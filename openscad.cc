@@ -18,12 +18,28 @@
  *
  */
 
+#include "openscad.h"
+
 extern int parserdebug;
 int parserparse(void);
 
 int main()
 {
+	int rc = 0;
+
+	initialize_builtin_functions();
+	initialize_builtin_modules();
+
+	Context ctx(NULL);
+	ctx.functions_p = &builtin_functions;
+	ctx.modules_p = &builtin_modules;
+
 	// parserdebug = 1;
-	return parserparse();
+	rc = parserparse();
+
+	destroy_builtin_functions();
+	destroy_builtin_modules();
+
+	return rc;
 }
 
