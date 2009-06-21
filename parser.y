@@ -137,9 +137,9 @@ module_instantciation_list:
 	/* empty */ {
 		$$ = new ModuleInstanciation();
 	} |
-	module_instantciation module_instantciation_list {
-		$$ = $2;
-		$$->children.append($1);
+	module_instantciation_list module_instantciation {
+		$$ = $1;
+		$$->children.append($2);
 	} ;
 
 single_module_instantciation:

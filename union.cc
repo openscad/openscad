@@ -48,6 +48,7 @@ CGAL_Nef_polyhedron UnionNode::render_cgal_nef_polyhedron() const
 	CGAL_Nef_polyhedron N;
 	foreach (AbstractNode *v, children)
 		N += v->render_cgal_nef_polyhedron();
+	progress_report();
 	return N;
 }
 

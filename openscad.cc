@@ -27,6 +27,11 @@
 #include <fstream>
 #include <iostream>
 
+void report_func(const class AbstractNode*, void*, int mark)
+{
+	printf("CSG rendering progress: %.2f%%\n", (mark*100.0) / progress_report_count);
+}
+
 int main()
 {
 	int rc = 0;
@@ -52,7 +57,12 @@ int main()
 
 	CGAL_Nef_polyhedron N;
 	CGAL_Polyhedron P;
+
+	progress_report_prep(root_node, report_func, NULL);
 	N = root_node->render_cgal_nef_polyhedron();
+	progress_report_fin();
+	printf("CSG rendering finished.\n");
+
 	N.convert_to_Polyhedron(P);
 
 	std::ofstream outFile("output.off");

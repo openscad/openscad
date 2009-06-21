@@ -60,6 +60,7 @@ CGAL_Nef_polyhedron TransNode::render_cgal_nef_polyhedron() const
 		N += v->render_cgal_nef_polyhedron();
 	CGAL_Aff_transformation t(CGAL::TRANSLATION, CGAL_Vector(x, y, z));
 	N.transform(t);
+	progress_report();
 	return N;
 }
 

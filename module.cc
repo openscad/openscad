@@ -191,6 +191,7 @@ CGAL_Nef_polyhedron AbstractNode::render_cgal_nef_polyhedron() const
 	CGAL_Nef_polyhedron N;
 	foreach (AbstractNode *v, children)
 		N += v->render_cgal_nef_polyhedron();
+	progress_report();
 	return N;
 }
 
@@ -200,5 +201,37 @@ QString AbstractNode::dump(QString indent) const
 	foreach (AbstractNode *v, children)
 		text += v->dump(indent + QString("\t"));
 	return text + indent + "}\n";
+}
+
+int progress_report_count;
+void (*progress_report_f)(const class AbstractNode*, void*, int);
+void *progress_report_vp;
+
+void AbstractNode::progress_prepare()
+{
+	foreach (AbstractNode *v, children)
+		v->progress_prepare();
+	progress_mark = ++progress_report_count;
+}
+
+void AbstractNode::progress_report() const
+{
+	if (progress_report_f)
+		progress_report_f(this, progress_report_vp, progress_mark);
+}
+
+void progress_report_prep(AbstractNode *root, void (*f)(const class AbstractNode *node, void *vp, int mark), void *vp)
+{
+	progress_report_count = 0;
+	progress_report_f = f;
+	progress_report_vp = vp;
+	root->progress_prepare();
+}
+
+void progress_report_fin()
+{
+	progress_report_count = 0;
+	progress_report_f = NULL;
+	progress_report_vp = NULL;
 }
 

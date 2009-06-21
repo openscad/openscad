@@ -218,7 +218,7 @@ public:
 #include <CGAL/Polyhedron_3.h>
 #include <CGAL/Nef_polyhedron_3.h>
 
-typedef CGAL::Cartesian<CGAL::Gmpq> CGAL_Kernel;
+typedef CGAL::Extended_cartesian<CGAL::Gmpq> CGAL_Kernel;
 typedef CGAL::Polyhedron_3<CGAL_Kernel> CGAL_Polyhedron;
 typedef CGAL::Nef_polyhedron_3<CGAL_Kernel> CGAL_Nef_polyhedron;
 typedef CGAL_Nef_polyhedron::Aff_transformation_3  CGAL_Aff_transformation;
@@ -231,10 +231,21 @@ class AbstractNode
 public:
 	QVector<AbstractNode*> children;
 
+	int progress_mark;
+	void progress_prepare();
+	void progress_report() const;
+
 	virtual ~AbstractNode();
 	virtual CGAL_Nef_polyhedron render_cgal_nef_polyhedron() const;
 	virtual QString dump(QString indent) const;
 };
+
+extern int progress_report_count;
+extern void (*progress_report_f)(const class AbstractNode*, void*, int);
+extern void *progress_report_vp;
+
+void progress_report_prep(AbstractNode *root, void (*f)(const class AbstractNode *node, void *vp, int mark), void *vp);
+void progress_report_fin();
 
 #endif /* HIDE_ABSTRACT_NODE_DETAILS */
 

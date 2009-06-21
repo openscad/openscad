@@ -60,13 +60,16 @@ void register_builtin_cube()
 
 CGAL_Nef_polyhedron CubeNode::render_cgal_nef_polyhedron() const
 {
-	CGAL_Nef_polyhedron N1(CGAL_Plane(+1,  0,  0, -x/2));
+	CGAL_Plane P1 = CGAL_Plane(+1,  0,  0, -x/2);
+	CGAL_Nef_polyhedron N1(P1);
 	CGAL_Nef_polyhedron N2(CGAL_Plane(-1,  0,  0, -x/2));
 	CGAL_Nef_polyhedron N3(CGAL_Plane( 0, +1,  0, -y/2));
 	CGAL_Nef_polyhedron N4(CGAL_Plane( 0, -1,  0, -y/2));
 	CGAL_Nef_polyhedron N5(CGAL_Plane( 0,  0, +1, -z/2));
 	CGAL_Nef_polyhedron N6(CGAL_Plane( 0,  0, -1, -z/2));
-	return N1 * N2 * N3 * N4 * N5 * N6;
+	CGAL_Nef_polyhedron N = N1 * N2 * N3 * N4 * N5 * N6;
+	progress_report();
+	return N;
 }
 
 QString CubeNode::dump(QString indent) const

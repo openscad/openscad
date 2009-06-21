@@ -24,8 +24,8 @@ module test001()
 module test002()
 {
 	difference() {
-		cube(1);
-		trans([0.5, 0.5, 0.5]) cube(1);
+		cube([2 2 0.5]);
+		cube([0.5 0.5 2]);
 	}
 }
 

@@ -52,7 +52,9 @@ CGAL_Nef_polyhedron IntersectNode::render_cgal_nef_polyhedron() const
 			N = v->render_cgal_nef_polyhedron();
 		else
 			N *= v->render_cgal_nef_polyhedron();
+		first = false;
 	}
+	progress_report();
 	return N;
 }
 
