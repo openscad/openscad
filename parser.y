@@ -26,16 +26,32 @@ int parserlex(void);
 void yyerror(char const *s);
 
 int lexerget_lineno(void);
+int lexerlex_destroy(void);
 int lexerlex(void);
 
 QVector<Module*> module_stack;
 Module *module;
+
+class ArgContainer {
+public:
+	QString argname;
+	Expression *argexpr;
+};
+class ArgsContainer {
+public:
+	QVector<QString> argnames;
+	QVector<Expression*> argexpr;
+};
 
 %}
 
 %union {
 	char *text;
 	double number;
+	class Expression *expr;
+	class ModuleInstanciation *inst;
+	class ArgContainer *arg;
+	class ArgsContainer *args;
 }
 
 %token TOK_MODULE
@@ -48,6 +64,18 @@ Module *module;
 %left '*' '/' '%'
 %left '.'
 
+%type <expr> expr
+
+%type <inst> module_instantciation
+%type <inst> module_instantciation_list
+%type <inst> single_module_instantciation
+
+%type <args> arguments_call
+%type <args> arguments_decl
+
+%type <arg> argument_call
+%type <arg> argument_decl
+
 %debug
 
 %%
@@ -59,51 +87,239 @@ input:
 statement:
 	';' |
 	'{' input '}' |
-	node statement |
-	TOK_ID '=' expr ';' |
-	TOK_MODULE TOK_ID '(' arguments_decal ')' statement |
-	TOK_FUNCTION TOK_ID '(' arguments_decal ')' expr ;
+	module_instantciation {
+		module->children.append($1);
+	} |
+	TOK_ID '=' expr ';' {
+		module->assignments[$1] = $3;
+		free($1);
+	} |
+	TOK_MODULE TOK_ID '(' arguments_decl ')' {
+		Module *p = module;
+		module_stack.append(module);
+		module = new Module();
+		p->modules[$2] = module;
+		module->argnames = $4->argnames;
+		module->argexpr = $4->argexpr;
+		free($2);
+		delete $4;
+	} statement {
+		module = module_stack.last();
+		module_stack.pop_back();
+	} |
+	TOK_FUNCTION TOK_ID '(' arguments_decl ')' '=' expr {
+		Function *func = new Function();
+		func->argnames = $4->argnames;
+		func->argexpr = $4->argexpr;
+		func->expr = $7;
+		module->functions[$2] = func;
+		free($2);
+		delete $4;
+	} ;
 
-node:
-	TOK_ID '(' arguments_call ')' |
-	TOK_ID ':' TOK_ID '(' arguments_call ')' ;
+module_instantciation:
+	single_module_instantciation ';' {
+		$$ = $1;
+	} |
+	single_module_instantciation '{' module_instantciation_list '}' {
+		$$ = $1;
+		$$->children = $3->children;
+		$3->children.clear();
+		delete $3;
+	} |
+	single_module_instantciation module_instantciation {
+		$$ = $1;
+		$$->children.append($2);
+	} ;
 
+module_instantciation_list:
+	/* empty */ {
+		$$ = new ModuleInstanciation();
+	} |
+	module_instantciation module_instantciation_list {
+		$$ = $2;
+		$$->children.append($1);
+	} ;
+
+single_module_instantciation:
+	TOK_ID '(' arguments_call ')' {
+		$$ = new ModuleInstanciation();
+		$$->modname = QString($1);
+		$$->argnames = $3->argnames;
+		$$->argexpr = $3->argexpr;
+		free($1);
+		delete $3;
+	} |
+	TOK_ID ':' TOK_ID '(' arguments_call ')' {
+		$$ = new ModuleInstanciation();
+		$$->label = QString($1);
+		$$->modname = QString($3);
+		$$->argnames = $5->argnames;
+		$$->argexpr = $5->argexpr;
+		free($1);
+		free($3);
+		delete $5;
+	} ;
+	
 expr:
-	TOK_ID |
-	expr '.' TOK_ID |
-	TOK_STRING |
-	TOK_NUMBER |
-	TOK_NUMBER ':' TOK_NUMBER |
-	TOK_NUMBER ':' TOK_NUMBER ':' TOK_NUMBER |
-	'[' TOK_NUMBER TOK_NUMBER TOK_NUMBER ']' |
-	'[' expr ',' expr ',' expr ']' |
-	expr '*' expr |
-	expr '/' expr |
-	expr '%' expr |
-	expr '+' expr |
-	expr '-' expr |
-	'+' expr |
-	'-' expr |
-	'(' expr ')' |
-	TOK_ID '(' arguments_call ')' ;
+	TOK_ID {
+		$$ = new Expression();
+		$$->type = 'L';
+		$$->var_name = QString($1);
+		free($1);
+	} |
+	expr '.' TOK_ID {
+		$$ = new Expression();
+		$$->type = 'M';
+		$$->children.append($1);
+		$$->var_name = QString($3);
+		free($3);
+	} |
+	TOK_STRING {
+		$$ = new Expression();
+		$$->type = 'C';
+		$$->const_value = Value(QString($1));
+		free($1);
+	} |
+	TOK_NUMBER {
+		$$ = new Expression();
+		$$->type = 'C';
+		$$->const_value = Value($1);
+	} |
+	TOK_NUMBER ':' TOK_NUMBER {
+		$$ = new Expression();
+		$$->type = 'C';
+		$$->const_value = Value($1, 1, $3);
+		$$->const_value.is_range = true;
+	} |
+	TOK_NUMBER ':' TOK_NUMBER ':' TOK_NUMBER {
+		$$ = new Expression();
+		$$->type = 'C';
+		$$->const_value = Value($1, $3, $5);
+		$$->const_value.is_range = true;
+	} |
+	'[' TOK_NUMBER TOK_NUMBER TOK_NUMBER ']' {
+		$$ = new Expression();
+		$$->type = 'C';
+		$$->const_value = Value($2, $3, $4);
+	} |
+	'[' expr ',' expr ',' expr ']' {
+		$$ = new Expression();
+		$$->type = 'V';
+		$$->children.append($2);
+		$$->children.append($4);
+		$$->children.append($6);
+	} |
+	expr '*' expr {
+		$$ = new Expression();
+		$$->type = '*';
+		$$->children.append($1);
+		$$->children.append($3);
+	} |
+	expr '/' expr {
+		$$ = new Expression();
+		$$->type = '/';
+		$$->children.append($1);
+		$$->children.append($3);
+	} |
+	expr '%' expr {
+		$$ = new Expression();
+		$$->type = '%';
+		$$->children.append($1);
+		$$->children.append($3);
+	} |
+	expr '+' expr {
+		$$ = new Expression();
+		$$->type = '+';
+		$$->children.append($1);
+		$$->children.append($3);
+	} |
+	expr '-' expr {
+		$$ = new Expression();
+		$$->type = '-';
+		$$->children.append($1);
+		$$->children.append($3);
+	} |
+	'+' expr {
+		$$ = $2;
+	} |
+	'-' expr {
+		$$ = new Expression();
+		$$->type = 'I';
+		$$->children.append($2);
+	} |
+	'(' expr ')' {
+		$$ = $2;
+	} |
+	TOK_ID '(' arguments_call ')' {
+		$$ = new Expression();
+		$$->type = 'F';
+		$$->call_funcname = QString($1);
+		$$->call_argnames = $3->argnames;
+		$$->children = $3->argexpr;
+		free($1);
+		delete $3;
+	} ;
 
-arguments_decal:
-	argument_decal |
-	argument_decal ',' arguments_decal |
-	/* empty */ ;
+arguments_decl:
+	/* empty */ {
+		$$ = new ArgsContainer();
+	} |
+	argument_decl {
+		$$ = new ArgsContainer();
+		$$->argnames.append($1->argname);
+		$$->argexpr.append($1->argexpr);
+		delete $1;
+	} |
+	arguments_decl ',' argument_decl {
+		$$ = $1;
+		$$->argnames.append($3->argname);
+		$$->argexpr.append($3->argexpr);
+		delete $3;
+	} ;
 
-argument_decal:
-	TOK_ID |
-	TOK_ID '=' expr ;
+argument_decl:
+	TOK_ID {
+		$$ = new ArgContainer();
+		$$->argname = QString($1);
+		$$->argexpr = NULL;
+		free($1);
+	} |
+	TOK_ID '=' expr {
+		$$ = new ArgContainer();
+		$$->argname = QString($1);
+		$$->argexpr = $3;
+		free($1);
+	} ;
 
 arguments_call:
-	argument_call |
-	argument_call ',' arguments_call |
-	/* empty */ ;
+	/* empty */ {
+		$$ = new ArgsContainer();
+	} |
+	argument_call {
+		$$ = new ArgsContainer();
+		$$->argnames.append($1->argname);
+		$$->argexpr.append($1->argexpr);
+		delete $1;
+	} |
+	arguments_call ',' argument_call {
+		$$ = $1;
+		$$->argnames.append($3->argname);
+		$$->argexpr.append($3->argexpr);
+		delete $3;
+	} ;
 
 argument_call:
-	expr |
-	TOK_ID '=' expr ;
+	expr {
+		$$ = new ArgContainer();
+		$$->argexpr = $1;
+	} |
+	TOK_ID '=' expr {
+		$$ = new ArgContainer();
+		$$->argname = QString($1);
+		$$->argexpr = $3;
+		free($1);
+	} ;
 
 %%
 
@@ -122,10 +338,11 @@ AbstractModule *parse(FILE *f, int debug)
 {
 	module_stack.clear();
 	module = new Module();
-	module_stack.append(module);
 
 	parserdebug = debug;
 	parserparse();
+
+	lexerlex_destroy();
 
 	return module;
 }

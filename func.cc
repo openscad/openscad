@@ -60,7 +60,7 @@ QString Function::dump(QString indent, QString name) const
 		if (argexpr[i])
 			text += QString(" = ") + argexpr[i]->dump();
 	}
-	text += QString(")\n%1\t%2;\n").arg(indent, expr->dump());
+	text += QString(") = %1;\n").arg(expr->dump());
 	return text;
 }
 

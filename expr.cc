@@ -53,6 +53,19 @@ Value Expression::evaluate(const Context *context) const
 		return Value(children[0]->evaluate(context), children[1]->evaluate(context), children[2]->evaluate(context));
 	case 'L':
 		return context->lookup_variable(var_name);
+	case 'M':
+		{
+			Value v = children[0]->evaluate(context);
+			if (v.is_nan || !v.is_vector)
+				return Value();
+			if (var_name == QString("x"))
+				return Value(v.x);
+			if (var_name == QString("y"))
+				return Value(v.y);
+			if (var_name == QString("z"))
+				return Value(v.z);
+			return Value();
+		}
 	case 'F':
 		{
 			QVector<Value> argvalues;
@@ -83,6 +96,8 @@ QString Expression::dump() const
 		return QString("[%1, %2, %3]").arg(children[0]->dump(), children[1]->dump(), children[2]->dump());
 	case 'L':
 		return var_name;
+	case 'M':
+		return QString("(%1.%2)").arg(children[0]->dump(), var_name);
 	case 'F':
 		{
 			QString text = call_funcname + QString("(");
@@ -93,6 +108,7 @@ QString Expression::dump() const
 					text += call_argnames[i] + QString(" = ");
 				text += children[i]->dump();
 			}
+			return text + QString(")");
 		}
 	default:
 		abort();

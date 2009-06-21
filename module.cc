@@ -38,6 +38,8 @@ ModuleInstanciation::~ModuleInstanciation()
 {
 	foreach (Expression *v, argexpr)
 		delete v;
+	foreach (ModuleInstanciation *v, children)
+		delete v;
 }
 
 QString ModuleInstanciation::dump(QString indent) const
@@ -53,12 +55,25 @@ QString ModuleInstanciation::dump(QString indent) const
 			text += argnames[i] + QString(" = ");
 		text += argexpr[i]->dump();
 	}
-	text += QString(") {\n");
-	for (int i = 0; i < children.size(); i++) {
-		children[i]->dump(indent + QString("\t"));
+	if (children.size() == 0) {
+		text += QString(");\n");
+	} else if (children.size() == 1) {
+		text += QString(")\n");
+		text += children[0]->dump(indent + QString("\t"));
+	} else {
+		text += QString(") {\n");
+		for (int i = 0; i < children.size(); i++) {
+			text += children[i]->dump(indent + QString("\t"));
+		}
+		text += QString("%1}\n").arg(indent);
 	}
-	text += QString("%1}\n").arg(indent);
 	return text;
+}
+
+AbstractNode *ModuleInstanciation::evaluate(const Context*) const
+{
+	/* FIXME */
+	return NULL;
 }
 
 Module::~Module()
@@ -69,6 +84,8 @@ Module::~Module()
 		delete v;
 	foreach (AbstractModule *v, modules)
 		delete v;
+	foreach (ModuleInstanciation *v, children)
+		delete v;
 }
 
 AbstractNode *Module::evaluate(const Context *ctx, const QVector<QString> &call_argnames, const QVector<Value> &call_argvalues) const
@@ -77,7 +94,6 @@ AbstractNode *Module::evaluate(const Context *ctx, const QVector<QString> &call_
 	c.args(argnames, argexpr, call_argnames, call_argvalues);
 
 	/* FIXME */
-
 	return NULL;
 }
 

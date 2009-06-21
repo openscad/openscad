@@ -45,13 +45,17 @@ class Value
 {
 public:
 	double x, y, z;
+	QString text;
 	bool is_vector;
+	bool is_range;
+	bool is_string;
 	bool is_nan;
 
-	Value() : x(0), y(0), z(0), is_vector(false), is_nan(true) { }
-	Value(double v1) : x(v1), y(0), z(0), is_vector(false), is_nan(false) { }
-	Value(double v1, double v2, double v3) : x(v1), y(v2), z(v3), is_vector(true), is_nan(false) { }
-	Value(const Value &v) : x(v.x), y(v.y), z(v.z), is_vector(v.is_vector), is_nan(v.is_nan) { }
+	Value() : x(0), y(0), z(0), is_vector(false), is_range(false), is_string(false), is_nan(true) { }
+	Value(const QString &t) : x(0), y(0), z(0), text(t), is_vector(false), is_range(false), is_string(true), is_nan(true) { }
+	Value(double v1) : x(v1), y(0), z(0), is_vector(false), is_range(false), is_string(false), is_nan(false) { }
+	Value(double v1, double v2, double v3) : x(v1), y(v2), z(v3), is_vector(true), is_range(false), is_string(false), is_nan(false) { }
+	Value(const Value &v) : x(v.x), y(v.y), z(v.z), text(v.text), is_vector(v.is_vector), is_range(v.is_range), is_string(v.is_string), is_nan(v.is_nan) { }
 	Value(const Value &v1, const Value &v2, const Value &v3);
 
 	Value& operator = (const Value &v);
@@ -81,6 +85,7 @@ public:
 	// Constant value: C
 	// Create Vector: V
 	// Lookup Variable: L
+	// Lookup Member: M
 	// Function call: F
 	char type;
 
@@ -151,7 +156,8 @@ public:
 	ModuleInstanciation() { }
 	~ModuleInstanciation();
 
-	virtual QString dump(QString indent) const;
+	QString dump(QString indent) const;
+	AbstractNode *evaluate(const Context *ctx) const;
 };
 
 class Module : public AbstractModule

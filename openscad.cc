@@ -32,7 +32,7 @@ int main()
 	ctx.modules_p = &builtin_modules;
 
 	AbstractModule *root_module = parse(stdin, 0);
-	QString text = root_module->dump("", "*");
+	QString text = root_module->dump("", "**root**");
 	printf("%s", text.toAscii().data());
 	delete root_module;
 

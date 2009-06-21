@@ -34,6 +34,8 @@ Value::Value(const Value &v1, const Value &v2, const Value &v3)
 	z = v1.z;
 
 	is_vector = true;
+	is_range = false;
+	is_string = false;
 	is_nan = false;
 	return;
 
@@ -43,6 +45,8 @@ create_nan:
 	z = 0;
 
 	is_vector = false;
+	is_range = false;
+	is_string = false;
 	is_nan = true;
 }
 
@@ -124,8 +128,13 @@ QString Value::dump() const
 {
 	if (is_nan)
 		return QString("NaN");
-	if (is_vector)
-		return QString("[%1 %2 %3]").arg(x, y, z);
-	return QString("%1").arg(x);
+	if (is_vector) {
+		QString text;
+		text.sprintf("[%f %f %f]", x, y, z);
+		return text;
+	}
+	QString text;
+	text.sprintf("%f", x);
+	return text;
 }
 
