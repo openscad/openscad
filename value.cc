@@ -30,8 +30,8 @@ Value::Value(const Value &v1, const Value &v2, const Value &v3)
 		goto create_nan;
 
 	x = v1.x;
-	y = v1.y;
-	z = v1.z;
+	y = v2.x;
+	z = v3.x;
 
 	is_vector = true;
 	is_range = false;

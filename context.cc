@@ -55,12 +55,12 @@ Value Context::evaluate_function(QString name, const QVector<QString> &argnames,
 	return Value();
 }
 
-AbstractNode *Context::evaluate_module(QString name, const QVector<QString> &argnames, const QVector<Value> &argvalues) const
+AbstractNode *Context::evaluate_module(QString name, const QVector<QString> &argnames, const QVector<Value> &argvalues, const QVector<AbstractNode*> child_nodes) const
 {
 	if (modules_p->contains(name))
-		return modules_p->value(name)->evaluate(this, argnames, argvalues);
+		return modules_p->value(name)->evaluate(this, argnames, argvalues, child_nodes);
 	if (parent)
-		return parent->evaluate_module(name, argnames, argvalues);
+		return parent->evaluate_module(name, argnames, argvalues, child_nodes);
 	return NULL;
 }
 

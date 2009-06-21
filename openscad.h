@@ -140,7 +140,7 @@ class AbstractModule
 {
 public:
 	virtual ~AbstractModule();
-	virtual AbstractNode *evaluate(const Context *ctx, const QVector<QString> &call_argnames, const QVector<Value> &call_argvalues) const;
+	virtual AbstractNode *evaluate(const Context *ctx, const QVector<QString> &call_argnames, const QVector<Value> &call_argvalues, const QVector<AbstractNode*> child_nodes) const;
 	virtual QString dump(QString indent, QString name) const;
 };
 
@@ -166,7 +166,9 @@ public:
 	QVector<QString> argnames;
 	QVector<Expression*> argexpr;
 
-	QHash<QString, Expression*> assignments;
+	QVector<QString> assignments_var;
+	QVector<Expression*> assignments_expr;
+
 	QHash<QString, AbstractFunction*> functions;
 	QHash<QString, AbstractModule*> modules;
 
@@ -175,7 +177,7 @@ public:
 	Module() { }
 	virtual ~Module();
 
-	virtual AbstractNode *evaluate(const Context *ctx, const QVector<QString> &call_argnames, const QVector<Value> &call_argvalues) const;
+	virtual AbstractNode *evaluate(const Context *ctx, const QVector<QString> &call_argnames, const QVector<Value> &call_argvalues, const QVector<AbstractNode*> child_nodes) const;
 	virtual QString dump(QString indent, QString name) const;
 };
 
@@ -183,27 +185,58 @@ extern QHash<QString, AbstractModule*> builtin_modules;
 extern void initialize_builtin_modules();
 extern void destroy_builtin_modules();
 
+extern void register_builtin_union();
+extern void register_builtin_difference();
+extern void register_builtin_intersect();
+
+extern void register_builtin_trans();
+
+extern void register_builtin_cube();
+
 class Context
 {
 public:
 	const Context *parent;
 	QHash<QString, Value> variables;
-	QHash<QString, AbstractFunction*> *functions_p;
-	QHash<QString, AbstractModule*> *modules_p;
+	const QHash<QString, AbstractFunction*> *functions_p;
+	const QHash<QString, AbstractModule*> *modules_p;
 
 	Context(const Context *parent) : parent(parent) { }
 	void args(const QVector<QString> &argnames, const QVector<Expression*> &argexpr, const QVector<QString> &call_argnames, const QVector<Value> &call_argvalues);
 
 	Value lookup_variable(QString name) const;
 	Value evaluate_function(QString name, const QVector<QString> &argnames, const QVector<Value> &argvalues) const;
-	AbstractNode *evaluate_module(QString name, const QVector<QString> &argnames, const QVector<Value> &argvalues) const;
+	AbstractNode *evaluate_module(QString name, const QVector<QString> &argnames, const QVector<Value> &argvalues, const QVector<AbstractNode*> child_nodes) const;
 };
+
+// The CGAL template magic slows down the compilation process by a factor of 5.
+// So we only include the declaration of AbstractNode where it is needed...
+#ifdef INCLUDE_ABSTRACT_NODE_DETAILS
+
+#include <CGAL/Gmpq.h>
+#include <CGAL/Cartesian.h>
+#include <CGAL/Polyhedron_3.h>
+#include <CGAL/Nef_polyhedron_3.h>
+
+typedef CGAL::Cartesian<CGAL::Gmpq> CGAL_Kernel;
+typedef CGAL::Polyhedron_3<CGAL_Kernel> CGAL_Polyhedron;
+typedef CGAL::Nef_polyhedron_3<CGAL_Kernel> CGAL_Nef_polyhedron;
+typedef CGAL_Nef_polyhedron::Aff_transformation_3  CGAL_Aff_transformation;
+typedef CGAL_Nef_polyhedron::Vector_3 CGAL_Vector;
+typedef CGAL_Nef_polyhedron::Plane_3 CGAL_Plane;
+typedef CGAL_Nef_polyhedron::Point_3 CGAL_Point;
 
 class AbstractNode
 {
 public:
 	QVector<AbstractNode*> children;
+
+	virtual ~AbstractNode();
+	virtual CGAL_Nef_polyhedron render_cgal_nef_polyhedron() const;
+	virtual QString dump(QString indent) const;
 };
+
+#endif /* HIDE_ABSTRACT_NODE_DETAILS */
 
 extern AbstractModule *parse(FILE *f, int debug);
 

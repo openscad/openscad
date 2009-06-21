@@ -91,7 +91,8 @@ statement:
 		module->children.append($1);
 	} |
 	TOK_ID '=' expr ';' {
-		module->assignments[$1] = $3;
+		module->assignments_var.append($1);
+		module->assignments_expr.append($3);
 		free($1);
 	} |
 	TOK_MODULE TOK_ID '(' arguments_decl ')' {
