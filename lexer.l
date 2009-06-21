@@ -23,6 +23,8 @@
 #include "openscad.h"
 #include "parser_yacc.h"
 
+int lexerget_lineno(void);
+
 %}
 
 %option yylineno

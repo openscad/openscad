@@ -1,5 +1,5 @@
 
-// g++ -o viewoff -lCGAL -lCGAL_Qt3 -I/opt/qt3/include/ -L/opt/qt3/lib/ -lqt viewoff.cc
+// g++ -o viewoff -lCGAL -lCGAL_Qt3 -lmpfr -I/opt/qt3/include/ -L/opt/qt3/lib/ -lqt viewoff.cc
 
 #include <CGAL/Cartesian.h>
 #include <CGAL/IO/Nef_polyhedron_iostream_3.h>

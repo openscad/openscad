@@ -2,7 +2,7 @@
 CONFIG += qt
 TEMPLATE = app
 
-LIBS += -lCGAL
+LIBS += -lCGAL -lmpfr
 
 LEXSOURCES += lexer.l
 YACCSOURCES += parser.y
