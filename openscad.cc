@@ -22,11 +22,6 @@
 
 #include "openscad.h"
 
-#include <CGAL/IO/Polyhedron_iostream.h>
-
-#include <fstream>
-#include <iostream>
-
 void report_func(const class AbstractNode*, void*, int mark)
 {
 	printf("CSG rendering progress: %.2f%%\n", (mark*100.0) / progress_report_count);

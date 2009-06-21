@@ -27,6 +27,9 @@
 #include <stdlib.h>
 #include <math.h>
 
+#include <fstream>
+#include <iostream>
+
 class Value;
 class Expression;
 
@@ -217,9 +220,13 @@ public:
 #include <CGAL/Cartesian.h>
 #include <CGAL/Polyhedron_3.h>
 #include <CGAL/Nef_polyhedron_3.h>
+#include <CGAL/IO/Polyhedron_iostream.h>
 
-typedef CGAL::Extended_cartesian<CGAL::Gmpq> CGAL_Kernel;
+typedef CGAL::Cartesian<CGAL::Gmpq> CGAL_Kernel;
+// typedef CGAL::Extended_cartesian<CGAL::Gmpq> CGAL_Kernel;
 typedef CGAL::Polyhedron_3<CGAL_Kernel> CGAL_Polyhedron;
+typedef CGAL_Polyhedron::HalfedgeDS CGAL_HDS;
+typedef CGAL::Polyhedron_incremental_builder_3<CGAL_HDS> CGAL_Polybuilder;
 typedef CGAL::Nef_polyhedron_3<CGAL_Kernel> CGAL_Nef_polyhedron;
 typedef CGAL_Nef_polyhedron::Aff_transformation_3  CGAL_Aff_transformation;
 typedef CGAL_Nef_polyhedron::Vector_3 CGAL_Vector;

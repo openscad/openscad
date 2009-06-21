@@ -58,16 +58,69 @@ void register_builtin_cube()
 	builtin_modules["cube"] = new CubeModule();
 }
 
+class CGAL_Build_cube : public CGAL::Modifier_base<CGAL_HDS>
+{
+public:
+	const CubeNode *n;
+	CGAL_Build_cube(const CubeNode *n) : n(n) { }
+	void operator()(CGAL_HDS& hds) {
+		CGAL_Polybuilder B(hds, true);
+		B.begin_surface(8, 6, 24);
+		typedef CGAL_HDS::Vertex::Point Point;
+		B.add_vertex(Point(-n->x/2, -n->y/2, +n->z/2)); // 0
+		B.add_vertex(Point(+n->x/2, -n->y/2, +n->z/2)); // 1
+		B.add_vertex(Point(+n->x/2, +n->y/2, +n->z/2)); // 2
+		B.add_vertex(Point(-n->x/2, +n->y/2, +n->z/2)); // 3
+		B.add_vertex(Point(-n->x/2, -n->y/2, -n->z/2)); // 4
+		B.add_vertex(Point(+n->x/2, -n->y/2, -n->z/2)); // 5
+		B.add_vertex(Point(+n->x/2, +n->y/2, -n->z/2)); // 6
+		B.add_vertex(Point(-n->x/2, +n->y/2, -n->z/2)); // 7
+		B.begin_facet();
+		B.add_vertex_to_facet(0);
+		B.add_vertex_to_facet(1);
+		B.add_vertex_to_facet(2);
+		B.add_vertex_to_facet(3);
+		B.end_facet();
+		B.begin_facet();
+		B.add_vertex_to_facet(7);
+		B.add_vertex_to_facet(6);
+		B.add_vertex_to_facet(5);
+		B.add_vertex_to_facet(4);
+		B.end_facet();
+		B.begin_facet();
+		B.add_vertex_to_facet(4);
+		B.add_vertex_to_facet(5);
+		B.add_vertex_to_facet(1);
+		B.add_vertex_to_facet(0);
+		B.end_facet();
+		B.begin_facet();
+		B.add_vertex_to_facet(5);
+		B.add_vertex_to_facet(6);
+		B.add_vertex_to_facet(2);
+		B.add_vertex_to_facet(1);
+		B.end_facet();
+		B.begin_facet();
+		B.add_vertex_to_facet(6);
+		B.add_vertex_to_facet(7);
+		B.add_vertex_to_facet(3);
+		B.add_vertex_to_facet(2);
+		B.end_facet();
+		B.begin_facet();
+		B.add_vertex_to_facet(7);
+		B.add_vertex_to_facet(4);
+		B.add_vertex_to_facet(0);
+		B.add_vertex_to_facet(3);
+		B.end_facet();
+		B.end_surface();
+	}
+};
+
 CGAL_Nef_polyhedron CubeNode::render_cgal_nef_polyhedron() const
 {
-	CGAL_Plane P1 = CGAL_Plane(+1,  0,  0, -x/2);
-	CGAL_Nef_polyhedron N1(P1);
-	CGAL_Nef_polyhedron N2(CGAL_Plane(-1,  0,  0, -x/2));
-	CGAL_Nef_polyhedron N3(CGAL_Plane( 0, +1,  0, -y/2));
-	CGAL_Nef_polyhedron N4(CGAL_Plane( 0, -1,  0, -y/2));
-	CGAL_Nef_polyhedron N5(CGAL_Plane( 0,  0, +1, -z/2));
-	CGAL_Nef_polyhedron N6(CGAL_Plane( 0,  0, -1, -z/2));
-	CGAL_Nef_polyhedron N = N1 * N2 * N3 * N4 * N5 * N6;
+	CGAL_Polyhedron P;
+	CGAL_Build_cube builder(this);
+	P.delegate(builder);
+	CGAL_Nef_polyhedron N(P);
 	progress_report();
 	return N;
 }
