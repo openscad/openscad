@@ -23,6 +23,9 @@
 
 #include <QHash>
 #include <QVector>
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
 
 class Value;
 class Expression;
@@ -49,6 +52,7 @@ public:
 	Value(double v1) : x(v1), y(0), z(0), is_vector(false), is_nan(false) { }
 	Value(double v1, double v2, double v3) : x(v1), y(v2), z(v3), is_vector(true), is_nan(false) { }
 	Value(const Value &v) : x(v.x), y(v.y), z(v.z), is_vector(v.is_vector), is_nan(v.is_nan) { }
+	Value(const Value &v1, const Value &v2, const Value &v3);
 
 	Value& operator = (const Value &v);
 	Value operator + (const Value &v) const;
@@ -57,6 +61,8 @@ public:
 	Value operator / (const Value &v) const;
 	Value operator % (const Value &v) const;
 	Value inv() const;
+
+	QString dump() const;
 };
 
 class Expression
@@ -73,21 +79,24 @@ public:
 	// Math operators: * / % + -
 	// Invert (prefix '-'): I
 	// Constant value: C
-	// Variable: V
+	// Create Vector: V
+	// Lookup Variable: L
 	// Function call: F
 	char type;
 
 	Expression();
 	~Expression();
 
-	Value evaluate(Context *context);
+	Value evaluate(const Context *context) const;
+	QString dump() const;
 };
 
 class AbstractFunction
 {
 public:
 	virtual ~AbstractFunction();
-	virtual Value evaluate(Context *ctx, const QVector<QString> &call_argnames, const QVector<Value> &call_argvalues);
+	virtual Value evaluate(const Context *ctx, const QVector<QString> &call_argnames, const QVector<Value> &call_argvalues) const;
+	virtual QString dump(QString indent, QString name) const;
 };
 
 class BuiltinFunction : public AbstractFunction
@@ -99,7 +108,8 @@ public:
 	BuiltinFunction(eval_func_t f) : eval_func(f) { }
 	virtual ~BuiltinFunction();
 
-	virtual Value evaluate(Context *ctx, const QVector<QString> &call_argnames, const QVector<Value> &call_argvalues);
+	virtual Value evaluate(const Context *ctx, const QVector<QString> &call_argnames, const QVector<Value> &call_argvalues) const;
+	virtual QString dump(QString indent, QString name) const;
 };
 
 class Function : public AbstractFunction
@@ -108,12 +118,13 @@ public:
 	QVector<QString> argnames;
 	QVector<Expression*> argexpr;
 
-	Expression expr;
+	Expression *expr;
 
 	Function() { }
 	virtual ~Function();
 
-	virtual Value evaluate(Context *ctx, const QVector<QString> &call_argnames, const QVector<Value> &call_argvalues);
+	virtual Value evaluate(const Context *ctx, const QVector<QString> &call_argnames, const QVector<Value> &call_argvalues) const;
+	virtual QString dump(QString indent, QString name) const;
 };
 
 extern QHash<QString, AbstractFunction*> builtin_functions;
@@ -124,7 +135,8 @@ class AbstractModule
 {
 public:
 	virtual ~AbstractModule();
-	virtual AbstractNode *evaluate(Context *ctx, const QVector<QString> &call_argnames, const QVector<Value> &call_argvalues);
+	virtual AbstractNode *evaluate(const Context *ctx, const QVector<QString> &call_argnames, const QVector<Value> &call_argvalues) const;
+	virtual QString dump(QString indent, QString name) const;
 };
 
 class ModuleInstanciation
@@ -134,9 +146,12 @@ public:
 	QString modname;
 	QVector<QString> argnames;
 	QVector<Expression*> argexpr;
+	QVector<ModuleInstanciation*> children;
 
 	ModuleInstanciation() { }
 	~ModuleInstanciation();
+
+	virtual QString dump(QString indent) const;
 };
 
 class Module : public AbstractModule
@@ -149,12 +164,13 @@ public:
 	QHash<QString, AbstractFunction*> functions;
 	QHash<QString, AbstractModule*> modules;
 
-	QVector<ModuleInstanciation> children;
+	QVector<ModuleInstanciation*> children;
 
 	Module() { }
 	virtual ~Module();
 
-	virtual AbstractNode *evaluate(Context *ctx, const QVector<QString> &call_argnames, const QVector<Value> &call_argvalues);
+	virtual AbstractNode *evaluate(const Context *ctx, const QVector<QString> &call_argnames, const QVector<Value> &call_argvalues) const;
+	virtual QString dump(QString indent, QString name) const;
 };
 
 extern QHash<QString, AbstractModule*> builtin_modules;
@@ -164,17 +180,17 @@ extern void destroy_builtin_modules();
 class Context
 {
 public:
-	Context *parent;
+	const Context *parent;
 	QHash<QString, Value> variables;
 	QHash<QString, AbstractFunction*> *functions_p;
 	QHash<QString, AbstractModule*> *modules_p;
 
-	Context(Context *parent) : parent(parent) { }
+	Context(const Context *parent) : parent(parent) { }
 	void args(const QVector<QString> &argnames, const QVector<Expression*> &argexpr, const QVector<QString> &call_argnames, const QVector<Value> &call_argvalues);
 
-	Value lookup_variable(QString name);
-	Value evaluate_function(QString name, const QVector<QString> &argnames, const QVector<Value> &argvalues);
-	AbstractNode *evaluate_module(QString name, const QVector<QString> &argnames, const QVector<Value> &argvalues);
+	Value lookup_variable(QString name) const;
+	Value evaluate_function(QString name, const QVector<QString> &argnames, const QVector<Value> &argvalues) const;
+	AbstractNode *evaluate_module(QString name, const QVector<QString> &argnames, const QVector<Value> &argvalues) const;
 };
 
 class AbstractNode
@@ -182,6 +198,8 @@ class AbstractNode
 public:
 	QVector<AbstractNode*> children;
 };
+
+extern AbstractModule *parse(FILE *f, int debug);
 
 #endif
 

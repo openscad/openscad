@@ -21,14 +21,15 @@
 %{
 
 #include "openscad.h"
-#include <stdio.h>
 
-extern int parserdebug;
 int parserlex(void);
 void yyerror(char const *s);
 
 int lexerget_lineno(void);
 int lexerlex(void);
+
+QVector<Module*> module_stack;
+Module *module;
 
 %}
 
@@ -115,5 +116,17 @@ void yyerror (char const *s)
 {
 	fprintf(stderr, "Parser error in line %d: %s\n", lexerget_lineno(), s);
 	exit(1);
+}
+
+AbstractModule *parse(FILE *f, int debug)
+{
+	module_stack.clear();
+	module = new Module();
+	module_stack.append(module);
+
+	parserdebug = debug;
+	parserparse();
+
+	return module;
 }
 

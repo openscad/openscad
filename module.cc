@@ -24,15 +24,41 @@ AbstractModule::~AbstractModule()
 {
 }
 
-AbstractNode *AbstractModule::evaluate(Context*, const QVector<QString>&, const QVector<Value>&)
+AbstractNode *AbstractModule::evaluate(const Context*, const QVector<QString>&, const QVector<Value>&) const
 {
 	return NULL;
+}
+
+QString AbstractModule::dump(QString indent, QString name) const
+{
+	return QString("%1abstract module %2();\n").arg(indent, name);
 }
 
 ModuleInstanciation::~ModuleInstanciation()
 {
 	foreach (Expression *v, argexpr)
 		delete v;
+}
+
+QString ModuleInstanciation::dump(QString indent) const
+{
+	QString text = indent;
+	if (!label.isEmpty())
+		text += label + QString(": ");
+	text += modname + QString("(");
+	for (int i=0; i < argnames.size(); i++) {
+		if (i > 0)
+			text += QString(", ");
+		if (!argnames[i].isEmpty())
+			text += argnames[i] + QString(" = ");
+		text += argexpr[i]->dump();
+	}
+	text += QString(") {\n");
+	for (int i = 0; i < children.size(); i++) {
+		children[i]->dump(indent + QString("\t"));
+	}
+	text += QString("%1}\n").arg(indent);
+	return text;
 }
 
 Module::~Module()
@@ -45,7 +71,7 @@ Module::~Module()
 		delete v;
 }
 
-AbstractNode *Module::evaluate(Context *ctx, const QVector<QString> &call_argnames, const QVector<Value> &call_argvalues)
+AbstractNode *Module::evaluate(const Context *ctx, const QVector<QString> &call_argnames, const QVector<Value> &call_argvalues) const
 {
 	Context c(ctx);
 	c.args(argnames, argexpr, call_argnames, call_argvalues);
@@ -53,6 +79,45 @@ AbstractNode *Module::evaluate(Context *ctx, const QVector<QString> &call_argnam
 	/* FIXME */
 
 	return NULL;
+}
+
+QString Module::dump(QString indent, QString name) const
+{
+	QString text = QString("%1module %2(").arg(indent, name);
+	for (int i=0; i < argnames.size(); i++) {
+		if (i > 0)
+			text += QString(", ");
+		text += argnames[i];
+		if (argexpr[i])
+			text += QString(" = ") + argexpr[i]->dump();
+	}
+	text += QString(") {\n");
+	{
+		QHashIterator<QString, Expression*> i(assignments);
+		while (i.hasNext()) {
+			i.next();
+			text += QString("%1\t%2 = %3;\n").arg(indent, i.key(), i.value()->dump());
+		}
+	}
+	{
+		QHashIterator<QString, AbstractFunction*> i(functions);
+		while (i.hasNext()) {
+			i.next();
+			text += i.value()->dump(indent + QString("\t"), i.key());
+		}
+	}
+	{
+		QHashIterator<QString, AbstractModule*> i(modules);
+		while (i.hasNext()) {
+			i.next();
+			text += i.value()->dump(indent + QString("\t"), i.key());
+		}
+	}
+	for (int i = 0; i < children.size(); i++) {
+		text += children[i]->dump(indent + QString("\t"));
+	}
+	text += QString("%1}\n").arg(indent);
+	return text;
 }
 
 QHash<QString, AbstractModule*> builtin_modules;

@@ -19,28 +19,49 @@
  */
 
 #include "openscad.h"
-#include <math.h>
 
 AbstractFunction::~AbstractFunction()
 {
 }
 
-Value AbstractFunction::evaluate(Context*, const QVector<QString>&, const QVector<Value>&)
+Value AbstractFunction::evaluate(const Context*, const QVector<QString>&, const QVector<Value>&) const
 {
 	return Value();
+}
+
+QString AbstractFunction::dump(QString indent, QString name) const
+{
+	return QString("%1abstract function %2();\n").arg(indent, name);
 }
 
 Function::~Function()
 {
 	for (int i=0; i < argexpr.size(); i++)
 		delete argexpr[i];
+	delete expr;
 }
 
-Value Function::evaluate(Context *ctx, const QVector<QString> &call_argnames, const QVector<Value> &call_argvalues)
+Value Function::evaluate(const Context *ctx, const QVector<QString> &call_argnames, const QVector<Value> &call_argvalues) const
 {
 	Context c(ctx);
 	c.args(argnames, argexpr, call_argnames, call_argvalues);
-	return expr.evaluate(&c);
+	if (expr)
+		return expr->evaluate(&c);
+	return Value();
+}
+
+QString Function::dump(QString indent, QString name) const
+{
+	QString text = QString("%1function %2(").arg(indent, name);
+	for (int i=0; i < argnames.size(); i++) {
+		if (i > 0)
+			text += QString(", ");
+		text += argnames[i];
+		if (argexpr[i])
+			text += QString(" = ") + argexpr[i]->dump();
+	}
+	text += QString(")\n%1\t%2;\n").arg(indent, expr->dump());
+	return text;
 }
 
 QHash<QString, AbstractFunction*> builtin_functions;
@@ -49,9 +70,14 @@ BuiltinFunction::~BuiltinFunction()
 {
 }
 
-Value BuiltinFunction::evaluate(Context*, const QVector<QString>&, const QVector<Value> &call_argvalues)
+Value BuiltinFunction::evaluate(const Context*, const QVector<QString>&, const QVector<Value> &call_argvalues) const
 {
 	return eval_func(call_argvalues);
+}
+
+QString BuiltinFunction::dump(QString indent, QString name) const
+{
+	return QString("%1builtin function %2();\n").arg(indent, name);
 }
 
 Value builtin_sin(const QVector<Value> &args)

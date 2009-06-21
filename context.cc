@@ -37,7 +37,7 @@ void Context::args(const QVector<QString> &argnames, const QVector<Expression*> 
 	}
 }
 
-Value Context::lookup_variable(QString name)
+Value Context::lookup_variable(QString name) const
 {
 	if (variables.contains(name))
 		return variables[name];
@@ -46,7 +46,7 @@ Value Context::lookup_variable(QString name)
 	return Value();
 }
 
-Value Context::evaluate_function(QString name, const QVector<QString> &argnames, const QVector<Value> &argvalues)
+Value Context::evaluate_function(QString name, const QVector<QString> &argnames, const QVector<Value> &argvalues) const
 {
 	if (functions_p->contains(name))
 		return functions_p->value(name)->evaluate(this, argnames, argvalues);
@@ -55,7 +55,7 @@ Value Context::evaluate_function(QString name, const QVector<QString> &argnames,
 	return Value();
 }
 
-AbstractNode *Context::evaluate_module(QString name, const QVector<QString> &argnames, const QVector<Value> &argvalues)
+AbstractNode *Context::evaluate_module(QString name, const QVector<QString> &argnames, const QVector<Value> &argvalues) const
 {
 	if (modules_p->contains(name))
 		return modules_p->value(name)->evaluate(this, argnames, argvalues);

@@ -19,9 +19,35 @@
  */
 
 #include "openscad.h"
-#include <math.h>
 
-Value& Value::operator = (const Value &v) {
+Value::Value(const Value &v1, const Value &v2, const Value &v3)
+{
+	if (v1.is_nan || v1.is_vector)
+		goto create_nan;
+	if (v2.is_nan || v2.is_vector)
+		goto create_nan;
+	if (v3.is_nan || v3.is_vector)
+		goto create_nan;
+
+	x = v1.x;
+	y = v1.y;
+	z = v1.z;
+
+	is_vector = true;
+	is_nan = false;
+	return;
+
+create_nan:
+	x = 0;
+	y = 0;
+	z = 0;
+
+	is_vector = false;
+	is_nan = true;
+}
+
+Value& Value::operator = (const Value &v)
+{
 	x = v.x;
 	y = v.y;
 	z = v.z;
@@ -30,7 +56,8 @@ Value& Value::operator = (const Value &v) {
 	return *this;
 }
 
-Value Value::operator + (const Value &v) const {
+Value Value::operator + (const Value &v) const
+{
 	if (is_nan || v.is_nan)
 		return Value();
 	if (is_vector && v.is_vector)
@@ -40,7 +67,8 @@ Value Value::operator + (const Value &v) const {
 	return Value();
 }
 
-Value Value::operator - (const Value &v) const {
+Value Value::operator - (const Value &v) const
+{
 	if (is_nan || v.is_nan)
 		return Value();
 	if (is_vector && v.is_vector)
@@ -50,7 +78,8 @@ Value Value::operator - (const Value &v) const {
 	return Value();
 }
 
-Value Value::operator * (const Value &v) const {
+Value Value::operator * (const Value &v) const
+{
 	if (is_nan || v.is_nan)
 		return Value();
 	if (is_vector && v.is_vector) {
@@ -68,23 +97,35 @@ Value Value::operator * (const Value &v) const {
 	return Value(x * v.x);
 }
 
-Value Value::operator / (const Value &v) const {
+Value Value::operator / (const Value &v) const
+{
 	if (is_nan || v.is_nan || is_vector || v.is_vector)
 		return Value();
 	return Value(x / v.x);
 }
 
-Value Value::operator % (const Value &v) const {
+Value Value::operator % (const Value &v) const
+{
 	if (is_nan || v.is_nan || is_vector || v.is_vector)
 		return Value();
 	return Value(fmod(x, v.x));
 }
 
-Value Value::inv() const {
+Value Value::inv() const
+{
 	if (is_nan)
 		return Value();
 	if (is_vector)
 		return Value(-x, -y, -z);
 	return Value(-x);
+}
+
+QString Value::dump() const
+{
+	if (is_nan)
+		return QString("NaN");
+	if (is_vector)
+		return QString("[%1 %2 %3]").arg(x, y, z);
+	return QString("%1").arg(x);
 }
 

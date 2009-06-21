@@ -20,9 +20,6 @@
 
 #include "openscad.h"
 
-extern int parserdebug;
-int parserparse(void);
-
 int main()
 {
 	int rc = 0;
@@ -34,8 +31,10 @@ int main()
 	ctx.functions_p = &builtin_functions;
 	ctx.modules_p = &builtin_modules;
 
-	// parserdebug = 1;
-	rc = parserparse();
+	AbstractModule *root_module = parse(stdin, 0);
+	QString text = root_module->dump("", "*");
+	printf("%s", text.toAscii().data());
+	delete root_module;
 
 	destroy_builtin_functions();
 	destroy_builtin_modules();

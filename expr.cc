@@ -31,7 +31,7 @@ Expression::~Expression()
 		delete children[i];
 }
 
-Value Expression::evaluate(Context *context)
+Value Expression::evaluate(const Context *context) const
 {
 	switch (type)
 	{
@@ -50,6 +50,8 @@ Value Expression::evaluate(Context *context)
 	case 'C':
 		return const_value;
 	case 'V':
+		return Value(children[0]->evaluate(context), children[1]->evaluate(context), children[2]->evaluate(context));
+	case 'L':
 		return context->lookup_variable(var_name);
 	case 'F':
 		{
@@ -59,7 +61,41 @@ Value Expression::evaluate(Context *context)
 			return context->evaluate_function(call_funcname, call_argnames, argvalues);
 		}
 	default:
-		return Value();
+		abort();
+	}
+}
+
+QString Expression::dump() const
+{
+	switch (type)
+	{
+	case '*':
+	case '/':
+	case '%':
+	case '+':
+	case '-':
+		return QString("(%1%2%3)").arg(children[0]->dump(), QString(type), children[1]->dump());
+	case 'I':
+		return QString("(-%1)").arg(children[0]->dump());
+	case 'C':
+		return const_value.dump();
+	case 'V':
+		return QString("[%1, %2, %3]").arg(children[0]->dump(), children[1]->dump(), children[2]->dump());
+	case 'L':
+		return var_name;
+	case 'F':
+		{
+			QString text = call_funcname + QString("(");
+			for (int i=0; i < children.size(); i++) {
+				if (i > 0)
+					text += QString(", ");
+				if (!call_argnames[i].isEmpty())
+					text += call_argnames[i] + QString(" = ");
+				text += children[i]->dump();
+			}
+		}
+	default:
+		abort();
 	}
 }
 
