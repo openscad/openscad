@@ -24,7 +24,7 @@ void Context::args(const QVector<QString> &argnames, const QVector<Expression*> 
 		const QVector<QString> &call_argnames, const QVector<Value> &call_argvalues)
 {
 	for (int i=0; i<argnames.size(); i++) {
-		variables[argnames[i]] = argexpr[i] ? argexpr[i]->evaluate(this->parent) : Value();
+		variables[argnames[i]] = i < argexpr.size() && argexpr[i] ? argexpr[i]->evaluate(this->parent) : Value();
 	}
 
 	int posarg = 0;

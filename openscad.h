@@ -188,13 +188,9 @@ extern QHash<QString, AbstractModule*> builtin_modules;
 extern void initialize_builtin_modules();
 extern void destroy_builtin_modules();
 
-extern void register_builtin_union();
-extern void register_builtin_difference();
-extern void register_builtin_intersect();
-
+extern void register_builtin_csg();
 extern void register_builtin_trans();
-
-extern void register_builtin_cube();
+extern void register_builtin_primitive();
 
 class Context
 {

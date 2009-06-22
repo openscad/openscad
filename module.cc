@@ -164,13 +164,9 @@ void initialize_builtin_modules()
 {
 	builtin_modules["group"] = new AbstractModule();
 
-	register_builtin_union();
-	register_builtin_difference();
-	register_builtin_intersect();
-
+	register_builtin_csg();
 	register_builtin_trans();
-
-	register_builtin_cube();
+	register_builtin_primitive();
 }
 
 void destroy_builtin_modules()

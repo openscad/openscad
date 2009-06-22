@@ -22,52 +22,75 @@
 
 #include "openscad.h"
 
-class IntersectModule : public AbstractModule
+enum csg_type_e {
+	UNION,
+	DIFFERENCE,
+	INTERSECT
+};
+
+class CsgModule : public AbstractModule
 {
 public:
+	csg_type_e type;
+	CsgModule(csg_type_e type) : type(type) { }
 	virtual AbstractNode *evaluate(const Context *ctx, const QVector<QString> &call_argnames, const QVector<Value> &call_argvalues, const QVector<AbstractNode*> child_nodes) const;
 };
 
-class IntersectNode : public AbstractNode
+class CsgNode : public AbstractNode
 {
 public:
+	csg_type_e type;
+	CsgNode(csg_type_e type) : type(type) { }
         virtual CGAL_Nef_polyhedron render_cgal_nef_polyhedron() const;
         virtual QString dump(QString indent) const;
 };
 
-AbstractNode *IntersectModule::evaluate(const Context*, const QVector<QString>&, const QVector<Value>&, const QVector<AbstractNode*> child_nodes) const
+AbstractNode *CsgModule::evaluate(const Context*, const QVector<QString>&, const QVector<Value>&, const QVector<AbstractNode*> child_nodes) const
 {
-	IntersectNode *node = new IntersectNode();
+	CsgNode *node = new CsgNode(type);
 	foreach (AbstractNode *v, child_nodes)
 		node->children.append(v);
 	return node;
 }
 
-CGAL_Nef_polyhedron IntersectNode::render_cgal_nef_polyhedron() const
+CGAL_Nef_polyhedron CsgNode::render_cgal_nef_polyhedron() const
 {
-	bool first = true;
+	bool first;
 	CGAL_Nef_polyhedron N;
 	foreach (AbstractNode *v, children) {
-		if (first)
+		if (first) {
 			N = v->render_cgal_nef_polyhedron();
-		else
+			first = false;
+		} else if (type == UNION) {
+			N += v->render_cgal_nef_polyhedron();
+		} else if (type == DIFFERENCE) {
+			N -= v->render_cgal_nef_polyhedron();
+		} else if (type == INTERSECT) {
 			N *= v->render_cgal_nef_polyhedron();
-		first = false;
+		}
 	}
 	progress_report();
 	return N;
 }
 
-QString IntersectNode::dump(QString indent) const
+QString CsgNode::dump(QString indent) const
 {
-	QString text = indent + "intersect() {\n";
+	QString text = indent;
+	if (type == UNION)
+		text += "union() {\n";
+	if (type == DIFFERENCE)
+		text += "difference() {\n";
+	if (type == INTERSECT)
+		text += "intersect() {\n";
 	foreach (AbstractNode *v, children)
 		text += v->dump(indent + QString("\t"));
 	return text + indent + "}\n";
 }
 
-void register_builtin_intersect()
+void register_builtin_csg()
 {
-	builtin_modules["intersect"] = new IntersectModule();
+	builtin_modules["union"] = new CsgModule(UNION);
+	builtin_modules["difference"] = new CsgModule(DIFFERENCE);
+	builtin_modules["intersect"] = new CsgModule(INTERSECT);
 }
 
