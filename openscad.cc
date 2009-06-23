@@ -18,22 +18,43 @@
  *
  */
 
-#define INCLUDE_ABSTRACT_NODE_DETAILS
+// #define INCLUDE_ABSTRACT_NODE_DETAILS
 
 #include "openscad.h"
 
+#include <QApplication>
+
+#if 0
 void report_func(const class AbstractNode*, void*, int mark)
 {
 	printf("CSG rendering progress: %.2f%%\n", (mark*100.0) / progress_report_count);
 }
+#endif
 
-int main()
+int main(int argc, char **argv)
 {
-	int rc = 0;
+	int rc;
 
 	initialize_builtin_functions();
 	initialize_builtin_modules();
 
+	QApplication a(argc, argv);
+	MainWindow *m;
+
+	if (argc > 1)
+		m = new MainWindow(argv[1]);
+	else
+		m = new MainWindow();
+
+	m->show();
+	m->resize(800, 600);
+	m->s1->setSizes(QList<int>() << 400 << 400);
+	m->s2->setSizes(QList<int>() << 400 << 200);
+
+	a.connect(m, SIGNAL(destroyed()), &a, SLOT(quit()));
+	rc = a.exec();
+
+#if 0
 	Context root_ctx(NULL);
 	root_ctx.functions_p = &builtin_functions;
 	root_ctx.modules_p = &builtin_modules;
@@ -67,11 +88,13 @@ int main()
 	}
 	outFile << P;
 
+	delete root_node;
 	delete root_module;
+#endif
 
 	destroy_builtin_functions();
 	destroy_builtin_modules();
 
-        return rc;
+	return rc;
 }
 

@@ -23,8 +23,15 @@
 
 #include <QHash>
 #include <QVector>
+#include <QMainWindow>
+#include <QSplitter>
+#include <QTextEdit>
+#include <QGLWidget>
+
 #include <stdio.h>
+#include <errno.h>
 #include <stdlib.h>
+#include <string.h>
 #include <math.h>
 
 #include <fstream>
@@ -222,7 +229,7 @@ public:
 	const QHash<QString, AbstractFunction*> *functions_p;
 	const QHash<QString, AbstractModule*> *modules_p;
 
-	Context(const Context *parent) : parent(parent) { }
+	Context(const Context *parent = NULL) : parent(parent) { }
 	void args(const QVector<QString> &argnames, const QVector<Expression*> &argexpr, const QVector<QString> &call_argnames, const QVector<Value> &call_argvalues);
 
 	Value lookup_variable(QString name) const;
@@ -233,6 +240,8 @@ public:
 // The CGAL template magic slows down the compilation process by a factor of 5.
 // So we only include the declaration of AbstractNode where it is needed...
 #ifdef INCLUDE_ABSTRACT_NODE_DETAILS
+
+#ifdef ENABLE_CGAL
 
 #include <CGAL/Gmpq.h>
 #include <CGAL/Cartesian.h>
@@ -250,6 +259,8 @@ typedef CGAL_Nef_polyhedron::Vector_3 CGAL_Vector;
 typedef CGAL_Nef_polyhedron::Plane_3 CGAL_Plane;
 typedef CGAL_Nef_polyhedron::Point_3 CGAL_Point;
 
+#endif /* ENABLE_CGAL */
+
 class AbstractNode
 {
 public:
@@ -260,7 +271,9 @@ public:
 	void progress_report() const;
 
 	virtual ~AbstractNode();
+#ifdef ENABLE_CGAL
 	virtual CGAL_Nef_polyhedron render_cgal_nef_polyhedron() const;
+#endif
 	virtual QString dump(QString indent) const;
 };
 
@@ -271,9 +284,87 @@ extern void *progress_report_vp;
 void progress_report_prep(AbstractNode *root, void (*f)(const class AbstractNode *node, void *vp, int mark), void *vp);
 void progress_report_fin();
 
+#else
+
+// this is a bit hackish - but a pointer is a pointer..
+struct CGAL_Nef_polyhedron;
+
 #endif /* HIDE_ABSTRACT_NODE_DETAILS */
 
-extern AbstractModule *parse(FILE *f, int debug);
+class GLView : public QGLWidget
+{
+	Q_OBJECT
+
+public:
+	struct Point {
+		double x, y, z;
+		Point() : x(0), y(0), z(0) { }
+		Point(double x, double y, double z) : x(x), y(y), z(z) { }
+	};
+	typedef QVector<Point> Polygon;
+	QVector<Polygon> polygons;
+
+	void (*renderfunc)(void*);
+	void *renderfunc_vp;
+
+	double viewer_distance;
+	double object_rot_y;
+	double object_rot_z;
+
+	GLView(QWidget *parent = NULL);
+
+protected:
+	bool mouse_drag_active;
+	int last_mouse_x;
+	int last_mouse_y;
+
+	void wheelEvent(QWheelEvent *event);
+	void mousePressEvent(QMouseEvent *event);
+	void mouseMoveEvent(QMouseEvent *event);
+	void mouseReleaseEvent(QMouseEvent *event);
+
+	void initializeGL();
+	void resizeGL(int w, int h);
+	void paintGL();
+};
+
+class MainWindow : public QMainWindow
+{
+	Q_OBJECT
+
+public:
+	QString filename;
+	QSplitter *s1, *s2;
+	QTextEdit *editor;
+	GLView *screen;
+	QTextEdit *console;
+
+	Context root_ctx;
+	AbstractModule *root_module;
+	AbstractNode *root_node;
+#ifdef ENABLE_CGAL
+	CGAL_Nef_polyhedron *root_N;
+#endif
+
+	MainWindow(const char *filename = 0);
+	~MainWindow();
+
+private slots:
+	void actionNew();
+	void actionOpen();
+	void actionSave();
+	void actionSaveAs();
+	void actionCompile();
+#ifdef ENABLE_CGAL
+	void actionRenderCGAL();
+#endif
+	void actionDisplayAST();
+	void actionDisplayCSG();
+	void actionExportSTL();
+	void actionExportOFF();
+};
+
+extern AbstractModule *parse(const char *text, int debug);
 
 #endif
 

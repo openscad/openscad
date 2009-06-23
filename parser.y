@@ -404,8 +404,13 @@ void yyerror (char const *s)
 	exit(1);
 }
 
-AbstractModule *parse(FILE *f, int debug)
+extern const char *parser_input_buffer;
+const char *parser_input_buffer;
+
+AbstractModule *parse(const char *text, int debug)
 {
+	parser_input_buffer = text;
+
 	module_stack.clear();
 	module = new Module();
 

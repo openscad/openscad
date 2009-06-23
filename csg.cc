@@ -41,7 +41,9 @@ class CsgNode : public AbstractNode
 public:
 	csg_type_e type;
 	CsgNode(csg_type_e type) : type(type) { }
+#ifdef ENABLE_CGAL
         virtual CGAL_Nef_polyhedron render_cgal_nef_polyhedron() const;
+#endif
         virtual QString dump(QString indent) const;
 };
 
@@ -55,6 +57,8 @@ AbstractNode *CsgModule::evaluate(const Context*, const QVector<QString>&, const
 		node->children.append(v);
 	return node;
 }
+
+#ifdef ENABLE_CGAL
 
 CGAL_Nef_polyhedron CsgNode::render_cgal_nef_polyhedron() const
 {
@@ -75,6 +79,8 @@ CGAL_Nef_polyhedron CsgNode::render_cgal_nef_polyhedron() const
 	progress_report();
 	return N;
 }
+
+#endif /* ENABLE_CGAL */
 
 QString CsgNode::dump(QString indent) const
 {

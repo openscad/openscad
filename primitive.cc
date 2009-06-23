@@ -43,7 +43,9 @@ public:
 	double x, y, z, h, r1, r2;
 	primitive_type_e type;
 	PrimitiveNode(primitive_type_e type) : type(type) { }
+#ifdef ENABLE_CGAL
 	virtual CGAL_Nef_polyhedron render_cgal_nef_polyhedron() const;
+#endif
 	virtual QString dump(QString indent) const;
 };
 
@@ -131,6 +133,8 @@ void register_builtin_primitive()
 	builtin_modules["sphere"] = new PrimitiveModule(SPHERE);
 	builtin_modules["cylinder"] = new PrimitiveModule(CYLINDER);
 }
+
+#ifdef ENABLE_CGAL
 
 static int cube_facets[6][4] = {
 	{ 0, 1, 2, 3 },
@@ -245,6 +249,8 @@ CGAL_Nef_polyhedron PrimitiveNode::render_cgal_nef_polyhedron() const
 	progress_report();
 	return N;
 }
+
+#endif /* ENABLE_CGAL */
 
 QString PrimitiveNode::dump(QString indent) const
 {

@@ -24,6 +24,16 @@
 #include "parser_yacc.h"
 
 int lexerget_lineno(void);
+extern const char *parser_input_buffer;
+
+#define YY_INPUT(buf,result,max_size) { \
+  if (*parser_input_buffer) {           \
+    result = 1;                         \
+    buf[0] = *(parser_input_buffer++);  \
+  } else {                              \
+    result = YY_NULL;                   \
+  }                                     \
+}
 
 %}
 

@@ -32,7 +32,9 @@ class TransNode : public AbstractNode
 {
 public:
 	double x, y, z;
+#ifdef ENABLE_CGAL
         virtual CGAL_Nef_polyhedron render_cgal_nef_polyhedron() const;
+#endif
         virtual QString dump(QString indent) const;
 };
 
@@ -53,6 +55,8 @@ AbstractNode *TransModule::evaluate(const Context*, const QVector<QString>&, con
 	return node;
 }
 
+#ifdef ENABLE_CGAL
+
 CGAL_Nef_polyhedron TransNode::render_cgal_nef_polyhedron() const
 {
 	CGAL_Nef_polyhedron N;
@@ -63,6 +67,8 @@ CGAL_Nef_polyhedron TransNode::render_cgal_nef_polyhedron() const
 	progress_report();
 	return N;
 }
+
+#endif /* ENABLE_CGAL */
 
 QString TransNode::dump(QString indent) const
 {

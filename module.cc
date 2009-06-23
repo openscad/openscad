@@ -135,36 +135,42 @@ AbstractNode *Module::evaluate(const Context *ctx, const QVector<QString> &call_
 
 QString Module::dump(QString indent, QString name) const
 {
-	QString text = QString("%1module %2(").arg(indent, name);
-	for (int i=0; i < argnames.size(); i++) {
-		if (i > 0)
-			text += QString(", ");
-		text += argnames[i];
-		if (argexpr[i])
-			text += QString(" = ") + argexpr[i]->dump();
+	QString text, tab;
+	if (!name.isEmpty()) {
+		text = QString("%1module %2(").arg(indent, name);
+		for (int i=0; i < argnames.size(); i++) {
+			if (i > 0)
+				text += QString(", ");
+			text += argnames[i];
+			if (argexpr[i])
+				text += QString(" = ") + argexpr[i]->dump();
+		}
+		text += QString(") {\n");
+		tab = "\t";
 	}
-	text += QString(") {\n");
 	{
 		QHashIterator<QString, AbstractFunction*> i(functions);
 		while (i.hasNext()) {
 			i.next();
-			text += i.value()->dump(indent + QString("\t"), i.key());
+			text += i.value()->dump(indent + tab, i.key());
 		}
 	}
 	{
 		QHashIterator<QString, AbstractModule*> i(modules);
 		while (i.hasNext()) {
 			i.next();
-			text += i.value()->dump(indent + QString("\t"), i.key());
+			text += i.value()->dump(indent + tab, i.key());
 		}
 	}
 	for (int i = 0; i < assignments_var.size(); i++) {
-		text += QString("%1\t%2 = %3;\n").arg(indent, assignments_var[i], assignments_expr[i]->dump());
+		text += QString("%1%2 = %3;\n").arg(indent + tab, assignments_var[i], assignments_expr[i]->dump());
 	}
 	for (int i = 0; i < children.size(); i++) {
-		text += children[i]->dump(indent + QString("\t"));
+		text += children[i]->dump(indent + tab);
 	}
-	text += QString("%1}\n").arg(indent);
+	if (!name.isEmpty()) {
+		text += QString("%1}\n").arg(indent);
+	}
 	return text;
 }
 
@@ -192,6 +198,8 @@ AbstractNode::~AbstractNode()
 		delete v;
 }
 
+#ifdef ENABLE_CGAL
+
 CGAL_Nef_polyhedron AbstractNode::render_cgal_nef_polyhedron() const
 {
 	CGAL_Nef_polyhedron N;
@@ -200,6 +208,8 @@ CGAL_Nef_polyhedron AbstractNode::render_cgal_nef_polyhedron() const
 	progress_report();
 	return N;
 }
+
+#endif /* ENABLE_CGAL */
 
 QString AbstractNode::dump(QString indent) const
 {
