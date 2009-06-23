@@ -32,9 +32,14 @@ int lexerget_lineno(void);
 
 %x comment
 
-WS [\n\r\t ]
-
 %%
+
+"module"	return TOK_MODULE;
+"function"	return TOK_FUNCTION;
+
+"true"		return TOK_TRUE;
+"false"		return TOK_FALSE;
+"undef"		return TOK_UNDEF;
 
 [0-9][0-9.]* { parserlval.number = atof(yytext); return TOK_NUMBER; }
 [a-zA-Z0-9_]+ { parserlval.text = strdup(yytext); return TOK_ID; }
@@ -43,6 +48,7 @@ WS [\n\r\t ]
 "."	return '.';
 ","	return ',';
 ";"	return ';';
+"?"	return '?';
 ":"	return ':';
 "="	return '=';
 "*"	return '*';
@@ -57,15 +63,11 @@ WS [\n\r\t ]
 "["	return '[';
 "]"	return ']';
 
-"module"/{WS}	return TOK_MODULE;
-"function"/{WS}	return TOK_FUNCTION;
-
+[\n\r\t ]
 \/\/[^\n]*\n
 "/*" BEGIN(comment);
 <comment>"*/" BEGIN(INITIAL);
 <comment>.|\n
-
-{WS}*
 
 . { fprintf(stderr, "Unrecognized input character in line %d: %s\n", lexerget_lineno(), yytext); exit(1); }
 

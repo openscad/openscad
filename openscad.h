@@ -47,21 +47,37 @@ class AbstractNode;
 class Value
 {
 public:
+	enum type_e {
+		UNDEFINED,
+		BOOL,
+		NUMBER,
+		RANGE,
+		VECTOR,
+		MATRIX,
+		STRING
+	};
+
+	enum type_e type;
+
+	bool b;
+	double num;
 	double x, y, z;
+	double r_begin;
+	double r_step;
+	double r_end;
+	double m[16];
 	QString text;
-	bool is_vector;
-	bool is_range;
-	bool is_string;
-	bool is_nan;
 
-	Value() : x(0), y(0), z(0), is_vector(false), is_range(false), is_string(false), is_nan(true) { }
-	Value(const QString &t) : x(0), y(0), z(0), text(t), is_vector(false), is_range(false), is_string(true), is_nan(true) { }
-	Value(double v1) : x(v1), y(0), z(0), is_vector(false), is_range(false), is_string(false), is_nan(false) { }
-	Value(double v1, double v2, double v3) : x(v1), y(v2), z(v3), is_vector(true), is_range(false), is_string(false), is_nan(false) { }
-	Value(const Value &v) : x(v.x), y(v.y), z(v.z), text(v.text), is_vector(v.is_vector), is_range(v.is_range), is_string(v.is_string), is_nan(v.is_nan) { }
-	Value(const Value &v1, const Value &v2, const Value &v3);
+	Value();
+	Value(bool v);
+	Value(double v);
+	Value(double v1, double v2, double v3);
+	Value(double m[16]);
+	Value(const QString &t);
 
+	Value(const Value &v);
 	Value& operator = (const Value &v);
+
 	Value operator + (const Value &v) const;
 	Value operator - (const Value &v) const;
 	Value operator * (const Value &v) const;
@@ -70,6 +86,9 @@ public:
 	Value inv() const;
 
 	QString dump() const;
+
+private:
+	void reset_undef();
 };
 
 class Expression
@@ -84,11 +103,14 @@ public:
 	QVector<QString> call_argnames;
 
 	// Math operators: * / % + -
+	// Condition (?: operator): ?
 	// Invert (prefix '-'): I
 	// Constant value: C
+	// Create Range: R
 	// Create Vector: V
+	// Create Matrix: M
 	// Lookup Variable: L
-	// Lookup Member: M
+	// Lookup member per name: N
 	// Function call: F
 	char type;
 

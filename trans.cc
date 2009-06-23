@@ -39,7 +39,7 @@ public:
 AbstractNode *TransModule::evaluate(const Context*, const QVector<QString>&, const QVector<Value> &call_argvalues, const QVector<AbstractNode*> child_nodes) const
 {
 	TransNode *node = new TransNode();
-	if (call_argvalues.size() == 1 && call_argvalues[0].is_vector) {
+	if (call_argvalues.size() == 1 && call_argvalues[0].type == Value::VECTOR) {
 		node->x = call_argvalues[0].x;
 		node->y = call_argvalues[0].y;
 		node->z = call_argvalues[0].z;

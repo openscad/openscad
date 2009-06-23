@@ -82,51 +82,51 @@ QString BuiltinFunction::dump(QString indent, QString name) const
 
 Value builtin_sin(const QVector<Value> &args)
 {
-	if (args[0].is_nan || args[0].is_vector)
-		return Value();
-	return Value(sin(args[0].x));
+	if (args[0].type == Value::NUMBER)
+		Value(sin(args[0].num));
+	return Value();
 }
 
 Value builtin_cos(const QVector<Value> &args)
 {
-	if (args[0].is_nan || args[0].is_vector)
-		return Value();
-	return Value(cos(args[0].x));
+	if (args[0].type == Value::NUMBER)
+		Value(cos(args[0].num));
+	return Value();
 }
 
 Value builtin_asin(const QVector<Value> &args)
 {
-	if (args[0].is_nan || args[0].is_vector)
-		return Value();
-	return Value(asin(args[0].x));
+	if (args[0].type == Value::NUMBER)
+		Value(asin(args[0].num));
+	return Value();
 }
 
 Value builtin_acos(const QVector<Value> &args)
 {
-	if (args[0].is_nan || args[0].is_vector)
-		return Value();
-	return Value(acos(args[0].x));
+	if (args[0].type == Value::NUMBER)
+		Value(acos(args[0].num));
+	return Value();
 }
 
 Value builtin_tan(const QVector<Value> &args)
 {
-	if (args[0].is_nan || args[0].is_vector)
-		return Value();
-	return Value(tan(args[0].x));
+	if (args[0].type == Value::NUMBER)
+		Value(tan(args[0].num));
+	return Value();
 }
 
 Value builtin_atan(const QVector<Value> &args)
 {
-	if (args[0].is_nan || args[0].is_vector)
-		return Value();
-	return Value(atan(args[0].x));
+	if (args[0].type == Value::NUMBER)
+		Value(atan(args[0].num));
+	return Value();
 }
 
 Value builtin_atan2(const QVector<Value> &args)
 {
-	if (args[0].is_nan || args[0].is_vector || args[1].is_nan || args[1].is_vector)
-		return Value();
-	return Value(atan2(args[0].x, args[1].x));
+	if (args[0].type == Value::NUMBER && args[1].type == Value::NUMBER)
+		Value(atan2(args[0].num, args[1].num));
+	return Value();
 }
 
 void initialize_builtin_functions()

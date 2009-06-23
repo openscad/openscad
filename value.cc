@@ -20,121 +20,216 @@
 
 #include "openscad.h"
 
-Value::Value(const Value &v1, const Value &v2, const Value &v3)
+Value::Value()
 {
-	if (v1.is_nan || v1.is_vector)
-		goto create_nan;
-	if (v2.is_nan || v2.is_vector)
-		goto create_nan;
-	if (v3.is_nan || v3.is_vector)
-		goto create_nan;
+	reset_undef();
+}
 
-	x = v1.x;
-	y = v2.x;
-	z = v3.x;
+Value::Value(bool v)
+{
+	reset_undef();
+	type = BOOL;
+	b = v;
+}
 
-	is_vector = true;
-	is_range = false;
-	is_string = false;
-	is_nan = false;
-	return;
+Value::Value(double v)
+{
+	reset_undef();
+	type = NUMBER;
+	num = v;
+}
 
-create_nan:
-	x = 0;
-	y = 0;
-	z = 0;
+Value::Value(double v1, double v2, double v3)
+{
+	reset_undef();
+	type = VECTOR;
+	x = v1;
+	y = v2;
+	z = v3;
+}
 
-	is_vector = false;
-	is_range = false;
-	is_string = false;
-	is_nan = true;
+Value::Value(double m[16])
+{
+	reset_undef();
+	type = MATRIX;
+	for (int i=0; i<16; i++)
+		this->m[i] = m[i];
+}
+
+Value::Value(const QString &t)
+{
+	reset_undef();
+	type = STRING;
+	text = t;
+}
+
+Value::Value(const Value &v)
+{
+	reset_undef();
+	type = v.type;
+	b = v.b;
+	num = v.num;
+	x = v.x;
+	y = v.y;
+	z = v.z;
+	for (int i=0; i<16; i++)
+		m[i] = v.m[i];
+	text = v.text;
 }
 
 Value& Value::operator = (const Value &v)
 {
+	reset_undef();
+	type = v.type;
+	b = v.b;
+	num = v.num;
 	x = v.x;
 	y = v.y;
 	z = v.z;
-	is_vector = v.is_vector;
-	is_nan = v.is_nan;
+	for (int i=0; i<16; i++)
+		m[i] = v.m[i];
+	text = v.text;
 	return *this;
 }
 
 Value Value::operator + (const Value &v) const
 {
-	if (is_nan || v.is_nan)
-		return Value();
-	if (is_vector && v.is_vector)
+	if (type == VECTOR && v.type == VECTOR) {
 		return Value(x + v.x, y + v.y, z + v.z);
-	if (!is_vector && !v.is_vector)
-		return Value(x + v.x);
+	}
+	if (type == MATRIX && v.type == MATRIX) {
+		double m_[16];
+		for (int i=0; i<16; i++)
+			m_[i] = m[i] + v.m[i];
+		return Value(m);
+	}
+	if (type == NUMBER && v.type == NUMBER) {
+		return Value(num + v.num);
+	}
 	return Value();
 }
 
 Value Value::operator - (const Value &v) const
 {
-	if (is_nan || v.is_nan)
-		return Value();
-	if (is_vector && v.is_vector)
-		return Value(x - v.x, y - v.y, z - v.z);
-	if (!is_vector && !v.is_vector)
-		return Value(x - v.x);
+	if (type == VECTOR && v.type == VECTOR) {
+		return Value(x + v.x, y + v.y, z + v.z);
+	}
+	if (type == MATRIX && v.type == MATRIX) {
+		double m_[16];
+		for (int i=0; i<16; i++)
+			m_[i] = m[i] + v.m[i];
+		return Value(m);
+	}
+	if (type == NUMBER && v.type == NUMBER) {
+		return Value(num + v.num);
+	}
 	return Value();
 }
 
 Value Value::operator * (const Value &v) const
 {
-	if (is_nan || v.is_nan)
-		return Value();
-	if (is_vector && v.is_vector) {
+	if (type == VECTOR && v.type == VECTOR) {
 		double nx = (y-v.y)*(z-v.z) - (z-v.z)*(y-v.y);
 		double ny = (z-v.z)*(x-v.x) - (x-v.x)*(z-v.z);
 		double nz = (x-v.x)*(y-v.y) - (y-v.y)*(x-v.x);
 		return Value(nx, ny, nz);
 	}
-	if (is_vector) {
-		return Value(x * v.x, y * v.x, z * v.x);
+	if (type == VECTOR && v.type == NUMBER) {
+		return Value(x * v.num, y * v.num, z * v.num);
 	}
-	if (v.is_vector) {
-		return Value(x * v.x, x * v.y, x * v.z);
+	if (type == NUMBER && v.type == VECTOR) {
+		return Value(num * v.x, num * v.y, num * v.z);
 	}
-	return Value(x * v.x);
+	if (type == NUMBER && v.type == NUMBER) {
+		return Value(num * v.num);
+	}
+	return Value();
 }
 
 Value Value::operator / (const Value &v) const
 {
-	if (is_nan || v.is_nan || is_vector || v.is_vector)
-		return Value();
-	return Value(x / v.x);
+	if (type == NUMBER && v.type == NUMBER) {
+		return Value(num / v.num);
+	}
+	return Value();
 }
 
 Value Value::operator % (const Value &v) const
 {
-	if (is_nan || v.is_nan || is_vector || v.is_vector)
-		return Value();
-	return Value(fmod(x, v.x));
+	if (type == NUMBER && v.type == NUMBER) {
+		return Value(fmod(num, v.num));
+	}
+	return Value();
 }
 
 Value Value::inv() const
 {
-	if (is_nan)
-		return Value();
-	if (is_vector)
+	if (type == MATRIX) {
+		double m_[16];
+		for (int i=0; i<16; i++)
+			m_[i] = -m[i];
+		return Value(m);
+	}
+	if (type == VECTOR)
 		return Value(-x, -y, -z);
-	return Value(-x);
+	if (type == NUMBER)
+		return Value(-x);
+	return Value();
 }
 
 QString Value::dump() const
 {
-	if (is_nan)
-		return QString("NaN");
-	if (is_vector) {
+	if (type == STRING) {
+		return QString("\"") + text + QString("\"");
+	}
+	if (type == MATRIX) {
+		QString text = "[";
+		for (int i=0; i<16; i++) {
+			QString t;
+			t.sprintf("%f", m[i]);
+			if (i % 4 == 0 && i > 0)
+				text += ";";
+			if (i > 0)
+				text += " ";
+			text += t;
+		}
+		text += "]";
+		return text;
+	}
+	if (type == VECTOR) {
 		QString text;
 		text.sprintf("[%f %f %f]", x, y, z);
 		return text;
 	}
-	QString text;
-	text.sprintf("%f", x);
-	return text;
+	if (type == RANGE) {
+		QString text;
+		text.sprintf("[ %f : %f : %f ]", r_begin, r_step, r_end);
+		return text;
+	}
+	if (type == NUMBER) {
+		QString text;
+		text.sprintf("%f", num);
+		return text;
+	}
+	if (type == BOOL) {
+		return QString(b ? "true" : "false");
+	}
+	return QString("undef");
+}
+
+void Value::reset_undef()
+{
+	type = UNDEFINED;
+	b = false;
+	num = 0;
+	r_begin = 0;
+	r_step = 0;
+	r_end = 0;
+	x = 0;
+	y = 0;
+	z = 0;
+	for (int i=0; i<16; i++)
+		m[i] = 0;
+	text = QString();
 }
 

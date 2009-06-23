@@ -47,6 +47,9 @@ public:
 
 AbstractNode *CsgModule::evaluate(const Context*, const QVector<QString>&, const QVector<Value>&, const QVector<AbstractNode*> child_nodes) const
 {
+	if (child_nodes.size() == 1)
+		return child_nodes[0];
+
 	CsgNode *node = new CsgNode(type);
 	foreach (AbstractNode *v, child_nodes)
 		node->children.append(v);

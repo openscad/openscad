@@ -45,25 +45,79 @@ Value Expression::evaluate(const Context *context) const
 		return children[0]->evaluate(context) + children[1]->evaluate(context);
 	case '-':
 		return children[0]->evaluate(context) - children[1]->evaluate(context);
+	case '?':
+		{
+			Value v = children[0]->evaluate(context);
+			if (v.type == Value::BOOL)
+				return children[v.b ? 1 : 2]->evaluate(context);
+			return Value();
+		}
 	case 'I':
 		return children[0]->evaluate(context).inv();
 	case 'C':
 		return const_value;
+	case 'R':
+		{
+			Value v1 = children[0]->evaluate(context);
+			Value v2 = children[1]->evaluate(context);
+			Value v3 = children[2]->evaluate(context);
+			if (v1.type == Value::NUMBER && v2.type == Value::NUMBER && v3.type == Value::NUMBER) {
+				Value r = Value();
+				r.type = Value::RANGE;
+				r.r_begin = v1.num;
+				r.r_step = v2.num;
+				r.r_end = v3.num;
+				return r;
+			}
+			return Value();
+		}
 	case 'V':
-		return Value(children[0]->evaluate(context), children[1]->evaluate(context), children[2]->evaluate(context));
-	case 'L':
-		return context->lookup_variable(var_name);
+		{
+			Value v1 = children[0]->evaluate(context);
+			Value v2 = children[1]->evaluate(context);
+			Value v3 = children[2]->evaluate(context);
+			if (v1.type == Value::NUMBER && v2.type == Value::NUMBER && v3.type == Value::NUMBER)
+				return Value(v1.num, v2.num, v3.num);
+			return Value();
+		}
 	case 'M':
 		{
+			double m[16];
+			for (int i=0; i<16; i++) {
+				Value v = children[i]->evaluate(context);
+				if (v.type != Value::NUMBER)
+					return Value();
+				m[i] = v.num;
+			}
+			return Value(m);
+		}
+	case 'L':
+		return context->lookup_variable(var_name);
+	case 'N':
+		{
 			Value v = children[0]->evaluate(context);
-			if (v.is_nan || !v.is_vector)
-				return Value();
-			if (var_name == QString("x"))
+
+			if (v.type == Value::VECTOR && var_name == QString("x"))
 				return Value(v.x);
-			if (var_name == QString("y"))
+			if (v.type == Value::VECTOR && var_name == QString("y"))
 				return Value(v.y);
-			if (var_name == QString("z"))
+			if (v.type == Value::VECTOR && var_name == QString("z"))
 				return Value(v.z);
+
+			if (v.type == Value::RANGE && var_name == QString("begin"))
+				return Value(v.r_begin);
+			if (v.type == Value::RANGE && var_name == QString("step"))
+				return Value(v.r_step);
+			if (v.type == Value::RANGE && var_name == QString("end"))
+				return Value(v.r_end);
+
+			for (int i=0; i<16; i++) {
+				QString n;
+				n.sprintf("m%d", i+1);
+				if (v.type == Value::MATRIX && var_name == n)
+					return Value(v.m[i]);
+			}
+
 			return Value();
 		}
 	case 'F':
@@ -87,16 +141,33 @@ QString Expression::dump() const
 	case '%':
 	case '+':
 	case '-':
-		return QString("(%1%2%3)").arg(children[0]->dump(), QString(type), children[1]->dump());
+		return QString("(%1 %2 %3)").arg(children[0]->dump(), QString(type), children[1]->dump());
+	case '?':
+		return QString("(%1 ? %2 : %3)").arg(children[0]->dump(), children[1]->dump(), children[2]->dump());
 	case 'I':
 		return QString("(-%1)").arg(children[0]->dump());
 	case 'C':
 		return const_value.dump();
+	case 'R':
+		return QString("[%1 : %2 : %3]").arg(children[0]->dump(), children[1]->dump(), children[2]->dump());
 	case 'V':
 		return QString("[%1, %2, %3]").arg(children[0]->dump(), children[1]->dump(), children[2]->dump());
+	case 'M':
+		{
+			QString text = "[";
+			for (int i = 0; i < 16; i++) {
+				if (i % 4 == 0 && i > 0)
+					text += ";";
+				if (i > 0)
+					text += " ";
+				text += children[i]->dump();
+			}
+			text += "]";
+			return text;
+		}
 	case 'L':
 		return var_name;
-	case 'M':
+	case 'N':
 		return QString("(%1.%2)").arg(children[0]->dump(), var_name);
 	case 'F':
 		{

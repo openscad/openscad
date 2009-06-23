@@ -73,24 +73,25 @@ AbstractNode *PrimitiveModule::evaluate(const Context *ctx, const QVector<QStrin
 	if (type == CUBE) {
 		Value size = c.lookup_variable("size");
 		Value center = c.lookup_variable("center");
-		if (size.is_vector) {
+		if (size.type == Value::VECTOR) {
 			node->x = size.x;
 			node->y = size.y;
 			node->z = size.z;
-		} else if (!size.is_nan) {
-			node->x = size.x;
-			node->y = size.x;
-			node->z = size.x;
 		}
-		if (!center.is_vector && !center.is_nan) {
-			node->center = center.x != 0;
+		if (size.type == Value::NUMBER) {
+			node->x = size.num;
+			node->y = size.num;
+			node->z = size.num;
+		}
+		if (center.type == Value::BOOL) {
+			node->center = center.b;
 		}
 	}
 
 	if (type == SPHERE) {
 		Value r = c.lookup_variable("r");
-		if (!r.is_vector && !r.is_nan) {
-			node->r1 = r.x;
+		if (r.type == Value::NUMBER) {
+			node->r1 = r.num;
 		}
 	}
 
@@ -100,21 +101,21 @@ AbstractNode *PrimitiveModule::evaluate(const Context *ctx, const QVector<QStrin
 		Value r1 = c.lookup_variable("r1");
 		Value r2 = c.lookup_variable("r2");
 		Value center = c.lookup_variable("center");
-		if (!h.is_vector && !h.is_nan) {
-			node->h = h.x;
+		if (h.type == Value::NUMBER) {
+			node->h = h.num;
 		}
-		if (!r.is_vector && !r.is_nan) {
-			node->r1 = r.x;
-			node->r2 = r.x;
+		if (r.type == Value::NUMBER) {
+			node->r1 = r.num;
+			node->r2 = r.num;
 		}
-		if (!r1.is_vector && !r1.is_nan) {
-			node->r1 = r1.x;
+		if (r1.type == Value::NUMBER) {
+			node->r1 = r1.num;
 		}
-		if (!r2.is_vector && !r2.is_nan) {
+		if (r2.type == Value::NUMBER) {
 			node->r2 = r2.x;
 		}
-		if (!center.is_vector && !center.is_nan) {
-			node->center = center.x != 0;
+		if (center.type == Value::BOOL) {
+			node->center = center.b;
 		}
 	}
 
@@ -212,11 +213,11 @@ QString PrimitiveNode::dump(QString indent) const
 {
 	QString text;
 	if (type == CUBE)
-		text.sprintf("cube(size = [%f %f %f], center = %d);\n", x, y, z, center ? 1 : 0);
+		text.sprintf("cube(size = [%f %f %f], center = %s);\n", x, y, z, center ? "true" : "false");
 	if (type == SPHERE)
 		text.sprintf("sphere(r = %f);\n", r1);
 	if (type == CYLINDER)
-		text.sprintf("cylinder(h = %f, r1 = %f, r2 = %f, center = %d);\n", h, r1, r2, center ? 1 : 0);
+		text.sprintf("cylinder(h = %f, r1 = %f, r2 = %f, center = %s);\n", h, r1, r2, center ? "true" : "false");
 	return indent + text;
 }
 

@@ -56,9 +56,14 @@ public:
 
 %token TOK_MODULE
 %token TOK_FUNCTION
+
 %token <text> TOK_ID
 %token <text> TOK_STRING
 %token <number> TOK_NUMBER
+
+%token TOK_TRUE
+%token TOK_FALSE
+%token TOK_UNDEF
 
 %left '+' '-'
 %left '*' '/' '%'
@@ -163,6 +168,21 @@ single_module_instantciation:
 	} ;
 	
 expr:
+	TOK_TRUE {
+		$$ = new Expression();
+		$$->type = 'C';
+		$$->const_value = Value(true);
+	} |
+	TOK_FALSE {
+		$$ = new Expression();
+		$$->type = 'C';
+		$$->const_value = Value(false);
+	} |
+	TOK_UNDEF {
+		$$ = new Expression();
+		$$->type = 'C';
+		$$->const_value = Value();
+	} |
 	TOK_ID {
 		$$ = new Expression();
 		$$->type = 'L';
@@ -171,7 +191,7 @@ expr:
 	} |
 	expr '.' TOK_ID {
 		$$ = new Expression();
-		$$->type = 'M';
+		$$->type = 'N';
 		$$->children.append($1);
 		$$->var_name = QString($3);
 		free($3);
@@ -187,22 +207,41 @@ expr:
 		$$->type = 'C';
 		$$->const_value = Value($1);
 	} |
-	TOK_NUMBER ':' TOK_NUMBER {
+	'[' expr ':' expr ']' {
+		Expression *e_one = new Expression();
+		e_one->type = 'C';
+		e_one->const_value = Value(1.0);
 		$$ = new Expression();
-		$$->type = 'C';
-		$$->const_value = Value($1, 1, $3);
-		$$->const_value.is_range = true;
+		$$->type = 'R';
+		$$->children.append($2);
+		$$->children.append(e_one);
+		$$->children.append($4);
 	} |
-	TOK_NUMBER ':' TOK_NUMBER ':' TOK_NUMBER {
+	'[' expr ':' expr ':' expr ']' {
 		$$ = new Expression();
-		$$->type = 'C';
-		$$->const_value = Value($1, $3, $5);
-		$$->const_value.is_range = true;
+		$$->type = 'R';
+		$$->children.append($2);
+		$$->children.append($4);
+		$$->children.append($6);
 	} |
 	'[' TOK_NUMBER TOK_NUMBER TOK_NUMBER ']' {
 		$$ = new Expression();
 		$$->type = 'C';
 		$$->const_value = Value($2, $3, $4);
+	} |
+	'[' TOK_NUMBER TOK_NUMBER TOK_NUMBER TOK_NUMBER ';'
+	    TOK_NUMBER TOK_NUMBER TOK_NUMBER TOK_NUMBER ';'
+	    TOK_NUMBER TOK_NUMBER TOK_NUMBER TOK_NUMBER ';'
+	    TOK_NUMBER TOK_NUMBER TOK_NUMBER TOK_NUMBER ']' {
+		$$ = new Expression();
+		$$->type = 'C';
+		double m[16] = {
+			 $2,  $3,  $4,  $5,
+			 $7,  $8,  $9, $10,
+			$12, $13, $14, $15,
+			$17, $18, $19, $20,
+		};
+		$$->const_value = Value(m);
 	} |
 	'[' expr ',' expr ',' expr ']' {
 		$$ = new Expression();
@@ -210,6 +249,29 @@ expr:
 		$$->children.append($2);
 		$$->children.append($4);
 		$$->children.append($6);
+	} |
+	'[' expr ',' expr ',' expr ',' expr ';'
+	    expr ',' expr ',' expr ',' expr ';'
+	    expr ',' expr ',' expr ',' expr ';'
+	    expr ',' expr ',' expr ',' expr ']' {
+		$$ = new Expression();
+		$$->type = 'M';
+		$$->children.append($2);
+		$$->children.append($4);
+		$$->children.append($6);
+		$$->children.append($8);
+		$$->children.append($10);
+		$$->children.append($12);
+		$$->children.append($14);
+		$$->children.append($16);
+		$$->children.append($18);
+		$$->children.append($20);
+		$$->children.append($22);
+		$$->children.append($24);
+		$$->children.append($26);
+		$$->children.append($28);
+		$$->children.append($30);
+		$$->children.append($32);
 	} |
 	expr '*' expr {
 		$$ = new Expression();
@@ -251,6 +313,13 @@ expr:
 	} |
 	'(' expr ')' {
 		$$ = $2;
+	} |
+	expr '?' expr ':' expr {
+		$$ = new Expression();
+		$$->type = '?';
+		$$->children.append($1);
+		$$->children.append($3);
+		$$->children.append($5);
 	} |
 	TOK_ID '(' arguments_call ')' {
 		$$ = new Expression();

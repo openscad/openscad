@@ -28,6 +28,9 @@ AbstractModule::~AbstractModule()
 
 AbstractNode *AbstractModule::evaluate(const Context*, const QVector<QString>&, const QVector<Value>&, const QVector<AbstractNode*> child_nodes) const
 {
+	if (child_nodes.size() == 1)
+		return child_nodes[0];
+
 	AbstractNode *node = new AbstractNode();
 	foreach (AbstractNode *v, child_nodes)
 		node->children.append(v);
@@ -119,6 +122,13 @@ AbstractNode *Module::evaluate(const Context *ctx, const QVector<QString> &call_
 
 	foreach (AbstractNode *v, child_nodes)
 		node->children.append(v);
+
+	if (node->children.size() == 1) {
+		AbstractNode *c = node->children[0];
+		node->children.clear();
+		delete node;
+		return c;
+	}
 
 	return node;
 }
