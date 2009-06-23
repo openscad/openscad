@@ -29,5 +29,11 @@ module test002()
 	}
 }
 
-test002();
+module test003()
+{
+	cylinder(h = 5, r1 = 3, r2 = 1, center = true);
+	// cylinder(h = 7, r1 = 1, r2 = 5, center = true);
+}
+
+test003();
 

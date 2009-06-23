@@ -241,7 +241,6 @@ public:
 #include <CGAL/IO/Polyhedron_iostream.h>
 
 typedef CGAL::Cartesian<CGAL::Gmpq> CGAL_Kernel;
-// typedef CGAL::Extended_cartesian<CGAL::Gmpq> CGAL_Kernel;
 typedef CGAL::Polyhedron_3<CGAL_Kernel> CGAL_Polyhedron;
 typedef CGAL_Polyhedron::HalfedgeDS CGAL_HDS;
 typedef CGAL::Polyhedron_incremental_builder_3<CGAL_HDS> CGAL_Polybuilder;

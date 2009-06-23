@@ -25,7 +25,7 @@
 enum csg_type_e {
 	UNION,
 	DIFFERENCE,
-	INTERSECT
+	INTERSECTION
 };
 
 class CsgModule : public AbstractModule
@@ -68,7 +68,7 @@ CGAL_Nef_polyhedron CsgNode::render_cgal_nef_polyhedron() const
 			N += v->render_cgal_nef_polyhedron();
 		} else if (type == DIFFERENCE) {
 			N -= v->render_cgal_nef_polyhedron();
-		} else if (type == INTERSECT) {
+		} else if (type == INTERSECTION) {
 			N *= v->render_cgal_nef_polyhedron();
 		}
 	}
@@ -83,8 +83,8 @@ QString CsgNode::dump(QString indent) const
 		text += "union() {\n";
 	if (type == DIFFERENCE)
 		text += "difference() {\n";
-	if (type == INTERSECT)
-		text += "intersect() {\n";
+	if (type == INTERSECTION)
+		text += "intersection() {\n";
 	foreach (AbstractNode *v, children)
 		text += v->dump(indent + QString("\t"));
 	return text + indent + "}\n";
@@ -94,6 +94,6 @@ void register_builtin_csg()
 {
 	builtin_modules["union"] = new CsgModule(UNION);
 	builtin_modules["difference"] = new CsgModule(DIFFERENCE);
-	builtin_modules["intersect"] = new CsgModule(INTERSECT);
+	builtin_modules["intersection"] = new CsgModule(INTERSECTION);
 }
 

@@ -112,7 +112,7 @@ AbstractNode *PrimitiveModule::evaluate(const Context *ctx, const QVector<QStrin
 			node->r1 = r1.num;
 		}
 		if (r2.type == Value::NUMBER) {
-			node->r2 = r2.x;
+			node->r2 = r2.num;
 		}
 		if (center.type == Value::BOOL) {
 			node->center = center.b;
@@ -192,8 +192,42 @@ public:
 
 		if (n->type == CYLINDER) {
 			int fragments = 10;
-			B.begin_surface(fragments*2, fragments+2);
-			/* FIXME */
+			B.begin_surface(fragments*2, fragments*2+2);
+			double z1, z2;
+			if (n->center) {
+				z1 = -n->h/2;
+				z2 = +n->h/2;
+			} else {
+				z1 = 0;
+				z2 = n->h;
+			}
+			for (int i=0; i<fragments; i++) {
+				double phi = (M_PI*2*i) / fragments;
+				B.add_vertex(Point(n->r1*cos(phi), n->r1*sin(phi), z1));
+				B.add_vertex(Point(n->r2*cos(phi), n->r2*sin(phi), z2));
+			}
+			for (int i=0; i<fragments; i++) {
+				B.begin_facet();
+				B.add_vertex_to_facet(i*2);
+				B.add_vertex_to_facet(i*2+1);
+				B.add_vertex_to_facet(((i+1)%fragments)*2);
+				B.end_facet();
+				B.begin_facet();
+				B.add_vertex_to_facet(i*2+1);
+				B.add_vertex_to_facet(((i+1)%fragments)*2+1);
+				B.add_vertex_to_facet(((i+1)%fragments)*2);
+				B.end_facet();
+			}
+			B.begin_facet();
+			for (int i=0; i<fragments; i++) {
+				B.add_vertex_to_facet(i*2);
+			}
+			B.end_facet();
+			B.begin_facet();
+			for (int i=fragments-1; i>=0; i--) {
+				B.add_vertex_to_facet(i*2+1);
+			}
+			B.end_facet();
 			B.end_surface();
 		}
 	}
@@ -204,6 +238,9 @@ CGAL_Nef_polyhedron PrimitiveNode::render_cgal_nef_polyhedron() const
 	CGAL_Polyhedron P;
 	CGAL_Build_cube builder(this);
 	P.delegate(builder);
+#if 0
+	std::cout << P;
+#endif
 	CGAL_Nef_polyhedron N(P);
 	progress_report();
 	return N;
