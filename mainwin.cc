@@ -25,6 +25,8 @@
 #include <QMenu>
 #include <QMenuBar>
 #include <QSplitter>
+#include <QFileDialog>
+#include <QApplication>
 
 MainWindow::MainWindow(const char *filename)
 {
@@ -103,7 +105,7 @@ MainWindow::MainWindow(const char *filename)
 		QString text;
 		FILE *fp = fopen(filename, "rt");
 		if (!fp) {
-			console->append(QString("Failed to open text file: %1 (%2)").arg(QString(filename), QString(strerror(errno))));
+			console->append(QString("Failed to open file: %1 (%2)").arg(QString(filename), QString(strerror(errno))));
 		} else {
 			char buffer[513];
 			int rc;
@@ -112,6 +114,7 @@ MainWindow::MainWindow(const char *filename)
 				text += buffer;
 			}
 			fclose(fp);
+			console->append(QString("Loaded design `%1'.").arg(QString(filename)));
 		}
 		editor->setPlainText(text);
 	}
@@ -138,22 +141,57 @@ MainWindow::~MainWindow()
 
 void MainWindow::actionNew()
 {
-	console->append(QString("Function %1 is not implemented yet!").arg(QString(__PRETTY_FUNCTION__)));
+	filename = QString();
+	setWindowTitle("New Document");
+	editor->setPlainText("");
 }
 
 void MainWindow::actionOpen()
 {
-	console->append(QString("Function %1 is not implemented yet!").arg(QString(__PRETTY_FUNCTION__)));
+	QString new_filename = QFileDialog::getOpenFileName(this, "Open File", "", "OpenSCAD Designs (*.scad)");
+	if (!new_filename.isEmpty())
+	{
+		filename = new_filename;
+		setWindowTitle(filename);
+
+		QString text;
+		FILE *fp = fopen(filename.toAscii().data(), "rt");
+		if (!fp) {
+			console->append(QString("Failed to open file: %1 (%2)").arg(QString(filename), QString(strerror(errno))));
+		} else {
+			char buffer[513];
+			int rc;
+			while ((rc = fread(buffer, 1, 512, fp)) > 0) {
+				buffer[rc] = 0;
+				text += buffer;
+			}
+			fclose(fp);
+			console->append(QString("Loaded design `%1'.").arg(QString(filename)));
+		}
+		editor->setPlainText(text);
+	}
 }
 
 void MainWindow::actionSave()
 {
-	console->append(QString("Function %1 is not implemented yet!").arg(QString(__PRETTY_FUNCTION__)));
+	FILE *fp = fopen(filename.toAscii().data(), "wt");
+	if (!fp) {
+		console->append(QString("Failed to open file for writing: %1 (%2)").arg(QString(filename), QString(strerror(errno))));
+	} else {
+		fprintf(fp, "%s", editor->toPlainText().toAscii().data());
+		fclose(fp);
+		console->append(QString("Saved design `%1'.").arg(QString(filename)));
+	}
 }
 
 void MainWindow::actionSaveAs()
 {
-	console->append(QString("Function %1 is not implemented yet!").arg(QString(__PRETTY_FUNCTION__)));
+	QString new_filename = QFileDialog::getSaveFileName(this, "Save File", filename, "OpenSCAD Designs (*.scad)");
+	if (!new_filename.isEmpty()) {
+		filename = new_filename;
+		setWindowTitle(filename);
+		actionSave();
+	}
 }
 
 void MainWindow::actionCompile()
@@ -164,6 +202,7 @@ void MainWindow::actionCompile()
 	}
 
 	console->append("Parsing design (AST generation)...");
+	QApplication::processEvents();
 	root_module = parse(editor->toPlainText().toAscii().data(), false);
 
 	if (!root_module) {
@@ -177,6 +216,7 @@ void MainWindow::actionCompile()
 	}
 
 	console->append("Compiling design (CSG generation)...");
+	QApplication::processEvents();
 	root_node = root_module->evaluate(&root_ctx, QVector<QString>(), QVector<Value>(), QVector<AbstractNode*>());
 
 	if (!root_node) {
@@ -194,6 +234,7 @@ static void report_func(const class AbstractNode*, void *vp, int mark)
 	MainWindow *m = (MainWindow*)vp;
 	QString msg;
 	msg.sprintf("CSG rendering progress: %.2f%%", (mark*100.0) / progress_report_count);
+	QApplication::processEvents();
         m->console->append(msg);
 }
 

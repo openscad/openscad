@@ -31,8 +31,16 @@ module test002()
 
 module test003()
 {
-	cylinder(h = 5, r1 = 3, r2 = 1, center = true);
-	// cylinder(h = 7, r1 = 1, r2 = 5, center = true);
+	intersection() {
+		difference() {
+			cube([3 3 3], center = true);
+			cube([5 1 1], center = true);
+			cube([1 5 1], center = true);
+			cube([1 1 5], center = true);
+		}
+		trans([0 0 0.5])
+			cylinder(h = 5, r1 = 2, r2 = 0.5, center = true);
+	}
 }
 
 test003();

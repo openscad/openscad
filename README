@@ -1,0 +1,42 @@
+
+WHAT IS IT?
+===========
+
+OpenSCAD (Open Solid CAD) is a tool for designing solid 3D objects using CSG
+techniques. Basically OpenSCAD is a compiler that transforms descriptions of
+3D objects written in a special computer language to 3D models.
+
+FIXME: Add some more introduction..
+
+
+PREREQUISITES
+=============
+
+To build OpenSCAD, you need some libraries and tools. The version numbers in
+brakets specify the versions I have used for my tests. Other versions may or
+may not work as well..
+
+* Qt4 (4.5.1):
+  http://www.qtsoftware.com/
+
+* CGAL (3.4):
+  http://www.cgal.org/
+
+* OpenCSG (1.1.0):
+  http://www.opencsg.org/
+
+* GCC C++ Compiler (4.3.1):
+  http://gcc.gnu.org/
+
+* Bison (2.4):
+  http://www.gnu.org/software/bison/
+
+* Flex (2.5.35):
+  http://flex.sourceforge.net/
+
+
+LANGUAGE DESCRIPTION
+====================
+
+FIXME: This still needs to be written..
+
