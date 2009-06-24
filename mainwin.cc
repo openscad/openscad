@@ -265,12 +265,13 @@ void MainWindow::actionCompile()
 
 	root_norm_term = root_raw_term->link();
 
-	CSGTerm *n;
-	do {
-		n = root_norm_term->normalize();
+	while (1) {
+		CSGTerm *n = root_norm_term->normalize();
 		root_norm_term->unlink();
+		if (root_norm_term == n)
+			break;
 		root_norm_term = n;
-	} while (root_norm_term != n);
+	}
 
 	if (!root_norm_term) {
 		console->append("Compilation failed!");

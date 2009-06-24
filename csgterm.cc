@@ -69,11 +69,13 @@ CSGTerm *CSGTerm::normalize()
 		y->unlink();
 	}
 
-	do {
+	while (1) {
 		t2 = t1->normalize_tail();
 		t1->unlink();
+		if (t1 == t2)
+			break;
 		t1 = t2;
-	} while (t1 != t2);
+	}
 
 	return t1;
 }
