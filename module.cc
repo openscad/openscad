@@ -192,6 +192,13 @@ void destroy_builtin_modules()
 	builtin_modules.clear();
 }
 
+int AbstractNode::idx_counter;
+
+AbstractNode::AbstractNode()
+{
+	idx = idx_counter++;
+}
+
 AbstractNode::~AbstractNode()
 {
 	foreach (AbstractNode *v, children)
@@ -211,9 +218,27 @@ CGAL_Nef_polyhedron AbstractNode::render_cgal_nef_polyhedron() const
 
 #endif /* ENABLE_CGAL */
 
+#ifdef ENABLE_OPENCSG
+
+CSGTerm *AbstractNode::render_csg_term(double m[16]) const
+{
+	CSGTerm *t1 = NULL;
+	foreach(AbstractNode * v, children) {
+		CSGTerm *t2 = v->render_csg_term(m);
+		if (t2 && !t1) {
+			t1 = t2;
+		} else if (t2 && t1) {
+			t1 = new CSGTerm(CSGTerm::UNION, t1, t2);
+		}
+	}
+	return t1;
+}
+
+#endif /* ENABLE_OPENCSG */
+
 QString AbstractNode::dump(QString indent) const
 {
-	QString text = indent + "group() {\n";
+	QString text = indent + QString("n%1: group() {\n").arg(idx);
 	foreach (AbstractNode *v, children)
 		text += v->dump(indent + QString("\t"));
 	return text + indent + "}\n";

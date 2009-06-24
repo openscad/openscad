@@ -35,7 +35,9 @@ MainWindow::MainWindow(const char *filename)
 
 	root_module = NULL;
 	root_node = NULL;
+#ifdef ENABLE_CGAL
 	root_N = NULL;
+#endif
 
 	if (filename) {
 		this->filename = QString(filename);
@@ -60,7 +62,8 @@ MainWindow::MainWindow(const char *filename)
 		menu->addAction("Compile and &Render (CGAL)", this, SLOT(actionRenderCGAL()));
 #endif
 		menu->addAction("Display &AST...", this, SLOT(actionDisplayAST()));
-		menu->addAction("Display &CSG...", this, SLOT(actionDisplayCSG()));
+		menu->addAction("Display CSG &Tree...", this, SLOT(actionDisplayCSGTree()));
+		menu->addAction("Display CSG &Products...", this, SLOT(actionDisplayCSGProducts()));
 		menu->addAction("Export as &STL...", this, SLOT(actionExportSTL()));
 		menu->addAction("Export as &OFF...", this, SLOT(actionExportOFF()));
 	}
@@ -135,8 +138,10 @@ MainWindow::~MainWindow()
 		delete root_module;
 	if (root_node)
 		delete root_node;
+#ifdef ENABLE_CGAL
 	if (root_N)
 		delete root_N;
+#endif
 }
 
 void MainWindow::actionNew()
@@ -215,8 +220,9 @@ void MainWindow::actionCompile()
 		root_node = NULL;
 	}
 
-	console->append("Compiling design (CSG generation)...");
+	console->append("Compiling design (CSG Tree generation)...");
 	QApplication::processEvents();
+	AbstractNode::idx_counter = 1;
 	root_node = root_module->evaluate(&root_ctx, QVector<QString>(), QVector<Value>(), QVector<AbstractNode*>());
 
 	if (!root_node) {
@@ -287,13 +293,27 @@ void MainWindow::actionDisplayAST()
 	e->resize(600, 400);
 }
 
-void MainWindow::actionDisplayCSG()
+void MainWindow::actionDisplayCSGTree()
 {
 	QTextEdit *e = new QTextEdit(NULL);
 	e->setTabStopWidth(30);
 	e->setWindowTitle("CSG Dump");
 	if (root_node) {
 		e->setPlainText(root_node->dump(""));
+	} else {
+		e->setPlainText("No CSG to dump. Please try compiling first...");
+	}
+	e->show();
+	e->resize(600, 400);
+}
+
+void MainWindow::actionDisplayCSGProducts()
+{
+	QTextEdit *e = new QTextEdit(NULL);
+	e->setTabStopWidth(30);
+	e->setWindowTitle("CSG Dump");
+	if (root_node) {
+		e->setPlainText("Fixme!");
 	} else {
 		e->setPlainText("No CSG to dump. Please try compiling first...");
 	}

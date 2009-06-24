@@ -21,6 +21,16 @@
 #ifndef OPENSCAD_H
 #define OPENSCAD_H
 
+// this must be defined as early as possible
+// so QHash<> and friends can see it..
+#include <qglobal.h>
+static inline uint qHash(double v) {
+	// not beauty but good enough..
+	union { double d; uint u[2]; } x;
+	x.u[0] = 0; x.u[1] = 0; x.d = v;
+	return x.u[0] ^ x.u[1];
+}
+
 #include <QHash>
 #include <QVector>
 #include <QMainWindow>
@@ -261,6 +271,58 @@ typedef CGAL_Nef_polyhedron::Point_3 CGAL_Point;
 
 #endif /* ENABLE_CGAL */
 
+class PolySet
+{
+public:
+	struct Point {
+		double x, y, z;
+		Point() : x(0), y(0), z(0) { }
+		Point(double x, double y, double z) : x(x), y(y), z(z) { }
+	};
+	typedef QList<Point> Polygon;
+	QVector<Polygon> polygons;
+
+	PolySet();
+
+	void append_poly();
+	void append_vertex(double x, double y, double z);
+	void insert_vertex(double x, double y, double z);
+
+	void render_opengl() const;
+
+#ifdef ENABLE_CGAL
+	CGAL_Nef_polyhedron render_cgal_nef_polyhedron() const;
+#endif
+};
+
+#ifdef ENABLE_OPENCSG
+class CSGTerm
+{
+public:
+	enum type_e {
+		PRIMITIVE,
+		UNION,
+		INTERSECTION,
+		DIFFERENCE
+	};
+
+	type_e type;
+	PolySet *polyset;
+	CSGTerm *left;
+	CSGTerm *right;
+	int refcounter;
+	double m[16];
+
+	CSGTerm(PolySet *polyset, double m[16]);
+	CSGTerm(type_e type, CSGTerm *left, CSGTerm *right);
+
+	CSGTerm *normalize(bool &changed);
+
+	CSGTerm *link();
+	void unlink();
+};
+#endif
+
 class AbstractNode
 {
 public:
@@ -270,11 +332,34 @@ public:
 	void progress_prepare();
 	void progress_report() const;
 
+	int idx;
+	static int idx_counter;
+
+	AbstractNode();
 	virtual ~AbstractNode();
 #ifdef ENABLE_CGAL
 	virtual CGAL_Nef_polyhedron render_cgal_nef_polyhedron() const;
 #endif
+#ifdef ENABLE_OPENCSG
+	virtual CSGTerm *render_csg_term(double m[16]) const;
+#endif
 	virtual QString dump(QString indent) const;
+};
+
+class AbstractPolyNode : public AbstractNode
+{
+public:
+	enum render_mode_e {
+		RENDER_CGAL,
+		RENDER_OPENCSG
+	};
+	virtual PolySet *render_polyset(render_mode_e mode) const;
+#ifdef ENABLE_CGAL
+	virtual CGAL_Nef_polyhedron render_cgal_nef_polyhedron() const;
+#endif
+#ifdef ENABLE_OPENCSG
+	virtual CSGTerm *render_csg_term(double m[16]) const;
+#endif
 };
 
 extern int progress_report_count;
@@ -286,6 +371,7 @@ void progress_report_fin();
 
 #else
 
+// Needed for Mainwin::root_N
 // this is a bit hackish - but a pointer is a pointer..
 struct CGAL_Nef_polyhedron;
 
@@ -359,7 +445,8 @@ private slots:
 	void actionRenderCGAL();
 #endif
 	void actionDisplayAST();
-	void actionDisplayCSG();
+	void actionDisplayCSGTree();
+	void actionDisplayCSGProducts();
 	void actionExportSTL();
 	void actionExportOFF();
 };

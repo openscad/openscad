@@ -22,8 +22,17 @@ may not work as well..
 * CGAL (3.4):
   http://www.cgal.org/
 
+* boost (1.35, required by CGAL)
+  http://www.boost.org/
+
+* cmake (2.6.2, required by CGAL)
+  http://www.cmake.org/
+
 * OpenCSG (1.1.0):
   http://www.opencsg.org/
+
+* GLEW (bundled with OpenCSG)
+  http://glew.sourceforge.net/
 
 * GCC C++ Compiler (4.3.1):
   http://gcc.gnu.org/

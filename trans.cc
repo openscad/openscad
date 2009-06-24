@@ -73,7 +73,7 @@ CGAL_Nef_polyhedron TransNode::render_cgal_nef_polyhedron() const
 QString TransNode::dump(QString indent) const
 {
 	QString text;
-	text.sprintf("trans([%f %f %f])", x, y, z);
+	text.sprintf("n%d: trans([%f %f %f])", idx, x, y, z);
 	text = indent + text + " {\n";
 	foreach (AbstractNode *v, children)
 		text += v->dump(indent + QString("\t"));

@@ -36,16 +36,14 @@ public:
 	virtual AbstractNode *evaluate(const Context *ctx, const QVector<QString> &call_argnames, const QVector<Value> &call_argvalues, const QVector<AbstractNode*> child_nodes) const;
 };
 
-class PrimitiveNode : public AbstractNode
+class PrimitiveNode : public AbstractPolyNode
 {
 public:
 	bool center;
 	double x, y, z, h, r1, r2;
 	primitive_type_e type;
 	PrimitiveNode(primitive_type_e type) : type(type) { }
-#ifdef ENABLE_CGAL
-	virtual CGAL_Nef_polyhedron render_cgal_nef_polyhedron() const;
-#endif
+	virtual PolySet *render_polyset(render_mode_e mode) const;
 	virtual QString dump(QString indent) const;
 };
 
@@ -134,123 +132,125 @@ void register_builtin_primitive()
 	builtin_modules["cylinder"] = new PrimitiveModule(CYLINDER);
 }
 
-#ifdef ENABLE_CGAL
 
-static int cube_facets[6][4] = {
-	{ 0, 1, 2, 3 },
-	{ 7, 6, 5, 4 },
-	{ 4, 5, 1, 0 },
-	{ 5, 6, 2, 1 },
-	{ 6, 7, 3, 2 },
-	{ 7, 4, 0, 3 }
-};
-
-class CGAL_Build_cube : public CGAL::Modifier_base<CGAL_HDS>
+PolySet *PrimitiveNode::render_polyset(render_mode_e mode) const
 {
-public:
-	typedef CGAL_HDS::Vertex::Point Point;
+	PolySet *p = new PolySet();
 
-	const PrimitiveNode *n;
-	CGAL_Build_cube(const PrimitiveNode *n) : n(n) { }
-
-	void operator()(CGAL_HDS& hds)
+	if (type == CUBE && x > 0 && y > 0 && z > 0)
 	{
-		CGAL_Polybuilder B(hds, true);
-
-		if (n->type == CUBE) {
-			B.begin_surface(8, 6, 24);
-			double x1, x2, y1, y2, z1, z2;
-			if (n->center) {
-				x1 = -n->x/2;
-				x2 = +n->x/2;
-				y1 = -n->y/2;
-				y2 = +n->y/2;
-				z1 = -n->z/2;
-				z2 = +n->z/2;
-			} else {
-				x1 = y1 = z1 = 0;
-				x2 = n->x;
-				y2 = n->y;
-				z2 = n->z;
-			}
-			B.add_vertex(Point(x1, y1, z2)); // 0
-			B.add_vertex(Point(x2, y1, z2)); // 1
-			B.add_vertex(Point(x2, y2, z2)); // 2
-			B.add_vertex(Point(x1, y2, z2)); // 3
-			B.add_vertex(Point(x1, y1, z1)); // 4
-			B.add_vertex(Point(x2, y1, z1)); // 5
-			B.add_vertex(Point(x2, y2, z1)); // 6
-			B.add_vertex(Point(x1, y2, z1)); // 7
-			for (int i = 0; i < 6; i++) {
-				B.begin_facet();
-				for (int j = 0; j < 4; j++)
-					B.add_vertex_to_facet(cube_facets[i][j]);
-				B.end_facet();
-			}
-			B.end_surface();
+		double x1, x2, y1, y2, z1, z2;
+		if (center) {
+			x1 = -x/2;
+			x2 = +x/2;
+			y1 = -y/2;
+			y2 = +y/2;
+			z1 = -z/2;
+			z2 = +z/2;
+		} else {
+			x1 = y1 = z1 = 0;
+			x2 = x;
+			y2 = y;
+			z2 = z;
 		}
 
-		if (n->type == SPHERE) {
-			/* FIXME */
+		p->append_poly(); // top
+		p->append_vertex(x1, y1, z2);
+		p->append_vertex(x2, y1, z2);
+		p->append_vertex(x2, y2, z2);
+		p->append_vertex(x1, y2, z2);
+
+		p->append_poly(); // bottom
+		p->append_vertex(x1, y2, z1);
+		p->append_vertex(x2, y2, z1);
+		p->append_vertex(x2, y1, z1);
+		p->append_vertex(x1, y1, z1);
+
+		p->append_poly(); // side1
+		p->append_vertex(x1, y1, z1);
+		p->append_vertex(x2, y1, z1);
+		p->append_vertex(x2, y1, z2);
+		p->append_vertex(x1, y1, z2);
+
+		p->append_poly(); // side2
+		p->append_vertex(x2, y1, z1);
+		p->append_vertex(x2, y2, z1);
+		p->append_vertex(x2, y2, z2);
+		p->append_vertex(x2, y1, z2);
+
+		p->append_poly(); // side3
+		p->append_vertex(x2, y2, z1);
+		p->append_vertex(x1, y2, z1);
+		p->append_vertex(x1, y2, z2);
+		p->append_vertex(x2, y2, z2);
+
+		p->append_poly(); // side4
+		p->append_vertex(x1, y2, z1);
+		p->append_vertex(x1, y1, z1);
+		p->append_vertex(x1, y1, z2);
+		p->append_vertex(x1, y2, z2);
+	}
+
+	if (type == SPHERE && r1 > 0)
+	{
+		/* FIXME */
+	}
+
+	if (type == CYLINDER && h > 0 && r1 >=0 && r2 >= 0 && (r1 > 0 || r2 > 0))
+	{
+		int fragments = 10;
+
+		double z1, z2;
+		if (center) {
+			z1 = -h/2;
+			z2 = +h/2;
+		} else {
+			z1 = 0;
+			z2 = h;
 		}
 
-		if (n->type == CYLINDER) {
-			int fragments = 10;
-			B.begin_surface(fragments*2, fragments*2+2);
-			double z1, z2;
-			if (n->center) {
-				z1 = -n->h/2;
-				z2 = +n->h/2;
-			} else {
-				z1 = 0;
-				z2 = n->h;
-			}
-			for (int i=0; i<fragments; i++) {
-				double phi = (M_PI*2*i) / fragments;
-				B.add_vertex(Point(n->r1*cos(phi), n->r1*sin(phi), z1));
-				B.add_vertex(Point(n->r2*cos(phi), n->r2*sin(phi), z2));
-			}
-			for (int i=0; i<fragments; i++) {
-				B.begin_facet();
-				B.add_vertex_to_facet(i*2);
-				B.add_vertex_to_facet(i*2+1);
-				B.add_vertex_to_facet(((i+1)%fragments)*2);
-				B.end_facet();
-				B.begin_facet();
-				B.add_vertex_to_facet(i*2+1);
-				B.add_vertex_to_facet(((i+1)%fragments)*2+1);
-				B.add_vertex_to_facet(((i+1)%fragments)*2);
-				B.end_facet();
-			}
-			B.begin_facet();
-			for (int i=0; i<fragments; i++) {
-				B.add_vertex_to_facet(i*2);
-			}
-			B.end_facet();
-			B.begin_facet();
-			for (int i=fragments-1; i>=0; i--) {
-				B.add_vertex_to_facet(i*2+1);
-			}
-			B.end_facet();
-			B.end_surface();
+		struct point2d {
+			double x, y;
+		};
+
+		point2d circle1[fragments];
+		point2d circle2[fragments];
+
+		for (int i=0; i<fragments; i++) {
+			double phi = (M_PI*2*i) / fragments;
+			circle1[i].x = r1*cos(phi);
+			circle1[i].y = r1*sin(phi);
+			circle2[i].x = r2*cos(phi);
+			circle2[i].y = r2*sin(phi);
+		}
+		
+		for (int i=0; i<fragments; i++) {
+			int j = (i+1) % fragments;
+			p->append_poly();
+			p->append_vertex(circle1[i].x, circle1[i].y, z1);
+			p->append_vertex(circle2[i].x, circle2[i].y, z2);
+			p->append_vertex(circle1[j].x, circle1[j].y, z1);
+			p->append_poly();
+			p->append_vertex(circle2[i].x, circle2[i].y, z2);
+			p->append_vertex(circle2[j].x, circle2[j].y, z2);
+			p->append_vertex(circle1[j].x, circle1[j].y, z1);
+		}
+
+		if (r1 > 0) {
+			p->append_poly();
+			for (int i=0; i<fragments; i++)
+				p->append_vertex(circle1[i].x, circle1[i].y, z1);
+		}
+
+		if (r2 > 0) {
+			p->append_poly();
+			for (int i=0; i<fragments; i++)
+				p->insert_vertex(circle2[i].x, circle2[i].y, z2);
 		}
 	}
-};
 
-CGAL_Nef_polyhedron PrimitiveNode::render_cgal_nef_polyhedron() const
-{
-	CGAL_Polyhedron P;
-	CGAL_Build_cube builder(this);
-	P.delegate(builder);
-#if 0
-	std::cout << P;
-#endif
-	CGAL_Nef_polyhedron N(P);
-	progress_report();
-	return N;
+	return p;
 }
-
-#endif /* ENABLE_CGAL */
 
 QString PrimitiveNode::dump(QString indent) const
 {
@@ -261,6 +261,6 @@ QString PrimitiveNode::dump(QString indent) const
 		text.sprintf("sphere(r = %f);\n", r1);
 	if (type == CYLINDER)
 		text.sprintf("cylinder(h = %f, r1 = %f, r2 = %f, center = %s);\n", h, r1, r2, center ? "true" : "false");
-	return indent + text;
+	return indent + QString("n%1: ").arg(idx) + text;
 }
 

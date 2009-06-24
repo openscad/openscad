@@ -44,6 +44,9 @@ public:
 #ifdef ENABLE_CGAL
         virtual CGAL_Nef_polyhedron render_cgal_nef_polyhedron() const;
 #endif
+#ifdef ENABLE_OPENCSG
+	CSGTerm *render_csg_term(double m[16]) const;
+#endif
         virtual QString dump(QString indent) const;
 };
 
@@ -82,9 +85,33 @@ CGAL_Nef_polyhedron CsgNode::render_cgal_nef_polyhedron() const
 
 #endif /* ENABLE_CGAL */
 
+#ifdef ENABLE_OPENCSG
+
+CSGTerm *CsgNode::render_csg_term(double m[16]) const
+{
+	CSGTerm *t1 = NULL;
+	foreach (AbstractNode *v, children) {
+		CSGTerm *t2 = v->render_csg_term(m);
+		if (t2 && !t1) {
+			t1 = t2;
+		} else if (t2 && t1) {
+			if (type == UNION) {
+				t1 = new CSGTerm(CSGTerm::UNION, t1, t2);
+			} else if (type == DIFFERENCE) {
+				t1 = new CSGTerm(CSGTerm::DIFFERENCE, t1, t2);
+			} else if (type == INTERSECTION) {
+				t1 = new CSGTerm(CSGTerm::INTERSECTION, t1, t2);
+			}
+		}
+	}
+	return t1;
+}
+
+#endif /* ENABLE_OPENCSG */
+
 QString CsgNode::dump(QString indent) const
 {
-	QString text = indent;
+	QString text = indent + QString("n%1: ").arg(idx);
 	if (type == UNION)
 		text += "union() {\n";
 	if (type == DIFFERENCE)
