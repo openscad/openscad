@@ -388,14 +388,6 @@ class GLView : public QGLWidget
 	Q_OBJECT
 
 public:
-	struct Point {
-		double x, y, z;
-		Point() : x(0), y(0), z(0) { }
-		Point(double x, double y, double z) : x(x), y(y), z(z) { }
-	};
-	typedef QVector<Point> Polygon;
-	QVector<Polygon> polygons;
-
 	void (*renderfunc)(void*);
 	void *renderfunc_vp;
 
@@ -434,10 +426,8 @@ public:
 	Context root_ctx;
 	AbstractModule *root_module;
 	AbstractNode *root_node;
-#ifdef ENABLE_OPENCSG
 	CSGTerm *root_raw_term;
 	CSGTerm *root_norm_term;
-#endif
 #ifdef ENABLE_CGAL
 	CGAL_Nef_polyhedron *root_N;
 #endif
@@ -450,17 +440,38 @@ private slots:
 	void actionOpen();
 	void actionSave();
 	void actionSaveAs();
+
+private slots:
 	void actionCompile();
 #ifdef ENABLE_CGAL
 	void actionRenderCGAL();
 #endif
 	void actionDisplayAST();
 	void actionDisplayCSGTree();
-#ifdef ENABLE_OPENCSG
 	void actionDisplayCSGProducts();
-#endif
 	void actionExportSTL();
 	void actionExportOFF();
+
+public:
+#ifdef ENABLE_OPENCSG
+	QAction *actViewModeOpenCSG;
+#endif
+#ifdef ENABLE_CGAL
+	QAction *actViewModeCGALSurface;
+	QAction *actViewModeCGALGrid;
+#endif
+	QAction *actViewModeTrownTogether;
+	void viewModeActionsUncheck();
+
+private slots:
+#ifdef ENABLE_OPENCSG
+	void viewModeOpenCSG();
+#endif
+#ifdef ENABLE_CGAL
+	void viewModeCGALSurface();
+	void viewModeCGALGrid();
+#endif
+	void viewModeTrownTogether();
 };
 
 extern AbstractModule *parse(const char *text, int debug);

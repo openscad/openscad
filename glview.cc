@@ -77,30 +77,10 @@ void GLView::paintGL()
 	glEnd();
 #endif
 
+	glColor3d(1.0, 0.0, 0.0);
+
 	if (renderfunc)
 		renderfunc(renderfunc_vp);
-
-	glColor3d(1.0, 0.0, 0.0);
-	for (int i=0; i<polygons.size(); i++) {
-		Polygon *poly = &polygons[i];
-		glBegin(GL_POLYGON);
-		for (int j=0; j<poly->size(); j++) {
-			const Point *p = &poly->at(j);
-			glVertex3d(p->x, p->y, p->z);
-		}
-		glEnd();
-	}
-
-	glColor3d(0.5, 0.0, 0.0);
-	for (int i=0; i<polygons.size(); i++) {
-		Polygon *poly = &polygons[i];
-		glBegin(GL_LINE_LOOP);
-		for (int j=0; j<poly->size(); j++) {
-			const Point *p = &poly->at(j);
-			glVertex3d(p->x, p->y, p->z);
-		}
-		glEnd();
-	}
 }
 
 void GLView::wheelEvent(QWheelEvent *event)

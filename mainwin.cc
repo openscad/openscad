@@ -35,10 +35,8 @@ MainWindow::MainWindow(const char *filename)
 
 	root_module = NULL;
 	root_node = NULL;
-#ifdef ENABLE_OPENCSG
 	root_raw_term = NULL;
 	root_norm_term = NULL;
-#endif
 #ifdef ENABLE_CGAL
 	root_N = NULL;
 #endif
@@ -67,18 +65,26 @@ MainWindow::MainWindow(const char *filename)
 #endif
 		menu->addAction("Display &AST...", this, SLOT(actionDisplayAST()));
 		menu->addAction("Display CSG &Tree...", this, SLOT(actionDisplayCSGTree()));
-#ifdef ENABLE_OPENCSG
 		menu->addAction("Display CSG &Products...", this, SLOT(actionDisplayCSGProducts()));
-#endif
 		menu->addAction("Export as &STL...", this, SLOT(actionExportSTL()));
 		menu->addAction("Export as &OFF...", this, SLOT(actionExportOFF()));
 	}
 
 	{
 		QMenu *menu = menuBar()->addMenu("&View");
-		menu->addAction("OpenCSG");
-		menu->addAction("CGAL Surfaces");
-		menu->addAction("CGAL Grid Only");
+#ifdef ENABLE_OPENCSG
+		actViewModeOpenCSG = menu->addAction("OpenCSG", this, SLOT(viewModeOpenCSG()));
+		actViewModeOpenCSG->setCheckable(true);
+#endif
+#ifdef ENABLE_CGAL
+		actViewModeCGALSurface = menu->addAction("CGAL Surfaces", this, SLOT(viewModeCGALSurface()));
+		actViewModeCGALGrid = menu->addAction("CGAL Grid Only", this, SLOT(viewModeCGALGrid()));
+		actViewModeCGALSurface->setCheckable(true);
+		actViewModeCGALGrid->setCheckable(true);
+#endif
+		actViewModeTrownTogether = menu->addAction("Thrown Together", this, SLOT(viewModeTrownTogether()));
+		actViewModeTrownTogether->setCheckable(true);
+
 		menu->addSeparator();
 		menu->addAction("Top");
 		menu->addAction("Bottom");
@@ -128,12 +134,11 @@ MainWindow::MainWindow(const char *filename)
 		editor->setPlainText(text);
 	}
 
-	screen->polygons.clear();
-	screen->polygons.append(GLView::Polygon() << GLView::Point(0,0,0) << GLView::Point(1,0,0) << GLView::Point(0,1,0));
-	screen->polygons.append(GLView::Polygon() << GLView::Point(0,0,0) << GLView::Point(1,0,0) << GLView::Point(0,0,1));
-	screen->polygons.append(GLView::Polygon() << GLView::Point(1,0,0) << GLView::Point(0,1,0) << GLView::Point(0,0,1));
-	screen->polygons.append(GLView::Polygon() << GLView::Point(0,1,0) << GLView::Point(0,0,0) << GLView::Point(0,0,1));
-	screen->updateGL();
+#ifdef ENABLE_OPENCSG
+	viewModeOpenCSG();
+#else
+	viewModeTrownTogether();
+#endif
 
 	setCentralWidget(s1);
 }
@@ -238,7 +243,6 @@ void MainWindow::actionCompile()
 		return;
 	}
 
-#ifdef ENABLE_OPENCSG
 	console->append("Compiling design (CSG Products generation)...");
 	QApplication::processEvents();
 
@@ -277,7 +281,6 @@ void MainWindow::actionCompile()
 		console->append("Compilation failed!");
 		return;
 	}
-#endif /* ENABLE_OPENCSG */
 
 	console->append("Compilation finished.");
 }
@@ -298,10 +301,16 @@ static void report_func(const class AbstractNode*, void *vp, int mark)
 static void renderGLviaCGAL(void *vp)
 {
 	MainWindow *m = (MainWindow*)vp;
-
-	CGAL::OGL::Polyhedron P;
-	CGAL::OGL::Nef3_Converter<CGAL_Nef_polyhedron>::convert_to_OGLPolyhedron(*m->root_N, &P);
-	P.draw();
+	if (m->root_N) {
+		CGAL::OGL::Polyhedron P;
+		CGAL::OGL::Nef3_Converter<CGAL_Nef_polyhedron>::convert_to_OGLPolyhedron(*m->root_N, &P);
+		P.init();
+		if (m->actViewModeCGALSurface->isChecked())
+			P.set_style(CGAL::OGL::SNC_BOUNDARY);
+		if (m->actViewModeCGALGrid->isChecked())
+			P.set_style(CGAL::OGL::SNC_SKELETON);
+		P.draw();
+	}
 }
 
 void MainWindow::actionRenderCGAL()
@@ -320,10 +329,11 @@ void MainWindow::actionRenderCGAL()
 	root_N = new CGAL_Nef_polyhedron(root_node->render_cgal_nef_polyhedron());
 	progress_report_fin();
 
-	screen->polygons.clear();
-	screen->renderfunc = renderGLviaCGAL;
-	screen->renderfunc_vp = this;
-	screen->updateGL();
+	if (!actViewModeCGALSurface->isChecked() && !actViewModeCGALGrid->isChecked()) {
+		viewModeCGALSurface();
+	} else {
+		screen->updateGL();
+	}
 }
 
 #endif /* ENABLE_CGAL */
@@ -356,8 +366,6 @@ void MainWindow::actionDisplayCSGTree()
 	e->resize(600, 400);
 }
 
-#ifdef ENABLE_OPENCSG
-
 void MainWindow::actionDisplayCSGProducts()
 {
 	QTextEdit *e = new QTextEdit(NULL);
@@ -367,8 +375,6 @@ void MainWindow::actionDisplayCSGProducts()
 	e->show();
 	e->resize(600, 400);
 }
-
-#endif /* ENABLE_OPENCSG */
 
 void MainWindow::actionExportSTL()
 {
@@ -380,4 +386,76 @@ void MainWindow::actionExportOFF()
 	console->append(QString("Function %1 is not implemented yet!").arg(QString(__PRETTY_FUNCTION__)));
 }
 
+void MainWindow::viewModeActionsUncheck()
+{
+#ifdef ENABLE_OPENCSG
+	actViewModeOpenCSG->setChecked(false);
+#endif
+#ifdef ENABLE_CGAL
+	actViewModeCGALSurface->setChecked(false);
+	actViewModeCGALGrid->setChecked(false);
+#endif
+	actViewModeTrownTogether->setChecked(false);
+}
+
+#ifdef ENABLE_OPENCSG
+
+void MainWindow::viewModeOpenCSG()
+{
+	/* FIXME */
+	viewModeActionsUncheck();
+	actViewModeOpenCSG->setChecked(true);
+	screen->renderfunc = NULL;
+	screen->updateGL();
+}
+
+#endif /* ENABLE_OPENCSG */
+
+#ifdef ENABLE_CGAL
+
+void MainWindow::viewModeCGALSurface()
+{
+	viewModeActionsUncheck();
+	actViewModeCGALSurface->setChecked(true);
+	screen->renderfunc = renderGLviaCGAL;
+	screen->renderfunc_vp = this;
+	screen->updateGL();
+}
+
+void MainWindow::viewModeCGALGrid()
+{
+	viewModeActionsUncheck();
+	actViewModeCGALGrid->setChecked(true);
+	screen->renderfunc = renderGLviaCGAL;
+	screen->renderfunc_vp = this;
+	screen->updateGL();
+}
+
+#endif /* ENABLE_CGAL */
+
+static void renderGLTrownTogether_worker(CSGTerm *t)
+{
+	if (t->left)
+		renderGLTrownTogether_worker(t->left);
+	if (t->right)
+		renderGLTrownTogether_worker(t->right);
+	if (t->polyset)
+		t->polyset->render_opengl();
+}
+
+static void renderGLTrownTogether(void *vp)
+{
+	MainWindow *m = (MainWindow*)vp;
+	if (m->root_raw_term)
+		renderGLTrownTogether_worker(m->root_raw_term);
+}
+
+void MainWindow::viewModeTrownTogether()
+{
+	viewModeActionsUncheck();
+	actViewModeTrownTogether->setChecked(true);
+	screen->renderfunc = renderGLTrownTogether;
+	screen->renderfunc_vp = this;
+	screen->updateGL();
+}
 
