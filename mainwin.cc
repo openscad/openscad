@@ -35,6 +35,10 @@ MainWindow::MainWindow(const char *filename)
 
 	root_module = NULL;
 	root_node = NULL;
+#ifdef ENABLE_OPENCSG
+	root_raw_term = NULL;
+	root_norm_term = NULL;
+#endif
 #ifdef ENABLE_CGAL
 	root_N = NULL;
 #endif
@@ -63,7 +67,9 @@ MainWindow::MainWindow(const char *filename)
 #endif
 		menu->addAction("Display &AST...", this, SLOT(actionDisplayAST()));
 		menu->addAction("Display CSG &Tree...", this, SLOT(actionDisplayCSGTree()));
+#ifdef ENABLE_OPENCSG
 		menu->addAction("Display CSG &Products...", this, SLOT(actionDisplayCSGProducts()));
+#endif
 		menu->addAction("Export as &STL...", this, SLOT(actionExportSTL()));
 		menu->addAction("Export as &OFF...", this, SLOT(actionExportOFF()));
 	}
@@ -201,13 +207,14 @@ void MainWindow::actionSaveAs()
 
 void MainWindow::actionCompile()
 {
+	console->append("Parsing design (AST generation)...");
+	QApplication::processEvents();
+
 	if (root_module) {
 		delete root_module;
 		root_module = NULL;
 	}
 
-	console->append("Parsing design (AST generation)...");
-	QApplication::processEvents();
 	root_module = parse(editor->toPlainText().toAscii().data(), false);
 
 	if (!root_module) {
@@ -215,13 +222,14 @@ void MainWindow::actionCompile()
 		return;
 	}
 
+	console->append("Compiling design (CSG Tree generation)...");
+	QApplication::processEvents();
+
 	if (root_node) {
 		delete root_node;
 		root_node = NULL;
 	}
 
-	console->append("Compiling design (CSG Tree generation)...");
-	QApplication::processEvents();
 	AbstractNode::idx_counter = 1;
 	root_node = root_module->evaluate(&root_ctx, QVector<QString>(), QVector<Value>(), QVector<AbstractNode*>());
 
@@ -229,6 +237,46 @@ void MainWindow::actionCompile()
 		console->append("Compilation failed!");
 		return;
 	}
+
+#ifdef ENABLE_OPENCSG
+	console->append("Compiling design (CSG Products generation)...");
+	QApplication::processEvents();
+
+	if (root_raw_term) {
+		root_raw_term->unlink();
+		root_raw_term = NULL;
+	}
+
+	double m[16];
+	root_raw_term = root_node->render_csg_term(m);
+
+	if (!root_raw_term) {
+		console->append("Compilation failed!");
+		return;
+	}
+
+	console->append("Compiling design (CSG Products normalization)...");
+	QApplication::processEvents();
+
+	if (root_norm_term) {
+		root_norm_term->unlink();
+		root_norm_term = NULL;
+	}
+
+	root_norm_term = root_raw_term->link();
+
+	CSGTerm *n;
+	do {
+		n = root_norm_term->normalize();
+		root_norm_term->unlink();
+		root_norm_term = n;
+	} while (root_norm_term != n);
+
+	if (!root_norm_term) {
+		console->append("Compilation failed!");
+		return;
+	}
+#endif /* ENABLE_OPENCSG */
 
 	console->append("Compilation finished.");
 }
@@ -307,19 +355,19 @@ void MainWindow::actionDisplayCSGTree()
 	e->resize(600, 400);
 }
 
+#ifdef ENABLE_OPENCSG
+
 void MainWindow::actionDisplayCSGProducts()
 {
 	QTextEdit *e = new QTextEdit(NULL);
 	e->setTabStopWidth(30);
 	e->setWindowTitle("CSG Dump");
-	if (root_node) {
-		e->setPlainText("Fixme!");
-	} else {
-		e->setPlainText("No CSG to dump. Please try compiling first...");
-	}
+	e->setPlainText(QString("\nCSG before normalization:\n%1\n\n\nCSG after normalization:\n%2\n").arg(root_raw_term ? root_raw_term->dump() : "N/A", root_norm_term ? root_norm_term->dump() : "N/A"));
 	e->show();
 	e->resize(600, 400);
 }
+
+#endif /* ENABLE_OPENCSG */
 
 void MainWindow::actionExportSTL()
 {

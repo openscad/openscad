@@ -59,7 +59,10 @@ class ModuleInstanciation;
 class Module;
 
 class Context;
+class CSGTerm;
+class PolySet;
 class AbstractNode;
+class AbstractPolyNode;
 
 class Value
 {
@@ -308,18 +311,21 @@ public:
 
 	type_e type;
 	PolySet *polyset;
+	QString label;
 	CSGTerm *left;
 	CSGTerm *right;
 	int refcounter;
 	double m[16];
 
-	CSGTerm(PolySet *polyset, double m[16]);
+	CSGTerm(PolySet *polyset, QString label, double m[16]);
 	CSGTerm(type_e type, CSGTerm *left, CSGTerm *right);
 
-	CSGTerm *normalize(bool &changed);
+	CSGTerm *normalize();
+	CSGTerm *normalize_tail();
 
 	CSGTerm *link();
 	void unlink();
+	QString dump();
 };
 #endif
 
@@ -428,6 +434,10 @@ public:
 	Context root_ctx;
 	AbstractModule *root_module;
 	AbstractNode *root_node;
+#ifdef ENABLE_OPENCSG
+	CSGTerm *root_raw_term;
+	CSGTerm *root_norm_term;
+#endif
 #ifdef ENABLE_CGAL
 	CGAL_Nef_polyhedron *root_N;
 #endif
@@ -446,7 +456,9 @@ private slots:
 #endif
 	void actionDisplayAST();
 	void actionDisplayCSGTree();
+#ifdef ENABLE_OPENCSG
 	void actionDisplayCSGProducts();
+#endif
 	void actionExportSTL();
 	void actionExportOFF();
 };

@@ -33,10 +33,15 @@ module test003()
 {
 	intersection() {
 		difference() {
-			cube([3 3 3], center = true);
-			cube([5 1 1], center = true);
-			cube([1 5 1], center = true);
-			cube([1 1 5], center = true);
+			union() {
+				cube([3 3 3], center = true);
+				trans([0 0 -2.5]) cube([1.5 1.5 5], center = true);
+			}
+			union() {
+				cube([5 1 1], center = true);
+				cube([1 5 1], center = true);
+				cube([1 1 5], center = true);
+			}
 		}
 		trans([0 0 0.5])
 			cylinder(h = 5, r1 = 2, r2 = 0.5, center = true);
