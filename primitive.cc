@@ -132,6 +132,11 @@ void register_builtin_primitive()
 	builtin_modules["cylinder"] = new PrimitiveModule(CYLINDER);
 }
 
+int get_fragments_from_r(double r)
+{
+	double fa = 72, fs = 0.5;
+	return ceil(fmax(360.0 / fa, fmax(r*M_PI / fs, 5)));
+}
 
 PolySet *PrimitiveNode::render_polyset(render_mode_e mode) const
 {
@@ -193,12 +198,76 @@ PolySet *PrimitiveNode::render_polyset(render_mode_e mode) const
 
 	if (type == SPHERE && r1 > 0)
 	{
-		/* FIXME */
+		struct point2d {
+			double x, y;
+		};
+
+		struct ring_s {
+			int fragments;
+			point2d *points;
+			double r, z;
+		};
+
+		int rings = get_fragments_from_r(r1);
+		ring_s ring[rings];
+
+		for (int i = 0; i < rings; i++) {
+			double phi = (M_PI * (i + 0.5)) / rings;
+			ring[i].r = r1 * sin(phi);
+			ring[i].z = r1 * cos(phi);
+			ring[i].fragments = get_fragments_from_r(ring[i].r);
+			ring[i].points = new point2d[ring[i].fragments];
+			for (int j = 0; j < ring[i].fragments; j++) {
+				phi = (M_PI*2*j) / ring[i].fragments;
+				ring[i].points[j].x = ring[i].r * cos(phi);
+				ring[i].points[j].y = ring[i].r * sin(phi);
+			}
+		}
+
+		p->append_poly();
+		for (int i = 0; i < ring[0].fragments; i++)
+			p->insert_vertex(ring[0].points[i].x, ring[0].points[i].y, ring[0].z);
+
+		for (int i = 0; i < rings-1; i++) {
+			ring_s *r1 = &ring[i];
+			ring_s *r2 = &ring[i+1];
+			int r1i = 0, r2i = 0;
+			while (r1i < r1->fragments || r2i < r2->fragments)
+			{
+				if (r1i >= r1->fragments)
+					goto sphere_next_r2;
+				if (r2i >= r2->fragments)
+					goto sphere_next_r1;
+				if ((double)r1i / r1->fragments <
+						(double)r2i / r2->fragments)
+				{
+sphere_next_r1:
+					p->append_poly();
+					int r1j = (r1i+1) % r1->fragments;
+					p->append_vertex(r1->points[r1i].x, r1->points[r1i].y, r1->z);
+					p->append_vertex(r1->points[r1j].x, r1->points[r1j].y, r1->z);
+					p->append_vertex(r2->points[r2i % r2->fragments].x, r2->points[r2i % r2->fragments].y, r2->z);
+					r1i++;
+				} else {
+sphere_next_r2:
+					p->append_poly();
+					int r2j = (r2i+1) % r2->fragments;
+					p->append_vertex(r2->points[r2i].x, r2->points[r2i].y, r2->z);
+					p->append_vertex(r2->points[r2j].x, r2->points[r2j].y, r2->z);
+					p->append_vertex(r1->points[r1i % r1->fragments].x, r1->points[r1i % r1->fragments].y, r1->z);
+					r2i++;
+				}
+			}
+		}
+
+		p->append_poly();
+		for (int i = 0; i < ring[rings-1].fragments; i++)
+			p->append_vertex(ring[rings-1].points[i].x, ring[rings-1].points[i].y, ring[rings-1].z);
 	}
 
 	if (type == CYLINDER && h > 0 && r1 >=0 && r2 >= 0 && (r1 > 0 || r2 > 0))
 	{
-		int fragments = 10;
+		int fragments = get_fragments_from_r(fmax(r1, r2));
 
 		double z1, z2;
 		if (center) {

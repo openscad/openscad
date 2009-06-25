@@ -51,7 +51,8 @@ void GLView::initializeGL()
 
 void GLView::resizeGL(int w, int h)
 {
-	glViewport(0, 0, (GLint)w, (GLint)h);
+	glViewport(0, 0, w, h);
+	w_h_ratio = sqrt((double)w / (double)h);
 }
 
 void GLView::paintGL()
@@ -60,7 +61,7 @@ void GLView::paintGL()
 
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	glFrustum(-1.0, +1.0, -1.0, +1.0, +10.0, +FAR_FAR_AWAY);
+	glFrustum(-w_h_ratio, +w_h_ratio, -(1/w_h_ratio), +(1/w_h_ratio), +10.0, +FAR_FAR_AWAY);
 	gluLookAt(0.0, -viewer_distance, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0);
 
 	glMatrixMode(GL_MODELVIEW);

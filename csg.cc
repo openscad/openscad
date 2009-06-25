@@ -44,9 +44,7 @@ public:
 #ifdef ENABLE_CGAL
         virtual CGAL_Nef_polyhedron render_cgal_nef_polyhedron() const;
 #endif
-#ifdef ENABLE_OPENCSG
 	CSGTerm *render_csg_term(double m[16]) const;
-#endif
         virtual QString dump(QString indent) const;
 };
 
@@ -85,8 +83,6 @@ CGAL_Nef_polyhedron CsgNode::render_cgal_nef_polyhedron() const
 
 #endif /* ENABLE_CGAL */
 
-#ifdef ENABLE_OPENCSG
-
 CSGTerm *CsgNode::render_csg_term(double m[16]) const
 {
 	CSGTerm *t1 = NULL;
@@ -106,8 +102,6 @@ CSGTerm *CsgNode::render_csg_term(double m[16]) const
 	}
 	return t1;
 }
-
-#endif /* ENABLE_OPENCSG */
 
 QString CsgNode::dump(QString indent) const
 {

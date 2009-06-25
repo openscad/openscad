@@ -178,13 +178,9 @@ CGAL_Nef_polyhedron AbstractPolyNode::render_cgal_nef_polyhedron() const
 
 #endif /* ENABLE_CGAL */
 
-#ifdef ENABLE_OPENCSG
-
 CSGTerm *AbstractPolyNode::render_csg_term(double m[16]) const
 {
 	PolySet *ps = render_polyset(RENDER_OPENCSG);
 	return new CSGTerm(ps, QString("n%1").arg(idx), m);
 }
-
-#endif /* ENABLE_OPENCSG */
 

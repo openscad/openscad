@@ -218,8 +218,6 @@ CGAL_Nef_polyhedron AbstractNode::render_cgal_nef_polyhedron() const
 
 #endif /* ENABLE_CGAL */
 
-#ifdef ENABLE_OPENCSG
-
 CSGTerm *AbstractNode::render_csg_term(double m[16]) const
 {
 	CSGTerm *t1 = NULL;
@@ -233,8 +231,6 @@ CSGTerm *AbstractNode::render_csg_term(double m[16]) const
 	}
 	return t1;
 }
-
-#endif /* ENABLE_OPENCSG */
 
 QString AbstractNode::dump(QString indent) const
 {
