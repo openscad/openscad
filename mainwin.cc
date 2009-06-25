@@ -37,6 +37,7 @@ MainWindow::MainWindow(const char *filename)
 	root_node = NULL;
 	root_raw_term = NULL;
 	root_norm_term = NULL;
+	root_chain = NULL;
 #ifdef ENABLE_CGAL
 	root_N = NULL;
 #endif
@@ -82,8 +83,8 @@ MainWindow::MainWindow(const char *filename)
 		actViewModeCGALSurface->setCheckable(true);
 		actViewModeCGALGrid->setCheckable(true);
 #endif
-		actViewModeTrownTogether = menu->addAction("Thrown Together", this, SLOT(viewModeTrownTogether()));
-		actViewModeTrownTogether->setCheckable(true);
+		actViewModeThrownTogether = menu->addAction("Thrown Together", this, SLOT(viewModeThrownTogether()));
+		actViewModeThrownTogether->setCheckable(true);
 
 		menu->addSeparator();
 		menu->addAction("Top");
@@ -137,7 +138,7 @@ MainWindow::MainWindow(const char *filename)
 #ifdef ENABLE_OPENCSG
 	viewModeOpenCSG();
 #else
-	viewModeTrownTogether();
+	viewModeThrownTogether();
 #endif
 
 	setCentralWidget(s1);
@@ -267,6 +268,11 @@ void MainWindow::actionCompile()
 		root_norm_term = NULL;
 	}
 
+	if (root_chain) {
+		delete root_chain;
+		root_chain = NULL;
+	}
+
 	root_norm_term = root_raw_term->link();
 
 	while (1) {
@@ -282,6 +288,9 @@ void MainWindow::actionCompile()
 		return;
 	}
 
+	root_chain = new CSGChain();
+	root_chain->import(root_norm_term);
+
 	console->append("Compilation finished.");
 }
 
@@ -294,23 +303,6 @@ static void report_func(const class AbstractNode*, void *vp, int mark)
 	msg.sprintf("CSG rendering progress: %.2f%%", (mark*100.0) / progress_report_count);
 	QApplication::processEvents();
         m->console->append(msg);
-}
-
-#include <CGAL/Nef_3/OGL_helper.h>
-
-static void renderGLviaCGAL(void *vp)
-{
-	MainWindow *m = (MainWindow*)vp;
-	if (m->root_N) {
-		CGAL::OGL::Polyhedron P;
-		CGAL::OGL::Nef3_Converter<CGAL_Nef_polyhedron>::convert_to_OGLPolyhedron(*m->root_N, &P);
-		P.init();
-		if (m->actViewModeCGALSurface->isChecked())
-			P.set_style(CGAL::OGL::SNC_BOUNDARY);
-		if (m->actViewModeCGALGrid->isChecked())
-			P.set_style(CGAL::OGL::SNC_SKELETON);
-		P.draw();
-	}
 }
 
 void MainWindow::actionRenderCGAL()
@@ -356,7 +348,7 @@ void MainWindow::actionDisplayCSGTree()
 {
 	QTextEdit *e = new QTextEdit(NULL);
 	e->setTabStopWidth(30);
-	e->setWindowTitle("CSG Dump");
+	e->setWindowTitle("CSG Tree Dump");
 	if (root_node) {
 		e->setPlainText(root_node->dump(""));
 	} else {
@@ -370,8 +362,8 @@ void MainWindow::actionDisplayCSGProducts()
 {
 	QTextEdit *e = new QTextEdit(NULL);
 	e->setTabStopWidth(30);
-	e->setWindowTitle("CSG Dump");
-	e->setPlainText(QString("\nCSG before normalization:\n%1\n\n\nCSG after normalization:\n%2\n").arg(root_raw_term ? root_raw_term->dump() : "N/A", root_norm_term ? root_norm_term->dump() : "N/A"));
+	e->setWindowTitle("CSG Products Dump");
+	e->setPlainText(QString("\nCSG before normalization:\n%1\n\n\nCSG after normalization:\n%2\n\n\nCSG rendering chain:\n%3\n").arg(root_raw_term ? root_raw_term->dump() : "N/A", root_norm_term ? root_norm_term->dump() : "N/A", root_chain ? root_chain->dump() : "N/A"));
 	e->show();
 	e->resize(600, 400);
 }
@@ -395,23 +387,102 @@ void MainWindow::viewModeActionsUncheck()
 	actViewModeCGALSurface->setChecked(false);
 	actViewModeCGALGrid->setChecked(false);
 #endif
-	actViewModeTrownTogether->setChecked(false);
+	actViewModeThrownTogether->setChecked(false);
 }
 
 #ifdef ENABLE_OPENCSG
 
+#include <GL/glut.h>
+
+class DLPrim : public OpenCSG::Primitive
+{
+public:
+	DLPrim(unsigned int displayListId, OpenCSG::Operation operation, unsigned int convexity) :
+			OpenCSG::Primitive(operation, convexity), id(displayListId) { }
+	virtual void render() { glCallList(id); }
+	unsigned int id;
+};
+
+static void renderGLviaOpenCSG(void *vp)
+{
+	MainWindow *m = (MainWindow*)vp;
+	static int glew_initialized = 0;
+	if (!glew_initialized) {
+		glew_initialized = 1;
+		glewInit();
+	}
+	if (m->root_chain) {
+		glDepthFunc(GL_LEQUAL);
+		/* FIXME */
+		for (int i = 0; i < m->root_chain->polysets.size(); i++) {
+			if (m->root_chain->types[i] == CSGTerm::DIFFERENCE) {
+				m->root_chain->polysets[i]->render_surface(PolySet::COLOR_CUTOUT);
+				m->root_chain->polysets[i]->render_edges(PolySet::COLOR_CUTOUT);
+			} else {
+				m->root_chain->polysets[i]->render_surface(PolySet::COLOR_MATERIAL);
+				m->root_chain->polysets[i]->render_edges(PolySet::COLOR_MATERIAL);
+			}
+		}
+	} else {
+		GLuint id1 = glGenLists(1);
+		glNewList(id1, GL_COMPILE);
+		glutSolidCube(1.8);
+		glEndList();
+
+		GLuint id2 = glGenLists(1);
+		glNewList(id2, GL_COMPILE);
+		glutSolidSphere(1.2, 20, 20);
+		glEndList();
+
+		DLPrim* box = new DLPrim(id1, OpenCSG::Intersection, 1);
+		DLPrim* sphere = new DLPrim(id2, OpenCSG::Subtraction, 1);
+		std::vector<OpenCSG::Primitive*> primitives;
+
+		primitives.push_back(box);
+		primitives.push_back(sphere);
+
+		OpenCSG::render(primitives, OpenCSG::Goldfeather, OpenCSG::NoDepthComplexitySampling);
+
+		glDepthFunc(GL_EQUAL);
+		glColor3f(1.0, 0, 0);
+		for (unsigned int i = 0; i < primitives.size(); i++) {
+			primitives[i]->render();
+			glDeleteLists(((DLPrim*)primitives[i])->id, 1);
+			delete primitives[i];
+		}
+		glDepthFunc(GL_LESS);
+	}
+}
+
 void MainWindow::viewModeOpenCSG()
 {
-	/* FIXME */
 	viewModeActionsUncheck();
 	actViewModeOpenCSG->setChecked(true);
-	screen->renderfunc = NULL;
+	screen->renderfunc = renderGLviaOpenCSG;
+	screen->renderfunc_vp = this;
 	screen->updateGL();
 }
 
 #endif /* ENABLE_OPENCSG */
 
 #ifdef ENABLE_CGAL
+
+#include <CGAL/Nef_3/OGL_helper.h>
+
+static void renderGLviaCGAL(void *vp)
+{
+	MainWindow *m = (MainWindow*)vp;
+	if (m->root_N) {
+		CGAL::OGL::Polyhedron P;
+		CGAL::OGL::Nef3_Converter<CGAL_Nef_polyhedron>::convert_to_OGLPolyhedron(*m->root_N, &P);
+		P.init();
+		if (m->actViewModeCGALSurface->isChecked())
+			P.set_style(CGAL::OGL::SNC_BOUNDARY);
+		if (m->actViewModeCGALGrid->isChecked())
+			P.set_style(CGAL::OGL::SNC_SKELETON);
+		P.draw();
+	}
+}
 
 void MainWindow::viewModeCGALSurface()
 {
@@ -433,28 +504,28 @@ void MainWindow::viewModeCGALGrid()
 
 #endif /* ENABLE_CGAL */
 
-static void renderGLTrownTogether_worker(CSGTerm *t)
-{
-	if (t->left)
-		renderGLTrownTogether_worker(t->left);
-	if (t->right)
-		renderGLTrownTogether_worker(t->right);
-	if (t->polyset)
-		t->polyset->render_opengl();
-}
-
-static void renderGLTrownTogether(void *vp)
+static void renderGLThrownTogether(void *vp)
 {
 	MainWindow *m = (MainWindow*)vp;
-	if (m->root_raw_term)
-		renderGLTrownTogether_worker(m->root_raw_term);
+	if (m->root_chain) {
+		glDepthFunc(GL_LEQUAL);
+		for (int i = 0; i < m->root_chain->polysets.size(); i++) {
+			if (m->root_chain->types[i] == CSGTerm::DIFFERENCE) {
+				m->root_chain->polysets[i]->render_surface(PolySet::COLOR_CUTOUT);
+				m->root_chain->polysets[i]->render_edges(PolySet::COLOR_CUTOUT);
+			} else {
+				m->root_chain->polysets[i]->render_surface(PolySet::COLOR_MATERIAL);
+				m->root_chain->polysets[i]->render_edges(PolySet::COLOR_MATERIAL);
+			}
+		}
+	}
 }
 
-void MainWindow::viewModeTrownTogether()
+void MainWindow::viewModeThrownTogether()
 {
 	viewModeActionsUncheck();
-	actViewModeTrownTogether->setChecked(true);
-	screen->renderfunc = renderGLTrownTogether;
+	actViewModeThrownTogether->setChecked(true);
+	screen->renderfunc = renderGLThrownTogether;
 	screen->renderfunc_vp = this;
 	screen->updateGL();
 }

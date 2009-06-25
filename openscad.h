@@ -31,6 +31,11 @@ static inline uint qHash(double v) {
 	return x.u[0] ^ x.u[1];
 }
 
+#ifdef ENABLE_OPENCSG
+// this must be included before the GL headers
+#  include <GL/glew.h>
+#endif
+
 #include <QHash>
 #include <QVector>
 #include <QMainWindow>
@@ -59,8 +64,9 @@ class ModuleInstanciation;
 class Module;
 
 class Context;
-class CSGTerm;
 class PolySet;
+class CSGTerm;
+class CSGChain;
 class AbstractNode;
 class AbstractPolyNode;
 
@@ -274,6 +280,10 @@ typedef CGAL_Nef_polyhedron::Point_3 CGAL_Point;
 
 #endif /* ENABLE_CGAL */
 
+#ifdef ENABLE_OPENCSG
+#  include <opencsg.h>
+#endif
+
 class PolySet
 {
 public:
@@ -291,14 +301,20 @@ public:
 	void append_vertex(double x, double y, double z);
 	void insert_vertex(double x, double y, double z);
 
-	void render_opengl() const;
+	enum colormode_e {
+		COLOR_NONE,
+		COLOR_MATERIAL,
+		COLOR_CUTOUT
+	};
+
+	void render_surface(colormode_e colormode) const;
+	void render_edges(colormode_e colormode) const;
 
 #ifdef ENABLE_CGAL
 	CGAL_Nef_polyhedron render_cgal_nef_polyhedron() const;
 #endif
 };
 
-#ifdef ENABLE_OPENCSG
 class CSGTerm
 {
 public:
@@ -327,7 +343,20 @@ public:
 	void unlink();
 	QString dump();
 };
-#endif
+
+class CSGChain
+{
+public:
+	QVector<PolySet*> polysets;
+	QVector<CSGTerm::type_e> types;
+	QVector<QString> labels;
+
+	CSGChain();
+
+	void add(PolySet *polyset, CSGTerm::type_e type, QString label);
+	void import(CSGTerm *term, CSGTerm::type_e type = CSGTerm::UNION);
+	QString dump();
+};
 
 class AbstractNode
 {
@@ -346,9 +375,7 @@ public:
 #ifdef ENABLE_CGAL
 	virtual CGAL_Nef_polyhedron render_cgal_nef_polyhedron() const;
 #endif
-#ifdef ENABLE_OPENCSG
 	virtual CSGTerm *render_csg_term(double m[16]) const;
-#endif
 	virtual QString dump(QString indent) const;
 };
 
@@ -363,9 +390,7 @@ public:
 #ifdef ENABLE_CGAL
 	virtual CGAL_Nef_polyhedron render_cgal_nef_polyhedron() const;
 #endif
-#ifdef ENABLE_OPENCSG
 	virtual CSGTerm *render_csg_term(double m[16]) const;
-#endif
 };
 
 extern int progress_report_count;
@@ -428,6 +453,7 @@ public:
 	AbstractNode *root_node;
 	CSGTerm *root_raw_term;
 	CSGTerm *root_norm_term;
+	CSGChain *root_chain;
 #ifdef ENABLE_CGAL
 	CGAL_Nef_polyhedron *root_N;
 #endif
@@ -460,7 +486,7 @@ public:
 	QAction *actViewModeCGALSurface;
 	QAction *actViewModeCGALGrid;
 #endif
-	QAction *actViewModeTrownTogether;
+	QAction *actViewModeThrownTogether;
 	void viewModeActionsUncheck();
 
 private slots:
@@ -471,7 +497,7 @@ private slots:
 	void viewModeCGALSurface();
 	void viewModeCGALGrid();
 #endif
-	void viewModeTrownTogether();
+	void viewModeThrownTogether();
 };
 
 extern AbstractModule *parse(const char *text, int debug);

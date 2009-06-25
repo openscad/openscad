@@ -47,6 +47,19 @@ void GLView::initializeGL()
 	glDepthRange(-FAR_FAR_AWAY, +FAR_FAR_AWAY);
 
 	glClearColor(1.0, 1.0, 0.9, 0.0);
+
+#if 0
+	GLfloat light_diffuse[] = {1.0, 1.0, 1.0, 1.0};
+	GLfloat light_position[] = {1.0, 1.0, -1.0, 0.0};
+
+	glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse);
+	glLightfv(GL_LIGHT0, GL_POSITION, light_position);
+	glEnable(GL_LIGHT0);
+
+	glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
+	glEnable(GL_COLOR_MATERIAL);
+	glEnable(GL_LIGHTING);
+#endif
 }
 
 void GLView::resizeGL(int w, int h)
@@ -56,7 +69,7 @@ void GLView::resizeGL(int w, int h)
 
 void GLView::paintGL()
 {
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
@@ -68,7 +81,10 @@ void GLView::paintGL()
 	glRotated(object_rot_y, 1.0, 0.0, 0.0);
 	glRotated(object_rot_z, 0.0, 0.0, 1.0);
 
+	glDepthFunc(GL_LESS);
+
 #if 0
+	glLineWidth(1);
 	glColor3d(0.0, 0.0, 1.0);
 	glBegin(GL_LINES);
 	glVertex3d(0, 0, 0); glVertex3d(10, 0, 0);
@@ -77,6 +93,7 @@ void GLView::paintGL()
 	glEnd();
 #endif
 
+	glLineWidth(5);
 	glColor3d(1.0, 0.0, 0.0);
 
 	if (renderfunc)

@@ -164,3 +164,45 @@ QString CSGTerm::dump()
 		return QString("(%1 - %2)").arg(left->dump(), right->dump());
 	return label;
 }
+
+CSGChain::CSGChain()
+{
+}
+
+void CSGChain::add(PolySet *polyset, CSGTerm::type_e type, QString label)
+{
+	polysets.append(polyset);
+	types.append(type);
+	labels.append(label);
+}
+
+void CSGChain::import(CSGTerm *term, CSGTerm::type_e type)
+{
+	if (term->type == CSGTerm::PRIMITIVE) {
+		add(term->polyset, type, term->label);
+	} else {
+		import(term->left, type);
+		import(term->right, term->type);
+	}
+}
+
+QString CSGChain::dump()
+{
+	QString text;
+	for (int i = 0; i < types.size(); i++)
+	{
+		if (types[i] == CSGTerm::UNION) {
+			if (i != 0)
+				text += "\n";
+			text += "+";
+		}
+		if (types[i] == CSGTerm::DIFFERENCE)
+			text += " -";
+		if (types[i] == CSGTerm::INTERSECTION)
+			text += " *";
+		text += labels[i];
+	}
+	text += "\n";
+	return text;
+}
+

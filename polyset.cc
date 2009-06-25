@@ -41,11 +41,32 @@ void PolySet::insert_vertex(double x, double y, double z)
 	polygons.last().insert(0, Point(x, y, z));
 }
 
-void PolySet::render_opengl() const
+void PolySet::render_surface(colormode_e colormode) const
 {
+	if (colormode == COLOR_MATERIAL)
+		glColor3ub(249, 215, 44);
+	if (colormode == COLOR_CUTOUT)
+		glColor3ub(157, 203, 81);
 	for (int i = 0; i < polygons.size(); i++) {
 		const Polygon *poly = &polygons[i];
 		glBegin(GL_POLYGON);
+		for (int j = 0; j < poly->size(); j++) {
+			const Point *p = &poly->at(j);
+			glVertex3d(p->x, p->y, p->z);
+		}
+		glEnd();
+	}
+}
+
+void PolySet::render_edges(colormode_e colormode) const
+{
+	if (colormode == COLOR_MATERIAL)
+		glColor3ub(255, 236, 94);
+	if (colormode == COLOR_CUTOUT)
+		glColor3ub(171, 216, 86);
+	for (int i = 0; i < polygons.size(); i++) {
+		const Polygon *poly = &polygons[i];
+		glBegin(GL_LINE_STRIP);
 		for (int j = 0; j < poly->size(); j++) {
 			const Point *p = &poly->at(j);
 			glVertex3d(p->x, p->y, p->z);
