@@ -60,9 +60,9 @@ MainWindow::MainWindow(const char *filename)
 
 	{
 		QMenu *menu = menuBar()->addMenu("&Design");
-		menu->addAction("&Compile", this, SLOT(actionCompile()));
+		menu->addAction("&Compile", this, SLOT(actionCompile()), QKeySequence(Qt::Key_F5));
 #ifdef ENABLE_CGAL
-		menu->addAction("Compile and &Render (CGAL)", this, SLOT(actionRenderCGAL()));
+		menu->addAction("Compile and &Render (CGAL)", this, SLOT(actionRenderCGAL()), QKeySequence(Qt::Key_F6));
 #endif
 		menu->addAction("Display &AST...", this, SLOT(actionDisplayAST()));
 		menu->addAction("Display CSG &Tree...", this, SLOT(actionDisplayCSGTree()));
@@ -291,6 +291,7 @@ void MainWindow::actionCompile()
 	root_chain = new CSGChain();
 	root_chain->import(root_norm_term);
 
+	screen->updateGL();
 	console->append("Compilation finished.");
 }
 
@@ -397,10 +398,14 @@ void MainWindow::viewModeActionsUncheck()
 class DLPrim : public OpenCSG::Primitive
 {
 public:
-	DLPrim(unsigned int displayListId, OpenCSG::Operation operation, unsigned int convexity) :
-			OpenCSG::Primitive(operation, convexity), id(displayListId) { }
-	virtual void render() { glCallList(id); }
+	DLPrim(OpenCSG::Operation operation, unsigned int convexity) :
+			OpenCSG::Primitive(operation, convexity), id(0), color(0) { }
+	virtual void render() {
+		if (id)
+			glCallList(id);
+	}
 	unsigned int id;
+	unsigned int color;
 };
 
 static void renderGLviaOpenCSG(void *vp)
@@ -411,31 +416,76 @@ static void renderGLviaOpenCSG(void *vp)
 		glew_initialized = 1;
 		glewInit();
 	}
+
+	glPushMatrix();
+	glLoadIdentity();
+
+	GLfloat light_diffuse[] = {1.0, 1.0, 1.0, 1.0};
+	GLfloat light_position[] = {-0.3, -1.0, 0.3, 0.0};
+
+	glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse);
+	glLightfv(GL_LIGHT0, GL_POSITION, light_position);
+	glEnable(GL_LIGHT0);
+
+	glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
+	glEnable(GL_COLOR_MATERIAL);
+	glEnable(GL_LIGHTING);
+
+	glPopMatrix();
+
 	if (m->root_chain) {
-		glDepthFunc(GL_LEQUAL);
-		/* FIXME */
-		for (int i = 0; i < m->root_chain->polysets.size(); i++) {
-			if (m->root_chain->types[i] == CSGTerm::DIFFERENCE) {
-				m->root_chain->polysets[i]->render_surface(PolySet::COLOR_CUTOUT);
-				m->root_chain->polysets[i]->render_edges(PolySet::COLOR_CUTOUT);
-			} else {
-				m->root_chain->polysets[i]->render_surface(PolySet::COLOR_MATERIAL);
-				m->root_chain->polysets[i]->render_edges(PolySet::COLOR_MATERIAL);
+		std::vector<OpenCSG::Primitive*> primitives;
+		for (int i = 0;; i++)
+		{
+			bool last = i == m->root_chain->polysets.size();
+
+			if (last || m->root_chain->types[i] == CSGTerm::UNION)
+			{
+				OpenCSG::render(primitives, OpenCSG::Goldfeather, OpenCSG::NoDepthComplexitySampling);
+				glDepthFunc(GL_EQUAL);
+				for (unsigned int j = 0; j < primitives.size(); j++) {
+					DLPrim *p = (DLPrim*)primitives[j];
+					if (p->color)
+						glColor3f(0.0, 0.8, 0);
+					else
+						glColor3f(0.8, 0, 0);
+					glCallList(p->id);
+					glDeleteLists(p->id, 1);
+					delete p;
+				}
+				glDepthFunc(GL_LESS);
+
+				primitives.clear();
 			}
+
+			if (last)
+				break;
+
+
+			DLPrim *prim = new DLPrim(m->root_chain->types[i] == CSGTerm::DIFFERENCE ? OpenCSG::Subtraction : OpenCSG::Intersection, 1);
+
+			prim->id = glGenLists(1);
+			prim->color = m->root_chain->types[i] == CSGTerm::DIFFERENCE ? 1 : 0;
+			glNewList(prim->id, GL_COMPILE);
+			m->root_chain->polysets[i]->render_surface(PolySet::COLOR_NONE);
+			glEndList();
+
+			primitives.push_back(prim);
 		}
 	} else {
-		GLuint id1 = glGenLists(1);
-		glNewList(id1, GL_COMPILE);
+		DLPrim *box = new DLPrim(OpenCSG::Intersection, 1);
+		box->id = glGenLists(1);
+		glNewList(box->id, GL_COMPILE);
 		glutSolidCube(1.8);
 		glEndList();
 
-		GLuint id2 = glGenLists(1);
-		glNewList(id2, GL_COMPILE);
+		DLPrim *sphere = new DLPrim(OpenCSG::Subtraction, 1);
+		sphere->id = glGenLists(1);
+		sphere->color = 1;
+		glNewList(sphere->id, GL_COMPILE);
 		glutSolidSphere(1.2, 20, 20);
 		glEndList();
 
-		DLPrim* box = new DLPrim(id1, OpenCSG::Intersection, 1);
-		DLPrim* sphere = new DLPrim(id2, OpenCSG::Subtraction, 1);
 		std::vector<OpenCSG::Primitive*> primitives;
 
 		primitives.push_back(box);
@@ -444,10 +494,14 @@ static void renderGLviaOpenCSG(void *vp)
 		OpenCSG::render(primitives, OpenCSG::Goldfeather, OpenCSG::NoDepthComplexitySampling);
 
 		glDepthFunc(GL_EQUAL);
-		glColor3f(1.0, 0, 0);
 		for (unsigned int i = 0; i < primitives.size(); i++) {
-			primitives[i]->render();
-			glDeleteLists(((DLPrim*)primitives[i])->id, 1);
+			DLPrim *p = (DLPrim*)primitives[i];
+			if (p->color)
+				glColor3f(0.0, 0.8, 0);
+			else
+				glColor3f(0.8, 0, 0);
+			glCallList(p->id);
+			glDeleteLists(p->id, 1);
 			delete primitives[i];
 		}
 		glDepthFunc(GL_LESS);

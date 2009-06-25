@@ -227,25 +227,25 @@ PolySet *PrimitiveNode::render_polyset(render_mode_e mode) const
 		for (int i=0; i<fragments; i++) {
 			int j = (i+1) % fragments;
 			p->append_poly();
-			p->append_vertex(circle1[i].x, circle1[i].y, z1);
-			p->append_vertex(circle2[i].x, circle2[i].y, z2);
-			p->append_vertex(circle1[j].x, circle1[j].y, z1);
+			p->insert_vertex(circle1[i].x, circle1[i].y, z1);
+			p->insert_vertex(circle2[i].x, circle2[i].y, z2);
+			p->insert_vertex(circle1[j].x, circle1[j].y, z1);
 			p->append_poly();
-			p->append_vertex(circle2[i].x, circle2[i].y, z2);
-			p->append_vertex(circle2[j].x, circle2[j].y, z2);
-			p->append_vertex(circle1[j].x, circle1[j].y, z1);
+			p->insert_vertex(circle2[i].x, circle2[i].y, z2);
+			p->insert_vertex(circle2[j].x, circle2[j].y, z2);
+			p->insert_vertex(circle1[j].x, circle1[j].y, z1);
 		}
 
 		if (r1 > 0) {
 			p->append_poly();
 			for (int i=0; i<fragments; i++)
-				p->append_vertex(circle1[i].x, circle1[i].y, z1);
+				p->insert_vertex(circle1[i].x, circle1[i].y, z1);
 		}
 
 		if (r2 > 0) {
 			p->append_poly();
 			for (int i=0; i<fragments; i++)
-				p->insert_vertex(circle2[i].x, circle2[i].y, z2);
+				p->append_vertex(circle2[i].x, circle2[i].y, z2);
 		}
 	}
 

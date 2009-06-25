@@ -48,5 +48,34 @@ module test003()
 	}
 }
 
-test003();
+module test004()
+{
+	intersection() {
+		difference() {
+			cylinder(h = 5, r1 = 2, r2 = 0.5, center = true);
+			cylinder(h = 6, r1 = 0.7, r2 = 0.7, center = true);
+		}
+		cube(3);
+	}
+}
+
+module test005()
+{
+	difference() {
+		union() {
+			cube([3 3 3], center = true);
+			cube([4 1.5 1.5], center = true);
+			cube([1.5 4 1.5], center = true);
+			cube([1.5 1.5 4], center = true);
+		}
+		union() {
+			cube([5 1 1], center = true);
+			cube([1 5 1], center = true);
+			cube([1 1 5], center = true);
+		}
+	}
+}
+
+test005();
+
 

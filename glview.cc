@@ -27,9 +27,9 @@
 
 GLView::GLView(QWidget *parent) : QGLWidget(parent)
 {
-	viewer_distance = 10;
-	object_rot_y = 0;
-	object_rot_z = 0;
+	viewer_distance = 20;
+	object_rot_y = 35;
+	object_rot_z = 25;
 
 	mouse_drag_active = false;
 	last_mouse_x = 0;
@@ -47,19 +47,6 @@ void GLView::initializeGL()
 	glDepthRange(-FAR_FAR_AWAY, +FAR_FAR_AWAY);
 
 	glClearColor(1.0, 1.0, 0.9, 0.0);
-
-#if 0
-	GLfloat light_diffuse[] = {1.0, 1.0, 1.0, 1.0};
-	GLfloat light_position[] = {1.0, 1.0, -1.0, 0.0};
-
-	glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse);
-	glLightfv(GL_LIGHT0, GL_POSITION, light_position);
-	glEnable(GL_LIGHT0);
-
-	glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
-	glEnable(GL_COLOR_MATERIAL);
-	glEnable(GL_LIGHTING);
-#endif
 }
 
 void GLView::resizeGL(int w, int h)
@@ -82,6 +69,7 @@ void GLView::paintGL()
 	glRotated(object_rot_z, 0.0, 0.0, 1.0);
 
 	glDepthFunc(GL_LESS);
+	glDisable(GL_LIGHTING);
 
 #if 0
 	glLineWidth(1);
@@ -93,7 +81,7 @@ void GLView::paintGL()
 	glEnd();
 #endif
 
-	glLineWidth(5);
+	glLineWidth(2);
 	glColor3d(1.0, 0.0, 0.0);
 
 	if (renderfunc)

@@ -41,6 +41,18 @@ void PolySet::insert_vertex(double x, double y, double z)
 	polygons.last().insert(0, Point(x, y, z));
 }
 
+static void set_opengl_normal(double x1, double y1, double z1, double x2, double y2, double z2, double x3, double y3, double z3)
+{
+	double ax = x1 - x2, ay = y1 - y2, az = z1 - z2;
+	double bx = x3 - x2, by = y3 - y2, bz = z3 - z2;
+	double nx = ay*bz - az*by;
+	double ny = az*bx - ax*bz;
+	double nz = ax*by - ay*bx;
+	double n_scale = 1.0 / sqrt(nx*nx + ny*ny + nz*nz);
+	nx /= n_scale; ny /= n_scale; nz /= n_scale;
+	glNormal3d(-nx, -ny, -nz);
+}
+
 void PolySet::render_surface(colormode_e colormode) const
 {
 	if (colormode == COLOR_MATERIAL)
@@ -50,6 +62,9 @@ void PolySet::render_surface(colormode_e colormode) const
 	for (int i = 0; i < polygons.size(); i++) {
 		const Polygon *poly = &polygons[i];
 		glBegin(GL_POLYGON);
+		set_opengl_normal(poly->at(0).x, poly->at(0).y, poly->at(0).z,
+				poly->at(1).x, poly->at(1).y, poly->at(1).z,
+				poly->at(2).x, poly->at(2).y, poly->at(2).z);
 		for (int j = 0; j < poly->size(); j++) {
 			const Point *p = &poly->at(j);
 			glVertex3d(p->x, p->y, p->z);
