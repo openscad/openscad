@@ -84,4 +84,8 @@ module test006()
 	}
 }
 
-cylinder(h=5, r1=3, r2 = 10, center = true);
+test006();
+
+// cylinder(h=5, r1=3, r2 = 10, center = true);
+// cube(10, center = true);
+// sphere(5);

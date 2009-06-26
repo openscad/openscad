@@ -426,9 +426,9 @@ public:
 	double viewer_distance;
 	double object_rot_y;
 	double object_rot_z;
-	double w_h_ratio;
 
-	GLint shaderinfo[10];
+	double w_h_ratio;
+	GLint shaderinfo[11];
 
 	GLView(QWidget *parent = NULL);
 

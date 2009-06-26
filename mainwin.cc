@@ -511,6 +511,17 @@ static void renderGLThrownTogether(void *vp)
 	MainWindow *m = (MainWindow*)vp;
 	if (m->root_chain) {
 		glDepthFunc(GL_LEQUAL);
+#if 0
+		glUseProgram(m->screen->shaderinfo[0]);
+		for (int i = 0; i < m->root_chain->polysets.size(); i++) {
+			if (m->root_chain->types[i] == CSGTerm::DIFFERENCE) {
+				m->root_chain->polysets[i]->render_surface(PolySet::COLOR_CUTOUT, m->screen->shaderinfo);
+			} else {
+				m->root_chain->polysets[i]->render_surface(PolySet::COLOR_MATERIAL, m->screen->shaderinfo);
+			}
+		}
+		glUseProgram(0);
+#else
 		for (int i = 0; i < m->root_chain->polysets.size(); i++) {
 			if (m->root_chain->types[i] == CSGTerm::DIFFERENCE) {
 				m->root_chain->polysets[i]->render_surface(PolySet::COLOR_CUTOUT);
@@ -520,6 +531,7 @@ static void renderGLThrownTogether(void *vp)
 				m->root_chain->polysets[i]->render_edges(PolySet::COLOR_MATERIAL);
 			}
 		}
+#endif
 	}
 }
 
