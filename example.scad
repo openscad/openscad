@@ -76,9 +76,12 @@ module test005()
 	}
 }
 
-// test005();
-
-difference() {
-	cube(8, center = true);
-	sphere(5);
+module test006()
+{
+	difference() {
+		cube(8, center = true);
+		sphere(5);
+	}
 }
+
+cylinder(h=5, r1=3, r2 = 10, center = true);

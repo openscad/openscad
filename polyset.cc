@@ -41,18 +41,6 @@ void PolySet::insert_vertex(double x, double y, double z)
 	polygons.last().insert(0, Point(x, y, z));
 }
 
-static void set_opengl_normal(double x1, double y1, double z1, double x2, double y2, double z2, double x3, double y3, double z3)
-{
-	double ax = x1 - x2, ay = y1 - y2, az = z1 - z2;
-	double bx = x3 - x2, by = y3 - y2, bz = z3 - z2;
-	double nx = ay*bz - az*by;
-	double ny = az*bx - ax*bz;
-	double nz = ax*by - ay*bx;
-	double n_scale = 1.0 / sqrt(nx*nx + ny*ny + nz*nz);
-	nx /= n_scale; ny /= n_scale; nz /= n_scale;
-	glNormal3d(-nx, -ny, -nz);
-}
-
 void PolySet::render_surface(colormode_e colormode, GLint *shaderinfo) const
 {
 	if (colormode == COLOR_MATERIAL) {
@@ -71,21 +59,26 @@ void PolySet::render_surface(colormode_e colormode, GLint *shaderinfo) const
 	}
 	for (int i = 0; i < polygons.size(); i++) {
 		const Polygon *poly = &polygons[i];
-		glBegin(GL_POLYGON);
-		set_opengl_normal(poly->at(0).x, poly->at(0).y, poly->at(0).z,
-				poly->at(1).x, poly->at(1).y, poly->at(1).z,
-				poly->at(2).x, poly->at(2).y, poly->at(2).z);
-		for (int j = 0; j < poly->size(); j++) {
-			const Point *p = &poly->at(j);
+		
+		glBegin(GL_TRIANGLES);
+		for (int j = 2; j < poly->size(); j++) {
+			const Point *p0 = &poly->at(0);
+			const Point *p1 = &poly->at(j-1);
+			const Point *p2 = &poly->at(j);
 			if (shaderinfo) {
-				if (j%3 == 0)
-					glVertexAttrib3d(shaderinfo[3], 1.0, 1.0, 0.0);
-				if (j%3 == 1)
-					glVertexAttrib3d(shaderinfo[3], 1.0, 0.0, 1.0);
-				if (j%3 == 2)
-					glVertexAttrib3d(shaderinfo[3], 0.0, 1.0, 1.0);
+				double e0 = j == 2 ? 1.0 : 0.0;
+				double e2 = j == poly->size()-1 ? 1.0 : 0.0;
+				glVertexAttrib3d(shaderinfo[3], e0, 0.0, e2);
+				glVertex3d(p0->x, p0->y, p0->z);
+				glVertexAttrib3d(shaderinfo[3], e0, 1.0, 0.0);
+				glVertex3d(p1->x, p1->y, p1->z);
+				glVertexAttrib3d(shaderinfo[3], 0.0, 1.0, e2);
+				glVertex3d(p2->x, p2->y, p2->z);
+			} else {
+				glVertex3d(p0->x, p0->y, p0->z);
+				glVertex3d(p1->x, p1->y, p1->z);
+				glVertex3d(p2->x, p2->y, p2->z);
 			}
-			glVertex3d(p->x, p->y, p->z);
 		}
 		glEnd();
 	}
