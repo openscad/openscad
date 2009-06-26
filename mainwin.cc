@@ -397,19 +397,15 @@ void MainWindow::viewModeActionsUncheck()
 
 #ifdef ENABLE_OPENCSG
 
-#include <GL/glut.h>
-
-class DLPrim : public OpenCSG::Primitive
+class OpenCSGPrim : public OpenCSG::Primitive
 {
 public:
-	DLPrim(OpenCSG::Operation operation, unsigned int convexity) :
-			OpenCSG::Primitive(operation, convexity), id(0), color(0) { }
+	OpenCSGPrim(OpenCSG::Operation operation, unsigned int convexity) :
+			OpenCSG::Primitive(operation, convexity) { }
+	PolySet *p;
 	virtual void render() {
-		if (id)
-			glCallList(id);
+		p->render_surface(PolySet::COLOR_NONE);
 	}
-	unsigned int id;
-	unsigned int color;
 };
 
 static void renderGLviaOpenCSG(void *vp)
@@ -421,24 +417,9 @@ static void renderGLviaOpenCSG(void *vp)
 		glewInit();
 	}
 
-	glPushMatrix();
-	glLoadIdentity();
-
-	GLfloat light_diffuse[] = {1.0, 1.0, 1.0, 1.0};
-	GLfloat light_position[] = {-0.3, -1.0, 0.3, 0.0};
-
-	glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse);
-	glLightfv(GL_LIGHT0, GL_POSITION, light_position);
-	glEnable(GL_LIGHT0);
-
-	glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
-	glEnable(GL_COLOR_MATERIAL);
-	glEnable(GL_LIGHTING);
-
-	glPopMatrix();
-
 	if (m->root_chain) {
 		std::vector<OpenCSG::Primitive*> primitives;
+		int j = 0;
 		for (int i = 0;; i++)
 		{
 			bool last = i == m->root_chain->polysets.size();
@@ -447,15 +428,17 @@ static void renderGLviaOpenCSG(void *vp)
 			{
 				OpenCSG::render(primitives, OpenCSG::Goldfeather, OpenCSG::NoDepthComplexitySampling);
 				glDepthFunc(GL_EQUAL);
-				for (unsigned int j = 0; j < primitives.size(); j++) {
-					DLPrim *p = (DLPrim*)primitives[j];
-					if (p->color)
-						glColor3f(0.0, 0.8, 0);
-					else
-						glColor3f(0.8, 0, 0);
-					glCallList(p->id);
-					glDeleteLists(p->id, 1);
-					delete p;
+				for (; j < i; j++) {
+					if (m->root_chain->types[j] == CSGTerm::DIFFERENCE) {
+						m->root_chain->polysets[j]->render_surface(PolySet::COLOR_CUTOUT);
+						m->root_chain->polysets[j]->render_edges(PolySet::COLOR_CUTOUT);
+					} else {
+						m->root_chain->polysets[j]->render_surface(PolySet::COLOR_MATERIAL);
+						m->root_chain->polysets[j]->render_edges(PolySet::COLOR_MATERIAL);
+					}
+				}
+				for (unsigned int k = 0; k < primitives.size(); k++) {
+					delete primitives[k];
 				}
 				glDepthFunc(GL_LESS);
 
@@ -465,50 +448,11 @@ static void renderGLviaOpenCSG(void *vp)
 			if (last)
 				break;
 
-
-			DLPrim *prim = new DLPrim(m->root_chain->types[i] == CSGTerm::DIFFERENCE ? OpenCSG::Subtraction : OpenCSG::Intersection, 1);
-
-			prim->id = glGenLists(1);
-			prim->color = m->root_chain->types[i] == CSGTerm::DIFFERENCE ? 1 : 0;
-			glNewList(prim->id, GL_COMPILE);
-			m->root_chain->polysets[i]->render_surface(PolySet::COLOR_NONE);
-			glEndList();
-
+			OpenCSGPrim *prim = new OpenCSGPrim(m->root_chain->types[i] == CSGTerm::DIFFERENCE ?
+					OpenCSG::Subtraction : OpenCSG::Intersection, 1);
+			prim->p = m->root_chain->polysets[i];
 			primitives.push_back(prim);
 		}
-	} else {
-		DLPrim *box = new DLPrim(OpenCSG::Intersection, 1);
-		box->id = glGenLists(1);
-		glNewList(box->id, GL_COMPILE);
-		glutSolidCube(1.8);
-		glEndList();
-
-		DLPrim *sphere = new DLPrim(OpenCSG::Subtraction, 1);
-		sphere->id = glGenLists(1);
-		sphere->color = 1;
-		glNewList(sphere->id, GL_COMPILE);
-		glutSolidSphere(1.2, 20, 20);
-		glEndList();
-
-		std::vector<OpenCSG::Primitive*> primitives;
-
-		primitives.push_back(box);
-		primitives.push_back(sphere);
-
-		OpenCSG::render(primitives, OpenCSG::Goldfeather, OpenCSG::NoDepthComplexitySampling);
-
-		glDepthFunc(GL_EQUAL);
-		for (unsigned int i = 0; i < primitives.size(); i++) {
-			DLPrim *p = (DLPrim*)primitives[i];
-			if (p->color)
-				glColor3f(0.0, 0.8, 0);
-			else
-				glColor3f(0.8, 0, 0);
-			glCallList(p->id);
-			glDeleteLists(p->id, 1);
-			delete primitives[i];
-		}
-		glDepthFunc(GL_LESS);
 	}
 }
 

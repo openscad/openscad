@@ -78,5 +78,7 @@ module test005()
 
 // test005();
 
-$fs_preview = 1;
-sphere(5);
+difference() {
+	cube(8, center = true);
+	sphere(5);
+}

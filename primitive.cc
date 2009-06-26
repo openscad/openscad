@@ -141,7 +141,7 @@ void register_builtin_primitive()
 
 int get_fragments_from_r(double r, double fs, double fa)
 {
-	return ceil(fmax(fmin(360.0 / fa, r*M_PI / fs), 5));
+	return (int)ceil(fmax(fmin(360.0 / fa, r*M_PI / fs), 5));
 }
 
 PolySet *PrimitiveNode::render_polyset(render_mode_e mode) const
@@ -234,7 +234,7 @@ PolySet *PrimitiveNode::render_polyset(render_mode_e mode) const
 
 		p->append_poly();
 		for (int i = 0; i < ring[0].fragments; i++)
-			p->insert_vertex(ring[0].points[i].x, ring[0].points[i].y, ring[0].z);
+			p->append_vertex(ring[0].points[i].x, ring[0].points[i].y, ring[0].z);
 
 		for (int i = 0; i < rings-1; i++) {
 			ring_s *r1 = &ring[i];
@@ -252,9 +252,9 @@ PolySet *PrimitiveNode::render_polyset(render_mode_e mode) const
 sphere_next_r1:
 					p->append_poly();
 					int r1j = (r1i+1) % r1->fragments;
-					p->append_vertex(r1->points[r1i].x, r1->points[r1i].y, r1->z);
-					p->append_vertex(r1->points[r1j].x, r1->points[r1j].y, r1->z);
-					p->append_vertex(r2->points[r2i % r2->fragments].x, r2->points[r2i % r2->fragments].y, r2->z);
+					p->insert_vertex(r1->points[r1i].x, r1->points[r1i].y, r1->z);
+					p->insert_vertex(r1->points[r1j].x, r1->points[r1j].y, r1->z);
+					p->insert_vertex(r2->points[r2i % r2->fragments].x, r2->points[r2i % r2->fragments].y, r2->z);
 					r1i++;
 				} else {
 sphere_next_r2:
@@ -270,7 +270,7 @@ sphere_next_r2:
 
 		p->append_poly();
 		for (int i = 0; i < ring[rings-1].fragments; i++)
-			p->append_vertex(ring[rings-1].points[i].x, ring[rings-1].points[i].y, ring[rings-1].z);
+			p->insert_vertex(ring[rings-1].points[i].x, ring[rings-1].points[i].y, ring[rings-1].z);
 	}
 
 	if (type == CYLINDER && h > 0 && r1 >=0 && r2 >= 0 && (r1 > 0 || r2 > 0))

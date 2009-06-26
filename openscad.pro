@@ -6,7 +6,7 @@ DEFINES += "ENABLE_CGAL=1"
 LIBS += -lCGAL -lmpfr
 
 DEFINES += "ENABLE_OPENCSG=1"
-LIBS += -lopencsg -lGLEW -lglut
+LIBS += -lopencsg -lGLEW
 
 LEXSOURCES += lexer.l
 YACCSOURCES += parser.y

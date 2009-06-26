@@ -47,6 +47,64 @@ void GLView::initializeGL()
 	glDepthRange(-FAR_FAR_AWAY, +FAR_FAR_AWAY);
 
 	glClearColor(1.0, 1.0, 0.9, 0.0);
+
+#if 0
+	char *vs_source =
+		"attribute float e1, e2, e3;\n"
+		"varying float ve1, ve2, ve3;\n"
+		"void main() {\n"
+		"       gl_FrontColor = gl_Color;\n"
+		"       gl_Position = ftransform();\n"
+		"       ve1 = e1; ve2 = e2; ve3 = e3;\n"
+		"}\n";
+
+	char *fs_source =
+		"#extension GL_EXT_gpu_shader4 : enable\n"
+		"varying float ve1, ve2, ve3;\n"
+		"void main() {\n"
+		"       gl_FragColor = vec4(1.0,0.0,0.0,1.0);\n"
+		"       if (ve1 > 0.9 || ve2 > 0.9 || ve3 > 0.9)\n"
+		"               gl_FragColor = vec4(0.0,1.0,0.0,1.0);\n"
+		"	gl_FragColor = gl_FrontColor;\n"
+		"}\n";
+
+	GLuint edgeshader_prog = glCreateProgram();
+
+        GLuint vs = glCreateShader(GL_VERTEX_SHADER);
+        glShaderSource(vs, 1, (const GLchar**)&vs_source, NULL);
+        glCompileShader(vs);
+        glAttachShader(edgeshader_prog, vs);
+
+        GLuint fs = glCreateShader(GL_FRAGMENT_SHADER);
+        glShaderSource(fs, 1, (const GLchar**)&fs_source, NULL);
+        glCompileShader(fs);
+        glAttachShader(edgeshader_prog, fs);
+
+	glLinkProgram(edgeshader_prog);
+
+	GLint status;
+	glGetProgramiv(edgeshader_prog, GL_LINK_STATUS, &status);
+	if (status == GL_FALSE) {
+		int loglen;
+		char logbuffer[1000];
+		glGetProgramInfoLog(edgeshader_prog, sizeof(logbuffer), &loglen, logbuffer);
+		fprintf(stderr, "OpenGL Program Linker Error:\n%.*s", loglen, logbuffer);
+	} else {
+		int loglen;
+		char logbuffer[1000];
+		glGetProgramInfoLog(edgeshader_prog, sizeof(logbuffer), &loglen, logbuffer);
+		if (loglen > 0) {
+			fprintf(stderr, "OpenGL Program Link OK:\n%.*s", loglen, logbuffer);
+		}
+		glValidateProgram(edgeshader_prog);
+		glGetProgramInfoLog(edgeshader_prog, sizeof(logbuffer), &loglen, logbuffer);
+		if (loglen > 0) {
+			fprintf(stderr, "OpenGL Program Validation results:\n%.*s", loglen, logbuffer);
+		}
+	}
+
+	glUseProgram(edgeshader_prog);
+#endif
 }
 
 void GLView::resizeGL(int w, int h)
