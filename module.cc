@@ -112,7 +112,7 @@ AbstractNode *Module::evaluate(const Context *ctx, const QVector<QString> &call_
 	c.modules_p = &modules;
 
 	for (int i = 0; i < assignments_var.size(); i++) {
-		c.variables[assignments_var[i]] = assignments_expr[i]->evaluate(&c);
+		c.set_variable(assignments_var[i], assignments_expr[i]->evaluate(&c));
 	}
 
 	AbstractNode *node = new AbstractNode();

@@ -20,25 +20,53 @@
 
 #include "openscad.h"
 
+Context::Context(const Context *parent)
+{
+	this->parent = parent;
+	ctx_stack.append(this);
+}
+
+Context::~Context()
+{
+	ctx_stack.pop_back();
+}
+
 void Context::args(const QVector<QString> &argnames, const QVector<Expression*> &argexpr,
 		const QVector<QString> &call_argnames, const QVector<Value> &call_argvalues)
 {
 	for (int i=0; i<argnames.size(); i++) {
-		variables[argnames[i]] = i < argexpr.size() && argexpr[i] ? argexpr[i]->evaluate(this->parent) : Value();
+		set_variable(argnames[i], i < argexpr.size() && argexpr[i] ? argexpr[i]->evaluate(this->parent) : Value());
 	}
 
 	int posarg = 0;
 	for (int i=0; i<call_argnames.size(); i++) {
 		if (call_argnames[i].isEmpty()) {
-			variables[argnames[posarg++]] = call_argvalues[i];
+			set_variable(argnames[posarg++], call_argvalues[i]);
 		} else {
-			variables[call_argnames[i]] = call_argvalues[i];
+			set_variable(call_argnames[i], call_argvalues[i]);
 		}
 	}
 }
 
+QVector<const Context*> Context::ctx_stack;
+
+void Context::set_variable(QString name, Value value)
+{
+	if (name.startsWith("$"))
+		config_variables[name] = value;
+	else
+		variables[name] = value;
+}
+
 Value Context::lookup_variable(QString name) const
 {
+	if (name.startsWith("$")) {
+		for (int i = ctx_stack.size()-1; i >= 0; i--) {
+			if (ctx_stack[i]->config_variables.contains(name))
+				return ctx_stack[i]->config_variables[name];
+		}
+		return Value();
+	}
 	if (variables.contains(name))
 		return variables[name];
 	if (parent)

@@ -76,6 +76,7 @@ module test005()
 	}
 }
 
-test005();
+// test005();
 
-
+$fs_preview = 1;
+sphere(5);

@@ -245,13 +245,20 @@ class Context
 public:
 	const Context *parent;
 	QHash<QString, Value> variables;
+	QHash<QString, Value> config_variables;
 	const QHash<QString, AbstractFunction*> *functions_p;
 	const QHash<QString, AbstractModule*> *modules_p;
 
-	Context(const Context *parent = NULL) : parent(parent) { }
+	static QVector<const Context*> ctx_stack;
+
+	Context(const Context *parent = NULL);
+	~Context();
+
 	void args(const QVector<QString> &argnames, const QVector<Expression*> &argexpr, const QVector<QString> &call_argnames, const QVector<Value> &call_argvalues);
 
+	void set_variable(QString name, Value value);
 	Value lookup_variable(QString name) const;
+
 	Value evaluate_function(QString name, const QVector<QString> &argnames, const QVector<Value> &argvalues) const;
 	AbstractNode *evaluate_module(QString name, const QVector<QString> &argnames, const QVector<Value> &argvalues, const QVector<AbstractNode*> child_nodes) const;
 };

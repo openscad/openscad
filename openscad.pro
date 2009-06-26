@@ -1,5 +1,5 @@
 
-CONFIG += qt
+CONFIG += qt debug
 TEMPLATE = app
 
 DEFINES += "ENABLE_CGAL=1"

@@ -41,6 +41,8 @@ class PrimitiveNode : public AbstractPolyNode
 public:
 	bool center;
 	double x, y, z, h, r1, r2;
+	double fs_render, fa_render;
+	double fs_preview, fa_preview;
 	primitive_type_e type;
 	PrimitiveNode(primitive_type_e type) : type(type) { }
 	virtual PolySet *render_polyset(render_mode_e mode) const;
@@ -69,6 +71,11 @@ AbstractNode *PrimitiveModule::evaluate(const Context *ctx, const QVector<QStrin
 
 	Context c(ctx);
 	c.args(argnames, argexpr, call_argnames, call_argvalues);
+
+	node->fs_render = c.lookup_variable("$fs_render").num;
+	node->fa_render = c.lookup_variable("$fa_render").num;
+	node->fs_preview = c.lookup_variable("$fs_preview").num;
+	node->fa_preview = c.lookup_variable("$fa_preview").num;
 
 	if (type == CUBE) {
 		Value size = c.lookup_variable("size");
@@ -132,15 +139,16 @@ void register_builtin_primitive()
 	builtin_modules["cylinder"] = new PrimitiveModule(CYLINDER);
 }
 
-int get_fragments_from_r(double r)
+int get_fragments_from_r(double r, double fs, double fa)
 {
-	double fa = 72, fs = 0.5;
-	return ceil(fmax(360.0 / fa, fmax(r*M_PI / fs, 5)));
+	return ceil(fmax(fmin(360.0 / fa, r*M_PI / fs), 5));
 }
 
 PolySet *PrimitiveNode::render_polyset(render_mode_e mode) const
 {
 	PolySet *p = new PolySet();
+	double fs = mode == RENDER_CGAL ? fs_render : fs_preview;
+	double fa = mode == RENDER_CGAL ? fa_render : fa_preview;
 
 	if (type == CUBE && x > 0 && y > 0 && z > 0)
 	{
@@ -208,14 +216,14 @@ PolySet *PrimitiveNode::render_polyset(render_mode_e mode) const
 			double r, z;
 		};
 
-		int rings = get_fragments_from_r(r1);
+		int rings = get_fragments_from_r(r1, fs, fa);
 		ring_s ring[rings];
 
 		for (int i = 0; i < rings; i++) {
 			double phi = (M_PI * (i + 0.5)) / rings;
 			ring[i].r = r1 * sin(phi);
 			ring[i].z = r1 * cos(phi);
-			ring[i].fragments = get_fragments_from_r(ring[i].r);
+			ring[i].fragments = get_fragments_from_r(ring[i].r, fs, fa);
 			ring[i].points = new point2d[ring[i].fragments];
 			for (int j = 0; j < ring[i].fragments; j++) {
 				phi = (M_PI*2*j) / ring[i].fragments;
@@ -267,7 +275,7 @@ sphere_next_r2:
 
 	if (type == CYLINDER && h > 0 && r1 >=0 && r2 >= 0 && (r1 > 0 || r2 > 0))
 	{
-		int fragments = get_fragments_from_r(fmax(r1, r2));
+		int fragments = get_fragments_from_r(fmax(r1, r2), fs, fa);
 
 		double z1, z2;
 		if (center) {
