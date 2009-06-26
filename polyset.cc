@@ -53,33 +53,22 @@ static void set_opengl_normal(double x1, double y1, double z1, double x2, double
 	glNormal3d(-nx, -ny, -nz);
 }
 
-static void set_triangle_point_data(GLint e1, GLint e2, GLint e3)
+void PolySet::render_surface(colormode_e colormode, GLint *shaderinfo) const
 {
-	static int state = 0;
-	if (state == 0) {
-		glVertexAttrib1d(e1, 1.0);
-		glVertexAttrib1d(e2, 1.0);
-		glVertexAttrib1d(e3, 0.0);
-	}
-	if (state == 1) {
-		glVertexAttrib1d(e1, 0.0);
-		glVertexAttrib1d(e2, 1.0);
-		glVertexAttrib1d(e3, 1.0);
-	}
-	if (state == 2) {
-		glVertexAttrib1d(e1, 1.0);
-		glVertexAttrib1d(e2, 0.0);
-		glVertexAttrib1d(e3, 1.0);
-	}
-	state = (state + 1) % 3;
-}
-
-void PolySet::render_surface(colormode_e colormode, GLint e1, GLint e2, GLint e3) const
-{
-	if (colormode == COLOR_MATERIAL)
+	if (colormode == COLOR_MATERIAL) {
 		glColor3ub(249, 215, 44);
-	if (colormode == COLOR_CUTOUT)
+		if (shaderinfo) {
+			glUniform4f(shaderinfo[1], 249 / 255.0, 215 / 255.0, 44 / 255.0, 1.0);
+			glUniform4f(shaderinfo[2], 255 / 255.0, 236 / 255.0, 94 / 255.0, 1.0);
+		}
+	}
+	if (colormode == COLOR_CUTOUT) {
 		glColor3ub(157, 203, 81);
+		if (shaderinfo) {
+			glUniform4f(shaderinfo[1], 157 / 255.0, 203 / 255.0, 81 / 255.0, 1.0);
+			glUniform4f(shaderinfo[2], 171 / 255.0, 216 / 255.0, 86 / 255.0, 1.0);
+		}
+	}
 	for (int i = 0; i < polygons.size(); i++) {
 		const Polygon *poly = &polygons[i];
 		glBegin(GL_POLYGON);
@@ -88,8 +77,14 @@ void PolySet::render_surface(colormode_e colormode, GLint e1, GLint e2, GLint e3
 				poly->at(2).x, poly->at(2).y, poly->at(2).z);
 		for (int j = 0; j < poly->size(); j++) {
 			const Point *p = &poly->at(j);
-			if (e1 && e2 && e3)
-				set_triangle_point_data(e1, e2, e3);
+			if (shaderinfo) {
+				if (j%3 == 0)
+					glVertexAttrib3d(shaderinfo[3], 1.0, 1.0, 0.0);
+				if (j%3 == 1)
+					glVertexAttrib3d(shaderinfo[3], 1.0, 0.0, 1.0);
+				if (j%3 == 2)
+					glVertexAttrib3d(shaderinfo[3], 0.0, 1.0, 1.0);
+			}
 			glVertex3d(p->x, p->y, p->z);
 		}
 		glEnd();

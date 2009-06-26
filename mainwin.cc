@@ -419,9 +419,6 @@ static void renderGLviaOpenCSG(void *vp)
 
 	if (m->root_chain) {
 		std::vector<OpenCSG::Primitive*> primitives;
-		GLint e1 = glGetAttribLocation(m->screen->edgeshader_prog, "e1");
-		GLint e2 = glGetAttribLocation(m->screen->edgeshader_prog, "e2");
-		GLint e3 = glGetAttribLocation(m->screen->edgeshader_prog, "e3");
 		int j = 0;
 		for (int i = 0;; i++)
 		{
@@ -431,12 +428,12 @@ static void renderGLviaOpenCSG(void *vp)
 			{
 				OpenCSG::render(primitives, OpenCSG::Goldfeather, OpenCSG::NoDepthComplexitySampling);
 				glDepthFunc(GL_EQUAL);
-				glUseProgram(m->screen->edgeshader_prog);
+				glUseProgram(m->screen->shaderinfo[0]);
 				for (; j < i; j++) {
 					if (m->root_chain->types[j] == CSGTerm::DIFFERENCE) {
-						m->root_chain->polysets[j]->render_surface(PolySet::COLOR_CUTOUT, e1, e2, e3);
+						m->root_chain->polysets[j]->render_surface(PolySet::COLOR_CUTOUT, m->screen->shaderinfo);
 					} else {
-						m->root_chain->polysets[j]->render_surface(PolySet::COLOR_MATERIAL, e1, e2, e3);
+						m->root_chain->polysets[j]->render_surface(PolySet::COLOR_MATERIAL, m->screen->shaderinfo);
 					}
 				}
 				glUseProgram(0);

@@ -38,7 +38,9 @@ GLView::GLView(QWidget *parent) : QGLWidget(parent)
 
 	renderfunc = NULL;
 	renderfunc_vp = NULL;
-	edgeshader_prog = 0;
+
+	for (int i = 0; i < 10; i++)
+		shaderinfo[i] = 0;
 
 	setMouseTracking(true);
 }
@@ -59,21 +61,21 @@ void GLView::initializeGL()
 
 	if (glewIsSupported("GL_VERSION_2_0"))
 	{
-		char *vs_source =
-			"attribute float e1, e2, e3;\n"
-			"varying float ve1, ve2, ve3;\n"
+		const char *vs_source =
+			"attribute vec3 tripos;\n"
+			"varying vec3 tp;\n"
 			"void main() {\n"
-			"       gl_FrontColor = gl_Color;\n"
-			"       gl_Position = ftransform();\n"
-			"       ve1 = e1; ve2 = e2; ve3 = e3;\n"
+			"  gl_Position = ftransform();\n"
+			"  tp = tripos;\n"
 			"}\n";
 
-		char *fs_source =
-			"varying float ve1, ve2, ve3;\n"
+		const char *fs_source =
+			"uniform vec4 color1, color2;\n"
+			"varying vec3 tp;\n"
 			"void main() {\n"
-			"       gl_FragColor = vec4(249.0/255.0, 215.0/255.0, 44.0/255.0, 1.0);\n"
-			"       if (ve1 > 0.95 || ve2 > 0.95 || ve3 > 0.95)\n"
-			"               gl_FragColor = vec4(255.0/255.0, 236.0/255.0, 94.0/255.0, 1.0);\n"
+			"  gl_FragColor = color1;\n"
+			"  if (tp.x > 0.95 || tp.y > 0.95 || tp.z > 0.95)\n"
+			"    gl_FragColor = color2;\n"
 			"}\n";
 
 		GLuint vs = glCreateShader(GL_VERTEX_SHADER);
@@ -84,10 +86,20 @@ void GLView::initializeGL()
 		glShaderSource(fs, 1, (const GLchar**)&fs_source, NULL);
 		glCompileShader(fs);
 
-		edgeshader_prog = glCreateProgram();
+		GLuint edgeshader_prog = glCreateProgram();
 		glAttachShader(edgeshader_prog, vs);
 		glAttachShader(edgeshader_prog, fs);
 		glLinkProgram(edgeshader_prog);
+
+		shaderinfo[0] = edgeshader_prog;
+		shaderinfo[1] = glGetUniformLocation(edgeshader_prog, "color1");
+		shaderinfo[2] = glGetUniformLocation(edgeshader_prog, "color2");
+		shaderinfo[3] = glGetAttribLocation(edgeshader_prog, "tripos");
+
+		GLenum err = glGetError();
+		if (err != GL_NO_ERROR) {
+			fprintf(stderr, "OpenGL Error: %s\n", gluErrorString(err));
+		}
 
 		GLint status;
 		glGetProgramiv(edgeshader_prog, GL_LINK_STATUS, &status);

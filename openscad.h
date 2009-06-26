@@ -314,7 +314,7 @@ public:
 		COLOR_CUTOUT
 	};
 
-	void render_surface(colormode_e colormode, GLint e1 = 0, GLint e2 = 0, GLint e3 = 0) const;
+	void render_surface(colormode_e colormode, GLint *shaderinfo = NULL) const;
 	void render_edges(colormode_e colormode) const;
 
 #ifdef ENABLE_CGAL
@@ -428,7 +428,7 @@ public:
 	double object_rot_z;
 	double w_h_ratio;
 
-	GLuint edgeshader_prog;
+	GLint shaderinfo[10];
 
 	GLView(QWidget *parent = NULL);
 
