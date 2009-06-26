@@ -41,8 +41,7 @@ class PrimitiveNode : public AbstractPolyNode
 public:
 	bool center;
 	double x, y, z, h, r1, r2;
-	double fs_render, fa_render;
-	double fs_preview, fa_preview;
+	double fs, fa;
 	primitive_type_e type;
 	PrimitiveNode(primitive_type_e type) : type(type) { }
 	virtual PolySet *render_polyset(render_mode_e mode) const;
@@ -72,10 +71,8 @@ AbstractNode *PrimitiveModule::evaluate(const Context *ctx, const QVector<QStrin
 	Context c(ctx);
 	c.args(argnames, argexpr, call_argnames, call_argvalues);
 
-	node->fs_render = c.lookup_variable("$fs_render").num;
-	node->fa_render = c.lookup_variable("$fa_render").num;
-	node->fs_preview = c.lookup_variable("$fs_preview").num;
-	node->fa_preview = c.lookup_variable("$fa_preview").num;
+	node->fs = c.lookup_variable("$fs").num;
+	node->fa = c.lookup_variable("$fa").num;
 
 	if (type == CUBE) {
 		Value size = c.lookup_variable("size");
@@ -147,8 +144,6 @@ int get_fragments_from_r(double r, double fs, double fa)
 PolySet *PrimitiveNode::render_polyset(render_mode_e mode) const
 {
 	PolySet *p = new PolySet();
-	double fs = mode == RENDER_CGAL ? fs_render : fs_preview;
-	double fa = mode == RENDER_CGAL ? fa_render : fa_preview;
 
 	if (type == CUBE && x > 0 && y > 0 && z > 0)
 	{

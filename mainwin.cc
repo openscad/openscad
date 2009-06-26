@@ -32,10 +32,8 @@ MainWindow::MainWindow(const char *filename)
 {
         root_ctx.functions_p = &builtin_functions;
         root_ctx.modules_p = &builtin_modules;
-	root_ctx.set_variable("$fs_render", Value(1.0));
-	root_ctx.set_variable("$fa_render", Value(12.0));
-	root_ctx.set_variable("$fs_preview", Value(1.0));
-	root_ctx.set_variable("$fa_preview", Value(12.0));
+	root_ctx.set_variable("$fs", Value(1.0));
+	root_ctx.set_variable("$fa", Value(12.0));
 
 	root_module = NULL;
 	root_node = NULL;
