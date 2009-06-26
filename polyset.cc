@@ -24,6 +24,8 @@
 
 PolySet::PolySet()
 {
+	for (int i = 0; i < 16; i++)
+		m[i] = i % 5 == 0 ? 1.0 : 0.0;
 }
 
 void PolySet::append_poly()
@@ -39,6 +41,12 @@ void PolySet::append_vertex(double x, double y, double z)
 void PolySet::insert_vertex(double x, double y, double z)
 {
 	polygons.last().insert(0, Point(x, y, z));
+}
+
+void PolySet::setmatrix(double m[16])
+{
+	for (int i = 0; i < 16; i++)
+		this->m[i] = m[i];
 }
 
 static void gl_draw_triangle(GLint *shaderinfo, const PolySet::Point *p0, const PolySet::Point *p1, const PolySet::Point *p2, bool e0, bool e1, bool e2)
@@ -75,6 +83,8 @@ static void gl_draw_triangle(GLint *shaderinfo, const PolySet::Point *p0, const 
 
 void PolySet::render_surface(colormode_e colormode, GLint *shaderinfo) const
 {
+	glPushMatrix();
+	glMultMatrixd(m);
 	if (colormode == COLOR_MATERIAL) {
 		glColor3ub(249, 215, 44);
 #ifdef ENABLE_OPENCSG
@@ -125,10 +135,13 @@ void PolySet::render_surface(colormode_e colormode, GLint *shaderinfo) const
 		}
 		glEnd();
 	}
+	glPopMatrix();
 }
 
 void PolySet::render_edges(colormode_e colormode) const
 {
+	glPushMatrix();
+	glMultMatrixd(m);
 	if (colormode == COLOR_MATERIAL)
 		glColor3ub(255, 236, 94);
 	if (colormode == COLOR_CUTOUT)
@@ -142,6 +155,7 @@ void PolySet::render_edges(colormode_e colormode) const
 		}
 		glEnd();
 	}
+	glPopMatrix();
 }
 
 #ifdef ENABLE_CGAL
@@ -235,6 +249,7 @@ CGAL_Nef_polyhedron AbstractPolyNode::render_cgal_nef_polyhedron() const
 CSGTerm *AbstractPolyNode::render_csg_term(double m[16]) const
 {
 	PolySet *ps = render_polyset(RENDER_OPENCSG);
-	return new CSGTerm(ps, QString("n%1").arg(idx), m);
+	ps->setmatrix(m);
+	return new CSGTerm(ps, QString("n%1").arg(idx));
 }
 

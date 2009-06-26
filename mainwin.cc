@@ -255,6 +255,10 @@ void MainWindow::actionCompile()
 	}
 
 	double m[16];
+
+	for (int i = 0; i < 16; i++)
+		m[i] = i % 5 == 0 ? 1.0 : 0.0;
+
 	root_raw_term = root_node->render_csg_term(m);
 
 	if (!root_raw_term) {

@@ -301,12 +301,15 @@ public:
 	};
 	typedef QList<Point> Polygon;
 	QVector<Polygon> polygons;
+	double m[16];
 
 	PolySet();
 
 	void append_poly();
 	void append_vertex(double x, double y, double z);
 	void insert_vertex(double x, double y, double z);
+
+	void setmatrix(double m[16]);
 
 	enum colormode_e {
 		COLOR_NONE,
@@ -338,9 +341,8 @@ public:
 	CSGTerm *left;
 	CSGTerm *right;
 	int refcounter;
-	double m[16];
 
-	CSGTerm(PolySet *polyset, QString label, double m[16]);
+	CSGTerm(PolySet *polyset, QString label);
 	CSGTerm(type_e type, CSGTerm *left, CSGTerm *right);
 
 	CSGTerm *normalize();

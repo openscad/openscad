@@ -186,7 +186,7 @@ QString Value::dump() const
 		QString text = "[";
 		for (int i=0; i<16; i++) {
 			QString t;
-			t.sprintf("%f", m[i]);
+			t.sprintf("%f", m[i == 15 ? 15 : (i*4) % 15]);
 			if (i % 4 == 0 && i > 0)
 				text += ";";
 			if (i > 0)

@@ -22,15 +22,13 @@
 
 #include "openscad.h"
 
-CSGTerm::CSGTerm(PolySet *polyset, QString label, double m[16])
+CSGTerm::CSGTerm(PolySet *polyset, QString label)
 {
 	this->type = PRIMITIVE;
 	this->polyset = polyset;
 	this->label = label;
 	this->left = NULL;
 	this->right = NULL;
-	for (int i=0; i<16; i++)
-		this->m[i] = m[i];
 	refcounter = 1;
 }
 
@@ -40,8 +38,6 @@ CSGTerm::CSGTerm(type_e type, CSGTerm *left, CSGTerm *right)
 	this->polyset = NULL;
 	this->left = left;
 	this->right = right;
-	for (int i=0; i<16; i++)
-		this->m[i] = 0;
 	refcounter = 1;
 }
 

@@ -87,7 +87,7 @@ Value Expression::evaluate(const Context *context) const
 				Value v = children[i]->evaluate(context);
 				if (v.type != Value::NUMBER)
 					return Value();
-				m[i] = v.num;
+				m[i == 15 ? 15 : (i*4) % 15] = v.num;
 			}
 			return Value(m);
 		}
