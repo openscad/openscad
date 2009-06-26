@@ -22,6 +22,7 @@
 
 #include <QWheelEvent>
 #include <QMouseEvent>
+#include <GL/glew.h>
 
 #define FAR_FAR_AWAY 100000.0
 
@@ -37,74 +38,80 @@ GLView::GLView(QWidget *parent) : QGLWidget(parent)
 
 	renderfunc = NULL;
 	renderfunc_vp = NULL;
+	edgeshader_prog = 0;
 
 	setMouseTracking(true);
 }
 
+extern GLint e1, e2, e3;
+
 void GLView::initializeGL()
 {
+	GLenum err = glewInit();
+	if (GLEW_OK != err) {
+		fprintf(stderr, "GLEW Error: %s\n", glewGetErrorString(err));
+	}
+
 	glEnable(GL_DEPTH_TEST);
 	glDepthRange(-FAR_FAR_AWAY, +FAR_FAR_AWAY);
 
 	glClearColor(1.0, 1.0, 0.9, 0.0);
 
-#if 0
-	char *vs_source =
-		"attribute float e1, e2, e3;\n"
-		"varying float ve1, ve2, ve3;\n"
-		"void main() {\n"
-		"       gl_FrontColor = gl_Color;\n"
-		"       gl_Position = ftransform();\n"
-		"       ve1 = e1; ve2 = e2; ve3 = e3;\n"
-		"}\n";
+	if (glewIsSupported("GL_VERSION_2_0"))
+	{
+		char *vs_source =
+			"attribute float e1, e2, e3;\n"
+			"varying float ve1, ve2, ve3;\n"
+			"void main() {\n"
+			"       gl_FrontColor = gl_Color;\n"
+			"       gl_Position = ftransform();\n"
+			"       ve1 = e1; ve2 = e2; ve3 = e3;\n"
+			"}\n";
 
-	char *fs_source =
-		"#extension GL_EXT_gpu_shader4 : enable\n"
-		"varying float ve1, ve2, ve3;\n"
-		"void main() {\n"
-		"       gl_FragColor = vec4(1.0,0.0,0.0,1.0);\n"
-		"       if (ve1 > 0.9 || ve2 > 0.9 || ve3 > 0.9)\n"
-		"               gl_FragColor = vec4(0.0,1.0,0.0,1.0);\n"
-		"	gl_FragColor = gl_FrontColor;\n"
-		"}\n";
+		char *fs_source =
+			"varying float ve1, ve2, ve3;\n"
+			"void main() {\n"
+			"       gl_FragColor = vec4(249.0/255.0, 215.0/255.0, 44.0/255.0, 1.0);\n"
+			"       if (ve1 > 0.95 || ve2 > 0.95 || ve3 > 0.95)\n"
+			"               gl_FragColor = vec4(255.0/255.0, 236.0/255.0, 94.0/255.0, 1.0);\n"
+			"}\n";
 
-	GLuint edgeshader_prog = glCreateProgram();
+		GLuint vs = glCreateShader(GL_VERTEX_SHADER);
+		glShaderSource(vs, 1, (const GLchar**)&vs_source, NULL);
+		glCompileShader(vs);
 
-        GLuint vs = glCreateShader(GL_VERTEX_SHADER);
-        glShaderSource(vs, 1, (const GLchar**)&vs_source, NULL);
-        glCompileShader(vs);
-        glAttachShader(edgeshader_prog, vs);
+		GLuint fs = glCreateShader(GL_FRAGMENT_SHADER);
+		glShaderSource(fs, 1, (const GLchar**)&fs_source, NULL);
+		glCompileShader(fs);
 
-        GLuint fs = glCreateShader(GL_FRAGMENT_SHADER);
-        glShaderSource(fs, 1, (const GLchar**)&fs_source, NULL);
-        glCompileShader(fs);
-        glAttachShader(edgeshader_prog, fs);
+		edgeshader_prog = glCreateProgram();
+		glAttachShader(edgeshader_prog, vs);
+		glAttachShader(edgeshader_prog, fs);
+		glLinkProgram(edgeshader_prog);
 
-	glLinkProgram(edgeshader_prog);
-
-	GLint status;
-	glGetProgramiv(edgeshader_prog, GL_LINK_STATUS, &status);
-	if (status == GL_FALSE) {
-		int loglen;
-		char logbuffer[1000];
-		glGetProgramInfoLog(edgeshader_prog, sizeof(logbuffer), &loglen, logbuffer);
-		fprintf(stderr, "OpenGL Program Linker Error:\n%.*s", loglen, logbuffer);
+		GLint status;
+		glGetProgramiv(edgeshader_prog, GL_LINK_STATUS, &status);
+		if (status == GL_FALSE) {
+			int loglen;
+			char logbuffer[1000];
+			glGetProgramInfoLog(edgeshader_prog, sizeof(logbuffer), &loglen, logbuffer);
+			fprintf(stderr, "OpenGL Program Linker Error:\n%.*s", loglen, logbuffer);
+		} else {
+			int loglen;
+			char logbuffer[1000];
+			glGetProgramInfoLog(edgeshader_prog, sizeof(logbuffer), &loglen, logbuffer);
+			if (loglen > 0) {
+				fprintf(stderr, "OpenGL Program Link OK:\n%.*s", loglen, logbuffer);
+			}
+			glValidateProgram(edgeshader_prog);
+			glGetProgramInfoLog(edgeshader_prog, sizeof(logbuffer), &loglen, logbuffer);
+			if (loglen > 0) {
+				fprintf(stderr, "OpenGL Program Validation results:\n%.*s", loglen, logbuffer);
+			}
+		}
 	} else {
-		int loglen;
-		char logbuffer[1000];
-		glGetProgramInfoLog(edgeshader_prog, sizeof(logbuffer), &loglen, logbuffer);
-		if (loglen > 0) {
-			fprintf(stderr, "OpenGL Program Link OK:\n%.*s", loglen, logbuffer);
-		}
-		glValidateProgram(edgeshader_prog);
-		glGetProgramInfoLog(edgeshader_prog, sizeof(logbuffer), &loglen, logbuffer);
-		if (loglen > 0) {
-			fprintf(stderr, "OpenGL Program Validation results:\n%.*s", loglen, logbuffer);
-		}
+		fprintf(stdout, "GLEW: GL_VERSION_2_0 is not supported!\n");
 	}
-
-	glUseProgram(edgeshader_prog);
-#endif
 }
 
 void GLView::resizeGL(int w, int h)

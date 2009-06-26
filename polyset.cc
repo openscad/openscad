@@ -53,7 +53,28 @@ static void set_opengl_normal(double x1, double y1, double z1, double x2, double
 	glNormal3d(-nx, -ny, -nz);
 }
 
-void PolySet::render_surface(colormode_e colormode) const
+static void set_triangle_point_data(GLint e1, GLint e2, GLint e3)
+{
+	static int state = 0;
+	if (state == 0) {
+		glVertexAttrib1d(e1, 1.0);
+		glVertexAttrib1d(e2, 1.0);
+		glVertexAttrib1d(e3, 0.0);
+	}
+	if (state == 1) {
+		glVertexAttrib1d(e1, 0.0);
+		glVertexAttrib1d(e2, 1.0);
+		glVertexAttrib1d(e3, 1.0);
+	}
+	if (state == 2) {
+		glVertexAttrib1d(e1, 1.0);
+		glVertexAttrib1d(e2, 0.0);
+		glVertexAttrib1d(e3, 1.0);
+	}
+	state = (state + 1) % 3;
+}
+
+void PolySet::render_surface(colormode_e colormode, GLint e1, GLint e2, GLint e3) const
 {
 	if (colormode == COLOR_MATERIAL)
 		glColor3ub(249, 215, 44);
@@ -67,6 +88,8 @@ void PolySet::render_surface(colormode_e colormode) const
 				poly->at(2).x, poly->at(2).y, poly->at(2).z);
 		for (int j = 0; j < poly->size(); j++) {
 			const Point *p = &poly->at(j);
+			if (e1 && e2 && e3)
+				set_triangle_point_data(e1, e2, e3);
 			glVertex3d(p->x, p->y, p->z);
 		}
 		glEnd();
