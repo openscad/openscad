@@ -47,24 +47,19 @@ MainWindow::MainWindow(const char *filename)
 	root_N = NULL;
 #endif
 
-	if (filename) {
-		this->filename = QString(filename);
-		setWindowTitle(this->filename);
-	} else {
-		setWindowTitle("New Document");
-	}
-
 	{
 		QMenu *menu = menuBar()->addMenu("&File");
 		menu->addAction("&New", this, SLOT(actionNew()));
 		menu->addAction("&Open...", this, SLOT(actionOpen()));
-		menu->addAction("&Save", this, SLOT(actionSave()));
+		menu->addAction("&Save", this, SLOT(actionSave()), QKeySequence(Qt::Key_F2));
 		menu->addAction("Save &As...", this, SLOT(actionSaveAs()));
+		menu->addAction("&Reload", this, SLOT(actionReload()), QKeySequence(Qt::Key_F3));
 		menu->addAction("&Quit", this, SLOT(close()));
 	}
 
 	{
 		QMenu *menu = menuBar()->addMenu("&Design");
+		menu->addAction("&Reload and Compile", this, SLOT(actionReloadCompile()), QKeySequence(Qt::Key_F4));
 		menu->addAction("&Compile", this, SLOT(actionCompile()), QKeySequence(Qt::Key_F5));
 #ifdef ENABLE_CGAL
 		menu->addAction("Compile and &Render (CGAL)", this, SLOT(actionRenderCGAL()), QKeySequence(Qt::Key_F6));
@@ -125,21 +120,11 @@ MainWindow::MainWindow(const char *filename)
 	editor->setTabStopWidth(30);
 
 	if (filename) {
-		QString text;
-		FILE *fp = fopen(filename, "rt");
-		if (!fp) {
-			PRINTA("Failed to open file: %1 (%2)", QString(filename), QString(strerror(errno)));
-		} else {
-			char buffer[513];
-			int rc;
-			while ((rc = fread(buffer, 1, 512, fp)) > 0) {
-				buffer[rc] = 0;
-				text += buffer;
-			}
-			fclose(fp);
-			PRINTA("Loaded design `%1'.", QString(filename));
-		}
-		editor->setPlainText(text);
+		this->filename = QString(filename);
+		setWindowTitle(this->filename);
+		load();
+	} else {
+		setWindowTitle("New Document");
 	}
 
 #ifdef ENABLE_OPENCSG
@@ -164,26 +149,14 @@ MainWindow::~MainWindow()
 #endif
 }
 
-void MainWindow::actionNew()
+void MainWindow::load()
 {
-	filename = QString();
-	setWindowTitle("New Document");
-	editor->setPlainText("");
-}
-
-void MainWindow::actionOpen()
-{
-	current_win = this;
-	QString new_filename = QFileDialog::getOpenFileName(this, "Open File", "", "OpenSCAD Designs (*.scad)");
-	if (!new_filename.isEmpty())
+	if (!filename.isEmpty())
 	{
-		filename = new_filename;
-		setWindowTitle(filename);
-
 		QString text;
 		FILE *fp = fopen(filename.toAscii().data(), "rt");
 		if (!fp) {
-			PRINTA("Failed to open file: %1 (%2)", QString(filename), QString(strerror(errno)));
+			PRINTA("Failed to open file: %1 (%2)", filename, QString(strerror(errno)));
 		} else {
 			char buffer[513];
 			int rc;
@@ -192,34 +165,9 @@ void MainWindow::actionOpen()
 				text += buffer;
 			}
 			fclose(fp);
-			PRINTA("Loaded design `%1'.", QString(filename));
+			PRINTA("Loaded design `%1'.", filename);
 		}
 		editor->setPlainText(text);
-	}
-	current_win = NULL;
-}
-
-void MainWindow::actionSave()
-{
-	current_win = this;
-	FILE *fp = fopen(filename.toAscii().data(), "wt");
-	if (!fp) {
-		PRINTA("Failed to open file for writing: %1 (%2)", QString(filename), QString(strerror(errno)));
-	} else {
-		fprintf(fp, "%s", editor->toPlainText().toAscii().data());
-		fclose(fp);
-		PRINTA("Saved design `%1'.", QString(filename));
-	}
-	current_win = NULL;
-}
-
-void MainWindow::actionSaveAs()
-{
-	QString new_filename = QFileDialog::getSaveFileName(this, "Save File", filename, "OpenSCAD Designs (*.scad)");
-	if (!new_filename.isEmpty()) {
-		filename = new_filename;
-		setWindowTitle(filename);
-		actionSave();
 	}
 }
 
@@ -305,6 +253,92 @@ void MainWindow::compile()
 fail:
 		PRINT("ERROR: Compilation failed!");
 	}
+}
+
+void MainWindow::actionNew()
+{
+	filename = QString();
+	setWindowTitle("New Document");
+	editor->setPlainText("");
+}
+
+void MainWindow::actionOpen()
+{
+	current_win = this;
+	QString new_filename = QFileDialog::getOpenFileName(this, "Open File", "", "OpenSCAD Designs (*.scad)");
+	if (!new_filename.isEmpty())
+	{
+		filename = new_filename;
+		setWindowTitle(filename);
+
+		QString text;
+		FILE *fp = fopen(filename.toAscii().data(), "rt");
+		if (!fp) {
+			PRINTA("Failed to open file: %1 (%2)", QString(filename), QString(strerror(errno)));
+		} else {
+			char buffer[513];
+			int rc;
+			while ((rc = fread(buffer, 1, 512, fp)) > 0) {
+				buffer[rc] = 0;
+				text += buffer;
+			}
+			fclose(fp);
+			PRINTA("Loaded design `%1'.", QString(filename));
+		}
+		editor->setPlainText(text);
+	}
+	current_win = NULL;
+}
+
+void MainWindow::actionSave()
+{
+	current_win = this;
+	FILE *fp = fopen(filename.toAscii().data(), "wt");
+	if (!fp) {
+		PRINTA("Failed to open file for writing: %1 (%2)", QString(filename), QString(strerror(errno)));
+	} else {
+		fprintf(fp, "%s", editor->toPlainText().toAscii().data());
+		fclose(fp);
+		PRINTA("Saved design `%1'.", QString(filename));
+	}
+	current_win = NULL;
+}
+
+void MainWindow::actionSaveAs()
+{
+	QString new_filename = QFileDialog::getSaveFileName(this, "Save File", filename, "OpenSCAD Designs (*.scad)");
+	if (!new_filename.isEmpty()) {
+		filename = new_filename;
+		setWindowTitle(filename);
+		actionSave();
+	}
+}
+
+void MainWindow::actionReload()
+{
+	current_win = this;
+	load();
+	current_win = NULL;
+}
+
+void MainWindow::actionReloadCompile()
+{
+	current_win = this;
+	console->clear();
+
+	load();
+	compile();
+
+#ifdef ENABLE_OPENCSG
+	if (!actViewModeOpenCSG->isChecked() && !actViewModeThrownTogether->isChecked()) {
+		viewModeOpenCSG();
+	}
+	else
+#endif
+	{
+		screen->updateGL();
+	}
+	current_win = NULL;
 }
 
 void MainWindow::actionCompile()

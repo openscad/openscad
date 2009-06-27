@@ -474,16 +474,19 @@ public:
 	MainWindow(const char *filename = 0);
 	~MainWindow();
 
+private:
+	void load();
+	void compile();
+
 private slots:
 	void actionNew();
 	void actionOpen();
 	void actionSave();
 	void actionSaveAs();
-
-private:
-	void compile();
+	void actionReload();
 
 private slots:
+	void actionReloadCompile();
 	void actionCompile();
 #ifdef ENABLE_CGAL
 	void actionRenderCGAL();
