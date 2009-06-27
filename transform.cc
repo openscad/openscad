@@ -100,9 +100,11 @@ AbstractNode *TransformModule::evaluate(const Context *ctx, const QVector<QStrin
 		}
 
 		if (val_v.type == Value::VECTOR) {
-			x = val_v.x; y = val_v.y; z = val_v.z;
-			double sn = 1.0 / sqrt(x*x + y*y + z*z);
-			x *= sn; y *= sn; z *= sn;
+			if (val_v.x != 0.0 || val_v.y != 0.0 || val_v.z != 0.0) {
+				x = val_v.x; y = val_v.y; z = val_v.z;
+				double sn = 1.0 / sqrt(x*x + y*y + z*z);
+				x *= sn; y *= sn; z *= sn;
+			}
 		}
 
 		double c = cos(a*M_PI/180.0);

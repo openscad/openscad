@@ -489,7 +489,20 @@ void MainWindow::viewModeOpenCSG()
 
 #ifdef ENABLE_CGAL
 
+// a little hackish: we need access to default-private members of
+// CGAL::OGL::Nef3_Converter so we can implement our own draw function
+// that does not scale the model. so we define 'class' to 'struct'
+// for this header..
+//
+// theoretically there could be two problems:
+// 1.) defining language keyword with the pre processor is illegal afair
+// 2.) the compiler could use a different memory layout or name mangling for structs
+//
+// both does not seam to be the case with todays compilers...
+//
+#define class struct
 #include <CGAL/Nef_3/OGL_helper.h>
+#undef class
 
 static void renderGLviaCGAL(void *vp)
 {
@@ -502,7 +515,18 @@ static void renderGLviaCGAL(void *vp)
 			P.set_style(CGAL::OGL::SNC_BOUNDARY);
 		if (m->actViewModeCGALGrid->isChecked())
 			P.set_style(CGAL::OGL::SNC_SKELETON);
+#if 0
 		P.draw();
+#else
+		if (P.style == CGAL::OGL::SNC_BOUNDARY) {
+		  glCallList(P.object_list_+2);
+		}
+		glCallList(P.object_list_+1);
+		glCallList(P.object_list_);
+		if (P.switches[CGAL::OGL::SNC_AXES]) {
+			glCallList(P.object_list_+3);
+		}
+#endif
 	}
 }
 

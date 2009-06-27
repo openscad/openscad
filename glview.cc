@@ -27,7 +27,7 @@
 
 GLView::GLView(QWidget *parent) : QGLWidget(parent)
 {
-	viewer_distance = 20;
+	viewer_distance = 500;
 	object_rot_y = 35;
 	object_rot_z = 25;
 

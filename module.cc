@@ -86,7 +86,9 @@ AbstractNode *ModuleInstanciation::evaluate(const Context *ctx) const
 	}
 	QVector<AbstractNode*> child_nodes;
 	foreach (ModuleInstanciation *v, children) {
-		child_nodes.append(v->evaluate(ctx));
+		AbstractNode *n = v->evaluate(ctx);
+		if (n != NULL)
+			child_nodes.append(n);
 	}
 	return ctx->evaluate_module(modname, argnames, argvalues, child_nodes);
 }
@@ -117,7 +119,9 @@ AbstractNode *Module::evaluate(const Context *ctx, const QVector<QString> &call_
 
 	AbstractNode *node = new AbstractNode();
 	for (int i = 0; i < children.size(); i++) {
-		node->children.append(children[i]->evaluate(&c));
+		AbstractNode *n = children[i]->evaluate(&c);
+		if (n != NULL)
+			node->children.append(n);
 	}
 
 	foreach (AbstractNode *v, child_nodes)
