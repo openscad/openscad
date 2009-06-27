@@ -63,7 +63,7 @@ AbstractNode *CsgModule::evaluate(const Context*, const QVector<QString>&, const
 
 CGAL_Nef_polyhedron CsgNode::render_cgal_nef_polyhedron() const
 {
-	bool first;
+	bool first = true;
 	CGAL_Nef_polyhedron N;
 	foreach (AbstractNode *v, children) {
 		if (first) {
