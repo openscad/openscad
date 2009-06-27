@@ -400,8 +400,9 @@ int parserlex(void)
 
 void yyerror (char const *s)
 {
-	fprintf(stderr, "Parser error in line %d: %s\n", lexerget_lineno(), s);
-	exit(1);
+	// FIXME: We leak memory on parser errors...
+	PRINTF("Parser error in line %d: %s\n", lexerget_lineno(), s);
+	module = NULL;
 }
 
 extern const char *parser_input_buffer;

@@ -89,7 +89,7 @@ AbstractNode *Context::evaluate_module(QString name, const QVector<QString> &arg
 		return modules_p->value(name)->evaluate(this, argnames, argvalues, child_nodes);
 	if (parent)
 		return parent->evaluate_module(name, argnames, argvalues, child_nodes);
-	printf("WARNING: Ignoring unkown module '%s'.\n", name.toAscii().data());
+	PRINTA("WARNING: Ignoring unkown module '%1'.", name);
 	return NULL;
 }
 

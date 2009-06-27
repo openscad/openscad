@@ -42,6 +42,7 @@ static inline uint qHash(double v) {
 #include <QSplitter>
 #include <QTextEdit>
 #include <QGLWidget>
+#include <QPointer>
 
 #include <stdio.h>
 #include <errno.h>
@@ -479,6 +480,9 @@ private slots:
 	void actionSave();
 	void actionSaveAs();
 
+private:
+	void compile();
+
 private slots:
 	void actionCompile();
 #ifdef ENABLE_CGAL
@@ -513,6 +517,12 @@ private slots:
 };
 
 extern AbstractModule *parse(const char *text, int debug);
+
+extern QPointer<MainWindow> current_win;
+
+#define PRINT(_msg) do { if (current_win.isNull()) fprintf(stderr, "%s\n", QString(_msg).toAscii().data()); else current_win->console->append(_msg); } while (0)
+#define PRINTF(_fmt, ...) do { QString _m; _m.sprintf(_fmt, ##__VA_ARGS__); PRINT(_m); } while (0)
+#define PRINTA(_fmt, ...) do { QString _m = QString(_fmt).arg(__VA_ARGS__); PRINT(_m); } while (0)
 
 #endif
 

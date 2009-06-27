@@ -27,6 +27,9 @@
 #include <QSplitter>
 #include <QFileDialog>
 #include <QApplication>
+#include <QProgressDialog>
+
+QPointer<MainWindow> current_win;
 
 MainWindow::MainWindow(const char *filename)
 {
@@ -108,14 +111,16 @@ MainWindow::MainWindow(const char *filename)
 	console = new QTextEdit(s2);
 
 	console->setReadOnly(true);
-	console->append("OpenSCAD (www.openscad.at)");
-	console->append("Copyright (C) 2009  Clifford Wolf <clifford@clifford.at>");
-	console->append("");
-	console->append("This program is free software; you can redistribute it and/or modify");
-	console->append("it under the terms of the GNU General Public License as published by");
-	console->append("the Free Software Foundation; either version 2 of the License, or");
-	console->append("(at your option) any later version.");
-	console->append("");
+	current_win = this;
+
+	PRINT("OpenSCAD (www.openscad.at)");
+	PRINT("Copyright (C) 2009  Clifford Wolf <clifford@clifford.at>");
+	PRINT("");
+	PRINT("This program is free software; you can redistribute it and/or modify");
+	PRINT("it under the terms of the GNU General Public License as published by");
+	PRINT("the Free Software Foundation; either version 2 of the License, or");
+	PRINT("(at your option) any later version.");
+	PRINT("");
 
 	editor->setTabStopWidth(30);
 
@@ -123,7 +128,7 @@ MainWindow::MainWindow(const char *filename)
 		QString text;
 		FILE *fp = fopen(filename, "rt");
 		if (!fp) {
-			console->append(QString("Failed to open file: %1 (%2)").arg(QString(filename), QString(strerror(errno))));
+			PRINTA("Failed to open file: %1 (%2)", QString(filename), QString(strerror(errno)));
 		} else {
 			char buffer[513];
 			int rc;
@@ -132,7 +137,7 @@ MainWindow::MainWindow(const char *filename)
 				text += buffer;
 			}
 			fclose(fp);
-			console->append(QString("Loaded design `%1'.").arg(QString(filename)));
+			PRINTA("Loaded design `%1'.", QString(filename));
 		}
 		editor->setPlainText(text);
 	}
@@ -144,6 +149,7 @@ MainWindow::MainWindow(const char *filename)
 #endif
 
 	setCentralWidget(s1);
+	current_win = NULL;
 }
 
 MainWindow::~MainWindow()
@@ -167,6 +173,7 @@ void MainWindow::actionNew()
 
 void MainWindow::actionOpen()
 {
+	current_win = this;
 	QString new_filename = QFileDialog::getOpenFileName(this, "Open File", "", "OpenSCAD Designs (*.scad)");
 	if (!new_filename.isEmpty())
 	{
@@ -176,7 +183,7 @@ void MainWindow::actionOpen()
 		QString text;
 		FILE *fp = fopen(filename.toAscii().data(), "rt");
 		if (!fp) {
-			console->append(QString("Failed to open file: %1 (%2)").arg(QString(filename), QString(strerror(errno))));
+			PRINTA("Failed to open file: %1 (%2)", QString(filename), QString(strerror(errno)));
 		} else {
 			char buffer[513];
 			int rc;
@@ -185,22 +192,25 @@ void MainWindow::actionOpen()
 				text += buffer;
 			}
 			fclose(fp);
-			console->append(QString("Loaded design `%1'.").arg(QString(filename)));
+			PRINTA("Loaded design `%1'.", QString(filename));
 		}
 		editor->setPlainText(text);
 	}
+	current_win = NULL;
 }
 
 void MainWindow::actionSave()
 {
+	current_win = this;
 	FILE *fp = fopen(filename.toAscii().data(), "wt");
 	if (!fp) {
-		console->append(QString("Failed to open file for writing: %1 (%2)").arg(QString(filename), QString(strerror(errno))));
+		PRINTA("Failed to open file for writing: %1 (%2)", QString(filename), QString(strerror(errno)));
 	} else {
 		fprintf(fp, "%s", editor->toPlainText().toAscii().data());
 		fclose(fp);
-		console->append(QString("Saved design `%1'.").arg(QString(filename)));
+		PRINTA("Saved design `%1'.", QString(filename));
 	}
+	current_win = NULL;
 }
 
 void MainWindow::actionSaveAs()
@@ -213,9 +223,9 @@ void MainWindow::actionSaveAs()
 	}
 }
 
-void MainWindow::actionCompile()
+void MainWindow::compile()
 {
-	console->append("Parsing design (AST generation)...");
+	PRINT("Parsing design (AST generation)...");
 	QApplication::processEvents();
 
 	if (root_module) {
@@ -223,51 +233,15 @@ void MainWindow::actionCompile()
 		root_module = NULL;
 	}
 
-	root_module = parse(editor->toPlainText().toAscii().data(), false);
-
-	if (!root_module) {
-		console->append("Compilation failed!");
-		return;
-	}
-
-	console->append("Compiling design (CSG Tree generation)...");
-	QApplication::processEvents();
-
 	if (root_node) {
 		delete root_node;
 		root_node = NULL;
 	}
 
-	AbstractNode::idx_counter = 1;
-	root_node = root_module->evaluate(&root_ctx, QVector<QString>(), QVector<Value>(), QVector<AbstractNode*>());
-
-	if (!root_node) {
-		console->append("Compilation failed!");
-		return;
-	}
-
-	console->append("Compiling design (CSG Products generation)...");
-	QApplication::processEvents();
-
 	if (root_raw_term) {
 		root_raw_term->unlink();
 		root_raw_term = NULL;
 	}
-
-	double m[16];
-
-	for (int i = 0; i < 16; i++)
-		m[i] = i % 5 == 0 ? 1.0 : 0.0;
-
-	root_raw_term = root_node->render_csg_term(m);
-
-	if (!root_raw_term) {
-		console->append("Compilation failed!");
-		return;
-	}
-
-	console->append("Compiling design (CSG Products normalization)...");
-	QApplication::processEvents();
 
 	if (root_norm_term) {
 		root_norm_term->unlink();
@@ -279,6 +253,36 @@ void MainWindow::actionCompile()
 		root_chain = NULL;
 	}
 
+	root_module = parse(editor->toPlainText().toAscii().data(), false);
+
+	if (!root_module)
+		goto fail;
+
+	PRINT("Compiling design (CSG Tree generation)...");
+	QApplication::processEvents();
+
+	AbstractNode::idx_counter = 1;
+	root_node = root_module->evaluate(&root_ctx, QVector<QString>(), QVector<Value>(), QVector<AbstractNode*>());
+
+	if (!root_node)
+		goto fail;
+
+	PRINT("Compiling design (CSG Products generation)...");
+	QApplication::processEvents();
+
+	double m[16];
+
+	for (int i = 0; i < 16; i++)
+		m[i] = i % 5 == 0 ? 1.0 : 0.0;
+
+	root_raw_term = root_node->render_csg_term(m);
+
+	if (!root_raw_term)
+		goto fail;
+
+	PRINT("Compiling design (CSG Products normalization)...");
+	QApplication::processEvents();
+
 	root_norm_term = root_raw_term->link();
 
 	while (1) {
@@ -289,32 +293,54 @@ void MainWindow::actionCompile()
 		root_norm_term = n;
 	}
 
-	if (!root_norm_term) {
-		console->append("Compilation failed!");
-		return;
-	}
+	if (!root_norm_term)
+		goto fail;
 
 	root_chain = new CSGChain();
 	root_chain->import(root_norm_term);
 
-	screen->updateGL();
-	console->append("Compilation finished.");
+	if (1) {
+		PRINT("Compilation finished.");
+	} else {
+fail:
+		PRINT("ERROR: Compilation failed!");
+	}
+}
+
+void MainWindow::actionCompile()
+{
+	current_win = this;
+	console->clear();
+
+	compile();
+
+#ifdef ENABLE_OPENCSG
+	if (!actViewModeOpenCSG->isChecked() && !actViewModeThrownTogether->isChecked()) {
+		viewModeOpenCSG();
+	}
+	else
+#endif
+	{
+		screen->updateGL();
+	}
+	current_win = NULL;
 }
 
 #ifdef ENABLE_CGAL
 
 static void report_func(const class AbstractNode*, void *vp, int mark)
 {
-	MainWindow *m = (MainWindow*)vp;
-	QString msg;
-	msg.sprintf("CSG rendering progress: %.2f%%", (mark*100.0) / progress_report_count);
+	QProgressDialog *pd = (QProgressDialog*)vp;
+	int v = (mark*100.0) / progress_report_count;
+	pd->setValue(v < 100 ? v : 99);
 	QApplication::processEvents();
-        m->console->append(msg);
 }
 
 void MainWindow::actionRenderCGAL()
 {
-	actionCompile();
+	current_win = this;
+
+	compile();
 
 	if (!root_module || !root_node)
 		return;
@@ -324,39 +350,46 @@ void MainWindow::actionRenderCGAL()
 		root_N = NULL;
 	}
 
-	progress_report_prep(root_node, report_func, this);
+	PRINT("Rendering Polygon Mesh using CGAL...");
+	QApplication::processEvents();
+
+	QProgressDialog *pd = new QProgressDialog("Rendering Polygon Mesh using CGAL...", QString(), 0, 100);
+	pd->setValue(0);
+	pd->setAutoClose(false);
+	pd->show();
+	QApplication::processEvents();
+
+	progress_report_prep(root_node, report_func, pd);
 	root_N = new CGAL_Nef_polyhedron(root_node->render_cgal_nef_polyhedron());
 	progress_report_fin();
 
-	QString msg;
-	msg.sprintf("Simple:     %6s", root_N->is_simple() ? "yes" : "no");
-	console->append(msg);
-	msg.sprintf("Valid:      %6s", root_N->is_valid() ? "yes" : "no");
-	console->append(msg);
-	msg.sprintf("Vertices:   %6d", (int)root_N->number_of_vertices());
-	console->append(msg);
-	msg.sprintf("Halfedges:  %6d", (int)root_N->number_of_halfedges());
-	console->append(msg);
-	msg.sprintf("Edges:      %6d", (int)root_N->number_of_edges());
-	console->append(msg);
-	msg.sprintf("Halffacets: %6d", (int)root_N->number_of_halffacets());
-	console->append(msg);
-	msg.sprintf("Facets:     %6d", (int)root_N->number_of_facets());
-	console->append(msg);
-	msg.sprintf("Volumes:    %6d", (int)root_N->number_of_volumes());
-	console->append(msg);
+	PRINTF("   Simple:     %6s", root_N->is_simple() ? "yes" : "no");
+	PRINTF("   Valid:      %6s", root_N->is_valid() ? "yes" : "no");
+	PRINTF("   Vertices:   %6d", (int)root_N->number_of_vertices());
+	PRINTF("   Halfedges:  %6d", (int)root_N->number_of_halfedges());
+	PRINTF("   Edges:      %6d", (int)root_N->number_of_edges());
+	PRINTF("   Halffacets: %6d", (int)root_N->number_of_halffacets());
+	PRINTF("   Facets:     %6d", (int)root_N->number_of_facets());
+	PRINTF("   Volumes:    %6d", (int)root_N->number_of_volumes());
 
 	if (!actViewModeCGALSurface->isChecked() && !actViewModeCGALGrid->isChecked()) {
 		viewModeCGALSurface();
 	} else {
 		screen->updateGL();
 	}
+
+	PRINT("Rendering finished.");
+
+	delete pd;
+	current_win = NULL;
+
 }
 
 #endif /* ENABLE_CGAL */
 
 void MainWindow::actionDisplayAST()
 {
+	current_win = this;
 	QTextEdit *e = new QTextEdit(NULL);
 	e->setTabStopWidth(30);
 	e->setWindowTitle("AST Dump");
@@ -367,10 +400,12 @@ void MainWindow::actionDisplayAST()
 	}
 	e->show();
 	e->resize(600, 400);
+	current_win = NULL;
 }
 
 void MainWindow::actionDisplayCSGTree()
 {
+	current_win = this;
 	QTextEdit *e = new QTextEdit(NULL);
 	e->setTabStopWidth(30);
 	e->setWindowTitle("CSG Tree Dump");
@@ -381,26 +416,33 @@ void MainWindow::actionDisplayCSGTree()
 	}
 	e->show();
 	e->resize(600, 400);
+	current_win = NULL;
 }
 
 void MainWindow::actionDisplayCSGProducts()
 {
+	current_win = this;
 	QTextEdit *e = new QTextEdit(NULL);
 	e->setTabStopWidth(30);
 	e->setWindowTitle("CSG Products Dump");
 	e->setPlainText(QString("\nCSG before normalization:\n%1\n\n\nCSG after normalization:\n%2\n\n\nCSG rendering chain:\n%3\n").arg(root_raw_term ? root_raw_term->dump() : "N/A", root_norm_term ? root_norm_term->dump() : "N/A", root_chain ? root_chain->dump() : "N/A"));
 	e->show();
 	e->resize(600, 400);
+	current_win = NULL;
 }
 
 void MainWindow::actionExportSTL()
 {
-	console->append(QString("Function %1 is not implemented yet!").arg(QString(__PRETTY_FUNCTION__)));
+	current_win = this;
+	PRINTA("Function %1 is not implemented yet!", QString(__PRETTY_FUNCTION__));
+	current_win = NULL;
 }
 
 void MainWindow::actionExportOFF()
 {
-	console->append(QString("Function %1 is not implemented yet!").arg(QString(__PRETTY_FUNCTION__)));
+	current_win = this;
+	PRINTA("Function %1 is not implemented yet!", QString(__PRETTY_FUNCTION__));
+	current_win = NULL;
 }
 
 void MainWindow::viewModeActionsUncheck()
