@@ -328,6 +328,24 @@ void MainWindow::actionRenderCGAL()
 	root_N = new CGAL_Nef_polyhedron(root_node->render_cgal_nef_polyhedron());
 	progress_report_fin();
 
+	QString msg;
+	msg.sprintf("Simple:     %6s", root_N->is_simple() ? "yes" : "no");
+	console->append(msg);
+	msg.sprintf("Valid:      %6s", root_N->is_valid() ? "yes" : "no");
+	console->append(msg);
+	msg.sprintf("Vertices:   %6d", (int)root_N->number_of_vertices());
+	console->append(msg);
+	msg.sprintf("Halfedges:  %6d", (int)root_N->number_of_halfedges());
+	console->append(msg);
+	msg.sprintf("Edges:      %6d", (int)root_N->number_of_edges());
+	console->append(msg);
+	msg.sprintf("Halffacets: %6d", (int)root_N->number_of_halffacets());
+	console->append(msg);
+	msg.sprintf("Facets:     %6d", (int)root_N->number_of_facets());
+	console->append(msg);
+	msg.sprintf("Volumes:    %6d", (int)root_N->number_of_volumes());
+	console->append(msg);
+
 	if (!actViewModeCGALSurface->isChecked() && !actViewModeCGALGrid->isChecked()) {
 		viewModeCGALSurface();
 	} else {
