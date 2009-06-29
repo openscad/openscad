@@ -432,6 +432,7 @@ public:
 
 	double w_h_ratio;
 	GLint shaderinfo[11];
+	bool useLights;
 
 	GLView(QWidget *parent = NULL);
 
@@ -506,6 +507,7 @@ public:
 	QAction *actViewModeCGALGrid;
 #endif
 	QAction *actViewModeThrownTogether;
+	QAction *actViewModeLights;
 	void viewModeActionsUncheck();
 
 private slots:
@@ -517,6 +519,7 @@ private slots:
 	void viewModeCGALGrid();
 #endif
 	void viewModeThrownTogether();
+	void viewModeLights();
 };
 
 extern AbstractModule *parse(const char *text, int debug);

@@ -87,6 +87,11 @@ MainWindow::MainWindow(const char *filename)
 		actViewModeThrownTogether->setCheckable(true);
 
 		menu->addSeparator();
+
+		actViewModeLights = menu->addAction("Lights", this, SLOT(viewModeLights()));
+		actViewModeLights->setCheckable(true);
+
+		menu->addSeparator();
 		menu->addAction("Top");
 		menu->addAction("Bottom");
 		menu->addAction("Left");
@@ -365,7 +370,7 @@ void MainWindow::actionCompile()
 static void report_func(const class AbstractNode*, void *vp, int mark)
 {
 	QProgressDialog *pd = (QProgressDialog*)vp;
-	int v = (mark*100.0) / progress_report_count;
+	int v = (int)((mark*100.0) / progress_report_count);
 	pd->setValue(v < 100 ? v : 99);
 	QApplication::processEvents();
 }
@@ -514,6 +519,9 @@ static void renderGLviaOpenCSG(void *vp)
 	}
 
 	if (m->root_chain) {
+		GLint *shaderinfo = m->screen->shaderinfo;
+		if (m->screen->useLights)
+			shaderinfo = NULL;
 		std::vector<OpenCSG::Primitive*> primitives;
 		int j = 0;
 		for (int i = 0;; i++)
@@ -524,15 +532,17 @@ static void renderGLviaOpenCSG(void *vp)
 			{
 				OpenCSG::render(primitives, OpenCSG::Goldfeather, OpenCSG::NoDepthComplexitySampling);
 				glDepthFunc(GL_EQUAL);
-				glUseProgram(m->screen->shaderinfo[0]);
+				if (shaderinfo)
+					glUseProgram(shaderinfo[0]);
 				for (; j < i; j++) {
 					if (m->root_chain->types[j] == CSGTerm::DIFFERENCE) {
-						m->root_chain->polysets[j]->render_surface(PolySet::COLOR_CUTOUT, m->screen->shaderinfo);
+						m->root_chain->polysets[j]->render_surface(PolySet::COLOR_CUTOUT, shaderinfo);
 					} else {
-						m->root_chain->polysets[j]->render_surface(PolySet::COLOR_MATERIAL, m->screen->shaderinfo);
+						m->root_chain->polysets[j]->render_surface(PolySet::COLOR_MATERIAL, shaderinfo);
 					}
 				}
-				glUseProgram(0);
+				if (shaderinfo)
+					glUseProgram(0);
 				for (unsigned int k = 0; k < primitives.size(); k++) {
 					delete primitives[k];
 				}
@@ -645,10 +655,12 @@ static void renderGLThrownTogether(void *vp)
 		for (int i = 0; i < m->root_chain->polysets.size(); i++) {
 			if (m->root_chain->types[i] == CSGTerm::DIFFERENCE) {
 				m->root_chain->polysets[i]->render_surface(PolySet::COLOR_CUTOUT);
-				m->root_chain->polysets[i]->render_edges(PolySet::COLOR_CUTOUT);
+				if (!m->screen->useLights)
+					m->root_chain->polysets[i]->render_edges(PolySet::COLOR_CUTOUT);
 			} else {
 				m->root_chain->polysets[i]->render_surface(PolySet::COLOR_MATERIAL);
-				m->root_chain->polysets[i]->render_edges(PolySet::COLOR_MATERIAL);
+				if (!m->screen->useLights)
+					m->root_chain->polysets[i]->render_edges(PolySet::COLOR_MATERIAL);
 			}
 		}
 #endif
@@ -662,5 +674,12 @@ void MainWindow::viewModeThrownTogether()
 	screen->renderfunc = renderGLThrownTogether;
 	screen->renderfunc_vp = this;
 	screen->updateGL();
+}
+
+void MainWindow::viewModeLights()
+{
+	screen->useLights = !screen->useLights;
+	screen->updateGL();
+	actViewModeLights->setChecked(screen->useLights);
 }
 

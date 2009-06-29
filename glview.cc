@@ -41,6 +41,8 @@ GLView::GLView(QWidget *parent) : QGLWidget(parent)
 	for (int i = 0; i < 10; i++)
 		shaderinfo[i] = 0;
 
+	useLights = false;
+
 	setMouseTracking(true);
 }
 
@@ -164,11 +166,31 @@ void GLView::paintGL()
 
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
+
+	if (useLights)
+	{
+		GLfloat light_diffuse[] = {1.0, 1.0, 1.0, 1.0};
+		GLfloat light_position0[] = {-1.0, -1.0, +1.0, 0.0};
+		GLfloat light_position1[] = {+1.0, +1.0, -1.0, 0.0};
+
+		glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse);
+		glLightfv(GL_LIGHT0, GL_POSITION, light_position0);
+		glEnable(GL_LIGHT0);
+		glLightfv(GL_LIGHT1, GL_DIFFUSE, light_diffuse);
+		glLightfv(GL_LIGHT1, GL_POSITION, light_position1);
+		glEnable(GL_LIGHT1);
+		glEnable(GL_LIGHTING);
+		glEnable(GL_NORMALIZE);
+	}
+	else
+	{
+		glDisable(GL_LIGHTING);
+	}
+
 	glRotated(object_rot_y, 1.0, 0.0, 0.0);
 	glRotated(object_rot_z, 0.0, 0.0, 1.0);
 
 	glDepthFunc(GL_LESS);
-	glDisable(GL_LIGHTING);
 
 #if 0
 	glLineWidth(1);

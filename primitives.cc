@@ -141,7 +141,7 @@ int get_fragments_from_r(double r, double fs, double fa)
 	return (int)ceil(fmax(fmin(360.0 / fa, r*M_PI / fs), 5));
 }
 
-PolySet *PrimitiveNode::render_polyset(render_mode_e mode) const
+PolySet *PrimitiveNode::render_polyset(render_mode_e) const
 {
 	PolySet *p = new PolySet();
 
