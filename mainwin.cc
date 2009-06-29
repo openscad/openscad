@@ -88,8 +88,10 @@ MainWindow::MainWindow(const char *filename)
 
 		menu->addSeparator();
 
-		actViewModeLights = menu->addAction("Lights", this, SLOT(viewModeLights()));
-		actViewModeLights->setCheckable(true);
+		actViewModeWireframe = menu->addAction("Wireframe", this, SLOT(viewModeWireframe()));
+		actViewModeWireframe->setCheckable(true);
+		actViewModeShaded = menu->addAction("Shaded", this, SLOT(viewModeShaded()));
+		actViewModeShaded->setCheckable(true);
 
 		menu->addSeparator();
 		menu->addAction("Top");
@@ -137,6 +139,7 @@ MainWindow::MainWindow(const char *filename)
 #else
 	viewModeThrownTogether();
 #endif
+	viewModeShaded();
 
 	setCentralWidget(s1);
 	current_win = NULL;
@@ -520,7 +523,7 @@ static void renderGLviaOpenCSG(void *vp)
 
 	if (m->root_chain) {
 		GLint *shaderinfo = m->screen->shaderinfo;
-		if (m->screen->useLights)
+		if (m->screen->useLights || !shaderinfo[0])
 			shaderinfo = NULL;
 		std::vector<OpenCSG::Primitive*> primitives;
 		int j = 0;
@@ -601,6 +604,7 @@ static void renderGLviaCGAL(void *vp)
 			P.set_style(CGAL::OGL::SNC_BOUNDARY);
 		if (m->actViewModeCGALGrid->isChecked())
 			P.set_style(CGAL::OGL::SNC_SKELETON);
+		glDisable(GL_LIGHTING);
 #if 0
 		P.draw();
 #else
@@ -676,10 +680,19 @@ void MainWindow::viewModeThrownTogether()
 	screen->updateGL();
 }
 
-void MainWindow::viewModeLights()
+void MainWindow::viewModeWireframe()
 {
-	screen->useLights = !screen->useLights;
+	screen->useLights = false;
+	actViewModeWireframe->setChecked(true);
+	actViewModeShaded->setChecked(false);
 	screen->updateGL();
-	actViewModeLights->setChecked(screen->useLights);
+}
+
+void MainWindow::viewModeShaded()
+{
+	screen->useLights = true;
+	actViewModeWireframe->setChecked(false);
+	actViewModeShaded->setChecked(true);
+	screen->updateGL();
 }
 

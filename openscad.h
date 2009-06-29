@@ -507,7 +507,8 @@ public:
 	QAction *actViewModeCGALGrid;
 #endif
 	QAction *actViewModeThrownTogether;
-	QAction *actViewModeLights;
+	QAction *actViewModeWireframe;
+	QAction *actViewModeShaded;
 	void viewModeActionsUncheck();
 
 private slots:
@@ -519,7 +520,8 @@ private slots:
 	void viewModeCGALGrid();
 #endif
 	void viewModeThrownTogether();
-	void viewModeLights();
+	void viewModeWireframe();
+	void viewModeShaded();
 };
 
 extern AbstractModule *parse(const char *text, int debug);
