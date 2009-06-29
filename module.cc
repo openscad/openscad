@@ -26,14 +26,16 @@ AbstractModule::~AbstractModule()
 {
 }
 
-AbstractNode *AbstractModule::evaluate(const Context*, const QVector<QString>&, const QVector<Value>&, const QVector<AbstractNode*> child_nodes) const
+AbstractNode *AbstractModule::evaluate(const Context*, const QVector<QString>&, const QVector<Value>&, const QVector<ModuleInstanciation*> arg_children, const Context *arg_context) const
 {
-	if (child_nodes.size() == 1)
-		return child_nodes[0];
-
 	AbstractNode *node = new AbstractNode();
-	foreach (AbstractNode *v, child_nodes)
-		node->children.append(v);
+
+	foreach (ModuleInstanciation *v, arg_children) {
+		AbstractNode *n = v->evaluate(arg_context);
+		if (n)
+			node->children.append(n);
+	}
+
 	return node;
 }
 
@@ -84,13 +86,7 @@ AbstractNode *ModuleInstanciation::evaluate(const Context *ctx) const
 	foreach (Expression *v, argexpr) {
 		argvalues.append(v->evaluate(ctx));
 	}
-	QVector<AbstractNode*> child_nodes;
-	foreach (ModuleInstanciation *v, children) {
-		AbstractNode *n = v->evaluate(ctx);
-		if (n != NULL)
-			child_nodes.append(n);
-	}
-	return ctx->evaluate_module(modname, argnames, argvalues, child_nodes);
+	return ctx->evaluate_module(modname, argnames, argvalues, children);
 }
 
 Module::~Module()
@@ -105,7 +101,7 @@ Module::~Module()
 		delete v;
 }
 
-AbstractNode *Module::evaluate(const Context *ctx, const QVector<QString> &call_argnames, const QVector<Value> &call_argvalues, const QVector<AbstractNode*> child_nodes) const
+AbstractNode *Module::evaluate(const Context *ctx, const QVector<QString> &call_argnames, const QVector<Value> &call_argvalues, const QVector<ModuleInstanciation*> arg_children, const Context *arg_context) const
 {
 	Context c(ctx);
 	c.args(argnames, argexpr, call_argnames, call_argvalues);
@@ -124,14 +120,10 @@ AbstractNode *Module::evaluate(const Context *ctx, const QVector<QString> &call_
 			node->children.append(n);
 	}
 
-	foreach (AbstractNode *v, child_nodes)
-		node->children.append(v);
-
-	if (node->children.size() == 1) {
-		AbstractNode *c = node->children[0];
-		node->children.clear();
-		delete node;
-		return c;
+	foreach(ModuleInstanciation *v, arg_children) {
+		AbstractNode *n = v->evaluate(arg_context);
+		if (n != NULL)
+			node->children.append(n);
 	}
 
 	return node;
@@ -184,9 +176,10 @@ void initialize_builtin_modules()
 {
 	builtin_modules["group"] = new AbstractModule();
 
-	register_builtin_csg();
-	register_builtin_trans();
-	register_builtin_primitive();
+	register_builtin_csgops();
+	register_builtin_transform();
+	register_builtin_primitives();
+	register_builtin_control();
 }
 
 void destroy_builtin_modules()

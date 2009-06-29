@@ -218,7 +218,7 @@ void MainWindow::compile()
 	QApplication::processEvents();
 
 	AbstractNode::idx_counter = 1;
-	root_node = root_module->evaluate(&root_ctx, QVector<QString>(), QVector<Value>(), QVector<AbstractNode*>());
+	root_node = root_module->evaluate(&root_ctx, QVector<QString>(), QVector<Value>(), QVector<ModuleInstanciation*>(), NULL);
 
 	if (!root_node)
 		goto fail;

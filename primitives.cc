@@ -33,7 +33,7 @@ class PrimitiveModule : public AbstractModule
 public:
 	primitive_type_e type;
 	PrimitiveModule(primitive_type_e type) : type(type) { }
-	virtual AbstractNode *evaluate(const Context *ctx, const QVector<QString> &call_argnames, const QVector<Value> &call_argvalues, const QVector<AbstractNode*> child_nodes) const;
+	virtual AbstractNode *evaluate(const Context *ctx, const QVector<QString> &call_argnames, const QVector<Value> &call_argvalues, const QVector<ModuleInstanciation*> arg_children, const Context *arg_context) const;
 };
 
 class PrimitiveNode : public AbstractPolyNode
@@ -48,7 +48,7 @@ public:
 	virtual QString dump(QString indent) const;
 };
 
-AbstractNode *PrimitiveModule::evaluate(const Context *ctx, const QVector<QString> &call_argnames, const QVector<Value> &call_argvalues, const QVector<AbstractNode*> child_nodes) const
+AbstractNode *PrimitiveModule::evaluate(const Context *ctx, const QVector<QString> &call_argnames, const QVector<Value> &call_argvalues, const QVector<ModuleInstanciation*>, const Context*) const
 {
 	PrimitiveNode *node = new PrimitiveNode(type);
 
@@ -123,13 +123,10 @@ AbstractNode *PrimitiveModule::evaluate(const Context *ctx, const QVector<QStrin
 		}
 	}
 
-	foreach (AbstractNode *v, child_nodes)
-		delete v;
-
 	return node;
 }
 
-void register_builtin_primitive()
+void register_builtin_primitives()
 {
 	builtin_modules["cube"] = new PrimitiveModule(CUBE);
 	builtin_modules["sphere"] = new PrimitiveModule(SPHERE);

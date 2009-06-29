@@ -71,6 +71,7 @@ Value Context::lookup_variable(QString name) const
 		return variables[name];
 	if (parent)
 		return parent->lookup_variable(name);
+	PRINTA("WARNING: Ignoring unkown variable '%1'.", name);
 	return Value();
 }
 
@@ -80,15 +81,18 @@ Value Context::evaluate_function(QString name, const QVector<QString> &argnames,
 		return functions_p->value(name)->evaluate(this, argnames, argvalues);
 	if (parent)
 		return parent->evaluate_function(name, argnames, argvalues);
+	PRINTA("WARNING: Ignoring unkown function '%1'.", name);
 	return Value();
 }
 
-AbstractNode *Context::evaluate_module(QString name, const QVector<QString> &argnames, const QVector<Value> &argvalues, const QVector<AbstractNode*> child_nodes) const
+AbstractNode *Context::evaluate_module(QString name, const QVector<QString> &argnames, const QVector<Value> &argvalues, const QVector<ModuleInstanciation*> arg_children, const Context *arg_context) const
 {
+	if (arg_context == NULL)
+		arg_context = this;
 	if (modules_p->contains(name))
-		return modules_p->value(name)->evaluate(this, argnames, argvalues, child_nodes);
+		return modules_p->value(name)->evaluate(this, argnames, argvalues, arg_children, arg_context);
 	if (parent)
-		return parent->evaluate_module(name, argnames, argvalues, child_nodes);
+		return parent->evaluate_module(name, argnames, argvalues, arg_children, arg_context);
 	PRINTA("WARNING: Ignoring unkown module '%1'.", name);
 	return NULL;
 }

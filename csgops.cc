@@ -33,7 +33,7 @@ class CsgModule : public AbstractModule
 public:
 	csg_type_e type;
 	CsgModule(csg_type_e type) : type(type) { }
-	virtual AbstractNode *evaluate(const Context *ctx, const QVector<QString> &call_argnames, const QVector<Value> &call_argvalues, const QVector<AbstractNode*> child_nodes) const;
+	virtual AbstractNode *evaluate(const Context *ctx, const QVector<QString> &call_argnames, const QVector<Value> &call_argvalues, const QVector<ModuleInstanciation*> arg_children, const Context *arg_context) const;
 };
 
 class CsgNode : public AbstractNode
@@ -48,14 +48,14 @@ public:
         virtual QString dump(QString indent) const;
 };
 
-AbstractNode *CsgModule::evaluate(const Context*, const QVector<QString>&, const QVector<Value>&, const QVector<AbstractNode*> child_nodes) const
+AbstractNode *CsgModule::evaluate(const Context*, const QVector<QString>&, const QVector<Value>&, const QVector<ModuleInstanciation*> arg_children, const Context *arg_context) const
 {
-	if (child_nodes.size() == 1)
-		return child_nodes[0];
-
 	CsgNode *node = new CsgNode(type);
-	foreach (AbstractNode *v, child_nodes)
-		node->children.append(v);
+	foreach (ModuleInstanciation *v, arg_children) {
+		AbstractNode *n = v->evaluate(arg_context);
+		if (n != NULL)
+			node->children.append(n);
+	}
 	return node;
 }
 
@@ -117,7 +117,7 @@ QString CsgNode::dump(QString indent) const
 	return text + indent + "}\n";
 }
 
-void register_builtin_csg()
+void register_builtin_csgops()
 {
 	builtin_modules["union"] = new CsgModule(UNION);
 	builtin_modules["difference"] = new CsgModule(DIFFERENCE);

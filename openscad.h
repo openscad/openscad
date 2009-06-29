@@ -192,7 +192,7 @@ class AbstractModule
 {
 public:
 	virtual ~AbstractModule();
-	virtual AbstractNode *evaluate(const Context *ctx, const QVector<QString> &call_argnames, const QVector<Value> &call_argvalues, const QVector<AbstractNode*> child_nodes) const;
+	virtual AbstractNode *evaluate(const Context *ctx, const QVector<QString> &call_argnames, const QVector<Value> &call_argvalues, const QVector<ModuleInstanciation*> arg_children, const Context *arg_context) const;
 	virtual QString dump(QString indent, QString name) const;
 };
 
@@ -229,7 +229,7 @@ public:
 	Module() { }
 	virtual ~Module();
 
-	virtual AbstractNode *evaluate(const Context *ctx, const QVector<QString> &call_argnames, const QVector<Value> &call_argvalues, const QVector<AbstractNode*> child_nodes) const;
+	virtual AbstractNode *evaluate(const Context *ctx, const QVector<QString> &call_argnames, const QVector<Value> &call_argvalues, const QVector<ModuleInstanciation*> arg_children, const Context *arg_context) const;
 	virtual QString dump(QString indent, QString name) const;
 };
 
@@ -237,9 +237,10 @@ extern QHash<QString, AbstractModule*> builtin_modules;
 extern void initialize_builtin_modules();
 extern void destroy_builtin_modules();
 
-extern void register_builtin_csg();
-extern void register_builtin_trans();
-extern void register_builtin_primitive();
+extern void register_builtin_csgops();
+extern void register_builtin_transform();
+extern void register_builtin_primitives();
+extern void register_builtin_control();
 
 class Context
 {
@@ -261,7 +262,7 @@ public:
 	Value lookup_variable(QString name) const;
 
 	Value evaluate_function(QString name, const QVector<QString> &argnames, const QVector<Value> &argvalues) const;
-	AbstractNode *evaluate_module(QString name, const QVector<QString> &argnames, const QVector<Value> &argvalues, const QVector<AbstractNode*> child_nodes) const;
+	AbstractNode *evaluate_module(QString name, const QVector<QString> &argnames, const QVector<Value> &argvalues, const QVector<ModuleInstanciation*> arg_children, const Context *arg_context = NULL) const;
 };
 
 // The CGAL template magic slows down the compilation process by a factor of 5.
