@@ -490,6 +490,12 @@ private slots:
 	void actionReload();
 
 private slots:
+	void editIndent();
+	void editUnindent();
+	void editComment();
+	void editUncomment();
+
+private slots:
 	void actionReloadCompile();
 	void actionCompile();
 #ifdef ENABLE_CGAL

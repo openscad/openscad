@@ -48,6 +48,12 @@ MainWindow::MainWindow(const char *filename)
 	root_N = NULL;
 #endif
 
+	s1 = new QSplitter(Qt::Horizontal, this);
+	editor = new QTextEdit(s1);
+	s2 = new QSplitter(Qt::Vertical, s1);
+	screen = new GLView(s2);
+	console = new QTextEdit(s2);
+
 	{
 		QMenu *menu = menuBar()->addMenu("&File");
 		menu->addAction("&New", this, SLOT(actionNew()));
@@ -56,6 +62,25 @@ MainWindow::MainWindow(const char *filename)
 		menu->addAction("Save &As...", this, SLOT(actionSaveAs()));
 		menu->addAction("&Reload", this, SLOT(actionReload()), QKeySequence(Qt::Key_F3));
 		menu->addAction("&Quit", this, SLOT(close()));
+	}
+
+	{
+		QMenu *menu = menuBar()->addMenu("&Edit");
+		menu->addAction("&Undo", editor, SLOT(undo()), QKeySequence(Qt::CTRL + Qt::Key_Z));
+		menu->addAction("&Redo", editor, SLOT(redo()), QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_Z));
+		menu->addSeparator();
+		menu->addAction("Cu&t", editor, SLOT(cut()), QKeySequence(Qt::CTRL + Qt::Key_X));
+		menu->addAction("&Copy", editor, SLOT(copy()), QKeySequence(Qt::CTRL + Qt::Key_C));
+		menu->addAction("&Paste", editor, SLOT(paste()), QKeySequence(Qt::CTRL + Qt::Key_V));
+		menu->addSeparator();
+		menu->addAction("&Indent", this, SLOT(editIndent()), QKeySequence(Qt::CTRL + Qt::Key_I));
+		menu->addAction("&Unindent", this, SLOT(editUnindent()), QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_I));
+		menu->addSeparator();
+		menu->addAction("C&omment", this, SLOT(editComment()), QKeySequence(Qt::CTRL + Qt::Key_D));
+		menu->addAction("&Uncomment", this, SLOT(editUncomment()), QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_D));
+		menu->addSeparator();
+		menu->addAction("Zoom In", editor, SLOT(zoomIn()), QKeySequence(Qt::CTRL + Qt::Key_Plus));
+		menu->addAction("Zoom Out", editor, SLOT(zoomOut()), QKeySequence(Qt::CTRL + Qt::Key_Minus));
 	}
 
 	{
@@ -106,12 +131,6 @@ MainWindow::MainWindow(const char *filename)
 		menu->addAction("Perspective");
 		menu->addAction("Orthogonal");
 	}
-
-	s1 = new QSplitter(Qt::Horizontal, this);
-	editor = new QTextEdit(s1);
-	s2 = new QSplitter(Qt::Vertical, s1);
-	screen = new GLView(s2);
-	console = new QTextEdit(s2);
 
 	console->setReadOnly(true);
 	current_win = this;
@@ -328,6 +347,22 @@ void MainWindow::actionReload()
 	current_win = this;
 	load();
 	current_win = NULL;
+}
+
+void MainWindow::editIndent()
+{
+}
+
+void MainWindow::editUnindent()
+{
+}
+
+void MainWindow::editComment()
+{
+}
+
+void MainWindow::editUncomment()
+{
 }
 
 void MainWindow::actionReloadCompile()
