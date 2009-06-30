@@ -23,6 +23,8 @@
 Context::Context(const Context *parent)
 {
 	this->parent = parent;
+	functions_p = NULL;
+	modules_p = NULL;
 	ctx_stack.append(this);
 }
 
@@ -77,7 +79,7 @@ Value Context::lookup_variable(QString name) const
 
 Value Context::evaluate_function(QString name, const QVector<QString> &argnames, const QVector<Value> &argvalues) const
 {
-	if (functions_p->contains(name))
+	if (functions_p && functions_p->contains(name))
 		return functions_p->value(name)->evaluate(this, argnames, argvalues);
 	if (parent)
 		return parent->evaluate_function(name, argnames, argvalues);
@@ -89,7 +91,7 @@ AbstractNode *Context::evaluate_module(QString name, const QVector<QString> &arg
 {
 	if (arg_context == NULL)
 		arg_context = this;
-	if (modules_p->contains(name))
+	if (modules_p && modules_p->contains(name))
 		return modules_p->value(name)->evaluate(this, argnames, argvalues, arg_children, arg_context);
 	if (parent)
 		return parent->evaluate_module(name, argnames, argvalues, arg_children, arg_context);

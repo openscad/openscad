@@ -36,13 +36,37 @@ public:
 	virtual AbstractNode *evaluate(const Context *ctx, const QVector<QString> &call_argnames, const QVector<Value> &call_argvalues, const QVector<ModuleInstanciation*> arg_children, const Context *arg_context) const;
 };
 
+void for_eval(AbstractNode *node, int l, const QVector<QString> &call_argnames, const QVector<Value> &call_argvalues, const QVector<ModuleInstanciation*> arg_children, const Context *arg_context)
+{
+	if (call_argnames.size() > l) {
+		QString it_name = call_argnames[l];
+		Value it_values = call_argvalues[l];
+		Context c(arg_context);
+		if (it_values.type == Value::RANGE) {
+			for (double i = it_values.r_begin; i <= it_values.r_end; i += it_values.r_step) {
+				fprintf(stderr, "%f\n", i);
+				c.set_variable(it_name, Value(i));
+				for_eval(node, l+1, call_argnames, call_argvalues, arg_children, &c);
+			}
+		}
+		else {
+			for_eval(node, l+1, call_argnames, call_argvalues, arg_children, &c);
+		}
+	} else {
+		foreach (ModuleInstanciation *v, arg_children) {
+			AbstractNode *n = v->evaluate(arg_context);
+			if (n != NULL)
+				node->children.append(n);
+		}
+	}
+}
+
 AbstractNode *ControlModule::evaluate(const Context*, const QVector<QString> &call_argnames, const QVector<Value> &call_argvalues, const QVector<ModuleInstanciation*> arg_children, const Context *arg_context) const
 {
 	AbstractNode *node = new AbstractNode();
 
 	if (type == ASSIGN)
 	{
-		/* FIXME */
 		Context c(arg_context);
 		for (int i = 0; i < call_argnames.size(); i++) {
 			if (!call_argnames[i].isEmpty())
@@ -57,10 +81,17 @@ AbstractNode *ControlModule::evaluate(const Context*, const QVector<QString> &ca
 
 	if (type == FOR)
 	{
+		for_eval(node, 0, call_argnames, call_argvalues, arg_children, arg_context);
 	}
 
 	if (type == IF)
 	{
+		if (call_argvalues.size() > 0 && call_argvalues[0].type == Value::BOOL && call_argvalues[0].b)
+			foreach (ModuleInstanciation *v, arg_children) {
+				AbstractNode *n = v->evaluate(arg_context);
+				if (n != NULL)
+					node->children.append(n);
+			}
 	}
 
 	return node;
@@ -68,8 +99,8 @@ AbstractNode *ControlModule::evaluate(const Context*, const QVector<QString> &ca
 
 void register_builtin_control()
 {
-	// builtin_modules["assign"] = new ControlModule(ASSIGN);
+	builtin_modules["assign"] = new ControlModule(ASSIGN);
 	// builtin_modules["for"] = new ControlModule(FOR);
-	// builtin_modules["if"] = new ControlModule(IF);
+	builtin_modules["if"] = new ControlModule(IF);
 }
 
