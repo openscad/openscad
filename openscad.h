@@ -88,18 +88,17 @@ public:
 
 	bool b;
 	double num;
-	double x, y, z;
-	double r_begin;
-	double r_step;
-	double r_end;
-	double m[16];
+	QVector<Value*> vec;
+	double range_begin;
+	double range_step;
+	double range_end;
 	QString text;
 
 	Value();
+	~Value();
+
 	Value(bool v);
 	Value(double v);
-	Value(double v1, double v2, double v3);
-	Value(double m[16]);
 	Value(const QString &t);
 
 	Value(const Value &v);
@@ -112,6 +111,9 @@ public:
 	Value operator % (const Value &v) const;
 	Value inv() const;
 
+	bool getnum(double &v) const;
+	bool getv3(double &x, double &y, double &z) const;
+
 	QString dump() const;
 
 private:
@@ -123,7 +125,7 @@ class Expression
 public:
 	QVector<Expression*> children;
 
-	Value const_value;
+	Value *const_value;
 	QString var_name;
 
 	QString call_funcname;

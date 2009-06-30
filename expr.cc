@@ -23,12 +23,15 @@
 Expression::Expression()
 {
 	type = 0;
+	const_value = NULL;
 }
 
 Expression::~Expression()
 {
 	for (int i=0; i < children.size(); i++)
 		delete children[i];
+	if (const_value)
+		delete const_value;
 }
 
 Value Expression::evaluate(const Context *context) const
@@ -55,7 +58,7 @@ Value Expression::evaluate(const Context *context) const
 	case 'I':
 		return children[0]->evaluate(context).inv();
 	case 'C':
-		return const_value;
+		return *const_value;
 	case 'R':
 		{
 			Value v1 = children[0]->evaluate(context);
@@ -64,32 +67,20 @@ Value Expression::evaluate(const Context *context) const
 			if (v1.type == Value::NUMBER && v2.type == Value::NUMBER && v3.type == Value::NUMBER) {
 				Value r = Value();
 				r.type = Value::RANGE;
-				r.r_begin = v1.num;
-				r.r_step = v2.num;
-				r.r_end = v3.num;
+				r.range_begin = v1.num;
+				r.range_step = v2.num;
+				r.range_end = v3.num;
 				return r;
 			}
 			return Value();
 		}
 	case 'V':
 		{
-			Value v1 = children[0]->evaluate(context);
-			Value v2 = children[1]->evaluate(context);
-			Value v3 = children[2]->evaluate(context);
-			if (v1.type == Value::NUMBER && v2.type == Value::NUMBER && v3.type == Value::NUMBER)
-				return Value(v1.num, v2.num, v3.num);
-			return Value();
-		}
-	case 'M':
-		{
-			double m[16];
-			for (int i=0; i<16; i++) {
-				Value v = children[i]->evaluate(context);
-				if (v.type != Value::NUMBER)
-					return Value();
-				m[i == 15 ? 15 : (i*4) % 15] = v.num;
-			}
-			return Value(m);
+			Value v;
+			v.type = Value::VECTOR;
+			for (int i = 0; i < children.size(); i++)
+				v.vec.append(new Value(children[i]->evaluate(context)));
+			return v;
 		}
 	case 'L':
 		return context->lookup_variable(var_name);
@@ -98,25 +89,18 @@ Value Expression::evaluate(const Context *context) const
 			Value v = children[0]->evaluate(context);
 
 			if (v.type == Value::VECTOR && var_name == QString("x"))
-				return Value(v.x);
+				return *v.vec[0];
 			if (v.type == Value::VECTOR && var_name == QString("y"))
-				return Value(v.y);
+				return *v.vec[1];
 			if (v.type == Value::VECTOR && var_name == QString("z"))
-				return Value(v.z);
+				return *v.vec[2];
 
 			if (v.type == Value::RANGE && var_name == QString("begin"))
-				return Value(v.r_begin);
+				return Value(v.range_begin);
 			if (v.type == Value::RANGE && var_name == QString("step"))
-				return Value(v.r_step);
+				return Value(v.range_step);
 			if (v.type == Value::RANGE && var_name == QString("end"))
-				return Value(v.r_end);
-
-			for (int i=0; i<16; i++) {
-				QString n;
-				n.sprintf("m%d", i+1);
-				if (v.type == Value::MATRIX && var_name == n)
-					return Value(v.m[i]);
-			}
+				return Value(v.range_end);
 
 			return Value();
 		}
@@ -147,24 +131,11 @@ QString Expression::dump() const
 	case 'I':
 		return QString("(-%1)").arg(children[0]->dump());
 	case 'C':
-		return const_value.dump();
+		return const_value->dump();
 	case 'R':
 		return QString("[%1 : %2 : %3]").arg(children[0]->dump(), children[1]->dump(), children[2]->dump());
 	case 'V':
 		return QString("[%1, %2, %3]").arg(children[0]->dump(), children[1]->dump(), children[2]->dump());
-	case 'M':
-		{
-			QString text = "[";
-			for (int i = 0; i < 16; i++) {
-				if (i % 4 == 0 && i > 0)
-					text += ";";
-				if (i > 0)
-					text += " ";
-				text += children[i]->dump();
-			}
-			text += "]";
-			return text;
-		}
 	case 'L':
 		return var_name;
 	case 'N':

@@ -35,6 +35,7 @@ MainWindow::MainWindow(const char *filename)
 {
         root_ctx.functions_p = &builtin_functions;
         root_ctx.modules_p = &builtin_modules;
+	root_ctx.set_variable("$fn", Value(0.0));
 	root_ctx.set_variable("$fs", Value(1.0));
 	root_ctx.set_variable("$fa", Value(12.0));
 

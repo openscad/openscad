@@ -25,6 +25,13 @@ Value::Value()
 	reset_undef();
 }
 
+Value::~Value()
+{
+	for (int i = 0; i < vec.size(); i++)
+		delete vec[i];
+	vec.clear();
+}
+
 Value::Value(bool v)
 {
 	reset_undef();
@@ -39,23 +46,6 @@ Value::Value(double v)
 	num = v;
 }
 
-Value::Value(double v1, double v2, double v3)
-{
-	reset_undef();
-	type = VECTOR;
-	x = v1;
-	y = v2;
-	z = v3;
-}
-
-Value::Value(double m[16])
-{
-	reset_undef();
-	type = MATRIX;
-	for (int i=0; i<16; i++)
-		this->m[i] = m[i];
-}
-
 Value::Value(const QString &t)
 {
 	reset_undef();
@@ -65,16 +55,7 @@ Value::Value(const QString &t)
 
 Value::Value(const Value &v)
 {
-	reset_undef();
-	type = v.type;
-	b = v.b;
-	num = v.num;
-	x = v.x;
-	y = v.y;
-	z = v.z;
-	for (int i=0; i<16; i++)
-		m[i] = v.m[i];
-	text = v.text;
+	*this = v;
 }
 
 Value& Value::operator = (const Value &v)
@@ -83,11 +64,11 @@ Value& Value::operator = (const Value &v)
 	type = v.type;
 	b = v.b;
 	num = v.num;
-	x = v.x;
-	y = v.y;
-	z = v.z;
-	for (int i=0; i<16; i++)
-		m[i] = v.m[i];
+	for (int i = 0; i < v.vec.size(); i++)
+		vec.append(new Value(*v.vec[i]));
+	range_begin = v.range_begin;
+	range_step = v.range_step;
+	range_end = v.range_end;
 	text = v.text;
 	return *this;
 }
@@ -95,13 +76,11 @@ Value& Value::operator = (const Value &v)
 Value Value::operator + (const Value &v) const
 {
 	if (type == VECTOR && v.type == VECTOR) {
-		return Value(x + v.x, y + v.y, z + v.z);
-	}
-	if (type == MATRIX && v.type == MATRIX) {
-		double m_[16];
-		for (int i=0; i<16; i++)
-			m_[i] = m[i] + v.m[i];
-		return Value(m);
+		Value r;
+		r.type = VECTOR;
+		for (int i = 0; i < vec.size() && i < v.vec.size(); i++)
+			r.vec.append(new Value(*vec[i] + *v.vec[i]));
+		return r;
 	}
 	if (type == NUMBER && v.type == NUMBER) {
 		return Value(num + v.num);
@@ -112,13 +91,11 @@ Value Value::operator + (const Value &v) const
 Value Value::operator - (const Value &v) const
 {
 	if (type == VECTOR && v.type == VECTOR) {
-		return Value(x + v.x, y + v.y, z + v.z);
-	}
-	if (type == MATRIX && v.type == MATRIX) {
-		double m_[16];
-		for (int i=0; i<16; i++)
-			m_[i] = m[i] + v.m[i];
-		return Value(m);
+		Value r;
+		r.type = VECTOR;
+		for (int i = 0; i < vec.size() && i < v.vec.size(); i++)
+			r.vec.append(new Value(*vec[i] - *v.vec[i]));
+		return r;
 	}
 	if (type == NUMBER && v.type == NUMBER) {
 		return Value(num + v.num);
@@ -128,17 +105,19 @@ Value Value::operator - (const Value &v) const
 
 Value Value::operator * (const Value &v) const
 {
-	if (type == VECTOR && v.type == VECTOR) {
-		double nx = (y-v.y)*(z-v.z) - (z-v.z)*(y-v.y);
-		double ny = (z-v.z)*(x-v.x) - (x-v.x)*(z-v.z);
-		double nz = (x-v.x)*(y-v.y) - (y-v.y)*(x-v.x);
-		return Value(nx, ny, nz);
-	}
 	if (type == VECTOR && v.type == NUMBER) {
-		return Value(x * v.num, y * v.num, z * v.num);
+		Value r;
+		r.type = VECTOR;
+		for (int i = 0; i < vec.size(); i++)
+			r.vec.append(new Value(*vec[i] * v));
+		return r;
 	}
 	if (type == NUMBER && v.type == VECTOR) {
-		return Value(num * v.x, num * v.y, num * v.z);
+		Value r;
+		r.type = VECTOR;
+		for (int i = 0; i < v.vec.size(); i++)
+			r.vec.append(new Value(v * *v.vec[i]));
+		return r;
 	}
 	if (type == NUMBER && v.type == NUMBER) {
 		return Value(num * v.num);
@@ -148,6 +127,20 @@ Value Value::operator * (const Value &v) const
 
 Value Value::operator / (const Value &v) const
 {
+	if (type == VECTOR && v.type == NUMBER) {
+		Value r;
+		r.type = VECTOR;
+		for (int i = 0; i < vec.size(); i++)
+			r.vec.append(new Value(*vec[i] / v));
+		return r;
+	}
+	if (type == NUMBER && v.type == VECTOR) {
+		Value r;
+		r.type = VECTOR;
+		for (int i = 0; i < v.vec.size(); i++)
+			r.vec.append(new Value(v / *v.vec[i]));
+		return r;
+	}
 	if (type == NUMBER && v.type == NUMBER) {
 		return Value(num / v.num);
 	}
@@ -164,17 +157,40 @@ Value Value::operator % (const Value &v) const
 
 Value Value::inv() const
 {
-	if (type == MATRIX) {
-		double m_[16];
-		for (int i=0; i<16; i++)
-			m_[i] = -m[i];
-		return Value(m);
+	if (type == VECTOR) {
+		Value r;
+		r.type = VECTOR;
+		for (int i = 0; i < vec.size(); i++)
+			r.vec.append(new Value(vec[i]->inv()));
+		return r;
 	}
-	if (type == VECTOR)
-		return Value(-x, -y, -z);
 	if (type == NUMBER)
-		return Value(-x);
+		return Value(-num);
 	return Value();
+}
+
+bool Value::getnum(double &v) const
+{
+	if (type != NUMBER)
+		return false;
+	v = num;
+	return true;
+}
+
+bool Value::getv3(double &x, double &y, double &z) const
+{
+	if (type != VECTOR || vec.size() != 3)
+		return false;
+	if (vec[0]->type != NUMBER)
+		return false;
+	if (vec[1]->type != NUMBER)
+		return false;
+	if (vec[2]->type != NUMBER)
+		return false;
+	x = vec[0]->num;	
+	y = vec[1]->num;	
+	z = vec[2]->num;	
+	return true;
 }
 
 QString Value::dump() const
@@ -182,28 +198,18 @@ QString Value::dump() const
 	if (type == STRING) {
 		return QString("\"") + text + QString("\"");
 	}
-	if (type == MATRIX) {
-		QString text = "[";
-		for (int i=0; i<16; i++) {
-			QString t;
-			t.sprintf("%f", m[i == 15 ? 15 : (i*4) % 15]);
-			if (i % 4 == 0 && i > 0)
-				text += ";";
-			if (i > 0)
-				text += " ";
-			text += t;
-		}
-		text += "]";
-		return text;
-	}
 	if (type == VECTOR) {
-		QString text;
-		text.sprintf("[%f %f %f]", x, y, z);
-		return text;
+		QString text = "[";
+		for (int i = 0; i < vec.size(); i++) {
+			if (i > 0)
+				text += ", ";
+			text += vec[i]->dump();
+		}
+		return text + "]";
 	}
 	if (type == RANGE) {
 		QString text;
-		text.sprintf("[ %f : %f : %f ]", r_begin, r_step, r_end);
+		text.sprintf("[ %f : %f : %f ]", range_begin, range_step, range_end);
 		return text;
 	}
 	if (type == NUMBER) {
@@ -222,14 +228,12 @@ void Value::reset_undef()
 	type = UNDEFINED;
 	b = false;
 	num = 0;
-	r_begin = 0;
-	r_step = 0;
-	r_end = 0;
-	x = 0;
-	y = 0;
-	z = 0;
-	for (int i=0; i<16; i++)
-		m[i] = 0;
+	for (int i = 0; i < vec.size(); i++)
+		delete vec[i];
+	vec.clear();
+	range_begin = 0;
+	range_step = 0;
+	range_end = 0;
 	text = QString();
 }
 

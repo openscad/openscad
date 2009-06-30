@@ -48,6 +48,7 @@ public:
 %union {
 	char *text;
 	double number;
+	class Value *value;
 	class Expression *expr;
 	class ModuleInstanciation *inst;
 	class ArgContainer *arg;
@@ -70,6 +71,8 @@ public:
 %left '.'
 
 %type <expr> expr
+%type <value> vector_const
+%type <expr> vector_expr
 
 %type <inst> module_instantciation
 %type <inst> module_instantciation_list
@@ -171,17 +174,17 @@ expr:
 	TOK_TRUE {
 		$$ = new Expression();
 		$$->type = 'C';
-		$$->const_value = Value(true);
+		$$->const_value = new Value(true);
 	} |
 	TOK_FALSE {
 		$$ = new Expression();
 		$$->type = 'C';
-		$$->const_value = Value(false);
+		$$->const_value = new Value(false);
 	} |
 	TOK_UNDEF {
 		$$ = new Expression();
 		$$->type = 'C';
-		$$->const_value = Value();
+		$$->const_value = new Value();
 	} |
 	TOK_ID {
 		$$ = new Expression();
@@ -199,18 +202,18 @@ expr:
 	TOK_STRING {
 		$$ = new Expression();
 		$$->type = 'C';
-		$$->const_value = Value(QString($1));
+		$$->const_value = new Value(QString($1));
 		free($1);
 	} |
 	TOK_NUMBER {
 		$$ = new Expression();
 		$$->type = 'C';
-		$$->const_value = Value($1);
+		$$->const_value = new Value($1);
 	} |
 	'[' expr ':' expr ']' {
 		Expression *e_one = new Expression();
 		e_one->type = 'C';
-		e_one->const_value = Value(1.0);
+		e_one->const_value = new Value(1.0);
 		$$ = new Expression();
 		$$->type = 'R';
 		$$->children.append($2);
@@ -224,54 +227,19 @@ expr:
 		$$->children.append($4);
 		$$->children.append($6);
 	} |
-	'[' TOK_NUMBER TOK_NUMBER TOK_NUMBER ']' {
+	'[' ']' {
 		$$ = new Expression();
 		$$->type = 'C';
-		$$->const_value = Value($2, $3, $4);
+		$$->const_value = new Value();
+		$$->const_value->type = Value::VECTOR;
 	} |
-	'[' TOK_NUMBER TOK_NUMBER TOK_NUMBER TOK_NUMBER ';'
-	    TOK_NUMBER TOK_NUMBER TOK_NUMBER TOK_NUMBER ';'
-	    TOK_NUMBER TOK_NUMBER TOK_NUMBER TOK_NUMBER ';'
-	    TOK_NUMBER TOK_NUMBER TOK_NUMBER TOK_NUMBER ']' {
+	'[' vector_const ']' {
 		$$ = new Expression();
 		$$->type = 'C';
-		double m[16] = {
-			 $2,  $3,  $4,  $5,
-			 $7,  $8,  $9, $10,
-			$12, $13, $14, $15,
-			$17, $18, $19, $20,
-		};
-		$$->const_value = Value(m);
+		$$->const_value = $2;
 	} |
-	'[' expr ',' expr ',' expr ']' {
-		$$ = new Expression();
-		$$->type = 'V';
-		$$->children.append($2);
-		$$->children.append($4);
-		$$->children.append($6);
-	} |
-	'[' expr ',' expr ',' expr ',' expr ';'
-	    expr ',' expr ',' expr ',' expr ';'
-	    expr ',' expr ',' expr ',' expr ';'
-	    expr ',' expr ',' expr ',' expr ']' {
-		$$ = new Expression();
-		$$->type = 'M';
-		$$->children.append($2);
-		$$->children.append($4);
-		$$->children.append($6);
-		$$->children.append($8);
-		$$->children.append($10);
-		$$->children.append($12);
-		$$->children.append($14);
-		$$->children.append($16);
-		$$->children.append($18);
-		$$->children.append($20);
-		$$->children.append($22);
-		$$->children.append($24);
-		$$->children.append($26);
-		$$->children.append($28);
-		$$->children.append($30);
-		$$->children.append($32);
+	'[' vector_expr ']' {
+		$$ = $2;
 	} |
 	expr '*' expr {
 		$$ = new Expression();
@@ -329,6 +297,28 @@ expr:
 		$$->children = $3->argexpr;
 		free($1);
 		delete $3;
+	} ;
+
+vector_const:
+	TOK_NUMBER {
+		$$ = new Value();
+		$$->type = Value::VECTOR;
+		$$->vec.append(new Value($1));
+	} |
+	vector_const TOK_NUMBER {
+		$$ = $1;
+		$$->vec.append(new Value($2));
+	} ;
+
+vector_expr:
+	expr {
+		$$ = new Expression();
+		$$->type = 'V';
+		$$->children.append($1);
+	} |
+	vector_expr ',' expr {
+		$$ = $1;
+		$$->children.append($3);
 	} ;
 
 arguments_decl:

@@ -78,16 +78,10 @@ AbstractNode *TransformModule::evaluate(const Context *ctx, const QVector<QStrin
 	if (type == SCALE)
 	{
 		Value v = c.lookup_variable("v");
-		if (v.type == Value::NUMBER) {
-			node->m[0] = v.num;
-			node->m[5] = v.num;
-			node->m[10] = v.num;
-		}
-		if (v.type == Value::VECTOR) {
-			node->m[0] = v.x;
-			node->m[5] = v.y;
-			node->m[10] = v.z;
-		}
+		v.getnum(node->m[0]);
+		v.getnum(node->m[5]);
+		v.getnum(node->m[10]);
+		v.getv3(node->m[0], node->m[5], node->m[10]);
 	}
 	if (type == ROTATE)
 	{
@@ -95,15 +89,14 @@ AbstractNode *TransformModule::evaluate(const Context *ctx, const QVector<QStrin
 		Value val_v = c.lookup_variable("v");
 		double a = 0, x = 0, y = 0, z = 1;
 
-		if (val_a.type == Value::NUMBER) {
-			a = val_a.num;
-		}
+		val_a.getnum(a);
 
-		if (val_v.type == Value::VECTOR) {
-			if (val_v.x != 0.0 || val_v.y != 0.0 || val_v.z != 0.0) {
-				x = val_v.x; y = val_v.y; z = val_v.z;
+		if (val_v.getv3(x, y, z)) {
+			if (x != 0.0 || y != 0.0 || z != 0.0) {
 				double sn = 1.0 / sqrt(x*x + y*y + z*z);
-				x *= sn; y *= sn; z *= sn;
+				x *= sn, y *= sn, z *= sn;
+			} else {
+				x = 0, y = 0, z = 1;
 			}
 		}
 
@@ -125,18 +118,17 @@ AbstractNode *TransformModule::evaluate(const Context *ctx, const QVector<QStrin
 	if (type == TRANSLATE)
 	{
 		Value v = c.lookup_variable("v");
-		if (v.type == Value::VECTOR) {
-			node->m[12] = v.x;
-			node->m[13] = v.y;
-			node->m[14] = v.z;
-		}
+		v.getv3(node->m[12], node->m[13], node->m[14]);
 	}
 	if (type == MULTMATRIX)
 	{
 		Value v = c.lookup_variable("m");
-		if (v.type == Value::MATRIX) {
-			for (int i = 0; i < 16; i++)
-				node->m[i] = v.m[i];
+		if (v.type == Value::VECTOR) {
+			for (int i = 0; i < 16; i++) {
+				int x = i / 4, y = i % 4;
+				if (y < v.vec.size() && v.vec[y]->type == Value::VECTOR && x < v.vec[y]->vec.size())
+					v.vec[y]->vec[x]->getnum(node->m[i]);
+			}
 		}
 	}
 
@@ -196,7 +188,7 @@ CSGTerm *TransformNode::render_csg_term(double c[16]) const
 QString TransformNode::dump(QString indent) const
 {
 	QString text;
-	text.sprintf("n%d: multmatrix([%f %f %f %f; %f %f %f %f; %f %f %f %f; %f %f %f %f])", idx,
+	text.sprintf("n%d: multmatrix([[%f %f %f %f], [%f %f %f %f], [%f %f %f %f], [%f %f %f %f]])", idx,
 			m[0], m[4], m[ 8], m[12],
 			m[1], m[5], m[ 9], m[13],
 			m[2], m[6], m[10], m[14],

@@ -41,7 +41,7 @@ class PrimitiveNode : public AbstractPolyNode
 public:
 	bool center;
 	double x, y, z, h, r1, r2;
-	double fs, fa;
+	double fn, fs, fa;
 	primitive_type_e type;
 	PrimitiveNode(primitive_type_e type) : type(type) { }
 	virtual PolySet *render_polyset(render_mode_e mode) const;
@@ -71,22 +71,17 @@ AbstractNode *PrimitiveModule::evaluate(const Context *ctx, const QVector<QStrin
 	Context c(ctx);
 	c.args(argnames, argexpr, call_argnames, call_argvalues);
 
+	node->fn = c.lookup_variable("$fn").num;
 	node->fs = c.lookup_variable("$fs").num;
 	node->fa = c.lookup_variable("$fa").num;
 
 	if (type == CUBE) {
 		Value size = c.lookup_variable("size");
 		Value center = c.lookup_variable("center");
-		if (size.type == Value::VECTOR) {
-			node->x = size.x;
-			node->y = size.y;
-			node->z = size.z;
-		}
-		if (size.type == Value::NUMBER) {
-			node->x = size.num;
-			node->y = size.num;
-			node->z = size.num;
-		}
+		size.getnum(node->x);
+		size.getnum(node->y);
+		size.getnum(node->z);
+		size.getv3(node->x, node->y, node->z);
 		if (center.type == Value::BOOL) {
 			node->center = center.b;
 		}
@@ -101,9 +96,11 @@ AbstractNode *PrimitiveModule::evaluate(const Context *ctx, const QVector<QStrin
 
 	if (type == CYLINDER) {
 		Value h = c.lookup_variable("h");
-		Value r = c.lookup_variable("r");
-		Value r1 = c.lookup_variable("r1");
-		Value r2 = c.lookup_variable("r2");
+		Value r, r1, r2;
+		r1 = c.lookup_variable("r1");
+		r2 = c.lookup_variable("r2");
+		if (r1.type != Value::NUMBER && r1.type != Value::NUMBER)
+			r = c.lookup_variable("r");
 		Value center = c.lookup_variable("center");
 		if (h.type == Value::NUMBER) {
 			node->h = h.num;
@@ -133,8 +130,10 @@ void register_builtin_primitives()
 	builtin_modules["cylinder"] = new PrimitiveModule(CYLINDER);
 }
 
-int get_fragments_from_r(double r, double fs, double fa)
+int get_fragments_from_r(double r, double fn, double fs, double fa)
 {
+	if (fn > 0.0)
+		return fn;
 	return (int)ceil(fmax(fmin(360.0 / fa, r*M_PI / fs), 5));
 }
 
@@ -208,14 +207,14 @@ PolySet *PrimitiveNode::render_polyset(render_mode_e) const
 			double r, z;
 		};
 
-		int rings = get_fragments_from_r(r1, fs, fa);
+		int rings = get_fragments_from_r(r1, fn, fs, fa);
 		ring_s ring[rings];
 
 		for (int i = 0; i < rings; i++) {
 			double phi = (M_PI * (i + 0.5)) / rings;
 			ring[i].r = r1 * sin(phi);
 			ring[i].z = r1 * cos(phi);
-			ring[i].fragments = get_fragments_from_r(ring[i].r, fs, fa);
+			ring[i].fragments = get_fragments_from_r(ring[i].r, fn, fs, fa);
 			ring[i].points = new point2d[ring[i].fragments];
 			for (int j = 0; j < ring[i].fragments; j++) {
 				phi = (M_PI*2*j) / ring[i].fragments;
@@ -267,7 +266,7 @@ sphere_next_r2:
 
 	if (type == CYLINDER && h > 0 && r1 >=0 && r2 >= 0 && (r1 > 0 || r2 > 0))
 	{
-		int fragments = get_fragments_from_r(fmax(r1, r2), fs, fa);
+		int fragments = get_fragments_from_r(fmax(r1, r2), fn, fs, fa);
 
 		double z1, z2;
 		if (center) {

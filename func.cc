@@ -80,52 +80,72 @@ QString BuiltinFunction::dump(QString indent, QString name) const
 	return QString("%1builtin function %2();\n").arg(indent, name);
 }
 
+static double deg2rad(double x)
+{
+	while (x < 0.0)
+		x += 360.0;
+	while (x >= 360.0)
+		x -= 360.0;
+	x = x * M_PI * 2.0 / 360.0;
+	return x;
+}
+
+static double rad2deg(double x)
+{
+	x = x * 360.0 / (M_PI * 2.0);
+	while (x < 0.0)
+		x += 360.0;
+	while (x >= 360.0)
+		x -= 360.0;
+	return x;
+}
+
 Value builtin_sin(const QVector<Value> &args)
 {
 	if (args[0].type == Value::NUMBER)
-		Value(sin(args[0].num));
+		return Value(sin(deg2rad(args[0].num)));
 	return Value();
 }
 
 Value builtin_cos(const QVector<Value> &args)
 {
 	if (args[0].type == Value::NUMBER)
-		Value(cos(args[0].num));
+		return Value(cos(deg2rad(args[0].num)));
 	return Value();
 }
 
 Value builtin_asin(const QVector<Value> &args)
 {
 	if (args[0].type == Value::NUMBER)
-		Value(asin(args[0].num));
+		return Value(rad2deg(asin(args[0].num)));
 	return Value();
 }
 
 Value builtin_acos(const QVector<Value> &args)
 {
 	if (args[0].type == Value::NUMBER)
-		Value(acos(args[0].num));
+		return Value(rad2deg(acos(args[0].num)));
 	return Value();
 }
 
 Value builtin_tan(const QVector<Value> &args)
 {
 	if (args[0].type == Value::NUMBER)
-		Value(tan(args[0].num));
+		return Value(tan(deg2rad(args[0].num)));
 	return Value();
 }
 
 Value builtin_atan(const QVector<Value> &args)
 {
 	if (args[0].type == Value::NUMBER)
-		Value(atan(args[0].num));
+		return Value(rad2deg(atan(args[0].num)));
 	return Value();
 }
 
 Value builtin_atan2(const QVector<Value> &args)
 {
 	if (args[0].type == Value::NUMBER && args[1].type == Value::NUMBER)
-		Value(atan2(args[0].num, args[1].num));
+		return Value(rad2deg(atan2(args[0].num, args[1].num)));
 	return Value();
 }
 

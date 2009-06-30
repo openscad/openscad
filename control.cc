@@ -23,6 +23,7 @@
 #include "openscad.h"
 
 enum control_type_e {
+	ECHO,
 	ASSIGN,
 	FOR,
 	IF
@@ -43,9 +44,24 @@ void for_eval(AbstractNode *node, int l, const QVector<QString> &call_argnames, 
 		Value it_values = call_argvalues[l];
 		Context c(arg_context);
 		if (it_values.type == Value::RANGE) {
-			for (double i = it_values.r_begin; i <= it_values.r_end; i += it_values.r_step) {
-				fprintf(stderr, "%f\n", i);
-				c.set_variable(it_name, Value(i));
+			double range_begin = it_values.range_begin;
+			double range_end = it_values.range_end;
+			double range_step = it_values.range_step;
+			if (range_end < range_begin) {
+				double t = range_begin;
+				range_begin = range_end;
+				range_end = t;
+			}
+			if (range_step > 0 && (range_begin-range_end)/range_step < 10000) {
+				for (double i = range_begin; i <= range_end; i += range_step) {
+					c.set_variable(it_name, Value(i));
+					for_eval(node, l+1, call_argnames, call_argvalues, arg_children, &c);
+				}
+			}
+		}
+		else if (it_values.type == Value::VECTOR) {
+			for (int i = 0; i < it_values.vec.size(); i++) {
+				c.set_variable(it_name, *it_values.vec[i]);
 				for_eval(node, l+1, call_argnames, call_argvalues, arg_children, &c);
 			}
 		}
@@ -64,6 +80,19 @@ void for_eval(AbstractNode *node, int l, const QVector<QString> &call_argnames, 
 AbstractNode *ControlModule::evaluate(const Context*, const QVector<QString> &call_argnames, const QVector<Value> &call_argvalues, const QVector<ModuleInstanciation*> arg_children, const Context *arg_context) const
 {
 	AbstractNode *node = new AbstractNode();
+
+	if (type == ECHO)
+	{
+		QString msg = QString("ECHO: ");
+		for (int i = 0; i < call_argnames.size(); i++) {
+			if (i > 0)
+				msg += QString(", ");
+			if (!call_argnames[i].isEmpty())
+				msg += call_argnames[i] + QString(" = ");
+			msg += call_argvalues[i].dump();
+		}
+		PRINT(msg);
+	}
 
 	if (type == ASSIGN)
 	{
@@ -99,8 +128,9 @@ AbstractNode *ControlModule::evaluate(const Context*, const QVector<QString> &ca
 
 void register_builtin_control()
 {
+	builtin_modules["echo"] = new ControlModule(ECHO);
 	builtin_modules["assign"] = new ControlModule(ASSIGN);
-	// builtin_modules["for"] = new ControlModule(FOR);
+	builtin_modules["for"] = new ControlModule(FOR);
 	builtin_modules["if"] = new ControlModule(IF);
 }
 
