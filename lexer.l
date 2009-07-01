@@ -55,29 +55,18 @@ extern const char *parser_input_buffer;
 "$"?[a-zA-Z0-9_]+ { parserlval.text = strdup(yytext); return TOK_ID; }
 \"[^"]*\" { parserlval.text = strdup(yytext); return TOK_STRING; }
 
-"."	return '.';
-","	return ',';
-";"	return ';';
-"?"	return '?';
-":"	return ':';
-"="	return '=';
-"*"	return '*';
-"/"	return '/';
-"%"	return '%';
-"+"	return '+';
-"-"	return '-';
-"("	return '(';
-")"	return ')';
-"{"	return '{';
-"}"	return '}';
-"["	return '[';
-"]"	return ']';
-
 [\n\r\t ]
 \/\/[^\n]*\n
 "/*" BEGIN(comment);
 <comment>"*/" BEGIN(INITIAL);
 <comment>.|\n
 
-. { fprintf(stderr, "Unrecognized input character in line %d: %s\n", lexerget_lineno(), yytext); exit(1); }
+"<="	return LE;
+">="	return GE;
+"=="	return EQ;
+"!="	return NE;
+"&&"	return AND;
+"||"	return OR;
+
+. { return yytext[0]; }
 

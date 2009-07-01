@@ -73,6 +73,30 @@ Value& Value::operator = (const Value &v)
 	return *this;
 }
 
+Value Value::operator ! () const
+{
+	if (type == BOOL) {
+		return Value(!b);
+	}
+	return Value();
+}
+
+Value Value::operator && (const Value &v) const
+{
+	if (type == BOOL && v.type == BOOL) {
+		return Value(b && v.b);
+	}
+	return Value();
+}
+
+Value Value::operator || (const Value &v) const
+{
+	if (type == BOOL && v.type == BOOL) {
+		return Value(b || v.b);
+	}
+	return Value();
+}
+
 Value Value::operator + (const Value &v) const
 {
 	if (type == VECTOR && v.type == VECTOR) {
@@ -151,6 +175,60 @@ Value Value::operator % (const Value &v) const
 {
 	if (type == NUMBER && v.type == NUMBER) {
 		return Value(fmod(num, v.num));
+	}
+	return Value();
+}
+
+Value Value::operator < (const Value &v) const
+{
+	if (type == NUMBER && v.type == NUMBER) {
+		return Value(num < v.num);
+	}
+	return Value();
+}
+
+Value Value::operator <= (const Value &v) const
+{
+	if (type == NUMBER && v.type == NUMBER) {
+		return Value(num <= v.num);
+	}
+	return Value();
+}
+
+Value Value::operator == (const Value &v) const
+{
+	if (type == BOOL && v.type == BOOL) {
+		return Value(b == v.b);
+	}
+	if (type == NUMBER && v.type == NUMBER) {
+		return Value(num == v.num);
+	}
+	return Value();
+}
+
+Value Value::operator != (const Value &v) const
+{
+	if (type == BOOL && v.type == BOOL) {
+		return Value(b != v.b);
+	}
+	if (type == NUMBER && v.type == NUMBER) {
+		return Value(num != v.num);
+	}
+	return Value();
+}
+
+Value Value::operator >= (const Value &v) const
+{
+	if (type == NUMBER && v.type == NUMBER) {
+		return Value(num >= v.num);
+	}
+	return Value();
+}
+
+Value Value::operator > (const Value &v) const
+{
+	if (type == NUMBER && v.type == NUMBER) {
+		return Value(num > v.num);
 	}
 	return Value();
 }

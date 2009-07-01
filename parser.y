@@ -66,9 +66,15 @@ public:
 %token TOK_FALSE
 %token TOK_UNDEF
 
+%token LE GE EQ NE AND OR
+
 %left '+' '-'
 %left '*' '/' '%'
 %left '.'
+%left '<' LE GE '>'
+%left EQ NE
+%left AND
+%left OR
 
 %type <expr> expr
 %type <value> vector_const
@@ -173,69 +179,69 @@ single_module_instantciation:
 expr:
 	TOK_TRUE {
 		$$ = new Expression();
-		$$->type = 'C';
+		$$->type = "C";
 		$$->const_value = new Value(true);
 	} |
 	TOK_FALSE {
 		$$ = new Expression();
-		$$->type = 'C';
+		$$->type = "C";
 		$$->const_value = new Value(false);
 	} |
 	TOK_UNDEF {
 		$$ = new Expression();
-		$$->type = 'C';
+		$$->type = "C";
 		$$->const_value = new Value();
 	} |
 	TOK_ID {
 		$$ = new Expression();
-		$$->type = 'L';
+		$$->type = "L";
 		$$->var_name = QString($1);
 		free($1);
 	} |
 	expr '.' TOK_ID {
 		$$ = new Expression();
-		$$->type = 'N';
+		$$->type = "N";
 		$$->children.append($1);
 		$$->var_name = QString($3);
 		free($3);
 	} |
 	TOK_STRING {
 		$$ = new Expression();
-		$$->type = 'C';
+		$$->type = "C";
 		$$->const_value = new Value(QString($1));
 		free($1);
 	} |
 	TOK_NUMBER {
 		$$ = new Expression();
-		$$->type = 'C';
+		$$->type = "C";
 		$$->const_value = new Value($1);
 	} |
 	'[' expr ':' expr ']' {
 		Expression *e_one = new Expression();
-		e_one->type = 'C';
+		e_one->type = "C";
 		e_one->const_value = new Value(1.0);
 		$$ = new Expression();
-		$$->type = 'R';
+		$$->type = "R";
 		$$->children.append($2);
 		$$->children.append(e_one);
 		$$->children.append($4);
 	} |
 	'[' expr ':' expr ':' expr ']' {
 		$$ = new Expression();
-		$$->type = 'R';
+		$$->type = "R";
 		$$->children.append($2);
 		$$->children.append($4);
 		$$->children.append($6);
 	} |
 	'[' ']' {
 		$$ = new Expression();
-		$$->type = 'C';
+		$$->type = "C";
 		$$->const_value = new Value();
 		$$->const_value->type = Value::VECTOR;
 	} |
 	'[' vector_const ']' {
 		$$ = new Expression();
-		$$->type = 'C';
+		$$->type = "C";
 		$$->const_value = $2;
 	} |
 	'[' vector_expr ']' {
@@ -243,31 +249,79 @@ expr:
 	} |
 	expr '*' expr {
 		$$ = new Expression();
-		$$->type = '*';
+		$$->type = "*";
 		$$->children.append($1);
 		$$->children.append($3);
 	} |
 	expr '/' expr {
 		$$ = new Expression();
-		$$->type = '/';
+		$$->type = "/";
 		$$->children.append($1);
 		$$->children.append($3);
 	} |
 	expr '%' expr {
 		$$ = new Expression();
-		$$->type = '%';
+		$$->type = "%";
 		$$->children.append($1);
 		$$->children.append($3);
 	} |
 	expr '+' expr {
 		$$ = new Expression();
-		$$->type = '+';
+		$$->type = "+";
 		$$->children.append($1);
 		$$->children.append($3);
 	} |
 	expr '-' expr {
 		$$ = new Expression();
-		$$->type = '-';
+		$$->type = "-";
+		$$->children.append($1);
+		$$->children.append($3);
+	} |
+	expr '<' expr {
+		$$ = new Expression();
+		$$->type = "<";
+		$$->children.append($1);
+		$$->children.append($3);
+	} |
+	expr LE expr {
+		$$ = new Expression();
+		$$->type = "<=";
+		$$->children.append($1);
+		$$->children.append($3);
+	} |
+	expr EQ expr {
+		$$ = new Expression();
+		$$->type = "==";
+		$$->children.append($1);
+		$$->children.append($3);
+	} |
+	expr NE expr {
+		$$ = new Expression();
+		$$->type = "!=";
+		$$->children.append($1);
+		$$->children.append($3);
+	} |
+	expr GE expr {
+		$$ = new Expression();
+		$$->type = ">=";
+		$$->children.append($1);
+		$$->children.append($3);
+	} |
+	expr '>' expr {
+		$$ = new Expression();
+		$$->type = "<";
+		$$->children.append($1);
+		$$->children.append($3);
+	} |
+	expr AND expr {
+		$$ = new Expression();
+		$$->type = "&&";
+		$$->children.append($1);
+		$$->children.append($3);
+	} |
+	expr OR expr {
+		$$ = new Expression();
+		$$->type = "||";
 		$$->children.append($1);
 		$$->children.append($3);
 	} |
@@ -276,7 +330,12 @@ expr:
 	} |
 	'-' expr {
 		$$ = new Expression();
-		$$->type = 'I';
+		$$->type = "I";
+		$$->children.append($2);
+	} |
+	'!' expr {
+		$$ = new Expression();
+		$$->type = "!";
 		$$->children.append($2);
 	} |
 	'(' expr ')' {
@@ -284,14 +343,20 @@ expr:
 	} |
 	expr '?' expr ':' expr {
 		$$ = new Expression();
-		$$->type = '?';
+		$$->type = "?:";
 		$$->children.append($1);
 		$$->children.append($3);
 		$$->children.append($5);
 	} |
+	expr '[' expr ']' {
+		$$ = new Expression();
+		$$->type = "[]";
+		$$->children.append($1);
+		$$->children.append($3);
+	} |
 	TOK_ID '(' arguments_call ')' {
 		$$ = new Expression();
-		$$->type = 'F';
+		$$->type = "F";
 		$$->call_funcname = QString($1);
 		$$->call_argnames = $3->argnames;
 		$$->children = $3->argexpr;

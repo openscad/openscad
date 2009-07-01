@@ -104,11 +104,23 @@ public:
 	Value(const Value &v);
 	Value& operator = (const Value &v);
 
+	Value operator ! () const;
+	Value operator && (const Value &v) const;
+	Value operator || (const Value &v) const;
+
 	Value operator + (const Value &v) const;
 	Value operator - (const Value &v) const;
 	Value operator * (const Value &v) const;
 	Value operator / (const Value &v) const;
 	Value operator % (const Value &v) const;
+
+	Value operator < (const Value &v) const;
+	Value operator <= (const Value &v) const;
+	Value operator == (const Value &v) const;
+	Value operator != (const Value &v) const;
+	Value operator >= (const Value &v) const;
+	Value operator > (const Value &v) const;
+
 	Value inv() const;
 
 	bool getnum(double &v) const;
@@ -131,8 +143,11 @@ public:
 	QString call_funcname;
 	QVector<QString> call_argnames;
 
-	// Math operators: * / % + -
-	// Condition (?: operator): ?
+	// Boolean: ! && ||
+	// Operators: * / % + -
+	// Relations: < <= == != >= >
+	// Vector element: []
+	// Condition operator: ?:
 	// Invert (prefix '-'): I
 	// Constant value: C
 	// Create Range: R
@@ -141,7 +156,7 @@ public:
 	// Lookup Variable: L
 	// Lookup member per name: N
 	// Function call: F
-	char type;
+	QString type;
 
 	Expression();
 	~Expression();
