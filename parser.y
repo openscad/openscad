@@ -68,13 +68,15 @@ public:
 
 %token LE GE EQ NE AND OR
 
-%left '+' '-'
+%left '[' ']'
+%left '!' '+' '-'
 %left '*' '/' '%'
 %left '.'
 %left '<' LE GE '>'
 %left EQ NE
 %left AND
 %left OR
+%right '?' ':'
 
 %type <expr> expr
 %type <value> vector_const
@@ -165,17 +167,20 @@ single_module_instantciation:
 		free($1);
 		delete $3;
 	} |
-	TOK_ID ':' TOK_ID '(' arguments_call ')' {
-		$$ = new ModuleInstanciation();
+	TOK_ID ':' single_module_instantciation {
+		$$ = $3;
 		$$->label = QString($1);
-		$$->modname = QString($3);
-		$$->argnames = $5->argnames;
-		$$->argexpr = $5->argexpr;
 		free($1);
-		free($3);
-		delete $5;
-	} ;
-	
+	} |
+	'!' single_module_instantciation {
+		$$ = $2;
+		$$->tag_root = true;
+	} |
+	'#' single_module_instantciation {
+		$$ = $2;
+		$$->tag_highlight = true;
+	};
+
 expr:
 	TOK_TRUE {
 		$$ = new Expression();
@@ -365,10 +370,11 @@ expr:
 	} ;
 
 vector_const:
-	TOK_NUMBER {
+	TOK_NUMBER TOK_NUMBER {
 		$$ = new Value();
 		$$->type = Value::VECTOR;
 		$$->vec.append(new Value($1));
+		$$->vec.append(new Value($2));
 	} |
 	vector_const TOK_NUMBER {
 		$$ = $1;

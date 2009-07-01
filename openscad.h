@@ -209,7 +209,7 @@ class AbstractModule
 {
 public:
 	virtual ~AbstractModule();
-	virtual AbstractNode *evaluate(const Context *ctx, const QVector<QString> &call_argnames, const QVector<Value> &call_argvalues, const QVector<ModuleInstanciation*> arg_children, const Context *arg_context) const;
+	virtual AbstractNode *evaluate(const Context *ctx, const ModuleInstanciation *inst) const;
 	virtual QString dump(QString indent, QString name) const;
 };
 
@@ -220,9 +220,14 @@ public:
 	QString modname;
 	QVector<QString> argnames;
 	QVector<Expression*> argexpr;
+	QVector<Value> argvalues;
 	QVector<ModuleInstanciation*> children;
 
-	ModuleInstanciation() { }
+	bool tag_root;
+	bool tag_highlight;
+	const Context *ctx;
+
+	ModuleInstanciation() : tag_root(false), tag_highlight(false), ctx(NULL) { }
 	~ModuleInstanciation();
 
 	QString dump(QString indent) const;
@@ -246,7 +251,7 @@ public:
 	Module() { }
 	virtual ~Module();
 
-	virtual AbstractNode *evaluate(const Context *ctx, const QVector<QString> &call_argnames, const QVector<Value> &call_argvalues, const QVector<ModuleInstanciation*> arg_children, const Context *arg_context) const;
+	virtual AbstractNode *evaluate(const Context *ctx, const ModuleInstanciation *inst) const;
 	virtual QString dump(QString indent, QString name) const;
 };
 
@@ -279,7 +284,7 @@ public:
 	Value lookup_variable(QString name) const;
 
 	Value evaluate_function(QString name, const QVector<QString> &argnames, const QVector<Value> &argvalues) const;
-	AbstractNode *evaluate_module(QString name, const QVector<QString> &argnames, const QVector<Value> &argvalues, const QVector<ModuleInstanciation*> arg_children, const Context *arg_context = NULL) const;
+	AbstractNode *evaluate_module(const ModuleInstanciation *inst) const;
 };
 
 // The CGAL template magic slows down the compilation process by a factor of 5.
@@ -390,6 +395,7 @@ class AbstractNode
 {
 public:
 	QVector<AbstractNode*> children;
+	const ModuleInstanciation *modinst;
 
 	int progress_mark;
 	void progress_prepare();
@@ -398,7 +404,7 @@ public:
 	int idx;
 	static int idx_counter;
 
-	AbstractNode();
+	AbstractNode(const ModuleInstanciation *mi);
 	virtual ~AbstractNode();
 #ifdef ENABLE_CGAL
 	virtual CGAL_Nef_polyhedron render_cgal_nef_polyhedron() const;
@@ -414,6 +420,7 @@ public:
 		RENDER_CGAL,
 		RENDER_OPENCSG
 	};
+	AbstractPolyNode(const ModuleInstanciation *mi) : AbstractNode(mi) { };
 	virtual PolySet *render_polyset(render_mode_e mode) const;
 #ifdef ENABLE_CGAL
 	virtual CGAL_Nef_polyhedron render_cgal_nef_polyhedron() const;

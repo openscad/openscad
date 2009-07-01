@@ -33,7 +33,7 @@ class PrimitiveModule : public AbstractModule
 public:
 	primitive_type_e type;
 	PrimitiveModule(primitive_type_e type) : type(type) { }
-	virtual AbstractNode *evaluate(const Context *ctx, const QVector<QString> &call_argnames, const QVector<Value> &call_argvalues, const QVector<ModuleInstanciation*> arg_children, const Context *arg_context) const;
+	virtual AbstractNode *evaluate(const Context *ctx, const ModuleInstanciation *inst) const;
 };
 
 class PrimitiveNode : public AbstractPolyNode
@@ -43,14 +43,14 @@ public:
 	double x, y, z, h, r1, r2;
 	double fn, fs, fa;
 	primitive_type_e type;
-	PrimitiveNode(primitive_type_e type) : type(type) { }
+	PrimitiveNode(const ModuleInstanciation *mi, primitive_type_e type) : AbstractPolyNode(mi), type(type) { }
 	virtual PolySet *render_polyset(render_mode_e mode) const;
 	virtual QString dump(QString indent) const;
 };
 
-AbstractNode *PrimitiveModule::evaluate(const Context *ctx, const QVector<QString> &call_argnames, const QVector<Value> &call_argvalues, const QVector<ModuleInstanciation*>, const Context*) const
+AbstractNode *PrimitiveModule::evaluate(const Context *ctx, const ModuleInstanciation *inst) const
 {
-	PrimitiveNode *node = new PrimitiveNode(type);
+	PrimitiveNode *node = new PrimitiveNode(inst, type);
 
 	node->center = false;
 	node->x = node->y = node->z = node->h = node->r1 = node->r2 = 1;
@@ -69,7 +69,7 @@ AbstractNode *PrimitiveModule::evaluate(const Context *ctx, const QVector<QStrin
 	}
 
 	Context c(ctx);
-	c.args(argnames, argexpr, call_argnames, call_argvalues);
+	c.args(argnames, argexpr, inst->argnames, inst->argvalues);
 
 	node->fn = c.lookup_variable("$fn").num;
 	node->fs = c.lookup_variable("$fs").num;

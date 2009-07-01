@@ -34,7 +34,7 @@ class ControlModule : public AbstractModule
 public:
 	control_type_e type;
 	ControlModule(control_type_e type) : type(type) { }
-	virtual AbstractNode *evaluate(const Context *ctx, const QVector<QString> &call_argnames, const QVector<Value> &call_argvalues, const QVector<ModuleInstanciation*> arg_children, const Context *arg_context) const;
+	virtual AbstractNode *evaluate(const Context *ctx, const ModuleInstanciation *inst) const;
 };
 
 void for_eval(AbstractNode *node, int l, const QVector<QString> &call_argnames, const QVector<Value> &call_argvalues, const QVector<ModuleInstanciation*> arg_children, const Context *arg_context)
@@ -77,31 +77,31 @@ void for_eval(AbstractNode *node, int l, const QVector<QString> &call_argnames, 
 	}
 }
 
-AbstractNode *ControlModule::evaluate(const Context*, const QVector<QString> &call_argnames, const QVector<Value> &call_argvalues, const QVector<ModuleInstanciation*> arg_children, const Context *arg_context) const
+AbstractNode *ControlModule::evaluate(const Context*, const ModuleInstanciation *inst) const
 {
-	AbstractNode *node = new AbstractNode();
+	AbstractNode *node = new AbstractNode(inst);
 
 	if (type == ECHO)
 	{
 		QString msg = QString("ECHO: ");
-		for (int i = 0; i < call_argnames.size(); i++) {
+		for (int i = 0; i < inst->argnames.size(); i++) {
 			if (i > 0)
 				msg += QString(", ");
-			if (!call_argnames[i].isEmpty())
-				msg += call_argnames[i] + QString(" = ");
-			msg += call_argvalues[i].dump();
+			if (!inst->argnames[i].isEmpty())
+				msg += inst->argnames[i] + QString(" = ");
+			msg += inst->argvalues[i].dump();
 		}
 		PRINT(msg);
 	}
 
 	if (type == ASSIGN)
 	{
-		Context c(arg_context);
-		for (int i = 0; i < call_argnames.size(); i++) {
-			if (!call_argnames[i].isEmpty())
-				c.set_variable(call_argnames[i], call_argvalues[i]);
+		Context c(inst->ctx);
+		for (int i = 0; i < inst->argnames.size(); i++) {
+			if (!inst->argnames[i].isEmpty())
+				c.set_variable(inst->argnames[i], inst->argvalues[i]);
 		}
-		foreach (ModuleInstanciation *v, arg_children) {
+		foreach (ModuleInstanciation *v, inst->children) {
 			AbstractNode *n = v->evaluate(&c);
 			if (n != NULL)
 				node->children.append(n);
@@ -110,14 +110,14 @@ AbstractNode *ControlModule::evaluate(const Context*, const QVector<QString> &ca
 
 	if (type == FOR)
 	{
-		for_eval(node, 0, call_argnames, call_argvalues, arg_children, arg_context);
+		for_eval(node, 0, inst->argnames, inst->argvalues, inst->children, inst->ctx);
 	}
 
 	if (type == IF)
 	{
-		if (call_argvalues.size() > 0 && call_argvalues[0].type == Value::BOOL && call_argvalues[0].b)
-			foreach (ModuleInstanciation *v, arg_children) {
-				AbstractNode *n = v->evaluate(arg_context);
+		if (inst->argvalues.size() > 0 && inst->argvalues[0].type == Value::BOOL && inst->argvalues[0].b)
+			foreach (ModuleInstanciation *v, inst->children) {
+				AbstractNode *n = v->evaluate(inst->ctx);
 				if (n != NULL)
 					node->children.append(n);
 			}

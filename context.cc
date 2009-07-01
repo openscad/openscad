@@ -87,15 +87,13 @@ Value Context::evaluate_function(QString name, const QVector<QString> &argnames,
 	return Value();
 }
 
-AbstractNode *Context::evaluate_module(QString name, const QVector<QString> &argnames, const QVector<Value> &argvalues, const QVector<ModuleInstanciation*> arg_children, const Context *arg_context) const
+AbstractNode *Context::evaluate_module(const ModuleInstanciation *inst) const
 {
-	if (arg_context == NULL)
-		arg_context = this;
-	if (modules_p && modules_p->contains(name))
-		return modules_p->value(name)->evaluate(this, argnames, argvalues, arg_children, arg_context);
+	if (modules_p && modules_p->contains(inst->modname))
+		return modules_p->value(inst->modname)->evaluate(this, inst);
 	if (parent)
-		return parent->evaluate_module(name, argnames, argvalues, arg_children, arg_context);
-	PRINTA("WARNING: Ignoring unkown module '%1'.", name);
+		return parent->evaluate_module(inst);
+	PRINTA("WARNING: Ignoring unkown module '%1'.", inst->modname);
 	return NULL;
 }
 

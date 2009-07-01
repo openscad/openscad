@@ -34,13 +34,14 @@ class TransformModule : public AbstractModule
 public:
 	transform_type_e type;
 	TransformModule(transform_type_e type) : type(type) { }
-	virtual AbstractNode *evaluate(const Context *ctx, const QVector<QString> &call_argnames, const QVector<Value> &call_argvalues, const QVector<ModuleInstanciation*> arg_children, const Context *arg_context) const;
+	virtual AbstractNode *evaluate(const Context *ctx, const ModuleInstanciation *inst) const;
 };
 
 class TransformNode : public AbstractNode
 {
 public:
 	double m[16];
+	TransformNode(const ModuleInstanciation *mi) : AbstractNode(mi) { }
 #ifdef ENABLE_CGAL
         virtual CGAL_Nef_polyhedron render_cgal_nef_polyhedron() const;
 #endif
@@ -48,9 +49,9 @@ public:
         virtual QString dump(QString indent) const;
 };
 
-AbstractNode *TransformModule::evaluate(const Context *ctx, const QVector<QString> &call_argnames, const QVector<Value> &call_argvalues, const QVector<ModuleInstanciation*> arg_children, const Context *arg_context) const
+AbstractNode *TransformModule::evaluate(const Context *ctx, const ModuleInstanciation *inst) const
 {
-	TransformNode *node = new TransformNode();
+	TransformNode *node = new TransformNode(inst);
 
 	for (int i = 0; i < 16; i++) {
 		node->m[i] = i % 5 == 0 ? 1.0 : 0.0;
@@ -73,7 +74,7 @@ AbstractNode *TransformModule::evaluate(const Context *ctx, const QVector<QStrin
 	}
 
         Context c(ctx);
-        c.args(argnames, argexpr, call_argnames, call_argvalues);
+        c.args(argnames, argexpr, inst->argnames, inst->argvalues);
 
 	if (type == SCALE)
 	{
@@ -132,8 +133,8 @@ AbstractNode *TransformModule::evaluate(const Context *ctx, const QVector<QStrin
 		}
 	}
 
-	foreach (ModuleInstanciation *v, arg_children) {
-		AbstractNode *n = v->evaluate(arg_context);
+	foreach (ModuleInstanciation *v, inst->children) {
+		AbstractNode *n = v->evaluate(inst->ctx);
 		if (n != NULL)
 			node->children.append(n);
 	}

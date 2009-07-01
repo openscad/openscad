@@ -26,12 +26,12 @@ AbstractModule::~AbstractModule()
 {
 }
 
-AbstractNode *AbstractModule::evaluate(const Context*, const QVector<QString>&, const QVector<Value>&, const QVector<ModuleInstanciation*> arg_children, const Context *arg_context) const
+AbstractNode *AbstractModule::evaluate(const Context*, const ModuleInstanciation *inst) const
 {
-	AbstractNode *node = new AbstractNode();
+	AbstractNode *node = new AbstractNode(inst);
 
-	foreach (ModuleInstanciation *v, arg_children) {
-		AbstractNode *n = v->evaluate(arg_context);
+	foreach (ModuleInstanciation *v, inst->children) {
+		AbstractNode *n = v->evaluate(inst->ctx);
 		if (n)
 			node->children.append(n);
 	}
@@ -82,11 +82,21 @@ QString ModuleInstanciation::dump(QString indent) const
 
 AbstractNode *ModuleInstanciation::evaluate(const Context *ctx) const
 {
-	QVector<Value> argvalues;
-	foreach (Expression *v, argexpr) {
-		argvalues.append(v->evaluate(ctx));
+	AbstractNode *node = NULL;
+	if (this->ctx) {
+		PRINTA("WARNING: Ignoring recursive module instanciation of '%1'.", modname);
+	} else {
+		ModuleInstanciation *that = (ModuleInstanciation*)this;
+		that->argvalues.clear();
+		foreach (Expression *v, that->argexpr) {
+			that->argvalues.append(v->evaluate(ctx));
+		}
+		that->ctx = ctx;
+		node = ctx->evaluate_module(this);
+		that->ctx = NULL;
+		that->argvalues.clear();
 	}
-	return ctx->evaluate_module(modname, argnames, argvalues, children);
+	return node;
 }
 
 Module::~Module()
@@ -101,10 +111,10 @@ Module::~Module()
 		delete v;
 }
 
-AbstractNode *Module::evaluate(const Context *ctx, const QVector<QString> &call_argnames, const QVector<Value> &call_argvalues, const QVector<ModuleInstanciation*> arg_children, const Context *arg_context) const
+AbstractNode *Module::evaluate(const Context *ctx, const ModuleInstanciation *inst) const
 {
 	Context c(ctx);
-	c.args(argnames, argexpr, call_argnames, call_argvalues);
+	c.args(argnames, argexpr, inst->argnames, inst->argvalues);
 
 	c.functions_p = &functions;
 	c.modules_p = &modules;
@@ -113,15 +123,15 @@ AbstractNode *Module::evaluate(const Context *ctx, const QVector<QString> &call_
 		c.set_variable(assignments_var[i], assignments_expr[i]->evaluate(&c));
 	}
 
-	AbstractNode *node = new AbstractNode();
+	AbstractNode *node = new AbstractNode(inst);
 	for (int i = 0; i < children.size(); i++) {
 		AbstractNode *n = children[i]->evaluate(&c);
 		if (n != NULL)
 			node->children.append(n);
 	}
 
-	foreach(ModuleInstanciation *v, arg_children) {
-		AbstractNode *n = v->evaluate(arg_context);
+	foreach(ModuleInstanciation *v, inst->children) {
+		AbstractNode *n = v->evaluate(inst->ctx);
 		if (n != NULL)
 			node->children.append(n);
 	}
@@ -191,8 +201,9 @@ void destroy_builtin_modules()
 
 int AbstractNode::idx_counter;
 
-AbstractNode::AbstractNode()
+AbstractNode::AbstractNode(const ModuleInstanciation *mi)
 {
+	modinst = mi;
 	idx = idx_counter++;
 }
 
