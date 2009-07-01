@@ -40,13 +40,16 @@ MainWindow::MainWindow(const char *filename)
 	root_ctx.set_variable("$fa", Value(12.0));
 
 	root_module = NULL;
-	root_node = NULL;
+	absolute_root_node = NULL;
 	root_raw_term = NULL;
 	root_norm_term = NULL;
 	root_chain = NULL;
 #ifdef ENABLE_CGAL
 	root_N = NULL;
 #endif
+
+	highlights_chain = NULL;
+	root_node = NULL;
 
 	s1 = new QSplitter(Qt::Horizontal, this);
 	editor = new QTextEdit(s1);
@@ -199,6 +202,17 @@ void MainWindow::load()
 	}
 }
 
+void MainWindow::find_root_tag(AbstractNode *n)
+{
+	foreach(AbstractNode *v, n->children) {
+		if (v->modinst->tag_root)
+			root_node = v;
+		if (root_node)
+			return;
+		find_root_tag(v);
+	}
+}
+
 void MainWindow::compile()
 {
 	PRINT("Parsing design (AST generation)...");
@@ -209,9 +223,9 @@ void MainWindow::compile()
 		root_module = NULL;
 	}
 
-	if (root_node) {
-		delete root_node;
-		root_node = NULL;
+	if (absolute_root_node) {
+		delete absolute_root_node;
+		absolute_root_node = NULL;
 	}
 
 	if (root_raw_term) {
@@ -229,6 +243,16 @@ void MainWindow::compile()
 		root_chain = NULL;
 	}
 
+	foreach(CSGTerm *v, highlight_terms) {
+		v->unlink();
+	}
+	highlight_terms.clear();
+	if (highlights_chain) {
+		delete highlights_chain;
+		highlights_chain = NULL;
+	}
+	root_node = NULL;
+
 	root_module = parse(editor->toPlainText().toAscii().data(), false);
 
 	if (!root_module)
@@ -240,11 +264,15 @@ void MainWindow::compile()
 	AbstractNode::idx_counter = 1;
 	{
 		ModuleInstanciation root_inst;
-		root_node = root_module->evaluate(&root_ctx, &root_inst);
+		absolute_root_node = root_module->evaluate(&root_ctx, &root_inst);
 	}
 
-	if (!root_node)
+	if (!absolute_root_node)
 		goto fail;
+
+	find_root_tag(absolute_root_node);
+	if (!root_node)
+		root_node = absolute_root_node;
 
 	PRINT("Compiling design (CSG Products generation)...");
 	QApplication::processEvents();
@@ -254,7 +282,7 @@ void MainWindow::compile()
 	for (int i = 0; i < 16; i++)
 		m[i] = i % 5 == 0 ? 1.0 : 0.0;
 
-	root_raw_term = root_node->render_csg_term(m);
+	root_raw_term = root_node->render_csg_term(m, &highlight_terms);
 
 	if (!root_raw_term)
 		goto fail;
@@ -277,6 +305,24 @@ void MainWindow::compile()
 
 	root_chain = new CSGChain();
 	root_chain->import(root_norm_term);
+
+	if (highlight_terms.size() > 0)
+	{
+		PRINTF("Compiling highlights (%d CSG Trees)...", highlight_terms.size());
+		QApplication::processEvents();
+
+		highlights_chain = new CSGChain();
+		for (int i = 0; i < highlight_terms.size(); i++) {
+			while (1) {
+				CSGTerm *n = highlight_terms[i]->normalize();
+				highlight_terms[i]->unlink();
+				if (highlight_terms[i] == n)
+					break;
+				highlight_terms[i] = n;
+			}
+			highlights_chain->import(highlight_terms[i]);
+		}
+	}
 
 	if (1) {
 		PRINT("Compilation finished.");
@@ -560,7 +606,7 @@ void MainWindow::actionDisplayCSGProducts()
 	QTextEdit *e = new QTextEdit(NULL);
 	e->setTabStopWidth(30);
 	e->setWindowTitle("CSG Products Dump");
-	e->setPlainText(QString("\nCSG before normalization:\n%1\n\n\nCSG after normalization:\n%2\n\n\nCSG rendering chain:\n%3\n").arg(root_raw_term ? root_raw_term->dump() : "N/A", root_norm_term ? root_norm_term->dump() : "N/A", root_chain ? root_chain->dump() : "N/A"));
+	e->setPlainText(QString("\nCSG before normalization:\n%1\n\n\nCSG after normalization:\n%2\n\n\nCSG rendering chain:\n%3\n\n\nHighlights CSG rendering chain:\n%4\n").arg(root_raw_term ? root_raw_term->dump() : "N/A", root_norm_term ? root_norm_term->dump() : "N/A", root_chain ? root_chain->dump() : "N/A", highlights_chain ? highlights_chain->dump() : "N/A"));
 	e->show();
 	e->resize(600, 400);
 	current_win = NULL;
@@ -605,6 +651,48 @@ public:
 	}
 };
 
+static void renderCSGChainviaOpenCSG(CSGChain *chain, GLint *shaderinfo, bool highlight)
+{
+	std::vector<OpenCSG::Primitive*> primitives;
+	int j = 0;
+	for (int i = 0;; i++)
+	{
+		bool last = i == chain->polysets.size();
+
+		if (last || chain->types[i] == CSGTerm::UNION)
+		{
+			OpenCSG::render(primitives, OpenCSG::Goldfeather, OpenCSG::NoDepthComplexitySampling);
+			glDepthFunc(GL_EQUAL);
+			if (shaderinfo)
+				glUseProgram(shaderinfo[0]);
+			for (; j < i; j++) {
+				if (highlight) {
+					chain->polysets[j]->render_surface(PolySet::COLOR_HIGHLIGHT, shaderinfo);
+				} else if (chain->types[j] == CSGTerm::DIFFERENCE) {
+					chain->polysets[j]->render_surface(PolySet::COLOR_CUTOUT, shaderinfo);
+				} else {
+					chain->polysets[j]->render_surface(PolySet::COLOR_MATERIAL, shaderinfo);
+				}
+			}
+			if (shaderinfo)
+				glUseProgram(0);
+			for (unsigned int k = 0; k < primitives.size(); k++) {
+				delete primitives[k];
+			}
+			glDepthFunc(GL_LEQUAL);
+			primitives.clear();
+		}
+
+		if (last)
+			break;
+
+		OpenCSGPrim *prim = new OpenCSGPrim(chain->types[i] == CSGTerm::DIFFERENCE ?
+				OpenCSG::Subtraction : OpenCSG::Intersection, 1);
+		prim->p = chain->polysets[i];
+		primitives.push_back(prim);
+	}
+}
+
 static void renderGLviaOpenCSG(void *vp)
 {
 	MainWindow *m = (MainWindow*)vp;
@@ -613,48 +701,13 @@ static void renderGLviaOpenCSG(void *vp)
 		glew_initialized = 1;
 		glewInit();
 	}
-
 	if (m->root_chain) {
 		GLint *shaderinfo = m->screen->shaderinfo;
-		if (m->screen->useLights || !shaderinfo[0])
+		if (!shaderinfo[0])
 			shaderinfo = NULL;
-		std::vector<OpenCSG::Primitive*> primitives;
-		int j = 0;
-		for (int i = 0;; i++)
-		{
-			bool last = i == m->root_chain->polysets.size();
-
-			if (last || m->root_chain->types[i] == CSGTerm::UNION)
-			{
-				OpenCSG::render(primitives, OpenCSG::Goldfeather, OpenCSG::NoDepthComplexitySampling);
-				glDepthFunc(GL_EQUAL);
-				if (shaderinfo)
-					glUseProgram(shaderinfo[0]);
-				for (; j < i; j++) {
-					if (m->root_chain->types[j] == CSGTerm::DIFFERENCE) {
-						m->root_chain->polysets[j]->render_surface(PolySet::COLOR_CUTOUT, shaderinfo);
-					} else {
-						m->root_chain->polysets[j]->render_surface(PolySet::COLOR_MATERIAL, shaderinfo);
-					}
-				}
-				if (shaderinfo)
-					glUseProgram(0);
-				for (unsigned int k = 0; k < primitives.size(); k++) {
-					delete primitives[k];
-				}
-				glDepthFunc(GL_LESS);
-
-				primitives.clear();
-			}
-
-			if (last)
-				break;
-
-			OpenCSGPrim *prim = new OpenCSGPrim(m->root_chain->types[i] == CSGTerm::DIFFERENCE ?
-					OpenCSG::Subtraction : OpenCSG::Intersection, 1);
-			prim->p = m->root_chain->polysets[i];
-			primitives.push_back(prim);
-		}
+		renderCSGChainviaOpenCSG(m->root_chain, m->screen->useLights ? NULL : shaderinfo, false);
+		if (m->highlights_chain)
+			renderCSGChainviaOpenCSG(m->highlights_chain, shaderinfo, true);
 	}
 }
 

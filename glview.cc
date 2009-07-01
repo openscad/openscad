@@ -53,6 +53,9 @@ void GLView::initializeGL()
 	glEnable(GL_DEPTH_TEST);
 	glDepthRange(-FAR_FAR_AWAY, +FAR_FAR_AWAY);
 
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
 	glClearColor(1.0, 1.0, 0.9, 0.0);
 
 #ifdef ENABLE_OPENCSG

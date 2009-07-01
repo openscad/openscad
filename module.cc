@@ -226,17 +226,19 @@ CGAL_Nef_polyhedron AbstractNode::render_cgal_nef_polyhedron() const
 
 #endif /* ENABLE_CGAL */
 
-CSGTerm *AbstractNode::render_csg_term(double m[16]) const
+CSGTerm *AbstractNode::render_csg_term(double m[16], QVector<CSGTerm*> *highlights) const
 {
 	CSGTerm *t1 = NULL;
-	foreach(AbstractNode * v, children) {
-		CSGTerm *t2 = v->render_csg_term(m);
+	foreach(AbstractNode *v, children) {
+		CSGTerm *t2 = v->render_csg_term(m, highlights);
 		if (t2 && !t1) {
 			t1 = t2;
 		} else if (t2 && t1) {
 			t1 = new CSGTerm(CSGTerm::UNION, t1, t2);
 		}
 	}
+	if (modinst->tag_highlight && highlights)
+		highlights->append(t1->link());
 	return t1;
 }
 

@@ -338,7 +338,8 @@ public:
 	enum colormode_e {
 		COLOR_NONE,
 		COLOR_MATERIAL,
-		COLOR_CUTOUT
+		COLOR_CUTOUT,
+		COLOR_HIGHLIGHT
 	};
 
 	void render_surface(colormode_e colormode, GLint *shaderinfo = NULL) const;
@@ -409,7 +410,7 @@ public:
 #ifdef ENABLE_CGAL
 	virtual CGAL_Nef_polyhedron render_cgal_nef_polyhedron() const;
 #endif
-	virtual CSGTerm *render_csg_term(double m[16]) const;
+	virtual CSGTerm *render_csg_term(double m[16], QVector<CSGTerm*> *highlights) const;
 	virtual QString dump(QString indent) const;
 };
 
@@ -425,7 +426,7 @@ public:
 #ifdef ENABLE_CGAL
 	virtual CGAL_Nef_polyhedron render_cgal_nef_polyhedron() const;
 #endif
-	virtual CSGTerm *render_csg_term(double m[16]) const;
+	virtual CSGTerm *render_csg_term(double m[16], QVector<CSGTerm*> *highlights) const;
 };
 
 extern int progress_report_count;
@@ -489,7 +490,7 @@ public:
 
 	Context root_ctx;
 	AbstractModule *root_module;
-	AbstractNode *root_node;
+	AbstractNode *absolute_root_node;
 	CSGTerm *root_raw_term;
 	CSGTerm *root_norm_term;
 	CSGChain *root_chain;
@@ -497,11 +498,16 @@ public:
 	CGAL_Nef_polyhedron *root_N;
 #endif
 
+	QVector<CSGTerm*> highlight_terms;
+	CSGChain *highlights_chain;
+	AbstractNode *root_node;
+
 	MainWindow(const char *filename = 0);
 	~MainWindow();
 
 private:
 	void load();
+	void find_root_tag(AbstractNode *n);
 	void compile();
 
 private slots:

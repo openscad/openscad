@@ -44,7 +44,7 @@ public:
 #ifdef ENABLE_CGAL
         virtual CGAL_Nef_polyhedron render_cgal_nef_polyhedron() const;
 #endif
-	CSGTerm *render_csg_term(double m[16]) const;
+	CSGTerm *render_csg_term(double m[16], QVector<CSGTerm*> *highlights) const;
         virtual QString dump(QString indent) const;
 };
 
@@ -83,11 +83,11 @@ CGAL_Nef_polyhedron CsgNode::render_cgal_nef_polyhedron() const
 
 #endif /* ENABLE_CGAL */
 
-CSGTerm *CsgNode::render_csg_term(double m[16]) const
+CSGTerm *CsgNode::render_csg_term(double m[16], QVector<CSGTerm*> *highlights) const
 {
 	CSGTerm *t1 = NULL;
 	foreach (AbstractNode *v, children) {
-		CSGTerm *t2 = v->render_csg_term(m);
+		CSGTerm *t2 = v->render_csg_term(m, highlights);
 		if (t2 && !t1) {
 			t1 = t2;
 		} else if (t2 && t1) {
@@ -100,6 +100,8 @@ CSGTerm *CsgNode::render_csg_term(double m[16]) const
 			}
 		}
 	}
+	if (modinst->tag_highlight && highlights)
+		highlights->append(t1->link());
 	return t1;
 }
 
