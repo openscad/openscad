@@ -95,9 +95,6 @@ void PolySet::render_surface(colormode_e colormode, GLint *shaderinfo) const
 	glMultMatrixd(m);
 	if (colormode == COLOR_MATERIAL) {
 		glColor3ub(249, 215, 44);
-		GLfloat light_diffuse[] = {255 / 255.0, 236 / 255.0, 94 / 255.0, 1.0};
-		glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse);
-		glLightfv(GL_LIGHT1, GL_DIFFUSE, light_diffuse);
 #ifdef ENABLE_OPENCSG
 		if (shaderinfo) {
 			glUniform4f(shaderinfo[1], 249 / 255.0, 215 / 255.0, 44 / 255.0, 1.0);
@@ -107,9 +104,6 @@ void PolySet::render_surface(colormode_e colormode, GLint *shaderinfo) const
 	}
 	if (colormode == COLOR_CUTOUT) {
 		glColor3ub(157, 203, 81);
-		GLfloat light_diffuse[] = {171 / 255.0, 216 / 255.0, 86 / 255.0, 1.0};
-		glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse);
-		glLightfv(GL_LIGHT1, GL_DIFFUSE, light_diffuse);
 #ifdef ENABLE_OPENCSG
 		if (shaderinfo) {
 			glUniform4f(shaderinfo[1], 157 / 255.0, 203 / 255.0, 81 / 255.0, 1.0);
@@ -119,9 +113,6 @@ void PolySet::render_surface(colormode_e colormode, GLint *shaderinfo) const
 	}
 	if (colormode == COLOR_HIGHLIGHT) {
 		glColor3ub(255, 157, 81);
-		GLfloat light_diffuse[] = {255 / 255.0, 171 / 255.0, 86 / 255.0, 0.5};
-		glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse);
-		glLightfv(GL_LIGHT1, GL_DIFFUSE, light_diffuse);
 #ifdef ENABLE_OPENCSG
 		if (shaderinfo) {
 			glUniform4f(shaderinfo[1], 255 / 255.0, 157 / 255.0, 81 / 255.0, 0.5);

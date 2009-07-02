@@ -41,8 +41,6 @@ GLView::GLView(QWidget *parent) : QGLWidget(parent)
 	for (int i = 0; i < 10; i++)
 		shaderinfo[i] = 0;
 
-	useLights = false;
-
 	setMouseTracking(true);
 }
 
@@ -70,6 +68,7 @@ void GLView::initializeGL()
 			"attribute vec3 pos_b, pos_c;\n"
 			"attribute vec3 trig, mask;\n"
 			"varying vec3 tp, tr;\n"
+			"varying float shading;\n"
 			"void main() {\n"
 			"  vec4 p0 = gl_ModelViewProjectionMatrix * gl_Vertex;\n"
 			"  vec4 p1 = gl_ModelViewProjectionMatrix * vec4(pos_b, 1.0);\n"
@@ -83,13 +82,18 @@ void GLView::initializeGL()
 			"  gl_Position = p0;\n"
 			"  tp = mask * ha;\n"
 			"  tr = trig;\n"
+			"  vec3 normal, lightDir;\n"
+			"  normal = normalize(gl_NormalMatrix * gl_Normal);\n"
+			"  lightDir = normalize(vec3(gl_LightSource[0].position));\n"
+			"  shading = abs(dot(normal, lightDir));\n"
 			"}\n";
 
 		const char *fs_source =
 			"uniform vec4 color1, color2;\n"
 			"varying vec3 tp, tr, tmp;\n"
+			"varying float shading;\n"
 			"void main() {\n"
-			"  gl_FragColor = color1;\n"
+			"  gl_FragColor = vec4(color1.r * shading, color1.g * shading, color1.b * shading, color1.a);\n"
 			"  if (tp.x < tr.x || tp.y < tr.y || tp.z < tr.z)\n"
 			"    gl_FragColor = color2;\n"
 			"}\n";
@@ -170,25 +174,21 @@ void GLView::paintGL()
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 
-	if (useLights)
-	{
-		GLfloat light_diffuse[] = {1.0, 1.0, 1.0, 1.0};
-		GLfloat light_position0[] = {-1.0, -1.0, +1.0, 0.0};
-		GLfloat light_position1[] = {+1.0, +1.0, -1.0, 0.0};
+	GLfloat light_diffuse[] = {1.0, 1.0, 1.0, 1.0};
+	GLfloat light_position0[] = {-1.0, -1.0, +1.0, 0.0};
+	GLfloat light_position1[] = {+1.0, +1.0, -1.0, 0.0};
 
-		glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse);
-		glLightfv(GL_LIGHT0, GL_POSITION, light_position0);
-		glEnable(GL_LIGHT0);
-		glLightfv(GL_LIGHT1, GL_DIFFUSE, light_diffuse);
-		glLightfv(GL_LIGHT1, GL_POSITION, light_position1);
-		glEnable(GL_LIGHT1);
-		glEnable(GL_LIGHTING);
-		glEnable(GL_NORMALIZE);
-	}
-	else
-	{
-		glDisable(GL_LIGHTING);
-	}
+	glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse);
+	glLightfv(GL_LIGHT0, GL_POSITION, light_position0);
+	glEnable(GL_LIGHT0);
+	glLightfv(GL_LIGHT1, GL_DIFFUSE, light_diffuse);
+	glLightfv(GL_LIGHT1, GL_POSITION, light_position1);
+	glEnable(GL_LIGHT1);
+	glEnable(GL_LIGHTING);
+	glEnable(GL_NORMALIZE);
+
+	glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
+	glEnable(GL_COLOR_MATERIAL);
 
 	glRotated(object_rot_y, 1.0, 0.0, 0.0);
 	glRotated(object_rot_z, 0.0, 0.0, 1.0);

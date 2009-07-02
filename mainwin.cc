@@ -114,13 +114,9 @@ MainWindow::MainWindow(const char *filename)
 #endif
 		actViewModeThrownTogether = menu->addAction("Thrown Together", this, SLOT(viewModeThrownTogether()));
 		actViewModeThrownTogether->setCheckable(true);
-
 		menu->addSeparator();
-
-		actViewModeWireframe = menu->addAction("Wireframe", this, SLOT(viewModeWireframe()));
-		actViewModeWireframe->setCheckable(true);
-		actViewModeShaded = menu->addAction("Shaded", this, SLOT(viewModeShaded()));
-		actViewModeShaded->setCheckable(true);
+		actViewModeShowEdges = menu->addAction("Show Edges", this, SLOT(viewModeShowEdges()));
+		actViewModeShowEdges->setCheckable(true);
 
 		menu->addSeparator();
 		menu->addAction("Top");
@@ -162,7 +158,6 @@ MainWindow::MainWindow(const char *filename)
 #else
 	viewModeThrownTogether();
 #endif
-	viewModeShaded();
 
 	setCentralWidget(s1);
 	current_win = NULL;
@@ -705,9 +700,11 @@ static void renderGLviaOpenCSG(void *vp)
 		GLint *shaderinfo = m->screen->shaderinfo;
 		if (!shaderinfo[0])
 			shaderinfo = NULL;
-		renderCSGChainviaOpenCSG(m->root_chain, m->screen->useLights ? NULL : shaderinfo, false);
-		if (m->highlights_chain)
+		renderCSGChainviaOpenCSG(m->root_chain, m->actViewModeShowEdges->isChecked() ? shaderinfo : NULL, false);
+		if (m->highlights_chain) {
+			glDisable(GL_LIGHTING);
 			renderCSGChainviaOpenCSG(m->highlights_chain, shaderinfo, true);
+		}
 	}
 }
 
@@ -750,17 +747,20 @@ static void renderGLviaCGAL(void *vp)
 			P.set_style(CGAL::OGL::SNC_BOUNDARY);
 		if (m->actViewModeCGALGrid->isChecked())
 			P.set_style(CGAL::OGL::SNC_SKELETON);
-		glDisable(GL_LIGHTING);
 #if 0
 		P.draw();
 #else
 		if (P.style == CGAL::OGL::SNC_BOUNDARY) {
-		  glCallList(P.object_list_+2);
-		}
-		glCallList(P.object_list_+1);
-		glCallList(P.object_list_);
-		if (P.switches[CGAL::OGL::SNC_AXES]) {
-			glCallList(P.object_list_+3);
+			glCallList(P.object_list_+2);
+			if (m->actViewModeShowEdges->isChecked()) {
+				glDisable(GL_LIGHTING);
+				glCallList(P.object_list_+1);
+				glCallList(P.object_list_);
+			}
+		} else {
+			glDisable(GL_LIGHTING);
+			glCallList(P.object_list_+1);
+			glCallList(P.object_list_);
 		}
 #endif
 	}
@@ -791,29 +791,23 @@ static void renderGLThrownTogether(void *vp)
 	MainWindow *m = (MainWindow*)vp;
 	if (m->root_chain) {
 		glDepthFunc(GL_LEQUAL);
-#if 0
-		glUseProgram(m->screen->shaderinfo[0]);
-		for (int i = 0; i < m->root_chain->polysets.size(); i++) {
-			if (m->root_chain->types[i] == CSGTerm::DIFFERENCE) {
-				m->root_chain->polysets[i]->render_surface(PolySet::COLOR_CUTOUT, m->screen->shaderinfo);
-			} else {
-				m->root_chain->polysets[i]->render_surface(PolySet::COLOR_MATERIAL, m->screen->shaderinfo);
-			}
-		}
-		glUseProgram(0);
-#else
 		for (int i = 0; i < m->root_chain->polysets.size(); i++) {
 			if (m->root_chain->types[i] == CSGTerm::DIFFERENCE) {
 				m->root_chain->polysets[i]->render_surface(PolySet::COLOR_CUTOUT);
-				if (!m->screen->useLights)
-					m->root_chain->polysets[i]->render_edges(PolySet::COLOR_CUTOUT);
 			} else {
 				m->root_chain->polysets[i]->render_surface(PolySet::COLOR_MATERIAL);
-				if (!m->screen->useLights)
-					m->root_chain->polysets[i]->render_edges(PolySet::COLOR_MATERIAL);
 			}
 		}
-#endif
+		if (m->actViewModeShowEdges->isChecked()) {
+			glDisable(GL_LIGHTING);
+			for (int i = 0; i < m->root_chain->polysets.size(); i++) {
+				if (m->root_chain->types[i] == CSGTerm::DIFFERENCE) {
+					m->root_chain->polysets[i]->render_edges(PolySet::COLOR_CUTOUT);
+				} else {
+					m->root_chain->polysets[i]->render_edges(PolySet::COLOR_MATERIAL);
+				}
+			}
+		}
 	}
 }
 
@@ -826,19 +820,8 @@ void MainWindow::viewModeThrownTogether()
 	screen->updateGL();
 }
 
-void MainWindow::viewModeWireframe()
+void MainWindow::viewModeShowEdges()
 {
-	screen->useLights = false;
-	actViewModeWireframe->setChecked(true);
-	actViewModeShaded->setChecked(false);
-	screen->updateGL();
-}
-
-void MainWindow::viewModeShaded()
-{
-	screen->useLights = true;
-	actViewModeWireframe->setChecked(false);
-	actViewModeShaded->setChecked(true);
 	screen->updateGL();
 }
 
