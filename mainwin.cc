@@ -50,6 +50,7 @@ MainWindow::MainWindow(const char *filename)
 
 	highlights_chain = NULL;
 	root_node = NULL;
+	enableOpenCSG = false;
 
 	s1 = new QSplitter(Qt::Horizontal, this);
 	editor = new QTextEdit(s1);
@@ -247,6 +248,7 @@ void MainWindow::compile()
 		highlights_chain = NULL;
 	}
 	root_node = NULL;
+	enableOpenCSG = false;
 
 	root_module = parse(editor->toPlainText().toAscii().data(), false);
 
@@ -301,6 +303,13 @@ void MainWindow::compile()
 	root_chain = new CSGChain();
 	root_chain->import(root_norm_term);
 
+	if (root_chain->polysets.size() > 1000) {
+		PRINTF("WARNING: Normalized tree has %d elements!", root_chain->polysets.size());
+		PRINTF("WARNING: OpenCSG rendering has been disabled.");
+	} else {
+		enableOpenCSG = true;
+	}
+
 	if (highlight_terms.size() > 0)
 	{
 		PRINTF("Compiling highlights (%d CSG Trees)...", highlight_terms.size());
@@ -321,9 +330,11 @@ void MainWindow::compile()
 
 	if (1) {
 		PRINT("Compilation finished.");
+		QApplication::processEvents();
 	} else {
 fail:
 		PRINT("ERROR: Compilation failed!");
+		QApplication::processEvents();
 	}
 }
 
@@ -515,6 +526,7 @@ static void report_func(const class AbstractNode*, void *vp, int mark)
 void MainWindow::actionRenderCGAL()
 {
 	current_win = this;
+	console->clear();
 
 	compile();
 
@@ -656,7 +668,7 @@ static void renderCSGChainviaOpenCSG(CSGChain *chain, GLint *shaderinfo, bool hi
 
 		if (last || chain->types[i] == CSGTerm::UNION)
 		{
-			OpenCSG::render(primitives, OpenCSG::Goldfeather, OpenCSG::NoDepthComplexitySampling);
+			OpenCSG::render(primitives);
 			glDepthFunc(GL_EQUAL);
 			if (shaderinfo)
 				glUseProgram(shaderinfo[0]);
@@ -688,9 +700,15 @@ static void renderCSGChainviaOpenCSG(CSGChain *chain, GLint *shaderinfo, bool hi
 	}
 }
 
+static void renderGLThrownTogether(void *vp);
+
 static void renderGLviaOpenCSG(void *vp)
 {
 	MainWindow *m = (MainWindow*)vp;
+	if (!m->enableOpenCSG) {
+		renderGLThrownTogether(vp);
+		return;
+	}
 	static int glew_initialized = 0;
 	if (!glew_initialized) {
 		glew_initialized = 1;

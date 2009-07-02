@@ -500,6 +500,7 @@ public:
 	QVector<CSGTerm*> highlight_terms;
 	CSGChain *highlights_chain;
 	AbstractNode *root_node;
+	bool enableOpenCSG;
 
 	MainWindow(const char *filename = 0);
 	~MainWindow();
