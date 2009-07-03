@@ -36,7 +36,7 @@ int main(int argc, char **argv)
 	int rc;
 
 #ifdef ENABLE_CGAL
-	AbstractNode::cgal_nef_cache.setMaxCost(200000);
+	AbstractNode::cgal_nef_cache.setMaxCost(100000);
 #endif
 
 	initialize_builtin_functions();
