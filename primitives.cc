@@ -326,13 +326,16 @@ sphere_next_r2:
 
 QString PrimitiveNode::dump(QString indent) const
 {
-	QString text;
-	if (type == CUBE)
-		text.sprintf("cube(size = [%f %f %f], center = %s);\n", x, y, z, center ? "true" : "false");
-	if (type == SPHERE)
-		text.sprintf("sphere(r = %f);\n", r1);
-	if (type == CYLINDER)
-		text.sprintf("cylinder(h = %f, r1 = %f, r2 = %f, center = %s);\n", h, r1, r2, center ? "true" : "false");
-	return indent + QString("n%1: ").arg(idx) + text;
+	if (dump_cache.isEmpty()) {
+		QString text;
+		if (type == CUBE)
+			text.sprintf("cube(size = [%f %f %f], center = %s);\n", x, y, z, center ? "true" : "false");
+		if (type == SPHERE)
+			text.sprintf("sphere($fn = %f, $fa = %f, $fs = %f, r = %f);\n", fn, fa, fs, r1);
+		if (type == CYLINDER)
+			text.sprintf("cylinder($fn = %f, $fa = %f, $fs = %f, h = %f, r1 = %f, r2 = %f, center = %s);\n", fn, fa, fs, h, r1, r2, center ? "true" : "false");
+		((AbstractNode*)this)->dump_cache = indent + QString("n%1: ").arg(idx) + text;
+	}
+	return dump_cache;
 }
 

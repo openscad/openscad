@@ -256,8 +256,16 @@ PolySet *AbstractPolyNode::render_polyset(render_mode_e) const
 
 CGAL_Nef_polyhedron AbstractPolyNode::render_cgal_nef_polyhedron() const
 {
+	QString cache_id = cgal_nef_cache_id();
+	if (cgal_nef_cache.contains(cache_id)) {
+		progress_report();
+		return *cgal_nef_cache[cache_id];
+	}
+
 	PolySet *ps = render_polyset(RENDER_CGAL);
 	CGAL_Nef_polyhedron N = ps->render_cgal_nef_polyhedron();
+
+	cgal_nef_cache.insert(cache_id, new CGAL_Nef_polyhedron(N), N.number_of_vertices());
 	progress_report();
 	delete ps;
 	return N;

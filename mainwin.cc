@@ -23,6 +23,7 @@
 #include "openscad.h"
 
 #include <QMenu>
+#include <QTime>
 #include <QMenuBar>
 #include <QSplitter>
 #include <QFileDialog>
@@ -520,6 +521,9 @@ static void report_func(const class AbstractNode*, void *vp, int mark)
 	QProgressDialog *pd = (QProgressDialog*)vp;
 	int v = (int)((mark*100.0) / progress_report_count);
 	pd->setValue(v < 100 ? v : 99);
+	QString label;
+	label.sprintf("Rendering Polygon Mesh using CGAL (%d/%d)", mark, progress_report_count);
+	pd->setLabelText(label);
 	QApplication::processEvents();
 }
 
@@ -541,6 +545,9 @@ void MainWindow::actionRenderCGAL()
 	PRINT("Rendering Polygon Mesh using CGAL...");
 	QApplication::processEvents();
 
+	QTime t;
+	t.start();
+
 	QProgressDialog *pd = new QProgressDialog("Rendering Polygon Mesh using CGAL...", QString(), 0, 100);
 	pd->setValue(0);
 	pd->setAutoClose(false);
@@ -551,14 +558,29 @@ void MainWindow::actionRenderCGAL()
 	root_N = new CGAL_Nef_polyhedron(root_node->render_cgal_nef_polyhedron());
 	progress_report_fin();
 
+	PRINTF("Number of vertices currently in CGAL cache: %d", AbstractNode::cgal_nef_cache.totalCost());
+	PRINTF("Number of objects currently in CGAL cache: %d", AbstractNode::cgal_nef_cache.size());
+	QApplication::processEvents();
+
 	PRINTF("   Simple:     %6s", root_N->is_simple() ? "yes" : "no");
+	QApplication::processEvents();
 	PRINTF("   Valid:      %6s", root_N->is_valid() ? "yes" : "no");
+	QApplication::processEvents();
 	PRINTF("   Vertices:   %6d", (int)root_N->number_of_vertices());
+	QApplication::processEvents();
 	PRINTF("   Halfedges:  %6d", (int)root_N->number_of_halfedges());
+	QApplication::processEvents();
 	PRINTF("   Edges:      %6d", (int)root_N->number_of_edges());
+	QApplication::processEvents();
 	PRINTF("   Halffacets: %6d", (int)root_N->number_of_halffacets());
+	QApplication::processEvents();
 	PRINTF("   Facets:     %6d", (int)root_N->number_of_facets());
+	QApplication::processEvents();
 	PRINTF("   Volumes:    %6d", (int)root_N->number_of_volumes());
+	QApplication::processEvents();
+
+	int s = t.elapsed() / 1000;
+	PRINTF("Total rendering time: %d hours, %d minutes, %d seconds", s / (60*60), (s / 60) % 60, s % 60);
 
 	if (!actViewModeCGALSurface->isChecked() && !actViewModeCGALGrid->isChecked()) {
 		viewModeCGALSurface();
@@ -809,20 +831,24 @@ static void renderGLThrownTogether(void *vp)
 	MainWindow *m = (MainWindow*)vp;
 	if (m->root_chain) {
 		glDepthFunc(GL_LEQUAL);
+		QHash<PolySet*,int> polySetVisitMark;
+		bool showEdges = m->actViewModeShowEdges->isChecked();
 		for (int i = 0; i < m->root_chain->polysets.size(); i++) {
+			if (polySetVisitMark[m->root_chain->polysets[i]]++ > 0)
+				continue;
 			if (m->root_chain->types[i] == CSGTerm::DIFFERENCE) {
 				m->root_chain->polysets[i]->render_surface(PolySet::COLOR_CUTOUT);
+				if (showEdges) {
+					glDisable(GL_LIGHTING);
+					m->root_chain->polysets[i]->render_edges(PolySet::COLOR_CUTOUT);
+					glEnable(GL_LIGHTING);
+				}
 			} else {
 				m->root_chain->polysets[i]->render_surface(PolySet::COLOR_MATERIAL);
-			}
-		}
-		if (m->actViewModeShowEdges->isChecked()) {
-			glDisable(GL_LIGHTING);
-			for (int i = 0; i < m->root_chain->polysets.size(); i++) {
-				if (m->root_chain->types[i] == CSGTerm::DIFFERENCE) {
-					m->root_chain->polysets[i]->render_edges(PolySet::COLOR_CUTOUT);
-				} else {
-					m->root_chain->polysets[i]->render_edges(PolySet::COLOR_MATERIAL);
+				if (showEdges) {
+						glDisable(GL_LIGHTING);
+						m->root_chain->polysets[i]->render_edges(PolySet::COLOR_MATERIAL);
+						glEnable(GL_LIGHTING);
 				}
 			}
 		}

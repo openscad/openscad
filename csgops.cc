@@ -63,6 +63,12 @@ AbstractNode *CsgModule::evaluate(const Context*, const ModuleInstanciation *ins
 
 CGAL_Nef_polyhedron CsgNode::render_cgal_nef_polyhedron() const
 {
+	QString cache_id = cgal_nef_cache_id();
+	if (cgal_nef_cache.contains(cache_id)) {
+		progress_report();
+		return *cgal_nef_cache[cache_id];
+	}
+
 	bool first = true;
 	CGAL_Nef_polyhedron N;
 	foreach (AbstractNode *v, children) {
@@ -77,6 +83,8 @@ CGAL_Nef_polyhedron CsgNode::render_cgal_nef_polyhedron() const
 			N *= v->render_cgal_nef_polyhedron();
 		}
 	}
+
+	cgal_nef_cache.insert(cache_id, new CGAL_Nef_polyhedron(N), N.number_of_vertices());
 	progress_report();
 	return N;
 }
@@ -107,16 +115,19 @@ CSGTerm *CsgNode::render_csg_term(double m[16], QVector<CSGTerm*> *highlights) c
 
 QString CsgNode::dump(QString indent) const
 {
-	QString text = indent + QString("n%1: ").arg(idx);
-	if (type == UNION)
-		text += "union() {\n";
-	if (type == DIFFERENCE)
-		text += "difference() {\n";
-	if (type == INTERSECTION)
-		text += "intersection() {\n";
-	foreach (AbstractNode *v, children)
-		text += v->dump(indent + QString("\t"));
-	return text + indent + "}\n";
+	if (dump_cache.isEmpty()) {
+		QString text = indent + QString("n%1: ").arg(idx);
+		if (type == UNION)
+			text += "union() {\n";
+		if (type == DIFFERENCE)
+			text += "difference() {\n";
+		if (type == INTERSECTION)
+			text += "intersection() {\n";
+		foreach (AbstractNode *v, children)
+			text += v->dump(indent + QString("\t"));
+		((AbstractNode*)this)->dump_cache = text + indent + "}\n";
+	}
+	return dump_cache;
 }
 
 void register_builtin_csgops()

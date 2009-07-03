@@ -146,6 +146,12 @@ AbstractNode *TransformModule::evaluate(const Context *ctx, const ModuleInstanci
 
 CGAL_Nef_polyhedron TransformNode::render_cgal_nef_polyhedron() const
 {
+	QString cache_id = cgal_nef_cache_id();
+	if (cgal_nef_cache.contains(cache_id)) {
+		progress_report();
+		return *cgal_nef_cache[cache_id];
+	}
+
 	CGAL_Nef_polyhedron N;
 	foreach (AbstractNode *v, children)
 		N += v->render_cgal_nef_polyhedron();
@@ -154,6 +160,8 @@ CGAL_Nef_polyhedron TransformNode::render_cgal_nef_polyhedron() const
 			m[1], m[5], m[ 9], m[13],
 			m[2], m[6], m[10], m[14], m[15]);
 	N.transform(t);
+
+	cgal_nef_cache.insert(cache_id, new CGAL_Nef_polyhedron(N), N.number_of_vertices());
 	progress_report();
 	return N;
 }
@@ -190,16 +198,19 @@ CSGTerm *TransformNode::render_csg_term(double c[16], QVector<CSGTerm*> *highlig
 
 QString TransformNode::dump(QString indent) const
 {
-	QString text;
-	text.sprintf("n%d: multmatrix([[%f %f %f %f], [%f %f %f %f], [%f %f %f %f], [%f %f %f %f]])", idx,
-			m[0], m[4], m[ 8], m[12],
-			m[1], m[5], m[ 9], m[13],
-			m[2], m[6], m[10], m[14],
-			m[3], m[7], m[11], m[15]);
-	text = indent + text + " {\n";
-	foreach (AbstractNode *v, children)
-		text += v->dump(indent + QString("\t"));
-	return text + indent + "}\n";
+	if (dump_cache.isEmpty()) {
+		QString text;
+		text.sprintf("n%d: multmatrix([[%f %f %f %f], [%f %f %f %f], [%f %f %f %f], [%f %f %f %f]])", idx,
+				m[0], m[4], m[ 8], m[12],
+				m[1], m[5], m[ 9], m[13],
+				m[2], m[6], m[10], m[14],
+				m[3], m[7], m[11], m[15]);
+		text = indent + text + " {\n";
+		foreach (AbstractNode *v, children)
+			text += v->dump(indent + QString("\t"));
+		((AbstractNode*)this)->dump_cache = text + indent + "}\n";
+	}
+	return dump_cache;
 }
 
 void register_builtin_transform()

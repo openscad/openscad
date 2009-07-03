@@ -18,7 +18,7 @@
  *
  */
 
-// #define INCLUDE_ABSTRACT_NODE_DETAILS
+#define INCLUDE_ABSTRACT_NODE_DETAILS
 
 #include "openscad.h"
 
@@ -34,6 +34,10 @@ void report_func(const class AbstractNode*, void*, int mark)
 int main(int argc, char **argv)
 {
 	int rc;
+
+#ifdef ENABLE_CGAL
+	AbstractNode::cgal_nef_cache.setMaxCost(200000);
+#endif
 
 	initialize_builtin_functions();
 	initialize_builtin_modules();

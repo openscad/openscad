@@ -215,11 +215,30 @@ AbstractNode::~AbstractNode()
 
 #ifdef ENABLE_CGAL
 
+QCache<QString, CGAL_Nef_polyhedron> AbstractNode::cgal_nef_cache;
+
+QString AbstractNode::cgal_nef_cache_id() const
+{
+        QString cache_id = dump("");
+        cache_id.remove(' ');
+        cache_id.remove('\t');
+        cache_id.remove('\n');
+	return cache_id;
+}
+
 CGAL_Nef_polyhedron AbstractNode::render_cgal_nef_polyhedron() const
 {
+	QString cache_id = cgal_nef_cache_id();
+	if (cgal_nef_cache.contains(cache_id)) {
+		progress_report();
+		return *cgal_nef_cache[cache_id];
+	}
+
 	CGAL_Nef_polyhedron N;
 	foreach (AbstractNode *v, children)
 		N += v->render_cgal_nef_polyhedron();
+
+	cgal_nef_cache.insert(cache_id, new CGAL_Nef_polyhedron(N), N.number_of_vertices());
 	progress_report();
 	return N;
 }
@@ -244,10 +263,13 @@ CSGTerm *AbstractNode::render_csg_term(double m[16], QVector<CSGTerm*> *highligh
 
 QString AbstractNode::dump(QString indent) const
 {
-	QString text = indent + QString("n%1: group() {\n").arg(idx);
-	foreach (AbstractNode *v, children)
-		text += v->dump(indent + QString("\t"));
-	return text + indent + "}\n";
+	if (dump_cache.isEmpty()) {
+		QString text = indent + QString("n%1: group() {\n").arg(idx);
+		foreach (AbstractNode *v, children)
+			text += v->dump(indent + QString("\t"));
+		((AbstractNode*)this)->dump_cache = text + indent + "}\n";
+	}
+	return dump_cache;
 }
 
 int progress_report_count;

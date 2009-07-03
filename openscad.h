@@ -37,6 +37,7 @@ static inline uint qHash(double v) {
 #endif
 
 #include <QHash>
+#include <QCache>
 #include <QVector>
 #include <QMainWindow>
 #include <QSplitter>
@@ -404,10 +405,13 @@ public:
 
 	int idx;
 	static int idx_counter;
+	QString dump_cache;
 
 	AbstractNode(const ModuleInstanciation *mi);
 	virtual ~AbstractNode();
 #ifdef ENABLE_CGAL
+	static QCache<QString, CGAL_Nef_polyhedron> cgal_nef_cache;
+	virtual QString cgal_nef_cache_id() const;
 	virtual CGAL_Nef_polyhedron render_cgal_nef_polyhedron() const;
 #endif
 	virtual CSGTerm *render_csg_term(double m[16], QVector<CSGTerm*> *highlights) const;
