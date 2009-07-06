@@ -81,7 +81,6 @@ public:
 		NUMBER,
 		RANGE,
 		VECTOR,
-		MATRIX,
 		STRING
 	};
 
