@@ -1,7 +1,6 @@
 
 module test001()
 {
-	$fn = 100;
 	function r_from_dia(d) = d / 2;
 
 	module rotcy(rot, r, h) {
@@ -81,7 +80,7 @@ module test005()
 				cylinder(h = 200, r=10);
 		}
 		translate([0 0 200])
-			cylinder(h = 80, r1 = 120, r2 = 1);
+			cylinder(h = 80, r1 = 120, r2 = 0);
 	}
 }
 
