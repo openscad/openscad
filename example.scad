@@ -86,21 +86,26 @@ module test005()
 
 module test006()
 {
-	$fa = 30;
+	module edgeprofile()
+	{
+		render() difference() {
+			cube([20 20 150], center = true);
+			translate([-10 -10 0])
+				cylinder(h = 150, r = 10, center = true);
+		}
+	}
+
 	difference()
 	{
 		cube(100, center = true);
-//		for (rot = [ [0 0 0], [1 0 0], [0 1 0] ]) {
-//			rotate(90, rot)
-//				for (x = [-1, +1], y = [-1, +1]) {
-//					difference() {
-//						translate([ x*50, y*50, 0 ])
-//							cube([20 20 150], center = true); 
-//						translate([ x*40, y*40, 0 ])
-//							cylinder(h = 150, r = 10, center = true); 
-//					}
-//				}
-//		}
+		for (rot = [ [0 0 0], [1 0 0], [0 1 0] ]) {
+			rotate(90, rot)
+				for (p = [[+1 +1 0], [-1 +1 90], [-1 -1 180], [+1 -1 270]]) {
+					translate([ p[0]*50, p[1]*50, 0 ])
+						rotate(p[2], [0 0 1])
+							edgeprofile();
+				}
+		}
 		for (i = [
 			[ 0, 0, [ [0 0] ] ],
 			[ 90, 0, [ [-20 -20], [+20 +20] ] ],
@@ -116,5 +121,4 @@ module test006()
 	}
 }
 
-test001();
-
+test006();

@@ -190,6 +190,7 @@ void initialize_builtin_modules()
 	register_builtin_transform();
 	register_builtin_primitives();
 	register_builtin_control();
+	register_builtin_render();
 }
 
 void destroy_builtin_modules()
@@ -219,10 +220,11 @@ QCache<QString, CGAL_Nef_polyhedron> AbstractNode::cgal_nef_cache;
 
 QString AbstractNode::cgal_nef_cache_id() const
 {
-        QString cache_id = dump("");
-        cache_id.remove(' ');
-        cache_id.remove('\t');
-        cache_id.remove('\n');
+	QString cache_id = dump("");
+	cache_id.remove(QRegExp("[a-zA-Z_][a-zA-Z_0-9]*:"));
+	cache_id.remove(' ');
+	cache_id.remove('\t');
+	cache_id.remove('\n');
 	return cache_id;
 }
 

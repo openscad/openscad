@@ -286,10 +286,20 @@ sphere_next_r2:
 
 		for (int i=0; i<fragments; i++) {
 			double phi = (M_PI*2*i) / fragments;
-			circle1[i].x = r1*cos(phi);
-			circle1[i].y = r1*sin(phi);
-			circle2[i].x = r2*cos(phi);
-			circle2[i].y = r2*sin(phi);
+			if (r1 > 0) {
+				circle1[i].x = r1*cos(phi);
+				circle1[i].y = r1*sin(phi);
+			} else {
+				circle1[i].x = 0;
+				circle1[i].y = 0;
+			}
+			if (r2 > 0) {
+				circle2[i].x = r2*cos(phi);
+				circle2[i].y = r2*sin(phi);
+			} else {
+				circle2[i].x = 0;
+				circle2[i].y = 0;
+			}
 		}
 		
 		for (int i=0; i<fragments; i++) {

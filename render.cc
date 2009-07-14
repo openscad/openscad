@@ -1,0 +1,200 @@
+/*
+ *  OpenSCAD (www.openscad.at)
+ *  Copyright (C) 2009  Clifford Wolf <clifford@clifford.at>
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *
+ */
+
+#define INCLUDE_ABSTRACT_NODE_DETAILS
+
+#include "openscad.h"
+#include <QProgressDialog>
+#include <QApplication>
+#include <QTime>
+
+class RenderModule : public AbstractModule
+{
+public:
+	RenderModule() { }
+	virtual AbstractNode *evaluate(const Context *ctx, const ModuleInstanciation *inst) const;
+};
+
+class RenderNode : public AbstractNode
+{
+public:
+	RenderNode(const ModuleInstanciation *mi) : AbstractNode(mi) { }
+#ifdef ENABLE_CGAL
+	virtual CGAL_Nef_polyhedron render_cgal_nef_polyhedron() const;
+#endif
+	CSGTerm *render_csg_term(double m[16], QVector<CSGTerm*> *highlights) const;
+	virtual QString dump(QString indent) const;
+};
+
+AbstractNode *RenderModule::evaluate(const Context*, const ModuleInstanciation *inst) const
+{
+	RenderNode *node = new RenderNode(inst);
+	foreach (ModuleInstanciation *v, inst->children) {
+		AbstractNode *n = v->evaluate(inst->ctx);
+		if (n != NULL)
+			node->children.append(n);
+	}
+	return node;
+}
+
+void register_builtin_render()
+{
+	builtin_modules["render"] = new RenderModule();
+}
+
+#ifdef ENABLE_CGAL
+
+CGAL_Nef_polyhedron RenderNode::render_cgal_nef_polyhedron() const
+{
+	QString cache_id = cgal_nef_cache_id();
+	if (cgal_nef_cache.contains(cache_id)) {
+		progress_report();
+		return *cgal_nef_cache[cache_id];
+	}
+
+	bool first = true;
+	CGAL_Nef_polyhedron N;
+	foreach(AbstractNode * v, children)
+	{
+		if (first) {
+			N = v->render_cgal_nef_polyhedron();
+			first = false;
+		} else {
+			N += v->render_cgal_nef_polyhedron();
+		}
+	}
+
+	cgal_nef_cache.insert(cache_id, new CGAL_Nef_polyhedron(N), N.number_of_vertices());
+	progress_report();
+	return N;
+}
+
+static void report_func(const class AbstractNode*, void *vp, int mark)
+{
+	QProgressDialog *pd = (QProgressDialog*)vp;
+	int v = (int)((mark*100.0) / progress_report_count);
+	pd->setValue(v < 100 ? v : 99);
+	QString label;
+	label.sprintf("Rendering Polygon Mesh using CGAL (%d/%d)", mark, progress_report_count);
+	pd->setLabelText(label);
+	QApplication::processEvents();
+}
+
+CSGTerm *RenderNode::render_csg_term(double m[16], QVector<CSGTerm*> *highlights) const
+{
+	CGAL_Nef_polyhedron N;
+
+	QString cache_id = cgal_nef_cache_id();
+	if (cgal_nef_cache.contains(cache_id))
+	{
+		N = *cgal_nef_cache[cache_id];
+	}
+	else
+	{
+		PRINT("Processing uncached render statement...");
+		// PRINTA("Cache ID: %1", cache_id);
+		QApplication::processEvents();
+
+		QTime t;
+		t.start();
+
+		QProgressDialog *pd = new QProgressDialog("Rendering Polygon Mesh using CGAL...", QString(), 0, 100);
+		pd->setValue(0);
+		pd->setAutoClose(false);
+		pd->show();
+		QApplication::processEvents();
+
+		progress_report_prep((AbstractNode*)this, report_func, pd);
+		N = this->render_cgal_nef_polyhedron();
+		progress_report_fin();
+
+		int s = t.elapsed() / 1000;
+		PRINTF("..rendering time: %d hours, %d minutes, %d seconds", s / (60*60), (s / 60) % 60, s % 60);
+
+		delete pd;
+	}
+
+	if (!N.is_simple()) {
+		PRINTF("WARNING: Result of render() isn't a single polyeder or otherwise invalid! Modify your design..");
+		return NULL;
+	}
+
+	PolySet *ps = new PolySet();
+	ps->setmatrix(m);
+	
+	CGAL_Polyhedron P;
+	N.convert_to_Polyhedron(P);
+
+	typedef CGAL_Polyhedron::Vertex Vertex;
+	typedef CGAL_Polyhedron::Vertex_const_iterator VCI;
+	typedef CGAL_Polyhedron::Facet_const_iterator FCI;
+	typedef CGAL_Polyhedron::Halfedge_around_facet_const_circulator HFCC;
+
+	for (FCI fi = P.facets_begin(); fi != P.facets_end(); ++fi) {
+		HFCC hc = fi->facet_begin();
+		HFCC hc_end = hc;
+		ps->append_poly();
+		do {
+			Vertex v = *VCI((hc++)->vertex());
+			double x = CGAL::to_double(v.point().x());
+			double y = CGAL::to_double(v.point().y());
+			double z = CGAL::to_double(v.point().z());
+			ps->append_vertex(x, y, z);
+		} while (hc != hc_end);
+	}
+
+	CSGTerm *term = new CSGTerm(ps, QString("n%1").arg(idx));
+	if (modinst->tag_highlight && highlights)
+		highlights->append(term->link());
+	return term;
+}
+
+#else
+
+CSGTerm *RenderNode::render_csg_term(double m[16], QVector<CSGTerm*> *highlights) const
+{
+	CSGTerm *t1 = NULL;
+	PRINT("WARNING: Found render() statement but compiled without CGAL support!");
+	foreach(AbstractNode * v, children) {
+		CSGTerm *t2 = v->render_csg_term(m, highlights);
+		if (t2 && !t1) {
+			t1 = t2;
+		} else if (t2 && t1) {
+			t1 = new CSGTerm(CSGTerm::UNION, t1, t2);
+		}
+	}
+	if (modinst->tag_highlight && highlights)
+		highlights->append(t1->link());
+	return t1;
+}
+
+#endif
+
+QString RenderNode::dump(QString indent) const
+{
+	if (dump_cache.isEmpty()) {
+		QString text = indent + QString("n%1: ").arg(idx) + QString("render() {\n");
+		foreach (AbstractNode *v, children)
+			text += v->dump(indent + QString("\t"));
+		((AbstractNode*)this)->dump_cache = text + indent + "}\n";
+	}
+	return dump_cache;
+}
+

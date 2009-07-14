@@ -263,6 +263,7 @@ extern void register_builtin_csgops();
 extern void register_builtin_transform();
 extern void register_builtin_primitives();
 extern void register_builtin_control();
+extern void register_builtin_render();
 
 class Context
 {
