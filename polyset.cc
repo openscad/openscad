@@ -26,6 +26,7 @@ PolySet::PolySet()
 {
 	for (int i = 0; i < 16; i++)
 		m[i] = i % 5 == 0 ? 1.0 : 0.0;
+	convexity = 1;
 }
 
 void PolySet::append_poly()

@@ -35,7 +35,8 @@ public:
 class RenderNode : public AbstractNode
 {
 public:
-	RenderNode(const ModuleInstanciation *mi) : AbstractNode(mi) { }
+	int convexity;
+	RenderNode(const ModuleInstanciation *mi) : AbstractNode(mi), convexity(1) { }
 #ifdef ENABLE_CGAL
 	virtual CGAL_Nef_polyhedron render_cgal_nef_polyhedron() const;
 #endif
@@ -43,14 +44,26 @@ public:
 	virtual QString dump(QString indent) const;
 };
 
-AbstractNode *RenderModule::evaluate(const Context*, const ModuleInstanciation *inst) const
+AbstractNode *RenderModule::evaluate(const Context *ctx, const ModuleInstanciation *inst) const
 {
 	RenderNode *node = new RenderNode(inst);
+
+	QVector<QString> argnames = QVector<QString>() << "convexity";
+	QVector<Expression*> argexpr;
+
+	Context c(ctx);
+	c.args(argnames, argexpr, inst->argnames, inst->argvalues);
+
+	Value v = c.lookup_variable("convexity");
+	if (v.type == Value::NUMBER)
+		node->convexity = v.num;
+
 	foreach (ModuleInstanciation *v, inst->children) {
 		AbstractNode *n = v->evaluate(inst->ctx);
 		if (n != NULL)
 			node->children.append(n);
 	}
+
 	return node;
 }
 
@@ -138,6 +151,7 @@ CSGTerm *RenderNode::render_csg_term(double m[16], QVector<CSGTerm*> *highlights
 
 	PolySet *ps = new PolySet();
 	ps->setmatrix(m);
+	ps->convexity = convexity;
 	
 	CGAL_Polyhedron P;
 	N.convert_to_Polyhedron(P);

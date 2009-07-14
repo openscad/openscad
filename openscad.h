@@ -327,6 +327,7 @@ public:
 	typedef QList<Point> Polygon;
 	QVector<Polygon> polygons;
 	double m[16];
+	int convexity;
 
 	PolySet();
 

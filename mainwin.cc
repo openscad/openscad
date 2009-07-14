@@ -807,7 +807,7 @@ static void renderCSGChainviaOpenCSG(CSGChain *chain, GLint *shaderinfo, bool hi
 			break;
 
 		OpenCSGPrim *prim = new OpenCSGPrim(chain->types[i] == CSGTerm::DIFFERENCE ?
-				OpenCSG::Subtraction : OpenCSG::Intersection, 1);
+				OpenCSG::Subtraction : OpenCSG::Intersection, chain->polysets[i]->convexity);
 		prim->p = chain->polysets[i];
 		primitives.push_back(prim);
 	}
