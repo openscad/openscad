@@ -645,6 +645,7 @@ void MainWindow::actionExportSTL()
 {
 	current_win = this;
 
+#ifdef ENABLE_CGAL
 	if (!root_N) {
 		PRINT("Nothing to export! Try building first (press F6).");
 		current_win = NULL;
@@ -736,6 +737,7 @@ void MainWindow::actionExportSTL()
 	PRINT("STL export finished.");
 
 	delete pd;
+#endif /* ENABLE_CGAL */
 	current_win = NULL;
 }
 

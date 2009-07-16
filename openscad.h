@@ -264,6 +264,7 @@ extern void register_builtin_transform();
 extern void register_builtin_primitives();
 extern void register_builtin_control();
 extern void register_builtin_render();
+extern void register_builtin_dxf_linear_extrude();
 
 class Context
 {
@@ -286,6 +287,33 @@ public:
 
 	Value evaluate_function(QString name, const QVector<QString> &argnames, const QVector<Value> &argvalues) const;
 	AbstractNode *evaluate_module(const ModuleInstanciation *inst) const;
+};
+
+class DxfData
+{
+public:
+	struct Point {
+		double x, y;
+		Point() : x(0), y(0) { }
+		Point(double x, double y) : x(x), y(y) { }
+	};
+	struct Line {
+		Point *p[2];
+		Line(Point *p1, Point *p2) { p[0] = p1; p[1] = p2; }
+		Line() { p[0] = NULL; p[1] = NULL; }
+	};
+	struct Path {
+		QList<Point*> points;
+		bool is_closed, is_inner;
+		Path() : is_closed(false), is_inner(false) { }
+	};
+
+	QList<Point> points;
+	QList<Path> paths;
+
+	DxfData(double fn, double fs, double fa, QString filename, QString layername = QString());
+
+	Point *p(double x, double y);
 };
 
 // The CGAL template magic slows down the compilation process by a factor of 5.

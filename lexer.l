@@ -54,7 +54,12 @@ extern const char *parser_input_buffer;
 
 [+-]?[0-9][0-9.]* { parserlval.number = atof(yytext); return TOK_NUMBER; }
 "$"?[a-zA-Z0-9_]+ { parserlval.text = strdup(yytext); return TOK_ID; }
-\"[^"]*\" { parserlval.text = strdup(yytext); return TOK_STRING; }
+
+\"[^"]*\" {
+	parserlval.text = strdup(yytext+1);
+	parserlval.text[strlen(parserlval.text)-1] = 0;
+	return TOK_STRING;
+}
 
 [\n\r\t ]
 \/\/[^\n]*\n

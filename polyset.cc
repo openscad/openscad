@@ -180,6 +180,8 @@ void PolySet::render_edges(colormode_e colormode) const
 
 #ifdef ENABLE_CGAL
 
+#undef GEN_SURFACE_DEBUG
+
 class CGAL_Build_PolySet : public CGAL::Modifier_base<CGAL_HDS>
 {
 public:
@@ -211,23 +213,41 @@ public:
 		}
 
 		B.begin_surface(vertices.size(), ps->polygons.size());
+#ifdef GEN_SURFACE_DEBUG
+		printf("=== CGAL Surface ===\n");
+#endif
 
 		for (int i = 0; i < vertices.size(); i++) {
 			const PolySet::Point *p = &vertices[i];
 			B.add_vertex(Point(p->x, p->y, p->z));
+#ifdef GEN_SURFACE_DEBUG
+			printf("%d: %f %f %f\n", i, p->x, p->y, p->z);
+#endif
 		}
 
 		for (int i = 0; i < ps->polygons.size(); i++) {
 			const PolySet::Polygon *poly = &ps->polygons[i];
 			B.begin_facet();
+#ifdef GEN_SURFACE_DEBUG
+			printf("F:");
+#endif
 			for (int j = 0; j < poly->size(); j++) {
 				const PolySet::Point *p = &poly->at(j);
 				PointKey_t pk = PointKey(p->x, p->y, p->z);
+#ifdef GEN_SURFACE_DEBUG
+				printf(" %d", vertices_idx[pk]);
+#endif
 				B.add_vertex_to_facet(vertices_idx[pk]);
 			}
+#ifdef GEN_SURFACE_DEBUG
+			printf("\n");
+#endif
 			B.end_facet();
 		}
 
+#ifdef GEN_SURFACE_DEBUG
+		printf("====================\n");
+#endif
 		B.end_surface();
 
 		#undef PointKey
