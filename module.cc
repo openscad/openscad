@@ -192,6 +192,7 @@ void initialize_builtin_modules()
 	register_builtin_control();
 	register_builtin_render();
 	register_builtin_dxf_linear_extrude();
+	register_builtin_dxf_rotate_extrude();
 }
 
 void destroy_builtin_modules()

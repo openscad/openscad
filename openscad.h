@@ -265,6 +265,7 @@ extern void register_builtin_primitives();
 extern void register_builtin_control();
 extern void register_builtin_render();
 extern void register_builtin_dxf_linear_extrude();
+extern void register_builtin_dxf_rotate_extrude();
 
 class Context
 {
@@ -593,6 +594,7 @@ private slots:
 };
 
 extern AbstractModule *parse(const char *text, int debug);
+extern int get_fragments_from_r(double r, double fn, double fs, double fa);
 
 extern QPointer<MainWindow> current_win;
 

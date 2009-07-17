@@ -176,12 +176,18 @@ DxfData::DxfData(double /* fn */, double /* fs */, double /* fa */, QString file
 			}
 			// rotate points if the path is not in non-standard rotation
 			int b = min_x_point;
-			int a = b == 0 ? paths[i].points.count() - 1 : b - 1;
-			int c = b == paths[i].points.count() - 1 ? 0 : b + 1;
+			int a = b == 0 ? paths[i].points.count() - 2 : b - 1;
+			int c = b == paths[i].points.count() - 1 ? 1 : b + 1;
 			double ax = paths[i].points[a]->x - paths[i].points[b]->x;
 			double ay = paths[i].points[a]->y - paths[i].points[b]->y;
-			double cx = paths[i].points[c]->x - paths[i].points[c]->x;
-			double cy = paths[i].points[c]->y - paths[i].points[c]->y;
+			double cx = paths[i].points[c]->x - paths[i].points[b]->x;
+			double cy = paths[i].points[c]->y - paths[i].points[b]->y;
+#if 0
+			printf("Rotate check:\n");
+			printf("  a/b/c indices = %d %d %d\n", a, b, c);
+			printf("  b->a vector = %f %f (%f)\n", ax, ay, atan2(ax, ay));
+			printf("  b->c vector = %f %f (%f)\n", cx, cy, atan2(cx, cy));
+#endif
 			if (atan2(ax, ay) < atan2(cx, cy)) {
 				for (int j = 0; j < paths[i].points.count()/2; j++)
 					paths[i].points.swap(j, paths[i].points.count()-1-j);
@@ -193,7 +199,8 @@ DxfData::DxfData(double /* fn */, double /* fs */, double /* fa */, QString file
 #if 0
 	printf("----- DXF Data -----\n");
 	for (int i = 0; i < paths.count(); i++) {
-		printf("Path %d (%s, %s):\n", i, paths[i].is_closed ? "closed" : "open", paths[i].is_inner ? "inner" : "outer");
+		printf("Path %d (%s, %s):\n", i, paths[i].is_closed ? "closed" : "open",
+				paths[i].is_inner ? "inner" : "outer");
 		for (int j = 0; j < paths[i].points.count(); j++)
 			printf("  %f %f\n", paths[i].points[j]->x, paths[i].points[j]->y);
 	}
