@@ -255,8 +255,28 @@ bool Value::getnum(double &v) const
 	return true;
 }
 
+bool Value::getv2(double &x, double &y) const
+{
+	if (type != VECTOR || vec.size() != 2)
+		return false;
+	if (vec[0]->type != NUMBER)
+		return false;
+	if (vec[1]->type != NUMBER)
+		return false;
+	x = vec[0]->num;	
+	y = vec[1]->num;	
+	return true;
+}
+
 bool Value::getv3(double &x, double &y, double &z) const
 {
+	if (type == VECTOR && vec.size() == 2) {
+		if (getv2(x, y)) {
+			z = 0;
+			return true;
+		}
+		return false;
+	}
 	if (type != VECTOR || vec.size() != 3)
 		return false;
 	if (vec[0]->type != NUMBER)

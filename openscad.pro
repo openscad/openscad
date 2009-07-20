@@ -23,3 +23,6 @@ QMAKE_CXXFLAGS += -O0
 
 QT += opengl
 
+target.path = /usr/local/bin/
+INSTALLS += target
+

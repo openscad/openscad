@@ -22,7 +22,7 @@
 
 #include <QFile>
 
-DxfData::DxfData(double /* fn */, double /* fs */, double /* fa */, QString filename, QString layername)
+DxfData::DxfData(double fn, double fs, double fa, QString filename, QString layername, double xorigin, double yorigin, double scale)
 {
 	QFile f(filename);
 
@@ -38,6 +38,9 @@ DxfData::DxfData(double /* fn */, double /* fs */, double /* fa */, QString file
 
 	QString mode, layer;
 	double x1 = 0, x2 = 0, y1 = 0, y2 = 0;
+	double radius = 0, start_angle = 0, stop_angle = 0;
+	bool in_entities_section = false;
+	QHash<QString, int> unsupported_entities_list;
 
 	while (!f.atEnd())
 	{
@@ -56,24 +59,70 @@ DxfData::DxfData(double /* fn */, double /* fs */, double /* fa */, QString file
 			if (mode == "LINE" && (layername.isNull() || layername == layer)) {
 				lines.append(Line(p(x1, y1), p(x2, y2)));
 			}
+			if (mode == "CIRCLE" && (layername.isNull() || layername == layer)) {
+				int n = get_fragments_from_r(radius, fn, fs, fa);
+				for (int i = 0; i < n; i++) {
+					double a1 = (2*M_PI*i)/n;
+					double a2 = (2*M_PI*(i+1))/n;
+					lines.append(Line(p(cos(a1)*radius + x1, sin(a1)*radius + y1),
+							p(cos(a2)*radius + x1, sin(a2)*radius + y1)));
+				}
+			}
+			if (mode == "ARC" && (layername.isNull() || layername == layer)) {
+				int n = get_fragments_from_r(radius, fn, fs, fa);
+				while (start_angle > stop_angle)
+					stop_angle += 360.0;
+				n = ceil(n * 360 / (stop_angle-start_angle));
+				for (int i = 0; i < n; i++) {
+					double a1 = ((stop_angle-start_angle)*i)/n;
+					double a2 = ((stop_angle-start_angle)*(i+1))/n;
+					a1 = (start_angle + a1) * M_PI / 180.0;
+					a2 = (start_angle + a2) * M_PI / 180.0;
+					lines.append(Line(p(cos(a1)*radius + x1, sin(a1)*radius + y1),
+							p(cos(a2)*radius + x1, sin(a2)*radius + y1)));
+				}
+			}
+			if (in_entities_section) {
+				if (data != "SECTION" && data != "ENDSEC" &&
+						data != "LINE" && data != "ARC" && data != "CIRCLE")
+				unsupported_entities_list[data]++;
+			}
 			mode = data;
 			break;
+		case 2:
+			in_entities_section = data == "ENTITIES";
 		case 8:
 			layer = data;
 			break;
 		case 10:
-			x1 = data.toDouble();
+			x1 = (data.toDouble() - xorigin) * scale;
 			break;
 		case 11:
-			x2 = data.toDouble();
+			x2 = (data.toDouble() - xorigin) * scale;
 			break;
 		case 20:
-			y1 = data.toDouble();
+			y1 = (data.toDouble() - yorigin) * scale;
 			break;
 		case 21:
-			y2 = data.toDouble();
+			y2 = (data.toDouble() - yorigin) * scale;
+			break;
+		case 40:
+			radius = data.toDouble() * scale;
+			break;
+		case 50:
+			start_angle = data.toDouble();
+			break;
+		case 51:
+			stop_angle = data.toDouble();
 			break;
 		}
+	}
+
+	QHashIterator<QString, int> i(unsupported_entities_list);
+	while (i.hasNext()) {
+		i.next();
+		PRINTA("WARNING: Unsupported DXF Entity `%1' (%2x) in `%3'.",
+			i.key(), QString::number(i.value()), filename);
 	}
 
 	// extract all open paths
@@ -84,6 +133,8 @@ DxfData::DxfData(double /* fn */, double /* fs */, double /* fa */, QString file
 		for (int i = 0; i < lines.count(); i++) {
 			for (int j = 0; j < 2; j++) {
 				for (int k = 0; k < lines.count(); k++) {
+					if (i == k)
+						continue;
 					if (lines[i].p[j] == lines[k].p[0])
 						goto next_open_path_j;
 					if (lines[i].p[j] == lines[k].p[1])
@@ -174,7 +225,7 @@ DxfData::DxfData(double /* fn */, double /* fs */, double /* fa */, QString file
 					min_x_point = j;
 				}
 			}
-			// rotate points if the path is not in non-standard rotation
+			// rotate points if the path is in non-standard rotation
 			int b = min_x_point;
 			int a = b == 0 ? paths[i].points.count() - 2 : b - 1;
 			int c = b == paths[i].points.count() - 1 ? 1 : b + 1;

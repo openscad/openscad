@@ -124,6 +124,7 @@ public:
 	Value inv() const;
 
 	bool getnum(double &v) const;
+	bool getv2(double &x, double &y) const;
 	bool getv3(double &x, double &y, double &z) const;
 
 	QString dump() const;
@@ -284,7 +285,7 @@ public:
 	void args(const QVector<QString> &argnames, const QVector<Expression*> &argexpr, const QVector<QString> &call_argnames, const QVector<Value> &call_argvalues);
 
 	void set_variable(QString name, Value value);
-	Value lookup_variable(QString name) const;
+	Value lookup_variable(QString name, bool silent = false) const;
 
 	Value evaluate_function(QString name, const QVector<QString> &argnames, const QVector<Value> &argvalues) const;
 	AbstractNode *evaluate_module(const ModuleInstanciation *inst) const;
@@ -312,7 +313,7 @@ public:
 	QList<Point> points;
 	QList<Path> paths;
 
-	DxfData(double fn, double fs, double fa, QString filename, QString layername = QString());
+	DxfData(double fn, double fs, double fa, QString filename, QString layername = QString(), double xorigin = 0.0, double yorigin = 0.0, double scale = 1.0);
 
 	Point *p(double x, double y);
 };

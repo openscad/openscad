@@ -34,8 +34,15 @@ class DxfLinearExtrudeNode : public AbstractPolyNode
 public:
 	int convexity;
 	double fn, fs, fa, height;
+	double origin_x, origin_y, scale;
+	bool center;
 	QString filename, layername;
-	DxfLinearExtrudeNode(const ModuleInstanciation *mi) : AbstractPolyNode(mi) { }
+	DxfLinearExtrudeNode(const ModuleInstanciation *mi) : AbstractPolyNode(mi) {
+		convexity = 0;
+		fn = fs = fa = height = 0;
+		origin_x = origin_y = scale = 0;
+		center = false;
+	}
 	virtual PolySet *render_polyset(render_mode_e mode) const;
 	virtual QString dump(QString indent) const;
 };
@@ -44,7 +51,7 @@ AbstractNode *DxfLinearExtrudeModule::evaluate(const Context *ctx, const ModuleI
 {
 	DxfLinearExtrudeNode *node = new DxfLinearExtrudeNode(inst);
 
-	QVector<QString> argnames = QVector<QString>() << "file" << "layer" << "height";
+	QVector<QString> argnames = QVector<QString>() << "file" << "layer" << "height" << "origin" << "scale" << "center";
 	QVector<Expression*> argexpr;
 
 	Context c(ctx);
@@ -55,20 +62,31 @@ AbstractNode *DxfLinearExtrudeModule::evaluate(const Context *ctx, const ModuleI
 	node->fa = c.lookup_variable("$fa").num;
 
 	Value file = c.lookup_variable("file");
-	Value layer = c.lookup_variable("layer");
-	Value height = c.lookup_variable("height");
-	Value convexity = c.lookup_variable("convexity");
+	Value layer = c.lookup_variable("layer", true);
+	Value height = c.lookup_variable("height", true);
+	Value convexity = c.lookup_variable("convexity", true);
+	Value origin = c.lookup_variable("origin", true);
+	Value scale = c.lookup_variable("scale", true);
+	Value center = c.lookup_variable("center", true);
 
 	node->filename = file.text;
 	node->layername = layer.text;
 	node->height = height.num;
 	node->convexity = convexity.num;
+	origin.getv2(node->origin_x, node->origin_y);
+	node->scale = scale.num;
+
+	if (center.type == Value::BOOL)
+		node->center = center.b;
 
 	if (node->height <= 0)
 		node->height = 100;
 
 	if (node->convexity <= 0)
 		node->convexity = 1;
+
+	if (node->scale <= 0)
+		node->scale = 1;
 
 	return node;
 }
@@ -319,20 +337,30 @@ static void tess(PolySet *ps, DxfData *dxf, bool up, double h)
 
 PolySet *DxfLinearExtrudeNode::render_polyset(render_mode_e) const
 {
-	DxfData dxf(fn, fs, fa, filename, layername);
+	DxfData dxf(fn, fs, fa, filename, layername, origin_x, origin_y, scale);
 
 	PolySet *ps = new PolySet();
 	ps->convexity = convexity;
+
+	double h1, h2;
+
+	if (center) {
+		h1 = -height/2.0;
+		h2 = -height/2.0;
+	} else {
+		h1 = 0;
+		h2 = height;
+	}
 
 	for (int i = 0; i < dxf.paths.count(); i++)
 	{
 		if (!dxf.paths[i].is_closed)
 			continue;
-		add_slice(ps, &dxf.paths[i], 0, height);
+		add_slice(ps, &dxf.paths[i], h1, h2);
 	}
 
-	tess(ps, &dxf, false, 0);
-	tess(ps, &dxf, true, height);
+	tess(ps, &dxf, false, h1);
+	tess(ps, &dxf, true, h2);
 
 	return ps;
 }
@@ -342,9 +370,10 @@ QString DxfLinearExtrudeNode::dump(QString indent) const
 	if (dump_cache.isEmpty()) {
 		QString text;
 		text.sprintf("dxf_linear_extrude(file = \"%s\", layer = \"%s\", height = %f, "
+				"origin = [ %f %f ], scale = %f, "
 				"$fn = %f, $fa = %f, $fs = %f);\n",
 				filename.toAscii().data(), layername.toAscii().data(),
-				height, fn, fs, fa);
+				height, origin_x, origin_y, scale, fn, fs, fa);
 		((AbstractNode*)this)->dump_cache = indent + QString("n%1: ").arg(idx) + text;
 	}
 	return dump_cache;

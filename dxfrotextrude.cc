@@ -34,8 +34,13 @@ class DxfRotateExtrudeNode : public AbstractPolyNode
 public:
 	int convexity;
 	double fn, fs, fa;
+	double origin_x, origin_y, scale;
 	QString filename, layername;
-	DxfRotateExtrudeNode(const ModuleInstanciation *mi) : AbstractPolyNode(mi) { }
+	DxfRotateExtrudeNode(const ModuleInstanciation *mi) : AbstractPolyNode(mi) {
+		convexity = 0;
+		fn = fs = fa = 0;
+		origin_x = origin_y = scale = 0;
+	}
 	virtual PolySet *render_polyset(render_mode_e mode) const;
 	virtual QString dump(QString indent) const;
 };
@@ -44,7 +49,7 @@ AbstractNode *DxfRotateExtrudeModule::evaluate(const Context *ctx, const ModuleI
 {
 	DxfRotateExtrudeNode *node = new DxfRotateExtrudeNode(inst);
 
-	QVector<QString> argnames = QVector<QString>() << "file" << "layer";
+	QVector<QString> argnames = QVector<QString>() << "file" << "layer" << "origin" << "scale";
 	QVector<Expression*> argexpr;
 
 	Context c(ctx);
@@ -55,15 +60,22 @@ AbstractNode *DxfRotateExtrudeModule::evaluate(const Context *ctx, const ModuleI
 	node->fa = c.lookup_variable("$fa").num;
 
 	Value file = c.lookup_variable("file");
-	Value layer = c.lookup_variable("layer");
-	Value convexity = c.lookup_variable("convexity");
+	Value layer = c.lookup_variable("layer", true);
+	Value convexity = c.lookup_variable("convexity", true);
+	Value origin = c.lookup_variable("origin", true);
+	Value scale = c.lookup_variable("scale", true);
 
 	node->filename = file.text;
 	node->layername = layer.text;
 	node->convexity = convexity.num;
+	origin.getv2(node->origin_x, node->origin_y);
+	node->scale = scale.num;
 
 	if (node->convexity <= 0)
 		node->convexity = 1;
+
+	if (node->scale <= 0)
+		node->scale = 1;
 
 	return node;
 }
@@ -75,7 +87,7 @@ void register_builtin_dxf_rotate_extrude()
 
 PolySet *DxfRotateExtrudeNode::render_polyset(render_mode_e) const
 {
-	DxfData dxf(fn, fs, fa, filename, layername);
+	DxfData dxf(fn, fs, fa, filename, layername, origin_x, origin_y, scale);
 
 	PolySet *ps = new PolySet();
 	ps->convexity = convexity;
@@ -143,8 +155,10 @@ QString DxfRotateExtrudeNode::dump(QString indent) const
 	if (dump_cache.isEmpty()) {
 		QString text;
 		text.sprintf("dxf_rotate_extrude(file = \"%s\", layer = \"%s\", "
+				"origin = [ %f %f ], scale = %f, "
 				"$fn = %f, $fa = %f, $fs = %f);\n",
-				filename.toAscii().data(), layername.toAscii().data(),fn, fs, fa);
+				filename.toAscii().data(), layername.toAscii().data(),
+				origin_x, origin_y, scale, fn, fs, fa);
 		((AbstractNode*)this)->dump_cache = indent + QString("n%1: ").arg(idx) + text;
 	}
 	return dump_cache;

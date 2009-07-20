@@ -60,7 +60,7 @@ void Context::set_variable(QString name, Value value)
 		variables[name] = value;
 }
 
-Value Context::lookup_variable(QString name) const
+Value Context::lookup_variable(QString name, bool silent) const
 {
 	if (name.startsWith("$")) {
 		for (int i = ctx_stack.size()-1; i >= 0; i--) {
@@ -73,7 +73,8 @@ Value Context::lookup_variable(QString name) const
 		return variables[name];
 	if (parent)
 		return parent->lookup_variable(name);
-	PRINTA("WARNING: Ignoring unkown variable '%1'.", name);
+	if (!silent)
+		PRINTA("WARNING: Ignoring unkown variable '%1'.", name);
 	return Value();
 }
 
