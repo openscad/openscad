@@ -21,16 +21,6 @@
 #ifndef OPENSCAD_H
 #define OPENSCAD_H
 
-// this must be defined as early as possible
-// so QHash<> and friends can see it..
-#include <qglobal.h>
-static inline uint qHash(double v) {
-	// not beauty but good enough..
-	union { double d; uint u[2]; } x;
-	x.u[0] = 0; x.u[1] = 0; x.d = v;
-	return x.u[0] ^ x.u[1];
-}
-
 #ifdef ENABLE_OPENCSG
 // this must be included before the GL headers
 #  include <GL/glew.h>
@@ -71,6 +61,110 @@ class CSGTerm;
 class CSGChain;
 class AbstractNode;
 class AbstractPolyNode;
+
+template <typename T>
+class Grid2d
+{
+public:
+	double res;
+	QHash<QPair<int,int>, T> db;
+
+	Grid2d(double resolution = 0.001) {
+		res = resolution;
+	}
+	T &align(double &x, double &y) {
+		int ix = round(x / res);
+		int iy = round(y / res);
+		x = ix * res, y = iy * res;
+		if (db.contains(QPair<int,int>(ix, iy)))
+			return db[QPair<int,int>(ix, iy)];
+		int dist = 10;
+		T *ptr = NULL;
+		for (int jx = ix - 1; jx <= ix + 1; jx++)
+		for (int jy = iy - 1; jy <= iy + 1; jy++) {
+			if (!db.contains(QPair<int,int>(jx, jy)))
+				continue;
+			if (abs(ix-jx) + abs(iy-jy) < dist) {
+				x = jx * res, y = jy * res;
+				dist = abs(ix-jx) + abs(iy-jy);
+				ptr = &db[QPair<int,int>(jx, jy)];
+			}
+		}
+		if (ptr)
+			return *ptr;
+		return db[QPair<int,int>(ix, iy)];
+	}
+	bool has(double x, double y) {
+		int ix = round(x / res);
+		int iy = round(y / res);
+		if (db.contains(QPair<int,int>(ix, iy)))
+			return true;
+		for (int jx = ix - 1; jx <= ix + 1; jx++)
+		for (int jy = iy - 1; jy <= iy + 1; jy++) {
+			if (db.contains(QPair<int,int>(jx, jy)))
+				true;
+		}
+		return false;
+	}
+	T &data(double x, double y) {
+		return align(x, y);
+	}
+};
+
+template <typename T>
+class Grid3d
+{
+public:
+	double res;
+	QHash<QPair<QPair<int,int>,int>, T> db;
+
+	Grid3d(double resolution = 0.001) {
+		res = resolution;
+	}
+	T &align(double &x, double &y, double &z) {
+		int ix = round(x / res);
+		int iy = round(y / res);
+		int iz = round(z / res);
+		x = ix * res, y = iy * res, z = iz * res;
+		if (db.contains(QPair<QPair<int,int>,int>(QPair<int,int>(ix, iy), iz)))
+			return db[QPair<QPair<int,int>,int>(QPair<int,int>(ix, iy), iz)];
+		int dist = 10;
+		T *ptr = NULL;
+		for (int jx = ix - 1; jx <= ix + 1; jx++)
+		for (int jy = iy - 1; jy <= iy + 1; jy++)
+		for (int jz = iz - 1; jz <= iz + 1; jz++) {
+			if (!db.contains(QPair<QPair<int,int>,int>(QPair<int,int>(jx, jy), jz)))
+				continue;
+			if (abs(ix-jx) + abs(iy-jy) + abs(iz-jz) < dist) {
+				x = jx * res, y = jy * res, z = jz * res;
+				dist = abs(ix-jx) + abs(iy-jy) + abs(iz-jz);
+				ptr = &db[QPair<QPair<int,int>,int>(QPair<int,int>(jx, jy), jz)];
+			}
+		}
+		if (ptr)
+			return *ptr;
+		return db[QPair<QPair<int,int>,int>(QPair<int,int>(ix, iy), iz)];
+		
+	}
+	bool has(double x, double y, double z) {
+		int ix = round(x / res);
+		int iy = round(y / res);
+		int iz = round(z / res);
+		if (db.contains(QPair<QPair<int,int>,int>(QPair<int,int>(ix, iy), iz)))
+			return true;
+		for (int jx = ix - 1; jx <= ix + 1; jx++)
+		for (int jy = iy - 1; jy <= iy + 1; jy++)
+		for (int jz = iz - 1; jz <= iz + 1; jz++) {
+			if (db.contains(QPair<QPair<int,int>,int>(QPair<int,int>(jx, jy), jz)))
+				return true;
+		}
+		return false;
+		
+	}
+	T &data(double x, double y, double z) {
+		return align(x, y, z);
+	}
+};
 
 class Value
 {
@@ -356,6 +450,7 @@ public:
 	};
 	typedef QList<Point> Polygon;
 	QVector<Polygon> polygons;
+	Grid3d<void*> grid;
 	double m[16];
 	int convexity;
 
@@ -470,6 +565,8 @@ extern void *progress_report_vp;
 
 void progress_report_prep(AbstractNode *root, void (*f)(const class AbstractNode *node, void *vp, int mark), void *vp);
 void progress_report_fin();
+
+void dxf_tesselate(PolySet *ps, DxfData *dxf, bool up, double h);
 
 #else
 

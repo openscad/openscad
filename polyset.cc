@@ -36,11 +36,13 @@ void PolySet::append_poly()
 
 void PolySet::append_vertex(double x, double y, double z)
 {
+	grid.align(x, y, z);
 	polygons.last().append(Point(x, y, z));
 }
 
 void PolySet::insert_vertex(double x, double y, double z)
 {
+	grid.align(x, y, z);
 	polygons.last().insert(0, Point(x, y, z));
 }
 
@@ -194,19 +196,15 @@ public:
 	{
 		CGAL_Polybuilder B(hds, true);
 
-		typedef QPair<QPair<double,double>,double> PointKey_t;
-		#define PointKey(_x,_y,_z) PointKey_t(QPair<double,double>(_x,_y),_z)
-
 		QVector<PolySet::Point> vertices;
-		QHash<PointKey_t,int> vertices_idx;
+		Grid3d<int> vertices_idx;
 
 		for (int i = 0; i < ps->polygons.size(); i++) {
 			const PolySet::Polygon *poly = &ps->polygons[i];
 			for (int j = 0; j < poly->size(); j++) {
 				const PolySet::Point *p = &poly->at(j);
-				PointKey_t pk = PointKey(p->x, p->y, p->z);
-				if (!vertices_idx.contains(pk)) {
-					vertices_idx[pk] = vertices.size();
+				if (!vertices_idx.has(p->x, p->y, p->z)) {
+					vertices_idx.data(p->x, p->y, p->z) = vertices.size();
 					vertices.append(*p);
 				}
 			}
@@ -233,11 +231,10 @@ public:
 #endif
 			for (int j = 0; j < poly->size(); j++) {
 				const PolySet::Point *p = &poly->at(j);
-				PointKey_t pk = PointKey(p->x, p->y, p->z);
 #ifdef GEN_SURFACE_DEBUG
-				printf(" %d", vertices_idx[pk]);
+				printf(" %d", vertices_idx.data(p->x, p->y, p->z));
 #endif
-				B.add_vertex_to_facet(vertices_idx[pk]);
+				B.add_vertex_to_facet(vertices_idx.data(p->x, p->y, p->z));
 			}
 #ifdef GEN_SURFACE_DEBUG
 			printf("\n");
