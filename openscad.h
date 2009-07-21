@@ -106,6 +106,13 @@ public:
 		}
 		return false;
 	}
+	bool eq(double x1, double y1, double x2, double y2) {
+		align(x1, y1);
+		align(x2, y2);
+		if (fabs(x1 - x2) < res && fabs(y1 - y2) < res)
+			return true;
+		return false;
+	}
 	T &data(double x, double y) {
 		return align(x, y);
 	}
@@ -160,6 +167,13 @@ public:
 		}
 		return false;
 		
+	}
+	bool eq(double x1, double y1, double z1, double x2, double y2, double z2) {
+		align(x1, y1, z1);
+		align(x2, y2, z2);
+		if (fabs(x1 - x2) < res && fabs(y1 - y2) < res && fabs(z1 - z2) < res)
+			return true;
+		return false;
 	}
 	T &data(double x, double y, double z) {
 		return align(x, y, z);
@@ -395,8 +409,9 @@ public:
 	};
 	struct Line {
 		Point *p[2];
-		Line(Point *p1, Point *p2) { p[0] = p1; p[1] = p2; }
-		Line() { p[0] = NULL; p[1] = NULL; }
+		bool disabled;
+		Line(Point *p1, Point *p2) { p[0] = p1; p[1] = p2; disabled = false; }
+		Line() { p[0] = NULL; p[1] = NULL; disabled = false; }
 	};
 	struct Path {
 		QList<Point*> points;

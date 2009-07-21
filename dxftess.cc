@@ -199,6 +199,7 @@ void dxf_tesselate(PolySet *ps, DxfData *dxf, bool up, double h)
 	// GLU tessing might merge points into edges. This is ok for GL displaying but
 	// creates invalid polyeders for CGAL. So we split this tirangles up again in order
 	// to create polyeders that are also accepted by CGAL..
+#if 1
 	bool added_triangles = true;
 	while (added_triangles)
 	{
@@ -215,6 +216,7 @@ void dxf_tesselate(PolySet *ps, DxfData *dxf, bool up, double h)
 			}
 		}
 	}
+#endif
 
 	for (int i = 0; i < tess_tri.count(); i++) {
 #if 0

@@ -21,6 +21,7 @@
 #include "openscad.h"
 
 #include <QFile>
+#include <assert.h>
 
 DxfData::DxfData(double fn, double fs, double fa, QString filename, QString layername, double xorigin, double yorigin, double scale)
 {
@@ -31,10 +32,17 @@ DxfData::DxfData(double fn, double fs, double fa, QString filename, QString laye
 		return;
 	}
 
-	// WARNING: The algorithms used here are extreamly sub-optimal and perform
-	// as bad as O(n^3). So for reading large DXF paths one might consider optimizing
-	// the code in this function..
 	QVector<Line> lines;
+	Grid2d< QVector<int> > grid;
+
+#define ADD_LINE(_x1, _y1, _x2, _y2) do {                    \
+     double _p1x = _x1, _p1y = _y1, _p2x = _x2, _p2y = _y2;  \
+     grid.align(_p1x, _p1y);                                 \
+     grid.align(_p2x, _p2y);                                 \
+     grid.data(_p1x, _p1y).append(lines.count());            \
+     grid.data(_p2x, _p2y).append(lines.count());            \
+     lines.append(Line(p(_p1x, _p1y), p(_p2x, _p2y)));       \
+   } while (0)
 
 	QString mode, layer;
 	double x1 = 0, x2 = 0, y1 = 0, y2 = 0;
@@ -57,15 +65,15 @@ DxfData::DxfData(double fn, double fs, double fa, QString filename, QString laye
 		{
 		case 0:
 			if (mode == "LINE" && (layername.isNull() || layername == layer)) {
-				lines.append(Line(p(x1, y1), p(x2, y2)));
+				ADD_LINE(x1, y1, x2, y2);
 			}
 			if (mode == "CIRCLE" && (layername.isNull() || layername == layer)) {
 				int n = get_fragments_from_r(radius, fn, fs, fa);
 				for (int i = 0; i < n; i++) {
 					double a1 = (2*M_PI*i)/n;
 					double a2 = (2*M_PI*(i+1))/n;
-					lines.append(Line(p(cos(a1)*radius + x1, sin(a1)*radius + y1),
-							p(cos(a2)*radius + x1, sin(a2)*radius + y1)));
+					ADD_LINE(cos(a1)*radius + x1, sin(a1)*radius + y1,
+							cos(a2)*radius + x1, sin(a2)*radius + y1);
 				}
 			}
 			if (mode == "ARC" && (layername.isNull() || layername == layer)) {
@@ -78,8 +86,8 @@ DxfData::DxfData(double fn, double fs, double fa, QString filename, QString laye
 					double a2 = ((stop_angle-start_angle)*(i+1))/n;
 					a1 = (start_angle + a1) * M_PI / 180.0;
 					a2 = (start_angle + a2) * M_PI / 180.0;
-					lines.append(Line(p(cos(a1)*radius + x1, sin(a1)*radius + y1),
-							p(cos(a2)*radius + x1, sin(a2)*radius + y1)));
+					ADD_LINE(cos(a1)*radius + x1, sin(a1)*radius + y1,
+							cos(a2)*radius + x1, sin(a2)*radius + y1);
 				}
 			}
 			if (in_entities_section) {
@@ -125,20 +133,24 @@ DxfData::DxfData(double fn, double fs, double fa, QString filename, QString laye
 			i.key(), QString::number(i.value()), filename);
 	}
 
+	QHash<int, int> enabled_lines;
+	for (int i = 0; i < lines.count(); i++) {
+		enabled_lines[i] = i;
+	}
+
 	// extract all open paths
-	while (lines.count() > 0)
+	while (enabled_lines.count() > 0)
 	{
 		int current_line, current_point;
 
-		for (int i = 0; i < lines.count(); i++) {
+		foreach (int i, enabled_lines) {
 			for (int j = 0; j < 2; j++) {
-				for (int k = 0; k < lines.count(); k++) {
-					if (i == k)
+				QVector<int> *lv = &grid.data(lines[i].p[j]->x, lines[i].p[j]->y);
+				for (int ki = 0; ki < lv->count(); ki++) {
+					int k = lv->at(ki);
+					if (k == i || lines[k].disabled)
 						continue;
-					if (lines[i].p[j] == lines[k].p[0])
-						goto next_open_path_j;
-					if (lines[i].p[j] == lines[k].p[1])
-						goto next_open_path_j;
+					goto next_open_path_j;
 				}
 				current_line = i;
 				current_point = j;
@@ -157,14 +169,19 @@ DxfData::DxfData(double fn, double fs, double fa, QString filename, QString laye
 		while (1) {
 			this_path->points.append(lines[current_line].p[!current_point]);
 			Point *ref_point = lines[current_line].p[!current_point];
-			lines.remove(current_line);
-			for (int k = 0; k < lines.count(); k++) {
-				if (ref_point == lines[k].p[0]) {
+			lines[current_line].disabled = true;
+			enabled_lines.remove(current_line);
+			QVector<int> *lv = &grid.data(ref_point->x, ref_point->y);
+			for (int ki = 0; ki < lv->count(); ki++) {
+				int k = lv->at(ki);
+				if (lines[k].disabled)
+					continue;
+				if (grid.eq(ref_point->x, ref_point->y, lines[k].p[0]->x, lines[k].p[0]->y)) {
 					current_line = k;
 					current_point = 0;
 					goto found_next_line_in_open_path;
 				}
-				if (ref_point == lines[k].p[1]) {
+				if (grid.eq(ref_point->x, ref_point->y, lines[k].p[1]->x, lines[k].p[1]->y)) {
 					current_line = k;
 					current_point = 1;
 					goto found_next_line_in_open_path;
@@ -176,9 +193,10 @@ DxfData::DxfData(double fn, double fs, double fa, QString filename, QString laye
 	}
 
 	// extract all closed paths
-	while (lines.count() > 0)
+	while (enabled_lines.count() > 0)
 	{
-		int current_line = 0, current_point = 0;
+		int current_line = enabled_lines.begin().value(), current_point = 0;
+		assert(lines[current_line].disabled == false);
 
 		paths.append(Path());
 		Path *this_path = &paths.last();
@@ -188,14 +206,19 @@ DxfData::DxfData(double fn, double fs, double fa, QString filename, QString laye
 		while (1) {
 			this_path->points.append(lines[current_line].p[!current_point]);
 			Point *ref_point = lines[current_line].p[!current_point];
-			lines.remove(current_line);
-			for (int k = 0; k < lines.count(); k++) {
-				if (ref_point == lines[k].p[0]) {
+			lines[current_line].disabled = true;
+			enabled_lines.remove(current_line);
+			QVector<int> *lv = &grid.data(ref_point->x, ref_point->y);
+			for (int ki = 0; ki < lv->count(); ki++) {
+				int k = lv->at(ki);
+				if (lines[k].disabled)
+					continue;
+				if (grid.eq(ref_point->x, ref_point->y, lines[k].p[0]->x, lines[k].p[0]->y)) {
 					current_line = k;
 					current_point = 0;
 					goto found_next_line_in_closed_path;
 				}
-				if (ref_point == lines[k].p[1]) {
+				if (grid.eq(ref_point->x, ref_point->y, lines[k].p[1]->x, lines[k].p[1]->y)) {
 					current_line = k;
 					current_point = 1;
 					goto found_next_line_in_closed_path;
@@ -250,22 +273,21 @@ DxfData::DxfData(double fn, double fs, double fa, QString filename, QString laye
 #if 0
 	printf("----- DXF Data -----\n");
 	for (int i = 0; i < paths.count(); i++) {
-		printf("Path %d (%s, %s):\n", i, paths[i].is_closed ? "closed" : "open",
-				paths[i].is_inner ? "inner" : "outer");
+		if (paths[i].is_closed)
+			printf("Path %d (closed, %s):\n", i, paths[i].is_inner ? "inner" : "outer");
+		else
+			printf("Path %d (open):\n", i);
 		for (int j = 0; j < paths[i].points.count(); j++)
 			printf("  %f %f\n", paths[i].points[j]->x, paths[i].points[j]->y);
 	}
 	printf("--------------------\n");
+	fflush(stdout);
 #endif
 }
 
 DxfData::Point *DxfData::p(double x, double y)
 {
-	for (int i = 0; i < points.count(); i++) {
-		if (abs(points[i].x - x) < 0.01 && abs(points[i].y - y) < 0.01)
-			return &points[i];
-	}
 	points.append(Point(x, y));
-	return &points[points.count()-1];
+	return &points.last();
 }
 
