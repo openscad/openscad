@@ -166,26 +166,28 @@ void dxf_tesselate(PolySet *ps, DxfData *dxf, bool up, double h)
 
 	gluTessBeginPolygon(tobj, NULL);
 
+	gluTessProperty(tobj, GLU_TESS_WINDING_RULE, GLU_TESS_WINDING_ODD);
+	if (up) {
+		gluTessNormal(tobj, 0, 0, -1);
+	} else {
+		gluTessNormal(tobj, 0, 0, +1);
+	}
+
+	Grid3d< QPair<int,int> > point_to_path;
+
 	for (int i = 0; i < dxf->paths.count(); i++) {
 		if (!dxf->paths[i].is_closed)
 			continue;
 		gluTessBeginContour(tobj);
-		if (up != dxf->paths[i].is_inner) {
-			for (int j = 1; j < dxf->paths[i].points.count(); j++) {
-				vl.append(tess_vdata());
-				vl.last().v[0] = dxf->paths[i].points[j]->x;
-				vl.last().v[1] = dxf->paths[i].points[j]->y;
-				vl.last().v[2] = h;
-				gluTessVertex(tobj, vl.last().v, vl.last().v);
-			}
-		} else {
-			for (int j = dxf->paths[i].points.count() - 1; j > 0; j--) {
-				vl.append(tess_vdata());
-				vl.last().v[0] = dxf->paths[i].points[j]->x;
-				vl.last().v[1] = dxf->paths[i].points[j]->y;
-				vl.last().v[2] = h;
-				gluTessVertex(tobj, vl.last().v, vl.last().v);
-			}
+		for (int j = 1; j < dxf->paths[i].points.count(); j++) {
+			point_to_path.data(dxf->paths[i].points[j]->x,
+					dxf->paths[i].points[j]->y,
+					h) = QPair<int,int>(i, j);
+			vl.append(tess_vdata());
+			vl.last().v[0] = dxf->paths[i].points[j]->x;
+			vl.last().v[1] = dxf->paths[i].points[j]->y;
+			vl.last().v[2] = h;
+			gluTessVertex(tobj, vl.last().v, vl.last().v);
 		}
 		gluTessEndContour(tobj);
 	}
@@ -273,7 +275,8 @@ void dxf_tesselate(PolySet *ps, DxfData *dxf, bool up, double h)
 	}
 #endif
 
-	for (int i = 0; i < tess_tri.count(); i++) {
+	for (int i = 0; i < tess_tri.count(); i++)
+	{
 #if 0
 		printf("---\n");
 		printf("  %f %f %f\n", tess_tri[i].p[0][0], tess_tri[i].p[0][1], tess_tri[i].p[0][2]);
@@ -284,6 +287,30 @@ void dxf_tesselate(PolySet *ps, DxfData *dxf, bool up, double h)
 		ps->insert_vertex(tess_tri[i].p[0][0], tess_tri[i].p[0][1], tess_tri[i].p[0][2]);
 		ps->insert_vertex(tess_tri[i].p[1][0], tess_tri[i].p[1][1], tess_tri[i].p[1][2]);
 		ps->insert_vertex(tess_tri[i].p[2][0], tess_tri[i].p[2][1], tess_tri[i].p[2][2]);
+
+		int i0 = point_to_path.data(tess_tri[i].p[0][0], tess_tri[i].p[0][1], tess_tri[i].p[0][2]).first;
+		int j0 = point_to_path.data(tess_tri[i].p[0][0], tess_tri[i].p[0][1], tess_tri[i].p[0][2]).second;
+
+		int i1 = point_to_path.data(tess_tri[i].p[1][0], tess_tri[i].p[1][1], tess_tri[i].p[1][2]).first;
+		int j1 = point_to_path.data(tess_tri[i].p[1][0], tess_tri[i].p[1][1], tess_tri[i].p[1][2]).second;
+
+		int i2 = point_to_path.data(tess_tri[i].p[2][0], tess_tri[i].p[2][1], tess_tri[i].p[2][2]).first;
+		int j2 = point_to_path.data(tess_tri[i].p[2][0], tess_tri[i].p[2][1], tess_tri[i].p[2][2]).second;
+
+		if (i0 == i1 && j0 == 1 && j1 == 2)
+			dxf->paths[i0].is_inner = !up;
+		if (i0 == i1 && j0 == 2 && j1 == 1)
+			dxf->paths[i0].is_inner = up;
+
+		if (i1 == i2 && j1 == 1 && j2 == 2)
+			dxf->paths[i1].is_inner = !up;
+		if (i1 == i2 && j1 == 2 && j2 == 1)
+			dxf->paths[i1].is_inner = up;
+
+		if (i2 == i0 && j2 == 1 && j0 == 2)
+			dxf->paths[i2].is_inner = !up;
+		if (i2 == i0 && j2 == 2 && j0 == 1)
+			dxf->paths[i2].is_inner = up;
 	}
 
 	tess_tri.clear();

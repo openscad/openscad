@@ -159,15 +159,15 @@ PolySet *DxfLinearExtrudeNode::render_polyset(render_mode_e) const
 				dxf.paths[i].points.last()->y / scale + origin_y);
 	}
 
+	dxf_tesselate(ps, &dxf, false, h1);
+	dxf_tesselate(ps, &dxf, true, h2);
+
 	for (int i = 0; i < dxf.paths.count(); i++)
 	{
 		if (!dxf.paths[i].is_closed)
 			continue;
 		add_slice(ps, &dxf.paths[i], h1, h2);
 	}
-
-	dxf_tesselate(ps, &dxf, false, h1);
-	dxf_tesselate(ps, &dxf, true, h2);
 
 	return ps;
 }

@@ -230,21 +230,15 @@ DxfData::DxfData(double fn, double fs, double fa, QString filename, QString laye
 	}
 
 	if (paths.count() > 0) {
-		double min_x1 = paths[0].points[0]->x;
-		int min_x_path = 0;
 		for (int i = 0; i < paths.count(); i++) {
 			if (!paths[i].is_closed)
 				break;
 			paths[i].is_inner = true;
-			double min_x2 = paths[i].points[0]->x;
+			double min_x = paths[i].points[0]->x;
 			int min_x_point = 0;
 			for (int j = 0; j < paths[i].points.count(); j++) {
-				if (paths[i].points[j]->x < min_x1) {
-					min_x1 = paths[i].points[j]->x;
-					min_x_path = i;
-				}
-				if (paths[i].points[j]->x < min_x2) {
-					min_x2 = paths[i].points[j]->x;
+				if (paths[i].points[j]->x < min_x) {
+					min_x = paths[i].points[j]->x;
 					min_x_point = j;
 				}
 			}
@@ -267,16 +261,12 @@ DxfData::DxfData(double fn, double fs, double fa, QString filename, QString laye
 					paths[i].points.swap(j, paths[i].points.count()-1-j);
 			}
 		}
-		paths[min_x_path].is_inner = false;
 	}
 
 #if 0
 	printf("----- DXF Data -----\n");
 	for (int i = 0; i < paths.count(); i++) {
-		if (paths[i].is_closed)
-			printf("Path %d (closed, %s):\n", i, paths[i].is_inner ? "inner" : "outer");
-		else
-			printf("Path %d (open):\n", i);
+		printf("Path %d (%s):\n", i, paths[i].is_closed ? "closed" : "open");
 		for (int j = 0; j < paths[i].points.count(); j++)
 			printf("  %f %f\n", paths[i].points[j]->x, paths[i].points[j]->y);
 	}
