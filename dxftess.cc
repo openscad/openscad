@@ -116,24 +116,40 @@ static void tess_error(GLenum errno)
 
 static bool point_on_line(double *p1, double *p2, double *p3)
 {
-	if (fabs(p1[0] - p2[0]) < 0.0001 && fabs(p1[1] - p2[1]) < 0.0001)
+	if (fabs(p1[0] - p2[0]) < 0.00001 && fabs(p1[1] - p2[1]) < 0.00001)
 		return false;
 
-	if (fabs(p3[0] - p2[0]) < 0.0001 && fabs(p3[1] - p2[1]) < 0.0001)
+	if (fabs(p3[0] - p2[0]) < 0.00001 && fabs(p3[1] - p2[1]) < 0.00001)
 		return false;
 
 	double v1[2] = { p2[0] - p1[0], p2[1] - p1[1] };
 	double v2[2] = { p3[0] - p1[0], p3[1] - p1[1] };
 
-	if (fabs(atan2(v1[0], v1[1]) - atan2(v2[0], v2[1])) < 0.0001 &&
-			sqrt(v1[0]*v1[0] + v1[1]*v1[1]) < sqrt(v2[0]*v2[0] + v2[1]*v2[1])) {
-#if 0
-		printf("Point on line: %f/%f %f/%f %f/%f\n", p1[0], p1[1], p2[0], p2[1], p3[0], p3[1]);
-#endif
-		return true;
+	if (sqrt(v1[0]*v1[0] + v1[1]*v1[1]) > sqrt(v2[0]*v2[0] + v2[1]*v2[1]))
+		return false;
+
+	if (fabs(v1[0]) > fabs(v1[1])) {
+		// y = x * dy/dx
+		if (v2[0] == 0 || ((v1[0] > 0) != (v2[0] > 0)))
+			return false;
+		double v1_dy_dx = v1[1] / v1[0];
+		double v2_dy_dx = v2[1] / v2[0];
+		if (fabs(v1_dy_dx - v2_dy_dx) > 1e-15)
+			return false;
+	} else {
+		// x = y * dx/dy
+		if (v2[1] == 0 || ((v1[1] > 0) != (v2[1] > 0)))
+			return false;
+		double v1_dy_dx = v1[0] / v1[1];
+		double v2_dy_dx = v2[0] / v2[1];
+		if (fabs(v1_dy_dx - v2_dy_dx) > 1e-15)
+			return false;
 	}
 
-	return false;
+#if 0
+	printf("Point on line: %f/%f %f/%f %f/%f\n", p1[0], p1[1], p2[0], p2[1], p3[0], p3[1]);
+#endif
+	return true;
 }
 
 void dxf_tesselate(PolySet *ps, DxfData *dxf, bool up, double h)
@@ -196,23 +212,62 @@ void dxf_tesselate(PolySet *ps, DxfData *dxf, bool up, double h)
 		}
 	}
 
-	// GLU tessing might merge points into edges. This is ok for GL displaying but
-	// creates invalid polyeders for CGAL. So we split this tirangles up again in order
+	// GLU tessing creates T-junctions. This is ok for GL displaying but creates
+	// invalid polyeders for CGAL. So we split this tirangles up again in order
 	// to create polyeders that are also accepted by CGAL..
+	// All triangle edges are sorted by their atan2 and only edges with a simmilar atan2
+	// value are compared. This speeds up this code block dramatically (compared to the
+	// n^2 compares that are neccessary in the trivial implementation).
 #if 1
 	bool added_triangles = true;
+	typedef QPair<int,int> QPair_ii;
+	QHash<int, QPair_ii> tri_by_atan2;
+	for (int i = 0; i < tess_tri.count(); i++)
+	for (int j = 0; j < 3; j++) {
+		int ai = round(atan2(fabs(tess_tri[i].p[(j+1)%3][0] - tess_tri[i].p[j][0]),
+				fabs(tess_tri[i].p[(j+1)%3][1] - tess_tri[i].p[j][1])) / 0.001);
+		tri_by_atan2.insertMulti(ai, QPair<int,int>(i, j));
+	}
 	while (added_triangles)
 	{
 		added_triangles = false;
+		// printf("*** Triangle splitting (%d) ***\n", tess_tri.count()+1);
 		for (int i = 0; i < tess_tri.count(); i++)
-		for (int j = 0; j < tess_tri.count(); j++)
 		for (int k = 0; k < 3; k++)
-		for (int l = 0; l < 3; l++) {
-			if (point_on_line(tess_tri[i].p[k], tess_tri[j].p[l], tess_tri[i].p[(k+1)%3])) {
-				tess_tri.append(tess_triangle(tess_tri[j].p[l],
-						tess_tri[i].p[(k+1)%3], tess_tri[i].p[(k+2)%3]));
-				tess_tri[i].p[(k+1)%3] = tess_tri[j].p[l];
-				added_triangles = true;
+		{
+			QHash<QPair_ii, QPair_ii> possible_neigh;
+			int ai = floor(atan2(fabs(tess_tri[i].p[(k+1)%3][0] - tess_tri[i].p[k][0]),
+					fabs(tess_tri[i].p[(k+1)%3][1] - tess_tri[i].p[k][1])) / 0.001 - 0.5);
+			for (int j = 0; j < 2; j++) {
+				foreach (QPair_ii jl, tri_by_atan2.values(ai+j))
+					if (i != jl.first)
+						possible_neigh[jl] = jl;
+			}
+			// printf("%d/%d: %d\n", i, k, possible_neigh.count());
+			foreach (QPair_ii jl, possible_neigh) {
+				int j = jl.first;
+				for (int l = jl.second; l != (jl.second + 2) % 3; l = (l + 1) % 3)
+				if (point_on_line(tess_tri[i].p[k], tess_tri[j].p[l], tess_tri[i].p[(k+1)%3])) {
+					// printf("%% %f %f %f %f %f %f [%d %d]\n",
+					// 		tess_tri[i].p[k][0], tess_tri[i].p[k][1],
+					// 		tess_tri[j].p[l][0], tess_tri[j].p[l][1],
+					// 		tess_tri[i].p[(k+1)%3][0], tess_tri[i].p[(k+1)%3][1],
+					// 		i, j);
+					tess_tri.append(tess_triangle(tess_tri[j].p[l],
+							tess_tri[i].p[(k+1)%3], tess_tri[i].p[(k+2)%3]));
+					for (int m = 0; m < 2; m++) {
+						int ai = round(atan2(fabs(tess_tri.last().p[(m+1)%3][0] - tess_tri.last().p[m][0]),
+								fabs(tess_tri.last().p[(m+1)%3][1] - tess_tri.last().p[m][1])) / 0.001 );
+						tri_by_atan2.insertMulti(ai, QPair<int,int>(tess_tri.count()-1, m));
+					}
+					tess_tri[i].p[(k+1)%3] = tess_tri[j].p[l];
+					for (int m = 0; m < 2; m++) {
+						int ai = round(atan2(fabs(tess_tri[i].p[(m+1)%3][0] - tess_tri[i].p[m][0]),
+								fabs(tess_tri[i].p[(m+1)%3][1] - tess_tri[i].p[m][1])) / 0.001 );
+						tri_by_atan2.insertMulti(ai, QPair<int,int>(i, m));
+					}
+					added_triangles = true;
+				}
 			}
 		}
 	}
