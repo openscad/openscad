@@ -142,6 +142,23 @@ PolySet *DxfLinearExtrudeNode::render_polyset(render_mode_e) const
 		h2 = height;
 	}
 
+	bool first_open_path = true;
+	for (int i = 0; i < dxf.paths.count(); i++)
+	{
+		if (dxf.paths[i].is_closed)
+			continue;
+		if (first_open_path) {
+			PRINTF("WARING: Open paths in dxf_liniear_extrude(file = \"%s\", layer = \"%s\"):",
+					filename.toAscii().data(), layername.toAscii().data());
+			first_open_path = false;
+		}
+		PRINTF("   %9.5f %10.5f ... %10.5f %10.5f",
+				dxf.paths[i].points.first()->x / scale + origin_x,
+				dxf.paths[i].points.first()->y / scale + origin_y, 
+				dxf.paths[i].points.last()->x / scale + origin_x,
+				dxf.paths[i].points.last()->y / scale + origin_y);
+	}
+
 	for (int i = 0; i < dxf.paths.count(); i++)
 	{
 		if (!dxf.paths[i].is_closed)
