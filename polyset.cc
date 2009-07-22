@@ -225,7 +225,17 @@ public:
 
 		for (int i = 0; i < ps->polygons.size(); i++) {
 			const PolySet::Polygon *poly = &ps->polygons[i];
-			B.begin_facet();
+			QHash<int,int> fc;
+			bool facet_is_degenerated = false;
+			for (int j = 0; j < poly->size(); j++) {
+				const PolySet::Point *p = &poly->at(j);
+				int v = vertices_idx.data(p->x, p->y, p->z);
+				if (fc[v]++ > 0)
+					facet_is_degenerated = true;
+			}
+			
+			if (!facet_is_degenerated)
+				B.begin_facet();
 #ifdef GEN_SURFACE_DEBUG
 			printf("F:");
 #endif
@@ -234,12 +244,16 @@ public:
 #ifdef GEN_SURFACE_DEBUG
 				printf(" %d", vertices_idx.data(p->x, p->y, p->z));
 #endif
-				B.add_vertex_to_facet(vertices_idx.data(p->x, p->y, p->z));
+				if (!facet_is_degenerated)
+					B.add_vertex_to_facet(vertices_idx.data(p->x, p->y, p->z));
 			}
 #ifdef GEN_SURFACE_DEBUG
+			if (facet_is_degenerated)
+				printf(" (degenerated)\n");
 			printf("\n");
 #endif
-			B.end_facet();
+			if (!facet_is_degenerated)
+				B.end_facet();
 		}
 
 #ifdef GEN_SURFACE_DEBUG
