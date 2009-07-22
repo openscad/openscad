@@ -136,7 +136,7 @@ PolySet *DxfLinearExtrudeNode::render_polyset(render_mode_e) const
 
 	if (center) {
 		h1 = -height/2.0;
-		h2 = -height/2.0;
+		h2 = +height/2.0;
 	} else {
 		h1 = 0;
 		h2 = height;
