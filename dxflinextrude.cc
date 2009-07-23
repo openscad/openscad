@@ -22,6 +22,10 @@
 
 #include "openscad.h"
 
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+
 class DxfLinearExtrudeModule : public AbstractModule
 {
 public:
@@ -176,11 +180,13 @@ QString DxfLinearExtrudeNode::dump(QString indent) const
 {
 	if (dump_cache.isEmpty()) {
 		QString text;
-		text.sprintf("dxf_linear_extrude(file = \"%s\", layer = \"%s\", height = %f, "
-				"origin = [ %f %f ], scale = %f, "
-				"$fn = %f, $fa = %f, $fs = %f);\n",
-				filename.toAscii().data(), layername.toAscii().data(),
-				height, origin_x, origin_y, scale, fn, fs, fa);
+		struct stat st;
+		memset(&st, 0, sizeof(struct stat));
+		stat(filename.toAscii().data(), &st);
+		text.sprintf("dxf_linear_extrude(file = \"%s\", cache = \"%x.%x\", layer = \"%s\", height = %f, "
+				"origin = [ %f %f ], scale = %f, $fn = %f, $fa = %f, $fs = %f);\n",
+				filename.toAscii().data(), (int)st.st_mtime, (int)st.st_size,
+				layername.toAscii().data(), height, origin_x, origin_y, scale, fn, fs, fa);
 		((AbstractNode*)this)->dump_cache = indent + QString("n%1: ").arg(idx) + text;
 	}
 	return dump_cache;

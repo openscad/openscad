@@ -150,8 +150,15 @@ QString Expression::dump() const
 		return const_value->dump();
 	if (type == "R")
 		return QString("[%1 : %2 : %3]").arg(children[0]->dump(), children[1]->dump(), children[2]->dump());
-	if (type == "V")
-		return QString("[%1, %2, %3]").arg(children[0]->dump(), children[1]->dump(), children[2]->dump());
+	if (type == "V") {
+		QString text = QString("[");
+		for (int i=0; i < children.size(); i++) {
+			if (i > 0)
+				text += QString(", ");
+			text += children[i]->dump();
+		}
+		return text + QString("]");
+	}
 	if (type == "L")
 		return var_name;
 	if (type == "N")

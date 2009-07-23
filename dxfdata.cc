@@ -64,10 +64,12 @@ DxfData::DxfData(double fn, double fs, double fa, QString filename, QString laye
 		switch (id)
 		{
 		case 0:
-			if (mode == "LINE" && (layername.isNull() || layername == layer)) {
+			if (in_entities_section && mode == "LINE" &&
+					(layername.isNull() || layername == layer)) {
 				ADD_LINE(x1, y1, x2, y2);
 			}
-			if (mode == "CIRCLE" && (layername.isNull() || layername == layer)) {
+			if (in_entities_section && mode == "CIRCLE" &&
+					(layername.isNull() || layername == layer)) {
 				int n = get_fragments_from_r(radius, fn, fs, fa);
 				for (int i = 0; i < n; i++) {
 					double a1 = (2*M_PI*i)/n;
@@ -76,7 +78,8 @@ DxfData::DxfData(double fn, double fs, double fa, QString filename, QString laye
 							cos(a2)*radius + x1, sin(a2)*radius + y1);
 				}
 			}
-			if (mode == "ARC" && (layername.isNull() || layername == layer)) {
+			if (in_entities_section && mode == "ARC" &&
+					(layername.isNull() || layername == layer)) {
 				int n = get_fragments_from_r(radius, fn, fs, fa);
 				while (start_angle > stop_angle)
 					stop_angle += 360.0;
@@ -90,10 +93,11 @@ DxfData::DxfData(double fn, double fs, double fa, QString filename, QString laye
 							cos(a2)*radius + x1, sin(a2)*radius + y1);
 				}
 			}
-			if (in_entities_section) {
-				if (data != "SECTION" && data != "ENDSEC" &&
-						data != "LINE" && data != "ARC" && data != "CIRCLE")
-				unsupported_entities_list[data]++;
+			if (in_entities_section &&
+					(layername.isNull() || layername == layer)) {
+				if (mode != "SECTION" && mode != "ENDSEC" &&
+						mode != "LINE" && mode != "ARC" && mode != "CIRCLE")
+					unsupported_entities_list[mode]++;
 			}
 			mode = data;
 			break;
@@ -129,8 +133,13 @@ DxfData::DxfData(double fn, double fs, double fa, QString filename, QString laye
 	QHashIterator<QString, int> i(unsupported_entities_list);
 	while (i.hasNext()) {
 		i.next();
-		PRINTA("WARNING: Unsupported DXF Entity `%1' (%2x) in `%3'.",
-			i.key(), QString::number(i.value()), filename);
+		if (layername.isNull()) {
+			PRINTA("WARNING: Unsupported DXF Entity `%1' (%2x) in `%3'.",
+					i.key(), QString::number(i.value()), filename);
+		} else {
+			PRINTA("WARNING: Unsupported DXF Entity `%1' (%2x) in layer `%3' of `%4'.",
+					i.key(), QString::number(i.value()), layername, filename);
+		}
 	}
 
 	QHash<int, int> enabled_lines;
