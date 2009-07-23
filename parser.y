@@ -179,6 +179,10 @@ single_module_instantciation:
 	'#' single_module_instantciation {
 		$$ = $2;
 		$$->tag_highlight = true;
+	} |
+	'%' single_module_instantciation {
+		$$ = $2;
+		$$->tag_background = true;
 	};
 
 expr:

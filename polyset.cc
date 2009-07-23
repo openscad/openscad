@@ -123,6 +123,15 @@ void PolySet::render_surface(colormode_e colormode, GLint *shaderinfo) const
 		}
 #endif /* ENABLE_OPENCSG */
 	}
+	if (colormode == COLOR_BACKGROUND) {
+		glColor3ub(180, 180, 180);
+#ifdef ENABLE_OPENCSG
+		if (shaderinfo) {
+			glUniform4f(shaderinfo[1], 180 / 255.0, 180 / 255.0, 180 / 255.0, 0.5);
+			glUniform4f(shaderinfo[2], 150 / 255.0, 150 / 255.0, 150 / 255.0, 0.5);
+		}
+#endif /* ENABLE_OPENCSG */
+	}
 #ifdef ENABLE_OPENCSG
 	if (shaderinfo) {
 		glUniform1f(shaderinfo[7], shaderinfo[9]);
@@ -168,6 +177,8 @@ void PolySet::render_edges(colormode_e colormode) const
 		glColor3ub(171, 216, 86);
 	if (colormode == COLOR_HIGHLIGHT)
 		glColor3ub(255, 171, 86);
+	if (colormode == COLOR_BACKGROUND)
+		glColor3ub(150, 150, 150);
 	for (int i = 0; i < polygons.size(); i++) {
 		const Polygon *poly = &polygons[i];
 		glBegin(GL_LINE_STRIP);
@@ -305,13 +316,17 @@ CGAL_Nef_polyhedron AbstractPolyNode::render_cgal_nef_polyhedron() const
 
 #endif /* ENABLE_CGAL */
 
-CSGTerm *AbstractPolyNode::render_csg_term(double m[16], QVector<CSGTerm*> *highlights) const
+CSGTerm *AbstractPolyNode::render_csg_term(double m[16], QVector<CSGTerm*> *highlights, QVector<CSGTerm*> *background) const
 {
 	PolySet *ps = render_polyset(RENDER_OPENCSG);
 	ps->setmatrix(m);
 	CSGTerm *t = new CSGTerm(ps, QString("n%1").arg(idx));
 	if (modinst->tag_highlight && highlights)
 		highlights->append(t->link());
+	if (modinst->tag_background && background) {
+		background->append(t);
+		return NULL;
+	}
 	return t;
 }
 

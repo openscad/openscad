@@ -44,7 +44,7 @@ public:
 #ifdef ENABLE_CGAL
         virtual CGAL_Nef_polyhedron render_cgal_nef_polyhedron() const;
 #endif
-	CSGTerm *render_csg_term(double m[16], QVector<CSGTerm*> *highlights) const;
+	CSGTerm *render_csg_term(double m[16], QVector<CSGTerm*> *highlights, QVector<CSGTerm*> *background) const;
         virtual QString dump(QString indent) const;
 };
 
@@ -91,11 +91,11 @@ CGAL_Nef_polyhedron CsgNode::render_cgal_nef_polyhedron() const
 
 #endif /* ENABLE_CGAL */
 
-CSGTerm *CsgNode::render_csg_term(double m[16], QVector<CSGTerm*> *highlights) const
+CSGTerm *CsgNode::render_csg_term(double m[16], QVector<CSGTerm*> *highlights, QVector<CSGTerm*> *background) const
 {
 	CSGTerm *t1 = NULL;
 	foreach (AbstractNode *v, children) {
-		CSGTerm *t2 = v->render_csg_term(m, highlights);
+		CSGTerm *t2 = v->render_csg_term(m, highlights, background);
 		if (t2 && !t1) {
 			t1 = t2;
 		} else if (t2 && t1) {
@@ -108,8 +108,12 @@ CSGTerm *CsgNode::render_csg_term(double m[16], QVector<CSGTerm*> *highlights) c
 			}
 		}
 	}
-	if (modinst->tag_highlight && highlights)
+	if (t1 && modinst->tag_highlight && highlights)
 		highlights->append(t1->link());
+	if (t1 && modinst->tag_background && background) {
+		background->append(t1);
+		return NULL;
+	}
 	return t1;
 }
 

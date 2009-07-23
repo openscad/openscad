@@ -334,9 +334,10 @@ public:
 
 	bool tag_root;
 	bool tag_highlight;
+	bool tag_background;
 	const Context *ctx;
 
-	ModuleInstanciation() : tag_root(false), tag_highlight(false), ctx(NULL) { }
+	ModuleInstanciation() : tag_root(false), tag_highlight(false), tag_background(false), ctx(NULL) { }
 	~ModuleInstanciation();
 
 	QString dump(QString indent) const;
@@ -481,7 +482,8 @@ public:
 		COLOR_NONE,
 		COLOR_MATERIAL,
 		COLOR_CUTOUT,
-		COLOR_HIGHLIGHT
+		COLOR_HIGHLIGHT,
+		COLOR_BACKGROUND
 	};
 
 	void render_surface(colormode_e colormode, GLint *shaderinfo = NULL) const;
@@ -555,7 +557,7 @@ public:
 	virtual QString cgal_nef_cache_id() const;
 	virtual CGAL_Nef_polyhedron render_cgal_nef_polyhedron() const;
 #endif
-	virtual CSGTerm *render_csg_term(double m[16], QVector<CSGTerm*> *highlights) const;
+	virtual CSGTerm *render_csg_term(double m[16], QVector<CSGTerm*> *highlights, QVector<CSGTerm*> *background) const;
 	virtual QString dump(QString indent) const;
 };
 
@@ -571,7 +573,7 @@ public:
 #ifdef ENABLE_CGAL
 	virtual CGAL_Nef_polyhedron render_cgal_nef_polyhedron() const;
 #endif
-	virtual CSGTerm *render_csg_term(double m[16], QVector<CSGTerm*> *highlights) const;
+	virtual CSGTerm *render_csg_term(double m[16], QVector<CSGTerm*> *highlights, QVector<CSGTerm*> *background) const;
 };
 
 extern int progress_report_count;
@@ -646,6 +648,8 @@ public:
 
 	QVector<CSGTerm*> highlight_terms;
 	CSGChain *highlights_chain;
+	QVector<CSGTerm*> background_terms;
+	CSGChain *background_chain;
 	AbstractNode *root_node;
 	bool enableOpenCSG;
 

@@ -40,7 +40,7 @@ public:
 #ifdef ENABLE_CGAL
 	virtual CGAL_Nef_polyhedron render_cgal_nef_polyhedron() const;
 #endif
-	CSGTerm *render_csg_term(double m[16], QVector<CSGTerm*> *highlights) const;
+	CSGTerm *render_csg_term(double m[16], QVector<CSGTerm*> *highlights, QVector<CSGTerm*> *background) const;
 	virtual QString dump(QString indent) const;
 };
 
@@ -110,7 +110,7 @@ static void report_func(const class AbstractNode*, void *vp, int mark)
 	QApplication::processEvents();
 }
 
-CSGTerm *RenderNode::render_csg_term(double m[16], QVector<CSGTerm*> *highlights) const
+CSGTerm *RenderNode::render_csg_term(double m[16], QVector<CSGTerm*> *highlights, QVector<CSGTerm*> *background) const
 {
 	CGAL_Nef_polyhedron N;
 
@@ -177,17 +177,21 @@ CSGTerm *RenderNode::render_csg_term(double m[16], QVector<CSGTerm*> *highlights
 	CSGTerm *term = new CSGTerm(ps, QString("n%1").arg(idx));
 	if (modinst->tag_highlight && highlights)
 		highlights->append(term->link());
+	if (modinst->tag_background && background) {
+		background->append(term);
+		return NULL;
+	}
 	return term;
 }
 
 #else
 
-CSGTerm *RenderNode::render_csg_term(double m[16], QVector<CSGTerm*> *highlights) const
+CSGTerm *RenderNode::render_csg_term(double m[16], QVector<CSGTerm*> *highlights, QVector<CSGTerm*> *background) const
 {
 	CSGTerm *t1 = NULL;
 	PRINT("WARNING: Found render() statement but compiled without CGAL support!");
 	foreach(AbstractNode * v, children) {
-		CSGTerm *t2 = v->render_csg_term(m, highlights);
+		CSGTerm *t2 = v->render_csg_term(m, highlights, background);
 		if (t2 && !t1) {
 			t1 = t2;
 		} else if (t2 && t1) {
@@ -196,6 +200,10 @@ CSGTerm *RenderNode::render_csg_term(double m[16], QVector<CSGTerm*> *highlights
 	}
 	if (modinst->tag_highlight && highlights)
 		highlights->append(t1->link());
+	if (t1 && modinst->tag_background && background) {
+		background->append(t1);
+		return NULL;
+	}
 	return t1;
 }
 

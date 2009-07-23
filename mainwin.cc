@@ -50,6 +50,7 @@ MainWindow::MainWindow(const char *filename)
 #endif
 
 	highlights_chain = NULL;
+	background_chain = NULL;
 	root_node = NULL;
 	enableOpenCSG = false;
 
@@ -248,6 +249,14 @@ void MainWindow::compile()
 		delete highlights_chain;
 		highlights_chain = NULL;
 	}
+	foreach(CSGTerm *v, background_terms) {
+		v->unlink();
+	}
+	background_terms.clear();
+	if (background_chain) {
+		delete background_chain;
+		background_chain = NULL;
+	}
 	root_node = NULL;
 	enableOpenCSG = false;
 
@@ -280,7 +289,7 @@ void MainWindow::compile()
 	for (int i = 0; i < 16; i++)
 		m[i] = i % 5 == 0 ? 1.0 : 0.0;
 
-	root_raw_term = root_node->render_csg_term(m, &highlight_terms);
+	root_raw_term = root_node->render_csg_term(m, &highlight_terms, &background_terms);
 
 	if (!root_raw_term)
 		goto fail;
@@ -326,6 +335,24 @@ void MainWindow::compile()
 				highlight_terms[i] = n;
 			}
 			highlights_chain->import(highlight_terms[i]);
+		}
+	}
+
+	if (background_terms.size() > 0)
+	{
+		PRINTF("Compiling background (%d CSG Trees)...", background_terms.size());
+		QApplication::processEvents();
+
+		background_chain = new CSGChain();
+		for (int i = 0; i < background_terms.size(); i++) {
+			while (1) {
+				CSGTerm *n = background_terms[i]->normalize();
+				background_terms[i]->unlink();
+				if (background_terms[i] == n)
+					break;
+				background_terms[i] = n;
+			}
+			background_chain->import(background_terms[i]);
 		}
 	}
 
@@ -635,7 +662,7 @@ void MainWindow::actionDisplayCSGProducts()
 	QTextEdit *e = new QTextEdit(NULL);
 	e->setTabStopWidth(30);
 	e->setWindowTitle("CSG Products Dump");
-	e->setPlainText(QString("\nCSG before normalization:\n%1\n\n\nCSG after normalization:\n%2\n\n\nCSG rendering chain:\n%3\n\n\nHighlights CSG rendering chain:\n%4\n").arg(root_raw_term ? root_raw_term->dump() : "N/A", root_norm_term ? root_norm_term->dump() : "N/A", root_chain ? root_chain->dump() : "N/A", highlights_chain ? highlights_chain->dump() : "N/A"));
+	e->setPlainText(QString("\nCSG before normalization:\n%1\n\n\nCSG after normalization:\n%2\n\n\nCSG rendering chain:\n%3\n\n\nHighlights CSG rendering chain:\n%4\n\n\nBackground CSG rendering chain:\n%5\n").arg(root_raw_term ? root_raw_term->dump() : "N/A", root_norm_term ? root_norm_term->dump() : "N/A", root_chain ? root_chain->dump() : "N/A", highlights_chain ? highlights_chain->dump() : "N/A", background_chain ? background_chain->dump() : "N/A"));
 	e->show();
 	e->resize(600, 400);
 	current_win = NULL;
@@ -773,7 +800,7 @@ public:
 	}
 };
 
-static void renderCSGChainviaOpenCSG(CSGChain *chain, GLint *shaderinfo, bool highlight)
+static void renderCSGChainviaOpenCSG(CSGChain *chain, GLint *shaderinfo, bool highlight, bool background)
 {
 	std::vector<OpenCSG::Primitive*> primitives;
 	int j = 0;
@@ -790,6 +817,8 @@ static void renderCSGChainviaOpenCSG(CSGChain *chain, GLint *shaderinfo, bool hi
 			for (; j < i; j++) {
 				if (highlight) {
 					chain->polysets[j]->render_surface(PolySet::COLOR_HIGHLIGHT, shaderinfo);
+				} else if (background) {
+					chain->polysets[j]->render_surface(PolySet::COLOR_BACKGROUND, shaderinfo);
 				} else if (chain->types[j] == CSGTerm::DIFFERENCE) {
 					chain->polysets[j]->render_surface(PolySet::COLOR_CUTOUT, shaderinfo);
 				} else {
@@ -833,10 +862,13 @@ static void renderGLviaOpenCSG(void *vp)
 		GLint *shaderinfo = m->screen->shaderinfo;
 		if (!shaderinfo[0])
 			shaderinfo = NULL;
-		renderCSGChainviaOpenCSG(m->root_chain, m->actViewModeShowEdges->isChecked() ? shaderinfo : NULL, false);
+		renderCSGChainviaOpenCSG(m->root_chain, m->actViewModeShowEdges->isChecked() ? shaderinfo : NULL, false, false);
+		if (m->background_chain) {
+			renderCSGChainviaOpenCSG(m->background_chain, shaderinfo, false, true);
+		}
 		if (m->highlights_chain) {
 			glDisable(GL_LIGHTING);
-			renderCSGChainviaOpenCSG(m->highlights_chain, shaderinfo, true);
+			renderCSGChainviaOpenCSG(m->highlights_chain, shaderinfo, true, false);
 		}
 	}
 }
