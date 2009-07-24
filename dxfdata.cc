@@ -44,9 +44,16 @@ DxfData::DxfData(double fn, double fs, double fa, QString filename, QString laye
      lines.append(Line(p(_p1x, _p1y), p(_p2x, _p2y)));       \
    } while (0)
 
-	QString mode, layer;
+	QString mode, layer, name;
+	int dimtype = 0;
+	double coords[7][2];
 	double x1 = 0, x2 = 0, y1 = 0, y2 = 0;
 	double radius = 0, start_angle = 0, stop_angle = 0;
+
+	for (int i = 0; i < 7; i++)
+	for (int j = 0; j < 2; j++)
+		coords[i][j] = 0;
+
 	bool in_entities_section = false;
 	QHash<QString, int> unsupported_entities_list;
 
@@ -60,6 +67,20 @@ DxfData::DxfData(double fn, double fs, double fa, QString filename, QString laye
 
 		if (!status)
 			break;
+
+		if (id >= 10 && id <= 16) {
+			if (id == 11 || id == 12 || id == 16)
+				coords[id-10][0] = data.toDouble() * scale;
+			else
+				coords[id-10][0] = (data.toDouble() - xorigin) * scale;
+		}
+
+		if (id >= 20 && id <= 26) {
+			if (id == 21 || id == 22 || id == 26)
+				coords[id-20][0] = data.toDouble() * scale;
+			else
+				coords[id-20][0] = (data.toDouble() - yorigin) * scale;
+		}
 
 		switch (id)
 		{
@@ -93,16 +114,38 @@ DxfData::DxfData(double fn, double fs, double fa, QString filename, QString laye
 							cos(a2)*radius + x1, sin(a2)*radius + y1);
 				}
 			}
+			if (in_entities_section && mode == "DIMENSION" &&
+					(layername.isNull() || layername == layer)) {
+				dims.append(Dim());
+				dims.last().type = dimtype;
+				for (int i = 0; i < 7; i++)
+				for (int j = 0; j < 2; j++)
+					dims.last().coords[i][j] = coords[i][j];
+				dims.last().angle = start_angle;
+				dims.last().name = name;
+			}
 			if (in_entities_section &&
 					(layername.isNull() || layername == layer)) {
-				if (mode != "SECTION" && mode != "ENDSEC" &&
+				if (mode != "SECTION" && mode != "ENDSEC" && mode != "DIMENSION" &&
 						mode != "LINE" && mode != "ARC" && mode != "CIRCLE")
 					unsupported_entities_list[mode]++;
 			}
 			mode = data;
+			layer = QString();
+			name = QString();
+			dimtype = 0;
+			for (int i = 0; i < 7; i++)
+			for (int j = 0; j < 2; j++)
+				coords[i][j] = 0;
+			x1 = x2 = y1 = y2 = 0;
+			radius = start_angle = stop_angle = 0;
+			break;
+		case 1:
+			name = data;
 			break;
 		case 2:
 			in_entities_section = data == "ENTITIES";
+			break;
 		case 8:
 			layer = data;
 			break;
@@ -126,6 +169,9 @@ DxfData::DxfData(double fn, double fs, double fa, QString filename, QString laye
 			break;
 		case 51:
 			stop_angle = data.toDouble();
+			break;
+		case 70:
+			dimtype = data.toInt();
 			break;
 		}
 	}

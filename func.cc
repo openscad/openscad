@@ -70,9 +70,9 @@ BuiltinFunction::~BuiltinFunction()
 {
 }
 
-Value BuiltinFunction::evaluate(const Context*, const QVector<QString>&, const QVector<Value> &call_argvalues) const
+Value BuiltinFunction::evaluate(const Context*, const QVector<QString> &call_argnames, const QVector<Value> &call_argvalues) const
 {
-	return eval_func(call_argvalues);
+	return eval_func(call_argnames, call_argvalues);
 }
 
 QString BuiltinFunction::dump(QString indent, QString name) const
@@ -100,49 +100,49 @@ static double rad2deg(double x)
 	return x;
 }
 
-Value builtin_sin(const QVector<Value> &args)
+Value builtin_sin(const QVector<QString>&, const QVector<Value> &args)
 {
 	if (args[0].type == Value::NUMBER)
 		return Value(sin(deg2rad(args[0].num)));
 	return Value();
 }
 
-Value builtin_cos(const QVector<Value> &args)
+Value builtin_cos(const QVector<QString>&, const QVector<Value> &args)
 {
 	if (args[0].type == Value::NUMBER)
 		return Value(cos(deg2rad(args[0].num)));
 	return Value();
 }
 
-Value builtin_asin(const QVector<Value> &args)
+Value builtin_asin(const QVector<QString>&, const QVector<Value> &args)
 {
 	if (args[0].type == Value::NUMBER)
 		return Value(rad2deg(asin(args[0].num)));
 	return Value();
 }
 
-Value builtin_acos(const QVector<Value> &args)
+Value builtin_acos(const QVector<QString>&, const QVector<Value> &args)
 {
 	if (args[0].type == Value::NUMBER)
 		return Value(rad2deg(acos(args[0].num)));
 	return Value();
 }
 
-Value builtin_tan(const QVector<Value> &args)
+Value builtin_tan(const QVector<QString>&, const QVector<Value> &args)
 {
 	if (args[0].type == Value::NUMBER)
 		return Value(tan(deg2rad(args[0].num)));
 	return Value();
 }
 
-Value builtin_atan(const QVector<Value> &args)
+Value builtin_atan(const QVector<QString>&, const QVector<Value> &args)
 {
 	if (args[0].type == Value::NUMBER)
 		return Value(rad2deg(atan(args[0].num)));
 	return Value();
 }
 
-Value builtin_atan2(const QVector<Value> &args)
+Value builtin_atan2(const QVector<QString>&, const QVector<Value> &args)
 {
 	if (args[0].type == Value::NUMBER && args[1].type == Value::NUMBER)
 		return Value(rad2deg(atan2(args[0].num, args[1].num)));
@@ -158,6 +158,7 @@ void initialize_builtin_functions()
 	builtin_functions["tan"] = new BuiltinFunction(&builtin_tan);
 	builtin_functions["atan"] = new BuiltinFunction(&builtin_atan);
 	builtin_functions["atan2"] = new BuiltinFunction(&builtin_atan2);
+	initialize_builtin_dxf_dim();
 }
 
 void destroy_builtin_functions()

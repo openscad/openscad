@@ -285,7 +285,7 @@ public:
 class BuiltinFunction : public AbstractFunction
 {
 public:
-	typedef Value (*eval_func_t)(const QVector<Value> &args);
+	typedef Value (*eval_func_t)(const QVector<QString> &argnames, const QVector<Value> &args);
 	eval_func_t eval_func;
 
 	BuiltinFunction(eval_func_t f) : eval_func(f) { }
@@ -312,6 +312,7 @@ public:
 
 extern QHash<QString, AbstractFunction*> builtin_functions;
 extern void initialize_builtin_functions();
+extern void initialize_builtin_dxf_dim();
 extern void destroy_builtin_functions();
 
 class AbstractModule
@@ -419,9 +420,22 @@ public:
 		bool is_closed, is_inner;
 		Path() : is_closed(false), is_inner(false) { }
 	};
+	struct Dim {
+		unsigned int type;
+		double coords[7][2];
+		double angle;
+		QString name;
+		Dim() {
+			for (int i = 0; i < 7; i++)
+			for (int j = 0; j < 2; j++)
+				coords[i][j] = 0;
+			type = 0;
+		}
+	};
 
 	QList<Point> points;
 	QList<Path> paths;
+	QList<Dim> dims;
 
 	DxfData(double fn, double fs, double fa, QString filename, QString layername = QString(), double xorigin = 0.0, double yorigin = 0.0, double scale = 1.0);
 
