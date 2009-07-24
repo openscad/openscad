@@ -77,9 +77,9 @@ DxfData::DxfData(double fn, double fs, double fa, QString filename, QString laye
 
 		if (id >= 20 && id <= 26) {
 			if (id == 21 || id == 22 || id == 26)
-				coords[id-20][0] = data.toDouble() * scale;
+				coords[id-20][1] = data.toDouble() * scale;
 			else
-				coords[id-20][0] = (data.toDouble() - yorigin) * scale;
+				coords[id-20][1] = (data.toDouble() - yorigin) * scale;
 		}
 
 		switch (id)
