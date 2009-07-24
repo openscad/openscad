@@ -115,7 +115,7 @@ void PolySet::render_surface(colormode_e colormode, GLint *shaderinfo) const
 #endif /* ENABLE_OPENCSG */
 	}
 	if (colormode == COLOR_HIGHLIGHT) {
-		glColor3ub(255, 157, 81);
+		glColor4ub(255, 157, 81, 128);
 #ifdef ENABLE_OPENCSG
 		if (shaderinfo) {
 			glUniform4f(shaderinfo[1], 255 / 255.0, 157 / 255.0, 81 / 255.0, 0.5);
@@ -124,7 +124,7 @@ void PolySet::render_surface(colormode_e colormode, GLint *shaderinfo) const
 #endif /* ENABLE_OPENCSG */
 	}
 	if (colormode == COLOR_BACKGROUND) {
-		glColor3ub(180, 180, 180);
+		glColor4ub(180, 180, 180, 128);
 #ifdef ENABLE_OPENCSG
 		if (shaderinfo) {
 			glUniform4f(shaderinfo[1], 180 / 255.0, 180 / 255.0, 180 / 255.0, 0.5);
@@ -176,9 +176,9 @@ void PolySet::render_edges(colormode_e colormode) const
 	if (colormode == COLOR_CUTOUT)
 		glColor3ub(171, 216, 86);
 	if (colormode == COLOR_HIGHLIGHT)
-		glColor3ub(255, 171, 86);
+		glColor4ub(255, 171, 86, 128);
 	if (colormode == COLOR_BACKGROUND)
-		glColor3ub(150, 150, 150);
+		glColor4ub(150, 150, 150, 128);
 	for (int i = 0; i < polygons.size(); i++) {
 		const Polygon *poly = &polygons[i];
 		glBegin(GL_LINE_STRIP);

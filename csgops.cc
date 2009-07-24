@@ -72,6 +72,8 @@ CGAL_Nef_polyhedron CsgNode::render_cgal_nef_polyhedron() const
 	bool first = true;
 	CGAL_Nef_polyhedron N;
 	foreach (AbstractNode *v, children) {
+		if (v->modinst->tag_background)
+			continue;
 		if (first) {
 			N = v->render_cgal_nef_polyhedron();
 			first = false;

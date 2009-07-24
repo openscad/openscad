@@ -153,8 +153,12 @@ CGAL_Nef_polyhedron TransformNode::render_cgal_nef_polyhedron() const
 	}
 
 	CGAL_Nef_polyhedron N;
-	foreach (AbstractNode *v, children)
+	foreach (AbstractNode *v, children) {
+		if (v->modinst->tag_background)
+			continue;
 		N += v->render_cgal_nef_polyhedron();
+	}
+
 	CGAL_Aff_transformation t(
 			m[0], m[4], m[ 8], m[12],
 			m[1], m[5], m[ 9], m[13],

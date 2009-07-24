@@ -864,11 +864,10 @@ static void renderGLviaOpenCSG(void *vp)
 			shaderinfo = NULL;
 		renderCSGChainviaOpenCSG(m->root_chain, m->actViewModeShowEdges->isChecked() ? shaderinfo : NULL, false, false);
 		if (m->background_chain) {
-			renderCSGChainviaOpenCSG(m->background_chain, shaderinfo, false, true);
+			renderCSGChainviaOpenCSG(m->background_chain, m->actViewModeShowEdges->isChecked() ? shaderinfo : NULL, false, true);
 		}
 		if (m->highlights_chain) {
-			glDisable(GL_LIGHTING);
-			renderCSGChainviaOpenCSG(m->highlights_chain, shaderinfo, true, false);
+			renderCSGChainviaOpenCSG(m->highlights_chain, m->actViewModeShowEdges->isChecked() ? shaderinfo : NULL, true, false);
 		}
 	}
 }
@@ -951,33 +950,56 @@ void MainWindow::viewModeCGALGrid()
 
 #endif /* ENABLE_CGAL */
 
-static void renderGLThrownTogether(void *vp)
+static void renderGLThrownTogetherChain(MainWindow *m, CSGChain *chain, bool highlight, bool background)
 {
-	MainWindow *m = (MainWindow*)vp;
-	if (m->root_chain) {
-		glDepthFunc(GL_LEQUAL);
-		QHash<PolySet*,int> polySetVisitMark;
-		bool showEdges = m->actViewModeShowEdges->isChecked();
-		for (int i = 0; i < m->root_chain->polysets.size(); i++) {
-			if (polySetVisitMark[m->root_chain->polysets[i]]++ > 0)
-				continue;
-			if (m->root_chain->types[i] == CSGTerm::DIFFERENCE) {
-				m->root_chain->polysets[i]->render_surface(PolySet::COLOR_CUTOUT);
-				if (showEdges) {
-					glDisable(GL_LIGHTING);
-					m->root_chain->polysets[i]->render_edges(PolySet::COLOR_CUTOUT);
-					glEnable(GL_LIGHTING);
-				}
-			} else {
-				m->root_chain->polysets[i]->render_surface(PolySet::COLOR_MATERIAL);
-				if (showEdges) {
-						glDisable(GL_LIGHTING);
-						m->root_chain->polysets[i]->render_edges(PolySet::COLOR_MATERIAL);
-						glEnable(GL_LIGHTING);
-				}
+	glDepthFunc(GL_LEQUAL);
+	QHash<PolySet*,int> polySetVisitMark;
+	bool showEdges = m->actViewModeShowEdges->isChecked();
+	for (int i = 0; i < chain->polysets.size(); i++) {
+		if (polySetVisitMark[chain->polysets[i]]++ > 0)
+			continue;
+		if (highlight) {
+			chain->polysets[i]->render_surface(PolySet::COLOR_HIGHLIGHT);
+			if (showEdges) {
+				glDisable(GL_LIGHTING);
+				chain->polysets[i]->render_edges(PolySet::COLOR_HIGHLIGHT);
+				glEnable(GL_LIGHTING);
+			}
+		} else if (background) {
+			chain->polysets[i]->render_surface(PolySet::COLOR_BACKGROUND);
+			if (showEdges) {
+				glDisable(GL_LIGHTING);
+				chain->polysets[i]->render_edges(PolySet::COLOR_BACKGROUND);
+				glEnable(GL_LIGHTING);
+			}
+		} else if (chain->types[i] == CSGTerm::DIFFERENCE) {
+			chain->polysets[i]->render_surface(PolySet::COLOR_CUTOUT);
+			if (showEdges) {
+				glDisable(GL_LIGHTING);
+				chain->polysets[i]->render_edges(PolySet::COLOR_CUTOUT);
+				glEnable(GL_LIGHTING);
+			}
+		} else {
+			chain->polysets[i]->render_surface(PolySet::COLOR_MATERIAL);
+			if (showEdges) {
+				glDisable(GL_LIGHTING);
+				chain->polysets[i]->render_edges(PolySet::COLOR_MATERIAL);
+				glEnable(GL_LIGHTING);
 			}
 		}
 	}
+}
+
+
+static void renderGLThrownTogether(void *vp)
+{
+	MainWindow *m = (MainWindow*)vp;
+	if (m->root_chain)
+		renderGLThrownTogetherChain(m, m->root_chain, false, false);
+	if (m->background_chain)
+		renderGLThrownTogetherChain(m, m->background_chain, false, true);
+	if (m->highlights_chain)
+		renderGLThrownTogetherChain(m, m->highlights_chain, true, false);
 }
 
 void MainWindow::viewModeThrownTogether()

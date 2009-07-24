@@ -239,8 +239,11 @@ CGAL_Nef_polyhedron AbstractNode::render_cgal_nef_polyhedron() const
 	}
 
 	CGAL_Nef_polyhedron N;
-	foreach (AbstractNode *v, children)
+	foreach (AbstractNode *v, children) {
+		if (v->modinst->tag_background)
+			continue;
 		N += v->render_cgal_nef_polyhedron();
+	}
 
 	cgal_nef_cache.insert(cache_id, new CGAL_Nef_polyhedron(N), N.number_of_vertices());
 	progress_report();
