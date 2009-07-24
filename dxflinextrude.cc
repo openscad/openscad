@@ -36,16 +36,16 @@ public:
 class DxfLinearExtrudeNode : public AbstractPolyNode
 {
 public:
-	int convexity;
-	double fn, fs, fa, height;
+	int convexity, slices;
+	double fn, fs, fa, height, twist;
 	double origin_x, origin_y, scale;
-	bool center;
+	bool center, has_twist;
 	QString filename, layername;
 	DxfLinearExtrudeNode(const ModuleInstanciation *mi) : AbstractPolyNode(mi) {
-		convexity = 0;
-		fn = fs = fa = height = 0;
+		convexity = slices = 0;
+		fn = fs = fa = height = twist = 0;
 		origin_x = origin_y = scale = 0;
-		center = false;
+		center = has_twist = false;
 	}
 	virtual PolySet *render_polyset(render_mode_e mode) const;
 	virtual QString dump(QString indent) const;
@@ -72,6 +72,8 @@ AbstractNode *DxfLinearExtrudeModule::evaluate(const Context *ctx, const ModuleI
 	Value origin = c.lookup_variable("origin", true);
 	Value scale = c.lookup_variable("scale", true);
 	Value center = c.lookup_variable("center", true);
+	Value twist = c.lookup_variable("twist", true);
+	Value slices = c.lookup_variable("slices", true);
 
 	node->filename = file.text;
 	node->layername = layer.text;
@@ -92,6 +94,17 @@ AbstractNode *DxfLinearExtrudeModule::evaluate(const Context *ctx, const ModuleI
 	if (node->scale <= 0)
 		node->scale = 1;
 
+	if (twist.type == Value::NUMBER) {
+		node->twist = twist.num;
+		if (slices.type == Value::NUMBER) {
+			node->slices = slices.num;
+		} else {
+			node->slices = fmax(2, fabs(get_fragments_from_r(node->height,
+					node->fn, node->fs, node->fa) * node->twist / 360));
+		}
+		node->has_twist = true;
+	}
+
 	return node;
 }
 
@@ -100,31 +113,44 @@ void register_builtin_dxf_linear_extrude()
 	builtin_modules["dxf_linear_extrude"] = new DxfLinearExtrudeModule();
 }
 
-static void add_slice(PolySet *ps, DxfData::Path *pt, double h1, double h2)
+static void add_slice(PolySet *ps, DxfData::Path *pt, double rot1, double rot2, double h1, double h2)
 {
 	for (int j = 1; j < pt->points.count(); j++)
 	{
 		int k = j - 1;
+
+		double jx1 = pt->points[j]->x *  cos(rot1*M_PI/180) + pt->points[j]->y * sin(rot1*M_PI/180);
+		double jy1 = pt->points[j]->x * -sin(rot1*M_PI/180) + pt->points[j]->y * cos(rot1*M_PI/180);
+
+		double jx2 = pt->points[j]->x *  cos(rot2*M_PI/180) + pt->points[j]->y * sin(rot2*M_PI/180);
+		double jy2 = pt->points[j]->x * -sin(rot2*M_PI/180) + pt->points[j]->y * cos(rot2*M_PI/180);
+
+		double kx1 = pt->points[k]->x *  cos(rot1*M_PI/180) + pt->points[k]->y * sin(rot1*M_PI/180);
+		double ky1 = pt->points[k]->x * -sin(rot1*M_PI/180) + pt->points[k]->y * cos(rot1*M_PI/180);
+
+		double kx2 = pt->points[k]->x *  cos(rot2*M_PI/180) + pt->points[k]->y * sin(rot2*M_PI/180);
+		double ky2 = pt->points[k]->x * -sin(rot2*M_PI/180) + pt->points[k]->y * cos(rot2*M_PI/180);
+
 		ps->append_poly();
 		if (pt->is_inner) {
-			ps->append_vertex(pt->points[k]->x, pt->points[k]->y, h1);
-			ps->append_vertex(pt->points[j]->x, pt->points[j]->y, h1);
-			ps->append_vertex(pt->points[j]->x, pt->points[j]->y, h2);
+			ps->append_vertex(kx1, ky1, h1);
+			ps->append_vertex(jx1, jy1, h1);
+			ps->append_vertex(jx2, jy2, h2);
 		} else {
-			ps->insert_vertex(pt->points[k]->x, pt->points[k]->y, h1);
-			ps->insert_vertex(pt->points[j]->x, pt->points[j]->y, h1);
-			ps->insert_vertex(pt->points[j]->x, pt->points[j]->y, h2);
+			ps->insert_vertex(kx1, ky1, h1);
+			ps->insert_vertex(jx1, jy1, h1);
+			ps->insert_vertex(jx2, jy2, h2);
 		}
 
 		ps->append_poly();
 		if (pt->is_inner) {
-			ps->append_vertex(pt->points[k]->x, pt->points[k]->y, h2);
-			ps->append_vertex(pt->points[k]->x, pt->points[k]->y, h1);
-			ps->append_vertex(pt->points[j]->x, pt->points[j]->y, h2);
+			ps->append_vertex(kx2, ky2, h2);
+			ps->append_vertex(kx1, ky1, h1);
+			ps->append_vertex(jx2, jy2, h2);
 		} else {
-			ps->insert_vertex(pt->points[k]->x, pt->points[k]->y, h2);
-			ps->insert_vertex(pt->points[k]->x, pt->points[k]->y, h1);
-			ps->insert_vertex(pt->points[j]->x, pt->points[j]->y, h2);
+			ps->insert_vertex(kx2, ky2, h2);
+			ps->insert_vertex(kx1, ky1, h1);
+			ps->insert_vertex(jx2, jy2, h2);
 		}
 	}
 }
@@ -163,14 +189,35 @@ PolySet *DxfLinearExtrudeNode::render_polyset(render_mode_e) const
 				dxf.paths[i].points.last()->y / scale + origin_y);
 	}
 
-	dxf_tesselate(ps, &dxf, false, h1);
-	dxf_tesselate(ps, &dxf, true, h2);
 
-	for (int i = 0; i < dxf.paths.count(); i++)
+	if (has_twist)
 	{
-		if (!dxf.paths[i].is_closed)
-			continue;
-		add_slice(ps, &dxf.paths[i], h1, h2);
+		dxf_tesselate(ps, &dxf, 0, false, h1);
+		dxf_tesselate(ps, &dxf, twist, true, h2);
+		for (int j = 0; j < slices; j++)
+		{
+			double t1 = twist*j / slices;
+			double t2 = twist*(j+1) / slices;
+			double g1 = h1 + (h2-h1)*j / slices;
+			double g2 = h1 + (h2-h1)*(j+1) / slices;
+			for (int i = 0; i < dxf.paths.count(); i++)
+			{
+				if (!dxf.paths[i].is_closed)
+					continue;
+				add_slice(ps, &dxf.paths[i], t1, t2, g1, g2);
+			}
+		}
+	}
+	else
+	{
+		dxf_tesselate(ps, &dxf, 0, false, h1);
+		dxf_tesselate(ps, &dxf, 0, true, h2);
+		for (int i = 0; i < dxf.paths.count(); i++)
+		{
+			if (!dxf.paths[i].is_closed)
+				continue;
+			add_slice(ps, &dxf.paths[i], 0, 0, h1, h2);
+		}
 	}
 
 	return ps;

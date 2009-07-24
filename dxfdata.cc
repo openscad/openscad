@@ -83,7 +83,7 @@ DxfData::DxfData(double fn, double fs, double fa, QString filename, QString laye
 				int n = get_fragments_from_r(radius, fn, fs, fa);
 				while (start_angle > stop_angle)
 					stop_angle += 360.0;
-				n = ceil(n * 360 / (stop_angle-start_angle));
+				n = ceil(n * (stop_angle-start_angle) / 360);
 				for (int i = 0; i < n; i++) {
 					double a1 = ((stop_angle-start_angle)*i)/n;
 					double a2 = ((stop_angle-start_angle)*(i+1))/n;
