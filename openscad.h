@@ -373,6 +373,7 @@ extern void destroy_builtin_modules();
 extern void register_builtin_csgops();
 extern void register_builtin_transform();
 extern void register_builtin_primitives();
+extern void register_builtin_surface();
 extern void register_builtin_control();
 extern void register_builtin_render();
 extern void register_builtin_dxf_linear_extrude();

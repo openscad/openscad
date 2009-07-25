@@ -21,7 +21,6 @@
 #include "openscad.h"
 
 #include <QFile>
-#include <assert.h>
 
 DxfData::DxfData(double fn, double fs, double fa, QString filename, QString layername, double xorigin, double yorigin, double scale)
 {
@@ -251,7 +250,6 @@ DxfData::DxfData(double fn, double fs, double fa, QString filename, QString laye
 	while (enabled_lines.count() > 0)
 	{
 		int current_line = enabled_lines.begin().value(), current_point = 0;
-		assert(lines[current_line].disabled == false);
 
 		paths.append(Path());
 		Path *this_path = &paths.last();
