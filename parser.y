@@ -104,7 +104,11 @@ statement:
 	';' |
 	'{' input '}' |
 	module_instantciation {
-		module->children.append($1);
+		if ($1) {
+			module->children.append($1);
+		} else {
+			delete $1;
+		}
 	} |
 	TOK_ID '=' expr ';' {
 		module->assignments_var.append($1);
@@ -140,13 +144,23 @@ module_instantciation:
 	} |
 	single_module_instantciation '{' module_instantciation_list '}' {
 		$$ = $1;
-		$$->children = $3->children;
+		if ($$) {
+			$$->children = $3->children;
+		} else {
+			for (int i = 0; i < $3->children.count(); i++)
+				delete $3->children[i];
+		}
 		$3->children.clear();
 		delete $3;
 	} |
 	single_module_instantciation module_instantciation {
 		$$ = $1;
-		$$->children.append($2);
+		if ($$) {
+			if ($2)
+				$$->children.append($2);
+		} else {
+			delete $2;
+		}
 	} ;
 
 module_instantciation_list:
@@ -155,7 +169,12 @@ module_instantciation_list:
 	} |
 	module_instantciation_list module_instantciation {
 		$$ = $1;
-		$$->children.append($2);
+		if ($$) {
+			if ($2)
+				$$->children.append($2);
+		} else {
+			delete $2;
+		}
 	} ;
 
 single_module_instantciation:
@@ -169,20 +188,28 @@ single_module_instantciation:
 	} |
 	TOK_ID ':' single_module_instantciation {
 		$$ = $3;
-		$$->label = QString($1);
+		if ($$)
+			$$->label = QString($1);
 		free($1);
 	} |
 	'!' single_module_instantciation {
 		$$ = $2;
-		$$->tag_root = true;
+		if ($$)
+			$$->tag_root = true;
 	} |
 	'#' single_module_instantciation {
 		$$ = $2;
-		$$->tag_highlight = true;
+		if ($$)
+			$$->tag_highlight = true;
 	} |
 	'%' single_module_instantciation {
 		$$ = $2;
-		$$->tag_background = true;
+		if ($$)
+			$$->tag_background = true;
+	} |
+	'*' single_module_instantciation {
+		delete $2;
+		$$ = NULL;
 	};
 
 expr:
@@ -470,11 +497,13 @@ void yyerror (char const *s)
 	module = NULL;
 }
 
+extern FILE *lexerin;
 extern const char *parser_input_buffer;
 const char *parser_input_buffer;
 
 AbstractModule *parse(const char *text, int debug)
 {
+	lexerin = NULL;
 	parser_input_buffer = text;
 
 	module_stack.clear();

@@ -27,13 +27,23 @@ int lexerget_lineno(void);
 static void yyunput(int, char*) __attribute__((unused));
 extern const char *parser_input_buffer;
 
-#define YY_INPUT(buf,result,max_size) { \
-  if (*parser_input_buffer) {           \
-    result = 1;                         \
-    buf[0] = *(parser_input_buffer++);  \
-  } else {                              \
-    result = YY_NULL;                   \
-  }                                     \
+#define YY_INPUT(buf,result,max_size) {   \
+  if (yyin && yyin != stdin) {            \
+    int c = fgetc(yyin);                  \
+    if (c >= 0) {                         \
+      result = 1;                         \
+      buf[0] = c;                         \
+    } else {                              \
+      result = YY_NULL;                   \
+    }                                     \
+  } else {                                \
+    if (*parser_input_buffer) {           \
+      result = 1;                         \
+      buf[0] = *(parser_input_buffer++);  \
+    } else {                              \
+      result = YY_NULL;                   \
+    }                                     \
+  }                                       \
 }
 
 %}
@@ -44,6 +54,27 @@ extern const char *parser_input_buffer;
 %x comment
 
 %%
+
+"<"[^ \t\n>]+">" {
+	char *filename = strdup(yytext+1);
+	filename[strlen(filename)-1] = 0;
+	yyin = fopen(filename, "r");
+	if (!yyin) {
+		PRINTF("WARNING: Can't open input file `%s'.", filename);
+	} else {
+		yypush_buffer_state(yy_create_buffer( yyin, YY_BUF_SIZE ));
+		BEGIN(INITIAL);
+	}
+	free(filename);
+}
+
+<<EOF>> {
+	if (yyin)
+		fclose(yyin);
+	yypop_buffer_state();
+	if (!YY_CURRENT_BUFFER)
+		yyterminate();
+}
 
 "module"	return TOK_MODULE;
 "function"	return TOK_FUNCTION;
