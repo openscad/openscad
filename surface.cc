@@ -141,16 +141,6 @@ PolySet *SurfaceNode::render_polyset(render_mode_e) const
 		p->append_vertex(ox + j-1, oy + i, v3);
 		p->append_vertex(ox + j-1, oy + i-1, v1);
 		p->append_vertex(ox + j-0.5, oy + i-0.5, vx);
-
-		p->append_poly();
-		p->append_vertex(ox + j-1, oy + i-1, min_val);
-		p->append_vertex(ox + j-1, oy + i, min_val);
-		p->append_vertex(ox + j, oy + i-1, min_val);
-
-		p->append_poly();
-		p->append_vertex(ox + j-1, oy + i, min_val);
-		p->append_vertex(ox + j, oy + i, min_val);
-		p->append_vertex(ox + j, oy + i-1, min_val);
 	}
 
 	for (int i = 1; i < lines; i++)
@@ -159,21 +149,13 @@ PolySet *SurfaceNode::render_polyset(render_mode_e) const
 		p->append_vertex(ox + 0, oy + i-1, min_val);
 		p->append_vertex(ox + 0, oy + i-1, data[QPair<int,int>(i-1, 0)]);
 		p->append_vertex(ox + 0, oy + i, data[QPair<int,int>(i, 0)]);
-
-		p->append_poly();
-		p->insert_vertex(ox + 0, oy + i-1, min_val);
-		p->insert_vertex(ox + 0, oy + i, min_val);
-		p->insert_vertex(ox + 0, oy + i, data[QPair<int,int>(i, 0)]);
+		p->append_vertex(ox + 0, oy + i, min_val);
 
 		p->append_poly();
 		p->insert_vertex(ox + columns-1, oy + i-1, min_val);
 		p->insert_vertex(ox + columns-1, oy + i-1, data[QPair<int,int>(i-1, columns-1)]);
 		p->insert_vertex(ox + columns-1, oy + i, data[QPair<int,int>(i, columns-1)]);
-
-		p->append_poly();
-		p->append_vertex(ox + columns-1, oy + i-1, min_val);
-		p->append_vertex(ox + columns-1, oy + i, min_val);
-		p->append_vertex(ox + columns-1, oy + i, data[QPair<int,int>(i, columns-1)]);
+		p->insert_vertex(ox + columns-1, oy + i, min_val);
 	}
 
 	for (int i = 1; i < columns; i++)
@@ -182,22 +164,24 @@ PolySet *SurfaceNode::render_polyset(render_mode_e) const
 		p->insert_vertex(ox + i-1, oy + 0, min_val);
 		p->insert_vertex(ox + i-1, oy + 0, data[QPair<int,int>(0, i-1)]);
 		p->insert_vertex(ox + i, oy + 0, data[QPair<int,int>(0, i)]);
-
-		p->append_poly();
-		p->append_vertex(ox + i-1, oy + 0, min_val);
-		p->append_vertex(ox + i, oy + 0, min_val);
-		p->append_vertex(ox + i, oy + 0, data[QPair<int,int>(0, i)]);
+		p->insert_vertex(ox + i, oy + 0, min_val);
 
 		p->append_poly();
 		p->append_vertex(ox + i-1, oy + lines-1, min_val);
 		p->append_vertex(ox + i-1, oy + lines-1, data[QPair<int,int>(lines-1, i-1)]);
 		p->append_vertex(ox + i, oy + lines-1, data[QPair<int,int>(lines-1, i)]);
-
-		p->append_poly();
-		p->insert_vertex(ox + i-1, oy + lines-1, min_val);
-		p->insert_vertex(ox + i, oy + lines-1, min_val);
-		p->insert_vertex(ox + i, oy + lines-1, data[QPair<int,int>(lines-1, i)]);
+		p->append_vertex(ox + i, oy + lines-1, min_val);
 	}
+
+	p->append_poly();
+	for (int i = 0; i < columns-1; i++)
+		p->insert_vertex(ox + i, oy + 0, min_val);
+	for (int i = 0; i < lines-1; i++)
+		p->insert_vertex(ox + columns-1, oy + i, min_val);
+	for (int i = columns-1; i > 0; i--)
+		p->insert_vertex(ox + i, oy + lines-1, min_val);
+	for (int i = lines-1; i > 0; i--)
+		p->insert_vertex(ox + 0, oy + i, min_val);
 
 	return p;
 }
