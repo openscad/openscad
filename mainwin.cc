@@ -150,6 +150,7 @@ MainWindow::MainWindow(const char *filename)
 
 	if (filename) {
 		this->filename = QString(filename);
+		maybe_change_dir();
 		setWindowTitle(this->filename);
 		load();
 	} else {
@@ -198,6 +199,22 @@ void MainWindow::load()
 		}
 		editor->setPlainText(text);
 	}
+}
+
+void MainWindow::maybe_change_dir()
+{
+	if (filename.isEmpty())
+		return;
+
+	int dir_end_index = filename.lastIndexOf("/");
+	if (dir_end_index < 0)
+		return;
+
+	QString dirname = filename.mid(0, dir_end_index);
+	if (chdir(dirname.toAscii().data()) < 0)
+		return;
+
+	filename = filename.mid(dir_end_index+1);
 }
 
 void MainWindow::find_root_tag(AbstractNode *n)
@@ -380,6 +397,7 @@ void MainWindow::actionOpen()
 	if (!new_filename.isEmpty())
 	{
 		filename = new_filename;
+		maybe_change_dir();
 		setWindowTitle(filename);
 
 		QString text;
@@ -420,6 +438,7 @@ void MainWindow::actionSaveAs()
 	QString new_filename = QFileDialog::getSaveFileName(this, "Save File", filename, "OpenSCAD Designs (*.scad)");
 	if (!new_filename.isEmpty()) {
 		filename = new_filename;
+		maybe_change_dir();
 		setWindowTitle(filename);
 		actionSave();
 	}

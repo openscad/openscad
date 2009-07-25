@@ -673,6 +673,7 @@ public:
 
 private:
 	void load();
+	void maybe_change_dir();
 	void find_root_tag(AbstractNode *n);
 	void compile();
 
