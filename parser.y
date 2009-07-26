@@ -136,7 +136,7 @@ statement:
 		module->functions[$2] = func;
 		free($2);
 		delete $4;
-	} ;
+	} ';' ;
 
 module_instantciation:
 	single_module_instantciation ';' {
