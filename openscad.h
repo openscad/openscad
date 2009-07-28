@@ -487,16 +487,14 @@ public:
 	typedef QList<Point> Polygon;
 	QVector<Polygon> polygons;
 	Grid3d<void*> grid;
-	double m[16];
 	int convexity;
 
 	PolySet();
+	~PolySet();
 
 	void append_poly();
 	void append_vertex(double x, double y, double z);
 	void insert_vertex(double x, double y, double z);
-
-	void setmatrix(double m[16]);
 
 	enum colormode_e {
 		COLOR_NONE,
@@ -512,6 +510,22 @@ public:
 #ifdef ENABLE_CGAL
 	CGAL_Nef_polyhedron render_cgal_nef_polyhedron() const;
 #endif
+
+	int refcount;
+	PolySet *link();
+	void unlink();
+};
+
+class PolySetPtr
+{
+public:
+       PolySet *ps;
+       PolySetPtr(PolySet *ps) {
+               this->ps = ps;
+       }
+       ~PolySetPtr() {
+               ps->unlink();
+       }
 };
 
 class CSGTerm
@@ -529,9 +543,10 @@ public:
 	QString label;
 	CSGTerm *left;
 	CSGTerm *right;
+	double m[16];
 	int refcounter;
 
-	CSGTerm(PolySet *polyset, QString label);
+	CSGTerm(PolySet *polyset, double m[16], QString label);
 	CSGTerm(type_e type, CSGTerm *left, CSGTerm *right);
 
 	CSGTerm *normalize();
@@ -546,12 +561,13 @@ class CSGChain
 {
 public:
 	QVector<PolySet*> polysets;
+	QVector<double*> matrices;
 	QVector<CSGTerm::type_e> types;
 	QVector<QString> labels;
 
 	CSGChain();
 
-	void add(PolySet *polyset, CSGTerm::type_e type, QString label);
+	void add(PolySet *polyset, double *m, CSGTerm::type_e type, QString label);
 	void import(CSGTerm *term, CSGTerm::type_e type = CSGTerm::UNION);
 	QString dump();
 };
@@ -572,9 +588,9 @@ public:
 
 	AbstractNode(const ModuleInstanciation *mi);
 	virtual ~AbstractNode();
+	virtual QString mk_cache_id() const;
 #ifdef ENABLE_CGAL
 	static QCache<QString, CGAL_Nef_polyhedron> cgal_nef_cache;
-	virtual QString cgal_nef_cache_id() const;
 	virtual CGAL_Nef_polyhedron render_cgal_nef_polyhedron() const;
 #endif
 	virtual CSGTerm *render_csg_term(double m[16], QVector<CSGTerm*> *highlights, QVector<CSGTerm*> *background) const;

@@ -24,9 +24,25 @@
 
 PolySet::PolySet()
 {
-	for (int i = 0; i < 16; i++)
-		m[i] = i % 5 == 0 ? 1.0 : 0.0;
 	convexity = 1;
+	refcount = 1;
+}
+
+PolySet::~PolySet()
+{
+	assert(refcount == 0);
+}
+
+PolySet* PolySet::link()
+{
+	refcount++;
+	return this;
+}
+
+void PolySet::unlink()
+{
+	if (--refcount == 0)
+		delete this;
 }
 
 void PolySet::append_poly()
@@ -44,12 +60,6 @@ void PolySet::insert_vertex(double x, double y, double z)
 {
 	grid.align(x, y, z);
 	polygons.last().insert(0, Point(x, y, z));
-}
-
-void PolySet::setmatrix(double m[16])
-{
-	for (int i = 0; i < 16; i++)
-		this->m[i] = m[i];
 }
 
 static void gl_draw_triangle(GLint *shaderinfo, const PolySet::Point *p0, const PolySet::Point *p1, const PolySet::Point *p2, bool e0, bool e1, bool e2)
@@ -94,8 +104,6 @@ static void gl_draw_triangle(GLint *shaderinfo, const PolySet::Point *p0, const 
 
 void PolySet::render_surface(colormode_e colormode, GLint *shaderinfo) const
 {
-	glPushMatrix();
-	glMultMatrixd(m);
 	if (colormode == COLOR_MATERIAL) {
 		glColor3ub(249, 215, 44);
 #ifdef ENABLE_OPENCSG
@@ -164,13 +172,10 @@ void PolySet::render_surface(colormode_e colormode, GLint *shaderinfo) const
 		}
 		glEnd();
 	}
-	glPopMatrix();
 }
 
 void PolySet::render_edges(colormode_e colormode) const
 {
-	glPushMatrix();
-	glMultMatrixd(m);
 	if (colormode == COLOR_MATERIAL)
 		glColor3ub(255, 236, 94);
 	if (colormode == COLOR_CUTOUT)
@@ -188,7 +193,6 @@ void PolySet::render_edges(colormode_e colormode) const
 		}
 		glEnd();
 	}
-	glPopMatrix();
 }
 
 #ifdef ENABLE_CGAL
@@ -299,7 +303,7 @@ PolySet *AbstractPolyNode::render_polyset(render_mode_e) const
 
 CGAL_Nef_polyhedron AbstractPolyNode::render_cgal_nef_polyhedron() const
 {
-	QString cache_id = cgal_nef_cache_id();
+	QString cache_id = mk_cache_id();
 	if (cgal_nef_cache.contains(cache_id)) {
 		progress_report();
 		return *cgal_nef_cache[cache_id];
@@ -310,7 +314,7 @@ CGAL_Nef_polyhedron AbstractPolyNode::render_cgal_nef_polyhedron() const
 
 	cgal_nef_cache.insert(cache_id, new CGAL_Nef_polyhedron(N), N.number_of_vertices());
 	progress_report();
-	delete ps;
+	ps->unlink();
 	return N;
 }
 
@@ -319,8 +323,7 @@ CGAL_Nef_polyhedron AbstractPolyNode::render_cgal_nef_polyhedron() const
 CSGTerm *AbstractPolyNode::render_csg_term(double m[16], QVector<CSGTerm*> *highlights, QVector<CSGTerm*> *background) const
 {
 	PolySet *ps = render_polyset(RENDER_OPENCSG);
-	ps->setmatrix(m);
-	CSGTerm *t = new CSGTerm(ps, QString("n%1").arg(idx));
+	CSGTerm *t = new CSGTerm(ps, m, QString("n%1").arg(idx));
 	if (modinst->tag_highlight && highlights)
 		highlights->append(t->link());
 	if (modinst->tag_background && background) {

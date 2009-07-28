@@ -89,8 +89,15 @@ void register_builtin_dxf_rotate_extrude()
 	builtin_modules["dxf_rotate_extrude"] = new DxfRotateExtrudeModule();
 }
 
+static QCache<QString,PolySetPtr> ps_cache(100);
+
 PolySet *DxfRotateExtrudeNode::render_polyset(render_mode_e) const
 {
+	QString key = mk_cache_id();
+
+	if (ps_cache.contains(key))
+		return ps_cache[key]->ps->link();
+
 	DxfData dxf(fn, fs, fa, filename, layername, origin_x, origin_y, scale);
 
 	PolySet *ps = new PolySet();
@@ -151,6 +158,7 @@ PolySet *DxfRotateExtrudeNode::render_polyset(render_mode_e) const
 		}
 	}
 
+	ps_cache.insert(key, new PolySetPtr(ps->link()));
 	return ps;
 }
 
@@ -162,9 +170,11 @@ QString DxfRotateExtrudeNode::dump(QString indent) const
 		memset(&st, 0, sizeof(struct stat));
 		stat(filename.toAscii().data(), &st);
 		text.sprintf("dxf_rotate_extrude(file = \"%s\", cache = \"%x.%x\", layer = \"%s\", "
-				"origin = [ %f %f ], scale = %f, $fn = %f, $fa = %f, $fs = %f);\n",
+				"origin = [ %f %f ], scale = %f, convexity = %d, "
+				"$fn = %f, $fa = %f, $fs = %f);\n",
 				filename.toAscii().data(), (int)st.st_mtime, (int)st.st_size,
-				layername.toAscii().data(), origin_x, origin_y, scale, fn, fs, fa);
+				layername.toAscii().data(), origin_x, origin_y, scale, convexity,
+				fn, fs, fa);
 		((AbstractNode*)this)->dump_cache = indent + QString("n%1: ").arg(idx) + text;
 	}
 	return dump_cache;

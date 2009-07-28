@@ -217,11 +217,7 @@ AbstractNode::~AbstractNode()
 		delete v;
 }
 
-#ifdef ENABLE_CGAL
-
-QCache<QString, CGAL_Nef_polyhedron> AbstractNode::cgal_nef_cache;
-
-QString AbstractNode::cgal_nef_cache_id() const
+QString AbstractNode::mk_cache_id() const
 {
 	QString cache_id = dump("");
 	cache_id.remove(QRegExp("[a-zA-Z_][a-zA-Z_0-9]*:"));
@@ -231,9 +227,13 @@ QString AbstractNode::cgal_nef_cache_id() const
 	return cache_id;
 }
 
+#ifdef ENABLE_CGAL
+
+QCache<QString, CGAL_Nef_polyhedron> AbstractNode::cgal_nef_cache(100000);
+
 CGAL_Nef_polyhedron AbstractNode::render_cgal_nef_polyhedron() const
 {
-	QString cache_id = cgal_nef_cache_id();
+	QString cache_id = mk_cache_id();
 	if (cgal_nef_cache.contains(cache_id)) {
 		progress_report();
 		return *cgal_nef_cache[cache_id];

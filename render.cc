@@ -76,7 +76,7 @@ void register_builtin_render()
 
 CGAL_Nef_polyhedron RenderNode::render_cgal_nef_polyhedron() const
 {
-	QString cache_id = cgal_nef_cache_id();
+	QString cache_id = mk_cache_id();
 	if (cgal_nef_cache.contains(cache_id)) {
 		progress_report();
 		return *cgal_nef_cache[cache_id];
@@ -116,7 +116,7 @@ CSGTerm *RenderNode::render_csg_term(double m[16], QVector<CSGTerm*> *highlights
 {
 	CGAL_Nef_polyhedron N;
 
-	QString cache_id = cgal_nef_cache_id();
+	QString cache_id = mk_cache_id();
 	if (cgal_nef_cache.contains(cache_id))
 	{
 		N = *cgal_nef_cache[cache_id];
@@ -152,7 +152,6 @@ CSGTerm *RenderNode::render_csg_term(double m[16], QVector<CSGTerm*> *highlights
 	}
 
 	PolySet *ps = new PolySet();
-	ps->setmatrix(m);
 	ps->convexity = convexity;
 	
 	CGAL_Polyhedron P;
@@ -176,7 +175,7 @@ CSGTerm *RenderNode::render_csg_term(double m[16], QVector<CSGTerm*> *highlights
 		} while (hc != hc_end);
 	}
 
-	CSGTerm *term = new CSGTerm(ps, QString("n%1").arg(idx));
+	CSGTerm *term = new CSGTerm(ps, m, QString("n%1").arg(idx));
 	if (modinst->tag_highlight && highlights)
 		highlights->append(term->link());
 	if (modinst->tag_background && background) {

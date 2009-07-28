@@ -297,6 +297,7 @@ void MainWindow::compile()
 	find_root_tag(absolute_root_node);
 	if (!root_node)
 		root_node = absolute_root_node;
+	root_node->dump("");
 
 	PRINT("Compiling design (CSG Products generation)...");
 	QApplication::processEvents();
@@ -814,8 +815,12 @@ public:
 	OpenCSGPrim(OpenCSG::Operation operation, unsigned int convexity) :
 			OpenCSG::Primitive(operation, convexity) { }
 	PolySet *p;
+	double *m;
 	virtual void render() {
+		glPushMatrix();
+		glMultMatrixd(m);
 		p->render_surface(PolySet::COLOR_NONE);
+		glPopMatrix();
 	}
 };
 
@@ -834,6 +839,8 @@ static void renderCSGChainviaOpenCSG(CSGChain *chain, GLint *shaderinfo, bool hi
 			if (shaderinfo)
 				glUseProgram(shaderinfo[0]);
 			for (; j < i; j++) {
+				glPushMatrix();
+				glMultMatrixd(chain->matrices[j]);
 				if (highlight) {
 					chain->polysets[j]->render_surface(PolySet::COLOR_HIGHLIGHT, shaderinfo);
 				} else if (background) {
@@ -843,6 +850,7 @@ static void renderCSGChainviaOpenCSG(CSGChain *chain, GLint *shaderinfo, bool hi
 				} else {
 					chain->polysets[j]->render_surface(PolySet::COLOR_MATERIAL, shaderinfo);
 				}
+				glPopMatrix();
 			}
 			if (shaderinfo)
 				glUseProgram(0);
@@ -859,6 +867,7 @@ static void renderCSGChainviaOpenCSG(CSGChain *chain, GLint *shaderinfo, bool hi
 		OpenCSGPrim *prim = new OpenCSGPrim(chain->types[i] == CSGTerm::DIFFERENCE ?
 				OpenCSG::Subtraction : OpenCSG::Intersection, chain->polysets[i]->convexity);
 		prim->p = chain->polysets[i];
+		prim->m = chain->matrices[i];
 		primitives.push_back(prim);
 	}
 }
@@ -972,11 +981,13 @@ void MainWindow::viewModeCGALGrid()
 static void renderGLThrownTogetherChain(MainWindow *m, CSGChain *chain, bool highlight, bool background)
 {
 	glDepthFunc(GL_LEQUAL);
-	QHash<PolySet*,int> polySetVisitMark;
+	QHash<QPair<PolySet*,double*>,int> polySetVisitMark;
 	bool showEdges = m->actViewModeShowEdges->isChecked();
 	for (int i = 0; i < chain->polysets.size(); i++) {
-		if (polySetVisitMark[chain->polysets[i]]++ > 0)
+		if (polySetVisitMark[QPair<PolySet*,double*>(chain->polysets[i], chain->matrices[i])]++ > 0)
 			continue;
+		glPushMatrix();
+		glMultMatrixd(chain->matrices[i]);
 		if (highlight) {
 			chain->polysets[i]->render_surface(PolySet::COLOR_HIGHLIGHT);
 			if (showEdges) {
@@ -1006,6 +1017,7 @@ static void renderGLThrownTogetherChain(MainWindow *m, CSGChain *chain, bool hig
 				glEnable(GL_LIGHTING);
 			}
 		}
+		glPopMatrix();
 	}
 }
 

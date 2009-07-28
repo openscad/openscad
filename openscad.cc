@@ -24,20 +24,9 @@
 
 #include <QApplication>
 
-#if 0
-void report_func(const class AbstractNode*, void*, int mark)
-{
-	printf("CSG rendering progress: %.2f%%\n", (mark*100.0) / progress_report_count);
-}
-#endif
-
 int main(int argc, char **argv)
 {
 	int rc;
-
-#ifdef ENABLE_CGAL
-	AbstractNode::cgal_nef_cache.setMaxCost(100000);
-#endif
 
 	initialize_builtin_functions();
 	initialize_builtin_modules();
@@ -57,44 +46,6 @@ int main(int argc, char **argv)
 
 	a.connect(m, SIGNAL(destroyed()), &a, SLOT(quit()));
 	rc = a.exec();
-
-#if 0
-	Context root_ctx(NULL);
-	root_ctx.functions_p = &builtin_functions;
-	root_ctx.modules_p = &builtin_modules;
-
-	AbstractModule *root_module = parse(stdin, 0);
-
-	printf("--- Abstract Syntax Tree ---\n");
-	QString ast_text = root_module->dump("", "**root**");
-	printf("%s", ast_text.toAscii().data());
-
-	AbstractNode *root_node = root_module->evaluate(&root_ctx, QVector<QString>(), QVector<Value>(), QVector<AbstractNode*>());
-
-	printf("--- Compiled CSG Tree ---\n");
-	QString csg_text = root_node->dump("");
-	printf("%s", csg_text.toAscii().data());
-
-	CGAL_Nef_polyhedron N;
-	CGAL_Polyhedron P;
-
-	progress_report_prep(root_node, report_func, NULL);
-	N = root_node->render_cgal_nef_polyhedron();
-	progress_report_fin();
-	printf("CSG rendering finished.\n");
-
-	N.convert_to_Polyhedron(P);
-
-	std::ofstream outFile("output.off");
-	if (outFile.fail()) {
-		std::cerr << "unable to open output file merged.off for writing!" << std::endl;
-		exit(1);
-	}
-	outFile << P;
-
-	delete root_node;
-	delete root_module;
-#endif
 
 	destroy_builtin_functions();
 	destroy_builtin_modules();

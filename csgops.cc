@@ -63,7 +63,7 @@ AbstractNode *CsgModule::evaluate(const Context*, const ModuleInstanciation *ins
 
 CGAL_Nef_polyhedron CsgNode::render_cgal_nef_polyhedron() const
 {
-	QString cache_id = cgal_nef_cache_id();
+	QString cache_id = mk_cache_id();
 	if (cgal_nef_cache.contains(cache_id)) {
 		progress_report();
 		return *cgal_nef_cache[cache_id];

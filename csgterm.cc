@@ -22,13 +22,15 @@
 
 #include "openscad.h"
 
-CSGTerm::CSGTerm(PolySet *polyset, QString label)
+CSGTerm::CSGTerm(PolySet *polyset, double m[16], QString label)
 {
 	this->type = PRIMITIVE;
 	this->polyset = polyset;
 	this->label = label;
 	this->left = NULL;
 	this->right = NULL;
+	for (int i = 0; i < 16; i++)
+		this->m[i] = m[i];
 	refcounter = 1;
 }
 
@@ -141,7 +143,7 @@ void CSGTerm::unlink()
 {
 	if (--refcounter <= 0) {
 		if (polyset)
-			delete polyset;
+			polyset->unlink();
 		if (left)
 			left->unlink();
 		if (right)
@@ -165,9 +167,10 @@ CSGChain::CSGChain()
 {
 }
 
-void CSGChain::add(PolySet *polyset, CSGTerm::type_e type, QString label)
+void CSGChain::add(PolySet *polyset, double *m, CSGTerm::type_e type, QString label)
 {
 	polysets.append(polyset);
+	matrices.append(m);
 	types.append(type);
 	labels.append(label);
 }
@@ -175,7 +178,7 @@ void CSGChain::add(PolySet *polyset, CSGTerm::type_e type, QString label)
 void CSGChain::import(CSGTerm *term, CSGTerm::type_e type)
 {
 	if (term->type == CSGTerm::PRIMITIVE) {
-		add(term->polyset, type, term->label);
+		add(term->polyset, term->m, type, term->label);
 	} else {
 		import(term->left, type);
 		import(term->right, term->type);

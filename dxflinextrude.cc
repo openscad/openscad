@@ -55,7 +55,7 @@ AbstractNode *DxfLinearExtrudeModule::evaluate(const Context *ctx, const ModuleI
 {
 	DxfLinearExtrudeNode *node = new DxfLinearExtrudeNode(inst);
 
-	QVector<QString> argnames = QVector<QString>() << "file" << "layer" << "height" << "origin" << "scale" << "center";
+	QVector<QString> argnames = QVector<QString>() << "file" << "layer" << "height" << "origin" << "scale" << "center" << "twist" << "slices";
 	QVector<Expression*> argexpr;
 
 	Context c(ctx);
@@ -155,8 +155,14 @@ static void add_slice(PolySet *ps, DxfData::Path *pt, double rot1, double rot2, 
 	}
 }
 
+static QCache<QString,PolySetPtr> ps_cache(100);
+
 PolySet *DxfLinearExtrudeNode::render_polyset(render_mode_e) const
 {
+	QString key = mk_cache_id();
+	if (ps_cache.contains(key))
+		return ps_cache[key]->ps->link();
+
 	DxfData dxf(fn, fs, fa, filename, layername, origin_x, origin_y, scale);
 
 	PolySet *ps = new PolySet();
@@ -220,6 +226,7 @@ PolySet *DxfLinearExtrudeNode::render_polyset(render_mode_e) const
 		}
 	}
 
+	ps_cache.insert(key, new PolySetPtr(ps->link()));
 	return ps;
 }
 
@@ -230,10 +237,19 @@ QString DxfLinearExtrudeNode::dump(QString indent) const
 		struct stat st;
 		memset(&st, 0, sizeof(struct stat));
 		stat(filename.toAscii().data(), &st);
-		text.sprintf("dxf_linear_extrude(file = \"%s\", cache = \"%x.%x\", layer = \"%s\", height = %f, "
-				"origin = [ %f %f ], scale = %f, $fn = %f, $fa = %f, $fs = %f);\n",
+		text.sprintf("dxf_linear_extrude(file = \"%s\", cache = \"%x.%x\", layer = \"%s\", "
+				"height = %f, origin = [ %f %f ], scale = %f, center = %s",
 				filename.toAscii().data(), (int)st.st_mtime, (int)st.st_size,
-				layername.toAscii().data(), height, origin_x, origin_y, scale, fn, fs, fa);
+				layername.toAscii().data(), height, origin_x, origin_y, scale,
+				center ? "true" : "false");
+		if (has_twist) {
+			QString t2;
+			t2.sprintf(", twist = %f, slices = %d", twist, slices);
+			text += t2;
+		}
+		QString t3;
+		t3.sprintf(", $fn = %f, $fa = %f, $fs = %f);\n", fn, fs, fa);
+		text += t3;
 		((AbstractNode*)this)->dump_cache = indent + QString("n%1: ").arg(idx) + text;
 	}
 	return dump_cache;
