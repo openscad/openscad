@@ -64,6 +64,7 @@ class Module;
 
 class Context;
 class PolySet;
+class PolySetPtr;
 class CSGTerm;
 class CSGChain;
 class AbstractNode;
@@ -506,6 +507,8 @@ public:
 		COLOR_BACKGROUND
 	};
 
+	static QCache<QString,PolySetPtr> ps_cache;
+
 	void render_surface(colormode_e colormode, GLint *shaderinfo = NULL) const;
 	void render_edges(colormode_e colormode) const;
 
@@ -612,6 +615,7 @@ public:
 	virtual CGAL_Nef_polyhedron render_cgal_nef_polyhedron() const;
 #endif
 	virtual CSGTerm *render_csg_term(double m[16], QVector<CSGTerm*> *highlights, QVector<CSGTerm*> *background) const;
+	static CSGTerm *render_csg_term_from_ps(double m[16], QVector<CSGTerm*> *highlights, QVector<CSGTerm*> *background, PolySet *ps, const ModuleInstanciation *modinst, int idx);
 };
 
 extern int progress_report_count;
@@ -676,8 +680,8 @@ public:
 
 	QWidget *animate_panel;
 	QTimer *animate_timer;
-	double tval, fps, fstep;
-	QLineEdit *e_tval, *e_fps, *e_fstep;
+	double tval, fps, fsteps;
+	QLineEdit *e_tval, *e_fps, *e_fsteps;
 
 	Context root_ctx;
 	AbstractModule *root_module;
@@ -707,7 +711,7 @@ private:
 	void load();
 	void maybe_change_dir();
 	void find_root_tag(AbstractNode *n);
-	void compile();
+	void compile(bool procevents);
 
 private slots:
 	void actionNew();

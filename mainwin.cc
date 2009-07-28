@@ -60,7 +60,7 @@ MainWindow::MainWindow(const char *filename)
 
 	tval = 0;
 	fps = 0;
-	fstep = 1;
+	fsteps = 1;
 
 	s1 = new QSplitter(Qt::Horizontal, this);
 	editor = new QTextEdit(s1);
@@ -90,8 +90,8 @@ MainWindow::MainWindow(const char *filename)
 	l2->addWidget(e_fps = new QLineEdit("0", w2));
 	connect(e_fps, SIGNAL(textChanged(QString)), this, SLOT(updatedFps()));
 
-	l2->addWidget(new QLabel("Step:", w2));
-	l2->addWidget(e_fstep = new QLineEdit("0", w2));
+	l2->addWidget(new QLabel("Steps:", w2));
+	l2->addWidget(e_fsteps = new QLineEdit("100", w2));
 
 	animate_panel = w2;
 	animate_panel->hide();
@@ -223,10 +223,8 @@ void MainWindow::updatedFps()
 	bool fps_ok;
 	double fps = e_fps->text().toDouble(&fps_ok);
 	if (!fps_ok || fps <= 0) {
-		// printf("-- stop --\n");
 		animate_timer->stop();
 	} else {
-		// printf("-- start --\n");
 		animate_timer->setInterval(1000 / e_fps->text().toDouble());
 		animate_timer->start();
 	}
@@ -234,10 +232,11 @@ void MainWindow::updatedFps()
 
 void MainWindow::updateTVal()
 {
-	double t = e_tval->text().toDouble();
-	double s = e_fstep->text().toDouble();
-	e_tval->setText(QString::number(t + s));
-	// printf("-- %f + %f => %s --\n", t, s, e_tval->text().toAscii().data());
+	double s = e_fsteps->text().toDouble();
+	double t = e_tval->text().toDouble() + 1/s;
+	QString txt;
+	txt.sprintf("%.5f", t >= 1.0 ? 0.0 : t);
+	e_tval->setText(txt);
 }
 
 void MainWindow::load()
@@ -289,10 +288,11 @@ void MainWindow::find_root_tag(AbstractNode *n)
 	}
 }
 
-void MainWindow::compile()
+void MainWindow::compile(bool procevents)
 {
 	PRINT("Parsing design (AST generation)...");
-	QApplication::processEvents();
+	if (procevents)
+		QApplication::processEvents();
 
 	if (root_module) {
 		delete root_module;
@@ -345,7 +345,8 @@ void MainWindow::compile()
 		goto fail;
 
 	PRINT("Compiling design (CSG Tree generation)...");
-	QApplication::processEvents();
+	if (procevents)
+		QApplication::processEvents();
 
 	AbstractNode::idx_counter = 1;
 	{
@@ -362,7 +363,8 @@ void MainWindow::compile()
 	root_node->dump("");
 
 	PRINT("Compiling design (CSG Products generation)...");
-	QApplication::processEvents();
+	if (procevents)
+		QApplication::processEvents();
 
 	double m[16];
 
@@ -375,7 +377,8 @@ void MainWindow::compile()
 		goto fail;
 
 	PRINT("Compiling design (CSG Products normalization)...");
-	QApplication::processEvents();
+	if (procevents)
+		QApplication::processEvents();
 
 	root_norm_term = root_raw_term->link();
 
@@ -403,7 +406,8 @@ void MainWindow::compile()
 	if (highlight_terms.size() > 0)
 	{
 		PRINTF("Compiling highlights (%d CSG Trees)...", highlight_terms.size());
-		QApplication::processEvents();
+		if (procevents)
+			QApplication::processEvents();
 
 		highlights_chain = new CSGChain();
 		for (int i = 0; i < highlight_terms.size(); i++) {
@@ -421,7 +425,8 @@ void MainWindow::compile()
 	if (background_terms.size() > 0)
 	{
 		PRINTF("Compiling background (%d CSG Trees)...", background_terms.size());
-		QApplication::processEvents();
+		if (procevents)
+			QApplication::processEvents();
 
 		background_chain = new CSGChain();
 		for (int i = 0; i < background_terms.size(); i++) {
@@ -438,11 +443,13 @@ void MainWindow::compile()
 
 	if (1) {
 		PRINT("Compilation finished.");
-		QApplication::processEvents();
+		if (procevents)
+			QApplication::processEvents();
 	} else {
 fail:
 		PRINT("ERROR: Compilation failed!");
-		QApplication::processEvents();
+		if (procevents)
+			QApplication::processEvents();
 	}
 }
 
@@ -590,7 +597,7 @@ void MainWindow::actionReloadCompile()
 	console->clear();
 
 	load();
-	compile();
+	compile(true);
 
 #ifdef ENABLE_OPENCSG
 	if (!actViewModeOpenCSG->isChecked() && !actViewModeThrownTogether->isChecked()) {
@@ -609,7 +616,7 @@ void MainWindow::actionCompile()
 	current_win = this;
 	console->clear();
 
-	compile();
+	compile(!actViewModeAnimate->isChecked());
 
 #ifdef ENABLE_OPENCSG
 	if (!actViewModeOpenCSG->isChecked() && !actViewModeThrownTogether->isChecked()) {
@@ -641,7 +648,7 @@ void MainWindow::actionRenderCGAL()
 	current_win = this;
 	console->clear();
 
-	compile();
+	compile(true);
 
 	if (!root_module || !root_node)
 		return;

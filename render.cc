@@ -114,6 +114,11 @@ static void report_func(const class AbstractNode*, void *vp, int mark)
 
 CSGTerm *RenderNode::render_csg_term(double m[16], QVector<CSGTerm*> *highlights, QVector<CSGTerm*> *background) const
 {
+	QString key = mk_cache_id();
+	if (PolySet::ps_cache.contains(key))
+		return AbstractPolyNode::render_csg_term_from_ps(m, highlights, background,
+				PolySet::ps_cache[key]->ps->link(), modinst, idx);
+
 	CGAL_Nef_polyhedron N;
 
 	QString cache_id = mk_cache_id();
@@ -174,6 +179,8 @@ CSGTerm *RenderNode::render_csg_term(double m[16], QVector<CSGTerm*> *highlights
 			ps->append_vertex(x, y, z);
 		} while (hc != hc_end);
 	}
+
+	PolySet::ps_cache.insert(key, new PolySetPtr(ps->link()));
 
 	CSGTerm *term = new CSGTerm(ps, m, QString("n%1").arg(idx));
 	if (modinst->tag_highlight && highlights)
