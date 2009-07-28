@@ -32,8 +32,10 @@
 #include <QMainWindow>
 #include <QSplitter>
 #include <QTextEdit>
+#include <QLineEdit>
 #include <QGLWidget>
 #include <QPointer>
+#include <QTimer>
 
 #include <stdio.h>
 #include <errno.h>
@@ -672,6 +674,11 @@ public:
 	GLView *screen;
 	QTextEdit *console;
 
+	QWidget *animate_panel;
+	QTimer *animate_timer;
+	double tval, fps, fstep;
+	QLineEdit *e_tval, *e_fps, *e_fstep;
+
 	Context root_ctx;
 	AbstractModule *root_module;
 	AbstractNode *absolute_root_node;
@@ -691,6 +698,10 @@ public:
 
 	MainWindow(const char *filename = 0);
 	~MainWindow();
+
+private slots:
+	void updatedFps();
+	void updateTVal();
 
 private:
 	void load();
@@ -733,6 +744,7 @@ public:
 #endif
 	QAction *actViewModeThrownTogether;
 	QAction *actViewModeShowEdges;
+	QAction *actViewModeAnimate;
 	void viewModeActionsUncheck();
 
 private slots:
@@ -745,6 +757,7 @@ private slots:
 #endif
 	void viewModeThrownTogether();
 	void viewModeShowEdges();
+	void viewModeAnimate();
 };
 
 extern AbstractModule *parse(const char *text, int debug);

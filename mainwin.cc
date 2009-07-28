@@ -29,6 +29,9 @@
 #include <QFileDialog>
 #include <QApplication>
 #include <QProgressDialog>
+#include <QHBoxLayout>
+#include <QVBoxLayout>
+#include <QLabel>
 
 QPointer<MainWindow> current_win;
 
@@ -39,6 +42,7 @@ MainWindow::MainWindow(const char *filename)
 	root_ctx.set_variable("$fn", Value(0.0));
 	root_ctx.set_variable("$fs", Value(1.0));
 	root_ctx.set_variable("$fa", Value(12.0));
+	root_ctx.set_variable("$t", Value(0.0));
 
 	root_module = NULL;
 	absolute_root_node = NULL;
@@ -54,11 +58,43 @@ MainWindow::MainWindow(const char *filename)
 	root_node = NULL;
 	enableOpenCSG = false;
 
+	tval = 0;
+	fps = 0;
+	fstep = 1;
+
 	s1 = new QSplitter(Qt::Horizontal, this);
 	editor = new QTextEdit(s1);
-	s2 = new QSplitter(Qt::Vertical, s1);
+
+	QWidget *w1 = new QWidget(s1);
+	QVBoxLayout *l1 = new QVBoxLayout(w1);
+	l1->setSpacing(0);
+	l1->setMargin(0);
+
+	s2 = new QSplitter(Qt::Vertical, w1);
+	l1->addWidget(s2);
 	screen = new GLView(s2);
 	console = new QTextEdit(s2);
+
+	QWidget *w2 = new QWidget(w1);
+	QHBoxLayout *l2 = new QHBoxLayout(w2);
+	l1->addWidget(w2);
+
+	animate_timer = new QTimer(this);
+	connect(animate_timer, SIGNAL(timeout()), this, SLOT(updateTVal()));
+
+	l2->addWidget(new QLabel("Time:", w2));
+	l2->addWidget(e_tval = new QLineEdit("0", w2));
+	connect(e_tval, SIGNAL(textChanged(QString)), this, SLOT(actionCompile()));
+	
+	l2->addWidget(new QLabel("FPS:", w2));
+	l2->addWidget(e_fps = new QLineEdit("0", w2));
+	connect(e_fps, SIGNAL(textChanged(QString)), this, SLOT(updatedFps()));
+
+	l2->addWidget(new QLabel("Step:", w2));
+	l2->addWidget(e_fstep = new QLineEdit("0", w2));
+
+	animate_panel = w2;
+	animate_panel->hide();
 
 	{
 		QMenu *menu = menuBar()->addMenu("&File");
@@ -117,9 +153,12 @@ MainWindow::MainWindow(const char *filename)
 #endif
 		actViewModeThrownTogether = menu->addAction("Thrown Together", this, SLOT(viewModeThrownTogether()));
 		actViewModeThrownTogether->setCheckable(true);
+
 		menu->addSeparator();
 		actViewModeShowEdges = menu->addAction("Show Edges", this, SLOT(viewModeShowEdges()));
 		actViewModeShowEdges->setCheckable(true);
+		actViewModeAnimate = menu->addAction("Animate", this, SLOT(viewModeAnimate()));
+		actViewModeAnimate->setCheckable(true);
 
 		menu->addSeparator();
 		menu->addAction("Top");
@@ -177,6 +216,28 @@ MainWindow::~MainWindow()
 	if (root_N)
 		delete root_N;
 #endif
+}
+
+void MainWindow::updatedFps()
+{
+	bool fps_ok;
+	double fps = e_fps->text().toDouble(&fps_ok);
+	if (!fps_ok || fps <= 0) {
+		// printf("-- stop --\n");
+		animate_timer->stop();
+	} else {
+		// printf("-- start --\n");
+		animate_timer->setInterval(1000 / e_fps->text().toDouble());
+		animate_timer->start();
+	}
+}
+
+void MainWindow::updateTVal()
+{
+	double t = e_tval->text().toDouble();
+	double s = e_fstep->text().toDouble();
+	e_tval->setText(QString::number(t + s));
+	// printf("-- %f + %f => %s --\n", t, s, e_tval->text().toAscii().data());
 }
 
 void MainWindow::load()
@@ -277,6 +338,7 @@ void MainWindow::compile()
 	root_node = NULL;
 	enableOpenCSG = false;
 
+	root_ctx.set_variable("$t", Value(e_tval->text().toDouble()));
 	root_module = parse(editor->toPlainText().toAscii().data(), false);
 
 	if (!root_module)
@@ -1021,7 +1083,6 @@ static void renderGLThrownTogetherChain(MainWindow *m, CSGChain *chain, bool hig
 	}
 }
 
-
 static void renderGLThrownTogether(void *vp)
 {
 	MainWindow *m = (MainWindow*)vp;
@@ -1045,5 +1106,16 @@ void MainWindow::viewModeThrownTogether()
 void MainWindow::viewModeShowEdges()
 {
 	screen->updateGL();
+}
+
+void MainWindow::viewModeAnimate()
+{
+	if (actViewModeAnimate->isChecked()) {
+		animate_panel->show();
+		updatedFps();
+	} else {
+		animate_panel->hide();
+		animate_timer->stop();
+	}
 }
 
