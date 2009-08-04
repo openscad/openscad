@@ -192,7 +192,7 @@ CSGTerm *TransformNode::render_csg_term(double c[16], QVector<CSGTerm*> *highlig
 		if (t2 && !t1) {
 			t1 = t2;
 		} else if (t2 && t1) {
-			t1 = new CSGTerm(CSGTerm::UNION, t1, t2);
+			t1 = new CSGTerm(CSGTerm::TYPE_UNION, t1, t2);
 		}
 	}
 	if (t1 && modinst->tag_highlight && highlights)

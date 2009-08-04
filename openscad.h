@@ -500,11 +500,11 @@ public:
 	void insert_vertex(double x, double y, double z);
 
 	enum colormode_e {
-		COLOR_NONE,
-		COLOR_MATERIAL,
-		COLOR_CUTOUT,
-		COLOR_HIGHLIGHT,
-		COLOR_BACKGROUND
+		COLORMODE_NONE,
+		COLORMODE_MATERIAL,
+		COLORMODE_CUTOUT,
+		COLORMODE_HIGHLIGHT,
+		COLORMODE_BACKGROUND
 	};
 
 	static QCache<QString,PolySetPtr> ps_cache;
@@ -537,10 +537,10 @@ class CSGTerm
 {
 public:
 	enum type_e {
-		PRIMITIVE,
-		UNION,
-		INTERSECTION,
-		DIFFERENCE
+		TYPE_PRIMITIVE,
+		TYPE_UNION,
+		TYPE_INTERSECTION,
+		TYPE_DIFFERENCE
 	};
 
 	type_e type;
@@ -573,7 +573,7 @@ public:
 	CSGChain();
 
 	void add(PolySet *polyset, double *m, CSGTerm::type_e type, QString label);
-	void import(CSGTerm *term, CSGTerm::type_e type = CSGTerm::UNION);
+	void import(CSGTerm *term, CSGTerm::type_e type = CSGTerm::TYPE_UNION);
 	QString dump();
 };
 

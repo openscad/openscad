@@ -33,6 +33,9 @@
 #include <QVBoxLayout>
 #include <QLabel>
 
+//for chdir
+#include <unistd.h>
+
 QPointer<MainWindow> current_win;
 
 MainWindow::MainWindow(const char *filename)
@@ -888,7 +891,7 @@ public:
 	virtual void render() {
 		glPushMatrix();
 		glMultMatrixd(m);
-		p->render_surface(PolySet::COLOR_NONE);
+		p->render_surface(PolySet::COLORMODE_NONE);
 		glPopMatrix();
 	}
 };
@@ -901,7 +904,7 @@ static void renderCSGChainviaOpenCSG(CSGChain *chain, GLint *shaderinfo, bool hi
 	{
 		bool last = i == chain->polysets.size();
 
-		if (last || chain->types[i] == CSGTerm::UNION)
+		if (last || chain->types[i] == CSGTerm::TYPE_UNION)
 		{
 			OpenCSG::render(primitives);
 			glDepthFunc(GL_EQUAL);
@@ -911,13 +914,13 @@ static void renderCSGChainviaOpenCSG(CSGChain *chain, GLint *shaderinfo, bool hi
 				glPushMatrix();
 				glMultMatrixd(chain->matrices[j]);
 				if (highlight) {
-					chain->polysets[j]->render_surface(PolySet::COLOR_HIGHLIGHT, shaderinfo);
+					chain->polysets[j]->render_surface(PolySet::COLORMODE_HIGHLIGHT, shaderinfo);
 				} else if (background) {
-					chain->polysets[j]->render_surface(PolySet::COLOR_BACKGROUND, shaderinfo);
-				} else if (chain->types[j] == CSGTerm::DIFFERENCE) {
-					chain->polysets[j]->render_surface(PolySet::COLOR_CUTOUT, shaderinfo);
+					chain->polysets[j]->render_surface(PolySet::COLORMODE_BACKGROUND, shaderinfo);
+				} else if (chain->types[j] == CSGTerm::TYPE_DIFFERENCE) {
+					chain->polysets[j]->render_surface(PolySet::COLORMODE_CUTOUT, shaderinfo);
 				} else {
-					chain->polysets[j]->render_surface(PolySet::COLOR_MATERIAL, shaderinfo);
+					chain->polysets[j]->render_surface(PolySet::COLORMODE_MATERIAL, shaderinfo);
 				}
 				glPopMatrix();
 			}
@@ -933,7 +936,7 @@ static void renderCSGChainviaOpenCSG(CSGChain *chain, GLint *shaderinfo, bool hi
 		if (last)
 			break;
 
-		OpenCSGPrim *prim = new OpenCSGPrim(chain->types[i] == CSGTerm::DIFFERENCE ?
+		OpenCSGPrim *prim = new OpenCSGPrim(chain->types[i] == CSGTerm::TYPE_DIFFERENCE ?
 				OpenCSG::Subtraction : OpenCSG::Intersection, chain->polysets[i]->convexity);
 		prim->p = chain->polysets[i];
 		prim->m = chain->matrices[i];
@@ -1058,31 +1061,31 @@ static void renderGLThrownTogetherChain(MainWindow *m, CSGChain *chain, bool hig
 		glPushMatrix();
 		glMultMatrixd(chain->matrices[i]);
 		if (highlight) {
-			chain->polysets[i]->render_surface(PolySet::COLOR_HIGHLIGHT);
+			chain->polysets[i]->render_surface(PolySet::COLORMODE_HIGHLIGHT);
 			if (showEdges) {
 				glDisable(GL_LIGHTING);
-				chain->polysets[i]->render_edges(PolySet::COLOR_HIGHLIGHT);
+				chain->polysets[i]->render_edges(PolySet::COLORMODE_HIGHLIGHT);
 				glEnable(GL_LIGHTING);
 			}
 		} else if (background) {
-			chain->polysets[i]->render_surface(PolySet::COLOR_BACKGROUND);
+			chain->polysets[i]->render_surface(PolySet::COLORMODE_BACKGROUND);
 			if (showEdges) {
 				glDisable(GL_LIGHTING);
-				chain->polysets[i]->render_edges(PolySet::COLOR_BACKGROUND);
+				chain->polysets[i]->render_edges(PolySet::COLORMODE_BACKGROUND);
 				glEnable(GL_LIGHTING);
 			}
-		} else if (chain->types[i] == CSGTerm::DIFFERENCE) {
-			chain->polysets[i]->render_surface(PolySet::COLOR_CUTOUT);
+		} else if (chain->types[i] == CSGTerm::TYPE_DIFFERENCE) {
+			chain->polysets[i]->render_surface(PolySet::COLORMODE_CUTOUT);
 			if (showEdges) {
 				glDisable(GL_LIGHTING);
-				chain->polysets[i]->render_edges(PolySet::COLOR_CUTOUT);
+				chain->polysets[i]->render_edges(PolySet::COLORMODE_CUTOUT);
 				glEnable(GL_LIGHTING);
 			}
 		} else {
-			chain->polysets[i]->render_surface(PolySet::COLOR_MATERIAL);
+			chain->polysets[i]->render_surface(PolySet::COLORMODE_MATERIAL);
 			if (showEdges) {
 				glDisable(GL_LIGHTING);
-				chain->polysets[i]->render_edges(PolySet::COLOR_MATERIAL);
+				chain->polysets[i]->render_edges(PolySet::COLORMODE_MATERIAL);
 				glEnable(GL_LIGHTING);
 			}
 		}

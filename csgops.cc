@@ -23,9 +23,9 @@
 #include "openscad.h"
 
 enum csg_type_e {
-	UNION,
-	DIFFERENCE,
-	INTERSECTION
+	CSG_TYPE_UNION,
+	CSG_TYPE_DIFFERENCE,
+	CSG_TYPE_INTERSECTION
 };
 
 class CsgModule : public AbstractModule
@@ -77,11 +77,11 @@ CGAL_Nef_polyhedron CsgNode::render_cgal_nef_polyhedron() const
 		if (first) {
 			N = v->render_cgal_nef_polyhedron();
 			first = false;
-		} else if (type == UNION) {
+		} else if (type == CSG_TYPE_UNION) {
 			N += v->render_cgal_nef_polyhedron();
-		} else if (type == DIFFERENCE) {
+		} else if (type == CSG_TYPE_DIFFERENCE) {
 			N -= v->render_cgal_nef_polyhedron();
-		} else if (type == INTERSECTION) {
+		} else if (type == CSG_TYPE_INTERSECTION) {
 			N *= v->render_cgal_nef_polyhedron();
 		}
 	}
@@ -101,12 +101,12 @@ CSGTerm *CsgNode::render_csg_term(double m[16], QVector<CSGTerm*> *highlights, Q
 		if (t2 && !t1) {
 			t1 = t2;
 		} else if (t2 && t1) {
-			if (type == UNION) {
-				t1 = new CSGTerm(CSGTerm::UNION, t1, t2);
-			} else if (type == DIFFERENCE) {
-				t1 = new CSGTerm(CSGTerm::DIFFERENCE, t1, t2);
-			} else if (type == INTERSECTION) {
-				t1 = new CSGTerm(CSGTerm::INTERSECTION, t1, t2);
+			if (type == CSG_TYPE_UNION) {
+				t1 = new CSGTerm(CSGTerm::TYPE_UNION, t1, t2);
+			} else if (type == CSG_TYPE_DIFFERENCE) {
+				t1 = new CSGTerm(CSGTerm::TYPE_DIFFERENCE, t1, t2);
+			} else if (type == CSG_TYPE_INTERSECTION) {
+				t1 = new CSGTerm(CSGTerm::TYPE_INTERSECTION, t1, t2);
 			}
 		}
 	}
@@ -123,11 +123,11 @@ QString CsgNode::dump(QString indent) const
 {
 	if (dump_cache.isEmpty()) {
 		QString text = indent + QString("n%1: ").arg(idx);
-		if (type == UNION)
+		if (type == CSG_TYPE_UNION)
 			text += "union() {\n";
-		if (type == DIFFERENCE)
+		if (type == CSG_TYPE_DIFFERENCE)
 			text += "difference() {\n";
-		if (type == INTERSECTION)
+		if (type == CSG_TYPE_INTERSECTION)
 			text += "intersection() {\n";
 		foreach (AbstractNode *v, children)
 			text += v->dump(indent + QString("\t"));
@@ -138,8 +138,8 @@ QString CsgNode::dump(QString indent) const
 
 void register_builtin_csgops()
 {
-	builtin_modules["union"] = new CsgModule(UNION);
-	builtin_modules["difference"] = new CsgModule(DIFFERENCE);
-	builtin_modules["intersection"] = new CsgModule(INTERSECTION);
+	builtin_modules["union"] = new CsgModule(CSG_TYPE_UNION);
+	builtin_modules["difference"] = new CsgModule(CSG_TYPE_DIFFERENCE);
+	builtin_modules["intersection"] = new CsgModule(CSG_TYPE_INTERSECTION);
 }
 

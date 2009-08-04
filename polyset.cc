@@ -106,7 +106,7 @@ static void gl_draw_triangle(GLint *shaderinfo, const PolySet::Point *p0, const 
 
 void PolySet::render_surface(colormode_e colormode, GLint *shaderinfo) const
 {
-	if (colormode == COLOR_MATERIAL) {
+	if (colormode == COLORMODE_MATERIAL) {
 		glColor3ub(249, 215, 44);
 #ifdef ENABLE_OPENCSG
 		if (shaderinfo) {
@@ -115,7 +115,7 @@ void PolySet::render_surface(colormode_e colormode, GLint *shaderinfo) const
 		}
 #endif /* ENABLE_OPENCSG */
 	}
-	if (colormode == COLOR_CUTOUT) {
+	if (colormode == COLORMODE_CUTOUT) {
 		glColor3ub(157, 203, 81);
 #ifdef ENABLE_OPENCSG
 		if (shaderinfo) {
@@ -124,7 +124,7 @@ void PolySet::render_surface(colormode_e colormode, GLint *shaderinfo) const
 		}
 #endif /* ENABLE_OPENCSG */
 	}
-	if (colormode == COLOR_HIGHLIGHT) {
+	if (colormode == COLORMODE_HIGHLIGHT) {
 		glColor4ub(255, 157, 81, 128);
 #ifdef ENABLE_OPENCSG
 		if (shaderinfo) {
@@ -133,7 +133,7 @@ void PolySet::render_surface(colormode_e colormode, GLint *shaderinfo) const
 		}
 #endif /* ENABLE_OPENCSG */
 	}
-	if (colormode == COLOR_BACKGROUND) {
+	if (colormode == COLORMODE_BACKGROUND) {
 		glColor4ub(180, 180, 180, 128);
 #ifdef ENABLE_OPENCSG
 		if (shaderinfo) {
@@ -178,13 +178,13 @@ void PolySet::render_surface(colormode_e colormode, GLint *shaderinfo) const
 
 void PolySet::render_edges(colormode_e colormode) const
 {
-	if (colormode == COLOR_MATERIAL)
+	if (colormode == COLORMODE_MATERIAL)
 		glColor3ub(255, 236, 94);
-	if (colormode == COLOR_CUTOUT)
+	if (colormode == COLORMODE_CUTOUT)
 		glColor3ub(171, 216, 86);
-	if (colormode == COLOR_HIGHLIGHT)
+	if (colormode == COLORMODE_HIGHLIGHT)
 		glColor4ub(255, 171, 86, 128);
-	if (colormode == COLOR_BACKGROUND)
+	if (colormode == COLORMODE_BACKGROUND)
 		glColor4ub(150, 150, 150, 128);
 	for (int i = 0; i < polygons.size(); i++) {
 		const Polygon *poly = &polygons[i];

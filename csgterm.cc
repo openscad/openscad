@@ -24,7 +24,7 @@
 
 CSGTerm::CSGTerm(PolySet *polyset, double m[16], QString label)
 {
-	this->type = PRIMITIVE;
+	this->type = TYPE_PRIMITIVE;
 	this->polyset = polyset;
 	this->label = label;
 	this->left = NULL;
@@ -51,7 +51,7 @@ CSGTerm *CSGTerm::normalize()
 	// University of Potsdam, Hasso-Plattner-Institute, Germany
 	// http://www.opencsg.org/data/csg_freenix2005_paper.pdf
 
-	if (type == PRIMITIVE)
+	if (type == TYPE_PRIMITIVE)
 		return link();
 
 	CSGTerm *t1, *t2, *x, *y;
@@ -89,28 +89,28 @@ CSGTerm *CSGTerm::normalize_tail()
 	z = right->right;
 
 	// 1.  x - (y + z) -> (x - y) - z
-	if (type == DIFFERENCE && right->type == UNION)
-		return new CSGTerm(DIFFERENCE, new CSGTerm(DIFFERENCE, x->link(), y->link()), z->link());
+	if (type == TYPE_DIFFERENCE && right->type == TYPE_UNION)
+		return new CSGTerm(TYPE_DIFFERENCE, new CSGTerm(TYPE_DIFFERENCE, x->link(), y->link()), z->link());
 
 	// 2.  x * (y + z) -> (x * y) + (x * z)
-	if (type == INTERSECTION && right->type == UNION)
-		return new CSGTerm(UNION, new CSGTerm(INTERSECTION, x->link(), y->link()), new CSGTerm(INTERSECTION, x->link(), z->link()));
+	if (type == TYPE_INTERSECTION && right->type == TYPE_UNION)
+		return new CSGTerm(TYPE_UNION, new CSGTerm(TYPE_INTERSECTION, x->link(), y->link()), new CSGTerm(TYPE_INTERSECTION, x->link(), z->link()));
 
 	// 3.  x - (y * z) -> (x - y) + (x - z)
-	if (type == DIFFERENCE && right->type == INTERSECTION)
-		return new CSGTerm(UNION, new CSGTerm(DIFFERENCE, x->link(), y->link()), new CSGTerm(DIFFERENCE, x->link(), z->link()));
+	if (type == TYPE_DIFFERENCE && right->type == TYPE_INTERSECTION)
+		return new CSGTerm(TYPE_UNION, new CSGTerm(TYPE_DIFFERENCE, x->link(), y->link()), new CSGTerm(TYPE_DIFFERENCE, x->link(), z->link()));
 
 	// 4.  x * (y * z) -> (x * y) * z
-	if (type == INTERSECTION && right->type == INTERSECTION)
-		return new CSGTerm(INTERSECTION, new CSGTerm(INTERSECTION, x->link(), y->link()), z->link());
+	if (type == TYPE_INTERSECTION && right->type == TYPE_INTERSECTION)
+		return new CSGTerm(TYPE_INTERSECTION, new CSGTerm(TYPE_INTERSECTION, x->link(), y->link()), z->link());
 
 	// 5.  x - (y - z) -> (x - y) + (x * z)
-	if (type == DIFFERENCE && right->type == DIFFERENCE)
-		return new CSGTerm(UNION, new CSGTerm(DIFFERENCE, x->link(), y->link()), new CSGTerm(INTERSECTION, x->link(), z->link()));
+	if (type == TYPE_DIFFERENCE && right->type == TYPE_DIFFERENCE)
+		return new CSGTerm(TYPE_UNION, new CSGTerm(TYPE_DIFFERENCE, x->link(), y->link()), new CSGTerm(TYPE_INTERSECTION, x->link(), z->link()));
 
 	// 6.  x * (y - z) -> (x * y) - z
-	if (type == INTERSECTION && right->type == DIFFERENCE)
-		return new CSGTerm(DIFFERENCE, new CSGTerm(INTERSECTION, x->link(), y->link()), z->link());
+	if (type == TYPE_INTERSECTION && right->type == TYPE_DIFFERENCE)
+		return new CSGTerm(TYPE_DIFFERENCE, new CSGTerm(TYPE_INTERSECTION, x->link(), y->link()), z->link());
 
 	// Part B: The '(x . y) . z' expressions
 
@@ -119,16 +119,16 @@ CSGTerm *CSGTerm::normalize_tail()
 	z = right;
 
 	// 7. (x - y) * z  -> (x * z) - y
-	if (left->type == DIFFERENCE && type == INTERSECTION)
-		return new CSGTerm(DIFFERENCE, new CSGTerm(INTERSECTION, x->link(), z->link()), y->link());
+	if (left->type == TYPE_DIFFERENCE && type == TYPE_INTERSECTION)
+		return new CSGTerm(TYPE_DIFFERENCE, new CSGTerm(TYPE_INTERSECTION, x->link(), z->link()), y->link());
 
 	// 8. (x + y) - z  -> (x - z) + (y - z)
-	if (left->type == UNION && type == DIFFERENCE)
-		return new CSGTerm(UNION, new CSGTerm(DIFFERENCE, x->link(), z->link()), new CSGTerm(DIFFERENCE, y->link(), z->link()));
+	if (left->type == TYPE_UNION && type == TYPE_DIFFERENCE)
+		return new CSGTerm(TYPE_UNION, new CSGTerm(TYPE_DIFFERENCE, x->link(), z->link()), new CSGTerm(TYPE_DIFFERENCE, y->link(), z->link()));
 
 	// 9. (x + y) * z  -> (x * z) + (y * z)
-	if (left->type == UNION && type == INTERSECTION)
-		return new CSGTerm(UNION, new CSGTerm(INTERSECTION, x->link(), z->link()), new CSGTerm(INTERSECTION, y->link(), z->link()));
+	if (left->type == TYPE_UNION && type == TYPE_INTERSECTION)
+		return new CSGTerm(TYPE_UNION, new CSGTerm(TYPE_INTERSECTION, x->link(), z->link()), new CSGTerm(TYPE_INTERSECTION, y->link(), z->link()));
 
 	return link();
 }
@@ -154,11 +154,11 @@ void CSGTerm::unlink()
 
 QString CSGTerm::dump()
 {
-	if (type == UNION)
+	if (type == TYPE_UNION)
 		return QString("(%1 + %2)").arg(left->dump(), right->dump());
-	if (type == INTERSECTION)
+	if (type == TYPE_INTERSECTION)
 		return QString("(%1 * %2)").arg(left->dump(), right->dump());
-	if (type == DIFFERENCE)
+	if (type == TYPE_DIFFERENCE)
 		return QString("(%1 - %2)").arg(left->dump(), right->dump());
 	return label;
 }
@@ -177,7 +177,7 @@ void CSGChain::add(PolySet *polyset, double *m, CSGTerm::type_e type, QString la
 
 void CSGChain::import(CSGTerm *term, CSGTerm::type_e type)
 {
-	if (term->type == CSGTerm::PRIMITIVE) {
+	if (term->type == CSGTerm::TYPE_PRIMITIVE) {
 		add(term->polyset, term->m, type, term->label);
 	} else {
 		import(term->left, type);
@@ -190,14 +190,14 @@ QString CSGChain::dump()
 	QString text;
 	for (int i = 0; i < types.size(); i++)
 	{
-		if (types[i] == CSGTerm::UNION) {
+		if (types[i] == CSGTerm::TYPE_UNION) {
 			if (i != 0)
 				text += "\n";
 			text += "+";
 		}
-		if (types[i] == CSGTerm::DIFFERENCE)
+		if (types[i] == CSGTerm::TYPE_DIFFERENCE)
 			text += " -";
-		if (types[i] == CSGTerm::INTERSECTION)
+		if (types[i] == CSGTerm::TYPE_INTERSECTION)
 			text += " *";
 		text += labels[i];
 	}
