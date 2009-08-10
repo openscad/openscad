@@ -71,7 +71,7 @@ AbstractNode *DxfRotateExtrudeModule::evaluate(const Context *ctx, const ModuleI
 
 	node->filename = file.text;
 	node->layername = layer.text;
-	node->convexity = convexity.num;
+	node->convexity = (int)convexity.num;
 	origin.getv2(node->origin_x, node->origin_y);
 	node->scale = scale.num;
 

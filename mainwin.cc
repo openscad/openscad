@@ -228,7 +228,7 @@ void MainWindow::updatedFps()
 	if (!fps_ok || fps <= 0) {
 		animate_timer->stop();
 	} else {
-		animate_timer->setInterval(1000 / e_fps->text().toDouble());
+		animate_timer->setInterval(int(1000 / e_fps->text().toDouble()));
 		animate_timer->start();
 	}
 }

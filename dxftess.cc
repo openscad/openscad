@@ -228,7 +228,7 @@ void dxf_tesselate(PolySet *ps, DxfData *dxf, double rot, bool up, double h)
 	QHash<int, QPair_ii> tri_by_atan2;
 	for (int i = 0; i < tess_tri.count(); i++)
 	for (int j = 0; j < 3; j++) {
-		int ai = round(atan2(fabs(tess_tri[i].p[(j+1)%3][0] - tess_tri[i].p[j][0]),
+		int ai = (int)round(atan2(fabs(tess_tri[i].p[(j+1)%3][0] - tess_tri[i].p[j][0]),
 				fabs(tess_tri[i].p[(j+1)%3][1] - tess_tri[i].p[j][1])) / 0.001);
 		tri_by_atan2.insertMulti(ai, QPair<int,int>(i, j));
 	}
@@ -242,7 +242,7 @@ void dxf_tesselate(PolySet *ps, DxfData *dxf, double rot, bool up, double h)
 		for (int k = 0; k < 3; k++)
 		{
 			QHash<QPair_ii, QPair_ii> possible_neigh;
-			int ai = floor(atan2(fabs(tess_tri[i].p[(k+1)%3][0] - tess_tri[i].p[k][0]),
+			int ai = (int)floor(atan2(fabs(tess_tri[i].p[(k+1)%3][0] - tess_tri[i].p[k][0]),
 					fabs(tess_tri[i].p[(k+1)%3][1] - tess_tri[i].p[k][1])) / 0.001 - 0.5);
 			for (int j = 0; j < 2; j++) {
 				foreach (QPair_ii jl, tri_by_atan2.values(ai+j))
@@ -266,13 +266,13 @@ void dxf_tesselate(PolySet *ps, DxfData *dxf, double rot, bool up, double h)
 					tess_tri.append(tess_triangle(tess_tri[j].p[l],
 							tess_tri[i].p[(k+1)%3], tess_tri[i].p[(k+2)%3]));
 					for (int m = 0; m < 2; m++) {
-						int ai = round(atan2(fabs(tess_tri.last().p[(m+1)%3][0] - tess_tri.last().p[m][0]),
+						int ai = (int)round(atan2(fabs(tess_tri.last().p[(m+1)%3][0] - tess_tri.last().p[m][0]),
 								fabs(tess_tri.last().p[(m+1)%3][1] - tess_tri.last().p[m][1])) / 0.001 );
 						tri_by_atan2.insertMulti(ai, QPair<int,int>(tess_tri.count()-1, m));
 					}
 					tess_tri[i].p[(k+1)%3] = tess_tri[j].p[l];
 					for (int m = 0; m < 2; m++) {
-						int ai = round(atan2(fabs(tess_tri[i].p[(m+1)%3][0] - tess_tri[i].p[m][0]),
+						int ai = (int)round(atan2(fabs(tess_tri[i].p[(m+1)%3][0] - tess_tri[i].p[m][0]),
 								fabs(tess_tri[i].p[(m+1)%3][1] - tess_tri[i].p[m][1])) / 0.001 );
 						tri_by_atan2.insertMulti(ai, QPair<int,int>(i, m));
 					}

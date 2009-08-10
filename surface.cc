@@ -63,7 +63,7 @@ AbstractNode *SurfaceModule::evaluate(const Context *ctx, const ModuleInstanciat
 
 	Value convexity = c.lookup_variable("convexity", true);
 	if (convexity.type == Value::NUMBER) {
-		node->convexity = convexity.num;
+		node->convexity = (int)convexity.num;
 	}
 
 	return node;

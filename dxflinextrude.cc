@@ -78,7 +78,7 @@ AbstractNode *DxfLinearExtrudeModule::evaluate(const Context *ctx, const ModuleI
 	node->filename = file.text;
 	node->layername = layer.text;
 	node->height = height.num;
-	node->convexity = convexity.num;
+	node->convexity = (int)convexity.num;
 	origin.getv2(node->origin_x, node->origin_y);
 	node->scale = scale.num;
 
@@ -97,9 +97,9 @@ AbstractNode *DxfLinearExtrudeModule::evaluate(const Context *ctx, const ModuleI
 	if (twist.type == Value::NUMBER) {
 		node->twist = twist.num;
 		if (slices.type == Value::NUMBER) {
-			node->slices = slices.num;
+			node->slices = (int)slices.num;
 		} else {
-			node->slices = fmax(2, fabs(get_fragments_from_r(node->height,
+			node->slices = (int)fmax(2, fabs(get_fragments_from_r(node->height,
 					node->fn, node->fs, node->fa) * node->twist / 360));
 		}
 		node->has_twist = true;

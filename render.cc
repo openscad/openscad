@@ -56,7 +56,7 @@ AbstractNode *RenderModule::evaluate(const Context *ctx, const ModuleInstanciati
 
 	Value v = c.lookup_variable("convexity");
 	if (v.type == Value::NUMBER)
-		node->convexity = v.num;
+		node->convexity = (int)v.num;
 
 	foreach (ModuleInstanciation *v, inst->children) {
 		AbstractNode *n = v->evaluate(inst->ctx);

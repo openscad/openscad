@@ -81,8 +81,8 @@ public:
 		res = resolution;
 	}
 	T &align(double &x, double &y) {
-		int ix = round(x / res);
-		int iy = round(y / res);
+		int ix = (int)round(x / res);
+		int iy = (int)round(y / res);
 		x = ix * res, y = iy * res;
 		if (db.contains(QPair<int,int>(ix, iy)))
 			return db[QPair<int,int>(ix, iy)];
@@ -103,14 +103,14 @@ public:
 		return db[QPair<int,int>(ix, iy)];
 	}
 	bool has(double x, double y) {
-		int ix = round(x / res);
-		int iy = round(y / res);
+		int ix = (int)round(x / res);
+		int iy = (int)round(y / res);
 		if (db.contains(QPair<int,int>(ix, iy)))
 			return true;
 		for (int jx = ix - 1; jx <= ix + 1; jx++)
 		for (int jy = iy - 1; jy <= iy + 1; jy++) {
 			if (db.contains(QPair<int,int>(jx, jy)))
-				true;
+				return true;
 		}
 		return false;
 	}
@@ -137,9 +137,9 @@ public:
 		res = resolution;
 	}
 	T &align(double &x, double &y, double &z) {
-		int ix = round(x / res);
-		int iy = round(y / res);
-		int iz = round(z / res);
+		int ix = (int)round(x / res);
+		int iy = (int)round(y / res);
+		int iz = (int)round(z / res);
 		x = ix * res, y = iy * res, z = iz * res;
 		if (db.contains(QPair<QPair<int,int>,int>(QPair<int,int>(ix, iy), iz)))
 			return db[QPair<QPair<int,int>,int>(QPair<int,int>(ix, iy), iz)];
@@ -162,9 +162,9 @@ public:
 		
 	}
 	bool has(double x, double y, double z) {
-		int ix = round(x / res);
-		int iy = round(y / res);
-		int iz = round(z / res);
+		int ix = (int)round(x / res);
+		int iy = (int)round(y / res);
+		int iz = (int)round(z / res);
 		if (db.contains(QPair<QPair<int,int>,int>(QPair<int,int>(ix, iy), iz)))
 			return true;
 		for (int jx = ix - 1; jx <= ix + 1; jx++)
