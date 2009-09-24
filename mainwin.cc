@@ -32,6 +32,7 @@
 #include <QHBoxLayout>
 #include <QVBoxLayout>
 #include <QLabel>
+#include <QFileInfo>
 
 //for chdir
 #include <unistd.h>
@@ -40,7 +41,7 @@ QPointer<MainWindow> current_win;
 
 MainWindow::MainWindow(const char *filename)
 {
-        root_ctx.functions_p = &builtin_functions;
+	root_ctx.functions_p = &builtin_functions;
         root_ctx.modules_p = &builtin_modules;
 	root_ctx.set_variable("$fn", Value(0.0));
 	root_ctx.set_variable("$fs", Value(1.0));
@@ -269,15 +270,9 @@ void MainWindow::maybe_change_dir()
 	if (filename.isEmpty())
 		return;
 
-	int dir_end_index = filename.lastIndexOf("/");
-	if (dir_end_index < 0)
-		return;
-
-	QString dirname = filename.mid(0, dir_end_index);
-	if (chdir(dirname.toAscii().data()) < 0)
-		return;
-
-	filename = filename.mid(dir_end_index+1);
+	QFileInfo fileInfo(filename);
+	QDir::setCurrent(fileInfo.dir().absolutePath());
+	filename = fileInfo.fileName();
 }
 
 void MainWindow::find_root_tag(AbstractNode *n)
