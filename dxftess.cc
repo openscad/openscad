@@ -18,6 +18,12 @@
  *
  */
 
+#ifdef WIN32
+#  define STDCALL __stdcall
+#else
+#  define STDCALL
+#endif
+
 #define INCLUDE_ABSTRACT_NODE_DETAILS
 
 #include "openscad.h"
@@ -39,7 +45,7 @@ static int tess_count;
 static QVector<tess_triangle> tess_tri;
 static GLdouble *tess_p1, *tess_p2;
 
-static void tess_vertex(void *vertex_data)
+static void STDCALL tess_vertex(void *vertex_data)
 {
 	GLdouble *p = (double*)vertex_data;
 #if 0
@@ -89,7 +95,7 @@ static void tess_vertex(void *vertex_data)
 	tess_count++;
 }
 
-static void tess_begin(GLenum type)
+static void STDCALL tess_begin(GLenum type)
 {
 #if 0
 	if (type == GL_TRIANGLE_FAN) {
@@ -106,12 +112,12 @@ static void tess_begin(GLenum type)
 	tess_type = type;
 }
 
-static void tess_end(void)
+static void STDCALL tess_end(void)
 {
 	/* nothing to be done here */
 }
 
-static void tess_error(GLenum errno)
+static void STDCALL tess_error(GLenum errno)
 {
 	PRINTF("GLU tesselation error %d!", errno);
 }
@@ -158,10 +164,10 @@ void dxf_tesselate(PolySet *ps, DxfData *dxf, double rot, bool up, double h)
 {
 	GLUtesselator *tobj = gluNewTess();
 
-	gluTessCallback(tobj, GLU_TESS_VERTEX, (GLvoid(*)())&tess_vertex);
-	gluTessCallback(tobj, GLU_TESS_BEGIN, (GLvoid(*)())&tess_begin);
-	gluTessCallback(tobj, GLU_TESS_END, (GLvoid(*)())&tess_end);
-	gluTessCallback(tobj, GLU_TESS_ERROR, (GLvoid(*)())&tess_error);
+	gluTessCallback(tobj, GLU_TESS_VERTEX, (void(STDCALL *)())&tess_vertex);
+	gluTessCallback(tobj, GLU_TESS_BEGIN, (void(STDCALL *)())&tess_begin);
+	gluTessCallback(tobj, GLU_TESS_END, (void(STDCALL *)())&tess_end);
+	gluTessCallback(tobj, GLU_TESS_ERROR, (void(STDCALL *)())&tess_error);
 
 	tess_tri.clear();
 	QList<tess_vdata> vl;
