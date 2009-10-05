@@ -165,13 +165,13 @@ MainWindow::MainWindow(const char *filename)
 		actViewModeAnimate->setCheckable(true);
 
 		menu->addSeparator();
-		menu->addAction("Top");
-		menu->addAction("Bottom");
-		menu->addAction("Left");
-		menu->addAction("Right");
-		menu->addAction("Front");
-		menu->addAction("Back");
-		menu->addAction("Diagonal");
+		menu->addAction("Top", this, SLOT(viewAngleTop()));
+		menu->addAction("Bottom", this, SLOT(viewAngleBottom()));
+		menu->addAction("Left", this, SLOT(viewAngleLeft()));
+		menu->addAction("Right", this, SLOT(viewAngleRight()));
+		menu->addAction("Front", this, SLOT(viewAngleFront()));
+		menu->addAction("Back", this, SLOT(viewAngleBack()));
+		menu->addAction("Diagonal", this, SLOT(viewAngleDiagonal()));
 		menu->addSeparator();
 		menu->addAction("Perspective");
 		menu->addAction("Orthogonal");
@@ -1122,5 +1122,54 @@ void MainWindow::viewModeAnimate()
 		animate_panel->hide();
 		animate_timer->stop();
 	}
+}
+
+void MainWindow::viewAngleTop()
+{
+	screen->object_rot_y = 90;
+	screen->object_rot_z = 0;
+	screen->updateGL();
+}
+
+void MainWindow::viewAngleBottom()
+{
+	screen->object_rot_y = 270;
+	screen->object_rot_z = 0;
+	screen->updateGL();
+}
+
+void MainWindow::viewAngleLeft()
+{
+	screen->object_rot_y = 0;
+	screen->object_rot_z = 90;
+	screen->updateGL();
+}
+
+void MainWindow::viewAngleRight()
+{
+	screen->object_rot_y = 0;
+	screen->object_rot_z = 270;
+	screen->updateGL();
+}
+
+void MainWindow::viewAngleFront()
+{
+	screen->object_rot_y = 0;
+	screen->object_rot_z = 0;
+	screen->updateGL();
+}
+
+void MainWindow::viewAngleBack()
+{
+	screen->object_rot_y = 0;
+	screen->object_rot_z = 180;
+	screen->updateGL();
+}
+
+void MainWindow::viewAngleDiagonal()
+{
+	screen->object_rot_y = 35;
+	screen->object_rot_z = 25;
+	screen->updateGL();
 }
 

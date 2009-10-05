@@ -658,6 +658,7 @@ protected:
 	int last_mouse_x;
 	int last_mouse_y;
 
+	void keyPressEvent(QKeyEvent *event);
 	void wheelEvent(QWheelEvent *event);
 	void mousePressEvent(QMouseEvent *event);
 	void mouseMoveEvent(QMouseEvent *event);
@@ -763,6 +764,15 @@ private slots:
 	void viewModeThrownTogether();
 	void viewModeShowEdges();
 	void viewModeAnimate();
+
+private slots:
+	void viewAngleTop();
+	void viewAngleBottom();
+	void viewAngleLeft();
+	void viewAngleRight();
+	void viewAngleFront();
+	void viewAngleBack();
+	void viewAngleDiagonal();
 };
 
 extern AbstractModule *parse(const char *text, int debug);

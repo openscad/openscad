@@ -212,6 +212,20 @@ void GLView::paintGL()
 		renderfunc(renderfunc_vp);
 }
 
+void GLView::keyPressEvent(QKeyEvent *event)
+{
+	if (event->key() == Qt::Key_Plus) {
+		viewer_distance *= 0.9;
+		updateGL();
+		return;
+	}
+	if (event->key() == Qt::Key_Minus) {
+		viewer_distance /= 0.9;
+		updateGL();
+		return;
+	}
+}
+
 void GLView::wheelEvent(QWheelEvent *event)
 {
 	viewer_distance *= pow(0.9, event->delta() / 120.0);
@@ -224,6 +238,7 @@ void GLView::mousePressEvent(QMouseEvent *event)
 	last_mouse_x = event->globalX();
 	last_mouse_y = event->globalY();
 	grabMouse();
+	setFocus();
 }
 
 void GLView::mouseMoveEvent(QMouseEvent *event)
