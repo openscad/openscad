@@ -25,7 +25,8 @@
 enum primitive_type_e {
 	CUBE,
 	SPHERE,
-	CYLINDER
+	CYLINDER,
+	POLYEDER
 };
 
 class PrimitiveModule : public AbstractModule
@@ -43,6 +44,7 @@ public:
 	double x, y, z, h, r1, r2;
 	double fn, fs, fa;
 	primitive_type_e type;
+	Value points, triangles;
 	PrimitiveNode(const ModuleInstanciation *mi, primitive_type_e type) : AbstractPolyNode(mi), type(type) { }
 	virtual PolySet *render_polyset(render_mode_e mode) const;
 	virtual QString dump(QString indent) const;
@@ -66,6 +68,9 @@ AbstractNode *PrimitiveModule::evaluate(const Context *ctx, const ModuleInstanci
 	}
 	if (type == CYLINDER) {
 		argnames = QVector<QString>() << "h" << "r1" << "r2" << "center";
+	}
+	if (type == POLYEDER) {
+		argnames = QVector<QString>() << "points" << "triangles";
 	}
 
 	Context c(ctx);
@@ -120,6 +125,11 @@ AbstractNode *PrimitiveModule::evaluate(const Context *ctx, const ModuleInstanci
 		}
 	}
 
+	if (type == POLYEDER) {
+		node->points = c.lookup_variable("points");
+		node->triangles = c.lookup_variable("triangles");
+	}
+
 	return node;
 }
 
@@ -128,6 +138,7 @@ void register_builtin_primitives()
 	builtin_modules["cube"] = new PrimitiveModule(CUBE);
 	builtin_modules["sphere"] = new PrimitiveModule(SPHERE);
 	builtin_modules["cylinder"] = new PrimitiveModule(CYLINDER);
+	builtin_modules["polyeder"] = new PrimitiveModule(POLYEDER);
 }
 
 int get_fragments_from_r(double r, double fn, double fs, double fa)
@@ -331,6 +342,21 @@ sphere_next_r2:
 		}
 	}
 
+	if (type == POLYEDER)
+	{
+		for (int i=0; i<triangles.vec.size(); i++)
+		{
+			p->append_poly();
+			for (int j=0; j<triangles.vec[i]->vec.size(); j++) {
+				int pt = triangles.vec[i]->vec[j]->num;
+				double px = points.vec[pt]->vec[0]->num;
+				double py = points.vec[pt]->vec[1]->num;
+				double pz = points.vec[pt]->vec[2]->num;
+				p->insert_vertex(px, py, pz);
+			}
+		}
+	}
+
 	return p;
 }
 
@@ -344,6 +370,8 @@ QString PrimitiveNode::dump(QString indent) const
 			text.sprintf("sphere($fn = %f, $fa = %f, $fs = %f, r = %f);\n", fn, fa, fs, r1);
 		if (type == CYLINDER)
 			text.sprintf("cylinder($fn = %f, $fa = %f, $fs = %f, h = %f, r1 = %f, r2 = %f, center = %s);\n", fn, fa, fs, h, r1, r2, center ? "true" : "false");
+		if (type == POLYEDER)
+			text.sprintf("polyeder(points = %s, triangles = %s);\n", points.dump().toAscii().data(), triangles.dump().toAscii().data());
 		((AbstractNode*)this)->dump_cache = indent + QString("n%1: ").arg(idx) + text;
 	}
 	return dump_cache;
