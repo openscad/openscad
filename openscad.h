@@ -644,6 +644,7 @@ public:
 	void (*renderfunc)(void*);
 	void *renderfunc_vp;
 
+	bool orthomode;
 	double viewer_distance;
 	double object_rot_y;
 	double object_rot_z;
@@ -751,6 +752,8 @@ public:
 	QAction *actViewModeThrownTogether;
 	QAction *actViewModeShowEdges;
 	QAction *actViewModeAnimate;
+	QAction *actViewPerspective;
+	QAction *actViewOrthogonal;
 	void viewModeActionsUncheck();
 
 private slots:
@@ -764,8 +767,6 @@ private slots:
 	void viewModeThrownTogether();
 	void viewModeShowEdges();
 	void viewModeAnimate();
-
-private slots:
 	void viewAngleTop();
 	void viewAngleBottom();
 	void viewAngleLeft();
@@ -773,6 +774,8 @@ private slots:
 	void viewAngleFront();
 	void viewAngleBack();
 	void viewAngleDiagonal();
+	void viewPerspective();
+	void viewOrthogonal();
 };
 
 extern AbstractModule *parse(const char *text, int debug);

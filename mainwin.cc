@@ -172,9 +172,12 @@ MainWindow::MainWindow(const char *filename)
 		menu->addAction("Front", this, SLOT(viewAngleFront()));
 		menu->addAction("Back", this, SLOT(viewAngleBack()));
 		menu->addAction("Diagonal", this, SLOT(viewAngleDiagonal()));
+
 		menu->addSeparator();
-		menu->addAction("Perspective");
-		menu->addAction("Orthogonal");
+		actViewPerspective = menu->addAction("Perspective", this, SLOT(viewPerspective()));
+		actViewPerspective->setCheckable(true);
+		actViewOrthogonal = menu->addAction("Orthogonal", this, SLOT(viewOrthogonal()));
+		actViewOrthogonal->setCheckable(true);
 	}
 
 	console->setReadOnly(true);
@@ -205,6 +208,7 @@ MainWindow::MainWindow(const char *filename)
 #else
 	viewModeThrownTogether();
 #endif
+	viewPerspective();
 
 	setCentralWidget(s1);
 	current_win = NULL;
@@ -1170,6 +1174,22 @@ void MainWindow::viewAngleDiagonal()
 {
 	screen->object_rot_y = 35;
 	screen->object_rot_z = 25;
+	screen->updateGL();
+}
+
+void MainWindow::viewPerspective()
+{
+	actViewPerspective->setChecked(true);
+	actViewOrthogonal->setChecked(false);
+	screen->orthomode = false;
+	screen->updateGL();
+}
+
+void MainWindow::viewOrthogonal()
+{
+	actViewPerspective->setChecked(false);
+	actViewOrthogonal->setChecked(true);
+	screen->orthomode = true;
 	screen->updateGL();
 }
 

@@ -35,6 +35,8 @@ GLView::GLView(QWidget *parent) : QGLWidget(parent)
 	last_mouse_x = 0;
 	last_mouse_y = 0;
 
+	orthomode = false;
+
 	renderfunc = NULL;
 	renderfunc_vp = NULL;
 
@@ -168,7 +170,12 @@ void GLView::paintGL()
 
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	glFrustum(-w_h_ratio, +w_h_ratio, -(1/w_h_ratio), +(1/w_h_ratio), +10.0, +FAR_FAR_AWAY);
+	if (orthomode)
+		glOrtho(-w_h_ratio*viewer_distance/10, +w_h_ratio*viewer_distance/10,
+				-(1/w_h_ratio)*viewer_distance/10, +(1/w_h_ratio)*viewer_distance/10,
+				-FAR_FAR_AWAY, +FAR_FAR_AWAY);
+	else
+		glFrustum(-w_h_ratio, +w_h_ratio, -(1/w_h_ratio), +(1/w_h_ratio), +10.0, +FAR_FAR_AWAY);
 	gluLookAt(0.0, -viewer_distance, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0);
 
 	glMatrixMode(GL_MODELVIEW);
