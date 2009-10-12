@@ -161,6 +161,8 @@ MainWindow::MainWindow(const char *filename)
 		menu->addSeparator();
 		actViewModeShowEdges = menu->addAction("Show Edges", this, SLOT(viewModeShowEdges()));
 		actViewModeShowEdges->setCheckable(true);
+		actViewModeShowAxis = menu->addAction("Show Axis", this, SLOT(viewModeShowAxis()));
+		actViewModeShowAxis->setCheckable(true);
 		actViewModeAnimate = menu->addAction("Animate", this, SLOT(viewModeAnimate()));
 		actViewModeAnimate->setCheckable(true);
 
@@ -1049,7 +1051,7 @@ void MainWindow::viewModeCGALGrid()
 
 #endif /* ENABLE_CGAL */
 
-static void renderGLThrownTogetherChain(MainWindow *m, CSGChain *chain, bool highlight, bool background)
+static void renderGLThrownTogetherChain(MainWindow *m, CSGChain *chain, bool highlight, bool background, bool fberror)
 {
 	glDepthFunc(GL_LEQUAL);
 	QHash<QPair<PolySet*,double*>,int> polySetVisitMark;
@@ -1073,6 +1075,8 @@ static void renderGLThrownTogetherChain(MainWindow *m, CSGChain *chain, bool hig
 				chain->polysets[i]->render_edges(PolySet::COLORMODE_BACKGROUND);
 				glEnable(GL_LIGHTING);
 			}
+		} else if (fberror) {
+			chain->polysets[i]->render_surface(PolySet::COLORMODE_NONE);
 		} else if (chain->types[i] == CSGTerm::TYPE_DIFFERENCE) {
 			chain->polysets[i]->render_surface(PolySet::COLORMODE_CUTOUT);
 			if (showEdges) {
@@ -1095,12 +1099,19 @@ static void renderGLThrownTogetherChain(MainWindow *m, CSGChain *chain, bool hig
 static void renderGLThrownTogether(void *vp)
 {
 	MainWindow *m = (MainWindow*)vp;
-	if (m->root_chain)
-		renderGLThrownTogetherChain(m, m->root_chain, false, false);
+	if (m->root_chain) {
+		glEnable(GL_CULL_FACE);
+		glCullFace(GL_BACK);
+		renderGLThrownTogetherChain(m, m->root_chain, false, false, false);
+		glCullFace(GL_FRONT);
+		glColor3ub(255, 0, 255);
+		renderGLThrownTogetherChain(m, m->root_chain, false, false, true);
+		glDisable(GL_CULL_FACE);
+	}
 	if (m->background_chain)
-		renderGLThrownTogetherChain(m, m->background_chain, false, true);
+		renderGLThrownTogetherChain(m, m->background_chain, false, true, false);
 	if (m->highlights_chain)
-		renderGLThrownTogetherChain(m, m->highlights_chain, true, false);
+		renderGLThrownTogetherChain(m, m->highlights_chain, true, false, false);
 }
 
 void MainWindow::viewModeThrownTogether()
@@ -1114,6 +1125,12 @@ void MainWindow::viewModeThrownTogether()
 
 void MainWindow::viewModeShowEdges()
 {
+	screen->updateGL();
+}
+
+void MainWindow::viewModeShowAxis()
+{
+	screen->showaxis = actViewModeShowAxis->isChecked();
 	screen->updateGL();
 }
 

@@ -36,6 +36,7 @@ GLView::GLView(QWidget *parent) : QGLWidget(parent)
 	last_mouse_y = 0;
 
 	orthomode = false;
+	showaxis = false;
 
 	renderfunc = NULL;
 	renderfunc_vp = NULL;
@@ -201,22 +202,78 @@ void GLView::paintGL()
 	glRotated(object_rot_z, 0.0, 0.0, 1.0);
 
 	glDepthFunc(GL_LESS);
-
-#if 0
-	glLineWidth(1);
-	glColor3d(0.0, 0.0, 1.0);
-	glBegin(GL_LINES);
-	glVertex3d(0, 0, 0); glVertex3d(10, 0, 0);
-	glVertex3d(0, 0, 0); glVertex3d(0, 10, 0);
-	glVertex3d(0, 0, 0); glVertex3d(0, 0, 10);
-	glEnd();
-#endif
+	glCullFace(GL_BACK);
+	glDisable(GL_CULL_FACE);
 
 	glLineWidth(2);
 	glColor3d(1.0, 0.0, 0.0);
 
 	if (renderfunc)
 		renderfunc(renderfunc_vp);
+
+	if (showaxis)
+	{
+		glDepthFunc(GL_ALWAYS);
+
+		glMatrixMode(GL_PROJECTION);
+		glLoadIdentity();
+		glTranslated(-0.8, -0.8, 0);
+		glOrtho(-w_h_ratio*1000/10, +w_h_ratio*1000/10,
+				-(1/w_h_ratio)*1000/10, +(1/w_h_ratio)*1000/10,
+				-FAR_FAR_AWAY, +FAR_FAR_AWAY);
+		gluLookAt(0.0, -1000, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0);
+		glMatrixMode(GL_MODELVIEW);
+
+		glLineWidth(1);
+		glColor3d(0.0, 0.0, 1.0);
+		glBegin(GL_LINES);
+		glVertex3d(0, 0, 0); glVertex3d(10, 0, 0);
+		glVertex3d(0, 0, 0); glVertex3d(0, 10, 0);
+		glVertex3d(0, 0, 0); glVertex3d(0, 0, 10);
+		glEnd();
+
+		GLdouble mat_model[16];
+		glGetDoublev(GL_MODELVIEW_MATRIX, mat_model);
+
+		GLdouble mat_proj[16];
+		glGetDoublev(GL_PROJECTION_MATRIX, mat_proj);
+
+		GLint viewport[4];
+		glGetIntegerv(GL_VIEWPORT, viewport);
+
+		GLdouble xlabel_x, xlabel_y, xlabel_z;
+		gluProject(12, 0, 0, mat_model, mat_proj, viewport, &xlabel_x, &xlabel_y, &xlabel_z);
+		xlabel_x = round(xlabel_x); xlabel_y = round(xlabel_y);
+
+		GLdouble ylabel_x, ylabel_y, ylabel_z;
+		gluProject(0, 12, 0, mat_model, mat_proj, viewport, &ylabel_x, &ylabel_y, &ylabel_z);
+		ylabel_x = round(ylabel_x); ylabel_y = round(ylabel_y);
+
+		GLdouble zlabel_x, zlabel_y, zlabel_z;
+		gluProject(0, 0, 12, mat_model, mat_proj, viewport, &zlabel_x, &zlabel_y, &zlabel_z);
+		zlabel_x = round(zlabel_x); zlabel_y = round(zlabel_y);
+
+		glMatrixMode(GL_PROJECTION);
+		glLoadIdentity();
+		glTranslated(-1, -1, 0);
+		glScaled(2.0/viewport[2], 2.0/viewport[3], 1);
+		glMatrixMode(GL_MODELVIEW);
+		glLoadIdentity();
+
+		glColor3d(0.0, 0.0, 0.0);
+		glBegin(GL_LINES);
+		// X Label
+		glVertex3d(xlabel_x-3, xlabel_y-3, 0); glVertex3d(xlabel_x+3, xlabel_y+3, 0);
+		glVertex3d(xlabel_x-3, xlabel_y+3, 0); glVertex3d(xlabel_x+3, xlabel_y-3, 0);
+		// Y Label
+		glVertex3d(ylabel_x-3, ylabel_y-3, 0); glVertex3d(ylabel_x+3, ylabel_y+3, 0);
+		glVertex3d(ylabel_x-3, ylabel_y+3, 0); glVertex3d(ylabel_x, ylabel_y, 0);
+		// Z Label
+		glVertex3d(zlabel_x-3, zlabel_y-3, 0); glVertex3d(zlabel_x+3, zlabel_y-3, 0);
+		glVertex3d(zlabel_x-3, zlabel_y+3, 0); glVertex3d(zlabel_x+3, zlabel_y+3, 0);
+		glVertex3d(zlabel_x-3, zlabel_y-3, 0); glVertex3d(zlabel_x+3, zlabel_y+3, 0);
+		glEnd();
+	}
 }
 
 void GLView::keyPressEvent(QKeyEvent *event)

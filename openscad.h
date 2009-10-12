@@ -645,6 +645,8 @@ public:
 	void *renderfunc_vp;
 
 	bool orthomode;
+	bool showaxis;
+
 	double viewer_distance;
 	double object_rot_y;
 	double object_rot_z;
@@ -751,6 +753,7 @@ public:
 #endif
 	QAction *actViewModeThrownTogether;
 	QAction *actViewModeShowEdges;
+	QAction *actViewModeShowAxis;
 	QAction *actViewModeAnimate;
 	QAction *actViewPerspective;
 	QAction *actViewOrthogonal;
@@ -766,6 +769,7 @@ private slots:
 #endif
 	void viewModeThrownTogether();
 	void viewModeShowEdges();
+	void viewModeShowAxis();
 	void viewModeAnimate();
 	void viewAngleTop();
 	void viewAngleBottom();
