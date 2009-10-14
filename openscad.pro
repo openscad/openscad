@@ -16,7 +16,7 @@ SOURCES += openscad.cc mainwin.cc glview.cc
 SOURCES += value.cc expr.cc func.cc module.cc context.cc
 SOURCES += csgterm.cc polyset.cc csgops.cc transform.cc
 SOURCES += primitives.cc surface.cc control.cc render.cc
-SOURCES += dxfdata.cc dxftess.cc dxfdim.cc
+SOURCES += import.cc dxfdata.cc dxftess.cc dxfdim.cc
 SOURCES += dxflinextrude.cc dxfrotextrude.cc
 
 QMAKE_CXXFLAGS += -O0

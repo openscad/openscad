@@ -386,6 +386,7 @@ extern void register_builtin_primitives();
 extern void register_builtin_surface();
 extern void register_builtin_control();
 extern void register_builtin_render();
+extern void register_builtin_import();
 extern void register_builtin_dxf_linear_extrude();
 extern void register_builtin_dxf_rotate_extrude();
 
