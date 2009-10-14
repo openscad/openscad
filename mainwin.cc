@@ -33,6 +33,7 @@
 #include <QVBoxLayout>
 #include <QLabel>
 #include <QFileInfo>
+#include <QStatusBar>
 
 //for chdir
 #include <unistd.h>
@@ -77,8 +78,10 @@ MainWindow::MainWindow(const char *filename)
 	s2 = new QSplitter(Qt::Vertical, w1);
 	l1->addWidget(s2);
 	screen = new GLView(s2);
-	screen->statusBar = statusBar();
 	console = new QTextEdit(s2);
+
+	screen->statusLabel = new QLabel(this);
+	statusBar()->addWidget(screen->statusLabel);
 
 	QWidget *w2 = new QWidget(w1);
 	QHBoxLayout *l2 = new QHBoxLayout(w2);

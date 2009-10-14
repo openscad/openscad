@@ -23,7 +23,6 @@
 #include <QApplication>
 #include <QWheelEvent>
 #include <QMouseEvent>
-#include <QStatusBar>
 
 #define FAR_FAR_AWAY 100000.0
 
@@ -51,7 +50,7 @@ GLView::GLView(QWidget *parent) : QGLWidget(parent)
 	for (int i = 0; i < 10; i++)
 		shaderinfo[i] = 0;
 
-	statusBar = NULL;
+	statusLabel = NULL;
 
 	setMouseTracking(true);
 }
@@ -321,12 +320,12 @@ void GLView::paintGL()
 		glEnd();
 	}
 
-	if (statusBar) {
+	if (statusLabel) {
 		QString msg;
 		msg.sprintf("Viewport: translate = [ %.2f %.2f %.2f ], rotate = [ %.2f %.2f %.2f ], distance = %.2f",
 			-object_trans_x, -object_trans_y, -object_trans_z,
 			fmodf(360 - object_rot_x + 90, 360), fmodf(360 - object_rot_y, 360), fmodf(360 - object_rot_z, 360), viewer_distance);
-		statusBar->showMessage(msg, 0);
+		statusLabel->setText(msg);
 	}
 }
 

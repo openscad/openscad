@@ -35,6 +35,7 @@
 #include <QLineEdit>
 #include <QGLWidget>
 #include <QPointer>
+#include <QLabel>
 #include <QTimer>
 
 #include <stdio.h>
@@ -659,7 +660,7 @@ public:
 	double w_h_ratio;
 	GLint shaderinfo[11];
 
-	QStatusBar *statusBar;
+	QLabel *statusLabel;
 
 	GLView(QWidget *parent = NULL);
 
