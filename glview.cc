@@ -20,6 +20,7 @@
 
 #include "openscad.h"
 
+#include <QApplication>
 #include <QWheelEvent>
 #include <QMouseEvent>
 
@@ -28,8 +29,12 @@
 GLView::GLView(QWidget *parent) : QGLWidget(parent)
 {
 	viewer_distance = 500;
-	object_rot_y = 35;
+	object_rot_x = 35;
+	object_rot_y = 0;
 	object_rot_z = 25;
+	object_trans_x = 0;
+	object_trans_y = 0;
+	object_trans_z = 0;
 
 	mouse_drag_active = false;
 	last_mouse_x = 0;
@@ -37,6 +42,7 @@ GLView::GLView(QWidget *parent) : QGLWidget(parent)
 
 	orthomode = false;
 	showaxis = false;
+	showcrosshairs = false;
 
 	renderfunc = NULL;
 	renderfunc_vp = NULL;
@@ -198,8 +204,39 @@ void GLView::paintGL()
 	glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
 	glEnable(GL_COLOR_MATERIAL);
 
-	glRotated(object_rot_y, 1.0, 0.0, 0.0);
+	glRotated(object_rot_x, 1.0, 0.0, 0.0);
+	glRotated(object_rot_y, 0.0, 1.0, 0.0);
 	glRotated(object_rot_z, 0.0, 0.0, 1.0);
+
+	if (showcrosshairs)
+	{
+		glLineWidth(3);
+		glColor3d(0.5, 0.0, 0.0);
+		glBegin(GL_LINES);
+		for (double xf = -1; xf <= +1; xf += 2)
+		for (double yf = -1; yf <= +1; yf += 2) {
+			double vd = viewer_distance/20;
+			glVertex3d(-xf*vd, -yf*vd, -vd);
+			glVertex3d(+xf*vd, +yf*vd, +vd);
+		}
+		glEnd();
+	}
+
+	glTranslated(object_trans_x, object_trans_y, object_trans_z);
+
+	if (showaxis)
+	{
+		glLineWidth(1);
+		glColor3d(0.5, 0.5, 0.5);
+		glBegin(GL_LINES);
+		glVertex3d(-viewer_distance/10, 0, 0);
+		glVertex3d(+viewer_distance/10, 0, 0);
+		glVertex3d(0, -viewer_distance/10, 0);
+		glVertex3d(0, +viewer_distance/10, 0);
+		glVertex3d(0, 0, -viewer_distance/10);
+		glVertex3d(0, 0, +viewer_distance/10);
+		glEnd();
+	}
 
 	glDepthFunc(GL_LESS);
 	glCullFace(GL_BACK);
@@ -222,7 +259,12 @@ void GLView::paintGL()
 				-(1/w_h_ratio)*1000/10, +(1/w_h_ratio)*1000/10,
 				-FAR_FAR_AWAY, +FAR_FAR_AWAY);
 		gluLookAt(0.0, -1000, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0);
+
 		glMatrixMode(GL_MODELVIEW);
+		glLoadIdentity();
+		glRotated(object_rot_x, 1.0, 0.0, 0.0);
+		glRotated(object_rot_y, 0.0, 1.0, 0.0);
+		glRotated(object_rot_z, 0.0, 0.0, 1.0);
 
 		glLineWidth(1);
 		glColor3d(0.0, 0.0, 1.0);
@@ -257,6 +299,7 @@ void GLView::paintGL()
 		glLoadIdentity();
 		glTranslated(-1, -1, 0);
 		glScaled(2.0/viewport[2], 2.0/viewport[3], 1);
+
 		glMatrixMode(GL_MODELVIEW);
 		glLoadIdentity();
 
@@ -303,6 +346,41 @@ void GLView::mousePressEvent(QMouseEvent *event)
 	last_mouse_y = event->globalY();
 	grabMouse();
 	setFocus();
+	updateGL();
+}
+
+static void mat_id(double *trg)
+{
+	for (int i = 0; i < 16; i++)
+		trg[i] = i%5 == 0;
+}
+
+static void mat_mul(double *trg, const double *m1, const double *m2)
+{
+	double m[16];
+	for (int x = 0; x < 4; x++)
+	for (int y = 0; y < 4; y++)
+	{
+		m[x+y*4] = 0;
+		for (int i = 0; i < 4; i++)
+			m[x+y*4] += m1[i+y*4] * m2[x+i*4];
+	}
+	for (int i = 0; i < 16; i++)
+		trg[i] = m[i];
+}
+
+static void mat_rot(double *trg, double angle, double x, double y, double z)
+{
+	double s = sin(M_PI*angle/180), c = cos(M_PI*angle/180);
+	double cc = 1 - c;
+	double m[16] = {
+		x*x*cc+c,	x*y*cc-z*s,	x*z*cc+y*s,	0,
+		y*x*cc+z*s,	y*y*cc+c,	y*z*cc-x*s,	0,
+		x*z*cc-y*s,	y*z*cc+x*s,	z*z*cc+c,	0,
+		0,		0,		0,		1
+	};
+	for (int i = 0; i < 16; i++)
+		trg[i] = m[i];
 }
 
 void GLView::mouseMoveEvent(QMouseEvent *event)
@@ -310,8 +388,39 @@ void GLView::mouseMoveEvent(QMouseEvent *event)
 	int this_mouse_x = event->globalX();
 	int this_mouse_y = event->globalY();
 	if (mouse_drag_active) {
-		object_rot_y += (this_mouse_y-last_mouse_y) * 0.7;
-		object_rot_z += (this_mouse_x-last_mouse_x) * 0.7;
+		if ((event->buttons() & Qt::LeftButton) != 0) {
+			object_rot_x += (this_mouse_y-last_mouse_y) * 0.7;
+			if ((QApplication::keyboardModifiers() & Qt::ShiftModifier) != 0)
+				object_rot_y += (this_mouse_x-last_mouse_x) * 0.7;
+			else
+				object_rot_z += (this_mouse_x-last_mouse_x) * 0.7;
+		} else {
+			double mx = +(this_mouse_x-last_mouse_x) * viewer_distance/1000;
+			double my = -(this_mouse_y-last_mouse_y) * viewer_distance/1000;
+			double rx[16], ry[16], rz[16], tm[16];
+			mat_rot(rx, -object_rot_x, 1.0, 0.0, 0.0);
+			mat_rot(ry, -object_rot_y, 0.0, 1.0, 0.0);
+			mat_rot(rz, -object_rot_z, 0.0, 0.0, 1.0);
+			mat_id(tm);
+			mat_mul(tm, rx, tm);
+			mat_mul(tm, ry, tm);
+			mat_mul(tm, rz, tm);
+			double vec[16] = {
+				0,	0,	0,	mx,
+				0,	0,	0,	0,
+				0,	0,	0,	my,
+				0,	0,	0,	1
+			};
+			if ((QApplication::keyboardModifiers() & Qt::ShiftModifier) != 0) {
+				vec[3] = 0;
+				vec[7] = my;
+				vec[11] = 0;
+			}
+			mat_mul(tm, tm, vec);
+			object_trans_x += tm[3];
+			object_trans_y += tm[7];
+			object_trans_z += tm[11];
+		}
 		updateGL();
 	}
 	last_mouse_x = this_mouse_x;
@@ -322,5 +431,6 @@ void GLView::mouseReleaseEvent(QMouseEvent*)
 {
 	mouse_drag_active = false;
 	releaseMouse();
+	updateGL();
 }
 

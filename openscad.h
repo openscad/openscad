@@ -646,10 +646,15 @@ public:
 
 	bool orthomode;
 	bool showaxis;
+	bool showcrosshairs;
 
 	double viewer_distance;
+	double object_rot_x;
 	double object_rot_y;
 	double object_rot_z;
+	double object_trans_x;
+	double object_trans_y;
+	double object_trans_z;
 
 	double w_h_ratio;
 	GLint shaderinfo[11];
@@ -754,6 +759,7 @@ public:
 	QAction *actViewModeThrownTogether;
 	QAction *actViewModeShowEdges;
 	QAction *actViewModeShowAxis;
+	QAction *actViewModeShowCrosshairs;
 	QAction *actViewModeAnimate;
 	QAction *actViewPerspective;
 	QAction *actViewOrthogonal;
@@ -770,6 +776,7 @@ private slots:
 	void viewModeThrownTogether();
 	void viewModeShowEdges();
 	void viewModeShowAxis();
+	void viewModeShowCrosshairs();
 	void viewModeAnimate();
 	void viewAngleTop();
 	void viewAngleBottom();

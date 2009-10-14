@@ -163,6 +163,8 @@ MainWindow::MainWindow(const char *filename)
 		actViewModeShowEdges->setCheckable(true);
 		actViewModeShowAxis = menu->addAction("Show Axis", this, SLOT(viewModeShowAxis()));
 		actViewModeShowAxis->setCheckable(true);
+		actViewModeShowCrosshairs = menu->addAction("Show Crosshairs", this, SLOT(viewModeShowCrosshairs()));
+		actViewModeShowCrosshairs->setCheckable(true);
 		actViewModeAnimate = menu->addAction("Animate", this, SLOT(viewModeAnimate()));
 		actViewModeAnimate->setCheckable(true);
 
@@ -1134,6 +1136,12 @@ void MainWindow::viewModeShowAxis()
 	screen->updateGL();
 }
 
+void MainWindow::viewModeShowCrosshairs()
+{
+	screen->showcrosshairs = actViewModeShowCrosshairs->isChecked();
+	screen->updateGL();
+}
+
 void MainWindow::viewModeAnimate()
 {
 	if (actViewModeAnimate->isChecked()) {
@@ -1147,50 +1155,78 @@ void MainWindow::viewModeAnimate()
 
 void MainWindow::viewAngleTop()
 {
-	screen->object_rot_y = 90;
+	screen->object_rot_x = 90;
+	screen->object_rot_y = 0;
 	screen->object_rot_z = 0;
+	screen->object_trans_x = 0;
+	screen->object_trans_y = 0;
+	screen->object_trans_z = 0;
 	screen->updateGL();
 }
 
 void MainWindow::viewAngleBottom()
 {
-	screen->object_rot_y = 270;
+	screen->object_rot_x = 270;
+	screen->object_rot_y = 0;
 	screen->object_rot_z = 0;
+	screen->object_trans_x = 0;
+	screen->object_trans_y = 0;
+	screen->object_trans_z = 0;
 	screen->updateGL();
 }
 
 void MainWindow::viewAngleLeft()
 {
+	screen->object_rot_x = 0;
 	screen->object_rot_y = 0;
 	screen->object_rot_z = 90;
+	screen->object_trans_x = 0;
+	screen->object_trans_y = 0;
+	screen->object_trans_z = 0;
 	screen->updateGL();
 }
 
 void MainWindow::viewAngleRight()
 {
+	screen->object_rot_x = 0;
 	screen->object_rot_y = 0;
 	screen->object_rot_z = 270;
+	screen->object_trans_x = 0;
+	screen->object_trans_y = 0;
+	screen->object_trans_z = 0;
 	screen->updateGL();
 }
 
 void MainWindow::viewAngleFront()
 {
+	screen->object_rot_x = 0;
 	screen->object_rot_y = 0;
 	screen->object_rot_z = 0;
+	screen->object_trans_x = 0;
+	screen->object_trans_y = 0;
+	screen->object_trans_z = 0;
 	screen->updateGL();
 }
 
 void MainWindow::viewAngleBack()
 {
+	screen->object_rot_x = 0;
 	screen->object_rot_y = 0;
 	screen->object_rot_z = 180;
+	screen->object_trans_x = 0;
+	screen->object_trans_y = 0;
+	screen->object_trans_z = 0;
 	screen->updateGL();
 }
 
 void MainWindow::viewAngleDiagonal()
 {
-	screen->object_rot_y = 35;
+	screen->object_rot_x = 35;
+	screen->object_rot_y = 0;
 	screen->object_rot_z = 25;
+	screen->object_trans_x = 0;
+	screen->object_trans_y = 0;
+	screen->object_trans_z = 0;
 	screen->updateGL();
 }
 
