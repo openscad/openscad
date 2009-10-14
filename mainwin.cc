@@ -77,6 +77,7 @@ MainWindow::MainWindow(const char *filename)
 	s2 = new QSplitter(Qt::Vertical, w1);
 	l1->addWidget(s2);
 	screen = new GLView(s2);
+	screen->statusBar = statusBar();
 	console = new QTextEdit(s2);
 
 	QWidget *w2 = new QWidget(w1);
@@ -125,6 +126,9 @@ MainWindow::MainWindow(const char *filename)
 		menu->addAction("C&omment", this, SLOT(editComment()), QKeySequence(Qt::CTRL + Qt::Key_D));
 		menu->addAction("&Uncomment", this, SLOT(editUncomment()), QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_D));
 		menu->addSeparator();
+		menu->addAction("Paste viewport translation", this, SLOT(pasteViewportTranslation()), QKeySequence(Qt::CTRL + Qt::Key_T));
+		menu->addAction("Paste viewport rotation", this, SLOT(pasteViewportRotation()), QKeySequence(Qt::CTRL + Qt::Key_R));
+		menu->addSeparator();
 		menu->addAction("Zoom In", editor, SLOT(zoomIn()), QKeySequence(Qt::CTRL + Qt::Key_Plus));
 		menu->addAction("Zoom Out", editor, SLOT(zoomOut()), QKeySequence(Qt::CTRL + Qt::Key_Minus));
 	}
@@ -146,36 +150,36 @@ MainWindow::MainWindow(const char *filename)
 	{
 		QMenu *menu = menuBar()->addMenu("&View");
 #ifdef ENABLE_OPENCSG
-		actViewModeOpenCSG = menu->addAction("OpenCSG", this, SLOT(viewModeOpenCSG()));
+		actViewModeOpenCSG = menu->addAction("OpenCSG", this, SLOT(viewModeOpenCSG()), QKeySequence(Qt::Key_F9));
 		actViewModeOpenCSG->setCheckable(true);
 #endif
 #ifdef ENABLE_CGAL
-		actViewModeCGALSurface = menu->addAction("CGAL Surfaces", this, SLOT(viewModeCGALSurface()));
-		actViewModeCGALGrid = menu->addAction("CGAL Grid Only", this, SLOT(viewModeCGALGrid()));
+		actViewModeCGALSurface = menu->addAction("CGAL Surfaces", this, SLOT(viewModeCGALSurface()), QKeySequence(Qt::Key_F10));
+		actViewModeCGALGrid = menu->addAction("CGAL Grid Only", this, SLOT(viewModeCGALGrid()), QKeySequence(Qt::Key_F11));
 		actViewModeCGALSurface->setCheckable(true);
 		actViewModeCGALGrid->setCheckable(true);
 #endif
-		actViewModeThrownTogether = menu->addAction("Thrown Together", this, SLOT(viewModeThrownTogether()));
+		actViewModeThrownTogether = menu->addAction("Thrown Together", this, SLOT(viewModeThrownTogether()), QKeySequence(Qt::Key_F12));
 		actViewModeThrownTogether->setCheckable(true);
 
 		menu->addSeparator();
-		actViewModeShowEdges = menu->addAction("Show Edges", this, SLOT(viewModeShowEdges()));
+		actViewModeShowEdges = menu->addAction("Show Edges", this, SLOT(viewModeShowEdges()), QKeySequence(Qt::CTRL + Qt::Key_1));
 		actViewModeShowEdges->setCheckable(true);
-		actViewModeShowAxis = menu->addAction("Show Axis", this, SLOT(viewModeShowAxis()));
+		actViewModeShowAxis = menu->addAction("Show Axis", this, SLOT(viewModeShowAxis()), QKeySequence(Qt::CTRL + Qt::Key_2));
 		actViewModeShowAxis->setCheckable(true);
-		actViewModeShowCrosshairs = menu->addAction("Show Crosshairs", this, SLOT(viewModeShowCrosshairs()));
+		actViewModeShowCrosshairs = menu->addAction("Show Crosshairs", this, SLOT(viewModeShowCrosshairs()), QKeySequence(Qt::CTRL + Qt::Key_3));
 		actViewModeShowCrosshairs->setCheckable(true);
 		actViewModeAnimate = menu->addAction("Animate", this, SLOT(viewModeAnimate()));
 		actViewModeAnimate->setCheckable(true);
 
 		menu->addSeparator();
-		menu->addAction("Top", this, SLOT(viewAngleTop()));
-		menu->addAction("Bottom", this, SLOT(viewAngleBottom()));
-		menu->addAction("Left", this, SLOT(viewAngleLeft()));
-		menu->addAction("Right", this, SLOT(viewAngleRight()));
-		menu->addAction("Front", this, SLOT(viewAngleFront()));
-		menu->addAction("Back", this, SLOT(viewAngleBack()));
-		menu->addAction("Diagonal", this, SLOT(viewAngleDiagonal()));
+		menu->addAction("Top", this, SLOT(viewAngleTop()), QKeySequence(Qt::CTRL + Qt::Key_4));
+		menu->addAction("Bottom", this, SLOT(viewAngleBottom()), QKeySequence(Qt::CTRL + Qt::Key_5));
+		menu->addAction("Left", this, SLOT(viewAngleLeft()), QKeySequence(Qt::CTRL + Qt::Key_6));
+		menu->addAction("Right", this, SLOT(viewAngleRight()), QKeySequence(Qt::CTRL + Qt::Key_7));
+		menu->addAction("Front", this, SLOT(viewAngleFront()), QKeySequence(Qt::CTRL + Qt::Key_8));
+		menu->addAction("Back", this, SLOT(viewAngleBack()), QKeySequence(Qt::CTRL + Qt::Key_9));
+		menu->addAction("Diagonal", this, SLOT(viewAngleDiagonal()), QKeySequence(Qt::CTRL + Qt::Key_0));
 
 		menu->addSeparator();
 		actViewPerspective = menu->addAction("Perspective", this, SLOT(viewPerspective()));
@@ -595,6 +599,23 @@ void MainWindow::editUncomment()
 	cursor.setPosition(p1, QTextCursor::MoveAnchor);
 	cursor.setPosition(p2, QTextCursor::KeepAnchor);
 	editor->setTextCursor(cursor);
+}
+
+void MainWindow::pasteViewportTranslation()
+{
+	QTextCursor cursor = editor->textCursor();
+	QString txt;
+	txt.sprintf("[ %.2f %.2f %.2f ]", -screen->object_trans_x, -screen->object_trans_y, -screen->object_trans_z);
+	cursor.insertText(txt);
+}
+
+void MainWindow::pasteViewportRotation()
+{
+	QTextCursor cursor = editor->textCursor();
+	QString txt;
+	txt.sprintf("[ %.2f %.2f %.2f ]",
+		fmodf(360 - screen->object_rot_x + 90, 360), fmodf(360 - screen->object_rot_y, 360), fmodf(360 - screen->object_rot_z, 360));
+	cursor.insertText(txt);
 }
 
 void MainWindow::actionReloadCompile()

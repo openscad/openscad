@@ -87,34 +87,72 @@ AbstractNode *TransformModule::evaluate(const Context *ctx, const ModuleInstanci
 	if (type == ROTATE)
 	{
 		Value val_a = c.lookup_variable("a");
-		Value val_v = c.lookup_variable("v");
-		double a = 0, x = 0, y = 0, z = 1;
-
-		val_a.getnum(a);
-
-		if (val_v.getv3(x, y, z)) {
-			if (x != 0.0 || y != 0.0 || z != 0.0) {
-				double sn = 1.0 / sqrt(x*x + y*y + z*z);
-				x *= sn, y *= sn, z *= sn;
-			} else {
-				x = 0, y = 0, z = 1;
+		if (val_a.type == Value::VECTOR)
+		{
+			for (int i = 0; i < 3; i++) {
+				double a;
+				val_a.vec[i]->getnum(a);
+				double c = cos(a*M_PI/180.0);
+				double s = sin(a*M_PI/180.0);
+				double x = i == 0, y = i == 1, z = i == 2;
+				double mr[16] = {
+					x*x*(1-c)+c,
+					y*x*(1-c)+z*s,
+					z*x*(1-c)-y*s,
+					0,
+					x*y*(1-c)-z*s,
+					y*y*(1-c)+c,
+					z*y*(1-c)+x*s,
+					0,
+					x*z*(1-c)+y*s,
+					y*z*(1-c)-x*s,
+					z*z*(1-c)+c,
+					0,
+					0, 0, 0, 1
+				};
+				double m[16];
+				for (int x = 0; x < 4; x++)
+				for (int y = 0; y < 4; y++)
+				{
+					m[x+y*4] = 0;
+					for (int i = 0; i < 4; i++)
+						m[x+y*4] += node->m[i+y*4] * mr[x+i*4];
+				}
+				for (int i = 0; i < 16; i++)
+					node->m[i] = m[i];
 			}
 		}
+		else
+		{
+			Value val_v = c.lookup_variable("v");
+			double a = 0, x = 0, y = 0, z = 1;
 
-		double c = cos(a*M_PI/180.0);
-		double s = sin(a*M_PI/180.0);
+			val_a.getnum(a);
 
-		node->m[ 0] = x*x*(1-c)+c;
-		node->m[ 1] = y*x*(1-c)+z*s;
-		node->m[ 2] = z*x*(1-c)-y*s;
+			if (val_v.getv3(x, y, z)) {
+				if (x != 0.0 || y != 0.0 || z != 0.0) {
+					double sn = 1.0 / sqrt(x*x + y*y + z*z);
+					x *= sn, y *= sn, z *= sn;
+				} else {
+					x = 0, y = 0, z = 1;
+				}
+			}
 
-		node->m[ 4] = x*y*(1-c)-z*s;
-		node->m[ 5] = y*y*(1-c)+c;
-		node->m[ 6] = z*y*(1-c)+x*s;
+			double c = cos(a*M_PI/180.0);
+			double s = sin(a*M_PI/180.0);
 
-		node->m[ 8] = x*z*(1-c)+y*s;
-		node->m[ 9] = y*z*(1-c)-x*s;
-		node->m[10] = z*z*(1-c)+c;
+			node->m[ 0] = x*x*(1-c)+c;
+			node->m[ 1] = y*x*(1-c)+z*s;
+			node->m[ 2] = z*x*(1-c)-y*s;
+
+			node->m[ 4] = x*y*(1-c)-z*s;
+			node->m[ 5] = y*y*(1-c)+c;
+			node->m[ 6] = z*y*(1-c)+x*s;
+
+			node->m[ 8] = x*z*(1-c)+y*s;
+			node->m[ 9] = y*z*(1-c)-x*s;
+			node->m[10] = z*z*(1-c)+c;
+		}
 	}
 	if (type == TRANSLATE)
 	{

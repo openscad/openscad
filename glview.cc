@@ -23,6 +23,7 @@
 #include <QApplication>
 #include <QWheelEvent>
 #include <QMouseEvent>
+#include <QStatusBar>
 
 #define FAR_FAR_AWAY 100000.0
 
@@ -49,6 +50,8 @@ GLView::GLView(QWidget *parent) : QGLWidget(parent)
 
 	for (int i = 0; i < 10; i++)
 		shaderinfo[i] = 0;
+
+	statusBar = NULL;
 
 	setMouseTracking(true);
 }
@@ -317,6 +320,14 @@ void GLView::paintGL()
 		glVertex3d(zlabel_x-3, zlabel_y-3, 0); glVertex3d(zlabel_x+3, zlabel_y+3, 0);
 		glEnd();
 	}
+
+	if (statusBar) {
+		QString msg;
+		msg.sprintf("Viewport: translate = [ %.2f %.2f %.2f ], rotate = [ %.2f %.2f %.2f ], distance = %f",
+			-object_trans_x, -object_trans_y, -object_trans_z,
+			fmodf(360 - object_rot_x + 90, 360), fmodf(360 - object_rot_y, 360), fmodf(360 - object_rot_z, 360), viewer_distance);
+		statusBar->showMessage(msg, 0);
+	}
 }
 
 void GLView::keyPressEvent(QKeyEvent *event)
@@ -346,7 +357,6 @@ void GLView::mousePressEvent(QMouseEvent *event)
 	last_mouse_y = event->globalY();
 	grabMouse();
 	setFocus();
-	updateGL();
 }
 
 static void mat_id(double *trg)
@@ -394,6 +404,18 @@ void GLView::mouseMoveEvent(QMouseEvent *event)
 				object_rot_y += (this_mouse_x-last_mouse_x) * 0.7;
 			else
 				object_rot_z += (this_mouse_x-last_mouse_x) * 0.7;
+			while (object_rot_x < 0)
+				object_rot_x += 360;
+			while (object_rot_x >= 360)
+				object_rot_x -= 360;
+			while (object_rot_y < 0)
+				object_rot_y += 360;
+			while (object_rot_y >= 360)
+				object_rot_y -= 360;
+			while (object_rot_z < 0)
+				object_rot_z += 360;
+			while (object_rot_z >= 360)
+				object_rot_z -= 360;
 		} else {
 			double mx = +(this_mouse_x-last_mouse_x) * viewer_distance/1000;
 			double my = -(this_mouse_y-last_mouse_y) * viewer_distance/1000;
@@ -431,6 +453,5 @@ void GLView::mouseReleaseEvent(QMouseEvent*)
 {
 	mouse_drag_active = false;
 	releaseMouse();
-	updateGL();
 }
 

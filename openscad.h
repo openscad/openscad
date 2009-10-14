@@ -659,6 +659,8 @@ public:
 	double w_h_ratio;
 	GLint shaderinfo[11];
 
+	QStatusBar *statusBar;
+
 	GLView(QWidget *parent = NULL);
 
 protected:
@@ -735,6 +737,8 @@ private slots:
 	void editUnindent();
 	void editComment();
 	void editUncomment();
+	void pasteViewportTranslation();
+	void pasteViewportRotation();
 
 private slots:
 	void actionReloadCompile();
