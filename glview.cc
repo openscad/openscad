@@ -323,7 +323,7 @@ void GLView::paintGL()
 
 	if (statusBar) {
 		QString msg;
-		msg.sprintf("Viewport: translate = [ %.2f %.2f %.2f ], rotate = [ %.2f %.2f %.2f ], distance = %f",
+		msg.sprintf("Viewport: translate = [ %.2f %.2f %.2f ], rotate = [ %.2f %.2f %.2f ], distance = %.2f",
 			-object_trans_x, -object_trans_y, -object_trans_z,
 			fmodf(360 - object_rot_x + 90, 360), fmodf(360 - object_rot_y, 360), fmodf(360 - object_rot_z, 360), viewer_distance);
 		statusBar->showMessage(msg, 0);
