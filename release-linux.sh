@@ -3,13 +3,13 @@
 
 set -ex
 
-svnclean
+# svnclean
 
 qmake
 make
 
 rm -rf release
-mkdir -p release/{bin,lib/openscad}
+mkdir -p release/{bin,lib/openscad,examples}
 
 cat > release/bin/openscad << "EOT"
 #!/bin/bash
@@ -26,7 +26,9 @@ cp openscad release/lib/openscad/
 gcc -o chrpath_linux chrpath_linux.c
 ./chrpath_linux -d release/lib/openscad/openscad
 
-ldd openscad | sed -r 's,.* => ,,; s,[\t ].*,,; /./ ! d; /libGLcore/ d; /libnvidia/ d;' | xargs cp -vt release/lib/openscad/
+ldd openscad | sed -re 's,.* => ,,; s,[\t ].*,,;' -e '/Qt|boost/ { p; d; };' \
+		-e '/lib(audio|CGAL|GLEW|opencsg|png)\.so/ { p; d; };' \
+		-e 'd;' | xargs cp -vt release/lib/openscad/
 strip release/lib/openscad/*
 
 cat > release/install.sh << "EOT"
@@ -73,6 +75,6 @@ EOT
 
 chmod 755 -R release/
 
-cp -r examples release/
+cp examples/* release/examples/
 chmod 644 -R release/examples/*
 
