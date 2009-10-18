@@ -26,6 +26,7 @@
 #include <QFile>
 #include <QDir>
 #include <QSet>
+#include <getopt.h>
 
 static void help(const char *progname)
 {
