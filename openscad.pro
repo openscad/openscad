@@ -15,7 +15,7 @@ LEXSOURCES += lexer.l
 YACCSOURCES += parser.y
 
 HEADERS += openscad.h
-SOURCES += openscad.cc mainwin.cc glview.cc
+SOURCES += openscad.cc mainwin.cc glview.cc export.cc
 SOURCES += value.cc expr.cc func.cc module.cc context.cc
 SOURCES += csgterm.cc polyset.cc csgops.cc transform.cc
 SOURCES += primitives.cc surface.cc control.cc render.cc

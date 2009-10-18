@@ -24,6 +24,7 @@
 
 DxfData::DxfData(double fn, double fs, double fa, QString filename, QString layername, double xorigin, double yorigin, double scale)
 {
+	handle_dep(filename);
 	QFile f(filename);
 
 	if (!f.open(QIODevice::ReadOnly | QIODevice::Text)) {

@@ -77,6 +77,7 @@ PolySet *ImportNode::render_polyset(render_mode_e) const
 
 	if (type == TYPE_STL)
 	{
+		handle_dep(filename);
 		QFile f(filename);
 		if (!f.open(QIODevice::ReadOnly)) {
 			PRINTF("WARNING: Can't open import file `%s'.", filename.toAscii().data());

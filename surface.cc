@@ -76,6 +76,7 @@ void register_builtin_surface()
 
 PolySet *SurfaceNode::render_polyset(render_mode_e) const
 {
+	handle_dep(filename);
 	QFile f(filename);
 
 	if (!f.open(QIODevice::ReadOnly | QIODevice::Text)) {

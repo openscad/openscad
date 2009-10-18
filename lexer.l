@@ -60,6 +60,7 @@ extern const char *parser_input_buffer;
 "<"[^ \t\n>]+">" {
 	char *filename = strdup(yytext+1);
 	filename[strlen(filename)-1] = 0;
+	handle_dep(filename);
 	yyin = fopen(filename, "r");
 	if (!yyin) {
 		PRINTF("WARNING: Can't open input file `%s'.", filename);

@@ -30,6 +30,7 @@
 #include <QCache>
 #include <QVector>
 #include <QMainWindow>
+#include <QProgressDialog>
 #include <QSplitter>
 #include <QTextEdit>
 #include <QLineEdit>
@@ -751,6 +752,7 @@ private slots:
 	void actionDisplayAST();
 	void actionDisplayCSGTree();
 	void actionDisplayCSGProducts();
+	void actionExportSTLorOFF(bool stl_mode);
 	void actionExportSTL();
 	void actionExportOFF();
 
@@ -799,6 +801,12 @@ extern AbstractModule *parse(const char *text, int debug);
 extern int get_fragments_from_r(double r, double fn, double fs, double fa);
 
 extern QPointer<MainWindow> current_win;
+
+#ifdef ENABLE_CGAL
+void export_stl(CGAL_Nef_polyhedron *root_N, QString filename, QProgressDialog *pd);
+void export_off(CGAL_Nef_polyhedron *root_N, QString filename, QProgressDialog *pd);
+#endif
+extern void handle_dep(QString filename);
 
 #define PRINT(_msg) do { if (current_win.isNull()) fprintf(stderr, "%s\n", QString(_msg).toAscii().data()); else current_win->console->append(_msg); } while (0)
 #define PRINTF(_fmt, ...) do { QString _m; _m.sprintf(_fmt, ##__VA_ARGS__); PRINT(_m); } while (0)
