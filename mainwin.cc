@@ -153,8 +153,12 @@ MainWindow::MainWindow(const char *filename)
 	{
 		QMenu *menu = menuBar()->addMenu("&View");
 #ifdef ENABLE_OPENCSG
-		actViewModeOpenCSG = menu->addAction("OpenCSG", this, SLOT(viewModeOpenCSG()), QKeySequence(Qt::Key_F9));
-		actViewModeOpenCSG->setCheckable(true);
+		if (screen->opencsg_support) {
+			actViewModeOpenCSG = menu->addAction("OpenCSG", this, SLOT(viewModeOpenCSG()), QKeySequence(Qt::Key_F9));
+			actViewModeOpenCSG->setCheckable(true);
+		} else {
+			actViewModeOpenCSG = NULL;
+		}
 #endif
 #ifdef ENABLE_CGAL
 		actViewModeCGALSurface = menu->addAction("CGAL Surfaces", this, SLOT(viewModeCGALSurface()), QKeySequence(Qt::Key_F10));
@@ -214,6 +218,12 @@ MainWindow::MainWindow(const char *filename)
 		setWindowTitle("New Document");
 	}
 
+	setCentralWidget(s1);
+
+	// display this window and check for OpenGL 2.0 (OpenCSG) support
+	viewModeThrownTogether();
+	show();
+
 #ifdef ENABLE_OPENCSG
 	viewModeOpenCSG();
 #else
@@ -221,7 +231,6 @@ MainWindow::MainWindow(const char *filename)
 #endif
 	viewPerspective();
 
-	setCentralWidget(s1);
 	current_win = NULL;
 }
 
@@ -634,7 +643,8 @@ void MainWindow::actionReloadCompile()
 	compile(true);
 
 #ifdef ENABLE_OPENCSG
-	if (!actViewModeOpenCSG->isChecked() && !actViewModeThrownTogether->isChecked()) {
+	if (!(actViewModeOpenCSG && actViewModeOpenCSG->isChecked()) &&
+			!actViewModeThrownTogether->isChecked()) {
 		viewModeOpenCSG();
 	}
 	else
@@ -653,7 +663,8 @@ void MainWindow::actionCompile()
 	compile(!actViewModeAnimate->isChecked());
 
 #ifdef ENABLE_OPENCSG
-	if (!actViewModeOpenCSG->isChecked() && !actViewModeThrownTogether->isChecked()) {
+	if (!(actViewModeOpenCSG && actViewModeOpenCSG->isChecked()) &&
+			!actViewModeThrownTogether->isChecked()) {
 		viewModeOpenCSG();
 	}
 	else
@@ -850,7 +861,8 @@ void MainWindow::actionExportOFF()
 void MainWindow::viewModeActionsUncheck()
 {
 #ifdef ENABLE_OPENCSG
-	actViewModeOpenCSG->setChecked(false);
+	if (actViewModeOpenCSG)
+		actViewModeOpenCSG->setChecked(false);
 #endif
 #ifdef ENABLE_CGAL
 	actViewModeCGALSurface->setChecked(false);
@@ -954,11 +966,19 @@ static void renderGLviaOpenCSG(void *vp)
 
 void MainWindow::viewModeOpenCSG()
 {
-	viewModeActionsUncheck();
-	actViewModeOpenCSG->setChecked(true);
-	screen->renderfunc = renderGLviaOpenCSG;
-	screen->renderfunc_vp = this;
-	screen->updateGL();
+	if (screen->opencsg_support) {
+		viewModeActionsUncheck();
+		actViewModeOpenCSG->setChecked(true);
+		screen->renderfunc = renderGLviaOpenCSG;
+		screen->renderfunc_vp = this;
+		screen->updateGL();
+	} else {
+		if (actViewModeOpenCSG) {
+			delete actViewModeOpenCSG;
+			actViewModeOpenCSG = NULL;
+		}
+		viewModeThrownTogether();
+	}
 }
 
 #endif /* ENABLE_OPENCSG */

@@ -23,6 +23,7 @@
 #include <QApplication>
 #include <QWheelEvent>
 #include <QMouseEvent>
+#include <QMessageBox>
 
 #define FAR_FAR_AWAY 100000.0
 
@@ -53,6 +54,9 @@ GLView::GLView(QWidget *parent) : QGLWidget(parent)
 	statusLabel = NULL;
 
 	setMouseTracking(true);
+#ifdef ENABLE_OPENCSG
+	opencsg_support = true;
+#endif
 }
 
 extern GLint e1, e2, e3;
@@ -158,10 +162,22 @@ void GLView::initializeGL()
 			}
 		}
 	} else {
-		fprintf(stdout, "GLEW: GL_VERSION_2_0 is not supported!\n");
+		opencsg_support = false;
+		QTimer::singleShot(0, this, SLOT(display_opengl20_warning()));
 	}
 #endif /* ENABLE_OPENCSG */
 }
+
+#ifdef ENABLE_OPENCSG
+void GLView::display_opengl20_warning()
+{
+	QMessageBox::warning(NULL, "GLEW: GL_VERSION_2_0 is not supported!",
+			"Warning: No support for OpenGL 2.0 found! OpenCSG View has been disabled.\n\n"
+			"It is highly recommended to use OpenSCAD on a system with OpenGL 2.0 "
+			"support. Please check if OpenGL 2.0 drivers are available for your "
+			"graphics hardware.");
+}
+#endif
 
 void GLView::resizeGL(int w, int h)
 {

@@ -663,6 +663,9 @@ public:
 	GLint shaderinfo[11];
 
 	QLabel *statusLabel;
+#ifdef ENABLE_OPENCSG
+	bool opencsg_support;
+#endif
 
 	GLView(QWidget *parent = NULL);
 
@@ -680,6 +683,11 @@ protected:
 	void initializeGL();
 	void resizeGL(int w, int h);
 	void paintGL();
+
+#ifdef ENABLE_OPENCSG
+private slots:
+	void display_opengl20_warning();
+#endif
 };
 
 class MainWindow : public QMainWindow
@@ -773,7 +781,7 @@ public:
 	QAction *actViewOrthogonal;
 	void viewModeActionsUncheck();
 
-private slots:
+public slots:
 #ifdef ENABLE_OPENCSG
 	void viewModeOpenCSG();
 #endif
