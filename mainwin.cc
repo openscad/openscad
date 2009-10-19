@@ -354,8 +354,12 @@ void MainWindow::compile(bool procevents)
 	root_ctx.set_variable("$t", Value(e_tval->text().toDouble()));
 	root_module = parse(editor->toPlainText().toAscii().data(), false);
 
-	if (!root_module)
+	if (!root_module) {
+		QTextCursor cursor = editor->textCursor();
+		cursor.setPosition(parser_error_pos);
+		editor->setTextCursor(cursor);
 		goto fail;
+	}
 
 	PRINT("Compiling design (CSG Tree generation)...");
 	if (procevents)
@@ -608,7 +612,7 @@ void MainWindow::pasteViewportTranslation()
 {
 	QTextCursor cursor = editor->textCursor();
 	QString txt;
-	txt.sprintf("[ %.2f %.2f %.2f ]", -screen->object_trans_x, -screen->object_trans_y, -screen->object_trans_z);
+	txt.sprintf("[ %.2f, %.2f, %.2f ]", -screen->object_trans_x, -screen->object_trans_y, -screen->object_trans_z);
 	cursor.insertText(txt);
 }
 
@@ -616,7 +620,7 @@ void MainWindow::pasteViewportRotation()
 {
 	QTextCursor cursor = editor->textCursor();
 	QString txt;
-	txt.sprintf("[ %.2f %.2f %.2f ]",
+	txt.sprintf("[ %.2f, %.2f, %.2f ]",
 		fmodf(360 - screen->object_rot_x + 90, 360), fmodf(360 - screen->object_rot_y, 360), fmodf(360 - screen->object_rot_z, 360));
 	cursor.insertText(txt);
 }

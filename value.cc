@@ -122,7 +122,7 @@ Value Value::operator - (const Value &v) const
 		return r;
 	}
 	if (type == NUMBER && v.type == NUMBER) {
-		return Value(num + v.num);
+		return Value(num - v.num);
 	}
 	return Value();
 }

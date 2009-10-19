@@ -22,6 +22,8 @@
 
 #include "openscad.h"
 
+int parser_error_pos = -1;
+
 int parserlex(void);
 void yyerror(char const *s);
 
@@ -79,7 +81,6 @@ public:
 %right '?' ':'
 
 %type <expr> expr
-%type <value> vector_const
 %type <expr> vector_expr
 
 %type <inst> module_instantciation
@@ -275,11 +276,6 @@ expr:
 		$$->const_value = new Value();
 		$$->const_value->type = Value::VECTOR;
 	} |
-	'[' vector_const ']' {
-		$$ = new Expression();
-		$$->type = "C";
-		$$->const_value = $2;
-	} |
 	'[' vector_expr ']' {
 		$$ = $2;
 	} |
@@ -400,18 +396,6 @@ expr:
 		delete $3;
 	} ;
 
-vector_const:
-	TOK_NUMBER TOK_NUMBER {
-		$$ = new Value();
-		$$->type = Value::VECTOR;
-		$$->vec.append(new Value($1));
-		$$->vec.append(new Value($2));
-	} |
-	vector_const TOK_NUMBER {
-		$$ = $1;
-		$$->vec.append(new Value($2));
-	} ;
-
 vector_expr:
 	expr {
 		$$ = new Expression();
@@ -504,6 +488,7 @@ const char *parser_input_buffer;
 AbstractModule *parse(const char *text, int debug)
 {
 	lexerin = NULL;
+	parser_error_pos = -1;
 	parser_input_buffer = text;
 
 	module_stack.clear();
@@ -513,6 +498,9 @@ AbstractModule *parse(const char *text, int debug)
 	parserparse();
 
 	lexerlex_destroy();
+
+	if (module)
+		parser_error_pos = -1;
 
 	return module;
 }
