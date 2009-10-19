@@ -26,7 +26,7 @@ enum primitive_type_e {
 	CUBE,
 	SPHERE,
 	CYLINDER,
-	POLYEDER
+	POLYHEDRON
 };
 
 class PrimitiveModule : public AbstractModule
@@ -69,7 +69,7 @@ AbstractNode *PrimitiveModule::evaluate(const Context *ctx, const ModuleInstanci
 	if (type == CYLINDER) {
 		argnames = QVector<QString>() << "h" << "r1" << "r2" << "center";
 	}
-	if (type == POLYEDER) {
+	if (type == POLYHEDRON) {
 		argnames = QVector<QString>() << "points" << "triangles";
 	}
 
@@ -125,7 +125,7 @@ AbstractNode *PrimitiveModule::evaluate(const Context *ctx, const ModuleInstanci
 		}
 	}
 
-	if (type == POLYEDER) {
+	if (type == POLYHEDRON) {
 		node->points = c.lookup_variable("points");
 		node->triangles = c.lookup_variable("triangles");
 	}
@@ -138,7 +138,7 @@ void register_builtin_primitives()
 	builtin_modules["cube"] = new PrimitiveModule(CUBE);
 	builtin_modules["sphere"] = new PrimitiveModule(SPHERE);
 	builtin_modules["cylinder"] = new PrimitiveModule(CYLINDER);
-	builtin_modules["polyeder"] = new PrimitiveModule(POLYEDER);
+	builtin_modules["polyhedron"] = new PrimitiveModule(POLYHEDRON);
 }
 
 int get_fragments_from_r(double r, double fn, double fs, double fa)
@@ -342,7 +342,7 @@ sphere_next_r2:
 		}
 	}
 
-	if (type == POLYEDER)
+	if (type == POLYHEDRON)
 	{
 		for (int i=0; i<triangles.vec.size(); i++)
 		{
@@ -370,8 +370,8 @@ QString PrimitiveNode::dump(QString indent) const
 			text.sprintf("sphere($fn = %f, $fa = %f, $fs = %f, r = %f);\n", fn, fa, fs, r1);
 		if (type == CYLINDER)
 			text.sprintf("cylinder($fn = %f, $fa = %f, $fs = %f, h = %f, r1 = %f, r2 = %f, center = %s);\n", fn, fa, fs, h, r1, r2, center ? "true" : "false");
-		if (type == POLYEDER)
-			text.sprintf("polyeder(points = %s, triangles = %s);\n", points.dump().toAscii().data(), triangles.dump().toAscii().data());
+		if (type == POLYHEDRON)
+			text.sprintf("polyhedron(points = %s, triangles = %s);\n", points.dump().toAscii().data(), triangles.dump().toAscii().data());
 		((AbstractNode*)this)->dump_cache = indent + QString("n%1: ").arg(idx) + text;
 	}
 	return dump_cache;

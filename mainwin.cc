@@ -814,7 +814,7 @@ void MainWindow::actionExportSTLorOFF(bool stl_mode)
 	}
 
 	if (!root_N->is_simple()) {
-		PRINT("Object isn't a single polyeder or otherwise invalid! Modify your design..");
+		PRINT("Object isn't a single polyhedron or otherwise invalid! Modify your design..");
 		current_win = NULL;
 		return;
 	}

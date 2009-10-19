@@ -152,7 +152,7 @@ CSGTerm *RenderNode::render_csg_term(double m[16], QVector<CSGTerm*> *highlights
 	}
 
 	if (!N.is_simple()) {
-		PRINTF("WARNING: Result of render() isn't a single polyeder or otherwise invalid! Modify your design..");
+		PRINTF("WARNING: Result of render() isn't a single polyhedron or otherwise invalid! Modify your design..");
 		return NULL;
 	}
 

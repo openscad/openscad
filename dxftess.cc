@@ -223,8 +223,8 @@ void dxf_tesselate(PolySet *ps, DxfData *dxf, double rot, bool up, double h)
 	}
 
 	// GLU tessing creates T-junctions. This is ok for GL displaying but creates
-	// invalid polyeders for CGAL. So we split this tirangles up again in order
-	// to create polyeders that are also accepted by CGAL..
+	// invalid polyhedrons for CGAL. So we split this tirangles up again in order
+	// to create polyhedrons that are also accepted by CGAL..
 	// All triangle edges are sorted by their atan2 and only edges with a simmilar atan2
 	// value are compared. This speeds up this code block dramatically (compared to the
 	// n^2 compares that are neccessary in the trivial implementation).
