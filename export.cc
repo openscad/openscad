@@ -93,8 +93,9 @@ void export_stl(CGAL_Nef_polyhedron *root_N, QString filename, QProgressDialog *
 	fclose(f);
 }
 
-void export_off(CGAL_Nef_polyhedron *root_N, QString filename, QProgressDialog *pd)
+void export_off(CGAL_Nef_polyhedron*, QString, QProgressDialog*)
 {
+	PRINTF("WARNING: OFF import is not implemented yet.");
 }
 
 #endif
