@@ -49,6 +49,14 @@ MainWindow::MainWindow(const char *filename)
 	root_ctx.set_variable("$fa", Value(12.0));
 	root_ctx.set_variable("$t", Value(0.0));
 
+	Value zero3;
+	zero3.type = Value::VECTOR;
+	zero3.vec.append(new Value(0.0));
+	zero3.vec.append(new Value(0.0));
+	zero3.vec.append(new Value(0.0));
+	root_ctx.set_variable("$vpt", zero3);
+	root_ctx.set_variable("$vpr", zero3);
+
 	root_module = NULL;
 	absolute_root_node = NULL;
 	root_raw_term = NULL;
@@ -361,6 +369,21 @@ void MainWindow::compile(bool procevents)
 	enableOpenCSG = false;
 
 	root_ctx.set_variable("$t", Value(e_tval->text().toDouble()));
+
+	Value vpt;
+	vpt.type = Value::VECTOR;
+	vpt.vec.append(new Value(-screen->object_trans_x));
+	vpt.vec.append(new Value(-screen->object_trans_y));
+	vpt.vec.append(new Value(-screen->object_trans_z));
+	root_ctx.set_variable("$vpt", vpt);
+
+	Value vpr;
+	vpr.type = Value::VECTOR;
+	vpr.vec.append(new Value(fmodf(360 - screen->object_rot_x + 90, 360)));
+	vpr.vec.append(new Value(fmodf(360 - screen->object_rot_y, 360)));
+	vpr.vec.append(new Value(fmodf(360 - screen->object_rot_z, 360)));
+	root_ctx.set_variable("$vpr", vpr);
+
 	root_module = parse(editor->toPlainText().toAscii().data(), false);
 
 	if (!root_module) {
