@@ -195,6 +195,7 @@ MainWindow::MainWindow(const char *filename)
 		menu->addAction("Front", this, SLOT(viewAngleFront()), QKeySequence(Qt::CTRL + Qt::Key_8));
 		menu->addAction("Back", this, SLOT(viewAngleBack()), QKeySequence(Qt::CTRL + Qt::Key_9));
 		menu->addAction("Diagonal", this, SLOT(viewAngleDiagonal()), QKeySequence(Qt::CTRL + Qt::Key_0));
+		menu->addAction("Center", this, SLOT(viewCenter()), QKeySequence(Qt::CTRL + Qt::Key_P));
 
 		menu->addSeparator();
 		actViewPerspective = menu->addAction("Perspective", this, SLOT(viewPerspective()));
@@ -228,6 +229,9 @@ MainWindow::MainWindow(const char *filename)
 
 	setCentralWidget(s1);
 
+	connect(editor->document(), SIGNAL(contentsChanged()), this, SLOT(animateUpdate()));
+	connect(screen, SIGNAL(doAnimateUpdate()), this, SLOT(animateUpdate()));
+
 	// display this window and check for OpenGL 2.0 (OpenCSG) support
 	viewModeThrownTogether();
 	show();
@@ -258,9 +262,9 @@ void MainWindow::updatedFps()
 {
 	bool fps_ok;
 	double fps = e_fps->text().toDouble(&fps_ok);
-	if (!fps_ok || fps <= 0) {
-		animate_timer->stop();
-	} else {
+	animate_timer->stop();
+	if (fps_ok && fps > 0) {
+		animate_timer->setSingleShot(false);
 		animate_timer->setInterval(int(1000 / e_fps->text().toDouble()));
 		animate_timer->start();
 	}
@@ -268,11 +272,19 @@ void MainWindow::updatedFps()
 
 void MainWindow::updateTVal()
 {
-	double s = e_fsteps->text().toDouble();
-	double t = e_tval->text().toDouble() + 1/s;
-	QString txt;
-	txt.sprintf("%.5f", t >= 1.0 ? 0.0 : t);
-	e_tval->setText(txt);
+	bool fps_ok;
+	double fps = e_fps->text().toDouble(&fps_ok);
+	if (fps_ok) {
+		if (fps <= 0) {
+			actionCompile();
+		} else {
+			double s = e_fsteps->text().toDouble();
+			double t = e_tval->text().toDouble() + 1/s;
+			QString txt;
+			txt.sprintf("%.5f", t >= 1.0 ? 0.0 : t);
+			e_tval->setText(txt);
+		}
+	}
 }
 
 void MainWindow::load()
@@ -1166,10 +1178,25 @@ void MainWindow::viewModeAnimate()
 {
 	if (actViewModeAnimate->isChecked()) {
 		animate_panel->show();
+		actionCompile();
 		updatedFps();
 	} else {
 		animate_panel->hide();
 		animate_timer->stop();
+	}
+}
+
+void MainWindow::animateUpdate()
+{
+	if (animate_panel->isVisible()) {
+		bool fps_ok;
+		double fps = e_fps->text().toDouble(&fps_ok);
+		if (fps_ok && fps <= 0 && !animate_timer->isActive()) {
+			animate_timer->stop();
+			animate_timer->setSingleShot(true);
+			animate_timer->setInterval(50);
+			animate_timer->start();
+		}
 	}
 }
 
@@ -1178,9 +1205,6 @@ void MainWindow::viewAngleTop()
 	screen->object_rot_x = 90;
 	screen->object_rot_y = 0;
 	screen->object_rot_z = 0;
-	screen->object_trans_x = 0;
-	screen->object_trans_y = 0;
-	screen->object_trans_z = 0;
 	screen->updateGL();
 }
 
@@ -1189,9 +1213,6 @@ void MainWindow::viewAngleBottom()
 	screen->object_rot_x = 270;
 	screen->object_rot_y = 0;
 	screen->object_rot_z = 0;
-	screen->object_trans_x = 0;
-	screen->object_trans_y = 0;
-	screen->object_trans_z = 0;
 	screen->updateGL();
 }
 
@@ -1200,9 +1221,6 @@ void MainWindow::viewAngleLeft()
 	screen->object_rot_x = 0;
 	screen->object_rot_y = 0;
 	screen->object_rot_z = 90;
-	screen->object_trans_x = 0;
-	screen->object_trans_y = 0;
-	screen->object_trans_z = 0;
 	screen->updateGL();
 }
 
@@ -1211,9 +1229,6 @@ void MainWindow::viewAngleRight()
 	screen->object_rot_x = 0;
 	screen->object_rot_y = 0;
 	screen->object_rot_z = 270;
-	screen->object_trans_x = 0;
-	screen->object_trans_y = 0;
-	screen->object_trans_z = 0;
 	screen->updateGL();
 }
 
@@ -1222,9 +1237,6 @@ void MainWindow::viewAngleFront()
 	screen->object_rot_x = 0;
 	screen->object_rot_y = 0;
 	screen->object_rot_z = 0;
-	screen->object_trans_x = 0;
-	screen->object_trans_y = 0;
-	screen->object_trans_z = 0;
 	screen->updateGL();
 }
 
@@ -1233,9 +1245,6 @@ void MainWindow::viewAngleBack()
 	screen->object_rot_x = 0;
 	screen->object_rot_y = 0;
 	screen->object_rot_z = 180;
-	screen->object_trans_x = 0;
-	screen->object_trans_y = 0;
-	screen->object_trans_z = 0;
 	screen->updateGL();
 }
 
@@ -1244,6 +1253,11 @@ void MainWindow::viewAngleDiagonal()
 	screen->object_rot_x = 35;
 	screen->object_rot_y = 0;
 	screen->object_rot_z = 25;
+	screen->updateGL();
+}
+
+void MainWindow::viewCenter()
+{
 	screen->object_trans_x = 0;
 	screen->object_trans_y = 0;
 	screen->object_trans_z = 0;

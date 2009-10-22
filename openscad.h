@@ -688,6 +688,9 @@ protected:
 private slots:
 	void display_opengl20_warning();
 #endif
+
+signals:
+	void doAnimateUpdate();
 };
 
 class MainWindow : public QMainWindow
@@ -801,8 +804,10 @@ public slots:
 	void viewAngleFront();
 	void viewAngleBack();
 	void viewAngleDiagonal();
+	void viewCenter();
 	void viewPerspective();
 	void viewOrthogonal();
+	void animateUpdate();
 };
 
 extern AbstractModule *parse(const char *text, int debug);

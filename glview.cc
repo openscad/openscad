@@ -459,6 +459,7 @@ void GLView::mouseMoveEvent(QMouseEvent *event)
 			object_trans_z += tm[11];
 		}
 		updateGL();
+		doAnimateUpdate();
 	}
 	last_mouse_x = this_mouse_x;
 	last_mouse_y = this_mouse_y;
