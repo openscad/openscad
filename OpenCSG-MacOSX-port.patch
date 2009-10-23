@@ -1,0 +1,268 @@
+diff -ru OpenCSG-1.1.1/RenderTexture/RenderTexture.h OpenCSG-1.1.1-patched/RenderTexture/RenderTexture.h
+--- OpenCSG-1.1.1/RenderTexture/RenderTexture.h	2009-07-19 21:05:09.000000000 +0200
++++ OpenCSG-1.1.1-patched/RenderTexture/RenderTexture.h	2009-10-18 17:37:18.000000000 +0200
+@@ -294,8 +294,8 @@
+     bool _BindDepthBuffer( ) const;
+ 
+ protected: // data
+-    int          _iWidth;     // width of the pbuffer
+-    int          _iHeight;    // height of the pbuffer
++    GLint          _iWidth;     // width of the pbuffer
++    GLint          _iHeight;    // height of the pbuffer
+     
+     bool         _bIsTexture;
+     bool         _bIsDepthTexture;
+@@ -342,8 +342,8 @@
+     
+     // Texture stuff
+     GLenum       _iTextureTarget;
+-    unsigned int _iTextureID;
+-    unsigned int _iDepthTextureID;
++    GLuint _iTextureID;
++    GLuint _iDepthTextureID;
+     
+     unsigned short* _pPoorDepthTexture; // [Redge]
+ 
+diff -ru OpenCSG-1.1.1/example/example.pro OpenCSG-1.1.1-patched/example/example.pro
+--- OpenCSG-1.1.1/example/example.pro	2009-07-19 21:05:09.000000000 +0200
++++ OpenCSG-1.1.1-patched/example/example.pro	2009-10-22 20:41:43.000000000 +0200
+@@ -2,9 +2,16 @@
+ TARGET		= opencsgexample
+ 
+ CONFIG	 	+= opengl warn_on release
+-INCLUDEPATH += ../glew/include ../include
+-
+-LIBS        += -L../lib -lopencsg -lglut -L../glew/lib -lGLEW
++INCLUDEPATH     += ../include
++LIBS            += -L../lib -lopencsg -lGLEW
++macx {
++  INCLUDEPATH   += /opt/local/include
++  LIBS          += -framework GLUT -L/opt/local/lib
++}
++else {
++  INCLUDEPATH   += ../glew/include
++  LIBS          += -lglut -L../glew/lib
++}
+ 
+ HEADERS		= displaylistPrimitive.h
+ SOURCES		= displaylistPrimitive.cpp main.cpp
+diff -ru OpenCSG-1.1.1/example/main.cpp OpenCSG-1.1.1-patched/example/main.cpp
+--- OpenCSG-1.1.1/example/main.cpp	2009-07-19 21:05:09.000000000 +0200
++++ OpenCSG-1.1.1-patched/example/main.cpp	2009-10-22 20:44:29.000000000 +0200
+@@ -22,7 +22,11 @@
+ //
+ 
+ #include <GL/glew.h>
++#ifdef __APPLE__
++#include <GLUT/glut.h>
++#else
+ #include <GL/glut.h>
++#endif
+ #include <opencsg.h>
+ #include "displaylistPrimitive.h"
+ #include <iostream>
+diff -ru OpenCSG-1.1.1/opencsg.pro OpenCSG-1.1.1-patched/opencsg.pro
+--- OpenCSG-1.1.1/opencsg.pro	2009-07-19 21:05:09.000000000 +0200
++++ OpenCSG-1.1.1-patched/opencsg.pro	2009-10-22 20:45:00.000000000 +0200
+@@ -1,2 +1,4 @@
+ TEMPLATE = subdirs
+ SUBDIRS  = src example
++# On Mac we get glew from MacPorts
++!macx:SUBDIRS += glew
+diff -ru OpenCSG-1.1.1/src/channelManager.cpp OpenCSG-1.1.1-patched/src/channelManager.cpp
+--- OpenCSG-1.1.1/src/channelManager.cpp	2009-07-19 21:05:09.000000000 +0200
++++ OpenCSG-1.1.1-patched/src/channelManager.cpp	2009-10-20 00:40:20.000000000 +0200
+@@ -23,7 +23,7 @@
+ #include <GL/glew.h>
+ #ifdef _WIN32
+ #include <GL/wglew.h>
+-#else
++#elif !defined(__APPLE__)
+ #include <GL/glxew.h>
+ #endif
+ 
+@@ -160,9 +160,11 @@
+ #ifdef WIN32
+                 if (   WGLEW_ARB_pbuffer
+                     && WGLEW_ARB_pixel_format
+-#else
++#elif !defined(__APPLE__)
+                 if (   GLXEW_SGIX_pbuffer
+                     && GLXEW_SGIX_fbconfig
++#else 
++                if ( false
+ #endif
+                 ) {
+                      newOffscreenType =  OpenCSG::PBuffer;
+diff -ru OpenCSG-1.1.1/src/frameBufferObject.h OpenCSG-1.1.1-patched/src/frameBufferObject.h
+--- OpenCSG-1.1.1/src/frameBufferObject.h	2009-07-19 21:05:09.000000000 +0200
++++ OpenCSG-1.1.1-patched/src/frameBufferObject.h	2009-10-18 17:33:13.000000000 +0200
+@@ -77,10 +77,10 @@
+ 
+             /// Texture stuff
+             GLenum       textureTarget;
+-            unsigned int textureID;
+-            unsigned int depthID;
++            GLuint textureID;
++            GLuint depthID;
+ 
+-            unsigned int framebufferID;
++            GLuint framebufferID;
+ 
+             bool initialized;
+         };
+diff -ru OpenCSG-1.1.1/src/occlusionQuery.cpp OpenCSG-1.1.1-patched/src/occlusionQuery.cpp
+--- OpenCSG-1.1.1/src/occlusionQuery.cpp	2009-07-19 21:05:09.000000000 +0200
++++ OpenCSG-1.1.1-patched/src/occlusionQuery.cpp	2009-10-18 17:33:52.000000000 +0200
+@@ -57,7 +57,7 @@
+         }
+ 
+         unsigned int OcclusionQueryARB::getQueryResult() {
+-            unsigned int fragmentCount;
++            GLuint fragmentCount;
+             glGetQueryObjectuivARB(mQueryObject, GL_QUERY_RESULT_ARB, &fragmentCount);
+             return fragmentCount;
+         }
+@@ -94,7 +94,7 @@
+         }
+ 
+         unsigned int OcclusionQueryNV::getQueryResult() {
+-            unsigned int fragmentCount;
++            GLuint fragmentCount;
+             glGetOcclusionQueryuivNV(mQueryObject, GL_PIXEL_COUNT_NV, &fragmentCount);
+             return fragmentCount;
+         }
+diff -ru OpenCSG-1.1.1/src/offscreenBuffer.cpp OpenCSG-1.1.1-patched/src/offscreenBuffer.cpp
+--- OpenCSG-1.1.1/src/offscreenBuffer.cpp	2009-07-19 21:05:09.000000000 +0200
++++ OpenCSG-1.1.1-patched/src/offscreenBuffer.cpp	2009-10-20 00:41:31.000000000 +0200
+@@ -21,7 +21,9 @@
+ #include "opencsgConfig.h"
+ #include "offscreenBuffer.h"
+ #include "frameBufferObject.h"
++#ifndef __APPLE__
+ #include "pBufferTexture.h"
++#endif
+ 
+ namespace OpenCSG {
+ 
+@@ -29,12 +31,17 @@
+ 
+         OffscreenBuffer* getOffscreenBuffer(bool fbo) {
+             static FrameBufferObject* f = new FrameBufferObject;
++#ifndef __APPLE__
+             static PBufferTexture* p = new PBufferTexture;
+-            
++#endif            
+             if (fbo)
+                 return f;
+             else 
++#ifndef __APPLE__
+                 return p;
++#else
++                return NULL;
++#endif            
+         }
+ 
+     } // namespace OpenGL
+diff -ru OpenCSG-1.1.1/src/openglHelper.cpp OpenCSG-1.1.1-patched/src/openglHelper.cpp
+--- OpenCSG-1.1.1/src/openglHelper.cpp	2009-07-19 21:05:09.000000000 +0200
++++ OpenCSG-1.1.1-patched/src/openglHelper.cpp	2009-10-18 17:32:19.000000000 +0200
+@@ -29,13 +29,13 @@
+ 
+         GLfloat projection[16];
+         GLfloat modelview[16];
+-        int canvasPos[4];
++        GLint canvasPos[4];
+ 
+-        int stencilBits = 0;
++        GLint stencilBits = 0;
+         int stencilMax = 0;
+         int stencilMask = 0;
+ 
+-        int scissorPos[4];
++        GLint scissorPos[4];
+ 
+         void scissor(const PCArea& area) {
+             const int dx = area.maxx - area.minx;
+diff -ru OpenCSG-1.1.1/src/openglHelper.h OpenCSG-1.1.1-patched/src/openglHelper.h
+--- OpenCSG-1.1.1/src/openglHelper.h	2009-07-19 21:05:09.000000000 +0200
++++ OpenCSG-1.1.1-patched/src/openglHelper.h	2009-10-18 17:32:15.000000000 +0200
+@@ -36,17 +36,17 @@
+             // copy of the projection matrix during CSG computation
+         extern GLfloat modelview[16];
+             // copy of the modelview matrix during CSG computation
+-        extern int canvasPos[4];
++        extern GLint canvasPos[4];
+             // copy of the viewport size during CSG computation
+ 
+-        extern int stencilBits;
++        extern GLint stencilBits;
+             // number of stencil bits in the pbuffer
+         extern int stencilMax;
+             // the number where the stencil value would "wrap around" to zero
+         extern int stencilMask;
+             // stencilMax - 1
+ 
+-        extern int scissorPos[4];
++        extern GLint scissorPos[4];
+             // copy of the scissor settings for CSG computation
+ 
+         void scissor(const PCArea& area);
+diff -ru OpenCSG-1.1.1/src/src.pro OpenCSG-1.1.1-patched/src/src.pro
+--- OpenCSG-1.1.1/src/src.pro	2009-07-19 21:05:09.000000000 +0200
++++ OpenCSG-1.1.1-patched/src/src.pro	2009-10-22 21:16:33.000000000 +0200
+@@ -4,7 +4,15 @@
+ DESTDIR     = ../lib
+ 
+ CONFIG		+= opengl warn_on release
+-INCLUDEPATH += ../include ../glew/include ../
++INCLUDEPATH += ../include ../
++
++macx {
++  INCLUDEPATH += /opt/local/include
++  LIBS += -L/opt/local/lib -lglew
++}
++else {
++INCLUDEPATH += ../glew/include
++}
+ 
+ HEADERS		= ../include/opencsg.h \
+ 		  opencsgConfig.h \
+@@ -16,12 +24,11 @@
+ 		  offscreenBuffer.h \
+ 		  opencsgRender.h \
+ 		  openglHelper.h \
+-		  pBufferTexture.h \
+ 		  primitiveHelper.h \
+ 		  scissorMemo.h \
+ 		  settings.h \
+-		  stencilManager.h \
+-		  ../RenderTexture/RenderTexture.h
++		  stencilManager.h
++
+ SOURCES		= area.cpp \
+ 		  batch.cpp \
+ 		  channelManager.cpp \
+@@ -30,12 +37,19 @@
+ 		  offscreenBuffer.cpp \
+ 		  opencsgRender.cpp \
+ 		  openglHelper.cpp \
+-		  pBufferTexture.cpp \
+ 		  primitive.cpp \
+ 		  primitiveHelper.cpp \
+ 		  renderGoldfeather.cpp \
+ 		  renderSCS.cpp \
+ 		  scissorMemo.cpp \
+ 		  settings.cpp \
+-		  stencilManager.cpp \
+-		  ../RenderTexture/RenderTexture.cpp
++		  stencilManager.cpp
++
++!macx {
++  HEADERS +=      ../RenderTexture/RenderTexture.h \
++  		  pBufferTexture.h
++
++  SOURCES +=	  ../RenderTexture/RenderTexture.cpp \
++		  pBufferTexture.cpp
++}
++
