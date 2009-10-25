@@ -78,6 +78,10 @@ MainWindow::MainWindow(const char *filename)
 	s1 = new QSplitter(Qt::Horizontal, this);
 	editor = new QTextEdit(s1);
 
+	QFont font;
+	font.setStyleHint(QFont::TypeWriter);
+	editor->setFont(font);
+
 	QWidget *w1 = new QWidget(s1);
 	QVBoxLayout *l1 = new QVBoxLayout(w1);
 	l1->setSpacing(0);

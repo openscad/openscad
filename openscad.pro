@@ -1,9 +1,26 @@
 
+macx {
+	TARGET = OpenSCAD
+}
+else {
+	TARGET = openscad
+}
+
 CONFIG += qt debug
 TEMPLATE = app
 
 DEFINES += "ENABLE_CGAL=1"
-LIBS += -lCGAL -lmpfr
+LIBS += -lCGAL
+
+macx {
+	INCLUDEPATH += $(PWD)/../install/include $(PWD)/../OpenCSG-1.1.1/include /opt/local/include
+	# The -L/usr/lib is to force the linker to use system libraries over MacPort libraries
+	LIBS += -L/usr/lib -L$(PWD)/../install/lib -L$(PWD)/../OpenCSG-1.1.1/lib -L/opt/local/lib /opt/local/lib/libgmp.a /opt/local/lib/libmpfr.a /opt/local/lib/libboost_thread-mt.a
+	QMAKE_CXXFLAGS += -frounding-math
+}
+else {
+	LIBS += -lmpfr
+}
 
 DEFINES += "ENABLE_OPENCSG=1"
 LIBS += -lopencsg

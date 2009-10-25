@@ -69,6 +69,9 @@ int main(int argc, char **argv)
 	bool useGUI = true;
 #endif
 	QApplication app(argc, argv, useGUI);
+#ifdef __APPLE__
+	app.setLibraryPaths(QStringList(app.applicationDirPath() + "/../PlugIns"));
+#endif
 
 	const char *filename = NULL;
 	const char *stl_output_file = NULL;
