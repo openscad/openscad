@@ -42,7 +42,7 @@ GLView::GLView(QWidget *parent) : QGLWidget(parent)
 	last_mouse_y = 0;
 
 	orthomode = false;
-	showaxis = false;
+	showaxes = false;
 	showcrosshairs = false;
 
 	renderfunc = NULL;
@@ -242,7 +242,7 @@ void GLView::paintGL()
 
 	glTranslated(object_trans_x, object_trans_y, object_trans_z);
 
-	if (showaxis)
+	if (showaxes)
 	{
 		glLineWidth(1);
 		glColor3d(0.5, 0.5, 0.5);
@@ -266,7 +266,7 @@ void GLView::paintGL()
 	if (renderfunc)
 		renderfunc(renderfunc_vp);
 
-	if (showaxis)
+	if (showaxes)
 	{
 		glDepthFunc(GL_ALWAYS);
 

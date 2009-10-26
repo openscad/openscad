@@ -184,8 +184,8 @@ MainWindow::MainWindow(const char *filename)
 		menu->addSeparator();
 		actViewModeShowEdges = menu->addAction("Show Edges", this, SLOT(viewModeShowEdges()), QKeySequence(Qt::CTRL + Qt::Key_1));
 		actViewModeShowEdges->setCheckable(true);
-		actViewModeShowAxis = menu->addAction("Show Axis", this, SLOT(viewModeShowAxis()), QKeySequence(Qt::CTRL + Qt::Key_2));
-		actViewModeShowAxis->setCheckable(true);
+		actViewModeShowAxes = menu->addAction("Show Axes", this, SLOT(viewModeShowAxes()), QKeySequence(Qt::CTRL + Qt::Key_2));
+		actViewModeShowAxes->setCheckable(true);
 		actViewModeShowCrosshairs = menu->addAction("Show Crosshairs", this, SLOT(viewModeShowCrosshairs()), QKeySequence(Qt::CTRL + Qt::Key_3));
 		actViewModeShowCrosshairs->setCheckable(true);
 		actViewModeAnimate = menu->addAction("Animate", this, SLOT(viewModeAnimate()));
@@ -1166,9 +1166,9 @@ void MainWindow::viewModeShowEdges()
 	screen->updateGL();
 }
 
-void MainWindow::viewModeShowAxis()
+void MainWindow::viewModeShowAxes()
 {
-	screen->showaxis = actViewModeShowAxis->isChecked();
+	screen->showaxes = actViewModeShowAxes->isChecked();
 	screen->updateGL();
 }
 

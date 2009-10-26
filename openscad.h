@@ -648,7 +648,7 @@ public:
 	void *renderfunc_vp;
 
 	bool orthomode;
-	bool showaxis;
+	bool showaxes;
 	bool showcrosshairs;
 
 	double viewer_distance;
@@ -777,7 +777,7 @@ public:
 #endif
 	QAction *actViewModeThrownTogether;
 	QAction *actViewModeShowEdges;
-	QAction *actViewModeShowAxis;
+	QAction *actViewModeShowAxes;
 	QAction *actViewModeShowCrosshairs;
 	QAction *actViewModeAnimate;
 	QAction *actViewPerspective;
@@ -794,7 +794,7 @@ public slots:
 #endif
 	void viewModeThrownTogether();
 	void viewModeShowEdges();
-	void viewModeShowAxis();
+	void viewModeShowAxes();
 	void viewModeShowCrosshairs();
 	void viewModeAnimate();
 	void viewAngleTop();
