@@ -144,7 +144,8 @@ DxfData::DxfData(double fn, double fs, double fa, QString filename, QString laye
 			name = data;
 			break;
 		case 2:
-			in_entities_section = data == "ENTITIES";
+			if (mode == "SECTION")
+				in_entities_section = data == "ENTITIES";
 			break;
 		case 8:
 			layer = data;
