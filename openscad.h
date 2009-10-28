@@ -808,6 +808,8 @@ public slots:
 	void viewPerspective();
 	void viewOrthogonal();
 	void animateUpdate();
+	void dragEnterEvent(QDragEnterEvent *event);
+	void dropEvent(QDropEvent *event);
 };
 
 extern AbstractModule *parse(const char *text, int debug);

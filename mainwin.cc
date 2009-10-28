@@ -34,6 +34,9 @@
 #include <QLabel>
 #include <QFileInfo>
 #include <QStatusBar>
+#include <QDropEvent>
+#include <QMimeData>
+#include <QUrl>
 
 //for chdir
 #include <unistd.h>
@@ -252,6 +255,7 @@ MainWindow::MainWindow(const char *filename)
 #endif
 	viewPerspective();
 
+	setAcceptDrops(true);
 	current_win = NULL;
 }
 
@@ -1301,5 +1305,34 @@ void MainWindow::viewOrthogonal()
 	actViewOrthogonal->setChecked(true);
 	screen->orthomode = true;
 	screen->updateGL();
+}
+
+void MainWindow::dragEnterEvent(QDragEnterEvent *event)
+{
+	if (event->mimeData()->hasUrls())
+		event->acceptProposedAction();
+}
+
+void MainWindow::dropEvent(QDropEvent *event)
+{
+	current_win = this;
+	const QList<QUrl> urls = event->mimeData()->urls();
+	for (int i = 0; i < urls.size(); i++) {
+		if (urls[i].scheme() != "file")
+			continue;
+		QString fn = urls[i].path();
+#if ENABLE_MDI
+		if (!editor->toPlainText().isEmpty()) {
+			new MainWindow(fn.toAscii().data());
+			break;
+		}
+#endif
+		filename = fn;
+		setWindowTitle(filename);
+		maybe_change_dir();
+		load();
+		break;
+	}
+	current_win = NULL;
 }
 
