@@ -236,10 +236,10 @@ QString DxfLinearExtrudeNode::dump(QString indent) const
 		memset(&st, 0, sizeof(struct stat));
 		stat(filename.toAscii().data(), &st);
 		text.sprintf("dxf_linear_extrude(file = \"%s\", cache = \"%x.%x\", layer = \"%s\", "
-				"height = %f, origin = [ %f %f ], scale = %f, center = %s",
+				"height = %f, origin = [ %f %f ], scale = %f, center = %s, convexity = %d",
 				filename.toAscii().data(), (int)st.st_mtime, (int)st.st_size,
 				layername.toAscii().data(), height, origin_x, origin_y, scale,
-				center ? "true" : "false");
+				center ? "true" : "false", convexity);
 		if (has_twist) {
 			QString t2;
 			t2.sprintf(", twist = %f, slices = %d", twist, slices);
