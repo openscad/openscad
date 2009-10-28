@@ -240,6 +240,11 @@ MainWindow::MainWindow(const char *filename)
 	viewModeThrownTogether();
 	show();
 
+	// make sure it looks nice..
+	resize(800, 600);
+	s1->setSizes(QList<int>() << 400 << 400);
+	s2->setSizes(QList<int>() << 400 << 200);
+
 #ifdef ENABLE_OPENCSG
 	viewModeOpenCSG();
 #else
@@ -520,9 +525,13 @@ fail:
 
 void MainWindow::actionNew()
 {
+#if ENABLE_MDI
+	new MainWindow;
+#else
 	filename = QString();
 	setWindowTitle("New Document");
 	editor->setPlainText("");
+#endif
 }
 
 void MainWindow::actionOpen()
@@ -531,6 +540,13 @@ void MainWindow::actionOpen()
 	QString new_filename = QFileDialog::getOpenFileName(this, "Open File", "", "OpenSCAD Designs (*.scad)");
 	if (!new_filename.isEmpty())
 	{
+#if ENABLE_MDI
+		if (!editor->toPlainText().isEmpty()) {
+			new MainWindow(new_filename.toAscii().data());
+			current_win = NULL;
+			return;
+		}
+#endif
 		filename = new_filename;
 		maybe_change_dir();
 		setWindowTitle(filename);
@@ -989,6 +1005,9 @@ static void renderGLviaOpenCSG(void *vp)
 		glew_initialized = 1;
 		glewInit();
 	}
+#ifdef ENABLE_MDI
+	OpenCSG::reset();
+#endif
 	if (m->root_chain) {
 		GLint *shaderinfo = m->screen->shaderinfo;
 		if (!shaderinfo[0])

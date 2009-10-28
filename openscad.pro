@@ -9,6 +9,9 @@ else {
 CONFIG += qt debug
 TEMPLATE = app
 
+# MDI needs an OpenCSG library that is compiled with OpenCSG-Reset-Hack.patch applied
+# DEFINES += "ENABLE_MDI=1"
+
 DEFINES += "ENABLE_CGAL=1"
 LIBS += -lCGAL
 
@@ -40,7 +43,7 @@ SOURCES += import.cc dxfdata.cc dxftess.cc dxfdim.cc
 SOURCES += dxflinextrude.cc dxfrotextrude.cc
 
 QMAKE_CXXFLAGS += -O0
-// QMAKE_CXXFLAGS += -O3 -march=pentium
+# QMAKE_CXXFLAGS += -O3 -march=pentium
 
 QT += opengl
 

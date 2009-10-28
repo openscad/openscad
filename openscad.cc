@@ -112,8 +112,10 @@ int main(int argc, char **argv)
 	if (optind < argc)
 		filename = argv[optind++];
 
+#ifndef ENABLE_MDI
 	if (optind != argc)
 		help(argv[0]);
+#endif
 
 	if (stl_output_file || off_output_file)
 	{
@@ -203,14 +205,14 @@ int main(int argc, char **argv)
 		if (filename)
 			m = new MainWindow(filename);
 		else
-			m = new MainWindow();
-
-		m->show();
-		m->resize(800, 600);
-		m->s1->setSizes(QList<int>() << 400 << 400);
-		m->s2->setSizes(QList<int>() << 400 << 200);
-
+			m = new MainWindow;
+#ifdef ENABLE_MDI
+		while (optind < argc)
+			new MainWindow(argv[optind++]);
+		app.connect(&app, SIGNAL(lastWindowClosed()), &app, SLOT(quit()));
+#else
 		app.connect(m, SIGNAL(destroyed()), &app, SLOT(quit()));
+#endif
 		rc = app.exec();
 	}
 	else
