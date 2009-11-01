@@ -116,7 +116,7 @@ statement:
 		module->assignments_expr.append($3);
 		free($1);
 	} |
-	TOK_MODULE TOK_ID '(' arguments_decl ')' {
+	TOK_MODULE TOK_ID '(' arguments_decl optional_commas ')' {
 		Module *p = module;
 		module_stack.append(module);
 		module = new Module();
@@ -129,11 +129,11 @@ statement:
 		module = module_stack.last();
 		module_stack.pop_back();
 	} |
-	TOK_FUNCTION TOK_ID '(' arguments_decl ')' '=' expr {
+	TOK_FUNCTION TOK_ID '(' arguments_decl optional_commas ')' '=' expr {
 		Function *func = new Function();
 		func->argnames = $4->argnames;
 		func->argexpr = $4->argexpr;
-		func->expr = $7;
+		func->expr = $8;
 		module->functions[$2] = func;
 		free($2);
 		delete $4;
@@ -270,13 +270,13 @@ expr:
 		$$->children.append($4);
 		$$->children.append($6);
 	} |
-	'[' ']' {
+	'[' optional_commas ']' {
 		$$ = new Expression();
 		$$->type = "C";
 		$$->const_value = new Value();
 		$$->const_value->type = Value::VECTOR;
 	} |
-	'[' vector_expr ']' {
+	'[' vector_expr optional_commas ']' {
 		$$ = $2;
 	} |
 	expr '*' expr {
@@ -396,15 +396,18 @@ expr:
 		delete $3;
 	} ;
 
+optional_commas:
+	',' optional_commas | ;
+
 vector_expr:
 	expr {
 		$$ = new Expression();
 		$$->type = 'V';
 		$$->children.append($1);
 	} |
-	vector_expr ',' expr {
+	vector_expr ',' optional_commas expr {
 		$$ = $1;
-		$$->children.append($3);
+		$$->children.append($4);
 	} ;
 
 arguments_decl:
@@ -417,11 +420,11 @@ arguments_decl:
 		$$->argexpr.append($1->argexpr);
 		delete $1;
 	} |
-	arguments_decl ',' argument_decl {
+	arguments_decl ',' optional_commas argument_decl {
 		$$ = $1;
-		$$->argnames.append($3->argname);
-		$$->argexpr.append($3->argexpr);
-		delete $3;
+		$$->argnames.append($4->argname);
+		$$->argexpr.append($4->argexpr);
+		delete $4;
 	} ;
 
 argument_decl:
@@ -448,11 +451,11 @@ arguments_call:
 		$$->argexpr.append($1->argexpr);
 		delete $1;
 	} |
-	arguments_call ',' argument_call {
+	arguments_call ',' optional_commas argument_call {
 		$$ = $1;
-		$$->argnames.append($3->argname);
-		$$->argexpr.append($3->argexpr);
-		delete $3;
+		$$->argnames.append($4->argname);
+		$$->argexpr.append($4->argexpr);
+		delete $4;
 	} ;
 
 argument_call:
