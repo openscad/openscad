@@ -40,7 +40,7 @@ SOURCES += value.cc expr.cc func.cc module.cc context.cc
 SOURCES += csgterm.cc polyset.cc csgops.cc transform.cc
 SOURCES += primitives.cc surface.cc control.cc render.cc
 SOURCES += import.cc dxfdata.cc dxftess.cc dxfdim.cc
-SOURCES += dxflinextrude.cc dxfrotextrude.cc
+SOURCES += dxflinextrude.cc dxfrotextrude.cc highlighter.cc
 
 QMAKE_CXXFLAGS += -O0
 # QMAKE_CXXFLAGS += -O3 -march=pentium

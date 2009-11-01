@@ -80,6 +80,7 @@ MainWindow::MainWindow(const char *filename)
 
 	s1 = new QSplitter(Qt::Horizontal, this);
 	editor = new QTextEdit(s1);
+	highlighter = new Highlighter(editor->document());
 
 	QFont font;
 	font.setStyleHint(QFont::TypeWriter);
@@ -410,6 +411,9 @@ void MainWindow::compile(bool procevents)
 	root_ctx.set_variable("$vpr", vpr);
 
 	root_module = parse(editor->toPlainText().toAscii().data(), false);
+
+	delete highlighter;
+	highlighter = new Highlighter(editor->document());
 
 	if (!root_module) {
 		QTextCursor cursor = editor->textCursor();
@@ -861,7 +865,11 @@ void MainWindow::actionDisplayCSGProducts()
 	current_win = NULL;
 }
 
+#ifdef ENABLE_CGAL
 void MainWindow::actionExportSTLorOFF(bool stl_mode)
+#else
+void MainWindow::actionExportSTLorOFF(bool)
+#endif
 {
 	current_win = this;
 

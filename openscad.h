@@ -31,6 +31,7 @@
 #include <QVector>
 #include <QMainWindow>
 #include <QProgressDialog>
+#include <QSyntaxHighlighter>
 #include <QSplitter>
 #include <QTextEdit>
 #include <QLineEdit>
@@ -693,6 +694,15 @@ signals:
 	void doAnimateUpdate();
 };
 
+class MainWindow;
+
+class Highlighter : public QSyntaxHighlighter
+{
+public:
+	Highlighter(QTextDocument *parent);
+	void highlightBlock(const QString &text);
+};
+
 class MainWindow : public QMainWindow
 {
 	Q_OBJECT
@@ -701,6 +711,7 @@ public:
 	QString filename;
 	QSplitter *s1, *s2;
 	QTextEdit *editor;
+	Highlighter *highlighter;
 	GLView *screen;
 	QTextEdit *console;
 
