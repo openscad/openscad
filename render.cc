@@ -220,7 +220,7 @@ CSGTerm *RenderNode::render_csg_term(double m[16], QVector<CSGTerm*> *highlights
 QString RenderNode::dump(QString indent) const
 {
 	if (dump_cache.isEmpty()) {
-		QString text = indent + QString("n%1: ").arg(idx) + QString("render() {\n");
+		QString text = indent + QString("n%1: ").arg(idx) + QString("render(convexity = %1) {\n").arg(QString::number(convexity));
 		foreach (AbstractNode *v, children)
 			text += v->dump(indent + QString("\t"));
 		((AbstractNode*)this)->dump_cache = text + indent + "}\n";

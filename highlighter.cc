@@ -36,6 +36,7 @@ void Highlighter::highlightBlock(const QString &text)
 		QTextCharFormat style;
 		style.setBackground(Qt::red);
 		setFormat(0, text.size(), style);
+		style.setBackground(Qt::black);
 		style.setForeground(Qt::white);
 		setFormat(parser_error_pos - n, 1, style);
 	}

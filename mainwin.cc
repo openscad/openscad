@@ -415,12 +415,8 @@ void MainWindow::compile(bool procevents)
 	delete highlighter;
 	highlighter = new Highlighter(editor->document());
 
-	if (!root_module) {
-		QTextCursor cursor = editor->textCursor();
-		cursor.setPosition(parser_error_pos);
-		editor->setTextCursor(cursor);
+	if (!root_module)
 		goto fail;
-	}
 
 	PRINT("Compiling design (CSG Tree generation)...");
 	if (procevents)
