@@ -102,50 +102,57 @@ static double rad2deg(double x)
 
 Value builtin_sin(const QVector<QString>&, const QVector<Value> &args)
 {
-	if (args[0].type == Value::NUMBER)
+	if (args.size() == 1 && args[0].type == Value::NUMBER)
 		return Value(sin(deg2rad(args[0].num)));
 	return Value();
 }
 
 Value builtin_cos(const QVector<QString>&, const QVector<Value> &args)
 {
-	if (args[0].type == Value::NUMBER)
+	if (args.size() == 1 && args[0].type == Value::NUMBER)
 		return Value(cos(deg2rad(args[0].num)));
 	return Value();
 }
 
 Value builtin_asin(const QVector<QString>&, const QVector<Value> &args)
 {
-	if (args[0].type == Value::NUMBER)
+	if (args.size() == 1 && args[0].type == Value::NUMBER)
 		return Value(rad2deg(asin(args[0].num)));
 	return Value();
 }
 
 Value builtin_acos(const QVector<QString>&, const QVector<Value> &args)
 {
-	if (args[0].type == Value::NUMBER)
+	if (args.size() == 1 && args[0].type == Value::NUMBER)
 		return Value(rad2deg(acos(args[0].num)));
 	return Value();
 }
 
 Value builtin_tan(const QVector<QString>&, const QVector<Value> &args)
 {
-	if (args[0].type == Value::NUMBER)
+	if (args.size() == 1 && args[0].type == Value::NUMBER)
 		return Value(tan(deg2rad(args[0].num)));
 	return Value();
 }
 
 Value builtin_atan(const QVector<QString>&, const QVector<Value> &args)
 {
-	if (args[0].type == Value::NUMBER)
+	if (args.size() == 1 && args[0].type == Value::NUMBER)
 		return Value(rad2deg(atan(args[0].num)));
 	return Value();
 }
 
 Value builtin_atan2(const QVector<QString>&, const QVector<Value> &args)
 {
-	if (args[0].type == Value::NUMBER && args[1].type == Value::NUMBER)
+	if (args.size() == 2 && args[0].type == Value::NUMBER && args[1].type == Value::NUMBER)
 		return Value(rad2deg(atan2(args[0].num, args[1].num)));
+	return Value();
+}
+
+Value builtin_pow(const QVector<QString>&, const QVector<Value> &args)
+{
+	if (args.size() == 2 && args[0].type == Value::NUMBER && args[1].type == Value::NUMBER)
+		return Value(pow(args[0].num, args[1].num));
 	return Value();
 }
 
@@ -158,6 +165,7 @@ void initialize_builtin_functions()
 	builtin_functions["tan"] = new BuiltinFunction(&builtin_tan);
 	builtin_functions["atan"] = new BuiltinFunction(&builtin_atan);
 	builtin_functions["atan2"] = new BuiltinFunction(&builtin_atan2);
+	builtin_functions["pow"] = new BuiltinFunction(&builtin_pow);
 	initialize_builtin_dxf_dim();
 }
 
