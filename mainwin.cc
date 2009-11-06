@@ -237,7 +237,7 @@ MainWindow::MainWindow(const char *filename)
 
 	setCentralWidget(s1);
 
-	connect(editor->document(), SIGNAL(contentsChanged()), this, SLOT(animateUpdate()));
+	connect(editor->document(), SIGNAL(contentsChanged()), this, SLOT(animateUpdateDocChanged()));
 	connect(screen, SIGNAL(doAnimateUpdate()), this, SLOT(animateUpdate()));
 
 	// display this window and check for OpenGL 2.0 (OpenCSG) support
@@ -410,13 +410,20 @@ void MainWindow::compile(bool procevents)
 	vpr.vec.append(new Value(fmodf(360 - screen->object_rot_z, 360)));
 	root_ctx.set_variable("$vpr", vpr);
 
-	root_module = parse(editor->toPlainText().toAscii().data(), false);
+	last_compiled_doc = editor->toPlainText();
+	root_module = parse(last_compiled_doc.toAscii().data(), false);
 
 	delete highlighter;
 	highlighter = new Highlighter(editor->document());
 
-	if (!root_module)
+	if (!root_module) {
+		if (!animate_panel->isVisible()) {
+			QTextCursor cursor = editor->textCursor();
+			cursor.setPosition(parser_error_pos);
+			editor->setTextCursor(cursor);
+		}
 		goto fail;
+	}
 
 	PRINT("Compiling design (CSG Tree generation)...");
 	if (procevents)
@@ -1215,6 +1222,13 @@ void MainWindow::viewModeAnimate()
 		animate_panel->hide();
 		animate_timer->stop();
 	}
+}
+
+void MainWindow::animateUpdateDocChanged()
+{
+	QString current_doc = editor->toPlainText();
+	if (current_doc != last_compiled_doc)
+		animateUpdate();
 }
 
 void MainWindow::animateUpdate()

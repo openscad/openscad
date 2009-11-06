@@ -735,6 +735,7 @@ public:
 	QVector<CSGTerm*> background_terms;
 	CSGChain *background_chain;
 	AbstractNode *root_node;
+	QString last_compiled_doc;
 	bool enableOpenCSG;
 
 	MainWindow(const char *filename = 0);
@@ -818,6 +819,7 @@ public slots:
 	void viewCenter();
 	void viewPerspective();
 	void viewOrthogonal();
+	void animateUpdateDocChanged();
 	void animateUpdate();
 	void dragEnterEvent(QDragEnterEvent *event);
 	void dropEvent(QDropEvent *event);
