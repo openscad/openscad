@@ -112,9 +112,19 @@ statement:
 		}
 	} |
 	TOK_ID '=' expr ';' {
-		module->assignments_var.append($1);
-		module->assignments_expr.append($3);
-		free($1);
+		bool add_new_assignment = true;
+		for (int i = 0; i < module->assignments_var.size(); i++) {
+			if (module->assignments_var[i] != QString($1))
+				continue;
+			delete module->assignments_expr[i];
+			module->assignments_expr[i] = $3;
+			add_new_assignment = false;
+		}
+		if (add_new_assignment) {
+			module->assignments_var.append($1);
+			module->assignments_expr.append($3);
+			free($1);
+		}
 	} |
 	TOK_MODULE TOK_ID '(' arguments_decl optional_commas ')' {
 		Module *p = module;

@@ -30,11 +30,13 @@
 
 static void help(const char *progname)
 {
-	fprintf(stderr, "Usage: %s [ -m make_command ] [ filename ]\n", progname);
-	fprintf(stderr, "       %s { -s stl_file | -o off_file } [ -d deps_file ] [ -m make_command ] filename\n", progname);
+	fprintf(stderr, "Usage: %s [ { -s stl_file | -o off_file } [ -d deps_file ] ]\\\n"
+			"%*s[ -m make_command ] [ -D var=val [..] ] filename\n",
+			progname, strlen(progname)+8, "");
 	exit(1);
 }
 
+QString commandline_commands;
 const char *make_command = NULL;
 QSet<QString> dependencies;
 
@@ -80,7 +82,7 @@ int main(int argc, char **argv)
 
 	int opt;
 
-	while ((opt = getopt(argc, argv, "s:o:d:m:")) != -1)
+	while ((opt = getopt(argc, argv, "s:o:d:m:D:")) != -1)
 	{
 		switch (opt)
 		{
@@ -103,6 +105,9 @@ int main(int argc, char **argv)
 			if (make_command)
 				help(argv[0]);
 			make_command = optarg;
+			break;
+		case 'D':
+			commandline_commands += QString(optarg) + QString(";\n");
 			break;
 		default:
 			help(argv[0]);

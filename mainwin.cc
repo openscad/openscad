@@ -411,7 +411,7 @@ void MainWindow::compile(bool procevents)
 	root_ctx.set_variable("$vpr", vpr);
 
 	last_compiled_doc = editor->toPlainText();
-	root_module = parse(last_compiled_doc.toAscii().data(), false);
+	root_module = parse((last_compiled_doc + commandline_commands).toAscii().data(), false);
 
 	delete highlighter;
 	highlighter = new Highlighter(editor->document());

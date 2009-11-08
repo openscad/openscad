@@ -828,6 +828,7 @@ public slots:
 extern AbstractModule *parse(const char *text, int debug);
 extern int get_fragments_from_r(double r, double fn, double fs, double fa);
 
+extern QString commandline_commands;
 extern int parser_error_pos;
 extern QPointer<MainWindow> current_win;
 
