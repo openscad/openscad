@@ -43,7 +43,8 @@ void Context::args(const QVector<QString> &argnames, const QVector<Expression*> 
 	int posarg = 0;
 	for (int i=0; i<call_argnames.size(); i++) {
 		if (call_argnames[i].isEmpty()) {
-			set_variable(argnames[posarg++], call_argvalues[i]);
+			if (posarg < argnames.size())
+				set_variable(argnames[posarg++], call_argvalues[i]);
 		} else {
 			set_variable(call_argnames[i], call_argvalues[i]);
 		}
