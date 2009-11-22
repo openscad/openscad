@@ -41,6 +41,25 @@
 //for chdir
 #include <unistd.h>
 
+#ifdef ENABLE_CGAL
+
+// a little hackish: we need access to default-private members of
+// CGAL::OGL::Nef3_Converter so we can implement our own draw function
+// that does not scale the model. so we define 'class' to 'struct'
+// for this header..
+//
+// theoretically there could be two problems:
+// 1.) defining language keyword with the pre processor is illegal afair
+// 2.) the compiler could use a different memory layout or name mangling for structs
+//
+// both does not seam to be the case with todays compilers...
+//
+#define class struct
+#include <CGAL/Nef_3/OGL_helper.h>
+#undef class
+
+#endif
+
 QPointer<MainWindow> current_win;
 
 MainWindow::MainWindow(const char *filename)
@@ -67,6 +86,8 @@ MainWindow::MainWindow(const char *filename)
 	root_chain = NULL;
 #ifdef ENABLE_CGAL
 	root_N = NULL;
+	recreate_cgal_ogl_p = false;
+	cgal_ogl_p = NULL;
 #endif
 
 	highlights_chain = NULL;
@@ -269,6 +290,10 @@ MainWindow::~MainWindow()
 #ifdef ENABLE_CGAL
 	if (root_N)
 		delete root_N;
+	if (cgal_ogl_p) {
+		CGAL::OGL::Polyhedron *p = (CGAL::OGL::Polyhedron*)cgal_ogl_p;
+		delete p;
+	}
 #endif
 }
 
@@ -767,6 +792,7 @@ void MainWindow::actionRenderCGAL()
 	if (root_N) {
 		delete root_N;
 		root_N = NULL;
+		recreate_cgal_ogl_p = true;
 	}
 
 	PRINT("Rendering Polygon Mesh using CGAL...");
@@ -1058,46 +1084,40 @@ void MainWindow::viewModeOpenCSG()
 
 #ifdef ENABLE_CGAL
 
-// a little hackish: we need access to default-private members of
-// CGAL::OGL::Nef3_Converter so we can implement our own draw function
-// that does not scale the model. so we define 'class' to 'struct'
-// for this header..
-//
-// theoretically there could be two problems:
-// 1.) defining language keyword with the pre processor is illegal afair
-// 2.) the compiler could use a different memory layout or name mangling for structs
-//
-// both does not seam to be the case with todays compilers...
-//
-#define class struct
-#include <CGAL/Nef_3/OGL_helper.h>
-#undef class
-
 static void renderGLviaCGAL(void *vp)
 {
 	MainWindow *m = (MainWindow*)vp;
+	if (m->recreate_cgal_ogl_p) {
+		m->recreate_cgal_ogl_p = false;
+		CGAL::OGL::Polyhedron *p = (CGAL::OGL::Polyhedron*)m->cgal_ogl_p;
+		delete p;
+		m->cgal_ogl_p = NULL;
+	}
 	if (m->root_N) {
-		CGAL::OGL::Polyhedron P;
-		CGAL::OGL::Nef3_Converter<CGAL_Nef_polyhedron>::convert_to_OGLPolyhedron(*m->root_N, &P);
-		P.init();
+		CGAL::OGL::Polyhedron *p = (CGAL::OGL::Polyhedron*)m->cgal_ogl_p;
+		if (!p) {
+			m->cgal_ogl_p = p = new CGAL::OGL::Polyhedron();
+			CGAL::OGL::Nef3_Converter<CGAL_Nef_polyhedron>::convert_to_OGLPolyhedron(*m->root_N, p);
+			p->init();
+		}
 		if (m->actViewModeCGALSurface->isChecked())
-			P.set_style(CGAL::OGL::SNC_BOUNDARY);
+			p->set_style(CGAL::OGL::SNC_BOUNDARY);
 		if (m->actViewModeCGALGrid->isChecked())
-			P.set_style(CGAL::OGL::SNC_SKELETON);
+			p->set_style(CGAL::OGL::SNC_SKELETON);
 #if 0
-		P.draw();
+		p->draw();
 #else
-		if (P.style == CGAL::OGL::SNC_BOUNDARY) {
-			glCallList(P.object_list_+2);
+		if (p->style == CGAL::OGL::SNC_BOUNDARY) {
+			glCallList(p->object_list_+2);
 			if (m->actViewModeShowEdges->isChecked()) {
 				glDisable(GL_LIGHTING);
-				glCallList(P.object_list_+1);
-				glCallList(P.object_list_);
+				glCallList(p->object_list_+1);
+				glCallList(p->object_list_);
 			}
 		} else {
 			glDisable(GL_LIGHTING);
-			glCallList(P.object_list_+1);
-			glCallList(P.object_list_);
+			glCallList(p->object_list_+1);
+			glCallList(p->object_list_);
 		}
 #endif
 	}

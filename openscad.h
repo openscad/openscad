@@ -728,6 +728,8 @@ public:
 	CSGChain *root_chain;
 #ifdef ENABLE_CGAL
 	CGAL_Nef_polyhedron *root_N;
+	bool recreate_cgal_ogl_p;
+	void *cgal_ogl_p;
 #endif
 
 	QVector<CSGTerm*> highlight_terms;
