@@ -26,6 +26,7 @@ enum control_type_e {
 	ECHO,
 	ASSIGN,
 	FOR,
+	INT_FOR,
 	IF
 };
 
@@ -79,7 +80,12 @@ void for_eval(AbstractNode *node, int l, const QVector<QString> &call_argnames, 
 
 AbstractNode *ControlModule::evaluate(const Context*, const ModuleInstanciation *inst) const
 {
-	AbstractNode *node = new AbstractNode(inst);
+	AbstractNode *node;
+
+	if (type == INT_FOR)
+		node = new AbstractIntersectionNode(inst);
+	else
+		node = new AbstractNode(inst);
 
 	if (type == ECHO)
 	{
@@ -108,7 +114,7 @@ AbstractNode *ControlModule::evaluate(const Context*, const ModuleInstanciation 
 		}
 	}
 
-	if (type == FOR)
+	if (type == FOR || type == INT_FOR)
 	{
 		for_eval(node, 0, inst->argnames, inst->argvalues, inst->children, inst->ctx);
 	}
@@ -131,6 +137,7 @@ void register_builtin_control()
 	builtin_modules["echo"] = new ControlModule(ECHO);
 	builtin_modules["assign"] = new ControlModule(ASSIGN);
 	builtin_modules["for"] = new ControlModule(FOR);
+	builtin_modules["intersection_for"] = new ControlModule(INT_FOR);
 	builtin_modules["if"] = new ControlModule(IF);
 }
 

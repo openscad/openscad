@@ -72,6 +72,7 @@ class PolySetPtr;
 class CSGTerm;
 class CSGChain;
 class AbstractNode;
+class AbstractIntersectionNode;
 class AbstractPolyNode;
 
 template <typename T>
@@ -601,6 +602,17 @@ public:
 	virtual QString mk_cache_id() const;
 #ifdef ENABLE_CGAL
 	static QCache<QString, CGAL_Nef_polyhedron> cgal_nef_cache;
+	virtual CGAL_Nef_polyhedron render_cgal_nef_polyhedron() const;
+#endif
+	virtual CSGTerm *render_csg_term(double m[16], QVector<CSGTerm*> *highlights, QVector<CSGTerm*> *background) const;
+	virtual QString dump(QString indent) const;
+};
+
+class AbstractIntersectionNode : public AbstractNode
+{
+public:
+	AbstractIntersectionNode(const ModuleInstanciation *mi) : AbstractNode(mi) { };
+#ifdef ENABLE_CGAL
 	virtual CGAL_Nef_polyhedron render_cgal_nef_polyhedron() const;
 #endif
 	virtual CSGTerm *render_csg_term(double m[16], QVector<CSGTerm*> *highlights, QVector<CSGTerm*> *background) const;

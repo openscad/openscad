@@ -232,52 +232,93 @@ QString AbstractNode::mk_cache_id() const
 
 QCache<QString, CGAL_Nef_polyhedron> AbstractNode::cgal_nef_cache(100000);
 
-CGAL_Nef_polyhedron AbstractNode::render_cgal_nef_polyhedron() const
+static CGAL_Nef_polyhedron render_cgal_nef_polyhedron_backend(const AbstractNode *that, bool intersect)
 {
-	QString cache_id = mk_cache_id();
-	if (cgal_nef_cache.contains(cache_id)) {
-		progress_report();
-		return *cgal_nef_cache[cache_id];
+	QString cache_id = that->mk_cache_id();
+	if (that->cgal_nef_cache.contains(cache_id)) {
+		that->progress_report();
+		return *that->cgal_nef_cache[cache_id];
 	}
 
+	bool is_first = true;
 	CGAL_Nef_polyhedron N;
-	foreach (AbstractNode *v, children) {
+	foreach (AbstractNode *v, that->children) {
 		if (v->modinst->tag_background)
 			continue;
-		N += v->render_cgal_nef_polyhedron();
+		if (is_first)
+			N = v->render_cgal_nef_polyhedron();
+		else if (intersect)
+			N *= v->render_cgal_nef_polyhedron();
+		else
+			N += v->render_cgal_nef_polyhedron();
+		is_first = false;
 	}
 
-	cgal_nef_cache.insert(cache_id, new CGAL_Nef_polyhedron(N), N.number_of_vertices());
-	progress_report();
+	that->cgal_nef_cache.insert(cache_id, new CGAL_Nef_polyhedron(N), N.number_of_vertices());
+	that->progress_report();
 	return N;
+}
+
+CGAL_Nef_polyhedron AbstractNode::render_cgal_nef_polyhedron() const
+{
+	return render_cgal_nef_polyhedron_backend(this, false);
+}
+
+CGAL_Nef_polyhedron AbstractIntersectionNode::render_cgal_nef_polyhedron() const
+{
+	return render_cgal_nef_polyhedron_backend(this, true);
 }
 
 #endif /* ENABLE_CGAL */
 
-CSGTerm *AbstractNode::render_csg_term(double m[16], QVector<CSGTerm*> *highlights, QVector<CSGTerm*> *background) const
+static CSGTerm *render_csg_term_backend(const AbstractNode *that, bool intersect, double m[16], QVector<CSGTerm*> *highlights, QVector<CSGTerm*> *background)
 {
 	CSGTerm *t1 = NULL;
-	foreach(AbstractNode *v, children) {
+	foreach(AbstractNode *v, that->children) {
 		CSGTerm *t2 = v->render_csg_term(m, highlights, background);
 		if (t2 && !t1) {
 			t1 = t2;
 		} else if (t2 && t1) {
-			t1 = new CSGTerm(CSGTerm::TYPE_UNION, t1, t2);
+			if (intersect)
+				t1 = new CSGTerm(CSGTerm::TYPE_INTERSECTION, t1, t2);
+			else
+				t1 = new CSGTerm(CSGTerm::TYPE_UNION, t1, t2);
 		}
 	}
-	if (t1 && modinst->tag_highlight && highlights)
+	if (t1 && that->modinst->tag_highlight && highlights)
 		highlights->append(t1->link());
-	if (t1 && modinst->tag_background && background) {
+	if (t1 && that->modinst->tag_background && background) {
 		background->append(t1);
 		return NULL;
 	}
 	return t1;
 }
 
+CSGTerm *AbstractNode::render_csg_term(double m[16], QVector<CSGTerm*> *highlights, QVector<CSGTerm*> *background) const
+{
+	return render_csg_term_backend(this, false, m, highlights, background);
+}
+
+CSGTerm *AbstractIntersectionNode::render_csg_term(double m[16], QVector<CSGTerm*> *highlights, QVector<CSGTerm*> *background) const
+{
+	return render_csg_term_backend(this, true, m, highlights, background);
+}
+
 QString AbstractNode::dump(QString indent) const
 {
 	if (dump_cache.isEmpty()) {
 		QString text = indent + QString("n%1: group() {\n").arg(idx);
+		foreach (AbstractNode *v, children)
+			text += v->dump(indent + QString("\t"));
+		((AbstractNode*)this)->dump_cache = text + indent + "}\n";
+	}
+	return dump_cache;
+}
+
+QString AbstractIntersectionNode::dump(QString indent) const
+{
+	if (dump_cache.isEmpty()) {
+		QString text = indent + QString("n%1: intersection() {\n").arg(idx);
 		foreach (AbstractNode *v, children)
 			text += v->dump(indent + QString("\t"));
 		((AbstractNode*)this)->dump_cache = text + indent + "}\n";
