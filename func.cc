@@ -156,6 +156,19 @@ Value builtin_pow(const QVector<QString>&, const QVector<Value> &args)
 	return Value();
 }
 
+Value builtin_str(const QVector<QString>&, const QVector<Value> &args)
+{
+	QString str;
+	for (int i = 0; i < args.size(); i++)
+	{
+		if (args[i].type == Value::STRING)
+			str += args[i].text;
+		else
+			str += args[i].dump();
+	}
+	return Value(str);
+}
+
 void initialize_builtin_functions()
 {
 	builtin_functions["sin"] = new BuiltinFunction(&builtin_sin);
@@ -166,6 +179,7 @@ void initialize_builtin_functions()
 	builtin_functions["atan"] = new BuiltinFunction(&builtin_atan);
 	builtin_functions["atan2"] = new BuiltinFunction(&builtin_atan2);
 	builtin_functions["pow"] = new BuiltinFunction(&builtin_pow);
+	builtin_functions["str"] = new BuiltinFunction(&builtin_str);
 	initialize_builtin_dxf_dim();
 }
 

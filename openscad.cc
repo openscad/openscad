@@ -48,7 +48,7 @@ void handle_dep(QString filename)
 		dependencies.insert(QDir::currentPath() + QString("/") + filename);
 	if (!QFile(filename).exists() && make_command) {
 		char buffer[4096];
-		snprintf(buffer, 4096, "%s '%s", make_command, filename.replace("'", "'\\''").toUtf8().data());
+		snprintf(buffer, 4096, "%s '%s'", make_command, filename.replace("'", "'\\''").toUtf8().data());
 		system(buffer);
 	}
 }
