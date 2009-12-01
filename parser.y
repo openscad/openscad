@@ -351,7 +351,7 @@ expr:
 	} |
 	expr '>' expr {
 		$$ = new Expression();
-		$$->type = "<";
+		$$->type = ">";
 		$$->children.append($1);
 		$$->children.append($3);
 	} |
