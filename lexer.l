@@ -73,7 +73,7 @@ extern const char *parser_input_buffer;
 }
 
 <<EOF>> {
-	if (yyin)
+	if (yyin && yyin != stdin)
 		fclose(yyin);
 	yypop_buffer_state();
 	if (!YY_CURRENT_BUFFER)
