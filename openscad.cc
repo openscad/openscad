@@ -162,7 +162,7 @@ int main(int argc, char **argv)
 				text += buffer;
 			}
 			fclose(fp);
-			root_module = parse(text.toAscii().data(), false);
+			root_module = parse((text+commandline_commands).toAscii().data(), false);
 		}
 
 		QString original_path = QDir::currentPath();
