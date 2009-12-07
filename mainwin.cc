@@ -910,7 +910,7 @@ void MainWindow::actionExportSTLorOFF(bool)
 	}
 
 	if (!root_N->is_simple()) {
-		PRINT("Object isn't a single polyhedron or otherwise invalid! Modify your design..");
+		PRINT("Object isn't a valid 2-manifold! Modify your design..");
 		current_win = NULL;
 		return;
 	}
