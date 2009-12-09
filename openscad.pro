@@ -1,7 +1,7 @@
 
 macx {
 	TARGET = OpenSCAD
-        ICON = OpenSCAD.icns
+	ICON = OpenSCAD.icns
 }
 else {
 	TARGET = openscad
