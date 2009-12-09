@@ -7,16 +7,18 @@ o Build CGAL:
 
 o Patch OpenCSG
 
-  patch -p0 < OpenCSG-MacOSX-port.patch
+  cd OpenCSG-1.1.1
+  patch -p1 < ../openscad/OpenCSG-MacOSX-port.patch
+  patch -p1 < ../openscad/OpenCSG-Reset-Hack.patch      # Only if MDI
 
 o Build OpenCSG
 
-  cd OpenCSG-1.1.1
   qmake -recursive
   make
   
 o Build OpenSCAD
 
+# If MDI: edit openscad.pro and set ENABLE_MDI=1
   cd openscad
   qmake
   make -j4
