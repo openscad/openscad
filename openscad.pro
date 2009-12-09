@@ -11,9 +11,9 @@ CONFIG += qt debug
 TEMPLATE = app
 
 # MDI needs an OpenCSG library that is compiled with OpenCSG-Reset-Hack.patch applied
-# DEFINES += "ENABLE_MDI=1"
+# DEFINES += ENABLE_MDI
 
-DEFINES += "ENABLE_CGAL=1"
+DEFINES += ENABLE_CGAL
 LIBS += -lCGAL
 
 macx {
@@ -26,7 +26,7 @@ else {
 	LIBS += -lmpfr
 }
 
-DEFINES += "ENABLE_OPENCSG=1"
+DEFINES += ENABLE_OPENCSG
 LIBS += -lopencsg
 
 unix:LIBS += -lGLEW

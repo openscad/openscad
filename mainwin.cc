@@ -561,7 +561,7 @@ fail:
 
 void MainWindow::actionNew()
 {
-#if ENABLE_MDI
+#ifdef ENABLE_MDI
 	new MainWindow;
 #else
 	filename = QString();
@@ -576,7 +576,7 @@ void MainWindow::actionOpen()
 	QString new_filename = QFileDialog::getOpenFileName(this, "Open File", "", "OpenSCAD Designs (*.scad)");
 	if (!new_filename.isEmpty())
 	{
-#if ENABLE_MDI
+#ifdef ENABLE_MDI
 		if (!editor->toPlainText().isEmpty()) {
 			new MainWindow(new_filename.toAscii().data());
 			current_win = NULL;
@@ -1359,7 +1359,7 @@ void MainWindow::dropEvent(QDropEvent *event)
 		if (urls[i].scheme() != "file")
 			continue;
 		QString fn = urls[i].path();
-#if ENABLE_MDI
+#ifdef ENABLE_MDI
 		if (!editor->toPlainText().isEmpty()) {
 			new MainWindow(fn.toAscii().data());
 			break;
