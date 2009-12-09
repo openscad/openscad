@@ -21,6 +21,8 @@
 #define INCLUDE_ABSTRACT_NODE_DETAILS
 
 #include "openscad.h"
+#include "MainWindow.h"
+#include "printutils.h"
 
 #include <QMenu>
 #include <QTime>
@@ -37,6 +39,7 @@
 #include <QDropEvent>
 #include <QMimeData>
 #include <QUrl>
+#include <QTimer>
 
 //for chdir
 #include <unistd.h>
@@ -60,12 +63,15 @@
 
 #endif
 
-QPointer<MainWindow> current_win;
+QPointer<MainWindow> MainWindow::current_win = NULL;
 
 MainWindow::MainWindow(const char *filename)
 {
+	setupUi(this);
+
+
 	root_ctx.functions_p = &builtin_functions;
-        root_ctx.modules_p = &builtin_modules;
+	root_ctx.modules_p = &builtin_modules;
 	root_ctx.set_variable("$fn", Value(0.0));
 	root_ctx.set_variable("$fs", Value(1.0));
 	root_ctx.set_variable("$fa", Value(12.0));
@@ -99,139 +105,91 @@ MainWindow::MainWindow(const char *filename)
 	fps = 0;
 	fsteps = 1;
 
-	s1 = new QSplitter(Qt::Horizontal, this);
-	editor = new QTextEdit(s1);
 	highlighter = new Highlighter(editor->document());
 
 	QFont font;
 	font.setStyleHint(QFont::TypeWriter);
 	editor->setFont(font);
 
-	QWidget *w1 = new QWidget(s1);
-	QVBoxLayout *l1 = new QVBoxLayout(w1);
-	l1->setSpacing(0);
-	l1->setMargin(0);
-
-	s2 = new QSplitter(Qt::Vertical, w1);
-	l1->addWidget(s2);
-	screen = new GLView(s2);
-	console = new QTextEdit(s2);
-
 	screen->statusLabel = new QLabel(this);
 	statusBar()->addWidget(screen->statusLabel);
-
-	QWidget *w2 = new QWidget(w1);
-	QHBoxLayout *l2 = new QHBoxLayout(w2);
-	l1->addWidget(w2);
 
 	animate_timer = new QTimer(this);
 	connect(animate_timer, SIGNAL(timeout()), this, SLOT(updateTVal()));
 
-	l2->addWidget(new QLabel("Time:", w2));
-	l2->addWidget(e_tval = new QLineEdit("0", w2));
 	connect(e_tval, SIGNAL(textChanged(QString)), this, SLOT(actionCompile()));
-	
-	l2->addWidget(new QLabel("FPS:", w2));
-	l2->addWidget(e_fps = new QLineEdit("0", w2));
 	connect(e_fps, SIGNAL(textChanged(QString)), this, SLOT(updatedFps()));
 
-	l2->addWidget(new QLabel("Steps:", w2));
-	l2->addWidget(e_fsteps = new QLineEdit("100", w2));
-
-	animate_panel = w2;
 	animate_panel->hide();
 
-	{
-		QMenu *menu = menuBar()->addMenu("&File");
-		menu->addAction("&New", this, SLOT(actionNew()));
-		menu->addAction("&Open...", this, SLOT(actionOpen()));
-		menu->addAction("&Save", this, SLOT(actionSave()), QKeySequence(Qt::Key_F2));
-		menu->addAction("Save &As...", this, SLOT(actionSaveAs()));
-		menu->addAction("&Reload", this, SLOT(actionReload()), QKeySequence(Qt::Key_F3));
-		menu->addAction("&Quit", this, SLOT(close()));
-	}
-
-	{
-		QMenu *menu = menuBar()->addMenu("&Edit");
-		menu->addAction("&Undo", editor, SLOT(undo()), QKeySequence(Qt::CTRL + Qt::Key_Z));
-		menu->addAction("&Redo", editor, SLOT(redo()), QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_Z));
-		menu->addSeparator();
-		menu->addAction("Cu&t", editor, SLOT(cut()), QKeySequence(Qt::CTRL + Qt::Key_X));
-		menu->addAction("&Copy", editor, SLOT(copy()), QKeySequence(Qt::CTRL + Qt::Key_C));
-		menu->addAction("&Paste", editor, SLOT(paste()), QKeySequence(Qt::CTRL + Qt::Key_V));
-		menu->addSeparator();
-		menu->addAction("&Indent", this, SLOT(editIndent()), QKeySequence(Qt::CTRL + Qt::Key_I));
-		menu->addAction("&Unindent", this, SLOT(editUnindent()), QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_I));
-		menu->addSeparator();
-		menu->addAction("C&omment", this, SLOT(editComment()), QKeySequence(Qt::CTRL + Qt::Key_D));
-		menu->addAction("&Uncomment", this, SLOT(editUncomment()), QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_D));
-		menu->addSeparator();
-		menu->addAction("Paste viewport translation", this, SLOT(pasteViewportTranslation()), QKeySequence(Qt::CTRL + Qt::Key_T));
-		menu->addAction("Paste viewport rotation", this, SLOT(pasteViewportRotation()), QKeySequence(Qt::CTRL + Qt::Key_R));
-		menu->addSeparator();
-		menu->addAction("Zoom In", editor, SLOT(zoomIn()), QKeySequence(Qt::CTRL + Qt::Key_Plus));
-		menu->addAction("Zoom Out", editor, SLOT(zoomOut()), QKeySequence(Qt::CTRL + Qt::Key_Minus));
-	}
-
-	{
-		QMenu *menu = menuBar()->addMenu("&Design");
-		menu->addAction("&Reload and Compile", this, SLOT(actionReloadCompile()), QKeySequence(Qt::Key_F4));
-		menu->addAction("&Compile", this, SLOT(actionCompile()), QKeySequence(Qt::Key_F5));
-#ifdef ENABLE_CGAL
-		menu->addAction("Compile and &Render (CGAL)", this, SLOT(actionRenderCGAL()), QKeySequence(Qt::Key_F6));
+	// File menu
+	connect(this->fileActionNew, SIGNAL(triggered()), this, SLOT(actionNew()));
+	connect(this->fileActionOpen, SIGNAL(triggered()), this, SLOT(actionOpen()));
+	connect(this->fileActionSave, SIGNAL(triggered()), this, SLOT(actionSave()));
+	connect(this->fileActionSaveAs, SIGNAL(triggered()), this, SLOT(actionSaveAs()));
+	connect(this->fileActionReload, SIGNAL(triggered()), this, SLOT(actionReload()));
+#ifndef __APPLE__
+	this->fileActionSave->setShortcut(QKeySequence(Qt::Key_F2));
+	this->fileActionReload->setShortcut(QKeySequence(Qt::Key_F4));
 #endif
-		menu->addAction("Display &AST...", this, SLOT(actionDisplayAST()));
-		menu->addAction("Display CSG &Tree...", this, SLOT(actionDisplayCSGTree()));
-		menu->addAction("Display CSG &Products...", this, SLOT(actionDisplayCSGProducts()));
-		menu->addAction("Export as &STL...", this, SLOT(actionExportSTL()));
-		menu->addAction("Export as &OFF...", this, SLOT(actionExportOFF()));
+
+	// Edit menu
+	connect(this->editActionUndo, SIGNAL(triggered()), editor, SLOT(undo()));
+	connect(this->editActionRedo, SIGNAL(triggered()), editor, SLOT(redo()));
+	connect(this->editActionCut, SIGNAL(triggered()), editor, SLOT(cut()));
+	connect(this->editActionCopy, SIGNAL(triggered()), editor, SLOT(copy()));
+	connect(this->editActionPaste, SIGNAL(triggered()), editor, SLOT(paste()));
+	connect(this->editActionIndent, SIGNAL(triggered()), this, SLOT(editIndent()));
+	connect(this->editActionUnindent, SIGNAL(triggered()), this, SLOT(editUnindent()));
+	connect(this->editActionComment, SIGNAL(triggered()), this, SLOT(editComment()));
+	connect(this->editActionUncomment, SIGNAL(triggered()), this, SLOT(editUncomment()));
+	connect(this->editActionPasteVPT, SIGNAL(triggered()), this, SLOT(pasteViewportTranslation()));
+	connect(this->editActionPasteVPR, SIGNAL(triggered()), this, SLOT(pasteViewportRotation()));
+	connect(this->editActionZoomIn, SIGNAL(triggered()), editor, SLOT(zoomIn()));
+	connect(this->editActionZoomOut, SIGNAL(triggered()), editor, SLOT(zoomOut()));
+
+	// Design menu
+	connect(this->designActionReloadAndCompile, SIGNAL(triggered()), this, SLOT(actionReloadCompile()));
+	connect(this->designActionCompile, SIGNAL(triggered()), this, SLOT(actionCompile()));
+	connect(this->designActionCompileAndRender, SIGNAL(triggered()), this, SLOT(actionRenderCGAL()));
+	connect(this->designActionDisplayAST, SIGNAL(triggered()), this, SLOT(actionDisplayAST()));
+	connect(this->designActionDisplayCSGTree, SIGNAL(triggered()), this, SLOT(actionDisplayCSGTree()));
+	connect(this->designActionDisplayCSGProducts, SIGNAL(triggered()), this, SLOT(actionDisplayCSGProducts()));
+	connect(this->designActionExportSTL, SIGNAL(triggered()), this, SLOT(actionExportSTL()));
+	connect(this->designActionExportOFF, SIGNAL(triggered()), this, SLOT(actionExportOFF()));
+
+	// View menu
+	connect(this->viewActionOpenCSG, SIGNAL(triggered()), this, SLOT(viewModeOpenCSG()));
+#ifndef ENABLE_OPENCSG
+	this->viewActionOpenCSG->setVisible(false);
+#else
+	if (!screen->opencsg_support) {
+		this->viewActionOpenCSG->setEnabled(false);
 	}
-
-	{
-		QMenu *menu = menuBar()->addMenu("&View");
-#ifdef ENABLE_OPENCSG
-		if (screen->opencsg_support) {
-			actViewModeOpenCSG = menu->addAction("OpenCSG", this, SLOT(viewModeOpenCSG()), QKeySequence(Qt::Key_F9));
-			actViewModeOpenCSG->setCheckable(true);
-		} else {
-			actViewModeOpenCSG = NULL;
-		}
 #endif
-#ifdef ENABLE_CGAL
-		actViewModeCGALSurface = menu->addAction("CGAL Surfaces", this, SLOT(viewModeCGALSurface()), QKeySequence(Qt::Key_F10));
-		actViewModeCGALGrid = menu->addAction("CGAL Grid Only", this, SLOT(viewModeCGALGrid()), QKeySequence(Qt::Key_F11));
-		actViewModeCGALSurface->setCheckable(true);
-		actViewModeCGALGrid->setCheckable(true);
-#endif
-		actViewModeThrownTogether = menu->addAction("Thrown Together", this, SLOT(viewModeThrownTogether()), QKeySequence(Qt::Key_F12));
-		actViewModeThrownTogether->setCheckable(true);
 
-		menu->addSeparator();
-		actViewModeShowEdges = menu->addAction("Show Edges", this, SLOT(viewModeShowEdges()), QKeySequence(Qt::CTRL + Qt::Key_1));
-		actViewModeShowEdges->setCheckable(true);
-		actViewModeShowAxes = menu->addAction("Show Axes", this, SLOT(viewModeShowAxes()), QKeySequence(Qt::CTRL + Qt::Key_2));
-		actViewModeShowAxes->setCheckable(true);
-		actViewModeShowCrosshairs = menu->addAction("Show Crosshairs", this, SLOT(viewModeShowCrosshairs()), QKeySequence(Qt::CTRL + Qt::Key_3));
-		actViewModeShowCrosshairs->setCheckable(true);
-		actViewModeAnimate = menu->addAction("Animate", this, SLOT(viewModeAnimate()));
-		actViewModeAnimate->setCheckable(true);
+	connect(this->viewActionCGALSurfaces, SIGNAL(triggered()), this, SLOT(viewModeCGALSurface()));
+	connect(this->viewActionCGALGrid, SIGNAL(triggered()), this, SLOT(viewModeCGALGrid()));
+	connect(this->viewActionThrownTogether, SIGNAL(triggered()), this, SLOT(viewModeThrownTogether()));
+	connect(this->viewActionShowEdges, SIGNAL(triggered()), this, SLOT(viewModeShowEdges()));
+	connect(this->viewActionShowAxes, SIGNAL(triggered()), this, SLOT(viewModeShowAxes()));
+	connect(this->viewActionShowCrosshairs, SIGNAL(triggered()), this, SLOT(viewModeShowCrosshairs()));
+	connect(this->viewActionAnimate, SIGNAL(triggered()), this, SLOT(viewModeAnimate()));
+	connect(this->viewActionTop, SIGNAL(triggered()), this, SLOT(viewAngleTop()));
+	connect(this->viewActionBottom, SIGNAL(triggered()), this, SLOT(viewAngleBottom()));
+	connect(this->viewActionLeft, SIGNAL(triggered()), this, SLOT(viewAngleLeft()));
+	connect(this->viewActionRight, SIGNAL(triggered()), this, SLOT(viewAngleRight()));
+	connect(this->viewActionFront, SIGNAL(triggered()), this, SLOT(viewAngleFront()));
+	connect(this->viewActionBack, SIGNAL(triggered()), this, SLOT(viewAngleBack()));
+	connect(this->viewActionDiagonal, SIGNAL(triggered()), this, SLOT(viewAngleDiagonal()));
+	connect(this->viewActionCenter, SIGNAL(triggered()), this, SLOT(viewCenter()));
+	connect(this->viewActionPerspective, SIGNAL(triggered()), this, SLOT(viewPerspective()));
+	connect(this->viewActionOrthogonal, SIGNAL(triggered()), this, SLOT(viewOrthogonal()));
 
-		menu->addSeparator();
-		menu->addAction("Top", this, SLOT(viewAngleTop()), QKeySequence(Qt::CTRL + Qt::Key_4));
-		menu->addAction("Bottom", this, SLOT(viewAngleBottom()), QKeySequence(Qt::CTRL + Qt::Key_5));
-		menu->addAction("Left", this, SLOT(viewAngleLeft()), QKeySequence(Qt::CTRL + Qt::Key_6));
-		menu->addAction("Right", this, SLOT(viewAngleRight()), QKeySequence(Qt::CTRL + Qt::Key_7));
-		menu->addAction("Front", this, SLOT(viewAngleFront()), QKeySequence(Qt::CTRL + Qt::Key_8));
-		menu->addAction("Back", this, SLOT(viewAngleBack()), QKeySequence(Qt::CTRL + Qt::Key_9));
-		menu->addAction("Diagonal", this, SLOT(viewAngleDiagonal()), QKeySequence(Qt::CTRL + Qt::Key_0));
-		menu->addAction("Center", this, SLOT(viewCenter()), QKeySequence(Qt::CTRL + Qt::Key_P));
-
-		menu->addSeparator();
-		actViewPerspective = menu->addAction("Perspective", this, SLOT(viewPerspective()));
-		actViewPerspective->setCheckable(true);
-		actViewOrthogonal = menu->addAction("Orthogonal", this, SLOT(viewOrthogonal()));
-		actViewOrthogonal->setCheckable(true);
-	}
+// #ifdef ENABLE_CGAL
+// 		viewActionCGALSurface = menu->addAction("CGAL Surfaces", this, SLOT(viewModeCGALSurface()), QKeySequence(Qt::Key_F10));
+// 		viewActionCGALGrid = menu->addAction("CGAL Grid Only", this, SLOT(viewModeCGALGrid()), QKeySequence(Qt::Key_F11));
+// #endif
 
 	console->setReadOnly(true);
 	current_win = this;
@@ -256,8 +214,6 @@ MainWindow::MainWindow(const char *filename)
 		setWindowTitle("New Document");
 	}
 
-	setCentralWidget(s1);
-
 	connect(editor->document(), SIGNAL(contentsChanged()), this, SLOT(animateUpdateDocChanged()));
 	connect(screen, SIGNAL(doAnimateUpdate()), this, SLOT(animateUpdate()));
 
@@ -267,8 +223,8 @@ MainWindow::MainWindow(const char *filename)
 
 	// make sure it looks nice..
 	resize(800, 600);
-	s1->setSizes(QList<int>() << 400 << 400);
-	s2->setSizes(QList<int>() << 400 << 200);
+	splitter1->setSizes(QList<int>() << 400 << 400);
+	splitter2->setSizes(QList<int>() << 400 << 200);
 
 #ifdef ENABLE_OPENCSG
 	viewModeOpenCSG();
@@ -734,8 +690,8 @@ void MainWindow::actionReloadCompile()
 	compile(true);
 
 #ifdef ENABLE_OPENCSG
-	if (!(actViewModeOpenCSG && actViewModeOpenCSG->isChecked()) &&
-			!actViewModeThrownTogether->isChecked()) {
+	if (!(viewActionOpenCSG->isVisible() && viewActionOpenCSG->isChecked()) &&
+			!viewActionThrownTogether->isChecked()) {
 		viewModeOpenCSG();
 	}
 	else
@@ -751,11 +707,11 @@ void MainWindow::actionCompile()
 	current_win = this;
 	console->clear();
 
-	compile(!actViewModeAnimate->isChecked());
+	compile(!viewActionAnimate->isChecked());
 
 #ifdef ENABLE_OPENCSG
-	if (!(actViewModeOpenCSG && actViewModeOpenCSG->isChecked()) &&
-			!actViewModeThrownTogether->isChecked()) {
+	if (!(viewActionOpenCSG->isVisible() && viewActionOpenCSG->isChecked()) &&
+			!viewActionThrownTogether->isChecked()) {
 		viewModeOpenCSG();
 	}
 	else
@@ -835,7 +791,7 @@ void MainWindow::actionRenderCGAL()
 	int s = t.elapsed() / 1000;
 	PRINTF("Total rendering time: %d hours, %d minutes, %d seconds", s / (60*60), (s / 60) % 60, s % 60);
 
-	if (!actViewModeCGALSurface->isChecked() && !actViewModeCGALGrid->isChecked()) {
+	if (!viewActionCGALSurfaces->isChecked() && !viewActionCGALGrid->isChecked()) {
 		viewModeCGALSurface();
 	} else {
 		screen->updateGL();
@@ -956,15 +912,12 @@ void MainWindow::actionExportOFF()
 
 void MainWindow::viewModeActionsUncheck()
 {
-#ifdef ENABLE_OPENCSG
-	if (actViewModeOpenCSG)
-		actViewModeOpenCSG->setChecked(false);
-#endif
+	viewActionOpenCSG->setChecked(false);
 #ifdef ENABLE_CGAL
-	actViewModeCGALSurface->setChecked(false);
-	actViewModeCGALGrid->setChecked(false);
+	viewActionCGALSurfaces->setChecked(false);
+	viewActionCGALGrid->setChecked(false);
 #endif
-	actViewModeThrownTogether->setChecked(false);
+	viewActionThrownTogether->setChecked(false);
 }
 
 #ifdef ENABLE_OPENCSG
@@ -1053,12 +1006,12 @@ static void renderGLviaOpenCSG(void *vp)
 		GLint *shaderinfo = m->screen->shaderinfo;
 		if (!shaderinfo[0])
 			shaderinfo = NULL;
-		renderCSGChainviaOpenCSG(m->root_chain, m->actViewModeShowEdges->isChecked() ? shaderinfo : NULL, false, false);
+		renderCSGChainviaOpenCSG(m->root_chain, m->viewActionShowEdges->isChecked() ? shaderinfo : NULL, false, false);
 		if (m->background_chain) {
-			renderCSGChainviaOpenCSG(m->background_chain, m->actViewModeShowEdges->isChecked() ? shaderinfo : NULL, false, true);
+			renderCSGChainviaOpenCSG(m->background_chain, m->viewActionShowEdges->isChecked() ? shaderinfo : NULL, false, true);
 		}
 		if (m->highlights_chain) {
-			renderCSGChainviaOpenCSG(m->highlights_chain, m->actViewModeShowEdges->isChecked() ? shaderinfo : NULL, true, false);
+			renderCSGChainviaOpenCSG(m->highlights_chain, m->viewActionShowEdges->isChecked() ? shaderinfo : NULL, true, false);
 		}
 	}
 }
@@ -1067,15 +1020,11 @@ void MainWindow::viewModeOpenCSG()
 {
 	if (screen->opencsg_support) {
 		viewModeActionsUncheck();
-		actViewModeOpenCSG->setChecked(true);
+		viewActionOpenCSG->setChecked(true);
 		screen->renderfunc = renderGLviaOpenCSG;
 		screen->renderfunc_vp = this;
 		screen->updateGL();
 	} else {
-		if (actViewModeOpenCSG) {
-			delete actViewModeOpenCSG;
-			actViewModeOpenCSG = NULL;
-		}
 		viewModeThrownTogether();
 	}
 }
@@ -1100,16 +1049,16 @@ static void renderGLviaCGAL(void *vp)
 			CGAL::OGL::Nef3_Converter<CGAL_Nef_polyhedron>::convert_to_OGLPolyhedron(*m->root_N, p);
 			p->init();
 		}
-		if (m->actViewModeCGALSurface->isChecked())
+		if (m->viewActionCGALSurfaces->isChecked())
 			p->set_style(CGAL::OGL::SNC_BOUNDARY);
-		if (m->actViewModeCGALGrid->isChecked())
+		if (m->viewActionCGALGrid->isChecked())
 			p->set_style(CGAL::OGL::SNC_SKELETON);
 #if 0
 		p->draw();
 #else
 		if (p->style == CGAL::OGL::SNC_BOUNDARY) {
 			glCallList(p->object_list_+2);
-			if (m->actViewModeShowEdges->isChecked()) {
+			if (m->viewActionShowEdges->isChecked()) {
 				glDisable(GL_LIGHTING);
 				glCallList(p->object_list_+1);
 				glCallList(p->object_list_);
@@ -1126,7 +1075,7 @@ static void renderGLviaCGAL(void *vp)
 void MainWindow::viewModeCGALSurface()
 {
 	viewModeActionsUncheck();
-	actViewModeCGALSurface->setChecked(true);
+	viewActionCGALSurfaces->setChecked(true);
 	screen->renderfunc = renderGLviaCGAL;
 	screen->renderfunc_vp = this;
 	screen->updateGL();
@@ -1135,7 +1084,7 @@ void MainWindow::viewModeCGALSurface()
 void MainWindow::viewModeCGALGrid()
 {
 	viewModeActionsUncheck();
-	actViewModeCGALGrid->setChecked(true);
+	viewActionCGALGrid->setChecked(true);
 	screen->renderfunc = renderGLviaCGAL;
 	screen->renderfunc_vp = this;
 	screen->updateGL();
@@ -1147,7 +1096,7 @@ static void renderGLThrownTogetherChain(MainWindow *m, CSGChain *chain, bool hig
 {
 	glDepthFunc(GL_LEQUAL);
 	QHash<QPair<PolySet*,double*>,int> polySetVisitMark;
-	bool showEdges = m->actViewModeShowEdges->isChecked();
+	bool showEdges = m->viewActionShowEdges->isChecked();
 	for (int i = 0; i < chain->polysets.size(); i++) {
 		if (polySetVisitMark[QPair<PolySet*,double*>(chain->polysets[i], chain->matrices[i])]++ > 0)
 			continue;
@@ -1209,7 +1158,7 @@ static void renderGLThrownTogether(void *vp)
 void MainWindow::viewModeThrownTogether()
 {
 	viewModeActionsUncheck();
-	actViewModeThrownTogether->setChecked(true);
+	viewActionThrownTogether->setChecked(true);
 	screen->renderfunc = renderGLThrownTogether;
 	screen->renderfunc_vp = this;
 	screen->updateGL();
@@ -1222,19 +1171,19 @@ void MainWindow::viewModeShowEdges()
 
 void MainWindow::viewModeShowAxes()
 {
-	screen->showaxes = actViewModeShowAxes->isChecked();
+	screen->showaxes = viewActionShowAxes->isChecked();
 	screen->updateGL();
 }
 
 void MainWindow::viewModeShowCrosshairs()
 {
-	screen->showcrosshairs = actViewModeShowCrosshairs->isChecked();
+	screen->showcrosshairs = viewActionShowCrosshairs->isChecked();
 	screen->updateGL();
 }
 
 void MainWindow::viewModeAnimate()
 {
-	if (actViewModeAnimate->isChecked()) {
+	if (viewActionAnimate->isChecked()) {
 		animate_panel->show();
 		actionCompile();
 		updatedFps();
@@ -1331,16 +1280,16 @@ void MainWindow::viewCenter()
 
 void MainWindow::viewPerspective()
 {
-	actViewPerspective->setChecked(true);
-	actViewOrthogonal->setChecked(false);
+	viewActionPerspective->setChecked(true);
+	viewActionOrthogonal->setChecked(false);
 	screen->orthomode = false;
 	screen->updateGL();
 }
 
 void MainWindow::viewOrthogonal()
 {
-	actViewPerspective->setChecked(false);
-	actViewOrthogonal->setChecked(true);
+	viewActionPerspective->setChecked(false);
+	viewActionOrthogonal->setChecked(true);
 	screen->orthomode = true;
 	screen->updateGL();
 }

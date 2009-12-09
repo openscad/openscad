@@ -21,6 +21,7 @@
 #define INCLUDE_ABSTRACT_NODE_DETAILS
 
 #include "openscad.h"
+#include "MainWindow.h"
 
 #include <QApplication>
 #include <QFile>

@@ -35,13 +35,20 @@ win32:LIBS += -lglew32 -lboost_thread -lgmp
 LEXSOURCES += lexer.l
 YACCSOURCES += parser.y
 
-HEADERS += openscad.h
-SOURCES += openscad.cc mainwin.cc glview.cc export.cc
-SOURCES += value.cc expr.cc func.cc module.cc context.cc
-SOURCES += csgterm.cc polyset.cc csgops.cc transform.cc
-SOURCES += primitives.cc surface.cc control.cc render.cc
-SOURCES += import.cc dxfdata.cc dxftess.cc dxfdim.cc
-SOURCES += dxflinextrude.cc dxfrotextrude.cc highlighter.cc
+FORMS   += MainWindow.ui
+
+HEADERS += openscad.h \
+           MainWindow.h \
+           GLView.h \
+           printutils.h
+
+SOURCES += openscad.cc mainwin.cc glview.cc export.cc \
+           value.cc expr.cc func.cc module.cc context.cc \
+           csgterm.cc polyset.cc csgops.cc transform.cc \
+           primitives.cc surface.cc control.cc render.cc \
+           import.cc dxfdata.cc dxftess.cc dxfdim.cc \
+           dxflinextrude.cc dxfrotextrude.cc highlighter.cc \
+           printutils.cc
 
 QMAKE_CXXFLAGS += -O0
 # QMAKE_CXXFLAGS += -O3 -march=pentium

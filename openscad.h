@@ -29,16 +29,9 @@
 #include <QHash>
 #include <QCache>
 #include <QVector>
-#include <QMainWindow>
 #include <QProgressDialog>
 #include <QSyntaxHighlighter>
-#include <QSplitter>
-#include <QTextEdit>
-#include <QLineEdit>
-#include <QGLWidget>
 #include <QPointer>
-#include <QLabel>
-#include <QTimer>
 
 #include <stdio.h>
 #include <errno.h>
@@ -530,13 +523,13 @@ public:
 class PolySetPtr
 {
 public:
-       PolySet *ps;
-       PolySetPtr(PolySet *ps) {
-               this->ps = ps;
-       }
-       ~PolySetPtr() {
-               ps->unlink();
-       }
+	PolySet *ps;
+	PolySetPtr(PolySet *ps) {
+		this->ps = ps;
+	}
+	~PolySetPtr() {
+		ps->unlink();
+	}
 };
 
 class CSGTerm
@@ -652,62 +645,6 @@ struct CGAL_Nef_polyhedron;
 
 #endif /* HIDE_ABSTRACT_NODE_DETAILS */
 
-class GLView : public QGLWidget
-{
-	Q_OBJECT
-
-public:
-	void (*renderfunc)(void*);
-	void *renderfunc_vp;
-
-	bool orthomode;
-	bool showaxes;
-	bool showcrosshairs;
-
-	double viewer_distance;
-	double object_rot_x;
-	double object_rot_y;
-	double object_rot_z;
-	double object_trans_x;
-	double object_trans_y;
-	double object_trans_z;
-
-	double w_h_ratio;
-	GLint shaderinfo[11];
-
-	QLabel *statusLabel;
-#ifdef ENABLE_OPENCSG
-	bool opencsg_support;
-#endif
-
-	GLView(QWidget *parent = NULL);
-
-protected:
-	bool mouse_drag_active;
-	int last_mouse_x;
-	int last_mouse_y;
-
-	void keyPressEvent(QKeyEvent *event);
-	void wheelEvent(QWheelEvent *event);
-	void mousePressEvent(QMouseEvent *event);
-	void mouseMoveEvent(QMouseEvent *event);
-	void mouseReleaseEvent(QMouseEvent *event);
-
-	void initializeGL();
-	void resizeGL(int w, int h);
-	void paintGL();
-
-#ifdef ENABLE_OPENCSG
-private slots:
-	void display_opengl20_warning();
-#endif
-
-signals:
-	void doAnimateUpdate();
-};
-
-class MainWindow;
-
 class Highlighter : public QSyntaxHighlighter
 {
 public:
@@ -715,146 +652,17 @@ public:
 	void highlightBlock(const QString &text);
 };
 
-class MainWindow : public QMainWindow
-{
-	Q_OBJECT
-
-public:
-	QString filename;
-	QSplitter *s1, *s2;
-	QTextEdit *editor;
-	Highlighter *highlighter;
-	GLView *screen;
-	QTextEdit *console;
-
-	QWidget *animate_panel;
-	QTimer *animate_timer;
-	double tval, fps, fsteps;
-	QLineEdit *e_tval, *e_fps, *e_fsteps;
-
-	Context root_ctx;
-	AbstractModule *root_module;
-	AbstractNode *absolute_root_node;
-	CSGTerm *root_raw_term;
-	CSGTerm *root_norm_term;
-	CSGChain *root_chain;
-#ifdef ENABLE_CGAL
-	CGAL_Nef_polyhedron *root_N;
-	bool recreate_cgal_ogl_p;
-	void *cgal_ogl_p;
-#endif
-
-	QVector<CSGTerm*> highlight_terms;
-	CSGChain *highlights_chain;
-	QVector<CSGTerm*> background_terms;
-	CSGChain *background_chain;
-	AbstractNode *root_node;
-	QString last_compiled_doc;
-	bool enableOpenCSG;
-
-	MainWindow(const char *filename = 0);
-	~MainWindow();
-
-private slots:
-	void updatedFps();
-	void updateTVal();
-
-private:
-	void load();
-	void maybe_change_dir();
-	void find_root_tag(AbstractNode *n);
-	void compile(bool procevents);
-
-private slots:
-	void actionNew();
-	void actionOpen();
-	void actionSave();
-	void actionSaveAs();
-	void actionReload();
-
-private slots:
-	void editIndent();
-	void editUnindent();
-	void editComment();
-	void editUncomment();
-	void pasteViewportTranslation();
-	void pasteViewportRotation();
-
-private slots:
-	void actionReloadCompile();
-	void actionCompile();
-#ifdef ENABLE_CGAL
-	void actionRenderCGAL();
-#endif
-	void actionDisplayAST();
-	void actionDisplayCSGTree();
-	void actionDisplayCSGProducts();
-	void actionExportSTLorOFF(bool stl_mode);
-	void actionExportSTL();
-	void actionExportOFF();
-
-public:
-#ifdef ENABLE_OPENCSG
-	QAction *actViewModeOpenCSG;
-#endif
-#ifdef ENABLE_CGAL
-	QAction *actViewModeCGALSurface;
-	QAction *actViewModeCGALGrid;
-#endif
-	QAction *actViewModeThrownTogether;
-	QAction *actViewModeShowEdges;
-	QAction *actViewModeShowAxes;
-	QAction *actViewModeShowCrosshairs;
-	QAction *actViewModeAnimate;
-	QAction *actViewPerspective;
-	QAction *actViewOrthogonal;
-	void viewModeActionsUncheck();
-
-public slots:
-#ifdef ENABLE_OPENCSG
-	void viewModeOpenCSG();
-#endif
-#ifdef ENABLE_CGAL
-	void viewModeCGALSurface();
-	void viewModeCGALGrid();
-#endif
-	void viewModeThrownTogether();
-	void viewModeShowEdges();
-	void viewModeShowAxes();
-	void viewModeShowCrosshairs();
-	void viewModeAnimate();
-	void viewAngleTop();
-	void viewAngleBottom();
-	void viewAngleLeft();
-	void viewAngleRight();
-	void viewAngleFront();
-	void viewAngleBack();
-	void viewAngleDiagonal();
-	void viewCenter();
-	void viewPerspective();
-	void viewOrthogonal();
-	void animateUpdateDocChanged();
-	void animateUpdate();
-	void dragEnterEvent(QDragEnterEvent *event);
-	void dropEvent(QDropEvent *event);
-};
-
 extern AbstractModule *parse(const char *text, int debug);
 extern int get_fragments_from_r(double r, double fn, double fs, double fa);
 
 extern QString commandline_commands;
 extern int parser_error_pos;
-extern QPointer<MainWindow> current_win;
 
 #ifdef ENABLE_CGAL
 void export_stl(CGAL_Nef_polyhedron *root_N, QString filename, QProgressDialog *pd);
 void export_off(CGAL_Nef_polyhedron *root_N, QString filename, QProgressDialog *pd);
 #endif
 extern void handle_dep(QString filename);
-
-#define PRINT(_msg) do { if (current_win.isNull()) fprintf(stderr, "%s\n", QString(_msg).toAscii().data()); else current_win->console->append(_msg); } while (0)
-#define PRINTF(_fmt, ...) do { QString _m; _m.sprintf(_fmt, ##__VA_ARGS__); PRINT(_m); } while (0)
-#define PRINTA(_fmt, ...) do { QString _m = QString(_fmt).arg(__VA_ARGS__); PRINT(_m); } while (0)
 
 #endif
 

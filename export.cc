@@ -21,6 +21,8 @@
 #define INCLUDE_ABSTRACT_NODE_DETAILS
 
 #include "openscad.h"
+#include "printutils.h"
+#include "MainWindow.h"
 
 #include <QApplication>
 
@@ -39,7 +41,7 @@ void export_stl(CGAL_Nef_polyhedron *root_N, QString filename, QProgressDialog *
 	FILE *f = fopen(filename.toAscii().data(), "w");
 	if (!f) {
 		PRINT("Can't open STL file for STL export.");
-		current_win = NULL;
+		MainWindow::current_win = NULL;
 		return;
 	}
 	fprintf(f, "solid\n");
