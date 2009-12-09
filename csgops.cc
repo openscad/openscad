@@ -42,10 +42,10 @@ public:
 	csg_type_e type;
 	CsgNode(const ModuleInstanciation *mi, csg_type_e type) : AbstractNode(mi), type(type) { }
 #ifdef ENABLE_CGAL
-        virtual CGAL_Nef_polyhedron render_cgal_nef_polyhedron() const;
+	virtual CGAL_Nef_polyhedron render_cgal_nef_polyhedron() const;
 #endif
 	CSGTerm *render_csg_term(double m[16], QVector<CSGTerm*> *highlights, QVector<CSGTerm*> *background) const;
-        virtual QString dump(QString indent) const;
+	virtual QString dump(QString indent) const;
 };
 
 AbstractNode *CsgModule::evaluate(const Context*, const ModuleInstanciation *inst) const

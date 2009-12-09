@@ -43,10 +43,10 @@ public:
 	double m[16];
 	TransformNode(const ModuleInstanciation *mi) : AbstractNode(mi) { }
 #ifdef ENABLE_CGAL
-        virtual CGAL_Nef_polyhedron render_cgal_nef_polyhedron() const;
+	virtual CGAL_Nef_polyhedron render_cgal_nef_polyhedron() const;
 #endif
 	virtual CSGTerm *render_csg_term(double m[16], QVector<CSGTerm*> *highlights, QVector<CSGTerm*> *background) const;
-        virtual QString dump(QString indent) const;
+	virtual QString dump(QString indent) const;
 };
 
 AbstractNode *TransformModule::evaluate(const Context *ctx, const ModuleInstanciation *inst) const
@@ -73,8 +73,8 @@ AbstractNode *TransformModule::evaluate(const Context *ctx, const ModuleInstanci
 		argnames = QVector<QString>() << "m";
 	}
 
-        Context c(ctx);
-        c.args(argnames, argexpr, inst->argnames, inst->argvalues);
+	Context c(ctx);
+	c.args(argnames, argexpr, inst->argnames, inst->argvalues);
 
 	if (type == SCALE)
 	{
