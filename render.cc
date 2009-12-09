@@ -21,6 +21,8 @@
 #define INCLUDE_ABSTRACT_NODE_DETAILS
 
 #include "openscad.h"
+#include "printutils.h"
+
 #include <QProgressDialog>
 #include <QApplication>
 #include <QTime>

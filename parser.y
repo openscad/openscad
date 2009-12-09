@@ -21,6 +21,7 @@
 %{
 
 #include "openscad.h"
+#include "printutils.h"
 
 int parser_error_pos = -1;
 

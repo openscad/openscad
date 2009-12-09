@@ -19,6 +19,7 @@
  */
 
 #include "openscad.h"
+#include "printutils.h"
 
 Context::Context(const Context *parent)
 {

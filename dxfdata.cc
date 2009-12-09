@@ -19,6 +19,7 @@
  */
 
 #include "openscad.h"
+#include "printutils.h"
 
 #include <QFile>
 
@@ -40,23 +41,23 @@ DxfData::DxfData(double fn, double fs, double fa, QString filename, QString laye
 	bool in_blocks_section = false;
 	QString current_block;
 
-#define ADD_LINE(_x1, _y1, _x2, _y2) do {                    \
-     double _p1x = _x1, _p1y = _y1, _p2x = _x2, _p2y = _y2;  \
-     if (!in_entities_section && !in_blocks_section)         \
-       break;                                                \
-     if (in_entities_section &&                              \
-         !(layername.isNull() || layername == layer))        \
-       break;                                                \
-     grid.align(_p1x, _p1y);                                 \
-     grid.align(_p2x, _p2y);                                 \
-     grid.data(_p1x, _p1y).append(lines.count());            \
-     grid.data(_p2x, _p2y).append(lines.count());            \
-     if (in_entities_section)                                \
-       lines.append(Line(p(_p1x, _p1y), p(_p2x, _p2y)));     \
-     if (in_blocks_section && !current_block.isNull())       \
-       blockdata[current_block].append(                      \
-           Line(p(_p1x, _p1y), p(_p2x, _p2y)));              \
-   } while (0)
+#define ADD_LINE(_x1, _y1, _x2, _y2) do {										\
+		double _p1x = _x1, _p1y = _y1, _p2x = _x2, _p2y = _y2;  \
+		if (!in_entities_section && !in_blocks_section)         \
+			break;                                                \
+		if (in_entities_section &&                              \
+				!(layername.isNull() || layername == layer))        \
+			break;                                                \
+		grid.align(_p1x, _p1y);                                 \
+		grid.align(_p2x, _p2y);                                 \
+		grid.data(_p1x, _p1y).append(lines.count());            \
+		grid.data(_p2x, _p2y).append(lines.count());            \
+		if (in_entities_section)                                \
+			lines.append(Line(p(_p1x, _p1y), p(_p2x, _p2y)));     \
+		if (in_blocks_section && !current_block.isNull())       \
+			blockdata[current_block].append(                      \
+				Line(p(_p1x, _p1y), p(_p2x, _p2y)));								\
+	} while (0)
 
 	QString mode, layer, name, iddata;
 	int dimtype = 0;
@@ -65,8 +66,8 @@ DxfData::DxfData(double fn, double fs, double fa, QString filename, QString laye
 	double radius = 0, start_angle = 0, stop_angle = 0;
 
 	for (int i = 0; i < 7; i++)
-	for (int j = 0; j < 2; j++)
-		coords[i][j] = 0;
+		for (int j = 0; j < 2; j++)
+			coords[i][j] = 0;
 
 	QHash<QString, int> unsupported_entities_list;
 
@@ -111,7 +112,7 @@ DxfData::DxfData(double fn, double fs, double fa, QString filename, QString laye
 					double a1 = (2*M_PI*i)/n;
 					double a2 = (2*M_PI*(i+1))/n;
 					ADD_LINE(cos(a1)*radius + x1, sin(a1)*radius + y1,
-							cos(a2)*radius + x1, sin(a2)*radius + y1);
+									 cos(a2)*radius + x1, sin(a2)*radius + y1);
 				}
 			}
 			if (mode == "ARC") {
@@ -125,7 +126,7 @@ DxfData::DxfData(double fn, double fs, double fa, QString filename, QString laye
 					a1 = (start_angle + a1) * M_PI / 180.0;
 					a2 = (start_angle + a2) * M_PI / 180.0;
 					ADD_LINE(cos(a1)*radius + x1, sin(a1)*radius + y1,
-							cos(a2)*radius + x1, sin(a2)*radius + y1);
+									 cos(a2)*radius + x1, sin(a2)*radius + y1);
 				}
 			}
 			if (mode == "INSERT") {
@@ -148,8 +149,8 @@ DxfData::DxfData(double fn, double fs, double fa, QString filename, QString laye
 				dims.append(Dim());
 				dims.last().type = dimtype;
 				for (int i = 0; i < 7; i++)
-				for (int j = 0; j < 2; j++)
-					dims.last().coords[i][j] = coords[i][j];
+					for (int j = 0; j < 2; j++)
+						dims.last().coords[i][j] = coords[i][j];
 				dims.last().angle = start_angle;
 				dims.last().name = name;
 			}
@@ -160,7 +161,7 @@ DxfData::DxfData(double fn, double fs, double fa, QString filename, QString laye
 				current_block = QString();
 			}
 			if (in_blocks_section || (in_entities_section &&
-					(layername.isNull() || layername == layer))) {
+																(layername.isNull() || layername == layer))) {
 				if (mode != "SECTION" && mode != "ENDSEC" && mode != "DIMENSION" &&
 						mode != "LINE" && mode != "ARC" && mode != "CIRCLE" &&
 						mode != "BLOCK" && mode != "ENDBLK" && mode != "INSERT")
@@ -172,8 +173,8 @@ DxfData::DxfData(double fn, double fs, double fa, QString filename, QString laye
 			iddata = QString();
 			dimtype = 0;
 			for (int i = 0; i < 7; i++)
-			for (int j = 0; j < 2; j++)
-				coords[i][j] = 0;
+				for (int j = 0; j < 2; j++)
+					coords[i][j] = 0;
 			x1 = x2 = y1 = y2 = 0;
 			radius = start_angle = stop_angle = 0;
 			break;
@@ -218,10 +219,10 @@ DxfData::DxfData(double fn, double fs, double fa, QString filename, QString laye
 		i.next();
 		if (layername.isNull()) {
 			PRINTA("WARNING: Unsupported DXF Entity `%1' (%2x) in `%3'.",
-					i.key(), QString::number(i.value()), filename);
+						 i.key(), QString::number(i.value()), filename);
 		} else {
 			PRINTA("WARNING: Unsupported DXF Entity `%1' (%2x) in layer `%3' of `%4'.",
-					i.key(), QString::number(i.value()), layername, filename);
+						 i.key(), QString::number(i.value()), layername, filename);
 		}
 	}
 

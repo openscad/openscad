@@ -19,6 +19,7 @@
  */
 
 #include "openscad.h"
+#include "printutils.h"
 
 Value builtin_dxf_dim(const QVector<QString> &argnames, const QVector<Value> &args)
 {

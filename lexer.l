@@ -21,6 +21,7 @@
 %{
 
 #include "openscad.h"
+#include "printutils.h"
 #include "parser_yacc.h"
 
 int lexerget_lineno(void);
