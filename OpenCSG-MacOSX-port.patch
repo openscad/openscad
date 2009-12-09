@@ -1,6 +1,6 @@
-diff -ru OpenCSG-1.1.1/RenderTexture/RenderTexture.h OpenCSG-1.1.1-patched/RenderTexture/RenderTexture.h
+diff -ru OpenCSG-1.1.1/RenderTexture/RenderTexture.h OpenCSG-1.1.1-mac/RenderTexture/RenderTexture.h
 --- OpenCSG-1.1.1/RenderTexture/RenderTexture.h	2009-07-19 21:05:09.000000000 +0200
-+++ OpenCSG-1.1.1-patched/RenderTexture/RenderTexture.h	2009-10-18 17:37:18.000000000 +0200
++++ OpenCSG-1.1.1-mac/RenderTexture/RenderTexture.h	2009-12-09 03:15:26.000000000 +0100
 @@ -294,8 +294,8 @@
      bool _BindDepthBuffer( ) const;
  
@@ -23,9 +23,9 @@ diff -ru OpenCSG-1.1.1/RenderTexture/RenderTexture.h OpenCSG-1.1.1-patched/Rende
      
      unsigned short* _pPoorDepthTexture; // [Redge]
  
-diff -ru OpenCSG-1.1.1/example/example.pro OpenCSG-1.1.1-patched/example/example.pro
+diff -ru OpenCSG-1.1.1/example/example.pro OpenCSG-1.1.1-mac/example/example.pro
 --- OpenCSG-1.1.1/example/example.pro	2009-07-19 21:05:09.000000000 +0200
-+++ OpenCSG-1.1.1-patched/example/example.pro	2009-10-22 20:41:43.000000000 +0200
++++ OpenCSG-1.1.1-mac/example/example.pro	2009-12-09 03:15:26.000000000 +0100
 @@ -2,9 +2,16 @@
  TARGET		= opencsgexample
  
@@ -46,9 +46,9 @@ diff -ru OpenCSG-1.1.1/example/example.pro OpenCSG-1.1.1-patched/example/example
  
  HEADERS		= displaylistPrimitive.h
  SOURCES		= displaylistPrimitive.cpp main.cpp
-diff -ru OpenCSG-1.1.1/example/main.cpp OpenCSG-1.1.1-patched/example/main.cpp
+diff -ru OpenCSG-1.1.1/example/main.cpp OpenCSG-1.1.1-mac/example/main.cpp
 --- OpenCSG-1.1.1/example/main.cpp	2009-07-19 21:05:09.000000000 +0200
-+++ OpenCSG-1.1.1-patched/example/main.cpp	2009-10-22 20:44:29.000000000 +0200
++++ OpenCSG-1.1.1-mac/example/main.cpp	2009-12-09 03:15:26.000000000 +0100
 @@ -22,7 +22,11 @@
  //
  
@@ -61,17 +61,17 @@ diff -ru OpenCSG-1.1.1/example/main.cpp OpenCSG-1.1.1-patched/example/main.cpp
  #include <opencsg.h>
  #include "displaylistPrimitive.h"
  #include <iostream>
-diff -ru OpenCSG-1.1.1/opencsg.pro OpenCSG-1.1.1-patched/opencsg.pro
+diff -ru OpenCSG-1.1.1/opencsg.pro OpenCSG-1.1.1-mac/opencsg.pro
 --- OpenCSG-1.1.1/opencsg.pro	2009-07-19 21:05:09.000000000 +0200
-+++ OpenCSG-1.1.1-patched/opencsg.pro	2009-10-22 20:45:00.000000000 +0200
++++ OpenCSG-1.1.1-mac/opencsg.pro	2009-12-09 03:15:26.000000000 +0100
 @@ -1,2 +1,4 @@
  TEMPLATE = subdirs
  SUBDIRS  = src example
 +# On Mac we get glew from MacPorts
 +!macx:SUBDIRS += glew
-diff -ru OpenCSG-1.1.1/src/channelManager.cpp OpenCSG-1.1.1-patched/src/channelManager.cpp
+diff -ru OpenCSG-1.1.1/src/channelManager.cpp OpenCSG-1.1.1-mac/src/channelManager.cpp
 --- OpenCSG-1.1.1/src/channelManager.cpp	2009-07-19 21:05:09.000000000 +0200
-+++ OpenCSG-1.1.1-patched/src/channelManager.cpp	2009-10-20 00:40:20.000000000 +0200
++++ OpenCSG-1.1.1-mac/src/channelManager.cpp	2009-12-09 03:15:26.000000000 +0100
 @@ -23,7 +23,7 @@
  #include <GL/glew.h>
  #ifdef _WIN32
@@ -94,9 +94,9 @@ diff -ru OpenCSG-1.1.1/src/channelManager.cpp OpenCSG-1.1.1-patched/src/channelM
  #endif
                  ) {
                       newOffscreenType =  OpenCSG::PBuffer;
-diff -ru OpenCSG-1.1.1/src/frameBufferObject.h OpenCSG-1.1.1-patched/src/frameBufferObject.h
+diff -ru OpenCSG-1.1.1/src/frameBufferObject.h OpenCSG-1.1.1-mac/src/frameBufferObject.h
 --- OpenCSG-1.1.1/src/frameBufferObject.h	2009-07-19 21:05:09.000000000 +0200
-+++ OpenCSG-1.1.1-patched/src/frameBufferObject.h	2009-10-18 17:33:13.000000000 +0200
++++ OpenCSG-1.1.1-mac/src/frameBufferObject.h	2009-12-09 03:15:26.000000000 +0100
 @@ -77,10 +77,10 @@
  
              /// Texture stuff
@@ -111,9 +111,9 @@ diff -ru OpenCSG-1.1.1/src/frameBufferObject.h OpenCSG-1.1.1-patched/src/frameBu
  
              bool initialized;
          };
-diff -ru OpenCSG-1.1.1/src/occlusionQuery.cpp OpenCSG-1.1.1-patched/src/occlusionQuery.cpp
+diff -ru OpenCSG-1.1.1/src/occlusionQuery.cpp OpenCSG-1.1.1-mac/src/occlusionQuery.cpp
 --- OpenCSG-1.1.1/src/occlusionQuery.cpp	2009-07-19 21:05:09.000000000 +0200
-+++ OpenCSG-1.1.1-patched/src/occlusionQuery.cpp	2009-10-18 17:33:52.000000000 +0200
++++ OpenCSG-1.1.1-mac/src/occlusionQuery.cpp	2009-12-09 03:15:26.000000000 +0100
 @@ -57,7 +57,7 @@
          }
  
@@ -132,41 +132,9 @@ diff -ru OpenCSG-1.1.1/src/occlusionQuery.cpp OpenCSG-1.1.1-patched/src/occlusio
              glGetOcclusionQueryuivNV(mQueryObject, GL_PIXEL_COUNT_NV, &fragmentCount);
              return fragmentCount;
          }
-diff -ru OpenCSG-1.1.1/src/offscreenBuffer.cpp OpenCSG-1.1.1-patched/src/offscreenBuffer.cpp
---- OpenCSG-1.1.1/src/offscreenBuffer.cpp	2009-07-19 21:05:09.000000000 +0200
-+++ OpenCSG-1.1.1-patched/src/offscreenBuffer.cpp	2009-10-20 00:41:31.000000000 +0200
-@@ -21,7 +21,9 @@
- #include "opencsgConfig.h"
- #include "offscreenBuffer.h"
- #include "frameBufferObject.h"
-+#ifndef __APPLE__
- #include "pBufferTexture.h"
-+#endif
- 
- namespace OpenCSG {
- 
-@@ -29,12 +31,17 @@
- 
-         OffscreenBuffer* getOffscreenBuffer(bool fbo) {
-             static FrameBufferObject* f = new FrameBufferObject;
-+#ifndef __APPLE__
-             static PBufferTexture* p = new PBufferTexture;
--            
-+#endif            
-             if (fbo)
-                 return f;
-             else 
-+#ifndef __APPLE__
-                 return p;
-+#else
-+                return NULL;
-+#endif            
-         }
- 
-     } // namespace OpenGL
-diff -ru OpenCSG-1.1.1/src/openglHelper.cpp OpenCSG-1.1.1-patched/src/openglHelper.cpp
+diff -ru OpenCSG-1.1.1/src/openglHelper.cpp OpenCSG-1.1.1-mac/src/openglHelper.cpp
 --- OpenCSG-1.1.1/src/openglHelper.cpp	2009-07-19 21:05:09.000000000 +0200
-+++ OpenCSG-1.1.1-patched/src/openglHelper.cpp	2009-10-18 17:32:19.000000000 +0200
++++ OpenCSG-1.1.1-mac/src/openglHelper.cpp	2009-12-09 03:15:26.000000000 +0100
 @@ -29,13 +29,13 @@
  
          GLfloat projection[16];
@@ -184,9 +152,9 @@ diff -ru OpenCSG-1.1.1/src/openglHelper.cpp OpenCSG-1.1.1-patched/src/openglHelp
  
          void scissor(const PCArea& area) {
              const int dx = area.maxx - area.minx;
-diff -ru OpenCSG-1.1.1/src/openglHelper.h OpenCSG-1.1.1-patched/src/openglHelper.h
+diff -ru OpenCSG-1.1.1/src/openglHelper.h OpenCSG-1.1.1-mac/src/openglHelper.h
 --- OpenCSG-1.1.1/src/openglHelper.h	2009-07-19 21:05:09.000000000 +0200
-+++ OpenCSG-1.1.1-patched/src/openglHelper.h	2009-10-18 17:32:15.000000000 +0200
++++ OpenCSG-1.1.1-mac/src/openglHelper.h	2009-12-09 03:15:26.000000000 +0100
 @@ -36,17 +36,17 @@
              // copy of the projection matrix during CSG computation
          extern GLfloat modelview[16];
@@ -208,9 +176,49 @@ diff -ru OpenCSG-1.1.1/src/openglHelper.h OpenCSG-1.1.1-patched/src/openglHelper
              // copy of the scissor settings for CSG computation
  
          void scissor(const PCArea& area);
-diff -ru OpenCSG-1.1.1/src/src.pro OpenCSG-1.1.1-patched/src/src.pro
+diff -ru OpenCSG-1.1.1/src/pBufferTexture.h OpenCSG-1.1.1-mac/src/pBufferTexture.h
+--- OpenCSG-1.1.1/src/pBufferTexture.h	2009-07-19 21:05:09.000000000 +0200
++++ OpenCSG-1.1.1-mac/src/pBufferTexture.h	2009-12-09 03:15:34.000000000 +0100
+@@ -22,7 +22,7 @@
+ 
+ #ifndef __OpenCSG__pbuffer_texture_h__
+ #define __OpenCSG__pbuffer_texture_h__
+-
++#ifndef __APPLE__
+ #include "opencsgConfig.h"
+ #include "offscreenBuffer.h"
+ 
+@@ -81,5 +81,26 @@
+     } // namespace OpenGL
+ 
+ } // namespace OpenCSG
++#else
++
++namespace OpenCSG {
++  namespace OpenGL {
++    class PBufferTexture : public OffscreenBuffer {
++      virtual bool Initialize(int , int , bool , bool ) {return false;}
++      virtual bool Reset() {return false;}
++      virtual bool Resize(int, int) {return false;}
++      virtual bool BeginCapture() {return false;}
++      virtual bool EndCapture() {return false;}
++      virtual void Bind() const {}
++      virtual void EnableTextureTarget() const {}
++      virtual void DisableTextureTarget() const {}
++      virtual unsigned int GetTextureTarget() const {return 0;}
++      virtual int GetWidth() const {return 0;}
++      virtual int GetHeight() const {return 0;}
++      virtual bool haveSeparateContext() const {return false;}
++    };
++  }
++}
+ 
++#endif // __APPLE__
+ #endif // __OpenCSG__frame_buffer_object_h__
+Only in OpenCSG-1.1.1-mac/src: pBufferTexture.h~
+diff -ru OpenCSG-1.1.1/src/src.pro OpenCSG-1.1.1-mac/src/src.pro
 --- OpenCSG-1.1.1/src/src.pro	2009-07-19 21:05:09.000000000 +0200
-+++ OpenCSG-1.1.1-patched/src/src.pro	2009-10-22 21:16:33.000000000 +0200
++++ OpenCSG-1.1.1-mac/src/src.pro	2009-12-09 03:15:26.000000000 +0100
 @@ -4,7 +4,15 @@
  DESTDIR     = ../lib
  
