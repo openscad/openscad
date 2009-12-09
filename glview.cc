@@ -19,11 +19,13 @@
  */
 
 #include "openscad.h"
+#include "GLView.h"
 
 #include <QApplication>
 #include <QWheelEvent>
 #include <QMouseEvent>
 #include <QMessageBox>
+#include <QTimer>
 
 #define FAR_FAR_AWAY 100000.0
 
@@ -459,7 +461,7 @@ void GLView::mouseMoveEvent(QMouseEvent *event)
 			object_trans_z += tm[11];
 		}
 		updateGL();
-		doAnimateUpdate();
+		emit doAnimateUpdate();
 	}
 	last_mouse_x = this_mouse_x;
 	last_mouse_y = this_mouse_y;
