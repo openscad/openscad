@@ -12,8 +12,9 @@ TEMPLATE = app
 
 CONFIG += debug
 # CONFIG += release
-# QMAKE_CFLAGS_RELEASE += -O3
-# QMAKE_CXXFLAGS_RELEASE += -O3
+
+QMAKE_CXXFLAGS += -O0
+# QMAKE_CXXFLAGS += -O3 -march=pentium
 
 # MDI needs an OpenCSG library that is compiled with OpenCSG-Reset-Hack.patch applied
 # DEFINES += ENABLE_MDI
@@ -54,9 +55,6 @@ SOURCES += openscad.cc mainwin.cc glview.cc export.cc \
            import.cc dxfdata.cc dxftess.cc dxfdim.cc \
            dxflinextrude.cc dxfrotextrude.cc highlighter.cc \
            printutils.cc
-
-QMAKE_CXXFLAGS += -O0
-# QMAKE_CXXFLAGS += -O3 -march=pentium
 
 QT += opengl
 
