@@ -56,7 +56,7 @@ void handle_dep(QString filename)
 
 int main(int argc, char **argv)
 {
-	int rc;
+	int rc = 0;
 
 	initialize_builtin_functions();
 	initialize_builtin_modules();
@@ -157,9 +157,9 @@ int main(int argc, char **argv)
 		} else {
 			QString text;
 			char buffer[513];
-			int rc;
-			while ((rc = fread(buffer, 1, 512, fp)) > 0) {
-				buffer[rc] = 0;
+			int ret;
+			while ((ret = fread(buffer, 1, 512, fp)) > 0) {
+				buffer[ret] = 0;
 				text += buffer;
 			}
 			fclose(fp);

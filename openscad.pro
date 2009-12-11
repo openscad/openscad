@@ -7,8 +7,13 @@ else {
 	TARGET = openscad
 }
 
-CONFIG += qt debug
+CONFIG += qt
 TEMPLATE = app
+
+CONFIG += debug
+# CONFIG += release
+# QMAKE_CFLAGS_RELEASE += -O3
+# QMAKE_CXXFLAGS_RELEASE += -O3
 
 # MDI needs an OpenCSG library that is compiled with OpenCSG-Reset-Hack.patch applied
 # DEFINES += ENABLE_MDI
