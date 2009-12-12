@@ -130,7 +130,7 @@ MainWindow::MainWindow(const char *filename)
 	connect(this->fileActionReload, SIGNAL(triggered()), this, SLOT(actionReload()));
 #ifndef __APPLE__
 	this->fileActionSave->setShortcut(QKeySequence(Qt::Key_F2));
-	this->fileActionReload->setShortcut(QKeySequence(Qt::Key_F4));
+	this->fileActionReload->setShortcut(QKeySequence(Qt::Key_F3));
 #endif
 
 	// Edit menu
