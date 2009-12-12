@@ -19,6 +19,8 @@ install_name_tool -change QtCore.framework/Versions/4/QtCore @executable_path/..
 install_name_tool -change QtCore.framework/Versions/4/QtCore @executable_path/../Frameworks/QtCore OpenSCAD.app/Contents/Frameworks/QtGui
  install_name_tool -change /opt/local/lib/libGLEW.1.5.1.dylib @executable_path/../Frameworks/libGLEW.1.5.1.dylib OpenSCAD.app/Contents/MacOS/openscad
 install_name_tool -change /opt/local/lib/libGLEW.1.5.1.dylib @executable_path/../Frameworks/libGLEW.1.5.1.dylib OpenSCAD.app/Contents/Frameworks/libopencsg.dylib
+install_name_tool -change QtGui.framework/Versions/4/QtGui @executable_path/../Frameworks/QtGui OpenSCAD.app/Contents/Frameworks/libopencsg.dylib
+install_name_tool -change QtCore.framework/Versions/4/QtCore @executable_path/../Frameworks/QtCore OpenSCAD.app/Contents/Frameworks/libopencsg.dylib
 
 echo "Creating directory structure.."
 rm -rf openscad-$VERSION
