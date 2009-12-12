@@ -12,9 +12,8 @@ TEMPLATE = app
 
 CONFIG += debug
 # CONFIG += release
-
-QMAKE_CXXFLAGS += -O0
-# QMAKE_CXXFLAGS += -O3 -march=pentium
+QMAKE_CXXFLAGS_RELEASE = -O3 -march=pentium
+QMAKE_CXXFLAGS_DEBUG = -O0 -ggdb
 
 # MDI needs an OpenCSG library that is compiled with OpenCSG-Reset-Hack.patch applied
 # DEFINES += ENABLE_MDI
