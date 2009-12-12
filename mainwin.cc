@@ -253,6 +253,32 @@ MainWindow::~MainWindow()
 #endif
 }
 
+/*!
+	Requests to open a file from an external event, e.g. by double-clicking a filename.
+ */
+void MainWindow::requestOpenFile(const QString &filename)
+{
+#ifdef ENABLE_MDI
+	new MainWindow(filename.toUtf8());
+#endif
+}
+
+void
+MainWindow::openFile(const QString &new_filename)
+{
+#ifdef ENABLE_MDI
+	if (!editor->toPlainText().isEmpty()) {
+		new MainWindow(new_filename.toUtf8());
+		current_win = NULL;
+		return;
+	}
+#endif
+	filename = new_filename;
+	maybe_change_dir();
+	setWindowTitle(filename);
+	load();
+}
+
 void MainWindow::updatedFps()
 {
 	bool fps_ok;
@@ -287,7 +313,7 @@ void MainWindow::load()
 	if (!filename.isEmpty())
 	{
 		QString text;
-		FILE *fp = fopen(filename.toAscii().data(), "rt");
+		FILE *fp = fopen(filename.toUtf8(), "rt");
 		if (!fp) {
 			PRINTA("Failed to open file: %1 (%2)", filename, QString(strerror(errno)));
 		} else {
@@ -529,43 +555,16 @@ void MainWindow::actionNew()
 void MainWindow::actionOpen()
 {
 	current_win = this;
-	QString new_filename = QFileDialog::getOpenFileName(this, "Open File", "", "OpenSCAD Designs (*.scad)");
-	if (!new_filename.isEmpty())
-	{
-#ifdef ENABLE_MDI
-		if (!editor->toPlainText().isEmpty()) {
-			new MainWindow(new_filename.toAscii().data());
-			current_win = NULL;
-			return;
-		}
-#endif
-		filename = new_filename;
-		maybe_change_dir();
-		setWindowTitle(filename);
-
-		QString text;
-		FILE *fp = fopen(filename.toAscii().data(), "rt");
-		if (!fp) {
-			PRINTA("Failed to open file: %1 (%2)", QString(filename), QString(strerror(errno)));
-		} else {
-			char buffer[513];
-			int rc;
-			while ((rc = fread(buffer, 1, 512, fp)) > 0) {
-				buffer[rc] = 0;
-				text += buffer;
-			}
-			fclose(fp);
-			PRINTA("Loaded design `%1'.", QString(filename));
-		}
-		editor->setPlainText(text);
-	}
+	QString new_filename = QFileDialog::getOpenFileName(this, "Open File", "", 
+																											"OpenSCAD Designs (*.scad)");
+	if (!new_filename.isEmpty()) openFile(new_filename);
 	current_win = NULL;
 }
 
 void MainWindow::actionSave()
 {
 	current_win = this;
-	FILE *fp = fopen(filename.toAscii().data(), "wt");
+	FILE *fp = fopen(filename.toUtf8(), "wt");
 	if (!fp) {
 		PRINTA("Failed to open file for writing: %1 (%2)", QString(filename), QString(strerror(errno)));
 	} else {
@@ -1310,7 +1309,7 @@ void MainWindow::dropEvent(QDropEvent *event)
 		QString fn = urls[i].path();
 #ifdef ENABLE_MDI
 		if (!editor->toPlainText().isEmpty()) {
-			new MainWindow(fn.toAscii().data());
+			new MainWindow(fn.toUtf8());
 			break;
 		}
 #endif

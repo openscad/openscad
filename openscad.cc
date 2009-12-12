@@ -28,6 +28,9 @@
 #include <QDir>
 #include <QSet>
 #include <getopt.h>
+#ifdef Q_WS_MAC
+#include "EventFilter.h"
+#endif
 
 static void help(const char *progname)
 {
@@ -72,8 +75,9 @@ int main(int argc, char **argv)
 	bool useGUI = true;
 #endif
 	QApplication app(argc, argv, useGUI);
-#ifdef __APPLE__
+#ifdef Q_WS_MAC
 	app.setLibraryPaths(QStringList(app.applicationDirPath() + "/../PlugIns"));
+	app.installEventFilter(new EventFilter(&app));
 #endif
 
 	const char *filename = NULL;

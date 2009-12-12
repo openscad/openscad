@@ -2,6 +2,7 @@
 macx {
 	TARGET = OpenSCAD
 	ICON = OpenSCAD.icns
+        QMAKE_INFO_PLIST = Info.plist
 }
 else {
 	TARGET = openscad
@@ -16,7 +17,7 @@ QMAKE_CXXFLAGS_RELEASE = -O3 -march=pentium
 QMAKE_CXXFLAGS_DEBUG = -O0 -ggdb
 
 # MDI needs an OpenCSG library that is compiled with OpenCSG-Reset-Hack.patch applied
-# DEFINES += ENABLE_MDI
+DEFINES += ENABLE_MDI
 
 DEFINES += ENABLE_CGAL
 LIBS += -lCGAL
@@ -46,6 +47,8 @@ HEADERS += openscad.h \
            MainWindow.h \
            GLView.h \
            printutils.h
+
+macx: HEADERS += EventFilter.h
 
 SOURCES += openscad.cc mainwin.cc glview.cc export.cc \
            value.cc expr.cc func.cc module.cc context.cc \

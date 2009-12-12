@@ -11,6 +11,7 @@ class MainWindow : public QMainWindow, public Ui::MainWindow
 
 public:
   static QPointer<MainWindow> current_win;
+	static void requestOpenFile(const QString &filename);
 
 	QString filename;
 	class Highlighter *highlighter;
@@ -46,6 +47,7 @@ private slots:
 	void updateTVal();
 
 private:
+	void openFile(const QString &filename);
 	void load();
 	void maybe_change_dir();
 	void find_root_tag(AbstractNode *n);
