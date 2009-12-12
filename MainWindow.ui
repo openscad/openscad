@@ -420,6 +420,9 @@
    </property>
   </action>
   <action name="viewActionShowEdges">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>Show Edges</string>
    </property>
@@ -428,6 +431,9 @@
    </property>
   </action>
   <action name="viewActionShowAxes">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>Show Axes</string>
    </property>
@@ -436,6 +442,9 @@
    </property>
   </action>
   <action name="viewActionShowCrosshairs">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>Show Crosshairs</string>
    </property>
