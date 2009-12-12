@@ -179,6 +179,7 @@
      <string>Help</string>
     </property>
     <addaction name="helpActionAbout"/>
+    <addaction name="helpActionManual"/>
    </widget>
    <addaction name="menu_File"/>
    <addaction name="menu_Edit"/>
@@ -550,6 +551,11 @@
   <action name="helpActionAbout">
    <property name="text">
     <string>About</string>
+   </property>
+  </action>
+  <action name="helpActionManual">
+   <property name="text">
+    <string>OpenSCAD Manual</string>
    </property>
   </action>
  </widget>

@@ -41,6 +41,7 @@
 #include <QUrl>
 #include <QTimer>
 #include <QMessageBox>
+#include <QDesktopServices>
 
 //for chdir
 #include <unistd.h>
@@ -203,6 +204,7 @@ MainWindow::MainWindow(const char *filename)
 
   // Help menu
 	connect(this->helpActionAbout, SIGNAL(triggered()), this, SLOT(helpAbout()));
+	connect(this->helpActionManual, SIGNAL(triggered()), this, SLOT(helpManual()));
 
 
 	console->setReadOnly(true);
@@ -1335,5 +1337,11 @@ MainWindow::helpAbout()
 {
 	qApp->setWindowIcon(QApplication::windowIcon());
   QMessageBox::information(this, "About OpenSCAD", helptext);
+}
+
+void
+MainWindow::helpManual()
+{
+	QDesktopServices::openUrl(QUrl("http://en.wikibooks.org/wiki/OpenSCAD_User_Manual"));
 }
 
