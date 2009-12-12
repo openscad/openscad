@@ -174,10 +174,17 @@
     <addaction name="viewActionPerspective"/>
     <addaction name="viewActionOrthogonal"/>
    </widget>
+   <widget class="QMenu" name="menuHelp">
+    <property name="title">
+     <string>Help</string>
+    </property>
+    <addaction name="helpActionAbout"/>
+   </widget>
    <addaction name="menu_File"/>
    <addaction name="menu_Edit"/>
    <addaction name="menu_Design"/>
    <addaction name="menu_View"/>
+   <addaction name="menuHelp"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <action name="fileActionNew">
@@ -538,6 +545,11 @@
    </property>
    <property name="text">
     <string>Orthogonal</string>
+   </property>
+  </action>
+  <action name="helpActionAbout">
+   <property name="text">
+    <string>About</string>
    </property>
   </action>
  </widget>

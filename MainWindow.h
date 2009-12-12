@@ -111,6 +111,7 @@ public slots:
 	void animateUpdate();
 	void dragEnterEvent(QDragEnterEvent *event);
 	void dropEvent(QDropEvent *event);
+	void helpAbout();
 };
 
 #endif

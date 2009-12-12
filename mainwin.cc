@@ -40,6 +40,7 @@
 #include <QMimeData>
 #include <QUrl>
 #include <QTimer>
+#include <QMessageBox>
 
 //for chdir
 #include <unistd.h>
@@ -62,6 +63,15 @@
 #undef class
 
 #endif
+
+static char helptext[] =
+	"OpenSCAD (www.openscad.org)\n"
+	"Copyright (C) 2009  Clifford Wolf <clifford@clifford.at>\n"
+	"\n"
+	"This program is free software; you can redistribute it and/or modify"
+	"it under the terms of the GNU General Public License as published by"
+	"the Free Software Foundation; either version 2 of the License, or"
+	"(at your option) any later version.";
 
 QPointer<MainWindow> MainWindow::current_win = NULL;
 
@@ -191,16 +201,14 @@ MainWindow::MainWindow(const char *filename)
 // 		viewActionCGALGrid = menu->addAction("CGAL Grid Only", this, SLOT(viewModeCGALGrid()), QKeySequence(Qt::Key_F11));
 // #endif
 
+  // Help menu
+	connect(this->helpActionAbout, SIGNAL(triggered()), this, SLOT(helpAbout()));
+
+
 	console->setReadOnly(true);
 	current_win = this;
 
-	PRINT("OpenSCAD (www.openscad.at)");
-	PRINT("Copyright (C) 2009  Clifford Wolf <clifford@clifford.at>");
-	PRINT("");
-	PRINT("This program is free software; you can redistribute it and/or modify");
-	PRINT("it under the terms of the GNU General Public License as published by");
-	PRINT("the Free Software Foundation; either version 2 of the License, or");
-	PRINT("(at your option) any later version.");
+	PRINT(helptext);
 	PRINT("");
 
 	editor->setTabStopWidth(30);
@@ -1320,5 +1328,12 @@ void MainWindow::dropEvent(QDropEvent *event)
 		break;
 	}
 	current_win = NULL;
+}
+
+void
+MainWindow::helpAbout()
+{
+	qApp->setWindowIcon(QApplication::windowIcon());
+  QMessageBox::information(this, "About OpenSCAD", helptext);
 }
 
