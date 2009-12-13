@@ -1,11 +1,13 @@
 #!/bin/sh
 # WARNING: This script might only work with the authors setup...
 
+VERSION=2010.01
+
 set -ex
 
 # svnclean
 
-qmake
+qmake VERSION=$VERSION
 make
 
 rm -rf release

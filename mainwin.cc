@@ -65,8 +65,14 @@
 
 #endif
 
-static char helptext[] =
-	"OpenSCAD (www.openscad.org)\n"
+#define QUOTE(x__) # x__
+#define QUOTED(x__) QUOTE(x__)
+
+static char helptitle[] =
+	"OpenSCAD "
+	QUOTED(OPENSCAD_VERSION)
+  " (www.openscad.org)\n";
+static char copyrighttext[] =
 	"Copyright (C) 2009  Clifford Wolf <clifford@clifford.at>\n"
 	"\n"
 	"This program is free software; you can redistribute it and/or modify"
@@ -162,7 +168,11 @@ MainWindow::MainWindow(const char *filename)
 	// Design menu
 	connect(this->designActionReloadAndCompile, SIGNAL(triggered()), this, SLOT(actionReloadCompile()));
 	connect(this->designActionCompile, SIGNAL(triggered()), this, SLOT(actionCompile()));
+#ifdef ENABLE_CGAL
 	connect(this->designActionCompileAndRender, SIGNAL(triggered()), this, SLOT(actionRenderCGAL()));
+#else
+	this->designActionCompileAndRender->setVisible(false);
+#endif
 	connect(this->designActionDisplayAST, SIGNAL(triggered()), this, SLOT(actionDisplayAST()));
 	connect(this->designActionDisplayCSGTree, SIGNAL(triggered()), this, SLOT(actionDisplayCSGTree()));
 	connect(this->designActionDisplayCSGProducts, SIGNAL(triggered()), this, SLOT(actionDisplayCSGProducts()));
@@ -170,17 +180,22 @@ MainWindow::MainWindow(const char *filename)
 	connect(this->designActionExportOFF, SIGNAL(triggered()), this, SLOT(actionExportOFF()));
 
 	// View menu
-	connect(this->viewActionOpenCSG, SIGNAL(triggered()), this, SLOT(viewModeOpenCSG()));
 #ifndef ENABLE_OPENCSG
 	this->viewActionOpenCSG->setVisible(false);
 #else
+	connect(this->viewActionOpenCSG, SIGNAL(triggered()), this, SLOT(viewModeOpenCSG()));
 	if (!screen->opencsg_support) {
 		this->viewActionOpenCSG->setEnabled(false);
 	}
 #endif
 
+#ifdef ENABLE_CGAL
 	connect(this->viewActionCGALSurfaces, SIGNAL(triggered()), this, SLOT(viewModeCGALSurface()));
 	connect(this->viewActionCGALGrid, SIGNAL(triggered()), this, SLOT(viewModeCGALGrid()));
+#else
+	this->viewActionCGALSurfaces->setVisible(false);
+	this->viewActionCGALGrid->setVisible(false);
+#endif
 	connect(this->viewActionThrownTogether, SIGNAL(triggered()), this, SLOT(viewModeThrownTogether()));
 	connect(this->viewActionShowEdges, SIGNAL(triggered()), this, SLOT(viewModeShowEdges()));
 	connect(this->viewActionShowAxes, SIGNAL(triggered()), this, SLOT(viewModeShowAxes()));
@@ -210,18 +225,16 @@ MainWindow::MainWindow(const char *filename)
 	console->setReadOnly(true);
 	current_win = this;
 
-	PRINT(helptext);
+	PRINT(helptitle);
+	PRINT(copyrighttext);
 	PRINT("");
 
 	editor->setTabStopWidth(30);
 
 	if (filename) {
-		this->filename = QString(filename);
-		maybe_change_dir();
-		setWindowTitle(this->filename);
-		load();
+		openFile(filename);
 	} else {
-		setWindowTitle("New Document");
+		setWindowTitle("OpenSCAD - New Document[*]");
 	}
 
 	connect(editor->document(), SIGNAL(contentsChanged()), this, SLOT(animateUpdateDocChanged()));
@@ -285,7 +298,7 @@ MainWindow::openFile(const QString &new_filename)
 #endif
 	filename = new_filename;
 	maybe_change_dir();
-	setWindowTitle(filename);
+	setWindowTitle("OpenSCAD - " + filename + "[*]");
 	load();
 }
 
@@ -557,7 +570,7 @@ void MainWindow::actionNew()
 	new MainWindow;
 #else
 	filename = QString();
-	setWindowTitle("New Document");
+	setWindowTitle("OpenSCAD - New Document[*]");
 	editor->setPlainText("");
 #endif
 }
@@ -591,7 +604,7 @@ void MainWindow::actionSaveAs()
 	if (!new_filename.isEmpty()) {
 		filename = new_filename;
 		maybe_change_dir();
-		setWindowTitle(filename);
+		setWindowTitle("OpenSCAD - " + filename + "[*]");
 		actionSave();
 	}
 }
@@ -1316,18 +1329,7 @@ void MainWindow::dropEvent(QDropEvent *event)
 	for (int i = 0; i < urls.size(); i++) {
 		if (urls[i].scheme() != "file")
 			continue;
-		QString fn = urls[i].path();
-#ifdef ENABLE_MDI
-		if (!editor->toPlainText().isEmpty()) {
-			new MainWindow(fn.toUtf8());
-			break;
-		}
-#endif
-		filename = fn;
-		setWindowTitle(filename);
-		maybe_change_dir();
-		load();
-		break;
+		openFile(urls[i].path());
 	}
 	current_win = NULL;
 }
@@ -1336,7 +1338,8 @@ void
 MainWindow::helpAbout()
 {
 	qApp->setWindowIcon(QApplication::windowIcon());
-  QMessageBox::information(this, "About OpenSCAD", helptext);
+  QMessageBox::information(this, "About OpenSCAD", 
+													 QString(helptitle) + QString(copyrighttext));
 }
 
 void

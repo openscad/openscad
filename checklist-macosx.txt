@@ -16,14 +16,10 @@ o Build OpenCSG
   qmake -recursive
   make
   
-o Build OpenSCAD
+o Build and Deploy OpenSCAD
 
-# If MDI: edit openscad.pro and set ENABLE_MDI=1
+# Update OPENSCAD_VERSION in release-macosx.sh
+# If MDI: edit openscad.pro and enable CONFIG += mdi
+# FIXME: Debug vs. release flags
   cd openscad
-  qmake
-  make -j4
-
-
-o Deploy
-
   ./release-macosx.sh

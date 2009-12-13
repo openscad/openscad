@@ -1,42 +1,60 @@
+isEmpty(VERSION) VERSION = 9999.99
+DEFINES += OPENSCAD_VERSION=$$VERSION
+TEMPLATE = app
 
 macx {
-	TARGET = OpenSCAD
-	ICON = OpenSCAD.icns
-        QMAKE_INFO_PLIST = Info.plist
+  TARGET = OpenSCAD
+  ICON = OpenSCAD.icns
+  QMAKE_INFO_PLIST = Info.plist
+  #CONFIG += x86 ppc
 }
 else {
-	TARGET = openscad
+  TARGET = openscad
 }
 
 CONFIG += qt
-TEMPLATE = app
+QT += opengl
 
+# Application configuration
 CONFIG += debug
 # CONFIG += release
+#CONFIG += mdi
+CONFIG += cgal
+CONFIG += opencsg
+
+mdi {
+  # MDI needs an OpenCSG library that is compiled with OpenCSG-Reset-Hack.patch applied
+  DEFINES += ENABLE_MDI
+}
+
+cgal {
+  DEFINES += ENABLE_CGAL
+  LIBS += -lCGAL
+  macx {
+    INCLUDEPATH += $(PWD)/../install/include /opt/local/include
+    # The -L/usr/lib is to force the linker to use system libraries over MacPort libraries
+    LIBS += -L/usr/lib -L$(PWD)/../install/lib -L/opt/local/lib /opt/local/lib/libgmp.a /opt/local/lib/libmpfr.a /opt/local/lib/libboost_thread-mt.a
+    QMAKE_CXXFLAGS += -frounding-math
+  }
+  else {
+    LIBS += -lmpfr
+  }
+  win32:LIBS += -lboost_thread -lgmp
+}
+
+opencsg {
+  DEFINES += ENABLE_OPENCSG
+  LIBS += -L/opt/local/lib -lopencsg
+  unix:LIBS += -lGLEW
+  win32:LIBS += -lglew32
+  macx {
+    INCLUDEPATH += $(PWD)/../OpenCSG-1.1.1/include /opt/local/include
+    LIBS += -L$(PWD)/../OpenCSG-1.1.1/lib
+  }
+}
+
 QMAKE_CXXFLAGS_RELEASE = -O3 -march=pentium
 QMAKE_CXXFLAGS_DEBUG = -O0 -ggdb
-
-# MDI needs an OpenCSG library that is compiled with OpenCSG-Reset-Hack.patch applied
-DEFINES += ENABLE_MDI
-
-DEFINES += ENABLE_CGAL
-LIBS += -lCGAL
-
-macx {
-	INCLUDEPATH += $(PWD)/../install/include $(PWD)/../OpenCSG-1.1.1/include /opt/local/include
-	# The -L/usr/lib is to force the linker to use system libraries over MacPort libraries
-	LIBS += -L/usr/lib -L$(PWD)/../install/lib -L$(PWD)/../OpenCSG-1.1.1/lib -L/opt/local/lib /opt/local/lib/libgmp.a /opt/local/lib/libmpfr.a /opt/local/lib/libboost_thread-mt.a
-	QMAKE_CXXFLAGS += -frounding-math
-}
-else {
-	LIBS += -lmpfr
-}
-
-DEFINES += ENABLE_OPENCSG
-LIBS += -lopencsg
-
-unix:LIBS += -lGLEW
-win32:LIBS += -lglew32 -lboost_thread -lgmp
 
 LEXSOURCES += lexer.l
 YACCSOURCES += parser.y
@@ -58,8 +76,5 @@ SOURCES += openscad.cc mainwin.cc glview.cc export.cc \
            dxflinextrude.cc dxfrotextrude.cc highlighter.cc \
            printutils.cc
 
-QT += opengl
-
 target.path = /usr/local/bin/
 INSTALLS += target
-
