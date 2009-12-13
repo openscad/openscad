@@ -605,8 +605,7 @@ void MainWindow::actionNew()
 #ifdef ENABLE_MDI
 	new MainWindow;
 #else
-	filename = QString();
-	setWindowTitle("OpenSCAD - New Document[*]");
+	setFileName("");
 	editor->setPlainText("");
 #endif
 }
