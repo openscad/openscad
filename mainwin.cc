@@ -42,6 +42,7 @@
 #include <QTimer>
 #include <QMessageBox>
 #include <QDesktopServices>
+#include <QSettings>
 
 //for chdir
 #include <unistd.h>
@@ -149,6 +150,18 @@ MainWindow::MainWindow(const char *filename)
 	this->fileActionSave->setShortcut(QKeySequence(Qt::Key_F2));
 	this->fileActionReload->setShortcut(QKeySequence(Qt::Key_F3));
 #endif
+	// Open Recent
+	for (int i = 0;i<maxRecentFiles; i++) {
+		this->actionRecentFile[i] = new QAction(this);
+		this->actionRecentFile[i]->setVisible(false);
+		this->menuOpenRecent->addAction(this->actionRecentFile[i]);
+		connect(this->actionRecentFile[i], SIGNAL(triggered()),
+						this, SLOT(actionOpenRecent()));
+	}
+	this->menuOpenRecent->addSeparator();
+	this->menuOpenRecent->addAction(this->fileActionClearRecent);
+	connect(this->fileActionClearRecent, SIGNAL(triggered()),
+					this, SLOT(clearRecentFiles()));
 
 	// Edit menu
 	connect(this->editActionUndo, SIGNAL(triggered()), editor, SLOT(undo()));
@@ -234,7 +247,7 @@ MainWindow::MainWindow(const char *filename)
 	if (filename) {
 		openFile(filename);
 	} else {
-		setWindowTitle("OpenSCAD - New Document[*]");
+		setFileName("");
 	}
 
 	connect(editor->document(), SIGNAL(contentsChanged()), this, SLOT(animateUpdateDocChanged()));
@@ -296,10 +309,43 @@ MainWindow::openFile(const QString &new_filename)
 		return;
 	}
 #endif
-	filename = new_filename;
-	maybe_change_dir();
-	setWindowTitle("OpenSCAD - " + filename + "[*]");
+	setFileName(new_filename);
 	load();
+}
+
+void
+MainWindow::setFileName(const QString &filename)
+{
+	if (filename.isEmpty()) {
+		this->fileName.clear();
+		setWindowTitle("OpenSCAD - New Document[*]");
+	}
+	else {
+		QFileInfo fileinfo(filename);
+		this->fileName = fileinfo.canonicalFilePath();
+		setWindowTitle("OpenSCAD - " + fileinfo.fileName() + "[*]");
+
+		// Check that the canonical file path exists - only update recent files
+		// if it does. Should prevent empty list items on initial open etc.
+		if (!this->fileName.isEmpty()) {
+			QSettings settings; // already set up properly via main.cpp
+			QStringList files = settings.value("recentFileList").toStringList();
+			files.removeAll(this->fileName);
+			files.prepend(this->fileName);
+			while (files.size() > maxRecentFiles) files.removeLast();
+			
+			settings.setValue("recentFileList", files);
+		}
+		
+		QDir::setCurrent(fileinfo.dir().absolutePath());
+	}
+
+	foreach(QWidget *widget, QApplication::topLevelWidgets()) {
+		MainWindow *mainWin = qobject_cast<MainWindow *>(widget);
+		if (mainWin) {
+			mainWin->updateRecentFileActions();
+		}
+	}
 }
 
 void MainWindow::updatedFps()
@@ -333,12 +379,12 @@ void MainWindow::updateTVal()
 
 void MainWindow::load()
 {
-	if (!filename.isEmpty())
+	if (!this->fileName.isEmpty())
 	{
 		QString text;
-		FILE *fp = fopen(filename.toUtf8(), "rt");
+		FILE *fp = fopen(this->fileName.toUtf8(), "rt");
 		if (!fp) {
-			PRINTA("Failed to open file: %1 (%2)", filename, QString(strerror(errno)));
+			PRINTA("Failed to open file: %1 (%2)", this->fileName, QString(strerror(errno)));
 		} else {
 			char buffer[513];
 			int rc;
@@ -347,20 +393,10 @@ void MainWindow::load()
 				text += buffer;
 			}
 			fclose(fp);
-			PRINTA("Loaded design `%1'.", filename);
+			PRINTA("Loaded design `%1'.", this->fileName);
 		}
 		editor->setPlainText(text);
 	}
-}
-
-void MainWindow::maybe_change_dir()
-{
-	if (filename.isEmpty())
-		return;
-
-	QFileInfo fileInfo(filename);
-	QDir::setCurrent(fileInfo.dir().absolutePath());
-	filename = fileInfo.fileName();
 }
 
 void MainWindow::find_root_tag(AbstractNode *n)
@@ -584,27 +620,75 @@ void MainWindow::actionOpen()
 	current_win = NULL;
 }
 
+void MainWindow::actionOpenRecent()
+{
+	QAction *action = qobject_cast<QAction *>(sender());
+	if (action) {
+		openFile(action->data().toString());
+	}
+}
+
+void MainWindow::clearRecentFiles()
+{
+	QSettings settings; // already set up properly via main.cpp
+	QStringList files;
+	settings.setValue("recentFileList", files);
+	
+	updateRecentFileActions();
+}
+
+void MainWindow::updateRecentFileActions()
+{
+	QSettings settings; // set up project and program properly in main.cpp
+	QStringList files = settings.value("recentFileList").toStringList();
+	
+	int originalNumRecentFiles = files.size();
+	
+	// Remove any duplicate or empty entries from the list
+	files.removeDuplicates();
+	files.removeAll(QString());
+	// Now remove any entries which do not exist
+	for(int i = files.size()-1; i >= 0; --i) {
+		QFileInfo fileInfo(files[i]);
+		if (!QFile(fileInfo.absoluteFilePath()).exists())
+			files.removeAt(i);
+	}
+
+	int numRecentFiles = qMin(files.size(),
+														static_cast<int>(maxRecentFiles));
+
+	for (int i = 0; i < numRecentFiles; ++i) {
+		this->actionRecentFile[i]->setText(QFileInfo(files[i]).fileName());
+		this->actionRecentFile[i]->setData(files[i]);
+		this->actionRecentFile[i]->setVisible(true);
+	}
+	for (int j = numRecentFiles; j < maxRecentFiles; ++j)
+		this->actionRecentFile[j]->setVisible(false);
+
+	// If we had to prune the list, then save the cleaned list
+	if (originalNumRecentFiles != numRecentFiles)
+		settings.setValue("recentFileList", files);
+}
+
 void MainWindow::actionSave()
 {
 	current_win = this;
-	FILE *fp = fopen(filename.toUtf8(), "wt");
+	FILE *fp = fopen(this->fileName.toUtf8(), "wt");
 	if (!fp) {
-		PRINTA("Failed to open file for writing: %1 (%2)", QString(filename), QString(strerror(errno)));
+		PRINTA("Failed to open file for writing: %1 (%2)", this->fileName, QString(strerror(errno)));
 	} else {
 		fprintf(fp, "%s", editor->toPlainText().toAscii().data());
 		fclose(fp);
-		PRINTA("Saved design `%1'.", QString(filename));
+		PRINTA("Saved design `%1'.", this->fileName);
 	}
 	current_win = NULL;
 }
 
 void MainWindow::actionSaveAs()
 {
-	QString new_filename = QFileDialog::getSaveFileName(this, "Save File", filename, "OpenSCAD Designs (*.scad)");
+	QString new_filename = QFileDialog::getSaveFileName(this, "Save File", this->fileName, "OpenSCAD Designs (*.scad)");
 	if (!new_filename.isEmpty()) {
-		filename = new_filename;
-		maybe_change_dir();
-		setWindowTitle("OpenSCAD - " + filename + "[*]");
+		setFileName(new_filename);
 		actionSave();
 	}
 }

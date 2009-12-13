@@ -27,6 +27,7 @@
 #include <QFile>
 #include <QDir>
 #include <QSet>
+#include <QSettings>
 #include <getopt.h>
 #ifdef Q_WS_MAC
 #include "EventFilter.h"
@@ -79,6 +80,12 @@ int main(int argc, char **argv)
 	app.setLibraryPaths(QStringList(app.applicationDirPath() + "/../PlugIns"));
 	app.installEventFilter(new EventFilter(&app));
 #endif
+
+  // set up groups for QSettings
+  QCoreApplication::setOrganizationName("OpenSCAD");
+  QCoreApplication::setOrganizationDomain("openscad.org");
+  QCoreApplication::setApplicationName("OpenSCAD");
+
 
 	const char *filename = NULL;
 	const char *stl_output_file = NULL;
@@ -211,11 +218,7 @@ int main(int argc, char **argv)
 	}
 	else if (useGUI)
 	{
-		MainWindow *m;
-		if (filename)
-			m = new MainWindow(filename);
-		else
-			m = new MainWindow;
+		MainWindow *m = new MainWindow(filename);
 #ifdef ENABLE_MDI
 		while (optind < argc)
 			new MainWindow(argv[optind++]);

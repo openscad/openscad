@@ -13,7 +13,7 @@ public:
   static QPointer<MainWindow> current_win;
 	static void requestOpenFile(const QString &filename);
 
-	QString filename;
+	QString fileName;
 	class Highlighter *highlighter;
 
 	QTimer *animate_timer;
@@ -39,23 +39,29 @@ public:
 	QString last_compiled_doc;
 	bool enableOpenCSG;
 
+	static const int maxRecentFiles = 10;
+	QAction *actionRecentFile[maxRecentFiles];
+
 	MainWindow(const char *filename = 0);
 	~MainWindow();
 
 private slots:
 	void updatedFps();
 	void updateTVal();
+	void setFileName(const QString &filename);
 
 private:
 	void openFile(const QString &filename);
 	void load();
-	void maybe_change_dir();
 	void find_root_tag(AbstractNode *n);
 	void compile(bool procevents);
 
 private slots:
 	void actionNew();
 	void actionOpen();
+	void actionOpenRecent();
+	void clearRecentFiles();
+	void updateRecentFileActions();
 	void actionSave();
 	void actionSaveAs();
 	void actionReload();
