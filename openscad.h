@@ -26,6 +26,8 @@
 #  include <GL/glew.h>
 #endif
 
+#include <qgl.h>
+
 #include <QHash>
 #include <QCache>
 #include <QVector>
