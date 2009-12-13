@@ -1,9 +1,9 @@
 BUGS
 ----
+o On Linux, large files load veery slowly
 
 TODO
 ----
-o File menu: Recently opened
 o Preferences
   - background colors
   - Model outside/inside color

@@ -1,7 +1,8 @@
 #!/bin/sh
 # WARNING: This script might only work with the authors setup...
 
-VERSION=2010.01
+VERSION=`date "+%Y.%m.%d"`
+#VERSION=2010.01
 
 echo "Building.."
 qmake VERSION=$VERSION

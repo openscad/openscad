@@ -1,4 +1,4 @@
-isEmpty(VERSION) VERSION = 9999.99
+isEmpty(VERSION) VERSION = $$system(date "+%Y.%m.%d")
 DEFINES += OPENSCAD_VERSION=$$VERSION
 TEMPLATE = app
 
