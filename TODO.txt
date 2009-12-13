@@ -1,0 +1,28 @@
+BUGS
+----
+
+TODO
+----
+o File menu: Recently opened
+o Preferences
+  - background colors
+  - Model outside/inside color
+  - wireframe color and width
+  - OpenGL params
+  - Default language feature settings
+o External editor
+o Hide/show editor
+o hide/show log widget
+o Mac OS X:
+  - embed examples into bundle -> separate example menu?
+  - distribute as (self-unpacking?) dmg containing a single .app instead of zip
+  - universal binary -> fix cgal and opencsg
+o Build multiple variants from one single build? (e.g. without opencsg)
+o MDI
+  - Think about how to do MDI the right way
+  - Quit vs. Close MainWindow.
+    Today Quit just closes the current window and there is no close function
+  - windowModified property -> windowtitle and check on quit/close
+
+WISHLIST
+--------
