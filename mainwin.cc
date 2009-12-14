@@ -251,6 +251,8 @@ MainWindow::MainWindow(const char *filename)
 	}
 
 	connect(editor->document(), SIGNAL(contentsChanged()), this, SLOT(animateUpdateDocChanged()));
+	connect(editor->document(), SIGNAL(modificationChanged(bool)), this, SLOT(setWindowModified(bool)));
+	connect(editor->document(), SIGNAL(modificationChanged(bool)), fileActionSave, SLOT(setEnabled(bool)));
 	connect(screen, SIGNAL(doAnimateUpdate()), this, SLOT(animateUpdate()));
 
 	// display this window and check for OpenGL 2.0 (OpenCSG) support
@@ -310,6 +312,7 @@ MainWindow::openFile(const QString &new_filename)
 	}
 #endif
 	setFileName(new_filename);
+
 	load();
 }
 
@@ -379,8 +382,8 @@ void MainWindow::updateTVal()
 
 void MainWindow::load()
 {
-	if (!this->fileName.isEmpty())
-	{
+	current_win = this;
+	if (!this->fileName.isEmpty()) {
 		QString text;
 		FILE *fp = fopen(this->fileName.toUtf8(), "rt");
 		if (!fp) {
@@ -397,6 +400,7 @@ void MainWindow::load()
 		}
 		editor->setPlainText(text);
 	}
+	current_win = this;
 }
 
 void MainWindow::find_root_tag(AbstractNode *n)
@@ -671,16 +675,21 @@ void MainWindow::updateRecentFileActions()
 
 void MainWindow::actionSave()
 {
-	current_win = this;
-	FILE *fp = fopen(this->fileName.toUtf8(), "wt");
-	if (!fp) {
-		PRINTA("Failed to open file for writing: %1 (%2)", this->fileName, QString(strerror(errno)));
-	} else {
-		fprintf(fp, "%s", editor->toPlainText().toAscii().data());
-		fclose(fp);
-		PRINTA("Saved design `%1'.", this->fileName);
+	if (this->fileName.isEmpty()) {
+		actionSaveAs();
 	}
-	current_win = NULL;
+	else {
+		current_win = this;
+		FILE *fp = fopen(this->fileName.toUtf8(), "wt");
+		if (!fp) {
+			PRINTA("Failed to open file for writing: %1 (%2)", this->fileName, QString(strerror(errno)));
+		} else {
+			fprintf(fp, "%s", editor->toPlainText().toAscii().data());
+			fclose(fp);
+			PRINTA("Saved design `%1'.", this->fileName);
+		}
+		current_win = NULL;
+	}
 }
 
 void MainWindow::actionSaveAs()
@@ -694,9 +703,7 @@ void MainWindow::actionSaveAs()
 
 void MainWindow::actionReload()
 {
-	current_win = this;
 	load();
-	current_win = NULL;
 }
 
 void MainWindow::editIndent()
@@ -788,10 +795,11 @@ void MainWindow::pasteViewportRotation()
 
 void MainWindow::actionReloadCompile()
 {
-	current_win = this;
 	console->clear();
 
 	load();
+
+	current_win = this;
 	compile(true);
 
 #ifdef ENABLE_OPENCSG
@@ -1431,3 +1439,35 @@ MainWindow::helpManual()
 	QDesktopServices::openUrl(QUrl("http://en.wikibooks.org/wiki/OpenSCAD_User_Manual"));
 }
 
+/*!
+	FIXME: In SDI mode, this should be called also on New and Open
+	In MDI mode; also call on both reload functions?
+ */
+bool
+MainWindow::maybeSave()
+{
+	if (editor->document()->isModified()) {
+		QMessageBox::StandardButton ret;
+		ret = QMessageBox::warning(this, "Application",
+															 "The document has been modified.\n"
+															 "Do you want to save your changes?",
+															 QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
+		if (ret == QMessageBox::Save) {
+			actionSave();
+			return true; // FIXME: Should return false on error
+		}
+		else if (ret == QMessageBox::Cancel) {
+			return false;
+		}
+	}
+	return true;
+}
+
+void MainWindow::closeEvent(QCloseEvent *event)
+{
+	if (maybeSave()) {
+		event->accept();
+	} else {
+		event->ignore();
+	}
+}

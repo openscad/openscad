@@ -45,6 +45,9 @@ public:
 	MainWindow(const char *filename = 0);
 	~MainWindow();
 
+protected:
+	void closeEvent(QCloseEvent *event);
+
 private slots:
 	void updatedFps();
 	void updateTVal();
@@ -55,6 +58,7 @@ private:
 	void load();
 	void find_root_tag(AbstractNode *n);
 	void compile(bool procevents);
+	bool maybeSave();
 
 private slots:
 	void actionNew();
