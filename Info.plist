@@ -24,7 +24,7 @@
 				<string>text/plain</string>
 			</array>
 			<key>CFBundleTypeName</key>
-			<string>OpenSCAD Model</string>
+			<string>OpenSCAD Design</string>
 			<key>CFBundleTypeRole</key>
 			<string>Editor</string>
 		        <key>LSIsAppleDefaultForType</key>
