@@ -38,9 +38,10 @@ void export_stl(CGAL_Nef_polyhedron *root_N, QString filename, QProgressDialog *
 	typedef CGAL_Polyhedron::Facet_const_iterator                   FCI;
 	typedef CGAL_Polyhedron::Halfedge_around_facet_const_circulator HFCC;
 
-	FILE *f = fopen(filename.toAscii().data(), "w");
+	FILE *f = fopen(filename.toUtf8().data(), "w");
 	if (!f) {
-		PRINT("Can't open STL file for STL export.");
+		PRINTA("Can't open STL file \"%1\" for STL export: %2", 
+					 filename, QString(strerror(errno)));
 		MainWindow::current_win = NULL;
 		return;
 	}
