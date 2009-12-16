@@ -1,9 +1,11 @@
+
 BUGS
 ----
 o On Linux, large files load veery slowly
+o Some invalid DXF data gets pass the import checks and breaks the tessing code
 
-TODO
-----
+USER iNTERFACE
+--------------
 o Preferences
   - background colors
   - Model outside/inside color
@@ -28,5 +30,17 @@ o 3D interaction
   - Improve mouse rotation
   - Add modifier key combos to handle pan on 1 mouse button systems
 
-WISHLIST
---------
+ENGINE
+------
+o 2D Subsystem
+  - Add support for Nef Polygons and 2D CSG
+  - Add import_dxf for loading DXF files
+  - Add DXF export for designs with a Nef Polygon as root element
+  - Add generic 2D->3D extrude statements
+  - Add generic 3D->2D projection statements
+  - Support old dxf_extrude statements for compatibility
+o Advanced Transformations
+  - Add statement for 2D and 3D minkowski sum
+  - Add statement for refinement via surface subdivision
+  - Add statement for intersections in cartesian product of childs
+
