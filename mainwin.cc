@@ -226,11 +226,11 @@ MainWindow::MainWindow(const char *filename)
 	connect(this->viewActionOrthogonal, SIGNAL(triggered()), this, SLOT(viewOrthogonal()));
 
 // #ifdef ENABLE_CGAL
-// 		viewActionCGALSurface = menu->addAction("CGAL Surfaces", this, SLOT(viewModeCGALSurface()), QKeySequence(Qt::Key_F10));
-// 		viewActionCGALGrid = menu->addAction("CGAL Grid Only", this, SLOT(viewModeCGALGrid()), QKeySequence(Qt::Key_F11));
+// 	viewActionCGALSurface = menu->addAction("CGAL Surfaces", this, SLOT(viewModeCGALSurface()), QKeySequence(Qt::Key_F10));
+// 	viewActionCGALGrid = menu->addAction("CGAL Grid Only", this, SLOT(viewModeCGALGrid()), QKeySequence(Qt::Key_F11));
 // #endif
 
-  // Help menu
+	// Help menu
 	connect(this->helpActionAbout, SIGNAL(triggered()), this, SLOT(helpAbout()));
 	connect(this->helpActionManual, SIGNAL(triggered()), this, SLOT(helpManual()));
 
@@ -294,12 +294,16 @@ MainWindow::~MainWindow()
 /*!
 	Requests to open a file from an external event, e.g. by double-clicking a filename.
  */
+#ifdef ENABLE_MDI
 void MainWindow::requestOpenFile(const QString &filename)
 {
-#ifdef ENABLE_MDI
 	new MainWindow(filename.toUtf8());
-#endif
 }
+#else
+void MainWindow::requestOpenFile(const QString &)
+{
+}
+#endif
 
 void
 MainWindow::openFile(const QString &new_filename)
@@ -325,19 +329,22 @@ MainWindow::setFileName(const QString &filename)
 	}
 	else {
 		QFileInfo fileinfo(filename);
-		this->fileName = fileinfo.canonicalFilePath();
+		QString infoFileName = fileinfo.canonicalFilePath();
 		setWindowTitle("OpenSCAD - " + fileinfo.fileName() + "[*]");
 
 		// Check that the canonical file path exists - only update recent files
 		// if it does. Should prevent empty list items on initial open etc.
-		if (!this->fileName.isEmpty()) {
+		if (!infoFileName.isEmpty()) {
 			QSettings settings; // already set up properly via main.cpp
 			QStringList files = settings.value("recentFileList").toStringList();
 			files.removeAll(this->fileName);
 			files.prepend(this->fileName);
-			while (files.size() > maxRecentFiles) files.removeLast();
-			
+			while (files.size() > maxRecentFiles)
+				files.removeLast();
 			settings.setValue("recentFileList", files);
+			this->fileName = infoFileName;
+		} else {
+			this->fileName = fileinfo.fileName();
 		}
 		
 		QDir::setCurrent(fileinfo.dir().absolutePath());
