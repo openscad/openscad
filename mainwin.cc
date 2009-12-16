@@ -648,7 +648,9 @@ void MainWindow::updateRecentFileActions()
 	int originalNumRecentFiles = files.size();
 	
 	// Remove any duplicate or empty entries from the list
+#if (QT_VERSION >= QT_VERSION_CHECK(4, 5, 0))
 	files.removeDuplicates();
+#endif
 	files.removeAll(QString());
 	// Now remove any entries which do not exist
 	for(int i = files.size()-1; i >= 0; --i) {
