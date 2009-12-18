@@ -123,7 +123,7 @@ MainWindow::MainWindow(const char *filename)
 	fps = 0;
 	fsteps = 1;
 
-	highlighter = new Highlighter(editor->document());
+	highlighter = NULL;
 
 	QFont font;
 	font.setStyleHint(QFont::TypeWriter);
@@ -490,8 +490,13 @@ void MainWindow::compile(bool procevents)
 	last_compiled_doc = editor->toPlainText();
 	root_module = parse((last_compiled_doc + "\n" + commandline_commands).toAscii().data(), false);
 
-	delete highlighter;
-	highlighter = new Highlighter(editor->document());
+	if (highlighter) {
+		delete highlighter;
+		highlighter = NULL;
+	}
+	if (parser_error_pos >= 0) {
+		highlighter = new Highlighter(editor->document());
+	}
 
 	if (!root_module) {
 		if (!animate_panel->isVisible()) {
