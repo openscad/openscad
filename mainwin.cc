@@ -177,6 +177,7 @@ MainWindow::MainWindow(const char *filename)
 	connect(this->editActionPasteVPR, SIGNAL(triggered()), this, SLOT(pasteViewportRotation()));
 	connect(this->editActionZoomIn, SIGNAL(triggered()), editor, SLOT(zoomIn()));
 	connect(this->editActionZoomOut, SIGNAL(triggered()), editor, SLOT(zoomOut()));
+	connect(this->editActionHide, SIGNAL(triggered()), this, SLOT(hideEditor()));
 
 	// Design menu
 	connect(this->designActionReloadAndCompile, SIGNAL(triggered()), this, SLOT(actionReloadCompile()));
@@ -224,6 +225,7 @@ MainWindow::MainWindow(const char *filename)
 	connect(this->viewActionCenter, SIGNAL(triggered()), this, SLOT(viewCenter()));
 	connect(this->viewActionPerspective, SIGNAL(triggered()), this, SLOT(viewPerspective()));
 	connect(this->viewActionOrthogonal, SIGNAL(triggered()), this, SLOT(viewOrthogonal()));
+	connect(this->viewActionHide, SIGNAL(triggered()), this, SLOT(hideConsole()));
 
 // #ifdef ENABLE_CGAL
 // 	viewActionCGALSurface = menu->addAction("CGAL Surfaces", this, SLOT(viewModeCGALSurface()), QKeySequence(Qt::Key_F10));
@@ -788,6 +790,15 @@ void MainWindow::editUncomment()
 	cursor.setPosition(p1, QTextCursor::MoveAnchor);
 	cursor.setPosition(p2, QTextCursor::KeepAnchor);
 	editor->setTextCursor(cursor);
+}
+
+void MainWindow::hideEditor()
+{
+	if (editActionHide->isChecked()) {
+		editor->hide();
+	} else {
+		editor->show();
+	}
 }
 
 void MainWindow::pasteViewportTranslation()
@@ -1419,6 +1430,15 @@ void MainWindow::viewOrthogonal()
 	viewActionOrthogonal->setChecked(true);
 	screen->orthomode = true;
 	screen->updateGL();
+}
+
+void MainWindow::hideConsole()
+{
+	if (viewActionHide->isChecked()) {
+		console->hide();
+	} else {
+		console->show();
+	}
 }
 
 void MainWindow::dragEnterEvent(QDragEnterEvent *event)

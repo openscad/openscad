@@ -77,6 +77,7 @@ private slots:
 	void editUncomment();
 	void pasteViewportTranslation();
 	void pasteViewportRotation();
+	void hideEditor();
 
 private slots:
 	void actionReloadCompile();
@@ -117,6 +118,7 @@ public slots:
 	void viewCenter();
 	void viewPerspective();
 	void viewOrthogonal();
+	void hideConsole();
 	void animateUpdateDocChanged();
 	void animateUpdate();
 	void dragEnterEvent(QDragEnterEvent *event);

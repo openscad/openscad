@@ -3,6 +3,7 @@ BUGS
 ----
 o On Linux, large files load veery slowly
 o Some invalid DXF data gets pass the import checks and breaks the tessing code
+o Broken polyhedron() entities are not correctly detected and cause CGAL segfaults
 
 USER iNTERFACE
 --------------
@@ -13,8 +14,6 @@ o Preferences
   - OpenGL params
   - Default language feature settings
 o External editor
-o Hide/show editor
-o hide/show log widget
 o Mac OS X:
   - embed examples into bundle -> separate example menu?
   - Use examples as default File Open folder

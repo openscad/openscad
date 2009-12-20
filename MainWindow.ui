@@ -98,7 +98,7 @@
      <x>0</x>
      <y>0</y>
      <width>681</width>
-     <height>22</height>
+     <height>25</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_File">
@@ -179,6 +179,9 @@
     <addaction name="separator"/>
     <addaction name="viewActionPerspective"/>
     <addaction name="viewActionOrthogonal"/>
+    <addaction name="separator"/>
+    <addaction name="editActionHide"/>
+    <addaction name="viewActionHide"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
@@ -338,6 +341,14 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+-</string>
+   </property>
+  </action>
+  <action name="editActionHide">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Hide editor</string>
    </property>
   </action>
   <action name="designActionReloadAndCompile">
@@ -552,6 +563,14 @@
    </property>
    <property name="text">
     <string>Orthogonal</string>
+   </property>
+  </action>
+  <action name="viewActionHide">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Hide console</string>
    </property>
   </action>
   <action name="helpActionAbout">
