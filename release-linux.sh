@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # WARNING: This script might only work with the authors setup...
 
 VERSION=2010.01
@@ -7,7 +7,7 @@ set -ex
 
 # svnclean
 
-qmake VERSION=$VERSION
+qmake-qt4 VERSION=$VERSION
 make
 
 rm -rf release
