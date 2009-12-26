@@ -78,7 +78,10 @@ void GLView::initializeGL()
 	if (GLEW_OK != err) {
 		fprintf(stderr, "GLEW Error: %s\n", glewGetErrorString(err));
 	}
-	if (glewIsSupported("GL_VERSION_2_0"))
+	const char *openscad_disable_gl20_env = getenv("OPENSCAD_DISABLE_GL20");
+	if (openscad_disable_gl20_env && !strcmp(openscad_disable_gl20_env, "0"))
+		openscad_disable_gl20_env = NULL;
+	if (glewIsSupported("GL_VERSION_2_0") && openscad_disable_gl20_env == NULL)
 	{
 		const char *vs_source =
 			"uniform float xscale, yscale;\n"
