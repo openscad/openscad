@@ -290,8 +290,8 @@ CGAL_Nef_polyhedron PolySet::render_cgal_nef_polyhedron() const
 #if 0
 	std::cout << P;
 #endif
-	CGAL_Nef_polyhedron N(P);
-	return N;
+	CGAL_Nef_polyhedron3 N(P);
+	return CGAL_Nef_polyhedron(N);
 }
 
 #endif /* ENABLE_CGAL */
@@ -314,7 +314,7 @@ CGAL_Nef_polyhedron AbstractPolyNode::render_cgal_nef_polyhedron() const
 	PolySet *ps = render_polyset(RENDER_CGAL);
 	CGAL_Nef_polyhedron N = ps->render_cgal_nef_polyhedron();
 
-	cgal_nef_cache.insert(cache_id, new CGAL_Nef_polyhedron(N), N.number_of_vertices());
+	cgal_nef_cache.insert(cache_id, new CGAL_Nef_polyhedron(N), N.weight());
 	progress_report();
 	ps->unlink();
 	return N;

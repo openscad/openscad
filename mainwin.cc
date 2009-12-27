@@ -909,22 +909,28 @@ void MainWindow::actionRenderCGAL()
 	PRINTF("Number of objects currently in CGAL cache: %d", AbstractNode::cgal_nef_cache.size());
 	QApplication::processEvents();
 
-	PRINTF("   Simple:     %6s", root_N->is_simple() ? "yes" : "no");
-	QApplication::processEvents();
-	PRINTF("   Valid:      %6s", root_N->is_valid() ? "yes" : "no");
-	QApplication::processEvents();
-	PRINTF("   Vertices:   %6d", (int)root_N->number_of_vertices());
-	QApplication::processEvents();
-	PRINTF("   Halfedges:  %6d", (int)root_N->number_of_halfedges());
-	QApplication::processEvents();
-	PRINTF("   Edges:      %6d", (int)root_N->number_of_edges());
-	QApplication::processEvents();
-	PRINTF("   Halffacets: %6d", (int)root_N->number_of_halffacets());
-	QApplication::processEvents();
-	PRINTF("   Facets:     %6d", (int)root_N->number_of_facets());
-	QApplication::processEvents();
-	PRINTF("   Volumes:    %6d", (int)root_N->number_of_volumes());
-	QApplication::processEvents();
+	if (root_N->dim == 2) {
+		// FIXME
+	}
+
+	if (root_N->dim == 3) {
+		PRINTF("   Simple:     %6s", root_N->p3.is_simple() ? "yes" : "no");
+		QApplication::processEvents();
+		PRINTF("   Valid:      %6s", root_N->p3.is_valid() ? "yes" : "no");
+		QApplication::processEvents();
+		PRINTF("   Vertices:   %6d", (int)root_N->p3.number_of_vertices());
+		QApplication::processEvents();
+		PRINTF("   Halfedges:  %6d", (int)root_N->p3.number_of_halfedges());
+		QApplication::processEvents();
+		PRINTF("   Edges:      %6d", (int)root_N->p3.number_of_edges());
+		QApplication::processEvents();
+		PRINTF("   Halffacets: %6d", (int)root_N->p3.number_of_halffacets());
+		QApplication::processEvents();
+		PRINTF("   Facets:     %6d", (int)root_N->p3.number_of_facets());
+		QApplication::processEvents();
+		PRINTF("   Volumes:    %6d", (int)root_N->p3.number_of_volumes());
+		QApplication::processEvents();
+	}
 
 	int s = t.elapsed() / 1000;
 	PRINTF("Total rendering time: %d hours, %d minutes, %d seconds", s / (60*60), (s / 60) % 60, s % 60);
@@ -1003,7 +1009,13 @@ void MainWindow::actionExportSTLorOFF(bool)
 		return;
 	}
 
-	if (!root_N->is_simple()) {
+	if (root_N->dim != 3) {
+		PRINT("Current top level object is not a 3D object.");
+		current_win = NULL;
+		return;
+	}
+
+	if (root_N->p3.is_simple()) {
 		PRINT("Object isn't a valid 2-manifold! Modify your design..");
 		current_win = NULL;
 		return;
@@ -1020,7 +1032,7 @@ void MainWindow::actionExportSTLorOFF(bool)
 
 	QProgressDialog *pd = new QProgressDialog(
 			stl_mode ? "Exporting object to STL file..." : "Exporting object to OFF file...",
-			QString(), 0, root_N->number_of_facets() + 1);
+			QString(), 0, root_N->p3.number_of_facets() + 1);
 	pd->setValue(0);
 	pd->setAutoClose(false);
 	pd->show();
@@ -1180,11 +1192,11 @@ static void renderGLviaCGAL(void *vp)
 		delete p;
 		m->cgal_ogl_p = NULL;
 	}
-	if (m->root_N) {
+	if (m->root_N && m->root_N->dim == 3) {
 		CGAL::OGL::Polyhedron *p = (CGAL::OGL::Polyhedron*)m->cgal_ogl_p;
 		if (!p) {
 			m->cgal_ogl_p = p = new CGAL::OGL::Polyhedron();
-			CGAL::OGL::Nef3_Converter<CGAL_Nef_polyhedron>::convert_to_OGLPolyhedron(*m->root_N, p);
+			CGAL::OGL::Nef3_Converter<CGAL_Nef_polyhedron3>::convert_to_OGLPolyhedron(m->root_N->p3, p);
 			p->init();
 		}
 		if (m->viewActionCGALSurfaces->isChecked())

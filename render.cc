@@ -93,12 +93,14 @@ CGAL_Nef_polyhedron RenderNode::render_cgal_nef_polyhedron() const
 		if (first) {
 			N = v->render_cgal_nef_polyhedron();
 			first = false;
-		} else {
-			N += v->render_cgal_nef_polyhedron();
+		} else if (N.dim == 2) {
+			N.p2 += v->render_cgal_nef_polyhedron().p2;
+		} else if (N.dim == 3) {
+			N.p3 += v->render_cgal_nef_polyhedron().p3;
 		}
 	}
 
-	cgal_nef_cache.insert(cache_id, new CGAL_Nef_polyhedron(N), N.number_of_vertices());
+	cgal_nef_cache.insert(cache_id, new CGAL_Nef_polyhedron(N), N.weight());
 	progress_report();
 	return N;
 }
@@ -153,45 +155,56 @@ CSGTerm *RenderNode::render_csg_term(double m[16], QVector<CSGTerm*> *highlights
 		delete pd;
 	}
 
-	if (!N.is_simple()) {
-		PRINTF("WARNING: Result of render() isn't valid 2-manifold! Modify your design..");
+	if (N.dim == 2)
+	{
+		// FIXME
 		return NULL;
 	}
 
-	PolySet *ps = new PolySet();
-	ps->convexity = convexity;
-	
-	CGAL_Polyhedron P;
-	N.convert_to_Polyhedron(P);
+	if (N.dim == 3)
+	{
+		if (!N.p3.is_simple()) {
+			PRINTF("WARNING: Result of render() isn't valid 2-manifold! Modify your design..");
+			return NULL;
+		}
 
-	typedef CGAL_Polyhedron::Vertex Vertex;
-	typedef CGAL_Polyhedron::Vertex_const_iterator VCI;
-	typedef CGAL_Polyhedron::Facet_const_iterator FCI;
-	typedef CGAL_Polyhedron::Halfedge_around_facet_const_circulator HFCC;
+		PolySet *ps = new PolySet();
+		ps->convexity = convexity;
+		
+		CGAL_Polyhedron P;
+		N.p3.convert_to_Polyhedron(P);
 
-	for (FCI fi = P.facets_begin(); fi != P.facets_end(); ++fi) {
-		HFCC hc = fi->facet_begin();
-		HFCC hc_end = hc;
-		ps->append_poly();
-		do {
-			Vertex v = *VCI((hc++)->vertex());
-			double x = CGAL::to_double(v.point().x());
-			double y = CGAL::to_double(v.point().y());
-			double z = CGAL::to_double(v.point().z());
-			ps->append_vertex(x, y, z);
-		} while (hc != hc_end);
+		typedef CGAL_Polyhedron::Vertex Vertex;
+		typedef CGAL_Polyhedron::Vertex_const_iterator VCI;
+		typedef CGAL_Polyhedron::Facet_const_iterator FCI;
+		typedef CGAL_Polyhedron::Halfedge_around_facet_const_circulator HFCC;
+
+		for (FCI fi = P.facets_begin(); fi != P.facets_end(); ++fi) {
+			HFCC hc = fi->facet_begin();
+			HFCC hc_end = hc;
+			ps->append_poly();
+			do {
+				Vertex v = *VCI((hc++)->vertex());
+				double x = CGAL::to_double(v.point().x());
+				double y = CGAL::to_double(v.point().y());
+				double z = CGAL::to_double(v.point().z());
+				ps->append_vertex(x, y, z);
+			} while (hc != hc_end);
+		}
+
+		PolySet::ps_cache.insert(key, new PolySetPtr(ps->link()));
+
+		CSGTerm *term = new CSGTerm(ps, m, QString("n%1").arg(idx));
+		if (modinst->tag_highlight && highlights)
+			highlights->append(term->link());
+		if (modinst->tag_background && background) {
+			background->append(term);
+			return NULL;
+		}
+		return term;
 	}
 
-	PolySet::ps_cache.insert(key, new PolySetPtr(ps->link()));
-
-	CSGTerm *term = new CSGTerm(ps, m, QString("n%1").arg(idx));
-	if (modinst->tag_highlight && highlights)
-		highlights->append(term->link());
-	if (modinst->tag_background && background) {
-		background->append(term);
-		return NULL;
-	}
-	return term;
+	return NULL;
 }
 
 #else

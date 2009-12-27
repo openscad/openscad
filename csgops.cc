@@ -77,16 +77,26 @@ CGAL_Nef_polyhedron CsgNode::render_cgal_nef_polyhedron() const
 		if (first) {
 			N = v->render_cgal_nef_polyhedron();
 			first = false;
-		} else if (type == CSG_TYPE_UNION) {
-			N += v->render_cgal_nef_polyhedron();
-		} else if (type == CSG_TYPE_DIFFERENCE) {
-			N -= v->render_cgal_nef_polyhedron();
-		} else if (type == CSG_TYPE_INTERSECTION) {
-			N *= v->render_cgal_nef_polyhedron();
+		} else if (N.dim == 2) {
+			if (type == CSG_TYPE_UNION) {
+				N.p2 += v->render_cgal_nef_polyhedron().p2;
+			} else if (type == CSG_TYPE_DIFFERENCE) {
+				N.p2 -= v->render_cgal_nef_polyhedron().p2;
+			} else if (type == CSG_TYPE_INTERSECTION) {
+				N.p2 *= v->render_cgal_nef_polyhedron().p2;
+			}
+		} else if (N.dim == 3) {
+			if (type == CSG_TYPE_UNION) {
+				N.p3 += v->render_cgal_nef_polyhedron().p3;
+			} else if (type == CSG_TYPE_DIFFERENCE) {
+				N.p3 -= v->render_cgal_nef_polyhedron().p3;
+			} else if (type == CSG_TYPE_INTERSECTION) {
+				N.p3 *= v->render_cgal_nef_polyhedron().p3;
+			}
 		}
 	}
 
-	cgal_nef_cache.insert(cache_id, new CGAL_Nef_polyhedron(N), N.number_of_vertices());
+	cgal_nef_cache.insert(cache_id, new CGAL_Nef_polyhedron(N), N.weight());
 	progress_report();
 	return N;
 }

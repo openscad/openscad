@@ -248,14 +248,21 @@ static CGAL_Nef_polyhedron render_cgal_nef_polyhedron_backend(const AbstractNode
 			continue;
 		if (is_first)
 			N = v->render_cgal_nef_polyhedron();
-		else if (intersect)
-			N *= v->render_cgal_nef_polyhedron();
-		else
-			N += v->render_cgal_nef_polyhedron();
+		else if (N.dim == 2) {
+			if (intersect)
+				N.p2 *= v->render_cgal_nef_polyhedron().p2;
+			else
+				N.p2 += v->render_cgal_nef_polyhedron().p2;
+		} else {
+			if (intersect)
+				N.p3 *= v->render_cgal_nef_polyhedron().p3;
+			else
+				N.p3 += v->render_cgal_nef_polyhedron().p3;
+		}
 		is_first = false;
 	}
 
-	that->cgal_nef_cache.insert(cache_id, new CGAL_Nef_polyhedron(N), N.number_of_vertices());
+	that->cgal_nef_cache.insert(cache_id, new CGAL_Nef_polyhedron(N), N.weight());
 	that->progress_report();
 	return N;
 }

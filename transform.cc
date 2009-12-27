@@ -190,20 +190,34 @@ CGAL_Nef_polyhedron TransformNode::render_cgal_nef_polyhedron() const
 		return *cgal_nef_cache[cache_id];
 	}
 
+	bool first = true;
 	CGAL_Nef_polyhedron N;
+
 	foreach (AbstractNode *v, children) {
 		if (v->modinst->tag_background)
 			continue;
-		N += v->render_cgal_nef_polyhedron();
+		if (first) {
+			N = v->render_cgal_nef_polyhedron();
+			first = false;
+		} else if (N.dim == 2) {
+			N.p2 += v->render_cgal_nef_polyhedron().p2;
+		} else if (N.dim == 3) {
+			N.p3 += v->render_cgal_nef_polyhedron().p3;
+		}
 	}
 
-	CGAL_Aff_transformation t(
-			m[0], m[4], m[ 8], m[12],
-			m[1], m[5], m[ 9], m[13],
-			m[2], m[6], m[10], m[14], m[15]);
-	N.transform(t);
+	if (N.dim == 2) {
+		// FIXME
+	}
+	if (N.dim == 3) {
+		CGAL_Aff_transformation t(
+				m[0], m[4], m[ 8], m[12],
+				m[1], m[5], m[ 9], m[13],
+				m[2], m[6], m[10], m[14], m[15]);
+		N.p3.transform(t);
+	}
 
-	cgal_nef_cache.insert(cache_id, new CGAL_Nef_polyhedron(N), N.number_of_vertices());
+	cgal_nef_cache.insert(cache_id, new CGAL_Nef_polyhedron(N), N.weight());
 	progress_report();
 	return N;
 }
