@@ -207,7 +207,11 @@ CGAL_Nef_polyhedron TransformNode::render_cgal_nef_polyhedron() const
 	}
 
 	if (N.dim == 2) {
+		CGAL_Aff_transformation2 t(
+				m[0], m[4], m[12],
+				m[1], m[5], m[13], m[15]);
 		// FIXME
+		// N.p2.transform(t);
 	}
 	if (N.dim == 3) {
 		CGAL_Aff_transformation t(

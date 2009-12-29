@@ -26,7 +26,8 @@ enum primitive_type_e {
 	CUBE,
 	SPHERE,
 	CYLINDER,
-	POLYHEDRON
+	POLYHEDRON,
+	SQUARE
 };
 
 class PrimitiveModule : public AbstractModule
@@ -71,6 +72,9 @@ AbstractNode *PrimitiveModule::evaluate(const Context *ctx, const ModuleInstanci
 	}
 	if (type == POLYHEDRON) {
 		argnames = QVector<QString>() << "points" << "triangles";
+	}
+	if (type == SQUARE) {
+		argnames = QVector<QString>() << "size" << "center";
 	}
 
 	Context c(ctx);
@@ -130,6 +134,17 @@ AbstractNode *PrimitiveModule::evaluate(const Context *ctx, const ModuleInstanci
 		node->triangles = c.lookup_variable("triangles");
 	}
 
+	if (type == SQUARE) {
+		Value size = c.lookup_variable("size");
+		Value center = c.lookup_variable("center");
+		size.getnum(node->x);
+		size.getnum(node->y);
+		size.getv2(node->x, node->y);
+		if (center.type == Value::BOOL) {
+			node->center = center.b;
+		}
+	}
+
 	return node;
 }
 
@@ -139,6 +154,7 @@ void register_builtin_primitives()
 	builtin_modules["sphere"] = new PrimitiveModule(SPHERE);
 	builtin_modules["cylinder"] = new PrimitiveModule(CYLINDER);
 	builtin_modules["polyhedron"] = new PrimitiveModule(POLYHEDRON);
+	builtin_modules["square"] = new PrimitiveModule(SQUARE);
 }
 
 int get_fragments_from_r(double r, double fn, double fs, double fa)
@@ -357,6 +373,28 @@ sphere_next_r2:
 		}
 	}
 
+	if (type == SQUARE)
+	{
+		double x1, x2, y1, y2;
+		if (center) {
+			x1 = -x/2;
+			x2 = +x/2;
+			y1 = -y/2;
+			y2 = +y/2;
+		} else {
+			x1 = y1 = 0;
+			x2 = x;
+			y2 = y;
+		}
+
+		p->is2d = true;
+		p->append_poly();
+		p->append_vertex(x1, y1);
+		p->append_vertex(x2, y1);
+		p->append_vertex(x2, y2);
+		p->append_vertex(x1, y2);
+	}
+
 	return p;
 }
 
@@ -365,13 +403,15 @@ QString PrimitiveNode::dump(QString indent) const
 	if (dump_cache.isEmpty()) {
 		QString text;
 		if (type == CUBE)
-			text.sprintf("cube(size = [%f %f %f], center = %s);\n", x, y, z, center ? "true" : "false");
+			text.sprintf("cube(size = [%f, %f, %f], center = %s);\n", x, y, z, center ? "true" : "false");
 		if (type == SPHERE)
 			text.sprintf("sphere($fn = %f, $fa = %f, $fs = %f, r = %f);\n", fn, fa, fs, r1);
 		if (type == CYLINDER)
 			text.sprintf("cylinder($fn = %f, $fa = %f, $fs = %f, h = %f, r1 = %f, r2 = %f, center = %s);\n", fn, fa, fs, h, r1, r2, center ? "true" : "false");
 		if (type == POLYHEDRON)
 			text.sprintf("polyhedron(points = %s, triangles = %s);\n", points.dump().toAscii().data(), triangles.dump().toAscii().data());
+		if (type == SQUARE)
+			text.sprintf("square(size = [%f, %f], center = %s);\n", x, y, center ? "true" : "false");
 		((AbstractNode*)this)->dump_cache = indent + QString("n%1: ").arg(idx) + text;
 	}
 	return dump_cache;

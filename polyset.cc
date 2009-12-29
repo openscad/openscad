@@ -26,6 +26,7 @@ QCache<QString,PolySetPtr> PolySet::ps_cache(100);
 
 PolySet::PolySet()
 {
+	is2d = false;
 	convexity = 1;
 	refcount = 1;
 }
@@ -284,14 +285,30 @@ public:
 
 CGAL_Nef_polyhedron PolySet::render_cgal_nef_polyhedron() const
 {
-	CGAL_Polyhedron P;
-	CGAL_Build_PolySet builder(this);
-	P.delegate(builder);
+	if (this->is2d)
+	{
+		int len = this->polygons[0].size();
+		if (len > 0) {
+			CGAL_Nef_polyhedron2::Point points[len];
+			for (int i = 0; i < len; i++)
+				points[i] = CGAL_Nef_polyhedron2::Point(this->polygons[0][i].x,
+						this->polygons[0][i].y);
+			CGAL_Nef_polyhedron2 N(points, points+len);
+			return CGAL_Nef_polyhedron(N);
+		}
+	}
+	else
+	{
+		CGAL_Polyhedron P;
+		CGAL_Build_PolySet builder(this);
+		P.delegate(builder);
 #if 0
-	std::cout << P;
+		std::cout << P;
 #endif
-	CGAL_Nef_polyhedron3 N(P);
-	return CGAL_Nef_polyhedron(N);
+		CGAL_Nef_polyhedron3 N(P);
+		return CGAL_Nef_polyhedron(N);
+	}
+	return CGAL_Nef_polyhedron();
 }
 
 #endif /* ENABLE_CGAL */

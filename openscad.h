@@ -468,6 +468,7 @@ public:
 
 typedef CGAL::Extended_cartesian<CGAL::Gmpq> CGAL_Kernel2;
 typedef CGAL::Nef_polyhedron_2<CGAL_Kernel2> CGAL_Nef_polyhedron2;
+typedef CGAL_Kernel2::Aff_transformation_2 CGAL_Aff_transformation2;
 
 typedef CGAL::Cartesian<CGAL::Gmpq> CGAL_Kernel3;
 typedef CGAL::Polyhedron_3<CGAL_Kernel3> CGAL_Polyhedron;
@@ -501,7 +502,7 @@ struct CGAL_Nef_polyhedron
 
 	int weight() {
 		if (dim == 2)
-			return 100;
+			return p2.explorer().number_of_vertices();
 		if (dim == 3)
 			return p3.number_of_vertices();
 		return 0;
@@ -525,6 +526,8 @@ public:
 	typedef QList<Point> Polygon;
 	QVector<Polygon> polygons;
 	Grid3d<void*> grid;
+
+	bool is2d;
 	int convexity;
 
 	PolySet();
@@ -533,6 +536,13 @@ public:
 	void append_poly();
 	void append_vertex(double x, double y, double z);
 	void insert_vertex(double x, double y, double z);
+
+	void append_vertex(double x, double y) {
+		append_vertex(x, y, 0.0);
+	}
+	void insert_vertex(double x, double y) {
+		insert_vertex(x, y, 0.0);
+	}
 
 	enum colormode_e {
 		COLORMODE_NONE,

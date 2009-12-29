@@ -910,7 +910,9 @@ void MainWindow::actionRenderCGAL()
 	QApplication::processEvents();
 
 	if (root_N->dim == 2) {
-		// FIXME
+		PRINTF("   Top level object is a 2D object.");
+		PRINTF("   Empty:      %6s", root_N->p2.is_empty() ? "yes" : "no");
+		PRINTF("   Plane:      %6s", root_N->p2.is_plane() ? "yes" : "no");
 	}
 
 	if (root_N->dim == 3) {
@@ -1192,7 +1194,39 @@ static void renderGLviaCGAL(void *vp)
 		delete p;
 		m->cgal_ogl_p = NULL;
 	}
-	if (m->root_N && m->root_N->dim == 3) {
+	if (m->root_N && m->root_N->dim == 2)
+	{
+		typedef CGAL_Nef_polyhedron2::Explorer Explorer;
+		typedef Explorer::Face_const_iterator fci_t;
+		typedef Explorer::Halfedge_around_face_const_circulator heafcc_t;
+		typedef Explorer::Point Point;
+		Explorer E = m->root_N->p2.explorer();
+
+		for (fci_t fit = E.faces_begin(), fend = E.faces_end(); fit != fend; ++fit)
+		{
+			bool fset = false;
+			double fx = 0.0, fy = 0.0;
+			heafcc_t fcirc(E.halfedge(fit)), fend(fcirc);
+			CGAL_For_all(fcirc, fend) {
+				if(E.is_standard(E.target(fcirc))) {
+					Point p = E.point(E.target(fcirc));
+					double x = to_double(p.x()), y = to_double(p.y());
+					if (!fset) {
+						glBegin(GL_LINE_STRIP);
+						fx = x, fy = y;
+						fset = true;
+					}
+					glVertex3d(x, y, 0.0);
+				}
+			}
+			if (fset) {
+				glVertex3d(fx, fy, 0.0);
+				glEnd();
+			}
+		}
+	}
+	if (m->root_N && m->root_N->dim == 3)
+	{
 		CGAL::OGL::Polyhedron *p = (CGAL::OGL::Polyhedron*)m->cgal_ogl_p;
 		if (!p) {
 			m->cgal_ogl_p = p = new CGAL::OGL::Polyhedron();
