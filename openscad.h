@@ -552,10 +552,20 @@ public:
 		COLORMODE_BACKGROUND
 	};
 
+	enum csgmode_e {
+		CSGMODE_NONE,
+		CSGMODE_NORMAL = 1,
+		CSGMODE_DIFFERENCE = 2,
+		CSGMODE_BACKGROUND = 11,
+		CSGMODE_BACKGROUND_DIFFERENCE = 12,
+		CSGMODE_HIGHLIGHT = 21,
+		CSGMODE_HIGHLIGHT_DIFFERENCE = 22
+	};
+
 	static QCache<QString,PolySetPtr> ps_cache;
 
-	void render_surface(colormode_e colormode, GLint *shaderinfo = NULL) const;
-	void render_edges(colormode_e colormode) const;
+	void render_surface(colormode_e colormode, csgmode_e csgmode, GLint *shaderinfo = NULL) const;
+	void render_edges(colormode_e colormode, csgmode_e csgmode) const;
 
 #ifdef ENABLE_CGAL
 	CGAL_Nef_polyhedron render_cgal_nef_polyhedron() const;

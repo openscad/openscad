@@ -65,7 +65,7 @@ void PolySet::insert_vertex(double x, double y, double z)
 	polygons.last().insert(0, Point(x, y, z));
 }
 
-static void gl_draw_triangle(GLint *shaderinfo, const PolySet::Point *p0, const PolySet::Point *p1, const PolySet::Point *p2, bool e0, bool e1, bool e2)
+static void gl_draw_triangle(GLint *shaderinfo, const PolySet::Point *p0, const PolySet::Point *p1, const PolySet::Point *p2, bool e0, bool e1, bool e2, double z)
 {
 	double ax = p1->x - p0->x, bx = p1->x - p2->x;
 	double ay = p1->y - p0->y, by = p1->y - p2->y;
@@ -81,31 +81,31 @@ static void gl_draw_triangle(GLint *shaderinfo, const PolySet::Point *p0, const 
 		double e1f = e1 ? 2.0 : -1.0;
 		double e2f = e2 ? 2.0 : -1.0;
 		glVertexAttrib3d(shaderinfo[3], e0f, e1f, e2f);
-		glVertexAttrib3d(shaderinfo[4], p1->x, p1->y, p1->z);
-		glVertexAttrib3d(shaderinfo[5], p2->x, p2->y, p2->z);
+		glVertexAttrib3d(shaderinfo[4], p1->x, p1->y, p1->z + z);
+		glVertexAttrib3d(shaderinfo[5], p2->x, p2->y, p2->z + z);
 		glVertexAttrib3d(shaderinfo[6], 0.0, 1.0, 0.0);
-		glVertex3d(p0->x, p0->y, p0->z);
+		glVertex3d(p0->x, p0->y, p0->z + z);
 		glVertexAttrib3d(shaderinfo[3], e0f, e1f, e2f);
-		glVertexAttrib3d(shaderinfo[4], p0->x, p0->y, p0->z);
-		glVertexAttrib3d(shaderinfo[5], p2->x, p2->y, p2->z);
+		glVertexAttrib3d(shaderinfo[4], p0->x, p0->y, p0->z + z);
+		glVertexAttrib3d(shaderinfo[5], p2->x, p2->y, p2->z + z);
 		glVertexAttrib3d(shaderinfo[6], 0.0, 0.0, 1.0);
-		glVertex3d(p1->x, p1->y, p1->z);
+		glVertex3d(p1->x, p1->y, p1->z + z);
 		glVertexAttrib3d(shaderinfo[3], e0f, e1f, e2f);
-		glVertexAttrib3d(shaderinfo[4], p0->x, p0->y, p0->z);
-		glVertexAttrib3d(shaderinfo[5], p1->x, p1->y, p1->z);
+		glVertexAttrib3d(shaderinfo[4], p0->x, p0->y, p0->z + z);
+		glVertexAttrib3d(shaderinfo[5], p1->x, p1->y, p1->z + z);
 		glVertexAttrib3d(shaderinfo[6], 1.0, 0.0, 0.0);
-		glVertex3d(p2->x, p2->y, p2->z);
+		glVertex3d(p2->x, p2->y, p2->z + z);
 	}
 	else
 #endif
 	{
-		glVertex3d(p0->x, p0->y, p0->z);
-		glVertex3d(p1->x, p1->y, p1->z);
-		glVertex3d(p2->x, p2->y, p2->z);
+		glVertex3d(p0->x, p0->y, p0->z + z);
+		glVertex3d(p1->x, p1->y, p1->z + z);
+		glVertex3d(p2->x, p2->y, p2->z + z);
 	}
 }
 
-void PolySet::render_surface(colormode_e colormode, GLint *shaderinfo) const
+void PolySet::render_surface(colormode_e colormode, csgmode_e csgmode, GLint *shaderinfo) const
 {
 	if (colormode == COLORMODE_MATERIAL) {
 		glColor3ub(249, 215, 44);
@@ -149,35 +149,91 @@ void PolySet::render_surface(colormode_e colormode, GLint *shaderinfo) const
 		glUniform1f(shaderinfo[8], shaderinfo[10]);
 	}
 #endif /* ENABLE_OPENCSG */
-	for (int i = 0; i < polygons.size(); i++) {
-		const Polygon *poly = &polygons[i];
-		glBegin(GL_TRIANGLES);
-		if (poly->size() == 3) {
-			gl_draw_triangle(shaderinfo, &poly->at(0), &poly->at(1), &poly->at(2), true, true, true);
-		}
-		else if (poly->size() == 4) {
-			gl_draw_triangle(shaderinfo, &poly->at(0), &poly->at(1), &poly->at(3), true, false, true);
-			gl_draw_triangle(shaderinfo, &poly->at(2), &poly->at(3), &poly->at(1), true, false, true);
-		}
-		else {
-			Point center;
-			for (int j = 0; j < poly->size(); j++) {
-				center.x += poly->at(j).x;
-				center.y += poly->at(j).y;
-				center.z += poly->at(j).z;
+	if (this->is2d) {
+		double zbase = csgmode;
+		for (double z = -zbase/2; z < zbase; z += zbase)
+		{
+			for (int i = 0; i < polygons.size(); i++) {
+				const Polygon *poly = &polygons[i];
+				glBegin(GL_TRIANGLES);
+				if (poly->size() == 3) {
+					if (z < 0) {
+						gl_draw_triangle(shaderinfo, &poly->at(0), &poly->at(2), &poly->at(1), true, true, true, z);
+					} else {
+						gl_draw_triangle(shaderinfo, &poly->at(0), &poly->at(1), &poly->at(2), true, true, true, z);
+					}
+				}
+				else if (poly->size() == 4) {
+					if (z < 0) {
+						gl_draw_triangle(shaderinfo, &poly->at(0), &poly->at(3), &poly->at(1), true, false, true, z);
+						gl_draw_triangle(shaderinfo, &poly->at(2), &poly->at(1), &poly->at(3), true, false, true, z);
+					} else {
+						gl_draw_triangle(shaderinfo, &poly->at(0), &poly->at(1), &poly->at(3), true, false, true, z);
+						gl_draw_triangle(shaderinfo, &poly->at(2), &poly->at(3), &poly->at(1), true, false, true, z);
+					}
+				}
+				else {
+					Point center;
+					for (int j = 0; j < poly->size(); j++) {
+						center.x += poly->at(j).x;
+						center.y += poly->at(j).y;
+					}
+					center.x /= poly->size();
+					center.y /= poly->size();
+					for (int j = 1; j <= poly->size(); j++) {
+						if (z < 0) {
+							gl_draw_triangle(shaderinfo, &center, &poly->at(j % poly->size()), &poly->at(j - 1),
+									false, true, false, z);
+						} else {
+							gl_draw_triangle(shaderinfo, &center, &poly->at(j - 1), &poly->at(j % poly->size()),
+									false, true, false, z);
+						}
+					}
+				}
+				if (z < 0) {
+					for (int j = 1; j <= poly->size(); j++) {
+						Point p1 = poly->at(j - 1), p2 = poly->at(j - 1);
+						Point p3 = poly->at(j % poly->size()), p4 = poly->at(j % poly->size());
+						p1.z -= zbase/2, p2.z += zbase/2;
+						p3.z -= zbase/2, p4.z += zbase/2;
+						gl_draw_triangle(shaderinfo, &p2, &p1, &p3, true, true, false, 0);
+						gl_draw_triangle(shaderinfo, &p2, &p3, &p4, false, true, true, 0);
+					}
+				}
+				glEnd();
 			}
-			center.x /= poly->size();
-			center.y /= poly->size();
-			center.z /= poly->size();
-			for (int j = 1; j <= poly->size(); j++) {
-				gl_draw_triangle(shaderinfo, &center, &poly->at(j - 1), &poly->at(j % poly->size()), false, true, false);
-			}
 		}
-		glEnd();
+	} else {
+		for (int i = 0; i < polygons.size(); i++) {
+			const Polygon *poly = &polygons[i];
+			glBegin(GL_TRIANGLES);
+			if (poly->size() == 3) {
+				gl_draw_triangle(shaderinfo, &poly->at(0), &poly->at(1), &poly->at(2), true, true, true, 0);
+			}
+			else if (poly->size() == 4) {
+				gl_draw_triangle(shaderinfo, &poly->at(0), &poly->at(1), &poly->at(3), true, false, true, 0);
+				gl_draw_triangle(shaderinfo, &poly->at(2), &poly->at(3), &poly->at(1), true, false, true, 0);
+			}
+			else {
+				Point center;
+				for (int j = 0; j < poly->size(); j++) {
+					center.x += poly->at(j).x;
+					center.y += poly->at(j).y;
+					center.z += poly->at(j).z;
+				}
+				center.x /= poly->size();
+				center.y /= poly->size();
+				center.z /= poly->size();
+				for (int j = 1; j <= poly->size(); j++) {
+					gl_draw_triangle(shaderinfo, &center, &poly->at(j - 1), &poly->at(j % poly->size()), false, true, false, 0);
+				}
+			}
+			glEnd();
+		}
 	}
 }
 
-void PolySet::render_edges(colormode_e colormode) const
+void PolySet::render_edges(colormode_e colormode, csgmode_e csgmode) const
 {
 	if (colormode == COLORMODE_MATERIAL)
 		glColor3ub(255, 236, 94);
@@ -187,14 +243,40 @@ void PolySet::render_edges(colormode_e colormode) const
 		glColor4ub(255, 171, 86, 128);
 	if (colormode == COLORMODE_BACKGROUND)
 		glColor4ub(150, 150, 150, 128);
-	for (int i = 0; i < polygons.size(); i++) {
-		const Polygon *poly = &polygons[i];
-		glBegin(GL_LINE_STRIP);
-		for (int j = 0; j < poly->size(); j++) {
-			const Point *p = &poly->at(j);
-			glVertex3d(p->x, p->y, p->z);
+	if (this->is2d) {
+		double zbase = csgmode;
+		for (double z = -zbase/2; z < zbase; z += zbase)
+		{
+			for (int i = 0; i < polygons.size(); i++) {
+				const Polygon *poly = &polygons[i];
+				glBegin(GL_LINE_LOOP);
+				for (int j = 0; j < poly->size(); j++) {
+					const Point *p = &poly->at(j);
+					glVertex3d(p->x, p->y, z);
+				}
+				glEnd();
+			}
 		}
-		glEnd();
+		for (int i = 0; i < polygons.size(); i++) {
+			const Polygon *poly = &polygons[i];
+			glBegin(GL_LINES);
+			for (int j = 0; j < poly->size(); j++) {
+				const Point *p = &poly->at(j);
+				glVertex3d(p->x, p->y, -zbase/2);
+				glVertex3d(p->x, p->y, +zbase/2);
+			}
+			glEnd();
+		}
+	} else {
+		for (int i = 0; i < polygons.size(); i++) {
+			const Polygon *poly = &polygons[i];
+			glBegin(GL_LINE_LOOP);
+			for (int j = 0; j < poly->size(); j++) {
+				const Point *p = &poly->at(j);
+				glVertex3d(p->x, p->y, p->z);
+			}
+			glEnd();
+		}
 	}
 }
 
