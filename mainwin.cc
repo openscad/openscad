@@ -703,7 +703,6 @@ void MainWindow::actionSave()
 			fprintf(fp, "%s", editor->toPlainText().toAscii().data());
 			fclose(fp);
 			PRINTA("Saved design `%1'.", this->fileName);
-			this->setWindowModified(false);
 			this->editor->document()->setModified(false);
 		}
 		current_win = NULL;
