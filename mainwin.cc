@@ -1018,7 +1018,7 @@ void MainWindow::actionExportSTLorOFF(bool)
 		return;
 	}
 
-	if (root_N->p3.is_simple()) {
+	if (!root_N->p3.is_simple()) {
 		PRINT("Object isn't a valid 2-manifold! Modify your design..");
 		current_win = NULL;
 		return;
