@@ -18,7 +18,7 @@ QT += opengl
 # Application configuration
 CONFIG += debug
 # CONFIG += release
-#CONFIG += mdi
+CONFIG += mdi
 CONFIG += cgal
 CONFIG += opencsg
 
@@ -44,12 +44,16 @@ cgal {
 
 opencsg {
   DEFINES += ENABLE_OPENCSG
-  LIBS += -L/opt/local/lib -lopencsg
+  LIBS += -lopencsg
   unix:LIBS += -lGLEW
   win32:LIBS += -lglew32
-  macx {
-    INCLUDEPATH += $(OPENCSGDIR)/include /opt/local/include
-    LIBS += -L$(OPENCSGDIR)/lib
+
+  # Optionally specify location of OpenCSG using the 
+  # OPENCSGDIR env. variable
+  OPENCSG_DIR = $$(OPENCSGDIR)
+  !isEmpty(OPENCSG_DIR) {
+    INCLUDEPATH += $$OPENCSG_DIR/include
+    LIBS += -L$$OPENCSG_DIR/lib
   }
 }
 
