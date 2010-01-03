@@ -18,7 +18,7 @@ QT += opengl
 # Application configuration
 CONFIG += debug
 # CONFIG += release
-CONFIG += mdi
+# CONFIG += mdi
 CONFIG += cgal
 CONFIG += opencsg
 
