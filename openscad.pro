@@ -48,8 +48,8 @@ opencsg {
   unix:LIBS += -lGLEW
   win32:LIBS += -lglew32
   macx {
-    INCLUDEPATH += $(PWD)/../OpenCSG-1.1.1/include /opt/local/include
-    LIBS += -L$(PWD)/../OpenCSG-1.1.1/lib
+    INCLUDEPATH += $(OPENCSGDIR)/include /opt/local/include
+    LIBS += -L$(OPENCSGDIR)/lib
   }
 }
 

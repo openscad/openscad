@@ -9,7 +9,7 @@ o Patch OpenCSG
 
   cd OpenCSG-1.1.1
   patch -p1 < ../openscad/OpenCSG-MacOSX-port.patch
-  patch -p1 < ../openscad/OpenCSG-Reset-Hack.patch      # Only if MDI
+  patch -p1 < ../openscad/OpenCSG-1.2.0-Reset-Hack.patch      # Only if MDI
 
 o Build OpenCSG
 

@@ -1,0 +1,89 @@
+diff -ru OpenCSG-1.2.0/include/opencsg.h OpenCSG-1.2.0-reset/include/opencsg.h
+--- OpenCSG-1.2.0/include/opencsg.h	2010-01-02 21:04:10.000000000 +0100
++++ OpenCSG-1.2.0-reset/include/opencsg.h	2010-01-03 00:41:30.000000000 +0100
+@@ -229,6 +229,9 @@
+                 Algorithm, 
+                 DepthComplexityAlgorithm = NoDepthComplexitySampling);
+ 
++    // call this function whenever switching the OpenGL context
++    void reset();
++
+ } // namespace OpenCSG
+ 
+ #endif // __OpenCSG__opencsg_h__
+Only in OpenCSG-1.2.0-reset/include: opencsg.h~
+diff -ru OpenCSG-1.2.0/src/channelManager.h OpenCSG-1.2.0-reset/src/channelManager.h
+--- OpenCSG-1.2.0/src/channelManager.h	2010-01-02 21:03:01.000000000 +0100
++++ OpenCSG-1.2.0-reset/src/channelManager.h	2010-01-03 00:40:53.000000000 +0100
+@@ -79,9 +79,9 @@
+         /// moved into alpha, to allow alpha testing of the channel.
+         static void setupTexEnv(Channel channel);
+ 
+-    private:
+-
+         static OpenGL::OffscreenBuffer* gOffscreenBuffer;
++
++    private:
+         static int gOffscreenType;
+         static bool gInUse;
+ 
+Only in OpenCSG-1.2.0-reset/src: channelManager.h~
+diff -ru OpenCSG-1.2.0/src/offscreenBuffer.cpp OpenCSG-1.2.0-reset/src/offscreenBuffer.cpp
+--- OpenCSG-1.2.0/src/offscreenBuffer.cpp	2010-01-02 21:03:04.000000000 +0100
++++ OpenCSG-1.2.0-reset/src/offscreenBuffer.cpp	2010-01-03 00:41:28.000000000 +0100
+@@ -24,9 +24,22 @@
+ #include "frameBufferObjectExt.h"
+ #include "pBufferTexture.h"
+ #include <GL/glew.h>
++#include "channelManager.h"
++
++static bool reset_fARB = false;
++static bool reset_fEXT = false;
++static bool reset_p = false;
+ 
+ namespace OpenCSG {
+ 
++    void reset()
++    {
++	reset_fARB = true;
++	reset_fEXT = true;
++	reset_p = true;
++	OpenCSG::ChannelManager::gOffscreenBuffer = NULL;
++    }
++
+     namespace OpenGL {
+ 
+         OffscreenBuffer* getOffscreenBuffer(bool fbo) {
+@@ -36,19 +49,28 @@
+             
+             if (fbo) {
+                 if (GLEW_ARB_framebuffer_object) {
+-                    if (!fARB)
++                    if (reset_fARB || !fARB) {
++                        delete fARB;
+                         fARB = new FrameBufferObject;
++                        reset_fARB = false;
++                    }
+                     return fARB;
+                 }
+                 else {
+-                    if (!fEXT)
++                    if (reset_fEXT || !fEXT) {
++                        delete fEXT;
+                         fEXT = new FrameBufferObjectExt;
++                        reset_fEXT = false;
++                    }
+                     return fEXT;
+                 }
+             }
+             else {
+-                if (!p)
++                if (reset_p || !p) {
++                    delete p;
+                     p = new PBufferTexture;
++                    reset_p = false;
++                }
+                 return p;
+             }
+         }
+Only in OpenCSG-1.2.0-reset/src: offscreenBuffer.cpp~

@@ -5,12 +5,13 @@ VERSION=`date "+%Y.%m.%d"`
 #VERSION=2010.01
 
 echo "Building.."
-qmake VERSION=$VERSION
+export OPENCSGDIR=$PWD/../OpenCSG-1.2.0
+qmake VERSION=$VERSION CONFIG+=mdi
 make clean
 make -j2
 echo "Preparing executable.."
 mkdir OpenSCAD.app/Contents/Frameworks
-cp ../OpenCSG-1.1.1/lib/libopencsg.dylib OpenSCAD.app/Contents/Frameworks
+cp $OPENCSGDIR/lib/libopencsg.dylib OpenSCAD.app/Contents/Frameworks
 cp /opt/local/lib/libGLEW.1.5.1.dylib OpenSCAD.app/Contents/Frameworks
 cp /Library/Frameworks/QtOpenGL.framework/Versions/4/QtOpenGL OpenSCAD.app/Contents/Frameworks
 cp /Library/Frameworks/QtGui.framework/Versions/4/QtGui OpenSCAD.app/Contents/Frameworks
