@@ -123,7 +123,7 @@ PolySet *ImportNode::render_polyset(render_mode_e) const
 		}
 		else
 		{
-			f.read(80-4+4);
+			f.read(80-5+4);
 			while (1) {
 				struct {
 					float i, j, k;
