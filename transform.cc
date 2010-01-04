@@ -208,6 +208,10 @@ CGAL_Nef_polyhedron TransformNode::render_cgal_nef_polyhedron() const
 
 	if (N.dim == 2)
 	{
+		// WARNING: There must be an easier way to perform a CGAL_Aff_transformation2
+		// on a CGAL_Nef_polyhedron2 than this. But I haven't found the right way to do
+		// it yet and this solution seams to work well.
+
 		CGAL_Aff_transformation2 t(
 				m[0], m[4], m[12],
 				m[1], m[5], m[13], m[15]);
@@ -229,8 +233,11 @@ CGAL_Nef_polyhedron TransformNode::render_cgal_nef_polyhedron() const
 			CGAL_For_all(fcirc, fend) {
 				if (E.is_standard(E.target(fcirc))) {
 					Explorer::Point ep = E.point(E.target(fcirc));
-					// FIXME: Actually do the transformation
-					pdata_point_lists.back().push_back(ep);
+					CGAL_Kernel2::Point_2 tp = t.transform(CGAL_Kernel2::Point_2(ep.x(), ep.y()));
+					// FIXME: This to_double() calls should not be neccessary! It would be much better to reuse
+					// the gmpq value directly. But I haven't managed to kick CGAL hard enough to do the trick..
+					CGAL_Nef_polyhedron2::Point p = CGAL_Nef_polyhedron2::Point(to_double(tp.x()), to_double(tp.y()));
+					pdata_point_lists.back().push_back(p);
 				}
 			}
 			pdata.push_back(std::make_pair(pdata_point_lists.back().begin(), pdata_point_lists.back().end()));
