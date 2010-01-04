@@ -911,12 +911,28 @@ void MainWindow::actionRenderCGAL()
 	QApplication::processEvents();
 
 	if (root_N->dim == 2) {
-		PRINTF("   Top level object is a 2D object.");
+		PRINTF("   Top level object is a 2D object:");
+		QApplication::processEvents();
 		PRINTF("   Empty:      %6s", root_N->p2.is_empty() ? "yes" : "no");
+		QApplication::processEvents();
 		PRINTF("   Plane:      %6s", root_N->p2.is_plane() ? "yes" : "no");
+		QApplication::processEvents();
+		PRINTF("   Vertices:   %6d", (int)root_N->p2.explorer().number_of_vertices());
+		QApplication::processEvents();
+		PRINTF("   Halfedges:  %6d", (int)root_N->p2.explorer().number_of_halfedges());
+		QApplication::processEvents();
+		PRINTF("   Edges:      %6d", (int)root_N->p2.explorer().number_of_edges());
+		QApplication::processEvents();
+		PRINTF("   Faces:      %6d", (int)root_N->p2.explorer().number_of_faces());
+		QApplication::processEvents();
+		PRINTF("   FaceCycles: %6d", (int)root_N->p2.explorer().number_of_face_cycles());
+		QApplication::processEvents();
+		PRINTF("   ConnComp:   %6d", (int)root_N->p2.explorer().number_of_connected_components());
+		QApplication::processEvents();
 	}
 
 	if (root_N->dim == 3) {
+		PRINTF("   Top level object is a 3D object:");
 		PRINTF("   Simple:     %6s", root_N->p3.is_simple() ? "yes" : "no");
 		QApplication::processEvents();
 		PRINTF("   Valid:      %6s", root_N->p3.is_valid() ? "yes" : "no");
