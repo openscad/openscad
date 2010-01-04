@@ -206,12 +206,37 @@ CGAL_Nef_polyhedron TransformNode::render_cgal_nef_polyhedron() const
 		}
 	}
 
-	if (N.dim == 2) {
+	if (N.dim == 2)
+	{
 		CGAL_Aff_transformation2 t(
 				m[0], m[4], m[12],
 				m[1], m[5], m[13], m[15]);
-		// FIXME
-		// N.p2.transform(t);
+
+		typedef std::list<CGAL_Nef_polyhedron2::Point> point_list_t;
+		typedef point_list_t::iterator point_list_it;
+		std::list< point_list_t > pdata_point_lists;
+		std::list < std::pair < point_list_it, point_list_it > >pdata;
+
+		typedef CGAL_Nef_polyhedron2::Explorer Explorer;
+		typedef Explorer::Face_const_iterator fci_t;
+		typedef Explorer::Halfedge_around_face_const_circulator heafcc_t;
+		Explorer E = N.p2.explorer();
+
+		for (fci_t fit = E.faces_begin(), fend = E.faces_end(); fit != fend; ++fit)
+		{
+			pdata_point_lists.push_back(point_list_t());
+			heafcc_t fcirc(E.halfedge(fit)), fend(fcirc);
+			CGAL_For_all(fcirc, fend) {
+				if (E.is_standard(E.target(fcirc))) {
+					Explorer::Point ep = E.point(E.target(fcirc));
+					// FIXME: Actually do the transformation
+					pdata_point_lists.back().push_back(ep);
+				}
+			}
+			pdata.push_back(std::make_pair(pdata_point_lists.back().begin(), pdata_point_lists.back().end()));
+		}
+
+		N.p2 = CGAL_Nef_polyhedron2(pdata.begin(), pdata.end(), CGAL_Nef_polyhedron2::POLYGONS);
 	}
 	if (N.dim == 3) {
 		CGAL_Aff_transformation t(
