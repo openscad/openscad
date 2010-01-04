@@ -83,6 +83,8 @@ AbstractNode *TransformModule::evaluate(const Context *ctx, const ModuleInstanci
 		v.getnum(node->m[5]);
 		v.getnum(node->m[10]);
 		v.getv3(node->m[0], node->m[5], node->m[10]);
+		if (node->m[10] <= 0)
+			node->m[10] = 1;
 	}
 	if (type == ROTATE)
 	{

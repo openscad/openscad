@@ -27,7 +27,8 @@ enum primitive_type_e {
 	SPHERE,
 	CYLINDER,
 	POLYHEDRON,
-	SQUARE
+	SQUARE,
+	CIRCLE
 };
 
 class PrimitiveModule : public AbstractModule
@@ -75,6 +76,9 @@ AbstractNode *PrimitiveModule::evaluate(const Context *ctx, const ModuleInstanci
 	}
 	if (type == SQUARE) {
 		argnames = QVector<QString>() << "size" << "center";
+	}
+	if (type == CIRCLE) {
+		argnames = QVector<QString>() << "r";
 	}
 
 	Context c(ctx);
@@ -145,6 +149,13 @@ AbstractNode *PrimitiveModule::evaluate(const Context *ctx, const ModuleInstanci
 		}
 	}
 
+	if (type == CIRCLE) {
+		Value r = c.lookup_variable("r");
+		if (r.type == Value::NUMBER) {
+			node->r1 = r.num;
+		}
+	}
+
 	return node;
 }
 
@@ -155,6 +166,7 @@ void register_builtin_primitives()
 	builtin_modules["cylinder"] = new PrimitiveModule(CYLINDER);
 	builtin_modules["polyhedron"] = new PrimitiveModule(POLYHEDRON);
 	builtin_modules["square"] = new PrimitiveModule(SQUARE);
+	builtin_modules["circle"] = new PrimitiveModule(CIRCLE);
 }
 
 int get_fragments_from_r(double r, double fn, double fs, double fa)
@@ -393,6 +405,28 @@ sphere_next_r2:
 		p->append_vertex(x2, y1);
 		p->append_vertex(x2, y2);
 		p->append_vertex(x1, y2);
+	}
+
+	if (type == CIRCLE)
+	{
+		int fragments = get_fragments_from_r(r1, fn, fs, fa);
+
+		struct point2d {
+			double x, y;
+		};
+
+		point2d circle[fragments];
+
+		for (int i=0; i<fragments; i++) {
+			double phi = (M_PI*2*i) / fragments;
+			circle[i].x = r1*cos(phi);
+			circle[i].y = r1*sin(phi);
+		}
+
+		p->is2d = true;
+		p->append_poly();
+		for (int i=0; i<fragments; i++)
+			p->append_vertex(circle[i].x, circle[i].y);
 	}
 
 	return p;
