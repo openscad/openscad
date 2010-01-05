@@ -1,7 +1,5 @@
-
 BUGS
 ----
-o On Linux, large files load veery slowly
 o Some invalid DXF data gets pass the import checks and breaks the tessing code
 o Broken polyhedron() entities are not correctly detected and cause CGAL segfaults
 
@@ -14,19 +12,17 @@ o Preferences
   - wireframe color and width
   - OpenGL params
   - Default language feature settings
-o External editor
+o More infrastructur for external editor (or is the reload good enough?)
 o Export, Save etc.: automatically add missing extension. ask on unexpected extension
 o Mac OS X:
   - embed examples into bundle -> separate example menu?
   - Use examples as default File Open folder
   - distribute as (self-unpacking?) dmg containing a single .app instead of zip
   - universal binary -> fix cgal and opencsg
-o Build multiple variants from one single build? (e.g. without opencsg)
 o MDI
   - Think about how to do MDI the right way
   - Quit vs. Close MainWindow.
     Today Quit just closes the current window and there is no close function
-  - windowModified property -> windowtitle and check on quit/close
 o 3D interaction
   - Improve mouse rotation
   - Add modifier key combos to handle pan on 1 mouse button systems
