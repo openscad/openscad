@@ -369,15 +369,25 @@ CGAL_Nef_polyhedron PolySet::render_cgal_nef_polyhedron() const
 {
 	if (this->is2d)
 	{
-		int len = this->polygons[0].size();
-		if (len > 0) {
-			CGAL_Nef_polyhedron2::Point points[len];
-			for (int i = 0; i < len; i++)
-				points[i] = CGAL_Nef_polyhedron2::Point(this->polygons[0][i].x,
-						this->polygons[0][i].y);
-			CGAL_Nef_polyhedron2 N(points, points+len);
-			return CGAL_Nef_polyhedron(N);
+		typedef std::list<CGAL_Nef_polyhedron2::Point> point_list_t;
+		typedef point_list_t::iterator point_list_it;
+		std::list< point_list_t > pdata_point_lists;
+		std::list < std::pair < point_list_it, point_list_it > > pdata;
+
+		for (int i = 0; i < this->polygons.size(); i++) {
+			pdata_point_lists.push_back(point_list_t());
+			for (int j = 0; j < this->polygons[i].size(); j++) {
+				double x = this->polygons[i][j].x;
+				double y = this->polygons[i][j].y;
+				CGAL_Nef_polyhedron2::Point p = CGAL_Nef_polyhedron2::Point(x, y);
+				pdata_point_lists.back().push_back(p);
+			}
+			pdata.push_back(std::make_pair(pdata_point_lists.back().begin(),
+					pdata_point_lists.back().end()));
 		}
+
+		CGAL_Nef_polyhedron2 N(pdata.begin(), pdata.end(), CGAL_Nef_polyhedron2::POLYGONS);
+		return CGAL_Nef_polyhedron(N);
 	}
 	else
 	{

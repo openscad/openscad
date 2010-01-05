@@ -69,6 +69,7 @@ class CSGChain;
 class AbstractNode;
 class AbstractIntersectionNode;
 class AbstractPolyNode;
+struct CGAL_Nef_polyhedron;
 
 template <typename T>
 class Grid2d
@@ -419,12 +420,6 @@ public:
 		Point() : x(0), y(0) { }
 		Point(double x, double y) : x(x), y(y) { }
 	};
-	struct Line {
-		Point *p[2];
-		bool disabled;
-		Line(Point *p1, Point *p2) { p[0] = p1; p[1] = p2; disabled = false; }
-		Line() { p[0] = NULL; p[1] = NULL; disabled = false; }
-	};
 	struct Path {
 		QList<Point*> points;
 		bool is_closed, is_inner;
@@ -448,6 +443,7 @@ public:
 	QList<Dim> dims;
 
 	DxfData(double fn, double fs, double fa, QString filename, QString layername = QString(), double xorigin = 0.0, double yorigin = 0.0, double scale = 1.0);
+	DxfData(const struct CGAL_Nef_polyhedron &N);
 
 	Point *p(double x, double y);
 };
@@ -693,13 +689,7 @@ void progress_report_fin();
 
 void dxf_tesselate(PolySet *ps, DxfData *dxf, double rot, bool up, double h);
 
-#else
-
-// Needed for Mainwin::root_N
-// this is a bit hackish - but a pointer is a pointer..
-struct CGAL_Nef_polyhedron;
-
-#endif /* HIDE_ABSTRACT_NODE_DETAILS */
+#endif /* INCLUDE_ABSTRACT_NODE_DETAILS */
 
 class Highlighter : public QSyntaxHighlighter
 {

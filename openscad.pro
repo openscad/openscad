@@ -78,7 +78,7 @@ SOURCES += openscad.cc mainwin.cc glview.cc export.cc \
            primitives.cc surface.cc control.cc render.cc \
            import.cc dxfdata.cc dxftess.cc dxfdim.cc \
            dxflinextrude.cc dxfrotextrude.cc highlighter.cc \
-           printutils.cc
+           printutils.cc nef2dxf.cc
 
 target.path = /usr/local/bin/
 INSTALLS += target

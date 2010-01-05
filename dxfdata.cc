@@ -23,6 +23,14 @@
 
 #include <QFile>
 
+struct Line {
+	typedef DxfData::Point Point;
+	Point *p[2];
+	bool disabled;
+	Line(Point *p1, Point *p2) { p[0] = p1; p[1] = p2; disabled = false; }
+	Line() { p[0] = NULL; p[1] = NULL; disabled = false; }
+};
+
 DxfData::DxfData(double fn, double fs, double fa, QString filename, QString layername, double xorigin, double yorigin, double scale)
 {
 	handle_dep(filename);

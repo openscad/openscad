@@ -210,42 +210,28 @@ CGAL_Nef_polyhedron TransformNode::render_cgal_nef_polyhedron() const
 
 	if (N.dim == 2)
 	{
-		// WARNING: There must be an easier way to perform a CGAL_Aff_transformation2
-		// on a CGAL_Nef_polyhedron2 than this. But I haven't found the right way to do
-		// it yet and this solution seams to work well.
-
+		// Unfortunately CGAL provides no transform method for CGAL_Nef_polyhedron2
+		// objects. So we convert in to our internal 2d data format, transform it,
+		// tesselate it and create a new CGAL_Nef_polyhedron2 from it.. What a hack!
+		
 		CGAL_Aff_transformation2 t(
 				m[0], m[4], m[12],
 				m[1], m[5], m[13], m[15]);
 
-		typedef std::list<CGAL_Nef_polyhedron2::Point> point_list_t;
-		typedef point_list_t::iterator point_list_it;
-		std::list< point_list_t > pdata_point_lists;
-		std::list < std::pair < point_list_it, point_list_it > >pdata;
-
-		typedef CGAL_Nef_polyhedron2::Explorer Explorer;
-		typedef Explorer::Face_const_iterator fci_t;
-		typedef Explorer::Halfedge_around_face_const_circulator heafcc_t;
-		Explorer E = N.p2.explorer();
-
-		for (fci_t fit = E.faces_begin(), fend = E.faces_end(); fit != fend; ++fit)
-		{
-			pdata_point_lists.push_back(point_list_t());
-			heafcc_t fcirc(E.halfedge(fit)), fend(fcirc);
-			CGAL_For_all(fcirc, fend) {
-				if (E.is_standard(E.target(fcirc))) {
-					Explorer::Point ep = E.point(E.target(fcirc));
-					CGAL_Kernel2::Point_2 tp = t.transform(CGAL_Kernel2::Point_2(ep.x(), ep.y()));
-					// FIXME: This to_double() calls should not be neccessary! It would be much better to reuse
-					// the gmpq value directly. But I haven't managed to kick CGAL hard enough to do the trick..
-					CGAL_Nef_polyhedron2::Point p = CGAL_Nef_polyhedron2::Point(to_double(tp.x()), to_double(tp.y()));
-					pdata_point_lists.back().push_back(p);
-				}
-			}
-			pdata.push_back(std::make_pair(pdata_point_lists.back().begin(), pdata_point_lists.back().end()));
+		DxfData dd(N);
+		for (int i=0; i < dd.points.size(); i++) {
+			CGAL_Kernel2::Point_2 p = CGAL_Kernel2::Point_2(dd.points[i].x, dd.points[i].y);
+			p = t.transform(p);
+			dd.points[i].x = to_double(p.x());
+			dd.points[i].y = to_double(p.y());
 		}
 
-		N.p2 = CGAL_Nef_polyhedron2(pdata.begin(), pdata.end(), CGAL_Nef_polyhedron2::POLYGONS);
+		PolySet ps;
+		ps.is2d = true;
+		dxf_tesselate(&ps, &dd, 0, true, 0);
+
+		N = ps.render_cgal_nef_polyhedron();
+		ps.refcount = 0;
 	}
 	if (N.dim == 3) {
 		CGAL_Aff_transformation t(
