@@ -200,7 +200,8 @@ CGAL_Nef_polyhedron TransformNode::render_cgal_nef_polyhedron() const
 			continue;
 		if (first) {
 			N = v->render_cgal_nef_polyhedron();
-			first = false;
+			if (N.dim != 0)
+				first = false;
 		} else if (N.dim == 2) {
 			N.p2 += v->render_cgal_nef_polyhedron().p2;
 		} else if (N.dim == 3) {
@@ -284,7 +285,7 @@ QString TransformNode::dump(QString indent) const
 {
 	if (dump_cache.isEmpty()) {
 		QString text;
-		text.sprintf("n%d: multmatrix([[%f %f %f %f], [%f %f %f %f], [%f %f %f %f], [%f %f %f %f]])", idx,
+		text.sprintf("n%d: multmatrix([[%f, %f, %f, %f], [%f, %f, %f, %f], [%f, %f, %f, %f], [%f, %f, %f, %f]])", idx,
 				m[0], m[4], m[ 8], m[12],
 				m[1], m[5], m[ 9], m[13],
 				m[2], m[6], m[10], m[14],

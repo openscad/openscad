@@ -76,7 +76,8 @@ CGAL_Nef_polyhedron CsgNode::render_cgal_nef_polyhedron() const
 			continue;
 		if (first) {
 			N = v->render_cgal_nef_polyhedron();
-			first = false;
+			if (N.dim != 0)
+				first = false;
 		} else if (N.dim == 2) {
 			if (type == CSG_TYPE_UNION) {
 				N.p2 += v->render_cgal_nef_polyhedron().p2;

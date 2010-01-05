@@ -92,7 +92,8 @@ CGAL_Nef_polyhedron RenderNode::render_cgal_nef_polyhedron() const
 			continue;
 		if (first) {
 			N = v->render_cgal_nef_polyhedron();
-			first = false;
+			if (N.dim != 0)
+				first = false;
 		} else if (N.dim == 2) {
 			N.p2 += v->render_cgal_nef_polyhedron().p2;
 		} else if (N.dim == 3) {

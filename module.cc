@@ -241,14 +241,16 @@ static CGAL_Nef_polyhedron render_cgal_nef_polyhedron_backend(const AbstractNode
 		return *that->cgal_nef_cache[cache_id];
 	}
 
-	bool is_first = true;
+	bool first = true;
 	CGAL_Nef_polyhedron N;
 	foreach (AbstractNode *v, that->children) {
 		if (v->modinst->tag_background)
 			continue;
-		if (is_first)
+		if (first) {
 			N = v->render_cgal_nef_polyhedron();
-		else if (N.dim == 2) {
+			if (N.dim != 0)
+				first = false;
+		} else if (N.dim == 2) {
 			if (intersect)
 				N.p2 *= v->render_cgal_nef_polyhedron().p2;
 			else
@@ -259,7 +261,6 @@ static CGAL_Nef_polyhedron render_cgal_nef_polyhedron_backend(const AbstractNode
 			else
 				N.p3 += v->render_cgal_nef_polyhedron().p3;
 		}
-		is_first = false;
 	}
 
 	that->cgal_nef_cache.insert(cache_id, new CGAL_Nef_polyhedron(N), N.weight());
