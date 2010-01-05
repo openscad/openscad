@@ -112,6 +112,7 @@ MainWindow::MainWindow(const char *filename)
 	root_N = NULL;
 	recreate_cgal_ogl_p = false;
 	cgal_ogl_p = NULL;
+	cgal_ogl_ps = NULL;
 #endif
 
 	highlights_chain = NULL;
@@ -290,6 +291,8 @@ MainWindow::~MainWindow()
 		CGAL::OGL::Polyhedron *p = (CGAL::OGL::Polyhedron*)cgal_ogl_p;
 		delete p;
 	}
+	if (cgal_ogl_ps)
+		cgal_ogl_ps->unlink();
 #endif
 }
 
@@ -1217,14 +1220,41 @@ static void renderGLviaCGAL(void *vp)
 		CGAL::OGL::Polyhedron *p = (CGAL::OGL::Polyhedron*)m->cgal_ogl_p;
 		delete p;
 		m->cgal_ogl_p = NULL;
+		if (m->cgal_ogl_ps)
+			m->cgal_ogl_ps->unlink();
+		m->cgal_ogl_ps = NULL;
 	}
 	if (m->root_N && m->root_N->dim == 2)
 	{
+		if (m->cgal_ogl_ps == NULL) {
+			DxfData dd(*m->root_N);
+			m->cgal_ogl_ps = new PolySet();
+			m->cgal_ogl_ps->is2d = true;
+			dxf_tesselate(m->cgal_ogl_ps, &dd, 0, true, 0);
+		}
+
+		glDisable(GL_LIGHTING);
+		glColor3d(0.0, 0.75, 0.6);
+
+		for (int i=0; i < m->cgal_ogl_ps->polygons.size(); i++) {
+			glBegin(GL_POLYGON);
+			for (int j=0; j < m->cgal_ogl_ps->polygons[i].size(); j++) {
+				PolySet::Point p = m->cgal_ogl_ps->polygons[i][j];
+				glVertex3d(p.x, p.y, -0.1);
+			}
+			glEnd();
+		}
+
 		typedef CGAL_Nef_polyhedron2::Explorer Explorer;
 		typedef Explorer::Face_const_iterator fci_t;
 		typedef Explorer::Halfedge_around_face_const_circulator heafcc_t;
 		typedef Explorer::Point Point;
 		Explorer E = m->root_N->p2.explorer();
+		
+		glDisable(GL_DEPTH_TEST);
+		glDisable(GL_LIGHTING);
+		glLineWidth(2);
+		glColor3d(0.0, 0.0, 0.0);
 
 		for (fci_t fit = E.faces_begin(), fend = E.faces_end(); fit != fend; ++fit)
 		{
@@ -1240,14 +1270,16 @@ static void renderGLviaCGAL(void *vp)
 						fx = x, fy = y;
 						fset = true;
 					}
-					glVertex3d(x, y, 0.0);
+					glVertex3d(x, y, -0.1);
 				}
 			}
 			if (fset) {
-				glVertex3d(fx, fy, 0.0);
+				glVertex3d(fx, fy, -0.1);
 				glEnd();
 			}
 		}
+
+		glEnable(GL_DEPTH_TEST);
 	}
 	if (m->root_N && m->root_N->dim == 3)
 	{

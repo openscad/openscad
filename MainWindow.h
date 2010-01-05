@@ -29,6 +29,7 @@ public:
 	CGAL_Nef_polyhedron *root_N;
 	bool recreate_cgal_ogl_p;
 	void *cgal_ogl_p;
+	PolySet *cgal_ogl_ps;
 #endif
 
 	QVector<CSGTerm*> highlight_terms;
