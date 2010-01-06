@@ -75,8 +75,8 @@ AbstractNode *ImportModule::evaluate(const Context *ctx, const ModuleInstanciati
 	node->fa = c.lookup_variable("$fa").num;
 
 	node->filename = c.lookup_variable("filename").text;
-	node->layername = c.lookup_variable("layername").text;
-	node->convexity = c.lookup_variable("convexity").num;
+	node->layername = c.lookup_variable("layername", true).text;
+	node->convexity = c.lookup_variable("convexity", true).num;
 
 	if (node->convexity <= 0)
 		node->convexity = 1;
