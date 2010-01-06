@@ -454,7 +454,7 @@ CSGTerm *AbstractPolyNode::render_csg_term(double m[16], QVector<CSGTerm*> *high
 	return render_csg_term_from_ps(m, highlights, background, ps, modinst, idx);
 }
 
-CSGTerm *AbstractPolyNode::render_csg_term_from_ps(double m[16], QVector<CSGTerm*> *highlights, QVector<CSGTerm*> *background, PolySet *ps, const ModuleInstanciation *modinst, int idx)
+CSGTerm *AbstractPolyNode::render_csg_term_from_ps(double m[16], QVector<CSGTerm*> *highlights, QVector<CSGTerm*> *background, PolySet *ps, const ModuleInstantiation *modinst, int idx)
 {
 	CSGTerm *t = new CSGTerm(ps, m, QString("n%1").arg(idx));
 	if (modinst->tag_highlight && highlights)

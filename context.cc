@@ -90,7 +90,7 @@ Value Context::evaluate_function(QString name, const QVector<QString> &argnames,
 	return Value();
 }
 
-AbstractNode *Context::evaluate_module(const ModuleInstanciation *inst) const
+AbstractNode *Context::evaluate_module(const ModuleInstantiation *inst) const
 {
 	if (modules_p && modules_p->contains(inst->modname))
 		return modules_p->value(inst->modname)->evaluate(this, inst);

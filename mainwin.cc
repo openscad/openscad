@@ -519,7 +519,7 @@ void MainWindow::compile(bool procevents)
 
 	AbstractNode::idx_counter = 1;
 	{
-		ModuleInstanciation root_inst;
+		ModuleInstantiation root_inst;
 		absolute_root_node = root_module->evaluate(&root_ctx, &root_inst);
 	}
 

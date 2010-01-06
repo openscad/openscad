@@ -163,7 +163,7 @@ int main(int argc, char **argv)
 		root_ctx.set_variable("$vpr", zero3);
 
 		AbstractModule *root_module;
-		ModuleInstanciation root_inst;
+		ModuleInstantiation root_inst;
 		AbstractNode *root_node;
 
 		handle_dep(filename);

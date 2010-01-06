@@ -29,7 +29,7 @@ class SurfaceModule : public AbstractModule
 {
 public:
 	SurfaceModule() { }
-	virtual AbstractNode *evaluate(const Context *ctx, const ModuleInstanciation *inst) const;
+	virtual AbstractNode *evaluate(const Context *ctx, const ModuleInstantiation *inst) const;
 };
 
 class SurfaceNode : public AbstractPolyNode
@@ -38,12 +38,12 @@ public:
 	QString filename;
 	bool center;
 	int convexity;
-	SurfaceNode(const ModuleInstanciation *mi) : AbstractPolyNode(mi) { }
+	SurfaceNode(const ModuleInstantiation *mi) : AbstractPolyNode(mi) { }
 	virtual PolySet *render_polyset(render_mode_e mode) const;
 	virtual QString dump(QString indent) const;
 };
 
-AbstractNode *SurfaceModule::evaluate(const Context *ctx, const ModuleInstanciation *inst) const
+AbstractNode *SurfaceModule::evaluate(const Context *ctx, const ModuleInstantiation *inst) const
 {
 	SurfaceNode *node = new SurfaceNode(inst);
 	node->center = false;

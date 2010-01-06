@@ -58,7 +58,7 @@ class BuiltinFunction;
 class Function;
 
 class AbstractModule;
-class ModuleInstanciation;
+class ModuleInstantiation;
 class Module;
 
 class Context;
@@ -327,11 +327,11 @@ class AbstractModule
 {
 public:
 	virtual ~AbstractModule();
-	virtual AbstractNode *evaluate(const Context *ctx, const ModuleInstanciation *inst) const;
+	virtual AbstractNode *evaluate(const Context *ctx, const ModuleInstantiation *inst) const;
 	virtual QString dump(QString indent, QString name) const;
 };
 
-class ModuleInstanciation
+class ModuleInstantiation
 {
 public:
 	QString label;
@@ -339,15 +339,15 @@ public:
 	QVector<QString> argnames;
 	QVector<Expression*> argexpr;
 	QVector<Value> argvalues;
-	QVector<ModuleInstanciation*> children;
+	QVector<ModuleInstantiation*> children;
 
 	bool tag_root;
 	bool tag_highlight;
 	bool tag_background;
 	const Context *ctx;
 
-	ModuleInstanciation() : tag_root(false), tag_highlight(false), tag_background(false), ctx(NULL) { }
-	~ModuleInstanciation();
+	ModuleInstantiation() : tag_root(false), tag_highlight(false), tag_background(false), ctx(NULL) { }
+	~ModuleInstantiation();
 
 	QString dump(QString indent) const;
 	AbstractNode *evaluate(const Context *ctx) const;
@@ -365,12 +365,12 @@ public:
 	QHash<QString, AbstractFunction*> functions;
 	QHash<QString, AbstractModule*> modules;
 
-	QVector<ModuleInstanciation*> children;
+	QVector<ModuleInstantiation*> children;
 
 	Module() { }
 	virtual ~Module();
 
-	virtual AbstractNode *evaluate(const Context *ctx, const ModuleInstanciation *inst) const;
+	virtual AbstractNode *evaluate(const Context *ctx, const ModuleInstantiation *inst) const;
 	virtual QString dump(QString indent, QString name) const;
 };
 
@@ -408,7 +408,7 @@ public:
 	Value lookup_variable(QString name, bool silent = false) const;
 
 	Value evaluate_function(QString name, const QVector<QString> &argnames, const QVector<Value> &argvalues) const;
-	AbstractNode *evaluate_module(const ModuleInstanciation *inst) const;
+	AbstractNode *evaluate_module(const ModuleInstantiation *inst) const;
 };
 
 class DxfData
@@ -627,7 +627,7 @@ class AbstractNode
 {
 public:
 	QVector<AbstractNode*> children;
-	const ModuleInstanciation *modinst;
+	const ModuleInstantiation *modinst;
 
 	int progress_mark;
 	void progress_prepare();
@@ -637,7 +637,7 @@ public:
 	static int idx_counter;
 	QString dump_cache;
 
-	AbstractNode(const ModuleInstanciation *mi);
+	AbstractNode(const ModuleInstantiation *mi);
 	virtual ~AbstractNode();
 	virtual QString mk_cache_id() const;
 #ifdef ENABLE_CGAL
@@ -656,7 +656,7 @@ public:
 class AbstractIntersectionNode : public AbstractNode
 {
 public:
-	AbstractIntersectionNode(const ModuleInstanciation *mi) : AbstractNode(mi) { };
+	AbstractIntersectionNode(const ModuleInstantiation *mi) : AbstractNode(mi) { };
 #ifdef ENABLE_CGAL
 	virtual CGAL_Nef_polyhedron render_cgal_nef_polyhedron() const;
 #endif
@@ -671,13 +671,13 @@ public:
 		RENDER_CGAL,
 		RENDER_OPENCSG
 	};
-	AbstractPolyNode(const ModuleInstanciation *mi) : AbstractNode(mi) { };
+	AbstractPolyNode(const ModuleInstantiation *mi) : AbstractNode(mi) { };
 	virtual PolySet *render_polyset(render_mode_e mode) const;
 #ifdef ENABLE_CGAL
 	virtual CGAL_Nef_polyhedron render_cgal_nef_polyhedron() const;
 #endif
 	virtual CSGTerm *render_csg_term(double m[16], QVector<CSGTerm*> *highlights, QVector<CSGTerm*> *background) const;
-	static CSGTerm *render_csg_term_from_ps(double m[16], QVector<CSGTerm*> *highlights, QVector<CSGTerm*> *background, PolySet *ps, const ModuleInstanciation *modinst, int idx);
+	static CSGTerm *render_csg_term_from_ps(double m[16], QVector<CSGTerm*> *highlights, QVector<CSGTerm*> *background, PolySet *ps, const ModuleInstantiation *modinst, int idx);
 };
 
 extern int progress_report_count;

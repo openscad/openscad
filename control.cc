@@ -36,10 +36,10 @@ class ControlModule : public AbstractModule
 public:
 	control_type_e type;
 	ControlModule(control_type_e type) : type(type) { }
-	virtual AbstractNode *evaluate(const Context *ctx, const ModuleInstanciation *inst) const;
+	virtual AbstractNode *evaluate(const Context *ctx, const ModuleInstantiation *inst) const;
 };
 
-void for_eval(AbstractNode *node, int l, const QVector<QString> &call_argnames, const QVector<Value> &call_argvalues, const QVector<ModuleInstanciation*> arg_children, const Context *arg_context)
+void for_eval(AbstractNode *node, int l, const QVector<QString> &call_argnames, const QVector<Value> &call_argvalues, const QVector<ModuleInstantiation*> arg_children, const Context *arg_context)
 {
 	if (call_argnames.size() > l) {
 		QString it_name = call_argnames[l];
@@ -71,7 +71,7 @@ void for_eval(AbstractNode *node, int l, const QVector<QString> &call_argnames, 
 			for_eval(node, l+1, call_argnames, call_argvalues, arg_children, &c);
 		}
 	} else {
-		foreach (ModuleInstanciation *v, arg_children) {
+		foreach (ModuleInstantiation *v, arg_children) {
 			AbstractNode *n = v->evaluate(arg_context);
 			if (n != NULL)
 				node->children.append(n);
@@ -79,7 +79,7 @@ void for_eval(AbstractNode *node, int l, const QVector<QString> &call_argnames, 
 	}
 }
 
-AbstractNode *ControlModule::evaluate(const Context*, const ModuleInstanciation *inst) const
+AbstractNode *ControlModule::evaluate(const Context*, const ModuleInstantiation *inst) const
 {
 	AbstractNode *node;
 
@@ -108,7 +108,7 @@ AbstractNode *ControlModule::evaluate(const Context*, const ModuleInstanciation 
 			if (!inst->argnames[i].isEmpty())
 				c.set_variable(inst->argnames[i], inst->argvalues[i]);
 		}
-		foreach (ModuleInstanciation *v, inst->children) {
+		foreach (ModuleInstantiation *v, inst->children) {
 			AbstractNode *n = v->evaluate(&c);
 			if (n != NULL)
 				node->children.append(n);
@@ -123,7 +123,7 @@ AbstractNode *ControlModule::evaluate(const Context*, const ModuleInstanciation 
 	if (type == IF)
 	{
 		if (inst->argvalues.size() > 0 && inst->argvalues[0].type == Value::BOOL && inst->argvalues[0].b)
-			foreach (ModuleInstanciation *v, inst->children) {
+			foreach (ModuleInstantiation *v, inst->children) {
 				AbstractNode *n = v->evaluate(inst->ctx);
 				if (n != NULL)
 					node->children.append(n);

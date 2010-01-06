@@ -38,7 +38,7 @@ class ImportModule : public AbstractModule
 public:
 	import_type_e type;
 	ImportModule(import_type_e type) : type(type) { }
-	virtual AbstractNode *evaluate(const Context *ctx, const ModuleInstanciation *inst) const;
+	virtual AbstractNode *evaluate(const Context *ctx, const ModuleInstantiation *inst) const;
 };
 
 class ImportNode : public AbstractPolyNode
@@ -50,12 +50,12 @@ public:
 	int convexity;
 	double fn, fs, fa;
 	double origin_x, origin_y, scale;
-	ImportNode(const ModuleInstanciation *mi, import_type_e type) : AbstractPolyNode(mi), type(type) { }
+	ImportNode(const ModuleInstantiation *mi, import_type_e type) : AbstractPolyNode(mi), type(type) { }
 	virtual PolySet *render_polyset(render_mode_e mode) const;
 	virtual QString dump(QString indent) const;
 };
 
-AbstractNode *ImportModule::evaluate(const Context *ctx, const ModuleInstanciation *inst) const
+AbstractNode *ImportModule::evaluate(const Context *ctx, const ModuleInstantiation *inst) const
 {
 	ImportNode *node = new ImportNode(inst, type);
 

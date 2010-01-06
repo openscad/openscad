@@ -35,14 +35,14 @@ class TransformModule : public AbstractModule
 public:
 	transform_type_e type;
 	TransformModule(transform_type_e type) : type(type) { }
-	virtual AbstractNode *evaluate(const Context *ctx, const ModuleInstanciation *inst) const;
+	virtual AbstractNode *evaluate(const Context *ctx, const ModuleInstantiation *inst) const;
 };
 
 class TransformNode : public AbstractNode
 {
 public:
 	double m[16];
-	TransformNode(const ModuleInstanciation *mi) : AbstractNode(mi) { }
+	TransformNode(const ModuleInstantiation *mi) : AbstractNode(mi) { }
 #ifdef ENABLE_CGAL
 	virtual CGAL_Nef_polyhedron render_cgal_nef_polyhedron() const;
 #endif
@@ -50,7 +50,7 @@ public:
 	virtual QString dump(QString indent) const;
 };
 
-AbstractNode *TransformModule::evaluate(const Context *ctx, const ModuleInstanciation *inst) const
+AbstractNode *TransformModule::evaluate(const Context *ctx, const ModuleInstantiation *inst) const
 {
 	TransformNode *node = new TransformNode(inst);
 
@@ -174,7 +174,7 @@ AbstractNode *TransformModule::evaluate(const Context *ctx, const ModuleInstanci
 		}
 	}
 
-	foreach (ModuleInstanciation *v, inst->children) {
+	foreach (ModuleInstantiation *v, inst->children) {
 		AbstractNode *n = v->evaluate(inst->ctx);
 		if (n != NULL)
 			node->children.append(n);

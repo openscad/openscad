@@ -27,11 +27,11 @@ AbstractModule::~AbstractModule()
 {
 }
 
-AbstractNode *AbstractModule::evaluate(const Context*, const ModuleInstanciation *inst) const
+AbstractNode *AbstractModule::evaluate(const Context*, const ModuleInstantiation *inst) const
 {
 	AbstractNode *node = new AbstractNode(inst);
 
-	foreach (ModuleInstanciation *v, inst->children) {
+	foreach (ModuleInstantiation *v, inst->children) {
 		AbstractNode *n = v->evaluate(inst->ctx);
 		if (n)
 			node->children.append(n);
@@ -45,15 +45,15 @@ QString AbstractModule::dump(QString indent, QString name) const
 	return QString("%1abstract module %2();\n").arg(indent, name);
 }
 
-ModuleInstanciation::~ModuleInstanciation()
+ModuleInstantiation::~ModuleInstantiation()
 {
 	foreach (Expression *v, argexpr)
 		delete v;
-	foreach (ModuleInstanciation *v, children)
+	foreach (ModuleInstantiation *v, children)
 		delete v;
 }
 
-QString ModuleInstanciation::dump(QString indent) const
+QString ModuleInstantiation::dump(QString indent) const
 {
 	QString text = indent;
 	if (!label.isEmpty())
@@ -81,13 +81,13 @@ QString ModuleInstanciation::dump(QString indent) const
 	return text;
 }
 
-AbstractNode *ModuleInstanciation::evaluate(const Context *ctx) const
+AbstractNode *ModuleInstantiation::evaluate(const Context *ctx) const
 {
 	AbstractNode *node = NULL;
 	if (this->ctx) {
 		PRINTA("WARNING: Ignoring recursive module instanciation of '%1'.", modname);
 	} else {
-		ModuleInstanciation *that = (ModuleInstanciation*)this;
+		ModuleInstantiation *that = (ModuleInstantiation*)this;
 		that->argvalues.clear();
 		foreach (Expression *v, that->argexpr) {
 			that->argvalues.append(v->evaluate(ctx));
@@ -108,11 +108,11 @@ Module::~Module()
 		delete v;
 	foreach (AbstractModule *v, modules)
 		delete v;
-	foreach (ModuleInstanciation *v, children)
+	foreach (ModuleInstantiation *v, children)
 		delete v;
 }
 
-AbstractNode *Module::evaluate(const Context *ctx, const ModuleInstanciation *inst) const
+AbstractNode *Module::evaluate(const Context *ctx, const ModuleInstantiation *inst) const
 {
 	Context c(ctx);
 	c.args(argnames, argexpr, inst->argnames, inst->argvalues);
@@ -131,7 +131,7 @@ AbstractNode *Module::evaluate(const Context *ctx, const ModuleInstanciation *in
 			node->children.append(n);
 	}
 
-	foreach(ModuleInstanciation *v, inst->children) {
+	foreach(ModuleInstantiation *v, inst->children) {
 		AbstractNode *n = v->evaluate(inst->ctx);
 		if (n != NULL)
 			node->children.append(n);
@@ -207,7 +207,7 @@ void destroy_builtin_modules()
 
 int AbstractNode::idx_counter;
 
-AbstractNode::AbstractNode(const ModuleInstanciation *mi)
+AbstractNode::AbstractNode(const ModuleInstantiation *mi)
 {
 	modinst = mi;
 	idx = idx_counter++;

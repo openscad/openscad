@@ -31,7 +31,7 @@ class DxfRotateExtrudeModule : public AbstractModule
 {
 public:
 	DxfRotateExtrudeModule() { }
-	virtual AbstractNode *evaluate(const Context *ctx, const ModuleInstanciation *inst) const;
+	virtual AbstractNode *evaluate(const Context *ctx, const ModuleInstantiation *inst) const;
 };
 
 class DxfRotateExtrudeNode : public AbstractPolyNode
@@ -41,7 +41,7 @@ public:
 	double fn, fs, fa;
 	double origin_x, origin_y, scale;
 	QString filename, layername;
-	DxfRotateExtrudeNode(const ModuleInstanciation *mi) : AbstractPolyNode(mi) {
+	DxfRotateExtrudeNode(const ModuleInstantiation *mi) : AbstractPolyNode(mi) {
 		convexity = 0;
 		fn = fs = fa = 0;
 		origin_x = origin_y = scale = 0;
@@ -50,7 +50,7 @@ public:
 	virtual QString dump(QString indent) const;
 };
 
-AbstractNode *DxfRotateExtrudeModule::evaluate(const Context *ctx, const ModuleInstanciation *inst) const
+AbstractNode *DxfRotateExtrudeModule::evaluate(const Context *ctx, const ModuleInstantiation *inst) const
 {
 	DxfRotateExtrudeNode *node = new DxfRotateExtrudeNode(inst);
 

@@ -36,7 +36,7 @@ class PrimitiveModule : public AbstractModule
 public:
 	primitive_type_e type;
 	PrimitiveModule(primitive_type_e type) : type(type) { }
-	virtual AbstractNode *evaluate(const Context *ctx, const ModuleInstanciation *inst) const;
+	virtual AbstractNode *evaluate(const Context *ctx, const ModuleInstantiation *inst) const;
 };
 
 class PrimitiveNode : public AbstractPolyNode
@@ -47,12 +47,12 @@ public:
 	double fn, fs, fa;
 	primitive_type_e type;
 	Value points, triangles;
-	PrimitiveNode(const ModuleInstanciation *mi, primitive_type_e type) : AbstractPolyNode(mi), type(type) { }
+	PrimitiveNode(const ModuleInstantiation *mi, primitive_type_e type) : AbstractPolyNode(mi), type(type) { }
 	virtual PolySet *render_polyset(render_mode_e mode) const;
 	virtual QString dump(QString indent) const;
 };
 
-AbstractNode *PrimitiveModule::evaluate(const Context *ctx, const ModuleInstanciation *inst) const
+AbstractNode *PrimitiveModule::evaluate(const Context *ctx, const ModuleInstantiation *inst) const
 {
 	PrimitiveNode *node = new PrimitiveNode(inst, type);
 

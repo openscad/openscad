@@ -123,6 +123,44 @@ static void STDCALL tess_error(GLenum errno)
 	PRINTF("GLU tesselation error %d!", errno);
 }
 
+static void STDCALL tess_begin_data()
+{
+	PRINTF("GLU tesselation BEGIN_DATA\n");
+}
+
+static void STDCALL tess_edge_flag(GLboolean flag)
+{
+//	PRINTF("GLU tesselation EDGE_FLAG\n");
+}
+
+static void STDCALL tess_edge_flag_data(GLboolean flag, void *polygon_data)
+{
+	PRINTF("GLU tesselation EDGE_FLAG_DATA\n");
+}
+static void STDCALL tess_vertex_data(void *vertex_data, void *polygon_data)
+{
+	PRINTF("GLU tesselation VERTEX_DATA\n");
+}
+static void STDCALL tess_end_data(void *polygon_data)
+{
+	PRINTF("GLU tesselation END_DATA\n");
+}
+static void STDCALL tess_combine(GLdouble coords[3], void *vertex_data[4],
+                               GLfloat weight[4], void **outData )
+{
+	PRINTF("GLU tesselation COMBINE\n");
+}
+static void STDCALL tess_combine_data(GLdouble coords[3], void *vertex_data[4],
+                                    GLfloat weight[4], void **outData,
+                                    void *polygon_data)
+{
+	PRINTF("GLU tesselation COMBINE_DATA\n");
+}
+static void STDCALL tess_error_data(GLenum errno, void *polygon_data )
+{
+	PRINTF("GLU tesselation ERROR_DATA\n");
+}
+
 static bool point_on_line(double *p1, double *p2, double *p3)
 {
 	if (fabs(p1[0] - p2[0]) < 0.00001 && fabs(p1[1] - p2[1]) < 0.00001)
@@ -170,6 +208,17 @@ void dxf_tesselate(PolySet *ps, DxfData *dxf, double rot, bool up, bool do_trian
 	gluTessCallback(tobj, GLU_TESS_END, (void(STDCALL *)())&tess_end);
 	gluTessCallback(tobj, GLU_TESS_ERROR, (void(STDCALL *)())&tess_error);
 
+	gluTessCallback(tobj, GLU_TESS_EDGE_FLAG, (void(STDCALL *)())&tess_edge_flag);
+	gluTessCallback(tobj, GLU_TESS_COMBINE, (void(STDCALL *)())&tess_combine);
+
+/* 	gluTessCallback(tobj, GLU_TESS_BEGIN_DATA, (void(STDCALL *)())&tess_begin_data); */
+/* 	gluTessCallback(tobj, GLU_TESS_EDGE_FLAG_DATA, (void(STDCALL *)())&tess_edge_flag_data); */
+/* 	gluTessCallback(tobj, GLU_TESS_VERTEX_DATA, (void(STDCALL *)())&tess_vertex_data); */
+/* 	gluTessCallback(tobj, GLU_TESS_END_DATA, (void(STDCALL *)())&tess_end_data); */
+/* 	gluTessCallback(tobj, GLU_TESS_COMBINE_DATA, (void(STDCALL *)())&tess_combine_data); */
+/* 	gluTessCallback(tobj, GLU_TESS_ERROR_DATA, (void(STDCALL *)())&tess_error_data); */
+
+
 	tess_tri.clear();
 	QList<tess_vdata> vl;
 
@@ -204,7 +253,7 @@ void dxf_tesselate(PolySet *ps, DxfData *dxf, double rot, bool up, bool do_trian
 	gluTessEndPolygon(tobj);
 	gluDeleteTess(tobj);
 
-#if 0
+#if 1
 	for (int i = 0; i < tess_tri.count(); i++) {
 		printf("~~~\n");
 		printf("  %f %f %f\n", tess_tri[i].p[0][0], tess_tri[i].p[0][1], tess_tri[i].p[0][2]);
@@ -219,6 +268,7 @@ void dxf_tesselate(PolySet *ps, DxfData *dxf, double rot, bool up, bool do_trian
 		if (point_on_line(tess_tri[i].p[0], tess_tri[i].p[1], tess_tri[i].p[2]) ||
 				point_on_line(tess_tri[i].p[1], tess_tri[i].p[2], tess_tri[i].p[0]) ||
 				point_on_line(tess_tri[i].p[2], tess_tri[i].p[0], tess_tri[i].p[1])) {
+			printf("DEBUG: Removed triangle\n");
 			tess_tri.remove(i--);
 		}
 	}

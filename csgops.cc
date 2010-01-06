@@ -34,14 +34,14 @@ class CsgModule : public AbstractModule
 public:
 	csg_type_e type;
 	CsgModule(csg_type_e type) : type(type) { }
-	virtual AbstractNode *evaluate(const Context *ctx, const ModuleInstanciation *inst) const;
+	virtual AbstractNode *evaluate(const Context *ctx, const ModuleInstantiation *inst) const;
 };
 
 class CsgNode : public AbstractNode
 {
 public:
 	csg_type_e type;
-	CsgNode(const ModuleInstanciation *mi, csg_type_e type) : AbstractNode(mi), type(type) { }
+	CsgNode(const ModuleInstantiation *mi, csg_type_e type) : AbstractNode(mi), type(type) { }
 #ifdef ENABLE_CGAL
 	virtual CGAL_Nef_polyhedron render_cgal_nef_polyhedron() const;
 #endif
@@ -49,10 +49,10 @@ public:
 	virtual QString dump(QString indent) const;
 };
 
-AbstractNode *CsgModule::evaluate(const Context*, const ModuleInstanciation *inst) const
+AbstractNode *CsgModule::evaluate(const Context*, const ModuleInstantiation *inst) const
 {
 	CsgNode *node = new CsgNode(inst, type);
-	foreach (ModuleInstanciation *v, inst->children) {
+	foreach (ModuleInstantiation *v, inst->children) {
 		AbstractNode *n = v->evaluate(inst->ctx);
 		if (n != NULL)
 			node->children.append(n);

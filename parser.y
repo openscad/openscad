@@ -53,7 +53,7 @@ public:
 	double number;
 	class Value *value;
 	class Expression *expr;
-	class ModuleInstanciation *inst;
+	class ModuleInstantiation *inst;
 	class ArgContainer *arg;
 	class ArgsContainer *args;
 }
@@ -84,9 +84,9 @@ public:
 %type <expr> expr
 %type <expr> vector_expr
 
-%type <inst> module_instantciation
-%type <inst> module_instantciation_list
-%type <inst> single_module_instantciation
+%type <inst> module_instantiation
+%type <inst> module_instantiation_list
+%type <inst> single_module_instantiation
 
 %type <args> arguments_call
 %type <args> arguments_decl
@@ -105,7 +105,7 @@ input:
 statement:
 	';' |
 	'{' input '}' |
-	module_instantciation {
+	module_instantiation {
 		if ($1) {
 			module->children.append($1);
 		} else {
@@ -150,11 +150,11 @@ statement:
 		delete $4;
 	} ';' ;
 
-module_instantciation:
-	single_module_instantciation ';' {
+module_instantiation:
+	single_module_instantiation ';' {
 		$$ = $1;
 	} |
-	single_module_instantciation '{' module_instantciation_list '}' {
+	single_module_instantiation '{' module_instantiation_list '}' {
 		$$ = $1;
 		if ($$) {
 			$$->children = $3->children;
@@ -165,7 +165,7 @@ module_instantciation:
 		$3->children.clear();
 		delete $3;
 	} |
-	single_module_instantciation module_instantciation {
+	single_module_instantiation module_instantiation {
 		$$ = $1;
 		if ($$) {
 			if ($2)
@@ -175,11 +175,11 @@ module_instantciation:
 		}
 	} ;
 
-module_instantciation_list:
+module_instantiation_list:
 	/* empty */ {
-		$$ = new ModuleInstanciation();
+		$$ = new ModuleInstantiation();
 	} |
-	module_instantciation_list module_instantciation {
+	module_instantiation_list module_instantiation {
 		$$ = $1;
 		if ($$) {
 			if ($2)
@@ -189,37 +189,37 @@ module_instantciation_list:
 		}
 	} ;
 
-single_module_instantciation:
+single_module_instantiation:
 	TOK_ID '(' arguments_call ')' {
-		$$ = new ModuleInstanciation();
+		$$ = new ModuleInstantiation();
 		$$->modname = QString($1);
 		$$->argnames = $3->argnames;
 		$$->argexpr = $3->argexpr;
 		free($1);
 		delete $3;
 	} |
-	TOK_ID ':' single_module_instantciation {
+	TOK_ID ':' single_module_instantiation {
 		$$ = $3;
 		if ($$)
 			$$->label = QString($1);
 		free($1);
 	} |
-	'!' single_module_instantciation {
+	'!' single_module_instantiation {
 		$$ = $2;
 		if ($$)
 			$$->tag_root = true;
 	} |
-	'#' single_module_instantciation {
+	'#' single_module_instantiation {
 		$$ = $2;
 		if ($$)
 			$$->tag_highlight = true;
 	} |
-	'%' single_module_instantciation {
+	'%' single_module_instantiation {
 		$$ = $2;
 		if ($$)
 			$$->tag_background = true;
 	} |
-	'*' single_module_instantciation {
+	'*' single_module_instantiation {
 		delete $2;
 		$$ = NULL;
 	};

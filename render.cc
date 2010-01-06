@@ -31,14 +31,14 @@ class RenderModule : public AbstractModule
 {
 public:
 	RenderModule() { }
-	virtual AbstractNode *evaluate(const Context *ctx, const ModuleInstanciation *inst) const;
+	virtual AbstractNode *evaluate(const Context *ctx, const ModuleInstantiation *inst) const;
 };
 
 class RenderNode : public AbstractNode
 {
 public:
 	int convexity;
-	RenderNode(const ModuleInstanciation *mi) : AbstractNode(mi), convexity(1) { }
+	RenderNode(const ModuleInstantiation *mi) : AbstractNode(mi), convexity(1) { }
 #ifdef ENABLE_CGAL
 	virtual CGAL_Nef_polyhedron render_cgal_nef_polyhedron() const;
 #endif
@@ -46,7 +46,7 @@ public:
 	virtual QString dump(QString indent) const;
 };
 
-AbstractNode *RenderModule::evaluate(const Context *ctx, const ModuleInstanciation *inst) const
+AbstractNode *RenderModule::evaluate(const Context *ctx, const ModuleInstantiation *inst) const
 {
 	RenderNode *node = new RenderNode(inst);
 
@@ -60,7 +60,7 @@ AbstractNode *RenderModule::evaluate(const Context *ctx, const ModuleInstanciati
 	if (v.type == Value::NUMBER)
 		node->convexity = (int)v.num;
 
-	foreach (ModuleInstanciation *v, inst->children) {
+	foreach (ModuleInstantiation *v, inst->children) {
 		AbstractNode *n = v->evaluate(inst->ctx);
 		if (n != NULL)
 			node->children.append(n);

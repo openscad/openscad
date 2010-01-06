@@ -31,7 +31,7 @@ class DxfLinearExtrudeModule : public AbstractModule
 {
 public:
 	DxfLinearExtrudeModule() { }
-	virtual AbstractNode *evaluate(const Context *ctx, const ModuleInstanciation *inst) const;
+	virtual AbstractNode *evaluate(const Context *ctx, const ModuleInstantiation *inst) const;
 };
 
 class DxfLinearExtrudeNode : public AbstractPolyNode
@@ -42,7 +42,7 @@ public:
 	double origin_x, origin_y, scale;
 	bool center, has_twist;
 	QString filename, layername;
-	DxfLinearExtrudeNode(const ModuleInstanciation *mi) : AbstractPolyNode(mi) {
+	DxfLinearExtrudeNode(const ModuleInstantiation *mi) : AbstractPolyNode(mi) {
 		convexity = slices = 0;
 		fn = fs = fa = height = twist = 0;
 		origin_x = origin_y = scale = 0;
@@ -52,7 +52,7 @@ public:
 	virtual QString dump(QString indent) const;
 };
 
-AbstractNode *DxfLinearExtrudeModule::evaluate(const Context *ctx, const ModuleInstanciation *inst) const
+AbstractNode *DxfLinearExtrudeModule::evaluate(const Context *ctx, const ModuleInstantiation *inst) const
 {
 	DxfLinearExtrudeNode *node = new DxfLinearExtrudeNode(inst);
 
@@ -107,7 +107,7 @@ AbstractNode *DxfLinearExtrudeModule::evaluate(const Context *ctx, const ModuleI
 	}
 
 	if (node->filename.isEmpty()) {
-		foreach (ModuleInstanciation *v, inst->children) {
+		foreach (ModuleInstantiation *v, inst->children) {
 			AbstractNode *n = v->evaluate(inst->ctx);
 			if (n)
 				node->children.append(n);
