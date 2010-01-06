@@ -81,8 +81,11 @@ CGAL_Nef_polyhedron RenderNode::render_cgal_nef_polyhedron() const
 	QString cache_id = mk_cache_id();
 	if (cgal_nef_cache.contains(cache_id)) {
 		progress_report();
-		return *cgal_nef_cache[cache_id];
+		PRINT(cgal_nef_cache[cache_id]->msg);
+		return cgal_nef_cache[cache_id]->N;
 	}
+
+	print_messages_push();
 
 	bool first = true;
 	CGAL_Nef_polyhedron N;
@@ -101,8 +104,10 @@ CGAL_Nef_polyhedron RenderNode::render_cgal_nef_polyhedron() const
 		}
 	}
 
-	cgal_nef_cache.insert(cache_id, new CGAL_Nef_polyhedron(N), N.weight());
+	cgal_nef_cache.insert(cache_id, new cgal_nef_cache_entry(N), N.weight());
+	print_messages_pop();
 	progress_report();
+
 	return N;
 }
 
@@ -120,20 +125,24 @@ static void report_func(const class AbstractNode*, void *vp, int mark)
 CSGTerm *RenderNode::render_csg_term(double m[16], QVector<CSGTerm*> *highlights, QVector<CSGTerm*> *background) const
 {
 	QString key = mk_cache_id();
-	if (PolySet::ps_cache.contains(key))
+	if (PolySet::ps_cache.contains(key)) {
+		PRINT(PolySet::ps_cache[key]->msg);
 		return AbstractPolyNode::render_csg_term_from_ps(m, highlights, background,
 				PolySet::ps_cache[key]->ps->link(), modinst, idx);
+	}
 
+	print_messages_push();
 	CGAL_Nef_polyhedron N;
 
 	QString cache_id = mk_cache_id();
 	if (cgal_nef_cache.contains(cache_id))
 	{
-		N = *cgal_nef_cache[cache_id];
+		PRINT(cgal_nef_cache[cache_id]->msg);
+		N = cgal_nef_cache[cache_id]->N;
 	}
 	else
 	{
-		PRINT("Processing uncached render statement...");
+		PRINT_NOCACHE("Processing uncached render statement...");
 		// PRINTA("Cache ID: %1", cache_id);
 		QApplication::processEvents();
 
@@ -151,7 +160,7 @@ CSGTerm *RenderNode::render_csg_term(double m[16], QVector<CSGTerm*> *highlights
 		progress_report_fin();
 
 		int s = t.elapsed() / 1000;
-		PRINTF("..rendering time: %d hours, %d minutes, %d seconds", s / (60*60), (s / 60) % 60, s % 60);
+		PRINTF_NOCACHE("..rendering time: %d hours, %d minutes, %d seconds", s / (60*60), (s / 60) % 60, s % 60);
 
 		delete pd;
 	}
@@ -201,7 +210,7 @@ CSGTerm *RenderNode::render_csg_term(double m[16], QVector<CSGTerm*> *highlights
 	if (ps)
 	{
 		ps->convexity = convexity;
-		PolySet::ps_cache.insert(key, new PolySetPtr(ps->link()));
+		PolySet::ps_cache.insert(key, new PolySet::ps_cache_entry(ps->link()));
 
 		CSGTerm *term = new CSGTerm(ps, m, QString("n%1").arg(idx));
 		if (modinst->tag_highlight && highlights)
@@ -212,6 +221,7 @@ CSGTerm *RenderNode::render_csg_term(double m[16], QVector<CSGTerm*> *highlights
 		}
 		return term;
 	}
+	print_messages_pop();
 
 	return NULL;
 }

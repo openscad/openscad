@@ -21,8 +21,16 @@
 #define INCLUDE_ABSTRACT_NODE_DETAILS
 
 #include "openscad.h"
+#include "printutils.h"
 
-QCache<QString,PolySetPtr> PolySet::ps_cache(100);
+QCache<QString,PolySet::ps_cache_entry> PolySet::ps_cache(100);
+
+PolySet::ps_cache_entry::ps_cache_entry(PolySet *ps) :
+		ps(ps), msg(print_messages_stack.last()) { }
+
+PolySet::ps_cache_entry::~ps_cache_entry() {
+	ps->unlink();
+}
 
 PolySet::PolySet()
 {
@@ -421,14 +429,19 @@ CGAL_Nef_polyhedron AbstractPolyNode::render_cgal_nef_polyhedron() const
 	QString cache_id = mk_cache_id();
 	if (cgal_nef_cache.contains(cache_id)) {
 		progress_report();
-		return *cgal_nef_cache[cache_id];
+		PRINT(cgal_nef_cache[cache_id]->msg);
+		return cgal_nef_cache[cache_id]->N;
 	}
+
+	print_messages_push();
 
 	PolySet *ps = render_polyset(RENDER_CGAL);
 	CGAL_Nef_polyhedron N = ps->render_cgal_nef_polyhedron();
 
-	cgal_nef_cache.insert(cache_id, new CGAL_Nef_polyhedron(N), N.weight());
+	cgal_nef_cache.insert(cache_id, new cgal_nef_cache_entry(N), N.weight());
+	print_messages_pop();
 	progress_report();
+
 	ps->unlink();
 	return N;
 }

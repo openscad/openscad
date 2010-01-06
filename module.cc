@@ -231,15 +231,21 @@ QString AbstractNode::mk_cache_id() const
 
 #ifdef ENABLE_CGAL
 
-QCache<QString, CGAL_Nef_polyhedron> AbstractNode::cgal_nef_cache(100000);
+AbstractNode::cgal_nef_cache_entry::cgal_nef_cache_entry(CGAL_Nef_polyhedron N) :
+		N(N), msg(print_messages_stack.last()) { };
+
+QCache<QString, AbstractNode::cgal_nef_cache_entry> AbstractNode::cgal_nef_cache(100000);
 
 static CGAL_Nef_polyhedron render_cgal_nef_polyhedron_backend(const AbstractNode *that, bool intersect)
 {
 	QString cache_id = that->mk_cache_id();
 	if (that->cgal_nef_cache.contains(cache_id)) {
 		that->progress_report();
-		return *that->cgal_nef_cache[cache_id];
+		PRINT(that->cgal_nef_cache[cache_id]->msg);
+		return that->cgal_nef_cache[cache_id]->N;
 	}
+
+	print_messages_push();
 
 	bool first = true;
 	CGAL_Nef_polyhedron N;
@@ -263,8 +269,10 @@ static CGAL_Nef_polyhedron render_cgal_nef_polyhedron_backend(const AbstractNode
 		}
 	}
 
-	that->cgal_nef_cache.insert(cache_id, new CGAL_Nef_polyhedron(N), N.weight());
+	that->cgal_nef_cache.insert(cache_id, new AbstractNode::cgal_nef_cache_entry(N), N.weight());
 	that->progress_report();
+	print_messages_pop();
+
 	return N;
 }
 

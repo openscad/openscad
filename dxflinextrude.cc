@@ -159,9 +159,12 @@ static void add_slice(PolySet *ps, DxfData::Path *pt, double rot1, double rot2, 
 PolySet *DxfLinearExtrudeNode::render_polyset(render_mode_e) const
 {
 	QString key = mk_cache_id();
-	if (PolySet::ps_cache.contains(key))
+	if (PolySet::ps_cache.contains(key)) {
+		PRINT(PolySet::ps_cache[key]->msg);
 		return PolySet::ps_cache[key]->ps->link();
+	}
 
+	print_messages_push();
 	DxfData dxf(fn, fs, fa, filename, layername, origin_x, origin_y, scale);
 
 	PolySet *ps = new PolySet();
@@ -225,7 +228,9 @@ PolySet *DxfLinearExtrudeNode::render_polyset(render_mode_e) const
 		}
 	}
 
-	PolySet::ps_cache.insert(key, new PolySetPtr(ps->link()));
+	PolySet::ps_cache.insert(key, new PolySet::ps_cache_entry(ps->link()));
+	print_messages_pop();
+
 	return ps;
 }
 

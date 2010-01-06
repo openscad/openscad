@@ -63,7 +63,6 @@ class Module;
 
 class Context;
 class PolySet;
-class PolySetPtr;
 class CSGTerm;
 class CSGChain;
 class AbstractNode;
@@ -559,7 +558,14 @@ public:
 		CSGMODE_HIGHLIGHT_DIFFERENCE = 22
 	};
 
-	static QCache<QString,PolySetPtr> ps_cache;
+	struct ps_cache_entry {
+		PolySet *ps;
+		QString msg;
+		ps_cache_entry(PolySet *ps);
+		~ps_cache_entry();
+	};
+
+	static QCache<QString,ps_cache_entry> ps_cache;
 
 	void render_surface(colormode_e colormode, csgmode_e csgmode, GLint *shaderinfo = NULL) const;
 	void render_edges(colormode_e colormode, csgmode_e csgmode) const;
@@ -571,18 +577,6 @@ public:
 	int refcount;
 	PolySet *link();
 	void unlink();
-};
-
-class PolySetPtr
-{
-public:
-	PolySet *ps;
-	PolySetPtr(PolySet *ps) {
-		this->ps = ps;
-	}
-	~PolySetPtr() {
-		ps->unlink();
-	}
 };
 
 class CSGTerm
@@ -647,7 +641,12 @@ public:
 	virtual ~AbstractNode();
 	virtual QString mk_cache_id() const;
 #ifdef ENABLE_CGAL
-	static QCache<QString, CGAL_Nef_polyhedron> cgal_nef_cache;
+	struct cgal_nef_cache_entry {
+		CGAL_Nef_polyhedron N;
+		QString msg;
+		cgal_nef_cache_entry(CGAL_Nef_polyhedron N);
+	};
+	static QCache<QString, cgal_nef_cache_entry> cgal_nef_cache;
 	virtual CGAL_Nef_polyhedron render_cgal_nef_polyhedron() const;
 #endif
 	virtual CSGTerm *render_csg_term(double m[16], QVector<CSGTerm*> *highlights, QVector<CSGTerm*> *background) const;

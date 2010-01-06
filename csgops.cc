@@ -21,6 +21,7 @@
 #define INCLUDE_ABSTRACT_NODE_DETAILS
 
 #include "openscad.h"
+#include "printutils.h"
 
 enum csg_type_e {
 	CSG_TYPE_UNION,
@@ -66,8 +67,11 @@ CGAL_Nef_polyhedron CsgNode::render_cgal_nef_polyhedron() const
 	QString cache_id = mk_cache_id();
 	if (cgal_nef_cache.contains(cache_id)) {
 		progress_report();
-		return *cgal_nef_cache[cache_id];
+		PRINT(cgal_nef_cache[cache_id]->msg);
+		return cgal_nef_cache[cache_id]->N;
 	}
+
+	print_messages_push();
 
 	bool first = true;
 	CGAL_Nef_polyhedron N;
@@ -97,8 +101,10 @@ CGAL_Nef_polyhedron CsgNode::render_cgal_nef_polyhedron() const
 		}
 	}
 
-	cgal_nef_cache.insert(cache_id, new CGAL_Nef_polyhedron(N), N.weight());
+	cgal_nef_cache.insert(cache_id, new cgal_nef_cache_entry(N), N.weight());
+	print_messages_pop();
 	progress_report();
+
 	return N;
 }
 

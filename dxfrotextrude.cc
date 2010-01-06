@@ -21,6 +21,7 @@
 #define INCLUDE_ABSTRACT_NODE_DETAILS
 
 #include "openscad.h"
+#include "printutils.h"
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -92,10 +93,12 @@ void register_builtin_dxf_rotate_extrude()
 PolySet *DxfRotateExtrudeNode::render_polyset(render_mode_e) const
 {
 	QString key = mk_cache_id();
-
-	if (PolySet::ps_cache.contains(key))
+	if (PolySet::ps_cache.contains(key)) {
+		PRINT(PolySet::ps_cache[key]->msg);
 		return PolySet::ps_cache[key]->ps->link();
+	}
 
+	print_messages_push();
 	DxfData dxf(fn, fs, fa, filename, layername, origin_x, origin_y, scale);
 
 	PolySet *ps = new PolySet();
@@ -156,7 +159,9 @@ PolySet *DxfRotateExtrudeNode::render_polyset(render_mode_e) const
 		}
 	}
 
-	PolySet::ps_cache.insert(key, new PolySetPtr(ps->link()));
+	PolySet::ps_cache.insert(key, new PolySet::ps_cache_entry(ps->link()));
+	print_messages_pop();
+
 	return ps;
 }
 
