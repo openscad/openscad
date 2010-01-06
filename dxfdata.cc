@@ -31,6 +31,10 @@ struct Line {
 	Line() { p[0] = NULL; p[1] = NULL; disabled = false; }
 };
 
+DxfData::DxfData()
+{
+}
+
 DxfData::DxfData(double fn, double fs, double fa, QString filename, QString layername, double xorigin, double yorigin, double scale)
 {
 	handle_dep(filename);

@@ -100,6 +100,30 @@ static double rad2deg(double x)
 	return x;
 }
 
+Value builtin_min(const QVector<QString>&, const QVector<Value> &args)
+{
+	if (args.size() >= 1 && args[0].type == Value::NUMBER) {
+		double val = args[0].num;
+		for (int i = 1; i < args.size(); i++)
+			if (args[1].type == Value::NUMBER)
+				val = fmin(val, args[i].num);
+		return Value(val);
+	}
+	return Value();
+}
+
+Value builtin_max(const QVector<QString>&, const QVector<Value> &args)
+{
+	if (args.size() >= 1 && args[0].type == Value::NUMBER) {
+		double val = args[0].num;
+		for (int i = 1; i < args.size(); i++)
+			if (args[1].type == Value::NUMBER)
+				val = fmax(val, args[i].num);
+		return Value(val);
+	}
+	return Value();
+}
+
 Value builtin_sin(const QVector<QString>&, const QVector<Value> &args)
 {
 	if (args.size() == 1 && args[0].type == Value::NUMBER)
@@ -171,6 +195,8 @@ Value builtin_str(const QVector<QString>&, const QVector<Value> &args)
 
 void initialize_builtin_functions()
 {
+	builtin_functions["min"] = new BuiltinFunction(&builtin_min);
+	builtin_functions["max"] = new BuiltinFunction(&builtin_max);
 	builtin_functions["sin"] = new BuiltinFunction(&builtin_sin);
 	builtin_functions["cos"] = new BuiltinFunction(&builtin_cos);
 	builtin_functions["asin"] = new BuiltinFunction(&builtin_asin);

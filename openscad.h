@@ -441,6 +441,7 @@ public:
 	QList<Path> paths;
 	QList<Dim> dims;
 
+	DxfData();
 	DxfData(double fn, double fs, double fa, QString filename, QString layername = QString(), double xorigin = 0.0, double yorigin = 0.0, double scale = 1.0);
 	DxfData(const struct CGAL_Nef_polyhedron &N);
 

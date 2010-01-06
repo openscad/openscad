@@ -28,7 +28,8 @@ enum primitive_type_e {
 	CYLINDER,
 	POLYHEDRON,
 	SQUARE,
-	CIRCLE
+	CIRCLE,
+	POLYGON
 };
 
 class PrimitiveModule : public AbstractModule
@@ -46,7 +47,8 @@ public:
 	double x, y, z, h, r1, r2;
 	double fn, fs, fa;
 	primitive_type_e type;
-	Value points, triangles;
+	int convexity;
+	Value points, paths, triangles;
 	PrimitiveNode(const ModuleInstantiation *mi, primitive_type_e type) : AbstractPolyNode(mi), type(type) { }
 	virtual PolySet *render_polyset(render_mode_e mode) const;
 	virtual QString dump(QString indent) const;
@@ -72,13 +74,16 @@ AbstractNode *PrimitiveModule::evaluate(const Context *ctx, const ModuleInstanti
 		argnames = QVector<QString>() << "h" << "r1" << "r2" << "center";
 	}
 	if (type == POLYHEDRON) {
-		argnames = QVector<QString>() << "points" << "triangles";
+		argnames = QVector<QString>() << "points" << "triangles" << "convexity";
 	}
 	if (type == SQUARE) {
 		argnames = QVector<QString>() << "size" << "center";
 	}
 	if (type == CIRCLE) {
 		argnames = QVector<QString>() << "r";
+	}
+	if (type == POLYGON) {
+		argnames = QVector<QString>() << "points" << "paths" << "convexity";
 	}
 
 	Context c(ctx);
@@ -156,6 +161,15 @@ AbstractNode *PrimitiveModule::evaluate(const Context *ctx, const ModuleInstanti
 		}
 	}
 
+	if (type == POLYGON) {
+		node->points = c.lookup_variable("points");
+		node->paths = c.lookup_variable("paths");
+	}
+
+	node->convexity = c.lookup_variable("convexity", true).num;
+	if (node->convexity < 1)
+		node->convexity = 1;
+
 	return node;
 }
 
@@ -167,6 +181,7 @@ void register_builtin_primitives()
 	builtin_modules["polyhedron"] = new PrimitiveModule(POLYHEDRON);
 	builtin_modules["square"] = new PrimitiveModule(SQUARE);
 	builtin_modules["circle"] = new PrimitiveModule(CIRCLE);
+	builtin_modules["polygon"] = new PrimitiveModule(POLYGON);
 }
 
 int get_fragments_from_r(double r, double fn, double fs, double fa)
@@ -372,6 +387,7 @@ sphere_next_r2:
 
 	if (type == POLYHEDRON)
 	{
+		p->convexity = convexity;
 		for (int i=0; i<triangles.vec.size(); i++)
 		{
 			p->append_poly();
@@ -429,6 +445,47 @@ sphere_next_r2:
 			p->append_vertex(circle[i].x, circle[i].y);
 	}
 
+	if (type == POLYGON)
+	{
+		DxfData dd;
+
+		for (int i=0; i<points.vec.size(); i++) {
+			double x = points.vec[i]->vec[0]->num;
+			double y = points.vec[i]->vec[1]->num;
+			dd.points.append(DxfData::Point(x, y));
+		}
+
+		if (paths.vec.size() == 0)
+		{
+			dd.paths.append(DxfData::Path());
+			for (int i=0; i<points.vec.size(); i++) {
+				DxfData::Point *p = &dd.points[i];
+				dd.paths.last().points.append(p);
+			}
+			dd.paths.last().points.append(dd.paths.last().points.first());
+			dd.paths.last().is_closed = true;
+		}
+		else
+		{
+			for (int i=0; i<paths.vec.size(); i++)
+			{
+				dd.paths.append(DxfData::Path());
+				for (int j=0; j<paths.vec[i]->vec.size(); j++) {
+					int idx = paths.vec[i]->vec[j]->num;
+					DxfData::Point *p = &dd.points[idx];
+					dd.paths.last().points.append(p);
+				}
+				dd.paths.last().points.append(dd.paths.last().points.first());
+				dd.paths.last().is_closed = true;
+			}
+		}
+
+		p->is2d = true;
+		p->convexity = convexity;
+		dxf_tesselate(p, &dd, 0, true, false, 0);
+		dxf_border_to_ps(p, &dd);
+	}
+
 	return p;
 }
 
@@ -443,9 +500,13 @@ QString PrimitiveNode::dump(QString indent) const
 		if (type == CYLINDER)
 			text.sprintf("cylinder($fn = %f, $fa = %f, $fs = %f, h = %f, r1 = %f, r2 = %f, center = %s);\n", fn, fa, fs, h, r1, r2, center ? "true" : "false");
 		if (type == POLYHEDRON)
-			text.sprintf("polyhedron(points = %s, triangles = %s);\n", points.dump().toAscii().data(), triangles.dump().toAscii().data());
+			text.sprintf("polyhedron(points = %s, triangles = %s, convexity = %d);\n", points.dump().toAscii().data(), triangles.dump().toAscii().data(), convexity);
 		if (type == SQUARE)
 			text.sprintf("square(size = [%f, %f], center = %s);\n", x, y, center ? "true" : "false");
+		if (type == CIRCLE)
+			text.sprintf("circle($fn = %f, $fa = %f, $fs = %f, r = %f);\n", fn, fa, fs, r1);
+		if (type == POLYGON)
+			text.sprintf("polygon(points = %s, paths = %s, convexity = %d);\n", points.dump().toAscii().data(), paths.dump().toAscii().data(), convexity);
 		((AbstractNode*)this)->dump_cache = indent + QString("n%1: ").arg(idx) + text;
 	}
 	return dump_cache;
