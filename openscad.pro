@@ -55,6 +55,11 @@ opencsg {
     INCLUDEPATH += $$OPENCSG_DIR/include
     LIBS += -L$$OPENCSG_DIR/lib
   }
+  macx {
+    # For glew
+    INCLUDEPATH += /opt/local/include
+    LIBS += -L/opt/local/lib
+  }
 }
 
 QMAKE_CXXFLAGS_RELEASE = -O3 -march=pentium
