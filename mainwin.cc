@@ -715,8 +715,27 @@ void MainWindow::actionSave()
 
 void MainWindow::actionSaveAs()
 {
-	QString new_filename = QFileDialog::getSaveFileName(this, "Save File", this->fileName, "OpenSCAD Designs (*.scad)");
+	QString new_filename = 
+		QFileDialog::getSaveFileName(this, "Save File", 
+																 this->fileName.isEmpty()?"Untitled.scad":this->fileName,
+																 "OpenSCAD Designs (*.scad)");
 	if (!new_filename.isEmpty()) {
+		if (QFileInfo(new_filename).suffix().isEmpty()) {
+			new_filename.append(".scad");
+
+      // Manual overwrite check since Qt doesn't do it, when using the 
+			// defaultSuffix property
+			QFileInfo info(new_filename);
+			if (info.exists()) {
+				if (QMessageBox::warning(this, windowTitle(),
+																 tr("%1 already exists.\nDo you want to replace it?")
+																 .arg(info.fileName()),
+																 QMessageBox::Yes | QMessageBox::No, QMessageBox::No)
+						!= QMessageBox::Yes) {
+					return;
+				}
+			}
+		}
 		setFileName(new_filename);
 		actionSave();
 	}
