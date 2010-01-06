@@ -635,8 +635,7 @@ void MainWindow::actionNew()
 void MainWindow::actionOpen()
 {
 	current_win = this;
-	QString new_filename = QFileDialog::getOpenFileName(this, "Open File", "", 
-																											"OpenSCAD Designs (*.scad)");
+	QString new_filename = QFileDialog::getOpenFileName(this, "Open File", "", "OpenSCAD Designs (*.scad)");
 	if (!new_filename.isEmpty()) openFile(new_filename);
 	current_win = NULL;
 }
@@ -654,7 +653,7 @@ void MainWindow::clearRecentFiles()
 	QSettings settings; // already set up properly via main.cpp
 	QStringList files;
 	settings.setValue("recentFileList", files);
-	
+
 	updateRecentFileActions();
 }
 
@@ -662,9 +661,9 @@ void MainWindow::updateRecentFileActions()
 {
 	QSettings settings; // set up project and program properly in main.cpp
 	QStringList files = settings.value("recentFileList").toStringList();
-	
+
 	int originalNumRecentFiles = files.size();
-	
+
 	// Remove any duplicate or empty entries from the list
 #if (QT_VERSION >= QT_VERSION_CHECK(4, 5, 0))
 	files.removeDuplicates();
@@ -1623,8 +1622,7 @@ void
 MainWindow::helpAbout()
 {
 	qApp->setWindowIcon(QApplication::windowIcon());
-  QMessageBox::information(this, "About OpenSCAD", 
-													 QString(helptitle) + QString(copyrighttext));
+	QMessageBox::information(this, "About OpenSCAD", QString(helptitle) + QString(copyrighttext));
 }
 
 void
@@ -1643,9 +1641,9 @@ MainWindow::maybeSave()
 	if (editor->document()->isModified()) {
 		QMessageBox::StandardButton ret;
 		ret = QMessageBox::warning(this, "Application",
-															 "The document has been modified.\n"
-															 "Do you want to save your changes?",
-															 QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
+				"The document has been modified.\n"
+				"Do you want to save your changes?",
+				QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
 		if (ret == QMessageBox::Save) {
 			actionSave();
 			return true; // FIXME: Should return false on error
