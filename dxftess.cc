@@ -253,7 +253,7 @@ void dxf_tesselate(PolySet *ps, DxfData *dxf, double rot, bool up, bool do_trian
 	gluTessEndPolygon(tobj);
 	gluDeleteTess(tobj);
 
-#if 1
+#if 0
 	for (int i = 0; i < tess_tri.count(); i++) {
 		printf("~~~\n");
 		printf("  %f %f %f\n", tess_tri[i].p[0][0], tess_tri[i].p[0][1], tess_tri[i].p[0][2]);
@@ -268,7 +268,7 @@ void dxf_tesselate(PolySet *ps, DxfData *dxf, double rot, bool up, bool do_trian
 		if (point_on_line(tess_tri[i].p[0], tess_tri[i].p[1], tess_tri[i].p[2]) ||
 				point_on_line(tess_tri[i].p[1], tess_tri[i].p[2], tess_tri[i].p[0]) ||
 				point_on_line(tess_tri[i].p[2], tess_tri[i].p[0], tess_tri[i].p[1])) {
-			printf("DEBUG: Removed triangle\n");
+			// printf("DEBUG: Removed triangle\n");
 			tess_tri.remove(i--);
 		}
 	}
