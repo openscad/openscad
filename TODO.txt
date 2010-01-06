@@ -30,12 +30,8 @@ o 3D interaction
 ENGINE
 ------
 o 2D Subsystem
-  - Add support for Nef Polygons and 2D CSG
-  - Add import_dxf for loading DXF files
-  - Add DXF export for designs with a Nef Polygon as root element
   - Add generic 2D->3D extrude statements
   - Add generic 3D->2D projection statements
-  - Support old dxf_extrude statements for compatibility
 o Advanced Transformations
   - Add statement for 2D and 3D minkowski sum
   - Add statement for refinement via surface subdivision
@@ -43,4 +39,10 @@ o Advanced Transformations
 o Function-Module-Interface
   - Pass a module instanciation to a function (e.g. for a volume() function)
   - Pass a function to a module instanciation (e.g. for dynamic extrusion paths)
+o DXF Import
+  - Support for ELLIPSE entity
+  - Support for POLYLINE entity
+  - Support for SPLINE entity
+o Diagnostics
+  - Cache Errors/WARNING for every cached compiler/renderer results
 
