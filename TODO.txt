@@ -3,7 +3,7 @@ BUGS
 o Some invalid DXF data gets pass the import checks and breaks the tessing code
 o Broken polyhedron() entities are not correctly detected and cause CGAL segfaults
 
-USER iNTERFACE
+USER INTERFACE
 --------------
 o Fix current_win hack
 o Preferences
@@ -12,8 +12,9 @@ o Preferences
   - wireframe color and width
   - OpenGL params
   - Default language feature settings
+  - Auto-view CSG/thrown together on load
 o More infrastructur for external editor (or is the reload good enough?)
-o Export, Save etc.: automatically add missing extension. ask on unexpected extension
+o Export etc.: automatically add missing extension as in SaveAs
 o Mac OS X:
   - embed examples into bundle -> separate example menu?
   - Use examples as default File Open folder
@@ -23,9 +24,15 @@ o MDI
   - Think about how to do MDI the right way
   - Quit vs. Close MainWindow.
     Today Quit just closes the current window and there is no close function
-o 3D interaction
+o 3D View
   - Improve mouse rotation
   - Add modifier key combos to handle pan on 1 mouse button systems
+  - Show grid
+  - 4 x split view w/orthogonal cameras?
+
+INFRASTRUCTURE
+--------------
+o Think about making external libraries easier available. Probably mostly convenience.
 
 ENGINE
 ------
