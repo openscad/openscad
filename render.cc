@@ -156,10 +156,14 @@ CSGTerm *RenderNode::render_csg_term(double m[16], QVector<CSGTerm*> *highlights
 		delete pd;
 	}
 
+	PolySet *ps = NULL;
+
 	if (N.dim == 2)
 	{
-		// FIXME
-		return NULL;
+		DxfData dd(N);
+		ps = new PolySet();
+		ps->is2d = true;
+		dxf_tesselate(ps, &dd, 0, true, 0);
 	}
 
 	if (N.dim == 3)
@@ -169,8 +173,7 @@ CSGTerm *RenderNode::render_csg_term(double m[16], QVector<CSGTerm*> *highlights
 			return NULL;
 		}
 
-		PolySet *ps = new PolySet();
-		ps->convexity = convexity;
+		ps = new PolySet();
 		
 		CGAL_Polyhedron P;
 		N.p3.convert_to_Polyhedron(P);
@@ -192,7 +195,11 @@ CSGTerm *RenderNode::render_csg_term(double m[16], QVector<CSGTerm*> *highlights
 				ps->append_vertex(x, y, z);
 			} while (hc != hc_end);
 		}
+	}
 
+	if (ps)
+	{
+		ps->convexity = convexity;
 		PolySet::ps_cache.insert(key, new PolySetPtr(ps->link()));
 
 		CSGTerm *term = new CSGTerm(ps, m, QString("n%1").arg(idx));
