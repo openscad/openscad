@@ -35,6 +35,7 @@
 #include <QVBoxLayout>
 #include <QLabel>
 #include <QFileInfo>
+#include <QTextStream>
 #include <QStatusBar>
 #include <QDropEvent>
 #include <QMimeData>
@@ -341,6 +342,7 @@ MainWindow::setFileName(const QString &filename)
 		// Check that the canonical file path exists - only update recent files
 		// if it does. Should prevent empty list items on initial open etc.
 		if (!infoFileName.isEmpty()) {
+			this->fileName = infoFileName;
 			QSettings settings; // already set up properly via main.cpp
 			QStringList files = settings.value("recentFileList").toStringList();
 			files.removeAll(this->fileName);
@@ -348,7 +350,6 @@ MainWindow::setFileName(const QString &filename)
 			while (files.size() > maxRecentFiles)
 				files.removeLast();
 			settings.setValue("recentFileList", files);
-			this->fileName = infoFileName;
 		} else {
 			this->fileName = fileinfo.fileName();
 		}
@@ -397,34 +398,26 @@ void MainWindow::load()
 {
 	current_win = this;
 	if (!this->fileName.isEmpty()) {
-		QString text;
-		FILE *fp = fopen(this->fileName.toUtf8(), "rt");
-		if (!fp) {
-			PRINTA("Failed to open file: %1 (%2)", this->fileName, QString(strerror(errno)));
-		} else {
-			char buffer[513];
-			int rc;
-			while ((rc = fread(buffer, 1, 512, fp)) > 0) {
-				buffer[rc] = 0;
-				text += buffer;
-			}
-			fclose(fp);
-			PRINTA("Loaded design `%1'.", this->fileName);
+		QFile file(this->fileName);
+		if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+			PRINTA("Failed to open file: %1 (%2)", this->fileName, file.errorString());
 		}
-		editor->setPlainText(text);
+		else {
+			QString text = QTextStream(&file).readAll();
+			PRINTA("Loaded design `%1'.", this->fileName);
+			editor->setPlainText(text);
+		}
 	}
 	current_win = this;
 }
 
-void MainWindow::find_root_tag(AbstractNode *n)
+AbstractNode *MainWindow::find_root_tag(AbstractNode *n)
 {
 	foreach(AbstractNode *v, n->children) {
-		if (v->modinst->tag_root)
-			root_node = v;
-		if (root_node)
-			return;
-		find_root_tag(v);
+		if (v->modinst->tag_root) return v;
+		return find_root_tag(v);
 	}
+	return NULL;
 }
 
 void MainWindow::compile(bool procevents)
@@ -433,6 +426,8 @@ void MainWindow::compile(bool procevents)
 	if (procevents)
 		QApplication::processEvents();
 
+
+	// Remove previous CSG tree
 	if (root_module) {
 		delete root_module;
 		root_module = NULL;
@@ -477,6 +472,7 @@ void MainWindow::compile(bool procevents)
 	root_node = NULL;
 	enableOpenCSG = false;
 
+  // Initialize special variables
 	root_ctx.set_variable("$t", Value(e_tval->text().toDouble()));
 
 	Value vpt;
@@ -493,9 +489,11 @@ void MainWindow::compile(bool procevents)
 	vpr.vec.append(new Value(fmodf(360 - screen->object_rot_z, 360)));
 	root_ctx.set_variable("$vpr", vpr);
 
+	// Parse
 	last_compiled_doc = editor->toPlainText();
 	root_module = parse((last_compiled_doc + "\n" + commandline_commands).toAscii().data(), false);
 
+	// Error highlighting
 	if (highlighter) {
 		delete highlighter;
 		highlighter = NULL;
@@ -513,6 +511,7 @@ void MainWindow::compile(bool procevents)
 		goto fail;
 	}
 
+	// Evaluate CSG tree
 	PRINT("Compiling design (CSG Tree generation)...");
 	if (procevents)
 		QApplication::processEvents();
@@ -526,9 +525,10 @@ void MainWindow::compile(bool procevents)
 	if (!absolute_root_node)
 		goto fail;
 
-	find_root_tag(absolute_root_node);
-	if (!root_node)
-		root_node = absolute_root_node;
+	// Do we have an explicit root node (! modifier)?
+	if (!(this->root_node = find_root_tag(absolute_root_node))) {
+		this->root_node = absolute_root_node;
+	}
 	root_node->dump("");
 
 	PRINT("Compiling design (CSG Products generation)...");
@@ -700,12 +700,12 @@ void MainWindow::actionSave()
 	}
 	else {
 		current_win = this;
-		FILE *fp = fopen(this->fileName.toUtf8(), "wt");
-		if (!fp) {
-			PRINTA("Failed to open file for writing: %1 (%2)", this->fileName, QString(strerror(errno)));
-		} else {
-			fprintf(fp, "%s", editor->toPlainText().toAscii().data());
-			fclose(fp);
+		QFile file(this->fileName);
+		if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text)) {
+			PRINTA("Failed to open file for writing: %1 (%2)", this->fileName, file.errorString());
+		}
+		else {
+			QTextStream(&file) << this->editor->toPlainText();
 			PRINTA("Saved design `%1'.", this->fileName);
 			this->editor->document()->setModified(false);
 		}
@@ -868,14 +868,11 @@ void MainWindow::actionCompile()
 
 	compile(!viewActionAnimate->isChecked());
 
-#ifdef ENABLE_OPENCSG
-	if (!(viewActionOpenCSG->isVisible() && viewActionOpenCSG->isChecked()) &&
-			!viewActionThrownTogether->isChecked()) {
+  // Go to non-CGAL view mode
+	if (!viewActionOpenCSG->isChecked() && !viewActionThrownTogether->isChecked()) {
 		viewModeOpenCSG();
 	}
-	else
-#endif
-	{
+	else {
 		screen->updateGL();
 	}
 	current_win = NULL;
@@ -1245,6 +1242,10 @@ static void renderGLviaOpenCSG(void *vp)
 	}
 }
 
+/*!
+	Go to the OpenCSG view mode.
+	Falls back to thrown together mode if OpenCSG is not available
+*/
 void MainWindow::viewModeOpenCSG()
 {
 	if (screen->opencsg_support) {

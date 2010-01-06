@@ -20,8 +20,10 @@ public:
 	double tval, fps, fsteps;
 
 	Context root_ctx;
-	AbstractModule *root_module;
-	AbstractNode *absolute_root_node;
+	AbstractModule *root_module;      // Result of parsing
+	AbstractNode *absolute_root_node; // Result of tree evaluation
+	AbstractNode *root_node;          // Root if the root modifier (!) is used
+
 	CSGTerm *root_raw_term;
 	CSGTerm *root_norm_term;
 	CSGChain *root_chain;
@@ -36,7 +38,6 @@ public:
 	CSGChain *highlights_chain;
 	QVector<CSGTerm*> background_terms;
 	CSGChain *background_chain;
-	AbstractNode *root_node;
 	QString last_compiled_doc;
 	bool enableOpenCSG;
 
@@ -57,7 +58,7 @@ private slots:
 private:
 	void openFile(const QString &filename);
 	void load();
-	void find_root_tag(AbstractNode *n);
+	AbstractNode *find_root_tag(AbstractNode *n);
 	void compile(bool procevents);
 	bool maybeSave();
 

@@ -98,7 +98,7 @@
      <x>0</x>
      <y>0</y>
      <width>681</width>
-     <height>27</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_File">
@@ -113,6 +113,8 @@
     <addaction name="fileActionNew"/>
     <addaction name="fileActionOpen"/>
     <addaction name="menuOpenRecent"/>
+    <addaction name="separator"/>
+    <addaction name="fileActionClose"/>
     <addaction name="fileActionSave"/>
     <addaction name="fileActionSaveAs"/>
     <addaction name="fileActionReload"/>
@@ -594,6 +596,14 @@
     <string>Export as DXF...</string>
    </property>
   </action>
+  <action name="fileActionClose">
+   <property name="text">
+    <string>Close</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+W</string>
+   </property>
+  </action>
  </widget>
  <customwidgets>
   <customwidget>
@@ -607,6 +617,22 @@
  <connections>
   <connection>
    <sender>fileActionQuit</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>close()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>340</x>
+     <y>323</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>fileActionClose</sender>
    <signal>triggered()</signal>
    <receiver>MainWindow</receiver>
    <slot>close()</slot>
