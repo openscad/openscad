@@ -707,6 +707,7 @@ extern int parser_error_pos;
 #ifdef ENABLE_CGAL
 void export_stl(CGAL_Nef_polyhedron *root_N, QString filename, QProgressDialog *pd);
 void export_off(CGAL_Nef_polyhedron *root_N, QString filename, QProgressDialog *pd);
+void export_dxf(CGAL_Nef_polyhedron *root_N, QString filename, QProgressDialog *pd);
 #endif
 extern void handle_dep(QString filename);
 

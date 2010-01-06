@@ -98,7 +98,7 @@
      <x>0</x>
      <y>0</y>
      <width>681</width>
-     <height>25</height>
+     <height>27</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_File">
@@ -153,6 +153,7 @@
     <addaction name="designActionDisplayCSGProducts"/>
     <addaction name="designActionExportSTL"/>
     <addaction name="designActionExportOFF"/>
+    <addaction name="designActionExportDXF"/>
    </widget>
    <widget class="QMenu" name="menu_View">
     <property name="title">
@@ -586,6 +587,11 @@
   <action name="fileActionClearRecent">
    <property name="text">
     <string>Clear Recent</string>
+   </property>
+  </action>
+  <action name="designActionExportDXF">
+   <property name="text">
+    <string>Export as DXF...</string>
    </property>
   </action>
  </widget>

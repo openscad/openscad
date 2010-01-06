@@ -92,6 +92,7 @@ private slots:
 	void actionExportSTLorOFF(bool stl_mode);
 	void actionExportSTL();
 	void actionExportOFF();
+	void actionExportDXF();
 
 public:
 	void viewModeActionsUncheck();

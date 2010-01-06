@@ -35,7 +35,7 @@
 
 static void help(const char *progname)
 {
-	fprintf(stderr, "Usage: %s [ { -s stl_file | -o off_file } [ -d deps_file ] ]\\\n"
+	fprintf(stderr, "Usage: %s [ { -s stl_file | -o off_file | -x dxf_file } [ -d deps_file ] ]\\\n"
 			"%*s[ -m make_command ] [ -D var=val [..] ] filename\n",
 			progname, strlen(progname)+8, "");
 	exit(1);
@@ -90,23 +90,29 @@ int main(int argc, char **argv)
 	const char *filename = NULL;
 	const char *stl_output_file = NULL;
 	const char *off_output_file = NULL;
+	const char *dxf_output_file = NULL;
 	const char *deps_output_file = NULL;
 
 	int opt;
 
-	while ((opt = getopt(argc, argv, "s:o:d:m:D:")) != -1)
+	while ((opt = getopt(argc, argv, "s:o:x:d:m:D:")) != -1)
 	{
 		switch (opt)
 		{
 		case 's':
-			if (stl_output_file || off_output_file)
+			if (stl_output_file || off_output_file || dxf_output_file)
 				help(argv[0]);
 			stl_output_file = optarg;
 			break;
 		case 'o':
-			if (stl_output_file || off_output_file)
+			if (stl_output_file || off_output_file || dxf_output_file)
 				help(argv[0]);
 			off_output_file = optarg;
+			break;
+		case 'x':
+			if (stl_output_file || off_output_file || dxf_output_file)
+				help(argv[0]);
+			dxf_output_file = optarg;
 			break;
 		case 'd':
 			if (deps_output_file)
@@ -134,7 +140,7 @@ int main(int argc, char **argv)
 		help(argv[0]);
 #endif
 
-	if (stl_output_file || off_output_file)
+	if (stl_output_file || off_output_file || dxf_output_file)
 	{
 		if (!filename)
 			help(argv[0]);
@@ -208,6 +214,9 @@ int main(int argc, char **argv)
 
 		if (off_output_file)
 			export_off(root_N, off_output_file, NULL);
+
+		if (dxf_output_file)
+			export_dxf(root_N, dxf_output_file, NULL);
 
 		delete root_node;
 		delete root_N;

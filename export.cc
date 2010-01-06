@@ -101,5 +101,51 @@ void export_off(CGAL_Nef_polyhedron*, QString, QProgressDialog*)
 	PRINTF("WARNING: OFF import is not implemented yet.");
 }
 
+void export_dxf(CGAL_Nef_polyhedron *root_N, QString filename, QProgressDialog *)
+{
+	FILE *f = fopen(filename.toUtf8().data(), "w");
+	if (!f) {
+		PRINTA("Can't open DXF file \"%1\" for DXF export: %2", 
+					 filename, QString(strerror(errno)));
+		MainWindow::current_win = NULL;
+		return;
+	}
+
+	fprintf(f, "  0\n");
+	fprintf(f, "SECTION\n");
+	fprintf(f, "  2\n");
+	fprintf(f, "ENTITIES\n");
+
+	DxfData dd(*root_N);
+	for (int i=0; i<dd.paths.size(); i++)
+	{
+		for (int j=1; j<dd.paths[i].points.size(); j++) {
+			DxfData::Point *p1 = dd.paths[i].points[j-1];
+			DxfData::Point *p2 = dd.paths[i].points[j];
+			double x1 = p1->x;
+			double y1 = p1->y;
+			double x2 = p2->x;
+			double y2 = p2->y;
+			fprintf(f, "  0\n");
+			fprintf(f, "LINE\n");
+			fprintf(f, " 10\n");
+			fprintf(f, "%f\n", x1);
+			fprintf(f, " 11\n");
+			fprintf(f, "%f\n", x2);
+			fprintf(f, " 20\n");
+			fprintf(f, "%f\n", y1);
+			fprintf(f, " 21\n");
+			fprintf(f, "%f\n", y2);
+		}
+	}
+
+	fprintf(f, "  0\n");
+	fprintf(f, "ENDSEC\n");
+	fprintf(f, "  0\n");
+	fprintf(f, "EOF\n");
+
+	fclose(f);
+}
+
 #endif
 

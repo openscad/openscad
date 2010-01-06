@@ -193,6 +193,7 @@ MainWindow::MainWindow(const char *filename)
 	connect(this->designActionDisplayCSGProducts, SIGNAL(triggered()), this, SLOT(actionDisplayCSGProducts()));
 	connect(this->designActionExportSTL, SIGNAL(triggered()), this, SLOT(actionExportSTL()));
 	connect(this->designActionExportOFF, SIGNAL(triggered()), this, SLOT(actionExportOFF()));
+	connect(this->designActionExportDXF, SIGNAL(triggered()), this, SLOT(actionExportDXF()));
 
 	// View menu
 #ifndef ENABLE_OPENCSG
@@ -1022,9 +1023,9 @@ void MainWindow::actionExportSTLorOFF(bool stl_mode)
 void MainWindow::actionExportSTLorOFF(bool)
 #endif
 {
+#ifdef ENABLE_CGAL
 	current_win = this;
 
-#ifdef ENABLE_CGAL
 	if (!root_N) {
 		PRINT("Nothing to export! Try building first (press F6).");
 		current_win = NULL;
@@ -1068,8 +1069,9 @@ void MainWindow::actionExportSTLorOFF(bool)
 	PRINTF("%s export finished.", stl_mode ? "STL" : "OFF");
 
 	delete pd;
-#endif /* ENABLE_CGAL */
+
 	current_win = NULL;
+#endif /* ENABLE_CGAL */
 }
 
 void MainWindow::actionExportSTL()
@@ -1080,6 +1082,38 @@ void MainWindow::actionExportSTL()
 void MainWindow::actionExportOFF()
 {
 	actionExportSTLorOFF(false);
+}
+
+void MainWindow::actionExportDXF()
+{
+#ifdef ENABLE_CGAL
+	current_win = this;
+
+	if (!root_N) {
+		PRINT("Nothing to export! Try building first (press F6).");
+		current_win = NULL;
+		return;
+	}
+
+	if (root_N->dim != 2) {
+		PRINT("Current top level object is not a 2D object.");
+		current_win = NULL;
+		return;
+	}
+
+	QString stl_filename = QFileDialog::getSaveFileName(this,
+			"Export DXF File", "", "DXF Files (*.dxf)");
+	if (stl_filename.isEmpty()) {
+		PRINTF("No filename specified. DXF export aborted.");
+		current_win = NULL;
+		return;
+	}
+
+	export_dxf(root_N, stl_filename, NULL);
+	PRINTF("DXF export finished.");
+
+	current_win = NULL;
+#endif /* ENABLE_CGAL */
 }
 
 void MainWindow::viewModeActionsUncheck()
