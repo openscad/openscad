@@ -106,12 +106,21 @@ AbstractNode *DxfLinearExtrudeModule::evaluate(const Context *ctx, const ModuleI
 		node->has_twist = true;
 	}
 
+	if (node->filename.isEmpty()) {
+		foreach (ModuleInstanciation *v, inst->children) {
+			AbstractNode *n = v->evaluate(inst->ctx);
+			if (n)
+				node->children.append(n);
+		}
+	}
+
 	return node;
 }
 
 void register_builtin_dxf_linear_extrude()
 {
 	builtin_modules["dxf_linear_extrude"] = new DxfLinearExtrudeModule();
+	builtin_modules["linear_extrude"] = new DxfLinearExtrudeModule();
 }
 
 static void add_slice(PolySet *ps, DxfData::Path *pt, double rot1, double rot2, double h1, double h2)
@@ -165,7 +174,21 @@ PolySet *DxfLinearExtrudeNode::render_polyset(render_mode_e) const
 	}
 
 	print_messages_push();
-	DxfData dxf(fn, fs, fa, filename, layername, origin_x, origin_y, scale);
+	DxfData *dxf;
+
+	if (filename.isEmpty())
+	{
+		CGAL_Nef_polyhedron N;
+		N.dim = 2;
+		foreach(AbstractNode * v, children) {
+			if (v->modinst->tag_background)
+				continue;
+			N.p2 += v->render_cgal_nef_polyhedron().p2;
+		}
+		dxf = new DxfData(N);
+	} else {
+		dxf = new DxfData(fn, fs, fa, filename, layername, origin_x, origin_y, scale);
+	}
 
 	PolySet *ps = new PolySet();
 	ps->convexity = convexity;
@@ -181,9 +204,9 @@ PolySet *DxfLinearExtrudeNode::render_polyset(render_mode_e) const
 	}
 
 	bool first_open_path = true;
-	for (int i = 0; i < dxf.paths.count(); i++)
+	for (int i = 0; i < dxf->paths.count(); i++)
 	{
-		if (dxf.paths[i].is_closed)
+		if (dxf->paths[i].is_closed)
 			continue;
 		if (first_open_path) {
 			PRINTF("WARING: Open paths in dxf_liniear_extrude(file = \"%s\", layer = \"%s\"):",
@@ -191,45 +214,46 @@ PolySet *DxfLinearExtrudeNode::render_polyset(render_mode_e) const
 			first_open_path = false;
 		}
 		PRINTF("   %9.5f %10.5f ... %10.5f %10.5f",
-				dxf.paths[i].points.first()->x / scale + origin_x,
-				dxf.paths[i].points.first()->y / scale + origin_y, 
-				dxf.paths[i].points.last()->x / scale + origin_x,
-				dxf.paths[i].points.last()->y / scale + origin_y);
+				dxf->paths[i].points.first()->x / scale + origin_x,
+				dxf->paths[i].points.first()->y / scale + origin_y, 
+				dxf->paths[i].points.last()->x / scale + origin_x,
+				dxf->paths[i].points.last()->y / scale + origin_y);
 	}
 
 
 	if (has_twist)
 	{
-		dxf_tesselate(ps, &dxf, 0, false, true, h1);
-		dxf_tesselate(ps, &dxf, twist, true, true, h2);
+		dxf_tesselate(ps, dxf, 0, false, true, h1);
+		dxf_tesselate(ps, dxf, twist, true, true, h2);
 		for (int j = 0; j < slices; j++)
 		{
 			double t1 = twist*j / slices;
 			double t2 = twist*(j+1) / slices;
 			double g1 = h1 + (h2-h1)*j / slices;
 			double g2 = h1 + (h2-h1)*(j+1) / slices;
-			for (int i = 0; i < dxf.paths.count(); i++)
+			for (int i = 0; i < dxf->paths.count(); i++)
 			{
-				if (!dxf.paths[i].is_closed)
+				if (!dxf->paths[i].is_closed)
 					continue;
-				add_slice(ps, &dxf.paths[i], t1, t2, g1, g2);
+				add_slice(ps, &dxf->paths[i], t1, t2, g1, g2);
 			}
 		}
 	}
 	else
 	{
-		dxf_tesselate(ps, &dxf, 0, false, true, h1);
-		dxf_tesselate(ps, &dxf, 0, true, true, h2);
-		for (int i = 0; i < dxf.paths.count(); i++)
+		dxf_tesselate(ps, dxf, 0, false, true, h1);
+		dxf_tesselate(ps, dxf, 0, true, true, h2);
+		for (int i = 0; i < dxf->paths.count(); i++)
 		{
-			if (!dxf.paths[i].is_closed)
+			if (!dxf->paths[i].is_closed)
 				continue;
-			add_slice(ps, &dxf.paths[i], 0, 0, h1, h2);
+			add_slice(ps, &dxf->paths[i], 0, 0, h1, h2);
 		}
 	}
 
 	PolySet::ps_cache.insert(key, new PolySet::ps_cache_entry(ps->link()));
 	print_messages_pop();
+	delete dxf;
 
 	return ps;
 }
@@ -241,7 +265,7 @@ QString DxfLinearExtrudeNode::dump(QString indent) const
 		struct stat st;
 		memset(&st, 0, sizeof(struct stat));
 		stat(filename.toAscii().data(), &st);
-		text.sprintf("dxf_linear_extrude(file = \"%s\", cache = \"%x.%x\", layer = \"%s\", "
+		text.sprintf("linear_extrude(file = \"%s\", cache = \"%x.%x\", layer = \"%s\", "
 				"height = %f, origin = [ %f %f ], scale = %f, center = %s, convexity = %d",
 				filename.toAscii().data(), (int)st.st_mtime, (int)st.st_size,
 				layername.toAscii().data(), height, origin_x, origin_y, scale,
@@ -252,8 +276,11 @@ QString DxfLinearExtrudeNode::dump(QString indent) const
 			text += t2;
 		}
 		QString t3;
-		t3.sprintf(", $fn = %f, $fa = %f, $fs = %f);\n", fn, fs, fa);
+		t3.sprintf(", $fn = %f, $fa = %f, $fs = %f) {\n", fn, fs, fa);
 		text += t3;
+		foreach (AbstractNode *v, children)
+			text += v->dump(indent + QString("\t"));
+		text += indent + "}\n";
 		((AbstractNode*)this)->dump_cache = indent + QString("n%1: ").arg(idx) + text;
 	}
 	return dump_cache;
