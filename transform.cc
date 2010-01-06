@@ -233,7 +233,7 @@ CGAL_Nef_polyhedron TransformNode::render_cgal_nef_polyhedron() const
 
 		PolySet ps;
 		ps.is2d = true;
-		dxf_tesselate(&ps, &dd, 0, true, 0);
+		dxf_tesselate(&ps, &dd, 0, true, false, 0);
 
 		N = ps.render_cgal_nef_polyhedron();
 		ps.refcount = 0;

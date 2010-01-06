@@ -161,7 +161,7 @@ static bool point_on_line(double *p1, double *p2, double *p3)
 	return true;
 }
 
-void dxf_tesselate(PolySet *ps, DxfData *dxf, double rot, bool up, double h)
+void dxf_tesselate(PolySet *ps, DxfData *dxf, double rot, bool up, bool do_triangle_splitting, double h)
 {
 	GLUtesselator *tobj = gluNewTess();
 
@@ -230,60 +230,63 @@ void dxf_tesselate(PolySet *ps, DxfData *dxf, double rot, bool up, double h)
 	// value are compared. This speeds up this code block dramatically (compared to the
 	// n^2 compares that are neccessary in the trivial implementation).
 #if 1
-	bool added_triangles = true;
-	typedef QPair<int,int> QPair_ii;
-	QHash<int, QPair_ii> tri_by_atan2;
-	for (int i = 0; i < tess_tri.count(); i++)
-	for (int j = 0; j < 3; j++) {
-		int ai = (int)round(atan2(fabs(tess_tri[i].p[(j+1)%3][0] - tess_tri[i].p[j][0]),
-				fabs(tess_tri[i].p[(j+1)%3][1] - tess_tri[i].p[j][1])) / 0.001);
-		tri_by_atan2.insertMulti(ai, QPair<int,int>(i, j));
-	}
-	while (added_triangles)
+	if (do_triangle_splitting)
 	{
-		added_triangles = false;
-#ifdef DEBUG_TRIANGLE_SPLITTING
-		printf("*** Triangle splitting (%d) ***\n", tess_tri.count()+1);
-#endif
+		bool added_triangles = true;
+		typedef QPair<int,int> QPair_ii;
+		QHash<int, QPair_ii> tri_by_atan2;
 		for (int i = 0; i < tess_tri.count(); i++)
-		for (int k = 0; k < 3; k++)
+		for (int j = 0; j < 3; j++) {
+			int ai = (int)round(atan2(fabs(tess_tri[i].p[(j+1)%3][0] - tess_tri[i].p[j][0]),
+					fabs(tess_tri[i].p[(j+1)%3][1] - tess_tri[i].p[j][1])) / 0.001);
+			tri_by_atan2.insertMulti(ai, QPair<int,int>(i, j));
+		}
+		while (added_triangles)
 		{
-			QHash<QPair_ii, QPair_ii> possible_neigh;
-			int ai = (int)floor(atan2(fabs(tess_tri[i].p[(k+1)%3][0] - tess_tri[i].p[k][0]),
-					fabs(tess_tri[i].p[(k+1)%3][1] - tess_tri[i].p[k][1])) / 0.001 - 0.5);
-			for (int j = 0; j < 2; j++) {
-				foreach (QPair_ii jl, tri_by_atan2.values(ai+j))
-					if (i != jl.first)
-						possible_neigh[jl] = jl;
-			}
+			added_triangles = false;
 #ifdef DEBUG_TRIANGLE_SPLITTING
-			printf("%d/%d: %d\n", i, k, possible_neigh.count());
+			printf("*** Triangle splitting (%d) ***\n", tess_tri.count()+1);
 #endif
-			foreach (QPair_ii jl, possible_neigh) {
-				int j = jl.first;
-				for (int l = jl.second; l != (jl.second + 2) % 3; l = (l + 1) % 3)
-				if (point_on_line(tess_tri[i].p[k], tess_tri[j].p[l], tess_tri[i].p[(k+1)%3])) {
+			for (int i = 0; i < tess_tri.count(); i++)
+			for (int k = 0; k < 3; k++)
+			{
+				QHash<QPair_ii, QPair_ii> possible_neigh;
+				int ai = (int)floor(atan2(fabs(tess_tri[i].p[(k+1)%3][0] - tess_tri[i].p[k][0]),
+						fabs(tess_tri[i].p[(k+1)%3][1] - tess_tri[i].p[k][1])) / 0.001 - 0.5);
+				for (int j = 0; j < 2; j++) {
+					foreach (QPair_ii jl, tri_by_atan2.values(ai+j))
+						if (i != jl.first)
+							possible_neigh[jl] = jl;
+				}
 #ifdef DEBUG_TRIANGLE_SPLITTING
-					printf("%% %f %f %f %f %f %f [%d %d]\n",
-							tess_tri[i].p[k][0], tess_tri[i].p[k][1],
-							tess_tri[j].p[l][0], tess_tri[j].p[l][1],
-							tess_tri[i].p[(k+1)%3][0], tess_tri[i].p[(k+1)%3][1],
-							i, j);
+				printf("%d/%d: %d\n", i, k, possible_neigh.count());
 #endif
-					tess_tri.append(tess_triangle(tess_tri[j].p[l],
-							tess_tri[i].p[(k+1)%3], tess_tri[i].p[(k+2)%3]));
-					for (int m = 0; m < 2; m++) {
-						int ai = (int)round(atan2(fabs(tess_tri.last().p[(m+1)%3][0] - tess_tri.last().p[m][0]),
-								fabs(tess_tri.last().p[(m+1)%3][1] - tess_tri.last().p[m][1])) / 0.001 );
-						tri_by_atan2.insertMulti(ai, QPair<int,int>(tess_tri.count()-1, m));
+				foreach (QPair_ii jl, possible_neigh) {
+					int j = jl.first;
+					for (int l = jl.second; l != (jl.second + 2) % 3; l = (l + 1) % 3)
+					if (point_on_line(tess_tri[i].p[k], tess_tri[j].p[l], tess_tri[i].p[(k+1)%3])) {
+#ifdef DEBUG_TRIANGLE_SPLITTING
+						printf("%% %f %f %f %f %f %f [%d %d]\n",
+								tess_tri[i].p[k][0], tess_tri[i].p[k][1],
+								tess_tri[j].p[l][0], tess_tri[j].p[l][1],
+								tess_tri[i].p[(k+1)%3][0], tess_tri[i].p[(k+1)%3][1],
+								i, j);
+#endif
+						tess_tri.append(tess_triangle(tess_tri[j].p[l],
+								tess_tri[i].p[(k+1)%3], tess_tri[i].p[(k+2)%3]));
+						for (int m = 0; m < 2; m++) {
+							int ai = (int)round(atan2(fabs(tess_tri.last().p[(m+1)%3][0] - tess_tri.last().p[m][0]),
+									fabs(tess_tri.last().p[(m+1)%3][1] - tess_tri.last().p[m][1])) / 0.001 );
+							tri_by_atan2.insertMulti(ai, QPair<int,int>(tess_tri.count()-1, m));
+						}
+						tess_tri[i].p[(k+1)%3] = tess_tri[j].p[l];
+						for (int m = 0; m < 2; m++) {
+							int ai = (int)round(atan2(fabs(tess_tri[i].p[(m+1)%3][0] - tess_tri[i].p[m][0]),
+									fabs(tess_tri[i].p[(m+1)%3][1] - tess_tri[i].p[m][1])) / 0.001 );
+							tri_by_atan2.insertMulti(ai, QPair<int,int>(i, m));
+						}
+						added_triangles = true;
 					}
-					tess_tri[i].p[(k+1)%3] = tess_tri[j].p[l];
-					for (int m = 0; m < 2; m++) {
-						int ai = (int)round(atan2(fabs(tess_tri[i].p[(m+1)%3][0] - tess_tri[i].p[m][0]),
-								fabs(tess_tri[i].p[(m+1)%3][1] - tess_tri[i].p[m][1])) / 0.001 );
-						tri_by_atan2.insertMulti(ai, QPair<int,int>(i, m));
-					}
-					added_triangles = true;
 				}
 			}
 		}

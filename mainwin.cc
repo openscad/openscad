@@ -1280,7 +1280,7 @@ static void renderGLviaCGAL(void *vp)
 			DxfData dd(*m->root_N);
 			m->cgal_ogl_ps = new PolySet();
 			m->cgal_ogl_ps->is2d = true;
-			dxf_tesselate(m->cgal_ogl_ps, &dd, 0, true, 0);
+			dxf_tesselate(m->cgal_ogl_ps, &dd, 0, true, false, 0);
 		}
 
 		glDisable(GL_LIGHTING);

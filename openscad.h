@@ -687,7 +687,7 @@ extern void *progress_report_vp;
 void progress_report_prep(AbstractNode *root, void (*f)(const class AbstractNode *node, void *vp, int mark), void *vp);
 void progress_report_fin();
 
-void dxf_tesselate(PolySet *ps, DxfData *dxf, double rot, bool up, double h);
+void dxf_tesselate(PolySet *ps, DxfData *dxf, double rot, bool up, bool do_triangle_splitting, double h);
 void dxf_border_to_ps(PolySet *ps, DxfData *dxf);
 
 #endif /* INCLUDE_ABSTRACT_NODE_DETAILS */

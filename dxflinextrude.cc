@@ -200,8 +200,8 @@ PolySet *DxfLinearExtrudeNode::render_polyset(render_mode_e) const
 
 	if (has_twist)
 	{
-		dxf_tesselate(ps, &dxf, 0, false, h1);
-		dxf_tesselate(ps, &dxf, twist, true, h2);
+		dxf_tesselate(ps, &dxf, 0, false, true, h1);
+		dxf_tesselate(ps, &dxf, twist, true, true, h2);
 		for (int j = 0; j < slices; j++)
 		{
 			double t1 = twist*j / slices;
@@ -218,8 +218,8 @@ PolySet *DxfLinearExtrudeNode::render_polyset(render_mode_e) const
 	}
 	else
 	{
-		dxf_tesselate(ps, &dxf, 0, false, h1);
-		dxf_tesselate(ps, &dxf, 0, true, h2);
+		dxf_tesselate(ps, &dxf, 0, false, true, h1);
+		dxf_tesselate(ps, &dxf, 0, true, true, h2);
 		for (int i = 0; i < dxf.paths.count(); i++)
 		{
 			if (!dxf.paths[i].is_closed)
