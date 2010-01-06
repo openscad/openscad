@@ -16,3 +16,6 @@ difference()
 
 	rotate(-45) scale([ 0.7, 1.3 ]) circle(5);
 }
+
+import_dxf(filename = "example009.dxf",
+		layername = "body", convexity = 10, scale=2);

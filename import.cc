@@ -24,10 +24,13 @@
 #include "printutils.h"
 
 #include <QFile>
+#include <sys/types.h>
+#include <sys/stat.h>
 
 enum import_type_e {
 	TYPE_STL,
-	TYPE_OFF
+	TYPE_OFF,
+	TYPE_DXF
 };
 
 class ImportModule : public AbstractModule
@@ -43,7 +46,10 @@ class ImportNode : public AbstractPolyNode
 public:
 	import_type_e type;
 	QString filename;
+	QString layername;
 	int convexity;
+	double fn, fs, fa;
+	double origin_x, origin_y, scale;
 	ImportNode(const ModuleInstanciation *mi, import_type_e type) : AbstractPolyNode(mi), type(type) { }
 	virtual PolySet *render_polyset(render_mode_e mode) const;
 	virtual QString dump(QString indent) const;
@@ -53,14 +59,36 @@ AbstractNode *ImportModule::evaluate(const Context *ctx, const ModuleInstanciati
 {
 	ImportNode *node = new ImportNode(inst, type);
 
-	QVector<QString> argnames = QVector<QString>() << "filename" << "convexity";
+	QVector<QString> argnames;
+	if (type == TYPE_DXF) {
+		QVector<QString> argnames = QVector<QString>() << "filename" << "layername" << "convexity" << "origin" << "scale";
+	} else {
+		QVector<QString> argnames = QVector<QString>() << "filename" << "convexity";
+	}
 	QVector<Expression*> argexpr;
 
 	Context c(ctx);
 	c.args(argnames, argexpr, inst->argnames, inst->argvalues);
 
+	node->fn = c.lookup_variable("$fn").num;
+	node->fs = c.lookup_variable("$fs").num;
+	node->fa = c.lookup_variable("$fa").num;
+
 	node->filename = c.lookup_variable("filename").text;
+	node->layername = c.lookup_variable("layername").text;
 	node->convexity = c.lookup_variable("convexity").num;
+
+	if (node->convexity <= 0)
+		node->convexity = 1;
+
+	Value origin = c.lookup_variable("origin", true);
+	node->origin_x = node->origin_y = 0;
+	origin.getv2(node->origin_x, node->origin_y);
+
+	node->scale = c.lookup_variable("scale", true).num;
+
+	if (node->scale <= 0)
+		node->scale = 1;
 
 	return node;
 }
@@ -69,6 +97,7 @@ void register_builtin_import()
 {
 	builtin_modules["import_stl"] = new ImportModule(TYPE_STL);
 	builtin_modules["import_off"] = new ImportModule(TYPE_OFF);
+	builtin_modules["import_dxf"] = new ImportModule(TYPE_DXF);
 }
 
 PolySet *ImportNode::render_polyset(render_mode_e) const
@@ -147,6 +176,13 @@ PolySet *ImportNode::render_polyset(render_mode_e) const
 		PRINTF("WARNING: OFF import is not implemented yet.");
 	}
 
+	if (type == TYPE_DXF)
+	{
+		DxfData dd(fn, fs, fa, filename, layername, origin_x, origin_y, scale);
+		p->is2d = true;
+		dxf_tesselate(p, &dd, 0, true, 0);
+	}
+
 	return p;
 }
 
@@ -155,9 +191,22 @@ QString ImportNode::dump(QString indent) const
 	if (dump_cache.isEmpty()) {
 		QString text;
 		if (type == TYPE_STL)
-			text.sprintf("import_stl(filename = \"%s\");\n", filename.toAscii().data());
+			text.sprintf("import_stl(filename = \"%s\", convexity = %d);\n",
+					filename.toAscii().data(), convexity);
 		if (type == TYPE_OFF)
-			text.sprintf("import_off(filename = \"%s\");\n", filename.toAscii().data());
+			text.sprintf("import_off(filename = \"%s\", convexity = %d);\n",
+					filename.toAscii().data(), convexity);
+		if (type == TYPE_DXF) {
+			struct stat st;
+			memset(&st, 0, sizeof(struct stat));
+			stat(filename.toAscii().data(), &st);
+			text.sprintf("import_dxf(filename = \"%s\", cache = \"%x.%x\", layer = \"%s\", "
+					"origin = [ %f %f ], scale = %f, convexity = %d, "
+					"$fn = %f, $fa = %f, $fs = %f);\n",
+					filename.toAscii().data(), (int)st.st_mtime, (int)st.st_size,
+					layername.toAscii().data(), origin_x, origin_y, scale, convexity,
+					fn, fs, fa);
+		}
 		((AbstractNode*)this)->dump_cache = indent + QString("n%1: ").arg(idx) + text;
 	}
 	return dump_cache;
