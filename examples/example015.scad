@@ -18,4 +18,4 @@ difference()
 }
 
 import_dxf(filename = "example009.dxf",
-		layername = "body", convexity = 10, scale=2);
+		layername = "body", convexity = 6, scale=2);

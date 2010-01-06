@@ -521,6 +521,7 @@ public:
 	};
 	typedef QList<Point> Polygon;
 	QVector<Polygon> polygons;
+	QVector<Polygon> borders;
 	Grid3d<void*> grid;
 
 	bool is2d;
@@ -688,6 +689,7 @@ void progress_report_prep(AbstractNode *root, void (*f)(const class AbstractNode
 void progress_report_fin();
 
 void dxf_tesselate(PolySet *ps, DxfData *dxf, double rot, bool up, double h);
+void dxf_border_to_ps(PolySet *ps, DxfData *dxf);
 
 #endif /* INCLUDE_ABSTRACT_NODE_DETAILS */
 

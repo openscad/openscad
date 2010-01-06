@@ -341,3 +341,23 @@ void dxf_tesselate(PolySet *ps, DxfData *dxf, double rot, bool up, double h)
 	tess_tri.clear();
 }
 
+
+void dxf_border_to_ps(PolySet *ps, DxfData *dxf)
+{
+	for (int i = 0; i < dxf->paths.count(); i++) {
+		DxfData::Path *pt = &dxf->paths[i];
+		if (!pt->is_closed)
+			continue;
+		ps->borders.append(PolySet::Polygon());
+		for (int j = 1; j < pt->points.count(); j++) {
+			double x = pt->points[j]->x, y = pt->points[j]->y, z = 0.0;
+			ps->grid.align(x, y, z);
+			if (pt->is_inner) {
+				ps->borders.last().append(PolySet::Point(x, y, z));
+			} else {
+				ps->borders.last().insert(0, PolySet::Point(x, y, z));
+			}
+		}
+	}
+}
+

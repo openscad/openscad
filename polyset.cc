@@ -151,11 +151,11 @@ void PolySet::render_surface(colormode_e colormode, csgmode_e csgmode, GLint *sh
 #endif /* ENABLE_OPENCSG */
 	if (this->is2d) {
 		double zbase = csgmode;
+		glBegin(GL_TRIANGLES);
 		for (double z = -zbase/2; z < zbase; z += zbase)
 		{
 			for (int i = 0; i < polygons.size(); i++) {
 				const Polygon *poly = &polygons[i];
-				glBegin(GL_TRIANGLES);
 				if (poly->size() == 3) {
 					if (z < 0) {
 						gl_draw_triangle(shaderinfo, &poly->at(0), &poly->at(2), &poly->at(1), true, true, true, z);
@@ -190,19 +190,23 @@ void PolySet::render_surface(colormode_e colormode, csgmode_e csgmode, GLint *sh
 						}
 					}
 				}
-				if (z < 0) {
-					for (int j = 1; j <= poly->size(); j++) {
-						Point p1 = poly->at(j - 1), p2 = poly->at(j - 1);
-						Point p3 = poly->at(j % poly->size()), p4 = poly->at(j % poly->size());
-						p1.z -= zbase/2, p2.z += zbase/2;
-						p3.z -= zbase/2, p4.z += zbase/2;
-						gl_draw_triangle(shaderinfo, &p2, &p1, &p3, true, true, false, 0);
-						gl_draw_triangle(shaderinfo, &p2, &p3, &p4, false, true, true, 0);
-					}
-				}
-				glEnd();
 			}
 		}
+		const QVector<Polygon> *borders_p = &borders;
+		if (borders_p->size() == 0)
+			borders_p = &polygons;
+		for (int i = 0; i < borders_p->size(); i++) {
+			const Polygon *poly = &borders_p->at(i);
+			for (int j = 1; j <= poly->size(); j++) {
+				Point p1 = poly->at(j - 1), p2 = poly->at(j - 1);
+				Point p3 = poly->at(j % poly->size()), p4 = poly->at(j % poly->size());
+				p1.z -= zbase/2, p2.z += zbase/2;
+				p3.z -= zbase/2, p4.z += zbase/2;
+				gl_draw_triangle(shaderinfo, &p2, &p1, &p3, true, true, false, 0);
+				gl_draw_triangle(shaderinfo, &p2, &p3, &p4, false, true, true, 0);
+			}
+		}
+		glEnd();
 	} else {
 		for (int i = 0; i < polygons.size(); i++) {
 			const Polygon *poly = &polygons[i];
@@ -247,8 +251,8 @@ void PolySet::render_edges(colormode_e colormode, csgmode_e csgmode) const
 		double zbase = csgmode;
 		for (double z = -zbase/2; z < zbase; z += zbase)
 		{
-			for (int i = 0; i < polygons.size(); i++) {
-				const Polygon *poly = &polygons[i];
+			for (int i = 0; i < borders.size(); i++) {
+				const Polygon *poly = &borders[i];
 				glBegin(GL_LINE_LOOP);
 				for (int j = 0; j < poly->size(); j++) {
 					const Point *p = &poly->at(j);
@@ -257,8 +261,8 @@ void PolySet::render_edges(colormode_e colormode, csgmode_e csgmode) const
 				glEnd();
 			}
 		}
-		for (int i = 0; i < polygons.size(); i++) {
-			const Polygon *poly = &polygons[i];
+		for (int i = 0; i < borders.size(); i++) {
+			const Polygon *poly = &borders[i];
 			glBegin(GL_LINES);
 			for (int j = 0; j < poly->size(); j++) {
 				const Point *p = &poly->at(j);

@@ -164,6 +164,7 @@ CSGTerm *RenderNode::render_csg_term(double m[16], QVector<CSGTerm*> *highlights
 		ps = new PolySet();
 		ps->is2d = true;
 		dxf_tesselate(ps, &dd, 0, true, 0);
+		dxf_border_to_ps(ps, &dd);
 	}
 
 	if (N.dim == 3)

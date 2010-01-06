@@ -181,6 +181,7 @@ PolySet *ImportNode::render_polyset(render_mode_e) const
 		DxfData dd(fn, fs, fa, filename, layername, origin_x, origin_y, scale);
 		p->is2d = true;
 		dxf_tesselate(p, &dd, 0, true, 0);
+		dxf_border_to_ps(p, &dd);
 	}
 
 	return p;
