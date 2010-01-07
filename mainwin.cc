@@ -1175,8 +1175,10 @@ static void renderCSGChainviaOpenCSG(CSGChain *chain, GLint *shaderinfo, bool hi
 
 		if (last || chain->types[i] == CSGTerm::TYPE_UNION)
 		{
-			OpenCSG::render(primitives);
-			glDepthFunc(GL_EQUAL);
+			if (j+1 != i) {
+				OpenCSG::render(primitives);
+				glDepthFunc(GL_EQUAL);
+			}
 			if (shaderinfo)
 				glUseProgram(shaderinfo[0]);
 			for (; j < i; j++) {
