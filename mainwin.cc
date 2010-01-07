@@ -195,6 +195,7 @@ MainWindow::MainWindow(const char *filename)
 	connect(this->designActionExportSTL, SIGNAL(triggered()), this, SLOT(actionExportSTL()));
 	connect(this->designActionExportOFF, SIGNAL(triggered()), this, SLOT(actionExportOFF()));
 	connect(this->designActionExportDXF, SIGNAL(triggered()), this, SLOT(actionExportDXF()));
+	connect(this->designActionFlushCaches, SIGNAL(triggered()), this, SLOT(actionFlushCaches()));
 
 	// View menu
 #ifndef ENABLE_OPENCSG
@@ -1130,6 +1131,12 @@ void MainWindow::actionExportDXF()
 #endif /* ENABLE_CGAL */
 }
 
+void MainWindow::actionFlushCaches()
+{
+	PolySet::ps_cache.clear();
+	AbstractNode::cgal_nef_cache.clear();
+}
+
 void MainWindow::viewModeActionsUncheck()
 {
 	viewActionOpenCSG->setChecked(false);
@@ -1683,3 +1690,4 @@ void MainWindow::closeEvent(QCloseEvent *event)
 		event->ignore();
 	}
 }
+

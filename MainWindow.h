@@ -94,6 +94,7 @@ private slots:
 	void actionExportSTL();
 	void actionExportOFF();
 	void actionExportDXF();
+	void actionFlushCaches();
 
 public:
 	void viewModeActionsUncheck();

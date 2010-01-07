@@ -156,6 +156,7 @@
     <addaction name="designActionExportSTL"/>
     <addaction name="designActionExportOFF"/>
     <addaction name="designActionExportDXF"/>
+    <addaction name="designActionFlushCaches"/>
    </widget>
    <widget class="QMenu" name="menu_View">
     <property name="title">
@@ -602,6 +603,11 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+W</string>
+   </property>
+  </action>
+  <action name="designActionFlushCaches">
+   <property name="text">
+    <string>Flush Caches</string>
    </property>
   </action>
  </widget>
