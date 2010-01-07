@@ -27,7 +27,8 @@ enum transform_type_e {
 	SCALE,
 	ROTATE,
 	TRANSLATE,
-	MULTMATRIX
+	MULTMATRIX,
+	COLOR
 };
 
 class TransformModule : public AbstractModule
@@ -41,12 +42,12 @@ public:
 class TransformNode : public AbstractNode
 {
 public:
-	double m[16];
+	double m[20];
 	TransformNode(const ModuleInstantiation *mi) : AbstractNode(mi) { }
 #ifdef ENABLE_CGAL
 	virtual CGAL_Nef_polyhedron render_cgal_nef_polyhedron() const;
 #endif
-	virtual CSGTerm *render_csg_term(double m[16], QVector<CSGTerm*> *highlights, QVector<CSGTerm*> *background) const;
+	virtual CSGTerm *render_csg_term(double m[20], QVector<CSGTerm*> *highlights, QVector<CSGTerm*> *background) const;
 	virtual QString dump(QString indent) const;
 };
 
@@ -54,9 +55,10 @@ AbstractNode *TransformModule::evaluate(const Context *ctx, const ModuleInstanti
 {
 	TransformNode *node = new TransformNode(inst);
 
-	for (int i = 0; i < 16; i++) {
+	for (int i = 0; i < 16; i++)
 		node->m[i] = i % 5 == 0 ? 1.0 : 0.0;
-	}
+	for (int i = 16; i < 20; i++)
+		node->m[i] = -1;
 
 	QVector<QString> argnames;
 	QVector<Expression*> argexpr;
@@ -72,6 +74,9 @@ AbstractNode *TransformModule::evaluate(const Context *ctx, const ModuleInstanti
 	}
 	if (type == MULTMATRIX) {
 		argnames = QVector<QString>() << "m";
+	}
+	if (type == COLOR) {
+		argnames = QVector<QString>() << "c";
 	}
 
 	Context c(ctx);
@@ -173,6 +178,14 @@ AbstractNode *TransformModule::evaluate(const Context *ctx, const ModuleInstanti
 			}
 		}
 	}
+	if (type == COLOR)
+	{
+		Value v = c.lookup_variable("c");
+		if (v.type == Value::VECTOR) {
+			for (int i = 0; i < 4; i++)
+				node->m[16+i] = i < v.vec.size() ? v.vec[i]->num : 1.0;
+		}
+	}
 
 	foreach (ModuleInstantiation *v, inst->children) {
 		AbstractNode *n = v->evaluate(inst->ctx);
@@ -255,9 +268,9 @@ CGAL_Nef_polyhedron TransformNode::render_cgal_nef_polyhedron() const
 
 #endif /* ENABLE_CGAL */
 
-CSGTerm *TransformNode::render_csg_term(double c[16], QVector<CSGTerm*> *highlights, QVector<CSGTerm*> *background) const
+CSGTerm *TransformNode::render_csg_term(double c[20], QVector<CSGTerm*> *highlights, QVector<CSGTerm*> *background) const
 {
-	double x[16];
+	double x[20];
 
 	for (int i = 0; i < 16; i++)
 	{
@@ -267,6 +280,9 @@ CSGTerm *TransformNode::render_csg_term(double c[16], QVector<CSGTerm*> *highlig
 		for (int j = 0; j < 4; j++)
 			x[i] += c[c_row + j*4] * m[m_col*4 + j];
 	}
+
+	for (int i = 16; i < 20; i++)
+		x[i] = m[i] < 0 ? c[i] : m[i];
 
 	CSGTerm *t1 = NULL;
 	foreach(AbstractNode *v, children)
@@ -291,11 +307,16 @@ QString TransformNode::dump(QString indent) const
 {
 	if (dump_cache.isEmpty()) {
 		QString text;
-		text.sprintf("n%d: multmatrix([[%f, %f, %f, %f], [%f, %f, %f, %f], [%f, %f, %f, %f], [%f, %f, %f, %f]])", idx,
-				m[0], m[4], m[ 8], m[12],
-				m[1], m[5], m[ 9], m[13],
-				m[2], m[6], m[10], m[14],
-				m[3], m[7], m[11], m[15]);
+		if (m[16] >= 0 || m[17] >= 0 || m[18] >= 0 || m[19] >= 0)
+			text.sprintf("n%d: color([%f, %f, %f, %f])", idx,
+					m[16], m[17], m[18], m[19]);
+		else
+			text.sprintf("n%d: multmatrix([[%f, %f, %f, %f], [%f, %f, %f, %f], "
+					"[%f, %f, %f, %f], [%f, %f, %f, %f]])", idx,
+					m[0], m[4], m[ 8], m[12],
+					m[1], m[5], m[ 9], m[13],
+					m[2], m[6], m[10], m[14],
+					m[3], m[7], m[11], m[15]);
 		text = indent + text + " {\n";
 		foreach (AbstractNode *v, children)
 			text += v->dump(indent + QString("\t"));
@@ -310,5 +331,6 @@ void register_builtin_transform()
 	builtin_modules["rotate"] = new TransformModule(ROTATE);
 	builtin_modules["translate"] = new TransformModule(TRANSLATE);
 	builtin_modules["multmatrix"] = new TransformModule(MULTMATRIX);
+	builtin_modules["color"] = new TransformModule(COLOR);
 }
 

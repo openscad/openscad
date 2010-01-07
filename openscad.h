@@ -595,10 +595,10 @@ public:
 	QString label;
 	CSGTerm *left;
 	CSGTerm *right;
-	double m[16];
+	double m[20];
 	int refcounter;
 
-	CSGTerm(PolySet *polyset, double m[16], QString label);
+	CSGTerm(PolySet *polyset, double m[20], QString label);
 	CSGTerm(type_e type, CSGTerm *left, CSGTerm *right);
 
 	CSGTerm *normalize();
@@ -650,7 +650,7 @@ public:
 	static QCache<QString, cgal_nef_cache_entry> cgal_nef_cache;
 	virtual CGAL_Nef_polyhedron render_cgal_nef_polyhedron() const;
 #endif
-	virtual CSGTerm *render_csg_term(double m[16], QVector<CSGTerm*> *highlights, QVector<CSGTerm*> *background) const;
+	virtual CSGTerm *render_csg_term(double m[20], QVector<CSGTerm*> *highlights, QVector<CSGTerm*> *background) const;
 	virtual QString dump(QString indent) const;
 };
 
@@ -661,7 +661,7 @@ public:
 #ifdef ENABLE_CGAL
 	virtual CGAL_Nef_polyhedron render_cgal_nef_polyhedron() const;
 #endif
-	virtual CSGTerm *render_csg_term(double m[16], QVector<CSGTerm*> *highlights, QVector<CSGTerm*> *background) const;
+	virtual CSGTerm *render_csg_term(double m[20], QVector<CSGTerm*> *highlights, QVector<CSGTerm*> *background) const;
 	virtual QString dump(QString indent) const;
 };
 
@@ -677,8 +677,8 @@ public:
 #ifdef ENABLE_CGAL
 	virtual CGAL_Nef_polyhedron render_cgal_nef_polyhedron() const;
 #endif
-	virtual CSGTerm *render_csg_term(double m[16], QVector<CSGTerm*> *highlights, QVector<CSGTerm*> *background) const;
-	static CSGTerm *render_csg_term_from_ps(double m[16], QVector<CSGTerm*> *highlights, QVector<CSGTerm*> *background, PolySet *ps, const ModuleInstantiation *modinst, int idx);
+	virtual CSGTerm *render_csg_term(double m[20], QVector<CSGTerm*> *highlights, QVector<CSGTerm*> *background) const;
+	static CSGTerm *render_csg_term_from_ps(double m[20], QVector<CSGTerm*> *highlights, QVector<CSGTerm*> *background, PolySet *ps, const ModuleInstantiation *modinst, int idx);
 };
 
 extern int progress_report_count;

@@ -535,10 +535,12 @@ void MainWindow::compile(bool procevents)
 	if (procevents)
 		QApplication::processEvents();
 
-	double m[16];
+	double m[20];
 
 	for (int i = 0; i < 16; i++)
 		m[i] = i % 5 == 0 ? 1.0 : 0.0;
+	for (int i = 16; i < 20; i++)
+		m[i] = -1;
 
 	root_raw_term = root_node->render_csg_term(m, &highlight_terms, &background_terms);
 
@@ -1171,13 +1173,21 @@ static void renderCSGChainviaOpenCSG(CSGChain *chain, GLint *shaderinfo, bool hi
 			if (shaderinfo)
 				glUseProgram(shaderinfo[0]);
 			for (; j < i; j++) {
+				double *m = chain->matrices[j];
 				glPushMatrix();
-				glMultMatrixd(chain->matrices[j]);
+				glMultMatrixd(m);
 				int csgmode = chain->types[j] == CSGTerm::TYPE_DIFFERENCE ? PolySet::CSGMODE_DIFFERENCE : PolySet::CSGMODE_NORMAL;
 				if (highlight) {
 					chain->polysets[j]->render_surface(PolySet::COLORMODE_HIGHLIGHT, PolySet::csgmode_e(csgmode + 20), shaderinfo);
 				} else if (background) {
 					chain->polysets[j]->render_surface(PolySet::COLORMODE_BACKGROUND, PolySet::csgmode_e(csgmode + 10), shaderinfo);
+				} else if (m[16] >= 0 || m[17] >= 0 || m[18] >= 0 || m[19] >= 0) {
+					glColor4d(m[16], m[17], m[18], m[19]);
+					if (shaderinfo) {
+						glUniform4f(shaderinfo[1], m[16], m[17], m[18], m[19]);
+						glUniform4f(shaderinfo[2], (m[16]+1)/2, (m[17]+1)/2, (m[18]+1)/2, 1.0);
+					}
+					chain->polysets[j]->render_surface(PolySet::COLORMODE_NONE, PolySet::csgmode_e(csgmode), shaderinfo);
 				} else if (chain->types[j] == CSGTerm::TYPE_DIFFERENCE) {
 					chain->polysets[j]->render_surface(PolySet::COLORMODE_CUTOUT, PolySet::csgmode_e(csgmode), shaderinfo);
 				} else {
@@ -1390,8 +1400,9 @@ static void renderGLThrownTogetherChain(MainWindow *m, CSGChain *chain, bool hig
 	for (int i = 0; i < chain->polysets.size(); i++) {
 		if (polySetVisitMark[QPair<PolySet*,double*>(chain->polysets[i], chain->matrices[i])]++ > 0)
 			continue;
+		double *m = chain->matrices[i];
 		glPushMatrix();
-		glMultMatrixd(chain->matrices[i]);
+		glMultMatrixd(m);
 		int csgmode = chain->types[i] == CSGTerm::TYPE_DIFFERENCE ? PolySet::CSGMODE_DIFFERENCE : PolySet::CSGMODE_NORMAL;
 		if (highlight) {
 			chain->polysets[i]->render_surface(PolySet::COLORMODE_HIGHLIGHT, PolySet::csgmode_e(csgmode + 20));
@@ -1414,6 +1425,15 @@ static void renderGLThrownTogetherChain(MainWindow *m, CSGChain *chain, bool hig
 				chain->polysets[i]->render_surface(PolySet::COLORMODE_NONE, PolySet::csgmode_e(csgmode + 10));
 			} else {
 				chain->polysets[i]->render_surface(PolySet::COLORMODE_NONE, PolySet::csgmode_e(csgmode));
+			}
+		} else if (m[16] >= 0 || m[17] >= 0 || m[18] >= 0 || m[19] >= 0) {
+			glColor4d(m[16], m[17], m[18], m[19]);
+			chain->polysets[i]->render_surface(PolySet::COLORMODE_NONE, PolySet::csgmode_e(csgmode));
+			if (showEdges) {
+				glDisable(GL_LIGHTING);
+				glColor4d((m[16]+1)/2, (m[17]+1)/2, (m[18]+1)/2, 1.0);
+				chain->polysets[i]->render_edges(PolySet::COLORMODE_NONE, PolySet::csgmode_e(csgmode));
+				glEnable(GL_LIGHTING);
 			}
 		} else if (chain->types[i] == CSGTerm::TYPE_DIFFERENCE) {
 			chain->polysets[i]->render_surface(PolySet::COLORMODE_CUTOUT, PolySet::csgmode_e(csgmode));

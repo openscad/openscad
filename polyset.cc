@@ -448,13 +448,13 @@ CGAL_Nef_polyhedron AbstractPolyNode::render_cgal_nef_polyhedron() const
 
 #endif /* ENABLE_CGAL */
 
-CSGTerm *AbstractPolyNode::render_csg_term(double m[16], QVector<CSGTerm*> *highlights, QVector<CSGTerm*> *background) const
+CSGTerm *AbstractPolyNode::render_csg_term(double m[20], QVector<CSGTerm*> *highlights, QVector<CSGTerm*> *background) const
 {
 	PolySet *ps = render_polyset(RENDER_OPENCSG);
 	return render_csg_term_from_ps(m, highlights, background, ps, modinst, idx);
 }
 
-CSGTerm *AbstractPolyNode::render_csg_term_from_ps(double m[16], QVector<CSGTerm*> *highlights, QVector<CSGTerm*> *background, PolySet *ps, const ModuleInstantiation *modinst, int idx)
+CSGTerm *AbstractPolyNode::render_csg_term_from_ps(double m[20], QVector<CSGTerm*> *highlights, QVector<CSGTerm*> *background, PolySet *ps, const ModuleInstantiation *modinst, int idx)
 {
 	CSGTerm *t = new CSGTerm(ps, m, QString("n%1").arg(idx));
 	if (modinst->tag_highlight && highlights)

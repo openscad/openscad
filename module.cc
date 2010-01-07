@@ -288,7 +288,7 @@ CGAL_Nef_polyhedron AbstractIntersectionNode::render_cgal_nef_polyhedron() const
 
 #endif /* ENABLE_CGAL */
 
-static CSGTerm *render_csg_term_backend(const AbstractNode *that, bool intersect, double m[16], QVector<CSGTerm*> *highlights, QVector<CSGTerm*> *background)
+static CSGTerm *render_csg_term_backend(const AbstractNode *that, bool intersect, double m[20], QVector<CSGTerm*> *highlights, QVector<CSGTerm*> *background)
 {
 	CSGTerm *t1 = NULL;
 	foreach(AbstractNode *v, that->children) {
@@ -311,12 +311,12 @@ static CSGTerm *render_csg_term_backend(const AbstractNode *that, bool intersect
 	return t1;
 }
 
-CSGTerm *AbstractNode::render_csg_term(double m[16], QVector<CSGTerm*> *highlights, QVector<CSGTerm*> *background) const
+CSGTerm *AbstractNode::render_csg_term(double m[20], QVector<CSGTerm*> *highlights, QVector<CSGTerm*> *background) const
 {
 	return render_csg_term_backend(this, false, m, highlights, background);
 }
 
-CSGTerm *AbstractIntersectionNode::render_csg_term(double m[16], QVector<CSGTerm*> *highlights, QVector<CSGTerm*> *background) const
+CSGTerm *AbstractIntersectionNode::render_csg_term(double m[20], QVector<CSGTerm*> *highlights, QVector<CSGTerm*> *background) const
 {
 	return render_csg_term_backend(this, true, m, highlights, background);
 }
