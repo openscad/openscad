@@ -58,5 +58,7 @@ DxfData::DxfData(const struct CGAL_Nef_polyhedron &N)
 			paths.last().points.append(&points[first_point]);
 		}
 	}
+
+	fixup_path_direction();
 }
 

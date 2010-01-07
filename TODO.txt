@@ -39,7 +39,6 @@ o Think about making external libraries easier available. Probably mostly conven
 ENGINE
 ------
 o 2D Subsystem
-  - Add generic 2D->3D extrude statements
   - Add generic 3D->2D projection statements
 o Advanced Transformations
   - Add statement for 2D and 3D minkowski sum

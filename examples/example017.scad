@@ -24,7 +24,7 @@ module shape_tripod()
 	y2 = y1 + thickness;
 	y3 = y2 + thickness;
 	y4 = y3 + thickness;
-	y5 = y3 + total_height - 4*thickness;
+	y5 = y3 + total_height - 3*thickness;
 	y6 = y5 + thickness;
 	
 	union()
@@ -96,7 +96,7 @@ module parts()
 
 module exploded()
 {
-	translate([ 0, 0, total_height + thickness ]) linear_extrude(height = thickness, convexity = 4) shape_inner_disc();
+	translate([ 0, 0, total_height + 2*thickness ]) linear_extrude(height = thickness, convexity = 4) shape_inner_disc();
 	linear_extrude(height = thickness, convexity = 4) shape_outer_disc();
 
 	color([ 0.7, 0.7, 1 ]) for (alpha = [ 0, 120, 240 ])
@@ -104,16 +104,41 @@ module exploded()
 			rotate([ 90, 0, -90 ]) linear_extrude(height = thickness, convexity = 10, center = true) shape_tripod();
 }
 
+module bottle()
+{
+	r = boltlen + midhole;
+	h = total_height - thickness*2;
+
+	rotate_extrude(convexity = 2)
+	{
+		square([ r, h ]);
+
+		translate([ 0, h ])
+		intersection() {
+			square([ r, r ]);
+			scale([ 1, 0.7 ]) circle(r);
+		}
+
+		translate([ 0, h+r ])
+		intersection() {
+			translate([ 0, -r/2 ]) square([ r/2, r ]);
+			circle(r/2);
+		}
+	}
+}
+
 module assembled()
 {
-	translate([ 0, 0, total_height - thickness*2 ]) linear_extrude(height = thickness, convexity = 4) shape_inner_disc();
+	translate([ 0, 0, total_height - thickness ]) linear_extrude(height = thickness, convexity = 4) shape_inner_disc();
 	linear_extrude(height = thickness, convexity = 4) shape_outer_disc();
 
 	color([ 0.7, 0.7, 1 ]) for (alpha = [ 0, 120, 240 ])
 		rotate(alpha) translate([ 0, thickness*2 + locklen1 + inner1_to_inner2 + boltlen + midhole, 0 ])
 			rotate([ 90, 0, -90 ]) linear_extrude(height = thickness, convexity = 10, center = true) shape_tripod();
+
+	% translate([ 0, 0, thickness*2]) bottle();
 }
 
-parts();
+// parts();
 // exploded();
-// assembled();
+assembled();

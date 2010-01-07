@@ -333,6 +333,22 @@ DxfData::DxfData(double fn, double fs, double fa, QString filename, QString laye
 		}
 	}
 
+	fixup_path_direction();
+
+#if 0
+	printf("----- DXF Data -----\n");
+	for (int i = 0; i < paths.count(); i++) {
+		printf("Path %d (%s):\n", i, paths[i].is_closed ? "closed" : "open");
+		for (int j = 0; j < paths[i].points.count(); j++)
+			printf("  %f %f\n", paths[i].points[j]->x, paths[i].points[j]->y);
+	}
+	printf("--------------------\n");
+	fflush(stdout);
+#endif
+}
+
+void DxfData::fixup_path_direction()
+{
 	if (paths.count() > 0) {
 		for (int i = 0; i < paths.count(); i++) {
 			if (!paths[i].is_closed)
@@ -366,17 +382,6 @@ DxfData::DxfData(double fn, double fs, double fa, QString filename, QString laye
 			}
 		}
 	}
-
-#if 0
-	printf("----- DXF Data -----\n");
-	for (int i = 0; i < paths.count(); i++) {
-		printf("Path %d (%s):\n", i, paths[i].is_closed ? "closed" : "open");
-		for (int j = 0; j < paths[i].points.count(); j++)
-			printf("  %f %f\n", paths[i].points[j]->x, paths[i].points[j]->y);
-	}
-	printf("--------------------\n");
-	fflush(stdout);
-#endif
 }
 
 DxfData::Point *DxfData::p(double x, double y)

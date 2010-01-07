@@ -446,6 +446,9 @@ public:
 	DxfData(const struct CGAL_Nef_polyhedron &N);
 
 	Point *p(double x, double y);
+
+private:
+	void fixup_path_direction();
 };
 
 // The CGAL template magic slows down the compilation process by a factor of 5.
