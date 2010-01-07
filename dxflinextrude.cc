@@ -27,6 +27,9 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
+#include <QApplication>
+#include <QTime>
+
 class DxfLinearExtrudeModule : public AbstractModule
 {
 public:
@@ -165,7 +168,18 @@ static void add_slice(PolySet *ps, DxfData::Path *pt, double rot1, double rot2, 
 	}
 }
 
-PolySet *DxfLinearExtrudeNode::render_polyset(render_mode_e) const
+static void report_func(const class AbstractNode*, void *vp, int mark)
+{
+	QProgressDialog *pd = (QProgressDialog*)vp;
+	int v = (int)((mark*100.0) / progress_report_count);
+	pd->setValue(v < 100 ? v : 99);
+	QString label;
+	label.sprintf("Rendering Polygon Mesh using CGAL (%d/%d)", mark, progress_report_count);
+	pd->setLabelText(label);
+	QApplication::processEvents();
+}
+
+PolySet *DxfLinearExtrudeNode::render_polyset(render_mode_e rm) const
 {
 	QString key = mk_cache_id();
 	if (PolySet::ps_cache.contains(key)) {
@@ -178,6 +192,24 @@ PolySet *DxfLinearExtrudeNode::render_polyset(render_mode_e) const
 
 	if (filename.isEmpty())
 	{
+		QTime t;
+		QProgressDialog *pd;
+
+		if (rm == RENDER_OPENCSG)
+		{
+			PRINT_NOCACHE("Processing uncached linear_extrude outline...");
+			QApplication::processEvents();
+
+			t.start();
+			pd = new QProgressDialog("Rendering Polygon Mesh using CGAL...", QString(), 0, 100);
+			pd->setValue(0);
+			pd->setAutoClose(false);
+			pd->show();
+			QApplication::processEvents();
+
+			progress_report_prep((AbstractNode*)this, report_func, pd);
+		}
+
 		CGAL_Nef_polyhedron N;
 		N.dim = 2;
 		foreach(AbstractNode * v, children) {
@@ -186,6 +218,13 @@ PolySet *DxfLinearExtrudeNode::render_polyset(render_mode_e) const
 			N.p2 += v->render_cgal_nef_polyhedron().p2;
 		}
 		dxf = new DxfData(N);
+
+		if (rm == RENDER_OPENCSG) {
+			progress_report_fin();
+			int s = t.elapsed() / 1000;
+			PRINTF_NOCACHE("..rendering time: %d hours, %d minutes, %d seconds", s / (60*60), (s / 60) % 60, s % 60);
+			delete pd;
+		}
 	} else {
 		dxf = new DxfData(fn, fs, fa, filename, layername, origin_x, origin_y, scale);
 	}
