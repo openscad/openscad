@@ -1,7 +1,9 @@
+
 BUGS
 ----
 o Some invalid DXF data gets pass the import checks and breaks the tessing code
 o Broken polyhedron() entities are not correctly detected and cause CGAL segfaults
+o Tesselation via GLU sometimes produces strange results
 
 USER INTERFACE
 --------------
