@@ -44,6 +44,7 @@ o Advanced Transformations
   - Add statement for 2D and 3D minkowski sum
   - Add statement for refinement via surface subdivision
   - Add statement for intersections in cartesian product of childs
+  - Add statement for mirroring objects (without inverting them)
 o Function-Module-Interface
   - Pass a module instanciation to a function (e.g. for a volume() function)
   - Pass a function to a module instanciation (e.g. for dynamic extrusion paths)
