@@ -47,11 +47,13 @@ o Advanced Transformations
 o Function-Module-Interface
   - Pass a module instanciation to a function (e.g. for a volume() function)
   - Pass a function to a module instanciation (e.g. for dynamic extrusion paths)
+o Language Frontend
+  - Allow using the childs of a module instance inside the module
+  - Allow local variables and functions everywhere (not only on module level)
 o DXF Import
   - Support for ELLIPSE entity
   - Support for POLYLINE entity
   - Support for SPLINE entity
 o Misc
   - Add symbolic colors to the color() statement
-
 
