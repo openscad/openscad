@@ -21,7 +21,7 @@ module blk2() {
 
 module chop() {
 	translate([ -14, 0, 0 ])
-		import_stl(filename = "example016.stl", convexity = 12);
+		import_stl(file = "example016.stl", convexity = 12);
 }
 
 difference() {

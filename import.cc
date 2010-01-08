@@ -61,21 +61,30 @@ AbstractNode *ImportModule::evaluate(const Context *ctx, const ModuleInstantiati
 
 	QVector<QString> argnames;
 	if (type == TYPE_DXF) {
-		argnames = QVector<QString>() << "filename" << "layername" << "convexity" << "origin" << "scale";
+		argnames = QVector<QString>() << "file" << "layer" << "convexity" << "origin" << "scale";
 	} else {
-		argnames = QVector<QString>() << "filename" << "convexity";
+		argnames = QVector<QString>() << "file" << "convexity";
 	}
 	QVector<Expression*> argexpr;
 
+	// Map old argnames to new argnames for compatibility
+	QVector<QString> inst_argnames = inst->argnames;
+	for (int i=0; i<inst_argnames.size(); i++) {
+		if (inst_argnames[i] == "filename")
+			inst_argnames[i] = "file";
+		if (inst_argnames[i] == "layername")
+			inst_argnames[i] = "layer";
+	}
+
 	Context c(ctx);
-	c.args(argnames, argexpr, inst->argnames, inst->argvalues);
+	c.args(argnames, argexpr, inst_argnames, inst->argvalues);
 
 	node->fn = c.lookup_variable("$fn").num;
 	node->fs = c.lookup_variable("$fs").num;
 	node->fa = c.lookup_variable("$fa").num;
 
-	node->filename = c.lookup_variable("filename").text;
-	node->layername = c.lookup_variable("layername", true).text;
+	node->filename = c.lookup_variable("file").text;
+	node->layername = c.lookup_variable("layer", true).text;
 	node->convexity = c.lookup_variable("convexity", true).num;
 
 	if (node->convexity <= 0)
@@ -201,7 +210,7 @@ QString ImportNode::dump(QString indent) const
 			struct stat st;
 			memset(&st, 0, sizeof(struct stat));
 			stat(filename.toAscii().data(), &st);
-			text.sprintf("import_dxf(filename = \"%s\", cache = \"%x.%x\", layer = \"%s\", "
+			text.sprintf("import_dxf(file = \"%s\", cache = \"%x.%x\", layer = \"%s\", "
 					"origin = [ %f %f ], scale = %f, convexity = %d, "
 					"$fn = %f, $fa = %f, $fs = %f);\n",
 					filename.toAscii().data(), (int)st.st_mtime, (int)st.st_size,

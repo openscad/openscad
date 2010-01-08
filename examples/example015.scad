@@ -19,8 +19,8 @@ module shape()
 		rotate(-45) scale([ 0.7, 1.3 ]) circle(5);
 	}
 	
-	import_dxf(filename = "example009.dxf",
-			layername = "body", convexity = 6, scale=2);
+	import_dxf(file = "example009.dxf", layer = "body",
+			convexity = 6, scale=2);
 }
 
 // linear_extrude(convexity = 10, center = true)
