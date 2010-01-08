@@ -61,9 +61,9 @@ AbstractNode *ImportModule::evaluate(const Context *ctx, const ModuleInstantiati
 
 	QVector<QString> argnames;
 	if (type == TYPE_DXF) {
-		QVector<QString> argnames = QVector<QString>() << "filename" << "layername" << "convexity" << "origin" << "scale";
+		argnames = QVector<QString>() << "filename" << "layername" << "convexity" << "origin" << "scale";
 	} else {
-		QVector<QString> argnames = QVector<QString>() << "filename" << "convexity";
+		argnames = QVector<QString>() << "filename" << "convexity";
 	}
 	QVector<Expression*> argexpr;
 
