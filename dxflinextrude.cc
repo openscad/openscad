@@ -193,7 +193,7 @@ PolySet *DxfLinearExtrudeNode::render_polyset(render_mode_e rm) const
 	if (filename.isEmpty())
 	{
 		QTime t;
-		QProgressDialog *pd;
+		QProgressDialog *pd = NULL;
 
 		if (rm == RENDER_OPENCSG)
 		{
