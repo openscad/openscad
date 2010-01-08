@@ -184,6 +184,10 @@ void register_builtin_primitives()
 	builtin_modules["polygon"] = new PrimitiveModule(POLYGON);
 }
 
+/*!
+	Returns the number of subdivision of a whole circle, given radius and
+	the three special variables $fn, $fs and $fa
+*/
 int get_fragments_from_r(double r, double fn, double fs, double fa)
 {
 	if (fn > 0.0)
