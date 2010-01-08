@@ -200,23 +200,22 @@ QString ImportNode::dump(QString indent) const
 {
 	if (dump_cache.isEmpty()) {
 		QString text;
+		struct stat st;
+		memset(&st, 0, sizeof(struct stat));
+		stat(filename.toAscii().data(), &st);
 		if (type == TYPE_STL)
-			text.sprintf("import_stl(filename = \"%s\", convexity = %d);\n",
-					filename.toAscii().data(), convexity);
+			text.sprintf("import_stl(file = \"%s\", cache = \"%x.%x\", convexity = %d);\n",
+					filename.toAscii().data(), (int)st.st_mtime, (int)st.st_size, convexity);
 		if (type == TYPE_OFF)
-			text.sprintf("import_off(filename = \"%s\", convexity = %d);\n",
-					filename.toAscii().data(), convexity);
-		if (type == TYPE_DXF) {
-			struct stat st;
-			memset(&st, 0, sizeof(struct stat));
-			stat(filename.toAscii().data(), &st);
+			text.sprintf("import_off(file = \"%s\", cache = \"%x.%x\", convexity = %d);\n",
+					filename.toAscii().data(), (int)st.st_mtime, (int)st.st_size, convexity);
+		if (type == TYPE_DXF)
 			text.sprintf("import_dxf(file = \"%s\", cache = \"%x.%x\", layer = \"%s\", "
 					"origin = [ %f %f ], scale = %f, convexity = %d, "
 					"$fn = %f, $fa = %f, $fs = %f);\n",
 					filename.toAscii().data(), (int)st.st_mtime, (int)st.st_size,
 					layername.toAscii().data(), origin_x, origin_y, scale, convexity,
 					fn, fs, fa);
-		}
 		((AbstractNode*)this)->dump_cache = indent + QString("n%1: ").arg(idx) + text;
 	}
 	return dump_cache;
