@@ -518,10 +518,8 @@ void MainWindow::compile(bool procevents)
 		QApplication::processEvents();
 
 	AbstractNode::idx_counter = 1;
-	{
-		ModuleInstantiation root_inst;
-		absolute_root_node = root_module->evaluate(&root_ctx, &root_inst);
-	}
+	root_inst = ModuleInstantiation();
+	absolute_root_node = root_module->evaluate(&root_ctx, &root_inst);
 
 	if (!absolute_root_node)
 		goto fail;

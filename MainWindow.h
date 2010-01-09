@@ -21,6 +21,7 @@ public:
 
 	Context root_ctx;
 	AbstractModule *root_module;      // Result of parsing
+	ModuleInstantiation root_inst;    // Top level instance
 	AbstractNode *absolute_root_node; // Result of tree evaluation
 	AbstractNode *root_node;          // Root if the root modifier (!) is used
 
