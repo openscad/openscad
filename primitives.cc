@@ -397,10 +397,11 @@ sphere_next_r2:
 			p->append_poly();
 			for (int j=0; j<triangles.vec[i]->vec.size(); j++) {
 				int pt = triangles.vec[i]->vec[j]->num;
-				double px = points.vec[pt]->vec[0]->num;
-				double py = points.vec[pt]->vec[1]->num;
-				double pz = points.vec[pt]->vec[2]->num;
-				p->insert_vertex(px, py, pz);
+				if (pt < points.vec.size()) {
+					double px, py, pz;
+					if (points.vec[pt]->getv3(px, py, pz))
+						p->insert_vertex(px, py, pz);
+				}
 			}
 		}
 	}
@@ -463,11 +464,15 @@ sphere_next_r2:
 		{
 			dd.paths.append(DxfData::Path());
 			for (int i=0; i<points.vec.size(); i++) {
-				DxfData::Point *p = &dd.points[i];
-				dd.paths.last().points.append(p);
+				if (i < dd.points.size()) {
+					DxfData::Point *p = &dd.points[i];
+					dd.paths.last().points.append(p);
+				}
 			}
-			dd.paths.last().points.append(dd.paths.last().points.first());
-			dd.paths.last().is_closed = true;
+			if (dd.paths.last().points.size() > 0) {
+				dd.paths.last().points.append(dd.paths.last().points.first());
+				dd.paths.last().is_closed = true;
+			}
 		}
 		else
 		{
