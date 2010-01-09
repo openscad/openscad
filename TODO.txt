@@ -52,7 +52,6 @@ o Language Frontend
   - Allow using the childs of a module instance inside the module
   - Allow local variables and functions everywhere (not only on module level)
 o DXF Import
-  - Support for LWPOLYLINE entity
   - Support for POLYLINE entity
   - Support for SPLINE entity
 o Misc
