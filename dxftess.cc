@@ -304,14 +304,14 @@ void dxf_tesselate(PolySet *ps, DxfData *dxf, double rot, bool up, bool do_trian
 				int ai = (int)floor(atan2(fabs(tess_tri[i].p[(k+1)%3][0] - tess_tri[i].p[k][0]),
 						fabs(tess_tri[i].p[(k+1)%3][1] - tess_tri[i].p[k][1])) / 0.001 - 0.5);
 				for (int j = 0; j < 2; j++) {
-					foreach (QPair_ii jl, tri_by_atan2.values(ai+j))
+					foreach (const QPair_ii &jl, tri_by_atan2.values(ai+j))
 						if (i != jl.first)
 							possible_neigh[jl] = jl;
 				}
 #ifdef DEBUG_TRIANGLE_SPLITTING
 				printf("%d/%d: %d\n", i, k, possible_neigh.count());
 #endif
-				foreach (QPair_ii jl, possible_neigh) {
+				foreach (const QPair_ii &jl, possible_neigh) {
 					int j = jl.first;
 					for (int l = jl.second; l != (jl.second + 2) % 3; l = (l + 1) % 3)
 					if (point_on_line(tess_tri[i].p[k], tess_tri[j].p[l], tess_tri[i].p[(k+1)%3])) {
