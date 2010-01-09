@@ -57,4 +57,5 @@ o DXF Import
   - Support for SPLINE entity
 o Misc
   - Add symbolic colors to the color() statement
+  - Go through default values of parameters (e.g. cube() has x,y,z=1 while linear_extrude() has height=100)
 
