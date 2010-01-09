@@ -1,10 +1,33 @@
 #!/bin/sh
-# WARNING: This script might only work with the authors setup...
+#
+# This script creates a binary release of OpenSCAD for Mac OS X.
+# The script will create a file called openscad-<versionstring>.zip
+# in the current directory.
+# 
+# Usage: makedmg.sh [-v <versionstring>]
+#  -v   Version string (e.g. -v 2010.01)
+#
+# If no version string is given, todays date will be used (YYYY-MM-DD)
+#
+printUsage()
+{
+  echo "Usage: $0 -v <versionstring>"
+  echo
+  echo "  Example: $0 -v 2010.01"
+}
 
-VERSION=`date "+%Y.%m.%d"`
-#VERSION=2010.01
+while getopts 'v:' c
+do
+  case $c in
+    v) VERSION=$OPTARG;;
+  esac
+done
 
-echo "Building.."
+if test -z "$VERSION"; then
+  VERSION=`date "+%Y.%m.%d"`
+fi
+
+echo "Building openscad-$VERSION..."
 export OPENCSGDIR=$PWD/../OpenCSG-1.2.0
 qmake VERSION=$VERSION CONFIG+=mdi
 make clean
