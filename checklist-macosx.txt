@@ -7,7 +7,7 @@ o Build CGAL:
 
 o Patch OpenCSG
 
-  cd OpenCSG-1.1.1
+  cd OpenCSG-1.2.0
   patch -p1 < ../openscad/OpenCSG-MacOSX-port.patch
   patch -p1 < ../openscad/OpenCSG-1.2.0-Reset-Hack.patch      # Only if MDI
 
@@ -18,8 +18,6 @@ o Build OpenCSG
   
 o Build and Deploy OpenSCAD
 
-# Update OPENSCAD_VERSION in release-macosx.sh
-# If MDI: edit openscad.pro and enable CONFIG += mdi
-# FIXME: Debug vs. release flags
+# Update VERSION in release-macosx.sh
   cd openscad
   ./release-macosx.sh
