@@ -91,7 +91,7 @@ module parts()
 	shape_outer_disc();
 
 	for (s = [ [1,1], [-1,1], [1,-1] ])
-		render() scale(s) translate([ tripod_x_off, -tripod_y_off ]) shape_tripod();
+		scale(s) translate([ tripod_x_off, -tripod_y_off ]) shape_tripod();
 }
 
 module exploded()
@@ -139,6 +139,6 @@ module assembled()
 	% translate([ 0, 0, thickness*2]) bottle();
 }
 
-// parts();
+parts();
 // exploded();
-assembled();
+// assembled();

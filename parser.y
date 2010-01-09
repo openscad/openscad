@@ -71,14 +71,17 @@ public:
 
 %token LE GE EQ NE AND OR
 
-%left '[' ']'
-%left '!' '+' '-'
-%left '*' '/' '%'
-%left '.'
+%left OR
+%left AND
+
 %left '<' LE GE '>'
 %left EQ NE
-%left AND
-%left OR
+
+%left '!' '+' '-'
+%left '*' '/' '%'
+%left '[' ']'
+%left '.'
+
 %right '?' ':'
 
 %type <expr> expr
