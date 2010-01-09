@@ -26,6 +26,7 @@
 enum transform_type_e {
 	SCALE,
 	ROTATE,
+	MIRROR,
 	TRANSLATE,
 	MULTMATRIX,
 	COLOR
@@ -68,6 +69,9 @@ AbstractNode *TransformModule::evaluate(const Context *ctx, const ModuleInstanti
 	}
 	if (type == ROTATE) {
 		argnames = QVector<QString>() << "a" << "v";
+	}
+	if (type == MIRROR) {
+		argnames = QVector<QString>() << "v";
 	}
 	if (type == TRANSLATE) {
 		argnames = QVector<QString>() << "v";
@@ -141,25 +145,53 @@ AbstractNode *TransformModule::evaluate(const Context *ctx, const ModuleInstanti
 				if (x != 0.0 || y != 0.0 || z != 0.0) {
 					double sn = 1.0 / sqrt(x*x + y*y + z*z);
 					x *= sn, y *= sn, z *= sn;
-				} else {
-					x = 0, y = 0, z = 1;
 				}
 			}
 
-			double c = cos(a*M_PI/180.0);
-			double s = sin(a*M_PI/180.0);
+			if (x != 0.0 || y != 0.0 || z != 0.0)
+			{
+				double c = cos(a*M_PI/180.0);
+				double s = sin(a*M_PI/180.0);
 
-			node->m[ 0] = x*x*(1-c)+c;
-			node->m[ 1] = y*x*(1-c)+z*s;
-			node->m[ 2] = z*x*(1-c)-y*s;
+				node->m[ 0] = x*x*(1-c)+c;
+				node->m[ 1] = y*x*(1-c)+z*s;
+				node->m[ 2] = z*x*(1-c)-y*s;
 
-			node->m[ 4] = x*y*(1-c)-z*s;
-			node->m[ 5] = y*y*(1-c)+c;
-			node->m[ 6] = z*y*(1-c)+x*s;
+				node->m[ 4] = x*y*(1-c)-z*s;
+				node->m[ 5] = y*y*(1-c)+c;
+				node->m[ 6] = z*y*(1-c)+x*s;
 
-			node->m[ 8] = x*z*(1-c)+y*s;
-			node->m[ 9] = y*z*(1-c)-x*s;
-			node->m[10] = z*z*(1-c)+c;
+				node->m[ 8] = x*z*(1-c)+y*s;
+				node->m[ 9] = y*z*(1-c)-x*s;
+				node->m[10] = z*z*(1-c)+c;
+			}
+		}
+	}
+	if (type == MIRROR)
+	{
+		Value val_v = c.lookup_variable("v");
+		double x = 1, y = 0, z = 0;
+	
+		if (val_v.getv3(x, y, z)) {
+			if (x != 0.0 || y != 0.0 || z != 0.0) {
+				double sn = 1.0 / sqrt(x*x + y*y + z*z);
+				x *= sn, y *= sn, z *= sn;
+			}
+		}
+
+		if (x != 0.0 || y != 0.0 || z != 0.0)
+		{
+			node->m[ 0] = 1-2*x*x;
+			node->m[ 1] = -2*y*x;
+			node->m[ 2] = -2*z*x;
+
+			node->m[ 4] = -2*x*y;
+			node->m[ 5] = 1-2*y*y;
+			node->m[ 6] = -2*z*y;
+
+			node->m[ 8] = -2*x*z;
+			node->m[ 9] = -2*y*z;
+			node->m[10] = 1-2*z*z;
 		}
 	}
 	if (type == TRANSLATE)
@@ -329,6 +361,7 @@ void register_builtin_transform()
 {
 	builtin_modules["scale"] = new TransformModule(SCALE);
 	builtin_modules["rotate"] = new TransformModule(ROTATE);
+	builtin_modules["mirror"] = new TransformModule(MIRROR);
 	builtin_modules["translate"] = new TransformModule(TRANSLATE);
 	builtin_modules["multmatrix"] = new TransformModule(MULTMATRIX);
 	builtin_modules["color"] = new TransformModule(COLOR);
