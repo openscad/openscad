@@ -22,6 +22,7 @@
 #include "printutils.h"
 
 #include <QFile>
+#include <QTextStream>
 
 struct Line {
 	typedef DxfData::Point Point;
@@ -44,6 +45,7 @@ DxfData::DxfData(double fn, double fs, double fa, QString filename, QString laye
 		PRINTF("WARNING: Can't open DXF file `%s'.", filename.toAscii().data());
 		return;
 	}
+	QTextStream stream(&f);
 
 	QList<Line> lines;
 	Grid2d< QVector<int> > grid;
@@ -83,16 +85,18 @@ DxfData::DxfData(double fn, double fs, double fa, QString filename, QString laye
 
 	QHash<QString, int> unsupported_entities_list;
 
-	while (!f.atEnd())
+	while (!stream.atEnd())
 	{
-		QString id_str = QString(f.readLine()).remove("\n");
-		QString data = QString(f.readLine()).remove("\n");
+		QString id_str = stream.readLine();
+		QString data = stream.readLine();
 
 		bool status;
 		int id = id_str.toInt(&status);
 
-		if (!status)
+		if (!status) {
+			PRINTA("WARNING: Illegal ID `%1' in `%3'.", id_str, filename);
 			break;
+		}
 
 		if (id >= 10 && id <= 16) {
 			if (id == 11 || id == 12 || id == 16)
@@ -115,10 +119,10 @@ DxfData::DxfData(double fn, double fs, double fa, QString filename, QString laye
 				in_entities_section = iddata == "ENTITIES";
 				in_blocks_section = iddata == "BLOCKS";
 			}
-			if (mode == "LINE") {
+			else if (mode == "LINE") {
 				ADD_LINE(x1, y1, x2, y2);
 			}
-			if (mode == "CIRCLE") {
+			else if (mode == "CIRCLE") {
 				int n = get_fragments_from_r(radius, fn, fs, fa);
 				for (int i = 0; i < n; i++) {
 					double a1 = (2*M_PI*i)/n;
@@ -127,7 +131,7 @@ DxfData::DxfData(double fn, double fs, double fa, QString filename, QString laye
 									 cos(a2)*radius + x1, sin(a2)*radius + y1);
 				}
 			}
-			if (mode == "ARC") {
+			else if (mode == "ARC") {
 				int n = get_fragments_from_r(radius, fn, fs, fa);
 				while (start_angle > stop_angle)
 					stop_angle += 360.0;
@@ -141,7 +145,54 @@ DxfData::DxfData(double fn, double fs, double fa, QString filename, QString laye
 									 cos(a2)*radius + x1, sin(a2)*radius + y1);
 				}
 			}
-			if (mode == "INSERT") {
+			else if (mode == "ELLIPSE") {
+				// Commented code is meant as documentation of vector math
+				while (start_angle > stop_angle) stop_angle += 2 * M_PI;
+//				Vector2d center(x1, y1);
+				Point center(x1, y1);
+//				Vector2d ce(x2, y2);
+				Point ce(x2, y2);
+//				double r_major = ce.length();
+				double r_major = sqrt(ce.x*ce.x + ce.y*ce.y);
+//				double rot_angle = ce.angle();
+				double rot_angle;
+				{
+//					double dot = ce.dot(Vector2d(1.0, 0.0));
+					double dot = ce.x;
+					double cosval = dot / r_major;
+					if (cosval > 1.0) cosval = 1.0;
+					if (cosval < -1.0) cosval = -1.0;
+					rot_angle = acos(cosval);
+					if (ce.y < 0.0) rot_angle = 2 * M_PI - rot_angle;
+				}
+
+				// the ratio stored in 'radius; due to the parser code not checking entity type
+				double r_minor = r_major * radius;
+				double sweep_angle = stop_angle-start_angle;
+				int n = get_fragments_from_r(r_major, fn, fs, fa);
+				n = (int)ceil(n * sweep_angle / (2 * M_PI));
+//				Vector2d p1;
+				Point p1;
+				for (int i=0;i<=n;i++) {
+					double a = (start_angle + sweep_angle*i/n);
+//					Vector2d p2(cos(a)*r_major, sin(a)*r_minor);
+					Point p2(cos(a)*r_major, sin(a)*r_minor);
+//					p2.rotate(rot_angle);
+					Point p2_rot(cos(rot_angle)*p2.x - sin(rot_angle)*p2.y,
+											 sin(rot_angle)*p2.x + cos(rot_angle)*p2.y);
+//					p2 += center;
+					p2_rot.x += center.x;
+					p2_rot.y += center.y;
+					if (i > 0) {
+// 						ADD_LINE(p1[0], p1[1], p2[0], p2[1]);
+						ADD_LINE(p1.x, p1.y, p2_rot.x, p2_rot.y);
+					}
+//					p1 = p2;
+					p1.x = p2_rot.x;
+					p1.y = p2_rot.y;
+				}
+			}
+			else if (mode == "INSERT") {
 				int n = blockdata[iddata].size();
 				for (int i = 0; i < n; i++) {
 					double a = -start_angle * M_PI / 180.0;
@@ -156,7 +207,7 @@ DxfData::DxfData(double fn, double fs, double fa, QString filename, QString laye
 					ADD_LINE(px1, py1, px2, py2);
 				}
 			}
-			if (mode == "DIMENSION" &&
+			else if (mode == "DIMENSION" &&
 					(layername.isNull() || layername == layer)) {
 				dims.append(Dim());
 				dims.last().type = dimtype;
@@ -166,17 +217,16 @@ DxfData::DxfData(double fn, double fs, double fa, QString filename, QString laye
 				dims.last().angle = start_angle;
 				dims.last().name = name;
 			}
-			if (mode == "BLOCK") {
+			else if (mode == "BLOCK") {
 				current_block = iddata;
 			}
-			if (mode == "ENDBLK") {
+			else if (mode == "ENDBLK") {
 				current_block = QString();
 			}
-			if (in_blocks_section || (in_entities_section &&
+			else if (mode == "ENDSEC") {
+			}
+			else if (in_blocks_section || (in_entities_section &&
 																(layername.isNull() || layername == layer))) {
-				if (mode != "SECTION" && mode != "ENDSEC" && mode != "DIMENSION" &&
-						mode != "LINE" && mode != "ARC" && mode != "CIRCLE" &&
-						mode != "BLOCK" && mode != "ENDBLK" && mode != "INSERT")
 					unsupported_entities_list[mode]++;
 			}
 			mode = data;
@@ -214,10 +264,12 @@ DxfData::DxfData(double fn, double fs, double fa, QString filename, QString laye
 		case 40:
 			radius = data.toDouble() * scale;
 			break;
-		case 50:
+		case 41: // for ELLIPSE
+		case 50: // for ARC
 			start_angle = data.toDouble();
 			break;
-		case 51:
+		case 42: // for ELLIPSE
+		case 51: // for ARC
 			stop_angle = data.toDouble();
 			break;
 		case 70:
