@@ -139,6 +139,6 @@ module assembled()
 	% translate([ 0, 0, thickness*2]) bottle();
 }
 
-parts();
+// parts();
 // exploded();
-// assembled();
+assembled();
