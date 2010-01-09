@@ -76,7 +76,8 @@ DxfData::DxfData(double fn, double fs, double fa, QString filename, QString laye
 	QString mode, layer, name, iddata;
 	int dimtype = 0;
 	double coords[7][2];
-	double x1 = 0, x2 = 0, y1 = 0, y2 = 0;
+	QVector<double> xverts;
+	QVector<double> yverts;
 	double radius = 0, start_angle = 0, stop_angle = 0;
 
 	for (int i = 0; i < 7; i++)
@@ -120,18 +121,31 @@ DxfData::DxfData(double fn, double fs, double fa, QString filename, QString laye
 				in_blocks_section = iddata == "BLOCKS";
 			}
 			else if (mode == "LINE") {
-				ADD_LINE(x1, y1, x2, y2);
+				ADD_LINE(xverts[0], yverts[0], xverts[1], yverts[1]);
+			}
+			else if (mode == "LWPOLYLINE") {
+				assert(xverts.size() == yverts.size());
+				// polyline flag is stored in 'dimtype'
+				int numverts = xverts.size();
+				for (int i=1;i<numverts;i++) {
+					ADD_LINE(xverts[i-1], yverts[i-1], xverts[i%numverts], yverts[i%numverts]);
+				}
+				if (dimtype & 0x01) { // closed polyline
+					ADD_LINE(xverts[numverts-1], yverts[numverts-1], xverts[0], yverts[0]);
+				}
 			}
 			else if (mode == "CIRCLE") {
 				int n = get_fragments_from_r(radius, fn, fs, fa);
+				Point center(xverts[0], yverts[0]);
 				for (int i = 0; i < n; i++) {
 					double a1 = (2*M_PI*i)/n;
 					double a2 = (2*M_PI*(i+1))/n;
-					ADD_LINE(cos(a1)*radius + x1, sin(a1)*radius + y1,
-									 cos(a2)*radius + x1, sin(a2)*radius + y1);
+					ADD_LINE(cos(a1)*radius + center.x, sin(a1)*radius + center.y,
+									 cos(a2)*radius + center.x, sin(a2)*radius + center.y);
 				}
 			}
 			else if (mode == "ARC") {
+				Point center(xverts[0], yverts[0]);
 				int n = get_fragments_from_r(radius, fn, fs, fa);
 				while (start_angle > stop_angle)
 					stop_angle += 360.0;
@@ -141,17 +155,17 @@ DxfData::DxfData(double fn, double fs, double fa, QString filename, QString laye
 					double a2 = ((stop_angle-start_angle)*(i+1))/n;
 					a1 = (start_angle + a1) * M_PI / 180.0;
 					a2 = (start_angle + a2) * M_PI / 180.0;
-					ADD_LINE(cos(a1)*radius + x1, sin(a1)*radius + y1,
-									 cos(a2)*radius + x1, sin(a2)*radius + y1);
+					ADD_LINE(cos(a1)*radius + center.x, sin(a1)*radius + center.y,
+									 cos(a2)*radius + center.x, sin(a2)*radius + center.y);
 				}
 			}
 			else if (mode == "ELLIPSE") {
 				// Commented code is meant as documentation of vector math
 				while (start_angle > stop_angle) stop_angle += 2 * M_PI;
-//				Vector2d center(x1, y1);
-				Point center(x1, y1);
-//				Vector2d ce(x2, y2);
-				Point ce(x2, y2);
+//				Vector2d center(xverts[0], yverts[0]);
+				Point center(xverts[0], yverts[0]);
+//				Vector2d ce(xverts[1], yverts[1]);
+				Point ce(xverts[1], yverts[1]);
 //				double r_major = ce.length();
 				double r_major = sqrt(ce.x*ce.x + ce.y*ce.y);
 //				double rot_angle = ce.angle();
@@ -200,10 +214,10 @@ DxfData::DxfData(double fn, double fs, double fa, QString filename, QString laye
 					double ly1 = blockdata[iddata][i].p[0]->y;
 					double lx2 = blockdata[iddata][i].p[1]->x;
 					double ly2 = blockdata[iddata][i].p[1]->y;
-					double px1 = cos(a)*lx1 + sin(a)*ly1 + x1;
-					double py1 = sin(a)*lx1 + cos(a)*ly1 + y1;
-					double px2 = cos(a)*lx2 + sin(a)*ly2 + x1;
-					double py2 = sin(a)*lx2 + cos(a)*ly2 + y1;
+					double px1 = cos(a)*lx1 + sin(a)*ly1 + xverts[0];
+					double py1 = sin(a)*lx1 + cos(a)*ly1 + yverts[0];
+					double px2 = cos(a)*lx2 + sin(a)*ly2 + xverts[0];
+					double py2 = sin(a)*lx2 + cos(a)*ly2 + yverts[0];
 					ADD_LINE(px1, py1, px2, py2);
 				}
 			}
@@ -237,7 +251,8 @@ DxfData::DxfData(double fn, double fs, double fa, QString filename, QString laye
 			for (int i = 0; i < 7; i++)
 				for (int j = 0; j < 2; j++)
 					coords[i][j] = 0;
-			x1 = x2 = y1 = y2 = 0;
+			xverts.clear();
+			yverts.clear();
 			radius = start_angle = stop_angle = 0;
 			break;
 		case 1:
@@ -250,18 +265,20 @@ DxfData::DxfData(double fn, double fs, double fa, QString filename, QString laye
 			layer = data;
 			break;
 		case 10:
-			x1 = (data.toDouble() - xorigin) * scale;
+			xverts.append((data.toDouble() - xorigin) * scale);
 			break;
 		case 11:
-			x2 = (data.toDouble() - xorigin) * scale;
+			xverts.append((data.toDouble() - xorigin) * scale);
 			break;
 		case 20:
-			y1 = (data.toDouble() - yorigin) * scale;
+			yverts.append((data.toDouble() - yorigin) * scale);
 			break;
 		case 21:
-			y2 = (data.toDouble() - yorigin) * scale;
+			yverts.append((data.toDouble() - yorigin) * scale);
 			break;
 		case 40:
+			// CIRCLE, ARC: radius
+			// ELLIPSE: minor to major ratio
 			radius = data.toDouble() * scale;
 			break;
 		case 41: // for ELLIPSE
@@ -273,6 +290,8 @@ DxfData::DxfData(double fn, double fs, double fa, QString filename, QString laye
 			stop_angle = data.toDouble();
 			break;
 		case 70:
+			// LWPOLYLINE: polyline flag
+			// DIMENSION: dimension type
 			dimtype = data.toInt();
 			break;
 		}
