@@ -65,6 +65,10 @@ opencsg {
 QMAKE_CXXFLAGS_RELEASE = -O3 -march=pentium
 QMAKE_CXXFLAGS_DEBUG = -O0 -ggdb
 
+# QMAKE_CFLAGS   += -pg
+# QMAKE_CXXFLAGS += -pg
+# QMAKE_LFLAGS   += -pg
+
 LEXSOURCES += lexer.l
 YACCSOURCES += parser.y
 
