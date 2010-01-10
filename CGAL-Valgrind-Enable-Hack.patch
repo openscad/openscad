@@ -1,0 +1,16 @@
+--- CGAL-3.4/include/CGAL/Interval_nt.h
++++ CGAL-3.4/include/CGAL/Interval_nt.h
+@@ -149,11 +149,13 @@
+       // The macros CGAL_IA_MUL and CGAL_IA_DIV stop constant propagation only
+       // on the second argument, so if -fno-rounding-math, the compiler optimizes
+       // the 2 negations and we get wrong rounding.
++#if 0
+       typename Interval_nt<>::Internal_protector P;
+       CGAL_assertion_msg(-CGAL_IA_MUL(-1.1, 10.1) != CGAL_IA_MUL(1.1, 10.1),
+                          "Wrong rounding: did you forget the -frounding-math option if you use GCC?");
+       CGAL_assertion_msg(-CGAL_IA_DIV(-1, 10) != CGAL_IA_DIV(1, 10),
+                          "Wrong rounding: did you forget the -frounding-math option if you use GCC?");
++#endif
+     }
+   };
+ 
