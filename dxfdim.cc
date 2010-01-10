@@ -21,6 +21,13 @@
 #include "openscad.h"
 #include "printutils.h"
 
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+
+QHash<QString,Value> dxf_dim_cache;
+QHash<QString,Value> dxf_cross_cache;
+
 Value builtin_dxf_dim(const QVector<QString> &argnames, const QVector<Value> &args)
 {
 	QString filename;
@@ -43,6 +50,16 @@ Value builtin_dxf_dim(const QVector<QString> &argnames, const QVector<Value> &ar
 			name = args[i].text;
 	}
 
+	struct stat st;
+	memset(&st, 0, sizeof(struct stat));
+	stat(filename.toAscii().data(), &st);
+
+	QString key = filename + "|" + layername + "|" + name + "|" + QString::number(xorigin) + "|" + QString::number(yorigin) +
+			"|" + QString::number(scale) + "|" + QString::number(st.st_mtime) + "|" + QString::number(st.st_size);
+
+	if (dxf_dim_cache.contains(key))
+		return dxf_dim_cache[key];
+
 	DxfData dxf(36, 0, 0, filename, layername, xorigin, yorigin, scale);
 
 	for (int i = 0; i < dxf.dims.count(); i++)
@@ -59,7 +76,7 @@ Value builtin_dxf_dim(const QVector<QString> &argnames, const QVector<Value> &ar
 			double y = d->coords[4][1] - d->coords[3][1];
 			double angle = d->angle;
 			double distance_projected_on_line = fabs(x * cos(angle*M_PI/180) + y * sin(angle*M_PI/180));
-			return Value(distance_projected_on_line);
+			return dxf_dim_cache[key] = Value(distance_projected_on_line);
 		}
 		if (type == 1) {
 			// Aligned
@@ -68,7 +85,7 @@ Value builtin_dxf_dim(const QVector<QString> &argnames, const QVector<Value> &ar
 			// Angular
 			double a1 = atan2(d->coords[0][0] - d->coords[5][0], d->coords[0][1] - d->coords[5][1]);
 			double a2 = atan2(d->coords[4][0] - d->coords[3][0], d->coords[4][1] - d->coords[3][1]);
-			return Value(fabs(a1 - a2) * 180 / M_PI);
+			return dxf_dim_cache[key] = Value(fabs(a1 - a2) * 180 / M_PI);
 		}
 		if (type == 3) {
 			// Diameter
@@ -108,6 +125,16 @@ Value builtin_dxf_cross(const QVector<QString> &argnames, const QVector<Value> &
 			args[i].getnum(scale);
 	}
 
+	struct stat st;
+	memset(&st, 0, sizeof(struct stat));
+	stat(filename.toAscii().data(), &st);
+
+	QString key = filename + "|" + layername + "|" + QString::number(xorigin) + "|" + QString::number(yorigin) +
+			"|" + QString::number(scale) + "|" + QString::number(st.st_mtime) + "|" + QString::number(st.st_size);
+
+	if (dxf_cross_cache.contains(key))
+		return dxf_cross_cache[key];
+
 	DxfData dxf(36, 0, 0, filename, layername, xorigin, yorigin, scale);
 
 	double coords[4][2];
@@ -136,7 +163,7 @@ Value builtin_dxf_cross(const QVector<QString> &argnames, const QVector<Value> &
 			ret.type = Value::VECTOR;
 			ret.vec.append(new Value(x));
 			ret.vec.append(new Value(y));
-			return ret;
+			return dxf_cross_cache[key] = ret;
 		}
 	}
 

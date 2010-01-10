@@ -684,6 +684,9 @@ public:
 	static CSGTerm *render_csg_term_from_ps(double m[20], QVector<CSGTerm*> *highlights, QVector<CSGTerm*> *background, PolySet *ps, const ModuleInstantiation *modinst, int idx);
 };
 
+extern QHash<QString,Value> dxf_dim_cache;
+extern QHash<QString,Value> dxf_cross_cache;
+
 extern int progress_report_count;
 extern void (*progress_report_f)(const class AbstractNode*, void*, int);
 extern void *progress_report_vp;

@@ -1133,6 +1133,8 @@ void MainWindow::actionFlushCaches()
 {
 	PolySet::ps_cache.clear();
 	AbstractNode::cgal_nef_cache.clear();
+	dxf_dim_cache.clear();
+	dxf_cross_cache.clear();
 }
 
 void MainWindow::viewModeActionsUncheck()
