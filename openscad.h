@@ -445,7 +445,7 @@ public:
 	DxfData(double fn, double fs, double fa, QString filename, QString layername = QString(), double xorigin = 0.0, double yorigin = 0.0, double scale = 1.0);
 	DxfData(const struct CGAL_Nef_polyhedron &N);
 
-	Point *p(double x, double y);
+	Point *addPoint(double x, double y);
 
 private:
 	void fixup_path_direction();
