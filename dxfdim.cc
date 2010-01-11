@@ -97,11 +97,11 @@ Value builtin_dxf_dim(const QVector<QString> &argnames, const QVector<Value> &ar
 			// Angular 3 Point
 		}
 
-		PRINTA("WARINING: Dimension `%1' in `%2', layer `%3' has unsupported type!", name, filename, layername);
+		PRINTA("WARNING: Dimension `%1' in `%2', layer `%3' has unsupported type!", name, filename, layername);
 		return Value();
 	}
 
-	PRINTA("WARINING: Can't find dimension `%1' in `%2', layer `%3'!", name, filename, layername);
+	PRINTA("WARNING: Can't find dimension `%1' in `%2', layer `%3'!", name, filename, layername);
 
 	return Value();
 }
@@ -167,7 +167,7 @@ Value builtin_dxf_cross(const QVector<QString> &argnames, const QVector<Value> &
 		}
 	}
 
-	PRINTA("WARINING: Can't find cross in `%1', layer `%2'!", filename, layername);
+	PRINTA("WARNING: Can't find cross in `%1', layer `%2'!", filename, layername);
 
 	return Value();
 }
