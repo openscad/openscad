@@ -32,6 +32,9 @@ o 3D View
   - Add modifier key combos to handle pan on 1 mouse button systems
   - Show grid
   - 4 x split view w/orthogonal cameras?
+o Misc
+  - Reload and compile: Ask for confirmation if file is locally edited
+    (make this configurable in preferences?)
 
 INFRASTRUCTURE
 --------------
