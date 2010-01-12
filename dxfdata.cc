@@ -430,37 +430,35 @@ DxfData::DxfData(double fn, double fs, double fa, QString filename, QString laye
 
 void DxfData::fixup_path_direction()
 {
-	if (this->paths.count() > 0) {
-		for (int i = 0; i < this->paths.count(); i++) {
-			if (!this->paths[i].is_closed)
-				break;
-			this->paths[i].is_inner = true;
-			double min_x = this->paths[i].points[0]->x;
-			int min_x_point = 0;
-			for (int j = 0; j < this->paths[i].points.count(); j++) {
-				if (this->paths[i].points[j]->x < min_x) {
-					min_x = this->paths[i].points[j]->x;
-					min_x_point = j;
-				}
+	for (int i = 0; i < this->paths.count(); i++) {
+		if (!this->paths[i].is_closed)
+			break;
+		this->paths[i].is_inner = true;
+		double min_x = this->paths[i].points[0]->x;
+		int min_x_point = 0;
+		for (int j = 0; j < this->paths[i].points.count(); j++) {
+			if (this->paths[i].points[j]->x < min_x) {
+				min_x = this->paths[i].points[j]->x;
+				min_x_point = j;
 			}
-			// rotate points if the path is in non-standard rotation
-			int b = min_x_point;
-			int a = b == 0 ? this->paths[i].points.count() - 2 : b - 1;
-			int c = b == this->paths[i].points.count() - 1 ? 1 : b + 1;
-			double ax = this->paths[i].points[a]->x - this->paths[i].points[b]->x;
-			double ay = this->paths[i].points[a]->y - this->paths[i].points[b]->y;
-			double cx = this->paths[i].points[c]->x - this->paths[i].points[b]->x;
-			double cy = this->paths[i].points[c]->y - this->paths[i].points[b]->y;
+		}
+		// rotate points if the path is in non-standard rotation
+		int b = min_x_point;
+		int a = b == 0 ? this->paths[i].points.count() - 2 : b - 1;
+		int c = b == this->paths[i].points.count() - 1 ? 1 : b + 1;
+		double ax = this->paths[i].points[a]->x - this->paths[i].points[b]->x;
+		double ay = this->paths[i].points[a]->y - this->paths[i].points[b]->y;
+		double cx = this->paths[i].points[c]->x - this->paths[i].points[b]->x;
+		double cy = this->paths[i].points[c]->y - this->paths[i].points[b]->y;
 #if 0
-			printf("Rotate check:\n");
-			printf("  a/b/c indices = %d %d %d\n", a, b, c);
-			printf("  b->a vector = %f %f (%f)\n", ax, ay, atan2(ax, ay));
-			printf("  b->c vector = %f %f (%f)\n", cx, cy, atan2(cx, cy));
+		printf("Rotate check:\n");
+		printf("  a/b/c indices = %d %d %d\n", a, b, c);
+		printf("  b->a vector = %f %f (%f)\n", ax, ay, atan2(ax, ay));
+		printf("  b->c vector = %f %f (%f)\n", cx, cy, atan2(cx, cy));
 #endif
-			if (atan2(ax, ay) < atan2(cx, cy)) {
-				for (int j = 0; j < this->paths[i].points.count()/2; j++)
-					this->paths[i].points.swap(j, this->paths[i].points.count()-1-j);
-			}
+		if (atan2(ax, ay) < atan2(cx, cy)) {
+			for (int j = 0; j < this->paths[i].points.count()/2; j++)
+				this->paths[i].points.swap(j, this->paths[i].points.count()-1-j);
 		}
 	}
 }
