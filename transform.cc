@@ -101,7 +101,7 @@ AbstractNode *TransformModule::evaluate(const Context *ctx, const ModuleInstanti
 		Value val_a = c.lookup_variable("a");
 		if (val_a.type == Value::VECTOR)
 		{
-			for (int i = 0; i < 3; i++) {
+			for (int i = 0; i < 3 && i < val_a.vec.size(); i++) {
 				double a;
 				val_a.vec[i]->getnum(a);
 				double c = cos(a*M_PI/180.0);
