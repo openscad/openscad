@@ -98,7 +98,7 @@ extern const char *parser_input_buffer;
 }
 
 [\n\r\t ]
-\/\/[^\n]*\n
+\/\/[^\n]*\n?
 "/*" BEGIN(comment);
 <comment>"*/" BEGIN(INITIAL);
 <comment>.|\n
