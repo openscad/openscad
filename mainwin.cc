@@ -617,7 +617,22 @@ void MainWindow::compile(bool procevents)
 			QApplication::processEvents();
 	} else {
 fail:
-		PRINT("ERROR: Compilation failed!");
+		if (parser_error_pos < 0) {
+			PRINT("ERROR: Compilation failed! (no top level object found)");
+		} else {
+			int line = 1;
+			QByteArray pb = last_compiled_doc.toAscii();
+			char *p = pb.data();
+			for (int i = 0; i < parser_error_pos; i++) {
+				if (p[i] == '\n')
+					line++;
+				if (p[i] == 0) {
+					line = -1;
+					break;
+				}
+			}
+			PRINTF("ERROR: Compilation failed! (parser error in line %d)", line);
+		}
 		if (procevents)
 			QApplication::processEvents();
 	}
