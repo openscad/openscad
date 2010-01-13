@@ -193,6 +193,34 @@ Value builtin_str(const QVector<QString>&, const QVector<Value> &args)
 	return Value(str);
 }
 
+Value builtin_list(const QVector<QString>&, const QVector<Value> &args)
+{
+	double p, low_p, low_v, high_p, high_v;
+	if (args.size() < 2 || !args[0].getnum(p) || args[1].vec.size() < 2 || args[1].vec[0]->vec.size() < 2)
+		return Value();
+	if (!args[1].vec[0]->getv2(low_p, low_v) || !args[1].vec[0]->getv2(high_p, high_v))
+		return Value();
+	for (int i = 1; i < args[1].vec.size(); i++) {
+		double this_p, this_v;
+		if (args[1].vec[i]->getv2(this_p, this_v)) {
+			if (this_p <= p && (this_p > low_p || low_p > p)) {
+				low_p = this_p;
+				low_v = this_v;
+			}
+			if (this_p >= p && (this_p < high_p || high_p < p)) {
+				high_p = this_p;
+				high_v = this_v;
+			}
+		}
+	}
+	if (p <= low_p)
+		return Value(low_v);
+	if (p >= high_p)
+		return Value(high_v);
+	double f = (p-low_p) / (high_p-low_p);
+	return Value(high_v * f + low_v * (1-f));
+}
+
 void initialize_builtin_functions()
 {
 	builtin_functions["min"] = new BuiltinFunction(&builtin_min);
@@ -206,6 +234,7 @@ void initialize_builtin_functions()
 	builtin_functions["atan2"] = new BuiltinFunction(&builtin_atan2);
 	builtin_functions["pow"] = new BuiltinFunction(&builtin_pow);
 	builtin_functions["str"] = new BuiltinFunction(&builtin_str);
+	builtin_functions["list"] = new BuiltinFunction(&builtin_list);
 	initialize_builtin_dxf_dim();
 }
 
