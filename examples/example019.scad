@@ -1,5 +1,5 @@
 
-function get_cylinder_h(p) = list(p, [
+function get_cylinder_h(p) = lookup(p, [
 		[ -200, 5 ],
 		[ -50, 20 ],
 		[ -20, 18 ],

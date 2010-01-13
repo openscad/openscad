@@ -193,7 +193,7 @@ Value builtin_str(const QVector<QString>&, const QVector<Value> &args)
 	return Value(str);
 }
 
-Value builtin_list(const QVector<QString>&, const QVector<Value> &args)
+Value builtin_lookup(const QVector<QString>&, const QVector<Value> &args)
 {
 	double p, low_p, low_v, high_p, high_v;
 	if (args.size() < 2 || !args[0].getnum(p) || args[1].vec.size() < 2 || args[1].vec[0]->vec.size() < 2)
@@ -234,7 +234,7 @@ void initialize_builtin_functions()
 	builtin_functions["atan2"] = new BuiltinFunction(&builtin_atan2);
 	builtin_functions["pow"] = new BuiltinFunction(&builtin_pow);
 	builtin_functions["str"] = new BuiltinFunction(&builtin_str);
-	builtin_functions["list"] = new BuiltinFunction(&builtin_list);
+	builtin_functions["lookup"] = new BuiltinFunction(&builtin_lookup);
 	initialize_builtin_dxf_dim();
 }
 
