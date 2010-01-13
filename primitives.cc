@@ -481,11 +481,17 @@ sphere_next_r2:
 				dd.paths.append(DxfData::Path());
 				for (int j=0; j<paths.vec[i]->vec.size(); j++) {
 					int idx = paths.vec[i]->vec[j]->num;
-					DxfData::Point *p = &dd.points[idx];
-					dd.paths.last().points.append(p);
+					if (idx < dd.points.size()) {
+						DxfData::Point *p = &dd.points[idx];
+						dd.paths.last().points.append(p);
+					}
 				}
-				dd.paths.last().points.append(dd.paths.last().points.first());
-				dd.paths.last().is_closed = true;
+				if (dd.paths.last().points.isEmpty()) {
+					dd.paths.removeLast();
+				} else {
+					dd.paths.last().points.append(dd.paths.last().points.first());
+					dd.paths.last().is_closed = true;
+				}
 			}
 		}
 
