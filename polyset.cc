@@ -398,17 +398,28 @@ CGAL_Nef_polyhedron PolySet::render_cgal_nef_polyhedron() const
 {
 	if (this->is2d)
 	{
+#if 0
+		// This version of the code causes problems in some cases.
+		// Example testcase: import_dxf("testdata/polygon8.dxf");
+		//
 		typedef std::list<CGAL_Nef_polyhedron2::Point> point_list_t;
 		typedef point_list_t::iterator point_list_it;
 		std::list< point_list_t > pdata_point_lists;
 		std::list < std::pair < point_list_it, point_list_it > > pdata;
+		Grid2d<CGAL_Nef_polyhedron2::Point> grid;
 
 		for (int i = 0; i < this->polygons.size(); i++) {
 			pdata_point_lists.push_back(point_list_t());
 			for (int j = 0; j < this->polygons[i].size(); j++) {
 				double x = this->polygons[i][j].x;
 				double y = this->polygons[i][j].y;
-				CGAL_Nef_polyhedron2::Point p = CGAL_Nef_polyhedron2::Point(x, y);
+				CGAL_Nef_polyhedron2::Point p;
+				if (grid.has(x, y)) {
+					p = grid.data(x, y);
+				} else {
+					p = CGAL_Nef_polyhedron2::Point(x, y);
+					grid.data(x, y) = p;
+				}
 				pdata_point_lists.back().push_back(p);
 			}
 			pdata.push_back(std::make_pair(pdata_point_lists.back().begin(),
@@ -417,6 +428,29 @@ CGAL_Nef_polyhedron PolySet::render_cgal_nef_polyhedron() const
 
 		CGAL_Nef_polyhedron2 N(pdata.begin(), pdata.end(), CGAL_Nef_polyhedron2::POLYGONS);
 		return CGAL_Nef_polyhedron(N);
+#else
+		CGAL_Nef_polyhedron2 N;
+		Grid2d<CGAL_Nef_polyhedron2::Point> grid;
+
+		for (int i = 0; i < this->polygons.size(); i++) {
+			std::list<CGAL_Nef_polyhedron2::Point> plist;
+			for (int j = 0; j < this->polygons[i].size(); j++) {
+				double x = this->polygons[i][j].x;
+				double y = this->polygons[i][j].y;
+				CGAL_Nef_polyhedron2::Point p;
+				if (grid.has(x, y)) {
+					p = grid.data(x, y);
+				} else {
+					p = CGAL_Nef_polyhedron2::Point(x, y);
+					grid.data(x, y) = p;
+				}
+				plist.push_back(p);
+			}
+			N += CGAL_Nef_polyhedron2(plist.begin(), plist.end(), CGAL_Nef_polyhedron2::INCLUDED);
+		}
+
+		return CGAL_Nef_polyhedron(N);
+#endif
 	}
 	else
 	{
