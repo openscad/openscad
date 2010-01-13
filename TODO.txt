@@ -38,6 +38,7 @@ o 3D View
 o Misc
   - Reload and compile: Ask for confirmation if file is locally edited
     (make this configurable in preferences?)
+  - Save: Ask for confirmation if file has been externaly changed
 
 INFRASTRUCTURE
 --------------
