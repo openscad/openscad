@@ -7,6 +7,14 @@ o Tesselation via GLU sometimes produces strange results
 o Non-manifold objects make CGAL crash (e.g. two cubes which touch at one edge)
 o crash: polygon(points=[[0,0],[10,0],[10,10],[0,10]],
                  paths=[[0,1,2],[2,3,1]]);
+o crash: DiscButton_Pegs_Array_20100112.scad
+o CGAL exits process with this message from OGL_helper.h:232:
+  Tessellation Error: need combine callback
+  union() {
+   rotate([45, 0, 0]) cube(50, true);
+   rotate([0, 45, 0]) cube(50, true);
+  }
+
 
 USER INTERFACE
 --------------
