@@ -26,6 +26,7 @@ Context::Context(const Context *parent)
 	this->parent = parent;
 	functions_p = NULL;
 	modules_p = NULL;
+	inst_p = NULL;
 	ctx_stack.append(this);
 }
 

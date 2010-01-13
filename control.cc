@@ -24,6 +24,7 @@
 #include "printutils.h"
 
 enum control_type_e {
+	CHILD,
 	ECHO,
 	ASSIGN,
 	FOR,
@@ -81,6 +82,26 @@ void for_eval(AbstractNode *node, int l, const QVector<QString> &call_argnames, 
 
 AbstractNode *ControlModule::evaluate(const Context*, const ModuleInstantiation *inst) const
 {
+	if (type == CHILD)
+	{
+		int n = 0;
+		if (inst->argvalues.size() > 0) {
+			double v;
+			if (inst->argvalues[0].getnum(v))
+				n = v;
+		}
+		for (int i = Context::ctx_stack.size()-1; i >= 0; i--) {
+			const Context *c = Context::ctx_stack[i];
+			if (c->inst_p) {
+				if (n < c->inst_p->children.size())
+					return c->inst_p->children[n]->evaluate(c->inst_p->ctx);
+				return NULL;
+			}
+			c = c->parent;
+		}
+		return NULL;
+	}
+
 	AbstractNode *node;
 
 	if (type == INT_FOR)
@@ -135,6 +156,7 @@ AbstractNode *ControlModule::evaluate(const Context*, const ModuleInstantiation 
 
 void register_builtin_control()
 {
+	builtin_modules["child"] = new ControlModule(CHILD);
 	builtin_modules["echo"] = new ControlModule(ECHO);
 	builtin_modules["assign"] = new ControlModule(ASSIGN);
 	builtin_modules["for"] = new ControlModule(FOR);

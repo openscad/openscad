@@ -117,6 +117,9 @@ AbstractNode *Module::evaluate(const Context *ctx, const ModuleInstantiation *in
 	Context c(ctx);
 	c.args(argnames, argexpr, inst->argnames, inst->argvalues);
 
+	c.inst_p = inst;
+	c.set_variable("$children", Value(double(inst->children.size())));
+
 	c.functions_p = &functions;
 	c.modules_p = &modules;
 
@@ -127,12 +130,6 @@ AbstractNode *Module::evaluate(const Context *ctx, const ModuleInstantiation *in
 	AbstractNode *node = new AbstractNode(inst);
 	for (int i = 0; i < children.size(); i++) {
 		AbstractNode *n = children[i]->evaluate(&c);
-		if (n != NULL)
-			node->children.append(n);
-	}
-
-	foreach(ModuleInstantiation *v, inst->children) {
-		AbstractNode *n = v->evaluate(inst->ctx);
 		if (n != NULL)
 			node->children.append(n);
 	}

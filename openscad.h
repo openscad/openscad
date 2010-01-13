@@ -396,6 +396,7 @@ public:
 	QHash<QString, Value> config_variables;
 	const QHash<QString, AbstractFunction*> *functions_p;
 	const QHash<QString, AbstractModule*> *modules_p;
+	const ModuleInstantiation *inst_p;
 
 	static QVector<const Context*> ctx_stack;
 
