@@ -5,7 +5,6 @@ o Some invalid DXF data gets pass the import checks and breaks the tessing code
 o Broken polyhedron() entities are not correctly detected and cause CGAL segfaults
 o Tesselation via GLU sometimes produces strange results
 o Non-manifold objects make CGAL crash (e.g. two cubes which touch at one edge)
-o crash: rotate([0,1,0])import_dxf("../openscad-tess/testdata/polygon.dxf");
 
 USER INTERFACE
 --------------
