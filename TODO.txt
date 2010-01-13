@@ -5,6 +5,8 @@ o Some invalid DXF data gets pass the import checks and breaks the tessing code
 o Broken polyhedron() entities are not correctly detected and cause CGAL segfaults
 o Tesselation via GLU sometimes produces strange results
 o Non-manifold objects make CGAL crash (e.g. two cubes which touch at one edge)
+o crash: polygon(points=[[0,0],[10,0],[10,10],[0,10]],
+                 paths=[[0,1,2],[2,3,1]]);
 
 USER INTERFACE
 --------------
