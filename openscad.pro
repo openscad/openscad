@@ -28,6 +28,8 @@ mdi {
 }
 
 cgal {
+# Uncomment this to enable experimental CGAL tesselation
+# DEFINES += CGAL_TESSELATE
   DEFINES += ENABLE_CGAL
   LIBS += -lCGAL
   macx {
@@ -85,7 +87,8 @@ SOURCES += openscad.cc mainwin.cc glview.cc export.cc \
            value.cc expr.cc func.cc module.cc context.cc \
            csgterm.cc polyset.cc csgops.cc transform.cc \
            primitives.cc surface.cc control.cc render.cc \
-           import.cc dxfdata.cc dxftess.cc dxfdim.cc \
+           import.cc dxfdata.cc dxftess.cc dxftess-glu.cc \
+           dxftess-cgal.cc dxfdim.cc \
            dxflinextrude.cc dxfrotextrude.cc highlighter.cc \
            printutils.cc nef2dxf.cc
 
