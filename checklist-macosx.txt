@@ -1,7 +1,9 @@
 o Build CGAL:
 
-  cd CGAL-3.5
-  source runcmake.sh
+  tar xzf CGAL-3.5.1.tar.gz
+  cd CGAL-3.5.1
+  patch -p1 < ../openscad/CGAL-OGL-Tess-Combine-Fix.patch
+  cmake -DCMAKE_INSTALL_PREFIX=$PWD/../install -DBUILD_SHARED_LIBS=FALSE
   make -j4
   make install
 
