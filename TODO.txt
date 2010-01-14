@@ -8,15 +8,15 @@ o Non-manifold objects make CGAL crash (e.g. two cubes which touch at one edge)
 
 USER INTERFACE
 --------------
-o Fix current_win hack
 o Preferences
   - background colors
-  - Model outside/inside color
-  - wireframe color and width
+  - colors (NB! CGAL colors are hardcoded in CGAL)
+    - Model outside/inside color
+    - wireframe color and width
   - OpenGL params
   - Default language feature settings
   - Auto-view CSG/thrown together on load
-o More infrastructur for external editor (or is the reload good enough?)
+  - editor font
 o Export etc.: automatically add missing extension as in SaveAs
 o Mac OS X:
   - embed examples into bundle -> separate example menu?
@@ -32,7 +32,13 @@ o 3D View
   - Add modifier key combos to handle pan on 1 mouse button systems
   - Show grid
   - 4 x split view w/orthogonal cameras?
+  - Quick highlighting of object under the cursor in the editor
+o Editor
+  - Autocompletion/hints for builtin (and user-defined) functions/modules
+  - builtin quick function reference/help
+  - More infrastructur for external editor (or is the reload good enough?)
 o Misc
+  - Fix current_win hack
   - Reload and compile: Ask for confirmation if file is locally edited
     (make this configurable in preferences?)
   - Save: Ask for confirmation if file has been externaly changed
@@ -57,6 +63,7 @@ o Language Frontend
 o DXF Import
   - Support for POLYLINE entity
   - Support for SPLINE entity
+  - idea: DXF inline - convert from dxf to OpenSCAD syntax -> parametrize dxf content
 o Mesh optimization on STL export
   - Remove super small triangles (all sides are short)
   - Replace super thin triangles (one h is short)
@@ -64,4 +71,16 @@ o Misc
   - Add symbolic colors to the color() statement
   - Go through default values of parameters (e.g. cube() has x,y,z=1 while linear_extrude() has height=100)
   - A random(seed) function
+
+CODE
+----
+
+o Refactor from MainWindow:
+  - CSG data structure (compiled model)
+  - CGAL data structure (compiled model)
+o C++-ify
+  - Use smart pointers where it makes sense (e.g. instead of homegrown refcount,
+    and to get memory ownership under control)
+  - Use static_cast instead of C-style casts
+
 
