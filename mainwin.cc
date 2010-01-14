@@ -1340,6 +1340,7 @@ static void renderGLviaCGAL(void *vp)
 		glLineWidth(2);
 		glColor3d(0.0, 0.0, 0.0);
 
+		// Extract the boundary, including inner boundaries of the polygons
 		for (fci_t fit = E.faces_begin(), fend = E.faces_end(); fit != fend; ++fit)
 		{
 			bool fset = false;
