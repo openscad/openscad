@@ -211,7 +211,7 @@ void dxf_tesselate(PolySet *ps, DxfData *dxf, double rot, bool up, bool do_trian
 		gluTessNormal(tobj, 0, 0, +1);
 	}
 
-	Grid3d< QPair<int,int> > point_to_path;
+	Grid3d< QPair<int,int> > point_to_path(GRID_COARSE);
 
 	for (int i = 0; i < dxf->paths.count(); i++) {
 		if (!dxf->paths[i].is_closed)

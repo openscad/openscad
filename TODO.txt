@@ -5,9 +5,7 @@ o Some invalid DXF data gets pass the import checks and breaks the tessing code
 o Broken polyhedron() entities are not correctly detected and cause CGAL segfaults
 o Tesselation via GLU sometimes produces strange results
 o Non-manifold objects make CGAL crash (e.g. two cubes which touch at one edge)
-o crash: polygon(points=[[0,0],[10,0],[10,10],[0,10]],
-                 paths=[[0,1,2],[2,3,1]]);
-o crash: DiscButton_Pegs_Array_20100112.scad
+o crash: polygon(points=[[0,0],[10,0],[10,10],[0,10]], paths=[[0,1,2],[2,3,1]]);
 
 USER INTERFACE
 --------------
@@ -60,6 +58,9 @@ o Language Frontend
 o DXF Import
   - Support for POLYLINE entity
   - Support for SPLINE entity
+o Mesh optimization on STL export
+  - Remove super small triangles (all sides are short)
+  - Replace super thin triangles (one h is short)
 o Misc
   - Add symbolic colors to the color() statement
   - Go through default values of parameters (e.g. cube() has x,y,z=1 while linear_extrude() has height=100)

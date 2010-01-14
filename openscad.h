@@ -70,6 +70,9 @@ class AbstractIntersectionNode;
 class AbstractPolyNode;
 struct CGAL_Nef_polyhedron;
 
+const double GRID_COARSE = 0.001;
+const double GRID_FINE = 0.0000001;
+
 template <typename T>
 class Grid2d
 {
@@ -77,7 +80,7 @@ public:
 	double res;
 	QHash<QPair<int,int>, T> db;
 
-	Grid2d(double resolution = 0.001) {
+	Grid2d(double resolution) {
 		res = resolution;
 	}
 	T &align(double &x, double &y) {
@@ -133,7 +136,7 @@ public:
 	double res;
 	QHash<QPair<QPair<int,int>,int>, T> db;
 
-	Grid3d(double resolution = 0.001) {
+	Grid3d(double resolution) {
 		res = resolution;
 	}
 	T &align(double &x, double &y, double &z) {

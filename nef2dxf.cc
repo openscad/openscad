@@ -24,7 +24,7 @@
 
 DxfData::DxfData(const struct CGAL_Nef_polyhedron &N)
 {
-	Grid2d<int> grid;
+	Grid2d<int> grid(GRID_COARSE);
 
 	typedef CGAL_Nef_polyhedron2::Explorer Explorer;
 	typedef Explorer::Face_const_iterator fci_t;
@@ -34,7 +34,7 @@ DxfData::DxfData(const struct CGAL_Nef_polyhedron &N)
 	for (fci_t fit = E.faces_begin(), fend = E.faces_end(); fit != fend; ++fit)
 	{
 		heafcc_t fcirc(E.halfedge(fit)), fend(fcirc);
-		int first_point = -1;
+		int first_point = -1, last_point = -1;
 		CGAL_For_all(fcirc, fend) {
 			if (E.is_standard(E.target(fcirc))) {
 				Explorer::Point ep = E.point(E.target(fcirc));
@@ -50,7 +50,10 @@ DxfData::DxfData(const struct CGAL_Nef_polyhedron &N)
 					paths.append(Path());
 					first_point = this_point;
 				}
-				paths.last().points.append(&points[this_point]);
+				if (this_point != last_point) {
+					paths.last().points.append(&points[this_point]);
+					last_point = this_point;
+				}
 			}
 		}
 		if (first_point >= 0) {

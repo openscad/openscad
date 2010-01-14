@@ -50,7 +50,7 @@ DxfData::DxfData(double fn, double fs, double fa, QString filename, QString laye
 	}
 	QTextStream stream(&f);
 
-	Grid2d< QVector<int> > grid;
+	Grid2d< QVector<int> > grid(GRID_COARSE);
 	QList<Line> lines;                       // Global lines
 	QHash< QString, QList<Line> > blockdata; // Lines in blocks
 

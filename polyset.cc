@@ -32,7 +32,7 @@ PolySet::ps_cache_entry::~ps_cache_entry() {
 	ps->unlink();
 }
 
-PolySet::PolySet()
+PolySet::PolySet() : grid(GRID_FINE)
 {
 	is2d = false;
 	convexity = 1;
@@ -325,8 +325,8 @@ public:
 	{
 		CGAL_Polybuilder B(hds, true);
 
-		QVector<PolySet::Point> vertices;
-		Grid3d<int> vertices_idx;
+		QList<PolySet::Point> vertices;
+		Grid3d<int> vertices_idx(GRID_FINE);
 
 		for (int i = 0; i < ps->polygons.size(); i++) {
 			const PolySet::Polygon *poly = &ps->polygons[i];
@@ -371,14 +371,14 @@ public:
 			for (int j = 0; j < poly->size(); j++) {
 				const PolySet::Point *p = &poly->at(j);
 #ifdef GEN_SURFACE_DEBUG
-				printf(" %d", vertices_idx.data(p->x, p->y, p->z));
+				printf(" %d (%f,%f,%f)", vertices_idx.data(p->x, p->y, p->z), p->x, p->y, p->z);
 #endif
 				if (!facet_is_degenerated)
 					B.add_vertex_to_facet(vertices_idx.data(p->x, p->y, p->z));
 			}
 #ifdef GEN_SURFACE_DEBUG
 			if (facet_is_degenerated)
-				printf(" (degenerated)\n");
+				printf(" (degenerated)");
 			printf("\n");
 #endif
 			if (!facet_is_degenerated)
@@ -406,7 +406,7 @@ CGAL_Nef_polyhedron PolySet::render_cgal_nef_polyhedron() const
 		typedef point_list_t::iterator point_list_it;
 		std::list< point_list_t > pdata_point_lists;
 		std::list < std::pair < point_list_it, point_list_it > > pdata;
-		Grid2d<CGAL_Nef_polyhedron2::Point> grid;
+		Grid2d<CGAL_Nef_polyhedron2::Point> grid(GRID_COARSE);
 
 		for (int i = 0; i < this->polygons.size(); i++) {
 			pdata_point_lists.push_back(point_list_t());
@@ -430,7 +430,7 @@ CGAL_Nef_polyhedron PolySet::render_cgal_nef_polyhedron() const
 		return CGAL_Nef_polyhedron(N);
 #else
 		CGAL_Nef_polyhedron2 N;
-		Grid2d<CGAL_Nef_polyhedron2::Point> grid;
+		Grid2d<CGAL_Nef_polyhedron2::Point> grid(GRID_COARSE);
 
 		for (int i = 0; i < this->polygons.size(); i++) {
 			std::list<CGAL_Nef_polyhedron2::Point> plist;
