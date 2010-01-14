@@ -83,29 +83,32 @@ public:
 	Grid2d(double resolution) {
 		res = resolution;
 	}
+  /*!
+		Aligns x,y to the grid or to existing point if one close enough exists.
+		Returns the value stored if a point already existing or an uninitialized new value
+		if not.
+	*/ 
 	T &align(double &x, double &y) {
 		int ix = (int)round(x / res);
 		int iy = (int)round(y / res);
-		x = ix * res, y = iy * res;
-		if (db.contains(QPair<int,int>(ix, iy)))
-			return db[QPair<int,int>(ix, iy)];
-		int dist = 10;
-		T *ptr = NULL;
-		for (int jx = ix - 1; jx <= ix + 1; jx++)
-		for (int jy = iy - 1; jy <= iy + 1; jy++) {
-			if (!db.contains(QPair<int,int>(jx, jy)))
-				continue;
-			if (abs(ix-jx) + abs(iy-jy) < dist) {
-				x = jx * res, y = jy * res;
-				dist = abs(ix-jx) + abs(iy-jy);
-				ptr = &db[QPair<int,int>(jx, jy)];
+		if (!db.contains(QPair<int,int>(ix, iy))) {
+			int dist = 10;
+			for (int jx = ix - 1; jx <= ix + 1; jx++) {
+				for (int jy = iy - 1; jy <= iy + 1; jy++) {
+					if (!db.contains(QPair<int,int>(jx, jy)))
+						continue;
+					if (abs(ix-jx) + abs(iy-jy) < dist) {
+						dist = abs(ix-jx) + abs(iy-jy);
+						ix = jx;
+						iy = jy;
+					}
+				}
 			}
 		}
-		if (ptr)
-			return *ptr;
+		x = ix * res, y = iy * res;
 		return db[QPair<int,int>(ix, iy)];
 	}
-	bool has(double x, double y) {
+	bool has(double x, double y) const {
 		int ix = (int)round(x / res);
 		int iy = (int)round(y / res);
 		if (db.contains(QPair<int,int>(ix, iy)))
@@ -127,6 +130,9 @@ public:
 	T &data(double x, double y) {
 		return align(x, y);
 	}
+	T &operator()(double x, double y) {
+		return align(x, y);
+	}
 };
 
 template <typename T>
@@ -143,26 +149,25 @@ public:
 		int ix = (int)round(x / res);
 		int iy = (int)round(y / res);
 		int iz = (int)round(z / res);
-		x = ix * res, y = iy * res, z = iz * res;
-		if (db.contains(QPair<QPair<int,int>,int>(QPair<int,int>(ix, iy), iz)))
-			return db[QPair<QPair<int,int>,int>(QPair<int,int>(ix, iy), iz)];
-		int dist = 10;
-		T *ptr = NULL;
-		for (int jx = ix - 1; jx <= ix + 1; jx++)
-		for (int jy = iy - 1; jy <= iy + 1; jy++)
-		for (int jz = iz - 1; jz <= iz + 1; jz++) {
-			if (!db.contains(QPair<QPair<int,int>,int>(QPair<int,int>(jx, jy), jz)))
-				continue;
-			if (abs(ix-jx) + abs(iy-jy) + abs(iz-jz) < dist) {
-				x = jx * res, y = jy * res, z = jz * res;
-				dist = abs(ix-jx) + abs(iy-jy) + abs(iz-jz);
-				ptr = &db[QPair<QPair<int,int>,int>(QPair<int,int>(jx, jy), jz)];
+		if (!db.contains(QPair<QPair<int,int>,int>(QPair<int,int>(ix, iy), iz))) {
+			int dist = 10;
+			for (int jx = ix - 1; jx <= ix + 1; jx++) {
+				for (int jy = iy - 1; jy <= iy + 1; jy++) {
+					for (int jz = iz - 1; jz <= iz + 1; jz++) {
+						if (!db.contains(QPair<QPair<int,int>,int>(QPair<int,int>(jx, jy), jz)))
+							continue;
+						if (abs(ix-jx) + abs(iy-jy) + abs(iz-jz) < dist) {
+							dist = abs(ix-jx) + abs(iy-jy) + abs(iz-jz);
+							ix = jx;
+							iy = jy;
+							iz = jz;
+						}
+					}
+				}
 			}
 		}
-		if (ptr)
-			return *ptr;
+		x = ix * res, y = iy * res, z = iz * res;
 		return db[QPair<QPair<int,int>,int>(QPair<int,int>(ix, iy), iz)];
-		
 	}
 	bool has(double x, double y, double z) {
 		int ix = (int)round(x / res);
@@ -187,6 +192,9 @@ public:
 		return false;
 	}
 	T &data(double x, double y, double z) {
+		return align(x, y, z);
+	}
+	T &operator()(double x, double y, double z) {
 		return align(x, y, z);
 	}
 };
