@@ -2015,9 +2015,9 @@ AcDbCircle
   6
 ByLayer
  10
-5.0
+-5.0
  20
-70.0
+140.0
  30
 0.0
  40
@@ -2039,9 +2039,9 @@ AcDbCircle
   6
 ByLayer
  10
--5.0
+5.0
  20
-140.0
+70.0
  30
 0.0
  40
@@ -2063,7 +2063,7 @@ AcDbCircle
   6
 ByLayer
  10
-5.0
+-5.0
  20
 70.0
  30
@@ -2087,30 +2087,6 @@ AcDbCircle
   6
 ByLayer
  10
--5.0
- 20
-70.0
- 30
-0.0
- 40
-1.5
-  0
-CIRCLE
-  5
-62
-100
-AcDbEntity
-100
-AcDbCircle
-  8
-0
- 62
-256
-370
--1
-  6
-ByLayer
- 10
 5.0
  20
 140.0
@@ -2121,7 +2097,7 @@ ByLayer
   0
 LINE
   5
-63
+62
 100
 AcDbEntity
 100
@@ -2149,7 +2125,7 @@ ByLayer
   0
 LINE
   5
-64
+63
 100
 AcDbEntity
 100
@@ -2177,7 +2153,7 @@ ByLayer
   0
 LINE
   5
-65
+64
 100
 AcDbEntity
 100
@@ -2241,7 +2217,7 @@ E
   3
 AcDbVariableDictionary
 350
-66
+65
   0
 DICTIONARY
   5
@@ -2705,7 +2681,7 @@ Layout2
   0
 DICTIONARY
   5
-66
+65
 100
 AcDbDictionary
 281
@@ -2713,15 +2689,15 @@ AcDbDictionary
   3
 DIMASSOC
 350
-68
+67
   3
 HIDETEXT
 350
-67
+66
   0
 DICTIONARYVAR
   5
-67
+66
 100
 DictionaryVariables
 280
@@ -2731,7 +2707,7 @@ DictionaryVariables
   0
 DICTIONARYVAR
   5
-68
+67
 100
 DictionaryVariables
 280
