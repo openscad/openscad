@@ -71,7 +71,7 @@ class AbstractPolyNode;
 struct CGAL_Nef_polyhedron;
 
 const double GRID_COARSE = 0.001;
-const double GRID_FINE = 0.0000001;
+const double GRID_FINE   = 0.000001;
 
 template <typename T>
 class Grid2d
