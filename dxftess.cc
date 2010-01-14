@@ -23,19 +23,28 @@
 #include "openscad.h"
 #include "printutils.h"
 
+#ifdef CGAL_TESSELATE
+#include "dxftess-cgal.cc"
+#else
 #include "dxftess-glu.cc"
+#endif //  CGAL_TESSELATE
 
+/*!
+	Converts all paths in the given DxfData to PolySet::borders polygons
+	without tesselating. Vertex ordering of the resulting polygons
+	will follow the paths' is_inner flag.
+*/
 void dxf_border_to_ps(PolySet *ps, DxfData *dxf)
 {
 	for (int i = 0; i < dxf->paths.count(); i++) {
-		DxfData::Path *pt = &dxf->paths[i];
-		if (!pt->is_closed)
+		const DxfData::Path &pt = dxf->paths[i];
+		if (!pt.is_closed)
 			continue;
 		ps->borders.append(PolySet::Polygon());
-		for (int j = 1; j < pt->points.count(); j++) {
-			double x = pt->points[j]->x, y = pt->points[j]->y, z = 0.0;
+		for (int j = 1; j < pt.points.count(); j++) {
+			double x = pt.points[j]->x, y = pt.points[j]->y, z = 0.0;
 			ps->grid.align(x, y, z);
-			if (pt->is_inner) {
+			if (pt.is_inner) {
 				ps->borders.last().append(PolySet::Point(x, y, z));
 			} else {
 				ps->borders.last().insert(0, PolySet::Point(x, y, z));
@@ -43,4 +52,3 @@ void dxf_border_to_ps(PolySet *ps, DxfData *dxf)
 		}
 	}
 }
-
