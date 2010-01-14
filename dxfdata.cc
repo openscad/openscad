@@ -428,6 +428,10 @@ DxfData::DxfData(double fn, double fs, double fa, QString filename, QString laye
 #endif
 }
 
+/*!
+	Ensures that all paths have the same vertex ordering.
+	FIXME: CW or CCW?
+*/
 void DxfData::fixup_path_direction()
 {
 	for (int i = 0; i < this->paths.count(); i++) {
@@ -436,7 +440,7 @@ void DxfData::fixup_path_direction()
 		this->paths[i].is_inner = true;
 		double min_x = this->paths[i].points[0]->x;
 		int min_x_point = 0;
-		for (int j = 0; j < this->paths[i].points.count(); j++) {
+		for (int j = 1; j < this->paths[i].points.count(); j++) {
 			if (this->paths[i].points[j]->x < min_x) {
 				min_x = this->paths[i].points[j]->x;
 				min_x_point = j;
@@ -456,6 +460,7 @@ void DxfData::fixup_path_direction()
 		printf("  b->a vector = %f %f (%f)\n", ax, ay, atan2(ax, ay));
 		printf("  b->c vector = %f %f (%f)\n", cx, cy, atan2(cx, cy));
 #endif
+		// FIXME: atan2() usually takes y,x. This variant probably makes the path clockwise..
 		if (atan2(ax, ay) < atan2(cx, cy)) {
 			for (int j = 0; j < this->paths[i].points.count()/2; j++)
 				this->paths[i].points.swap(j, this->paths[i].points.count()-1-j);
