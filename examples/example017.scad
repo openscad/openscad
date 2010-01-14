@@ -1,4 +1,11 @@
 
+// To render the DXF file from the command line:
+// openscad -x example017.dxf -D'mode="parts"' example017.scad
+
+// mode = "parts";
+// mode = "exploded";
+mode = "assembled";
+
 thickness = 6;
 locklen1 = 15;
 locklen2 = 10;
@@ -139,6 +146,12 @@ module assembled()
 	% translate([ 0, 0, thickness*2]) bottle();
 }
 
-// parts();
-// exploded();
-assembled();
+if (mode == "parts")
+	parts();
+
+if (mode == "exploded")
+	exploded();
+
+if (mode == "assembled")
+	assembled();
+

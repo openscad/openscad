@@ -203,18 +203,27 @@ Value Value::operator == (const Value &v) const
 	if (type == NUMBER && v.type == NUMBER) {
 		return Value(num == v.num);
 	}
-	return Value();
+	if (type == RANGE && v.type == RANGE) {
+		return Value(range_begin == v.range_begin && range_step == v.range_step && range_end == v.range_end);
+	}
+	if (type == VECTOR && v.type == VECTOR) {
+		if (vec.size() != v.vec.size())
+			return Value(false);
+		for (int i=0; i<vec.size(); i++)
+			if (!(*vec[i] == *v.vec[i]).b)
+				return Value(false);
+		return Value(true);
+	}
+	if (type == STRING && v.type == STRING) {
+		return Value(text == v.text);
+	}
+	return Value(false);
 }
 
 Value Value::operator != (const Value &v) const
 {
-	if (type == BOOL && v.type == BOOL) {
-		return Value(b != v.b);
-	}
-	if (type == NUMBER && v.type == NUMBER) {
-		return Value(num != v.num);
-	}
-	return Value();
+	Value eq = *this == v;
+	return Value(!eq.b);
 }
 
 Value Value::operator >= (const Value &v) const
