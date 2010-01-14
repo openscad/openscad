@@ -5,14 +5,17 @@ o Some invalid DXF data gets pass the import checks and breaks the tessing code
 o Broken polyhedron() entities are not correctly detected and cause CGAL segfaults
 o Tesselation via GLU sometimes produces strange results
 o Non-manifold objects make CGAL crash (e.g. two cubes which touch at one edge)
+o Export STL: Exports existing CGAL model even though the current model is changed, but not CGAL rendered
 
 USER INTERFACE
 --------------
 o Preferences
   - background colors
-  - colors (NB! CGAL colors are hardcoded in CGAL)
-    - Model outside/inside color
-    - wireframe color and width
+  - colors
+    - OpenCSG: face back/front, edges?
+    - CGAL: face back/front, edge back/front, vertex back/front
+  - wireframe width
+  - pointsize
   - OpenGL params
   - Default language feature settings
   - Auto-view CSG/thrown together on load
