@@ -46,10 +46,6 @@ o Misc
     (make this configurable in preferences?)
   - Save: Ask for confirmation if file has been externaly changed
 
-INFRASTRUCTURE
---------------
-o Think about making external libraries easier available. Probably mostly convenience.
-
 ENGINE
 ------
 o 2D Subsystem
@@ -91,4 +87,14 @@ o C++-ify
     and to get memory ownership under control)
   - Use static_cast instead of C-style casts
 
+INFRASTRUCTURE
+--------------
+o Think about making external libraries easier available. Probably mostly convenience.
+o Use a logging framework to get debugging/info output more under control?
+  (check log4j, google project)
+
+MISC
+----
+o Collect "all" available OpenSCAD scripts from the internets and batch convert them
+  to STL to assist with robustness testing.
 
