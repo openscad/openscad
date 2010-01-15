@@ -340,11 +340,11 @@ QString TransformNode::dump(QString indent) const
 	if (dump_cache.isEmpty()) {
 		QString text;
 		if (m[16] >= 0 || m[17] >= 0 || m[18] >= 0 || m[19] >= 0)
-			text.sprintf("n%d: color([%f, %f, %f, %f])", idx,
+			text.sprintf("n%d: color([%g, %g, %g, %g])", idx,
 					m[16], m[17], m[18], m[19]);
 		else
-			text.sprintf("n%d: multmatrix([[%f, %f, %f, %f], [%f, %f, %f, %f], "
-					"[%f, %f, %f, %f], [%f, %f, %f, %f]])", idx,
+			text.sprintf("n%d: multmatrix([[%g, %g, %g, %g], [%g, %g, %g, %g], "
+					"[%g, %g, %g, %g], [%g, %g, %g, %g]])", idx,
 					m[0], m[4], m[ 8], m[12],
 					m[1], m[5], m[ 9], m[13],
 					m[2], m[6], m[10], m[14],

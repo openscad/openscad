@@ -211,8 +211,8 @@ QString ImportNode::dump(QString indent) const
 					filename.toAscii().data(), (int)st.st_mtime, (int)st.st_size, convexity);
 		if (type == TYPE_DXF)
 			text.sprintf("import_dxf(file = \"%s\", cache = \"%x.%x\", layer = \"%s\", "
-					"origin = [ %f %f ], scale = %f, convexity = %d, "
-					"$fn = %f, $fa = %f, $fs = %f);\n",
+					"origin = [ %g %g ], scale = %g, convexity = %d, "
+					"$fn = %g, $fa = %g, $fs = %g);\n",
 					filename.toAscii().data(), (int)st.st_mtime, (int)st.st_size,
 					layername.toAscii().data(), origin_x, origin_y, scale, convexity,
 					fn, fs, fa);

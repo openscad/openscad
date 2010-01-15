@@ -305,17 +305,17 @@ QString DxfLinearExtrudeNode::dump(QString indent) const
 		memset(&st, 0, sizeof(struct stat));
 		stat(filename.toAscii().data(), &st);
 		text.sprintf("linear_extrude(file = \"%s\", cache = \"%x.%x\", layer = \"%s\", "
-				"height = %f, origin = [ %f %f ], scale = %f, center = %s, convexity = %d",
+				"height = %g, origin = [ %g %g ], scale = %g, center = %s, convexity = %d",
 				filename.toAscii().data(), (int)st.st_mtime, (int)st.st_size,
 				layername.toAscii().data(), height, origin_x, origin_y, scale,
 				center ? "true" : "false", convexity);
 		if (has_twist) {
 			QString t2;
-			t2.sprintf(", twist = %f, slices = %d", twist, slices);
+			t2.sprintf(", twist = %g, slices = %d", twist, slices);
 			text += t2;
 		}
 		QString t3;
-		t3.sprintf(", $fn = %f, $fa = %f, $fs = %f) {\n", fn, fs, fa);
+		t3.sprintf(", $fn = %g, $fa = %g, $fs = %g) {\n", fn, fs, fa);
 		text += t3;
 		foreach (AbstractNode *v, children)
 			text += v->dump(indent + QString("\t"));

@@ -509,17 +509,17 @@ QString PrimitiveNode::dump(QString indent) const
 	if (dump_cache.isEmpty()) {
 		QString text;
 		if (type == CUBE)
-			text.sprintf("cube(size = [%f, %f, %f], center = %s);\n", x, y, z, center ? "true" : "false");
+			text.sprintf("cube(size = [%g, %g, %g], center = %s);\n", x, y, z, center ? "true" : "false");
 		if (type == SPHERE)
-			text.sprintf("sphere($fn = %f, $fa = %f, $fs = %f, r = %f);\n", fn, fa, fs, r1);
+			text.sprintf("sphere($fn = %g, $fa = %g, $fs = %g, r = %g);\n", fn, fa, fs, r1);
 		if (type == CYLINDER)
-			text.sprintf("cylinder($fn = %f, $fa = %f, $fs = %f, h = %f, r1 = %f, r2 = %f, center = %s);\n", fn, fa, fs, h, r1, r2, center ? "true" : "false");
+			text.sprintf("cylinder($fn = %g, $fa = %g, $fs = %g, h = %g, r1 = %g, r2 = %g, center = %s);\n", fn, fa, fs, h, r1, r2, center ? "true" : "false");
 		if (type == POLYHEDRON)
 			text.sprintf("polyhedron(points = %s, triangles = %s, convexity = %d);\n", points.dump().toAscii().data(), triangles.dump().toAscii().data(), convexity);
 		if (type == SQUARE)
-			text.sprintf("square(size = [%f, %f], center = %s);\n", x, y, center ? "true" : "false");
+			text.sprintf("square(size = [%g, %g], center = %s);\n", x, y, center ? "true" : "false");
 		if (type == CIRCLE)
-			text.sprintf("circle($fn = %f, $fa = %f, $fs = %f, r = %f);\n", fn, fa, fs, r1);
+			text.sprintf("circle($fn = %g, $fa = %g, $fs = %g, r = %g);\n", fn, fa, fs, r1);
 		if (type == POLYGON)
 			text.sprintf("polygon(points = %s, paths = %s, convexity = %d);\n", points.dump().toAscii().data(), paths.dump().toAscii().data(), convexity);
 		((AbstractNode*)this)->dump_cache = indent + QString("n%1: ").arg(idx) + text;
