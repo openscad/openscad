@@ -40,6 +40,7 @@ o Editor
   - Autocompletion/hints for builtin (and user-defined) functions/modules
   - builtin quick function reference/help
   - More infrastructur for external editor (or is the reload good enough?)
+  - Evaluate QCodeEdit (http://qcodeedit.edyuk.org)
 o Misc
   - Fix current_win hack
   - Reload and compile: Ask for confirmation if file is locally edited
