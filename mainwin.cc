@@ -553,6 +553,7 @@ void MainWindow::compile(bool procevents)
 	for (int i = 16; i < 20; i++)
 		m[i] = -1;
 
+	// Main CSG evaluation
 	root_raw_term = root_node->render_csg_term(m, &highlight_terms, &background_terms);
 
 	if (!root_raw_term)
@@ -564,6 +565,7 @@ void MainWindow::compile(bool procevents)
 
 	root_norm_term = root_raw_term->link();
 
+	// CSG normalization
 	while (1) {
 		CSGTerm *n = root_norm_term->normalize();
 		root_norm_term->unlink();
@@ -1028,6 +1030,7 @@ void MainWindow::actionDisplayAST()
 	QTextEdit *e = new QTextEdit(NULL);
 	e->setTabStopWidth(30);
 	e->setWindowTitle("AST Dump");
+	e->setReadOnly(true);
 	if (root_module) {
 		e->setPlainText(root_module->dump("", ""));
 	} else {
