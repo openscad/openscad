@@ -16,6 +16,8 @@ public:
 	QString fileName;
 	class Highlighter *highlighter;
 
+	class Preferences *prefs;
+
 	QTimer *animate_timer;
 	double tval, fps, fsteps;
 
@@ -25,8 +27,8 @@ public:
 	AbstractNode *absolute_root_node; // Result of tree evaluation
 	AbstractNode *root_node;          // Root if the root modifier (!) is used
 
-	CSGTerm *root_raw_term;
-	CSGTerm *root_norm_term;
+	CSGTerm *root_raw_term;           // Result of CSG term rendering
+	CSGTerm *root_norm_term;          // Normalized CSG products
 	CSGChain *root_chain;
 #ifdef ENABLE_CGAL
 	CGAL_Nef_polyhedron *root_N;
@@ -81,6 +83,7 @@ private slots:
 	void pasteViewportTranslation();
 	void pasteViewportRotation();
 	void hideEditor();
+	void preferences();
 
 private slots:
 	void actionReloadCompile();
