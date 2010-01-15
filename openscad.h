@@ -78,7 +78,7 @@ class Grid2d
 {
 public:
 	double res;
-	QHash<QPair<int,int>, T> db;
+	QHash<QPair<int64_t,int64_t>, T> db;
 
 	Grid2d(double resolution) {
 		res = resolution;
@@ -89,13 +89,13 @@ public:
 		if not.
 	*/ 
 	T &align(double &x, double &y) {
-		int ix = (int)round(x / res);
-		int iy = (int)round(y / res);
-		if (!db.contains(QPair<int,int>(ix, iy))) {
+		int64_t ix = (int64_t)round(x / res);
+		int64_t iy = (int64_t)round(y / res);
+		if (!db.contains(QPair<int64_t,int64_t>(ix, iy))) {
 			int dist = 10;
-			for (int jx = ix - 1; jx <= ix + 1; jx++) {
-				for (int jy = iy - 1; jy <= iy + 1; jy++) {
-					if (!db.contains(QPair<int,int>(jx, jy)))
+			for (int64_t jx = ix - 1; jx <= ix + 1; jx++) {
+				for (int64_t jy = iy - 1; jy <= iy + 1; jy++) {
+					if (!db.contains(QPair<int64_t,int64_t>(jx, jy)))
 						continue;
 					if (abs(ix-jx) + abs(iy-jy) < dist) {
 						dist = abs(ix-jx) + abs(iy-jy);
@@ -106,16 +106,16 @@ public:
 			}
 		}
 		x = ix * res, y = iy * res;
-		return db[QPair<int,int>(ix, iy)];
+		return db[QPair<int64_t,int64_t>(ix, iy)];
 	}
 	bool has(double x, double y) const {
-		int ix = (int)round(x / res);
-		int iy = (int)round(y / res);
-		if (db.contains(QPair<int,int>(ix, iy)))
+		int64_t ix = (int64_t)round(x / res);
+		int64_t iy = (int64_t)round(y / res);
+		if (db.contains(QPair<int64_t,int64_t>(ix, iy)))
 			return true;
-		for (int jx = ix - 1; jx <= ix + 1; jx++)
-		for (int jy = iy - 1; jy <= iy + 1; jy++) {
-			if (db.contains(QPair<int,int>(jx, jy)))
+		for (int64_t jx = ix - 1; jx <= ix + 1; jx++)
+		for (int64_t jy = iy - 1; jy <= iy + 1; jy++) {
+			if (db.contains(QPair<int64_t,int64_t>(jx, jy)))
 				return true;
 		}
 		return false;
@@ -140,21 +140,21 @@ class Grid3d
 {
 public:
 	double res;
-	QHash<QPair<QPair<int,int>,int>, T> db;
+	QHash<QPair<QPair<int64_t,int64_t>,int64_t>, T> db;
 
 	Grid3d(double resolution) {
 		res = resolution;
 	}
 	T &align(double &x, double &y, double &z) {
-		int ix = (int)round(x / res);
-		int iy = (int)round(y / res);
-		int iz = (int)round(z / res);
-		if (!db.contains(QPair<QPair<int,int>,int>(QPair<int,int>(ix, iy), iz))) {
+		int64_t ix = (int64_t)round(x / res);
+		int64_t iy = (int64_t)round(y / res);
+		int64_t iz = (int64_t)round(z / res);
+		if (!db.contains(QPair<QPair<int64_t,int64_t>,int64_t>(QPair<int64_t,int64_t>(ix, iy), iz))) {
 			int dist = 10;
-			for (int jx = ix - 1; jx <= ix + 1; jx++) {
-				for (int jy = iy - 1; jy <= iy + 1; jy++) {
-					for (int jz = iz - 1; jz <= iz + 1; jz++) {
-						if (!db.contains(QPair<QPair<int,int>,int>(QPair<int,int>(jx, jy), jz)))
+			for (int64_t jx = ix - 1; jx <= ix + 1; jx++) {
+				for (int64_t jy = iy - 1; jy <= iy + 1; jy++) {
+					for (int64_t jz = iz - 1; jz <= iz + 1; jz++) {
+						if (!db.contains(QPair<QPair<int64_t,int64_t>,int64_t>(QPair<int64_t,int64_t>(jx, jy), jz)))
 							continue;
 						if (abs(ix-jx) + abs(iy-jy) + abs(iz-jz) < dist) {
 							dist = abs(ix-jx) + abs(iy-jy) + abs(iz-jz);
@@ -167,18 +167,18 @@ public:
 			}
 		}
 		x = ix * res, y = iy * res, z = iz * res;
-		return db[QPair<QPair<int,int>,int>(QPair<int,int>(ix, iy), iz)];
+		return db[QPair<QPair<int64_t,int64_t>,int64_t>(QPair<int64_t,int64_t>(ix, iy), iz)];
 	}
 	bool has(double x, double y, double z) {
-		int ix = (int)round(x / res);
-		int iy = (int)round(y / res);
-		int iz = (int)round(z / res);
-		if (db.contains(QPair<QPair<int,int>,int>(QPair<int,int>(ix, iy), iz)))
+		int64_t ix = (int64_t)round(x / res);
+		int64_t iy = (int64_t)round(y / res);
+		int64_t iz = (int64_t)round(z / res);
+		if (db.contains(QPair<QPair<int64_t,int64_t>,int64_t>(QPair<int64_t,int64_t>(ix, iy), iz)))
 			return true;
-		for (int jx = ix - 1; jx <= ix + 1; jx++)
-		for (int jy = iy - 1; jy <= iy + 1; jy++)
-		for (int jz = iz - 1; jz <= iz + 1; jz++) {
-			if (db.contains(QPair<QPair<int,int>,int>(QPair<int,int>(jx, jy), jz)))
+		for (int64_t jx = ix - 1; jx <= ix + 1; jx++)
+		for (int64_t jy = iy - 1; jy <= iy + 1; jy++)
+		for (int64_t jz = iz - 1; jz <= iz + 1; jz++) {
+			if (db.contains(QPair<QPair<int64_t,int64_t>,int64_t>(QPair<int64_t,int64_t>(jx, jy), jz)))
 				return true;
 		}
 		return false;
