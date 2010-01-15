@@ -22,6 +22,7 @@
 
 #include "openscad.h"
 #include "MainWindow.h"
+#include "Preferences.h"
 #include "printutils.h"
 
 #include <QMenu>
@@ -50,6 +51,13 @@
 
 #ifdef ENABLE_CGAL
 
+#if 1
+#include "CGAL_renderer.h"
+using OpenSCAD::OGL::Polyhedron;
+using OpenSCAD::OGL::SNC_BOUNDARY;
+using OpenSCAD::OGL::SNC_SKELETON;
+using OpenSCAD::OGL::Nef3_Converter;
+#else
 // a little hackish: we need access to default-private members of
 // CGAL::OGL::Nef3_Converter so we can implement our own draw function
 // that does not scale the model. so we define 'class' to 'struct'
@@ -64,8 +72,12 @@
 #define class struct
 #include <CGAL/Nef_3/OGL_helper.h>
 #undef class
-
+using CGAL::OGL::Polyhedron;
+using CGAL::OGL::SNC_BOUNDARY;
+using CGAL::OGL::SNC_SKELETON;
+using CGAL::OGL::Nef3_Converter;
 #endif
+#endif // ENABLE_CGAL
 
 #define QUOTE(x__) # x__
 #define QUOTED(x__) QUOTE(x__)
@@ -88,7 +100,6 @@ MainWindow::MainWindow(const char *filename)
 {
 	setupUi(this);
 
-
 	root_ctx.functions_p = &builtin_functions;
 	root_ctx.modules_p = &builtin_modules;
 	root_ctx.set_variable("$fn", Value(0.0));
@@ -110,8 +121,8 @@ MainWindow::MainWindow(const char *filename)
 	root_norm_term = NULL;
 	root_chain = NULL;
 #ifdef ENABLE_CGAL
-	root_N = NULL;
-	recreate_cgal_ogl_p = false;
+	this->root_N = NULL;
+	this->recreate_cgal_ogl_p = false;
 	cgal_ogl_p = NULL;
 	cgal_ogl_ps = NULL;
 #endif
@@ -180,6 +191,7 @@ MainWindow::MainWindow(const char *filename)
 	connect(this->editActionZoomIn, SIGNAL(triggered()), editor, SLOT(zoomIn()));
 	connect(this->editActionZoomOut, SIGNAL(triggered()), editor, SLOT(zoomOut()));
 	connect(this->editActionHide, SIGNAL(triggered()), this, SLOT(hideEditor()));
+	connect(this->editActionPreferences, SIGNAL(triggered()), this, SLOT(preferences()));
 
 	// Design menu
 	connect(this->designActionReloadAndCompile, SIGNAL(triggered()), this, SLOT(actionReloadCompile()));
@@ -288,10 +300,10 @@ MainWindow::~MainWindow()
 	if (root_node)
 		delete root_node;
 #ifdef ENABLE_CGAL
-	if (root_N)
-		delete root_N;
+	if (this->root_N)
+		delete this->root_N;
 	if (cgal_ogl_p) {
-		CGAL::OGL::Polyhedron *p = (CGAL::OGL::Polyhedron*)cgal_ogl_p;
+		Polyhedron *p = (Polyhedron*)cgal_ogl_p;
 		delete p;
 	}
 	if (cgal_ogl_ps)
@@ -916,10 +928,10 @@ void MainWindow::actionRenderCGAL()
 	if (!root_module || !root_node)
 		return;
 
-	if (root_N) {
-		delete root_N;
-		root_N = NULL;
-		recreate_cgal_ogl_p = true;
+	if (this->root_N) {
+		delete this->root_N;
+		this->root_N = NULL;
+		this->recreate_cgal_ogl_p = true;
 	}
 
 	PRINT("Rendering Polygon Mesh using CGAL...");
@@ -935,51 +947,51 @@ void MainWindow::actionRenderCGAL()
 	QApplication::processEvents();
 
 	progress_report_prep(root_node, report_func, pd);
-	root_N = new CGAL_Nef_polyhedron(root_node->render_cgal_nef_polyhedron());
+	this->root_N = new CGAL_Nef_polyhedron(root_node->render_cgal_nef_polyhedron());
 	progress_report_fin();
 
 	PRINTF("Number of vertices currently in CGAL cache: %d", AbstractNode::cgal_nef_cache.totalCost());
 	PRINTF("Number of objects currently in CGAL cache: %d", AbstractNode::cgal_nef_cache.size());
 	QApplication::processEvents();
 
-	if (root_N->dim == 2) {
+	if (this->root_N->dim == 2) {
 		PRINTF("   Top level object is a 2D object:");
 		QApplication::processEvents();
-		PRINTF("   Empty:      %6s", root_N->p2.is_empty() ? "yes" : "no");
+		PRINTF("   Empty:      %6s", this->root_N->p2.is_empty() ? "yes" : "no");
 		QApplication::processEvents();
-		PRINTF("   Plane:      %6s", root_N->p2.is_plane() ? "yes" : "no");
+		PRINTF("   Plane:      %6s", this->root_N->p2.is_plane() ? "yes" : "no");
 		QApplication::processEvents();
-		PRINTF("   Vertices:   %6d", (int)root_N->p2.explorer().number_of_vertices());
+		PRINTF("   Vertices:   %6d", (int)this->root_N->p2.explorer().number_of_vertices());
 		QApplication::processEvents();
-		PRINTF("   Halfedges:  %6d", (int)root_N->p2.explorer().number_of_halfedges());
+		PRINTF("   Halfedges:  %6d", (int)this->root_N->p2.explorer().number_of_halfedges());
 		QApplication::processEvents();
-		PRINTF("   Edges:      %6d", (int)root_N->p2.explorer().number_of_edges());
+		PRINTF("   Edges:      %6d", (int)this->root_N->p2.explorer().number_of_edges());
 		QApplication::processEvents();
-		PRINTF("   Faces:      %6d", (int)root_N->p2.explorer().number_of_faces());
+		PRINTF("   Faces:      %6d", (int)this->root_N->p2.explorer().number_of_faces());
 		QApplication::processEvents();
-		PRINTF("   FaceCycles: %6d", (int)root_N->p2.explorer().number_of_face_cycles());
+		PRINTF("   FaceCycles: %6d", (int)this->root_N->p2.explorer().number_of_face_cycles());
 		QApplication::processEvents();
-		PRINTF("   ConnComp:   %6d", (int)root_N->p2.explorer().number_of_connected_components());
+		PRINTF("   ConnComp:   %6d", (int)this->root_N->p2.explorer().number_of_connected_components());
 		QApplication::processEvents();
 	}
 
-	if (root_N->dim == 3) {
+	if (this->root_N->dim == 3) {
 		PRINTF("   Top level object is a 3D object:");
-		PRINTF("   Simple:     %6s", root_N->p3.is_simple() ? "yes" : "no");
+		PRINTF("   Simple:     %6s", this->root_N->p3.is_simple() ? "yes" : "no");
 		QApplication::processEvents();
-		PRINTF("   Valid:      %6s", root_N->p3.is_valid() ? "yes" : "no");
+		PRINTF("   Valid:      %6s", this->root_N->p3.is_valid() ? "yes" : "no");
 		QApplication::processEvents();
-		PRINTF("   Vertices:   %6d", (int)root_N->p3.number_of_vertices());
+		PRINTF("   Vertices:   %6d", (int)this->root_N->p3.number_of_vertices());
 		QApplication::processEvents();
-		PRINTF("   Halfedges:  %6d", (int)root_N->p3.number_of_halfedges());
+		PRINTF("   Halfedges:  %6d", (int)this->root_N->p3.number_of_halfedges());
 		QApplication::processEvents();
-		PRINTF("   Edges:      %6d", (int)root_N->p3.number_of_edges());
+		PRINTF("   Edges:      %6d", (int)this->root_N->p3.number_of_edges());
 		QApplication::processEvents();
-		PRINTF("   Halffacets: %6d", (int)root_N->p3.number_of_halffacets());
+		PRINTF("   Halffacets: %6d", (int)this->root_N->p3.number_of_halffacets());
 		QApplication::processEvents();
-		PRINTF("   Facets:     %6d", (int)root_N->p3.number_of_facets());
+		PRINTF("   Facets:     %6d", (int)this->root_N->p3.number_of_facets());
 		QApplication::processEvents();
-		PRINTF("   Volumes:    %6d", (int)root_N->p3.number_of_volumes());
+		PRINTF("   Volumes:    %6d", (int)this->root_N->p3.number_of_volumes());
 		QApplication::processEvents();
 	}
 
@@ -996,7 +1008,6 @@ void MainWindow::actionRenderCGAL()
 
 	delete pd;
 	current_win = NULL;
-
 }
 
 #endif /* ENABLE_CGAL */
@@ -1054,19 +1065,19 @@ void MainWindow::actionExportSTLorOFF(bool)
 #ifdef ENABLE_CGAL
 	current_win = this;
 
-	if (!root_N) {
+	if (!this->root_N) {
 		PRINT("Nothing to export! Try building first (press F6).");
 		current_win = NULL;
 		return;
 	}
 
-	if (root_N->dim != 3) {
+	if (this->root_N->dim != 3) {
 		PRINT("Current top level object is not a 3D object.");
 		current_win = NULL;
 		return;
 	}
 
-	if (!root_N->p3.is_simple()) {
+	if (!this->root_N->p3.is_simple()) {
 		PRINT("Object isn't a valid 2-manifold! Modify your design..");
 		current_win = NULL;
 		return;
@@ -1083,16 +1094,16 @@ void MainWindow::actionExportSTLorOFF(bool)
 
 	QProgressDialog *pd = new QProgressDialog(
 			stl_mode ? "Exporting object to STL file..." : "Exporting object to OFF file...",
-			QString(), 0, root_N->p3.number_of_facets() + 1);
+			QString(), 0, this->root_N->p3.number_of_facets() + 1);
 	pd->setValue(0);
 	pd->setAutoClose(false);
 	pd->show();
 	QApplication::processEvents();
 
 	if (stl_mode)
-		export_stl(root_N, stl_filename, pd);
+		export_stl(this->root_N, stl_filename, pd);
 	else
-		export_off(root_N, stl_filename, pd);
+		export_off(this->root_N, stl_filename, pd);
 
 	PRINTF("%s export finished.", stl_mode ? "STL" : "OFF");
 
@@ -1117,13 +1128,13 @@ void MainWindow::actionExportDXF()
 #ifdef ENABLE_CGAL
 	current_win = this;
 
-	if (!root_N) {
+	if (!this->root_N) {
 		PRINT("Nothing to export! Try building first (press F6).");
 		current_win = NULL;
 		return;
 	}
 
-	if (root_N->dim != 2) {
+	if (this->root_N->dim != 2) {
 		PRINT("Current top level object is not a 2D object.");
 		current_win = NULL;
 		return;
@@ -1137,7 +1148,7 @@ void MainWindow::actionExportDXF()
 		return;
 	}
 
-	export_dxf(root_N, stl_filename, NULL);
+	export_dxf(this->root_N, stl_filename, NULL);
 	PRINTF("DXF export finished.");
 
 	current_win = NULL;
@@ -1206,6 +1217,7 @@ static void renderCSGChainviaOpenCSG(CSGChain *chain, GLint *shaderinfo, bool hi
 				} else if (background) {
 					chain->polysets[j]->render_surface(PolySet::COLORMODE_BACKGROUND, PolySet::csgmode_e(csgmode + 10), m, shaderinfo);
 				} else if (m[16] >= 0 || m[17] >= 0 || m[18] >= 0 || m[19] >= 0) {
+					// User-defined color from source
 					glColor4d(m[16], m[17], m[18], m[19]);
 					if (shaderinfo) {
 						glUniform4f(shaderinfo[1], m[16], m[17], m[18], m[19]);
@@ -1301,14 +1313,15 @@ static void renderGLviaCGAL(void *vp)
 	MainWindow *m = (MainWindow*)vp;
 	if (m->recreate_cgal_ogl_p) {
 		m->recreate_cgal_ogl_p = false;
-		CGAL::OGL::Polyhedron *p = (CGAL::OGL::Polyhedron*)m->cgal_ogl_p;
+		Polyhedron *p = (Polyhedron*)m->cgal_ogl_p;
 		delete p;
 		m->cgal_ogl_p = NULL;
 		if (m->cgal_ogl_ps)
 			m->cgal_ogl_ps->unlink();
 		m->cgal_ogl_ps = NULL;
 	}
-	if (m->root_N && m->root_N->dim == 2)
+	if (!m->root_N) return;
+	if (m->root_N->dim == 2)
 	{
 		if (m->cgal_ogl_ps == NULL) {
 			DxfData dd(*m->root_N);
@@ -1317,8 +1330,10 @@ static void renderGLviaCGAL(void *vp)
 			dxf_tesselate(m->cgal_ogl_ps, &dd, 0, true, false, 0);
 		}
 
+		// Draw 2D polygons
 		glDisable(GL_LIGHTING);
-		glColor3d(0.0, 0.75, 0.6);
+		const QColor &col = Preferences::inst()->color(Preferences::CGAL_FACE_2D_COLOR);
+		glColor3f(col.redF(), col.greenF(), col.blueF());
 
 		for (int i=0; i < m->cgal_ogl_ps->polygons.size(); i++) {
 			glBegin(GL_POLYGON);
@@ -1335,10 +1350,12 @@ static void renderGLviaCGAL(void *vp)
 		typedef Explorer::Point Point;
 		Explorer E = m->root_N->p2.explorer();
 		
+		// Draw 2D edges
 		glDisable(GL_DEPTH_TEST);
 		glDisable(GL_LIGHTING);
 		glLineWidth(2);
-		glColor3d(0.0, 0.0, 0.0);
+		const QColor &col2 = Preferences::inst()->color(Preferences::CGAL_EDGE_2D_COLOR);
+		glColor3f(col2.redF(), col2.greenF(), col2.blueF());
 
 		// Extract the boundary, including inner boundaries of the polygons
 		for (fci_t fit = E.faces_begin(), fend = E.faces_end(); fit != fend; ++fit)
@@ -1366,22 +1383,30 @@ static void renderGLviaCGAL(void *vp)
 
 		glEnable(GL_DEPTH_TEST);
 	}
-	if (m->root_N && m->root_N->dim == 3)
+	else if (m->root_N->dim == 3)
 	{
-		CGAL::OGL::Polyhedron *p = (CGAL::OGL::Polyhedron*)m->cgal_ogl_p;
+		Polyhedron *p = (Polyhedron*)m->cgal_ogl_p;
 		if (!p) {
-			m->cgal_ogl_p = p = new CGAL::OGL::Polyhedron();
-			CGAL::OGL::Nef3_Converter<CGAL_Nef_polyhedron3>::convert_to_OGLPolyhedron(m->root_N->p3, p);
+			Nef3_Converter<CGAL_Nef_polyhedron3>::setColor(Polyhedron::CGAL_NEF3_MARKED_FACET_COLOR,
+																										 Preferences::inst()->color(Preferences::CGAL_FACE_BACK_COLOR).red(),
+																										 Preferences::inst()->color(Preferences::CGAL_FACE_BACK_COLOR).green(),
+																										 Preferences::inst()->color(Preferences::CGAL_FACE_BACK_COLOR).blue());
+			Nef3_Converter<CGAL_Nef_polyhedron3>::setColor(Polyhedron::CGAL_NEF3_UNMARKED_FACET_COLOR,
+																										 Preferences::inst()->color(Preferences::CGAL_FACE_FRONT_COLOR).red(),
+																										 Preferences::inst()->color(Preferences::CGAL_FACE_FRONT_COLOR).green(),
+																										 Preferences::inst()->color(Preferences::CGAL_FACE_FRONT_COLOR).blue());
+			m->cgal_ogl_p = p = new Polyhedron();
+			Nef3_Converter<CGAL_Nef_polyhedron3>::convert_to_OGLPolyhedron(m->root_N->p3, p);
 			p->init();
 		}
 		if (m->viewActionCGALSurfaces->isChecked())
-			p->set_style(CGAL::OGL::SNC_BOUNDARY);
+			p->set_style(SNC_BOUNDARY);
 		if (m->viewActionCGALGrid->isChecked())
-			p->set_style(CGAL::OGL::SNC_SKELETON);
+			p->set_style(SNC_SKELETON);
 #if 0
 		p->draw();
 #else
-		if (p->style == CGAL::OGL::SNC_BOUNDARY) {
+		if (p->style == SNC_BOUNDARY) {
 			glCallList(p->object_list_+2);
 			if (m->viewActionShowEdges->isChecked()) {
 				glDisable(GL_LIGHTING);
@@ -1709,3 +1734,8 @@ void MainWindow::closeEvent(QCloseEvent *event)
 	}
 }
 
+void
+MainWindow::preferences()
+{
+	Preferences::inst()->show();
+}

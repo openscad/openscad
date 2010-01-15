@@ -142,6 +142,7 @@
     <addaction name="separator"/>
     <addaction name="editActionZoomIn"/>
     <addaction name="editActionZoomOut"/>
+    <addaction name="editActionPreferences"/>
    </widget>
    <widget class="QMenu" name="menu_Design">
     <property name="title">
@@ -605,6 +606,11 @@
     <string>Ctrl+W</string>
    </property>
   </action>
+  <action name="editActionPreferences">
+   <property name="text">
+    <string>Preferences</string>
+   </property>
+  </action>
   <action name="designActionFlushCaches">
    <property name="text">
     <string>Flush Caches</string>
@@ -619,7 +625,9 @@
    <container>1</container>
   </customwidget>
  </customwidgets>
- <resources/>
+ <resources>
+  <include location="openscad.qrc"/>
+ </resources>
  <connections>
   <connection>
    <sender>fileActionQuit</sender>

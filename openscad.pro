@@ -1,6 +1,7 @@
 isEmpty(VERSION) VERSION = $$system(date "+%Y.%m.%d")
 DEFINES += OPENSCAD_VERSION=$$VERSION
 TEMPLATE = app
+RESOURCES = openscad.qrc
 
 macx {
   TARGET = OpenSCAD
@@ -18,7 +19,7 @@ QT += opengl
 # Application configuration
 CONFIG += debug
 # CONFIG += release
-# CONFIG += mdi
+CONFIG += mdi
 CONFIG += cgal
 CONFIG += opencsg
 
@@ -74,12 +75,15 @@ QMAKE_CXXFLAGS_DEBUG = -O0 -ggdb
 LEXSOURCES += lexer.l
 YACCSOURCES += parser.y
 
-FORMS   += MainWindow.ui
+FORMS   += MainWindow.ui \
+           Preferences.ui
 
 HEADERS += openscad.h \
            MainWindow.h \
+           Preferences.h \
            GLView.h \
-           printutils.h
+           printutils.h \
+           CGAL_renderer.h
 
 macx: HEADERS += EventFilter.h
 
@@ -90,7 +94,8 @@ SOURCES += openscad.cc mainwin.cc glview.cc export.cc \
            import.cc dxfdata.cc dxftess.cc dxftess-glu.cc \
            dxftess-cgal.cc dxfdim.cc \
            dxflinextrude.cc dxfrotextrude.cc highlighter.cc \
-           printutils.cc nef2dxf.cc
+           printutils.cc nef2dxf.cc \
+           Preferences.cc
 
 target.path = /usr/local/bin/
 INSTALLS += target

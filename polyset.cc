@@ -22,6 +22,7 @@
 
 #include "openscad.h"
 #include "printutils.h"
+#include "Preferences.h"
 
 QCache<QString,PolySet::ps_cache_entry> PolySet::ps_cache(100);
 
@@ -133,16 +134,18 @@ void PolySet::render_surface(colormode_e colormode, csgmode_e csgmode, double *m
 	bool mirrored = m_scale_rotate_det < 0;
 
 	if (colormode == COLORMODE_MATERIAL) {
-		glColor3ub(249, 215, 44);
+		const QColor &col = Preferences::inst()->color(Preferences::OPENCSG_FACE_FRONT_COLOR);
+		glColor3f(col.redF(), col.greenF(), col.blueF());
 #ifdef ENABLE_OPENCSG
 		if (shaderinfo) {
-			glUniform4f(shaderinfo[1], 249 / 255.0, 215 / 255.0, 44 / 255.0, 1.0);
+			glUniform4f(shaderinfo[1], col.redF(), col.greenF(), col.blueF(), 1.0f);
 			glUniform4f(shaderinfo[2], 255 / 255.0, 236 / 255.0, 94 / 255.0, 1.0);
 		}
 #endif /* ENABLE_OPENCSG */
 	}
 	if (colormode == COLORMODE_CUTOUT) {
-		glColor3ub(157, 203, 81);
+		const QColor &col = Preferences::inst()->color(Preferences::OPENCSG_FACE_BACK_COLOR);
+		glColor3f(col.redF(), col.greenF(), col.blueF());
 #ifdef ENABLE_OPENCSG
 		if (shaderinfo) {
 			glUniform4f(shaderinfo[1], 157 / 255.0, 203 / 255.0, 81 / 255.0, 1.0);
