@@ -1,0 +1,6 @@
+ <!DOCTYPE RCC><RCC version="1.0">
+ <qresource prefix="/">
+     <file>prefsAdvanced.png</file>
+     <file>prefs3DView.png</file>
+ </qresource>
+ </RCC>
