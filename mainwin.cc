@@ -1027,7 +1027,8 @@ void MainWindow::actionRenderCGAL()
 void MainWindow::actionDisplayAST()
 {
 	current_win = this;
-	QTextEdit *e = new QTextEdit(NULL);
+	QTextEdit *e = new QTextEdit(this);
+	e->setWindowFlags(Qt::Window);
 	e->setTabStopWidth(30);
 	e->setWindowTitle("AST Dump");
 	e->setReadOnly(true);
@@ -1044,9 +1045,11 @@ void MainWindow::actionDisplayAST()
 void MainWindow::actionDisplayCSGTree()
 {
 	current_win = this;
-	QTextEdit *e = new QTextEdit(NULL);
+	QTextEdit *e = new QTextEdit(this);
+	e->setWindowFlags(Qt::Window);
 	e->setTabStopWidth(30);
 	e->setWindowTitle("CSG Tree Dump");
+	e->setReadOnly(true);
 	if (root_node) {
 		e->setPlainText(root_node->dump(""));
 	} else {
@@ -1060,9 +1063,11 @@ void MainWindow::actionDisplayCSGTree()
 void MainWindow::actionDisplayCSGProducts()
 {
 	current_win = this;
-	QTextEdit *e = new QTextEdit(NULL);
+	QTextEdit *e = new QTextEdit(this);
+	e->setWindowFlags(Qt::Window);
 	e->setTabStopWidth(30);
 	e->setWindowTitle("CSG Products Dump");
+	e->setReadOnly(true);
 	e->setPlainText(QString("\nCSG before normalization:\n%1\n\n\nCSG after normalization:\n%2\n\n\nCSG rendering chain:\n%3\n\n\nHighlights CSG rendering chain:\n%4\n\n\nBackground CSG rendering chain:\n%5\n").arg(root_raw_term ? root_raw_term->dump() : "N/A", root_norm_term ? root_norm_term->dump() : "N/A", root_chain ? root_chain->dump() : "N/A", highlights_chain ? highlights_chain->dump() : "N/A", background_chain ? background_chain->dump() : "N/A"));
 	e->show();
 	e->resize(600, 400);
