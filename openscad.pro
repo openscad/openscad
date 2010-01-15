@@ -13,6 +13,10 @@ else {
   TARGET = openscad
 }
 
+win32 {
+  RC_FILE = openscad_win32.rc
+}
+
 CONFIG += qt
 QT += opengl
 
