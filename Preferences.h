@@ -21,7 +21,8 @@ public:
 		CGAL_FACE_BACK_COLOR,
 		CGAL_EDGE_FRONT_COLOR,
 		CGAL_EDGE_BACK_COLOR,
-		CGAL_EDGE_2D_COLOR
+		CGAL_EDGE_2D_COLOR,
+		CROSSHAIR_COLOR
 	};
 	void setColor(RenderColor idx, const QColor &color) { this->colormap[idx] = color; }
 	const QColor &color(RenderColor idx) { return this->colormap[idx]; }

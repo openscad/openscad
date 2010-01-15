@@ -12,34 +12,49 @@
 class GLView : public QGLWidget
 {
 	Q_OBJECT
+	Q_PROPERTY(bool showAxes READ showAxes WRITE setShowAxes);
+	Q_PROPERTY(bool showCrosshairs READ showCrosshairs WRITE setShowCrosshairs);
+	Q_PROPERTY(bool orthoMode READ orthoMode WRITE setOrthoMode);
 
 public:
-	void (*renderfunc)(void*);
-	void *renderfunc_vp;
+	GLView(QWidget *parent = NULL);
+	void setRenderFunc(void (*func)(void*), void *userdata);
+#ifdef ENABLE_OPENCSG
+	bool hasOpenCSGSupport() { return this->opencsg_support; }
+#endif
+	// Properties
+	bool showAxes() const { return this->showaxes; }
+	void setShowAxes(bool enabled) { this->showaxes = enabled; }
+	bool showCrosshairs() const { return this->showcrosshairs; }
+	void setShowCrosshairs(bool enabled) { this->showcrosshairs = enabled; }
+	bool orthoMode() const { return this->orthomode; }
+	void setOrthoMode(bool enabled) { this->orthomode = enabled; }
 
-	bool orthomode;
-	bool showaxes;
-	bool showcrosshairs;
-
-	double viewer_distance;
+	QLabel *statusLabel;
 	double object_rot_x;
 	double object_rot_y;
 	double object_rot_z;
 	double object_trans_x;
 	double object_trans_y;
 	double object_trans_z;
-
-	double w_h_ratio;
 	GLint shaderinfo[11];
 
-	QLabel *statusLabel;
+private:
+	void (*renderfunc)(void*);
+	void *renderfunc_vp;
+
+	bool showaxes;
+	bool showcrosshairs;
+	bool orthomode;
+
+	double viewer_distance;
+
+	double w_h_ratio;
+
 #ifdef ENABLE_OPENCSG
 	bool opencsg_support;
 #endif
 
-	GLView(QWidget *parent = NULL);
-
-protected:
 	bool mouse_drag_active;
 	int last_mouse_x;
 	int last_mouse_y;

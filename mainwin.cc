@@ -214,7 +214,7 @@ MainWindow::MainWindow(const char *filename)
 	this->viewActionOpenCSG->setVisible(false);
 #else
 	connect(this->viewActionOpenCSG, SIGNAL(triggered()), this, SLOT(viewModeOpenCSG()));
-	if (!screen->opencsg_support) {
+	if (!screen->hasOpenCSGSupport()) {
 		this->viewActionOpenCSG->setEnabled(false);
 	}
 #endif
@@ -1293,11 +1293,10 @@ static void renderGLviaOpenCSG(void *vp)
 */
 void MainWindow::viewModeOpenCSG()
 {
-	if (screen->opencsg_support) {
+	if (screen->hasOpenCSGSupport()) {
 		viewModeActionsUncheck();
 		viewActionOpenCSG->setChecked(true);
-		screen->renderfunc = renderGLviaOpenCSG;
-		screen->renderfunc_vp = this;
+		screen->setRenderFunc(renderGLviaOpenCSG, this);
 		screen->updateGL();
 	} else {
 		viewModeThrownTogether();
@@ -1426,8 +1425,7 @@ void MainWindow::viewModeCGALSurface()
 {
 	viewModeActionsUncheck();
 	viewActionCGALSurfaces->setChecked(true);
-	screen->renderfunc = renderGLviaCGAL;
-	screen->renderfunc_vp = this;
+	screen->setRenderFunc(renderGLviaCGAL, this);
 	screen->updateGL();
 }
 
@@ -1435,8 +1433,7 @@ void MainWindow::viewModeCGALGrid()
 {
 	viewModeActionsUncheck();
 	viewActionCGALGrid->setChecked(true);
-	screen->renderfunc = renderGLviaCGAL;
-	screen->renderfunc_vp = this;
+	screen->setRenderFunc(renderGLviaCGAL, this);
 	screen->updateGL();
 }
 
@@ -1526,8 +1523,7 @@ void MainWindow::viewModeThrownTogether()
 {
 	viewModeActionsUncheck();
 	viewActionThrownTogether->setChecked(true);
-	screen->renderfunc = renderGLThrownTogether;
-	screen->renderfunc_vp = this;
+	screen->setRenderFunc(renderGLThrownTogether, this);
 	screen->updateGL();
 }
 
@@ -1538,13 +1534,13 @@ void MainWindow::viewModeShowEdges()
 
 void MainWindow::viewModeShowAxes()
 {
-	screen->showaxes = viewActionShowAxes->isChecked();
+	screen->setShowAxes(viewActionShowAxes->isChecked());
 	screen->updateGL();
 }
 
 void MainWindow::viewModeShowCrosshairs()
 {
-	screen->showcrosshairs = viewActionShowCrosshairs->isChecked();
+	screen->setShowCrosshairs(viewActionShowCrosshairs->isChecked());
 	screen->updateGL();
 }
 
@@ -1649,7 +1645,7 @@ void MainWindow::viewPerspective()
 {
 	viewActionPerspective->setChecked(true);
 	viewActionOrthogonal->setChecked(false);
-	screen->orthomode = false;
+	screen->setOrthoMode(false);
 	screen->updateGL();
 }
 
@@ -1657,7 +1653,7 @@ void MainWindow::viewOrthogonal()
 {
 	viewActionPerspective->setChecked(false);
 	viewActionOrthogonal->setChecked(true);
-	screen->orthomode = true;
+	screen->setOrthoMode(true);
 	screen->updateGL();
 }
 

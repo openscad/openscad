@@ -20,6 +20,7 @@
 
 #include "openscad.h"
 #include "GLView.h"
+#include "Preferences.h"
 
 #include <QApplication>
 #include <QWheelEvent>
@@ -61,7 +62,11 @@ GLView::GLView(QWidget *parent) : QGLWidget(parent)
 #endif
 }
 
-extern GLint e1, e2, e3;
+void GLView::setRenderFunc(void (*func)(void*), void *userdata)
+{
+	this->renderfunc = func;
+	this->renderfunc_vp = userdata;
+}
 
 void GLView::initializeGL()
 {
@@ -71,7 +76,8 @@ void GLView::initializeGL()
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	glClearColor(1.0, 1.0, 0.9, 0.0);
+	const QColor &col = Preferences::inst()->color(Preferences::BACKGROUND_COLOR);
+	glClearColor(col.redF(), col.greenF(), col.blueF(), 0.0);
 
 #ifdef ENABLE_OPENCSG
 	GLenum err = glewInit();
@@ -234,7 +240,8 @@ void GLView::paintGL()
 	if (showcrosshairs)
 	{
 		glLineWidth(3);
-		glColor3d(0.5, 0.0, 0.0);
+		const QColor &col = Preferences::inst()->color(Preferences::CROSSHAIR_COLOR);
+		glColor3f(col.redF(), col.greenF(), col.blueF());
 		glBegin(GL_LINES);
 		for (double xf = -1; xf <= +1; xf += 2)
 		for (double yf = -1; yf <= +1; yf += 2) {
@@ -247,6 +254,7 @@ void GLView::paintGL()
 
 	glTranslated(object_trans_x, object_trans_y, object_trans_z);
 
+	// Large gray axis cross inline with the model
 	if (showaxes)
 	{
 		glLineWidth(1);
@@ -271,6 +279,8 @@ void GLView::paintGL()
 	if (renderfunc)
 		renderfunc(renderfunc_vp);
 
+	// Small axis cross in the lower left corner
+	// FIXME: Adjust color to keep contrast with background
 	if (showaxes)
 	{
 		glDepthFunc(GL_ALWAYS);
@@ -290,10 +300,12 @@ void GLView::paintGL()
 		glRotated(object_rot_z, 0.0, 0.0, 1.0);
 
 		glLineWidth(1);
-		glColor3d(0.0, 0.0, 1.0);
 		glBegin(GL_LINES);
+		glColor3d(1.0, 0.0, 0.0);
 		glVertex3d(0, 0, 0); glVertex3d(10, 0, 0);
+		glColor3d(0.0, 1.0, 0.0);
 		glVertex3d(0, 0, 0); glVertex3d(0, 10, 0);
+		glColor3d(0.0, 0.0, 1.0);
 		glVertex3d(0, 0, 0); glVertex3d(0, 0, 10);
 		glEnd();
 
@@ -326,6 +338,7 @@ void GLView::paintGL()
 		glMatrixMode(GL_MODELVIEW);
 		glLoadIdentity();
 
+		// FIXME: Adjust color to keep contrast with background
 		glColor3d(0.0, 0.0, 0.0);
 		glBegin(GL_LINES);
 		// X Label

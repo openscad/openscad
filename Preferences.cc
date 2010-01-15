@@ -35,6 +35,7 @@ Preferences::Preferences(QWidget *parent) : QMainWindow(parent)
 	this->colormap[CGAL_EDGE_FRONT_COLOR] = QColor(0xff, 0x00, 0x00);
 	this->colormap[CGAL_EDGE_BACK_COLOR] = QColor(0xff, 0x00, 0x00);
 	this->colormap[CGAL_EDGE_2D_COLOR] = QColor(0xff, 0x00, 0x00);
+	this->colormap[CROSSHAIR_COLOR] = QColor(0x80, 0x00, 0x00);
 
 	QActionGroup *group = new QActionGroup(this);
 	group->addAction(prefsAction3DView);
