@@ -316,12 +316,12 @@ QString Value::dump() const
 	}
 	if (type == RANGE) {
 		QString text;
-		text.sprintf("[ %f : %f : %f ]", range_begin, range_step, range_end);
+		text.sprintf("[ %g : %g : %g ]", range_begin, range_step, range_end);
 		return text;
 	}
 	if (type == NUMBER) {
 		QString text;
-		text.sprintf("%f", num);
+		text.sprintf("%g", num);
 		return text;
 	}
 	if (type == BOOL) {
