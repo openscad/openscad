@@ -227,12 +227,13 @@ int main(int argc, char **argv)
 	}
 	else if (useGUI)
 	{
-		MainWindow *m = new MainWindow(filename);
 #ifdef ENABLE_MDI
+		new MainWindow(filename);
 		while (optind < argc)
 			new MainWindow(argv[optind++]);
 		app.connect(&app, SIGNAL(lastWindowClosed()), &app, SLOT(quit()));
 #else
+		MainWindow *m = new MainWindow(filename);
 		app.connect(m, SIGNAL(destroyed()), &app, SLOT(quit()));
 #endif
 		rc = app.exec();
