@@ -37,7 +37,7 @@ static void help(const char *progname)
 {
 	fprintf(stderr, "Usage: %s [ { -s stl_file | -o off_file | -x dxf_file } [ -d deps_file ] ]\\\n"
 			"%*s[ -m make_command ] [ -D var=val [..] ] filename\n",
-			progname, strlen(progname)+8, "");
+			progname, int(strlen(progname))+8, "");
 	exit(1);
 }
 
