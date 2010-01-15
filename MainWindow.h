@@ -10,7 +10,7 @@ class MainWindow : public QMainWindow, public Ui::MainWindow
 	Q_OBJECT
 
 public:
-  static QPointer<MainWindow> current_win;
+	static QPointer<MainWindow> current_win;
 	static void requestOpenFile(const QString &filename);
 
 	QString fileName;

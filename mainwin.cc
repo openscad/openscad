@@ -485,7 +485,7 @@ void MainWindow::compile(bool procevents)
 	root_node = NULL;
 	enableOpenCSG = false;
 
-  // Initialize special variables
+	// Initialize special variables
 	root_ctx.set_variable("$t", Value(e_tval->text().toDouble()));
 
 	Value vpt;
@@ -895,13 +895,23 @@ void MainWindow::actionCompile()
 
 	compile(!viewActionAnimate->isChecked());
 
-  // Go to non-CGAL view mode
+	// Go to non-CGAL view mode
 	if (!viewActionOpenCSG->isChecked() && !viewActionThrownTogether->isChecked()) {
 		viewModeOpenCSG();
 	}
 	else {
 		screen->updateGL();
 	}
+
+	if (viewActionAnimate->isChecked() && e_dump->isChecked()) {
+		QImage img = screen->grabFrameBuffer();
+		QString filename;
+		double s = e_fsteps->text().toDouble();
+		double t = e_tval->text().toDouble();
+		filename.sprintf("frame%05d.png", int(round(s*t)));
+		img.save(filename, "PNG");
+	}
+	
 	current_win = NULL;
 }
 

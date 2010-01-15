@@ -83,6 +83,13 @@
            <item>
             <widget class="QLineEdit" name="e_fsteps"/>
            </item>
+           <item>
+            <widget class="QCheckBox" name="e_dump">
+             <property name="text">
+              <string>Dump Pictures</string>
+             </property>
+            </widget>
+           </item>
           </layout>
          </widget>
         </item>
@@ -98,7 +105,7 @@
      <x>0</x>
      <y>0</y>
      <width>681</width>
-     <height>22</height>
+     <height>25</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_File">
