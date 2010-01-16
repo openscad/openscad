@@ -60,14 +60,17 @@ esac
 
 qmake VERSION=$VERSION CONFIG+=$CONFIG
 make -s clean
-if [[ $OS == WIN ]]; then
-    #if the following files are missing their tried removal stops the build process on msys
-    touch -t 200012121010 parser_yacc.h parser_yacc.cpp lexer_lex.cpp
-fi
+case $OS in
+    MACOSX) 
+        rm -rf OpenSCAD.app
+        ;;
+    WIN)
+            #if the following files are missing their tried removal stops the build process on msys
+        touch -t 200012121010 parser_yacc.h parser_yacc.cpp lexer_lex.cpp
+        ;;
+esac
 
 make -j2 $TARGET
-
-echo "Preparing executable..."
 
 echo "Creating directory structure..."
 rm -rf openscad-$VERSION
@@ -104,7 +107,7 @@ case $OS in
         ;;
 esac
 
-echo "Creating directory structure..."
+echo "Creating archive.."
 "$ZIP" $ZIPARGS openscad-$VERSION.zip openscad-$VERSION
 
 rm -rf openscad-$VERSION
