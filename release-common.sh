@@ -21,7 +21,7 @@ printUsage()
 
 if [[ $OSTYPE =~ "darwin" ]]; then
   OS=MACOSX
-elif [[ $OSTYPE == "Msys" ]]; then
+elif [[ $OSTYPE == "msys" ]]; then
   OS=WIN
 fi
 
