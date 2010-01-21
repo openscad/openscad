@@ -67,6 +67,8 @@ opencsg {
   }
 }
 
+include(qtcolorbutton/qtcolorbutton.pri)
+
 QMAKE_CXXFLAGS_RELEASE = -O3 -march=pentium
 QMAKE_CXXFLAGS_DEBUG = -O0 -ggdb
 

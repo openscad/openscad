@@ -273,6 +273,8 @@ MainWindow::MainWindow(const char *filename)
 	connect(editor->document(), SIGNAL(modificationChanged(bool)), fileActionSave, SLOT(setEnabled(bool)));
 	connect(screen, SIGNAL(doAnimateUpdate()), this, SLOT(animateUpdate()));
 
+	connect(Preferences::inst(), SIGNAL(requestRedraw()), this->screen, SLOT(updateGL()));
+
 	// display this window and check for OpenGL 2.0 (OpenCSG) support
 	viewModeThrownTogether();
 	show();

@@ -24,15 +24,19 @@ public:
 		CGAL_EDGE_2D_COLOR,
 		CROSSHAIR_COLOR
 	};
-	void setColor(RenderColor idx, const QColor &color) { this->colormap[idx] = color; }
-	const QColor &color(RenderColor idx) { return this->colormap[idx]; }
+	const QColor &color(RenderColor idx);
 
 public slots:
 	void actionTriggered(class QAction *);
+	void colorSchemeChanged();
+
+signals:
+	void requestRedraw();
 
 private:
 	Preferences(QWidget *parent = NULL);
-	QMap<RenderColor, QColor> colormap;
+	QHash<QString, QMap<RenderColor, QColor> > colorschemes;
+	QString colorscheme;
 
 	static Preferences *instance;
 };
