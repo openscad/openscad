@@ -64,8 +64,8 @@ o Language Frontend
 o DXF Import
   - Support for POLYLINE entity
   - Support for SPLINE entity
-  - Support for Aligned, Radius, Diameter and Ordinate DIMENSION
   - Support for LEADER entity
+  - Support for MTEXT entity ?
   - Test INSERT with rotation. code looks wrong
   - idea: DXF inline - convert from dxf to OpenSCAD syntax -> parametrize dxf content
 o Mesh optimization on STL export

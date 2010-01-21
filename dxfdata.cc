@@ -79,7 +79,7 @@ DxfData::DxfData(double fn, double fs, double fa, QString filename, QString laye
 
 	QString mode, layer, name, iddata;
 	int dimtype = 0;
-	double coords[7][2];
+	double coords[7][2]; // Used by DIMENSION entities
 	QVector<double> xverts;
 	QVector<double> yverts;
 	double radius = 0, start_angle = 0, stop_angle = 0;
@@ -237,6 +237,7 @@ DxfData::DxfData(double fn, double fs, double fa, QString filename, QString laye
 					for (int j = 0; j < 2; j++)
 						this->dims.last().coords[i][j] = coords[i][j];
 				this->dims.last().angle = start_angle;
+				this->dims.last().length = radius;
 				this->dims.last().name = name;
 			}
 			else if (mode == "BLOCK") {
@@ -287,6 +288,7 @@ DxfData::DxfData(double fn, double fs, double fa, QString filename, QString laye
 		case 40:
 			// CIRCLE, ARC: radius
 			// ELLIPSE: minor to major ratio
+			// DIMENSION (radial, diameter): Leader length
 			radius = data.toDouble() * scale;
 			break;
 		case 41: // for ELLIPSE

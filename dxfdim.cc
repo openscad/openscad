@@ -78,23 +78,30 @@ Value builtin_dxf_dim(const QVector<QString> &argnames, const QVector<Value> &ar
 			double distance_projected_on_line = fabs(x * cos(angle*M_PI/180) + y * sin(angle*M_PI/180));
 			return dxf_dim_cache[key] = Value(distance_projected_on_line);
 		}
-		if (type == 1) {
+		else if (type == 1) {
 			// Aligned
+			double x = d->coords[4][0] - d->coords[3][0];
+			double y = d->coords[4][1] - d->coords[3][1];
+			return dxf_dim_cache[key] = Value(sqrt(x*x + y*y));
 		}
-		if (type == 2) {
+		else if (type == 2) {
 			// Angular
 			double a1 = atan2(d->coords[0][0] - d->coords[5][0], d->coords[0][1] - d->coords[5][1]);
 			double a2 = atan2(d->coords[4][0] - d->coords[3][0], d->coords[4][1] - d->coords[3][1]);
 			return dxf_dim_cache[key] = Value(fabs(a1 - a2) * 180 / M_PI);
 		}
-		if (type == 3) {
-			// Diameter
+		else if (type == 3 || type == 4) {
+			// Diameter or Radius
+			double x = d->coords[5][0] - d->coords[0][0];
+			double y = d->coords[5][1] - d->coords[0][1];
+			return dxf_dim_cache[key] = Value(sqrt(x*x + y*y));
 		}
-		if (type == 4) {
-			// Radius
-		}
-		if (type == 5) {
+		else if (type == 5) {
 			// Angular 3 Point
+		}
+		else if (type == 6) {
+			// Ordinate
+			return dxf_dim_cache[key] = Value((d->type & 64) ? d->coords[3][0] : d->coords[3][1]);
 		}
 
 		PRINTA("WARNING: Dimension `%1' in `%2', layer `%3' has unsupported type!", name, filename, layername);
