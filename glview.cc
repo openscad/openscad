@@ -76,9 +76,6 @@ void GLView::initializeGL()
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	const QColor &col = Preferences::inst()->color(Preferences::BACKGROUND_COLOR);
-	glClearColor(col.redF(), col.greenF(), col.blueF(), 0.0);
-
 #ifdef ENABLE_OPENCSG
 	GLenum err = glewInit();
 	if (GLEW_OK != err) {
@@ -202,6 +199,9 @@ void GLView::resizeGL(int w, int h)
 
 void GLView::paintGL()
 {
+	const QColor &col = Preferences::inst()->color(Preferences::BACKGROUND_COLOR);
+	glClearColor(col.redF(), col.greenF(), col.blueF(), 0.0);
+
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
 	glMatrixMode(GL_PROJECTION);
