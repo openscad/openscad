@@ -66,7 +66,6 @@ o DXF Import
   - Support for SPLINE entity
   - Support for LEADER entity
   - Support for MTEXT entity ?
-  - Test INSERT with rotation. code looks wrong
   - idea: DXF inline - convert from dxf to OpenSCAD syntax -> parametrize dxf content
 o Mesh optimization on STL export
   - Remove super small triangles (all sides are short)

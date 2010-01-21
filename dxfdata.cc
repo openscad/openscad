@@ -82,7 +82,9 @@ DxfData::DxfData(double fn, double fs, double fa, QString filename, QString laye
 	double coords[7][2]; // Used by DIMENSION entities
 	QVector<double> xverts;
 	QVector<double> yverts;
-	double radius = 0, start_angle = 0, stop_angle = 0;
+	double radius = 0;
+	double arc_start_angle = 0, arc_stop_angle = 0;
+	double ellipse_start_angle = 0, ellipse_stop_angle = 0;
 
 	for (int i = 0; i < 7; i++)
 		for (int j = 0; j < 2; j++)
@@ -155,21 +157,21 @@ DxfData::DxfData(double fn, double fs, double fa, QString filename, QString laye
 			else if (mode == "ARC") {
 				Point center(xverts[0], yverts[0]);
 				int n = get_fragments_from_r(radius, fn, fs, fa);
-				while (start_angle > stop_angle)
-					stop_angle += 360.0;
-				n = (int)ceil(n * (stop_angle-start_angle) / 360);
+				while (arc_start_angle > arc_stop_angle)
+					arc_stop_angle += 360.0;
+				n = (int)ceil(n * (arc_stop_angle-arc_start_angle) / 360);
 				for (int i = 0; i < n; i++) {
-					double a1 = ((stop_angle-start_angle)*i)/n;
-					double a2 = ((stop_angle-start_angle)*(i+1))/n;
-					a1 = (start_angle + a1) * M_PI / 180.0;
-					a2 = (start_angle + a2) * M_PI / 180.0;
+					double a1 = ((arc_stop_angle-arc_start_angle)*i)/n;
+					double a2 = ((arc_stop_angle-arc_start_angle)*(i+1))/n;
+					a1 = (arc_start_angle + a1) * M_PI / 180.0;
+					a2 = (arc_start_angle + a2) * M_PI / 180.0;
 					ADD_LINE(cos(a1)*radius + center.x, sin(a1)*radius + center.y,
 									 cos(a2)*radius + center.x, sin(a2)*radius + center.y);
 				}
 			}
 			else if (mode == "ELLIPSE") {
 				// Commented code is meant as documentation of vector math
-				while (start_angle > stop_angle) stop_angle += 2 * M_PI;
+				while (ellipse_start_angle > ellipse_stop_angle) ellipse_stop_angle += 2 * M_PI;
 //				Vector2d center(xverts[0], yverts[0]);
 				Point center(xverts[0], yverts[0]);
 //				Vector2d ce(xverts[1], yverts[1]);
@@ -190,13 +192,13 @@ DxfData::DxfData(double fn, double fs, double fa, QString filename, QString laye
 
 				// the ratio stored in 'radius; due to the parser code not checking entity type
 				double r_minor = r_major * radius;
-				double sweep_angle = stop_angle-start_angle;
+				double sweep_angle = ellipse_stop_angle-ellipse_start_angle;
 				int n = get_fragments_from_r(r_major, fn, fs, fa);
 				n = (int)ceil(n * sweep_angle / (2 * M_PI));
 //				Vector2d p1;
 				Point p1;
 				for (int i=0;i<=n;i++) {
-					double a = (start_angle + sweep_angle*i/n);
+					double a = (ellipse_start_angle + sweep_angle*i/n);
 //					Vector2d p2(cos(a)*r_major, sin(a)*r_minor);
 					Point p2(cos(a)*r_major, sin(a)*r_minor);
 //					p2.rotate(rot_angle);
@@ -215,16 +217,18 @@ DxfData::DxfData(double fn, double fs, double fa, QString filename, QString laye
 				}
 			}
 			else if (mode == "INSERT") {
+				// scale is stored in ellipse_start|stop_angle, rotation in arc_start_angle;
+				// due to the parser code not checking entity type
 				int n = blockdata[iddata].size();
 				for (int i = 0; i < n; i++) {
-					double a = -start_angle * M_PI / 180.0;
-					double lx1 = blockdata[iddata][i].p[0]->x;
-					double ly1 = blockdata[iddata][i].p[0]->y;
-					double lx2 = blockdata[iddata][i].p[1]->x;
-					double ly2 = blockdata[iddata][i].p[1]->y;
-					double px1 = cos(a)*lx1 + sin(a)*ly1 + xverts[0];
+					double a = arc_start_angle * M_PI / 180.0;
+					double lx1 = blockdata[iddata][i].p[0]->x * ellipse_start_angle;
+					double ly1 = blockdata[iddata][i].p[0]->y * ellipse_stop_angle;
+					double lx2 = blockdata[iddata][i].p[1]->x * ellipse_start_angle;
+					double ly2 = blockdata[iddata][i].p[1]->y * ellipse_stop_angle;
+					double px1 = cos(a)*lx1 - sin(a)*ly1 + xverts[0];
 					double py1 = sin(a)*lx1 + cos(a)*ly1 + yverts[0];
-					double px2 = cos(a)*lx2 + sin(a)*ly2 + xverts[0];
+					double px2 = cos(a)*lx2 - sin(a)*ly2 + xverts[0];
 					double py2 = sin(a)*lx2 + cos(a)*ly2 + yverts[0];
 					ADD_LINE(px1, py1, px2, py2);
 				}
@@ -236,7 +240,7 @@ DxfData::DxfData(double fn, double fs, double fa, QString filename, QString laye
 				for (int i = 0; i < 7; i++)
 					for (int j = 0; j < 2; j++)
 						this->dims.last().coords[i][j] = coords[i][j];
-				this->dims.last().angle = start_angle;
+				this->dims.last().angle = ellipse_start_angle;
 				this->dims.last().length = radius;
 				this->dims.last().name = name;
 			}
@@ -262,7 +266,11 @@ DxfData::DxfData(double fn, double fs, double fa, QString filename, QString laye
 					coords[i][j] = 0;
 			xverts.clear();
 			yverts.clear();
-			radius = start_angle = stop_angle = 0;
+			radius = arc_start_angle = arc_stop_angle = 0;
+			ellipse_start_angle = ellipse_stop_angle = 0;
+			if (mode == "INSERT") {
+				ellipse_start_angle = ellipse_stop_angle = 1.0; // scale
+			}
 			break;
 		case 1:
 			name = data;
@@ -291,13 +299,23 @@ DxfData::DxfData(double fn, double fs, double fa, QString filename, QString laye
 			// DIMENSION (radial, diameter): Leader length
 			radius = data.toDouble() * scale;
 			break;
-		case 41: // for ELLIPSE
-		case 50: // for ARC
-			start_angle = data.toDouble();
+		case 41:
+			// ELLIPSE: start_angle
+			// INSERT: X scale
+			ellipse_start_angle = data.toDouble();
 			break;
-		case 42: // for ELLIPSE
-		case 51: // for ARC
-			stop_angle = data.toDouble();
+		case 50:
+			// ARC: start_angle
+			// INSERT: rot angle
+			arc_start_angle = data.toDouble();
+			break;
+		case 42:
+			// ELLIPSE: stop_angle
+			// INSERT: Y scale
+			ellipse_stop_angle = data.toDouble();
+			break;
+		case 51: // ARC
+			arc_stop_angle = data.toDouble();
 			break;
 		case 70:
 			// LWPOLYLINE: polyline flag
