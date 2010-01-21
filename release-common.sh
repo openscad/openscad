@@ -58,7 +58,7 @@ case $OS in
         ;;
 esac
 
-qmake VERSION=$VERSION CONFIG+=$CONFIG
+qmake VERSION=$VERSION CONFIG+=$CONFIG CONFIG-=debug
 make -s clean
 case $OS in
     MACOSX) 
