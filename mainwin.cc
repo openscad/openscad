@@ -138,9 +138,8 @@ MainWindow::MainWindow(const char *filename)
 
 	highlighter = NULL;
 
-	QFont font;
-	font.setStyleHint(QFont::TypeWriter);
-	editor->setFont(font);
+	editor->setWordWrapMode(QTextOption::WrapAnywhere); // Not designable
+	setFont("", 0); // Init default font
 
 	screen->statusLabel = new QLabel(this);
 	statusBar()->addWidget(screen->statusLabel);
@@ -260,8 +259,6 @@ MainWindow::MainWindow(const char *filename)
 	PRINT(copyrighttext);
 	PRINT("");
 
-	editor->setTabStopWidth(30);
-
 	if (filename) {
 		openFile(filename);
 	} else {
@@ -274,6 +271,8 @@ MainWindow::MainWindow(const char *filename)
 	connect(screen, SIGNAL(doAnimateUpdate()), this, SLOT(animateUpdate()));
 
 	connect(Preferences::inst(), SIGNAL(requestRedraw()), this->screen, SLOT(updateGL()));
+	connect(Preferences::inst(), SIGNAL(fontChanged(const QString&,uint)), 
+					this, SLOT(setFont(const QString&,uint)));
 
 	// display this window and check for OpenGL 2.0 (OpenCSG) support
 	viewModeThrownTogether();
@@ -1754,4 +1753,13 @@ void
 MainWindow::preferences()
 {
 	Preferences::inst()->show();
+}
+
+void MainWindow::setFont(const QString &family, uint size)
+{
+	QFont font(editor->font());
+	if (!family.isEmpty()) font.setFamily(family);
+	if (size > 0)	font.setPointSize(size);
+	font.setStyleHint(QFont::TypeWriter);
+	editor->setFont(font);
 }

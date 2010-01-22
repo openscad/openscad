@@ -29,14 +29,19 @@ public:
 public slots:
 	void actionTriggered(class QAction *);
 	void colorSchemeChanged();
+	void fontFamilyChanged(const QString &);
+	void fontSizeChanged(const QString &);
 
 signals:
 	void requestRedraw();
+	void fontChanged(const QString &family, uint size);
 
 private:
 	Preferences(QWidget *parent = NULL);
 	QHash<QString, QMap<RenderColor, QColor> > colorschemes;
 	QString colorscheme;
+	QString fontfamily;
+	uint fontsize;
 
 	static Preferences *instance;
 };

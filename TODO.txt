@@ -10,16 +10,14 @@ o Export STL: Exports existing CGAL model even though the current model is chang
 USER INTERFACE
 --------------
 o Preferences
-  - background colors
-  - colors
-    - OpenCSG: face back/front, edges?
-    - CGAL: face back/front, edge back/front, vertex back/front
+  - Beautify color schemes
+  - Color schemes read from file
+  - Color scheme editor
   - wireframe width
   - pointsize
   - OpenGL params
   - Default language feature settings
   - Auto-view CSG/thrown together on load
-  - editor font
 o Export etc.: automatically add missing extension as in SaveAs
 o Mac OS X:
   - embed examples into bundle -> separate example menu?
@@ -38,17 +36,26 @@ o 3D View
   - 4 x split view w/orthogonal cameras?
   - Quick highlighting of object under the cursor in the editor
   - View All
+  - overlay indicator displaying current view mode
 o Editor
   - Autocompletion/hints for builtin (and user-defined) functions/modules
   - builtin quick function reference/help
+  - Drawer/popup with all modules/functions listed which can be inserted into
+    the editor by clicking or drag&drop -> icons in toolbar?
+    -> This would be moving in the direction of a traditional CAD GUI
+       and needs a fair bit of thinking.
   - More infrastructur for external editor (or is the reload good enough?)
   - Evaluate QCodeEdit (http://qcodeedit.edyuk.org)
-  - don't line break
+  - Display some kind of line wrap indicator
+  - Couple the source code to the AST to allow highlighting selected elements
+    in the source code in the 3D view
 o Misc
   - Fix current_win hack
   - Reload and compile: Ask for confirmation if file is locally edited
     (make this configurable in preferences?)
   - Save: Ask for confirmation if file has been externaly changed
+  - Rename OpenCSG and CGAL to smth. not specific to the underlying libraries
+    (e.g Preview, Render)
 
 ENGINE
 ------
@@ -56,6 +63,7 @@ o Primitives
   - Springs, spirals (requested by Cathal Garvey)
 o 2D Subsystem
   - Add generic 3D->2D projection statements
+  - 2D->3D using clipping plane
 o Advanced Transformations
   - Add statement for 2D and 3D minkowski sum
   - Add statement for refinement via surface subdivision

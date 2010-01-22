@@ -2,5 +2,6 @@
  <qresource prefix="/">
      <file>prefsAdvanced.png</file>
      <file>prefs3DView.png</file>
+     <file>prefsEditor.png</file>
  </qresource>
  </RCC>

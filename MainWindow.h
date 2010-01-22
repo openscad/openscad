@@ -57,6 +57,7 @@ private slots:
 	void updatedFps();
 	void updateTVal();
 	void setFileName(const QString &filename);
+	void setFont(const QString &family, uint size);
 
 private:
 	void openFile(const QString &filename);

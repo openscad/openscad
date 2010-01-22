@@ -20,12 +20,25 @@
 
 #include "Preferences.h"
 
+#include <QFontDatabase>
+
 Preferences *Preferences::instance = NULL;
 
 Preferences::Preferences(QWidget *parent) : QMainWindow(parent)
 {
 	setupUi(this);
 
+	// Toolbar
+	QActionGroup *group = new QActionGroup(this);
+	group->addAction(prefsAction3DView);
+	group->addAction(prefsActionEditor);
+	group->addAction(prefsActionAdvanced);
+	connect(group, SIGNAL(triggered(QAction*)), this, SLOT(actionTriggered(QAction*)));
+
+	prefsAction3DView->setChecked(true);
+	this->actionTriggered(this->prefsAction3DView);
+
+	// 3D View pane
 	this->colorscheme = this->colorSchemeChooser->item(0)->text();
 	this->colorschemes["Cornfield"][BACKGROUND_COLOR] = QColor(0xff, 0xff, 0xe5);
 	this->colorschemes["Cornfield"][OPENCSG_FACE_FRONT_COLOR] = QColor(0xf9, 0xd7, 0x2c);
@@ -60,17 +73,22 @@ Preferences::Preferences(QWidget *parent) : QMainWindow(parent)
 	this->colorschemes["Sunset"][CGAL_EDGE_2D_COLOR] = QColor(0xff, 0x00, 0x00);
 	this->colorschemes["Sunset"][CROSSHAIR_COLOR] = QColor(0x80, 0x00, 0x00);
 
-	QActionGroup *group = new QActionGroup(this);
-	group->addAction(prefsAction3DView);
-	group->addAction(prefsActionAdvanced);
-	connect(group, SIGNAL(triggered(QAction*)), this, SLOT(actionTriggered(QAction*)));
-
-	prefsAction3DView->setChecked(true);
-	this->actionTriggered(this->prefsAction3DView);
-
 	connect(this->colorSchemeChooser, SIGNAL(itemSelectionChanged()),
 					this, SLOT(colorSchemeChanged()));
 
+	// Editor pane
+	QFontDatabase db;
+	foreach(int size, db.standardSizes()) {
+		this->fontSize->addItem(QString::number(size));
+	}
+	this->fontSize->setCurrentIndex(this->fontSize->findText(QString::number(12)));
+	fontFamilyChanged(this->fontChooser->currentText());
+	fontSizeChanged(this->fontSize->currentText());
+
+	connect(this->fontChooser, SIGNAL(activated(const QString &)),
+					this, SLOT(fontFamilyChanged(const QString &)));
+	connect(this->fontSize, SIGNAL(activated(const QString &)),
+					this, SLOT(fontSizeChanged(const QString &)));
 }
 
 Preferences::~Preferences()
@@ -82,6 +100,9 @@ Preferences::actionTriggered(QAction *action)
 {
 	if (action == this->prefsAction3DView) {
 		this->stackedWidget->setCurrentWidget(this->page3DView);
+	}
+	else if (action == this->prefsActionEditor) {
+		this->stackedWidget->setCurrentWidget(this->pageEditor);
 	}
 	else if (action == this->prefsActionAdvanced) {
 		this->stackedWidget->setCurrentWidget(this->pageAdvanced);
@@ -99,3 +120,14 @@ const QColor &Preferences::color(RenderColor idx)
 	return this->colorschemes[this->colorscheme][idx];
 }
 
+void Preferences::fontFamilyChanged(const QString &family)
+{
+	this->fontfamily = family;
+	emit fontChanged(this->fontfamily, this->fontsize);
+}
+
+void Preferences::fontSizeChanged(const QString &size)
+{
+	this->fontsize = size.toUInt();
+	emit fontChanged(this->fontfamily, this->fontsize);
+}
