@@ -144,26 +144,56 @@ static void add_slice(PolySet *ps, DxfData::Path *pt, double rot1, double rot2, 
 		double kx2 = pt->points[k]->x *  cos(rot2*M_PI/180) + pt->points[k]->y * sin(rot2*M_PI/180);
 		double ky2 = pt->points[k]->x * -sin(rot2*M_PI/180) + pt->points[k]->y * cos(rot2*M_PI/180);
 
-		ps->append_poly();
-		if (pt->is_inner) {
-			ps->append_vertex(kx1, ky1, h1);
-			ps->append_vertex(jx1, jy1, h1);
-			ps->append_vertex(jx2, jy2, h2);
-		} else {
-			ps->insert_vertex(kx1, ky1, h1);
-			ps->insert_vertex(jx1, jy1, h1);
-			ps->insert_vertex(jx2, jy2, h2);
-		}
+		double dia1_len_sq = (jy1-ky2)*(jy1-ky2) + (jx1-kx2)*(jx1-kx2);
+		double dia2_len_sq = (jy2-ky1)*(jy2-ky1) + (jx2-kx1)*(jx2-kx1);
 
-		ps->append_poly();
-		if (pt->is_inner) {
-			ps->append_vertex(kx2, ky2, h2);
-			ps->append_vertex(kx1, ky1, h1);
-			ps->append_vertex(jx2, jy2, h2);
-		} else {
-			ps->insert_vertex(kx2, ky2, h2);
-			ps->insert_vertex(kx1, ky1, h1);
-			ps->insert_vertex(jx2, jy2, h2);
+		if (dia1_len_sq > dia2_len_sq)
+		{
+			ps->append_poly();
+			if (pt->is_inner) {
+				ps->append_vertex(kx1, ky1, h1);
+				ps->append_vertex(jx1, jy1, h1);
+				ps->append_vertex(jx2, jy2, h2);
+			} else {
+				ps->insert_vertex(kx1, ky1, h1);
+				ps->insert_vertex(jx1, jy1, h1);
+				ps->insert_vertex(jx2, jy2, h2);
+			}
+
+			ps->append_poly();
+			if (pt->is_inner) {
+				ps->append_vertex(kx2, ky2, h2);
+				ps->append_vertex(kx1, ky1, h1);
+				ps->append_vertex(jx2, jy2, h2);
+			} else {
+				ps->insert_vertex(kx2, ky2, h2);
+				ps->insert_vertex(kx1, ky1, h1);
+				ps->insert_vertex(jx2, jy2, h2);
+			}
+		}
+		else
+		{
+			ps->append_poly();
+			if (pt->is_inner) {
+				ps->append_vertex(kx1, ky1, h1);
+				ps->append_vertex(jx1, jy1, h1);
+				ps->append_vertex(kx2, ky2, h2);
+			} else {
+				ps->insert_vertex(kx1, ky1, h1);
+				ps->insert_vertex(jx1, jy1, h1);
+				ps->insert_vertex(kx2, ky2, h2);
+			}
+
+			ps->append_poly();
+			if (pt->is_inner) {
+				ps->append_vertex(jx2, jy2, h2);
+				ps->append_vertex(kx2, ky2, h2);
+				ps->append_vertex(jx1, jy1, h1);
+			} else {
+				ps->insert_vertex(jx2, jy2, h2);
+				ps->insert_vertex(kx2, ky2, h2);
+				ps->insert_vertex(jx1, jy1, h1);
+			}
 		}
 	}
 }
