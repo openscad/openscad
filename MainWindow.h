@@ -46,6 +46,7 @@ public:
 
 	static const int maxRecentFiles = 10;
 	QAction *actionRecentFile[maxRecentFiles];
+	QString examplesdir;
 
 	MainWindow(const char *filename = 0);
 	~MainWindow();
@@ -70,6 +71,7 @@ private slots:
 	void actionNew();
 	void actionOpen();
 	void actionOpenRecent();
+	void actionOpenExample();
 	void clearRecentFiles();
 	void updateRecentFileActions();
 	void actionSave();

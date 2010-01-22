@@ -130,9 +130,15 @@
       <string>Open Recent</string>
      </property>
     </widget>
+    <widget class="QMenu" name="menuExamples">
+     <property name="title">
+      <string>Examples</string>
+     </property>
+    </widget>
     <addaction name="fileActionNew"/>
     <addaction name="fileActionOpen"/>
     <addaction name="menuOpenRecent"/>
+    <addaction name="menuExamples"/>
     <addaction name="separator"/>
     <addaction name="fileActionClose"/>
     <addaction name="fileActionSave"/>

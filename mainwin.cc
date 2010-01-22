@@ -175,6 +175,21 @@ MainWindow::MainWindow(const char *filename)
 	connect(this->fileActionClearRecent, SIGNAL(triggered()),
 					this, SLOT(clearRecentFiles()));
 
+	QDir examplesdir(QApplication::instance()->applicationDirPath());
+#ifdef Q_WS_MAC
+	examplesdir.cd("../Resources"); // Examples can be bundled
+	if (!examplesdir.exists("examples")) examplesdir.cd("../../..");
+#endif
+	if (examplesdir.cd("examples")) {
+		this->examplesdir = examplesdir.path();
+	
+		QStringList examples = examplesdir.entryList(QStringList("*.scad"), 
+																								 QDir::Files | QDir::Readable, QDir::Name);
+		foreach (const QString &ex, examples) {
+			this->menuExamples->addAction(ex, this, SLOT(actionOpenExample()));
+		}
+	}
+
 	// Edit menu
 	connect(this->editActionUndo, SIGNAL(triggered()), editor, SLOT(undo()));
 	connect(this->editActionRedo, SIGNAL(triggered()), editor, SLOT(redo()));
@@ -721,6 +736,14 @@ void MainWindow::updateRecentFileActions()
 	// If we had to prune the list, then save the cleaned list
 	if (originalNumRecentFiles != numRecentFiles)
 		settings.setValue("recentFileList", files);
+}
+
+void MainWindow::actionOpenExample()
+{
+	QAction *action = qobject_cast<QAction *>(sender());
+	if (action) {
+		openFile(this->examplesdir + QDir::separator() + action->text());
+	}
 }
 
 void MainWindow::actionSave()
