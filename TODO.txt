@@ -29,6 +29,9 @@ o MDI
   - Quit vs. Close MainWindow.
     Today Quit just closes the current window and there is no close function
   - Ctrl-W should close the current dialog, not the current main window
+    -> implement as for Preferences?
+  - Menu bar handling:
+    Mac: share menubar among all top-level windows
 o 3D View
   - Improve mouse rotation
   - Add modifier key combos to handle pan on 1 mouse button systems
