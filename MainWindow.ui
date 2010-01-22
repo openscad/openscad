@@ -27,7 +27,7 @@
        <property name="font">
         <font>
          <family>Monaco</family>
-         <pointsize>12</pointsize>
+         <pointsize>8</pointsize>
         </font>
        </property>
        <property name="tabStopWidth">
