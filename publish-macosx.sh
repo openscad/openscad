@@ -6,5 +6,7 @@ VERSION=`date "+%Y.%m.%d"`
 export OPENCSGDIR=$PWD/../OpenCSG-1.2.0
 
 ./release-common.sh -v $VERSION
-cp openscad-$VERSION.zip ~/Documents/Dropbox/Public
-ln -sf openscad-$VERSION.zip ~/Documents/Dropbox/Public/openscad-latest.zip 
+cp OpenSCAD-$VERSION.dmg ~/Documents/Dropbox/Public
+ln -sf OpenSCAD-$VERSION.dmg ~/Documents/Dropbox/Public/OpenSCAD-latest.dmg
+
+echo "Upload in progress..."

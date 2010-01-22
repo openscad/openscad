@@ -43,8 +43,6 @@ echo "Building openscad-$VERSION $CONFIGURATION..."
 case $OS in
     MACOSX) 
         CONFIG=mdi
-        ZIP=zip
-        ZIPARGS=-qr
         TARGET=
         ;;
     WIN) 
@@ -74,10 +72,8 @@ make -j2 $TARGET
 
 echo "Creating directory structure..."
 rm -rf openscad-$VERSION
-rm -f openscad-$VERSION.zip
-mkdir -p openscad-$VERSION/examples
-cp examples/* openscad-$VERSION/examples/
-chmod -R 644 openscad-$VERSION/examples/*
+mkdir openscad-$VERSION
+EXAMPLESDIR=openscad-$VERSION/examples/
 
 case $OS in
     MACOSX)
@@ -101,6 +97,7 @@ case $OS in
         install_name_tool -change QtCore.framework/Versions/4/QtCore @executable_path/../Frameworks/QtCore OpenSCAD.app/Contents/Frameworks/libopencsg.dylib
         install_name_tool -id libGLEW.1.5.1.dylib OpenSCAD.app/Contents/Frameworks/libGLEW.1.5.1.dylib
         mv OpenSCAD.app openscad-$VERSION
+        EXAMPLESDIR=openscad-$VERSION/OpenSCAD.app/Contents/Resources/examples
     ;;
     WIN)
         #package
@@ -109,9 +106,23 @@ case $OS in
         ;;
 esac
 
+mkdir -p $EXAMPLESDIR
+cp examples/* $EXAMPLESDIR
+chmod -R 644 $EXAMPLESDIR/*
+
 echo "Creating archive.."
-"$ZIP" $ZIPARGS openscad-$VERSION.zip openscad-$VERSION
+case $OS in
+    MACOSX)
+        hdiutil create -quiet -ov -srcfolder openscad-$VERSION/OpenSCAD.app OpenSCAD-$VERSION.dmg
+        hdiutil internet-enable -yes -quiet OpenSCAD-$VERSION.dmg
+        echo "Binary created: openscad-$VERSION.dmg"
+        ;;
+    *)
+        rm -f openscad-$VERSION.zip
+        "$ZIP" $ZIPARGS openscad-$VERSION.zip openscad-$VERSION
+        echo "Binary created: openscad-$VERSION.zip"
+        ;;
+esac
 
 rm -rf openscad-$VERSION
 
-echo "Binary created: openscad-$VERSION.zip"
