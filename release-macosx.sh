@@ -29,7 +29,7 @@ fi
 
 echo "Building openscad-$VERSION..."
 export OPENCSGDIR=$PWD/../OpenCSG-1.2.0
-qmake VERSION=$VERSION CONFIG+=mdi
+qmake VERSION=$VERSION CONFIG+=mdi openscad.pro
 make clean
 make -j2
 echo "Preparing executable.."

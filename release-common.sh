@@ -58,7 +58,7 @@ case $OS in
         ;;
 esac
 
-qmake VERSION=$VERSION CONFIG+=$CONFIG CONFIG-=debug
+qmake VERSION=$VERSION CONFIG+=$CONFIG CONFIG-=debug openscad.pro
 make -s clean
 case $OS in
     MACOSX) 
@@ -77,6 +77,7 @@ rm -rf openscad-$VERSION
 rm -f openscad-$VERSION.zip
 mkdir -p openscad-$VERSION/examples
 cp examples/* openscad-$VERSION/examples/
+chmod -R 644 openscad-$VERSION/examples/*
 
 case $OS in
     MACOSX)
@@ -99,6 +100,7 @@ case $OS in
         install_name_tool -change QtGui.framework/Versions/4/QtGui @executable_path/../Frameworks/QtGui OpenSCAD.app/Contents/Frameworks/libopencsg.dylib
         install_name_tool -change QtCore.framework/Versions/4/QtCore @executable_path/../Frameworks/QtCore OpenSCAD.app/Contents/Frameworks/libopencsg.dylib
         install_name_tool -id libGLEW.1.5.1.dylib OpenSCAD.app/Contents/Frameworks/libGLEW.1.5.1.dylib
+        mv OpenSCAD.app openscad-$VERSION
     ;;
     WIN)
         #package
