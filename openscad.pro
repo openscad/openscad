@@ -55,7 +55,7 @@ opencsg {
 
   # Optionally specify location of OpenCSG using the 
   # OPENCSGDIR env. variable
-  OPENCSG_DIR = $$(OPENCSGDIR)
+  OPENCSG_DIR = $(OPENCSGDIR)
   !isEmpty(OPENCSG_DIR) {
     INCLUDEPATH += $$OPENCSG_DIR/include
     LIBS += -L$$OPENCSG_DIR/lib
