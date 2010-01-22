@@ -20,9 +20,6 @@ o Preferences
   - Auto-view CSG/thrown together on load
 o Export etc.: automatically add missing extension as in SaveAs
 o Mac OS X:
-  - embed examples into bundle -> separate example menu?
-  - Use examples as default File Open folder
-  - distribute as (self-unpacking?) dmg containing a single .app instead of zip
   - universal binary -> fix cgal and opencsg
 o MDI
   - Think about how to do MDI the right way
