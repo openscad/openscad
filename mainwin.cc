@@ -1753,6 +1753,8 @@ void
 MainWindow::preferences()
 {
 	Preferences::inst()->show();
+	Preferences::inst()->activateWindow();
+	Preferences::inst()->raise();
 }
 
 void MainWindow::setFont(const QString &family, uint size)

@@ -38,6 +38,8 @@ signals:
 
 private:
 	Preferences(QWidget *parent = NULL);
+	void keyPressEvent(QKeyEvent *e);
+
 	QHash<QString, QMap<RenderColor, QColor> > colorschemes;
 	QString colorscheme;
 	QString fontfamily;

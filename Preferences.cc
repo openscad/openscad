@@ -21,6 +21,7 @@
 #include "Preferences.h"
 
 #include <QFontDatabase>
+#include <QKeyEvent>
 
 Preferences *Preferences::instance = NULL;
 
@@ -130,4 +131,17 @@ void Preferences::fontSizeChanged(const QString &size)
 {
 	this->fontsize = size.toUInt();
 	emit fontChanged(this->fontfamily, this->fontsize);
+}
+
+void Preferences::keyPressEvent(QKeyEvent *e)
+{
+#ifdef Q_WS_MAC
+	if (e->modifiers() == Qt::ControlModifier && e->key() == Qt::Key_Period) {
+		close();
+	} else
+#endif
+		if (e->modifiers() == Qt::ControlModifier && e->key() == Qt::Key_W ||
+				e->key() == Qt::Key_Escape) {
+			close();
+		}
 }
