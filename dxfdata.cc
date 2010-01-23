@@ -110,14 +110,18 @@ DxfData::DxfData(double fn, double fs, double fa, QString filename, QString laye
 		}
 
 		if (id >= 10 && id <= 16) {
-			if (id == 11 || id == 12 || id == 16)
+			if (in_blocks_section)
+				coords[id-10][0] = data.toDouble();
+			else if (id == 11 || id == 12 || id == 16)
 				coords[id-10][0] = data.toDouble() * scale;
 			else
 				coords[id-10][0] = (data.toDouble() - xorigin) * scale;
 		}
 
 		if (id >= 20 && id <= 26) {
-			if (id == 21 || id == 22 || id == 26)
+			if (in_blocks_section)
+				coords[id-20][1] = data.toDouble();
+			else if (id == 21 || id == 22 || id == 26)
 				coords[id-20][1] = data.toDouble() * scale;
 			else
 				coords[id-20][1] = (data.toDouble() - yorigin) * scale;
@@ -253,8 +257,8 @@ DxfData::DxfData(double fn, double fs, double fa, QString filename, QString laye
 			else if (mode == "ENDSEC") {
 			}
 			else if (in_blocks_section || (in_entities_section &&
-																(layername.isNull() || layername == layer))) {
-					unsupported_entities_list[mode]++;
+					(layername.isNull() || layername == layer))) {
+				unsupported_entities_list[mode]++;
 			}
 			mode = data;
 			layer = QString();
@@ -282,16 +286,28 @@ DxfData::DxfData(double fn, double fs, double fa, QString filename, QString laye
 			layer = data;
 			break;
 		case 10:
-			xverts.append((data.toDouble() - xorigin) * scale);
+			if (in_blocks_section)
+				xverts.append((data.toDouble()));
+			else
+				xverts.append((data.toDouble() - xorigin) * scale);
 			break;
 		case 11:
-			xverts.append((data.toDouble() - xorigin) * scale);
+			if (in_blocks_section)
+				xverts.append((data.toDouble()));
+			else
+				xverts.append((data.toDouble() - xorigin) * scale);
 			break;
 		case 20:
-			yverts.append((data.toDouble() - yorigin) * scale);
+			if (in_blocks_section)
+				yverts.append((data.toDouble()));
+			else
+				yverts.append((data.toDouble() - yorigin) * scale);
 			break;
 		case 21:
-			yverts.append((data.toDouble() - yorigin) * scale);
+			if (in_blocks_section)
+				yverts.append((data.toDouble()));
+			else
+				yverts.append((data.toDouble() - yorigin) * scale);
 			break;
 		case 40:
 			// CIRCLE, ARC: radius
@@ -330,10 +346,10 @@ DxfData::DxfData(double fn, double fs, double fa, QString filename, QString laye
 		i.next();
 		if (layername.isNull()) {
 			PRINTA("WARNING: Unsupported DXF Entity `%1' (%2x) in `%3'.",
-						 i.key(), QString::number(i.value()), filename);
+					 i.key(), QString::number(i.value()), filename);
 		} else {
 			PRINTA("WARNING: Unsupported DXF Entity `%1' (%2x) in layer `%3' of `%4'.",
-						 i.key(), QString::number(i.value()), layername, filename);
+					 i.key(), QString::number(i.value()), layername, filename);
 		}
 	}
 
