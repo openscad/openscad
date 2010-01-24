@@ -227,6 +227,11 @@ int main(int argc, char **argv)
 	}
 	else if (useGUI)
 	{
+		// turn on anti-aliasing
+		QGLFormat f;
+		f.setSampleBuffers(true);
+		f.setSamples(4);
+		QGLFormat::setDefaultFormat(f);
 #ifdef ENABLE_MDI
 		new MainWindow(filename);
 		while (optind < argc)
