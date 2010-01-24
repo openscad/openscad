@@ -77,13 +77,14 @@ EXAMPLESDIR=openscad-$VERSION/examples/
 
 case $OS in
     MACOSX)
+        OPENCSGDIR=`cd "$OPENCSGDIR" && pwd`
         mkdir OpenSCAD.app/Contents/Frameworks
         cp $OPENCSGDIR/lib/libopencsg.dylib OpenSCAD.app/Contents/Frameworks
         cp /opt/local/lib/libGLEW.1.5.1.dylib OpenSCAD.app/Contents/Frameworks
         cp /Library/Frameworks/QtOpenGL.framework/Versions/4/QtOpenGL OpenSCAD.app/Contents/Frameworks
         cp /Library/Frameworks/QtGui.framework/Versions/4/QtGui OpenSCAD.app/Contents/Frameworks
         cp /Library/Frameworks/QtCore.framework/Versions/4/QtCore OpenSCAD.app/Contents/Frameworks
-        install_name_tool -change libopencsg.1.dylib @executable_path/../Frameworks/libopencsg.dylib OpenSCAD.app/Contents/MacOS/openscad
+        install_name_tool -change $OPENCSGDIR/lib/libopencsg.1.dylib @executable_path/../Frameworks/libopencsg.dylib OpenSCAD.app/Contents/MacOS/openscad
         install_name_tool -change QtOpenGL.framework/Versions/4/QtOpenGL @executable_path/../Frameworks/QtOpenGL OpenSCAD.app/Contents/MacOS/openscad
         install_name_tool -change QtGui.framework/Versions/4/QtGui @executable_path/../Frameworks/QtGui OpenSCAD.app/Contents/MacOS/openscad
         install_name_tool -change QtCore.framework/Versions/4/QtCore @executable_path/../Frameworks/QtCore OpenSCAD.app/Contents/MacOS/openscad
@@ -115,7 +116,7 @@ case $OS in
     MACOSX)
         hdiutil create -quiet -ov -srcfolder openscad-$VERSION/OpenSCAD.app OpenSCAD-$VERSION.dmg
         hdiutil internet-enable -yes -quiet OpenSCAD-$VERSION.dmg
-        echo "Binary created: openscad-$VERSION.dmg"
+        echo "Binary created: OpenSCAD-$VERSION.dmg"
         ;;
     *)
         rm -f openscad-$VERSION.zip
