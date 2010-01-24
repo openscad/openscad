@@ -240,6 +240,8 @@ PolySet *DxfLinearExtrudeNode::render_polyset(render_mode_e rm) const
 			progress_report_prep((AbstractNode*)this, report_func, pd);
 		}
 
+		// Before extruding, union all (2D) children nodes
+		// to a single DxfData, then tessealte this into a PolySet
 		CGAL_Nef_polyhedron N;
 		N.dim = 2;
 		foreach(AbstractNode * v, children) {
