@@ -61,9 +61,12 @@ ENGINE
 ------
 o Primitives
   - Springs, spirals (requested by Cathal Garvey)
+  - (TTF) Text
 o 2D Subsystem
   - Add generic 3D->2D projection statements
   - 2D->3D using clipping plane
+  - Performance: Is it necessary to union children before extrusion
+    when compiling? Can this be postponed to CGAL evaluation time?
 o Built-in modules
   - extrude*: Allow the base 2D primitive to have a Z value
 o Advanced Transformations
@@ -91,6 +94,7 @@ o Grammar
   - dim->name -> dim->label
   - A random(seed) function
   - import_*() -> *_import() (consistent prefix vs. postfix)
+  - linear_extrude()/rotate_extrude(): Cumbersome names? -> (extrude, revolve, lathe, sweep ?) 
 
 CODE
 ----
@@ -102,6 +106,10 @@ o C++-ify
   - Use smart pointers where it makes sense (e.g. instead of homegrown refcount,
     and to get memory ownership under control)
   - Use static_cast instead of C-style casts
+o dxflinextrude and dxfrotextrude could share code
+o Consider decoupling DXF-specific functionality from the 2D subsystem
+o Make the interfaces from OpenSCAD and OpenCSG and CGAL cleaner to facilitate
+  experimentation with other frameworks (ref. Nef_polyhedron_2() problems)
 
 INFRASTRUCTURE
 --------------
