@@ -158,6 +158,7 @@ MainWindow::MainWindow(const char *filename)
 	connect(this->fileActionSave, SIGNAL(triggered()), this, SLOT(actionSave()));
 	connect(this->fileActionSaveAs, SIGNAL(triggered()), this, SLOT(actionSaveAs()));
 	connect(this->fileActionReload, SIGNAL(triggered()), this, SLOT(actionReload()));
+	connect(this->fileActionQuit, SIGNAL(triggered()), this, SLOT(quit()));
 #ifndef __APPLE__
 	this->fileActionSave->setShortcut(QKeySequence(Qt::Key_F2));
 	this->fileActionReload->setShortcut(QKeySequence(Qt::Key_F3));
@@ -1789,4 +1790,11 @@ void MainWindow::setFont(const QString &family, uint size)
 	if (size > 0)	font.setPointSize(size);
 	font.setStyleHint(QFont::TypeWriter);
 	editor->setFont(font);
+}
+
+void MainWindow::quit()
+{
+	QCloseEvent ev;
+	QApplication::sendEvent(QApplication::instance(), &ev);
+	if (ev.isAccepted()) QApplication::instance()->quit();
 }

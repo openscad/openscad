@@ -136,6 +136,7 @@ public slots:
 	void dropEvent(QDropEvent *event);
 	void helpAbout();
 	void helpManual();
+	void quit();
 };
 
 #endif

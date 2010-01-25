@@ -19,16 +19,12 @@ o Preferences
   - Default language feature settings
   - Auto-view CSG/thrown together on load
 o Export etc.: automatically add missing extension as in SaveAs
-o Mac OS X:
-  - universal binary -> fix cgal and opencsg
 o MDI
   - Think about how to do MDI the right way
-  - Quit vs. Close MainWindow.
-    Today Quit just closes the current window and there is no close function
   - Ctrl-W should close the current dialog, not the current main window
     -> implement as for Preferences?
   - Menu bar handling:
-    Mac: share menubar among all top-level windows
+    Mac: share menubar among all top-level windows?
 o 3D View
   - Improve mouse rotation
   - Add modifier key combos to handle pan on 1 mouse button systems
@@ -50,7 +46,6 @@ o Editor
   - Couple the source code to the AST to allow highlighting selected elements
     in the source code in the 3D view
 o Misc
-  - Fix current_win hack
   - Reload and compile: Ask for confirmation if file is locally edited
     (make this configurable in preferences?)
   - Save: Ask for confirmation if file has been externaly changed
@@ -100,6 +95,7 @@ CODE
 ----
 
 o Refactor from MainWindow:
+  - Fix current_win hack
   - CSG data structure (compiled model)
   - CGAL data structure (compiled model)
 o C++-ify
@@ -121,4 +117,6 @@ MISC
 ----
 o Collect "all" available OpenSCAD scripts from the internets and batch convert them
   to STL to assist with robustness testing.
+o Mac OS X:
+  - universal binary -> fix cgal and opencsg
 
