@@ -22,12 +22,18 @@
 
 #include <QFontDatabase>
 #include <QKeyEvent>
+#include <QSettings>
 
 Preferences *Preferences::instance = NULL;
 
 Preferences::Preferences(QWidget *parent) : QMainWindow(parent)
 {
 	setupUi(this);
+
+	// Setup default settings
+	this->defaultmap["3dview/colorscheme"] = this->colorSchemeChooser->currentItem()->text();
+	this->defaultmap["editor/fontfamily"] = this->fontChooser->currentText();
+	this->defaultmap["editor/fontsize"] = this->fontSize->currentText().toUInt();
 
 	// Toolbar
 	QActionGroup *group = new QActionGroup(this);
@@ -40,7 +46,6 @@ Preferences::Preferences(QWidget *parent) : QMainWindow(parent)
 	this->actionTriggered(this->prefsAction3DView);
 
 	// 3D View pane
-	this->colorscheme = this->colorSchemeChooser->item(0)->text();
 	this->colorschemes["Cornfield"][BACKGROUND_COLOR] = QColor(0xff, 0xff, 0xe5);
 	this->colorschemes["Cornfield"][OPENCSG_FACE_FRONT_COLOR] = QColor(0xf9, 0xd7, 0x2c);
 	this->colorschemes["Cornfield"][OPENCSG_FACE_BACK_COLOR] = QColor(0x9d, 0xcb, 0x51);
@@ -74,26 +79,25 @@ Preferences::Preferences(QWidget *parent) : QMainWindow(parent)
 	this->colorschemes["Sunset"][CGAL_EDGE_2D_COLOR] = QColor(0xff, 0x00, 0x00);
 	this->colorschemes["Sunset"][CROSSHAIR_COLOR] = QColor(0x80, 0x00, 0x00);
 
-	connect(this->colorSchemeChooser, SIGNAL(itemSelectionChanged()),
-					this, SLOT(colorSchemeChanged()));
-
 	// Editor pane
 	QFontDatabase db;
 	foreach(int size, db.standardSizes()) {
 		this->fontSize->addItem(QString::number(size));
 	}
-	this->fontSize->setCurrentIndex(this->fontSize->findText(QString::number(12)));
-	fontFamilyChanged(this->fontChooser->currentText());
-	fontSizeChanged(this->fontSize->currentText());
 
+	connect(this->colorSchemeChooser, SIGNAL(itemSelectionChanged()),
+					this, SLOT(colorSchemeChanged()));
 	connect(this->fontChooser, SIGNAL(activated(const QString &)),
 					this, SLOT(fontFamilyChanged(const QString &)));
-	connect(this->fontSize, SIGNAL(activated(const QString &)),
+	connect(this->fontSize, SIGNAL(editTextChanged(const QString &)),
 					this, SLOT(fontSizeChanged(const QString &)));
+
+	updateGUI();
 }
 
 Preferences::~Preferences()
 {
+	removeDefaultSettings();
 }
 
 void
@@ -112,25 +116,30 @@ Preferences::actionTriggered(QAction *action)
 
 void Preferences::colorSchemeChanged()
 {
-	this->colorscheme = this->colorSchemeChooser->currentItem()->text();
+	QSettings settings;
+	settings.setValue("3dview/colorscheme", this->colorSchemeChooser->currentItem()->text());
+
 	emit requestRedraw();
 }
 
 const QColor &Preferences::color(RenderColor idx)
 {
-	return this->colorschemes[this->colorscheme][idx];
+	return this->colorschemes[getValue("3dview/colorscheme").toString()][idx];
 }
 
 void Preferences::fontFamilyChanged(const QString &family)
 {
-	this->fontfamily = family;
-	emit fontChanged(this->fontfamily, this->fontsize);
+	QSettings settings;
+	settings.setValue("editor/fontfamily", family);
+	emit fontChanged(family, getValue("editor/fontsize").toUInt());
 }
 
 void Preferences::fontSizeChanged(const QString &size)
 {
-	this->fontsize = size.toUInt();
-	emit fontChanged(this->fontfamily, this->fontsize);
+	uint intsize = size.toUInt();
+	QSettings settings;
+	settings.setValue("editor/fontsize", intsize);
+	emit fontChanged(getValue("editor/fontfamily").toString(), intsize);
 }
 
 void Preferences::keyPressEvent(QKeyEvent *e)
@@ -145,3 +154,55 @@ void Preferences::keyPressEvent(QKeyEvent *e)
 			close();
 		}
 }
+
+/*!
+  Removes settings that are the same as the default settings to avoid
+	overwriting future changes to default settings.
+ */
+void Preferences::removeDefaultSettings()
+{
+	QSettings settings;
+	for (QSettings::SettingsMap::const_iterator iter = this->defaultmap.begin();
+			 iter != this->defaultmap.end();
+			 iter++) {
+		if (settings.value(iter.key()) == iter.value()) {
+			settings.remove(iter.key());
+		}
+	}
+}
+
+QVariant Preferences::getValue(const QString &key) const
+{
+	QSettings settings;
+	return settings.value(key, this->defaultmap[key]);
+}
+
+void Preferences::updateGUI()
+{
+	QList<QListWidgetItem *> found = 
+		this->colorSchemeChooser->findItems(getValue("3dview/colorscheme").toString(),
+																				Qt::MatchExactly);
+	if (!found.isEmpty()) this->colorSchemeChooser->setCurrentItem(found.first());
+
+	QString fontfamily = getValue("editor/fontfamily").toString();
+	int fidx = this->fontChooser->findText(fontfamily);
+	if (fidx >= 0) {
+		this->fontChooser->setCurrentIndex(fidx);
+	}
+
+	QString fontsize = getValue("editor/fontsize").toString();
+	int sidx = this->fontSize->findText(fontsize);
+	if (sidx >= 0) {
+		this->fontSize->setCurrentIndex(sidx);
+	}
+	else {
+		this->fontSize->setEditText(fontsize);
+	}
+}
+
+void Preferences::apply() const
+{
+	emit fontChanged(getValue("editor/fontfamily").toString(), getValue("editor/fontsize").toUInt());
+	emit requestRedraw();
+}
+

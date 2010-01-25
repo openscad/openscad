@@ -2,6 +2,7 @@
 #define PREFERENCES_H_
 
 #include <QMainWindow>
+#include <QSettings>
 #include "ui_Preferences.h"
 
 class Preferences : public QMainWindow, public Ui::Preferences
@@ -25,6 +26,8 @@ public:
 		CROSSHAIR_COLOR
 	};
 	const QColor &color(RenderColor idx);
+	QVariant getValue(const QString &key) const;
+	void apply() const;
 
 public slots:
 	void actionTriggered(class QAction *);
@@ -33,17 +36,17 @@ public slots:
 	void fontSizeChanged(const QString &);
 
 signals:
-	void requestRedraw();
-	void fontChanged(const QString &family, uint size);
+	void requestRedraw() const;
+	void fontChanged(const QString &family, uint size) const;
 
 private:
 	Preferences(QWidget *parent = NULL);
 	void keyPressEvent(QKeyEvent *e);
+	void updateGUI();
+	void removeDefaultSettings();
 
+	QSettings::SettingsMap defaultmap;
 	QHash<QString, QMap<RenderColor, QColor> > colorschemes;
-	QString colorscheme;
-	QString fontfamily;
-	uint fontsize;
 
 	static Preferences *instance;
 };
