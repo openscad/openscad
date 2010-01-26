@@ -230,10 +230,10 @@ DxfData::DxfData(double fn, double fs, double fa, QString filename, QString laye
 					double ly1 = blockdata[iddata][i].p[0]->y * ellipse_stop_angle;
 					double lx2 = blockdata[iddata][i].p[1]->x * ellipse_start_angle;
 					double ly2 = blockdata[iddata][i].p[1]->y * ellipse_stop_angle;
-					double px1 = cos(a)*lx1 - sin(a)*ly1 + xverts[0];
-					double py1 = sin(a)*lx1 + cos(a)*ly1 + yverts[0];
-					double px2 = cos(a)*lx2 - sin(a)*ly2 + xverts[0];
-					double py2 = sin(a)*lx2 + cos(a)*ly2 + yverts[0];
+					double px1 = (cos(a)*lx1 - sin(a)*ly1) * scale + xverts[0];
+					double py1 = (sin(a)*lx1 + cos(a)*ly1) * scale + yverts[0];
+					double px2 = (cos(a)*lx2 - sin(a)*ly2) * scale + xverts[0];
+					double py2 = (sin(a)*lx2 + cos(a)*ly2) * scale + yverts[0];
 					ADD_LINE(px1, py1, px2, py2);
 				}
 			}
@@ -313,7 +313,8 @@ DxfData::DxfData(double fn, double fs, double fa, QString filename, QString laye
 			// CIRCLE, ARC: radius
 			// ELLIPSE: minor to major ratio
 			// DIMENSION (radial, diameter): Leader length
-			radius = data.toDouble() * scale;
+			radius = data.toDouble();
+			if (!in_blocks_section) radius *= scale;
 			break;
 		case 41:
 			// ELLIPSE: start_angle
