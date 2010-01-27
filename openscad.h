@@ -83,7 +83,7 @@ public:
 	Grid2d(double resolution) {
 		res = resolution;
 	}
-  /*!
+	/*!
 		Aligns x,y to the grid or to existing point if one close enough exists.
 		Returns the value stored if a point already existing or an uninitialized new value
 		if not.
