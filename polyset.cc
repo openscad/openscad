@@ -431,7 +431,10 @@ CGAL_Nef_polyhedron PolySet::render_cgal_nef_polyhedron() const
 
 		CGAL_Nef_polyhedron2 N(pdata.begin(), pdata.end(), CGAL_Nef_polyhedron2::POLYGONS);
 		return CGAL_Nef_polyhedron(N);
-#else
+#endif
+#if 1
+		// This version of the code works fine but is pretty slow.
+		//
 		CGAL_Nef_polyhedron2 N;
 		Grid2d<CGAL_Nef_polyhedron2::Point> grid(GRID_COARSE);
 
@@ -453,6 +456,181 @@ CGAL_Nef_polyhedron PolySet::render_cgal_nef_polyhedron() const
 		}
 
 		return CGAL_Nef_polyhedron(N);
+#endif
+#if 0
+		// This version of the code does essentially the same thing as the 2nd
+		// version but merges some triangles before sending them to CGAL. This adds
+		// complexity. There was hope that this would speed up things. Unfortunately
+		// it does not look like it does..
+		//
+		// !! STILL WORK IN PROGRESS !!
+		//
+		struct PolyReducer
+		{
+			Grid2d<int> grid;
+			QHash< QPair<int,int>, QPair<int,int> > egde_to_poly;
+			QHash< int, CGAL_Nef_polyhedron2::Point > points;
+			QHash< int, QList<int> > polygons;
+			int poly_n;
+
+			void add_edges(int pn)
+			{
+				for (int j = 1; j <= this->polygons[pn].size(); j++) {
+					int a = this->polygons[pn][j-1];
+					int b = this->polygons[pn][j % this->polygons[pn].size()];
+					if (a > b) { a = a^b; b = a^b; a = a^b; }
+					if (this->egde_to_poly[QPair<int,int>(a, b)].first == 0)
+						this->egde_to_poly[QPair<int,int>(a, b)].first = pn;
+					else if (this->egde_to_poly[QPair<int,int>(a, b)].second == 0)
+						this->egde_to_poly[QPair<int,int>(a, b)].second = pn;
+					else
+						abort();
+				}
+			}
+
+			void del_poly(int pn)
+			{
+				for (int j = 1; j <= this->polygons[pn].size(); j++) {
+					int a = this->polygons[pn][j-1];
+					int b = this->polygons[pn][j % this->polygons[pn].size()];
+					if (a > b) { a = a^b; b = a^b; a = a^b; }
+					if (this->egde_to_poly[QPair<int,int>(a, b)].first == pn)
+						this->egde_to_poly[QPair<int,int>(a, b)].first = 0;
+					if (this->egde_to_poly[QPair<int,int>(a, b)].second == pn)
+						this->egde_to_poly[QPair<int,int>(a, b)].second = 0;
+				}
+				this->polygons.remove(pn);
+			}
+
+			PolyReducer(const PolySet *ps) : grid(GRID_COARSE), poly_n(1)
+			{
+				int point_n = 1;
+				for (int i = 0; i < ps->polygons.size(); i++) {
+					for (int j = 0; j < ps->polygons[i].size(); j++) {
+						double x = ps->polygons[i][j].x;
+						double y = ps->polygons[i][j].y;
+						if (this->grid.has(x, y)) {
+							this->polygons[this->poly_n].append(this->grid.data(x, y));
+						} else {
+							this->grid.align(x, y) = point_n;
+							this->polygons[this->poly_n].append(point_n);
+							this->points[point_n] = CGAL_Nef_polyhedron2::Point(x, y);
+							point_n++;
+						}
+					}
+					add_edges(this->poly_n);
+					this->poly_n++;
+				}
+			}
+
+			void reduce()
+			{
+				QList<int> work_queue;
+				QHashIterator< int, QList<int> > it(polygons);
+				while (it.hasNext()) {
+					it.next();
+					work_queue.append(it.key());
+				}
+				while (!work_queue.isEmpty()) {
+					int poly1_n = work_queue.first();
+					work_queue.removeFirst();
+					if (!this->polygons.contains(poly1_n))
+						continue;
+					for (int j = 1; j <= this->polygons[poly1_n].size(); j++) {
+						int a = this->polygons[poly1_n][j-1];
+						int b = this->polygons[poly1_n][j % this->polygons[poly1_n].size()];
+						if (a > b) { a = a^b; b = a^b; a = a^b; }
+						if (this->egde_to_poly[QPair<int,int>(a, b)].first != 0 &&
+								this->egde_to_poly[QPair<int,int>(a, b)].second != 0) {
+							int poly2_n = this->egde_to_poly[QPair<int,int>(a, b)].first +
+									this->egde_to_poly[QPair<int,int>(a, b)].second - poly1_n;
+							int poly2_entry_n = -1;
+							for (int k = 1; k <= this->polygons[poly2_n].size(); k++) {
+								int c = this->polygons[poly2_n][k-1];
+								int d = this->polygons[poly2_n][k % this->polygons[poly2_n].size()];
+								if (c > d) { c = c^d; d = c^d; c = c^d; }
+								if (a == c && b == d) {
+									poly2_entry_n = k;
+									continue;
+								}
+								int poly3_n = this->egde_to_poly[QPair<int,int>(c, d)].first +
+										this->egde_to_poly[QPair<int,int>(c, d)].second - poly2_n;
+								if (poly3_n < 0)
+									continue;
+								if (poly3_n == poly1_n) {
+									this->egde_to_poly[QPair<int,int>(c, d)].first = 0;
+									this->egde_to_poly[QPair<int,int>(c, d)].second = 0;
+									goto next_poly1_edge;
+								}
+							}
+							printf("----\npoly1 [%d]:", poly1_n);
+							for (int k = 0; k < this->polygons[poly1_n].size(); k++) {
+								printf(" %d", this->polygons[poly1_n][k]);
+							}
+							printf("\npoly2 [%d]:", poly2_n);
+							for (int k = 0; k < this->polygons[poly2_n].size(); k++) {
+								printf(" %d", this->polygons[poly2_n][k]);
+							}
+							printf("\nmerged [%d]:", this->poly_n);
+							for (int k = 0; k < j; k++) {
+								printf(" %d", this->polygons[poly1_n][k]);
+								this->polygons[this->poly_n].append(this->polygons[poly1_n][k]);
+							}
+							printf(" |");
+							int start_poly2_2nd_seg = poly2_entry_n == this->polygons[poly2_n].size() ? 1 : 0;
+							for (int k = poly2_entry_n-2; k >= start_poly2_2nd_seg; k--) {
+								printf(" %d", this->polygons[poly2_n][k]);
+								this->polygons[this->poly_n].append(this->polygons[poly2_n][k]);
+							}
+							printf(" |");
+							for (int k = this->polygons[poly2_n].size()-1; k > poly2_entry_n; k--) {
+								printf(" %d", this->polygons[poly2_n][k]);
+								this->polygons[this->poly_n].append(this->polygons[poly2_n][k]);
+							}
+							printf(" |");
+							for (int k = j; k < this->polygons[poly1_n].size(); k++) {
+								printf(" %d", this->polygons[poly1_n][k]);
+								this->polygons[this->poly_n].append(this->polygons[poly1_n][k]);
+							}
+							printf("\n");
+							del_poly(poly1_n);
+							del_poly(poly2_n);
+							add_edges(this->poly_n);
+							work_queue.append(this->poly_n);
+							this->poly_n++;
+							printf("New number of polygons: %d\n", this->polygons.size());
+							goto next_poly1;
+						}
+					next_poly1_edge:;
+					}
+				next_poly1:;
+				}
+			}
+
+			CGAL_Nef_polyhedron2 toNef()
+			{
+				CGAL_Nef_polyhedron2 N;
+
+				QHashIterator< int, QList<int> > it(polygons);
+				while (it.hasNext()) {
+					it.next();
+					std::list<CGAL_Nef_polyhedron2::Point> plist;
+					for (int j = 0; j < it.value().size(); j++) {
+						int p = it.value()[j];
+						plist.push_back(points[p]);
+					}
+					N += CGAL_Nef_polyhedron2(plist.begin(), plist.end(), CGAL_Nef_polyhedron2::INCLUDED);
+				}
+
+				return N;
+			}
+		};
+
+		PolyReducer pr(this);
+		printf("Number of polygons before reduction: %d\n", pr.polygons.size());
+		pr.reduce();
+		printf("Number of polygons after reduction: %d\n", pr.polygons.size());
+		return CGAL_Nef_polyhedron(pr.toNef());
 #endif
 	}
 	else
