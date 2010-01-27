@@ -244,7 +244,7 @@ DxfData::DxfData(double fn, double fs, double fa, QString filename, QString laye
 				for (int i = 0; i < 7; i++)
 					for (int j = 0; j < 2; j++)
 						this->dims.last().coords[i][j] = coords[i][j];
-				this->dims.last().angle = ellipse_start_angle;
+				this->dims.last().angle = arc_start_angle;
 				this->dims.last().length = radius;
 				this->dims.last().name = name;
 			}
@@ -324,6 +324,7 @@ DxfData::DxfData(double fn, double fs, double fa, QString filename, QString laye
 		case 50:
 			// ARC: start_angle
 			// INSERT: rot angle
+      // DIMENSION: linear and rotated: angle
 			arc_start_angle = data.toDouble();
 			break;
 		case 42:
