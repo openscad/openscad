@@ -460,8 +460,7 @@ CGAL_Nef_polyhedron PolySet::render_cgal_nef_polyhedron() const
 #if 0
 		// This version of the code does essentially the same thing as the 2nd
 		// version but merges some triangles before sending them to CGAL. This adds
-		// complexity. There was hope that this would speed up things. Unfortunately
-		// it does not look like it does..
+		// complexity but might speed up things..
 		//
 		// !! STILL WORK IN PROGRESS !!
 		//
@@ -558,8 +557,8 @@ CGAL_Nef_polyhedron PolySet::render_cgal_nef_polyhedron() const
 								if (poly3_n < 0)
 									continue;
 								if (poly3_n == poly1_n) {
-									this->egde_to_poly[QPair<int,int>(c, d)].first = 0;
-									this->egde_to_poly[QPair<int,int>(c, d)].second = 0;
+									// this->egde_to_poly[QPair<int,int>(c, d)].first = 0;
+									// this->egde_to_poly[QPair<int,int>(c, d)].second = 0;
 									goto next_poly1_edge;
 								}
 							}
@@ -578,12 +577,12 @@ CGAL_Nef_polyhedron PolySet::render_cgal_nef_polyhedron() const
 							}
 							printf(" |");
 							int start_poly2_2nd_seg = poly2_entry_n == this->polygons[poly2_n].size() ? 1 : 0;
-							for (int k = poly2_entry_n-2; k >= start_poly2_2nd_seg; k--) {
+							for (int k = start_poly2_2nd_seg; k < poly2_entry_n-1; k++) {
 								printf(" %d", this->polygons[poly2_n][k]);
 								this->polygons[this->poly_n].append(this->polygons[poly2_n][k]);
 							}
 							printf(" |");
-							for (int k = this->polygons[poly2_n].size()-1; k > poly2_entry_n; k--) {
+							for (int k = poly2_entry_n+1; k < this->polygons[poly2_n].size(); k++) {
 								printf(" %d", this->polygons[poly2_n][k]);
 								this->polygons[this->poly_n].append(this->polygons[poly2_n][k]);
 							}
@@ -597,8 +596,12 @@ CGAL_Nef_polyhedron PolySet::render_cgal_nef_polyhedron() const
 							del_poly(poly2_n);
 							add_edges(this->poly_n);
 							work_queue.append(this->poly_n);
-							this->poly_n++;
 							printf("New number of polygons: %d\n", this->polygons.size());
+							for (int k = 0; k < this->polygons[this->poly_n].size(); k++) {
+								int p = this->polygons[this->poly_n][k];
+								printf("%d %f %f\n", p, to_double(points[p].x()), to_double(points[p].y()));
+							}
+							this->poly_n++;
 							goto next_poly1;
 						}
 					next_poly1_edge:;
@@ -615,9 +618,11 @@ CGAL_Nef_polyhedron PolySet::render_cgal_nef_polyhedron() const
 				while (it.hasNext()) {
 					it.next();
 					std::list<CGAL_Nef_polyhedron2::Point> plist;
+					printf("===\n");
 					for (int j = 0; j < it.value().size(); j++) {
 						int p = it.value()[j];
 						plist.push_back(points[p]);
+						printf("%d %f %f\n", p, to_double(points[p].x()), to_double(points[p].y()));
 					}
 					N += CGAL_Nef_polyhedron2(plist.begin(), plist.end(), CGAL_Nef_polyhedron2::INCLUDED);
 				}
