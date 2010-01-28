@@ -149,7 +149,7 @@ void Preferences::keyPressEvent(QKeyEvent *e)
 		close();
 	} else
 #endif
-		if (e->modifiers() == Qt::ControlModifier && e->key() == Qt::Key_W ||
+		if ((e->modifiers() == Qt::ControlModifier && e->key() == Qt::Key_W) ||
 				e->key() == Qt::Key_Escape) {
 			close();
 		}
