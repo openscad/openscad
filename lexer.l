@@ -88,7 +88,7 @@ extern const char *parser_input_buffer;
 "false"		return TOK_FALSE;
 "undef"		return TOK_UNDEF;
 
-[0-9][0-9.]* { parserlval.number = atof(yytext); return TOK_NUMBER; }
+[0-9][0-9.]* { parserlval.number = QString(yytext).toDouble(); return TOK_NUMBER; }
 "$"?[a-zA-Z0-9_]+ { parserlval.text = strdup(yytext); return TOK_ID; }
 
 \"[^"]*\" {
