@@ -607,6 +607,37 @@ CGAL_Nef_polyhedron PolySet::render_cgal_nef_polyhedron() const
 		// printf("Number of polygons after reduction: %d\n", pr.polygons.size());
 		return CGAL_Nef_polyhedron(pr.toNef());
 #endif
+#if 0
+		// This is another experimental version. I should run faster than the above,
+		// is a lot simpler and has only one known weakness: Degenerate polygons, which
+		// get repaired by GLUTess, might trigger a CGAL crash here. The only
+		// known case for this is triangle-with-duplicate-vertex.dxf
+		if (this->polygons.size() > 0) assert(this->borders.size() > 0);
+		CGAL_Nef_polyhedron2 N;
+		Grid2d<CGAL_Nef_polyhedron2::Point> grid(GRID_COARSE);
+
+		for (int i = 0; i < this->borders.size(); i++) {
+			std::list<CGAL_Nef_polyhedron2::Point> plist;
+			for (int j = 0; j < this->borders[i].size(); j++) {
+				double x = this->borders[i][j].x;
+				double y = this->borders[i][j].y;
+				CGAL_Nef_polyhedron2::Point p;
+				if (grid.has(x, y)) {
+					p = grid.data(x, y);
+				} else {
+					p = CGAL_Nef_polyhedron2::Point(x, y);
+					grid.data(x, y) = p;
+				}
+				plist.push_back(p);		
+			}
+			// FIXME: If a border (path) has a duplicate vertex in dxf,
+			// the CGAL_Nef_polyhedron2 constructor will crash.
+			N ^= CGAL_Nef_polyhedron2(plist.begin(), plist.end(), CGAL_Nef_polyhedron2::INCLUDED);
+		}
+
+		return CGAL_Nef_polyhedron(N);
+
+#endif
 	}
 	else
 	{
