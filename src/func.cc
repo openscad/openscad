@@ -18,7 +18,12 @@
  *
  */
 
-#include "openscad.h"
+#include "function.h"
+#include "expression.h"
+#include "context.h"
+#include "dxfdim.h"
+#include "builtin.h"
+#include <math.h>
 
 AbstractFunction::~AbstractFunction()
 {

@@ -18,9 +18,10 @@
  *
  */
 
-#define INCLUDE_ABSTRACT_NODE_DETAILS
-
-#include "openscad.h"
+#include "module.h"
+#include "node.h"
+#include "context.h"
+#include "builtin.h"
 #include "printutils.h"
 
 enum control_type_e {

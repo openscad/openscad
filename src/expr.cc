@@ -18,7 +18,9 @@
  *
  */
 
-#include "openscad.h"
+#include "expression.h"
+#include "value.h"
+#include "context.h"
 
 Expression::Expression()
 {

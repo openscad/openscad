@@ -237,7 +237,7 @@ namespace OpenSCAD {
 			glVertex3dv(pc); 
 		}
 
-		inline void CGAL_GLU_TESS_CALLBACK combineCallback(GLdouble coords[3], GLvoid *d[4], GLfloat w[4], GLvoid **dataOut)
+		inline void CGAL_GLU_TESS_CALLBACK combineCallback(GLdouble coords[3], GLvoid *[4], GLfloat [4], GLvoid **dataOut)
 		{
 			static std::list<GLdouble*> pcache;
 			if (dataOut) {

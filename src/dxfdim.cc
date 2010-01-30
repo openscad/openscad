@@ -18,12 +18,18 @@
  *
  */
 
-#include "openscad.h"
+#include "dxfdim.h"
+#include "value.h"
+#include "function.h"
+#include "dxfdata.h"
+#include "builtin.h"
 #include "printutils.h"
 
+#include <math.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <QHash>
 
 QHash<QString,Value> dxf_dim_cache;
 QHash<QString,Value> dxf_cross_cache;

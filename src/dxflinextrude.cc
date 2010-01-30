@@ -18,10 +18,15 @@
  *
  */
 
-#define INCLUDE_ABSTRACT_NODE_DETAILS
-
-#include "openscad.h"
+#include "module.h"
+#include "node.h"
+#include "context.h"
 #include "printutils.h"
+#include "builtin.h"
+#include "dxfdata.h"
+#include "dxftess.h"
+#include "polyset.h"
+#include "openscad.h" // get_fragments_from_r()
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -29,6 +34,7 @@
 
 #include <QApplication>
 #include <QTime>
+#include <QProgressDialog>
 
 class DxfLinearExtrudeModule : public AbstractModule
 {

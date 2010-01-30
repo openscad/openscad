@@ -18,15 +18,15 @@
  *
  */
 
-#define INCLUDE_ABSTRACT_NODE_DETAILS
-
-#include "openscad.h"
 #include "printutils.h"
 #include "MainWindow.h"
+#include "dxfdata.h"
 
 #include <QApplication>
+#include <QProgressDialog>
 
 #ifdef ENABLE_CGAL
+#include "cgal.h"
 
 void export_stl(CGAL_Nef_polyhedron *root_N, QString filename, QProgressDialog *pd)
 {

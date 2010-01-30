@@ -18,9 +18,13 @@
  *
  */
 
-#define INCLUDE_ABSTRACT_NODE_DETAILS
-
-#include "openscad.h"
+#include "module.h"
+#include "node.h"
+#include "polyset.h"
+#include "context.h"
+#include "dxfdata.h"
+#include "dxftess.h"
+#include "builtin.h"
 
 enum primitive_type_e {
 	CUBE,

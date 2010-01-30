@@ -18,10 +18,14 @@
  *
  */
 
-#define INCLUDE_ABSTRACT_NODE_DETAILS
-
-#include "openscad.h"
+#include "module.h"
+#include "node.h"
+#include "polyset.h"
+#include "context.h"
+#include "builtin.h"
+#include "dxftess.h"
 #include "printutils.h"
+#include "openscad.h" // handle_dep()
 
 #include <QFile>
 

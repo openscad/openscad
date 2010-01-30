@@ -18,9 +18,14 @@
  *
  */
 
-#define INCLUDE_ABSTRACT_NODE_DETAILS
-
-#include "openscad.h"
+#include "module.h"
+#include "node.h"
+#include "context.h"
+#include "dxfdata.h"
+#include "csgterm.h"
+#include "polyset.h"
+#include "dxftess.h"
+#include "builtin.h"
 #include "printutils.h"
 
 enum transform_type_e {

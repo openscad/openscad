@@ -18,9 +18,9 @@
  *
  */
 
-#define INCLUDE_ABSTRACT_NODE_DETAILS
-
-#include "openscad.h"
+#include "dxfdata.h"
+#include "grid.h"
+#include "cgal.h"
 
 DxfData::DxfData(const struct CGAL_Nef_polyhedron &N)
 {

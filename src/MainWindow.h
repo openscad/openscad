@@ -4,6 +4,10 @@
 #include <QMainWindow>
 #include "ui_MainWindow.h"
 #include "openscad.h"
+#include "context.h"
+#include "module.h"
+#include "polyset.h"
+#include <QPointer>
 
 class MainWindow : public QMainWindow, public Ui::MainWindow
 {
@@ -27,11 +31,11 @@ public:
 	AbstractNode *absolute_root_node; // Result of tree evaluation
 	AbstractNode *root_node;          // Root if the root modifier (!) is used
 
-	CSGTerm *root_raw_term;           // Result of CSG term rendering
+	class CSGTerm *root_raw_term;           // Result of CSG term rendering
 	CSGTerm *root_norm_term;          // Normalized CSG products
-	CSGChain *root_chain;
+	class CSGChain *root_chain;
 #ifdef ENABLE_CGAL
-	CGAL_Nef_polyhedron *root_N;
+	class CGAL_Nef_polyhedron *root_N;
 	bool recreate_cgal_ogl_p;
 	void *cgal_ogl_p;
 	PolySet *cgal_ogl_ps;

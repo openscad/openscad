@@ -18,12 +18,19 @@
  *
  */
 
-#define INCLUDE_ABSTRACT_NODE_DETAILS
-
-#include "openscad.h"
 #include "MainWindow.h"
 #include "Preferences.h"
 #include "printutils.h"
+#include "node.h"
+#include "polyset.h"
+#include "csgterm.h"
+#include "highlighter.h"
+#include "grid.h"
+#include "dxfdata.h"
+#include "dxfdim.h"
+#include "export.h"
+#include "builtin.h"
+#include "dxftess.h"
 
 #include <QMenu>
 #include <QTime>

@@ -18,9 +18,10 @@
  *
  */
 
-#define INCLUDE_ABSTRACT_NODE_DETAILS
-
-#include "openscad.h"
+#include "polyset.h"
+#include "node.h"
+#include "module.h"
+#include "csgterm.h"
 #include "printutils.h"
 #include "Preferences.h"
 

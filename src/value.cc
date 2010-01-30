@@ -18,7 +18,8 @@
  *
  */
 
-#include "openscad.h"
+#include "value.h"
+#include <math.h>
 
 Value::Value()
 {

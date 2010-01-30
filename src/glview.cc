@@ -18,7 +18,6 @@
  *
  */
 
-#include "openscad.h"
 #include "GLView.h"
 #include "Preferences.h"
 
@@ -27,6 +26,7 @@
 #include <QMouseEvent>
 #include <QMessageBox>
 #include <QTimer>
+#include <math.h>
 
 #define FAR_FAR_AWAY 100000.0
 

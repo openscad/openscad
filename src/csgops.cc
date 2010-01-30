@@ -18,10 +18,14 @@
  *
  */
 
-#define INCLUDE_ABSTRACT_NODE_DETAILS
-
-#include "openscad.h"
+#include "module.h"
+#include "node.h"
+#include "csgterm.h"
+#include "builtin.h"
 #include "printutils.h"
+#ifdef ENABLE_CGAL
+#  include "cgal.h"
+#endif
 
 enum csg_type_e {
 	CSG_TYPE_UNION,

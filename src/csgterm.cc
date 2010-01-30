@@ -18,9 +18,8 @@
  *
  */
 
-#define INCLUDE_ABSTRACT_NODE_DETAILS
-
-#include "openscad.h"
+#include "csgterm.h"
+#include "polyset.h"
 
 CSGTerm::CSGTerm(PolySet *polyset, double m[20], QString label)
 {

@@ -18,11 +18,16 @@
  *
  */
 
-#include "openscad.h"
+#include "dxfdata.h"
+#include "grid.h"
 #include "printutils.h"
+#include "openscad.h" // handle_dep()
 
 #include <QFile>
 #include <QTextStream>
+#include <QHash>
+#include <QVector>
+#include <math.h>
 
 struct Line {
 	typedef DxfData::Point Point;

@@ -18,7 +18,8 @@
  *
  */
 
-#include "openscad.h"
+#include "highlighter.h"
+#include "openscad.h" // extern int parser_error_pos;
 
 Highlighter::Highlighter(QTextDocument *parent)
 		: QSyntaxHighlighter(parent)

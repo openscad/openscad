@@ -18,10 +18,18 @@
  *
  */
 
-#define INCLUDE_ABSTRACT_NODE_DETAILS
-
-#include "openscad.h"
+#include "module.h"
+#include "node.h"
+#include "polyset.h"
+#include "context.h"
+#include "dxfdata.h"
+#include "dxftess.h"
+#include "csgterm.h"
+#include "builtin.h"
 #include "printutils.h"
+#ifdef ENABLE_CGAL
+#  include "cgal.h"
+#endif
 
 #include <QProgressDialog>
 #include <QApplication>

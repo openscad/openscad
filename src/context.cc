@@ -18,7 +18,10 @@
  *
  */
 
-#include "openscad.h"
+#include "context.h"
+#include "expression.h"
+#include "function.h"
+#include "module.h"
 #include "printutils.h"
 
 Context::Context(const Context *parent)

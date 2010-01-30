@@ -1,4 +1,3 @@
-#include "openscad.h"
 #include "printutils.h"
 
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>

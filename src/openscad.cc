@@ -22,6 +22,16 @@
 
 #include "openscad.h"
 #include "MainWindow.h"
+#include "node.h"
+#include "module.h"
+#include "context.h"
+#include "value.h"
+#include "export.h"
+#include "builtin.h"
+
+#ifdef ENABLE_CGAL
+#include "cgal.h"
+#endif
 
 #include <QApplication>
 #include <QFile>
@@ -161,6 +171,7 @@ int main(int argc, char **argv)
 		zero3.vec.append(new Value(0.0));
 		root_ctx.set_variable("$vpt", zero3);
 		root_ctx.set_variable("$vpr", zero3);
+
 
 		AbstractModule *root_module;
 		ModuleInstantiation root_inst;
