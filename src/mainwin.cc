@@ -375,11 +375,11 @@ MainWindow::setFileName(const QString &filename)
 	}
 	else {
 		QFileInfo fileinfo(filename);
-		QString infoFileName = fileinfo.canonicalFilePath();
 		setWindowTitle("OpenSCAD - " + fileinfo.fileName() + "[*]");
 
 		// Check that the canonical file path exists - only update recent files
 		// if it does. Should prevent empty list items on initial open etc.
+		QString infoFileName = fileinfo.absoluteFilePath();
 		if (!infoFileName.isEmpty()) {
 			this->fileName = infoFileName;
 			QSettings settings; // already set up properly via main.cpp
