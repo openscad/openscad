@@ -39,14 +39,19 @@ mdi {
 include(cgal.pri)
 include(opencsg.pri)
 
+!isEmpty(EIGEN2_DIR) {
+  QMAKE_CXXFLAGS += -I$$EIGEN2_DIR
+}
+else {
+  QMAKE_CXXFLAGS += -I/usr/include/eigen2
+}
+
 QMAKE_CXXFLAGS_RELEASE = -O3 -march=pentium
 QMAKE_CXXFLAGS_DEBUG = -O0 -ggdb
 
 # QMAKE_CFLAGS   += -pg
 # QMAKE_CXXFLAGS += -pg
 # QMAKE_LFLAGS   += -pg
-
-
 
 LEXSOURCES += src/lexer.l
 YACCSOURCES += src/parser.y

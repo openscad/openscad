@@ -25,6 +25,9 @@
 #include "printutils.h"
 #include "Preferences.h"
 
+#include <Eigen/Core>
+#include <Eigen/LU>
+
 QCache<QString,PolySet::ps_cache_entry> PolySet::ps_cache(100);
 
 PolySet::ps_cache_entry::ps_cache_entry(PolySet *ps) :
@@ -129,10 +132,11 @@ static void gl_draw_triangle(GLint *shaderinfo, const PolySet::Point *p0, const 
 
 void PolySet::render_surface(colormode_e colormode, csgmode_e csgmode, double *m, GLint *shaderinfo) const
 {
-	double m_scale_rotate_det =
-		m[0]*m[5]*m[10] + m[4]*m[9]*m[2] + m[8]*m[1]*m[6] -
-		(m[8]*m[5]*m[2] + m[4]*m[1]*m[10] + m[0]*m[9]*m[6]);
-	bool mirrored = m_scale_rotate_det < 0;
+	Eigen::Matrix3f m3f;
+	m3f << m[0], m[4], m[8],
+		m[1], m[5], m[9],
+		m[2], m[6], m[10];
+	bool mirrored = m3f.determinant() < 0;
 
 	if (colormode == COLORMODE_MATERIAL) {
 		const QColor &col = Preferences::inst()->color(Preferences::OPENCSG_FACE_FRONT_COLOR);

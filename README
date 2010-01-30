@@ -52,6 +52,9 @@ development. Other versions may or may not work as well..
 * GLEW (bundled with OpenCSG)
   http://glew.sourceforge.net/
 
+* Eigen2 (2.0.11)
+  http://eigen.tuxfamily.org/
+
 * GCC C++ Compiler (4.0, 4.2, 4.3.1):
   http://gcc.gnu.org/
 
