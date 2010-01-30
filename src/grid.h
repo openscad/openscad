@@ -3,6 +3,7 @@
 
 #include <math.h>
 #include <stdint.h>
+#include <stdlib.h>
 #include <QHash>
 
 const double GRID_COARSE = 0.001;

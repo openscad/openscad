@@ -28,6 +28,7 @@
 #include <QHash>
 #include <QVector>
 #include <math.h>
+#include <assert.h>
 
 struct Line {
 	typedef DxfData::Point Point;
