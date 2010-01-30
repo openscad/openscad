@@ -24,6 +24,7 @@
 
 #include <QApplication>
 #include <QProgressDialog>
+#include <errno.h>
 
 #ifdef ENABLE_CGAL
 #include "cgal.h"

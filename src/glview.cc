@@ -27,6 +27,7 @@
 #include <QMessageBox>
 #include <QTimer>
 #include <math.h>
+#include <stdio.h>
 
 #define FAR_FAR_AWAY 100000.0
 

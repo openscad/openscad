@@ -15,7 +15,7 @@
 #  include "cgal.h"
 #endif
 
-#include <QCache.h>
+#include <QCache>
 
 class PolySet
 {
