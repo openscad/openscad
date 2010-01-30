@@ -39,11 +39,14 @@ mdi {
 include(cgal.pri)
 include(opencsg.pri)
 
+# Optionally specify location of Eigen2 using the 
+# EIGEN2DIR env. variable
+EIGEN2_DIR = $(EIGEN2DIR)
 !isEmpty(EIGEN2_DIR) {
-  QMAKE_CXXFLAGS += -I$$EIGEN2_DIR
+  INCLUDEPATH += $$EIGEN2_DIR
 }
 else {
-  QMAKE_CXXFLAGS += -I/usr/include/eigen2
+  INCLUDEPATH += /usr/include/eigen2
 }
 
 QMAKE_CXXFLAGS_RELEASE = -O3 -march=pentium
