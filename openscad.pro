@@ -94,6 +94,7 @@ SOURCES += src/openscad.cc \
            src/csgops.cc \
            src/transform.cc \
            src/primitives.cc \
+           src/projection.cc \
            src/surface.cc \
            src/control.cc \
            src/render.cc \
