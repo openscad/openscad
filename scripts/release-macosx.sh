@@ -1,3 +1,7 @@
+##
+## Deprecated! Use release-common.sh instead
+##
+
 #!/bin/sh
 #
 # This script creates a binary release of OpenSCAD for Mac OS X.

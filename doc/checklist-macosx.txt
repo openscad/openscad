@@ -20,6 +20,6 @@ o Build OpenCSG
   
 o Build and Deploy OpenSCAD
 
-# Update VERSION in release-macosx.sh
+# Update VERSION in publish-macosx.sh
   cd openscad
-  ./release-macosx.sh
+  ./scripts/publish-macosx.sh

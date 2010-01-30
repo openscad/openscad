@@ -70,6 +70,10 @@ esac
 
 make -j2 $TARGET
 
+if [[ $? != 0 ]]; then
+  echo "Error building OpenSCAD. Aborting."
+fi
+
 echo "Creating directory structure..."
 rm -rf openscad-$VERSION
 mkdir openscad-$VERSION
