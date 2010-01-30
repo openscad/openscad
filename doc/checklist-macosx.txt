@@ -1,4 +1,5 @@
 o Prerequisites (MacPorts):
+  - NB! CGAL requires gcc >= 4.2
   - eigen
   - boost
   - gmp
