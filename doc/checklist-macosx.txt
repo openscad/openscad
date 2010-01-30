@@ -1,3 +1,10 @@
+o Prerequisites (MacPorts):
+  - eigen
+  - boost
+  - gmp
+  - mpfr
+  - Qt4
+
 o Build CGAL:
 
   tar xzf CGAL-3.5.1.tar.gz
