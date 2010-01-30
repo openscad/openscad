@@ -3,9 +3,15 @@ DEFINES += OPENSCAD_VERSION=$$VERSION
 TEMPLATE = app
 RESOURCES = openscad.qrc
 
+OBJECTS_DIR = objects
+MOC_DIR = objects
+UI_DIR = objects
+RCC_DIR = objects
+INCLUDEPATH += src
+
 macx {
   TARGET = OpenSCAD
-  ICON = OpenSCAD.icns
+  ICON = icons/OpenSCAD.icns
   QMAKE_INFO_PLIST = Info.plist
   #CONFIG += x86 ppc
 }
@@ -30,44 +36,8 @@ mdi {
   DEFINES += ENABLE_MDI
 }
 
-cgal {
-# Uncomment this to enable experimental CGAL tesselation
-# DEFINES += CGAL_TESSELATE
-  DEFINES += ENABLE_CGAL
-  LIBS += -lCGAL
-  macx {
-    INCLUDEPATH += $(PWD)/../install/include /opt/local/include
-    # The -L/usr/lib is to force the linker to use system libraries over MacPort libraries
-    LIBS += -L/usr/lib -L$(PWD)/../install/lib -L/opt/local/lib /opt/local/lib/libgmp.a /opt/local/lib/libmpfr.a /opt/local/lib/libboost_thread-mt.a
-  }
-  else {
-    LIBS += -lmpfr
-  }
-  win32:LIBS += -lboost_thread -lgmp
-  QMAKE_CXXFLAGS += -frounding-math
-}
-
-opencsg {
-  DEFINES += ENABLE_OPENCSG
-  LIBS += -lopencsg
-  unix:LIBS += -lGLEW
-  win32:LIBS += -lglew32
-
-  # Optionally specify location of OpenCSG using the 
-  # OPENCSGDIR env. variable
-  OPENCSG_DIR = $(OPENCSGDIR)
-  !isEmpty(OPENCSG_DIR) {
-    INCLUDEPATH += $$OPENCSG_DIR/include
-    LIBS += -L$$OPENCSG_DIR/lib
-  }
-  macx {
-    # For glew
-    INCLUDEPATH += /opt/local/include
-    LIBS += -L/opt/local/lib
-  }
-}
-
-include(qtcolorbutton/qtcolorbutton.pri)
+include(cgal.pri)
+include(opencsg.pri)
 
 QMAKE_CXXFLAGS_RELEASE = -O3 -march=pentium
 QMAKE_CXXFLAGS_DEBUG = -O0 -ggdb
@@ -76,30 +46,67 @@ QMAKE_CXXFLAGS_DEBUG = -O0 -ggdb
 # QMAKE_CXXFLAGS += -pg
 # QMAKE_LFLAGS   += -pg
 
-LEXSOURCES += lexer.l
-YACCSOURCES += parser.y
 
-FORMS   += MainWindow.ui \
-           Preferences.ui
 
-HEADERS += openscad.h \
-           MainWindow.h \
-           Preferences.h \
-           GLView.h \
-           printutils.h \
-           CGAL_renderer.h
+LEXSOURCES += src/lexer.l
+YACCSOURCES += src/parser.y
 
-macx: HEADERS += EventFilter.h
+FORMS   += src/MainWindow.ui \
+           src/Preferences.ui
 
-SOURCES += openscad.cc mainwin.cc glview.cc export.cc \
-           value.cc expr.cc func.cc module.cc context.cc \
-           csgterm.cc polyset.cc csgops.cc transform.cc \
-           primitives.cc surface.cc control.cc render.cc \
-           import.cc dxfdata.cc dxftess.cc dxftess-glu.cc \
-           dxftess-cgal.cc dxfdim.cc \
-           dxflinextrude.cc dxfrotextrude.cc highlighter.cc \
-           printutils.cc nef2dxf.cc \
-           Preferences.cc
+HEADERS += src/CGAL_renderer.h \
+           src/GLView.h \
+           src/MainWindow.h \
+           src/Preferences.h \
+           src/builtin.h \
+           src/cgal.h \
+           src/context.h \
+           src/csgterm.h \
+           src/dxfdata.h \
+           src/dxfdim.h \
+           src/dxftess.h \
+           src/export.h \
+           src/expression.h \
+           src/function.h \
+           src/grid.h \
+           src/highlighter.h \
+           src/module.h \
+           src/node.h \
+           src/openscad.h \
+           src/polyset.h \
+           src/printutils.h \
+           src/value.h
+
+SOURCES += src/openscad.cc \
+           src/mainwin.cc \
+           src/glview.cc \
+           src/export.cc \
+           src/value.cc \
+           src/expr.cc \
+           src/func.cc \
+           src/module.cc \
+           src/node.cc \
+           src/context.cc \
+           src/csgterm.cc \
+           src/polyset.cc \
+           src/csgops.cc \
+           src/transform.cc \
+           src/primitives.cc \
+           src/surface.cc \
+           src/control.cc \
+           src/render.cc \
+           src/import.cc \
+           src/dxfdata.cc \
+           src/dxftess.cc \
+           src/dxftess-glu.cc \
+           src/dxftess-cgal.cc \
+           src/dxfdim.cc \
+           src/dxflinextrude.cc \
+           src/dxfrotextrude.cc \
+           src/highlighter.cc \
+           src/printutils.cc \
+           src/nef2dxf.cc \
+           src/Preferences.cc
 
 target.path = /usr/local/bin/
 INSTALLS += target

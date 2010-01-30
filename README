@@ -3,7 +3,7 @@ WHAT IS IT?
 ===========
 
 OpenSCAD is a software for creating solid 3D CAD objects. It is free software
-and available for Linux/UNIX, MS Windows and Apples OS X.
+and available for Linux/UNIX, MS Windows and Mac OS X.
 
 Unlike most free software for creating 3D models (such as the famous
 application Blender) it does not focus on the artistic aspects of 3D modelling
@@ -16,7 +16,7 @@ OpenSCAD is not an interactive modeller. Instead it is something like a
 3D-compiler that reads in a script file that describes the object and renders
 the 3D model from this script file (see examples below). This gives you (the
 designer) full control over the modelling process and enables you to easily
-change any step in the modelling process or make designes that are defined by
+change any step in the modelling process or make designs that are defined by
 configurable parameters.
 
 OpenSCAD provides two main modelling techniques: First there is constructive
@@ -30,14 +30,14 @@ STL and OFF file formats.
 PREREQUISITES
 =============
 
-To build OpenSCAD, you need some libraries and tools. The version numbers in
-brakets specify the versions I have used for my tests. Other versions may or
-may not work as well..
+To build OpenSCAD, you need some libraries and tools. The version
+numbers in brackets specify the versions which have been used for
+development. Other versions may or may not work as well..
 
-* Qt4 (4.5.1):
+* Qt4 (4.4 - 4.6):
   http://www.qtsoftware.com/
 
-* CGAL (3.4):
+* CGAL (3.4, 3.5):
   http://www.cgal.org/
 
 * boost (1.35, required by CGAL)
@@ -46,13 +46,13 @@ may not work as well..
 * cmake (2.6.2, required by CGAL)
   http://www.cmake.org/
 
-* OpenCSG (1.1.0):
+* OpenCSG (1.1 - 1.2):
   http://www.opencsg.org/
 
 * GLEW (bundled with OpenCSG)
   http://glew.sourceforge.net/
 
-* GCC C++ Compiler (4.3.1):
+* GCC C++ Compiler (4.0, 4.2, 4.3.1):
   http://gcc.gnu.org/
 
 * Bison (2.4):
@@ -68,12 +68,12 @@ BUILDING OPENSCAD
 First, run 'qmake' from Qt4 to generate a Makefile. On some systems you need to
 run 'qmake4', 'qmake-qt4' or something alike to run the qt4 version of the tool.
 
-Then run make. Finnaly you might run 'make install' as root or simply copy the
-'openscad' binary to to bin directory of your choice.
+Then run make. Finally you might run 'make install' as root or simply copy the
+'openscad' binary (OpenSCAD.app on Mac OS X) to the bin directory of your choice.
 
 
 DOCUMENTATION
 =============
 
-Hava a look at the OpenSCAD Homepage (http://openscad.org/) for documentation.
+Have a look at the OpenSCAD Homepage (http://openscad.org/) for documentation.
 
