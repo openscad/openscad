@@ -77,6 +77,8 @@ HEADERS += src/CGAL_renderer.h \
            src/printutils.h \
            src/value.h
 
+macx: HEADERS += src/EventFilter.h
+
 SOURCES += src/openscad.cc \
            src/mainwin.cc \
            src/glview.cc \

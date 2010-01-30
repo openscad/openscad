@@ -20,7 +20,10 @@
 
 %{
 
-#include "openscad.h"
+#include "module.h"
+#include "expression.h"
+#include "value.h"
+#include "function.h"
 #include "printutils.h"
 
 int parser_error_pos = -1;
