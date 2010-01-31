@@ -195,14 +195,24 @@ PolySet *ProjectionNode::render_polyset(render_mode_e rm) const
 		// N.p3 *= CGAL_Nef_polyhedron3(CGAL_Plane(0, 0, 1, 0), CGAL_Nef_polyhedron3::INCLUDED);
 		N.p3 *= Ncube.p3;
 		cgal_nef3_to_polyset(ps3, &N);
+		Grid2d<int> conversion_grid(GRID_COARSE);
 		for (int i = 0; i < ps3->polygons.size(); i++) {
 			for (int j = 0; j < ps3->polygons[i].size(); j++) {
-				if (ps3->polygons[i][j].z != 0)
+				double x = ps3->polygons[i][j].x;
+				double y = ps3->polygons[i][j].y;
+				double z = ps3->polygons[i][j].z;
+				if (z != 0)
 					goto next_ps3_polygon_cut_mode;
+				if (conversion_grid.align(x, y) == i+1)
+					goto next_ps3_polygon_cut_mode;
+				conversion_grid.data(x, y) = i+1;
 			}
 			ps->append_poly();
 			for (int j = 0; j < ps3->polygons[i].size(); j++) {
-				ps->insert_vertex(ps3->polygons[i][j].x, ps3->polygons[i][j].y);
+				double x = ps3->polygons[i][j].x;
+				double y = ps3->polygons[i][j].y;
+				conversion_grid.align(x, y);
+				ps->insert_vertex(x, y);
 			}
 		next_ps3_polygon_cut_mode:;
 		}
