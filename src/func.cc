@@ -185,6 +185,27 @@ Value builtin_pow(const QVector<QString>&, const QVector<Value> &args)
 	return Value();
 }
 
+Value builtin_round(const QVector<QString>&, const QVector<Value> &args)
+{
+	if (args.size() == 1 && args[0].type == Value::NUMBER)
+		return Value(round(args[0].num));
+	return Value();
+}
+
+Value builtin_ceil(const QVector<QString>&, const QVector<Value> &args)
+{
+	if (args.size() == 1 && args[0].type == Value::NUMBER)
+		return Value(ceil(args[0].num));
+	return Value();
+}
+
+Value builtin_floor(const QVector<QString>&, const QVector<Value> &args)
+{
+	if (args.size() == 1 && args[0].type == Value::NUMBER)
+		return Value(floor(args[0].num));
+	return Value();
+}
+
 Value builtin_str(const QVector<QString>&, const QVector<Value> &args)
 {
 	QString str;
@@ -238,6 +259,9 @@ void initialize_builtin_functions()
 	builtin_functions["atan"] = new BuiltinFunction(&builtin_atan);
 	builtin_functions["atan2"] = new BuiltinFunction(&builtin_atan2);
 	builtin_functions["pow"] = new BuiltinFunction(&builtin_pow);
+	builtin_functions["round"] = new BuiltinFunction(&builtin_round);
+	builtin_functions["ceil"] = new BuiltinFunction(&builtin_ceil);
+	builtin_functions["floor"] = new BuiltinFunction(&builtin_floor);
 	builtin_functions["str"] = new BuiltinFunction(&builtin_str);
 	builtin_functions["lookup"] = new BuiltinFunction(&builtin_lookup);
 	initialize_builtin_dxf_dim();
