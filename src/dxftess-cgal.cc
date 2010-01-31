@@ -46,29 +46,50 @@ struct triangle {
 
 struct point_info_t
 {
+	double x, y;
 	int pathidx, pointidx;
 	int max_pointidx_in_path;
 	QList<int> triangles;
 
-	struct point_info_t *neigh_up;
-	struct point_info_t *neigh_down;
+	struct point_info_t *neigh_next;
+	struct point_info_t *neigh_prev;
 
-	point_info_t() : pathidx(-1), pointidx(-1), max_pointidx_in_path(-1) { }
-	point_info_t(int a, int b, int c) : pathidx(a), pointidx(b), max_pointidx_in_path(c) { }
+	point_info_t(double x, double y, int a, int b, int c) :
+			x(x), y(y), pathidx(a), pointidx(b), max_pointidx_in_path(c) { }
+	point_info_t() : x(0), y(0), pathidx(-1), pointidx(-1), max_pointidx_in_path(-1) { }
 };
 
-#if 0
-void mark_inner_outer(QList<struct triangle> &t, Grid2d<point_info_t> &p, int idx, bool inner)
+typedef QPair<point_info_t*,point_info_t*> edge_t;
+
+void mark_inner_outer(QList<struct triangle> &tri, Grid2d<point_info_t> &point_info,
+		QHash<edge_t,int> &edge_to_triangle, QHash<edge_t,int> &edge_to_path, int idx, bool inner)
 {
-	if (t[idx].is_marked)
+	if (tri[idx].is_marked)
 		return;
 
-	if (inner)
-		t[idx].is_inner = true;
+	tri[idx].is_inner = inner;
+	tri[idx].is_marked = true;
 
-	FIXME
+	point_info_t *p[3] = {
+		&point_info.data(tri[idx].p[0].x, tri[idx].p[0].y),
+		&point_info.data(tri[idx].p[1].x, tri[idx].p[1].y),
+		&point_info.data(tri[idx].p[2].x, tri[idx].p[2].y)
+	};
+
+	edge_t edges[3] = {
+		edge_t(p[1], p[0]),
+		edge_t(p[2], p[1]),
+		edge_t(p[0], p[2])
+	};
+
+	for (int i = 0; i < 3; i++) {
+		if (edge_to_triangle.contains(edges[i])) {
+			bool next_inner = edge_to_path.contains(edges[i]) ? !inner : inner;
+			mark_inner_outer(tri, point_info, edge_to_triangle, edge_to_path,
+					edge_to_triangle[edges[i]], next_inner);
+		}
+	}
 }
-#endif
 
 void dxf_tesselate(PolySet *ps, DxfData *dxf, double rot, bool up, bool /* do_triangle_splitting */, double h)
 {
@@ -76,10 +97,10 @@ void dxf_tesselate(PolySet *ps, DxfData *dxf, double rot, bool up, bool /* do_tr
 
 	QList<struct triangle> tri;
 	Grid2d<point_info_t> point_info(GRID_FINE);
+	QHash<edge_t,int> edge_to_triangle;
+	QHash<edge_t,int> edge_to_path;
 
-	double far_left_x = 0;
-	struct point_info_t *far_left_p = NULL;
-
+	// read path data and copy all relevant infos
 	for (int i = 0; i < dxf->paths.count(); i++)
 	{
 		if (!dxf->paths[i].is_closed)
@@ -93,20 +114,17 @@ void dxf_tesselate(PolySet *ps, DxfData *dxf, double rot, bool up, bool /* do_tr
 			double y = dxf->paths[i].points[j]->y;
 
 			struct point_info_t *pi = &point_info.align(x, y);
-			*pi = point_info_t(i, j, dxf->paths[i].points.count()-1);
+			*pi = point_info_t(x, y, i, j, dxf->paths[i].points.count()-1);
 
 			if (j == 1) {
 				first_pi = pi;
 			} else {
-				prev_pi->neigh_up = pi;
-				pi->neigh_down = prev_pi;
+				prev_pi->neigh_next = pi;
+				pi->neigh_prev = prev_pi;
+				edge_to_path[edge_t(prev_pi, pi)] = 1; 
+				edge_to_path[edge_t(pi, prev_pi)] = 1; 
 			}
 			prev_pi = pi;
-
-			if (far_left_p == NULL || x < far_left_x) {
-				far_left_x = x;
-				far_left_p = &point_info.data(x, y);
-			}
 
 			Vertex_handle vh = cdt.insert(CDTPoint(x, y));
 			if (j == 1) {
@@ -117,16 +135,21 @@ void dxf_tesselate(PolySet *ps, DxfData *dxf, double rot, bool up, bool /* do_tr
 			prev = vh;
 		}
 
-		prev_pi->neigh_up = first_pi;
-		first_pi->neigh_down = prev_pi;
+		prev_pi->neigh_next = first_pi;
+		first_pi->neigh_prev = prev_pi;
+
+		edge_to_path[edge_t(first_pi, prev_pi)] = 1; 
+		edge_to_path[edge_t(prev_pi, first_pi)] = 1; 
 
  		cdt.insert_constraint(prev, first);
 	}
 
+	// run delaunay triangulation
 	std::list<CDTPoint> list_of_seeds;
 	CGAL::refine_Delaunay_mesh_2_without_edge_refinement(cdt,
 			list_of_seeds.begin(), list_of_seeds.end(), DummyCriteria<CDT>());
 
+	// copy triangulation results
 	CDT::Finite_faces_iterator iter = cdt.finite_faces_begin();
 	for(; iter != cdt.finite_faces_end(); ++iter)
 	{
@@ -136,58 +159,98 @@ void dxf_tesselate(PolySet *ps, DxfData *dxf, double rot, bool up, bool /* do_tr
 		int idx = tri.size();
 		tri.append(triangle());
 
+		point_info_t *pi[3];
 		for (int i=0; i<3; i++) {
 			double px = iter->vertex(i)->point()[0];
 			double py = iter->vertex(i)->point()[1];
-			point_info.align(px, py).triangles.append(idx);
+			pi[i] = &point_info.align(px, py);
+			pi[i]->triangles.append(idx);
 			tri[idx].p[i].x = px;
 			tri[idx].p[i].y = py;
 		}
+
+		edge_to_triangle[edge_t(pi[0], pi[1])] = idx;
+		edge_to_triangle[edge_t(pi[1], pi[2])] = idx;
+		edge_to_triangle[edge_t(pi[2], pi[0])] = idx;
 	}
 
-#if 0
-	for (int i = 0; i < far_left_p->triangles.size(); i++)
+	// mark trianlges as inner/outer
+	while (1)
 	{
-		int idx = far_left_p->triangles[i];
-		point_info_t *p0 = &point_info.data(tri[idx].p[0].x, tri[idx].p[0].y);
-		point_info_t *p1 = &point_info.data(tri[idx].p[1].x, tri[idx].p[1].y);
-		point_info_t *p2 = &point_info.data(tri[idx].p[2].x, tri[idx].p[2].y);
-		point_info_t *mp = NULL, *np1 = NULL, *np2 = NULL;
+		double far_left_x = 0;
+		struct point_info_t *far_left_p = NULL;
 
-		if (p0 == far_left_p)
-			mp = p0, np1 = p1, np2 = p2;
-		else if (p1 == far_left_p)
-			mp = p1, np1 = p0, np2 = p2;
-		else if (p2 == far_left_p)
-			mp = p2, np1 = p0, np2 = p1;
-		else
-			continue;
+		for (int i = 0; i < tri.size(); i++)
+		{
+			if (tri[i].is_marked)
+				continue;
 
-		if (mp->neigh_up == np2 || mp->neigh_down == np1) {
-			point_info_t *t = np1;
-			np1 = np2;
-			np2 = t;
+			for (int j = 0; j < 3; j++) {
+				double x = tri[i].p[j].x;
+				double y = tri[i].p[j].y;
+				if (far_left_p == NULL || x < far_left_x) {
+					far_left_x = x;
+					far_left_p = &point_info.data(x, y);
+				}
+			}
 		}
 
-		if (mp->neigh_up == np1 && mp->neigh_down == np2) {
-			mark_inner_outer(tri, point_info, idx, true);
+		if (far_left_p == NULL)
 			break;
-		}
 
-		if (mp->neigh_up == np1) {
-			FIXME
-		}
+		// find one inner triangle and run recursive marking
+		for (int i = 0; i < far_left_p->triangles.size(); i++)
+		{
+			int idx = far_left_p->triangles[i];
+			point_info_t *p0 = &point_info.data(tri[idx].p[0].x, tri[idx].p[0].y);
+			point_info_t *p1 = &point_info.data(tri[idx].p[1].x, tri[idx].p[1].y);
+			point_info_t *p2 = &point_info.data(tri[idx].p[2].x, tri[idx].p[2].y);
+			point_info_t *mp = NULL, *np1 = NULL, *np2 = NULL, *tp = NULL;
 
-		if (mp->neigh_up == np1) {
-			FIXME
+			if (p0 == far_left_p)
+				mp = p0, np1 = p1, np2 = p2;
+			else if (p1 == far_left_p)
+				mp = p1, np1 = p0, np2 = p2;
+			else if (p2 == far_left_p)
+				mp = p2, np1 = p0, np2 = p1;
+			else
+				continue;
+
+			if (mp->neigh_next == np2 || mp->neigh_prev == np1) {
+				point_info_t *t = np1;
+				np1 = np2;
+				np2 = t;
+			}
+
+			if (mp->neigh_next == np1 && mp->neigh_prev == np2) {
+				mark_inner_outer(tri, point_info, edge_to_triangle, edge_to_path, idx, true);
+				break;
+			}
+
+			if (mp->neigh_next == np1)
+				tp = np2;
+
+			if (mp->neigh_prev == np2)
+				tp = np1;
+
+			if (tp != NULL) {
+				double z1 = (mp->neigh_next->x - mp->x) * (tp->y - mp->y) -
+						(tp->x - mp->x) * (mp->neigh_next->y - mp->y);
+				double z2 = (tp->x - mp->x) * (mp->neigh_prev->y - mp->y) -
+						(mp->neigh_prev->x - mp->x) * (tp->y - mp->y);
+				if (z1 < 0 && z2 < 0) {
+					mark_inner_outer(tri, point_info, edge_to_triangle, edge_to_path, idx, true);
+					break;
+				}
+			}
 		}
 	}
-#endif
 
+	// add all inner triangles to target polyset
 	for(int i = 0; i < tri.size(); i++)
 	{
-		// if (!tri[i].is_inner)
-		//	continue;
+		if (!tri[i].is_inner)
+			continue;
 
 		ps->append_poly();
 		int path[3], point[3];

@@ -20,6 +20,7 @@
 
 #include "printutils.h"
 
+#define CGAL_TESSELATE
 #ifdef CGAL_TESSELATE
 #include "dxftess-cgal.cc"
 #else
