@@ -617,6 +617,7 @@ CGAL_Nef_polyhedron PolySet::render_cgal_nef_polyhedron() const
 		// is a lot simpler and has only one known weakness: Degenerate polygons, which
 		// get repaired by GLUTess, might trigger a CGAL crash here. The only
 		// known case for this is triangle-with-duplicate-vertex.dxf
+		// FIXME: If we just did a projection, we need to recreate the border!
 		if (this->polygons.size() > 0) assert(this->borders.size() > 0);
 		CGAL_Nef_polyhedron2 N;
 		Grid2d<CGAL_Nef_polyhedron2::Point> grid(GRID_COARSE);
