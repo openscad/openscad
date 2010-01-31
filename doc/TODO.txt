@@ -57,11 +57,6 @@ ENGINE
 o Primitives
   - Springs, spirals (requested by Cathal Garvey)
   - (TTF) Text
-o 2D Subsystem
-  - Add generic 3D->2D projection statements
-  - 2D->3D using clipping plane
-  - Performance: Is it necessary to union children before extrusion
-    when compiling? Can this be postponed to CGAL evaluation time?
 o Built-in modules
   - extrude*: Allow the base 2D primitive to have a Z value
 o Advanced Transformations
@@ -73,6 +68,9 @@ o Function-Module-Interface
   - Pass a function to a module instanciation (e.g. for dynamic extrusion paths)
 o Language Frontend
   - Allow local variables and functions everywhere (not only on module level)
+  - Add "use" statement to load modules. Like include but read a module only once,
+    ignore all top level objects (they are used as module testcase) and search in
+    a module search path.
 o DXF Import
   - Support for POLYLINE entity
   - Support for SPLINE entity
@@ -85,6 +83,7 @@ o Mesh optimization on STL export
 o Misc
   - Add symbolic colors to the color() statement
   - Go through default values of parameters (e.g. cube() has x,y,z=1 while linear_extrude() has height=100)
+  - Add support for symbolic names to child() statement 
 o Grammar
   - dim->name -> dim->label
   - A random(seed) function
