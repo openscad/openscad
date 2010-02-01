@@ -87,6 +87,7 @@ o Language Frontend
     ignore all top level objects (they are used as module testcase) and search in
     a module search path.
   - Add a default search path for included files to allow bundling libs
+  - allow 0/1 f/t FALSE/TRUE as boolean values
 o DXF Import
   - Support for POLYLINE entity
   - Support for SPLINE entity
