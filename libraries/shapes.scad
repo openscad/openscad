@@ -71,42 +71,32 @@ module ovalTube(height, rx, ry, wall) {
   }
 }
 
-module hexagon(height, depth) {
-  boxWidth = height/1.75;
-  union() {
-    box(boxWidth, height, depth);
-    rotate([0,0,60]) box(boxWidth, height, depth);
-    rotate([0,0,-60]) box(boxWidth, height, depth);
+module hexagon(size, depth) {
+  boxWidth = size/1.75;
+  for (r = [-60, 0, 60]) rotate([0,0,r]) cube([boxWidth, size, depth], true);
+}
+
+module octagon(size, depth) {
+  intersection() {
+    cube([size, size, depth], true);
+    rotate([0,0,45]) cube([size, size, depth], true);
   }
 }
 
-module octagon(height, depth) {
+module dodecagon(size, depth) {
   intersection() {
-    box(height, height, depth);
-    rotate([0,0,45]) box(height, height, depth);
+    hexagon(size, depth);
+    rotate([0,0,90]) hexagon(size, depth);
   }
 }
 
-module dodecagon(height, depth) {
-  intersection() {
-    hexagon(height, depth);
-    rotate([0,0,90]) hexagon(height, depth);
-  }
-}
-
-module hexagram(height, depth) {
-  boxWidth=height/1.75;
-  intersection() {
-    box(height, boxWidth, depth);
-    rotate([0,0,60]) box(height, boxWidth, depth);
-  }
-  intersection() {
-    box(height, boxWidth, depth);
-    rotate([0,0,-60]) box(height, boxWidth, depth);
-  }
-  intersection() {
-    rotate([0,0,60]) box(height, boxWidth, depth);
-    rotate([0,0,-60]) box(height, boxWidth, depth);
+module hexagram(size, depth) {
+  boxWidth=size/1.75;
+  for (v = [[0,1],[0,-1],[1,-1]]) {
+    intersection() {
+      rotate([0,0,60*v[0]]) cube([size, boxWidth, depth], true);
+      rotate([0,0,60*v[1]]) cube([size, boxWidth, depth], true);
+    }
   }
 }
 
@@ -129,11 +119,11 @@ module equiTriangle(side, depth) {
   }
 }
 
-module 12ptStar(height, depth) {
+module 12ptStar(size, depth) {
   starNum=3;
   starAngle=360/starNum;
   for (s=[1:starNum]) {
-    rotate([0, 0, s*starAngle]) box(height, height, depth);
+    rotate([0, 0, s*starAngle]) box(size, size, depth);
   }
 }
 
@@ -141,13 +131,13 @@ module 12ptStar(height, depth) {
 //MOVES THE ROTATION AXIS OF A BOX FROM ITS CENTER TO THE BOTTOM LEFT CORNER
 //FIXME: Why are the dimensions changed?
 // why not just translate([0,0,-d/2]) cube([w,h,d]);
-module dislocateBox(w,h,d){
-	translate([w/2,h,0]){
-		difference(){
-			box(w, h*2, d+1);
-			translate([-w,0,0]) box(w, h*2, d+1);
-		}
-	}
+module dislocateBox(w,h,d) {
+  translate([w/2,h,0]) {
+    difference() {
+      box(w, h*2, d+1);
+      translate([-w,0,0]) box(w, h*2, d+1);
+    }
+  }
 }
 
 
