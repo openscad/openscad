@@ -23,12 +23,15 @@
 #include "openscad.h"
 #include "printutils.h"
 #include "parser_yacc.h"
+#include <QFileInfo>
+#include <QDir>
 
 int lexerget_lineno(void);
 #ifdef __GNUC__
 static void yyunput(int, char*) __attribute__((unused));
 #endif
 extern const char *parser_input_buffer;
+extern const char *parser_source_path;
 
 #define YY_INPUT(buf,result,max_size) {   \
   if (yyin && yyin != stdin) {            \
@@ -62,8 +65,10 @@ extern const char *parser_input_buffer;
 "<"[^ \t\n>]+">" {
 	char *filename = strdup(yytext+1);
 	filename[strlen(filename)-1] = 0;
-	handle_dep(filename);
-	yyin = fopen(filename, "r");
+        QFileInfo finfo(QDir(parser_source_path), filename);
+        
+	handle_dep(finfo.absoluteFilePath());
+	yyin = fopen(finfo.absoluteFilePath().toLocal8Bit(), "r");
 	if (!yyin) {
 		PRINTF("WARNING: Can't open input file `%s'.", filename);
 	} else {

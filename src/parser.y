@@ -504,12 +504,14 @@ void yyerror (char const *s)
 extern FILE *lexerin;
 extern const char *parser_input_buffer;
 const char *parser_input_buffer;
+const char *parser_source_path;
 
-AbstractModule *parse(const char *text, int debug)
+AbstractModule *parse(const char *text, const char *path, int debug)
 {
 	lexerin = NULL;
 	parser_error_pos = -1;
 	parser_input_buffer = text;
+	parser_source_path = path;
 
 	module_stack.clear();
 	module = new Module();

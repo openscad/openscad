@@ -530,7 +530,7 @@ void MainWindow::compile(bool procevents)
 
 	// Parse
 	last_compiled_doc = editor->toPlainText();
-	root_module = parse((last_compiled_doc + "\n" + commandline_commands).toAscii().data(), false);
+	root_module = parse((last_compiled_doc + "\n" + commandline_commands).toAscii().data(), this->fileName.isEmpty() ? "" : QFileInfo(this->fileName).absolutePath().toLocal8Bit(), false);
 
 	// Error highlighting
 	if (highlighter) {

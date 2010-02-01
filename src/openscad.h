@@ -32,7 +32,7 @@
 #endif
 
 
-extern class AbstractModule *parse(const char *text, int debug);
+extern class AbstractModule *parse(const char *text, const char *path, int debug);
 extern int get_fragments_from_r(double r, double fn, double fs, double fa);
 
 #include <QString>

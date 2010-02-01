@@ -26,8 +26,6 @@
 #include "dxfdata.h"
 #include "dxftess.h"
 #include "polyset.h"
-#include "export.h"
-#include "openscad.h" // get_fragments_from_r()
 
 #include <sys/types.h>
 #include <sys/stat.h>

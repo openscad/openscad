@@ -181,6 +181,7 @@ int main(int argc, char **argv)
 		ModuleInstantiation root_inst;
 		AbstractNode *root_node;
 
+		QFileInfo fileInfo(filename);
 		handle_dep(filename);
 		FILE *fp = fopen(filename, "rt");
 		if (!fp) {
@@ -195,12 +196,11 @@ int main(int argc, char **argv)
 				text += buffer;
 			}
 			fclose(fp);
-			root_module = parse((text+commandline_commands).toAscii().data(), false);
+			root_module = parse((text+commandline_commands).toAscii().data(), fileInfo.absolutePath().toLocal8Bit(), false);
 		}
 
 		QString original_path = QDir::currentPath();
-		QFileInfo fileInfo(filename);
-		QDir::setCurrent(fileInfo.dir().absolutePath());
+		QDir::setCurrent(fileInfo.absolutePath());
 
 		AbstractNode::idx_counter = 1;
 		root_node = root_module->evaluate(&root_ctx, &root_inst);
