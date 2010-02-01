@@ -113,35 +113,42 @@ void dxf_tesselate(PolySet *ps, DxfData *dxf, double rot, bool up, bool /* do_tr
 			double x = dxf->paths[i].points[j]->x;
 			double y = dxf->paths[i].points[j]->y;
 
+			if (point_info.has(x, y)) {
+				// FIXME: How can the same path set contain the same point twice?
+				// ..maybe it would be better to assert here. But this would
+				// break compatibility with the glu tesselator that handled such
+				// cases just fine.
+				continue;
+			}
+
 			struct point_info_t *pi = &point_info.align(x, y);
 			*pi = point_info_t(x, y, i, j, dxf->paths[i].points.count()-1);
 
-			if (j == 1) {
+			Vertex_handle vh = cdt.insert(CDTPoint(x, y));
+			if (first_pi == NULL) {
 				first_pi = pi;
+				first = vh;
 			} else {
 				prev_pi->neigh_next = pi;
 				pi->neigh_prev = prev_pi;
 				edge_to_path[edge_t(prev_pi, pi)] = 1; 
 				edge_to_path[edge_t(pi, prev_pi)] = 1; 
-			}
-			prev_pi = pi;
-
-			Vertex_handle vh = cdt.insert(CDTPoint(x, y));
-			if (j == 1) {
-				first = vh;
-			} else {
 				cdt.insert_constraint(prev, vh);
 			}
+			prev_pi = pi;
 			prev = vh;
 		}
 
-		prev_pi->neigh_next = first_pi;
-		first_pi->neigh_prev = prev_pi;
+		if (first_pi != NULL && first_pi != prev_pi)
+		{
+			prev_pi->neigh_next = first_pi;
+			first_pi->neigh_prev = prev_pi;
 
-		edge_to_path[edge_t(first_pi, prev_pi)] = 1; 
-		edge_to_path[edge_t(prev_pi, first_pi)] = 1; 
+			edge_to_path[edge_t(first_pi, prev_pi)] = 1; 
+			edge_to_path[edge_t(prev_pi, first_pi)] = 1; 
 
- 		cdt.insert_constraint(prev, first);
+			cdt.insert_constraint(prev, first);
+		}
 	}
 
 	// run delaunay triangulation
