@@ -26,6 +26,7 @@
 #include "dxfdata.h"
 #include "dxftess.h"
 #include "polyset.h"
+#include "export.h"
 
 #include <sys/types.h>
 #include <sys/stat.h>
