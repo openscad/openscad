@@ -209,6 +209,10 @@ void dxf_tesselate(PolySet *ps, DxfData *dxf, double rot, bool up, bool /* do_tr
 		for (int i = 0; i < far_left_p->triangles.size(); i++)
 		{
 			int idx = far_left_p->triangles[i];
+
+			if (tri[idx].is_marked)
+				continue;
+
 			point_info_t *p0 = &point_info.data(tri[idx].p[0].x, tri[idx].p[0].y);
 			point_info_t *p1 = &point_info.data(tri[idx].p[1].x, tri[idx].p[1].y);
 			point_info_t *p2 = &point_info.data(tri[idx].p[2].x, tri[idx].p[2].y);
@@ -231,7 +235,7 @@ void dxf_tesselate(PolySet *ps, DxfData *dxf, double rot, bool up, bool /* do_tr
 
 			if (mp->neigh_next == np1 && mp->neigh_prev == np2) {
 				mark_inner_outer(tri, point_info, edge_to_triangle, edge_to_path, idx, true);
-				break;
+				goto found_and_marked_inner;
 			}
 
 			if (mp->neigh_next == np1)
@@ -241,16 +245,33 @@ void dxf_tesselate(PolySet *ps, DxfData *dxf, double rot, bool up, bool /* do_tr
 				tp = np1;
 
 			if (tp != NULL) {
+				double z0 = (mp->neigh_next->x - mp->x) * (mp->neigh_prev->y - mp->y) -
+						(mp->neigh_prev->x - mp->x) * (mp->neigh_next->y - mp->y);
 				double z1 = (mp->neigh_next->x - mp->x) * (tp->y - mp->y) -
 						(tp->x - mp->x) * (mp->neigh_next->y - mp->y);
 				double z2 = (tp->x - mp->x) * (mp->neigh_prev->y - mp->y) -
 						(mp->neigh_prev->x - mp->x) * (tp->y - mp->y);
-				if (z1 < 0 && z2 < 0) {
+				if ((z0 < 0 && z1 < 0 && z2 < 0) || (z0 > 0 && z1 > 0 && z2 > 0)) {
 					mark_inner_outer(tri, point_info, edge_to_triangle, edge_to_path, idx, true);
-					break;
+					goto found_and_marked_inner;
 				}
 			}
 		}
+
+		// far left point is in the middle of a vertical segment
+		// -> it is ok to use any unmarked triangle connected to this point
+		for (int i = 0; i < far_left_p->triangles.size(); i++)
+		{
+			int idx = far_left_p->triangles[i];
+
+			if (tri[idx].is_marked)
+				continue;
+
+			mark_inner_outer(tri, point_info, edge_to_triangle, edge_to_path, idx, true);
+			break;
+		}
+
+	found_and_marked_inner:;
 	}
 
 	// add all inner triangles to target polyset
