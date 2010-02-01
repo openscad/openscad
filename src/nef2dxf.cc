@@ -27,6 +27,8 @@
 #include "grid.h"
 #include "cgal.h"
 
+#ifdef ENABLE_CGAL
+
 DxfData::DxfData(const struct CGAL_Nef_polyhedron &N)
 {
 	Grid2d<int> grid(GRID_COARSE);
@@ -70,3 +72,4 @@ DxfData::DxfData(const struct CGAL_Nef_polyhedron &N)
 	fixup_path_direction();
 }
 
+#endif // ENABLE_CGAL

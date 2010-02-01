@@ -1215,7 +1215,9 @@ void MainWindow::actionExportDXF()
 void MainWindow::actionFlushCaches()
 {
 	PolySet::ps_cache.clear();
+#ifdef ENABLE_CGAL
 	AbstractNode::cgal_nef_cache.clear();
+#endif
 	dxf_dim_cache.clear();
 	dxf_cross_cache.clear();
 }

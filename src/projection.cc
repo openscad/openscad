@@ -93,6 +93,8 @@ void register_builtin_projection()
 	builtin_modules["projection"] = new ProjectionModule();
 }
 
+#ifdef ENABLE_CGAL
+
 static void report_func(const class AbstractNode*, void *vp, int mark)
 {
 	QProgressDialog *pd = (QProgressDialog*)vp;
@@ -290,6 +292,18 @@ cant_project_non_simple_polyhedron:
 
 	return ps;
 }
+
+#else // ENABLE_CGAL
+
+PolySet *ProjectionNode::render_polyset(render_mode_e) const
+{
+	PRINT("WARNING: Found projection() statement but compiled without CGAL support!");
+	PolySet *ps = new PolySet();
+	ps->is2d = true;
+	return ps;
+}
+
+#endif // ENABLE_CGAL
 
 QString ProjectionNode::dump(QString indent) const
 {

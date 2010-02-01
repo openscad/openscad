@@ -25,12 +25,11 @@
 
 #include "printutils.h"
 
-#define CGAL_TESSELATE
-#ifdef CGAL_TESSELATE
+#ifdef ENABLE_CGAL
 #include "dxftess-cgal.cc"
 #else
 #include "dxftess-glu.cc"
-#endif //  CGAL_TESSELATE
+#endif
 
 /*!
 	Converts all paths in the given DxfData to PolySet::borders polygons

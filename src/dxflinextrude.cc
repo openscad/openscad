@@ -233,6 +233,7 @@ PolySet *DxfLinearExtrudeNode::render_polyset(render_mode_e rm) const
 
 	if (filename.isEmpty())
 	{
+#ifdef ENABLE_CGAL
 		QTime t;
 		QProgressDialog *pd = NULL;
 
@@ -268,6 +269,10 @@ PolySet *DxfLinearExtrudeNode::render_polyset(render_mode_e rm) const
 			PRINTF_NOCACHE("..rendering time: %d hours, %d minutes, %d seconds", s / (60*60), (s / 60) % 60, s % 60);
 			delete pd;
 		}
+#else // ENABLE_CGAL
+		PRINT("WARNING: Found linear_extrude() statement without dxf file but compiled without CGAL support!");
+		dxf = new DxfData();
+#endif // ENABLE_CGAL
 	} else {
 		dxf = new DxfData(fn, fs, fa, filename, layername, origin_x, origin_y, scale);
 	}
