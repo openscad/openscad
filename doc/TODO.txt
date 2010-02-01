@@ -25,6 +25,8 @@ o MDI
     -> implement as for Preferences?
   - Menu bar handling:
     Mac: share menubar among all top-level windows?
+  - currentPath is global but is used by each document, e.g. parser
+    and handle_dep.
 o 3D View
   - Improve mouse rotation
   - Add modifier key combos to handle pan on 1 mouse button systems
@@ -33,6 +35,7 @@ o 3D View
   - Quick highlighting of object under the cursor in the editor
   - View All
   - overlay indicator displaying current view mode
+  - CSG rendering: prefer holes when coincident surfaces to avoid zbuffer fighting?
 o Editor
   - line numbers
   - tear-off/maximize options?
@@ -83,6 +86,7 @@ o Language Frontend
   - Add "use" statement to load modules. Like include but read a module only once,
     ignore all top level objects (they are used as module testcase) and search in
     a module search path.
+  - Add a default search path for included files to allow bundling libs
 o DXF Import
   - Support for POLYLINE entity
   - Support for SPLINE entity
