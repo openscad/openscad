@@ -190,9 +190,14 @@ PolySet *ProjectionNode::render_polyset(render_mode_e rm) const
 		CGAL_Nef_polyhedron Ncube = cube->render_cgal_nef_polyhedron();
 		cube->unlink();
 
-		PolySet *ps3 = new PolySet();
 		// N.p3 *= CGAL_Nef_polyhedron3(CGAL_Plane(0, 0, 1, 0), CGAL_Nef_polyhedron3::INCLUDED);
 		N.p3 *= Ncube.p3;
+		if (!N.p3.is_simple()) {
+			PRINTF("WARNING: Body of projection(cut = true) isn't valid 2-manifold! Modify your design..");
+			goto cant_project_non_simple_polyhedron;
+		}
+
+		PolySet *ps3 = new PolySet();
 		cgal_nef3_to_polyset(ps3, &N);
 		Grid2d<int> conversion_grid(GRID_COARSE);
 		for (int i = 0; i < ps3->polygons.size(); i++) {
@@ -219,6 +224,11 @@ PolySet *ProjectionNode::render_polyset(render_mode_e rm) const
 	}
 	else
 	{
+		if (!N.p3.is_simple()) {
+			PRINTF("WARNING: Body of projection(cut = false) isn't valid 2-manifold! Modify your design..");
+			goto cant_project_non_simple_polyhedron;
+		}
+
 		PolySet *ps3 = new PolySet();
 		cgal_nef3_to_polyset(ps3, &N);
 		CGAL_Nef_polyhedron np;
@@ -269,6 +279,7 @@ PolySet *ProjectionNode::render_polyset(render_mode_e rm) const
 		ps3->unlink();
 	}
 
+cant_project_non_simple_polyhedron:
 	PolySet::ps_cache.insert(key, new PolySet::ps_cache_entry(ps->link()));
 	print_messages_pop();
 
