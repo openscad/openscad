@@ -27,7 +27,7 @@ CONFIG += qt
 QT += opengl
 
 # Application configuration
-# CONFIG += mdi
+macx:CONFIG += mdi
 CONFIG += cgal
 CONFIG += opencsg
 
@@ -50,7 +50,6 @@ else {
 }
 
 QMAKE_CXXFLAGS_RELEASE = -O3 -march=pentium
-QMAKE_CXXFLAGS_DEBUG = -O0 -ggdb
 
 # QMAKE_CFLAGS   += -pg
 # QMAKE_CXXFLAGS += -pg
