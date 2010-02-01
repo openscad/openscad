@@ -73,7 +73,7 @@ int main(int argc, char **argv)
 
 #ifdef ENABLE_CGAL
 	// Causes CGAL errors to abort directly instead of throwing exceptions
-  // (which we don't catch). This gives us stack traces without rerunning in gdb.
+	// (which we don't catch). This gives us stack traces without rerunning in gdb.
 	CGAL::set_error_behaviour(CGAL::ABORT);
 #endif
 	initialize_builtin_functions();
