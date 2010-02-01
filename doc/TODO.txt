@@ -34,6 +34,9 @@ o 3D View
   - View All
   - overlay indicator displaying current view mode
 o Editor
+  - line numbers
+  - tear-off/maximize options?
+  - Save somehow uses current dir, even if the file is already saved earlier
   - Autocompletion/hints for builtin (and user-defined) functions/modules
   - builtin quick function reference/help
   - Drawer/popup with all modules/functions listed which can be inserted into
@@ -45,6 +48,12 @@ o Editor
   - Display some kind of line wrap indicator
   - Couple the source code to the AST to allow highlighting selected elements
     in the source code in the 3D view
+  - Tabbed editor for designs including other files
+o Computation
+  - Run CGAL rendering in a backgroud thread
+  - Move progress bar to status bar (as in Eclipse)
+  - Cancel rendering
+  - Enable viewing/editing while rendering
 o Misc
   - Reload and compile: Ask for confirmation if file is locally edited
     (make this configurable in preferences?)
@@ -57,6 +66,9 @@ ENGINE
 o Primitives
   - Springs, spirals (requested by Cathal Garvey)
   - (TTF) Text
+o 2D Subsystem
+  - Performance: Is it necessary to union children before extrusion
+    when compiling? Can this be postponed to CGAL evaluation time?
 o Built-in modules
   - extrude*: Allow the base 2D primitive to have a Z value
 o Advanced Transformations
