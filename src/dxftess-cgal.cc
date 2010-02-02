@@ -10,6 +10,8 @@
 #include <CGAL/Delaunay_mesher_no_edge_refinement_2.h>
 #include <CGAL/Delaunay_mesh_face_base_2.h>
 #include <CGAL/Delaunay_mesh_criteria_2.h>
+#include <CGAL/assertions_behaviour.h>
+#include <CGAL/exceptions.h>
 
 typedef CGAL::Exact_predicates_inexact_constructions_kernel K;
 typedef CGAL::Triangulation_vertex_base_2<K> Vb;
@@ -100,6 +102,9 @@ void dxf_tesselate(PolySet *ps, DxfData *dxf, double rot, bool up, bool /* do_tr
 	QHash<edge_t,int> edge_to_triangle;
 	QHash<edge_t,int> edge_to_path;
 
+	CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
+	try {
+
 	// read path data and copy all relevant infos
 	for (int i = 0; i < dxf->paths.count(); i++)
 	{
@@ -150,6 +155,14 @@ void dxf_tesselate(PolySet *ps, DxfData *dxf, double rot, bool up, bool /* do_tr
 			cdt.insert_constraint(prev, first);
 		}
 	}
+
+	}
+	catch (CGAL::Assertion_exception e) {
+		PRINTF("ERROR: Polygon intersection detected. Skipping affected polygons.");
+		CGAL::set_error_behaviour(old_behaviour);
+		return;
+	}
+	CGAL::set_error_behaviour(old_behaviour);
 
 	// run delaunay triangulation
 	std::list<CDTPoint> list_of_seeds;
