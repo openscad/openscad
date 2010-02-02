@@ -13,7 +13,11 @@ macx {
   TARGET = OpenSCAD
   ICON = icons/OpenSCAD.icns
   QMAKE_INFO_PLIST = Info.plist
+  APP_RESOURCES.path = Contents/Resources
+  APP_RESOURCES.files = OpenSCAD.sdef
+  QMAKE_BUNDLE_DATA += APP_RESOURCES
   #CONFIG += x86 ppc
+  LIBS += -framework Carbon
 }
 else {
   TARGET = openscad
@@ -84,8 +88,6 @@ HEADERS += src/CGAL_renderer.h \
            src/printutils.h \
            src/value.h
 
-macx: HEADERS += src/EventFilter.h
-
 SOURCES += src/openscad.cc \
            src/mainwin.cc \
            src/glview.cc \
@@ -117,6 +119,12 @@ SOURCES += src/openscad.cc \
            src/printutils.cc \
            src/nef2dxf.cc \
            src/Preferences.cc
+
+macx {
+  HEADERS += src/AppleEvents.h \
+             src/EventFilter.h
+  SOURCES += src/AppleEvents.cc
+}
 
 target.path = /usr/local/bin/
 INSTALLS += target
