@@ -93,7 +93,6 @@ private slots:
 	void preferences();
 
 private slots:
-	void actionReloadCompile();
 	void actionCompile();
 #ifdef ENABLE_CGAL
 	void actionRenderCGAL();
@@ -141,6 +140,7 @@ public slots:
 	void helpAbout();
 	void helpManual();
 	void quit();
+	void actionReloadCompile();
 };
 
 #endif

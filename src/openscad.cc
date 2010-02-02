@@ -45,6 +45,7 @@
 #include <getopt.h>
 #ifdef Q_WS_MAC
 #include "EventFilter.h"
+#include "AppleEvents.h"
 #endif
 
 static void help(const char *progname)
@@ -247,6 +248,10 @@ int main(int argc, char **argv)
 	}
 	else if (useGUI)
 	{
+#ifdef Q_WS_MAC
+		installAppleEventHandlers();
+#endif		
+
 		// turn on anti-aliasing
 		QGLFormat f;
 		f.setSampleBuffers(true);

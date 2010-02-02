@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE dictionary SYSTEM "file://localhost/System/Library/DTDs/sdef.dtd">
+<dictionary title="OpenSCAD Terminology">
+ <suite name="OpenSCAD Suite" code="SCAD" description="AppleScript support for OpenSCAD">
+  <command name="reload" code="SCADrelo" description="Reload file in the front window (F4)">
+  </command>
+ </suite>
+</dictionary>
