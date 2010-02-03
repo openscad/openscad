@@ -59,6 +59,8 @@ static void help(const char *progname)
 QString commandline_commands;
 const char *make_command = NULL;
 QSet<QString> dependencies;
+QString examplesdir;
+QString librarydir;
 
 void handle_dep(QString filename)
 {
@@ -97,7 +99,6 @@ int main(int argc, char **argv)
 #endif
 	QApplication app(argc, argv, useGUI);
 #ifdef Q_WS_MAC
-	app.setLibraryPaths(QStringList(app.applicationDirPath() + "/../PlugIns"));
 	app.installEventFilter(new EventFilter(&app));
 #endif
 
@@ -159,6 +160,24 @@ int main(int argc, char **argv)
 	if (optind != argc)
 		help(argv[0]);
 #endif
+
+	QDir exdir(QApplication::instance()->applicationDirPath());
+#ifdef Q_WS_MAC
+	exdir.cd("../Resources"); // Examples can be bundled
+	if (!exdir.exists("examples")) exdir.cd("../../..");
+#endif
+	if (exdir.cd("examples")) {
+		examplesdir = exdir.path();
+	}
+
+	QDir libdir(QApplication::instance()->applicationDirPath());
+#ifdef Q_WS_MAC
+	libdir.cd("../Resources"); // Libraries can be bundled
+	if (!libdir.exists("libraries")) libdir.cd("../../..");
+#endif
+	if (libdir.cd("libraries")) {
+		librarydir = libdir.path();
+	}
 
 	if (stl_output_file || off_output_file || dxf_output_file)
 	{

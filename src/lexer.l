@@ -70,8 +70,11 @@ extern const char *parser_source_path;
 "<"[^ \t\n>]+">" {
 	char *filename = strdup(yytext+1);
 	filename[strlen(filename)-1] = 0;
-        QFileInfo finfo(QDir(parser_source_path), filename);
-        
+	QFileInfo finfo(QDir(parser_source_path), filename);
+	if (!finfo.exists()) {
+		finfo = QFileInfo(QDir(librarydir), filename);
+	}
+
 	handle_dep(finfo.absoluteFilePath());
 	yyin = fopen(finfo.absoluteFilePath().toLocal8Bit(), "r");
 	if (!yyin) {

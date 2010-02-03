@@ -46,5 +46,8 @@ extern int parser_error_pos;
 
 extern void handle_dep(QString filename);
 
+extern QString examplesdir;
+extern QString librarydir;
+
 #endif
 

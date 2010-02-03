@@ -24,6 +24,7 @@
  */
 
 #include "MainWindow.h"
+#include "openscad.h" // examplesdir
 #include "Preferences.h"
 #include "printutils.h"
 #include "node.h"
@@ -188,16 +189,9 @@ MainWindow::MainWindow(const char *filename)
 	connect(this->fileActionClearRecent, SIGNAL(triggered()),
 					this, SLOT(clearRecentFiles()));
 
-	QDir examplesdir(QApplication::instance()->applicationDirPath());
-#ifdef Q_WS_MAC
-	examplesdir.cd("../Resources"); // Examples can be bundled
-	if (!examplesdir.exists("examples")) examplesdir.cd("../../..");
-#endif
-	if (examplesdir.cd("examples")) {
-		this->examplesdir = examplesdir.path();
-	
-		QStringList examples = examplesdir.entryList(QStringList("*.scad"), 
-																								 QDir::Files | QDir::Readable, QDir::Name);
+	if (!examplesdir.isEmpty()) {
+		QStringList examples = QDir(examplesdir).entryList(QStringList("*.scad"), 
+		QDir::Files | QDir::Readable, QDir::Name);
 		foreach (const QString &ex, examples) {
 			this->menuExamples->addAction(ex, this, SLOT(actionOpenExample()));
 		}
@@ -757,7 +751,7 @@ void MainWindow::actionOpenExample()
 {
 	QAction *action = qobject_cast<QAction *>(sender());
 	if (action) {
-		openFile(this->examplesdir + QDir::separator() + action->text());
+		openFile(examplesdir + QDir::separator() + action->text());
 	}
 }
 

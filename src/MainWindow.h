@@ -50,7 +50,6 @@ public:
 
 	static const int maxRecentFiles = 10;
 	QAction *actionRecentFile[maxRecentFiles];
-	QString examplesdir;
 
 	MainWindow(const char *filename = 0);
 	~MainWindow();
