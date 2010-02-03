@@ -35,12 +35,13 @@
 
 //----------------------
 
-module box(w,h,d) {
-  cube([w,h,d], true);
+// size is a vector [w, h, d]
+module box(size) {
+  cube(size, true);
 }
 
-module roundedBox(w,h,d,radius) {
-  size = [w,h,d];
+// size is a vector [w, h, d]
+module roundedBox(size, radius) {
   cube(size - [2*radius,0,0], true);
   cube(size - [0,2*radius,0], true);
   for (x = [radius-size[0]/2, -radius+size[0]/2],
@@ -53,10 +54,11 @@ module cone(height, radius, center = false) {
   cylinder(height, radius, 0, center);
 }
 
-module oval(w,h,d, center = false) {
-  scale([1, h/w, 1]) cylinder(h=d, r=w, center=center);
+module oval(w,h, height, center = false) {
+  scale([1, h/w, 1]) cylinder(h=height, r=w, center=center);
 }
 
+// wall is wall thickness
 module tube(height, radius, wall, center = false) {
   difference() {
     cylinder(h=height, r=radius, center=center);
@@ -64,66 +66,71 @@ module tube(height, radius, wall, center = false) {
   }
 }
 
-module ovalTube(height, rx, ry, wall) {
+// wall is wall thickness
+module ovalTube(height, rx, ry, wall, center = false) {
   difference() {
-    scale([1, ry/rx, 1]) cylinder(h=height, r=rx);
-    scale([(rx-wall)/rx, (ry-wall)/rx, 1]) cylinder(h=height, r=rx);
+    scale([1, ry/rx, 1]) cylinder(h=height, r=rx, center=center);
+    scale([(rx-wall)/rx, (ry-wall)/rx, 1]) cylinder(h=height, r=rx, center=center);
   }
 }
 
-module hexagon(size, depth) {
+// size is the XY plane size, height in Z
+module hexagon(size, height) {
   boxWidth = size/1.75;
-  for (r = [-60, 0, 60]) rotate([0,0,r]) cube([boxWidth, size, depth], true);
+  for (r = [-60, 0, 60]) rotate([0,0,r]) cube([boxWidth, size, height], true);
 }
 
-module octagon(size, depth) {
+// size is the XY plane size, height in Z
+module octagon(size, height) {
   intersection() {
-    cube([size, size, depth], true);
-    rotate([0,0,45]) cube([size, size, depth], true);
+    cube([size, size, height], true);
+    rotate([0,0,45]) cube([size, size, height], true);
   }
 }
 
-module dodecagon(size, depth) {
+// size is the XY plane size, height in Z
+module dodecagon(size, height) {
   intersection() {
-    hexagon(size, depth);
-    rotate([0,0,90]) hexagon(size, depth);
+    hexagon(size, height);
+    rotate([0,0,90]) hexagon(size, height);
   }
 }
 
-module hexagram(size, depth) {
+// size is the XY plane size, height in Z
+module hexagram(size, height) {
   boxWidth=size/1.75;
   for (v = [[0,1],[0,-1],[1,-1]]) {
     intersection() {
-      rotate([0,0,60*v[0]]) cube([size, boxWidth, depth], true);
-      rotate([0,0,60*v[1]]) cube([size, boxWidth, depth], true);
+      rotate([0,0,60*v[0]]) cube([size, boxWidth, height], true);
+      rotate([0,0,60*v[1]]) cube([size, boxWidth, height], true);
     }
   }
 }
 
-module rightTriangle(adjacent, opposite, depth) {
+module rightTriangle(adjacent, opposite, height) {
   difference() {
-    translate([-adjacent/2,opposite/2,0]) box(adjacent, opposite, depth);
+    translate([-adjacent/2,opposite/2,0]) cube([adjacent, opposite, height], true);
     translate([-adjacent,0,0]) {
-      rotate([0,0,atan(opposite/adjacent)]) dislocateBox(adjacent*2, opposite, depth);
+      rotate([0,0,atan(opposite/adjacent)]) dislocateBox(adjacent*2, opposite, height);
     }
   }
 }
 
-module equiTriangle(side, depth) {
+module equiTriangle(side, height) {
   difference() {
-    translate([-side/2,side/2,0]) box(side, side, depth);
-    rotate([0,0,30]) dislocateBox(side*2, side, depth);
+    translate([-side/2,side/2,0]) cube([side, side, height], true);
+    rotate([0,0,30]) dislocateBox(side*2, side, height);
     translate([-side,0,0]) {
-      rotate([0,0,60]) dislocateBox(side*2, side, depth);
+      rotate([0,0,60]) dislocateBox(side*2, side, height);
     }
   }
 }
 
-module 12ptStar(size, depth) {
-  starNum=3;
-  starAngle=360/starNum;
-  for (s=[1:starNum]) {
-    rotate([0, 0, s*starAngle]) box(size, size, depth);
+module 12ptStar(size, height) {
+  starNum = 3;
+  starAngle = 360/starNum;
+  for (s = [1:starNum]) {
+    rotate([0, 0, s*starAngle]) cube([size, size, height], true);
   }
 }
 
@@ -134,15 +141,8 @@ module 12ptStar(size, depth) {
 module dislocateBox(w,h,d) {
   translate([w/2,h,0]) {
     difference() {
-      box(w, h*2, d+1);
-      translate([-w,0,0]) box(w, h*2, d+1);
+      cube([w, h*2, d+1]);
+      translate([-w,0,0]) cube([w, h*2, d+1]);
     }
   }
 }
-
-
-
-
-
-
-
