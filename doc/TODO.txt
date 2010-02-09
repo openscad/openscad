@@ -6,6 +6,8 @@ o Broken polyhedron() entities are not correctly detected and cause CGAL segfaul
 o Tesselation via GLU sometimes produces strange results
 o Non-manifold objects make CGAL crash (e.g. two cubes which touch at one edge)
 o Export STL: Exports existing CGAL model even though the current model is changed, but not CGAL rendered
+o Compile CGAL while animating causes crash - we should prob. stop the animation timer
+o cylinder(); -> WARNING: Ignoring unkown variable 'r'.
 
 USER INTERFACE
 --------------
@@ -52,10 +54,13 @@ o Editor
   - Couple the source code to the AST to allow highlighting selected elements
     in the source code in the 3D view
   - Tabbed editor for designs including other files
+  - modifier flag is broken
+  - C-c/C-v should work on the focused widget, not always in the editor
+
 o Computation
   - Run CGAL rendering in a backgroud thread
-  - Move progress bar to status bar (as in Eclipse)
-  - Cancel rendering
+  - Progress
+    - Move progress bar to status bar (as in Eclipse)
   - Enable viewing/editing while rendering
 o Misc
   - Reload and compile: Ask for confirmation if file is locally edited
@@ -72,6 +77,7 @@ o Primitives
 o 2D Subsystem
   - Performance: Is it necessary to union children before extrusion
     when compiling? Can this be postponed to CGAL evaluation time?
+  - Add inset() operation
 o Built-in modules
   - extrude*: Allow the base 2D primitive to have a Z value
 o Advanced Transformations
@@ -99,6 +105,8 @@ o Mesh optimization on STL export
   - Replace super thin triangles (one h is short)
 o Misc
   - Add symbolic colors to the color() statement
+  - When specifying a transparency with the color() statement,
+    the object is not sorted and will be rendered wrongly
   - Go through default values of parameters (e.g. cube() has x,y,z=1 while linear_extrude() has height=100)
   - Add support for symbolic names to child() statement 
   - Add 'lines' object type for non-solid 2d drawings
@@ -112,6 +120,7 @@ CODE
 ----
 
 o Refactor from MainWindow:
+  - Put all application-global data in one place (QApplication subtype?)
   - Fix current_win hack
   - CSG data structure (compiled model)
   - CGAL data structure (compiled model)
