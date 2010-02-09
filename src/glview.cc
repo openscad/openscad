@@ -65,6 +65,8 @@ GLView::GLView(QWidget *parent) : QGLWidget(parent)
 	setMouseTracking(true);
 #ifdef ENABLE_OPENCSG
 	opencsg_support = true;
+	static int sId = 0;
+	opencsg_id = sId++;
 #endif
 }
 

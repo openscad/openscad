@@ -1323,6 +1323,9 @@ static void renderGLviaOpenCSG(void *vp)
 		glew_initialized = 1;
 		glewInit();
 	}
+#ifdef ENABLE_MDI
+	OpenCSG::setContext(m->screen->opencsg_id);
+#endif
 	if (m->root_chain) {
 		GLint *shaderinfo = m->screen->shaderinfo;
 		if (!shaderinfo[0])
@@ -1335,9 +1338,6 @@ static void renderGLviaOpenCSG(void *vp)
 			renderCSGChainviaOpenCSG(m->highlights_chain, m->viewActionShowEdges->isChecked() ? shaderinfo : NULL, true, false);
 		}
 	}
-#ifdef ENABLE_MDI
-	OpenCSG::reset();
-#endif
 }
 
 /*!

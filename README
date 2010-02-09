@@ -46,7 +46,7 @@ development. Other versions may or may not work as well..
 * cmake (2.6.2, required by CGAL)
   http://www.cmake.org/
 
-* OpenCSG (1.1 - 1.2):
+* OpenCSG (1.3.0):
   http://www.opencsg.org/
 
 * GLEW (bundled with OpenCSG)

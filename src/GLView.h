@@ -39,6 +39,11 @@ public:
 	double object_trans_z;
 	GLint shaderinfo[11];
 
+#ifdef ENABLE_OPENCSG
+	bool opencsg_support;
+	int opencsg_id;
+#endif
+
 private:
 	void (*renderfunc)(void*);
 	void *renderfunc_vp;
@@ -50,10 +55,6 @@ private:
 	double viewer_distance;
 
 	double w_h_ratio;
-
-#ifdef ENABLE_OPENCSG
-	bool opencsg_support;
-#endif
 
 	bool mouse_drag_active;
 	int last_mouse_x;
