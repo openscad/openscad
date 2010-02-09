@@ -2,12 +2,15 @@
 BUGS
 ----
 o Some invalid DXF data gets pass the import checks and breaks the tessing code
-o Broken polyhedron() entities are not correctly detected and cause CGAL segfaults
 o Tesselation via GLU sometimes produces strange results
 o Non-manifold objects make CGAL crash (e.g. two cubes which touch at one edge)
-o Export STL: Exports existing CGAL model even though the current model is changed, but not CGAL rendered
-o Compile CGAL while animating causes crash - we should prob. stop the animation timer
 o cylinder(); -> WARNING: Ignoring unkown variable 'r'.
+
+CRASH BUGS
+----------
+o Broken polyhedron() entities are not correctly detected and cause CGAL segfaults
+o Export STL: Exports existing CGAL model even though the current model is changed, but not CGAL rendered
+o Negative array indices causes crash: v=[0,1,2]; a=v[-1];
 
 USER INTERFACE
 --------------
