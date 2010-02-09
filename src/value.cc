@@ -33,30 +33,30 @@ Value::Value()
 
 Value::~Value()
 {
-	for (int i = 0; i < vec.size(); i++)
-		delete vec[i];
-	vec.clear();
+	for (int i = 0; i < this->vec.size(); i++)
+		delete this->vec[i];
+	this->vec.clear();
 }
 
 Value::Value(bool v)
 {
 	reset_undef();
-	type = BOOL;
-	b = v;
+	this->type = BOOL;
+	this->b = v;
 }
 
 Value::Value(double v)
 {
 	reset_undef();
-	type = NUMBER;
-	num = v;
+	this->type = NUMBER;
+	this->num = v;
 }
 
 Value::Value(const QString &t)
 {
 	reset_undef();
-	type = STRING;
-	text = t;
+	this->type = STRING;
+	this->text = t;
 }
 
 Value::Value(const Value &v)
@@ -67,161 +67,161 @@ Value::Value(const Value &v)
 Value& Value::operator = (const Value &v)
 {
 	reset_undef();
-	type = v.type;
-	b = v.b;
-	num = v.num;
+	this->type = v.type;
+	this->b = v.b;
+	this->num = v.num;
 	for (int i = 0; i < v.vec.size(); i++)
-		vec.append(new Value(*v.vec[i]));
-	range_begin = v.range_begin;
-	range_step = v.range_step;
-	range_end = v.range_end;
-	text = v.text;
+		this->vec.append(new Value(*v.vec[i]));
+	this->range_begin = v.range_begin;
+	this->range_step = v.range_step;
+	this->range_end = v.range_end;
+	this->text = v.text;
 	return *this;
 }
 
 Value Value::operator ! () const
 {
-	if (type == BOOL) {
-		return Value(!b);
+	if (this->type == BOOL) {
+		return Value(!this->b);
 	}
 	return Value();
 }
 
 Value Value::operator && (const Value &v) const
 {
-	if (type == BOOL && v.type == BOOL) {
-		return Value(b && v.b);
+	if (this->type == BOOL && v.type == BOOL) {
+		return Value(this->b && v.b);
 	}
 	return Value();
 }
 
 Value Value::operator || (const Value &v) const
 {
-	if (type == BOOL && v.type == BOOL) {
-		return Value(b || v.b);
+	if (this->type == BOOL && v.type == BOOL) {
+		return Value(this->b || v.b);
 	}
 	return Value();
 }
 
 Value Value::operator + (const Value &v) const
 {
-	if (type == VECTOR && v.type == VECTOR) {
+	if (this->type == VECTOR && v.type == VECTOR) {
 		Value r;
 		r.type = VECTOR;
-		for (int i = 0; i < vec.size() && i < v.vec.size(); i++)
-			r.vec.append(new Value(*vec[i] + *v.vec[i]));
+		for (int i = 0; i < this->vec.size() && i < v.vec.size(); i++)
+			r.vec.append(new Value(*this->vec[i] + *v.vec[i]));
 		return r;
 	}
-	if (type == NUMBER && v.type == NUMBER) {
-		return Value(num + v.num);
+	if (this->type == NUMBER && v.type == NUMBER) {
+		return Value(this->num + v.num);
 	}
 	return Value();
 }
 
 Value Value::operator - (const Value &v) const
 {
-	if (type == VECTOR && v.type == VECTOR) {
+	if (this->type == VECTOR && v.type == VECTOR) {
 		Value r;
 		r.type = VECTOR;
-		for (int i = 0; i < vec.size() && i < v.vec.size(); i++)
-			r.vec.append(new Value(*vec[i] - *v.vec[i]));
+		for (int i = 0; i < this->vec.size() && i < v.vec.size(); i++)
+			r.vec.append(new Value(*this->vec[i] - *v.vec[i]));
 		return r;
 	}
-	if (type == NUMBER && v.type == NUMBER) {
-		return Value(num - v.num);
+	if (this->type == NUMBER && v.type == NUMBER) {
+		return Value(this->num - v.num);
 	}
 	return Value();
 }
 
 Value Value::operator * (const Value &v) const
 {
-	if (type == VECTOR && v.type == NUMBER) {
+	if (this->type == VECTOR && v.type == NUMBER) {
 		Value r;
 		r.type = VECTOR;
-		for (int i = 0; i < vec.size(); i++)
-			r.vec.append(new Value(*vec[i] * v));
+		for (int i = 0; i < this->vec.size(); i++)
+			r.vec.append(new Value(*this->vec[i] * v));
 		return r;
 	}
-	if (type == NUMBER && v.type == VECTOR) {
+	if (this->type == NUMBER && v.type == VECTOR) {
 		Value r;
 		r.type = VECTOR;
 		for (int i = 0; i < v.vec.size(); i++)
-			r.vec.append(new Value(v * *v.vec[i]));
+			r.vec.append(new Value(*this * *v.vec[i]));
 		return r;
 	}
-	if (type == NUMBER && v.type == NUMBER) {
-		return Value(num * v.num);
+	if (this->type == NUMBER && v.type == NUMBER) {
+		return Value(this->num * v.num);
 	}
 	return Value();
 }
 
 Value Value::operator / (const Value &v) const
 {
-	if (type == VECTOR && v.type == NUMBER) {
+	if (this->type == VECTOR && v.type == NUMBER) {
 		Value r;
 		r.type = VECTOR;
-		for (int i = 0; i < vec.size(); i++)
-			r.vec.append(new Value(*vec[i] / v));
+		for (int i = 0; i < this->vec.size(); i++)
+			r.vec.append(new Value(*this->vec[i] / v));
 		return r;
 	}
-	if (type == NUMBER && v.type == VECTOR) {
+	if (this->type == NUMBER && v.type == VECTOR) {
 		Value r;
 		r.type = VECTOR;
 		for (int i = 0; i < v.vec.size(); i++)
 			r.vec.append(new Value(v / *v.vec[i]));
 		return r;
 	}
-	if (type == NUMBER && v.type == NUMBER) {
-		return Value(num / v.num);
+	if (this->type == NUMBER && v.type == NUMBER) {
+		return Value(this->num / v.num);
 	}
 	return Value();
 }
 
 Value Value::operator % (const Value &v) const
 {
-	if (type == NUMBER && v.type == NUMBER) {
-		return Value(fmod(num, v.num));
+	if (this->type == NUMBER && v.type == NUMBER) {
+		return Value(fmod(this->num, v.num));
 	}
 	return Value();
 }
 
 Value Value::operator < (const Value &v) const
 {
-	if (type == NUMBER && v.type == NUMBER) {
-		return Value(num < v.num);
+	if (this->type == NUMBER && v.type == NUMBER) {
+		return Value(this->num < v.num);
 	}
 	return Value();
 }
 
 Value Value::operator <= (const Value &v) const
 {
-	if (type == NUMBER && v.type == NUMBER) {
-		return Value(num <= v.num);
+	if (this->type == NUMBER && v.type == NUMBER) {
+		return Value(this->num <= v.num);
 	}
 	return Value();
 }
 
 Value Value::operator == (const Value &v) const
 {
-	if (type == BOOL && v.type == BOOL) {
-		return Value(b == v.b);
+	if (this->type == BOOL && v.type == BOOL) {
+		return Value(this->b == v.b);
 	}
-	if (type == NUMBER && v.type == NUMBER) {
-		return Value(num == v.num);
+	if (this->type == NUMBER && v.type == NUMBER) {
+		return Value(this->num == v.num);
 	}
-	if (type == RANGE && v.type == RANGE) {
-		return Value(range_begin == v.range_begin && range_step == v.range_step && range_end == v.range_end);
+	if (this->type == RANGE && v.type == RANGE) {
+		return Value(this->range_begin == v.range_begin && this->range_step == v.range_step && this->range_end == v.range_end);
 	}
-	if (type == VECTOR && v.type == VECTOR) {
-		if (vec.size() != v.vec.size())
+	if (this->type == VECTOR && v.type == VECTOR) {
+		if (this->vec.size() != v.vec.size())
 			return Value(false);
-		for (int i=0; i<vec.size(); i++)
-			if (!(*vec[i] == *v.vec[i]).b)
+		for (int i=0; i<this->vec.size(); i++)
+			if (!(*this->vec[i] == *v.vec[i]).b)
 				return Value(false);
 		return Value(true);
 	}
-	if (type == STRING && v.type == STRING) {
-		return Value(text == v.text);
+	if (this->type == STRING && v.type == STRING) {
+		return Value(this->text == v.text);
 	}
 	return Value(false);
 }
@@ -234,119 +234,118 @@ Value Value::operator != (const Value &v) const
 
 Value Value::operator >= (const Value &v) const
 {
-	if (type == NUMBER && v.type == NUMBER) {
-		return Value(num >= v.num);
+	if (this->type == NUMBER && v.type == NUMBER) {
+		return Value(this->num >= v.num);
 	}
 	return Value();
 }
 
 Value Value::operator > (const Value &v) const
 {
-	if (type == NUMBER && v.type == NUMBER) {
-		return Value(num > v.num);
+	if (this->type == NUMBER && v.type == NUMBER) {
+		return Value(this->num > v.num);
 	}
 	return Value();
 }
 
 Value Value::inv() const
 {
-	if (type == VECTOR) {
+	if (this->type == VECTOR) {
 		Value r;
 		r.type = VECTOR;
-		for (int i = 0; i < vec.size(); i++)
-			r.vec.append(new Value(vec[i]->inv()));
+		for (int i = 0; i < this->vec.size(); i++)
+			r.vec.append(new Value(this->vec[i]->inv()));
 		return r;
 	}
-	if (type == NUMBER)
-		return Value(-num);
+	if (this->type == NUMBER)
+		return Value(-this->num);
 	return Value();
 }
 
 bool Value::getnum(double &v) const
 {
-	if (type != NUMBER)
+	if (this->type != NUMBER)
 		return false;
-	v = num;
+	v = this->num;
 	return true;
 }
 
 bool Value::getv2(double &x, double &y) const
 {
-	if (type != VECTOR || vec.size() != 2)
+	if (this->type != VECTOR || this->vec.size() != 2)
 		return false;
-	if (vec[0]->type != NUMBER)
+	if (this->vec[0]->type != NUMBER)
 		return false;
-	if (vec[1]->type != NUMBER)
+	if (this->vec[1]->type != NUMBER)
 		return false;
-	x = vec[0]->num;	
-	y = vec[1]->num;	
+	x = this->vec[0]->num;	
+	y = this->vec[1]->num;	
 	return true;
 }
 
 bool Value::getv3(double &x, double &y, double &z) const
 {
-	if (type == VECTOR && vec.size() == 2) {
+	if (this->type == VECTOR && this->vec.size() == 2) {
 		if (getv2(x, y)) {
 			z = 0;
 			return true;
 		}
 		return false;
 	}
-	if (type != VECTOR || vec.size() != 3)
+	if (this->type != VECTOR || this->vec.size() != 3)
 		return false;
-	if (vec[0]->type != NUMBER)
+	if (this->vec[0]->type != NUMBER)
 		return false;
-	if (vec[1]->type != NUMBER)
+	if (this->vec[1]->type != NUMBER)
 		return false;
-	if (vec[2]->type != NUMBER)
+	if (this->vec[2]->type != NUMBER)
 		return false;
-	x = vec[0]->num;	
-	y = vec[1]->num;	
-	z = vec[2]->num;	
+	x = this->vec[0]->num;	
+	y = this->vec[1]->num;	
+	z = this->vec[2]->num;	
 	return true;
 }
 
 QString Value::dump() const
 {
-	if (type == STRING) {
-		return QString("\"") + text + QString("\"");
+	if (this->type == STRING) {
+		return QString("\"") + this->text + QString("\"");
 	}
-	if (type == VECTOR) {
+	if (this->type == VECTOR) {
 		QString text = "[";
-		for (int i = 0; i < vec.size(); i++) {
+		for (int i = 0; i < this->vec.size(); i++) {
 			if (i > 0)
 				text += ", ";
-			text += vec[i]->dump();
+			text += this->vec[i]->dump();
 		}
 		return text + "]";
 	}
-	if (type == RANGE) {
+	if (this->type == RANGE) {
 		QString text;
-		text.sprintf("[ %g : %g : %g ]", range_begin, range_step, range_end);
+		text.sprintf("[ %g : %g : %g ]", this->range_begin, this->range_step, this->range_end);
 		return text;
 	}
-	if (type == NUMBER) {
+	if (this->type == NUMBER) {
 		QString text;
-		text.sprintf("%g", num);
+		text.sprintf("%g", this->num);
 		return text;
 	}
-	if (type == BOOL) {
-		return QString(b ? "true" : "false");
+	if (this->type == BOOL) {
+		return QString(this->b ? "true" : "false");
 	}
 	return QString("undef");
 }
 
 void Value::reset_undef()
 {
-	type = UNDEFINED;
-	b = false;
-	num = 0;
-	for (int i = 0; i < vec.size(); i++)
-		delete vec[i];
-	vec.clear();
-	range_begin = 0;
-	range_step = 0;
-	range_end = 0;
-	text = QString();
+	this->type = UNDEFINED;
+	this->b = false;
+	this->num = 0;
+	for (int i = 0; i < this->vec.size(); i++)
+		delete this->vec[i];
+	this->vec.clear();
+	this->range_begin = 0;
+	this->range_step = 0;
+	this->range_end = 0;
+	this->text = QString();
 }
-
