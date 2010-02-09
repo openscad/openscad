@@ -32,6 +32,7 @@
 #include "csgterm.h"
 #include "builtin.h"
 #include "printutils.h"
+#include "progress.h"
 #ifdef ENABLE_CGAL
 #  include "cgal.h"
 #endif
@@ -124,17 +125,6 @@ CGAL_Nef_polyhedron RenderNode::render_cgal_nef_polyhedron() const
 	return N;
 }
 
-static void report_func(const class AbstractNode*, void *vp, int mark)
-{
-	QProgressDialog *pd = (QProgressDialog*)vp;
-	int v = (int)((mark*100.0) / progress_report_count);
-	pd->setValue(v < 100 ? v : 99);
-	QString label;
-	label.sprintf("Rendering Polygon Mesh using CGAL (%d/%d)", mark, progress_report_count);
-	pd->setLabelText(label);
-	QApplication::processEvents();
-}
-
 CSGTerm *RenderNode::render_csg_term(double m[20], QVector<CSGTerm*> *highlights, QVector<CSGTerm*> *background) const
 {
 	QString key = mk_cache_id();
@@ -162,20 +152,10 @@ CSGTerm *RenderNode::render_csg_term(double m[20], QVector<CSGTerm*> *highlights
 		QTime t;
 		t.start();
 
-		QProgressDialog *pd = new QProgressDialog("Rendering Polygon Mesh using CGAL...", QString(), 0, 100);
-		pd->setValue(0);
-		pd->setAutoClose(false);
-		pd->show();
-		QApplication::processEvents();
-
-		progress_report_prep((AbstractNode*)this, report_func, pd);
 		N = this->render_cgal_nef_polyhedron();
-		progress_report_fin();
 
 		int s = t.elapsed() / 1000;
 		PRINTF_NOCACHE("..rendering time: %d hours, %d minutes, %d seconds", s / (60*60), (s / 60) % 60, s % 60);
-
-		delete pd;
 	}
 
 	PolySet *ps = NULL;

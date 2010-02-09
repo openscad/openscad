@@ -86,7 +86,8 @@ HEADERS += src/CGAL_renderer.h \
            src/openscad.h \
            src/polyset.h \
            src/printutils.h \
-           src/value.h
+           src/value.h \
+           src/progress.h
 
 SOURCES += src/openscad.cc \
            src/mainwin.cc \
@@ -118,7 +119,8 @@ SOURCES += src/openscad.cc \
            src/highlighter.cc \
            src/printutils.cc \
            src/nef2dxf.cc \
-           src/Preferences.cc
+           src/Preferences.cc \
+           src/progress.cc
 
 macx {
   HEADERS += src/AppleEvents.h \

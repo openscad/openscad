@@ -32,6 +32,7 @@
 #include "dxftess.h"
 #include "polyset.h"
 #include "export.h"
+#include "progress.h"
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -95,17 +96,6 @@ void register_builtin_projection()
 
 #ifdef ENABLE_CGAL
 
-static void report_func(const class AbstractNode*, void *vp, int mark)
-{
-	QProgressDialog *pd = (QProgressDialog*)vp;
-	int v = (int)((mark*100.0) / progress_report_count);
-	pd->setValue(v < 100 ? v : 99);
-	QString label;
-	label.sprintf("Rendering Polygon Mesh using CGAL (%d/%d)", mark, progress_report_count);
-	pd->setLabelText(label);
-	QApplication::processEvents();
-}
-
 PolySet *ProjectionNode::render_polyset(render_mode_e rm) const
 {
 	QString key = mk_cache_id();
@@ -116,37 +106,12 @@ PolySet *ProjectionNode::render_polyset(render_mode_e rm) const
 
 	print_messages_push();
 
-	QTime t;
-	QProgressDialog *pd = NULL;
-
-	if (rm == RENDER_OPENCSG)
-	{
-		PRINT_NOCACHE("Processing uncached projection body...");
-		QApplication::processEvents();
-
-		t.start();
-		pd = new QProgressDialog("Rendering Polygon Mesh using CGAL...", QString(), 0, 100);
-		pd->setValue(0);
-		pd->setAutoClose(false);
-		pd->show();
-		QApplication::processEvents();
-
-		progress_report_prep((AbstractNode*)this, report_func, pd);
-	}
-
 	CGAL_Nef_polyhedron N;
 	N.dim = 3;
 	foreach(AbstractNode *v, this->children) {
 		if (v->modinst->tag_background)
 			continue;
 		N.p3 += v->render_cgal_nef_polyhedron().p3;
-	}
-
-	if (rm == RENDER_OPENCSG) {
-		progress_report_fin();
-		int s = t.elapsed() / 1000;
-		PRINTF_NOCACHE("..rendering time: %d hours, %d minutes, %d seconds", s / (60*60), (s / 60) % 60, s % 60);
-		delete pd;
 	}
 
 	PolySet *ps = new PolySet();

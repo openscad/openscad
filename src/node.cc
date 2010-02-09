@@ -27,6 +27,8 @@
 #include "node.h"
 #include "module.h"
 #include "csgterm.h"
+#include "progress.h"
+#include "polyset.h"
 #include <QRegExp>
 
 int AbstractNode::idx_counter;
@@ -55,7 +57,7 @@ QString AbstractNode::mk_cache_id() const
 
 #ifdef ENABLE_CGAL
 
-AbstractNode::cgal_nef_cache_entry::cgal_nef_cache_entry(CGAL_Nef_polyhedron N) :
+AbstractNode::cgal_nef_cache_entry::cgal_nef_cache_entry(const CGAL_Nef_polyhedron &N) :
 		N(N), msg(print_messages_stack.last()) { };
 
 QCache<QString, AbstractNode::cgal_nef_cache_entry> AbstractNode::cgal_nef_cache(100000);
@@ -167,35 +169,64 @@ QString AbstractIntersectionNode::dump(QString indent) const
 	return dump_cache;
 }
 
-int progress_report_count;
-void (*progress_report_f)(const class AbstractNode*, void*, int);
-void *progress_report_vp;
-
 void AbstractNode::progress_prepare()
 {
 	foreach (AbstractNode *v, children)
 		v->progress_prepare();
-	progress_mark = ++progress_report_count;
+	this->progress_mark = ++progress_report_count;
 }
 
 void AbstractNode::progress_report() const
 {
-	if (progress_report_f)
-		progress_report_f(this, progress_report_vp, progress_mark);
+	progress_update(this, this->progress_mark);
 }
 
-void progress_report_prep(AbstractNode *root, void (*f)(const class AbstractNode *node, void *vp, int mark), void *vp)
+#ifdef ENABLE_CGAL
+
+CGAL_Nef_polyhedron AbstractPolyNode::render_cgal_nef_polyhedron() const
 {
-	progress_report_count = 0;
-	progress_report_f = f;
-	progress_report_vp = vp;
-	root->progress_prepare();
+	QString cache_id = mk_cache_id();
+	if (cgal_nef_cache.contains(cache_id)) {
+		progress_report();
+		PRINT(cgal_nef_cache[cache_id]->msg);
+		return cgal_nef_cache[cache_id]->N;
+	}
+
+	print_messages_push();
+
+	PolySet *ps = render_polyset(RENDER_CGAL);
+	try {
+		CGAL_Nef_polyhedron N = ps->render_cgal_nef_polyhedron();
+		cgal_nef_cache.insert(cache_id, new cgal_nef_cache_entry(N), N.weight());
+		print_messages_pop();
+		progress_report();
+		
+		ps->unlink();
+		return N;
+	}
+	catch (...) { // Don't leak the PolySet on ProgressCancelException
+		ps->unlink();
+		throw;
+	}
 }
 
-void progress_report_fin()
+#endif /* ENABLE_CGAL */
+
+CSGTerm *AbstractPolyNode::render_csg_term(double m[20], QVector<CSGTerm*> *highlights, QVector<CSGTerm*> *background) const
 {
-	progress_report_count = 0;
-	progress_report_f = NULL;
-	progress_report_vp = NULL;
+	PolySet *ps = render_polyset(RENDER_OPENCSG);
+	return render_csg_term_from_ps(m, highlights, background, ps, modinst, idx);
+}
+
+CSGTerm *AbstractPolyNode::render_csg_term_from_ps(double m[20], QVector<CSGTerm*> *highlights, QVector<CSGTerm*> *background, PolySet *ps, const ModuleInstantiation *modinst, int idx)
+{
+	CSGTerm *t = new CSGTerm(ps, m, QString("n%1").arg(idx));
+	if (modinst->tag_highlight && highlights)
+		highlights->append(t->link());
+	if (modinst->tag_background && background) {
+		background->append(t);
+		return NULL;
+	}
+	return t;
 }
 

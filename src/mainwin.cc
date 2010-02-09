@@ -37,6 +37,7 @@
 #include "export.h"
 #include "builtin.h"
 #include "dxftess.h"
+#include "progress.h"
 
 #include <QMenu>
 #include <QTime>
@@ -45,6 +46,7 @@
 #include <QFileDialog>
 #include <QApplication>
 #include <QProgressDialog>
+#include <QProgressBar>
 #include <QHBoxLayout>
 #include <QVBoxLayout>
 #include <QLabel>
@@ -336,6 +338,20 @@ MainWindow::~MainWindow()
 #endif
 }
 
+typedef QPair<QProgressBar*, QProgressDialog*> ProgressData;
+
+static void report_func(const class AbstractNode*, void *vp, int mark)
+{
+	ProgressData *progpair = static_cast<ProgressData*>(vp);
+	int v = (int)((mark*100.0) / progress_report_count);
+	progpair->first->setValue(v < 100 ? v : 99);
+	QString label;
+	label.sprintf("Rendering Polygon Mesh (%d/%d)", mark, progress_report_count);
+	progpair->second->setLabelText(label);
+	QApplication::processEvents();
+	if (progpair->second->wasCanceled()) throw ProgressCancelException();
+}
+
 /*!
 	Requests to open a file from an external event, e.g. by double-clicking a filename.
  */
@@ -458,6 +474,9 @@ AbstractNode *MainWindow::find_root_tag(AbstractNode *n)
 	return NULL;
 }
 
+/*!
+	Parse and evaluate the design -> this->root_node
+*/
 void MainWindow::compile(bool procevents)
 {
 	PRINT("Parsing design (AST generation)...");
@@ -554,7 +573,7 @@ void MainWindow::compile(bool procevents)
 	if (procevents)
 		QApplication::processEvents();
 
-	AbstractNode::idx_counter = 1;
+	AbstractNode::resetIndexCounter();
 	root_inst = ModuleInstantiation();
 	absolute_root_node = root_module->evaluate(&root_ctx, &root_inst);
 
@@ -566,89 +585,6 @@ void MainWindow::compile(bool procevents)
 		this->root_node = absolute_root_node;
 	}
 	root_node->dump("");
-
-	PRINT("Compiling design (CSG Products generation)...");
-	if (procevents)
-		QApplication::processEvents();
-
-	double m[20];
-
-	for (int i = 0; i < 16; i++)
-		m[i] = i % 5 == 0 ? 1.0 : 0.0;
-	for (int i = 16; i < 20; i++)
-		m[i] = -1;
-
-	// Main CSG evaluation
-	root_raw_term = root_node->render_csg_term(m, &highlight_terms, &background_terms);
-
-	if (!root_raw_term)
-		goto fail;
-
-	PRINT("Compiling design (CSG Products normalization)...");
-	if (procevents)
-		QApplication::processEvents();
-
-	root_norm_term = root_raw_term->link();
-
-	// CSG normalization
-	while (1) {
-		CSGTerm *n = root_norm_term->normalize();
-		root_norm_term->unlink();
-		if (root_norm_term == n)
-			break;
-		root_norm_term = n;
-	}
-
-	if (!root_norm_term)
-		goto fail;
-
-	root_chain = new CSGChain();
-	root_chain->import(root_norm_term);
-
-	if (root_chain->polysets.size() > 1000) {
-		PRINTF("WARNING: Normalized tree has %d elements!", root_chain->polysets.size());
-		PRINTF("WARNING: OpenCSG rendering has been disabled.");
-	} else {
-		enableOpenCSG = true;
-	}
-
-	if (highlight_terms.size() > 0)
-	{
-		PRINTF("Compiling highlights (%d CSG Trees)...", highlight_terms.size());
-		if (procevents)
-			QApplication::processEvents();
-
-		highlights_chain = new CSGChain();
-		for (int i = 0; i < highlight_terms.size(); i++) {
-			while (1) {
-				CSGTerm *n = highlight_terms[i]->normalize();
-				highlight_terms[i]->unlink();
-				if (highlight_terms[i] == n)
-					break;
-				highlight_terms[i] = n;
-			}
-			highlights_chain->import(highlight_terms[i]);
-		}
-	}
-
-	if (background_terms.size() > 0)
-	{
-		PRINTF("Compiling background (%d CSG Trees)...", background_terms.size());
-		if (procevents)
-			QApplication::processEvents();
-
-		background_chain = new CSGChain();
-		for (int i = 0; i < background_terms.size(); i++) {
-			while (1) {
-				CSGTerm *n = background_terms[i]->normalize();
-				background_terms[i]->unlink();
-				if (background_terms[i] == n)
-					break;
-				background_terms[i] = n;
-			}
-			background_chain->import(background_terms[i]);
-		}
-	}
 
 	if (1) {
 		PRINT("Compilation finished.");
@@ -672,6 +608,126 @@ fail:
 			}
 			PRINTF("ERROR: Compilation failed! (parser error in line %d)", line);
 		}
+		if (procevents)
+			QApplication::processEvents();
+	}
+}
+
+/*!
+	Generates CSG tree for OpenCSG evaluation.
+	Assumes that the design has been parsed and evaluated
+*/
+void MainWindow::compileCSG(bool procevents)
+{
+	assert(this->root_node);
+	PRINT("Compiling design (CSG Products generation)...");
+	if (procevents)
+		QApplication::processEvents();
+
+	double m[20];
+
+	for (int i = 0; i < 16; i++)
+		m[i] = i % 5 == 0 ? 1.0 : 0.0;
+	for (int i = 16; i < 20; i++)
+		m[i] = -1;
+
+	// Main CSG evaluation
+	QTime t;
+	t.start();
+
+	QProgressDialog *pd = new QProgressDialog("Rendering CSG products...", "Cancel", 0, 100);
+	QProgressBar *bar = new QProgressBar(pd);
+	bar->setRange(0, 100);
+	bar->setValue(0);
+	pd->setBar(bar);
+	pd->setAutoClose(false);
+	pd->show();
+	ProgressData progpair(bar, pd);
+	QApplication::processEvents();
+
+	progress_report_prep(root_node, report_func, &progpair);
+	try {
+		root_raw_term = root_node->render_csg_term(m, &highlight_terms, &background_terms);
+		if (!root_raw_term) {
+			PRINT("ERROR: CSG generation failed! (no top level object found)");
+			if (procevents)
+				QApplication::processEvents();
+		}
+	}
+	catch (ProgressCancelException e) {
+	}
+	progress_report_fin();
+	delete pd;
+
+	if (root_raw_term) {
+		PRINT("Compiling design (CSG Products normalization)...");
+		if (procevents)
+			QApplication::processEvents();
+		
+		root_norm_term = root_raw_term->link();
+		
+		// CSG normalization
+		while (1) {
+			CSGTerm *n = root_norm_term->normalize();
+			root_norm_term->unlink();
+			if (root_norm_term == n)
+				break;
+			root_norm_term = n;
+		}
+		
+		assert(root_norm_term);
+
+		root_chain = new CSGChain();
+		root_chain->import(root_norm_term);
+		
+		if (root_chain->polysets.size() > 1000) {
+			PRINTF("WARNING: Normalized tree has %d elements!", root_chain->polysets.size());
+			PRINTF("WARNING: OpenCSG rendering has been disabled.");
+		} else {
+			enableOpenCSG = true;
+		}
+		
+		if (highlight_terms.size() > 0)
+		{
+			PRINTF("Compiling highlights (%d CSG Trees)...", highlight_terms.size());
+			if (procevents)
+				QApplication::processEvents();
+			
+			highlights_chain = new CSGChain();
+			for (int i = 0; i < highlight_terms.size(); i++) {
+				while (1) {
+					CSGTerm *n = highlight_terms[i]->normalize();
+					highlight_terms[i]->unlink();
+					if (highlight_terms[i] == n)
+						break;
+					highlight_terms[i] = n;
+				}
+				highlights_chain->import(highlight_terms[i]);
+			}
+		}
+		
+		if (background_terms.size() > 0)
+		{
+			PRINTF("Compiling background (%d CSG Trees)...", background_terms.size());
+			if (procevents)
+				QApplication::processEvents();
+			
+			background_chain = new CSGChain();
+			for (int i = 0; i < background_terms.size(); i++) {
+				while (1) {
+					CSGTerm *n = background_terms[i]->normalize();
+					background_terms[i]->unlink();
+					if (background_terms[i] == n)
+						break;
+					background_terms[i] = n;
+				}
+				background_chain->import(background_terms[i]);
+			}
+		}
+		
+		PRINT("CSG generation finished.");
+		int s = t.elapsed() / 1000;
+		PRINTF("Total rendering time: %d hours, %d minutes, %d seconds", s / (60*60), (s / 60) % 60, s % 60);
 		if (procevents)
 			QApplication::processEvents();
 	}
@@ -909,6 +965,7 @@ void MainWindow::actionReloadCompile()
 
 	current_win = this;
 	compile(true);
+	if (this->root_node) compileCSG(true);
 
 #ifdef ENABLE_OPENCSG
 	if (!(viewActionOpenCSG->isVisible() && viewActionOpenCSG->isChecked()) &&
@@ -929,6 +986,7 @@ void MainWindow::actionCompile()
 	console->clear();
 
 	compile(!viewActionAnimate->isChecked());
+	if (this->root_node) compileCSG(!viewActionAnimate->isChecked());
 
 	// Go to non-CGAL view mode
 	if (!viewActionOpenCSG->isChecked() && !viewActionThrownTogether->isChecked()) {
@@ -952,17 +1010,6 @@ void MainWindow::actionCompile()
 
 #ifdef ENABLE_CGAL
 
-static void report_func(const class AbstractNode*, void *vp, int mark)
-{
-	QProgressDialog *pd = (QProgressDialog*)vp;
-	int v = (int)((mark*100.0) / progress_report_count);
-	pd->setValue(v < 100 ? v : 99);
-	QString label;
-	label.sprintf("Rendering Polygon Mesh using CGAL (%d/%d)", mark, progress_report_count);
-	pd->setLabelText(label);
-	QApplication::processEvents();
-}
-
 void MainWindow::actionRenderCGAL()
 {
 	current_win = this;
@@ -985,71 +1032,84 @@ void MainWindow::actionRenderCGAL()
 	QTime t;
 	t.start();
 
-	QProgressDialog *pd = new QProgressDialog("Rendering Polygon Mesh using CGAL...", QString(), 0, 100);
-	pd->setValue(0);
+	QProgressDialog *pd = new QProgressDialog("Rendering Polygon Mesh using CGAL...", "Cancel", 0, 100);
+	QProgressBar *bar = new QProgressBar(pd);
+	bar->setRange(0, 100);
+	bar->setValue(0);
+	pd->setBar(bar);
 	pd->setAutoClose(false);
 	pd->show();
+//	this->statusBar()->addPermanentWidget(bar);
+	ProgressData progpair(bar, pd);
 	QApplication::processEvents();
 
-	progress_report_prep(root_node, report_func, pd);
-	this->root_N = new CGAL_Nef_polyhedron(root_node->render_cgal_nef_polyhedron());
+	progress_report_prep(root_node, report_func, &progpair);
+	try {
+		this->root_N = new CGAL_Nef_polyhedron(root_node->render_cgal_nef_polyhedron());
+	}
+	catch (ProgressCancelException e) {
+	}
 	progress_report_fin();
+//	this->statusBar()->removeWidget(bar);
 
-	PRINTF("Number of vertices currently in CGAL cache: %d", AbstractNode::cgal_nef_cache.totalCost());
-	PRINTF("Number of objects currently in CGAL cache: %d", AbstractNode::cgal_nef_cache.size());
-	QApplication::processEvents();
+	if (this->root_N)
+	{
+		PRINTF("Number of vertices currently in CGAL cache: %d", AbstractNode::cgal_nef_cache.totalCost());
+		PRINTF("Number of objects currently in CGAL cache: %d", AbstractNode::cgal_nef_cache.size());
+		QApplication::processEvents();
 
-	if (this->root_N->dim == 2) {
-		PRINTF("   Top level object is a 2D object:");
-		QApplication::processEvents();
-		PRINTF("   Empty:      %6s", this->root_N->p2.is_empty() ? "yes" : "no");
-		QApplication::processEvents();
-		PRINTF("   Plane:      %6s", this->root_N->p2.is_plane() ? "yes" : "no");
-		QApplication::processEvents();
-		PRINTF("   Vertices:   %6d", (int)this->root_N->p2.explorer().number_of_vertices());
-		QApplication::processEvents();
-		PRINTF("   Halfedges:  %6d", (int)this->root_N->p2.explorer().number_of_halfedges());
-		QApplication::processEvents();
-		PRINTF("   Edges:      %6d", (int)this->root_N->p2.explorer().number_of_edges());
-		QApplication::processEvents();
-		PRINTF("   Faces:      %6d", (int)this->root_N->p2.explorer().number_of_faces());
-		QApplication::processEvents();
-		PRINTF("   FaceCycles: %6d", (int)this->root_N->p2.explorer().number_of_face_cycles());
-		QApplication::processEvents();
-		PRINTF("   ConnComp:   %6d", (int)this->root_N->p2.explorer().number_of_connected_components());
-		QApplication::processEvents();
+		if (this->root_N->dim == 2) {
+			PRINTF("   Top level object is a 2D object:");
+			QApplication::processEvents();
+			PRINTF("   Empty:      %6s", this->root_N->p2.is_empty() ? "yes" : "no");
+			QApplication::processEvents();
+			PRINTF("   Plane:      %6s", this->root_N->p2.is_plane() ? "yes" : "no");
+			QApplication::processEvents();
+			PRINTF("   Vertices:   %6d", (int)this->root_N->p2.explorer().number_of_vertices());
+			QApplication::processEvents();
+			PRINTF("   Halfedges:  %6d", (int)this->root_N->p2.explorer().number_of_halfedges());
+			QApplication::processEvents();
+			PRINTF("   Edges:      %6d", (int)this->root_N->p2.explorer().number_of_edges());
+			QApplication::processEvents();
+			PRINTF("   Faces:      %6d", (int)this->root_N->p2.explorer().number_of_faces());
+			QApplication::processEvents();
+			PRINTF("   FaceCycles: %6d", (int)this->root_N->p2.explorer().number_of_face_cycles());
+			QApplication::processEvents();
+			PRINTF("   ConnComp:   %6d", (int)this->root_N->p2.explorer().number_of_connected_components());
+			QApplication::processEvents();
+		}
+
+		if (this->root_N->dim == 3) {
+			PRINTF("   Top level object is a 3D object:");
+			PRINTF("   Simple:     %6s", this->root_N->p3.is_simple() ? "yes" : "no");
+			QApplication::processEvents();
+			PRINTF("   Valid:      %6s", this->root_N->p3.is_valid() ? "yes" : "no");
+			QApplication::processEvents();
+			PRINTF("   Vertices:   %6d", (int)this->root_N->p3.number_of_vertices());
+			QApplication::processEvents();
+			PRINTF("   Halfedges:  %6d", (int)this->root_N->p3.number_of_halfedges());
+			QApplication::processEvents();
+			PRINTF("   Edges:      %6d", (int)this->root_N->p3.number_of_edges());
+			QApplication::processEvents();
+			PRINTF("   Halffacets: %6d", (int)this->root_N->p3.number_of_halffacets());
+			QApplication::processEvents();
+			PRINTF("   Facets:     %6d", (int)this->root_N->p3.number_of_facets());
+			QApplication::processEvents();
+			PRINTF("   Volumes:    %6d", (int)this->root_N->p3.number_of_volumes());
+			QApplication::processEvents();
+		}
+
+		int s = t.elapsed() / 1000;
+		PRINTF("Total rendering time: %d hours, %d minutes, %d seconds", s / (60*60), (s / 60) % 60, s % 60);
+
+		if (!viewActionCGALSurfaces->isChecked() && !viewActionCGALGrid->isChecked()) {
+			viewModeCGALSurface();
+		} else {
+			screen->updateGL();
+		}
+
+		PRINT("Rendering finished.");
 	}
-
-	if (this->root_N->dim == 3) {
-		PRINTF("   Top level object is a 3D object:");
-		PRINTF("   Simple:     %6s", this->root_N->p3.is_simple() ? "yes" : "no");
-		QApplication::processEvents();
-		PRINTF("   Valid:      %6s", this->root_N->p3.is_valid() ? "yes" : "no");
-		QApplication::processEvents();
-		PRINTF("   Vertices:   %6d", (int)this->root_N->p3.number_of_vertices());
-		QApplication::processEvents();
-		PRINTF("   Halfedges:  %6d", (int)this->root_N->p3.number_of_halfedges());
-		QApplication::processEvents();
-		PRINTF("   Edges:      %6d", (int)this->root_N->p3.number_of_edges());
-		QApplication::processEvents();
-		PRINTF("   Halffacets: %6d", (int)this->root_N->p3.number_of_halffacets());
-		QApplication::processEvents();
-		PRINTF("   Facets:     %6d", (int)this->root_N->p3.number_of_facets());
-		QApplication::processEvents();
-		PRINTF("   Volumes:    %6d", (int)this->root_N->p3.number_of_volumes());
-		QApplication::processEvents();
-	}
-
-	int s = t.elapsed() / 1000;
-	PRINTF("Total rendering time: %d hours, %d minutes, %d seconds", s / (60*60), (s / 60) % 60, s % 60);
-
-	if (!viewActionCGALSurfaces->isChecked() && !viewActionCGALGrid->isChecked()) {
-		viewModeCGALSurface();
-	} else {
-		screen->updateGL();
-	}
-
-	PRINT("Rendering finished.");
 
 	delete pd;
 	current_win = NULL;

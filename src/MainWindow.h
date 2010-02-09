@@ -68,6 +68,7 @@ private:
 	void load();
 	AbstractNode *find_root_tag(AbstractNode *n);
 	void compile(bool procevents);
+	void compileCSG(bool procevents);
 	bool maybeSave();
 
 private slots:

@@ -227,7 +227,7 @@ int main(int argc, char **argv)
 		QString original_path = QDir::currentPath();
 		QDir::setCurrent(fileInfo.absolutePath());
 
-		AbstractNode::idx_counter = 1;
+		AbstractNode::resetIndexCounter();
 		root_node = root_module->evaluate(&root_ctx, &root_inst);
 
 		CGAL_Nef_polyhedron *root_N;

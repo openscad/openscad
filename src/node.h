@@ -17,7 +17,10 @@ void progress_report_fin();
 
 class AbstractNode
 {
+	static int idx_counter;   // Node instantiation index
 public:
+	static void resetIndexCounter() { idx_counter = 1; }
+
 	QVector<AbstractNode*> children;
 	const class ModuleInstantiation *modinst;
 
@@ -26,7 +29,6 @@ public:
 	void progress_report() const;
 
 	int idx;
-	static int idx_counter;
 	QString dump_cache;
 
 	AbstractNode(const ModuleInstantiation *mi);
@@ -36,7 +38,7 @@ public:
 	struct cgal_nef_cache_entry {
 		CGAL_Nef_polyhedron N;
 		QString msg;
-		cgal_nef_cache_entry(CGAL_Nef_polyhedron N);
+		cgal_nef_cache_entry(const CGAL_Nef_polyhedron &N);
 	};
 	static QCache<QString, cgal_nef_cache_entry> cgal_nef_cache;
 	virtual CGAL_Nef_polyhedron render_cgal_nef_polyhedron() const;
@@ -64,7 +66,7 @@ public:
 		RENDER_OPENCSG
 	};
 	AbstractPolyNode(const ModuleInstantiation *mi) : AbstractNode(mi) { };
-	virtual class PolySet *render_polyset(render_mode_e mode) const;
+	virtual class PolySet *render_polyset(render_mode_e mode) const = 0;
 #ifdef ENABLE_CGAL
 	virtual CGAL_Nef_polyhedron render_cgal_nef_polyhedron() const;
 #endif

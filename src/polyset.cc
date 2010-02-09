@@ -24,9 +24,6 @@
  */
 
 #include "polyset.h"
-#include "node.h"
-#include "module.h"
-#include "csgterm.h"
 #include "printutils.h"
 #include "Preferences.h"
 
@@ -665,53 +662,4 @@ CGAL_Nef_polyhedron PolySet::render_cgal_nef_polyhedron() const
 }
 
 #endif /* ENABLE_CGAL */
-
-PolySet *AbstractPolyNode::render_polyset(render_mode_e) const
-{
-	return NULL;
-}
-
-#ifdef ENABLE_CGAL
-
-CGAL_Nef_polyhedron AbstractPolyNode::render_cgal_nef_polyhedron() const
-{
-	QString cache_id = mk_cache_id();
-	if (cgal_nef_cache.contains(cache_id)) {
-		progress_report();
-		PRINT(cgal_nef_cache[cache_id]->msg);
-		return cgal_nef_cache[cache_id]->N;
-	}
-
-	print_messages_push();
-
-	PolySet *ps = render_polyset(RENDER_CGAL);
-	CGAL_Nef_polyhedron N = ps->render_cgal_nef_polyhedron();
-
-	cgal_nef_cache.insert(cache_id, new cgal_nef_cache_entry(N), N.weight());
-	print_messages_pop();
-	progress_report();
-
-	ps->unlink();
-	return N;
-}
-
-#endif /* ENABLE_CGAL */
-
-CSGTerm *AbstractPolyNode::render_csg_term(double m[20], QVector<CSGTerm*> *highlights, QVector<CSGTerm*> *background) const
-{
-	PolySet *ps = render_polyset(RENDER_OPENCSG);
-	return render_csg_term_from_ps(m, highlights, background, ps, modinst, idx);
-}
-
-CSGTerm *AbstractPolyNode::render_csg_term_from_ps(double m[20], QVector<CSGTerm*> *highlights, QVector<CSGTerm*> *background, PolySet *ps, const ModuleInstantiation *modinst, int idx)
-{
-	CSGTerm *t = new CSGTerm(ps, m, QString("n%1").arg(idx));
-	if (modinst->tag_highlight && highlights)
-		highlights->append(t->link());
-	if (modinst->tag_background && background) {
-		background->append(t);
-		return NULL;
-	}
-	return t;
-}
 
