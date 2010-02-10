@@ -127,7 +127,7 @@ AbstractNode *PrimitiveModule::evaluate(const Context *ctx, const ModuleInstanti
 		r1 = c.lookup_variable("r1");
 		r2 = c.lookup_variable("r2");
 		if (r1.type != Value::NUMBER && r2.type != Value::NUMBER)
-			r = c.lookup_variable("r");
+			r = c.lookup_variable("r", true); // silence warning since r has no default value
 		Value center = c.lookup_variable("center");
 		if (h.type == Value::NUMBER) {
 			node->h = h.num;
