@@ -34,10 +34,18 @@ QT += opengl
 macx:CONFIG += mdi
 CONFIG += cgal
 CONFIG += opencsg
+#CONFIG += progresswidget
 
 mdi {
   # MDI needs an OpenCSG library that is compiled with OpenCSG-Reset-Hack.patch applied
   DEFINES += ENABLE_MDI
+}
+
+progresswidget {
+  DEFINES += USE_PROGRESSWIDGET
+  FORMS   += src/ProgressWidget.ui
+  HEADERS += src/ProgressWidget.h
+  SOURCES += src/ProgressWidget.cc
 }
 
 include(cgal.pri)

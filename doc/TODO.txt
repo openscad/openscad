@@ -22,6 +22,7 @@ o Preferences
   - OpenGL params
   - Default language feature settings
   - Auto-view CSG/thrown together on load
+  - Make the library search path configurable?
 o Export etc.: automatically add missing extension as in SaveAs
 o MDI
   - Think about how to do MDI the right way
@@ -61,8 +62,6 @@ o Editor
 
 o Computation
   - Run CGAL rendering in a backgroud thread
-  - Progress
-    - Move progress bar to status bar (as in Eclipse)
   - Enable viewing/editing while rendering
 o Misc
   - Reload and compile: Ask for confirmation if file is locally edited
@@ -94,7 +93,6 @@ o Language Frontend
   - Add "use" statement to load modules. Like include but read a module only once,
     ignore all top level objects (they are used as module testcase) and search in
     a module search path.
-  - Add a default search path for included files to allow bundling libs
   - allow 0/1 f/t FALSE/TRUE as boolean values
 o DXF Import
   - Support for POLYLINE entity
@@ -137,7 +135,6 @@ o Make the interfaces from OpenSCAD and OpenCSG and CGAL cleaner to facilitate
 
 INFRASTRUCTURE
 --------------
-o Think about making external libraries easier available. Probably mostly convenience.
 o Use a logging framework to get debugging/info output more under control?
   (check log4j, google project)
 

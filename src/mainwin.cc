@@ -38,6 +38,9 @@
 #include "builtin.h"
 #include "dxftess.h"
 #include "progress.h"
+#ifdef USE_PROGRESSWIDGET
+#include "ProgressWidget.h"
+#endif
 
 #include <QMenu>
 #include <QTime>
@@ -338,18 +341,24 @@ MainWindow::~MainWindow()
 #endif
 }
 
-typedef QPair<QProgressBar*, QProgressDialog*> ProgressData;
-
 static void report_func(const class AbstractNode*, void *vp, int mark)
 {
-	ProgressData *progpair = static_cast<ProgressData*>(vp);
+#ifdef USE_PROGRESSWIDGET
+	ProgressWidget *pw = static_cast<ProgressWidget*>(vp);
 	int v = (int)((mark*100.0) / progress_report_count);
-	progpair->first->setValue(v < 100 ? v : 99);
+	pw->setValue(v < 100 ? v : 99);
+	QApplication::processEvents();
+	if (pw->wasCanceled()) throw ProgressCancelException();
+#else
+	QProgressDialog *pd = static_cast<QProgressDialog*>(vp);
+	int v = (int)((mark*100.0) / progress_report_count);
+	pd->setValue(v < 100 ? v : 99);
 	QString label;
 	label.sprintf("Rendering Polygon Mesh (%d/%d)", mark, progress_report_count);
-	progpair->second->setLabelText(label);
+	pd->setLabelText(label);
 	QApplication::processEvents();
-	if (progpair->second->wasCanceled()) throw ProgressCancelException();
+	if (pd->wasCanceled()) throw ProgressCancelException();
+#endif
 }
 
 /*!
@@ -635,17 +644,21 @@ void MainWindow::compileCSG(bool procevents)
 	QTime t;
 	t.start();
 
+#ifdef USE_PROGRESSWIDGET
+	ProgressWidget *pd = new ProgressWidget(this);
+	pd->setRange(0, 100);
+	pd->setValue(0);
+	this->statusBar()->addPermanentWidget(pd);
+#else
 	QProgressDialog *pd = new QProgressDialog("Rendering CSG products...", "Cancel", 0, 100);
-	QProgressBar *bar = new QProgressBar(pd);
-	bar->setRange(0, 100);
-	bar->setValue(0);
-	pd->setBar(bar);
+	pd->setRange(0, 100);
+	pd->setValue(0);
 	pd->setAutoClose(false);
 	pd->show();
-	ProgressData progpair(bar, pd);
+#endif
 	QApplication::processEvents();
 
-	progress_report_prep(root_node, report_func, &progpair);
+	progress_report_prep(root_node, report_func, pd);
 	try {
 		root_raw_term = root_node->render_csg_term(m, &highlight_terms, &background_terms);
 		if (!root_raw_term) {
@@ -655,8 +668,12 @@ void MainWindow::compileCSG(bool procevents)
 		}
 	}
 	catch (ProgressCancelException e) {
+		PRINT("CSG generation cancelled.");
 	}
 	progress_report_fin();
+#ifdef USE_PROGRESSWIDGET
+	this->statusBar()->removeWidget(pd);
+#endif
 	delete pd;
 
 	if (root_raw_term) {
@@ -1032,25 +1049,30 @@ void MainWindow::actionRenderCGAL()
 	QTime t;
 	t.start();
 
+
+#ifdef USE_PROGRESSWIDGET
+	ProgressWidget *pd = new ProgressWidget(this);
+	pd->setRange(0, 100);
+	pd->setValue(0);
+	this->statusBar()->addPermanentWidget(pd);
+#else
 	QProgressDialog *pd = new QProgressDialog("Rendering Polygon Mesh using CGAL...", "Cancel", 0, 100);
-	QProgressBar *bar = new QProgressBar(pd);
-	bar->setRange(0, 100);
-	bar->setValue(0);
-	pd->setBar(bar);
+	pd->setRange(0, 100);
+	pd->setValue(0);
 	pd->setAutoClose(false);
 	pd->show();
-//	this->statusBar()->addPermanentWidget(bar);
-	ProgressData progpair(bar, pd);
+#endif
+
 	QApplication::processEvents();
 
-	progress_report_prep(root_node, report_func, &progpair);
+	progress_report_prep(root_node, report_func, pd);
 	try {
 		this->root_N = new CGAL_Nef_polyhedron(root_node->render_cgal_nef_polyhedron());
 	}
 	catch (ProgressCancelException e) {
+		PRINT("Rendering cancelled.");
 	}
 	progress_report_fin();
-//	this->statusBar()->removeWidget(bar);
 
 	if (this->root_N)
 	{
@@ -1111,6 +1133,9 @@ void MainWindow::actionRenderCGAL()
 		PRINT("Rendering finished.");
 	}
 
+#ifdef USE_PROGRESSWIDGET
+	this->statusBar()->removeWidget(pd);
+#endif
 	delete pd;
 	current_win = NULL;
 }

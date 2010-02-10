@@ -1,7 +1,8 @@
- <!DOCTYPE RCC><RCC version="1.0">
- <qresource prefix="/">
-     <file>icons/prefsAdvanced.png</file>
-     <file>icons/prefs3DView.png</file>
-     <file>icons/prefsEditor.png</file>
- </qresource>
- </RCC>
+<RCC>
+  <qresource prefix="/">
+    <file>icons/stopbutton.png</file>
+    <file>icons/prefsAdvanced.png</file>
+    <file>icons/prefs3DView.png</file>
+    <file>icons/prefsEditor.png</file>
+  </qresource>
+</RCC>
