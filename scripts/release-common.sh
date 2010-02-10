@@ -72,6 +72,7 @@ make -j2 $TARGET
 
 if [[ $? != 0 ]]; then
   echo "Error building OpenSCAD. Aborting."
+  exit 1
 fi
 
 echo "Creating directory structure..."
