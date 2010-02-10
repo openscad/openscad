@@ -652,7 +652,7 @@
   </customwidget>
  </customwidgets>
  <resources>
-  <include location="openscad.qrc"/>
+  <include location="../openscad.qrc"/>
  </resources>
  <connections>
   <connection>
