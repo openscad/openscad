@@ -85,7 +85,7 @@ Value Context::lookup_variable(QString name, bool silent) const
 	if (parent)
 		return parent->lookup_variable(name, silent);
 	if (!silent)
-		PRINTA("WARNING: Ignoring unkown variable '%1'.", name);
+		PRINTA("WARNING: Ignoring unknown variable '%1'.", name);
 	return Value();
 }
 
