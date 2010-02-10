@@ -9,7 +9,7 @@ CRASH BUGS
 ----------
 o Broken polyhedron() entities are not correctly detected and cause CGAL segfaults
 o Export STL: Exports existing CGAL model even though the current model is changed, but not CGAL rendered
-o Negative array indices causes crash: v=[0,1,2]; a=v[-1];
+
 
 USER INTERFACE
 --------------
@@ -66,7 +66,7 @@ o Computation
 o Misc
   - Reload and compile: Ask for confirmation if file is locally edited
     (make this configurable in preferences?)
-  - Save: Ask for confirmation if file has been externaly changed
+  - Save: Ask for confirmation if file has been externally changed
   - Rename OpenCSG and CGAL to smth. not specific to the underlying libraries
     (e.g Preview, Render)
 
@@ -127,7 +127,7 @@ o Refactor from MainWindow:
 o C++-ify
   - Use smart pointers where it makes sense (e.g. instead of homegrown refcount,
     and to get memory ownership under control)
-  - Use static_cast instead of C-style casts
+  - Use static_cast/dynamic_cast instead of C-style casts
 o dxflinextrude and dxfrotextrude could share code
 o Consider decoupling DXF-specific functionality from the 2D subsystem
 o Make the interfaces from OpenSCAD and OpenCSG and CGAL cleaner to facilitate

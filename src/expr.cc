@@ -81,7 +81,7 @@ Value Expression::evaluate(const Context *context) const
 		Value v2 = children[1]->evaluate(context);
 		if (v1.type == Value::VECTOR && v2.type == Value::NUMBER) {
 			int i = (int)(v2.num);
-			if (i < v1.vec.size())
+			if (i >= 0 && i < v1.vec.size())
 				return *v1.vec[i];
 		}
 		return Value();
