@@ -1,4 +1,7 @@
 opencsg {
+  HEADERS += src/render-opencsg.h
+  SOURCES += src/render-opencsg.cc
+
   DEFINES += ENABLE_OPENCSG
   LIBS += -lopencsg
   unix:LIBS += -lGLEW

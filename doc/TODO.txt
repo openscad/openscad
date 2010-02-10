@@ -3,12 +3,12 @@ BUGS
 ----
 o Some invalid DXF data gets pass the import checks and breaks the tessing code
 o Tesselation via GLU sometimes produces strange results
-o Non-manifold objects make CGAL crash (e.g. two cubes which touch at one edge)
+o Export STL: Exports existing CGAL model even though the current model is changed, but not CGAL rendered
 
 CRASH BUGS
 ----------
 o Broken polyhedron() entities are not correctly detected and cause CGAL segfaults
-o Export STL: Exports existing CGAL model even though the current model is changed, but not CGAL rendered
+o Non-manifold objects make CGAL crash (e.g. two cubes which touch at one edge)
 
 
 USER INTERFACE
@@ -40,7 +40,8 @@ o 3D View
   - Quick highlighting of object under the cursor in the editor
   - View All
   - overlay indicator displaying current view mode
-  - CSG rendering: prefer holes when coincident surfaces to avoid zbuffer fighting?
+  - OpenCSG rendering: Coincident surfaces causes z-buffer fighting. Is this somehow
+    avoidable tuning the depth tests in OpenCSG? 
 o Editor
   - line numbers
   - tear-off/maximize options?
