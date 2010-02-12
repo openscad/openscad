@@ -344,6 +344,13 @@ MainWindow::~MainWindow()
 #endif
 }
 
+#ifdef USE_PROGRESSWIDGET
+void MainWindow::showProgress()
+{
+	this->statusBar()->addPermanentWidget(qobject_cast<ProgressWidget*>(sender()));
+}
+#endif
+
 static void report_func(const class AbstractNode*, void *vp, int mark)
 {
 #ifdef USE_PROGRESSWIDGET
@@ -651,7 +658,7 @@ void MainWindow::compileCSG(bool procevents)
 	ProgressWidget *pd = new ProgressWidget(this);
 	pd->setRange(0, 100);
 	pd->setValue(0);
-	this->statusBar()->addPermanentWidget(pd);
+	connect(pd, SIGNAL(requestShow()), this, SLOT(showProgress()));
 #else
 	QProgressDialog *pd = new QProgressDialog("Rendering CSG products...", "Cancel", 0, 100);
 	pd->setRange(0, 100);
@@ -1057,7 +1064,7 @@ void MainWindow::actionRenderCGAL()
 	ProgressWidget *pd = new ProgressWidget(this);
 	pd->setRange(0, 100);
 	pd->setValue(0);
-	this->statusBar()->addPermanentWidget(pd);
+	connect(pd, SIGNAL(requestShow()), this, SLOT(showProgress()));
 #else
 	QProgressDialog *pd = new QProgressDialog("Rendering Polygon Mesh using CGAL...", "Cancel", 0, 100);
 	pd->setRange(0, 100);

@@ -1,4 +1,5 @@
 #include "ProgressWidget.h"
+#include <QTimer>
 
 ProgressWidget::ProgressWidget(QWidget *parent)
 	:QWidget(parent)
@@ -6,6 +7,7 @@ ProgressWidget::ProgressWidget(QWidget *parent)
 	setupUi(this);
 	this->wascanceled = false;
 	connect(this->stopButton, SIGNAL(clicked()), this, SLOT(cancel()));
+	QTimer::singleShot(1000, this, SIGNAL(requestShow()));
 }
 
 bool ProgressWidget::wasCanceled() const

@@ -17,9 +17,11 @@ public slots:
 	void setValue(int progress);
 	void cancel();
 
+signals:
+	void requestShow();
+
 private:
 	bool wascanceled;
-	
 };
 
 #endif

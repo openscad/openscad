@@ -62,6 +62,9 @@ private slots:
 	void updateTVal();
 	void setFileName(const QString &filename);
 	void setFont(const QString &family, uint size);
+#ifdef USE_PROGRESSWIDGET
+	void showProgress();
+#endif
 
 private:
 	void openFile(const QString &filename);
