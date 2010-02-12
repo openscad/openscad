@@ -149,12 +149,21 @@ AbstractNode *ControlModule::evaluate(const Context*, const ModuleInstantiation 
 
 	if (type == IF)
 	{
-		if (inst->argvalues.size() > 0 && inst->argvalues[0].type == Value::BOOL && inst->argvalues[0].b)
-			foreach (ModuleInstantiation *v, inst->children) {
-				AbstractNode *n = v->evaluate(inst->ctx);
+		const IfElseModuleInstantiation *ifelse = dynamic_cast<const IfElseModuleInstantiation*>(inst);
+		if (ifelse->argvalues.size() > 0 && ifelse->argvalues[0].type == Value::BOOL && ifelse->argvalues[0].b) {
+			foreach (ModuleInstantiation *v, ifelse->children) {
+				AbstractNode *n = v->evaluate(ifelse->ctx);
 				if (n != NULL)
 					node->children.append(n);
 			}
+		}
+		else {
+			foreach (ModuleInstantiation *v, ifelse->else_children) {
+				AbstractNode *n = v->evaluate(ifelse->ctx);
+				if (n != NULL)
+					node->children.append(n);
+			}
+		}
 	}
 
 	return node;

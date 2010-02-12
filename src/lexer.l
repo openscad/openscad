@@ -96,6 +96,8 @@ extern const char *parser_source_path;
 
 "module"	return TOK_MODULE;
 "function"	return TOK_FUNCTION;
+"if"		return TOK_IF;
+"else"		return TOK_ELSE;
 
 "true"		return TOK_TRUE;
 "false"		return TOK_FALSE;

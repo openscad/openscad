@@ -62,12 +62,15 @@ public:
 	class Value *value;
 	class Expression *expr;
 	class ModuleInstantiation *inst;
+	class IfElseModuleInstantiation *ifelse;
 	class ArgContainer *arg;
 	class ArgsContainer *args;
 }
 
 %token TOK_MODULE
 %token TOK_FUNCTION
+%token TOK_IF
+%token TOK_ELSE
 
 %token <text> TOK_ID
 %token <text> TOK_STRING
@@ -96,6 +99,9 @@ public:
 %type <expr> vector_expr
 
 %type <inst> module_instantiation
+%type <ifelse> if_statement
+%type <ifelse> ifelse_statement
+%type <inst> children_instantiation
 %type <inst> module_instantiation_list
 %type <inst> single_module_instantiation
 
@@ -161,29 +167,70 @@ statement:
 		delete $4;
 	} ';' ;
 
-module_instantiation:
-	single_module_instantiation ';' {
+/* Will return a dummy parent node with zero or more children */
+children_instantiation:
+	module_instantiation {
+		$$ = new ModuleInstantiation();
+		if ($1) {
+			$$->children.append($1);
+		} else {
+			delete $1;
+		}
+	} |
+	'{' module_instantiation_list '}' {
+		$$ = $2;
+	} ;
+
+if_statement:
+	TOK_IF '(' expr ')' children_instantiation {
+		$$ = new IfElseModuleInstantiation();
+		$$->modname = "if";
+		$$->argnames.append(QString());
+		$$->argexpr.append($3);
+
+		if ($$) {
+			$$->children = $5->children;
+		} else {
+			for (int i = 0; i < $5->children.count(); i++)
+				delete $5->children[i];
+		}
+		$5->children.clear();
+		delete $5;
+	} ;
+
+ifelse_statement:
+	if_statement {
 		$$ = $1;
 	} |
-	single_module_instantiation '{' module_instantiation_list '}' {
+	if_statement TOK_ELSE children_instantiation {
 		$$ = $1;
 		if ($$) {
-			$$->children = $3->children;
+			$$->else_children = $3->children;
 		} else {
 			for (int i = 0; i < $3->children.count(); i++)
 				delete $3->children[i];
 		}
 		$3->children.clear();
 		delete $3;
+	} ;
+
+module_instantiation:
+	single_module_instantiation ';' {
+		$$ = $1;
 	} |
-	single_module_instantiation module_instantiation {
+	single_module_instantiation children_instantiation {
 		$$ = $1;
 		if ($$) {
-			if ($2)
-				$$->children.append($2);
+			$$->children = $2->children;
 		} else {
-			delete $2;
+			for (int i = 0; i < $2->children.count(); i++)
+				delete $2->children[i];
 		}
+		$2->children.clear();
+		delete $2;
+	} |
+	ifelse_statement {
+		$$ = $1;
 	} ;
 
 module_instantiation_list:

@@ -61,6 +61,12 @@ ModuleInstantiation::~ModuleInstantiation()
 		delete v;
 }
 
+IfElseModuleInstantiation::~IfElseModuleInstantiation()
+{
+	foreach (ModuleInstantiation *v, else_children)
+		delete v;
+}
+
 QString ModuleInstantiation::dump(QString indent) const
 {
 	QString text = indent;

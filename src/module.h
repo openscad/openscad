@@ -22,10 +22,17 @@ public:
 	const class Context *ctx;
 
 	ModuleInstantiation() : tag_root(false), tag_highlight(false), tag_background(false), ctx(NULL) { }
-	~ModuleInstantiation();
+	virtual ~ModuleInstantiation();
 
 	QString dump(QString indent) const;
 	class AbstractNode *evaluate(const Context *ctx) const;
+};
+
+class IfElseModuleInstantiation : public ModuleInstantiation {
+public:
+	virtual ~IfElseModuleInstantiation();
+
+	QVector<ModuleInstantiation*> else_children;
 };
 
 class AbstractModule
