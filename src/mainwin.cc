@@ -198,11 +198,20 @@ MainWindow::MainWindow(const char *filename)
 					this, SLOT(clearRecentFiles()));
 
 	if (!examplesdir.isEmpty()) {
+		bool found_example = false;
 		QStringList examples = QDir(examplesdir).entryList(QStringList("*.scad"), 
 		QDir::Files | QDir::Readable, QDir::Name);
 		foreach (const QString &ex, examples) {
 			this->menuExamples->addAction(ex, this, SLOT(actionOpenExample()));
+			found_example = true;
 		}
+		if (!found_example) {
+			delete this->menuExamples;
+			this->menuExamples = NULL;
+		}
+	} else {
+		delete this->menuExamples;
+		this->menuExamples = NULL;
 	}
 
 	// Edit menu

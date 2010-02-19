@@ -166,6 +166,14 @@ int main(int argc, char **argv)
 	exdir.cd("../Resources"); // Examples can be bundled
 	if (!exdir.exists("examples")) exdir.cd("../../..");
 #endif
+#ifdef linux
+	if (exdir.cd("../../examples")) {
+		examplesdir = exdir.path();
+	} else
+	if (exdir.cd("../../share/openscad/examples")) {
+		examplesdir = exdir.path();
+	} else
+#endif
 	if (exdir.cd("examples")) {
 		examplesdir = exdir.path();
 	}

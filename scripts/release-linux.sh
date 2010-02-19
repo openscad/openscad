@@ -1,7 +1,7 @@
 #!/bin/bash
 # WARNING: This script might only work with the authors setup...
 
-VERSION=2010.01
+VERSION=2010.02
 
 set -ex
 
@@ -25,7 +25,7 @@ exec $libdir/openscad "$@"
 EOT
 
 cp openscad release/lib/openscad/
-gcc -o chrpath_linux chrpath_linux.c
+gcc -o chrpath_linux scripts/chrpath_linux.c
 ./chrpath_linux -d release/lib/openscad/openscad
 
 ldd openscad | sed -re 's,.* => ,,; s,[\t ].*,,;' -e '/Qt|boost/ { p; d; };' \
@@ -58,9 +58,9 @@ if [ ! -d "$prefix" ]; then
 	read -p "press enter to continue> "
 fi
 
-mkdir -p "$prefix"/{bin,lib/openscad}
+mkdir -p "$prefix"/{bin,lib/openscad,share/openscad/examples}
 
-if ! [ -w "$prefix"/bin/ -a -w "$prefix"/lib/ ]; then
+if ! [ -w "$prefix"/bin/ -a -w "$prefix"/lib/openscad -a -w "$prefix"/share/openscad ]; then
 	echo "You does not seam to have write permissions for prefix \`$prefix'!" >&2
 	echo "Maybe you should have run this install script using \`sudo'?" >&2
 	exit 1
@@ -71,6 +71,9 @@ cp -rv bin/. "$prefix"/bin/
 
 echo "Copying application and libraries..."
 cp -rv lib/. "$prefix"/lib/
+
+echo "Copying examples..."
+cp -rv examples/. "$prefix"/share/openscad/examples/
 
 echo "Installation finished. Have a nice day."
 EOT
