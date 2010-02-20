@@ -1,0 +1,40 @@
+
+OpenSCAD 2010.03
+================
+
+ .. ADD STUFF HERE ..
+ o Some bugs fixed, maybe some new bugs added to
+
+OpenSCAD 2010.02
+================
+
+ o Added functions and statements
+  - Added sqrt() function
+  - Added round(), ceil() and floor() functions
+  - Added lookup() function for linear interpolation in value list
+  - Added projection(cut = true/false) statement
+  - Added child() statement for accessing child nodes of module instance
+  - Added mirror() statement
+ o Improved DXF import code (mor entities and some bugs fixed)
+ o Added feature for dumping animation as PNG files
+ o Added a preferences dialog
+ o Now using CGAL's delaunay tesselator
+ o Now using eigen2 for linear algebra
+ o Reorganisation of the source tree
+ o Some bugs fixed, maybe some new bugs added to
+
+OpenSCAD 2010.01
+================
+
+ o Added functions and statements
+  - Added intersection_for()
+  - Added str function
+  - Added min and max function
+  - Added color() statement
+ o Added 2D Subsystem
+  - New primitives: circle(), square() and polygon()
+  - 2D->3D path: linear_extrude() and rotate_extrude()
+  - Import of DXF to 2d subsystem: import_dxf()
+  - Export of 2D data as DXF files
+ o Some bugs fixed, maybe some new bugs added to
+
