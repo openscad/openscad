@@ -15,7 +15,7 @@ OpenSCAD 2010.02
   - Added projection(cut = true/false) statement
   - Added child() statement for accessing child nodes of module instances
   - Added mirror() statement
- o Improved DXF import code (mor entities and some bugs fixed)
+ o Improved DXF import code (more entities and some bugs fixed)
  o Added feature for dumping animation as PNG files
  o Added a preferences dialog
  o Now using CGAL's delaunay tesselator

@@ -141,6 +141,7 @@ public slots:
 	void dragEnterEvent(QDragEnterEvent *event);
 	void dropEvent(QDropEvent *event);
 	void helpAbout();
+	void helpHomepage();
 	void helpManual();
 	void quit();
 	void actionReloadCompile();

@@ -288,6 +288,7 @@ MainWindow::MainWindow(const char *filename)
 
 	// Help menu
 	connect(this->helpActionAbout, SIGNAL(triggered()), this, SLOT(helpAbout()));
+	connect(this->helpActionHomepage, SIGNAL(triggered()), this, SLOT(helpHomepage()));
 	connect(this->helpActionManual, SIGNAL(triggered()), this, SLOT(helpManual()));
 
 
@@ -1765,6 +1766,12 @@ MainWindow::helpAbout()
 {
 	qApp->setWindowIcon(QApplication::windowIcon());
 	QMessageBox::information(this, "About OpenSCAD", QString(helptitle) + QString(copyrighttext));
+}
+
+void
+MainWindow::helpHomepage()
+{
+	QDesktopServices::openUrl(QUrl("http://openscad.org/"));
 }
 
 void

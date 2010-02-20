@@ -118,7 +118,7 @@
      <x>0</x>
      <y>0</y>
      <width>681</width>
-     <height>22</height>
+     <height>25</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_File">
@@ -219,6 +219,7 @@
      <string>Help</string>
     </property>
     <addaction name="helpActionAbout"/>
+    <addaction name="helpActionHomepage"/>
     <addaction name="helpActionManual"/>
    </widget>
    <addaction name="menu_File"/>
@@ -640,6 +641,11 @@
   <action name="designActionFlushCaches">
    <property name="text">
     <string>Flush Caches</string>
+   </property>
+  </action>
+  <action name="helpActionHomepage">
+   <property name="text">
+    <string>OpenSCAD Homepage</string>
    </property>
   </action>
  </widget>
