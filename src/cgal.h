@@ -45,6 +45,42 @@ struct CGAL_Nef_polyhedron
 		p3 = p;
 	}
 
+	CGAL_Nef_polyhedron& operator+=(const CGAL_Nef_polyhedron &other) {
+		if (other.dim == 2) {
+			this->p2 += other.p2;
+			this->dim = 2;
+		}
+		if (other.dim == 3) {
+			this->p3 += other.p3;
+			this->dim = 3;
+		}
+		return *this;
+	}
+
+	CGAL_Nef_polyhedron& operator*=(const CGAL_Nef_polyhedron &other) {
+		if (other.dim == 2) {
+			this->p2 *= other.p2;
+			this->dim = 2;
+		}
+		if (other.dim == 3) {
+			this->p3 *= other.p3;
+			this->dim = 3;
+		}
+		return *this;
+	}
+
+	CGAL_Nef_polyhedron& operator-=(const CGAL_Nef_polyhedron &other) {
+		if (other.dim == 2) {
+			this->p2 -= other.p2;
+			this->dim = 2;
+		}
+		if (other.dim == 3) {
+			this->p3 -= other.p3;
+			this->dim = 3;
+		}
+		return *this;
+	}
+
 	int weight() {
 		if (dim == 2)
 			return p2.explorer().number_of_vertices();

@@ -206,6 +206,7 @@ void initialize_builtin_modules()
 	register_builtin_render();
 	register_builtin_import();
 	register_builtin_projection();
+	register_builtin_cgaladv();
 	register_builtin_dxf_linear_extrude();
 	register_builtin_dxf_rotate_extrude();
 }

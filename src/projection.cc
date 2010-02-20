@@ -96,7 +96,7 @@ void register_builtin_projection()
 
 #ifdef ENABLE_CGAL
 
-PolySet *ProjectionNode::render_polyset(render_mode_e rm) const
+PolySet *ProjectionNode::render_polyset(render_mode_e) const
 {
 	QString key = mk_cache_id();
 	if (PolySet::ps_cache.contains(key)) {

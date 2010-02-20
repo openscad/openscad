@@ -210,7 +210,7 @@ static void add_slice(PolySet *ps, DxfData::Path *pt, double rot1, double rot2, 
 	}
 }
 
-PolySet *DxfLinearExtrudeNode::render_polyset(render_mode_e rm) const
+PolySet *DxfLinearExtrudeNode::render_polyset(render_mode_e) const
 {
 	QString key = mk_cache_id();
 	if (PolySet::ps_cache.contains(key)) {

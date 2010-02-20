@@ -42,6 +42,7 @@ public:
 	};
 	static QCache<QString, cgal_nef_cache_entry> cgal_nef_cache;
 	virtual CGAL_Nef_polyhedron render_cgal_nef_polyhedron() const;
+	class CSGTerm *render_csg_term_from_nef(double m[20], QVector<CSGTerm*> *highlights, QVector<CSGTerm*> *background, const char *statement, int convexity) const;
 #endif
 	virtual class CSGTerm *render_csg_term(double m[20], QVector<CSGTerm*> *highlights, QVector<CSGTerm*> *background) const;
 	virtual QString dump(QString indent) const;

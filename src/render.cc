@@ -125,7 +125,7 @@ CGAL_Nef_polyhedron RenderNode::render_cgal_nef_polyhedron() const
 	return N;
 }
 
-CSGTerm *RenderNode::render_csg_term(double m[20], QVector<CSGTerm*> *highlights, QVector<CSGTerm*> *background) const
+CSGTerm *AbstractNode::render_csg_term_from_nef(double m[20], QVector<CSGTerm*> *highlights, QVector<CSGTerm*> *background, const char *statement, int convexity) const
 {
 	QString key = mk_cache_id();
 	if (PolySet::ps_cache.contains(key)) {
@@ -145,7 +145,7 @@ CSGTerm *RenderNode::render_csg_term(double m[20], QVector<CSGTerm*> *highlights
 	}
 	else
 	{
-		PRINT_NOCACHE("Processing uncached render statement...");
+		PRINTF_NOCACHE("Processing uncached %s statement...", statement);
 		// PRINTA("Cache ID: %1", cache_id);
 		QApplication::processEvents();
 
@@ -172,7 +172,7 @@ CSGTerm *RenderNode::render_csg_term(double m[20], QVector<CSGTerm*> *highlights
 	if (N.dim == 3)
 	{
 		if (!N.p3.is_simple()) {
-			PRINTF("WARNING: Result of render() isn't valid 2-manifold! Modify your design..");
+			PRINTF("WARNING: Result of %s() isn't valid 2-manifold! Modify your design..", statement);
 			return NULL;
 		}
 
@@ -217,6 +217,11 @@ CSGTerm *RenderNode::render_csg_term(double m[20], QVector<CSGTerm*> *highlights
 	print_messages_pop();
 
 	return NULL;
+}
+
+CSGTerm *RenderNode::render_csg_term(double m[20], QVector<CSGTerm*> *highlights, QVector<CSGTerm*> *background) const
+{
+	return render_csg_term_from_nef(m, highlights, background, "render", this->convexity);
 }
 
 #else
