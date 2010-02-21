@@ -279,11 +279,13 @@ int main(int argc, char **argv)
 		installAppleEventHandlers();
 #endif		
 
+#if 0 /*** disabled by clifford wolf: adds rendering artefacts with OpenCSG ***/
 		// turn on anti-aliasing
 		QGLFormat f;
 		f.setSampleBuffers(true);
 		f.setSamples(4);
 		QGLFormat::setDefaultFormat(f);
+#endif
 #ifdef ENABLE_MDI
 		new MainWindow(filename);
 		while (optind < argc)
