@@ -183,13 +183,6 @@ Value builtin_atan2(const QVector<QString>&, const QVector<Value> &args)
 	return Value();
 }
 
-Value builtin_pow(const QVector<QString>&, const QVector<Value> &args)
-{
-	if (args.size() == 2 && args[0].type == Value::NUMBER && args[1].type == Value::NUMBER)
-		return Value(pow(args[0].num, args[1].num));
-	return Value();
-}
-
 Value builtin_round(const QVector<QString>&, const QVector<Value> &args)
 {
 	if (args.size() == 1 && args[0].type == Value::NUMBER)
@@ -211,10 +204,40 @@ Value builtin_floor(const QVector<QString>&, const QVector<Value> &args)
 	return Value();
 }
 
+Value builtin_pow(const QVector<QString>&, const QVector<Value> &args)
+{
+	if (args.size() == 2 && args[0].type == Value::NUMBER && args[1].type == Value::NUMBER)
+		return Value(pow(args[0].num, args[1].num));
+	return Value();
+}
+
 Value builtin_sqrt(const QVector<QString>&, const QVector<Value> &args)
 {
 	if (args.size() == 1 && args[0].type == Value::NUMBER)
 		return Value(sqrt(args[0].num));
+	return Value();
+}
+
+Value builtin_exp(const QVector<QString>&, const QVector<Value> &args)
+{
+	if (args.size() == 1 && args[0].type == Value::NUMBER)
+		return Value(exp(args[0].num));
+	return Value();
+}
+
+Value builtin_log(const QVector<QString>&, const QVector<Value> &args)
+{
+	if (args.size() == 2 && args[0].type == Value::NUMBER && args[1].type == Value::NUMBER)
+		return Value(log(args[1].num) / log(args[0].num));
+	if (args.size() == 1 && args[0].type == Value::NUMBER)
+		return Value(log(args[0].num) / log(10));
+	return Value();
+}
+
+Value builtin_ln(const QVector<QString>&, const QVector<Value> &args)
+{
+	if (args.size() == 1 && args[0].type == Value::NUMBER)
+		return Value(log(args[0].num));
 	return Value();
 }
 
@@ -270,11 +293,14 @@ void initialize_builtin_functions()
 	builtin_functions["tan"] = new BuiltinFunction(&builtin_tan);
 	builtin_functions["atan"] = new BuiltinFunction(&builtin_atan);
 	builtin_functions["atan2"] = new BuiltinFunction(&builtin_atan2);
-	builtin_functions["pow"] = new BuiltinFunction(&builtin_pow);
 	builtin_functions["round"] = new BuiltinFunction(&builtin_round);
 	builtin_functions["ceil"] = new BuiltinFunction(&builtin_ceil);
 	builtin_functions["floor"] = new BuiltinFunction(&builtin_floor);
+	builtin_functions["pow"] = new BuiltinFunction(&builtin_pow);
 	builtin_functions["sqrt"] = new BuiltinFunction(&builtin_sqrt);
+	builtin_functions["exp"] = new BuiltinFunction(&builtin_exp);
+	builtin_functions["log"] = new BuiltinFunction(&builtin_log);
+	builtin_functions["ln"] = new BuiltinFunction(&builtin_ln);
 	builtin_functions["str"] = new BuiltinFunction(&builtin_str);
 	builtin_functions["lookup"] = new BuiltinFunction(&builtin_lookup);
 	initialize_builtin_dxf_dim();
