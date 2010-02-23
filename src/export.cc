@@ -70,6 +70,9 @@ void cgal_nef3_to_polyset(PolySet *ps, CGAL_Nef_polyhedron *root_N)
 	}
 }
 
+/*!
+	Saves the current 3D CGAL Nef polyhedron as STL to the given absolute filename.
+ */
 void export_stl(CGAL_Nef_polyhedron *root_N, QString filename, QProgressDialog *pd)
 {
 	CGAL_Polyhedron P;
@@ -143,6 +146,9 @@ void export_off(CGAL_Nef_polyhedron*, QString, QProgressDialog*)
 	PRINTF("WARNING: OFF import is not implemented yet.");
 }
 
+/*!
+	Saves the current 2D CGAL Nef polyhedron as DXF to the given absolute filename.
+ */
 void export_dxf(CGAL_Nef_polyhedron *root_N, QString filename, QProgressDialog *)
 {
 	FILE *f = fopen(filename.toUtf8().data(), "w");
