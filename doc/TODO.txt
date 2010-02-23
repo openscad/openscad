@@ -134,6 +134,8 @@ o dxflinextrude and dxfrotextrude could share code
 o Consider decoupling DXF-specific functionality from the 2D subsystem
 o Make the interfaces from OpenSCAD and OpenCSG and CGAL cleaner to facilitate
   experimentation with other frameworks (ref. Nef_polyhedron_2() problems)
+o Hide CGAL dependencies behind a separate API: node.h 
+  Return a reference: CGAL_Nef_polyhedron AbstractNode::render_cgal_nef_polyhedron() const
 
 INFRASTRUCTURE
 --------------
