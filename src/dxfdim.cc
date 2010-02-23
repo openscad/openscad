@@ -29,6 +29,7 @@
 #include "dxfdata.h"
 #include "builtin.h"
 #include "printutils.h"
+#include "context.h"
 
 #include <math.h>
 #include <sys/types.h>
@@ -39,7 +40,7 @@
 QHash<QString,Value> dxf_dim_cache;
 QHash<QString,Value> dxf_cross_cache;
 
-Value builtin_dxf_dim(const QVector<QString> &argnames, const QVector<Value> &args)
+Value builtin_dxf_dim(const Context *ctx, const QVector<QString> &argnames, const QVector<Value> &args)
 {
 	QString filename;
 	QString layername;
@@ -50,7 +51,7 @@ Value builtin_dxf_dim(const QVector<QString> &argnames, const QVector<Value> &ar
 
 	for (int i = 0; i < argnames.count() && i < args.count(); i++) {
 		if (argnames[i] == "file")
-			filename = args[i].text;
+			filename = ctx->get_absolute_path(args[i].text);
 		if (argnames[i] == "layer")
 			layername = args[i].text;
 		if (argnames[i] == "origin")
@@ -124,7 +125,7 @@ Value builtin_dxf_dim(const QVector<QString> &argnames, const QVector<Value> &ar
 	return Value();
 }
 
-Value builtin_dxf_cross(const QVector<QString> &argnames, const QVector<Value> &args)
+Value builtin_dxf_cross(const Context *ctx, const QVector<QString> &argnames, const QVector<Value> &args)
 {
 	QString filename;
 	QString layername;
@@ -134,7 +135,7 @@ Value builtin_dxf_cross(const QVector<QString> &argnames, const QVector<Value> &
 
 	for (int i = 0; i < argnames.count() && i < args.count(); i++) {
 		if (argnames[i] == "file")
-			filename = args[i].text;
+			filename = ctx->get_absolute_path(args[i].text);
 		if (argnames[i] == "layer")
 			layername = args[i].text;
 		if (argnames[i] == "origin")

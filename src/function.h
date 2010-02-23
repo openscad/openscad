@@ -15,7 +15,7 @@ public:
 class BuiltinFunction : public AbstractFunction
 {
 public:
-	typedef Value (*eval_func_t)(const QVector<QString> &argnames, const QVector<Value> &args);
+	typedef Value (*eval_func_t)(const Context *ctx, const QVector<QString> &argnames, const QVector<Value> &args);
 	eval_func_t eval_func;
 
 	BuiltinFunction(eval_func_t f) : eval_func(f) { }

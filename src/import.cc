@@ -93,7 +93,7 @@ AbstractNode *ImportModule::evaluate(const Context *ctx, const ModuleInstantiati
 	node->fs = c.lookup_variable("$fs").num;
 	node->fa = c.lookup_variable("$fa").num;
 
-	node->filename = c.lookup_variable("file").text;
+	node->filename = c.get_absolute_path(c.lookup_variable("file").text);
 	node->layername = c.lookup_variable("layer", true).text;
 	node->convexity = c.lookup_variable("convexity", true).num;
 

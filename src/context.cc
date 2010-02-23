@@ -28,6 +28,8 @@
 #include "function.h"
 #include "module.h"
 #include "printutils.h"
+#include <QFileInfo>
+#include <QDir>
 
 Context::Context(const Context *parent)
 {
@@ -35,6 +37,7 @@ Context::Context(const Context *parent)
 	functions_p = NULL;
 	modules_p = NULL;
 	inst_p = NULL;
+	if (parent) document_path = parent->document_path;
 	ctx_stack.append(this);
 }
 
@@ -107,5 +110,10 @@ AbstractNode *Context::evaluate_module(const ModuleInstantiation *inst) const
 		return parent->evaluate_module(inst);
 	PRINTA("WARNING: Ignoring unkown module '%1'.", inst->modname);
 	return NULL;
+}
+
+QString Context::get_absolute_path(const QString &filename) const
+{
+	return QFileInfo(QDir(this->document_path), filename).absoluteFilePath();
 }
 

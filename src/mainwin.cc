@@ -117,7 +117,7 @@ static char copyrighttext[] =
 
 QPointer<MainWindow> MainWindow::current_win = NULL;
 
-MainWindow::MainWindow(const char *filename)
+MainWindow::MainWindow(const QString &filename)
 {
 	setupUi(this);
 
@@ -299,7 +299,7 @@ MainWindow::MainWindow(const char *filename)
 	PRINT(copyrighttext);
 	PRINT("");
 
-	if (filename) {
+	if (!filename.isEmpty()) {
 		openFile(filename);
 	} else {
 		setFileName("");
@@ -387,7 +387,7 @@ static void report_func(const class AbstractNode*, void *vp, int mark)
 #ifdef ENABLE_MDI
 void MainWindow::requestOpenFile(const QString &filename)
 {
-	new MainWindow(filename.toUtf8());
+	new MainWindow(filename);
 }
 #else
 void MainWindow::requestOpenFile(const QString &)
@@ -400,7 +400,7 @@ MainWindow::openFile(const QString &new_filename)
 {
 #ifdef ENABLE_MDI
 	if (!editor->toPlainText().isEmpty()) {
-		new MainWindow(new_filename.toUtf8());
+		new MainWindow(new_filename);
 		current_win = NULL;
 		return;
 	}
@@ -415,6 +415,7 @@ MainWindow::setFileName(const QString &filename)
 {
 	if (filename.isEmpty()) {
 		this->fileName.clear();
+		this->root_ctx.document_path = currentdir;
 		setWindowTitle("OpenSCAD - New Document[*]");
 	}
 	else {
@@ -437,6 +438,7 @@ MainWindow::setFileName(const QString &filename)
 			this->fileName = fileinfo.fileName();
 		}
 		
+		this->root_ctx.document_path = fileinfo.dir().absolutePath();
 		QDir::setCurrent(fileinfo.dir().absolutePath());
 	}
 
@@ -773,7 +775,7 @@ void MainWindow::compileCSG(bool procevents)
 void MainWindow::actionNew()
 {
 #ifdef ENABLE_MDI
-	new MainWindow;
+	new MainWindow(QString());
 #else
 	setFileName("");
 	editor->setPlainText("");

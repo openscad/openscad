@@ -14,6 +14,7 @@ public:
 	const QHash<QString, class AbstractFunction*> *functions_p;
 	const QHash<QString, class AbstractModule*> *modules_p;
 	const class ModuleInstantiation *inst_p;
+	QString document_path;
 
 	static QVector<const Context*> ctx_stack;
 
@@ -24,6 +25,8 @@ public:
 
 	void set_variable(QString name, Value value);
 	Value lookup_variable(QString name, bool silent = false) const;
+
+	QString get_absolute_path(const QString &filename) const;
 
 	Value evaluate_function(QString name, const QVector<QString> &argnames, const QVector<Value> &argvalues) const;
 	class AbstractNode *evaluate_module(const ModuleInstantiation *inst) const;

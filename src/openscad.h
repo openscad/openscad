@@ -46,6 +46,10 @@ extern int parser_error_pos;
 
 extern void handle_dep(QString filename);
 
+// The CWD when application started. We shouldn't change CWD, but until we stop
+// doing this, use currentdir to get the original CWD.
+extern QString currentdir;
+
 extern QString examplesdir;
 extern QString librarydir;
 
