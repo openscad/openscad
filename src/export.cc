@@ -90,7 +90,7 @@ void export_stl(CGAL_Nef_polyhedron *root_N, QString filename, QProgressDialog *
 		MainWindow::current_win = NULL;
 		return;
 	}
-	fprintf(f, "solid\n");
+	fprintf(f, "solid OpenSCAD_Model\n");
 
 	int facet_count = 0;
 	for (FCI fi = P.facets_begin(); fi != P.facets_end(); ++fi) {
@@ -137,7 +137,7 @@ void export_stl(CGAL_Nef_polyhedron *root_N, QString filename, QProgressDialog *
 		}
 	}
 
-	fprintf(f, "endsolid\n");
+	fprintf(f, "endsolid OpenSCAD_Model\n");
 	fclose(f);
 }
 
