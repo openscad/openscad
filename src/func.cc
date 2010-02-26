@@ -110,6 +110,13 @@ static double rad2deg(double x)
 	return x;
 }
 
+Value builtin_abs(const Context *, const QVector<QString>&, const QVector<Value> &args)
+{
+	if (args.size() == 1 && args[0].type == Value::NUMBER)
+		return Value(fabs(args[0].num));
+	return Value();
+}
+
 Value builtin_min(const Context *, const QVector<QString>&, const QVector<Value> &args)
 {
 	if (args.size() >= 1 && args[0].type == Value::NUMBER) {
@@ -284,6 +291,7 @@ Value builtin_lookup(const Context *, const QVector<QString>&, const QVector<Val
 
 void initialize_builtin_functions()
 {
+	builtin_functions["abs"] = new BuiltinFunction(&builtin_abs);
 	builtin_functions["min"] = new BuiltinFunction(&builtin_min);
 	builtin_functions["max"] = new BuiltinFunction(&builtin_max);
 	builtin_functions["sin"] = new BuiltinFunction(&builtin_sin);
