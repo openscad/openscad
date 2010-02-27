@@ -170,8 +170,11 @@ int main(int argc, char **argv)
 	exdir.cd("../Resources"); // Examples can be bundled
 	if (!exdir.exists("examples")) exdir.cd("../../..");
 #endif
-#ifdef linux
+#ifdef Q_OS_UNIX
 	if (exdir.cd("../../examples")) {
+		examplesdir = exdir.path();
+	} else
+	if (exdir.cd("../share/openscad/examples")) {
 		examplesdir = exdir.path();
 	} else
 	if (exdir.cd("../../share/openscad/examples")) {
@@ -186,6 +189,17 @@ int main(int argc, char **argv)
 #ifdef Q_WS_MAC
 	libdir.cd("../Resources"); // Libraries can be bundled
 	if (!libdir.exists("libraries")) libdir.cd("../../..");
+#endif
+#ifdef Q_OS_UNIX
+	if (libdir.cd("../../libraries")) {
+		librarydir = libdir.path();
+	} else
+	if (libdir.cd("../share/openscad/libraries")) {
+		librarydir = libdir.path();
+	} else
+	if (libdir.cd("../../share/openscad/libraries")) {
+		librarydir = libdir.path();
+	} else
 #endif
 	if (libdir.cd("libraries")) {
 		librarydir = libdir.path();

@@ -139,3 +139,12 @@ macx {
 
 target.path = /usr/local/bin/
 INSTALLS += target
+
+examples.path = /usr/local/share/openscad/examples/
+examples.files = examples/*
+INSTALLS += examples
+
+libraries.path = /usr/local/share/openscad/libraries/
+libraries.files = libraries/*
+INSTALLS += libraries
+
