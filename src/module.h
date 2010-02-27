@@ -46,6 +46,8 @@ public:
 class Module : public AbstractModule
 {
 public:
+	QVector<QString> usedlibs;
+
 	QVector<QString> argnames;
 	QVector<Expression*> argexpr;
 

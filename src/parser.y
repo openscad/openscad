@@ -74,6 +74,7 @@ public:
 
 %token <text> TOK_ID
 %token <text> TOK_STRING
+%token <text> TOK_USE
 %token <number> TOK_NUMBER
 
 %token TOK_TRUE
@@ -117,11 +118,16 @@ public:
 
 input: 
 	/* empty */ |
+	TOK_USE { module->usedlibs.append($1); } input |
 	statement input ;
+
+inner_input: 
+	/* empty */ |
+	statement inner_input ;
 
 statement:
 	';' |
-	'{' input '}' |
+	'{' inner_input '}' |
 	module_instantiation {
 		if ($1) {
 			module->children.append($1);
