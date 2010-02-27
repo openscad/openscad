@@ -169,8 +169,7 @@ int main(int argc, char **argv)
 #ifdef Q_WS_MAC
 	exdir.cd("../Resources"); // Examples can be bundled
 	if (!exdir.exists("examples")) exdir.cd("../../..");
-#endif
-#ifdef Q_OS_UNIX
+#elif defined(Q_OS_UNIX)
 	if (exdir.cd("../../examples")) {
 		examplesdir = exdir.path();
 	} else
@@ -189,8 +188,7 @@ int main(int argc, char **argv)
 #ifdef Q_WS_MAC
 	libdir.cd("../Resources"); // Libraries can be bundled
 	if (!libdir.exists("libraries")) libdir.cd("../../..");
-#endif
-#ifdef Q_OS_UNIX
+#elif defined(Q_OS_UNIX)
 	if (libdir.cd("../../libraries")) {
 		librarydir = libdir.path();
 	} else
