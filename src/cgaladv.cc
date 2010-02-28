@@ -30,7 +30,9 @@
 #include "printutils.h"
 #include "cgal.h"
 
+#ifdef ENABLE_CGAL
 #include <CGAL/minkowski_sum_3.h>
+#endif
 
 enum cgaladv_type_e {
 	MINKOWSKI,
