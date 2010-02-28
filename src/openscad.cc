@@ -294,7 +294,8 @@ int main(int argc, char **argv)
 		installAppleEventHandlers();
 #endif		
 
-		QString qfilename = QFileInfo(original_path, filename).absoluteFilePath();
+		QString qfilename;
+		if (filename) qfilename = QFileInfo(original_path, filename).absoluteFilePath();
 
 #if 0 /*** disabled by clifford wolf: adds rendering artefacts with OpenCSG ***/
 		// turn on anti-aliasing
