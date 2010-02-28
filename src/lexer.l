@@ -89,7 +89,12 @@ use[ \t\r\n>]*"<"[^ \t\r\n>]+">" {
 	QString filename(yytext);
 	filename.remove(QRegExp("^use[ \t\r\n>]*<"));
 	filename.remove(QRegExp(">$"));
-	parserlval.text = strdup(filename.toLocal8Bit());
+	QFileInfo finfo(QDir(parser_source_path), filename);
+	if (!finfo.exists()) {
+		finfo = QFileInfo(QDir(librarydir), filename);
+	}
+	handle_dep(finfo.absoluteFilePath());
+	parserlval.text = strdup(finfo.absoluteFilePath().toLocal8Bit());
 	return TOK_USE;
 }
 

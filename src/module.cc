@@ -137,6 +137,11 @@ AbstractNode *Module::evaluate(const Context *ctx, const ModuleInstantiation *in
 	c.functions_p = &functions;
 	c.modules_p = &modules;
 
+	if (!usedlibs.empty())
+		c.usedlibs_p = &usedlibs;
+	else
+		c.usedlibs_p = NULL;
+
 	for (int i = 0; i < assignments_var.size(); i++) {
 		c.set_variable(assignments_var[i], assignments_expr[i]->evaluate(&c));
 	}

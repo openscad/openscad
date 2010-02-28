@@ -36,6 +36,7 @@ Context::Context(const Context *parent)
 	this->parent = parent;
 	functions_p = NULL;
 	modules_p = NULL;
+	usedlibs_p = NULL;
 	inst_p = NULL;
 	if (parent) document_path = parent->document_path;
 	ctx_stack.append(this);
@@ -96,6 +97,23 @@ Value Context::evaluate_function(QString name, const QVector<QString> &argnames,
 {
 	if (functions_p && functions_p->contains(name))
 		return functions_p->value(name)->evaluate(this, argnames, argvalues);
+	if (usedlibs_p) {
+		QHashIterator<QString, Module*> i(*usedlibs_p);
+		while (i.hasNext()) {
+			i.next();
+			if (i.value()->functions.contains(name)) {
+				Module *lib = i.value();
+				Context ctx(parent);
+				ctx.functions_p = &lib->functions;
+				ctx.modules_p = &lib->modules;
+				ctx.usedlibs_p = &lib->usedlibs;
+				for (int j = 0; j < lib->assignments_var.size(); j++) {
+					ctx.set_variable(lib->assignments_var[j], lib->assignments_expr[j]->evaluate(&ctx));
+				}
+				return i.value()->functions.value(name)->evaluate(&ctx, argnames, argvalues);
+			}
+		}
+	}
 	if (parent)
 		return parent->evaluate_function(name, argnames, argvalues);
 	PRINTA("WARNING: Ignoring unkown function '%1'.", name);
@@ -106,6 +124,23 @@ AbstractNode *Context::evaluate_module(const ModuleInstantiation *inst) const
 {
 	if (modules_p && modules_p->contains(inst->modname))
 		return modules_p->value(inst->modname)->evaluate(this, inst);
+	if (usedlibs_p) {
+		QHashIterator<QString, Module*> i(*usedlibs_p);
+		while (i.hasNext()) {
+			i.next();
+			if (i.value()->modules.contains(inst->modname)) {
+				Module *lib = i.value();
+				Context ctx(parent);
+				ctx.functions_p = &lib->functions;
+				ctx.modules_p = &lib->modules;
+				ctx.usedlibs_p = &lib->usedlibs;
+				for (int j = 0; j < lib->assignments_var.size(); j++) {
+					ctx.set_variable(lib->assignments_var[j], lib->assignments_expr[j]->evaluate(&ctx));
+				}
+				return i.value()->modules.value(inst->modname)->evaluate(&ctx, inst);
+			}
+		}
+	}
 	if (parent)
 		return parent->evaluate_module(inst);
 	PRINTA("WARNING: Ignoring unkown module '%1'.", inst->modname);

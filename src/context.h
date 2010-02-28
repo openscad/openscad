@@ -13,6 +13,7 @@ public:
 	QHash<QString, Value> config_variables;
 	const QHash<QString, class AbstractFunction*> *functions_p;
 	const QHash<QString, class AbstractModule*> *modules_p;
+	const QHash<QString, class Module*> *usedlibs_p;
 	const class ModuleInstantiation *inst_p;
 	QString document_path;
 

@@ -25,6 +25,15 @@
 
 %{
 
+#include <QDir>
+#include <QFile>
+#include <QFileInfo>
+#include <QTextStream>
+
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+
 #include "module.h"
 #include "expression.h"
 #include "value.h"
@@ -118,7 +127,7 @@ public:
 
 input: 
 	/* empty */ |
-	TOK_USE { module->usedlibs.append($1); } input |
+	TOK_USE { module->usedlibs[$1] = NULL; } input |
 	statement input ;
 
 inner_input: 
@@ -579,9 +588,66 @@ AbstractModule *parse(const char *text, const char *path, int debug)
 
 	lexerlex_destroy();
 
-	if (module)
-		parser_error_pos = -1;
+	if (!module)
+		return NULL;
 
+	QHashIterator<QString, Module*> i(module->usedlibs);
+	while (i.hasNext()) {
+		i.next();
+		module->usedlibs[i.key()] = Module::compile_library(i.key());
+		if (!module->usedlibs[i.key()]) {
+			PRINTF("WARNING: Failed to compile library `%s'.", i.key().toUtf8().data());
+		}
+	}
+
+	parser_error_pos = -1;
 	return module;
+}
+
+QHash<QString, Module::libs_cache_ent> Module::libs_cache;
+
+Module *Module::compile_library(QString filename)
+{
+	struct stat st;
+	memset(&st, 0, sizeof(struct stat));
+	stat(filename.toAscii().data(), &st);
+
+	QString cache_id;
+	cache_id.sprintf("%x.%x", (int)st.st_mtime, (int)st.st_size);
+
+	if (libs_cache.contains(filename) && libs_cache[filename].cache_id == cache_id) {
+		PRINT(libs_cache[cache_id].msg);
+		return &(*libs_cache[filename].mod);
+	}
+
+	QFile f(filename);
+	if (!f.open(QIODevice::ReadOnly | QIODevice::Text)) {
+		PRINTF("WARNING: Can't open library file `%s'.", filename.toUtf8().data());
+		return NULL;
+	}
+	QString text = QTextStream(&f).readAll();
+
+	print_messages_push();
+
+	PRINTF("Compiling library `%s'.", filename.toUtf8().data());
+	libs_cache_ent e = { NULL, cache_id, QString("WARNING: Library `%1' tries to recursively use itself!\n").arg(filename) };
+	if (libs_cache.contains(filename))
+		delete libs_cache[filename].mod;
+	libs_cache[filename] = e;
+
+	Module *backup_mod = module;
+	Module *lib_mod = dynamic_cast<Module*>(parse(text.toLocal8Bit(), QFileInfo(filename).absoluteDir().absolutePath().toLocal8Bit(), 0));
+	module = backup_mod;
+
+	if (lib_mod) {
+		libs_cache[filename].mod = lib_mod;
+		libs_cache[filename].msg = print_messages_stack.last();
+	} else {
+		libs_cache.remove(filename);
+	}
+
+	print_messages_pop();
+
+	return lib_mod;
 }
 
