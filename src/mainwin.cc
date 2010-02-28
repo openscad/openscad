@@ -1029,7 +1029,11 @@ void MainWindow::actionCompile()
 
 	// Go to non-CGAL view mode
 	if (!viewActionOpenCSG->isChecked() && !viewActionThrownTogether->isChecked()) {
+#ifdef ENABLE_OPENCSG
 		viewModeOpenCSG();
+#else
+		viewModeThrownTogether();
+#endif
 	}
 	else {
 		screen->updateGL();
