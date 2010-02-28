@@ -11,7 +11,7 @@ qmake-qt4 VERSION=$VERSION
 make
 
 rm -rf release
-mkdir -p release/{bin,lib/openscad,examples}
+mkdir -p release/{bin,lib/openscad,examples,libraries}
 
 cat > release/bin/openscad << "EOT"
 #!/bin/bash
@@ -39,7 +39,7 @@ cat > release/install.sh << "EOT"
 # change to the install source directory
 cd "$( dirname "$( type -p $0 )" )"
 
-if ! [ -f bin/openscad -a -d lib/openscad -a -d examples ]; then
+if ! [ -f bin/openscad -a -d lib/openscad -a -d examples -a -d libraries ]; then
 	echo "Error: Can't change to install source directory!" >&2
 	exit 1
 fi
@@ -58,7 +58,7 @@ if [ ! -d "$prefix" ]; then
 	read -p "press enter to continue> "
 fi
 
-mkdir -p "$prefix"/{bin,lib/openscad,share/openscad/examples}
+mkdir -p "$prefix"/{bin,lib/openscad,share/openscad/examples,share/openscad/libraries}
 
 if ! [ -w "$prefix"/bin/ -a -w "$prefix"/lib/openscad -a -w "$prefix"/share/openscad ]; then
 	echo "You does not seam to have write permissions for prefix \`$prefix'!" >&2
@@ -69,11 +69,14 @@ fi
 echo "Copying application wrappers..."
 cp -rv bin/. "$prefix"/bin/
 
-echo "Copying application and libraries..."
+echo "Copying application..."
 cp -rv lib/. "$prefix"/lib/
 
 echo "Copying examples..."
 cp -rv examples/. "$prefix"/share/openscad/examples/
+
+echo "Copying libraries..."
+cp -rv libraries/. "$prefix"/share/openscad/libraries/
 
 echo "Installation finished. Have a nice day."
 EOT
@@ -82,4 +85,7 @@ chmod 755 -R release/
 
 cp examples/* release/examples/
 chmod 644 -R release/examples/*
+
+cp libraries/* release/libraries/
+chmod 644 -R release/libraries/*
 
