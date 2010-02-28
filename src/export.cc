@@ -87,7 +87,7 @@ void export_stl(CGAL_Nef_polyhedron *root_N, QString filename, QProgressDialog *
 	if (!f) {
 		PRINTA("Can't open STL file \"%1\" for STL export: %2", 
 					 filename, QString(strerror(errno)));
-		MainWindow::current_win = NULL;
+		set_output_handler(NULL, NULL);
 		return;
 	}
 	fprintf(f, "solid OpenSCAD_Model\n");
@@ -155,7 +155,7 @@ void export_dxf(CGAL_Nef_polyhedron *root_N, QString filename, QProgressDialog *
 	if (!f) {
 		PRINTA("Can't open DXF file \"%1\" for DXF export: %2", 
 					 filename, QString(strerror(errno)));
-		MainWindow::current_win = NULL;
+		set_output_handler(NULL, NULL);
 		return;
 	}
 

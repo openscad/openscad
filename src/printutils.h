@@ -4,6 +4,12 @@
 #include <QString>
 #include <QList>
 
+typedef void (OutputHandlerFunc)(const QString &msg, void *userdata);
+extern OutputHandlerFunc *outputhandler;
+extern void *outputhandler_data;
+
+void set_output_handler(OutputHandlerFunc *newhandler, void *userdata);
+
 extern QList<QString> print_messages_stack;
 void print_messages_push();
 void print_messages_pop();

@@ -14,7 +14,6 @@ class MainWindow : public QMainWindow, public Ui::MainWindow
 	Q_OBJECT
 
 public:
-	static QPointer<MainWindow> current_win;
 	static void requestOpenFile(const QString &filename);
 
 	QString fileName;
@@ -73,6 +72,9 @@ private:
 	void compile(bool procevents);
 	void compileCSG(bool procevents);
 	bool maybeSave();
+	static void consoleOutput(const QString &msg, void *userdata) {
+		static_cast<MainWindow*>(userdata)->console->append(msg);
+	}
 
 private slots:
 	void actionNew();
@@ -111,6 +113,8 @@ private slots:
 
 public:
 	void viewModeActionsUncheck();
+	void setCurrentOutput();
+	void clearCurrentOutput();
 
 public slots:
 #ifdef ENABLE_OPENCSG

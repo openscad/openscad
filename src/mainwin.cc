@@ -115,8 +115,6 @@ static char copyrighttext[] =
 	"the Free Software Foundation; either version 2 of the License, or"
 	"(at your option) any later version.";
 
-QPointer<MainWindow> MainWindow::current_win = NULL;
-
 MainWindow::MainWindow(const QString &filename)
 {
 	setupUi(this);
@@ -293,7 +291,7 @@ MainWindow::MainWindow(const QString &filename)
 
 
 	console->setReadOnly(true);
-	current_win = this;
+	setCurrentOutput();
 
 	PRINT(helptitle);
 	PRINT(copyrighttext);
@@ -333,7 +331,7 @@ MainWindow::MainWindow(const QString &filename)
 	viewPerspective();
 
 	setAcceptDrops(true);
-	current_win = NULL;
+	clearCurrentOutput();
 }
 
 MainWindow::~MainWindow()
@@ -401,7 +399,7 @@ MainWindow::openFile(const QString &new_filename)
 #ifdef ENABLE_MDI
 	if (!editor->toPlainText().isEmpty()) {
 		new MainWindow(new_filename);
-		current_win = NULL;
+		clearCurrentOutput();
 		return;
 	}
 #endif
@@ -481,7 +479,7 @@ void MainWindow::updateTVal()
 
 void MainWindow::load()
 {
-	current_win = this;
+	setCurrentOutput();
 	if (!this->fileName.isEmpty()) {
 		QFile file(this->fileName);
 		if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
@@ -493,7 +491,7 @@ void MainWindow::load()
 			editor->setPlainText(text);
 		}
 	}
-	current_win = this;
+	setCurrentOutput();
 }
 
 AbstractNode *MainWindow::find_root_tag(AbstractNode *n)
@@ -784,10 +782,10 @@ void MainWindow::actionNew()
 
 void MainWindow::actionOpen()
 {
-	current_win = this;
+	setCurrentOutput();
 	QString new_filename = QFileDialog::getOpenFileName(this, "Open File", "", "OpenSCAD Designs (*.scad)");
 	if (!new_filename.isEmpty()) openFile(new_filename);
-	current_win = NULL;
+	clearCurrentOutput();
 }
 
 void MainWindow::actionOpenRecent()
@@ -856,7 +854,7 @@ void MainWindow::actionSave()
 		actionSaveAs();
 	}
 	else {
-		current_win = this;
+		setCurrentOutput();
 		QFile file(this->fileName);
 		if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text)) {
 			PRINTA("Failed to open file for writing: %1 (%2)", this->fileName, file.errorString());
@@ -866,7 +864,7 @@ void MainWindow::actionSave()
 			PRINTA("Saved design `%1'.", this->fileName);
 			this->editor->document()->setModified(false);
 		}
-		current_win = NULL;
+		clearCurrentOutput();
 	}
 }
 
@@ -1002,7 +1000,7 @@ void MainWindow::actionReloadCompile()
 
 	load();
 
-	current_win = this;
+	setCurrentOutput();
 	compile(true);
 	if (this->root_node) compileCSG(true);
 
@@ -1016,12 +1014,12 @@ void MainWindow::actionReloadCompile()
 	{
 		screen->updateGL();
 	}
-	current_win = NULL;
+	clearCurrentOutput();
 }
 
 void MainWindow::actionCompile()
 {
-	current_win = this;
+	setCurrentOutput();
 	console->clear();
 
 	compile(!viewActionAnimate->isChecked());
@@ -1048,14 +1046,14 @@ void MainWindow::actionCompile()
 		img.save(filename, "PNG");
 	}
 	
-	current_win = NULL;
+	clearCurrentOutput();
 }
 
 #ifdef ENABLE_CGAL
 
 void MainWindow::actionRenderCGAL()
 {
-	current_win = this;
+	setCurrentOutput();
 	console->clear();
 
 	compile(true);
@@ -1163,14 +1161,14 @@ void MainWindow::actionRenderCGAL()
 	this->statusBar()->removeWidget(pd);
 #endif
 	delete pd;
-	current_win = NULL;
+	clearCurrentOutput();
 }
 
 #endif /* ENABLE_CGAL */
 
 void MainWindow::actionDisplayAST()
 {
-	current_win = this;
+	setCurrentOutput();
 	QTextEdit *e = new QTextEdit(this);
 	e->setWindowFlags(Qt::Window);
 	e->setTabStopWidth(30);
@@ -1183,12 +1181,12 @@ void MainWindow::actionDisplayAST()
 	}
 	e->show();
 	e->resize(600, 400);
-	current_win = NULL;
+	clearCurrentOutput();
 }
 
 void MainWindow::actionDisplayCSGTree()
 {
-	current_win = this;
+	setCurrentOutput();
 	QTextEdit *e = new QTextEdit(this);
 	e->setWindowFlags(Qt::Window);
 	e->setTabStopWidth(30);
@@ -1201,12 +1199,12 @@ void MainWindow::actionDisplayCSGTree()
 	}
 	e->show();
 	e->resize(600, 400);
-	current_win = NULL;
+	clearCurrentOutput();
 }
 
 void MainWindow::actionDisplayCSGProducts()
 {
-	current_win = this;
+	setCurrentOutput();
 	QTextEdit *e = new QTextEdit(this);
 	e->setWindowFlags(Qt::Window);
 	e->setTabStopWidth(30);
@@ -1215,7 +1213,7 @@ void MainWindow::actionDisplayCSGProducts()
 	e->setPlainText(QString("\nCSG before normalization:\n%1\n\n\nCSG after normalization:\n%2\n\n\nCSG rendering chain:\n%3\n\n\nHighlights CSG rendering chain:\n%4\n\n\nBackground CSG rendering chain:\n%5\n").arg(root_raw_term ? root_raw_term->dump() : "N/A", root_norm_term ? root_norm_term->dump() : "N/A", root_chain ? root_chain->dump() : "N/A", highlights_chain ? highlights_chain->dump() : "N/A", background_chain ? background_chain->dump() : "N/A"));
 	e->show();
 	e->resize(600, 400);
-	current_win = NULL;
+	clearCurrentOutput();
 }
 
 #ifdef ENABLE_CGAL
@@ -1225,23 +1223,23 @@ void MainWindow::actionExportSTLorOFF(bool)
 #endif
 {
 #ifdef ENABLE_CGAL
-	current_win = this;
+	setCurrentOutput();
 
 	if (!this->root_N) {
 		PRINT("Nothing to export! Try building first (press F6).");
-		current_win = NULL;
+		clearCurrentOutput();
 		return;
 	}
 
 	if (this->root_N->dim != 3) {
 		PRINT("Current top level object is not a 3D object.");
-		current_win = NULL;
+		clearCurrentOutput();
 		return;
 	}
 
 	if (!this->root_N->p3.is_simple()) {
 		PRINT("Object isn't a valid 2-manifold! Modify your design..");
-		current_win = NULL;
+		clearCurrentOutput();
 		return;
 	}
 
@@ -1250,7 +1248,7 @@ void MainWindow::actionExportSTLorOFF(bool)
 			stl_mode ? "STL Files (*.stl)" : "OFF Files (*.off)");
 	if (stl_filename.isEmpty()) {
 		PRINTF("No filename specified. %s export aborted.", stl_mode ? "STL" : "OFF");
-		current_win = NULL;
+		clearCurrentOutput();
 		return;
 	}
 
@@ -1271,7 +1269,7 @@ void MainWindow::actionExportSTLorOFF(bool)
 
 	delete pd;
 
-	current_win = NULL;
+	clearCurrentOutput();
 #endif /* ENABLE_CGAL */
 }
 
@@ -1288,17 +1286,17 @@ void MainWindow::actionExportOFF()
 void MainWindow::actionExportDXF()
 {
 #ifdef ENABLE_CGAL
-	current_win = this;
+	setCurrentOutput();
 
 	if (!this->root_N) {
 		PRINT("Nothing to export! Try building first (press F6).");
-		current_win = NULL;
+		clearCurrentOutput();
 		return;
 	}
 
 	if (this->root_N->dim != 2) {
 		PRINT("Current top level object is not a 2D object.");
-		current_win = NULL;
+		clearCurrentOutput();
 		return;
 	}
 
@@ -1306,14 +1304,14 @@ void MainWindow::actionExportDXF()
 			"Export DXF File", "", "DXF Files (*.dxf)");
 	if (stl_filename.isEmpty()) {
 		PRINTF("No filename specified. DXF export aborted.");
-		current_win = NULL;
+		clearCurrentOutput();
 		return;
 	}
 
 	export_dxf(this->root_N, stl_filename, NULL);
 	PRINTF("DXF export finished.");
 
-	current_win = NULL;
+	clearCurrentOutput();
 #endif /* ENABLE_CGAL */
 }
 
@@ -1757,14 +1755,14 @@ void MainWindow::dragEnterEvent(QDragEnterEvent *event)
 
 void MainWindow::dropEvent(QDropEvent *event)
 {
-	current_win = this;
+	setCurrentOutput();
 	const QList<QUrl> urls = event->mimeData()->urls();
 	for (int i = 0; i < urls.size(); i++) {
 		if (urls[i].scheme() != "file")
 			continue;
 		openFile(urls[i].path());
 	}
-	current_win = NULL;
+	clearCurrentOutput();
 }
 
 void
@@ -1841,4 +1839,14 @@ void MainWindow::quit()
 	QCloseEvent ev;
 	QApplication::sendEvent(QApplication::instance(), &ev);
 	if (ev.isAccepted()) QApplication::instance()->quit();
+}
+
+void MainWindow::setCurrentOutput()
+{
+	set_output_handler(&MainWindow::consoleOutput, this);
+}
+
+void MainWindow::clearCurrentOutput()
+{
+	set_output_handler(NULL, NULL);
 }
