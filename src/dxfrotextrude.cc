@@ -225,7 +225,7 @@ QString DxfRotateExtrudeNode::dump(QString indent) const
 				"$fn = %g, $fa = %g, $fs = %g) {\n",
 				filename.toAscii().data(), (int)st.st_mtime, (int)st.st_size,
 				layername.toAscii().data(), origin_x, origin_y, scale, convexity,
-				fn, fs, fa);
+				fn, fa, fs);
 		foreach (AbstractNode *v, children)
 			text += v->dump(indent + QString("\t"));
 		text += indent + "}\n";

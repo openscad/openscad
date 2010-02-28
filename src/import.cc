@@ -225,7 +225,7 @@ QString ImportNode::dump(QString indent) const
 					"$fn = %g, $fa = %g, $fs = %g);\n",
 					filename.toAscii().data(), (int)st.st_mtime, (int)st.st_size,
 					layername.toAscii().data(), origin_x, origin_y, scale, convexity,
-					fn, fs, fa);
+					fn, fa, fs);
 		((AbstractNode*)this)->dump_cache = indent + QString("n%1: ").arg(idx) + text;
 	}
 	return dump_cache;

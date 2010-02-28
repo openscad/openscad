@@ -334,7 +334,7 @@ QString DxfLinearExtrudeNode::dump(QString indent) const
 			text += t2;
 		}
 		QString t3;
-		t3.sprintf(", $fn = %g, $fa = %g, $fs = %g) {\n", fn, fs, fa);
+		t3.sprintf(", $fn = %g, $fa = %g, $fs = %g) {\n", fn, fa, fs);
 		text += t3;
 		foreach (AbstractNode *v, children)
 			text += v->dump(indent + QString("\t"));
