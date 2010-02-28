@@ -597,6 +597,7 @@ AbstractModule *parse(const char *text, const char *path, int debug)
 		module->usedlibs[i.key()] = Module::compile_library(i.key());
 		if (!module->usedlibs[i.key()]) {
 			PRINTF("WARNING: Failed to compile library `%s'.", i.key().toUtf8().data());
+			module->usedlibs.remove(i.key());
 		}
 	}
 
@@ -616,7 +617,7 @@ Module *Module::compile_library(QString filename)
 	cache_id.sprintf("%x.%x", (int)st.st_mtime, (int)st.st_size);
 
 	if (libs_cache.contains(filename) && libs_cache[filename].cache_id == cache_id) {
-		PRINT(libs_cache[cache_id].msg);
+		PRINT(libs_cache[filename].msg);
 		return &(*libs_cache[filename].mod);
 	}
 
@@ -630,7 +631,7 @@ Module *Module::compile_library(QString filename)
 	print_messages_push();
 
 	PRINTF("Compiling library `%s'.", filename.toUtf8().data());
-	libs_cache_ent e = { NULL, cache_id, QString("WARNING: Library `%1' tries to recursively use itself!\n").arg(filename) };
+	libs_cache_ent e = { NULL, cache_id, QString("WARNING: Library `%1' tries to recursively use itself!").arg(filename) };
 	if (libs_cache.contains(filename))
 		delete libs_cache[filename].mod;
 	libs_cache[filename] = e;

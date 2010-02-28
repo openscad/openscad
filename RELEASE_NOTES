@@ -7,6 +7,8 @@ OpenSCAD 2010.03
   - Added abs() function
   - Added exp(x), log(b, x), log(x) and ln(x) functions
   - Added minkowski() statement for 3d minkowski sums
+ o Added 'include <filename>' and 'use <filename>' statements
+  - Old implicit '<filename>' include statement is now obsolete
  o Some bugs fixed, maybe some new bugs added
 
 OpenSCAD 2010.02
