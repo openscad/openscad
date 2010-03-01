@@ -24,7 +24,6 @@
  */
 
 #include "printutils.h"
-#include "MainWindow.h"
 #include "dxfdata.h"
 
 #include <QApplication>
