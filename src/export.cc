@@ -24,6 +24,7 @@
  */
 
 #include "printutils.h"
+#include "polyset.h"
 #include "dxfdata.h"
 
 #include <QApplication>
