@@ -1,4 +1,5 @@
 #include "printutils.h"
+#include <stdio.h>
 
 QList<QString> print_messages_stack;
 OutputHandlerFunc *outputhandler = NULL;
