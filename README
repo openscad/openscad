@@ -37,7 +37,7 @@ development. Other versions may or may not work as well..
 * Qt4 (4.4 - 4.6):
   http://www.qtsoftware.com/
 
-* CGAL (3.4, 3.5):
+* CGAL (3.5):
   http://www.cgal.org/
 
 * boost (1.35, required by CGAL)
