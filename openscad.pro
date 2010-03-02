@@ -58,7 +58,12 @@ EIGEN2_DIR = $$(EIGEN2DIR)
   INCLUDEPATH += $$EIGEN2_DIR
 }
 else {
-  INCLUDEPATH += /usr/include/eigen2
+  macx {
+    INCLUDEPATH += /opt/local/include/eigen2
+  }
+  else {
+    INCLUDEPATH += /usr/include/eigen2
+  }
 }
 
 # QMAKE_CFLAGS   += -pg
