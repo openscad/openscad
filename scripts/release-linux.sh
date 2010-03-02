@@ -7,7 +7,7 @@ set -ex
 
 # svnclean
 
-qmake-qt4 VERSION=$VERSION
+qmake-qt4 VERSION=$VERSION QMAKE_CXXFLAGS_RELEASE="-O3 -march=pentium"
 make
 
 rm -rf release
