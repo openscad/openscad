@@ -29,7 +29,9 @@
 #include "csgterm.h"
 #include "progress.h"
 #include "polyset.h"
+#include "visitor.h"
 #include <QRegExp>
+#include <sstream>
 
 int AbstractNode::idx_counter;
 
@@ -43,6 +45,21 @@ AbstractNode::~AbstractNode()
 {
 	foreach (AbstractNode *v, children)
 		delete v;
+}
+
+Response AbstractNode::accept(const class State &state, Visitor &visitor) const
+{
+	return visitor.visit(state, *this);
+}
+
+Response AbstractIntersectionNode::accept(const class State &state, Visitor &visitor) const
+{
+	return visitor.visit(state, *this);
+}
+
+Response AbstractPolyNode::accept(const class State &state, Visitor &visitor) const
+{
+	return visitor.visit(state, *this);
 }
 
 QString AbstractNode::mk_cache_id() const
@@ -79,19 +96,19 @@ static CGAL_Nef_polyhedron render_cgal_nef_polyhedron_backend(const AbstractNode
 		if (v->modinst->tag_background)
 			continue;
 		if (first) {
-			N = v->render_cgal_nef_polyhedron();
+			N = v->renderCSGMesh();
 			if (N.dim != 0)
 				first = false;
 		} else if (N.dim == 2) {
 			if (intersect)
-				N.p2 *= v->render_cgal_nef_polyhedron().p2;
+				N.p2 *= v->renderCSGMesh().p2;
 			else
-				N.p2 += v->render_cgal_nef_polyhedron().p2;
+				N.p2 += v->renderCSGMesh().p2;
 		} else {
 			if (intersect)
-				N.p3 *= v->render_cgal_nef_polyhedron().p3;
+				N.p3 *= v->renderCSGMesh().p3;
 			else
-				N.p3 += v->render_cgal_nef_polyhedron().p3;
+				N.p3 += v->renderCSGMesh().p3;
 		}
 		v->progress_report();
 	}
@@ -103,12 +120,12 @@ static CGAL_Nef_polyhedron render_cgal_nef_polyhedron_backend(const AbstractNode
 	return N;
 }
 
-CGAL_Nef_polyhedron AbstractNode::render_cgal_nef_polyhedron() const
+CGAL_Nef_polyhedron AbstractNode::renderCSGMesh() const
 {
 	return render_cgal_nef_polyhedron_backend(this, false);
 }
 
-CGAL_Nef_polyhedron AbstractIntersectionNode::render_cgal_nef_polyhedron() const
+CGAL_Nef_polyhedron AbstractIntersectionNode::renderCSGMesh() const
 {
 	return render_cgal_nef_polyhedron_backend(this, true);
 }
@@ -159,15 +176,29 @@ QString AbstractNode::dump(QString indent) const
 	return dump_cache;
 }
 
+std::string AbstractNode::toString() const
+{
+	std::stringstream stream;
+	stream << "n" << this->index() << ": group()";
+	return stream.str();
+}
+
 QString AbstractIntersectionNode::dump(QString indent) const
 {
 	if (dump_cache.isEmpty()) {
-		QString text = indent + QString("n%1: intersection() {\n").arg(idx);
+		QString text = indent + QString::fromStdString(this->toString()) + " {\n";
 		foreach (AbstractNode *v, children)
 			text += v->dump(indent + QString("\t"));
 		((AbstractNode*)this)->dump_cache = text + indent + "}\n";
 	}
 	return dump_cache;
+}
+
+std::string AbstractIntersectionNode::toString() const
+{
+	std::stringstream stream;
+	stream << "n" << this->index() << ": intersection()";
+	return stream.str();
 }
 
 void AbstractNode::progress_prepare()
@@ -184,7 +215,7 @@ void AbstractNode::progress_report() const
 
 #ifdef ENABLE_CGAL
 
-CGAL_Nef_polyhedron AbstractPolyNode::render_cgal_nef_polyhedron() const
+CGAL_Nef_polyhedron AbstractPolyNode::renderCSGMesh() const
 {
 	QString cache_id = mk_cache_id();
 	if (cgal_nef_cache.contains(cache_id)) {
@@ -197,7 +228,7 @@ CGAL_Nef_polyhedron AbstractPolyNode::render_cgal_nef_polyhedron() const
 
 	PolySet *ps = render_polyset(RENDER_CGAL);
 	try {
-		CGAL_Nef_polyhedron N = ps->render_cgal_nef_polyhedron();
+		CGAL_Nef_polyhedron N = ps->renderCSGMesh();
 		cgal_nef_cache.insert(cache_id, new cgal_nef_cache_entry(N), N.weight());
 		print_messages_pop();
 		progress_report();
@@ -229,5 +260,17 @@ CSGTerm *AbstractPolyNode::render_csg_term_from_ps(double m[20], QVector<CSGTerm
 		return NULL;
 	}
 	return t;
+}
+
+std::ostream &operator<<(std::ostream &stream, const QString &str)
+{
+	stream << str.toStdString();
+	return stream;
+}
+
+std::ostream &operator<<(std::ostream &stream, const AbstractNode &node)
+{
+	stream << node.toString();
+	return stream;
 }
 

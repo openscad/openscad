@@ -98,12 +98,22 @@ HEADERS += src/CGAL_renderer.h \
            src/highlighter.h \
            src/module.h \
            src/node.h \
+           src/csgnode.h \
+           src/dxflinextrudenode.h \
+           src/dxfrotextrudenode.h \
+           src/projectionnode.h \
+           src/importnode.h \
            src/openscad.h \
            src/polyset.h \
            src/printutils.h \
            src/value.h \
            src/progress.h \
-           src/editor.h
+           src/editor.h \
+           src/visitor.h \
+           src/state.h \
+           src/traverser.h \
+           src/nodecache.h \
+           src/nodedumper.h
 
 SOURCES += src/openscad.cc \
            src/mainwin.cc \
@@ -140,7 +150,9 @@ SOURCES += src/openscad.cc \
            src/nef2dxf.cc \
            src/Preferences.cc \
            src/progress.cc \
-           src/editor.cc
+           src/editor.cc \\
+           src/traverser.cc \
+           src/nodedumper.cc
 
 macx {
   HEADERS += src/AppleEvents.h \
