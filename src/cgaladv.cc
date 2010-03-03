@@ -31,7 +31,8 @@
 #include "cgal.h"
 
 #ifdef ENABLE_CGAL
-#include <CGAL/minkowski_sum_3.h>
+extern CGAL_Nef_polyhedron3 minkowski3(CGAL_Nef_polyhedron3 a, CGAL_Nef_polyhedron3 b);
+extern CGAL_Nef_polyhedron2 minkowski2(CGAL_Nef_polyhedron2 a, CGAL_Nef_polyhedron2 b);
 #endif
 
 enum cgaladv_type_e {
@@ -142,25 +143,23 @@ CGAL_Nef_polyhedron CgaladvNode::render_cgal_nef_polyhedron() const
 	if (type == MINKOWSKI)
 	{
 		bool first = true;
-		CGAL_Nef_polyhedron a, b;
 		foreach(AbstractNode * v, children) {
 			if (v->modinst->tag_background)
 				continue;
 			if (first) {
-				a = v->render_cgal_nef_polyhedron();
-				if (a.dim != 0)
+				N = v->render_cgal_nef_polyhedron();
+				if (N.dim != 0)
 					first = false;
 			} else {
-				b += v->render_cgal_nef_polyhedron();
+				CGAL_Nef_polyhedron tmp = v->render_cgal_nef_polyhedron();
+				if (N.dim == 3 && tmp.dim == 3) {
+					N.p3 = minkowski3(N.p3, tmp.p3);
+				}
+				if (N.dim == 2 && tmp.dim == 2) {
+					N.p2 = minkowski2(N.p2, tmp.p2);
+				}
 			}
 			v->progress_report();
-		}
-		if (a.dim == 3 && b.dim == 3) {
-			N.dim = 3;
-			N.p3 = CGAL::minkowski_sum_3(a.p3, b.p3);
-		}
-		if (a.dim == 2 && b.dim == 2) {
-			PRINT("WARNING: minkowski() is not implemented yet for 2d objects!");
 		}
 	}
 

@@ -117,6 +117,8 @@ SOURCES += src/openscad.cc \
            src/primitives.cc \
            src/projection.cc \
            src/cgaladv.cc \
+           src/cgaladv_minkowski3.cc \
+           src/cgaladv_minkowski2.cc \
            src/surface.cc \
            src/control.cc \
            src/render.cc \
