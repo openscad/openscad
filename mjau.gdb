@@ -1,0 +1,1 @@
+set environment DYLD_LIBRARY_PATH=/Users/kintel/code/metalab/checkout/OpenSCAD/OpenCSG-1.2.0/lib
