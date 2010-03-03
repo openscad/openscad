@@ -153,6 +153,7 @@ CGAL_Nef_polyhedron CgaladvNode::render_cgal_nef_polyhedron() const
 			} else {
 				b += v->render_cgal_nef_polyhedron();
 			}
+			v->progress_report();
 		}
 		if (a.dim == 3 && b.dim == 3) {
 			N.dim = 3;

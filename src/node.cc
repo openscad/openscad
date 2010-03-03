@@ -93,6 +93,7 @@ static CGAL_Nef_polyhedron render_cgal_nef_polyhedron_backend(const AbstractNode
 			else
 				N.p3 += v->render_cgal_nef_polyhedron().p3;
 		}
+		v->progress_report();
 	}
 
 	that->cgal_nef_cache.insert(cache_id, new AbstractNode::cgal_nef_cache_entry(N), N.weight());

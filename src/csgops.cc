@@ -108,6 +108,7 @@ CGAL_Nef_polyhedron CsgNode::render_cgal_nef_polyhedron() const
 				N.p3 *= v->render_cgal_nef_polyhedron().p3;
 			}
 		}
+		v->progress_report();
 	}
 
 	cgal_nef_cache.insert(cache_id, new cgal_nef_cache_entry(N), N.weight());

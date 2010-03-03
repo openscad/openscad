@@ -116,6 +116,7 @@ CGAL_Nef_polyhedron RenderNode::render_cgal_nef_polyhedron() const
 		} else if (N.dim == 3) {
 			N.p3 += v->render_cgal_nef_polyhedron().p3;
 		}
+		v->progress_report();
 	}
 
 	cgal_nef_cache.insert(cache_id, new cgal_nef_cache_entry(N), N.weight());
