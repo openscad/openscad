@@ -92,6 +92,8 @@ public:
 
 %token LE GE EQ NE AND OR
 
+%right '?' ':'
+
 %left OR
 %left AND
 
@@ -102,8 +104,6 @@ public:
 %left '*' '/' '%'
 %left '[' ']'
 %left '.'
-
-%right '?' ':'
 
 %type <expr> expr
 %type <expr> vector_expr
