@@ -4,12 +4,14 @@ BUGS
 o Some invalid DXF data gets pass the import checks and breaks the tessing code
 o Tesselation via GLU sometimes produces strange results
 o Export STL: Exports existing CGAL model even though the current model is changed, but not CGAL rendered
+o It's now possible to start a new rendering while one is already running.
+  -> turn off most (or all) interaction while rendering
 
 CRASH BUGS
 ----------
 o Broken polyhedron() entities are not correctly detected and cause CGAL segfaults
 o Non-manifold objects make CGAL crash (e.g. two cubes which touch at one edge)
-
+o linear_extrude(50) square([5,0]);
 
 USER INTERFACE
 --------------
@@ -64,6 +66,8 @@ o Editor
 o Computation
   - Run CGAL rendering in a backgroud thread
   - Enable viewing/editing while rendering
+  - Progress: Call progresswidget more often to avoid app hanging for multiple
+    seconds (i.e. make cancel button more responsive)
 o Misc
   - Reload and compile: Ask for confirmation if file is locally edited
     (make this configurable in preferences?)
@@ -134,7 +138,8 @@ o dxflinextrude and dxfrotextrude could share code
 o Consider decoupling DXF-specific functionality from the 2D subsystem
 o Make the interfaces from OpenSCAD and OpenCSG and CGAL cleaner to facilitate
   experimentation with other frameworks (ref. Nef_polyhedron_2() problems)
-o Decouple CGAL and OpenCSG operations from the node tree
+o Decouple CGAL and OpenCSG operations from the node tree -> visitor
+  - Make AbstractNode members private/protected
 
 TESTING
 -------
@@ -143,7 +148,6 @@ o Write some cmd-line apps that dump an openscad file to misc. formats
 o Write simple driver scripts for comparing output of above command
 o Collect "all" available OpenSCAD scripts from the internets and run the integration
   tests on them all
-
 
 INFRASTRUCTURE
 --------------
