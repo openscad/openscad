@@ -69,7 +69,9 @@ public:
 	int convexity;
 	Value points, paths, triangles;
 	virtual PolySet *render_polyset(render_mode_e mode) const;
+#ifndef REMOVE_DUMP
 	virtual QString dump(QString indent) const;
+#endif
 };
 
 AbstractNode *PrimitiveModule::evaluate(const Context *ctx, const ModuleInstantiation *inst) const
@@ -526,6 +528,7 @@ sphere_next_r2:
 	return p;
 }
 
+#ifndef REMOVE_DUMP
 QString PrimitiveNode::dump(QString indent) const
 {
 	if (dump_cache.isEmpty()) {
@@ -548,6 +551,7 @@ QString PrimitiveNode::dump(QString indent) const
 	}
 	return dump_cache;
 }
+#endif
 
 std::string PrimitiveNode::toString() const
 {

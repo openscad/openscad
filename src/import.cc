@@ -188,6 +188,7 @@ PolySet *ImportNode::render_polyset(render_mode_e) const
 	return p;
 }
 
+#ifndef REMOVE_DUMP
 QString ImportNode::dump(QString indent) const
 {
 	if (dump_cache.isEmpty()) {
@@ -212,6 +213,7 @@ QString ImportNode::dump(QString indent) const
 	}
 	return dump_cache;
 }
+#endif
 
 std::string ImportNode::toString() const
 {

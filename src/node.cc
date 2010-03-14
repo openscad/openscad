@@ -30,6 +30,8 @@
 #include "progress.h"
 #include "polyset.h"
 #include "visitor.h"
+#include "nodedumper.h"
+
 #include <QRegExp>
 #include <sstream>
 
@@ -62,9 +64,15 @@ Response AbstractPolyNode::accept(const class State &state, Visitor &visitor) co
 	return visitor.visit(state, *this);
 }
 
+/*!
+  Create a cache id of the entire tree under this node.  This cache id
+	is a non-whitespace plaintext of the evaluated scad tree and is used
+	for lookup in cgal_nef_cache.
+*/
 QString AbstractNode::mk_cache_id() const
 {
-	QString cache_id = dump("");
+	QString cache_id = dump();
+	// Remove all node class names and whitespace
 	cache_id.remove(QRegExp("[a-zA-Z_][a-zA-Z_0-9]*:"));
 	cache_id.remove(' ');
 	cache_id.remove('\t');
@@ -165,6 +173,7 @@ CSGTerm *AbstractIntersectionNode::render_csg_term(double m[20], QVector<CSGTerm
 	return render_csg_term_backend(this, true, m, highlights, background);
 }
 
+#ifndef REMOVE_DUMP
 QString AbstractNode::dump(QString indent) const
 {
 	if (dump_cache.isEmpty()) {
@@ -175,6 +184,16 @@ QString AbstractNode::dump(QString indent) const
 	}
 	return dump_cache;
 }
+#else
+// Temporarily offer a top-level dump function to keep existing code running
+QString AbstractNode::dump() const
+{
+	NodeDumper dumper;
+	Traverser trav(dumper, *this, Traverser::PRE_AND_POSTFIX);
+	trav.execute();
+	return QString::fromStdString(dumper.getDump() + "\n");
+}
+#endif
 
 std::string AbstractNode::toString() const
 {
@@ -183,6 +202,7 @@ std::string AbstractNode::toString() const
 	return stream.str();
 }
 
+#ifndef REMOVE_DUMP
 QString AbstractIntersectionNode::dump(QString indent) const
 {
 	if (dump_cache.isEmpty()) {
@@ -193,6 +213,7 @@ QString AbstractIntersectionNode::dump(QString indent) const
 	}
 	return dump_cache;
 }
+#endif
 
 std::string AbstractIntersectionNode::toString() const
 {

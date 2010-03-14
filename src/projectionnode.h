@@ -18,7 +18,9 @@ public:
 	int convexity;
 	bool cut_mode;
 	virtual PolySet *render_polyset(render_mode_e mode) const;
+#ifndef REMOVE_DUMP
 	virtual QString dump(QString indent) const;
+#endif
 };
 
 #endif

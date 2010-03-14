@@ -62,8 +62,10 @@ public:
 #ifdef ENABLE_CGAL
 	virtual CGAL_Nef_polyhedron renderCSGMesh() const;
 #endif
-	CSGTerm *render_csg_term(double m[20], QVector<CSGTerm*> *highlights, QVector<CSGTerm*> *background) const;
+	CSGTerm *render_csg_term(double m[20], QVector<CSGTerm*> *highlights, QVector<CSGTerm*> *background) const;	
+#ifndef REMOVE_DUMP
 	virtual QString dump(QString indent) const;
+#endif
 };
 
 AbstractNode *RenderModule::evaluate(const Context *ctx, const ModuleInstantiation *inst) const
@@ -256,6 +258,7 @@ CSGTerm *RenderNode::render_csg_term(double m[20], QVector<CSGTerm*> *highlights
 
 #endif
 
+#ifndef REMOVE_DUMP
 QString RenderNode::dump(QString indent) const
 {
 	if (dump_cache.isEmpty()) {
@@ -266,6 +269,7 @@ QString RenderNode::dump(QString indent) const
 	}
 	return dump_cache;
 }
+#endif
 
 std::string RenderNode::toString() const
 {

@@ -144,8 +144,8 @@ int main(int argc, char **argv)
 	root_node = root_module->evaluate(&root_ctx, &root_inst);
 
 	// Cache test
-	QString dumpstr = root_node->dump("");
-	QString dumpstr_cached = root_node->dump("");
+	QString dumpstr = root_node->dump();
+	QString dumpstr_cached = root_node->dump();
 	if (dumpstr != dumpstr_cached) rc = 1;
 
 	NodeDumper dumper;

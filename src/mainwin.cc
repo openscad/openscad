@@ -650,7 +650,9 @@ void MainWindow::compile(bool procevents)
 	if (!(this->root_node = find_root_tag(absolute_root_node))) {
 		this->root_node = absolute_root_node;
 	}
-	root_node->dump("");
+  // Dump the tree (to initialize caches). I guess we wouldn't really need to do 
+	// this explicitly..
+	root_node->dump();
 
 	if (1) {
 		PRINT("Compilation finished.");
@@ -1228,7 +1230,7 @@ void MainWindow::actionDisplayCSGTree()
 	e->setWindowTitle("CSG Tree Dump");
 	e->setReadOnly(true);
 	if (root_node) {
-		e->setPlainText(root_node->dump(""));
+		e->setPlainText(root_node->dump());
 	} else {
 		e->setPlainText("No CSG to dump. Please try compiling first...");
 	}

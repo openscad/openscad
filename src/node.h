@@ -52,9 +52,11 @@ public:
 	int idx; // Node index (unique per tree)
 
 	// FIXME: Remove these three with dump() method
-	QString dump_cache;
 	virtual QString mk_cache_id() const;
-	virtual QString dump(QString indent) const;
+	QString dump() const;
+#ifndef REMOVE_DUMP
+	QString dump_cache;
+#endif
 
 	// FIXME: Rewrite to visitor
 	virtual class CSGTerm *render_csg_term(double m[20], QVector<CSGTerm*> *highlights, QVector<CSGTerm*> *background) const;
@@ -84,7 +86,9 @@ public:
 	virtual CGAL_Nef_polyhedron renderCSGMesh() const;
 #endif
 	virtual CSGTerm *render_csg_term(double m[20], QVector<CSGTerm*> *highlights, QVector<CSGTerm*> *background) const;
+#ifndef REMOVE_DUMP
 	virtual QString dump(QString indent) const;
+#endif
 };
 
 class AbstractPolyNode : public AbstractNode

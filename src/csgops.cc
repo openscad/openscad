@@ -134,6 +134,7 @@ CSGTerm *CsgNode::render_csg_term(double m[20], QVector<CSGTerm*> *highlights, Q
 	return t1;
 }
 
+#ifndef REMOVE_DUMP
 QString CsgNode::dump(QString indent) const
 {
 	if (dump_cache.isEmpty()) {
@@ -150,6 +151,7 @@ QString CsgNode::dump(QString indent) const
 	}
 	return dump_cache;
 }
+#endif
 
 std::string CsgNode::toString() const
 {

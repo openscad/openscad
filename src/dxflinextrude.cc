@@ -299,6 +299,7 @@ PolySet *DxfLinearExtrudeNode::render_polyset(render_mode_e) const
 	return ps;
 }
 
+#ifndef REMOVE_DUMP
 QString DxfLinearExtrudeNode::dump(QString indent) const
 {
 	if (dump_cache.isEmpty()) {
@@ -326,6 +327,7 @@ QString DxfLinearExtrudeNode::dump(QString indent) const
 	}
 	return dump_cache;
 }
+#endif
 
 std::string DxfLinearExtrudeNode::toString() const
 {

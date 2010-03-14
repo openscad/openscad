@@ -71,7 +71,9 @@ public:
 	virtual CGAL_Nef_polyhedron renderCSGMesh() const;
 #endif
 	virtual CSGTerm *render_csg_term(double m[20], QVector<CSGTerm*> *highlights, QVector<CSGTerm*> *background) const;
+#ifndef REMOVE_DUMP
 	virtual QString dump(QString indent) const;
+#endif
 };
 
 AbstractNode *CgaladvModule::evaluate(const Context *ctx, const ModuleInstantiation *inst) const
@@ -155,11 +157,11 @@ CGAL_Nef_polyhedron CgaladvNode::renderCSGMesh() const
 			if (v->modinst->tag_background)
 				continue;
 			if (first) {
-				N = v->renderCsgMesh();
+				N = v->renderCSGMesh();
 				if (N.dim != 0)
 					first = false;
 			} else {
-				CGAL_Nef_polyhedron tmp = v->renderCsgMesh();
+				CGAL_Nef_polyhedron tmp = v->renderCSGMesh();
 				if (N.dim == 3 && tmp.dim == 3) {
 					N.p3 = minkowski3(N.p3, tmp.p3);
 				}
@@ -212,6 +214,7 @@ CSGTerm *CgaladvNode::render_csg_term(double m[20], QVector<CSGTerm*> *highlight
 
 #endif // ENABLE_CGAL
 
+#ifndef REMOVE_DUMP
 QString CgaladvNode::dump(QString indent) const
 {
 	if (dump_cache.isEmpty()) {
@@ -231,6 +234,7 @@ QString CgaladvNode::dump(QString indent) const
 	}
 	return dump_cache;
 }
+#endif
 
 std::string CgaladvNode::toString() const
 {

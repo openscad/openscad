@@ -56,7 +56,9 @@ public:
 	bool center;
 	int convexity;
 	virtual PolySet *render_polyset(render_mode_e mode) const;
+#ifndef REMOVE_DUMP
 	virtual QString dump(QString indent) const;
+#endif
 };
 
 AbstractNode *SurfaceModule::evaluate(const Context *ctx, const ModuleInstantiation *inst) const
@@ -204,6 +206,7 @@ PolySet *SurfaceNode::render_polyset(render_mode_e) const
 	return p;
 }
 
+#ifndef REMOVE_DUMP
 QString SurfaceNode::dump(QString indent) const
 {
 	if (dump_cache.isEmpty()) {
@@ -214,6 +217,7 @@ QString SurfaceNode::dump(QString indent) const
 	}
 	return dump_cache;
 }
+#endif
 
 std::string SurfaceNode::toString() const
 {

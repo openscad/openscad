@@ -274,6 +274,7 @@ PolySet *ProjectionNode::render_polyset(render_mode_e) const
 
 #endif // ENABLE_CGAL
 
+#ifndef REMOVE_DUMP
 QString ProjectionNode::dump(QString indent) const
 {
 	if (dump_cache.isEmpty()) {
@@ -287,6 +288,7 @@ QString ProjectionNode::dump(QString indent) const
 	}
 	return dump_cache;
 }
+#endif
 
 std::string ProjectionNode::toString() const
 {
