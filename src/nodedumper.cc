@@ -43,6 +43,7 @@ string NodeDumper::dumpChildren(const AbstractNode &node)
 		for (ChildList::const_iterator iter = this->visitedchildren[node.index()].begin();
 				 iter != this->visitedchildren[node.index()].end();
 				 iter++) {
+// FIXME: assert that cache contains **iter
 			dump << this->cache[**iter] << "\n";
 		}
 		
@@ -81,6 +82,7 @@ Response NodeDumper::visit(const State &state, const AbstractNode &node)
 const string &NodeDumper::getDump() const 
 { 
 	assert(this->root); 
+// FIXME: assert that cache contains root
 	return this->cache[*this->root];
 }
 

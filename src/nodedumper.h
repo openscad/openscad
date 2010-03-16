@@ -33,5 +33,4 @@ private:
   NodeCache<string> cache;
 };
 
-
 #endif
