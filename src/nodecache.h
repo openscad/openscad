@@ -17,7 +17,7 @@ public:
   }
 
   void insert(const class AbstractNode &node, const T & value) {
-    this->cache.resize(node.index() + 1);
+    if (this->cache.size() <= node.index()) this->cache.resize(node.index() + 1);
     this->cache[node.index()] = value;
   }
 
