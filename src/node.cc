@@ -72,7 +72,7 @@ Response AbstractPolyNode::accept(const class State &state, Visitor &visitor) co
 QString AbstractNode::mk_cache_id() const
 {
 	QString cache_id = dump();
-	// Remove all node class names and whitespace
+	// Remove all node indices and whitespace
 	cache_id.remove(QRegExp("[a-zA-Z_][a-zA-Z_0-9]*:"));
 	cache_id.remove(' ');
 	cache_id.remove('\t');
