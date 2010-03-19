@@ -23,6 +23,8 @@
  *
  */
 
+%expect 1 /* Expect 1 shift/reduce conflict for ifelse_statement - "dangling else problem" */
+
 %{
 
 #include <QDir>
