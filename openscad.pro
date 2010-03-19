@@ -115,7 +115,8 @@ HEADERS += src/CGAL_renderer.h \
            src/state.h \
            src/traverser.h \
            src/nodecache.h \
-           src/nodedumper.h
+           src/nodedumper.h \
+           src/CGALRenderer.h
 
 SOURCES += src/openscad.cc \
            src/mainwin.cc \
@@ -154,7 +155,8 @@ SOURCES += src/openscad.cc \
            src/progress.cc \
            src/editor.cc \\
            src/traverser.cc \
-           src/nodedumper.cc
+           src/nodedumper.cc \
+           src/CGALRenderer.cc 
 
 macx {
   HEADERS += src/AppleEvents.h \

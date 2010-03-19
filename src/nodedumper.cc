@@ -86,6 +86,10 @@ const string &NodeDumper::getDump() const
 	return this->cache[*this->root];
 }
 
+/*!
+	Adds this given node to its parent's child list.
+	Should be called for all nodes, including leaf nodes.
+*/
 void NodeDumper::handleVisitedChildren(const State &state, const AbstractNode &node)
 {
 	if (state.isPostfix()) {

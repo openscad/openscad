@@ -20,6 +20,7 @@ public:
   virtual Response visit(const State &state, const AbstractNode &node);
 
   const string &getDump() const;
+	const NodeCache<string> &getCache() const { return this->cache; }
 private:
   void handleVisitedChildren(const State &state, const AbstractNode &node);
   bool isCached(const AbstractNode &node);
