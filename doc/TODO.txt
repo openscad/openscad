@@ -145,6 +145,8 @@ TESTING
 -------
 o Write some cmd-line apps that dump an openscad file to misc. formats
   (dump, stl, dxf)
+o Write a simple test script that collects verified and current STL renderings
+  and displays them side-by-side or smth.
 o Write simple driver scripts for comparing output of above command
 o Collect "all" available OpenSCAD scripts from the internets and run the integration
   tests on them all

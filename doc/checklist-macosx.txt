@@ -10,7 +10,7 @@ o Build CGAL:
 
   tar xzf CGAL-3.5.1.tar.gz
   cd CGAL-3.5.1
-  patch -p1 < ../openscad/CGAL-OGL-Tess-Combine-Fix.patch
+  patch -p1 < ../openscad/patches/CGAL-OGL-Tess-Combine-Fix.patch
   cmake -DCMAKE_INSTALL_PREFIX=$PWD/../install -DBUILD_SHARED_LIBS=FALSE
   make -j4
   make install
@@ -18,7 +18,7 @@ o Build CGAL:
 o Patch OpenCSG
 
   cd OpenCSG-1.3.0
-  patch -p1 < ../openscad/OpenCSG-1.3.0-MacOSX-port.patch
+  patch -p1 < ../openscad/patches/OpenCSG-1.3.0-MacOSX-port.patch
 
 o Build OpenCSG
 
