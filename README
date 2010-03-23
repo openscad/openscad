@@ -37,13 +37,13 @@ development. Other versions may or may not work as well..
 * Qt4 (4.4 - 4.6):
   http://www.qtsoftware.com/
 
-* CGAL (3.5):
+* CGAL (3.5.x):
   http://www.cgal.org/
 
-* boost (1.35, required by CGAL)
+* boost (1.35 - 1.41, required by CGAL)
   http://www.boost.org/
 
-* cmake (2.6.2, required by CGAL)
+* cmake (2.6.x, required by CGAL)
   http://www.cmake.org/
 
 * OpenCSG (1.3.0):
