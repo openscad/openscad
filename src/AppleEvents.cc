@@ -1,5 +1,5 @@
 #include <Carbon/Carbon.h>
-#include <QApplication.h>
+#include <QApplication>
 #include "MainWindow.h"
 
 extern "C" {

@@ -234,7 +234,7 @@ diff -ru OpenCSG-1.3.0/src/src.pro OpenCSG-1.3.0-mac/src/src.pro
 +
 +macx {
 +  INCLUDEPATH += /opt/local/include
-+  LIBS += -L/opt/local/lib -lglew
++  LIBS += -L/opt/local/lib -lGLEW
 +  CONFIG += absolute_library_soname
 +}
 +else {
