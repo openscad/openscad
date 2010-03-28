@@ -38,6 +38,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sstream>
+#include <assert.h>
 
 class ImportModule : public AbstractModule
 {

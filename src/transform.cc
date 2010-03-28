@@ -23,8 +23,8 @@
  *
  */
 
+#include "transformnode.h"
 #include "module.h"
-#include "node.h"
 #include "context.h"
 #include "dxfdata.h"
 #include "csgterm.h"
@@ -50,25 +50,6 @@ public:
 	transform_type_e type;
 	TransformModule(transform_type_e type) : type(type) { }
 	virtual AbstractNode *evaluate(const Context *ctx, const ModuleInstantiation *inst) const;
-};
-
-class TransformNode : public AbstractNode
-{
-public:
-	TransformNode(const ModuleInstantiation *mi) : AbstractNode(mi) { }
-  virtual Response accept(const class State &state, Visitor &visitor) const {
-		return visitor.visit(state, *this);
-	}
-	virtual std::string toString() const;
-
-	double m[20];
-#ifdef ENABLE_CGAL
-	virtual CGAL_Nef_polyhedron renderCSGMesh() const;
-#endif
-	virtual CSGTerm *render_csg_term(double m[20], QVector<CSGTerm*> *highlights, QVector<CSGTerm*> *background) const;
-#ifndef REMOVE_DUMP
-	virtual QString dump(QString indent) const;
-#endif
 };
 
 AbstractNode *TransformModule::evaluate(const Context *ctx, const ModuleInstantiation *inst) const

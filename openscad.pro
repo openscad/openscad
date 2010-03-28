@@ -105,6 +105,8 @@ HEADERS += src/CGAL_renderer.h \
            src/dxfrotextrudenode.h \
            src/projectionnode.h \
            src/importnode.h \
+           src/transformnode.h \
+           src/rendernode.h \
            src/openscad.h \
            src/polyset.h \
            src/printutils.h \

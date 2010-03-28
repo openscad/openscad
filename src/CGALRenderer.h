@@ -28,7 +28,7 @@ public:
 	string getCGALMesh() const;
 // 	CGAL_Nef_polyhedron getCGALMesh() const;
 private:
-  void handleVisitedChildren(const State &state, const AbstractNode &node);
+  void addToParent(const State &state, const AbstractNode &node);
   bool isCached(const AbstractNode &node);
 	QString mk_cache_id(const AbstractNode &node) const;
 	void process(string &target, const string &src, CGALRenderer::CsgOp op);

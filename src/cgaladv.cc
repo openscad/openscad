@@ -31,6 +31,7 @@
 #include "cgal.h"
 #include "visitor.h"
 #include <sstream>
+#include <assert.h>
 
 #ifdef ENABLE_CGAL
 extern CGAL_Nef_polyhedron3 minkowski3(CGAL_Nef_polyhedron3 a, CGAL_Nef_polyhedron3 b);

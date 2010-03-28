@@ -34,6 +34,7 @@
 #include <assert.h>
 #include "visitor.h"
 #include <sstream>
+#include <assert.h>
 
 enum primitive_type_e {
 	CUBE,

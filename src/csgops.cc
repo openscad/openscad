@@ -30,6 +30,7 @@
 #include "builtin.h"
 #include "printutils.h"
 #include <sstream>
+#include <assert.h>
 
 class CsgModule : public AbstractModule
 {

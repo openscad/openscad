@@ -52,6 +52,8 @@ HEADERS += ../src/builtin.h \
            ../src/projectionnode.h \
            ../src/importnode.h \
            ../src/csgnode.h \
+           ../src/transformnode.h \
+           ../src/rendernode.h \
            ../src/openscad.h \
            ../src/polyset.h \
            ../src/printutils.h \

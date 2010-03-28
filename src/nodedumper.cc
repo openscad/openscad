@@ -8,6 +8,7 @@
 
 #include <sstream>
 #include <iostream>
+#include <assert.h>
 
 // For compatibility with old dump() output
 #define NODEDUMPER_COMPAT_MODE

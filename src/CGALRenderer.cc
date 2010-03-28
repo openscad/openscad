@@ -8,10 +8,11 @@
 #include "module.h" // FIXME: Temporarily for ModuleInstantiation
 
 #include "csgnode.h"
-
+#include "transformnode.h"
 
 #include <sstream>
 #include <iostream>
+#include <assert.h>
 #include <QRegExp>
 
 string CGALRenderer::getCGALMesh() const
@@ -105,83 +106,98 @@ CGALRenderer::process(string &target, const string &src, CGALRenderer::CsgOp op)
 
 void CGALRenderer::applyToChildren(const AbstractNode &node, CGALRenderer::CsgOp op)
 {
-	// FIXME: assert that cache contains nodes in code below
-	bool first = true;
+	std::stringstream stream;
+	stream << typeid(node).name();
+	stream << "<" << node.index() << ">";
+	string N = stream.str();
+	if (this->visitedchildren[node.index()].size() > 0) {
+		// FIXME: assert that cache contains nodes in code below
+		bool first = true;
 //		CGAL_Nef_polyhedron N;
-	string N;
-	for (ChildList::const_iterator iter = this->visitedchildren[node.index()].begin();
-			 iter != this->visitedchildren[node.index()].end();
-			 iter++) {
-		const AbstractNode *chnode = iter->first;
-		const QString &chcacheid = iter->second;
-		// FIXME: Don't use deep access to modinst members
-		if (chnode->modinst->tag_background) continue;
-		if (first) {
-			N = "(" + this->cache[chcacheid];
+		for (ChildList::const_iterator iter = this->visitedchildren[node.index()].begin();
+				 iter != this->visitedchildren[node.index()].end();
+				 iter++) {
+			const AbstractNode *chnode = iter->first;
+			const QString &chcacheid = iter->second;
+			// FIXME: Don't use deep access to modinst members
+			if (chnode->modinst->tag_background) continue;
+			if (first) {
+				N += "(" + this->cache[chcacheid];
 // 				if (N.dim != 0) first = false; // FIXME: when can this happen?
-			first = false;
-		} else {
-			process(N, this->cache[chcacheid], op);
+				first = false;
+			} else {
+				process(N, this->cache[chcacheid], op);
+			}
+			chnode->progress_report();
 		}
-		chnode->progress_report();
+		N += ")";
 	}
-	N += ")";
 	QString cacheid = mk_cache_id(node);
 	this->cache.insert(cacheid, N);
 }
 
+/*
+	Typical visitor behavior:
+	o In prefix: Check if we're cached -> prune
+	o In postfix: Check if we're cached -> don't apply operator to children
+	o In postfix: addToParent()
+ */
+
 Response CGALRenderer::visit(const State &state, const AbstractNode &node)
 {
-	if (isCached(node)) return PruneTraversal;
-
+	if (state.isPrefix() && isCached(node)) return PruneTraversal;
 	if (state.isPostfix()) {
-		applyToChildren(node, UNION);
+		if (!isCached(node)) applyToChildren(node, UNION);
+		addToParent(state, node);
 	}
-	
-	handleVisitedChildren(state, node);
 	return ContinueTraversal;
 }
 
 Response CGALRenderer::visit(const State &state, const AbstractIntersectionNode &node)
 {
-	if (isCached(node)) return PruneTraversal;
-
+	if (state.isPrefix() && isCached(node)) return PruneTraversal;
 	if (state.isPostfix()) {
-		applyToChildren(node, INTERSECTION);
+		if (!isCached(node)) applyToChildren(node, INTERSECTION);
+		addToParent(state, node);
 	}
-
-	handleVisitedChildren(state, node);
 	return ContinueTraversal;
 }
 
 Response CGALRenderer::visit(const State &state, const CsgNode &node)
 {
-	if (isCached(node)) return PruneTraversal;
-
-	CsgOp op;
-	switch (node.type) {
-	case CSG_TYPE_UNION:
-		op = UNION;
-		break;
-	case CSG_TYPE_DIFFERENCE:
-		op = DIFFERENCE;
-		break;
-	case CSG_TYPE_INTERSECTION:
-		op = INTERSECTION;
-		break;
-	}
-
+	if (state.isPrefix() && isCached(node)) return PruneTraversal;
 	if (state.isPostfix()) {
-		applyToChildren(node, op);
+		if (!isCached(node)) {
+			CsgOp op;
+			switch (node.type) {
+			case CSG_TYPE_UNION:
+				op = UNION;
+				break;
+			case CSG_TYPE_DIFFERENCE:
+				op = DIFFERENCE;
+				break;
+			case CSG_TYPE_INTERSECTION:
+				op = INTERSECTION;
+				break;
+			}
+			applyToChildren(node, op);
+		}
+		addToParent(state, node);
 	}
-
-	handleVisitedChildren(state, node);
 	return ContinueTraversal;
 }
 
 Response CGALRenderer::visit(const State &state, const TransformNode &node)
 {
-  // FIXME: First union, then 2D/3D transform
+	if (state.isPrefix() && isCached(node)) return PruneTraversal;
+	if (state.isPostfix()) {
+		if (!isCached(node)) {
+			// First union all children
+			applyToChildren(node, UNION);
+			// FIXME: Then apply transform
+		}
+		addToParent(state, node);
+	}
 	return ContinueTraversal;
 }
 
@@ -196,6 +212,10 @@ Response CGALRenderer::visit(const State &state, const TransformNode &node)
 // (PrimitiveNode)
 Response CGALRenderer::visit(const State &state, const AbstractPolyNode &node)
 {
+	if (state.isPrefix() && isCached(node)) return PruneTraversal;
+	if (state.isPostfix()) {
+		if (!isCached(node)) {
+
 	// FIXME: Manage caching
 	// FIXME: Will generate one single Nef polyhedron (no csg ops necessary)
  
@@ -214,31 +234,33 @@ Response CGALRenderer::visit(const State &state, const AbstractPolyNode &node)
 // 		throw;
 // 	}
 
-	if (state.isPostfix()) {
-		string N = "X";
-		QString cacheid = mk_cache_id(node);
-		this->cache.insert(cacheid, N);
+			string N = typeid(node).name();
+			QString cacheid = mk_cache_id(node);
+			this->cache.insert(cacheid, N);
 		
-		std::cout << "Insert: " << N << "\n";
-		std::cout << "Node: " << cacheid.toStdString() << "\n\n";
+// 		std::cout << "Insert: " << N << "\n";
+// 		std::cout << "Node: " << cacheid.toStdString() << "\n\n";
+		}
+		addToParent(state, node);
 	}
-
-	handleVisitedChildren(state, node);
 
 	return ContinueTraversal;
 }
 
-void CGALRenderer::handleVisitedChildren(const State &state, const AbstractNode &node)
+/*!
+	Adds ourself to out parent's list of traversed children.
+	Call this for _every_ node which affects output during the postfix traversal.
+*/
+void CGALRenderer::addToParent(const State &state, const AbstractNode &node)
 {
+	assert(state.isPostfix());
 	QString cacheid = mk_cache_id(node);
-	if (state.isPostfix()) {
-		this->visitedchildren.erase(node.index());
-		if (!state.parent()) {
-			this->root = &node;
-		}
-		else {
-			this->visitedchildren[state.parent()->index()].push_back(std::make_pair(&node, cacheid));
-		}
+	this->visitedchildren.erase(node.index());
+	if (!state.parent()) {
+		this->root = &node;
+	}
+	else {
+		this->visitedchildren[state.parent()->index()].push_back(std::make_pair(&node, cacheid));
 	}
 }
 
