@@ -27,8 +27,8 @@ public:
   virtual ~CGALRenderer() {}
 
   virtual Response visit(const State &state, const AbstractNode &node);
-// 	virtual Response visit(const State &state, const AbstractIntersectionNode &node);
-// 	virtual Response visit(const State &state, const CsgNode &node);
+ 	virtual Response visit(const State &state, const AbstractIntersectionNode &node);
+ 	virtual Response visit(const State &state, const CsgNode &node);
  	virtual Response visit(const State &state, const TransformNode &node);
 	virtual Response visit(const State &state, const AbstractPolyNode &node);
 

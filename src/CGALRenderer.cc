@@ -128,7 +128,6 @@ Response CGALRenderer::visit(const State &state, const AbstractNode &node)
 	return ContinueTraversal;
 }
 
-#if 0
 Response CGALRenderer::visit(const State &state, const AbstractIntersectionNode &node)
 {
 	if (state.isPrefix() && isCached(node)) return PruneTraversal;
@@ -162,7 +161,6 @@ Response CGALRenderer::visit(const State &state, const CsgNode &node)
 	}
 	return ContinueTraversal;
 }
-#endif
 
 Response CGALRenderer::visit(const State &state, const TransformNode &node)
 {
