@@ -18,6 +18,7 @@
 #include "projectionnode.h"
 #endif
 
+NodeDumper *NodeDumper::global_dumper = NULL;
 
 bool NodeDumper::isCached(const AbstractNode &node)
 {

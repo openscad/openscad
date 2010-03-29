@@ -68,9 +68,6 @@ public:
 	QString subdiv_type;
 	int convexity, level;
 	cgaladv_type_e type;
-#ifdef ENABLE_CGAL
-	virtual CGAL_Nef_polyhedron renderCSGMesh() const;
-#endif
 	virtual CSGTerm *render_csg_term(double m[20], QVector<CSGTerm*> *highlights, QVector<CSGTerm*> *background) const;
 #ifndef REMOVE_DUMP
 	virtual QString dump(QString indent) const;
@@ -137,60 +134,8 @@ void register_builtin_cgaladv()
 	builtin_modules["subdiv"] = new CgaladvModule(SUBDIV);
 }
 
-#ifdef ENABLE_CGAL
-
-CGAL_Nef_polyhedron CgaladvNode::renderCSGMesh() const
-{
-	QString cache_id = mk_cache_id();
-	if (cgal_nef_cache.contains(cache_id)) {
-		progress_report();
-		PRINT(cgal_nef_cache[cache_id]->msg);
-		return cgal_nef_cache[cache_id]->N;
-	}
-
-	print_messages_push();
-	CGAL_Nef_polyhedron N;
-
-	if (type == MINKOWSKI)
-	{
-		bool first = true;
-		foreach(AbstractNode * v, children) {
-			if (v->modinst->tag_background)
-				continue;
-			if (first) {
-				N = v->renderCSGMesh();
-				if (N.dim != 0)
-					first = false;
-			} else {
-				CGAL_Nef_polyhedron tmp = v->renderCSGMesh();
-				if (N.dim == 3 && tmp.dim == 3) {
-					N.p3 = minkowski3(N.p3, tmp.p3);
-				}
-				if (N.dim == 2 && tmp.dim == 2) {
-					N.p2 = minkowski2(N.p2, tmp.p2);
-				}
-			}
-			v->progress_report();
-		}
-	}
-
-	if (type == GLIDE)
-	{
-		PRINT("WARNING: subdiv() is not implemented yet!");
-	}
-
-	if (type == SUBDIV)
-	{
-		PRINT("WARNING: subdiv() is not implemented yet!");
-	}
-
-	cgal_nef_cache.insert(cache_id, new cgal_nef_cache_entry(N), N.weight());
-	print_messages_pop();
-	progress_report();
-
-	return N;
-}
-
+// FIXME: #ifdef ENABLE_CGAL
+#if 0
 CSGTerm *CgaladvNode::render_csg_term(double m[20], QVector<CSGTerm*> *highlights, QVector<CSGTerm*> *background) const
 {
 	if (type == MINKOWSKI)

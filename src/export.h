@@ -2,6 +2,7 @@
 #define EXPORT_H_
 
 #ifdef ENABLE_CGAL
+#include "cgal.h"
 void cgal_nef3_to_polyset(PolySet *ps, CGAL_Nef_polyhedron *root_N);
 void export_stl(class CGAL_Nef_polyhedron *root_N, QString filename, class QProgressDialog *pd);
 void export_off(CGAL_Nef_polyhedron *root_N, QString filename, QProgressDialog *pd);

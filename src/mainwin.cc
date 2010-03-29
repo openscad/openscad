@@ -44,6 +44,9 @@
 #ifdef USE_PROGRESSWIDGET
 #include "ProgressWidget.h"
 #endif
+#include "CGALRenderer.h"
+#include "PolySetCGALRenderer.h"
+#include "NodeDumper.h"
 
 #include <QMenu>
 #include <QTime>
@@ -1128,7 +1131,7 @@ void MainWindow::actionRenderCGAL()
 
 	progress_report_prep(root_node, report_func, pd);
 	try {
-		this->root_N = new CGAL_Nef_polyhedron(root_node->renderCSGMesh());
+		this->root_N = new CGAL_Nef_polyhedron(CGALRenderer::renderer()->renderCGALMesh(*root_node));
 	}
 	catch (ProgressCancelException e) {
 		PRINT("Rendering cancelled.");
@@ -1137,8 +1140,9 @@ void MainWindow::actionRenderCGAL()
 
 	if (this->root_N)
 	{
-		PRINTF("Number of vertices currently in CGAL cache: %d", AbstractNode::cgal_nef_cache.totalCost());
-		PRINTF("Number of objects currently in CGAL cache: %d", AbstractNode::cgal_nef_cache.size());
+		// FIXME: Reenable cache cost info
+// 		PRINTF("Number of vertices currently in CGAL cache: %d", AbstractNode::cgal_nef_cache.totalCost());
+// 		PRINTF("Number of objects currently in CGAL cache: %d", AbstractNode::cgal_nef_cache.size());
 		QApplication::processEvents();
 
 		if (this->root_N->dim == 2) {
@@ -1354,9 +1358,11 @@ void MainWindow::actionExportDXF()
 
 void MainWindow::actionFlushCaches()
 {
+// FIXME: Polycache -> PolySetRenderer
 	PolySet::ps_cache.clear();
 #ifdef ENABLE_CGAL
-	AbstractNode::cgal_nef_cache.clear();
+	CGALRenderer::renderer()->getCache().clear();
+	NodeDumper::dumper()->clearCache();
 #endif
 	dxf_dim_cache.clear();
 	dxf_cross_cache.clear();

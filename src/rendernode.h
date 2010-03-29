@@ -3,9 +3,6 @@
 
 #include "node.h"
 #include "visitor.h"
-#ifdef ENABLE_CGAL
-#  include "cgal.h"
-#endif
 
 class RenderNode : public AbstractNode
 {
@@ -17,9 +14,6 @@ public:
 	virtual std::string toString() const;
 
 	int convexity;
-#ifdef ENABLE_CGAL
-	virtual CGAL_Nef_polyhedron renderCSGMesh() const;
-#endif
 	CSGTerm *render_csg_term(double m[20], QVector<CSGTerm*> *highlights, QVector<CSGTerm*> *background) const;	
 #ifndef REMOVE_DUMP
 	virtual QString dump(QString indent) const;

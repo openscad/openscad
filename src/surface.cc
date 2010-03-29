@@ -99,7 +99,7 @@ PolySet *SurfaceNode::render_polyset(render_mode_e) const
 	QFile f(filename);
 
 	if (!f.open(QIODevice::ReadOnly | QIODevice::Text)) {
-		PRINTF("WARNING: Can't open DXF file `%s'.", filename.toAscii().data());
+		PRINTF("WARNING: Can't open DAT file `%s'.", filename.toAscii().data());
 		return NULL;
 	}
 

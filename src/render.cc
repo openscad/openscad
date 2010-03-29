@@ -77,44 +77,8 @@ void register_builtin_render()
 	builtin_modules["render"] = new RenderModule();
 }
 
-#ifdef ENABLE_CGAL
-
-CGAL_Nef_polyhedron RenderNode::renderCSGMesh() const
-{
-	QString cache_id = mk_cache_id();
-	if (cgal_nef_cache.contains(cache_id)) {
-		progress_report();
-		PRINT(cgal_nef_cache[cache_id]->msg);
-		return cgal_nef_cache[cache_id]->N;
-	}
-
-	print_messages_push();
-
-	bool first = true;
-	CGAL_Nef_polyhedron N;
-	foreach(AbstractNode * v, children)
-	{
-		if (v->modinst->tag_background)
-			continue;
-		if (first) {
-			N = v->renderCSGMesh();
-			if (N.dim != 0)
-				first = false;
-		} else if (N.dim == 2) {
-			N.p2 += v->renderCSGMesh().p2;
-		} else if (N.dim == 3) {
-			N.p3 += v->renderCSGMesh().p3;
-		}
-		v->progress_report();
-	}
-
-	cgal_nef_cache.insert(cache_id, new cgal_nef_cache_entry(N), N.weight());
-	print_messages_pop();
-	progress_report();
-
-	return N;
-}
-
+// FIXME: #ifdef ENABLE_CGAL
+#if 0
 CSGTerm *AbstractNode::render_csg_term_from_nef(double m[20], QVector<CSGTerm*> *highlights, QVector<CSGTerm*> *background, const char *statement, int convexity) const
 {
 	QString key = mk_cache_id();

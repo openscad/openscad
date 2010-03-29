@@ -7,7 +7,7 @@ UI_DIR = objects
 RCC_DIR = objects
 INCLUDEPATH += ../src
 
-DEFINES += REMOVE_DUMP
+DEFINES += REMOVE_DUMP REMOVE_RENDERCGAL
 macx {
   CONFIG -= app_bundle
   LIBS += -framework Carbon
@@ -15,20 +15,14 @@ macx {
 
 CONFIG += qt
 QT += opengl
+CONFIG += cgal
 
-# Optionally specify location of Eigen2 using the 
-# EIGEN2DIR env. variable
-EIGEN2_DIR = $$(EIGEN2DIR)
-!isEmpty(EIGEN2_DIR) {
-  INCLUDEPATH += $$EIGEN2_DIR
-}
-else {
-  macx {
-    INCLUDEPATH += /opt/local/include/eigen2
-  }
-  else {
-    INCLUDEPATH += /usr/include/eigen2
-  }
+include(../cgal.pri)
+include(../eigen2.pri)
+
+# Standard include path for misc external libs
+macx {
+  INCLUDEPATH += /opt/local/include
 }
 
 LEXSOURCES += ../src/lexer.l
@@ -66,7 +60,9 @@ HEADERS += ../src/builtin.h \
            ../src/CGALRenderer.h \
            ../src/nodecache.h \
            ../src/importnode.h \
-           ../src/state.h
+           ../src/state.h \
+           ../src/PolySetRenderer.h \
+           ../src/PolySetCGALRenderer.h
 
 SOURCES += cgaltest.cc \
            ../src/export.cc \
@@ -83,11 +79,14 @@ SOURCES += cgaltest.cc \
            ../src/primitives.cc \
            ../src/projection.cc \
            ../src/cgaladv.cc \
+           ../src/cgaladv_minkowski2.cc \
+           ../src/cgaladv_minkowski3.cc \
            ../src/surface.cc \
            ../src/control.cc \
            ../src/render.cc \
            ../src/import.cc \
            ../src/dxfdata.cc \
+           ../src/nef2dxf.cc \
            ../src/dxftess.cc \
            ../src/dxftess-glu.cc \
            ../src/dxftess-cgal.cc \
@@ -98,4 +97,6 @@ SOURCES += cgaltest.cc \
            ../src/progress.cc \
            ../src/nodedumper.cc \
            ../src/CGALRenderer.cc \
-           ../src/traverser.cc
+           ../src/traverser.cc \
+           ../src/PolySetRenderer.cc \
+           ../src/PolySetCGALRenderer.cc

@@ -34,6 +34,7 @@
 #include "polyset.h"
 #include "progress.h"
 #include "visitor.h"
+#include "PolySetRenderer.h"
 #include "openscad.h" // get_fragments_from_r()
 
 #include <sys/types.h>
@@ -125,80 +126,16 @@ void register_builtin_dxf_linear_extrude()
 	builtin_modules["linear_extrude"] = new DxfLinearExtrudeModule();
 }
 
-static void add_slice(PolySet *ps, DxfData::Path *pt, double rot1, double rot2, double h1, double h2)
+PolySet *DxfLinearExtrudeNode::render_polyset(render_mode_e mode) const
 {
-	for (int j = 1; j < pt->points.count(); j++)
-	{
-		int k = j - 1;
-
-		double jx1 = pt->points[j]->x *  cos(rot1*M_PI/180) + pt->points[j]->y * sin(rot1*M_PI/180);
-		double jy1 = pt->points[j]->x * -sin(rot1*M_PI/180) + pt->points[j]->y * cos(rot1*M_PI/180);
-
-		double jx2 = pt->points[j]->x *  cos(rot2*M_PI/180) + pt->points[j]->y * sin(rot2*M_PI/180);
-		double jy2 = pt->points[j]->x * -sin(rot2*M_PI/180) + pt->points[j]->y * cos(rot2*M_PI/180);
-
-		double kx1 = pt->points[k]->x *  cos(rot1*M_PI/180) + pt->points[k]->y * sin(rot1*M_PI/180);
-		double ky1 = pt->points[k]->x * -sin(rot1*M_PI/180) + pt->points[k]->y * cos(rot1*M_PI/180);
-
-		double kx2 = pt->points[k]->x *  cos(rot2*M_PI/180) + pt->points[k]->y * sin(rot2*M_PI/180);
-		double ky2 = pt->points[k]->x * -sin(rot2*M_PI/180) + pt->points[k]->y * cos(rot2*M_PI/180);
-
-		double dia1_len_sq = (jy1-ky2)*(jy1-ky2) + (jx1-kx2)*(jx1-kx2);
-		double dia2_len_sq = (jy2-ky1)*(jy2-ky1) + (jx2-kx1)*(jx2-kx1);
-
-		if (dia1_len_sq > dia2_len_sq)
-		{
-			ps->append_poly();
-			if (pt->is_inner) {
-				ps->append_vertex(kx1, ky1, h1);
-				ps->append_vertex(jx1, jy1, h1);
-				ps->append_vertex(jx2, jy2, h2);
-			} else {
-				ps->insert_vertex(kx1, ky1, h1);
-				ps->insert_vertex(jx1, jy1, h1);
-				ps->insert_vertex(jx2, jy2, h2);
-			}
-
-			ps->append_poly();
-			if (pt->is_inner) {
-				ps->append_vertex(kx2, ky2, h2);
-				ps->append_vertex(kx1, ky1, h1);
-				ps->append_vertex(jx2, jy2, h2);
-			} else {
-				ps->insert_vertex(kx2, ky2, h2);
-				ps->insert_vertex(kx1, ky1, h1);
-				ps->insert_vertex(jx2, jy2, h2);
-			}
-		}
-		else
-		{
-			ps->append_poly();
-			if (pt->is_inner) {
-				ps->append_vertex(kx1, ky1, h1);
-				ps->append_vertex(jx1, jy1, h1);
-				ps->append_vertex(kx2, ky2, h2);
-			} else {
-				ps->insert_vertex(kx1, ky1, h1);
-				ps->insert_vertex(jx1, jy1, h1);
-				ps->insert_vertex(kx2, ky2, h2);
-			}
-
-			ps->append_poly();
-			if (pt->is_inner) {
-				ps->append_vertex(jx2, jy2, h2);
-				ps->append_vertex(kx2, ky2, h2);
-				ps->append_vertex(jx1, jy1, h1);
-			} else {
-				ps->insert_vertex(jx2, jy2, h2);
-				ps->insert_vertex(kx2, ky2, h2);
-				ps->insert_vertex(jx1, jy1, h1);
-			}
-		}
+	PolySetRenderer *renderer = PolySetRenderer::renderer();
+	if (!renderer) {
+		PRINT("WARNING: No suitable PolySetRenderer found for linear_extrude() module!");
+		PolySet *ps = new PolySet();
+		ps->is2d = true;
+		return ps;
 	}
-}
 
-PolySet *DxfLinearExtrudeNode::render_polyset(render_mode_e) const
-{
 	QString key = mk_cache_id();
 	if (PolySet::ps_cache.contains(key)) {
 		PRINT(PolySet::ps_cache[key]->msg);
@@ -206,95 +143,11 @@ PolySet *DxfLinearExtrudeNode::render_polyset(render_mode_e) const
 	}
 
 	print_messages_push();
-	DxfData *dxf;
 
-	if (filename.isEmpty())
-	{
-#ifdef ENABLE_CGAL
-
-		// Before extruding, union all (2D) children nodes
-		// to a single DxfData, then tesselate this into a PolySet
-		CGAL_Nef_polyhedron N;
-		N.dim = 2;
-		foreach(AbstractNode * v, children) {
-			if (v->modinst->tag_background)
-				continue;
-			N.p2 += v->renderCSGMesh().p2;
-		}
-		dxf = new DxfData(N);
-
-#else // ENABLE_CGAL
-		PRINT("WARNING: Found linear_extrude() statement without dxf file but compiled without CGAL support!");
-		dxf = new DxfData();
-#endif // ENABLE_CGAL
-	} else {
-		dxf = new DxfData(fn, fs, fa, filename, layername, origin_x, origin_y, scale);
-	}
-
-	PolySet *ps = new PolySet();
-	ps->convexity = convexity;
-
-	double h1, h2;
-
-	if (center) {
-		h1 = -height/2.0;
-		h2 = +height/2.0;
-	} else {
-		h1 = 0;
-		h2 = height;
-	}
-
-	bool first_open_path = true;
-	for (int i = 0; i < dxf->paths.count(); i++)
-	{
-		if (dxf->paths[i].is_closed)
-			continue;
-		if (first_open_path) {
-			PRINTF("WARING: Open paths in dxf_liniear_extrude(file = \"%s\", layer = \"%s\"):",
-					filename.toAscii().data(), layername.toAscii().data());
-			first_open_path = false;
-		}
-		PRINTF("   %9.5f %10.5f ... %10.5f %10.5f",
-				dxf->paths[i].points.first()->x / scale + origin_x,
-				dxf->paths[i].points.first()->y / scale + origin_y, 
-				dxf->paths[i].points.last()->x / scale + origin_x,
-				dxf->paths[i].points.last()->y / scale + origin_y);
-	}
-
-
-	if (has_twist)
-	{
-		dxf_tesselate(ps, dxf, 0, false, true, h1);
-		dxf_tesselate(ps, dxf, twist, true, true, h2);
-		for (int j = 0; j < slices; j++)
-		{
-			double t1 = twist*j / slices;
-			double t2 = twist*(j+1) / slices;
-			double g1 = h1 + (h2-h1)*j / slices;
-			double g2 = h1 + (h2-h1)*(j+1) / slices;
-			for (int i = 0; i < dxf->paths.count(); i++)
-			{
-				if (!dxf->paths[i].is_closed)
-					continue;
-				add_slice(ps, &dxf->paths[i], t1, t2, g1, g2);
-			}
-		}
-	}
-	else
-	{
-		dxf_tesselate(ps, dxf, 0, false, true, h1);
-		dxf_tesselate(ps, dxf, 0, true, true, h2);
-		for (int i = 0; i < dxf->paths.count(); i++)
-		{
-			if (!dxf->paths[i].is_closed)
-				continue;
-			add_slice(ps, &dxf->paths[i], 0, 0, h1, h2);
-		}
-	}
-
+	PolySet *ps = renderer->renderPolySet(*this, mode);
 	PolySet::ps_cache.insert(key, new PolySet::ps_cache_entry(ps->link()));
+
 	print_messages_pop();
-	delete dxf;
 
 	return ps;
 }

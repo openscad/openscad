@@ -34,6 +34,7 @@
 #include "export.h"
 #include "progress.h"
 #include "visitor.h"
+#include "PolySetRenderer.h"
 
 #ifdef ENABLE_CGAL
 #  include <CGAL/assertions_behaviour.h>
@@ -89,10 +90,16 @@ void register_builtin_projection()
 	builtin_modules["projection"] = new ProjectionModule();
 }
 
-#ifdef ENABLE_CGAL
-
-PolySet *ProjectionNode::render_polyset(render_mode_e) const
+PolySet *ProjectionNode::render_polyset(render_mode_e mode) const
 {
+	PolySetRenderer *renderer = PolySetRenderer::renderer();
+	if (!renderer) {
+		PRINT("WARNING: No suitable PolySetRenderer found for projection() module!");
+		PolySet *ps = new PolySet();
+		ps->is2d = true;
+		return ps;
+	}
+
 	QString key = mk_cache_id();
 	if (PolySet::ps_cache.contains(key)) {
 		PRINT(PolySet::ps_cache[key]->msg);
@@ -101,178 +108,13 @@ PolySet *ProjectionNode::render_polyset(render_mode_e) const
 
 	print_messages_push();
 
-	PolySet *ps = new PolySet();
-	ps->convexity = this->convexity;
-	ps->is2d = true;
-
-	CGAL_Nef_polyhedron N;
-	N.dim = 3;
-	CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
-  try {
-	foreach(AbstractNode *v, this->children) {
-		if (v->modinst->tag_background)
-			continue;
-		N.p3 += v->renderCSGMesh().p3;
-	}
-  }
-  catch (CGAL::Assertion_exception e) {
-		PRINTF("ERROR: Illegal polygonal object - make sure all polygons are defined with the same winding order. Skipping affected object.");
-		CGAL::set_error_behaviour(old_behaviour);
-		return ps;
-	}
-  CGAL::set_error_behaviour(old_behaviour);
-
-	if (cut_mode)
-	{
-		PolySet *cube = new PolySet();
-		double infval = 1e8, eps = 0.1;
-		double x1 = -infval, x2 = +infval, y1 = -infval, y2 = +infval, z1 = 0, z2 = eps;
-
-		cube->append_poly(); // top
-		cube->append_vertex(x1, y1, z2);
-		cube->append_vertex(x2, y1, z2);
-		cube->append_vertex(x2, y2, z2);
-		cube->append_vertex(x1, y2, z2);
-
-		cube->append_poly(); // bottom
-		cube->append_vertex(x1, y2, z1);
-		cube->append_vertex(x2, y2, z1);
-		cube->append_vertex(x2, y1, z1);
-		cube->append_vertex(x1, y1, z1);
-
-		cube->append_poly(); // side1
-		cube->append_vertex(x1, y1, z1);
-		cube->append_vertex(x2, y1, z1);
-		cube->append_vertex(x2, y1, z2);
-		cube->append_vertex(x1, y1, z2);
-
-		cube->append_poly(); // side2
-		cube->append_vertex(x2, y1, z1);
-		cube->append_vertex(x2, y2, z1);
-		cube->append_vertex(x2, y2, z2);
-		cube->append_vertex(x2, y1, z2);
-
-		cube->append_poly(); // side3
-		cube->append_vertex(x2, y2, z1);
-		cube->append_vertex(x1, y2, z1);
-		cube->append_vertex(x1, y2, z2);
-		cube->append_vertex(x2, y2, z2);
-
-		cube->append_poly(); // side4
-		cube->append_vertex(x1, y2, z1);
-		cube->append_vertex(x1, y1, z1);
-		cube->append_vertex(x1, y1, z2);
-		cube->append_vertex(x1, y2, z2);
-		CGAL_Nef_polyhedron Ncube = cube->renderCSGMesh();
-		cube->unlink();
-
-		// N.p3 *= CGAL_Nef_polyhedron3(CGAL_Plane(0, 0, 1, 0), CGAL_Nef_polyhedron3::INCLUDED);
-		N.p3 *= Ncube.p3;
-		if (!N.p3.is_simple()) {
-			PRINTF("WARNING: Body of projection(cut = true) isn't valid 2-manifold! Modify your design..");
-			goto cant_project_non_simple_polyhedron;
-		}
-
-		PolySet *ps3 = new PolySet();
-		cgal_nef3_to_polyset(ps3, &N);
-		Grid2d<int> conversion_grid(GRID_COARSE);
-		for (int i = 0; i < ps3->polygons.size(); i++) {
-			for (int j = 0; j < ps3->polygons[i].size(); j++) {
-				double x = ps3->polygons[i][j].x;
-				double y = ps3->polygons[i][j].y;
-				double z = ps3->polygons[i][j].z;
-				if (z != 0)
-					goto next_ps3_polygon_cut_mode;
-				if (conversion_grid.align(x, y) == i+1)
-					goto next_ps3_polygon_cut_mode;
-				conversion_grid.data(x, y) = i+1;
-			}
-			ps->append_poly();
-			for (int j = 0; j < ps3->polygons[i].size(); j++) {
-				double x = ps3->polygons[i][j].x;
-				double y = ps3->polygons[i][j].y;
-				conversion_grid.align(x, y);
-				ps->insert_vertex(x, y);
-			}
-		next_ps3_polygon_cut_mode:;
-		}
-		ps3->unlink();
-	}
-	else
-	{
-		if (!N.p3.is_simple()) {
-			PRINTF("WARNING: Body of projection(cut = false) isn't valid 2-manifold! Modify your design..");
-			goto cant_project_non_simple_polyhedron;
-		}
-
-		PolySet *ps3 = new PolySet();
-		cgal_nef3_to_polyset(ps3, &N);
-		CGAL_Nef_polyhedron np;
-		np.dim = 2;
-		for (int i = 0; i < ps3->polygons.size(); i++)
-		{
-			int min_x_p = -1;
-			double min_x_val = 0;
-			for (int j = 0; j < ps3->polygons[i].size(); j++) {
-				double x = ps3->polygons[i][j].x;
-				if (min_x_p < 0 || x < min_x_val) {
-					min_x_p = j;
-					min_x_val = x;
-				}
-			}
-			int min_x_p1 = (min_x_p+1) % ps3->polygons[i].size();
-			int min_x_p2 = (min_x_p+ps3->polygons[i].size()-1) % ps3->polygons[i].size();
-			double ax = ps3->polygons[i][min_x_p1].x - ps3->polygons[i][min_x_p].x;
-			double ay = ps3->polygons[i][min_x_p1].y - ps3->polygons[i][min_x_p].y;
-			double at = atan2(ay, ax);
-			double bx = ps3->polygons[i][min_x_p2].x - ps3->polygons[i][min_x_p].x;
-			double by = ps3->polygons[i][min_x_p2].y - ps3->polygons[i][min_x_p].y;
-			double bt = atan2(by, bx);
-
-			double eps = 0.000001;
-			if (fabs(at - bt) < eps || (fabs(ax) < eps && fabs(ay) < eps) ||
-					(fabs(bx) < eps && fabs(by) < eps)) {
-				// this triangle is degenerated in projection
-				continue;
-			}
-
-			std::list<CGAL_Nef_polyhedron2::Point> plist;
-			for (int j = 0; j < ps3->polygons[i].size(); j++) {
-				double x = ps3->polygons[i][j].x;
-				double y = ps3->polygons[i][j].y;
-				CGAL_Nef_polyhedron2::Point p = CGAL_Nef_polyhedron2::Point(x, y);
-				if (at > bt)
-					plist.push_front(p);
-				else
-					plist.push_back(p);
-			}
-			np.p2 += CGAL_Nef_polyhedron2(plist.begin(), plist.end(),
-					CGAL_Nef_polyhedron2::INCLUDED);
-		}
-		DxfData dxf(np);
-		dxf_tesselate(ps, &dxf, 0, true, false, 0);
-		dxf_border_to_ps(ps, &dxf);
-		ps3->unlink();
-	}
-
-cant_project_non_simple_polyhedron:
+	PolySet *ps = renderer->renderPolySet(*this, mode);
 	PolySet::ps_cache.insert(key, new PolySet::ps_cache_entry(ps->link()));
+
 	print_messages_pop();
 
 	return ps;
 }
-
-#else // ENABLE_CGAL
-
-PolySet *ProjectionNode::render_polyset(render_mode_e) const
-{
-	PRINT("WARNING: Found projection() statement but compiled without CGAL support!");
-	PolySet *ps = new PolySet();
-	ps->is2d = true;
-	return ps;
-}
-
-#endif // ENABLE_CGAL
 
 #ifndef REMOVE_DUMP
 QString ProjectionNode::dump(QString indent) const

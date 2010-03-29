@@ -11,9 +11,6 @@
 #ifdef ENABLE_OPENCSG
 #  include <opencsg.h>
 #endif
-#ifdef ENABLE_CGAL
-#  include "cgal.h"
-#endif
 
 #include <QCache>
 
@@ -76,10 +73,6 @@ public:
 
 	void render_surface(colormode_e colormode, csgmode_e csgmode, double *m, GLint *shaderinfo = NULL) const;
 	void render_edges(colormode_e colormode, csgmode_e csgmode) const;
-
-#ifdef ENABLE_CGAL
-	CGAL_Nef_polyhedron renderCSGMesh() const;
-#endif
 
 	int refcount;
 	PolySet *link();

@@ -32,6 +32,7 @@
 #include "dxfdata.h"
 #include "progress.h"
 #include "visitor.h"
+#include "PolySetRenderer.h"
 #include "openscad.h" // get_fragments_from_r()
 
 #include <sys/types.h>
@@ -101,8 +102,16 @@ void register_builtin_dxf_rotate_extrude()
 	builtin_modules["rotate_extrude"] = new DxfRotateExtrudeModule();
 }
 
-PolySet *DxfRotateExtrudeNode::render_polyset(render_mode_e) const
+PolySet *DxfRotateExtrudeNode::render_polyset(render_mode_e mode) const
 {
+	PolySetRenderer *renderer = PolySetRenderer::renderer();
+	if (!renderer) {
+		PRINT("WARNING: No suitable PolySetRenderer found for rotate_extrude() module!");
+		PolySet *ps = new PolySet();
+		ps->is2d = true;
+		return ps;
+	}
+
 	QString key = mk_cache_id();
 	if (PolySet::ps_cache.contains(key)) {
 		PRINT(PolySet::ps_cache[key]->msg);
@@ -110,89 +119,12 @@ PolySet *DxfRotateExtrudeNode::render_polyset(render_mode_e) const
 	}
 
 	print_messages_push();
-	DxfData *dxf;
 
-	if (filename.isEmpty())
-	{
-#ifdef ENABLE_CGAL
-		CGAL_Nef_polyhedron N;
-		N.dim = 2;
-		foreach(AbstractNode * v, children) {
-			if (v->modinst->tag_background)
-				continue;
-			N.p2 += v->renderCSGMesh().p2;
-		}
-		dxf = new DxfData(N);
-
-#else // ENABLE_CGAL
-		PRINT("WARNING: Found rotate_extrude() statement without dxf file but compiled without CGAL support!");
-		dxf = new DxfData();
-#endif // ENABLE_CGAL
-	} else {
-		dxf = new DxfData(fn, fs, fa, filename, layername, origin_x, origin_y, scale);
-	}
-
-	PolySet *ps = new PolySet();
-	ps->convexity = convexity;
-
-	for (int i = 0; i < dxf->paths.count(); i++)
-	{
-		double max_x = 0;
-		for (int j = 0; j < dxf->paths[i].points.count(); j++) {
-			max_x = fmax(max_x, dxf->paths[i].points[j]->x);
-		}
-
-		int fragments = get_fragments_from_r(max_x, fn, fs, fa);
-
-		double points[fragments][dxf->paths[i].points.count()][3];
-
-		for (int j = 0; j < fragments; j++) {
-			double a = (j*2*M_PI) / fragments;
-			for (int k = 0; k < dxf->paths[i].points.count(); k++) {
-				if (dxf->paths[i].points[k]->x == 0) {
-					points[j][k][0] = 0;
-					points[j][k][1] = 0;
-				} else {
-					points[j][k][0] = dxf->paths[i].points[k]->x * sin(a);
-					points[j][k][1] = dxf->paths[i].points[k]->x * cos(a);
-				}
-				points[j][k][2] = dxf->paths[i].points[k]->y;
-			}
-		}
-
-		for (int j = 0; j < fragments; j++) {
-			int j1 = j + 1 < fragments ? j + 1 : 0;
-			for (int k = 0; k < dxf->paths[i].points.count(); k++) {
-				int k1 = k + 1 < dxf->paths[i].points.count() ? k + 1 : 0;
-				if (points[j][k][0] != points[j1][k][0] ||
-						points[j][k][1] != points[j1][k][1] ||
-						points[j][k][2] != points[j1][k][2]) {
-					ps->append_poly();
-					ps->append_vertex(points[j ][k ][0],
-							points[j ][k ][1], points[j ][k ][2]);
-					ps->append_vertex(points[j1][k ][0],
-							points[j1][k ][1], points[j1][k ][2]);
-					ps->append_vertex(points[j ][k1][0],
-							points[j ][k1][1], points[j ][k1][2]);
-				}
-				if (points[j][k1][0] != points[j1][k1][0] ||
-						points[j][k1][1] != points[j1][k1][1] ||
-						points[j][k1][2] != points[j1][k1][2]) {
-					ps->append_poly();
-					ps->append_vertex(points[j ][k1][0],
-							points[j ][k1][1], points[j ][k1][2]);
-					ps->append_vertex(points[j1][k ][0],
-							points[j1][k ][1], points[j1][k ][2]);
-					ps->append_vertex(points[j1][k1][0],
-							points[j1][k1][1], points[j1][k1][2]);
-				}
-			}
-		}
-	}
-
+	PolySet *ps = renderer->renderPolySet(*this, mode);
+	
 	PolySet::ps_cache.insert(key, new PolySet::ps_cache_entry(ps->link()));
+
 	print_messages_pop();
-	delete dxf;
 
 	return ps;
 }

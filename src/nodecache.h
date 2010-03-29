@@ -25,6 +25,10 @@ public:
     if (this->cache.size() > node.index()) this->cache[node.index()] = nullvalue;
   }
 
+	void clear() {
+		this->cache.clear();
+	}
+
 private:
   std::vector<T> cache;
   T nullvalue;

@@ -32,6 +32,7 @@
 #include "builtin.h"
 #include "nodedumper.h"
 #include "CGALRenderer.h"
+#include "PolySetCGALRenderer.h"
 
 #include <QApplication>
 #include <QFile>
@@ -145,17 +146,25 @@ int main(int argc, char **argv)
 	AbstractNode::resetIndexCounter();
 	root_node = root_module->evaluate(&root_ctx, &root_inst);
 
-
 	NodeDumper dumper;
 	Traverser trav(dumper, *root_node, Traverser::PRE_AND_POSTFIX);
 	trav.execute();
  	std::string dumpstdstr = dumper.getDump() + "\n";
  	std::cout << dumpstdstr << "\n";
 
-	CGALRenderer renderer(dumper.getCache());
-	Traverser render(renderer, *root_node, Traverser::PRE_AND_POSTFIX);
-	render.execute();
-	std::cout << renderer.getCGALMesh() << "\n";
+	CGALRenderer cgalrenderer(dumper.getCache());
+	PolySetCGALRenderer psrenderer(cgalrenderer);
+	PolySetRenderer::setRenderer(&psrenderer);
+
+// This is done in renderCGALMesh() for convenience, but can be overridden here
+// 	Traverser render(cgalrenderer, *root_node, Traverser::PRE_AND_POSTFIX);
+// 	render.execute();
+	CGAL_Nef_polyhedron N = cgalrenderer.renderCGALMesh(*root_node);
+
+	QDir::setCurrent(original_path.absolutePath());
+	export_stl(&N, fileInfo.baseName() + ".stl", NULL);
+
+	PolySetRenderer::setRenderer(NULL);
 
 	destroy_builtin_functions();
 	destroy_builtin_modules();

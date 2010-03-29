@@ -21,6 +21,11 @@ public:
 
   const string &getDump() const;
 	const NodeCache<string> &getCache() const { return this->cache; }
+	void clearCache() { this->cache.clear(); }
+
+	// FIXME: Questionable design...
+	static NodeDumper *dumper() { return global_dumper; }
+	static void setDumper(NodeDumper *d) { global_dumper = d; }
 private:
   void handleVisitedChildren(const State &state, const AbstractNode &node);
   bool isCached(const AbstractNode &node);
@@ -32,6 +37,8 @@ private:
   typedef list<const AbstractNode *> ChildList;
   map<int, ChildList> visitedchildren;
   NodeCache<string> cache;
+
+	static NodeDumper *global_dumper;
 };
 
 #endif

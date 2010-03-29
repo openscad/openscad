@@ -51,64 +51,6 @@ AbstractNode *CsgModule::evaluate(const Context*, const ModuleInstantiation *ins
 	return node;
 }
 
-#ifdef ENABLE_CGAL
-
-CGAL_Nef_polyhedron CsgNode::renderCSGMesh() const
-{
-	QString cache_id = mk_cache_id();
-	if (cgal_nef_cache.contains(cache_id)) {
-		progress_report();
-		PRINT(cgal_nef_cache[cache_id]->msg);
-		return cgal_nef_cache[cache_id]->N;
-	}
-
-	print_messages_push();
-
-	CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
-	bool first = true;
-	CGAL_Nef_polyhedron N;
-	try {
-	foreach (AbstractNode *v, children) {
-		if (v->modinst->tag_background)
-			continue;
-		if (first) {
-			N = v->renderCSGMesh();
-			if (N.dim != 0)
-				first = false;
-		} else if (N.dim == 2) {
-			if (type == CSG_TYPE_UNION) {
-				N.p2 += v->renderCSGMesh().p2;
-			} else if (type == CSG_TYPE_DIFFERENCE) {
-				N.p2 -= v->renderCSGMesh().p2;
-			} else if (type == CSG_TYPE_INTERSECTION) {
-				N.p2 *= v->renderCSGMesh().p2;
-			}
-		} else if (N.dim == 3) {
-			if (type == CSG_TYPE_UNION) {
-				N.p3 += v->renderCSGMesh().p3;
-			} else if (type == CSG_TYPE_DIFFERENCE) {
-				N.p3 -= v->renderCSGMesh().p3;
-			} else if (type == CSG_TYPE_INTERSECTION) {
-				N.p3 *= v->renderCSGMesh().p3;
-			}
-		}
-		v->progress_report();
-	}
-	cgal_nef_cache.insert(cache_id, new cgal_nef_cache_entry(N), N.weight());
-	}
-	catch (CGAL::Assertion_exception e) {
-		PRINTF("ERROR: Illegal polygonal object - make sure all polygons are defined with the same winding order. Skipping affected object.");
-	}
-	CGAL::set_error_behaviour(old_behaviour);
-
-	print_messages_pop();
-	progress_report();
-
-	return N;
-}
-
-#endif /* ENABLE_CGAL */
-
 CSGTerm *CsgNode::render_csg_term(double m[20], QVector<CSGTerm*> *highlights, QVector<CSGTerm*> *background) const
 {
 	CSGTerm *t1 = NULL;

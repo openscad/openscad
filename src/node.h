@@ -63,13 +63,6 @@ public:
 
 	// FIXME: Rewrite to visitor
 #ifdef ENABLE_CGAL
-	struct cgal_nef_cache_entry {
-		CGAL_Nef_polyhedron N;
-		QString msg;
-		cgal_nef_cache_entry(const CGAL_Nef_polyhedron &N);
-	};
-	static QCache<QString, cgal_nef_cache_entry> cgal_nef_cache;
-	virtual CGAL_Nef_polyhedron renderCSGMesh() const;
 	class CSGTerm *render_csg_term_from_nef(double m[20], QVector<CSGTerm*> *highlights, QVector<CSGTerm*> *background, const char *statement, int convexity) const;
 #endif
 };
@@ -82,9 +75,6 @@ public:
   virtual Response accept(const class State &state, class Visitor &visitor) const;
 	virtual std::string toString() const;
 
-#ifdef ENABLE_CGAL
-	virtual CGAL_Nef_polyhedron renderCSGMesh() const;
-#endif
 	virtual CSGTerm *render_csg_term(double m[20], QVector<CSGTerm*> *highlights, QVector<CSGTerm*> *background) const;
 #ifndef REMOVE_DUMP
 	virtual QString dump(QString indent) const;
@@ -103,9 +93,6 @@ public:
 		RENDER_OPENCSG
 	};
 	virtual class PolySet *render_polyset(render_mode_e mode) const = 0;
-#ifdef ENABLE_CGAL
-	virtual CGAL_Nef_polyhedron renderCSGMesh() const;
-#endif
 	virtual CSGTerm *render_csg_term(double m[20], QVector<CSGTerm*> *highlights, QVector<CSGTerm*> *background) const;
 	static CSGTerm *render_csg_term_from_ps(double m[20], QVector<CSGTerm*> *highlights, QVector<CSGTerm*> *background, PolySet *ps, const ModuleInstantiation *modinst, int idx);
 };

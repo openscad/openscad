@@ -32,6 +32,8 @@
 #include "export.h"
 #include "builtin.h"
 #include "nodedumper.h"
+#include "CGALRenderer.h"
+#include "PolySetCGALRenderer.h"
 
 #ifdef ENABLE_CGAL
 #include "cgal.h"
@@ -235,6 +237,14 @@ int main(int argc, char **argv)
 		librarydir = libdir.path();
 	}
 
+	// Initialize global visitors
+	NodeDumper dumper;
+	CGALRenderer cgalrenderer(dumper.getCache());
+	PolySetCGALRenderer psrenderer(cgalrenderer);
+	NodeDumper::setDumper(&dumper);
+	CGALRenderer::setRenderer(&cgalrenderer);
+	PolySetRenderer::setRenderer(&psrenderer);
+
 	if (stl_output_file || off_output_file || dxf_output_file)
 	{
 		if (!filename)
@@ -285,8 +295,11 @@ int main(int argc, char **argv)
 		AbstractNode::resetIndexCounter();
 		root_node = root_module->evaluate(&root_ctx, &root_inst);
 
-		CGAL_Nef_polyhedron *root_N;
-		root_N = new CGAL_Nef_polyhedron(root_node->renderCSGMesh());
+		// FIXME: It shouldn't be necessary to dump manually, only when
+		// the dumper and the renderer wants to share a cache
+		Traverser trav(*NodeDumper::dumper(), *root_node, Traverser::PRE_AND_POSTFIX);
+		trav.execute();
+		CGAL_Nef_polyhedron root_N = CGALRenderer::renderer()->renderCGALMesh(*root_node);
 
 		QDir::setCurrent(original_path.absolutePath());
 
@@ -305,16 +318,15 @@ int main(int argc, char **argv)
 		}
 
 		if (stl_output_file)
-			export_stl(root_N, stl_output_file, NULL);
+			export_stl(&root_N, stl_output_file, NULL);
 
 		if (off_output_file)
-			export_off(root_N, off_output_file, NULL);
+			export_off(&root_N, off_output_file, NULL);
 
 		if (dxf_output_file)
-			export_dxf(root_N, dxf_output_file, NULL);
+			export_dxf(&root_N, dxf_output_file, NULL);
 
 		delete root_node;
-		delete root_N;
 #else
 		fprintf(stderr, "OpenSCAD has been compiled without CGAL support!\n");
 		exit(1);
