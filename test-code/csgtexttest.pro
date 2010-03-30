@@ -35,7 +35,6 @@ LEXSOURCES += ../src/lexer.l
 YACCSOURCES += ../src/parser.y
 
 HEADERS += ../src/builtin.h \
-           ../src/cgal.h \
            ../src/context.h \
            ../src/csgterm.h \
            ../src/dxfdata.h \
@@ -63,12 +62,13 @@ HEADERS += ../src/builtin.h \
            ../src/csgnode.h \
            ../src/visitor.h \
            ../src/nodedumper.h \
-           ../src/CGALRenderer.h \
+           ../src/CSGTextRenderer.h \
            ../src/nodecache.h \
            ../src/importnode.h \
-           ../src/state.h
+           ../src/state.h \
+           ../src/PolySetRenderer.h
 
-SOURCES += cgaltest.cc \
+SOURCES += csgtexttest.cc \
            ../src/export.cc \
            ../src/value.cc \
            ../src/expr.cc \
@@ -97,5 +97,6 @@ SOURCES += cgaltest.cc \
            ../src/printutils.cc \
            ../src/progress.cc \
            ../src/nodedumper.cc \
-           ../src/CGALRenderer.cc \
-           ../src/traverser.cc
+           ../src/CSGTextRenderer.cc \
+           ../src/traverser.cc \
+           ../src/PolySetRenderer.cc

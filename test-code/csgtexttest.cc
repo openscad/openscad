@@ -31,7 +31,7 @@
 #include "export.h"
 #include "builtin.h"
 #include "nodedumper.h"
-#include "CGALRenderer.h"
+#include "CSGTextRenderer.h"
 
 #include <QApplication>
 #include <QFile>
@@ -152,10 +152,10 @@ int main(int argc, char **argv)
  	std::string dumpstdstr = dumper.getDump() + "\n";
  	std::cout << dumpstdstr << "\n";
 
-	CGALRenderer renderer(dumper.getCache());
+	CSGTextRenderer renderer(dumper.getCache());
 	Traverser render(renderer, *root_node, Traverser::PRE_AND_POSTFIX);
 	render.execute();
-	std::cout << renderer.getCGALMesh() << "\n";
+	std::cout << renderer.getCSGString() << "\n";
 
 	destroy_builtin_functions();
 	destroy_builtin_modules();

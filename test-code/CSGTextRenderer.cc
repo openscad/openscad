@@ -15,7 +15,7 @@
 #include <assert.h>
 #include <QRegExp>
 
-string CSGTextRenderer::getCGALMesh() const
+string CSGTextRenderer::getCSGString() const
 {
 	assert(this->root); 
 	// FIXME: assert that cache contains root

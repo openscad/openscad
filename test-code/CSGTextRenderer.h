@@ -25,8 +25,7 @@ public:
 	virtual Response visit(const State &state, const TransformNode &node);
 	virtual Response visit(const State &state, const AbstractPolyNode &node);
 
-	string getCGALMesh() const;
-// 	CGAL_Nef_polyhedron getCGALMesh() const;
+	string getCSGString() const;
 private:
   void addToParent(const State &state, const AbstractNode &node);
   bool isCached(const AbstractNode &node);
@@ -38,9 +37,7 @@ private:
   const AbstractNode *root;
   typedef list<pair<const AbstractNode *, QString> > ChildList;
   map<int, ChildList> visitedchildren;
-//	hashmap<string, CGAL_Nef_polyhedron> cache;
 
-  // For now use strings instead of Nef polyhedrons for testing caching
 	QHash<QString, string> cache;
 	const NodeCache<string> &dumpcache;
 };
