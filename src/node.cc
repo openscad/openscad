@@ -64,19 +64,7 @@ Response AbstractPolyNode::accept(const class State &state, Visitor &visitor) co
 	return visitor.visit(state, *this);
 }
 
-#ifndef REMOVE_DUMP
-QString AbstractNode::dump(QString indent) const
-{
-	if (dump_cache.isEmpty()) {
-		QString text = indent + QString("n%1: group() {\n").arg(idx);
-		foreach (AbstractNode *v, children)
-			text += v->dump(indent + QString("\t"));
-		((AbstractNode*)this)->dump_cache = text + indent + "}\n";
-	}
-	return dump_cache;
-}
-#else
-// Temporarily offer a top-level dump function to keep existing code running
+// FIXME: Temporarily offer a top-level dump function to keep existing code running
 QString AbstractNode::dump() const
 {
 	NodeDumper dumper;
@@ -84,7 +72,6 @@ QString AbstractNode::dump() const
 	trav.execute();
 	return QString::fromStdString(dumper.getDump() + "\n");
 }
-#endif
 
 std::string AbstractNode::toString() const
 {
@@ -92,19 +79,6 @@ std::string AbstractNode::toString() const
 	stream << "n" << this->index() << ": group()";
 	return stream.str();
 }
-
-#ifndef REMOVE_DUMP
-QString AbstractIntersectionNode::dump(QString indent) const
-{
-	if (dump_cache.isEmpty()) {
-		QString text = indent + QString::fromStdString(this->toString()) + " {\n";
-		foreach (AbstractNode *v, children)
-			text += v->dump(indent + QString("\t"));
-		((AbstractNode*)this)->dump_cache = text + indent + "}\n";
-	}
-	return dump_cache;
-}
-#endif
 
 std::string AbstractIntersectionNode::toString() const
 {

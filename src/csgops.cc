@@ -77,25 +77,6 @@ CSGTerm *CsgNode::render_csg_term(double m[20], QVector<CSGTerm*> *highlights, Q
 	return t1;
 }
 
-#ifndef REMOVE_DUMP
-QString CsgNode::dump(QString indent) const
-{
-	if (dump_cache.isEmpty()) {
-		QString text = indent + QString("n%1: ").arg(idx);
-		if (type == CSG_TYPE_UNION)
-			text += "union() {\n";
-		if (type == CSG_TYPE_DIFFERENCE)
-			text += "difference() {\n";
-		if (type == CSG_TYPE_INTERSECTION)
-			text += "intersection() {\n";
-		foreach (AbstractNode *v, children)
-			text += v->dump(indent + QString("\t"));
-		((AbstractNode*)this)->dump_cache = text + indent + "}\n";
-	}
-	return dump_cache;
-}
-#endif
-
 std::string CsgNode::toString() const
 {
 	std::stringstream stream;

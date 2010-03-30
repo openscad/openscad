@@ -203,19 +203,6 @@ CSGTerm *RenderNode::render_csg_term(double m[20], QVector<CSGTerm*> *highlights
 
 #endif
 
-#ifndef REMOVE_DUMP
-QString RenderNode::dump(QString indent) const
-{
-	if (dump_cache.isEmpty()) {
-		QString text = indent + QString("n%1: ").arg(idx) + QString("render(convexity = %1) {\n").arg(QString::number(convexity));
-		foreach (AbstractNode *v, children)
-			text += v->dump(indent + QString("\t"));
-		((AbstractNode*)this)->dump_cache = text + indent + "}\n";
-	}
-	return dump_cache;
-}
-#endif
-
 std::string RenderNode::toString() const
 {
 	std::stringstream stream;

@@ -263,30 +263,6 @@ CSGTerm *TransformNode::render_csg_term(double c[20], QVector<CSGTerm*> *highlig
 	return t1;
 }
 
-#ifndef REMOVE_DUMP
-QString TransformNode::dump(QString indent) const
-{
-	if (dump_cache.isEmpty()) {
-		QString text;
-		if (m[16] >= 0 || m[17] >= 0 || m[18] >= 0 || m[19] >= 0)
-			text.sprintf("n%d: color([%g, %g, %g, %g])", idx,
-					m[16], m[17], m[18], m[19]);
-		else
-			text.sprintf("n%d: multmatrix([[%g, %g, %g, %g], [%g, %g, %g, %g], "
-					"[%g, %g, %g, %g], [%g, %g, %g, %g]])", idx,
-					m[0], m[4], m[ 8], m[12],
-					m[1], m[5], m[ 9], m[13],
-					m[2], m[6], m[10], m[14],
-					m[3], m[7], m[11], m[15]);
-		text = indent + text + " {\n";
-		foreach (AbstractNode *v, children)
-			text += v->dump(indent + QString("\t"));
-		((AbstractNode*)this)->dump_cache = text + indent + "}\n";
-	}
-	return dump_cache;
-}
-#endif
-
 std::string TransformNode::toString() const
 {
 	std::stringstream stream;

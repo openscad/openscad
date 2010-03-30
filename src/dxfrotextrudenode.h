@@ -22,9 +22,6 @@ public:
 	double origin_x, origin_y, scale;
 	QString filename, layername;
 	virtual PolySet *render_polyset(render_mode_e mode) const;
-#ifndef REMOVE_DUMP
-	virtual QString dump(QString indent) const;
-#endif
 };
 
 #endif

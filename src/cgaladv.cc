@@ -69,9 +69,6 @@ public:
 	int convexity, level;
 	cgaladv_type_e type;
 	virtual CSGTerm *render_csg_term(double m[20], QVector<CSGTerm*> *highlights, QVector<CSGTerm*> *background) const;
-#ifndef REMOVE_DUMP
-	virtual QString dump(QString indent) const;
-#endif
 };
 
 AbstractNode *CgaladvModule::evaluate(const Context *ctx, const ModuleInstantiation *inst) const
@@ -159,28 +156,6 @@ CSGTerm *CgaladvNode::render_csg_term(double m[20], QVector<CSGTerm*> *highlight
 }
 
 #endif // ENABLE_CGAL
-
-#ifndef REMOVE_DUMP
-QString CgaladvNode::dump(QString indent) const
-{
-	if (dump_cache.isEmpty()) {
-		QString text;
-		if (type == MINKOWSKI)
-			text.sprintf("minkowski(convexity = %d) {\n", this->convexity);
-		if (type == GLIDE) {
-			text.sprintf(", convexity = %d) {\n", this->convexity);
-			text = QString("glide(path = ") + this->path.dump() + text;
-		}
-		if (type == SUBDIV)
-			text.sprintf("subdiv(level = %d, convexity = %d) {\n", this->level, this->convexity);
-		foreach (AbstractNode *v, this->children)
-			text += v->dump(indent + QString("\t"));
-		text += indent + "}\n";
-		((AbstractNode*)this)->dump_cache = indent + QString("n%1: ").arg(idx) + text;
-	}
-	return dump_cache;
-}
-#endif
 
 std::string CgaladvNode::toString() const
 {

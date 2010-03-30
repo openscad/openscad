@@ -56,9 +56,6 @@ public:
 	bool center;
 	int convexity;
 	virtual PolySet *render_polyset(render_mode_e mode) const;
-#ifndef REMOVE_DUMP
-	virtual QString dump(QString indent) const;
-#endif
 };
 
 AbstractNode *SurfaceModule::evaluate(const Context *ctx, const ModuleInstantiation *inst) const
@@ -205,19 +202,6 @@ PolySet *SurfaceNode::render_polyset(render_mode_e) const
 
 	return p;
 }
-
-#ifndef REMOVE_DUMP
-QString SurfaceNode::dump(QString indent) const
-{
-	if (dump_cache.isEmpty()) {
-		QString text;
-		text.sprintf("surface(file = \"%s\", center = %s);\n",
-				filename.toAscii().data(), center ? "true" : "false");
-		((AbstractNode*)this)->dump_cache = indent + QString("n%1: ").arg(idx) + text;
-	}
-	return dump_cache;
-}
-#endif
 
 std::string SurfaceNode::toString() const
 {

@@ -116,22 +116,6 @@ PolySet *ProjectionNode::render_polyset(render_mode_e mode) const
 	return ps;
 }
 
-#ifndef REMOVE_DUMP
-QString ProjectionNode::dump(QString indent) const
-{
-	if (dump_cache.isEmpty()) {
-		QString text;
-		text.sprintf("projection(cut = %s, convexity = %d) {\n",
-				this->cut_mode ? "true" : "false", this->convexity);
-		foreach (AbstractNode *v, this->children)
-			text += v->dump(indent + QString("\t"));
-		text += indent + "}\n";
-		((AbstractNode*)this)->dump_cache = indent + QString("n%1: ").arg(idx) + text;
-	}
-	return dump_cache;
-}
-#endif
-
 std::string ProjectionNode::toString() const
 {
 	std::stringstream stream;

@@ -24,9 +24,6 @@ public:
 	bool center, has_twist;
 	QString filename, layername;
 	virtual PolySet *render_polyset(render_mode_e mode) const;
-#ifndef REMOVE_DUMP
-	virtual QString dump(QString indent) const;
-#endif
 };
 
 #endif

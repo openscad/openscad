@@ -9,8 +9,6 @@ UI_DIR = objects
 RCC_DIR = objects
 INCLUDEPATH += src
 
-DEFINES += REMOVE_DUMP
-
 macx {
   DEPLOYDIR = $$(MACOSX_DEPLOY_DIR)
   !isEmpty(DEPLOYDIR) {

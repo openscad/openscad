@@ -189,33 +189,6 @@ PolySet *ImportNode::render_polyset(render_mode_e) const
 	return p;
 }
 
-#ifndef REMOVE_DUMP
-QString ImportNode::dump(QString indent) const
-{
-	if (dump_cache.isEmpty()) {
-		QString text;
-		struct stat st;
-		memset(&st, 0, sizeof(struct stat));
-		stat(filename.toAscii().data(), &st);
-		if (type == TYPE_STL)
-			text.sprintf("import_stl(file = \"%s\", cache = \"%x.%x\", convexity = %d);\n",
-					filename.toAscii().data(), (int)st.st_mtime, (int)st.st_size, convexity);
-		if (type == TYPE_OFF)
-			text.sprintf("import_off(file = \"%s\", cache = \"%x.%x\", convexity = %d);\n",
-					filename.toAscii().data(), (int)st.st_mtime, (int)st.st_size, convexity);
-		if (type == TYPE_DXF)
-			text.sprintf("import_dxf(file = \"%s\", cache = \"%x.%x\", layer = \"%s\", "
-					"origin = [ %g %g ], scale = %g, convexity = %d, "
-					"$fn = %g, $fa = %g, $fs = %g);\n",
-					filename.toAscii().data(), (int)st.st_mtime, (int)st.st_size,
-					layername.toAscii().data(), origin_x, origin_y, scale, convexity,
-					fn, fa, fs);
-		((AbstractNode*)this)->dump_cache = indent + QString("n%1: ").arg(idx) + text;
-	}
-	return dump_cache;
-}
-#endif
-
 std::string ImportNode::toString() const
 {
 	std::stringstream stream;

@@ -7,7 +7,6 @@ UI_DIR = objects
 RCC_DIR = objects
 INCLUDEPATH += ../src
 
-DEFINES += REMOVE_DUMP
 TARGET = dumptest
 macx {
   CONFIG -= app_bundle

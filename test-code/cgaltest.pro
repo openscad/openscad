@@ -7,7 +7,6 @@ UI_DIR = objects
 RCC_DIR = objects
 INCLUDEPATH += ../src
 
-DEFINES += REMOVE_DUMP REMOVE_RENDERCGAL
 macx {
   CONFIG -= app_bundle
   LIBS += -framework Carbon

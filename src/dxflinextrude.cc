@@ -152,36 +152,6 @@ PolySet *DxfLinearExtrudeNode::render_polyset(render_mode_e mode) const
 	return ps;
 }
 
-#ifndef REMOVE_DUMP
-QString DxfLinearExtrudeNode::dump(QString indent) const
-{
-	if (dump_cache.isEmpty()) {
-		QString text;
-		struct stat st;
-		memset(&st, 0, sizeof(struct stat));
-		stat(filename.toAscii().data(), &st);
-		text.sprintf("linear_extrude(file = \"%s\", cache = \"%x.%x\", layer = \"%s\", "
-				"height = %g, origin = [ %g %g ], scale = %g, center = %s, convexity = %d",
-				filename.toAscii().data(), (int)st.st_mtime, (int)st.st_size,
-				layername.toAscii().data(), height, origin_x, origin_y, scale,
-				center ? "true" : "false", convexity);
-		if (has_twist) {
-			QString t2;
-			t2.sprintf(", twist = %g, slices = %d", twist, slices);
-			text += t2;
-		}
-		QString t3;
-		t3.sprintf(", $fn = %g, $fa = %g, $fs = %g) {\n", fn, fa, fs);
-		text += t3;
-		foreach (AbstractNode *v, children)
-			text += v->dump(indent + QString("\t"));
-		text += indent + "}\n";
-		((AbstractNode*)this)->dump_cache = indent + QString("n%1: ").arg(idx) + text;
-	}
-	return dump_cache;
-}
-#endif
-
 std::string DxfLinearExtrudeNode::toString() const
 {
 	std::stringstream stream;
