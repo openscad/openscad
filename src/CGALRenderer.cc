@@ -1,11 +1,9 @@
 #include "CGALRenderer.h"
-#include <string>
-#include <map>
-#include <list>
 #include "visitor.h"
 #include "state.h"
 #include "nodecache.h"
 #include "module.h" // FIXME: Temporarily for ModuleInstantiation
+#include "printutils.h"
 
 #include "csgnode.h"
 #include "transformnode.h"
@@ -13,6 +11,12 @@
 #include "dxfdata.h"
 #include "dxftess.h"
 
+#include <CGAL/assertions_behaviour.h>
+#include <CGAL/exceptions.h>
+
+#include <string>
+#include <map>
+#include <list>
 #include <sstream>
 #include <iostream>
 #include <assert.h>
@@ -646,8 +650,10 @@ CGAL_Nef_polyhedron CGALRenderer::renderCGALMesh(const PolySet &ps)
 
 #endif
 	}
-	else
+	else // not (this->is2d)
 	{
+		CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
+		try {
 		CGAL_Polyhedron P;
 		CGAL_Build_PolySet builder(ps);
 		P.delegate(builder);
@@ -656,6 +662,12 @@ CGAL_Nef_polyhedron CGALRenderer::renderCGALMesh(const PolySet &ps)
 #endif
 		CGAL_Nef_polyhedron3 N(P);
 		return CGAL_Nef_polyhedron(N);
+    }
+		catch (CGAL::Assertion_exception e) {
+			PRINTF("ERROR: Illegal polygonal object - make sure all polygons are defined with the same winding order. Skipping affected object.");
+			CGAL::set_error_behaviour(old_behaviour);
+			return CGAL_Nef_polyhedron();
+		}
 	}
 	return CGAL_Nef_polyhedron();
 }
