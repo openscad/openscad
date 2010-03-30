@@ -10,8 +10,11 @@ o It's now possible to start a new rendering while one is already running.
 CRASH BUGS
 ----------
 o Broken polyhedron() entities are not correctly detected and cause CGAL segfaults
-o Non-manifold objects make CGAL crash (e.g. two cubes which touch at one edge)
 o linear_extrude(50) square([5,0]);
+o union() {
+    linear_extrude(height=10, twist=90) circle(5);
+    translate([7,-5,0]) linear_extrude(height=10, twist=180) polygon(points = [[0,0], [10,0], [5,10]]);
+  }
 
 USER INTERFACE
 --------------
@@ -80,14 +83,15 @@ ENGINE
 o Primitives
   - Springs, spirals (requested by Cathal Garvey)
   - (TTF) Text
+  - Image-based height field like http://www.thingiverse.com/thing:2078
 o 2D Subsystem
   - Performance: Is it necessary to union children before extrusion
     when compiling? Can this be postponed to CGAL evaluation time?
   - Add inset() operation
 o Built-in modules
   - extrude*: Allow the base 2D primitive to have a Z value
+  - rotate_extrude(): Allow for specification of start/stop/sweep angle?
 o Advanced Transformations
-  - Add statement for 2D and 3D minkowski sum
   - Add statement for refinement via surface subdivision
   - Add statement for intersections in cartesian product of childs
 o Function-Module-Interface
@@ -143,6 +147,9 @@ o Decouple CGAL and OpenCSG operations from the node tree -> visitor
 
 TESTING
 -------
+o Caching and MDI looks suspicious when the code relies on external resources
+  which might be loaded from difference locations in different documents
+  -> we might get a false cache hit
 o Write some cmd-line apps that dump an openscad file to misc. formats
   (dump, stl, dxf)
 o Write a simple test script that collects verified and current STL renderings
@@ -160,4 +167,5 @@ MISC
 ----
 o Mac OS X:
   - universal binary -> fix cgal and opencsg
-
+o Write checklists for typical extension work (add new module, add new function)
+  -> make sure new test files are added
