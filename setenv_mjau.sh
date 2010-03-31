@@ -1,2 +1,3 @@
 export OPENCSGDIR=$PWD/../OpenCSG-1.3.0
+export CGALDIR=$PWD/../install
 export DYLD_LIBRARY_PATH=$OPENCSGDIR/lib:$QCODEEDITDIR/lib

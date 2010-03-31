@@ -13,6 +13,7 @@ opencsg {
   !isEmpty(OPENCSG_DIR) {
     INCLUDEPATH += $$OPENCSG_DIR/include
     LIBS += -L$$OPENCSG_DIR/lib
+    message("OpenCSG location: $$CGAL_DIR")
   }
   macx {
     # For glew
