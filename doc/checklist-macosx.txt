@@ -11,7 +11,7 @@ o Build CGAL >= 3.5
 
   tar xzf CGAL-3.6.tar.gz
   cd CGAL-3.6
-  cmake -DCMAKE_INSTALL_PREFIX=$PWD/../install -DBUILD_SHARED_LIBS=FALSE
+  cmake -DCMAKE_INSTALL_PREFIX=$PWD/../install/CGAL-3.6 -DBUILD_SHARED_LIBS=FALSE
   make -j4
   make install
 
