@@ -412,7 +412,12 @@ void
 MainWindow::openFile(const QString &new_filename)
 {
 #ifdef ENABLE_MDI
+#ifdef _QCODE_EDIT_
+	if (this->editor->document()->lines() > 1 ||
+			!this->editor->document()->text(true, false).trimmed().isEmpty()) {
+#else
 	if (!editor->toPlainText().isEmpty()) {
+#endif
 		new MainWindow(new_filename);
 		clearCurrentOutput();
 		return;
