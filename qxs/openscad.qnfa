@@ -1,0 +1,86 @@
+<!DOCTYPE QNFA>
+<QNFA language="openscad" extensions="scad" defaultLineMark="breakpoint">
+
+	<context id="comment/multi" format="comment">
+		<start parenthesis="cppcomment:open" indent="1" fold="1">/\*</start>
+		<stop parenthesis="cppcomment:close" indent="1" fold="1">\*/</stop>
+	</context>
+	
+	<context id="comment/single" format="comment" >
+		<start>//</start>
+		<stop exclusive="false">\n</stop>
+		
+		<context id="evilJump" format="danger" >
+			<start>\\\n</start>
+			<stop exclusive="false">\n</stop>
+			<escape>\\</escape>
+		</context>
+	</context>
+	
+	<context id="data/string" format="text" >
+		<start>&quot;</start>
+		<stop>&quot;</stop>
+		<stop exclusive="false">\n</stop>
+		<sequence id="escape" format="escapeseq" >\\[nrtvf\\"'\n]</sequence>
+	</context>
+	
+	<sequence parenthesis="round:open">(</sequence>
+	<sequence parenthesis="round:close">)</sequence>
+	<sequence parenthesis="curly:open" indent="1" fold="1">{</sequence>
+	<sequence parenthesis="curly:close" indent="1" fold="1">}</sequence>
+	<sequence parenthesis="square:open">\[</sequence>
+	<sequence parenthesis="square:close">\]</sequence>
+	
+	<list id="keywords/visibility" format="keyword">
+		<word parenthesis="visibility:boundary" fold="1" indent="1">public</word>
+		<word parenthesis="visibility:boundary" fold="1" indent="1">protected</word>
+		<word parenthesis="visibility:boundary" fold="1" indent="1">private</word>
+	</list>
+	
+	<list id="keywords/toplevel" format="keyword">
+		<word>module</word>
+		<word>func</word>
+	</list>
+
+	<list id="keywords/blocks" format="keyword">
+		<word>for</word>
+		<word>if</word>
+		<word>else</word>
+	</list>
+	
+	<list id="keywords/oop" format="keyword">
+		<word>using</word>
+	</list>
+	
+	<list id="keywords/others" format="keyword">
+		<word>asm</word>
+		<word>false</word>
+		<word>true</word>
+		<word>template</word>
+		<word>typename</word>
+		<word>return</word>
+		<word>sizeof</word>
+		<word>typeid</word>
+		<word>typedef</word>
+	</list>
+	
+	<list id="ansi/trigraph" format="extra-keyword">
+		<prefix>\?\?</prefix>
+		<word>\(</word>
+		<word>\)</word>
+		<word>&lt;</word>
+		<word>&gt;</word>
+		<word>=</word>
+		<word>/</word>
+		<word>&apos;</word>
+		<word>!</word>
+		<word>-</word>
+	</list>
+	
+	<word id="QtCasts" format="extra-keyword">q$w+_cast</word>
+	
+	<word id="data/float" format="numbers">-?[0-9]*.[0-9]+f?</word>
+	<word id="data/hexadecimal" format="numbers">0[xX][0-9a-fA-F]+[ulUL]*</word>
+	<word id="data/octal" format="numbers">0[0-7]+</word>
+	<word id="data/decimal" format="numbers">-?[0-9]+[ulUL]*</word>
+</QNFA>

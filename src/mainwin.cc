@@ -66,7 +66,11 @@
 #include <QMessageBox>
 #include <QDesktopServices>
 #include <QSettings>
-
+#ifdef _QCODE_EDIT_
+#include "qdocument.h"
+#include "qformatscheme.h"
+#include "qlanguagefactory.h"
+#endif
 //for chdir
 #include <unistd.h>
 
@@ -156,7 +160,13 @@ MainWindow::MainWindow(const QString &filename)
 	fsteps = 1;
 
 	highlighter = NULL;
-
+#ifdef _QCODE_EDIT_
+	QFormatScheme *formats = new QFormatScheme("qxs/openscad.qxf");
+	QDocument::setDefaultFormatScheme(formats);
+	QLanguageFactory *languages = new QLanguageFactory(formats,this);
+	languages->addDefinitionPath("qxs");
+	languages->setLanguage(editor, "openscad");
+#endif
 	editor->setLineWrapping(true); // Not designable
 	setFont("", 0); // Init default font
 
