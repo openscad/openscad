@@ -155,7 +155,7 @@ SOURCES += src/openscad.cc \
            src/nef2dxf.cc \
            src/Preferences.cc \
            src/progress.cc \
-           src/editor.cc \\
+           src/editor.cc \
            src/traverser.cc \
            src/nodedumper.cc \
            src/CGALRenderer.cc \
