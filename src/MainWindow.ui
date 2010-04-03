@@ -23,18 +23,12 @@
       <property name="orientation">
        <enum>Qt::Horizontal</enum>
       </property>
-      <widget class="QTextEdit" name="editor">
+      <widget class="Editor" name="editor">
        <property name="font">
         <font>
          <family>Monaco</family>
          <pointsize>8</pointsize>
         </font>
-       </property>
-       <property name="tabStopWidth">
-        <number>30</number>
-       </property>
-       <property name="textInteractionFlags">
-        <set>Qt::LinksAccessibleByMouse|Qt::TextEditable|Qt::TextEditorInteraction|Qt::TextSelectableByKeyboard|Qt::TextSelectableByMouse</set>
        </property>
       </widget>
       <widget class="QWidget" name="layoutWidget">

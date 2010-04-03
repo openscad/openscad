@@ -157,7 +157,7 @@ MainWindow::MainWindow(const QString &filename)
 
 	highlighter = NULL;
 
-	editor->setWordWrapMode(QTextOption::WrapAnywhere); // Not designable
+	editor->setLineWrapping(true); // Not designable
 	setFont("", 0); // Init default font
 
 	screen->statusLabel = new QLabel(this);
@@ -218,10 +218,10 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this->editActionCut, SIGNAL(triggered()), editor, SLOT(cut()));
 	connect(this->editActionCopy, SIGNAL(triggered()), editor, SLOT(copy()));
 	connect(this->editActionPaste, SIGNAL(triggered()), editor, SLOT(paste()));
-	connect(this->editActionIndent, SIGNAL(triggered()), this, SLOT(editIndent()));
-	connect(this->editActionUnindent, SIGNAL(triggered()), this, SLOT(editUnindent()));
-	connect(this->editActionComment, SIGNAL(triggered()), this, SLOT(editComment()));
-	connect(this->editActionUncomment, SIGNAL(triggered()), this, SLOT(editUncomment()));
+	connect(this->editActionIndent, SIGNAL(triggered()), editor, SLOT(indentSelection()));
+	connect(this->editActionUnindent, SIGNAL(triggered()), editor, SLOT(unindentSelection()));
+	connect(this->editActionComment, SIGNAL(triggered()), editor, SLOT(commentSelection()));
+	connect(this->editActionUncomment, SIGNAL(triggered()), editor, SLOT(uncommentSelection()));
 	connect(this->editActionPasteVPT, SIGNAL(triggered()), this, SLOT(pasteViewportTranslation()));
 	connect(this->editActionPasteVPR, SIGNAL(triggered()), this, SLOT(pasteViewportRotation()));
 	connect(this->editActionZoomIn, SIGNAL(triggered()), editor, SLOT(zoomIn()));
@@ -590,9 +590,14 @@ void MainWindow::compile(bool procevents)
 
 	if (!root_module) {
 		if (!animate_panel->isVisible()) {
+#ifdef _QCODE_EDIT_
+			QDocumentCursor cursor = editor->cursor();
+			cursor.setPosition(parser_error_pos);
+#else
 			QTextCursor cursor = editor->textCursor();
 			cursor.setPosition(parser_error_pos);
 			editor->setTextCursor(cursor);
+#endif
 		}
 		goto fail;
 	}
@@ -862,7 +867,7 @@ void MainWindow::actionSave()
 		else {
 			QTextStream(&file) << this->editor->toPlainText();
 			PRINTA("Saved design `%1'.", this->fileName);
-			this->editor->document()->setModified(false);
+			this->editor->setContentModified(false);
 		}
 		clearCurrentOutput();
 	}
@@ -898,76 +903,6 @@ void MainWindow::actionReload()
 	load();
 }
 
-void MainWindow::editIndent()
-{
-	QTextCursor cursor = editor->textCursor();
-	int p1 = cursor.selectionStart();
-	QString txt = cursor.selectedText();
-
-	txt.replace(QString(QChar(8233)), QString(QChar(8233)) + QString("\t"));
-	if (txt.endsWith(QString(QChar(8233)) + QString("\t")))
-		txt.chop(1);
-	txt = QString("\t") + txt;
-
-	cursor.insertText(txt);
-	int p2 = cursor.position();
-	cursor.setPosition(p1, QTextCursor::MoveAnchor);
-	cursor.setPosition(p2, QTextCursor::KeepAnchor);
-	editor->setTextCursor(cursor);
-}
-
-void MainWindow::editUnindent()
-{
-	QTextCursor cursor = editor->textCursor();
-	int p1 = cursor.selectionStart();
-	QString txt = cursor.selectedText();
-
-	txt.replace(QString(QChar(8233)) + QString("\t"), QString(QChar(8233)));
-	if (txt.startsWith(QString("\t")))
-		txt.remove(0, 1);
-
-	cursor.insertText(txt);
-	int p2 = cursor.position();
-	cursor.setPosition(p1, QTextCursor::MoveAnchor);
-	cursor.setPosition(p2, QTextCursor::KeepAnchor);
-	editor->setTextCursor(cursor);
-}
-
-void MainWindow::editComment()
-{
-	QTextCursor cursor = editor->textCursor();
-	int p1 = cursor.selectionStart();
-	QString txt = cursor.selectedText();
-
-	txt.replace(QString(QChar(8233)), QString(QChar(8233)) + QString("//"));
-	if (txt.endsWith(QString(QChar(8233)) + QString("//")))
-		txt.chop(2);
-	txt = QString("//") + txt;
-
-	cursor.insertText(txt);
-	int p2 = cursor.position();
-	cursor.setPosition(p1, QTextCursor::MoveAnchor);
-	cursor.setPosition(p2, QTextCursor::KeepAnchor);
-	editor->setTextCursor(cursor);
-}
-
-void MainWindow::editUncomment()
-{
-	QTextCursor cursor = editor->textCursor();
-	int p1 = cursor.selectionStart();
-	QString txt = cursor.selectedText();
-
-	txt.replace(QString(QChar(8233)) + QString("//"), QString(QChar(8233)));
-	if (txt.startsWith(QString("//")))
-		txt.remove(0, 2);
-
-	cursor.insertText(txt);
-	int p2 = cursor.position();
-	cursor.setPosition(p1, QTextCursor::MoveAnchor);
-	cursor.setPosition(p2, QTextCursor::KeepAnchor);
-	editor->setTextCursor(cursor);
-}
-
 void MainWindow::hideEditor()
 {
 	if (editActionHide->isChecked()) {
@@ -979,7 +914,11 @@ void MainWindow::hideEditor()
 
 void MainWindow::pasteViewportTranslation()
 {
+#ifdef _QCODE_EDIT_
+	QDocumentCursor cursor = editor->cursor();
+#else
 	QTextCursor cursor = editor->textCursor();
+#endif
 	QString txt;
 	txt.sprintf("[ %.2f, %.2f, %.2f ]", -screen->object_trans_x, -screen->object_trans_y, -screen->object_trans_z);
 	cursor.insertText(txt);
@@ -987,7 +926,11 @@ void MainWindow::pasteViewportTranslation()
 
 void MainWindow::pasteViewportRotation()
 {
+#ifdef _QCODE_EDIT_
+	QDocumentCursor cursor = editor->cursor();
+#else
 	QTextCursor cursor = editor->textCursor();
+#endif
 	QString txt;
 	txt.sprintf("[ %.2f, %.2f, %.2f ]",
 		fmodf(360 - screen->object_rot_x + 90, 360), fmodf(360 - screen->object_rot_y, 360), fmodf(360 - screen->object_rot_z, 360));
@@ -1791,7 +1734,7 @@ MainWindow::helpManual()
 bool
 MainWindow::maybeSave()
 {
-	if (editor->document()->isModified()) {
+	if (editor->isContentModified()) {
 		QMessageBox::StandardButton ret;
 		ret = QMessageBox::warning(this, "Application",
 				"The document has been modified.\n"

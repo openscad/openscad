@@ -35,6 +35,7 @@ macx:CONFIG += mdi
 CONFIG += cgal
 CONFIG += opencsg
 CONFIG += progresswidget
+#CONFIG += qcodeedit
 
 mdi {
   # MDI needs an OpenCSG library that is compiled with OpenCSG-Reset-Hack.patch applied
@@ -89,7 +90,8 @@ HEADERS += src/CGAL_renderer.h \
            src/polyset.h \
            src/printutils.h \
            src/value.h \
-           src/progress.h
+           src/progress.h \
+           src/editor.h
 
 SOURCES += src/openscad.cc \
            src/mainwin.cc \
@@ -125,7 +127,8 @@ SOURCES += src/openscad.cc \
            src/printutils.cc \
            src/nef2dxf.cc \
            src/Preferences.cc \
-           src/progress.cc
+           src/progress.cc \
+           src/editor.cc
 
 macx {
   HEADERS += src/AppleEvents.h \
