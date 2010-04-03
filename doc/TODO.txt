@@ -47,23 +47,22 @@ o 3D View
   - overlay indicator displaying current view mode
   - OpenCSG rendering: Coincident surfaces causes z-buffer fighting. Is this somehow
     avoidable tuning the depth tests in OpenCSG? 
-o Editor
+o Editor wishlist
+  - More infrastructure for external editor (allow communication from the outside)
+  - Preferences GUI for the features below
   - line numbers
   - tear-off/maximize options?
   - Save somehow uses current dir, even if the file is already saved earlier
-  - Autocompletion/hints for builtin (and user-defined) functions/modules
+  - Code completion/hints for builtin (and user-defined) functions/modules
   - builtin quick function reference/help
   - Drawer/popup with all modules/functions listed which can be inserted into
     the editor by clicking or drag&drop -> icons in toolbar?
     -> This would be moving in the direction of a traditional CAD GUI
        and needs a fair bit of thinking.
-  - More infrastructur for external editor (or is the reload good enough?)
-  - Evaluate QCodeEdit (http://qcodeedit.edyuk.org)
   - Display some kind of line wrap indicator
   - Couple the source code to the AST to allow highlighting selected elements
     in the source code in the 3D view
   - Tabbed editor for designs including other files
-  - modifier flag is broken
   - C-c/C-v should work on the focused widget, not always in the editor
 
 o Computation
