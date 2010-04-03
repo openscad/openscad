@@ -3,6 +3,10 @@
 
 #include <QSyntaxHighlighter>
 
+#ifdef _QCODE_EDIT_
+#include "qdocument.h"
+#endif
+
 class Highlighter : public QSyntaxHighlighter
 {
 public:

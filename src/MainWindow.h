@@ -88,10 +88,6 @@ private slots:
 	void actionReload();
 
 private slots:
-	void editIndent();
-	void editUnindent();
-	void editComment();
-	void editUncomment();
 	void pasteViewportTranslation();
 	void pasteViewportRotation();
 	void hideEditor();
