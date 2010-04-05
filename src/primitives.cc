@@ -474,10 +474,9 @@ sphere_next_r2:
 		{
 			dd.paths.append(DxfData::Path());
 			for (int i=0; i<points.vec.size(); i++) {
-				if (i < dd.points.size()) {
-					DxfData::Point *p = &dd.points[i];
-					dd.paths.last().points.append(p);
-				}
+				assert(i < dd.points.size()); // FIXME: Not needed, but this used to be an 'if'
+				DxfData::Point *p = &dd.points[i];
+				dd.paths.last().points.append(p);
 			}
 			if (dd.paths.last().points.size() > 0) {
 				dd.paths.last().points.append(dd.paths.last().points.first());
