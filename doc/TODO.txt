@@ -164,6 +164,10 @@ o Use a logging framework to get debugging/info output more under control?
 
 MISC
 ----
+o Streamline the cmd-line interface a bit
+  - add -h/-?
+  - -v/--version
+  - Implicit output file format
 o Mac OS X:
   - universal binary -> fix cgal and opencsg
 o Write checklists for typical extension work (add new module, add new function)
