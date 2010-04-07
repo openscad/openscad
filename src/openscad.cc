@@ -56,6 +56,14 @@ static void help(const char *progname)
 	exit(1);
 }
 
+#define STRINGIFY(x) #x
+#define TOSTRING(x) STRINGIFY(x)
+static void version()
+{
+	printf("openscad version %s\n",TOSTRING(OPENSCAD_VERSION));
+	exit(1);
+}
+
 QString commandline_commands;
 const char *make_command = NULL;
 QSet<QString> dependencies;
@@ -115,13 +123,37 @@ int main(int argc, char **argv)
 	const char *off_output_file = NULL;
 	const char *dxf_output_file = NULL;
 	const char *deps_output_file = NULL;
-
+	
+	static struct option long_options[] =
+             {
+               {"version", no_argument,	0, 'v'},
+               {"help",    no_argument, 0, 'h'},
+               {0, 0, 0, 0}
+             };
+	int option_index = 0;
+	
 	int opt;
-
-	while ((opt = getopt(argc, argv, "s:o:x:d:m:D:")) != -1)
+	while ((opt = getopt_long(argc, argv, "s:o:x:d:m:D:vh", long_options, &option_index)) != -1)
 	{
 		switch (opt)
 		{
+		case 0:
+			switch (option_index)
+			{
+				case 'v':
+					version();
+					break;
+				case 'h':
+					help(argv[0]);
+					break;
+			}
+			break;
+		case 'v':
+			version();
+			break;
+		case 'h':
+			help(argv[0]);
+			break;
 		case 's':
 			if (stl_output_file || off_output_file || dxf_output_file)
 				help(argv[0]);
