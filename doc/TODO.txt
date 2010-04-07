@@ -6,6 +6,7 @@ o Tesselation via GLU sometimes produces strange results
 o Export STL: Exports existing CGAL model even though the current model is changed, but not CGAL rendered
 o It's now possible to start a new rendering while one is already running.
   -> turn off most (or all) interaction while rendering
+o Look into the polygon winding and rotate_extrude() problem reported by Britton
 
 CRASH BUGS
 ----------
