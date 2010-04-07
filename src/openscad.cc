@@ -60,7 +60,7 @@ static void help(const char *progname)
 #define TOSTRING(x) STRINGIFY(x)
 static void version()
 {
-	printf("openscad version %s\n",TOSTRING(OPENSCAD_VERSION));
+	printf("OpenSCAD version %s\n", TOSTRING(OPENSCAD_VERSION));
 	exit(1);
 }
 
