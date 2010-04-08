@@ -282,8 +282,7 @@
    </property>
    <property name="icon">
     <iconset resource="openscad.qrc">
-     <normaloff>:/prefs3DView.png</normaloff>
-     <normalon>:/openscad.ico</normalon>:/prefs3DView.png</iconset>
+     <normaloff>:/icons/prefs3DView.png</normaloff>:/icons/prefs3DView.png</iconset>
    </property>
    <property name="text">
     <string>3D View</string>
@@ -295,7 +294,7 @@
    </property>
    <property name="icon">
     <iconset resource="openscad.qrc">
-     <normaloff>:/prefsAdvanced.png</normaloff>:/prefsAdvanced.png</iconset>
+     <normaloff>:/icons/prefsAdvanced.png</normaloff>:/icons/prefsAdvanced.png</iconset>
    </property>
    <property name="text">
     <string>Advanced</string>
@@ -307,7 +306,7 @@
    </property>
    <property name="icon">
     <iconset resource="openscad.qrc">
-     <normaloff>:/prefsEditor.png</normaloff>:/prefsEditor.png</iconset>
+     <normaloff>:/icons/prefsEditor.png</normaloff>:/icons/prefsEditor.png</iconset>
    </property>
    <property name="text">
     <string>Editor</string>
