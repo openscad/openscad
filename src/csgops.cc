@@ -80,7 +80,6 @@ CSGTerm *CsgNode::render_csg_term(double m[20], QVector<CSGTerm*> *highlights, Q
 std::string CsgNode::toString() const
 {
 	std::stringstream stream;
-	stream << "n" << this->index() << ": ";
 
 	switch (this->type) {
 	case CSG_TYPE_UNION:

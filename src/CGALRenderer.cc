@@ -22,8 +22,6 @@
 #include <assert.h>
 #include <QRegExp>
 
-CGALRenderer *CGALRenderer::global_renderer = NULL;
-
 CGAL_Nef_polyhedron CGALRenderer::renderCGALMesh(const AbstractNode &node)
 {
 	if (!isCached(node)) {
@@ -31,12 +29,12 @@ CGAL_Nef_polyhedron CGALRenderer::renderCGALMesh(const AbstractNode &node)
 		render.execute();
 		assert(isCached(node));
 	}
-	return this->cache[mk_cache_id(node)];
+	return this->cache[this->dumpcache[node]];
 }
 
 bool CGALRenderer::isCached(const AbstractNode &node) const
 {
-	return this->cache.contains(mk_cache_id(node));
+	return this->cache.contains(this->dumpcache[node]);
 }
 
 /*!
@@ -111,8 +109,7 @@ void CGALRenderer::applyToChildren(const AbstractNode &node, CGALRenderer::CsgOp
 			chnode->progress_report();
 		}
 	}
-	QString cacheid = mk_cache_id(node);
-	this->cache.insert(cacheid, N);
+	this->cache.insert(this->dumpcache[node], N);
 }
 
 /*
@@ -175,8 +172,7 @@ Response CGALRenderer::visit(const State &state, const TransformNode &node)
 			applyToChildren(node, UNION);
 
 			// Then apply transform
-			QString cacheid = mk_cache_id(node);
-			CGAL_Nef_polyhedron N = this->cache[cacheid];
+			CGAL_Nef_polyhedron N = this->cache[this->dumpcache[node]];
 			assert(N.dim >= 2 && N.dim <= 3);
 			if (N.dim == 2) {
 				// Unfortunately CGAL provides no transform method for CGAL_Nef_polyhedron2
@@ -241,8 +237,7 @@ Response CGALRenderer::visit(const State &state, const AbstractPolyNode &node)
 				node.progress_report();
 				
 				ps->unlink();
-				QString cacheid = mk_cache_id(node);
-				this->cache.insert(cacheid, N);
+				this->cache.insert(this->dumpcache[node], N);
 			}
 			catch (...) { // Don't leak the PolySet on ProgressCancelException
 				ps->unlink();
@@ -261,35 +256,10 @@ Response CGALRenderer::visit(const State &state, const AbstractPolyNode &node)
 void CGALRenderer::addToParent(const State &state, const AbstractNode &node)
 {
 	assert(state.isPostfix());
-	QString cacheid = mk_cache_id(node);
 	this->visitedchildren.erase(node.index());
-	if (!state.parent()) {
-		this->root = &node;
+	if (state.parent()) {
+		this->visitedchildren[state.parent()->index()].push_back(std::make_pair(&node, this->dumpcache[node]));
 	}
-	else {
-		this->visitedchildren[state.parent()->index()].push_back(std::make_pair(&node, cacheid));
-	}
-}
-
-/*!
-  Create a cache id of the entire tree under this node. This cache id
-	is a non-whitespace plaintext of the evaluated scad tree and is used
-	for lookup in cgal_nef_cache.
-*/
-QString CGALRenderer::mk_cache_id(const AbstractNode &node) const
-{
-	// FIXME: should we keep a cache of cache_id's to avoid recalculating this?
-	// -> check how often we recalculate it.
-
-	// FIXME: Get dump from dump cache
-	// FIXME: assert that cache contains node
-	QString cache_id = QString::fromStdString(this->dumpcache[node]);
-	// Remove all node indices and whitespace
-	cache_id.remove(QRegExp("[a-zA-Z_][a-zA-Z_0-9]*:"));
-	cache_id.remove(' ');
-	cache_id.remove('\t');
-	cache_id.remove('\n');
-	return cache_id;
 }
 
 #if 0

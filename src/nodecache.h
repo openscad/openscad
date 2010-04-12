@@ -2,27 +2,36 @@
 #define NODECACHE_H_
 
 #include <vector>
+#include <string>
 #include "node.h"
 
-template <class T>
+/*!
+	Caches values per node based on the node.index().
+	The node index guaranteed to be unique per node tree since the index is reset
+	every time a new tree is generated.
+*/
 class NodeCache
 {
 public:
   NodeCache() { }
   virtual ~NodeCache() { }
 
-  const T & operator[](const AbstractNode &node) const {
+	bool contains(const AbstractNode &node) const {
+ 		return !(*this)[node].empty();
+	}
+
+  const std::string & operator[](const AbstractNode &node) const {
     if (this->cache.size() > node.index()) return this->cache[node.index()];
-    else return nullvalue;
+    else return this->nullvalue;
   }
 
-  void insert(const class AbstractNode &node, const T & value) {
+  void insert(const class AbstractNode &node, const std::string & value) {
     if (this->cache.size() <= node.index()) this->cache.resize(node.index() + 1);
     this->cache[node.index()] = value;
   }
 
   void remove(const class AbstractNode &node) {
-    if (this->cache.size() > node.index()) this->cache[node.index()] = nullvalue;
+    if (this->cache.size() > node.index()) this->cache[node.index()] = std::string();
   }
 
 	void clear() {
@@ -30,8 +39,8 @@ public:
 	}
 
 private:
-  std::vector<T> cache;
-  T nullvalue;
+  std::vector<std::string> cache;
+	std::string nullvalue;
 };
 
 #endif

@@ -62,15 +62,6 @@ public:
 		CSGMODE_HIGHLIGHT_DIFFERENCE = 22
 	};
 
-	struct ps_cache_entry {
-		PolySet *ps;
-		QString msg;
-		ps_cache_entry(PolySet *ps);
-		~ps_cache_entry();
-	};
-
-	static QCache<QString,ps_cache_entry> ps_cache;
-
 	void render_surface(colormode_e colormode, csgmode_e csgmode, double *m, GLint *shaderinfo = NULL) const;
 	void render_edges(colormode_e colormode, csgmode_e csgmode) const;
 

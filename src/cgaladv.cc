@@ -160,7 +160,6 @@ CSGTerm *CgaladvNode::render_csg_term(double m[20], QVector<CSGTerm*> *highlight
 std::string CgaladvNode::toString() const
 {
 	std::stringstream stream;
-	stream << "n" << this->index() << ": ";
 
 	switch (type) {
 	case MINKOWSKI:

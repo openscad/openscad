@@ -112,18 +112,10 @@ PolySet *DxfRotateExtrudeNode::render_polyset(render_mode_e mode) const
 		return ps;
 	}
 
-	QString key = mk_cache_id();
-	if (PolySet::ps_cache.contains(key)) {
-		PRINT(PolySet::ps_cache[key]->msg);
-		return PolySet::ps_cache[key]->ps->link();
-	}
-
 	print_messages_push();
 
 	PolySet *ps = renderer->renderPolySet(*this, mode);
 	
-	PolySet::ps_cache.insert(key, new PolySet::ps_cache_entry(ps->link()));
-
 	print_messages_pop();
 
 	return ps;
@@ -132,7 +124,6 @@ PolySet *DxfRotateExtrudeNode::render_polyset(render_mode_e mode) const
 std::string DxfRotateExtrudeNode::toString() const
 {
 	std::stringstream stream;
-	stream << "n" << this->index() << ": ";
 
 	struct stat st;
 	memset(&st, 0, sizeof(struct stat));

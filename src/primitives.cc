@@ -529,7 +529,6 @@ sphere_next_r2:
 std::string PrimitiveNode::toString() const
 {
 	std::stringstream stream;
-	stream << "n" << this->index() << ": ";
 
 	switch (this->type) {
 	case CUBE:

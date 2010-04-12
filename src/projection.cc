@@ -85,11 +85,6 @@ AbstractNode *ProjectionModule::evaluate(const Context *ctx, const ModuleInstant
 	return node;
 }
 
-void register_builtin_projection()
-{
-	builtin_modules["projection"] = new ProjectionModule();
-}
-
 PolySet *ProjectionNode::render_polyset(render_mode_e mode) const
 {
 	PolySetRenderer *renderer = PolySetRenderer::renderer();
@@ -100,16 +95,9 @@ PolySet *ProjectionNode::render_polyset(render_mode_e mode) const
 		return ps;
 	}
 
-	QString key = mk_cache_id();
-	if (PolySet::ps_cache.contains(key)) {
-		PRINT(PolySet::ps_cache[key]->msg);
-		return PolySet::ps_cache[key]->ps->link();
-	}
-
 	print_messages_push();
 
 	PolySet *ps = renderer->renderPolySet(*this, mode);
-	PolySet::ps_cache.insert(key, new PolySet::ps_cache_entry(ps->link()));
 
 	print_messages_pop();
 
@@ -119,10 +107,14 @@ PolySet *ProjectionNode::render_polyset(render_mode_e mode) const
 std::string ProjectionNode::toString() const
 {
 	std::stringstream stream;
-	stream << "n" << this->index() << ": ";
 
 	stream << "projection(cut = " << (this->cut_mode ? "true" : "false")
 				 << ", convexity = " << this->convexity << ")";
 
 	return stream.str();
+}
+
+void register_builtin_projection()
+{
+	builtin_modules["projection"] = new ProjectionModule();
 }

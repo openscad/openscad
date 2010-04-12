@@ -192,7 +192,6 @@ PolySet *ImportNode::render_polyset(render_mode_e) const
 std::string ImportNode::toString() const
 {
 	std::stringstream stream;
-	stream << "n" << this->index() << ": ";
 
 	QString text;
 	struct stat st;

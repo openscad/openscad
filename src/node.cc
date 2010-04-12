@@ -64,26 +64,17 @@ Response AbstractPolyNode::accept(const class State &state, Visitor &visitor) co
 	return visitor.visit(state, *this);
 }
 
-// FIXME: Temporarily offer a top-level dump function to keep existing code running
-QString AbstractNode::dump() const
-{
-	NodeDumper dumper;
-	Traverser trav(dumper, *this, Traverser::PRE_AND_POSTFIX);
-	trav.execute();
-	return QString::fromStdString(dumper.getDump() + "\n");
-}
-
 std::string AbstractNode::toString() const
 {
 	std::stringstream stream;
-	stream << "n" << this->index() << ": group()";
+	stream << "group()";
 	return stream.str();
 }
 
 std::string AbstractIntersectionNode::toString() const
 {
 	std::stringstream stream;
-	stream << "n" << this->index() << ": intersection()";
+	stream << "intersection()";
 	return stream.str();
 }
 
@@ -160,14 +151,4 @@ std::ostream &operator<<(std::ostream &stream, const AbstractNode &node)
 {
 	stream << node.toString();
 	return stream;
-}
-
-QString AbstractNode::mk_cache_id() const
-{
-	QString cache_id = dump();
-	cache_id.remove(QRegExp("[a-zA-Z_][a-zA-Z_0-9]*:"));
-	cache_id.remove(' ');
-	cache_id.remove('\t');
-	cache_id.remove('\n');
-	return cache_id;
 }

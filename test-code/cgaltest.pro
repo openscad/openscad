@@ -1,10 +1,10 @@
 DEFINES += OPENSCAD_VERSION=test
 TEMPLATE = app
 
-OBJECTS_DIR = objects
-MOC_DIR = objects
-UI_DIR = objects
-RCC_DIR = objects
+OBJECTS_DIR = cgal-objects
+MOC_DIR = cgal-objects
+UI_DIR = cgal-objects
+RCC_DIR = cgal-objects
 INCLUDEPATH += ../src
 
 macx {
@@ -61,7 +61,8 @@ HEADERS += ../src/builtin.h \
            ../src/importnode.h \
            ../src/state.h \
            ../src/PolySetRenderer.h \
-           ../src/PolySetCGALRenderer.h
+           ../src/PolySetCGALRenderer.h \
+           ../src/Tree.h
 
 SOURCES += cgaltest.cc \
            ../src/export.cc \
@@ -98,4 +99,5 @@ SOURCES += cgaltest.cc \
            ../src/CGALRenderer.cc \
            ../src/traverser.cc \
            ../src/PolySetRenderer.cc \
-           ../src/PolySetCGALRenderer.cc
+           ../src/PolySetCGALRenderer.cc \
+           ../src/Tree.cc

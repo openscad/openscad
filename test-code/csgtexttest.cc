@@ -23,6 +23,7 @@
  *
  */
 
+#include "CSGTextRenderer.h"
 #include "openscad.h"
 #include "node.h"
 #include "module.h"
@@ -30,14 +31,14 @@
 #include "value.h"
 #include "export.h"
 #include "builtin.h"
-#include "nodedumper.h"
-#include "CSGTextRenderer.h"
+#include "Tree.h"
 
 #include <QApplication>
 #include <QFile>
 #include <QDir>
 #include <QSet>
 #include <getopt.h>
+#include <assert.h>
 #include <iostream>
 
 QString commandline_commands;
@@ -58,6 +59,17 @@ void handle_dep(QString filename)
 		snprintf(buffer, 4096, "%s '%s'", make_command, filename.replace("'", "'\\''").toUtf8().data());
 		system(buffer); // FIXME: Handle error
 	}
+}
+
+
+QHash<string, string> csgcache;
+void csgTree(Tree &tree)
+{
+	assert(tree.root());
+
+	CSGTextRenderer renderer(csgcache, tree);
+	Traverser render(renderer, *tree.root(), Traverser::PRE_AND_POSTFIX);
+	render.execute();
 }
 
 int main(int argc, char **argv)
@@ -145,17 +157,13 @@ int main(int argc, char **argv)
 	AbstractNode::resetIndexCounter();
 	root_node = root_module->evaluate(&root_ctx, &root_inst);
 
+	Tree tree;
+	tree.setRoot(root_node);
 
-	NodeDumper dumper;
-	Traverser trav(dumper, *root_node, Traverser::PRE_AND_POSTFIX);
-	trav.execute();
- 	std::string dumpstdstr = dumper.getDump() + "\n";
- 	std::cout << dumpstdstr << "\n";
+	csgTree(tree);
+ 	std::cout << tree.getString(*root_node) << "\n";
 
-	CSGTextRenderer renderer(dumper.getCache());
-	Traverser render(renderer, *root_node, Traverser::PRE_AND_POSTFIX);
-	render.execute();
-	std::cout << renderer.getCSGString() << "\n";
+	std::cout << csgcache[tree.getString(*root_node)] << "\n";
 
 	destroy_builtin_functions();
 	destroy_builtin_modules();

@@ -67,7 +67,8 @@ HEADERS += ../src/builtin.h \
            ../src/nodecache.h \
            ../src/importnode.h \
            ../src/state.h \
-           ../src/PolySetRenderer.h
+           ../src/PolySetRenderer.h \
+           ../src/Tree.h
 
 SOURCES += dumptest.cc \
            ../src/export.cc \
@@ -99,4 +100,5 @@ SOURCES += dumptest.cc \
            ../src/progress.cc \
            ../src/nodedumper.cc \
            ../src/traverser.cc \
-           ../src/PolySetRenderer.cc
+           ../src/PolySetRenderer.cc \
+           ../src/Tree.cc

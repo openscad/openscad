@@ -51,10 +51,6 @@ public:
 
 	int idx; // Node index (unique per tree)
 
-	// FIXME: Remove these three with dump() method
-	virtual QString mk_cache_id() const;
-	QString dump() const;
-
 	// FIXME: Rewrite to visitor
 	virtual class CSGTerm *render_csg_term(double m[20], QVector<CSGTerm*> *highlights, QVector<CSGTerm*> *background) const;
 

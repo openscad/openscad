@@ -1,10 +1,10 @@
 #include "CSGTextRenderer.h"
+
 #include <string>
 #include <map>
 #include <list>
 #include "visitor.h"
 #include "state.h"
-#include "nodecache.h"
 #include "module.h" // FIXME: Temporarily for ModuleInstantiation
 
 #include "csgnode.h"
@@ -15,23 +15,9 @@
 #include <assert.h>
 #include <QRegExp>
 
-string CSGTextRenderer::getCSGString() const
-{
-	assert(this->root); 
-	// FIXME: assert that cache contains root
-	return this->cache[mk_cache_id(*this->root)];
-}
-
-// CGAL_Nef_polyhedron CSGTextRenderer::getCGALMesh() const
-// {
-// 	assert(this->root); 
-// // FIXME: assert that cache contains root
-// 	return this->cache[*this->root];
-// }
-
 bool CSGTextRenderer::isCached(const AbstractNode &node)
 {
-	return this->cache.contains(mk_cache_id(node));
+	return this->cache.contains(this->tree.getString(node));
 }
 
 /*!
@@ -118,7 +104,7 @@ void CSGTextRenderer::applyToChildren(const AbstractNode &node, CSGTextRenderer:
 				 iter != this->visitedchildren[node.index()].end();
 				 iter++) {
 			const AbstractNode *chnode = iter->first;
-			const QString &chcacheid = iter->second;
+			const string &chcacheid = iter->second;
 			// FIXME: Don't use deep access to modinst members
 			if (chnode->modinst->tag_background) continue;
 			if (first) {
@@ -132,8 +118,7 @@ void CSGTextRenderer::applyToChildren(const AbstractNode &node, CSGTextRenderer:
 		}
 		N += ")";
 	}
-	QString cacheid = mk_cache_id(node);
-	this->cache.insert(cacheid, N);
+	this->cache.insert(this->tree.getString(node), N);
 }
 
 /*
@@ -235,8 +220,7 @@ Response CSGTextRenderer::visit(const State &state, const AbstractPolyNode &node
 // 	}
 
 			string N = typeid(node).name();
-			QString cacheid = mk_cache_id(node);
-			this->cache.insert(cacheid, N);
+			this->cache.insert(this->tree.getString(node), N);
 		
 // 		std::cout << "Insert: " << N << "\n";
 // 		std::cout << "Node: " << cacheid.toStdString() << "\n\n";
@@ -254,33 +238,28 @@ Response CSGTextRenderer::visit(const State &state, const AbstractPolyNode &node
 void CSGTextRenderer::addToParent(const State &state, const AbstractNode &node)
 {
 	assert(state.isPostfix());
-	QString cacheid = mk_cache_id(node);
 	this->visitedchildren.erase(node.index());
-	if (!state.parent()) {
-		this->root = &node;
-	}
-	else {
-		this->visitedchildren[state.parent()->index()].push_back(std::make_pair(&node, cacheid));
+	if (state.parent()) {
+		this->visitedchildren[state.parent()->index()].push_back(std::make_pair(&node, this->tree.getString(node)));
 	}
 }
 
-/*!
-  Create a cache id of the entire tree under this node. This cache id
-	is a non-whitespace plaintext of the evaluated scad tree and is used
-	for lookup in cgal_nef_cache.
-*/
-QString CSGTextRenderer::mk_cache_id(const AbstractNode &node) const
-{
-	// FIXME: should we keep a cache of cache_id's to avoid recalculating this?
-	// -> check how often we recalculate it.
 
-	// FIXME: Get dump from dump cache
-	// FIXME: assert that cache contains node
-	QString cache_id = QString::fromStdString(this->dumpcache[node]);
-	// Remove all node indices and whitespace
-	cache_id.remove(QRegExp("[a-zA-Z_][a-zA-Z_0-9]*:"));
-	cache_id.remove(' ');
-	cache_id.remove('\t');
-	cache_id.remove('\n');
-	return cache_id;
+
+static uint hash(const uchar *p, int n)
+{
+    uint h = 0;
+    uint g;
+
+    while (n--) {
+        h = (h << 4) + *p++;
+        if ((g = (h & 0xf0000000)) != 0)
+            h ^= g >> 23;
+        h &= ~g;
+    }
+    return h;
+}
+
+uint qHash(const string &str) {
+	return hash(reinterpret_cast<const uchar *>(str.c_str()), str.length());
 }

@@ -14,6 +14,10 @@
 
 PolySet *PolySetCGALRenderer::renderPolySet(const ProjectionNode &node, AbstractPolyNode::render_mode_e)
 {
+	// FIXME: create cacheid from node
+	QString cacheid;
+	if (this->cache.contains(cacheid)) return this->cache[cacheid]->ps->link();
+
 	CGAL_Nef_polyhedron N = this->cgalrenderer.renderCGALMesh(node);
 
 	PolySet *ps = new PolySet();
@@ -155,6 +159,7 @@ PolySet *PolySetCGALRenderer::renderPolySet(const ProjectionNode &node, Abstract
 
 cant_project_non_simple_polyhedron:
 
+	this->cache.insert(cacheid, new cache_entry(ps->link()));
 	return ps;
 }
 
@@ -232,6 +237,10 @@ static void add_slice(PolySet *ps, DxfData::Path *pt, double rot1, double rot2, 
 
 PolySet *PolySetCGALRenderer::renderPolySet(const DxfLinearExtrudeNode &node, AbstractPolyNode::render_mode_e)
 {
+	// FIXME: create cacheid from node
+	QString cacheid;
+	if (this->cache.contains(cacheid)) return this->cache[cacheid]->ps->link();
+
 	DxfData *dxf;
 
 	if (node.filename.isEmpty())
@@ -305,11 +314,16 @@ PolySet *PolySetCGALRenderer::renderPolySet(const DxfLinearExtrudeNode &node, Ab
 
 	delete dxf;
 
+	this->cache.insert(cacheid, new cache_entry(ps->link()));
 	return ps;
 }
 
 PolySet *PolySetCGALRenderer::renderPolySet(const DxfRotateExtrudeNode &node, AbstractPolyNode::render_mode_e)
 {
+	// FIXME: create cacheid from node
+	QString cacheid;
+	if (this->cache.contains(cacheid)) return this->cache[cacheid]->ps->link();
+
 	DxfData *dxf;
 
 	if (node.filename.isEmpty())
@@ -380,5 +394,6 @@ PolySet *PolySetCGALRenderer::renderPolySet(const DxfRotateExtrudeNode &node, Ab
 
 	delete dxf;
 
+	this->cache.insert(cacheid, new cache_entry(ps->link()));
 	return ps;
 }

@@ -206,7 +206,6 @@ CSGTerm *RenderNode::render_csg_term(double m[20], QVector<CSGTerm*> *highlights
 std::string RenderNode::toString() const
 {
 	std::stringstream stream;
-	stream << "n" << this->index() << ": ";
 
 	stream << "render(convexity = " << convexity << ")";
 

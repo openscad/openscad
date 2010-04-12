@@ -241,7 +241,6 @@ int main(int argc, char **argv)
 	NodeDumper dumper;
 	CGALRenderer cgalrenderer(dumper.getCache());
 	PolySetCGALRenderer psrenderer(cgalrenderer);
-	NodeDumper::setDumper(&dumper);
 	CGALRenderer::setRenderer(&cgalrenderer);
 	PolySetRenderer::setRenderer(&psrenderer);
 
@@ -297,9 +296,11 @@ int main(int argc, char **argv)
 
 		// FIXME: It shouldn't be necessary to dump manually, only when
 		// the dumper and the renderer wants to share a cache
-		Traverser trav(*NodeDumper::dumper(), *root_node, Traverser::PRE_AND_POSTFIX);
-		trav.execute();
-		CGAL_Nef_polyhedron root_N = CGALRenderer::renderer()->renderCGALMesh(*root_node);
+		// FIXME: Rewrite to non-global dumper
+// 		Traverser trav(*NodeDumper::dumper(), *root_node, Traverser::PRE_AND_POSTFIX);
+// 		trav.execute();
+//  		CGAL_Nef_polyhedron root_N = CGALRenderer::renderer()->renderCGALMesh(*root_node);
+ 		CGAL_Nef_polyhedron root_N;
 
 		QDir::setCurrent(original_path.absolutePath());
 

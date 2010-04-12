@@ -33,15 +33,6 @@
 #include <Eigen/Core>
 #include <Eigen/LU>
 
-QCache<QString,PolySet::ps_cache_entry> PolySet::ps_cache(100);
-
-PolySet::ps_cache_entry::ps_cache_entry(PolySet *ps) :
-		ps(ps), msg(print_messages_stack.last()) { }
-
-PolySet::ps_cache_entry::~ps_cache_entry() {
-	ps->unlink();
-}
-
 PolySet::PolySet() : grid(GRID_FINE)
 {
 	is2d = false;

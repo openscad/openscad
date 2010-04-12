@@ -206,7 +206,6 @@ PolySet *SurfaceNode::render_polyset(render_mode_e) const
 std::string SurfaceNode::toString() const
 {
 	std::stringstream stream;
-	stream << "n" << this->index() << ": ";
 
 	stream << "surface(file = \"" << this->filename
 				 << "\", center = " << (this->center ? "true" : "false") << ")";

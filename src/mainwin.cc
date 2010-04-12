@@ -151,6 +151,7 @@ MainWindow::MainWindow(const QString &filename)
 	root_raw_term = NULL;
 	root_norm_term = NULL;
 	root_chain = NULL;
+	this->dumper = new NodeDumper;
 #ifdef ENABLE_CGAL
 	this->root_N = NULL;
 	this->recreate_cgal_ogl_p = false;
@@ -538,6 +539,13 @@ AbstractNode *MainWindow::find_root_tag(AbstractNode *n)
 	return NULL;
 }
 
+QString MainWindow::dumpCSGTree(AbstractNode *root)
+{
+	Traverser trav(*this->dumper, *root, Traverser::PRE_AND_POSTFIX);
+	trav.execute();
+	return QString::fromStdString(this->dumper->getDump() + "\n");
+}
+
 /*!
 	Parse and evaluate the design -> this->root_node
 */
@@ -653,11 +661,11 @@ void MainWindow::compile(bool procevents)
 	if (!(this->root_node = find_root_tag(absolute_root_node))) {
 		this->root_node = absolute_root_node;
 	}
-  // Dump the tree (to initialize caches). I guess we wouldn't really need to do 
-	// this explicitly..
-	root_node->dump();
+  // Dump the tree (to initialize caches).
+  // FIXME: We shouldn't really need to do  this explicitly..
+	dumpCSGTree(this->root_node);
 
-	if (1) {
+ 	if (1) {
 		PRINT("Compilation finished.");
 		if (procevents)
 			QApplication::processEvents();
@@ -1131,7 +1139,11 @@ void MainWindow::actionRenderCGAL()
 
 	progress_report_prep(root_node, report_func, pd);
 	try {
-		this->root_N = new CGAL_Nef_polyhedron(CGALRenderer::renderer()->renderCGALMesh(*root_node));
+// 		this->root_N = new CGAL_Nef_polyhedron(CGALRenderer::renderer()->renderCGALMesh(*root_node));
+
+		Tree *tree = this->tree;
+		CGALRenderDriver renderer(tree);
+		this->root_N = new CGAL_Nef_polyhedron(renderer->renderCGALMesh());
 	}
 	catch (ProgressCancelException e) {
 		PRINT("Rendering cancelled.");
@@ -1234,7 +1246,7 @@ void MainWindow::actionDisplayCSGTree()
 	e->setWindowTitle("CSG Tree Dump");
 	e->setReadOnly(true);
 	if (root_node) {
-		e->setPlainText(root_node->dump());
+		e->setPlainText(QString::fromStdString(this->dumper->getDump()));
 	} else {
 		e->setPlainText("No CSG to dump. Please try compiling first...");
 	}
@@ -1359,10 +1371,10 @@ void MainWindow::actionExportDXF()
 void MainWindow::actionFlushCaches()
 {
 // FIXME: Polycache -> PolySetRenderer
-	PolySet::ps_cache.clear();
+	PolySetRenderer::renderer()->clearCache();
 #ifdef ENABLE_CGAL
 	CGALRenderer::renderer()->getCache().clear();
-	NodeDumper::dumper()->clearCache();
+	this->dumper->clearCache();
 #endif
 	dxf_dim_cache.clear();
 	dxf_cross_cache.clear();

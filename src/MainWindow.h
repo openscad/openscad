@@ -32,6 +32,7 @@ public:
 	ModuleInstantiation root_inst;    // Top level instance
 	AbstractNode *absolute_root_node; // Result of tree evaluation
 	AbstractNode *root_node;          // Root if the root modifier (!) is used
+	class NodeDumper *dumper;
 
 	class CSGTerm *root_raw_term;           // Result of CSG term rendering
 	CSGTerm *root_norm_term;          // Normalized CSG products
@@ -76,6 +77,7 @@ private:
 	void compileCSG(bool procevents);
 	bool maybeSave();
 	bool checkModified();
+	QString dumpCSGTree(AbstractNode *root);
 	static void consoleOutput(const QString &msg, void *userdata) {
 		static_cast<MainWindow*>(userdata)->console->append(msg);
 	}

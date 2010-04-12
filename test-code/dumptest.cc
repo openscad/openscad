@@ -31,12 +31,17 @@
 #include "export.h"
 #include "builtin.h"
 #include "nodedumper.h"
+#include "Tree.h"
 
 #include <QApplication>
 #include <QFile>
 #include <QDir>
 #include <QSet>
 #include <getopt.h>
+#include <assert.h>
+#include <iostream>
+
+using std::string;
 
 QString commandline_commands;
 const char *make_command = NULL;
@@ -144,23 +149,15 @@ int main(int argc, char **argv)
 	root_node = root_module->evaluate(&root_ctx, &root_inst);
 
 	// Cache test
-	QString dumpstr = root_node->dump();
-	QString dumpstr_cached = root_node->dump();
-	if (dumpstr != dumpstr_cached) rc = 1;
+	QString teststr("test");
+	Tree tree;
+	tree.setRoot(root_node);
 
-	NodeDumper dumper;
-	Traverser trav(dumper, *root_node, Traverser::PRE_AND_POSTFIX);
-	trav.execute();
-	std::string dumpstdstr = dumper.getDump() + "\n";
-	trav.execute();
-	std::string dumpstdstr_cached = dumper.getDump() + "\n";
+	string dumpstdstr = tree.getString(*root_node);
+	string dumpstdstr_cached = tree.getString(*root_node);
 	if (dumpstdstr != dumpstdstr_cached) rc = 1;
 
-	if (QString::fromStdString(dumpstdstr) != dumpstr) {
-		printf(dumpstr.toUtf8());
-		printf(dumpstdstr.c_str());
-		rc = 1;
-	}
+	std::cout << dumpstdstr << "\n";
 
 	destroy_builtin_functions();
 	destroy_builtin_modules();

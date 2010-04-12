@@ -14,31 +14,27 @@ using std::list;
 class NodeDumper : public Visitor
 {
 public:
-	NodeDumper() : root(NULL) {}
+	/*! If idPrefix is true, we will output "n<id>:" in front of each node, 
+		  which is useful for debugging. */
+	NodeDumper(NodeCache &cache, bool idPrefix = false) : 
+		cache(cache), idprefix(idPrefix), root(NULL) { }
   virtual ~NodeDumper() {}
 
   virtual Response visit(const State &state, const AbstractNode &node);
 
-  const string &getDump() const;
-	const NodeCache<string> &getCache() const { return this->cache; }
-	void clearCache() { this->cache.clear(); }
-
-	// FIXME: Questionable design...
-	static NodeDumper *dumper() { return global_dumper; }
-	static void setDumper(NodeDumper *d) { global_dumper = d; }
 private:
   void handleVisitedChildren(const State &state, const AbstractNode &node);
-  bool isCached(const AbstractNode &node);
+  bool isCached(const AbstractNode &node) const;
   void handleIndent(const State &state);
 	string dumpChildren(const AbstractNode &node);
+
+  NodeCache &cache;
+	bool idprefix;
 
   string currindent;
   const AbstractNode *root;
   typedef list<const AbstractNode *> ChildList;
   map<int, ChildList> visitedchildren;
-  NodeCache<string> cache;
-
-	static NodeDumper *global_dumper;
 };
 
 #endif

@@ -266,7 +266,6 @@ CSGTerm *TransformNode::render_csg_term(double c[20], QVector<CSGTerm*> *highlig
 std::string TransformNode::toString() const
 {
 	std::stringstream stream;
-	stream << "n" << this->index() << ": ";
 
 	if (m[16] >= 0 || m[17] >= 0 || m[18] >= 0 || m[19] >= 0) {
 		stream << "color([" << m[16] << ", " << m[17] << ", " << m[18] << ", " << m[19] << "])";

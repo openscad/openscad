@@ -10,21 +10,31 @@
 #include <iostream>
 #include <assert.h>
 
-// For compatibility with old dump() output
-#define NODEDUMPER_COMPAT_MODE
+// For compatibility with old dump() output.
+// FIXME: Only needed for testing.
+//#define NODEDUMPER_COMPAT_MODE
 #ifdef NODEDUMPER_COMPAT_MODE
 #include "dxflinextrudenode.h"
 #include "dxfrotextrudenode.h"
 #include "projectionnode.h"
 #endif
 
-NodeDumper *NodeDumper::global_dumper = NULL;
+/*!
+	\class NodeDumper
 
-bool NodeDumper::isCached(const AbstractNode &node)
+	A visitor responsible for creating a text dump of a node tree.  Also
+	contains a cache for fast retrieval of the text representation of
+	any node or subtree.
+*/
+
+bool NodeDumper::isCached(const AbstractNode &node) const
 {
 	return !this->cache[node].empty();
 }
 
+/*!
+	Indent or deindent. Must be called before we output any children.
+*/
 void NodeDumper::handleIndent(const State &state)
 {
 	if (state.isPrefix()) {
@@ -36,6 +46,11 @@ void NodeDumper::handleIndent(const State &state)
 	}
 }
 
+/*!
+	Dumps the block of children contained in this->visitedchildren,
+	including braces and indentation.
+	All children are assumed to be cached already.
+ */
 string NodeDumper::dumpChildren(const AbstractNode &node)
 {
 	std::stringstream dump;
@@ -45,7 +60,7 @@ string NodeDumper::dumpChildren(const AbstractNode &node)
 		for (ChildList::const_iterator iter = this->visitedchildren[node.index()].begin();
 				 iter != this->visitedchildren[node.index()].end();
 				 iter++) {
-// FIXME: assert that cache contains **iter
+			assert(isCached(**iter));
 			dump << this->cache[**iter] << "\n";
 		}
 		
@@ -65,27 +80,26 @@ string NodeDumper::dumpChildren(const AbstractNode &node)
 	return dump.str();
 }
 
-
+/*!
+	Called for each node in the tree.
+	Will abort traversal if we're cached
+*/
 Response NodeDumper::visit(const State &state, const AbstractNode &node)
 {
 	if (isCached(node)) return PruneTraversal;
-	else handleIndent(state);
+
+	handleIndent(state);
 	if (state.isPostfix()) {
 		std::stringstream dump;
-		dump << this->currindent << node;
+		dump << this->currindent;
+		if (this->idprefix) dump << "n" << node.index() << ":";
+		dump << node;
 		dump << dumpChildren(node);
 		this->cache.insert(node, dump.str());
 	}
 
 	handleVisitedChildren(state, node);
 	return ContinueTraversal;
-}
-
-const string &NodeDumper::getDump() const 
-{ 
-	assert(this->root); 
-// FIXME: assert that cache contains root
-	return this->cache[*this->root];
 }
 
 /*!

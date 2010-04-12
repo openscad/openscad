@@ -61,11 +61,12 @@ HEADERS += ../src/builtin.h \
            ../src/csgnode.h \
            ../src/visitor.h \
            ../src/nodedumper.h \
-           ../src/CSGTextRenderer.h \
            ../src/nodecache.h \
            ../src/importnode.h \
            ../src/state.h \
-           ../src/PolySetRenderer.h
+           ../src/PolySetRenderer.h \
+           ../src/Tree.h \
+           CSGTextRenderer.h
 
 SOURCES += csgtexttest.cc \
            ../src/export.cc \
@@ -96,6 +97,7 @@ SOURCES += csgtexttest.cc \
            ../src/printutils.cc \
            ../src/progress.cc \
            ../src/nodedumper.cc \
-           ../src/CSGTextRenderer.cc \
            ../src/traverser.cc \
-           ../src/PolySetRenderer.cc
+           ../src/PolySetRenderer.cc \
+           ../src/Tree.cc \
+           CSGTextRenderer.cc
