@@ -62,6 +62,7 @@ HEADERS += ../src/builtin.h \
            ../src/state.h \
            ../src/PolySetRenderer.h \
            ../src/PolySetCGALRenderer.h \
+           ../src/myqhash.h \
            ../src/Tree.h
 
 SOURCES += cgaltest.cc \
@@ -100,4 +101,5 @@ SOURCES += cgaltest.cc \
            ../src/traverser.cc \
            ../src/PolySetRenderer.cc \
            ../src/PolySetCGALRenderer.cc \
+           ../src/qhash.cc \
            ../src/Tree.cc

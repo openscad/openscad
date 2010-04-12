@@ -24,6 +24,7 @@
  */
 
 #include "CSGTextRenderer.h"
+#include "CSGTextCache.h"
 #include "openscad.h"
 #include "node.h"
 #include "module.h"
@@ -61,14 +62,10 @@ void handle_dep(QString filename)
 	}
 }
 
-
-QHash<string, string> csgcache;
-void csgTree(Tree &tree)
+void csgTree(CSGTextCache &cache, const AbstractNode &root)
 {
-	assert(tree.root());
-
-	CSGTextRenderer renderer(csgcache, tree);
-	Traverser render(renderer, *tree.root(), Traverser::PRE_AND_POSTFIX);
+	CSGTextRenderer renderer(cache);
+	Traverser render(renderer, root, Traverser::PRE_AND_POSTFIX);
 	render.execute();
 }
 
@@ -159,11 +156,12 @@ int main(int argc, char **argv)
 
 	Tree tree;
 	tree.setRoot(root_node);
+	CSGTextCache csgcache(tree);
 
-	csgTree(tree);
+	csgTree(csgcache, *root_node);
  	std::cout << tree.getString(*root_node) << "\n";
 
-	std::cout << csgcache[tree.getString(*root_node)] << "\n";
+	std::cout << csgcache[*root_node] << "\n";
 
 	destroy_builtin_functions();
 	destroy_builtin_modules();

@@ -1,26 +1,20 @@
 #ifndef CSGTEXTRENDERER_H_
 #define CSGTEXTRENDERER_H_
 
-#include <qglobal.h>
-#include <string>
-extern uint qHash(const std::string &);
+#include "visitor.h"
+#include "CSGTextCache.h"
 
 #include <map>
 #include <list>
-#include <QHash>
-#include "visitor.h"
-#include "Tree.h"
 
 using std::string;
 using std::map;
 using std::list;
-using std::pair;
 
 class CSGTextRenderer : public Visitor
 {
 public:
-	CSGTextRenderer(QHash<string, string> &cache, const Tree &tree) : 
-		cache(cache), tree(tree) {}
+	CSGTextRenderer(CSGTextCache &cache) : cache(cache) {}
   virtual ~CSGTextRenderer() {}
 
   virtual Response visit(const State &state, const AbstractNode &node);
@@ -37,11 +31,10 @@ private:
 	void applyToChildren(const AbstractNode &node, CSGTextRenderer::CsgOp op);
 
   string currindent;
-  typedef list<pair<const AbstractNode *, string> > ChildList;
+  typedef list<const AbstractNode *> ChildList;
   map<int, ChildList> visitedchildren;
 
-	QHash<string, string> &cache;
-	const Tree &tree;
+	CSGTextCache &cache;
 };
 
 #endif

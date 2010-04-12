@@ -66,7 +66,9 @@ HEADERS += ../src/builtin.h \
            ../src/state.h \
            ../src/PolySetRenderer.h \
            ../src/Tree.h \
-           CSGTextRenderer.h
+           ../src/myqhash.h \
+           CSGTextRenderer.h \
+           CSGTextCache.h
 
 SOURCES += csgtexttest.cc \
            ../src/export.cc \
@@ -100,4 +102,6 @@ SOURCES += csgtexttest.cc \
            ../src/traverser.cc \
            ../src/PolySetRenderer.cc \
            ../src/Tree.cc \
-           CSGTextRenderer.cc
+           ../src/qhash.cc \
+           CSGTextRenderer.cc \
+           CSGTextCache.cc

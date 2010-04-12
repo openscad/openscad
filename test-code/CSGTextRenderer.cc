@@ -17,7 +17,7 @@
 
 bool CSGTextRenderer::isCached(const AbstractNode &node)
 {
-	return this->cache.contains(this->tree.getString(node));
+	return this->cache.contains(node);
 }
 
 /*!
@@ -47,49 +47,6 @@ CSGTextRenderer::process(string &target, const string &src, CSGTextRenderer::Csg
 	}
 }
 
-// /*!
-// 	Modifies target by applying op to target and src:
-// 	target = target [op] src
-//  */
-// void process(CGAL_Nef_polyhedron &target, const CGAL_Nef_polyhedron &src, CsgOp op)
-// {
-// 	if (target.dim == 2) {
-// 		switch (op) {
-// 		case UNION:
-// 			target.p2 += src.p2;
-// 			break;
-// 		case INTERSECTION:
-// 			target.p2 *= src.p2;
-// 			break;
-// 		case DIFFERENCE:
-// 			target.p2 -= src.p2;
-// 			break;
-// 		case MINKOWSKI:
-// 			target.p2 = minkowski2(target.p2, src.p2);
-// 			break;
-// 		}
-// 	}
-// 	else if (target.dim == 3) {
-// 		switch (op) {
-// 		case UNION:
-// 			target.p3 += src.p3;
-// 			break;
-// 		case INTERSECTION:
-// 			target.p3 *= src.p3;
-// 			break;
-// 		case DIFFERENCE:
-// 			target.p3 -= src.p3;
-// 			break;
-// 		case MINKOWSKI:
-// 			target.p3 = minkowski3(target.p3, src.p3);
-// 			break;
-// 		}
-// 	}
-// 	else {
-// 		assert(false && "Dimention of Nef polyhedron must be 2 or 3");
-// 	}
-// }
-
 void CSGTextRenderer::applyToChildren(const AbstractNode &node, CSGTextRenderer::CsgOp op)
 {
 	std::stringstream stream;
@@ -99,26 +56,25 @@ void CSGTextRenderer::applyToChildren(const AbstractNode &node, CSGTextRenderer:
 	if (this->visitedchildren[node.index()].size() > 0) {
 		// FIXME: assert that cache contains nodes in code below
 		bool first = true;
-//		CGAL_Nef_polyhedron N;
 		for (ChildList::const_iterator iter = this->visitedchildren[node.index()].begin();
 				 iter != this->visitedchildren[node.index()].end();
 				 iter++) {
-			const AbstractNode *chnode = iter->first;
-			const string &chcacheid = iter->second;
+			const AbstractNode *chnode = *iter;
+			assert(this->cache.contains(*chnode));
 			// FIXME: Don't use deep access to modinst members
 			if (chnode->modinst->tag_background) continue;
 			if (first) {
-				N += "(" + this->cache[chcacheid];
+				N += "(" + this->cache[*chnode];
 // 				if (N.dim != 0) first = false; // FIXME: when can this happen?
 				first = false;
 			} else {
-				process(N, this->cache[chcacheid], op);
+				process(N, this->cache[*chnode], op);
 			}
 			chnode->progress_report();
 		}
 		N += ")";
 	}
-	this->cache.insert(this->tree.getString(node), N);
+	this->cache.insert(node, N);
 }
 
 /*
@@ -204,23 +160,8 @@ Response CSGTextRenderer::visit(const State &state, const AbstractPolyNode &node
 	// FIXME: Manage caching
 	// FIXME: Will generate one single Nef polyhedron (no csg ops necessary)
  
-// 	PolySet *ps = render_polyset(RENDER_CGAL);
-// 	try {
-// 		CGAL_Nef_polyhedron N = ps->renderCSGMesh();
-// 		cgal_nef_cache.insert(cache_id, new cgal_nef_cache_entry(N), N.weight());
-// 		print_messages_pop();
-// 		progress_report();
-		
-// 		ps->unlink();
-// 		return N;
-// 	}
-// 	catch (...) { // Don't leak the PolySet on ProgressCancelException
-// 		ps->unlink();
-// 		throw;
-// 	}
-
 			string N = typeid(node).name();
-			this->cache.insert(this->tree.getString(node), N);
+			this->cache.insert(node, N);
 		
 // 		std::cout << "Insert: " << N << "\n";
 // 		std::cout << "Node: " << cacheid.toStdString() << "\n\n";
@@ -240,26 +181,6 @@ void CSGTextRenderer::addToParent(const State &state, const AbstractNode &node)
 	assert(state.isPostfix());
 	this->visitedchildren.erase(node.index());
 	if (state.parent()) {
-		this->visitedchildren[state.parent()->index()].push_back(std::make_pair(&node, this->tree.getString(node)));
+		this->visitedchildren[state.parent()->index()].push_back(&node);
 	}
-}
-
-
-
-static uint hash(const uchar *p, int n)
-{
-    uint h = 0;
-    uint g;
-
-    while (n--) {
-        h = (h << 4) + *p++;
-        if ((g = (h & 0xf0000000)) != 0)
-            h ^= g >> 23;
-        h &= ~g;
-    }
-    return h;
-}
-
-uint qHash(const string &str) {
-	return hash(reinterpret_cast<const uchar *>(str.c_str()), str.length());
 }

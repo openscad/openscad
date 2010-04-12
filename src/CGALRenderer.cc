@@ -1,7 +1,6 @@
 #include "CGALRenderer.h"
 #include "visitor.h"
 #include "state.h"
-#include "nodecache.h"
 #include "module.h" // FIXME: Temporarily for ModuleInstantiation
 #include "printutils.h"
 
@@ -29,12 +28,12 @@ CGAL_Nef_polyhedron CGALRenderer::renderCGALMesh(const AbstractNode &node)
 		render.execute();
 		assert(isCached(node));
 	}
-	return this->cache[this->dumpcache[node]];
+	return this->cache[this->tree.getString(node)];
 }
 
 bool CGALRenderer::isCached(const AbstractNode &node) const
 {
-	return this->cache.contains(this->dumpcache[node]);
+	return this->cache.contains(this->tree.getString(node));
 }
 
 /*!
@@ -94,7 +93,7 @@ void CGALRenderer::applyToChildren(const AbstractNode &node, CGALRenderer::CsgOp
 				 iter != this->visitedchildren[node.index()].end();
 				 iter++) {
 			const AbstractNode *chnode = iter->first;
-			const QString &chcacheid = iter->second;
+			const string &chcacheid = iter->second;
 			// FIXME: Don't use deep access to modinst members
 			if (chnode->modinst->tag_background) continue;
 			assert(isCached(*chnode));
@@ -109,7 +108,7 @@ void CGALRenderer::applyToChildren(const AbstractNode &node, CGALRenderer::CsgOp
 			chnode->progress_report();
 		}
 	}
-	this->cache.insert(this->dumpcache[node], N);
+	this->cache.insert(this->tree.getString(node), N);
 }
 
 /*
@@ -172,7 +171,7 @@ Response CGALRenderer::visit(const State &state, const TransformNode &node)
 			applyToChildren(node, UNION);
 
 			// Then apply transform
-			CGAL_Nef_polyhedron N = this->cache[this->dumpcache[node]];
+			CGAL_Nef_polyhedron N = this->cache[this->tree.getString(node)];
 			assert(N.dim >= 2 && N.dim <= 3);
 			if (N.dim == 2) {
 				// Unfortunately CGAL provides no transform method for CGAL_Nef_polyhedron2
@@ -205,7 +204,7 @@ Response CGALRenderer::visit(const State &state, const TransformNode &node)
 					node.m[2], node.m[6], node.m[10], node.m[14], node.m[15]);
 				N.p3.transform(t);
 			}
-			this->cache.insert(cacheid, N);
+			this->cache.insert(this->tree.getString(node), N);
 		}
 		addToParent(state, node);
 	}
@@ -237,7 +236,7 @@ Response CGALRenderer::visit(const State &state, const AbstractPolyNode &node)
 				node.progress_report();
 				
 				ps->unlink();
-				this->cache.insert(this->dumpcache[node], N);
+				this->cache.insert(this->tree.getString(node), N);
 			}
 			catch (...) { // Don't leak the PolySet on ProgressCancelException
 				ps->unlink();
@@ -258,7 +257,7 @@ void CGALRenderer::addToParent(const State &state, const AbstractNode &node)
 	assert(state.isPostfix());
 	this->visitedchildren.erase(node.index());
 	if (state.parent()) {
-		this->visitedchildren[state.parent()->index()].push_back(std::make_pair(&node, this->dumpcache[node]));
+		this->visitedchildren[state.parent()->index()].push_back(std::make_pair(&node, this->tree.getString(node)));
 	}
 }
 

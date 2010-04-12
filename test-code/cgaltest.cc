@@ -23,6 +23,7 @@
  *
  */
 
+#include "myqhash.h"
 #include "openscad.h"
 #include "node.h"
 #include "module.h"
@@ -30,10 +31,9 @@
 #include "value.h"
 #include "export.h"
 #include "builtin.h"
-#include "nodedumper.h"
+#include "Tree.h"
 #include "CGALRenderer.h"
 #include "PolySetCGALRenderer.h"
-#include "Tree.h"
 
 #include <QApplication>
 #include <QFile>
@@ -49,6 +49,8 @@ QString currentdir;
 QString examplesdir;
 QString librarydir;
 
+using std::string;
+
 void handle_dep(QString filename)
 {
 	if (filename.startsWith("/"))
@@ -63,20 +65,14 @@ void handle_dep(QString filename)
 }
 
 // FIXME: enforce some maximum cache size (old version had 100K vertices as limit)
-QHash<string, CGAL_Nef_polyhedron> cache;
+QHash<std::string, CGAL_Nef_polyhedron> cache;
 
 void cgalTree(Tree &tree)
 {
-	const AbstractNode *root = tree.root();
-	assert(root);
-	NodeCache<string> &cache = tree.cache();
-	NodeDumper dumper(cache, false);
-	Traverser trav(dumper, *root, Traverser::PRE_AND_POSTFIX);
-	trav.execute();
-	assert(!cache[*root].empty());
+	assert(tree.root());
 
-	CSGTextRenderer renderer(csgcache, cache);
-	Traverser render(renderer, *root, Traverser::PRE_AND_POSTFIX);
+	CGALRenderer renderer(cache, tree);
+	Traverser render(renderer, *tree.root(), Traverser::PRE_AND_POSTFIX);
 	render.execute();
 }
 
@@ -170,16 +166,13 @@ int main(int argc, char **argv)
 
 	cgalTree(tree);
 
- 	std::cout << cache[tree.cache()[*root_node]] << "\n";
+ 	std::cout << tree.getString(*root_node) << "\n";
 
-	CGALRenderer cgalrenderer(dumper.getCache());
-	PolySetCGALRenderer psrenderer(cgalrenderer);
-	PolySetRenderer::setRenderer(&psrenderer);
+// 	CGALRenderer cgalrenderer(dumper.getCache());
+// 	PolySetCGALRenderer psrenderer(cgalrenderer);
+// 	PolySetRenderer::setRenderer(&psrenderer);
 
-// This is done in renderCGALMesh() for convenience, but can be overridden here
-// 	Traverser render(cgalrenderer, *root_node, Traverser::PRE_AND_POSTFIX);
-// 	render.execute();
-	CGAL_Nef_polyhedron N = cgalrenderer.renderCGALMesh(*root_node);
+	CGAL_Nef_polyhedron N = cache[tree.getString(*root_node)];
 
 	QDir::setCurrent(original_path.absolutePath());
 	export_stl(&N, fileInfo.baseName() + ".stl", NULL);

@@ -2,7 +2,6 @@
 #define POLYSETCGALRENDERER_H_
 
 #include "PolySetRenderer.h"
-#include <QHash>
 #include "CGALRenderer.h"
 
 /*!

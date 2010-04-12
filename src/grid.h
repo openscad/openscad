@@ -1,10 +1,10 @@
 #ifndef GRID_H_
 #define GRID_H_
 
+#include <QHash>
 #include <math.h>
 #include <stdint.h>
 #include <stdlib.h>
-#include <QHash>
 
 const double GRID_COARSE = 0.001;
 const double GRID_FINE   = 0.000001;
