@@ -120,6 +120,8 @@ o Misc
   - Go through default values of parameters (e.g. cube() has x,y,z=1 while linear_extrude() has height=100)
   - Add support for symbolic names to child() statement 
   - Add 'lines' object type for non-solid 2d drawings
+  - Is there a reason why modules like echo, empty if, empty for loop returns an
+    empty AbstractNode instead of being ignored?
 o Grammar
   - dim->name -> dim->label
   - A random(seed) function
