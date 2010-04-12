@@ -1,4 +1,4 @@
-dxf="testdata/dim-all.dxf";
+dxf="dim-all.dxf";
 echo(linearX=dxf_dim(file=dxf, name="linearX"));
 echo(linearY=dxf_dim(file=dxf, name="linearY"));
 echo(aligned=dxf_dim(file=dxf, name="aligned"));
