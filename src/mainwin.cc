@@ -46,7 +46,7 @@
 #endif
 #include "CGALRenderer.h"
 #include "PolySetCGALRenderer.h"
-#include "NodeDumper.h"
+#include "nodedumper.h"
 
 #include <QMenu>
 #include <QTime>
