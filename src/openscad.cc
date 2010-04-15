@@ -112,11 +112,10 @@ int main(int argc, char **argv)
 #endif
 	QDir original_path = QDir::current();
 
-  // set up groups for QSettings
-  QCoreApplication::setOrganizationName("OpenSCAD");
-  QCoreApplication::setOrganizationDomain("openscad.org");
-  QCoreApplication::setApplicationName("OpenSCAD");
-
+	// set up groups for QSettings
+	QCoreApplication::setOrganizationName("OpenSCAD");
+	QCoreApplication::setOrganizationDomain("openscad.org");
+	QCoreApplication::setApplicationName("OpenSCAD");
 
 	const char *filename = NULL;
 	const char *stl_output_file = NULL;
