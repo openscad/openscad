@@ -166,6 +166,8 @@ MainWindow::MainWindow(const QString &filename)
 	QLanguageFactory *languages = new QLanguageFactory(formats,this);
 	languages->addDefinitionPath("qxs");
 	languages->setLanguage(editor, "openscad");
+#else
+	editor->setTabStopWidth(30);
 #endif
 	editor->setLineWrapping(true); // Not designable
 	setFont("", 0); // Init default font
