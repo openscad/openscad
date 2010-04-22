@@ -39,6 +39,7 @@ o MDI
   - currentPath is global but is used by each document, e.g. parser
     and handle_dep.
 o 3D View
+  - OpenGL 2.0 test: What, exactly, is needed from OpenGL 2.0? Can we use 1.x with extensions?
   - Improve mouse rotation
   - Add modifier key combos to handle pan on 1 mouse button systems
   - Show grid
