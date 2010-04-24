@@ -187,11 +187,19 @@ void GLView::initializeGL()
 #ifdef ENABLE_OPENCSG
 void GLView::display_opengl20_warning()
 {
+	QString rendererinfo;
+	rendererinfo.sprintf("GLEW version %s\n"
+											 "%s (%s)\n"
+											 "OpenGL version %s\n",
+											 glewGetString(GLEW_VERSION),
+											 glGetString(GL_RENDERER), glGetString(GL_VENDOR),
+											 glGetString(GL_VERSION));
+
 	QMessageBox::warning(NULL, "GLEW: GL_VERSION_2_0 is not supported!",
-			"Warning: No support for OpenGL 2.0 found! OpenCSG View has been disabled.\n\n"
+			QString("Warning: No support for OpenGL 2.0 found! OpenCSG View has been disabled.\n\n"
 			"It is highly recommended to use OpenSCAD on a system with OpenGL 2.0 "
-			"support. Please check if OpenGL 2.0 drivers are available for your "
-			"graphics hardware.");
+			"support. Please check if OpenGL 2.0 drivers are available for your "	
+			"graphics hardware.\n\n%1").arg(rendererinfo));
 }
 #endif
 
