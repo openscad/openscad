@@ -29,6 +29,7 @@ o Build boost::thread
   ./bootstrap.sh --prefix=$PWD/../../deploy --with-libraries=thread
   ./bjam cflags="-mmacosx-version-min=10.5" linkflags="-mmacosx-version-min=10.5"
   ./bjam install
+  install_name_tool -id $PWD/../../deploy/lib/libboost_thread.dylib /Users/kintel/code/metalab/checkout/OpenSCAD/libraries/deploy/lib/libboost_thread.dylib 
 
 o Build CGAL >= 3.5
 
