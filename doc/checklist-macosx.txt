@@ -1,30 +1,60 @@
-o Prerequisites (MacPorts):
-  - NB! CGAL requires gcc >= 4.2
-  - eigen
-  - boost
-  - gmp
-  - mpfr
-  - cmake
-  - Qt4
+NB! This is the Mac OS X deployment checklist.
+    See build-macosx.txt for how to build a development build of
+    OpenSCAD for your system only without manually compiling all
+    dependencies.
+
+o MacPorts libs
+  port install eigen
+
+o Qt4
+  - Download and install the combined 32-bit and 64-bit build for 10.5-10.6 from here:
+     http://qt.nokia.com/downloads/qt-for-open-source-cpp-development-on-mac-os-x
+
+o Build gmp
+
+  tar xjz gmp-5.0.1.tar.bz2
+  cd gmp-5.0.1
+  ./configure --prefix=$PWD/../../deploy CFLAGS=-mmacosx-version-min=10.5 LDFLAGS=-mmacosx-version-min=10.5
+  make install
+
+o Build mpfr
+  tar xjz mpfr-2.4.2.tar.bz2
+  cd mpfr-2.4.2
+  ./configure --prefix=$PWD/../../deploy --with-gmp=$PWD/../../deploy CFLAGS=-mmacosx-version-min=10.5 LDFLAGS=-mmacosx-version-min=10.5
+  make install
+
+o Build boost::thread
+  tar xjz boost_1_42_0.tar.bz2
+  cd boost_1_42_0
+  ./bootstrap.sh --prefix=$PWD/../../deploy --with-libraries=thread
+  ./bjam cflags="-mmacosx-version-min=10.5" linkflags="-mmacosx-version-min=10.5"
+  ./bjam install
 
 o Build CGAL >= 3.5
 
   tar xzf CGAL-3.6.tar.gz
   cd CGAL-3.6
-  cmake -DCMAKE_INSTALL_PREFIX=$PWD/../install/CGAL-3.6 -DBUILD_SHARED_LIBS=FALSE
+  cmake -DCMAKE_INSTALL_PREFIX=$PWD/../../deploy -DBUILD_SHARED_LIBS=FALSE -DCMAKE_OSX_DEPLOYMENT_TARGET="10.5"
   make -j4
   make install
 
-o Patch OpenCSG >= 1.3.0
+o Patch & build GLEW
 
+  tar xzf glew-1.5.3.tar.gz
+  cd glew-1.5.3
+  patch -p1 < ../openscad/patches/glew-1.5.3-MacOSX.patch
+  mkdir ../../deploy/lib/pkgconfig
+  GLEW_DEST=$PWD/../../deploy make install
+
+o Patch and build OpenCSG >= 1.3.0
+
+  FIXME: Update patch
   tar xzf OpenCSG-1.3.0.tar.gz
   cd OpenCSG-1.3.0
   patch -p1 < ../openscad/patches/OpenCSG-1.3.0-MacOSX-port.patch
-
-o Build OpenCSG
-
-  qmake -recursive
+  MACOSX_DEPLOY_DIR=$PWD/../../deploy qmake -r
   make
+  make install
   
 o Build and Deploy OpenSCAD
 

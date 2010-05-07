@@ -41,7 +41,7 @@ o MDI
 o 3D View
   - OpenGL 2.0 test: What, exactly, is needed from OpenGL 2.0? Can we use 1.x with extensions?
   - Improve mouse rotation
-  - Add modifier key combos to handle pan on 1 mouse button systems
+  - Add modifier key combos to handle pan and zoom on 1 mouse button systems
   - Show grid
   - 4 x split view w/orthogonal cameras?
   - Quick highlighting of object under the cursor in the editor
@@ -170,6 +170,8 @@ MISC
 o Streamline the cmd-line interface a bit
   - Implicit output file format
 o Mac OS X:
-  - universal binary -> fix cgal and opencsg
+  - 32-bit compatibility
+    o Build everything including i386 arch
+
 o Write checklists for typical extension work (add new module, add new function)
   -> make sure new test files are added

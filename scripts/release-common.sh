@@ -42,7 +42,7 @@ echo "Building openscad-$VERSION $CONFIGURATION..."
 
 case $OS in
     MACOSX) 
-        CONFIG=mdi
+        CONFIG=deploy
         TARGET=
         ;;
     WIN) 
