@@ -1,0 +1,40 @@
+o Prerequisites (MacPorts):
+  - NB! CGAL requires gcc >= 4.2 (This is default in 10.6 Snow Leopard)
+  - eigen
+  - boost
+  - gmp
+  - mpfr
+  - cmake
+  - qt4-mac-devel
+  - glew
+
+o An important note about paths: 
+  You can choose where to put the libs you build yourself as long as
+  this is reflected in the environment variables as specified under
+  'Build OpenSCAD'.
+
+o Build CGAL >= 3.5
+
+  tar xzf CGAL-3.6.tar.gz
+  cd CGAL-3.6
+  cmake -DCMAKE_INSTALL_PREFIX=$PWD/../install/CGAL-3.6 -DBUILD_SHARED_LIBS=FALSE
+  make -j4
+  make install
+
+o Patch OpenCSG >= 1.3.0
+
+  tar xzf OpenCSG-1.3.0.tar.gz
+  cd OpenCSG-1.3.0
+  patch -p1 < ../openscad/patches/OpenCSG-1.3.0-MacOSX-port.patch
+
+o Build OpenCSG
+
+  qmake -recursive
+  make
+  
+o Build OpenSCAD
+
+  cd openscad
+  export OPENCSGDIR=$PWD/../OpenCSG-1.3.0
+  export CGALDIR=$PWD/../install/CGAL-3.6
+  ./scripts/release-common.sh
