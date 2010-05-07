@@ -10,6 +10,16 @@ RCC_DIR = objects
 INCLUDEPATH += src
 
 macx {
+  # add CONFIG+=deploy to the qmake command-line to make a deployment build
+  deploy {
+    message("Building deployment version")
+    DEPLOYDIR = $$(MACOSX_DEPLOY_DIR)
+    !isEmpty(DEPLOYDIR) {
+      INCLUDEPATH += $$DEPLOYDIR/include
+      LIBS += -L$$DEPLOYDIR/lib
+    }
+  }
+
   TARGET = OpenSCAD
   ICON = icons/OpenSCAD.icns
   QMAKE_INFO_PLIST = Info.plist
@@ -56,9 +66,9 @@ include(opencsg.pri)
 include(eigen2.pri)
 
 # Standard include path for misc external libs
-macx {
-  INCLUDEPATH += /opt/local/include
-}
+#macx {
+#  INCLUDEPATH += /opt/local/include
+#}
 
 # QMAKE_CFLAGS   += -pg
 # QMAKE_CXXFLAGS += -pg

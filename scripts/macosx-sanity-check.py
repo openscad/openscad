@@ -5,6 +5,8 @@
 # are present and that they are backwards compatible with at least 10.5.
 # Run with an executable as parameter
 #
+# Author: Marius Kintel <marius@kintel.net>
+#
 
 import sys
 import os
