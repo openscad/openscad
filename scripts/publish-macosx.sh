@@ -3,9 +3,7 @@
 VERSION=`date "+%Y.%m.%d"`
 #VERSION=2010.02
 
-export OPENCSGDIR=$PWD/../OpenCSG-1.3.0
-export CGALDIR=$PWD/../install/CGAL-3.6
-export EIGEN2DIR=/opt/local/include/eigen2
+export MACOSX_DEPLOY_DIR=$PWD/../libraries/deploy
 
 `dirname $0`/release-common.sh -v $VERSION
 if [[ $? != 0 ]]; then
