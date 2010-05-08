@@ -67,6 +67,18 @@ def validate_lib(lib):
     if re.search("LC_DYLD_INFO_ONLY", output):
         print "Error: Requires Snow Leopard: " + lib
         return False
+
+    p  = subprocess.Popen(["lipo", lib, "-verify_arch", "x86_64"], stdout=subprocess.PIPE)
+    output = p.communicate()[0]
+    if p.returncode != 0: 
+        print "Error: x86_64 architecture not supported: " + lib
+        return False
+
+    p  = subprocess.Popen(["lipo", lib, "-verify_arch", "i386"], stdout=subprocess.PIPE)
+    output = p.communicate()[0]
+    if p.returncode != 0: 
+        print "Error: i386 architecture not supported: " + lib
+        return False
     return True
 
 if __name__ == '__main__':
@@ -77,6 +89,7 @@ if __name__ == '__main__':
     # processed is a dict {libname : [parents]} - each parent is dependant on libname
     processed = {}
     pending = [executable]
+    processed[executable] = []
     while len(pending) > 0:
         dep = pending.pop()
         if DEBUG: print "Evaluating " + dep
