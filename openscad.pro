@@ -26,7 +26,6 @@ macx {
   APP_RESOURCES.path = Contents/Resources
   APP_RESOURCES.files = OpenSCAD.sdef
   QMAKE_BUNDLE_DATA += APP_RESOURCES
-  #CONFIG += x86 ppc
   LIBS += -framework Carbon
 }
 else {
