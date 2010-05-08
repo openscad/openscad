@@ -961,6 +961,17 @@ void MainWindow::pasteViewportRotation()
 
 void MainWindow::actionReloadCompile()
 {
+	if (editor->isContentModified()) {
+		QMessageBox::StandardButton ret;
+		ret = QMessageBox::warning(this, "Application",
+				"The document has been modified.\n"
+				"Do you really want to reload the file?",
+				QMessageBox::Yes | QMessageBox::No);
+		if (ret != QMessageBox::Yes) {
+			return;
+		}
+	}
+
 	console->clear();
 
 	load();
