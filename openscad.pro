@@ -13,6 +13,7 @@ macx {
   # add CONFIG+=deploy to the qmake command-line to make a deployment build
   deploy {
     message("Building deployment version")
+    CONFIG += x86 x86_64
     DEPLOYDIR = $$(MACOSX_DEPLOY_DIR)
     !isEmpty(DEPLOYDIR) {
       INCLUDEPATH += $$DEPLOYDIR/include
