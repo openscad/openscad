@@ -71,8 +71,13 @@
 #include "qformatscheme.h"
 #include "qlanguagefactory.h"
 #endif
+
 //for chdir
 #include <unistd.h>
+
+// for stat()
+#include <sys/types.h>
+#include <sys/stat.h>
 
 #ifdef ENABLE_CGAL
 
@@ -178,6 +183,10 @@ MainWindow::MainWindow(const QString &filename)
 	animate_timer = new QTimer(this);
 	connect(animate_timer, SIGNAL(timeout()), this, SLOT(updateTVal()));
 
+	autoReloadTimer = new QTimer(this);
+	autoReloadTimer->setSingleShot(false);
+	connect(autoReloadTimer, SIGNAL(timeout()), this, SLOT(checkAutoReload()));
+
 	connect(e_tval, SIGNAL(textChanged(QString)), this, SLOT(actionCompile()));
 	connect(e_fps, SIGNAL(textChanged(QString)), this, SLOT(updatedFps()));
 
@@ -242,6 +251,7 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this->editActionPreferences, SIGNAL(triggered()), this, SLOT(preferences()));
 
 	// Design menu
+	connect(this->designActionAutoReload, SIGNAL(toggled(bool)), this, SLOT(autoReloadSet(bool)));
 	connect(this->designActionReloadAndCompile, SIGNAL(triggered()), this, SLOT(actionReloadCompile()));
 	connect(this->designActionCompile, SIGNAL(triggered()), this, SLOT(actionCompile()));
 #ifdef ENABLE_CGAL
@@ -959,6 +969,28 @@ void MainWindow::pasteViewportRotation()
 	cursor.insertText(txt);
 }
 
+void MainWindow::checkAutoReload()
+{
+	QString new_stinfo;
+	struct stat st;
+	memset(&st, 0, sizeof(struct stat));
+	stat(this->fileName.toAscii().data(), &st);
+	new_stinfo.sprintf("%x.%x", (int)st.st_mtime, (int)st.st_size);
+	if (new_stinfo != autoReloadInfo)
+		actionReloadCompile();
+	autoReloadInfo = new_stinfo;
+}
+
+void MainWindow::autoReloadSet(bool on)
+{
+	if (on) {
+		autoReloadInfo = QString();
+		autoReloadTimer->start(200);
+	} else {
+		autoReloadTimer->stop();
+	}
+}
+
 void MainWindow::actionReloadCompile()
 {
 	if (editor->isContentModified()) {
@@ -968,6 +1000,7 @@ void MainWindow::actionReloadCompile()
 				"Do you really want to reload the file?",
 				QMessageBox::Yes | QMessageBox::No);
 		if (ret != QMessageBox::Yes) {
+			designActionAutoReload->setChecked(false);
 			return;
 		}
 	}
