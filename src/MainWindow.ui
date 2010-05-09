@@ -23,7 +23,7 @@
       <property name="orientation">
        <enum>Qt::Horizontal</enum>
       </property>
-      <widget class="Editor" name="editor">
+      <widget class="Editor" name="editor" native="true">
        <property name="font">
         <font>
          <family>Monaco</family>
@@ -168,6 +168,7 @@
     <property name="title">
      <string>&amp;Design</string>
     </property>
+    <addaction name="designActionAutoReload"/>
     <addaction name="designActionReloadAndCompile"/>
     <addaction name="designActionCompile"/>
     <addaction name="designActionCompileAndRender"/>
@@ -642,6 +643,14 @@
     <string>OpenSCAD Homepage</string>
    </property>
   </action>
+  <action name="designActionAutoReload">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Automatic Reload and Compile</string>
+   </property>
+  </action>
  </widget>
  <customwidgets>
   <customwidget>
@@ -649,6 +658,11 @@
    <extends>QWidget</extends>
    <header>GLView.h</header>
    <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>Editor</class>
+   <extends>QWidget</extends>
+   <header>editor.h</header>
   </customwidget>
  </customwidgets>
  <resources>

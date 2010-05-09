@@ -24,6 +24,9 @@ public:
 	QTimer *animate_timer;
 	double tval, fps, fsteps;
 
+	QTimer *autoReloadTimer;
+	QString autoReloadInfo;
+
 	Context root_ctx;
 	AbstractModule *root_module;      // Result of parsing
 	ModuleInstantiation root_inst;    // Top level instance
@@ -145,6 +148,8 @@ public slots:
 	void helpManual();
 	void quit();
 	void actionReloadCompile();
+	void checkAutoReload();
+	void autoReloadSet(bool);
 };
 
 #endif
