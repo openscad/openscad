@@ -12,6 +12,7 @@ o Qt4
 
 o Build gmp
 
+  curl -O ftp://ftp.gmplib.org/pub/gmp-5.0.1/gmp-5.0.1.tar.bz2
   tar xjz gmp-5.0.1.tar.bz2
   cd gmp-5.0.1
   mkdir build-i386
@@ -26,8 +27,11 @@ o Build gmp
   cd ../../../deploy
   lipo -create lib-i386/libgmp.dylib lib-x86_64/libgmp.dylib -output lib/libgmp.dylib
   install_name_tool -id $PWD/lib/libgmp.dylib lib/libgmp.dylib
+  cd ../src
 
 o Build mpfr
+
+  curl -O http://www.mpfr.org/mpfr-current/mpfr-2.4.2.tar.bz2
   tar xjz mpfr-2.4.2.tar.bz2
   cd mpfr-2.4.2
   mkdir build-i386
@@ -42,39 +46,49 @@ o Build mpfr
   cd ../../../deploy
   lipo -create lib-i386/libmpfr.dylib lib-x86_64/libmpfr.dylib -output lib/libmpfr.dylib
   install_name_tool -id $PWD/lib/libmpfr.dylib lib/libmpfr.dylib
+  cd ../src
 
 o Build boost::thread
+
+  curl -O http://downloads.sourceforge.net/project/boost/boost/1.42.0/boost_1_42_0.tar.bz2
   tar xjz boost_1_42_0.tar.bz2
   cd boost_1_42_0
   ./bootstrap.sh --prefix=$PWD/../../deploy --with-libraries=thread
   ./bjam cflags="-mmacosx-version-min=10.5 -arch i386 -arch x86_64" linkflags="-mmacosx-version-min=10.5 -arch i386 -arch x86_64"
   ./bjam install
   install_name_tool -id $PWD/../../deploy/lib/libboost_thread.dylib /Users/kintel/code/metalab/checkout/OpenSCAD/libraries/deploy/lib/libboost_thread.dylib 
+  cd ..
 
 o Build CGAL >= 3.5
 
+  curl -O https://gforge.inria.fr/frs/download.php/26688/CGAL-3.6.tar.gz
   tar xzf CGAL-3.6.tar.gz
   cd CGAL-3.6
   cmake -DCMAKE_INSTALL_PREFIX=$PWD/../../deploy -DBUILD_SHARED_LIBS=FALSE -DCMAKE_OSX_DEPLOYMENT_TARGET="10.5" -DCMAKE_OSX_ARCHITECTURES="i386;x86_64"
   make -j4
   make install
+  cd ..
 
 o Patch & build GLEW
 
+  curl -LO http://downloads.sourceforge.net/project/glew/glew/1.5.4/glew-1.5.4.tgz
   tar xzf glew-1.5.3.tar.gz
   cd glew-1.5.3
   patch -p1 < ../openscad/patches/glew-1.5.3-MacOSX.patch
   mkdir ../../deploy/lib/pkgconfig
   make GLEW_DEST=$PWD/../../deploy CFLAGS.EXTRA="-no-cpp-precomp -dynamic -fno-common -mmacosx-version-min=10.5 -arch i386 -arch x86_64" LDFLAGS.EXTRA="-mmacosx-version-min=10.5 -arch i386 -arch x86_64" install
+  cd ..
 
 o Patch and build OpenCSG >= 1.3.0
 
+  curl -O http://www.opencsg.org/OpenCSG-1.3.0.tar.gz
   FIXME: Update patch
   tar xzf OpenCSG-1.3.0.tar.gz
   cd OpenCSG-1.3.0
   patch -p1 < ../openscad/patches/OpenCSG-1.3.0-MacOSX-port.patch
   MACOSX_DEPLOY_DIR=$PWD/../../deploy qmake -r CONFIG+="x86 x86_64"
   make install
+  cd ..
   
 o Build and Deploy OpenSCAD
 
