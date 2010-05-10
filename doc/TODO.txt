@@ -20,6 +20,7 @@ o union() {
 USER INTERFACE
 --------------
 o Preferences
+  - Remember settings done in menus between sessions (automatic reload, perspective, show*, hide*)
   - Beautify color schemes
   - Color schemes read from file
   - Color scheme editor
