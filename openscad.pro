@@ -10,15 +10,15 @@ RCC_DIR = objects
 INCLUDEPATH += src
 
 macx {
+  DEPLOYDIR = $$(MACOSX_DEPLOY_DIR)
+  !isEmpty(DEPLOYDIR) {
+    INCLUDEPATH += $$DEPLOYDIR/include
+    LIBS += -L$$DEPLOYDIR/lib
+  }
   # add CONFIG+=deploy to the qmake command-line to make a deployment build
   deploy {
     message("Building deployment version")
     CONFIG += x86 x86_64
-    DEPLOYDIR = $$(MACOSX_DEPLOY_DIR)
-    !isEmpty(DEPLOYDIR) {
-      INCLUDEPATH += $$DEPLOYDIR/include
-      LIBS += -L$$DEPLOYDIR/lib
-    }
   }
 
   TARGET = OpenSCAD

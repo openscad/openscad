@@ -1,7 +1,7 @@
 cgal {
   DEFINES += ENABLE_CGAL
 
-  !deploy {
+  isEmpty(DEPLOYDIR) {
     # Optionally specify location of CGAL using the 
     # CGALDIR env. variable
     CGAL_DIR = $$(CGALDIR)
