@@ -4,6 +4,8 @@
 # This is be used to verify that all the dependant libraries of a  Mac OS X executable 
 # are present and that they are backwards compatible with at least 10.5.
 # Run with an executable as parameter
+# Will return 0 if the executable an all libraries are OK
+# Returns != 0 and prints some textural description on error
 #
 # Author: Marius Kintel <marius@kintel.net>
 #
@@ -82,6 +84,7 @@ def validate_lib(lib):
     return True
 
 if __name__ == '__main__':
+    error = False
     if len(sys.argv) != 2: usage()
     executable = sys.argv[1]
     if DEBUG: print "Processing " + executable
@@ -113,3 +116,6 @@ if __name__ == '__main__':
 #        print "     " + str(processed[dep])
        if not validate_lib(dep):
            print "..required by " + str(processed[dep])
+           error = True
+    if error: sys.exit(1)
+    else: sys.exit(0)
