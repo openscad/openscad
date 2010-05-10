@@ -1,5 +1,5 @@
 glew {
-  !deploy {
+  isEmpty(DEPLOYDIR) {
     # Optionally specify location of GLEW using the 
     # GLEWDIR env. variable
     GLEW_DIR = $$(GLEWDIR)

@@ -6,7 +6,7 @@ opencsg {
   HEADERS += src/render-opencsg.h
   SOURCES += src/render-opencsg.cc
 
-  !deploy {
+  isEmpty(DEPLOYDIR) {
     # Optionally specify location of OpenCSG using the 
     # OPENCSGDIR env. variable
     OPENCSG_DIR = $$(OPENCSGDIR)
