@@ -120,9 +120,12 @@ void export_stl(CGAL_Nef_polyhedron *root_N, QString filename, QProgressDialog *
 				double nx = (y1-y2)*(z1-z3) - (z1-z2)*(y1-y3);
 				double ny = (z1-z2)*(x1-x3) - (x1-x2)*(z1-z3);
 				double nz = (x1-x2)*(y1-y3) - (y1-y2)*(x1-x3);
-				double n_scale = 1 / sqrt(nx*nx + ny*ny + nz*nz);
+				double nlength = sqrt(nx*nx + ny*ny + nz*nz);
+				// Avoid generating normals for polygons with zero area
+				double eps = 0.000001;
+				if (nlength < eps) nlength = 1.0;
 				fprintf(f, "  facet normal %f %f %f\n",
-						nx * n_scale, ny * n_scale, nz * n_scale);
+						nx / nlength, ny / nlength, nz  / nlength);
 				fprintf(f, "    outer loop\n");
 				fprintf(f, "      vertex %s\n", vs1.toAscii().data());
 				fprintf(f, "      vertex %s\n", vs2.toAscii().data());
