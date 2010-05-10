@@ -8,6 +8,13 @@ RCC_DIR = cgal-objects
 INCLUDEPATH += ../src
 
 macx {
+  macx {
+    DEPLOYDIR = $$(MACOSX_DEPLOY_DIR)
+    !isEmpty(DEPLOYDIR) {
+      INCLUDEPATH += $$DEPLOYDIR/include
+      LIBS += -L$$DEPLOYDIR/lib
+    }
+  }
   CONFIG -= app_bundle
   LIBS += -framework Carbon
 }
@@ -18,11 +25,6 @@ CONFIG += cgal
 
 include(../cgal.pri)
 include(../eigen2.pri)
-
-# Standard include path for misc external libs
-macx {
-  INCLUDEPATH += /opt/local/include
-}
 
 LEXSOURCES += ../src/lexer.l
 YACCSOURCES += ../src/parser.y
