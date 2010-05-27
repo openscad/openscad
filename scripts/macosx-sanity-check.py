@@ -103,6 +103,7 @@ if __name__ == '__main__':
             if absfile == None:
                 print "Not found: " + d
                 print "  ..required by " + str(processed[dep])
+                error = True
                 continue
             if absfile in processed:
                 processed[absfile].append(dep)
