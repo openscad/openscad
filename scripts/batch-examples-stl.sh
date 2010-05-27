@@ -1,12 +1,9 @@
 #!/bin/sh
 
-cmd="openscad"
-[ -x "./openscad" ] && cmd="./openscad"
-[ -x "./OpenSCAD.app/Contents/MacOS/OpenSCAD" ] && cmd="./OpenSCAD.app/Contents/MacOS/OpenSCAD"
+SCRIPTDIR=`dirname $0`
 
 mkdir -p output
 for f in examples/*.scad; do
   echo `basename $f .scad`
-  "$cmd" -s output/`basename $f .scad`.stl $f
+  $SCRIPTDIR/create-stl.sh $f output/`basename $f .scad`.stl
 done
-
