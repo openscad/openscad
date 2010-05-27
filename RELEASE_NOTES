@@ -1,8 +1,7 @@
 
-OpenSCAD 2010.03
+OpenSCAD 2010.05
 ================
 
- .. ADD STUFF HERE ..
  o Added functions and statements
   - Added abs() function
   - Added exp(x), log(b, x), log(x) and ln(x) functions
