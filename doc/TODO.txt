@@ -16,6 +16,7 @@ o union() {
     linear_extrude(height=10, twist=90) circle(5);
     translate([7,-5,0]) linear_extrude(height=10, twist=180) polygon(points = [[0,0], [10,0], [5,10]]);
   }
+o non-convex minkowski example from chrysn fails with an exception
 
 USER INTERFACE
 --------------
