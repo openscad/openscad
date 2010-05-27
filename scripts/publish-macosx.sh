@@ -1,7 +1,7 @@
 #!/bin/sh
 
-#VERSION=`date "+%Y.%m.%d"`
-VERSION=2010.05
+VERSION=`date "+%Y.%m.%d"`
+#VERSION=2010.05
 
 export MACOSX_DEPLOY_DIR=$PWD/../libraries/deploy
 
