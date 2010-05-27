@@ -107,6 +107,9 @@ o Language Frontend
     a module search path.
   - allow 0/1 f/t FALSE/TRUE as boolean values
   - allow any expression to be evaluated as boolean (e.g. 1 = true, 0 = false)
+  - Rethink for vs. intersection_for vs. group. Should for loops
+    generate child lists instead, and make these passable to other
+    modules or accessible by child()?
 o DXF Import
   - Support for POLYLINE entity
   - Support for SPLINE entity
