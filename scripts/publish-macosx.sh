@@ -3,12 +3,15 @@
 VERSION=`date "+%Y.%m.%d"`
 #VERSION=2010.05
 
-export MACOSX_DEPLOY_DIR=$PWD/../libraries/deploy
+# This is the same location as DEPLOYDIR in macosx-build-dependencies.sh
+export MACOSX_DEPLOY_DIR=$PWD/../libraries/install
 
 `dirname $0`/release-common.sh -v $VERSION
 if [[ $? != 0 ]]; then
   exit 1
 fi
+
+echo "Sanity check of the app bundle..."
 `dirname $0`/macosx-sanity-check.py OpenSCAD.app/Contents/MacOS/OpenSCAD
 if [[ $? != 0 ]]; then
   exit 1
