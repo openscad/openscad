@@ -20,8 +20,14 @@
 BASEDIR=/Users/kintel/code/metalab/checkout/OpenSCAD/libraries
 OPENSCADDIR=/Users/kintel/code/metalab/checkout/OpenSCAD/openscad-release
 SRCDIR=$BASEDIR/src
-DEPLOYDIR=$BASEDIR/deploy
+DEPLOYDIR=$BASEDIR/install
 
+# Hack warning: gmplib is built separately in 32-bit and 64-bit mode
+# and then merged afterwards.  Somehow, gmplib's header files appear
+# to be dependant on the CPU architecture on which configure was
+# run. Not nice, but as long as we also build mpfr in two separate
+# steps and nobody else uses these architecture-dependent macros, we
+# should be fine.
 build_gmp()
 {
   version=$1
@@ -31,21 +37,32 @@ build_gmp()
   curl -O ftp://ftp.gmplib.org/pub/gmp-$version/gmp-$version.tar.bz2
   tar xjf gmp-$version.tar.bz2
   cd gmp-$version
+  # 32-bit version
   mkdir build-i386
   cd build-i386
-  ../configure --prefix=$DEPLOYDIR "CFLAGS=-mmacosx-version-min=10.5 -arch i386" LDFLAGS="-mmacosx-version-min=10.5 -arch i386" ABI=32 --libdir=$DEPLOYDIR/lib-i386
+  ../configure --prefix=$DEPLOYDIR/i386 "CFLAGS=-mmacosx-version-min=10.5 -arch i386" LDFLAGS="-mmacosx-version-min=10.5 -arch i386" ABI=32 --enable-cxx
   make install
   cd ..
+  # 64-bit version
   mkdir build-x86_64
   cd build-x86_64
-  ../configure --prefix=$DEPLOYDIR "CFLAGS=-mmacosx-version-min=10.5" LDFLAGS="-mmacosx-version-min=10.5" --libdir=$DEPLOYDIR/lib-x86_64
+  ../configure --prefix=$DEPLOYDIR/x86_64 "CFLAGS=-mmacosx-version-min=10.5" LDFLAGS="-mmacosx-version-min=10.5" --enable-cxx
   make install
+
+  # merge
   cd $DEPLOYDIR
   mkdir -p lib
-  lipo -create lib-i386/libgmp.dylib lib-x86_64/libgmp.dylib -output lib/libgmp.dylib
+  lipo -create i386/lib/libgmp.dylib x86_64/lib/libgmp.dylib -output lib/libgmp.dylib
   install_name_tool -id $DEPLOYDIR/lib/libgmp.dylib lib/libgmp.dylib
+  cp lib/libgmp.dylib i386/lib/
+  cp lib/libgmp.dylib x86_64/lib/
+  mkdir -p include
+  cp x86_64/include/gmp.h include/
+  cp x86_64/include/gmpxx.h include/
 }
 
+# As with gmplib, mpfr is built separately in 32-bit and 64-bit mode and then merged
+# afterwards.
 build_mpfr()
 {
   version=$1
@@ -55,18 +72,27 @@ build_mpfr()
   curl -O http://www.mpfr.org/mpfr-current/mpfr-$version.tar.bz2
   tar xjf mpfr-$version.tar.bz2
   cd mpfr-$version
+
+  # 32-bit version
   mkdir build-i386
   cd build-i386
-  ../configure --prefix=$DEPLOYDIR --with-gmp=$DEPLOYDIR CFLAGS="-mmacosx-version-min=10.5 -arch i386" LDFLAGS="-mmacosx-version-min=10.5 -arch i386"  --libdir=$DEPLOYDIR/lib-i386
+  ../configure --prefix=$DEPLOYDIR/i386 --with-gmp=$DEPLOYDIR/i386 CFLAGS="-mmacosx-version-min=10.5 -arch i386" LDFLAGS="-mmacosx-version-min=10.5 -arch i386"
   make install
   cd ..
+
+  # 64-bit version
   mkdir build-x86_64
   cd build-x86_64
-  ../configure --prefix=$DEPLOYDIR --with-gmp=$DEPLOYDIR CFLAGS="-mmacosx-version-min=10.5 -arch x86_64" LDFLAGS="-mmacosx-version-min=10.5 -arch x86_64"  --libdir=$DEPLOYDIR/lib-x86_64
+  ../configure --prefix=$DEPLOYDIR/x86_64 --with-gmp=$DEPLOYDIR/x86_64 CFLAGS="-mmacosx-version-min=10.5 -arch x86_64" LDFLAGS="-mmacosx-version-min=10.5 -arch x86_64"
   make install
+
+  # merge
   cd $DEPLOYDIR
-  lipo -create lib-i386/libmpfr.dylib lib-x86_64/libmpfr.dylib -output lib/libmpfr.dylib
+  lipo -create i386/lib/libmpfr.dylib x86_64/lib/libmpfr.dylib -output lib/libmpfr.dylib
   install_name_tool -id $DEPLOYDIR/lib/libmpfr.dylib lib/libmpfr.dylib
+  mkdir -p include
+  cp x86_64/include/mpfr.h include/
+  cp x86_64/include/mpf2mpfr.h include/
 }
 
 
@@ -80,6 +106,7 @@ build_boost()
   curl -LO http://downloads.sourceforge.net/project/boost/boost/$version/boost_$bversion.tar.bz2
   tar xjf boost_$bversion.tar.bz2
   cd boost_$bversion
+  # We only need the thread library for now
   ./bootstrap.sh --prefix=$DEPLOYDIR --with-libraries=thread
   ./bjam cflags="-mmacosx-version-min=10.5 -arch i386 -arch x86_64" linkflags="-mmacosx-version-min=10.5 -arch i386 -arch x86_64"
   ./bjam install
@@ -94,6 +121,7 @@ build_cgal()
   curl -O https://gforge.inria.fr/frs/download.php/26688/CGAL-$version.tar.gz
   tar xzf CGAL-$version.tar.gz
   cd CGAL-$version
+  # We build a static lib. Not really necessary, but it's well tested.
   cmake -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR -DBUILD_SHARED_LIBS=FALSE -DCMAKE_OSX_DEPLOYMENT_TARGET="10.5" -DCMAKE_OSX_ARCHITECTURES="i386;x86_64"
   make -j4
   make install
