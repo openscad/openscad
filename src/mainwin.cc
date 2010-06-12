@@ -932,7 +932,7 @@ void MainWindow::actionSaveAs()
 
 void MainWindow::actionReload()
 {
-	load();
+	if (checkModified()) load();
 }
 
 void MainWindow::hideEditor()
@@ -991,7 +991,7 @@ void MainWindow::autoReloadSet(bool on)
 	}
 }
 
-void MainWindow::actionReloadCompile()
+bool MainWindow::checkModified()
 {
 	if (editor->isContentModified()) {
 		QMessageBox::StandardButton ret;
@@ -1001,9 +1001,15 @@ void MainWindow::actionReloadCompile()
 				QMessageBox::Yes | QMessageBox::No);
 		if (ret != QMessageBox::Yes) {
 			designActionAutoReload->setChecked(false);
-			return;
+			return false;
 		}
 	}
+	return true;
+}
+
+void MainWindow::actionReloadCompile()
+{
+	if (!checkModified()) return;
 
 	console->clear();
 
