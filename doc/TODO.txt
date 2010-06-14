@@ -87,6 +87,7 @@ o Primitives
   - Springs, spirals (requested by Cathal Garvey)
   - (TTF) Text
   - Image-based height field like http://www.thingiverse.com/thing:2078
+  - mesh (coordinates and indices)
 o 2D Subsystem
   - Performance: Is it necessary to union children before extrusion
     when compiling? Can this be postponed to CGAL evaluation time?
@@ -94,6 +95,7 @@ o 2D Subsystem
 o Built-in modules
   - extrude*: Allow the base 2D primitive to have a Z value
   - rotate_extrude(): Allow for specification of start/stop/sweep angle?
+  - Convex hull of multiple 2D or 2D objects
 o Advanced Transformations
   - Add statement for refinement via surface subdivision
   - Add statement for intersections in cartesian product of childs
