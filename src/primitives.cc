@@ -30,6 +30,7 @@
 #include "dxfdata.h"
 #include "dxftess.h"
 #include "builtin.h"
+#include "printutils.h"
 
 enum primitive_type_e {
 	CUBE,
@@ -465,8 +466,12 @@ sphere_next_r2:
 		DxfData dd;
 
 		for (int i=0; i<points.vec.size(); i++) {
-			double x = points.vec[i]->vec[0]->num;
-			double y = points.vec[i]->vec[1]->num;
+			double x,y;
+			if (!points.vec[i]->getv2(x, y)) {
+				PRINTF("ERROR: Unable to convert point at index %d to a vec2 of numbers", i);
+				// FIXME: Return NULL and make sure this is checked by all callers?
+				return p;
+			}
 			dd.points.append(DxfData::Point(x, y));
 		}
 
