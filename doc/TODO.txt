@@ -112,12 +112,14 @@ o Language Frontend
   - Rethink for vs. intersection_for vs. group. Should for loops
     generate child lists instead, and make these passable to other
     modules or accessible by child()?
-o DXF Import
-  - Support for POLYLINE entity
-  - Support for SPLINE entity
-  - Support for LEADER entity
-  - Support for MTEXT entity ?
-  - idea: DXF inline - convert from dxf to OpenSCAD syntax -> parametrize dxf content
+o DXF Import/Export
+  - Use dxflib from RibbonSoft for import/export? -> investigate
+  - Import
+    - Support for POLYLINE entity
+    - Support for SPLINE entity
+    - Support for LEADER entity
+    - Support for MTEXT entity ?
+    - idea: DXF inline - convert from dxf to OpenSCAD syntax -> parametrize dxf content
 o Mesh optimization on STL export
   - Remove super small triangles (all sides are short)
   - Replace super thin triangles (one h is short)
