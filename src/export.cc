@@ -83,6 +83,8 @@ void export_stl(CGAL_Nef_polyhedron *root_N, QString filename, QProgressDialog *
 	typedef CGAL_Polyhedron::Facet_const_iterator                   FCI;
 	typedef CGAL_Polyhedron::Halfedge_around_facet_const_circulator HFCC;
 
+	setlocale(LC_NUMERIC, "C"); // Ensure radix is . (not ,) in output
+
 	FILE *f = fopen(filename.toUtf8().data(), "w");
 	if (!f) {
 		PRINTA("Can't open STL file \"%1\" for STL export: %2", 
@@ -142,6 +144,7 @@ void export_stl(CGAL_Nef_polyhedron *root_N, QString filename, QProgressDialog *
 
 	fprintf(f, "endsolid OpenSCAD_Model\n");
 	fclose(f);
+	setlocale(LC_NUMERIC, "");      // Set default locale
 }
 
 void export_off(CGAL_Nef_polyhedron*, QString, QProgressDialog*)
