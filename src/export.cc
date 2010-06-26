@@ -165,10 +165,19 @@ void export_dxf(CGAL_Nef_polyhedron *root_N, QString filename, QProgressDialog *
 		return;
 	}
 
-	fprintf(f, "  0\n");
-	fprintf(f, "SECTION\n");
-	fprintf(f, "  2\n");
-	fprintf(f, "ENTITIES\n");
+	setlocale(LC_NUMERIC, "C"); // Ensure radix is . (not ,) in output
+	// Some importers (e.g. Inkscape) needs a BLOCKS section to be present
+	fprintf(f, "  0\n"
+					"SECTION\n"
+					"  2\n"
+					"BLOCKS\n"
+					"  0\n"
+					"ENDSEC\n");
+
+	fprintf(f, "  0\n"
+					"SECTION\n"
+					"  2\n"
+					"ENTITIES\n");
 
 	DxfData dd(*root_N);
 	for (int i=0; i<dd.paths.size(); i++)
@@ -182,6 +191,9 @@ void export_dxf(CGAL_Nef_polyhedron *root_N, QString filename, QProgressDialog *
 			double y2 = p2->y;
 			fprintf(f, "  0\n");
 			fprintf(f, "LINE\n");
+			// Some importers (e.g. Inkscape) needs a layer to be specified
+			fprintf(f, "  8\n");
+			fprintf(f, "0\n");
 			fprintf(f, " 10\n");
 			fprintf(f, "%f\n", x1);
 			fprintf(f, " 11\n");
@@ -195,10 +207,20 @@ void export_dxf(CGAL_Nef_polyhedron *root_N, QString filename, QProgressDialog *
 
 	fprintf(f, "  0\n");
 	fprintf(f, "ENDSEC\n");
+	// Some importers (e.g. Inkscape) needs an OBJECTS section with a DICTIONARY entry
+	fprintf(f, "  0\n"
+					"SECTION\n"
+					"  2\n"
+					"OBJECTS\n"
+					"  0\n"
+					"DICTIONARY\n"
+					"  0\n"
+					"ENDSEC\n");
 	fprintf(f, "  0\n");
 	fprintf(f, "EOF\n");
 
 	fclose(f);
+	setlocale(LC_NUMERIC, "");      // Set default locale
 }
 
 #endif
