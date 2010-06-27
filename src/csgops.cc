@@ -30,6 +30,8 @@
 #include "printutils.h"
 #ifdef ENABLE_CGAL
 #  include "cgal.h"
+#  include <CGAL/assertions_behaviour.h>
+#  include <CGAL/exceptions.h>
 #endif
 
 enum csg_type_e {
@@ -82,8 +84,10 @@ CGAL_Nef_polyhedron CsgNode::render_cgal_nef_polyhedron() const
 
 	print_messages_push();
 
+	CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
 	bool first = true;
 	CGAL_Nef_polyhedron N;
+	try {
 	foreach (AbstractNode *v, children) {
 		if (v->modinst->tag_background)
 			continue;
@@ -110,8 +114,13 @@ CGAL_Nef_polyhedron CsgNode::render_cgal_nef_polyhedron() const
 		}
 		v->progress_report();
 	}
-
 	cgal_nef_cache.insert(cache_id, new cgal_nef_cache_entry(N), N.weight());
+	}
+	catch (CGAL::Assertion_exception e) {
+		PRINTF("ERROR: Illegal polygonal object - make sure all polygons are defined with the same winding order. Skipping affected object.");
+	}
+	CGAL::set_error_behaviour(old_behaviour);
+
 	print_messages_pop();
 	progress_report();
 
