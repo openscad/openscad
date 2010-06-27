@@ -34,6 +34,11 @@
 #include "export.h"
 #include "progress.h"
 
+#ifdef ENABLE_CGAL
+#  include <CGAL/assertions_behaviour.h>
+#  include <CGAL/exceptions.h>
+#endif
+
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -106,17 +111,26 @@ PolySet *ProjectionNode::render_polyset(render_mode_e) const
 
 	print_messages_push();
 
+	PolySet *ps = new PolySet();
+	ps->convexity = this->convexity;
+	ps->is2d = true;
+
 	CGAL_Nef_polyhedron N;
 	N.dim = 3;
+	CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
+  try {
 	foreach(AbstractNode *v, this->children) {
 		if (v->modinst->tag_background)
 			continue;
 		N.p3 += v->render_cgal_nef_polyhedron().p3;
 	}
-
-	PolySet *ps = new PolySet();
-	ps->convexity = this->convexity;
-	ps->is2d = true;
+  }
+  catch (CGAL::Assertion_exception e) {
+		PRINTF("ERROR: Illegal polygonal object - make sure all polygons are defined with the same winding order. Skipping affected object.");
+		CGAL::set_error_behaviour(old_behaviour);
+		return ps;
+	}
+  CGAL::set_error_behaviour(old_behaviour);
 
 	if (cut_mode)
 	{

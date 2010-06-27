@@ -667,6 +667,7 @@ CGAL_Nef_polyhedron PolySet::render_cgal_nef_polyhedron() const
 			CGAL::set_error_behaviour(old_behaviour);
 			return CGAL_Nef_polyhedron();
 		}
+		CGAL::set_error_behaviour(old_behaviour);
 	}
 	return CGAL_Nef_polyhedron();
 }
