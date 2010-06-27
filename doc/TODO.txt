@@ -8,6 +8,35 @@ o It's now possible to start a new rendering while one is already running.
   -> turn off most (or all) interaction while rendering
 o Look into the polygon winding and rotate_extrude() problem reported by Britton
 
+STL Import BUGS
+---------------
+
+Using STL-imported models is tricky and triggers multiple issues:
+(these all fail with the usual "Illegal polygonal object" error)
+1) null-faces causes F6 rendering to fail while F5 rendering succeeds.
+   (null-faces are exported by OpenSCAD). Example: adns2610_dev_circuit_inv.stl
+   by Andrew Plumb
+2) Even very simple imported STL models don't render correctly with F5 when taking 
+   a difference(), though F6 looks correct. Example: test_cube.stl by Andrew Plumb
+   with this scad file:
+   difference() {
+     import_stl("test_cube.stl");
+     translate([2,2,2]) cylinder(h=10);
+   }
+3) More complex STL models with something simple unioned or subtracted fails rendering 
+   using F6 even though F5 works. Example: adns2610_dev_circuit_inv.stl
+   by Andrew Plumb with the three null-faces removed by MeshLab with this scad file:
+   union() {
+     import_stl("adns2610_dev_circuit_inv_4.stl");
+     sphere(r=5);
+   }
+4) More complex STL models cannot be projected (both F5 and F6).
+   Example: adns2610_dev_circuit_inv.stl by Andrew Plumb with the three 
+   null-faces removed by MeshLab and this scad file:
+   projection(cut=true) {
+     import_stl("adns2610_dev_circuit_inv.stl");
+   }
+
 CRASH BUGS
 ----------
 o Broken polyhedron() entities are not correctly detected and cause CGAL segfaults
