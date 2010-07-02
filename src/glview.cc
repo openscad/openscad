@@ -215,8 +215,8 @@ void GLView::resizeGL(int w, int h)
 
 void GLView::paintGL()
 {
-	const QColor &col = Preferences::inst()->color(Preferences::BACKGROUND_COLOR);
-	glClearColor(col.redF(), col.greenF(), col.blueF(), 0.0);
+	const QColor &bgcol = Preferences::inst()->color(Preferences::BACKGROUND_COLOR);
+	glClearColor(bgcol.redF(), bgcol.greenF(), bgcol.blueF(), 0.0);
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
@@ -253,6 +253,8 @@ void GLView::paintGL()
 	glRotated(object_rot_y, 0.0, 1.0, 0.0);
 	glRotated(object_rot_z, 0.0, 0.0, 1.0);
 
+  // FIXME: Crosshairs and axes are lighted, this doesn't make sense and causes them
+  // to change color based on view orientation.
 	if (showcrosshairs)
 	{
 		glLineWidth(3);
@@ -271,6 +273,7 @@ void GLView::paintGL()
 	glTranslated(object_trans_x, object_trans_y, object_trans_z);
 
 	// Large gray axis cross inline with the model
+  // FIXME: This is always gray - adjust color to keep contrast with background
 	if (showaxes)
 	{
 		glLineWidth(1);
@@ -296,7 +299,6 @@ void GLView::paintGL()
 		renderfunc(renderfunc_vp);
 
 	// Small axis cross in the lower left corner
-	// FIXME: Adjust color to keep contrast with background
 	if (showaxes)
 	{
 		glDepthFunc(GL_ALWAYS);
@@ -354,8 +356,11 @@ void GLView::paintGL()
 		glMatrixMode(GL_MODELVIEW);
 		glLoadIdentity();
 
-		// FIXME: Adjust color to keep contrast with background
-		glColor3d(0.0, 0.0, 0.0);
+		// FIXME: This was an attempt to keep contrast with background, but is suboptimal
+		// (e.g. nearly invisible against a gray background).
+		int r,g,b;
+		bgcol.getRgb(&r, &g, &b);
+		glColor3d((255.0-r)/255.0, (255.0-g)/255.0, (255.0-b)/255.0);
 		glBegin(GL_LINES);
 		// X Label
 		glVertex3d(xlabel_x-3, xlabel_y-3, 0); glVertex3d(xlabel_x+3, xlabel_y+3, 0);
