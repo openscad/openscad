@@ -1,4 +1,4 @@
-export MACOSX_DEPLOY_DIR=$PWD/../libraries/deploy
+export MACOSX_DEPLOY_DIR=$PWD/../libraries/install
 export DYLD_LIBRARY_PATH=$MACOSX_DEPLOY_DIR/lib
 
 #export OPENCSGDIR=$PWD/../OpenCSG-1.3.0
