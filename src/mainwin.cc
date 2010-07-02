@@ -812,6 +812,9 @@ void MainWindow::actionNew()
 #ifdef ENABLE_MDI
 	new MainWindow(QString());
 #else
+	if (!maybeSave())
+		return;
+
 	setFileName("");
 	editor->setPlainText("");
 #endif
@@ -819,18 +822,35 @@ void MainWindow::actionNew()
 
 void MainWindow::actionOpen()
 {
-	setCurrentOutput();
 	QString new_filename = QFileDialog::getOpenFileName(this, "Open File", "", "OpenSCAD Designs (*.scad)");
-	if (!new_filename.isEmpty()) openFile(new_filename);
-	clearCurrentOutput();
+#ifdef ENABLE_MDI
+	new MainWindow(new_filename);
+#else
+	if (!new_filename.isEmpty()) {
+		if (!maybeSave())
+			return;
+		
+		setCurrentOutput();
+		openFile(new_filename);
+		clearCurrentOutput();
+	}
+#endif
 }
 
 void MainWindow::actionOpenRecent()
 {
 	QAction *action = qobject_cast<QAction *>(sender());
+
+#ifdef ENABLE_MDI
+	new MainWindow(action->data().toString());
+#else
+	if (!maybeSave())
+		return;
+
 	if (action) {
 		openFile(action->data().toString());
 	}
+#endif
 }
 
 void MainWindow::clearRecentFiles()
@@ -1800,8 +1820,7 @@ MainWindow::helpManual()
 }
 
 /*!
-	FIXME: In SDI mode, this should be called also on New and Open
-	In MDI mode; also call on both reload functions?
+	FIXME: In MDI mode, should this be called on both reload functions?
  */
 bool
 MainWindow::maybeSave()
