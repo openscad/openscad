@@ -197,6 +197,8 @@ o Write a simple test script that collects verified and current STL renderings
 o Write simple driver scripts for comparing output of above command
 o Collect "all" available OpenSCAD scripts from the internets and run the integration
   tests on them all
+o dumptest tests:
+  - filename are dumped as absolute filenames - this will fail on other systems
 
 INFRASTRUCTURE
 --------------
