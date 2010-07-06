@@ -159,7 +159,7 @@ int main(int argc, char **argv)
 	CSGTextCache csgcache(tree);
 
 	csgTree(csgcache, *root_node);
- 	std::cout << tree.getString(*root_node) << "\n";
+// 	std::cout << tree.getString(*root_node) << "\n";
 
 	std::cout << csgcache[*root_node] << "\n";
 
