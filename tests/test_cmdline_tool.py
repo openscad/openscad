@@ -59,9 +59,11 @@ def run_test(cmd, testfile):
 
     outputdir = os.path.join(os.getcwd(), cmdname)
     actualfilename = os.path.join(outputdir, test + "-actual.txt")
-    expectedfilename = os.path.join(testdir, cmdname, test + "-expected.txt")
+    expecteddir = os.path.join(testdir, cmdname)
+    expectedfilename = os.path.join(expecteddir, test + "-expected.txt")
 
     if options.generate: 
+        if not os.path.exists(expecteddir): os.makedirs(expecteddir)
         outputname = expectedfilename
     else:
         if not os.path.exists(outputdir): os.makedirs(outputdir)
