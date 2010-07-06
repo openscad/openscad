@@ -147,8 +147,16 @@ AbstractNode *Context::evaluate_module(const ModuleInstantiation *inst) const
 	return NULL;
 }
 
+/*!
+	Returns the absolute path to the given filename, unless it's empty.
+ */
 QString Context::get_absolute_path(const QString &filename) const
 {
-	return QFileInfo(QDir(this->document_path), filename).absoluteFilePath();
+	if (!filename.isEmpty()) {
+		return QFileInfo(QDir(this->document_path), filename).absoluteFilePath();
+	}
+	else {
+		return filename;
+	}
 }
 
