@@ -53,7 +53,7 @@ AbstractNode *ImportModule::evaluate(const Context *ctx, const ModuleInstantiati
 	ImportNode *node = new ImportNode(inst, type);
 
 	QVector<QString> argnames;
-	if (type == TYPE_DXF) {
+	if (this->type == TYPE_DXF) {
 		argnames = QVector<QString>() << "file" << "layer" << "convexity" << "origin" << "scale";
 	} else {
 		argnames = QVector<QString>() << "file" << "convexity";
@@ -105,14 +105,14 @@ void register_builtin_import()
 PolySet *ImportNode::render_polyset(render_mode_e) const
 {
 	PolySet *p = new PolySet();
-	p->convexity = convexity;
+	p->convexity = this->convexity;
 
-	if (type == TYPE_STL)
+	if (this->type == TYPE_STL)
 	{
-		handle_dep(filename);
-		QFile f(filename);
+		handle_dep(this->filename);
+		QFile f(this->filename);
 		if (!f.open(QIODevice::ReadOnly)) {
-			PRINTF("WARNING: Can't open import file `%s'.", filename.toAscii().data());
+			PRINTF("WARNING: Can't open import file `%s'.", this->filename.toAscii().data());
 			return p;
 		}
 
@@ -173,14 +173,14 @@ PolySet *ImportNode::render_polyset(render_mode_e) const
 		}
 	}
 
-	if (type == TYPE_OFF)
+	if (this->type == TYPE_OFF)
 	{
 		PRINTF("WARNING: OFF import is not implemented yet.");
 	}
 
-	if (type == TYPE_DXF)
+	if (this->type == TYPE_DXF)
 	{
-		DxfData dd(fn, fs, fa, filename, layername, origin_x, origin_y, scale);
+		DxfData dd(this->fn, this->fs, this->fa, this->filename, this->layername, this->origin_x, this->origin_y, this->scale);
 		p->is2d = true;
 		dxf_tesselate(p, &dd, 0, true, false, 0);
 		dxf_border_to_ps(p, &dd);
