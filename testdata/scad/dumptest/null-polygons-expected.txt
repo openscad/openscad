@@ -1,0 +1,6 @@
+group() {
+	linear_extrude(file = "", cache = "0.0", layer = "", height = 100, origin = [ 0 0 ], scale = 1, center = false, convexity = 1, $fn = 0, $fa = 12, $fs = 1) {
+		import_dxf(file = "/Users/kintel/code/metalab/checkout/OpenSCAD/openscad-visitor/testdata/scad/null-polygons.dxf", cache = "4c337cc1.3124", layer = "", origin = [ 0 0 ], scale = 1, convexity = 1, $fn = 0, $fa = 12, $fs = 1);
+	}
+	linear_extrude(file = "/Users/kintel/code/metalab/checkout/OpenSCAD/openscad-visitor/testdata/scad/null-polygons.dxf", cache = "4c337cc1.3124", layer = "", height = 100, origin = [ 0 0 ], scale = 1, center = false, convexity = 1, $fn = 0, $fa = 12, $fs = 1);
+}
