@@ -1,0 +1,1 @@
+12AbstractNode<1>(13TransformNode<2>(7CsgNode<3>(13TransformNode<4>(13PrimitiveNode+13PrimitiveNode+13PrimitiveNode+13PrimitiveNode+13PrimitiveNode+13PrimitiveNode+13PrimitiveNode+13PrimitiveNode)+13PrimitiveNode)))
