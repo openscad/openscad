@@ -39,10 +39,8 @@ def verify_test(cmd, testfile):
     return True
 
 def execute_and_redirect(cmd, params, outfile):
-    outf = open(outfile, "wb")
-    proc = subprocess.Popen([cmd] + params, stdout=outf)
+    proc = subprocess.Popen([cmd] + params, stdout=outfile)
     retval = proc.wait()
-    outf.close()
     return retval
 
 def get_normalized_text(filename):
@@ -80,8 +78,7 @@ def run_test(cmd, testfile):
 
     if not options.generate:
         if not compare_text(expectedfilename, actualfilename): 
-            execute_and_redirect("diff", [expectedfilename, actualfilename], 
-                                 os.path.join(outputdir, test + ".log"))
+            execute_and_redirect("diff", [expectedfilename, actualfilename], sys.stderr)
             return False
     return True
 
