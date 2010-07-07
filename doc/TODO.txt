@@ -183,6 +183,9 @@ o dxflinextrude and dxfrotextrude could share code
 o Consider decoupling DXF-specific functionality from the 2D subsystem
 o Visitation refactoring
   - Make AbstractNode members private/protected?
+o Consider evaluating all referenced files relative to the document path instead
+  of being absolute. This would e.g. make regression testing of dumpcaching easier.
+  This would require us to pass a document contect to all traversal methods though.
 
 TESTING
 -------
