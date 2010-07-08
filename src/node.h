@@ -82,6 +82,9 @@ public:
 		RENDER_CGAL,
 		RENDER_OPENCSG
 	};
+  /*! Should return a PolySet of the given geometry. It's normal to return an
+		  empty PolySet if smth. is wrong, but don't return NULL unless we change the calling
+			strategy for this method. */
 	virtual class PolySet *render_polyset(render_mode_e mode) const = 0;
 	virtual CSGTerm *render_csg_term(double m[20], QVector<CSGTerm*> *highlights, QVector<CSGTerm*> *background) const;
 	static CSGTerm *render_csg_term_from_ps(double m[20], QVector<CSGTerm*> *highlights, QVector<CSGTerm*> *background, PolySet *ps, const ModuleInstantiation *modinst, int idx);
