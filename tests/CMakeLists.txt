@@ -19,3 +19,10 @@ foreach (SCADFILE ${SCAD_FILES})
   get_filename_component(TEST ${SCADFILE} NAME_WE)
   add_test(csgtext_${TEST} ${tests_SOURCE_DIR}/test_cmdline_tool.py ${CSGTEXTTEST_CMD} ${SCADFILE})
 endforeach()
+
+# Add cgaltest tests to CTest
+set(CGALTEST_CMD ${CMAKE_SOURCE_DIR}/../test-code/cgaltest)
+foreach (SCADFILE ${SCAD_FILES})
+  get_filename_component(TEST ${SCADFILE} NAME_WE)
+  add_test(cgal_${TEST} ${tests_SOURCE_DIR}/test_cmdline_tool.py ${CGALTEST_CMD} ${SCADFILE})
+endforeach()
