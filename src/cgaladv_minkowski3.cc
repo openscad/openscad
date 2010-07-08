@@ -25,10 +25,7 @@
 
 #ifdef ENABLE_CGAL
 
-#include "node.h"
-#include "printutils.h"
 #include "cgal.h"
-
 #include <CGAL/minkowski_sum_3.h>
 
 extern CGAL_Nef_polyhedron3 minkowski3(CGAL_Nef_polyhedron3 a, CGAL_Nef_polyhedron3 b);
