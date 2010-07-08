@@ -39,6 +39,7 @@
 #include <QFile>
 #include <QDir>
 #include <QSet>
+#include <QTextStream>
 #include <getopt.h>
 #include <iostream>
 
@@ -166,7 +167,7 @@ int main(int argc, char **argv)
 
 	cgalTree(tree);
 
- 	std::cout << tree.getString(*root_node) << "\n";
+// 	std::cout << tree.getString(*root_node) << "\n";
 
 // 	CGALRenderer cgalrenderer(dumper.getCache());
 // 	PolySetCGALRenderer psrenderer(cgalrenderer);
@@ -175,7 +176,8 @@ int main(int argc, char **argv)
 	CGAL_Nef_polyhedron N = cache[tree.getString(*root_node)];
 
 	QDir::setCurrent(original_path.absolutePath());
-	export_stl(&N, fileInfo.baseName() + ".stl", NULL);
+	QTextStream outstream(stdout);
+	export_stl(&N, outstream, NULL);
 
 	PolySetRenderer::setRenderer(NULL);
 
