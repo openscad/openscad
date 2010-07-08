@@ -29,6 +29,7 @@
 
 #include <QApplication>
 #include <QProgressDialog>
+#include <QTextStream>
 #include <errno.h>
 
 #ifdef ENABLE_CGAL
@@ -71,9 +72,10 @@ void cgal_nef3_to_polyset(PolySet *ps, CGAL_Nef_polyhedron *root_N)
 }
 
 /*!
-	Saves the current 3D CGAL Nef polyhedron as STL to the given absolute filename.
+	Saves the current 3D CGAL Nef polyhedron as STL to the given file.
+	The file must be open.
  */
-void export_stl(CGAL_Nef_polyhedron *root_N, QString filename, QProgressDialog *pd)
+void export_stl(CGAL_Nef_polyhedron *root_N, QTextStream &output, QProgressDialog *pd)
 {
 	CGAL_Polyhedron P;
 	root_N->p3.convert_to_Polyhedron(P);
@@ -85,14 +87,7 @@ void export_stl(CGAL_Nef_polyhedron *root_N, QString filename, QProgressDialog *
 
 	setlocale(LC_NUMERIC, "C"); // Ensure radix is . (not ,) in output
 
-	FILE *f = fopen(filename.toUtf8().data(), "w");
-	if (!f) {
-		PRINTA("Can't open STL file \"%1\" for STL export: %2", 
-					 filename, QString(strerror(errno)));
-		set_output_handler(NULL, NULL);
-		return;
-	}
-	fprintf(f, "solid OpenSCAD_Model\n");
+	output << "solid OpenSCAD_Model\n";
 
 	int facet_count = 0;
 	for (FCI fi = P.facets_begin(); fi != P.facets_end(); ++fi) {
@@ -126,14 +121,16 @@ void export_stl(CGAL_Nef_polyhedron *root_N, QString filename, QProgressDialog *
 				// Avoid generating normals for polygons with zero area
 				double eps = 0.000001;
 				if (nlength < eps) nlength = 1.0;
-				fprintf(f, "  facet normal %f %f %f\n",
-						nx / nlength, ny / nlength, nz  / nlength);
-				fprintf(f, "    outer loop\n");
-				fprintf(f, "      vertex %s\n", vs1.toAscii().data());
-				fprintf(f, "      vertex %s\n", vs2.toAscii().data());
-				fprintf(f, "      vertex %s\n", vs3.toAscii().data());
-				fprintf(f, "    endloop\n");
-				fprintf(f, "  endfacet\n");
+				output << "  facet normal " 
+							 << nx / nlength << " " 
+							 << ny / nlength << " " 
+							 << nz / nlength << "\n";
+				output << "    outer loop\n";
+				output << "      vertex " << vs2 << "\n";
+				output << "      vertex " << vs2 << "\n";
+				output << "      vertex " << vs3 << "\n";
+				output << "    endloop\n";
+				output << "  endfacet\n";
 			}
 		} while (hc != hc_end);
 		if (pd) {
@@ -142,12 +139,11 @@ void export_stl(CGAL_Nef_polyhedron *root_N, QString filename, QProgressDialog *
 		}
 	}
 
-	fprintf(f, "endsolid OpenSCAD_Model\n");
-	fclose(f);
+	output << "endsolid OpenSCAD_Model\n";
 	setlocale(LC_NUMERIC, "");      // Set default locale
 }
 
-void export_off(CGAL_Nef_polyhedron*, QString, QProgressDialog*)
+void export_off(CGAL_Nef_polyhedron*, QTextStream&, QProgressDialog*)
 {
 	PRINTF("WARNING: OFF import is not implemented yet.");
 }

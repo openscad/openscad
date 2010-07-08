@@ -1313,13 +1313,18 @@ void MainWindow::actionExportSTLorOFF(bool)
 	pd->show();
 	QApplication::processEvents();
 
-	if (stl_mode)
-		export_stl(this->root_N, stl_filename, pd);
-	else
-		export_off(this->root_N, stl_filename, pd);
+	QFile file(filename);
+	if (!file.open(QIODevice::ReadWrite)) {
+		PRINTA("Can't open file \"%1\" for export", filename);
+	}
+	else {
+		QTextStream fstream(&file);
+		if (stl_mode) export_stl(this->root_N, fstream, pd);
+		else export_off(this->root_N, fstream, pd);
+		file.close()
 
-	PRINTF("%s export finished.", stl_mode ? "STL" : "OFF");
-
+		PRINTF("%s export finished.", stl_mode ? "STL" : "OFF");
+	}
 	delete pd;
 
 	clearCurrentOutput();
