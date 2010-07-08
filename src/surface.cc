@@ -92,12 +92,13 @@ void register_builtin_surface()
 
 PolySet *SurfaceNode::render_polyset(render_mode_e) const
 {
+	PolySet *p = new PolySet();
 	handle_dep(filename);
 	QFile f(filename);
 
 	if (!f.open(QIODevice::ReadOnly | QIODevice::Text)) {
 		PRINTF("WARNING: Can't open DAT file `%s'.", filename.toAscii().data());
-		return NULL;
+		return p;
 	}
 
 	int lines = 0, columns = 0;
@@ -124,7 +125,6 @@ PolySet *SurfaceNode::render_polyset(render_mode_e) const
 		lines++;
 	}
 
-	PolySet *p = new PolySet();
 	p->convexity = convexity;
 
 	double ox = center ? -columns/2.0 : 0;
