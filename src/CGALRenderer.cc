@@ -172,7 +172,8 @@ Response CGALRenderer::visit(const State &state, const TransformNode &node)
 
 			// Then apply transform
 			CGAL_Nef_polyhedron N = this->cache[this->tree.getString(node)];
-			assert(N.dim >= 2 && N.dim <= 3);
+			// If there is no geometry under the transform, N will be empty and of dim 0,
+			// just just silently ignore such nodes
 			if (N.dim == 2) {
 				// Unfortunately CGAL provides no transform method for CGAL_Nef_polyhedron2
 				// objects. So we convert in to our internal 2d data format, transform it,
