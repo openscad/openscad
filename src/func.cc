@@ -117,6 +117,13 @@ Value builtin_abs(const Context *, const QVector<QString>&, const QVector<Value>
 	return Value();
 }
 
+Value builtin_sign(const Context *, const QVector<QString>&, const QVector<Value> &args)
+{
+	if (args.size() == 1 && args[0].type == Value::NUMBER)
+		return Value((args[0].num<0) ? -1.0 : ((args[0].num>0) ? 1.0 : 0.0));
+	return Value();
+}
+
 Value builtin_min(const Context *, const QVector<QString>&, const QVector<Value> &args)
 {
 	if (args.size() >= 1 && args[0].type == Value::NUMBER) {
@@ -292,6 +299,7 @@ Value builtin_lookup(const Context *, const QVector<QString>&, const QVector<Val
 void initialize_builtin_functions()
 {
 	builtin_functions["abs"] = new BuiltinFunction(&builtin_abs);
+	builtin_functions["sign"] = new BuiltinFunction(&builtin_sign);
 	builtin_functions["min"] = new BuiltinFunction(&builtin_min);
 	builtin_functions["max"] = new BuiltinFunction(&builtin_max);
 	builtin_functions["sin"] = new BuiltinFunction(&builtin_sin);
