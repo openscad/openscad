@@ -1,0 +1,14 @@
+Adding  a new regression test:
+
+1) create a test file at an appropriate location under testdata/
+2) if the test is non-obvious, create a human readable description of the test in the same directory (e.g testdata/scad/mytest.txt)
+3) if a new test app was written, this must be added to tests/CMakeLists
+4) run the test with the environment variable TEST_GENERATE=1, e.g.:
+   $ ECAD_GENERATE=1 ctest -R mytest
+   (this will generate a mytest-expected.txt file which is used for regression testing)
+5) manually verify that the output is correct (test-data/scad/mytest-expected.txt)
+6) run the test normally and verify that it passes:
+  $ ctest -R mytest
+
+Note that test files which don't have an *-expected.<suffix> file will
+be ignored for the test apps in question.
