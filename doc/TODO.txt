@@ -212,9 +212,5 @@ MISC
 ----
 o Streamline the cmd-line interface a bit
   - Implicit output file format
-o Mac OS X:
-  - 32-bit compatibility
-    o Build everything including i386 arch
-
 o Write checklists for typical extension work (add new module, add new function)
   -> make sure new test files are added
