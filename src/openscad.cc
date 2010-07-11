@@ -34,6 +34,7 @@
 #include "nodedumper.h"
 #include "CGALRenderer.h"
 #include "PolySetCGALRenderer.h"
+#include "printutils.h"
 
 #ifdef ENABLE_CGAL
 #include "cgal.h"
@@ -45,6 +46,8 @@
 #include <QDir>
 #include <QSet>
 #include <QSettings>
+#include <QTextStream>
+
 #include <getopt.h>
 #ifdef Q_WS_MAC
 #include "EventFilter.h"
@@ -238,10 +241,13 @@ int main(int argc, char **argv)
 	}
 
 	// Initialize global visitors
-	NodeDumper dumper;
-	CGALRenderer cgalrenderer(dumper.getCache());
+	NodeCache nodecache;
+	NodeDumper dumper(nodecache);
+	Tree tree;
+	// FIXME: enforce some maximum cache size (old version had 100K vertices as limit)
+	QHash<std::string, CGAL_Nef_polyhedron> cache;
+	CGALRenderer cgalrenderer(cache, tree);
 	PolySetCGALRenderer psrenderer(cgalrenderer);
-	CGALRenderer::setRenderer(&cgalrenderer);
 	PolySetRenderer::setRenderer(&psrenderer);
 
 	if (stl_output_file || off_output_file || dxf_output_file)

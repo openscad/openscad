@@ -6,7 +6,7 @@
 #include "node.h"
 
 /*!
-	Caches values per node based on the node.index().
+	Caches string values per node based on the node.index().
 	The node index guaranteed to be unique per node tree since the index is reset
 	every time a new tree is generated.
 */

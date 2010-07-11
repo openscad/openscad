@@ -118,7 +118,8 @@ HEADERS += src/CGAL_renderer.h \
            src/nodedumper.h \
            src/CGALRenderer.h \
            src/PolySetRenderer.h \
-           src/PolySetCGALRenderer.h
+           src/PolySetCGALRenderer.h \
+           src/Tree.h
 
 SOURCES += src/openscad.cc \
            src/mainwin.cc \
@@ -160,7 +161,9 @@ SOURCES += src/openscad.cc \
            src/nodedumper.cc \
            src/CGALRenderer.cc \
            src/PolySetRenderer.cc \
-           src/PolySetCGALRenderer.cc
+           src/PolySetCGALRenderer.cc \
+           src/qhash.cc \
+           src/Tree.cc
 
 macx {
   HEADERS += src/AppleEvents.h \

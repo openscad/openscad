@@ -7,6 +7,7 @@
 #include "context.h"
 #include "module.h"
 #include "polyset.h"
+#include "Tree.h"
 #include <QPointer>
 
 class MainWindow : public QMainWindow, public Ui::MainWindow
@@ -32,7 +33,7 @@ public:
 	ModuleInstantiation root_inst;    // Top level instance
 	AbstractNode *absolute_root_node; // Result of tree evaluation
 	AbstractNode *root_node;          // Root if the root modifier (!) is used
-	class NodeDumper *dumper;
+	Tree tree;
 
 	class CSGTerm *root_raw_term;           // Result of CSG term rendering
 	CSGTerm *root_norm_term;          // Normalized CSG products
