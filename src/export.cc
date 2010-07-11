@@ -151,29 +151,20 @@ void export_off(CGAL_Nef_polyhedron*, QTextStream&, QProgressDialog*)
 /*!
 	Saves the current 2D CGAL Nef polyhedron as DXF to the given absolute filename.
  */
-void export_dxf(CGAL_Nef_polyhedron *root_N, QString filename, QProgressDialog *)
+void export_dxf(CGAL_Nef_polyhedron *root_N, QTextStream &output, QProgressDialog *)
 {
-	FILE *f = fopen(filename.toUtf8().data(), "w");
-	if (!f) {
-		PRINTA("Can't open DXF file \"%1\" for DXF export: %2", 
-					 filename, QString(strerror(errno)));
-		set_output_handler(NULL, NULL);
-		return;
-	}
-
 	setlocale(LC_NUMERIC, "C"); // Ensure radix is . (not ,) in output
 	// Some importers (e.g. Inkscape) needs a BLOCKS section to be present
-	fprintf(f, "  0\n"
-					"SECTION\n"
-					"  2\n"
-					"BLOCKS\n"
-					"  0\n"
-					"ENDSEC\n");
-
-	fprintf(f, "  0\n"
-					"SECTION\n"
-					"  2\n"
-					"ENTITIES\n");
+	output << "  0\n"
+				 <<	"SECTION\n"
+				 <<	"  2\n"
+				 <<	"BLOCKS\n"
+				 <<	"  0\n"
+				 << "ENDSEC\n"
+				 << "  0\n"
+				 << "SECTION\n"
+				 << "  2\n"
+				 << "ENTITIES\n";
 
 	DxfData dd(*root_N);
 	for (int i=0; i<dd.paths.size(); i++)
@@ -185,37 +176,38 @@ void export_dxf(CGAL_Nef_polyhedron *root_N, QString filename, QProgressDialog *
 			double y1 = p1->y;
 			double x2 = p2->x;
 			double y2 = p2->y;
-			fprintf(f, "  0\n");
-			fprintf(f, "LINE\n");
+			output << "  0\n"
+						 << "LINE\n";
 			// Some importers (e.g. Inkscape) needs a layer to be specified
-			fprintf(f, "  8\n");
-			fprintf(f, "0\n");
-			fprintf(f, " 10\n");
-			fprintf(f, "%f\n", x1);
-			fprintf(f, " 11\n");
-			fprintf(f, "%f\n", x2);
-			fprintf(f, " 20\n");
-			fprintf(f, "%f\n", y1);
-			fprintf(f, " 21\n");
-			fprintf(f, "%f\n", y2);
+			output <<"  8\n"
+						 << "0\n"
+						 << " 10\n"
+						 << x1 << "\n"
+						 << " 11\n"
+						 << x2 << "\n"
+						 << " 20\n"
+						 << y1 << "\n"
+						 << " 21\n"
+						 << y2 << "\n";
 		}
 	}
+	
+	output << "  0\n"
+				 << "ENDSEC\n";
 
-	fprintf(f, "  0\n");
-	fprintf(f, "ENDSEC\n");
 	// Some importers (e.g. Inkscape) needs an OBJECTS section with a DICTIONARY entry
-	fprintf(f, "  0\n"
-					"SECTION\n"
-					"  2\n"
-					"OBJECTS\n"
-					"  0\n"
-					"DICTIONARY\n"
-					"  0\n"
-					"ENDSEC\n");
-	fprintf(f, "  0\n");
-	fprintf(f, "EOF\n");
+	output << "  0\n"
+				 << "SECTION\n"
+				 << "  2\n"
+				 << "OBJECTS\n"
+				 << "  0\n"
+				 << "DICTIONARY\n"
+				 << "  0\n"
+				 << "ENDSEC\n";
 
-	fclose(f);
+	output << "  0\n"
+				 <<"EOF\n";
+
 	setlocale(LC_NUMERIC, "");      // Set default locale
 }
 
