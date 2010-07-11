@@ -3,12 +3,12 @@
 #
 # Regression test driver for cmd-line tools
 #
-# Usage: test_cmdline_tool.py [<options>] <tool> <args>
+# Usage: test_cmdline_tool.py [<options>] <tool> <argument>
 #
-# If the -g options is given or the TEST_GENERATE environment variable is set to 1,
-# *-expected.txt files will be generated instead of running the tests.
+# If the -g option is given or the TEST_GENERATE environment variable is set to 1,
+# *-expected.<suffix> files will be generated instead of running the tests.
 # 
-# Any generated output is written to stdout.
+# Any generated output is written to the file `basename <argument`-actual.<suffix>
 # Any warning or errors are written to stderr.
 #
 # Returns 0 on passed test
@@ -33,7 +33,7 @@ def verify_test(cmd, testfile):
     basename = os.path.splitext(testfile)[0]
     path, test = os.path.split(basename)
     if not options.generate:
-        if not os.path.isfile(os.path.join(os.path.split(testfile)[0], os.path.split(cmd)[1], test + "-expected.txt")):
+        if not os.path.isfile(os.path.join(os.path.split(testfile)[0], os.path.split(cmd)[1], test + "-expected" + options.suffix)):
             print >> sys.stderr, "Error: test '%s' is missing expected output" % (test,)
             return False
     return True
@@ -56,9 +56,9 @@ def run_test(cmd, testfile):
     test = os.path.splitext(testname)[0]
 
     outputdir = os.path.join(os.getcwd(), cmdname)
-    actualfilename = os.path.join(outputdir, test + "-actual.txt")
+    actualfilename = os.path.join(outputdir, test + "-actual" + options.suffix)
     expecteddir = os.path.join(testdir, cmdname)
-    expectedfilename = os.path.join(expecteddir, test + "-expected.txt")
+    expectedfilename = os.path.join(expecteddir, test + "-expected" + options.suffix)
 
     if options.generate: 
         if not os.path.exists(expecteddir): os.makedirs(expecteddir)
@@ -93,12 +93,13 @@ class Options:
 def usage():
     print >> sys.stderr, "Usage: " + sys.argv[0] + " [<options>] <cmdline-tool> <argument>"
     print >> sys.stderr, "Options:"
-    print >> sys.stderr, "   -g (--generate)     Generate expected output for the given tests "
+    print >> sys.stderr, "  -g, --generate        Generate expected output for the given tests "
+    print >> sys.stderr, "  -s, --suffix=<suffix> Write -expected and -actual files with the given suffix instead of .txt "
 
 if __name__ == '__main__':
     # Handle command-line arguments
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "g", ["generate"])
+        opts, args = getopt.getopt(sys.argv[1:], "gs:", ["generate", "suffix="])
     except getopt.GetoptError, err:
         usage()
         sys.exit(2)
@@ -106,9 +107,14 @@ if __name__ == '__main__':
     global options
     options = Options()
     options.generate = False
+    options.suffix = ".txt"
     for o, a in opts:
         if o in ("-g", "--generate"): options.generate = True
-
+        if o in ("-s", "--suffix"): 
+            if a[0] == '.': options.suffix = ""
+            else: options.suffix = "."
+            options.suffix += a
+            
     # <cmdline-tool> and <argument>
     if len(args) != 2:
         usage()
