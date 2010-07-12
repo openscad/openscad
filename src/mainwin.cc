@@ -115,9 +115,8 @@ using CGAL::OGL::Nef3_Converter;
 #define QUOTED(x__) QUOTE(x__)
 
 static char helptitle[] =
-	"OpenSCAD "
-	QUOTED(OPENSCAD_VERSION)
-  " (www.openscad.org)\n";
+	"OpenSCAD " QUOTED(OPENSCAD_VERSION) " (www.openscad.org)\n"
+	"Visitor refactored version";
 static char copyrighttext[] =
 	"Copyright (C) 2009  Clifford Wolf <clifford@clifford.at>\n"
 	"\n"
@@ -538,7 +537,7 @@ AbstractNode *MainWindow::find_root_tag(AbstractNode *n)
 }
 
 /*!
-	Parse and evaluate the design -> this->root_node
+	Parse and evaluate the design => this->root_node
 */
 void MainWindow::compile(bool procevents)
 {
@@ -548,59 +547,59 @@ void MainWindow::compile(bool procevents)
 
 
 	// Remove previous CSG tree
-	if (root_module) {
-		delete root_module;
-		root_module = NULL;
+	if (this->root_module) {
+		delete this->root_module;
+		this->root_module = NULL;
 	}
 
-	if (absolute_root_node) {
-		delete absolute_root_node;
-		absolute_root_node = NULL;
+	if (this->absolute_root_node) {
+		delete this->absolute_root_node;
+		this->absolute_root_node = NULL;
 	}
 
-	if (root_raw_term) {
-		root_raw_term->unlink();
-		root_raw_term = NULL;
+	if (this->root_raw_term) {
+		this->root_raw_term->unlink();
+		this->root_raw_term = NULL;
 	}
 
-	if (root_norm_term) {
-		root_norm_term->unlink();
-		root_norm_term = NULL;
+	if (this->root_norm_term) {
+		this->root_norm_term->unlink();
+		this->root_norm_term = NULL;
 	}
 
-	if (root_chain) {
-		delete root_chain;
-		root_chain = NULL;
+	if (this->root_chain) {
+		delete this->root_chain;
+		this->root_chain = NULL;
 	}
 
-	foreach(CSGTerm *v, highlight_terms) {
+	foreach(CSGTerm *v, this->highlight_terms) {
 		v->unlink();
 	}
-	highlight_terms.clear();
-	if (highlights_chain) {
-		delete highlights_chain;
-		highlights_chain = NULL;
+	this->highlight_terms.clear();
+	if (this->highlights_chain) {
+		delete this->highlights_chain;
+		this->highlights_chain = NULL;
 	}
-	foreach(CSGTerm *v, background_terms) {
+	foreach(CSGTerm *v, this->background_terms) {
 		v->unlink();
 	}
-	background_terms.clear();
-	if (background_chain) {
-		delete background_chain;
-		background_chain = NULL;
+	this->background_terms.clear();
+	if (this->background_chain) {
+		delete this->background_chain;
+		this->background_chain = NULL;
 	}
-	root_node = NULL;
-	enableOpenCSG = false;
+	this->root_node = NULL;
+	this->enableOpenCSG = false;
 
 	// Initialize special variables
-	root_ctx.set_variable("$t", Value(e_tval->text().toDouble()));
+	this->root_ctx.set_variable("$t", Value(e_tval->text().toDouble()));
 
 	Value vpt;
 	vpt.type = Value::VECTOR;
 	vpt.vec.append(new Value(-screen->object_trans_x));
 	vpt.vec.append(new Value(-screen->object_trans_y));
 	vpt.vec.append(new Value(-screen->object_trans_z));
-	root_ctx.set_variable("$vpt", vpt);
+	this->root_ctx.set_variable("$vpt", vpt);
 
 	Value vpr;
 	vpr.type = Value::VECTOR;
@@ -610,19 +609,24 @@ void MainWindow::compile(bool procevents)
 	root_ctx.set_variable("$vpr", vpr);
 
 	// Parse
-	last_compiled_doc = editor->toPlainText();
-	root_module = parse((last_compiled_doc + "\n" + commandline_commands).toAscii().data(), this->fileName.isEmpty() ? "" : QFileInfo(this->fileName).absolutePath().toLocal8Bit(), false);
+	this->last_compiled_doc = editor->toPlainText();
+	this->root_module = parse((this->last_compiled_doc + "\n" + 
+														 commandline_commands).toAscii().data(), 
+														this->fileName.isEmpty() ? 
+														"" : 
+														QFileInfo(this->fileName).absolutePath().toLocal8Bit(), 
+														false);
 
 	// Error highlighting
-	if (highlighter) {
-		delete highlighter;
-		highlighter = NULL;
+	if (this->highlighter) {
+		delete this->highlighter;
+		this->highlighter = NULL;
 	}
 	if (parser_error_pos >= 0) {
-		highlighter = new Highlighter(editor->document());
+		this->highlighter = new Highlighter(editor->document());
 	}
 
-	if (!root_module) {
+	if (!this->root_module) {
 		if (!animate_panel->isVisible()) {
 #ifdef _QCODE_EDIT_
 			QDocumentCursor cursor = editor->cursor();
@@ -642,18 +646,20 @@ void MainWindow::compile(bool procevents)
 		QApplication::processEvents();
 
 	AbstractNode::resetIndexCounter();
-	root_inst = ModuleInstantiation();
-	absolute_root_node = root_module->evaluate(&root_ctx, &root_inst);
+	this->root_inst = ModuleInstantiation();
+	this->absolute_root_node = this->root_module->evaluate(&this->root_ctx, &this->root_inst);
 
-	if (!absolute_root_node)
+	if (!this->absolute_root_node)
 		goto fail;
 
 	// Do we have an explicit root node (! modifier)?
-	if (!(this->root_node = find_root_tag(absolute_root_node))) {
-		this->root_node = absolute_root_node;
+	if (!(this->root_node = find_root_tag(this->absolute_root_node))) {
+		this->root_node = this->absolute_root_node;
 	}
+	// FIXME: Consider giving away ownership of root_node to the Tree, or use reference counted pointers
+	this->tree.setRoot(this->root_node);
   // Dump the tree (to initialize caches).
-  // FIXME: We shouldn't really need to do  this explicitly..	this->tree.setRoot(root);
+  // FIXME: We shouldn't really need to do this explicitly..
 	this->tree.getString(*this->root_node);
 
  	if (1) {
@@ -666,7 +672,7 @@ fail:
 			PRINT("ERROR: Compilation failed! (no top level object found)");
 		} else {
 			int line = 1;
-			QByteArray pb = last_compiled_doc.toAscii();
+			QByteArray pb = this->last_compiled_doc.toAscii();
 			char *p = pb.data();
 			for (int i = 0; i < parser_error_pos; i++) {
 				if (p[i] == '\n')
