@@ -68,7 +68,6 @@ public:
 	QString subdiv_type;
 	int convexity, level;
 	cgaladv_type_e type;
-	virtual CSGTerm *render_csg_term(double m[20], QVector<CSGTerm*> *highlights, QVector<CSGTerm*> *background) const;
 };
 
 AbstractNode *CgaladvModule::evaluate(const Context *ctx, const ModuleInstantiation *inst) const
@@ -130,32 +129,6 @@ void register_builtin_cgaladv()
 	builtin_modules["glide"] = new CgaladvModule(GLIDE);
 	builtin_modules["subdiv"] = new CgaladvModule(SUBDIV);
 }
-
-// FIXME: #ifdef ENABLE_CGAL
-#if 0
-CSGTerm *CgaladvNode::render_csg_term(double m[20], QVector<CSGTerm*> *highlights, QVector<CSGTerm*> *background) const
-{
-	if (type == MINKOWSKI)
-		return render_csg_term_from_nef(m, highlights, background, "minkowski", this->convexity);
-
-	if (type == GLIDE)
-		return render_csg_term_from_nef(m, highlights, background, "glide", this->convexity);
-
-	if (type == SUBDIV)
-		return render_csg_term_from_nef(m, highlights, background, "subdiv", this->convexity);
-
-	return NULL;
-}
-
-#else // ENABLE_CGAL
-
-CSGTerm *CgaladvNode::render_csg_term(double m[20], QVector<CSGTerm*> *highlights, QVector<CSGTerm*> *background) const
-{
-	PRINT("WARNING: Found minkowski(), glide() or subdiv() statement but compiled without CGAL support!");
-	return NULL;
-}
-
-#endif // ENABLE_CGAL
 
 std::string CgaladvNode::toString() const
 {

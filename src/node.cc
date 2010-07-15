@@ -90,57 +90,6 @@ void AbstractNode::progress_report() const
 	progress_update(this, this->progress_mark);
 }
 
-static CSGTerm *render_csg_term_backend(const AbstractNode *that, bool intersect, double m[20], QVector<CSGTerm*> *highlights, QVector<CSGTerm*> *background)
-{
-	CSGTerm *t1 = NULL;
-	foreach(AbstractNode *v, that->children) {
-		CSGTerm *t2 = v->render_csg_term(m, highlights, background);
-		if (t2 && !t1) {
-			t1 = t2;
-		} else if (t2 && t1) {
-			if (intersect)
-				t1 = new CSGTerm(CSGTerm::TYPE_INTERSECTION, t1, t2);
-			else
-				t1 = new CSGTerm(CSGTerm::TYPE_UNION, t1, t2);
-		}
-	}
-	if (t1 && that->modinst->tag_highlight && highlights)
-		highlights->append(t1->link());
-	if (t1 && that->modinst->tag_background && background) {
-		background->append(t1);
-		return NULL;
-	}
-	return t1;
-}
-
-CSGTerm *AbstractNode::render_csg_term(double m[20], QVector<CSGTerm*> *highlights, QVector<CSGTerm*> *background) const
-{
-	return render_csg_term_backend(this, false, m, highlights, background);
-}
-
-CSGTerm *AbstractIntersectionNode::render_csg_term(double m[20], QVector<CSGTerm*> *highlights, QVector<CSGTerm*> *background) const
-{
-	return render_csg_term_backend(this, true, m, highlights, background);
-}
-
-CSGTerm *AbstractPolyNode::render_csg_term(double m[20], QVector<CSGTerm*> *highlights, QVector<CSGTerm*> *background) const
-{
-	PolySet *ps = render_polyset(RENDER_OPENCSG);
-	return render_csg_term_from_ps(m, highlights, background, ps, modinst, idx);
-}
-
-CSGTerm *AbstractPolyNode::render_csg_term_from_ps(double m[20], QVector<CSGTerm*> *highlights, QVector<CSGTerm*> *background, PolySet *ps, const ModuleInstantiation *modinst, int idx)
-{
-	CSGTerm *t = new CSGTerm(ps, m, QString("n%1").arg(idx));
-	if (modinst->tag_highlight && highlights)
-		highlights->append(t->link());
-	if (modinst->tag_background && background) {
-		background->append(t);
-		return NULL;
-	}
-	return t;
-}
-
 std::ostream &operator<<(std::ostream &stream, const QString &str)
 {
 	stream << str.toStdString();

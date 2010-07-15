@@ -14,7 +14,6 @@ public:
 	virtual std::string toString() const;
 
 	double m[20];
-	virtual CSGTerm *render_csg_term(double m[20], QVector<CSGTerm*> *highlights, QVector<CSGTerm*> *background) const;
 };
 
 #endif

@@ -51,32 +51,6 @@ AbstractNode *CsgModule::evaluate(const Context*, const ModuleInstantiation *ins
 	return node;
 }
 
-CSGTerm *CsgNode::render_csg_term(double m[20], QVector<CSGTerm*> *highlights, QVector<CSGTerm*> *background) const
-{
-	CSGTerm *t1 = NULL;
-	foreach (AbstractNode *v, children) {
-		CSGTerm *t2 = v->render_csg_term(m, highlights, background);
-		if (t2 && !t1) {
-			t1 = t2;
-		} else if (t2 && t1) {
-			if (type == CSG_TYPE_UNION) {
-				t1 = new CSGTerm(CSGTerm::TYPE_UNION, t1, t2);
-			} else if (type == CSG_TYPE_DIFFERENCE) {
-				t1 = new CSGTerm(CSGTerm::TYPE_DIFFERENCE, t1, t2);
-			} else if (type == CSG_TYPE_INTERSECTION) {
-				t1 = new CSGTerm(CSGTerm::TYPE_INTERSECTION, t1, t2);
-			}
-		}
-	}
-	if (t1 && modinst->tag_highlight && highlights)
-		highlights->append(t1->link());
-	if (t1 && modinst->tag_background && background) {
-		background->append(t1);
-		return NULL;
-	}
-	return t1;
-}
-
 std::string CsgNode::toString() const
 {
 	std::stringstream stream;

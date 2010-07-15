@@ -1,0 +1,43 @@
+#ifndef CSGTERMRENDERER_H_
+#define CSGTERMRENDERER_H_
+
+#include <string>
+#include <map>
+#include <list>
+#include <vector>
+#include "visitor.h"
+#include "node.h"
+
+using std::string;
+using std::map;
+using std::list;
+using std::vector;
+
+class CSGTermRenderer : public Visitor
+{
+public:
+	CSGTermRenderer() {}
+  virtual ~CSGTermRenderer() {}
+
+  virtual Response visit(const State &state, const AbstractNode &node);
+ 	virtual Response visit(const State &state, const AbstractIntersectionNode &node);
+ 	virtual Response visit(const State &state, const AbstractPolyNode &node);
+ 	virtual Response visit(const State &state, const CsgNode &node);
+ 	virtual Response visit(const State &state, const TransformNode &node);
+ 	virtual Response visit(const State &state, const RenderNode &node);
+
+private:
+	enum CsgOp {UNION, INTERSECTION, DIFFERENCE, MINKOWSKI};
+  void addToParent(const State &state, const AbstractNode &node);
+	void applyToChildren(const AbstractNode &node, CSGTermRenderer::CsgOp op);
+
+  const AbstractNode *root;
+  typedef list<const AbstractNode *> ChildList;
+  map<int, ChildList> visitedchildren;
+  map<int, class CSGTerm*> stored_term;
+
+	vector<CSGTerm*> *highlights;
+	vector<CSGTerm*> *background;
+};
+
+#endif

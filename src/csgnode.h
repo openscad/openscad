@@ -19,8 +19,6 @@ public:
 		return visitor.visit(state, *this);
 	}
 	virtual std::string toString() const;
-
-	CSGTerm *render_csg_term(double m[20], QVector<CSGTerm*> *highlights, QVector<CSGTerm*> *background) const;
 };
 
 #endif

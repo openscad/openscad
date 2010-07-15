@@ -52,9 +52,6 @@ public:
 	int idx; // Node index (unique per tree)
 
 	// FIXME: Rewrite to visitor
-	virtual class CSGTerm *render_csg_term(double m[20], QVector<CSGTerm*> *highlights, QVector<CSGTerm*> *background) const;
-
-	// FIXME: Rewrite to visitor
 #ifdef ENABLE_CGAL
 	class CSGTerm *render_csg_term_from_nef(double m[20], QVector<CSGTerm*> *highlights, QVector<CSGTerm*> *background, const char *statement, int convexity) const;
 #endif
@@ -67,8 +64,6 @@ public:
 	virtual ~AbstractIntersectionNode() { };
   virtual Response accept(const class State &state, class Visitor &visitor) const;
 	virtual std::string toString() const;
-
-	virtual CSGTerm *render_csg_term(double m[20], QVector<CSGTerm*> *highlights, QVector<CSGTerm*> *background) const;
 };
 
 class AbstractPolyNode : public AbstractNode
@@ -86,8 +81,6 @@ public:
 		  empty PolySet if smth. is wrong, but don't return NULL unless we change the calling
 			strategy for this method. */
 	virtual class PolySet *render_polyset(render_mode_e mode) const = 0;
-	virtual CSGTerm *render_csg_term(double m[20], QVector<CSGTerm*> *highlights, QVector<CSGTerm*> *background) const;
-	static CSGTerm *render_csg_term_from_ps(double m[20], QVector<CSGTerm*> *highlights, QVector<CSGTerm*> *background, PolySet *ps, const ModuleInstantiation *modinst, int idx);
 };
 
 std::ostream &operator<<(std::ostream &stream, const AbstractNode &node);

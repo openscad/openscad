@@ -228,41 +228,6 @@ AbstractNode *TransformModule::evaluate(const Context *ctx, const ModuleInstanti
 	return node;
 }
 
-CSGTerm *TransformNode::render_csg_term(double c[20], QVector<CSGTerm*> *highlights, QVector<CSGTerm*> *background) const
-{
-	double x[20];
-
-	for (int i = 0; i < 16; i++)
-	{
-		int c_row = i%4;
-		int m_col = i/4;
-		x[i] = 0;
-		for (int j = 0; j < 4; j++)
-			x[i] += c[c_row + j*4] * m[m_col*4 + j];
-	}
-
-	for (int i = 16; i < 20; i++)
-		x[i] = m[i] < 0 ? c[i] : m[i];
-
-	CSGTerm *t1 = NULL;
-	foreach(AbstractNode *v, children)
-	{
-		CSGTerm *t2 = v->render_csg_term(x, highlights, background);
-		if (t2 && !t1) {
-			t1 = t2;
-		} else if (t2 && t1) {
-			t1 = new CSGTerm(CSGTerm::TYPE_UNION, t1, t2);
-		}
-	}
-	if (t1 && modinst->tag_highlight && highlights)
-		highlights->append(t1->link());
-	if (t1 && modinst->tag_background && background) {
-		background->append(t1);
-		return NULL;
-	}
-	return t1;
-}
-
 std::string TransformNode::toString() const
 {
 	std::stringstream stream;
