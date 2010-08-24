@@ -3,7 +3,7 @@
 #
 # Regression test driver for cmd-line tools
 #
-# Usage: test_cmdline_tool.py [<options>] <tool> <argument>
+# Usage: test_cmdline_tool.py [<options>] <tool> <arguments>
 #
 # If the -g option is given or the TEST_GENERATE environment variable is set to 1,
 # *-expected.<suffix> files will be generated instead of running the tests.
@@ -29,12 +29,11 @@ def initialize_environment():
     if not options.generate: options.generate = bool(os.getenv("TEST_GENERATE"))
     return True
 
-def verify_test(cmd, testfile):
-    basename = os.path.splitext(testfile)[0]
-    path, test = os.path.split(basename)
+def verify_test(testname, cmd):
     if not options.generate:
-        if not os.path.isfile(os.path.join(os.path.split(testfile)[0], os.path.split(cmd)[1], test + "-expected" + options.suffix)):
-            print >> sys.stderr, "Error: test '%s' is missing expected output" % (test,)
+        expectedfilename = os.path.join(options.regressiondir, os.path.split(cmd)[1], testname + "-expected" + options.suffix)
+        if not os.path.isfile(expectedfilename):
+            print >> sys.stderr, "Error: test '%s' is missing expected output in %s" % (testname, expectedfilename)
             return False
     return True
 
@@ -50,15 +49,13 @@ def get_normalized_text(filename):
 def compare_text(expected, actual):
     return get_normalized_text(expected) == get_normalized_text(actual)
 
-def run_test(cmd, testfile):
+def run_test(testname, cmd, args):
     cmdname = os.path.split(options.cmd)[1]
-    testdir,testname = os.path.split(testfile)
-    test = os.path.splitext(testname)[0]
 
     outputdir = os.path.join(os.getcwd(), cmdname)
-    actualfilename = os.path.join(outputdir, test + "-actual" + options.suffix)
-    expecteddir = os.path.join(testdir, cmdname)
-    expectedfilename = os.path.join(expecteddir, test + "-expected" + options.suffix)
+    actualfilename = os.path.join(outputdir, testname + "-actual" + options.suffix)
+    expecteddir = os.path.join(options.regressiondir, cmdname)
+    expectedfilename = os.path.join(expecteddir, testname + "-expected" + options.suffix)
 
     if options.generate: 
         if not os.path.exists(expecteddir): os.makedirs(expecteddir)
@@ -67,7 +64,7 @@ def run_test(cmd, testfile):
         if not os.path.exists(outputdir): os.makedirs(outputdir)
         outputname = actualfilename
     outfile = open(outputname, "wb")
-    proc = subprocess.Popen([cmd, testfile], stdout=outfile, stderr=subprocess.PIPE)
+    proc = subprocess.Popen([cmd] + args, stdout=outfile, stderr=subprocess.PIPE)
     errtext = proc.communicate()[1]
     if errtext != None and len(errtext) > 0:
         print >> sys.stderr, "Error output: " + errtext
@@ -93,39 +90,51 @@ class Options:
 def usage():
     print >> sys.stderr, "Usage: " + sys.argv[0] + " [<options>] <cmdline-tool> <argument>"
     print >> sys.stderr, "Options:"
-    print >> sys.stderr, "  -g, --generate        Generate expected output for the given tests "
-    print >> sys.stderr, "  -s, --suffix=<suffix> Write -expected and -actual files with the given suffix instead of .txt "
+    print >> sys.stderr, "  -g, --generate        Generate expected output for the given tests"
+    print >> sys.stderr, "  -s, --suffix=<suffix> Write -expected and -actual files with the given suffix instead of .txt"
+    print >> sys.stderr, "  -t, --test=<name>     Specify test name instead of deducting it from the argument"
 
 if __name__ == '__main__':
     # Handle command-line arguments
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "gs:", ["generate", "suffix="])
+        opts, args = getopt.getopt(sys.argv[1:], "gs:t:", ["generate", "suffix=", "test="])
     except getopt.GetoptError, err:
         usage()
         sys.exit(2)
 
     global options
     options = Options()
+    options.regressiondir = os.path.join(os.path.split(sys.argv[0])[0], "regression")
     options.generate = False
     options.suffix = ".txt"
     for o, a in opts:
         if o in ("-g", "--generate"): options.generate = True
-        if o in ("-s", "--suffix"): 
+        elif o in ("-s", "--suffix"):
             if a[0] == '.': options.suffix = ""
             else: options.suffix = "."
             options.suffix += a
+        elif o in ("-t", "--test"):
+            options.testname = a
             
     # <cmdline-tool> and <argument>
-    if len(args) != 2:
+    if len(args) < 2:
         usage()
         sys.exit(2)
     options.cmd = args[0]
-    options.testfile = args[1]
+
+    # If only one test file, we can usually deduct the test name from the file
+    if len(args) == 2:
+        basename = os.path.splitext(args[1])[0]
+        path, options.testname = os.path.split(basename)
+
+    if not hasattr(options, "testname"):
+        print >> sys.stderr, "Test name cannot be deducted from arguments. Specify test name using the -t option"
+        sys.exit(2)
 
     # Initialize and verify run-time environment
     if not initialize_environment(): sys.exit(1)
 
     # Verify test environment
-    if not verify_test(options.cmd, options.testfile): sys.exit(1)
+    if not verify_test(options.testname, options.cmd): sys.exit(1)
 
-    if not run_test(options.cmd, options.testfile): sys.exit(1)
+    if not run_test(options.testname, options.cmd, args[1:]): sys.exit(1)
