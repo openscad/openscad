@@ -81,7 +81,7 @@ std::string RenderNode::toString() const
 {
 	std::stringstream stream;
 
-	stream << "render(convexity = " << convexity << ")";
+	stream << this->name() << "(convexity = " << convexity << ")";
 
 	return stream.str();
 }

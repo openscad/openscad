@@ -66,16 +66,22 @@ Response AbstractPolyNode::accept(class State &state, Visitor &visitor) const
 
 std::string AbstractNode::toString() const
 {
-	std::stringstream stream;
-	stream << "group()";
-	return stream.str();
+	return this->name() + "()";
+}
+
+std::string AbstractNode::name() const
+{
+	return "group";
 }
 
 std::string AbstractIntersectionNode::toString() const
 {
-	std::stringstream stream;
-	stream << "intersection()";
-	return stream.str();
+	return this->name() + "()";
+}
+
+std::string AbstractIntersectionNode::name() const
+{
+	return "intersection_for";
 }
 
 void AbstractNode::progress_prepare()

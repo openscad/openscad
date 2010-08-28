@@ -128,7 +128,7 @@ std::string DxfRotateExtrudeNode::toString() const
 	struct stat st;
 	memset(&st, 0, sizeof(struct stat));
 	stat(filename.toAscii().data(), &st);
-	stream << "rotate_extrude("
+	stream << this->name() << "("
 		"file = \"" << this->filename << "\", "
 		"cache = \"" << std::hex << (int)st.st_mtime << "." << (int)st.st_size << "\", "
 		"layer = \"" << this->layername << "\", "

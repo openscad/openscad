@@ -1,1 +1,1 @@
-12AbstractNode<1>(11CgaladvNode<2>)
+group1(minkowski2)

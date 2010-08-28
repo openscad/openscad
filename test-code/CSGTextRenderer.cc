@@ -50,8 +50,7 @@ CSGTextRenderer::process(string &target, const string &src, CSGTextRenderer::Csg
 void CSGTextRenderer::applyToChildren(const AbstractNode &node, CSGTextRenderer::CsgOp op)
 {
 	std::stringstream stream;
-	stream << typeid(node).name();
-	stream << "<" << node.index() << ">";
+	stream << node.name() << node.index();
 	string N = stream.str();
 	if (this->visitedchildren[node.index()].size() > 0) {
 		// FIXME: assert that cache contains nodes in code below
@@ -84,7 +83,7 @@ void CSGTextRenderer::applyToChildren(const AbstractNode &node, CSGTextRenderer:
 	o In postfix: addToParent()
  */
 
-Response CSGTextRenderer::visit(const State &state, const AbstractNode &node)
+Response CSGTextRenderer::visit(State &state, const AbstractNode &node)
 {
 	if (state.isPrefix() && isCached(node)) return PruneTraversal;
 	if (state.isPostfix()) {
@@ -94,7 +93,7 @@ Response CSGTextRenderer::visit(const State &state, const AbstractNode &node)
 	return ContinueTraversal;
 }
 
-Response CSGTextRenderer::visit(const State &state, const AbstractIntersectionNode &node)
+Response CSGTextRenderer::visit(State &state, const AbstractIntersectionNode &node)
 {
 	if (state.isPrefix() && isCached(node)) return PruneTraversal;
 	if (state.isPostfix()) {
@@ -104,7 +103,7 @@ Response CSGTextRenderer::visit(const State &state, const AbstractIntersectionNo
 	return ContinueTraversal;
 }
 
-Response CSGTextRenderer::visit(const State &state, const CsgNode &node)
+Response CSGTextRenderer::visit(State &state, const CsgNode &node)
 {
 	if (state.isPrefix() && isCached(node)) return PruneTraversal;
 	if (state.isPostfix()) {
@@ -128,7 +127,7 @@ Response CSGTextRenderer::visit(const State &state, const CsgNode &node)
 	return ContinueTraversal;
 }
 
-Response CSGTextRenderer::visit(const State &state, const TransformNode &node)
+Response CSGTextRenderer::visit(State &state, const TransformNode &node)
 {
 	if (state.isPrefix() && isCached(node)) return PruneTraversal;
 	if (state.isPostfix()) {
@@ -151,7 +150,7 @@ Response CSGTextRenderer::visit(const State &state, const TransformNode &node)
 // DxfRotateExtrudeNode
 // (SurfaceNode)
 // (PrimitiveNode)
-Response CSGTextRenderer::visit(const State &state, const AbstractPolyNode &node)
+Response CSGTextRenderer::visit(State &state, const AbstractPolyNode &node)
 {
 	if (state.isPrefix() && isCached(node)) return PruneTraversal;
 	if (state.isPostfix()) {
@@ -160,7 +159,7 @@ Response CSGTextRenderer::visit(const State &state, const AbstractPolyNode &node
 	// FIXME: Manage caching
 	// FIXME: Will generate one single Nef polyhedron (no csg ops necessary)
  
-			string N = typeid(node).name();
+			string N = node.name();
 			this->cache.insert(node, N);
 		
 // 		std::cout << "Insert: " << N << "\n";

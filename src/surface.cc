@@ -51,6 +51,7 @@ public:
 		return visitor.visit(state, *this);
 	}
 	virtual std::string toString() const;
+	virtual std::string name() const { return "surface"; }
 
 	QString filename;
 	bool center;
@@ -207,7 +208,7 @@ std::string SurfaceNode::toString() const
 {
 	std::stringstream stream;
 
-	stream << "surface(file = \"" << this->filename
+	stream << this->name() << "(file = \"" << this->filename
 				 << "\", center = " << (this->center ? "true" : "false") << ")";
 
 	return stream.str();

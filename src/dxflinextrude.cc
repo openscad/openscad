@@ -154,7 +154,7 @@ std::string DxfLinearExtrudeNode::toString() const
 	memset(&st, 0, sizeof(struct stat));
 	stat(this->filename.toAscii().data(), &st);
 	
-	stream << "linear_extrude("
+	stream << this->name() << "("
 		"file = \"" << this->filename << "\", "
 		"cache = \"" << std::hex << (int)st.st_mtime << "." << (int)st.st_size << "\", "
 		"layer = \"" << this->layername << "\", "

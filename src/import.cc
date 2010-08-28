@@ -198,19 +198,20 @@ std::string ImportNode::toString() const
 	memset(&st, 0, sizeof(struct stat));
 	stat(this->filename.toAscii().data(), &st);
 
+	stream << this->name();
 	switch (this->type) {
 	case TYPE_STL:
-		stream << "import_stl(file = \"" << this->filename << "\", "
+		stream << "(file = \"" << this->filename << "\", "
 			"cache = \"" << std::hex << (int)st.st_mtime << "." << (int)st.st_size << "\", "
 			"convexity = " << std::dec << this->convexity << ")";
 		break;
 	case TYPE_OFF:
-		stream << "import_off(file = \"" << this->filename << "\", "
+		stream << "(file = \"" << this->filename << "\", "
 			"cache = \"" << std::hex << (int)st.st_mtime << "." << (int)st.st_size << "\", "
 			"convexity = " << std::dec << this->convexity << ")";
 		break;
 	case TYPE_DXF:
-		stream << "import_dxf(file = \"" << this->filename << "\", "
+		stream << "(file = \"" << this->filename << "\", "
 			"cache = \"" << std::hex << (int)st.st_mtime << "." << (int)st.st_size << "\", "
 			"layer = \"" << this->layername << "\", "
 			"origin = [ " << std::dec << this->origin_x << " " << this->origin_y << " ], "
@@ -223,4 +224,21 @@ std::string ImportNode::toString() const
 	}
 
 	return stream.str();
+}
+
+std::string ImportNode::name() const
+{
+	switch (this->type) {
+	case TYPE_STL:
+		return "import_stl";
+		break;
+	case TYPE_OFF:
+		return "import_off";
+		break;
+	case TYPE_DXF:
+		return "import_dxf";
+		break;
+	default:
+		assert(false);
+	}
 }

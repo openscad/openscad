@@ -63,6 +63,21 @@ public:
 		return visitor.visit(state, *this);
 	}
 	virtual std::string toString() const;
+	virtual std::string name() const {
+		switch (this->type) {
+		case MINKOWSKI:
+			return "minkowski";
+			break;
+		case GLIDE:
+			return "glide";
+			break;
+		case SUBDIV:
+			return "subdiv";
+			break;
+		default:
+			assert(false);
+		}
+	}
 
 	Value path;
 	QString subdiv_type;
@@ -134,15 +149,16 @@ std::string CgaladvNode::toString() const
 {
 	std::stringstream stream;
 
+	stream << this->name();
 	switch (type) {
 	case MINKOWSKI:
-		stream << "minkowski(convexity = " << this->convexity << ")";
+		stream << "(convexity = " << this->convexity << ")";
 		break;
 	case GLIDE:
-		stream << "glide(path = " << this->path.dump() << ", convexity = " << this->convexity << ")";
+		stream << "(path = " << this->path.dump() << ", convexity = " << this->convexity << ")";
 		break;
 	case SUBDIV:
-		stream << "subdiv(level = " << this->level << ", convexity = " << this->convexity << ")";
+		stream << "(level = " << this->level << ", convexity = " << this->convexity << ")";
 		break;
 	default:
 		assert(false);

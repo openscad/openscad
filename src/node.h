@@ -29,6 +29,10 @@ public:
 	virtual ~AbstractNode();
   virtual Response accept(class State &state, class Visitor &visitor) const;
 	virtual std::string toString() const;
+	/*! The 'OpenSCAD name' of this node, defaults to classname, but can be 
+	    overloaded to provide specialization for e.g. CSG nodes, primitive nodes etc.
+	    Used for human-readable output. */
+	virtual std::string name() const;
 
   // FIXME: Make return value a reference
 	const std::list<AbstractNode*> getChildren() const { 
@@ -64,6 +68,7 @@ public:
 	virtual ~AbstractIntersectionNode() { };
   virtual Response accept(class State &state, class Visitor &visitor) const;
 	virtual std::string toString() const;
+	virtual std::string name() const;
 };
 
 class AbstractPolyNode : public AbstractNode

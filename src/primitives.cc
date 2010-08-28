@@ -62,6 +62,34 @@ public:
 		return visitor.visit(state, *this);
 	}
 	virtual std::string toString() const;
+	virtual std::string name() const {
+		switch (this->type) {
+		case CUBE:
+			return "cube";
+			break;
+		case SPHERE:
+			return "sphere";
+			break;
+		case CYLINDER:
+			return "cylinder";
+			break;
+		case POLYHEDRON:
+			return "polyhedron";
+			break;
+		case SQUARE:
+			return "square";
+			break;
+		case CIRCLE:
+			return "circle";
+			break;
+		case POLYGON:
+			return "polygon";
+			break;
+		default:
+			assert(false && "PrimitiveNode::name(): Unknown primitive type");
+			return AbstractPolyNode::name();
+		}
+	}
 
 	bool center;
 	double x, y, z, h, r1, r2;
@@ -74,7 +102,7 @@ public:
 
 AbstractNode *PrimitiveModule::evaluate(const Context *ctx, const ModuleInstantiation *inst) const
 {
-	PrimitiveNode *node = new PrimitiveNode(inst, type);
+	PrimitiveNode *node = new PrimitiveNode(inst, this->type);
 
 	node->center = false;
 	node->x = node->y = node->z = node->h = node->r1 = node->r2 = 1;
@@ -82,26 +110,30 @@ AbstractNode *PrimitiveModule::evaluate(const Context *ctx, const ModuleInstanti
 	QVector<QString> argnames;
 	QVector<Expression*> argexpr;
 
-	if (type == CUBE) {
+	switch (this->type) {
+	case CUBE:
 		argnames = QVector<QString>() << "size" << "center";
-	}
-	if (type == SPHERE) {
+		break;
+	case SPHERE:
 		argnames = QVector<QString>() << "r";
-	}
-	if (type == CYLINDER) {
+		break;
+	case CYLINDER:
 		argnames = QVector<QString>() << "h" << "r1" << "r2" << "center";
-	}
-	if (type == POLYHEDRON) {
+		break;
+	case POLYHEDRON:
 		argnames = QVector<QString>() << "points" << "triangles" << "convexity";
-	}
-	if (type == SQUARE) {
+		break;
+	case SQUARE:
 		argnames = QVector<QString>() << "size" << "center";
-	}
-	if (type == CIRCLE) {
+		break;
+	case CIRCLE:
 		argnames = QVector<QString>() << "r";
-	}
-	if (type == POLYGON) {
+		break;
+	case POLYGON:
 		argnames = QVector<QString>() << "points" << "paths" << "convexity";
+		break;
+	default:
+		assert(false && "PrimitiveModule::evaluate(): Unknown node type");
 	}
 
 	Context c(ctx);
@@ -218,21 +250,21 @@ PolySet *PrimitiveNode::render_polyset(render_mode_e) const
 {
 	PolySet *p = new PolySet();
 
-	if (type == CUBE && x > 0 && y > 0 && z > 0)
+	if (this->type == CUBE && this->x > 0 && this->y > 0 && this->z > 0)
 	{
 		double x1, x2, y1, y2, z1, z2;
-		if (center) {
-			x1 = -x/2;
-			x2 = +x/2;
-			y1 = -y/2;
-			y2 = +y/2;
-			z1 = -z/2;
-			z2 = +z/2;
+		if (this->center) {
+			x1 = -this->x/2;
+			x2 = +this->x/2;
+			y1 = -this->y/2;
+			y2 = +this->y/2;
+			z1 = -this->z/2;
+			z2 = +this->z/2;
 		} else {
 			x1 = y1 = z1 = 0;
-			x2 = x;
-			y2 = y;
-			z2 = z;
+			x2 = this->x;
+			y2 = this->y;
+			z2 = this->z;
 		}
 
 		p->append_poly(); // top
@@ -272,7 +304,7 @@ PolySet *PrimitiveNode::render_polyset(render_mode_e) const
 		p->append_vertex(x1, y2, z2);
 	}
 
-	if (type == SPHERE && r1 > 0)
+	if (this->type == SPHERE && this->r1 > 0)
 	{
 		struct point2d {
 			double x, y;
@@ -284,14 +316,14 @@ PolySet *PrimitiveNode::render_polyset(render_mode_e) const
 			double r, z;
 		};
 
-		int rings = get_fragments_from_r(r1, fn, fs, fa);
+		int rings = get_fragments_from_r(this->r1, this->fn, this->fs, this->fa);
 		ring_s ring[rings];
 
 		for (int i = 0; i < rings; i++) {
 			double phi = (M_PI * (i + 0.5)) / rings;
-			ring[i].r = r1 * sin(phi);
-			ring[i].z = r1 * cos(phi);
-			ring[i].fragments = get_fragments_from_r(ring[i].r, fn, fs, fa);
+			ring[i].r = this->r1 * sin(phi);
+			ring[i].z = this->r1 * cos(phi);
+			ring[i].fragments = get_fragments_from_r(ring[i].r, this->fn, this->fs, this->fa);
 			ring[i].points = new point2d[ring[i].fragments];
 			for (int j = 0; j < ring[i].fragments; j++) {
 				phi = (M_PI*2*j) / ring[i].fragments;
@@ -314,8 +346,7 @@ PolySet *PrimitiveNode::render_polyset(render_mode_e) const
 					goto sphere_next_r2;
 				if (r2i >= r2->fragments)
 					goto sphere_next_r1;
-				if ((double)r1i / r1->fragments <
-						(double)r2i / r2->fragments)
+				if ((double)r1i / r1->fragments < (double)r2i / r2->fragments)
 				{
 sphere_next_r1:
 					p->append_poly();
@@ -341,17 +372,18 @@ sphere_next_r2:
 			p->insert_vertex(ring[rings-1].points[i].x, ring[rings-1].points[i].y, ring[rings-1].z);
 	}
 
-	if (type == CYLINDER && h > 0 && r1 >=0 && r2 >= 0 && (r1 > 0 || r2 > 0))
+	if (this->type == CYLINDER && 
+			this->h > 0 && this->r1 >=0 && this->r2 >= 0 && (this->r1 > 0 || this->r2 > 0))
 	{
-		int fragments = get_fragments_from_r(fmax(r1, r2), fn, fs, fa);
+		int fragments = get_fragments_from_r(fmax(this->r1, this->r2), this->fn, this->fs, this->fa);
 
 		double z1, z2;
-		if (center) {
-			z1 = -h/2;
-			z2 = +h/2;
+		if (this->center) {
+			z1 = -this->h/2;
+			z2 = +this->h/2;
 		} else {
 			z1 = 0;
-			z2 = h;
+			z2 = this->h;
 		}
 
 		struct point2d {
@@ -363,16 +395,16 @@ sphere_next_r2:
 
 		for (int i=0; i<fragments; i++) {
 			double phi = (M_PI*2*i) / fragments;
-			if (r1 > 0) {
-				circle1[i].x = r1*cos(phi);
-				circle1[i].y = r1*sin(phi);
+			if (this->r1 > 0) {
+				circle1[i].x = this->r1*cos(phi);
+				circle1[i].y = this->r1*sin(phi);
 			} else {
 				circle1[i].x = 0;
 				circle1[i].y = 0;
 			}
-			if (r2 > 0) {
-				circle2[i].x = r2*cos(phi);
-				circle2[i].y = r2*sin(phi);
+			if (this->r2 > 0) {
+				circle2[i].x = this->r2*cos(phi);
+				circle2[i].y = this->r2*sin(phi);
 			} else {
 				circle2[i].x = 0;
 				circle2[i].y = 0;
@@ -381,13 +413,13 @@ sphere_next_r2:
 		
 		for (int i=0; i<fragments; i++) {
 			int j = (i+1) % fragments;
-			if (r1 > 0) {
+			if (this->r1 > 0) {
 				p->append_poly();
 				p->insert_vertex(circle1[i].x, circle1[i].y, z1);
 				p->insert_vertex(circle2[i].x, circle2[i].y, z2);
 				p->insert_vertex(circle1[j].x, circle1[j].y, z1);
 			}
-			if (r2 > 0) {
+			if (this->r2 > 0) {
 				p->append_poly();
 				p->insert_vertex(circle2[i].x, circle2[i].y, z2);
 				p->insert_vertex(circle2[j].x, circle2[j].y, z2);
@@ -395,48 +427,48 @@ sphere_next_r2:
 			}
 		}
 
-		if (r1 > 0) {
+		if (this->r1 > 0) {
 			p->append_poly();
 			for (int i=0; i<fragments; i++)
 				p->insert_vertex(circle1[i].x, circle1[i].y, z1);
 		}
 
-		if (r2 > 0) {
+		if (this->r2 > 0) {
 			p->append_poly();
 			for (int i=0; i<fragments; i++)
 				p->append_vertex(circle2[i].x, circle2[i].y, z2);
 		}
 	}
 
-	if (type == POLYHEDRON)
+	if (this->type == POLYHEDRON)
 	{
-		p->convexity = convexity;
-		for (int i=0; i<triangles.vec.size(); i++)
+		p->convexity = this->convexity;
+		for (int i=0; i<this->triangles.vec.size(); i++)
 		{
 			p->append_poly();
-			for (int j=0; j<triangles.vec[i]->vec.size(); j++) {
-				int pt = triangles.vec[i]->vec[j]->num;
-				if (pt < points.vec.size()) {
+			for (int j=0; j<this->triangles.vec[i]->vec.size(); j++) {
+				int pt = this->triangles.vec[i]->vec[j]->num;
+				if (pt < this->points.vec.size()) {
 					double px, py, pz;
-					if (points.vec[pt]->getv3(px, py, pz))
+					if (this->points.vec[pt]->getv3(px, py, pz))
 						p->insert_vertex(px, py, pz);
 				}
 			}
 		}
 	}
 
-	if (type == SQUARE)
+	if (this->type == SQUARE)
 	{
 		double x1, x2, y1, y2;
-		if (center) {
-			x1 = -x/2;
-			x2 = +x/2;
-			y1 = -y/2;
-			y2 = +y/2;
+		if (this->center) {
+			x1 = -this->x/2;
+			x2 = +this->x/2;
+			y1 = -this->y/2;
+			y2 = +this->y/2;
 		} else {
 			x1 = y1 = 0;
-			x2 = x;
-			y2 = y;
+			x2 = this->x;
+			y2 = this->y;
 		}
 
 		p->is2d = true;
@@ -447,9 +479,9 @@ sphere_next_r2:
 		p->append_vertex(x1, y2);
 	}
 
-	if (type == CIRCLE)
+	if (this->type == CIRCLE)
 	{
-		int fragments = get_fragments_from_r(r1, fn, fs, fa);
+		int fragments = get_fragments_from_r(this->r1, this->fn, this->fs, this->fa);
 
 		struct point2d {
 			double x, y;
@@ -459,8 +491,8 @@ sphere_next_r2:
 
 		for (int i=0; i<fragments; i++) {
 			double phi = (M_PI*2*i) / fragments;
-			circle[i].x = r1*cos(phi);
-			circle[i].y = r1*sin(phi);
+			circle[i].x = this->r1*cos(phi);
+			circle[i].y = this->r1*sin(phi);
 		}
 
 		p->is2d = true;
@@ -469,13 +501,13 @@ sphere_next_r2:
 			p->append_vertex(circle[i].x, circle[i].y);
 	}
 
-	if (type == POLYGON)
+	if (this->type == POLYGON)
 	{
 		DxfData dd;
 
-		for (int i=0; i<points.vec.size(); i++) {
+		for (int i=0; i<this->points.vec.size(); i++) {
 			double x,y;
-			if (!points.vec[i]->getv2(x, y)) {
+			if (!this->points.vec[i]->getv2(x, y)) {
 				PRINTF("ERROR: Unable to convert point at index %d to a vec2 of numbers", i);
 				// FIXME: Return NULL and make sure this is checked by all callers?
 				return p;
@@ -483,10 +515,10 @@ sphere_next_r2:
 			dd.points.append(DxfData::Point(x, y));
 		}
 
-		if (paths.vec.size() == 0)
+		if (this->paths.vec.size() == 0)
 		{
 			dd.paths.append(DxfData::Path());
-			for (int i=0; i<points.vec.size(); i++) {
+			for (int i=0; i<this->points.vec.size(); i++) {
 				assert(i < dd.points.size()); // FIXME: Not needed, but this used to be an 'if'
 				DxfData::Point *p = &dd.points[i];
 				dd.paths.last().points.append(p);
@@ -498,11 +530,11 @@ sphere_next_r2:
 		}
 		else
 		{
-			for (int i=0; i<paths.vec.size(); i++)
+			for (int i=0; i<this->paths.vec.size(); i++)
 			{
 				dd.paths.append(DxfData::Path());
-				for (int j=0; j<paths.vec[i]->vec.size(); j++) {
-					int idx = paths.vec[i]->vec[j]->num;
+				for (int j=0; j<this->paths.vec[i]->vec.size(); j++) {
+					int idx = this->paths.vec[i]->vec[j]->num;
 					if (idx < dd.points.size()) {
 						DxfData::Point *p = &dd.points[idx];
 						dd.paths.last().points.append(p);
@@ -530,35 +562,37 @@ std::string PrimitiveNode::toString() const
 {
 	std::stringstream stream;
 
+	stream << this->name();
+
 	switch (this->type) {
 	case CUBE:
-		stream << "cube(size = [" << this->x << ", " << this->y << ", " << this->z << "], "
+		stream << "(size = [" << this->x << ", " << this->y << ", " << this->z << "], "
 					 <<	"center = " << (center ? "true" : "false") << ")";
 		break;
 	case SPHERE:
-		stream << "sphere($fn = " << this->fn << ", $fa = " << this->fa
+		stream << "($fn = " << this->fn << ", $fa = " << this->fa
 					 << ", $fs = " << this->fs << ", r = " << this->r1 << ")";
 			break;
 	case CYLINDER:
-		stream << "cylinder($fn = " << this->fn << ", $fa = " << this->fa
+		stream << "($fn = " << this->fn << ", $fa = " << this->fa
 					 << ", $fs = " << this->fs << ", h = " << this->h << ", r1 = " << this->r1
 					 << ", r2 = " << this->r2 << ", center = " << (center ? "true" : "false") << ")";
 			break;
 	case POLYHEDRON:
-		stream << "polyhedron(points = " << this->points.dump()
+		stream << "(points = " << this->points.dump()
 					 << ", triangles = " << this->triangles.dump()
 					 << ", convexity = " << this->convexity << ")";
 			break;
 	case SQUARE:
-		stream << "square(size = [" << this->x << ", " << this->y << "], "
+		stream << "(size = [" << this->x << ", " << this->y << "], "
 					 << "center = " << (center ? "true" : "false") << ")";
 			break;
 	case CIRCLE:
-		stream << "circle($fn = " << this->fn << ", $fa = " << this->fa
+		stream << "($fn = " << this->fn << ", $fa = " << this->fa
 					 << ", $fs = " << this->fs << ", r = " << this->r1 << ")";
 		break;
 	case POLYGON:
-		stream << "polygon(points = " << this->points.dump() << ", paths = " << this->paths.dump() << ", convexity = " << this->convexity << ")";
+		stream << "(points = " << this->points.dump() << ", paths = " << this->paths.dump() << ", convexity = " << this->convexity << ")";
 			break;
 	default:
 		assert(false);

@@ -12,6 +12,7 @@ public:
 		return visitor.visit(state, *this);
 	}
 	virtual std::string toString() const;
+	virtual std::string name() const { return "render"; }
 
 	int convexity;
 };

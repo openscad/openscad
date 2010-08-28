@@ -53,23 +53,24 @@ AbstractNode *CsgModule::evaluate(const Context*, const ModuleInstantiation *ins
 
 std::string CsgNode::toString() const
 {
-	std::stringstream stream;
+	return this->name() + "()";
+}
 
+std::string CsgNode::name() const
+{
 	switch (this->type) {
 	case CSG_TYPE_UNION:
-		stream << "union()";
+		return "union";
 		break;
 	case CSG_TYPE_DIFFERENCE:
-		stream << "difference()";
+		return "difference";
 		break;
 	case CSG_TYPE_INTERSECTION:
-		stream << "intersection()";
+		return "intersection";
 		break;
 	default:
 		assert(false);
 	}
-
-	return stream.str();
 }
 
 void register_builtin_csgops()

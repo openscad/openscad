@@ -1,1 +1,1 @@
-12AbstractNode<1>(7CsgNode<2>(13PrimitiveNode*13PrimitiveNode))
+group1(intersection2(sphere*cube))

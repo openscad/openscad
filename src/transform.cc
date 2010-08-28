@@ -34,6 +34,7 @@
 #include "printutils.h"
 #include "visitor.h"
 #include <sstream>
+#include <assert.h>
 
 enum transform_type_e {
 	SCALE,
@@ -64,29 +65,33 @@ AbstractNode *TransformModule::evaluate(const Context *ctx, const ModuleInstanti
 	QVector<QString> argnames;
 	QVector<Expression*> argexpr;
 
-	if (type == SCALE) {
+	switch (this->type) {
+	case SCALE:
 		argnames = QVector<QString>() << "v";
-	}
-	if (type == ROTATE) {
+		break;
+	case ROTATE:
 		argnames = QVector<QString>() << "a" << "v";
-	}
-	if (type == MIRROR) {
+		break;
+	case MIRROR:
 		argnames = QVector<QString>() << "v";
-	}
-	if (type == TRANSLATE) {
+		break;
+	case TRANSLATE:
 		argnames = QVector<QString>() << "v";
-	}
-	if (type == MULTMATRIX) {
+		break;
+	case MULTMATRIX:
 		argnames = QVector<QString>() << "m";
-	}
-	if (type == COLOR) {
+		break;
+	case COLOR:
 		argnames = QVector<QString>() << "c";
+		break;
+	default:
+		assert(false);
 	}
 
 	Context c(ctx);
 	c.args(argnames, argexpr, inst->argnames, inst->argvalues);
 
-	if (type == SCALE)
+	if (this->type == SCALE)
 	{
 		Value v = c.lookup_variable("v");
 		v.getnum(node->matrix[0]);
@@ -96,7 +101,7 @@ AbstractNode *TransformModule::evaluate(const Context *ctx, const ModuleInstanti
 		if (node->matrix[10] <= 0)
 			node->matrix[10] = 1;
 	}
-	if (type == ROTATE)
+	else if (this->type == ROTATE)
 	{
 		Value val_a = c.lookup_variable("a");
 		if (val_a.type == Value::VECTOR)
@@ -167,7 +172,7 @@ AbstractNode *TransformModule::evaluate(const Context *ctx, const ModuleInstanti
 			}
 		}
 	}
-	if (type == MIRROR)
+	else if (this->type == MIRROR)
 	{
 		Value val_v = c.lookup_variable("v");
 		double x = 1, y = 0, z = 0;
@@ -194,12 +199,12 @@ AbstractNode *TransformModule::evaluate(const Context *ctx, const ModuleInstanti
 			node->matrix[10] = 1-2*z*z;
 		}
 	}
-	if (type == TRANSLATE)
+	else if (this->type == TRANSLATE)
 	{
 		Value v = c.lookup_variable("v");
 		v.getv3(node->matrix[12], node->matrix[13], node->matrix[14]);
 	}
-	if (type == MULTMATRIX)
+	else if (this->type == MULTMATRIX)
 	{
 		Value v = c.lookup_variable("m");
 		if (v.type == Value::VECTOR) {
@@ -210,7 +215,7 @@ AbstractNode *TransformModule::evaluate(const Context *ctx, const ModuleInstanti
 			}
 		}
 	}
-	if (type == COLOR)
+	else if (this->type == COLOR)
 	{
 		Value v = c.lookup_variable("c");
 		if (v.type == Value::VECTOR) {
@@ -251,6 +256,11 @@ std::string TransformNode::toString() const
 	}
 
 	return stream.str();
+}
+
+std::string TransformNode::name() const
+{
+	return "transform";
 }
 
 void register_builtin_transform()

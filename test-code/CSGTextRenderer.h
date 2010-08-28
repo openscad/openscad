@@ -17,11 +17,11 @@ public:
 	CSGTextRenderer(CSGTextCache &cache) : cache(cache) {}
   virtual ~CSGTextRenderer() {}
 
-  virtual Response visit(const State &state, const AbstractNode &node);
-	virtual Response visit(const State &state, const AbstractIntersectionNode &node);
-	virtual Response visit(const State &state, const CsgNode &node);
-	virtual Response visit(const State &state, const TransformNode &node);
-	virtual Response visit(const State &state, const AbstractPolyNode &node);
+  virtual Response visit(State &state, const AbstractNode &node);
+	virtual Response visit(State &state, const AbstractIntersectionNode &node);
+	virtual Response visit(State &state, const CsgNode &node);
+	virtual Response visit(State &state, const TransformNode &node);
+	virtual Response visit(State &state, const AbstractPolyNode &node);
 
 private:
 	enum CsgOp {UNION, INTERSECTION, DIFFERENCE, MINKOWSKI};
