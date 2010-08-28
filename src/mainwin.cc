@@ -1407,8 +1407,8 @@ static void renderGLThrownTogether(void *vp);
 
 static void renderGLviaOpenCSG(void *vp)
 {
-	MainWindow *m = (MainWindow*)vp;
-	if (!m->enableOpenCSG) {
+	MainWindow *mainwin = (MainWindow *)vp;
+	if (!mainwin->enableOpenCSG) {
 		renderGLThrownTogether(vp);
 		return;
 	}
@@ -1418,18 +1418,18 @@ static void renderGLviaOpenCSG(void *vp)
 		glewInit();
 	}
 #ifdef ENABLE_MDI
-	OpenCSG::setContext(m->screen->opencsg_id);
+	OpenCSG::setContext(mainwin->screen->opencsg_id);
 #endif
-	if (m->root_chain) {
-		GLint *shaderinfo = m->screen->shaderinfo;
+	if (mainwin->root_chain) {
+		GLint *shaderinfo = mainwin->screen->shaderinfo;
 		if (!shaderinfo[0])
 			shaderinfo = NULL;
-		renderCSGChainviaOpenCSG(m->root_chain, m->viewActionShowEdges->isChecked() ? shaderinfo : NULL, false, false);
-		if (m->background_chain) {
-			renderCSGChainviaOpenCSG(m->background_chain, m->viewActionShowEdges->isChecked() ? shaderinfo : NULL, false, true);
+		renderCSGChainviaOpenCSG(mainwin->root_chain, mainwin->viewActionShowEdges->isChecked() ? shaderinfo : NULL, false, false);
+		if (mainwin->background_chain) {
+			renderCSGChainviaOpenCSG(mainwin->background_chain, mainwin->viewActionShowEdges->isChecked() ? shaderinfo : NULL, false, true);
 		}
-		if (m->highlights_chain) {
-			renderCSGChainviaOpenCSG(m->highlights_chain, m->viewActionShowEdges->isChecked() ? shaderinfo : NULL, true, false);
+		if (mainwin->highlights_chain) {
+			renderCSGChainviaOpenCSG(mainwin->highlights_chain, mainwin->viewActionShowEdges->isChecked() ? shaderinfo : NULL, true, false);
 		}
 	}
 }
