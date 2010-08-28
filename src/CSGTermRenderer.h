@@ -34,6 +34,8 @@ private:
   const AbstractNode *root;
   typedef list<const AbstractNode *> ChildList;
   map<int, ChildList> visitedchildren;
+
+public:
   map<int, class CSGTerm*> stored_term;
 
 	vector<CSGTerm*> *highlights;

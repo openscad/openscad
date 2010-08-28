@@ -24,8 +24,6 @@
 
 void CSGTermRenderer::applyToChildren(const AbstractNode &node, CSGTermRenderer::CsgOp op)
 {
-	if (this->visitedchildren[node.index()].size() == 0) return;
-
 	CSGTerm *t1 = NULL;
 	for (ChildList::const_iterator iter = this->visitedchildren[node.index()].begin();
 			 iter != this->visitedchildren[node.index()].end();
@@ -50,7 +48,7 @@ void CSGTermRenderer::applyToChildren(const AbstractNode &node, CSGTermRenderer:
 	}
 	if (t1 && node.modinst->tag_background && this->background) {
 		this->background->push_back(t1);
-// FIXME: don't store in stored_term? 		return NULL;
+		t1 = NULL; // don't propagate background tagged nodes
 	}
 	this->stored_term[node.index()] = t1;
 }
@@ -78,9 +76,9 @@ static CSGTerm *render_csg_term_from_ps(const double m[20],
 																				vector<CSGTerm*> *background, 
 																				PolySet *ps, 
 																				const ModuleInstantiation *modinst, 
-																				int idx)
+																				const AbstractPolyNode &node)
 {
-	CSGTerm *t = new CSGTerm(ps, m, QString("n%1").arg(idx));
+	CSGTerm *t = new CSGTerm(ps, m, QString("%1%2").arg(node.name().c_str()).arg(node.index()));
 	if (modinst->tag_highlight && highlights)
 		highlights->push_back(t->link());
 	if (modinst->tag_background && background) {
@@ -94,7 +92,7 @@ Response CSGTermRenderer::visit(State &state, const AbstractPolyNode &node)
 {
 	if (state.isPostfix()) {
 		PolySet *ps = node.render_polyset(AbstractPolyNode::RENDER_OPENCSG);
-		CSGTerm *t1 = render_csg_term_from_ps(state.matrix(), this->highlights, this->background, ps, node.modinst, node.index());
+		CSGTerm *t1 = render_csg_term_from_ps(state.matrix(), this->highlights, this->background, ps, node.modinst, node);
 		this->stored_term[node.index()] = t1;
 		addToParent(state, node);
 	}

@@ -33,6 +33,7 @@
 #include "export.h"
 #include "builtin.h"
 #include "Tree.h"
+#include "csgterm.h"
 
 #include <QApplication>
 #include <QFile>
@@ -41,6 +42,8 @@
 #include <getopt.h>
 #include <assert.h>
 #include <iostream>
+
+using std::cout;
 
 QString commandline_commands;
 const char *make_command = NULL;
@@ -60,13 +63,6 @@ void handle_dep(QString filename)
 		snprintf(buffer, 4096, "%s '%s'", make_command, filename.replace("'", "'\\''").toUtf8().data());
 		system(buffer); // FIXME: Handle error
 	}
-}
-
-void csgTree(Tree &tree)
-{
-	CSGTermRenderer renderer;
-	Traverser render(renderer, *tree.root(), Traverser::PRE_AND_POSTFIX);
-	render.execute();
 }
 
 int main(int argc, char **argv)
@@ -157,8 +153,29 @@ int main(int argc, char **argv)
 	Tree tree;
 	tree.setRoot(root_node);
 
-	csgTree(tree);
+//	cout << tree.getString(*root_node) << "\n";
 
+	CSGTermRenderer renderer;
+	Traverser render(renderer, *tree.root(), Traverser::PRE_AND_POSTFIX);
+	render.execute();
+	
+	// cout << "Stored terms: " << renderer.stored_term.size() << "\n";
+	// for (map<int, class CSGTerm*>::iterator iter = renderer.stored_term.begin();
+	// 		 iter != renderer.stored_term.end();
+	// 		 iter++) {
+	// 	cout << iter->first << ":" << (iter->second ? iter->second->label : "NULL") << "\n";
+	// }
+
+	// if (renderer.background) cout << "Background terms: " << renderer.background->size() << "\n";
+	// if (renderer.highlights) cout << "Highlights terms: " << renderer.highlights->size() << "\n";
+
+	CSGTerm *root_term = renderer.stored_term[root_node->index()];
+	if (root_term) {
+		cout << root_term->dump() << "\n";
+	}
+	else {
+		cout << "No top-level CSG object\n";
+	}
 
 	destroy_builtin_functions();
 	destroy_builtin_modules();
