@@ -64,19 +64,23 @@ def run_test(testname, cmd, args):
         if not os.path.exists(outputdir): os.makedirs(outputdir)
         outputname = actualfilename
     outfile = open(outputname, "wb")
-    proc = subprocess.Popen([cmd] + args, stdout=outfile, stderr=subprocess.PIPE)
-    errtext = proc.communicate()[1]
-    if errtext != None and len(errtext) > 0:
-        print >> sys.stderr, "Error output: " + errtext
-    outfile.close()
-    if proc.returncode != 0:
-        print >> sys.stderr, "Error: %s failed with return code %d" % (cmdname, proc.returncode)
-        return False
-
-    if not options.generate:
-        if not compare_text(expectedfilename, actualfilename): 
-            execute_and_redirect("diff", [expectedfilename, actualfilename], sys.stderr)
+    try:
+        proc = subprocess.Popen([cmd] + args, stdout=outfile, stderr=subprocess.PIPE)
+        errtext = proc.communicate()[1]
+        if errtext != None and len(errtext) > 0:
+            print >> sys.stderr, "Error output: " + errtext
+        outfile.close()
+        if proc.returncode != 0:
+            print >> sys.stderr, "Error: %s failed with return code %d" % (cmdname, proc.returncode)
             return False
+
+        if not options.generate:
+            if not compare_text(expectedfilename, actualfilename): 
+                execute_and_redirect("diff", [expectedfilename, actualfilename], sys.stderr)
+                return False
+    except OSError, err:
+        print >> sys.stderr, "Error: %s \"%s\"" % (err.strerror, cmd)
+
     return True
 
 class Options:
