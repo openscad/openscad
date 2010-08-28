@@ -80,6 +80,7 @@ def run_test(testname, cmd, args):
                 return False
     except OSError, err:
         print >> sys.stderr, "Error: %s \"%s\"" % (err.strerror, cmd)
+        return False
 
     return True
 
