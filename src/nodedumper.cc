@@ -84,7 +84,7 @@ string NodeDumper::dumpChildren(const AbstractNode &node)
 	Called for each node in the tree.
 	Will abort traversal if we're cached
 */
-Response NodeDumper::visit(const State &state, const AbstractNode &node)
+Response NodeDumper::visit(State &state, const AbstractNode &node)
 {
 	if (isCached(node)) return PruneTraversal;
 

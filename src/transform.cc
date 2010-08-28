@@ -57,9 +57,9 @@ AbstractNode *TransformModule::evaluate(const Context *ctx, const ModuleInstanti
 	TransformNode *node = new TransformNode(inst);
 
 	for (int i = 0; i < 16; i++)
-		node->m[i] = i % 5 == 0 ? 1.0 : 0.0;
+		node->matrix[i] = i % 5 == 0 ? 1.0 : 0.0;
 	for (int i = 16; i < 20; i++)
-		node->m[i] = -1;
+		node->matrix[i] = -1;
 
 	QVector<QString> argnames;
 	QVector<Expression*> argexpr;
@@ -89,12 +89,12 @@ AbstractNode *TransformModule::evaluate(const Context *ctx, const ModuleInstanti
 	if (type == SCALE)
 	{
 		Value v = c.lookup_variable("v");
-		v.getnum(node->m[0]);
-		v.getnum(node->m[5]);
-		v.getnum(node->m[10]);
-		v.getv3(node->m[0], node->m[5], node->m[10]);
-		if (node->m[10] <= 0)
-			node->m[10] = 1;
+		v.getnum(node->matrix[0]);
+		v.getnum(node->matrix[5]);
+		v.getnum(node->matrix[10]);
+		v.getv3(node->matrix[0], node->matrix[5], node->matrix[10]);
+		if (node->matrix[10] <= 0)
+			node->matrix[10] = 1;
 	}
 	if (type == ROTATE)
 	{
@@ -128,10 +128,10 @@ AbstractNode *TransformModule::evaluate(const Context *ctx, const ModuleInstanti
 				{
 					m[x+y*4] = 0;
 					for (int i = 0; i < 4; i++)
-						m[x+y*4] += node->m[i+y*4] * mr[x+i*4];
+						m[x+y*4] += node->matrix[i+y*4] * mr[x+i*4];
 				}
 				for (int i = 0; i < 16; i++)
-					node->m[i] = m[i];
+					node->matrix[i] = m[i];
 			}
 		}
 		else
@@ -153,17 +153,17 @@ AbstractNode *TransformModule::evaluate(const Context *ctx, const ModuleInstanti
 				double c = cos(a*M_PI/180.0);
 				double s = sin(a*M_PI/180.0);
 
-				node->m[ 0] = x*x*(1-c)+c;
-				node->m[ 1] = y*x*(1-c)+z*s;
-				node->m[ 2] = z*x*(1-c)-y*s;
+				node->matrix[ 0] = x*x*(1-c)+c;
+				node->matrix[ 1] = y*x*(1-c)+z*s;
+				node->matrix[ 2] = z*x*(1-c)-y*s;
 
-				node->m[ 4] = x*y*(1-c)-z*s;
-				node->m[ 5] = y*y*(1-c)+c;
-				node->m[ 6] = z*y*(1-c)+x*s;
+				node->matrix[ 4] = x*y*(1-c)-z*s;
+				node->matrix[ 5] = y*y*(1-c)+c;
+				node->matrix[ 6] = z*y*(1-c)+x*s;
 
-				node->m[ 8] = x*z*(1-c)+y*s;
-				node->m[ 9] = y*z*(1-c)-x*s;
-				node->m[10] = z*z*(1-c)+c;
+				node->matrix[ 8] = x*z*(1-c)+y*s;
+				node->matrix[ 9] = y*z*(1-c)-x*s;
+				node->matrix[10] = z*z*(1-c)+c;
 			}
 		}
 	}
@@ -181,23 +181,23 @@ AbstractNode *TransformModule::evaluate(const Context *ctx, const ModuleInstanti
 
 		if (x != 0.0 || y != 0.0 || z != 0.0)
 		{
-			node->m[ 0] = 1-2*x*x;
-			node->m[ 1] = -2*y*x;
-			node->m[ 2] = -2*z*x;
+			node->matrix[ 0] = 1-2*x*x;
+			node->matrix[ 1] = -2*y*x;
+			node->matrix[ 2] = -2*z*x;
 
-			node->m[ 4] = -2*x*y;
-			node->m[ 5] = 1-2*y*y;
-			node->m[ 6] = -2*z*y;
+			node->matrix[ 4] = -2*x*y;
+			node->matrix[ 5] = 1-2*y*y;
+			node->matrix[ 6] = -2*z*y;
 
-			node->m[ 8] = -2*x*z;
-			node->m[ 9] = -2*y*z;
-			node->m[10] = 1-2*z*z;
+			node->matrix[ 8] = -2*x*z;
+			node->matrix[ 9] = -2*y*z;
+			node->matrix[10] = 1-2*z*z;
 		}
 	}
 	if (type == TRANSLATE)
 	{
 		Value v = c.lookup_variable("v");
-		v.getv3(node->m[12], node->m[13], node->m[14]);
+		v.getv3(node->matrix[12], node->matrix[13], node->matrix[14]);
 	}
 	if (type == MULTMATRIX)
 	{
@@ -206,7 +206,7 @@ AbstractNode *TransformModule::evaluate(const Context *ctx, const ModuleInstanti
 			for (int i = 0; i < 16; i++) {
 				int x = i / 4, y = i % 4;
 				if (y < v.vec.size() && v.vec[y]->type == Value::VECTOR && x < v.vec[y]->vec.size())
-					v.vec[y]->vec[x]->getnum(node->m[i]);
+					v.vec[y]->vec[x]->getnum(node->matrix[i]);
 			}
 		}
 	}
@@ -215,7 +215,7 @@ AbstractNode *TransformModule::evaluate(const Context *ctx, const ModuleInstanti
 		Value v = c.lookup_variable("c");
 		if (v.type == Value::VECTOR) {
 			for (int i = 0; i < 4; i++)
-				node->m[16+i] = i < v.vec.size() ? v.vec[i]->num : 1.0;
+				node->matrix[16+i] = i < v.vec.size() ? v.vec[i]->num : 1.0;
 		}
 	}
 
@@ -232,8 +232,8 @@ std::string TransformNode::toString() const
 {
 	std::stringstream stream;
 
-	if (m[16] >= 0 || m[17] >= 0 || m[18] >= 0 || m[19] >= 0) {
-		stream << "color([" << m[16] << ", " << m[17] << ", " << m[18] << ", " << m[19] << "])";
+	if (this->matrix[16] >= 0 || this->matrix[17] >= 0 || this->matrix[18] >= 0 || this->matrix[19] >= 0) {
+		stream << "color([" << this->matrix[16] << ", " << this->matrix[17] << ", " << this->matrix[18] << ", " << this->matrix[19] << "])";
 	}
 	else {
 		stream << "multmatrix([";
@@ -241,7 +241,7 @@ std::string TransformNode::toString() const
 			stream << "[";
 			for (int i=0;i<4;i++) {
 				// FIXME: The 0 test is to avoid a leading minus before a single 0 (cosmetics)
-				stream << ((m[i*4+j]==0)?0:m[i*4+j]);
+				stream << ((this->matrix[i*4+j]==0)?0:this->matrix[i*4+j]);
 				if (i != 3) stream << ", ";
 			}
 			stream << "]";

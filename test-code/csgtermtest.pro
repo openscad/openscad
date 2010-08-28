@@ -69,7 +69,7 @@ HEADERS += ../src/builtin.h \
            ../src/myqhash.h \
            ../src/CSGTermRenderer.h
 
-SOURCES += csgtexttest.cc \
+SOURCES += csgtermtest.cc \
            ../src/export.cc \
            ../src/value.cc \
            ../src/expr.cc \

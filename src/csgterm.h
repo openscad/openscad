@@ -22,7 +22,7 @@ public:
 	double m[20];
 	int refcounter;
 
-	CSGTerm(PolySet *polyset, double m[20], QString label);
+	CSGTerm(PolySet *polyset, const double m[20], QString label);
 	CSGTerm(type_e type, CSGTerm *left, CSGTerm *right);
 
 	CSGTerm *normalize();

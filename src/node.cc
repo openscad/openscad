@@ -49,17 +49,17 @@ AbstractNode::~AbstractNode()
 		delete v;
 }
 
-Response AbstractNode::accept(const class State &state, Visitor &visitor) const
+Response AbstractNode::accept(class State &state, Visitor &visitor) const
 {
 	return visitor.visit(state, *this);
 }
 
-Response AbstractIntersectionNode::accept(const class State &state, Visitor &visitor) const
+Response AbstractIntersectionNode::accept(class State &state, Visitor &visitor) const
 {
 	return visitor.visit(state, *this);
 }
 
-Response AbstractPolyNode::accept(const class State &state, Visitor &visitor) const
+Response AbstractPolyNode::accept(class State &state, Visitor &visitor) const
 {
 	return visitor.visit(state, *this);
 }

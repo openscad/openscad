@@ -47,7 +47,7 @@ class SurfaceNode : public AbstractPolyNode
 {
 public:
 	SurfaceNode(const ModuleInstantiation *mi) : AbstractPolyNode(mi) { }
-  virtual Response accept(const class State &state, Visitor &visitor) const {
+  virtual Response accept(class State &state, Visitor &visitor) const {
 		return visitor.visit(state, *this);
 	}
 	virtual std::string toString() const;

@@ -26,7 +26,7 @@
 #include "csgterm.h"
 #include "polyset.h"
 
-CSGTerm::CSGTerm(PolySet *polyset, double m[20], QString label)
+CSGTerm::CSGTerm(PolySet *polyset, const double m[20], QString label)
 {
 	this->type = TYPE_PRIMITIVE;
 	this->polyset = polyset;

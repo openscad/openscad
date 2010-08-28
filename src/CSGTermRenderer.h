@@ -19,12 +19,12 @@ public:
 	CSGTermRenderer() {}
   virtual ~CSGTermRenderer() {}
 
-  virtual Response visit(const State &state, const AbstractNode &node);
- 	virtual Response visit(const State &state, const AbstractIntersectionNode &node);
- 	virtual Response visit(const State &state, const AbstractPolyNode &node);
- 	virtual Response visit(const State &state, const CsgNode &node);
- 	virtual Response visit(const State &state, const TransformNode &node);
- 	virtual Response visit(const State &state, const RenderNode &node);
+  virtual Response visit(State &state, const AbstractNode &node);
+ 	virtual Response visit(State &state, const AbstractIntersectionNode &node);
+ 	virtual Response visit(State &state, const AbstractPolyNode &node);
+ 	virtual Response visit(State &state, const CsgNode &node);
+ 	virtual Response visit(State &state, const TransformNode &node);
+ 	virtual Response visit(State &state, const RenderNode &node);
 
 private:
 	enum CsgOp {UNION, INTERSECTION, DIFFERENCE, MINKOWSKI};

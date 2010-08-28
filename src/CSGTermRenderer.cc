@@ -55,7 +55,7 @@ void CSGTermRenderer::applyToChildren(const AbstractNode &node, CSGTermRenderer:
 	this->stored_term[node.index()] = t1;
 }
 
-Response CSGTermRenderer::visit(const State &state, const AbstractNode &node)
+Response CSGTermRenderer::visit(State &state, const AbstractNode &node)
 {
 	if (state.isPostfix()) {
 		applyToChildren(node, UNION);
@@ -64,7 +64,7 @@ Response CSGTermRenderer::visit(const State &state, const AbstractNode &node)
 	return ContinueTraversal;
 }
 
-Response CSGTermRenderer::visit(const State &state, const AbstractIntersectionNode &node)
+Response CSGTermRenderer::visit(State &state, const AbstractIntersectionNode &node)
 {
 	if (state.isPostfix()) {
 		applyToChildren(node, INTERSECTION);
@@ -73,9 +73,9 @@ Response CSGTermRenderer::visit(const State &state, const AbstractIntersectionNo
 	return ContinueTraversal;
 }
 
-static CSGTerm *render_csg_term_from_ps(double m[20], 
-																				QVector<CSGTerm*> *highlights, 
-																				QVector<CSGTerm*> *background, 
+static CSGTerm *render_csg_term_from_ps(const double m[20], 
+																				vector<CSGTerm*> *highlights, 
+																				vector<CSGTerm*> *background, 
 																				PolySet *ps, 
 																				const ModuleInstantiation *modinst, 
 																				int idx)
@@ -90,18 +90,18 @@ static CSGTerm *render_csg_term_from_ps(double m[20],
 	return t;
 }
 
-Response CSGTermRenderer::visit(const State &state, const AbstractPolyNode &node)
+Response CSGTermRenderer::visit(State &state, const AbstractPolyNode &node)
 {
 	if (state.isPostfix()) {
 		PolySet *ps = node.render_polyset(AbstractPolyNode::RENDER_OPENCSG);
-		CSGTerm *t1 = render_csg_term_from_ps(m, this->highlights, this->background, ps, node.modinst, node.index());
+		CSGTerm *t1 = render_csg_term_from_ps(state.matrix(), this->highlights, this->background, ps, node.modinst, node.index());
 		this->stored_term[node.index()] = t1;
 		addToParent(state, node);
 	}
 	return ContinueTraversal;
 }
 
-Response CSGTermRenderer::visit(const State &state, const CsgNode &node)
+Response CSGTermRenderer::visit(State &state, const CsgNode &node)
 {
 	if (state.isPostfix()) {
 		CsgOp op;
@@ -122,26 +122,28 @@ Response CSGTermRenderer::visit(const State &state, const CsgNode &node)
 	return ContinueTraversal;
 }
 
-Response CSGTermRenderer::visit(const State &state, const TransformNode &node)
+Response CSGTermRenderer::visit(State &state, const TransformNode &node)
 {
-	if (state.isPostfix()) {
-		double x[20];
+	if (state.isPrefix()) {
+		double m[20];
 		
 		for (int i = 0; i < 16; i++)
 		{
 			int c_row = i%4;
 			int m_col = i/4;
-			x[i] = 0;
-			for (int j = 0; j < 4; j++)
-				x[i] += c[c_row + j*4] * m[m_col*4 + j];
+			m[i] = 0;
+			for (int j = 0; j < 4; j++) {
+				m[i] += state.matrix()[c_row + j*4] * node.matrix[m_col*4 + j];
+			}
 		}
 		
-		for (int i = 16; i < 20; i++)
-			x[i] = m[i] < 0 ? c[i] : m[i];
+		for (int i = 16; i < 20; i++) {
+			m[i] = node.matrix[i] < 0 ? state.matrix()[i] : node.matrix[i];
+		}
 
-		// FIXME: Apply the x matrix.
-		// FIXME: Look into how bottom-up vs. top down affects matrix handling
-
+		state.setMatrix(m);
+	}
+	if (state.isPostfix()) {
 		applyToChildren(node, UNION);
 		addToParent(state, node);
 	}
@@ -149,7 +151,7 @@ Response CSGTermRenderer::visit(const State &state, const TransformNode &node)
 }
 
 // FIXME: Find out how to best call into CGAL from this visitor
-Response CSGTermRenderer::visit(const State &state, const RenderNode &node)
+Response CSGTermRenderer::visit(State &state, const RenderNode &node)
 {
 	PRINT("WARNING: Found render() statement but compiled without CGAL support!");
 	if (state.isPostfix()) {

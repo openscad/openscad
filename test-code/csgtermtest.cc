@@ -23,7 +23,7 @@
  *
  */
 
-#include "CSGTextRenderer.h"
+#include "CSGTermRenderer.h"
 #include "CSGTextCache.h"
 #include "openscad.h"
 #include "node.h"
@@ -62,10 +62,10 @@ void handle_dep(QString filename)
 	}
 }
 
-void csgTree(CSGTextCache &cache, const AbstractNode &root)
+void csgTree(Tree &tree)
 {
-	CSGTextRenderer renderer(cache);
-	Traverser render(renderer, root, Traverser::PRE_AND_POSTFIX);
+	CSGTermRenderer renderer;
+	Traverser render(renderer, *tree.root(), Traverser::PRE_AND_POSTFIX);
 	render.execute();
 }
 
@@ -157,7 +157,7 @@ int main(int argc, char **argv)
 	Tree tree;
 	tree.setRoot(root_node);
 
-	
+	csgTree(tree);
 
 
 	destroy_builtin_functions();

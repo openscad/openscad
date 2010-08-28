@@ -20,7 +20,7 @@ public:
 		cache(cache), idprefix(idPrefix), root(NULL) { }
   virtual ~NodeDumper() {}
 
-  virtual Response visit(const State &state, const AbstractNode &node);
+  virtual Response visit(State &state, const AbstractNode &node);
 
 private:
   void handleVisitedChildren(const State &state, const AbstractNode &node);

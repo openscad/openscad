@@ -27,7 +27,7 @@ class AbstractNode
 public:
 	AbstractNode(const class ModuleInstantiation *mi);
 	virtual ~AbstractNode();
-  virtual Response accept(const class State &state, class Visitor &visitor) const;
+  virtual Response accept(class State &state, class Visitor &visitor) const;
 	virtual std::string toString() const;
 
   // FIXME: Make return value a reference
@@ -62,7 +62,7 @@ class AbstractIntersectionNode : public AbstractNode
 public:
 	AbstractIntersectionNode(const ModuleInstantiation *mi) : AbstractNode(mi) { };
 	virtual ~AbstractIntersectionNode() { };
-  virtual Response accept(const class State &state, class Visitor &visitor) const;
+  virtual Response accept(class State &state, class Visitor &visitor) const;
 	virtual std::string toString() const;
 };
 
@@ -71,7 +71,7 @@ class AbstractPolyNode : public AbstractNode
 public:
 	AbstractPolyNode(const ModuleInstantiation *mi) : AbstractNode(mi) { };
 	virtual ~AbstractPolyNode() { };
-  virtual Response accept(const class State &state, class Visitor &visitor) const;
+  virtual Response accept(class State &state, class Visitor &visitor) const;
 
 	enum render_mode_e {
 		RENDER_CGAL,
