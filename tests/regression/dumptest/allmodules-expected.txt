@@ -5,7 +5,7 @@ group() {
 	group();
 	group();
 	group();
-	intersection();
+	intersection_for();
 	group();
 	union();
 	difference();
