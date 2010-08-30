@@ -12,15 +12,17 @@ include(${QT_USE_FILE})
 include_directories(../src)
 
 # Eigen2
-find_path(EIGEN_INCLUDE_DIRS 
-          Eigen/Core 
-          PATHS ENV EIGEN2DIR /opt/local/include/eigen2 /usr/include/eigen2)
-if (NOT EIGEN_INCLUDE_DIRS)
-  message(FATAL_ERROR "Eigen2 not found")
-else()
-  message(STATUS "Eigen2 found in " ${EIGEN_INCLUDE_DIRS})
+if (NOT EIGEN2_INCLUDE_DIR)
+  find_path(EIGEN2_INCLUDE_DIR
+            Eigen/Core 
+            PATHS ENV EIGEN2DIR /opt/local/include/eigen2 /usr/include/eigen2)
+  if (NOT EIGEN2_INCLUDE_DIR)
+    message(FATAL_ERROR "Eigen2 not found")
+  else()
+    message(STATUS "Eigen2 found in " ${EIGEN2_INCLUDE_DIR})
+  endif()
 endif()
-include_directories(${EIGEN_INCLUDE_DIRS})
+include_directories(${EIGEN2_INCLUDE_DIR})
 
 # Flex/Bison
 find_package(BISON)
@@ -37,41 +39,52 @@ include_directories(../src)
 
 add_definitions(-DOPENSCAD_VERSION=test)
 
-set(SOURCES dumptest.cc 
-           ../src/export.cc 
-           ../src/value.cc 
-           ../src/expr.cc 
-           ../src/func.cc 
-           ../src/module.cc 
-           ../src/node.cc 
-           ../src/context.cc 
-           ../src/csgterm.cc 
-           ../src/polyset.cc 
-           ../src/csgops.cc 
-           ../src/transform.cc 
-           ../src/primitives.cc 
-           ../src/projection.cc 
-           ../src/cgaladv.cc 
-           ../src/surface.cc 
-           ../src/control.cc 
-           ../src/render.cc 
-           ../src/import.cc 
-           ../src/dxfdata.cc 
-           ../src/dxftess.cc 
-           ../src/dxfdim.cc 
-           ../src/dxflinextrude.cc 
-           ../src/dxfrotextrude.cc 
-           ../src/printutils.cc 
-           ../src/progress.cc 
-           ../src/nodedumper.cc 
-           ../src/traverser.cc 
-           ../src/PolySetRenderer.cc 
-           ../src/Tree.cc
-           ${FLEX_OpenSCADlexer_OUTPUTS}
-           ${BISON_OpenSCADparser_OUTPUTS})
+set(COMMON_SOURCES
+  ../src/export.cc 
+  ../src/value.cc 
+  ../src/expr.cc 
+  ../src/func.cc 
+  ../src/module.cc 
+  ../src/node.cc 
+  ../src/context.cc 
+  ../src/csgterm.cc 
+  ../src/polyset.cc 
+  ../src/csgops.cc 
+  ../src/transform.cc 
+  ../src/primitives.cc 
+  ../src/projection.cc 
+  ../src/cgaladv.cc 
+  ../src/surface.cc 
+  ../src/control.cc 
+  ../src/render.cc 
+  ../src/import.cc 
+  ../src/dxfdata.cc 
+  ../src/dxftess.cc 
+  ../src/dxfdim.cc 
+  ../src/dxflinextrude.cc 
+  ../src/dxfrotextrude.cc 
+  ../src/printutils.cc 
+  ../src/progress.cc 
+  ../src/nodedumper.cc 
+  ../src/traverser.cc 
+  ../src/PolySetRenderer.cc 
+  ../src/Tree.cc
+  ${FLEX_OpenSCADlexer_OUTPUTS}
+  ${BISON_OpenSCADparser_OUTPUTS})
 
-add_executable(dumptest ${SOURCES})
+add_executable(dumptest dumptest.cc ${COMMON_SOURCES})
 target_link_libraries(dumptest ${QT_LIBRARIES} ${OPENGL_LIBRARY})
+add_executable(csgtexttest csgtexttest.cc CSGTextRenderer.cc CSGTextCache.cc ../src/qhash.cc ${COMMON_SOURCES})
+target_link_libraries(csgtexttest ${QT_LIBRARIES} ${OPENGL_LIBRARY})
+add_executable(csgtermtest csgtermtest.cc ../src/CSGTermRenderer.cc ${COMMON_SOURCES})
+target_link_libraries(csgtermtest ${QT_LIBRARIES} ${OPENGL_LIBRARY})
+
+# FIXME: Add FindCGAL and enable this
+#add_executable(cgaltest cgaltest.cc ../src/CSGTermRenderer.cc ../src/CGALRenderer.cc
+#                        ../src/PolySetCGALRenderer.cc ../src/qhash.cc ../src/nef2dxf.cc
+#                        ../src/nef2dxf.cc ../src/cgaladv_minkowski2.cc
+#                        ../src/cgaladv_minkowski3.cc ${COMMON_SOURCES})
+#target_link_libraries(cgaltest ${QT_LIBRARIES} ${OPENGL_LIBRARY})
 
 #
 # This functions adds cmd-line tests for those of the FILES which have
@@ -96,10 +109,12 @@ file(GLOB SCAD_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/*.scad)
 # Add dumptest tests to CTest
 add_cmdline_test(dumptest txt ${SCAD_FILES})
 # Add csgtexttest tests to CTest
-#add_cmdline_test(${CMAKE_SOURCE_DIR}/../test-code/csgtexttest txt ${SCAD_FILES})
+add_cmdline_test(csgtexttest txt ${SCAD_FILES})
+# Add csgtermtest tests to CTest
+add_cmdline_test(csgtermtest txt ${SCAD_FILES})
+
+# FIXME: Add FindCGAL and enable these tests
 # Add cgaltest tests to CTest
-#add_cmdline_test(${CMAKE_SOURCE_DIR}/../test-code/cgaltest stl ${SCAD_FILES})
+#add_cmdline_test(cgaltest stl ${SCAD_FILES})
 # Add dxfexport tests to CTest
 #add_cmdline_test(${CMAKE_SOURCE_DIR}/../test-code/exportdxf dxf ${SCAD_FILES})
-# Add csgtermtest tests to CTest
-#add_cmdline_test(${CMAKE_SOURCE_DIR}/../test-code/csgtermtest txt ${SCAD_FILES})
