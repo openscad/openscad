@@ -52,7 +52,7 @@ def compare_text(expected, actual):
 def run_test(testname, cmd, args):
     cmdname = os.path.split(options.cmd)[1]
 
-    outputdir = os.path.join(os.getcwd(), cmdname)
+    outputdir = os.path.join(os.getcwd(), cmdname + "-output")
     actualfilename = os.path.join(outputdir, testname + "-actual" + options.suffix)
     expecteddir = os.path.join(options.regressiondir, cmdname)
     expectedfilename = os.path.join(expecteddir, testname + "-expected" + options.suffix)
