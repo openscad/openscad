@@ -91,8 +91,6 @@ SOURCES += dumptest.cc \
            ../src/import.cc \
            ../src/dxfdata.cc \
            ../src/dxftess.cc \
-           ../src/dxftess-glu.cc \
-           ../src/dxftess-cgal.cc \
            ../src/dxfdim.cc \
            ../src/dxflinextrude.cc \
            ../src/dxfrotextrude.cc \
