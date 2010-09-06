@@ -126,7 +126,7 @@ void export_stl(CGAL_Nef_polyhedron *root_N, QTextStream &output, QProgressDialo
 							 << ny / nlength << " " 
 							 << nz / nlength << "\n";
 				output << "    outer loop\n";
-				output << "      vertex " << vs2 << "\n";
+				output << "      vertex " << vs1 << "\n";
 				output << "      vertex " << vs2 << "\n";
 				output << "      vertex " << vs3 << "\n";
 				output << "    endloop\n";
