@@ -29,9 +29,14 @@ def initialize_environment():
     if not options.generate: options.generate = bool(os.getenv("TEST_GENERATE"))
     return True
 
+def init_expected_filename(testname, cmd):
+    global expecteddir, expectedfilename
+    expecteddir = os.path.join(options.regressiondir, os.path.split(cmd)[1])
+    expectedfilename = os.path.join(expecteddir, testname + "-expected" + options.suffix)
+
 def verify_test(testname, cmd):
+    global expectedfilename
     if not options.generate:
-        expectedfilename = os.path.join(options.regressiondir, os.path.split(cmd)[1], testname + "-expected" + options.suffix)
         if not os.path.isfile(expectedfilename):
             print >> sys.stderr, "Error: test '%s' is missing expected output in %s" % (testname, expectedfilename)
             return False
@@ -49,13 +54,18 @@ def get_normalized_text(filename):
 def compare_text(expected, actual):
     return get_normalized_text(expected) == get_normalized_text(actual)
 
+def compare_with_expected(resultfilename):
+    if not options.generate:
+        if not compare_text(expectedfilename, resultfilename): 
+            execute_and_redirect("diff", [expectedfilename, resultfilename], sys.stderr)
+            return False
+    return True
+
 def run_test(testname, cmd, args):
     cmdname = os.path.split(options.cmd)[1]
 
     outputdir = os.path.join(os.getcwd(), cmdname + "-output")
     actualfilename = os.path.join(outputdir, testname + "-actual" + options.suffix)
-    expecteddir = os.path.join(options.regressiondir, cmdname)
-    expectedfilename = os.path.join(expecteddir, testname + "-expected" + options.suffix)
 
     if options.generate: 
         if not os.path.exists(expecteddir): os.makedirs(expecteddir)
@@ -72,17 +82,12 @@ def run_test(testname, cmd, args):
         outfile.close()
         if proc.returncode != 0:
             print >> sys.stderr, "Error: %s failed with return code %d" % (cmdname, proc.returncode)
-            return False
+            return None
 
-        if not options.generate:
-            if not compare_text(expectedfilename, actualfilename): 
-                execute_and_redirect("diff", [expectedfilename, actualfilename], sys.stderr)
-                return False
+        return outputname
     except OSError, err:
         print >> sys.stderr, "Error: %s \"%s\"" % (err.strerror, cmd)
-        return False
-
-    return True
+        return None
 
 class Options:
     def __init__(self):
@@ -139,7 +144,11 @@ if __name__ == '__main__':
     # Initialize and verify run-time environment
     if not initialize_environment(): sys.exit(1)
 
-    # Verify test environment
-    if not verify_test(options.testname, options.cmd): sys.exit(1)
+    init_expected_filename(options.testname, options.cmd)
 
-    if not run_test(options.testname, options.cmd, args[1:]): sys.exit(1)
+    # Verify test environment
+    verification = verify_test(options.testname, options.cmd)
+
+    resultfile = run_test(options.testname, options.cmd, args[1:])
+
+    if not verification or not compare_with_expected(resultfile): exit(1)
