@@ -40,6 +40,7 @@
 #include "progress.h"
 #ifdef ENABLE_OPENCSG
 #include "render-opencsg.h"
+#include "CSGTermRenderer.h"
 #endif
 #ifdef USE_PROGRESSWIDGET
 #include "ProgressWidget.h"
@@ -73,6 +74,11 @@
 #include "qformatscheme.h"
 #include "qlanguagefactory.h"
 #endif
+
+#include <algorithm>
+#include <boost/lambda/lambda.hpp>
+#include <boost/lambda/bind.hpp>
+using namespace boost::lambda;
 
 //for chdir
 #include <unistd.h>
@@ -572,22 +578,19 @@ void MainWindow::compile(bool procevents)
 		this->root_chain = NULL;
 	}
 
-	foreach(CSGTerm *v, this->highlight_terms) {
-		v->unlink();
-	}
+	std::for_each(this->highlight_terms.begin(), this->highlight_terms.end(), 
+								bind(&CSGTerm::unlink, _1));
+
 	this->highlight_terms.clear();
-	if (this->highlights_chain) {
-		delete this->highlights_chain;
-		this->highlights_chain = NULL;
-	}
-	foreach(CSGTerm *v, this->background_terms) {
-		v->unlink();
-	}
+	delete this->highlights_chain;
+	this->highlights_chain = NULL;
+
+	std::for_each(this->background_terms.begin(), this->background_terms.end(), 
+								bind(&CSGTerm::unlink, _1));
 	this->background_terms.clear();
-	if (this->background_chain) {
-		delete this->background_chain;
-		this->background_chain = NULL;
-	}
+	delete this->background_chain;
+	this->background_chain = NULL;
+
 	this->root_node = NULL;
 	this->enableOpenCSG = false;
 
@@ -727,7 +730,8 @@ void MainWindow::compileCSG(bool procevents)
 
 	progress_report_prep(root_node, report_func, pd);
 	try {
-		root_raw_term = root_node->render_csg_term(m, &highlight_terms, &background_terms);
+		CSGTermRenderer renderer;
+		root_raw_term = renderer.renderCSGTerm(*root_node, &highlight_terms, &background_terms);
 		if (!root_raw_term) {
 			PRINT("ERROR: CSG generation failed! (no top level object found)");
 			if (procevents)

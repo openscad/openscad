@@ -22,6 +22,16 @@
 	with OpenCSG.
 */
 
+CSGTerm *CSGTermRenderer::renderCSGTerm(const AbstractNode &node,
+																				vector<CSGTerm*> *highlights, 
+																				vector<CSGTerm*> *background)
+{
+	CSGTermRenderer renderer;
+	Traverser render(renderer, node, Traverser::PRE_AND_POSTFIX);
+	render.execute();
+	return renderer.stored_term[node.index()];
+}
+
 void CSGTermRenderer::applyToChildren(const AbstractNode &node, CSGTermRenderer::CsgOp op)
 {
 	CSGTerm *t1 = NULL;

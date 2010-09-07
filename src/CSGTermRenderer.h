@@ -16,7 +16,8 @@ using std::vector;
 class CSGTermRenderer : public Visitor
 {
 public:
-	CSGTermRenderer() {}
+	CSGTermRenderer() : highlights(NULL), background(NULL) {
+	}
   virtual ~CSGTermRenderer() {}
 
   virtual Response visit(State &state, const AbstractNode &node);
@@ -25,6 +26,9 @@ public:
  	virtual Response visit(State &state, const CsgNode &node);
  	virtual Response visit(State &state, const TransformNode &node);
  	virtual Response visit(State &state, const RenderNode &node);
+
+	class CSGTerm *renderCSGTerm(const AbstractNode &node,
+															 vector<CSGTerm*> *highlights, vector<CSGTerm*> *background);
 
 private:
 	enum CsgOp {UNION, INTERSECTION, DIFFERENCE, MINKOWSKI};

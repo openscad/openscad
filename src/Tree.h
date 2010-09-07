@@ -8,9 +8,7 @@ using std::string;
 class Tree
 {
 public:
-	Tree() {
-		this->root_node = NULL;
-	}
+	Tree(const AbstractNode *root = NULL) : root_node(root) {}
 	~Tree() {}
 
 	void setRoot(const AbstractNode *root) { this->root_node = root; }

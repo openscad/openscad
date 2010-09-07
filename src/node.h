@@ -54,11 +54,6 @@ public:
 	void progress_report() const;
 
 	int idx; // Node index (unique per tree)
-
-	// FIXME: Rewrite to visitor
-#ifdef ENABLE_CGAL
-	class CSGTerm *render_csg_term_from_nef(double m[20], QVector<CSGTerm*> *highlights, QVector<CSGTerm*> *background, const char *statement, int convexity) const;
-#endif
 };
 
 class AbstractIntersectionNode : public AbstractNode

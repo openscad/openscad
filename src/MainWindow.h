@@ -9,6 +9,7 @@
 #include "polyset.h"
 #include "Tree.h"
 #include <QPointer>
+#include <vector>
 
 class MainWindow : public QMainWindow, public Ui::MainWindow
 {
@@ -45,9 +46,9 @@ public:
 	PolySet *cgal_ogl_ps;
 #endif
 
-	QVector<CSGTerm*> highlight_terms;
+	std::vector<CSGTerm*> highlight_terms;
 	CSGChain *highlights_chain;
-	QVector<CSGTerm*> background_terms;
+	std::vector<CSGTerm*> background_terms;
 	CSGChain *background_chain;
 	QString last_compiled_doc;
 	bool enableOpenCSG;
