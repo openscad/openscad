@@ -79,25 +79,28 @@ target_link_libraries(csgtexttest ${QT_LIBRARIES} ${OPENGL_LIBRARY})
 add_executable(csgtermtest csgtermtest.cc ../src/CSGTermRenderer.cc ${COMMON_SOURCES})
 target_link_libraries(csgtermtest ${QT_LIBRARIES} ${OPENGL_LIBRARY})
 
-# FIXME: Add FindCGAL and enable this
-#add_executable(cgaltest cgaltest.cc ../src/CSGTermRenderer.cc ../src/CGALRenderer.cc
-#                        ../src/PolySetCGALRenderer.cc ../src/qhash.cc ../src/nef2dxf.cc
-#                        ../src/nef2dxf.cc ../src/cgaladv_minkowski2.cc
-#                        ../src/cgaladv_minkowski3.cc ${COMMON_SOURCES})
-#target_link_libraries(cgaltest ${QT_LIBRARIES} ${OPENGL_LIBRARY})
+if (NOT $ENV{MACOSX_DEPLOY_DIR} STREQUAL "")
+  set(CGAL_DIR "$ENV{MACOSX_DEPLOY_DIR}/lib/CGAL")
+  set(CMAKE_MODULE_PATH "${CGAL_DIR}")
+endif()
+find_package(CGAL REQUIRED)
+include_directories(${CGAL_INCLUDE_DIRS})
+add_executable(cgaltest cgaltest.cc ../src/CSGTermRenderer.cc ../src/CGALRenderer.cc
+                        ../src/PolySetCGALRenderer.cc ../src/qhash.cc ../src/nef2dxf.cc
+                        ../src/nef2dxf.cc ../src/cgaladv_minkowski2.cc
+                        ../src/cgaladv_minkowski3.cc ${COMMON_SOURCES})
+set_target_properties(cgaltest PROPERTIES COMPILE_FLAGS "-DENABLE_CGAL ${CGAL_CXX_FLAGS_INIT}")
+target_link_libraries(cgaltest ${CGAL_LIBRARY} ${CGAL_3RD_PARTY_LIBRARIES} ${QT_LIBRARIES} ${OPENGL_LIBRARY})
 
 #
-# This functions adds cmd-line tests for those of the FILES which have
-# a corresponding TESTNAME-expected.<suffix> file present.
+# This functions adds cmd-line tests given files.
+# Files are sent as the parameters following TESTSUFFIX
 #
-function(add_cmdline_test TESTCMD TESTSUFFIX FILES)
+function(add_cmdline_test TESTCMD TESTSUFFIX)
   get_filename_component(TESTCMD_NAME ${TESTCMD} NAME_WE)
-  foreach (SCADFILE ${SCAD_FILES})
+  foreach (SCADFILE ${ARGN})
     get_filename_component(TESTNAME ${SCADFILE} NAME_WE)
-# FIXME: Run tests even if no expected files are found (to facilitate generating expected files)
-#    if (EXISTS ${CMAKE_SOURCE_DIR}/regression/${TESTCMD_NAME}/${TESTNAME}-expected.${TESTSUFFIX})
-      add_test(${TESTCMD_NAME}_${TESTNAME} ${tests_SOURCE_DIR}/test_cmdline_tool.py -s ${TESTSUFFIX} ${CMAKE_BINARY_DIR}/${TESTCMD} ${SCADFILE})
-#    endif()
+    add_test(${TESTCMD_NAME}_${TESTNAME} ${tests_SOURCE_DIR}/test_cmdline_tool.py -s ${TESTSUFFIX} ${CMAKE_BINARY_DIR}/${TESTCMD} ${SCADFILE})
   endforeach()
 endfunction()
 
@@ -112,9 +115,12 @@ add_cmdline_test(dumptest txt ${SCAD_FILES})
 add_cmdline_test(csgtexttest txt ${SCAD_FILES})
 # Add csgtermtest tests to CTest
 add_cmdline_test(csgtermtest txt ${SCAD_FILES})
-
-# FIXME: Add FindCGAL and enable these tests
 # Add cgaltest tests to CTest
-#add_cmdline_test(cgaltest stl ${SCAD_FILES})
+LIST(APPEND CGALTEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/cube.scad)
+LIST(APPEND CGALTEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/sphere.scad)
+LIST(APPEND CGALTEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/cylinder.scad)
+LIST(APPEND CGALTEST_FILES ${CMAKE_SOURCE_DIR}/../examples/example001.scad)
+add_cmdline_test(cgaltest stl ${CGALTEST_FILES})
+
 # Add dxfexport tests to CTest
 #add_cmdline_test(${CMAKE_SOURCE_DIR}/../test-code/exportdxf dxf ${SCAD_FILES})

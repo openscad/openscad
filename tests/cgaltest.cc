@@ -162,8 +162,7 @@ int main(int argc, char **argv)
 	AbstractNode::resetIndexCounter();
 	root_node = root_module->evaluate(&root_ctx, &root_inst);
 
-	Tree tree;
-	tree.setRoot(root_node);
+	Tree tree(root_node);
 
 	cgalTree(tree);
 

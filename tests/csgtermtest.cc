@@ -156,8 +156,7 @@ int main(int argc, char **argv)
 //	cout << tree.getString(*root_node) << "\n";
 
 	CSGTermRenderer renderer;
-	Traverser render(renderer, *tree.root(), Traverser::PRE_AND_POSTFIX);
-	render.execute();
+	CSGTerm *root_term = renderer.renderCSGTerm(*root_node, NULL, NULL);
 	
 	// cout << "Stored terms: " << renderer.stored_term.size() << "\n";
 	// for (map<int, class CSGTerm*>::iterator iter = renderer.stored_term.begin();
@@ -169,7 +168,6 @@ int main(int argc, char **argv)
 	// if (renderer.background) cout << "Background terms: " << renderer.background->size() << "\n";
 	// if (renderer.highlights) cout << "Highlights terms: " << renderer.highlights->size() << "\n";
 
-	CSGTerm *root_term = renderer.stored_term[root_node->index()];
 	if (root_term) {
 		cout << root_term->dump() << "\n";
 	}
