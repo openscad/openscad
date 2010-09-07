@@ -119,6 +119,7 @@ HEADERS += src/CGAL_renderer.h \
            src/CGALRenderer.h \
            src/PolySetRenderer.h \
            src/PolySetCGALRenderer.h \
+           src/CSGTermRenderer.h \
            src/Tree.h
 
 SOURCES += src/openscad.cc \
@@ -162,6 +163,7 @@ SOURCES += src/openscad.cc \
            src/CGALRenderer.cc \
            src/PolySetRenderer.cc \
            src/PolySetCGALRenderer.cc \
+           src/CSGTermRenderer.cc \
            src/qhash.cc \
            src/Tree.cc
 
