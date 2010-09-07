@@ -2,18 +2,16 @@
 #define CGALRENDERER_H_
 
 #include "myqhash.h"
-
-#include <string>
-#include <map>
-#include <list>
 #include "visitor.h"
 #include "Tree.h"
 #include "cgal.h"
 
-#ifdef ENABLE_CGAL
+#include <string>
+#include <map>
+#include <list>
+
 extern CGAL_Nef_polyhedron3 minkowski3(CGAL_Nef_polyhedron3 a, CGAL_Nef_polyhedron3 b);
 extern CGAL_Nef_polyhedron2 minkowski2(CGAL_Nef_polyhedron2 a, CGAL_Nef_polyhedron2 b);
-#endif
 
 using std::string;
 using std::map;
@@ -28,11 +26,11 @@ public:
 	CGALRenderer(QHash<string, CGAL_Nef_polyhedron> &cache, const Tree &tree) : cache(cache), tree(tree) {}
   virtual ~CGALRenderer() {}
 
-  virtual Response visit(const State &state, const AbstractNode &node);
- 	virtual Response visit(const State &state, const AbstractIntersectionNode &node);
- 	virtual Response visit(const State &state, const CsgNode &node);
- 	virtual Response visit(const State &state, const TransformNode &node);
-	virtual Response visit(const State &state, const AbstractPolyNode &node);
+  virtual Response visit(State &state, const AbstractNode &node);
+ 	virtual Response visit(State &state, const AbstractIntersectionNode &node);
+ 	virtual Response visit(State &state, const CsgNode &node);
+ 	virtual Response visit(State &state, const TransformNode &node);
+	virtual Response visit(State &state, const AbstractPolyNode &node);
 
  	CGAL_Nef_polyhedron renderCGALMesh(const AbstractNode &node);
 	CGAL_Nef_polyhedron renderCGALMesh(const PolySet &polyset);

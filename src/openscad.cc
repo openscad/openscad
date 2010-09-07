@@ -300,13 +300,10 @@ int main(int argc, char **argv)
 		AbstractNode::resetIndexCounter();
 		root_node = root_module->evaluate(&root_ctx, &root_inst);
 
-		// FIXME: It shouldn't be necessary to dump manually, only when
-		// the dumper and the renderer wants to share a cache
-		// FIXME: Rewrite to non-global dumper
-// 		Traverser trav(*NodeDumper::dumper(), *root_node, Traverser::PRE_AND_POSTFIX);
-// 		trav.execute();
-//  		CGAL_Nef_polyhedron root_N = CGALRenderer::renderer()->renderCGALMesh(*root_node);
- 		CGAL_Nef_polyhedron root_N;
+		Tree tree(root_node);
+		QHash<std::string, CGAL_Nef_polyhedron> cache;
+		CGALRenderer renderer(cache, tree);
+ 		CGAL_Nef_polyhedron root_N = renderer.renderCGALMesh(*tree.root());
 
 		QDir::setCurrent(original_path.absolutePath());
 

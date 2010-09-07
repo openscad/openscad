@@ -118,7 +118,7 @@ void CGALRenderer::applyToChildren(const AbstractNode &node, CGALRenderer::CsgOp
 	o In postfix: addToParent()
  */
 
-Response CGALRenderer::visit(const State &state, const AbstractNode &node)
+Response CGALRenderer::visit(State &state, const AbstractNode &node)
 {
 	if (state.isPrefix() && isCached(node)) return PruneTraversal;
 	if (state.isPostfix()) {
@@ -128,7 +128,7 @@ Response CGALRenderer::visit(const State &state, const AbstractNode &node)
 	return ContinueTraversal;
 }
 
-Response CGALRenderer::visit(const State &state, const AbstractIntersectionNode &node)
+Response CGALRenderer::visit(State &state, const AbstractIntersectionNode &node)
 {
 	if (state.isPrefix() && isCached(node)) return PruneTraversal;
 	if (state.isPostfix()) {
@@ -138,7 +138,7 @@ Response CGALRenderer::visit(const State &state, const AbstractIntersectionNode 
 	return ContinueTraversal;
 }
 
-Response CGALRenderer::visit(const State &state, const CsgNode &node)
+Response CGALRenderer::visit(State &state, const CsgNode &node)
 {
 	if (state.isPrefix() && isCached(node)) return PruneTraversal;
 	if (state.isPostfix()) {
@@ -162,7 +162,7 @@ Response CGALRenderer::visit(const State &state, const CsgNode &node)
 	return ContinueTraversal;
 }
 
-Response CGALRenderer::visit(const State &state, const TransformNode &node)
+Response CGALRenderer::visit(State &state, const TransformNode &node)
 {
 	if (state.isPrefix() && isCached(node)) return PruneTraversal;
 	if (state.isPostfix()) {
@@ -180,8 +180,8 @@ Response CGALRenderer::visit(const State &state, const TransformNode &node)
 				// tesselate it and create a new CGAL_Nef_polyhedron2 from it.. What a hack!
 				
 				CGAL_Aff_transformation2 t(
-					node.m[0], node.m[4], node.m[12],
-					node.m[1], node.m[5], node.m[13], node.m[15]);
+					node.matrix[0], node.matrix[4], node.matrix[12],
+					node.matrix[1], node.matrix[5], node.matrix[13], node.matrix[15]);
 				
 				DxfData dd(N);
 				for (int i=0; i < dd.points.size(); i++) {
@@ -200,9 +200,9 @@ Response CGALRenderer::visit(const State &state, const TransformNode &node)
 			}
 			else if (N.dim == 3) {
 				CGAL_Aff_transformation t(
-					node.m[0], node.m[4], node.m[ 8], node.m[12],
-					node.m[1], node.m[5], node.m[ 9], node.m[13],
-					node.m[2], node.m[6], node.m[10], node.m[14], node.m[15]);
+					node.matrix[0], node.matrix[4], node.matrix[ 8], node.matrix[12],
+					node.matrix[1], node.matrix[5], node.matrix[ 9], node.matrix[13],
+					node.matrix[2], node.matrix[6], node.matrix[10], node.matrix[14], node.matrix[15]);
 				N.p3.transform(t);
 			}
 			this->cache.insert(this->tree.getString(node), N);
@@ -221,7 +221,7 @@ Response CGALRenderer::visit(const State &state, const TransformNode &node)
 // DxfRotateExtrudeNode
 // (SurfaceNode)
 // (PrimitiveNode)
-Response CGALRenderer::visit(const State &state, const AbstractPolyNode &node)
+Response CGALRenderer::visit(State &state, const AbstractPolyNode &node)
 {
 	if (state.isPrefix() && isCached(node)) return PruneTraversal;
 	if (state.isPostfix()) {
