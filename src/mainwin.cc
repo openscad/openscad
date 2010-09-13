@@ -703,13 +703,6 @@ void MainWindow::compileCSG(bool procevents)
 	if (procevents)
 		QApplication::processEvents();
 
-	double m[20];
-
-	for (int i = 0; i < 16; i++)
-		m[i] = i % 5 == 0 ? 1.0 : 0.0;
-	for (int i = 16; i < 20; i++)
-		m[i] = -1;
-
 	// Main CSG evaluation
 	QTime t;
 	t.start();

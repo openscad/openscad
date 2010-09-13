@@ -6,7 +6,8 @@ class State
 public:
   State(const class AbstractNode *parent) 
     : parentnode(parent), isprefix(false), ispostfix(false), numchildren(0) {
-		for (int i=0;i<20;i++) this->m[i] = 0.0;
+		for (int i=0;i<16;i++) this->m[i] = i % 5 == 0 ? 1.0 : 0.0;
+		for (int i=16;i<20;i++) this->m[i] = -1.0;
 	}
   virtual ~State() {}
   
