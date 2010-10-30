@@ -1,4 +1,18 @@
+Running regression tests:
+-------------------------
+
+Prerequisites: cmake, python
+
+cd tests
+mkdir build
+cd build
+cmake ..
+make
+make test
+
+
 Adding  a new regression test:
+------------------------------
 
 1) create a test file at an appropriate location under testdata/
 2) if the test is non-obvious, create a human readable description of the test in the same directory (e.g testdata/scad/mytest.txt)
