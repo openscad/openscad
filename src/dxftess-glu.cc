@@ -2,6 +2,7 @@
 #include "dxfdata.h"
 #include "polyset.h"
 #include "grid.h"
+#include <stdio.h>
 
 #ifdef ENABLE_OPENCSG
 // this must be included before the GL headers

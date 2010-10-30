@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 cmd="./dumptest"
 
@@ -7,6 +7,8 @@ if [ $# == 0 ]; then
 else
   dir=$1
 fi
+
+echo $dir;
 
 for f in $dir/*.scad; do
   echo `basename $f`
