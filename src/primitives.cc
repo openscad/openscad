@@ -31,6 +31,7 @@
 #include "dxftess.h"
 #include "builtin.h"
 #include "printutils.h"
+#include <assert.h>
 
 enum primitive_type_e {
 	CUBE,

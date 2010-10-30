@@ -26,9 +26,10 @@
 #include "polyset.h"
 #include "printutils.h"
 #include "Preferences.h"
+#ifdef ENABLE_CGAL
 #include <CGAL/assertions_behaviour.h>
 #include <CGAL/exceptions.h>
-
+#endif
 #include <Eigen/Core>
 #include <Eigen/LU>
 

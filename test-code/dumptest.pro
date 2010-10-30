@@ -30,6 +30,9 @@ else {
     INCLUDEPATH += /usr/include/eigen2
   }
 }
+FORMS += ../src/Preferences.ui
+HEADERS += ../src/Preferences.h
+SOURCES += ../src/Preferences.cc
 
 LEXSOURCES += ../src/lexer.l
 YACCSOURCES += ../src/parser.y
