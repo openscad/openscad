@@ -31,6 +31,7 @@
 #include "value.h"
 #include "export.h"
 #include "builtin.h"
+#include "nodedumper.h"
 
 #ifdef ENABLE_CGAL
 #include "cgal.h"
@@ -284,8 +285,20 @@ int main(int argc, char **argv)
 		AbstractNode::resetIndexCounter();
 		root_node = root_module->evaluate(&root_ctx, &root_inst);
 
+		NodeDumper dumper;
+		Traverser trav(dumper, *root_node, Traverser::PRE_AND_POSTFIX);
+		trav.execute();
+//   std::cout << dumper.getDump();
+//   std::cout << std::endl;
+//   trav.execute();
+//   std::cout << dumper.getDump();
+//   std::cout << std::endl;
+		printf(dumper.getDump().c_str());
+		exit(1);
+
+
 		CGAL_Nef_polyhedron *root_N;
-		root_N = new CGAL_Nef_polyhedron(root_node->render_cgal_nef_polyhedron());
+		root_N = new CGAL_Nef_polyhedron(root_node->renderCSGMesh());
 
 		QDir::setCurrent(original_path.absolutePath());
 

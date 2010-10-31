@@ -23,8 +23,8 @@
  *
  */
 
+#include "projectionnode.h"
 #include "module.h"
-#include "node.h"
 #include "context.h"
 #include "printutils.h"
 #include "builtin.h"
@@ -33,6 +33,7 @@
 #include "polyset.h"
 #include "export.h"
 #include "progress.h"
+#include "visitor.h"
 
 #ifdef ENABLE_CGAL
 #  include <CGAL/assertions_behaviour.h>
@@ -43,6 +44,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <assert.h>
+#include <sstream>
 
 #include <QApplication>
 #include <QTime>
@@ -53,18 +55,6 @@ class ProjectionModule : public AbstractModule
 public:
 	ProjectionModule() { }
 	virtual AbstractNode *evaluate(const Context *ctx, const ModuleInstantiation *inst) const;
-};
-
-class ProjectionNode : public AbstractPolyNode
-{
-public:
-	int convexity;
-	bool cut_mode;
-	ProjectionNode(const ModuleInstantiation *mi) : AbstractPolyNode(mi) {
-		cut_mode = false;
-	}
-	virtual PolySet *render_polyset(render_mode_e mode) const;
-	virtual QString dump(QString indent) const;
 };
 
 AbstractNode *ProjectionModule::evaluate(const Context *ctx, const ModuleInstantiation *inst) const
@@ -122,7 +112,7 @@ PolySet *ProjectionNode::render_polyset(render_mode_e) const
 	foreach(AbstractNode *v, this->children) {
 		if (v->modinst->tag_background)
 			continue;
-		N.p3 += v->render_cgal_nef_polyhedron().p3;
+		N.p3 += v->renderCSGMesh().p3;
 	}
   }
   catch (CGAL::Assertion_exception e) {
@@ -173,7 +163,7 @@ PolySet *ProjectionNode::render_polyset(render_mode_e) const
 		cube->append_vertex(x1, y1, z1);
 		cube->append_vertex(x1, y1, z2);
 		cube->append_vertex(x1, y2, z2);
-		CGAL_Nef_polyhedron Ncube = cube->render_cgal_nef_polyhedron();
+		CGAL_Nef_polyhedron Ncube = cube->renderCSGMesh();
 		cube->unlink();
 
 		// N.p3 *= CGAL_Nef_polyhedron3(CGAL_Plane(0, 0, 1, 0), CGAL_Nef_polyhedron3::INCLUDED);
@@ -298,3 +288,13 @@ QString ProjectionNode::dump(QString indent) const
 	return dump_cache;
 }
 
+std::string ProjectionNode::toString() const
+{
+	std::stringstream stream;
+	stream << "n" << this->index() << ": ";
+
+	stream << "projection(cut = " << (this->cut_mode ? "true" : "false")
+				 << ", convexity = " << this->convexity << ")";
+
+	return stream.str();
+}

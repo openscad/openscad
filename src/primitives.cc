@@ -32,6 +32,8 @@
 #include "builtin.h"
 #include "printutils.h"
 #include <assert.h>
+#include "visitor.h"
+#include <sstream>
 
 enum primitive_type_e {
 	CUBE,
@@ -54,13 +56,18 @@ public:
 class PrimitiveNode : public AbstractPolyNode
 {
 public:
+	PrimitiveNode(const ModuleInstantiation *mi, primitive_type_e type) : AbstractPolyNode(mi), type(type) { }
+  virtual Response accept(const class State &state, Visitor &visitor) const {
+		return visitor.visit(state, *this);
+	}
+	virtual std::string toString() const;
+
 	bool center;
 	double x, y, z, h, r1, r2;
 	double fn, fs, fa;
 	primitive_type_e type;
 	int convexity;
 	Value points, paths, triangles;
-	PrimitiveNode(const ModuleInstantiation *mi, primitive_type_e type) : AbstractPolyNode(mi), type(type) { }
 	virtual PolySet *render_polyset(render_mode_e mode) const;
 	virtual QString dump(QString indent) const;
 };
@@ -542,3 +549,44 @@ QString PrimitiveNode::dump(QString indent) const
 	return dump_cache;
 }
 
+std::string PrimitiveNode::toString() const
+{
+	std::stringstream stream;
+	stream << "n" << this->index() << ": ";
+
+	switch (this->type) {
+	case CUBE:
+		stream << "cube(size = [" << this->x << ", " << this->y << ", " << this->z << "], "
+					 <<	"center = " << (center ? "true" : "false") << ")";
+		break;
+	case SPHERE:
+		stream << "sphere($fn = " << this->fn << ", $fa = " << this->fa
+					 << ", $fs = " << this->fs << ", r = " << this->r1 << ")";
+			break;
+	case CYLINDER:
+		stream << "cylinder($fn = " << this->fn << ", $fa = " << this->fa
+					 << ", $fs = " << this->fs << ", h = " << this->h << ", r1 = " << this->r1
+					 << ", r2 = " << this->r2 << ", center = " << (center ? "true" : "false") << ")";
+			break;
+	case POLYHEDRON:
+		stream << "polyhedron(points = " << this->points.dump()
+					 << ", triangles = " << this->triangles.dump()
+					 << ", convexity = " << this->convexity << ")";
+			break;
+	case SQUARE:
+		stream << "square(size = [" << this->x << ", " << this->y << "], "
+					 << "center = " << (center ? "true" : "false") << ")";
+			break;
+	case CIRCLE:
+		stream << "circle($fn = " << this->fn << ", $fa = " << this->fa
+					 << ", $fs = " << this->fs << ", r = " << this->r1 << ")";
+		break;
+	case POLYGON:
+		stream << "polygon(points = " << this->points.dump() << ", paths = " << this->paths.dump() << ", convexity = " << this->convexity << ")";
+			break;
+	default:
+		assert(false);
+	}
+
+	return stream.str();
+}

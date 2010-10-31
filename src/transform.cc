@@ -32,6 +32,8 @@
 #include "dxftess.h"
 #include "builtin.h"
 #include "printutils.h"
+#include "visitor.h"
+#include <sstream>
 
 enum transform_type_e {
 	SCALE,
@@ -53,10 +55,15 @@ public:
 class TransformNode : public AbstractNode
 {
 public:
-	double m[20];
 	TransformNode(const ModuleInstantiation *mi) : AbstractNode(mi) { }
+  virtual Response accept(const class State &state, Visitor &visitor) const {
+		return visitor.visit(state, *this);
+	}
+	virtual std::string toString() const;
+
+	double m[20];
 #ifdef ENABLE_CGAL
-	virtual CGAL_Nef_polyhedron render_cgal_nef_polyhedron() const;
+	virtual CGAL_Nef_polyhedron renderCSGMesh() const;
 #endif
 	virtual CSGTerm *render_csg_term(double m[20], QVector<CSGTerm*> *highlights, QVector<CSGTerm*> *background) const;
 	virtual QString dump(QString indent) const;
@@ -240,7 +247,7 @@ AbstractNode *TransformModule::evaluate(const Context *ctx, const ModuleInstanti
 
 #ifdef ENABLE_CGAL
 
-CGAL_Nef_polyhedron TransformNode::render_cgal_nef_polyhedron() const
+CGAL_Nef_polyhedron TransformNode::renderCSGMesh() const
 {
 	QString cache_id = mk_cache_id();
 	if (cgal_nef_cache.contains(cache_id)) {
@@ -258,13 +265,13 @@ CGAL_Nef_polyhedron TransformNode::render_cgal_nef_polyhedron() const
 		if (v->modinst->tag_background)
 			continue;
 		if (first) {
-			N = v->render_cgal_nef_polyhedron();
+			N = v->renderCSGMesh();
 			if (N.dim != 0)
 				first = false;
 		} else if (N.dim == 2) {
-			N.p2 += v->render_cgal_nef_polyhedron().p2;
+			N.p2 += v->renderCSGMesh().p2;
 		} else if (N.dim == 3) {
-			N.p3 += v->render_cgal_nef_polyhedron().p3;
+			N.p3 += v->renderCSGMesh().p3;
 		}
 		v->progress_report();
 	}
@@ -291,7 +298,7 @@ CGAL_Nef_polyhedron TransformNode::render_cgal_nef_polyhedron() const
 		ps.is2d = true;
 		dxf_tesselate(&ps, &dd, 0, true, false, 0);
 
-		N = ps.render_cgal_nef_polyhedron();
+		N = ps.renderCSGMesh();
 		ps.refcount = 0;
 	}
 	if (N.dim == 3) {
@@ -368,6 +375,32 @@ QString TransformNode::dump(QString indent) const
 	return dump_cache;
 }
 
+std::string TransformNode::toString() const
+{
+	std::stringstream stream;
+	stream << "n" << this->index() << ": ";
+
+	if (m[16] >= 0 || m[17] >= 0 || m[18] >= 0 || m[19] >= 0) {
+		stream << "color([" << m[16] << ", " << m[17] << ", " << m[18] << ", " << m[19] << "])";
+	}
+	else {
+		stream << "multmatrix([";
+		for (int j=0;j<4;j++) {
+			stream << "[";
+			for (int i=0;i<4;i++) {
+				// FIXME: The 0 test is to avoid a leading minus before a single 0 (cosmetics)
+				stream << ((m[i*4+j]==0)?0:m[i*4+j]);
+				if (i != 3) stream << ", ";
+			}
+			stream << "]";
+				if (j != 3) stream << ", ";
+		}
+		stream << "])";
+	}
+
+	return stream.str();
+}
+
 void register_builtin_transform()
 {
 	builtin_modules["scale"] = new TransformModule(SCALE);
@@ -377,4 +410,3 @@ void register_builtin_transform()
 	builtin_modules["multmatrix"] = new TransformModule(MULTMATRIX);
 	builtin_modules["color"] = new TransformModule(COLOR);
 }
-

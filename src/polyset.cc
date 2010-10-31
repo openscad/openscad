@@ -144,7 +144,9 @@ void PolySet::render_surface(colormode_e colormode, csgmode_e csgmode, double *m
 	bool mirrored = m3f.determinant() < 0;
 
 	if (colormode == COLORMODE_MATERIAL) {
-		const QColor &col = Preferences::inst()->color(Preferences::OPENCSG_FACE_FRONT_COLOR);
+// FIXME: Reenable/rewrite - don't be dependant on GUI
+//		const QColor &col = Preferences::inst()->color(Preferences::OPENCSG_FACE_FRONT_COLOR);
+		const QColor &col = QColor(0xf9, 0xd7, 0x2c);
 		glColor3f(col.redF(), col.greenF(), col.blueF());
 #ifdef ENABLE_OPENCSG
 		if (shaderinfo) {
@@ -154,7 +156,9 @@ void PolySet::render_surface(colormode_e colormode, csgmode_e csgmode, double *m
 #endif /* ENABLE_OPENCSG */
 	}
 	if (colormode == COLORMODE_CUTOUT) {
-		const QColor &col = Preferences::inst()->color(Preferences::OPENCSG_FACE_BACK_COLOR);
+// FIXME: Reenable/rewrite - don't be dependant on GUI
+//		const QColor &col = Preferences::inst()->color(Preferences::OPENCSG_FACE_BACK_COLOR);
+		const QColor &col = QColor(0x9d, 0xcb, 0x51);
 		glColor3f(col.redF(), col.greenF(), col.blueF());
 #ifdef ENABLE_OPENCSG
 		if (shaderinfo) {
@@ -407,7 +411,7 @@ public:
 	}
 };
 
-CGAL_Nef_polyhedron PolySet::render_cgal_nef_polyhedron() const
+CGAL_Nef_polyhedron PolySet::renderCSGMesh() const
 {
 	if (this->is2d)
 	{

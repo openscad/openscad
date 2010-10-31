@@ -31,8 +31,10 @@
 #include "dxftess.h"
 #include "printutils.h"
 #include "openscad.h" // handle_dep()
+#include "visitor.h"
 
 #include <QFile>
+#include <sstream>
 
 class SurfaceModule : public AbstractModule
 {
@@ -44,10 +46,15 @@ public:
 class SurfaceNode : public AbstractPolyNode
 {
 public:
+	SurfaceNode(const ModuleInstantiation *mi) : AbstractPolyNode(mi) { }
+  virtual Response accept(const class State &state, Visitor &visitor) const {
+		return visitor.visit(state, *this);
+	}
+	virtual std::string toString() const;
+
 	QString filename;
 	bool center;
 	int convexity;
-	SurfaceNode(const ModuleInstantiation *mi) : AbstractPolyNode(mi) { }
 	virtual PolySet *render_polyset(render_mode_e mode) const;
 	virtual QString dump(QString indent) const;
 };
@@ -208,3 +215,13 @@ QString SurfaceNode::dump(QString indent) const
 	return dump_cache;
 }
 
+std::string SurfaceNode::toString() const
+{
+	std::stringstream stream;
+	stream << "n" << this->index() << ": ";
+
+	stream << "surface(file = \"" << this->filename
+				 << "\", center = " << (this->center ? "true" : "false") << ")";
+
+	return stream.str();
+}
