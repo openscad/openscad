@@ -18,7 +18,8 @@ void print_messages_push()
 
 void print_messages_pop()
 {
-	QString msg = print_messages_stack.takeLast();
+	QString msg = print_messages_stack.last();
+	print_messages_stack.removeLast();
 	if (print_messages_stack.size() > 0 && !msg.isNull()) {
 		if (!print_messages_stack.last().isEmpty())
 			print_messages_stack.last() += "\n";

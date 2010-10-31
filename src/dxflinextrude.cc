@@ -23,9 +23,8 @@
  *
  */
 
-#include "dxflinextrudenode.h"
-
 #include "module.h"
+#include "node.h"
 #include "context.h"
 #include "printutils.h"
 #include "builtin.h"
@@ -33,13 +32,11 @@
 #include "dxftess.h"
 #include "polyset.h"
 #include "progress.h"
-#include "visitor.h"
 #include "openscad.h" // get_fragments_from_r()
 
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
-#include <sstream>
 
 #include <QApplication>
 #include <QTime>
@@ -50,6 +47,24 @@ class DxfLinearExtrudeModule : public AbstractModule
 public:
 	DxfLinearExtrudeModule() { }
 	virtual AbstractNode *evaluate(const Context *ctx, const ModuleInstantiation *inst) const;
+};
+
+class DxfLinearExtrudeNode : public AbstractPolyNode
+{
+public:
+	int convexity, slices;
+	double fn, fs, fa, height, twist;
+	double origin_x, origin_y, scale;
+	bool center, has_twist;
+	QString filename, layername;
+	DxfLinearExtrudeNode(const ModuleInstantiation *mi) : AbstractPolyNode(mi) {
+		convexity = slices = 0;
+		fn = fs = fa = height = twist = 0;
+		origin_x = origin_y = scale = 0;
+		center = has_twist = false;
+	}
+	virtual PolySet *render_polyset(render_mode_e mode) const;
+	virtual QString dump(QString indent) const;
 };
 
 AbstractNode *DxfLinearExtrudeModule::evaluate(const Context *ctx, const ModuleInstantiation *inst) const
@@ -76,8 +91,10 @@ AbstractNode *DxfLinearExtrudeModule::evaluate(const Context *ctx, const ModuleI
 	Value twist = c.lookup_variable("twist", true);
 	Value slices = c.lookup_variable("slices", true);
 
-	if (!file.text.isNull())
+	if(!file.text.isNull())
 		node->filename = c.get_absolute_path(file.text);
+	else
+		node->filename = file.text;
 
 	node->layername = layer.text;
 	node->height = height.num;
@@ -219,7 +236,7 @@ PolySet *DxfLinearExtrudeNode::render_polyset(render_mode_e) const
 		foreach(AbstractNode * v, children) {
 			if (v->modinst->tag_background)
 				continue;
-			N.p2 += v->renderCSGMesh().p2;
+			N.p2 += v->render_cgal_nef_polyhedron().p2;
 		}
 		dxf = new DxfData(N);
 
@@ -327,30 +344,3 @@ QString DxfLinearExtrudeNode::dump(QString indent) const
 	return dump_cache;
 }
 
-std::string DxfLinearExtrudeNode::toString() const
-{
-	std::stringstream stream;
-	stream << "n" << this->index() << ": ";
-
-	QString text;
-	struct stat st;
-	memset(&st, 0, sizeof(struct stat));
-	stat(this->filename.toAscii().data(), &st);
-	
-	stream << "linear_extrude("
-		"file = \"" << this->filename << "\", "
-		"cache = \"" << std::hex << (int)st.st_mtime << "." << (int)st.st_size << "\", "
-		"layer = \"" << this->layername << "\", "
-		"height = " << std::dec << this->height << ", "
-		"origin = [ " << this->origin_x << " " << this->origin_y << " ], "
-		"scale = " << this->scale << ", "
-		"center = " << (this->center?"true":"false") << ", "
-		"convexity = " << this->convexity;
-	
-	if (this->has_twist) {
-		stream << ", twist = " << this->twist << ", slices = " << this->slices;
-	}
-	stream << ", $fn = " << this->fn << ", $fa = " << this->fa << ", $fs = " << this->fs << ")";
-	
-	return stream.str();
-}
