@@ -118,7 +118,7 @@ build_cgal()
   version=$1
   echo "Building CGAL" $version "..."
   cd $BASEDIR/src
-  curl -O https://gforge.inria.fr/frs/download.php/27222/CGAL-$version.tar.gz
+  curl -O https://gforge.inria.fr/frs/download.php/27641/CGAL-$version.tar.gz
   tar xzf CGAL-$version.tar.gz
   cd CGAL-$version
   # We build a static lib. Not really necessary, but it's well tested.
@@ -156,9 +156,9 @@ build_opencsg()
 
 echo "Using basedir:" $BASEDIR
 mkdir -p $SRCDIR $DEPLOYDIR
-#build_gmp 5.0.1
-#build_mpfr 3.0.0
-#build_boost 1.43.0
-#build_cgal 3.6.1
-#build_glew 1.5.4
+build_gmp 5.0.1
+build_mpfr 3.0.0
+build_boost 1.44.0
+build_cgal 3.7
+build_glew 1.5.6
 build_opencsg 1.3.0
