@@ -78,7 +78,7 @@ public:
 	void render_edges(colormode_e colormode, csgmode_e csgmode) const;
 
 #ifdef ENABLE_CGAL
-	CGAL_Nef_polyhedron render_cgal_nef_polyhedron() const;
+	CGAL_Nef_polyhedron renderCSGMesh() const;
 #endif
 
 	int refcount;

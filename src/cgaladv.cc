@@ -29,6 +29,8 @@
 #include "builtin.h"
 #include "printutils.h"
 #include "cgal.h"
+#include "visitor.h"
+#include <sstream>
 
 #ifdef ENABLE_CGAL
 extern CGAL_Nef_polyhedron3 minkowski3(CGAL_Nef_polyhedron3 a, CGAL_Nef_polyhedron3 b);
@@ -52,15 +54,21 @@ public:
 class CgaladvNode : public AbstractNode
 {
 public:
+	CgaladvNode(const ModuleInstantiation *mi, cgaladv_type_e type) : AbstractNode(mi), type(type) {
+		convexity = 1;
+	}
+	virtual ~CgaladvNode() { }
+  virtual Response accept(const class State &state, Visitor &visitor) const {
+		return visitor.visit(state, *this);
+	}
+	virtual std::string toString() const;
+
 	Value path;
 	QString subdiv_type;
 	int convexity, level;
 	cgaladv_type_e type;
-	CgaladvNode(const ModuleInstantiation *mi, cgaladv_type_e type) : AbstractNode(mi), type(type) {
-		convexity = 1;
-	}
 #ifdef ENABLE_CGAL
-	virtual CGAL_Nef_polyhedron render_cgal_nef_polyhedron() const;
+	virtual CGAL_Nef_polyhedron renderCSGMesh() const;
 #endif
 	virtual CSGTerm *render_csg_term(double m[20], QVector<CSGTerm*> *highlights, QVector<CSGTerm*> *background) const;
 	virtual QString dump(QString indent) const;
@@ -128,7 +136,7 @@ void register_builtin_cgaladv()
 
 #ifdef ENABLE_CGAL
 
-CGAL_Nef_polyhedron CgaladvNode::render_cgal_nef_polyhedron() const
+CGAL_Nef_polyhedron CgaladvNode::renderCSGMesh() const
 {
 	QString cache_id = mk_cache_id();
 	if (cgal_nef_cache.contains(cache_id)) {
@@ -147,11 +155,11 @@ CGAL_Nef_polyhedron CgaladvNode::render_cgal_nef_polyhedron() const
 			if (v->modinst->tag_background)
 				continue;
 			if (first) {
-				N = v->render_cgal_nef_polyhedron();
+				N = v->renderCsgMesh();
 				if (N.dim != 0)
 					first = false;
 			} else {
-				CGAL_Nef_polyhedron tmp = v->render_cgal_nef_polyhedron();
+				CGAL_Nef_polyhedron tmp = v->renderCsgMesh();
 				if (N.dim == 3 && tmp.dim == 3) {
 					N.p3 = minkowski3(N.p3, tmp.p3);
 				}
@@ -224,3 +232,24 @@ QString CgaladvNode::dump(QString indent) const
 	return dump_cache;
 }
 
+std::string CgaladvNode::toString() const
+{
+	std::stringstream stream;
+	stream << "n" << this->index() << ": ";
+
+	switch (type) {
+	case MINKOWSKI:
+		stream << "minkowski(convexity = " << this->convexity << ")";
+		break;
+	case GLIDE:
+		stream << "glide(path = " << this->path.dump() << ", convexity = " << this->convexity << ")";
+		break;
+	case SUBDIV:
+		stream << "subdiv(level = " << this->level << ", convexity = " << this->convexity << ")";
+		break;
+	default:
+		assert(false);
+	}
+
+	return stream.str();
+}

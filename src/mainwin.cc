@@ -1126,7 +1126,7 @@ void MainWindow::actionRenderCGAL()
 
 	progress_report_prep(root_node, report_func, pd);
 	try {
-		this->root_N = new CGAL_Nef_polyhedron(root_node->render_cgal_nef_polyhedron());
+		this->root_N = new CGAL_Nef_polyhedron(root_node->renderCSGMesh());
 	}
 	catch (ProgressCancelException e) {
 		PRINT("Rendering cancelled.");

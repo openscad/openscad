@@ -59,6 +59,7 @@ public:
 	bool getv2(double &x, double &y) const;
 	bool getv3(double &x, double &y, double &z) const;
 
+	// FIXME: stream support
 	QString dump() const;
 
 private:

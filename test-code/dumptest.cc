@@ -30,7 +30,7 @@
 #include "value.h"
 #include "export.h"
 #include "builtin.h"
-//#include "nodedumper.h"
+#include "nodedumper.h"
 
 #include <QApplication>
 #include <QFile>
@@ -148,17 +148,19 @@ int main(int argc, char **argv)
 	QString dumpstr_cached = root_node->dump("");
 	if (dumpstr != dumpstr_cached) rc = 1;
 
-	printf(dumpstr.toUtf8());
-
-#if 0
 	NodeDumper dumper;
 	Traverser trav(dumper, *root_node, Traverser::PRE_AND_POSTFIX);
 	trav.execute();
-	std::string dumpstdstr = dumper.getDump();
+	std::string dumpstdstr = dumper.getDump() + "\n";
 	trav.execute();
-	std::string dumpstdstr_cached = dumper.getDump();
+	std::string dumpstdstr_cached = dumper.getDump() + "\n";
 	if (dumpstdstr != dumpstdstr_cached) rc = 1;
-#endif
+
+	if (QString::fromStdString(dumpstdstr) != dumpstr) {
+		printf(dumpstr.toUtf8());
+		printf(dumpstdstr.c_str());
+		rc = 1;
+	}
 
 	destroy_builtin_functions();
 	destroy_builtin_modules();

@@ -23,19 +23,21 @@
  *
  */
 
+#include "dxfrotextrudenode.h"
 #include "module.h"
-#include "node.h"
 #include "context.h"
 #include "printutils.h"
 #include "builtin.h"
 #include "polyset.h"
 #include "dxfdata.h"
 #include "progress.h"
+#include "visitor.h"
 #include "openscad.h" // get_fragments_from_r()
 
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <sstream>
 
 #include <QTime>
 #include <QApplication>
@@ -46,22 +48,6 @@ class DxfRotateExtrudeModule : public AbstractModule
 public:
 	DxfRotateExtrudeModule() { }
 	virtual AbstractNode *evaluate(const Context *ctx, const ModuleInstantiation *inst) const;
-};
-
-class DxfRotateExtrudeNode : public AbstractPolyNode
-{
-public:
-	int convexity;
-	double fn, fs, fa;
-	double origin_x, origin_y, scale;
-	QString filename, layername;
-	DxfRotateExtrudeNode(const ModuleInstantiation *mi) : AbstractPolyNode(mi) {
-		convexity = 0;
-		fn = fs = fa = 0;
-		origin_x = origin_y = scale = 0;
-	}
-	virtual PolySet *render_polyset(render_mode_e mode) const;
-	virtual QString dump(QString indent) const;
 };
 
 AbstractNode *DxfRotateExtrudeModule::evaluate(const Context *ctx, const ModuleInstantiation *inst) const
@@ -84,10 +70,8 @@ AbstractNode *DxfRotateExtrudeModule::evaluate(const Context *ctx, const ModuleI
 	Value origin = c.lookup_variable("origin", true);
 	Value scale = c.lookup_variable("scale", true);
 
-	if(!file.text.isNull())
+	if (!file.text.isNull())
 		node->filename = c.get_absolute_path(file.text);
-	else
-		node->filename = file.text;
 
 	node->layername = layer.text;
 	node->convexity = (int)convexity.num;
@@ -136,7 +120,7 @@ PolySet *DxfRotateExtrudeNode::render_polyset(render_mode_e) const
 		foreach(AbstractNode * v, children) {
 			if (v->modinst->tag_background)
 				continue;
-			N.p2 += v->render_cgal_nef_polyhedron().p2;
+			N.p2 += v->renderCSGMesh().p2;
 		}
 		dxf = new DxfData(N);
 
@@ -234,3 +218,22 @@ QString DxfRotateExtrudeNode::dump(QString indent) const
 	return dump_cache;
 }
 
+std::string DxfRotateExtrudeNode::toString() const
+{
+	std::stringstream stream;
+	stream << "n" << this->index() << ": ";
+
+	struct stat st;
+	memset(&st, 0, sizeof(struct stat));
+	stat(filename.toAscii().data(), &st);
+	stream << "rotate_extrude("
+		"file = \"" << this->filename << "\", "
+		"cache = \"" << std::hex << (int)st.st_mtime << "." << (int)st.st_size << "\", "
+		"layer = \"" << this->layername << "\", "
+		"origin = [ " << std::dec << this->origin_x << " " << this->origin_y << " ], "
+		"scale = " << this->scale << ", "
+		"convexity = " << this->convexity << ", "
+		"$fn = " << this->fn << ", $fa = " << this->fa << ", $fs = " << this->fs << ")";
+
+	return stream.str();
+}
