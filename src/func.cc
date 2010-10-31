@@ -136,11 +136,18 @@ double frand(double min, double max)
 
 Value builtin_rands(const Context *, const QVector<QString>&, const QVector<Value> &args)
 {
-	if (args.size() == 3 && args[0].type == Value::NUMBER && args[1].type == Value::NUMBER && args[2].type == Value::NUMBER)
+	if (args.size() == 3 &&
+			args[0].type == Value::NUMBER && 
+			args[1].type == Value::NUMBER && 
+			args[2].type == Value::NUMBER)
 	{
 		srand((unsigned int)time(0));
 	}
-	else if (args.size() == 4 && args[0].type == Value::NUMBER && args[1].type == Value::NUMBER && args[2].type == Value::NUMBER && args[3].type == Value::NUMBER)
+	else if (args.size() == 4 && 
+					 args[0].type == Value::NUMBER && 
+					 args[1].type == Value::NUMBER && 
+					 args[2].type == Value::NUMBER && 
+					 args[3].type == Value::NUMBER)
 	{
 		srand((unsigned int)args[3].num);
 	}
@@ -148,16 +155,16 @@ Value builtin_rands(const Context *, const QVector<QString>&, const QVector<Valu
 	{
 		return Value();
 	}
-
+	
 	Value v;
 	v.type = Value::VECTOR;
-
-	for(int i=0; i<args[2].num; i++)
+	
+	for (int i=0; i<args[2].num; i++)
 	{	
-		Value * r = new Value(frand(args[0].num,args[1].num));
+		Value * r = new Value(frand(args[0].num, args[1].num));
 		v.vec.append(r);
 	}
-
+	
 	return v;
 }
 
