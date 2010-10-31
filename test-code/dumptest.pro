@@ -50,23 +50,11 @@ HEADERS += ../src/builtin.h \
            ../src/grid.h \
            ../src/module.h \
            ../src/node.h \
-           ../src/dxflinextrudenode.h \
-           ../src/dxfrotextrudenode.h \
-           ../src/projectionnode.h \
-           ../src/importnode.h \
-           ../src/csgnode.h \
            ../src/openscad.h \
            ../src/polyset.h \
            ../src/printutils.h \
            ../src/value.h \
-           ../src/progress.h \
-           ../src/traverser.h \
-           ../src/csgnode.h \
-           ../src/visitor.h \
-           ../src/nodedumper.h \
-           ../src/nodecache.h \
-           ../src/importnode.h \
-           ../src/state.h
+           ../src/progress.h
 
 SOURCES += dumptest.cc \
            ../src/export.cc \
@@ -95,6 +83,4 @@ SOURCES += dumptest.cc \
            ../src/dxflinextrude.cc \
            ../src/dxfrotextrude.cc \
            ../src/printutils.cc \
-           ../src/progress.cc \
-           ../src/nodedumper.cc \
-           ../src/traverser.cc
+           ../src/progress.cc

@@ -23,13 +23,22 @@
  *
  */
 
-#include "csgnode.h"
-
 #include "module.h"
+#include "node.h"
 #include "csgterm.h"
 #include "builtin.h"
 #include "printutils.h"
-#include <sstream>
+#ifdef ENABLE_CGAL
+#  include "cgal.h"
+#  include <CGAL/assertions_behaviour.h>
+#  include <CGAL/exceptions.h>
+#endif
+
+enum csg_type_e {
+	CSG_TYPE_UNION,
+	CSG_TYPE_DIFFERENCE,
+	CSG_TYPE_INTERSECTION
+};
 
 class CsgModule : public AbstractModule
 {
@@ -37,6 +46,18 @@ public:
 	csg_type_e type;
 	CsgModule(csg_type_e type) : type(type) { }
 	virtual AbstractNode *evaluate(const Context *ctx, const ModuleInstantiation *inst) const;
+};
+
+class CsgNode : public AbstractNode
+{
+public:
+	csg_type_e type;
+	CsgNode(const ModuleInstantiation *mi, csg_type_e type) : AbstractNode(mi), type(type) { }
+#ifdef ENABLE_CGAL
+	virtual CGAL_Nef_polyhedron render_cgal_nef_polyhedron() const;
+#endif
+	CSGTerm *render_csg_term(double m[20], QVector<CSGTerm*> *highlights, QVector<CSGTerm*> *background) const;
+	virtual QString dump(QString indent) const;
 };
 
 AbstractNode *CsgModule::evaluate(const Context*, const ModuleInstantiation *inst) const
@@ -52,7 +73,7 @@ AbstractNode *CsgModule::evaluate(const Context*, const ModuleInstantiation *ins
 
 #ifdef ENABLE_CGAL
 
-CGAL_Nef_polyhedron CsgNode::renderCSGMesh() const
+CGAL_Nef_polyhedron CsgNode::render_cgal_nef_polyhedron() const
 {
 	QString cache_id = mk_cache_id();
 	if (cgal_nef_cache.contains(cache_id)) {
@@ -71,24 +92,24 @@ CGAL_Nef_polyhedron CsgNode::renderCSGMesh() const
 		if (v->modinst->tag_background)
 			continue;
 		if (first) {
-			N = v->renderCSGMesh();
+			N = v->render_cgal_nef_polyhedron();
 			if (N.dim != 0)
 				first = false;
 		} else if (N.dim == 2) {
 			if (type == CSG_TYPE_UNION) {
-				N.p2 += v->renderCSGMesh().p2;
+				N.p2 += v->render_cgal_nef_polyhedron().p2;
 			} else if (type == CSG_TYPE_DIFFERENCE) {
-				N.p2 -= v->renderCSGMesh().p2;
+				N.p2 -= v->render_cgal_nef_polyhedron().p2;
 			} else if (type == CSG_TYPE_INTERSECTION) {
-				N.p2 *= v->renderCSGMesh().p2;
+				N.p2 *= v->render_cgal_nef_polyhedron().p2;
 			}
 		} else if (N.dim == 3) {
 			if (type == CSG_TYPE_UNION) {
-				N.p3 += v->renderCSGMesh().p3;
+				N.p3 += v->render_cgal_nef_polyhedron().p3;
 			} else if (type == CSG_TYPE_DIFFERENCE) {
-				N.p3 -= v->renderCSGMesh().p3;
+				N.p3 -= v->render_cgal_nef_polyhedron().p3;
 			} else if (type == CSG_TYPE_INTERSECTION) {
-				N.p3 *= v->renderCSGMesh().p3;
+				N.p3 *= v->render_cgal_nef_polyhedron().p3;
 			}
 		}
 		v->progress_report();
@@ -149,28 +170,6 @@ QString CsgNode::dump(QString indent) const
 		((AbstractNode*)this)->dump_cache = text + indent + "}\n";
 	}
 	return dump_cache;
-}
-
-std::string CsgNode::toString() const
-{
-	std::stringstream stream;
-	stream << "n" << this->index() << ": ";
-
-	switch (this->type) {
-	case CSG_TYPE_UNION:
-		stream << "union()";
-		break;
-	case CSG_TYPE_DIFFERENCE:
-		stream << "difference()";
-		break;
-	case CSG_TYPE_INTERSECTION:
-		stream << "intersection()";
-		break;
-	default:
-		assert(false);
-	}
-
-	return stream.str();
 }
 
 void register_builtin_csgops()

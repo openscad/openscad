@@ -23,9 +23,8 @@
  *
  */
 
-#include "importnode.h"
-
 #include "module.h"
+#include "node.h"
 #include "polyset.h"
 #include "context.h"
 #include "builtin.h"
@@ -37,7 +36,12 @@
 #include <QFile>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <sstream>
+
+enum import_type_e {
+	TYPE_STL,
+	TYPE_OFF,
+	TYPE_DXF
+};
 
 class ImportModule : public AbstractModule
 {
@@ -45,6 +49,20 @@ public:
 	import_type_e type;
 	ImportModule(import_type_e type) : type(type) { }
 	virtual AbstractNode *evaluate(const Context *ctx, const ModuleInstantiation *inst) const;
+};
+
+class ImportNode : public AbstractPolyNode
+{
+public:
+	import_type_e type;
+	QString filename;
+	QString layername;
+	int convexity;
+	double fn, fs, fa;
+	double origin_x, origin_y, scale;
+	ImportNode(const ModuleInstantiation *mi, import_type_e type) : AbstractPolyNode(mi), type(type) { }
+	virtual PolySet *render_polyset(render_mode_e mode) const;
+	virtual QString dump(QString indent) const;
 };
 
 AbstractNode *ImportModule::evaluate(const Context *ctx, const ModuleInstantiation *inst) const
@@ -213,39 +231,3 @@ QString ImportNode::dump(QString indent) const
 	return dump_cache;
 }
 
-std::string ImportNode::toString() const
-{
-	std::stringstream stream;
-	stream << "n" << this->index() << ": ";
-
-	QString text;
-	struct stat st;
-	memset(&st, 0, sizeof(struct stat));
-	stat(this->filename.toAscii().data(), &st);
-
-	switch (this->type) {
-	case TYPE_STL:
-		stream << "import_stl(file = \"" << this->filename << "\", "
-			"cache = \"" << std::hex << (int)st.st_mtime << "." << (int)st.st_size << "\", "
-			"convexity = " << std::dec << this->convexity << ")";
-		break;
-	case TYPE_OFF:
-		stream << "import_off(file = \"" << this->filename << "\", "
-			"cache = \"" << std::hex << (int)st.st_mtime << "." << (int)st.st_size << "\", "
-			"convexity = " << std::dec << this->convexity << ")";
-		break;
-	case TYPE_DXF:
-		stream << "import_dxf(file = \"" << this->filename << "\", "
-			"cache = \"" << std::hex << (int)st.st_mtime << "." << (int)st.st_size << "\", "
-			"layer = \"" << this->layername << "\", "
-			"origin = [ " << std::dec << this->origin_x << " " << this->origin_y << " ], "
-			"scale = " << this->scale << ", "
-			"convexity = " << this->convexity << ", "
-			"$fn = " << this->fn << ", $fa = " << this->fa << ", $fs = " << this->fs << ")";
-		break;
-	default:
-		assert(false);
-	}
-
-	return stream.str();
-}

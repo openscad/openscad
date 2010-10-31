@@ -33,14 +33,13 @@
 #include "builtin.h"
 #include "printutils.h"
 #include "progress.h"
-#include "visitor.h"
 #ifdef ENABLE_CGAL
 #  include "cgal.h"
 #endif
 
+#include <QProgressDialog>
 #include <QApplication>
 #include <QTime>
-#include <sstream>
 
 class RenderModule : public AbstractModule
 {
@@ -52,15 +51,10 @@ public:
 class RenderNode : public AbstractNode
 {
 public:
-	RenderNode(const ModuleInstantiation *mi) : AbstractNode(mi), convexity(1) { }
-  virtual Response accept(const class State &state, Visitor &visitor) const {
-		return visitor.visit(state, *this);
-	}
-	virtual std::string toString() const;
-
 	int convexity;
+	RenderNode(const ModuleInstantiation *mi) : AbstractNode(mi), convexity(1) { }
 #ifdef ENABLE_CGAL
-	virtual CGAL_Nef_polyhedron renderCSGMesh() const;
+	virtual CGAL_Nef_polyhedron render_cgal_nef_polyhedron() const;
 #endif
 	CSGTerm *render_csg_term(double m[20], QVector<CSGTerm*> *highlights, QVector<CSGTerm*> *background) const;
 	virtual QString dump(QString indent) const;
@@ -96,7 +90,7 @@ void register_builtin_render()
 
 #ifdef ENABLE_CGAL
 
-CGAL_Nef_polyhedron RenderNode::renderCSGMesh() const
+CGAL_Nef_polyhedron RenderNode::render_cgal_nef_polyhedron() const
 {
 	QString cache_id = mk_cache_id();
 	if (cgal_nef_cache.contains(cache_id)) {
@@ -114,13 +108,13 @@ CGAL_Nef_polyhedron RenderNode::renderCSGMesh() const
 		if (v->modinst->tag_background)
 			continue;
 		if (first) {
-			N = v->renderCSGMesh();
+			N = v->render_cgal_nef_polyhedron();
 			if (N.dim != 0)
 				first = false;
 		} else if (N.dim == 2) {
-			N.p2 += v->renderCSGMesh().p2;
+			N.p2 += v->render_cgal_nef_polyhedron().p2;
 		} else if (N.dim == 3) {
-			N.p3 += v->renderCSGMesh().p3;
+			N.p3 += v->render_cgal_nef_polyhedron().p3;
 		}
 		v->progress_report();
 	}
@@ -159,7 +153,7 @@ CSGTerm *AbstractNode::render_csg_term_from_nef(double m[20], QVector<CSGTerm*> 
 		QTime t;
 		t.start();
 
-		N = this->renderCSGMesh();
+		N = this->render_cgal_nef_polyhedron();
 
 		int s = t.elapsed() / 1000;
 		PRINTF_NOCACHE("..rendering time: %d hours, %d minutes, %d seconds", s / (60*60), (s / 60) % 60, s % 60);
@@ -267,12 +261,3 @@ QString RenderNode::dump(QString indent) const
 	return dump_cache;
 }
 
-std::string RenderNode::toString() const
-{
-	std::stringstream stream;
-	stream << "n" << this->index() << ": ";
-
-	stream << "render(convexity = " << convexity << ")";
-
-	return stream.str();
-}
