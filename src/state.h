@@ -15,7 +15,7 @@ public:
   void setPostfix(bool on) { this->ispostfix = on; }
   void setNumChildren(unsigned int numc) { this->numchildren = numc; }
   void setParent(const AbstractNode *parent) { this->parentnode = parent; }
-	void setMatrix(const double m[20]) { memcpy(this->m, m, sizeof(m)); }
+	void setMatrix(const double m[20]) { memcpy(this->m, m, 20*sizeof(m)); }
 
   bool isPrefix() const { return this->isprefix; }
   bool isPostfix() const { return this->ispostfix; }
