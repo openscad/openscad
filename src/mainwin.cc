@@ -762,7 +762,7 @@ void MainWindow::compileCSG(bool procevents)
 		root_chain->import(root_norm_term);
 		
 		if (root_chain->polysets.size() > 1000) {
-			PRINTF("WARNING: Normalized tree has %d elements!", root_chain->polysets.size());
+			PRINTF("WARNING: Normalized tree has %u elements!", root_chain->polysets.size());
 			PRINTF("WARNING: OpenCSG rendering has been disabled.");
 		} else {
 			enableOpenCSG = true;
@@ -770,7 +770,7 @@ void MainWindow::compileCSG(bool procevents)
 		
 		if (highlight_terms.size() > 0)
 		{
-			PRINTF("Compiling highlights (%d CSG Trees)...", highlight_terms.size());
+			PRINTF("Compiling highlights (%u CSG Trees)...", highlight_terms.size());
 			if (procevents)
 				QApplication::processEvents();
 			
@@ -789,7 +789,7 @@ void MainWindow::compileCSG(bool procevents)
 		
 		if (background_terms.size() > 0)
 		{
-			PRINTF("Compiling background (%d CSG Trees)...", background_terms.size());
+			PRINTF("Compiling background (%u CSG Trees)...", background_terms.size());
 			if (procevents)
 				QApplication::processEvents();
 			

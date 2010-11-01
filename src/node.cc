@@ -35,7 +35,7 @@
 #include <QRegExp>
 #include <sstream>
 
-int AbstractNode::idx_counter;
+size_t AbstractNode::idx_counter;
 
 AbstractNode::AbstractNode(const ModuleInstantiation *mi)
 {

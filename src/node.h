@@ -23,7 +23,7 @@ class AbstractNode
 	// We can hash on pointer value or smth. else.
   //  -> remove and
 	// use smth. else to display node identifier in CSG tree output?
-	static int idx_counter;   // Node instantiation index
+	static size_t idx_counter;   // Node instantiation index
 public:
 	AbstractNode(const class ModuleInstantiation *mi);
 	virtual ~AbstractNode();
@@ -38,7 +38,7 @@ public:
 	const std::list<AbstractNode*> getChildren() const { 
 		return this->children.toList().toStdList(); 
 	}
-	int index() const { return this->idx; }
+	size_t index() const { return this->idx; }
 
 	static void resetIndexCounter() { idx_counter = 1; }
 

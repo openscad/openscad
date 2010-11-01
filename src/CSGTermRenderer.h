@@ -40,7 +40,7 @@ private:
   map<int, ChildList> visitedchildren;
 
 public:
-  map<int, class CSGTerm*> stored_term;
+  map<int, class CSGTerm*> stored_term; // The term rendered from each node index
 
 	vector<CSGTerm*> *highlights;
 	vector<CSGTerm*> *background;
