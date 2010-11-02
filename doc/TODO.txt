@@ -132,10 +132,11 @@ o Function-Module-Interface
   - Pass a module instanciation to a function (e.g. for a volume() function)
   - Pass a function to a module instanciation (e.g. for dynamic extrusion paths)
 o Language Frontend
+  - include statement doesn't support nesting. This can be fixed by
+    keeping a nested stack of current input files in the lexer. See
+    the "Flex & Bison" O'Reilly book, "Start States and Nested Input
+    Files", page 28, for an example.
   - Allow local variables and functions everywhere (not only on module level)
-  - Add "use" statement to load modules. Like include but read a module only once,
-    ignore all top level objects (they are used as module testcase) and search in
-    a module search path.
   - allow 0/1 f/t FALSE/TRUE as boolean values
   - allow any expression to be evaluated as boolean (e.g. 1 = true, 0 = false)
   - Rethink for vs. intersection_for vs. group. Should for loops
