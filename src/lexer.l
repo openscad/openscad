@@ -106,7 +106,7 @@ use[ \t\r\n>]*"<"[^ \t\r\n>]+">" {
 		finfo = QFileInfo(QDir(librarydir), filename);
 	}
 
-	PRINTF("WARNING: Support for implicit include will be removed in future releases. Use `include <filename>' instead.");
+	PRINTF("DEPRECATED: Support for implicit include will be removed in future releases. Use `include <filename>' instead.");
 	handle_dep(finfo.absoluteFilePath());
 	yyin = fopen(finfo.absoluteFilePath().toLocal8Bit(), "r");
 	if (!yyin) {
