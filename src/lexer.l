@@ -65,6 +65,8 @@ extern const char *parser_source_path;
 
 %x comment
 
+DIGIT [0-9]
+
 %%
 
 include[ \t\r\n>]*"<"[^ \t\r\n>]+">" {
@@ -135,7 +137,7 @@ use[ \t\r\n>]*"<"[^ \t\r\n>]+">" {
 "false"		return TOK_FALSE;
 "undef"		return TOK_UNDEF;
 
-[0-9][0-9.]* { parserlval.number = QString(yytext).toDouble(); return TOK_NUMBER; }
+{DIGIT}+|{DIGIT}*\.{DIGIT}+|{DIGIT}+\.{DIGIT}* { parserlval.number = QString(yytext).toDouble(); return TOK_NUMBER; }
 "$"?[a-zA-Z0-9_]+ { parserlval.text = strdup(yytext); return TOK_ID; }
 
 \"[^"]*\" {
