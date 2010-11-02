@@ -1,8 +1,10 @@
 
-OpenSCAD 2010.06
+OpenSCAD 2010.XX
 ================
 
-... add stuff here ...
+o Added rands() function
+o Added sign() function
+o Bugfixes: More robust DXF export
 
 OpenSCAD 2010.05
 ================
