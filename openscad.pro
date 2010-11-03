@@ -120,6 +120,7 @@ HEADERS += src/CGAL_renderer.h \
            src/PolySetRenderer.h \
            src/PolySetCGALRenderer.h \
            src/CSGTermRenderer.h \
+           src/myqhash.h \
            src/Tree.h
 
 SOURCES += src/openscad.cc \
