@@ -24,7 +24,7 @@ public:
 	double origin_x, origin_y, scale;
 	bool center, has_twist;
 	QString filename, layername;
-	virtual PolySet *render_polyset(render_mode_e mode) const;
+	virtual PolySet *render_polyset(render_mode_e mode, class PolySetRenderer *) const;
 };
 
 #endif

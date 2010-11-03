@@ -31,6 +31,7 @@
 
 DxfData::DxfData(const struct CGAL_Nef_polyhedron &N)
 {
+	assert(N.dim == 2);
 	Grid2d<int> grid(GRID_COARSE);
 
 	typedef CGAL_Nef_polyhedron2::Explorer Explorer;

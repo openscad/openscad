@@ -248,7 +248,6 @@ int main(int argc, char **argv)
 	QHash<std::string, CGAL_Nef_polyhedron> cache;
 	CGALRenderer cgalrenderer(cache, tree);
 	PolySetCGALRenderer psrenderer(cgalrenderer);
-	PolySetRenderer::setRenderer(&psrenderer);
 
 	if (stl_output_file || off_output_file || dxf_output_file)
 	{
@@ -300,10 +299,8 @@ int main(int argc, char **argv)
 		AbstractNode::resetIndexCounter();
 		root_node = root_module->evaluate(&root_ctx, &root_inst);
 
-		Tree tree(root_node);
-		QHash<std::string, CGAL_Nef_polyhedron> cache;
-		CGALRenderer renderer(cache, tree);
- 		CGAL_Nef_polyhedron root_N = renderer.renderCGALMesh(*tree.root());
+		tree.setRoot(root_node);
+ 		CGAL_Nef_polyhedron root_N = cgalrenderer.renderCGALMesh(*tree.root());
 
 		QDir::setCurrent(original_path.absolutePath());
 

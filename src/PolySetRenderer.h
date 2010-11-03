@@ -1,6 +1,7 @@
 #ifndef POLYSETRENDERER_H_
 #define POLYSETRENDERER_H_
 
+#include "myqhash.h"
 #include "node.h"
 #include <QCache>
 
@@ -20,8 +21,6 @@ public:
 		this->cache.clear();
 	}
 
-	static PolySetRenderer *renderer() { return global_renderer; }
-	static void setRenderer(PolySetRenderer *r) { global_renderer = r; }
 protected:
 
 	struct cache_entry {
@@ -31,7 +30,7 @@ protected:
 		~cache_entry();
 	};
 
-	QCache<QString, cache_entry> cache;
+	QCache<std::string, cache_entry> cache;
 
 private:
 	static PolySetRenderer *global_renderer;

@@ -85,11 +85,10 @@ AbstractNode *ProjectionModule::evaluate(const Context *ctx, const ModuleInstant
 	return node;
 }
 
-PolySet *ProjectionNode::render_polyset(render_mode_e mode) const
+PolySet *ProjectionNode::render_polyset(render_mode_e mode, PolySetRenderer *renderer) const
 {
-	PolySetRenderer *renderer = PolySetRenderer::renderer();
 	if (!renderer) {
-		PRINT("WARNING: No suitable PolySetRenderer found for projection() module!");
+		PRINTF("WARNING: No suitable PolySetRenderer found for %s module!", this->name().c_str());
 		PolySet *ps = new PolySet();
 		ps->is2d = true;
 		return ps;

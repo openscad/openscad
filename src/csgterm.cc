@@ -26,6 +26,25 @@
 #include "csgterm.h"
 #include "polyset.h"
 
+/*!
+	\class CSGTerm
+
+	A CSGTerm is either a "primitive" or a CSG operation with two
+	children terms. A primitive in this context is any PolySet, which
+	may or may not have a subtree which is already evaluated (e.g. using
+	the render() module).
+
+ */
+
+/*!
+	\class CSGChain
+
+	A CSGChain is just a vector of primitives, each having a CSG type associated with it.
+	It's created by importing a CSGTerm tree.
+
+ */
+
+
 CSGTerm::CSGTerm(PolySet *polyset, const double m[20], QString label)
 {
 	this->type = TYPE_PRIMITIVE;
@@ -199,9 +218,9 @@ QString CSGChain::dump()
 				text += "\n";
 			text += "+";
 		}
-		if (types[i] == CSGTerm::TYPE_DIFFERENCE)
+		else if (types[i] == CSGTerm::TYPE_DIFFERENCE)
 			text += " -";
-		if (types[i] == CSGTerm::TYPE_INTERSECTION)
+		else if (types[i] == CSGTerm::TYPE_INTERSECTION)
 			text += " *";
 		text += labels[i];
 	}

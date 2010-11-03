@@ -723,8 +723,12 @@ void MainWindow::compileCSG(bool procevents)
 
 	progress_report_prep(root_node, report_func, pd);
 	try {
-		CSGTermRenderer renderer;
-		root_raw_term = renderer.renderCSGTerm(*root_node, &highlight_terms, &background_terms);
+		// FIXME: put cache somewhere else as it's pretty useless now
+		QHash<std::string, CGAL_Nef_polyhedron> cache;
+		CGALRenderer cgalrenderer(cache, this->tree);
+		PolySetCGALRenderer psrenderer(cgalrenderer);
+		CSGTermRenderer csgrenderer(this->tree, &psrenderer);
+		root_raw_term = csgrenderer.renderCSGTerm(*root_node, &highlight_terms, &background_terms);
 		if (!root_raw_term) {
 			PRINT("ERROR: CSG generation failed! (no top level object found)");
 			if (procevents)
@@ -770,12 +774,12 @@ void MainWindow::compileCSG(bool procevents)
 		
 		if (highlight_terms.size() > 0)
 		{
-			PRINTF("Compiling highlights (%u CSG Trees)...", highlight_terms.size());
+			PRINTF("Compiling highlights (%zu CSG Trees)...", highlight_terms.size());
 			if (procevents)
 				QApplication::processEvents();
 			
 			highlights_chain = new CSGChain();
-			for (int i = 0; i < highlight_terms.size(); i++) {
+			for (unsigned int i = 0; i < highlight_terms.size(); i++) {
 				while (1) {
 					CSGTerm *n = highlight_terms[i]->normalize();
 					highlight_terms[i]->unlink();
@@ -789,12 +793,12 @@ void MainWindow::compileCSG(bool procevents)
 		
 		if (background_terms.size() > 0)
 		{
-			PRINTF("Compiling background (%u CSG Trees)...", background_terms.size());
+			PRINTF("Compiling background (%zu CSG Trees)...", background_terms.size());
 			if (procevents)
 				QApplication::processEvents();
 			
 			background_chain = new CSGChain();
-			for (int i = 0; i < background_terms.size(); i++) {
+			for (unsigned int i = 0; i < background_terms.size(); i++) {
 				while (1) {
 					CSGTerm *n = background_terms[i]->normalize();
 					background_terms[i]->unlink();
@@ -1134,7 +1138,7 @@ void MainWindow::actionRenderCGAL()
 
 	progress_report_prep(this->root_node, report_func, pd);
 	try {
-		// FIXME: put cache somewhere else
+		// FIXME: put cache somewhere else as it's pretty useless now
 		QHash<std::string, CGAL_Nef_polyhedron> cache;
 		CGALRenderer renderer(cache, this->tree);
 		this->root_N = new CGAL_Nef_polyhedron(renderer.renderCGALMesh(*this->root_node));
@@ -1378,7 +1382,7 @@ void MainWindow::actionExportDXF()
 void MainWindow::actionFlushCaches()
 {
 // FIXME: Polycache -> PolySetRenderer
-	PolySetRenderer::renderer()->clearCache();
+// FIXME: PolySetRenderer->clearCache();
 #ifdef ENABLE_CGAL
 // FIXME: Flush caches through whatever channels we have
 	// CGALRenderer::renderer()->getCache().clear();

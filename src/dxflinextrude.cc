@@ -126,11 +126,11 @@ void register_builtin_dxf_linear_extrude()
 	builtin_modules["linear_extrude"] = new DxfLinearExtrudeModule();
 }
 
-PolySet *DxfLinearExtrudeNode::render_polyset(render_mode_e mode) const
+PolySet *DxfLinearExtrudeNode::render_polyset(render_mode_e mode, 
+																							PolySetRenderer *renderer) const
 {
-	PolySetRenderer *renderer = PolySetRenderer::renderer();
 	if (!renderer) {
-		PRINT("WARNING: No suitable PolySetRenderer found for linear_extrude() module!");
+		PRINTF("WARNING: No suitable PolySetRenderer found for %s module!", this->name().c_str());
 		PolySet *ps = new PolySet();
 		ps->is2d = true;
 		return ps;

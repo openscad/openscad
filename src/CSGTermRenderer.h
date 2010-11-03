@@ -5,6 +5,7 @@
 #include <map>
 #include <list>
 #include <vector>
+#include "Tree.h"
 #include "visitor.h"
 #include "node.h"
 
@@ -16,7 +17,8 @@ using std::vector;
 class CSGTermRenderer : public Visitor
 {
 public:
-	CSGTermRenderer() : highlights(NULL), background(NULL) {
+	CSGTermRenderer(const Tree &tree, class PolySetRenderer *psrenderer = NULL)
+		: highlights(NULL), background(NULL), tree(tree), psrenderer(psrenderer) {
 	}
   virtual ~CSGTermRenderer() {}
 
@@ -44,6 +46,8 @@ public:
 
 	vector<CSGTerm*> *highlights;
 	vector<CSGTerm*> *background;
+	const Tree &tree;
+	class PolySetRenderer *psrenderer;
 };
 
 #endif

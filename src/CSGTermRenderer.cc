@@ -26,10 +26,9 @@ CSGTerm *CSGTermRenderer::renderCSGTerm(const AbstractNode &node,
 																				vector<CSGTerm*> *highlights, 
 																				vector<CSGTerm*> *background)
 {
-	CSGTermRenderer renderer;
-	Traverser render(renderer, node, Traverser::PRE_AND_POSTFIX);
+	Traverser render(*this, node, Traverser::PRE_AND_POSTFIX);
 	render.execute();
-	return renderer.stored_term[node.index()];
+	return this->stored_term[node.index()];
 }
 
 void CSGTermRenderer::applyToChildren(const AbstractNode &node, CSGTermRenderer::CsgOp op)
@@ -101,7 +100,7 @@ static CSGTerm *render_csg_term_from_ps(const double m[20],
 Response CSGTermRenderer::visit(State &state, const AbstractPolyNode &node)
 {
 	if (state.isPostfix()) {
-		PolySet *ps = node.render_polyset(AbstractPolyNode::RENDER_OPENCSG);
+		PolySet *ps = node.render_polyset(AbstractPolyNode::RENDER_OPENCSG, this->psrenderer);
 		CSGTerm *t1 = render_csg_term_from_ps(state.matrix(), this->highlights, this->background, ps, node.modinst, node);
 		this->stored_term[node.index()] = t1;
 		addToParent(state, node);

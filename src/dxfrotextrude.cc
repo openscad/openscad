@@ -102,11 +102,11 @@ void register_builtin_dxf_rotate_extrude()
 	builtin_modules["rotate_extrude"] = new DxfRotateExtrudeModule();
 }
 
-PolySet *DxfRotateExtrudeNode::render_polyset(render_mode_e mode) const
+PolySet *DxfRotateExtrudeNode::render_polyset(render_mode_e mode, 
+																							PolySetRenderer *renderer) const
 {
-	PolySetRenderer *renderer = PolySetRenderer::renderer();
 	if (!renderer) {
-		PRINT("WARNING: No suitable PolySetRenderer found for rotate_extrude() module!");
+		PRINTF("WARNING: No suitable PolySetRenderer found for %s module!", this->name().c_str());
 		PolySet *ps = new PolySet();
 		ps->is2d = true;
 		return ps;

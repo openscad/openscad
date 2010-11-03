@@ -230,7 +230,7 @@ Response CGALRenderer::visit(State &state, const AbstractPolyNode &node)
 			applyToChildren(node, UNION);
 
 			// Then apply polyset operation
-			PolySet *ps = node.render_polyset(AbstractPolyNode::RENDER_CGAL);
+			PolySet *ps = node.render_polyset(AbstractPolyNode::RENDER_CGAL, &this->psrenderer);
 			try {
 				CGAL_Nef_polyhedron N = renderCGALMesh(*ps);
 //				print_messages_pop();

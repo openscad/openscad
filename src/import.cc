@@ -102,7 +102,7 @@ void register_builtin_import()
 	builtin_modules["import_dxf"] = new ImportModule(TYPE_DXF);
 }
 
-PolySet *ImportNode::render_polyset(render_mode_e) const
+PolySet *ImportNode::render_polyset(render_mode_e, class PolySetRenderer *) const
 {
 	PolySet *p = new PolySet();
 	p->convexity = this->convexity;

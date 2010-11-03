@@ -5,6 +5,7 @@
 #include "visitor.h"
 #include "Tree.h"
 #include "cgal.h"
+#include "PolySetCGALRenderer.h"
 
 #include <string>
 #include <map>
@@ -23,7 +24,7 @@ class CGALRenderer : public Visitor
 public:
 	enum CsgOp {UNION, INTERSECTION, DIFFERENCE, MINKOWSKI};
 	// FIXME: If a cache is not given, we need to fix this ourselves
-	CGALRenderer(QHash<string, CGAL_Nef_polyhedron> &cache, const Tree &tree) : cache(cache), tree(tree) {}
+	CGALRenderer(QHash<string, CGAL_Nef_polyhedron> &cache, const Tree &tree) : cache(cache), tree(tree), psrenderer(*this) {}
   virtual ~CGALRenderer() {}
 
   virtual Response visit(State &state, const AbstractNode &node);
@@ -34,6 +35,8 @@ public:
 
  	CGAL_Nef_polyhedron renderCGALMesh(const AbstractNode &node);
 	CGAL_Nef_polyhedron renderCGALMesh(const PolySet &polyset);
+
+	const Tree &getTree() const { return this->tree; }
 
 private:
   void addToParent(const State &state, const AbstractNode &node);
@@ -47,6 +50,7 @@ private:
 
 	QHash<string, CGAL_Nef_polyhedron> &cache;
 	const Tree &tree;
+	PolySetCGALRenderer psrenderer;
 };
 
 #endif

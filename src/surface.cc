@@ -56,7 +56,7 @@ public:
 	QString filename;
 	bool center;
 	int convexity;
-	virtual PolySet *render_polyset(render_mode_e mode) const;
+	virtual PolySet *render_polyset(render_mode_e mode, class PolySetRenderer *) const;
 };
 
 AbstractNode *SurfaceModule::evaluate(const Context *ctx, const ModuleInstantiation *inst) const
@@ -91,7 +91,7 @@ void register_builtin_surface()
 	builtin_modules["surface"] = new SurfaceModule();
 }
 
-PolySet *SurfaceNode::render_polyset(render_mode_e) const
+PolySet *SurfaceNode::render_polyset(render_mode_e, class PolySetRenderer *) const
 {
 	PolySet *p = new PolySet();
 	handle_dep(filename);

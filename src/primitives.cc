@@ -97,7 +97,7 @@ public:
 	primitive_type_e type;
 	int convexity;
 	Value points, paths, triangles;
-	virtual PolySet *render_polyset(render_mode_e mode) const;
+	virtual PolySet *render_polyset(render_mode_e mode, class PolySetRenderer *) const;
 };
 
 AbstractNode *PrimitiveModule::evaluate(const Context *ctx, const ModuleInstantiation *inst) const
@@ -246,7 +246,7 @@ int get_fragments_from_r(double r, double fn, double fs, double fa)
 	return (int)ceil(fmax(fmin(360.0 / fa, r*M_PI / fs), 5));
 }
 
-PolySet *PrimitiveNode::render_polyset(render_mode_e) const
+PolySet *PrimitiveNode::render_polyset(render_mode_e, class PolySetRenderer *) const
 {
 	PolySet *p = new PolySet();
 

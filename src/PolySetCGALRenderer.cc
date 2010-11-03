@@ -14,8 +14,7 @@
 
 PolySet *PolySetCGALRenderer::renderPolySet(const ProjectionNode &node, AbstractPolyNode::render_mode_e)
 {
-	// FIXME: create cacheid from node
-	QString cacheid;
+	const string &cacheid = this->cgalrenderer.getTree().getString(node);
 	if (this->cache.contains(cacheid)) return this->cache[cacheid]->ps->link();
 
 	CGAL_Nef_polyhedron N = this->cgalrenderer.renderCGALMesh(node);
@@ -237,15 +236,22 @@ static void add_slice(PolySet *ps, DxfData::Path *pt, double rot1, double rot2, 
 
 PolySet *PolySetCGALRenderer::renderPolySet(const DxfLinearExtrudeNode &node, AbstractPolyNode::render_mode_e)
 {
-	// FIXME: create cacheid from node
-	QString cacheid;
+	const string &cacheid = this->cgalrenderer.getTree().getString(node);
 	if (this->cache.contains(cacheid)) return this->cache[cacheid]->ps->link();
 
 	DxfData *dxf;
 
 	if (node.filename.isEmpty())
 	{
-		CGAL_Nef_polyhedron N = this->cgalrenderer.renderCGALMesh(node);
+		// Before extruding, union all (2D) children nodes
+		// to a single DxfData, then tesselate this into a PolySet
+		CGAL_Nef_polyhedron N;
+		N.dim = 2;
+		foreach (AbstractNode * v, node.getChildren()) {
+			if (v->modinst->tag_background) continue;
+			N.p2 += this->cgalrenderer.renderCGALMesh(*v).p2;
+		}
+
 		dxf = new DxfData(N);
 	} else {
 		dxf = new DxfData(node.fn, node.fs, node.fa, node.filename, node.layername, node.origin_x, node.origin_y, node.scale);
@@ -320,15 +326,22 @@ PolySet *PolySetCGALRenderer::renderPolySet(const DxfLinearExtrudeNode &node, Ab
 
 PolySet *PolySetCGALRenderer::renderPolySet(const DxfRotateExtrudeNode &node, AbstractPolyNode::render_mode_e)
 {
-	// FIXME: create cacheid from node
-	QString cacheid;
+	const string &cacheid = this->cgalrenderer.getTree().getString(node);
 	if (this->cache.contains(cacheid)) return this->cache[cacheid]->ps->link();
 
 	DxfData *dxf;
 
 	if (node.filename.isEmpty())
 	{
-		CGAL_Nef_polyhedron N = this->cgalrenderer.renderCGALMesh(node);
+		// Before extruding, union all (2D) children nodes
+		// to a single DxfData, then tesselate this into a PolySet
+		CGAL_Nef_polyhedron N;
+		N.dim = 2;
+		foreach (AbstractNode * v, node.getChildren()) {
+			if (v->modinst->tag_background) continue;
+			N.p2 += this->cgalrenderer.renderCGALMesh(*v).p2;
+		}
+
 		dxf = new DxfData(N);
 	} else {
 		dxf = new DxfData(node.fn, node.fs, node.fa, node.filename, node.layername, node.origin_x, node.origin_y, node.scale);

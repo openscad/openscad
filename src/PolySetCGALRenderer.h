@@ -2,7 +2,6 @@
 #define POLYSETCGALRENDERER_H_
 
 #include "PolySetRenderer.h"
-#include "CGALRenderer.h"
 
 /*!
 	This is a PolySet renderer which uses the CGALRenderer to support building
@@ -11,7 +10,7 @@
 class PolySetCGALRenderer : public PolySetRenderer
 {
 public:
-	PolySetCGALRenderer(CGALRenderer &cgalrenderer) : 
+	PolySetCGALRenderer(class CGALRenderer &cgalrenderer) : 
 		PolySetRenderer(), cgalrenderer(cgalrenderer) { }
 	virtual ~PolySetCGALRenderer() { }
 	virtual PolySet *renderPolySet(const ProjectionNode &node, AbstractPolyNode::render_mode_e);
