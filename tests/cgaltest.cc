@@ -164,21 +164,15 @@ int main(int argc, char **argv)
 
 	Tree tree(root_node);
 
-	cgalTree(tree);
+	QHash<std::string, CGAL_Nef_polyhedron> cache;
+	CGALRenderer cgalrenderer(cache, tree);
+ 	PolySetCGALRenderer psrenderer(cgalrenderer);
 
-// 	std::cout << tree.getString(*root_node) << "\n";
-
-// 	CGALRenderer cgalrenderer(dumper.getCache());
-// 	PolySetCGALRenderer psrenderer(cgalrenderer);
-// 	PolySetRenderer::setRenderer(&psrenderer);
-
-	CGAL_Nef_polyhedron N = cache[tree.getString(*root_node)];
+	CGAL_Nef_polyhedron N = cgalrenderer.renderCGALMesh(*root_node);
 
 	QDir::setCurrent(original_path.absolutePath());
 	QTextStream outstream(stdout);
 	export_stl(&N, outstream, NULL);
-
-	PolySetRenderer::setRenderer(NULL);
 
 	destroy_builtin_functions();
 	destroy_builtin_modules();

@@ -155,7 +155,7 @@ int main(int argc, char **argv)
 
 //	cout << tree.getString(*root_node) << "\n";
 
-	CSGTermRenderer renderer;
+	CSGTermRenderer renderer(tree);
 	CSGTerm *root_term = renderer.renderCSGTerm(*root_node, NULL, NULL);
 	
 	// cout << "Stored terms: " << renderer.stored_term.size() << "\n";
