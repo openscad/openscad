@@ -1,6 +1,11 @@
 cmake_minimum_required(VERSION 2.8)
 project(tests)
 
+# Build debug build as default
+if(NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE Debug)
+endif()
+
 #
 # Build test apps
 #
