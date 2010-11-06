@@ -324,7 +324,8 @@ PolySet *PolySetCGALRenderer::renderPolySet(const DxfLinearExtrudeNode &node, Ab
 	return ps;
 }
 
-PolySet *PolySetCGALRenderer::renderPolySet(const DxfRotateExtrudeNode &node, AbstractPolyNode::render_mode_e)
+PolySet *PolySetCGALRenderer::renderPolySet(const DxfRotateExtrudeNode &node, 
+																						AbstractPolyNode::render_mode_e)
 {
 	const string &cacheid = this->cgalrenderer.getTree().getString(node);
 	if (this->cache.contains(cacheid)) return this->cache[cacheid]->ps->link();

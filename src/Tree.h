@@ -5,13 +5,19 @@
 
 using std::string;
 
+/*!  
+	For now, just an abstraction of the node tree which keeps a dump
+	cache based on node indices around.
+
+	Note that since node trees don't survive a recompilation, the tree cannot either.
+ */
 class Tree
 {
 public:
 	Tree(const AbstractNode *root = NULL) : root_node(root) {}
 	~Tree() {}
 
-	void setRoot(const AbstractNode *root) { this->root_node = root; }
+	void setRoot(const AbstractNode *root);
 	const AbstractNode *root() const { return this->root_node; }
 
   // FIXME: Really return a reference?

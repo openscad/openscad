@@ -4,10 +4,6 @@
 #include <QCache>
 #include <QVector>
 
-#ifdef ENABLE_CGAL
-#include "cgal.h"
-#endif
-
 #include "traverser.h"
 
 extern int progress_report_count;
@@ -17,6 +13,13 @@ extern void *progress_report_vp;
 void progress_report_prep(AbstractNode *root, void (*f)(const class AbstractNode *node, void *vp, int mark), void *vp);
 void progress_report_fin();
 
+/*!  
+
+	The node tree is the result of evaluation of a module instantiation
+	tree.  Both the module tree and the node tree are regenerated from
+	scratch for each compile.
+
+ */
 class AbstractNode
 {
 	// FIXME: the idx_counter/idx is mostly (only?) for debugging.

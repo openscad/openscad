@@ -34,9 +34,6 @@
 #include "printutils.h"
 #include "progress.h"
 #include "visitor.h"
-#ifdef ENABLE_CGAL
-#  include "cgal.h"
-#endif
 
 #include <QApplication>
 #include <QTime>

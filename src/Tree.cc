@@ -3,6 +3,10 @@
 
 #include <assert.h>
 
+/*!
+	Returns the cached string representation of the subtree rootet by \a node.
+	If node is not cached, the cache will be rebuilt.
+*/
 const std::string &Tree::getString(const AbstractNode &node) const
 {
 	assert(this->root_node);
@@ -14,4 +18,13 @@ const std::string &Tree::getString(const AbstractNode &node) const
 					 "NodeDumper failed to create a cache");
 	}
 	return this->nodecache[node];
+}
+
+/*!
+	Sets a new root. Will clear the existing cache.
+ */
+void Tree::setRoot(const AbstractNode *root)
+{
+	this->root_node = root; 
+	this->nodecache.clear();
 }
