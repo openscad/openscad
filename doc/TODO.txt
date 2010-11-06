@@ -166,6 +166,14 @@ o Grammar
   - A random(seed) function
   - import_*() -> *_import() (consistent prefix vs. postfix)
   - linear_extrude()/rotate_extrude(): Cumbersome names? -> (extrude, revolve, lathe, sweep ?) 
+o Hollow donut problem
+  When extruding a 2D CSG tree (e.g. a polygon with a hole), the hole
+  information is lost when performing the extrusion. For linear
+  extrusions, this has only a minor visual impact, but for rotate
+  extrusion, the resulting CGAL models will lose the hole. The OpenCSG
+  rendering keeps the hole, but renders slightly incorrect.
+
+
 
 CODE
 ----
