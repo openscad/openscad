@@ -117,6 +117,9 @@ using CGAL::OGL::Nef3_Converter;
 #endif
 #endif // ENABLE_CGAL
 
+// Global application state
+unsigned int GuiLocker::gui_locked = 0;
+
 #define QUOTE(x__) # x__
 #define QUOTED(x__) QUOTE(x__)
 
@@ -592,6 +595,7 @@ void MainWindow::compile(bool procevents)
 	this->background_chain = NULL;
 
 	this->root_node = NULL;
+	this->tree.setRoot(NULL);
 	this->enableOpenCSG = false;
 
 	// Initialize special variables
@@ -1040,6 +1044,9 @@ bool MainWindow::checkModified()
 
 void MainWindow::actionReloadCompile()
 {
+	if (GuiLocker::isLocked()) return;
+	GuiLocker lock;
+
 	if (!checkModified()) return;
 
 	console->clear();
@@ -1065,6 +1072,9 @@ void MainWindow::actionReloadCompile()
 
 void MainWindow::actionCompile()
 {
+	if (GuiLocker::isLocked()) return;
+	GuiLocker lock;
+
 	setCurrentOutput();
 	console->clear();
 
@@ -1099,6 +1109,9 @@ void MainWindow::actionCompile()
 
 void MainWindow::actionRenderCGAL()
 {
+	if (GuiLocker::isLocked()) return;
+	GuiLocker lock;
+
 	setCurrentOutput();
 	console->clear();
 
@@ -1273,6 +1286,8 @@ void MainWindow::actionExportSTLorOFF(bool stl_mode)
 void MainWindow::actionExportSTLorOFF(bool)
 #endif
 {
+	if (GuiLocker::isLocked()) return;
+	GuiLocker lock;
 #ifdef ENABLE_CGAL
 	setCurrentOutput();
 

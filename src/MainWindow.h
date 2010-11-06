@@ -157,4 +157,19 @@ public slots:
 	void autoReloadSet(bool);
 };
 
+class GuiLocker
+{
+public:
+	GuiLocker() {
+		gui_locked++;
+	}
+	~GuiLocker() {
+		gui_locked--;
+	}
+	static bool isLocked() { return gui_locked > 0; }
+
+private:
+	static unsigned int gui_locked;
+};
+
 #endif
