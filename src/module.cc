@@ -78,7 +78,7 @@ QString ModuleInstantiation::dump(QString indent) const
 			text += QString(", ");
 		if (!argnames[i].isEmpty())
 			text += argnames[i] + QString(" = ");
-		text += argexpr[i]->dump();
+		text += QString::fromStdString(argexpr[i]->toString());
 	}
 	if (children.size() == 0) {
 		text += QString(");\n");
@@ -166,7 +166,7 @@ QString Module::dump(QString indent, QString name) const
 				text += QString(", ");
 			text += argnames[i];
 			if (argexpr[i])
-				text += QString(" = ") + argexpr[i]->dump();
+				text += QString(" = ") + QString::fromStdString(argexpr[i]->toString());
 		}
 		text += QString(") {\n");
 		tab = "\t";
@@ -186,7 +186,7 @@ QString Module::dump(QString indent, QString name) const
 		}
 	}
 	for (int i = 0; i < assignments_var.size(); i++) {
-		text += QString("%1%2 = %3;\n").arg(indent + tab, assignments_var[i], assignments_expr[i]->dump());
+		text += QString("%1%2 = %3;\n").arg(indent + tab, assignments_var[i], QString::fromStdString(assignments_expr[i]->toString()));
 	}
 	for (int i = 0; i < children.size(); i++) {
 		text += children[i]->dump(indent + tab);

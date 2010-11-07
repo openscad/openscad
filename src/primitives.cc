@@ -579,8 +579,8 @@ std::string PrimitiveNode::toString() const
 					 << ", r2 = " << this->r2 << ", center = " << (center ? "true" : "false") << ")";
 			break;
 	case POLYHEDRON:
-		stream << "(points = " << this->points.dump()
-					 << ", triangles = " << this->triangles.dump()
+		stream << "(points = " << this->points
+					 << ", triangles = " << this->triangles
 					 << ", convexity = " << this->convexity << ")";
 			break;
 	case SQUARE:
@@ -592,7 +592,7 @@ std::string PrimitiveNode::toString() const
 					 << ", $fs = " << this->fs << ", r = " << this->r1 << ")";
 		break;
 	case POLYGON:
-		stream << "(points = " << this->points.dump() << ", paths = " << this->paths.dump() << ", convexity = " << this->convexity << ")";
+		stream << "(points = " << this->points << ", paths = " << this->paths << ", convexity = " << this->convexity << ")";
 			break;
 	default:
 		assert(false);

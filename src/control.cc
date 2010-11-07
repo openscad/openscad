@@ -123,7 +123,7 @@ AbstractNode *ControlModule::evaluate(const Context*, const ModuleInstantiation 
 				msg += QString(", ");
 			if (!inst->argnames[i].isEmpty())
 				msg += inst->argnames[i] + QString(" = ");
-			msg += inst->argvalues[i].dump();
+			msg += QString::fromStdString(inst->argvalues[i].toString());
 		}
 		PRINT(msg);
 	}

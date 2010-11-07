@@ -76,8 +76,10 @@ AbstractNode *ImportModule::evaluate(const Context *ctx, const ModuleInstantiati
 	node->fs = c.lookup_variable("$fs").num;
 	node->fa = c.lookup_variable("$fa").num;
 
-	node->filename = c.get_absolute_path(c.lookup_variable("file").text);
-	node->layername = c.lookup_variable("layer", true).text;
+	Value v = c.lookup_variable("file");
+	node->filename = c.get_absolute_path(QString::fromStdString(v.text));
+//	node->filename = c.get_absolute_path(QString::fromStdString(c.lookup_variable("file").text));
+	node->layername = QString::fromStdString(c.lookup_variable("layer", true).text);
 	node->convexity = c.lookup_variable("convexity", true).num;
 
 	if (node->convexity <= 0)

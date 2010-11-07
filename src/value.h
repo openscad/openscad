@@ -2,7 +2,6 @@
 #define VALUE_H_
 
 #include <QVector>
-#include <QString>
 
 class Value
 {
@@ -24,14 +23,14 @@ public:
 	double range_begin;
 	double range_step;
 	double range_end;
-	QString text;
+	std::string text;
 
 	Value();
 	~Value();
 
 	Value(bool v);
 	Value(double v);
-	Value(const QString &t);
+	Value(const std::string &t);
 
 	Value(const Value &v);
 	Value& operator = (const Value &v);
@@ -59,11 +58,15 @@ public:
 	bool getv2(double &x, double &y) const;
 	bool getv3(double &x, double &y, double &z) const;
 
-	// FIXME: stream support
-	QString dump() const;
+	std::string toString() const;
 
 private:
 	void reset_undef();
 };
+
+std::ostream &operator<<(std::ostream &stream, const Value &value);
+
+// FIXME: Doesn't belong here..
+std::ostream &operator<<(std::ostream &stream, const QString &str);
 
 #endif

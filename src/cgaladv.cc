@@ -80,7 +80,7 @@ public:
 	}
 
 	Value path;
-	QString subdiv_type;
+	std::string subdiv_type;
 	int convexity, level;
 	cgaladv_type_e type;
 };
@@ -155,7 +155,7 @@ std::string CgaladvNode::toString() const
 		stream << "(convexity = " << this->convexity << ")";
 		break;
 	case GLIDE:
-		stream << "(path = " << this->path.dump() << ", convexity = " << this->convexity << ")";
+		stream << "(path = " << this->path << ", convexity = " << this->convexity << ")";
 		break;
 	case SUBDIV:
 		stream << "(level = " << this->level << ", convexity = " << this->convexity << ")";

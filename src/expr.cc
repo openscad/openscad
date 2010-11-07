@@ -26,6 +26,8 @@
 #include "expression.h"
 #include "value.h"
 #include "context.h"
+#include <assert.h>
+#include <sstream>
 
 Expression::Expression()
 {
@@ -142,45 +144,62 @@ Value Expression::evaluate(const Context *context) const
 	abort();
 }
 
-QString Expression::dump() const
+std::string Expression::toString() const
 {
-	if (type == "*" || type == "/" || type == "%" || type == "+" || type == "-" ||
-			type == "<" || type == "<=" || type == "==" || type == "!=" || type == ">=" || type == ">")
-		return QString("(%1 %2 %3)").arg(children[0]->dump(), QString(type), children[1]->dump());
-	if (type == "?:")
-		return QString("(%1 ? %2 : %3)").arg(children[0]->dump(), children[1]->dump(), children[2]->dump());
-	if (type == "[]")
-		return QString("(%1[%2])").arg(children[0]->dump(), children[1]->dump());
-	if (type == "I")
-		return QString("(-%1)").arg(children[0]->dump());
-	if (type == "C")
-		return const_value->dump();
-	if (type == "R")
-		return QString("[%1 : %2 : %3]").arg(children[0]->dump(), children[1]->dump(), children[2]->dump());
-	if (type == "V") {
-		QString text = QString("[");
-		for (int i=0; i < children.size(); i++) {
-			if (i > 0)
-				text += QString(", ");
-			text += children[i]->dump();
-		}
-		return text + QString("]");
+	std::stringstream stream;
+
+	if (this->type == "*" || this->type == "/" || this->type == "%" || this->type == "+" ||
+			this->type == "-" || this->type == "<" || this->type == "<=" || this->type == "==" || 
+			this->type == "!=" || this->type == ">=" || this->type == ">") {
+		stream << "(" << *children[0] << " " << this->type << " " << *children[1] << ")";
 	}
-	if (type == "L")
-		return var_name;
-	if (type == "N")
-		return QString("(%1.%2)").arg(children[0]->dump(), var_name);
-	if (type == "F") {
-		QString text = call_funcname + QString("(");
-		for (int i=0; i < children.size(); i++) {
-			if (i > 0)
-				text += QString(", ");
-			if (!call_argnames[i].isEmpty())
-				text += call_argnames[i] + QString(" = ");
-			text += children[i]->dump();
-		}
-		return text + QString(")");
+	else if (this->type == "?:") {
+		stream << "(" << *children[0] << " ? " << this->type << " : " << *children[1] << ")";
 	}
-	abort();
+	else if (this->type == "[]") {
+		stream << "(" << *children[0] << "[" << *children[1] << "])";
+	}
+	else if (this->type == "I") {
+		stream << "(-" << *children[0] << ")";
+	}
+	else if (this->type == "C") {
+		stream << *const_value;
+	}
+	else if (this->type == "R") {
+		stream << "[" << *children[0] << " : " << *children[1] << " : " << children[2] << "]";
+	}
+	else if (this->type == "V") {
+		stream << "[";
+		for (int i=0; i < children.size(); i++) {
+			if (i > 0) stream << ", ";
+			stream << *children[i];
+		}
+		stream << "]";
+	}
+	else if (this->type == "L") {
+		stream << var_name;
+	}
+	else if (this->type == "N") {
+		stream << "(" << *children[0] << "." << var_name << ")";
+	}
+	else if (this->type == "F") {
+		stream << call_funcname << "(";
+		for (int i=0; i < children.size(); i++) {
+			if (i > 0) stream << ", ";
+			if (!call_argnames[i].isEmpty()) stream << call_argnames[i]  << " = ";
+			stream << *children[i];
+		}
+		stream << ")";
+	}
+	else {
+		assert(false && "Illegal expression type");
+	}
+
+	return stream.str();
 }
 
+std::ostream &operator<<(std::ostream &stream, const Expression &expr)
+{
+	stream << expr.toString();
+	return stream;
+}

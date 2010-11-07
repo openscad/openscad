@@ -34,7 +34,9 @@ public:
 	~Expression();
 
 	Value evaluate(const class Context *context) const;
-	QString dump() const;
+	std::string toString() const;
 };
+
+std::ostream &operator<<(std::ostream &stream, const Expression &expr);
 
 #endif

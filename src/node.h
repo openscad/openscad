@@ -87,7 +87,5 @@ public:
 };
 
 std::ostream &operator<<(std::ostream &stream, const AbstractNode &node);
-// FIXME: Doesn't belong here..
-std::ostream &operator<<(std::ostream &stream, const QString &str);
 
 #endif

@@ -96,12 +96,6 @@ void AbstractNode::progress_report() const
 	progress_update(this, this->progress_mark);
 }
 
-std::ostream &operator<<(std::ostream &stream, const QString &str)
-{
-	stream << str.toStdString();
-	return stream;
-}
-
 std::ostream &operator<<(std::ostream &stream, const AbstractNode &node)
 {
 	stream << node.toString();

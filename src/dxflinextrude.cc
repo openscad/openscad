@@ -77,10 +77,10 @@ AbstractNode *DxfLinearExtrudeModule::evaluate(const Context *ctx, const ModuleI
 	Value twist = c.lookup_variable("twist", true);
 	Value slices = c.lookup_variable("slices", true);
 
-	if (!file.text.isNull())
-		node->filename = c.get_absolute_path(file.text);
+	if (!file.text.empty())
+		node->filename = c.get_absolute_path(QString::fromStdString(file.text));
 
-	node->layername = layer.text;
+	node->layername = QString::fromStdString(layer.text);
 	node->height = height.num;
 	node->convexity = (int)convexity.num;
 	origin.getv2(node->origin_x, node->origin_y);

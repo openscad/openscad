@@ -51,15 +51,15 @@ Value builtin_dxf_dim(const Context *ctx, const QVector<QString> &argnames, cons
 
 	for (int i = 0; i < argnames.count() && i < args.count(); i++) {
 		if (argnames[i] == "file")
-			filename = ctx->get_absolute_path(args[i].text);
+			filename = ctx->get_absolute_path(QString::fromStdString(args[i].text));
 		if (argnames[i] == "layer")
-			layername = args[i].text;
+			layername = QString::fromStdString(args[i].text);
 		if (argnames[i] == "origin")
 			args[i].getv2(xorigin, yorigin);
 		if (argnames[i] == "scale")
 			args[i].getnum(scale);
 		if (argnames[i] == "name")
-			name = args[i].text;
+			name = QString::fromStdString(args[i].text);
 	}
 
 	struct stat st;
@@ -135,9 +135,9 @@ Value builtin_dxf_cross(const Context *ctx, const QVector<QString> &argnames, co
 
 	for (int i = 0; i < argnames.count() && i < args.count(); i++) {
 		if (argnames[i] == "file")
-			filename = ctx->get_absolute_path(args[i].text);
+			filename = ctx->get_absolute_path(QString::fromStdString(args[i].text));
 		if (argnames[i] == "layer")
-			layername = args[i].text;
+			layername = QString::fromStdString(args[i].text);
 		if (argnames[i] == "origin")
 			args[i].getv2(xorigin, yorigin);
 		if (argnames[i] == "scale")

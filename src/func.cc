@@ -29,6 +29,7 @@
 #include "dxfdim.h"
 #include "builtin.h"
 #include <math.h>
+#include <sstream>
 
 AbstractFunction::~AbstractFunction()
 {
@@ -68,9 +69,9 @@ QString Function::dump(QString indent, QString name) const
 			text += QString(", ");
 		text += argnames[i];
 		if (argexpr[i])
-			text += QString(" = ") + argexpr[i]->dump();
+			text += QString(" = ") + QString::fromStdString(argexpr[i]->toString());
 	}
-	text += QString(") = %1;\n").arg(expr->dump());
+	text += QString(") = %1;\n").arg(QString::fromStdString(expr->toString()));
 	return text;
 }
 
@@ -257,15 +258,12 @@ Value builtin_ln(const Context *, const QVector<QString>&, const QVector<Value> 
 
 Value builtin_str(const Context *, const QVector<QString>&, const QVector<Value> &args)
 {
-	QString str;
-	for (int i = 0; i < args.size(); i++)
-	{
-		if (args[i].type == Value::STRING)
-			str += args[i].text;
-		else
-			str += args[i].dump();
+	std::stringstream stream;
+
+	for (int i = 0; i < args.size(); i++) {
+		stream << args[i];
 	}
-	return Value(str);
+	return Value(stream.str());
 }
 
 Value builtin_lookup(const Context *, const QVector<QString>&, const QVector<Value> &args)

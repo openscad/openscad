@@ -25,6 +25,8 @@
 
 #include "value.h"
 #include <math.h>
+#include <sstream>
+#include <QString>
 
 Value::Value()
 {
@@ -52,7 +54,7 @@ Value::Value(double v)
 	this->num = v;
 }
 
-Value::Value(const QString &t)
+Value::Value(const std::string &t)
 {
 	reset_undef();
 	this->type = STRING;
@@ -306,36 +308,6 @@ bool Value::getv3(double &x, double &y, double &z) const
 	return true;
 }
 
-QString Value::dump() const
-{
-	if (this->type == STRING) {
-		return QString("\"") + this->text + QString("\"");
-	}
-	if (this->type == VECTOR) {
-		QString text = "[";
-		for (int i = 0; i < this->vec.size(); i++) {
-			if (i > 0)
-				text += ", ";
-			text += this->vec[i]->dump();
-		}
-		return text + "]";
-	}
-	if (this->type == RANGE) {
-		QString text;
-		text.sprintf("[ %g : %g : %g ]", this->range_begin, this->range_step, this->range_end);
-		return text;
-	}
-	if (this->type == NUMBER) {
-		QString text;
-		text.sprintf("%g", this->num);
-		return text;
-	}
-	if (this->type == BOOL) {
-		return QString(this->b ? "true" : "false");
-	}
-	return QString("undef");
-}
-
 void Value::reset_undef()
 {
 	this->type = UNDEFINED;
@@ -347,5 +319,52 @@ void Value::reset_undef()
 	this->range_begin = 0;
 	this->range_step = 0;
 	this->range_end = 0;
-	this->text = QString();
+	this->text = "";
 }
+
+std::string Value::toString() const
+{
+	std::stringstream stream;
+
+	switch (this->type) {
+	case STRING:
+		stream << '"' << this->text << '"';
+		break;
+	case VECTOR:
+		stream << '[';
+		for (int i = 0; i < this->vec.size(); i++) {
+			if (i > 0) stream << ", ";
+			stream << *(this->vec[i]);
+		}
+		stream << ']';
+		break;
+	case RANGE:
+		stream << "[ "
+					 << this->range_begin << " : " << this->range_step << " : " << this->range_end
+					 << " ]";
+		break;
+	case NUMBER:
+		stream << this->num;
+		break;
+	case BOOL:
+		stream << this->b;
+		break;
+	default:
+		stream << "undef";
+	}
+
+	return stream.str();
+}
+
+std::ostream &operator<<(std::ostream &stream, const Value &value)
+{
+	stream << value.toString();
+	return stream;
+}
+
+std::ostream &operator<<(std::ostream &stream, const QString &str)
+{
+	stream << str.toStdString();
+	return stream;
+}
+

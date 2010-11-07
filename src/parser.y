@@ -331,7 +331,7 @@ expr:
 	TOK_STRING {
 		$$ = new Expression();
 		$$->type = "C";
-		$$->const_value = new Value(QString($1));
+		$$->const_value = new Value(std::string($1));
 		free($1);
 	} |
 	TOK_NUMBER {

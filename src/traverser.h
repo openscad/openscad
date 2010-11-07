@@ -16,7 +16,7 @@ public:
   void execute();
 private:
   // FIXME: reverse parameters
-  void traverse(const class State &state, const AbstractNode &node);
+  void traverse(const AbstractNode &node, const class State &state);
 
   Visitor &visitor;
   const AbstractNode &root;

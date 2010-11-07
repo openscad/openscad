@@ -6,10 +6,10 @@
 void Traverser::execute() 
 {
 	State state(NULL);
-	traverse(state, this->root);
+	traverse(this->root, state);
 }
 
-void Traverser::traverse(const State &state, const AbstractNode &node)
+void Traverser::traverse(const AbstractNode &node, const State &state)
 {
 	// FIXME: Handle abort
 	
@@ -28,7 +28,7 @@ void Traverser::traverse(const State &state, const AbstractNode &node)
 			 iter != children.end();
 			 iter++) {
 		
-		traverse(newstate, **iter);
+		traverse(**iter, newstate);
 	}
 	
 	if (traversaltype == POSTFIX || traversaltype == PRE_AND_POSTFIX) {
