@@ -10,15 +10,6 @@
 #include <iostream>
 #include <assert.h>
 
-// For compatibility with old dump() output.
-// FIXME: Only needed for testing.
-//#define NODEDUMPER_COMPAT_MODE
-#ifdef NODEDUMPER_COMPAT_MODE
-#include "dxflinextrudenode.h"
-#include "dxfrotextrudenode.h"
-#include "projectionnode.h"
-#endif
-
 /*!
 	\class NodeDumper
 
@@ -67,15 +58,7 @@ string NodeDumper::dumpChildren(const AbstractNode &node)
 		dump << this->currindent << "}";
 	}
 	else {
-#ifndef NODEDUMPER_COMPAT_MODE
 		dump << ";";
-#else
-		if (dynamic_cast<const AbstractPolyNode*>(&node) &&
-				!dynamic_cast<const ProjectionNode*>(&node) &&
-				!dynamic_cast<const DxfRotateExtrudeNode*>(&node) &&
-				!dynamic_cast<const DxfLinearExtrudeNode*>(&node)) dump << ";";
-		else dump << " {\n" << this->currindent << "}";
-#endif
 	}
 	return dump.str();
 }
