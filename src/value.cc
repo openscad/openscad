@@ -25,8 +25,8 @@
 
 #include "value.h"
 #include <math.h>
+#include <assert.h>
 #include <sstream>
-#include <QString>
 
 Value::Value()
 {
@@ -35,8 +35,7 @@ Value::Value()
 
 Value::~Value()
 {
-	for (int i = 0; i < this->vec.size(); i++)
-		delete this->vec[i];
+	for (int i = 0; i < this->vec.size(); i++) delete this->vec[i];
 	this->vec.clear();
 }
 
@@ -72,8 +71,9 @@ Value& Value::operator = (const Value &v)
 	this->type = v.type;
 	this->b = v.b;
 	this->num = v.num;
-	for (int i = 0; i < v.vec.size(); i++)
-		this->vec.append(new Value(*v.vec[i]));
+	for (int i = 0; i < v.vec.size(); i++) {
+		this->vec.push_back(new Value(*v.vec[i]));
+	}
 	this->range_begin = v.range_begin;
 	this->range_step = v.range_step;
 	this->range_end = v.range_end;
@@ -111,7 +111,7 @@ Value Value::operator + (const Value &v) const
 		Value r;
 		r.type = VECTOR;
 		for (int i = 0; i < this->vec.size() && i < v.vec.size(); i++)
-			r.vec.append(new Value(*this->vec[i] + *v.vec[i]));
+			r.vec.push_back(new Value(*this->vec[i] + *v.vec[i]));
 		return r;
 	}
 	if (this->type == NUMBER && v.type == NUMBER) {
@@ -126,7 +126,7 @@ Value Value::operator - (const Value &v) const
 		Value r;
 		r.type = VECTOR;
 		for (int i = 0; i < this->vec.size() && i < v.vec.size(); i++)
-			r.vec.append(new Value(*this->vec[i] - *v.vec[i]));
+			r.vec.push_back(new Value(*this->vec[i] - *v.vec[i]));
 		return r;
 	}
 	if (this->type == NUMBER && v.type == NUMBER) {
@@ -141,14 +141,14 @@ Value Value::operator * (const Value &v) const
 		Value r;
 		r.type = VECTOR;
 		for (int i = 0; i < this->vec.size(); i++)
-			r.vec.append(new Value(*this->vec[i] * v));
+			r.vec.push_back(new Value(*this->vec[i] * v));
 		return r;
 	}
 	if (this->type == NUMBER && v.type == VECTOR) {
 		Value r;
 		r.type = VECTOR;
 		for (int i = 0; i < v.vec.size(); i++)
-			r.vec.append(new Value(*this * *v.vec[i]));
+			r.vec.push_back(new Value(*this * *v.vec[i]));
 		return r;
 	}
 	if (this->type == NUMBER && v.type == NUMBER) {
@@ -163,14 +163,14 @@ Value Value::operator / (const Value &v) const
 		Value r;
 		r.type = VECTOR;
 		for (int i = 0; i < this->vec.size(); i++)
-			r.vec.append(new Value(*this->vec[i] / v));
+			r.vec.push_back(new Value(*this->vec[i] / v));
 		return r;
 	}
 	if (this->type == NUMBER && v.type == VECTOR) {
 		Value r;
 		r.type = VECTOR;
 		for (int i = 0; i < v.vec.size(); i++)
-			r.vec.append(new Value(v / *v.vec[i]));
+			r.vec.push_back(new Value(v / *v.vec[i]));
 		return r;
 	}
 	if (this->type == NUMBER && v.type == NUMBER) {
@@ -256,7 +256,7 @@ Value Value::inv() const
 		Value r;
 		r.type = VECTOR;
 		for (int i = 0; i < this->vec.size(); i++)
-			r.vec.append(new Value(this->vec[i]->inv()));
+			r.vec.push_back(new Value(this->vec[i]->inv()));
 		return r;
 	}
 	if (this->type == NUMBER)
@@ -313,8 +313,7 @@ void Value::reset_undef()
 	this->type = UNDEFINED;
 	this->b = false;
 	this->num = 0;
-	for (int i = 0; i < this->vec.size(); i++)
-		delete this->vec[i];
+	for (int i = 0; i < this->vec.size(); i++) delete this->vec[i];
 	this->vec.clear();
 	this->range_begin = 0;
 	this->range_step = 0;
@@ -354,6 +353,16 @@ std::string Value::toString() const
 	}
 
 	return stream.str();
+}
+
+/*!
+	Append a value to this vector.
+	This must be of type VECTOR.
+*/
+void Value::append(Value *val)
+{
+	assert(this->type == VECTOR);
+	this->vec.push_back(val);
 }
 
 std::ostream &operator<<(std::ostream &stream, const Value &value)

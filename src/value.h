@@ -1,7 +1,8 @@
 #ifndef VALUE_H_
 #define VALUE_H_
 
-#include <QVector>
+#include <vector>
+#include <string>
 
 class Value
 {
@@ -19,7 +20,7 @@ public:
 
 	bool b;
 	double num;
-	QVector<Value*> vec;
+	std::vector<Value*> vec;
 	double range_begin;
 	double range_step;
 	double range_end;
@@ -60,6 +61,8 @@ public:
 
 	std::string toString() const;
 
+	void append(Value *val);
+
 private:
 	void reset_undef();
 };
@@ -67,6 +70,7 @@ private:
 std::ostream &operator<<(std::ostream &stream, const Value &value);
 
 // FIXME: Doesn't belong here..
+#include <QString>
 std::ostream &operator<<(std::ostream &stream, const QString &str);
 
 #endif

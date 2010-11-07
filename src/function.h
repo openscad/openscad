@@ -3,6 +3,7 @@
 
 #include "value.h"
 #include <QString>
+#include <QVector>
 
 class AbstractFunction
 {

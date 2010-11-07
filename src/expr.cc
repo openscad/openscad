@@ -110,7 +110,7 @@ Value Expression::evaluate(const Context *context) const
 		Value v;
 		v.type = Value::VECTOR;
 		for (int i = 0; i < children.size(); i++)
-			v.vec.append(new Value(children[i]->evaluate(context)));
+			v.append(new Value(children[i]->evaluate(context)));
 		return v;
 	}
 	if (type == "L")

@@ -180,8 +180,8 @@ Value builtin_dxf_cross(const Context *ctx, const QVector<QString> &argnames, co
 			double y = y1 + ua*(y2 - y1);
 			Value ret;
 			ret.type = Value::VECTOR;
-			ret.vec.append(new Value(x));
-			ret.vec.append(new Value(y));
+			ret.append(new Value(x));
+			ret.append(new Value(y));
 			return dxf_cross_cache[key] = ret;
 		}
 	}
