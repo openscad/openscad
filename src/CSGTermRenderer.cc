@@ -100,8 +100,12 @@ static CSGTerm *render_csg_term_from_ps(const double m[20],
 Response CSGTermRenderer::visit(State &state, const AbstractPolyNode &node)
 {
 	if (state.isPostfix()) {
+		CSGTerm *t1 = NULL;
 		PolySet *ps = node.render_polyset(AbstractPolyNode::RENDER_OPENCSG, this->psrenderer);
-		CSGTerm *t1 = render_csg_term_from_ps(state.matrix(), this->highlights, this->background, ps, node.modinst, node);
+		if (ps) {
+			t1 = render_csg_term_from_ps(state.matrix(), this->highlights, this->background, 
+																	 ps, node.modinst, node);
+		}
 		this->stored_term[node.index()] = t1;
 		addToParent(state, node);
 	}

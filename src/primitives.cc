@@ -509,8 +509,8 @@ sphere_next_r2:
 			double x,y;
 			if (!this->points.vec[i]->getv2(x, y)) {
 				PRINTF("ERROR: Unable to convert point at index %d to a vec2 of numbers", i);
-				// FIXME: Return NULL and make sure this is checked by all callers?
-				return p;
+				p->unlink();
+				return NULL;
 			}
 			dd.points.append(DxfData::Point(x, y));
 		}

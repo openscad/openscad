@@ -231,17 +231,19 @@ Response CGALRenderer::visit(State &state, const AbstractPolyNode &node)
 
 			// Then apply polyset operation
 			PolySet *ps = node.render_polyset(AbstractPolyNode::RENDER_CGAL, &this->psrenderer);
-			try {
-				CGAL_Nef_polyhedron N = renderCGALMesh(*ps);
+			if (ps) {
+				try {
+					CGAL_Nef_polyhedron N = renderCGALMesh(*ps);
 //				print_messages_pop();
-				node.progress_report();
-				
-				ps->unlink();
-				this->cache.insert(this->tree.getString(node), N);
-			}
-			catch (...) { // Don't leak the PolySet on ProgressCancelException
-				ps->unlink();
-				throw;
+					node.progress_report();
+					
+					ps->unlink();
+					this->cache.insert(this->tree.getString(node), N);
+				}
+				catch (...) { // Don't leak the PolySet on ProgressCancelException
+					ps->unlink();
+					throw;
+				}
 			}
 		}
 		addToParent(state, node);
@@ -274,18 +276,20 @@ CGAL_Nef_polyhedron CGALRenderer::renderCGALMesh(const AbstractPolyNode &node)
 	// 	print_messages_push();
 	
 	PolySet *ps = node.render_polyset(AbstractPolyNode::RENDER_CGAL);
-	try {
-		CGAL_Nef_polyhedron N = ps->renderCSGMesh();
-		// FIXME: Insert into cache
-		// print_messages_pop();
-		node.progress_report();
-		
-		ps->unlink();
-		return N;
-	}
-	catch (...) { // Don't leak the PolySet on ProgressCancelException
-		ps->unlink();
-		throw;
+	if (ps) {
+		try {
+			CGAL_Nef_polyhedron N = ps->renderCSGMesh();
+			// FIXME: Insert into cache
+			// print_messages_pop();
+			node.progress_report();
+			
+			ps->unlink();
+			return N;
+		}
+		catch (...) { // Don't leak the PolySet on ProgressCancelException
+			ps->unlink();
+			throw;
+		}
 	}
 }
 #endif

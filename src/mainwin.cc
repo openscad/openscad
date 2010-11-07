@@ -147,9 +147,9 @@ MainWindow::MainWindow(const QString &filename)
 
 	Value zero3;
 	zero3.type = Value::VECTOR;
-	zero3.vec.append(new Value(0.0));
-	zero3.vec.append(new Value(0.0));
-	zero3.vec.append(new Value(0.0));
+	zero3.append(new Value(0.0));
+	zero3.append(new Value(0.0));
+	zero3.append(new Value(0.0));
 	root_ctx.set_variable("$vpt", zero3);
 	root_ctx.set_variable("$vpr", zero3);
 
@@ -603,16 +603,16 @@ void MainWindow::compile(bool procevents)
 
 	Value vpt;
 	vpt.type = Value::VECTOR;
-	vpt.vec.append(new Value(-screen->object_trans_x));
-	vpt.vec.append(new Value(-screen->object_trans_y));
-	vpt.vec.append(new Value(-screen->object_trans_z));
+	vpt.append(new Value(-screen->object_trans_x));
+	vpt.append(new Value(-screen->object_trans_y));
+	vpt.append(new Value(-screen->object_trans_z));
 	this->root_ctx.set_variable("$vpt", vpt);
 
 	Value vpr;
 	vpr.type = Value::VECTOR;
-	vpr.vec.append(new Value(fmodf(360 - screen->object_rot_x + 90, 360)));
-	vpr.vec.append(new Value(fmodf(360 - screen->object_rot_y, 360)));
-	vpr.vec.append(new Value(fmodf(360 - screen->object_rot_z, 360)));
+	vpr.append(new Value(fmodf(360 - screen->object_rot_x + 90, 360)));
+	vpr.append(new Value(fmodf(360 - screen->object_rot_y, 360)));
+	vpr.append(new Value(fmodf(360 - screen->object_rot_z, 360)));
 	root_ctx.set_variable("$vpr", vpr);
 
 	// Parse
