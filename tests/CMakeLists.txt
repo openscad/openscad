@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 2.8)
 project(tests)
 
+set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}")
+
 # Build debug build as default
 if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Debug)
@@ -14,7 +16,6 @@ endif()
 find_package(OpenGL)
 find_package(Qt4 COMPONENTS QtCore QtGui QtOpenGL REQUIRED)
 include(${QT_USE_FILE})
-include_directories(../src)
 
 # Eigen2
 if (NOT EIGEN2_INCLUDE_DIR)
@@ -28,6 +29,28 @@ if (NOT EIGEN2_INCLUDE_DIR)
   endif()
 endif()
 include_directories(${EIGEN2_INCLUDE_DIR})
+
+# OpenCSG
+if (NOT $ENV{MACOSX_DEPLOY_DIR} STREQUAL "")
+  set(OPENCSG_DIR "$ENV{MACOSX_DEPLOY_DIR}")
+endif()
+if (NOT OPENCSG_INCLUDE_DIR)
+  find_path(OPENCSG_INCLUDE_DIR
+            opencsg.h
+            PATHS $ENV{MACOSX_DEPLOY_DIR}/include)
+  find_library(OPENCSG_LIBRARY
+               opencsg
+               PATHS $ENV{MACOSX_DEPLOY_DIR}/lib)
+  if (NOT OPENCSG_INCLUDE_DIR OR NOT OPENCSG_LIBRARY)
+    message(FATAL_ERROR "OpenCSG not found")
+  else()
+    message(STATUS "OpenCSG found in " ${OPENCSG_LIBRARY})
+  endif()
+endif()
+include_directories(${OPENCSG_INCLUDE_DIR})
+
+find_package(GLEW REQUIRED)
+include_directories(${GLEW_INCLUDE_PATH})
 
 # Flex/Bison
 find_package(BISON)
@@ -92,10 +115,18 @@ find_package(CGAL REQUIRED)
 include_directories(${CGAL_INCLUDE_DIRS})
 add_executable(cgaltest cgaltest.cc ../src/CSGTermRenderer.cc ../src/CGALRenderer.cc
                         ../src/PolySetCGALRenderer.cc ../src/qhash.cc ../src/nef2dxf.cc
-                        ../src/nef2dxf.cc ../src/cgaladv_minkowski2.cc
-                        ../src/cgaladv_minkowski3.cc ${COMMON_SOURCES})
+                        ../src/cgaladv_minkowski2.cc ../src/cgaladv_minkowski3.cc ${COMMON_SOURCES})
 set_target_properties(cgaltest PROPERTIES COMPILE_FLAGS "-DENABLE_CGAL ${CGAL_CXX_FLAGS_INIT}")
 target_link_libraries(cgaltest ${CGAL_LIBRARY} ${CGAL_3RD_PARTY_LIBRARIES} ${QT_LIBRARIES} ${OPENGL_LIBRARY})
+
+QT4_WRAP_CPP(MOC_SRC_opencsgtest ../src/GLView.h)
+add_executable(opencsgtest opencsgtest.cc ${MOC_SRC_opencsgtest} ../src/glview.cc
+                           ../src/render-opencsg.cc ../src/CSGTermRenderer.cc ../src/CGALRenderer.cc
+                           ../src/PolySetCGALRenderer.cc ../src/qhash.cc ../src/nef2dxf.cc
+                           ../src/cgaladv_minkowski2.cc ../src/cgaladv_minkowski3.cc
+                           ${COMMON_SOURCES})
+set_target_properties(opencsgtest PROPERTIES COMPILE_FLAGS "-DENABLE_OPENCSG -DENABLE_CGAL ${CGAL_CXX_FLAGS_INIT}")
+target_link_libraries(opencsgtest ${CGAL_LIBRARY} ${CGAL_3RD_PARTY_LIBRARIES} ${QT_LIBRARIES} ${OPENCSG_LIBRARY} ${GLEW_LIBRARY} ${OPENGL_LIBRARY})
 
 #
 # This functions adds cmd-line tests given files.
