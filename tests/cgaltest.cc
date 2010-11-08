@@ -86,8 +86,6 @@ int main(int argc, char **argv)
 
 	const char *filename = argv[1];
 
-	int rc = 0;
-
 	initialize_builtin_functions();
 	initialize_builtin_modules();
 
@@ -177,5 +175,5 @@ int main(int argc, char **argv)
 	destroy_builtin_functions();
 	destroy_builtin_modules();
 
-	return rc;
+	return 0;
 }
