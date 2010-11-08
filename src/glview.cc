@@ -24,7 +24,8 @@
  */
 
 #include "GLView.h"
-#include "Preferences.h"
+// FIXME: Reenable/rewrite - don't be dependant on GUI
+//#include "Preferences.h"
 
 #include <QApplication>
 #include <QWheelEvent>
@@ -215,7 +216,9 @@ void GLView::resizeGL(int w, int h)
 
 void GLView::paintGL()
 {
-	const QColor &bgcol = Preferences::inst()->color(Preferences::BACKGROUND_COLOR);
+// FIXME: Reenable/rewrite - don't be dependant on GUI
+//	const QColor &bgcol = Preferences::inst()->color(Preferences::BACKGROUND_COLOR);
+		const QColor &bgcol = QColor(0xff, 0xff, 0xe5);
 	glClearColor(bgcol.redF(), bgcol.greenF(), bgcol.blueF(), 0.0);
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
@@ -258,7 +261,8 @@ void GLView::paintGL()
 	if (showcrosshairs)
 	{
 		glLineWidth(3);
-		const QColor &col = Preferences::inst()->color(Preferences::CROSSHAIR_COLOR);
+//		const QColor &col = Preferences::inst()->color(Preferences::CROSSHAIR_COLOR);
+		const QColor &col = QColor(0x80, 0x00, 0x00);
 		glColor3f(col.redF(), col.greenF(), col.blueF());
 		glBegin(GL_LINES);
 		for (double xf = -1; xf <= +1; xf += 2)

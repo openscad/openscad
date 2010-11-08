@@ -38,7 +38,7 @@
           <property name="orientation">
            <enum>Qt::Vertical</enum>
           </property>
-          <widget class="GLView" name="screen" native="true"/>
+          <widget class="GLView" name="glview" native="true"/>
           <widget class="QTextEdit" name="console"/>
          </widget>
         </item>

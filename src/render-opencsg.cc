@@ -1,6 +1,9 @@
 #include "render-opencsg.h"
 #include "polyset.h"
 #include "csgterm.h"
+#ifdef ENABLE_OPENCSG
+#  include <opencsg.h>
+#endif
 
 class OpenCSGPrim : public OpenCSG::Primitive
 {

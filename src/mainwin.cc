@@ -187,8 +187,8 @@ MainWindow::MainWindow(const QString &filename)
 	editor->setLineWrapping(true); // Not designable
 	setFont("", 0); // Init default font
 
-	screen->statusLabel = new QLabel(this);
-	statusBar()->addWidget(screen->statusLabel);
+	this->glview->statusLabel = new QLabel(this);
+	statusBar()->addWidget(this->glview->statusLabel);
 
 	animate_timer = new QTimer(this);
 	connect(animate_timer, SIGNAL(timeout()), this, SLOT(updateTVal()));
@@ -282,7 +282,7 @@ MainWindow::MainWindow(const QString &filename)
 	this->viewActionOpenCSG->setVisible(false);
 #else
 	connect(this->viewActionOpenCSG, SIGNAL(triggered()), this, SLOT(viewModeOpenCSG()));
-	if (!screen->hasOpenCSGSupport()) {
+	if (!this->glview->hasOpenCSGSupport()) {
 		this->viewActionOpenCSG->setEnabled(false);
 	}
 #endif
@@ -343,9 +343,9 @@ MainWindow::MainWindow(const QString &filename)
 	connect(editor->document(), SIGNAL(modificationChanged(bool)), this, SLOT(setWindowModified(bool)));
 	connect(editor->document(), SIGNAL(modificationChanged(bool)), fileActionSave, SLOT(setEnabled(bool)));
 #endif
-	connect(screen, SIGNAL(doAnimateUpdate()), this, SLOT(animateUpdate()));
+	connect(this->glview, SIGNAL(doAnimateUpdate()), this, SLOT(animateUpdate()));
 
-	connect(Preferences::inst(), SIGNAL(requestRedraw()), this->screen, SLOT(updateGL()));
+	connect(Preferences::inst(), SIGNAL(requestRedraw()), this->glview, SLOT(updateGL()));
 	connect(Preferences::inst(), SIGNAL(fontChanged(const QString&,uint)), 
 					this, SLOT(setFont(const QString&,uint)));
 	Preferences::inst()->apply();
@@ -603,16 +603,16 @@ void MainWindow::compile(bool procevents)
 
 	Value vpt;
 	vpt.type = Value::VECTOR;
-	vpt.append(new Value(-screen->object_trans_x));
-	vpt.append(new Value(-screen->object_trans_y));
-	vpt.append(new Value(-screen->object_trans_z));
+	vpt.append(new Value(-this->glview->object_trans_x));
+	vpt.append(new Value(-this->glview->object_trans_y));
+	vpt.append(new Value(-this->glview->object_trans_z));
 	this->root_ctx.set_variable("$vpt", vpt);
 
 	Value vpr;
 	vpr.type = Value::VECTOR;
-	vpr.append(new Value(fmodf(360 - screen->object_rot_x + 90, 360)));
-	vpr.append(new Value(fmodf(360 - screen->object_rot_y, 360)));
-	vpr.append(new Value(fmodf(360 - screen->object_rot_z, 360)));
+	vpr.append(new Value(fmodf(360 - this->glview->object_rot_x + 90, 360)));
+	vpr.append(new Value(fmodf(360 - this->glview->object_rot_y, 360)));
+	vpr.append(new Value(fmodf(360 - this->glview->object_rot_z, 360)));
 	root_ctx.set_variable("$vpr", vpr);
 
 	// Parse
@@ -987,7 +987,7 @@ void MainWindow::pasteViewportTranslation()
 	QTextCursor cursor = editor->textCursor();
 #endif
 	QString txt;
-	txt.sprintf("[ %.2f, %.2f, %.2f ]", -screen->object_trans_x, -screen->object_trans_y, -screen->object_trans_z);
+	txt.sprintf("[ %.2f, %.2f, %.2f ]", -this->glview->object_trans_x, -this->glview->object_trans_y, -this->glview->object_trans_z);
 	cursor.insertText(txt);
 }
 
@@ -1000,7 +1000,7 @@ void MainWindow::pasteViewportRotation()
 #endif
 	QString txt;
 	txt.sprintf("[ %.2f, %.2f, %.2f ]",
-		fmodf(360 - screen->object_rot_x + 90, 360), fmodf(360 - screen->object_rot_y, 360), fmodf(360 - screen->object_rot_z, 360));
+		fmodf(360 - this->glview->object_rot_x + 90, 360), fmodf(360 - this->glview->object_rot_y, 360), fmodf(360 - this->glview->object_rot_z, 360));
 	cursor.insertText(txt);
 }
 
@@ -1065,7 +1065,7 @@ void MainWindow::actionReloadCompile()
 	else
 #endif
 	{
-		screen->updateGL();
+		this->glview->updateGL();
 	}
 	clearCurrentOutput();
 }
@@ -1090,11 +1090,11 @@ void MainWindow::actionCompile()
 #endif
 	}
 	else {
-		screen->updateGL();
+		this->glview->updateGL();
 	}
 
 	if (viewActionAnimate->isChecked() && e_dump->isChecked()) {
-		QImage img = screen->grabFrameBuffer();
+		QImage img = this->glview->grabFrameBuffer();
 		QString filename;
 		double s = e_fsteps->text().toDouble();
 		double t = e_tval->text().toDouble();
@@ -1215,7 +1215,7 @@ void MainWindow::actionRenderCGAL()
 		if (!viewActionCGALSurfaces->isChecked() && !viewActionCGALGrid->isChecked()) {
 			viewModeCGALSurface();
 		} else {
-			screen->updateGL();
+			this->glview->updateGL();
 		}
 
 		PRINT("Rendering finished.");
@@ -1434,10 +1434,10 @@ static void renderGLviaOpenCSG(void *vp)
 		glewInit();
 	}
 #ifdef ENABLE_MDI
-	OpenCSG::setContext(mainwin->screen->opencsg_id);
+	OpenCSG::setContext(mainwin->glview->opencsg_id);
 #endif
 	if (mainwin->root_chain) {
-		GLint *shaderinfo = mainwin->screen->shaderinfo;
+		GLint *shaderinfo = mainwin->glview->shaderinfo;
 		if (!shaderinfo[0])
 			shaderinfo = NULL;
 		renderCSGChainviaOpenCSG(mainwin->root_chain, mainwin->viewActionShowEdges->isChecked() ? shaderinfo : NULL, false, false);
@@ -1456,11 +1456,11 @@ static void renderGLviaOpenCSG(void *vp)
 */
 void MainWindow::viewModeOpenCSG()
 {
-	if (screen->hasOpenCSGSupport()) {
+	if (this->glview->hasOpenCSGSupport()) {
 		viewModeActionsUncheck();
 		viewActionOpenCSG->setChecked(true);
-		screen->setRenderFunc(renderGLviaOpenCSG, this);
-		screen->updateGL();
+		this->glview->setRenderFunc(renderGLviaOpenCSG, this);
+		this->glview->updateGL();
 	} else {
 		viewModeThrownTogether();
 	}
@@ -1588,16 +1588,16 @@ void MainWindow::viewModeCGALSurface()
 {
 	viewModeActionsUncheck();
 	viewActionCGALSurfaces->setChecked(true);
-	screen->setRenderFunc(renderGLviaCGAL, this);
-	screen->updateGL();
+	this->glview->setRenderFunc(renderGLviaCGAL, this);
+	this->glview->updateGL();
 }
 
 void MainWindow::viewModeCGALGrid()
 {
 	viewModeActionsUncheck();
 	viewActionCGALGrid->setChecked(true);
-	screen->setRenderFunc(renderGLviaCGAL, this);
-	screen->updateGL();
+	this->glview->setRenderFunc(renderGLviaCGAL, this);
+	this->glview->updateGL();
 }
 
 #endif /* ENABLE_CGAL */
@@ -1686,25 +1686,25 @@ void MainWindow::viewModeThrownTogether()
 {
 	viewModeActionsUncheck();
 	viewActionThrownTogether->setChecked(true);
-	screen->setRenderFunc(renderGLThrownTogether, this);
-	screen->updateGL();
+	this->glview->setRenderFunc(renderGLThrownTogether, this);
+	this->glview->updateGL();
 }
 
 void MainWindow::viewModeShowEdges()
 {
-	screen->updateGL();
+	this->glview->updateGL();
 }
 
 void MainWindow::viewModeShowAxes()
 {
-	screen->setShowAxes(viewActionShowAxes->isChecked());
-	screen->updateGL();
+	this->glview->setShowAxes(viewActionShowAxes->isChecked());
+	this->glview->updateGL();
 }
 
 void MainWindow::viewModeShowCrosshairs()
 {
-	screen->setShowCrosshairs(viewActionShowCrosshairs->isChecked());
-	screen->updateGL();
+	this->glview->setShowCrosshairs(viewActionShowCrosshairs->isChecked());
+	this->glview->updateGL();
 }
 
 void MainWindow::viewModeAnimate()
@@ -1742,82 +1742,82 @@ void MainWindow::animateUpdate()
 
 void MainWindow::viewAngleTop()
 {
-	screen->object_rot_x = 90;
-	screen->object_rot_y = 0;
-	screen->object_rot_z = 0;
-	screen->updateGL();
+	this->glview->object_rot_x = 90;
+	this->glview->object_rot_y = 0;
+	this->glview->object_rot_z = 0;
+	this->glview->updateGL();
 }
 
 void MainWindow::viewAngleBottom()
 {
-	screen->object_rot_x = 270;
-	screen->object_rot_y = 0;
-	screen->object_rot_z = 0;
-	screen->updateGL();
+	this->glview->object_rot_x = 270;
+	this->glview->object_rot_y = 0;
+	this->glview->object_rot_z = 0;
+	this->glview->updateGL();
 }
 
 void MainWindow::viewAngleLeft()
 {
-	screen->object_rot_x = 0;
-	screen->object_rot_y = 0;
-	screen->object_rot_z = 90;
-	screen->updateGL();
+	this->glview->object_rot_x = 0;
+	this->glview->object_rot_y = 0;
+	this->glview->object_rot_z = 90;
+	this->glview->updateGL();
 }
 
 void MainWindow::viewAngleRight()
 {
-	screen->object_rot_x = 0;
-	screen->object_rot_y = 0;
-	screen->object_rot_z = 270;
-	screen->updateGL();
+	this->glview->object_rot_x = 0;
+	this->glview->object_rot_y = 0;
+	this->glview->object_rot_z = 270;
+	this->glview->updateGL();
 }
 
 void MainWindow::viewAngleFront()
 {
-	screen->object_rot_x = 0;
-	screen->object_rot_y = 0;
-	screen->object_rot_z = 0;
-	screen->updateGL();
+	this->glview->object_rot_x = 0;
+	this->glview->object_rot_y = 0;
+	this->glview->object_rot_z = 0;
+	this->glview->updateGL();
 }
 
 void MainWindow::viewAngleBack()
 {
-	screen->object_rot_x = 0;
-	screen->object_rot_y = 0;
-	screen->object_rot_z = 180;
-	screen->updateGL();
+	this->glview->object_rot_x = 0;
+	this->glview->object_rot_y = 0;
+	this->glview->object_rot_z = 180;
+	this->glview->updateGL();
 }
 
 void MainWindow::viewAngleDiagonal()
 {
-	screen->object_rot_x = 35;
-	screen->object_rot_y = 0;
-	screen->object_rot_z = 25;
-	screen->updateGL();
+	this->glview->object_rot_x = 35;
+	this->glview->object_rot_y = 0;
+	this->glview->object_rot_z = 25;
+	this->glview->updateGL();
 }
 
 void MainWindow::viewCenter()
 {
-	screen->object_trans_x = 0;
-	screen->object_trans_y = 0;
-	screen->object_trans_z = 0;
-	screen->updateGL();
+	this->glview->object_trans_x = 0;
+	this->glview->object_trans_y = 0;
+	this->glview->object_trans_z = 0;
+	this->glview->updateGL();
 }
 
 void MainWindow::viewPerspective()
 {
 	viewActionPerspective->setChecked(true);
 	viewActionOrthogonal->setChecked(false);
-	screen->setOrthoMode(false);
-	screen->updateGL();
+	this->glview->setOrthoMode(false);
+	this->glview->updateGL();
 }
 
 void MainWindow::viewOrthogonal()
 {
 	viewActionPerspective->setChecked(false);
 	viewActionOrthogonal->setChecked(true);
-	screen->setOrthoMode(true);
-	screen->updateGL();
+	this->glview->setOrthoMode(true);
+	this->glview->updateGL();
 }
 
 void MainWindow::hideConsole()
