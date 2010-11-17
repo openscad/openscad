@@ -132,6 +132,7 @@ build_glew()
   version=$1
   echo "Building GLEW" $version "..."
   cd $BASEDIR/src
+  rm -r glew-*
   curl -LO http://downloads.sourceforge.net/project/glew/glew/$version/glew-$version.tgz
   tar xzf glew-$version.tgz
   cd glew-$version
