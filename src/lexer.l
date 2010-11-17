@@ -140,11 +140,15 @@ use[ \t\r\n>]*"<"[^ \t\r\n>]+">" {
 {DIGIT}+|{DIGIT}*\.{DIGIT}+|{DIGIT}+\.{DIGIT}* { parserlval.number = QString(yytext).toDouble(); return TOK_NUMBER; }
 "$"?[a-zA-Z0-9_]+ { parserlval.text = strdup(yytext); return TOK_ID; }
 
-\"[^"]*\" {
-	parserlval.text = strdup(yytext+1);
-	parserlval.text[strlen(parserlval.text)-1] = 0;
-	return TOK_STRING;
-}
+\"(\\[tnr\"\\]|[^\\"])*\" { QString str(yytext+1);
+			  str.chop(1);
+			  str=str.replace("\\\\","\\");
+			  str=str.replace("\\\"","\"");
+			  str=str.replace("\\t","\t");
+			  str=str.replace("\\n","\n");
+			  str=str.replace("\\r","\r");
+			  parserlval.text = strdup(str.toAscii().data());
+			  return TOK_STRING; }
 
 [\n\r\t ]
 \/\/[^\n]*\n?
