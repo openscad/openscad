@@ -18,6 +18,7 @@ class GLView : public QGLWidget
 
 public:
 	GLView(QWidget *parent = NULL);
+	GLView(const QGLFormat & format, QWidget *parent = NULL);
 	void setRenderFunc(void (*func)(void*), void *userdata);
 #ifdef ENABLE_OPENCSG
 	bool hasOpenCSGSupport() { return this->opencsg_support; }
@@ -45,6 +46,8 @@ public:
 #endif
 
 private:
+	void init();
+
 	void (*renderfunc)(void*);
 	void *renderfunc_vp;
 

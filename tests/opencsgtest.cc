@@ -13,13 +13,16 @@
 #include "render-opencsg.h"
 #include <GL/glew.h>
 #include "GLView.h"
+#include "mainwindow.h"
 
 #include <QApplication>
 #include <QFile>
 #include <QDir>
 #include <QSet>
+#include <QTimer>
 
 using std::cerr;
+using std::cout;
 
 QString commandline_commands;
 QString librarydir;
@@ -139,15 +142,32 @@ static void renderGLThrownTogether(void *vp)
 static void renderGLviaOpenCSG(void *vp)
 {
 	CsgInfo *csgInfo = (CsgInfo *)vp;
-	static bool glew_initialized = false;
-	if (!glew_initialized) {
-		glew_initialized = true;
-		glewInit();
+
+	if (csgInfo->root_chain) {
+		glEnable(GL_CULL_FACE);
+		glCullFace(GL_BACK);
+		glDepthFunc(GL_LEQUAL);
+		QHash<QPair<PolySet*,double*>,int> polySetVisitMark;
+		bool showEdges = false;
+		int i = 1;
+		double *m = csgInfo->root_chain->matrices[i];
+		glPushMatrix();
+		glMultMatrixd(m);
+		int csgmode = csgInfo->root_chain->types[i] == CSGTerm::TYPE_DIFFERENCE ? PolySet::CSGMODE_DIFFERENCE : PolySet::CSGMODE_NORMAL;
+		csgInfo->root_chain->polysets[i]->render_surface(PolySet::COLORMODE_MATERIAL, PolySet::csgmode_e(csgmode), m);
+		glPopMatrix();
 	}
+
+	// static bool glew_initialized = false;
+	// if (!glew_initialized) {
+	// 	glew_initialized = true;
+	// 	glewInit();
+	// }
 #ifdef ENABLE_MDI
 	OpenCSG::setContext(csgInfo->glview->opencsg_id);
 #endif
 	if (csgInfo->root_chain) {
+		renderCSGChainviaOpenCSG(csgInfo->root_chain, NULL, false, false);
 		GLint *shaderinfo = csgInfo->glview->shaderinfo;
 		if (!shaderinfo[0]) shaderinfo = NULL;
 		renderCSGChainviaOpenCSG(csgInfo->root_chain, NULL, false, false);
@@ -306,16 +326,40 @@ int main(int argc, char *argv[])
 		}
 	}
 	
-  // QGLFormat fmt;
-	// fmt.setDirectRendering(false);
-	csgInfo.glview = new GLView(NULL);	
-// FIXME: Thrown together works, OpenCSG not..
-//	csgInfo.glview->setRenderFunc(renderGLviaOpenCSG, &csgInfo);
-	csgInfo.glview->setRenderFunc(renderGLThrownTogether, &csgInfo);
-
 	QDir::setCurrent(original_path.absolutePath());
-	csgInfo.glview->renderPixmap(512, 512).save("out.png");
 
+	QGLFormat fmt = QGLFormat::defaultFormat();
+//	fmt.setDirectRendering(false);
+//	fmt.setDoubleBuffer(false);
+
+	csgInfo.glview = new GLView(fmt, NULL);	
+	csgInfo.glview->makeCurrent();
+
+	glewInit();
+	cout << "GLEW version " << glewGetString(GLEW_VERSION) << "\n";
+	cout << (const char *)glGetString(GL_RENDERER) << "(" << (const char *)glGetString(GL_VENDOR) << ")\n"
+			 << "OpenGL version " << (const char *)glGetString(GL_VERSION) << "\n";
+	cout  << "Extensions: " << (const char *)glGetString(GL_EXTENSIONS) << "\n";
+
+
+	if (GLEW_ARB_framebuffer_object) {
+		cout << "ARB_FBO supported\n";
+	}
+	if (GLEW_EXT_framebuffer_object) {
+		cout << "EXT_FBO supported\n";
+	}
+	if (GLEW_EXT_packed_depth_stencil) {
+		cout << "EXT_packed_depth_stencil\n";
+	}
+
+//	csgInfo.glview->setRenderFunc(renderGLThrownTogether, &csgInfo);
+	csgInfo.glview->setRenderFunc(renderGLviaOpenCSG, &csgInfo);	
+	csgInfo.glview->show();
+	csgInfo.glview->hide();
+
+	QImage img = csgInfo.glview->grabFrameBuffer();
+	cout << "Image: " << img.width() << "x" << img.height() << " " << img.format() << "\n";
+	img.save("out.png");
 
 	destroy_builtin_functions();
 	destroy_builtin_modules();

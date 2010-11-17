@@ -39,35 +39,45 @@
 
 GLView::GLView(QWidget *parent) : QGLWidget(parent)
 {
-	viewer_distance = 500;
-	object_rot_x = 35;
-	object_rot_y = 0;
-	object_rot_z = 25;
-	object_trans_x = 0;
-	object_trans_y = 0;
-	object_trans_z = 0;
+	init();
+}
 
-	mouse_drag_active = false;
-	last_mouse_x = 0;
-	last_mouse_y = 0;
+GLView::GLView(const QGLFormat & format, QWidget *parent) : QGLWidget(format, parent)
+{
+	init();
+}
 
-	orthomode = false;
-	showaxes = false;
-	showcrosshairs = false;
+void GLView::init()
+{
+	this->viewer_distance = 500;
+	this->object_rot_x = 35;
+	this->object_rot_y = 0;
+	this->object_rot_z = 25;
+	this->object_trans_x = 0;
+	this->object_trans_y = 0;
+	this->object_trans_z = 0;
 
-	renderfunc = NULL;
-	renderfunc_vp = NULL;
+	this->mouse_drag_active = false;
+	this->last_mouse_x = 0;
+	this->last_mouse_y = 0;
+
+	this->orthomode = false;
+	this->showaxes = false;
+	this->showcrosshairs = false;
+
+	this->renderfunc = NULL;
+	this->renderfunc_vp = NULL;
 
 	for (int i = 0; i < 10; i++)
-		shaderinfo[i] = 0;
+		this->shaderinfo[i] = 0;
 
-	statusLabel = NULL;
+	this->statusLabel = NULL;
 
 	setMouseTracking(true);
 #ifdef ENABLE_OPENCSG
-	opencsg_support = true;
+	this->opencsg_support = true;
 	static int sId = 0;
-	opencsg_id = sId++;
+	this->opencsg_id = sId++;
 #endif
 }
 
@@ -513,4 +523,3 @@ void GLView::mouseReleaseEvent(QMouseEvent*)
 	mouse_drag_active = false;
 	releaseMouse();
 }
-
