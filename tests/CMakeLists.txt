@@ -49,6 +49,9 @@ if (NOT OPENCSG_INCLUDE_DIR)
 endif()
 include_directories(${OPENCSG_INCLUDE_DIR})
 
+if (NOT $ENV{MACOSX_DEPLOY_DIR} STREQUAL "")
+  set(GLEW_DIR "$ENV{MACOSX_DEPLOY_DIR}")
+endif()
 find_package(GLEW REQUIRED)
 include_directories(${GLEW_INCLUDE_PATH})
 
@@ -100,10 +103,21 @@ set(COMMON_SOURCES
   ${FLEX_OpenSCADlexer_OUTPUTS}
   ${BISON_OpenSCADparser_OUTPUTS})
 
+#
+# dumptest
+#
 add_executable(dumptest dumptest.cc ${COMMON_SOURCES})
 target_link_libraries(dumptest ${QT_LIBRARIES} ${OPENGL_LIBRARY})
+
+#
+# csgtexttest
+#
 add_executable(csgtexttest csgtexttest.cc CSGTextRenderer.cc CSGTextCache.cc ../src/qhash.cc ${COMMON_SOURCES})
 target_link_libraries(csgtexttest ${QT_LIBRARIES} ${OPENGL_LIBRARY})
+
+#
+# csgtermtest
+#
 add_executable(csgtermtest csgtermtest.cc ../src/CSGTermRenderer.cc ${COMMON_SOURCES})
 target_link_libraries(csgtermtest ${QT_LIBRARIES} ${OPENGL_LIBRARY})
 
@@ -113,12 +127,19 @@ if (NOT $ENV{MACOSX_DEPLOY_DIR} STREQUAL "")
 endif()
 find_package(CGAL REQUIRED)
 include_directories(${CGAL_INCLUDE_DIRS})
+
+#
+# cgaltest
+#
 add_executable(cgaltest cgaltest.cc ../src/CSGTermRenderer.cc ../src/CGALRenderer.cc
                         ../src/PolySetCGALRenderer.cc ../src/qhash.cc ../src/nef2dxf.cc
                         ../src/cgaladv_minkowski2.cc ../src/cgaladv_minkowski3.cc ${COMMON_SOURCES})
 set_target_properties(cgaltest PROPERTIES COMPILE_FLAGS "-DENABLE_CGAL ${CGAL_CXX_FLAGS_INIT}")
 target_link_libraries(cgaltest ${CGAL_LIBRARY} ${CGAL_3RD_PARTY_LIBRARIES} ${QT_LIBRARIES} ${OPENGL_LIBRARY})
 
+#
+# opencsgtest
+#
 QT4_WRAP_CPP(MOC_SRC_opencsgtest ../src/GLView.h)
 add_executable(opencsgtest opencsgtest.cc ${MOC_SRC_opencsgtest} ../src/glview.cc
                            ../src/render-opencsg.cc ../src/CSGTermRenderer.cc ../src/CGALRenderer.cc
