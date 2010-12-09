@@ -163,7 +163,7 @@ Value builtin_rands(const Context *, const QVector<QString>&, const QVector<Valu
 	for (int i=0; i<args[2].num; i++)
 	{	
 		Value * r = new Value(frand(args[0].num, args[1].num));
-		v.vec.append(r);
+		v.vec.push_back(r);
 	}
 	
 	return v;
