@@ -125,6 +125,51 @@ Value builtin_sign(const Context *, const QVector<QString>&, const QVector<Value
 	return Value();
 }
 
+double frand() 
+{ 
+    return rand()/(double(RAND_MAX)+1); 
+} 
+
+double frand(double min, double max) 
+{ 
+    return (min>max) ? frand()*(min-max)+max : frand()*(max-min)+min;  
+} 
+
+Value builtin_rands(const Context *, const QVector<QString>&, const QVector<Value> &args)
+{
+	if (args.size() == 3 &&
+			args[0].type == Value::NUMBER && 
+			args[1].type == Value::NUMBER && 
+			args[2].type == Value::NUMBER)
+	{
+		srand((unsigned int)time(0));
+	}
+	else if (args.size() == 4 && 
+					 args[0].type == Value::NUMBER && 
+					 args[1].type == Value::NUMBER && 
+					 args[2].type == Value::NUMBER && 
+					 args[3].type == Value::NUMBER)
+	{
+		srand((unsigned int)args[3].num);
+	}
+	else
+	{
+		return Value();
+	}
+	
+	Value v;
+	v.type = Value::VECTOR;
+	
+	for (int i=0; i<args[2].num; i++)
+	{	
+		Value * r = new Value(frand(args[0].num, args[1].num));
+		v.vec.append(r);
+	}
+	
+	return v;
+}
+
+
 Value builtin_min(const Context *, const QVector<QString>&, const QVector<Value> &args)
 {
 	if (args.size() >= 1 && args[0].type == Value::NUMBER) {
@@ -298,6 +343,7 @@ void initialize_builtin_functions()
 {
 	builtin_functions["abs"] = new BuiltinFunction(&builtin_abs);
 	builtin_functions["sign"] = new BuiltinFunction(&builtin_sign);
+	builtin_functions["rands"] = new BuiltinFunction(&builtin_rands);
 	builtin_functions["min"] = new BuiltinFunction(&builtin_min);
 	builtin_functions["max"] = new BuiltinFunction(&builtin_max);
 	builtin_functions["sin"] = new BuiltinFunction(&builtin_sin);
