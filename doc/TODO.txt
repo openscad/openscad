@@ -58,8 +58,6 @@ o Preferences
   - Default language feature settings
   - Auto-view CSG/thrown together on load
   - Make the library search path configurable?
-o Export etc.:
-  - Remember document name and suggest that as export filename
 o MDI
   - Think about how to do MDI the right way
   - Ctrl-W should close the current dialog, not the current main window
