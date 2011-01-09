@@ -28,6 +28,7 @@
 #include "openscad.h"
 #include "printutils.h"
 #include "parser_yacc.h"
+#include <QStack>
 #include <QFileInfo>
 #include <QDir>
 QString* stringcontents;
@@ -58,34 +59,32 @@ extern const char *parser_source_path;
   }                                       \
 }
 
+void includefile();
+QDir sourcepath();
+QStack<QDir> path_stack;
+
+QString filename;
+QString filepath;
+
 %}
 
 %option yylineno
 %option noyywrap
 
 %x comment string
+%x include path
 
 DIGIT [0-9]
 
 %%
 
-include[ \t\r\n>]*"<"[^ \t\r\n>]+">" {
-	QString filename(yytext);
-	filename.remove(QRegExp("^include[ \t\r\n>]*<"));
-	filename.remove(QRegExp(">$"));
-	QFileInfo finfo(QDir(parser_source_path), filename);
-	if (!finfo.exists()) {
-		finfo = QFileInfo(QDir(librarydir), filename);
-	}
-	handle_dep(finfo.absoluteFilePath());
-	yyin = fopen(finfo.absoluteFilePath().toLocal8Bit(), "r");
-	if (!yyin) {
-		PRINTA("WARNING: Can't open input file `%1'.", filename);
-	} else {
-		yypush_buffer_state(yy_create_buffer( yyin, YY_BUF_SIZE ));
-		BEGIN(INITIAL);
-	}
+include[ \t\r\n>]*"<"	{ BEGIN(include); }
+<include>{
+<path>[^\t\r\n>]+"/"	{ filepath = yytext; }
+<path>[^\t\r\n>/]+	{ filename = yytext; }
+<path>">"		{ BEGIN(INITIAL); includefile(); }
 }
+
 
 use[ \t\r\n>]*"<"[^ \t\r\n>]+">" {
 	QString filename(yytext);
@@ -121,6 +120,8 @@ use[ \t\r\n>]*"<"[^ \t\r\n>]+">" {
 }
 
 <<EOF>> {
+	if(!path_stack.isEmpty())
+		path_stack.pop();
 	if (yyin && yyin != stdin)
 		fclose(yyin);
 	yypop_buffer_state();
@@ -168,4 +169,43 @@ use[ \t\r\n>]*"<"[^ \t\r\n>]+">" {
 "||"	return OR;
 
 . { return yytext[0]; }
+
+%%
+
+QDir sourcepath()
+{
+	if(!path_stack.isEmpty())
+		return path_stack.top();
+
+	return QDir(parser_source_path);
+}
+
+void includefile()
+{
+	if(filename.isEmpty())
+		return;
+
+	if(filepath.isEmpty()) {
+		path_stack.push(sourcepath());
+	} else {
+		QFileInfo dirinfo(sourcepath(),filepath);
+		path_stack.push(dirinfo.dir());
+		filepath.clear();
+	}
+
+	QFileInfo finfo(sourcepath(), filename);
+	if (!finfo.exists()) {
+		finfo = QFileInfo(QDir(librarydir), filename);
+	}
+
+	handle_dep(finfo.absoluteFilePath());
+	yyin = fopen(finfo.absoluteFilePath().toLocal8Bit(), "r");
+	if (!yyin) {
+		PRINTA("WARNING: Can't open input file `%1'.", filename);
+		return;
+	}
+	filename.clear();
+
+	yypush_buffer_state(yy_create_buffer( yyin, YY_BUF_SIZE ));
+}
 
