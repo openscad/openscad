@@ -202,6 +202,7 @@ void includefile()
 	yyin = fopen(finfo.absoluteFilePath().toLocal8Bit(), "r");
 	if (!yyin) {
 		PRINTA("WARNING: Can't open input file `%1'.", filename);
+		path_stack.pop();
 		return;
 	}
 	filename.clear();
