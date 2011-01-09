@@ -4,8 +4,9 @@ BUGS
 o Some invalid DXF data gets pass the import checks and breaks the tessing code
 o Tesselation via GLU sometimes produces strange results
 o Export STL: Exports existing CGAL model even though the current model is changed, but not CGAL rendered
-o It's now possible to start a new rendering while one is already running.
+o It's now possible to start a new rendering while one is already running (which call processEvents())
   -> turn off most (or all) interaction while rendering
+  -> Lock all or only one MainWindow (MDI)?
 o Look into the polygon winding and rotate_extrude() problem reported by Britton
 
 STL Import BUGS
