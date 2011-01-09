@@ -169,6 +169,11 @@ o Grammar
   - import_*() -> *_import() (consistent prefix vs. postfix)
   - linear_extrude()/rotate_extrude(): Cumbersome names? -> (extrude, revolve, lathe, sweep ?) 
 
+IDEAS FOR LANGUAGE CHANGES
+--------------------------
+o More strict checking of module parameters to make e.g. this fail:
+  module test(a,b) { a=1; b=2; echo(a,b,c); } test(c=3);
+
 CODE
 ----
 
