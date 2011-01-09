@@ -72,7 +72,7 @@ QString filepath;
 %option noyywrap
 
 %x comment string
-%x include path
+%x include
 
 DIGIT [0-9]
 
@@ -80,9 +80,9 @@ DIGIT [0-9]
 
 include[ \t\r\n>]*"<"	{ BEGIN(include); }
 <include>{
-<path>[^\t\r\n>]+"/"	{ filepath = yytext; }
-<path>[^\t\r\n>/]+	{ filename = yytext; }
-<path>">"		{ BEGIN(INITIAL); includefile(); }
+[^\t\r\n>]+"/"	{ filepath = yytext; }
+[^\t\r\n>/]+	{ filename = yytext; }
+">"		{ BEGIN(INITIAL); includefile(); }
 }
 
 
