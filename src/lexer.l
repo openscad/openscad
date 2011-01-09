@@ -30,7 +30,7 @@
 #include "parser_yacc.h"
 #include <QFileInfo>
 #include <QDir>
-
+QString* stringcontents;
 int lexerget_lineno(void);
 #ifdef __GNUC__
 static void yyunput(int, char*) __attribute__((unused));
@@ -63,7 +63,7 @@ extern const char *parser_source_path;
 %option yylineno
 %option noyywrap
 
-%x comment
+%x comment string
 
 DIGIT [0-9]
 
@@ -140,15 +140,19 @@ use[ \t\r\n>]*"<"[^ \t\r\n>]+">" {
 {DIGIT}+|{DIGIT}*\.{DIGIT}+|{DIGIT}+\.{DIGIT}* { parserlval.number = QString(yytext).toDouble(); return TOK_NUMBER; }
 "$"?[a-zA-Z0-9_]+ { parserlval.text = strdup(yytext); return TOK_ID; }
 
-\"(\\[tnr\"\\]|[^\\"])*\" { QString str(yytext+1);
-			  str.chop(1);
-			  str=str.replace("\\\\","\\");
-			  str=str.replace("\\\"","\"");
-			  str=str.replace("\\t","\t");
-			  str=str.replace("\\n","\n");
-			  str=str.replace("\\r","\r");
-			  parserlval.text = strdup(str.toAscii().data());
-			  return TOK_STRING; }
+\"			{ BEGIN(string); stringcontents = new QString(); }
+<string>{
+\\n			{ stringcontents->append('\n'); }
+\\t			{ stringcontents->append('\t'); }
+\\r			{ stringcontents->append('\r'); }
+\\\\			{ stringcontents->append('\\'); }
+\\\"			{ stringcontents->append('"'); }
+[^\\\n\"]+		{ stringcontents->append(lexertext); }
+\"			{ BEGIN(INITIAL); 
+			parserlval.text = strdup(stringcontents->toLocal8Bit()); 
+			delete stringcontents; 
+			return TOK_STRING; }
+}
 
 [\n\r\t ]
 \/\/[^\n]*\n?
