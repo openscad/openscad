@@ -185,6 +185,11 @@ o Consider decoupling DXF-specific functionality from the 2D subsystem
 o Visitation refactoring
   - Make AbstractNode members private/protected?
 
+BUILD SYSTEM
+------------
+o Fedora is reported to ship with byacc, which doesn't support bison extensions (e.g. %debuig). Look into this, either be yacc-compatible or force the build system to use bison.
+o We currently link in -lboost_thread. Should we always use -lboost_thread-mt under Linux or can we pick this up using qmake?
+
 TESTING
 -------
 o Caching and MDI looks suspicious when the code relies on external resources
@@ -208,9 +213,6 @@ MISC
 ----
 o Streamline the cmd-line interface a bit
   - Implicit output file format
-o Mac OS X:
-  - 32-bit compatibility
-    o Build everything including i386 arch
 
 o Write checklists for typical extension work (add new module, add new function)
   -> make sure new test files are added
