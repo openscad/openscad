@@ -1,7 +1,7 @@
 win32 {
-isEmpty(VERSION) VERSION = $$system(date /t)
+  isEmpty(VERSION) VERSION = $$system(date /t)
 } else {
-isEmpty(VERSION) VERSION = $$system(date "+%Y.%m.%d")
+  isEmpty(VERSION) VERSION = $$system(date "+%Y.%m.%d")
 }
 
 DEFINES += OPENSCAD_VERSION=$$VERSION
