@@ -28,7 +28,7 @@
 #include "context.h"
 #include "dxfdim.h"
 #include "builtin.h"
-#include <math.h>
+#include "mathc99.h"
 
 AbstractFunction::~AbstractFunction()
 {

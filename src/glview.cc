@@ -31,7 +31,7 @@
 #include <QMouseEvent>
 #include <QMessageBox>
 #include <QTimer>
-#include <math.h>
+#include "mathc99.h"
 #include <stdio.h>
 
 #define FAR_FAR_AWAY 100000.0

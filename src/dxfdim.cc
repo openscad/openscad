@@ -31,7 +31,7 @@
 #include "printutils.h"
 #include "context.h"
 
-#include <math.h>
+#include "mathc99.h"
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>

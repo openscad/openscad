@@ -9,7 +9,7 @@
 #  include <GL/glew.h>
 #endif
 #include <qgl.h>
-#include <math.h>
+#include "mathc99.h"
 
 #ifdef WIN32
 #  define STDCALL __stdcall

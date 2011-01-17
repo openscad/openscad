@@ -32,7 +32,7 @@
 #include <QTextStream>
 #include <QHash>
 #include <QVector>
-#include <math.h>
+#include "mathc99.h"
 #include <assert.h>
 
 struct Line {
