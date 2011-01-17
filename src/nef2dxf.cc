@@ -38,7 +38,7 @@ DxfData::DxfData(const struct CGAL_Nef_polyhedron &N)
 	typedef Explorer::Halfedge_around_face_const_circulator heafcc_t;
 	Explorer E = N.p2.explorer();
 
-	for (fci_t fit = E.faces_begin(), fend = E.faces_end(); fit != fend; ++fit)
+	for (fci_t fit = E.faces_begin(), facesend = E.faces_end(); fit != facesend; ++fit)
 	{
 		heafcc_t fcirc(E.halfedge(fit)), fend(fcirc);
 		int first_point = -1, last_point = -1;
