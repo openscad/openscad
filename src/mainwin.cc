@@ -72,9 +72,6 @@
 #include "qlanguagefactory.h"
 #endif
 
-//for chdir
-#include <unistd.h>
-
 #ifdef ENABLE_CGAL
 
 #if 1
