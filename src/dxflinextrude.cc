@@ -34,13 +34,11 @@
 #include "progress.h"
 #include "openscad.h" // get_fragments_from_r()
 
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <unistd.h>
-
 #include <QApplication>
 #include <QTime>
 #include <QProgressDialog>
+#include <QDateTime>
+#include <QFileInfo>
 
 class DxfLinearExtrudeModule : public AbstractModule
 {
@@ -320,14 +318,12 @@ QString DxfLinearExtrudeNode::dump(QString indent) const
 {
 	if (dump_cache.isEmpty()) {
 		QString text;
-		struct stat st;
-		memset(&st, 0, sizeof(struct stat));
-		stat(filename.toAscii().data(), &st);
+        QFileInfo fileInfo(filename);
 		text.sprintf("linear_extrude(file = \"%s\", cache = \"%x.%x\", layer = \"%s\", "
 				"height = %g, origin = [ %g %g ], scale = %g, center = %s, convexity = %d",
-				filename.toAscii().data(), (int)st.st_mtime, (int)st.st_size,
-				layername.toAscii().data(), height, origin_x, origin_y, scale,
-				center ? "true" : "false", convexity);
+				filename.toAscii().data(), (int)fileInfo.lastModified().toTime_t(), 
+				(int)fileInfo.size(), layername.toAscii().data(), height, origin_x, 
+				origin_y, scale, center ? "true" : "false", convexity);
 		if (has_twist) {
 			QString t2;
 			t2.sprintf(", twist = %g, slices = %d", twist, slices);

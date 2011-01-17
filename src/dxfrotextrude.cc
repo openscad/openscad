@@ -33,13 +33,11 @@
 #include "progress.h"
 #include "openscad.h" // get_fragments_from_r()
 
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <unistd.h>
-
 #include <QTime>
 #include <QApplication>
 #include <QProgressDialog>
+#include <QDateTime>
+#include <QFileInfo>
 
 class DxfRotateExtrudeModule : public AbstractModule
 {
@@ -217,15 +215,13 @@ QString DxfRotateExtrudeNode::dump(QString indent) const
 {
 	if (dump_cache.isEmpty()) {
 		QString text;
-		struct stat st;
-		memset(&st, 0, sizeof(struct stat));
-		stat(filename.toAscii().data(), &st);
+		QFileInfo fileInfo(filename);
 		text.sprintf("rotate_extrude(file = \"%s\", cache = \"%x.%x\", layer = \"%s\", "
 				"origin = [ %g %g ], scale = %g, convexity = %d, "
 				"$fn = %g, $fa = %g, $fs = %g) {\n",
-				filename.toAscii().data(), (int)st.st_mtime, (int)st.st_size,
-				layername.toAscii().data(), origin_x, origin_y, scale, convexity,
-				fn, fa, fs);
+				filename.toAscii().data(), (int)fileInfo.lastModified().toTime_t(),
+				(int)fileInfo.size(),layername.toAscii().data(), origin_x, origin_y, 
+				scale, convexity, fn, fa, fs);
 		foreach (AbstractNode *v, children)
 			text += v->dump(indent + QString("\t"));
 		text += indent + "}\n";
