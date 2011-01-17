@@ -75,10 +75,6 @@
 //for chdir
 #include <unistd.h>
 
-// for stat()
-#include <sys/types.h>
-#include <sys/stat.h>
-
 #ifdef ENABLE_CGAL
 
 #if 1
@@ -992,10 +988,8 @@ void MainWindow::pasteViewportRotation()
 void MainWindow::checkAutoReload()
 {
 	QString new_stinfo;
-	struct stat st;
-	memset(&st, 0, sizeof(struct stat));
-	stat(this->fileName.toAscii().data(), &st);
-	new_stinfo.sprintf("%x.%x", (int)st.st_mtime, (int)st.st_size);
+	QFileInfo finfo(this->fileName);
+	new_stinfo = QString::number(finfo.size()) + QString::number(finfo.lastModified().toTime_t());
 	if (new_stinfo != autoReloadInfo)
 		actionReloadCompile();
 	autoReloadInfo = new_stinfo;
