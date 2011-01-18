@@ -29,6 +29,7 @@
 #include "dxfdim.h"
 #include "builtin.h"
 #include "mathc99.h"
+#include <time.h>
 
 AbstractFunction::~AbstractFunction()
 {
