@@ -290,7 +290,7 @@ Value builtin_log(const Context *, const QVector<QString>&, const QVector<Value>
 	if (args.size() == 2 && args[0].type == Value::NUMBER && args[1].type == Value::NUMBER)
 		return Value(log(args[1].num) / log(args[0].num));
 	if (args.size() == 1 && args[0].type == Value::NUMBER)
-		return Value(log(args[0].num) / log(10));
+		return Value(log(args[0].num) / log(10.0));
 	return Value();
 }
 
