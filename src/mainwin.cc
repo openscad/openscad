@@ -1,6 +1,7 @@
 /*
- *  OpenSCAD (www.openscad.at)
- *  Copyright (C) 2009  Clifford Wolf <clifford@clifford.at>
+ *  OpenSCAD (www.openscad.org)
+ *  Copyright (C) 2009-2011 Clifford Wolf <clifford@clifford.at> and
+ *                          Marius Kintel <marius@kintel.net>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -117,7 +118,7 @@ static char helptitle[] =
 	QUOTED(OPENSCAD_VERSION)
   " (www.openscad.org)\n";
 static char copyrighttext[] =
-	"Copyright (C) 2009  Clifford Wolf <clifford@clifford.at>\n"
+	"Copyright (C) 2009-2011 Marius Kintel <marius@kintel.net> and Clifford Wolf <clifford@clifford.at>\n"
 	"\n"
 	"This program is free software; you can redistribute it and/or modify"
 	"it under the terms of the GNU General Public License as published by"
