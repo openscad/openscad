@@ -1,4 +1,9 @@
-isEmpty(VERSION) VERSION = $$system(date "+%Y.%m.%d")
+win32 {
+  isEmpty(VERSION) VERSION = $$system(date /t)
+} else {
+  isEmpty(VERSION) VERSION = $$system(date "+%Y.%m.%d")
+}
+
 DEFINES += OPENSCAD_VERSION=$$VERSION
 TEMPLATE = app
 RESOURCES = openscad.qrc
