@@ -73,13 +73,6 @@
 #include "qlanguagefactory.h"
 #endif
 
-//for chdir
-#include <unistd.h>
-
-// for stat()
-#include <sys/types.h>
-#include <sys/stat.h>
-
 #ifdef ENABLE_CGAL
 
 #if 1
@@ -993,10 +986,8 @@ void MainWindow::pasteViewportRotation()
 void MainWindow::checkAutoReload()
 {
 	QString new_stinfo;
-	struct stat st;
-	memset(&st, 0, sizeof(struct stat));
-	stat(this->fileName.toAscii().data(), &st);
-	new_stinfo.sprintf("%x.%x", (int)st.st_mtime, (int)st.st_size);
+	QFileInfo finfo(this->fileName);
+	new_stinfo = QString::number(finfo.size()) + QString::number(finfo.lastModified().toTime_t());
 	if (new_stinfo != autoReloadInfo)
 		actionReloadCompile();
 	autoReloadInfo = new_stinfo;
@@ -1474,7 +1465,7 @@ static void renderGLviaCGAL(void *vp)
 		glColor3f(col2.redF(), col2.greenF(), col2.blueF());
 
 		// Extract the boundary, including inner boundaries of the polygons
-		for (fci_t fit = E.faces_begin(), fend = E.faces_end(); fit != fend; ++fit)
+		for (fci_t fit = E.faces_begin(), facesend = E.faces_end(); fit != facesend; ++fit)
 		{
 			bool fset = false;
 			double fx = 0.0, fy = 0.0;

@@ -1,7 +1,7 @@
 #ifndef GRID_H_
 #define GRID_H_
 
-#include <math.h>
+#include "mathc99.h"
 #include <stdint.h>
 #include <stdlib.h>
 #include <QHash>

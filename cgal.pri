@@ -12,6 +12,11 @@ cgal {
     }
   }
 
-  LIBS += -lCGAL -lmpfr -lgmp -lboost_thread
+  LIBS += -lCGAL -lmpfr -lboost_thread
+  win32 {
+    LIBS += -lmpir
+  } else {
+    LIBS += -lgmp
+  }
   QMAKE_CXXFLAGS += -frounding-math
 }

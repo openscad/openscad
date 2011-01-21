@@ -25,7 +25,7 @@
  */
 
 #include "value.h"
-#include <math.h>
+#include "mathc99.h"
 
 Value::Value()
 {

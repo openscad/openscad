@@ -150,7 +150,7 @@ void PolySet::render_surface(colormode_e colormode, csgmode_e csgmode, double *m
 #ifdef ENABLE_OPENCSG
 		if (shaderinfo) {
 			glUniform4f(shaderinfo[1], col.redF(), col.greenF(), col.blueF(), 1.0f);
-			glUniform4f(shaderinfo[2], 255 / 255.0, 236 / 255.0, 94 / 255.0, 1.0);
+			glUniform4f(shaderinfo[2], 255 / 255.0f, 236 / 255.0f, 94 / 255.0f, 1.0f);
 		}
 #endif /* ENABLE_OPENCSG */
 	}
@@ -159,8 +159,8 @@ void PolySet::render_surface(colormode_e colormode, csgmode_e csgmode, double *m
 		glColor3f(col.redF(), col.greenF(), col.blueF());
 #ifdef ENABLE_OPENCSG
 		if (shaderinfo) {
-			glUniform4f(shaderinfo[1], 157 / 255.0, 203 / 255.0, 81 / 255.0, 1.0);
-			glUniform4f(shaderinfo[2], 171 / 255.0, 216 / 255.0, 86 / 255.0, 1.0);
+			glUniform4f(shaderinfo[1], 157 / 255.0f, 203 / 255.0f, 81 / 255.0f, 1.0f);
+			glUniform4f(shaderinfo[2], 171 / 255.0f, 216 / 255.0f, 86 / 255.0f, 1.0f);
 		}
 #endif /* ENABLE_OPENCSG */
 	}
@@ -168,8 +168,8 @@ void PolySet::render_surface(colormode_e colormode, csgmode_e csgmode, double *m
 		glColor4ub(255, 157, 81, 128);
 #ifdef ENABLE_OPENCSG
 		if (shaderinfo) {
-			glUniform4f(shaderinfo[1], 255 / 255.0, 157 / 255.0, 81 / 255.0, 0.5);
-			glUniform4f(shaderinfo[2], 255 / 255.0, 171 / 255.0, 86 / 255.0, 0.5);
+			glUniform4f(shaderinfo[1], 255 / 255.0f, 157 / 255.0f, 81 / 255.0f, 0.5f);
+			glUniform4f(shaderinfo[2], 255 / 255.0f, 171 / 255.0f, 86 / 255.0f, 0.5f);
 		}
 #endif /* ENABLE_OPENCSG */
 	}
@@ -177,8 +177,8 @@ void PolySet::render_surface(colormode_e colormode, csgmode_e csgmode, double *m
 		glColor4ub(180, 180, 180, 128);
 #ifdef ENABLE_OPENCSG
 		if (shaderinfo) {
-			glUniform4f(shaderinfo[1], 180 / 255.0, 180 / 255.0, 180 / 255.0, 0.5);
-			glUniform4f(shaderinfo[2], 150 / 255.0, 150 / 255.0, 150 / 255.0, 0.5);
+			glUniform4f(shaderinfo[1], 180 / 255.0f, 180 / 255.0f, 180 / 255.0f, 0.5f);
+			glUniform4f(shaderinfo[2], 150 / 255.0f, 150 / 255.0f, 150 / 255.0f, 0.5f);
 		}
 #endif /* ENABLE_OPENCSG */
 	}

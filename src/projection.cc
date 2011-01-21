@@ -40,9 +40,6 @@
 #  include <CGAL/exceptions.h>
 #endif
 
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <unistd.h>
 #include <assert.h>
 
 #include <QApplication>

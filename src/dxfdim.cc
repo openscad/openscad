@@ -32,11 +32,10 @@
 #include "printutils.h"
 #include "context.h"
 
-#include <math.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <unistd.h>
+#include "mathc99.h"
 #include <QHash>
+#include <QDatetime>
+#include <QFileInfo>
 
 QHash<QString,Value> dxf_dim_cache;
 QHash<QString,Value> dxf_cross_cache;
@@ -63,12 +62,10 @@ Value builtin_dxf_dim(const Context *ctx, const QVector<QString> &argnames, cons
 			name = args[i].text;
 	}
 
-	struct stat st;
-	memset(&st, 0, sizeof(struct stat));
-	stat(filename.toAscii().data(), &st);
+	QFileInfo fileInfo(filename);
 
 	QString key = filename + "|" + layername + "|" + name + "|" + QString::number(xorigin) + "|" + QString::number(yorigin) +
-			"|" + QString::number(scale) + "|" + QString::number(st.st_mtime) + "|" + QString::number(st.st_size);
+			"|" + QString::number(scale) + "|" + QString::number(fileInfo.lastModified().toTime_t()) + "|" + QString::number(fileInfo.size());
 
 	if (dxf_dim_cache.contains(key))
 		return dxf_dim_cache[key];
@@ -145,12 +142,10 @@ Value builtin_dxf_cross(const Context *ctx, const QVector<QString> &argnames, co
 			args[i].getnum(scale);
 	}
 
-	struct stat st;
-	memset(&st, 0, sizeof(struct stat));
-	stat(filename.toAscii().data(), &st);
+	QFileInfo fileInfo(filename);
 
 	QString key = filename + "|" + layername + "|" + QString::number(xorigin) + "|" + QString::number(yorigin) +
-			"|" + QString::number(scale) + "|" + QString::number(st.st_mtime) + "|" + QString::number(st.st_size);
+			"|" + QString::number(scale) + "|" + QString::number(fileInfo.lastModified().toTime_t()) + "|" + QString::number(fileInfo.size());
 
 	if (dxf_cross_cache.contains(key))
 		return dxf_cross_cache[key];

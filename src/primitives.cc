@@ -279,7 +279,7 @@ PolySet *PrimitiveNode::render_polyset(render_mode_e) const
 		};
 
 		int rings = get_fragments_from_r(r1, fn, fs, fa);
-		ring_s ring[rings];
+		ring_s *ring = new ring_s[rings];
 
 		for (int i = 0; i < rings; i++) {
 			double phi = (M_PI * (i + 0.5)) / rings;
@@ -333,6 +333,8 @@ sphere_next_r2:
 		p->append_poly();
 		for (int i = 0; i < ring[rings-1].fragments; i++)
 			p->insert_vertex(ring[rings-1].points[i].x, ring[rings-1].points[i].y, ring[rings-1].z);
+
+		delete[] ring;
 	}
 
 	if (type == CYLINDER && h > 0 && r1 >=0 && r2 >= 0 && (r1 > 0 || r2 > 0))
@@ -352,8 +354,8 @@ sphere_next_r2:
 			double x, y;
 		};
 
-		point2d circle1[fragments];
-		point2d circle2[fragments];
+		point2d *circle1 = new point2d[fragments];
+		point2d *circle2 = new point2d[fragments];
 
 		for (int i=0; i<fragments; i++) {
 			double phi = (M_PI*2*i) / fragments;
@@ -400,6 +402,9 @@ sphere_next_r2:
 			for (int i=0; i<fragments; i++)
 				p->append_vertex(circle2[i].x, circle2[i].y, z2);
 		}
+
+		delete[] circle1;
+		delete[] circle2;
 	}
 
 	if (type == POLYHEDRON)
@@ -445,22 +450,13 @@ sphere_next_r2:
 	{
 		int fragments = get_fragments_from_r(r1, fn, fs, fa);
 
-		struct point2d {
-			double x, y;
-		};
-
-		point2d circle[fragments];
-
-		for (int i=0; i<fragments; i++) {
-			double phi = (M_PI*2*i) / fragments;
-			circle[i].x = r1*cos(phi);
-			circle[i].y = r1*sin(phi);
-		}
-
 		p->is2d = true;
 		p->append_poly();
-		for (int i=0; i<fragments; i++)
-			p->append_vertex(circle[i].x, circle[i].y);
+
+		for (int i=0; i < fragments; i++) {
+			double phi = (M_PI*2*i) / fragments;
+			p->append_vertex(r1*cos(phi), r1*sin(phi));
+		}
 	}
 
 	if (type == POLYGON)
