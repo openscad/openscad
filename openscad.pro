@@ -4,7 +4,6 @@ win32 {
   isEmpty(VERSION) VERSION = $$system(date "+%Y.%m.%d")
 }
 
-
 #configure lex / yacc
 win32 {
   include(flex.pri)
