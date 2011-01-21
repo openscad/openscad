@@ -16,7 +16,7 @@ echo "Sanity check of the app bundle..."
 if [[ $? != 0 ]]; then
   exit 1
 fi
-cp OpenSCAD-$VERSION.dmg ~/Documents/Dropbox/Public
-ln -sf OpenSCAD-$VERSION.dmg ~/Documents/Dropbox/Public/OpenSCAD-latest.dmg
+cp OpenSCAD-$VERSION.dmg ~/Dropbox/Public
+ln -sf OpenSCAD-$VERSION.dmg ~/Dropbox/Public/OpenSCAD-latest.dmg
 
 echo "Upload in progress..."
