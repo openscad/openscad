@@ -33,6 +33,9 @@
 #include "export.h"
 #include "builtin.h"
 
+#include <string>
+#include <vector>
+
 #ifdef ENABLE_CGAL
 #include "cgal.h"
 #include <CGAL/assertions_behaviour.h>
@@ -43,11 +46,18 @@
 #include <QDir>
 #include <QSet>
 #include <QSettings>
-#include <getopt.h>
+#include <boost/program_options.hpp>
 #ifdef Q_WS_MAC
 #include "EventFilter.h"
 #include "AppleEvents.h"
 #endif
+
+#ifdef _MSC_VER
+#define snprintf _snprintf
+#endif
+
+using namespace boost;
+namespace po = boost::program_options;
 
 static void help(const char *progname)
 {
@@ -123,75 +133,70 @@ int main(int argc, char **argv)
 	const char *off_output_file = NULL;
 	const char *dxf_output_file = NULL;
 	const char *deps_output_file = NULL;
+
+	po::options_description desc("Allowed options");
+	desc.add_options()
+		("help,h", "help message")
+		("version,v", "print the version")
+		("s", po::value<std::string>(), "stl-file")
+		("o", po::value<std::string>(), "off-file")
+		("x", po::value<std::string>(), "dxf-file")
+		("d", po::value<std::string>(), "deps-file")
+		("m", po::value<std::string>(), "make file")
+		("D", po::value<std::vector<std::string>>(), "var=val")
+		;
+
+	po::positional_options_description p;
+	p.add("input-file", -1);
+
+	po::variables_map vm;
+	po::store(po::command_line_parser(argc, argv).
+			options(desc).positional(p).run(), vm);
+	//po::notify(vm);
 	
-	static struct option long_options[] =
-             {
-               {"version", no_argument,	0, 'v'},
-               {"help",    no_argument, 0, 'h'},
-               {0, 0, 0, 0}
-             };
-	int option_index = 0;
-	
-	int opt;
-	while ((opt = getopt_long(argc, argv, "s:o:x:d:m:D:vh", long_options, &option_index)) != -1)
-	{
-		switch (opt)
-		{
-		case 0:
-			switch (option_index)
-			{
-				case 'v':
-					version();
-					break;
-				case 'h':
-					help(argv[0]);
-					break;
-			}
-			break;
-		case 'v':
-			version();
-			break;
-		case 'h':
+	if (vm.count("help")) help(argv[0]);
+	if (vm.count("version")) version();
+
+	if (vm.count("s")) {
+		if (stl_output_file || off_output_file || dxf_output_file)
 			help(argv[0]);
-			break;
-		case 's':
-			if (stl_output_file || off_output_file || dxf_output_file)
-				help(argv[0]);
-			stl_output_file = optarg;
-			break;
-		case 'o':
-			if (stl_output_file || off_output_file || dxf_output_file)
-				help(argv[0]);
-			off_output_file = optarg;
-			break;
-		case 'x':
-			if (stl_output_file || off_output_file || dxf_output_file)
-				help(argv[0]);
-			dxf_output_file = optarg;
-			break;
-		case 'd':
-			if (deps_output_file)
-				help(argv[0]);
-			deps_output_file = optarg;
-			break;
-		case 'm':
-			if (make_command)
-				help(argv[0]);
-			make_command = optarg;
-			break;
-		case 'D':
-			commandline_commands += QString(optarg) + QString(";\n");
-			break;
-		default:
+		stl_output_file = vm["s"].as<std::string>().c_str();
+	}
+	if (vm.count("o")) {
+		if (stl_output_file || off_output_file || dxf_output_file)
 			help(argv[0]);
+		off_output_file = vm["o"].as<std::string>().c_str();
+	}
+	if (vm.count("x")) { 
+		if (stl_output_file || off_output_file || dxf_output_file)
+			help(argv[0]);
+		dxf_output_file = vm["x"].as<std::string>().c_str();
+	}
+	if (vm.count("d")) {
+		if (deps_output_file)
+			help(argv[0]);
+		deps_output_file = vm["d"].as<std::string>().c_str();
+	}
+	if (vm.count("m")) {
+		if (make_command)
+			help(argv[0]);
+		make_command = vm["m"].as<std::string>().c_str();
+	}
+
+	if (vm.count("D")) {
+		const std::vector<std::string> &commands = vm["D"].as<std::vector<std::string> >();
+
+		for (std::vector<std::string>::const_iterator i = commands.begin(); i != commands.end(); i++) {
+			commandline_commands.append(i->c_str());
+			commandline_commands.append(";\n");
 		}
 	}
 
-	if (optind < argc)
-		filename = argv[optind++];
+	if (vm.count("input-file"))
+		filename = vm["input-file"].as<std::vector<std::string> >().begin()->c_str();
 
 #ifndef ENABLE_MDI
-	if (optind != argc)
+	if (vm["input-file"].as<std::vector<std::string> >().size() > 1)
 		help(argv[0]);
 #endif
 
@@ -338,8 +343,9 @@ int main(int argc, char **argv)
 #endif
 #ifdef ENABLE_MDI
 		new MainWindow(qfilename);
-		while (optind < argc)
-			new MainWindow(QFileInfo(original_path, argv[optind++]).absoluteFilePath());
+		std::vector<std::string> inputFiles = vm["input-files"].as<std::vector<std::string>>();
+		for (std::vector<std::string>::const_iterator i = inputFiles.begin()+1; i != inputFiles.end(); i++)
+			new MainWindow(QFileInfo(original_path, i->c_str()).absoluteFilePath());
 		app.connect(&app, SIGNAL(lastWindowClosed()), &app, SLOT(quit()));
 #else
 		MainWindow *m = new MainWindow(qfilename);
