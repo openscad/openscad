@@ -159,7 +159,13 @@ PolySet *DxfRotateExtrudeNode::render_polyset(render_mode_e) const
 
 		int fragments = get_fragments_from_r(max_x, fn, fs, fa);
 
-		double points[fragments][dxf->paths[i].points.count()][3];
+        double ***points;
+        points = new double**[fragments];
+        for (int j=0; j < fragments; j++) {
+            points[j] = new double*[dxf->paths[i].points.count()];
+            for (int k=0; k < dxf->paths[i].points.count(); k++)
+                points[j][k] = new double[3];
+        }
 
 		for (int j = 0; j < fragments; j++) {
 			double a = (j*2*M_PI) / fragments;
@@ -203,6 +209,13 @@ PolySet *DxfRotateExtrudeNode::render_polyset(render_mode_e) const
 				}
 			}
 		}
+
+        for (int j=0; j < fragments; j++) {
+            for (int k=0; k < dxf->paths[i].points.count(); k++)
+                delete[] points[j][k];
+            delete[] points[j];
+        }
+        delete[] points;
 	}
 
 	PolySet::ps_cache.insert(key, new PolySet::ps_cache_entry(ps->link()));
