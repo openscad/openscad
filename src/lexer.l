@@ -32,6 +32,13 @@
 #include <QStack>
 #include <QFileInfo>
 #include <QDir>
+
+//isatty for visual c++
+#ifdef _MSC_VER
+int __cdecl _isatty(int _FileHandle);
+#define isatty _isatty
+#endif
+
 QString* stringcontents;
 int lexerget_lineno(void);
 #ifdef __GNUC__
