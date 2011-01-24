@@ -15,5 +15,5 @@ glew {
   }
 
   unix:LIBS += -lGLEW
-  win32:LIBS += -lglew32
+  win32:LIBS += -lglew32s
 }
