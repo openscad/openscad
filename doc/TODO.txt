@@ -143,6 +143,7 @@ o Language Frontend
   - Rethink for vs. intersection_for vs. group. Should for loops
     generate child lists instead, and make these passable to other
     modules or accessible by child()?
+  - constants: PI, TRUE, FALSE
 o DXF Import/Export
   - Use dxflib from RibbonSoft for import/export? -> investigate
   - Import
