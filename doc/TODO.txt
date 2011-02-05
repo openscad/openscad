@@ -138,12 +138,11 @@ o Language Frontend
     the "Flex & Bison" O'Reilly book, "Start States and Nested Input
     Files", page 28, for an example.
   - Allow local variables and functions everywhere (not only on module level)
-  - allow 0/1 f/t FALSE/TRUE as boolean values
-  - allow any expression to be evaluated as boolean (e.g. 1 = true, 0 = false)
+  - allow any expression to be evaluated as boolean (!0 = true, 0 = false)
   - Rethink for vs. intersection_for vs. group. Should for loops
     generate child lists instead, and make these passable to other
     modules or accessible by child()?
-  - constants: PI, TRUE, FALSE
+  - constants: PI
 o DXF Import/Export
   - Use dxflib from RibbonSoft for import/export? -> investigate
   - Import
