@@ -84,6 +84,8 @@ Value Context::lookup_variable(QString name, bool silent) const
 		}
 		return Value();
 	}
+	if (!parent && constants.contains(name))
+		return constants[name];
 	if (variables.contains(name))
 		return variables[name];
 	if (parent)
@@ -91,6 +93,14 @@ Value Context::lookup_variable(QString name, bool silent) const
 	if (!silent)
 		PRINTA("WARNING: Ignoring unknown variable '%1'.", name);
 	return Value();
+}
+
+void Context::set_constant(QString name, Value value)
+{
+    if (constants.contains(name))
+	PRINTA("WARNING: Attempt to modify constant '%1'.",name);
+    else
+	constants.insert(name,value);
 }
 
 Value Context::evaluate_function(QString name, const QVector<QString> &argnames, const QVector<Value> &argvalues) const

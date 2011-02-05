@@ -9,6 +9,7 @@ class Context
 {
 public:
 	const Context *parent;
+	QHash<QString, Value> constants;
 	QHash<QString, Value> variables;
 	QHash<QString, Value> config_variables;
 	const QHash<QString, class AbstractFunction*> *functions_p;
@@ -26,6 +27,8 @@ public:
 
 	void set_variable(QString name, Value value);
 	Value lookup_variable(QString name, bool silent = false) const;
+
+	void set_constant(QString name, Value value);
 
 	QString get_absolute_path(const QString &filename) const;
 

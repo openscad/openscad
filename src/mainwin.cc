@@ -145,6 +145,8 @@ MainWindow::MainWindow(const QString &filename)
 	root_ctx.set_variable("$fa", Value(12.0));
 	root_ctx.set_variable("$t", Value(0.0));
 
+	root_ctx.set_constant("PI",Value(M_PI));
+
 	Value zero3;
 	zero3.type = Value::VECTOR;
 	zero3.append(new Value(0.0));
