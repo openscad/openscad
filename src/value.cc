@@ -324,6 +324,7 @@ void Value::reset_undef()
 std::string Value::toString() const
 {
 	std::stringstream stream;
+	stream.precision(16);
 
 	switch (this->type) {
 	case STRING:
@@ -338,9 +339,13 @@ std::string Value::toString() const
 		stream << ']';
 		break;
 	case RANGE:
-		stream << "[ "
-					 << this->range_begin << " : " << this->range_step << " : " << this->range_end
-					 << " ]";
+		stream	<< "[ "
+			<< this->range_begin
+			<< " : "
+			<< this->range_step
+			<< " : "
+			<< this->range_end
+			<< " ]";
 		break;
 	case NUMBER:
 		stream << this->num;
