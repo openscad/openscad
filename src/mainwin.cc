@@ -1311,8 +1311,10 @@ void MainWindow::actionExportSTLorOFF(bool)
 		return;
 	}
 
+	QString suffix = stl_mode ? ".stl" : ".off";
 	QString stl_filename = QFileDialog::getSaveFileName(this,
-			stl_mode ? "Export STL File" : "Export OFF File", "",
+			stl_mode ? "Export STL File" : "Export OFF File", 
+			this->fileName.isEmpty() ? "Untitled"+suffix : QFileInfo(this->fileName).baseName()+suffix,
 			stl_mode ? "STL Files (*.stl)" : "OFF Files (*.off)");
 	if (stl_filename.isEmpty()) {
 		PRINTF("No filename specified. %s export aborted.", stl_mode ? "STL" : "OFF");
@@ -1374,7 +1376,9 @@ void MainWindow::actionExportDXF()
 	}
 
 	QString dxf_filename = QFileDialog::getSaveFileName(this,
-			"Export DXF File", "", "DXF Files (*.dxf)");
+			"Export DXF File", 
+			this->fileName.isEmpty() ? "Untitled.dxf" : QFileInfo(this->fileName).baseName()+".dxf",
+			"DXF Files (*.dxf)");
 	if (dxf_filename.isEmpty()) {
 		PRINTF("No filename specified. DXF export aborted.");
 		clearCurrentOutput();

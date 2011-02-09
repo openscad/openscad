@@ -58,8 +58,6 @@ o Preferences
   - Default language feature settings
   - Auto-view CSG/thrown together on load
   - Make the library search path configurable?
-o Export etc.:
-  - Remember document name and suggest that as export filename
 o MDI
   - Think about how to do MDI the right way
   - Ctrl-W should close the current dialog, not the current main window
@@ -174,6 +172,11 @@ o Hollow donut problem
   rendering keeps the hole, but renders slightly incorrect.
 
 
+
+IDEAS FOR LANGUAGE CHANGES
+--------------------------
+o More strict checking of module parameters to make e.g. this fail:
+  module test(a,b) { a=1; b=2; echo(a,b,c); } test(c=3);
 
 CODE
 ----
