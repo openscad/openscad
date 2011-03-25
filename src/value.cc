@@ -26,9 +26,7 @@
 
 #include "value.h"
 #include "mathc99.h"
-#include <QtGui>
-#include <iostream>
-using namespace std;
+
 
 Value::Value()
 {
