@@ -32,6 +32,7 @@
 #include "polyset.h"
 #include "csgterm.h"
 #include "highlighter.h"
+#include "error_highlighter.h"
 #include "grid.h"
 #include "dxfdata.h"
 #include "dxfdim.h"
@@ -169,7 +170,9 @@ MainWindow::MainWindow(const QString &filename)
 	editor->setTabStopWidth(30);
 #endif
 	editor->setLineWrapping(true); // Not designable
-	setFont("", 0); // Init default font
+	// Select a monospaced font; even if this font doesn't exist, it will try
+	// to fall back to the most similar font, which should be monospaced.
+	setFont("Monospace", 12); 
 
 	screen->statusLabel = new QLabel(this);
 	statusBar()->addWidget(screen->statusLabel);
@@ -606,13 +609,13 @@ void MainWindow::compile(bool procevents)
 	root_module = parse((last_compiled_doc + "\n" + commandline_commands).toAscii().data(), this->fileName.isEmpty() ? "" : QFileInfo(this->fileName).absolutePath().toLocal8Bit(), false);
 
 	// Error highlighting
-	/*if (highlighter) {
-		delete highlighter;
-		highlighter = NULL;
-	}
 	if (parser_error_pos >= 0) {
+		delete highlighter;
+		highlighter = new ErrorHighlighter(editor->document());
+	} else {
+		delete highlighter;
 		highlighter = new Highlighter(editor->document());
-	}*/
+	}
 
 	if (!root_module) {
 		if (!animate_panel->isVisible()) {
