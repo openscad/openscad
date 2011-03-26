@@ -36,18 +36,22 @@ Highlighter::Highlighter(QTextDocument *parent)
 {
 	operators << "!" << "&&" << "||" << "+" << "-" << "*" << "/" << "%" << "!" << "#" << ";";
 	KeyWords << "for" << "intersection_for" << "if" << "assign" 
+		 << "$children" << "$child" << "$fn" << "$fa" << "$fb"     // Lump special variables in here
 	         << "union" << "intersection" << "difference" << "render"; //Lump CSG in here
-	Primitives << "cube" << "cylinder" << "sphere" << "polyhedron";
-	Transforms << "scale" << "translate" << "rotate" << "multmatrix" << "color";
-	Imports << "import" << "use";
+	Primitives3D << "cube" << "cylinder" << "sphere" << "polyhedron";
+	Primitives2D << "square" << "polygon" << "circle";
+	Transforms << "scale" << "translate" << "rotate" << "multmatrix" << "color"
+	           << "linear_extrude" << "rotate_extrude"; // Lump extrudes in here.
+	Imports << "import" << "use" << "import_stl";
 
 	//this->OperatorStyle.setForeground
 	KeyWordStyle.setForeground(Qt::darkGreen);
-	PrimitiveStyle.setForeground(Qt::darkBlue);
-	TransformStyle.setForeground(Qt::darkBlue);
-	ImportStyle.setForeground(Qt::darkBlue);
+	TransformStyle.setForeground(Qt::darkGreen);
+	PrimitiveStyle3D.setForeground(Qt::darkBlue);
+	PrimitiveStyle2D.setForeground(Qt::blue);
+	ImportStyle.setForeground(Qt::darkYellow);
 	QuoteStyle.setForeground(Qt::darkMagenta);
-	CommentStyle.setForeground(Qt::blue);
+	CommentStyle.setForeground(Qt::darkCyan);
 }
 
 
@@ -62,9 +66,14 @@ void Highlighter::highlightBlock(const QString &text)
 			setFormat(text.indexOf(*it), it->size(), KeyWordStyle);
 		}
 	}
-	for (it = Primitives.begin(); it != Primitives.end(); ++it){
+	for (it = Primitives3D.begin(); it != Primitives3D.end(); ++it){
 		for (int i = 0; i < text.count(*it); ++i){
-			setFormat(text.indexOf(*it), it->size(), PrimitiveStyle);
+			setFormat(text.indexOf(*it), it->size(), PrimitiveStyle3D);
+		}
+	}
+	for (it = Primitives2D.begin(); it != Primitives2D.end(); ++it){
+		for (int i = 0; i < text.count(*it); ++i){
+			setFormat(text.indexOf(*it), it->size(), PrimitiveStyle2D);
 		}
 	}
 	for (it = Transforms.begin(); it != Transforms.end(); ++it){
@@ -77,7 +86,6 @@ void Highlighter::highlightBlock(const QString &text)
 			setFormat(text.indexOf(*it), it->size(), ImportStyle);
 		}
 	}
-
 
 
 	// Quoting and Comments.

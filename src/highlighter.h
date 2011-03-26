@@ -14,7 +14,8 @@ public:
 
 	QStringList operators;
 	QStringList KeyWords;
-	QStringList Primitives;
+	QStringList Primitives3D;
+	QStringList Primitives2D;
 	QStringList Transforms;
 	QStringList Imports;
 
@@ -22,7 +23,8 @@ public:
 	QTextCharFormat CommentStyle;
 	QTextCharFormat QuoteStyle;
 	QTextCharFormat KeyWordStyle;
-	QTextCharFormat PrimitiveStyle;
+	QTextCharFormat PrimitiveStyle3D;
+	QTextCharFormat PrimitiveStyle2D;
 	QTextCharFormat TransformStyle;
 	QTextCharFormat ImportStyle;
 
