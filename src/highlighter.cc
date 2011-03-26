@@ -34,24 +34,75 @@ Highlighter::Highlighter(QTextDocument *parent)
 #endif
 		: QSyntaxHighlighter(parent)
 {
+	//this->operators << "!" << "&&" << "||" << "+" << "-" << "*" << "/" << "%" << "!" << "#" << ";";
+	KeyWords << "for" << "intersection_for" << "if" << "assign" 
+	         << "union" << "intersection" << "difference"; //Lump CSG in here
+	Primitives << "cube" << "cylinder" << "sphere" << "polyhedron";
+	// Transforms??
+	ErrorStyle.setForeground(Qt::red);
+	//this->OperatorStyle.setForeground
+	KeyWordStyle.setForeground(Qt::darkGreen);
+	PrimitiveStyle.setForeground(Qt::darkBlue);
+	QuoteStyle.setForeground(Qt::darkMagenta);
+	CommentStyle.setForeground(Qt::blue);
+	state=NORMAL;
 }
+
 
 void Highlighter::highlightBlock(const QString &text)
 {
+	//Key words and Primitives
+	QStringList::iterator it;
+	for (it = KeyWords.begin(); it != KeyWords.end(); ++it){
+		for (int i = 0; i < text.count(*it); ++i){
+			setFormat(text.indexOf(*it),it->size(),KeyWordStyle);
+		}
+	}
+	for (it = Primitives.begin(); it != Primitives.end(); ++it){
+		for (int i = 0; i < text.count(*it); ++i){
+			setFormat(text.indexOf(*it),it->size(),PrimitiveStyle);
+		}
+	}
+
+	// Quoting and Comments.
+	for (int n = 0; n < text.size(); ++n){
+		if (state == NORMAL){
+			if (text[n] == '"'){
+				state = QUOTE;
+				setFormat(n,1,QuoteStyle);
+			} else if (text[n] == '/'){
+				if (text[n+1] == '/'){
+					setFormat(n,text.size(),CommentStyle);
+					break;
+				} else if (text[n+1] == '*'){
+					setFormat(n++,2,CommentStyle);
+					state = COMMENT;
+				}
+			}
+		} else if (state == QUOTE){
+			setFormat(n,1,QuoteStyle);
+			if (text[n] == '"' && text[n-1] != '\\')
+				state = NORMAL;
+		} else if (state == COMMENT){
+			setFormat(n,1,CommentStyle);
+			if (text[n] == '*' && text[n+1] == '/'){
+				setFormat(++n,1,CommentStyle);
+				state = NORMAL;
+			}
+		}
+	}
+
+	// Errors
+	// A bit confusing. parser_error_pos is the number of charcters 
+	// into the document that the error is. The position is kept track of
+	// and if its on this line, the whole line is set to ErrorStyle.
 	int n = previousBlockState();
 	if (n < 0)
 		n = 0;
 	int k = n + text.size() + 1;
 	setCurrentBlockState(k);
 	if (parser_error_pos >= n && parser_error_pos < k) {
-		QTextCharFormat style;
-		style.setBackground(Qt::red);
-		setFormat(0, text.size(), style);
-#if 0
-		style.setBackground(Qt::black);
-		style.setForeground(Qt::white);
-		setFormat(parser_error_pos - n, 1, style);
-#endif
+		setFormat(0, text.size(), ErrorStyle);
 	}
 }
 
