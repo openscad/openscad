@@ -36,13 +36,14 @@ Highlighter::Highlighter(QTextDocument *parent)
 {
 	operators << "!" << "&&" << "||" << "+" << "-" << "*" << "/" << "%" << "!" << "#" << ";";
 	KeyWords << "for" << "intersection_for" << "if" << "assign" 
-		 << "$children" << "$child" << "$fn" << "$fa" << "$fb"     // Lump special variables in here
+	         << "module" << "function"
+		 << "$children" << "child" << "$fn" << "$fa" << "$fb"     // Lump special variables in here
 	         << "union" << "intersection" << "difference" << "render"; //Lump CSG in here
 	Primitives3D << "cube" << "cylinder" << "sphere" << "polyhedron";
 	Primitives2D << "square" << "polygon" << "circle";
 	Transforms << "scale" << "translate" << "rotate" << "multmatrix" << "color"
 	           << "linear_extrude" << "rotate_extrude"; // Lump extrudes in here.
-	Imports << "import" << "use" << "import_stl";
+	Imports << "include" << "use" << "import_stl";
 
 	//this->OperatorStyle.setForeground
 	KeyWordStyle.setForeground(Qt::darkGreen);

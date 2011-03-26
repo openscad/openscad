@@ -129,6 +129,7 @@ HEADERS += src/CGAL_renderer.h \
            src/dxfdata.h \
            src/dxfdim.h \
            src/dxftess.h \
+           src/error_highlighter.h \
            src/export.h \
            src/expression.h \
            src/function.h \
@@ -147,6 +148,7 @@ HEADERS += src/CGAL_renderer.h \
 SOURCES += src/openscad.cc \
            src/mainwin.cc \
            src/glview.cc \
+           src/error_highlighter.cc \
            src/export.cc \
            src/value.cc \
            src/expr.cc \
