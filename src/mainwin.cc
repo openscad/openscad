@@ -170,7 +170,9 @@ MainWindow::MainWindow(const QString &filename)
 	editor->setTabStopWidth(30);
 #endif
 	editor->setLineWrapping(true); // Not designable
-	setFont("", 0); // Init default font
+	// Select a monospaced font; even if this font doesn't exist, it will try
+	// to fall back to the most similar font, which should be monospaced.
+	setFont("Monospace", 12); 
 
 	screen->statusLabel = new QLabel(this);
 	statusBar()->addWidget(screen->statusLabel);
