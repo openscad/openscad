@@ -158,7 +158,7 @@ MainWindow::MainWindow(const QString &filename)
 	fps = 0;
 	fsteps = 1;
 
-	highlighter = NULL;
+	highlighter = new Highlighter(editor->document());
 #ifdef _QCODE_EDIT_
 	QFormatScheme *formats = new QFormatScheme("qxs/openscad.qxf");
 	QDocument::setDefaultFormatScheme(formats);
@@ -606,13 +606,13 @@ void MainWindow::compile(bool procevents)
 	root_module = parse((last_compiled_doc + "\n" + commandline_commands).toAscii().data(), this->fileName.isEmpty() ? "" : QFileInfo(this->fileName).absolutePath().toLocal8Bit(), false);
 
 	// Error highlighting
-	if (highlighter) {
+	/*if (highlighter) {
 		delete highlighter;
 		highlighter = NULL;
 	}
 	if (parser_error_pos >= 0) {
 		highlighter = new Highlighter(editor->document());
-	}
+	}*/
 
 	if (!root_module) {
 		if (!animate_panel->isVisible()) {
