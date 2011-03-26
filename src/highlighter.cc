@@ -34,35 +34,51 @@ Highlighter::Highlighter(QTextDocument *parent)
 #endif
 		: QSyntaxHighlighter(parent)
 {
-	//this->operators << "!" << "&&" << "||" << "+" << "-" << "*" << "/" << "%" << "!" << "#" << ";";
+	operators << "!" << "&&" << "||" << "+" << "-" << "*" << "/" << "%" << "!" << "#" << ";";
 	KeyWords << "for" << "intersection_for" << "if" << "assign" 
-	         << "union" << "intersection" << "difference"; //Lump CSG in here
+	         << "union" << "intersection" << "difference" << "render"; //Lump CSG in here
 	Primitives << "cube" << "cylinder" << "sphere" << "polyhedron";
-	// Transforms??
-	ErrorStyle.setForeground(Qt::red);
+	Transforms << "scale" << "translate" << "rotate" << "multmatrix" << "color";
+	Imports << "import" << "use";
+
 	//this->OperatorStyle.setForeground
 	KeyWordStyle.setForeground(Qt::darkGreen);
 	PrimitiveStyle.setForeground(Qt::darkBlue);
+	TransformStyle.setForeground(Qt::darkBlue);
+	ImportStyle.setForeground(Qt::darkBlue);
 	QuoteStyle.setForeground(Qt::darkMagenta);
 	CommentStyle.setForeground(Qt::blue);
-	state=NORMAL;
 }
 
 
 void Highlighter::highlightBlock(const QString &text)
 {
+	state_e state = (state_e) previousBlockState();
+
 	//Key words and Primitives
 	QStringList::iterator it;
 	for (it = KeyWords.begin(); it != KeyWords.end(); ++it){
 		for (int i = 0; i < text.count(*it); ++i){
-			setFormat(text.indexOf(*it),it->size(),KeyWordStyle);
+			setFormat(text.indexOf(*it), it->size(), KeyWordStyle);
 		}
 	}
 	for (it = Primitives.begin(); it != Primitives.end(); ++it){
 		for (int i = 0; i < text.count(*it); ++i){
-			setFormat(text.indexOf(*it),it->size(),PrimitiveStyle);
+			setFormat(text.indexOf(*it), it->size(), PrimitiveStyle);
 		}
 	}
+	for (it = Transforms.begin(); it != Transforms.end(); ++it){
+		for (int i = 0; i < text.count(*it); ++i){
+			setFormat(text.indexOf(*it), it->size(), TransformStyle);
+		}
+	}
+	for (it = Imports.begin(); it != Imports.end(); ++it){
+		for (int i = 0; i < text.count(*it); ++i){
+			setFormat(text.indexOf(*it), it->size(), ImportStyle);
+		}
+	}
+
+
 
 	// Quoting and Comments.
 	for (int n = 0; n < text.size(); ++n){
@@ -92,17 +108,8 @@ void Highlighter::highlightBlock(const QString &text)
 		}
 	}
 
-	// Errors
-	// A bit confusing. parser_error_pos is the number of charcters 
-	// into the document that the error is. The position is kept track of
-	// and if its on this line, the whole line is set to ErrorStyle.
-	int n = previousBlockState();
-	if (n < 0)
-		n = 0;
-	int k = n + text.size() + 1;
-	setCurrentBlockState(k);
-	if (parser_error_pos >= n && parser_error_pos < k) {
-		setFormat(0, text.size(), ErrorStyle);
-	}
+	//Save State
+	setCurrentBlockState((int) state);
+
 }
 

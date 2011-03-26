@@ -32,6 +32,7 @@
 #include "polyset.h"
 #include "csgterm.h"
 #include "highlighter.h"
+#include "error_highlighter.h"
 #include "grid.h"
 #include "dxfdata.h"
 #include "dxfdim.h"
@@ -606,13 +607,13 @@ void MainWindow::compile(bool procevents)
 	root_module = parse((last_compiled_doc + "\n" + commandline_commands).toAscii().data(), this->fileName.isEmpty() ? "" : QFileInfo(this->fileName).absolutePath().toLocal8Bit(), false);
 
 	// Error highlighting
-	/*if (highlighter) {
-		delete highlighter;
-		highlighter = NULL;
-	}
 	if (parser_error_pos >= 0) {
+		delete highlighter;
+		highlighter = new ErrorHighlighter(editor->document());
+	} else {
+		delete highlighter;
 		highlighter = new Highlighter(editor->document());
-	}*/
+	}
 
 	if (!root_module) {
 		if (!animate_panel->isVisible()) {

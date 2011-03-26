@@ -10,18 +10,22 @@
 class Highlighter : public QSyntaxHighlighter
 {
 public:
-	enum state_e {NORMAL,QUOTE,COMMENT};
-	state_e state;
+	enum state_e {NORMAL=-1,QUOTE,COMMENT};
 
 	QStringList operators;
 	QStringList KeyWords;
 	QStringList Primitives;
-	QTextCharFormat ErrorStyle;
+	QStringList Transforms;
+	QStringList Imports;
+
 	QTextCharFormat OperatorStyle;
 	QTextCharFormat CommentStyle;
 	QTextCharFormat QuoteStyle;
 	QTextCharFormat KeyWordStyle;
 	QTextCharFormat PrimitiveStyle;
+	QTextCharFormat TransformStyle;
+	QTextCharFormat ImportStyle;
+
 #ifdef _QCODE_EDIT_
 	Highlighter(QDocument *parent);
 #else
