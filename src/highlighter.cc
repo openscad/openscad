@@ -28,12 +28,15 @@
 #include "openscad.h" // extern int parser_error_pos;
 
 #ifdef _QCODE_EDIT_
-Highlighter::Highlighter(QDocument *parent)
+Highlighter::Highlighter(QDocument *parent, bool ErrorMode)
 #else
-Highlighter::Highlighter(QTextDocument *parent)
+Highlighter::Highlighter(QTextDocument *parent, bool ErrorMode)
 #endif
 		: QSyntaxHighlighter(parent)
 {
+
+	this->ErrorMode=ErrorMode;
+
 	operators << "!" << "&&" << "||" << "+" << "-" << "*" << "/" << "%" << "!" << "#" << ";";
 	KeyWords << "for" << "intersection_for" << "if" << "assign" 
 	         << "module" << "function"
@@ -53,72 +56,93 @@ Highlighter::Highlighter(QTextDocument *parent)
 	ImportStyle.setForeground(Qt::darkYellow);
 	QuoteStyle.setForeground(Qt::darkMagenta);
 	CommentStyle.setForeground(Qt::darkCyan);
+	ErrorStyle.setForeground(Qt::red);
 }
 
+void Highlighter::setErrorMode(bool ErrorMode){
+	this->ErrorMode=ErrorMode;
+	//Ideally, we'd force the entire document to rehighlight to avoid 
+	// the risk of screwed up formatting because of state meaning change.
+	// For now, don't use this and instead recreate the object.
+}
 
 void Highlighter::highlightBlock(const QString &text)
 {
-	state_e state = (state_e) previousBlockState();
+	if (ErrorMode){
+		// Errors
+		// A bit confusing. parser_error_pos is the number of charcters 
+		// into the document that the error is. The position is kept track of
+		// and if its on this line, the whole line is set to ErrorStyle.
+		int n = previousBlockState();
+		if (n < 0)
+			n = 0;
+		int k = n + text.size() + 1;
+		setCurrentBlockState(k);
+		if (parser_error_pos >= n && parser_error_pos < k) {
+			setFormat(0, text.size(), ErrorStyle);
+		}
+	} else{
+		state_e state = (state_e) previousBlockState();
 
-	//Key words and Primitives
-	QStringList::iterator it;
-	for (it = KeyWords.begin(); it != KeyWords.end(); ++it){
-		for (int i = 0; i < text.count(*it); ++i){
-			setFormat(text.indexOf(*it), it->size(), KeyWordStyle);
+		//Key words and Primitives
+		QStringList::iterator it;
+		for (it = KeyWords.begin(); it != KeyWords.end(); ++it){
+			for (int i = 0; i < text.count(*it); ++i){
+				setFormat(text.indexOf(*it), it->size(), KeyWordStyle);
+			}
 		}
-	}
-	for (it = Primitives3D.begin(); it != Primitives3D.end(); ++it){
-		for (int i = 0; i < text.count(*it); ++i){
-			setFormat(text.indexOf(*it), it->size(), PrimitiveStyle3D);
+		for (it = Primitives3D.begin(); it != Primitives3D.end(); ++it){
+			for (int i = 0; i < text.count(*it); ++i){
+				setFormat(text.indexOf(*it), it->size(), PrimitiveStyle3D);
+			}
 		}
-	}
-	for (it = Primitives2D.begin(); it != Primitives2D.end(); ++it){
-		for (int i = 0; i < text.count(*it); ++i){
-			setFormat(text.indexOf(*it), it->size(), PrimitiveStyle2D);
+		for (it = Primitives2D.begin(); it != Primitives2D.end(); ++it){
+			for (int i = 0; i < text.count(*it); ++i){
+				setFormat(text.indexOf(*it), it->size(), PrimitiveStyle2D);
+			}
 		}
-	}
-	for (it = Transforms.begin(); it != Transforms.end(); ++it){
-		for (int i = 0; i < text.count(*it); ++i){
-			setFormat(text.indexOf(*it), it->size(), TransformStyle);
+		for (it = Transforms.begin(); it != Transforms.end(); ++it){
+			for (int i = 0; i < text.count(*it); ++i){
+				setFormat(text.indexOf(*it), it->size(), TransformStyle);
+			}
 		}
-	}
-	for (it = Imports.begin(); it != Imports.end(); ++it){
-		for (int i = 0; i < text.count(*it); ++i){
-			setFormat(text.indexOf(*it), it->size(), ImportStyle);
+		for (it = Imports.begin(); it != Imports.end(); ++it){
+			for (int i = 0; i < text.count(*it); ++i){
+				setFormat(text.indexOf(*it), it->size(), ImportStyle);
+			}
 		}
-	}
 
 
-	// Quoting and Comments.
-	for (int n = 0; n < text.size(); ++n){
-		if (state == NORMAL){
-			if (text[n] == '"'){
-				state = QUOTE;
+		// Quoting and Comments.
+		for (int n = 0; n < text.size(); ++n){
+			if (state == NORMAL){
+				if (text[n] == '"'){
+					state = QUOTE;
+					setFormat(n,1,QuoteStyle);
+				} else if (text[n] == '/'){
+					if (text[n+1] == '/'){
+						setFormat(n,text.size(),CommentStyle);
+						break;
+					} else if (text[n+1] == '*'){
+						setFormat(n++,2,CommentStyle);
+						state = COMMENT;
+					}
+				}
+			} else if (state == QUOTE){
 				setFormat(n,1,QuoteStyle);
-			} else if (text[n] == '/'){
-				if (text[n+1] == '/'){
-					setFormat(n,text.size(),CommentStyle);
-					break;
-				} else if (text[n+1] == '*'){
-					setFormat(n++,2,CommentStyle);
-					state = COMMENT;
+				if (text[n] == '"' && text[n-1] != '\\')
+					state = NORMAL;
+			} else if (state == COMMENT){
+				setFormat(n,1,CommentStyle);
+				if (text[n] == '*' && text[n+1] == '/'){
+					setFormat(++n,1,CommentStyle);
+					state = NORMAL;
 				}
 			}
-		} else if (state == QUOTE){
-			setFormat(n,1,QuoteStyle);
-			if (text[n] == '"' && text[n-1] != '\\')
-				state = NORMAL;
-		} else if (state == COMMENT){
-			setFormat(n,1,CommentStyle);
-			if (text[n] == '*' && text[n+1] == '/'){
-				setFormat(++n,1,CommentStyle);
-				state = NORMAL;
-			}
 		}
+
+		//Save State
+		setCurrentBlockState((int) state);
 	}
-
-	//Save State
-	setCurrentBlockState((int) state);
-
 }
 

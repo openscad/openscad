@@ -27,13 +27,18 @@ public:
 	QTextCharFormat PrimitiveStyle2D;
 	QTextCharFormat TransformStyle;
 	QTextCharFormat ImportStyle;
+	QTextCharFormat ErrorStyle;
 
 #ifdef _QCODE_EDIT_
-	Highlighter(QDocument *parent);
+	Highlighter(QDocument *parent, bool ErrorMode=false);
 #else
-	Highlighter(QTextDocument *parent);
+	Highlighter(QTextDocument *parent, bool ErrorMode=false);
 #endif
 	void highlightBlock(const QString &text);
+	void setErrorMode(bool ErrorMode);
+protected:
+	bool ErrorMode;
 };
+
 
 #endif
