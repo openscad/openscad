@@ -62,7 +62,7 @@ Highlighter::Highlighter(QTextDocument *parent, mode_e mode)
 
 void Highlighter::highlightBlock(const QString &text)
 {
-	if (mode = ERROR_MODE){
+	if (mode == ERROR_MODE){
 		// Errors
 		// A bit confusing. parser_error_pos is the number of charcters 
 		// into the document that the error is. The position is kept track of
