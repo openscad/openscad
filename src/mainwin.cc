@@ -158,7 +158,7 @@ MainWindow::MainWindow(const QString &filename)
 	fps = 0;
 	fsteps = 1;
 
-	highlighter = new Highlighter(editor->document());
+	highlighter = new Highlighter(editor->document(),Highlighter::NORMAL_MODE);
 #ifdef _QCODE_EDIT_
 	QFormatScheme *formats = new QFormatScheme("qxs/openscad.qxf");
 	QDocument::setDefaultFormatScheme(formats);
@@ -609,12 +609,12 @@ void MainWindow::compile(bool procevents)
 
 	// Error highlighting
 	// Note: Highlighter(*parent, bool ErrorMode=false)
-	if (parser_error_pos >= 0) {
+	if (parser_error_pos >= 0 && highlighter->mode == Highlighter::NORMAL_MODE) {
 		delete highlighter;
-		highlighter = new Highlighter(editor->document(), true);
-	} else {
+		highlighter = new Highlighter(editor->document(), Highlighter::ERROR_MODE);
+	} else if (highlighter->mode == Highlighter::ERROR_MODE) {
 		delete highlighter;
-		highlighter = new Highlighter(editor->document());
+		highlighter = new Highlighter(editor->document(), Highlighter::NORMAL_MODE);
 	}
 
 	if (!root_module) {

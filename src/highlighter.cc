@@ -28,14 +28,14 @@
 #include "openscad.h" // extern int parser_error_pos;
 
 #ifdef _QCODE_EDIT_
-Highlighter::Highlighter(QDocument *parent, bool ErrorMode)
+Highlighter::Highlighter(QDocument *parent, mode_e mode)
 #else
-Highlighter::Highlighter(QTextDocument *parent, bool ErrorMode)
+Highlighter::Highlighter(QTextDocument *parent, mode_e mode)
 #endif
 		: QSyntaxHighlighter(parent)
 {
 
-	this->ErrorMode=ErrorMode;
+	this->mode=mode;
 
 	operators << "!" << "&&" << "||" << "+" << "-" << "*" << "/" << "%" << "!" << "#" << ";";
 	KeyWords << "for" << "intersection_for" << "if" << "assign" 
@@ -59,16 +59,10 @@ Highlighter::Highlighter(QTextDocument *parent, bool ErrorMode)
 	ErrorStyle.setForeground(Qt::red);
 }
 
-void Highlighter::setErrorMode(bool ErrorMode){
-	this->ErrorMode=ErrorMode;
-	//Ideally, we'd force the entire document to rehighlight to avoid 
-	// the risk of screwed up formatting because of state meaning change.
-	// For now, don't use this and instead recreate the object.
-}
 
 void Highlighter::highlightBlock(const QString &text)
 {
-	if (ErrorMode){
+	if (mode = ERROR_MODE){
 		// Errors
 		// A bit confusing. parser_error_pos is the number of charcters 
 		// into the document that the error is. The position is kept track of

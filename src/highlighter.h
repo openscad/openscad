@@ -11,6 +11,9 @@ class Highlighter : public QSyntaxHighlighter
 {
 public:
 	enum state_e {NORMAL=-1,QUOTE,COMMENT};
+	enum mode_e {NORMAL_MODE, ERROR_MODE};
+
+	mode_e mode;
 
 	QStringList operators;
 	QStringList KeyWords;
@@ -30,14 +33,13 @@ public:
 	QTextCharFormat ErrorStyle;
 
 #ifdef _QCODE_EDIT_
-	Highlighter(QDocument *parent, bool ErrorMode=false);
+	Highlighter(QDocument *parent, mode_e mode);
 #else
-	Highlighter(QTextDocument *parent, bool ErrorMode=false);
+	Highlighter(QTextDocument *parent, mode_e mode);
 #endif
 	void highlightBlock(const QString &text);
-	void setErrorMode(bool ErrorMode);
-protected:
-	bool ErrorMode;
+
+
 };
 
 

@@ -2,7 +2,7 @@
 #define MAINWINDOW_H_
 
 #include <QMainWindow>
-#include <QSyntaxHighlighter>
+#include "highlighter.h"
 #include "ui_MainWindow.h"
 #include "openscad.h"
 #include "context.h"
@@ -18,7 +18,7 @@ public:
 	static void requestOpenFile(const QString &filename);
 
 	QString fileName;
-	QSyntaxHighlighter *highlighter;
+	Highlighter *highlighter;
 
 	class Preferences *prefs;
 
