@@ -1,3 +1,13 @@
+# Auto-include config_<variant>.pri if the VARIANT variable is give on the
+# command-line, e.g. qmake VARIANT=mybuild
+!isEmpty(VARIANT) {
+  message("Variant: $${VARIANT}")
+  exists(config_$${VARIANT}.pri) {
+    message("Including config_$${VARIANT}.pri")
+    include(config_$${VARIANT}.pri)
+  }
+}
+
 win32 {
   isEmpty(VERSION) VERSION = $$system(date /t)
 } else {
