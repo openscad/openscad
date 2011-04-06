@@ -143,7 +143,7 @@ int main(int argc, char **argv)
 		("x", po::value<std::string>(), "dxf-file")
 		("d", po::value<std::string>(), "deps-file")
 		("m", po::value<std::string>(), "make file")
-		("D", po::value<std::vector<std::string>>(), "var=val")
+		("D", po::value<std::vector<std::string> >(), "var=val")
 		;
 
 	po::positional_options_description p;
@@ -343,7 +343,7 @@ int main(int argc, char **argv)
 #endif
 #ifdef ENABLE_MDI
 		new MainWindow(qfilename);
-		std::vector<std::string> inputFiles = vm["input-files"].as<std::vector<std::string>>();
+		std::vector<std::string> inputFiles = vm["input-files"].as<std::vector<std::string> >();
 		for (std::vector<std::string>::const_iterator i = inputFiles.begin()+1; i != inputFiles.end(); i++)
 			new MainWindow(QFileInfo(original_path, i->c_str()).absoluteFilePath());
 		app.connect(&app, SIGNAL(lastWindowClosed()), &app, SLOT(quit()));
