@@ -56,14 +56,13 @@
 #define snprintf _snprintf
 #endif
 
-using namespace boost;
 namespace po = boost::program_options;
 
 static void help(const char *progname)
 {
 	fprintf(stderr, "Usage: %s [ { -s stl_file | -o off_file | -x dxf_file } [ -d deps_file ] ]\\\n"
-			"%*s[ -m make_command ] [ -D var=val [..] ] filename\n",
-			progname, int(strlen(progname))+8, "");
+					"%*s[ -m make_command ] [ -D var=val [..] ] filename\n",
+					progname, int(strlen(progname))+8, "");
 	exit(1);
 }
 
@@ -81,6 +80,9 @@ QSet<QString> dependencies;
 QString currentdir;
 QString examplesdir;
 QString librarydir;
+
+using std::string;
+using std::vector;
 
 void handle_dep(QString filename)
 {
@@ -138,21 +140,20 @@ int main(int argc, char **argv)
 	desc.add_options()
 		("help,h", "help message")
 		("version,v", "print the version")
-		("s", po::value<std::string>(), "stl-file")
-		("o", po::value<std::string>(), "off-file")
-		("x", po::value<std::string>(), "dxf-file")
-		("d", po::value<std::string>(), "deps-file")
-		("m", po::value<std::string>(), "make file")
-		("D", po::value<std::vector<std::string> >(), "var=val")
+		("s", po::value<string>(), "stl-file")
+		("o", po::value<string>(), "off-file")
+		("x", po::value<string>(), "dxf-file")
+		("d", po::value<string>(), "deps-file")
+		("m", po::value<string>(), "make file")
+		("D", po::value<vector<string> >(), "var=val")
 		;
 
 	po::positional_options_description p;
 	p.add("input-file", -1);
 
 	po::variables_map vm;
-	po::store(po::command_line_parser(argc, argv).
-			options(desc).positional(p).run(), vm);
-	//po::notify(vm);
+	po::store(po::command_line_parser(argc, argv).options(desc).positional(p).run(), vm);
+//	po::notify(vm);
 	
 	if (vm.count("help")) help(argv[0]);
 	if (vm.count("version")) version();
@@ -160,43 +161,44 @@ int main(int argc, char **argv)
 	if (vm.count("s")) {
 		if (stl_output_file || off_output_file || dxf_output_file)
 			help(argv[0]);
-		stl_output_file = vm["s"].as<std::string>().c_str();
+		stl_output_file = vm["s"].as<string>().c_str();
 	}
 	if (vm.count("o")) {
 		if (stl_output_file || off_output_file || dxf_output_file)
 			help(argv[0]);
-		off_output_file = vm["o"].as<std::string>().c_str();
+		off_output_file = vm["o"].as<string>().c_str();
 	}
 	if (vm.count("x")) { 
 		if (stl_output_file || off_output_file || dxf_output_file)
 			help(argv[0]);
-		dxf_output_file = vm["x"].as<std::string>().c_str();
+		dxf_output_file = vm["x"].as<string>().c_str();
 	}
 	if (vm.count("d")) {
 		if (deps_output_file)
 			help(argv[0]);
-		deps_output_file = vm["d"].as<std::string>().c_str();
+		deps_output_file = vm["d"].as<string>().c_str();
 	}
 	if (vm.count("m")) {
 		if (make_command)
 			help(argv[0]);
-		make_command = vm["m"].as<std::string>().c_str();
+		make_command = vm["m"].as<string>().c_str();
 	}
 
 	if (vm.count("D")) {
-		const std::vector<std::string> &commands = vm["D"].as<std::vector<std::string> >();
+		const vector<string> &commands = vm["D"].as<vector<string> >();
 
-		for (std::vector<std::string>::const_iterator i = commands.begin(); i != commands.end(); i++) {
+		for (vector<string>::const_iterator i = commands.begin(); i != commands.end(); i++) {
 			commandline_commands.append(i->c_str());
 			commandline_commands.append(";\n");
 		}
 	}
 
-	if (vm.count("input-file"))
-		filename = vm["input-file"].as<std::vector<std::string> >().begin()->c_str();
+	if (vm.count("input-file")) {
+		filename = vm["input-file"].as< vector<string> >().begin()->c_str();
+	}
 
 #ifndef ENABLE_MDI
-	if (vm["input-file"].as<std::vector<std::string> >().size() > 1)
+	if (vm["input-file"].as<vector<string> >().size() > 1)
 		help(argv[0]);
 #endif
 
@@ -210,16 +212,16 @@ int main(int argc, char **argv)
 	if (exdir.cd("../share/openscad/examples")) {
 		examplesdir = exdir.path();
 	} else
-	if (exdir.cd("../../share/openscad/examples")) {
-		examplesdir = exdir.path();
-	} else
-	if (exdir.cd("../../examples")) {
-		examplesdir = exdir.path();
-	} else
+		if (exdir.cd("../../share/openscad/examples")) {
+			examplesdir = exdir.path();
+		} else
+			if (exdir.cd("../../examples")) {
+				examplesdir = exdir.path();
+			} else
 #endif
-	if (exdir.cd("examples")) {
-		examplesdir = exdir.path();
-	}
+				if (exdir.cd("examples")) {
+					examplesdir = exdir.path();
+				}
 
 	QDir libdir(QApplication::instance()->applicationDirPath());
 #ifdef Q_WS_MAC
@@ -229,16 +231,16 @@ int main(int argc, char **argv)
 	if (libdir.cd("../share/openscad/libraries")) {
 		librarydir = libdir.path();
 	} else
-	if (libdir.cd("../../share/openscad/libraries")) {
-		librarydir = libdir.path();
-	} else
-	if (libdir.cd("../../libraries")) {
-		librarydir = libdir.path();
-	} else
+		if (libdir.cd("../../share/openscad/libraries")) {
+			librarydir = libdir.path();
+		} else
+			if (libdir.cd("../../libraries")) {
+				librarydir = libdir.path();
+			} else
 #endif
-	if (libdir.cd("libraries")) {
-		librarydir = libdir.path();
-	}
+				if (libdir.cd("libraries")) {
+					librarydir = libdir.path();
+				}
 
 	if (stl_output_file || off_output_file || dxf_output_file)
 	{
@@ -343,9 +345,13 @@ int main(int argc, char **argv)
 #endif
 #ifdef ENABLE_MDI
 		new MainWindow(qfilename);
-		std::vector<std::string> inputFiles = vm["input-files"].as<std::vector<std::string> >();
-		for (std::vector<std::string>::const_iterator i = inputFiles.begin()+1; i != inputFiles.end(); i++)
-			new MainWindow(QFileInfo(original_path, i->c_str()).absoluteFilePath());
+		vector<string> inputFiles;
+		if (vm.count("input-file")) {
+			inputFiles = vm["input-files"].as<vector<string> >();
+			for (vector<string>::const_iterator i = inputFiles.begin()+1; i != inputFiles.end(); i++) {
+				new MainWindow(QFileInfo(original_path, i->c_str()).absoluteFilePath());
+			}
+		}
 		app.connect(&app, SIGNAL(lastWindowClosed()), &app, SLOT(quit()));
 #else
 		MainWindow *m = new MainWindow(qfilename);
