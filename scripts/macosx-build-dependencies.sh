@@ -158,7 +158,7 @@ echo "Using basedir:" $BASEDIR
 mkdir -p $SRCDIR $DEPLOYDIR
 build_gmp 5.0.1
 build_mpfr 3.0.0
-build_boost 1.44.0
+build_boost 1.46.1
 build_cgal 3.7
-build_glew 1.5.6
+build_glew 1.5.8
 build_opencsg 1.3.0
