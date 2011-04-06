@@ -7,18 +7,14 @@ cgal {
     CGAL_DIR = $$(CGALDIR)
     !isEmpty(CGAL_DIR) {
       INCLUDEPATH += $$CGAL_DIR/include
-      win32 {
-         LIBS += -L$$CGAL_DIR/build/lib -L$$(MPFRDIR)/build.vc10/lib/Win32/Release -L$$(MPIRDIR)
-      } else {
-         LIBS += -L$$CGAL_DIR/lib
-      }
+      win32: INCLUDEPATH += $$CGAL_DIR/auxiliary/gmp/include
+      LIBS += -L$$CGAL_DIR/lib
       message("CGAL location: $$CGAL_DIR")
     }
   }
 
-  LIBS += -lmpfr
   win32 {
-    LIBS += -lmpir -lCGAL-vc100-mt
+    LIBS += $$CGAL_DIR/auxiliary/gmp/lib/libmpfr-4.lib -lCGAL-vc90-mt-gd
   } else {
     LIBS += -lgmp -lCGAL
   }
