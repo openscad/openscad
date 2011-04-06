@@ -198,8 +198,9 @@ int main(int argc, char **argv)
 	}
 
 #ifndef ENABLE_MDI
-	if (vm["input-file"].as<vector<string> >().size() > 1)
+	if (vm.count("input-file") > 1) {
 		help(argv[0]);
+	}
 #endif
 
 	currentdir = QDir::currentPath();
