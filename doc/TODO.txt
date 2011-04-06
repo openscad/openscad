@@ -75,12 +75,16 @@ o 3D View
   - Improve mouse rotation
   - Add modifier key combos to handle pan and zoom on 1 mouse button systems
   - Show grid
+  - Measurement ticks on the axes that look like rulers that one can turn off and on.
   - 4 x split view w/orthogonal cameras?
   - Quick highlighting of object under the cursor in the editor
   - View All
+  - Allow specifying viewpoint in the scad file
   - overlay indicator displaying current view mode
   - OpenCSG rendering: Coincident surfaces causes z-buffer fighting. Is this somehow
     avoidable tuning the depth tests in OpenCSG? 
+  - Use OpenGL picking to facilitate ray-tracing like features like measuring
+    thicknesses, distances, slot thicknesses etc.
 o Editor wishlist
   - More infrastructure for external editor (allow communication from the outside)
   - Preferences GUI for the features below
