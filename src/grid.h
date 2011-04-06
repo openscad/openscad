@@ -2,7 +2,11 @@
 #define GRID_H_
 
 #include "mathc99.h"
+#ifdef WIN32
+typedef __int64 int64_t;
+#else
 #include <stdint.h>
+#endif
 #include <stdlib.h>
 #include <QHash>
 
@@ -33,8 +37,9 @@ public:
 				for (int64_t jy = iy - 1; jy <= iy + 1; jy++) {
 					if (!db.contains(QPair<int64_t,int64_t>(jx, jy)))
 						continue;
-					if (abs(ix-jx) + abs(iy-jy) < dist) {
-						dist = abs(ix-jx) + abs(iy-jy);
+					int d = abs(int(ix-jx)) + abs(int(iy-jy));
+					if (d < dist) {
+					  dist = d;
 						ix = jx;
 						iy = jy;
 					}
@@ -92,8 +97,9 @@ public:
 					for (int64_t jz = iz - 1; jz <= iz + 1; jz++) {
 						if (!db.contains(QPair<QPair<int64_t,int64_t>,int64_t>(QPair<int64_t,int64_t>(jx, jy), jz)))
 							continue;
-						if (abs(ix-jx) + abs(iy-jy) + abs(iz-jz) < dist) {
-							dist = abs(ix-jx) + abs(iy-jy) + abs(iz-jz);
+						int d = abs(int(ix-jx)) + abs(int(iy-jy)) + abs(int(iz-jz));
+						if (d < dist) {
+						  dist = d;
 							ix = jx;
 							iy = jy;
 							iz = jz;
