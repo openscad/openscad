@@ -93,7 +93,7 @@ public:
 %token TOK_FALSE
 %token TOK_UNDEF
 
-%token LE GE EQ NE AND OR
+%token LE GE EQ NE AND OR APND
 
 %right '?' ':'
 
@@ -103,7 +103,7 @@ public:
 %left '<' LE GE '>'
 %left EQ NE
 
-%left '!' '+' '-'
+%left '!' '+' '-' CONCAT
 %left '*' '/' '%'
 %left '[' ']'
 %left '.'
@@ -387,6 +387,12 @@ expr:
 	expr '+' expr {
 		$$ = new Expression();
 		$$->type = "+";
+		$$->children.append($1);
+		$$->children.append($3);
+	} |
+	expr CONCAT expr {
+		$$ = new Expression();
+		$$->type = "++";
 		$$->children.append($1);
 		$$->children.append($3);
 	} |

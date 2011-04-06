@@ -57,6 +57,8 @@ Value Expression::evaluate(const Context *context) const
 		return children[0]->evaluate(context) % children[1]->evaluate(context);
 	if (type == "+")
 		return children[0]->evaluate(context) + children[1]->evaluate(context);
+	if (type == "++")
+		return children[0]->evaluate(context).concat(children[1]->evaluate(context));
 	if (type == "-")
 		return children[0]->evaluate(context) - children[1]->evaluate(context);
 	if (type == "<")

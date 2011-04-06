@@ -45,6 +45,7 @@ public:
 	Value operator * (const Value &v) const;
 	Value operator / (const Value &v) const;
 	Value operator % (const Value &v) const;
+	Value concat (const Value &v) const;
 
 	Value operator < (const Value &v) const;
 	Value operator <= (const Value &v) const;

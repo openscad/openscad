@@ -120,6 +120,23 @@ Value Value::operator + (const Value &v) const
 	return Value();
 }
 
+Value Value::concat (const Value &v) const
+{
+	if (this->type == VECTOR && v.type == VECTOR) {
+		Value r;
+		r.type = VECTOR;
+		for (int i = 0; i < this->vec.size(); i++)
+			r.vec.append(new Value(*this->vec[i]));
+		for (int i = 0; i < v.vec.size(); i++)
+			r.vec.append(new Value(*v.vec[i]));
+		return r;
+	}
+	if (this->type == STRING && v.type == STRING) {
+		return Value(this->text + v.text);
+	}
+	return Value();
+}
+
 Value Value::operator - (const Value &v) const
 {
 	if (this->type == VECTOR && v.type == VECTOR) {

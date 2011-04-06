@@ -16,7 +16,7 @@ public:
 	QVector<QString> call_argnames;
 
 	// Boolean: ! && ||
-	// Operators: * / % + -
+	// Operators: * / % + ++ -
 	// Relations: < <= == != >= >
 	// Vector element: []
 	// Condition operator: ?:
