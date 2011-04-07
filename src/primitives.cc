@@ -279,6 +279,9 @@ PolySet *PrimitiveNode::render_polyset(render_mode_e) const
 
 		int fragments = get_fragments_from_r(r1, fn, fs, fa);
 		int rings = fragments/2;
+		if(rings<=0)
+		    rings=1;
+
 		ring_s *ring = new ring_s[rings];
 
 		for (int i = 0; i < rings; i++) {
