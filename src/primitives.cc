@@ -284,65 +284,67 @@ PolySet *PrimitiveNode::render_polyset(render_mode_e) const
 		};
 
 		struct ring_s {
-			int fragments;
 			point2d *points;
-			double r, z;
+			double z;
 		};
 
-		int rings = get_fragments_from_r(r1, fn, fs, fa);
+		int fragments = get_fragments_from_r(r1, fn, fs, fa);
+		int rings = fragments/2;
+		if(rings<=0)
+		    rings=1;
+
 		ring_s *ring = new ring_s[rings];
 
 		for (int i = 0; i < rings; i++) {
 			double phi = (M_PI * (i + 0.5)) / rings;
-			ring[i].r = r1 * sin(phi);
+			double r = r1 * sin(phi);
 			ring[i].z = r1 * cos(phi);
-			ring[i].fragments = get_fragments_from_r(ring[i].r, fn, fs, fa);
-			ring[i].points = new point2d[ring[i].fragments];
-			for (int j = 0; j < ring[i].fragments; j++) {
-				phi = (M_PI*2*j) / ring[i].fragments;
-				ring[i].points[j].x = ring[i].r * cos(phi);
-				ring[i].points[j].y = ring[i].r * sin(phi);
+			ring[i].points = new point2d[fragments];
+			for (int j = 0; j < fragments; j++) {
+				phi = (M_PI*2*j) / fragments;
+				ring[i].points[j].x = r * cos(phi);
+				ring[i].points[j].y = r * sin(phi);
 			}
 		}
 
 		p->append_poly();
-		for (int i = 0; i < ring[0].fragments; i++)
+		for (int i = 0; i < fragments; i++)
 			p->append_vertex(ring[0].points[i].x, ring[0].points[i].y, ring[0].z);
 
 		for (int i = 0; i < rings-1; i++) {
 			ring_s *r1 = &ring[i];
 			ring_s *r2 = &ring[i+1];
 			int r1i = 0, r2i = 0;
-			while (r1i < r1->fragments || r2i < r2->fragments)
+			while (r1i < fragments || r2i < fragments)
 			{
-				if (r1i >= r1->fragments)
+				if (r1i >= fragments)
 					goto sphere_next_r2;
-				if (r2i >= r2->fragments)
+				if (r2i >= fragments)
 					goto sphere_next_r1;
-				if ((double)r1i / r1->fragments <
-						(double)r2i / r2->fragments)
+				if ((double)r1i / fragments <
+						(double)r2i / fragments)
 				{
 sphere_next_r1:
 					p->append_poly();
-					int r1j = (r1i+1) % r1->fragments;
+					int r1j = (r1i+1) % fragments;
 					p->insert_vertex(r1->points[r1i].x, r1->points[r1i].y, r1->z);
 					p->insert_vertex(r1->points[r1j].x, r1->points[r1j].y, r1->z);
-					p->insert_vertex(r2->points[r2i % r2->fragments].x, r2->points[r2i % r2->fragments].y, r2->z);
+					p->insert_vertex(r2->points[r2i % fragments].x, r2->points[r2i % fragments].y, r2->z);
 					r1i++;
 				} else {
 sphere_next_r2:
 					p->append_poly();
-					int r2j = (r2i+1) % r2->fragments;
+					int r2j = (r2i+1) % fragments;
 					p->append_vertex(r2->points[r2i].x, r2->points[r2i].y, r2->z);
 					p->append_vertex(r2->points[r2j].x, r2->points[r2j].y, r2->z);
-					p->append_vertex(r1->points[r1i % r1->fragments].x, r1->points[r1i % r1->fragments].y, r1->z);
+					p->append_vertex(r1->points[r1i % fragments].x, r1->points[r1i % fragments].y, r1->z);
 					r2i++;
 				}
 			}
 		}
 
 		p->append_poly();
-		for (int i = 0; i < ring[rings-1].fragments; i++)
+		for (int i = 0; i < fragments; i++)
 			p->insert_vertex(ring[rings-1].points[i].x, ring[rings-1].points[i].y, ring[rings-1].z);
 
 		delete[] ring;
@@ -388,17 +390,25 @@ sphere_next_r2:
 		
 		for (int i=0; i<fragments; i++) {
 			int j = (i+1) % fragments;
-			if (r1 > 0) {
+			if (r1 == r2) {
 				p->append_poly();
 				p->insert_vertex(circle1[i].x, circle1[i].y, z1);
 				p->insert_vertex(circle2[i].x, circle2[i].y, z2);
-				p->insert_vertex(circle1[j].x, circle1[j].y, z1);
-			}
-			if (r2 > 0) {
-				p->append_poly();
-				p->insert_vertex(circle2[i].x, circle2[i].y, z2);
 				p->insert_vertex(circle2[j].x, circle2[j].y, z2);
 				p->insert_vertex(circle1[j].x, circle1[j].y, z1);
+			} else {
+				if (r1 > 0) {
+					p->append_poly();
+					p->insert_vertex(circle1[i].x, circle1[i].y, z1);
+					p->insert_vertex(circle2[i].x, circle2[i].y, z2);
+					p->insert_vertex(circle1[j].x, circle1[j].y, z1);
+				}
+				if (r2 > 0) {
+					p->append_poly();
+					p->insert_vertex(circle2[i].x, circle2[i].y, z2);
+					p->insert_vertex(circle2[j].x, circle2[j].y, z2);
+					p->insert_vertex(circle1[j].x, circle1[j].y, z1);
+				}
 			}
 		}
 
