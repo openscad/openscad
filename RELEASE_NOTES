@@ -1,8 +1,4 @@
-OpenSCAD 20XX.YY
-================
-
-
-OpenSCAD 2011.01
+OpenSCAD 2011.XX
 ================
 
 o Added rands() function
@@ -11,7 +7,7 @@ o Now supports escaping of the following characters in strings: \n, \t, \r, \\, 
 o Support nested includes
 o Improved parsing of numbers
 o DXF: output LWPOLYLINE instead of just LINE entities
-o Bugfixes: More robust DXF export
+o Bugfixes: More robust DXF export, setting $fs/$fa to 0 caused a crash
 o Some bugs fixed, maybe some new bugs added
 
 OpenSCAD 2010.05
