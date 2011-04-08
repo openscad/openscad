@@ -30,6 +30,7 @@
 #include "builtin.h"
 #include "printutils.h"
 #include "cgal.h"
+#include <CGAL/ch_graham_andrew.h>
 
 #ifdef ENABLE_CGAL
 extern CGAL_Nef_polyhedron3 minkowski3(CGAL_Nef_polyhedron3 a, CGAL_Nef_polyhedron3 b);
@@ -39,7 +40,8 @@ extern CGAL_Nef_polyhedron2 minkowski2(CGAL_Nef_polyhedron2 a, CGAL_Nef_polyhedr
 enum cgaladv_type_e {
 	MINKOWSKI,
 	GLIDE,
-	SUBDIV
+	SUBDIV,
+	HULL
 };
 
 class CgaladvModule : public AbstractModule
@@ -103,6 +105,10 @@ AbstractNode *CgaladvModule::evaluate(const Context *ctx, const ModuleInstantiat
 		level = c.lookup_variable("level", true);
 	}
 
+	if (type == HULL) {
+		convexity = c.lookup_variable("convexity", true);
+	}
+
 	node->convexity = (int)convexity.num;
 	node->path = path;
 	node->subdiv_type = subdiv_type.text;
@@ -125,6 +131,7 @@ void register_builtin_cgaladv()
 	builtin_modules["minkowski"] = new CgaladvModule(MINKOWSKI);
 	builtin_modules["glide"] = new CgaladvModule(GLIDE);
 	builtin_modules["subdiv"] = new CgaladvModule(SUBDIV);
+	builtin_modules["hull"] = new CgaladvModule(HULL);
 }
 
 #ifdef ENABLE_CGAL
@@ -172,6 +179,29 @@ CGAL_Nef_polyhedron CgaladvNode::render_cgal_nef_polyhedron() const
 	if (type == SUBDIV)
 	{
 		PRINT("WARNING: subdiv() is not implemented yet!");
+	}
+
+	if (type == HULL)
+	{
+	    bool first = true;
+	    foreach(AbstractNode * v, children) {
+		    if (v->modinst->tag_background)
+			    continue;
+		    if (first) {
+			    N = v->render_cgal_nef_polyhedron();
+			    if (N.dim != 0)
+				    first = false;
+		    } else {
+			    CGAL_Nef_polyhedron tmp = v->render_cgal_nef_polyhedron();
+			    if (N.dim == 3 && tmp.dim == 3) {
+
+			    }
+			    if (N.dim == 2 && tmp.dim == 2) {
+
+			    }
+		    }
+		    v->progress_report();
+	    }
 	}
 
 	cgal_nef_cache.insert(cache_id, new cgal_nef_cache_entry(N), N.weight());
