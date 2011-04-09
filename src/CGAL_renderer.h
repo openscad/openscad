@@ -88,20 +88,15 @@ public:
 		CGAL::Color c = f->mark() ? colors[CGAL_NEF3_UNMARKED_FACET_COLOR] : colors[CGAL_NEF3_MARKED_FACET_COLOR];
 		return c;
 	}
-};
 
-template<typename Nef_polyhedron>
-class Nef3_Converter : public CGAL::OGL::Nef3_Converter<Nef_polyhedron>
-{
-public:
-	static void setColor(Polyhedron* p, Polyhedron::RenderColor color_index,
+	void setColor(Polyhedron::RenderColor color_index,
 						 unsigned char r, unsigned char g, unsigned char b) {
 		assert(color_index < Polyhedron::NUM_COLORS);
-		p->colors[color_index] = CGAL::Color(r,g,b);
+		this->colors[color_index] = CGAL::Color(r,g,b);
 	}
 
 
-}; // Nef3_Converter
+}; // Polyhedron
 
 } // namespace OGL
 

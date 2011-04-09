@@ -78,7 +78,7 @@
 #if 1
 #include "CGAL_renderer.h"
 using OpenSCAD::OGL::Polyhedron;
-using OpenSCAD::OGL::Nef3_Converter;
+using CGAL::OGL::Nef3_Converter;
 #else
 // a little hackish: we need access to default-private members of
 // CGAL::OGL::Nef3_Converter so we can implement our own draw function
@@ -1493,11 +1493,11 @@ static void renderGLviaCGAL(void *vp)
 		Polyhedron *p = (Polyhedron*)m->cgal_ogl_p;
 		if (!p) {
 			m->cgal_ogl_p = p = new Polyhedron();
-			Nef3_Converter<CGAL_Nef_polyhedron3>::setColor(p,Polyhedron::CGAL_NEF3_MARKED_FACET_COLOR,
+			p->setColor(Polyhedron::CGAL_NEF3_MARKED_FACET_COLOR,
 																										 Preferences::inst()->color(Preferences::CGAL_FACE_BACK_COLOR).red(),
 																										 Preferences::inst()->color(Preferences::CGAL_FACE_BACK_COLOR).green(),
 																										 Preferences::inst()->color(Preferences::CGAL_FACE_BACK_COLOR).blue());
-			Nef3_Converter<CGAL_Nef_polyhedron3>::setColor(p,Polyhedron::CGAL_NEF3_UNMARKED_FACET_COLOR,
+			p->setColor(Polyhedron::CGAL_NEF3_UNMARKED_FACET_COLOR,
 																										 Preferences::inst()->color(Preferences::CGAL_FACE_FRONT_COLOR).red(),
 																										 Preferences::inst()->color(Preferences::CGAL_FACE_FRONT_COLOR).green(),
 																										 Preferences::inst()->color(Preferences::CGAL_FACE_FRONT_COLOR).blue());
