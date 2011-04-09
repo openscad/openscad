@@ -1494,13 +1494,13 @@ static void renderGLviaCGAL(void *vp)
 		if (!p) {
 			m->cgal_ogl_p = p = new Polyhedron();
 			p->setColor(Polyhedron::CGAL_NEF3_MARKED_FACET_COLOR,
-																										 Preferences::inst()->color(Preferences::CGAL_FACE_BACK_COLOR).red(),
-																										 Preferences::inst()->color(Preferences::CGAL_FACE_BACK_COLOR).green(),
-																										 Preferences::inst()->color(Preferences::CGAL_FACE_BACK_COLOR).blue());
+				    Preferences::inst()->color(Preferences::CGAL_FACE_BACK_COLOR).red(),
+				    Preferences::inst()->color(Preferences::CGAL_FACE_BACK_COLOR).green(),
+				    Preferences::inst()->color(Preferences::CGAL_FACE_BACK_COLOR).blue());
 			p->setColor(Polyhedron::CGAL_NEF3_UNMARKED_FACET_COLOR,
-																										 Preferences::inst()->color(Preferences::CGAL_FACE_FRONT_COLOR).red(),
-																										 Preferences::inst()->color(Preferences::CGAL_FACE_FRONT_COLOR).green(),
-																										 Preferences::inst()->color(Preferences::CGAL_FACE_FRONT_COLOR).blue());
+				    Preferences::inst()->color(Preferences::CGAL_FACE_FRONT_COLOR).red(),
+				    Preferences::inst()->color(Preferences::CGAL_FACE_FRONT_COLOR).green(),
+				    Preferences::inst()->color(Preferences::CGAL_FACE_FRONT_COLOR).blue());
 
 			Nef3_Converter<CGAL_Nef_polyhedron3>::convert_to_OGLPolyhedron(m->root_N->p3, p);
 			p->init();
