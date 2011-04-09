@@ -31,7 +31,7 @@
 #include "grid.h"
 #include "cgal.h"
 
-#if 0
+#if 1
 
 #include <CGAL/Exact_predicates_exact_constructions_kernel.h>
 #include <CGAL/minkowski_sum_2.h>
@@ -41,6 +41,44 @@ extern CGAL_Nef_polyhedron2 minkowski2(CGAL_Nef_polyhedron2 a, CGAL_Nef_polyhedr
 struct K2 : public CGAL::Exact_predicates_exact_constructions_kernel {};
 typedef CGAL::Polygon_2<K2> Poly2;
 typedef CGAL::Polygon_with_holes_2<K2> Poly2h;
+
+//-----------------------------------------------------------------------------
+// Pretty-print a CGAL polygon.
+//
+template<class Kernel, class Container>
+void print_polygon (const CGAL::Polygon_2<Kernel, Container>& P)
+{
+  typename CGAL::Polygon_2<Kernel, Container>::Vertex_const_iterator  vit;
+
+  std::cout << "[ " << P.size() << " vertices:";
+  for (vit = P.vertices_begin(); vit != P.vertices_end(); ++vit)
+    std::cout << " (" << *vit << ')';
+  std::cout << " ]" << std::endl;
+}
+
+//-----------------------------------------------------------------------------
+// Pretty-print a polygon with holes.
+//
+template<class Kernel, class Container>
+void print_polygon_with_holes (const CGAL::Polygon_with_holes_2<Kernel, Container>& pwh) { 
+  if (! pwh.is_unbounded()) { 
+      std::cout << "{ Outer boundary = ";
+      print_polygon (pwh.outer_boundary());
+    } else
+    std::cout << "{ Unbounded polygon." << std::endl;
+
+  typename CGAL::Polygon_with_holes_2<Kernel,Container>::Hole_const_iterator  hit;
+  unsigned int k = 1;
+
+  std::cout << "  " << pwh.number_of_holes() << " holes:" << std::endl;
+  for (hit = pwh.holes_begin(); hit != pwh.holes_end(); ++hit, ++k) { 
+    std::cout << "    Hole #" << k << " = ";
+    print_polygon (*hit);
+  }
+  std::cout << " }" << std::endl;
+
+  return;
+}
 
 static Poly2 nef2p2(CGAL_Nef_polyhedron2 p)
 {
@@ -54,16 +92,23 @@ static Poly2 nef2p2(CGAL_Nef_polyhedron2 p)
 
 	for (fci_t fit = E.faces_begin(), fend = E.faces_end(); fit != fend; ++fit)
 	{
-		if (fit != E.faces_begin()) {
+          std::cout << "face " << ((E.mark(fit))? "is part of polygon" :  "is not part of polygon") << std::endl;
+                if (!E.mark(fit)) {
+                  continue;
+                }
+		//if (fit != E.faces_begin()) {
+		if (points.size() != 0) {
 			PRINT("WARNING: minkowski() is not implemented for 2d objects with holes!");
-			break;
+                        break;
 		}
 
 		heafcc_t fcirc(E.halfedge(fit)), fend(fcirc);
 		CGAL_For_all(fcirc, fend) {
+                  //std::cout << "fcirc,fend " << std::endl;
 			if (E.is_standard(E.target(fcirc))) {
 				Explorer::Point ep = E.point(E.target(fcirc));
 				double x = to_double(ep.x()), y = to_double(ep.y());
+                                std::cout << "point " << ep << std::endl;
 				grid.align(x, y);
 				points.push_back(K2::Point_2(x, y));
 			}
@@ -72,15 +117,36 @@ static Poly2 nef2p2(CGAL_Nef_polyhedron2 p)
 
 	return Poly2(points.begin(), points.end());
 }
+static CGAL_Nef_polyhedron2 p2nef2(Poly2 p2) {
+  std::list<CGAL_Nef_polyhedron2::Point> points;
+  for (int j = 0; j < p2.size(); j++) {
+    double x = to_double(p2[j].x());
+    double y = to_double(p2[j].y());
+    CGAL_Nef_polyhedron2::Point p = CGAL_Nef_polyhedron2::Point(x, y);
+    points.push_back(p);
+  }
+  return CGAL_Nef_polyhedron2(points.begin(), points.end(), CGAL_Nef_polyhedron2::INCLUDED);
+}
 
 CGAL_Nef_polyhedron2 minkowski2(CGAL_Nef_polyhedron2 a, CGAL_Nef_polyhedron2 b)
 {
 	Poly2 ap = nef2p2(a), bp = nef2p2(b);
-	Poly2h x = minkowski_sum_2(ap, bp);
-	/** FIXME **/
-	
-	PRINT("WARNING: minkowski() is not implemented yet for 2d objects!");
-	return CGAL_Nef_polyhedron2();
+        std::cout << "ap = "; print_polygon(ap);
+        std::cout << "bp = "; print_polygon(bp);
+
+        if (ap.size() == 0) {
+          PRINT("WARNING: minkowski() could not get any points from object 1!");
+          return CGAL_Nef_polyhedron2();
+        } else if (bp.size() == 0) {
+          PRINT("WARNING: minkowski() could not get any points from object 2!");
+          return CGAL_Nef_polyhedron2();
+        } else {
+          Poly2h x = minkowski_sum_2(ap, bp);
+          std::cout << "result = "; print_polygon_with_holes(x);
+
+          // Make a CGAL_Nef_polyhedron2 out of just the boundary for starters
+          return p2nef2(x.outer_boundary());
+        }	
 }
 
 #else
