@@ -39,71 +39,71 @@
 using CGAL::OGL::SNC_BOUNDARY;
 using CGAL::OGL::SNC_SKELETON;
 
-namespace OpenSCAD {
+namespace OpenSCAD
+{
 
-	namespace OGL {
+namespace OGL
+{
 
 
-	       class Polyhedron : public CGAL::OGL::Polyhedron {
-	       public:
-			enum RenderColor {
-				CGAL_NEF3_MARKED_VERTEX_COLOR,
-				CGAL_NEF3_MARKED_EDGE_COLOR,
-				CGAL_NEF3_MARKED_FACET_COLOR,
-				CGAL_NEF3_UNMARKED_VERTEX_COLOR,
-				CGAL_NEF3_UNMARKED_EDGE_COLOR,
-				CGAL_NEF3_UNMARKED_FACET_COLOR,
-				NUM_COLORS
-			};
-		       CGAL::Color colors[NUM_COLORS];
+class Polyhedron : public CGAL::OGL::Polyhedron
+{
+public:
+	enum RenderColor {
+		CGAL_NEF3_MARKED_VERTEX_COLOR,
+		CGAL_NEF3_MARKED_EDGE_COLOR,
+		CGAL_NEF3_MARKED_FACET_COLOR,
+		CGAL_NEF3_UNMARKED_VERTEX_COLOR,
+		CGAL_NEF3_UNMARKED_EDGE_COLOR,
+		CGAL_NEF3_UNMARKED_FACET_COLOR,
+		NUM_COLORS
+	};
+	CGAL::Color colors[NUM_COLORS];
 
-			void draw(bool showedges) const
-				{ 
-	if (this->style == SNC_BOUNDARY) {
-		glCallList(this->object_list_+2);
-		if (showedges) {
+	void draw(bool showedges) const {
+		if(this->style == SNC_BOUNDARY) {
+			glCallList(this->object_list_+2);
+			if(showedges) {
+				glDisable(GL_LIGHTING);
+				glCallList(this->object_list_+1);
+				glCallList(this->object_list_);
+			}
+		} else {
 			glDisable(GL_LIGHTING);
 			glCallList(this->object_list_+1);
 			glCallList(this->object_list_);
-				}
-	} else {
-		glDisable(GL_LIGHTING);
-		glCallList(this->object_list_+1);
-		glCallList(this->object_list_);
+		}
 	}
-    }
-			CGAL::Color getVertexColor(Vertex_iterator v) const
-			    {
-				CGAL::Color c = v->mark() ? colors[CGAL_NEF3_UNMARKED_VERTEX_COLOR] : colors[CGAL_NEF3_MARKED_VERTEX_COLOR];
-				return c;
-			    }
+	CGAL::Color getVertexColor(Vertex_iterator v) const {
+		CGAL::Color c = v->mark() ? colors[CGAL_NEF3_UNMARKED_VERTEX_COLOR] : colors[CGAL_NEF3_MARKED_VERTEX_COLOR];
+		return c;
+	}
 
-			    CGAL::Color getEdgeColor(Edge_iterator e) const
-			    {
-				CGAL::Color c = e->mark() ? colors[CGAL_NEF3_UNMARKED_EDGE_COLOR] : colors[CGAL_NEF3_MARKED_EDGE_COLOR];
-				return c;
-			    }
+	CGAL::Color getEdgeColor(Edge_iterator e) const {
+		CGAL::Color c = e->mark() ? colors[CGAL_NEF3_UNMARKED_EDGE_COLOR] : colors[CGAL_NEF3_MARKED_EDGE_COLOR];
+		return c;
+	}
 
-			    CGAL::Color getFacetColor(Halffacet_iterator f) const
-			    {
-				CGAL::Color c = f->mark() ? colors[CGAL_NEF3_UNMARKED_FACET_COLOR] : colors[CGAL_NEF3_MARKED_FACET_COLOR];
-				return c;
-			    }
-		};
+	CGAL::Color getFacetColor(Halffacet_iterator f) const {
+		CGAL::Color c = f->mark() ? colors[CGAL_NEF3_UNMARKED_FACET_COLOR] : colors[CGAL_NEF3_MARKED_FACET_COLOR];
+		return c;
+	}
+};
 
-		template<typename Nef_polyhedron>
-		class Nef3_Converter : public CGAL::OGL::Nef3_Converter<Nef_polyhedron> {
-		public:
-			static void setColor(Polyhedron* p, Polyhedron::RenderColor color_index,
-													 unsigned char r, unsigned char g, unsigned char b) {
-				assert(color_index < Polyhedron::NUM_COLORS);
-				p->colors[color_index] = CGAL::Color(r,g,b);
-			}
+template<typename Nef_polyhedron>
+class Nef3_Converter : public CGAL::OGL::Nef3_Converter<Nef_polyhedron>
+{
+public:
+	static void setColor(Polyhedron* p, Polyhedron::RenderColor color_index,
+						 unsigned char r, unsigned char g, unsigned char b) {
+		assert(color_index < Polyhedron::NUM_COLORS);
+		p->colors[color_index] = CGAL::Color(r,g,b);
+	}
 
-    
-		}; // Nef3_Converter
 
-	} // namespace OGL
+}; // Nef3_Converter
+
+} // namespace OGL
 
 } // namespace OpenSCAD
 
