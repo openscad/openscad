@@ -49,6 +49,7 @@ namespace OGL
 class Polyhedron : public CGAL::OGL::Polyhedron
 {
 public:
+
 	enum RenderColor {
 		CGAL_NEF3_MARKED_VERTEX_COLOR,
 		CGAL_NEF3_MARKED_EDGE_COLOR,
@@ -58,6 +59,15 @@ public:
 		CGAL_NEF3_UNMARKED_FACET_COLOR,
 		NUM_COLORS
 	};
+
+	Polyhedron() {
+		setColor(CGAL_NEF3_MARKED_VERTEX_COLOR,0xb7,0xe8,0x5c);
+		setColor(CGAL_NEF3_MARKED_EDGE_COLOR,0xab,0xd8,0x56);
+		setColor(CGAL_NEF3_MARKED_FACET_COLOR,0x9d,0xcb,0x51);
+		setColor(CGAL_NEF3_UNMARKED_VERTEX_COLOR,0xff,0xf6,0x7c);
+		setColor(CGAL_NEF3_UNMARKED_EDGE_COLOR,0xff,0xec,0x5e);
+		setColor(CGAL_NEF3_UNMARKED_FACET_COLOR,0xf9,0xd7,0x2c);
+	}
 
 	void draw(bool showedges) const {
 		if(this->style == SNC_BOUNDARY) {
@@ -89,7 +99,7 @@ public:
 	}
 
 	void setColor(Polyhedron::RenderColor color_index,
-						 unsigned char r, unsigned char g, unsigned char b) {
+				  unsigned char r, unsigned char g, unsigned char b) {
 		assert(color_index < Polyhedron::NUM_COLORS);
 		this->colors[color_index] = CGAL::Color(r,g,b);
 	}
