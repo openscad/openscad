@@ -78,8 +78,6 @@
 #if 1
 #include "CGAL_renderer.h"
 using OpenSCAD::OGL::Polyhedron;
-using OpenSCAD::OGL::SNC_BOUNDARY;
-using OpenSCAD::OGL::SNC_SKELETON;
 using OpenSCAD::OGL::Nef3_Converter;
 #else
 // a little hackish: we need access to default-private members of
@@ -1494,15 +1492,16 @@ static void renderGLviaCGAL(void *vp)
 	{
 		Polyhedron *p = (Polyhedron*)m->cgal_ogl_p;
 		if (!p) {
-			Nef3_Converter<CGAL_Nef_polyhedron3>::setColor(Polyhedron::CGAL_NEF3_MARKED_FACET_COLOR,
+			m->cgal_ogl_p = p = new Polyhedron();
+			Nef3_Converter<CGAL_Nef_polyhedron3>::setColor(p,Polyhedron::CGAL_NEF3_MARKED_FACET_COLOR,
 																										 Preferences::inst()->color(Preferences::CGAL_FACE_BACK_COLOR).red(),
 																										 Preferences::inst()->color(Preferences::CGAL_FACE_BACK_COLOR).green(),
 																										 Preferences::inst()->color(Preferences::CGAL_FACE_BACK_COLOR).blue());
-			Nef3_Converter<CGAL_Nef_polyhedron3>::setColor(Polyhedron::CGAL_NEF3_UNMARKED_FACET_COLOR,
+			Nef3_Converter<CGAL_Nef_polyhedron3>::setColor(p,Polyhedron::CGAL_NEF3_UNMARKED_FACET_COLOR,
 																										 Preferences::inst()->color(Preferences::CGAL_FACE_FRONT_COLOR).red(),
 																										 Preferences::inst()->color(Preferences::CGAL_FACE_FRONT_COLOR).green(),
 																										 Preferences::inst()->color(Preferences::CGAL_FACE_FRONT_COLOR).blue());
-			m->cgal_ogl_p = p = new Polyhedron();
+
 			Nef3_Converter<CGAL_Nef_polyhedron3>::convert_to_OGLPolyhedron(m->root_N->p3, p);
 			p->init();
 		}
@@ -1513,18 +1512,7 @@ static void renderGLviaCGAL(void *vp)
 #if 0
 		p->draw();
 #else
-		if (p->style == SNC_BOUNDARY) {
-			glCallList(p->object_list_+2);
-			if (m->viewActionShowEdges->isChecked()) {
-				glDisable(GL_LIGHTING);
-				glCallList(p->object_list_+1);
-				glCallList(p->object_list_);
-			}
-		} else {
-			glDisable(GL_LIGHTING);
-			glCallList(p->object_list_+1);
-			glCallList(p->object_list_);
-		}
+		p->draw(m->viewActionShowEdges->isChecked());
 #endif
 	}
 }
