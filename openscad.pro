@@ -119,6 +119,7 @@ FORMS   += src/MainWindow.ui \
            src/Preferences.ui
 
 HEADERS += src/CGAL_renderer.h \
+           src/OGL_helper.h \
            src/GLView.h \
            src/MainWindow.h \
            src/Preferences.h \
