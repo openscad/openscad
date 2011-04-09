@@ -30,11 +30,11 @@
 #include "builtin.h"
 #include "printutils.h"
 #include "cgal.h"
-#include <CGAL/ch_graham_andrew.h>
 
 #ifdef ENABLE_CGAL
 extern CGAL_Nef_polyhedron3 minkowski3(CGAL_Nef_polyhedron3 a, CGAL_Nef_polyhedron3 b);
 extern CGAL_Nef_polyhedron2 minkowski2(CGAL_Nef_polyhedron2 a, CGAL_Nef_polyhedron2 b);
+extern CGAL_Nef_polyhedron2 convexhull2(CGAL_Nef_polyhedron2 a, CGAL_Nef_polyhedron2 b);
 #endif
 
 enum cgaladv_type_e {
@@ -197,7 +197,7 @@ CGAL_Nef_polyhedron CgaladvNode::render_cgal_nef_polyhedron() const
 
 			    }
 			    if (N.dim == 2 && tmp.dim == 2) {
-
+				N.p2 = convexhull2(N.p2, tmp.p2);
 			    }
 		    }
 		    v->progress_report();

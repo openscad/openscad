@@ -161,6 +161,7 @@ SOURCES += src/openscad.cc \
            src/primitives.cc \
            src/projection.cc \
            src/cgaladv.cc \
+	   src/cgaladv_convexhull2.cc \
            src/cgaladv_minkowski3.cc \
            src/cgaladv_minkowski2.cc \
            src/surface.cc \
@@ -180,7 +181,7 @@ SOURCES += src/openscad.cc \
            src/Preferences.cc \
            src/progress.cc \
            src/editor.cc \
-           src/mathc99.cc
+	   src/mathc99.cc
 
 macx {
   HEADERS += src/AppleEvents.h \
@@ -198,4 +199,3 @@ INSTALLS += examples
 libraries.path = /usr/local/share/openscad/libraries/
 libraries.files = libraries/*
 INSTALLS += libraries
-
