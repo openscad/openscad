@@ -58,7 +58,6 @@ public:
 		CGAL_NEF3_UNMARKED_FACET_COLOR,
 		NUM_COLORS
 	};
-	CGAL::Color colors[NUM_COLORS];
 
 	void draw(bool showedges) const {
 		if(this->style == SNC_BOUNDARY) {
@@ -94,7 +93,8 @@ public:
 		assert(color_index < Polyhedron::NUM_COLORS);
 		this->colors[color_index] = CGAL::Color(r,g,b);
 	}
-
+private:
+	CGAL::Color colors[NUM_COLORS];
 
 }; // Polyhedron
 
