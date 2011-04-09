@@ -29,31 +29,27 @@
 #include "cgal.h"
 #include <CGAL/convex_hull_2.h>
 
-extern CGAL_Nef_polyhedron2 convexhull2(CGAL_Nef_polyhedron2 a);
+extern CGAL_Nef_polyhedron2 convexhull2(std::list<CGAL_Nef_polyhedron2> a);
 extern CGAL_Poly2 nef2p2(CGAL_Nef_polyhedron2 p);
 
-static std::list<CGAL_Nef_polyhedron2::Point> p2points(CGAL_Poly2 p2)
+CGAL_Nef_polyhedron2 convexhull2(std::list<CGAL_Nef_polyhedron2> a)
 {
-	std::list<CGAL_Nef_polyhedron2::Point> points;
-	for (int j = 0; j < p2.size(); j++) {
-		double x = to_double(p2[j].x()), y = to_double(p2[j].y());
-		CGAL_Nef_polyhedron2::Point p =
-		CGAL_Nef_polyhedron2::Point(x, y);
-		points.push_back(p);
+    std::list<CGAL_Nef_polyhedron2::Point> points;
+
+    std::list<CGAL_Nef_polyhedron2>::iterator i;
+    for(i=a.begin(); i!=a.end(); i++) {
+	CGAL_Poly2 ap=nef2p2(*i);
+	for (int j=0;j<ap.size();j++) {
+	    double x=to_double(ap[j].x()),y=to_double(ap[j].y());
+	    CGAL_Nef_polyhedron2::Point p=CGAL_Nef_polyhedron2::Point(x,y);
+	    points.push_back(p);
 	}
-	return points;
-}
+    }
 
-CGAL_Nef_polyhedron2 convexhull2(CGAL_Nef_polyhedron2 a)
-{
-    CGAL_Poly2 ap = nef2p2(a);
-    std::list<CGAL_Nef_polyhedron2::Point> points = p2points(ap), result;
+    std::list<CGAL_Nef_polyhedron2::Point> result;
+    CGAL::convex_hull_2(points.begin(),points.end(),std::back_inserter(result));
 
-    CGAL::convex_hull_2(points.begin(), points.end(),
-    std::back_inserter(result));
-		std::cout << result.size() << " points on the convex hull" << std::endl;
-                return CGAL_Nef_polyhedron2(result.begin(),
-    result.end(), CGAL_Nef_polyhedron2::INCLUDED);
+    return CGAL_Nef_polyhedron2(result.begin(),result.end(),CGAL_Nef_polyhedron2::INCLUDED);
 }
 
 #endif

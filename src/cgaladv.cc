@@ -34,7 +34,7 @@
 #ifdef ENABLE_CGAL
 extern CGAL_Nef_polyhedron3 minkowski3(CGAL_Nef_polyhedron3 a, CGAL_Nef_polyhedron3 b);
 extern CGAL_Nef_polyhedron2 minkowski2(CGAL_Nef_polyhedron2 a, CGAL_Nef_polyhedron2 b);
-extern CGAL_Nef_polyhedron2 convexhull2(CGAL_Nef_polyhedron2 a);
+extern CGAL_Nef_polyhedron2 convexhull2(std::list<CGAL_Nef_polyhedron2> a);
 #endif
 
 enum cgaladv_type_e {
@@ -184,19 +184,24 @@ CGAL_Nef_polyhedron CgaladvNode::render_cgal_nef_polyhedron() const
 	if (type == HULL)
 	{
 
+	    std::list<CGAL_Nef_polyhedron2> polys;
+	    bool all2d = true;
 	    foreach(AbstractNode * v, children) {
 		if (v->modinst->tag_background)
 		    continue;
 		N = v->render_cgal_nef_polyhedron();
 		if (N.dim == 3) {
-
+		    //polys.push_back(tmp.p3);
+		    all2d=false;
 		}
 		if (N.dim == 2) {
-		    N.p2 = convexhull2(N.p2);
+		    polys.push_back(N.p2);
 		}
 		v->progress_report();
-		break;
 	    }
+
+	    if(all2d)
+		N.p2 = convexhull2(polys);
 	}
 
 	cgal_nef_cache.insert(cache_id, new cgal_nef_cache_entry(N), N.weight());
