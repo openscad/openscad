@@ -4,5 +4,4 @@ hull() {
         circle(10);
         circle(10);
     }
-    square(2);
 }

@@ -29,7 +29,7 @@
 #include "cgal.h"
 #include <CGAL/convex_hull_2.h>
 
-extern CGAL_Nef_polyhedron2 convexhull2(CGAL_Nef_polyhedron2 a, CGAL_Nef_polyhedron2 b);
+extern CGAL_Nef_polyhedron2 convexhull2(CGAL_Nef_polyhedron2 a);
 extern CGAL_Poly2 nef2p2(CGAL_Nef_polyhedron2 p);
 
 static std::list<CGAL_Nef_polyhedron2::Point> p2points(CGAL_Poly2 p2)
@@ -44,7 +44,7 @@ static std::list<CGAL_Nef_polyhedron2::Point> p2points(CGAL_Poly2 p2)
 	return points;
 }
 
-CGAL_Nef_polyhedron2 convexhull2(CGAL_Nef_polyhedron2 a, CGAL_Nef_polyhedron2 b)
+CGAL_Nef_polyhedron2 convexhull2(CGAL_Nef_polyhedron2 a)
 {
     CGAL_Poly2 ap = nef2p2(a);
     std::list<CGAL_Nef_polyhedron2::Point> points = p2points(ap), result;
