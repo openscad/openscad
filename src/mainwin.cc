@@ -75,30 +75,10 @@
 
 #ifdef ENABLE_CGAL
 
-#if 1
 #include "CGAL_renderer.h"
 using OpenSCAD::OGL::Polyhedron;
 using CGAL::OGL::Nef3_Converter;
-#else
-// a little hackish: we need access to default-private members of
-// CGAL::OGL::Nef3_Converter so we can implement our own draw function
-// that does not scale the model. so we define 'class' to 'struct'
-// for this header..
-//
-// theoretically there could be two problems:
-// 1.) defining language keyword with the pre processor is illegal afair
-// 2.) the compiler could use a different memory layout or name mangling for structs
-//
-// both does not seam to be the case with todays compilers...
-//
-#define class struct
-#include <CGAL/Nef_3/OGL_helper.h>
-#undef class
-using CGAL::OGL::Polyhedron;
-using CGAL::OGL::SNC_BOUNDARY;
-using CGAL::OGL::SNC_SKELETON;
-using CGAL::OGL::Nef3_Converter;
-#endif
+
 #endif // ENABLE_CGAL
 
 #define QUOTE(x__) # x__
@@ -1509,11 +1489,9 @@ static void renderGLviaCGAL(void *vp)
 			p->set_style(SNC_BOUNDARY);
 		if (m->viewActionCGALGrid->isChecked())
 			p->set_style(SNC_SKELETON);
-#if 0
-		p->draw();
-#else
+
 		p->draw(m->viewActionShowEdges->isChecked());
-#endif
+
 	}
 }
 
