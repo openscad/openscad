@@ -191,6 +191,7 @@ CGAL_Nef_polyhedron CgaladvNode::render_cgal_nef_polyhedron() const
 			N = v->render_cgal_nef_polyhedron();
 			if (N.dim == 3) {
 		    //polys.push_back(tmp.p3);
+				PRINT("WARNING: hull() is not implemented yet for 3D objects!");
 		    all2d=false;
 			}
 			if (N.dim == 2) {
