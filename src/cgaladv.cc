@@ -105,10 +105,6 @@ AbstractNode *CgaladvModule::evaluate(const Context *ctx, const ModuleInstantiat
 		level = c.lookup_variable("level", true);
 	}
 
-	if (type == HULL) {
-		convexity = c.lookup_variable("convexity", true);
-	}
-
 	node->convexity = (int)convexity.num;
 	node->path = path;
 	node->subdiv_type = subdiv_type.text;
@@ -222,6 +218,9 @@ CSGTerm *CgaladvNode::render_csg_term(double m[20], QVector<CSGTerm*> *highlight
 	if (type == SUBDIV)
 		return render_csg_term_from_nef(m, highlights, background, "subdiv", this->convexity);
 
+	if (type == HULL)
+		return render_csg_term_from_nef(m, highlights, background, "hull", this->convexity);
+
 	return NULL;
 }
 
@@ -229,7 +228,7 @@ CSGTerm *CgaladvNode::render_csg_term(double m[20], QVector<CSGTerm*> *highlight
 
 CSGTerm *CgaladvNode::render_csg_term(double m[20], QVector<CSGTerm*> *highlights, QVector<CSGTerm*> *background) const
 {
-	PRINT("WARNING: Found minkowski(), glide() or subdiv() statement but compiled without CGAL support!");
+	PRINT("WARNING: Found minkowski(), glide(), subdiv() or hull() statement but compiled without CGAL support!");
 	return NULL;
 }
 
@@ -247,6 +246,8 @@ QString CgaladvNode::dump(QString indent) const
 		}
 		if (type == SUBDIV)
 			text.sprintf("subdiv(level = %d, convexity = %d) {\n", this->level, this->convexity);
+		if (type == HULL)
+			text.sprintf("hull() {\n");
 		foreach (AbstractNode *v, this->children)
 			text += v->dump(indent + QString("\t"));
 		text += indent + "}\n";
