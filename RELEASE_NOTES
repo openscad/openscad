@@ -1,8 +1,9 @@
 OpenSCAD 2011.XX
 ================
 
-o Added rands() function
-o Added sign() function
+o Added hull() for convex hulls
+o minkowski() now supports 2D objects
+o Added functions: rands(), sign()
 o Now supports escaping of the following characters in strings: \n, \t, \r, \\, \"
 o Support nested includes
 o Improved parsing of numbers
