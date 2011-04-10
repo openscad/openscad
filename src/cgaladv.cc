@@ -183,25 +183,24 @@ CGAL_Nef_polyhedron CgaladvNode::render_cgal_nef_polyhedron() const
 
 	if (type == HULL)
 	{
-
-	    std::list<CGAL_Nef_polyhedron2> polys;
-	    bool all2d = true;
-	    foreach(AbstractNode * v, children) {
-		if (v->modinst->tag_background)
+		std::list<CGAL_Nef_polyhedron2> polys;
+		bool all2d = true;
+		foreach(AbstractNode * v, children) {
+			if (v->modinst->tag_background)
 		    continue;
-		N = v->render_cgal_nef_polyhedron();
-		if (N.dim == 3) {
+			N = v->render_cgal_nef_polyhedron();
+			if (N.dim == 3) {
 		    //polys.push_back(tmp.p3);
 		    all2d=false;
-		}
-		if (N.dim == 2) {
+			}
+			if (N.dim == 2) {
 		    polys.push_back(N.p2);
+			}
+			v->progress_report();
 		}
-		v->progress_report();
-	    }
 
-	    if(all2d)
-		N.p2 = convexhull2(polys);
+		if (all2d)
+			N.p2 = convexhull2(polys);
 	}
 
 	cgal_nef_cache.insert(cache_id, new cgal_nef_cache_entry(N), N.weight());
