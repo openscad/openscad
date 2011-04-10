@@ -144,15 +144,21 @@ int main(int argc, char **argv)
 		("o", po::value<string>(), "off-file")
 		("x", po::value<string>(), "dxf-file")
 		("d", po::value<string>(), "deps-file")
-		("m", po::value<string>(), "make file")
-		("D", po::value<vector<string> >(), "var=val")
-		;
+		("m", po::value<string>(), "makefile")
+		("D", po::value<vector<string> >(), "var=val");
+
+	po::options_description hidden("Hidden options");
+	hidden.add_options()
+		("input-file", po::value< vector<string> >(), "input file");
 
 	po::positional_options_description p;
 	p.add("input-file", -1);
 
+	po::options_description all_options;
+	all_options.add(desc).add(hidden);
+
 	po::variables_map vm;
-	po::store(po::command_line_parser(argc, argv).options(desc).positional(p).run(), vm);
+	po::store(po::command_line_parser(argc, argv).options(all_options).positional(p).run(), vm);
 //	po::notify(vm);
 	
 	if (vm.count("help")) help(argv[0]);
@@ -348,7 +354,7 @@ int main(int argc, char **argv)
 		new MainWindow(qfilename);
 		vector<string> inputFiles;
 		if (vm.count("input-file")) {
-			inputFiles = vm["input-files"].as<vector<string> >();
+			inputFiles = vm["input-file"].as<vector<string> >();
 			for (vector<string>::const_iterator i = inputFiles.begin()+1; i != inputFiles.end(); i++) {
 				new MainWindow(QFileInfo(original_path, i->c_str()).absoluteFilePath());
 			}
