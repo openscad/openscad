@@ -104,7 +104,7 @@ o Editor wishlist
   - C-c/C-v should work on the focused widget, not always in the editor
 
 o Computation
-  - Run CGAL rendering in a backgroud thread
+  - Run CGAL rendering in a background thread
   - Enable viewing/editing while rendering
   - Progress: Call progresswidget more often to avoid app hanging for multiple
     seconds (i.e. make cancel button more responsive)
@@ -167,6 +167,8 @@ o Misc
   - Add 'lines' object type for non-solid 2d drawings
   - Is there a reason why modules like echo, empty if, empty for loop returns an
     empty AbstractNode instead of being ignored?
+  - Bug: Using the background operator (%) on the only object in a scene triggers a
+    CSG error: No top level object found
 o Grammar
   - dim->name -> dim->label
   - A random(seed) function
