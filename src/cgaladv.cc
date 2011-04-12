@@ -34,12 +34,14 @@
 #ifdef ENABLE_CGAL
 extern CGAL_Nef_polyhedron3 minkowski3(CGAL_Nef_polyhedron3 a, CGAL_Nef_polyhedron3 b);
 extern CGAL_Nef_polyhedron2 minkowski2(CGAL_Nef_polyhedron2 a, CGAL_Nef_polyhedron2 b);
+extern CGAL_Nef_polyhedron2 convexhull2(std::list<CGAL_Nef_polyhedron2> a);
 #endif
 
 enum cgaladv_type_e {
 	MINKOWSKI,
 	GLIDE,
-	SUBDIV
+	SUBDIV,
+	HULL
 };
 
 class CgaladvModule : public AbstractModule
@@ -125,6 +127,7 @@ void register_builtin_cgaladv()
 	builtin_modules["minkowski"] = new CgaladvModule(MINKOWSKI);
 	builtin_modules["glide"] = new CgaladvModule(GLIDE);
 	builtin_modules["subdiv"] = new CgaladvModule(SUBDIV);
+	builtin_modules["hull"] = new CgaladvModule(HULL);
 }
 
 #ifdef ENABLE_CGAL
@@ -174,6 +177,29 @@ CGAL_Nef_polyhedron CgaladvNode::render_cgal_nef_polyhedron() const
 		PRINT("WARNING: subdiv() is not implemented yet!");
 	}
 
+	if (type == HULL)
+	{
+		std::list<CGAL_Nef_polyhedron2> polys;
+		bool all2d = true;
+		foreach(AbstractNode * v, children) {
+			if (v->modinst->tag_background)
+		    continue;
+			N = v->render_cgal_nef_polyhedron();
+			if (N.dim == 3) {
+		    //polys.push_back(tmp.p3);
+				PRINT("WARNING: hull() is not implemented yet for 3D objects!");
+		    all2d=false;
+			}
+			if (N.dim == 2) {
+		    polys.push_back(N.p2);
+			}
+			v->progress_report();
+		}
+
+		if (all2d)
+			N.p2 = convexhull2(polys);
+	}
+
 	cgal_nef_cache.insert(cache_id, new cgal_nef_cache_entry(N), N.weight());
 	print_messages_pop();
 	progress_report();
@@ -192,6 +218,9 @@ CSGTerm *CgaladvNode::render_csg_term(double m[20], QVector<CSGTerm*> *highlight
 	if (type == SUBDIV)
 		return render_csg_term_from_nef(m, highlights, background, "subdiv", this->convexity);
 
+	if (type == HULL)
+		return render_csg_term_from_nef(m, highlights, background, "hull", this->convexity);
+
 	return NULL;
 }
 
@@ -199,7 +228,7 @@ CSGTerm *CgaladvNode::render_csg_term(double m[20], QVector<CSGTerm*> *highlight
 
 CSGTerm *CgaladvNode::render_csg_term(double m[20], QVector<CSGTerm*> *highlights, QVector<CSGTerm*> *background) const
 {
-	PRINT("WARNING: Found minkowski(), glide() or subdiv() statement but compiled without CGAL support!");
+	PRINT("WARNING: Found minkowski(), glide(), subdiv() or hull() statement but compiled without CGAL support!");
 	return NULL;
 }
 
@@ -217,6 +246,8 @@ QString CgaladvNode::dump(QString indent) const
 		}
 		if (type == SUBDIV)
 			text.sprintf("subdiv(level = %d, convexity = %d) {\n", this->level, this->convexity);
+		if (type == HULL)
+			text.sprintf("hull() {\n");
 		foreach (AbstractNode *v, this->children)
 			text += v->dump(indent + QString("\t"));
 		text += indent + "}\n";
