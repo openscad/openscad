@@ -21,6 +21,8 @@ o build binaries
   - release-linux.sh
   Windows: FIXME 32 vs. 64 bit
 
+o FIXME: Run some tests
+
 o Set back version: release-linux.sh, publish-macosx.sh, FIXME: Windows
 
 o Upload
