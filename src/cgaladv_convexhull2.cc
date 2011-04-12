@@ -24,34 +24,32 @@
  *
  */
 
-#include "printutils.h"
-
 #ifdef ENABLE_CGAL
-#include "dxftess-cgal.cc"
-#else
-#include "dxftess-glu.cc"
-#endif
 
-/*!
-	Converts all paths in the given DxfData to PolySet::borders polygons
-	without tesselating. Vertex ordering of the resulting polygons
-	will follow the paths' is_inner flag.
-*/
-void dxf_border_to_ps(PolySet *ps, DxfData *dxf)
+#include "cgal.h"
+#include <CGAL/convex_hull_2.h>
+
+extern CGAL_Nef_polyhedron2 convexhull2(std::list<CGAL_Nef_polyhedron2> a);
+extern CGAL_Poly2 nef2p2(CGAL_Nef_polyhedron2 p);
+
+CGAL_Nef_polyhedron2 convexhull2(std::list<CGAL_Nef_polyhedron2> a)
 {
-	for (int i = 0; i < dxf->paths.count(); i++) {
-		const DxfData::Path &pt = dxf->paths[i];
-		if (!pt.is_closed)
-			continue;
-		ps->borders.append(PolySet::Polygon());
-		for (int j = 1; j < pt.points.count(); j++) {
-			double x = pt.points[j]->x, y = pt.points[j]->y, z = 0.0;
-			ps->grid.align(x, y, z);
-			if (pt.is_inner) {
-				ps->borders.last().append(PolySet::Point(x, y, z));
-			} else {
-				ps->borders.last().insert(0, PolySet::Point(x, y, z));
-			}
+	std::list<CGAL_Nef_polyhedron2::Point> points;
+
+	std::list<CGAL_Nef_polyhedron2>::iterator i;
+	for (i=a.begin(); i!=a.end(); i++) {
+		CGAL_Poly2 ap=nef2p2(*i);
+		for (size_t j=0;j<ap.size();j++) {
+	    double x=to_double(ap[j].x()),y=to_double(ap[j].y());
+	    CGAL_Nef_polyhedron2::Point p=CGAL_Nef_polyhedron2::Point(x,y);
+	    points.push_back(p);
 		}
 	}
+
+	std::list<CGAL_Nef_polyhedron2::Point> result;
+	CGAL::convex_hull_2(points.begin(),points.end(),std::back_inserter(result));
+
+	return CGAL_Nef_polyhedron2(result.begin(),result.end(),CGAL_Nef_polyhedron2::INCLUDED);
 }
+
+#endif

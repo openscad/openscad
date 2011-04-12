@@ -60,6 +60,11 @@ void CGALRenderer::process(CGAL_Nef_polyhedron &target, const CGAL_Nef_polyhedro
 		case MINKOWSKI:
 			target.p2 = minkowski2(target.p2, src.p2);
 			break;
+		case HULL:
+			//FIXME: Port convex hull to a binary operator or process it all in the end somehow
+			// target.p2 = convexhull2(target.p2, src.p2);
+			// target.p2 = convexhull2(polys);
+			break;
 		}
 	}
 	else if (target.dim == 3) {
@@ -75,6 +80,9 @@ void CGALRenderer::process(CGAL_Nef_polyhedron &target, const CGAL_Nef_polyhedro
 			break;
 		case MINKOWSKI:
 			target.p3 = minkowski3(target.p3, src.p3);
+			break;
+		case HULL:
+			// FIXME: Print warning: hull() not supported in 3D
 			break;
 		}
 	}

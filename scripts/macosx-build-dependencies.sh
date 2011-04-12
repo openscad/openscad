@@ -100,17 +100,18 @@ build_boost()
 {
   version=$1
   bversion=`echo $version | tr "." "_"`
-  echo "Building boost::thread" $version "..."
+  echo "Building boost" $version "..."
   cd $BASEDIR/src
   rm -rf boost*
   curl -LO http://downloads.sourceforge.net/project/boost/boost/$version/boost_$bversion.tar.bz2
   tar xjf boost_$bversion.tar.bz2
   cd boost_$bversion
-  # We only need the thread library for now
-  ./bootstrap.sh --prefix=$DEPLOYDIR --with-libraries=thread
+  # We only need the thread and program_options libraries
+  ./bootstrap.sh --prefix=$DEPLOYDIR --with-libraries=thread,program_options
   ./bjam cflags="-mmacosx-version-min=10.5 -arch i386 -arch x86_64" linkflags="-mmacosx-version-min=10.5 -arch i386 -arch x86_64"
   ./bjam install
   install_name_tool -id $DEPLOYDIR/lib/libboost_thread.dylib $DEPLOYDIR/lib/libboost_thread.dylib 
+  install_name_tool -id $DEPLOYDIR/lib/libboost_program_options.dylib $DEPLOYDIR/lib/libboost_program_options.dylib 
 }
 
 build_cgal()
@@ -159,7 +160,7 @@ echo "Using basedir:" $BASEDIR
 mkdir -p $SRCDIR $DEPLOYDIR
 build_gmp 5.0.1
 build_mpfr 3.0.0
-build_boost 1.44.0
+build_boost 1.46.1
 build_cgal 3.7
-build_glew 1.5.6
+build_glew 1.5.8
 build_opencsg 1.3.0

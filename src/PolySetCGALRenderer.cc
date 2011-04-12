@@ -360,7 +360,13 @@ PolySet *PolySetCGALRenderer::renderPolySet(const DxfRotateExtrudeNode &node,
 
 		int fragments = get_fragments_from_r(max_x, node.fn, node.fs, node.fa);
 
-		double points[fragments][dxf->paths[i].points.count()][3];
+		double ***points;
+		points = new double**[fragments];
+		for (int j=0; j < fragments; j++) {
+			points[j] = new double*[dxf->paths[i].points.count()];
+			for (int k=0; k < dxf->paths[i].points.count(); k++)
+				points[j][k] = new double[3];
+		}
 
 		for (int j = 0; j < fragments; j++) {
 			double a = (j*2*M_PI) / fragments;
@@ -404,6 +410,13 @@ PolySet *PolySetCGALRenderer::renderPolySet(const DxfRotateExtrudeNode &node,
 				}
 			}
 		}
+
+		for (int j=0; j < fragments; j++) {
+			for (int k=0; k < dxf->paths[i].points.count(); k++)
+				delete[] points[j][k];
+			delete[] points[j];
+		}
+		delete[] points;
 	}
 
 	delete dxf;

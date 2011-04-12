@@ -22,7 +22,7 @@ using std::pair;
 class CGALRenderer : public Visitor
 {
 public:
-	enum CsgOp {UNION, INTERSECTION, DIFFERENCE, MINKOWSKI};
+	enum CsgOp {UNION, INTERSECTION, DIFFERENCE, MINKOWSKI, HULL};
 	// FIXME: If a cache is not given, we need to fix this ourselves
 	CGALRenderer(QHash<string, CGAL_Nef_polyhedron> &cache, const Tree &tree) : cache(cache), tree(tree), psrenderer(*this) {}
   virtual ~CGALRenderer() {}

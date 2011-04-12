@@ -1,6 +1,7 @@
 /*
- *  OpenSCAD (www.openscad.at)
- *  Copyright (C) 2009  Clifford Wolf <clifford@clifford.at>
+ *  OpenSCAD (www.openscad.org)
+ *  Copyright (C) 2009-2011 Clifford Wolf <clifford@clifford.at> and
+ *                          Marius Kintel <marius@kintel.net>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -36,12 +37,14 @@
 #ifdef ENABLE_CGAL
 extern CGAL_Nef_polyhedron3 minkowski3(CGAL_Nef_polyhedron3 a, CGAL_Nef_polyhedron3 b);
 extern CGAL_Nef_polyhedron2 minkowski2(CGAL_Nef_polyhedron2 a, CGAL_Nef_polyhedron2 b);
+extern CGAL_Nef_polyhedron2 convexhull2(std::list<CGAL_Nef_polyhedron2> a);
 #endif
 
 enum cgaladv_type_e {
 	MINKOWSKI,
 	GLIDE,
-	SUBDIV
+	SUBDIV,
+	HULL
 };
 
 class CgaladvModule : public AbstractModule
@@ -143,6 +146,7 @@ void register_builtin_cgaladv()
 	builtin_modules["minkowski"] = new CgaladvModule(MINKOWSKI);
 	builtin_modules["glide"] = new CgaladvModule(GLIDE);
 	builtin_modules["subdiv"] = new CgaladvModule(SUBDIV);
+	builtin_modules["hull"] = new CgaladvModule(HULL);
 }
 
 std::string CgaladvNode::toString() const
@@ -159,6 +163,9 @@ std::string CgaladvNode::toString() const
 		break;
 	case SUBDIV:
 		stream << "(level = " << this->level << ", convexity = " << this->convexity << ")";
+		break;
+	case HULL:
+		stream << "()";
 		break;
 	default:
 		assert(false);

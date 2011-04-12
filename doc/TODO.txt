@@ -71,12 +71,16 @@ o 3D View
   - Improve mouse rotation
   - Add modifier key combos to handle pan and zoom on 1 mouse button systems
   - Show grid
+  - Measurement ticks on the axes that look like rulers that one can turn off and on.
   - 4 x split view w/orthogonal cameras?
   - Quick highlighting of object under the cursor in the editor
   - View All
+  - Allow specifying viewpoint in the scad file
   - overlay indicator displaying current view mode
   - OpenCSG rendering: Coincident surfaces causes z-buffer fighting. Is this somehow
     avoidable tuning the depth tests in OpenCSG? 
+  - Use OpenGL picking to facilitate ray-tracing like features like measuring
+    thicknesses, distances, slot thicknesses etc.
 o Editor wishlist
   - More infrastructure for external editor (allow communication from the outside)
   - Preferences GUI for the features below
@@ -134,11 +138,11 @@ o Language Frontend
     the "Flex & Bison" O'Reilly book, "Start States and Nested Input
     Files", page 28, for an example.
   - Allow local variables and functions everywhere (not only on module level)
-  - allow 0/1 f/t FALSE/TRUE as boolean values
-  - allow any expression to be evaluated as boolean (e.g. 1 = true, 0 = false)
+  - allow any expression to be evaluated as boolean (!0 = true, 0 = false)
   - Rethink for vs. intersection_for vs. group. Should for loops
     generate child lists instead, and make these passable to other
     modules or accessible by child()?
+  - constants: PI
 o DXF Import/Export
   - Use dxflib from RibbonSoft for import/export? -> investigate
   - Import

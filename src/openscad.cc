@@ -1,6 +1,7 @@
 /*
- *  OpenSCAD (www.openscad.at)
- *  Copyright (C) 2009  Clifford Wolf <clifford@clifford.at>
+ *  OpenSCAD (www.openscad.org)
+ *  Copyright (C) 2009-2011 Clifford Wolf <clifford@clifford.at> and
+ *                          Marius Kintel <marius@kintel.net>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -36,6 +37,9 @@
 #include "PolySetCGALRenderer.h"
 #include "printutils.h"
 
+#include <string>
+#include <vector>
+
 #ifdef ENABLE_CGAL
 #include "cgal.h"
 #include <CGAL/assertions_behaviour.h>
@@ -47,18 +51,24 @@
 #include <QSet>
 #include <QSettings>
 #include <QTextStream>
+#include <boost/program_options.hpp>
 
-#include <getopt.h>
 #ifdef Q_WS_MAC
 #include "EventFilter.h"
 #include "AppleEvents.h"
 #endif
 
+#ifdef _MSC_VER
+#define snprintf _snprintf
+#endif
+
+namespace po = boost::program_options;
+
 static void help(const char *progname)
 {
 	fprintf(stderr, "Usage: %s [ { -s stl_file | -o off_file | -x dxf_file } [ -d deps_file ] ]\\\n"
-			"%*s[ -m make_command ] [ -D var=val [..] ] filename\n",
-			progname, int(strlen(progname))+8, "");
+					"%*s[ -m make_command ] [ -D var=val [..] ] filename\n",
+					progname, int(strlen(progname))+8, "");
 	exit(1);
 }
 
@@ -76,6 +86,9 @@ QSet<QString> dependencies;
 QString currentdir;
 QString examplesdir;
 QString librarydir;
+
+using std::string;
+using std::vector;
 
 void handle_dep(QString filename)
 {
@@ -128,76 +141,78 @@ int main(int argc, char **argv)
 	const char *off_output_file = NULL;
 	const char *dxf_output_file = NULL;
 	const char *deps_output_file = NULL;
+
+	po::options_description desc("Allowed options");
+	desc.add_options()
+		("help,h", "help message")
+		("version,v", "print the version")
+		("s", po::value<string>(), "stl-file")
+		("o", po::value<string>(), "off-file")
+		("x", po::value<string>(), "dxf-file")
+		("d", po::value<string>(), "deps-file")
+		("m", po::value<string>(), "makefile")
+		("D", po::value<vector<string> >(), "var=val");
+
+	po::options_description hidden("Hidden options");
+	hidden.add_options()
+		("input-file", po::value< vector<string> >(), "input file");
+
+	po::positional_options_description p;
+	p.add("input-file", -1);
+
+	po::options_description all_options;
+	all_options.add(desc).add(hidden);
+
+	po::variables_map vm;
+	po::store(po::command_line_parser(argc, argv).options(all_options).positional(p).run(), vm);
+//	po::notify(vm);
 	
-	static struct option long_options[] =
-             {
-               {"version", no_argument,	0, 'v'},
-               {"help",    no_argument, 0, 'h'},
-               {0, 0, 0, 0}
-             };
-	int option_index = 0;
-	
-	int opt;
-	while ((opt = getopt_long(argc, argv, "s:o:x:d:m:D:vh", long_options, &option_index)) != -1)
-	{
-		switch (opt)
-		{
-		case 0:
-			switch (option_index)
-			{
-				case 'v':
-					version();
-					break;
-				case 'h':
-					help(argv[0]);
-					break;
-			}
-			break;
-		case 'v':
-			version();
-			break;
-		case 'h':
+	if (vm.count("help")) help(argv[0]);
+	if (vm.count("version")) version();
+
+	if (vm.count("s")) {
+		if (stl_output_file || off_output_file || dxf_output_file)
 			help(argv[0]);
-			break;
-		case 's':
-			if (stl_output_file || off_output_file || dxf_output_file)
-				help(argv[0]);
-			stl_output_file = optarg;
-			break;
-		case 'o':
-			if (stl_output_file || off_output_file || dxf_output_file)
-				help(argv[0]);
-			off_output_file = optarg;
-			break;
-		case 'x':
-			if (stl_output_file || off_output_file || dxf_output_file)
-				help(argv[0]);
-			dxf_output_file = optarg;
-			break;
-		case 'd':
-			if (deps_output_file)
-				help(argv[0]);
-			deps_output_file = optarg;
-			break;
-		case 'm':
-			if (make_command)
-				help(argv[0]);
-			make_command = optarg;
-			break;
-		case 'D':
-			commandline_commands += QString(optarg) + QString(";\n");
-			break;
-		default:
+		stl_output_file = vm["s"].as<string>().c_str();
+	}
+	if (vm.count("o")) {
+		if (stl_output_file || off_output_file || dxf_output_file)
 			help(argv[0]);
+		off_output_file = vm["o"].as<string>().c_str();
+	}
+	if (vm.count("x")) { 
+		if (stl_output_file || off_output_file || dxf_output_file)
+			help(argv[0]);
+		dxf_output_file = vm["x"].as<string>().c_str();
+	}
+	if (vm.count("d")) {
+		if (deps_output_file)
+			help(argv[0]);
+		deps_output_file = vm["d"].as<string>().c_str();
+	}
+	if (vm.count("m")) {
+		if (make_command)
+			help(argv[0]);
+		make_command = vm["m"].as<string>().c_str();
+	}
+
+	if (vm.count("D")) {
+		const vector<string> &commands = vm["D"].as<vector<string> >();
+
+		for (vector<string>::const_iterator i = commands.begin(); i != commands.end(); i++) {
+			commandline_commands.append(i->c_str());
+			commandline_commands.append(";\n");
 		}
 	}
 
-	if (optind < argc)
-		filename = argv[optind++];
+	if (vm.count("input-file")) {
+		filename = vm["input-file"].as< vector<string> >().begin()->c_str();
+	}
 
 #ifndef ENABLE_MDI
-	if (optind != argc)
+	if (vm.count("input-file") > 1) {
 		help(argv[0]);
+	}
 #endif
 
 	currentdir = QDir::currentPath();
@@ -210,16 +225,16 @@ int main(int argc, char **argv)
 	if (exdir.cd("../share/openscad/examples")) {
 		examplesdir = exdir.path();
 	} else
-	if (exdir.cd("../../share/openscad/examples")) {
-		examplesdir = exdir.path();
-	} else
-	if (exdir.cd("../../examples")) {
-		examplesdir = exdir.path();
-	} else
+		if (exdir.cd("../../share/openscad/examples")) {
+			examplesdir = exdir.path();
+		} else
+			if (exdir.cd("../../examples")) {
+				examplesdir = exdir.path();
+			} else
 #endif
-	if (exdir.cd("examples")) {
-		examplesdir = exdir.path();
-	}
+				if (exdir.cd("examples")) {
+					examplesdir = exdir.path();
+				}
 
 	QDir libdir(QApplication::instance()->applicationDirPath());
 #ifdef Q_WS_MAC
@@ -229,16 +244,16 @@ int main(int argc, char **argv)
 	if (libdir.cd("../share/openscad/libraries")) {
 		librarydir = libdir.path();
 	} else
-	if (libdir.cd("../../share/openscad/libraries")) {
-		librarydir = libdir.path();
-	} else
-	if (libdir.cd("../../libraries")) {
-		librarydir = libdir.path();
-	} else
+		if (libdir.cd("../../share/openscad/libraries")) {
+			librarydir = libdir.path();
+		} else
+			if (libdir.cd("../../libraries")) {
+				librarydir = libdir.path();
+			} else
 #endif
-	if (libdir.cd("libraries")) {
-		librarydir = libdir.path();
-	}
+				if (libdir.cd("libraries")) {
+					librarydir = libdir.path();
+				}
 
 	// Initialize global visitors
 	NodeCache nodecache;
@@ -378,8 +393,13 @@ int main(int argc, char **argv)
 #endif
 #ifdef ENABLE_MDI
 		new MainWindow(qfilename);
-		while (optind < argc)
-			new MainWindow(QFileInfo(original_path, argv[optind++]).absoluteFilePath());
+		vector<string> inputFiles;
+		if (vm.count("input-file")) {
+			inputFiles = vm["input-file"].as<vector<string> >();
+			for (vector<string>::const_iterator i = inputFiles.begin()+1; i != inputFiles.end(); i++) {
+				new MainWindow(QFileInfo(original_path, i->c_str()).absoluteFilePath());
+			}
+		}
 		app.connect(&app, SIGNAL(lastWindowClosed()), &app, SLOT(quit()));
 #else
 		MainWindow *m = new MainWindow(qfilename);

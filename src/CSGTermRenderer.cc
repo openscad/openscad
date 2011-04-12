@@ -201,6 +201,9 @@ CSGTerm *CgaladvNode::render_csg_term(double m[20], QVector<CSGTerm*> *highlight
 	if (type == SUBDIV)
 		return render_csg_term_from_nef(m, highlights, background, "subdiv", this->convexity);
 
+	if (type == HULL)
+		return render_csg_term_from_nef(m, highlights, background, "hull", this->convexity);
+
 	return NULL;
 }
 
@@ -208,7 +211,7 @@ CSGTerm *CgaladvNode::render_csg_term(double m[20], QVector<CSGTerm*> *highlight
 
 CSGTerm *CgaladvNode::render_csg_term(double m[20], QVector<CSGTerm*> *highlights, QVector<CSGTerm*> *background) const
 {
-	PRINT("WARNING: Found minkowski(), glide() or subdiv() statement but compiled without CGAL support!");
+	PRINT("WARNING: Found minkowski(), glide(), subdiv() or hull() statement but compiled without CGAL support!");
 	return NULL;
 }
 

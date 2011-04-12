@@ -1,10 +1,15 @@
-
-OpenSCAD 2010.XX
+OpenSCAD 2011.XX
 ================
 
-o Added rands() function
-o Added sign() function
-o Bugfixes: More robust DXF export
+o Added hull() for convex hulls (2D object only)
+o minkowski() now supports 2D objects
+o Added functions: rands(), sign()
+o Now supports escaping of the following characters in strings: \n, \t, \r, \\, \"
+o Support nested includes
+o Improved parsing of numbers
+o DXF: output LWPOLYLINE instead of just LINE entities
+o Bugfixes: More robust DXF export, setting $fs/$fa to 0 caused a crash
+o Some bugs fixed, maybe some new bugs added
 
 OpenSCAD 2010.05
 ================

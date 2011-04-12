@@ -1,6 +1,7 @@
 /*
- *  OpenSCAD (www.openscad.at)
- *  Copyright (C) 2009  Clifford Wolf <clifford@clifford.at>
+ *  OpenSCAD (www.openscad.org)
+ *  Copyright (C) 2009-2011 Clifford Wolf <clifford@clifford.at> and
+ *                          Marius Kintel <marius@kintel.net>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -158,13 +159,24 @@ PolySet *ImportNode::render_polyset(render_mode_e, class PolySetRenderer *) cons
 		{
 			f.read(80-5+4);
 			while (1) {
+#ifdef _MSC_VER
+#pragma pack(push,1)
+#endif
 				struct {
 					float i, j, k;
 					float x1, y1, z1;
 					float x2, y2, z2;
 					float x3, y3, z3;
 					unsigned short acount;
-				} __attribute__ ((packed)) data;
+				}
+#ifdef __GNUC__
+				__attribute__ ((packed))
+#endif
+				data;
+#ifdef _MSC_VER
+#pragma pack(pop)
+#endif
+
 				if (f.read((char*)&data, sizeof(data)) != sizeof(data))
 					break;
 				p->append_poly();

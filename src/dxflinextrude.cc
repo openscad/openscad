@@ -1,6 +1,7 @@
 /*
- *  OpenSCAD (www.openscad.at)
- *  Copyright (C) 2009  Clifford Wolf <clifford@clifford.at>
+ *  OpenSCAD (www.openscad.org)
+ *  Copyright (C) 2009-2011 Clifford Wolf <clifford@clifford.at> and
+ *                          Marius Kintel <marius@kintel.net>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -37,14 +38,13 @@
 #include "PolySetRenderer.h"
 #include "openscad.h" // get_fragments_from_r()
 
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <unistd.h>
 #include <sstream>
 
 #include <QApplication>
 #include <QTime>
 #include <QProgressDialog>
+#include <QDateTime>
+#include <QFileInfo>
 
 class DxfLinearExtrudeModule : public AbstractModule
 {
@@ -150,13 +150,11 @@ std::string DxfLinearExtrudeNode::toString() const
 	std::stringstream stream;
 
 	QString text;
-	struct stat st;
-	memset(&st, 0, sizeof(struct stat));
-	stat(this->filename.toAscii().data(), &st);
+	QFileInfo fileInfo(this->filename);
 	
 	stream << this->name() << "("
 		"file = \"" << this->filename << "\", "
-		"cache = \"" << std::hex << (int)st.st_mtime << "." << (int)st.st_size << "\", "
+		"cache = \"" << std::hex << (int)fileInfo.lastModified().toTime_t() << "." << (int)fileInfo.size() << "\", "
 		"layer = \"" << this->layername << "\", "
 		"height = " << std::dec << this->height << ", "
 		"origin = [ " << this->origin_x << " " << this->origin_y << " ], "
