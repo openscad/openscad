@@ -1,6 +1,7 @@
 /*
- *  OpenSCAD (www.openscad.at)
- *  Copyright (C) 2009  Clifford Wolf <clifford@clifford.at>
+ *  OpenSCAD (www.openscad.org)
+ *  Copyright (C) 2009-2011 Clifford Wolf <clifford@clifford.at> and
+ *                          Marius Kintel <marius@kintel.net>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -28,7 +29,8 @@
 #include "context.h"
 #include "dxfdim.h"
 #include "builtin.h"
-#include <math.h>
+#include "mathc99.h"
+#include <time.h>
 
 AbstractFunction::~AbstractFunction()
 {
@@ -289,7 +291,7 @@ Value builtin_log(const Context *, const QVector<QString>&, const QVector<Value>
 	if (args.size() == 2 && args[0].type == Value::NUMBER && args[1].type == Value::NUMBER)
 		return Value(log(args[1].num) / log(args[0].num));
 	if (args.size() == 1 && args[0].type == Value::NUMBER)
-		return Value(log(args[0].num) / log(10));
+		return Value(log(args[0].num) / log(10.0));
 	return Value();
 }
 

@@ -1,5 +1,43 @@
-isEmpty(VERSION) VERSION = $$system(date "+%Y.%m.%d")
+# Auto-include config_<variant>.pri if the VARIANT variable is give on the
+# command-line, e.g. qmake VARIANT=mybuild
+!isEmpty(VARIANT) {
+  message("Variant: $${VARIANT}")
+  exists(config_$${VARIANT}.pri) {
+    message("Including config_$${VARIANT}.pri")
+    include(config_$${VARIANT}.pri)
+  }
+}
+
+win32 {
+  isEmpty(VERSION) VERSION = $$system(date /t)
+} else {
+  isEmpty(VERSION) VERSION = $$system(date "+%Y.%m.%d")
+}
+
+#configure lex / yacc
+win32 {
+  include(flex.pri)
+  include(bison.pri)
+  FLEXSOURCES = src/lexer.l
+  BISONSOURCES = src/parser.y
+} else {
+  LEXSOURCES += src/lexer.l
+  YACCSOURCES += src/parser.y
+}
+
+#configure additional directories
+win32 {
+    INCLUDEPATH += $$(MPIRDIR)
+    INCLUDEPATH += $$(MPFRDIR)
+}
+
 DEFINES += OPENSCAD_VERSION=$$VERSION
+win32:DEFINES += _USE_MATH_DEFINES NOMINMAX _CRT_SECURE_NO_WARNINGS YY_NO_UNISTD_H
+
+#disable warning about too long decorated names
+win32:QMAKE_CXXFLAGS += -wd4503
+
+
 TEMPLATE = app
 RESOURCES = openscad.qrc
 
@@ -45,6 +83,7 @@ macx:CONFIG += mdi
 CONFIG += cgal
 CONFIG += opencsg
 CONFIG += progresswidget
+CONFIG += boost
 
 #Uncomment the following line to enable QCodeEdit
 #CONFIG += qcodeedit
@@ -64,6 +103,7 @@ progresswidget {
 include(cgal.pri)
 include(opencsg.pri)
 include(eigen2.pri)
+include(boost.pri)
 
 # Standard include path for misc external libs
 #macx {
@@ -74,8 +114,6 @@ include(eigen2.pri)
 # QMAKE_CXXFLAGS += -pg
 # QMAKE_LFLAGS   += -pg
 
-LEXSOURCES += src/lexer.l
-YACCSOURCES += src/parser.y
 
 FORMS   += src/MainWindow.ui \
            src/Preferences.ui
@@ -103,7 +141,8 @@ HEADERS += src/CGAL_renderer.h \
            src/printutils.h \
            src/value.h \
            src/progress.h \
-           src/editor.h
+           src/editor.h \
+           src/mathc99.h
 
 SOURCES += src/openscad.cc \
            src/mainwin.cc \
@@ -122,6 +161,7 @@ SOURCES += src/openscad.cc \
            src/primitives.cc \
            src/projection.cc \
            src/cgaladv.cc \
+	   src/cgaladv_convexhull2.cc \
            src/cgaladv_minkowski3.cc \
            src/cgaladv_minkowski2.cc \
            src/surface.cc \
@@ -140,7 +180,8 @@ SOURCES += src/openscad.cc \
            src/nef2dxf.cc \
            src/Preferences.cc \
            src/progress.cc \
-           src/editor.cc
+           src/editor.cc \
+	   src/mathc99.cc
 
 macx {
   HEADERS += src/AppleEvents.h \
@@ -158,4 +199,3 @@ INSTALLS += examples
 libraries.path = /usr/local/share/openscad/libraries/
 libraries.files = libraries/*
 INSTALLS += libraries
-

@@ -476,7 +476,7 @@ elf_open(const char *filename, int flags, Elf_Ehdr *ehdr)
    if (ehdr->e_phentsize != sizeof(Elf_Phdr))
    {
      fprintf(stderr, "section size was read as %d, not %d!\n",
-            ehdr->e_phentsize, sizeof(Elf_Phdr));
+            ehdr->e_phentsize, (int)sizeof(Elf_Phdr));
      close(fd);
      return -1;
    }

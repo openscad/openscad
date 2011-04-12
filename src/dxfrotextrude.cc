@@ -1,6 +1,7 @@
 /*
- *  OpenSCAD (www.openscad.at)
- *  Copyright (C) 2009  Clifford Wolf <clifford@clifford.at>
+ *  OpenSCAD (www.openscad.org)
+ *  Copyright (C) 2009-2011 Clifford Wolf <clifford@clifford.at> and
+ *                          Marius Kintel <marius@kintel.net>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -33,13 +34,11 @@
 #include "progress.h"
 #include "openscad.h" // get_fragments_from_r()
 
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <unistd.h>
-
 #include <QTime>
 #include <QApplication>
 #include <QProgressDialog>
+#include <QDateTime>
+#include <QFileInfo>
 
 class DxfRotateExtrudeModule : public AbstractModule
 {
@@ -160,7 +159,13 @@ PolySet *DxfRotateExtrudeNode::render_polyset(render_mode_e) const
 
 		int fragments = get_fragments_from_r(max_x, fn, fs, fa);
 
-		double points[fragments][dxf->paths[i].points.count()][3];
+        double ***points;
+        points = new double**[fragments];
+        for (int j=0; j < fragments; j++) {
+            points[j] = new double*[dxf->paths[i].points.count()];
+            for (int k=0; k < dxf->paths[i].points.count(); k++)
+                points[j][k] = new double[3];
+        }
 
 		for (int j = 0; j < fragments; j++) {
 			double a = (j*2*M_PI) / fragments;
@@ -204,6 +209,13 @@ PolySet *DxfRotateExtrudeNode::render_polyset(render_mode_e) const
 				}
 			}
 		}
+
+        for (int j=0; j < fragments; j++) {
+            for (int k=0; k < dxf->paths[i].points.count(); k++)
+                delete[] points[j][k];
+            delete[] points[j];
+        }
+        delete[] points;
 	}
 
 	PolySet::ps_cache.insert(key, new PolySet::ps_cache_entry(ps->link()));
@@ -217,15 +229,13 @@ QString DxfRotateExtrudeNode::dump(QString indent) const
 {
 	if (dump_cache.isEmpty()) {
 		QString text;
-		struct stat st;
-		memset(&st, 0, sizeof(struct stat));
-		stat(filename.toAscii().data(), &st);
+		QFileInfo fileInfo(filename);
 		text.sprintf("rotate_extrude(file = \"%s\", cache = \"%x.%x\", layer = \"%s\", "
 				"origin = [ %g %g ], scale = %g, convexity = %d, "
 				"$fn = %g, $fa = %g, $fs = %g) {\n",
-				filename.toAscii().data(), (int)st.st_mtime, (int)st.st_size,
-				layername.toAscii().data(), origin_x, origin_y, scale, convexity,
-				fn, fa, fs);
+				filename.toAscii().data(), (int)fileInfo.lastModified().toTime_t(),
+				(int)fileInfo.size(),layername.toAscii().data(), origin_x, origin_y, 
+				scale, convexity, fn, fa, fs);
 		foreach (AbstractNode *v, children)
 			text += v->dump(indent + QString("\t"));
 		text += indent + "}\n";

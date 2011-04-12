@@ -1,6 +1,7 @@
 /*
- *  OpenSCAD (www.openscad.at)
- *  Copyright (C) 2009  Clifford Wolf <clifford@clifford.at>
+ *  OpenSCAD (www.openscad.org)
+ *  Copyright (C) 2009-2011 Clifford Wolf <clifford@clifford.at> and
+ *                          Marius Kintel <marius@kintel.net>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -56,6 +57,7 @@ class PrimitiveNode : public AbstractPolyNode
 public:
 	bool center;
 	double x, y, z, h, r1, r2;
+	static const double F_MINIMUM = 0.01;
 	double fn, fs, fa;
 	primitive_type_e type;
 	int convexity;
@@ -103,6 +105,16 @@ AbstractNode *PrimitiveModule::evaluate(const Context *ctx, const ModuleInstanti
 	node->fn = c.lookup_variable("$fn").num;
 	node->fs = c.lookup_variable("$fs").num;
 	node->fa = c.lookup_variable("$fa").num;
+
+	if (node->fs < PrimitiveNode::F_MINIMUM) {
+		PRINTF("WARNING: $fs too small - clamping to %f", PrimitiveNode::F_MINIMUM);
+		node->fs = PrimitiveNode::F_MINIMUM;
+	}
+	if (node->fa < PrimitiveNode::F_MINIMUM) {
+		PRINTF("WARNING: $fa too small - clamping to %f", PrimitiveNode::F_MINIMUM);
+		node->fa = PrimitiveNode::F_MINIMUM;
+	}
+
 
 	if (type == CUBE) {
 		Value size = c.lookup_variable("size");
@@ -278,7 +290,7 @@ PolySet *PrimitiveNode::render_polyset(render_mode_e) const
 		};
 
 		int rings = get_fragments_from_r(r1, fn, fs, fa);
-		ring_s ring[rings];
+		ring_s *ring = new ring_s[rings];
 
 		for (int i = 0; i < rings; i++) {
 			double phi = (M_PI * (i + 0.5)) / rings;
@@ -332,6 +344,8 @@ sphere_next_r2:
 		p->append_poly();
 		for (int i = 0; i < ring[rings-1].fragments; i++)
 			p->insert_vertex(ring[rings-1].points[i].x, ring[rings-1].points[i].y, ring[rings-1].z);
+
+		delete[] ring;
 	}
 
 	if (type == CYLINDER && h > 0 && r1 >=0 && r2 >= 0 && (r1 > 0 || r2 > 0))
@@ -351,8 +365,8 @@ sphere_next_r2:
 			double x, y;
 		};
 
-		point2d circle1[fragments];
-		point2d circle2[fragments];
+		point2d *circle1 = new point2d[fragments];
+		point2d *circle2 = new point2d[fragments];
 
 		for (int i=0; i<fragments; i++) {
 			double phi = (M_PI*2*i) / fragments;
@@ -399,6 +413,9 @@ sphere_next_r2:
 			for (int i=0; i<fragments; i++)
 				p->append_vertex(circle2[i].x, circle2[i].y, z2);
 		}
+
+		delete[] circle1;
+		delete[] circle2;
 	}
 
 	if (type == POLYHEDRON)
@@ -444,22 +461,13 @@ sphere_next_r2:
 	{
 		int fragments = get_fragments_from_r(r1, fn, fs, fa);
 
-		struct point2d {
-			double x, y;
-		};
-
-		point2d circle[fragments];
-
-		for (int i=0; i<fragments; i++) {
-			double phi = (M_PI*2*i) / fragments;
-			circle[i].x = r1*cos(phi);
-			circle[i].y = r1*sin(phi);
-		}
-
 		p->is2d = true;
 		p->append_poly();
-		for (int i=0; i<fragments; i++)
-			p->append_vertex(circle[i].x, circle[i].y);
+
+		for (int i=0; i < fragments; i++) {
+			double phi = (M_PI*2*i) / fragments;
+			p->append_vertex(r1*cos(phi), r1*sin(phi));
+		}
 	}
 
 	if (type == POLYGON)

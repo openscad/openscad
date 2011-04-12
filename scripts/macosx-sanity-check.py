@@ -9,6 +9,9 @@
 #
 # Author: Marius Kintel <marius@kintel.net>
 #
+# This script lives here:
+# https://github.com/kintel/MacOSX-tools
+#
 
 import sys
 import os
@@ -49,9 +52,14 @@ def lookup_library(file):
 def find_dependencies(file):
     libs = []
 
-    p = subprocess.Popen(["otool", "-L", file], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    output = p.communicate()[0]
-    if p.returncode != 0: return None
+    args = ["otool", "-L", file]
+    if DEBUG: print "Executing " + " ".join(args)
+    p = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    output,err = p.communicate()
+    if p.returncode != 0: 
+        print "Failed with return code " + str(p.returncode) + ":"
+        print err
+        return None
     deps = output.split('\n')
     for dep in deps:
 #        print dep

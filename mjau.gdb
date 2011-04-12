@@ -1,1 +1,1 @@
-set environment DYLD_LIBRARY_PATH=/Users/kintel/code/metalab/checkout/OpenSCAD/OpenCSG-1.3.0/lib:/Users/kintel/code/metalab/checkout/OpenSCAD/qcodeedit-2.2.3/install/lib
+set environment DYLD_LIBRARY_PATH=/Users/kintel/code/metalab/checkout/OpenSCAD/libraries/install/lib

@@ -7,11 +7,16 @@ cgal {
     CGAL_DIR = $$(CGALDIR)
     !isEmpty(CGAL_DIR) {
       INCLUDEPATH += $$CGAL_DIR/include
+      win32: INCLUDEPATH += $$CGAL_DIR/auxiliary/gmp/include
       LIBS += -L$$CGAL_DIR/lib
       message("CGAL location: $$CGAL_DIR")
     }
   }
 
-  LIBS += -lCGAL -lmpfr -lgmp -lboost_thread
+  win32 {
+    LIBS += $$CGAL_DIR/auxiliary/gmp/lib/libmpfr-4.lib -lCGAL-vc90-mt-gd
+  } else {
+    LIBS += -lgmp -lmpfr -lCGAL
+  }
   QMAKE_CXXFLAGS += -frounding-math
 }

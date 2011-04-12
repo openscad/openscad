@@ -1,6 +1,7 @@
 /*
- *  OpenSCAD (www.openscad.at)
- *  Copyright (C) 2009  Clifford Wolf <clifford@clifford.at>
+ *  OpenSCAD (www.openscad.org)
+ *  Copyright (C) 2009-2011 Clifford Wolf <clifford@clifford.at> and
+ *                          Marius Kintel <marius@kintel.net>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -31,6 +32,13 @@
 #include <QStack>
 #include <QFileInfo>
 #include <QDir>
+
+//isatty for visual c++
+#ifdef _MSC_VER
+int __cdecl _isatty(int _FileHandle);
+#define isatty _isatty
+#endif
+
 QString* stringcontents;
 int lexerget_lineno(void);
 #ifdef __GNUC__
