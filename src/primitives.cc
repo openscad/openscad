@@ -219,6 +219,19 @@ int get_fragments_from_r(double r, double fn, double fs, double fa)
 	return (int)ceil(fmax(fmin(360.0 / fa, r*M_PI / fs), 5));
 }
 
+struct point2d {
+	double x, y;
+};
+
+static void generate_circle(point2d *circle, double r, int fragments)
+{
+	for (int i=0; i<fragments; i++) {
+		double phi = (M_PI*2* (i + 0.5)) / fragments;
+		circle[i].x = r*cos(phi);
+		circle[i].y = r*sin(phi);
+	}
+}
+
 PolySet *PrimitiveNode::render_polyset(render_mode_e) const
 {
 	PolySet *p = new PolySet();
@@ -279,10 +292,6 @@ PolySet *PrimitiveNode::render_polyset(render_mode_e) const
 
 	if (type == SPHERE && r1 > 0)
 	{
-		struct point2d {
-			double x, y;
-		};
-
 		struct ring_s {
 			point2d *points;
 			double z;
@@ -290,21 +299,19 @@ PolySet *PrimitiveNode::render_polyset(render_mode_e) const
 
 		int fragments = get_fragments_from_r(r1, fn, fs, fa);
 		int rings = fragments/2;
-		if(rings<=0)
-		    rings=1;
+// Uncomment the following three lines to enable experimental sphere tesselation
+//		if (rings % 2 == 0) rings++; // To ensure that the middle ring is at phi == 0 degrees
 
 		ring_s *ring = new ring_s[rings];
 
+//		double offset = 0.5 * ((fragments / 2) % 2);
 		for (int i = 0; i < rings; i++) {
+//			double phi = (M_PI * (i + offset)) / (fragments/2);
 			double phi = (M_PI * (i + 0.5)) / rings;
 			double r = r1 * sin(phi);
 			ring[i].z = r1 * cos(phi);
 			ring[i].points = new point2d[fragments];
-			for (int j = 0; j < fragments; j++) {
-				phi = (M_PI*2*j) / fragments;
-				ring[i].points[j].x = r * cos(phi);
-				ring[i].points[j].y = r * sin(phi);
-			}
+			generate_circle(ring[i].points, r, fragments);
 		}
 
 		p->append_poly();
@@ -363,30 +370,11 @@ sphere_next_r2:
 			z2 = h;
 		}
 
-		struct point2d {
-			double x, y;
-		};
-
 		point2d *circle1 = new point2d[fragments];
 		point2d *circle2 = new point2d[fragments];
 
-		for (int i=0; i<fragments; i++) {
-			double phi = (M_PI*2*i) / fragments;
-			if (r1 > 0) {
-				circle1[i].x = r1*cos(phi);
-				circle1[i].y = r1*sin(phi);
-			} else {
-				circle1[i].x = 0;
-				circle1[i].y = 0;
-			}
-			if (r2 > 0) {
-				circle2[i].x = r2*cos(phi);
-				circle2[i].y = r2*sin(phi);
-			} else {
-				circle2[i].x = 0;
-				circle2[i].y = 0;
-			}
-		}
+		generate_circle(circle1, r1, fragments);
+		generate_circle(circle2, r2, fragments);
 		
 		for (int i=0; i<fragments; i++) {
 			int j = (i+1) % fragments;
