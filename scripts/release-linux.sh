@@ -30,8 +30,8 @@ gcc -o chrpath_linux scripts/chrpath_linux.c
 ./chrpath_linux -d release/lib/openscad/openscad
 
 ldd openscad | sed -re 's,.* => ,,; s,[\t ].*,,;' -e '/Qt|boost/ { p; d; };' \
-		-e '/lib(audio|CGAL|GLEW|opencsg|png)\.so/ { p; d; };' \
-		-e 'd;' | xargs cp -vt release/lib/openscad/
+    -e '/lib(audio|CGAL|GLEW|opencsg|png|gmp|gmpxx|mpfr)\.so/ { p; d; };' \
+    -e 'd;' | xargs cp -vt release/lib/openscad/
 strip release/lib/openscad/*
 
 cat > release/install.sh << "EOT"
