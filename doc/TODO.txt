@@ -102,7 +102,13 @@ o Editor wishlist
     in the source code in the 3D view
   - Tabbed editor for designs including other files
   - C-c/C-v should work on the focused widget, not always in the editor
-
+o Error reporting/debugging
+  - Provide better error messages when polygon ordering causes CGAL errors:
+    o Supply syntax highlighting of the exact polygon indices which are 
+      reported to be wrong
+    o Provide some interaction for debug walk-through?
+  - Provide visual highlighting of geometry corresponding to code
+    -> could aid debugging a lot
 o Computation
   - Run CGAL rendering in a background thread
   - Enable viewing/editing while rendering
