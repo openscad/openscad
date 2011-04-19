@@ -46,7 +46,7 @@ build_gmp()
   # 64-bit version
   mkdir build-x86_64
   cd build-x86_64
-  ../configure --prefix=$DEPLOYDIR/x86_64 "CFLAGS=-mmacosx-version-min=10.5" LDFLAGS="-mmacosx-version-min=10.5" --enable-cxx
+  ../configure --prefix=$DEPLOYDIR/x86_64 "CFLAGS=-mmacosx-version-min=10.5 -arch x86_64" LDFLAGS="-mmacosx-version-min=10.5 -arch x86_64" ABI=64 --enable-cxx
   make install
 
   # merge
@@ -158,7 +158,7 @@ build_opencsg()
 echo "Using basedir:" $BASEDIR
 mkdir -p $SRCDIR $DEPLOYDIR
 build_gmp 5.0.1
-build_mpfr 3.0.0
+build_mpfr 3.0.1
 build_boost 1.46.1
 build_cgal 3.7
 build_glew 1.5.8
