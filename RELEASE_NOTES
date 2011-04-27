@@ -1,4 +1,4 @@
-OpenSCAD 2011.XX
+OpenSCAD 2011.04
 ================
 
 o Added hull() for convex hulls (2D object only)
