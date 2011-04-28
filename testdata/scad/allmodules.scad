@@ -1,6 +1,7 @@
 minkowski();
 glide();
 subdiv();
+hull();
 child();
 echo();
 assign();
