@@ -258,6 +258,19 @@ int get_fragments_from_r(double r, double fn, double fs, double fa)
 	return (int)ceil(fmax(fmin(360.0 / fa, r*M_PI / fs), 5));
 }
 
+struct point2d {
+	double x, y;
+};
+
+static void generate_circle(point2d *circle, double r, int fragments)
+{
+	for (int i=0; i<fragments; i++) {
+		double phi = (M_PI*2* (i + 0.5)) / fragments;
+		circle[i].x = r*cos(phi);
+		circle[i].y = r*sin(phi);
+	}
+}
+
 PolySet *PrimitiveNode::render_polyset(render_mode_e, class PolySetRenderer *) const
 {
 	PolySet *p = new PolySet();
@@ -318,69 +331,66 @@ PolySet *PrimitiveNode::render_polyset(render_mode_e, class PolySetRenderer *) c
 
 	if (this->type == SPHERE && this->r1 > 0)
 	{
-		struct point2d {
-			double x, y;
-		};
-
 		struct ring_s {
-			int fragments;
 			point2d *points;
-			double r, z;
+			double z;
 		};
 
-		int rings = get_fragments_from_r(this->r1, this->fn, this->fs, this->fa);
+		int fragments = get_fragments_from_r(r1, fn, fs, fa);
+		int rings = fragments/2;
+// Uncomment the following three lines to enable experimental sphere tesselation
+//		if (rings % 2 == 0) rings++; // To ensure that the middle ring is at phi == 0 degrees
+
 		ring_s *ring = new ring_s[rings];
 
+//		double offset = 0.5 * ((fragments / 2) % 2);
 		for (int i = 0; i < rings; i++) {
+//			double phi = (M_PI * (i + offset)) / (fragments/2);
 			double phi = (M_PI * (i + 0.5)) / rings;
-			ring[i].r = this->r1 * sin(phi);
-			ring[i].z = this->r1 * cos(phi);
-			ring[i].fragments = get_fragments_from_r(ring[i].r, this->fn, this->fs, this->fa);
-			ring[i].points = new point2d[ring[i].fragments];
-			for (int j = 0; j < ring[i].fragments; j++) {
-				phi = (M_PI*2*j) / ring[i].fragments;
-				ring[i].points[j].x = ring[i].r * cos(phi);
-				ring[i].points[j].y = ring[i].r * sin(phi);
-			}
+			double r = r1 * sin(phi);
+			ring[i].z = r1 * cos(phi);
+			ring[i].points = new point2d[fragments];
+			generate_circle(ring[i].points, r, fragments);
 		}
 
 		p->append_poly();
-		for (int i = 0; i < ring[0].fragments; i++)
+		for (int i = 0; i < fragments; i++)
 			p->append_vertex(ring[0].points[i].x, ring[0].points[i].y, ring[0].z);
 
 		for (int i = 0; i < rings-1; i++) {
 			ring_s *r1 = &ring[i];
 			ring_s *r2 = &ring[i+1];
 			int r1i = 0, r2i = 0;
-			while (r1i < r1->fragments || r2i < r2->fragments)
+			while (r1i < fragments || r2i < fragments)
 			{
-				if (r1i >= r1->fragments)
+				if (r1i >= fragments)
 					goto sphere_next_r2;
-				if (r2i >= r2->fragments)
+				if (r2i >= fragments)
 					goto sphere_next_r1;
-				if ((double)r1i / r1->fragments < (double)r2i / r2->fragments)
+				if ((double)r1i / fragments <
+						(double)r2i / fragments)
 				{
 sphere_next_r1:
 					p->append_poly();
-					int r1j = (r1i+1) % r1->fragments;
+					int r1j = (r1i+1) % fragments;
 					p->insert_vertex(r1->points[r1i].x, r1->points[r1i].y, r1->z);
 					p->insert_vertex(r1->points[r1j].x, r1->points[r1j].y, r1->z);
-					p->insert_vertex(r2->points[r2i % r2->fragments].x, r2->points[r2i % r2->fragments].y, r2->z);
+					p->insert_vertex(r2->points[r2i % fragments].x, r2->points[r2i % fragments].y, r2->z);
 					r1i++;
 				} else {
 sphere_next_r2:
 					p->append_poly();
-					int r2j = (r2i+1) % r2->fragments;
+					int r2j = (r2i+1) % fragments;
 					p->append_vertex(r2->points[r2i].x, r2->points[r2i].y, r2->z);
 					p->append_vertex(r2->points[r2j].x, r2->points[r2j].y, r2->z);
-					p->append_vertex(r1->points[r1i % r1->fragments].x, r1->points[r1i % r1->fragments].y, r1->z);
+					p->append_vertex(r1->points[r1i % fragments].x, r1->points[r1i % fragments].y, r1->z);
 					r2i++;
 				}
 			}
 		}
 
 		p->append_poly();
-		for (int i = 0; i < ring[rings-1].fragments; i++)
+		for (int i = 0; i < fragments; i++)
 			p->insert_vertex(ring[rings-1].points[i].x, ring[rings-1].points[i].y, ring[rings-1].z);
 
 		delete[] ring;
@@ -400,44 +410,33 @@ sphere_next_r2:
 			z2 = this->h;
 		}
 
-		struct point2d {
-			double x, y;
-		};
-
 		point2d *circle1 = new point2d[fragments];
 		point2d *circle2 = new point2d[fragments];
 
-		for (int i=0; i<fragments; i++) {
-			double phi = (M_PI*2*i) / fragments;
-			if (this->r1 > 0) {
-				circle1[i].x = this->r1*cos(phi);
-				circle1[i].y = this->r1*sin(phi);
-			} else {
-				circle1[i].x = 0;
-				circle1[i].y = 0;
-			}
-			if (this->r2 > 0) {
-				circle2[i].x = this->r2*cos(phi);
-				circle2[i].y = this->r2*sin(phi);
-			} else {
-				circle2[i].x = 0;
-				circle2[i].y = 0;
-			}
-		}
+		generate_circle(circle1, r1, fragments);
+		generate_circle(circle2, r2, fragments);
 		
 		for (int i=0; i<fragments; i++) {
 			int j = (i+1) % fragments;
-			if (this->r1 > 0) {
+			if (r1 == r2) {
 				p->append_poly();
 				p->insert_vertex(circle1[i].x, circle1[i].y, z1);
 				p->insert_vertex(circle2[i].x, circle2[i].y, z2);
-				p->insert_vertex(circle1[j].x, circle1[j].y, z1);
-			}
-			if (this->r2 > 0) {
-				p->append_poly();
-				p->insert_vertex(circle2[i].x, circle2[i].y, z2);
 				p->insert_vertex(circle2[j].x, circle2[j].y, z2);
 				p->insert_vertex(circle1[j].x, circle1[j].y, z1);
+			} else {
+				if (r1 > 0) {
+					p->append_poly();
+					p->insert_vertex(circle1[i].x, circle1[i].y, z1);
+					p->insert_vertex(circle2[i].x, circle2[i].y, z2);
+					p->insert_vertex(circle1[j].x, circle1[j].y, z1);
+				}
+				if (r2 > 0) {
+					p->append_poly();
+					p->insert_vertex(circle2[i].x, circle2[i].y, z2);
+					p->insert_vertex(circle2[j].x, circle2[j].y, z2);
+					p->insert_vertex(circle1[j].x, circle1[j].y, z1);
+				}
 			}
 		}
 
@@ -460,10 +459,10 @@ sphere_next_r2:
 	if (this->type == POLYHEDRON)
 	{
 		p->convexity = this->convexity;
-		for (int i=0; i<this->triangles.vec.size(); i++)
+		for (size_t i=0; i<this->triangles.vec.size(); i++)
 		{
 			p->append_poly();
-			for (int j=0; j<this->triangles.vec[i]->vec.size(); j++) {
+			for (size_t j=0; j<this->triangles.vec[i]->vec.size(); j++) {
 				int pt = this->triangles.vec[i]->vec[j]->num;
 				if (pt < this->points.vec.size()) {
 					double px, py, pz;
@@ -513,7 +512,7 @@ sphere_next_r2:
 	{
 		DxfData dd;
 
-		for (int i=0; i<this->points.vec.size(); i++) {
+		for (size_t i=0; i<this->points.vec.size(); i++) {
 			double x,y;
 			if (!this->points.vec[i]->getv2(x, y)) {
 				PRINTF("ERROR: Unable to convert point at index %d to a vec2 of numbers", i);
@@ -526,7 +525,7 @@ sphere_next_r2:
 		if (this->paths.vec.size() == 0)
 		{
 			dd.paths.append(DxfData::Path());
-			for (int i=0; i<this->points.vec.size(); i++) {
+			for (size_t i=0; i<this->points.vec.size(); i++) {
 				assert(i < dd.points.size()); // FIXME: Not needed, but this used to be an 'if'
 				DxfData::Point *p = &dd.points[i];
 				dd.paths.last().points.append(p);
@@ -538,10 +537,10 @@ sphere_next_r2:
 		}
 		else
 		{
-			for (int i=0; i<this->paths.vec.size(); i++)
+			for (size_t i=0; i<this->paths.vec.size(); i++)
 			{
 				dd.paths.append(DxfData::Path());
-				for (int j=0; j<this->paths.vec[i]->vec.size(); j++) {
+				for (size_t j=0; j<this->paths.vec[i]->vec.size(); j++) {
 					int idx = this->paths.vec[i]->vec[j]->num;
 					if (idx < dd.points.size()) {
 						DxfData::Point *p = &dd.points[idx];

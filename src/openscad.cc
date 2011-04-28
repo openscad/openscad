@@ -146,12 +146,12 @@ int main(int argc, char **argv)
 	desc.add_options()
 		("help,h", "help message")
 		("version,v", "print the version")
-		("s", po::value<string>(), "stl-file")
-		("o", po::value<string>(), "off-file")
-		("x", po::value<string>(), "dxf-file")
-		("d", po::value<string>(), "deps-file")
-		("m", po::value<string>(), "makefile")
-		("D", po::value<vector<string> >(), "var=val");
+		("s,s", po::value<string>(), "stl-file")
+		("o,o", po::value<string>(), "off-file")
+		("x,x", po::value<string>(), "dxf-file")
+		("d,d", po::value<string>(), "deps-file")
+		("m,m", po::value<string>(), "makefile")
+		("D,D", po::value<vector<string> >(), "var=val");
 
 	po::options_description hidden("Hidden options");
 	hidden.add_options()

@@ -12,7 +12,7 @@ o Tag release
   git tag "openscad-2011.01"
 
 o build source package
-  git archive --format=tar openscad-2011.01  --prefix=openscad-2011.01/ | gzip > openscad-2011.01.tar.gz
+  git archive --format=tar openscad-2011.01  --prefix=openscad-2011.01/ | gzip > openscad-2011.01.src.tar.gz
 
 o build binaries
   Mac OS X
@@ -21,6 +21,8 @@ o build binaries
   - release-linux.sh
   Windows: FIXME 32 vs. 64 bit
 
+o FIXME: Run some tests
+
 o Set back version: release-linux.sh, publish-macosx.sh, FIXME: Windows
 
 o Upload
@@ -28,9 +30,5 @@ o Upload
     Upload manually here: https://github.com/openscad/openscad/downloads
     FIXME: Write a script
 
-  - Google code
-    - Get password from https://code.google.com/hosting/settings
-    ./scripts/googlecode_upload.py -u kintel -w <passwd> -s "OpenSCAD 2011.11 Windows" -p openscad openscad-2011.01.win32.zip
-    ./scripts/googlecode_upload.py -u kintel -w <passwd> -s "OpenSCAD 2011.11 Linux x86" -p openscad openscad-2011.01.linux-x86.tar.gz
-    ./scripts/googlecode_upload.py -u kintel -w <passwd> -s "OpenSCAD 2011.11 Mac OS X" -p openscad openscad-2011.01.dmg
-    ./scripts/googlecode_upload.py -u kintel -w <passwd> -s "OpenSCAD 2011.11 Source code" -p openscad openscad-2011.01.src.tar.gz
+o Update web page
+o Write email to mailing list
