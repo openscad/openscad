@@ -2,6 +2,7 @@ group() {
 	minkowski(convexity = 0);
 	glide(path = undef, convexity = 0);
 	subdiv(level = 1, convexity = 0);
+	hull();
 	group();
 	group();
 	group();
