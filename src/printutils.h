@@ -3,6 +3,9 @@
 
 #include <QString>
 #include <QList>
+#include <iostream>
+#include <QFileInfo>
+#include <QDateTime>
 
 typedef void (OutputHandlerFunc)(const QString &msg, void *userdata);
 extern OutputHandlerFunc *outputhandler;
@@ -21,5 +24,7 @@ void PRINT(const QString &msg);
 void PRINT_NOCACHE(const QString &msg);
 #define PRINTF_NOCACHE(_fmt, ...) do { QString _m; _m.sprintf(_fmt, ##__VA_ARGS__); PRINT_NOCACHE(_m); } while (0)
 #define PRINTA_NOCACHE(_fmt, ...) do { QString _m = QString(_fmt).arg(__VA_ARGS__); PRINT_NOCACHE(_m); } while (0)
+
+std::ostream &operator<<(std::ostream &os, const QFileInfo &fi);
 
 #endif

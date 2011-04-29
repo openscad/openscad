@@ -150,11 +150,10 @@ std::string DxfLinearExtrudeNode::toString() const
 	std::stringstream stream;
 
 	QString text;
-	QFileInfo fileInfo(this->filename);
 	
 	stream << this->name() << "("
 		"file = \"" << this->filename << "\", "
-		"cache = \"" << std::hex << (int)fileInfo.lastModified().toTime_t() << "." << (int)fileInfo.size() << "\", "
+		"cache = \"" << 	QFileInfo(this->filename) << "\", "
 		"layer = \"" << this->layername << "\", "
 		"height = " << std::dec << this->height << ", "
 		"origin = [ " << this->origin_x << " " << this->origin_y << " ], "

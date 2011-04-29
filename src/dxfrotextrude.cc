@@ -125,10 +125,9 @@ std::string DxfRotateExtrudeNode::toString() const
 {
 	std::stringstream stream;
 
-	QFileInfo fileInfo(this->filename);
 	stream << this->name() << "("
 		"file = \"" << this->filename << "\", "
-		"cache = \"" << std::hex << (int)fileInfo.lastModified().toTime_t() << "." << (int)fileInfo.size() << "\", "
+		"cache = \"" << QFileInfo(this->filename) << "\", "
 		"layer = \"" << this->layername << "\", "
 		"origin = [ " << std::dec << this->origin_x << " " << this->origin_y << " ], "
 		"scale = " << this->scale << ", "
