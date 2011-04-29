@@ -77,6 +77,9 @@ public:
 		case SUBDIV:
 			return "subdiv";
 			break;
+		case HULL:
+			return "hull";
+			break;
 		default:
 			assert(false);
 		}
