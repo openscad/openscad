@@ -157,7 +157,8 @@ function(add_cmdline_test TESTCMD TESTSUFFIX)
   get_filename_component(TESTCMD_NAME ${TESTCMD} NAME_WE)
   foreach (SCADFILE ${ARGN})
     get_filename_component(TESTNAME ${SCADFILE} NAME_WE)
-    add_test(${TESTCMD_NAME}_${TESTNAME} ${tests_SOURCE_DIR}/test_cmdline_tool.py -s ${TESTSUFFIX} ${CMAKE_BINARY_DIR}/${TESTCMD} ${SCADFILE})
+    string(REPLACE " " "_" TESTNAME ${TESTNAME}) # Test names cannot include spaces
+    add_test("${TESTCMD_NAME}_${TESTNAME}" ${tests_SOURCE_DIR}/test_cmdline_tool.py -s ${TESTSUFFIX} ${CMAKE_BINARY_DIR}/${TESTCMD} "${SCADFILE}")
   endforeach()
 endfunction()
 
