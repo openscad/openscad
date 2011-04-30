@@ -88,7 +88,7 @@ DIGIT [0-9]
 
 include[ \t\r\n>]*"<"	{ BEGIN(include); }
 <include>{
-[^\t\r\n>]+"/"	{ filepath = yytext; }
+[^\t\r\n>]*"/"	{ filepath = yytext; }
 [^\t\r\n>/]+	{ filename = yytext; }
 ">"		{ BEGIN(INITIAL); includefile(); }
 }
