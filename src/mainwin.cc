@@ -172,6 +172,7 @@ MainWindow::MainWindow(const QString &filename)
 	// Select a monospaced font; even if this font doesn't exist, it will try
 	// to fall back to the most similar font, which should be monospaced.
 	setFont("Monospace", 12); 
+	editor->setAcceptRichText(false);
 
 	screen->statusLabel = new QLabel(this);
 	statusBar()->addWidget(screen->statusLabel);
