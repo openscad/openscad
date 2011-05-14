@@ -68,7 +68,10 @@ private:
 
 	void initializeGL();
 	void resizeGL(int w, int h);
+	void setupPerspective();
+	void setupOrtho();
 	void paintGL();
+	void normalizeAngle(GLdouble& angle);
 
 #ifdef ENABLE_OPENCSG
 private slots:

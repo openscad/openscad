@@ -236,25 +236,32 @@ void GLView::setupPerspective()
 {
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	if (orthomode)
-		glOrtho(-w_h_ratio*viewer_distance/10, +w_h_ratio*viewer_distance/10,
-				-(1/w_h_ratio)*viewer_distance/10, +(1/w_h_ratio)*viewer_distance/10,
-				-FAR_FAR_AWAY, +FAR_FAR_AWAY);
-	else
-		glFrustum(-w_h_ratio, +w_h_ratio, -(1/w_h_ratio), +(1/w_h_ratio), +10.0, +FAR_FAR_AWAY);
+	glFrustum(-w_h_ratio, +w_h_ratio, -(1/w_h_ratio), +(1/w_h_ratio), +10.0, +FAR_FAR_AWAY);
+}
+
+void GLView::setupOrtho()
+{
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	glOrtho(-w_h_ratio*viewer_distance/10, +w_h_ratio*viewer_distance/10,
+			-(1/w_h_ratio)*viewer_distance/10, +(1/w_h_ratio)*viewer_distance/10,
+			-FAR_FAR_AWAY, +FAR_FAR_AWAY);
 }
 
 void GLView::paintGL()
 {
+	if (orthomode)
+		setupOrtho();
+
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+
 	const QColor &bgcol = Preferences::inst()->color(Preferences::BACKGROUND_COLOR);
 	glClearColor(bgcol.redF(), bgcol.greenF(), bgcol.blueF(), 0.0);
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
 	gluLookAt(0.0, -viewer_distance, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0);
-
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
 
 	glRotated(object_rot_x, 1.0, 0.0, 0.0);
 	glRotated(object_rot_y, 0.0, 1.0, 0.0);
@@ -382,7 +389,8 @@ void GLView::paintGL()
 		glEnd();
 
 		//Restore perspective for next paint
-		setupPerspective();
+		if(!orthomode)
+			setupPerspective();
 	}
 
 	if (statusLabel) {
@@ -457,6 +465,14 @@ static void mat_rot(double *trg, double angle, double x, double y, double z)
 		trg[i] = m[i];
 }
 
+void GLView::normalizeAngle(GLdouble& angle)
+{
+	while(angle < 0)
+		angle += 360;
+	while(angle > 360)
+		angle -= 360;
+}
+
 void GLView::mouseMoveEvent(QMouseEvent *event)
 {
 	int this_mouse_x = event->globalX();
@@ -468,18 +484,10 @@ void GLView::mouseMoveEvent(QMouseEvent *event)
 				object_rot_y += (this_mouse_x-last_mouse_x) * 0.7;
 			else
 				object_rot_z += (this_mouse_x-last_mouse_x) * 0.7;
-			while (object_rot_x < 0)
-				object_rot_x += 360;
-			while (object_rot_x >= 360)
-				object_rot_x -= 360;
-			while (object_rot_y < 0)
-				object_rot_y += 360;
-			while (object_rot_y >= 360)
-				object_rot_y -= 360;
-			while (object_rot_z < 0)
-				object_rot_z += 360;
-			while (object_rot_z >= 360)
-				object_rot_z -= 360;
+
+			normalizeAngle(object_rot_x);
+			normalizeAngle(object_rot_y);
+			normalizeAngle(object_rot_z);
 		} else {
 			double mx = +(this_mouse_x-last_mouse_x) * viewer_distance/1000;
 			double my = -(this_mouse_y-last_mouse_y) * viewer_distance/1000;
