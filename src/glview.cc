@@ -48,8 +48,6 @@ GLView::GLView(QWidget *parent) : QGLWidget(parent)
 	object_trans_z = 0;
 
 	mouse_drag_active = false;
-	last_mouse_x = 0;
-	last_mouse_y = 0;
 
 	orthomode = false;
 	showaxes = false;
@@ -425,8 +423,7 @@ void GLView::wheelEvent(QWheelEvent *event)
 void GLView::mousePressEvent(QMouseEvent *event)
 {
 	mouse_drag_active = true;
-	last_mouse_x = event->globalX();
-	last_mouse_y = event->globalY();
+	last_mouse = event->globalPos();
 	grabMouse();
 	setFocus();
 }
@@ -442,17 +439,16 @@ void GLView::normalizeAngle(GLdouble& angle)
 
 void GLView::mouseMoveEvent(QMouseEvent *event)
 {
-	int this_mouse_x = event->globalX();
-	int this_mouse_y = event->globalY();
-	int dx = (this_mouse_x-last_mouse_x);
-	int dy = (this_mouse_y-last_mouse_y);
+	QPoint this_mouse = event->globalPos();
+	double dx = (this_mouse.x()-last_mouse.x()) * 0.7;
+	double dy = (this_mouse.y()-last_mouse.y()) * 0.7;
 	if (mouse_drag_active) {
 		if ((event->buttons() & Qt::LeftButton) != 0) {
-			object_rot_x += (this_mouse_y-last_mouse_y) * 0.7;
+			object_rot_x += dy;
 			if ((QApplication::keyboardModifiers() & Qt::ShiftModifier) != 0)
-				object_rot_y += dx * 0.7;
+				object_rot_y += dx;
 			else
-				object_rot_z += dx * 0.7;
+				object_rot_z += dx;
 
 			normalizeAngle(object_rot_x);
 			normalizeAngle(object_rot_y);
@@ -461,15 +457,14 @@ void GLView::mouseMoveEvent(QMouseEvent *event)
 			if ((QApplication::keyboardModifiers() & Qt::ShiftModifier) != 0) {
 				viewer_distance += (GLdouble)dy;
 			} else {
-				object_trans_x += (GLint)dx;
-				object_trans_z -= (GLint)dy;
+				object_trans_x += dx;
+				object_trans_z -= dy;
 			}
 		}
 		updateGL();
 		emit doAnimateUpdate();
 	}
-	last_mouse_x = this_mouse_x;
-	last_mouse_y = this_mouse_y;
+	last_mouse = this_mouse;
 }
 
 void GLView::mouseReleaseEvent(QMouseEvent*)

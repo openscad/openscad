@@ -57,8 +57,7 @@ private:
 	double w_h_ratio;
 
 	bool mouse_drag_active;
-	int last_mouse_x;
-	int last_mouse_y;
+	QPoint last_mouse;
 
 	void keyPressEvent(QKeyEvent *event);
 	void wheelEvent(QWheelEvent *event);
