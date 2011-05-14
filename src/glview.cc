@@ -228,6 +228,20 @@ void GLView::resizeGL(int w, int h)
 #endif
 	glViewport(0, 0, w, h);
 	w_h_ratio = sqrt((double)w / (double)h);
+
+	setupPerspective();
+}
+
+void GLView::setupPerspective()
+{
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	if (orthomode)
+		glOrtho(-w_h_ratio*viewer_distance/10, +w_h_ratio*viewer_distance/10,
+				-(1/w_h_ratio)*viewer_distance/10, +(1/w_h_ratio)*viewer_distance/10,
+				-FAR_FAR_AWAY, +FAR_FAR_AWAY);
+	else
+		glFrustum(-w_h_ratio, +w_h_ratio, -(1/w_h_ratio), +(1/w_h_ratio), +10.0, +FAR_FAR_AWAY);
 }
 
 void GLView::paintGL()
@@ -237,14 +251,6 @@ void GLView::paintGL()
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	if (orthomode)
-		glOrtho(-w_h_ratio*viewer_distance/10, +w_h_ratio*viewer_distance/10,
-				-(1/w_h_ratio)*viewer_distance/10, +(1/w_h_ratio)*viewer_distance/10,
-				-FAR_FAR_AWAY, +FAR_FAR_AWAY);
-	else
-		glFrustum(-w_h_ratio, +w_h_ratio, -(1/w_h_ratio), +(1/w_h_ratio), +10.0, +FAR_FAR_AWAY);
 	gluLookAt(0.0, -viewer_distance, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0);
 
 	glMatrixMode(GL_MODELVIEW);
@@ -374,6 +380,9 @@ void GLView::paintGL()
 		glVertex3d(zlabel_x-3, zlabel_y+3, 0); glVertex3d(zlabel_x+3, zlabel_y+3, 0);
 		glVertex3d(zlabel_x-3, zlabel_y-3, 0); glVertex3d(zlabel_x+3, zlabel_y+3, 0);
 		glEnd();
+
+		//Restore perspective for next paint
+		setupPerspective();
 	}
 
 	if (statusLabel) {
