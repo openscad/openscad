@@ -69,7 +69,7 @@ private:
 	void initializeGL();
 	void resizeGL(int w, int h);
 	void setupPerspective();
-	void setupOrtho();
+	void setupOrtho(double distance,bool offset=false);
 	void paintGL();
 	void normalizeAngle(GLdouble& angle);
 

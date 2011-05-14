@@ -239,19 +239,22 @@ void GLView::setupPerspective()
 	glFrustum(-w_h_ratio, +w_h_ratio, -(1/w_h_ratio), +(1/w_h_ratio), +10.0, +FAR_FAR_AWAY);
 }
 
-void GLView::setupOrtho()
+void GLView::setupOrtho(double distance, bool offset)
 {
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	glOrtho(-w_h_ratio*viewer_distance/10, +w_h_ratio*viewer_distance/10,
-			-(1/w_h_ratio)*viewer_distance/10, +(1/w_h_ratio)*viewer_distance/10,
+	if(offset)
+		glTranslated(-0.8, -0.8, 0);
+	double l = distance/10;
+	glOrtho(-w_h_ratio*l, +w_h_ratio*l,
+			-(1/w_h_ratio)*l, +(1/w_h_ratio)*l,
 			-FAR_FAR_AWAY, +FAR_FAR_AWAY);
 }
 
 void GLView::paintGL()
 {
 	if (orthomode)
-		setupOrtho();
+		setupOrtho(viewer_distance);
 
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
@@ -293,12 +296,13 @@ void GLView::paintGL()
 		glLineWidth(1);
 		glColor3d(0.5, 0.5, 0.5);
 		glBegin(GL_LINES);
-		glVertex3d(-viewer_distance/10, 0, 0);
-		glVertex3d(+viewer_distance/10, 0, 0);
-		glVertex3d(0, -viewer_distance/10, 0);
-		glVertex3d(0, +viewer_distance/10, 0);
-		glVertex3d(0, 0, -viewer_distance/10);
-		glVertex3d(0, 0, +viewer_distance/10);
+		double l = viewer_distance/10;
+		glVertex3d(-l, 0, 0);
+		glVertex3d(+l, 0, 0);
+		glVertex3d(0, -l, 0);
+		glVertex3d(0, +l, 0);
+		glVertex3d(0, 0, -l);
+		glVertex3d(0, 0, +l);
 		glEnd();
 	}
 
@@ -317,12 +321,8 @@ void GLView::paintGL()
 	{
 		glDepthFunc(GL_ALWAYS);
 
-		glMatrixMode(GL_PROJECTION);
-		glLoadIdentity();
-		glTranslated(-0.8, -0.8, 0);
-		glOrtho(-w_h_ratio*1000/10, +w_h_ratio*1000/10,
-				-(1/w_h_ratio)*1000/10, +(1/w_h_ratio)*1000/10,
-				-FAR_FAR_AWAY, +FAR_FAR_AWAY);
+		setupOrtho(1000,true);
+
 		gluLookAt(0.0, -1000, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0);
 
 		glMatrixMode(GL_MODELVIEW);
