@@ -153,7 +153,7 @@ o Language Frontend
   - Rethink for vs. intersection_for vs. group. Should for loops
     generate child lists instead, and make these passable to other
     modules or accessible by child()?
-  - constants: PI
+  - constants: PI, OpenSCAD version
 o DXF Import/Export
   - Use dxflib from RibbonSoft for import/export? -> investigate
   - Import
@@ -222,6 +222,7 @@ o Write a simple test script that collects verified and current STL renderings
 o Write simple driver scripts for comparing output of above command
 o Collect "all" available OpenSCAD scripts from the internets and run the integration
   tests on them all
+o Write a regression test for the hexagonal cylinder orientation issue
 
 INFRASTRUCTURE
 --------------
