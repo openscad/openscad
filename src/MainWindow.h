@@ -109,6 +109,7 @@ private slots:
 	void actionExportSTL();
 	void actionExportOFF();
 	void actionExportDXF();
+	void actionExportImage();
 	void actionFlushCaches();
 
 public:

@@ -259,6 +259,7 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this->designActionExportSTL, SIGNAL(triggered()), this, SLOT(actionExportSTL()));
 	connect(this->designActionExportOFF, SIGNAL(triggered()), this, SLOT(actionExportOFF()));
 	connect(this->designActionExportDXF, SIGNAL(triggered()), this, SLOT(actionExportDXF()));
+	connect(this->designActionExportImage, SIGNAL(triggered()), this, SLOT(actionExportImage()));
 	connect(this->designActionFlushCaches, SIGNAL(triggered()), this, SLOT(actionFlushCaches()));
 
 	// View menu
@@ -1340,6 +1341,24 @@ void MainWindow::actionExportDXF()
 
 	clearCurrentOutput();
 #endif /* ENABLE_CGAL */
+}
+
+void MainWindow::actionExportImage()
+{
+	QImage img = screen->grabFrameBuffer();
+	setCurrentOutput();
+
+	QString img_filename = QFileDialog::getSaveFileName(this,
+			"Export Image", "", "PNG Files (*.png)");
+	if (img_filename.isEmpty()) {
+		PRINTF("No filename specified. Image export aborted.");
+		clearCurrentOutput();
+		return;
+	}
+
+	img.save(img_filename, "PNG");
+
+	clearCurrentOutput();
 }
 
 void MainWindow::actionFlushCaches()
