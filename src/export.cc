@@ -167,20 +167,6 @@ void export_dxf(CGAL_Nef_polyhedron *root_N, QString filename, QProgressDialog *
 	}
 
 	setlocale(LC_NUMERIC, "C"); // Ensure radix is . (not ,) in output
-
-	// Some importers (e.g. QCAD) needs a HEADER section specifying AutoCAD 2000 as 
-	// the file format for LWPOLYLINE entities to work
-	fprintf(f, "  0\n"
-					"SECTION\n"
-					"  2\n"
-					"HEADER\n"
-					"  9\n"
-					"$ACADVER\n"
-					"  1\n"
-					"AC1015\n"
-					"  0\n"
-					"ENDSEC\n");
-
 	// Some importers (e.g. Inkscape) needs a BLOCKS section to be present
 	fprintf(f, "  0\n"
 					"SECTION\n"
@@ -197,29 +183,26 @@ void export_dxf(CGAL_Nef_polyhedron *root_N, QString filename, QProgressDialog *
 	DxfData dd(*root_N);
 	for (int i=0; i<dd.paths.size(); i++)
 	{
-		if (dd.paths[i].points.size() < 2)
-			// not a valid polygon
-			continue;
-		// Use the LWPOLYLINE class - this makes it easier to handle complete
-		// objects (as paths) in Inkscape.
-		fprintf(f, "  0\n");
-		fprintf(f, "LWPOLYLINE\n");
-		// Some importers (e.g. Inkscape) need a layer to be specified
-		fprintf(f, "  8\n");
-		fprintf(f, "0\n");
-		// number of vertices
-		fprintf(f, "  90\n");
-		fprintf(f, "%d\n", dd.paths[i].points.size());
-		// polygon flag (closed, ...)
-		fprintf(f, "  70\n");
-		fprintf(f, "%d\n", dd.paths[i].is_closed ? 1 : 0);
-		// add all points
-		for (int j=0; j<dd.paths[i].points.size(); j++) {
-			DxfData::Point *p = dd.paths[i].points[j];
+		for (int j=1; j<dd.paths[i].points.size(); j++) {
+			DxfData::Point *p1 = dd.paths[i].points[j-1];
+			DxfData::Point *p2 = dd.paths[i].points[j];
+			double x1 = p1->x;
+			double y1 = p1->y;
+			double x2 = p2->x;
+			double y2 = p2->y;
+			fprintf(f, "  0\n");
+			fprintf(f, "LINE\n");
+			// Some importers (e.g. Inkscape) needs a layer to be specified
+			fprintf(f, "  8\n");
+			fprintf(f, "0\n");
 			fprintf(f, " 10\n");
-			fprintf(f, "%f\n", p->x);
+			fprintf(f, "%f\n", x1);
+			fprintf(f, " 11\n");
+			fprintf(f, "%f\n", x2);
 			fprintf(f, " 20\n");
-			fprintf(f, "%f\n", p->y);
+			fprintf(f, "%f\n", y1);
+			fprintf(f, " 21\n");
+			fprintf(f, "%f\n", y2);
 		}
 	}
 
