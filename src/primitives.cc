@@ -223,10 +223,10 @@ struct point2d {
 	double x, y;
 };
 
-static void generate_circle(point2d *circle, double r, int fragments, double offset)
+static void generate_circle(point2d *circle, double r, int fragments)
 {
 	for (int i=0; i<fragments; i++) {
-		double phi = (M_PI*2* (i + offset)) / fragments;
+		double phi = (M_PI*2*i) / fragments;
 		circle[i].x = r*cos(phi);
 		circle[i].y = r*sin(phi);
 	}
@@ -311,7 +311,7 @@ PolySet *PrimitiveNode::render_polyset(render_mode_e) const
 			double r = r1 * sin(phi);
 			ring[i].z = r1 * cos(phi);
 			ring[i].points = new point2d[fragments];
-			generate_circle(ring[i].points, r, fragments,0.5);
+			generate_circle(ring[i].points, r, fragments);
 		}
 
 		p->append_poly();
@@ -373,8 +373,8 @@ sphere_next_r2:
 		point2d *circle1 = new point2d[fragments];
 		point2d *circle2 = new point2d[fragments];
 
-		generate_circle(circle1, r1, fragments,0.0);
-		generate_circle(circle2, r2, fragments,0.0);
+		generate_circle(circle1, r1, fragments);
+		generate_circle(circle2, r2, fragments);
 		
 		for (int i=0; i<fragments; i++) {
 			int j = (i+1) % fragments;
