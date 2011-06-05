@@ -34,6 +34,8 @@
 #include "printutils.h"
 #include <assert.h>
 
+#define F_MINIMUM 0.01
+
 enum primitive_type_e {
 	CUBE,
 	SPHERE,
@@ -57,7 +59,6 @@ class PrimitiveNode : public AbstractPolyNode
 public:
 	bool center;
 	double x, y, z, h, r1, r2;
-	static const double F_MINIMUM = 0.01;
 	double fn, fs, fa;
 	primitive_type_e type;
 	int convexity;
@@ -106,13 +107,13 @@ AbstractNode *PrimitiveModule::evaluate(const Context *ctx, const ModuleInstanti
 	node->fs = c.lookup_variable("$fs").num;
 	node->fa = c.lookup_variable("$fa").num;
 
-	if (node->fs < PrimitiveNode::F_MINIMUM) {
-		PRINTF("WARNING: $fs too small - clamping to %f", PrimitiveNode::F_MINIMUM);
-		node->fs = PrimitiveNode::F_MINIMUM;
+	if (node->fs < F_MINIMUM) {
+		PRINTF("WARNING: $fs too small - clamping to %f", F_MINIMUM);
+		node->fs = F_MINIMUM;
 	}
-	if (node->fa < PrimitiveNode::F_MINIMUM) {
-		PRINTF("WARNING: $fa too small - clamping to %f", PrimitiveNode::F_MINIMUM);
-		node->fa = PrimitiveNode::F_MINIMUM;
+	if (node->fa < F_MINIMUM) {
+		PRINTF("WARNING: $fa too small - clamping to %f", F_MINIMUM);
+		node->fa = F_MINIMUM;
 	}
 
 

@@ -85,7 +85,7 @@ CGAL_Poly2 nef2p2(CGAL_Nef_polyhedron2 p)
 	typedef Explorer::Halfedge_around_face_const_circulator heafcc_t;
 	Explorer E = p.explorer();
 
-	for (fci_t fit = E.faces_begin(), fend = E.faces_end(); fit != fend; ++fit)
+	for (fci_t fit = E.faces_begin(), facesend = E.faces_end(); fit != facesend; ++fit)
 	{
 		if (!E.mark(fit)) {
 			continue;
