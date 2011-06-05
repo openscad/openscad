@@ -1,3 +1,15 @@
+OpenSCAD 2011.06
+================
+
+Bugfix release:
+
+o Cylinder tesselation broke existing models which are using cylinders
+  for e.g. captured nut slots and are dependent on the orientation not
+  changing.
+o DXF output couldn't be imported into e.g. AutoCAD and Solidworks after updating
+  to using the AutoCAD 2000 (AC1015) format. Reverted to the old entity-only output,
+  causing LWPOLYLINES to not exported allowed anmore.
+
 OpenSCAD 2011.04
 ================
 
