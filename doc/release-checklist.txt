@@ -15,15 +15,20 @@ o build source package
   git archive --format=tar openscad-2011.01  --prefix=openscad-2011.01/ | gzip > openscad-2011.01.src.tar.gz
 
 o build binaries
+  tar xzf openscad-2011.01.src.tar.gz
+  cd openscad-2011.01
   Mac OS X
-  - publish-macosx.sh -> OpenSCAD-2011.01.dmg
+    For Qt-4.7.3: Remove /Developers/Applications/Qt/plugins/qmltooling
+    ./scripts/publish-macosx.sh -> OpenSCAD-2011.01.dmg
   Linux: FIXME 32 vs. 64 bit
-  - release-linux.sh
+    ./scripts/release-linux.sh
   Windows: FIXME 32 vs. 64 bit
 
 o FIXME: Run some tests
 
 o Set back version: release-linux.sh, publish-macosx.sh, FIXME: Windows
+
+o  git push --tags
 
 o Upload
   - Github
