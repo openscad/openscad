@@ -1,3 +1,7 @@
+OpenSCAD 20xx.yy
+================
+
+
 OpenSCAD 2011.06
 ================
 
@@ -9,7 +13,7 @@ o Cylinder tesselation broke existing models which are using cylinders
   changing.
 o DXF output couldn't be imported into e.g. AutoCAD and Solidworks after updating
   to using the AutoCAD 2000 (AC1015) format. Reverted to the old entity-only output,
-  causing LWPOLYLINES to not exported allowed anmore.
+  causing LWPOLYLINES to not exported allowed anymore.
 
 
 
