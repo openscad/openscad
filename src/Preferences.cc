@@ -40,6 +40,7 @@ Preferences::Preferences(QWidget *parent) : QMainWindow(parent)
 	this->defaultmap["3dview/colorscheme"] = this->colorSchemeChooser->currentItem()->text();
 	this->defaultmap["editor/fontfamily"] = this->fontChooser->currentText();
 	this->defaultmap["editor/fontsize"] = this->fontSize->currentText().toUInt();
+	this->defaultmap["editor/opengl20_warning_show"] = true;
 
 	// Toolbar
 	QActionGroup *group = new QActionGroup(this);
@@ -97,7 +98,8 @@ Preferences::Preferences(QWidget *parent) : QMainWindow(parent)
 					this, SLOT(fontFamilyChanged(const QString &)));
 	connect(this->fontSize, SIGNAL(editTextChanged(const QString &)),
 					this, SLOT(fontSizeChanged(const QString &)));
-
+	connect(this->OpenGL20WarningCheckbox, SIGNAL(clicked(bool)),
+					this, SLOT(OpenGL20WarningChanged(bool)));
 	updateGUI();
 }
 
@@ -148,6 +150,13 @@ void Preferences::fontSizeChanged(const QString &size)
 	emit fontChanged(getValue("editor/fontfamily").toString(), intsize);
 }
 
+void
+Preferences::OpenGL20WarningChanged(bool state)
+{
+	QSettings settings;
+	settings.setValue("editor/opengl20_warning_show",state);
+}
+
 void Preferences::keyPressEvent(QKeyEvent *e)
 {
 #ifdef Q_WS_MAC
@@ -185,6 +194,7 @@ QVariant Preferences::getValue(const QString &key) const
 
 void Preferences::updateGUI()
 {
+	QSettings settings;
 	QList<QListWidgetItem *> found = 
 		this->colorSchemeChooser->findItems(getValue("3dview/colorscheme").toString(),
 																				Qt::MatchExactly);
@@ -204,6 +214,9 @@ void Preferences::updateGUI()
 	else {
 		this->fontSize->setEditText(fontsize);
 	}
+
+	bool opengl20_warning_show = getValue("editor/opengl20_warning_show").toBool();
+	this->OpenGL20WarningCheckbox->setChecked(opengl20_warning_show);
 }
 
 void Preferences::apply() const
@@ -211,4 +224,3 @@ void Preferences::apply() const
 	emit fontChanged(getValue("editor/fontfamily").toString(), getValue("editor/fontsize").toUInt());
 	emit requestRedraw();
 }
-

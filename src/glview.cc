@@ -29,9 +29,15 @@
 
 #include <QApplication>
 #include <QWheelEvent>
+#include <QCheckBox>
+#include <QDialogButtonBox>
 #include <QMouseEvent>
 #include <QMessageBox>
+#include <QPushButton>
+#include <QSettings>
 #include <QTimer>
+#include <QTextEdit>
+#include <QVBoxLayout>
 #include "mathc99.h"
 #include <stdio.h>
 
@@ -180,7 +186,10 @@ void GLView::initializeGL()
 		}
 	} else {
 		opencsg_support = false;
-		QTimer::singleShot(0, this, SLOT(display_opengl20_warning()));
+		QSettings settings;
+		if (settings.value("editor/opengl20_warning_show").toBool()) {
+			QTimer::singleShot(0, this, SLOT(display_opengl20_warning()));
+		}
 	}
 #endif /* ENABLE_OPENCSG */
 }
@@ -188,6 +197,9 @@ void GLView::initializeGL()
 #ifdef ENABLE_OPENCSG
 void GLView::display_opengl20_warning()
 {
+	// data
+	QString title = QString("GLEW: GL_VERSION_2_0 is not supported!");
+
 	QString rendererinfo;
 	rendererinfo.sprintf("GLEW version %s\n"
 											 "%s (%s)\n"
@@ -196,11 +208,43 @@ void GLView::display_opengl20_warning()
 											 glGetString(GL_RENDERER), glGetString(GL_VENDOR),
 											 glGetString(GL_VERSION));
 
-	QMessageBox::warning(NULL, "GLEW: GL_VERSION_2_0 is not supported!",
-			QString("Warning: No support for OpenGL 2.0 found! OpenCSG View has been disabled.\n\n"
+	QString message = QString("Warning: No support for OpenGL 2.0 found! OpenCSG View has been disabled.\n\n"
 			"It is highly recommended to use OpenSCAD on a system with OpenGL 2.0 "
 			"support. Please check if OpenGL 2.0 drivers are available for your "	
-			"graphics hardware.\n\n%1").arg(rendererinfo));
+			"graphics hardware. Your renderer information is as follows:\n\n%1").arg(rendererinfo);
+
+	QString note = QString("Uncheck to hide this message in the future");
+
+	// presentation
+	QDialog *dialog = new QDialog(this);
+	dialog->setSizeGripEnabled(true);
+	dialog->setWindowTitle(title);
+	dialog->resize(500,300);
+
+	QVBoxLayout *layout = new QVBoxLayout(dialog);
+	dialog->setLayout(layout);
+
+	QTextEdit *textEdit = new QTextEdit(dialog);
+	textEdit->setPlainText(message);
+	layout->addWidget(textEdit);
+
+	QCheckBox *checkbox = new QCheckBox(note,dialog);
+	checkbox->setCheckState(Qt::Checked);
+	layout->addWidget(checkbox);
+
+	QDialogButtonBox *buttonbox =
+		new QDialogButtonBox(	QDialogButtonBox::Ok, Qt::Horizontal,dialog);
+	layout->addWidget(buttonbox);
+	buttonbox->button(QDialogButtonBox::Ok)->setFocus();
+	buttonbox->button(QDialogButtonBox::Ok)->setDefault(true);
+
+	// action
+	connect(buttonbox, SIGNAL(accepted()), dialog, SLOT(accept()));
+	connect(checkbox, SIGNAL(clicked(bool)),
+		Preferences::inst()->OpenGL20WarningCheckbox, SLOT(setChecked(bool)));
+	connect(checkbox, SIGNAL(clicked(bool)),
+		Preferences::inst(), SLOT(OpenGL20WarningChanged(bool)));
+	dialog->exec();
 }
 #endif
 
