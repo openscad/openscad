@@ -187,7 +187,7 @@ void GLView::initializeGL()
 	} else {
 		opencsg_support = false;
 		QSettings settings;
-		if (settings.value("editor/opengl20_warning_show").toBool()) {
+		if (settings.value("editor/opengl20_warning_show",true).toBool()) {
 			QTimer::singleShot(0, this, SLOT(display_opengl20_warning()));
 		}
 	}
