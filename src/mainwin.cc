@@ -118,6 +118,37 @@ static char copyrighttext[] =
 	"the Free Software Foundation; either version 2 of the License, or"
 	"(at your option) any later version.";
 
+static void
+settings_setValueList(const QString &key,const QList<int> &list)
+{
+	QSettings settings;
+	settings.beginWriteArray(key);
+	for (int i=0;i<list.size(); ++i) {
+		settings.setArrayIndex(i);
+		settings.setValue("entry",list[i]);
+	}
+	settings.endArray();
+}
+
+QList<int>
+settings_valueList(const QString &key, const QList<int> &defaultList = QList<int>())
+{
+	QSettings settings;
+	QList<int> result;
+	if (settings.contains(key+"/size")){
+		int length = settings.beginReadArray(key);
+		for (int i = 0; i < length; ++i) {
+			settings.setArrayIndex(i);
+			result += settings.value("entry").toInt();
+		}
+		settings.endArray();
+		return result;
+	} else {
+		return defaultList;
+	}
+
+}
+
 MainWindow::MainWindow(const QString &filename)
 {
 	setupUi(this);
@@ -335,15 +366,18 @@ MainWindow::MainWindow(const QString &filename)
 					this, SLOT(setFont(const QString&,uint)));
 	Preferences::inst()->apply();
 
+	// make sure it looks nice..
+	QSettings settings;
+	resize(settings.value("window/size", QSize(800, 600)).toSize());
+	move(settings.value("window/position", QPoint(0, 0)).toPoint());
+	QList<int> s1sizes = settings_valueList("window/splitter1sizes",QList<int>()<<400<<400);
+	QList<int> s2sizes = settings_valueList("window/splitter2sizes",QList<int>()<<400<<200);
+	splitter1->setSizes(s1sizes);
+	splitter2->setSizes(s2sizes);
 
 	// display this window and check for OpenGL 2.0 (OpenCSG) support
 	viewModeThrownTogether();
 	show();
-
-	// make sure it looks nice..
-	resize(800, 600);
-	splitter1->setSizes(QList<int>() << 400 << 400);
-	splitter2->setSizes(QList<int>() << 400 << 200);
 
 #ifdef ENABLE_OPENCSG
 	viewModeOpenCSG();
@@ -1902,6 +1936,11 @@ MainWindow::maybeSave()
 void MainWindow::closeEvent(QCloseEvent *event)
 {
 	if (maybeSave()) {
+		QSettings settings;
+		settings.setValue("window/size", size());
+		settings.setValue("window/position", pos());
+		settings_setValueList("window/splitter1sizes",splitter1->sizes());
+		settings_setValueList("window/splitter2sizes",splitter2->sizes());
 		event->accept();
 	} else {
 		event->ignore();
