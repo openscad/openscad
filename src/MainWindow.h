@@ -79,6 +79,7 @@ private:
 	static void consoleOutput(const QString &msg, void *userdata) {
 		static_cast<MainWindow*>(userdata)->console->append(msg);
 	}
+	void loadViewSettings();
 
 private slots:
 	void actionNew();

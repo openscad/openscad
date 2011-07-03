@@ -350,10 +350,40 @@ MainWindow::MainWindow(const QString &filename)
 #else
 	viewModeThrownTogether();
 #endif
-	viewPerspective();
+	loadViewSettings();
 
 	setAcceptDrops(true);
 	clearCurrentOutput();
+}
+
+void
+MainWindow::loadViewSettings(){
+	QSettings settings;
+	if (settings.value("view/showEdges").toBool()) {
+		viewActionShowEdges->setChecked(true);
+		viewModeShowEdges();
+	}
+	if (settings.value("view/showAxes").toBool()) {
+		viewActionShowAxes->setChecked(true);
+		viewModeShowAxes();
+	}
+	if (settings.value("view/showCrosshairs").toBool()) {
+		viewActionShowCrosshairs->setChecked(true);
+		viewModeShowCrosshairs();
+	}
+	if (settings.value("view/orthogonalProjection").toBool()) {
+		viewOrthogonal();
+	} else {
+		viewPerspective();
+	}
+	if (settings.value("view/hideConsole").toBool()) {
+		viewActionHide->setChecked(true);
+		hideConsole();
+	}
+	if (settings.value("view/hideEditor").toBool()) {
+		editActionHide->setChecked(true);
+		hideEditor();
+	}
 }
 
 MainWindow::~MainWindow()
@@ -952,10 +982,13 @@ void MainWindow::actionReload()
 
 void MainWindow::hideEditor()
 {
+	QSettings settings;
 	if (editActionHide->isChecked()) {
 		editor->hide();
+		settings.setValue("view/hideEditor",true);
 	} else {
 		editor->show();
+		settings.setValue("view/hideEditor",false);
 	}
 }
 
@@ -1656,17 +1689,23 @@ void MainWindow::viewModeThrownTogether()
 
 void MainWindow::viewModeShowEdges()
 {
+	QSettings settings;
+	settings.setValue("view/showEdges",viewActionShowEdges->isChecked());
 	screen->updateGL();
 }
 
 void MainWindow::viewModeShowAxes()
 {
+	QSettings settings;
+	settings.setValue("view/showAxes",viewActionShowAxes->isChecked());
 	screen->setShowAxes(viewActionShowAxes->isChecked());
 	screen->updateGL();
 }
 
 void MainWindow::viewModeShowCrosshairs()
 {
+	QSettings settings;
+	settings.setValue("view/showCrosshairs",viewActionShowCrosshairs->isChecked());
 	screen->setShowCrosshairs(viewActionShowCrosshairs->isChecked());
 	screen->updateGL();
 }
@@ -1770,6 +1809,8 @@ void MainWindow::viewCenter()
 
 void MainWindow::viewPerspective()
 {
+	QSettings settings;
+	settings.setValue("view/orthogonalProjection",false);
 	viewActionPerspective->setChecked(true);
 	viewActionOrthogonal->setChecked(false);
 	screen->setOrthoMode(false);
@@ -1778,6 +1819,8 @@ void MainWindow::viewPerspective()
 
 void MainWindow::viewOrthogonal()
 {
+	QSettings settings;
+	settings.setValue("view/orthogonalProjection",true);
 	viewActionPerspective->setChecked(false);
 	viewActionOrthogonal->setChecked(true);
 	screen->setOrthoMode(true);
@@ -1786,10 +1829,13 @@ void MainWindow::viewOrthogonal()
 
 void MainWindow::hideConsole()
 {
+	QSettings settings;
 	if (viewActionHide->isChecked()) {
 		console->hide();
+		settings.setValue("view/hideConsole",true);
 	} else {
 		console->show();
+		settings.setValue("view/hideConsole",false);
 	}
 }
 
