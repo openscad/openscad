@@ -337,8 +337,6 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this->helpActionHomepage, SIGNAL(triggered()), this, SLOT(helpHomepage()));
 	connect(this->helpActionManual, SIGNAL(triggered()), this, SLOT(helpManual()));
 
-	loadDesignSettings();
-
 	console->setReadOnly(true);
 	setCurrentOutput();
 
@@ -386,6 +384,7 @@ MainWindow::MainWindow(const QString &filename)
 	viewModeThrownTogether();
 #endif
 	loadViewSettings();
+	loadDesignSettings();
 
 	setAcceptDrops(true);
 	clearCurrentOutput();
@@ -419,6 +418,14 @@ MainWindow::loadViewSettings(){
 		editActionHide->setChecked(true);
 		hideEditor();
 	}
+}
+
+void
+MainWindow::loadDesignSettings()
+{
+	QSettings settings;
+	if (settings.value("design/autoReload").toBool())
+		designActionAutoReload->setChecked(true);
 }
 
 MainWindow::~MainWindow()
@@ -498,14 +505,6 @@ MainWindow::openFile(const QString &new_filename)
 	setFileName(new_filename);
 
 	load();
-}
-
-void
-MainWindow::loadDesignSettings()
-{
-	QSettings settings;
-	if (settings.value("design/autoReload").toBool())
-		designActionAutoReload->setChecked(true);
 }
 
 void
