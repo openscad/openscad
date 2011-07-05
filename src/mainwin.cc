@@ -337,6 +337,7 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this->helpActionHomepage, SIGNAL(triggered()), this, SLOT(helpHomepage()));
 	connect(this->helpActionManual, SIGNAL(triggered()), this, SLOT(helpManual()));
 
+	loadDesignSettings();
 
 	console->setReadOnly(true);
 	setCurrentOutput();
@@ -497,6 +498,14 @@ MainWindow::openFile(const QString &new_filename)
 	setFileName(new_filename);
 
 	load();
+}
+
+void
+MainWindow::loadDesignSettings()
+{
+	QSettings settings;
+	if (settings.value("design/autoReload").toBool())
+		designActionAutoReload->setChecked(true);
 }
 
 void
@@ -1063,6 +1072,8 @@ void MainWindow::checkAutoReload()
 
 void MainWindow::autoReloadSet(bool on)
 {
+	QSettings settings;
+	settings.setValue("design/autoReload",designActionAutoReload->isChecked());
 	if (on) {
 		autoReloadInfo = QString();
 		autoReloadTimer->start(200);
