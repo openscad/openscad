@@ -80,6 +80,7 @@ private:
 		static_cast<MainWindow*>(userdata)->console->append(msg);
 	}
 	void loadViewSettings();
+	void loadDesignSettings();
 
 private slots:
 	void actionNew();

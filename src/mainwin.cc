@@ -385,6 +385,7 @@ MainWindow::MainWindow(const QString &filename)
 	viewModeThrownTogether();
 #endif
 	loadViewSettings();
+	loadDesignSettings();
 
 	setAcceptDrops(true);
 	clearCurrentOutput();
@@ -418,6 +419,14 @@ MainWindow::loadViewSettings(){
 		editActionHide->setChecked(true);
 		hideEditor();
 	}
+}
+
+void
+MainWindow::loadDesignSettings()
+{
+	QSettings settings;
+	if (settings.value("design/autoReload").toBool())
+		designActionAutoReload->setChecked(true);
 }
 
 MainWindow::~MainWindow()
@@ -1063,6 +1072,8 @@ void MainWindow::checkAutoReload()
 
 void MainWindow::autoReloadSet(bool on)
 {
+	QSettings settings;
+	settings.setValue("design/autoReload",designActionAutoReload->isChecked());
 	if (on) {
 		autoReloadInfo = QString();
 		autoReloadTimer->start(200);
