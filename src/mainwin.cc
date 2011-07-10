@@ -119,7 +119,7 @@ unsigned int GuiLocker::gui_locked = 0;
 
 static char helptitle[] =
 	"OpenSCAD " QUOTED(OPENSCAD_VERSION) " (www.openscad.org)\n"
-	"Visitor refactored version";
+	"Visitor refactored version\n";
 static char copyrighttext[] =
 	"Copyright (C) 2009-2011 Marius Kintel <marius@kintel.net> and Clifford Wolf <clifford@clifford.at>\n"
 	"\n"
