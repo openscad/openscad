@@ -215,6 +215,7 @@ void initialize_builtin_modules()
 	register_builtin_cgaladv();
 	register_builtin_dxf_linear_extrude();
 	register_builtin_dxf_rotate_extrude();
+	register_builtin_viewport();
 }
 
 void destroy_builtin_modules()

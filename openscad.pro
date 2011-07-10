@@ -142,7 +142,8 @@ HEADERS += src/CGAL_renderer.h \
            src/value.h \
            src/progress.h \
            src/editor.h \
-           src/mathc99.h
+           src/mathc99.h \
+           src/viewport.h
 
 SOURCES += src/openscad.cc \
            src/mainwin.cc \
@@ -181,7 +182,8 @@ SOURCES += src/openscad.cc \
            src/Preferences.cc \
            src/progress.cc \
            src/editor.cc \
-	   src/mathc99.cc
+           src/mathc99.cc \
+           src/viewport.cc
 
 macx {
   HEADERS += src/AppleEvents.h \

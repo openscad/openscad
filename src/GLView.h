@@ -31,6 +31,7 @@ public:
 	void setOrthoMode(bool enabled) { this->orthomode = enabled; }
 
 	QLabel *statusLabel;
+	double viewer_distance;
 	double object_rot_x;
 	double object_rot_y;
 	double object_rot_z;
@@ -51,8 +52,6 @@ private:
 	bool showaxes;
 	bool showcrosshairs;
 	bool orthomode;
-
-	double viewer_distance;
 
 	double w_h_ratio;
 

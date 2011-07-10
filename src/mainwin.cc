@@ -39,6 +39,7 @@
 #include "builtin.h"
 #include "dxftess.h"
 #include "progress.h"
+#include "viewport.h"
 #ifdef ENABLE_OPENCSG
 #include "render-opencsg.h"
 #endif
@@ -365,6 +366,7 @@ MainWindow::MainWindow(const QString &filename)
 	connect(Preferences::inst(), SIGNAL(fontChanged(const QString&,uint)), 
 					this, SLOT(setFont(const QString&,uint)));
 	Preferences::inst()->apply();
+	Viewport::screen = screen;
 
 	// make sure it looks nice..
 	QSettings settings;
@@ -1090,6 +1092,8 @@ bool MainWindow::checkModified()
 void MainWindow::actionReloadCompile()
 {
 	if (!checkModified()) return;
+
+	Viewport::has_run_once = false;
 
 	console->clear();
 
