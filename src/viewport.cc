@@ -36,6 +36,31 @@
 #include "viewport.h"
 #include "GLView.h"
 
+/*
+
+modules starting_viewport() and animation_viewport()
+
+parameters:
+distance - distance from camera to origin point
+transx - translation in x direction
+transy - translation in y direction
+transz - translation in z direction
+rotx - rotation around x axis
+roty - rotation around y axis
+rotz - rotation around z axis
+translation - translation as a vector
+rotation - rotation as a vector, like [35,0,25]
+
+behavior:
+starting_viewport() only acts once per file-load
+animation_viewport() acts upon each recompile and/or animation frame
+
+examples:
+starting_viewport(distance=500,translation=[0,0,0],rotation=[35,0,25]);
+animation_viewport(rotz=$t*360);
+
+*/
+
 GLView *Viewport::screen = NULL;
 bool Viewport::has_run_once = false;
 
@@ -66,7 +91,7 @@ AbstractNode *ViewportModule::evaluate(const Context *ctx, const ModuleInstantia
 {
 	ViewportNode *node = new ViewportNode(inst, type);
 
-	// unlike other modules, default values are unnecessary. 
+	// default values are unnecessary in this module 
 
 	QVector<QString> argnames = QVector<QString>() << "distance";
 	argnames << "transx" << "transy" << "transz" ;
