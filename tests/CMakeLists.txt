@@ -165,10 +165,12 @@ endfunction()
 enable_testing()
 
 # Find all scad files
-file(GLOB SCAD_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/*.scad)
+file(GLOB MINIMAL_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/minimal/*.scad)
+file(GLOB FEATURES_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/features/*.scad)
+file(GLOB BUGS_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/*.scad)
 
 # Add dumptest tests to CTest
-add_cmdline_test(dumptest txt ${SCAD_FILES})
+add_cmdline_test(dumptest txt ${MINIMAL_FILES})
 # Add csgtexttest tests to CTest
 add_cmdline_test(csgtexttest txt ${SCAD_FILES})
 # Add csgtermtest tests to CTest
