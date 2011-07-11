@@ -128,6 +128,37 @@ static char copyrighttext[] =
 	"the Free Software Foundation; either version 2 of the License, or"
 	"(at your option) any later version.";
 
+static void
+settings_setValueList(const QString &key,const QList<int> &list)
+{
+	QSettings settings;
+	settings.beginWriteArray(key);
+	for (int i=0;i<list.size(); ++i) {
+		settings.setArrayIndex(i);
+		settings.setValue("entry",list[i]);
+	}
+	settings.endArray();
+}
+
+QList<int>
+settings_valueList(const QString &key, const QList<int> &defaultList = QList<int>())
+{
+	QSettings settings;
+	QList<int> result;
+	if (settings.contains(key+"/size")){
+		int length = settings.beginReadArray(key);
+		for (int i = 0; i < length; ++i) {
+			settings.setArrayIndex(i);
+			result += settings.value("entry").toInt();
+		}
+		settings.endArray();
+		return result;
+	} else {
+		return defaultList;
+	}
+
+}
+
 MainWindow::MainWindow(const QString &filename)
 {
 	setupUi(this);
@@ -271,6 +302,7 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this->designActionExportSTL, SIGNAL(triggered()), this, SLOT(actionExportSTL()));
 	connect(this->designActionExportOFF, SIGNAL(triggered()), this, SLOT(actionExportOFF()));
 	connect(this->designActionExportDXF, SIGNAL(triggered()), this, SLOT(actionExportDXF()));
+	connect(this->designActionExportImage, SIGNAL(triggered()), this, SLOT(actionExportImage()));
 	connect(this->designActionFlushCaches, SIGNAL(triggered()), this, SLOT(actionFlushCaches()));
 
 	// View menu
@@ -346,25 +378,67 @@ MainWindow::MainWindow(const QString &filename)
 					this, SLOT(setFont(const QString&,uint)));
 	Preferences::inst()->apply();
 
+	// make sure it looks nice..
+	QSettings settings;
+	resize(settings.value("window/size", QSize(800, 600)).toSize());
+	move(settings.value("window/position", QPoint(0, 0)).toPoint());
+	QList<int> s1sizes = settings_valueList("window/splitter1sizes",QList<int>()<<400<<400);
+	QList<int> s2sizes = settings_valueList("window/splitter2sizes",QList<int>()<<400<<200);
+	splitter1->setSizes(s1sizes);
+	splitter2->setSizes(s2sizes);
 
 	// display this window and check for OpenGL 2.0 (OpenCSG) support
 	viewModeThrownTogether();
 	show();
-
-	// make sure it looks nice..
-	resize(800, 600);
-	splitter1->setSizes(QList<int>() << 400 << 400);
-	splitter2->setSizes(QList<int>() << 400 << 200);
 
 #ifdef ENABLE_OPENCSG
 	viewModeOpenCSG();
 #else
 	viewModeThrownTogether();
 #endif
-	viewPerspective();
+	loadViewSettings();
+	loadDesignSettings();
 
 	setAcceptDrops(true);
 	clearCurrentOutput();
+}
+
+void
+MainWindow::loadViewSettings(){
+	QSettings settings;
+	if (settings.value("view/showEdges").toBool()) {
+		viewActionShowEdges->setChecked(true);
+		viewModeShowEdges();
+	}
+	if (settings.value("view/showAxes").toBool()) {
+		viewActionShowAxes->setChecked(true);
+		viewModeShowAxes();
+	}
+	if (settings.value("view/showCrosshairs").toBool()) {
+		viewActionShowCrosshairs->setChecked(true);
+		viewModeShowCrosshairs();
+	}
+	if (settings.value("view/orthogonalProjection").toBool()) {
+		viewOrthogonal();
+	} else {
+		viewPerspective();
+	}
+	if (settings.value("view/hideConsole").toBool()) {
+		viewActionHide->setChecked(true);
+		hideConsole();
+	}
+	if (settings.value("view/hideEditor").toBool()) {
+		editActionHide->setChecked(true);
+		hideEditor();
+	}
+}
+
+void
+MainWindow::loadDesignSettings()
+{
+	QSettings settings;
+	if (settings.value("design/autoReload").toBool())
+		designActionAutoReload->setChecked(true);
 }
 
 MainWindow::~MainWindow()
@@ -968,10 +1042,13 @@ void MainWindow::actionReload()
 
 void MainWindow::hideEditor()
 {
+	QSettings settings;
 	if (editActionHide->isChecked()) {
 		editor->hide();
+		settings.setValue("view/hideEditor",true);
 	} else {
 		editor->show();
+		settings.setValue("view/hideEditor",false);
 	}
 }
 
@@ -1012,6 +1089,8 @@ void MainWindow::checkAutoReload()
 
 void MainWindow::autoReloadSet(bool on)
 {
+	QSettings settings;
+	settings.setValue("design/autoReload",designActionAutoReload->isChecked());
 	if (on) {
 		autoReloadInfo = QString();
 		autoReloadTimer->start(200);
@@ -1392,6 +1471,24 @@ void MainWindow::actionExportDXF()
 #endif /* ENABLE_CGAL */
 }
 
+void MainWindow::actionExportImage()
+{
+	QImage img = this->glview->grabFrameBuffer();
+	setCurrentOutput();
+
+	QString img_filename = QFileDialog::getSaveFileName(this,
+			"Export Image", "", "PNG Files (*.png)");
+	if (img_filename.isEmpty()) {
+		PRINTF("No filename specified. Image export aborted.");
+		clearCurrentOutput();
+		return;
+	}
+
+	img.save(img_filename, "PNG");
+
+	clearCurrentOutput();
+}
+
 void MainWindow::actionFlushCaches()
 {
 // FIXME: Polycache -> PolySetRenderer
@@ -1690,17 +1787,23 @@ void MainWindow::viewModeThrownTogether()
 
 void MainWindow::viewModeShowEdges()
 {
+	QSettings settings;
+	settings.setValue("view/showEdges",viewActionShowEdges->isChecked());
 	this->glview->updateGL();
 }
 
 void MainWindow::viewModeShowAxes()
 {
+	QSettings settings;
+	settings.setValue("view/showAxes",viewActionShowAxes->isChecked());
 	this->glview->setShowAxes(viewActionShowAxes->isChecked());
 	this->glview->updateGL();
 }
 
 void MainWindow::viewModeShowCrosshairs()
 {
+	QSettings settings;
+	settings.setValue("view/showCrosshairs",viewActionShowCrosshairs->isChecked());
 	this->glview->setShowCrosshairs(viewActionShowCrosshairs->isChecked());
 	this->glview->updateGL();
 }
@@ -1804,6 +1907,8 @@ void MainWindow::viewCenter()
 
 void MainWindow::viewPerspective()
 {
+	QSettings settings;
+	settings.setValue("view/orthogonalProjection",false);
 	viewActionPerspective->setChecked(true);
 	viewActionOrthogonal->setChecked(false);
 	this->glview->setOrthoMode(false);
@@ -1812,6 +1917,8 @@ void MainWindow::viewPerspective()
 
 void MainWindow::viewOrthogonal()
 {
+	QSettings settings;
+	settings.setValue("view/orthogonalProjection",true);
 	viewActionPerspective->setChecked(false);
 	viewActionOrthogonal->setChecked(true);
 	this->glview->setOrthoMode(true);
@@ -1820,10 +1927,13 @@ void MainWindow::viewOrthogonal()
 
 void MainWindow::hideConsole()
 {
+	QSettings settings;
 	if (viewActionHide->isChecked()) {
 		console->hide();
+		settings.setValue("view/hideConsole",true);
 	} else {
 		console->show();
+		settings.setValue("view/hideConsole",false);
 	}
 }
 
@@ -1890,6 +2000,11 @@ MainWindow::maybeSave()
 void MainWindow::closeEvent(QCloseEvent *event)
 {
 	if (maybeSave()) {
+		QSettings settings;
+		settings.setValue("window/size", size());
+		settings.setValue("window/position", pos());
+		settings_setValueList("window/splitter1sizes",splitter1->sizes());
+		settings_setValueList("window/splitter2sizes",splitter2->sizes());
 		event->accept();
 	} else {
 		event->ignore();

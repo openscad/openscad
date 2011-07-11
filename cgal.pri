@@ -14,7 +14,7 @@ cgal {
   }
 
   win32 {
-    LIBS += $$CGAL_DIR/auxiliary/gmp/lib/libmpfr-4.lib -lCGAL-vc90-mt-gd
+    LIBS += $$CGAL_DIR/auxiliary/gmp/lib/libmpfr-4.lib -lCGAL-vc90-mt-s
   } else {
     LIBS += -lgmp -lmpfr -lCGAL
   }

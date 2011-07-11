@@ -112,7 +112,7 @@
      <x>0</x>
      <y>0</y>
      <width>681</width>
-     <height>25</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_File">
@@ -178,6 +178,7 @@
     <addaction name="designActionExportSTL"/>
     <addaction name="designActionExportOFF"/>
     <addaction name="designActionExportDXF"/>
+    <addaction name="designActionExportImage"/>
     <addaction name="designActionFlushCaches"/>
    </widget>
    <widget class="QMenu" name="menu_View">
@@ -649,6 +650,11 @@
    </property>
    <property name="text">
     <string>Automatic Reload and Compile</string>
+   </property>
+  </action>
+  <action name="designActionExportImage">
+   <property name="text">
+    <string>Export as Image...</string>
    </property>
   </action>
  </widget>

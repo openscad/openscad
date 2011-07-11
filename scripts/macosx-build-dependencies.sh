@@ -17,8 +17,8 @@
 # o Port to other platforms?
 #
 
-BASEDIR=/Users/kintel/code/metalab/checkout/OpenSCAD/libraries
-OPENSCADDIR=/Users/kintel/code/metalab/checkout/OpenSCAD/openscad-release
+BASEDIR=/Users/kintel/code/OpenSCAD/libraries
+OPENSCADDIR=/Users/kintel/code/OpenSCAD/openscad
 SRCDIR=$BASEDIR/src
 DEPLOYDIR=$BASEDIR/install
 

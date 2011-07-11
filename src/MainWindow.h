@@ -83,6 +83,8 @@ private:
 	static void consoleOutput(const QString &msg, void *userdata) {
 		static_cast<MainWindow*>(userdata)->console->append(msg);
 	}
+	void loadViewSettings();
+	void loadDesignSettings();
 
 private slots:
 	void actionNew();
@@ -113,6 +115,7 @@ private slots:
 	void actionExportSTL();
 	void actionExportOFF();
 	void actionExportDXF();
+	void actionExportImage();
 	void actionFlushCaches();
 
 public:

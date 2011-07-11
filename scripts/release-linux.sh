@@ -2,7 +2,7 @@
 # WARNING: This script might only work with the authors setup...
 
 VERSION=`date "+%Y.%m.%d"`
-#VERSION=2011.04
+#VERSION=2011.06
 
 set -ex
 

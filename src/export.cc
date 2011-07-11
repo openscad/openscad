@@ -155,20 +155,6 @@ void export_off(CGAL_Nef_polyhedron*, QTextStream&, QProgressDialog*)
 void export_dxf(CGAL_Nef_polyhedron *root_N, QTextStream &output, QProgressDialog *)
 {
 	setlocale(LC_NUMERIC, "C"); // Ensure radix is . (not ,) in output
-
-	// Some importers (e.g. QCAD) needs a HEADER section specifying AutoCAD 2000 as 
-	// the file format for LWPOLYLINE entities to work
-	output << "  0\n"
-				 << "SECTION\n"
-				 << "  2\n"
-				 << "HEADER\n"
-				 << "  9\n"
-				 << "$ACADVER\n"
-				 << "  1\n"
-				 << "AC1015\n"
-				 << "  0\n"
-				 << "ENDSEC\n";
-
 	// Some importers (e.g. Inkscape) needs a BLOCKS section to be present
 	output << "  0\n"
 				 <<	"SECTION\n"
@@ -184,27 +170,26 @@ void export_dxf(CGAL_Nef_polyhedron *root_N, QTextStream &output, QProgressDialo
 	DxfData dd(*root_N);
 	for (int i=0; i<dd.paths.size(); i++)
 	{
-		if (dd.paths[i].points.size() < 2) {
-			// not a valid polygon
-			continue;
-		}
-		// Use the LWPOLYLINE class - this makes it easier to handle complete
-		// objects (as paths) in Inkscape.
-		output << "  0\n"
-					 << "LWPOLYLINE\n"
-					 << "  8\n"		// Some importers (e.g. Inkscape) need a layer to be specified
-					 << "0\n"
-					 << "  90\n"		// number of vertices
-					 << dd.paths[i].points.size() << "\n"
-					 << "  70\n"		// polygon flag (closed, ...)
-					 << (dd.paths[i].is_closed ? 1 : 0) << "\n";
-		// add all points
-		for (int j=0; j<dd.paths[i].points.size(); j++) {
-			DxfData::Point *p = dd.paths[i].points[j];
-			output <<" 10\n"
-						 << p->x << "\n"
+		for (int j=1; j<dd.paths[i].points.size(); j++) {
+			DxfData::Point *p1 = dd.paths[i].points[j-1];
+			DxfData::Point *p2 = dd.paths[i].points[j];
+			double x1 = p1->x;
+			double y1 = p1->y;
+			double x2 = p2->x;
+			double y2 = p2->y;
+			output << "  0\n"
+						 << "LINE\n";
+			// Some importers (e.g. Inkscape) needs a layer to be specified
+			output << "  8\n"
+						 << "0\n"
+						 << " 10\n"
+						 << x1 << "\n"
+						 << " 11\n"
+						 << x2 << "\n"
 						 << " 20\n"
-						 << p->y << "\n";
+						 << y1 << "\n"
+						 << " 21\n"
+						 << y2 << "\n";
 		}
 	}
 	

@@ -35,6 +35,7 @@
 #include "printutils.h"
 #include "visitor.h"
 #include <sstream>
+#include <vector>
 #include <assert.h>
 
 enum transform_type_e {
@@ -53,6 +54,31 @@ public:
 	TransformModule(transform_type_e type) : type(type) { }
 	virtual AbstractNode *evaluate(const Context *ctx, const ModuleInstantiation *inst) const;
 };
+
+using std::string;
+using std::vector;
+
+static vector<string> split(const string &str, const string &delim)
+{
+  assert(delim.size() > 0);
+
+	vector<string> strvec;
+  size_t start = 0, end = 0;
+  while (end != string::npos) {
+    end = str.find(delim, start);
+		// If at end, use length=maxLength.  Else use length=end-start.
+    strvec.push_back(str.substr(start, (end == string::npos) ? string::npos : end - start));
+		// If at end, use start=maxSize.  Else use start=end+delimiter.
+    start = ((end > (string::npos - delim.size())) ? string::npos : end + delim.size());
+  }
+	return strvec;
+}
+
+template <class T> static bool from_string(T &t, const string &s)
+{
+  std::istringstream iss(s);
+  return !(iss >> t).fail();
+}
 
 AbstractNode *TransformModule::evaluate(const Context *ctx, const ModuleInstantiation *inst) const
 {
@@ -222,6 +248,25 @@ AbstractNode *TransformModule::evaluate(const Context *ctx, const ModuleInstanti
 		if (v.type == Value::VECTOR) {
 			for (int i = 0; i < 4; i++)
 				node->matrix[16+i] = i < v.vec.size() ? v.vec[i]->num : 1.0;
+// FIXME: Port to non-Qt
+#if 0
+		} else if (v.type == Value::STRING) {
+			double alpha = 1.0;
+			vector<string> chunks = split(v.text, ",");
+			string colorname = chunks[0];
+			if (chunks.size() < 2 || !from_string(alpha, chunks[1])) alpha = 1.0;
+			QColor color;
+			color.setNamedColor(colorname);
+			if (color.isValid()) {
+				node->m[16+0] = color.redF();
+				node->m[16+1] = color.greenF();
+				node->m[16+2] = color.blueF();
+				node->m[16+3] = alpha;
+			} else {
+				PRINTF_NOCACHE("WARNING: Color name \"%s\" unknown. Please see",v.text.toUtf8().data());
+				PRINTF_NOCACHE("WARNING: http://en.wikipedia.org/wiki/Web_colors");
+			}
+#endif
 		}
 	}
 
@@ -234,7 +279,7 @@ AbstractNode *TransformModule::evaluate(const Context *ctx, const ModuleInstanti
 	return node;
 }
 
-std::string TransformNode::toString() const
+string TransformNode::toString() const
 {
 	std::stringstream stream;
 
@@ -259,7 +304,7 @@ std::string TransformNode::toString() const
 	return stream.str();
 }
 
-std::string TransformNode::name() const
+string TransformNode::name() const
 {
 	return "transform";
 }
