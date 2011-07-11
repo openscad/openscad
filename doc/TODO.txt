@@ -52,7 +52,6 @@ o non-convex minkowski example from chrysn fails with an exception
 USER INTERFACE
 --------------
 o Preferences
-  - Remember settings done in menus between sessions (automatic reload, perspective, show*, hide*)
   - Beautify color schemes
   - Color schemes read from file
   - Color scheme editor
@@ -60,7 +59,6 @@ o Preferences
   - pointsize
   - OpenGL params
   - Default language feature settings
-  - Auto-view CSG/thrown together on load
   - Make the library search path configurable?
 o Export etc.: automatically add missing extension as in SaveAs
 o MDI
@@ -166,7 +164,6 @@ o Mesh optimization on STL export
   - Remove super small triangles (all sides are short)
   - Replace super thin triangles (one h is short)
 o Misc
-  - Add symbolic colors to the color() statement
   - When specifying a transparency with the color() statement,
     the object is not sorted and will be rendered wrongly
   - Go through default values of parameters (e.g. cube() has x,y,z=1 while linear_extrude() has height=100)
