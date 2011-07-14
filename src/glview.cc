@@ -251,10 +251,10 @@ void GLView::display_opengl20_warning()
 
 	// action
 	connect(buttonbox, SIGNAL(accepted()), dialog, SLOT(accept()));
-	connect(checkbox, SIGNAL(clicked(bool)),
-		Preferences::inst()->OpenGL20WarningCheckbox, SLOT(setChecked(bool)));
-	connect(checkbox, SIGNAL(clicked(bool)),
-		Preferences::inst(), SLOT(OpenGL20WarningChanged(bool)));
+	// connect(checkbox, SIGNAL(clicked(bool)),
+	// 	Preferences::inst()->OpenGL20WarningCheckbox, SLOT(setChecked(bool)));
+	// connect(checkbox, SIGNAL(clicked(bool)),
+	// 	Preferences::inst(), SLOT(OpenGL20WarningChanged(bool)));
 	dialog->exec();
 }
 #endif
