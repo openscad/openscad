@@ -91,7 +91,7 @@ AbstractNode *TransformModule::evaluate(const Context *ctx, const ModuleInstanti
 		argnames = QVector<QString>() << "m";
 	}
 	if (type == COLOR) {
-		argnames = QVector<QString>() << "c";
+		argnames = QVector<QString>() << "c" << "alpha";
 	}
 
 	Context c(ctx);
@@ -228,26 +228,23 @@ AbstractNode *TransformModule::evaluate(const Context *ctx, const ModuleInstanti
 			for (int i = 0; i < 4; i++)
 				node->m[16+i] = i < v.vec.size() ? v.vec[i]->num : 1.0;
 		} else if (v.type == Value::STRING) {
-			double alpha = 1.0;
 			QString colorname = v.text;
-			if (v.text.contains(",")) {
-				QStringList chunks = v.text.split(",");
-				colorname = chunks[0];
-				bool parseok;
-				alpha = chunks[1].toDouble(&parseok);
-				if (!parseok) alpha=1.0;
-			}
 			QColor color;
 			color.setNamedColor(colorname);
 			if (color.isValid()) {
 				node->m[16+0] = color.redF();
 				node->m[16+1] = color.greenF();
 				node->m[16+2] = color.blueF();
-				node->m[16+3] = alpha;
 			} else {
 				PRINTF_NOCACHE("WARNING: Color name \"%s\" unknown. Please see",v.text.toUtf8().data());
 				PRINTF_NOCACHE("WARNING: http://en.wikipedia.org/wiki/Web_colors");
 			}
+		}
+		Value alpha = c.lookup_variable("alpha");
+		if (alpha.type == Value::NUMBER) {
+			node->m[16+3] = alpha.num;
+		} else {
+			node->m[16+3] = 1.0;
 		}
 	}
 
