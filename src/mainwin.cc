@@ -75,32 +75,10 @@
 
 #ifdef ENABLE_CGAL
 
-#if 1
 #include "CGAL_renderer.h"
 using OpenSCAD::OGL::Polyhedron;
-using OpenSCAD::OGL::SNC_BOUNDARY;
-using OpenSCAD::OGL::SNC_SKELETON;
-using OpenSCAD::OGL::Nef3_Converter;
-#else
-// a little hackish: we need access to default-private members of
-// CGAL::OGL::Nef3_Converter so we can implement our own draw function
-// that does not scale the model. so we define 'class' to 'struct'
-// for this header..
-//
-// theoretically there could be two problems:
-// 1.) defining language keyword with the pre processor is illegal afair
-// 2.) the compiler could use a different memory layout or name mangling for structs
-//
-// both does not seam to be the case with todays compilers...
-//
-#define class struct
-#include <CGAL/Nef_3/OGL_helper.h>
-#undef class
-using CGAL::OGL::Polyhedron;
-using CGAL::OGL::SNC_BOUNDARY;
-using CGAL::OGL::SNC_SKELETON;
 using CGAL::OGL::Nef3_Converter;
-#endif
+
 #endif // ENABLE_CGAL
 
 #define QUOTE(x__) # x__
@@ -1591,15 +1569,16 @@ static void renderGLviaCGAL(void *vp)
 	{
 		Polyhedron *p = (Polyhedron*)m->cgal_ogl_p;
 		if (!p) {
-			Nef3_Converter<CGAL_Nef_polyhedron3>::setColor(Polyhedron::CGAL_NEF3_MARKED_FACET_COLOR,
-																										 Preferences::inst()->color(Preferences::CGAL_FACE_BACK_COLOR).red(),
-																										 Preferences::inst()->color(Preferences::CGAL_FACE_BACK_COLOR).green(),
-																										 Preferences::inst()->color(Preferences::CGAL_FACE_BACK_COLOR).blue());
-			Nef3_Converter<CGAL_Nef_polyhedron3>::setColor(Polyhedron::CGAL_NEF3_UNMARKED_FACET_COLOR,
-																										 Preferences::inst()->color(Preferences::CGAL_FACE_FRONT_COLOR).red(),
-																										 Preferences::inst()->color(Preferences::CGAL_FACE_FRONT_COLOR).green(),
-																										 Preferences::inst()->color(Preferences::CGAL_FACE_FRONT_COLOR).blue());
 			m->cgal_ogl_p = p = new Polyhedron();
+			p->setColor(Polyhedron::CGAL_NEF3_MARKED_FACET_COLOR,
+				    Preferences::inst()->color(Preferences::CGAL_FACE_BACK_COLOR).red(),
+				    Preferences::inst()->color(Preferences::CGAL_FACE_BACK_COLOR).green(),
+				    Preferences::inst()->color(Preferences::CGAL_FACE_BACK_COLOR).blue());
+			p->setColor(Polyhedron::CGAL_NEF3_UNMARKED_FACET_COLOR,
+				    Preferences::inst()->color(Preferences::CGAL_FACE_FRONT_COLOR).red(),
+				    Preferences::inst()->color(Preferences::CGAL_FACE_FRONT_COLOR).green(),
+				    Preferences::inst()->color(Preferences::CGAL_FACE_FRONT_COLOR).blue());
+
 			Nef3_Converter<CGAL_Nef_polyhedron3>::convert_to_OGLPolyhedron(m->root_N->p3, p);
 			p->init();
 		}
@@ -1607,22 +1586,9 @@ static void renderGLviaCGAL(void *vp)
 			p->set_style(SNC_BOUNDARY);
 		if (m->viewActionCGALGrid->isChecked())
 			p->set_style(SNC_SKELETON);
-#if 0
-		p->draw();
-#else
-		if (p->style == SNC_BOUNDARY) {
-			glCallList(p->object_list_+2);
-			if (m->viewActionShowEdges->isChecked()) {
-				glDisable(GL_LIGHTING);
-				glCallList(p->object_list_+1);
-				glCallList(p->object_list_);
-			}
-		} else {
-			glDisable(GL_LIGHTING);
-			glCallList(p->object_list_+1);
-			glCallList(p->object_list_);
-		}
-#endif
+
+		p->draw(m->viewActionShowEdges->isChecked());
+
 	}
 }
 
