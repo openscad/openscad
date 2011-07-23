@@ -35,7 +35,7 @@
 
 //isatty for visual c++
 #ifdef _MSC_VER
-int __cdecl _isatty(int _FileHandle);
+extern "C" int __cdecl _isatty(int _FileHandle);
 #define isatty _isatty
 #endif
 
