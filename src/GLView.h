@@ -57,8 +57,7 @@ private:
 	double w_h_ratio;
 
 	bool mouse_drag_active;
-	int last_mouse_x;
-	int last_mouse_y;
+	QPoint last_mouse;
 
 	void keyPressEvent(QKeyEvent *event);
 	void wheelEvent(QWheelEvent *event);
@@ -68,7 +67,10 @@ private:
 
 	void initializeGL();
 	void resizeGL(int w, int h);
+	void setupPerspective();
+	void setupOrtho(double distance,bool offset=false);
 	void paintGL();
+	void normalizeAngle(GLdouble& angle);
 
 #ifdef ENABLE_OPENCSG
 private slots:
