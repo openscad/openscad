@@ -39,13 +39,6 @@
 using CGAL::OGL::SNC_BOUNDARY;
 using CGAL::OGL::SNC_SKELETON;
 
-namespace OpenSCAD
-{
-
-namespace OGL
-{
-
-
 class Polyhedron : public CGAL::OGL::Polyhedron
 {
 public:
@@ -107,9 +100,5 @@ private:
 	CGAL::Color colors[NUM_COLORS];
 
 }; // Polyhedron
-
-} // namespace OGL
-
-} // namespace OpenSCAD
 
 #endif // CGAL_RENDERER_H

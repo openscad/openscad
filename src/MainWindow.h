@@ -38,10 +38,12 @@ public:
 	class CSGChain *root_chain;
 #ifdef ENABLE_CGAL
 	class CGAL_Nef_polyhedron *root_N;
-	bool recreate_cgal_ogl_p;
-	void *cgal_ogl_p;
-	PolySet *cgal_ogl_ps;
+	class CGALRenderer *cgalRenderer;
 #endif
+#ifdef ENABLE_OPENCSG
+	class OpenCSGRenderer *opencsgRenderer;
+#endif
+	class ThrownTogetherRenderer *thrownTogetherRenderer;
 
 	QVector<CSGTerm*> highlight_terms;
 	CSGChain *highlights_chain;

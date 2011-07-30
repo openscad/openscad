@@ -26,6 +26,7 @@
 
 #include "GLView.h"
 #include "Preferences.h"
+#include "renderer.h"
 
 #include <QApplication>
 #include <QWheelEvent>
@@ -41,9 +42,13 @@
 #include "mathc99.h"
 #include <stdio.h>
 
+#ifdef ENABLE_OPENCSG
+#  include <opencsg.h>
+#endif
+
 #define FAR_FAR_AWAY 100000.0
 
-GLView::GLView(QWidget *parent) : QGLWidget(parent)
+GLView::GLView(QWidget *parent) : QGLWidget(parent), renderer(NULL)
 {
 	viewer_distance = 500;
 	object_rot_x = 35;
@@ -58,9 +63,8 @@ GLView::GLView(QWidget *parent) : QGLWidget(parent)
 	orthomode = false;
 	showaxes = false;
 	showcrosshairs = false;
-
-	renderfunc = NULL;
-	renderfunc_vp = NULL;
+	showedges = false;
+	showfaces = true;
 
 	for (int i = 0; i < 10; i++)
 		shaderinfo[i] = 0;
@@ -75,10 +79,10 @@ GLView::GLView(QWidget *parent) : QGLWidget(parent)
 #endif
 }
 
-void GLView::setRenderFunc(void (*func)(void*), void *userdata)
+void GLView::setRenderer(Renderer *r)
 {
-	this->renderfunc = func;
-	this->renderfunc_vp = userdata;
+	this->renderer = r;
+	updateGL();
 }
 
 void GLView::initializeGL()
@@ -295,6 +299,8 @@ void GLView::setupOrtho(double distance, bool offset)
 
 void GLView::paintGL()
 {
+	glEnable(GL_LIGHTING);
+
 	if (orthomode)
 		setupOrtho(viewer_distance);
 
@@ -355,8 +361,13 @@ void GLView::paintGL()
 	glLineWidth(2);
 	glColor3d(1.0, 0.0, 0.0);
 
-	if (renderfunc)
-		renderfunc(renderfunc_vp);
+	if (this->renderer) {
+#if defined(ENABLE_MDI) && defined(ENABLE_OPENCSG)
+		// FIXME: This belongs in the OpenCSG renderer, but it doesn't know about this ID yet
+		OpenCSG::setContext(this->opencsg_id);
+#endif
+		this->renderer->draw(showfaces, showedges);
+	}
 
 	// Small axis cross in the lower left corner
 	if (showaxes)

@@ -12,24 +12,31 @@
 class GLView : public QGLWidget
 {
 	Q_OBJECT
+	Q_PROPERTY(bool showFaces READ showFaces WRITE setShowFaces);
+	Q_PROPERTY(bool showEdges READ showEdges WRITE setShowEdges);
 	Q_PROPERTY(bool showAxes READ showAxes WRITE setShowAxes);
 	Q_PROPERTY(bool showCrosshairs READ showCrosshairs WRITE setShowCrosshairs);
 	Q_PROPERTY(bool orthoMode READ orthoMode WRITE setOrthoMode);
 
 public:
 	GLView(QWidget *parent = NULL);
-	void setRenderFunc(void (*func)(void*), void *userdata);
+	void setRenderer(class Renderer* r);
 #ifdef ENABLE_OPENCSG
 	bool hasOpenCSGSupport() { return this->opencsg_support; }
 #endif
 	// Properties
+	bool showFaces() const { return this->showfaces; }
+	void setShowFaces(bool enabled) { this->showfaces = enabled; }
+	bool showEdges() const { return this->showedges; }
+	void setShowEdges(bool enabled) { this->showedges = enabled; }
 	bool showAxes() const { return this->showaxes; }
 	void setShowAxes(bool enabled) { this->showaxes = enabled; }
 	bool showCrosshairs() const { return this->showcrosshairs; }
 	void setShowCrosshairs(bool enabled) { this->showcrosshairs = enabled; }
 	bool orthoMode() const { return this->orthomode; }
 	void setOrthoMode(bool enabled) { this->orthomode = enabled; }
-
+	
+public:
 	QLabel *statusLabel;
 	double object_rot_x;
 	double object_rot_y;
@@ -45,9 +52,10 @@ public:
 #endif
 
 private:
-	void (*renderfunc)(void*);
-	void *renderfunc_vp;
+	Renderer *renderer;
 
+	bool showfaces;
+	bool showedges;
 	bool showaxes;
 	bool showcrosshairs;
 	bool orthomode;

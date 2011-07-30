@@ -40,11 +40,12 @@
 #include "dxftess.h"
 #include "progress.h"
 #ifdef ENABLE_OPENCSG
-#include "render-opencsg.h"
+#include "opencsgRenderer.h"
 #endif
 #ifdef USE_PROGRESSWIDGET
 #include "ProgressWidget.h"
 #endif
+#include "thrownTogetherRenderer.h"
 
 #include <QMenu>
 #include <QTime>
@@ -75,9 +76,7 @@
 
 #ifdef ENABLE_CGAL
 
-#include "CGAL_renderer.h"
-using OpenSCAD::OGL::Polyhedron;
-using CGAL::OGL::Nef3_Converter;
+#include "cgalrenderer.h"
 
 #endif // ENABLE_CGAL
 
@@ -153,10 +152,12 @@ MainWindow::MainWindow(const QString &filename)
 	root_chain = NULL;
 #ifdef ENABLE_CGAL
 	this->root_N = NULL;
-	this->recreate_cgal_ogl_p = false;
-	cgal_ogl_p = NULL;
-	cgal_ogl_ps = NULL;
+	this->cgalRenderer = NULL;
 #endif
+#ifdef ENABLE_OPENCSG
+	this->opencsgRenderer = NULL;
+#endif
+	this->thrownTogetherRenderer = NULL;
 
 	highlights_chain = NULL;
 	background_chain = NULL;
@@ -305,11 +306,6 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this->viewActionOrthogonal, SIGNAL(triggered()), this, SLOT(viewOrthogonal()));
 	connect(this->viewActionHide, SIGNAL(triggered()), this, SLOT(hideConsole()));
 
-// #ifdef ENABLE_CGAL
-// 	viewActionCGALSurface = menu->addAction("CGAL Surfaces", this, SLOT(viewModeCGALSurface()), QKeySequence(Qt::Key_F10));
-// 	viewActionCGALGrid = menu->addAction("CGAL Grid Only", this, SLOT(viewModeCGALGrid()), QKeySequence(Qt::Key_F11));
-// #endif
-
 	// Help menu
 	connect(this->helpActionAbout, SIGNAL(triggered()), this, SLOT(helpAbout()));
 	connect(this->helpActionHomepage, SIGNAL(triggered()), this, SLOT(helpHomepage()));
@@ -409,19 +405,14 @@ MainWindow::loadDesignSettings()
 
 MainWindow::~MainWindow()
 {
-	if (root_module)
-		delete root_module;
-	if (root_node)
-		delete root_node;
+	if (root_module) delete root_module;
+	if (root_node) delete root_node;
 #ifdef ENABLE_CGAL
-	if (this->root_N)
-		delete this->root_N;
-	if (cgal_ogl_p) {
-		Polyhedron *p = (Polyhedron*)cgal_ogl_p;
-		delete p;
-	}
-	if (cgal_ogl_ps)
-		cgal_ogl_ps->unlink();
+	if (this->root_N) delete this->root_N;
+	delete this->cgalRenderer;
+#endif
+#ifdef ENABLE_OPENCSG
+	delete this->opencsgRenderer;
 #endif
 }
 
@@ -590,6 +581,16 @@ void MainWindow::compile(bool procevents)
 	if (procevents)
 		QApplication::processEvents();
 
+  // Invalidate renderers before we kill the CSG tree
+	screen->setRenderer(NULL);
+	if (this->opencsgRenderer) {
+		delete this->opencsgRenderer;
+		this->opencsgRenderer = NULL;
+	}
+	if (this->thrownTogetherRenderer) {
+		delete this->thrownTogetherRenderer;
+		this->thrownTogetherRenderer = NULL;
+	}
 
 	// Remove previous CSG tree
 	if (root_module) {
@@ -800,13 +801,6 @@ void MainWindow::compileCSG(bool procevents)
 		root_chain = new CSGChain();
 		root_chain->import(root_norm_term);
 		
-		if (root_chain->polysets.size() > 1000) {
-			PRINTF("WARNING: Normalized tree has %d elements!", root_chain->polysets.size());
-			PRINTF("WARNING: OpenCSG rendering has been disabled.");
-		} else {
-			enableOpenCSG = true;
-		}
-		
 		if (highlight_terms.size() > 0)
 		{
 			PRINTF("Compiling highlights (%d CSG Trees)...", highlight_terms.size());
@@ -844,6 +838,20 @@ void MainWindow::compileCSG(bool procevents)
 				background_chain->import(background_terms[i]);
 			}
 		}
+
+		if (root_chain->polysets.size() > 1000) {
+			PRINTF("WARNING: Normalized tree has %d elements!", root_chain->polysets.size());
+			PRINTF("WARNING: OpenCSG rendering has been disabled.");
+		}
+		else {
+			this->opencsgRenderer = new OpenCSGRenderer(this->root_chain, 
+																									this->highlights_chain, 
+																									this->background_chain, 
+																									this->screen->shaderinfo);
+		}
+		this->thrownTogetherRenderer = new ThrownTogetherRenderer(this->root_chain, 
+																															this->highlights_chain, 
+																															this->background_chain);
 		
 		PRINT("CSG generation finished.");
 		int s = t.elapsed() / 1000;
@@ -1110,15 +1118,15 @@ void MainWindow::actionCompile()
 	if (this->root_node) compileCSG(!viewActionAnimate->isChecked());
 
 	// Go to non-CGAL view mode
-	if (!viewActionOpenCSG->isChecked() && !viewActionThrownTogether->isChecked()) {
+	if (viewActionThrownTogether->isChecked()) {
+		viewModeThrownTogether();
+	}
+	else {
 #ifdef ENABLE_OPENCSG
 		viewModeOpenCSG();
 #else
 		viewModeThrownTogether();
 #endif
-	}
-	else {
-		screen->updateGL();
 	}
 
 	if (viewActionAnimate->isChecked() && e_dump->isChecked()) {
@@ -1145,10 +1153,12 @@ void MainWindow::actionRenderCGAL()
 	if (!root_module || !root_node)
 		return;
 
+	this->screen->setRenderer(NULL);
+	delete this->cgalRenderer;
+	this->cgalRenderer = NULL;
 	if (this->root_N) {
 		delete this->root_N;
 		this->root_N = NULL;
-		this->recreate_cgal_ogl_p = true;
 	}
 
 	PRINT("Rendering Polygon Mesh using CGAL...");
@@ -1232,10 +1242,13 @@ void MainWindow::actionRenderCGAL()
 		int s = t.elapsed() / 1000;
 		PRINTF("Total rendering time: %d hours, %d minutes, %d seconds", s / (60*60), (s / 60) % 60, s % 60);
 
-		if (!viewActionCGALSurfaces->isChecked() && !viewActionCGALGrid->isChecked()) {
+		this->cgalRenderer = new CGALRenderer(*this->root_N);
+		// Go to CGAL view mode
+		if (viewActionCGALGrid->isChecked()) {
+			viewModeCGALGrid();
+		}
+		else {
 			viewModeCGALSurface();
-		} else {
-			screen->updateGL();
 		}
 
 		PRINT("Rendering finished.");
@@ -1439,37 +1452,6 @@ void MainWindow::viewModeActionsUncheck()
 
 #ifdef ENABLE_OPENCSG
 
-static void renderGLThrownTogether(void *vp);
-
-static void renderGLviaOpenCSG(void *vp)
-{
-	MainWindow *m = (MainWindow*)vp;
-	if (!m->enableOpenCSG) {
-		renderGLThrownTogether(vp);
-		return;
-	}
-	static int glew_initialized = 0;
-	if (!glew_initialized) {
-		glew_initialized = 1;
-		glewInit();
-	}
-#ifdef ENABLE_MDI
-	OpenCSG::setContext(m->screen->opencsg_id);
-#endif
-	if (m->root_chain) {
-		GLint *shaderinfo = m->screen->shaderinfo;
-		if (!shaderinfo[0])
-			shaderinfo = NULL;
-		renderCSGChainviaOpenCSG(m->root_chain, m->viewActionShowEdges->isChecked() ? shaderinfo : NULL, false, false);
-		if (m->background_chain) {
-			renderCSGChainviaOpenCSG(m->background_chain, m->viewActionShowEdges->isChecked() ? shaderinfo : NULL, false, true);
-		}
-		if (m->highlights_chain) {
-			renderCSGChainviaOpenCSG(m->highlights_chain, m->viewActionShowEdges->isChecked() ? shaderinfo : NULL, true, false);
-		}
-	}
-}
-
 /*!
 	Go to the OpenCSG view mode.
 	Falls back to thrown together mode if OpenCSG is not available
@@ -1479,8 +1461,7 @@ void MainWindow::viewModeOpenCSG()
 	if (screen->hasOpenCSGSupport()) {
 		viewModeActionsUncheck();
 		viewActionOpenCSG->setChecked(true);
-		screen->setRenderFunc(renderGLviaOpenCSG, this);
-		screen->updateGL();
+		screen->setRenderer(this->opencsgRenderer ? (Renderer *)this->opencsgRenderer : (Renderer *)this->thrownTogetherRenderer);
 	} else {
 		viewModeThrownTogether();
 	}
@@ -1490,113 +1471,12 @@ void MainWindow::viewModeOpenCSG()
 
 #ifdef ENABLE_CGAL
 
-static void renderGLviaCGAL(void *vp)
-{
-	MainWindow *m = (MainWindow*)vp;
-	if (m->recreate_cgal_ogl_p) {
-		m->recreate_cgal_ogl_p = false;
-		Polyhedron *p = (Polyhedron*)m->cgal_ogl_p;
-		delete p;
-		m->cgal_ogl_p = NULL;
-		if (m->cgal_ogl_ps)
-			m->cgal_ogl_ps->unlink();
-		m->cgal_ogl_ps = NULL;
-	}
-	if (!m->root_N) return;
-	if (m->root_N->dim == 2)
-	{
-		if (m->cgal_ogl_ps == NULL) {
-			DxfData dd(*m->root_N);
-			m->cgal_ogl_ps = new PolySet();
-			m->cgal_ogl_ps->is2d = true;
-			dxf_tesselate(m->cgal_ogl_ps, &dd, 0, true, false, 0);
-		}
-
-		// Draw 2D polygons
-		glDisable(GL_LIGHTING);
-		const QColor &col = Preferences::inst()->color(Preferences::CGAL_FACE_2D_COLOR);
-		glColor3f(col.redF(), col.greenF(), col.blueF());
-
-		for (int i=0; i < m->cgal_ogl_ps->polygons.size(); i++) {
-			glBegin(GL_POLYGON);
-			for (int j=0; j < m->cgal_ogl_ps->polygons[i].size(); j++) {
-				PolySet::Point p = m->cgal_ogl_ps->polygons[i][j];
-				glVertex3d(p.x, p.y, -0.1);
-			}
-			glEnd();
-		}
-
-		typedef CGAL_Nef_polyhedron2::Explorer Explorer;
-		typedef Explorer::Face_const_iterator fci_t;
-		typedef Explorer::Halfedge_around_face_const_circulator heafcc_t;
-		typedef Explorer::Point Point;
-		Explorer E = m->root_N->p2.explorer();
-		
-		// Draw 2D edges
-		glDisable(GL_DEPTH_TEST);
-		glDisable(GL_LIGHTING);
-		glLineWidth(2);
-		const QColor &col2 = Preferences::inst()->color(Preferences::CGAL_EDGE_2D_COLOR);
-		glColor3f(col2.redF(), col2.greenF(), col2.blueF());
-
-		// Extract the boundary, including inner boundaries of the polygons
-		for (fci_t fit = E.faces_begin(), facesend = E.faces_end(); fit != facesend; ++fit)
-		{
-			bool fset = false;
-			double fx = 0.0, fy = 0.0;
-			heafcc_t fcirc(E.halfedge(fit)), fend(fcirc);
-			CGAL_For_all(fcirc, fend) {
-				if(E.is_standard(E.target(fcirc))) {
-					Point p = E.point(E.target(fcirc));
-					double x = to_double(p.x()), y = to_double(p.y());
-					if (!fset) {
-						glBegin(GL_LINE_STRIP);
-						fx = x, fy = y;
-						fset = true;
-					}
-					glVertex3d(x, y, -0.1);
-				}
-			}
-			if (fset) {
-				glVertex3d(fx, fy, -0.1);
-				glEnd();
-			}
-		}
-
-		glEnable(GL_DEPTH_TEST);
-	}
-	else if (m->root_N->dim == 3)
-	{
-		Polyhedron *p = (Polyhedron*)m->cgal_ogl_p;
-		if (!p) {
-			m->cgal_ogl_p = p = new Polyhedron();
-			p->setColor(Polyhedron::CGAL_NEF3_MARKED_FACET_COLOR,
-				    Preferences::inst()->color(Preferences::CGAL_FACE_BACK_COLOR).red(),
-				    Preferences::inst()->color(Preferences::CGAL_FACE_BACK_COLOR).green(),
-				    Preferences::inst()->color(Preferences::CGAL_FACE_BACK_COLOR).blue());
-			p->setColor(Polyhedron::CGAL_NEF3_UNMARKED_FACET_COLOR,
-				    Preferences::inst()->color(Preferences::CGAL_FACE_FRONT_COLOR).red(),
-				    Preferences::inst()->color(Preferences::CGAL_FACE_FRONT_COLOR).green(),
-				    Preferences::inst()->color(Preferences::CGAL_FACE_FRONT_COLOR).blue());
-
-			Nef3_Converter<CGAL_Nef_polyhedron3>::convert_to_OGLPolyhedron(m->root_N->p3, p);
-			p->init();
-		}
-		if (m->viewActionCGALSurfaces->isChecked())
-			p->set_style(SNC_BOUNDARY);
-		if (m->viewActionCGALGrid->isChecked())
-			p->set_style(SNC_SKELETON);
-
-		p->draw(m->viewActionShowEdges->isChecked());
-
-	}
-}
-
 void MainWindow::viewModeCGALSurface()
 {
 	viewModeActionsUncheck();
 	viewActionCGALSurfaces->setChecked(true);
-	screen->setRenderFunc(renderGLviaCGAL, this);
+	screen->setShowFaces(true);
+	screen->setRenderer(this->cgalRenderer);
 	screen->updateGL();
 }
 
@@ -1604,104 +1484,24 @@ void MainWindow::viewModeCGALGrid()
 {
 	viewModeActionsUncheck();
 	viewActionCGALGrid->setChecked(true);
-	screen->setRenderFunc(renderGLviaCGAL, this);
-	screen->updateGL();
+	screen->setShowFaces(false);
+	screen->setRenderer(this->cgalRenderer);
 }
 
 #endif /* ENABLE_CGAL */
-
-static void renderGLThrownTogetherChain(MainWindow *m, CSGChain *chain, bool highlight, bool background, bool fberror)
-{
-	glDepthFunc(GL_LEQUAL);
-	QHash<QPair<PolySet*,double*>,int> polySetVisitMark;
-	bool showEdges = m->viewActionShowEdges->isChecked();
-	for (int i = 0; i < chain->polysets.size(); i++) {
-		if (polySetVisitMark[QPair<PolySet*,double*>(chain->polysets[i], chain->matrices[i])]++ > 0)
-			continue;
-		double *m = chain->matrices[i];
-		glPushMatrix();
-		glMultMatrixd(m);
-		int csgmode = chain->types[i] == CSGTerm::TYPE_DIFFERENCE ? PolySet::CSGMODE_DIFFERENCE : PolySet::CSGMODE_NORMAL;
-		if (highlight) {
-			chain->polysets[i]->render_surface(PolySet::COLORMODE_HIGHLIGHT, PolySet::csgmode_e(csgmode + 20), m);
-			if (showEdges) {
-				glDisable(GL_LIGHTING);
-				chain->polysets[i]->render_edges(PolySet::COLORMODE_HIGHLIGHT, PolySet::csgmode_e(csgmode + 20));
-				glEnable(GL_LIGHTING);
-			}
-		} else if (background) {
-			chain->polysets[i]->render_surface(PolySet::COLORMODE_BACKGROUND, PolySet::csgmode_e(csgmode + 10), m);
-			if (showEdges) {
-				glDisable(GL_LIGHTING);
-				chain->polysets[i]->render_edges(PolySet::COLORMODE_BACKGROUND, PolySet::csgmode_e(csgmode + 10));
-				glEnable(GL_LIGHTING);
-			}
-		} else if (fberror) {
-			if (highlight) {
-				chain->polysets[i]->render_surface(PolySet::COLORMODE_NONE, PolySet::csgmode_e(csgmode + 20), m);
-			} else if (background) {
-				chain->polysets[i]->render_surface(PolySet::COLORMODE_NONE, PolySet::csgmode_e(csgmode + 10), m);
-			} else {
-				chain->polysets[i]->render_surface(PolySet::COLORMODE_NONE, PolySet::csgmode_e(csgmode), m);
-			}
-		} else if (m[16] >= 0 || m[17] >= 0 || m[18] >= 0 || m[19] >= 0) {
-			glColor4d(m[16], m[17], m[18], m[19]);
-			chain->polysets[i]->render_surface(PolySet::COLORMODE_NONE, PolySet::csgmode_e(csgmode), m);
-			if (showEdges) {
-				glDisable(GL_LIGHTING);
-				glColor4d((m[16]+1)/2, (m[17]+1)/2, (m[18]+1)/2, 1.0);
-				chain->polysets[i]->render_edges(PolySet::COLORMODE_NONE, PolySet::csgmode_e(csgmode));
-				glEnable(GL_LIGHTING);
-			}
-		} else if (chain->types[i] == CSGTerm::TYPE_DIFFERENCE) {
-			chain->polysets[i]->render_surface(PolySet::COLORMODE_CUTOUT, PolySet::csgmode_e(csgmode), m);
-			if (showEdges) {
-				glDisable(GL_LIGHTING);
-				chain->polysets[i]->render_edges(PolySet::COLORMODE_CUTOUT, PolySet::csgmode_e(csgmode));
-				glEnable(GL_LIGHTING);
-			}
-		} else {
-			chain->polysets[i]->render_surface(PolySet::COLORMODE_MATERIAL, PolySet::csgmode_e(csgmode), m);
-			if (showEdges) {
-				glDisable(GL_LIGHTING);
-				chain->polysets[i]->render_edges(PolySet::COLORMODE_MATERIAL, PolySet::csgmode_e(csgmode));
-				glEnable(GL_LIGHTING);
-			}
-		}
-		glPopMatrix();
-	}
-}
-
-static void renderGLThrownTogether(void *vp)
-{
-	MainWindow *m = (MainWindow*)vp;
-	if (m->root_chain) {
-		glEnable(GL_CULL_FACE);
-		glCullFace(GL_BACK);
-		renderGLThrownTogetherChain(m, m->root_chain, false, false, false);
-		glCullFace(GL_FRONT);
-		glColor3ub(255, 0, 255);
-		renderGLThrownTogetherChain(m, m->root_chain, false, false, true);
-		glDisable(GL_CULL_FACE);
-	}
-	if (m->background_chain)
-		renderGLThrownTogetherChain(m, m->background_chain, false, true, false);
-	if (m->highlights_chain)
-		renderGLThrownTogetherChain(m, m->highlights_chain, true, false, false);
-}
 
 void MainWindow::viewModeThrownTogether()
 {
 	viewModeActionsUncheck();
 	viewActionThrownTogether->setChecked(true);
-	screen->setRenderFunc(renderGLThrownTogether, this);
-	screen->updateGL();
+	screen->setRenderer(this->thrownTogetherRenderer);
 }
 
 void MainWindow::viewModeShowEdges()
 {
 	QSettings settings;
 	settings.setValue("view/showEdges",viewActionShowEdges->isChecked());
+	screen->setShowEdges(viewActionShowEdges->isChecked());
 	screen->updateGL();
 }
 
