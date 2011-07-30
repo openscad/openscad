@@ -1,6 +1,6 @@
-#include "PolySetCGALRenderer.h"
+#include "PolySetCGALEvaluator.h"
 #include "polyset.h"
-#include "CGALRenderer.h"
+#include "CGALEvaluator.h"
 #include "projectionnode.h"
 #include "dxflinextrudenode.h"
 #include "dxfrotextrudenode.h"
@@ -12,12 +12,12 @@
 #include "export.h" // void cgal_nef3_to_polyset()
 #include "openscad.h" // get_fragments_from_r()
 
-PolySet *PolySetCGALRenderer::renderPolySet(const ProjectionNode &node, AbstractPolyNode::render_mode_e)
+PolySet *PolySetCGALEvaluator::evaluatePolySet(const ProjectionNode &node, AbstractPolyNode::render_mode_e)
 {
-	const string &cacheid = this->cgalrenderer.getTree().getString(node);
+	const string &cacheid = this->cgalevaluator.getTree().getString(node);
 	if (this->cache.contains(cacheid)) return this->cache[cacheid]->ps->link();
 
-	CGAL_Nef_polyhedron N = this->cgalrenderer.renderCGALMesh(node);
+	CGAL_Nef_polyhedron N = this->cgalevaluator.evaluateCGALMesh(node);
 
 	PolySet *ps = new PolySet();
 	ps->convexity = node.convexity;
@@ -64,7 +64,7 @@ PolySet *PolySetCGALRenderer::renderPolySet(const ProjectionNode &node, Abstract
 		cube->append_vertex(x1, y1, z1);
 		cube->append_vertex(x1, y1, z2);
 		cube->append_vertex(x1, y2, z2);
-		CGAL_Nef_polyhedron Ncube = this->cgalrenderer.renderCGALMesh(*cube);
+		CGAL_Nef_polyhedron Ncube = this->cgalevaluator.evaluateCGALMesh(*cube);
 		cube->unlink();
 
 		// N.p3 *= CGAL_Nef_polyhedron3(CGAL_Plane(0, 0, 1, 0), CGAL_Nef_polyhedron3::INCLUDED);
@@ -234,9 +234,9 @@ static void add_slice(PolySet *ps, DxfData::Path *pt, double rot1, double rot2, 
 	}
 }
 
-PolySet *PolySetCGALRenderer::renderPolySet(const DxfLinearExtrudeNode &node, AbstractPolyNode::render_mode_e)
+PolySet *PolySetCGALEvaluator::evaluatePolySet(const DxfLinearExtrudeNode &node, AbstractPolyNode::render_mode_e)
 {
-	const string &cacheid = this->cgalrenderer.getTree().getString(node);
+	const string &cacheid = this->cgalevaluator.getTree().getString(node);
 	if (this->cache.contains(cacheid)) return this->cache[cacheid]->ps->link();
 
 	DxfData *dxf;
@@ -249,7 +249,7 @@ PolySet *PolySetCGALRenderer::renderPolySet(const DxfLinearExtrudeNode &node, Ab
 		N.dim = 2;
 		foreach (AbstractNode * v, node.getChildren()) {
 			if (v->modinst->tag_background) continue;
-			N.p2 += this->cgalrenderer.renderCGALMesh(*v).p2;
+			N.p2 += this->cgalevaluator.evaluateCGALMesh(*v).p2;
 		}
 
 		dxf = new DxfData(N);
@@ -324,10 +324,10 @@ PolySet *PolySetCGALRenderer::renderPolySet(const DxfLinearExtrudeNode &node, Ab
 	return ps;
 }
 
-PolySet *PolySetCGALRenderer::renderPolySet(const DxfRotateExtrudeNode &node, 
+PolySet *PolySetCGALEvaluator::evaluatePolySet(const DxfRotateExtrudeNode &node, 
 																						AbstractPolyNode::render_mode_e)
 {
-	const string &cacheid = this->cgalrenderer.getTree().getString(node);
+	const string &cacheid = this->cgalevaluator.getTree().getString(node);
 	if (this->cache.contains(cacheid)) return this->cache[cacheid]->ps->link();
 
 	DxfData *dxf;
@@ -340,7 +340,7 @@ PolySet *PolySetCGALRenderer::renderPolySet(const DxfRotateExtrudeNode &node,
 		N.dim = 2;
 		foreach (AbstractNode * v, node.getChildren()) {
 			if (v->modinst->tag_background) continue;
-			N.p2 += this->cgalrenderer.renderCGALMesh(*v).p2;
+			N.p2 += this->cgalevaluator.evaluateCGALMesh(*v).p2;
 		}
 
 		dxf = new DxfData(N);

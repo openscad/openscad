@@ -1,4 +1,4 @@
-#include "CSGTermRenderer.h"
+#include "CSGTermEvaluator.h"
 #include "visitor.h"
 #include "state.h"
 #include "csgterm.h"
@@ -16,22 +16,22 @@
 #include <assert.h>
 
 /*!
-	\class CSGTermRenderer
+	\class CSGTermEvaluator
 
 	A visitor responsible for creating a tree of CSGTerm nodes used for rendering
 	with OpenCSG.
 */
 
-CSGTerm *CSGTermRenderer::renderCSGTerm(const AbstractNode &node,
+CSGTerm *CSGTermEvaluator::evaluateCSGTerm(const AbstractNode &node,
 																				vector<CSGTerm*> *highlights, 
 																				vector<CSGTerm*> *background)
 {
-	Traverser render(*this, node, Traverser::PRE_AND_POSTFIX);
-	render.execute();
+	Traverser evaluate(*this, node, Traverser::PRE_AND_POSTFIX);
+	evaluate.execute();
 	return this->stored_term[node.index()];
 }
 
-void CSGTermRenderer::applyToChildren(const AbstractNode &node, CSGTermRenderer::CsgOp op)
+void CSGTermEvaluator::applyToChildren(const AbstractNode &node, CSGTermEvaluator::CsgOp op)
 {
 	CSGTerm *t1 = NULL;
 	for (ChildList::const_iterator iter = this->visitedchildren[node.index()].begin();
@@ -62,7 +62,7 @@ void CSGTermRenderer::applyToChildren(const AbstractNode &node, CSGTermRenderer:
 	this->stored_term[node.index()] = t1;
 }
 
-Response CSGTermRenderer::visit(State &state, const AbstractNode &node)
+Response CSGTermEvaluator::visit(State &state, const AbstractNode &node)
 {
 	if (state.isPostfix()) {
 		applyToChildren(node, UNION);
@@ -71,7 +71,7 @@ Response CSGTermRenderer::visit(State &state, const AbstractNode &node)
 	return ContinueTraversal;
 }
 
-Response CSGTermRenderer::visit(State &state, const AbstractIntersectionNode &node)
+Response CSGTermEvaluator::visit(State &state, const AbstractIntersectionNode &node)
 {
 	if (state.isPostfix()) {
 		applyToChildren(node, INTERSECTION);
@@ -80,7 +80,7 @@ Response CSGTermRenderer::visit(State &state, const AbstractIntersectionNode &no
 	return ContinueTraversal;
 }
 
-static CSGTerm *render_csg_term_from_ps(const double m[20], 
+static CSGTerm *evaluate_csg_term_from_ps(const double m[20], 
 																				vector<CSGTerm*> *highlights, 
 																				vector<CSGTerm*> *background, 
 																				PolySet *ps, 
@@ -97,13 +97,13 @@ static CSGTerm *render_csg_term_from_ps(const double m[20],
 	return t;
 }
 
-Response CSGTermRenderer::visit(State &state, const AbstractPolyNode &node)
+Response CSGTermEvaluator::visit(State &state, const AbstractPolyNode &node)
 {
 	if (state.isPostfix()) {
 		CSGTerm *t1 = NULL;
-		PolySet *ps = node.render_polyset(AbstractPolyNode::RENDER_OPENCSG, this->psrenderer);
+		PolySet *ps = node.evaluate_polyset(AbstractPolyNode::RENDER_OPENCSG, this->psevaluator);
 		if (ps) {
-			t1 = render_csg_term_from_ps(state.matrix(), this->highlights, this->background, 
+			t1 = evaluate_csg_term_from_ps(state.matrix(), this->highlights, this->background, 
 																	 ps, node.modinst, node);
 		}
 		this->stored_term[node.index()] = t1;
@@ -112,7 +112,7 @@ Response CSGTermRenderer::visit(State &state, const AbstractPolyNode &node)
 	return ContinueTraversal;
 }
 
-Response CSGTermRenderer::visit(State &state, const CsgNode &node)
+Response CSGTermEvaluator::visit(State &state, const CsgNode &node)
 {
 	if (state.isPostfix()) {
 		CsgOp op;
@@ -133,7 +133,7 @@ Response CSGTermRenderer::visit(State &state, const CsgNode &node)
 	return ContinueTraversal;
 }
 
-Response CSGTermRenderer::visit(State &state, const TransformNode &node)
+Response CSGTermEvaluator::visit(State &state, const TransformNode &node)
 {
 	if (state.isPrefix()) {
 		double m[20];
@@ -162,7 +162,7 @@ Response CSGTermRenderer::visit(State &state, const TransformNode &node)
 }
 
 // FIXME: Find out how to best call into CGAL from this visitor
-Response CSGTermRenderer::visit(State &state, const RenderNode &node)
+Response CSGTermEvaluator::visit(State &state, const RenderNode &node)
 {
 	PRINT("WARNING: Found render() statement but compiled without CGAL support!");
 	if (state.isPostfix()) {
@@ -176,7 +176,7 @@ Response CSGTermRenderer::visit(State &state, const RenderNode &node)
 	Adds ourself to out parent's list of traversed children.
 	Call this for _every_ node which affects output during the postfix traversal.
 */
-void CSGTermRenderer::addToParent(const State &state, const AbstractNode &node)
+void CSGTermEvaluator::addToParent(const State &state, const AbstractNode &node)
 {
 	assert(state.isPostfix());
 	this->visitedchildren.erase(node.index());
@@ -190,26 +190,26 @@ void CSGTermRenderer::addToParent(const State &state, const AbstractNode &node)
 
 // FIXME: #ifdef ENABLE_CGAL
 #if 0
-CSGTerm *CgaladvNode::render_csg_term(double m[20], QVector<CSGTerm*> *highlights, QVector<CSGTerm*> *background) const
+CSGTerm *CgaladvNode::evaluate_csg_term(double m[20], QVector<CSGTerm*> *highlights, QVector<CSGTerm*> *background) const
 {
 	if (type == MINKOWSKI)
-		return render_csg_term_from_nef(m, highlights, background, "minkowski", this->convexity);
+		return evaluate_csg_term_from_nef(m, highlights, background, "minkowski", this->convexity);
 
 	if (type == GLIDE)
-		return render_csg_term_from_nef(m, highlights, background, "glide", this->convexity);
+		return evaluate_csg_term_from_nef(m, highlights, background, "glide", this->convexity);
 
 	if (type == SUBDIV)
-		return render_csg_term_from_nef(m, highlights, background, "subdiv", this->convexity);
+		return evaluate_csg_term_from_nef(m, highlights, background, "subdiv", this->convexity);
 
 	if (type == HULL)
-		return render_csg_term_from_nef(m, highlights, background, "hull", this->convexity);
+		return evaluate_csg_term_from_nef(m, highlights, background, "hull", this->convexity);
 
 	return NULL;
 }
 
 #else // ENABLE_CGAL
 
-CSGTerm *CgaladvNode::render_csg_term(double m[20], QVector<CSGTerm*> *highlights, QVector<CSGTerm*> *background) const
+CSGTerm *CgaladvNode::evaluate_csg_term(double m[20], QVector<CSGTerm*> *highlights, QVector<CSGTerm*> *background) const
 {
 	PRINT("WARNING: Found minkowski(), glide(), subdiv() or hull() statement but compiled without CGAL support!");
 	return NULL;
@@ -221,12 +221,12 @@ CSGTerm *CgaladvNode::render_csg_term(double m[20], QVector<CSGTerm*> *highlight
 
 // FIXME: #ifdef ENABLE_CGAL
 #if 0
-CSGTerm *AbstractNode::render_csg_term_from_nef(double m[20], QVector<CSGTerm*> *highlights, QVector<CSGTerm*> *background, const char *statement, int convexity) const
+CSGTerm *AbstractNode::evaluate_csg_term_from_nef(double m[20], QVector<CSGTerm*> *highlights, QVector<CSGTerm*> *background, const char *statement, int convexity) const
 {
 	QString key = mk_cache_id();
 	if (PolySet::ps_cache.contains(key)) {
 		PRINT(PolySet::ps_cache[key]->msg);
-		return AbstractPolyNode::render_csg_term_from_ps(m, highlights, background,
+		return AbstractPolyNode::evaluate_csg_term_from_ps(m, highlights, background,
 				PolySet::ps_cache[key]->ps->link(), modinst, idx);
 	}
 
@@ -248,10 +248,10 @@ CSGTerm *AbstractNode::render_csg_term_from_nef(double m[20], QVector<CSGTerm*> 
 		QTime t;
 		t.start();
 
-		N = this->renderCSGMesh();
+		N = this->evaluateCSGMesh();
 
 		int s = t.elapsed() / 1000;
-		PRINTF_NOCACHE("..rendering time: %d hours, %d minutes, %d seconds", s / (60*60), (s / 60) % 60, s % 60);
+		PRINTF_NOCACHE("..processing time: %d hours, %d minutes, %d seconds", s / (60*60), (s / 60) % 60, s % 60);
 	}
 
 	PolySet *ps = NULL;
@@ -315,19 +315,19 @@ CSGTerm *AbstractNode::render_csg_term_from_nef(double m[20], QVector<CSGTerm*> 
 	return NULL;
 }
 
-CSGTerm *RenderNode::render_csg_term(double m[20], QVector<CSGTerm*> *highlights, QVector<CSGTerm*> *background) const
+CSGTerm *RenderNode::evaluate_csg_term(double m[20], QVector<CSGTerm*> *highlights, QVector<CSGTerm*> *background) const
 {
-	return render_csg_term_from_nef(m, highlights, background, "render", this->convexity);
+	return evaluate_csg_term_from_nef(m, highlights, background, "render", this->convexity);
 }
 
 #else
 
-CSGTerm *RenderNode::render_csg_term(double m[20], QVector<CSGTerm*> *highlights, QVector<CSGTerm*> *background) const
+CSGTerm *RenderNode::evaluate_csg_term(double m[20], QVector<CSGTerm*> *highlights, QVector<CSGTerm*> *background) const
 {
 	CSGTerm *t1 = NULL;
 	PRINT("WARNING: Found render() statement but compiled without CGAL support!");
 	foreach(AbstractNode * v, children) {
-		CSGTerm *t2 = v->render_csg_term(m, highlights, background);
+		CSGTerm *t2 = v->evaluate_csg_term(m, highlights, background);
 		if (t2 && !t1) {
 			t1 = t2;
 		} else if (t2 && t1) {

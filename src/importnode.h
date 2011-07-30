@@ -26,7 +26,7 @@ public:
 	int convexity;
 	double fn, fs, fa;
 	double origin_x, origin_y, scale;
-	virtual PolySet *render_polyset(render_mode_e mode, class PolySetRenderer *) const;
+	virtual PolySet *evaluate_polyset(render_mode_e mode, class PolySetEvaluator *) const;
 };
 
 #endif

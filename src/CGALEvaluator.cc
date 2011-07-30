@@ -1,4 +1,4 @@
-#include "CGALRenderer.h"
+#include "CGALEvaluator.h"
 #include "visitor.h"
 #include "state.h"
 #include "module.h" // FIXME: Temporarily for ModuleInstantiation
@@ -21,17 +21,17 @@
 #include <assert.h>
 #include <QRegExp>
 
-CGAL_Nef_polyhedron CGALRenderer::renderCGALMesh(const AbstractNode &node)
+CGAL_Nef_polyhedron CGALEvaluator::evaluateCGALMesh(const AbstractNode &node)
 {
 	if (!isCached(node)) {
-		Traverser render(*this, node, Traverser::PRE_AND_POSTFIX);
-		render.execute();
+		Traverser evaluate(*this, node, Traverser::PRE_AND_POSTFIX);
+		evaluate.execute();
 		assert(isCached(node));
 	}
 	return this->cache[this->tree.getString(node)];
 }
 
-bool CGALRenderer::isCached(const AbstractNode &node) const
+bool CGALEvaluator::isCached(const AbstractNode &node) const
 {
 	return this->cache.contains(this->tree.getString(node));
 }
@@ -40,7 +40,7 @@ bool CGALRenderer::isCached(const AbstractNode &node) const
 	Modifies target by applying op to target and src:
 	target = target [op] src
  */
-void CGALRenderer::process(CGAL_Nef_polyhedron &target, const CGAL_Nef_polyhedron &src, CsgOp op)
+void CGALEvaluator::process(CGAL_Nef_polyhedron &target, const CGAL_Nef_polyhedron &src, CsgOp op)
 {
  	if (target.dim != 2 && target.dim != 3) {
  		assert(false && "Dimension of Nef polyhedron must be 2 or 3");
@@ -92,7 +92,7 @@ void CGALRenderer::process(CGAL_Nef_polyhedron &target, const CGAL_Nef_polyhedro
 	FIXME: Let caller insert into the cache since caller might modify the result
   (e.g. transform)
 */
-void CGALRenderer::applyToChildren(const AbstractNode &node, CGALRenderer::CsgOp op)
+void CGALEvaluator::applyToChildren(const AbstractNode &node, CGALEvaluator::CsgOp op)
 {
 	CGAL_Nef_polyhedron N;
 	if (this->visitedchildren[node.index()].size() > 0) {
@@ -126,7 +126,7 @@ void CGALRenderer::applyToChildren(const AbstractNode &node, CGALRenderer::CsgOp
 	o In postfix: addToParent()
  */
 
-Response CGALRenderer::visit(State &state, const AbstractNode &node)
+Response CGALEvaluator::visit(State &state, const AbstractNode &node)
 {
 	if (state.isPrefix() && isCached(node)) return PruneTraversal;
 	if (state.isPostfix()) {
@@ -136,7 +136,7 @@ Response CGALRenderer::visit(State &state, const AbstractNode &node)
 	return ContinueTraversal;
 }
 
-Response CGALRenderer::visit(State &state, const AbstractIntersectionNode &node)
+Response CGALEvaluator::visit(State &state, const AbstractIntersectionNode &node)
 {
 	if (state.isPrefix() && isCached(node)) return PruneTraversal;
 	if (state.isPostfix()) {
@@ -146,7 +146,7 @@ Response CGALRenderer::visit(State &state, const AbstractIntersectionNode &node)
 	return ContinueTraversal;
 }
 
-Response CGALRenderer::visit(State &state, const CsgNode &node)
+Response CGALEvaluator::visit(State &state, const CsgNode &node)
 {
 	if (state.isPrefix() && isCached(node)) return PruneTraversal;
 	if (state.isPostfix()) {
@@ -170,7 +170,7 @@ Response CGALRenderer::visit(State &state, const CsgNode &node)
 	return ContinueTraversal;
 }
 
-Response CGALRenderer::visit(State &state, const TransformNode &node)
+Response CGALEvaluator::visit(State &state, const TransformNode &node)
 {
 	if (state.isPrefix() && isCached(node)) return PruneTraversal;
 	if (state.isPostfix()) {
@@ -203,7 +203,7 @@ Response CGALRenderer::visit(State &state, const TransformNode &node)
 				ps.is2d = true;
 				dxf_tesselate(&ps, &dd, 0, true, false, 0);
 				
-				N = renderCGALMesh(ps);
+				N = evaluateCGALMesh(ps);
 				ps.refcount = 0;
 			}
 			else if (N.dim == 3) {
@@ -220,7 +220,7 @@ Response CGALRenderer::visit(State &state, const TransformNode &node)
 	return ContinueTraversal;
 }
 
-// FIXME: RenderNode: Union over children + some magic
+// FIXME: EvaluateNode: Union over children + some magic
 // FIXME: CgaladvNode: Iterate over children. Special operation
 
 // FIXME: Subtypes of AbstractPolyNode:
@@ -229,7 +229,7 @@ Response CGALRenderer::visit(State &state, const TransformNode &node)
 // DxfRotateExtrudeNode
 // (SurfaceNode)
 // (PrimitiveNode)
-Response CGALRenderer::visit(State &state, const AbstractPolyNode &node)
+Response CGALEvaluator::visit(State &state, const AbstractPolyNode &node)
 {
 	if (state.isPrefix() && isCached(node)) return PruneTraversal;
 	if (state.isPostfix()) {
@@ -238,10 +238,10 @@ Response CGALRenderer::visit(State &state, const AbstractPolyNode &node)
 			applyToChildren(node, UNION);
 
 			// Then apply polyset operation
-			PolySet *ps = node.render_polyset(AbstractPolyNode::RENDER_CGAL, &this->psrenderer);
+			PolySet *ps = node.evaluate_polyset(AbstractPolyNode::RENDER_CGAL, &this->psevaluator);
 			if (ps) {
 				try {
-					CGAL_Nef_polyhedron N = renderCGALMesh(*ps);
+					CGAL_Nef_polyhedron N = evaluateCGALMesh(*ps);
 //				print_messages_pop();
 					node.progress_report();
 					
@@ -263,7 +263,7 @@ Response CGALRenderer::visit(State &state, const AbstractPolyNode &node)
 	Adds ourself to out parent's list of traversed children.
 	Call this for _every_ node which affects output during the postfix traversal.
 */
-void CGALRenderer::addToParent(const State &state, const AbstractNode &node)
+void CGALEvaluator::addToParent(const State &state, const AbstractNode &node)
 {
 	assert(state.isPostfix());
 	this->visitedchildren.erase(node.index());
@@ -274,19 +274,19 @@ void CGALRenderer::addToParent(const State &state, const AbstractNode &node)
 
 #if 0
 /*!
-	Static function to render CGAL meshes.
+	Static function to evaluate CGAL meshes.
 	NB! This is just a support function used for development and debugging
 */
-CGAL_Nef_polyhedron CGALRenderer::renderCGALMesh(const AbstractPolyNode &node)
+CGAL_Nef_polyhedron CGALEvaluator::evaluateCGALMesh(const AbstractPolyNode &node)
 {
 	// FIXME: Lookup Nef polyhedron in cache.
 
 	// 	print_messages_push();
 	
-	PolySet *ps = node.render_polyset(AbstractPolyNode::RENDER_CGAL);
+	PolySet *ps = node.evaluate_polyset(AbstractPolyNode::RENDER_CGAL);
 	if (ps) {
 		try {
-			CGAL_Nef_polyhedron N = ps->renderCSGMesh();
+			CGAL_Nef_polyhedron N = ps->evaluateCSGMesh();
 			// FIXME: Insert into cache
 			// print_messages_pop();
 			node.progress_report();
@@ -389,7 +389,7 @@ public:
 
 #endif /* ENABLE_CGAL */
 
-CGAL_Nef_polyhedron CGALRenderer::renderCGALMesh(const PolySet &ps)
+CGAL_Nef_polyhedron CGALEvaluator::evaluateCGALMesh(const PolySet &ps)
 {
 	if (ps.is2d)
 	{

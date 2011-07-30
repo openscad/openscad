@@ -33,7 +33,7 @@
 #include "dxfdata.h"
 #include "progress.h"
 #include "visitor.h"
-#include "PolySetRenderer.h"
+#include "PolySetEvaluator.h"
 #include "openscad.h" // get_fragments_from_r()
 
 #include <sstream>
@@ -102,11 +102,11 @@ void register_builtin_dxf_rotate_extrude()
 	builtin_modules["rotate_extrude"] = new DxfRotateExtrudeModule();
 }
 
-PolySet *DxfRotateExtrudeNode::render_polyset(render_mode_e mode, 
-																							PolySetRenderer *renderer) const
+PolySet *DxfRotateExtrudeNode::evaluate_polyset(render_mode_e mode, 
+																							PolySetEvaluator *evaluator) const
 {
-	if (!renderer) {
-		PRINTF("WARNING: No suitable PolySetRenderer found for %s module!", this->name().c_str());
+	if (!evaluator) {
+		PRINTF("WARNING: No suitable PolySetEvaluator found for %s module!", this->name().c_str());
 		PolySet *ps = new PolySet();
 		ps->is2d = true;
 		return ps;
@@ -114,7 +114,7 @@ PolySet *DxfRotateExtrudeNode::render_polyset(render_mode_e mode,
 
 	print_messages_push();
 
-	PolySet *ps = renderer->renderPolySet(*this, mode);
+	PolySet *ps = evaluator->evaluatePolySet(*this, mode);
 	
 	print_messages_pop();
 

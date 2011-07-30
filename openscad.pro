@@ -118,7 +118,11 @@ include(boost.pri)
 FORMS   += src/MainWindow.ui \
            src/Preferences.ui
 
-HEADERS += src/CGAL_renderer.h \
+HEADERS += src/renderer.h \
+           src/cgalrenderer.h \
+           src/throwntogetherrenderer.h \
+           src/CGAL_renderer.h \
+           src/OGL_helper.h \
            src/GLView.h \
            src/MainWindow.h \
            src/Preferences.h \
@@ -154,16 +158,18 @@ HEADERS += src/CGAL_renderer.h \
            src/traverser.h \
            src/nodecache.h \
            src/nodedumper.h \
-           src/CGALRenderer.h \
-           src/PolySetRenderer.h \
-           src/PolySetCGALRenderer.h \
-           src/CSGTermRenderer.h \
+           src/CGALEvaluator.h \
+           src/PolySetEvaluator.h \
+           src/PolySetCGALEvaluator.h \
+           src/CSGTermEvaluator.h \
            src/myqhash.h \
            src/Tree.h \
            src/mathc99.h
 
 SOURCES += src/openscad.cc \
            src/mainwin.cc \
+           src/cgalrenderer.cc \
+           src/throwntogetherrenderer.cc \
            src/glview.cc \
            src/export.cc \
            src/value.cc \
@@ -201,10 +207,10 @@ SOURCES += src/openscad.cc \
            src/editor.cc \
            src/traverser.cc \
            src/nodedumper.cc \
-           src/CGALRenderer.cc \
-           src/PolySetRenderer.cc \
-           src/PolySetCGALRenderer.cc \
-           src/CSGTermRenderer.cc \
+           src/CGALEvaluator.cc \
+           src/PolySetEvaluator.cc \
+           src/PolySetCGALEvaluator.cc \
+           src/CSGTermEvaluator.cc \
            src/qhash.cc \
            src/Tree.cc \
 	   src/mathc99.cc

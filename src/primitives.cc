@@ -100,7 +100,7 @@ public:
 	primitive_type_e type;
 	int convexity;
 	Value points, paths, triangles;
-	virtual PolySet *render_polyset(render_mode_e mode, class PolySetRenderer *) const;
+	virtual PolySet *evaluate_polyset(render_mode_e mode, class PolySetEvaluator *) const;
 };
 
 AbstractNode *PrimitiveModule::evaluate(const Context *ctx, const ModuleInstantiation *inst) const
@@ -272,7 +272,7 @@ static void generate_circle(point2d *circle, double r, int fragments)
 	}
 }
 
-PolySet *PrimitiveNode::render_polyset(render_mode_e, class PolySetRenderer *) const
+PolySet *PrimitiveNode::evaluate_polyset(render_mode_e, class PolySetEvaluator *) const
 {
 	PolySet *p = new PolySet();
 

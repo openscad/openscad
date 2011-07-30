@@ -1,11 +1,11 @@
-#ifndef CGALRENDERER_H_
-#define CGALRENDERER_H_
+#ifndef CGALEVALUATOR_H_
+#define CGALEVALUATOR_H_
 
 #include "myqhash.h"
 #include "visitor.h"
 #include "Tree.h"
 #include "cgal.h"
-#include "PolySetCGALRenderer.h"
+#include "PolySetCGALEvaluator.h"
 
 #include <string>
 #include <map>
@@ -19,13 +19,13 @@ using std::map;
 using std::list;
 using std::pair;
 
-class CGALRenderer : public Visitor
+class CGALEvaluator : public Visitor
 {
 public:
 	enum CsgOp {UNION, INTERSECTION, DIFFERENCE, MINKOWSKI, HULL};
 	// FIXME: If a cache is not given, we need to fix this ourselves
-	CGALRenderer(QHash<string, CGAL_Nef_polyhedron> &cache, const Tree &tree) : cache(cache), tree(tree), psrenderer(*this) {}
-  virtual ~CGALRenderer() {}
+	CGALEvaluator(QHash<string, CGAL_Nef_polyhedron> &cache, const Tree &tree) : cache(cache), tree(tree), psevaluator(*this) {}
+  virtual ~CGALEvaluator() {}
 
   virtual Response visit(State &state, const AbstractNode &node);
  	virtual Response visit(State &state, const AbstractIntersectionNode &node);
@@ -33,16 +33,16 @@ public:
  	virtual Response visit(State &state, const TransformNode &node);
 	virtual Response visit(State &state, const AbstractPolyNode &node);
 
- 	CGAL_Nef_polyhedron renderCGALMesh(const AbstractNode &node);
-	CGAL_Nef_polyhedron renderCGALMesh(const PolySet &polyset);
+ 	CGAL_Nef_polyhedron evaluateCGALMesh(const AbstractNode &node);
+	CGAL_Nef_polyhedron evaluateCGALMesh(const PolySet &polyset);
 
 	const Tree &getTree() const { return this->tree; }
 
 private:
   void addToParent(const State &state, const AbstractNode &node);
   bool isCached(const AbstractNode &node) const;
-	void process(CGAL_Nef_polyhedron &target, const CGAL_Nef_polyhedron &src, CGALRenderer::CsgOp op);
-	void applyToChildren(const AbstractNode &node, CGALRenderer::CsgOp op);
+	void process(CGAL_Nef_polyhedron &target, const CGAL_Nef_polyhedron &src, CGALEvaluator::CsgOp op);
+	void applyToChildren(const AbstractNode &node, CGALEvaluator::CsgOp op);
 
   string currindent;
   typedef list<pair<const AbstractNode *, string> > ChildList;
@@ -50,7 +50,7 @@ private:
 
 	QHash<string, CGAL_Nef_polyhedron> &cache;
 	const Tree &tree;
-	PolySetCGALRenderer psrenderer;
+	PolySetCGALEvaluator psevaluator;
 };
 
 #endif

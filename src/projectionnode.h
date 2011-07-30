@@ -18,7 +18,7 @@ public:
 
 	int convexity;
 	bool cut_mode;
-	virtual PolySet *render_polyset(render_mode_e mode, class PolySetRenderer *renderer) const;
+	virtual PolySet *evaluate_polyset(render_mode_e mode, class PolySetEvaluator *evaluator) const;
 };
 
 #endif

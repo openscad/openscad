@@ -83,7 +83,7 @@ public:
   /*! Should return a PolySet of the given geometry. It's normal to return an
 		  empty PolySet if smth. is wrong, but don't return NULL unless we change the calling
 			strategy for this method. */
-	virtual class PolySet *render_polyset(render_mode_e mode, class PolySetRenderer *renderer) const = 0;
+	virtual class PolySet *evaluate_polyset(render_mode_e mode, class PolySetEvaluator *evaluator) const = 0;
 };
 
 std::ostream &operator<<(std::ostream &stream, const AbstractNode &node);

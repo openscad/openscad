@@ -33,8 +33,8 @@
 #include "export.h"
 #include "builtin.h"
 #include "nodedumper.h"
-#include "CGALRenderer.h"
-#include "PolySetCGALRenderer.h"
+#include "CGALEvaluator.h"
+#include "PolySetCGALEvaluator.h"
 #include "printutils.h"
 
 #include <string>
@@ -261,8 +261,8 @@ int main(int argc, char **argv)
 	Tree tree;
 	// FIXME: enforce some maximum cache size (old version had 100K vertices as limit)
 	QHash<std::string, CGAL_Nef_polyhedron> cache;
-	CGALRenderer cgalrenderer(cache, tree);
-	PolySetCGALRenderer psrenderer(cgalrenderer);
+	CGALEvaluator cgalevaluator(cache, tree);
+	PolySetCGALEvaluator psevaluator(cgalevaluator);
 
 	if (stl_output_file || off_output_file || dxf_output_file)
 	{
@@ -315,7 +315,7 @@ int main(int argc, char **argv)
 		root_node = root_module->evaluate(&root_ctx, &root_inst);
 
 		tree.setRoot(root_node);
- 		CGAL_Nef_polyhedron root_N = cgalrenderer.renderCGALMesh(*tree.root());
+ 		CGAL_Nef_polyhedron root_N = cgalevaluator.evaluateCGALMesh(*tree.root());
 
 		QDir::setCurrent(original_path.absolutePath());
 

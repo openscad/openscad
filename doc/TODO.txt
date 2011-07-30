@@ -49,7 +49,6 @@ o non-convex minkowski example from chrysn fails with an exception
 USER INTERFACE
 --------------
 o Preferences
-  - Remember settings done in menus between sessions (automatic reload, perspective, show*, hide*)
   - Beautify color schemes
   - Color schemes read from file
   - Color scheme editor
@@ -57,7 +56,6 @@ o Preferences
   - pointsize
   - OpenGL params
   - Default language feature settings
-  - Auto-view CSG/thrown together on load
   - Make the library search path configurable?
 o MDI
   - Think about how to do MDI the right way

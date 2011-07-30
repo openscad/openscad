@@ -35,7 +35,7 @@
 #include "export.h"
 #include "progress.h"
 #include "visitor.h"
-#include "PolySetRenderer.h"
+#include "PolySetEvaluator.h"
 
 #ifdef ENABLE_CGAL
 #  include <CGAL/assertions_behaviour.h>
@@ -83,10 +83,10 @@ AbstractNode *ProjectionModule::evaluate(const Context *ctx, const ModuleInstant
 	return node;
 }
 
-PolySet *ProjectionNode::render_polyset(render_mode_e mode, PolySetRenderer *renderer) const
+PolySet *ProjectionNode::evaluate_polyset(render_mode_e mode, PolySetEvaluator *evaluator) const
 {
-	if (!renderer) {
-		PRINTF("WARNING: No suitable PolySetRenderer found for %s module!", this->name().c_str());
+	if (!evaluator) {
+		PRINTF("WARNING: No suitable PolySetEvaluator found for %s module!", this->name().c_str());
 		PolySet *ps = new PolySet();
 		ps->is2d = true;
 		return ps;
@@ -94,7 +94,7 @@ PolySet *ProjectionNode::render_polyset(render_mode_e mode, PolySetRenderer *ren
 
 	print_messages_push();
 
-	PolySet *ps = renderer->renderPolySet(*this, mode);
+	PolySet *ps = evaluator->evaluatePolySet(*this, mode);
 
 	print_messages_pop();
 

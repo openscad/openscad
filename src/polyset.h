@@ -1,10 +1,7 @@
 #ifndef POLYSET_H_
 #define POLYSET_H_
 
-#ifdef ENABLE_OPENCSG
-// this must be included before the GL headers
-#  include <GL/glew.h>
-#endif
+#include <GL/glew.h> // this must be included before the GL headers
 #include <qgl.h>
 
 #include "grid.h"
