@@ -162,7 +162,6 @@ MainWindow::MainWindow(const QString &filename)
 	highlights_chain = NULL;
 	background_chain = NULL;
 	root_node = NULL;
-	enableOpenCSG = false;
 
 	tval = 0;
 	fps = 0;
@@ -635,7 +634,6 @@ void MainWindow::compile(bool procevents)
 		background_chain = NULL;
 	}
 	root_node = NULL;
-	enableOpenCSG = false;
 
 	// Initialize special variables
 	root_ctx.set_variable("$t", Value(e_tval->text().toDouble()));

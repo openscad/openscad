@@ -50,7 +50,6 @@ public:
 	QVector<CSGTerm*> background_terms;
 	CSGChain *background_chain;
 	QString last_compiled_doc;
-	bool enableOpenCSG;
 
 	static const int maxRecentFiles = 10;
 	QAction *actionRecentFile[maxRecentFiles];
