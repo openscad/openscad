@@ -25,8 +25,7 @@
  */
 
 #include "GLView.h"
-// FIXME: Reenable/rewrite - don't be dependant on GUI
-//#include "Preferences.h"
+#include "Preferences.h"
 
 #include <QApplication>
 #include <QWheelEvent>
@@ -251,10 +250,10 @@ void GLView::display_opengl20_warning()
 
 	// action
 	connect(buttonbox, SIGNAL(accepted()), dialog, SLOT(accept()));
-	// connect(checkbox, SIGNAL(clicked(bool)),
-	// 	Preferences::inst()->OpenGL20WarningCheckbox, SLOT(setChecked(bool)));
-	// connect(checkbox, SIGNAL(clicked(bool)),
-	// 	Preferences::inst(), SLOT(OpenGL20WarningChanged(bool)));
+	connect(checkbox, SIGNAL(clicked(bool)),
+		Preferences::inst()->OpenGL20WarningCheckbox, SLOT(setChecked(bool)));
+	connect(checkbox, SIGNAL(clicked(bool)),
+		Preferences::inst(), SLOT(OpenGL20WarningChanged(bool)));
 	dialog->exec();
 }
 #endif
@@ -271,9 +270,7 @@ void GLView::resizeGL(int w, int h)
 
 void GLView::paintGL()
 {
-// FIXME: Reenable/rewrite - don't be dependant on GUI
-//	const QColor &bgcol = Preferences::inst()->color(Preferences::BACKGROUND_COLOR);
-		const QColor &bgcol = QColor(0xff, 0xff, 0xe5);
+	const QColor &bgcol = Preferences::inst()->color(Preferences::BACKGROUND_COLOR);
 	glClearColor(bgcol.redF(), bgcol.greenF(), bgcol.blueF(), 0.0);
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
@@ -316,8 +313,7 @@ void GLView::paintGL()
 	if (showcrosshairs)
 	{
 		glLineWidth(3);
-//		const QColor &col = Preferences::inst()->color(Preferences::CROSSHAIR_COLOR);
-		const QColor &col = QColor(0x80, 0x00, 0x00);
+		const QColor &col = Preferences::inst()->color(Preferences::CROSSHAIR_COLOR);
 		glColor3f(col.redF(), col.greenF(), col.blueF());
 		glBegin(GL_LINES);
 		for (double xf = -1; xf <= +1; xf += 2)
