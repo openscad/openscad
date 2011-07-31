@@ -5,15 +5,15 @@
 #include "module.h"
 #include "polyset.h"
 #include "Tree.h"
-#include "CSGTermRenderer.h"
-#include "CGALRenderer.h"
-#include "PolySetCGALRenderer.h"
+#include "CSGTermEvaluator.h"
+#include "CGALEvaluator.h"
+#include "PolySetCGALEvaluator.h"
+
+#include "OpenCSGRenderer.h"
 
 #include "csgterm.h"
-#include "render-opencsg.h"
 #include <GL/glew.h>
-#include "GLView.h"
-#include "mainwindow.h"
+#include "OffscreenView.h"
 
 #include <QApplication>
 #include <QFile>
@@ -56,129 +56,8 @@ struct CsgInfo
 	CSGChain *highlights_chain;
 	std::vector<CSGTerm*> background_terms;
 	CSGChain *background_chain;
-	GLView *glview;
+	OffscreenView *glview;
 };
-
-static void renderGLThrownTogetherChain(CSGChain *chain, bool highlight, bool background, bool fberror)
-{
-	glDepthFunc(GL_LEQUAL);
-	QHash<QPair<PolySet*,double*>,int> polySetVisitMark;
-	bool showEdges = false;
-	for (int i = 0; i < chain->polysets.size(); i++) {
-		if (polySetVisitMark[QPair<PolySet*,double*>(chain->polysets[i], chain->matrices[i])]++ > 0)
-			continue;
-		double *m = chain->matrices[i];
-		glPushMatrix();
-		glMultMatrixd(m);
-		int csgmode = chain->types[i] == CSGTerm::TYPE_DIFFERENCE ? PolySet::CSGMODE_DIFFERENCE : PolySet::CSGMODE_NORMAL;
-		if (highlight) {
-			chain->polysets[i]->render_surface(PolySet::COLORMODE_HIGHLIGHT, PolySet::csgmode_e(csgmode + 20), m);
-			if (showEdges) {
-				glDisable(GL_LIGHTING);
-				chain->polysets[i]->render_edges(PolySet::COLORMODE_HIGHLIGHT, PolySet::csgmode_e(csgmode + 20));
-				glEnable(GL_LIGHTING);
-			}
-		} else if (background) {
-			chain->polysets[i]->render_surface(PolySet::COLORMODE_BACKGROUND, PolySet::csgmode_e(csgmode + 10), m);
-			if (showEdges) {
-				glDisable(GL_LIGHTING);
-				chain->polysets[i]->render_edges(PolySet::COLORMODE_BACKGROUND, PolySet::csgmode_e(csgmode + 10));
-				glEnable(GL_LIGHTING);
-			}
-		} else if (fberror) {
-			if (highlight) {
-				chain->polysets[i]->render_surface(PolySet::COLORMODE_NONE, PolySet::csgmode_e(csgmode + 20), m);
-			} else if (background) {
-				chain->polysets[i]->render_surface(PolySet::COLORMODE_NONE, PolySet::csgmode_e(csgmode + 10), m);
-			} else {
-				chain->polysets[i]->render_surface(PolySet::COLORMODE_NONE, PolySet::csgmode_e(csgmode), m);
-			}
-		} else if (m[16] >= 0 || m[17] >= 0 || m[18] >= 0 || m[19] >= 0) {
-			glColor4d(m[16], m[17], m[18], m[19]);
-			chain->polysets[i]->render_surface(PolySet::COLORMODE_NONE, PolySet::csgmode_e(csgmode), m);
-			if (showEdges) {
-				glDisable(GL_LIGHTING);
-				glColor4d((m[16]+1)/2, (m[17]+1)/2, (m[18]+1)/2, 1.0);
-				chain->polysets[i]->render_edges(PolySet::COLORMODE_NONE, PolySet::csgmode_e(csgmode));
-				glEnable(GL_LIGHTING);
-			}
-		} else if (chain->types[i] == CSGTerm::TYPE_DIFFERENCE) {
-			chain->polysets[i]->render_surface(PolySet::COLORMODE_CUTOUT, PolySet::csgmode_e(csgmode), m);
-			if (showEdges) {
-				glDisable(GL_LIGHTING);
-				chain->polysets[i]->render_edges(PolySet::COLORMODE_CUTOUT, PolySet::csgmode_e(csgmode));
-				glEnable(GL_LIGHTING);
-			}
-		} else {
-			chain->polysets[i]->render_surface(PolySet::COLORMODE_MATERIAL, PolySet::csgmode_e(csgmode), m);
-			if (showEdges) {
-				glDisable(GL_LIGHTING);
-				chain->polysets[i]->render_edges(PolySet::COLORMODE_MATERIAL, PolySet::csgmode_e(csgmode));
-				glEnable(GL_LIGHTING);
-			}
-		}
-		glPopMatrix();
-	}
-}
-
-static void renderGLThrownTogether(void *vp)
-{
-	CsgInfo *csgInfo = (CsgInfo *)vp;
-	if (csgInfo->root_chain) {
-		glEnable(GL_CULL_FACE);
-		glCullFace(GL_BACK);
-		renderGLThrownTogetherChain(csgInfo->root_chain, false, false, false);
-		glCullFace(GL_FRONT);
-		glColor3ub(255, 0, 255);
-		renderGLThrownTogetherChain(csgInfo->root_chain, false, false, true);
-		glDisable(GL_CULL_FACE);
-	}
-	if (csgInfo->background_chain)
-		renderGLThrownTogetherChain(csgInfo->background_chain, false, true, false);
-	if (csgInfo->highlights_chain)
-		renderGLThrownTogetherChain(csgInfo->highlights_chain, true, false, false);
-}
-
-static void renderGLviaOpenCSG(void *vp)
-{
-	CsgInfo *csgInfo = (CsgInfo *)vp;
-
-	if (csgInfo->root_chain) {
-		glEnable(GL_CULL_FACE);
-		glCullFace(GL_BACK);
-		glDepthFunc(GL_LEQUAL);
-		QHash<QPair<PolySet*,double*>,int> polySetVisitMark;
-		bool showEdges = false;
-		int i = 1;
-		double *m = csgInfo->root_chain->matrices[i];
-		glPushMatrix();
-		glMultMatrixd(m);
-		int csgmode = csgInfo->root_chain->types[i] == CSGTerm::TYPE_DIFFERENCE ? PolySet::CSGMODE_DIFFERENCE : PolySet::CSGMODE_NORMAL;
-		csgInfo->root_chain->polysets[i]->render_surface(PolySet::COLORMODE_MATERIAL, PolySet::csgmode_e(csgmode), m);
-		glPopMatrix();
-	}
-
-	// static bool glew_initialized = false;
-	// if (!glew_initialized) {
-	// 	glew_initialized = true;
-	// 	glewInit();
-	// }
-#ifdef ENABLE_MDI
-	OpenCSG::setContext(csgInfo->glview->opencsg_id);
-#endif
-	if (csgInfo->root_chain) {
-		renderCSGChainviaOpenCSG(csgInfo->root_chain, NULL, false, false);
-		GLint *shaderinfo = csgInfo->glview->shaderinfo;
-		if (!shaderinfo[0]) shaderinfo = NULL;
-		renderCSGChainviaOpenCSG(csgInfo->root_chain, NULL, false, false);
-		if (csgInfo->background_chain) {
-			renderCSGChainviaOpenCSG(csgInfo->background_chain, NULL, false, true);
-		}
-		if (csgInfo->highlights_chain) {
-			renderCSGChainviaOpenCSG(csgInfo->highlights_chain, NULL, true, false);
-		}
-	}
-}
 
 int main(int argc, char *argv[])
 {
@@ -267,10 +146,10 @@ int main(int argc, char *argv[])
 	Tree tree(root_node);
 
 	QHash<std::string, CGAL_Nef_polyhedron> cache;
-	CGALRenderer cgalrenderer(cache, tree);
-	PolySetCGALRenderer psrenderer(cgalrenderer);
-	CSGTermRenderer renderer(tree);
-	CSGTerm *root_raw_term = renderer.renderCSGTerm(*root_node, NULL, NULL);
+	CGALEvaluator cgalevaluator(cache, tree);
+	PolySetCGALEvaluator psevaluator(cgalevaluator);
+	CSGTermEvaluator evaluator(tree);
+	CSGTerm *root_raw_term = evaluator.evaluateCSGTerm(*root_node, NULL, NULL);
 
 	if (!root_raw_term) {
 		cerr << "Error: CSG generation failed! (no top level object found)\n";
@@ -328,12 +207,7 @@ int main(int argc, char *argv[])
 	
 	QDir::setCurrent(original_path.absolutePath());
 
-	QGLFormat fmt = QGLFormat::defaultFormat();
-//	fmt.setDirectRendering(false);
-//	fmt.setDoubleBuffer(false);
-
-	csgInfo.glview = new GLView(fmt, NULL);	
-	csgInfo.glview->makeCurrent();
+	csgInfo.glview = new OffscreenView(256, 256);	
 
 	glewInit();
 	cout << "GLEW version " << glewGetString(GLEW_VERSION) << "\n";
@@ -352,14 +226,19 @@ int main(int argc, char *argv[])
 		cout << "EXT_packed_depth_stencil\n";
 	}
 
-//	csgInfo.glview->setRenderFunc(renderGLThrownTogether, &csgInfo);
-	csgInfo.glview->setRenderFunc(renderGLviaOpenCSG, &csgInfo);	
-	csgInfo.glview->show();
-	csgInfo.glview->hide();
+	OpenCSGRenderer opencsgRenderer(csgInfo.root_chain, csgInfo.highlights_chain, csgInfo.background_chain, csgInfo.glview->shaderinfo);
+//	csgInfo.glview->setRenderFunc(thrownTogetherRenderer);
+	csgInfo.glview->setRenderer(&opencsgRenderer);
 
-	QImage img = csgInfo.glview->grabFrameBuffer();
-	cout << "Image: " << img.width() << "x" << img.height() << " " << img.format() << "\n";
-	img.save("out.png");
+	csgInfo.glview->paintGL();
+
+	csgInfo.glview->save("out.png");
+	
+// FIXME: Render & Grab buffer
+
+	// QImage img = csgInfo.glview->grabFrameBuffer();
+	// cout << "Image: " << img.width() << "x" << img.height() << " " << img.format() << "\n";
+	// img.save("out.png");
 
 	destroy_builtin_functions();
 	destroy_builtin_modules();

@@ -12,6 +12,11 @@ endif()
 # Build test apps
 #
 
+# Mac OS X
+if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+  FIND_LIBRARY(COCOA_LIBRARY Cocoa)
+endif(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+
 # Qt4
 find_package(OpenGL)
 find_package(Qt4 COMPONENTS QtCore QtGui QtOpenGL REQUIRED)
@@ -98,7 +103,7 @@ set(COMMON_SOURCES
   ../src/progress.cc 
   ../src/nodedumper.cc 
   ../src/traverser.cc 
-  ../src/PolySetRenderer.cc 
+  ../src/PolySetEvaluator.cc 
   ../src/Tree.cc
   ${FLEX_OpenSCADlexer_OUTPUTS}
   ${BISON_OpenSCADparser_OUTPUTS})
@@ -118,7 +123,7 @@ target_link_libraries(csgtexttest ${QT_LIBRARIES} ${OPENGL_LIBRARY})
 #
 # csgtermtest
 #
-add_executable(csgtermtest csgtermtest.cc ../src/CSGTermRenderer.cc ${COMMON_SOURCES})
+add_executable(csgtermtest csgtermtest.cc ../src/CSGTermEvaluator.cc ${COMMON_SOURCES})
 target_link_libraries(csgtermtest ${QT_LIBRARIES} ${OPENGL_LIBRARY})
 
 if (NOT $ENV{MACOSX_DEPLOY_DIR} STREQUAL "")
@@ -131,8 +136,8 @@ include_directories(${CGAL_INCLUDE_DIRS})
 #
 # cgaltest
 #
-add_executable(cgaltest cgaltest.cc ../src/CSGTermRenderer.cc ../src/CGALRenderer.cc
-                        ../src/PolySetCGALRenderer.cc ../src/qhash.cc ../src/nef2dxf.cc
+add_executable(cgaltest cgaltest.cc ../src/CSGTermEvaluator.cc ../src/CGALEvaluator.cc
+                        ../src/PolySetCGALEvaluator.cc ../src/qhash.cc ../src/nef2dxf.cc
                         ../src/cgaladv_minkowski2.cc ../src/cgaladv_minkowski3.cc ${COMMON_SOURCES})
 set_target_properties(cgaltest PROPERTIES COMPILE_FLAGS "-DENABLE_CGAL ${CGAL_CXX_FLAGS_INIT}")
 target_link_libraries(cgaltest ${CGAL_LIBRARY} ${CGAL_3RD_PARTY_LIBRARIES} ${QT_LIBRARIES} ${OPENGL_LIBRARY})
@@ -140,14 +145,13 @@ target_link_libraries(cgaltest ${CGAL_LIBRARY} ${CGAL_3RD_PARTY_LIBRARIES} ${QT_
 #
 # opencsgtest
 #
-QT4_WRAP_CPP(MOC_SRC_opencsgtest ../src/GLView.h)
-add_executable(opencsgtest opencsgtest.cc ${MOC_SRC_opencsgtest} ../src/glview.cc
-                           ../src/render-opencsg.cc ../src/CSGTermRenderer.cc ../src/CGALRenderer.cc
-                           ../src/PolySetCGALRenderer.cc ../src/qhash.cc ../src/nef2dxf.cc
+add_executable(opencsgtest opencsgtest.cc OffscreenView.cc OffscreenContext.mm
+                           ../src/opencsgrenderer.cc ../src/CSGTermEvaluator.cc ../src/CGALEvaluator.cc
+                           ../src/PolySetCGALEvaluator.cc ../src/qhash.cc ../src/nef2dxf.cc
                            ../src/cgaladv_minkowski2.cc ../src/cgaladv_minkowski3.cc
                            ${COMMON_SOURCES})
 set_target_properties(opencsgtest PROPERTIES COMPILE_FLAGS "-DENABLE_OPENCSG -DENABLE_CGAL ${CGAL_CXX_FLAGS_INIT}")
-target_link_libraries(opencsgtest ${CGAL_LIBRARY} ${CGAL_3RD_PARTY_LIBRARIES} ${QT_LIBRARIES} ${OPENCSG_LIBRARY} ${GLEW_LIBRARY} ${OPENGL_LIBRARY})
+target_link_libraries(opencsgtest ${CGAL_LIBRARY} ${CGAL_3RD_PARTY_LIBRARIES} ${QT_LIBRARIES} ${OPENCSG_LIBRARY} ${GLEW_LIBRARY} ${COCOA_LIBRARY} ${OPENGL_LIBRARY})
 
 #
 # This functions adds cmd-line tests given files.

@@ -32,8 +32,8 @@
 #include "export.h"
 #include "builtin.h"
 #include "Tree.h"
-#include "CGALRenderer.h"
-#include "PolySetCGALRenderer.h"
+#include "CGALEvaluator.h"
+#include "PolySetCGALEvaluator.h"
 
 #include <QApplication>
 #include <QFile>
@@ -72,9 +72,9 @@ void cgalTree(Tree &tree)
 {
 	assert(tree.root());
 
-	CGALRenderer renderer(cache, tree);
-	Traverser render(renderer, *tree.root(), Traverser::PRE_AND_POSTFIX);
-	render.execute();
+	CGALEvaluator evaluator(cache, tree);
+	Traverser evaluate(evaluator, *tree.root(), Traverser::PRE_AND_POSTFIX);
+	evaluate.execute();
 }
 
 int main(int argc, char **argv)
@@ -163,10 +163,10 @@ int main(int argc, char **argv)
 	Tree tree(root_node);
 
 	QHash<std::string, CGAL_Nef_polyhedron> cache;
-	CGALRenderer cgalrenderer(cache, tree);
- 	PolySetCGALRenderer psrenderer(cgalrenderer);
+	CGALEvaluator cgalevaluator(cache, tree);
+ 	PolySetCGALEvaluator psevaluator(cgalevaluator);
 
-	CGAL_Nef_polyhedron N = cgalrenderer.renderCGALMesh(*root_node);
+	CGAL_Nef_polyhedron N = cgalevaluator.evaluateCGALMesh(*root_node);
 
 	QDir::setCurrent(original_path.absolutePath());
 	QTextStream outstream(stdout);
