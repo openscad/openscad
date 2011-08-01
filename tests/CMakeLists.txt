@@ -36,16 +36,19 @@ endif()
 include_directories(${EIGEN2_INCLUDE_DIR})
 
 # OpenCSG
-if (NOT $ENV{MACOSX_DEPLOY_DIR} STREQUAL "")
+if (NOT $ENV{OPENCSG_DIR} STREQUAL "")
+  set(OPENCSG_DIR "$ENV{OPENCSG_DIR}")
+elseif (NOT $ENV{MACOSX_DEPLOY_DIR} STREQUAL "")
   set(OPENCSG_DIR "$ENV{MACOSX_DEPLOY_DIR}")
 endif()
 if (NOT OPENCSG_INCLUDE_DIR)
+   message(STATUS ${OPENCSG_DIR})
   find_path(OPENCSG_INCLUDE_DIR
             opencsg.h
-            PATHS $ENV{MACOSX_DEPLOY_DIR}/include)
+            PATHS ${OPENCSG_DIR}/include)
   find_library(OPENCSG_LIBRARY
                opencsg
-               PATHS $ENV{MACOSX_DEPLOY_DIR}/lib)
+               PATHS ${OPENCSG_DIR}/src)
   if (NOT OPENCSG_INCLUDE_DIR OR NOT OPENCSG_LIBRARY)
     message(FATAL_ERROR "OpenCSG not found")
   else()
@@ -146,7 +149,7 @@ target_link_libraries(cgaltest ${CGAL_LIBRARY} ${CGAL_3RD_PARTY_LIBRARIES} ${QT_
 # opencsgtest
 #
 add_executable(opencsgtest opencsgtest.cc OffscreenView.cc OffscreenContext.mm
-                           ../src/opencsgrenderer.cc ../src/CSGTermEvaluator.cc ../src/CGALEvaluator.cc
+                           ../src/opencsgrenderer.cc ../src/throwntogetherrenderer.cc ../src/CSGTermEvaluator.cc ../src/CGALEvaluator.cc
                            ../src/PolySetCGALEvaluator.cc ../src/qhash.cc ../src/nef2dxf.cc
                            ../src/cgaladv_minkowski2.cc ../src/cgaladv_minkowski3.cc
                            ${COMMON_SOURCES})

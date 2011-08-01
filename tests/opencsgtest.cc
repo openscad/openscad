@@ -1,3 +1,4 @@
+#include <GL/glew.h>
 #include "openscad.h"
 #include "builtin.h"
 #include "context.h"
@@ -10,9 +11,9 @@
 #include "PolySetCGALEvaluator.h"
 
 #include "OpenCSGRenderer.h"
+#include "ThrownTogetherRenderer.h"
 
 #include "csgterm.h"
-#include <GL/glew.h>
 #include "OffscreenView.h"
 
 #include <QApplication>
@@ -207,7 +208,7 @@ int main(int argc, char *argv[])
 	
 	QDir::setCurrent(original_path.absolutePath());
 
-	csgInfo.glview = new OffscreenView(256, 256);	
+	csgInfo.glview = new OffscreenView(512,512);
 
 	glewInit();
 	cout << "GLEW version " << glewGetString(GLEW_VERSION) << "\n";
@@ -227,19 +228,14 @@ int main(int argc, char *argv[])
 	}
 
 	OpenCSGRenderer opencsgRenderer(csgInfo.root_chain, csgInfo.highlights_chain, csgInfo.background_chain, csgInfo.glview->shaderinfo);
-//	csgInfo.glview->setRenderFunc(thrownTogetherRenderer);
+	ThrownTogetherRenderer thrownTogetherRenderer(csgInfo.root_chain, csgInfo.highlights_chain, csgInfo.background_chain);
+//	csgInfo.glview->setRenderer(&thrownTogetherRenderer);
 	csgInfo.glview->setRenderer(&opencsgRenderer);
 
 	csgInfo.glview->paintGL();
 
 	csgInfo.glview->save("out.png");
 	
-// FIXME: Render & Grab buffer
-
-	// QImage img = csgInfo.glview->grabFrameBuffer();
-	// cout << "Image: " << img.width() << "x" << img.height() << " " << img.format() << "\n";
-	// img.save("out.png");
-
 	destroy_builtin_functions();
 	destroy_builtin_modules();
 

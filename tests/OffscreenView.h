@@ -19,9 +19,9 @@ public:
 	bool save(const char *filename);
 
 	GLint shaderinfo[11];
+	OffscreenContext *ctx;
 private:
 	Renderer *renderer;
-	class OffscreenContext *ctx;
 	double w_h_ratio;
 
 	bool orthomode;

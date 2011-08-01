@@ -1,14 +1,15 @@
 #include <GL/glew.h>
 #include "OffscreenView.h"
+#include <opencsg.h>
 #include "Renderer.h"
-#include "OffscreenContext.h"
 #include <math.h>
 
 #define FAR_FAR_AWAY 100000.0
 
 OffscreenView::OffscreenView(size_t width, size_t height)
-	: orthomode(false), showaxes(false), showfaces(false), showedges(false), viewer_distance(500)
+	: orthomode(false), showaxes(true), showfaces(true), showedges(false), viewer_distance(500)
 {
+	for (int i = 0; i < 10; i++) this->shaderinfo[i] = 0;
   this->ctx = create_offscreen_context(width, height);
 	initializeGL();
 	resizeGL(width, height);
@@ -218,9 +219,8 @@ void OffscreenView::paintGL()
 	glColor3d(1.0, 0.0, 0.0);
 
 	if (this->renderer) {
-#if defined(ENABLE_MDI) && defined(ENABLE_OPENCSG)
-		// FIXME: This belongs in the OpenCSG renderer, but it doesn't know about this ID yet
-		OpenCSG::setContext(this->opencsg_id);
+#ifdef ENABLE_OPENCSG
+		OpenCSG::setContext(0);
 #endif
 		this->renderer->draw(showfaces, showedges);
 	}

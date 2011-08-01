@@ -14,6 +14,7 @@ struct OffscreenContext
   NSAutoreleasePool *pool;
   int width;
   int height;
+  GLuint fbo;
 };
 
 
@@ -56,8 +57,8 @@ OffscreenContext *create_offscreen_context(int w, int h)
   /*
    * Create an FBO
    */
-  GLuint  renderBuffer = 0;
-  GLuint  depthBuffer = 0;
+  GLuint renderBuffer = 0;
+  GLuint depthBuffer = 0;
   // Depth buffer to use for depth testing - optional if you're not using depth testing
   glGenRenderbuffersEXT(1, &depthBuffer);
   glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, depthBuffer);
@@ -69,9 +70,9 @@ OffscreenContext *create_offscreen_context(int w, int h)
   glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, renderBuffer);
   glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, GL_RGBA8, w, h);
   REPORTGLERROR("creating color render buffer");
-  GLuint  fbo = 0;
-  glGenFramebuffersEXT(1, &fbo);
-  glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fbo);
+  ctx->fbo = 0;
+  glGenFramebuffersEXT(1, &ctx->fbo);
+  glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, ctx->fbo);
   REPORTGLERROR("binding framebuffer");
 
   glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, 
@@ -195,4 +196,9 @@ bool save_framebuffer(OffscreenContext *ctx, const char *filename)
   CGColorSpaceRelease( colorSpace );
   CGImageRelease(imageRef);
   return true;
+}
+
+void bind_offscreen_context(OffscreenContext *ctx)
+{
+  glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, ctx->fbo);
 }
