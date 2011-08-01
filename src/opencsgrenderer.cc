@@ -24,6 +24,7 @@
  *
  */
 
+#include <GL/glew.h>
 #include "opencsgrenderer.h"
 #include "polyset.h"
 #include "csgterm.h"
@@ -53,11 +54,6 @@ OpenCSGRenderer::OpenCSGRenderer(CSGChain *root_chain, CSGChain *highlights_chai
 
 void OpenCSGRenderer::draw(bool showfaces, bool showedges) const
 {
-	static int glew_initialized = 0;
-	if (!glew_initialized) {
-		glew_initialized = 1;
-		glewInit();
-	}
 	if (this->root_chain) {
 		GLint *shaderinfo = this->shaderinfo;
 		if (!shaderinfo[0]) shaderinfo = NULL;
@@ -76,18 +72,14 @@ void OpenCSGRenderer::renderCSGChain(CSGChain *chain, GLint *shaderinfo,
 {
 	std::vector<OpenCSG::Primitive*> primitives;
 	int j = 0;
-	for (int i = 0;; i++)
-	{
+	for (int i = 0;; i++) {
 		bool last = i == chain->polysets.size();
-
-		if (last || chain->types[i] == CSGTerm::TYPE_UNION)
-		{
+		if (last || chain->types[i] == CSGTerm::TYPE_UNION) {
 			if (j+1 != i) {
-				OpenCSG::render(primitives);
+				 OpenCSG::render(primitives);
 				glDepthFunc(GL_EQUAL);
 			}
-			if (shaderinfo)
-				glUseProgram(shaderinfo[0]);
+			if (shaderinfo) glUseProgram(shaderinfo[0]);
 			for (; j < i; j++) {
 				double *m = chain->matrices[j];
 				glPushMatrix();
@@ -112,8 +104,7 @@ void OpenCSGRenderer::renderCSGChain(CSGChain *chain, GLint *shaderinfo,
 				}
 				glPopMatrix();
 			}
-			if (shaderinfo)
-				glUseProgram(0);
+			if (shaderinfo) glUseProgram(0);
 			for (unsigned int k = 0; k < primitives.size(); k++) {
 				delete primitives[k];
 			}
@@ -121,18 +112,15 @@ void OpenCSGRenderer::renderCSGChain(CSGChain *chain, GLint *shaderinfo,
 			primitives.clear();
 		}
 
-		if (last)
-			break;
+		if (last) break;
 
 		OpenCSGPrim *prim = new OpenCSGPrim(chain->types[i] == CSGTerm::TYPE_DIFFERENCE ?
 				OpenCSG::Subtraction : OpenCSG::Intersection, chain->polysets[i]->convexity);
 		prim->p = chain->polysets[i];
 		prim->m = chain->matrices[i];
 		prim->csgmode = chain->types[i] == CSGTerm::TYPE_DIFFERENCE ? PolySet::CSGMODE_DIFFERENCE : PolySet::CSGMODE_NORMAL;
-		if (highlight)
-			prim->csgmode += 20;
-		else if (background)
-			prim->csgmode += 10;
+		if (highlight) prim->csgmode += 20;
+		else if (background) prim->csgmode += 10;
 		primitives.push_back(prim);
 	}
 }
