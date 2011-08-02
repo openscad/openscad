@@ -1102,7 +1102,7 @@ diff -ru OpenCSG-1.3.0/src/channelManager.cpp OpenCSG-1.3.0-mac/src/channelManag
 diff -ru OpenCSG-1.3.0/src/frameBufferObject.h OpenCSG-1.3.0-mac/src/frameBufferObject.h
 --- OpenCSG-1.3.0/src/frameBufferObject.h	2010-02-06 21:35:10.000000000 +0100
 +++ OpenCSG-1.3.0-mac/src/frameBufferObject.h	2010-05-09 02:51:36.000000000 +0200
-@@ -79,10 +79,10 @@
+@@ -79,11 +79,11 @@
  
              /// Texture stuff
              GLenum       textureTarget;
@@ -1112,7 +1112,9 @@ diff -ru OpenCSG-1.3.0/src/frameBufferObject.h OpenCSG-1.3.0-mac/src/frameBuffer
 +            GLuint depthID;
  
 -            unsigned int framebufferID;
+-            int oldFramebufferID;
 +            GLuint framebufferID;
++            GLint oldFramebufferID;
  
              bool         initialized;
          };
