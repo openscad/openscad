@@ -665,7 +665,7 @@ CGAL_Nef_polyhedron PolySet::render_cgal_nef_polyhedron() const
 		return CGAL_Nef_polyhedron(N);
 		}
 		catch (CGAL::Assertion_exception e) {
-			PRINTF("ERROR: Illegal polygonal object - make sure all polygons are defined with the same winding order. Skipping affected object.");
+			PRINTF("CGAL error: %s", e.what());
 			CGAL::set_error_behaviour(old_behaviour);
 			return CGAL_Nef_polyhedron();
 		}
