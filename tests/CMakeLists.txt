@@ -48,7 +48,7 @@ if (NOT OPENCSG_INCLUDE_DIR)
             PATHS ${OPENCSG_DIR}/include)
   find_library(OPENCSG_LIBRARY
                opencsg
-               PATHS ${OPENCSG_DIR}/src)
+               PATHS ${OPENCSG_DIR}/lib)
   if (NOT OPENCSG_INCLUDE_DIR OR NOT OPENCSG_LIBRARY)
     message(FATAL_ERROR "OpenCSG not found")
   else()
