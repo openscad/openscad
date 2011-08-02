@@ -153,6 +153,7 @@ build_opencsg()
   curl -O http://www.opencsg.org/OpenCSG-$version.tar.gz
   tar xzf OpenCSG-$version.tar.gz
   cd OpenCSG-$version
+  patch -p1 < $OPENSCADDIR/patches/OpenCSG-$version-FBO.patch
   patch -p1 < $OPENSCADDIR/patches/OpenCSG-$version-MacOSX-port.patch
   MACOSX_DEPLOY_DIR=$DEPLOYDIR qmake -r CONFIG+="x86 x86_64"
   make install
