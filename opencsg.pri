@@ -3,8 +3,8 @@ opencsg {
   CONFIG += glew
   include(glew.pri)
 
-  HEADERS += src/opencsgrenderer.h
-  SOURCES += src/opencsgrenderer.cc
+  HEADERS += src/OpenCSGRenderer.h
+  SOURCES += src/OpenCSGRenderer.cc
 
   isEmpty(DEPLOYDIR) {
     # Optionally specify location of OpenCSG using the 

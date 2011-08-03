@@ -120,7 +120,7 @@ FORMS   += src/MainWindow.ui \
 
 HEADERS += src/renderer.h \
            src/cgalrenderer.h \
-           src/throwntogetherrenderer.h \
+           src/ThrownTogetherRenderer.h \
            src/CGAL_renderer.h \
            src/OGL_helper.h \
            src/GLView.h \
@@ -151,7 +151,7 @@ HEADERS += src/renderer.h \
 SOURCES += src/openscad.cc \
            src/mainwin.cc \
            src/cgalrenderer.cc \
-           src/throwntogetherrenderer.cc \
+           src/ThrownTogetherRenderer.cc \
            src/glview.cc \
            src/export.cc \
            src/value.cc \

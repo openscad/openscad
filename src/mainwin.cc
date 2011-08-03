@@ -40,12 +40,12 @@
 #include "dxftess.h"
 #include "progress.h"
 #ifdef ENABLE_OPENCSG
-#include "opencsgRenderer.h"
+#include "OpenCSGRenderer.h"
 #endif
 #ifdef USE_PROGRESSWIDGET
 #include "ProgressWidget.h"
 #endif
-#include "thrownTogetherRenderer.h"
+#include "ThrownTogetherRenderer.h"
 
 #include <QMenu>
 #include <QTime>
