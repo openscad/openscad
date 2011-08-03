@@ -118,7 +118,7 @@ CGAL_Nef_polyhedron CsgNode::render_cgal_nef_polyhedron() const
 	cgal_nef_cache.insert(cache_id, new cgal_nef_cache_entry(N), N.weight());
 	}
 	catch (CGAL::Assertion_exception e) {
-		PRINTF("ERROR: Illegal polygonal object - make sure all polygons are defined with the same winding order. Skipping affected object.");
+		PRINTF("CGAL error: %s", e.what());
 	}
 	CGAL::set_error_behaviour(old_behaviour);
 

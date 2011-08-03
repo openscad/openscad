@@ -118,7 +118,11 @@ include(boost.pri)
 FORMS   += src/MainWindow.ui \
            src/Preferences.ui
 
-HEADERS += src/CGAL_renderer.h \
+HEADERS += src/renderer.h \
+           src/cgalrenderer.h \
+           src/throwntogetherrenderer.h \
+           src/CGAL_renderer.h \
+           src/OGL_helper.h \
            src/GLView.h \
            src/MainWindow.h \
            src/Preferences.h \
@@ -146,6 +150,8 @@ HEADERS += src/CGAL_renderer.h \
 
 SOURCES += src/openscad.cc \
            src/mainwin.cc \
+           src/cgalrenderer.cc \
+           src/throwntogetherrenderer.cc \
            src/glview.cc \
            src/export.cc \
            src/value.cc \
