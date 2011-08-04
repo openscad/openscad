@@ -37,7 +37,7 @@ public:
 	virtual std::string name() const;
 
   // FIXME: Make return value a reference
-	const std::vector<AbstractNode*> getChildren() const { 
+	const std::vector<AbstractNode*> &getChildren() const { 
 		return this->children;
 	}
 	size_t index() const { return this->idx; }
