@@ -179,15 +179,20 @@ file(GLOB BUGS_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/*.scad)
 # Add dumptest tests to CTest
 add_cmdline_test(dumptest txt ${MINIMAL_FILES})
 # Add csgtexttest tests to CTest
-add_cmdline_test(csgtexttest txt ${SCAD_FILES})
+add_cmdline_test(csgtexttest txt ${MINIMAL_FILES})
 # Add csgtermtest tests to CTest
-add_cmdline_test(csgtermtest txt ${SCAD_FILES})
+add_cmdline_test(csgtermtest txt ${MINIMAL_FILES})
+
 # Add cgaltest tests to CTest
-LIST(APPEND CGALTEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/cube.scad)
-LIST(APPEND CGALTEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/sphere.scad)
-LIST(APPEND CGALTEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/cylinder.scad)
+LIST(APPEND CGALTEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/minimal/cube.scad)
+LIST(APPEND CGALTEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/minimal/sphere.scad)
+LIST(APPEND CGALTEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/minimal/cylinder.scad)
 LIST(APPEND CGALTEST_FILES ${CMAKE_SOURCE_DIR}/../examples/example001.scad)
 add_cmdline_test(cgaltest stl ${CGALTEST_FILES})
+
+# Add opencsg tests to CTest
+#LIST(APPEND OPENCSGTEST_FILES ${CGALTEST_FILES})
+#add_cmdline_test(opencsgtest png ${OPENCSGTEST_FILES})
 
 # Add dxfexport tests to CTest
 #add_cmdline_test(${CMAKE_SOURCE_DIR}/../test-code/exportdxf dxf ${SCAD_FILES})
