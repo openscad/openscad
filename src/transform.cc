@@ -264,6 +264,7 @@ AbstractNode *TransformModule::evaluate(const Context *ctx, const ModuleInstanti
 			}
 #endif
 		}
+		// FIXME: Only lookup alpha if color was set
 		Value alpha = c.lookup_variable("alpha");
 		if (alpha.type == Value::NUMBER) {
 			node->matrix[16+3] = alpha.num;
