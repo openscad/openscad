@@ -166,14 +166,16 @@ bool save_framebuffer(OffscreenContext *ctx, const char *filename)
     std::cerr << "Unable to create file URL ref.";
     return false;
   }
+  CGDataConsumerRef dataconsumer = CGDataConsumerCreateWithURL(fileURL);
+
   CFIndex                 fileImageIndex = 1;
   CFMutableDictionaryRef  fileDict       = NULL;
-  CFStringRef             fileUTType     = kUTTypeJPEG;
+  CFStringRef             fileUTType     = kUTTypePNG;
   // Create an image destination opaque reference for authoring an image file
-  CGImageDestinationRef imageDest = CGImageDestinationCreateWithURL(fileURL, 
-                                                                    fileUTType, 
-                                                                    fileImageIndex, 
-                                                                    fileDict);
+  CGImageDestinationRef imageDest = CGImageDestinationCreateWithDataConsumer(dataconsumer,
+                                                                             fileUTType, 
+                                                                             fileImageIndex, 
+                                                                             fileDict);
   if (!imageDest) {
     std::cerr <<  "Unable to create CGImageDestinationRef.";
     return false;
@@ -190,10 +192,11 @@ bool save_framebuffer(OffscreenContext *ctx, const char *filename)
   free(flippedBuffer);
   free(bufferData);
   CFRelease(imageDest);
+  CFRelease(dataconsumer);
   CFRelease(fileURL);
   CFRelease(fname);
   CFRelease(imageProps);
-  CGColorSpaceRelease( colorSpace );
+  CGColorSpaceRelease(colorSpace);
   CGImageRelease(imageRef);
   return true;
 }

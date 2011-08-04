@@ -30,6 +30,8 @@ QString librarydir;
 QSet<QString> dependencies;
 const char *make_command = NULL;
 
+//#define DEBUG
+
 void handle_dep(QString filename)
 {
 	if (filename.startsWith("/"))
@@ -211,6 +213,7 @@ int main(int argc, char *argv[])
 	csgInfo.glview = new OffscreenView(512,512);
 
 	glewInit();
+#ifdef DEBUG
 	cout << "GLEW version " << glewGetString(GLEW_VERSION) << "\n";
 	cout << (const char *)glGetString(GL_RENDERER) << "(" << (const char *)glGetString(GL_VENDOR) << ")\n"
 			 << "OpenGL version " << (const char *)glGetString(GL_VERSION) << "\n";
@@ -226,6 +229,7 @@ int main(int argc, char *argv[])
 	if (GLEW_EXT_packed_depth_stencil) {
 		cout << "EXT_packed_depth_stencil\n";
 	}
+#endif
 
 	OpenCSGRenderer opencsgRenderer(csgInfo.root_chain, csgInfo.highlights_chain, csgInfo.background_chain, csgInfo.glview->shaderinfo);
 	ThrownTogetherRenderer thrownTogetherRenderer(csgInfo.root_chain, csgInfo.highlights_chain, csgInfo.background_chain);
@@ -234,7 +238,7 @@ int main(int argc, char *argv[])
 
 	csgInfo.glview->paintGL();
 
-	csgInfo.glview->save("out.png");
+	csgInfo.glview->save("/dev/stdout");
 	
 	destroy_builtin_functions();
 	destroy_builtin_modules();
