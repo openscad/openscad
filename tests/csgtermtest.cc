@@ -23,7 +23,7 @@
  *
  */
 
-#include "CSGTermRenderer.h"
+#include "CSGTermEvaluator.h"
 #include "CSGTextCache.h"
 #include "openscad.h"
 #include "node.h"
@@ -154,18 +154,18 @@ int main(int argc, char **argv)
 
 //	cout << tree.getString(*root_node) << "\n";
 
-	CSGTermRenderer renderer(tree);
-	CSGTerm *root_term = renderer.renderCSGTerm(*root_node, NULL, NULL);
+	CSGTermEvaluator evaluator(tree);
+	CSGTerm *root_term = evaluator.evaluateCSGTerm(*root_node, NULL, NULL);
 	
-	// cout << "Stored terms: " << renderer.stored_term.size() << "\n";
-	// for (map<int, class CSGTerm*>::iterator iter = renderer.stored_term.begin();
-	// 		 iter != renderer.stored_term.end();
+	// cout << "Stored terms: " << evaluator.stored_term.size() << "\n";
+	// for (map<int, class CSGTerm*>::iterator iter = evaluator.stored_term.begin();
+	// 		 iter != evaluator.stored_term.end();
 	// 		 iter++) {
 	// 	cout << iter->first << ":" << (iter->second ? iter->second->label : "NULL") << "\n";
 	// }
 
-	// if (renderer.background) cout << "Background terms: " << renderer.background->size() << "\n";
-	// if (renderer.highlights) cout << "Highlights terms: " << renderer.highlights->size() << "\n";
+	// if (evaluator.background) cout << "Background terms: " << evaluator.background->size() << "\n";
+	// if (evaluator.highlights) cout << "Highlights terms: " << evaluator.highlights->size() << "\n";
 
 	if (root_term) {
 		cout << root_term->dump() << "\n";
