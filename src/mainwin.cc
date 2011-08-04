@@ -41,14 +41,14 @@
 #include "progress.h"
 #ifdef ENABLE_OPENCSG
 #include "CSGTermEvaluator.h"
-#include "opencsgRenderer.h"
+#include "OpenCSGRenderer.h"
 #endif
 #ifdef USE_PROGRESSWIDGET
 #include "ProgressWidget.h"
 #endif
 #include "CGALEvaluator.h"
 #include "PolySetCGALEvaluator.h"
-#include "thrownTogetherRenderer.h"
+#include "ThrownTogetherRenderer.h"
 
 #include <QMenu>
 #include <QTime>

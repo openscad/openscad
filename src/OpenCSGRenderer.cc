@@ -25,7 +25,7 @@
  */
 
 #include <GL/glew.h>
-#include "opencsgrenderer.h"
+#include "OpenCSGRenderer.h"
 #include "polyset.h"
 #include "csgterm.h"
 
