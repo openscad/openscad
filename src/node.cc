@@ -32,9 +32,10 @@
 #include "polyset.h"
 #include "visitor.h"
 #include "nodedumper.h"
+#include "stl-utils.h"
 
-#include <QRegExp>
 #include <sstream>
+#include <algorithm>
 
 size_t AbstractNode::idx_counter;
 
@@ -46,8 +47,7 @@ AbstractNode::AbstractNode(const ModuleInstantiation *mi)
 
 AbstractNode::~AbstractNode()
 {
-	foreach (AbstractNode *v, children)
-		delete v;
+	std::for_each(this->children.begin(), this->children.end(), del_fun<AbstractNode>());
 }
 
 Response AbstractNode::accept(class State &state, Visitor &visitor) const
@@ -87,8 +87,7 @@ std::string AbstractIntersectionNode::name() const
 
 void AbstractNode::progress_prepare()
 {
-	foreach (AbstractNode *v, children)
-		v->progress_prepare();
+	std::for_each(this->children.begin(), this->children.end(), std::mem_fun(&AbstractNode::progress_prepare));
 	this->progress_mark = ++progress_report_count;
 }
 

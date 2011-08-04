@@ -164,7 +164,8 @@ HEADERS += src/renderer.h \
            src/CSGTermEvaluator.h \
            src/myqhash.h \
            src/Tree.h \
-           src/mathc99.h
+           src/mathc99.h \
+           src/stl-utils.h
 
 SOURCES += src/openscad.cc \
            src/mainwin.cc \

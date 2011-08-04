@@ -3,6 +3,7 @@
 
 #include "node.h"
 #include "visitor.h"
+#include <string>
 
 class ProjectionNode : public AbstractPolyNode
 {

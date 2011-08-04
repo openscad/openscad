@@ -82,7 +82,7 @@ void for_eval(AbstractNode *node, int l, const QVector<QString> &call_argnames, 
 		foreach (ModuleInstantiation *v, arg_children) {
 			AbstractNode *n = v->evaluate(arg_context);
 			if (n != NULL)
-				node->children.append(n);
+				node->children.push_back(n);
 		}
 	}
 }
@@ -139,7 +139,7 @@ AbstractNode *ControlModule::evaluate(const Context*, const ModuleInstantiation 
 		foreach (ModuleInstantiation *v, inst->children) {
 			AbstractNode *n = v->evaluate(&c);
 			if (n != NULL)
-				node->children.append(n);
+				node->children.push_back(n);
 		}
 	}
 
@@ -155,14 +155,14 @@ AbstractNode *ControlModule::evaluate(const Context*, const ModuleInstantiation 
 			foreach (ModuleInstantiation *v, ifelse->children) {
 				AbstractNode *n = v->evaluate(ifelse->ctx);
 				if (n != NULL)
-					node->children.append(n);
+					node->children.push_back(n);
 			}
 		}
 		else {
 			foreach (ModuleInstantiation *v, ifelse->else_children) {
 				AbstractNode *n = v->evaluate(ifelse->ctx);
 				if (n != NULL)
-					node->children.append(n);
+					node->children.push_back(n);
 			}
 		}
 	}

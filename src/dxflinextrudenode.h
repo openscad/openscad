@@ -3,6 +3,7 @@
 
 #include "node.h"
 #include "visitor.h"
+#include <QString>
 
 class DxfLinearExtrudeNode : public AbstractPolyNode
 {

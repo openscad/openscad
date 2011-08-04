@@ -2,12 +2,22 @@
 #include "visitor.h"
 #include "node.h"
 #include "state.h"
+#include <algorithm>
 
 void Traverser::execute() 
 {
 	State state(NULL);
 	traverse(this->root, state);
 }
+
+struct TraverseNode
+{
+	Traverser *traverser;
+	const State &state;
+	TraverseNode(Traverser *traverser, const State &state) : 
+		traverser(traverser), state(state) {}
+	void operator()(const AbstractNode *node) { traverser->traverse(*node, state); }
+};
 
 void Traverser::traverse(const AbstractNode &node, const State &state)
 {
@@ -23,13 +33,7 @@ void Traverser::traverse(const AbstractNode &node, const State &state)
 	}
 	
 	newstate.setParent(&node);
-	const std::list<AbstractNode*> &children = node.getChildren();
-	for (std::list<AbstractNode*>::const_iterator iter = children.begin();
-			 iter != children.end();
-			 iter++) {
-		
-		traverse(**iter, newstate);
-	}
+	std::for_each(node.getChildren().begin(), node.getChildren().end(), TraverseNode(this, newstate));
 	
 	if (traversaltype == POSTFIX || traversaltype == PRE_AND_POSTFIX) {
 		newstate.setParent(state.parent());

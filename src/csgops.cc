@@ -47,7 +47,7 @@ AbstractNode *CsgModule::evaluate(const Context*, const ModuleInstantiation *ins
 	foreach (ModuleInstantiation *v, inst->children) {
 		AbstractNode *n = v->evaluate(inst->ctx);
 		if (n != NULL)
-			node->children.append(n);
+			node->children.push_back(n);
 	}
 	return node;
 }

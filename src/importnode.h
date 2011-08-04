@@ -3,6 +3,7 @@
 
 #include "node.h"
 #include "visitor.h"
+#include <QString>
 
 enum import_type_e {
 	TYPE_STL,

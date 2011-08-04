@@ -14,9 +14,9 @@ public:
   virtual ~Traverser() { }
   
   void execute();
-private:
   // FIXME: reverse parameters
   void traverse(const AbstractNode &node, const class State &state);
+private:
 
   Visitor &visitor;
   const AbstractNode &root;

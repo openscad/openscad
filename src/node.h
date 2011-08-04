@@ -1,8 +1,7 @@
 #ifndef NODE_H_
 #define NODE_H_
 
-#include <QCache>
-#include <QVector>
+#include <vector>
 
 #include "traverser.h"
 
@@ -38,16 +37,15 @@ public:
 	virtual std::string name() const;
 
   // FIXME: Make return value a reference
-	const std::list<AbstractNode*> getChildren() const { 
-		return this->children.toList().toStdList(); 
+	const std::vector<AbstractNode*> getChildren() const { 
+		return this->children;
 	}
 	size_t index() const { return this->idx; }
 
 	static void resetIndexCounter() { idx_counter = 1; }
 
-	// FIXME: Rewrite to STL container?
 	// FIXME: Make protected
-	QVector<AbstractNode*> children;
+	std::vector<AbstractNode*> children;
 	const ModuleInstantiation *modinst;
 
 	// progress_mark is a running number used for progress indication

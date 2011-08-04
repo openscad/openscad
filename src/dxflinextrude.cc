@@ -113,7 +113,7 @@ AbstractNode *DxfLinearExtrudeModule::evaluate(const Context *ctx, const ModuleI
 		foreach (ModuleInstantiation *v, inst->children) {
 			AbstractNode *n = v->evaluate(inst->ctx);
 			if (n)
-				node->children.append(n);
+				node->children.push_back(n);
 		}
 	}
 
