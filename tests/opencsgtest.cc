@@ -211,6 +211,12 @@ int main(int argc, char *argv[])
 	QDir::setCurrent(original_path.absolutePath());
 
 	csgInfo.glview = new OffscreenView(512,512);
+	BoundingBox bbox = csgInfo.root_chain->getBoundingBox();
+
+	Vector3d center = (bbox.min() + bbox.max()) / 2;
+	double radius = (bbox.max() - bbox.min()).norm() / 2;
+	csgInfo.glview->setCamera(center[0], center[1] - 2 * radius, center[2],
+														center[0], center[1], center[2]);
 
 	glewInit();
 #ifdef DEBUG
