@@ -148,18 +148,20 @@ int main(int argc, char *argv[])
 
 	Tree tree(root_node);
 
+	CsgInfo csgInfo;
 	QHash<std::string, CGAL_Nef_polyhedron> cache;
 	CGALEvaluator cgalevaluator(cache, tree);
 	PolySetCGALEvaluator psevaluator(cgalevaluator);
 	CSGTermEvaluator evaluator(tree);
-	CSGTerm *root_raw_term = evaluator.evaluateCSGTerm(*root_node, NULL, NULL);
+	CSGTerm *root_raw_term = evaluator.evaluateCSGTerm(*root_node, 
+																										 csgInfo.highlight_terms, 
+																										 csgInfo.background_terms);
 
 	if (!root_raw_term) {
 		cerr << "Error: CSG generation failed! (no top level object found)\n";
 		return 1;
 	}
 
-	CsgInfo csgInfo;
 	csgInfo.root_norm_term = root_raw_term->link();
 		
 	// CSG normalization
@@ -177,7 +179,7 @@ int main(int argc, char *argv[])
 	csgInfo.root_chain->import(csgInfo.root_norm_term);
 	
 	if (csgInfo.highlight_terms.size() > 0) {
-		cerr << "Compiling highlights (" << "  CSG Trees)...\n";
+		cerr << "Compiling highlights (" << csgInfo.highlight_terms.size() << "  CSG Trees)...\n";
 		
 		csgInfo.highlights_chain = new CSGChain();
 		for (unsigned int i = 0; i < csgInfo.highlight_terms.size(); i++) {
