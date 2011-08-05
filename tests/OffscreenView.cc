@@ -7,7 +7,8 @@
 #define FAR_FAR_AWAY 100000.0
 
 OffscreenView::OffscreenView(size_t width, size_t height)
-	: orthomode(false), showaxes(true), showfaces(true), showedges(false), viewer_distance(500)
+	: orthomode(false), showaxes(true), showfaces(true), showedges(false), viewer_distance(500), 
+		object_rot_x(35), object_rot_y(0), object_rot_z(25)
 {
 	for (int i = 0; i < 10; i++) this->shaderinfo[i] = 0;
   this->ctx = create_offscreen_context(width, height);
@@ -190,9 +191,9 @@ void OffscreenView::paintGL()
 
 //	glTranslated(object_trans_x, object_trans_y, object_trans_z);
 
-	// glRotated(object_rot_x, 1.0, 0.0, 0.0);
-	// glRotated(object_rot_y, 0.0, 1.0, 0.0);
-	// glRotated(object_rot_z, 0.0, 0.0, 1.0);
+	glRotated(object_rot_x, 1.0, 0.0, 0.0);
+	glRotated(object_rot_y, 0.0, 1.0, 0.0);
+	glRotated(object_rot_z, 0.0, 0.0, 1.0);
 
 	// Large gray axis cross inline with the model
   // FIXME: This is always gray - adjust color to keep contrast with background

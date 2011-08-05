@@ -23,6 +23,9 @@ public:
 private:
 	Renderer *renderer;
 	double w_h_ratio;
+	double object_rot_x;
+	double object_rot_y;
+	double object_rot_z;
 
 	bool orthomode;
 	bool showaxes;
