@@ -32,7 +32,7 @@ def initialize_environment():
 def init_expected_filename(testname, cmd):
     global expecteddir, expectedfilename
     expecteddir = os.path.join(options.regressiondir, os.path.split(cmd)[1])
-    expectedfilename = os.path.join(expecteddir, testname + "-expected" + options.suffix)
+    expectedfilename = os.path.join(expecteddir, testname + "-expected." + options.suffix)
 
 def verify_test(testname, cmd):
     global expectedfilename
@@ -54,18 +54,28 @@ def get_normalized_text(filename):
 def compare_text(expected, actual):
     return get_normalized_text(expected) == get_normalized_text(actual)
 
+def compare_default(resultfilename):
+    if not compare_text(expectedfilename, resultfilename): 
+        execute_and_redirect("diff", [expectedfilename, resultfilename], sys.stderr)
+        return False
+    return True
+
+def compare_png(resultfilename):
+    if execute_and_redirect("diff", [expectedfilename, resultfilename], sys.stderr) != 0:
+        return False
+    return True
+
 def compare_with_expected(resultfilename):
     if not options.generate:
-        if not compare_text(expectedfilename, resultfilename): 
-            execute_and_redirect("diff", [expectedfilename, resultfilename], sys.stderr)
-            return False
+        if "compare_" + options.suffix in globals(): return globals()["compare_" + options.suffix](resultfilename)
+        else: return compare_default(resultfilename)
     return True
 
 def run_test(testname, cmd, args):
     cmdname = os.path.split(options.cmd)[1]
 
     outputdir = os.path.join(os.getcwd(), cmdname + "-output")
-    actualfilename = os.path.join(outputdir, testname + "-actual" + options.suffix)
+    actualfilename = os.path.join(outputdir, testname + "-actual." + options.suffix)
 
     if options.generate: 
         if not os.path.exists(expecteddir): os.makedirs(expecteddir)
@@ -116,13 +126,12 @@ if __name__ == '__main__':
     options = Options()
     options.regressiondir = os.path.join(os.path.split(sys.argv[0])[0], "regression")
     options.generate = False
-    options.suffix = ".txt"
+    options.suffix = "txt"
     for o, a in opts:
         if o in ("-g", "--generate"): options.generate = True
         elif o in ("-s", "--suffix"):
-            if a[0] == '.': options.suffix = ""
-            else: options.suffix = "."
-            options.suffix += a
+            if a[0] == '.': options.suffix = a[1:]
+            else: options.suffix = a
         elif o in ("-t", "--test"):
             options.testname = a
             
