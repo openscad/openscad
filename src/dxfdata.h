@@ -3,17 +3,15 @@
 
 #include <QList>
 #include <QString>
+#include <Eigen/Dense>
+
+using Eigen::Vector2d;
 
 class DxfData
 {
 public:
-	struct Point {
-		double x, y;
-		Point() : x(0), y(0) { }
-		Point(double x, double y) : x(x), y(y) { }
-	};
 	struct Path {
-		QList<Point*> points;
+		QList<Vector2d*> points;
 		bool is_closed, is_inner;
 		Path() : is_closed(false), is_inner(false) { }
 	};
@@ -33,7 +31,7 @@ public:
 		}
 	};
 
-	QList<Point> points;
+	QList<Vector2d> points;
 	QList<Path> paths;
 	QList<Dim> dims;
 
@@ -43,7 +41,7 @@ public:
 	DxfData(const struct CGAL_Nef_polyhedron &N);
 #endif
 
-	Point *addPoint(double x, double y);
+	Vector2d *addPoint(double x, double y);
 
 private:
 	void fixup_path_direction();

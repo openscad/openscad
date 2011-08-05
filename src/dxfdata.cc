@@ -37,10 +37,9 @@
 #include <assert.h>
 
 struct Line {
-	typedef DxfData::Point Point;
-	Point *p[2];
+	Vector2d *p[2];
 	bool disabled;
-	Line(Point *p1, Point *p2) { p[0] = p1; p[1] = p2; disabled = false; }
+	Line(Vector2d *p1, Vector2d *p2) { p[0] = p1; p[1] = p2; disabled = false; }
 	Line() { p[0] = NULL; p[1] = NULL; disabled = false; }
 };
 
@@ -162,16 +161,16 @@ DxfData::DxfData(double fn, double fs, double fa, QString filename, QString laye
 			}
 			else if (mode == "CIRCLE") {
 				int n = get_fragments_from_r(radius, fn, fs, fa);
-				Point center(xverts[0], yverts[0]);
+				Vector2d center(xverts[0], yverts[0]);
 				for (int i = 0; i < n; i++) {
 					double a1 = (2*M_PI*i)/n;
 					double a2 = (2*M_PI*(i+1))/n;
-					ADD_LINE(cos(a1)*radius + center.x, sin(a1)*radius + center.y,
-									 cos(a2)*radius + center.x, sin(a2)*radius + center.y);
+					ADD_LINE(cos(a1)*radius + center[0], sin(a1)*radius + center[1],
+									 cos(a2)*radius + center[0], sin(a2)*radius + center[1]);
 				}
 			}
 			else if (mode == "ARC") {
-				Point center(xverts[0], yverts[0]);
+				Vector2d center(xverts[0], yverts[0]);
 				int n = get_fragments_from_r(radius, fn, fs, fa);
 				while (arc_start_angle > arc_stop_angle)
 					arc_stop_angle += 360.0;
@@ -181,29 +180,29 @@ DxfData::DxfData(double fn, double fs, double fa, QString filename, QString laye
 					double a2 = ((arc_stop_angle-arc_start_angle)*(i+1))/n;
 					a1 = (arc_start_angle + a1) * M_PI / 180.0;
 					a2 = (arc_start_angle + a2) * M_PI / 180.0;
-					ADD_LINE(cos(a1)*radius + center.x, sin(a1)*radius + center.y,
-									 cos(a2)*radius + center.x, sin(a2)*radius + center.y);
+					ADD_LINE(cos(a1)*radius + center[0], sin(a1)*radius + center[1],
+									 cos(a2)*radius + center[0], sin(a2)*radius + center[1]);
 				}
 			}
 			else if (mode == "ELLIPSE") {
 				// Commented code is meant as documentation of vector math
 				while (ellipse_start_angle > ellipse_stop_angle) ellipse_stop_angle += 2 * M_PI;
 //				Vector2d center(xverts[0], yverts[0]);
-				Point center(xverts[0], yverts[0]);
+				Vector2d center(xverts[0], yverts[0]);
 //				Vector2d ce(xverts[1], yverts[1]);
-				Point ce(xverts[1], yverts[1]);
+				Vector2d ce(xverts[1], yverts[1]);
 //				double r_major = ce.length();
-				double r_major = sqrt(ce.x*ce.x + ce.y*ce.y);
+				double r_major = sqrt(ce[0]*ce[0] + ce[1]*ce[1]);
 //				double rot_angle = ce.angle();
 				double rot_angle;
 				{
 //					double dot = ce.dot(Vector2d(1.0, 0.0));
-					double dot = ce.x;
+					double dot = ce[0];
 					double cosval = dot / r_major;
 					if (cosval > 1.0) cosval = 1.0;
 					if (cosval < -1.0) cosval = -1.0;
 					rot_angle = acos(cosval);
-					if (ce.y < 0.0) rot_angle = 2 * M_PI - rot_angle;
+					if (ce[1] < 0.0) rot_angle = 2 * M_PI - rot_angle;
 				}
 
 				// the ratio stored in 'radius; due to the parser code not checking entity type
@@ -212,24 +211,24 @@ DxfData::DxfData(double fn, double fs, double fa, QString filename, QString laye
 				int n = get_fragments_from_r(r_major, fn, fs, fa);
 				n = (int)ceil(n * sweep_angle / (2 * M_PI));
 //				Vector2d p1;
-				Point p1;
+				Vector2d p1;
 				for (int i=0;i<=n;i++) {
 					double a = (ellipse_start_angle + sweep_angle*i/n);
 //					Vector2d p2(cos(a)*r_major, sin(a)*r_minor);
-					Point p2(cos(a)*r_major, sin(a)*r_minor);
+					Vector2d p2(cos(a)*r_major, sin(a)*r_minor);
 //					p2.rotate(rot_angle);
-					Point p2_rot(cos(rot_angle)*p2.x - sin(rot_angle)*p2.y,
-											 sin(rot_angle)*p2.x + cos(rot_angle)*p2.y);
+					Vector2d p2_rot(cos(rot_angle)*p2[0] - sin(rot_angle)*p2[1],
+											 sin(rot_angle)*p2[0] + cos(rot_angle)*p2[1]);
 //					p2 += center;
-					p2_rot.x += center.x;
-					p2_rot.y += center.y;
+					p2_rot[0] += center[0];
+					p2_rot[1] += center[1];
 					if (i > 0) {
 // 						ADD_LINE(p1[0], p1[1], p2[0], p2[1]);
-						ADD_LINE(p1.x, p1.y, p2_rot.x, p2_rot.y);
+						ADD_LINE(p1[0], p1[1], p2_rot[0], p2_rot[1]);
 					}
 //					p1 = p2;
-					p1.x = p2_rot.x;
-					p1.y = p2_rot.y;
+					p1[0] = p2_rot[0];
+					p1[1] = p2_rot[1];
 				}
 			}
 			else if (mode == "INSERT") {
@@ -238,10 +237,10 @@ DxfData::DxfData(double fn, double fs, double fa, QString filename, QString laye
 				int n = blockdata[iddata].size();
 				for (int i = 0; i < n; i++) {
 					double a = arc_start_angle * M_PI / 180.0;
-					double lx1 = blockdata[iddata][i].p[0]->x * ellipse_start_angle;
-					double ly1 = blockdata[iddata][i].p[0]->y * ellipse_stop_angle;
-					double lx2 = blockdata[iddata][i].p[1]->x * ellipse_start_angle;
-					double ly2 = blockdata[iddata][i].p[1]->y * ellipse_stop_angle;
+					double lx1 = (*blockdata[iddata][i].p[0])[0] * ellipse_start_angle;
+					double ly1 = (*blockdata[iddata][i].p[0])[1] * ellipse_stop_angle;
+					double lx2 = (*blockdata[iddata][i].p[1])[0] * ellipse_start_angle;
+					double ly2 = (*blockdata[iddata][i].p[1])[1] * ellipse_stop_angle;
 					double px1 = (cos(a)*lx1 - sin(a)*ly1) * scale + xverts[0];
 					double py1 = (sin(a)*lx1 + cos(a)*ly1) * scale + yverts[0];
 					double px2 = (cos(a)*lx2 - sin(a)*ly2) * scale + xverts[0];
@@ -381,7 +380,7 @@ DxfData::DxfData(double fn, double fs, double fa, QString filename, QString laye
 
 		foreach (int i, enabled_lines) {
 			for (int j = 0; j < 2; j++) {
-				QVector<int> *lv = &grid.data(lines[i].p[j]->x, lines[i].p[j]->y);
+				QVector<int> *lv = &grid.data((*lines[i].p[j])[0], (*lines[i].p[j])[1]);
 				for (int ki = 0; ki < lv->count(); ki++) {
 					int k = lv->at(ki);
 					if (k == i || lines[k].disabled)
@@ -404,20 +403,20 @@ DxfData::DxfData(double fn, double fs, double fa, QString filename, QString laye
 		this_path->points.append(lines[current_line].p[current_point]);
 		while (1) {
 			this_path->points.append(lines[current_line].p[!current_point]);
-			Point *ref_point = lines[current_line].p[!current_point];
+			const Vector2d &ref_point = *lines[current_line].p[!current_point];
 			lines[current_line].disabled = true;
 			enabled_lines.remove(current_line);
-			QVector<int> *lv = &grid.data(ref_point->x, ref_point->y);
+			QVector<int> *lv = &grid.data(ref_point[0], ref_point[1]);
 			for (int ki = 0; ki < lv->count(); ki++) {
 				int k = lv->at(ki);
 				if (lines[k].disabled)
 					continue;
-				if (grid.eq(ref_point->x, ref_point->y, lines[k].p[0]->x, lines[k].p[0]->y)) {
+				if (grid.eq(ref_point[0], ref_point[1], (*lines[k].p[0])[0], (*lines[k].p[0])[1])) {
 					current_line = k;
 					current_point = 0;
 					goto found_next_line_in_open_path;
 				}
-				if (grid.eq(ref_point->x, ref_point->y, lines[k].p[1]->x, lines[k].p[1]->y)) {
+				if (grid.eq(ref_point[0], ref_point[1], (*lines[k].p[1])[0], (*lines[k].p[1])[1])) {
 					current_line = k;
 					current_point = 1;
 					goto found_next_line_in_open_path;
@@ -440,20 +439,20 @@ DxfData::DxfData(double fn, double fs, double fa, QString filename, QString laye
 		this_path->points.append(lines[current_line].p[current_point]);
 		while (1) {
 			this_path->points.append(lines[current_line].p[!current_point]);
-			Point *ref_point = lines[current_line].p[!current_point];
+			const Vector2d &ref_point = *lines[current_line].p[!current_point];
 			lines[current_line].disabled = true;
 			enabled_lines.remove(current_line);
-			QVector<int> *lv = &grid.data(ref_point->x, ref_point->y);
+			QVector<int> *lv = &grid.data(ref_point[0], ref_point[1]);
 			for (int ki = 0; ki < lv->count(); ki++) {
 				int k = lv->at(ki);
 				if (lines[k].disabled)
 					continue;
-				if (grid.eq(ref_point->x, ref_point->y, lines[k].p[0]->x, lines[k].p[0]->y)) {
+				if (grid.eq(ref_point[0], ref_point[1], (*lines[k].p[0])[0], (*lines[k].p[0])[1])) {
 					current_line = k;
 					current_point = 0;
 					goto found_next_line_in_closed_path;
 				}
-				if (grid.eq(ref_point->x, ref_point->y, lines[k].p[1]->x, lines[k].p[1]->y)) {
+					if (grid.eq(ref_point[0], ref_point[1], (*lines[k].p[1])[0], (*lines[k].p[1])[1])) {
 					current_line = k;
 					current_point = 1;
 					goto found_next_line_in_closed_path;
@@ -471,7 +470,7 @@ DxfData::DxfData(double fn, double fs, double fa, QString filename, QString laye
 	for (int i = 0; i < this->paths.count(); i++) {
 		printf("Path %d (%s):\n", i, this->paths[i].is_closed ? "closed" : "open");
 		for (int j = 0; j < this->paths[i].points.count(); j++)
-			printf("  %f %f\n", this->paths[i].points[j]->x, this->paths[i].points[j]->y);
+			printf("  %f %f\n", (*this->paths[i].points[j])[0], (*this->paths[i].points[j])[1]);
 	}
 	printf("--------------------\n");
 	fflush(stdout);
@@ -488,11 +487,11 @@ void DxfData::fixup_path_direction()
 		if (!this->paths[i].is_closed)
 			break;
 		this->paths[i].is_inner = true;
-		double min_x = this->paths[i].points[0]->x;
+		double min_x = (*this->paths[i].points[0])[0];
 		int min_x_point = 0;
 		for (int j = 1; j < this->paths[i].points.count(); j++) {
-			if (this->paths[i].points[j]->x < min_x) {
-				min_x = this->paths[i].points[j]->x;
+			if ((*this->paths[i].points[j])[0] < min_x) {
+				min_x = (*this->paths[i].points[j])[0];
 				min_x_point = j;
 			}
 		}
@@ -500,10 +499,10 @@ void DxfData::fixup_path_direction()
 		int b = min_x_point;
 		int a = b == 0 ? this->paths[i].points.count() - 2 : b - 1;
 		int c = b == this->paths[i].points.count() - 1 ? 1 : b + 1;
-		double ax = this->paths[i].points[a]->x - this->paths[i].points[b]->x;
-		double ay = this->paths[i].points[a]->y - this->paths[i].points[b]->y;
-		double cx = this->paths[i].points[c]->x - this->paths[i].points[b]->x;
-		double cy = this->paths[i].points[c]->y - this->paths[i].points[b]->y;
+		double ax = (*this->paths[i].points[a])[0] - (*this->paths[i].points[b])[0];
+		double ay = (*this->paths[i].points[a])[1] - (*this->paths[i].points[b])[1];
+		double cx = (*this->paths[i].points[c])[0] - (*this->paths[i].points[b])[0];
+		double cy = (*this->paths[i].points[c])[1] - (*this->paths[i].points[b])[1];
 #if 0
 		printf("Rotate check:\n");
 		printf("  a/b/c indices = %d %d %d\n", a, b, c);
@@ -518,9 +517,9 @@ void DxfData::fixup_path_direction()
 	}
 }
 
-DxfData::Point *DxfData::addPoint(double x, double y)
+Vector2d *DxfData::addPoint(double x, double y)
 {
-	this->points.append(Point(x, y));
+	this->points.append(Vector2d(x, y));
 	return &this->points.last();
 }
 

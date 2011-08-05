@@ -232,12 +232,12 @@ void dxf_tesselate(PolySet *ps, DxfData *dxf, double rot, bool up, bool do_trian
 			continue;
 		gluTessBeginContour(tobj);
 		for (int j = 1; j < dxf->paths[i].points.count(); j++) {
-			point_to_path.data(dxf->paths[i].points[j]->x,
-					dxf->paths[i].points[j]->y,
-					h) = QPair<int,int>(i, j);
+			point_to_path.data((*dxf->paths[i].points[j])[0],
+												 (*dxf->paths[i].points[j])[1],
+												 h) = QPair<int,int>(i, j);
 			vl.append(tess_vdata());
-			vl.last().v[0] = dxf->paths[i].points[j]->x;
-			vl.last().v[1] = dxf->paths[i].points[j]->y;
+			vl.last().v[0] = (*dxf->paths[i].points[j])[0];
+			vl.last().v[1] = (*dxf->paths[i].points[j])[1];
 			vl.last().v[2] = h;
 			gluTessVertex(tobj, vl.last().v, vl.last().v);
 		}

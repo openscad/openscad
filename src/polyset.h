@@ -1,27 +1,21 @@
 #ifndef POLYSET_H_
 #define POLYSET_H_
 
-#include <GL/glew.h> // this must be included before the GL headers
-#include <qgl.h>
-
+#include <GL/glew.h>
 #include "grid.h"
-#ifdef ENABLE_OPENCSG
-#  include <opencsg.h>
-#endif
+#include <vector>
+#include <Eigen/Core>
+#include <Eigen/Geometry>
 
-#include <QCache>
+using Eigen::Vector3d;
+typedef Eigen::AlignedBox<double, 3> BoundingBox;
 
 class PolySet
 {
 public:
-	struct Point {
-		double x, y, z;
-		Point() : x(0), y(0), z(0) { }
-		Point(double x, double y, double z) : x(x), y(y), z(z) { }
-	};
-	typedef QList<Point> Polygon;
-	QVector<Polygon> polygons;
-	QVector<Polygon> borders;
+	typedef std::vector<Vector3d> Polygon;
+	std::vector<Polygon> polygons;
+	std::vector<Polygon> borders;
 	Grid3d<void*> grid;
 
 	bool is2d;
@@ -31,15 +25,10 @@ public:
 	~PolySet();
 
 	void append_poly();
-	void append_vertex(double x, double y, double z);
-	void insert_vertex(double x, double y, double z);
+	void append_vertex(double x, double y, double z = 0.0);
+	void insert_vertex(double x, double y, double z = 0.0);
 
-	void append_vertex(double x, double y) {
-		append_vertex(x, y, 0.0);
-	}
-	void insert_vertex(double x, double y) {
-		insert_vertex(x, y, 0.0);
-	}
+	BoundingBox getBoundingBox() const;
 
 	enum colormode_e {
 		COLORMODE_NONE,

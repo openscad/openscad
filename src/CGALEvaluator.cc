@@ -193,10 +193,10 @@ Response CGALEvaluator::visit(State &state, const TransformNode &node)
 				
 				DxfData dd(N);
 				for (int i=0; i < dd.points.size(); i++) {
-					CGAL_Kernel2::Point_2 p = CGAL_Kernel2::Point_2(dd.points[i].x, dd.points[i].y);
+					CGAL_Kernel2::Point_2 p = CGAL_Kernel2::Point_2(dd.points[i][0], dd.points[i][1]);
 					p = t.transform(p);
-					dd.points[i].x = to_double(p.x());
-					dd.points[i].y = to_double(p.y());
+					dd.points[i][0] = to_double(p.x());
+					dd.points[i][1] = to_double(p.y());
 				}
 				
 				PolySet ps;
@@ -309,7 +309,7 @@ CGAL_Nef_polyhedron CGALEvaluator::evaluateCGALMesh(const AbstractPolyNode &node
 class CGAL_Build_PolySet : public CGAL::Modifier_base<CGAL_HDS>
 {
 public:
-	typedef CGAL_HDS::Vertex::Point Point;
+	typedef CGAL_HDS::Vertex::Point CGALPoint;
 
 	const PolySet &ps;
 	CGAL_Build_PolySet(const PolySet &ps) : ps(ps) { }
@@ -318,16 +318,16 @@ public:
 	{
 		CGAL_Polybuilder B(hds, true);
 
-		QList<PolySet::Point> vertices;
+		QList<CGALPoint> vertices;
 		Grid3d<int> vertices_idx(GRID_FINE);
 
-		for (int i = 0; i < ps.polygons.size(); i++) {
+		for (size_t i = 0; i < ps.polygons.size(); i++) {
 			const PolySet::Polygon *poly = &ps.polygons[i];
-			for (int j = 0; j < poly->size(); j++) {
-				const PolySet::Point *p = &poly->at(j);
-				if (!vertices_idx.has(p->x, p->y, p->z)) {
-					vertices_idx.data(p->x, p->y, p->z) = vertices.size();
-					vertices.append(*p);
+			for (size_t j = 0; j < poly->size(); j++) {
+				const Vector3d &p = poly->at(j);
+				if (!vertices_idx.has(p[0], p[1], p[2])) {
+					vertices_idx.data(p[0], p[1], p[2]) = vertices.size();
+					vertices.append(CGALPoint(p[0], p[1], p[2]));
 				}
 			}
 		}
@@ -337,21 +337,21 @@ public:
 		printf("=== CGAL Surface ===\n");
 #endif
 
-		for (int i = 0; i < vertices.size(); i++) {
-			const PolySet::Point *p = &vertices[i];
-			B.add_vertex(Point(p->x, p->y, p->z));
+		for (size_t i = 0; i < vertices.size(); i++) {
+			const CGALPoint &p = vertices[i];
+			B.add_vertex(p);
 #ifdef GEN_SURFACE_DEBUG
-			printf("%d: %f %f %f\n", i, p->x, p->y, p->z);
+			printf("%d: %f %f %f\n", i, p[0], p[1], p[2]);
 #endif
 		}
 
-		for (int i = 0; i < ps.polygons.size(); i++) {
+		for (size_t i = 0; i < ps.polygons.size(); i++) {
 			const PolySet::Polygon *poly = &ps.polygons[i];
 			QHash<int,int> fc;
 			bool facet_is_degenerated = false;
-			for (int j = 0; j < poly->size(); j++) {
-				const PolySet::Point *p = &poly->at(j);
-				int v = vertices_idx.data(p->x, p->y, p->z);
+			for (size_t j = 0; j < poly->size(); j++) {
+				const Vector3d &p = poly->at(j);
+				int v = vertices_idx.data(p[0], p[1], p[2]);
 				if (fc[v]++ > 0)
 					facet_is_degenerated = true;
 			}
@@ -361,13 +361,13 @@ public:
 #ifdef GEN_SURFACE_DEBUG
 			printf("F:");
 #endif
-			for (int j = 0; j < poly->size(); j++) {
-				const PolySet::Point *p = &poly->at(j);
+			for (size_t j = 0; j < poly->size(); j++) {
+				const Vector3d &p = poly->at(j);
 #ifdef GEN_SURFACE_DEBUG
-				printf(" %d (%f,%f,%f)", vertices_idx.data(p->x, p->y, p->z), p->x, p->y, p->z);
+				printf(" %d (%f,%f,%f)", vertices_idx.data(p[0], p[1], p[2]), p[0], p[1], p[2]);
 #endif
 				if (!facet_is_degenerated)
-					B.add_vertex_to_facet(vertices_idx.data(p->x, p->y, p->z));
+					B.add_vertex_to_facet(vertices_idx.data(p[0], p[1], p[2]));
 			}
 #ifdef GEN_SURFACE_DEBUG
 			if (facet_is_degenerated)
@@ -494,10 +494,10 @@ CGAL_Nef_polyhedron CGALEvaluator::evaluateCGALMesh(const PolySet &ps)
 			PolyReducer(const PolySet &ps) : grid(GRID_COARSE), poly_n(1)
 			{
 				int point_n = 1;
-				for (int i = 0; i < ps.polygons.size(); i++) {
-					for (int j = 0; j < ps.polygons[i].size(); j++) {
-						double x = ps.polygons[i][j].x;
-						double y = ps.polygons[i][j].y;
+				for (size_t i = 0; i < ps.polygons.size(); i++) {
+					for (size_t j = 0; j < ps.polygons[i].size(); j++) {
+						double x = ps.polygons[i][j][0];
+						double y = ps.polygons[i][j][1];
 						if (this->grid.has(x, y)) {
 							this->polygons[this->poly_n].append(this->grid.data(x, y));
 						} else {

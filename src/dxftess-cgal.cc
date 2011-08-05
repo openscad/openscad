@@ -115,8 +115,8 @@ void dxf_tesselate(PolySet *ps, DxfData *dxf, double rot, bool up, bool /* do_tr
 		struct point_info_t *first_pi = NULL, *prev_pi = NULL;
 		for (int j = 1; j < dxf->paths[i].points.count(); j++)
 		{
-			double x = dxf->paths[i].points[j]->x;
-			double y = dxf->paths[i].points[j]->y;
+			double x = (*dxf->paths[i].points[j])[0];
+			double y = (*dxf->paths[i].points[j])[1];
 
 			if (point_info.has(x, y)) {
 				// FIXME: How can the same path set contain the same point twice?

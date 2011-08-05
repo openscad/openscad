@@ -3,6 +3,7 @@
 
 #include <QString>
 #include <QVector>
+#include "polyset.h"
 
 class CSGTerm
 {
@@ -15,7 +16,7 @@ public:
 	};
 
 	type_e type;
-	class PolySet *polyset;
+	PolySet *polyset;
 	QString label;
 	CSGTerm *left;
 	CSGTerm *right;
@@ -46,6 +47,8 @@ public:
 	void add(PolySet *polyset, double *m, CSGTerm::type_e type, QString label);
 	void import(CSGTerm *term, CSGTerm::type_e type = CSGTerm::TYPE_UNION);
 	QString dump();
+
+	BoundingBox getBoundingBox() const;
 };
 
 #endif

@@ -43,14 +43,14 @@ void dxf_border_to_ps(PolySet *ps, DxfData *dxf)
 		const DxfData::Path &pt = dxf->paths[i];
 		if (!pt.is_closed)
 			continue;
-		ps->borders.append(PolySet::Polygon());
+		ps->borders.push_back(PolySet::Polygon());
 		for (int j = 1; j < pt.points.count(); j++) {
-			double x = pt.points[j]->x, y = pt.points[j]->y, z = 0.0;
+			double x = (*pt.points[j])[0], y = (*pt.points[j])[1], z = 0.0;
 			ps->grid.align(x, y, z);
 			if (pt.is_inner) {
-				ps->borders.last().append(PolySet::Point(x, y, z));
+				ps->borders.back().push_back(Vector3d(x, y, z));
 			} else {
-				ps->borders.last().insert(0, PolySet::Point(x, y, z));
+				ps->borders.back().insert(ps->borders.back().begin(), Vector3d(x, y, z));
 			}
 		}
 	}

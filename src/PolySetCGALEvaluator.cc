@@ -77,11 +77,11 @@ PolySet *PolySetCGALEvaluator::evaluatePolySet(const ProjectionNode &node, Abstr
 		PolySet *ps3 = new PolySet();
 		cgal_nef3_to_polyset(ps3, &N);
 		Grid2d<int> conversion_grid(GRID_COARSE);
-		for (int i = 0; i < ps3->polygons.size(); i++) {
-			for (int j = 0; j < ps3->polygons[i].size(); j++) {
-				double x = ps3->polygons[i][j].x;
-				double y = ps3->polygons[i][j].y;
-				double z = ps3->polygons[i][j].z;
+		for (size_t i = 0; i < ps3->polygons.size(); i++) {
+			for (size_t j = 0; j < ps3->polygons[i].size(); j++) {
+				double x = ps3->polygons[i][j][0];
+				double y = ps3->polygons[i][j][1];
+				double z = ps3->polygons[i][j][2];
 				if (z != 0)
 					goto next_ps3_polygon_cut_mode;
 				if (conversion_grid.align(x, y) == i+1)
@@ -89,9 +89,9 @@ PolySet *PolySetCGALEvaluator::evaluatePolySet(const ProjectionNode &node, Abstr
 				conversion_grid.data(x, y) = i+1;
 			}
 			ps->append_poly();
-			for (int j = 0; j < ps3->polygons[i].size(); j++) {
-				double x = ps3->polygons[i][j].x;
-				double y = ps3->polygons[i][j].y;
+			for (size_t j = 0; j < ps3->polygons[i].size(); j++) {
+				double x = ps3->polygons[i][j][0];
+				double y = ps3->polygons[i][j][1];
 				conversion_grid.align(x, y);
 				ps->insert_vertex(x, y);
 			}
@@ -110,12 +110,12 @@ PolySet *PolySetCGALEvaluator::evaluatePolySet(const ProjectionNode &node, Abstr
 		cgal_nef3_to_polyset(ps3, &N);
 		CGAL_Nef_polyhedron np;
 		np.dim = 2;
-		for (int i = 0; i < ps3->polygons.size(); i++)
+		for (size_t i = 0; i < ps3->polygons.size(); i++)
 		{
 			int min_x_p = -1;
 			double min_x_val = 0;
-			for (int j = 0; j < ps3->polygons[i].size(); j++) {
-				double x = ps3->polygons[i][j].x;
+			for (size_t j = 0; j < ps3->polygons[i].size(); j++) {
+				double x = ps3->polygons[i][j][0];
 				if (min_x_p < 0 || x < min_x_val) {
 					min_x_p = j;
 					min_x_val = x;
@@ -123,11 +123,11 @@ PolySet *PolySetCGALEvaluator::evaluatePolySet(const ProjectionNode &node, Abstr
 			}
 			int min_x_p1 = (min_x_p+1) % ps3->polygons[i].size();
 			int min_x_p2 = (min_x_p+ps3->polygons[i].size()-1) % ps3->polygons[i].size();
-			double ax = ps3->polygons[i][min_x_p1].x - ps3->polygons[i][min_x_p].x;
-			double ay = ps3->polygons[i][min_x_p1].y - ps3->polygons[i][min_x_p].y;
+			double ax = ps3->polygons[i][min_x_p1][0] - ps3->polygons[i][min_x_p][0];
+			double ay = ps3->polygons[i][min_x_p1][1] - ps3->polygons[i][min_x_p][1];
 			double at = atan2(ay, ax);
-			double bx = ps3->polygons[i][min_x_p2].x - ps3->polygons[i][min_x_p].x;
-			double by = ps3->polygons[i][min_x_p2].y - ps3->polygons[i][min_x_p].y;
+			double bx = ps3->polygons[i][min_x_p2][0] - ps3->polygons[i][min_x_p][0];
+			double by = ps3->polygons[i][min_x_p2][1] - ps3->polygons[i][min_x_p][1];
 			double bt = atan2(by, bx);
 
 			double eps = 0.000001;
@@ -138,9 +138,9 @@ PolySet *PolySetCGALEvaluator::evaluatePolySet(const ProjectionNode &node, Abstr
 			}
 
 			std::list<CGAL_Nef_polyhedron2::Point> plist;
-			for (int j = 0; j < ps3->polygons[i].size(); j++) {
-				double x = ps3->polygons[i][j].x;
-				double y = ps3->polygons[i][j].y;
+			for (size_t j = 0; j < ps3->polygons[i].size(); j++) {
+				double x = ps3->polygons[i][j][0];
+				double y = ps3->polygons[i][j][1];
 				CGAL_Nef_polyhedron2::Point p = CGAL_Nef_polyhedron2::Point(x, y);
 				if (at > bt)
 					plist.push_front(p);
@@ -168,17 +168,17 @@ static void add_slice(PolySet *ps, DxfData::Path *pt, double rot1, double rot2, 
 	{
 		int k = j - 1;
 
-		double jx1 = pt->points[j]->x *  cos(rot1*M_PI/180) + pt->points[j]->y * sin(rot1*M_PI/180);
-		double jy1 = pt->points[j]->x * -sin(rot1*M_PI/180) + pt->points[j]->y * cos(rot1*M_PI/180);
+		double jx1 = (*pt->points[j])[0] *  cos(rot1*M_PI/180) + (*pt->points[j])[1] * sin(rot1*M_PI/180);
+		double jy1 = (*pt->points[j])[0] * -sin(rot1*M_PI/180) + (*pt->points[j])[1] * cos(rot1*M_PI/180);
 
-		double jx2 = pt->points[j]->x *  cos(rot2*M_PI/180) + pt->points[j]->y * sin(rot2*M_PI/180);
-		double jy2 = pt->points[j]->x * -sin(rot2*M_PI/180) + pt->points[j]->y * cos(rot2*M_PI/180);
+		double jx2 = (*pt->points[j])[0] *  cos(rot2*M_PI/180) + (*pt->points[j])[1] * sin(rot2*M_PI/180);
+		double jy2 = (*pt->points[j])[0] * -sin(rot2*M_PI/180) + (*pt->points[j])[1] * cos(rot2*M_PI/180);
 
-		double kx1 = pt->points[k]->x *  cos(rot1*M_PI/180) + pt->points[k]->y * sin(rot1*M_PI/180);
-		double ky1 = pt->points[k]->x * -sin(rot1*M_PI/180) + pt->points[k]->y * cos(rot1*M_PI/180);
+		double kx1 = (*pt->points[k])[0] *  cos(rot1*M_PI/180) + (*pt->points[k])[1] * sin(rot1*M_PI/180);
+		double ky1 = (*pt->points[k])[0] * -sin(rot1*M_PI/180) + (*pt->points[k])[1] * cos(rot1*M_PI/180);
 
-		double kx2 = pt->points[k]->x *  cos(rot2*M_PI/180) + pt->points[k]->y * sin(rot2*M_PI/180);
-		double ky2 = pt->points[k]->x * -sin(rot2*M_PI/180) + pt->points[k]->y * cos(rot2*M_PI/180);
+		double kx2 = (*pt->points[k])[0] *  cos(rot2*M_PI/180) + (*pt->points[k])[1] * sin(rot2*M_PI/180);
+		double ky2 = (*pt->points[k])[0] * -sin(rot2*M_PI/180) + (*pt->points[k])[1] * cos(rot2*M_PI/180);
 
 		double dia1_len_sq = (jy1-ky2)*(jy1-ky2) + (jx1-kx2)*(jx1-kx2);
 		double dia2_len_sq = (jy2-ky1)*(jy2-ky1) + (jx2-kx1)*(jx2-kx1);
@@ -281,10 +281,10 @@ PolySet *PolySetCGALEvaluator::evaluatePolySet(const DxfLinearExtrudeNode &node,
 			first_open_path = false;
 		}
 		PRINTF("   %9.5f %10.5f ... %10.5f %10.5f",
-				dxf->paths[i].points.first()->x / node.scale + node.origin_x,
-				dxf->paths[i].points.first()->y / node.scale + node.origin_y, 
-				dxf->paths[i].points.last()->x / node.scale + node.origin_x,
-				dxf->paths[i].points.last()->y / node.scale + node.origin_y);
+					 (*dxf->paths[i].points.first())[0] / node.scale + node.origin_x,
+					 (*dxf->paths[i].points.first())[1] / node.scale + node.origin_y, 
+					 (*dxf->paths[i].points.last())[0] / node.scale + node.origin_x,
+					 (*dxf->paths[i].points.last())[1] / node.scale + node.origin_y);
 	}
 
 
@@ -355,7 +355,7 @@ PolySet *PolySetCGALEvaluator::evaluatePolySet(const DxfRotateExtrudeNode &node,
 	{
 		double max_x = 0;
 		for (int j = 0; j < dxf->paths[i].points.count(); j++) {
-			max_x = fmax(max_x, dxf->paths[i].points[j]->x);
+			max_x = fmax(max_x, (*dxf->paths[i].points[j])[0]);
 		}
 
 		int fragments = get_fragments_from_r(max_x, node.fn, node.fs, node.fa);
@@ -371,14 +371,14 @@ PolySet *PolySetCGALEvaluator::evaluatePolySet(const DxfRotateExtrudeNode &node,
 		for (int j = 0; j < fragments; j++) {
 			double a = (j*2*M_PI) / fragments;
 			for (int k = 0; k < dxf->paths[i].points.count(); k++) {
-				if (dxf->paths[i].points[k]->x == 0) {
+				if ((*dxf->paths[i].points[k])[0] == 0) {
 					points[j][k][0] = 0;
 					points[j][k][1] = 0;
 				} else {
-					points[j][k][0] = dxf->paths[i].points[k]->x * sin(a);
-					points[j][k][1] = dxf->paths[i].points[k]->x * cos(a);
+					points[j][k][0] = (*dxf->paths[i].points[k])[0] * sin(a);
+					points[j][k][1] = (*dxf->paths[i].points[k])[0] * cos(a);
 				}
-				points[j][k][2] = dxf->paths[i].points[k]->y;
+				points[j][k][2] = (*dxf->paths[i].points[k])[1];
 			}
 		}
 

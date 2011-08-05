@@ -171,12 +171,12 @@ void export_dxf(CGAL_Nef_polyhedron *root_N, QTextStream &output, QProgressDialo
 	for (int i=0; i<dd.paths.size(); i++)
 	{
 		for (int j=1; j<dd.paths[i].points.size(); j++) {
-			DxfData::Point *p1 = dd.paths[i].points[j-1];
-			DxfData::Point *p2 = dd.paths[i].points[j];
-			double x1 = p1->x;
-			double y1 = p1->y;
-			double x2 = p2->x;
-			double y2 = p2->y;
+			const Vector2d &p1 = *dd.paths[i].points[j-1];
+			const Vector2d &p2 = *dd.paths[i].points[j];
+			double x1 = p1[0];
+			double y1 = p1[1];
+			double x2 = p2[0];
+			double y2 = p2[1];
 			output << "  0\n"
 						 << "LINE\n";
 			// Some importers (e.g. Inkscape) needs a layer to be specified

@@ -157,10 +157,10 @@ Value builtin_dxf_cross(const Context *ctx, const QVector<QString> &argnames, co
 	for (int i = 0, j = 0; i < dxf.paths.count(); i++) {
 		if (dxf.paths[i].points.count() != 2)
 			continue;
-		coords[j][0] = dxf.paths[i].points[0]->x;
-		coords[j++][1] = dxf.paths[i].points[0]->y;
-		coords[j][0] = dxf.paths[i].points[1]->x;
-		coords[j++][1] = dxf.paths[i].points[1]->y;
+		coords[j][0] = (*dxf.paths[i].points[0])[0];
+		coords[j++][1] = (*dxf.paths[i].points[0])[1];
+		coords[j][0] = (*dxf.paths[i].points[1])[0];
+		coords[j++][1] = (*dxf.paths[i].points[1])[1];
 
 		if (j == 4) {
 			double x1 = coords[0][0], y1 = coords[0][1];

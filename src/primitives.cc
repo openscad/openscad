@@ -520,7 +520,7 @@ sphere_next_r2:
 				p->unlink();
 				return NULL;
 			}
-			dd.points.append(DxfData::Point(x, y));
+			dd.points.append(Vector2d(x, y));
 		}
 
 		if (this->paths.vec.size() == 0)
@@ -528,7 +528,7 @@ sphere_next_r2:
 			dd.paths.append(DxfData::Path());
 			for (size_t i=0; i<this->points.vec.size(); i++) {
 				assert(i < dd.points.size()); // FIXME: Not needed, but this used to be an 'if'
-				DxfData::Point *p = &dd.points[i];
+				Vector2d *p = &dd.points[i];
 				dd.paths.last().points.append(p);
 			}
 			if (dd.paths.last().points.size() > 0) {
@@ -544,7 +544,7 @@ sphere_next_r2:
 				for (size_t j=0; j<this->paths.vec[i]->vec.size(); j++) {
 					int idx = this->paths.vec[i]->vec[j]->num;
 					if (idx < dd.points.size()) {
-						DxfData::Point *p = &dd.points[idx];
+						Vector2d *p = &dd.points[idx];
 						dd.paths.last().points.append(p);
 					}
 				}

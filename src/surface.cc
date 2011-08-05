@@ -35,6 +35,8 @@
 #include "visitor.h"
 
 #include <QFile>
+#include <QRegExp>
+#include <QStringList>
 #include <sstream>
 
 class SurfaceModule : public AbstractModule

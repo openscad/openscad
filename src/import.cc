@@ -36,6 +36,8 @@
 #include "openscad.h" // handle_dep()
 
 #include <QFile>
+#include <QRegExp>
+#include <QStringList>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sstream>

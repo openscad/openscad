@@ -34,6 +34,7 @@
 #endif
 #include <Eigen/Core>
 #include <Eigen/LU>
+#include <QColor>
 
 PolySet::PolySet() : grid(GRID_FINE)
 {
@@ -61,26 +62,26 @@ void PolySet::unlink()
 
 void PolySet::append_poly()
 {
-	polygons.append(Polygon());
+	polygons.push_back(Polygon());
 }
 
 void PolySet::append_vertex(double x, double y, double z)
 {
 	grid.align(x, y, z);
-	polygons.last().append(Point(x, y, z));
+	polygons.back().push_back(Vector3d(x, y, z));
 }
 
 void PolySet::insert_vertex(double x, double y, double z)
 {
 	grid.align(x, y, z);
-	polygons.last().insert(0, Point(x, y, z));
+	polygons.back().insert(polygons.back().begin(), Vector3d(x, y, z));
 }
 
-static void gl_draw_triangle(GLint *shaderinfo, const PolySet::Point *p0, const PolySet::Point *p1, const PolySet::Point *p2, bool e0, bool e1, bool e2, double z, bool mirrored)
+static void gl_draw_triangle(GLint *shaderinfo, const Vector3d &p0, const Vector3d &p1, const Vector3d &p2, bool e0, bool e1, bool e2, double z, bool mirrored)
 {
-	double ax = p1->x - p0->x, bx = p1->x - p2->x;
-	double ay = p1->y - p0->y, by = p1->y - p2->y;
-	double az = p1->z - p0->z, bz = p1->z - p2->z;
+	double ax = p1[0] - p0[0], bx = p1[0] - p2[0];
+	double ay = p1[1] - p0[1], by = p1[1] - p2[1];
+	double az = p1[2] - p0[2], bz = p1[2] - p2[2];
 	double nx = ay*bz - az*by;
 	double ny = az*bx - ax*bz;
 	double nz = ax*by - ay*bx;
@@ -92,39 +93,39 @@ static void gl_draw_triangle(GLint *shaderinfo, const PolySet::Point *p0, const 
 		double e1f = e1 ? 2.0 : -1.0;
 		double e2f = e2 ? 2.0 : -1.0;
 		glVertexAttrib3d(shaderinfo[3], e0f, e1f, e2f);
-		glVertexAttrib3d(shaderinfo[4], p1->x, p1->y, p1->z + z);
-		glVertexAttrib3d(shaderinfo[5], p2->x, p2->y, p2->z + z);
+		glVertexAttrib3d(shaderinfo[4], p1[0], p1[1], p1[2] + z);
+		glVertexAttrib3d(shaderinfo[5], p2[0], p2[1], p2[2] + z);
 		glVertexAttrib3d(shaderinfo[6], 0.0, 1.0, 0.0);
-		glVertex3d(p0->x, p0->y, p0->z + z);
+		glVertex3d(p0[0], p0[1], p0[2] + z);
 		if (!mirrored) {
 			glVertexAttrib3d(shaderinfo[3], e0f, e1f, e2f);
-			glVertexAttrib3d(shaderinfo[4], p0->x, p0->y, p0->z + z);
-			glVertexAttrib3d(shaderinfo[5], p2->x, p2->y, p2->z + z);
+			glVertexAttrib3d(shaderinfo[4], p0[0], p0[1], p0[2] + z);
+			glVertexAttrib3d(shaderinfo[5], p2[0], p2[1], p2[2] + z);
 			glVertexAttrib3d(shaderinfo[6], 0.0, 0.0, 1.0);
-			glVertex3d(p1->x, p1->y, p1->z + z);
+			glVertex3d(p1[0], p1[1], p1[2] + z);
 		}
 		glVertexAttrib3d(shaderinfo[3], e0f, e1f, e2f);
-		glVertexAttrib3d(shaderinfo[4], p0->x, p0->y, p0->z + z);
-		glVertexAttrib3d(shaderinfo[5], p1->x, p1->y, p1->z + z);
+		glVertexAttrib3d(shaderinfo[4], p0[0], p0[1], p0[2] + z);
+		glVertexAttrib3d(shaderinfo[5], p1[0], p1[1], p1[2] + z);
 		glVertexAttrib3d(shaderinfo[6], 1.0, 0.0, 0.0);
-		glVertex3d(p2->x, p2->y, p2->z + z);
+		glVertex3d(p2[0], p2[1], p2[2] + z);
 		if (mirrored) {
 			glVertexAttrib3d(shaderinfo[3], e0f, e1f, e2f);
-			glVertexAttrib3d(shaderinfo[4], p0->x, p0->y, p0->z + z);
-			glVertexAttrib3d(shaderinfo[5], p2->x, p2->y, p2->z + z);
+			glVertexAttrib3d(shaderinfo[4], p0[0], p0[1], p0[2] + z);
+			glVertexAttrib3d(shaderinfo[5], p2[0], p2[1], p2[2] + z);
 			glVertexAttrib3d(shaderinfo[6], 0.0, 0.0, 1.0);
-			glVertex3d(p1->x, p1->y, p1->z + z);
+			glVertex3d(p1[0], p1[1], p1[2] + z);
 		}
 	}
 	else
 #endif
 	{
-		glVertex3d(p0->x, p0->y, p0->z + z);
+		glVertex3d(p0[0], p0[1], p0[2] + z);
 		if (!mirrored)
-			glVertex3d(p1->x, p1->y, p1->z + z);
-		glVertex3d(p2->x, p2->y, p2->z + z);
+			glVertex3d(p1[0], p1[1], p1[2] + z);
+		glVertex3d(p2[0], p2[1], p2[2] + z);
 		if (mirrored)
-			glVertex3d(p1->x, p1->y, p1->z + z);
+			glVertex3d(p1[0], p1[1], p1[2] + z);
 	}
 }
 
@@ -193,52 +194,52 @@ void PolySet::render_surface(colormode_e colormode, csgmode_e csgmode, double *m
 				const Polygon *poly = &polygons[i];
 				if (poly->size() == 3) {
 					if (z < 0) {
-						gl_draw_triangle(shaderinfo, &poly->at(0), &poly->at(2), &poly->at(1), true, true, true, z, mirrored);
+						gl_draw_triangle(shaderinfo, poly->at(0), poly->at(2), poly->at(1), true, true, true, z, mirrored);
 					} else {
-						gl_draw_triangle(shaderinfo, &poly->at(0), &poly->at(1), &poly->at(2), true, true, true, z, mirrored);
+						gl_draw_triangle(shaderinfo, poly->at(0), poly->at(1), poly->at(2), true, true, true, z, mirrored);
 					}
 				}
 				else if (poly->size() == 4) {
 					if (z < 0) {
-						gl_draw_triangle(shaderinfo, &poly->at(0), &poly->at(3), &poly->at(1), true, false, true, z, mirrored);
-						gl_draw_triangle(shaderinfo, &poly->at(2), &poly->at(1), &poly->at(3), true, false, true, z, mirrored);
+						gl_draw_triangle(shaderinfo, poly->at(0), poly->at(3), poly->at(1), true, false, true, z, mirrored);
+						gl_draw_triangle(shaderinfo, poly->at(2), poly->at(1), poly->at(3), true, false, true, z, mirrored);
 					} else {
-						gl_draw_triangle(shaderinfo, &poly->at(0), &poly->at(1), &poly->at(3), true, false, true, z, mirrored);
-						gl_draw_triangle(shaderinfo, &poly->at(2), &poly->at(3), &poly->at(1), true, false, true, z, mirrored);
+						gl_draw_triangle(shaderinfo, poly->at(0), poly->at(1), poly->at(3), true, false, true, z, mirrored);
+						gl_draw_triangle(shaderinfo, poly->at(2), poly->at(3), poly->at(1), true, false, true, z, mirrored);
 					}
 				}
 				else {
-					Point center;
+					Vector3d center;
 					for (int j = 0; j < poly->size(); j++) {
-						center.x += poly->at(j).x;
-						center.y += poly->at(j).y;
+						center[0] += poly->at(j)[0];
+						center[1] += poly->at(j)[1];
 					}
-					center.x /= poly->size();
-					center.y /= poly->size();
+					center[0] /= poly->size();
+					center[1] /= poly->size();
 					for (int j = 1; j <= poly->size(); j++) {
 						if (z < 0) {
-							gl_draw_triangle(shaderinfo, &center, &poly->at(j % poly->size()), &poly->at(j - 1),
+							gl_draw_triangle(shaderinfo, center, poly->at(j % poly->size()), poly->at(j - 1),
 									false, true, false, z, mirrored);
 						} else {
-							gl_draw_triangle(shaderinfo, &center, &poly->at(j - 1), &poly->at(j % poly->size()),
+							gl_draw_triangle(shaderinfo, center, poly->at(j - 1), poly->at(j % poly->size()),
 									false, true, false, z, mirrored);
 						}
 					}
 				}
 			}
 		}
-		const QVector<Polygon> *borders_p = &borders;
+		const std::vector<Polygon> *borders_p = &borders;
 		if (borders_p->size() == 0)
 			borders_p = &polygons;
 		for (int i = 0; i < borders_p->size(); i++) {
 			const Polygon *poly = &borders_p->at(i);
 			for (int j = 1; j <= poly->size(); j++) {
-				Point p1 = poly->at(j - 1), p2 = poly->at(j - 1);
-				Point p3 = poly->at(j % poly->size()), p4 = poly->at(j % poly->size());
-				p1.z -= zbase/2, p2.z += zbase/2;
-				p3.z -= zbase/2, p4.z += zbase/2;
-				gl_draw_triangle(shaderinfo, &p2, &p1, &p3, true, true, false, 0, mirrored);
-				gl_draw_triangle(shaderinfo, &p2, &p3, &p4, false, true, true, 0, mirrored);
+				Vector3d p1 = poly->at(j - 1), p2 = poly->at(j - 1);
+				Vector3d p3 = poly->at(j % poly->size()), p4 = poly->at(j % poly->size());
+				p1[2] -= zbase/2, p2[2] += zbase/2;
+				p3[2] -= zbase/2, p4[2] += zbase/2;
+				gl_draw_triangle(shaderinfo, p2, p1, p3, true, true, false, 0, mirrored);
+				gl_draw_triangle(shaderinfo, p2, p3, p4, false, true, true, 0, mirrored);
 			}
 		}
 		glEnd();
@@ -247,24 +248,24 @@ void PolySet::render_surface(colormode_e colormode, csgmode_e csgmode, double *m
 			const Polygon *poly = &polygons[i];
 			glBegin(GL_TRIANGLES);
 			if (poly->size() == 3) {
-				gl_draw_triangle(shaderinfo, &poly->at(0), &poly->at(1), &poly->at(2), true, true, true, 0, mirrored);
+				gl_draw_triangle(shaderinfo, poly->at(0), poly->at(1), poly->at(2), true, true, true, 0, mirrored);
 			}
 			else if (poly->size() == 4) {
-				gl_draw_triangle(shaderinfo, &poly->at(0), &poly->at(1), &poly->at(3), true, false, true, 0, mirrored);
-				gl_draw_triangle(shaderinfo, &poly->at(2), &poly->at(3), &poly->at(1), true, false, true, 0, mirrored);
+				gl_draw_triangle(shaderinfo, poly->at(0), poly->at(1), poly->at(3), true, false, true, 0, mirrored);
+				gl_draw_triangle(shaderinfo, poly->at(2), poly->at(3), poly->at(1), true, false, true, 0, mirrored);
 			}
 			else {
-				Point center;
+				Vector3d center;
 				for (int j = 0; j < poly->size(); j++) {
-					center.x += poly->at(j).x;
-					center.y += poly->at(j).y;
-					center.z += poly->at(j).z;
+					center[0] += poly->at(j)[0];
+					center[1] += poly->at(j)[1];
+					center[2] += poly->at(j)[2];
 				}
-				center.x /= poly->size();
-				center.y /= poly->size();
-				center.z /= poly->size();
+				center[0] /= poly->size();
+				center[1] /= poly->size();
+				center[2] /= poly->size();
 				for (int j = 1; j <= poly->size(); j++) {
-					gl_draw_triangle(shaderinfo, &center, &poly->at(j - 1), &poly->at(j % poly->size()), false, true, false, 0, mirrored);
+					gl_draw_triangle(shaderinfo, center, poly->at(j - 1), poly->at(j % poly->size()), false, true, false, 0, mirrored);
 				}
 			}
 			glEnd();
@@ -290,8 +291,8 @@ void PolySet::render_edges(colormode_e colormode, csgmode_e csgmode) const
 				const Polygon *poly = &borders[i];
 				glBegin(GL_LINE_LOOP);
 				for (int j = 0; j < poly->size(); j++) {
-					const Point *p = &poly->at(j);
-					glVertex3d(p->x, p->y, z);
+					const Vector3d &p = poly->at(j);
+					glVertex3d(p[0], p[1], z);
 				}
 				glEnd();
 			}
@@ -300,9 +301,9 @@ void PolySet::render_edges(colormode_e colormode, csgmode_e csgmode) const
 			const Polygon *poly = &borders[i];
 			glBegin(GL_LINES);
 			for (int j = 0; j < poly->size(); j++) {
-				const Point *p = &poly->at(j);
-				glVertex3d(p->x, p->y, -zbase/2);
-				glVertex3d(p->x, p->y, +zbase/2);
+				const Vector3d &p = poly->at(j);
+				glVertex3d(p[0], p[1], -zbase/2);
+				glVertex3d(p[0], p[1], +zbase/2);
 			}
 			glEnd();
 		}
@@ -311,10 +312,23 @@ void PolySet::render_edges(colormode_e colormode, csgmode_e csgmode) const
 			const Polygon *poly = &polygons[i];
 			glBegin(GL_LINE_LOOP);
 			for (int j = 0; j < poly->size(); j++) {
-				const Point *p = &poly->at(j);
-				glVertex3d(p->x, p->y, p->z);
+				const Vector3d &p = poly->at(j);
+				glVertex3d(p[0], p[1], p[2]);
 			}
 			glEnd();
 		}
 	}
+}
+
+BoundingBox PolySet::getBoundingBox() const
+{
+	BoundingBox bbox;
+	for (int i = 0; i < polygons.size(); i++) {
+		const Polygon &poly = polygons[i];
+		for (int j = 0; j < poly.size(); j++) {
+			const Vector3d &p = poly[j];
+			bbox.extend(p);
+		}
+	}
+	return bbox;
 }

@@ -53,7 +53,7 @@ DxfData::DxfData(const struct CGAL_Nef_polyhedron &N)
 					this_point = grid.align(x, y);
 				} else {
 					this_point = grid.align(x, y) = points.size();
-					points.append(Point(x, y));
+					points.append(Vector2d(x, y));
 				}
 				if (first_point < 0) {
 					paths.append(Path());

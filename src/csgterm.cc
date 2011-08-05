@@ -229,3 +229,13 @@ QString CSGChain::dump()
 	return text;
 }
 
+BoundingBox CSGChain::getBoundingBox() const
+{
+	BoundingBox bbox;
+	for (size_t i=0;i<polysets.size();i++) {
+		if (types[i] != CSGTerm::TYPE_DIFFERENCE) {
+			bbox.extend(polysets[i]->getBoundingBox());
+		}
+	}
+	return bbox;
+}
