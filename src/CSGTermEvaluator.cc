@@ -22,12 +22,14 @@
 	with OpenCSG.
 */
 
-CSGTerm *CSGTermEvaluator::evaluateCSGTerm(const AbstractNode &node,
-																				vector<CSGTerm*> *highlights, 
-																				vector<CSGTerm*> *background)
+CSGTerm *CSGTermEvaluator::evaluateCSGTerm(const AbstractNode &node, 
+																					 std::vector<CSGTerm*> &highlights, 
+																					 std::vector<CSGTerm*> &background)
 {
 	Traverser evaluate(*this, node, Traverser::PRE_AND_POSTFIX);
 	evaluate.execute();
+	highlights = this->highlights;
+	background = this->background;
 	return this->stored_term[node.index()];
 }
 
@@ -52,11 +54,11 @@ void CSGTermEvaluator::applyToChildren(const AbstractNode &node, CSGTermEvaluato
 			}
 		}
 	}
-	if (t1 && node.modinst->tag_highlight && this->highlights) {
-		this->highlights->push_back(t1->link());
+	if (t1 && node.modinst->tag_highlight) {
+		this->highlights.push_back(t1->link());
 	}
-	if (t1 && node.modinst->tag_background && this->background) {
-		this->background->push_back(t1);
+	if (t1 && node.modinst->tag_background) {
+		this->background.push_back(t1);
 		t1 = NULL; // don't propagate background tagged nodes
 	}
 	this->stored_term[node.index()] = t1;
@@ -81,17 +83,17 @@ Response CSGTermEvaluator::visit(State &state, const AbstractIntersectionNode &n
 }
 
 static CSGTerm *evaluate_csg_term_from_ps(const double m[20], 
-																				vector<CSGTerm*> *highlights, 
-																				vector<CSGTerm*> *background, 
+																				vector<CSGTerm*> &highlights, 
+																				vector<CSGTerm*> &background, 
 																				PolySet *ps, 
 																				const ModuleInstantiation *modinst, 
 																				const AbstractPolyNode &node)
 {
 	CSGTerm *t = new CSGTerm(ps, m, QString("%1%2").arg(node.name().c_str()).arg(node.index()));
-	if (modinst->tag_highlight && highlights)
-		highlights->push_back(t->link());
-	if (modinst->tag_background && background) {
-		background->push_back(t);
+	if (modinst->tag_highlight)
+		highlights.push_back(t->link());
+	if (modinst->tag_background) {
+		background.push_back(t);
 		return NULL;
 	}
 	return t;
@@ -190,7 +192,7 @@ void CSGTermEvaluator::addToParent(const State &state, const AbstractNode &node)
 
 // FIXME: #ifdef ENABLE_CGAL
 #if 0
-CSGTerm *CgaladvNode::evaluate_csg_term(double m[20], QVector<CSGTerm*> *highlights, QVector<CSGTerm*> *background) const
+CSGTerm *CgaladvNode::evaluate_csg_term(double m[20], QVector<CSGTerm*> &highlights, QVector<CSGTerm*> &background) const
 {
 	if (type == MINKOWSKI)
 		return evaluate_csg_term_from_nef(m, highlights, background, "minkowski", this->convexity);
@@ -209,7 +211,7 @@ CSGTerm *CgaladvNode::evaluate_csg_term(double m[20], QVector<CSGTerm*> *highlig
 
 #else // ENABLE_CGAL
 
-CSGTerm *CgaladvNode::evaluate_csg_term(double m[20], QVector<CSGTerm*> *highlights, QVector<CSGTerm*> *background) const
+CSGTerm *CgaladvNode::evaluate_csg_term(double m[20], QVector<CSGTerm*> &highlights, QVector<CSGTerm*> &background) const
 {
 	PRINT("WARNING: Found minkowski(), glide(), subdiv() or hull() statement but compiled without CGAL support!");
 	return NULL;
@@ -221,7 +223,7 @@ CSGTerm *CgaladvNode::evaluate_csg_term(double m[20], QVector<CSGTerm*> *highlig
 
 // FIXME: #ifdef ENABLE_CGAL
 #if 0
-CSGTerm *AbstractNode::evaluate_csg_term_from_nef(double m[20], QVector<CSGTerm*> *highlights, QVector<CSGTerm*> *background, const char *statement, int convexity) const
+CSGTerm *AbstractNode::evaluate_csg_term_from_nef(double m[20], QVector<CSGTerm*> &highlights, QVector<CSGTerm*> &background, const char *statement, int convexity) const
 {
 	QString key = mk_cache_id();
 	if (PolySet::ps_cache.contains(key)) {
@@ -302,10 +304,10 @@ CSGTerm *AbstractNode::evaluate_csg_term_from_nef(double m[20], QVector<CSGTerm*
 		PolySet::ps_cache.insert(key, new PolySet::ps_cache_entry(ps->link()));
 
 		CSGTerm *term = new CSGTerm(ps, m, QString("n%1").arg(idx));
-		if (modinst->tag_highlight && highlights)
-			highlights->push_back(term->link());
-		if (modinst->tag_background && background) {
-			background->push_back(term);
+		if (modinst->tag_highlight)
+			highlights.push_back(term->link());
+		if (modinst->tag_background) {
+			background.push_back(term);
 			return NULL;
 		}
 		return term;
@@ -315,14 +317,14 @@ CSGTerm *AbstractNode::evaluate_csg_term_from_nef(double m[20], QVector<CSGTerm*
 	return NULL;
 }
 
-CSGTerm *RenderNode::evaluate_csg_term(double m[20], QVector<CSGTerm*> *highlights, QVector<CSGTerm*> *background) const
+CSGTerm *RenderNode::evaluate_csg_term(double m[20], QVector<CSGTerm*> &highlights, QVector<CSGTerm*> &background) const
 {
 	return evaluate_csg_term_from_nef(m, highlights, background, "render", this->convexity);
 }
 
 #else
 
-CSGTerm *RenderNode::evaluate_csg_term(double m[20], QVector<CSGTerm*> *highlights, QVector<CSGTerm*> *background) const
+CSGTerm *RenderNode::evaluate_csg_term(double m[20], QVector<CSGTerm*> &highlights, QVector<CSGTerm*> &background) const
 {
 	CSGTerm *t1 = NULL;
 	PRINT("WARNING: Found render() statement but compiled without CGAL support!");
@@ -334,10 +336,10 @@ CSGTerm *RenderNode::evaluate_csg_term(double m[20], QVector<CSGTerm*> *highligh
 			t1 = new CSGTerm(CSGTerm::TYPE_UNION, t1, t2);
 		}
 	}
-	if (modinst->tag_highlight && highlights)
-		highlights->push_back(t1->link());
-	if (t1 && modinst->tag_background && background) {
-		background->push_back(t1);
+	if (modinst->tag_highlight)
+		highlights.push_back(t1->link());
+	if (t1 && modinst->tag_background) {
+		background.push_back(t1);
 		return NULL;
 	}
 	return t1;

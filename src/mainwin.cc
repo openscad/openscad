@@ -779,7 +779,7 @@ void MainWindow::compileCSG(bool procevents)
 		CGALEvaluator cgalevaluator(cache, this->tree);
 		PolySetCGALEvaluator psevaluator(cgalevaluator);
 		CSGTermEvaluator csgrenderer(this->tree, &psevaluator);
-		root_raw_term = csgrenderer.evaluateCSGTerm(*root_node, &highlight_terms, &background_terms);
+		root_raw_term = csgrenderer.evaluateCSGTerm(*root_node, highlight_terms, background_terms);
 		if (!root_raw_term) {
 			PRINT("ERROR: CSG generation failed! (no top level object found)");
 			if (procevents)

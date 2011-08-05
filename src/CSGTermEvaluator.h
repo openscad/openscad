@@ -18,7 +18,7 @@ class CSGTermEvaluator : public Visitor
 {
 public:
 	CSGTermEvaluator(const Tree &tree, class PolySetEvaluator *psevaluator = NULL)
-		: highlights(NULL), background(NULL), tree(tree), psevaluator(psevaluator) {
+		: tree(tree), psevaluator(psevaluator) {
 	}
   virtual ~CSGTermEvaluator() {}
 
@@ -30,7 +30,8 @@ public:
  	virtual Response visit(State &state, const RenderNode &node);
 
 	class CSGTerm *evaluateCSGTerm(const AbstractNode &node,
-															 vector<CSGTerm*> *highlights, vector<CSGTerm*> *background);
+																 vector<CSGTerm*> &highlights, 
+																 vector<CSGTerm*> &background);
 
 private:
 	enum CsgOp {UNION, INTERSECTION, DIFFERENCE, MINKOWSKI};
@@ -44,8 +45,8 @@ private:
 public:
   map<int, class CSGTerm*> stored_term; // The term evaluated from each node index
 
-	vector<CSGTerm*> *highlights;
-	vector<CSGTerm*> *background;
+	vector<CSGTerm*> highlights;
+	vector<CSGTerm*> background;
 	const Tree &tree;
 	class PolySetEvaluator *psevaluator;
 };
