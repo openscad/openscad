@@ -115,8 +115,6 @@ o Misc
   - Save: Ask for confirmation if file has been externally changed
   - Rename OpenCSG and CGAL to smth. not specific to the underlying libraries
     (e.g Preview, Render)
-o Cmd-line
-  - Add verbose option (PRINT command from mainwin.cc and progress output)
 
 ENGINE
 ------
