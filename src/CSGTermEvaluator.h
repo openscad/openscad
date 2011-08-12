@@ -34,7 +34,7 @@ public:
 																 vector<CSGTerm*> &background);
 
 private:
-	enum CsgOp {UNION, INTERSECTION, DIFFERENCE, MINKOWSKI};
+	enum CsgOp {CSGT_UNION, CSGT_INTERSECTION, CSGT_DIFFERENCE, CSGT_MINKOWSKI};
   void addToParent(const State &state, const AbstractNode &node);
 	void applyToChildren(const AbstractNode &node, CSGTermEvaluator::CsgOp op);
 

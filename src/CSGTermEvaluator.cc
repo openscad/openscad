@@ -45,11 +45,11 @@ void CSGTermEvaluator::applyToChildren(const AbstractNode &node, CSGTermEvaluato
 		if (t2 && !t1) {
 			t1 = t2;
 		} else if (t2 && t1) {
-			if (op == UNION) {
+			if (op == CSGT_UNION) {
 				t1 = new CSGTerm(CSGTerm::TYPE_UNION, t1, t2);
-			} else if (op == DIFFERENCE) {
+			} else if (op == CSGT_DIFFERENCE) {
 				t1 = new CSGTerm(CSGTerm::TYPE_DIFFERENCE, t1, t2);
-			} else if (op == INTERSECTION) {
+			} else if (op == CSGT_INTERSECTION) {
 				t1 = new CSGTerm(CSGTerm::TYPE_INTERSECTION, t1, t2);
 			}
 		}
@@ -67,7 +67,7 @@ void CSGTermEvaluator::applyToChildren(const AbstractNode &node, CSGTermEvaluato
 Response CSGTermEvaluator::visit(State &state, const AbstractNode &node)
 {
 	if (state.isPostfix()) {
-		applyToChildren(node, UNION);
+		applyToChildren(node, CSGT_UNION);
 		addToParent(state, node);
 	}
 	return ContinueTraversal;
@@ -76,7 +76,7 @@ Response CSGTermEvaluator::visit(State &state, const AbstractNode &node)
 Response CSGTermEvaluator::visit(State &state, const AbstractIntersectionNode &node)
 {
 	if (state.isPostfix()) {
-		applyToChildren(node, INTERSECTION);
+		applyToChildren(node, CSGT_INTERSECTION);
 		addToParent(state, node);
 	}
 	return ContinueTraversal;
@@ -120,13 +120,13 @@ Response CSGTermEvaluator::visit(State &state, const CsgNode &node)
 		CsgOp op;
 		switch (node.type) {
 		case CSG_TYPE_UNION:
-			op = UNION;
+			op = CSGT_UNION;
 			break;
 		case CSG_TYPE_DIFFERENCE:
-			op = DIFFERENCE;
+			op = CSGT_DIFFERENCE;
 			break;
 		case CSG_TYPE_INTERSECTION:
-			op = INTERSECTION;
+			op = CSGT_INTERSECTION;
 			break;
 		}
 		applyToChildren(node, op);
@@ -157,7 +157,7 @@ Response CSGTermEvaluator::visit(State &state, const TransformNode &node)
 		state.setMatrix(m);
 	}
 	if (state.isPostfix()) {
-		applyToChildren(node, UNION);
+		applyToChildren(node, CSGT_UNION);
 		addToParent(state, node);
 	}
 	return ContinueTraversal;
@@ -168,7 +168,7 @@ Response CSGTermEvaluator::visit(State &state, const RenderNode &node)
 {
 	PRINT("WARNING: Found render() statement but compiled without CGAL support!");
 	if (state.isPostfix()) {
-		applyToChildren(node, UNION);
+		applyToChildren(node, CSGT_UNION);
 		addToParent(state, node);
 	}
 	return ContinueTraversal;
