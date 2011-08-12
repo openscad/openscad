@@ -2,6 +2,7 @@
 #define NODE_H_
 
 #include <vector>
+#include <string>
 
 #include "traverser.h"
 
