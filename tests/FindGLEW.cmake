@@ -7,6 +7,9 @@
 # GLEW_LIBRARY
 # 
 
+# a few lines of this file are based on the LGPL code found at 
+# http://openlibraries.org/browser/trunk/FindGLEW.cmake?rev=1383 
+
 IF (WIN32)
 	FIND_PATH( GLEW_INCLUDE_PATH GL/glew.h
 		$ENV{PROGRAMFILES}/GLEW/include
@@ -20,15 +23,15 @@ IF (WIN32)
 		${PROJECT_SOURCE_DIR}/src/nvgl/glew/lib
 		DOC "The GLEW library")
 ELSE (WIN32)
-     message(${GLEW_DIR})
+     	MESSAGE( "-- GLEW_DIR value:" ${GLEW_DIR})
 	FIND_PATH( GLEW_INCLUDE_PATH GL/glew.h
-                PATHS
+                PATHS /usr/include /usr/local/include
                 ${GLEW_DIR}/include
                 NO_DEFAULT_PATH
 		DOC "The directory where GL/glew.h resides")
 	FIND_LIBRARY( GLEW_LIBRARY
 		NAMES GLEW glew
-		PATHS
+		PATHS /usr/lib /usr/local/lib
                 ${GLEW_DIR}/lib
                 NO_DEFAULT_PATH
 		DOC "The GLEW library")
