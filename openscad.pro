@@ -170,6 +170,7 @@ HEADERS += src/renderer.h \
 SOURCES += src/openscad.cc \
            src/mainwin.cc \
            src/cgalrenderer.cc \
+           src/cgal.cc \
            src/ThrownTogetherRenderer.cc \
            src/glview.cc \
            src/export.cc \

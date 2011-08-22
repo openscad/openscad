@@ -94,6 +94,8 @@ struct CGAL_Nef_polyhedron
 			return p3.number_of_vertices();
 		return 0;
 	}
+
+	class PolySet *convertToPolyset() const;
 };
 
 #endif /* ENABLE_CGAL */

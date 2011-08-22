@@ -9,7 +9,6 @@
 #include "module.h"
 
 #include "printutils.h"
-#include "export.h" // void cgal_nef3_to_polyset()
 #include "openscad.h" // get_fragments_from_r()
 
 PolySet *PolySetCGALEvaluator::evaluatePolySet(const ProjectionNode &node, AbstractPolyNode::render_mode_e)
@@ -74,8 +73,7 @@ PolySet *PolySetCGALEvaluator::evaluatePolySet(const ProjectionNode &node, Abstr
 			goto cant_project_non_simple_polyhedron;
 		}
 
-		PolySet *ps3 = new PolySet();
-		cgal_nef3_to_polyset(ps3, &N);
+		PolySet *ps3 = N.convertToPolyset();
 		Grid2d<int> conversion_grid(GRID_COARSE);
 		for (size_t i = 0; i < ps3->polygons.size(); i++) {
 			for (size_t j = 0; j < ps3->polygons[i].size(); j++) {
@@ -106,8 +104,7 @@ PolySet *PolySetCGALEvaluator::evaluatePolySet(const ProjectionNode &node, Abstr
 			goto cant_project_non_simple_polyhedron;
 		}
 
-		PolySet *ps3 = new PolySet();
-		cgal_nef3_to_polyset(ps3, &N);
+		PolySet *ps3 = N.convertToPolyset();
 		CGAL_Nef_polyhedron np;
 		np.dim = 2;
 		for (size_t i = 0; i < ps3->polygons.size(); i++)
