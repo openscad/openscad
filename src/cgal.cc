@@ -3,8 +3,11 @@
 
 /*!
 	Creates a new PolySet and initializes it with the data from this polyhedron
+
+	This method is not const since convert_to_Polyhedron() wasn't const
+  in earlier versions of CGAL.
 */
-PolySet *CGAL_Nef_polyhedron::convertToPolyset() const
+PolySet *CGAL_Nef_polyhedron::convertToPolyset()
 {
 	PolySet *ps = new PolySet();
 	CGAL_Polyhedron P;

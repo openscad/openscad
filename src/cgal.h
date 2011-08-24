@@ -95,7 +95,7 @@ struct CGAL_Nef_polyhedron
 		return 0;
 	}
 
-	class PolySet *convertToPolyset() const;
+	class PolySet *convertToPolyset();
 };
 
 #endif /* ENABLE_CGAL */
