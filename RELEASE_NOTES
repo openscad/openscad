@@ -1,6 +1,8 @@
 OpenSCAD 20xx.yy
 ================
 
+Bugfixes:
+o Flush Caches didn't flush cached USE'd modules
 
 OpenSCAD 2011.06
 ================
