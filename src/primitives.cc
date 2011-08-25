@@ -474,7 +474,7 @@ sphere_next_r2:
 		}
 	}
 
-	if (this->type == SQUARE)
+	if (this->type == SQUARE && x > 0 && y > 0)
 	{
 		double x1, x2, y1, y2;
 		if (this->center) {

@@ -1489,6 +1489,7 @@ void MainWindow::actionFlushCaches()
 #endif
 	dxf_dim_cache.clear();
 	dxf_cross_cache.clear();
+	Module::libs_cache.clear();
 }
 
 void MainWindow::viewModeActionsUncheck()
