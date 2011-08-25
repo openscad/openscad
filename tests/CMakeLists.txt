@@ -184,11 +184,7 @@ add_cmdline_test(csgtexttest txt ${MINIMAL_FILES})
 add_cmdline_test(csgtermtest txt ${MINIMAL_FILES})
 
 # Add cgaltest tests to CTest
-LIST(APPEND CGALTEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/minimal/cube.scad)
-LIST(APPEND CGALTEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/minimal/sphere.scad)
-LIST(APPEND CGALTEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/minimal/cylinder.scad)
-LIST(APPEND CGALTEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/features/background-modifier.scad)
-LIST(APPEND CGALTEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/features/highlight-modifier.scad)
+LIST(APPEND CGALTEST_FILES ${FEATURES_FILES})
 LIST(APPEND CGALTEST_FILES ${CMAKE_SOURCE_DIR}/../examples/example001.scad)
 add_cmdline_test(cgaltest stl ${CGALTEST_FILES})
 
