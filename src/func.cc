@@ -30,6 +30,7 @@
 #include "dxfdim.h"
 #include "builtin.h"
 #include <sstream>
+#include <ctime>
 #include "mathc99.h"
 
 AbstractFunction::~AbstractFunction()
