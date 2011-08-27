@@ -1,7 +1,13 @@
 #ifndef OFFSCREENCONTEXT_H_
 #define OFFSCREENCONTEXT_H_
 
+#ifdef Q_WS_MAC
 #include <OpenGL/OpenGL.h>
+#else
+#include <GL/glew.h>
+#include <GL/gl.h>
+#endif
+
 #include <iostream>         // for error output
 
 #define REPORTGLERROR(task) { GLenum tGLErr = glGetError(); if (tGLErr != GL_NO_ERROR) { std::cout << "OpenGL error " << tGLErr << " while " << task << "\n"; } }

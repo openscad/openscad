@@ -57,6 +57,23 @@ if (NOT OPENCSG_INCLUDE_DIR)
 endif()
 include_directories(${OPENCSG_INCLUDE_DIR})
 
+# SDL (for OpenCSG on Linux & other platforms)
+if (NOT $ENV{MACOSX_DEPLOY_DIR} STREQUAL "")
+  message(STATU "SDL not needed for Mac OSX")
+else()
+  find_package(SDL REQUIRED)
+  if (NOT SDL_FOUND)
+    message(FATAL_ERROR "SDL not found. needed for OpenCSG testing on this platform")
+  else()
+    message(STATUS "SDL library found in " ${SDL_LIBRARY})
+    message(STATUS "SDL header found in " ${SDL_INCLUDE_DIR})
+    set(OPENGL_LIBRARY ${OPENGL_LIBRARY} ${SDL_LIBRARY})
+  endif()
+endif()
+include_directories(${SDL_INCLUDE_DIR})
+
+# GLEW
+
 if (NOT $ENV{MACOSX_DEPLOY_DIR} STREQUAL "")
   set(GLEW_DIR "$ENV{MACOSX_DEPLOY_DIR}")
 endif()
@@ -148,8 +165,14 @@ target_link_libraries(cgaltest ${CGAL_LIBRARY} ${CGAL_3RD_PARTY_LIBRARIES} ${QT_
 #
 # opencsgtest
 #
-add_executable(opencsgtest opencsgtest.cc OffscreenView.cc OffscreenContext.mm
-                           ../src/opencsgrenderer.cc ../src/throwntogetherrenderer.cc ../src/CSGTermEvaluator.cc ../src/cgal.cc ../src/CGALEvaluator.cc
+if (NOT $ENV{MACOSX_DEPLOY_DIR} STREQUAL "")
+	set(OFFSCREEN_SOURCE "OffscreenContext.mm")
+else()
+	set(OFFSCREEN_SOURCE "OffscreenContext.cc")
+endif()
+
+add_executable(opencsgtest opencsgtest.cc OffscreenView.cc ${OFFSCREEN_SOURCE}
+                           ../src/cgal.cc ../src/OpenCSGRenderer.cc ../src/ThrownTogetherRenderer.cc ../src/CSGTermEvaluator.cc ../src/CGALEvaluator.cc
                            ../src/PolySetCGALEvaluator.cc ../src/qhash.cc ../src/nef2dxf.cc
                            ../src/cgaladv_minkowski2.cc ../src/cgaladv_minkowski3.cc
                            ${COMMON_SOURCES})
@@ -184,7 +207,11 @@ add_cmdline_test(csgtexttest txt ${MINIMAL_FILES})
 add_cmdline_test(csgtermtest txt ${MINIMAL_FILES})
 
 # Add cgaltest tests to CTest
-LIST(APPEND CGALTEST_FILES ${FEATURES_FILES})
+LIST(APPEND CGALTEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/minimal/cube.scad)
+LIST(APPEND CGALTEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/minimal/sphere.scad)
+LIST(APPEND CGALTEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/minimal/cylinder.scad)
+LIST(APPEND CGALTEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/features/background-modifier.scad)
+LIST(APPEND CGALTEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/features/highlight-modifier.scad)
 LIST(APPEND CGALTEST_FILES ${CMAKE_SOURCE_DIR}/../examples/example001.scad)
 add_cmdline_test(cgaltest stl ${CGALTEST_FILES})
 

@@ -1,8 +1,11 @@
 #include <GL/glew.h>
 #include "OffscreenView.h"
 #include <opencsg.h>
-#include "Renderer.h"
+#include "renderer.h"
 #include <math.h>
+#include <stdio.h>
+#include <string.h>
+#include <cstdlib>
 
 #define FAR_FAR_AWAY 100000.0
 

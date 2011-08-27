@@ -122,7 +122,7 @@ int main(int argc, char **argv)
 
 	AbstractModule *root_module;
 	ModuleInstantiation root_inst;
-	AbstractNode *root_node;
+	const AbstractNode *root_node;
 
 	QFileInfo fileInfo(filename);
 	handle_dep(filename);
@@ -154,10 +154,9 @@ int main(int argc, char **argv)
 
 //	cout << tree.getString(*root_node) << "\n";
 
-	vector<CSGTerm*> highlights;
-	vector<CSGTerm*> background;
 	CSGTermEvaluator evaluator(tree);
-	CSGTerm *root_term = evaluator.evaluateCSGTerm(*root_node, highlights, background);
+	vector<CSGTerm*> empty = vector<CSGTerm*>();
+	CSGTerm *root_term = evaluator.evaluateCSGTerm(*root_node, empty, empty);
 	
 	// cout << "Stored terms: " << evaluator.stored_term.size() << "\n";
 	// for (map<int, class CSGTerm*>::iterator iter = evaluator.stored_term.begin();
