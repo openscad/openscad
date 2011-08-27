@@ -2,6 +2,7 @@ OpenSCAD 20xx.yy
 ================
 
 Bugfixes:
+o square() crashed if any of the dimensions were zero
 o Flush Caches didn't flush cached USE'd modules
 
 OpenSCAD 2011.06
