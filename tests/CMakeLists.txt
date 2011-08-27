@@ -139,7 +139,7 @@ include_directories(${CGAL_INCLUDE_DIRS})
 #
 # cgaltest
 #
-add_executable(cgaltest cgaltest.cc ../src/CSGTermEvaluator.cc ../src/CGALEvaluator.cc
+add_executable(cgaltest cgaltest.cc ../src/cgal.cc ../src/CSGTermEvaluator.cc ../src/CGALEvaluator.cc
                         ../src/PolySetCGALEvaluator.cc ../src/qhash.cc ../src/nef2dxf.cc
                         ../src/cgaladv_minkowski2.cc ../src/cgaladv_minkowski3.cc ${COMMON_SOURCES})
 set_target_properties(cgaltest PROPERTIES COMPILE_FLAGS "-DENABLE_CGAL ${CGAL_CXX_FLAGS_INIT}")
@@ -149,7 +149,7 @@ target_link_libraries(cgaltest ${CGAL_LIBRARY} ${CGAL_3RD_PARTY_LIBRARIES} ${QT_
 # opencsgtest
 #
 add_executable(opencsgtest opencsgtest.cc OffscreenView.cc OffscreenContext.mm
-                           ../src/opencsgrenderer.cc ../src/throwntogetherrenderer.cc ../src/CSGTermEvaluator.cc ../src/CGALEvaluator.cc
+                           ../src/opencsgrenderer.cc ../src/throwntogetherrenderer.cc ../src/CSGTermEvaluator.cc ../src/cgal.cc ../src/CGALEvaluator.cc
                            ../src/PolySetCGALEvaluator.cc ../src/qhash.cc ../src/nef2dxf.cc
                            ../src/cgaladv_minkowski2.cc ../src/cgaladv_minkowski3.cc
                            ${COMMON_SOURCES})

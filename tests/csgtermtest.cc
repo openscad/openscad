@@ -154,8 +154,10 @@ int main(int argc, char **argv)
 
 //	cout << tree.getString(*root_node) << "\n";
 
+	vector<CSGTerm*> highlights;
+	vector<CSGTerm*> background;
 	CSGTermEvaluator evaluator(tree);
-	CSGTerm *root_term = evaluator.evaluateCSGTerm(*root_node, NULL, NULL);
+	CSGTerm *root_term = evaluator.evaluateCSGTerm(*root_node, highlights, background);
 	
 	// cout << "Stored terms: " << evaluator.stored_term.size() << "\n";
 	// for (map<int, class CSGTerm*>::iterator iter = evaluator.stored_term.begin();
