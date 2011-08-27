@@ -71,7 +71,7 @@ o MDI
     and handle_dep.
 o 3D View
   - OpenGL 2.0 test: What, exactly, is needed from OpenGL 2.0? Can we use 1.x with extensions?
-  - Improve mouse rotation
+  - Improve mouse rotation/zoom/pan
   - Add modifier key combos to handle pan and zoom on 1 mouse button systems
   - Show grid
   - Measurement ticks on the axes that look like rulers that one can turn off and on.
