@@ -1094,16 +1094,18 @@ void MainWindow::actionReloadCompile()
 	compile(true);
 	if (this->root_node) compileCSG(true);
 
+	// Go to non-CGAL view mode
+	if (viewActionThrownTogether->isChecked()) {
+		viewModeThrownTogether();
+	}
+	else {
 #ifdef ENABLE_OPENCSG
-	if (!(viewActionOpenCSG->isVisible() && viewActionOpenCSG->isChecked()) &&
-			!viewActionThrownTogether->isChecked()) {
 		viewModeOpenCSG();
-	}
-	else
+#else
+		viewModeThrownTogether();
 #endif
-	{
-		screen->updateGL();
 	}
+
 	clearCurrentOutput();
 }
 
