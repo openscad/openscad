@@ -175,6 +175,7 @@ o Misc
     empty AbstractNode instead of being ignored?
   - Bug: Using the background operator (%) on the only object in a scene triggers a
     CSG error: No top level object found
+  - Dependency tracking of libraries (USE'd modules) isn't implemented. See Mail from nophead 20110823.
 o Grammar
   - dim->name -> dim->label
   - A random(seed) function
