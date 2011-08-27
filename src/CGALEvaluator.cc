@@ -40,7 +40,7 @@ bool CGALEvaluator::isCached(const AbstractNode &node) const
 	Modifies target by applying op to target and src:
 	target = target [op] src
  */
-void CGALEvaluator::process(CGAL_Nef_polyhedron &target, const CGAL_Nef_polyhedron &src, CsgOp op)
+void CGALEvaluator::process(CGAL_Nef_polyhedron &target, const CGAL_Nef_polyhedron &src, CGALEvaluator::CsgOp op)
 {
  	if (target.dim != 2 && target.dim != 3) {
  		assert(false && "Dimension of Nef polyhedron must be 2 or 3");
@@ -48,19 +48,19 @@ void CGALEvaluator::process(CGAL_Nef_polyhedron &target, const CGAL_Nef_polyhedr
 
 	if (target.dim == 2) {
 		switch (op) {
-		case UNION:
+		case CGE_UNION:
 			target.p2 += src.p2;
 			break;
-		case INTERSECTION:
+		case CGE_INTERSECTION:
 			target.p2 *= src.p2;
 			break;
-		case DIFFERENCE:
+		case CGE_DIFFERENCE:
 			target.p2 -= src.p2;
 			break;
-		case MINKOWSKI:
+		case CGE_MINKOWSKI:
 			target.p2 = minkowski2(target.p2, src.p2);
 			break;
-		case HULL:
+		case CGE_HULL:
 			//FIXME: Port convex hull to a binary operator or process it all in the end somehow
 			// target.p2 = convexhull2(target.p2, src.p2);
 			// target.p2 = convexhull2(polys);
@@ -69,19 +69,19 @@ void CGALEvaluator::process(CGAL_Nef_polyhedron &target, const CGAL_Nef_polyhedr
 	}
 	else if (target.dim == 3) {
 		switch (op) {
-		case UNION:
+		case CGE_UNION:
 			target.p3 += src.p3;
 			break;
-		case INTERSECTION:
+		case CGE_INTERSECTION:
 			target.p3 *= src.p3;
 			break;
-		case DIFFERENCE:
+		case CGE_DIFFERENCE:
 			target.p3 -= src.p3;
 			break;
-		case MINKOWSKI:
+		case CGE_MINKOWSKI:
 			target.p3 = minkowski3(target.p3, src.p3);
 			break;
-		case HULL:
+		case CGE_HULL:
 			// FIXME: Print warning: hull() not supported in 3D
 			break;
 		}
@@ -130,7 +130,7 @@ Response CGALEvaluator::visit(State &state, const AbstractNode &node)
 {
 	if (state.isPrefix() && isCached(node)) return PruneTraversal;
 	if (state.isPostfix()) {
-		if (!isCached(node)) applyToChildren(node, UNION);
+		if (!isCached(node)) applyToChildren(node, CGE_UNION);
 		addToParent(state, node);
 	}
 	return ContinueTraversal;
@@ -140,7 +140,7 @@ Response CGALEvaluator::visit(State &state, const AbstractIntersectionNode &node
 {
 	if (state.isPrefix() && isCached(node)) return PruneTraversal;
 	if (state.isPostfix()) {
-		if (!isCached(node)) applyToChildren(node, INTERSECTION);
+		if (!isCached(node)) applyToChildren(node, CGE_INTERSECTION);
 		addToParent(state, node);
 	}
 	return ContinueTraversal;
@@ -151,16 +151,16 @@ Response CGALEvaluator::visit(State &state, const CsgNode &node)
 	if (state.isPrefix() && isCached(node)) return PruneTraversal;
 	if (state.isPostfix()) {
 		if (!isCached(node)) {
-			CsgOp op;
+			CGALEvaluator::CsgOp op;
 			switch (node.type) {
 			case CSG_TYPE_UNION:
-				op = UNION;
+				op = CGE_UNION;
 				break;
 			case CSG_TYPE_DIFFERENCE:
-				op = DIFFERENCE;
+				op = CGE_DIFFERENCE;
 				break;
 			case CSG_TYPE_INTERSECTION:
-				op = INTERSECTION;
+				op = CGE_INTERSECTION;
 				break;
 			}
 			applyToChildren(node, op);
@@ -176,7 +176,7 @@ Response CGALEvaluator::visit(State &state, const TransformNode &node)
 	if (state.isPostfix()) {
 		if (!isCached(node)) {
 			// First union all children
-			applyToChildren(node, UNION);
+			applyToChildren(node, CGE_UNION);
 
 			// Then apply transform
 			CGAL_Nef_polyhedron N = this->cache[this->tree.getString(node)];
@@ -235,7 +235,7 @@ Response CGALEvaluator::visit(State &state, const AbstractPolyNode &node)
 	if (state.isPostfix()) {
 		if (!isCached(node)) {
 			// First union all children
-			applyToChildren(node, UNION);
+			applyToChildren(node, CGE_UNION);
 
 			// Then apply polyset operation
 			PolySet *ps = node.evaluate_polyset(AbstractPolyNode::RENDER_CGAL, &this->psevaluator);

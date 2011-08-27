@@ -22,7 +22,7 @@ using std::pair;
 class CGALEvaluator : public Visitor
 {
 public:
-	enum CsgOp {UNION, INTERSECTION, DIFFERENCE, MINKOWSKI, HULL};
+	enum CsgOp {CGE_UNION, CGE_INTERSECTION, CGE_DIFFERENCE, CGE_MINKOWSKI, CGE_HULL};
 	// FIXME: If a cache is not given, we need to fix this ourselves
 	CGALEvaluator(QHash<string, CGAL_Nef_polyhedron> &cache, const Tree &tree) : cache(cache), tree(tree), psevaluator(*this) {}
   virtual ~CGALEvaluator() {}
