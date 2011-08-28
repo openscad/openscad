@@ -1,0 +1,2 @@
+Changes in visitor branch:
+o import_dxf(): layername="" imports all layers. Importing a single layer with a zero-length name is no longer supported.
