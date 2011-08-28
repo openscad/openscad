@@ -149,7 +149,7 @@ target_link_libraries(cgaltest ${CGAL_LIBRARY} ${CGAL_3RD_PARTY_LIBRARIES} ${QT_
 # opencsgtest
 #
 add_executable(opencsgtest opencsgtest.cc OffscreenView.cc OffscreenContext.mm
-                           ../src/opencsgrenderer.cc ../src/throwntogetherrenderer.cc ../src/CSGTermEvaluator.cc ../src/cgal.cc ../src/CGALEvaluator.cc
+                           ../src/OpenCSGRenderer.cc ../src/ThrownTogetherRenderer.cc ../src/CSGTermEvaluator.cc ../src/cgal.cc ../src/CGALEvaluator.cc
                            ../src/PolySetCGALEvaluator.cc ../src/qhash.cc ../src/nef2dxf.cc
                            ../src/cgaladv_minkowski2.cc ../src/cgaladv_minkowski3.cc
                            ${COMMON_SOURCES})
