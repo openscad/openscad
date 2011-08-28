@@ -358,9 +358,9 @@ int main(int argc, char **argv)
 		}
 
 		if (dxf_output_file) {
-			QFile file(stl_output_file);
+			QFile file(dxf_output_file);
 			if (!file.open(QIODevice::ReadWrite)) {
-				PRINTA("Can't open file \"%1\" for export", stl_output_file);
+				PRINTA("Can't open file \"%1\" for export", dxf_output_file);
 			}
 			else {
 				QTextStream fstream(&file);
