@@ -48,7 +48,7 @@ DxfData::DxfData()
 }
 
 /*!
-	Reads a layer from the given file, or all layers if layename.isNull()
+	Reads a layer from the given file, or all layers if layername.isEmpty()
  */
 DxfData::DxfData(double fn, double fs, double fa, QString filename, QString layername, double xorigin, double yorigin, double scale)
 {
@@ -74,7 +74,7 @@ DxfData::DxfData(double fn, double fs, double fa, QString filename, QString laye
 		if (!in_entities_section && !in_blocks_section)         \
 			break;                                                \
 		if (in_entities_section &&                              \
-				!(layername.isNull() || layername == layer))        \
+				!(layername.isEmpty() || layername == layer))        \
 			break;                                                \
 		grid.align(_p1x, _p1y);                                 \
 		grid.align(_p2x, _p2y);                                 \
@@ -249,7 +249,7 @@ DxfData::DxfData(double fn, double fs, double fa, QString filename, QString laye
 				}
 			}
 			else if (mode == "DIMENSION" &&
-					(layername.isNull() || layername == layer)) {
+					(layername.isEmpty() || layername == layer)) {
 				this->dims.append(Dim());
 				this->dims.last().type = dimtype;
 				for (int i = 0; i < 7; i++)
@@ -268,7 +268,7 @@ DxfData::DxfData(double fn, double fs, double fa, QString filename, QString laye
 			else if (mode == "ENDSEC") {
 			}
 			else if (in_blocks_section || (in_entities_section &&
-					(layername.isNull() || layername == layer))) {
+					(layername.isEmpty() || layername == layer))) {
 				unsupported_entities_list[mode]++;
 			}
 			mode = data;
@@ -357,7 +357,7 @@ DxfData::DxfData(double fn, double fs, double fa, QString filename, QString laye
 	QHashIterator<QString, int> i(unsupported_entities_list);
 	while (i.hasNext()) {
 		i.next();
-		if (layername.isNull()) {
+		if (layername.isEmpty()) {
 			PRINTA("WARNING: Unsupported DXF Entity `%1' (%2x) in `%3'.",
 					 i.key(), QString::number(i.value()), filename);
 		} else {
