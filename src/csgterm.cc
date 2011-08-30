@@ -234,7 +234,18 @@ BoundingBox CSGChain::getBoundingBox() const
 	BoundingBox bbox;
 	for (size_t i=0;i<polysets.size();i++) {
 		if (types[i] != CSGTerm::TYPE_DIFFERENCE) {
-			bbox.extend(polysets[i]->getBoundingBox());
+			BoundingBox psbox = polysets[i]->getBoundingBox();
+			if (!psbox.isNull()) {
+				Eigen::Transform3d t;
+				// Column-major vs. Row-major
+				t.matrix()	<< 
+					matrices[i][0], matrices[i][4], matrices[i][8], matrices[i][12],
+					matrices[i][1], matrices[i][5], matrices[i][9], matrices[i][13],
+					matrices[i][2], matrices[i][6], matrices[i][10], matrices[i][14],
+					matrices[i][3], matrices[i][7], matrices[i][11], matrices[i][15];
+				bbox.extend(t * psbox.min());
+				bbox.extend(t * psbox.max());
+			}
 		}
 	}
 	return bbox;
