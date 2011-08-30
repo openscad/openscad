@@ -2,6 +2,8 @@
 #define OFFSCREENVIEW_H_
 
 #include "OffscreenContext.h"
+#include <Eigen/Core>
+#include <Eigen/Geometry>
 #include <stdint.h>
 
 class OffscreenView
@@ -11,8 +13,7 @@ public:
 	~OffscreenView();
 	void setRenderer(class Renderer* r);
 
-	void setCamera(double xpos, double ypos, double zpos, 
-								 double xcenter, double ycenter, double zcenter);
+	void setCamera(const Eigen::Vector3d &pos, const Eigen::Vector3d &center);
 	void initializeGL();
 	void resizeGL(int w, int h);
 	void setupPerspective();
@@ -25,15 +26,9 @@ public:
 private:
 	Renderer *renderer;
 	double w_h_ratio;
-	double object_rot_x;
-	double object_rot_y;
-	double object_rot_z;
-	double camera_eye_x;
-	double camera_eye_y;
-	double camera_eye_z;
-	double camera_center_x;
-	double camera_center_y;
-	double camera_center_z;
+	Eigen::Vector3d object_rot;
+	Eigen::Vector3d camera_eye;
+	Eigen::Vector3d camera_center;
 
 	bool orthomode;
 	bool showaxes;
