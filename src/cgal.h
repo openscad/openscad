@@ -14,22 +14,22 @@
 #include <CGAL/Polygon_2.h>
 #include <CGAL/Polygon_with_holes_2.h>
 
-typedef CGAL::Extended_cartesian<CGAL::Gmpq> CGAL_Kernel2;
+typedef CGAL::Gmpq NT;
+typedef CGAL::Extended_cartesian<NT> CGAL_Kernel2;
 typedef CGAL::Nef_polyhedron_2<CGAL_Kernel2> CGAL_Nef_polyhedron2;
 typedef CGAL_Kernel2::Aff_transformation_2 CGAL_Aff_transformation2;
 
-typedef CGAL::Cartesian<CGAL::Gmpq> CGAL_Kernel3;
-typedef CGAL::Polyhedron_3<CGAL_Kernel3> CGAL_Polyhedron;
-typedef CGAL_Polyhedron::HalfedgeDS CGAL_HDS;
-typedef CGAL::Polyhedron_incremental_builder_3<CGAL_HDS> CGAL_Polybuilder;
-typedef CGAL::Nef_polyhedron_3<CGAL_Kernel3> CGAL_Nef_polyhedron3;
-typedef CGAL_Nef_polyhedron3::Aff_transformation_3 CGAL_Aff_transformation;
-typedef CGAL_Nef_polyhedron3::Vector_3 CGAL_Vector;
-typedef CGAL_Nef_polyhedron3::Plane_3 CGAL_Plane;
-typedef CGAL_Nef_polyhedron3::Point_3 CGAL_Point;
 typedef CGAL::Exact_predicates_exact_constructions_kernel CGAL_ExactKernel2;
 typedef CGAL::Polygon_2<CGAL_ExactKernel2> CGAL_Poly2;
 typedef CGAL::Polygon_with_holes_2<CGAL_ExactKernel2> CGAL_Poly2h;
+
+typedef CGAL::Cartesian<NT> CGAL_Kernel3;
+typedef CGAL::Nef_polyhedron_3<CGAL_Kernel3> CGAL_Nef_polyhedron3;
+typedef CGAL_Nef_polyhedron3::Aff_transformation_3 CGAL_Aff_transformation;
+
+typedef CGAL::Polyhedron_3<CGAL_Kernel3> CGAL_Polyhedron;
+typedef CGAL_Polyhedron::HalfedgeDS CGAL_HDS;
+typedef CGAL::Polyhedron_incremental_builder_3<CGAL_HDS> CGAL_Polybuilder;
 
 struct CGAL_Nef_polyhedron
 {
