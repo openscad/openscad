@@ -67,7 +67,7 @@ o MDI
     and handle_dep.
 o 3D View
   - OpenGL 2.0 test: What, exactly, is needed from OpenGL 2.0? Can we use 1.x with extensions?
-  - Improve mouse rotation
+  - Improve mouse rotation/zoom/pan
   - Add modifier key combos to handle pan and zoom on 1 mouse button systems
   - Show grid
   - Measurement ticks on the axes that look like rulers that one can turn off and on.
@@ -78,6 +78,7 @@ o 3D View
   - overlay indicator displaying current view mode
   - OpenCSG rendering: Coincident surfaces causes z-buffer fighting. Is this somehow
     avoidable tuning the depth tests in OpenCSG? 
+  - Make the 10.000 element OpenCSG klimit configurable (Preferences) ?
   - Use OpenGL picking to facilitate ray-tracing like features like measuring
     thicknesses, distances, slot thicknesses etc.
 o Editor wishlist
