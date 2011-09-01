@@ -32,7 +32,7 @@
 #include "CGAL_Nef_polyhedron.h"
 #include "cgal.h"
 
-#include "Preferences.h"
+//#include "Preferences.h"
 
 CGALRenderer::CGALRenderer(const CGAL_Nef_polyhedron &root) : root(root)
 {
@@ -48,14 +48,14 @@ CGALRenderer::CGALRenderer(const CGAL_Nef_polyhedron &root) : root(root)
 		this->polyset = NULL;
 		this->polyhedron = new Polyhedron();
     // FIXME: Make independent of Preferences
-		this->polyhedron->setColor(Polyhedron::CGAL_NEF3_MARKED_FACET_COLOR,
-															 Preferences::inst()->color(Preferences::CGAL_FACE_BACK_COLOR).red(),
-															 Preferences::inst()->color(Preferences::CGAL_FACE_BACK_COLOR).green(),
-															 Preferences::inst()->color(Preferences::CGAL_FACE_BACK_COLOR).blue());
-		this->polyhedron->setColor(Polyhedron::CGAL_NEF3_UNMARKED_FACET_COLOR,
-															 Preferences::inst()->color(Preferences::CGAL_FACE_FRONT_COLOR).red(),
-															 Preferences::inst()->color(Preferences::CGAL_FACE_FRONT_COLOR).green(),
-															 Preferences::inst()->color(Preferences::CGAL_FACE_FRONT_COLOR).blue());
+		// this->polyhedron->setColor(Polyhedron::CGAL_NEF3_MARKED_FACET_COLOR,
+		// 													 Preferences::inst()->color(Preferences::CGAL_FACE_BACK_COLOR).red(),
+		// 													 Preferences::inst()->color(Preferences::CGAL_FACE_BACK_COLOR).green(),
+		// 													 Preferences::inst()->color(Preferences::CGAL_FACE_BACK_COLOR).blue());
+		// this->polyhedron->setColor(Polyhedron::CGAL_NEF3_UNMARKED_FACET_COLOR,
+		// 													 Preferences::inst()->color(Preferences::CGAL_FACE_FRONT_COLOR).red(),
+		// 													 Preferences::inst()->color(Preferences::CGAL_FACE_FRONT_COLOR).green(),
+		// 													 Preferences::inst()->color(Preferences::CGAL_FACE_FRONT_COLOR).blue());
 		
 		CGAL::OGL::Nef3_Converter<CGAL_Nef_polyhedron3>::convert_to_OGLPolyhedron(*this->root.p3, this->polyhedron);
 		this->polyhedron->init();
@@ -73,7 +73,8 @@ void CGALRenderer::draw(bool showfaces, bool showedges) const
 	if (this->root.dim == 2) {
 		// Draw 2D polygons
 		glDisable(GL_LIGHTING);
-		const QColor &col = Preferences::inst()->color(Preferences::CGAL_FACE_2D_COLOR);
+// FIXME:		const QColor &col = Preferences::inst()->color(Preferences::CGAL_FACE_2D_COLOR);
+		const QColor &col = QColor(0x00, 0xbf, 0x99);
 		glColor3f(col.redF(), col.greenF(), col.blueF());
 		
 		for (int i=0; i < this->polyset->polygons.size(); i++) {
@@ -95,7 +96,8 @@ void CGALRenderer::draw(bool showfaces, bool showedges) const
 		glDisable(GL_DEPTH_TEST);
 		glDisable(GL_LIGHTING);
 		glLineWidth(2);
-		const QColor &col2 = Preferences::inst()->color(Preferences::CGAL_EDGE_2D_COLOR);
+// FIXME:		const QColor &col2 = Preferences::inst()->color(Preferences::CGAL_EDGE_2D_COLOR);
+		const QColor &col2 = QColor(0xff, 0x00, 0x00);
 		glColor3f(col2.redF(), col2.greenF(), col2.blueF());
 		
 		// Extract the boundary, including inner boundaries of the polygons
