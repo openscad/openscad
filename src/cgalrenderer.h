@@ -11,7 +11,7 @@ public:
 	~CGALRenderer();
 	void draw(bool showfaces, bool showedges) const;
 
-private:
+public:
 	const CGAL_Nef_polyhedron &root;
 	class Polyhedron *polyhedron;
 	class PolySet *polyset;

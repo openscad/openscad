@@ -263,7 +263,7 @@ CSGTerm *AbstractNode::evaluate_csg_term_from_nef(double m[20], QVector<CSGTerm*
 		DxfData dd(N);
 		ps = new PolySet();
 		ps->is2d = true;
-		dxf_tesselate(ps, &dd, 0, true, false, 0);
+		dxf_tesselate(ps, dd, 0, true, false, 0);
 		dxf_border_to_ps(ps, &dd);
 	}
 

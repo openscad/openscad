@@ -41,7 +41,7 @@ CGALRenderer::CGALRenderer(const CGAL_Nef_polyhedron &root) : root(root)
 		this->polyhedron = NULL;
 		this->polyset = new PolySet();
 		this->polyset->is2d = true;
-		dxf_tesselate(this->polyset, dd, 0, true, false, 0);
+		dxf_tesselate(this->polyset, *dd, 0, true, false, 0);
 		delete dd;
 	}
 	else if (root.dim == 3) {

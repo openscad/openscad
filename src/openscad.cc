@@ -33,8 +33,6 @@
 #include "export.h"
 #include "builtin.h"
 #include "nodedumper.h"
-#include "CGALEvaluator.h"
-#include "PolySetCGALEvaluator.h"
 #include "printutils.h"
 
 #include <string>
@@ -43,6 +41,8 @@
 #ifdef ENABLE_CGAL
 #include "CGAL_Nef_polyhedron.h"
 #include <CGAL/assertions_behaviour.h>
+#include "CGALEvaluator.h"
+#include "PolySetCGALEvaluator.h"
 #endif
 
 #include <QApplication>
@@ -259,10 +259,12 @@ int main(int argc, char **argv)
 	NodeCache nodecache;
 	NodeDumper dumper(nodecache);
 	Tree tree;
+#ifdef ENABLE_CGAL
 	// FIXME: enforce some maximum cache size (old version had 100K vertices as limit)
 	QHash<std::string, CGAL_Nef_polyhedron> cache;
 	CGALEvaluator cgalevaluator(cache, tree);
 	PolySetCGALEvaluator psevaluator(cgalevaluator);
+#endif
 
 	if (stl_output_file || off_output_file || dxf_output_file)
 	{

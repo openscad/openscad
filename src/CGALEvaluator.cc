@@ -182,7 +182,7 @@ Response CGALEvaluator::visit(State &state, const TransformNode &node)
 				
 				PolySet ps;
 				ps.is2d = true;
-				dxf_tesselate(&ps, dd, 0, true, false, 0);
+				dxf_tesselate(&ps, *dd, 0, true, false, 0);
 				
 				N = evaluateCGALMesh(ps);
 				ps.refcount = 0;

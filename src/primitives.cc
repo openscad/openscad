@@ -559,7 +559,7 @@ sphere_next_r2:
 
 		p->is2d = true;
 		p->convexity = convexity;
-		dxf_tesselate(p, &dd, 0, true, false, 0);
+		dxf_tesselate(p, dd, 0, true, false, 0);
 		dxf_border_to_ps(p, &dd);
 	}
 
