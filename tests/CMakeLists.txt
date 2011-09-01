@@ -147,6 +147,18 @@ set_target_properties(cgaltest PROPERTIES COMPILE_FLAGS "-DENABLE_CGAL ${CGAL_CX
 target_link_libraries(cgaltest ${CGAL_LIBRARY} ${CGAL_3RD_PARTY_LIBRARIES} ${QT_LIBRARIES} ${OPENGL_LIBRARY})
 
 #
+# cgalpngtest
+#
+add_executable(cgalpngtest cgalpngtest.cc OffscreenView.cc OffscreenContext.mm
+                           ../src/CGALRenderer.cc ../src/CGAL_Nef_polyhedron.cc
+                           ../src/CSGTermEvaluator.cc ../src/CGALEvaluator.cc
+                           ../src/PolySetCGALEvaluator.cc ../src/qhash.cc
+                           ../src/CGAL_Nef_polyhedron_DxfData.cc ../src/cgaladv_minkowski2.cc
+                           ${COMMON_SOURCES})
+set_target_properties(cgalpngtest PROPERTIES COMPILE_FLAGS "-DENABLE_CGAL ${CGAL_CXX_FLAGS_INIT}")
+target_link_libraries(cgalpngtest ${CGAL_LIBRARY} ${CGAL_3RD_PARTY_LIBRARIES} ${QT_LIBRARIES}  ${GLEW_LIBRARY} ${COCOA_LIBRARY} ${OPENGL_LIBRARY})
+
+#
 # opencsgtest
 #
 add_executable(opencsgtest opencsgtest.cc OffscreenView.cc OffscreenContext.mm
@@ -186,9 +198,12 @@ add_cmdline_test(csgtexttest txt ${MINIMAL_FILES})
 add_cmdline_test(csgtermtest txt ${MINIMAL_FILES})
 
 # Add cgaltest tests to CTest
+add_cmdline_test(cgaltest stl ${CGALTEST_FILES})
+
+# Add cgalpngtest tests to CTest
 LIST(APPEND CGALTEST_FILES ${FEATURES_FILES})
 LIST(APPEND CGALTEST_FILES ${CMAKE_SOURCE_DIR}/../examples/example001.scad)
-add_cmdline_test(cgaltest stl ${CGALTEST_FILES})
+add_cmdline_test(cgaltest stl ${CGALPNGTEST_FILES})
 
 # Add opencsg tests to CTest
 LIST(APPEND OPENCSGTEST_FILES ${CGALTEST_FILES})
