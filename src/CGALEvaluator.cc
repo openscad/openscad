@@ -46,6 +46,7 @@ void CGALEvaluator::process(CGAL_Nef_polyhedron &target, const CGAL_Nef_polyhedr
  	if (target.dim != 2 && target.dim != 3) {
  		assert(false && "Dimension of Nef polyhedron must be 2 or 3");
  	}
+	assert(target.dim == src.dim);
 
 	switch (op) {
 	case CGE_UNION:
@@ -58,7 +59,7 @@ void CGALEvaluator::process(CGAL_Nef_polyhedron &target, const CGAL_Nef_polyhedr
 		target -= src;
 		break;
 	case CGE_MINKOWSKI:
-		target = target.minkowski(src);
+		target.minkowski(src);
 		break;
 	case CGE_HULL:
 		//FIXME: Port convex hull to a binary operator or process it all in the end somehow
@@ -87,7 +88,7 @@ void CGALEvaluator::applyToChildren(const AbstractNode &node, CGALEvaluator::Csg
 			if (chnode->modinst->tag_background) continue;
 			assert(isCached(*chnode));
 			if (first) {
-				N = this->cache[chcacheid];
+				N = this->cache[chcacheid].copy();
 				// If the first child(ren) are empty (e.g. echo) nodes, 
 				// ignore them (reset first flag)
  				if (N.dim != 0) first = false;
@@ -97,7 +98,8 @@ void CGALEvaluator::applyToChildren(const AbstractNode &node, CGALEvaluator::Csg
 			chnode->progress_report();
 		}
 	}
-	this->cache.insert(this->tree.getString(node), N);
+	const std::string &cacheid = this->tree.getString(node); 
+	this->cache.insert(cacheid, N);
 }
 
 /*
@@ -195,7 +197,8 @@ Response CGALEvaluator::visit(State &state, const TransformNode &node)
 					node.matrix[2], node.matrix[6], node.matrix[10], node.matrix[14], node.matrix[15]);
 				N.p3->transform(t);
 			}
-			this->cache.insert(this->tree.getString(node), N);
+			const std::string &cacheid = this->tree.getString(node);
+			this->cache.insert(cacheid, N);
 		}
 		addToParent(state, node);
 	}
@@ -228,7 +231,8 @@ Response CGALEvaluator::visit(State &state, const AbstractPolyNode &node)
 					node.progress_report();
 					
 					ps->unlink();
-					this->cache.insert(this->tree.getString(node), N);
+					const std::string &cacheid = this->tree.getString(node);
+					this->cache.insert(cacheid, N);
 				}
 				catch (...) { // Don't leak the PolySet on ProgressCancelException
 					ps->unlink();

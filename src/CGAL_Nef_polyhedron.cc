@@ -5,49 +5,38 @@
 
 CGAL_Nef_polyhedron& CGAL_Nef_polyhedron::operator+=(const CGAL_Nef_polyhedron &other)
 {
-	if (other.dim == 2) {
-		(*this->p2) += (*other.p2);
-		this->dim = 2;
-	}
-	if (other.dim == 3) {
-		(*this->p3) += (*other.p3);
-		this->dim = 3;
-	}
+	if (this->dim == 2) (*this->p2) += (*other.p2);
+	else if (this->dim == 3) (*this->p3) += (*other.p3);
 	return *this;
 }
 
 CGAL_Nef_polyhedron& CGAL_Nef_polyhedron::operator*=(const CGAL_Nef_polyhedron &other)
 {
-	if (other.dim == 2) {
-		(*this->p2) *= (*other.p2);
-		this->dim = 2;
-	}
-	if (other.dim == 3) {
-		(*this->p3) *= (*other.p3);
-		this->dim = 3;
-	}
+	if (this->dim == 2) (*this->p2) *= (*other.p2);
+	else if (this->dim == 3) (*this->p3) *= (*other.p3);
 	return *this;
 }
 
 CGAL_Nef_polyhedron& CGAL_Nef_polyhedron::operator-=(const CGAL_Nef_polyhedron &other)
 {
-	if (other.dim == 2) {
-		(*this->p2) -= (*other.p2);
-		this->dim = 2;
-	}
-	if (other.dim == 3) {
-		(*this->p3) -= (*other.p3);
-		this->dim = 3;
-	}
+	if (this->dim == 2) (*this->p2) -= (*other.p2);
+	else if (this->dim == 3) (*this->p3) -= (*other.p3);
+	return *this;
+}
+
+extern CGAL_Nef_polyhedron2 minkowski2(const CGAL_Nef_polyhedron2 &a, const CGAL_Nef_polyhedron2 &b);
+
+CGAL_Nef_polyhedron &CGAL_Nef_polyhedron::minkowski(const CGAL_Nef_polyhedron &other)
+{
+	if (this->dim == 2) (*this->p2) = minkowski2(*this->p2, *other.p2);
+	else if (this->dim == 3) (*this->p3) = CGAL::minkowski_sum_3(*this->p3, *other.p3);
 	return *this;
 }
 
 int CGAL_Nef_polyhedron::weight() const
 {
-	if (dim == 2)
-		return p2->explorer().number_of_vertices();
-	if (dim == 3)
-		return p3->number_of_vertices();
+	if (this->dim == 2) return this->p2->explorer().number_of_vertices();
+	if (this->dim == 3) return this->p3->number_of_vertices();
 	return 0;
 }
 
@@ -95,17 +84,13 @@ PolySet *CGAL_Nef_polyhedron::convertToPolyset()
 	return ps;
 }
 
-extern CGAL_Nef_polyhedron2 minkowski2(const CGAL_Nef_polyhedron2 &a, const CGAL_Nef_polyhedron2 &b);
-
-CGAL_Nef_polyhedron &CGAL_Nef_polyhedron::minkowski(const CGAL_Nef_polyhedron &other)
+/*!
+	Deep copy
+*/
+CGAL_Nef_polyhedron CGAL_Nef_polyhedron::copy() const
 {
-	if (other.dim == 2) {
-		(*this->p2) = minkowski2(*this->p2, *other.p2);
-		this->dim = 2;
-	}
-	if (other.dim == 3) {
-		(*this->p3) = CGAL::minkowski_sum_3(*this->p3, *other.p3);
-		this->dim = 3;
-	}
-	return *this;
+	CGAL_Nef_polyhedron copy = *this;
+	if (copy.p2) copy.p2 = new CGAL_Nef_polyhedron2(*copy.p2);
+	else if (copy.p3) copy.p3 = new CGAL_Nef_polyhedron3(*copy.p3);
+	return copy;
 }

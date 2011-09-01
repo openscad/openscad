@@ -193,7 +193,7 @@ static bool point_on_line(double *p1, double *p2, double *p3)
 	rot: CLOCKWISE rotation around positive Z axis
  */
 
-void dxf_tesselate(PolySet *ps, DxfData *dxf, double rot, bool up, bool do_triangle_splitting, double h)
+void dxf_tesselate(PolySet *ps, DxfData &dxf, double rot, bool up, bool do_triangle_splitting, double h)
 {
 	GLUtesselator *tobj = gluNewTess();
 
@@ -227,17 +227,17 @@ void dxf_tesselate(PolySet *ps, DxfData *dxf, double rot, bool up, bool do_trian
 
 	Grid3d< QPair<int,int> > point_to_path(GRID_COARSE);
 
-	for (int i = 0; i < dxf->paths.count(); i++) {
-		if (!dxf->paths[i].is_closed)
+	for (int i = 0; i < dxf.paths.count(); i++) {
+		if (!dxf.paths[i].is_closed)
 			continue;
 		gluTessBeginContour(tobj);
-		for (int j = 1; j < dxf->paths[i].points.count(); j++) {
-			point_to_path.data((*dxf->paths[i].points[j])[0],
-												 (*dxf->paths[i].points[j])[1],
+		for (int j = 1; j < dxf.paths[i].points.count(); j++) {
+			point_to_path.data((*dxf.paths[i].points[j])[0],
+												 (*dxf.paths[i].points[j])[1],
 												 h) = QPair<int,int>(i, j);
 			vl.append(tess_vdata());
-			vl.last().v[0] = (*dxf->paths[i].points[j])[0];
-			vl.last().v[1] = (*dxf->paths[i].points[j])[1];
+			vl.last().v[0] = (*dxf.paths[i].points[j])[0];
+			vl.last().v[1] = (*dxf.paths[i].points[j])[1];
 			vl.last().v[2] = h;
 			gluTessVertex(tobj, vl.last().v, vl.last().v);
 		}
@@ -370,19 +370,19 @@ void dxf_tesselate(PolySet *ps, DxfData *dxf, double rot, bool up, bool do_trian
 		int j2 = point_to_path.data(tess_tri[i].p[2][0], tess_tri[i].p[2][1], tess_tri[i].p[2][2]).second;
 
 		if (i0 == i1 && j0 == 1 && j1 == 2)
-			dxf->paths[i0].is_inner = !up;
+			dxf.paths[i0].is_inner = !up;
 		if (i0 == i1 && j0 == 2 && j1 == 1)
-			dxf->paths[i0].is_inner = up;
+			dxf.paths[i0].is_inner = up;
 
 		if (i1 == i2 && j1 == 1 && j2 == 2)
-			dxf->paths[i1].is_inner = !up;
+			dxf.paths[i1].is_inner = !up;
 		if (i1 == i2 && j1 == 2 && j2 == 1)
-			dxf->paths[i1].is_inner = up;
+			dxf.paths[i1].is_inner = up;
 
 		if (i2 == i0 && j2 == 1 && j0 == 2)
-			dxf->paths[i2].is_inner = !up;
+			dxf.paths[i2].is_inner = !up;
 		if (i2 == i0 && j2 == 2 && j0 == 1)
-			dxf->paths[i2].is_inner = up;
+			dxf.paths[i2].is_inner = up;
 	}
 
 	tess_tri.clear();
