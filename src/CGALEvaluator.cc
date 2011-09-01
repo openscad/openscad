@@ -46,6 +46,7 @@ void CGALEvaluator::process(CGAL_Nef_polyhedron &target, const CGAL_Nef_polyhedr
  	if (target.dim != 2 && target.dim != 3) {
  		assert(false && "Dimension of Nef polyhedron must be 2 or 3");
  	}
+	if (src.dim == 0) { return; } // Empty polyhedron. This can happen for e.g. square([0,0])
 	assert(target.dim == src.dim);
 
 	switch (op) {
@@ -377,6 +378,8 @@ public:
 
 CGAL_Nef_polyhedron CGALEvaluator::evaluateCGALMesh(const PolySet &ps)
 {
+	if (ps.empty()) return CGAL_Nef_polyhedron();
+
 	if (ps.is2d)
 	{
 #if 0
