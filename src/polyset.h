@@ -24,6 +24,7 @@ public:
 	PolySet();
 	~PolySet();
 
+	bool empty() const { return polygons.size() == 0; }
 	void append_poly();
 	void append_vertex(double x, double y, double z = 0.0);
 	void insert_vertex(double x, double y, double z = 0.0);
