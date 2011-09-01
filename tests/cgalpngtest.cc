@@ -36,7 +36,9 @@
 #include "CGAL_Nef_polyhedron.h"
 #include "CGALEvaluator.h"
 #include "PolySetCGALEvaluator.h"
-#include "CGALRenderer.h"
+#include "cgalrenderer.h"
+#include "CGAL_renderer.h"
+#include "cgal.h"
 #include "OffscreenView.h"
 
 #include <QApplication>
@@ -182,16 +184,6 @@ int main(int argc, char **argv)
 	QDir::setCurrent(original_path.absolutePath());
 
 	csgInfo.glview = new OffscreenView(512,512);
-// FIXME: Get bbox from CGAL mesh	BoundingBox bbox = csgInfo.root_chain->getBoundingBox();
-	BoundingBox bbox;
-
-	Vector3d center = (bbox.min() + bbox.max()) / 2;
-	double radius = (bbox.max() - bbox.min()).norm() / 2;
-
-
-	Vector3d cameradir(1, 1, -0.5);
-	Vector3d camerapos = center - radius*1.5*cameradir;
-	csgInfo.glview->setCamera(camerapos, center);
 
 	glewInit();
 #ifdef DEBUG
@@ -213,6 +205,22 @@ int main(int argc, char **argv)
 #endif
 
 	CGALRenderer cgalRenderer(N);
+
+	BoundingBox bbox;
+	if (cgalRenderer.polyhedron) {
+		CGAL::Bbox_3 cgalbbox = cgalRenderer.polyhedron->bbox();
+		bbox = BoundingBox(Vector3d(cgalbbox.xmin(), cgalbbox.ymin(), cgalbbox.zmin()),
+											 Vector3d(cgalbbox.xmax(), cgalbbox.ymax(), cgalbbox.zmax()));
+	}
+	Vector3d center = (bbox.min() + bbox.max()) / 2;
+	double radius = (bbox.max() - bbox.min()).norm() / 2;
+
+
+	Vector3d cameradir(1, 1, -0.5);
+	Vector3d camerapos = center - radius*1.5*cameradir;
+	csgInfo.glview->setCamera(camerapos, center);
+
+
 	csgInfo.glview->setRenderer(&cgalRenderer);
 	csgInfo.glview->paintGL();
 	csgInfo.glview->save("/dev/stdout");
