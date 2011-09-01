@@ -212,12 +212,15 @@ int main(int argc, char **argv)
 		bbox = BoundingBox(Vector3d(cgalbbox.xmin(), cgalbbox.ymin(), cgalbbox.zmin()),
 											 Vector3d(cgalbbox.xmax(), cgalbbox.ymax(), cgalbbox.zmax()));
 	}
+	else if (cgalRenderer.polyset) {
+		bbox = cgalRenderer.polyset->getBoundingBox();
+	}
 	Vector3d center = (bbox.min() + bbox.max()) / 2;
 	double radius = (bbox.max() - bbox.min()).norm() / 2;
 
 
 	Vector3d cameradir(1, 1, -0.5);
-	Vector3d camerapos = center - radius*1.5*cameradir;
+	Vector3d camerapos = center - radius*2*cameradir;
 	csgInfo.glview->setCamera(camerapos, center);
 
 
