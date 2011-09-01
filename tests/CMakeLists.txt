@@ -201,9 +201,9 @@ add_cmdline_test(csgtermtest txt ${MINIMAL_FILES})
 add_cmdline_test(cgaltest stl ${CGALTEST_FILES})
 
 # Add cgalpngtest tests to CTest
-LIST(APPEND CGALTEST_FILES ${FEATURES_FILES})
-LIST(APPEND CGALTEST_FILES ${CMAKE_SOURCE_DIR}/../examples/example001.scad)
-add_cmdline_test(cgaltest stl ${CGALPNGTEST_FILES})
+LIST(APPEND CGALPNGTEST_FILES ${FEATURES_FILES})
+LIST(APPEND CGALPNGTEST_FILES ${CMAKE_SOURCE_DIR}/../examples/example001.scad)
+add_cmdline_test(cgalpngtest png ${CGALPNGTEST_FILES})
 
 # Add opencsg tests to CTest
 LIST(APPEND OPENCSGTEST_FILES ${CGALTEST_FILES})
