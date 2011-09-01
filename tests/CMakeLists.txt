@@ -206,7 +206,7 @@ LIST(APPEND CGALPNGTEST_FILES ${CMAKE_SOURCE_DIR}/../examples/example001.scad)
 add_cmdline_test(cgalpngtest png ${CGALPNGTEST_FILES})
 
 # Add opencsg tests to CTest
-LIST(APPEND OPENCSGTEST_FILES ${CGALTEST_FILES})
+LIST(APPEND OPENCSGTEST_FILES ${CGALPNGTEST_FILES})
 add_cmdline_test(opencsgtest png ${OPENCSGTEST_FILES})
 
 # Add dxfexport tests to CTest
