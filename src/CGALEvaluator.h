@@ -4,7 +4,7 @@
 #include "myqhash.h"
 #include "visitor.h"
 #include "Tree.h"
-#include "cgal.h"
+#include "CGAL_Nef_polyhedron.h"
 #include "PolySetCGALEvaluator.h"
 
 #include <string>

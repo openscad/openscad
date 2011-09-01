@@ -29,17 +29,20 @@
 #include "CGAL_renderer.h"
 #include "dxfdata.h"
 #include "dxftess.h"
+#include "CGAL_Nef_polyhedron.h"
+#include "cgal.h"
 
 #include "Preferences.h"
 
 CGALRenderer::CGALRenderer(const CGAL_Nef_polyhedron &root) : root(root)
 {
 	if (root.dim == 2) {
-		DxfData dd(root);
+		DxfData *dd = root.convertToDxfData();
 		this->polyhedron = NULL;
 		this->polyset = new PolySet();
 		this->polyset->is2d = true;
-		dxf_tesselate(this->polyset, &dd, 0, true, false, 0);
+		dxf_tesselate(this->polyset, dd, 0, true, false, 0);
+		delete dd;
 	}
 	else if (root.dim == 3) {
 		this->polyset = NULL;
@@ -54,7 +57,7 @@ CGALRenderer::CGALRenderer(const CGAL_Nef_polyhedron &root) : root(root)
 															 Preferences::inst()->color(Preferences::CGAL_FACE_FRONT_COLOR).green(),
 															 Preferences::inst()->color(Preferences::CGAL_FACE_FRONT_COLOR).blue());
 		
-		CGAL::OGL::Nef3_Converter<CGAL_Nef_polyhedron3>::convert_to_OGLPolyhedron(this->root.p3, this->polyhedron);
+		CGAL::OGL::Nef3_Converter<CGAL_Nef_polyhedron3>::convert_to_OGLPolyhedron(*this->root.p3, this->polyhedron);
 		this->polyhedron->init();
 	}
 }
@@ -86,7 +89,7 @@ void CGALRenderer::draw(bool showfaces, bool showedges) const
 		typedef Explorer::Face_const_iterator fci_t;
 		typedef Explorer::Halfedge_around_face_const_circulator heafcc_t;
 		typedef Explorer::Point Point;
-		Explorer E = this->root.p2.explorer();
+		Explorer E = this->root.p2->explorer();
 		
 		// Draw 2D edges
 		glDisable(GL_DEPTH_TEST);

@@ -10,6 +10,7 @@
 #include "dxfdata.h"
 #include "dxftess.h"
 
+#include "cgal.h"
 #include <CGAL/assertions_behaviour.h>
 #include <CGAL/exceptions.h>
 
@@ -46,45 +47,25 @@ void CGALEvaluator::process(CGAL_Nef_polyhedron &target, const CGAL_Nef_polyhedr
  		assert(false && "Dimension of Nef polyhedron must be 2 or 3");
  	}
 
-	if (target.dim == 2) {
-		switch (op) {
-		case CGE_UNION:
-			target.p2 += src.p2;
-			break;
-		case CGE_INTERSECTION:
-			target.p2 *= src.p2;
-			break;
-		case CGE_DIFFERENCE:
-			target.p2 -= src.p2;
-			break;
-		case CGE_MINKOWSKI:
-			target.p2 = minkowski2(target.p2, src.p2);
-			break;
-		case CGE_HULL:
-			//FIXME: Port convex hull to a binary operator or process it all in the end somehow
-			// target.p2 = convexhull2(target.p2, src.p2);
-			// target.p2 = convexhull2(polys);
-			break;
-		}
-	}
-	else if (target.dim == 3) {
-		switch (op) {
-		case CGE_UNION:
-			target.p3 += src.p3;
-			break;
-		case CGE_INTERSECTION:
-			target.p3 *= src.p3;
-			break;
-		case CGE_DIFFERENCE:
-			target.p3 -= src.p3;
-			break;
-		case CGE_MINKOWSKI:
-			target.p3 = minkowski3(target.p3, src.p3);
-			break;
-		case CGE_HULL:
-			// FIXME: Print warning: hull() not supported in 3D
-			break;
-		}
+	switch (op) {
+	case CGE_UNION:
+		target += src;
+		break;
+	case CGE_INTERSECTION:
+		target *= src;
+		break;
+	case CGE_DIFFERENCE:
+		target -= src;
+		break;
+	case CGE_MINKOWSKI:
+		target = target.minkowski(src);
+		break;
+	case CGE_HULL:
+		//FIXME: Port convex hull to a binary operator or process it all in the end somehow
+		// target.p2 = convexhull2(target.p2, src.p2);
+		// target.p2 = convexhull2(polys);
+		// FIXME: Print warning: hull() not supported in 3D
+		break;
 	}
 }
 
@@ -191,27 +172,28 @@ Response CGALEvaluator::visit(State &state, const TransformNode &node)
 					node.matrix[0], node.matrix[4], node.matrix[12],
 					node.matrix[1], node.matrix[5], node.matrix[13], node.matrix[15]);
 				
-				DxfData dd(N);
-				for (int i=0; i < dd.points.size(); i++) {
-					CGAL_Kernel2::Point_2 p = CGAL_Kernel2::Point_2(dd.points[i][0], dd.points[i][1]);
+				DxfData *dd = N.convertToDxfData();
+				for (int i=0; i < dd->points.size(); i++) {
+					CGAL_Kernel2::Point_2 p = CGAL_Kernel2::Point_2(dd->points[i][0], dd->points[i][1]);
 					p = t.transform(p);
-					dd.points[i][0] = to_double(p.x());
-					dd.points[i][1] = to_double(p.y());
+					dd->points[i][0] = to_double(p.x());
+					dd->points[i][1] = to_double(p.y());
 				}
 				
 				PolySet ps;
 				ps.is2d = true;
-				dxf_tesselate(&ps, &dd, 0, true, false, 0);
+				dxf_tesselate(&ps, dd, 0, true, false, 0);
 				
 				N = evaluateCGALMesh(ps);
 				ps.refcount = 0;
+				delete dd;
 			}
 			else if (N.dim == 3) {
 				CGAL_Aff_transformation t(
 					node.matrix[0], node.matrix[4], node.matrix[ 8], node.matrix[12],
 					node.matrix[1], node.matrix[5], node.matrix[ 9], node.matrix[13],
 					node.matrix[2], node.matrix[6], node.matrix[10], node.matrix[14], node.matrix[15]);
-				N.p3.transform(t);
+				N.p3->transform(t);
 			}
 			this->cache.insert(this->tree.getString(node), N);
 		}
@@ -574,9 +556,9 @@ CGAL_Nef_polyhedron CGALEvaluator::evaluateCGALMesh(const PolySet &ps)
 				}
 			}
 
-			CGAL_Nef_polyhedron2 toNef()
+			CGAL_Nef_polyhedron2 *toNef()
 			{
-				CGAL_Nef_polyhedron2 N;
+				CGAL_Nef_polyhedron2 *N = new CGAL_Nef_polyhedron2;
 
 				QHashIterator< int, QList<int> > it(polygons);
 				while (it.hasNext()) {
@@ -586,7 +568,7 @@ CGAL_Nef_polyhedron CGALEvaluator::evaluateCGALMesh(const PolySet &ps)
 						int p = it.value()[j];
 						plist.push_back(points[p]);
 					}
-					N += CGAL_Nef_polyhedron2(plist.begin(), plist.end(), CGAL_Nef_polyhedron2::INCLUDED);
+					*N += CGAL_Nef_polyhedron2(plist.begin(), plist.end(), CGAL_Nef_polyhedron2::INCLUDED);
 				}
 
 				return N;
@@ -642,7 +624,7 @@ CGAL_Nef_polyhedron CGALEvaluator::evaluateCGALMesh(const PolySet &ps)
 #if 0
 		std::cout << P;
 #endif
-		CGAL_Nef_polyhedron3 N(P);
+		CGAL_Nef_polyhedron3 *N = new CGAL_Nef_polyhedron3(P);
 		return CGAL_Nef_polyhedron(N);
     }
 		catch (CGAL::Assertion_exception e) {

@@ -26,19 +26,21 @@
 
 #include "dxfdata.h"
 #include "grid.h"
+#include "CGAL_Nef_polyhedron.h"
 #include "cgal.h"
 
 #ifdef ENABLE_CGAL
 
-DxfData::DxfData(const struct CGAL_Nef_polyhedron &N)
+DxfData *CGAL_Nef_polyhedron::convertToDxfData() const
 {
-	assert(N.dim == 2);
+	assert(this->dim == 2);
+	DxfData *dxfdata = new DxfData();
 	Grid2d<int> grid(GRID_COARSE);
 
 	typedef CGAL_Nef_polyhedron2::Explorer Explorer;
 	typedef Explorer::Face_const_iterator fci_t;
 	typedef Explorer::Halfedge_around_face_const_circulator heafcc_t;
-	Explorer E = N.p2.explorer();
+	Explorer E = this->p2->explorer();
 
 	for (fci_t fit = E.faces_begin(), facesend = E.faces_end(); fit != facesend; ++fit)
 	{
@@ -52,26 +54,27 @@ DxfData::DxfData(const struct CGAL_Nef_polyhedron &N)
 				if (grid.has(x, y)) {
 					this_point = grid.align(x, y);
 				} else {
-					this_point = grid.align(x, y) = points.size();
-					points.append(Vector2d(x, y));
+					this_point = grid.align(x, y) = dxfdata->points.size();
+					dxfdata->points.append(Vector2d(x, y));
 				}
 				if (first_point < 0) {
-					paths.append(Path());
+					dxfdata->paths.append(DxfData::Path());
 					first_point = this_point;
 				}
 				if (this_point != last_point) {
-					paths.last().points.append(&points[this_point]);
+					dxfdata->paths.last().points.append(&dxfdata->points[this_point]);
 					last_point = this_point;
 				}
 			}
 		}
 		if (first_point >= 0) {
-			paths.last().is_closed = 1;
-			paths.last().points.append(&points[first_point]);
+			dxfdata->paths.last().is_closed = 1;
+			dxfdata->paths.last().points.append(&dxfdata->points[first_point]);
 		}
 	}
 
-	fixup_path_direction();
+	dxfdata->fixup_path_direction();
+	return dxfdata;
 }
 
 #endif // ENABLE_CGAL

@@ -41,7 +41,7 @@
 #include <vector>
 
 #ifdef ENABLE_CGAL
-#include "cgal.h"
+#include "CGAL_Nef_polyhedron.h"
 #include <CGAL/assertions_behaviour.h>
 #endif
 

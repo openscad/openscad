@@ -29,16 +29,9 @@
 #include "context.h"
 #include "builtin.h"
 #include "printutils.h"
-#include "cgal.h"
 #include "visitor.h"
 #include <sstream>
 #include <assert.h>
-
-#ifdef ENABLE_CGAL
-extern CGAL_Nef_polyhedron3 minkowski3(CGAL_Nef_polyhedron3 a, CGAL_Nef_polyhedron3 b);
-extern CGAL_Nef_polyhedron2 minkowski2(CGAL_Nef_polyhedron2 a, CGAL_Nef_polyhedron2 b);
-extern CGAL_Nef_polyhedron2 convexhull2(std::list<CGAL_Nef_polyhedron2> a);
-#endif
 
 enum cgaladv_type_e {
 	MINKOWSKI,

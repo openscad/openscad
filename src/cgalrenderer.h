@@ -2,7 +2,7 @@
 #define CGALRENDERER_H_
 
 #include "renderer.h"
-#include "cgal.h"
+#include "CGAL_Nef_polyhedron.h"
 
 class CGALRenderer : public Renderer
 {

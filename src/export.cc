@@ -24,6 +24,7 @@
  *
  */
 
+#include "export.h"
 #include "printutils.h"
 #include "polyset.h"
 #include "dxfdata.h"
@@ -34,6 +35,7 @@
 #include <errno.h>
 
 #ifdef ENABLE_CGAL
+#include "CGAL_Nef_polyhedron.h"
 #include "cgal.h"
 
 /*!
@@ -43,7 +45,7 @@
 void export_stl(CGAL_Nef_polyhedron *root_N, QTextStream &output, QProgressDialog *pd)
 {
 	CGAL_Polyhedron P;
-	root_N->p3.convert_to_Polyhedron(P);
+	root_N->p3->convert_to_Polyhedron(P);
 
 	typedef CGAL_Polyhedron::Vertex                                 Vertex;
 	typedef CGAL_Polyhedron::Vertex_const_iterator                  VCI;
@@ -131,12 +133,12 @@ void export_dxf(CGAL_Nef_polyhedron *root_N, QTextStream &output, QProgressDialo
 				 << "  2\n"
 				 << "ENTITIES\n";
 
-	DxfData dd(*root_N);
-	for (int i=0; i<dd.paths.size(); i++)
+	DxfData *dd =root_N->convertToDxfData();
+	for (int i=0; i<dd->paths.size(); i++)
 	{
-		for (int j=1; j<dd.paths[i].points.size(); j++) {
-			const Vector2d &p1 = *dd.paths[i].points[j-1];
-			const Vector2d &p2 = *dd.paths[i].points[j];
+		for (int j=1; j<dd->paths[i].points.size(); j++) {
+			const Vector2d &p1 = *dd->paths[i].points[j-1];
+			const Vector2d &p2 = *dd->paths[i].points[j];
 			double x1 = p1[0];
 			double y1 = p1[1];
 			double x2 = p2[0];
@@ -173,6 +175,7 @@ void export_dxf(CGAL_Nef_polyhedron *root_N, QTextStream &output, QProgressDialo
 	output << "  0\n"
 				 <<"EOF\n";
 
+	delete dd;
 	setlocale(LC_NUMERIC, "");      // Set default locale
 }
 

@@ -32,6 +32,7 @@
 #include "export.h"
 #include "builtin.h"
 #include "Tree.h"
+#include "CGAL_Nef_polyhedron.h"
 #include "CGALEvaluator.h"
 #include "PolySetCGALEvaluator.h"
 
@@ -42,6 +43,7 @@
 #include <QTextStream>
 #include <getopt.h>
 #include <iostream>
+#include <assert.h>
 
 QString commandline_commands;
 const char *make_command = NULL;

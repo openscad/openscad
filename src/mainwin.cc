@@ -46,8 +46,6 @@
 #ifdef USE_PROGRESSWIDGET
 #include "ProgressWidget.h"
 #endif
-#include "CGALEvaluator.h"
-#include "PolySetCGALEvaluator.h"
 #include "ThrownTogetherRenderer.h"
 
 #include <QMenu>
@@ -84,7 +82,11 @@ using namespace boost::lambda;
 
 #ifdef ENABLE_CGAL
 
+#include "CGALEvaluator.h"
+#include "PolySetCGALEvaluator.h"
 #include "cgalrenderer.h"
+#include "CGAL_Nef_polyhedron.h"
+#include "cgal.h"
 
 #endif // ENABLE_CGAL
 
@@ -1232,41 +1234,41 @@ void MainWindow::actionRenderCGAL()
 		if (this->root_N->dim == 2) {
 			PRINTF("   Top level object is a 2D object:");
 			QApplication::processEvents();
-			PRINTF("   Empty:      %6s", this->root_N->p2.is_empty() ? "yes" : "no");
+			PRINTF("   Empty:      %6s", this->root_N->p2->is_empty() ? "yes" : "no");
 			QApplication::processEvents();
-			PRINTF("   Plane:      %6s", this->root_N->p2.is_plane() ? "yes" : "no");
+			PRINTF("   Plane:      %6s", this->root_N->p2->is_plane() ? "yes" : "no");
 			QApplication::processEvents();
-			PRINTF("   Vertices:   %6d", (int)this->root_N->p2.explorer().number_of_vertices());
+			PRINTF("   Vertices:   %6d", (int)this->root_N->p2->explorer().number_of_vertices());
 			QApplication::processEvents();
-			PRINTF("   Halfedges:  %6d", (int)this->root_N->p2.explorer().number_of_halfedges());
+			PRINTF("   Halfedges:  %6d", (int)this->root_N->p2->explorer().number_of_halfedges());
 			QApplication::processEvents();
-			PRINTF("   Edges:      %6d", (int)this->root_N->p2.explorer().number_of_edges());
+			PRINTF("   Edges:      %6d", (int)this->root_N->p2->explorer().number_of_edges());
 			QApplication::processEvents();
-			PRINTF("   Faces:      %6d", (int)this->root_N->p2.explorer().number_of_faces());
+			PRINTF("   Faces:      %6d", (int)this->root_N->p2->explorer().number_of_faces());
 			QApplication::processEvents();
-			PRINTF("   FaceCycles: %6d", (int)this->root_N->p2.explorer().number_of_face_cycles());
+			PRINTF("   FaceCycles: %6d", (int)this->root_N->p2->explorer().number_of_face_cycles());
 			QApplication::processEvents();
-			PRINTF("   ConnComp:   %6d", (int)this->root_N->p2.explorer().number_of_connected_components());
+			PRINTF("   ConnComp:   %6d", (int)this->root_N->p2->explorer().number_of_connected_components());
 			QApplication::processEvents();
 		}
 
 		if (this->root_N->dim == 3) {
 			PRINTF("   Top level object is a 3D object:");
-			PRINTF("   Simple:     %6s", this->root_N->p3.is_simple() ? "yes" : "no");
+			PRINTF("   Simple:     %6s", this->root_N->p3->is_simple() ? "yes" : "no");
 			QApplication::processEvents();
-			PRINTF("   Valid:      %6s", this->root_N->p3.is_valid() ? "yes" : "no");
+			PRINTF("   Valid:      %6s", this->root_N->p3->is_valid() ? "yes" : "no");
 			QApplication::processEvents();
-			PRINTF("   Vertices:   %6d", (int)this->root_N->p3.number_of_vertices());
+			PRINTF("   Vertices:   %6d", (int)this->root_N->p3->number_of_vertices());
 			QApplication::processEvents();
-			PRINTF("   Halfedges:  %6d", (int)this->root_N->p3.number_of_halfedges());
+			PRINTF("   Halfedges:  %6d", (int)this->root_N->p3->number_of_halfedges());
 			QApplication::processEvents();
-			PRINTF("   Edges:      %6d", (int)this->root_N->p3.number_of_edges());
+			PRINTF("   Edges:      %6d", (int)this->root_N->p3->number_of_edges());
 			QApplication::processEvents();
-			PRINTF("   Halffacets: %6d", (int)this->root_N->p3.number_of_halffacets());
+			PRINTF("   Halffacets: %6d", (int)this->root_N->p3->number_of_halffacets());
 			QApplication::processEvents();
-			PRINTF("   Facets:     %6d", (int)this->root_N->p3.number_of_facets());
+			PRINTF("   Facets:     %6d", (int)this->root_N->p3->number_of_facets());
 			QApplication::processEvents();
-			PRINTF("   Volumes:    %6d", (int)this->root_N->p3.number_of_volumes());
+			PRINTF("   Volumes:    %6d", (int)this->root_N->p3->number_of_volumes());
 			QApplication::processEvents();
 		}
 
@@ -1367,7 +1369,7 @@ void MainWindow::actionExportSTLorOFF(bool)
 		return;
 	}
 
-	if (!this->root_N->p3.is_simple()) {
+	if (!this->root_N->p3->is_simple()) {
 		PRINT("Object isn't a valid 2-manifold! Modify your design..");
 		clearCurrentOutput();
 		return;
@@ -1386,7 +1388,7 @@ void MainWindow::actionExportSTLorOFF(bool)
 
 	QProgressDialog *pd = new QProgressDialog(
 			stl_mode ? "Exporting object to STL file..." : "Exporting object to OFF file...",
-			QString(), 0, this->root_N->p3.number_of_facets() + 1);
+			QString(), 0, this->root_N->p3->number_of_facets() + 1);
 	pd->setValue(0);
 	pd->setAutoClose(false);
 	pd->show();

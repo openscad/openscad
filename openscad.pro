@@ -119,7 +119,6 @@ FORMS   += src/MainWindow.ui \
            src/Preferences.ui
 
 HEADERS += src/renderer.h \
-           src/cgalrenderer.h \
            src/ThrownTogetherRenderer.h \
            src/CGAL_renderer.h \
            src/OGL_helper.h \
@@ -127,7 +126,6 @@ HEADERS += src/renderer.h \
            src/MainWindow.h \
            src/Preferences.h \
            src/builtin.h \
-           src/cgal.h \
            src/context.h \
            src/csgterm.h \
            src/dxfdata.h \
@@ -158,9 +156,7 @@ HEADERS += src/renderer.h \
            src/traverser.h \
            src/nodecache.h \
            src/nodedumper.h \
-           src/CGALEvaluator.h \
            src/PolySetEvaluator.h \
-           src/PolySetCGALEvaluator.h \
            src/CSGTermEvaluator.h \
            src/myqhash.h \
            src/Tree.h \
@@ -169,8 +165,6 @@ HEADERS += src/renderer.h \
 
 SOURCES += src/openscad.cc \
            src/mainwin.cc \
-           src/cgalrenderer.cc \
-           src/cgal.cc \
            src/ThrownTogetherRenderer.cc \
            src/glview.cc \
            src/export.cc \
@@ -187,9 +181,6 @@ SOURCES += src/openscad.cc \
            src/primitives.cc \
            src/projection.cc \
            src/cgaladv.cc \
-	   src/cgaladv_convexhull2.cc \
-           src/cgaladv_minkowski3.cc \
-           src/cgaladv_minkowski2.cc \
            src/surface.cc \
            src/control.cc \
            src/render.cc \
@@ -203,19 +194,33 @@ SOURCES += src/openscad.cc \
            src/dxfrotextrude.cc \
            src/highlighter.cc \
            src/printutils.cc \
-           src/nef2dxf.cc \
            src/Preferences.cc \
            src/progress.cc \
            src/editor.cc \
            src/traverser.cc \
            src/nodedumper.cc \
-           src/CGALEvaluator.cc \
-           src/PolySetEvaluator.cc \
-           src/PolySetCGALEvaluator.cc \
            src/CSGTermEvaluator.cc \
            src/qhash.cc \
            src/Tree.cc \
-	   src/mathc99.cc
+	   src/mathc99.cc \
+           src/PolySetEvaluator.cc
+
+cgal {
+HEADERS += src/cgal.h \
+           src/cgalfwd.h \
+           src/CGALEvaluator.h \
+           src/PolySetCGALEvaluator.h \
+           src/cgalrenderer.h \
+           src/CGAL_Nef_polyhedron.h
+
+SOURCES += src/CGALEvaluator.cc \
+           src/PolySetCGALEvaluator.cc \
+           src/cgalrenderer.cc \
+           src/CGAL_Nef_polyhedron.cc \
+           src/CGAL_Nef_polyhedron_DxfData.cc \
+	   src/cgaladv_convexhull2.cc \
+           src/cgaladv_minkowski2.cc
+}
 
 macx {
   HEADERS += src/AppleEvents.h \

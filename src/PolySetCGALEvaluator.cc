@@ -1,4 +1,5 @@
 #include "PolySetCGALEvaluator.h"
+#include "cgal.h"
 #include "polyset.h"
 #include "CGALEvaluator.h"
 #include "projectionnode.h"
@@ -67,8 +68,8 @@ PolySet *PolySetCGALEvaluator::evaluatePolySet(const ProjectionNode &node, Abstr
 		cube->unlink();
 
 		// N.p3 *= CGAL_Nef_polyhedron3(CGAL_Plane(0, 0, 1, 0), CGAL_Nef_polyhedron3::INCLUDED);
-		N.p3 *= Ncube.p3;
-		if (!N.p3.is_simple()) {
+		N *= Ncube;
+		if (!N.p3->is_simple()) {
 			PRINTF("WARNING: Body of projection(cut = true) isn't valid 2-manifold! Modify your design..");
 			goto cant_project_non_simple_polyhedron;
 		}
@@ -99,7 +100,7 @@ PolySet *PolySetCGALEvaluator::evaluatePolySet(const ProjectionNode &node, Abstr
 	}
 	else
 	{
-		if (!N.p3.is_simple()) {
+		if (!N.p3->is_simple()) {
 			PRINTF("WARNING: Body of projection(cut = false) isn't valid 2-manifold! Modify your design..");
 			goto cant_project_non_simple_polyhedron;
 		}
@@ -144,13 +145,13 @@ PolySet *PolySetCGALEvaluator::evaluatePolySet(const ProjectionNode &node, Abstr
 				else
 					plist.push_back(p);
 			}
-			np.p2 += CGAL_Nef_polyhedron2(plist.begin(), plist.end(),
-					CGAL_Nef_polyhedron2::INCLUDED);
+			(*np.p2) += CGAL_Nef_polyhedron2(plist.begin(), plist.end(), CGAL_Nef_polyhedron2::INCLUDED);
 		}
-		DxfData dxf(np);
-		dxf_tesselate(ps, &dxf, 0, true, false, 0);
-		dxf_border_to_ps(ps, &dxf);
+		DxfData *dxf = np.convertToDxfData();
+		dxf_tesselate(ps, dxf, 0, true, false, 0);
+		dxf_border_to_ps(ps, dxf);
 		ps3->unlink();
+		delete dxf;
 	}
 
 cant_project_non_simple_polyhedron:
@@ -246,10 +247,10 @@ PolySet *PolySetCGALEvaluator::evaluatePolySet(const DxfLinearExtrudeNode &node,
 		N.dim = 2;
 		foreach (AbstractNode * v, node.getChildren()) {
 			if (v->modinst->tag_background) continue;
-			N.p2 += this->cgalevaluator.evaluateCGALMesh(*v).p2;
+			N += this->cgalevaluator.evaluateCGALMesh(*v);
 		}
 
-		dxf = new DxfData(N);
+		dxf = N.convertToDxfData();;
 	} else {
 		dxf = new DxfData(node.fn, node.fs, node.fa, node.filename, node.layername, node.origin_x, node.origin_y, node.scale);
 	}
@@ -337,10 +338,10 @@ PolySet *PolySetCGALEvaluator::evaluatePolySet(const DxfRotateExtrudeNode &node,
 		N.dim = 2;
 		foreach (AbstractNode * v, node.getChildren()) {
 			if (v->modinst->tag_background) continue;
-			N.p2 += this->cgalevaluator.evaluateCGALMesh(*v).p2;
+			N += this->cgalevaluator.evaluateCGALMesh(*v);
 		}
 
-		dxf = new DxfData(N);
+		dxf = N.convertToDxfData();
 	} else {
 		dxf = new DxfData(node.fn, node.fs, node.fa, node.filename, node.layername, node.origin_x, node.origin_y, node.scale);
 	}
