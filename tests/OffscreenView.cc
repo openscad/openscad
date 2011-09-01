@@ -151,7 +151,6 @@ void OffscreenView::resizeGL(int w, int h)
 #endif
 	glViewport(0, 0, w, h);
 	w_h_ratio = sqrt((double)w / (double)h);
-	setupPerspective();
 }
 
 void OffscreenView::setupPerspective()
@@ -159,7 +158,7 @@ void OffscreenView::setupPerspective()
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 	double dist = (this->camera_center - this->camera_eye).norm();
-	gluPerspective(90, w_h_ratio, 0.1*dist, 10*dist);
+	gluPerspective(45, w_h_ratio, 0.1*dist, 100*dist);
 }
 
 void OffscreenView::setupOrtho(bool offset)
