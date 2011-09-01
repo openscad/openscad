@@ -11,9 +11,6 @@
 #include <map>
 #include <list>
 
-extern CGAL_Nef_polyhedron3 minkowski3(CGAL_Nef_polyhedron3 a, CGAL_Nef_polyhedron3 b);
-extern CGAL_Nef_polyhedron2 minkowski2(CGAL_Nef_polyhedron2 a, CGAL_Nef_polyhedron2 b);
-
 using std::string;
 using std::map;
 using std::list;
