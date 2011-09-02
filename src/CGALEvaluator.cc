@@ -46,7 +46,7 @@ void CGALEvaluator::process(CGAL_Nef_polyhedron &target, const CGAL_Nef_polyhedr
  	if (target.dim != 2 && target.dim != 3) {
  		assert(false && "Dimension of Nef polyhedron must be 2 or 3");
  	}
-	if (src.dim == 0) { return; } // Empty polyhedron. This can happen for e.g. square([0,0])
+	if (src.empty()) return; // Empty polyhedron. This can happen for e.g. square([0,0])
 	assert(target.dim == src.dim);
 
 	switch (op) {
@@ -79,7 +79,6 @@ void CGALEvaluator::applyToChildren(const AbstractNode &node, CGALEvaluator::Csg
 {
 	CGAL_Nef_polyhedron N;
 	if (this->visitedchildren[node.index()].size() > 0) {
-		bool first = true;
 		for (ChildList::const_iterator iter = this->visitedchildren[node.index()].begin();
 				 iter != this->visitedchildren[node.index()].end();
 				 iter++) {
@@ -88,11 +87,8 @@ void CGALEvaluator::applyToChildren(const AbstractNode &node, CGALEvaluator::Csg
 			// FIXME: Don't use deep access to modinst members
 			if (chnode->modinst->tag_background) continue;
 			assert(isCached(*chnode));
-			if (first) {
+			if (N.empty()) {
 				N = this->cache[chcacheid].copy();
-				// If the first child(ren) are empty (e.g. echo) nodes, 
-				// ignore them (reset first flag)
- 				if (N.dim != 0) first = false;
 			} else {
 				process(N, this->cache[chcacheid], op);
 			}
@@ -635,7 +631,7 @@ CGAL_Nef_polyhedron CGALEvaluator::evaluateCGALMesh(const PolySet &ps)
 		return CGAL_Nef_polyhedron(N);
     }
 		catch (CGAL::Assertion_exception e) {
-			PRINTF("ERROR: Illegal polygonal object - make sure all polygons are defined with the same winding order. Skipping affected object.");
+			PRINTF("CGAL error: %s", e.what());
 			CGAL::set_error_behaviour(old_behaviour);
 			return CGAL_Nef_polyhedron();
 		}
