@@ -13,6 +13,7 @@ extern void destroy_builtin_modules();
 
 extern void register_builtin_csgops();
 extern void register_builtin_transform();
+extern void register_builtin_color();
 extern void register_builtin_primitives();
 extern void register_builtin_surface();
 extern void register_builtin_control();

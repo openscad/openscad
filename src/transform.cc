@@ -43,8 +43,7 @@ enum transform_type_e {
 	ROTATE,
 	MIRROR,
 	TRANSLATE,
-	MULTMATRIX,
-	COLOR
+	MULTMATRIX
 };
 
 class TransformModule : public AbstractModule
@@ -86,8 +85,6 @@ AbstractNode *TransformModule::evaluate(const Context *ctx, const ModuleInstanti
 
 	for (int i = 0; i < 16; i++)
 		node->matrix[i] = i % 5 == 0 ? 1.0 : 0.0;
-	for (int i = 16; i < 20; i++)
-		node->matrix[i] = -1;
 
 	QVector<QString> argnames;
 	QVector<Expression*> argexpr;
@@ -107,9 +104,6 @@ AbstractNode *TransformModule::evaluate(const Context *ctx, const ModuleInstanti
 		break;
 	case MULTMATRIX:
 		argnames = QVector<QString>() << "m";
-		break;
-	case COLOR:
-		argnames = QVector<QString>() << "c" << "alpha";
 		break;
 	default:
 		assert(false);
@@ -242,36 +236,6 @@ AbstractNode *TransformModule::evaluate(const Context *ctx, const ModuleInstanti
 			}
 		}
 	}
-	else if (this->type == COLOR)
-	{
-		Value v = c.lookup_variable("c");
-		if (v.type == Value::VECTOR) {
-			for (int i = 0; i < 4; i++)
-				node->matrix[16+i] = i < v.vec.size() ? v.vec[i]->num : 1.0;
-// FIXME: Port to non-Qt
-#if 0
-		} else if (v.type == Value::STRING) {
-			QString colorname = v.text;
-			QColor color;
-			color.setNamedColor(colorname);
-			if (color.isValid()) {
-				node->matrix[16+0] = color.redF();
-				node->matrix[16+1] = color.greenF();
-				node->matrix[16+2] = color.blueF();
-			} else {
-				PRINTF_NOCACHE("WARNING: Color name \"%s\" unknown. Please see",v.text.toUtf8().data());
-				PRINTF_NOCACHE("WARNING: http://en.wikipedia.org/wiki/Web_colors");
-			}
-#endif
-		}
-		// FIXME: Only lookup alpha if color was set
-		Value alpha = c.lookup_variable("alpha");
-		if (alpha.type == Value::NUMBER) {
-			node->matrix[16+3] = alpha.num;
-		} else {
-			node->matrix[16+3] = 1.0;
-		}
-	}
 
 	foreach (ModuleInstantiation *v, inst->children) {
 		AbstractNode *n = v->evaluate(inst->ctx);
@@ -286,23 +250,18 @@ string TransformNode::toString() const
 {
 	std::stringstream stream;
 
-	if (this->matrix[16] >= 0 || this->matrix[17] >= 0 || this->matrix[18] >= 0 || this->matrix[19] >= 0) {
-		stream << "color([" << this->matrix[16] << ", " << this->matrix[17] << ", " << this->matrix[18] << ", " << this->matrix[19] << "])";
-	}
-	else {
-		stream << "multmatrix([";
-		for (int j=0;j<4;j++) {
-			stream << "[";
-			for (int i=0;i<4;i++) {
-				// FIXME: The 0 test is to avoid a leading minus before a single 0 (cosmetics)
-				stream << ((this->matrix[i*4+j]==0)?0:this->matrix[i*4+j]);
-				if (i != 3) stream << ", ";
-			}
-			stream << "]";
-				if (j != 3) stream << ", ";
+	stream << "multmatrix([";
+	for (int j=0;j<4;j++) {
+		stream << "[";
+		for (int i=0;i<4;i++) {
+			// FIXME: The 0 test is to avoid a leading minus before a single 0 (cosmetics)
+			stream << ((this->matrix[i*4+j]==0)?0:this->matrix[i*4+j]);
+			if (i != 3) stream << ", ";
 		}
-		stream << "])";
+		stream << "]";
+		if (j != 3) stream << ", ";
 	}
+	stream << "])";
 
 	return stream.str();
 }
@@ -319,5 +278,4 @@ void register_builtin_transform()
 	builtin_modules["mirror"] = new TransformModule(MIRROR);
 	builtin_modules["translate"] = new TransformModule(TRANSLATE);
 	builtin_modules["multmatrix"] = new TransformModule(MULTMATRIX);
-	builtin_modules["color"] = new TransformModule(COLOR);
 }

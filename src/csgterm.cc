@@ -46,15 +46,15 @@
  */
 
 
-CSGTerm::CSGTerm(PolySet *polyset, const double m[20], QString label)
+CSGTerm::CSGTerm(PolySet *polyset, const double matrix[16], const double color[4], QString label)
 {
 	this->type = TYPE_PRIMITIVE;
 	this->polyset = polyset;
 	this->label = label;
 	this->left = NULL;
 	this->right = NULL;
-	for (int i = 0; i < 20; i++)
-		this->m[i] = m[i];
+	for (int i = 0; i < 16; i++) this->m[i] = matrix[i];
+	for (int i = 0; i < 4; i++) this->color[i] = color[i];
 	refcounter = 1;
 }
 
@@ -191,10 +191,11 @@ CSGChain::CSGChain()
 {
 }
 
-void CSGChain::add(PolySet *polyset, double *m, CSGTerm::type_e type, QString label)
+void CSGChain::add(PolySet *polyset, double *m, double *color, CSGTerm::type_e type, QString label)
 {
 	polysets.append(polyset);
 	matrices.append(m);
+	colors.append(color);
 	types.append(type);
 	labels.append(label);
 }
@@ -202,7 +203,7 @@ void CSGChain::add(PolySet *polyset, double *m, CSGTerm::type_e type, QString la
 void CSGChain::import(CSGTerm *term, CSGTerm::type_e type)
 {
 	if (term->type == CSGTerm::TYPE_PRIMITIVE) {
-		add(term->polyset, term->m, type, term->label);
+		add(term->polyset, term->m, term->color, type, term->label);
 	} else {
 		import(term->left, type);
 		import(term->right, term->type);

@@ -20,10 +20,11 @@ public:
 	QString label;
 	CSGTerm *left;
 	CSGTerm *right;
-	double m[20];
+	double m[16];
+	double color[4];
 	int refcounter;
 
-	CSGTerm(PolySet *polyset, const double m[20], QString label);
+	CSGTerm(PolySet *polyset, const double matrix[16], const double color[4], QString label);
 	CSGTerm(type_e type, CSGTerm *left, CSGTerm *right);
 
 	CSGTerm *normalize();
@@ -39,12 +40,13 @@ class CSGChain
 public:
 	QVector<PolySet*> polysets;
 	QVector<double*> matrices;
+	QVector<double*> colors;
 	QVector<CSGTerm::type_e> types;
 	QVector<QString> labels;
 
 	CSGChain();
 
-	void add(PolySet *polyset, double *m, CSGTerm::type_e type, QString label);
+	void add(PolySet *polyset, double *m, double *color, CSGTerm::type_e type, QString label);
 	void import(CSGTerm *term, CSGTerm::type_e type = CSGTerm::TYPE_UNION);
 	QString dump();
 

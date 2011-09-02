@@ -27,6 +27,7 @@ public:
  	virtual Response visit(State &state, const AbstractPolyNode &node);
  	virtual Response visit(State &state, const CsgNode &node);
  	virtual Response visit(State &state, const TransformNode &node);
+	virtual Response visit(State &state, const ColorNode &node);
  	virtual Response visit(State &state, const RenderNode &node);
 
 	class CSGTerm *evaluateCSGTerm(const AbstractNode &node,

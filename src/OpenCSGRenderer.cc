@@ -85,6 +85,7 @@ void OpenCSGRenderer::renderCSGChain(CSGChain *chain, GLint *shaderinfo,
 			if (shaderinfo) glUseProgram(shaderinfo[0]);
 			for (; j < i; j++) {
 				double *m = chain->matrices[j];
+				double *c = chain->colors[j];
 				glPushMatrix();
 				glMultMatrixd(m);
 				int csgmode = chain->types[j] == CSGTerm::TYPE_DIFFERENCE ? PolySet::CSGMODE_DIFFERENCE : PolySet::CSGMODE_NORMAL;
@@ -92,12 +93,12 @@ void OpenCSGRenderer::renderCSGChain(CSGChain *chain, GLint *shaderinfo,
 					chain->polysets[j]->render_surface(PolySet::COLORMODE_HIGHLIGHT, PolySet::csgmode_e(csgmode + 20), m, shaderinfo);
 				} else if (background) {
 					chain->polysets[j]->render_surface(PolySet::COLORMODE_BACKGROUND, PolySet::csgmode_e(csgmode + 10), m, shaderinfo);
-				} else if (m[16] >= 0 || m[17] >= 0 || m[18] >= 0 || m[19] >= 0) {
+				} else if (c[0] >= 0 || c[1] >= 0 || c[2] >= 0 || c[3] >= 0) {
 					// User-defined color from source
-					glColor4d(m[16], m[17], m[18], m[19]);
+					glColor4dv(c);
 					if (shaderinfo) {
-						glUniform4f(shaderinfo[1], m[16], m[17], m[18], m[19]);
-						glUniform4f(shaderinfo[2], (m[16]+1)/2, (m[17]+1)/2, (m[18]+1)/2, 1.0);
+						glUniform4f(shaderinfo[1], c[0], c[1], c[2], c[3]);
+						glUniform4f(shaderinfo[2], (c[0]+1)/2, (c[1]+1)/2, (c[2]+1)/2, 1.0);
 					}
 					chain->polysets[j]->render_surface(PolySet::COLORMODE_NONE, PolySet::csgmode_e(csgmode), m, shaderinfo);
 				} else if (chain->types[j] == CSGTerm::TYPE_DIFFERENCE) {

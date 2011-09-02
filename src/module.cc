@@ -206,6 +206,7 @@ void initialize_builtin_modules()
 
 	register_builtin_csgops();
 	register_builtin_transform();
+	register_builtin_color();
 	register_builtin_primitives();
 	register_builtin_surface();
 	register_builtin_control();

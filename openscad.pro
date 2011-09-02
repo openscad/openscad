@@ -144,6 +144,7 @@ HEADERS += src/renderer.h \
            src/projectionnode.h \
            src/importnode.h \
            src/transformnode.h \
+           src/colornode.h \
            src/rendernode.h \
            src/openscad.h \
            src/polyset.h \
@@ -178,6 +179,7 @@ SOURCES += src/openscad.cc \
            src/polyset.cc \
            src/csgops.cc \
            src/transform.cc \
+           src/color.cc \
            src/primitives.cc \
            src/projection.cc \
            src/cgaladv.cc \
