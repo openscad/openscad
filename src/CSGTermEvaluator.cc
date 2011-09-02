@@ -163,10 +163,10 @@ Response CSGTermEvaluator::visit(State &state, const TransformNode &node)
 	return ContinueTraversal;
 }
 
-// FIXME: Find out how to best call into CGAL from this visitor
+// FIXME: If we've got CGAL support, render this node as a CGAL union into a PolySet
 Response CSGTermEvaluator::visit(State &state, const RenderNode &node)
 {
-	PRINT("WARNING: Found render() statement but compiled without CGAL support!");
+	PRINT("WARNING: render() statement not implemented");
 	if (state.isPostfix()) {
 		applyToChildren(node, CSGT_UNION);
 		addToParent(state, node);
