@@ -179,7 +179,8 @@ o Hollow donut problem
   extrusions, this has only a minor visual impact, but for rotate
   extrusion, the resulting CGAL models will lose the hole. The OpenCSG
   rendering keeps the hole, but renders slightly incorrect.
-
+o CGAL issues
+  - CGAL doesn't handle almost planar polygons. Consider splitting into triangles ourselves. See WillamAdams/dodec.scad
 
 
 IDEAS FOR LANGUAGE CHANGES
