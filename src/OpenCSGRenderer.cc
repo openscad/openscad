@@ -97,7 +97,7 @@ void OpenCSGRenderer::renderCSGChain(CSGChain *chain, GLint *shaderinfo,
 					chain->polysets[j]->render_surface(PolySet::COLORMODE_HIGHLIGHT, PolySet::csgmode_e(csgmode + 20), m, shaderinfo);
 				} else if (background) {
 					chain->polysets[j]->render_surface(PolySet::COLORMODE_BACKGROUND, PolySet::csgmode_e(csgmode + 10), m, shaderinfo);
-				} else if (m[16] >= 0 || m[17] >= 0 || m[18] >= 0 || m[19] >= 0) {
+				} else if (m[16] >= 0 || m[17] >= 0 || m[18] >= 0) {
 					// User-defined color from source
 					glColor4d(m[16], m[17], m[18], m[19]);
 					if (shaderinfo) {

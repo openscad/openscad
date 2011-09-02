@@ -69,8 +69,9 @@ AbstractNode *TransformModule::evaluate(const Context *ctx, const ModuleInstanti
 
 	for (int i = 0; i < 16; i++)
 		node->m[i] = i % 5 == 0 ? 1.0 : 0.0;
-	for (int i = 16; i < 20; i++)
+	for (int i = 16; i < 19; i++)
 		node->m[i] = -1;
+	node->m[19] = 1;
 
 	QVector<QString> argnames;
 	QVector<Expression*> argexpr;
@@ -367,7 +368,7 @@ QString TransformNode::dump(QString indent) const
 {
 	if (dump_cache.isEmpty()) {
 		QString text;
-		if (m[16] >= 0 || m[17] >= 0 || m[18] >= 0 || m[19] >= 0)
+		if (m[16] >= 0 || m[17] >= 0 || m[18] >= 0)
 			text.sprintf("n%d: color([%g, %g, %g, %g])", idx,
 					m[16], m[17], m[18], m[19]);
 		else
