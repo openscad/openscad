@@ -243,8 +243,6 @@ AbstractNode *TransformModule::evaluate(const Context *ctx, const ModuleInstanti
 		Value alpha = c.lookup_variable("alpha");
 		if (alpha.type == Value::NUMBER) {
 			node->m[16+3] = alpha.num;
-		} else {
-			node->m[16+3] = 1.0;
 		}
 	}
 
