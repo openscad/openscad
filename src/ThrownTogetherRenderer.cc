@@ -92,7 +92,7 @@ void ThrownTogetherRenderer::renderCSGChain(CSGChain *chain, bool highlight,
 			} else {
 				chain->polysets[i]->render_surface(PolySet::COLORMODE_NONE, PolySet::csgmode_e(csgmode), m);
 			}
-		} else if (c[0] >= 0 || c[1] >= 0 || c[2] >= 0 || c[3] >= 0) {
+		} else if (c[0] >= 0 || c[1] >= 0 || c[2] >= 0) {
 			glColor4dv(c);
 			chain->polysets[i]->render_surface(PolySet::COLORMODE_NONE, PolySet::csgmode_e(csgmode), m);
 			if (showedges) {

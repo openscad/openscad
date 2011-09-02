@@ -47,7 +47,8 @@ AbstractNode *ColorModule::evaluate(const Context *ctx, const ModuleInstantiatio
 {
 	ColorNode *node = new ColorNode(inst);
 
-	for (int i = 0; i < 4; i++) node->color[i] = -1;
+	node->color[0] = node->color[1] = node->color[2] = -1.0;
+	node->color[3] = 1.0;
 
 	QVector<QString> argnames;
 	QVector<Expression*> argexpr;
