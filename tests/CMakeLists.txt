@@ -90,6 +90,7 @@ set(COMMON_SOURCES
   ../src/polyset.cc 
   ../src/csgops.cc 
   ../src/transform.cc 
+  ../src/color.cc 
   ../src/primitives.cc 
   ../src/projection.cc 
   ../src/cgaladv.cc 
