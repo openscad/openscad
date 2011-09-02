@@ -1275,16 +1275,21 @@ void MainWindow::actionRenderCGAL()
 		int s = t.elapsed() / 1000;
 		PRINTF("Total rendering time: %d hours, %d minutes, %d seconds", s / (60*60), (s / 60) % 60, s % 60);
 
-		this->cgalRenderer = new CGALRenderer(*this->root_N);
-		// Go to CGAL view mode
-		if (viewActionCGALGrid->isChecked()) {
-			viewModeCGALGrid();
+		if (!this->root_N->empty()) {
+			this->cgalRenderer = new CGALRenderer(*this->root_N);
+			// Go to CGAL view mode
+			if (viewActionCGALGrid->isChecked()) {
+				viewModeCGALGrid();
+			}
+			else {
+				viewModeCGALSurface();
+			}
+			
+			PRINT("Rendering finished.");
 		}
 		else {
-			viewModeCGALSurface();
+			PRINT("WARNING: No top level geometry to render");
 		}
-
-		PRINT("Rendering finished.");
 	}
 
 #ifdef USE_PROGRESSWIDGET
