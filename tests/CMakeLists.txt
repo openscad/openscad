@@ -207,7 +207,8 @@ LIST(APPEND CGALPNGTEST_FILES
             ${CMAKE_SOURCE_DIR}/../testdata/scad/features/cube-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/features/sphere-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/features/cylinder-tests.scad
-            ${CMAKE_SOURCE_DIR}/../testdata/scad/features/union-tests.scad)
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/features/union-tests.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/features/difference-tests.scad)
 #LIST(APPEND CGALPNGTEST_FILES ${CMAKE_SOURCE_DIR}/../examples/example001.scad)
 add_cmdline_test(cgalpngtest png ${CGALPNGTEST_FILES})
 
