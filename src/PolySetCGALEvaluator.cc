@@ -244,14 +244,15 @@ PolySet *PolySetCGALEvaluator::evaluatePolySet(const DxfLinearExtrudeNode &node,
 	{
 		// Before extruding, union all (2D) children nodes
 		// to a single DxfData, then tesselate this into a PolySet
-		CGAL_Nef_polyhedron N;
-		N.dim = 2;
+		CGAL_Nef_polyhedron sum;
 		foreach (AbstractNode * v, node.getChildren()) {
 			if (v->modinst->tag_background) continue;
-			N += this->cgalevaluator.evaluateCGALMesh(*v);
+			CGAL_Nef_polyhedron N = this->cgalevaluator.evaluateCGALMesh(*v);
+			if (sum.empty()) sum = N.copy();
+			else sum += N;
 		}
 
-		dxf = N.convertToDxfData();;
+		dxf = sum.convertToDxfData();;
 	} else {
 		dxf = new DxfData(node.fn, node.fs, node.fa, node.filename, node.layername, node.origin_x, node.origin_y, node.scale);
 	}
@@ -340,14 +341,15 @@ PolySet *PolySetCGALEvaluator::evaluatePolySet(const DxfRotateExtrudeNode &node,
 	{
 		// Before extruding, union all (2D) children nodes
 		// to a single DxfData, then tesselate this into a PolySet
-		CGAL_Nef_polyhedron N;
-		N.dim = 2;
+		CGAL_Nef_polyhedron sum;
 		foreach (AbstractNode * v, node.getChildren()) {
 			if (v->modinst->tag_background) continue;
-			N += this->cgalevaluator.evaluateCGALMesh(*v);
+			CGAL_Nef_polyhedron N = this->cgalevaluator.evaluateCGALMesh(*v);
+			if (sum.empty()) sum = N.copy();
+			else sum += N;
 		}
 
-		dxf = N.convertToDxfData();
+		dxf = sum.convertToDxfData();
 	} else {
 		dxf = new DxfData(node.fn, node.fs, node.fa, node.filename, node.layername, node.origin_x, node.origin_y, node.scale);
 	}
