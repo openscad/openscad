@@ -209,7 +209,7 @@ void PolySet::render_surface(colormode_e colormode, csgmode_e csgmode, double *m
 					}
 				}
 				else {
-					Vector3d center;
+					Vector3d center = Vector3d::Zero();
 					for (int j = 0; j < poly->size(); j++) {
 						center[0] += poly->at(j)[0];
 						center[1] += poly->at(j)[1];
@@ -255,7 +255,7 @@ void PolySet::render_surface(colormode_e colormode, csgmode_e csgmode, double *m
 				gl_draw_triangle(shaderinfo, poly->at(2), poly->at(3), poly->at(1), true, false, true, 0, mirrored);
 			}
 			else {
-				Vector3d center;
+				Vector3d center = Vector3d::Zero();
 				for (int j = 0; j < poly->size(); j++) {
 					center[0] += poly->at(j)[0];
 					center[1] += poly->at(j)[1];
