@@ -107,7 +107,6 @@ PolySet *PolySetCGALEvaluator::evaluatePolySet(const ProjectionNode &node, Abstr
 
 		PolySet *ps3 = N.convertToPolyset();
 		CGAL_Nef_polyhedron np;
-		np.dim = 2;
 		for (size_t i = 0; i < ps3->polygons.size(); i++)
 		{
 			int min_x_p = -1;
@@ -145,7 +144,14 @@ PolySet *PolySetCGALEvaluator::evaluatePolySet(const ProjectionNode &node, Abstr
 				else
 					plist.push_back(p);
 			}
-			(*np.p2) += CGAL_Nef_polyhedron2(plist.begin(), plist.end(), CGAL_Nef_polyhedron2::INCLUDED);
+			// FIXME: Should the CGAL_Nef_polyhedron2 be cached?
+			if (np.empty()) {
+				np.dim = 2;
+				np.p2 = new CGAL_Nef_polyhedron2(plist.begin(), plist.end(), CGAL_Nef_polyhedron2::INCLUDED);
+			}
+			else {
+				(*np.p2) += CGAL_Nef_polyhedron2(plist.begin(), plist.end(), CGAL_Nef_polyhedron2::INCLUDED);
+			}
 		}
 		DxfData *dxf = np.convertToDxfData();
 		dxf_tesselate(ps, *dxf, 0, true, false, 0);
