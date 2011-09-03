@@ -205,13 +205,14 @@ add_cmdline_test(cgaltest stl ${CGALTEST_FILES})
 LIST(APPEND CGALPNGTEST_FILES 
             ${CMAKE_SOURCE_DIR}/../testdata/scad/features/circle-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/features/square-tests.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/features/polygon-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/features/cube-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/features/sphere-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/features/cylinder-tests.scad
-            ${CMAKE_SOURCE_DIR}/../testdata/scad/features/polygon-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/features/union-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/features/difference-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/features/intersection-tests.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/features/import_dxf-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/features/color-tests.scad)
 #LIST(APPEND CGALPNGTEST_FILES ${CMAKE_SOURCE_DIR}/../examples/example001.scad)
 add_cmdline_test(cgalpngtest png ${CGALPNGTEST_FILES})
