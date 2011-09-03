@@ -2,7 +2,6 @@
 #define DXFDATA_H_
 
 #include <vector>
-#include <QString>
 #include <Eigen/Dense>
 
 using Eigen::Vector2d;

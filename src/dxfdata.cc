@@ -24,6 +24,7 @@
  *
  */
 
+#include "myqhash.h"
 #include "dxfdata.h"
 #include "grid.h"
 #include "printutils.h"
@@ -31,8 +32,6 @@
 
 #include <QFile>
 #include <QTextStream>
-#include <QHash>
-#include <QVector>
 #include "mathc99.h"
 #include <assert.h>
 #include <boost/unordered_map.hpp>
@@ -67,7 +66,7 @@ DxfData::DxfData(double fn, double fs, double fa,
 
 	Grid2d< std::vector<int> > grid(GRID_COARSE);
 	std::vector<Line> lines;                       // Global lines
-	QHash< QString, std::vector<Line> > blockdata; // Lines in blocks
+	boost::unordered_map< std::string, std::vector<Line> > blockdata; // Lines in blocks
 
 	bool in_entities_section = false;
 	bool in_blocks_section = false;
@@ -78,17 +77,17 @@ DxfData::DxfData(double fn, double fs, double fa,
 		if (!in_entities_section && !in_blocks_section)         \
 			break;                                                \
 		if (in_entities_section &&                              \
-				!(layername.empty() || layername == layer))        \
+				!(layername.empty() || layername == layer))         \
 			break;                                                \
 		grid.align(_p1x, _p1y);                                 \
 		grid.align(_p2x, _p2y);                                 \
-		grid.data(_p1x, _p1y).push_back(lines.size());            \
-		grid.data(_p2x, _p2y).push_back(lines.size());            \
+		grid.data(_p1x, _p1y).push_back(lines.size());          \
+		grid.data(_p2x, _p2y).push_back(lines.size());          \
 		if (in_entities_section)                                \
-			lines.push_back(                                         \
+			lines.push_back(                                      \
 				Line(addPoint(_p1x, _p1y), addPoint(_p2x, _p2y)));	\
-		if (in_blocks_section && !current_block.empty())       \
-			blockdata[QString::fromStdString(current_block)].push_back(	\
+		if (in_blocks_section && !current_block.empty())        \
+			blockdata[current_block].push_back(	                  \
 				Line(addPoint(_p1x, _p1y), addPoint(_p2x, _p2y)));	\
 	} while (0)
 
@@ -105,8 +104,8 @@ DxfData::DxfData(double fn, double fs, double fa,
 		for (int j = 0; j < 2; j++)
 			coords[i][j] = 0;
 
-	QHash<QString, int> unsupported_entities_list;
-
+	typedef boost::unordered_map<std::string, int> EntityList;
+	EntityList unsupported_entities_list;
 
 	//
 	// Parse DXF file. Will populate this->points, this->dims, lines and blockdata
@@ -238,13 +237,13 @@ DxfData::DxfData(double fn, double fs, double fa,
 			else if (mode == "INSERT") {
 				// scale is stored in ellipse_start|stop_angle, rotation in arc_start_angle;
 				// due to the parser code not checking entity type
-				int n = blockdata[QString::fromStdString(iddata)].size();
+				int n = blockdata[iddata].size();
 				for (int i = 0; i < n; i++) {
 					double a = arc_start_angle * M_PI / 180.0;
-					double lx1 = this->points[blockdata[QString::fromStdString(iddata)][i].idx[0]][0] * ellipse_start_angle;
-					double ly1 = this->points[blockdata[QString::fromStdString(iddata)][i].idx[0]][1] * ellipse_stop_angle;
-					double lx2 = this->points[blockdata[QString::fromStdString(iddata)][i].idx[1]][0] * ellipse_start_angle;
-					double ly2 = this->points[blockdata[QString::fromStdString(iddata)][i].idx[1]][1] * ellipse_stop_angle;
+					double lx1 = this->points[blockdata[iddata][i].idx[0]][0] * ellipse_start_angle;
+					double ly1 = this->points[blockdata[iddata][i].idx[0]][1] * ellipse_stop_angle;
+					double lx2 = this->points[blockdata[iddata][i].idx[1]][0] * ellipse_start_angle;
+					double ly2 = this->points[blockdata[iddata][i].idx[1]][1] * ellipse_stop_angle;
 					double px1 = (cos(a)*lx1 - sin(a)*ly1) * scale + xverts[0];
 					double py1 = (sin(a)*lx1 + cos(a)*ly1) * scale + yverts[0];
 					double px2 = (cos(a)*lx2 - sin(a)*ly2) * scale + xverts[0];
@@ -273,7 +272,7 @@ DxfData::DxfData(double fn, double fs, double fa,
 			}
 			else if (in_blocks_section || (in_entities_section &&
 					(layername.empty() || layername == layer))) {
-				unsupported_entities_list[QString::fromStdString(mode)]++;
+				unsupported_entities_list[mode]++;
 			}
 			mode = data.toStdString();
 			layer.erase();
@@ -358,15 +357,13 @@ DxfData::DxfData(double fn, double fs, double fa,
 		}
 	}
 
-	QHashIterator<QString, int> i(unsupported_entities_list);
-	while (i.hasNext()) {
-		i.next();
+	BOOST_FOREACH(const EntityList::value_type &i, unsupported_entities_list) {
 		if (layername.empty()) {
-			PRINTA("WARNING: Unsupported DXF Entity `%1' (%2x) in `%3'.",
-						 i.key(), QString::number(i.value()), QString::fromStdString(filename));
+			PRINTF("WARNING: Unsupported DXF Entity `%s' (%x) in `%s'.",
+						 i.first.c_str(), i.second, filename.c_str());
 		} else {
-			PRINTA("WARNING: Unsupported DXF Entity `%1' (%2x) in layer `%3' of `%4'.",
-						 i.key(), QString::number(i.value()), QString::fromStdString(layername), QString::fromStdString(filename));
+			PRINTF("WARNING: Unsupported DXF Entity `%s' (%x) in layer `%s' of `%s'.",
+						 i.first.c_str(), i.second, layername.c_str(), filename.c_str());
 		}
 	}
 
