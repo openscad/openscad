@@ -83,8 +83,8 @@ Value Expression::evaluate(const Context *context) const
 		Value v1 = this->children[0]->evaluate(context);
 		Value v2 = this->children[1]->evaluate(context);
 		if (v1.type == Value::VECTOR && v2.type == Value::NUMBER) {
-			int i = (int)(v2.num);
-			if (i >= 0 && i < v1.vec.size())
+			int i = int(v2.num);
+			if (i >= 0 && i < int(v1.vec.size()))
 				return *v1.vec[i];
 		}
 		return Value();
@@ -110,7 +110,7 @@ Value Expression::evaluate(const Context *context) const
 	if (this->type == "V") {
 		Value v;
 		v.type = Value::VECTOR;
-		for (int i = 0; i < this->children.size(); i++)
+		for (size_t i = 0; i < this->children.size(); i++)
 			v.append(new Value(this->children[i]->evaluate(context)));
 		return v;
 	}
@@ -138,7 +138,7 @@ Value Expression::evaluate(const Context *context) const
 	}
 	if (this->type == "F") {
 		std::vector<Value> argvalues;
-		for (int i=0; i < this->children.size(); i++)
+		for (size_t i=0; i < this->children.size(); i++)
 			argvalues.push_back(this->children[i]->evaluate(context));
 		return context->evaluate_function(this->call_funcname, this->call_argnames, argvalues);
 	}
@@ -171,7 +171,7 @@ std::string Expression::toString() const
 	}
 	else if (this->type == "V") {
 		stream << "[";
-		for (int i=0; i < this->children.size(); i++) {
+		for (size_t i=0; i < this->children.size(); i++) {
 			if (i > 0) stream << ", ";
 			stream << *this->children[i];
 		}
@@ -185,7 +185,7 @@ std::string Expression::toString() const
 	}
 	else if (this->type == "F") {
 		stream << this->call_funcname << "(";
-		for (int i=0; i < this->children.size(); i++) {
+		for (size_t i=0; i < this->children.size(); i++) {
 			if (i > 0) stream << ", ";
 			if (!this->call_argnames[i].empty()) stream << this->call_argnames[i]  << " = ";
 			stream << *this->children[i];
