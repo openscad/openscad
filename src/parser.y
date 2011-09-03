@@ -619,8 +619,7 @@ Module *Module::compile_library(std::string filename)
 	stat(filename.c_str(), &st);
 
         std::stringstream idstream;
-        // FIXME: stream as hex
-        idstream << st.st_mtime << "." << st.st_size;
+        idstream << std::hex << st.st_mtime << "." << st.st_size;
         std::string cache_id = idstream.str();
 
 	if (libs_cache.find(filename) != libs_cache.end() && libs_cache[filename].cache_id == cache_id) {
