@@ -32,6 +32,8 @@
 #include "visitor.h"
 #include <sstream>
 #include <assert.h>
+#include <boost/assign/std/vector.hpp>
+using namespace boost::assign; // bring 'operator+=()' into scope
 
 enum cgaladv_type_e {
 	MINKOWSKI,
@@ -88,17 +90,17 @@ AbstractNode *CgaladvModule::evaluate(const Context *ctx, const ModuleInstantiat
 {
 	CgaladvNode *node = new CgaladvNode(inst, type);
 
-	QVector<QString> argnames;
-	QVector<Expression*> argexpr;
+	std::vector<std::string> argnames;
+	std::vector<Expression*> argexpr;
 
 	if (type == MINKOWSKI)
-		argnames = QVector<QString>() << "convexity";
+		argnames += "convexity";
 
 	if (type == GLIDE)
-		argnames = QVector<QString>() << "path" << "convexity";
+		argnames += "path", "convexity";
 
 	if (type == SUBDIV)
-		argnames = QVector<QString>() << "type" << "level" << "convexity";
+		argnames += "type", "level", "convexity";
 
 	Context c(ctx);
 	c.args(argnames, argexpr, inst->argnames, inst->argvalues);

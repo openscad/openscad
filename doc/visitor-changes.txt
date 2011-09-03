@@ -1,3 +1,3 @@
 Changes in visitor branch:
-o import_dxf(): layername="" imports all layers. Importing a single layer with a zero-length name is no longer supported.
+o import_dxf(): layername="" imports all layers. Importing a single layer with a zero-length name is no longer supported. FIXME: The same prob. goes for dims
 o cylinder(): the r parameter will now always be used in place of a missing r1 or r2

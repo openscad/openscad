@@ -37,11 +37,9 @@
 #include "openscad.h" // get_fragments_from_r()
 
 #include <sstream>
+#include <boost/assign/std/vector.hpp>
+using namespace boost::assign; // bring 'operator+=()' into scope
 
-#include <QTime>
-#include <QApplication>
-#include <QProgressDialog>
-#include <QDateTime>
 #include <QFileInfo>
 
 class DxfRotateExtrudeModule : public AbstractModule
@@ -55,8 +53,9 @@ AbstractNode *DxfRotateExtrudeModule::evaluate(const Context *ctx, const ModuleI
 {
 	DxfRotateExtrudeNode *node = new DxfRotateExtrudeNode(inst);
 
-	QVector<QString> argnames = QVector<QString>() << "file" << "layer" << "origin" << "scale";
-	QVector<Expression*> argexpr;
+	std::vector<std::string> argnames;
+	argnames += "file", "layer", "origin", "scale";
+	std::vector<Expression*> argexpr;
 
 	Context c(ctx);
 	c.args(argnames, argexpr, inst->argnames, inst->argvalues);
@@ -72,9 +71,9 @@ AbstractNode *DxfRotateExtrudeModule::evaluate(const Context *ctx, const ModuleI
 	Value scale = c.lookup_variable("scale", true);
 
 	if (!file.text.empty())
-		node->filename = c.get_absolute_path(QString::fromStdString(file.text));
+		node->filename = c.get_absolute_path(file.text);
 
-	node->layername = QString::fromStdString(layer.text);
+	node->layername = layer.text;
 	node->convexity = (int)convexity.num;
 	origin.getv2(node->origin_x, node->origin_y);
 	node->scale = scale.num;
@@ -85,7 +84,7 @@ AbstractNode *DxfRotateExtrudeModule::evaluate(const Context *ctx, const ModuleI
 	if (node->scale <= 0)
 		node->scale = 1;
 
-	if (node->filename.isEmpty()) {
+	if (node->filename.empty()) {
 		foreach (ModuleInstantiation *v, inst->children) {
 			AbstractNode *n = v->evaluate(inst->ctx);
 			if (n)
@@ -127,7 +126,7 @@ std::string DxfRotateExtrudeNode::toString() const
 
 	stream << this->name() << "("
 		"file = \"" << this->filename << "\", "
-		"cache = \"" << QFileInfo(this->filename) << "\", "
+		"cache = \"" << QFileInfo(QString::fromStdString(this->filename)) << "\", "
 		"layer = \"" << this->layername << "\", "
 		"origin = [ " << std::dec << this->origin_x << " " << this->origin_y << " ], "
 		"scale = " << this->scale << ", "

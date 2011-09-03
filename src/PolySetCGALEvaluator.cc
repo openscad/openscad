@@ -246,7 +246,7 @@ PolySet *PolySetCGALEvaluator::evaluatePolySet(const DxfLinearExtrudeNode &node,
 
 	DxfData *dxf;
 
-	if (node.filename.isEmpty())
+	if (node.filename.empty())
 	{
 		// Before extruding, union all (2D) children nodes
 		// to a single DxfData, then tesselate this into a PolySet
@@ -260,7 +260,7 @@ PolySet *PolySetCGALEvaluator::evaluatePolySet(const DxfLinearExtrudeNode &node,
 
 		dxf = sum.convertToDxfData();;
 	} else {
-		dxf = new DxfData(node.fn, node.fs, node.fa, node.filename, node.layername, node.origin_x, node.origin_y, node.scale);
+		dxf = new DxfData(node.fn, node.fs, node.fa, QString::fromStdString(node.filename), QString::fromStdString(node.layername), node.origin_x, node.origin_y, node.scale);
 	}
 
 	PolySet *ps = extrudeDxfData(node, *dxf);
@@ -291,7 +291,7 @@ PolySet *PolySetCGALEvaluator::extrudeDxfData(const DxfLinearExtrudeNode &node, 
 			continue;
 		if (first_open_path) {
 			PRINTF("WARNING: Open paths in dxf_linear_extrude(file = \"%s\", layer = \"%s\"):",
-					node.filename.toAscii().data(), node.layername.toAscii().data());
+					node.filename.c_str(), node.layername.c_str());
 			first_open_path = false;
 		}
 		PRINTF("   %9.5f %10.5f ... %10.5f %10.5f",
@@ -343,7 +343,7 @@ PolySet *PolySetCGALEvaluator::evaluatePolySet(const DxfRotateExtrudeNode &node,
 
 	DxfData *dxf;
 
-	if (node.filename.isEmpty())
+	if (node.filename.empty())
 	{
 		// Before extruding, union all (2D) children nodes
 		// to a single DxfData, then tesselate this into a PolySet
@@ -357,7 +357,7 @@ PolySet *PolySetCGALEvaluator::evaluatePolySet(const DxfRotateExtrudeNode &node,
 
 		dxf = sum.convertToDxfData();
 	} else {
-		dxf = new DxfData(node.fn, node.fs, node.fa, node.filename, node.layername, node.origin_x, node.origin_y, node.scale);
+		dxf = new DxfData(node.fn, node.fs, node.fa, QString::fromStdString(node.filename), QString::fromStdString(node.layername), node.origin_x, node.origin_y, node.scale);
 	}
 
 	PolySet *ps = rotateDxfData(node, *dxf);

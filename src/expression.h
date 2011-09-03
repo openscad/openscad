@@ -1,19 +1,19 @@
 #ifndef EXPRESSION_H_
 #define EXPRESSION_H_
 
-#include <QVector>
-#include <QString>
+#include <string>
+#include <vector>
 
 class Expression
 {
 public:
-	QVector<Expression*> children;
+	std::vector<Expression*> children;
 
 	class Value *const_value;
-	QString var_name;
+	std::string var_name;
 
-	QString call_funcname;
-	QVector<QString> call_argnames;
+	std::string call_funcname;
+	std::vector<std::string> call_argnames;
 
 	// Boolean: ! && ||
 	// Operators: * / % + -
@@ -28,7 +28,7 @@ public:
 	// Lookup Variable: L
 	// Lookup member per name: N
 	// Function call: F
-	QString type;
+  std::string type;
 
 	Expression();
 	~Expression();

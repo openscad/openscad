@@ -42,6 +42,8 @@
 #include <sys/stat.h>
 #include <sstream>
 #include <assert.h>
+#include <boost/assign/std/vector.hpp>
+using namespace boost::assign; // bring 'operator+=()' into scope
 
 class ImportModule : public AbstractModule
 {
@@ -55,17 +57,17 @@ AbstractNode *ImportModule::evaluate(const Context *ctx, const ModuleInstantiati
 {
 	ImportNode *node = new ImportNode(inst, type);
 
-	QVector<QString> argnames;
+	std::vector<std::string> argnames;
 	if (this->type == TYPE_DXF) {
-		argnames = QVector<QString>() << "file" << "layer" << "convexity" << "origin" << "scale";
+		argnames += "file", "layer", "convexity", "origin", "scale";
 	} else {
-		argnames = QVector<QString>() << "file" << "convexity";
+		argnames += "file", "convexity";
 	}
-	QVector<Expression*> argexpr;
+	std::vector<Expression*> argexpr;
 
 	// Map old argnames to new argnames for compatibility
-	QVector<QString> inst_argnames = inst->argnames;
-	for (int i=0; i<inst_argnames.size(); i++) {
+	std::vector<std::string> inst_argnames = inst->argnames;
+	for (size_t i=0; i<inst_argnames.size(); i++) {
 		if (inst_argnames[i] == "filename")
 			inst_argnames[i] = "file";
 		if (inst_argnames[i] == "layername")
@@ -80,9 +82,9 @@ AbstractNode *ImportModule::evaluate(const Context *ctx, const ModuleInstantiati
 	node->fa = c.lookup_variable("$fa").num;
 
 	Value v = c.lookup_variable("file");
-	node->filename = c.get_absolute_path(QString::fromStdString(v.text));
-//	node->filename = c.get_absolute_path(QString::fromStdString(c.lookup_variable("file").text));
-	node->layername = QString::fromStdString(c.lookup_variable("layer", true).text);
+	node->filename = c.get_absolute_path(v.text);
+//	node->filename = c.get_absolute_path(c.lookup_variable("file").text);
+	node->layername = c.lookup_variable("layer", true).text;
 	node->convexity = c.lookup_variable("convexity", true).num;
 
 	if (node->convexity <= 0)
@@ -114,10 +116,10 @@ PolySet *ImportNode::evaluate_polyset(render_mode_e, class PolySetEvaluator *) c
 
 	if (this->type == TYPE_STL)
 	{
-		handle_dep(this->filename);
-		QFile f(this->filename);
+		handle_dep(QString::fromStdString(this->filename));
+		QFile f(QString::fromStdString(this->filename));
 		if (!f.open(QIODevice::ReadOnly)) {
-			PRINTF("WARNING: Can't open import file `%s'.", this->filename.toAscii().data());
+			PRINTF("WARNING: Can't open import file `%s'.", this->filename.c_str());
 			return p;
 		}
 
@@ -196,7 +198,7 @@ PolySet *ImportNode::evaluate_polyset(render_mode_e, class PolySetEvaluator *) c
 
 	if (this->type == TYPE_DXF)
 	{
-		DxfData dd(this->fn, this->fs, this->fa, this->filename, this->layername, this->origin_x, this->origin_y, this->scale);
+		DxfData dd(this->fn, this->fs, this->fa, QString::fromStdString(this->filename), QString::fromStdString(this->layername), this->origin_x, this->origin_y, this->scale);
 		p->is2d = true;
 		dxf_tesselate(p, dd, 0, true, false, 0);
 		dxf_border_to_ps(p, &dd);
@@ -212,7 +214,7 @@ std::string ImportNode::toString() const
 	QString text;
 	struct stat st;
 	memset(&st, 0, sizeof(struct stat));
-	stat(this->filename.toAscii().data(), &st);
+	stat(this->filename.c_str(), &st);
 
 	stream << this->name();
 	switch (this->type) {

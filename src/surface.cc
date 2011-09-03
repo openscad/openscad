@@ -38,6 +38,9 @@
 #include <QRegExp>
 #include <QStringList>
 #include <sstream>
+#include <boost/unordered_map.hpp>
+#include <boost/assign/std/vector.hpp>
+using namespace boost::assign; // bring 'operator+=()' into scope
 
 class SurfaceModule : public AbstractModule
 {
@@ -56,7 +59,7 @@ public:
 	virtual std::string toString() const;
 	virtual std::string name() const { return "surface"; }
 
-	QString filename;
+	std::string filename;
 	bool center;
 	int convexity;
 	virtual PolySet *evaluate_polyset(render_mode_e mode, class PolySetEvaluator *) const;
@@ -68,13 +71,14 @@ AbstractNode *SurfaceModule::evaluate(const Context *ctx, const ModuleInstantiat
 	node->center = false;
 	node->convexity = 1;
 
-	QVector<QString> argnames = QVector<QString>() << "file" << "center" << "convexity";
-	QVector<Expression*> argexpr;
+	std::vector<std::string> argnames;
+	argnames += "file", "center", "convexity";
+	std::vector<Expression*> argexpr;
 
 	Context c(ctx);
 	c.args(argnames, argexpr, inst->argnames, inst->argvalues);
 
-	node->filename = c.get_absolute_path(QString::fromStdString(c.lookup_variable("file").text));
+	node->filename = c.get_absolute_path(c.lookup_variable("file").text);
 
 	Value center = c.lookup_variable("center", true);
 	if (center.type == Value::BOOL) {
@@ -97,16 +101,16 @@ void register_builtin_surface()
 PolySet *SurfaceNode::evaluate_polyset(render_mode_e, class PolySetEvaluator *) const
 {
 	PolySet *p = new PolySet();
-	handle_dep(filename);
-	QFile f(filename);
+	handle_dep(QString::fromStdString(filename));
+	QFile f(QString::fromStdString(filename));
 
 	if (!f.open(QIODevice::ReadOnly | QIODevice::Text)) {
-		PRINTF("WARNING: Can't open DAT file `%s'.", filename.toAscii().data());
+		PRINTF("WARNING: Can't open DAT file `%s'.", filename.c_str());
 		return p;
 	}
 
 	int lines = 0, columns = 0;
-	QHash<QPair<int,int>,double> data;
+	boost::unordered_map<std::pair<int,int>,double> data;
 	double min_val = 0;
 
 	while (!f.atEnd())
@@ -123,7 +127,7 @@ PolySet *SurfaceNode::evaluate_polyset(render_mode_e, class PolySetEvaluator *) 
 			if (i >= columns)
 				columns = i + 1;
 			double v = fields[i].toDouble();
-			data[QPair<int,int>(lines, i)] = v;
+			data[std::make_pair(lines, i)] = v;
 			min_val = fmin(v-1, min_val);
 		}
 		lines++;
@@ -137,10 +141,10 @@ PolySet *SurfaceNode::evaluate_polyset(render_mode_e, class PolySetEvaluator *) 
 	for (int i = 1; i < lines; i++)
 	for (int j = 1; j < columns; j++)
 	{
-		double v1 = data[QPair<int,int>(i-1, j-1)];
-		double v2 = data[QPair<int,int>(i-1, j)];
-		double v3 = data[QPair<int,int>(i, j-1)];
-		double v4 = data[QPair<int,int>(i, j)];
+		double v1 = data[std::make_pair(i-1, j-1)];
+		double v2 = data[std::make_pair(i-1, j)];
+		double v3 = data[std::make_pair(i, j-1)];
+		double v4 = data[std::make_pair(i, j)];
 		double vx = (v1 + v2 + v3 + v4) / 4;
 
 		p->append_poly();
@@ -168,14 +172,14 @@ PolySet *SurfaceNode::evaluate_polyset(render_mode_e, class PolySetEvaluator *) 
 	{
 		p->append_poly();
 		p->append_vertex(ox + 0, oy + i-1, min_val);
-		p->append_vertex(ox + 0, oy + i-1, data[QPair<int,int>(i-1, 0)]);
-		p->append_vertex(ox + 0, oy + i, data[QPair<int,int>(i, 0)]);
+		p->append_vertex(ox + 0, oy + i-1, data[std::make_pair(i-1, 0)]);
+		p->append_vertex(ox + 0, oy + i, data[std::make_pair(i, 0)]);
 		p->append_vertex(ox + 0, oy + i, min_val);
 
 		p->append_poly();
 		p->insert_vertex(ox + columns-1, oy + i-1, min_val);
-		p->insert_vertex(ox + columns-1, oy + i-1, data[QPair<int,int>(i-1, columns-1)]);
-		p->insert_vertex(ox + columns-1, oy + i, data[QPair<int,int>(i, columns-1)]);
+		p->insert_vertex(ox + columns-1, oy + i-1, data[std::make_pair(i-1, columns-1)]);
+		p->insert_vertex(ox + columns-1, oy + i, data[std::make_pair(i, columns-1)]);
 		p->insert_vertex(ox + columns-1, oy + i, min_val);
 	}
 
@@ -183,14 +187,14 @@ PolySet *SurfaceNode::evaluate_polyset(render_mode_e, class PolySetEvaluator *) 
 	{
 		p->append_poly();
 		p->insert_vertex(ox + i-1, oy + 0, min_val);
-		p->insert_vertex(ox + i-1, oy + 0, data[QPair<int,int>(0, i-1)]);
-		p->insert_vertex(ox + i, oy + 0, data[QPair<int,int>(0, i)]);
+		p->insert_vertex(ox + i-1, oy + 0, data[std::make_pair(0, i-1)]);
+		p->insert_vertex(ox + i, oy + 0, data[std::make_pair(0, i)]);
 		p->insert_vertex(ox + i, oy + 0, min_val);
 
 		p->append_poly();
 		p->append_vertex(ox + i-1, oy + lines-1, min_val);
-		p->append_vertex(ox + i-1, oy + lines-1, data[QPair<int,int>(lines-1, i-1)]);
-		p->append_vertex(ox + i, oy + lines-1, data[QPair<int,int>(lines-1, i)]);
+		p->append_vertex(ox + i-1, oy + lines-1, data[std::make_pair(lines-1, i-1)]);
+		p->append_vertex(ox + i, oy + lines-1, data[std::make_pair(lines-1, i)]);
 		p->append_vertex(ox + i, oy + lines-1, min_val);
 	}
 

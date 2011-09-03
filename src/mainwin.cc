@@ -495,7 +495,7 @@ MainWindow::setFileName(const QString &filename)
 {
 	if (filename.isEmpty()) {
 		this->fileName.clear();
-		this->root_ctx.document_path = currentdir;
+		this->root_ctx.document_path = currentdir.toStdString();
 		setWindowTitle("OpenSCAD - New Document[*]");
 	}
 	else {
@@ -518,7 +518,7 @@ MainWindow::setFileName(const QString &filename)
 			this->fileName = fileinfo.fileName();
 		}
 		
-		this->root_ctx.document_path = fileinfo.dir().absolutePath();
+		this->root_ctx.document_path = fileinfo.dir().absolutePath().toStdString();
 		QDir::setCurrent(fileinfo.dir().absolutePath());
 	}
 
@@ -1310,7 +1310,7 @@ void MainWindow::actionDisplayAST()
 	e->setWindowTitle("AST Dump");
 	e->setReadOnly(true);
 	if (root_module) {
-		e->setPlainText(root_module->dump("", ""));
+		e->setPlainText(QString::fromStdString(root_module->dump("", "")));
 	} else {
 		e->setPlainText("No AST to dump. Please try compiling first...");
 	}

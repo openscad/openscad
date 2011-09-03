@@ -44,10 +44,8 @@
 
 #include <assert.h>
 #include <sstream>
-
-#include <QApplication>
-#include <QTime>
-#include <QProgressDialog>
+#include <boost/assign/std/vector.hpp>
+using namespace boost::assign; // bring 'operator+=()' into scope
 
 class ProjectionModule : public AbstractModule
 {
@@ -60,8 +58,9 @@ AbstractNode *ProjectionModule::evaluate(const Context *ctx, const ModuleInstant
 {
 	ProjectionNode *node = new ProjectionNode(inst);
 
-	QVector<QString> argnames = QVector<QString>() << "cut";
-	QVector<Expression*> argexpr;
+	std::vector<std::string> argnames;
+	argnames += "cut";
+	std::vector<Expression*> argexpr;
 
 	Context c(ctx);
 	c.args(argnames, argexpr, inst->argnames, inst->argvalues);

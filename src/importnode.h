@@ -3,7 +3,6 @@
 
 #include "node.h"
 #include "visitor.h"
-#include <QString>
 
 enum import_type_e {
 	TYPE_STL,
@@ -22,8 +21,8 @@ public:
 	virtual std::string name() const;
 
 	import_type_e type;
-	QString filename;
-	QString layername;
+	std::string filename;
+	std::string layername;
 	int convexity;
 	double fn, fs, fa;
 	double origin_x, origin_y, scale;

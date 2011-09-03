@@ -37,6 +37,8 @@
 #include <sstream>
 #include <vector>
 #include <assert.h>
+#include <boost/assign/std/vector.hpp>
+using namespace boost::assign; // bring 'operator+=()' into scope
 
 enum transform_type_e {
 	SCALE,
@@ -86,24 +88,24 @@ AbstractNode *TransformModule::evaluate(const Context *ctx, const ModuleInstanti
 	for (int i = 0; i < 16; i++)
 		node->matrix[i] = i % 5 == 0 ? 1.0 : 0.0;
 
-	QVector<QString> argnames;
-	QVector<Expression*> argexpr;
+	std::vector<std::string> argnames;
+	std::vector<Expression*> argexpr;
 
 	switch (this->type) {
 	case SCALE:
-		argnames = QVector<QString>() << "v";
+		argnames += "v";
 		break;
 	case ROTATE:
-		argnames = QVector<QString>() << "a" << "v";
+		argnames += "a", "v";
 		break;
 	case MIRROR:
-		argnames = QVector<QString>() << "v";
+		argnames += "v";
 		break;
 	case TRANSLATE:
-		argnames = QVector<QString>() << "v";
+		argnames += "v";
 		break;
 	case MULTMATRIX:
-		argnames = QVector<QString>() << "m";
+		argnames += "m";
 		break;
 	default:
 		assert(false);
@@ -127,7 +129,7 @@ AbstractNode *TransformModule::evaluate(const Context *ctx, const ModuleInstanti
 		Value val_a = c.lookup_variable("a");
 		if (val_a.type == Value::VECTOR)
 		{
-			for (int i = 0; i < 3 && i < val_a.vec.size(); i++) {
+			for (size_t i = 0; i < 3 && i < val_a.vec.size(); i++) {
 				double a;
 				val_a.vec[i]->getnum(a);
 				double c = cos(a*M_PI/180.0);
@@ -230,7 +232,7 @@ AbstractNode *TransformModule::evaluate(const Context *ctx, const ModuleInstanti
 		Value v = c.lookup_variable("m");
 		if (v.type == Value::VECTOR) {
 			for (int i = 0; i < 16; i++) {
-				int x = i / 4, y = i % 4;
+				size_t x = i / 4, y = i % 4;
 				if (y < v.vec.size() && v.vec[y]->type == Value::VECTOR && x < v.vec[y]->vec.size())
 					v.vec[y]->vec[x]->getnum(node->matrix[i]);
 			}

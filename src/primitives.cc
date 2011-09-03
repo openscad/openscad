@@ -36,6 +36,8 @@
 #include "visitor.h"
 #include <sstream>
 #include <assert.h>
+#include <boost/assign/std/vector.hpp>
+using namespace boost::assign; // bring 'operator+=()' into scope
 
 #define F_MINIMUM 0.01
 
@@ -110,30 +112,30 @@ AbstractNode *PrimitiveModule::evaluate(const Context *ctx, const ModuleInstanti
 	node->center = false;
 	node->x = node->y = node->z = node->h = node->r1 = node->r2 = 1;
 
-	QVector<QString> argnames;
-	QVector<Expression*> argexpr;
+	std::vector<std::string> argnames;
+	std::vector<Expression*> argexpr;
 
 	switch (this->type) {
 	case CUBE:
-		argnames = QVector<QString>() << "size" << "center";
+		argnames += "size", "center";
 		break;
 	case SPHERE:
-		argnames = QVector<QString>() << "r";
+		argnames += "r";
 		break;
 	case CYLINDER:
-		argnames = QVector<QString>() << "h" << "r1" << "r2" << "center";
+		argnames += "h", "r1", "r2", "center";
 		break;
 	case POLYHEDRON:
-		argnames = QVector<QString>() << "points" << "triangles" << "convexity";
+		argnames += "points", "triangles", "convexity";
 		break;
 	case SQUARE:
-		argnames = QVector<QString>() << "size" << "center";
+		argnames += "size", "center";
 		break;
 	case CIRCLE:
-		argnames = QVector<QString>() << "r";
+		argnames += "r";
 		break;
 	case POLYGON:
-		argnames = QVector<QString>() << "points" << "paths" << "convexity";
+		argnames += "points", "paths", "convexity";
 		break;
 	default:
 		assert(false && "PrimitiveModule::evaluate(): Unknown node type");
@@ -463,7 +465,7 @@ sphere_next_r2:
 		{
 			p->append_poly();
 			for (size_t j=0; j<this->triangles.vec[i]->vec.size(); j++) {
-				int pt = this->triangles.vec[i]->vec[j]->num;
+				size_t pt = this->triangles.vec[i]->vec[j]->num;
 				if (pt < this->points.vec.size()) {
 					double px, py, pz;
 					if (this->points.vec[pt]->getv3(px, py, pz))

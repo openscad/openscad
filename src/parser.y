@@ -44,6 +44,8 @@
 #include "value.h"
 #include "function.h"
 #include "printutils.h"
+#include <sstream>
+#include <boost/foreach.hpp>
 
 int parser_error_pos = -1;
 
@@ -54,18 +56,18 @@ int lexerget_lineno(void);
 int lexerlex_destroy(void);
 int lexerlex(void);
 
-QVector<Module*> module_stack;
+std::vector<Module*> module_stack;
 Module *module;
 
 class ArgContainer {
-public:
-	QString argname;
+public: 
+	std::string argname;
 	Expression *argexpr;
 };
 class ArgsContainer {
 public:
-	QVector<QString> argnames;
-	QVector<Expression*> argexpr;
+	std::vector<std::string> argnames;
+	std::vector<Expression*> argexpr;
 };
 
 %}
@@ -144,29 +146,29 @@ statement:
 	'{' inner_input '}' |
 	module_instantiation {
 		if ($1) {
-			module->children.append($1);
+			module->children.push_back($1);
 		} else {
 			delete $1;
 		}
 	} |
 	TOK_ID '=' expr ';' {
 		bool add_new_assignment = true;
-		for (int i = 0; i < module->assignments_var.size(); i++) {
-			if (module->assignments_var[i] != QString($1))
+		for (size_t i = 0; i < module->assignments_var.size(); i++) {
+			if (module->assignments_var[i] != $1)
 				continue;
 			delete module->assignments_expr[i];
 			module->assignments_expr[i] = $3;
 			add_new_assignment = false;
 		}
 		if (add_new_assignment) {
-			module->assignments_var.append($1);
-			module->assignments_expr.append($3);
+			module->assignments_var.push_back($1);
+			module->assignments_expr.push_back($3);
 			free($1);
 		}
 	} |
 	TOK_MODULE TOK_ID '(' arguments_decl optional_commas ')' {
 		Module *p = module;
-		module_stack.append(module);
+		module_stack.push_back(module);
 		module = new Module();
 		p->modules[$2] = module;
 		module->argnames = $4->argnames;
@@ -174,7 +176,7 @@ statement:
 		free($2);
 		delete $4;
 	} statement {
-		module = module_stack.last();
+		module = module_stack.back();
 		module_stack.pop_back();
 	} |
 	TOK_FUNCTION TOK_ID '(' arguments_decl optional_commas ')' '=' expr {
@@ -192,7 +194,7 @@ children_instantiation:
 	module_instantiation {
 		$$ = new ModuleInstantiation();
 		if ($1) {
-			$$->children.append($1);
+			$$->children.push_back($1);
 		} else {
 			delete $1;
 		}
@@ -205,13 +207,13 @@ if_statement:
 	TOK_IF '(' expr ')' children_instantiation {
 		$$ = new IfElseModuleInstantiation();
 		$$->modname = "if";
-		$$->argnames.append(QString());
-		$$->argexpr.append($3);
+		$$->argnames.push_back("");
+		$$->argexpr.push_back($3);
 
 		if ($$) {
 			$$->children = $5->children;
 		} else {
-			for (int i = 0; i < $5->children.count(); i++)
+			for (size_t i = 0; i < $5->children.size(); i++)
 				delete $5->children[i];
 		}
 		$5->children.clear();
@@ -227,7 +229,7 @@ ifelse_statement:
 		if ($$) {
 			$$->else_children = $3->children;
 		} else {
-			for (int i = 0; i < $3->children.count(); i++)
+			for (size_t i = 0; i < $3->children.size(); i++)
 				delete $3->children[i];
 		}
 		$3->children.clear();
@@ -243,7 +245,7 @@ module_instantiation:
 		if ($$) {
 			$$->children = $2->children;
 		} else {
-			for (int i = 0; i < $2->children.count(); i++)
+			for (size_t i = 0; i < $2->children.size(); i++)
 				delete $2->children[i];
 		}
 		$2->children.clear();
@@ -261,7 +263,7 @@ module_instantiation_list:
 		$$ = $1;
 		if ($$) {
 			if ($2)
-				$$->children.append($2);
+				$$->children.push_back($2);
 		} else {
 			delete $2;
 		}
@@ -270,7 +272,7 @@ module_instantiation_list:
 single_module_instantiation:
 	TOK_ID '(' arguments_call ')' {
 		$$ = new ModuleInstantiation();
-		$$->modname = QString($1);
+		$$->modname = $1;
 		$$->argnames = $3->argnames;
 		$$->argexpr = $3->argexpr;
 		free($1);
@@ -279,7 +281,7 @@ single_module_instantiation:
 	TOK_ID ':' single_module_instantiation {
 		$$ = $3;
 		if ($$)
-			$$->label = QString($1);
+			$$->label = $1;
 		free($1);
 	} |
 	'!' single_module_instantiation {
@@ -321,14 +323,14 @@ expr:
 	TOK_ID {
 		$$ = new Expression();
 		$$->type = "L";
-		$$->var_name = QString($1);
+		$$->var_name = $1;
 		free($1);
 	} |
 	expr '.' TOK_ID {
 		$$ = new Expression();
 		$$->type = "N";
-		$$->children.append($1);
-		$$->var_name = QString($3);
+		$$->children.push_back($1);
+		$$->var_name = $3;
 		free($3);
 	} |
 	TOK_STRING {
@@ -348,16 +350,16 @@ expr:
 		e_one->const_value = new Value(1.0);
 		$$ = new Expression();
 		$$->type = "R";
-		$$->children.append($2);
-		$$->children.append(e_one);
-		$$->children.append($4);
+		$$->children.push_back($2);
+		$$->children.push_back(e_one);
+		$$->children.push_back($4);
 	} |
 	'[' expr ':' expr ':' expr ']' {
 		$$ = new Expression();
 		$$->type = "R";
-		$$->children.append($2);
-		$$->children.append($4);
-		$$->children.append($6);
+		$$->children.push_back($2);
+		$$->children.push_back($4);
+		$$->children.push_back($6);
 	} |
 	'[' optional_commas ']' {
 		$$ = new Expression();
@@ -371,80 +373,80 @@ expr:
 	expr '*' expr {
 		$$ = new Expression();
 		$$->type = "*";
-		$$->children.append($1);
-		$$->children.append($3);
+		$$->children.push_back($1);
+		$$->children.push_back($3);
 	} |
 	expr '/' expr {
 		$$ = new Expression();
 		$$->type = "/";
-		$$->children.append($1);
-		$$->children.append($3);
+		$$->children.push_back($1);
+		$$->children.push_back($3);
 	} |
 	expr '%' expr {
 		$$ = new Expression();
 		$$->type = "%";
-		$$->children.append($1);
-		$$->children.append($3);
+		$$->children.push_back($1);
+		$$->children.push_back($3);
 	} |
 	expr '+' expr {
 		$$ = new Expression();
 		$$->type = "+";
-		$$->children.append($1);
-		$$->children.append($3);
+		$$->children.push_back($1);
+		$$->children.push_back($3);
 	} |
 	expr '-' expr {
 		$$ = new Expression();
 		$$->type = "-";
-		$$->children.append($1);
-		$$->children.append($3);
+		$$->children.push_back($1);
+		$$->children.push_back($3);
 	} |
 	expr '<' expr {
 		$$ = new Expression();
 		$$->type = "<";
-		$$->children.append($1);
-		$$->children.append($3);
+		$$->children.push_back($1);
+		$$->children.push_back($3);
 	} |
 	expr LE expr {
 		$$ = new Expression();
 		$$->type = "<=";
-		$$->children.append($1);
-		$$->children.append($3);
+		$$->children.push_back($1);
+		$$->children.push_back($3);
 	} |
 	expr EQ expr {
 		$$ = new Expression();
 		$$->type = "==";
-		$$->children.append($1);
-		$$->children.append($3);
+		$$->children.push_back($1);
+		$$->children.push_back($3);
 	} |
 	expr NE expr {
 		$$ = new Expression();
 		$$->type = "!=";
-		$$->children.append($1);
-		$$->children.append($3);
+		$$->children.push_back($1);
+		$$->children.push_back($3);
 	} |
 	expr GE expr {
 		$$ = new Expression();
 		$$->type = ">=";
-		$$->children.append($1);
-		$$->children.append($3);
+		$$->children.push_back($1);
+		$$->children.push_back($3);
 	} |
 	expr '>' expr {
 		$$ = new Expression();
 		$$->type = ">";
-		$$->children.append($1);
-		$$->children.append($3);
+		$$->children.push_back($1);
+		$$->children.push_back($3);
 	} |
 	expr AND expr {
 		$$ = new Expression();
 		$$->type = "&&";
-		$$->children.append($1);
-		$$->children.append($3);
+		$$->children.push_back($1);
+		$$->children.push_back($3);
 	} |
 	expr OR expr {
 		$$ = new Expression();
 		$$->type = "||";
-		$$->children.append($1);
-		$$->children.append($3);
+		$$->children.push_back($1);
+		$$->children.push_back($3);
 	} |
 	'+' expr {
 		$$ = $2;
@@ -452,12 +454,12 @@ expr:
 	'-' expr {
 		$$ = new Expression();
 		$$->type = "I";
-		$$->children.append($2);
+		$$->children.push_back($2);
 	} |
 	'!' expr {
 		$$ = new Expression();
 		$$->type = "!";
-		$$->children.append($2);
+		$$->children.push_back($2);
 	} |
 	'(' expr ')' {
 		$$ = $2;
@@ -465,20 +467,20 @@ expr:
 	expr '?' expr ':' expr {
 		$$ = new Expression();
 		$$->type = "?:";
-		$$->children.append($1);
-		$$->children.append($3);
-		$$->children.append($5);
+		$$->children.push_back($1);
+		$$->children.push_back($3);
+		$$->children.push_back($5);
 	} |
 	expr '[' expr ']' {
 		$$ = new Expression();
 		$$->type = "[]";
-		$$->children.append($1);
-		$$->children.append($3);
+		$$->children.push_back($1);
+		$$->children.push_back($3);
 	} |
 	TOK_ID '(' arguments_call ')' {
 		$$ = new Expression();
 		$$->type = "F";
-		$$->call_funcname = QString($1);
+		$$->call_funcname = $1;
 		$$->call_argnames = $3->argnames;
 		$$->children = $3->argexpr;
 		free($1);
@@ -492,11 +494,11 @@ vector_expr:
 	expr {
 		$$ = new Expression();
 		$$->type = 'V';
-		$$->children.append($1);
+		$$->children.push_back($1);
 	} |
 	vector_expr ',' optional_commas expr {
 		$$ = $1;
-		$$->children.append($4);
+		$$->children.push_back($4);
 	} ;
 
 arguments_decl:
@@ -505,27 +507,27 @@ arguments_decl:
 	} |
 	argument_decl {
 		$$ = new ArgsContainer();
-		$$->argnames.append($1->argname);
-		$$->argexpr.append($1->argexpr);
+		$$->argnames.push_back($1->argname);
+		$$->argexpr.push_back($1->argexpr);
 		delete $1;
 	} |
 	arguments_decl ',' optional_commas argument_decl {
 		$$ = $1;
-		$$->argnames.append($4->argname);
-		$$->argexpr.append($4->argexpr);
+		$$->argnames.push_back($4->argname);
+		$$->argexpr.push_back($4->argexpr);
 		delete $4;
 	} ;
 
 argument_decl:
 	TOK_ID {
 		$$ = new ArgContainer();
-		$$->argname = QString($1);
+		$$->argname = $1;
 		$$->argexpr = NULL;
 		free($1);
 	} |
 	TOK_ID '=' expr {
 		$$ = new ArgContainer();
-		$$->argname = QString($1);
+		$$->argname = $1;
 		$$->argexpr = $3;
 		free($1);
 	} ;
@@ -536,14 +538,14 @@ arguments_call:
 	} |
 	argument_call {
 		$$ = new ArgsContainer();
-		$$->argnames.append($1->argname);
-		$$->argexpr.append($1->argexpr);
+		$$->argnames.push_back($1->argname);
+		$$->argexpr.push_back($1->argexpr);
 		delete $1;
 	} |
 	arguments_call ',' optional_commas argument_call {
 		$$ = $1;
-		$$->argnames.append($4->argname);
-		$$->argexpr.append($4->argexpr);
+		$$->argnames.push_back($4->argname);
+		$$->argexpr.push_back($4->argexpr);
 		delete $4;
 	} ;
 
@@ -554,7 +556,7 @@ argument_call:
 	} |
 	TOK_ID '=' expr {
 		$$ = new ArgContainer();
-		$$->argname = QString($1);
+		$$->argname = $1;
 		$$->argexpr = $3;
 		free($1);
 	} ;
@@ -596,13 +598,11 @@ AbstractModule *parse(const char *text, const char *path, int debug)
 	if (!module)
 		return NULL;
 
-	QHashIterator<QString, Module*> i(module->usedlibs);
-	while (i.hasNext()) {
-		i.next();
-		module->usedlibs[i.key()] = Module::compile_library(i.key());
-		if (!module->usedlibs[i.key()]) {
-			PRINTF("WARNING: Failed to compile library `%s'.", i.key().toUtf8().data());
-			module->usedlibs.remove(i.key());
+        BOOST_FOREACH(Module::ModuleContainer::value_type &m, module->usedlibs) {
+		module->usedlibs[m.first] = Module::compile_library(m.first);
+		if (!module->usedlibs[m.first]) {
+			PRINTF("WARNING: Failed to compile library `%s'.", m.first.c_str());
+			module->usedlibs.erase(m.first);
 		}
 	}
 
@@ -610,46 +610,48 @@ AbstractModule *parse(const char *text, const char *path, int debug)
 	return module;
 }
 
-QHash<QString, Module::libs_cache_ent> Module::libs_cache;
+boost::unordered_map<std::string, Module::libs_cache_ent> Module::libs_cache;
 
-Module *Module::compile_library(QString filename)
+Module *Module::compile_library(std::string filename)
 {
 	struct stat st;
 	memset(&st, 0, sizeof(struct stat));
-	stat(filename.toAscii().data(), &st);
+	stat(filename.c_str(), &st);
 
-	QString cache_id;
-	cache_id.sprintf("%x.%x", (int)st.st_mtime, (int)st.st_size);
+        std::stringstream idstream;
+        // FIXME: stream as hex
+        idstream << st.st_mtime << "." << st.st_size;
+        std::string cache_id = idstream.str();
 
-	if (libs_cache.contains(filename) && libs_cache[filename].cache_id == cache_id) {
-		PRINT(libs_cache[filename].msg);
-		return &(*libs_cache[filename].mod);
+	if (libs_cache.find(filename) != libs_cache.end() && libs_cache[filename].cache_id == cache_id) {
+          PRINTF("%s", libs_cache[filename].msg.c_str());
+          return &(*libs_cache[filename].mod);
 	}
 
-	QFile f(filename);
+	QFile f(QString::fromStdString(filename));
 	if (!f.open(QIODevice::ReadOnly | QIODevice::Text)) {
-		PRINTF("WARNING: Can't open library file `%s'.", filename.toUtf8().data());
+		PRINTF("WARNING: Can't open library file `%s'.", filename.c_str());
 		return NULL;
 	}
 	QString text = QTextStream(&f).readAll();
 
 	print_messages_push();
 
-	PRINTF("Compiling library `%s'.", filename.toUtf8().data());
-	libs_cache_ent e = { NULL, cache_id, QString("WARNING: Library `%1' tries to recursively use itself!").arg(filename) };
-	if (libs_cache.contains(filename))
+	PRINTF("Compiling library `%s'.", filename.c_str());
+	libs_cache_ent e = { NULL, cache_id, std::string("WARNING: Library `") + filename + "' tries to recursively use itself!" };
+	if (libs_cache.find(filename) != libs_cache.end())
 		delete libs_cache[filename].mod;
 	libs_cache[filename] = e;
 
 	Module *backup_mod = module;
-	Module *lib_mod = dynamic_cast<Module*>(parse(text.toLocal8Bit(), QFileInfo(filename).absoluteDir().absolutePath().toLocal8Bit(), 0));
+	Module *lib_mod = dynamic_cast<Module*>(parse(text.toLocal8Bit(), QFileInfo(QString::fromStdString(filename)).absoluteDir().absolutePath().toLocal8Bit(), 0));
 	module = backup_mod;
 
 	if (lib_mod) {
 		libs_cache[filename].mod = lib_mod;
-		libs_cache[filename].msg = print_messages_stack.last();
+		libs_cache[filename].msg = print_messages_stack.last().toStdString();
 	} else {
-		libs_cache.remove(filename);
+		libs_cache.erase(filename);
 	}
 
 	print_messages_pop();

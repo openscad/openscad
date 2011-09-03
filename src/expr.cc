@@ -29,59 +29,59 @@
 #include "context.h"
 #include <assert.h>
 #include <sstream>
+#include <algorithm>
+#include "stl-utils.h"
 
 Expression::Expression()
 {
-	const_value = NULL;
+	this->const_value = NULL;
 }
 
 Expression::~Expression()
 {
-	for (int i=0; i < children.size(); i++)
-		delete children[i];
-	if (const_value)
-		delete const_value;
+	std::for_each(this->children.begin(), this->children.end(), del_fun<Expression>());
+	delete this->const_value;
 }
 
 Value Expression::evaluate(const Context *context) const
 {
-	if (type == "!")
-		return ! children[0]->evaluate(context);
-	if (type == "&&")
-		return children[0]->evaluate(context) && children[1]->evaluate(context);
-	if (type == "||")
-		return children[0]->evaluate(context) || children[1]->evaluate(context);
-	if (type == "*")
-		return children[0]->evaluate(context) * children[1]->evaluate(context);
-	if (type == "/")
-		return children[0]->evaluate(context) / children[1]->evaluate(context);
-	if (type == "%")
-		return children[0]->evaluate(context) % children[1]->evaluate(context);
-	if (type == "+")
-		return children[0]->evaluate(context) + children[1]->evaluate(context);
-	if (type == "-")
-		return children[0]->evaluate(context) - children[1]->evaluate(context);
-	if (type == "<")
-		return children[0]->evaluate(context) < children[1]->evaluate(context);
-	if (type == "<=")
-		return children[0]->evaluate(context) <= children[1]->evaluate(context);
-	if (type == "==")
-		return children[0]->evaluate(context) == children[1]->evaluate(context);
-	if (type == "!=")
-		return children[0]->evaluate(context) != children[1]->evaluate(context);
-	if (type == ">=")
-		return children[0]->evaluate(context) >= children[1]->evaluate(context);
-	if (type == ">")
-		return children[0]->evaluate(context) > children[1]->evaluate(context);
-	if (type == "?:") {
-		Value v = children[0]->evaluate(context);
+	if (this->type == "!")
+		return ! this->children[0]->evaluate(context);
+	if (this->type == "&&")
+		return this->children[0]->evaluate(context) && this->children[1]->evaluate(context);
+	if (this->type == "||")
+		return this->children[0]->evaluate(context) || this->children[1]->evaluate(context);
+	if (this->type == "*")
+		return this->children[0]->evaluate(context) * this->children[1]->evaluate(context);
+	if (this->type == "/")
+		return this->children[0]->evaluate(context) / this->children[1]->evaluate(context);
+	if (this->type == "%")
+		return this->children[0]->evaluate(context) % this->children[1]->evaluate(context);
+	if (this->type == "+")
+		return this->children[0]->evaluate(context) + this->children[1]->evaluate(context);
+	if (this->type == "-")
+		return this->children[0]->evaluate(context) - this->children[1]->evaluate(context);
+	if (this->type == "<")
+		return this->children[0]->evaluate(context) < this->children[1]->evaluate(context);
+	if (this->type == "<=")
+		return this->children[0]->evaluate(context) <= this->children[1]->evaluate(context);
+	if (this->type == "==")
+		return this->children[0]->evaluate(context) == this->children[1]->evaluate(context);
+	if (this->type == "!=")
+		return this->children[0]->evaluate(context) != this->children[1]->evaluate(context);
+	if (this->type == ">=")
+		return this->children[0]->evaluate(context) >= this->children[1]->evaluate(context);
+	if (this->type == ">")
+		return this->children[0]->evaluate(context) > this->children[1]->evaluate(context);
+	if (this->type == "?:") {
+		Value v = this->children[0]->evaluate(context);
 		if (v.type == Value::BOOL)
-			return children[v.b ? 1 : 2]->evaluate(context);
+			return this->children[v.b ? 1 : 2]->evaluate(context);
 		return Value();
 	}
-	if (type == "[]") {
-		Value v1 = children[0]->evaluate(context);
-		Value v2 = children[1]->evaluate(context);
+	if (this->type == "[]") {
+		Value v1 = this->children[0]->evaluate(context);
+		Value v2 = this->children[1]->evaluate(context);
 		if (v1.type == Value::VECTOR && v2.type == Value::NUMBER) {
 			int i = (int)(v2.num);
 			if (i >= 0 && i < v1.vec.size())
@@ -89,14 +89,14 @@ Value Expression::evaluate(const Context *context) const
 		}
 		return Value();
 	}
-	if (type == "I")
-		return children[0]->evaluate(context).inv();
-	if (type == "C")
-		return *const_value;
-	if (type == "R") {
-		Value v1 = children[0]->evaluate(context);
-		Value v2 = children[1]->evaluate(context);
-		Value v3 = children[2]->evaluate(context);
+	if (this->type == "I")
+		return this->children[0]->evaluate(context).inv();
+	if (this->type == "C")
+		return *this->const_value;
+	if (this->type == "R") {
+		Value v1 = this->children[0]->evaluate(context);
+		Value v2 = this->children[1]->evaluate(context);
+		Value v3 = this->children[2]->evaluate(context);
 		if (v1.type == Value::NUMBER && v2.type == Value::NUMBER && v3.type == Value::NUMBER) {
 			Value r = Value();
 			r.type = Value::RANGE;
@@ -107,40 +107,40 @@ Value Expression::evaluate(const Context *context) const
 		}
 		return Value();
 	}
-	if (type == "V") {
+	if (this->type == "V") {
 		Value v;
 		v.type = Value::VECTOR;
-		for (int i = 0; i < children.size(); i++)
-			v.append(new Value(children[i]->evaluate(context)));
+		for (int i = 0; i < this->children.size(); i++)
+			v.append(new Value(this->children[i]->evaluate(context)));
 		return v;
 	}
-	if (type == "L")
-		return context->lookup_variable(var_name);
-	if (type == "N")
+	if (this->type == "L")
+		return context->lookup_variable(this->var_name);
+	if (this->type == "N")
 	{
-		Value v = children[0]->evaluate(context);
+		Value v = this->children[0]->evaluate(context);
 
-		if (v.type == Value::VECTOR && var_name == QString("x"))
+		if (v.type == Value::VECTOR && this->var_name == "x")
 			return *v.vec[0];
-		if (v.type == Value::VECTOR && var_name == QString("y"))
+		if (v.type == Value::VECTOR && this->var_name == "y")
 			return *v.vec[1];
-		if (v.type == Value::VECTOR && var_name == QString("z"))
+		if (v.type == Value::VECTOR && this->var_name == "z")
 			return *v.vec[2];
 
-		if (v.type == Value::RANGE && var_name == QString("begin"))
+		if (v.type == Value::RANGE && this->var_name == "begin")
 			return Value(v.range_begin);
-		if (v.type == Value::RANGE && var_name == QString("step"))
+		if (v.type == Value::RANGE && this->var_name == "step")
 			return Value(v.range_step);
-		if (v.type == Value::RANGE && var_name == QString("end"))
+		if (v.type == Value::RANGE && this->var_name == "end")
 			return Value(v.range_end);
 
 		return Value();
 	}
-	if (type == "F") {
-		QVector<Value> argvalues;
-		for (int i=0; i < children.size(); i++)
-			argvalues.append(children[i]->evaluate(context));
-		return context->evaluate_function(call_funcname, call_argnames, argvalues);
+	if (this->type == "F") {
+		std::vector<Value> argvalues;
+		for (int i=0; i < this->children.size(); i++)
+			argvalues.push_back(this->children[i]->evaluate(context));
+		return context->evaluate_function(this->call_funcname, this->call_argnames, argvalues);
 	}
 	abort();
 }
@@ -152,43 +152,43 @@ std::string Expression::toString() const
 	if (this->type == "*" || this->type == "/" || this->type == "%" || this->type == "+" ||
 			this->type == "-" || this->type == "<" || this->type == "<=" || this->type == "==" || 
 			this->type == "!=" || this->type == ">=" || this->type == ">") {
-		stream << "(" << *children[0] << " " << this->type << " " << *children[1] << ")";
+		stream << "(" << *this->children[0] << " " << this->type << " " << *this->children[1] << ")";
 	}
 	else if (this->type == "?:") {
-		stream << "(" << *children[0] << " ? " << this->type << " : " << *children[1] << ")";
+		stream << "(" << *this->children[0] << " ? " << this->type << " : " << *this->children[1] << ")";
 	}
 	else if (this->type == "[]") {
-		stream << "(" << *children[0] << "[" << *children[1] << "])";
+		stream << "(" << *this->children[0] << "[" << *this->children[1] << "])";
 	}
 	else if (this->type == "I") {
-		stream << "(-" << *children[0] << ")";
+		stream << "(-" << *this->children[0] << ")";
 	}
 	else if (this->type == "C") {
-		stream << *const_value;
+		stream << *this->const_value;
 	}
 	else if (this->type == "R") {
-		stream << "[" << *children[0] << " : " << *children[1] << " : " << children[2] << "]";
+		stream << "[" << *this->children[0] << " : " << *this->children[1] << " : " << this->children[2] << "]";
 	}
 	else if (this->type == "V") {
 		stream << "[";
-		for (int i=0; i < children.size(); i++) {
+		for (int i=0; i < this->children.size(); i++) {
 			if (i > 0) stream << ", ";
-			stream << *children[i];
+			stream << *this->children[i];
 		}
 		stream << "]";
 	}
 	else if (this->type == "L") {
-		stream << var_name;
+		stream << this->var_name;
 	}
 	else if (this->type == "N") {
-		stream << "(" << *children[0] << "." << var_name << ")";
+		stream << "(" << *this->children[0] << "." << this->var_name << ")";
 	}
 	else if (this->type == "F") {
-		stream << call_funcname << "(";
-		for (int i=0; i < children.size(); i++) {
+		stream << this->call_funcname << "(";
+		for (int i=0; i < this->children.size(); i++) {
 			if (i > 0) stream << ", ";
-			if (!call_argnames[i].isEmpty()) stream << call_argnames[i]  << " = ";
-			stream << *children[i];
+			if (!this->call_argnames[i].empty()) stream << this->call_argnames[i]  << " = ";
+			stream << *this->children[i];
 		}
 		stream << ")";
 	}

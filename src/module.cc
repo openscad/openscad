@@ -31,6 +31,8 @@
 #include "function.h"
 #include "builtin.h"
 #include "printutils.h"
+#include <boost/foreach.hpp>
+#include <sstream>
 
 AbstractModule::~AbstractModule()
 {
@@ -49,9 +51,11 @@ AbstractNode *AbstractModule::evaluate(const Context*, const ModuleInstantiation
 	return node;
 }
 
-QString AbstractModule::dump(QString indent, QString name) const
+std::string AbstractModule::dump(const std::string &indent, const std::string &name) const
 {
-	return QString("%1abstract module %2();\n").arg(indent, name);
+	std::stringstream dump;
+	dump << indent << "abstract module " << name << "();\n";
+	return dump.str();
 }
 
 ModuleInstantiation::~ModuleInstantiation()
@@ -68,44 +72,42 @@ IfElseModuleInstantiation::~IfElseModuleInstantiation()
 		delete v;
 }
 
-QString ModuleInstantiation::dump(QString indent) const
+std::string ModuleInstantiation::dump(const std::string &indent) const
 {
-	QString text = indent;
-	if (!label.isEmpty())
-		text += label + QString(": ");
-	text += modname + QString("(");
-	for (int i=0; i < argnames.size(); i++) {
-		if (i > 0)
-			text += QString(", ");
-		if (!argnames[i].isEmpty())
-			text += argnames[i] + QString(" = ");
-		text += QString::fromStdString(argexpr[i]->toString());
+	std::stringstream dump;
+	dump << indent;
+	if (!label.empty()) dump << label <<": ";
+	dump << modname + "(";
+	for (size_t i=0; i < argnames.size(); i++) {
+		if (i > 0) dump << ", ";
+		if (!argnames[i].empty()) dump << argnames[i] << " = ";
+		dump << *argexpr[i];
 	}
 	if (children.size() == 0) {
-		text += QString(");\n");
+		dump << ");\n";
 	} else if (children.size() == 1) {
-		text += QString(")\n");
-		text += children[0]->dump(indent + QString("\t"));
+		dump << ")\n";
+		dump << children[0]->dump(indent + "\t");
 	} else {
-		text += QString(") {\n");
-		for (int i = 0; i < children.size(); i++) {
-			text += children[i]->dump(indent + QString("\t"));
+		dump << ") {\n";
+		for (size_t i = 0; i < children.size(); i++) {
+			dump << children[i]->dump(indent + "\t");
 		}
-		text += QString("%1}\n").arg(indent);
+		dump << indent << "}\n";
 	}
-	return text;
+	return dump.str();
 }
 
 AbstractNode *ModuleInstantiation::evaluate(const Context *ctx) const
 {
 	AbstractNode *node = NULL;
 	if (this->ctx) {
-		PRINTA("WARNING: Ignoring recursive module instanciation of '%1'.", modname);
+		PRINTF("WARNING: Ignoring recursive module instanciation of '%s'.", modname.c_str());
 	} else {
 		ModuleInstantiation *that = (ModuleInstantiation*)this;
 		that->argvalues.clear();
 		foreach (Expression *v, that->argexpr) {
-			that->argvalues.append(v->evaluate(ctx));
+			that->argvalues.push_back(v->evaluate(ctx));
 		}
 		that->ctx = ctx;
 		node = ctx->evaluate_module(this);
@@ -119,10 +121,12 @@ Module::~Module()
 {
 	foreach (Expression *v, assignments_expr)
 		delete v;
-	foreach (AbstractFunction *v, functions)
-		delete v;
-	foreach (AbstractModule *v, modules)
-		delete v;
+	BOOST_FOREACH(FunctionContainer::value_type &f, functions) {
+		delete f.second;
+	}
+	BOOST_FOREACH(AbstractModuleContainer::value_type &m, modules) {
+		delete m.second;
+	}
 	foreach (ModuleInstantiation *v, children)
 		delete v;
 }
@@ -143,12 +147,12 @@ AbstractNode *Module::evaluate(const Context *ctx, const ModuleInstantiation *in
 	else
 		c.usedlibs_p = NULL;
 
-	for (int i = 0; i < assignments_var.size(); i++) {
+	for (size_t i = 0; i < assignments_var.size(); i++) {
 		c.set_variable(assignments_var[i], assignments_expr[i]->evaluate(&c));
 	}
 
 	AbstractNode *node = new AbstractNode(inst);
-	for (int i = 0; i < children.size(); i++) {
+	for (size_t i = 0; i < children.size(); i++) {
 		AbstractNode *n = children[i]->evaluate(&c);
 		if (n != NULL)
 			node->children.push_back(n);
@@ -157,48 +161,39 @@ AbstractNode *Module::evaluate(const Context *ctx, const ModuleInstantiation *in
 	return node;
 }
 
-QString Module::dump(QString indent, QString name) const
+std::string Module::dump(const std::string &indent, const std::string &name) const
 {
-	QString text, tab;
-	if (!name.isEmpty()) {
-		text = QString("%1module %2(").arg(indent, name);
-		for (int i=0; i < argnames.size(); i++) {
-			if (i > 0)
-				text += QString(", ");
-			text += argnames[i];
-			if (argexpr[i])
-				text += QString(" = ") + QString::fromStdString(argexpr[i]->toString());
+	std::stringstream dump;
+	std::string tab;
+	if (!name.empty()) {
+		dump << indent << "module " << name << "(";
+		for (size_t i=0; i < argnames.size(); i++) {
+			if (i > 0) dump << ", ";
+			dump << argnames[i];
+			if (argexpr[i]) dump << " = " << *argexpr[i];
 		}
-		text += QString(") {\n");
+		dump << ") {\n";
 		tab = "\t";
 	}
-	{
-		QHashIterator<QString, AbstractFunction*> i(functions);
-		while (i.hasNext()) {
-			i.next();
-			text += i.value()->dump(indent + tab, i.key());
-		}
+	BOOST_FOREACH(const FunctionContainer::value_type &f, functions) {
+		dump << f.second->dump(indent + tab, f.first);
 	}
-	{
-		QHashIterator<QString, AbstractModule*> i(modules);
-		while (i.hasNext()) {
-			i.next();
-			text += i.value()->dump(indent + tab, i.key());
-		}
+	BOOST_FOREACH(const AbstractModuleContainer::value_type &m, modules) {
+		dump << m.second->dump(indent + tab, m.first);
 	}
-	for (int i = 0; i < assignments_var.size(); i++) {
-		text += QString("%1%2 = %3;\n").arg(indent + tab, assignments_var[i], QString::fromStdString(assignments_expr[i]->toString()));
+	for (size_t i = 0; i < assignments_var.size(); i++) {
+		dump << indent << tab << assignments_var[i] << " = " << *assignments_expr[i] << ";\n";
 	}
-	for (int i = 0; i < children.size(); i++) {
-		text += children[i]->dump(indent + tab);
+	for (size_t i = 0; i < children.size(); i++) {
+		dump << children[i]->dump(indent + tab);
 	}
-	if (!name.isEmpty()) {
-		text += QString("%1}\n").arg(indent);
+	if (!name.empty()) {
+		dump << indent << "}\n";
 	}
-	return text;
+	return dump.str();
 }
 
-QHash<QString, AbstractModule*> builtin_modules;
+Module::AbstractModuleContainer builtin_modules;
 
 void initialize_builtin_modules()
 {
@@ -220,7 +215,8 @@ void initialize_builtin_modules()
 
 void destroy_builtin_modules()
 {
-	foreach (AbstractModule *v, builtin_modules)
-		delete v;
+	BOOST_FOREACH(Module::AbstractModuleContainer::value_type &m, builtin_modules) {
+		delete m.second;
+	}
 	builtin_modules.clear();
 }

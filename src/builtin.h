@@ -1,13 +1,14 @@
 #ifndef BUILTIN_H_
 #define BUILTIN_H_
 
-#include <QHash>
+#include <string>
+#include <boost/unordered_map.hpp>
 
-extern QHash<QString, class AbstractFunction*> builtin_functions;
+extern boost::unordered_map<std::string, class AbstractFunction*> builtin_functions;
 extern void initialize_builtin_functions();
 extern void destroy_builtin_functions();
 
-extern QHash<QString, class AbstractModule*> builtin_modules;
+extern boost::unordered_map<std::string, class AbstractModule*> builtin_modules;
 extern void initialize_builtin_modules();
 extern void destroy_builtin_modules();
 

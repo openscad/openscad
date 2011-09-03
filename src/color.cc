@@ -33,6 +33,8 @@
 #include <sstream>
 #include <assert.h>
 #include <QColor>
+#include <boost/assign/std/vector.hpp>
+using namespace boost::assign; // bring 'operator+=()' into scope
 
 class ColorModule : public AbstractModule
 {
@@ -50,28 +52,28 @@ AbstractNode *ColorModule::evaluate(const Context *ctx, const ModuleInstantiatio
 	node->color[0] = node->color[1] = node->color[2] = -1.0;
 	node->color[3] = 1.0;
 
-	QVector<QString> argnames;
-	QVector<Expression*> argexpr;
+	std::vector<std::string> argnames;
+	std::vector<Expression*> argexpr;
 
-	argnames = QVector<QString>() << "c" << "alpha";
+	argnames += "c", "alpha";
 
 	Context c(ctx);
 	c.args(argnames, argexpr, inst->argnames, inst->argvalues);
 
 	Value v = c.lookup_variable("c");
 	if (v.type == Value::VECTOR) {
-		for (int i = 0; i < 4; i++)
+		for (size_t i = 0; i < 4; i++)
 			node->color[i] = i < v.vec.size() ? v.vec[i]->num : 1.0;
 	} else if (v.type == Value::STRING) {
-		QString colorname = QString::fromStdString(v.text);
+		std::string colorname = v.text;
 		QColor color;
-		color.setNamedColor(colorname);
+		color.setNamedColor(QString::fromStdString(colorname));
 		if (color.isValid()) {
 			node->color[0] = color.redF();
 			node->color[1] = color.greenF();
 			node->color[2] = color.blueF();
 		} else {
-			PRINTA_NOCACHE("WARNING: Color name \"%1\" unknown. Please see", colorname);
+			PRINTF_NOCACHE("WARNING: Color name \"%s\" unknown. Please see", colorname.c_str());
 			PRINTF_NOCACHE("WARNING: http://en.wikipedia.org/wiki/Web_colors");
 		}
 	}

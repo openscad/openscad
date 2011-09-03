@@ -39,11 +39,9 @@
 #include "openscad.h" // get_fragments_from_r()
 
 #include <sstream>
+#include <boost/assign/std/vector.hpp>
+using namespace boost::assign; // bring 'operator+=()' into scope
 
-#include <QApplication>
-#include <QTime>
-#include <QProgressDialog>
-#include <QDateTime>
 #include <QFileInfo>
 
 class DxfLinearExtrudeModule : public AbstractModule
@@ -57,8 +55,9 @@ AbstractNode *DxfLinearExtrudeModule::evaluate(const Context *ctx, const ModuleI
 {
 	DxfLinearExtrudeNode *node = new DxfLinearExtrudeNode(inst);
 
-	QVector<QString> argnames = QVector<QString>() << "file" << "layer" << "height" << "origin" << "scale" << "center" << "twist" << "slices";
-	QVector<Expression*> argexpr;
+	std::vector<std::string> argnames;
+	argnames += "file", "layer", "height", "origin", "scale", "center", "twist", "slices";
+	std::vector<Expression*> argexpr;
 
 	Context c(ctx);
 	c.args(argnames, argexpr, inst->argnames, inst->argvalues);
@@ -78,9 +77,9 @@ AbstractNode *DxfLinearExtrudeModule::evaluate(const Context *ctx, const ModuleI
 	Value slices = c.lookup_variable("slices", true);
 
 	if (!file.text.empty())
-		node->filename = c.get_absolute_path(QString::fromStdString(file.text));
+		node->filename = c.get_absolute_path(file.text);
 
-	node->layername = QString::fromStdString(layer.text);
+	node->layername = layer.text;
 	node->height = height.num;
 	node->convexity = (int)convexity.num;
 	origin.getv2(node->origin_x, node->origin_y);
@@ -109,7 +108,7 @@ AbstractNode *DxfLinearExtrudeModule::evaluate(const Context *ctx, const ModuleI
 		node->has_twist = true;
 	}
 
-	if (node->filename.isEmpty()) {
+	if (node->filename.empty()) {
 		foreach (ModuleInstantiation *v, inst->children) {
 			AbstractNode *n = v->evaluate(inst->ctx);
 			if (n)
@@ -149,11 +148,9 @@ std::string DxfLinearExtrudeNode::toString() const
 {
 	std::stringstream stream;
 
-	QString text;
-	
 	stream << this->name() << "("
 		"file = \"" << this->filename << "\", "
-		"cache = \"" << 	QFileInfo(this->filename) << "\", "
+		"cache = \"" << 	QFileInfo(QString::fromStdString(this->filename)) << "\", "
 		"layer = \"" << this->layername << "\", "
 		"height = " << std::dec << this->height << ", "
 		"origin = [ " << this->origin_x << " " << this->origin_y << " ], "

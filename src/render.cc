@@ -36,9 +36,9 @@
 #include "progress.h"
 #include "visitor.h"
 
-#include <QApplication>
-#include <QTime>
 #include <sstream>
+#include <boost/assign/std/vector.hpp>
+using namespace boost::assign; // bring 'operator+=()' into scope
 
 class RenderModule : public AbstractModule
 {
@@ -51,8 +51,9 @@ AbstractNode *RenderModule::evaluate(const Context *ctx, const ModuleInstantiati
 {
 	RenderNode *node = new RenderNode(inst);
 
-	QVector<QString> argnames = QVector<QString>() << "convexity";
-	QVector<Expression*> argexpr;
+	std::vector<std::string> argnames;
+	argnames += "convexity";
+	std::vector<Expression*> argexpr;
 
 	Context c(ctx);
 	c.args(argnames, argexpr, inst->argnames, inst->argvalues);

@@ -47,10 +47,10 @@ public:
 	virtual AbstractNode *evaluate(const Context *ctx, const ModuleInstantiation *inst) const;
 };
 
-void for_eval(AbstractNode *node, int l, const QVector<QString> &call_argnames, const QVector<Value> &call_argvalues, const QVector<ModuleInstantiation*> arg_children, const Context *arg_context)
+void for_eval(AbstractNode *node, size_t l, const std::vector<std::string> &call_argnames, const std::vector<Value> &call_argvalues, const std::vector<ModuleInstantiation*> arg_children, const Context *arg_context)
 {
 	if (call_argnames.size() > l) {
-		QString it_name = call_argnames[l];
+		std::string it_name = call_argnames[l];
 		Value it_values = call_argvalues[l];
 		Context c(arg_context);
 		if (it_values.type == Value::RANGE) {
@@ -70,7 +70,7 @@ void for_eval(AbstractNode *node, int l, const QVector<QString> &call_argnames, 
 			}
 		}
 		else if (it_values.type == Value::VECTOR) {
-			for (int i = 0; i < it_values.vec.size(); i++) {
+			for (size_t i = 0; i < it_values.vec.size(); i++) {
 				c.set_variable(it_name, *it_values.vec[i]);
 				for_eval(node, l+1, call_argnames, call_argvalues, arg_children, &c);
 			}
@@ -91,7 +91,7 @@ AbstractNode *ControlModule::evaluate(const Context*, const ModuleInstantiation 
 {
 	if (type == CHILD)
 	{
-		int n = 0;
+		size_t n = 0;
 		if (inst->argvalues.size() > 0) {
 			double v;
 			if (inst->argvalues[0].getnum(v))
@@ -122,8 +122,8 @@ AbstractNode *ControlModule::evaluate(const Context*, const ModuleInstantiation 
 		for (int i = 0; i < inst->argnames.size(); i++) {
 			if (i > 0)
 				msg += QString(", ");
-			if (!inst->argnames[i].isEmpty())
-				msg += inst->argnames[i] + QString(" = ");
+			if (!inst->argnames[i].empty())
+				msg += QString::fromStdString(inst->argnames[i]) + QString(" = ");
 			msg += QString::fromStdString(inst->argvalues[i].toString());
 		}
 		PRINT(msg);
@@ -133,7 +133,7 @@ AbstractNode *ControlModule::evaluate(const Context*, const ModuleInstantiation 
 	{
 		Context c(inst->ctx);
 		for (int i = 0; i < inst->argnames.size(); i++) {
-			if (!inst->argnames[i].isEmpty())
+			if (!inst->argnames[i].empty())
 				c.set_variable(inst->argnames[i], inst->argvalues[i]);
 		}
 		foreach (ModuleInstantiation *v, inst->children) {

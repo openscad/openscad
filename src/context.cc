@@ -31,6 +31,7 @@
 #include "printutils.h"
 #include <QFileInfo>
 #include <QDir>
+#include <boost/foreach.hpp>
 
 Context::Context(const Context *parent)
 {
@@ -40,7 +41,7 @@ Context::Context(const Context *parent)
 	usedlibs_p = NULL;
 	inst_p = NULL;
 	if (parent) document_path = parent->document_path;
-	ctx_stack.append(this);
+	ctx_stack.push_back(this);
 }
 
 Context::~Context()
@@ -48,16 +49,16 @@ Context::~Context()
 	ctx_stack.pop_back();
 }
 
-void Context::args(const QVector<QString> &argnames, const QVector<Expression*> &argexpr,
-		const QVector<QString> &call_argnames, const QVector<Value> &call_argvalues)
+void Context::args(const std::vector<std::string> &argnames, const std::vector<Expression*> &argexpr,
+		const std::vector<std::string> &call_argnames, const std::vector<Value> &call_argvalues)
 {
-	for (int i=0; i<argnames.size(); i++) {
+	for (size_t i=0; i<argnames.size(); i++) {
 		set_variable(argnames[i], i < argexpr.size() && argexpr[i] ? argexpr[i]->evaluate(this->parent) : Value());
 	}
 
-	int posarg = 0;
-	for (int i=0; i<call_argnames.size(); i++) {
-		if (call_argnames[i].isEmpty()) {
+	size_t posarg = 0;
+	for (size_t i=0; i<call_argnames.size(); i++) {
+		if (call_argnames[i].empty()) {
 			if (posarg < argnames.size())
 				set_variable(argnames[posarg++], call_argvalues[i]);
 		} else {
@@ -66,105 +67,103 @@ void Context::args(const QVector<QString> &argnames, const QVector<Expression*> 
 	}
 }
 
-QVector<const Context*> Context::ctx_stack;
+std::vector<const Context*> Context::ctx_stack;
 
-void Context::set_variable(QString name, Value value)
+void Context::set_variable(const std::string &name, Value value)
 {
-	if (name.startsWith("$"))
+	if (name[0] == '$')
 		config_variables[name] = value;
 	else
 		variables[name] = value;
 }
 
-Value Context::lookup_variable(QString name, bool silent) const
+Value Context::lookup_variable(const std::string &name, bool silent) const
 {
-	if (name.startsWith("$")) {
+	if (name[0] == '$') {
 		for (int i = ctx_stack.size()-1; i >= 0; i--) {
-			if (ctx_stack[i]->config_variables.contains(name))
-				return ctx_stack[i]->config_variables[name];
+			const ValueMap &confvars = ctx_stack[i]->config_variables;
+			if (confvars.find(name) != confvars.end())
+				return confvars.find(name)->second;
 		}
 		return Value();
 	}
-	if (!parent && constants.contains(name))
-		return constants[name];
-	if (variables.contains(name))
-		return variables[name];
+	if (!parent && constants.find(name) != constants.end())
+		return constants.find(name)->second;
+	if (variables.find(name) != variables.end())
+		return variables.find(name)->second;
 	if (parent)
 		return parent->lookup_variable(name, silent);
 	if (!silent)
-		PRINTA("WARNING: Ignoring unknown variable '%1'.", name);
+		PRINTF("WARNING: Ignoring unknown variable '%s'.", name.c_str());
 	return Value();
 }
 
-void Context::set_constant(QString name, Value value)
+void Context::set_constant(const std::string &name, Value value)
 {
-    if (constants.contains(name))
-	PRINTA("WARNING: Attempt to modify constant '%1'.",name);
-    else
-	constants.insert(name,value);
+	if (constants.count(name))
+		PRINTF("WARNING: Attempt to modify constant '%s'.",name.c_str());
+	else
+		constants[name] = value;
 }
 
-Value Context::evaluate_function(QString name, const QVector<QString> &argnames, const QVector<Value> &argvalues) const
+Value Context::evaluate_function(const std::string &name, const std::vector<std::string> &argnames, const std::vector<Value> &argvalues) const
 {
-	if (functions_p && functions_p->contains(name))
-		return functions_p->value(name)->evaluate(this, argnames, argvalues);
+	if (functions_p && functions_p->find(name) != functions_p->end())
+		return functions_p->find(name)->second->evaluate(this, argnames, argvalues);
 	if (usedlibs_p) {
-		QHashIterator<QString, Module*> i(*usedlibs_p);
-		while (i.hasNext()) {
-			i.next();
-			if (i.value()->functions.contains(name)) {
-				Module *lib = i.value();
+		BOOST_FOREACH(const ModuleContainer::value_type &m, *usedlibs_p) {
+			if (m.second->functions.count(name)) {
+				Module *lib = m.second;
 				Context ctx(parent);
 				ctx.functions_p = &lib->functions;
 				ctx.modules_p = &lib->modules;
 				ctx.usedlibs_p = &lib->usedlibs;
-				for (int j = 0; j < lib->assignments_var.size(); j++) {
+				for (size_t j = 0; j < lib->assignments_var.size(); j++) {
 					ctx.set_variable(lib->assignments_var[j], lib->assignments_expr[j]->evaluate(&ctx));
 				}
-				return i.value()->functions.value(name)->evaluate(&ctx, argnames, argvalues);
+				return m.second->functions[name]->evaluate(&ctx, argnames, argvalues);
 			}
 		}
 	}
 	if (parent)
 		return parent->evaluate_function(name, argnames, argvalues);
-	PRINTA("WARNING: Ignoring unkown function '%1'.", name);
+	PRINTF("WARNING: Ignoring unkown function '%s'.", name.c_str());
 	return Value();
 }
 
 AbstractNode *Context::evaluate_module(const ModuleInstantiation *inst) const
 {
-	if (modules_p && modules_p->contains(inst->modname))
-		return modules_p->value(inst->modname)->evaluate(this, inst);
+	if (modules_p && modules_p->find(inst->modname) != modules_p->end())
+		return modules_p->find(inst->modname)->second->evaluate(this, inst);
 	if (usedlibs_p) {
-		QHashIterator<QString, Module*> i(*usedlibs_p);
-		while (i.hasNext()) {
-			i.next();
-			if (i.value()->modules.contains(inst->modname)) {
-				Module *lib = i.value();
+		BOOST_FOREACH(const ModuleContainer::value_type &m, *usedlibs_p) {
+			if (m.second->modules.count(inst->modname)) {
+				Module *lib = m.second;
 				Context ctx(parent);
 				ctx.functions_p = &lib->functions;
 				ctx.modules_p = &lib->modules;
 				ctx.usedlibs_p = &lib->usedlibs;
-				for (int j = 0; j < lib->assignments_var.size(); j++) {
+				for (size_t j = 0; j < lib->assignments_var.size(); j++) {
 					ctx.set_variable(lib->assignments_var[j], lib->assignments_expr[j]->evaluate(&ctx));
 				}
-				return i.value()->modules.value(inst->modname)->evaluate(&ctx, inst);
+				return m.second->modules[inst->modname]->evaluate(&ctx, inst);
 			}
 		}
 	}
 	if (parent)
 		return parent->evaluate_module(inst);
-	PRINTA("WARNING: Ignoring unkown module '%1'.", inst->modname);
+	PRINTF("WARNING: Ignoring unkown module '%s'.", inst->modname.c_str());
 	return NULL;
 }
 
 /*!
 	Returns the absolute path to the given filename, unless it's empty.
  */
-QString Context::get_absolute_path(const QString &filename) const
+std::string Context::get_absolute_path(const std::string &filename) const
 {
-	if (!filename.isEmpty()) {
-		return QFileInfo(QDir(this->document_path), filename).absoluteFilePath();
+	if (!filename.empty()) {
+		return QFileInfo(QDir(QString::fromStdString(this->document_path)), 
+										 QString::fromStdString(filename)).absoluteFilePath().toStdString();
 	}
 	else {
 		return filename;
