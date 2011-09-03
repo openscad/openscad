@@ -214,12 +214,12 @@ HEADERS += src/cgal.h \
            src/cgalfwd.h \
            src/CGALEvaluator.h \
            src/PolySetCGALEvaluator.h \
-           src/cgalrenderer.h \
+           src/CGALRenderer.h \
            src/CGAL_Nef_polyhedron.h
 
 SOURCES += src/CGALEvaluator.cc \
            src/PolySetCGALEvaluator.cc \
-           src/cgalrenderer.cc \
+           src/CGALRenderer.cc \
            src/CGAL_Nef_polyhedron.cc \
            src/CGAL_Nef_polyhedron_DxfData.cc \
 	   src/cgaladv_convexhull2.cc \
