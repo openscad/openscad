@@ -84,7 +84,7 @@ using namespace boost::lambda;
 
 #include "CGALEvaluator.h"
 #include "PolySetCGALEvaluator.h"
-#include "cgalrenderer.h"
+#include "CGALRenderer.h"
 #include "CGAL_Nef_polyhedron.h"
 #include "cgal.h"
 

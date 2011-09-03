@@ -24,7 +24,7 @@
  *
  */
 
-#include "cgalrenderer.h"
+#include "CGALRenderer.h"
 #include "polyset.h"
 #include "CGAL_renderer.h"
 #include "dxfdata.h"

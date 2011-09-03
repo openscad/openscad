@@ -36,7 +36,7 @@
 #include "CGAL_Nef_polyhedron.h"
 #include "CGALEvaluator.h"
 #include "PolySetCGALEvaluator.h"
-#include "cgalrenderer.h"
+#include "CGALRenderer.h"
 #include "CGAL_renderer.h"
 #include "cgal.h"
 #include "OffscreenView.h"
