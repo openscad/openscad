@@ -134,11 +134,11 @@ void export_dxf(CGAL_Nef_polyhedron *root_N, QTextStream &output, QProgressDialo
 				 << "ENTITIES\n";
 
 	DxfData *dd =root_N->convertToDxfData();
-	for (int i=0; i<dd->paths.size(); i++)
+	for (size_t i=0; i<dd->paths.size(); i++)
 	{
-		for (int j=1; j<dd->paths[i].points.size(); j++) {
-			const Vector2d &p1 = *dd->paths[i].points[j-1];
-			const Vector2d &p2 = *dd->paths[i].points[j];
+		for (size_t j=1; j<dd->paths[i].indices.size(); j++) {
+			const Vector2d &p1 = dd->points[dd->paths[i].indices[j-1]];
+			const Vector2d &p2 = dd->points[dd->paths[i].indices[j]];
 			double x1 = p1[0];
 			double y1 = p1[1];
 			double x2 = p2[0];

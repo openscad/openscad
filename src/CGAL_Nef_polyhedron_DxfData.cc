@@ -55,21 +55,21 @@ DxfData *CGAL_Nef_polyhedron::convertToDxfData() const
 					this_point = grid.align(x, y);
 				} else {
 					this_point = grid.align(x, y) = dxfdata->points.size();
-					dxfdata->points.append(Vector2d(x, y));
+					dxfdata->points.push_back(Vector2d(x, y));
 				}
 				if (first_point < 0) {
-					dxfdata->paths.append(DxfData::Path());
+					dxfdata->paths.push_back(DxfData::Path());
 					first_point = this_point;
 				}
 				if (this_point != last_point) {
-					dxfdata->paths.last().points.append(&dxfdata->points[this_point]);
+					dxfdata->paths.back().indices.push_back(this_point);
 					last_point = this_point;
 				}
 			}
 		}
 		if (first_point >= 0) {
-			dxfdata->paths.last().is_closed = 1;
-			dxfdata->paths.last().points.append(&dxfdata->points[first_point]);
+			dxfdata->paths.back().is_closed = 1;
+			dxfdata->paths.back().indices.push_back(first_point);
 		}
 	}
 

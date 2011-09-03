@@ -106,17 +106,17 @@ void dxf_tesselate(PolySet *ps, DxfData &dxf, double rot, bool up, bool /* do_tr
 	try {
 
 	// read path data and copy all relevant infos
-	for (int i = 0; i < dxf.paths.count(); i++)
+	for (int i = 0; i < dxf.paths.size(); i++)
 	{
 		if (!dxf.paths[i].is_closed)
 			continue;
 
 		Vertex_handle first, prev;
 		struct point_info_t *first_pi = NULL, *prev_pi = NULL;
-		for (int j = 1; j < dxf.paths[i].points.count(); j++)
+		for (int j = 1; j < dxf.paths[i].indices.size(); j++)
 		{
-			double x = (*dxf.paths[i].points[j])[0];
-			double y = (*dxf.paths[i].points[j])[1];
+			double x = dxf.points[dxf.paths[i].indices[j]][0];
+			double y = dxf.points[dxf.paths[i].indices[j]][1];
 
 			if (point_info.has(x, y)) {
 				// FIXME: How can the same path set contain the same point twice?
@@ -127,7 +127,7 @@ void dxf_tesselate(PolySet *ps, DxfData &dxf, double rot, bool up, bool /* do_tr
 			}
 
 			struct point_info_t *pi = &point_info.align(x, y);
-			*pi = point_info_t(x, y, i, j, dxf.paths[i].points.count()-1);
+			*pi = point_info_t(x, y, i, j, dxf.paths[i].indices.size()-1);
 
 			Vertex_handle vh = cdt.insert(CDTPoint(x, y));
 			if (first_pi == NULL) {

@@ -521,39 +521,37 @@ sphere_next_r2:
 				p->unlink();
 				return NULL;
 			}
-			dd.points.append(Vector2d(x, y));
+			dd.points.push_back(Vector2d(x, y));
 		}
 
 		if (this->paths.vec.size() == 0)
 		{
-			dd.paths.append(DxfData::Path());
+			dd.paths.push_back(DxfData::Path());
 			for (size_t i=0; i<this->points.vec.size(); i++) {
 				assert(i < dd.points.size()); // FIXME: Not needed, but this used to be an 'if'
-				Vector2d *p = &dd.points[i];
-				dd.paths.last().points.append(p);
+				dd.paths.back().indices.push_back(i);
 			}
-			if (dd.paths.last().points.size() > 0) {
-				dd.paths.last().points.append(dd.paths.last().points.first());
-				dd.paths.last().is_closed = true;
+			if (dd.paths.back().indices.size() > 0) {
+				dd.paths.back().indices.push_back(dd.paths.back().indices.front());
+				dd.paths.back().is_closed = true;
 			}
 		}
 		else
 		{
 			for (size_t i=0; i<this->paths.vec.size(); i++)
 			{
-				dd.paths.append(DxfData::Path());
+				dd.paths.push_back(DxfData::Path());
 				for (size_t j=0; j<this->paths.vec[i]->vec.size(); j++) {
 					int idx = this->paths.vec[i]->vec[j]->num;
 					if (idx < dd.points.size()) {
-						Vector2d *p = &dd.points[idx];
-						dd.paths.last().points.append(p);
+						dd.paths.back().indices.push_back(idx);
 					}
 				}
-				if (dd.paths.last().points.isEmpty()) {
-					dd.paths.removeLast();
+				if (dd.paths.back().indices.empty()) {
+					dd.paths.pop_back();
 				} else {
-					dd.paths.last().points.append(dd.paths.last().points.first());
-					dd.paths.last().is_closed = true;
+					dd.paths.back().indices.push_back(dd.paths.back().indices.front());
+					dd.paths.back().is_closed = true;
 				}
 			}
 		}
@@ -561,7 +559,7 @@ sphere_next_r2:
 		p->is2d = true;
 		p->convexity = convexity;
 		dxf_tesselate(p, dd, 0, true, false, 0);
-		dxf_border_to_ps(p, &dd);
+		dxf_border_to_ps(p, dd);
 	}
 
 	return p;

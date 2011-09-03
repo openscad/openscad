@@ -72,11 +72,11 @@ Value builtin_dxf_dim(const Context *ctx, const std::vector<std::string> &argnam
 	if (dxf_dim_cache.find(key) != dxf_dim_cache.end())
 		return dxf_dim_cache.find(key)->second;
 
-	DxfData dxf(36, 0, 0, QString::fromStdString(filename), QString::fromStdString(layername), xorigin, yorigin, scale);
+	DxfData dxf(36, 0, 0, filename, layername, xorigin, yorigin, scale);
 
-	for (int i = 0; i < dxf.dims.count(); i++)
+	for (size_t i = 0; i < dxf.dims.size(); i++)
 	{
-		if (!name.empty() && dxf.dims[i].name != QString::fromStdString(name))
+		if (!name.empty() && dxf.dims[i].name != name)
 			continue;
 
 		DxfData::Dim *d = &dxf.dims[i];
@@ -155,17 +155,17 @@ Value builtin_dxf_cross(const Context *ctx, const std::vector<std::string> &argn
 	if (dxf_cross_cache.find(key) != dxf_cross_cache.end())
 		return dxf_cross_cache.find(key)->second;
 
-	DxfData dxf(36, 0, 0, QString::fromStdString(filename), QString::fromStdString(layername), xorigin, yorigin, scale);
+	DxfData dxf(36, 0, 0, filename, layername, xorigin, yorigin, scale);
 
 	double coords[4][2];
 
-	for (int i = 0, j = 0; i < dxf.paths.count(); i++) {
-		if (dxf.paths[i].points.count() != 2)
+	for (size_t i = 0, j = 0; i < dxf.paths.size(); i++) {
+		if (dxf.paths[i].indices.size() != 2)
 			continue;
-		coords[j][0] = (*dxf.paths[i].points[0])[0];
-		coords[j++][1] = (*dxf.paths[i].points[0])[1];
-		coords[j][0] = (*dxf.paths[i].points[1])[0];
-		coords[j++][1] = (*dxf.paths[i].points[1])[1];
+		coords[j][0] = dxf.points[dxf.paths[i].indices[0]][0];
+		coords[j++][1] = dxf.points[dxf.paths[i].indices[0]][1];
+		coords[j][0] = dxf.points[dxf.paths[i].indices[1]][0];
+		coords[j++][1] = dxf.points[dxf.paths[i].indices[1]][1];
 
 		if (j == 4) {
 			double x1 = coords[0][0], y1 = coords[0][1];

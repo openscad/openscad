@@ -198,10 +198,10 @@ PolySet *ImportNode::evaluate_polyset(render_mode_e, class PolySetEvaluator *) c
 
 	if (this->type == TYPE_DXF)
 	{
-		DxfData dd(this->fn, this->fs, this->fa, QString::fromStdString(this->filename), QString::fromStdString(this->layername), this->origin_x, this->origin_y, this->scale);
+		DxfData dd(this->fn, this->fs, this->fa, this->filename, this->layername, this->origin_x, this->origin_y, this->scale);
 		p->is2d = true;
 		dxf_tesselate(p, dd, 0, true, false, 0);
-		dxf_border_to_ps(p, &dd);
+		dxf_border_to_ps(p, dd);
 	}
 
 	return p;

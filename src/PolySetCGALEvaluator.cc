@@ -155,7 +155,7 @@ PolySet *PolySetCGALEvaluator::evaluatePolySet(const ProjectionNode &node, Abstr
 		}
 		DxfData *dxf = np.convertToDxfData();
 		dxf_tesselate(ps, *dxf, 0, true, false, 0);
-		dxf_border_to_ps(ps, dxf);
+		dxf_border_to_ps(ps, *dxf);
 		ps3->unlink();
 		delete dxf;
 	}
@@ -166,23 +166,23 @@ cant_project_non_simple_polyhedron:
 	return ps;
 }
 
-static void add_slice(PolySet *ps, DxfData::Path &pt, double rot1, double rot2, double h1, double h2)
+static void add_slice(PolySet *ps, const DxfData &dxf, DxfData::Path &path, double rot1, double rot2, double h1, double h2)
 {
-	for (int j = 1; j < pt.points.count(); j++)
+	for (size_t j = 1; j < path.indices.size(); j++)
 	{
 		int k = j - 1;
 
-		double jx1 = (*pt.points[j])[0] *  cos(rot1*M_PI/180) + (*pt.points[j])[1] * sin(rot1*M_PI/180);
-		double jy1 = (*pt.points[j])[0] * -sin(rot1*M_PI/180) + (*pt.points[j])[1] * cos(rot1*M_PI/180);
+		double jx1 = dxf.points[path.indices[j]][0] *  cos(rot1*M_PI/180) + dxf.points[path.indices[j]][1] * sin(rot1*M_PI/180);
+		double jy1 = dxf.points[path.indices[j]][0] * -sin(rot1*M_PI/180) + dxf.points[path.indices[j]][1] * cos(rot1*M_PI/180);
 
-		double jx2 = (*pt.points[j])[0] *  cos(rot2*M_PI/180) + (*pt.points[j])[1] * sin(rot2*M_PI/180);
-		double jy2 = (*pt.points[j])[0] * -sin(rot2*M_PI/180) + (*pt.points[j])[1] * cos(rot2*M_PI/180);
+		double jx2 = dxf.points[path.indices[j]][0] *  cos(rot2*M_PI/180) + dxf.points[path.indices[j]][1] * sin(rot2*M_PI/180);
+		double jy2 = dxf.points[path.indices[j]][0] * -sin(rot2*M_PI/180) + dxf.points[path.indices[j]][1] * cos(rot2*M_PI/180);
 
-		double kx1 = (*pt.points[k])[0] *  cos(rot1*M_PI/180) + (*pt.points[k])[1] * sin(rot1*M_PI/180);
-		double ky1 = (*pt.points[k])[0] * -sin(rot1*M_PI/180) + (*pt.points[k])[1] * cos(rot1*M_PI/180);
+		double kx1 = dxf.points[path.indices[k]][0] *  cos(rot1*M_PI/180) + dxf.points[path.indices[k]][1] * sin(rot1*M_PI/180);
+		double ky1 = dxf.points[path.indices[k]][0] * -sin(rot1*M_PI/180) + dxf.points[path.indices[k]][1] * cos(rot1*M_PI/180);
 
-		double kx2 = (*pt.points[k])[0] *  cos(rot2*M_PI/180) + (*pt.points[k])[1] * sin(rot2*M_PI/180);
-		double ky2 = (*pt.points[k])[0] * -sin(rot2*M_PI/180) + (*pt.points[k])[1] * cos(rot2*M_PI/180);
+		double kx2 = dxf.points[path.indices[k]][0] *  cos(rot2*M_PI/180) + dxf.points[path.indices[k]][1] * sin(rot2*M_PI/180);
+		double ky2 = dxf.points[path.indices[k]][0] * -sin(rot2*M_PI/180) + dxf.points[path.indices[k]][1] * cos(rot2*M_PI/180);
 
 		double dia1_len_sq = (jy1-ky2)*(jy1-ky2) + (jx1-kx2)*(jx1-kx2);
 		double dia2_len_sq = (jy2-ky1)*(jy2-ky1) + (jx2-kx1)*(jx2-kx1);
@@ -190,7 +190,7 @@ static void add_slice(PolySet *ps, DxfData::Path &pt, double rot1, double rot2, 
 		if (dia1_len_sq > dia2_len_sq)
 		{
 			ps->append_poly();
-			if (pt.is_inner) {
+			if (path.is_inner) {
 				ps->append_vertex(kx1, ky1, h1);
 				ps->append_vertex(jx1, jy1, h1);
 				ps->append_vertex(jx2, jy2, h2);
@@ -201,7 +201,7 @@ static void add_slice(PolySet *ps, DxfData::Path &pt, double rot1, double rot2, 
 			}
 
 			ps->append_poly();
-			if (pt.is_inner) {
+			if (path.is_inner) {
 				ps->append_vertex(kx2, ky2, h2);
 				ps->append_vertex(kx1, ky1, h1);
 				ps->append_vertex(jx2, jy2, h2);
@@ -214,7 +214,7 @@ static void add_slice(PolySet *ps, DxfData::Path &pt, double rot1, double rot2, 
 		else
 		{
 			ps->append_poly();
-			if (pt.is_inner) {
+			if (path.is_inner) {
 				ps->append_vertex(kx1, ky1, h1);
 				ps->append_vertex(jx1, jy1, h1);
 				ps->append_vertex(kx2, ky2, h2);
@@ -225,7 +225,7 @@ static void add_slice(PolySet *ps, DxfData::Path &pt, double rot1, double rot2, 
 			}
 
 			ps->append_poly();
-			if (pt.is_inner) {
+			if (path.is_inner) {
 				ps->append_vertex(jx2, jy2, h2);
 				ps->append_vertex(kx2, ky2, h2);
 				ps->append_vertex(jx1, jy1, h1);
@@ -260,7 +260,7 @@ PolySet *PolySetCGALEvaluator::evaluatePolySet(const DxfLinearExtrudeNode &node,
 
 		dxf = sum.convertToDxfData();;
 	} else {
-		dxf = new DxfData(node.fn, node.fs, node.fa, QString::fromStdString(node.filename), QString::fromStdString(node.layername), node.origin_x, node.origin_y, node.scale);
+		dxf = new DxfData(node.fn, node.fs, node.fa, node.filename, node.layername, node.origin_x, node.origin_y, node.scale);
 	}
 
 	PolySet *ps = extrudeDxfData(node, *dxf);
@@ -285,7 +285,7 @@ PolySet *PolySetCGALEvaluator::extrudeDxfData(const DxfLinearExtrudeNode &node, 
 	}
 
 	bool first_open_path = true;
-	for (int i = 0; i < dxf.paths.count(); i++)
+	for (size_t i = 0; i < dxf.paths.size(); i++)
 	{
 		if (dxf.paths[i].is_closed)
 			continue;
@@ -295,10 +295,10 @@ PolySet *PolySetCGALEvaluator::extrudeDxfData(const DxfLinearExtrudeNode &node, 
 			first_open_path = false;
 		}
 		PRINTF("   %9.5f %10.5f ... %10.5f %10.5f",
-					 (*dxf.paths[i].points.first())[0] / node.scale + node.origin_x,
-					 (*dxf.paths[i].points.first())[1] / node.scale + node.origin_y, 
-					 (*dxf.paths[i].points.last())[0] / node.scale + node.origin_x,
-					 (*dxf.paths[i].points.last())[1] / node.scale + node.origin_y);
+					 dxf.points[dxf.paths[i].indices.front()][0] / node.scale + node.origin_x,
+					 dxf.points[dxf.paths[i].indices.front()][1] / node.scale + node.origin_y, 
+					 dxf.points[dxf.paths[i].indices.back()][0] / node.scale + node.origin_x,
+					 dxf.points[dxf.paths[i].indices.back()][1] / node.scale + node.origin_y);
 	}
 
 
@@ -312,11 +312,11 @@ PolySet *PolySetCGALEvaluator::extrudeDxfData(const DxfLinearExtrudeNode &node, 
 			double t2 = node.twist*(j+1) / node.slices;
 			double g1 = h1 + (h2-h1)*j / node.slices;
 			double g2 = h1 + (h2-h1)*(j+1) / node.slices;
-			for (int i = 0; i < dxf.paths.count(); i++)
+			for (size_t i = 0; i < dxf.paths.size(); i++)
 			{
 				if (!dxf.paths[i].is_closed)
 					continue;
-				add_slice(ps, dxf.paths[i], t1, t2, g1, g2);
+				add_slice(ps, dxf, dxf.paths[i], t1, t2, g1, g2);
 			}
 		}
 	}
@@ -324,11 +324,11 @@ PolySet *PolySetCGALEvaluator::extrudeDxfData(const DxfLinearExtrudeNode &node, 
 	{
 		dxf_tesselate(ps, dxf, 0, false, true, h1);
 		dxf_tesselate(ps, dxf, 0, true, true, h2);
-		for (int i = 0; i < dxf.paths.count(); i++)
+		for (size_t i = 0; i < dxf.paths.size(); i++)
 		{
 			if (!dxf.paths[i].is_closed)
 				continue;
-			add_slice(ps, dxf.paths[i], 0, 0, h1, h2);
+			add_slice(ps, dxf, dxf.paths[i], 0, 0, h1, h2);
 		}
 	}
 
@@ -357,7 +357,7 @@ PolySet *PolySetCGALEvaluator::evaluatePolySet(const DxfRotateExtrudeNode &node,
 
 		dxf = sum.convertToDxfData();
 	} else {
-		dxf = new DxfData(node.fn, node.fs, node.fa, QString::fromStdString(node.filename), QString::fromStdString(node.layername), node.origin_x, node.origin_y, node.scale);
+		dxf = new DxfData(node.fn, node.fs, node.fa, node.filename, node.layername, node.origin_x, node.origin_y, node.scale);
 	}
 
 	PolySet *ps = rotateDxfData(node, *dxf);
@@ -371,11 +371,11 @@ PolySet *PolySetCGALEvaluator::rotateDxfData(const DxfRotateExtrudeNode &node, D
 	PolySet *ps = new PolySet();
 	ps->convexity = node.convexity;
 
-	for (int i = 0; i < dxf.paths.count(); i++)
+	for (int i = 0; i < dxf.paths.size(); i++)
 	{
 		double max_x = 0;
-		for (int j = 0; j < dxf.paths[i].points.count(); j++) {
-			max_x = fmax(max_x, (*dxf.paths[i].points[j])[0]);
+		for (int j = 0; j < dxf.paths[i].indices.size(); j++) {
+			max_x = fmax(max_x, dxf.points[dxf.paths[i].indices[j]][0]);
 		}
 
 		int fragments = get_fragments_from_r(max_x, node.fn, node.fs, node.fa);
@@ -383,29 +383,29 @@ PolySet *PolySetCGALEvaluator::rotateDxfData(const DxfRotateExtrudeNode &node, D
 		double ***points;
 		points = new double**[fragments];
 		for (int j=0; j < fragments; j++) {
-			points[j] = new double*[dxf.paths[i].points.count()];
-			for (int k=0; k < dxf.paths[i].points.count(); k++)
+			points[j] = new double*[dxf.paths[i].indices.size()];
+			for (int k=0; k < dxf.paths[i].indices.size(); k++)
 				points[j][k] = new double[3];
 		}
 
 		for (int j = 0; j < fragments; j++) {
 			double a = (j*2*M_PI) / fragments;
-			for (int k = 0; k < dxf.paths[i].points.count(); k++) {
-				if ((*dxf.paths[i].points[k])[0] == 0) {
+			for (int k = 0; k < dxf.paths[i].indices.size(); k++) {
+				if (dxf.points[dxf.paths[i].indices[k]][0] == 0) {
 					points[j][k][0] = 0;
 					points[j][k][1] = 0;
 				} else {
-					points[j][k][0] = (*dxf.paths[i].points[k])[0] * sin(a);
-					points[j][k][1] = (*dxf.paths[i].points[k])[0] * cos(a);
+					points[j][k][0] = dxf.points[dxf.paths[i].indices[k]][0] * sin(a);
+					points[j][k][1] = dxf.points[dxf.paths[i].indices[k]][0] * cos(a);
 				}
-				points[j][k][2] = (*dxf.paths[i].points[k])[1];
+				points[j][k][2] = dxf.points[dxf.paths[i].indices[k]][1];
 			}
 		}
 
 		for (int j = 0; j < fragments; j++) {
 			int j1 = j + 1 < fragments ? j + 1 : 0;
-			for (int k = 0; k < dxf.paths[i].points.count(); k++) {
-				int k1 = k + 1 < dxf.paths[i].points.count() ? k + 1 : 0;
+			for (size_t k = 0; k < dxf.paths[i].indices.size(); k++) {
+				int k1 = k + 1 < dxf.paths[i].indices.size() ? k + 1 : 0;
 				if (points[j][k][0] != points[j1][k][0] ||
 						points[j][k][1] != points[j1][k][1] ||
 						points[j][k][2] != points[j1][k][2]) {
@@ -432,7 +432,7 @@ PolySet *PolySetCGALEvaluator::rotateDxfData(const DxfRotateExtrudeNode &node, D
 		}
 
 		for (int j=0; j < fragments; j++) {
-			for (int k=0; k < dxf.paths[i].points.count(); k++)
+			for (size_t k=0; k < dxf.paths[i].indices.size(); k++)
 				delete[] points[j][k];
 			delete[] points[j];
 		}
