@@ -31,7 +31,7 @@
 #include "builtin.h"
 #include "dxftess.h"
 #include "printutils.h"
-#include "openscad.h" // handle_dep()
+#include "handle_dep.h" // handle_dep()
 #include "visitor.h"
 
 #include <QFile>
@@ -101,7 +101,7 @@ void register_builtin_surface()
 PolySet *SurfaceNode::evaluate_polyset(render_mode_e, class PolySetEvaluator *) const
 {
 	PolySet *p = new PolySet();
-	handle_dep(QString::fromStdString(filename));
+	handle_dep(filename);
 	QFile f(QString::fromStdString(filename));
 
 	if (!f.open(QIODevice::ReadOnly | QIODevice::Text)) {

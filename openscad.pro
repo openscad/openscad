@@ -147,6 +147,7 @@ HEADERS += src/renderer.h \
            src/colornode.h \
            src/rendernode.h \
            src/openscad.h \
+           src/handle_dep.h \
            src/polyset.h \
            src/printutils.h \
            src/value.h \
@@ -166,6 +167,7 @@ HEADERS += src/renderer.h \
 
 SOURCES += src/openscad.cc \
            src/mainwin.cc \
+           src/handle_dep.cc \
            src/ThrownTogetherRenderer.cc \
            src/glview.cc \
            src/export.cc \

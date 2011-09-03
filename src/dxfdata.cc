@@ -28,7 +28,8 @@
 #include "dxfdata.h"
 #include "grid.h"
 #include "printutils.h"
-#include "openscad.h" // handle_dep()
+#include "handle_dep.h"
+#include "openscad.h" // get_fragments_from_r()
 
 #include <QFile>
 #include <QTextStream>
@@ -55,7 +56,7 @@ DxfData::DxfData(double fn, double fs, double fa,
 								 const std::string &filename, const std::string &layername, 
 								 double xorigin, double yorigin, double scale)
 {
-	handle_dep(QString::fromStdString(filename)); // Register ourselves as a dependency
+	handle_dep(filename); // Register ourselves as a dependency
 
 	QFile f(QString::fromStdString(filename));
 	if (!f.open(QIODevice::ReadOnly | QIODevice::Text)) {

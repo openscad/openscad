@@ -26,7 +26,8 @@
 
 %{
 
-#include "openscad.h"
+#include "handle_dep.h"
+#include "openscad.h" // librarydir
 #include "printutils.h"
 #include "parser_yacc.h"
 #include <QStack>
@@ -102,7 +103,7 @@ use[ \t\r\n>]*"<"[^ \t\r\n>]+">" {
 	if (!finfo.exists()) {
 		finfo = QFileInfo(QDir(librarydir), filename);
 	}
-	handle_dep(finfo.absoluteFilePath());
+	handle_dep(finfo.absoluteFilePath().toStdString());
 	parserlval.text = strdup(finfo.absoluteFilePath().toLocal8Bit());
 	return TOK_USE;
 }
@@ -116,7 +117,7 @@ use[ \t\r\n>]*"<"[^ \t\r\n>]+">" {
 	}
 
 	PRINTF("DEPRECATED: Support for implicit include will be removed in future releases. Use `include <filename>' instead.");
-	handle_dep(finfo.absoluteFilePath());
+	handle_dep(finfo.absoluteFilePath().toStdString());
 	yyin = fopen(finfo.absoluteFilePath().toLocal8Bit(), "r");
 	if (!yyin) {
 		PRINTF("WARNING: Can't open input file `%s'.", filename);
@@ -206,7 +207,7 @@ void includefile()
 		finfo = QFileInfo(QDir(librarydir), filename);
 	}
 
-	handle_dep(finfo.absoluteFilePath());
+	handle_dep(finfo.absoluteFilePath().toStdString());
 	yyin = fopen(finfo.absoluteFilePath().toLocal8Bit(), "r");
 	if (!yyin) {
 		PRINTA("WARNING: Can't open input file `%1'.", filename);

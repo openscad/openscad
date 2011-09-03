@@ -40,6 +40,7 @@
 #include "CGAL_renderer.h"
 #include "cgal.h"
 #include "OffscreenView.h"
+#include "handle_dep.h"
 
 #include <QApplication>
 #include <QFile>
@@ -49,28 +50,14 @@
 #include <getopt.h>
 #include <iostream>
 #include <assert.h>
+#include <sstream>
 
-QString commandline_commands;
-const char *make_command = NULL;
-QSet<QString> dependencies;
+std::string commandline_commands;
 QString currentdir;
 QString examplesdir;
 QString librarydir;
 
 using std::string;
-
-void handle_dep(QString filename)
-{
-	if (filename.startsWith("/"))
-		dependencies.insert(filename);
-	else
-		dependencies.insert(QDir::currentPath() + QString("/") + filename);
-	if (!QFile(filename).exists() && make_command) {
-		char buffer[4096];
-		snprintf(buffer, 4096, "%s '%s'", make_command, filename.replace("'", "'\\''").toUtf8().data());
-		system(buffer); // FIXME: Handle error
-	}
-}
 
 // FIXME: enforce some maximum cache size (old version had 100K vertices as limit)
 QHash<std::string, CGAL_Nef_polyhedron> cache;
@@ -153,15 +140,16 @@ int main(int argc, char **argv)
 		fprintf(stderr, "Can't open input file `%s'!\n", filename);
 		exit(1);
 	} else {
-		QString text;
+		std::stringstream text;
 		char buffer[513];
 		int ret;
 		while ((ret = fread(buffer, 1, 512, fp)) > 0) {
 			buffer[ret] = 0;
-			text += buffer;
+			text << buffer;
 		}
 		fclose(fp);
-		root_module = parse((text+commandline_commands).toAscii().data(), fileInfo.absolutePath().toLocal8Bit(), false);
+		text << commandline_commands;
+		root_module = parse(text.str().c_str(), fileInfo.absolutePath().toLocal8Bit(), false);
 		if (!root_module) {
 			exit(1);
 		}

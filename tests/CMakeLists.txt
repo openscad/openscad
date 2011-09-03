@@ -79,6 +79,8 @@ include_directories(../src)
 add_definitions(-DOPENSCAD_VERSION=test)
 
 set(COMMON_SOURCES
+  ../src/handle_dep.cc 
+  ../src/qhash.cc
   ../src/export.cc 
   ../src/value.cc 
   ../src/expr.cc 

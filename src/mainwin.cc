@@ -667,7 +667,7 @@ void MainWindow::compile(bool procevents)
 	// Parse
 	this->last_compiled_doc = editor->toPlainText();
 	this->root_module = parse((this->last_compiled_doc + "\n" + 
-														 commandline_commands).toAscii().data(), 
+														 QString::fromStdString(commandline_commands)).toAscii().data(), 
 														this->fileName.isEmpty() ? 
 														"" : 
 														QFileInfo(this->fileName).absolutePath().toLocal8Bit(), 

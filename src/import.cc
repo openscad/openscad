@@ -33,7 +33,7 @@
 #include "dxfdata.h"
 #include "dxftess.h"
 #include "printutils.h"
-#include "openscad.h" // handle_dep()
+#include "handle_dep.h" // handle_dep()
 
 #include <QFile>
 #include <QRegExp>
@@ -116,7 +116,7 @@ PolySet *ImportNode::evaluate_polyset(render_mode_e, class PolySetEvaluator *) c
 
 	if (this->type == TYPE_STL)
 	{
-		handle_dep(QString::fromStdString(this->filename));
+		handle_dep(this->filename);
 		QFile f(QString::fromStdString(this->filename));
 		if (!f.open(QIODevice::ReadOnly)) {
 			PRINTF("WARNING: Can't open import file `%s'.", this->filename.c_str());

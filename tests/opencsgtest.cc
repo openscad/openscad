@@ -1,5 +1,6 @@
 #include <GL/glew.h>
 #include "openscad.h"
+#include "handle_dep.h"
 #include "builtin.h"
 #include "context.h"
 #include "node.h"
@@ -21,35 +22,15 @@
 #include <QDir>
 #include <QSet>
 #include <QTimer>
+#include <sstream>
 
 using std::cerr;
 using std::cout;
 
-QString commandline_commands;
+std::string commandline_commands;
 QString librarydir;
-QSet<QString> dependencies;
-const char *make_command = NULL;
 
 //#define DEBUG
-
-void handle_dep(QString filename)
-{
-	if (filename.startsWith("/"))
-		dependencies.insert(filename);
-	else
-		dependencies.insert(QDir::currentPath() + QString("/") + filename);
-	if (!QFile(filename).exists() && make_command) {
-		char buffer[4096];
-		snprintf(buffer, 4096, "%s '%s'", make_command, filename.replace("'", "'\\''").toUtf8().data());
-		system(buffer); // FIXME: Handle error
-	}
-}
-
-// static void renderfunc(void *vp)
-// {
-// 	glClearColor(1.0, 0.0, 0.0, 0.0);
-// 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-// }
 
 struct CsgInfo
 {
@@ -127,15 +108,16 @@ int main(int argc, char *argv[])
 		fprintf(stderr, "Can't open input file `%s'!\n", filename);
 		exit(1);
 	} else {
-		QString text;
+		std::stringstream text;
 		char buffer[513];
 		int ret;
 		while ((ret = fread(buffer, 1, 512, fp)) > 0) {
 			buffer[ret] = 0;
-			text += buffer;
+			text << buffer;
 		}
 		fclose(fp);
-		root_module = parse((text+commandline_commands).toAscii().data(), fileInfo.absolutePath().toLocal8Bit(), false);
+		text << commandline_commands;
+		root_module = parse(text.str().c_str(), fileInfo.absolutePath().toLocal8Bit(), false);
 		if (!root_module) {
 			exit(1);
 		}
