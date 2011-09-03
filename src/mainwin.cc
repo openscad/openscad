@@ -495,7 +495,7 @@ MainWindow::setFileName(const QString &filename)
 {
 	if (filename.isEmpty()) {
 		this->fileName.clear();
-		this->root_ctx.document_path = currentdir.toStdString();
+		this->root_ctx.setDocumentPath(currentdir.toStdString());
 		setWindowTitle("OpenSCAD - New Document[*]");
 	}
 	else {
@@ -518,7 +518,7 @@ MainWindow::setFileName(const QString &filename)
 			this->fileName = fileinfo.fileName();
 		}
 		
-		this->root_ctx.document_path = fileinfo.dir().absolutePath().toStdString();
+		this->root_ctx.setDocumentPath(fileinfo.dir().absolutePath().toStdString());
 		QDir::setCurrent(fileinfo.dir().absolutePath());
 	}
 

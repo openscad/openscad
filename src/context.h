@@ -11,34 +11,42 @@ using boost::unordered_map;
 class Context
 {
 public:
+	Context(const Context *parent = NULL, const class Module *library = NULL);
+	~Context();
+
+	void args(const std::vector<std::string> &argnames, 
+						const std::vector<class Expression*> &argexpr, 
+						const std::vector<std::string> &call_argnames, 
+						const std::vector<Value> &call_argvalues);
+
+	void set_variable(const std::string &name, const Value &value);
+	void set_constant(const std::string &name, const Value &value);
+
+	Value lookup_variable(const std::string &name, bool silent = false) const;
+	Value evaluate_function(const std::string &name, 
+													const std::vector<std::string> &argnames, 
+													const std::vector<Value> &argvalues) const;
+	class AbstractNode *evaluate_module(const class ModuleInstantiation &inst) const;
+
+	void setDocumentPath(const std::string &path) { this->document_path = path; }
+	std::string getAbsolutePath(const std::string &filename) const;
+
+public:
 	const Context *parent;
-	typedef unordered_map<std::string, Value> ValueMap;
-	ValueMap constants;
-	ValueMap variables;
-	ValueMap config_variables;
 	const unordered_map<std::string, class AbstractFunction*> *functions_p;
 	const unordered_map<std::string, class AbstractModule*> *modules_p;
 	typedef unordered_map<std::string, class Module*> ModuleContainer;
 	const ModuleContainer *usedlibs_p;
-	const class ModuleInstantiation *inst_p;
-	std::string document_path;
+	const ModuleInstantiation *inst_p;
 
 	static std::vector<const Context*> ctx_stack;
 
-	Context(const Context *parent = NULL);
-	~Context();
-
-	void args(const std::vector<std::string> &argnames, const std::vector<class Expression*> &argexpr, const std::vector<std::string> &call_argnames, const std::vector<Value> &call_argvalues);
-
-	void set_variable(const std::string &name, Value value);
-	Value lookup_variable(const std::string &name, bool silent = false) const;
-
-	void set_constant(const std::string &name, Value value);
-
-	std::string get_absolute_path(const std::string &filename) const;
-
-	Value evaluate_function(const std::string &name, const std::vector<std::string> &argnames, const std::vector<Value> &argvalues) const;
-	class AbstractNode *evaluate_module(const ModuleInstantiation *inst) const;
+private:
+	typedef unordered_map<std::string, Value> ValueMap;
+	ValueMap constants;
+	ValueMap variables;
+	ValueMap config_variables;
+	std::string document_path;
 };
 
 #endif

@@ -102,7 +102,7 @@ AbstractNode *ModuleInstantiation::evaluate(const Context *ctx) const
 {
 	AbstractNode *node = NULL;
 	if (this->ctx) {
-		PRINTF("WARNING: Ignoring recursive module instanciation of '%s'.", modname.c_str());
+		PRINTF("WARNING: Ignoring recursive module instantiation of '%s'.", modname.c_str());
 	} else {
 		ModuleInstantiation *that = (ModuleInstantiation*)this;
 		that->argvalues.clear();
@@ -110,7 +110,7 @@ AbstractNode *ModuleInstantiation::evaluate(const Context *ctx) const
 			that->argvalues.push_back(v->evaluate(ctx));
 		}
 		that->ctx = ctx;
-		node = ctx->evaluate_module(this);
+		node = ctx->evaluate_module(*this);
 		that->ctx = NULL;
 		that->argvalues.clear();
 	}

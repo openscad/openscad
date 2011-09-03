@@ -33,15 +33,30 @@
 #include <QDir>
 #include <boost/foreach.hpp>
 
-Context::Context(const Context *parent)
+std::vector<const Context*> Context::ctx_stack;
+
+/*!
+	Initializes this context. Optionally initializes a context for an external library
+*/
+Context::Context(const Context *parent, const Module *library)
+	: parent(parent), inst_p(NULL)
 {
-	this->parent = parent;
-	functions_p = NULL;
-	modules_p = NULL;
-	usedlibs_p = NULL;
-	inst_p = NULL;
-	if (parent) document_path = parent->document_path;
 	ctx_stack.push_back(this);
+	if (parent) document_path = parent->document_path;
+	if (library) {
+		this->functions_p = &library->functions;
+		this->modules_p = &library->modules;
+		this->usedlibs_p = &library->usedlibs;
+		for (size_t j = 0; j < library->assignments_var.size(); j++) {
+			this->set_variable(library->assignments_var[j], 
+												 library->assignments_expr[j]->evaluate(this));
+		}
+	}
+	else {
+		functions_p = NULL;
+		modules_p = NULL;
+		usedlibs_p = NULL;
+	}
 }
 
 Context::~Context()
@@ -49,11 +64,17 @@ Context::~Context()
 	ctx_stack.pop_back();
 }
 
-void Context::args(const std::vector<std::string> &argnames, const std::vector<Expression*> &argexpr,
-		const std::vector<std::string> &call_argnames, const std::vector<Value> &call_argvalues)
+/*!
+	Initialize context from argument lists (function call/module instantiation)
+ */
+void Context::args(const std::vector<std::string> &argnames, 
+									 const std::vector<Expression*> &argexpr,
+									 const std::vector<std::string> &call_argnames, 
+									 const std::vector<Value> &call_argvalues)
 {
 	for (size_t i=0; i<argnames.size(); i++) {
-		set_variable(argnames[i], i < argexpr.size() && argexpr[i] ? argexpr[i]->evaluate(this->parent) : Value());
+		set_variable(argnames[i], i < argexpr.size() && argexpr[i] ? 
+								 argexpr[i]->evaluate(this->parent) : Value());
 	}
 
 	size_t posarg = 0;
@@ -67,14 +88,20 @@ void Context::args(const std::vector<std::string> &argnames, const std::vector<E
 	}
 }
 
-std::vector<const Context*> Context::ctx_stack;
-
-void Context::set_variable(const std::string &name, Value value)
+void Context::set_variable(const std::string &name, const Value &value)
 {
 	if (name[0] == '$')
-		config_variables[name] = value;
+		this->config_variables[name] = value;
 	else
-		variables[name] = value;
+		this->variables[name] = value;
+}
+
+void Context::set_constant(const std::string &name, const Value &value)
+{
+	if (this->constants.find(name) != this->constants.end())
+		PRINTF("WARNING: Attempt to modify constant '%s'.",name.c_str());
+	else
+		this->constants[name] = value;
 }
 
 Value Context::lookup_variable(const std::string &name, bool silent) const
@@ -87,79 +114,58 @@ Value Context::lookup_variable(const std::string &name, bool silent) const
 		}
 		return Value();
 	}
-	if (!parent && constants.find(name) != constants.end())
-		return constants.find(name)->second;
-	if (variables.find(name) != variables.end())
-		return variables.find(name)->second;
-	if (parent)
-		return parent->lookup_variable(name, silent);
+	if (!this->parent && this->constants.find(name) != this->constants.end())
+		return this->constants.find(name)->second;
+	if (this->variables.find(name) != this->variables.end())
+		return this->variables.find(name)->second;
+	if (this->parent)
+		return this->parent->lookup_variable(name, silent);
 	if (!silent)
 		PRINTF("WARNING: Ignoring unknown variable '%s'.", name.c_str());
 	return Value();
 }
 
-void Context::set_constant(const std::string &name, Value value)
+Value Context::evaluate_function(const std::string &name, 
+																 const std::vector<std::string> &argnames, 
+																 const std::vector<Value> &argvalues) const
 {
-	if (constants.count(name))
-		PRINTF("WARNING: Attempt to modify constant '%s'.",name.c_str());
-	else
-		constants[name] = value;
-}
-
-Value Context::evaluate_function(const std::string &name, const std::vector<std::string> &argnames, const std::vector<Value> &argvalues) const
-{
-	if (functions_p && functions_p->find(name) != functions_p->end())
-		return functions_p->find(name)->second->evaluate(this, argnames, argvalues);
-	if (usedlibs_p) {
-		BOOST_FOREACH(const ModuleContainer::value_type &m, *usedlibs_p) {
-			if (m.second->functions.count(name)) {
-				Module *lib = m.second;
-				Context ctx(parent);
-				ctx.functions_p = &lib->functions;
-				ctx.modules_p = &lib->modules;
-				ctx.usedlibs_p = &lib->usedlibs;
-				for (size_t j = 0; j < lib->assignments_var.size(); j++) {
-					ctx.set_variable(lib->assignments_var[j], lib->assignments_expr[j]->evaluate(&ctx));
-				}
+	if (this->functions_p && this->functions_p->find(name) != this->functions_p->end())
+		return this->functions_p->find(name)->second->evaluate(this, argnames, argvalues);
+	if (this->usedlibs_p) {
+		BOOST_FOREACH(const ModuleContainer::value_type &m, *this->usedlibs_p) {
+			if (m.second->functions.find(name) != m.second->functions.end()) {
+				Context ctx(this->parent, m.second);
 				return m.second->functions[name]->evaluate(&ctx, argnames, argvalues);
 			}
 		}
 	}
-	if (parent)
-		return parent->evaluate_function(name, argnames, argvalues);
-	PRINTF("WARNING: Ignoring unkown function '%s'.", name.c_str());
+	if (this->parent)
+		return this->parent->evaluate_function(name, argnames, argvalues);
+	PRINTF("WARNING: Ignoring unknown function '%s'.", name.c_str());
 	return Value();
 }
 
-AbstractNode *Context::evaluate_module(const ModuleInstantiation *inst) const
+AbstractNode *Context::evaluate_module(const ModuleInstantiation &inst) const
 {
-	if (modules_p && modules_p->find(inst->modname) != modules_p->end())
-		return modules_p->find(inst->modname)->second->evaluate(this, inst);
-	if (usedlibs_p) {
-		BOOST_FOREACH(const ModuleContainer::value_type &m, *usedlibs_p) {
-			if (m.second->modules.count(inst->modname)) {
-				Module *lib = m.second;
-				Context ctx(parent);
-				ctx.functions_p = &lib->functions;
-				ctx.modules_p = &lib->modules;
-				ctx.usedlibs_p = &lib->usedlibs;
-				for (size_t j = 0; j < lib->assignments_var.size(); j++) {
-					ctx.set_variable(lib->assignments_var[j], lib->assignments_expr[j]->evaluate(&ctx));
-				}
-				return m.second->modules[inst->modname]->evaluate(&ctx, inst);
+	if (this->modules_p && this->modules_p->find(inst.modname) != this->modules_p->end())
+		return this->modules_p->find(inst.modname)->second->evaluate(this, &inst);
+	if (this->usedlibs_p) {
+		BOOST_FOREACH(const ModuleContainer::value_type &m, *this->usedlibs_p) {
+			if (m.second->modules.find(inst.modname) != m.second->modules.end()) {
+				Context ctx(this->parent, m.second);
+				return m.second->modules[inst.modname]->evaluate(&ctx, &inst);
 			}
 		}
 	}
-	if (parent)
-		return parent->evaluate_module(inst);
-	PRINTF("WARNING: Ignoring unkown module '%s'.", inst->modname.c_str());
+	if (this->parent) return this->parent->evaluate_module(inst);
+	PRINTF("WARNING: Ignoring unknown module '%s'.", inst.modname.c_str());
 	return NULL;
 }
 
 /*!
 	Returns the absolute path to the given filename, unless it's empty.
  */
-std::string Context::get_absolute_path(const std::string &filename) const
+std::string Context::getAbsolutePath(const std::string &filename) const
 {
 	if (!filename.empty()) {
 		return QFileInfo(QDir(QString::fromStdString(this->document_path)), 
@@ -169,4 +175,3 @@ std::string Context::get_absolute_path(const std::string &filename) const
 		return filename;
 	}
 }
-

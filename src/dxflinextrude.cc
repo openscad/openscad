@@ -77,7 +77,7 @@ AbstractNode *DxfLinearExtrudeModule::evaluate(const Context *ctx, const ModuleI
 	Value slices = c.lookup_variable("slices", true);
 
 	if (!file.text.empty())
-		node->filename = c.get_absolute_path(file.text);
+		node->filename = c.getAbsolutePath(file.text);
 
 	node->layername = layer.text;
 	node->height = height.num;

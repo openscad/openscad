@@ -51,7 +51,7 @@ Value builtin_dxf_dim(const Context *ctx, const std::vector<std::string> &argnam
 
 	for (size_t i = 0; i < argnames.size() && i < args.size(); i++) {
 		if (argnames[i] == "file")
-			filename = ctx->get_absolute_path(args[i].text);
+			filename = ctx->getAbsolutePath(args[i].text);
 		if (argnames[i] == "layer")
 			layername = args[i].text;
 		if (argnames[i] == "origin")
@@ -135,7 +135,7 @@ Value builtin_dxf_cross(const Context *ctx, const std::vector<std::string> &argn
 
 	for (size_t i = 0; i < argnames.size() && i < args.size(); i++) {
 		if (argnames[i] == "file")
-			filename = ctx->get_absolute_path(args[i].text);
+			filename = ctx->getAbsolutePath(args[i].text);
 		if (argnames[i] == "layer")
 			layername = args[i].text;
 		if (argnames[i] == "origin")

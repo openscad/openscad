@@ -58,7 +58,9 @@ Function::~Function()
 	delete expr;
 }
 
-Value Function::evaluate(const Context *ctx, const std::vector<std::string> &call_argnames, const std::vector<Value> &call_argvalues) const
+Value Function::evaluate(const Context *ctx, 
+												 const std::vector<std::string> &call_argnames, 
+												 const std::vector<Value> &call_argvalues) const
 {
 	Context c(ctx);
 	c.args(argnames, argexpr, call_argnames, call_argvalues);
