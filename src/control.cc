@@ -119,7 +119,7 @@ AbstractNode *ControlModule::evaluate(const Context*, const ModuleInstantiation 
 	if (type == ECHO)
 	{
 		QString msg = QString("ECHO: ");
-		for (int i = 0; i < inst->argnames.size(); i++) {
+		for (size_t i = 0; i < inst->argnames.size(); i++) {
 			if (i > 0)
 				msg += QString(", ");
 			if (!inst->argnames[i].empty())
@@ -132,7 +132,7 @@ AbstractNode *ControlModule::evaluate(const Context*, const ModuleInstantiation 
 	if (type == ASSIGN)
 	{
 		Context c(inst->ctx);
-		for (int i = 0; i < inst->argnames.size(); i++) {
+		for (size_t i = 0; i < inst->argnames.size(); i++) {
 			if (!inst->argnames[i].empty())
 				c.set_variable(inst->argnames[i], inst->argvalues[i]);
 		}
