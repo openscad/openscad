@@ -90,7 +90,9 @@ static CSGTerm *evaluate_csg_term_from_ps(const State &state,
 																				const ModuleInstantiation *modinst, 
 																				const AbstractPolyNode &node)
 {
-	CSGTerm *t = new CSGTerm(ps, state.matrix(), state.color(), QString("%1%2").arg(node.name().c_str()).arg(node.index()));
+	std::stringstream stream;
+	stream << node.name() << node.index();
+	CSGTerm *t = new CSGTerm(ps, state.matrix(), state.color(), stream.str());
 	if (modinst->tag_highlight)
 		highlights.push_back(t->link());
 	if (modinst->tag_background) {

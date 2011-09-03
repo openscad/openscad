@@ -69,8 +69,4 @@ private:
 
 std::ostream &operator<<(std::ostream &stream, const Value &value);
 
-// FIXME: Doesn't belong here..
-#include <QString>
-std::ostream &operator<<(std::ostream &stream, const QString &str);
-
 #endif

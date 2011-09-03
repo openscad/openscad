@@ -26,6 +26,7 @@
 
 #include "csgterm.h"
 #include "polyset.h"
+#include <sstream>
 
 /*!
 	\class CSGTerm
@@ -46,7 +47,7 @@
  */
 
 
-CSGTerm::CSGTerm(PolySet *polyset, const double matrix[16], const double color[4], QString label)
+CSGTerm::CSGTerm(PolySet *polyset, const double matrix[16], const double color[4], const std::string &label)
 {
 	this->type = TYPE_PRIMITIVE;
 	this->polyset = polyset;
@@ -176,28 +177,33 @@ void CSGTerm::unlink()
 	}
 }
 
-QString CSGTerm::dump()
+std::string CSGTerm::dump()
 {
+	std::stringstream dump;
+
 	if (type == TYPE_UNION)
-		return QString("(%1 + %2)").arg(left->dump(), right->dump());
-	if (type == TYPE_INTERSECTION)
-		return QString("(%1 * %2)").arg(left->dump(), right->dump());
-	if (type == TYPE_DIFFERENCE)
-		return QString("(%1 - %2)").arg(left->dump(), right->dump());
-	return label;
+		dump << "(" << left->dump() << " + " << right->dump() << ")";
+	else if (type == TYPE_INTERSECTION)
+		dump << "(" << left->dump() << " * " << right->dump() << ")";
+	else if (type == TYPE_DIFFERENCE)
+		dump << "(" << left->dump() << " - " << right->dump() << ")";
+	else 
+		dump << this->label;
+
+	return dump.str();
 }
 
 CSGChain::CSGChain()
 {
 }
 
-void CSGChain::add(PolySet *polyset, double *m, double *color, CSGTerm::type_e type, QString label)
+void CSGChain::add(PolySet *polyset, double *m, double *color, CSGTerm::type_e type, std::string label)
 {
-	polysets.append(polyset);
-	matrices.append(m);
-	colors.append(color);
-	types.append(type);
-	labels.append(label);
+	polysets.push_back(polyset);
+	matrices.push_back(m);
+	colors.push_back(color);
+	types.push_back(type);
+	labels.push_back(label);
 }
 
 void CSGChain::import(CSGTerm *term, CSGTerm::type_e type)
@@ -210,24 +216,24 @@ void CSGChain::import(CSGTerm *term, CSGTerm::type_e type)
 	}
 }
 
-QString CSGChain::dump()
+std::string CSGChain::dump()
 {
-	QString text;
+	std::stringstream dump;
+
 	for (int i = 0; i < types.size(); i++)
 	{
 		if (types[i] == CSGTerm::TYPE_UNION) {
-			if (i != 0)
-				text += "\n";
-			text += "+";
+			if (i != 0) dump << "\n";
+			dump << "+";
 		}
 		else if (types[i] == CSGTerm::TYPE_DIFFERENCE)
-			text += " -";
+			dump << " -";
 		else if (types[i] == CSGTerm::TYPE_INTERSECTION)
-			text += " *";
-		text += labels[i];
+			dump << " *";
+		dump << labels[i];
 	}
-	text += "\n";
-	return text;
+	dump << "\n";
+	return dump.str();
 }
 
 BoundingBox CSGChain::getBoundingBox() const
