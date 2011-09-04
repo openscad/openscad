@@ -170,9 +170,10 @@ int main(int argc, char **argv)
 	CGAL_Nef_polyhedron N = cgalevaluator.evaluateCGALMesh(*root_node);
 
 	QDir::setCurrent(original_path.absolutePath());
-	QTextStream outstream(stdout);
-	export_stl(&N, outstream, NULL);
-
+	if (!N.empty()) {
+		QTextStream outstream(stdout);
+		export_stl(&N, outstream, NULL);
+	}
 	destroy_builtin_functions();
 	destroy_builtin_modules();
 
