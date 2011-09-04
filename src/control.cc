@@ -80,6 +80,7 @@ void for_eval(AbstractNode &node, const ModuleInstantiation &inst, size_t l,
 			}
 		}
 		else {
+			c.set_variable(it_name, it_values);
 			for_eval(node, inst, l+1, call_argnames, call_argvalues, &c);
 		}
 	} else {
