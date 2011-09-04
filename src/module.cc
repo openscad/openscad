@@ -115,7 +115,7 @@ std::vector<AbstractNode*> ModuleInstantiation::evaluateChildren(const Context *
 	if (!ctx) ctx = this->ctx;
 	std::vector<AbstractNode*> childnodes;
 	BOOST_FOREACH (ModuleInstantiation *v, this->children) {
-		AbstractNode *n = v->evaluate(this->ctx);
+		AbstractNode *n = v->evaluate(ctx);
 		if (n != NULL) childnodes.push_back(n);
 	}
 	return childnodes;
