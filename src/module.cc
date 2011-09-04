@@ -42,11 +42,7 @@ AbstractNode *AbstractModule::evaluate(const Context*, const ModuleInstantiation
 {
 	AbstractNode *node = new AbstractNode(inst);
 
-	foreach (ModuleInstantiation *v, inst->children) {
-		AbstractNode *n = v->evaluate(inst->ctx);
-		if (n)
-			node->children.push_back(n);
-	}
+	node->children = inst->evaluateChildren();
 
 	return node;
 }
@@ -60,16 +56,13 @@ std::string AbstractModule::dump(const std::string &indent, const std::string &n
 
 ModuleInstantiation::~ModuleInstantiation()
 {
-	foreach (Expression *v, argexpr)
-		delete v;
-	foreach (ModuleInstantiation *v, children)
-		delete v;
+	BOOST_FOREACH (Expression *v, argexpr) delete v;
+	BOOST_FOREACH (ModuleInstantiation *v, children) delete v;
 }
 
 IfElseModuleInstantiation::~IfElseModuleInstantiation()
 {
-	foreach (ModuleInstantiation *v, else_children)
-		delete v;
+	BOOST_FOREACH (ModuleInstantiation *v, else_children) delete v;
 }
 
 std::string ModuleInstantiation::dump(const std::string &indent) const
@@ -106,7 +99,7 @@ AbstractNode *ModuleInstantiation::evaluate(const Context *ctx) const
 	} else {
 		ModuleInstantiation *that = (ModuleInstantiation*)this;
 		that->argvalues.clear();
-		foreach (Expression *v, that->argexpr) {
+		BOOST_FOREACH (Expression *v, that->argexpr) {
 			that->argvalues.push_back(v->evaluate(ctx));
 		}
 		that->ctx = ctx;
@@ -117,18 +110,34 @@ AbstractNode *ModuleInstantiation::evaluate(const Context *ctx) const
 	return node;
 }
 
+std::vector<AbstractNode*> ModuleInstantiation::evaluateChildren(const Context *ctx) const
+{
+	if (!ctx) ctx = this->ctx;
+	std::vector<AbstractNode*> childnodes;
+	BOOST_FOREACH (ModuleInstantiation *v, this->children) {
+		AbstractNode *n = v->evaluate(this->ctx);
+		if (n != NULL) childnodes.push_back(n);
+	}
+	return childnodes;
+}
+
+std::vector<AbstractNode*> IfElseModuleInstantiation::evaluateElseChildren(const Context *ctx) const
+{
+	if (!ctx) ctx = this->ctx;
+	std::vector<AbstractNode*> childnodes;
+	BOOST_FOREACH (ModuleInstantiation *v, this->else_children) {
+		AbstractNode *n = v->evaluate(this->ctx);
+		if (n != NULL) childnodes.push_back(n);
+	}
+	return childnodes;
+}
+
 Module::~Module()
 {
-	foreach (Expression *v, assignments_expr)
-		delete v;
-	BOOST_FOREACH(FunctionContainer::value_type &f, functions) {
-		delete f.second;
-	}
-	BOOST_FOREACH(AbstractModuleContainer::value_type &m, modules) {
-		delete m.second;
-	}
-	foreach (ModuleInstantiation *v, children)
-		delete v;
+	BOOST_FOREACH (Expression *v, assignments_expr) delete v;
+	BOOST_FOREACH (FunctionContainer::value_type &f, functions) delete f.second;
+	BOOST_FOREACH (AbstractModuleContainer::value_type &m, modules) delete m.second;
+	BOOST_FOREACH (ModuleInstantiation *v, children) delete v;
 }
 
 AbstractNode *Module::evaluate(const Context *ctx, const ModuleInstantiation *inst) const

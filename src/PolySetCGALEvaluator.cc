@@ -11,6 +11,7 @@
 
 #include "printutils.h"
 #include "openscad.h" // get_fragments_from_r()
+#include <boost/foreach.hpp>
 
 PolySet *PolySetCGALEvaluator::evaluatePolySet(const ProjectionNode &node, AbstractPolyNode::render_mode_e)
 {
@@ -251,7 +252,7 @@ PolySet *PolySetCGALEvaluator::evaluatePolySet(const DxfLinearExtrudeNode &node,
 		// Before extruding, union all (2D) children nodes
 		// to a single DxfData, then tesselate this into a PolySet
 		CGAL_Nef_polyhedron sum;
-		foreach (AbstractNode * v, node.getChildren()) {
+		BOOST_FOREACH (AbstractNode * v, node.getChildren()) {
 			if (v->modinst->tag_background) continue;
 			CGAL_Nef_polyhedron N = this->cgalevaluator.evaluateCGALMesh(*v);
 			if (sum.empty()) sum = N.copy();
@@ -348,7 +349,7 @@ PolySet *PolySetCGALEvaluator::evaluatePolySet(const DxfRotateExtrudeNode &node,
 		// Before extruding, union all (2D) children nodes
 		// to a single DxfData, then tesselate this into a PolySet
 		CGAL_Nef_polyhedron sum;
-		foreach (AbstractNode * v, node.getChildren()) {
+		BOOST_FOREACH (AbstractNode * v, node.getChildren()) {
 			if (v->modinst->tag_background) continue;
 			CGAL_Nef_polyhedron N = this->cgalevaluator.evaluateCGALMesh(*v);
 			if (sum.empty()) sum = N.copy();
@@ -371,10 +372,10 @@ PolySet *PolySetCGALEvaluator::rotateDxfData(const DxfRotateExtrudeNode &node, D
 	PolySet *ps = new PolySet();
 	ps->convexity = node.convexity;
 
-	for (int i = 0; i < dxf.paths.size(); i++)
+	for (size_t i = 0; i < dxf.paths.size(); i++)
 	{
 		double max_x = 0;
-		for (int j = 0; j < dxf.paths[i].indices.size(); j++) {
+		for (size_t j = 0; j < dxf.paths[i].indices.size(); j++) {
 			max_x = fmax(max_x, dxf.points[dxf.paths[i].indices[j]][0]);
 		}
 
@@ -384,13 +385,13 @@ PolySet *PolySetCGALEvaluator::rotateDxfData(const DxfRotateExtrudeNode &node, D
 		points = new double**[fragments];
 		for (int j=0; j < fragments; j++) {
 			points[j] = new double*[dxf.paths[i].indices.size()];
-			for (int k=0; k < dxf.paths[i].indices.size(); k++)
+			for (size_t k=0; k < dxf.paths[i].indices.size(); k++)
 				points[j][k] = new double[3];
 		}
 
 		for (int j = 0; j < fragments; j++) {
 			double a = (j*2*M_PI) / fragments;
-			for (int k = 0; k < dxf.paths[i].indices.size(); k++) {
+			for (size_t k = 0; k < dxf.paths[i].indices.size(); k++) {
 				if (dxf.points[dxf.paths[i].indices[k]][0] == 0) {
 					points[j][k][0] = 0;
 					points[j][k][1] = 0;

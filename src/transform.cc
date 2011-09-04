@@ -239,11 +239,8 @@ AbstractNode *TransformModule::evaluate(const Context *ctx, const ModuleInstanti
 		}
 	}
 
-	foreach (ModuleInstantiation *v, inst->children) {
-		AbstractNode *n = v->evaluate(inst->ctx);
-		if (n != NULL)
-			node->children.push_back(n);
-	}
+	vector<AbstractNode *> evaluatednodes = inst->evaluateChildren();
+	node->children.insert(node->children.end(), evaluatednodes.begin(), evaluatednodes.end());
 
 	return node;
 }

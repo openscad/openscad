@@ -26,11 +26,13 @@ public:
 
 	std::string dump(const std::string &indent) const;
 	class AbstractNode *evaluate(const Context *ctx) const;
+	std::vector<AbstractNode*> evaluateChildren(const Context *ctx = NULL) const;
 };
 
 class IfElseModuleInstantiation : public ModuleInstantiation {
 public:
 	virtual ~IfElseModuleInstantiation();
+	std::vector<AbstractNode*> evaluateElseChildren(const Context *ctx = NULL) const;
 
 	std::vector<ModuleInstantiation*> else_children;
 };

@@ -62,11 +62,8 @@ AbstractNode *RenderModule::evaluate(const Context *ctx, const ModuleInstantiati
 	if (v.type == Value::NUMBER)
 		node->convexity = (int)v.num;
 
-	foreach (ModuleInstantiation *v, inst->children) {
-		AbstractNode *n = v->evaluate(inst->ctx);
-		if (n != NULL)
-			node->children.push_back(n);
-	}
+	std::vector<AbstractNode *> evaluatednodes = inst->evaluateChildren();
+	node->children.insert(node->children.end(), evaluatednodes.begin(), evaluatednodes.end());
 
 	return node;
 }

@@ -76,6 +76,7 @@
 #endif
 
 #include <algorithm>
+#include <boost/foreach.hpp>
 #include <boost/lambda/lambda.hpp>
 #include <boost/lambda/bind.hpp>
 using namespace boost::lambda;
@@ -578,7 +579,7 @@ void MainWindow::load()
 
 AbstractNode *MainWindow::find_root_tag(AbstractNode *n)
 {
-	foreach(AbstractNode *v, n->children) {
+	BOOST_FOREACH (AbstractNode *v, n->children) {
 		if (v->modinst->tag_root) return v;
 		if (AbstractNode *vroot = find_root_tag(v)) return vroot;
 	}

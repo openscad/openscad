@@ -48,10 +48,9 @@ public:
 	virtual AbstractNode *evaluate(const Context *ctx, const ModuleInstantiation *inst) const;
 };
 
-void for_eval(AbstractNode *node, size_t l, 
+void for_eval(AbstractNode &node, const ModuleInstantiation &inst, size_t l, 
 							const std::vector<std::string> &call_argnames, 
 							const std::vector<Value> &call_argvalues, 
-							const std::vector<ModuleInstantiation*> &arg_children, 
 							const Context *arg_context)
 {
 	if (call_argnames.size() > l) {
@@ -70,24 +69,22 @@ void for_eval(AbstractNode *node, size_t l,
 			if (range_step > 0 && (range_begin-range_end)/range_step < 10000) {
 				for (double i = range_begin; i <= range_end; i += range_step) {
 					c.set_variable(it_name, Value(i));
-					for_eval(node, l+1, call_argnames, call_argvalues, arg_children, &c);
+					for_eval(node, inst, l+1, call_argnames, call_argvalues, &c);
 				}
 			}
 		}
 		else if (it_values.type == Value::VECTOR) {
 			for (size_t i = 0; i < it_values.vec.size(); i++) {
 				c.set_variable(it_name, *it_values.vec[i]);
-				for_eval(node, l+1, call_argnames, call_argvalues, arg_children, &c);
+				for_eval(node, inst, l+1, call_argnames, call_argvalues, &c);
 			}
 		}
 		else {
-			for_eval(node, l+1, call_argnames, call_argvalues, arg_children, &c);
+			for_eval(node, inst, l+1, call_argnames, call_argvalues, &c);
 		}
 	} else {
-		foreach (ModuleInstantiation *v, arg_children) {
-			AbstractNode *n = v->evaluate(arg_context);
-			if (n != NULL) node->children.push_back(n);
-		}
+		std::vector<AbstractNode *> evaluatednodes = inst.evaluateChildren(arg_context);
+		node.children.insert(node.children.end(), evaluatednodes.begin(), evaluatednodes.end());
 	}
 }
 
@@ -139,34 +136,25 @@ AbstractNode *ControlModule::evaluate(const Context*, const ModuleInstantiation 
 			if (!inst->argnames[i].empty())
 				c.set_variable(inst->argnames[i], inst->argvalues[i]);
 		}
-		foreach (ModuleInstantiation *v, inst->children) {
-			AbstractNode *n = v->evaluate(&c);
-			if (n != NULL)
-				node->children.push_back(n);
-		}
+		std::vector<AbstractNode *> evaluatednodes = inst->evaluateChildren();
+		node->children.insert(node->children.end(), evaluatednodes.begin(), evaluatednodes.end());
 	}
 
 	if (type == FOR || type == INT_FOR)
 	{
-		for_eval(node, 0, inst->argnames, inst->argvalues, inst->children, inst->ctx);
+		for_eval(*node, *inst, 0, inst->argnames, inst->argvalues, inst->ctx);
 	}
 
 	if (type == IF)
 	{
 		const IfElseModuleInstantiation *ifelse = dynamic_cast<const IfElseModuleInstantiation*>(inst);
 		if (ifelse->argvalues.size() > 0 && ifelse->argvalues[0].type == Value::BOOL && ifelse->argvalues[0].b) {
-			foreach (ModuleInstantiation *v, ifelse->children) {
-				AbstractNode *n = v->evaluate(ifelse->ctx);
-				if (n != NULL)
-					node->children.push_back(n);
-			}
+			std::vector<AbstractNode *> evaluatednodes = ifelse->evaluateChildren();
+			node->children.insert(node->children.end(), evaluatednodes.begin(), evaluatednodes.end());
 		}
 		else {
-			foreach (ModuleInstantiation *v, ifelse->else_children) {
-				AbstractNode *n = v->evaluate(ifelse->ctx);
-				if (n != NULL)
-					node->children.push_back(n);
-			}
+			std::vector<AbstractNode *> evaluatednodes = ifelse->evaluateElseChildren();
+			node->children.insert(node->children.end(), evaluatednodes.begin(), evaluatednodes.end());
 		}
 	}
 
