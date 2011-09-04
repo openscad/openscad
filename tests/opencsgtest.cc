@@ -43,6 +43,15 @@ struct CsgInfo
 	OffscreenView *glview;
 };
 
+AbstractNode *find_root_tag(AbstractNode *n)
+{
+	foreach(AbstractNode *v, n->children) {
+		if (v->modinst->tag_root) return v;
+		if (AbstractNode *vroot = find_root_tag(v)) return vroot;
+	}
+	return NULL;
+}
+
 int main(int argc, char *argv[])
 {
 	if (argc != 2) {
@@ -99,7 +108,6 @@ int main(int argc, char *argv[])
 
 	AbstractModule *root_module;
 	ModuleInstantiation root_inst;
-	AbstractNode *root_node;
 
 	QFileInfo fileInfo(filename);
 	handle_dep(filename);
@@ -126,7 +134,10 @@ int main(int argc, char *argv[])
 	QDir::setCurrent(fileInfo.absolutePath());
 
 	AbstractNode::resetIndexCounter();
-	root_node = root_module->evaluate(&root_ctx, &root_inst);
+	AbstractNode *absolute_root_node = root_module->evaluate(&root_ctx, &root_inst);
+	AbstractNode *root_node;
+	// Do we have an explicit root node (! modifier)?
+	if (!(root_node = find_root_tag(absolute_root_node))) root_node = absolute_root_node;
 
 	Tree tree(root_node);
 
