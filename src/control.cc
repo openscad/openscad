@@ -29,6 +29,7 @@
 #include "context.h"
 #include "builtin.h"
 #include "printutils.h"
+#include <sstream>
 
 enum control_type_e {
 	CHILD,
@@ -47,11 +48,15 @@ public:
 	virtual AbstractNode *evaluate(const Context *ctx, const ModuleInstantiation *inst) const;
 };
 
-void for_eval(AbstractNode *node, size_t l, const std::vector<std::string> &call_argnames, const std::vector<Value> &call_argvalues, const std::vector<ModuleInstantiation*> arg_children, const Context *arg_context)
+void for_eval(AbstractNode *node, size_t l, 
+							const std::vector<std::string> &call_argnames, 
+							const std::vector<Value> &call_argvalues, 
+							const std::vector<ModuleInstantiation*> &arg_children, 
+							const Context *arg_context)
 {
 	if (call_argnames.size() > l) {
-		std::string it_name = call_argnames[l];
-		Value it_values = call_argvalues[l];
+		const std::string &it_name = call_argnames[l];
+		const Value &it_values = call_argvalues[l];
 		Context c(arg_context);
 		if (it_values.type == Value::RANGE) {
 			double range_begin = it_values.range_begin;
@@ -81,8 +86,7 @@ void for_eval(AbstractNode *node, size_t l, const std::vector<std::string> &call
 	} else {
 		foreach (ModuleInstantiation *v, arg_children) {
 			AbstractNode *n = v->evaluate(arg_context);
-			if (n != NULL)
-				node->children.push_back(n);
+			if (n != NULL) node->children.push_back(n);
 		}
 	}
 }
@@ -118,15 +122,14 @@ AbstractNode *ControlModule::evaluate(const Context*, const ModuleInstantiation 
 
 	if (type == ECHO)
 	{
-		QString msg = QString("ECHO: ");
+		std::stringstream msg;
+		msg << "ECHO: ";
 		for (size_t i = 0; i < inst->argnames.size(); i++) {
-			if (i > 0)
-				msg += QString(", ");
-			if (!inst->argnames[i].empty())
-				msg += QString::fromStdString(inst->argnames[i]) + QString(" = ");
-			msg += QString::fromStdString(inst->argvalues[i].toString());
+			if (i > 0) msg << ", ";
+			if (!inst->argnames[i].empty()) msg << inst->argnames[i] << " = ";
+			msg << inst->argvalues[i];
 		}
-		PRINT(msg);
+		PRINTF("%s", msg.str().c_str());
 	}
 
 	if (type == ASSIGN)
