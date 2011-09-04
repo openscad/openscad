@@ -20,7 +20,7 @@ Adding  a new regression test:
 4) run the test with the environment variable TEST_GENERATE=1, e.g.:
    $ TEST_GENERATE=1 ctest -R mytest
    (this will generate a mytest-expected.txt file which is used for regression testing)
-5) manually verify that the output is correct (test-data/scad/mytest-expected.txt)
+5) manually verify that the output is correct (tests/regression/<testapp>/mytest-expected.<suffix>)
 6) run the test normally and verify that it passes:
   $ ctest -R mytest
 
