@@ -202,7 +202,7 @@ int main(int argc, char *argv[])
 
 
 	Vector3d cameradir(1, 1, -0.5);
-	Vector3d camerapos = center - radius*1.5*cameradir;
+	Vector3d camerapos = center - radius*1.8*cameradir;
 	csgInfo.glview->setCamera(camerapos, center);
 
 	glewInit();
