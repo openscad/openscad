@@ -172,7 +172,7 @@ Response CGALEvaluator::visit(State &state, const TransformNode &node)
 					node.matrix[1], node.matrix[5], node.matrix[13], node.matrix[15]);
 				
 				DxfData *dd = N.convertToDxfData();
-				for (int i=0; i < dd->points.size(); i++) {
+				for (size_t i=0; i < dd->points.size(); i++) {
 					CGAL_Kernel2::Point_2 p = CGAL_Kernel2::Point_2(dd->points[i][0], dd->points[i][1]);
 					p = t.transform(p);
 					dd->points[i][0] = to_double(p.x());
@@ -301,7 +301,7 @@ public:
 	{
 		CGAL_Polybuilder B(hds, true);
 
-		QList<CGALPoint> vertices;
+		std::vector<CGALPoint> vertices;
 		Grid3d<int> vertices_idx(GRID_FINE);
 
 		for (size_t i = 0; i < ps.polygons.size(); i++) {
@@ -310,7 +310,7 @@ public:
 				const Vector3d &p = poly->at(j);
 				if (!vertices_idx.has(p[0], p[1], p[2])) {
 					vertices_idx.data(p[0], p[1], p[2]) = vertices.size();
-					vertices.append(CGALPoint(p[0], p[1], p[2]));
+					vertices.push_back(CGALPoint(p[0], p[1], p[2]));
 				}
 			}
 		}
