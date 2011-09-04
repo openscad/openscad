@@ -219,7 +219,8 @@ LIST(APPEND CGALPNGTEST_FILES
             ${CMAKE_SOURCE_DIR}/../testdata/scad/features/background-modifier.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/features/highlight-modifier.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/features/root-modifier.scad
-            ${CMAKE_SOURCE_DIR}/../testdata/scad/features/disable-modifier.scad)
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/features/disable-modifier.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/features/for-tests.scad)
 #LIST(APPEND CGALPNGTEST_FILES ${CMAKE_SOURCE_DIR}/../examples/example001.scad)
 add_cmdline_test(cgalpngtest png ${CGALPNGTEST_FILES})
 
