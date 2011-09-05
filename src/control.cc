@@ -79,11 +79,11 @@ void for_eval(AbstractNode &node, const ModuleInstantiation &inst, size_t l,
 				for_eval(node, inst, l+1, call_argnames, call_argvalues, &c);
 			}
 		}
-		else {
+		else if (it_values.type != Value::UNDEFINED) {
 			c.set_variable(it_name, it_values);
 			for_eval(node, inst, l+1, call_argnames, call_argvalues, &c);
 		}
-	} else {
+	} else if (l > 0) {
 		std::vector<AbstractNode *> evaluatednodes = inst.evaluateChildren(arg_context);
 		node.children.insert(node.children.end(), evaluatednodes.begin(), evaluatednodes.end());
 	}
