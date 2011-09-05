@@ -215,6 +215,7 @@ LIST(APPEND CGALPNGTEST_FILES
             ${CMAKE_SOURCE_DIR}/../testdata/scad/features/difference-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/features/intersection-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/features/linear_extrude-tests.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/features/rotate_extrude-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/features/import_dxf-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/features/color-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/features/background-modifier.scad
