@@ -145,7 +145,7 @@ int main(int argc, char *argv[])
 	QHash<std::string, CGAL_Nef_polyhedron> cache;
 	CGALEvaluator cgalevaluator(cache, tree);
 	PolySetCGALEvaluator psevaluator(cgalevaluator);
-	CSGTermEvaluator evaluator(tree);
+	CSGTermEvaluator evaluator(tree, &psevaluator);
 	CSGTerm *root_raw_term = evaluator.evaluateCSGTerm(*root_node, 
 																										 csgInfo.highlight_terms, 
 																										 csgInfo.background_terms);
