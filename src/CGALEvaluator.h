@@ -29,6 +29,7 @@ public:
  	virtual Response visit(State &state, const CsgNode &node);
  	virtual Response visit(State &state, const TransformNode &node);
 	virtual Response visit(State &state, const AbstractPolyNode &node);
+	virtual Response visit(State &state, const CgaladvNode &node);
 
  	CGAL_Nef_polyhedron evaluateCGALMesh(const AbstractNode &node);
 	CGAL_Nef_polyhedron evaluateCGALMesh(const PolySet &polyset);

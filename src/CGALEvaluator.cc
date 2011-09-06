@@ -5,6 +5,7 @@
 #include "printutils.h"
 
 #include "csgnode.h"
+#include "cgaladvnode.h"
 #include "transformnode.h"
 #include "polyset.h"
 #include "dxfdata.h"
@@ -47,7 +48,7 @@ void CGALEvaluator::process(CGAL_Nef_polyhedron &target, const CGAL_Nef_polyhedr
  		assert(false && "Dimension of Nef polyhedron must be 2 or 3");
  	}
 	if (src.empty()) return; // Empty polyhedron. This can happen for e.g. square([0,0])
-	assert(target.dim == src.dim);
+	if (target.dim != src.dim) return; // If someone tries to e.g. union 2d and 3d objects
 
 	switch (op) {
 	case CGE_UNION:
@@ -203,14 +204,7 @@ Response CGALEvaluator::visit(State &state, const TransformNode &node)
 }
 
 // FIXME: EvaluateNode: Union over children + some magic
-// FIXME: CgaladvNode: Iterate over children. Special operation
 
-// FIXME: Subtypes of AbstractPolyNode:
-// ProjectionNode
-// DxfLinearExtrudeNode
-// DxfRotateExtrudeNode
-// (SurfaceNode)
-// (PrimitiveNode)
 Response CGALEvaluator::visit(State &state, const AbstractPolyNode &node)
 {
 	if (state.isPrefix() && isCached(node)) return PruneTraversal;
@@ -236,6 +230,32 @@ Response CGALEvaluator::visit(State &state, const AbstractPolyNode &node)
 					throw;
 				}
 			}
+		}
+		addToParent(state, node);
+	}
+	return ContinueTraversal;
+}
+
+Response CGALEvaluator::visit(State &state, const CgaladvNode &node)
+{
+	if (state.isPrefix() && isCached(node)) return PruneTraversal;
+	if (state.isPostfix()) {
+		if (!isCached(node)) {
+			CGALEvaluator::CsgOp op;
+			switch (node.type) {
+			case MINKOWSKI:
+				op = CGE_MINKOWSKI;
+				break;
+			case GLIDE:
+			case SUBDIV:
+				// FIXME: Not implemented
+				return PruneTraversal;
+				break;
+			case HULL:
+				op = CGE_HULL;
+				break;
+			}
+			applyToChildren(node, op);
 		}
 		addToParent(state, node);
 	}

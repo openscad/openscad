@@ -24,23 +24,15 @@
  *
  */
 
+#include "cgaladvnode.h"
 #include "module.h"
-#include "node.h"
 #include "context.h"
 #include "builtin.h"
 #include "printutils.h"
-#include "visitor.h"
 #include <sstream>
 #include <assert.h>
 #include <boost/assign/std/vector.hpp>
 using namespace boost::assign; // bring 'operator+=()' into scope
-
-enum cgaladv_type_e {
-	MINKOWSKI,
-	GLIDE,
-	SUBDIV,
-	HULL
-};
 
 class CgaladvModule : public AbstractModule
 {
@@ -48,42 +40,6 @@ public:
 	cgaladv_type_e type;
 	CgaladvModule(cgaladv_type_e type) : type(type) { }
 	virtual AbstractNode *evaluate(const Context *ctx, const ModuleInstantiation *inst) const;
-};
-
-class CgaladvNode : public AbstractNode
-{
-public:
-	CgaladvNode(const ModuleInstantiation *mi, cgaladv_type_e type) : AbstractNode(mi), type(type) {
-		convexity = 1;
-	}
-	virtual ~CgaladvNode() { }
-  virtual Response accept(class State &state, Visitor &visitor) const {
-		return visitor.visit(state, *this);
-	}
-	virtual std::string toString() const;
-	virtual std::string name() const {
-		switch (this->type) {
-		case MINKOWSKI:
-			return "minkowski";
-			break;
-		case GLIDE:
-			return "glide";
-			break;
-		case SUBDIV:
-			return "subdiv";
-			break;
-		case HULL:
-			return "hull";
-			break;
-		default:
-			assert(false);
-		}
-	}
-
-	Value path;
-	std::string subdiv_type;
-	int convexity, level;
-	cgaladv_type_e type;
 };
 
 AbstractNode *CgaladvModule::evaluate(const Context *ctx, const ModuleInstantiation *inst) const
@@ -142,6 +98,26 @@ void register_builtin_cgaladv()
 	builtin_modules["glide"] = new CgaladvModule(GLIDE);
 	builtin_modules["subdiv"] = new CgaladvModule(SUBDIV);
 	builtin_modules["hull"] = new CgaladvModule(HULL);
+}
+
+std::string CgaladvNode::name() const
+{
+	switch (this->type) {
+	case MINKOWSKI:
+		return "minkowski";
+		break;
+	case GLIDE:
+		return "glide";
+		break;
+	case SUBDIV:
+		return "subdiv";
+		break;
+	case HULL:
+		return "hull";
+		break;
+	default:
+		assert(false);
+	}
 }
 
 std::string CgaladvNode::toString() const

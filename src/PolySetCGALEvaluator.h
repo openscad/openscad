@@ -16,6 +16,7 @@ public:
 	virtual PolySet *evaluatePolySet(const ProjectionNode &node, AbstractPolyNode::render_mode_e);
 	virtual PolySet *evaluatePolySet(const DxfLinearExtrudeNode &node, AbstractPolyNode::render_mode_e);
 	virtual PolySet *evaluatePolySet(const DxfRotateExtrudeNode &node, AbstractPolyNode::render_mode_e);
+	virtual PolySet *evaluatePolySet(const CgaladvNode &node, AbstractPolyNode::render_mode_e);
 
 protected:
 	PolySet *extrudeDxfData(const DxfLinearExtrudeNode &node, class DxfData &dxf);

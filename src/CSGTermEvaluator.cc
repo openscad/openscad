@@ -7,7 +7,9 @@
 #include "transformnode.h"
 #include "colornode.h"
 #include "rendernode.h"
+#include "cgaladvnode.h"
 #include "printutils.h"
+#include "PolySetEvaluator.h"
 
 #include <string>
 #include <map>
@@ -88,7 +90,7 @@ static CSGTerm *evaluate_csg_term_from_ps(const State &state,
 																				vector<CSGTerm*> &background, 
 																				PolySet *ps, 
 																				const ModuleInstantiation *modinst, 
-																				const AbstractPolyNode &node)
+																				const AbstractNode &node)
 {
 	std::stringstream stream;
 	stream << node.name() << node.index();
@@ -179,6 +181,25 @@ Response CSGTermEvaluator::visit(State &state, const RenderNode &node)
 	PRINT("WARNING: render() statement not implemented");
 	if (state.isPostfix()) {
 		applyToChildren(node, CSGT_UNION);
+		addToParent(state, node);
+	}
+	return ContinueTraversal;
+}
+
+Response CSGTermEvaluator::visit(State &state, const CgaladvNode &node)
+{
+	if (state.isPostfix()) {
+		CSGTerm *t1 = NULL;
+    // FIXME: Calling evaluator directly since we're not a PolyNode. Generalize this.
+		PolySet *ps = NULL;
+		if (this->psevaluator) {
+			ps = this->psevaluator->evaluatePolySet(node, AbstractPolyNode::RENDER_OPENCSG);
+		}
+		if (ps) {
+			t1 = evaluate_csg_term_from_ps(state, this->highlights, this->background, 
+																		 ps, node.modinst, node);
+		}
+		this->stored_term[node.index()] = t1;
 		addToParent(state, node);
 	}
 	return ContinueTraversal;

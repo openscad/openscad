@@ -142,6 +142,7 @@ HEADERS += src/renderer.h \
            src/dxflinextrudenode.h \
            src/dxfrotextrudenode.h \
            src/projectionnode.h \
+           src/cgaladvnode.h \
            src/importnode.h \
            src/transformnode.h \
            src/colornode.h \
