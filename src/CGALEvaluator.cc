@@ -63,12 +63,6 @@ void CGALEvaluator::process(CGAL_Nef_polyhedron &target, const CGAL_Nef_polyhedr
 	case CGE_MINKOWSKI:
 		target.minkowski(src);
 		break;
-	case CGE_HULL:
-		//FIXME: Port convex hull to a binary operator or process it all in the end somehow
-		// target.p2 = convexhull2(target.p2, src.p2);
-		// target.p2 = convexhull2(polys);
-		// FIXME: Print warning: hull() not supported in 3D
-		break;
 	}
 }
 
@@ -98,6 +92,40 @@ void CGALEvaluator::applyToChildren(const AbstractNode &node, CGALEvaluator::Csg
 	}
 	const std::string &cacheid = this->tree.getString(node); 
 	this->cache.insert(cacheid, N);
+}
+
+extern CGAL_Nef_polyhedron2 *convexhull2(std::list<CGAL_Nef_polyhedron2*> a);
+
+void CGALEvaluator::applyHull(const CgaladvNode &node)
+{
+	if (this->visitedchildren[node.index()].size() > 0) {
+		std::list<CGAL_Nef_polyhedron2*> polys;
+		bool all2d = true;
+		for (ChildList::const_iterator iter = this->visitedchildren[node.index()].begin();
+				 iter != this->visitedchildren[node.index()].end();
+				 iter++) {
+			const AbstractNode *chnode = iter->first;
+			const string &chcacheid = iter->second;
+			// FIXME: Don't use deep access to modinst members
+			if (chnode->modinst->tag_background) continue;
+			assert(isCached(*chnode));
+			const CGAL_Nef_polyhedron &ch = this->cache[chcacheid];
+			if (ch.dim == 2) {
+		    polys.push_back(ch.p2);
+			}
+			else if (ch.dim == 3) {
+				PRINT("WARNING: hull() is not implemented yet for 3D objects!");
+		    all2d = false;
+			}
+			chnode->progress_report();
+		}
+
+		if (all2d) {
+			CGAL_Nef_polyhedron N(convexhull2(polys));
+			const std::string &cacheid = this->tree.getString(node); 
+			this->cache.insert(cacheid, N);
+		}
+	}
 }
 
 /*
@@ -246,17 +274,20 @@ Response CGALEvaluator::visit(State &state, const CgaladvNode &node)
 			switch (node.type) {
 			case MINKOWSKI:
 				op = CGE_MINKOWSKI;
+				applyToChildren(node, op);
 				break;
 			case GLIDE:
+				PRINT("WARNING: glide() is not implemented yet!");
+				return PruneTraversal;
+				break;
 			case SUBDIV:
-				// FIXME: Not implemented
+				PRINT("WARNING: subdiv() is not implemented yet!");
 				return PruneTraversal;
 				break;
 			case HULL:
-				op = CGE_HULL;
+				applyHull(node);
 				break;
 			}
-			applyToChildren(node, op);
 		}
 		addToParent(state, node);
 	}
