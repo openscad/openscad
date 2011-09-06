@@ -862,6 +862,7 @@ void MainWindow::compileCSG(bool procevents)
 			PRINTF("WARNING: OpenCSG rendering has been disabled.");
 		}
 		else {
+			PRINTF("Normalized CSG tree has %d elements", root_chain->polysets.size());
 			this->opencsgRenderer = new OpenCSGRenderer(this->root_chain, 
 																									this->highlights_chain, 
 																									this->background_chain, 
@@ -896,7 +897,9 @@ void MainWindow::actionOpen()
 {
 	QString new_filename = QFileDialog::getOpenFileName(this, "Open File", "", "OpenSCAD Designs (*.scad)");
 #ifdef ENABLE_MDI
-	new MainWindow(new_filename);
+	if (!new_filename.isEmpty()) {
+		new MainWindow(new_filename);
+	}
 #else
 	if (!new_filename.isEmpty()) {
 		if (!maybeSave())
