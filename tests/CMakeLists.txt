@@ -205,6 +205,7 @@ add_cmdline_test(cgaltest stl ${CGALTEST_FILES})
 
 # Add cgalpngtest tests to CTest
 LIST(APPEND CGALPNGTEST_FILES 
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/features/2d-3d.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/features/circle-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/features/square-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/features/polygon-tests.scad
@@ -216,6 +217,8 @@ LIST(APPEND CGALPNGTEST_FILES
             ${CMAKE_SOURCE_DIR}/../testdata/scad/features/intersection-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/features/linear_extrude-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/features/rotate_extrude-tests.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/features/minkowski2-tests.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/features/minkowski3-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/features/surface-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/features/import_dxf-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/features/transform-tests.scad
