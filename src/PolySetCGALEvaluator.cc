@@ -29,7 +29,7 @@ PolySet *PolySetCGALEvaluator::evaluatePolySet(const ProjectionNode &node, Abstr
 		else sum += N;
 	}
 	if (sum.empty()) return NULL;
-	if (sum.dim != 2) {
+	if (sum.dim != 3) {
 		PRINTF("WARNING: Body of projection() must be a 3D object");
 		return NULL;
 	}
