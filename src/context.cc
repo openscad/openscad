@@ -28,6 +28,7 @@
 #include "expression.h"
 #include "function.h"
 #include "module.h"
+#include "builtin.h"
 #include "printutils.h"
 #include <QFileInfo>
 #include <QDir>
@@ -147,8 +148,16 @@ Value Context::evaluate_function(const std::string &name,
 
 AbstractNode *Context::evaluate_module(const ModuleInstantiation &inst) const
 {
-	if (this->modules_p && this->modules_p->find(inst.modname) != this->modules_p->end())
-		return this->modules_p->find(inst.modname)->second->evaluate(this, &inst);
+	if (this->modules_p && this->modules_p->find(inst.modname) != this->modules_p->end()) {
+		AbstractModule *m = this->modules_p->find(inst.modname)->second;
+		if (m == builtin_modules["dxf_linear_extrude"]) {
+			PRINTF("DEPRECATED: The dxf_linear_extrude() module will be removed in future releases. Use a linear_extrude() instead.");
+		}
+		if (m == builtin_modules["dxf_rotate_extrude"]) {
+			PRINTF("DEPRECATED: The dxf_rotate_extrude() module will be removed in future releases. Use a rotate_extrude() instead.");
+		}
+		return m->evaluate(this, &inst);
+	}
 	if (this->usedlibs_p) {
 		BOOST_FOREACH(const ModuleContainer::value_type &m, *this->usedlibs_p) {
 			if (m.second->modules.find(inst.modname) != m.second->modules.end()) {

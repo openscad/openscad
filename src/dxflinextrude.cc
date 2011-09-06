@@ -76,8 +76,10 @@ AbstractNode *DxfLinearExtrudeModule::evaluate(const Context *ctx, const ModuleI
 	Value twist = c.lookup_variable("twist", true);
 	Value slices = c.lookup_variable("slices", true);
 
-	if (!file.text.empty())
+	if (!file.text.empty()) {
+		PRINTF("DEPRECATED: Support for reading files in linear_extrude will be removed in future releases. Use a child import() instead.");
 		node->filename = c.getAbsolutePath(file.text);
+	}
 
 	node->layername = layer.text;
 	node->height = height.num;

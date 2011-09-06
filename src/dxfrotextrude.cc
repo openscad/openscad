@@ -70,8 +70,10 @@ AbstractNode *DxfRotateExtrudeModule::evaluate(const Context *ctx, const ModuleI
 	Value origin = c.lookup_variable("origin", true);
 	Value scale = c.lookup_variable("scale", true);
 
-	if (!file.text.empty())
+	if (!file.text.empty()) {
+		PRINTF("DEPRECATED: Support for reading files in rotate_extrude will be removed in future releases. Use a child import() instead.");
 		node->filename = c.getAbsolutePath(file.text);
+	}
 
 	node->layername = layer.text;
 	node->convexity = (int)convexity.num;
