@@ -10,6 +10,7 @@ o dxf_linear_extrude() and dxf_rotate_extrude() are now deprecated.
   Use linear_extrude() and rotate_extrude() instead.
 o The file, layer, origin and scale parameters to linear_extrude() and rotate_extrude()
   are now deprecated. Use an import() child instead.
+o import_dxf(), import_stl() and import_off() are now deprecated. Use import() instead.
 
 OpenSCAD 2011.06
 ================
