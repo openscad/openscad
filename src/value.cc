@@ -36,7 +36,7 @@ Value::Value()
 
 Value::~Value()
 {
-	for (int i = 0; i < this->vec.size(); i++) delete this->vec[i];
+	for (size_t i = 0; i < this->vec.size(); i++) delete this->vec[i];
 	this->vec.clear();
 }
 
@@ -72,7 +72,7 @@ Value& Value::operator = (const Value &v)
 	this->type = v.type;
 	this->b = v.b;
 	this->num = v.num;
-	for (int i = 0; i < v.vec.size(); i++) {
+	for (size_t i = 0; i < v.vec.size(); i++) {
 		this->vec.push_back(new Value(*v.vec[i]));
 	}
 	this->range_begin = v.range_begin;
@@ -111,7 +111,7 @@ Value Value::operator + (const Value &v) const
 	if (this->type == VECTOR && v.type == VECTOR) {
 		Value r;
 		r.type = VECTOR;
-		for (int i = 0; i < this->vec.size() && i < v.vec.size(); i++)
+		for (size_t i = 0; i < this->vec.size() && i < v.vec.size(); i++)
 			r.vec.push_back(new Value(*this->vec[i] + *v.vec[i]));
 		return r;
 	}
@@ -126,7 +126,7 @@ Value Value::operator - (const Value &v) const
 	if (this->type == VECTOR && v.type == VECTOR) {
 		Value r;
 		r.type = VECTOR;
-		for (int i = 0; i < this->vec.size() && i < v.vec.size(); i++)
+		for (size_t i = 0; i < this->vec.size() && i < v.vec.size(); i++)
 			r.vec.push_back(new Value(*this->vec[i] - *v.vec[i]));
 		return r;
 	}
@@ -141,14 +141,14 @@ Value Value::operator * (const Value &v) const
 	if (this->type == VECTOR && v.type == NUMBER) {
 		Value r;
 		r.type = VECTOR;
-		for (int i = 0; i < this->vec.size(); i++)
+		for (size_t i = 0; i < this->vec.size(); i++)
 			r.vec.push_back(new Value(*this->vec[i] * v));
 		return r;
 	}
 	if (this->type == NUMBER && v.type == VECTOR) {
 		Value r;
 		r.type = VECTOR;
-		for (int i = 0; i < v.vec.size(); i++)
+		for (size_t i = 0; i < v.vec.size(); i++)
 			r.vec.push_back(new Value(*this * *v.vec[i]));
 		return r;
 	}
@@ -163,14 +163,14 @@ Value Value::operator / (const Value &v) const
 	if (this->type == VECTOR && v.type == NUMBER) {
 		Value r;
 		r.type = VECTOR;
-		for (int i = 0; i < this->vec.size(); i++)
+		for (size_t i = 0; i < this->vec.size(); i++)
 			r.vec.push_back(new Value(*this->vec[i] / v));
 		return r;
 	}
 	if (this->type == NUMBER && v.type == VECTOR) {
 		Value r;
 		r.type = VECTOR;
-		for (int i = 0; i < v.vec.size(); i++)
+		for (size_t i = 0; i < v.vec.size(); i++)
 			r.vec.push_back(new Value(v / *v.vec[i]));
 		return r;
 	}
@@ -218,7 +218,7 @@ Value Value::operator == (const Value &v) const
 	if (this->type == VECTOR && v.type == VECTOR) {
 		if (this->vec.size() != v.vec.size())
 			return Value(false);
-		for (int i=0; i<this->vec.size(); i++)
+		for (size_t i=0; i<this->vec.size(); i++)
 			if (!(*this->vec[i] == *v.vec[i]).b)
 				return Value(false);
 		return Value(true);
@@ -256,7 +256,7 @@ Value Value::inv() const
 	if (this->type == VECTOR) {
 		Value r;
 		r.type = VECTOR;
-		for (int i = 0; i < this->vec.size(); i++)
+		for (size_t i = 0; i < this->vec.size(); i++)
 			r.vec.push_back(new Value(this->vec[i]->inv()));
 		return r;
 	}
@@ -314,7 +314,7 @@ void Value::reset_undef()
 	this->type = UNDEFINED;
 	this->b = false;
 	this->num = 0;
-	for (int i = 0; i < this->vec.size(); i++) delete this->vec[i];
+	for (size_t i = 0; i < this->vec.size(); i++) delete this->vec[i];
 	this->vec.clear();
 	this->range_begin = 0;
 	this->range_step = 0;
@@ -333,7 +333,7 @@ std::string Value::toString() const
 		break;
 	case VECTOR:
 		stream << '[';
-		for (int i = 0; i < this->vec.size(); i++) {
+		for (size_t i = 0; i < this->vec.size(); i++) {
 			if (i > 0) stream << ", ";
 			stream << *(this->vec[i]);
 		}
