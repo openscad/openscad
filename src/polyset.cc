@@ -518,7 +518,13 @@ CGAL_Nef_polyhedron PolySet::render_cgal_nef_polyhedron() const
 						double x = ps->polygons[i][j].x;
 						double y = ps->polygons[i][j].y;
 						if (this->grid.has(x, y)) {
-							this->polygons[this->poly_n].append(this->grid.data(x, y));
+							int idx = this->grid.data(x, y);
+							// Filter away two vertices with the same index (due to grid)
+							// This could be done in a more general way, but we'd rather redo the entire
+							// grid concept instead.
+							if (this->polygons[this->poly_n].indexOf(idx) == -1) {
+								this->polygons[this->poly_n].append(this->grid.data(x, y));
+							}
 						} else {
 							this->grid.align(x, y) = point_n;
 							this->polygons[this->poly_n].append(point_n);
@@ -526,8 +532,13 @@ CGAL_Nef_polyhedron PolySet::render_cgal_nef_polyhedron() const
 							point_n++;
 						}
 					}
-					add_edges(this->poly_n);
-					this->poly_n++;
+					if (this->polygons[this->poly_n].size() >= 3) {
+						add_edges(this->poly_n);
+						this->poly_n++;
+					}
+					else {
+						this->polygons.remove(this->poly_n);
+					}
 				}
 			}
 
