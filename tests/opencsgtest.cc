@@ -155,9 +155,8 @@ int main(int argc, char *argv[])
 		return 1;
 	}
 
-	csgInfo.root_norm_term = root_raw_term->link();
-		
 	// CSG normalization
+	csgInfo.root_norm_term = root_raw_term->link();
 	while (1) {
 		CSGTerm *n = csgInfo.root_norm_term->normalize();
 		csgInfo.root_norm_term->unlink();
@@ -170,6 +169,7 @@ int main(int argc, char *argv[])
 	
 	csgInfo.root_chain = new CSGChain();
 	csgInfo.root_chain->import(csgInfo.root_norm_term);
+	fprintf(stderr, "Normalized CSG tree has %d elements\n", csgInfo.root_chain->polysets.size());
 	
 	if (csgInfo.highlight_terms.size() > 0) {
 		cerr << "Compiling highlights (" << csgInfo.highlight_terms.size() << "  CSG Trees)...\n";
