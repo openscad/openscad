@@ -264,10 +264,16 @@ PolySet *PolySetCGALEvaluator::evaluatePolySet(const DxfLinearExtrudeNode &node,
 		BOOST_FOREACH (AbstractNode * v, node.getChildren()) {
 			if (v->modinst->tag_background) continue;
 			CGAL_Nef_polyhedron N = this->cgalevaluator.evaluateCGALMesh(*v);
-			if (sum.empty()) sum = N.copy();
-			else sum += N;
+			if (N.dim != 2) {
+				PRINT("ERROR: rotate_extrude() is not defined for 3D child objects!");
+			}
+			else {
+				if (sum.empty()) sum = N.copy();
+				else sum += N;
+			}
 		}
 
+		if (sum.empty()) return NULL;
 		dxf = sum.convertToDxfData();;
 	} else {
 		dxf = new DxfData(node.fn, node.fs, node.fa, node.filename, node.layername, node.origin_x, node.origin_y, node.scale);
@@ -361,10 +367,16 @@ PolySet *PolySetCGALEvaluator::evaluatePolySet(const DxfRotateExtrudeNode &node,
 		BOOST_FOREACH (AbstractNode * v, node.getChildren()) {
 			if (v->modinst->tag_background) continue;
 			CGAL_Nef_polyhedron N = this->cgalevaluator.evaluateCGALMesh(*v);
-			if (sum.empty()) sum = N.copy();
-			else sum += N;
+			if (N.dim != 2) {
+				PRINT("ERROR: rotate_extrude() is not defined for 3D child objects!");
+			}
+			else {
+				if (sum.empty()) sum = N.copy();
+				else sum += N;
+			}
 		}
 
+		if (sum.empty()) return NULL;
 		dxf = sum.convertToDxfData();
 	} else {
 		dxf = new DxfData(node.fn, node.fs, node.fa, node.filename, node.layername, node.origin_x, node.origin_y, node.scale);
