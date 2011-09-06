@@ -144,7 +144,7 @@ include_directories(${CGAL_INCLUDE_DIRS})
 #
 add_executable(cgaltest cgaltest.cc ../src/CGAL_Nef_polyhedron.cc ../src/CSGTermEvaluator.cc
                         ../src/CGALEvaluator.cc ../src/PolySetCGALEvaluator.cc ../src/qhash.cc
-                        ../src/CGAL_Nef_polyhedron_DxfData.cc ../src/cgaladv_minkowski2.cc
+                        ../src/CGAL_Nef_polyhedron_DxfData.cc ../src/cgaladv_minkowski2.cc ../src/cgaladv_convexhull2.cc
                         ${COMMON_SOURCES})
 set_target_properties(cgaltest PROPERTIES COMPILE_FLAGS "-DENABLE_CGAL ${CGAL_CXX_FLAGS_INIT}")
 target_link_libraries(cgaltest ${CGAL_LIBRARY} ${CGAL_3RD_PARTY_LIBRARIES} ${QT_LIBRARIES} ${OPENGL_LIBRARY})
@@ -156,7 +156,7 @@ add_executable(cgalpngtest cgalpngtest.cc OffscreenView.cc OffscreenContext.mm
                            ../src/CGALRenderer.cc ../src/CGAL_Nef_polyhedron.cc
                            ../src/CSGTermEvaluator.cc ../src/CGALEvaluator.cc
                            ../src/PolySetCGALEvaluator.cc ../src/qhash.cc
-                           ../src/CGAL_Nef_polyhedron_DxfData.cc ../src/cgaladv_minkowski2.cc
+                           ../src/CGAL_Nef_polyhedron_DxfData.cc ../src/cgaladv_minkowski2.cc ../src/cgaladv_convexhull2.cc
                            ${COMMON_SOURCES})
 set_target_properties(cgalpngtest PROPERTIES COMPILE_FLAGS "-DENABLE_CGAL ${CGAL_CXX_FLAGS_INIT}")
 target_link_libraries(cgalpngtest ${CGAL_LIBRARY} ${CGAL_3RD_PARTY_LIBRARIES} ${QT_LIBRARIES}  ${GLEW_LIBRARY} ${COCOA_LIBRARY} ${OPENGL_LIBRARY})
@@ -168,7 +168,7 @@ add_executable(opencsgtest opencsgtest.cc OffscreenView.cc OffscreenContext.mm
                            ../src/OpenCSGRenderer.cc ../src/ThrownTogetherRenderer.cc
                            ../src/CSGTermEvaluator.cc ../src/CGAL_Nef_polyhedron.cc
                            ../src/CGALEvaluator.cc ../src/PolySetCGALEvaluator.cc ../src/qhash.cc
-                           ../src/CGAL_Nef_polyhedron_DxfData.cc ../src/cgaladv_minkowski2.cc
+                           ../src/CGAL_Nef_polyhedron_DxfData.cc ../src/cgaladv_minkowski2.cc ../src/cgaladv_convexhull2.cc
                            ${COMMON_SOURCES})
 set_target_properties(opencsgtest PROPERTIES COMPILE_FLAGS "-DENABLE_OPENCSG -DENABLE_CGAL ${CGAL_CXX_FLAGS_INIT}")
 target_link_libraries(opencsgtest ${CGAL_LIBRARY} ${CGAL_3RD_PARTY_LIBRARIES} ${QT_LIBRARIES} ${OPENCSG_LIBRARY} ${GLEW_LIBRARY} ${COCOA_LIBRARY} ${OPENGL_LIBRARY})
@@ -219,6 +219,7 @@ LIST(APPEND CGALPNGTEST_FILES
             ${CMAKE_SOURCE_DIR}/../testdata/scad/features/rotate_extrude-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/features/minkowski2-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/features/minkowski3-tests.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/features/hull2-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/features/surface-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/features/import_dxf-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/features/transform-tests.scad
