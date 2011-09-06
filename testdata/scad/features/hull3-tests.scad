@@ -19,3 +19,9 @@ module convex3dHole() {
 
 translate([0,40,0]) convex3dHole();
 translate([40,40,0]) convex3dSimple();
+
+// Empty
+hull();
+// No children
+hull() { }
+

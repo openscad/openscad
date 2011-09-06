@@ -1,3 +1,8 @@
+// Empty
+for();
+// No children
+for(i=2) { }
+
 // Null
 translate([-10,0,0]) for() cylinder(r=4);
 

@@ -1,3 +1,10 @@
+// Empty
+rotate_extrude();
+// No children
+rotate_extrude() { }
+// 3D child
+rotate_extrude() { cube(); }
+
 // Normal
 rotate_extrude() translate([20,0,0]) circle(r=10);
 

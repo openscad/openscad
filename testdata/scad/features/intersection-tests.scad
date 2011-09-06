@@ -1,3 +1,9 @@
+// Empty
+intersection();
+
+// No children
+intersection() { }
+
 intersection() {
   sphere(r=5);
   translate([0,0,3]) cube([4,4,6], center=true);

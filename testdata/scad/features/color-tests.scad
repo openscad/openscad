@@ -1,3 +1,8 @@
+// Empty
+color();
+// No children
+color() { }
+
 module object() cube([10,10,10]);
 
 translate([12,12,0]) object();

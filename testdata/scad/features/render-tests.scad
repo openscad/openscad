@@ -27,5 +27,10 @@ module rendered_mycube() {
   }
 }
 
+// Empty
+render();
+// No children
+render() { }
+
 mycube();
 translate([110,0,0]) rendered_mycube();

@@ -28,3 +28,8 @@ module roundedBox3dHole() {
 translate([-20,30,0]) roundedBox3dHole();
 translate([0,25,0]) roundedBox3dCut();
 translate([25,25,0]) roundedBox3dSimple();
+
+// Empty
+minkowski();
+// No children
+minkowski() { }
