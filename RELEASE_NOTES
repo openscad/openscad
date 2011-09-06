@@ -5,6 +5,12 @@ Bugfixes:
 o square() crashed if any of the dimensions were zero
 o Flush Caches didn't flush cached USE'd modules
 
+Deprecations:
+o dxf_linear_extrude() and dxf_rotate_extrude() are now deprecated.
+  Use linear_extrude() and rotate_extrude() instead.
+o The file, layer, origin and scale parameters to linear_extrude() and rotate_extrude()
+  are now deprecated. Use an import() child instead.
+
 OpenSCAD 2011.06
 ================
 
