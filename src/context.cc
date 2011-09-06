@@ -153,8 +153,17 @@ AbstractNode *Context::evaluate_module(const ModuleInstantiation &inst) const
 		if (m == builtin_modules["dxf_linear_extrude"]) {
 			PRINTF("DEPRECATED: The dxf_linear_extrude() module will be removed in future releases. Use a linear_extrude() instead.");
 		}
-		if (m == builtin_modules["dxf_rotate_extrude"]) {
+		else if (m == builtin_modules["dxf_rotate_extrude"]) {
 			PRINTF("DEPRECATED: The dxf_rotate_extrude() module will be removed in future releases. Use a rotate_extrude() instead.");
+		}
+		else if (m == builtin_modules["import_stl"]) {
+			PRINTF("DEPRECATED: The import_stl() module will be removed in future releases. Use import() instead.");
+		}
+		else if (m == builtin_modules["import_dxf"]) {
+			PRINTF("DEPRECATED: The import_dxf() module will be removed in future releases. Use import() instead.");
+		}
+		else if (m == builtin_modules["import_off"]) {
+			PRINTF("DEPRECATED: The import_off() module will be removed in future releases. Use import() instead.");
 		}
 		return m->evaluate(this, &inst);
 	}

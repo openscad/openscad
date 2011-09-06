@@ -49,20 +49,14 @@ class ImportModule : public AbstractModule
 {
 public:
 	import_type_e type;
-	ImportModule(import_type_e type) : type(type) { }
+	ImportModule(import_type_e type = TYPE_UNKNOWN) : type(type) { }
 	virtual AbstractNode *evaluate(const Context *ctx, const ModuleInstantiation *inst) const;
 };
 
 AbstractNode *ImportModule::evaluate(const Context *ctx, const ModuleInstantiation *inst) const
 {
-	ImportNode *node = new ImportNode(inst, type);
-
 	std::vector<std::string> argnames;
-	if (this->type == TYPE_DXF) {
-		argnames += "file", "layer", "convexity", "origin", "scale";
-	} else {
-		argnames += "file", "convexity";
-	}
+	argnames += "file", "layer", "convexity", "origin", "scale";
 	std::vector<Expression*> argexpr;
 
 	// Map old argnames to new argnames for compatibility
@@ -77,13 +71,23 @@ AbstractNode *ImportModule::evaluate(const Context *ctx, const ModuleInstantiati
 	Context c(ctx);
 	c.args(argnames, argexpr, inst_argnames, inst->argvalues);
 
+	Value v = c.lookup_variable("file");
+	std::string filename = c.getAbsolutePath(v.text);
+	import_type_e actualtype = this->type;
+	if (actualtype == TYPE_UNKNOWN) {
+		QFileInfo fi(QString::fromStdString(filename));
+		if (fi.suffix().toLower() == "stl") actualtype = TYPE_STL;
+		else if (fi.suffix().toLower() == "off") actualtype = TYPE_OFF;
+		else if (fi.suffix().toLower() == "dxf") actualtype = TYPE_DXF;
+	}
+
+	ImportNode *node = new ImportNode(inst, actualtype);
+
 	node->fn = c.lookup_variable("$fn").num;
 	node->fs = c.lookup_variable("$fs").num;
 	node->fa = c.lookup_variable("$fa").num;
 
-	Value v = c.lookup_variable("file");
-	node->filename = c.getAbsolutePath(v.text);
-//	node->filename = c.getAbsolutePath(c.lookup_variable("file").text);
+	node->filename = filename;
 	node->layername = c.lookup_variable("layer", true).text;
 	node->convexity = c.lookup_variable("convexity", true).num;
 
@@ -100,13 +104,6 @@ AbstractNode *ImportModule::evaluate(const Context *ctx, const ModuleInstantiati
 		node->scale = 1;
 
 	return node;
-}
-
-void register_builtin_import()
-{
-	builtin_modules["import_stl"] = new ImportModule(TYPE_STL);
-	builtin_modules["import_off"] = new ImportModule(TYPE_OFF);
-	builtin_modules["import_dxf"] = new ImportModule(TYPE_DXF);
 }
 
 PolySet *ImportNode::evaluate_polyset(render_mode_e, class PolySetEvaluator *) const
@@ -191,17 +188,21 @@ PolySet *ImportNode::evaluate_polyset(render_mode_e, class PolySetEvaluator *) c
 		}
 	}
 
-	if (this->type == TYPE_OFF)
+	else if (this->type == TYPE_OFF)
 	{
 		PRINTF("WARNING: OFF import is not implemented yet.");
 	}
 
-	if (this->type == TYPE_DXF)
+	else if (this->type == TYPE_DXF)
 	{
 		DxfData dd(this->fn, this->fs, this->fa, this->filename, this->layername, this->origin_x, this->origin_y, this->scale);
 		p->is2d = true;
 		dxf_tesselate(p, dd, 0, true, false, 0);
 		dxf_border_to_ps(p, dd);
+	}
+	else 
+	{
+		PRINTF("ERROR: Unsupported file format while trying to import file '%s'", this->filename.c_str());
 	}
 
 	return p;
@@ -217,46 +218,27 @@ std::string ImportNode::toString() const
 	stat(this->filename.c_str(), &st);
 
 	stream << this->name();
-	switch (this->type) {
-	case TYPE_STL:
-		stream << "(file = \"" << this->filename << "\", "
-			"cache = \"" << std::hex << (int)st.st_mtime << "." << (int)st.st_size << "\", "
-			"convexity = " << std::dec << this->convexity << ")";
-		break;
-	case TYPE_OFF:
-		stream << "(file = \"" << this->filename << "\", "
-			"cache = \"" << std::hex << (int)st.st_mtime << "." << (int)st.st_size << "\", "
-			"convexity = " << std::dec << this->convexity << ")";
-		break;
-	case TYPE_DXF:
-		stream << "(file = \"" << this->filename << "\", "
-			"cache = \"" << std::hex << (int)st.st_mtime << "." << (int)st.st_size << "\", "
-			"layer = \"" << this->layername << "\", "
-			"origin = [ " << std::dec << this->origin_x << " " << this->origin_y << " ], "
-			"scale = " << this->scale << ", "
-			"convexity = " << this->convexity << ", "
-			"$fn = " << this->fn << ", $fa = " << this->fa << ", $fs = " << this->fs << ")";
-		break;
-	default:
-		assert(false);
-	}
+	stream << "(file = \"" << this->filename << "\", "
+		"cache = \"" << std::hex << (int)st.st_mtime << "." << (int)st.st_size << "\", "
+		"layer = \"" << this->layername << "\", "
+		"origin = [ " << std::dec << this->origin_x << " " << this->origin_y << " ], "
+		"scale = " << this->scale << ", "
+		"convexity = " << this->convexity << ", "
+		"$fn = " << this->fn << ", $fa = " << this->fa << ", $fs = " << this->fs << ")";
 
 	return stream.str();
 }
 
 std::string ImportNode::name() const
 {
-	switch (this->type) {
-	case TYPE_STL:
-		return "import_stl";
-		break;
-	case TYPE_OFF:
-		return "import_off";
-		break;
-	case TYPE_DXF:
-		return "import_dxf";
-		break;
-	default:
-		assert(false);
-	}
+	return "import";
 }
+
+void register_builtin_import()
+{
+	builtin_modules["import_stl"] = new ImportModule(TYPE_STL);
+	builtin_modules["import_off"] = new ImportModule(TYPE_OFF);
+	builtin_modules["import_dxf"] = new ImportModule(TYPE_DXF);
+	builtin_modules["import"] = new ImportModule();
+}
+
