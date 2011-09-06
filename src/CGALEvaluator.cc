@@ -504,7 +504,13 @@ CGAL_Nef_polyhedron CGALEvaluator::evaluateCGALMesh(const PolySet &ps)
 						double x = ps.polygons[i][j][0];
 						double y = ps.polygons[i][j][1];
 						if (this->grid.has(x, y)) {
-							this->polygons[this->poly_n].append(this->grid.data(x, y));
+							int idx = this->grid.data(x, y);
+							// Filter away two vertices with the same index (due to grid)
+							// This could be done in a more general way, but we'd rather redo the entire
+							// grid concept instead.
+							if (this->polygons[this->poly_n].indexOf(idx) == -1) {
+								this->polygons[this->poly_n].append(this->grid.data(x, y));
+							}
 						} else {
 							this->grid.align(x, y) = point_n;
 							this->polygons[this->poly_n].append(point_n);
@@ -512,8 +518,13 @@ CGAL_Nef_polyhedron CGALEvaluator::evaluateCGALMesh(const PolySet &ps)
 							point_n++;
 						}
 					}
-					add_edges(this->poly_n);
-					this->poly_n++;
+					if (this->polygons[this->poly_n].size() >= 3) {
+						add_edges(this->poly_n);
+						this->poly_n++;
+					}
+					else {
+						this->polygons.remove(this->poly_n);
+					}
 				}
 			}
 
@@ -599,9 +610,9 @@ CGAL_Nef_polyhedron CGALEvaluator::evaluateCGALMesh(const PolySet &ps)
 		};
 
 		PolyReducer pr(ps);
-		// printf("Number of polygons before reduction: %d\n", pr.polygons.size());
+		PRINTF("Number of polygons before reduction: %d\n", pr.polygons.size());
 		pr.reduce();
-		// printf("Number of polygons after reduction: %d\n", pr.polygons.size());
+		PRINTF("Number of polygons after reduction: %d\n", pr.polygons.size());
 		return CGAL_Nef_polyhedron(pr.toNef());
 #endif
 #if 0
