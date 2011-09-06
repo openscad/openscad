@@ -178,9 +178,18 @@ Response CSGTermEvaluator::visit(State &state, const ColorNode &node)
 // FIXME: If we've got CGAL support, render this node as a CGAL union into a PolySet
 Response CSGTermEvaluator::visit(State &state, const RenderNode &node)
 {
-	PRINT("WARNING: render() statement not implemented");
 	if (state.isPostfix()) {
-		applyToChildren(node, CSGT_UNION);
+		CSGTerm *t1 = NULL;
+    // FIXME: Calling evaluator directly since we're not a PolyNode. Generalize this.
+		PolySet *ps = NULL;
+		if (this->psevaluator) {
+			ps = this->psevaluator->evaluatePolySet(node, AbstractPolyNode::RENDER_OPENCSG);
+		}
+		if (ps) {
+			t1 = evaluate_csg_term_from_ps(state, this->highlights, this->background, 
+																		 ps, node.modinst, node);
+		}
+		this->stored_term[node.index()] = t1;
 		addToParent(state, node);
 	}
 	return ContinueTraversal;

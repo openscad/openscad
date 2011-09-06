@@ -6,6 +6,7 @@
 #include "dxflinextrudenode.h"
 #include "dxfrotextrudenode.h"
 #include "cgaladvnode.h"
+#include "rendernode.h"
 #include "dxfdata.h"
 #include "dxftess.h"
 #include "module.h"
@@ -376,6 +377,13 @@ PolySet *PolySetCGALEvaluator::evaluatePolySet(const CgaladvNode &node, Abstract
 	return ps;
 }
 
+PolySet *PolySetCGALEvaluator::evaluatePolySet(const RenderNode &node, AbstractPolyNode::render_mode_e)
+{
+	CGAL_Nef_polyhedron N = this->cgalevaluator.evaluateCGALMesh(node);
+	PolySet *ps = NULL;
+	if (!N.empty()) ps = N.convertToPolyset();
+	return ps;
+}
 
 PolySet *PolySetCGALEvaluator::rotateDxfData(const DxfRotateExtrudeNode &node, DxfData &dxf)
 {

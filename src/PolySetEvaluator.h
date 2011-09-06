@@ -17,6 +17,7 @@ public:
 	virtual PolySet *evaluatePolySet(const class DxfLinearExtrudeNode &, AbstractPolyNode::render_mode_e) = 0;
 	virtual PolySet *evaluatePolySet(const class DxfRotateExtrudeNode &, AbstractPolyNode::render_mode_e) = 0;
 	virtual PolySet *evaluatePolySet(const class CgaladvNode &, AbstractPolyNode::render_mode_e) = 0;
+	virtual PolySet *evaluatePolySet(const class RenderNode &, AbstractPolyNode::render_mode_e) = 0;
 
 	void clearCache() {
 		this->cache.clear();
