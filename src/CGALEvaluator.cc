@@ -211,6 +211,7 @@ Response CGALEvaluator::visit(State &state, const AbstractPolyNode &node)
 	if (state.isPostfix()) {
 		if (!isCached(node)) {
 			// First union all children
+			// FIXME: What does this actually achieve? kintel 20110906
 			applyToChildren(node, CGE_UNION);
 
 			// Then apply polyset operation

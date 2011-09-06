@@ -20,7 +20,14 @@ PolySet *PolySetCGALEvaluator::evaluatePolySet(const ProjectionNode &node, Abstr
 	const string &cacheid = this->cgalevaluator.getTree().getString(node);
 	if (this->cache.contains(cacheid)) return this->cache[cacheid]->ps->link();
 
-	CGAL_Nef_polyhedron N = this->cgalevaluator.evaluateCGALMesh(node);
+	// Before projecting, union all children
+	CGAL_Nef_polyhedron sum;
+	BOOST_FOREACH (AbstractNode * v, node.getChildren()) {
+		if (v->modinst->tag_background) continue;
+		CGAL_Nef_polyhedron N = this->cgalevaluator.evaluateCGALMesh(*v);
+		if (sum.empty()) sum = N.copy();
+		else sum += N;
+	}
 
 	PolySet *ps = new PolySet();
 	ps->convexity = node.convexity;
@@ -71,13 +78,13 @@ PolySet *PolySetCGALEvaluator::evaluatePolySet(const ProjectionNode &node, Abstr
 		cube->unlink();
 
 		// N.p3 *= CGAL_Nef_polyhedron3(CGAL_Plane(0, 0, 1, 0), CGAL_Nef_polyhedron3::INCLUDED);
-		N *= Ncube;
-		if (!N.p3->is_simple()) {
+		sum *= Ncube;
+		if (!sum.p3->is_simple()) {
 			PRINTF("WARNING: Body of projection(cut = true) isn't valid 2-manifold! Modify your design..");
 			goto cant_project_non_simple_polyhedron;
 		}
 
-		PolySet *ps3 = N.convertToPolyset();
+		PolySet *ps3 = sum.convertToPolyset();
 		Grid2d<int> conversion_grid(GRID_COARSE);
 		for (size_t i = 0; i < ps3->polygons.size(); i++) {
 			for (size_t j = 0; j < ps3->polygons[i].size(); j++) {
@@ -103,12 +110,12 @@ PolySet *PolySetCGALEvaluator::evaluatePolySet(const ProjectionNode &node, Abstr
 	}
 	else
 	{
-		if (!N.p3->is_simple()) {
+		if (!sum.p3->is_simple()) {
 			PRINTF("WARNING: Body of projection(cut = false) isn't valid 2-manifold! Modify your design..");
 			goto cant_project_non_simple_polyhedron;
 		}
 
-		PolySet *ps3 = N.convertToPolyset();
+		PolySet *ps3 = sum.convertToPolyset();
 		CGAL_Nef_polyhedron np;
 		for (size_t i = 0; i < ps3->polygons.size(); i++)
 		{
