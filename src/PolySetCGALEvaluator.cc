@@ -28,6 +28,7 @@ PolySet *PolySetCGALEvaluator::evaluatePolySet(const ProjectionNode &node, Abstr
 		if (sum.empty()) sum = N.copy();
 		else sum += N;
 	}
+	if (sum.empty()) return NULL;
 
 	PolySet *ps = new PolySet();
 	ps->convexity = node.convexity;
