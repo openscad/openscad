@@ -31,7 +31,6 @@
 
 #include <QApplication>
 #include <QProgressDialog>
-#include <QTextStream>
 #include <errno.h>
 
 #ifdef ENABLE_CGAL
@@ -75,10 +74,15 @@ void export_stl(CGAL_Nef_polyhedron *root_N, std::ostream &output, QProgressDial
 			double x3 = CGAL::to_double(v3.point().x());
 			double y3 = CGAL::to_double(v3.point().y());
 			double z3 = CGAL::to_double(v3.point().z());
-			QString vs1, vs2, vs3;
-			vs1.sprintf("%f %f %f", x1, y1, z1);
-			vs2.sprintf("%f %f %f", x2, y2, z2);
-			vs3.sprintf("%f %f %f", x3, y3, z3);
+			std::stringstream stream;
+			stream << x1 << " " << y1 << " " << z1;
+			std::string vs1 = stream.str();
+			stream.str("");
+			stream << x2 << " " << y2 << " " << z2;
+			std::string vs2 = stream.str();
+			stream.str("");
+			stream << x3 << " " << y3 << " " << z3;
+			std::string vs3 = stream.str();
 			if (vs1 != vs2 && vs1 != vs3 && vs2 != vs3) {
 				
 				double nx = (y1-y2)*(z1-z3) - (z1-z2)*(y1-y3);
