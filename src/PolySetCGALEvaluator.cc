@@ -25,14 +25,12 @@ PolySet *PolySetCGALEvaluator::evaluatePolySet(const ProjectionNode &node, Abstr
 	BOOST_FOREACH (AbstractNode * v, node.getChildren()) {
 		if (v->modinst->tag_background) continue;
 		CGAL_Nef_polyhedron N = this->cgalevaluator.evaluateCGALMesh(*v);
-		if (sum.empty()) sum = N.copy();
-		else sum += N;
+		if (N.dim == 3) {
+			if (sum.empty()) sum = N.copy();
+			else sum += N;
+		}
 	}
 	if (sum.empty()) return NULL;
-	if (sum.dim != 3) {
-		PRINTF("WARNING: Body of projection() must be a 3D object");
-		return NULL;
-	}
 
 	PolySet *ps = new PolySet();
 	ps->convexity = node.convexity;
