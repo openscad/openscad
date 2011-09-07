@@ -169,7 +169,7 @@ CGAL_Nef_polyhedron CgaladvNode::render_cgal_nef_polyhedron() const
 
 	if (type == GLIDE)
 	{
-		PRINT("WARNING: subdiv() is not implemented yet!");
+		PRINT("WARNING: glide() is not implemented yet!");
 	}
 
 	if (type == SUBDIV)
