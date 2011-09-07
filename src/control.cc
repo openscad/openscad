@@ -137,7 +137,7 @@ AbstractNode *ControlModule::evaluate(const Context*, const ModuleInstantiation 
 			if (!inst->argnames[i].empty())
 				c.set_variable(inst->argnames[i], inst->argvalues[i]);
 		}
-		std::vector<AbstractNode *> evaluatednodes = inst->evaluateChildren();
+		std::vector<AbstractNode *> evaluatednodes = inst->evaluateChildren(&c);
 		node->children.insert(node->children.end(), evaluatednodes.begin(), evaluatednodes.end());
 	}
 
