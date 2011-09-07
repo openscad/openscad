@@ -213,12 +213,14 @@ SOURCES += src/openscad.cc \
 cgal {
 HEADERS += src/cgal.h \
            src/cgalfwd.h \
+           src/cgalutils.h \
            src/CGALEvaluator.h \
            src/PolySetCGALEvaluator.h \
            src/CGALRenderer.h \
            src/CGAL_Nef_polyhedron.h
 
-SOURCES += src/CGALEvaluator.cc \
+SOURCES += src/cgalutils.cc \
+           src/CGALEvaluator.cc \
            src/PolySetCGALEvaluator.cc \
            src/CGALRenderer.cc \
            src/CGAL_Nef_polyhedron.cc \

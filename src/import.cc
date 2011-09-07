@@ -35,11 +35,16 @@
 #include "printutils.h"
 #include "handle_dep.h" // handle_dep()
 
+#ifdef ENABLE_CGAL
+#include "cgalutils.h"
+#endif
+
 #include <QFile>
 #include <QRegExp>
 #include <QStringList>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <fstream>
 #include <sstream>
 #include <assert.h>
 #include <boost/assign/std/vector.hpp>
@@ -108,11 +113,11 @@ AbstractNode *ImportModule::evaluate(const Context *ctx, const ModuleInstantiati
 
 PolySet *ImportNode::evaluate_polyset(render_mode_e, class PolySetEvaluator *) const
 {
-	PolySet *p = new PolySet();
-	p->convexity = this->convexity;
+	PolySet *p = NULL;
 
 	if (this->type == TYPE_STL)
 	{
+		p = new PolySet();
 		handle_dep(this->filename);
 		QFile f(QString::fromStdString(this->filename));
 		if (!f.open(QIODevice::ReadOnly)) {
@@ -190,11 +195,21 @@ PolySet *ImportNode::evaluate_polyset(render_mode_e, class PolySetEvaluator *) c
 
 	else if (this->type == TYPE_OFF)
 	{
-		PRINTF("WARNING: OFF import is not implemented yet.");
+#ifdef ENABLE_CGAL
+		CGAL_Polyhedron poly;
+		std::ifstream file(this->filename.c_str());
+		file >> poly;
+		file.close();
+		
+		p = createPolySetFromPolyhedron(poly);
+#else
+  PRINTF("WARNING: OFF import requires CGAL.");
+#endif
 	}
 
 	else if (this->type == TYPE_DXF)
 	{
+		p = new PolySet();
 		DxfData dd(this->fn, this->fs, this->fa, this->filename, this->layername, this->origin_x, this->origin_y, this->scale);
 		p->is2d = true;
 		dxf_tesselate(p, dd, 0, true, false, 0);
@@ -205,6 +220,7 @@ PolySet *ImportNode::evaluate_polyset(render_mode_e, class PolySetEvaluator *) c
 		PRINTF("ERROR: Unsupported file format while trying to import file '%s'", this->filename.c_str());
 	}
 
+	if (p) p->convexity = this->convexity;
 	return p;
 }
 

@@ -1,7 +1,12 @@
 #ifndef CGALFWD_H_
 #define CGALFWD_H_
 
+#ifndef CGAL_FORWARD
+#include "cgal.h"
+#else
 #ifdef ENABLE_CGAL
+
+#include <memory>
 
 namespace CGAL { 
 	class Gmpq;
@@ -22,6 +27,19 @@ namespace CGAL {
 typedef CGAL::Cartesian<NT> CGAL_Kernel3;
 typedef CGAL::Nef_polyhedron_3<CGAL_Kernel3, CGAL::SNC_indexed_items, bool> CGAL_Nef_polyhedron3;
 
+namespace CGAL {
+#ifndef CGAL_ALLOCATOR
+#  define CGAL_ALLOCATOR(T) std::allocator< T >
+#endif
+	class HalfedgeDS_items_2;
+	template <class Traits_, class HalfedgeDSItems, class Alloc> class HalfedgeDS_default;
+	class Polyhedron_items_3;
+	template <class PolyhedronTraits_3, class PolyhedronItems_3, class T_HDS, class Alloc> class Polyhedron_3;
+}
+typedef CGAL::Polyhedron_3<CGAL_Kernel3, CGAL::Polyhedron_items_3, CGAL::HalfedgeDS_default<CGAL_Kernel3, CGAL::HalfedgeDS_items_2, CGAL_ALLOCATOR(int)>, CGAL_ALLOCATOR(int)> CGAL_Polyhedron;
+
 #endif /* ENABLE_CGAL */
+
+#endif
 
 #endif

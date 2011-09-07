@@ -12,6 +12,7 @@
 #include "dxftess.h"
 
 #include "cgal.h"
+#include "cgalutils.h"
 #include <CGAL/assertions_behaviour.h>
 #include <CGAL/exceptions.h>
 
@@ -332,93 +333,6 @@ CGAL_Nef_polyhedron CGALEvaluator::evaluateCGALMesh(const AbstractPolyNode &node
 }
 #endif
 
-#ifdef ENABLE_CGAL
-
-#undef GEN_SURFACE_DEBUG
-
-class CGAL_Build_PolySet : public CGAL::Modifier_base<CGAL_HDS>
-{
-public:
-	typedef CGAL_HDS::Vertex::Point CGALPoint;
-
-	const PolySet &ps;
-	CGAL_Build_PolySet(const PolySet &ps) : ps(ps) { }
-
-	void operator()(CGAL_HDS& hds)
-	{
-		CGAL_Polybuilder B(hds, true);
-
-		std::vector<CGALPoint> vertices;
-		Grid3d<int> vertices_idx(GRID_FINE);
-
-		for (size_t i = 0; i < ps.polygons.size(); i++) {
-			const PolySet::Polygon *poly = &ps.polygons[i];
-			for (size_t j = 0; j < poly->size(); j++) {
-				const Vector3d &p = poly->at(j);
-				if (!vertices_idx.has(p[0], p[1], p[2])) {
-					vertices_idx.data(p[0], p[1], p[2]) = vertices.size();
-					vertices.push_back(CGALPoint(p[0], p[1], p[2]));
-				}
-			}
-		}
-
-		B.begin_surface(vertices.size(), ps.polygons.size());
-#ifdef GEN_SURFACE_DEBUG
-		printf("=== CGAL Surface ===\n");
-#endif
-
-		for (size_t i = 0; i < vertices.size(); i++) {
-			const CGALPoint &p = vertices[i];
-			B.add_vertex(p);
-#ifdef GEN_SURFACE_DEBUG
-			printf("%d: %f %f %f\n", i, p[0], p[1], p[2]);
-#endif
-		}
-
-		for (size_t i = 0; i < ps.polygons.size(); i++) {
-			const PolySet::Polygon *poly = &ps.polygons[i];
-			QHash<int,int> fc;
-			bool facet_is_degenerated = false;
-			for (size_t j = 0; j < poly->size(); j++) {
-				const Vector3d &p = poly->at(j);
-				int v = vertices_idx.data(p[0], p[1], p[2]);
-				if (fc[v]++ > 0)
-					facet_is_degenerated = true;
-			}
-			
-			if (!facet_is_degenerated)
-				B.begin_facet();
-#ifdef GEN_SURFACE_DEBUG
-			printf("F:");
-#endif
-			for (size_t j = 0; j < poly->size(); j++) {
-				const Vector3d &p = poly->at(j);
-#ifdef GEN_SURFACE_DEBUG
-				printf(" %d (%f,%f,%f)", vertices_idx.data(p[0], p[1], p[2]), p[0], p[1], p[2]);
-#endif
-				if (!facet_is_degenerated)
-					B.add_vertex_to_facet(vertices_idx.data(p[0], p[1], p[2]));
-			}
-#ifdef GEN_SURFACE_DEBUG
-			if (facet_is_degenerated)
-				printf(" (degenerated)");
-			printf("\n");
-#endif
-			if (!facet_is_degenerated)
-				B.end_facet();
-		}
-
-#ifdef GEN_SURFACE_DEBUG
-		printf("====================\n");
-#endif
-		B.end_surface();
-
-		#undef PointKey
-	}
-};
-
-#endif /* ENABLE_CGAL */
-
 CGAL_Nef_polyhedron CGALEvaluator::evaluateCGALMesh(const PolySet &ps)
 {
 	if (ps.empty()) return CGAL_Nef_polyhedron();
@@ -679,15 +593,12 @@ CGAL_Nef_polyhedron CGALEvaluator::evaluateCGALMesh(const PolySet &ps)
 	{
 		CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
 		try {
-		CGAL_Polyhedron P;
-		CGAL_Build_PolySet builder(ps);
-		P.delegate(builder);
-#if 0
-		std::cout << P;
-#endif
-		CGAL_Nef_polyhedron3 *N = new CGAL_Nef_polyhedron3(P);
-		return CGAL_Nef_polyhedron(N);
-    }
+			CGAL_Polyhedron *P = createPolyhedronFromPolySet(ps);
+			if (P) {
+				CGAL_Nef_polyhedron3 *N = new CGAL_Nef_polyhedron3(*P);
+				return CGAL_Nef_polyhedron(N);
+			}
+		}
 		catch (CGAL::Assertion_exception e) {
 			PRINTF("CGAL error: %s", e.what());
 			CGAL::set_error_behaviour(old_behaviour);

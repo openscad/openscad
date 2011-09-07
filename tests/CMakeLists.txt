@@ -142,7 +142,7 @@ include_directories(${CGAL_INCLUDE_DIRS})
 #
 # cgaltest
 #
-add_executable(cgaltest cgaltest.cc ../src/CGAL_Nef_polyhedron.cc ../src/CSGTermEvaluator.cc
+add_executable(cgaltest cgaltest.cc ../src/CGAL_Nef_polyhedron.cc ../src/cgalutils.cc ../src/CSGTermEvaluator.cc
                         ../src/CGALEvaluator.cc ../src/PolySetCGALEvaluator.cc ../src/qhash.cc
                         ../src/CGAL_Nef_polyhedron_DxfData.cc ../src/cgaladv_minkowski2.cc ../src/cgaladv_convexhull2.cc
                         ${COMMON_SOURCES})
@@ -153,7 +153,7 @@ target_link_libraries(cgaltest ${CGAL_LIBRARY} ${CGAL_3RD_PARTY_LIBRARIES} ${QT_
 # cgalpngtest
 #
 add_executable(cgalpngtest cgalpngtest.cc OffscreenView.cc OffscreenContext.mm
-                           ../src/CGALRenderer.cc ../src/CGAL_Nef_polyhedron.cc
+                           ../src/CGALRenderer.cc ../src/CGAL_Nef_polyhedron.cc ../src/cgalutils.cc
                            ../src/CSGTermEvaluator.cc ../src/CGALEvaluator.cc
                            ../src/PolySetCGALEvaluator.cc ../src/qhash.cc
                            ../src/CGAL_Nef_polyhedron_DxfData.cc ../src/cgaladv_minkowski2.cc ../src/cgaladv_convexhull2.cc
@@ -166,7 +166,7 @@ target_link_libraries(cgalpngtest ${CGAL_LIBRARY} ${CGAL_3RD_PARTY_LIBRARIES} ${
 #
 add_executable(opencsgtest opencsgtest.cc OffscreenView.cc OffscreenContext.mm
                            ../src/OpenCSGRenderer.cc ../src/ThrownTogetherRenderer.cc
-                           ../src/CSGTermEvaluator.cc ../src/CGAL_Nef_polyhedron.cc
+                           ../src/CSGTermEvaluator.cc ../src/CGAL_Nef_polyhedron.cc ../src/cgalutils.cc
                            ../src/CGALEvaluator.cc ../src/PolySetCGALEvaluator.cc ../src/qhash.cc
                            ../src/CGAL_Nef_polyhedron_DxfData.cc ../src/cgaladv_minkowski2.cc ../src/cgaladv_convexhull2.cc
                            ${COMMON_SOURCES})
