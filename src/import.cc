@@ -117,7 +117,6 @@ PolySet *ImportNode::evaluate_polyset(render_mode_e, class PolySetEvaluator *) c
 
 	if (this->type == TYPE_STL)
 	{
-		p = new PolySet();
 		handle_dep(this->filename);
 		QFile f(QString::fromStdString(this->filename));
 		if (!f.open(QIODevice::ReadOnly)) {
@@ -125,6 +124,7 @@ PolySet *ImportNode::evaluate_polyset(render_mode_e, class PolySetEvaluator *) c
 			return p;
 		}
 
+		p = new PolySet();
 		QByteArray data = f.read(5);
 		if (data.size() == 5 && QString(data) == QString("solid"))
 		{
