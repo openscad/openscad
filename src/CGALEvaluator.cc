@@ -231,34 +231,29 @@ Response CGALEvaluator::visit(State &state, const TransformNode &node)
 	return ContinueTraversal;
 }
 
-// FIXME: EvaluateNode: Union over children + some magic
-
 Response CGALEvaluator::visit(State &state, const AbstractPolyNode &node)
 {
 	if (state.isPrefix() && isCached(node)) return PruneTraversal;
 	if (state.isPostfix()) {
 		if (!isCached(node)) {
-			// First union all children
-			// FIXME: What does this actually achieve? kintel 20110906
-			applyToChildren(node, CGE_UNION);
-
-			// Then apply polyset operation
+			// Apply polyset operation
 			PolySet *ps = node.evaluate_polyset(AbstractPolyNode::RENDER_CGAL, &this->psevaluator);
+			CGAL_Nef_polyhedron N;
 			if (ps) {
 				try {
-					CGAL_Nef_polyhedron N = evaluateCGALMesh(*ps);
+					N = evaluateCGALMesh(*ps);
 //				print_messages_pop();
 					node.progress_report();
 					
 					ps->unlink();
-					const std::string &cacheid = this->tree.getString(node);
-					this->cache.insert(cacheid, N);
 				}
 				catch (...) { // Don't leak the PolySet on ProgressCancelException
 					ps->unlink();
 					throw;
 				}
 			}
+			const std::string &cacheid = this->tree.getString(node);
+			this->cache.insert(cacheid, N);
 		}
 		addToParent(state, node);
 	}
