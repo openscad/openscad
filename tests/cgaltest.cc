@@ -171,8 +171,7 @@ int main(int argc, char **argv)
 
 	QDir::setCurrent(original_path.absolutePath());
 	if (!N.empty()) {
-		QTextStream outstream(stdout);
-		export_stl(&N, outstream, NULL);
+		export_stl(&N, std::cout, NULL);
 	}
 	destroy_builtin_functions();
 	destroy_builtin_modules();

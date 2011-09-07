@@ -42,7 +42,7 @@
 	Saves the current 3D CGAL Nef polyhedron as STL to the given file.
 	The file must be open.
  */
-void export_stl(CGAL_Nef_polyhedron *root_N, QTextStream &output, QProgressDialog *pd)
+void export_stl(CGAL_Nef_polyhedron *root_N, std::ostream &output, QProgressDialog *pd)
 {
 	CGAL_Polyhedron P;
 	root_N->p3->convert_to_Polyhedron(P);
@@ -110,15 +110,17 @@ void export_stl(CGAL_Nef_polyhedron *root_N, QTextStream &output, QProgressDialo
 	setlocale(LC_NUMERIC, "");      // Set default locale
 }
 
-void export_off(CGAL_Nef_polyhedron*, QTextStream&, QProgressDialog*)
+void export_off(CGAL_Nef_polyhedron *root_N, std::ostream &output, QProgressDialog*)
 {
-	PRINTF("WARNING: OFF import is not implemented yet.");
+	CGAL_Polyhedron P;
+	root_N->p3->convert_to_Polyhedron(P);
+	output << P;
 }
 
 /*!
 	Saves the current 2D CGAL Nef polyhedron as DXF to the given absolute filename.
  */
-void export_dxf(CGAL_Nef_polyhedron *root_N, QTextStream &output, QProgressDialog *)
+void export_dxf(CGAL_Nef_polyhedron *root_N, std::ostream &output, QProgressDialog *)
 {
 	setlocale(LC_NUMERIC, "C"); // Ensure radix is . (not ,) in output
 	// Some importers (e.g. Inkscape) needs a BLOCKS section to be present

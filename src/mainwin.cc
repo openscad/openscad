@@ -75,6 +75,8 @@
 #include "qlanguagefactory.h"
 #endif
 
+#include <fstream>
+
 #include <algorithm>
 #include <boost/foreach.hpp>
 #include <boost/lambda/lambda.hpp>
@@ -1403,15 +1405,14 @@ void MainWindow::actionExportSTLorOFF(bool)
 	pd->show();
 	QApplication::processEvents();
 
-	QFile file(stl_filename);
-	if (!file.open(QIODevice::ReadWrite)) {
+	std::ofstream fstream(stl_filename.toUtf8());
+	if (!fstream.is_open()) {
 		PRINTA("Can't open file \"%1\" for export", stl_filename);
 	}
 	else {
-		QTextStream fstream(&file);
 		if (stl_mode) export_stl(this->root_N, fstream, pd);
 		else export_off(this->root_N, fstream, pd);
-		file.close();
+		fstream.close();
 
 		PRINTF("%s export finished.", stl_mode ? "STL" : "OFF");
 	}
@@ -1458,14 +1459,13 @@ void MainWindow::actionExportDXF()
 		return;
 	}
 
-	QFile file(dxf_filename);
-	if (!file.open(QIODevice::ReadWrite)) {
-		PRINTA("Can't open file \"%1\" for export", dxf_filename);
+	std::ofstream fstream(dxf_filename.toUtf8());
+	if (!fstream.is_open()) {
+		PRINTA("Can't open file \"%s\" for export", dxf_filename);
 	}
 	else {
-		QTextStream fstream(&file);
 		export_dxf(this->root_N, fstream, NULL);
-		file.close();
+		fstream.close();
 		PRINTF("DXF export finished.");
 	}
 

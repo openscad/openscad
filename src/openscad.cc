@@ -39,6 +39,7 @@
 
 #include <string>
 #include <vector>
+#include <fstream>
 
 #ifdef ENABLE_CGAL
 #include "CGAL_Nef_polyhedron.h"
@@ -318,38 +319,35 @@ int main(int argc, char **argv)
 		}
 
 		if (stl_output_file) {
-			QFile file(stl_output_file);
-			if (!file.open(QIODevice::ReadWrite)) {
-				PRINTA("Can't open file \"%1\" for export", stl_output_file);
+			std::ofstream fstream(stl_output_file);
+			if (!fstream.is_open()) {
+				PRINTF("Can't open file \"%s\" for export", stl_output_file);
 			}
 			else {
-				QTextStream fstream(&file);
 				export_stl(&root_N, fstream, NULL);
-				file.close();
+				fstream.close();
 			}
 		}
 
 		if (off_output_file) {
-			QFile file(stl_output_file);
-			if (!file.open(QIODevice::ReadWrite)) {
-				PRINTA("Can't open file \"%1\" for export", stl_output_file);
+			std::ofstream fstream(stl_output_file);
+			if (!fstream.is_open()) {
+				PRINTF("Can't open file \"%s\" for export", stl_output_file);
 			}
 			else {
-				QTextStream fstream(&file);
 				export_off(&root_N, fstream, NULL);
-				file.close();
+				fstream.close();
 			}
 		}
 
 		if (dxf_output_file) {
-			QFile file(dxf_output_file);
-			if (!file.open(QIODevice::ReadWrite)) {
-				PRINTA("Can't open file \"%1\" for export", dxf_output_file);
+			std::ofstream fstream(dxf_output_file);
+			if (!fstream.is_open()) {
+				PRINTF("Can't open file \"%s\" for export", dxf_output_file);
 			}
 			else {
-				QTextStream fstream(&file);
 				export_dxf(&root_N, fstream, NULL);
-				file.close();
+				fstream.close();
 			}
 		}
 
