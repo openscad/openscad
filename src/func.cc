@@ -31,6 +31,9 @@
 #include "builtin.h"
 #include "mathc99.h"
 #include <time.h>
+#include <QImage>
+#include <QColor>
+#include <math.h>
 
 AbstractFunction::~AbstractFunction()
 {
@@ -315,6 +318,40 @@ Value builtin_str(const Context *, const QVector<QString>&, const QVector<Value>
 	return Value(str);
 }
 
+Value builtin_length(const Context *, const QVector<QString>&, const QVector<Value> &args)
+{
+	if (args.size() == 1){
+		if (args[0].type == Value::VECTOR)
+			return Value((double) args[0].vec.size());
+		if (args[0].type == Value::STRING)
+			return Value((double) args[0].text.size());
+	}
+	return Value();
+}
+
+Value builtin_image(const Context *, const QVector<QString>&, const QVector<Value> &args)
+{
+	Value ret = Value();
+	if (args.size() == 1 && args[0].type == Value::STRING){
+		ret.type = Value::POINT;
+		ret.misc_pointer = (void*) new QImage(args[0].text);
+	}
+	return ret;
+}
+
+Value builtin_pixel(const Context *, const QVector<QString>&, const QVector<Value> &args)
+{
+	if (args.size() == 3 && args[0].type == Value::POINT && args[1].type == Value::NUMBER && args[2].type == Value::NUMBER){
+		QImage *img = (QImage*) args[0].misc_pointer;
+		double x,y;
+		float dx = modf(img->width()/args[1].num, &x);
+		float dy = modf(img->height()/args[2].num, &y);
+		return Value(QColor(img->pixel((int) x,(int) y)).lightnessF());
+		
+	}
+	return Value();
+}
+
 Value builtin_lookup(const Context *, const QVector<QString>&, const QVector<Value> &args)
 {
 	double p, low_p, low_v, high_p, high_v;
@@ -365,7 +402,10 @@ void initialize_builtin_functions()
 	builtin_functions["exp"] = new BuiltinFunction(&builtin_exp);
 	builtin_functions["log"] = new BuiltinFunction(&builtin_log);
 	builtin_functions["ln"] = new BuiltinFunction(&builtin_ln);
+	builtin_functions["length"] = new BuiltinFunction(&builtin_length);
 	builtin_functions["str"] = new BuiltinFunction(&builtin_str);
+	builtin_functions["image"] = new BuiltinFunction(&builtin_image);
+	builtin_functions["pixel"] = new BuiltinFunction(&builtin_pixel);
 	builtin_functions["lookup"] = new BuiltinFunction(&builtin_lookup);
 	initialize_builtin_dxf_dim();
 }

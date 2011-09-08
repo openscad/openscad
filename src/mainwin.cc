@@ -167,7 +167,7 @@ MainWindow::MainWindow(const QString &filename)
 	fps = 0;
 	fsteps = 1;
 
-	highlighter = NULL;
+	highlighter = new Highlighter(editor->document(),Highlighter::NORMAL_MODE);
 #ifdef _QCODE_EDIT_
 	QFormatScheme *formats = new QFormatScheme("qxs/openscad.qxf");
 	QDocument::setDefaultFormatScheme(formats);
@@ -178,7 +178,10 @@ MainWindow::MainWindow(const QString &filename)
 	editor->setTabStopWidth(30);
 #endif
 	editor->setLineWrapping(true); // Not designable
-	setFont("", 0); // Init default font
+	// Select a monospaced font; even if this font doesn't exist, it will try
+	// to fall back to the most similar font, which should be monospaced.
+	setFont("Monospace", 12); 
+	editor->setAcceptRichText(false);
 
 	screen->statusLabel = new QLabel(this);
 	statusBar()->addWidget(screen->statusLabel);
@@ -657,12 +660,13 @@ void MainWindow::compile(bool procevents)
 	root_module = parse((last_compiled_doc + "\n" + commandline_commands).toAscii().data(), this->fileName.isEmpty() ? "" : QFileInfo(this->fileName).absolutePath().toLocal8Bit(), false);
 
 	// Error highlighting
-	if (highlighter) {
+	// Note: Highlighter(*parent, bool ErrorMode=false)
+	if (parser_error_pos >= 0 && highlighter->mode == Highlighter::NORMAL_MODE) {
 		delete highlighter;
-		highlighter = NULL;
-	}
-	if (parser_error_pos >= 0) {
-		highlighter = new Highlighter(editor->document());
+		highlighter = new Highlighter(editor->document(), Highlighter::ERROR_MODE);
+	} else if (highlighter->mode == Highlighter::ERROR_MODE) {
+		delete highlighter;
+		highlighter = new Highlighter(editor->document(), Highlighter::NORMAL_MODE);
 	}
 
 	if (!root_module) {

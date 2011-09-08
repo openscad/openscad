@@ -57,6 +57,8 @@ Value Expression::evaluate(const Context *context) const
 		return children[0]->evaluate(context) % children[1]->evaluate(context);
 	if (type == "+")
 		return children[0]->evaluate(context) + children[1]->evaluate(context);
+	if (type == "++")
+		return children[0]->evaluate(context).concat(children[1]->evaluate(context));
 	if (type == "-")
 		return children[0]->evaluate(context) - children[1]->evaluate(context);
 	if (type == "<")
@@ -84,6 +86,16 @@ Value Expression::evaluate(const Context *context) const
 			int i = (int)(v2.num);
 			if (i >= 0 && i < v1.vec.size())
 				return *v1.vec[i];
+			if (i >= v1.vec.size()){
+				for (int j = v1.vec.size(); j <= i; ++j)
+					v1.vec.append(new Value(0.));
+				return *v1.vec[i];
+			}
+		}
+		if (v1.type == Value::STRING && v2.type == Value::NUMBER) {
+			int i = (int)(v2.num);
+			if (i >= 0 && i < v1.text.size())
+				return Value(QString(v1.text[i]));
 		}
 		return Value();
 	}

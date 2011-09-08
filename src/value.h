@@ -13,7 +13,8 @@ public:
 		NUMBER,
 		RANGE,
 		VECTOR,
-		STRING
+		STRING,
+		POINT
 	};
 
 	enum type_e type;
@@ -24,6 +25,7 @@ public:
 	double range_begin;
 	double range_step;
 	double range_end;
+	void *misc_pointer;
 	QString text;
 
 	Value();
@@ -45,6 +47,7 @@ public:
 	Value operator * (const Value &v) const;
 	Value operator / (const Value &v) const;
 	Value operator % (const Value &v) const;
+	Value concat (const Value &v) const;
 
 	Value operator < (const Value &v) const;
 	Value operator <= (const Value &v) const;

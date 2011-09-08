@@ -27,6 +27,7 @@
 #include "value.h"
 #include "mathc99.h"
 
+
 Value::Value()
 {
 	reset_undef();
@@ -119,6 +120,23 @@ Value Value::operator + (const Value &v) const
 	return Value();
 }
 
+Value Value::concat (const Value &v) const
+{
+	if (this->type == VECTOR && v.type == VECTOR) {
+		Value r;
+		r.type = VECTOR;
+		for (int i = 0; i < this->vec.size(); i++)
+			r.vec.append(new Value(*this->vec[i]));
+		for (int i = 0; i < v.vec.size(); i++)
+			r.vec.append(new Value(*v.vec[i]));
+		return r;
+	}
+	if (this->type == STRING && v.type == STRING) {
+		return Value(this->text + v.text);
+	}
+	return Value();
+}
+
 Value Value::operator - (const Value &v) const
 {
 	if (this->type == VECTOR && v.type == VECTOR) {
@@ -150,6 +168,14 @@ Value Value::operator * (const Value &v) const
 			r.vec.append(new Value(*this * *v.vec[i]));
 		return r;
 	}
+	if (this->type == VECTOR && v.type == VECTOR) { // dot product
+		double num = 0;
+		for (int i = 0; i < this->vec.size() && i < v.vec.size(); i++){
+			if (this->vec[i]->type == NUMBER && v.vec[i]->type == NUMBER)
+				num += (this->vec[i]->num)*(v.vec[i]->num);
+		}
+		return Value(num);
+	}
 	if (this->type == NUMBER && v.type == NUMBER) {
 		return Value(this->num * v.num);
 	}
@@ -180,8 +206,35 @@ Value Value::operator / (const Value &v) const
 
 Value Value::operator % (const Value &v) const
 {
+	
 	if (this->type == NUMBER && v.type == NUMBER) {
 		return Value(fmod(this->num, v.num));
+	}
+	if (this->type == VECTOR && v.type == VECTOR) { // Cross Product
+		if ( this->vec.size() < 2 || v.vec.size() < 2
+		  || this->vec.size() > 3 || v.vec.size() > 3)
+			return Value();
+		for (int i = 0; i < v.vec.size(); i++){
+			if (v.vec[i]->type != NUMBER) 
+				return Value();
+		}
+		for (int i = 0; i < this->vec.size(); i++){
+			if (this->vec[i]->type != NUMBER) 
+				return Value();
+		}
+		Value r;
+		r.type = VECTOR;
+		if (this->vec.size() == 2 || v.vec.size() == 2){
+			r.vec.append(new Value(0.));
+			r.vec.append(new Value(0.));
+			r.vec.append(new Value((this->vec[0]->num)*(v.vec[1]->num) - (this->vec[1]->num)*(v.vec[0]->num)));
+			return r;
+		}
+		r.vec.append(new Value((this->vec[1]->num)*(v.vec[2]->num) - (this->vec[2]->num)*(v.vec[1]->num)));
+		r.vec.append(new Value((this->vec[2]->num)*(v.vec[0]->num) - (this->vec[0]->num)*(v.vec[2]->num)));
+		r.vec.append(new Value((this->vec[0]->num)*(v.vec[1]->num) - (this->vec[1]->num)*(v.vec[0]->num)));
+		return r;		
+		
 	}
 	return Value();
 }

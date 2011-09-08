@@ -175,6 +175,7 @@ use[ \t\r\n>]*"<"[^ \t\r\n>]+">" {
 "!="	return NE;
 "&&"	return AND;
 "||"	return OR;
+"++"	return CONCAT;
 
 . { return yytext[0]; }
 
