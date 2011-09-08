@@ -320,7 +320,11 @@ int main(int argc, char **argv)
 		}
 
 		if (stl_output_file) {
-			if (root_N.dim == 3 && !root_N.p3->is_simple()) {
+			if (root_N.dim != 3) {
+				fprintf(stderr, "Current top level object is not a 3D object.\n");
+				exit(1);
+			}
+			if (!root_N.p3->is_simple()) {
 				fprintf(stderr, "Object isn't a valid 2-manifold! Modify your design.\n");
 				exit(1);
 			}
@@ -335,7 +339,11 @@ int main(int argc, char **argv)
 		}
 
 		if (off_output_file) {
-			if (root_N.dim == 3 && !root_N.p3->is_simple()) {
+			if (root_N.dim != 3) {
+				fprintf(stderr, "Current top level object is not a 3D object.\n");
+				exit(1);
+			}
+			if (!root_N.p3->is_simple()) {
 				fprintf(stderr, "Object isn't a valid 2-manifold! Modify your design.\n");
 				exit(1);
 			}
