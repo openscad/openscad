@@ -1,10 +1,13 @@
 #include "CGAL_Nef_polyhedron.h"
 #include "cgal.h"
 #include "cgalutils.h"
+#include "printutils.h"
 #include "polyset.h"
 #include "dxfdata.h"
 #include "dxftess.h"
 #include <CGAL/minkowski_sum_3.h>
+#include <CGAL/assertions_behaviour.h>
+#include <CGAL/exceptions.h>
 
 CGAL_Nef_polyhedron& CGAL_Nef_polyhedron::operator+=(const CGAL_Nef_polyhedron &other)
 {
@@ -31,8 +34,15 @@ extern CGAL_Nef_polyhedron2 minkowski2(const CGAL_Nef_polyhedron2 &a, const CGAL
 
 CGAL_Nef_polyhedron &CGAL_Nef_polyhedron::minkowski(const CGAL_Nef_polyhedron &other)
 {
-	if (this->dim == 2) (*this->p2) = minkowski2(*this->p2, *other.p2);
-	else if (this->dim == 3) (*this->p3) = CGAL::minkowski_sum_3(*this->p3, *other.p3);
+	CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
+	try {
+		if (this->dim == 2) (*this->p2) = minkowski2(*this->p2, *other.p2);
+		else if (this->dim == 3) (*this->p3) = CGAL::minkowski_sum_3(*this->p3, *other.p3);
+	}
+	catch (CGAL::Assertion_exception e) {
+		PRINTF("CGAL error in minkowski %s", e.what());
+		CGAL::set_error_behaviour(old_behaviour);
+	}
 	return *this;
 }
 
