@@ -1,9 +1,16 @@
 OpenSCAD 20xx.yy
 ================
 
+Features:
+o The MCAD library is now bundled with OpenSCAD
+o Added import and export of the OFF file format
+o New import() statement reads the correct file format based on the filename extension
+  (.stl, .dxf and .off is supported)
+
 Bugfixes:
 o square() crashed if any of the dimensions were zero
 o Flush Caches didn't flush cached USE'd modules
+o STL export should be a bit more robust
 
 Deprecations:
 o dxf_linear_extrude() and dxf_rotate_extrude() are now deprecated.
