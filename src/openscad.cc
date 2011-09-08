@@ -319,6 +319,10 @@ int main(int argc, char **argv)
 		}
 
 		if (stl_output_file) {
+			if (root_N->dim == 3 && !root_N->p3.is_simple()) {
+				fprintf(stderr, "Object isn't a valid 2-manifold! Modify your design.\n");
+				exit(1);
+			}
 			std::ofstream fstream(stl_output_file);
 			if (!fstream.is_open()) {
 				PRINTF("Can't open file \"%s\" for export", stl_output_file);
@@ -330,6 +334,10 @@ int main(int argc, char **argv)
 		}
 
 		if (off_output_file) {
+			if (root_N->dim == 3 && !root_N->p3.is_simple()) {
+				fprintf(stderr, "Object isn't a valid 2-manifold! Modify your design.\n");
+				exit(1);
+			}
 			std::ofstream fstream(stl_output_file);
 			if (!fstream.is_open()) {
 				PRINTF("Can't open file \"%s\" for export", stl_output_file);
