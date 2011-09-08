@@ -130,7 +130,7 @@ o 2D Subsystem
 o Built-in modules
   - extrude*: Allow the base 2D primitive to have a Z value
   - rotate_extrude(): Allow for specification of start/stop/sweep angle?
-  - Convex hull of multiple 2D or 2D objects
+  - Convex hull of 3D objects
 o Advanced Transformations
   - Add statement for refinement via surface subdivision
   - Add statement for intersections in cartesian product of childs
@@ -167,7 +167,6 @@ o Misc
 o Grammar
   - dim->name -> dim->label
   - A random(seed) function
-  - import_*() -> *_import() (consistent prefix vs. postfix)
   - linear_extrude()/rotate_extrude(): Cumbersome names? -> (extrude, revolve, lathe, sweep ?) 
 o Hollow donut problem
   When extruding a 2D CSG tree (e.g. a polygon with a hole), the hole
