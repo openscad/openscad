@@ -318,6 +318,11 @@ int main(int argc, char **argv)
 			fclose(fp);
 		}
 
+		if (root_N->dim == 3 && !root_N->p3.is_simple()) {
+			fprintf(stderr, "Object isn't a valid 2-manifold! Modify your design.\n");
+			exit(1);
+		}
+
 		if (stl_output_file)
 			export_stl(root_N, stl_output_file, NULL);
 
