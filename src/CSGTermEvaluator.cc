@@ -133,6 +133,8 @@ Response CSGTermEvaluator::visit(State &state, const CsgNode &node)
 		case CSG_TYPE_INTERSECTION:
 			op = CSGT_INTERSECTION;
 			break;
+		default:
+			assert(false);
 		}
 		applyToChildren(node, op);
 		addToParent(state, node);
