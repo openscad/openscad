@@ -340,6 +340,7 @@ MainWindow::MainWindow(const QString &filename)
 	} else {
 		setFileName("");
 	}
+	updateRecentFileActions();
 
 	connect(editor->document(), SIGNAL(contentsChanged()), this, SLOT(animateUpdateDocChanged()));
 #ifdef _QCODE_EDIT_
@@ -491,6 +492,7 @@ MainWindow::openFile(const QString &new_filename)
 	setFileName(new_filename);
 
 	load();
+	updateRecentFiles();
 }
 
 void
@@ -510,13 +512,6 @@ MainWindow::setFileName(const QString &filename)
 		QString infoFileName = fileinfo.absoluteFilePath();
 		if (!infoFileName.isEmpty()) {
 			this->fileName = infoFileName;
-			QSettings settings; // already set up properly via main.cpp
-			QStringList files = settings.value("recentFileList").toStringList();
-			files.removeAll(this->fileName);
-			files.prepend(this->fileName);
-			while (files.size() > maxRecentFiles)
-				files.removeLast();
-			settings.setValue("recentFileList", files);
 		} else {
 			this->fileName = fileinfo.fileName();
 		}
@@ -525,6 +520,21 @@ MainWindow::setFileName(const QString &filename)
 		QDir::setCurrent(fileinfo.dir().absolutePath());
 	}
 
+}
+
+void MainWindow::updateRecentFiles()
+{
+	// Check that the canonical file path exists - only update recent files
+	// if it does. Should prevent empty list items on initial open etc.
+	QFileInfo fileinfo(this->fileName);
+	QString infoFileName = fileinfo.absoluteFilePath();
+	QSettings settings; // already set up properly via main.cpp
+	QStringList files = settings.value("recentFileList").toStringList();
+	files.removeAll(infoFileName);
+	files.prepend(infoFileName);
+	while (files.size() > maxRecentFiles) files.removeLast();
+	settings.setValue("recentFileList", files);
+
 	foreach(QWidget *widget, QApplication::topLevelWidgets()) {
 		MainWindow *mainWin = qobject_cast<MainWindow *>(widget);
 		if (mainWin) {
@@ -532,6 +542,7 @@ MainWindow::setFileName(const QString &filename)
 		}
 	}
 }
+
 
 void MainWindow::updatedFps()
 {
@@ -988,6 +999,7 @@ void MainWindow::actionSave()
 			this->editor->setContentModified(false);
 		}
 		clearCurrentOutput();
+		updateRecentFiles();
 	}
 }
 
