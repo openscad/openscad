@@ -602,7 +602,7 @@ CGAL_Nef_polyhedron CGALEvaluator::evaluateCGALMesh(const PolySet &ps)
 			}
 		}
 		catch (CGAL::Assertion_exception e) {
-			PRINTF("CGAL error: %s", e.what());
+			PRINTF("CGAL error in CGA_Nef_polyhedron3(): %s", e.what());
 			CGAL::set_error_behaviour(old_behaviour);
 			return CGAL_Nef_polyhedron();
 		}
