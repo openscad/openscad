@@ -40,10 +40,6 @@ Using STL-imported models is tricky and triggers multiple issues:
 CRASH BUGS
 ----------
 o Broken polyhedron() entities are not correctly detected and cause CGAL segfaults
-o union() {
-    linear_extrude(height=10, twist=90) circle(5);
-    translate([7,-5,0]) linear_extrude(height=10, twist=180) polygon(points = [[0,0], [10,0], [5,10]]);
-  }
 o non-convex minkowski example from chrysn fails with an exception
 
 USER INTERFACE
@@ -118,6 +114,7 @@ o Misc
   - Save: Ask for confirmation if file has been externally changed
   - Rename OpenCSG and CGAL to smth. not specific to the underlying libraries
     (e.g Preview, Render)
+  - Recent files not updated on SaveAs
 o Cmd-line
   - Add verbose option (PRINT command from mainwin.cc and progress output)
 
@@ -144,7 +141,6 @@ o Function-Module-Interface
   - Pass a function to a module instanciation (e.g. for dynamic extrusion paths)
 o Language Frontend
   - Allow local variables and functions everywhere (not only on module level)
-  - allow any expression to be evaluated as boolean (!0 = true, 0 = false)
   - Rethink for vs. intersection_for vs. group. Should for loops
     generate child lists instead, and make these passable to other
     modules or accessible by child()?
