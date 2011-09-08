@@ -56,31 +56,6 @@ public:
 	virtual AbstractNode *evaluate(const Context *ctx, const ModuleInstantiation *inst) const;
 };
 
-using std::string;
-using std::vector;
-
-static vector<string> split(const string &str, const string &delim)
-{
-  assert(delim.size() > 0);
-
-	vector<string> strvec;
-  size_t start = 0, end = 0;
-  while (end != string::npos) {
-    end = str.find(delim, start);
-		// If at end, use length=maxLength.  Else use length=end-start.
-    strvec.push_back(str.substr(start, (end == string::npos) ? string::npos : end - start));
-		// If at end, use start=maxSize.  Else use start=end+delimiter.
-    start = ((end > (string::npos - delim.size())) ? string::npos : end + delim.size());
-  }
-	return strvec;
-}
-
-template <class T> static bool from_string(T &t, const string &s)
-{
-  std::istringstream iss(s);
-  return !(iss >> t).fail();
-}
-
 AbstractNode *TransformModule::evaluate(const Context *ctx, const ModuleInstantiation *inst) const
 {
 	TransformNode *node = new TransformNode(inst);
@@ -239,13 +214,13 @@ AbstractNode *TransformModule::evaluate(const Context *ctx, const ModuleInstanti
 		}
 	}
 
-	vector<AbstractNode *> evaluatednodes = inst->evaluateChildren();
+	std::vector<AbstractNode *> evaluatednodes = inst->evaluateChildren();
 	node->children.insert(node->children.end(), evaluatednodes.begin(), evaluatednodes.end());
 
 	return node;
 }
 
-string TransformNode::toString() const
+std::string TransformNode::toString() const
 {
 	std::stringstream stream;
 
@@ -265,7 +240,7 @@ string TransformNode::toString() const
 	return stream.str();
 }
 
-string TransformNode::name() const
+std::string TransformNode::name() const
 {
 	return "transform";
 }
