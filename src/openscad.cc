@@ -339,9 +339,9 @@ int main(int argc, char **argv)
 				fprintf(stderr, "Object isn't a valid 2-manifold! Modify your design.\n");
 				exit(1);
 			}
-			std::ofstream fstream(stl_output_file);
+			std::ofstream fstream(off_output_file);
 			if (!fstream.is_open()) {
-				PRINTF("Can't open file \"%s\" for export", stl_output_file);
+				PRINTF("Can't open file \"%s\" for export", off_output_file);
 			}
 			else {
 				export_off(&root_N, fstream, NULL);
