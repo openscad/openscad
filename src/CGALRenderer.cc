@@ -81,9 +81,9 @@ void CGALRenderer::draw(bool showfaces, bool showedges) const
 		const QColor &col = QColor(0x00, 0xbf, 0x99);
 		glColor3f(col.redF(), col.greenF(), col.blueF());
 		
-		for (int i=0; i < this->polyset->polygons.size(); i++) {
+		for (size_t i=0; i < this->polyset->polygons.size(); i++) {
 			glBegin(GL_POLYGON);
-			for (int j=0; j < this->polyset->polygons[i].size(); j++) {
+			for (size_t j=0; j < this->polyset->polygons[i].size(); j++) {
 				const Vector3d &p = this->polyset->polygons[i][j];
 				glVertex3d(p[0], p[1], -0.1);
 			}
