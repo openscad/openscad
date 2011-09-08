@@ -60,6 +60,10 @@ CGALRenderer::CGALRenderer(const CGAL_Nef_polyhedron &root) : root(root)
 		CGAL::OGL::Nef3_Converter<CGAL_Nef_polyhedron3>::convert_to_OGLPolyhedron(*this->root.p3, this->polyhedron);
 		this->polyhedron->init();
 	}
+	else {
+		this->polyhedron = NULL;
+		this->polyset = NULL;
+	}
 }
 
 CGALRenderer::~CGALRenderer()
