@@ -80,17 +80,29 @@ echo "Creating directory structure..."
 case $OS in
     MACOSX)
         EXAMPLESDIR=OpenSCAD.app/Contents/Resources/examples
+        LIBRARYDIR=OpenSCAD.app/Contents/Resources/libraries
     ;;
     *)
         EXAMPLESDIR=openscad-$VERSION/examples/
+        LIBRARYDIR=openscad-$VERSION/libraries/
         rm -rf openscad-$VERSION
         mkdir openscad-$VERSION
     ;;
 esac
 
-mkdir -p $EXAMPLESDIR
-cp examples/* $EXAMPLESDIR
-chmod -R 644 $EXAMPLESDIR/*
+if [ -n $EXAMPLESDIR ]; then
+  echo $EXAMPLESDIR
+  mkdir -p $EXAMPLESDIR
+  cp examples/* $EXAMPLESDIR
+  chmod -R 644 $EXAMPLESDIR/*
+fi
+if [ -n $LIBRARYDIR ]; then
+  echo $LIBRARYDIR
+  mkdir -p $LIBRARYDIR
+  cp -R libraries/* $LIBRARYDIR
+  chmod -R u=rwx,go=r,+X $LIBRARYDIR/*
+  rm -rf `find $LIBRARYDIR -name ".git"`
+fi
 
 echo "Creating archive.."
 
