@@ -62,7 +62,7 @@ void ThrownTogetherRenderer::renderCSGChain(CSGChain *chain, bool highlight,
 {
 	glDepthFunc(GL_LEQUAL);
 	QHash<QPair<PolySet*,double*>,int> polySetVisitMark;
-	for (int i = 0; i < chain->polysets.size(); i++) {
+	for (size_t i = 0; i < chain->polysets.size(); i++) {
 		if (polySetVisitMark[QPair<PolySet*,double*>(chain->polysets[i], chain->matrices[i])]++ > 0)
 			continue;
 		double *m = chain->matrices[i];

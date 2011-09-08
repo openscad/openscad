@@ -74,8 +74,8 @@ void OpenCSGRenderer::renderCSGChain(CSGChain *chain, GLint *shaderinfo,
 																		 bool highlight, bool background) const
 {
 	std::vector<OpenCSG::Primitive*> primitives;
-	int j = 0;
-	for (int i = 0;; i++) {
+	size_t j = 0;
+	for (size_t i = 0;; i++) {
 		bool last = i == chain->polysets.size();
 		if (last || chain->types[i] == CSGTerm::TYPE_UNION) {
 			if (j+1 != i) {
