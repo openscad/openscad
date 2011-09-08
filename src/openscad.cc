@@ -299,6 +299,7 @@ int main(int argc, char **argv)
 			fclose(fp);
 			text << commandline_commands;
 			root_module = parse(text.str().c_str(), fileInfo.absolutePath().toLocal8Bit(), false);
+			if (!root_module) exit(1);
 		}
 
 		QDir::setCurrent(fileInfo.absolutePath());
