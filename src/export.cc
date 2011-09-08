@@ -32,7 +32,6 @@
 #include <QApplication>
 #include <QProgressDialog>
 #include <errno.h>
-#include <fstream>
 
 #ifdef ENABLE_CGAL
 #include "CGAL_Nef_polyhedron.h"
