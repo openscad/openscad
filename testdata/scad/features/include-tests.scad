@@ -28,13 +28,13 @@ include <>
 module test1()
 {
 	test2();
-	test3();
-	test4();
-	test5();
-	test6();
+	translate([2,0,0]) test3();
+	translate([2,-2,0]) test4();
+	translate([-2,0,0]) test5();
+	translate([-2,-2,0]) test6();
 
 	//Just to give a top level object
-	sphere(1);
+	translate([0,-2,0]) sphere(0.7, $fn=16);
 }
 
 test1();

@@ -1,4 +1,4 @@
 module test5()
 {
-	echo("included from include-test5.scad");
+  sphere(r=0.5, $fn=8);
 }

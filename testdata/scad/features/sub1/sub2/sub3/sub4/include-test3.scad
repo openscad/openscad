@@ -1,4 +1,4 @@
 module test3()
 {
-	echo("included from include-test3.scad");
+  cylinder(r1=0.7, r2=0.2, center=true);
 }

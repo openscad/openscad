@@ -6,5 +6,5 @@ include <../include-test4.scad>
 
 module test2 ()
 {
-	echo("included from include-test2.scad");
+  cube(center=true);
 }
