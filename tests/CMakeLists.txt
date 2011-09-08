@@ -234,7 +234,8 @@ LIST(APPEND CGALPNGTEST_FILES
             ${CMAKE_SOURCE_DIR}/../testdata/scad/features/render-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/features/projection-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/features/assign-tests.scad
-            ${CMAKE_SOURCE_DIR}/../testdata/scad/features/include-tests.scad)
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/features/include-tests.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/features/child-tests.scad)
 #LIST(APPEND CGALPNGTEST_FILES ${CMAKE_SOURCE_DIR}/../examples/example001.scad)
 add_cmdline_test(cgalpngtest png ${CGALPNGTEST_FILES})
 
