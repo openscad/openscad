@@ -361,6 +361,30 @@ std::string Value::toString() const
 	return stream.str();
 }
 
+bool Value::toBool() const
+{
+	switch (this->type) {
+	case STRING:
+		return this->text.size() > 0;
+		break;
+	case VECTOR:
+		return this->vec.size() > 0;
+		break;
+	case RANGE:
+		return true;
+		break;
+	case NUMBER:
+		return this->num != 0;
+		break;
+	case BOOL:
+		return this->b;
+		break;
+	default:
+		return false;
+		break;
+	}
+}
+
 /*!
 	Append a value to this vector.
 	This must be of type VECTOR.

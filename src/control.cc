@@ -149,7 +149,7 @@ AbstractNode *ControlModule::evaluate(const Context*, const ModuleInstantiation 
 	if (type == IF)
 	{
 		const IfElseModuleInstantiation *ifelse = dynamic_cast<const IfElseModuleInstantiation*>(inst);
-		if (ifelse->argvalues.size() > 0 && ifelse->argvalues[0].type == Value::BOOL && ifelse->argvalues[0].b) {
+		if (ifelse->argvalues.size() > 0 && ifelse->argvalues[0].toBool()) {
 			std::vector<AbstractNode *> evaluatednodes = ifelse->evaluateChildren();
 			node->children.insert(node->children.end(), evaluatednodes.begin(), evaluatednodes.end());
 		}

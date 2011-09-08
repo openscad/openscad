@@ -61,6 +61,8 @@ public:
 
 	std::string toString() const;
 
+	bool toBool() const;
+
 	void append(Value *val);
 
 private:
