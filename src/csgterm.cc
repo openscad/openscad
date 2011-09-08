@@ -220,7 +220,7 @@ std::string CSGChain::dump()
 {
 	std::stringstream dump;
 
-	for (int i = 0; i < types.size(); i++)
+	for (size_t i = 0; i < types.size(); i++)
 	{
 		if (types[i] == CSGTerm::TYPE_UNION) {
 			if (i != 0) dump << "\n";

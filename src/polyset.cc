@@ -190,7 +190,7 @@ void PolySet::render_surface(colormode_e colormode, csgmode_e csgmode, double *m
 		glBegin(GL_TRIANGLES);
 		for (double z = -zbase/2; z < zbase; z += zbase)
 		{
-			for (int i = 0; i < polygons.size(); i++) {
+			for (size_t i = 0; i < polygons.size(); i++) {
 				const Polygon *poly = &polygons[i];
 				if (poly->size() == 3) {
 					if (z < 0) {
@@ -210,13 +210,13 @@ void PolySet::render_surface(colormode_e colormode, csgmode_e csgmode, double *m
 				}
 				else {
 					Vector3d center = Vector3d::Zero();
-					for (int j = 0; j < poly->size(); j++) {
+					for (size_t j = 0; j < poly->size(); j++) {
 						center[0] += poly->at(j)[0];
 						center[1] += poly->at(j)[1];
 					}
 					center[0] /= poly->size();
 					center[1] /= poly->size();
-					for (int j = 1; j <= poly->size(); j++) {
+					for (size_t j = 1; j <= poly->size(); j++) {
 						if (z < 0) {
 							gl_draw_triangle(shaderinfo, center, poly->at(j % poly->size()), poly->at(j - 1),
 									false, true, false, z, mirrored);
@@ -231,9 +231,9 @@ void PolySet::render_surface(colormode_e colormode, csgmode_e csgmode, double *m
 		const std::vector<Polygon> *borders_p = &borders;
 		if (borders_p->size() == 0)
 			borders_p = &polygons;
-		for (int i = 0; i < borders_p->size(); i++) {
+		for (size_t i = 0; i < borders_p->size(); i++) {
 			const Polygon *poly = &borders_p->at(i);
-			for (int j = 1; j <= poly->size(); j++) {
+			for (size_t j = 1; j <= poly->size(); j++) {
 				Vector3d p1 = poly->at(j - 1), p2 = poly->at(j - 1);
 				Vector3d p3 = poly->at(j % poly->size()), p4 = poly->at(j % poly->size());
 				p1[2] -= zbase/2, p2[2] += zbase/2;
@@ -244,7 +244,7 @@ void PolySet::render_surface(colormode_e colormode, csgmode_e csgmode, double *m
 		}
 		glEnd();
 	} else {
-		for (int i = 0; i < polygons.size(); i++) {
+		for (size_t i = 0; i < polygons.size(); i++) {
 			const Polygon *poly = &polygons[i];
 			glBegin(GL_TRIANGLES);
 			if (poly->size() == 3) {
@@ -256,7 +256,7 @@ void PolySet::render_surface(colormode_e colormode, csgmode_e csgmode, double *m
 			}
 			else {
 				Vector3d center = Vector3d::Zero();
-				for (int j = 0; j < poly->size(); j++) {
+				for (size_t j = 0; j < poly->size(); j++) {
 					center[0] += poly->at(j)[0];
 					center[1] += poly->at(j)[1];
 					center[2] += poly->at(j)[2];
@@ -264,7 +264,7 @@ void PolySet::render_surface(colormode_e colormode, csgmode_e csgmode, double *m
 				center[0] /= poly->size();
 				center[1] /= poly->size();
 				center[2] /= poly->size();
-				for (int j = 1; j <= poly->size(); j++) {
+				for (size_t j = 1; j <= poly->size(); j++) {
 					gl_draw_triangle(shaderinfo, center, poly->at(j - 1), poly->at(j % poly->size()), false, true, false, 0, mirrored);
 				}
 			}
@@ -287,20 +287,20 @@ void PolySet::render_edges(colormode_e colormode, csgmode_e csgmode) const
 		double zbase = csgmode;
 		for (double z = -zbase/2; z < zbase; z += zbase)
 		{
-			for (int i = 0; i < borders.size(); i++) {
+			for (size_t i = 0; i < borders.size(); i++) {
 				const Polygon *poly = &borders[i];
 				glBegin(GL_LINE_LOOP);
-				for (int j = 0; j < poly->size(); j++) {
+				for (size_t j = 0; j < poly->size(); j++) {
 					const Vector3d &p = poly->at(j);
 					glVertex3d(p[0], p[1], z);
 				}
 				glEnd();
 			}
 		}
-		for (int i = 0; i < borders.size(); i++) {
+		for (size_t i = 0; i < borders.size(); i++) {
 			const Polygon *poly = &borders[i];
 			glBegin(GL_LINES);
-			for (int j = 0; j < poly->size(); j++) {
+			for (size_t j = 0; j < poly->size(); j++) {
 				const Vector3d &p = poly->at(j);
 				glVertex3d(p[0], p[1], -zbase/2);
 				glVertex3d(p[0], p[1], +zbase/2);
@@ -308,10 +308,10 @@ void PolySet::render_edges(colormode_e colormode, csgmode_e csgmode) const
 			glEnd();
 		}
 	} else {
-		for (int i = 0; i < polygons.size(); i++) {
+		for (size_t i = 0; i < polygons.size(); i++) {
 			const Polygon *poly = &polygons[i];
 			glBegin(GL_LINE_LOOP);
-			for (int j = 0; j < poly->size(); j++) {
+			for (size_t j = 0; j < poly->size(); j++) {
 				const Vector3d &p = poly->at(j);
 				glVertex3d(p[0], p[1], p[2]);
 			}
@@ -323,9 +323,9 @@ void PolySet::render_edges(colormode_e colormode, csgmode_e csgmode) const
 BoundingBox PolySet::getBoundingBox() const
 {
 	BoundingBox bbox;
-	for (int i = 0; i < polygons.size(); i++) {
+	for (size_t i = 0; i < polygons.size(); i++) {
 		const Polygon &poly = polygons[i];
-		for (int j = 0; j < poly.size(); j++) {
+		for (size_t j = 0; j < poly.size(); j++) {
 			const Vector3d &p = poly[j];
 			bbox.extend(p);
 		}

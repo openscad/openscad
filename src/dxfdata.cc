@@ -385,7 +385,7 @@ DxfData::DxfData(double fn, double fs, double fa,
 			int idx = l.second;
 			for (int j = 0; j < 2; j++) {
 				std::vector<int> *lv = &grid.data(this->points[lines[idx].idx[j]][0], this->points[lines[idx].idx[j]][1]);
-				for (int ki = 0; ki < lv->size(); ki++) {
+				for (size_t ki = 0; ki < lv->size(); ki++) {
 					int k = lv->at(ki);
 					if (k == idx || lines[k].disabled)
 						continue;
@@ -411,7 +411,7 @@ DxfData::DxfData(double fn, double fs, double fa,
 			lines[current_line].disabled = true;
 			enabled_lines.erase(current_line);
 			std::vector<int> *lv = &grid.data(ref_point[0], ref_point[1]);
-			for (int ki = 0; ki < lv->size(); ki++) {
+			for (size_t ki = 0; ki < lv->size(); ki++) {
 				int k = lv->at(ki);
 				if (lines[k].disabled)
 					continue;
@@ -447,7 +447,7 @@ DxfData::DxfData(double fn, double fs, double fa,
 			lines[current_line].disabled = true;
 			enabled_lines.erase(current_line);
 			std::vector<int> *lv = &grid.data(ref_point[0], ref_point[1]);
-			for (int ki = 0; ki < lv->size(); ki++) {
+			for (size_t ki = 0; ki < lv->size(); ki++) {
 				int k = lv->at(ki);
 				if (lines[k].disabled)
 					continue;
