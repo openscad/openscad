@@ -40,7 +40,6 @@ Using STL-imported models is tricky and triggers multiple issues:
 CRASH BUGS
 ----------
 o Broken polyhedron() entities are not correctly detected and cause CGAL segfaults
-o non-convex minkowski example from chrysn fails with an exception
 
 USER INTERFACE
 --------------
@@ -114,7 +113,6 @@ o Misc
   - Save: Ask for confirmation if file has been externally changed
   - Rename OpenCSG and CGAL to smth. not specific to the underlying libraries
     (e.g Preview, Render)
-  - Recent files not updated on SaveAs
 o Cmd-line
   - Add verbose option (PRINT command from mainwin.cc and progress output)
 
@@ -136,6 +134,7 @@ o Built-in modules
 o Advanced Transformations
   - Add statement for refinement via surface subdivision
   - Add statement for intersections in cartesian product of childs
+  - non-convex minkowski example from chrysn fails with an exception (testdata/scad/bugs/minkowski-assert.scad)
 o Function-Module-Interface
   - Pass a module instanciation to a function (e.g. for a volume() function)
   - Pass a function to a module instanciation (e.g. for dynamic extrusion paths)
