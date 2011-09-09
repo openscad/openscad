@@ -9,13 +9,15 @@
 	class.
 */
 
+QCache<std::string, PolySetEvaluator::cache_entry> PolySetEvaluator::cache(100000);
+
 PolySet *PolySetEvaluator::getPolySet(const AbstractNode &node)
 {
 	const string &cacheid = this->tree.getString(node);
-	if (this->cache.contains(cacheid)) return this->cache[cacheid]->ps;
+	if (cache.contains(cacheid)) return cache[cacheid]->ps;
 
 	PolySet *ps = node.evaluate_polyset(this);
-	this->cache.insert(cacheid, new cache_entry(ps), ps?ps->polygons.size():0);
+	cache.insert(cacheid, new cache_entry(ps), ps?ps->polygons.size():0);
 	return ps;
 }
 
@@ -27,6 +29,6 @@ PolySetEvaluator::cache_entry::cache_entry(PolySet *ps)
 
 void PolySetEvaluator::printCache()
 {
-	PRINTF("PolySets in cache: %d", this->cache.size());
-	PRINTF("Polygons in cache: %d", this->cache.totalCost());
+	PRINTF("PolySets in cache: %d", cache.size());
+	PRINTF("Polygons in cache: %d", cache.totalCost());
 }

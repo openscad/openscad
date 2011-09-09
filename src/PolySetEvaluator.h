@@ -9,7 +9,7 @@
 class PolySetEvaluator
 {
 public:
-	PolySetEvaluator(const Tree &tree) : cache(100000), tree(tree) {}
+	PolySetEvaluator(const Tree &tree) : tree(tree) {}
 	virtual ~PolySetEvaluator() {}
 
 	const Tree &getTree() const { return this->tree; }
@@ -23,7 +23,7 @@ public:
 	virtual PolySet *evaluatePolySet(const class RenderNode &) { return NULL; }
 
 	void clearCache() {
-		this->cache.clear();
+		cache.clear();
 	}
 	void printCache();
 protected:
@@ -35,7 +35,7 @@ protected:
 		~cache_entry() { }
 	};
 
-	QCache<std::string, cache_entry> cache;
+	static QCache<std::string, cache_entry> cache;
 
 private:
 	const Tree &tree;
