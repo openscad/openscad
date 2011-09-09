@@ -49,6 +49,9 @@ private:
 
 	QHash<string, CGAL_Nef_polyhedron> &cache;
 	const Tree &tree;
+public:
+	// FIXME: Do we need to make this visible? Used for cache management
+ // Note: psevaluator constructor needs this->tree to be initialized first
 	PolySetCGALEvaluator psevaluator;
 };
 

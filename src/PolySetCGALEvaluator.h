@@ -10,14 +10,13 @@
 class PolySetCGALEvaluator : public PolySetEvaluator
 {
 public:
-	PolySetCGALEvaluator(class CGALEvaluator &CGALEvaluator) : 
-		PolySetEvaluator(), cgalevaluator(CGALEvaluator) { }
+	PolySetCGALEvaluator(class CGALEvaluator &cgalevaluator);
 	virtual ~PolySetCGALEvaluator() { }
-	virtual PolySet *evaluatePolySet(const ProjectionNode &node, AbstractPolyNode::render_mode_e);
-	virtual PolySet *evaluatePolySet(const DxfLinearExtrudeNode &node, AbstractPolyNode::render_mode_e);
-	virtual PolySet *evaluatePolySet(const DxfRotateExtrudeNode &node, AbstractPolyNode::render_mode_e);
-	virtual PolySet *evaluatePolySet(const CgaladvNode &node, AbstractPolyNode::render_mode_e);
-	virtual PolySet *evaluatePolySet(const RenderNode &node, AbstractPolyNode::render_mode_e);
+	virtual PolySet *evaluatePolySet(const ProjectionNode &node);
+	virtual PolySet *evaluatePolySet(const DxfLinearExtrudeNode &node);
+	virtual PolySet *evaluatePolySet(const DxfRotateExtrudeNode &node);
+	virtual PolySet *evaluatePolySet(const CgaladvNode &node);
+	virtual PolySet *evaluatePolySet(const RenderNode &node);
 
 protected:
 	PolySet *extrudeDxfData(const DxfLinearExtrudeNode &node, class DxfData &dxf);

@@ -167,8 +167,6 @@ CSGTerm *CSGTerm::link()
 void CSGTerm::unlink()
 {
 	if (--refcounter <= 0) {
-		if (polyset)
-			polyset->unlink();
 		if (left)
 			left->unlink();
 		if (right)

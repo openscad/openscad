@@ -216,7 +216,6 @@ Response CGALEvaluator::visit(State &state, const TransformNode &node)
 				dxf_tesselate(&ps, *dd, 0, true, false, 0);
 				
 				N = evaluateCGALMesh(ps);
-				ps.refcount = 0;
 				delete dd;
 			}
 			else if (N.dim == 3) {
@@ -240,18 +239,15 @@ Response CGALEvaluator::visit(State &state, const AbstractPolyNode &node)
 	if (state.isPostfix()) {
 		if (!isCached(node)) {
 			// Apply polyset operation
-			PolySet *ps = node.evaluate_polyset(AbstractPolyNode::RENDER_CGAL, &this->psevaluator);
+			PolySet *ps = this->psevaluator.getPolySet(node);
 			CGAL_Nef_polyhedron N;
 			if (ps) {
 				try {
 					N = evaluateCGALMesh(*ps);
 //				print_messages_pop();
 					node.progress_report();
-					
-					ps->unlink();
 				}
-				catch (...) { // Don't leak the PolySet on ProgressCancelException
-					ps->unlink();
+				catch (...) {
 					throw;
 				}
 			}
@@ -316,7 +312,7 @@ CGAL_Nef_polyhedron CGALEvaluator::evaluateCGALMesh(const AbstractPolyNode &node
 
 	// 	print_messages_push();
 	
-	PolySet *ps = node.evaluate_polyset(AbstractPolyNode::RENDER_CGAL);
+	PolySet *ps = this->psevaluator->getPolySet(node);
 	if (ps) {
 		try {
 			CGAL_Nef_polyhedron N = ps->evaluateCSGMesh();

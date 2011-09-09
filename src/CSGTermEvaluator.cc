@@ -108,10 +108,12 @@ Response CSGTermEvaluator::visit(State &state, const AbstractPolyNode &node)
 {
 	if (state.isPostfix()) {
 		CSGTerm *t1 = NULL;
-		PolySet *ps = node.evaluate_polyset(AbstractPolyNode::RENDER_OPENCSG, this->psevaluator);
-		if (ps) {
-			t1 = evaluate_csg_term_from_ps(state, this->highlights, this->background, 
-																	 ps, node.modinst, node);
+		if (this->psevaluator) {
+			PolySet *ps = this->psevaluator->getPolySet(node);
+			if (ps) {
+				t1 = evaluate_csg_term_from_ps(state, this->highlights, this->background, 
+																			 ps, node.modinst, node);
+			}
 		}
 		this->stored_term[node.index()] = t1;
 		addToParent(state, node);
@@ -182,10 +184,9 @@ Response CSGTermEvaluator::visit(State &state, const RenderNode &node)
 {
 	if (state.isPostfix()) {
 		CSGTerm *t1 = NULL;
-    // FIXME: Calling evaluator directly since we're not a PolyNode. Generalize this.
 		PolySet *ps = NULL;
 		if (this->psevaluator) {
-			ps = this->psevaluator->evaluatePolySet(node, AbstractPolyNode::RENDER_OPENCSG);
+			ps = this->psevaluator->getPolySet(node);
 		}
 		if (ps) {
 			t1 = evaluate_csg_term_from_ps(state, this->highlights, this->background, 
@@ -204,7 +205,7 @@ Response CSGTermEvaluator::visit(State &state, const CgaladvNode &node)
     // FIXME: Calling evaluator directly since we're not a PolyNode. Generalize this.
 		PolySet *ps = NULL;
 		if (this->psevaluator) {
-			ps = this->psevaluator->evaluatePolySet(node, AbstractPolyNode::RENDER_OPENCSG);
+			ps = this->psevaluator->getPolySet(node);
 		}
 		if (ps) {
 			t1 = evaluate_csg_term_from_ps(state, this->highlights, this->background, 

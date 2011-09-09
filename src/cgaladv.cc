@@ -29,6 +29,7 @@
 #include "context.h"
 #include "builtin.h"
 #include "printutils.h"
+#include "PolySetEvaluator.h"
 #include <sstream>
 #include <assert.h>
 #include <boost/assign/std/vector.hpp>
@@ -90,6 +91,11 @@ AbstractNode *CgaladvModule::evaluate(const Context *ctx, const ModuleInstantiat
 	node->children.insert(node->children.end(), evaluatednodes.begin(), evaluatednodes.end());
 
 	return node;
+}
+
+PolySet *CgaladvNode::evaluate_polyset(PolySetEvaluator *ps) const
+{
+	return ps->evaluatePolySet(*this);
 }
 
 void register_builtin_cgaladv()

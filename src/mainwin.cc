@@ -790,6 +790,7 @@ void MainWindow::compileCSG(bool procevents)
 			if (procevents)
 				QApplication::processEvents();
 		}
+		psevaluator.printCache();
 	}
 	catch (ProgressCancelException e) {
 		PRINT("CSG generation cancelled.");
@@ -1225,6 +1226,7 @@ void MainWindow::actionRenderCGAL()
 		QHash<std::string, CGAL_Nef_polyhedron> cache;
 		CGALEvaluator evaluator(cache, this->tree);
 		this->root_N = new CGAL_Nef_polyhedron(evaluator.evaluateCGALMesh(*this->root_node));
+		evaluator.psevaluator.printCache();
 	}
 	catch (ProgressCancelException e) {
 		PRINT("Rendering cancelled.");
