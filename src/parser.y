@@ -575,6 +575,7 @@ void yyerror (char const *s)
 	module = NULL;
 }
 
+extern void lexerdestroy();
 extern FILE *lexerin;
 extern const char *parser_input_buffer;
 const char *parser_input_buffer;
@@ -592,7 +593,7 @@ AbstractModule *parse(const char *text, const char *path, int debug)
 
 	parserdebug = debug;
 	parserparse();
-
+        lexerdestroy();
 	lexerlex_destroy();
 
 	if (!module)

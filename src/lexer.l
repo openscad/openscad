@@ -33,6 +33,7 @@
 #include <QStack>
 #include <QFileInfo>
 #include <QDir>
+#include <assert.h>
 
 //isatty for visual c++
 #ifdef _MSC_VER
@@ -71,6 +72,7 @@ extern const char *parser_source_path;
 void includefile();
 QDir sourcepath();
 QStack<QDir> path_stack;
+QStack<FILE*> openfiles;
 
 QString filename;
 QString filepath;
@@ -122,6 +124,7 @@ use[ \t\r\n>]*"<"[^ \t\r\n>]+">" {
 	if (!yyin) {
 		PRINTF("WARNING: Can't open input file `%s'.", filename);
 	} else {
+		openfiles.append(yyin);
 		yypush_buffer_state(yy_create_buffer( yyin, YY_BUF_SIZE ));
 		BEGIN(INITIAL);
 	}
@@ -129,10 +132,12 @@ use[ \t\r\n>]*"<"[^ \t\r\n>]+">" {
 }
 
 <<EOF>> {
-	if(!path_stack.isEmpty())
+	if(!path_stack.empty())
 		path_stack.pop();
-	if (yyin && yyin != stdin)
-		fclose(yyin);
+	if (yyin && yyin != stdin) {
+		assert(!openfiles.empty());
+		fclose(openfiles.pop());
+	}
 	yypop_buffer_state();
 	if (!YY_CURRENT_BUFFER)
 		yyterminate();
@@ -183,7 +188,7 @@ use[ \t\r\n>]*"<"[^ \t\r\n>]+">" {
 
 QDir sourcepath()
 {
-	if(!path_stack.isEmpty())
+	if(!path_stack.empty())
 		return path_stack.top();
 
 	return QDir(parser_source_path);
@@ -214,8 +219,19 @@ void includefile()
 		path_stack.pop();
 		return;
 	}
+	openfiles.append(yyin);
 	filename.clear();
 
 	yypush_buffer_state(yy_create_buffer( yyin, YY_BUF_SIZE ));
 }
 
+/*!
+  In case of an error, this will make sure we clean up our custom data structures 
+  and close all files.
+*/
+void lexerdestroy()
+{
+  foreach (FILE *f, openfiles) fclose(f);
+  openfiles.clear();
+  path_stack.clear();
+}
