@@ -12,6 +12,8 @@ const std::string &Tree::getString(const AbstractNode &node) const
 {
 	assert(this->root_node);
 	if (!this->nodecache.contains(node)) {
+		this->nodecache.clear();
+		this->nodeidcache.clear();
 		NodeDumper dumper(this->nodecache, false);
 		Traverser trav(dumper, *this->root_node, Traverser::PRE_AND_POSTFIX);
 		trav.execute();
