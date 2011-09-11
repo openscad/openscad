@@ -1,6 +1,6 @@
 #include "PolySetCache.h"
 #include "printutils.h"
-#include "PolySet.h"
+#include "polyset.h"
 
 PolySetCache *PolySetCache::inst = NULL;
 
