@@ -217,6 +217,7 @@ HEADERS += src/cgal.h \
            src/cgalfwd.h \
            src/cgalutils.h \
            src/CGALEvaluator.h \
+           src/CGALCache.h \
            src/PolySetCGALEvaluator.h \
            src/CGALRenderer.h \
            src/CGAL_Nef_polyhedron.h
@@ -224,6 +225,7 @@ HEADERS += src/cgal.h \
 SOURCES += src/cgalutils.cc \
            src/CGALEvaluator.cc \
            src/PolySetCGALEvaluator.cc \
+           src/CGALCache.cc \
            src/CGALRenderer.cc \
            src/CGAL_Nef_polyhedron.cc \
            src/CGAL_Nef_polyhedron_DxfData.cc \

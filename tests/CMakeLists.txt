@@ -144,7 +144,7 @@ include_directories(${CGAL_INCLUDE_DIRS})
 # cgaltest
 #
 add_executable(cgaltest cgaltest.cc ../src/CGAL_Nef_polyhedron.cc ../src/cgalutils.cc ../src/CSGTermEvaluator.cc
-                        ../src/CGALEvaluator.cc ../src/PolySetCGALEvaluator.cc ../src/qhash.cc
+                        ../src/CGALEvaluator.cc ../src/CGALCache.cc ../src/PolySetCGALEvaluator.cc ../src/qhash.cc
                         ../src/CGAL_Nef_polyhedron_DxfData.cc ../src/cgaladv_minkowski2.cc ../src/cgaladv_convexhull2.cc
                         ${COMMON_SOURCES})
 set_target_properties(cgaltest PROPERTIES COMPILE_FLAGS "-DENABLE_CGAL ${CGAL_CXX_FLAGS_INIT}")
@@ -155,7 +155,7 @@ target_link_libraries(cgaltest ${CGAL_LIBRARY} ${CGAL_3RD_PARTY_LIBRARIES} ${QT_
 #
 add_executable(cgalpngtest cgalpngtest.cc OffscreenView.cc OffscreenContext.mm
                            ../src/CGALRenderer.cc ../src/CGAL_Nef_polyhedron.cc ../src/cgalutils.cc
-                           ../src/CSGTermEvaluator.cc ../src/CGALEvaluator.cc
+                           ../src/CSGTermEvaluator.cc ../src/CGALEvaluator.cc ../src/CGALCache.cc
                            ../src/PolySetCGALEvaluator.cc ../src/qhash.cc
                            ../src/CGAL_Nef_polyhedron_DxfData.cc ../src/cgaladv_minkowski2.cc ../src/cgaladv_convexhull2.cc
                            ${COMMON_SOURCES})
@@ -168,7 +168,7 @@ target_link_libraries(cgalpngtest ${CGAL_LIBRARY} ${CGAL_3RD_PARTY_LIBRARIES} ${
 add_executable(opencsgtest opencsgtest.cc OffscreenView.cc OffscreenContext.mm
                            ../src/OpenCSGRenderer.cc ../src/ThrownTogetherRenderer.cc
                            ../src/CSGTermEvaluator.cc ../src/CGAL_Nef_polyhedron.cc ../src/cgalutils.cc
-                           ../src/CGALEvaluator.cc ../src/PolySetCGALEvaluator.cc ../src/qhash.cc
+                           ../src/CGALEvaluator.cc ../src/CGALCache.cc ../src/PolySetCGALEvaluator.cc ../src/qhash.cc
                            ../src/CGAL_Nef_polyhedron_DxfData.cc ../src/cgaladv_minkowski2.cc ../src/cgaladv_convexhull2.cc
                            ${COMMON_SOURCES})
 set_target_properties(opencsgtest PROPERTIES COMPILE_FLAGS "-DENABLE_OPENCSG -DENABLE_CGAL ${CGAL_CXX_FLAGS_INIT}")

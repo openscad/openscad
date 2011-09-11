@@ -10,11 +10,6 @@
 	class.
 */
 
-static bool filter(char c)
-{
-	return c == ' ' || c == '\n' || c == '\t' || c == '\r';
-}
-
 /*!
   Factory method returning a PolySet from the given node. If the
   node is already cached, the cached PolySet will be returned
@@ -23,8 +18,7 @@ static bool filter(char c)
  */
 shared_ptr<PolySet> PolySetEvaluator::getPolySet(const AbstractNode &node, bool cache)
 {
-	std::string cacheid = this->tree.getString(node);
-	cacheid.erase(std::remove_if(cacheid.begin(), cacheid.end(), filter), cacheid.end());
+	std::string cacheid = this->tree.getIdString(node);
 
 	if (PolySetCache::instance()->contains(cacheid)) {
 // For cache debugging

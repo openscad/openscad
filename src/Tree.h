@@ -21,10 +21,12 @@ public:
 	const AbstractNode *root() const { return this->root_node; }
 
 	const string &getString(const AbstractNode &node) const;
+	const string &getIdString(const AbstractNode &node) const;
 
 private:
 	const AbstractNode *root_node;
   mutable NodeCache nodecache;
+  mutable NodeCache nodeidcache;
 };
 
 #endif

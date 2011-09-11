@@ -85,7 +85,7 @@ PolySet *CGAL_Nef_polyhedron::convertToPolyset()
 CGAL_Nef_polyhedron CGAL_Nef_polyhedron::copy() const
 {
 	CGAL_Nef_polyhedron copy = *this;
-	if (copy.p2) copy.p2 = new CGAL_Nef_polyhedron2(*copy.p2);
-	else if (copy.p3) copy.p3 = new CGAL_Nef_polyhedron3(*copy.p3);
+	if (copy.p2) copy.p2.reset(new CGAL_Nef_polyhedron2(*copy.p2));
+	else if (copy.p3) copy.p3.reset(new CGAL_Nef_polyhedron3(*copy.p3));
 	return copy;
 }

@@ -142,8 +142,7 @@ int main(int argc, char *argv[])
 	Tree tree(root_node);
 
 	CsgInfo csgInfo;
-	QHash<std::string, CGAL_Nef_polyhedron> cache;
-	CGALEvaluator cgalevaluator(cache, tree);
+	CGALEvaluator cgalevaluator(tree);
 	CSGTermEvaluator evaluator(tree, &cgalevaluator.psevaluator);
 	CSGTerm *root_raw_term = evaluator.evaluateCSGTerm(*root_node, 
 																										 csgInfo.highlight_terms, 

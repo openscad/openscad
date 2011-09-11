@@ -54,14 +54,11 @@ QString librarydir;
 
 using std::string;
 
-// FIXME: enforce some maximum cache size (old version had 100K vertices as limit)
-QHash<std::string, CGAL_Nef_polyhedron> cache;
-
 void cgalTree(Tree &tree)
 {
 	assert(tree.root());
 
-	CGALEvaluator evaluator(cache, tree);
+	CGALEvaluator evaluator(tree);
 	Traverser evaluate(evaluator, *tree.root(), Traverser::PRE_AND_POSTFIX);
 	evaluate.execute();
 }
@@ -163,8 +160,7 @@ int main(int argc, char **argv)
 
 	Tree tree(root_node);
 
-	QHash<std::string, CGAL_Nef_polyhedron> cache;
-	CGALEvaluator cgalevaluator(cache, tree);
+	CGALEvaluator cgalevaluator(tree);
  	PolySetCGALEvaluator psevaluator(cgalevaluator);
 
 	CGAL_Nef_polyhedron N = cgalevaluator.evaluateCGALMesh(*root_node);

@@ -86,6 +86,7 @@ using namespace boost::lambda;
 
 #ifdef ENABLE_CGAL
 
+#include "CGALCache.h"
 #include "CGALEvaluator.h"
 #include "PolySetCGALEvaluator.h"
 #include "CGALRenderer.h"
@@ -780,9 +781,7 @@ void MainWindow::compileCSG(bool procevents)
 
 	progress_report_prep(root_node, report_func, pd);
 	try {
-		// FIXME: put cache somewhere else as it's pretty useless now
-		QHash<std::string, CGAL_Nef_polyhedron> cache;
-		CGALEvaluator cgalevaluator(cache, this->tree);
+		CGALEvaluator cgalevaluator(this->tree);
 		PolySetCGALEvaluator psevaluator(cgalevaluator);
 		CSGTermEvaluator csgrenderer(this->tree, &psevaluator);
 		root_raw_term = csgrenderer.evaluateCSGTerm(*root_node, highlight_terms, background_terms);
@@ -792,6 +791,7 @@ void MainWindow::compileCSG(bool procevents)
 				QApplication::processEvents();
 		}
 		PolySetCache::instance()->print();
+		CGALCache::instance()->print();
 	}
 	catch (ProgressCancelException e) {
 		PRINT("CSG generation cancelled.");
@@ -1223,11 +1223,10 @@ void MainWindow::actionRenderCGAL()
 
 	progress_report_prep(this->root_node, report_func, pd);
 	try {
-		// FIXME: put cache somewhere else as it's pretty useless now
-		QHash<std::string, CGAL_Nef_polyhedron> cache;
-		CGALEvaluator evaluator(cache, this->tree);
+		CGALEvaluator evaluator(this->tree);
 		this->root_N = new CGAL_Nef_polyhedron(evaluator.evaluateCGALMesh(*this->root_node));
 		PolySetCache::instance()->print();
+		CGALCache::instance()->print();
 	}
 	catch (ProgressCancelException e) {
 		PRINT("Rendering cancelled.");

@@ -249,9 +249,7 @@ int main(int argc, char **argv)
 	NodeDumper dumper(nodecache);
 	Tree tree;
 #ifdef ENABLE_CGAL
-	// FIXME: enforce some maximum cache size (old version had 100K vertices as limit)
-	QHash<std::string, CGAL_Nef_polyhedron> cache;
-	CGALEvaluator cgalevaluator(cache, tree);
+	CGALEvaluator cgalevaluator(tree);
 	PolySetCGALEvaluator psevaluator(cgalevaluator);
 #endif
 

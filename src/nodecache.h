@@ -25,9 +25,10 @@ public:
     else return this->nullvalue;
   }
 
-  void insert(const class AbstractNode &node, const std::string & value) {
+  /*! Returns a reference to the cached string copy */
+  const std::string &insert(const class AbstractNode &node, const std::string & value) {
     if (this->cache.size() <= node.index()) this->cache.resize(node.index() + 1);
-    this->cache[node.index()] = value;
+    return this->cache[node.index()] = value;
   }
 
   void remove(const class AbstractNode &node) {
