@@ -24,6 +24,7 @@
  *
  */
 
+#include "PolySetCache.h"
 #include "MainWindow.h"
 #include "openscad.h" // examplesdir
 #include "Preferences.h"
@@ -790,7 +791,7 @@ void MainWindow::compileCSG(bool procevents)
 			if (procevents)
 				QApplication::processEvents();
 		}
-		psevaluator.printCache();
+		PolySetCache::instance()->print();
 	}
 	catch (ProgressCancelException e) {
 		PRINT("CSG generation cancelled.");
@@ -1226,7 +1227,7 @@ void MainWindow::actionRenderCGAL()
 		QHash<std::string, CGAL_Nef_polyhedron> cache;
 		CGALEvaluator evaluator(cache, this->tree);
 		this->root_N = new CGAL_Nef_polyhedron(evaluator.evaluateCGALMesh(*this->root_node));
-		evaluator.psevaluator.printCache();
+		PolySetCache::instance()->print();
 	}
 	catch (ProgressCancelException e) {
 		PRINT("Rendering cancelled.");
@@ -1497,7 +1498,7 @@ void MainWindow::actionExportImage()
 void MainWindow::actionFlushCaches()
 {
 // FIXME: Polycache -> PolySetEvaluator
-	PolySetEvaluator::clearCache();
+	PolySetCache::instance()->clear();
 #ifdef ENABLE_CGAL
 // FIXME: Flush caches through whatever channels we have
 	// CGALEvaluator::evaluator()->getCache().clear();

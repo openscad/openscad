@@ -110,6 +110,7 @@ set(COMMON_SOURCES
   ../src/nodedumper.cc 
   ../src/traverser.cc 
   ../src/PolySetEvaluator.cc 
+  ../src/PolySetCache.cc 
   ../src/Tree.cc
   ${FLEX_OpenSCADlexer_OUTPUTS}
   ${BISON_OpenSCADparser_OUTPUTS})

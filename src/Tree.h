@@ -20,7 +20,7 @@ public:
 	void setRoot(const AbstractNode *root);
 	const AbstractNode *root() const { return this->root_node; }
 
-	const string getString(const AbstractNode &node) const;
+	const string &getString(const AbstractNode &node) const;
 
 private:
 	const AbstractNode *root_node;

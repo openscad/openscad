@@ -159,6 +159,7 @@ HEADERS += src/renderer.h \
            src/traverser.h \
            src/nodecache.h \
            src/nodedumper.h \
+           src/PolySetCache.h \
            src/PolySetEvaluator.h \
            src/CSGTermEvaluator.h \
            src/myqhash.h \
@@ -208,6 +209,7 @@ SOURCES += src/openscad.cc \
            src/qhash.cc \
            src/Tree.cc \
 	   src/mathc99.cc \
+           src/PolySetCache.cc \
            src/PolySetEvaluator.cc
 
 cgal {

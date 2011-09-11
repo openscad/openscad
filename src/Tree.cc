@@ -4,16 +4,11 @@
 #include <assert.h>
 #include <algorithm>
 
-static bool filter(char c)
-{
-	return c == ' ' || c == '\n' || c == '\t' || c == '\r';
-}
-
 /*!
 	Returns the cached string representation of the subtree rooted by \a node.
 	If node is not cached, the cache will be rebuilt.
 */
-const std::string Tree::getString(const AbstractNode &node) const
+const std::string &Tree::getString(const AbstractNode &node) const
 {
 	assert(this->root_node);
 	if (!this->nodecache.contains(node)) {
@@ -23,10 +18,7 @@ const std::string Tree::getString(const AbstractNode &node) const
 		assert(this->nodecache.contains(*this->root_node) &&
 					 "NodeDumper failed to create a cache");
 	}
-	std::string str = this->nodecache[node];
-	str.erase(std::remove_if(str.begin(), str.end(), filter), str.end());
-
-	return str;
+	return this->nodecache[node];
 }
 
 /*!

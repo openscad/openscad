@@ -144,7 +144,7 @@ int main(int argc, char **argv)
 
 	string dumpstdstr = tree.getString(*root_node);
 	string dumpstdstr_cached = tree.getString(*root_node);
-	if (dumpstdstr != dumpstdstr_cached) rc = 1;
+	assert(dumpstdstr == dumpstdstr_cached);
 
 	std::cout << dumpstdstr << "\n";
 

@@ -1,3 +1,4 @@
+#include "PolySetCache.h"
 #include "PolySetEvaluator.h"
 #include "printutils.h"
 #include "polyset.h"
@@ -9,7 +10,10 @@
 	class.
 */
 
-QCache<std::string, PolySetEvaluator::cache_entry> PolySetEvaluator::cache(100000);
+static bool filter(char c)
+{
+	return c == ' ' || c == '\n' || c == '\t' || c == '\r';
+}
 
 /*!
   Factory method returning a PolySet from the given node. If the
@@ -20,23 +24,15 @@ QCache<std::string, PolySetEvaluator::cache_entry> PolySetEvaluator::cache(10000
 shared_ptr<PolySet> PolySetEvaluator::getPolySet(const AbstractNode &node, bool cache)
 {
 	std::string cacheid = this->tree.getString(node);
-	if (this->cache.contains(cacheid)) {
-		PRINTF("Cache hit: %s", cacheid.substr(0, 40).c_str());
-		return this->cache[cacheid]->ps;
+	cacheid.erase(std::remove_if(cacheid.begin(), cacheid.end(), filter), cacheid.end());
+
+	if (PolySetCache::instance()->contains(cacheid)) {
+// For cache debugging
+//		PRINTF("Cache hit: %s", cacheid.substr(0, 40).c_str());
+		return PolySetCache::instance()->get(cacheid);
 	}
 
 	shared_ptr<PolySet> ps(node.evaluate_polyset(this));
-	if (cache) this->cache.insert(cacheid, new cache_entry(ps), ps?ps->polygons.size():0);
+	if (cache) PolySetCache::instance()->insert(cacheid, ps);
 	return ps;
-}
-
-PolySetEvaluator::cache_entry::cache_entry(const shared_ptr<PolySet> &ps) : ps(ps)
-{
-	if (print_messages_stack.size() > 0) this->msg = print_messages_stack.last();
-}
-
-void PolySetEvaluator::printCache()
-{
-	PRINTF("PolySets in cache: %d", cache.size());
-	PRINTF("Polygons in cache: %d", cache.totalCost());
 }
