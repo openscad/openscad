@@ -5,6 +5,7 @@
 #include "node.h"
 #include "Tree.h"
 #include <QCache>
+#include "memory.h"
 
 class PolySetEvaluator
 {
@@ -14,7 +15,7 @@ public:
 
 	const Tree &getTree() const { return this->tree; }
 
-	virtual PolySet *getPolySet(const class AbstractNode &);
+	virtual shared_ptr<PolySet> getPolySet(const class AbstractNode &, bool cache);
 
 	virtual PolySet *evaluatePolySet(const class ProjectionNode &) { return NULL; }
 	virtual PolySet *evaluatePolySet(const class DxfLinearExtrudeNode &) { return NULL; }
@@ -22,16 +23,16 @@ public:
 	virtual PolySet *evaluatePolySet(const class CgaladvNode &) { return NULL; }
 	virtual PolySet *evaluatePolySet(const class RenderNode &) { return NULL; }
 
-	void clearCache() {
+	static void clearCache() {
 		cache.clear();
 	}
 	void printCache();
 protected:
 
 	struct cache_entry {
-		class PolySet *ps;
+		shared_ptr<class PolySet> ps;
 		QString msg;
-		cache_entry(PolySet *ps);
+		cache_entry(const shared_ptr<PolySet> &ps);
 		~cache_entry() { }
 	};
 

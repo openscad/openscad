@@ -47,24 +47,17 @@
  */
 
 
-CSGTerm::CSGTerm(PolySet *polyset, const double matrix[16], const double color[4], const std::string &label)
+CSGTerm::CSGTerm(const shared_ptr<PolySet> &polyset, const double matrix[16], const double color[4], const std::string &label)
+	: type(TYPE_PRIMITIVE), polyset(polyset), label(label), left(NULL), right(NULL)
 {
-	this->type = TYPE_PRIMITIVE;
-	this->polyset = polyset;
-	this->label = label;
-	this->left = NULL;
-	this->right = NULL;
 	for (int i = 0; i < 16; i++) this->m[i] = matrix[i];
 	for (int i = 0; i < 4; i++) this->color[i] = color[i];
 	refcounter = 1;
 }
 
 CSGTerm::CSGTerm(type_e type, CSGTerm *left, CSGTerm *right)
+	: type(type), left(left), right(right)
 {
-	this->type = type;
-	this->polyset = NULL;
-	this->left = left;
-	this->right = right;
 	refcounter = 1;
 }
 
@@ -195,7 +188,7 @@ CSGChain::CSGChain()
 {
 }
 
-void CSGChain::add(PolySet *polyset, double *m, double *color, CSGTerm::type_e type, std::string label)
+void CSGChain::add(const shared_ptr<PolySet> &polyset, double *m, double *color, CSGTerm::type_e type, std::string label)
 {
 	polysets.push_back(polyset);
 	matrices.push_back(m);

@@ -86,11 +86,11 @@ Response CSGTermEvaluator::visit(State &state, const AbstractIntersectionNode &n
 }
 
 static CSGTerm *evaluate_csg_term_from_ps(const State &state, 
-																				vector<CSGTerm*> &highlights, 
-																				vector<CSGTerm*> &background, 
-																				PolySet *ps, 
-																				const ModuleInstantiation *modinst, 
-																				const AbstractNode &node)
+																					vector<CSGTerm*> &highlights, 
+																					vector<CSGTerm*> &background, 
+																					const shared_ptr<PolySet> &ps, 
+																					const ModuleInstantiation *modinst, 
+																					const AbstractNode &node)
 {
 	std::stringstream stream;
 	stream << node.name() << node.index();
@@ -109,7 +109,7 @@ Response CSGTermEvaluator::visit(State &state, const AbstractPolyNode &node)
 	if (state.isPostfix()) {
 		CSGTerm *t1 = NULL;
 		if (this->psevaluator) {
-			PolySet *ps = this->psevaluator->getPolySet(node);
+			shared_ptr<PolySet> ps = this->psevaluator->getPolySet(node, true);
 			if (ps) {
 				t1 = evaluate_csg_term_from_ps(state, this->highlights, this->background, 
 																			 ps, node.modinst, node);
@@ -184,9 +184,9 @@ Response CSGTermEvaluator::visit(State &state, const RenderNode &node)
 {
 	if (state.isPostfix()) {
 		CSGTerm *t1 = NULL;
-		PolySet *ps = NULL;
+		shared_ptr<PolySet> ps;
 		if (this->psevaluator) {
-			ps = this->psevaluator->getPolySet(node);
+			ps = this->psevaluator->getPolySet(node, true);
 		}
 		if (ps) {
 			t1 = evaluate_csg_term_from_ps(state, this->highlights, this->background, 
@@ -203,9 +203,9 @@ Response CSGTermEvaluator::visit(State &state, const CgaladvNode &node)
 	if (state.isPostfix()) {
 		CSGTerm *t1 = NULL;
     // FIXME: Calling evaluator directly since we're not a PolyNode. Generalize this.
-		PolySet *ps = NULL;
+		shared_ptr<PolySet> ps;
 		if (this->psevaluator) {
-			ps = this->psevaluator->getPolySet(node);
+			ps = this->psevaluator->getPolySet(node, true);
 		}
 		if (ps) {
 			t1 = evaluate_csg_term_from_ps(state, this->highlights, this->background, 

@@ -28,6 +28,7 @@
 #include "OpenCSGRenderer.h"
 #include "polyset.h"
 #include "csgterm.h"
+#include "stl-utils.h"
 #ifdef ENABLE_OPENCSG
 #  include <opencsg.h>
 #endif
@@ -37,13 +38,13 @@ class OpenCSGPrim : public OpenCSG::Primitive
 public:
 	OpenCSGPrim(OpenCSG::Operation operation, unsigned int convexity) :
 			OpenCSG::Primitive(operation, convexity) { }
-	PolySet *p;
+	shared_ptr<PolySet> ps;
 	double *m;
 	int csgmode;
 	virtual void render() {
 		glPushMatrix();
 		glMultMatrixd(m);
-		p->render_surface(PolySet::COLORMODE_NONE, PolySet::csgmode_e(csgmode), m);
+		ps->render_surface(PolySet::COLORMODE_NONE, PolySet::csgmode_e(csgmode), m);
 		glPopMatrix();
 	}
 };
@@ -120,11 +121,12 @@ void OpenCSGRenderer::renderCSGChain(CSGChain *chain, GLint *shaderinfo,
 
 		OpenCSGPrim *prim = new OpenCSGPrim(chain->types[i] == CSGTerm::TYPE_DIFFERENCE ?
 				OpenCSG::Subtraction : OpenCSG::Intersection, chain->polysets[i]->convexity);
-		prim->p = chain->polysets[i];
+		prim->ps = chain->polysets[i];
 		prim->m = chain->matrices[i];
 		prim->csgmode = chain->types[i] == CSGTerm::TYPE_DIFFERENCE ? PolySet::CSGMODE_DIFFERENCE : PolySet::CSGMODE_NORMAL;
 		if (highlight) prim->csgmode += 20;
 		else if (background) prim->csgmode += 10;
 		primitives.push_back(prim);
 	}
+	std::for_each(primitives.begin(), primitives.end(), del_fun<OpenCSG::Primitive>());
 }

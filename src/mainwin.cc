@@ -1497,7 +1497,7 @@ void MainWindow::actionExportImage()
 void MainWindow::actionFlushCaches()
 {
 // FIXME: Polycache -> PolySetEvaluator
-// FIXME: PolySetEvaluator->clearCache();
+	PolySetEvaluator::clearCache();
 #ifdef ENABLE_CGAL
 // FIXME: Flush caches through whatever channels we have
 	// CGALEvaluator::evaluator()->getCache().clear();
