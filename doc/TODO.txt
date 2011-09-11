@@ -78,6 +78,7 @@ o 3D View
     thicknesses, distances, slot thicknesses etc.
   - When specifying a transparency with the color() statement,
     the object is not sorted and will be rendered wrongly
+  - Add option to change lights, e.g. add an optional camera light
 o Editor wishlist
   - More infrastructure for external editor (allow communication from the outside)
   - Preferences GUI for the features below
