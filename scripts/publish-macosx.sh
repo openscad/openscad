@@ -20,3 +20,6 @@ cp OpenSCAD-$VERSION.dmg ~/Dropbox/Public
 ln -sf OpenSCAD-$VERSION.dmg ~/Dropbox/Public/OpenSCAD-latest.dmg
 
 echo "Upload in progress..."
+
+# Update snapshot filename on wab page
+`dirname $0`/update-web.sh OpenSCAD-$VERSION.dmg
