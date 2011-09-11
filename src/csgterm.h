@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include "polyset.h"
+#include "memory.h"
 
 class CSGTerm
 {
@@ -16,7 +17,7 @@ public:
 	};
 
 	type_e type;
-	PolySet *polyset;
+	shared_ptr<PolySet> polyset;
 	std::string label;
 	CSGTerm *left;
 	CSGTerm *right;
@@ -24,7 +25,7 @@ public:
 	double color[4];
 	int refcounter;
 
-	CSGTerm(PolySet *polyset, const double matrix[16], const double color[4], const std::string &label);
+	CSGTerm(const shared_ptr<PolySet> &polyset, const double matrix[16], const double color[4], const std::string &label);
 	CSGTerm(type_e type, CSGTerm *left, CSGTerm *right);
 
 	CSGTerm *normalize();
@@ -38,7 +39,7 @@ public:
 class CSGChain
 {
 public:
-	std::vector<PolySet*> polysets;
+	std::vector<shared_ptr<PolySet> > polysets;
 	std::vector<double*> matrices;
 	std::vector<double*> colors;
 	std::vector<CSGTerm::type_e> types;
@@ -46,7 +47,7 @@ public:
 
 	CSGChain();
 
-	void add(PolySet *polyset, double *m, double *color, CSGTerm::type_e type, std::string label);
+	void add(const shared_ptr<PolySet> &polyset, double *m, double *color, CSGTerm::type_e type, std::string label);
 	void import(CSGTerm *term, CSGTerm::type_e type = CSGTerm::TYPE_UNION);
 	std::string dump();
 

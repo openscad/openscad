@@ -68,7 +68,7 @@ CGALRenderer::CGALRenderer(const CGAL_Nef_polyhedron &root) : root(root)
 
 CGALRenderer::~CGALRenderer()
 {
-	if (this->polyset) this->polyset->unlink();
+	delete this->polyset;
 	delete this->polyhedron;
 }
 

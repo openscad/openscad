@@ -62,7 +62,7 @@ public:
 	std::string filename;
 	bool center;
 	int convexity;
-	virtual PolySet *evaluate_polyset(render_mode_e mode, class PolySetEvaluator *) const;
+	virtual PolySet *evaluate_polyset(class PolySetEvaluator *) const;
 };
 
 AbstractNode *SurfaceModule::evaluate(const Context *ctx, const ModuleInstantiation *inst) const
@@ -98,17 +98,17 @@ void register_builtin_surface()
 	builtin_modules["surface"] = new SurfaceModule();
 }
 
-PolySet *SurfaceNode::evaluate_polyset(render_mode_e, class PolySetEvaluator *) const
+PolySet *SurfaceNode::evaluate_polyset(class PolySetEvaluator *) const
 {
-	PolySet *p = new PolySet();
 	handle_dep(filename);
 	QFile f(QString::fromStdString(filename));
 
 	if (!f.open(QIODevice::ReadOnly | QIODevice::Text)) {
 		PRINTF("WARNING: Can't open DAT file `%s'.", filename.c_str());
-		return p;
+		return NULL;
 	}
 
+	PolySet *p = new PolySet();
 	int lines = 0, columns = 0;
 	boost::unordered_map<std::pair<int,int>,double> data;
 	double min_val = 0;

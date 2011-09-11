@@ -3,39 +3,43 @@
 
 #include "myqhash.h"
 #include "node.h"
+#include "Tree.h"
 #include <QCache>
+#include "memory.h"
 
 class PolySetEvaluator
 {
 public:
-	enum EvaluateMode { EVALUATE_CGAL, EVALUATE_OPENCSG };
-	PolySetEvaluator() : cache(100) {}
-
+	PolySetEvaluator(const Tree &tree) : tree(tree) {}
 	virtual ~PolySetEvaluator() {}
 
-	virtual PolySet *evaluatePolySet(const class ProjectionNode &, AbstractPolyNode::render_mode_e) = 0;
-	virtual PolySet *evaluatePolySet(const class DxfLinearExtrudeNode &, AbstractPolyNode::render_mode_e) = 0;
-	virtual PolySet *evaluatePolySet(const class DxfRotateExtrudeNode &, AbstractPolyNode::render_mode_e) = 0;
-	virtual PolySet *evaluatePolySet(const class CgaladvNode &, AbstractPolyNode::render_mode_e) = 0;
-	virtual PolySet *evaluatePolySet(const class RenderNode &, AbstractPolyNode::render_mode_e) = 0;
+	const Tree &getTree() const { return this->tree; }
 
-	void clearCache() {
-		this->cache.clear();
+	virtual shared_ptr<PolySet> getPolySet(const class AbstractNode &, bool cache);
+
+	virtual PolySet *evaluatePolySet(const class ProjectionNode &) { return NULL; }
+	virtual PolySet *evaluatePolySet(const class DxfLinearExtrudeNode &) { return NULL; }
+	virtual PolySet *evaluatePolySet(const class DxfRotateExtrudeNode &) { return NULL; }
+	virtual PolySet *evaluatePolySet(const class CgaladvNode &) { return NULL; }
+	virtual PolySet *evaluatePolySet(const class RenderNode &) { return NULL; }
+
+	static void clearCache() {
+		cache.clear();
 	}
-
+	void printCache();
 protected:
 
 	struct cache_entry {
-		class PolySet *ps;
+		shared_ptr<class PolySet> ps;
 		QString msg;
-		cache_entry(PolySet *ps);
-		~cache_entry();
+		cache_entry(const shared_ptr<PolySet> &ps);
+		~cache_entry() { }
 	};
 
-	QCache<std::string, cache_entry> cache;
+	static QCache<std::string, cache_entry> cache;
 
 private:
-	static PolySetEvaluator *global_evaluator;
+	const Tree &tree;
 };
 
 #endif

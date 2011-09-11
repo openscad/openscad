@@ -36,28 +36,12 @@
 #include <Eigen/LU>
 #include <QColor>
 
-PolySet::PolySet() : grid(GRID_FINE)
+PolySet::PolySet() : grid(GRID_FINE), is2d(false), convexity(1)
 {
-	is2d = false;
-	convexity = 1;
-	refcount = 1;
 }
 
 PolySet::~PolySet()
 {
-	assert(refcount == 0);
-}
-
-PolySet* PolySet::link()
-{
-	refcount++;
-	return this;
-}
-
-void PolySet::unlink()
-{
-	if (--refcount == 0)
-		delete this;
 }
 
 void PolySet::append_poly()

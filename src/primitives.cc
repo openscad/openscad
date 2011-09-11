@@ -102,7 +102,7 @@ public:
 	primitive_type_e type;
 	int convexity;
 	Value points, paths, triangles;
-	virtual PolySet *evaluate_polyset(render_mode_e mode, class PolySetEvaluator *) const;
+	virtual PolySet *evaluate_polyset(class PolySetEvaluator *) const;
 };
 
 AbstractNode *PrimitiveModule::evaluate(const Context *ctx, const ModuleInstantiation *inst) const
@@ -273,7 +273,7 @@ static void generate_circle(point2d *circle, double r, int fragments)
 	}
 }
 
-PolySet *PrimitiveNode::evaluate_polyset(render_mode_e, class PolySetEvaluator *) const
+PolySet *PrimitiveNode::evaluate_polyset(class PolySetEvaluator *) const
 {
 	PolySet *p = new PolySet();
 
@@ -518,7 +518,7 @@ sphere_next_r2:
 			double x,y;
 			if (!this->points.vec[i]->getv2(x, y)) {
 				PRINTF("ERROR: Unable to convert point at index %d to a vec2 of numbers", i);
-				p->unlink();
+				delete p;
 				return NULL;
 			}
 			dd.points.push_back(Vector2d(x, y));

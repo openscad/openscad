@@ -51,10 +51,6 @@ public:
 
 	void render_surface(colormode_e colormode, csgmode_e csgmode, double *m, GLint *shaderinfo = NULL) const;
 	void render_edges(colormode_e colormode, csgmode_e csgmode) const;
-
-	int refcount;
-	PolySet *link();
-	void unlink();
 };
 
 #endif

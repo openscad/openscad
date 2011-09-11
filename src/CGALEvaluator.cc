@@ -91,8 +91,7 @@ void CGALEvaluator::applyToChildren(const AbstractNode &node, CGALEvaluator::Csg
 			chnode->progress_report();
 		}
 	}
-	const std::string &cacheid = this->tree.getString(node); 
-	this->cache.insert(cacheid, N);
+	this->cache.insert(this->tree.getString(node), N);
 }
 
 extern CGAL_Nef_polyhedron2 *convexhull2(std::list<CGAL_Nef_polyhedron2*> a);
@@ -123,8 +122,7 @@ void CGALEvaluator::applyHull(const CgaladvNode &node)
 
 		if (all2d) {
 			CGAL_Nef_polyhedron N(convexhull2(polys));
-			const std::string &cacheid = this->tree.getString(node); 
-			this->cache.insert(cacheid, N);
+			this->cache.insert(this->tree.getString(node), N);
 		}
 	}
 }
@@ -216,7 +214,6 @@ Response CGALEvaluator::visit(State &state, const TransformNode &node)
 				dxf_tesselate(&ps, *dd, 0, true, false, 0);
 				
 				N = evaluateCGALMesh(ps);
-				ps.refcount = 0;
 				delete dd;
 			}
 			else if (N.dim == 3) {
@@ -226,8 +223,7 @@ Response CGALEvaluator::visit(State &state, const TransformNode &node)
 					node.matrix[2], node.matrix[6], node.matrix[10], node.matrix[14], node.matrix[15]);
 				N.p3->transform(t);
 			}
-			const std::string &cacheid = this->tree.getString(node);
-			this->cache.insert(cacheid, N);
+			this->cache.insert(this->tree.getString(node), N);
 		}
 		addToParent(state, node);
 	}
@@ -240,23 +236,19 @@ Response CGALEvaluator::visit(State &state, const AbstractPolyNode &node)
 	if (state.isPostfix()) {
 		if (!isCached(node)) {
 			// Apply polyset operation
-			PolySet *ps = node.evaluate_polyset(AbstractPolyNode::RENDER_CGAL, &this->psevaluator);
+			shared_ptr<PolySet> ps = this->psevaluator.getPolySet(node, false);
 			CGAL_Nef_polyhedron N;
 			if (ps) {
 				try {
 					N = evaluateCGALMesh(*ps);
 //				print_messages_pop();
 					node.progress_report();
-					
-					ps->unlink();
 				}
-				catch (...) { // Don't leak the PolySet on ProgressCancelException
-					ps->unlink();
+				catch (...) {
 					throw;
 				}
 			}
-			const std::string &cacheid = this->tree.getString(node);
-			this->cache.insert(cacheid, N);
+			this->cache.insert(this->tree.getString(node), N);
 		}
 		addToParent(state, node);
 	}
@@ -316,7 +308,7 @@ CGAL_Nef_polyhedron CGALEvaluator::evaluateCGALMesh(const AbstractPolyNode &node
 
 	// 	print_messages_push();
 	
-	PolySet *ps = node.evaluate_polyset(AbstractPolyNode::RENDER_CGAL);
+	shared_ptr<PolySet> ps = this->psevaluator->getPolySet(node, false);
 	if (ps) {
 		try {
 			CGAL_Nef_polyhedron N = ps->evaluateCSGMesh();
@@ -324,11 +316,9 @@ CGAL_Nef_polyhedron CGALEvaluator::evaluateCGALMesh(const AbstractPolyNode &node
 			// print_messages_pop();
 			node.progress_report();
 			
-			ps->unlink();
 			return N;
 		}
 		catch (...) { // Don't leak the PolySet on ProgressCancelException
-			ps->unlink();
 			throw;
 		}
 	}

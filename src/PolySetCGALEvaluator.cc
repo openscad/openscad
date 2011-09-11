@@ -1,5 +1,6 @@
 #include "PolySetCGALEvaluator.h"
 #include "cgal.h"
+#include "cgalutils.h"
 #include "polyset.h"
 #include "CGALEvaluator.h"
 #include "projectionnode.h"
@@ -15,11 +16,13 @@
 #include "openscad.h" // get_fragments_from_r()
 #include <boost/foreach.hpp>
 
-PolySet *PolySetCGALEvaluator::evaluatePolySet(const ProjectionNode &node, AbstractPolyNode::render_mode_e)
+PolySetCGALEvaluator::PolySetCGALEvaluator(CGALEvaluator &cgalevaluator)
+	: PolySetEvaluator(cgalevaluator.getTree()), cgalevaluator(cgalevaluator)
 {
-	const string &cacheid = this->cgalevaluator.getTree().getString(node);
-	if (this->cache.contains(cacheid)) return this->cache[cacheid]->ps->link();
+}
 
+PolySet *PolySetCGALEvaluator::evaluatePolySet(const ProjectionNode &node)
+{
 	// Before projecting, union all children
 	CGAL_Nef_polyhedron sum;
 	BOOST_FOREACH (AbstractNode * v, node.getChildren()) {
@@ -38,47 +41,46 @@ PolySet *PolySetCGALEvaluator::evaluatePolySet(const ProjectionNode &node, Abstr
 
 	if (node.cut_mode)
 	{
-		PolySet *cube = new PolySet();
+		PolySet cube;
 		double infval = 1e8, eps = 0.1;
 		double x1 = -infval, x2 = +infval, y1 = -infval, y2 = +infval, z1 = 0, z2 = eps;
 
-		cube->append_poly(); // top
-		cube->append_vertex(x1, y1, z2);
-		cube->append_vertex(x2, y1, z2);
-		cube->append_vertex(x2, y2, z2);
-		cube->append_vertex(x1, y2, z2);
+		cube.append_poly(); // top
+		cube.append_vertex(x1, y1, z2);
+		cube.append_vertex(x2, y1, z2);
+		cube.append_vertex(x2, y2, z2);
+		cube.append_vertex(x1, y2, z2);
 
-		cube->append_poly(); // bottom
-		cube->append_vertex(x1, y2, z1);
-		cube->append_vertex(x2, y2, z1);
-		cube->append_vertex(x2, y1, z1);
-		cube->append_vertex(x1, y1, z1);
+		cube.append_poly(); // bottom
+		cube.append_vertex(x1, y2, z1);
+		cube.append_vertex(x2, y2, z1);
+		cube.append_vertex(x2, y1, z1);
+		cube.append_vertex(x1, y1, z1);
 
-		cube->append_poly(); // side1
-		cube->append_vertex(x1, y1, z1);
-		cube->append_vertex(x2, y1, z1);
-		cube->append_vertex(x2, y1, z2);
-		cube->append_vertex(x1, y1, z2);
+		cube.append_poly(); // side1
+		cube.append_vertex(x1, y1, z1);
+		cube.append_vertex(x2, y1, z1);
+		cube.append_vertex(x2, y1, z2);
+		cube.append_vertex(x1, y1, z2);
 
-		cube->append_poly(); // side2
-		cube->append_vertex(x2, y1, z1);
-		cube->append_vertex(x2, y2, z1);
-		cube->append_vertex(x2, y2, z2);
-		cube->append_vertex(x2, y1, z2);
+		cube.append_poly(); // side2
+		cube.append_vertex(x2, y1, z1);
+		cube.append_vertex(x2, y2, z1);
+		cube.append_vertex(x2, y2, z2);
+		cube.append_vertex(x2, y1, z2);
 
-		cube->append_poly(); // side3
-		cube->append_vertex(x2, y2, z1);
-		cube->append_vertex(x1, y2, z1);
-		cube->append_vertex(x1, y2, z2);
-		cube->append_vertex(x2, y2, z2);
+		cube.append_poly(); // side3
+		cube.append_vertex(x2, y2, z1);
+		cube.append_vertex(x1, y2, z1);
+		cube.append_vertex(x1, y2, z2);
+		cube.append_vertex(x2, y2, z2);
 
-		cube->append_poly(); // side4
-		cube->append_vertex(x1, y2, z1);
-		cube->append_vertex(x1, y1, z1);
-		cube->append_vertex(x1, y1, z2);
-		cube->append_vertex(x1, y2, z2);
-		CGAL_Nef_polyhedron Ncube = this->cgalevaluator.evaluateCGALMesh(*cube);
-		cube->unlink();
+		cube.append_poly(); // side4
+		cube.append_vertex(x1, y2, z1);
+		cube.append_vertex(x1, y1, z1);
+		cube.append_vertex(x1, y1, z2);
+		cube.append_vertex(x1, y2, z2);
+		CGAL_Nef_polyhedron Ncube = this->cgalevaluator.evaluateCGALMesh(cube);
 
 		// N.p3 *= CGAL_Nef_polyhedron3(CGAL_Plane(0, 0, 1, 0), CGAL_Nef_polyhedron3::INCLUDED);
 		sum *= Ncube;
@@ -109,7 +111,7 @@ PolySet *PolySetCGALEvaluator::evaluatePolySet(const ProjectionNode &node, Abstr
 			}
 		next_ps3_polygon_cut_mode:;
 		}
-		ps3->unlink();
+		delete ps3;
 	}
 	else
 	{
@@ -166,16 +168,14 @@ PolySet *PolySetCGALEvaluator::evaluatePolySet(const ProjectionNode &node, Abstr
 				(*np.p2) += CGAL_Nef_polyhedron2(plist.begin(), plist.end(), CGAL_Nef_polyhedron2::INCLUDED);
 			}
 		}
+		delete ps3;
 		DxfData *dxf = np.convertToDxfData();
 		dxf_tesselate(ps, *dxf, 0, true, false, 0);
 		dxf_border_to_ps(ps, *dxf);
-		ps3->unlink();
 		delete dxf;
 	}
 
 cant_project_non_simple_polyhedron:
-
-	this->cache.insert(cacheid, new cache_entry(ps->link()));
 	return ps;
 }
 
@@ -251,12 +251,8 @@ static void add_slice(PolySet *ps, const DxfData &dxf, DxfData::Path &path, doub
 	}
 }
 
-PolySet *PolySetCGALEvaluator::evaluatePolySet(const DxfLinearExtrudeNode &node, 
-																							 AbstractPolyNode::render_mode_e)
+PolySet *PolySetCGALEvaluator::evaluatePolySet(const DxfLinearExtrudeNode &node)
 {
-	const string &cacheid = this->cgalevaluator.getTree().getString(node);
-	if (this->cache.contains(cacheid)) return this->cache[cacheid]->ps->link();
-
 	DxfData *dxf;
 
 	if (node.filename.empty())
@@ -283,7 +279,6 @@ PolySet *PolySetCGALEvaluator::evaluatePolySet(const DxfLinearExtrudeNode &node,
 	}
 
 	PolySet *ps = extrudeDxfData(node, *dxf);
-	this->cache.insert(cacheid, new cache_entry(ps->link()));
 	delete dxf;
 	return ps;
 }
@@ -354,12 +349,8 @@ PolySet *PolySetCGALEvaluator::extrudeDxfData(const DxfLinearExtrudeNode &node, 
 	return ps;
 }
 
-PolySet *PolySetCGALEvaluator::evaluatePolySet(const DxfRotateExtrudeNode &node, 
-																							 AbstractPolyNode::render_mode_e)
+PolySet *PolySetCGALEvaluator::evaluatePolySet(const DxfRotateExtrudeNode &node)
 {
-	const string &cacheid = this->cgalevaluator.getTree().getString(node);
-	if (this->cache.contains(cacheid)) return this->cache[cacheid]->ps->link();
-
 	DxfData *dxf;
 
 	if (node.filename.empty())
@@ -386,20 +377,20 @@ PolySet *PolySetCGALEvaluator::evaluatePolySet(const DxfRotateExtrudeNode &node,
 	}
 
 	PolySet *ps = rotateDxfData(node, *dxf);
-	this->cache.insert(cacheid, new cache_entry(ps->link()));
 	delete dxf;
 	return ps;
 }
 
-PolySet *PolySetCGALEvaluator::evaluatePolySet(const CgaladvNode &node, AbstractPolyNode::render_mode_e)
+PolySet *PolySetCGALEvaluator::evaluatePolySet(const CgaladvNode &node)
 {
 	CGAL_Nef_polyhedron N = this->cgalevaluator.evaluateCGALMesh(node);
 	PolySet *ps = NULL;
 	if (!N.empty()) ps = N.convertToPolyset();
+
 	return ps;
 }
 
-PolySet *PolySetCGALEvaluator::evaluatePolySet(const RenderNode &node, AbstractPolyNode::render_mode_e)
+PolySet *PolySetCGALEvaluator::evaluatePolySet(const RenderNode &node)
 {
 	CGAL_Nef_polyhedron N = this->cgalevaluator.evaluateCGALMesh(node);
 	PolySet *ps = NULL;
@@ -479,6 +470,6 @@ PolySet *PolySetCGALEvaluator::rotateDxfData(const DxfRotateExtrudeNode &node, D
 		}
 		delete[] points;
 	}
-
+	
 	return ps;
 }

@@ -24,6 +24,7 @@
  */
 
 #include "myqhash.h"
+#include "PolySetEvaluator.h"
 #include "CSGTermEvaluator.h"
 #include "CSGTextCache.h"
 #include "openscad.h"
@@ -145,7 +146,8 @@ int main(int argc, char **argv)
 
 	vector<CSGTerm*> highlights;
 	vector<CSGTerm*> background;
-	CSGTermEvaluator evaluator(tree);
+	PolySetEvaluator psevaluator(tree);
+	CSGTermEvaluator evaluator(tree, &psevaluator);
 	CSGTerm *root_term = evaluator.evaluateCSGTerm(*root_node, highlights, background);
 	
 	// cout << "Stored terms: " << evaluator.stored_term.size() << "\n";

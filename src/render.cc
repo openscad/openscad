@@ -26,15 +26,12 @@
 
 #include "rendernode.h"
 #include "module.h"
-#include "polyset.h"
 #include "context.h"
-#include "dxfdata.h"
-#include "dxftess.h"
-#include "csgterm.h"
 #include "builtin.h"
 #include "printutils.h"
 #include "progress.h"
 #include "visitor.h"
+#include "PolySetEvaluator.h"
 
 #include <sstream>
 #include <boost/assign/std/vector.hpp>
@@ -66,6 +63,11 @@ AbstractNode *RenderModule::evaluate(const Context *ctx, const ModuleInstantiati
 	node->children.insert(node->children.end(), evaluatednodes.begin(), evaluatednodes.end());
 
 	return node;
+}
+
+class PolySet *RenderNode::evaluate_polyset(PolySetEvaluator *ps) const
+{
+	return ps->evaluatePolySet(*this);
 }
 
 void register_builtin_render()

@@ -111,7 +111,7 @@ AbstractNode *ImportModule::evaluate(const Context *ctx, const ModuleInstantiati
 	return node;
 }
 
-PolySet *ImportNode::evaluate_polyset(render_mode_e, class PolySetEvaluator *) const
+PolySet *ImportNode::evaluate_polyset(class PolySetEvaluator *evaluator) const
 {
 	PolySet *p = NULL;
 
