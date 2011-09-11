@@ -1674,7 +1674,7 @@ void MainWindow::viewAngleDiagonal()
 {
 	this->glview->object_rot_x = 35;
 	this->glview->object_rot_y = 0;
-	this->glview->object_rot_z = 25;
+	this->glview->object_rot_z = -25;
 	this->glview->updateGL();
 }
 
