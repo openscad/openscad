@@ -165,6 +165,7 @@ HEADERS += src/renderer.h \
            src/myqhash.h \
            src/Tree.h \
            src/mathc99.h \
+           src/memory.h \
            src/stl-utils.h
 
 SOURCES += src/openscad.cc \
