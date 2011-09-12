@@ -34,7 +34,6 @@
 
 #include <CGAL/minkowski_sum_2.h>
 
-extern CGAL_Nef_polyhedron2 minkowski2(CGAL_Nef_polyhedron2 a, CGAL_Nef_polyhedron2 b);
 extern CGAL_Poly2 nef2p2(CGAL_Nef_polyhedron2 p);
 
 //-----------------------------------------------------------------------------
@@ -120,7 +119,7 @@ static CGAL_Nef_polyhedron2 p2nef2(CGAL_Poly2 p2) {
   return CGAL_Nef_polyhedron2(points.begin(), points.end(), CGAL_Nef_polyhedron2::INCLUDED);
 }
 
-CGAL_Nef_polyhedron2 minkowski2(CGAL_Nef_polyhedron2 a, CGAL_Nef_polyhedron2 b)
+CGAL_Nef_polyhedron2 minkowski2(const CGAL_Nef_polyhedron2 &a, const CGAL_Nef_polyhedron2 &b)
 {
 	CGAL_Poly2 ap = nef2p2(a), bp = nef2p2(b);
 

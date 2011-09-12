@@ -24,6 +24,7 @@
  *
  */
 
+#include "myqhash.h"
 #include "openscad.h"
 #include "MainWindow.h"
 #include "node.h"
@@ -33,16 +34,18 @@
 #include "export.h"
 #include "builtin.h"
 #include "nodedumper.h"
-#include "CGALEvaluator.h"
-#include "PolySetCGALEvaluator.h"
 #include "printutils.h"
+#include "handle_dep.h"
 
 #include <string>
 #include <vector>
+#include <fstream>
 
 #ifdef ENABLE_CGAL
-#include "cgal.h"
+#include "CGAL_Nef_polyhedron.h"
 #include <CGAL/assertions_behaviour.h>
+#include "CGALEvaluator.h"
+#include "PolySetCGALEvaluator.h"
 #endif
 
 #include <QApplication>
@@ -52,6 +55,7 @@
 #include <QSettings>
 #include <QTextStream>
 #include <boost/program_options.hpp>
+#include <sstream>
 
 #ifdef Q_WS_MAC
 #include "EventFilter.h"
@@ -80,28 +84,13 @@ static void version()
 	exit(1);
 }
 
-QString commandline_commands;
-const char *make_command = NULL;
-QSet<QString> dependencies;
+std::string commandline_commands;
 QString currentdir;
 QString examplesdir;
 QString librarydir;
 
 using std::string;
 using std::vector;
-
-void handle_dep(QString filename)
-{
-	if (filename.startsWith("/"))
-		dependencies.insert(filename);
-	else
-		dependencies.insert(QDir::currentPath() + QString("/") + filename);
-	if (!QFile(filename).exists() && make_command) {
-		char buffer[4096];
-		snprintf(buffer, 4096, "%s '%s'", make_command, filename.replace("'", "'\\''").toUtf8().data());
-		system(buffer); // FIXME: Handle error
-	}
-}
 
 int main(int argc, char **argv)
 {
@@ -200,8 +189,8 @@ int main(int argc, char **argv)
 		const vector<string> &commands = vm["D"].as<vector<string> >();
 
 		for (vector<string>::const_iterator i = commands.begin(); i != commands.end(); i++) {
-			commandline_commands.append(i->c_str());
-			commandline_commands.append(";\n");
+			commandline_commands += *i;
+			commandline_commands += ";\n";
 		}
 	}
 
@@ -259,10 +248,10 @@ int main(int argc, char **argv)
 	NodeCache nodecache;
 	NodeDumper dumper(nodecache);
 	Tree tree;
-	// FIXME: enforce some maximum cache size (old version had 100K vertices as limit)
-	QHash<std::string, CGAL_Nef_polyhedron> cache;
-	CGALEvaluator cgalevaluator(cache, tree);
+#ifdef ENABLE_CGAL
+	CGALEvaluator cgalevaluator(tree);
 	PolySetCGALEvaluator psevaluator(cgalevaluator);
+#endif
 
 	if (stl_output_file || off_output_file || dxf_output_file)
 	{
@@ -298,15 +287,17 @@ int main(int argc, char **argv)
 			fprintf(stderr, "Can't open input file `%s'!\n", filename);
 			exit(1);
 		} else {
-			QString text;
+			std::stringstream text;
 			char buffer[513];
 			int ret;
 			while ((ret = fread(buffer, 1, 512, fp)) > 0) {
 				buffer[ret] = 0;
-				text += buffer;
+				text << buffer;
 			}
 			fclose(fp);
-			root_module = parse((text+commandline_commands).toAscii().data(), fileInfo.absolutePath().toLocal8Bit(), false);
+			text << commandline_commands;
+			root_module = parse(text.str().c_str(), fileInfo.absolutePath().toLocal8Bit(), false);
+			if (!root_module) exit(1);
 		}
 
 		QDir::setCurrent(fileInfo.absolutePath());
@@ -320,19 +311,13 @@ int main(int argc, char **argv)
 		QDir::setCurrent(original_path.absolutePath());
 
 		if (deps_output_file) {
-			fp = fopen(deps_output_file, "wt");
-			if (!fp) {
-				fprintf(stderr, "Can't open dependencies file `%s' for writing!\n", deps_output_file);
+			if (!write_deps(deps_output_file, 
+											stl_output_file ? stl_output_file : off_output_file)) {
 				exit(1);
 			}
-			fprintf(fp, "%s:", stl_output_file ? stl_output_file : off_output_file);
-			QSetIterator<QString> i(dependencies);
-			while (i.hasNext())
-				fprintf(fp, " \\\n\t%s", i.next().toUtf8().data());
-			fprintf(fp, "\n");
-			fclose(fp);
 		}
 
+<<<<<<< HEAD
 		if (root_N.dim == 3 && !root_N.p3.is_simple()) {
 			fprintf(stderr, "Object isn't a valid 2-manifold! Modify your design.\n");
 			exit(1);
@@ -340,28 +325,54 @@ int main(int argc, char **argv)
 
 		if (stl_output_file)
 			export_stl(&root_N, stl_output_file, NULL);
-
-		if (off_output_file) {
-			QFile file(stl_output_file);
-			if (!file.open(QIODevice::ReadWrite)) {
-				PRINTA("Can't open file \"%1\" for export", stl_output_file);
+=======
+		if (stl_output_file) {
+			if (root_N.dim != 3) {
+				fprintf(stderr, "Current top level object is not a 3D object.\n");
+				exit(1);
+			}
+			if (!root_N.p3->is_simple()) {
+				fprintf(stderr, "Object isn't a valid 2-manifold! Modify your design.\n");
+				exit(1);
+			}
+			std::ofstream fstream(stl_output_file);
+			if (!fstream.is_open()) {
+				PRINTF("Can't open file \"%s\" for export", stl_output_file);
 			}
 			else {
-				QTextStream fstream(&file);
+				export_stl(&root_N, fstream, NULL);
+				fstream.close();
+			}
+		}
+>>>>>>> upstream/visitor
+
+		if (off_output_file) {
+			if (root_N.dim != 3) {
+				fprintf(stderr, "Current top level object is not a 3D object.\n");
+				exit(1);
+			}
+			if (!root_N.p3->is_simple()) {
+				fprintf(stderr, "Object isn't a valid 2-manifold! Modify your design.\n");
+				exit(1);
+			}
+			std::ofstream fstream(off_output_file);
+			if (!fstream.is_open()) {
+				PRINTF("Can't open file \"%s\" for export", off_output_file);
+			}
+			else {
 				export_off(&root_N, fstream, NULL);
-				file.close();
+				fstream.close();
 			}
 		}
 
 		if (dxf_output_file) {
-			QFile file(stl_output_file);
-			if (!file.open(QIODevice::ReadWrite)) {
-				PRINTA("Can't open file \"%1\" for export", stl_output_file);
+			std::ofstream fstream(dxf_output_file);
+			if (!fstream.is_open()) {
+				PRINTF("Can't open file \"%s\" for export", dxf_output_file);
 			}
 			else {
-				QTextStream fstream(&file);
 				export_dxf(&root_N, fstream, NULL);
-				file.close();
+				fstream.close();
 			}
 		}
 

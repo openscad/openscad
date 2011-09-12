@@ -29,6 +29,7 @@
 #include "context.h"
 #include "builtin.h"
 #include "printutils.h"
+#include <sstream>
 
 enum control_type_e {
 	CHILD,
@@ -47,11 +48,14 @@ public:
 	virtual AbstractNode *evaluate(const Context *ctx, const ModuleInstantiation *inst) const;
 };
 
-void for_eval(AbstractNode *node, int l, const QVector<QString> &call_argnames, const QVector<Value> &call_argvalues, const QVector<ModuleInstantiation*> arg_children, const Context *arg_context)
+void for_eval(AbstractNode &node, const ModuleInstantiation &inst, size_t l, 
+							const std::vector<std::string> &call_argnames, 
+							const std::vector<Value> &call_argvalues, 
+							const Context *arg_context)
 {
 	if (call_argnames.size() > l) {
-		QString it_name = call_argnames[l];
-		Value it_values = call_argvalues[l];
+		const std::string &it_name = call_argnames[l];
+		const Value &it_values = call_argvalues[l];
 		Context c(arg_context);
 		if (it_values.type == Value::RANGE) {
 			double range_begin = it_values.range_begin;
@@ -65,25 +69,23 @@ void for_eval(AbstractNode *node, int l, const QVector<QString> &call_argnames, 
 			if (range_step > 0 && (range_begin-range_end)/range_step < 10000) {
 				for (double i = range_begin; i <= range_end; i += range_step) {
 					c.set_variable(it_name, Value(i));
-					for_eval(node, l+1, call_argnames, call_argvalues, arg_children, &c);
+					for_eval(node, inst, l+1, call_argnames, call_argvalues, &c);
 				}
 			}
 		}
 		else if (it_values.type == Value::VECTOR) {
-			for (int i = 0; i < it_values.vec.size(); i++) {
+			for (size_t i = 0; i < it_values.vec.size(); i++) {
 				c.set_variable(it_name, *it_values.vec[i]);
-				for_eval(node, l+1, call_argnames, call_argvalues, arg_children, &c);
+				for_eval(node, inst, l+1, call_argnames, call_argvalues, &c);
 			}
 		}
-		else {
-			for_eval(node, l+1, call_argnames, call_argvalues, arg_children, &c);
+		else if (it_values.type != Value::UNDEFINED) {
+			c.set_variable(it_name, it_values);
+			for_eval(node, inst, l+1, call_argnames, call_argvalues, &c);
 		}
-	} else {
-		foreach (ModuleInstantiation *v, arg_children) {
-			AbstractNode *n = v->evaluate(arg_context);
-			if (n != NULL)
-				node->children.push_back(n);
-		}
+	} else if (l > 0) {
+		std::vector<AbstractNode *> evaluatednodes = inst.evaluateChildren(arg_context);
+		node.children.insert(node.children.end(), evaluatednodes.begin(), evaluatednodes.end());
 	}
 }
 
@@ -91,7 +93,7 @@ AbstractNode *ControlModule::evaluate(const Context*, const ModuleInstantiation 
 {
 	if (type == CHILD)
 	{
-		int n = 0;
+		size_t n = 0;
 		if (inst->argvalues.size() > 0) {
 			double v;
 			if (inst->argvalues[0].getnum(v))
@@ -118,52 +120,42 @@ AbstractNode *ControlModule::evaluate(const Context*, const ModuleInstantiation 
 
 	if (type == ECHO)
 	{
-		QString msg = QString("ECHO: ");
-		for (int i = 0; i < inst->argnames.size(); i++) {
-			if (i > 0)
-				msg += QString(", ");
-			if (!inst->argnames[i].isEmpty())
-				msg += inst->argnames[i] + QString(" = ");
-			msg += QString::fromStdString(inst->argvalues[i].toString());
+		std::stringstream msg;
+		msg << "ECHO: ";
+		for (size_t i = 0; i < inst->argnames.size(); i++) {
+			if (i > 0) msg << ", ";
+			if (!inst->argnames[i].empty()) msg << inst->argnames[i] << " = ";
+			msg << inst->argvalues[i];
 		}
-		PRINT(msg);
+		PRINTF("%s", msg.str().c_str());
 	}
 
 	if (type == ASSIGN)
 	{
 		Context c(inst->ctx);
-		for (int i = 0; i < inst->argnames.size(); i++) {
-			if (!inst->argnames[i].isEmpty())
+		for (size_t i = 0; i < inst->argnames.size(); i++) {
+			if (!inst->argnames[i].empty())
 				c.set_variable(inst->argnames[i], inst->argvalues[i]);
 		}
-		foreach (ModuleInstantiation *v, inst->children) {
-			AbstractNode *n = v->evaluate(&c);
-			if (n != NULL)
-				node->children.push_back(n);
-		}
+		std::vector<AbstractNode *> evaluatednodes = inst->evaluateChildren(&c);
+		node->children.insert(node->children.end(), evaluatednodes.begin(), evaluatednodes.end());
 	}
 
 	if (type == FOR || type == INT_FOR)
 	{
-		for_eval(node, 0, inst->argnames, inst->argvalues, inst->children, inst->ctx);
+		for_eval(*node, *inst, 0, inst->argnames, inst->argvalues, inst->ctx);
 	}
 
 	if (type == IF)
 	{
 		const IfElseModuleInstantiation *ifelse = dynamic_cast<const IfElseModuleInstantiation*>(inst);
-		if (ifelse->argvalues.size() > 0 && ifelse->argvalues[0].type == Value::BOOL && ifelse->argvalues[0].b) {
-			foreach (ModuleInstantiation *v, ifelse->children) {
-				AbstractNode *n = v->evaluate(ifelse->ctx);
-				if (n != NULL)
-					node->children.push_back(n);
-			}
+		if (ifelse->argvalues.size() > 0 && ifelse->argvalues[0].toBool()) {
+			std::vector<AbstractNode *> evaluatednodes = ifelse->evaluateChildren();
+			node->children.insert(node->children.end(), evaluatednodes.begin(), evaluatednodes.end());
 		}
 		else {
-			foreach (ModuleInstantiation *v, ifelse->else_children) {
-				AbstractNode *n = v->evaluate(ifelse->ctx);
-				if (n != NULL)
-					node->children.push_back(n);
-			}
+			std::vector<AbstractNode *> evaluatednodes = ifelse->evaluateElseChildren();
+			node->children.insert(node->children.end(), evaluatednodes.begin(), evaluatednodes.end());
 		}
 	}
 

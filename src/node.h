@@ -36,6 +36,8 @@ public:
 	    overloaded to provide specialization for e.g. CSG nodes, primitive nodes etc.
 	    Used for human-readable output. */
 	virtual std::string name() const;
+  /*! Should return a PolySet of the given geometry. Returns NULL if smth. goes wrong */
+	virtual class PolySet *evaluate_polyset(class PolySetEvaluator *) const { return NULL; }
 
   // FIXME: Make return value a reference
 	const std::vector<AbstractNode*> &getChildren() const { 
@@ -79,10 +81,6 @@ public:
 		RENDER_CGAL,
 		RENDER_OPENCSG
 	};
-  /*! Should return a PolySet of the given geometry. It's normal to return an
-		  empty PolySet if smth. is wrong, but don't return NULL unless we change the calling
-			strategy for this method. */
-	virtual class PolySet *evaluate_polyset(render_mode_e mode, class PolySetEvaluator *evaluator) const = 0;
 };
 
 std::ostream &operator<<(std::ostream &stream, const AbstractNode &node);

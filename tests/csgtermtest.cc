@@ -23,9 +23,12 @@
  *
  */
 
+#include "myqhash.h"
+#include "PolySetEvaluator.h"
 #include "CSGTermEvaluator.h"
 #include "CSGTextCache.h"
 #include "openscad.h"
+#include "handle_dep.h"
 #include "node.h"
 #include "module.h"
 #include "context.h"
@@ -42,28 +45,14 @@
 #include <getopt.h>
 #include <assert.h>
 #include <iostream>
+#include <sstream>
 
 using std::cout;
 
-QString commandline_commands;
-const char *make_command = NULL;
-QSet<QString> dependencies;
+std::string commandline_commands;
 QString currentdir;
 QString examplesdir;
 QString librarydir;
-
-void handle_dep(QString filename)
-{
-	if (filename.startsWith("/"))
-		dependencies.insert(filename);
-	else
-		dependencies.insert(QDir::currentPath() + QString("/") + filename);
-	if (!QFile(filename).exists() && make_command) {
-		char buffer[4096];
-		snprintf(buffer, 4096, "%s '%s'", make_command, filename.replace("'", "'\\''").toUtf8().data());
-		system(buffer); // FIXME: Handle error
-	}
-}
 
 int main(int argc, char **argv)
 {
@@ -131,15 +120,16 @@ int main(int argc, char **argv)
 		fprintf(stderr, "Can't open input file `%s'!\n", filename);
 		exit(1);
 	} else {
-		QString text;
+		std::stringstream text;
 		char buffer[513];
 		int ret;
 		while ((ret = fread(buffer, 1, 512, fp)) > 0) {
 			buffer[ret] = 0;
-			text += buffer;
+			text << buffer;
 		}
 		fclose(fp);
-		root_module = parse((text+commandline_commands).toAscii().data(), fileInfo.absolutePath().toLocal8Bit(), false);
+		text << commandline_commands;
+		root_module = parse(text.str().c_str(), fileInfo.absolutePath().toLocal8Bit(), false);
 		if (!root_module) {
 			exit(1);
 		}
@@ -154,9 +144,17 @@ int main(int argc, char **argv)
 
 //	cout << tree.getString(*root_node) << "\n";
 
+<<<<<<< HEAD
 	CSGTermEvaluator evaluator(tree);
 	vector<CSGTerm*> empty = vector<CSGTerm*>();
 	CSGTerm *root_term = evaluator.evaluateCSGTerm(*root_node, empty, empty);
+=======
+	vector<CSGTerm*> highlights;
+	vector<CSGTerm*> background;
+	PolySetEvaluator psevaluator(tree);
+	CSGTermEvaluator evaluator(tree, &psevaluator);
+	CSGTerm *root_term = evaluator.evaluateCSGTerm(*root_node, highlights, background);
+>>>>>>> upstream/visitor
 	
 	// cout << "Stored terms: " << evaluator.stored_term.size() << "\n";
 	// for (map<int, class CSGTerm*>::iterator iter = evaluator.stored_term.begin();

@@ -193,7 +193,7 @@ static bool point_on_line(double *p1, double *p2, double *p3)
 	rot: CLOCKWISE rotation around positive Z axis
  */
 
-void dxf_tesselate(PolySet *ps, DxfData *dxf, double rot, bool up, bool do_triangle_splitting, double h)
+void dxf_tesselate(PolySet *ps, DxfData &dxf, double rot, bool up, bool do_triangle_splitting, double h)
 {
 	GLUtesselator *tobj = gluNewTess();
 
@@ -227,17 +227,17 @@ void dxf_tesselate(PolySet *ps, DxfData *dxf, double rot, bool up, bool do_trian
 
 	Grid3d< QPair<int,int> > point_to_path(GRID_COARSE);
 
-	for (int i = 0; i < dxf->paths.count(); i++) {
-		if (!dxf->paths[i].is_closed)
+	for (int i = 0; i < dxf.paths.size(); i++) {
+		if (!dxf.paths[i].is_closed)
 			continue;
 		gluTessBeginContour(tobj);
-		for (int j = 1; j < dxf->paths[i].points.count(); j++) {
-			point_to_path.data((*dxf->paths[i].points[j])[0],
-												 (*dxf->paths[i].points[j])[1],
+		for (int j = 1; j < dxf.paths[i].indices.size(); j++) {
+			point_to_path.data(dxf.points[dxf.paths[i].indices[j]][0],
+												 dxf.points[dxf.paths[i].indices[j]][1],
 												 h) = QPair<int,int>(i, j);
 			vl.append(tess_vdata());
-			vl.last().v[0] = (*dxf->paths[i].points[j])[0];
-			vl.last().v[1] = (*dxf->paths[i].points[j])[1];
+			vl.last().v[0] = dxf.points[dxf.paths[i].indices[j]][0];
+			vl.last().v[1] = dxf.points[dxf.paths[i].indices[j]][1];
 			vl.last().v[2] = h;
 			gluTessVertex(tobj, vl.last().v, vl.last().v);
 		}
@@ -248,7 +248,7 @@ void dxf_tesselate(PolySet *ps, DxfData *dxf, double rot, bool up, bool do_trian
 	gluDeleteTess(tobj);
 
 #if 0
-	for (int i = 0; i < tess_tri.count(); i++) {
+	for (int i = 0; i < tess_tri.size(); i++) {
 		printf("~~~\n");
 		printf("  %f %f %f\n", tess_tri[i].p[0][0], tess_tri[i].p[0][1], tess_tri[i].p[0][2]);
 		printf("  %f %f %f\n", tess_tri[i].p[1][0], tess_tri[i].p[1][1], tess_tri[i].p[1][2]);
@@ -258,7 +258,7 @@ void dxf_tesselate(PolySet *ps, DxfData *dxf, double rot, bool up, bool do_trian
 
 	// GLU tessing sometimes generates degenerated triangles. We must find and remove
 	// them so we can use the triangle array with CGAL..
-	for (int i = 0; i < tess_tri.count(); i++) {
+	for (int i = 0; i < tess_tri.size(); i++) {
 		if (point_on_line(tess_tri[i].p[0], tess_tri[i].p[1], tess_tri[i].p[2]) ||
 				point_on_line(tess_tri[i].p[1], tess_tri[i].p[2], tess_tri[i].p[0]) ||
 				point_on_line(tess_tri[i].p[2], tess_tri[i].p[0], tess_tri[i].p[1])) {
@@ -279,7 +279,7 @@ void dxf_tesselate(PolySet *ps, DxfData *dxf, double rot, bool up, bool do_trian
 		bool added_triangles = true;
 		typedef QPair<int,int> QPair_ii;
 		QHash<int, QPair_ii> tri_by_atan2;
-		for (int i = 0; i < tess_tri.count(); i++)
+		for (int i = 0; i < tess_tri.size(); i++)
 		for (int j = 0; j < 3; j++) {
 			int ai = (int)round(atan2(fabs(tess_tri[i].p[(j+1)%3][0] - tess_tri[i].p[j][0]),
 					fabs(tess_tri[i].p[(j+1)%3][1] - tess_tri[i].p[j][1])) / 0.001);
@@ -289,9 +289,9 @@ void dxf_tesselate(PolySet *ps, DxfData *dxf, double rot, bool up, bool do_trian
 		{
 			added_triangles = false;
 #ifdef DEBUG_TRIANGLE_SPLITTING
-			printf("*** Triangle splitting (%d) ***\n", tess_tri.count()+1);
+			printf("*** Triangle splitting (%d) ***\n", tess_tri.size()+1);
 #endif
-			for (int i = 0; i < tess_tri.count(); i++)
+			for (int i = 0; i < tess_tri.size(); i++)
 			for (int k = 0; k < 3; k++)
 			{
 				QHash<QPair_ii, QPair_ii> possible_neigh;
@@ -303,7 +303,7 @@ void dxf_tesselate(PolySet *ps, DxfData *dxf, double rot, bool up, bool do_trian
 							possible_neigh[jl] = jl;
 				}
 #ifdef DEBUG_TRIANGLE_SPLITTING
-				printf("%d/%d: %d\n", i, k, possible_neigh.count());
+				printf("%d/%d: %d\n", i, k, possible_neigh.size());
 #endif
 				foreach (const QPair_ii &jl, possible_neigh) {
 					int j = jl.first;
@@ -321,7 +321,7 @@ void dxf_tesselate(PolySet *ps, DxfData *dxf, double rot, bool up, bool do_trian
 						for (int m = 0; m < 2; m++) {
 							int ai = (int)round(atan2(fabs(tess_tri.last().p[(m+1)%3][0] - tess_tri.last().p[m][0]),
 									fabs(tess_tri.last().p[(m+1)%3][1] - tess_tri.last().p[m][1])) / 0.001 );
-							tri_by_atan2.insertMulti(ai, QPair<int,int>(tess_tri.count()-1, m));
+							tri_by_atan2.insertMulti(ai, QPair<int,int>(tess_tri.size()-1, m));
 						}
 						tess_tri[i].p[(k+1)%3] = tess_tri[j].p[l];
 						for (int m = 0; m < 2; m++) {
@@ -337,7 +337,7 @@ void dxf_tesselate(PolySet *ps, DxfData *dxf, double rot, bool up, bool do_trian
 	}
 #endif
 
-	for (int i = 0; i < tess_tri.count(); i++)
+	for (int i = 0; i < tess_tri.size(); i++)
 	{
 #if 0
 		printf("---\n");
@@ -370,19 +370,19 @@ void dxf_tesselate(PolySet *ps, DxfData *dxf, double rot, bool up, bool do_trian
 		int j2 = point_to_path.data(tess_tri[i].p[2][0], tess_tri[i].p[2][1], tess_tri[i].p[2][2]).second;
 
 		if (i0 == i1 && j0 == 1 && j1 == 2)
-			dxf->paths[i0].is_inner = !up;
+			dxf.paths[i0].is_inner = !up;
 		if (i0 == i1 && j0 == 2 && j1 == 1)
-			dxf->paths[i0].is_inner = up;
+			dxf.paths[i0].is_inner = up;
 
 		if (i1 == i2 && j1 == 1 && j2 == 2)
-			dxf->paths[i1].is_inner = !up;
+			dxf.paths[i1].is_inner = !up;
 		if (i1 == i2 && j1 == 2 && j2 == 1)
-			dxf->paths[i1].is_inner = up;
+			dxf.paths[i1].is_inner = up;
 
 		if (i2 == i0 && j2 == 1 && j0 == 2)
-			dxf->paths[i2].is_inner = !up;
+			dxf.paths[i2].is_inner = !up;
 		if (i2 == i0 && j2 == 2 && j0 == 1)
-			dxf->paths[i2].is_inner = up;
+			dxf.paths[i2].is_inner = up;
 	}
 
 	tess_tri.clear();

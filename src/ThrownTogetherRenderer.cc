@@ -62,10 +62,11 @@ void ThrownTogetherRenderer::renderCSGChain(CSGChain *chain, bool highlight,
 {
 	glDepthFunc(GL_LEQUAL);
 	QHash<QPair<PolySet*,double*>,int> polySetVisitMark;
-	for (int i = 0; i < chain->polysets.size(); i++) {
-		if (polySetVisitMark[QPair<PolySet*,double*>(chain->polysets[i], chain->matrices[i])]++ > 0)
+	for (size_t i = 0; i < chain->polysets.size(); i++) {
+		if (polySetVisitMark[QPair<PolySet*,double*>(chain->polysets[i].get(), chain->matrices[i])]++ > 0)
 			continue;
 		double *m = chain->matrices[i];
+		double *c = chain->colors[i];
 		glPushMatrix();
 		glMultMatrixd(m);
 		int csgmode = chain->types[i] == CSGTerm::TYPE_DIFFERENCE ? PolySet::CSGMODE_DIFFERENCE : PolySet::CSGMODE_NORMAL;
@@ -91,12 +92,12 @@ void ThrownTogetherRenderer::renderCSGChain(CSGChain *chain, bool highlight,
 			} else {
 				chain->polysets[i]->render_surface(PolySet::COLORMODE_NONE, PolySet::csgmode_e(csgmode), m);
 			}
-		} else if (m[16] >= 0 || m[17] >= 0 || m[18] >= 0) {
-			glColor4d(m[16], m[17], m[18], m[19]);
+		} else if (c[0] >= 0 || c[1] >= 0 || c[2] >= 0) {
+			glColor4dv(c);
 			chain->polysets[i]->render_surface(PolySet::COLORMODE_NONE, PolySet::csgmode_e(csgmode), m);
 			if (showedges) {
 				glDisable(GL_LIGHTING);
-				glColor4d((m[16]+1)/2, (m[17]+1)/2, (m[18]+1)/2, 1.0);
+				glColor4d((c[0]+1)/2, (c[1]+1)/2, (c[2]+1)/2, 1.0);
 				chain->polysets[i]->render_edges(PolySet::COLORMODE_NONE, PolySet::csgmode_e(csgmode));
 				glEnable(GL_LIGHTING);
 			}

@@ -37,14 +37,15 @@
 #include <sstream>
 #include <vector>
 #include <assert.h>
+#include <boost/assign/std/vector.hpp>
+using namespace boost::assign; // bring 'operator+=()' into scope
 
 enum transform_type_e {
 	SCALE,
 	ROTATE,
 	MIRROR,
 	TRANSLATE,
-	MULTMATRIX,
-	COLOR
+	MULTMATRIX
 };
 
 class TransformModule : public AbstractModule
@@ -55,62 +56,38 @@ public:
 	virtual AbstractNode *evaluate(const Context *ctx, const ModuleInstantiation *inst) const;
 };
 
-using std::string;
-using std::vector;
-
-static vector<string> split(const string &str, const string &delim)
-{
-  assert(delim.size() > 0);
-
-	vector<string> strvec;
-  size_t start = 0, end = 0;
-  while (end != string::npos) {
-    end = str.find(delim, start);
-		// If at end, use length=maxLength.  Else use length=end-start.
-    strvec.push_back(str.substr(start, (end == string::npos) ? string::npos : end - start));
-		// If at end, use start=maxSize.  Else use start=end+delimiter.
-    start = ((end > (string::npos - delim.size())) ? string::npos : end + delim.size());
-  }
-	return strvec;
-}
-
-template <class T> static bool from_string(T &t, const string &s)
-{
-  std::istringstream iss(s);
-  return !(iss >> t).fail();
-}
-
 AbstractNode *TransformModule::evaluate(const Context *ctx, const ModuleInstantiation *inst) const
 {
 	TransformNode *node = new TransformNode(inst);
 
 	for (int i = 0; i < 16; i++)
+<<<<<<< HEAD
 		node->m[i] = i % 5 == 0 ? 1.0 : 0.0;
 	for (int i = 16; i < 19; i++)
 		node->m[i] = -1;
 	node->m[19] = 1;
+=======
+		node->matrix[i] = i % 5 == 0 ? 1.0 : 0.0;
+>>>>>>> upstream/visitor
 
-	QVector<QString> argnames;
-	QVector<Expression*> argexpr;
+	std::vector<std::string> argnames;
+	std::vector<Expression*> argexpr;
 
 	switch (this->type) {
 	case SCALE:
-		argnames = QVector<QString>() << "v";
+		argnames += "v";
 		break;
 	case ROTATE:
-		argnames = QVector<QString>() << "a" << "v";
+		argnames += "a", "v";
 		break;
 	case MIRROR:
-		argnames = QVector<QString>() << "v";
+		argnames += "v";
 		break;
 	case TRANSLATE:
-		argnames = QVector<QString>() << "v";
+		argnames += "v";
 		break;
 	case MULTMATRIX:
-		argnames = QVector<QString>() << "m";
-		break;
-	case COLOR:
-		argnames = QVector<QString>() << "c" << "alpha";
+		argnames += "m";
 		break;
 	default:
 		assert(false);
@@ -134,7 +111,7 @@ AbstractNode *TransformModule::evaluate(const Context *ctx, const ModuleInstanti
 		Value val_a = c.lookup_variable("a");
 		if (val_a.type == Value::VECTOR)
 		{
-			for (int i = 0; i < 3 && i < val_a.vec.size(); i++) {
+			for (size_t i = 0; i < 3 && i < val_a.vec.size(); i++) {
 				double a;
 				val_a.vec[i]->getnum(a);
 				double c = cos(a*M_PI/180.0);
@@ -237,12 +214,13 @@ AbstractNode *TransformModule::evaluate(const Context *ctx, const ModuleInstanti
 		Value v = c.lookup_variable("m");
 		if (v.type == Value::VECTOR) {
 			for (int i = 0; i < 16; i++) {
-				int x = i / 4, y = i % 4;
+				size_t x = i / 4, y = i % 4;
 				if (y < v.vec.size() && v.vec[y]->type == Value::VECTOR && x < v.vec[y]->vec.size())
 					v.vec[y]->vec[x]->getnum(node->matrix[i]);
 			}
 		}
 	}
+<<<<<<< HEAD
 	else if (this->type == COLOR)
 	{
 		Value v = c.lookup_variable("c");
@@ -271,43 +249,38 @@ AbstractNode *TransformModule::evaluate(const Context *ctx, const ModuleInstanti
 			node->m[16+3] = alpha.num;
 		}
 	}
+=======
+>>>>>>> upstream/visitor
 
-	foreach (ModuleInstantiation *v, inst->children) {
-		AbstractNode *n = v->evaluate(inst->ctx);
-		if (n != NULL)
-			node->children.push_back(n);
-	}
+	std::vector<AbstractNode *> evaluatednodes = inst->evaluateChildren();
+	node->children.insert(node->children.end(), evaluatednodes.begin(), evaluatednodes.end());
 
 	return node;
 }
 
-string TransformNode::toString() const
+std::string TransformNode::toString() const
 {
 	std::stringstream stream;
 
-	if (this->matrix[16] >= 0 || this->matrix[17] >= 0 || this->matrix[18] >= 0 || this->matrix[19] >= 0) {
-		stream << "color([" << this->matrix[16] << ", " << this->matrix[17] << ", " << this->matrix[18] << ", " << this->matrix[19] << "])";
-	}
-	else {
-		stream << "multmatrix([";
-		for (int j=0;j<4;j++) {
-			stream << "[";
-			for (int i=0;i<4;i++) {
-				// FIXME: The 0 test is to avoid a leading minus before a single 0 (cosmetics)
-				stream << ((this->matrix[i*4+j]==0)?0:this->matrix[i*4+j]);
-				if (i != 3) stream << ", ";
-			}
-			stream << "]";
-				if (j != 3) stream << ", ";
+	stream << "multmatrix([";
+	for (int j=0;j<4;j++) {
+		stream << "[";
+		for (int i=0;i<4;i++) {
+			// FIXME: The 0 test is to avoid a leading minus before a single 0 (cosmetics)
+			stream << ((this->matrix[i*4+j]==0)?0:this->matrix[i*4+j]);
+			if (i != 3) stream << ", ";
 		}
-		stream << "])";
+		stream << "]";
+		if (j != 3) stream << ", ";
 	}
+	stream << "])";
 
 	return stream.str();
 }
 
-string TransformNode::name() const
+std::string TransformNode::name() const
 {
+<<<<<<< HEAD
 <<<<<<< HEAD
 	return "transform";
 =======
@@ -329,6 +302,9 @@ string TransformNode::name() const
 		((AbstractNode*)this)->dump_cache = text + indent + "}\n";
 	}
 	return dump_cache;
+=======
+	return "transform";
+>>>>>>> upstream/visitor
 }
 
 void register_builtin_transform()
@@ -338,5 +314,4 @@ void register_builtin_transform()
 	builtin_modules["mirror"] = new TransformModule(MIRROR);
 	builtin_modules["translate"] = new TransformModule(TRANSLATE);
 	builtin_modules["multmatrix"] = new TransformModule(MULTMATRIX);
-	builtin_modules["color"] = new TransformModule(COLOR);
 }

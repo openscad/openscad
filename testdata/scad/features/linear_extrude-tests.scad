@@ -1,7 +1,13 @@
-linear_extrude(height=10) square([10,10]);
-translate([19,5,0]) linear_extrude(height=10) circle(5);
-translate([31.5,2.5,0]) linear_extrude(height=10) polygon(points = [[-5,-2.5], [5,-2.5], [0,2.5]]);
+// Empty
+rotate_extrude();
+// No children
+rotate_extrude() { }
+// 3D child
+rotate_extrude() { cube(); }
 
-translate([0,-12,0]) linear_extrude(height=20, twist=45) square([10,10]);
-translate([19,-7,0]) linear_extrude(height=20, twist=90) circle(5);
-translate([31.5,-9.5,0]) linear_extrude(height=20, twist=180) polygon(points = [[-5,-2.5], [5,-2.5], [0,2.5]]);
+linear_extrude(height=10) square([10,10]);
+translate([19,5,0]) linear_extrude(height=10, center=true) difference() {circle(5); circle(3);}
+translate([31.5,2.5,0]) linear_extrude(height=10, twist=-45) polygon(points = [[-5,-2.5], [5,-2.5], [0,2.5]]);
+
+translate([0,20,0]) linear_extrude(height=20, twist=45, slices=2) square([10,10]);
+translate([19,20,0]) linear_extrude(height=20, twist=45, slices=10) square([10,10]);

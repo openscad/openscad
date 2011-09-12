@@ -1,15 +1,32 @@
+#include "PolySetCache.h"
 #include "PolySetEvaluator.h"
 #include "printutils.h"
 #include "polyset.h"
 
-PolySetEvaluator *PolySetEvaluator::global_evaluator = NULL;
+/*!
+	The task of PolySetEvaluator is to create, keep track of and cache PolySet instances.
 
-PolySetEvaluator::cache_entry::cache_entry(PolySet *ps) :
-		ps(ps), msg(print_messages_stack.last())
-{
-}
+	All instances of PolySet which are not strictly temporary should be requested through this
+	class.
+*/
 
-PolySetEvaluator::cache_entry::~cache_entry()
+/*!
+  Factory method returning a PolySet from the given node. If the
+  node is already cached, the cached PolySet will be returned
+  otherwise a new PolySet will be created from the node. If cache is
+  true, the newly created PolySet will be cached.
+ */
+shared_ptr<PolySet> PolySetEvaluator::getPolySet(const AbstractNode &node, bool cache)
 {
-	ps->unlink();
+	std::string cacheid = this->tree.getIdString(node);
+
+	if (PolySetCache::instance()->contains(cacheid)) {
+// For cache debugging
+//		PRINTF("Cache hit: %s", cacheid.substr(0, 40).c_str());
+		return PolySetCache::instance()->get(cacheid);
+	}
+
+	shared_ptr<PolySet> ps(node.evaluate_polyset(this));
+	if (cache) PolySetCache::instance()->insert(cacheid, ps);
+	return ps;
 }

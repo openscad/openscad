@@ -24,6 +24,7 @@ public:
 	PolySet();
 	~PolySet();
 
+	bool empty() const { return polygons.size() == 0; }
 	void append_poly();
 	void append_vertex(double x, double y, double z = 0.0);
 	void insert_vertex(double x, double y, double z = 0.0);
@@ -50,10 +51,6 @@ public:
 
 	void render_surface(colormode_e colormode, csgmode_e csgmode, double *m, GLint *shaderinfo = NULL) const;
 	void render_edges(colormode_e colormode, csgmode_e csgmode) const;
-
-	int refcount;
-	PolySet *link();
-	void unlink();
 };
 
 #endif

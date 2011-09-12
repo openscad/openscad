@@ -24,28 +24,16 @@
  *
  */
 
+#include "cgaladvnode.h"
 #include "module.h"
-#include "node.h"
 #include "context.h"
 #include "builtin.h"
 #include "printutils.h"
-#include "cgal.h"
-#include "visitor.h"
+#include "PolySetEvaluator.h"
 #include <sstream>
 #include <assert.h>
-
-#ifdef ENABLE_CGAL
-extern CGAL_Nef_polyhedron3 minkowski3(CGAL_Nef_polyhedron3 a, CGAL_Nef_polyhedron3 b);
-extern CGAL_Nef_polyhedron2 minkowski2(CGAL_Nef_polyhedron2 a, CGAL_Nef_polyhedron2 b);
-extern CGAL_Nef_polyhedron2 convexhull2(std::list<CGAL_Nef_polyhedron2> a);
-#endif
-
-enum cgaladv_type_e {
-	MINKOWSKI,
-	GLIDE,
-	SUBDIV,
-	HULL
-};
+#include <boost/assign/std/vector.hpp>
+using namespace boost::assign; // bring 'operator+=()' into scope
 
 class CgaladvModule : public AbstractModule
 {
@@ -55,57 +43,21 @@ public:
 	virtual AbstractNode *evaluate(const Context *ctx, const ModuleInstantiation *inst) const;
 };
 
-class CgaladvNode : public AbstractNode
-{
-public:
-	CgaladvNode(const ModuleInstantiation *mi, cgaladv_type_e type) : AbstractNode(mi), type(type) {
-		convexity = 1;
-	}
-	virtual ~CgaladvNode() { }
-  virtual Response accept(class State &state, Visitor &visitor) const {
-		return visitor.visit(state, *this);
-	}
-	virtual std::string toString() const;
-	virtual std::string name() const {
-		switch (this->type) {
-		case MINKOWSKI:
-			return "minkowski";
-			break;
-		case GLIDE:
-			return "glide";
-			break;
-		case SUBDIV:
-			return "subdiv";
-			break;
-		case HULL:
-			return "hull";
-			break;
-		default:
-			assert(false);
-		}
-	}
-
-	Value path;
-	std::string subdiv_type;
-	int convexity, level;
-	cgaladv_type_e type;
-};
-
 AbstractNode *CgaladvModule::evaluate(const Context *ctx, const ModuleInstantiation *inst) const
 {
 	CgaladvNode *node = new CgaladvNode(inst, type);
 
-	QVector<QString> argnames;
-	QVector<Expression*> argexpr;
+	std::vector<std::string> argnames;
+	std::vector<Expression*> argexpr;
 
 	if (type == MINKOWSKI)
-		argnames = QVector<QString>() << "convexity";
+		argnames += "convexity";
 
 	if (type == GLIDE)
-		argnames = QVector<QString>() << "path" << "convexity";
+		argnames += "path", "convexity";
 
 	if (type == SUBDIV)
-		argnames = QVector<QString>() << "type" << "level" << "convexity";
+		argnames += "type", "level", "convexity";
 
 	Context c(ctx);
 	c.args(argnames, argexpr, inst->argnames, inst->argvalues);
@@ -135,13 +87,15 @@ AbstractNode *CgaladvModule::evaluate(const Context *ctx, const ModuleInstantiat
 	if (node->level <= 1)
 		node->level = 1;
 
-	foreach (ModuleInstantiation *v, inst->children) {
-		AbstractNode *n = v->evaluate(inst->ctx);
-		if (n)
-			node->children.push_back(n);
-	}
+	std::vector<AbstractNode *> evaluatednodes = inst->evaluateChildren();
+	node->children.insert(node->children.end(), evaluatednodes.begin(), evaluatednodes.end());
 
 	return node;
+}
+
+PolySet *CgaladvNode::evaluate_polyset(PolySetEvaluator *ps) const
+{
+	return ps->evaluatePolySet(*this);
 }
 
 void register_builtin_cgaladv()
@@ -150,6 +104,26 @@ void register_builtin_cgaladv()
 	builtin_modules["glide"] = new CgaladvModule(GLIDE);
 	builtin_modules["subdiv"] = new CgaladvModule(SUBDIV);
 	builtin_modules["hull"] = new CgaladvModule(HULL);
+}
+
+std::string CgaladvNode::name() const
+{
+	switch (this->type) {
+	case MINKOWSKI:
+		return "minkowski";
+		break;
+	case GLIDE:
+		return "glide";
+		break;
+	case SUBDIV:
+		return "subdiv";
+		break;
+	case HULL:
+		return "hull";
+		break;
+	default:
+		assert(false);
+	}
 }
 
 std::string CgaladvNode::toString() const

@@ -87,6 +87,6 @@ chmod 755 -R release/
 cp examples/* release/examples/
 chmod 644 -R release/examples/*
 
-cp libraries/* release/libraries/
-chmod 644 -R release/libraries/*
-
+cp -R libraries/* release/libraries/
+chmod -R u=rwx,go=r,+X release/libraries/*
+rm -rf `find release/libraries -name ".git"`

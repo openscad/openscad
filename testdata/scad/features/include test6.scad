@@ -1,4 +1,7 @@
 module test6()
 {
-	echo("included from include test6.scad");
+  difference() {
+    cube(center=true);
+    cylinder(r=0.4, h=2, center=true);
+  }    
 }

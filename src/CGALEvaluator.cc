@@ -1,3 +1,4 @@
+#include "CGALCache.h"
 #include "CGALEvaluator.h"
 #include "visitor.h"
 #include "state.h"
@@ -5,11 +6,15 @@
 #include "printutils.h"
 
 #include "csgnode.h"
+#include "cgaladvnode.h"
 #include "transformnode.h"
 #include "polyset.h"
 #include "dxfdata.h"
 #include "dxftess.h"
 
+#include "CGALCache.h"
+#include "cgal.h"
+#include "cgalutils.h"
 #include <CGAL/assertions_behaviour.h>
 #include <CGAL/exceptions.h>
 
@@ -28,12 +33,12 @@ CGAL_Nef_polyhedron CGALEvaluator::evaluateCGALMesh(const AbstractNode &node)
 		evaluate.execute();
 		assert(isCached(node));
 	}
-	return this->cache[this->tree.getString(node)];
+	return CGALCache::instance()->get(this->tree.getIdString(node));
 }
 
 bool CGALEvaluator::isCached(const AbstractNode &node) const
 {
-	return this->cache.contains(this->tree.getString(node));
+	return CGALCache::instance()->contains(this->tree.getIdString(node));
 }
 
 /*!
@@ -45,58 +50,31 @@ void CGALEvaluator::process(CGAL_Nef_polyhedron &target, const CGAL_Nef_polyhedr
  	if (target.dim != 2 && target.dim != 3) {
  		assert(false && "Dimension of Nef polyhedron must be 2 or 3");
  	}
+	if (src.empty()) return; // Empty polyhedron. This can happen for e.g. square([0,0])
+	if (target.dim != src.dim) return; // If someone tries to e.g. union 2d and 3d objects
 
-	if (target.dim == 2) {
-		switch (op) {
-		case CGE_UNION:
-			target.p2 += src.p2;
-			break;
-		case CGE_INTERSECTION:
-			target.p2 *= src.p2;
-			break;
-		case CGE_DIFFERENCE:
-			target.p2 -= src.p2;
-			break;
-		case CGE_MINKOWSKI:
-			target.p2 = minkowski2(target.p2, src.p2);
-			break;
-		case CGE_HULL:
-			//FIXME: Port convex hull to a binary operator or process it all in the end somehow
-			// target.p2 = convexhull2(target.p2, src.p2);
-			// target.p2 = convexhull2(polys);
-			break;
-		}
-	}
-	else if (target.dim == 3) {
-		switch (op) {
-		case CGE_UNION:
-			target.p3 += src.p3;
-			break;
-		case CGE_INTERSECTION:
-			target.p3 *= src.p3;
-			break;
-		case CGE_DIFFERENCE:
-			target.p3 -= src.p3;
-			break;
-		case CGE_MINKOWSKI:
-			target.p3 = minkowski3(target.p3, src.p3);
-			break;
-		case CGE_HULL:
-			// FIXME: Print warning: hull() not supported in 3D
-			break;
-		}
+	switch (op) {
+	case CGE_UNION:
+		target += src;
+		break;
+	case CGE_INTERSECTION:
+		target *= src;
+		break;
+	case CGE_DIFFERENCE:
+		target -= src;
+		break;
+	case CGE_MINKOWSKI:
+		target.minkowski(src);
+		break;
 	}
 }
 
 /*!
-	FIXME: Let caller insert into the cache since caller might modify the result
-  (e.g. transform)
 */
-void CGALEvaluator::applyToChildren(const AbstractNode &node, CGALEvaluator::CsgOp op)
+CGAL_Nef_polyhedron CGALEvaluator::applyToChildren(const AbstractNode &node, CGALEvaluator::CsgOp op)
 {
 	CGAL_Nef_polyhedron N;
 	if (this->visitedchildren[node.index()].size() > 0) {
-		bool first = true;
 		for (ChildList::const_iterator iter = this->visitedchildren[node.index()].begin();
 				 iter != this->visitedchildren[node.index()].end();
 				 iter++) {
@@ -105,18 +83,49 @@ void CGALEvaluator::applyToChildren(const AbstractNode &node, CGALEvaluator::Csg
 			// FIXME: Don't use deep access to modinst members
 			if (chnode->modinst->tag_background) continue;
 			assert(isCached(*chnode));
-			if (first) {
-				N = this->cache[chcacheid];
-				// If the first child(ren) are empty (e.g. echo) nodes, 
-				// ignore them (reset first flag)
- 				if (N.dim != 0) first = false;
+			if (N.empty()) {
+				N = CGALCache::instance()->get(chcacheid).copy();
 			} else {
-				process(N, this->cache[chcacheid], op);
+				process(N, CGALCache::instance()->get(chcacheid), op);
 			}
 			chnode->progress_report();
 		}
 	}
-	this->cache.insert(this->tree.getString(node), N);
+	return N;
+}
+
+extern CGAL_Nef_polyhedron2 *convexhull2(std::list<CGAL_Nef_polyhedron2*> a);
+
+CGAL_Nef_polyhedron CGALEvaluator::applyHull(const CgaladvNode &node)
+{
+	CGAL_Nef_polyhedron N;
+	if (this->visitedchildren[node.index()].size() > 0) {
+		std::list<CGAL_Nef_polyhedron2*> polys;
+		bool all2d = true;
+		for (ChildList::const_iterator iter = this->visitedchildren[node.index()].begin();
+				 iter != this->visitedchildren[node.index()].end();
+				 iter++) {
+			const AbstractNode *chnode = iter->first;
+			const string &chcacheid = iter->second;
+			// FIXME: Don't use deep access to modinst members
+			if (chnode->modinst->tag_background) continue;
+			assert(isCached(*chnode));
+			const CGAL_Nef_polyhedron &ch = CGALCache::instance()->get(chcacheid);
+			if (ch.dim == 2) {
+		    polys.push_back(ch.p2.get());
+			}
+			else if (ch.dim == 3) {
+				PRINT("WARNING: hull() is not implemented yet for 3D objects!");
+		    all2d = false;
+			}
+			chnode->progress_report();
+		}
+
+		if (all2d) {
+			N = CGAL_Nef_polyhedron(convexhull2(polys));
+		}
+	}
+	return N;
 }
 
 /*
@@ -130,7 +139,10 @@ Response CGALEvaluator::visit(State &state, const AbstractNode &node)
 {
 	if (state.isPrefix() && isCached(node)) return PruneTraversal;
 	if (state.isPostfix()) {
-		if (!isCached(node)) applyToChildren(node, CGE_UNION);
+		if (!isCached(node)) {
+			CGAL_Nef_polyhedron N = applyToChildren(node, CGE_UNION);
+			CGALCache::instance()->insert(this->tree.getIdString(node), N);
+		}
 		addToParent(state, node);
 	}
 	return ContinueTraversal;
@@ -140,7 +152,10 @@ Response CGALEvaluator::visit(State &state, const AbstractIntersectionNode &node
 {
 	if (state.isPrefix() && isCached(node)) return PruneTraversal;
 	if (state.isPostfix()) {
-		if (!isCached(node)) applyToChildren(node, CGE_INTERSECTION);
+		if (!isCached(node)) {
+			CGAL_Nef_polyhedron N = applyToChildren(node, CGE_INTERSECTION);
+			CGALCache::instance()->insert(this->tree.getIdString(node), N);
+		}
 		addToParent(state, node);
 	}
 	return ContinueTraversal;
@@ -162,8 +177,11 @@ Response CGALEvaluator::visit(State &state, const CsgNode &node)
 			case CSG_TYPE_INTERSECTION:
 				op = CGE_INTERSECTION;
 				break;
+			default:
+				assert(false);
 			}
-			applyToChildren(node, op);
+			CGAL_Nef_polyhedron N = applyToChildren(node, op);
+			CGALCache::instance()->insert(this->tree.getIdString(node), N);
 		}
 		addToParent(state, node);
 	}
@@ -176,10 +194,9 @@ Response CGALEvaluator::visit(State &state, const TransformNode &node)
 	if (state.isPostfix()) {
 		if (!isCached(node)) {
 			// First union all children
-			applyToChildren(node, CGE_UNION);
+			CGAL_Nef_polyhedron N = applyToChildren(node, CGE_UNION);
 
 			// Then apply transform
-			CGAL_Nef_polyhedron N = this->cache[this->tree.getString(node)];
 			// If there is no geometry under the transform, N will be empty and of dim 0,
 			// just just silently ignore such nodes
 			if (N.dim == 2) {
@@ -191,68 +208,80 @@ Response CGALEvaluator::visit(State &state, const TransformNode &node)
 					node.matrix[0], node.matrix[4], node.matrix[12],
 					node.matrix[1], node.matrix[5], node.matrix[13], node.matrix[15]);
 				
-				DxfData dd(N);
-				for (int i=0; i < dd.points.size(); i++) {
-					CGAL_Kernel2::Point_2 p = CGAL_Kernel2::Point_2(dd.points[i][0], dd.points[i][1]);
+				DxfData *dd = N.convertToDxfData();
+				for (size_t i=0; i < dd->points.size(); i++) {
+					CGAL_Kernel2::Point_2 p = CGAL_Kernel2::Point_2(dd->points[i][0], dd->points[i][1]);
 					p = t.transform(p);
-					dd.points[i][0] = to_double(p.x());
-					dd.points[i][1] = to_double(p.y());
+					dd->points[i][0] = to_double(p.x());
+					dd->points[i][1] = to_double(p.y());
 				}
 				
 				PolySet ps;
 				ps.is2d = true;
-				dxf_tesselate(&ps, &dd, 0, true, false, 0);
+				dxf_tesselate(&ps, *dd, 0, true, false, 0);
 				
 				N = evaluateCGALMesh(ps);
-				ps.refcount = 0;
+				delete dd;
 			}
 			else if (N.dim == 3) {
 				CGAL_Aff_transformation t(
 					node.matrix[0], node.matrix[4], node.matrix[ 8], node.matrix[12],
 					node.matrix[1], node.matrix[5], node.matrix[ 9], node.matrix[13],
 					node.matrix[2], node.matrix[6], node.matrix[10], node.matrix[14], node.matrix[15]);
-				N.p3.transform(t);
+				N.p3->transform(t);
 			}
-			this->cache.insert(this->tree.getString(node), N);
+			CGALCache::instance()->insert(this->tree.getIdString(node), N);
 		}
 		addToParent(state, node);
 	}
 	return ContinueTraversal;
 }
 
-// FIXME: EvaluateNode: Union over children + some magic
-// FIXME: CgaladvNode: Iterate over children. Special operation
-
-// FIXME: Subtypes of AbstractPolyNode:
-// ProjectionNode
-// DxfLinearExtrudeNode
-// DxfRotateExtrudeNode
-// (SurfaceNode)
-// (PrimitiveNode)
 Response CGALEvaluator::visit(State &state, const AbstractPolyNode &node)
 {
 	if (state.isPrefix() && isCached(node)) return PruneTraversal;
 	if (state.isPostfix()) {
 		if (!isCached(node)) {
-			// First union all children
-			applyToChildren(node, CGE_UNION);
-
-			// Then apply polyset operation
-			PolySet *ps = node.evaluate_polyset(AbstractPolyNode::RENDER_CGAL, &this->psevaluator);
+			// Apply polyset operation
+			shared_ptr<PolySet> ps = this->psevaluator.getPolySet(node, false);
+			CGAL_Nef_polyhedron N;
 			if (ps) {
-				try {
-					CGAL_Nef_polyhedron N = evaluateCGALMesh(*ps);
+				N = evaluateCGALMesh(*ps);
 //				print_messages_pop();
-					node.progress_report();
-					
-					ps->unlink();
-					this->cache.insert(this->tree.getString(node), N);
-				}
-				catch (...) { // Don't leak the PolySet on ProgressCancelException
-					ps->unlink();
-					throw;
-				}
+				node.progress_report();
 			}
+			CGALCache::instance()->insert(this->tree.getIdString(node), N);
+		}
+		addToParent(state, node);
+	}
+	return ContinueTraversal;
+}
+
+Response CGALEvaluator::visit(State &state, const CgaladvNode &node)
+{
+	if (state.isPrefix() && isCached(node)) return PruneTraversal;
+	if (state.isPostfix()) {
+		if (!isCached(node)) {
+			CGAL_Nef_polyhedron N;
+			CGALEvaluator::CsgOp op;
+			switch (node.type) {
+			case MINKOWSKI:
+				op = CGE_MINKOWSKI;
+				N = applyToChildren(node, op);
+				break;
+			case GLIDE:
+				PRINT("WARNING: glide() is not implemented yet!");
+				return PruneTraversal;
+				break;
+			case SUBDIV:
+				PRINT("WARNING: subdiv() is not implemented yet!");
+				return PruneTraversal;
+				break;
+			case HULL:
+				N = applyHull(node);
+				break;
+			}
+			CGALCache::instance()->insert(this->tree.getIdString(node), N);
 		}
 		addToParent(state, node);
 	}
@@ -268,129 +297,14 @@ void CGALEvaluator::addToParent(const State &state, const AbstractNode &node)
 	assert(state.isPostfix());
 	this->visitedchildren.erase(node.index());
 	if (state.parent()) {
-		this->visitedchildren[state.parent()->index()].push_back(std::make_pair(&node, this->tree.getString(node)));
+		this->visitedchildren[state.parent()->index()].push_back(std::make_pair(&node, this->tree.getIdString(node)));
 	}
 }
-
-#if 0
-/*!
-	Static function to evaluate CGAL meshes.
-	NB! This is just a support function used for development and debugging
-*/
-CGAL_Nef_polyhedron CGALEvaluator::evaluateCGALMesh(const AbstractPolyNode &node)
-{
-	// FIXME: Lookup Nef polyhedron in cache.
-
-	// 	print_messages_push();
-	
-	PolySet *ps = node.evaluate_polyset(AbstractPolyNode::RENDER_CGAL);
-	if (ps) {
-		try {
-			CGAL_Nef_polyhedron N = ps->evaluateCSGMesh();
-			// FIXME: Insert into cache
-			// print_messages_pop();
-			node.progress_report();
-			
-			ps->unlink();
-			return N;
-		}
-		catch (...) { // Don't leak the PolySet on ProgressCancelException
-			ps->unlink();
-			throw;
-		}
-	}
-}
-#endif
-
-#ifdef ENABLE_CGAL
-
-#undef GEN_SURFACE_DEBUG
-
-class CGAL_Build_PolySet : public CGAL::Modifier_base<CGAL_HDS>
-{
-public:
-	typedef CGAL_HDS::Vertex::Point CGALPoint;
-
-	const PolySet &ps;
-	CGAL_Build_PolySet(const PolySet &ps) : ps(ps) { }
-
-	void operator()(CGAL_HDS& hds)
-	{
-		CGAL_Polybuilder B(hds, true);
-
-		QList<CGALPoint> vertices;
-		Grid3d<int> vertices_idx(GRID_FINE);
-
-		for (size_t i = 0; i < ps.polygons.size(); i++) {
-			const PolySet::Polygon *poly = &ps.polygons[i];
-			for (size_t j = 0; j < poly->size(); j++) {
-				const Vector3d &p = poly->at(j);
-				if (!vertices_idx.has(p[0], p[1], p[2])) {
-					vertices_idx.data(p[0], p[1], p[2]) = vertices.size();
-					vertices.append(CGALPoint(p[0], p[1], p[2]));
-				}
-			}
-		}
-
-		B.begin_surface(vertices.size(), ps.polygons.size());
-#ifdef GEN_SURFACE_DEBUG
-		printf("=== CGAL Surface ===\n");
-#endif
-
-		for (size_t i = 0; i < vertices.size(); i++) {
-			const CGALPoint &p = vertices[i];
-			B.add_vertex(p);
-#ifdef GEN_SURFACE_DEBUG
-			printf("%d: %f %f %f\n", i, p[0], p[1], p[2]);
-#endif
-		}
-
-		for (size_t i = 0; i < ps.polygons.size(); i++) {
-			const PolySet::Polygon *poly = &ps.polygons[i];
-			QHash<int,int> fc;
-			bool facet_is_degenerated = false;
-			for (size_t j = 0; j < poly->size(); j++) {
-				const Vector3d &p = poly->at(j);
-				int v = vertices_idx.data(p[0], p[1], p[2]);
-				if (fc[v]++ > 0)
-					facet_is_degenerated = true;
-			}
-			
-			if (!facet_is_degenerated)
-				B.begin_facet();
-#ifdef GEN_SURFACE_DEBUG
-			printf("F:");
-#endif
-			for (size_t j = 0; j < poly->size(); j++) {
-				const Vector3d &p = poly->at(j);
-#ifdef GEN_SURFACE_DEBUG
-				printf(" %d (%f,%f,%f)", vertices_idx.data(p[0], p[1], p[2]), p[0], p[1], p[2]);
-#endif
-				if (!facet_is_degenerated)
-					B.add_vertex_to_facet(vertices_idx.data(p[0], p[1], p[2]));
-			}
-#ifdef GEN_SURFACE_DEBUG
-			if (facet_is_degenerated)
-				printf(" (degenerated)");
-			printf("\n");
-#endif
-			if (!facet_is_degenerated)
-				B.end_facet();
-		}
-
-#ifdef GEN_SURFACE_DEBUG
-		printf("====================\n");
-#endif
-		B.end_surface();
-
-		#undef PointKey
-	}
-};
-
-#endif /* ENABLE_CGAL */
 
 CGAL_Nef_polyhedron CGALEvaluator::evaluateCGALMesh(const PolySet &ps)
 {
+	if (ps.empty()) return CGAL_Nef_polyhedron();
+
 	if (ps.is2d)
 	{
 #if 0
@@ -499,7 +413,13 @@ CGAL_Nef_polyhedron CGALEvaluator::evaluateCGALMesh(const PolySet &ps)
 						double x = ps.polygons[i][j][0];
 						double y = ps.polygons[i][j][1];
 						if (this->grid.has(x, y)) {
-							this->polygons[this->poly_n].append(this->grid.data(x, y));
+							int idx = this->grid.data(x, y);
+							// Filter away two vertices with the same index (due to grid)
+							// This could be done in a more general way, but we'd rather redo the entire
+							// grid concept instead.
+							if (this->polygons[this->poly_n].indexOf(idx) == -1) {
+								this->polygons[this->poly_n].append(this->grid.data(x, y));
+							}
 						} else {
 							this->grid.align(x, y) = point_n;
 							this->polygons[this->poly_n].append(point_n);
@@ -507,8 +427,13 @@ CGAL_Nef_polyhedron CGALEvaluator::evaluateCGALMesh(const PolySet &ps)
 							point_n++;
 						}
 					}
-					add_edges(this->poly_n);
-					this->poly_n++;
+					if (this->polygons[this->poly_n].size() >= 3) {
+						add_edges(this->poly_n);
+						this->poly_n++;
+					}
+					else {
+						this->polygons.remove(this->poly_n);
+					}
 				}
 			}
 
@@ -574,9 +499,9 @@ CGAL_Nef_polyhedron CGALEvaluator::evaluateCGALMesh(const PolySet &ps)
 				}
 			}
 
-			CGAL_Nef_polyhedron2 toNef()
+			CGAL_Nef_polyhedron2 *toNef()
 			{
-				CGAL_Nef_polyhedron2 N;
+				CGAL_Nef_polyhedron2 *N = new CGAL_Nef_polyhedron2;
 
 				QHashIterator< int, QList<int> > it(polygons);
 				while (it.hasNext()) {
@@ -586,7 +511,7 @@ CGAL_Nef_polyhedron CGALEvaluator::evaluateCGALMesh(const PolySet &ps)
 						int p = it.value()[j];
 						plist.push_back(points[p]);
 					}
-					N += CGAL_Nef_polyhedron2(plist.begin(), plist.end(), CGAL_Nef_polyhedron2::INCLUDED);
+					*N += CGAL_Nef_polyhedron2(plist.begin(), plist.end(), CGAL_Nef_polyhedron2::INCLUDED);
 				}
 
 				return N;
@@ -594,9 +519,9 @@ CGAL_Nef_polyhedron CGALEvaluator::evaluateCGALMesh(const PolySet &ps)
 		};
 
 		PolyReducer pr(ps);
-		// printf("Number of polygons before reduction: %d\n", pr.polygons.size());
+		PRINTF("Number of polygons before reduction: %d\n", pr.polygons.size());
 		pr.reduce();
-		// printf("Number of polygons after reduction: %d\n", pr.polygons.size());
+		PRINTF("Number of polygons after reduction: %d\n", pr.polygons.size());
 		return CGAL_Nef_polyhedron(pr.toNef());
 #endif
 #if 0
@@ -636,17 +561,14 @@ CGAL_Nef_polyhedron CGALEvaluator::evaluateCGALMesh(const PolySet &ps)
 	{
 		CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
 		try {
-		CGAL_Polyhedron P;
-		CGAL_Build_PolySet builder(ps);
-		P.delegate(builder);
-#if 0
-		std::cout << P;
-#endif
-		CGAL_Nef_polyhedron3 N(P);
-		return CGAL_Nef_polyhedron(N);
-    }
+			CGAL_Polyhedron *P = createPolyhedronFromPolySet(ps);
+			if (P) {
+				CGAL_Nef_polyhedron3 *N = new CGAL_Nef_polyhedron3(*P);
+				return CGAL_Nef_polyhedron(N);
+			}
+		}
 		catch (CGAL::Assertion_exception e) {
-			PRINTF("ERROR: Illegal polygonal object - make sure all polygons are defined with the same winding order. Skipping affected object.");
+			PRINTF("CGAL error in CGA_Nef_polyhedron3(): %s", e.what());
 			CGAL::set_error_behaviour(old_behaviour);
 			return CGAL_Nef_polyhedron();
 		}

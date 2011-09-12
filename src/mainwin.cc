@@ -24,6 +24,7 @@
  *
  */
 
+#include "PolySetCache.h"
 #include "MainWindow.h"
 #include "openscad.h" // examplesdir
 #include "Preferences.h"
@@ -46,8 +47,6 @@
 #ifdef USE_PROGRESSWIDGET
 #include "ProgressWidget.h"
 #endif
-#include "CGALEvaluator.h"
-#include "PolySetCGALEvaluator.h"
 #include "ThrownTogetherRenderer.h"
 
 #include <QMenu>
@@ -77,14 +76,22 @@
 #include "qlanguagefactory.h"
 #endif
 
+#include <fstream>
+
 #include <algorithm>
+#include <boost/foreach.hpp>
 #include <boost/lambda/lambda.hpp>
 #include <boost/lambda/bind.hpp>
 using namespace boost::lambda;
 
 #ifdef ENABLE_CGAL
 
-#include "cgalrenderer.h"
+#include "CGALCache.h"
+#include "CGALEvaluator.h"
+#include "PolySetCGALEvaluator.h"
+#include "CGALRenderer.h"
+#include "CGAL_Nef_polyhedron.h"
+#include "cgal.h"
 
 #endif // ENABLE_CGAL
 
@@ -335,6 +342,7 @@ MainWindow::MainWindow(const QString &filename)
 	} else {
 		setFileName("");
 	}
+	updateRecentFileActions();
 
 	connect(editor->document(), SIGNAL(contentsChanged()), this, SLOT(animateUpdateDocChanged()));
 #ifdef _QCODE_EDIT_
@@ -486,6 +494,7 @@ MainWindow::openFile(const QString &new_filename)
 	setFileName(new_filename);
 
 	load();
+	updateRecentFiles();
 }
 
 void
@@ -493,7 +502,7 @@ MainWindow::setFileName(const QString &filename)
 {
 	if (filename.isEmpty()) {
 		this->fileName.clear();
-		this->root_ctx.document_path = currentdir;
+		this->root_ctx.setDocumentPath(currentdir.toStdString());
 		setWindowTitle("OpenSCAD - New Document[*]");
 	}
 	else {
@@ -505,20 +514,28 @@ MainWindow::setFileName(const QString &filename)
 		QString infoFileName = fileinfo.absoluteFilePath();
 		if (!infoFileName.isEmpty()) {
 			this->fileName = infoFileName;
-			QSettings settings; // already set up properly via main.cpp
-			QStringList files = settings.value("recentFileList").toStringList();
-			files.removeAll(this->fileName);
-			files.prepend(this->fileName);
-			while (files.size() > maxRecentFiles)
-				files.removeLast();
-			settings.setValue("recentFileList", files);
 		} else {
 			this->fileName = fileinfo.fileName();
 		}
 		
-		this->root_ctx.document_path = fileinfo.dir().absolutePath();
+		this->root_ctx.setDocumentPath(fileinfo.dir().absolutePath().toStdString());
 		QDir::setCurrent(fileinfo.dir().absolutePath());
 	}
+
+}
+
+void MainWindow::updateRecentFiles()
+{
+	// Check that the canonical file path exists - only update recent files
+	// if it does. Should prevent empty list items on initial open etc.
+	QFileInfo fileinfo(this->fileName);
+	QString infoFileName = fileinfo.absoluteFilePath();
+	QSettings settings; // already set up properly via main.cpp
+	QStringList files = settings.value("recentFileList").toStringList();
+	files.removeAll(infoFileName);
+	files.prepend(infoFileName);
+	while (files.size() > maxRecentFiles) files.removeLast();
+	settings.setValue("recentFileList", files);
 
 	foreach(QWidget *widget, QApplication::topLevelWidgets()) {
 		MainWindow *mainWin = qobject_cast<MainWindow *>(widget);
@@ -527,6 +544,7 @@ MainWindow::setFileName(const QString &filename)
 		}
 	}
 }
+
 
 void MainWindow::updatedFps()
 {
@@ -576,7 +594,7 @@ void MainWindow::load()
 
 AbstractNode *MainWindow::find_root_tag(AbstractNode *n)
 {
-	foreach(AbstractNode *v, n->children) {
+	BOOST_FOREACH (AbstractNode *v, n->children) {
 		if (v->modinst->tag_root) return v;
 		if (AbstractNode *vroot = find_root_tag(v)) return vroot;
 	}
@@ -665,7 +683,7 @@ void MainWindow::compile(bool procevents)
 	// Parse
 	this->last_compiled_doc = editor->toPlainText();
 	this->root_module = parse((this->last_compiled_doc + "\n" + 
-														 commandline_commands).toAscii().data(), 
+														 QString::fromStdString(commandline_commands)).toAscii().data(), 
 														this->fileName.isEmpty() ? 
 														"" : 
 														QFileInfo(this->fileName).absolutePath().toLocal8Bit(), 
@@ -725,18 +743,7 @@ fail:
 		if (parser_error_pos < 0) {
 			PRINT("ERROR: Compilation failed! (no top level object found)");
 		} else {
-			int line = 1;
-			QByteArray pb = this->last_compiled_doc.toAscii();
-			char *p = pb.data();
-			for (int i = 0; i < parser_error_pos; i++) {
-				if (p[i] == '\n')
-					line++;
-				if (p[i] == 0) {
-					line = -1;
-					break;
-				}
-			}
-			PRINTF("ERROR: Compilation failed! (parser error in line %d)", line);
+			PRINT("ERROR: Compilation failed!");
 		}
 		if (procevents)
 			QApplication::processEvents();
@@ -774,9 +781,7 @@ void MainWindow::compileCSG(bool procevents)
 
 	progress_report_prep(root_node, report_func, pd);
 	try {
-		// FIXME: put cache somewhere else as it's pretty useless now
-		QHash<std::string, CGAL_Nef_polyhedron> cache;
-		CGALEvaluator cgalevaluator(cache, this->tree);
+		CGALEvaluator cgalevaluator(this->tree);
 		PolySetCGALEvaluator psevaluator(cgalevaluator);
 		CSGTermEvaluator csgrenderer(this->tree, &psevaluator);
 		root_raw_term = csgrenderer.evaluateCSGTerm(*root_node, highlight_terms, background_terms);
@@ -785,6 +790,8 @@ void MainWindow::compileCSG(bool procevents)
 			if (procevents)
 				QApplication::processEvents();
 		}
+		PolySetCache::instance()->print();
+		CGALCache::instance()->print();
 	}
 	catch (ProgressCancelException e) {
 		PRINT("CSG generation cancelled.");
@@ -859,6 +866,7 @@ void MainWindow::compileCSG(bool procevents)
 			PRINTF("WARNING: OpenCSG rendering has been disabled.");
 		}
 		else {
+			PRINTF("Normalized CSG tree has %d elements", root_chain->polysets.size());
 			this->opencsgRenderer = new OpenCSGRenderer(this->root_chain, 
 																									this->highlights_chain, 
 																									this->background_chain, 
@@ -893,7 +901,9 @@ void MainWindow::actionOpen()
 {
 	QString new_filename = QFileDialog::getOpenFileName(this, "Open File", "", "OpenSCAD Designs (*.scad)");
 #ifdef ENABLE_MDI
-	new MainWindow(new_filename);
+	if (!new_filename.isEmpty()) {
+		new MainWindow(new_filename);
+	}
 #else
 	if (!new_filename.isEmpty()) {
 		if (!maybeSave())
@@ -991,6 +1001,7 @@ void MainWindow::actionSave()
 			this->editor->setContentModified(false);
 		}
 		clearCurrentOutput();
+		updateRecentFiles();
 	}
 }
 
@@ -1212,10 +1223,10 @@ void MainWindow::actionRenderCGAL()
 
 	progress_report_prep(this->root_node, report_func, pd);
 	try {
-		// FIXME: put cache somewhere else as it's pretty useless now
-		QHash<std::string, CGAL_Nef_polyhedron> cache;
-		CGALEvaluator evaluator(cache, this->tree);
+		CGALEvaluator evaluator(this->tree);
 		this->root_N = new CGAL_Nef_polyhedron(evaluator.evaluateCGALMesh(*this->root_node));
+		PolySetCache::instance()->print();
+		CGALCache::instance()->print();
 	}
 	catch (ProgressCancelException e) {
 		PRINT("Rendering cancelled.");
@@ -1232,57 +1243,62 @@ void MainWindow::actionRenderCGAL()
 		if (this->root_N->dim == 2) {
 			PRINTF("   Top level object is a 2D object:");
 			QApplication::processEvents();
-			PRINTF("   Empty:      %6s", this->root_N->p2.is_empty() ? "yes" : "no");
+			PRINTF("   Empty:      %6s", this->root_N->p2->is_empty() ? "yes" : "no");
 			QApplication::processEvents();
-			PRINTF("   Plane:      %6s", this->root_N->p2.is_plane() ? "yes" : "no");
+			PRINTF("   Plane:      %6s", this->root_N->p2->is_plane() ? "yes" : "no");
 			QApplication::processEvents();
-			PRINTF("   Vertices:   %6d", (int)this->root_N->p2.explorer().number_of_vertices());
+			PRINTF("   Vertices:   %6d", (int)this->root_N->p2->explorer().number_of_vertices());
 			QApplication::processEvents();
-			PRINTF("   Halfedges:  %6d", (int)this->root_N->p2.explorer().number_of_halfedges());
+			PRINTF("   Halfedges:  %6d", (int)this->root_N->p2->explorer().number_of_halfedges());
 			QApplication::processEvents();
-			PRINTF("   Edges:      %6d", (int)this->root_N->p2.explorer().number_of_edges());
+			PRINTF("   Edges:      %6d", (int)this->root_N->p2->explorer().number_of_edges());
 			QApplication::processEvents();
-			PRINTF("   Faces:      %6d", (int)this->root_N->p2.explorer().number_of_faces());
+			PRINTF("   Faces:      %6d", (int)this->root_N->p2->explorer().number_of_faces());
 			QApplication::processEvents();
-			PRINTF("   FaceCycles: %6d", (int)this->root_N->p2.explorer().number_of_face_cycles());
+			PRINTF("   FaceCycles: %6d", (int)this->root_N->p2->explorer().number_of_face_cycles());
 			QApplication::processEvents();
-			PRINTF("   ConnComp:   %6d", (int)this->root_N->p2.explorer().number_of_connected_components());
+			PRINTF("   ConnComp:   %6d", (int)this->root_N->p2->explorer().number_of_connected_components());
 			QApplication::processEvents();
 		}
 
 		if (this->root_N->dim == 3) {
 			PRINTF("   Top level object is a 3D object:");
-			PRINTF("   Simple:     %6s", this->root_N->p3.is_simple() ? "yes" : "no");
+			PRINTF("   Simple:     %6s", this->root_N->p3->is_simple() ? "yes" : "no");
 			QApplication::processEvents();
-			PRINTF("   Valid:      %6s", this->root_N->p3.is_valid() ? "yes" : "no");
+			PRINTF("   Valid:      %6s", this->root_N->p3->is_valid() ? "yes" : "no");
 			QApplication::processEvents();
-			PRINTF("   Vertices:   %6d", (int)this->root_N->p3.number_of_vertices());
+			PRINTF("   Vertices:   %6d", (int)this->root_N->p3->number_of_vertices());
 			QApplication::processEvents();
-			PRINTF("   Halfedges:  %6d", (int)this->root_N->p3.number_of_halfedges());
+			PRINTF("   Halfedges:  %6d", (int)this->root_N->p3->number_of_halfedges());
 			QApplication::processEvents();
-			PRINTF("   Edges:      %6d", (int)this->root_N->p3.number_of_edges());
+			PRINTF("   Edges:      %6d", (int)this->root_N->p3->number_of_edges());
 			QApplication::processEvents();
-			PRINTF("   Halffacets: %6d", (int)this->root_N->p3.number_of_halffacets());
+			PRINTF("   Halffacets: %6d", (int)this->root_N->p3->number_of_halffacets());
 			QApplication::processEvents();
-			PRINTF("   Facets:     %6d", (int)this->root_N->p3.number_of_facets());
+			PRINTF("   Facets:     %6d", (int)this->root_N->p3->number_of_facets());
 			QApplication::processEvents();
-			PRINTF("   Volumes:    %6d", (int)this->root_N->p3.number_of_volumes());
+			PRINTF("   Volumes:    %6d", (int)this->root_N->p3->number_of_volumes());
 			QApplication::processEvents();
 		}
 
 		int s = t.elapsed() / 1000;
 		PRINTF("Total rendering time: %d hours, %d minutes, %d seconds", s / (60*60), (s / 60) % 60, s % 60);
 
-		this->cgalRenderer = new CGALRenderer(*this->root_N);
-		// Go to CGAL view mode
-		if (viewActionCGALGrid->isChecked()) {
-			viewModeCGALGrid();
+		if (!this->root_N->empty()) {
+			this->cgalRenderer = new CGALRenderer(*this->root_N);
+			// Go to CGAL view mode
+			if (viewActionCGALGrid->isChecked()) {
+				viewModeCGALGrid();
+			}
+			else {
+				viewModeCGALSurface();
+			}
+			
+			PRINT("Rendering finished.");
 		}
 		else {
-			viewModeCGALSurface();
+			PRINT("WARNING: No top level geometry to render");
 		}
-
-		PRINT("Rendering finished.");
 	}
 
 #ifdef USE_PROGRESSWIDGET
@@ -1303,7 +1319,7 @@ void MainWindow::actionDisplayAST()
 	e->setWindowTitle("AST Dump");
 	e->setReadOnly(true);
 	if (root_module) {
-		e->setPlainText(root_module->dump("", ""));
+		e->setPlainText(QString::fromStdString(root_module->dump("", "")));
 	} else {
 		e->setPlainText("No AST to dump. Please try compiling first...");
 	}
@@ -1338,7 +1354,7 @@ void MainWindow::actionDisplayCSGProducts()
 	e->setTabStopWidth(30);
 	e->setWindowTitle("CSG Products Dump");
 	e->setReadOnly(true);
-	e->setPlainText(QString("\nCSG before normalization:\n%1\n\n\nCSG after normalization:\n%2\n\n\nCSG rendering chain:\n%3\n\n\nHighlights CSG rendering chain:\n%4\n\n\nBackground CSG rendering chain:\n%5\n").arg(root_raw_term ? root_raw_term->dump() : "N/A", root_norm_term ? root_norm_term->dump() : "N/A", root_chain ? root_chain->dump() : "N/A", highlights_chain ? highlights_chain->dump() : "N/A", background_chain ? background_chain->dump() : "N/A"));
+	e->setPlainText(QString("\nCSG before normalization:\n%1\n\n\nCSG after normalization:\n%2\n\n\nCSG rendering chain:\n%3\n\n\nHighlights CSG rendering chain:\n%4\n\n\nBackground CSG rendering chain:\n%5\n").arg(root_raw_term ? QString::fromStdString(root_raw_term->dump()) : "N/A", root_norm_term ? QString::fromStdString(root_norm_term->dump()) : "N/A", root_chain ? QString::fromStdString(root_chain->dump()) : "N/A", highlights_chain ? QString::fromStdString(highlights_chain->dump()) : "N/A", background_chain ? QString::fromStdString(background_chain->dump()) : "N/A"));
 	e->show();
 	e->resize(600, 400);
 	clearCurrentOutput();
@@ -1367,7 +1383,7 @@ void MainWindow::actionExportSTLorOFF(bool)
 		return;
 	}
 
-	if (!this->root_N->p3.is_simple()) {
+	if (!this->root_N->p3->is_simple()) {
 		PRINT("Object isn't a valid 2-manifold! Modify your design..");
 		clearCurrentOutput();
 		return;
@@ -1386,21 +1402,20 @@ void MainWindow::actionExportSTLorOFF(bool)
 
 	QProgressDialog *pd = new QProgressDialog(
 			stl_mode ? "Exporting object to STL file..." : "Exporting object to OFF file...",
-			QString(), 0, this->root_N->p3.number_of_facets() + 1);
+			QString(), 0, this->root_N->p3->number_of_facets() + 1);
 	pd->setValue(0);
 	pd->setAutoClose(false);
 	pd->show();
 	QApplication::processEvents();
 
-	QFile file(stl_filename);
-	if (!file.open(QIODevice::ReadWrite)) {
+	std::ofstream fstream(stl_filename.toUtf8());
+	if (!fstream.is_open()) {
 		PRINTA("Can't open file \"%1\" for export", stl_filename);
 	}
 	else {
-		QTextStream fstream(&file);
 		if (stl_mode) export_stl(this->root_N, fstream, pd);
 		else export_off(this->root_N, fstream, pd);
-		file.close();
+		fstream.close();
 
 		PRINTF("%s export finished.", stl_mode ? "STL" : "OFF");
 	}
@@ -1447,14 +1462,13 @@ void MainWindow::actionExportDXF()
 		return;
 	}
 
-	QFile file(dxf_filename);
-	if (!file.open(QIODevice::ReadWrite)) {
-		PRINTA("Can't open file \"%1\" for export", dxf_filename);
+	std::ofstream fstream(dxf_filename.toUtf8());
+	if (!fstream.is_open()) {
+		PRINTA("Can't open file \"%s\" for export", dxf_filename);
 	}
 	else {
-		QTextStream fstream(&file);
 		export_dxf(this->root_N, fstream, NULL);
-		file.close();
+		fstream.close();
 		PRINTF("DXF export finished.");
 	}
 
@@ -1482,12 +1496,9 @@ void MainWindow::actionExportImage()
 
 void MainWindow::actionFlushCaches()
 {
-// FIXME: Polycache -> PolySetEvaluator
-// FIXME: PolySetEvaluator->clearCache();
+	PolySetCache::instance()->clear();
 #ifdef ENABLE_CGAL
-// FIXME: Flush caches through whatever channels we have
-	// CGALEvaluator::evaluator()->getCache().clear();
-	// this->dumper->clearCache();
+	CGALCache::instance()->clear();
 #endif
 	dxf_dim_cache.clear();
 	dxf_cross_cache.clear();
@@ -1660,7 +1671,7 @@ void MainWindow::viewAngleDiagonal()
 {
 	this->glview->object_rot_x = 35;
 	this->glview->object_rot_y = 0;
-	this->glview->object_rot_z = 25;
+	this->glview->object_rot_z = -25;
 	this->glview->updateGL();
 }
 

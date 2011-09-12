@@ -92,6 +92,7 @@ private slots:
 	void actionOpen();
 	void actionOpenRecent();
 	void actionOpenExample();
+	void updateRecentFiles();
 	void clearRecentFiles();
 	void updateRecentFileActions();
 	void actionSave();

@@ -14,7 +14,7 @@ public:
 	virtual std::string toString() const;
 	virtual std::string name() const;
 
-	double matrix[20];
+	double matrix[16];
 };
 
 #endif

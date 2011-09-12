@@ -37,11 +37,9 @@
 #include "openscad.h" // get_fragments_from_r()
 
 #include <sstream>
+#include <boost/assign/std/vector.hpp>
+using namespace boost::assign; // bring 'operator+=()' into scope
 
-#include <QTime>
-#include <QApplication>
-#include <QProgressDialog>
-#include <QDateTime>
 #include <QFileInfo>
 
 class DxfRotateExtrudeModule : public AbstractModule
@@ -55,8 +53,9 @@ AbstractNode *DxfRotateExtrudeModule::evaluate(const Context *ctx, const ModuleI
 {
 	DxfRotateExtrudeNode *node = new DxfRotateExtrudeNode(inst);
 
-	QVector<QString> argnames = QVector<QString>() << "file" << "layer" << "origin" << "scale";
-	QVector<Expression*> argexpr;
+	std::vector<std::string> argnames;
+	argnames += "file", "layer", "origin", "scale";
+	std::vector<Expression*> argexpr;
 
 	Context c(ctx);
 	c.args(argnames, argexpr, inst->argnames, inst->argvalues);
@@ -71,10 +70,12 @@ AbstractNode *DxfRotateExtrudeModule::evaluate(const Context *ctx, const ModuleI
 	Value origin = c.lookup_variable("origin", true);
 	Value scale = c.lookup_variable("scale", true);
 
-	if (!file.text.empty())
-		node->filename = c.get_absolute_path(QString::fromStdString(file.text));
+	if (!file.text.empty()) {
+		PRINTF("DEPRECATED: Support for reading files in rotate_extrude will be removed in future releases. Use a child import() instead.");
+		node->filename = c.getAbsolutePath(file.text);
+	}
 
-	node->layername = QString::fromStdString(layer.text);
+	node->layername = layer.text;
 	node->convexity = (int)convexity.num;
 	origin.getv2(node->origin_x, node->origin_y);
 	node->scale = scale.num;
@@ -85,12 +86,9 @@ AbstractNode *DxfRotateExtrudeModule::evaluate(const Context *ctx, const ModuleI
 	if (node->scale <= 0)
 		node->scale = 1;
 
-	if (node->filename.isEmpty()) {
-		foreach (ModuleInstantiation *v, inst->children) {
-			AbstractNode *n = v->evaluate(inst->ctx);
-			if (n)
-				node->children.push_back(n);
-		}
+	if (node->filename.empty()) {
+		std::vector<AbstractNode *> evaluatednodes = inst->evaluateChildren();
+		node->children.insert(node->children.end(), evaluatednodes.begin(), evaluatednodes.end());
 	}
 
 	return node;
@@ -102,19 +100,16 @@ void register_builtin_dxf_rotate_extrude()
 	builtin_modules["rotate_extrude"] = new DxfRotateExtrudeModule();
 }
 
-PolySet *DxfRotateExtrudeNode::evaluate_polyset(render_mode_e mode, 
-																							PolySetEvaluator *evaluator) const
+PolySet *DxfRotateExtrudeNode::evaluate_polyset(PolySetEvaluator *evaluator) const
 {
 	if (!evaluator) {
 		PRINTF("WARNING: No suitable PolySetEvaluator found for %s module!", this->name().c_str());
-		PolySet *ps = new PolySet();
-		ps->is2d = true;
-		return ps;
+		return NULL;
 	}
 
 	print_messages_push();
 
-	PolySet *ps = evaluator->evaluatePolySet(*this, mode);
+	PolySet *ps = evaluator->evaluatePolySet(*this);
 	
 	print_messages_pop();
 
@@ -125,12 +120,16 @@ std::string DxfRotateExtrudeNode::toString() const
 {
 	std::stringstream stream;
 
-	stream << this->name() << "("
-		"file = \"" << this->filename << "\", "
-		"cache = \"" << QFileInfo(this->filename) << "\", "
-		"layer = \"" << this->layername << "\", "
-		"origin = [ " << std::dec << this->origin_x << " " << this->origin_y << " ], "
-		"scale = " << this->scale << ", "
+	stream << this->name() << "(";
+	if (!this->filename.empty()) { // Ignore deprecated parameters if empty 
+		stream <<
+			"file = \"" << this->filename << "\", "
+			"cache = \"" << QFileInfo(QString::fromStdString(this->filename)) << "\", "
+			"layer = \"" << this->layername << "\", "
+			"origin = [ " << std::dec << this->origin_x << " " << this->origin_y << " ], "
+			"scale = " << this->scale << ", ";
+	}
+	stream <<
 		"convexity = " << this->convexity << ", "
 		"$fn = " << this->fn << ", $fa = " << this->fa << ", $fs = " << this->fs << ")";
 

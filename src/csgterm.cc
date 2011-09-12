@@ -26,6 +26,7 @@
 
 #include "csgterm.h"
 #include "polyset.h"
+#include <sstream>
 
 /*!
 	\class CSGTerm
@@ -46,24 +47,17 @@
  */
 
 
-CSGTerm::CSGTerm(PolySet *polyset, const double m[20], QString label)
+CSGTerm::CSGTerm(const shared_ptr<PolySet> &polyset, const double matrix[16], const double color[4], const std::string &label)
+	: type(TYPE_PRIMITIVE), polyset(polyset), label(label), left(NULL), right(NULL)
 {
-	this->type = TYPE_PRIMITIVE;
-	this->polyset = polyset;
-	this->label = label;
-	this->left = NULL;
-	this->right = NULL;
-	for (int i = 0; i < 20; i++)
-		this->m[i] = m[i];
+	for (int i = 0; i < 16; i++) this->m[i] = matrix[i];
+	for (int i = 0; i < 4; i++) this->color[i] = color[i];
 	refcounter = 1;
 }
 
 CSGTerm::CSGTerm(type_e type, CSGTerm *left, CSGTerm *right)
+	: type(type), left(left), right(right)
 {
-	this->type = type;
-	this->polyset = NULL;
-	this->left = left;
-	this->right = right;
 	refcounter = 1;
 }
 
@@ -166,8 +160,6 @@ CSGTerm *CSGTerm::link()
 void CSGTerm::unlink()
 {
 	if (--refcounter <= 0) {
-		if (polyset)
-			polyset->unlink();
 		if (left)
 			left->unlink();
 		if (right)
@@ -176,57 +168,63 @@ void CSGTerm::unlink()
 	}
 }
 
-QString CSGTerm::dump()
+std::string CSGTerm::dump()
 {
+	std::stringstream dump;
+
 	if (type == TYPE_UNION)
-		return QString("(%1 + %2)").arg(left->dump(), right->dump());
-	if (type == TYPE_INTERSECTION)
-		return QString("(%1 * %2)").arg(left->dump(), right->dump());
-	if (type == TYPE_DIFFERENCE)
-		return QString("(%1 - %2)").arg(left->dump(), right->dump());
-	return label;
+		dump << "(" << left->dump() << " + " << right->dump() << ")";
+	else if (type == TYPE_INTERSECTION)
+		dump << "(" << left->dump() << " * " << right->dump() << ")";
+	else if (type == TYPE_DIFFERENCE)
+		dump << "(" << left->dump() << " - " << right->dump() << ")";
+	else 
+		dump << this->label;
+
+	return dump.str();
 }
 
 CSGChain::CSGChain()
 {
 }
 
-void CSGChain::add(PolySet *polyset, double *m, CSGTerm::type_e type, QString label)
+void CSGChain::add(const shared_ptr<PolySet> &polyset, double *m, double *color, CSGTerm::type_e type, std::string label)
 {
-	polysets.append(polyset);
-	matrices.append(m);
-	types.append(type);
-	labels.append(label);
+	polysets.push_back(polyset);
+	matrices.push_back(m);
+	colors.push_back(color);
+	types.push_back(type);
+	labels.push_back(label);
 }
 
 void CSGChain::import(CSGTerm *term, CSGTerm::type_e type)
 {
 	if (term->type == CSGTerm::TYPE_PRIMITIVE) {
-		add(term->polyset, term->m, type, term->label);
+		add(term->polyset, term->m, term->color, type, term->label);
 	} else {
 		import(term->left, type);
 		import(term->right, term->type);
 	}
 }
 
-QString CSGChain::dump()
+std::string CSGChain::dump()
 {
-	QString text;
-	for (int i = 0; i < types.size(); i++)
+	std::stringstream dump;
+
+	for (size_t i = 0; i < types.size(); i++)
 	{
 		if (types[i] == CSGTerm::TYPE_UNION) {
-			if (i != 0)
-				text += "\n";
-			text += "+";
+			if (i != 0) dump << "\n";
+			dump << "+";
 		}
 		else if (types[i] == CSGTerm::TYPE_DIFFERENCE)
-			text += " -";
+			dump << " -";
 		else if (types[i] == CSGTerm::TYPE_INTERSECTION)
-			text += " *";
-		text += labels[i];
+			dump << " *";
+		dump << labels[i];
 	}
-	text += "\n";
-	return text;
+	dump << "\n";
+	return dump.str();
 }
 
 BoundingBox CSGChain::getBoundingBox() const
@@ -234,7 +232,18 @@ BoundingBox CSGChain::getBoundingBox() const
 	BoundingBox bbox;
 	for (size_t i=0;i<polysets.size();i++) {
 		if (types[i] != CSGTerm::TYPE_DIFFERENCE) {
-			bbox.extend(polysets[i]->getBoundingBox());
+			BoundingBox psbox = polysets[i]->getBoundingBox();
+			if (!psbox.isNull()) {
+				Eigen::Transform3d t;
+				// Column-major vs. Row-major
+				t.matrix()	<< 
+					matrices[i][0], matrices[i][4], matrices[i][8], matrices[i][12],
+					matrices[i][1], matrices[i][5], matrices[i][9], matrices[i][13],
+					matrices[i][2], matrices[i][6], matrices[i][10], matrices[i][14],
+					matrices[i][3], matrices[i][7], matrices[i][11], matrices[i][15];
+				bbox.extend(t * psbox.min());
+				bbox.extend(t * psbox.max());
+			}
 		}
 	}
 	return bbox;

@@ -1,5 +1,6 @@
 #include <GL/glew.h>
 #include "openscad.h"
+#include "handle_dep.h"
 #include "builtin.h"
 #include "context.h"
 #include "node.h"
@@ -21,35 +22,15 @@
 #include <QDir>
 #include <QSet>
 #include <QTimer>
+#include <sstream>
 
 using std::cerr;
 using std::cout;
 
-QString commandline_commands;
+std::string commandline_commands;
 QString librarydir;
-QSet<QString> dependencies;
-const char *make_command = NULL;
 
 //#define DEBUG
-
-void handle_dep(QString filename)
-{
-	if (filename.startsWith("/"))
-		dependencies.insert(filename);
-	else
-		dependencies.insert(QDir::currentPath() + QString("/") + filename);
-	if (!QFile(filename).exists() && make_command) {
-		char buffer[4096];
-		snprintf(buffer, 4096, "%s '%s'", make_command, filename.replace("'", "'\\''").toUtf8().data());
-		system(buffer); // FIXME: Handle error
-	}
-}
-
-// static void renderfunc(void *vp)
-// {
-// 	glClearColor(1.0, 0.0, 0.0, 0.0);
-// 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-// }
 
 struct CsgInfo
 {
@@ -61,6 +42,15 @@ struct CsgInfo
 	CSGChain *background_chain;
 	OffscreenView *glview;
 };
+
+AbstractNode *find_root_tag(AbstractNode *n)
+{
+	foreach(AbstractNode *v, n->children) {
+		if (v->modinst->tag_root) return v;
+		if (AbstractNode *vroot = find_root_tag(v)) return vroot;
+	}
+	return NULL;
+}
 
 int main(int argc, char *argv[])
 {
@@ -118,7 +108,6 @@ int main(int argc, char *argv[])
 
 	AbstractModule *root_module;
 	ModuleInstantiation root_inst;
-	AbstractNode *root_node;
 
 	QFileInfo fileInfo(filename);
 	handle_dep(filename);
@@ -127,15 +116,16 @@ int main(int argc, char *argv[])
 		fprintf(stderr, "Can't open input file `%s'!\n", filename);
 		exit(1);
 	} else {
-		QString text;
+		std::stringstream text;
 		char buffer[513];
 		int ret;
 		while ((ret = fread(buffer, 1, 512, fp)) > 0) {
 			buffer[ret] = 0;
-			text += buffer;
+			text << buffer;
 		}
 		fclose(fp);
-		root_module = parse((text+commandline_commands).toAscii().data(), fileInfo.absolutePath().toLocal8Bit(), false);
+		text << commandline_commands;
+		root_module = parse(text.str().c_str(), fileInfo.absolutePath().toLocal8Bit(), false);
 		if (!root_module) {
 			exit(1);
 		}
@@ -144,15 +134,16 @@ int main(int argc, char *argv[])
 	QDir::setCurrent(fileInfo.absolutePath());
 
 	AbstractNode::resetIndexCounter();
-	root_node = root_module->evaluate(&root_ctx, &root_inst);
+	AbstractNode *absolute_root_node = root_module->evaluate(&root_ctx, &root_inst);
+	AbstractNode *root_node;
+	// Do we have an explicit root node (! modifier)?
+	if (!(root_node = find_root_tag(absolute_root_node))) root_node = absolute_root_node;
 
 	Tree tree(root_node);
 
 	CsgInfo csgInfo;
-	QHash<std::string, CGAL_Nef_polyhedron> cache;
-	CGALEvaluator cgalevaluator(cache, tree);
-	PolySetCGALEvaluator psevaluator(cgalevaluator);
-	CSGTermEvaluator evaluator(tree);
+	CGALEvaluator cgalevaluator(tree);
+	CSGTermEvaluator evaluator(tree, &cgalevaluator.psevaluator);
 	CSGTerm *root_raw_term = evaluator.evaluateCSGTerm(*root_node, 
 																										 csgInfo.highlight_terms, 
 																										 csgInfo.background_terms);
@@ -162,9 +153,8 @@ int main(int argc, char *argv[])
 		return 1;
 	}
 
-	csgInfo.root_norm_term = root_raw_term->link();
-		
 	// CSG normalization
+	csgInfo.root_norm_term = root_raw_term->link();
 	while (1) {
 		CSGTerm *n = csgInfo.root_norm_term->normalize();
 		csgInfo.root_norm_term->unlink();
@@ -177,6 +167,7 @@ int main(int argc, char *argv[])
 	
 	csgInfo.root_chain = new CSGChain();
 	csgInfo.root_chain->import(csgInfo.root_norm_term);
+	fprintf(stderr, "Normalized CSG tree has %d elements\n", csgInfo.root_chain->polysets.size());
 	
 	if (csgInfo.highlight_terms.size() > 0) {
 		cerr << "Compiling highlights (" << csgInfo.highlight_terms.size() << "  CSG Trees)...\n";
@@ -217,8 +208,11 @@ int main(int argc, char *argv[])
 
 	Vector3d center = (bbox.min() + bbox.max()) / 2;
 	double radius = (bbox.max() - bbox.min()).norm() / 2;
-	csgInfo.glview->setCamera(center[0], center[1] - 2 * radius, center[2],
-														center[0], center[1], center[2]);
+
+
+	Vector3d cameradir(1, 1, -0.5);
+	Vector3d camerapos = center - radius*1.8*cameradir;
+	csgInfo.glview->setCamera(camerapos, center);
 
 	glewInit();
 #ifdef DEBUG

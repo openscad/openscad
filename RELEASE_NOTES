@@ -1,12 +1,26 @@
 OpenSCAD 20xx.yy
 ================
 
+Features:
+o The MCAD library is now bundled with OpenSCAD
+o Added import and export of the OFF file format
+o New import() statement reads the correct file format based on the filename extension
+  (.stl, .dxf and .off is supported)
 o The color() statement now supports an alpha parameter, e.g. color(c=[1,0,0], alpha=0.4)
 o The color() statement now supports specifying colors as strings, e.g. color("Red")
+o if() and else() can now take any value type as parameter. false, 0, empty string and empty vector or illegal value type will evaluate as false, everything else as true.
 
 Bugfixes:
 o square() crashed if any of the dimensions were zero
 o Flush Caches didn't flush cached USE'd modules
+o STL export should be a bit more robust
+
+Deprecations:
+o dxf_linear_extrude() and dxf_rotate_extrude() are now deprecated.
+  Use linear_extrude() and rotate_extrude() instead.
+o The file, layer, origin and scale parameters to linear_extrude() and rotate_extrude()
+  are now deprecated. Use an import() child instead.
+o import_dxf(), import_stl() and import_off() are now deprecated. Use import() instead.
 
 OpenSCAD 2011.06
 ================

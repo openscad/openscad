@@ -96,6 +96,8 @@ include_directories(../src)
 add_definitions(-DOPENSCAD_VERSION=test)
 
 set(COMMON_SOURCES
+  ../src/handle_dep.cc 
+  ../src/qhash.cc
   ../src/export.cc 
   ../src/value.cc 
   ../src/expr.cc 
@@ -107,6 +109,7 @@ set(COMMON_SOURCES
   ../src/polyset.cc 
   ../src/csgops.cc 
   ../src/transform.cc 
+  ../src/color.cc 
   ../src/primitives.cc 
   ../src/projection.cc 
   ../src/cgaladv.cc 
@@ -124,6 +127,7 @@ set(COMMON_SOURCES
   ../src/nodedumper.cc 
   ../src/traverser.cc 
   ../src/PolySetEvaluator.cc 
+  ../src/PolySetCache.cc 
   ../src/Tree.cc
   ${FLEX_OpenSCADlexer_OUTPUTS}
   ${BISON_OpenSCADparser_OUTPUTS})
@@ -156,15 +160,29 @@ include_directories(${CGAL_INCLUDE_DIRS})
 #
 # cgaltest
 #
-add_executable(cgaltest cgaltest.cc ../src/cgal.cc ../src/CSGTermEvaluator.cc ../src/CGALEvaluator.cc
-                        ../src/PolySetCGALEvaluator.cc ../src/qhash.cc ../src/nef2dxf.cc
-                        ../src/cgaladv_minkowski2.cc ../src/cgaladv_minkowski3.cc ${COMMON_SOURCES})
+add_executable(cgaltest cgaltest.cc ../src/CGAL_Nef_polyhedron.cc ../src/cgalutils.cc ../src/CSGTermEvaluator.cc
+                        ../src/CGALEvaluator.cc ../src/CGALCache.cc ../src/PolySetCGALEvaluator.cc ../src/qhash.cc
+                        ../src/CGAL_Nef_polyhedron_DxfData.cc ../src/cgaladv_minkowski2.cc ../src/cgaladv_convexhull2.cc
+                        ${COMMON_SOURCES})
 set_target_properties(cgaltest PROPERTIES COMPILE_FLAGS "-DENABLE_CGAL ${CGAL_CXX_FLAGS_INIT}")
 target_link_libraries(cgaltest ${CGAL_LIBRARY} ${CGAL_3RD_PARTY_LIBRARIES} ${QT_LIBRARIES} ${OPENGL_LIBRARY})
 
 #
+# cgalpngtest
+#
+add_executable(cgalpngtest cgalpngtest.cc OffscreenView.cc OffscreenContext.mm
+                           ../src/CGALRenderer.cc ../src/CGAL_Nef_polyhedron.cc ../src/cgalutils.cc
+                           ../src/CSGTermEvaluator.cc ../src/CGALEvaluator.cc ../src/CGALCache.cc
+                           ../src/PolySetCGALEvaluator.cc ../src/qhash.cc
+                           ../src/CGAL_Nef_polyhedron_DxfData.cc ../src/cgaladv_minkowski2.cc ../src/cgaladv_convexhull2.cc
+                           ${COMMON_SOURCES})
+set_target_properties(cgalpngtest PROPERTIES COMPILE_FLAGS "-DENABLE_CGAL ${CGAL_CXX_FLAGS_INIT}")
+target_link_libraries(cgalpngtest ${CGAL_LIBRARY} ${CGAL_3RD_PARTY_LIBRARIES} ${QT_LIBRARIES}  ${GLEW_LIBRARY} ${COCOA_LIBRARY} ${OPENGL_LIBRARY})
+
+#
 # opencsgtest
 #
+<<<<<<< HEAD
 if (NOT $ENV{MACOSX_DEPLOY_DIR} STREQUAL "")
 	set(OFFSCREEN_SOURCE "OffscreenContext.mm")
 else()
@@ -175,6 +193,13 @@ add_executable(opencsgtest opencsgtest.cc OffscreenView.cc ${OFFSCREEN_SOURCE}
                            ../src/cgal.cc ../src/OpenCSGRenderer.cc ../src/ThrownTogetherRenderer.cc ../src/CSGTermEvaluator.cc ../src/CGALEvaluator.cc
                            ../src/PolySetCGALEvaluator.cc ../src/qhash.cc ../src/nef2dxf.cc
                            ../src/cgaladv_minkowski2.cc ../src/cgaladv_minkowski3.cc
+=======
+add_executable(opencsgtest opencsgtest.cc OffscreenView.cc OffscreenContext.mm
+                           ../src/OpenCSGRenderer.cc ../src/ThrownTogetherRenderer.cc
+                           ../src/CSGTermEvaluator.cc ../src/CGAL_Nef_polyhedron.cc ../src/cgalutils.cc
+                           ../src/CGALEvaluator.cc ../src/CGALCache.cc ../src/PolySetCGALEvaluator.cc ../src/qhash.cc
+                           ../src/CGAL_Nef_polyhedron_DxfData.cc ../src/cgaladv_minkowski2.cc ../src/cgaladv_convexhull2.cc
+>>>>>>> upstream/visitor
                            ${COMMON_SOURCES})
 set_target_properties(opencsgtest PROPERTIES COMPILE_FLAGS "-DENABLE_OPENCSG -DENABLE_CGAL ${CGAL_CXX_FLAGS_INIT}")
 target_link_libraries(opencsgtest ${CGAL_LIBRARY} ${CGAL_3RD_PARTY_LIBRARIES} ${QT_LIBRARIES} ${OPENCSG_LIBRARY} ${GLEW_LIBRARY} ${COCOA_LIBRARY} ${OPENGL_LIBRARY})
@@ -207,16 +232,56 @@ add_cmdline_test(csgtexttest txt ${MINIMAL_FILES})
 add_cmdline_test(csgtermtest txt ${MINIMAL_FILES})
 
 # Add cgaltest tests to CTest
+<<<<<<< HEAD
 LIST(APPEND CGALTEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/minimal/cube.scad)
 LIST(APPEND CGALTEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/minimal/sphere.scad)
 LIST(APPEND CGALTEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/minimal/cylinder.scad)
 LIST(APPEND CGALTEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/features/background-modifier.scad)
 LIST(APPEND CGALTEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/features/highlight-modifier.scad)
 LIST(APPEND CGALTEST_FILES ${CMAKE_SOURCE_DIR}/../examples/example001.scad)
+=======
+>>>>>>> upstream/visitor
 add_cmdline_test(cgaltest stl ${CGALTEST_FILES})
 
+# Add cgalpngtest tests to CTest
+LIST(APPEND CGALPNGTEST_FILES 
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/features/2d-3d.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/features/circle-tests.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/features/square-tests.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/features/polygon-tests.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/features/cube-tests.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/features/sphere-tests.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/features/cylinder-tests.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/features/union-tests.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/features/difference-tests.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/features/intersection-tests.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/features/linear_extrude-tests.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/features/rotate_extrude-tests.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/features/minkowski2-tests.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/features/minkowski3-tests.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/features/hull2-tests.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/features/surface-tests.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/features/import_dxf-tests.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/features/transform-tests.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/features/color-tests.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/features/background-modifier.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/features/highlight-modifier.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/features/root-modifier.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/features/disable-modifier.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/features/for-tests.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/features/for-nested-tests.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/features/intersection_for-tests.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/features/render-tests.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/features/projection-tests.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/features/assign-tests.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/features/include-tests.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/features/child-tests.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/features/ifelse-tests.scad)
+#LIST(APPEND CGALPNGTEST_FILES ${CMAKE_SOURCE_DIR}/../examples/example001.scad)
+add_cmdline_test(cgalpngtest png ${CGALPNGTEST_FILES})
+
 # Add opencsg tests to CTest
-LIST(APPEND OPENCSGTEST_FILES ${CGALTEST_FILES})
+LIST(APPEND OPENCSGTEST_FILES ${CGALPNGTEST_FILES})
 add_cmdline_test(opencsgtest png ${OPENCSGTEST_FILES})
 
 # Add dxfexport tests to CTest

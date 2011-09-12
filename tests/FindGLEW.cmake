@@ -23,16 +23,26 @@ IF (WIN32)
 		${PROJECT_SOURCE_DIR}/src/nvgl/glew/lib
 		DOC "The GLEW library")
 ELSE (WIN32)
+<<<<<<< HEAD
      	MESSAGE( "-- GLEW_DIR value:" ${GLEW_DIR})
 	FIND_PATH( GLEW_INCLUDE_PATH GL/glew.h
                 PATHS /usr/include /usr/local/include
                 ${GLEW_DIR}/include
+=======
+        message("GLEW_DIR: " ${GLEW_DIR})
+	FIND_PATH( GLEW_INCLUDE_PATH GL/glew.h
+                PATHS ${GLEW_DIR}/include /usr/include /usr/local/include
+>>>>>>> upstream/visitor
                 NO_DEFAULT_PATH
 		DOC "The directory where GL/glew.h resides")
 	FIND_LIBRARY( GLEW_LIBRARY
 		NAMES GLEW glew
+<<<<<<< HEAD
 		PATHS /usr/lib /usr/local/lib
                 ${GLEW_DIR}/lib
+=======
+		PATHS ${GLEW_DIR}/lib /usr/lib /usr/local/lib
+>>>>>>> upstream/visitor
                 NO_DEFAULT_PATH
 		DOC "The GLEW library")
 ENDIF (WIN32)
@@ -43,5 +53,3 @@ IF (GLEW_INCLUDE_PATH)
 ELSE (GLEW_INCLUDE_PATH)
 	SET( GLEW_FOUND 0 CACHE STRING "Set to 1 if GLEW is found, 0 otherwise")
 ENDIF (GLEW_INCLUDE_PATH)
-
-MARK_AS_ADVANCED( GLEW_FOUND )

@@ -3,7 +3,6 @@
 
 #include "node.h"
 #include "visitor.h"
-#include <QString>
 
 class DxfRotateExtrudeNode : public AbstractPolyNode
 {
@@ -22,8 +21,8 @@ public:
 	int convexity;
 	double fn, fs, fa;
 	double origin_x, origin_y, scale;
-	QString filename, layername;
-	virtual PolySet *evaluate_polyset(render_mode_e mode, class PolySetEvaluator *) const;
+	std::string filename, layername;
+	virtual PolySet *evaluate_polyset(class PolySetEvaluator *) const;
 };
 
 #endif

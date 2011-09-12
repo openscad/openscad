@@ -1,0 +1,7 @@
+Changes in visitor branch:
+o import_dxf(): layername="" imports all layers. Importing a single layer with a zero-length name is no longer supported. FIXME: The same prob. goes for dims
+o cylinder(): the r parameter will now always be used in place of a missing r1 or r2
+o for():
+  - with scalar argument now works, e.g.: for (i=23) echo(i)
+  - empty for loop is not evaluated, e.g. for () echo(i) 
+  - for loop with illegal value is not evaluated, e.g. for ([0:true:2])

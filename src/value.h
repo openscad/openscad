@@ -61,6 +61,8 @@ public:
 
 	std::string toString() const;
 
+	bool toBool() const;
+
 	void append(Value *val);
 
 private:
@@ -68,9 +70,5 @@ private:
 };
 
 std::ostream &operator<<(std::ostream &stream, const Value &value);
-
-// FIXME: Doesn't belong here..
-#include <QString>
-std::ostream &operator<<(std::ostream &stream, const QString &str);
 
 #endif

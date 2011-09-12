@@ -24,27 +24,27 @@
  *
  */
 
+#include "export.h"
 #include "printutils.h"
 #include "polyset.h"
 #include "dxfdata.h"
 
 #include <QApplication>
 #include <QProgressDialog>
-#include <QTextStream>
 #include <errno.h>
-#include <fstream>
 
 #ifdef ENABLE_CGAL
+#include "CGAL_Nef_polyhedron.h"
 #include "cgal.h"
 
 /*!
 	Saves the current 3D CGAL Nef polyhedron as STL to the given file.
 	The file must be open.
  */
-void export_stl(CGAL_Nef_polyhedron *root_N, QTextStream &output, QProgressDialog *pd)
+void export_stl(CGAL_Nef_polyhedron *root_N, std::ostream &output, QProgressDialog *pd)
 {
 	CGAL_Polyhedron P;
-	root_N->p3.convert_to_Polyhedron(P);
+	root_N->p3->convert_to_Polyhedron(P);
 
 	typedef CGAL_Polyhedron::Vertex                                 Vertex;
 	typedef CGAL_Polyhedron::Vertex_const_iterator                  VCI;
@@ -53,6 +53,7 @@ void export_stl(CGAL_Nef_polyhedron *root_N, QTextStream &output, QProgressDialo
 
 	setlocale(LC_NUMERIC, "C"); // Ensure radix is . (not ,) in output
 
+<<<<<<< HEAD
 	std::ofstream output(filename.toUtf8());
 	if (!output.is_open()) {
 		PRINTA("Can't open STL file \"%1\" for STL export: %2", 
@@ -61,6 +62,8 @@ void export_stl(CGAL_Nef_polyhedron *root_N, QTextStream &output, QProgressDialo
 		return;
 	}
 
+=======
+>>>>>>> upstream/visitor
 	output << "solid OpenSCAD_Model\n";
 
 	int facet_count = 0;
@@ -119,19 +122,24 @@ void export_stl(CGAL_Nef_polyhedron *root_N, QTextStream &output, QProgressDialo
 	}
 
 	output << "endsolid OpenSCAD_Model\n";
+<<<<<<< HEAD
 	output.close();
+=======
+>>>>>>> upstream/visitor
 	setlocale(LC_NUMERIC, "");      // Set default locale
 }
 
-void export_off(CGAL_Nef_polyhedron*, QTextStream&, QProgressDialog*)
+void export_off(CGAL_Nef_polyhedron *root_N, std::ostream &output, QProgressDialog*)
 {
-	PRINTF("WARNING: OFF import is not implemented yet.");
+	CGAL_Polyhedron P;
+	root_N->p3->convert_to_Polyhedron(P);
+	output << P;
 }
 
 /*!
 	Saves the current 2D CGAL Nef polyhedron as DXF to the given absolute filename.
  */
-void export_dxf(CGAL_Nef_polyhedron *root_N, QTextStream &output, QProgressDialog *)
+void export_dxf(CGAL_Nef_polyhedron *root_N, std::ostream &output, QProgressDialog *)
 {
 	setlocale(LC_NUMERIC, "C"); // Ensure radix is . (not ,) in output
 	// Some importers (e.g. Inkscape) needs a BLOCKS section to be present
@@ -146,12 +154,12 @@ void export_dxf(CGAL_Nef_polyhedron *root_N, QTextStream &output, QProgressDialo
 				 << "  2\n"
 				 << "ENTITIES\n";
 
-	DxfData dd(*root_N);
-	for (int i=0; i<dd.paths.size(); i++)
+	DxfData *dd =root_N->convertToDxfData();
+	for (size_t i=0; i<dd->paths.size(); i++)
 	{
-		for (int j=1; j<dd.paths[i].points.size(); j++) {
-			const Vector2d &p1 = *dd.paths[i].points[j-1];
-			const Vector2d &p2 = *dd.paths[i].points[j];
+		for (size_t j=1; j<dd->paths[i].indices.size(); j++) {
+			const Vector2d &p1 = dd->points[dd->paths[i].indices[j-1]];
+			const Vector2d &p2 = dd->points[dd->paths[i].indices[j]];
 			double x1 = p1[0];
 			double y1 = p1[1];
 			double x2 = p2[0];
@@ -188,6 +196,7 @@ void export_dxf(CGAL_Nef_polyhedron *root_N, QTextStream &output, QProgressDialo
 	output << "  0\n"
 				 <<"EOF\n";
 
+	delete dd;
 	setlocale(LC_NUMERIC, "");      // Set default locale
 }
 

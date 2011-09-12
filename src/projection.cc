@@ -44,10 +44,8 @@
 
 #include <assert.h>
 #include <sstream>
-
-#include <QApplication>
-#include <QTime>
-#include <QProgressDialog>
+#include <boost/assign/std/vector.hpp>
+using namespace boost::assign; // bring 'operator+=()' into scope
 
 class ProjectionModule : public AbstractModule
 {
@@ -60,8 +58,9 @@ AbstractNode *ProjectionModule::evaluate(const Context *ctx, const ModuleInstant
 {
 	ProjectionNode *node = new ProjectionNode(inst);
 
-	QVector<QString> argnames = QVector<QString>() << "cut";
-	QVector<Expression*> argexpr;
+	std::vector<std::string> argnames;
+	argnames += "cut";
+	std::vector<Expression*> argexpr;
 
 	Context c(ctx);
 	c.args(argnames, argexpr, inst->argnames, inst->argvalues);
@@ -74,27 +73,22 @@ AbstractNode *ProjectionModule::evaluate(const Context *ctx, const ModuleInstant
 	if (cut.type == Value::BOOL)
 		node->cut_mode = cut.b;
 
-	foreach (ModuleInstantiation *v, inst->children) {
-		AbstractNode *n = v->evaluate(inst->ctx);
-		if (n)
-			node->children.push_back(n);
-	}
+	std::vector<AbstractNode *> evaluatednodes = inst->evaluateChildren();
+	node->children.insert(node->children.end(), evaluatednodes.begin(), evaluatednodes.end());
 
 	return node;
 }
 
-PolySet *ProjectionNode::evaluate_polyset(render_mode_e mode, PolySetEvaluator *evaluator) const
+PolySet *ProjectionNode::evaluate_polyset(PolySetEvaluator *evaluator) const
 {
 	if (!evaluator) {
 		PRINTF("WARNING: No suitable PolySetEvaluator found for %s module!", this->name().c_str());
-		PolySet *ps = new PolySet();
-		ps->is2d = true;
-		return ps;
+		return NULL;
 	}
 
 	print_messages_push();
 
-	PolySet *ps = evaluator->evaluatePolySet(*this, mode);
+	PolySet *ps = evaluator->evaluatePolySet(*this);
 
 	print_messages_pop();
 

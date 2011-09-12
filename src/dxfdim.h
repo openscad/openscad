@@ -1,10 +1,10 @@
 #ifndef DXFDIM_H_
 #define DXFDIM_H_
 
-#include <QHash>
+#include <boost/unordered_map.hpp>
 #include "value.h"
 
-extern QHash<QString,Value> dxf_cross_cache;
-extern QHash<QString,Value> dxf_dim_cache;
+extern boost::unordered_map<std::string,Value> dxf_dim_cache;
+extern boost::unordered_map<std::string,Value> dxf_cross_cache;
 
 #endif

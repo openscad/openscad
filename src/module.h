@@ -1,20 +1,20 @@
 #ifndef MODULE_H_
 #define MODULE_H_
 
-#include <QString>
-#include <QVector>
-#include <QHash>
+#include <string>
+#include <vector>
+#include <boost/unordered_map.hpp>
 #include "value.h"
 
 class ModuleInstantiation
 {
 public:
-	QString label;
-	QString modname;
-	QVector<QString> argnames;
-	QVector<class Expression*> argexpr;
-	QVector<Value> argvalues;
-	QVector<ModuleInstantiation*> children;
+	std::string label;
+	std::string modname;
+	std::vector<std::string> argnames;
+	std::vector<class Expression*> argexpr;
+	std::vector<Value> argvalues;
+	std::vector<ModuleInstantiation*> children;
 
 	bool tag_root;
 	bool tag_highlight;
@@ -24,15 +24,17 @@ public:
 	ModuleInstantiation() : tag_root(false), tag_highlight(false), tag_background(false), ctx(NULL) { }
 	virtual ~ModuleInstantiation();
 
-	QString dump(QString indent) const;
+	std::string dump(const std::string &indent) const;
 	class AbstractNode *evaluate(const Context *ctx) const;
+	std::vector<AbstractNode*> evaluateChildren(const Context *ctx = NULL) const;
 };
 
 class IfElseModuleInstantiation : public ModuleInstantiation {
 public:
 	virtual ~IfElseModuleInstantiation();
+	std::vector<AbstractNode*> evaluateElseChildren(const Context *ctx = NULL) const;
 
-	QVector<ModuleInstantiation*> else_children;
+	std::vector<ModuleInstantiation*> else_children;
 };
 
 class AbstractModule
@@ -40,37 +42,40 @@ class AbstractModule
 public:
 	virtual ~AbstractModule();
 	virtual class AbstractNode *evaluate(const Context *ctx, const ModuleInstantiation *inst) const;
-	virtual QString dump(QString indent, QString name) const;
+	virtual std::string dump(const std::string &indent, const std::string &name) const;
 };
 
 class Module : public AbstractModule
 {
 public:
-	QHash< QString, Module*> usedlibs;
+	typedef boost::unordered_map<std::string, class Module*> ModuleContainer;
+	ModuleContainer usedlibs;
 
 	struct libs_cache_ent {
 		Module *mod;
-		QString cache_id, msg;
+		std::string cache_id, msg;
 	};
-	static QHash<QString, libs_cache_ent> libs_cache;
-	static Module *compile_library(QString filename);
+	static boost::unordered_map<std::string, libs_cache_ent> libs_cache;
+	static Module *compile_library(std::string filename);
 
-	QVector<QString> argnames;
-	QVector<Expression*> argexpr;
+	std::vector<std::string> argnames;
+	std::vector<Expression*> argexpr;
 
-	QVector<QString> assignments_var;
-	QVector<Expression*> assignments_expr;
+	std::vector<std::string> assignments_var;
+	std::vector<Expression*> assignments_expr;
 
-	QHash<QString, class AbstractFunction*> functions;
-	QHash<QString, AbstractModule*> modules;
+	typedef boost::unordered_map<std::string, class AbstractFunction*> FunctionContainer;
+	FunctionContainer functions;
+	typedef boost::unordered_map<std::string, AbstractModule*> AbstractModuleContainer;
+	AbstractModuleContainer	modules;
 
-	QVector<ModuleInstantiation*> children;
+	std::vector<ModuleInstantiation*> children;
 
 	Module() { }
 	virtual ~Module();
 
 	virtual AbstractNode *evaluate(const Context *ctx, const ModuleInstantiation *inst) const;
-	virtual QString dump(QString indent, QString name) const;
+	virtual std::string dump(const std::string &indent, const std::string &name) const;
 };
 
 #endif

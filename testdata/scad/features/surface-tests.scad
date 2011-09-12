@@ -1,1 +1,2 @@
-surface("surface.dat");
+surface();
+surface("surface.dat", center=true);

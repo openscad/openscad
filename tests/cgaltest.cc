@@ -25,6 +25,7 @@
 
 #include "myqhash.h"
 #include "openscad.h"
+#include "handle_dep.h"
 #include "node.h"
 #include "module.h"
 #include "context.h"
@@ -32,6 +33,7 @@
 #include "export.h"
 #include "builtin.h"
 #include "Tree.h"
+#include "CGAL_Nef_polyhedron.h"
 #include "CGALEvaluator.h"
 #include "PolySetCGALEvaluator.h"
 
@@ -42,39 +44,32 @@
 #include <QTextStream>
 #include <getopt.h>
 #include <iostream>
+#include <assert.h>
+#include <sstream>
 
-QString commandline_commands;
-const char *make_command = NULL;
-QSet<QString> dependencies;
+std::string commandline_commands;
 QString currentdir;
 QString examplesdir;
 QString librarydir;
 
 using std::string;
 
-void handle_dep(QString filename)
-{
-	if (filename.startsWith("/"))
-		dependencies.insert(filename);
-	else
-		dependencies.insert(QDir::currentPath() + QString("/") + filename);
-	if (!QFile(filename).exists() && make_command) {
-		char buffer[4096];
-		snprintf(buffer, 4096, "%s '%s'", make_command, filename.replace("'", "'\\''").toUtf8().data());
-		system(buffer); // FIXME: Handle error
-	}
-}
-
-// FIXME: enforce some maximum cache size (old version had 100K vertices as limit)
-QHash<std::string, CGAL_Nef_polyhedron> cache;
-
 void cgalTree(Tree &tree)
 {
 	assert(tree.root());
 
-	CGALEvaluator evaluator(cache, tree);
+	CGALEvaluator evaluator(tree);
 	Traverser evaluate(evaluator, *tree.root(), Traverser::PRE_AND_POSTFIX);
 	evaluate.execute();
+}
+
+AbstractNode *find_root_tag(AbstractNode *n)
+{
+	foreach(AbstractNode *v, n->children) {
+		if (v->modinst->tag_root) return v;
+		if (AbstractNode *vroot = find_root_tag(v)) return vroot;
+	}
+	return NULL;
 }
 
 int main(int argc, char **argv)
@@ -132,7 +127,6 @@ int main(int argc, char **argv)
 
 	AbstractModule *root_module;
 	ModuleInstantiation root_inst;
-	AbstractNode *root_node;
 
 	QFileInfo fileInfo(filename);
 	handle_dep(filename);
@@ -141,15 +135,16 @@ int main(int argc, char **argv)
 		fprintf(stderr, "Can't open input file `%s'!\n", filename);
 		exit(1);
 	} else {
-		QString text;
+		std::stringstream text;
 		char buffer[513];
 		int ret;
 		while ((ret = fread(buffer, 1, 512, fp)) > 0) {
 			buffer[ret] = 0;
-			text += buffer;
+			text << buffer;
 		}
 		fclose(fp);
-		root_module = parse((text+commandline_commands).toAscii().data(), fileInfo.absolutePath().toLocal8Bit(), false);
+		text << commandline_commands;
+		root_module = parse(text.str().c_str(), fileInfo.absolutePath().toLocal8Bit(), false);
 		if (!root_module) {
 			exit(1);
 		}
@@ -158,20 +153,22 @@ int main(int argc, char **argv)
 	QDir::setCurrent(fileInfo.absolutePath());
 
 	AbstractNode::resetIndexCounter();
-	root_node = root_module->evaluate(&root_ctx, &root_inst);
+	AbstractNode *absolute_root_node = root_module->evaluate(&root_ctx, &root_inst);
+	AbstractNode *root_node;
+	// Do we have an explicit root node (! modifier)?
+	if (!(root_node = find_root_tag(absolute_root_node))) root_node = absolute_root_node;
 
 	Tree tree(root_node);
 
-	QHash<std::string, CGAL_Nef_polyhedron> cache;
-	CGALEvaluator cgalevaluator(cache, tree);
+	CGALEvaluator cgalevaluator(tree);
  	PolySetCGALEvaluator psevaluator(cgalevaluator);
 
 	CGAL_Nef_polyhedron N = cgalevaluator.evaluateCGALMesh(*root_node);
 
 	QDir::setCurrent(original_path.absolutePath());
-	QTextStream outstream(stdout);
-	export_stl(&N, outstream, NULL);
-
+	if (!N.empty()) {
+		export_stl(&N, std::cout, NULL);
+	}
 	destroy_builtin_functions();
 	destroy_builtin_modules();
 

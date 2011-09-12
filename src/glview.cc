@@ -63,7 +63,7 @@ void GLView::init()
 	this->viewer_distance = 500;
 	this->object_rot_x = 35;
 	this->object_rot_y = 0;
-	this->object_rot_z = 25;
+	this->object_rot_z = -25;
 	this->object_trans_x = 0;
 	this->object_trans_y = 0;
 	this->object_trans_z = 0;

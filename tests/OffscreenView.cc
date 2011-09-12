@@ -10,10 +10,8 @@
 #define FAR_FAR_AWAY 100000.0
 
 OffscreenView::OffscreenView(size_t width, size_t height)
-	: orthomode(false), showaxes(true), showfaces(true), showedges(false),
-		object_rot_x(35), object_rot_y(0), object_rot_z(25), 
-		camera_eye_x(0), camera_eye_y(0), camera_eye_z(0),
-		camera_center_x(0), camera_center_y(0), camera_center_z(0)
+	: orthomode(false), showaxes(false), showfaces(true), showedges(false),
+		object_rot(35, 0, 25), camera_eye(0, 0, 0), camera_center(0, 0, 0)
 {
 	for (int i = 0; i < 10; i++) this->shaderinfo[i] = 0;
   this->ctx = create_offscreen_context(width, height);
@@ -156,15 +154,14 @@ void OffscreenView::resizeGL(int w, int h)
 #endif
 	glViewport(0, 0, w, h);
 	w_h_ratio = sqrt((double)w / (double)h);
-	setupPerspective();
 }
 
 void OffscreenView::setupPerspective()
 {
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	gluPerspective(90, w_h_ratio, 0.1*(this->camera_center_y - this->camera_eye_y), 
-								 3*(this->camera_center_y - this->camera_eye_y));
+	double dist = (this->camera_center - this->camera_eye).norm();
+	gluPerspective(45, w_h_ratio, 0.1*dist, 100*dist);
 }
 
 void OffscreenView::setupOrtho(bool offset)
@@ -172,7 +169,7 @@ void OffscreenView::setupOrtho(bool offset)
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 	if (offset) glTranslated(-0.8, -0.8, 0);
-	double l = (this->camera_eye_y - this->camera_center_y)/10;
+	double l = (this->camera_center - this->camera_eye).norm() / 10;
 	glOrtho(-w_h_ratio*l, +w_h_ratio*l,
 					-(1/w_h_ratio)*l, +(1/w_h_ratio)*l,
 					-FAR_FAR_AWAY, +FAR_FAR_AWAY);
@@ -192,13 +189,13 @@ void OffscreenView::paintGL()
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
-	gluLookAt(this->camera_eye_x, this->camera_eye_y, this->camera_eye_z,
-						this->camera_center_x, this->camera_center_y, this->camera_center_z, 
+	gluLookAt(this->camera_eye[0], this->camera_eye[1], this->camera_eye[2],
+						this->camera_center[0], this->camera_center[1], this->camera_center[2], 
 						0.0, 0.0, 1.0);
 
-	glRotated(object_rot_x, 1.0, 0.0, 0.0);
-	glRotated(object_rot_y, 0.0, 1.0, 0.0);
-	glRotated(object_rot_z, 0.0, 0.0, 1.0);
+	// glRotated(object_rot[0], 1.0, 0.0, 0.0);
+	// glRotated(object_rot[1], 0.0, 1.0, 0.0);
+	// glRotated(object_rot[2], 0.0, 0.0, 1.0);
 
 	// Large gray axis cross inline with the model
   // FIXME: This is always gray - adjust color to keep contrast with background
@@ -207,7 +204,7 @@ void OffscreenView::paintGL()
 		glLineWidth(1);
 		glColor3d(0.5, 0.5, 0.5);
 		glBegin(GL_LINES);
-		double l = 3*(this->camera_eye_y - this->camera_center_y);
+		double l = 3*(this->camera_center - this->camera_eye).norm();
 		glVertex3d(-l, 0, 0);
 		glVertex3d(+l, 0, 0);
 		glVertex3d(0, -l, 0);
@@ -237,14 +234,9 @@ bool OffscreenView::save(const char *filename)
 	return save_framebuffer(this->ctx, filename);
 }
 
-void OffscreenView::setCamera(double xpos, double ypos, double zpos, 
-															double xcenter, double ycenter, double zcenter)
+void OffscreenView::setCamera(const Eigen::Vector3d &pos, const Eigen::Vector3d &center)
 {
-	this->camera_eye_x = xpos;
-	this->camera_eye_y = ypos;
-	this->camera_eye_z = zpos;
-	this->camera_center_x = xcenter;
-	this->camera_center_y = ycenter;
-	this->camera_center_z = zcenter;
+	this->camera_eye = pos;
+	this->camera_center = center;
 }
 

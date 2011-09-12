@@ -39,11 +39,9 @@
 #include "openscad.h" // get_fragments_from_r()
 
 #include <sstream>
+#include <boost/assign/std/vector.hpp>
+using namespace boost::assign; // bring 'operator+=()' into scope
 
-#include <QApplication>
-#include <QTime>
-#include <QProgressDialog>
-#include <QDateTime>
 #include <QFileInfo>
 
 class DxfLinearExtrudeModule : public AbstractModule
@@ -57,8 +55,9 @@ AbstractNode *DxfLinearExtrudeModule::evaluate(const Context *ctx, const ModuleI
 {
 	DxfLinearExtrudeNode *node = new DxfLinearExtrudeNode(inst);
 
-	QVector<QString> argnames = QVector<QString>() << "file" << "layer" << "height" << "origin" << "scale" << "center" << "twist" << "slices";
-	QVector<Expression*> argexpr;
+	std::vector<std::string> argnames;
+	argnames += "file", "layer", "height", "origin", "scale", "center", "twist", "slices";
+	std::vector<Expression*> argexpr;
 
 	Context c(ctx);
 	c.args(argnames, argexpr, inst->argnames, inst->argvalues);
@@ -77,10 +76,12 @@ AbstractNode *DxfLinearExtrudeModule::evaluate(const Context *ctx, const ModuleI
 	Value twist = c.lookup_variable("twist", true);
 	Value slices = c.lookup_variable("slices", true);
 
-	if (!file.text.empty())
-		node->filename = c.get_absolute_path(QString::fromStdString(file.text));
+	if (!file.text.empty()) {
+		PRINTF("DEPRECATED: Support for reading files in linear_extrude will be removed in future releases. Use a child import() instead.");
+		node->filename = c.getAbsolutePath(file.text);
+	}
 
-	node->layername = QString::fromStdString(layer.text);
+	node->layername = layer.text;
 	node->height = height.num;
 	node->convexity = (int)convexity.num;
 	origin.getv2(node->origin_x, node->origin_y);
@@ -109,12 +110,9 @@ AbstractNode *DxfLinearExtrudeModule::evaluate(const Context *ctx, const ModuleI
 		node->has_twist = true;
 	}
 
-	if (node->filename.isEmpty()) {
-		foreach (ModuleInstantiation *v, inst->children) {
-			AbstractNode *n = v->evaluate(inst->ctx);
-			if (n)
-				node->children.push_back(n);
-		}
+	if (node->filename.empty()) {
+		std::vector<AbstractNode *> evaluatednodes = inst->evaluateChildren();
+		node->children.insert(node->children.end(), evaluatednodes.begin(), evaluatednodes.end());
 	}
 
 	return node;
@@ -126,19 +124,16 @@ void register_builtin_dxf_linear_extrude()
 	builtin_modules["linear_extrude"] = new DxfLinearExtrudeModule();
 }
 
-PolySet *DxfLinearExtrudeNode::evaluate_polyset(render_mode_e mode, 
-																							PolySetEvaluator *evaluator) const
+PolySet *DxfLinearExtrudeNode::evaluate_polyset(PolySetEvaluator *evaluator) const
 {
 	if (!evaluator) {
 		PRINTF("WARNING: No suitable PolySetEvaluator found for %s module!", this->name().c_str());
-		PolySet *ps = new PolySet();
-		ps->is2d = true;
-		return ps;
+		return NULL;
 	}
 
 	print_messages_push();
 
-	PolySet *ps = evaluator->evaluatePolySet(*this, mode);
+	PolySet *ps = evaluator->evaluatePolySet(*this);
 
 	print_messages_pop();
 
@@ -149,15 +144,17 @@ std::string DxfLinearExtrudeNode::toString() const
 {
 	std::stringstream stream;
 
-	QString text;
-	
-	stream << this->name() << "("
-		"file = \"" << this->filename << "\", "
-		"cache = \"" << 	QFileInfo(this->filename) << "\", "
-		"layer = \"" << this->layername << "\", "
+	stream << this->name() << "(";
+	if (!this->filename.empty()) { // Ignore deprecated parameters if empty 
+		stream <<
+			"file = \"" << this->filename << "\", "
+			"cache = \"" << 	QFileInfo(QString::fromStdString(this->filename)) << "\", "
+			"layer = \"" << this->layername << "\", "
+			"origin = [ " << this->origin_x << " " << this->origin_y << " ], "
+			"scale = " << this->scale << ", ";
+	}
+	stream <<
 		"height = " << std::dec << this->height << ", "
-		"origin = [ " << this->origin_x << " " << this->origin_y << " ], "
-		"scale = " << this->scale << ", "
 		"center = " << (this->center?"true":"false") << ", "
 		"convexity = " << this->convexity;
 	

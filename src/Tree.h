@@ -20,12 +20,13 @@ public:
 	void setRoot(const AbstractNode *root);
 	const AbstractNode *root() const { return this->root_node; }
 
-  // FIXME: Really return a reference?
 	const string &getString(const AbstractNode &node) const;
+	const string &getIdString(const AbstractNode &node) const;
 
 private:
 	const AbstractNode *root_node;
   mutable NodeCache nodecache;
+  mutable NodeCache nodeidcache;
 };
 
 #endif

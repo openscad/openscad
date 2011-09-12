@@ -26,12 +26,14 @@
 
 %{
 
-#include "openscad.h"
+#include "handle_dep.h"
+#include "openscad.h" // librarydir
 #include "printutils.h"
 #include "parser_yacc.h"
 #include <QStack>
 #include <QFileInfo>
 #include <QDir>
+#include <assert.h>
 
 //isatty for visual c++
 #ifdef _MSC_VER
@@ -70,6 +72,7 @@ extern const char *parser_source_path;
 void includefile();
 QDir sourcepath();
 QStack<QDir> path_stack;
+QStack<FILE*> openfiles;
 
 QString filename;
 QString filepath;
@@ -102,7 +105,7 @@ use[ \t\r\n>]*"<"[^ \t\r\n>]+">" {
 	if (!finfo.exists()) {
 		finfo = QFileInfo(QDir(librarydir), filename);
 	}
-	handle_dep(finfo.absoluteFilePath());
+	handle_dep(finfo.absoluteFilePath().toStdString());
 	parserlval.text = strdup(finfo.absoluteFilePath().toLocal8Bit());
 	return TOK_USE;
 }
@@ -116,11 +119,12 @@ use[ \t\r\n>]*"<"[^ \t\r\n>]+">" {
 	}
 
 	PRINTF("DEPRECATED: Support for implicit include will be removed in future releases. Use `include <filename>' instead.");
-	handle_dep(finfo.absoluteFilePath());
+	handle_dep(finfo.absoluteFilePath().toStdString());
 	yyin = fopen(finfo.absoluteFilePath().toLocal8Bit(), "r");
 	if (!yyin) {
 		PRINTF("WARNING: Can't open input file `%s'.", filename);
 	} else {
+		openfiles.append(yyin);
 		yypush_buffer_state(yy_create_buffer( yyin, YY_BUF_SIZE ));
 		BEGIN(INITIAL);
 	}
@@ -128,10 +132,12 @@ use[ \t\r\n>]*"<"[^ \t\r\n>]+">" {
 }
 
 <<EOF>> {
-	if(!path_stack.isEmpty())
+	if(!path_stack.empty())
 		path_stack.pop();
-	if (yyin && yyin != stdin)
-		fclose(yyin);
+	if (yyin && yyin != stdin) {
+		assert(!openfiles.empty());
+		fclose(openfiles.pop());
+	}
 	yypop_buffer_state();
 	if (!YY_CURRENT_BUFFER)
 		yyterminate();
@@ -182,7 +188,7 @@ use[ \t\r\n>]*"<"[^ \t\r\n>]+">" {
 
 QDir sourcepath()
 {
-	if(!path_stack.isEmpty())
+	if(!path_stack.empty())
 		return path_stack.top();
 
 	return QDir(parser_source_path);
@@ -206,15 +212,26 @@ void includefile()
 		finfo = QFileInfo(QDir(librarydir), filename);
 	}
 
-	handle_dep(finfo.absoluteFilePath());
+	handle_dep(finfo.absoluteFilePath().toStdString());
 	yyin = fopen(finfo.absoluteFilePath().toLocal8Bit(), "r");
 	if (!yyin) {
 		PRINTA("WARNING: Can't open input file `%1'.", filename);
 		path_stack.pop();
 		return;
 	}
+	openfiles.append(yyin);
 	filename.clear();
 
 	yypush_buffer_state(yy_create_buffer( yyin, YY_BUF_SIZE ));
 }
 
+/*!
+  In case of an error, this will make sure we clean up our custom data structures 
+  and close all files.
+*/
+void lexerdestroy()
+{
+  foreach (FILE *f, openfiles) fclose(f);
+  openfiles.clear();
+  path_stack.clear();
+}

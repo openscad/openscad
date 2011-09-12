@@ -36,6 +36,8 @@
 #include "visitor.h"
 #include <sstream>
 #include <assert.h>
+#include <boost/assign/std/vector.hpp>
+using namespace boost::assign; // bring 'operator+=()' into scope
 
 #define F_MINIMUM 0.01
 
@@ -100,7 +102,7 @@ public:
 	primitive_type_e type;
 	int convexity;
 	Value points, paths, triangles;
-	virtual PolySet *evaluate_polyset(render_mode_e mode, class PolySetEvaluator *) const;
+	virtual PolySet *evaluate_polyset(class PolySetEvaluator *) const;
 };
 
 AbstractNode *PrimitiveModule::evaluate(const Context *ctx, const ModuleInstantiation *inst) const
@@ -110,30 +112,30 @@ AbstractNode *PrimitiveModule::evaluate(const Context *ctx, const ModuleInstanti
 	node->center = false;
 	node->x = node->y = node->z = node->h = node->r1 = node->r2 = 1;
 
-	QVector<QString> argnames;
-	QVector<Expression*> argexpr;
+	std::vector<std::string> argnames;
+	std::vector<Expression*> argexpr;
 
 	switch (this->type) {
 	case CUBE:
-		argnames = QVector<QString>() << "size" << "center";
+		argnames += "size", "center";
 		break;
 	case SPHERE:
-		argnames = QVector<QString>() << "r";
+		argnames += "r";
 		break;
 	case CYLINDER:
-		argnames = QVector<QString>() << "h" << "r1" << "r2" << "center";
+		argnames += "h", "r1", "r2", "center";
 		break;
 	case POLYHEDRON:
-		argnames = QVector<QString>() << "points" << "triangles" << "convexity";
+		argnames += "points", "triangles", "convexity";
 		break;
 	case SQUARE:
-		argnames = QVector<QString>() << "size" << "center";
+		argnames += "size", "center";
 		break;
 	case CIRCLE:
-		argnames = QVector<QString>() << "r";
+		argnames += "r";
 		break;
 	case POLYGON:
-		argnames = QVector<QString>() << "points" << "paths" << "convexity";
+		argnames += "points", "paths", "convexity";
 		break;
 	default:
 		assert(false && "PrimitiveModule::evaluate(): Unknown node type");
@@ -180,8 +182,7 @@ AbstractNode *PrimitiveModule::evaluate(const Context *ctx, const ModuleInstanti
 		Value r, r1, r2;
 		r1 = c.lookup_variable("r1");
 		r2 = c.lookup_variable("r2");
-		if (r1.type != Value::NUMBER && r2.type != Value::NUMBER)
-			r = c.lookup_variable("r", true); // silence warning since r has no default value
+		r = c.lookup_variable("r", true); // silence warning since r has no default value
 		Value center = c.lookup_variable("center");
 		if (h.type == Value::NUMBER) {
 			node->h = h.num;
@@ -272,7 +273,7 @@ static void generate_circle(point2d *circle, double r, int fragments)
 	}
 }
 
-PolySet *PrimitiveNode::evaluate_polyset(render_mode_e, class PolySetEvaluator *) const
+PolySet *PrimitiveNode::evaluate_polyset(class PolySetEvaluator *) const
 {
 	PolySet *p = new PolySet();
 
@@ -464,7 +465,7 @@ sphere_next_r2:
 		{
 			p->append_poly();
 			for (size_t j=0; j<this->triangles.vec[i]->vec.size(); j++) {
-				int pt = this->triangles.vec[i]->vec[j]->num;
+				size_t pt = this->triangles.vec[i]->vec[j]->num;
 				if (pt < this->points.vec.size()) {
 					double px, py, pz;
 					if (this->points.vec[pt]->getv3(px, py, pz))
@@ -517,50 +518,48 @@ sphere_next_r2:
 			double x,y;
 			if (!this->points.vec[i]->getv2(x, y)) {
 				PRINTF("ERROR: Unable to convert point at index %d to a vec2 of numbers", i);
-				p->unlink();
+				delete p;
 				return NULL;
 			}
-			dd.points.append(Vector2d(x, y));
+			dd.points.push_back(Vector2d(x, y));
 		}
 
 		if (this->paths.vec.size() == 0)
 		{
-			dd.paths.append(DxfData::Path());
+			dd.paths.push_back(DxfData::Path());
 			for (size_t i=0; i<this->points.vec.size(); i++) {
 				assert(i < dd.points.size()); // FIXME: Not needed, but this used to be an 'if'
-				Vector2d *p = &dd.points[i];
-				dd.paths.last().points.append(p);
+				dd.paths.back().indices.push_back(i);
 			}
-			if (dd.paths.last().points.size() > 0) {
-				dd.paths.last().points.append(dd.paths.last().points.first());
-				dd.paths.last().is_closed = true;
+			if (dd.paths.back().indices.size() > 0) {
+				dd.paths.back().indices.push_back(dd.paths.back().indices.front());
+				dd.paths.back().is_closed = true;
 			}
 		}
 		else
 		{
 			for (size_t i=0; i<this->paths.vec.size(); i++)
 			{
-				dd.paths.append(DxfData::Path());
+				dd.paths.push_back(DxfData::Path());
 				for (size_t j=0; j<this->paths.vec[i]->vec.size(); j++) {
 					int idx = this->paths.vec[i]->vec[j]->num;
 					if (idx < dd.points.size()) {
-						Vector2d *p = &dd.points[idx];
-						dd.paths.last().points.append(p);
+						dd.paths.back().indices.push_back(idx);
 					}
 				}
-				if (dd.paths.last().points.isEmpty()) {
-					dd.paths.removeLast();
+				if (dd.paths.back().indices.empty()) {
+					dd.paths.pop_back();
 				} else {
-					dd.paths.last().points.append(dd.paths.last().points.first());
-					dd.paths.last().is_closed = true;
+					dd.paths.back().indices.push_back(dd.paths.back().indices.front());
+					dd.paths.back().is_closed = true;
 				}
 			}
 		}
 
 		p->is2d = true;
 		p->convexity = convexity;
-		dxf_tesselate(p, &dd, 0, true, false, 0);
-		dxf_border_to_ps(p, &dd);
+		dxf_tesselate(p, dd, 0, true, false, 0);
+		dxf_border_to_ps(p, dd);
 	}
 
 	return p;

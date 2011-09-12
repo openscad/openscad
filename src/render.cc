@@ -26,19 +26,16 @@
 
 #include "rendernode.h"
 #include "module.h"
-#include "polyset.h"
 #include "context.h"
-#include "dxfdata.h"
-#include "dxftess.h"
-#include "csgterm.h"
 #include "builtin.h"
 #include "printutils.h"
 #include "progress.h"
 #include "visitor.h"
+#include "PolySetEvaluator.h"
 
-#include <QApplication>
-#include <QTime>
 #include <sstream>
+#include <boost/assign/std/vector.hpp>
+using namespace boost::assign; // bring 'operator+=()' into scope
 
 class RenderModule : public AbstractModule
 {
@@ -51,8 +48,9 @@ AbstractNode *RenderModule::evaluate(const Context *ctx, const ModuleInstantiati
 {
 	RenderNode *node = new RenderNode(inst);
 
-	QVector<QString> argnames = QVector<QString>() << "convexity";
-	QVector<Expression*> argexpr;
+	std::vector<std::string> argnames;
+	argnames += "convexity";
+	std::vector<Expression*> argexpr;
 
 	Context c(ctx);
 	c.args(argnames, argexpr, inst->argnames, inst->argvalues);
@@ -61,13 +59,15 @@ AbstractNode *RenderModule::evaluate(const Context *ctx, const ModuleInstantiati
 	if (v.type == Value::NUMBER)
 		node->convexity = (int)v.num;
 
-	foreach (ModuleInstantiation *v, inst->children) {
-		AbstractNode *n = v->evaluate(inst->ctx);
-		if (n != NULL)
-			node->children.push_back(n);
-	}
+	std::vector<AbstractNode *> evaluatednodes = inst->evaluateChildren();
+	node->children.insert(node->children.end(), evaluatednodes.begin(), evaluatednodes.end());
 
 	return node;
+}
+
+class PolySet *RenderNode::evaluate_polyset(PolySetEvaluator *ps) const
+{
+	return ps->evaluatePolySet(*this);
 }
 
 void register_builtin_render()
