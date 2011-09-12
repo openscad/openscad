@@ -1496,12 +1496,9 @@ void MainWindow::actionExportImage()
 
 void MainWindow::actionFlushCaches()
 {
-// FIXME: Polycache -> PolySetEvaluator
 	PolySetCache::instance()->clear();
 #ifdef ENABLE_CGAL
-// FIXME: Flush caches through whatever channels we have
-	// CGALEvaluator::evaluator()->getCache().clear();
-	// this->dumper->clearCache();
+	CGALCache::instance()->clear();
 #endif
 	dxf_dim_cache.clear();
 	dxf_cross_cache.clear();

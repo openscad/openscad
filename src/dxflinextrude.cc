@@ -144,13 +144,17 @@ std::string DxfLinearExtrudeNode::toString() const
 {
 	std::stringstream stream;
 
-	stream << this->name() << "("
-		"file = \"" << this->filename << "\", "
-		"cache = \"" << 	QFileInfo(QString::fromStdString(this->filename)) << "\", "
-		"layer = \"" << this->layername << "\", "
+	stream << this->name() << "(";
+	if (!this->filename.empty()) { // Ignore deprecated parameters if empty 
+		stream <<
+			"file = \"" << this->filename << "\", "
+			"cache = \"" << 	QFileInfo(QString::fromStdString(this->filename)) << "\", "
+			"layer = \"" << this->layername << "\", "
+			"origin = [ " << this->origin_x << " " << this->origin_y << " ], "
+			"scale = " << this->scale << ", ";
+	}
+	stream <<
 		"height = " << std::dec << this->height << ", "
-		"origin = [ " << this->origin_x << " " << this->origin_y << " ], "
-		"scale = " << this->scale << ", "
 		"center = " << (this->center?"true":"false") << ", "
 		"convexity = " << this->convexity;
 	
