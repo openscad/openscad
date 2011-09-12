@@ -1,7 +1,15 @@
 #include "OffscreenContext.h"
 
+// see http://www.gamedev.net/topic/552607-conflict-between-glew-and-sdl/
+#define NO_SDL_GLEXT
+#include <GL/glew.h>
+
+#define GL_GLEXT_PROTOTYPES
 #include <GL/gl.h>
-#include <GL/glu.h>      // for gluCheckExtension
+#include <GL/glext.h>
+
+//#include <GL/gl.h>
+//#include <GL/glu.h>      // for gluCheckExtension
 #include <SDL.h>
 
 // Simple error reporting macros to help keep the sample code clean
@@ -26,18 +34,27 @@ OffscreenContext *create_offscreen_context(int w, int h)
 
   // dummy window 
   SDL_Init(SDL_INIT_VIDEO);
-  SDL_SetVideoMode(10,10,32,SDL_OPENGL);
+  SDL_SetVideoMode(256,256,32,SDL_OPENGL);
 
-  /*
-   * Test if framebuffer objects are supported
-   */
+  // must come after openGL context init (done by dummy window)
+  // but must also come before various EXT calls
+  glewInit();
+
+/*
+  //  Test if framebuffer objects are supported
   const GLubyte* strExt = glGetString(GL_EXTENSIONS);
   GLboolean fboSupported = gluCheckExtension((const GLubyte*)"GL_EXT_framebuffer_object", strExt);
   if (!fboSupported)
     REPORT_ERROR_AND_EXIT("Your system does not support framebuffer extension - unable to render scene");
-  /*
-   * Create an FBO
-   */
+
+  printf("%i\n", (int)glGenFramebuffersEXT);
+  GLuint fbo;
+  //ctx->fbo = 0;
+  glGenFramebuffersEXT(1, &fbo);
+  glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fbo);
+  REPORTGLERROR("binding framebuffer");
+
+
   GLuint renderBuffer = 0;
   GLuint depthBuffer = 0;
   // Depth buffer to use for depth testing - optional if you're not using depth testing
@@ -51,10 +68,6 @@ OffscreenContext *create_offscreen_context(int w, int h)
   glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, renderBuffer);
   glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, GL_RGBA8, w, h);
   REPORTGLERROR("creating color render buffer");
-  ctx->fbo = 0;
-  glGenFramebuffersEXT(1, &ctx->fbo);
-  glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, ctx->fbo);
-  REPORTGLERROR("binding framebuffer");
 
   glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, 
                                GL_RENDERBUFFER_EXT, renderBuffer);
@@ -71,6 +84,7 @@ OffscreenContext *create_offscreen_context(int w, int h)
   if (glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT) != 
       GL_FRAMEBUFFER_COMPLETE_EXT)
     REPORT_ERROR_AND_EXIT("Problem with OpenGL framebuffer after specifying depth render buffer.");
+*/
 
   return ctx;
 }
@@ -78,7 +92,7 @@ OffscreenContext *create_offscreen_context(int w, int h)
 bool teardown_offscreen_context(OffscreenContext *ctx)
 {
   // "un"bind my FBO
-  glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
+//  glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
 
   /*
    * Cleanup
@@ -121,5 +135,5 @@ bool save_framebuffer(OffscreenContext *ctx, const char *filename)
 
 void bind_offscreen_context(OffscreenContext *ctx)
 {
-  glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, ctx->fbo);
+//  glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, ctx->fbo);
 }

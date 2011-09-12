@@ -85,9 +85,10 @@ AbstractNode *TransformModule::evaluate(const Context *ctx, const ModuleInstanti
 	TransformNode *node = new TransformNode(inst);
 
 	for (int i = 0; i < 16; i++)
-		node->matrix[i] = i % 5 == 0 ? 1.0 : 0.0;
-	for (int i = 16; i < 20; i++)
-		node->matrix[i] = -1;
+		node->m[i] = i % 5 == 0 ? 1.0 : 0.0;
+	for (int i = 16; i < 19; i++)
+		node->m[i] = -1;
+	node->m[19] = 1;
 
 	QVector<QString> argnames;
 	QVector<Expression*> argexpr;
@@ -267,9 +268,7 @@ AbstractNode *TransformModule::evaluate(const Context *ctx, const ModuleInstanti
 		// FIXME: Only lookup alpha if color was set
 		Value alpha = c.lookup_variable("alpha");
 		if (alpha.type == Value::NUMBER) {
-			node->matrix[16+3] = alpha.num;
-		} else {
-			node->matrix[16+3] = 1.0;
+			node->m[16+3] = alpha.num;
 		}
 	}
 
@@ -309,7 +308,27 @@ string TransformNode::toString() const
 
 string TransformNode::name() const
 {
+<<<<<<< HEAD
 	return "transform";
+=======
+	if (dump_cache.isEmpty()) {
+		QString text;
+		if (m[16] >= 0 || m[17] >= 0 || m[18] >= 0)
+			text.sprintf("n%d: color([%g, %g, %g, %g])", idx,
+					m[16], m[17], m[18], m[19]);
+		else
+			text.sprintf("n%d: multmatrix([[%g, %g, %g, %g], [%g, %g, %g, %g], "
+					"[%g, %g, %g, %g], [%g, %g, %g, %g]])", idx,
+					m[0], m[4], m[ 8], m[12],
+					m[1], m[5], m[ 9], m[13],
+					m[2], m[6], m[10], m[14],
+					m[3], m[7], m[11], m[15]);
+		text = indent + text + " {\n";
+		foreach (AbstractNode *v, children)
+			text += v->dump(indent + QString("\t"));
+		((AbstractNode*)this)->dump_cache = text + indent + "}\n";
+	}
+	return dump_cache;
 }
 
 void register_builtin_transform()

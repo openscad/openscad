@@ -36,11 +36,13 @@ CGALRenderer::CGALRenderer(const CGAL_Nef_polyhedron &root) : root(root)
 {
 	if (root.dim == 2) {
 		DxfData dd(root);
+		this->polyhedron = NULL;
 		this->polyset = new PolySet();
 		this->polyset->is2d = true;
 		dxf_tesselate(this->polyset, &dd, 0, true, false, 0);
 	}
 	else if (root.dim == 3) {
+		this->polyset = NULL;
 		this->polyhedron = new Polyhedron();
     // FIXME: Make independent of Preferences
 		this->polyhedron->setColor(Polyhedron::CGAL_NEF3_MARKED_FACET_COLOR,
@@ -55,11 +57,16 @@ CGALRenderer::CGALRenderer(const CGAL_Nef_polyhedron &root) : root(root)
 		CGAL::OGL::Nef3_Converter<CGAL_Nef_polyhedron3>::convert_to_OGLPolyhedron(this->root.p3, this->polyhedron);
 		this->polyhedron->init();
 	}
+	else {
+		this->polyhedron = NULL;
+		this->polyset = NULL;
+	}
 }
 
 CGALRenderer::~CGALRenderer()
 {
 	if (this->polyset) this->polyset->unlink();
+	delete this->polyhedron;
 }
 
 void CGALRenderer::draw(bool showfaces, bool showedges) const

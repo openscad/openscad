@@ -241,8 +241,8 @@ int main(int argc, char *argv[])
 
 	OpenCSGRenderer opencsgRenderer(csgInfo.root_chain, csgInfo.highlights_chain, csgInfo.background_chain, csgInfo.glview->shaderinfo);
 	ThrownTogetherRenderer thrownTogetherRenderer(csgInfo.root_chain, csgInfo.highlights_chain, csgInfo.background_chain);
-//	csgInfo.glview->setRenderer(&thrownTogetherRenderer);
-	csgInfo.glview->setRenderer(&opencsgRenderer);
+	csgInfo.glview->setRenderer(&thrownTogetherRenderer);
+//	csgInfo.glview->setRenderer(&opencsgRenderer);
 
 	csgInfo.glview->paintGL();
 

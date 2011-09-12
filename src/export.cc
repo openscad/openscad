@@ -32,6 +32,7 @@
 #include <QProgressDialog>
 #include <QTextStream>
 #include <errno.h>
+#include <fstream>
 
 #ifdef ENABLE_CGAL
 #include "cgal.h"
@@ -51,6 +52,14 @@ void export_stl(CGAL_Nef_polyhedron *root_N, QTextStream &output, QProgressDialo
 	typedef CGAL_Polyhedron::Halfedge_around_facet_const_circulator HFCC;
 
 	setlocale(LC_NUMERIC, "C"); // Ensure radix is . (not ,) in output
+
+	std::ofstream output(filename.toUtf8());
+	if (!output.is_open()) {
+		PRINTA("Can't open STL file \"%1\" for STL export: %2", 
+					 filename, QString(strerror(errno)));
+		set_output_handler(NULL, NULL);
+		return;
+	}
 
 	output << "solid OpenSCAD_Model\n";
 
@@ -73,10 +82,15 @@ void export_stl(CGAL_Nef_polyhedron *root_N, QTextStream &output, QProgressDialo
 			double x3 = CGAL::to_double(v3.point().x());
 			double y3 = CGAL::to_double(v3.point().y());
 			double z3 = CGAL::to_double(v3.point().z());
-			QString vs1, vs2, vs3;
-			vs1.sprintf("%f %f %f", x1, y1, z1);
-			vs2.sprintf("%f %f %f", x2, y2, z2);
-			vs3.sprintf("%f %f %f", x3, y3, z3);
+			std::stringstream stream;
+			stream << x1 << " " << y1 << " " << z1;
+			std::string vs1 = stream.str();
+			stream.str("");
+			stream << x2 << " " << y2 << " " << z2;
+			std::string vs2 = stream.str();
+			stream.str("");
+			stream << x3 << " " << y3 << " " << z3;
+			std::string vs3 = stream.str();
 			if (vs1 != vs2 && vs1 != vs3 && vs2 != vs3) {
 				
 				double nx = (y1-y2)*(z1-z3) - (z1-z2)*(y1-y3);
@@ -105,6 +119,7 @@ void export_stl(CGAL_Nef_polyhedron *root_N, QTextStream &output, QProgressDialo
 	}
 
 	output << "endsolid OpenSCAD_Model\n";
+	output.close();
 	setlocale(LC_NUMERIC, "");      // Set default locale
 }
 

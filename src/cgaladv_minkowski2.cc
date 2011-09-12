@@ -92,7 +92,7 @@ CGAL_Poly2 nef2p2(CGAL_Nef_polyhedron2 p)
 		}
 		//if (fit != E.faces_begin()) {
 		if (points.size() != 0) {
-			PRINT("WARNING: minkowski() is not implemented for 2d objects with holes!");
+			PRINT("WARNING: minkowski() and hull() is not implemented for 2d objects with holes!");
 			break;
 		}
 

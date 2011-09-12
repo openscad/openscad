@@ -1,6 +1,9 @@
 OpenSCAD 20xx.yy
 ================
 
+o The color() statement now supports an alpha parameter, e.g. color(c=[1,0,0], alpha=0.4)
+o The color() statement now supports specifying colors as strings, e.g. color("Red")
+
 Bugfixes:
 o square() crashed if any of the dimensions were zero
 o Flush Caches didn't flush cached USE'd modules
