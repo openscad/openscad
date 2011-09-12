@@ -7,8 +7,8 @@ if [ -z "$dmgfile" ]; then
 fi
 indexfile=../openscad.github.com/index.html
 if [ -f $indexfile ]; then
-  sed -i .backup -e "s/^\(.*mac-snapshot.*\)\(openscad-.*\.dmg\)\(.*\)\(openscad-.*dmg\)\(.*$\)/\\1$dmgfile\\3$dmgfile\\5/" $indexfile
+  sed -i .backup -e "s/^\(.*mac-snapshot.*\)\(OpenSCAD-.*\.dmg\)\(.*\)\(OpenSCAD-.*dmg\)\(.*$\)/\\1$dmgfile\\3$dmgfile\\5/" $indexfile
+  echo "Web page updated. Remember to commit and push openscad.github.com"
 else
   echo "Web page not found at $indexfile"
 fi
-echo "Web page updated. Remember to commit and push openscad.githib.com"
