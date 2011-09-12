@@ -333,19 +333,6 @@ int main(int argc, char **argv)
 			fclose(fp);
 		}
 
-<<<<<<< HEAD
-		if (stl_output_file) {
-			QFile file(stl_output_file);
-			if (!file.open(QIODevice::ReadWrite)) {
-				PRINTA("Can't open file \"%1\" for export", stl_output_file);
-			}
-			else {
-				QTextStream fstream(&file);
-				export_stl(&root_N, fstream, NULL);
-				file.close();
-			}
-		}
-=======
 		if (root_N->dim == 3 && !root_N->p3.is_simple()) {
 			fprintf(stderr, "Object isn't a valid 2-manifold! Modify your design.\n");
 			exit(1);
@@ -353,7 +340,6 @@ int main(int argc, char **argv)
 
 		if (stl_output_file)
 			export_stl(root_N, stl_output_file, NULL);
->>>>>>> upstream/master
 
 		if (off_output_file) {
 			QFile file(stl_output_file);
