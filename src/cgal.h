@@ -3,6 +3,14 @@
 
 #ifdef ENABLE_CGAL
 
+#ifdef _MSC_VER
+// see http://en.wikipedia.org/wiki/Stdint.h
+// and http://www.mpfr.org/mpfr-2.4.2/#stdint
+#include <boost/cstdint.hpp>
+using boost::intmax_t;
+using boost::uintmax_t;
+#endif
+
 #include <CGAL/Gmpq.h>
 #include <CGAL/Extended_cartesian.h>
 #include <CGAL/Nef_polyhedron_2.h>
