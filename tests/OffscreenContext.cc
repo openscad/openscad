@@ -1,4 +1,6 @@
 #include "OffscreenContext.h"
+#include "printutils.h"
+#include "lodepng.h"
 
 // see http://www.gamedev.net/topic/552607-conflict-between-glew-and-sdl/
 #define NO_SDL_GLEXT
@@ -25,6 +27,52 @@ struct OffscreenContext
   GLuint depthbo;
 };
 
+void write_targa(const char *filename, GLubyte *pixels, int width, int height)
+{
+	FILE *f = fopen( filename, "w" );
+	int y;
+	if (f) {
+		GLubyte header[] = {
+			00,00,02, 00,00,00, 00,00,00, 00,00,00,
+			0xff & width, 0xff & width >> 8,
+			0xff & height, 0xff & height >> 8,
+			32, 0x20 }; // next-to-last = bit depth
+		fwrite( header, sizeof(header), 1, f);
+		for (y=height-1; y>=0; y--)
+			fwrite( pixels + y*width*4, 4, width, f);
+		fclose(f);
+	}
+}
+
+void write_png(const char *filename, GLubyte *pixels, int width, int height)
+{
+	size_t pixel_size = 4;
+	size_t dataout_size = -1;
+	GLubyte *dataout = (GLubyte*)malloc(width*height*pixel_size); // freed below
+	GLubyte *pixels_flipped = (GLubyte*)malloc(width*height*pixel_size); // freed below
+	for (int y=0;y<height;y++) {
+		for (int x=0;x<width;x++) {
+			int offs1 = y*width*pixel_size + x*pixel_size;
+			int offs2 = (height-1-y)*width*pixel_size + x*pixel_size;
+			pixels_flipped[offs1  ] = pixels[offs2  ];
+			pixels_flipped[offs1+1] = pixels[offs2+1];
+			pixels_flipped[offs1+2] = pixels[offs2+2];
+			pixels_flipped[offs1+3] = pixels[offs2+3];
+		}
+	}
+	//encoder.settings.zlibsettings.windowSize = 2048;
+	//LodePNG_Text_add(&encoder.infoPng.text, "Comment", "Created with LodePNG");
+
+	LodePNG_encode(&dataout, &dataout_size, pixels_flipped, width, height, LCT_RGBA, 8);
+	//LodePNG_saveFile(dataout, dataout_size, "blah2.png");
+	FILE *f = fopen( filename, "w" );
+	if (f) {
+		fwrite( dataout, 1, dataout_size, f);
+		fclose(f);
+	}
+	free(pixels_flipped);
+	free(dataout);
+}
 
 OffscreenContext *create_offscreen_context(int w, int h)
 {
@@ -34,11 +82,11 @@ OffscreenContext *create_offscreen_context(int w, int h)
 
   // dummy window 
   SDL_Init(SDL_INIT_VIDEO);
-  SDL_SetVideoMode(256,256,32,SDL_OPENGL);
+  SDL_SetVideoMode(ctx->width,ctx->height,32,SDL_OPENGL);
 
   // must come after openGL context init (done by dummy window)
   // but must also come before various EXT calls
-  glewInit();
+  //glewInit();
 
 /*
   //  Test if framebuffer objects are supported
@@ -85,7 +133,26 @@ OffscreenContext *create_offscreen_context(int w, int h)
       GL_FRAMEBUFFER_COMPLETE_EXT)
     REPORT_ERROR_AND_EXIT("Problem with OpenGL framebuffer after specifying depth render buffer.");
 */
+/*
+	glClearColor(1, 1, 1, 1);
+	glClear(GL_COLOR_BUFFER_BIT);
+	glBegin(GL_TRIANGLES);
+	glColor3f( 1, 0, 0);
+	glVertex3f( 0, 0, 0);
+	glVertex3f( 1, 0, 0);
+	glVertex3f( 0, 1, 0);
+	glEnd();
+        SDL_GL_SwapBuffers();
+//  sleep(2);
+*/
 
+  int samplesPerPixel = 4; // R, G, B and A
+
+/*  char * filename = "blah.tga";
+  GLubyte pixels[ ctx->width * ctx->height * samplesPerPixel ];
+  glReadPixels(0, 0, ctx->width, ctx->height, GL_BGRA, GL_UNSIGNED_BYTE, pixels);
+  printf("writing %s\n",filename);
+  write_targa(filename,pixels,ctx->width, ctx->height);*/
   return ctx;
 }
 
@@ -100,35 +167,25 @@ bool teardown_offscreen_context(OffscreenContext *ctx)
   return true;
 }
 
-void write_targa(const char *filename, GLubyte *pixels, int width, int height)
-{
-	FILE *f = fopen( filename, "w" );
-	int y;
-	if (f) {
-		GLubyte header[] = {
-			00,00,02, 00,00,00, 00,00,00, 00,00,00,
-			0xff & width, 0xff & width >> 8,
-			0xff & height, 0xff & height >> 8,
-			32, 0x20 }; // next-to-last = bit depth
-		fwrite( header, sizeof(header), 1, f);
-		for (y=height-1; y>=0; y--)
-			fwrite( pixels + y*width*4, 4, width, f);
-		fclose(f);
-	}
-}
-
 bool save_framebuffer(OffscreenContext *ctx, const char *filename)
 {
   /*
    * Extract the resulting rendering as an image
    */
 
-  int samplesPerPixel = 4; // R, G, B and A
+	SDL_GL_SwapBuffers(); // show image
+	int samplesPerPixel = 4; // R, G, B and A
 
   GLubyte pixels[ ctx->width * ctx->height * samplesPerPixel ];
-  glReadPixels(0, 0, ctx->width, ctx->height, GL_BGRA, GL_UNSIGNED_BYTE, pixels);
-  printf("writing %s\n",filename);
-  write_targa(filename,pixels,ctx->width, ctx->height);
+  glReadPixels(0, 0, ctx->width, ctx->height, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+  //char * filename2="blah2.tga";
+  //PRINTF("writing %s\n",filename2);
+  //write_targa(filename2,pixels,ctx->width, ctx->height);
+  char * filename2="blah2.png";
+  PRINTF("writing %s . . .",filename);
+  //write_targa(filename2,pixels,ctx->width, ctx->height);
+  write_png(filename,pixels,ctx->width, ctx->height);
+  PRINTF("written\n");
 
   return true;
 }

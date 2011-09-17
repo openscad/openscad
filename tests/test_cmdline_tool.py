@@ -43,8 +43,15 @@ def verify_test(testname, cmd):
     return True
 
 def execute_and_redirect(cmd, params, outfile):
-    proc = subprocess.Popen([cmd] + params, stdout=outfile)
-    retval = proc.wait()
+    retval = -1
+    try:
+        proc = subprocess.Popen([cmd] + params, stdout=outfile)
+        retval = proc.wait()
+    except OSError as (errno, strerror):
+        print >> sys.stderr, "Error: ", errno, strerror
+        print >> sys.stderr, " cmd:", cmd
+        print >> sys.stderr, " params:", params
+        print >> sys.stderr, " outfile:", outfile
     return retval
 
 def get_normalized_text(filename):
@@ -61,7 +68,7 @@ def compare_default(resultfilename):
     return True
 
 def compare_png(resultfilename):
-    if execute_and_redirect("diff", [expectedfilename, resultfilename], sys.stderr) != 0:
+    if execute_and_redirect("./yee_compare", [expectedfilename, resultfilename], sys.stderr) != 0:
         return False
     return True
 

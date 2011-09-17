@@ -180,7 +180,7 @@ int main(int argc, char **argv)
 
 	csgInfo.glview = new OffscreenView(512,512);
 
-	glewInit();
+	//glewInit();
 #ifdef DEBUG
 	cout << "GLEW version " << glewGetString(GLEW_VERSION) << "\n";
 	cout << (const char *)glGetString(GL_RENDERER) << "(" << (const char *)glGetString(GL_VENDOR) << ")\n"

@@ -63,7 +63,7 @@ if (NOT $ENV{MACOSX_DEPLOY_DIR} STREQUAL "")
 else()
   find_package(SDL REQUIRED)
   if (NOT SDL_FOUND)
-    message(FATAL_ERROR "SDL not found. needed for OpenCSG testing on this platform")
+    message(FATAL_ERROR "SDL not found.")
   else()
     message(STATUS "SDL library found in " ${SDL_LIBRARY})
     message(STATUS "SDL header found in " ${SDL_INCLUDE_DIR})
@@ -129,8 +129,24 @@ set(COMMON_SOURCES
   ../src/PolySetEvaluator.cc 
   ../src/PolySetCache.cc 
   ../src/Tree.cc
+  lodepng.cpp
   ${FLEX_OpenSCADlexer_OUTPUTS}
   ${BISON_OpenSCADparser_OUTPUTS})
+
+#
+# Offscreen OpenGL context source code
+#
+if (NOT $ENV{MACOSX_DEPLOY_DIR} STREQUAL "")
+	set(OFFSCREEN_CTX_SOURCE "OffscreenContext.mm")
+else()
+	set(OFFSCREEN_CTX_SOURCE "OffscreenContext.cc")
+endif()
+
+#
+# Yangli Hector Yee's comparison aglorithm
+#
+
+add_executable(yee_compare yee_compare.cpp lodepng.cpp)
 
 #
 # dumptest
@@ -170,7 +186,7 @@ target_link_libraries(cgaltest ${CGAL_LIBRARY} ${CGAL_3RD_PARTY_LIBRARIES} ${QT_
 #
 # cgalpngtest
 #
-add_executable(cgalpngtest cgalpngtest.cc OffscreenView.cc OffscreenContext.mm
+add_executable(cgalpngtest cgalpngtest.cc OffscreenView.cc ${OFFSCREEN_CTX_SOURCE}
                            ../src/CGALRenderer.cc ../src/CGAL_Nef_polyhedron.cc ../src/cgalutils.cc
                            ../src/CSGTermEvaluator.cc ../src/CGALEvaluator.cc ../src/CGALCache.cc
                            ../src/PolySetCGALEvaluator.cc ../src/qhash.cc
@@ -182,24 +198,12 @@ target_link_libraries(cgalpngtest ${CGAL_LIBRARY} ${CGAL_3RD_PARTY_LIBRARIES} ${
 #
 # opencsgtest
 #
-<<<<<<< HEAD
-if (NOT $ENV{MACOSX_DEPLOY_DIR} STREQUAL "")
-	set(OFFSCREEN_SOURCE "OffscreenContext.mm")
-else()
-	set(OFFSCREEN_SOURCE "OffscreenContext.cc")
-endif()
 
-add_executable(opencsgtest opencsgtest.cc OffscreenView.cc ${OFFSCREEN_SOURCE}
-                           ../src/cgal.cc ../src/OpenCSGRenderer.cc ../src/ThrownTogetherRenderer.cc ../src/CSGTermEvaluator.cc ../src/CGALEvaluator.cc
-                           ../src/PolySetCGALEvaluator.cc ../src/qhash.cc ../src/nef2dxf.cc
-                           ../src/cgaladv_minkowski2.cc ../src/cgaladv_minkowski3.cc
-=======
-add_executable(opencsgtest opencsgtest.cc OffscreenView.cc OffscreenContext.mm
+add_executable(opencsgtest opencsgtest.cc OffscreenView.cc ${OFFSCREEN_CTX_SOURCE}
                            ../src/OpenCSGRenderer.cc ../src/ThrownTogetherRenderer.cc
                            ../src/CSGTermEvaluator.cc ../src/CGAL_Nef_polyhedron.cc ../src/cgalutils.cc
                            ../src/CGALEvaluator.cc ../src/CGALCache.cc ../src/PolySetCGALEvaluator.cc ../src/qhash.cc
                            ../src/CGAL_Nef_polyhedron_DxfData.cc ../src/cgaladv_minkowski2.cc ../src/cgaladv_convexhull2.cc
->>>>>>> upstream/visitor
                            ${COMMON_SOURCES})
 set_target_properties(opencsgtest PROPERTIES COMPILE_FLAGS "-DENABLE_OPENCSG -DENABLE_CGAL ${CGAL_CXX_FLAGS_INIT}")
 target_link_libraries(opencsgtest ${CGAL_LIBRARY} ${CGAL_3RD_PARTY_LIBRARIES} ${QT_LIBRARIES} ${OPENCSG_LIBRARY} ${GLEW_LIBRARY} ${COCOA_LIBRARY} ${OPENGL_LIBRARY})
@@ -232,15 +236,6 @@ add_cmdline_test(csgtexttest txt ${MINIMAL_FILES})
 add_cmdline_test(csgtermtest txt ${MINIMAL_FILES})
 
 # Add cgaltest tests to CTest
-<<<<<<< HEAD
-LIST(APPEND CGALTEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/minimal/cube.scad)
-LIST(APPEND CGALTEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/minimal/sphere.scad)
-LIST(APPEND CGALTEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/minimal/cylinder.scad)
-LIST(APPEND CGALTEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/features/background-modifier.scad)
-LIST(APPEND CGALTEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/features/highlight-modifier.scad)
-LIST(APPEND CGALTEST_FILES ${CMAKE_SOURCE_DIR}/../examples/example001.scad)
-=======
->>>>>>> upstream/visitor
 add_cmdline_test(cgaltest stl ${CGALTEST_FILES})
 
 # Add cgalpngtest tests to CTest

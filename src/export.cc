@@ -53,17 +53,6 @@ void export_stl(CGAL_Nef_polyhedron *root_N, std::ostream &output, QProgressDial
 
 	setlocale(LC_NUMERIC, "C"); // Ensure radix is . (not ,) in output
 
-<<<<<<< HEAD
-	std::ofstream output(filename.toUtf8());
-	if (!output.is_open()) {
-		PRINTA("Can't open STL file \"%1\" for STL export: %2", 
-					 filename, QString(strerror(errno)));
-		set_output_handler(NULL, NULL);
-		return;
-	}
-
-=======
->>>>>>> upstream/visitor
 	output << "solid OpenSCAD_Model\n";
 
 	int facet_count = 0;
@@ -122,10 +111,6 @@ void export_stl(CGAL_Nef_polyhedron *root_N, std::ostream &output, QProgressDial
 	}
 
 	output << "endsolid OpenSCAD_Model\n";
-<<<<<<< HEAD
-	output.close();
-=======
->>>>>>> upstream/visitor
 	setlocale(LC_NUMERIC, "");      // Set default locale
 }
 

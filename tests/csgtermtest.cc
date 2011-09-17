@@ -144,17 +144,11 @@ int main(int argc, char **argv)
 
 //	cout << tree.getString(*root_node) << "\n";
 
-<<<<<<< HEAD
-	CSGTermEvaluator evaluator(tree);
-	vector<CSGTerm*> empty = vector<CSGTerm*>();
-	CSGTerm *root_term = evaluator.evaluateCSGTerm(*root_node, empty, empty);
-=======
 	vector<CSGTerm*> highlights;
 	vector<CSGTerm*> background;
 	PolySetEvaluator psevaluator(tree);
 	CSGTermEvaluator evaluator(tree, &psevaluator);
 	CSGTerm *root_term = evaluator.evaluateCSGTerm(*root_node, highlights, background);
->>>>>>> upstream/visitor
 	
 	// cout << "Stored terms: " << evaluator.stored_term.size() << "\n";
 	// for (map<int, class CSGTerm*>::iterator iter = evaluator.stored_term.begin();
