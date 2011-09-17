@@ -51,6 +51,8 @@ Value::Value(double v)
 	reset_undef();
 	this->type = NUMBER;
 	this->num = v;
+	if(v != 0)
+		this->b = true;
 }
 
 Value::Value(const QString &t)
@@ -58,11 +60,15 @@ Value::Value(const QString &t)
 	reset_undef();
 	this->type = STRING;
 	this->text = t;
+	if(t != "" && t != "0")
+		this->b = true;
 }
 
 Value::Value(const Value &v)
 {
 	*this = v;
+	if(v.type == VECTOR && v.vec.size() > 0)
+		this->b = true;
 }
 
 Value& Value::operator = (const Value &v)
@@ -82,26 +88,17 @@ Value& Value::operator = (const Value &v)
 
 Value Value::operator ! () const
 {
-	if (this->type == BOOL) {
-		return Value(!this->b);
-	}
-	return Value();
+	return Value(!this->b);
 }
 
 Value Value::operator && (const Value &v) const
 {
-	if (this->type == BOOL && v.type == BOOL) {
-		return Value(this->b && v.b);
-	}
-	return Value();
+	return Value(this->b && v.b);
 }
 
 Value Value::operator || (const Value &v) const
 {
-	if (this->type == BOOL && v.type == BOOL) {
-		return Value(this->b || v.b);
-	}
-	return Value();
+	return Value(this->b || v.b);
 }
 
 Value Value::operator + (const Value &v) const
@@ -111,6 +108,8 @@ Value Value::operator + (const Value &v) const
 		r.type = VECTOR;
 		for (int i = 0; i < this->vec.size() && i < v.vec.size(); i++)
 			r.vec.append(new Value(*this->vec[i] + *v.vec[i]));
+		if(r.vec.size() != 0)
+			r.b = true;
 		return r;
 	}
 	if (this->type == NUMBER && v.type == NUMBER) {
@@ -126,6 +125,8 @@ Value Value::operator - (const Value &v) const
 		r.type = VECTOR;
 		for (int i = 0; i < this->vec.size() && i < v.vec.size(); i++)
 			r.vec.append(new Value(*this->vec[i] - *v.vec[i]));
+		if(r.vec.size() != 0)
+			r.b = true;
 		return r;
 	}
 	if (this->type == NUMBER && v.type == NUMBER) {
@@ -141,6 +142,8 @@ Value Value::operator * (const Value &v) const
 		r.type = VECTOR;
 		for (int i = 0; i < this->vec.size(); i++)
 			r.vec.append(new Value(*this->vec[i] * v));
+		if(r.vec.size() != 0)
+			r.b = true;
 		return r;
 	}
 	if (this->type == NUMBER && v.type == VECTOR) {
@@ -163,6 +166,8 @@ Value Value::operator / (const Value &v) const
 		r.type = VECTOR;
 		for (int i = 0; i < this->vec.size(); i++)
 			r.vec.append(new Value(*this->vec[i] / v));
+		if(r.vec.size() != 0)
+			r.b = true;
 		return r;
 	}
 	if (this->type == NUMBER && v.type == VECTOR) {

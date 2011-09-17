@@ -151,7 +151,7 @@ AbstractNode *ControlModule::evaluate(const Context*, const ModuleInstantiation 
 	if (type == IF)
 	{
 		const IfElseModuleInstantiation *ifelse = dynamic_cast<const IfElseModuleInstantiation*>(inst);
-		if (ifelse->argvalues.size() > 0 && ifelse->argvalues[0].type == Value::BOOL && ifelse->argvalues[0].b) {
+		if (ifelse->argvalues.size() > 0 && ifelse->argvalues[0].b) {
 			foreach (ModuleInstantiation *v, ifelse->children) {
 				AbstractNode *n = v->evaluate(ifelse->ctx);
 				if (n != NULL)
