@@ -1,3 +1,4 @@
+// source code modified for OpenSCAD, Sept 2011
 /*
 Metric
 RGBAImage.h

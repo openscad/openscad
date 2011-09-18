@@ -1,3 +1,4 @@
+// modified from PerceptualDiff source for OpenSCAD, 2011 September
 
 #include "yee_compare.h"
 #include "lodepng.h"
