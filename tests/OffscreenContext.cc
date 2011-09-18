@@ -181,7 +181,7 @@ bool save_framebuffer(OffscreenContext *ctx, const char *filename)
   //char * filename2="blah2.tga";
   //PRINTF("writing %s\n",filename2);
   //write_targa(filename2,pixels,ctx->width, ctx->height);
-  char * filename2="blah2.png";
+  //char * filename2="blah2.png";
   PRINTF("writing %s . . .",filename);
   //write_targa(filename2,pixels,ctx->width, ctx->height);
   write_png(filename,pixels,ctx->width, ctx->height);

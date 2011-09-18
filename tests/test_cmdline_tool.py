@@ -47,8 +47,8 @@ def execute_and_redirect(cmd, params, outfile):
     try:
         proc = subprocess.Popen([cmd] + params, stdout=outfile)
         retval = proc.wait()
-    except OSError as (errno, strerror):
-        print >> sys.stderr, "Error: ", errno, strerror
+    except:
+        print >> sys.stderr, "Error running subprocess: ", sys.exc_info()[1]
         print >> sys.stderr, " cmd:", cmd
         print >> sys.stderr, " params:", params
         print >> sys.stderr, " outfile:", outfile
@@ -68,6 +68,10 @@ def compare_default(resultfilename):
     return True
 
 def compare_png(resultfilename):
+    if not resultfilename:
+        print >> sys.stderr, "Error: OpenSCAD did not generate an image"
+        return False
+    print >> sys.stderr, 'Yee image compare: ', expectedfilename, ' ', resultfilename
     if execute_and_redirect("./yee_compare", [expectedfilename, resultfilename], sys.stderr) != 0:
         return False
     return True

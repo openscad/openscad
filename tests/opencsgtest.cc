@@ -1,4 +1,4 @@
-#include <GL/glew.h>
+//#include <GL/glew.h>
 #include "openscad.h"
 #include "handle_dep.h"
 #include "builtin.h"
@@ -144,9 +144,9 @@ int main(int argc, char *argv[])
 	CsgInfo csgInfo;
 	CGALEvaluator cgalevaluator(tree);
 	CSGTermEvaluator evaluator(tree, &cgalevaluator.psevaluator);
-	CSGTerm *root_raw_term = evaluator.evaluateCSGTerm(*root_node, 
-																										 csgInfo.highlight_terms, 
-																										 csgInfo.background_terms);
+	CSGTerm *root_raw_term = evaluator.evaluateCSGTerm(*root_node,
+ csgInfo.highlight_terms,
+ csgInfo.background_terms);
 
 	if (!root_raw_term) {
 		cerr << "Error: CSG generation failed! (no top level object found)\n";
@@ -203,6 +203,8 @@ int main(int argc, char *argv[])
 	
 	QDir::setCurrent(original_path.absolutePath());
 
+
+
 	csgInfo.glview = new OffscreenView(512,512);
 	BoundingBox bbox = csgInfo.root_chain->getBoundingBox();
 
@@ -214,7 +216,7 @@ int main(int argc, char *argv[])
 	Vector3d camerapos = center - radius*1.8*cameradir;
 	csgInfo.glview->setCamera(camerapos, center);
 
-	glewInit();
+	//glewInit();
 #ifdef DEBUG
 	cout << "GLEW version " << glewGetString(GLEW_VERSION) << "\n";
 	cout << (const char *)glGetString(GL_RENDERER) << "(" << (const char *)glGetString(GL_VENDOR) << ")\n"
@@ -234,9 +236,9 @@ int main(int argc, char *argv[])
 #endif
 
 	OpenCSGRenderer opencsgRenderer(csgInfo.root_chain, csgInfo.highlights_chain, csgInfo.background_chain, csgInfo.glview->shaderinfo);
-	ThrownTogetherRenderer thrownTogetherRenderer(csgInfo.root_chain, csgInfo.highlights_chain, csgInfo.background_chain);
-	csgInfo.glview->setRenderer(&thrownTogetherRenderer);
-//	csgInfo.glview->setRenderer(&opencsgRenderer);
+	//ThrownTogetherRenderer thrownTogetherRenderer(csgInfo.root_chain, csgInfo.highlights_chain, csgInfo.background_chain);
+	//csgInfo.glview->setRenderer(&thrownTogetherRenderer);
+	csgInfo.glview->setRenderer(&opencsgRenderer);
 
 	csgInfo.glview->paintGL();
 

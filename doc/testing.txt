@@ -27,3 +27,18 @@ Adding  a new regression test:
 
 Note that test files which don't have an *-expected.<suffix> file will
 be ignored for the test apps in question.
+
+Troubleshooting a failed test:
+------------------------------
+
+You can run a single test by running
+ $ ctest -R testname
+
+You can run a series by running
+ $ ctest -R cgalpng  # runs all cgalpng tests
+ $ ctest -R sphere   # runs all sphere tests
+   
+Logs of test runs are found in tests/build/Testing/Temporary
+Expected results are found in tests/regression/*
+Actual results are found in tests/build/testname-output/*
+

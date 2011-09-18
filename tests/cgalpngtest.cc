@@ -178,6 +178,7 @@ int main(int argc, char **argv)
 
 	QDir::setCurrent(original_path.absolutePath());
 
+// match with csgtest ends
 	csgInfo.glview = new OffscreenView(512,512);
 
 	//glewInit();

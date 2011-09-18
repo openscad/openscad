@@ -1,8 +1,13 @@
 #ifndef DXFDATA_H_
 #define DXFDATA_H_
 
-#include <vector>
+#ifndef __APPLE__
+#define EIGEN_DONT_VECTORIZE 1
+#define EIGEN_DISABLE_UNALIGNED_ARRAY_ASSERT 1
+#endif
+
 #include <Eigen/Dense>
+#include <vector>
 
 using Eigen::Vector2d;
 

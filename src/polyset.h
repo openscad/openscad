@@ -1,11 +1,16 @@
 #ifndef POLYSET_H_
 #define POLYSET_H_
 
+#ifndef __APPLE__
+#define EIGEN_DONT_VECTORIZE 1
+#define EIGEN_DISABLE_UNALIGNED_ARRAY_ASSERT 1
+#endif
+
 #include <GL/glew.h>
 #include "grid.h"
-#include <vector>
 #include <Eigen/Core>
 #include <Eigen/Geometry>
+#include <vector>
 
 using Eigen::Vector3d;
 typedef Eigen::AlignedBox<double, 3> BoundingBox;
