@@ -1,4 +1,4 @@
-//#include <GL/glew.h>
+///#include <GL/glew.h>
 #include "openscad.h"
 #include "handle_dep.h"
 #include "builtin.h"
@@ -32,8 +32,10 @@ QString librarydir;
 
 //#define DEBUG
 
-struct CsgInfo
+class CsgInfo
 {
+public:
+	CsgInfo();
 	CSGTerm *root_norm_term;          // Normalized CSG products
 	class CSGChain *root_chain;
 	std::vector<CSGTerm*> highlight_terms;
@@ -42,6 +44,17 @@ struct CsgInfo
 	CSGChain *background_chain;
 	OffscreenView *glview;
 };
+
+CsgInfo::CsgInfo()
+{
+	this->root_norm_term = NULL;
+	this->root_chain = NULL;;
+	this->highlight_terms = vector<CSGTerm*>();
+	this->highlights_chain = NULL;
+	this->background_terms = vector<CSGTerm*>();
+	this->background_chain = NULL;
+	this->glview = NULL;
+}
 
 AbstractNode *find_root_tag(AbstractNode *n)
 {
@@ -141,12 +154,11 @@ int main(int argc, char *argv[])
 
 	Tree tree(root_node);
 
-	CsgInfo csgInfo;
+	CsgInfo csgInfo = CsgInfo();
+
 	CGALEvaluator cgalevaluator(tree);
 	CSGTermEvaluator evaluator(tree, &cgalevaluator.psevaluator);
-	CSGTerm *root_raw_term = evaluator.evaluateCSGTerm(*root_node,
- csgInfo.highlight_terms,
- csgInfo.background_terms);
+	CSGTerm *root_raw_term = evaluator.evaluateCSGTerm(*root_node, csgInfo.highlight_terms, csgInfo.background_terms);
 
 	if (!root_raw_term) {
 		cerr << "Error: CSG generation failed! (no top level object found)\n";
@@ -203,45 +215,31 @@ int main(int argc, char *argv[])
 	
 	QDir::setCurrent(original_path.absolutePath());
 
+	/*
+	fprintf(stderr, "Dump root chain\n");
+	cerr << csgInfo.root_chain->fulldump();
+	cerr << csgInfo.highlights_chain;
+	cerr << csgInfo.background_chain;
+	fprintf(stderr, "end dump\n");
+	*/
 
-
+	ThrownTogetherRenderer thrownTogetherRenderer(csgInfo.root_chain, csgInfo.highlights_chain, csgInfo.background_chain);
 	csgInfo.glview = new OffscreenView(512,512);
-	BoundingBox bbox = csgInfo.root_chain->getBoundingBox();
 
+
+
+	BoundingBox bbox = csgInfo.root_chain->getBoundingBox();
 	Vector3d center = (bbox.min() + bbox.max()) / 2;
 	double radius = (bbox.max() - bbox.min()).norm() / 2;
-
-
 	Vector3d cameradir(1, 1, -0.5);
 	Vector3d camerapos = center - radius*1.8*cameradir;
 	csgInfo.glview->setCamera(camerapos, center);
 
-	//glewInit();
-#ifdef DEBUG
-	cout << "GLEW version " << glewGetString(GLEW_VERSION) << "\n";
-	cout << (const char *)glGetString(GL_RENDERER) << "(" << (const char *)glGetString(GL_VENDOR) << ")\n"
-			 << "OpenGL version " << (const char *)glGetString(GL_VERSION) << "\n";
-	cout  << "Extensions: " << (const char *)glGetString(GL_EXTENSIONS) << "\n";
 
-
-	if (GLEW_ARB_framebuffer_object) {
-		cout << "ARB_FBO supported\n";
-	}
-	if (GLEW_EXT_framebuffer_object) {
-		cout << "EXT_FBO supported\n";
-	}
-	if (GLEW_EXT_packed_depth_stencil) {
-		cout << "EXT_packed_depth_stencil\n";
-	}
-#endif
-
+	csgInfo.glview->setRenderer(&thrownTogetherRenderer);
 	//OpenCSGRenderer opencsgRenderer(csgInfo.root_chain, csgInfo.highlights_chain, csgInfo.background_chain, csgInfo.glview->shaderinfo);
 	//csgInfo.glview->setRenderer(&opencsgRenderer);
-	ThrownTogetherRenderer thrownTogetherRenderer(csgInfo.root_chain, csgInfo.highlights_chain, csgInfo.background_chain);
-	csgInfo.glview->setRenderer(&thrownTogetherRenderer);
-
 	csgInfo.glview->paintGL();
-
 	csgInfo.glview->save("/dev/stdout");
 	
 	destroy_builtin_functions();

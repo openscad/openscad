@@ -1,8 +1,10 @@
 #ifndef OFFSCREENVIEW_H_
 #define OFFSCREENVIEW_H_
 
+#ifndef __APPLE__ // Eigen SIMD alignment
 #define EIGEN_DONT_VECTORIZE 1
 #define EIGEN_DISABLE_UNALIGNED_ARRAY_ASSERT 1
+#endif
 
 #include "OffscreenContext.h"
 #include <Eigen/Core>

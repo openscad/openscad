@@ -227,6 +227,26 @@ std::string CSGChain::dump()
 	return dump.str();
 }
 
+
+std::string CSGChain::fulldump()
+{
+	std::stringstream dump;
+	dump << "\nsizes: \n";
+	dump << " polysets: " << polysets.size();
+	dump << " matrices: " << matrices.size();
+	dump << " colors: " << colors.size();
+	dump << " types: " << types.size();
+	dump << " labels: " << labels.size();
+	dump << "\ndata: \n";
+	for (size_t i = 0; i < polysets.size(); i++) dump << (*polysets[i]).polygons.size()   << "\n";
+	for (size_t i = 0; i < matrices.size(); i++) dump << *matrices[i]  << "\n";
+	for (size_t i = 0; i < colors.size(); i++) dump << *colors[i]  << "\n";
+	for (size_t i = 0; i < types.size(); i++) dump << types[i]   << "\n";
+	for (size_t i = 0; i < labels.size(); i++) dump << labels[i]  << "\n";
+	dump << "\n";
+	return dump.str();
+}
+
 BoundingBox CSGChain::getBoundingBox() const
 {
 	BoundingBox bbox;

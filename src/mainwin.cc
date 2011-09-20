@@ -95,6 +95,8 @@ using namespace boost::lambda;
 
 #endif // ENABLE_CGAL
 
+using std::cerr;
+
 // Global application state
 unsigned int GuiLocker::gui_locked = 0;
 
@@ -876,6 +878,17 @@ void MainWindow::compileCSG(bool procevents)
 																															this->highlights_chain, 
 																															this->background_chain);
 		
+        fprintf(stderr, "Dump root chain\n");
+        cerr << this->root_chain->fulldump();
+	cerr << this->highlights_chain;
+	cerr << this->background_chain;
+/*        fprintf(stderr, "dump highlights\n");
+        this->highlights_chain->dump();
+        fprintf(stderr, "dump background\n");
+        this->background_chain->dump();*/
+        fprintf(stderr, "end dump\n");
+
+
 		PRINT("CSG generation finished.");
 		int s = t.elapsed() / 1000;
 		PRINTF("Total rendering time: %d hours, %d minutes, %d seconds", s / (60*60), (s / 60) % 60, s % 60);
