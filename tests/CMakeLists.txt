@@ -143,7 +143,7 @@ else()
 endif()
 
 #
-# Yangli Hector Yee's comparison aglorithm
+# Yangli Hector Yee's PerceptualDiff code
 #
 
 add_executable(yee_compare yee_compare.cpp lodepng.cpp)
@@ -199,7 +199,7 @@ target_link_libraries(cgalpngtest ${CGAL_LIBRARY} ${CGAL_3RD_PARTY_LIBRARIES} ${
 # opencsgtest
 #
 
-add_executable(opencsgtest opencsgtest.cc OffscreenView.cc ${OFFSCREEN_CTX_SOURCE}
+add_executable(opencsgtest opencsgtest.cc csgtestcore.cc OffscreenView.cc ${OFFSCREEN_CTX_SOURCE}
                            ../src/OpenCSGRenderer.cc ../src/ThrownTogetherRenderer.cc
                            ../src/CSGTermEvaluator.cc ../src/CGAL_Nef_polyhedron.cc ../src/cgalutils.cc
                            ../src/CGALEvaluator.cc ../src/CGALCache.cc ../src/PolySetCGALEvaluator.cc ../src/qhash.cc
@@ -207,6 +207,20 @@ add_executable(opencsgtest opencsgtest.cc OffscreenView.cc ${OFFSCREEN_CTX_SOURC
                            ${COMMON_SOURCES})
 set_target_properties(opencsgtest PROPERTIES COMPILE_FLAGS "-DENABLE_OPENCSG -DENABLE_CGAL ${CGAL_CXX_FLAGS_INIT}")
 target_link_libraries(opencsgtest ${CGAL_LIBRARY} ${CGAL_3RD_PARTY_LIBRARIES} ${QT_LIBRARIES} ${OPENCSG_LIBRARY} ${GLEW_LIBRARY} ${COCOA_LIBRARY} ${OPENGL_LIBRARY})
+
+#
+# throwntogethertest
+#
+
+add_executable(throwntogethertest throwntogethertest.cc csgtestcore.cc OffscreenView.cc ${OFFSCREEN_CTX_SOURCE}
+                           ../src/OpenCSGRenderer.cc ../src/ThrownTogetherRenderer.cc
+                           ../src/CSGTermEvaluator.cc ../src/CGAL_Nef_polyhedron.cc ../src/cgalutils.cc
+                           ../src/CGALEvaluator.cc ../src/CGALCache.cc ../src/PolySetCGALEvaluator.cc ../src/qhash.cc
+                           ../src/CGAL_Nef_polyhedron_DxfData.cc ../src/cgaladv_minkowski2.cc ../src/cgaladv_convexhull2.cc
+                           ${COMMON_SOURCES})
+set_target_properties(throwntogethertest PROPERTIES COMPILE_FLAGS "-DENABLE_OPENCSG -DENABLE_CGAL ${CGAL_CXX_FLAGS_INIT}")
+target_link_libraries(throwntogethertest ${CGAL_LIBRARY} ${CGAL_3RD_PARTY_LIBRARIES} ${QT_LIBRARIES} ${OPENCSG_LIBRARY} ${GLEW_LIBRARY} ${COCOA_LIBRARY} ${OPENGL_LIBRARY})
+
 
 #
 # This functions adds cmd-line tests given files.
@@ -279,5 +293,9 @@ add_cmdline_test(cgalpngtest png ${CGALPNGTEST_FILES})
 LIST(APPEND OPENCSGTEST_FILES ${CGALPNGTEST_FILES})
 add_cmdline_test(opencsgtest png ${OPENCSGTEST_FILES})
 
+# Add throwntogether tests to CTest
+LIST(APPEND THROWNTOGETHERTEST_FILES ${CGALPNGTEST_FILES})
+add_cmdline_test(throwntogethertest png ${THROWNTOGETHERTEST_FILES})
+
 # Add dxfexport tests to CTest
-#add_cmdline_test(${CMAKE_SOURCE_DIR}/../test-code/exportdxf dxf ${SCAD_FILES})
+add_cmdline_test(${CMAKE_SOURCE_DIR}/../test-code/exportdxf dxf ${SCAD_FILES})
