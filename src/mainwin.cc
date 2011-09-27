@@ -1741,7 +1741,7 @@ void MainWindow::dropEvent(QDropEvent *event)
 	for (int i = 0; i < urls.size(); i++) {
 		if (urls[i].scheme() != "file")
 			continue;
-		openFile(urls[i].path());
+		openFile(urls[i].toLocalFile());
 	}
 	clearCurrentOutput();
 }
