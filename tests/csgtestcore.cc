@@ -35,8 +35,10 @@ QString librarydir;
 
 //#define DEBUG
 
-struct CsgInfo
+class CsgInfo
 {
+public:
+	CsgInfo();
 	CSGTerm *root_norm_term;          // Normalized CSG products
 	class CSGChain *root_chain;
 	std::vector<CSGTerm*> highlight_terms;
@@ -45,6 +47,16 @@ struct CsgInfo
 	CSGChain *background_chain;
 	OffscreenView *glview;
 };
+
+CsgInfo::CsgInfo() {
+        root_norm_term = NULL;
+        root_chain = NULL;
+        highlight_terms = vector<CSGTerm*>();
+        highlights_chain = NULL;
+        background_terms = vector<CSGTerm*>();
+        background_chain = NULL;
+        glview = NULL;
+}
 
 AbstractNode *find_root_tag(AbstractNode *n)
 {
@@ -144,7 +156,7 @@ int csgtestcore(int argc, char *argv[], test_type_e test_type)
 
 	Tree tree(root_node);
 
-	CsgInfo csgInfo;
+	CsgInfo csgInfo = CsgInfo();
 	CGALEvaluator cgalevaluator(tree);
 	CSGTermEvaluator evaluator(tree, &cgalevaluator.psevaluator);
 	CSGTerm *root_raw_term = evaluator.evaluateCSGTerm(*root_node, 
