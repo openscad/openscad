@@ -1,7 +1,5 @@
 #include "csgtestcore.h"
 
-int main(int argc, char *argv[])
-{
-	csgtestcore(argc, argv, TEST_OPENCSG);
-	return 0;
+int main(int argc, char* argv[]) {
+	return csgtestcore(argc+1, argv, TEST_OPENCSG);
 }
