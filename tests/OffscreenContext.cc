@@ -1,6 +1,6 @@
 #include "OffscreenContext.h"
 #include "printutils.h"
-#include "lodepng.h"
+#include "imageutils.h"
 
 // see http://www.gamedev.net/topic/552607-conflict-between-glew-and-sdl/
 #define NO_SDL_GLEXT
@@ -42,36 +42,6 @@ void write_targa(const char *filename, GLubyte *pixels, int width, int height)
 			fwrite( pixels + y*width*4, 4, width, f);
 		fclose(f);
 	}
-}
-
-void write_png(const char *filename, GLubyte *pixels, int width, int height)
-{
-	size_t pixel_size = 4;
-	size_t dataout_size = -1;
-	GLubyte *dataout = (GLubyte*)malloc(width*height*pixel_size); // freed below
-	GLubyte *pixels_flipped = (GLubyte*)malloc(width*height*pixel_size); // freed below
-	for (int y=0;y<height;y++) {
-		for (int x=0;x<width;x++) {
-			int offs1 = y*width*pixel_size + x*pixel_size;
-			int offs2 = (height-1-y)*width*pixel_size + x*pixel_size;
-			pixels_flipped[offs1  ] = pixels[offs2  ];
-			pixels_flipped[offs1+1] = pixels[offs2+1];
-			pixels_flipped[offs1+2] = pixels[offs2+2];
-			pixels_flipped[offs1+3] = pixels[offs2+3];
-		}
-	}
-	//encoder.settings.zlibsettings.windowSize = 2048;
-	//LodePNG_Text_add(&encoder.infoPng.text, "Comment", "Created with LodePNG");
-
-	LodePNG_encode(&dataout, &dataout_size, pixels_flipped, width, height, LCT_RGBA, 8);
-	//LodePNG_saveFile(dataout, dataout_size, "blah2.png");
-	FILE *f = fopen( filename, "w" );
-	if (f) {
-		fwrite( dataout, 1, dataout_size, f);
-		fclose(f);
-	}
-	free(pixels_flipped);
-	free(dataout);
 }
 
 OffscreenContext *create_offscreen_context(int w, int h)
@@ -167,27 +137,31 @@ bool teardown_offscreen_context(OffscreenContext *ctx)
   return true;
 }
 
+/*!
+  Capture framebuffer from OpenGL and write it to the given filename as PNG.
+*/
 bool save_framebuffer(OffscreenContext *ctx, const char *filename)
 {
-  /*
-   * Extract the resulting rendering as an image
-   */
-
 	SDL_GL_SwapBuffers(); // show image
+
 	int samplesPerPixel = 4; // R, G, B and A
-
-  GLubyte pixels[ ctx->width * ctx->height * samplesPerPixel ];
+  GLubyte pixels[ctx->width * ctx->height * samplesPerPixel];
   glReadPixels(0, 0, ctx->width, ctx->height, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
-  //char * filename2="blah2.tga";
-  //PRINTF("writing %s\n",filename2);
-  //write_targa(filename2,pixels,ctx->width, ctx->height);
-  //char * filename2="blah2.png";
-  PRINTF("writing %s . . .",filename);
-  //write_targa(filename2,pixels,ctx->width, ctx->height);
-  write_png(filename,pixels,ctx->width, ctx->height);
-  PRINTF("written\n");
 
-  return true;
+  // Flip it vertically - images read from OpenGL buffers are upside-down
+  unsigned char *flippedBuffer = (unsigned char *)malloc(rowBytes * ctx->height);
+  if (!flippedBuffer) {
+    std::cout << "Unable to allocate flipped buffer for corrected image.";
+    return 1;
+  }
+  flip_image(bufferData, flippedBuffer, samplesPerPixel, ctx->width, ctx->height);
+
+  bool writeok = write_png(filename, flippedBuffer, ctx->width, ctx->height);
+
+  free(flippedBuffer);
+  free(bufferData);
+
+  return writeok;
 }
 
 void bind_offscreen_context(OffscreenContext *ctx)

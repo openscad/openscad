@@ -185,7 +185,7 @@ int csgtestcore(int argc, char *argv[], test_type_e test_type)
 	fprintf(stderr, "Normalized CSG tree has %d elements\n", csgInfo.root_chain->polysets.size());
 	
 	if (csgInfo.highlight_terms.size() > 0) {
-		cerr << "Compiling highlights (" << csgInfo.highlight_terms.size() << "  CSG Trees)...\n";
+		cerr << "Compiling highlights (" << csgInfo.highlight_terms.size() << " CSG Trees)...\n";
 		
 		csgInfo.highlights_chain = new CSGChain();
 		for (unsigned int i = 0; i < csgInfo.highlight_terms.size(); i++) {
