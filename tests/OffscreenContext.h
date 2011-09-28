@@ -1,7 +1,7 @@
 #ifndef OFFSCREENCONTEXT_H_
 #define OFFSCREENCONTEXT_H_
 
-#ifdef Q_WS_MAC
+#ifdef __APPLE__
 #include <OpenGL/OpenGL.h>
 #else
 #include <GL/glew.h>
