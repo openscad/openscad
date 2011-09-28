@@ -91,6 +91,8 @@ void for_eval(AbstractNode &node, const ModuleInstantiation &inst, size_t l,
 
 AbstractNode *ControlModule::evaluate(const Context*, const ModuleInstantiation *inst) const
 {
+	AbstractNode *node = NULL;
+
 	if (type == CHILD)
 	{
 		size_t n = 0;
@@ -102,16 +104,19 @@ AbstractNode *ControlModule::evaluate(const Context*, const ModuleInstantiation 
 		for (int i = Context::ctx_stack.size()-1; i >= 0; i--) {
 			const Context *c = Context::ctx_stack[i];
 			if (c->inst_p) {
-				if (n < c->inst_p->children.size())
-					return c->inst_p->children[n]->evaluate(c->inst_p->ctx);
-				return NULL;
+				if (n < c->inst_p->children.size()) {
+					node = c->inst_p->children[n]->evaluate(c->inst_p->ctx);
+					// FIXME: We'd like to inherit any tags from the ModuleInstantiation
+					// given as parameter to this method. However, the instantition which belongs
+					// to the returned node cannot be changed. This causes the test
+					// features/child-background.scad to fail.
+				}
+				return node;
 			}
 			c = c->parent;
 		}
 		return NULL;
 	}
-
-	AbstractNode *node;
 
 	if (type == INT_FOR)
 		node = new AbstractIntersectionNode(inst);
