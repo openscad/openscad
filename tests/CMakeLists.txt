@@ -291,6 +291,9 @@ add_cmdline_test(cgalpngtest png ${CGALPNGTEST_FILES})
 
 # Add opencsg tests to CTest
 LIST(APPEND OPENCSGTEST_FILES ${CGALPNGTEST_FILES})
+LIST(APPEND OPENCSGTEST_FILES 
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/features/highlight-and-background-modifier.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/features/child-background.scad)
 add_cmdline_test(opencsgtest png ${OPENCSGTEST_FILES})
 
 # Add throwntogether tests to CTest

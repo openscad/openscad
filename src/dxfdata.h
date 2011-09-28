@@ -35,7 +35,7 @@ public:
 		}
 	};
 
-	std::vector<Vector2d> points;
+	std::vector<Vector2d, Eigen::aligned_allocator<Vector2d> > points;
 	std::vector<Path> paths;
 	std::vector<Dim> dims;
 
