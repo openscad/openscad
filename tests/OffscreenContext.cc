@@ -142,24 +142,24 @@ bool teardown_offscreen_context(OffscreenContext *ctx)
 */
 bool save_framebuffer(OffscreenContext *ctx, const char *filename)
 {
-	SDL_GL_SwapBuffers(); // show image
+  SDL_GL_SwapBuffers(); // show image
 
-	int samplesPerPixel = 4; // R, G, B and A
+  int samplesPerPixel = 4; // R, G, B and A
   GLubyte pixels[ctx->width * ctx->height * samplesPerPixel];
   glReadPixels(0, 0, ctx->width, ctx->height, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
 
   // Flip it vertically - images read from OpenGL buffers are upside-down
+  int rowBytes = samplesPerPixel * ctx->width;
   unsigned char *flippedBuffer = (unsigned char *)malloc(rowBytes * ctx->height);
   if (!flippedBuffer) {
     std::cout << "Unable to allocate flipped buffer for corrected image.";
     return 1;
   }
-  flip_image(bufferData, flippedBuffer, samplesPerPixel, ctx->width, ctx->height);
+  flip_image(pixels, flippedBuffer, samplesPerPixel, ctx->width, ctx->height);
 
   bool writeok = write_png(filename, flippedBuffer, ctx->width, ctx->height);
 
   free(flippedBuffer);
-  free(bufferData);
 
   return writeok;
 }
