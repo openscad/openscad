@@ -139,8 +139,8 @@ HEADERS += src/renderer.h \
            src/module.h \
            src/node.h \
            src/csgnode.h \
-           src/dxflinextrudenode.h \
-           src/dxfrotextrudenode.h \
+           src/linearextrudenode.h \
+           src/rotateextrudenode.h \
            src/projectionnode.h \
            src/cgaladvnode.h \
            src/importnode.h \
@@ -197,8 +197,8 @@ SOURCES += src/openscad.cc \
            src/dxftess-glu.cc \
            src/dxftess-cgal.cc \
            src/dxfdim.cc \
-           src/dxflinextrude.cc \
-           src/dxfrotextrude.cc \
+           src/linearextrude.cc \
+           src/rotateextrude.cc \
            src/highlighter.cc \
            src/printutils.cc \
            src/Preferences.cc \

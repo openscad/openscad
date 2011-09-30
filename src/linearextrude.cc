@@ -24,7 +24,7 @@
  *
  */
 
-#include "dxflinextrudenode.h"
+#include "linearextrudenode.h"
 
 #include "module.h"
 #include "context.h"
@@ -44,16 +44,16 @@ using namespace boost::assign; // bring 'operator+=()' into scope
 
 #include <QFileInfo>
 
-class DxfLinearExtrudeModule : public AbstractModule
+class LinearExtrudeModule : public AbstractModule
 {
 public:
-	DxfLinearExtrudeModule() { }
+	LinearExtrudeModule() { }
 	virtual AbstractNode *evaluate(const Context *ctx, const ModuleInstantiation *inst) const;
 };
 
-AbstractNode *DxfLinearExtrudeModule::evaluate(const Context *ctx, const ModuleInstantiation *inst) const
+AbstractNode *LinearExtrudeModule::evaluate(const Context *ctx, const ModuleInstantiation *inst) const
 {
-	DxfLinearExtrudeNode *node = new DxfLinearExtrudeNode(inst);
+	LinearExtrudeNode *node = new LinearExtrudeNode(inst);
 
 	std::vector<std::string> argnames;
 	argnames += "file", "layer", "height", "origin", "scale", "center", "twist", "slices";
@@ -120,11 +120,11 @@ AbstractNode *DxfLinearExtrudeModule::evaluate(const Context *ctx, const ModuleI
 
 void register_builtin_dxf_linear_extrude()
 {
-	builtin_modules["dxf_linear_extrude"] = new DxfLinearExtrudeModule();
-	builtin_modules["linear_extrude"] = new DxfLinearExtrudeModule();
+	builtin_modules["dxf_linear_extrude"] = new LinearExtrudeModule();
+	builtin_modules["linear_extrude"] = new LinearExtrudeModule();
 }
 
-PolySet *DxfLinearExtrudeNode::evaluate_polyset(PolySetEvaluator *evaluator) const
+PolySet *LinearExtrudeNode::evaluate_polyset(PolySetEvaluator *evaluator) const
 {
 	if (!evaluator) {
 		PRINTF("WARNING: No suitable PolySetEvaluator found for %s module!", this->name().c_str());
@@ -140,7 +140,7 @@ PolySet *DxfLinearExtrudeNode::evaluate_polyset(PolySetEvaluator *evaluator) con
 	return ps;
 }
 
-std::string DxfLinearExtrudeNode::toString() const
+std::string LinearExtrudeNode::toString() const
 {
 	std::stringstream stream;
 

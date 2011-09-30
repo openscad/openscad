@@ -1,13 +1,13 @@
-#ifndef DXFLINEXTRUDENODE_H_
-#define DXFLINEXTRUDENODE_H_
+#ifndef LINEAREXTRUDENODE_H_
+#define LINEAREXTRUDENODE_H_
 
 #include "node.h"
 #include "visitor.h"
 
-class DxfLinearExtrudeNode : public AbstractPolyNode
+class LinearExtrudeNode : public AbstractPolyNode
 {
 public:
-	DxfLinearExtrudeNode(const ModuleInstantiation *mi) : AbstractPolyNode(mi) {
+	LinearExtrudeNode(const ModuleInstantiation *mi) : AbstractPolyNode(mi) {
 		convexity = slices = 0;
 		fn = fs = fa = height = twist = 0;
 		origin_x = origin_y = scale = 0;

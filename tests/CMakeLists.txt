@@ -103,8 +103,8 @@ set(COMMON_SOURCES
   ../src/dxfdata.cc 
   ../src/dxftess.cc 
   ../src/dxfdim.cc 
-  ../src/dxflinextrude.cc 
-  ../src/dxfrotextrude.cc 
+  ../src/linearextrude.cc 
+  ../src/rotateextrude.cc 
   ../src/printutils.cc 
   ../src/progress.cc 
   ../src/nodedumper.cc 

@@ -24,7 +24,7 @@
  *
  */
 
-#include "dxfrotextrudenode.h"
+#include "rotateextrudenode.h"
 #include "module.h"
 #include "context.h"
 #include "printutils.h"
@@ -42,16 +42,16 @@ using namespace boost::assign; // bring 'operator+=()' into scope
 
 #include <QFileInfo>
 
-class DxfRotateExtrudeModule : public AbstractModule
+class RotateExtrudeModule : public AbstractModule
 {
 public:
-	DxfRotateExtrudeModule() { }
+	RotateExtrudeModule() { }
 	virtual AbstractNode *evaluate(const Context *ctx, const ModuleInstantiation *inst) const;
 };
 
-AbstractNode *DxfRotateExtrudeModule::evaluate(const Context *ctx, const ModuleInstantiation *inst) const
+AbstractNode *RotateExtrudeModule::evaluate(const Context *ctx, const ModuleInstantiation *inst) const
 {
-	DxfRotateExtrudeNode *node = new DxfRotateExtrudeNode(inst);
+	RotateExtrudeNode *node = new RotateExtrudeNode(inst);
 
 	std::vector<std::string> argnames;
 	argnames += "file", "layer", "origin", "scale";
@@ -96,11 +96,11 @@ AbstractNode *DxfRotateExtrudeModule::evaluate(const Context *ctx, const ModuleI
 
 void register_builtin_dxf_rotate_extrude()
 {
-	builtin_modules["dxf_rotate_extrude"] = new DxfRotateExtrudeModule();
-	builtin_modules["rotate_extrude"] = new DxfRotateExtrudeModule();
+	builtin_modules["dxf_rotate_extrude"] = new RotateExtrudeModule();
+	builtin_modules["rotate_extrude"] = new RotateExtrudeModule();
 }
 
-PolySet *DxfRotateExtrudeNode::evaluate_polyset(PolySetEvaluator *evaluator) const
+PolySet *RotateExtrudeNode::evaluate_polyset(PolySetEvaluator *evaluator) const
 {
 	if (!evaluator) {
 		PRINTF("WARNING: No suitable PolySetEvaluator found for %s module!", this->name().c_str());
@@ -116,7 +116,7 @@ PolySet *DxfRotateExtrudeNode::evaluate_polyset(PolySetEvaluator *evaluator) con
 	return ps;
 }
 
-std::string DxfRotateExtrudeNode::toString() const
+std::string RotateExtrudeNode::toString() const
 {
 	std::stringstream stream;
 

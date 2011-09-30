@@ -13,14 +13,14 @@ public:
 	PolySetCGALEvaluator(class CGALEvaluator &cgalevaluator);
 	virtual ~PolySetCGALEvaluator() { }
 	virtual PolySet *evaluatePolySet(const ProjectionNode &node);
-	virtual PolySet *evaluatePolySet(const DxfLinearExtrudeNode &node);
-	virtual PolySet *evaluatePolySet(const DxfRotateExtrudeNode &node);
+	virtual PolySet *evaluatePolySet(const LinearExtrudeNode &node);
+	virtual PolySet *evaluatePolySet(const RotateExtrudeNode &node);
 	virtual PolySet *evaluatePolySet(const CgaladvNode &node);
 	virtual PolySet *evaluatePolySet(const RenderNode &node);
 
 protected:
-	PolySet *extrudeDxfData(const DxfLinearExtrudeNode &node, class DxfData &dxf);
-	PolySet *rotateDxfData(const DxfRotateExtrudeNode &node, class DxfData &dxf);
+	PolySet *extrudeDxfData(const LinearExtrudeNode &node, class DxfData &dxf);
+	PolySet *rotateDxfData(const RotateExtrudeNode &node, class DxfData &dxf);
 
 	CGALEvaluator &cgalevaluator;
 };

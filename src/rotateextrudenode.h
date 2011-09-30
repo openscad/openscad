@@ -1,13 +1,13 @@
-#ifndef DXFROTEXTRUDENODE_H_
-#define DXFROTEXTRUDENODE_H_
+#ifndef ROTATEEXTRUDENODE_H_
+#define ROTATEEXTRUDENODE_H_
 
 #include "node.h"
 #include "visitor.h"
 
-class DxfRotateExtrudeNode : public AbstractPolyNode
+class RotateExtrudeNode : public AbstractPolyNode
 {
 public:
-	DxfRotateExtrudeNode(const ModuleInstantiation *mi) : AbstractPolyNode(mi) {
+	RotateExtrudeNode(const ModuleInstantiation *mi) : AbstractPolyNode(mi) {
 		convexity = 0;
 		fn = fs = fa = 0;
 		origin_x = origin_y = scale = 0;
