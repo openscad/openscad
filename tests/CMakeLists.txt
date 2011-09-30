@@ -213,6 +213,7 @@ LIST(APPEND CGALPNGTEST_FILES
             ${CMAKE_SOURCE_DIR}/../testdata/scad/features/cube-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/features/sphere-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/features/cylinder-tests.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/features/polyhedron-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/features/union-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/features/difference-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/features/intersection-tests.scad
