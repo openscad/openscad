@@ -120,12 +120,13 @@ build_cgal()
   echo "Building CGAL" $version "..."
   cd $BASEDIR/src
   rm -rf CGAL*
-  curl -O https://gforge.inria.fr/frs/download.php/28500/CGAL-$version.tar.gz
+  curl -O https://gforge.inria.fr/frs/download.php/29125/CGAL-$version.tar.gz
+#  curl -O https://gforge.inria.fr/frs/download.php/28500/CGAL-$version.tar.gz
 #  curl -O https://gforge.inria.fr/frs/download.php/27641/CGAL-$version.tar.gz
   tar xzf CGAL-$version.tar.gz
   cd CGAL-$version
   # We build a static lib. Not really necessary, but it's well tested.
-  cmake -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR -DBUILD_SHARED_LIBS=FALSE -DCMAKE_OSX_DEPLOYMENT_TARGET="10.5" -DCMAKE_OSX_ARCHITECTURES="i386;x86_64" -DBOOST_ROOT=$DEPLOYDIR
+  cmake -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR -DGMP_INCLUDE_DIR=$DEPLOYDIR/include -DGMP_LIBRARIES=$DEPLOYDIR/lib/libgmp.dylib -DGMPXX_INCLUDE_DIR=$DEPLOYDIR/include -DMPFR_INCLUDE_DIR=$DEPLOYDIR/include -DMPFR_LIBRARIES=$DEPLOYDIR/lib/libmpfr.dylib -DWITH_CGAL_Qt3=OFF -DWITH_CGAL_Qt4=OFF -DWITH_CGAL_ImageIO=OFF -DBUILD_SHARED_LIBS=FALSE -DCMAKE_OSX_DEPLOYMENT_TARGET="10.5" -DCMAKE_OSX_ARCHITECTURES="i386;x86_64" -DBOOST_ROOT=$DEPLOYDIR
   make -j4
   make install
 }
@@ -165,6 +166,6 @@ build_gmp 5.0.1
 build_mpfr 3.0.1
 build_boost 1.47.0
 # NB! For CGAL, also update the actual download URL in the function
-build_cgal 3.8
+build_cgal 3.9
 build_glew 1.6.0
 build_opencsg 1.3.0

@@ -349,6 +349,14 @@ Value builtin_lookup(const Context *, const std::vector<std::string>&, const std
 	return Value(high_v * f + low_v * (1-f));
 }
 
+#define QUOTE(x__) # x__
+#define QUOTED(x__) QUOTE(x__)
+
+Value builtin_version(const Context *, const std::vector<std::string>&, const std::vector<Value> &)
+{
+	return Value(std::string(QUOTED(OPENSCAD_VERSION)));
+}
+
 void initialize_builtin_functions()
 {
 	builtin_functions["abs"] = new BuiltinFunction(&builtin_abs);
@@ -373,6 +381,7 @@ void initialize_builtin_functions()
 	builtin_functions["ln"] = new BuiltinFunction(&builtin_ln);
 	builtin_functions["str"] = new BuiltinFunction(&builtin_str);
 	builtin_functions["lookup"] = new BuiltinFunction(&builtin_lookup);
+	builtin_functions["version"] = new BuiltinFunction(&builtin_version);
 	initialize_builtin_dxf_dim();
 }
 

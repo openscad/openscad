@@ -11,7 +11,7 @@
 // This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
 // WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 //
-// $URL: svn+ssh://scm.gforge.inria.fr/svn/cgal/branches/CGAL-3.7-branch/Nef_3/include/CGAL/Nef_3/OGL_helper.h $
+// $URL: svn+ssh://scm.gforge.inria.fr/svn/cgal/trunk/Nef_3/include/CGAL/Nef_3/OGL_helper.h $
 // $Id: OGL_helper.h 56667 2010-06-09 07:37:13Z sloriot $
 // 
 //
@@ -246,18 +246,19 @@ namespace OGL {
   inline void CGAL_GLU_TESS_CALLBACK combineCallback(GLdouble coords[3], GLvoid *[4], GLfloat [4], GLvoid **dataOut)
   { static std::list<GLdouble*> pcache;
     if (dataOut) {
-        GLdouble *n = new GLdouble[3];
-        n[0] = coords[0];
-        n[1] = coords[1];
-        n[2] = coords[2];
-        pcache.push_back(n);
-        *dataOut = n;
+      GLdouble *n = new GLdouble[3];
+      n[0] = coords[0];
+      n[1] = coords[1];
+      n[2] = coords[2];
+      pcache.push_back(n);
+      *dataOut = n;
     } else {
-        for (std::list<GLdouble*>::const_iterator i = pcache.begin(); i != pcache.end(); i++)
-            delete[] *i;
-        pcache.clear();
+      for (std::list<GLdouble*>::const_iterator i = pcache.begin(); i != pcache.end(); i++)
+        delete[] *i;
+      pcache.clear();
     }
   }
+
 
  enum { SNC_AXES};
  enum { SNC_BOUNDARY, SNC_SKELETON };

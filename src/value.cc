@@ -193,6 +193,9 @@ Value Value::operator < (const Value &v) const
 	if (this->type == NUMBER && v.type == NUMBER) {
 		return Value(this->num < v.num);
 	}
+	else if (this->type == STRING && v.type == STRING) {
+		return Value(this->text < v.text);
+	}
 	return Value();
 }
 
@@ -200,6 +203,9 @@ Value Value::operator <= (const Value &v) const
 {
 	if (this->type == NUMBER && v.type == NUMBER) {
 		return Value(this->num <= v.num);
+	}
+	else if (this->type == STRING && v.type == STRING) {
+		return Value(this->text <= v.text);
 	}
 	return Value();
 }
@@ -240,6 +246,9 @@ Value Value::operator >= (const Value &v) const
 	if (this->type == NUMBER && v.type == NUMBER) {
 		return Value(this->num >= v.num);
 	}
+	else if (this->type == STRING && v.type == STRING) {
+		return Value(this->text >= v.text);
+	}
 	return Value();
 }
 
@@ -247,6 +256,9 @@ Value Value::operator > (const Value &v) const
 {
 	if (this->type == NUMBER && v.type == NUMBER) {
 		return Value(this->num > v.num);
+	}
+	else if (this->type == STRING && v.type == STRING) {
+		return Value(this->text > v.text);
 	}
 	return Value();
 }

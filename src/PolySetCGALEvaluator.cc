@@ -4,8 +4,8 @@
 #include "polyset.h"
 #include "CGALEvaluator.h"
 #include "projectionnode.h"
-#include "dxflinextrudenode.h"
-#include "dxfrotextrudenode.h"
+#include "linearextrudenode.h"
+#include "rotateextrudenode.h"
 #include "cgaladvnode.h"
 #include "rendernode.h"
 #include "dxfdata.h"
@@ -251,7 +251,7 @@ static void add_slice(PolySet *ps, const DxfData &dxf, DxfData::Path &path, doub
 	}
 }
 
-PolySet *PolySetCGALEvaluator::evaluatePolySet(const DxfLinearExtrudeNode &node)
+PolySet *PolySetCGALEvaluator::evaluatePolySet(const LinearExtrudeNode &node)
 {
 	DxfData *dxf;
 
@@ -283,7 +283,7 @@ PolySet *PolySetCGALEvaluator::evaluatePolySet(const DxfLinearExtrudeNode &node)
 	return ps;
 }
 
-PolySet *PolySetCGALEvaluator::extrudeDxfData(const DxfLinearExtrudeNode &node, DxfData &dxf)
+PolySet *PolySetCGALEvaluator::extrudeDxfData(const LinearExtrudeNode &node, DxfData &dxf)
 {
 	PolySet *ps = new PolySet();
 	ps->convexity = node.convexity;
@@ -349,7 +349,7 @@ PolySet *PolySetCGALEvaluator::extrudeDxfData(const DxfLinearExtrudeNode &node, 
 	return ps;
 }
 
-PolySet *PolySetCGALEvaluator::evaluatePolySet(const DxfRotateExtrudeNode &node)
+PolySet *PolySetCGALEvaluator::evaluatePolySet(const RotateExtrudeNode &node)
 {
 	DxfData *dxf;
 
@@ -398,7 +398,7 @@ PolySet *PolySetCGALEvaluator::evaluatePolySet(const RenderNode &node)
 	return ps;
 }
 
-PolySet *PolySetCGALEvaluator::rotateDxfData(const DxfRotateExtrudeNode &node, DxfData &dxf)
+PolySet *PolySetCGALEvaluator::rotateDxfData(const RotateExtrudeNode &node, DxfData &dxf)
 {
 	PolySet *ps = new PolySet();
 	ps->convexity = node.convexity;

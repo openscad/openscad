@@ -22,10 +22,10 @@ public:
   virtual Response visit(class State &state, const class CsgNode &node) {
 		return visit(state, (const class AbstractNode &)node);
 	}
-  virtual Response visit(class State &state, const class DxfLinearExtrudeNode &node) {
+  virtual Response visit(class State &state, const class LinearExtrudeNode &node) {
 		return visit(state, (const class AbstractPolyNode &)node);
 	}
-  virtual Response visit(class State &state, const class DxfRotateExtrudeNode &node) {
+  virtual Response visit(class State &state, const class RotateExtrudeNode &node) {
 		return visit(state, (const class AbstractPolyNode &)node);
 	}
   virtual Response visit(class State &state, const class ImportNode &node) {

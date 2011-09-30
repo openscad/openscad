@@ -120,8 +120,8 @@ set(COMMON_SOURCES
   ../src/dxfdata.cc 
   ../src/dxftess.cc 
   ../src/dxfdim.cc 
-  ../src/dxflinextrude.cc 
-  ../src/dxfrotextrude.cc 
+  ../src/linearextrude.cc 
+  ../src/rotateextrude.cc 
   ../src/printutils.cc 
   ../src/progress.cc 
   ../src/nodedumper.cc 
@@ -261,6 +261,7 @@ LIST(APPEND CGALPNGTEST_FILES
             ${CMAKE_SOURCE_DIR}/../testdata/scad/features/cube-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/features/sphere-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/features/cylinder-tests.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/features/polyhedron-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/features/union-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/features/difference-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/features/intersection-tests.scad
