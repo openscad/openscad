@@ -193,6 +193,7 @@ enable_testing()
 file(GLOB MINIMAL_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/minimal/*.scad)
 file(GLOB FEATURES_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/features/*.scad)
 file(GLOB BUGS_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/*.scad)
+file(GLOB SCAD_DXF_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/dxf/*.scad)
 
 # Add dumptest tests to CTest
 add_cmdline_test(dumptest txt ${MINIMAL_FILES})
@@ -239,6 +240,7 @@ LIST(APPEND CGALPNGTEST_FILES
             ${CMAKE_SOURCE_DIR}/../testdata/scad/features/include-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/features/child-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/features/ifelse-tests.scad)
+LIST(APPEND CGALPNGTEST_FILES ${SCAD_DXF_FILES})
 #LIST(APPEND CGALPNGTEST_FILES ${CMAKE_SOURCE_DIR}/../examples/example001.scad)
 add_cmdline_test(cgalpngtest png ${CGALPNGTEST_FILES})
 
@@ -247,6 +249,7 @@ LIST(APPEND OPENCSGTEST_FILES ${CGALPNGTEST_FILES})
 LIST(APPEND OPENCSGTEST_FILES 
             ${CMAKE_SOURCE_DIR}/../testdata/scad/features/highlight-and-background-modifier.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/features/child-background.scad)
+LIST(APPEND OPENCSGTEST_FILES ${SCAD_DXF_FILES})
 add_cmdline_test(opencsgtest png ${OPENCSGTEST_FILES})
 
 # Add dxfexport tests to CTest
