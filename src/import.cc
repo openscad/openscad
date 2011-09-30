@@ -228,7 +228,6 @@ std::string ImportNode::toString() const
 {
 	std::stringstream stream;
 
-	QString text;
 	struct stat st;
 	memset(&st, 0, sizeof(struct stat));
 	stat(this->filename.c_str(), &st);
