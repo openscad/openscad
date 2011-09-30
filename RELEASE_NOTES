@@ -16,6 +16,8 @@ Bugfixes:
 o square() crashed if any of the dimensions were zero
 o Flush Caches didn't flush cached USE'd modules
 o STL export should be a bit more robust
+o Dropping a file into the editor under Windows didn't work (double C:/C:/ problem)
+
 
 Deprecations:
 o dxf_linear_extrude() and dxf_rotate_extrude() are now deprecated.
