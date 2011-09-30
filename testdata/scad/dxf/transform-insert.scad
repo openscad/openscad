@@ -1,1 +1,1 @@
-import_dxf("../../dxf/transform-insert.dxf");
+import("../../dxf/transform-insert.dxf");
