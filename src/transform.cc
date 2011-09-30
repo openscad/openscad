@@ -27,13 +27,8 @@
 #include "transformnode.h"
 #include "module.h"
 #include "context.h"
-#include "dxfdata.h"
-#include "csgterm.h"
 #include "polyset.h"
-#include "dxftess.h"
 #include "builtin.h"
-#include "printutils.h"
-#include "visitor.h"
 #include <sstream>
 #include <vector>
 #include <assert.h>
