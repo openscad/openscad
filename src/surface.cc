@@ -29,7 +29,6 @@
 #include "polyset.h"
 #include "context.h"
 #include "builtin.h"
-#include "dxftess.h"
 #include "printutils.h"
 #include "handle_dep.h" // handle_dep()
 #include "visitor.h"

@@ -86,8 +86,8 @@ Response CSGTermEvaluator::visit(State &state, const AbstractIntersectionNode &n
 }
 
 static CSGTerm *evaluate_csg_term_from_ps(const State &state, 
-																					vector<CSGTerm*> &highlights, 
-																					vector<CSGTerm*> &background, 
+																					std::vector<CSGTerm*> &highlights, 
+																					std::vector<CSGTerm*> &background, 
 																					const shared_ptr<PolySet> &ps, 
 																					const ModuleInstantiation *modinst, 
 																					const AbstractNode &node)

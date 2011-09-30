@@ -26,7 +26,6 @@
 
 #ifdef ENABLE_CGAL
 
-#include "node.h"
 #include "printutils.h"
 #include "grid.h"
 #include "cgal.h"

@@ -32,7 +32,6 @@
 #include "dxftess.h"
 #include "builtin.h"
 #include "printutils.h"
-#include <assert.h>
 #include "visitor.h"
 #include <sstream>
 #include <assert.h>

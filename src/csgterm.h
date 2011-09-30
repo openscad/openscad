@@ -3,8 +3,10 @@
 
 #include <string>
 #include <vector>
-#include "polyset.h"
 #include "memory.h"
+#include "linalg.h"
+
+class PolySet;
 
 class CSGTerm
 {

@@ -26,7 +26,6 @@
 #include "myqhash.h"
 #include "PolySetEvaluator.h"
 #include "CSGTermEvaluator.h"
-#include "CSGTextCache.h"
 #include "openscad.h"
 #include "handle_dep.h"
 #include "node.h"
@@ -144,8 +143,8 @@ int main(int argc, char **argv)
 
 //	cout << tree.getString(*root_node) << "\n";
 
-	vector<CSGTerm*> highlights;
-	vector<CSGTerm*> background;
+	std::vector<CSGTerm*> highlights;
+	std::vector<CSGTerm*> background;
 	PolySetEvaluator psevaluator(tree);
 	CSGTermEvaluator evaluator(tree, &psevaluator);
 	CSGTerm *root_term = evaluator.evaluateCSGTerm(*root_node, highlights, background);

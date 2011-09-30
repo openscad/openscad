@@ -1,14 +1,10 @@
 #ifndef POLYSET_H_
 #define POLYSET_H_
 
-#include <GL/glew.h>
+#include "system-gl.h"
 #include "grid.h"
+#include "linalg.h"
 #include <vector>
-#include <Eigen/Core>
-#include <Eigen/Geometry>
-
-using Eigen::Vector3d;
-typedef Eigen::AlignedBox<double, 3> BoundingBox;
 
 class PolySet
 {

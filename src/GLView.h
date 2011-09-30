@@ -1,11 +1,7 @@
 #ifndef GLVIEW_H_
 #define GLVIEW_H_
 
-#ifdef ENABLE_OPENCSG
-// this must be included before the GL headers
-#  include <GL/glew.h>
-#endif
-
+#include "system-gl.h"
 #include <QGLWidget>
 #include <QLabel>
 

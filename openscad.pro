@@ -166,6 +166,8 @@ HEADERS += src/renderer.h \
            src/Tree.h \
            src/mathc99.h \
            src/memory.h \
+           src/linalg.h \
+           src/system-gl.h \
            src/stl-utils.h
 
 SOURCES += src/openscad.cc \

@@ -3,7 +3,6 @@
 
 #include <vector>
 #include <string>
-
 #include "traverser.h"
 
 extern int progress_report_count;

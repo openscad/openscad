@@ -6,9 +6,7 @@
 #include "openscad.h"
 #include "context.h"
 #include "module.h"
-#include "polyset.h"
 #include "Tree.h"
-#include <QPointer>
 #include <vector>
 
 class MainWindow : public QMainWindow, public Ui::MainWindow

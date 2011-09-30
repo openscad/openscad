@@ -29,7 +29,6 @@
 #include "module.h"
 #include "csgterm.h"
 #include "builtin.h"
-#include "printutils.h"
 #include <sstream>
 #include <assert.h>
 

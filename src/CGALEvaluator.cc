@@ -11,6 +11,7 @@
 #include "polyset.h"
 #include "dxfdata.h"
 #include "dxftess.h"
+#include "Tree.h"
 
 #include "CGALCache.h"
 #include "cgal.h"

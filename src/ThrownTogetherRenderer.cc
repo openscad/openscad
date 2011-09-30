@@ -28,8 +28,7 @@
 #include "polyset.h"
 #include "csgterm.h"
 
-#include <GL/glew.h> // this must be included before the GL headers
-#include <qgl.h>
+#include "system-gl.h"
 
 ThrownTogetherRenderer::ThrownTogetherRenderer(CSGChain *root_chain, 
 																							 CSGChain *highlights_chain,

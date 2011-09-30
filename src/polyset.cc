@@ -25,7 +25,6 @@
  */
 
 #include "polyset.h"
-#include "printutils.h"
 // FIXME: Reenable/rewrite - don't be dependant on GUI
 // #include "Preferences.h"
 #ifdef ENABLE_CGAL
