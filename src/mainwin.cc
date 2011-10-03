@@ -99,8 +99,7 @@ unsigned int GuiLocker::gui_locked = 0;
 #define QUOTED(x__) QUOTE(x__)
 
 static char helptitle[] =
-	"OpenSCAD " QUOTED(OPENSCAD_VERSION) " (www.openscad.org)\n"
-	"Visitor refactored version\n";
+	"OpenSCAD " QUOTED(OPENSCAD_VERSION) " (www.openscad.org)\n\n";
 static char copyrighttext[] =
 	"Copyright (C) 2009-2011 Marius Kintel <marius@kintel.net> and Clifford Wolf <clifford@clifford.at>\n"
 	"\n"
@@ -1071,12 +1070,14 @@ void MainWindow::pasteViewportRotation()
 
 void MainWindow::checkAutoReload()
 {
-	QString new_stinfo;
-	QFileInfo finfo(this->fileName);
-	new_stinfo = QString::number(finfo.size()) + QString::number(finfo.lastModified().toTime_t());
-	if (new_stinfo != autoReloadInfo)
-		actionReloadCompile();
-	autoReloadInfo = new_stinfo;
+	if (!this->fileName.isEmpty()) {
+		QString new_stinfo;
+		QFileInfo finfo(this->fileName);
+		new_stinfo = QString::number(finfo.size()) + QString::number(finfo.lastModified().toTime_t());
+		if (new_stinfo != autoReloadInfo)
+			actionReloadCompile();
+		autoReloadInfo = new_stinfo;
+	}
 }
 
 void MainWindow::autoReloadSet(bool on)
