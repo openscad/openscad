@@ -76,7 +76,7 @@ set_source_files_properties(${CMAKE_CURRENT_BINARY_DIR}/parser_yacc.c PROPERTIES
 # Internal includes
 include_directories(../src)
 
-add_definitions(-DOPENSCAD_VERSION=test)
+add_definitions(-DOPENSCAD_VERSION=test -DOPENSCAD_YEAR=2011 -DOPENSCAD_MONTH=10)
 
 set(COMMON_SOURCES
   ../src/handle_dep.cc 
