@@ -2,6 +2,7 @@
 #include "PolySetEvaluator.h"
 #include "printutils.h"
 #include "polyset.h"
+#include "Tree.h"
 
 /*!
 	The task of PolySetEvaluator is to create, keep track of and cache PolySet instances.

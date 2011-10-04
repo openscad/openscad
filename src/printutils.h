@@ -5,7 +5,6 @@
 #include <QList>
 #include <iostream>
 #include <QFileInfo>
-#include <QDateTime>
 
 typedef void (OutputHandlerFunc)(const QString &msg, void *userdata);
 extern OutputHandlerFunc *outputhandler;

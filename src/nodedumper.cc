@@ -1,13 +1,8 @@
 #include "nodedumper.h"
-#include <string>
-#include <map>
-#include <list>
-#include "visitor.h"
 #include "state.h"
-#include "nodecache.h"
 
+#include <string>
 #include <sstream>
-#include <iostream>
 #include <assert.h>
 
 /*!
@@ -42,7 +37,7 @@ void NodeDumper::handleIndent(const State &state)
 	including braces and indentation.
 	All children are assumed to be cached already.
  */
-string NodeDumper::dumpChildren(const AbstractNode &node)
+std::string NodeDumper::dumpChildren(const AbstractNode &node)
 {
 	std::stringstream dump;
 	if (!this->visitedchildren[node.index()].empty()) {

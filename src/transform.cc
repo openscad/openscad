@@ -27,13 +27,8 @@
 #include "transformnode.h"
 #include "module.h"
 #include "context.h"
-#include "dxfdata.h"
-#include "csgterm.h"
 #include "polyset.h"
-#include "dxftess.h"
 #include "builtin.h"
-#include "printutils.h"
-#include "visitor.h"
 #include <sstream>
 #include <vector>
 #include <assert.h>
@@ -60,8 +55,7 @@ AbstractNode *TransformModule::evaluate(const Context *ctx, const ModuleInstanti
 {
 	TransformNode *node = new TransformNode(inst);
 
-	for (int i = 0; i < 16; i++)
-		node->matrix[i] = i % 5 == 0 ? 1.0 : 0.0;
+	node->matrix = Transform3d::Identity();
 
 	std::vector<std::string> argnames;
 	std::vector<Expression*> argexpr;
@@ -91,82 +85,50 @@ AbstractNode *TransformModule::evaluate(const Context *ctx, const ModuleInstanti
 
 	if (this->type == SCALE)
 	{
+		Vector3d scalevec(1,1,1);
 		Value v = c.lookup_variable("v");
-		v.getnum(node->matrix[0]);
-		v.getnum(node->matrix[5]);
-		v.getnum(node->matrix[10]);
-		v.getv3(node->matrix[0], node->matrix[5], node->matrix[10]);
-		if (node->matrix[10] <= 0)
-			node->matrix[10] = 1;
+		v.getnum(scalevec[0]);
+		v.getnum(scalevec[1]);
+		v.getnum(scalevec[2]);
+		v.getv3(scalevec[0], scalevec[1], scalevec[2]);
+		if (scalevec[2] == 0) scalevec[2] = 1;
+		node->matrix.scale(scalevec);
 	}
 	else if (this->type == ROTATE)
 	{
 		Value val_a = c.lookup_variable("a");
 		if (val_a.type == Value::VECTOR)
 		{
-			for (size_t i = 0; i < 3 && i < val_a.vec.size(); i++) {
-				double a;
-				val_a.vec[i]->getnum(a);
-				double c = cos(a*M_PI/180.0);
-				double s = sin(a*M_PI/180.0);
-				double x = i == 0, y = i == 1, z = i == 2;
-				double mr[16] = {
-					x*x*(1-c)+c,
-					y*x*(1-c)+z*s,
-					z*x*(1-c)-y*s,
-					0,
-					x*y*(1-c)-z*s,
-					y*y*(1-c)+c,
-					z*y*(1-c)+x*s,
-					0,
-					x*z*(1-c)+y*s,
-					y*z*(1-c)-x*s,
-					z*z*(1-c)+c,
-					0,
-					0, 0, 0, 1
-				};
-				double m[16];
-				for (int x = 0; x < 4; x++)
-				for (int y = 0; y < 4; y++)
-				{
-					m[x+y*4] = 0;
-					for (int i = 0; i < 4; i++)
-						m[x+y*4] += node->matrix[i+y*4] * mr[x+i*4];
-				}
-				for (int i = 0; i < 16; i++)
-					node->matrix[i] = m[i];
+			Eigen::AngleAxisd rotx, roty, rotz;
+			double a;
+			if (val_a.vec.size() > 0) {
+				val_a.vec[0]->getnum(a);
+				rotx = Eigen::AngleAxisd(a*M_PI/180, Vector3d::UnitX());
 			}
+			if (val_a.vec.size() > 1) {
+				val_a.vec[1]->getnum(a);
+				roty = Eigen::AngleAxisd(a*M_PI/180, Vector3d::UnitY());
+			}
+			if (val_a.vec.size() > 2) {
+				val_a.vec[2]->getnum(a);
+				rotz = Eigen::AngleAxisd(a*M_PI/180, Vector3d::UnitZ());
+			}
+			node->matrix.rotate(rotz * roty * rotx);
 		}
 		else
 		{
 			Value val_v = c.lookup_variable("v");
-			double a = 0, x = 0, y = 0, z = 1;
+			double a = 0;
 
 			val_a.getnum(a);
 
-			if (val_v.getv3(x, y, z)) {
-				if (x != 0.0 || y != 0.0 || z != 0.0) {
-					double sn = 1.0 / sqrt(x*x + y*y + z*z);
-					x *= sn, y *= sn, z *= sn;
-				}
+			Vector3d axis(0,0,1);
+			if (val_v.getv3(axis[0], axis[1], axis[2])) {
+				if (axis.squaredNorm() > 0) axis.normalize();
 			}
 
-			if (x != 0.0 || y != 0.0 || z != 0.0)
-			{
-				double c = cos(a*M_PI/180.0);
-				double s = sin(a*M_PI/180.0);
-
-				node->matrix[ 0] = x*x*(1-c)+c;
-				node->matrix[ 1] = y*x*(1-c)+z*s;
-				node->matrix[ 2] = z*x*(1-c)-y*s;
-
-				node->matrix[ 4] = x*y*(1-c)-z*s;
-				node->matrix[ 5] = y*y*(1-c)+c;
-				node->matrix[ 6] = z*y*(1-c)+x*s;
-
-				node->matrix[ 8] = x*z*(1-c)+y*s;
-				node->matrix[ 9] = y*z*(1-c)-x*s;
-				node->matrix[10] = z*z*(1-c)+c;
+			if (axis.squaredNorm() > 0) {
+				node->matrix = Eigen::AngleAxisd(a*M_PI/180, axis);
 			}
 		}
 	}
@@ -184,23 +146,20 @@ AbstractNode *TransformModule::evaluate(const Context *ctx, const ModuleInstanti
 
 		if (x != 0.0 || y != 0.0 || z != 0.0)
 		{
-			node->matrix[ 0] = 1-2*x*x;
-			node->matrix[ 1] = -2*y*x;
-			node->matrix[ 2] = -2*z*x;
-
-			node->matrix[ 4] = -2*x*y;
-			node->matrix[ 5] = 1-2*y*y;
-			node->matrix[ 6] = -2*z*y;
-
-			node->matrix[ 8] = -2*x*z;
-			node->matrix[ 9] = -2*y*z;
-			node->matrix[10] = 1-2*z*z;
+			Eigen::Matrix4d m;
+			m << 1-2*x*x, -2*y*x, -2*z*x, 0,
+				-2*x*y, 1-2*y*y, -2*z*y, 0,
+				-2*x*z, -2*y*z, 1-2*z*z, 0,
+				0, 0, 0, 1;
+			node->matrix = m;
 		}
 	}
 	else if (this->type == TRANSLATE)
 	{
 		Value v = c.lookup_variable("v");
-		v.getv3(node->matrix[12], node->matrix[13], node->matrix[14]);
+		Vector3d translatevec(0,0,0);
+		v.getv3(translatevec[0], translatevec[1], translatevec[2]);
+		node->matrix.translate(translatevec);
 	}
 	else if (this->type == MULTMATRIX)
 	{
@@ -209,7 +168,7 @@ AbstractNode *TransformModule::evaluate(const Context *ctx, const ModuleInstanti
 			for (int i = 0; i < 16; i++) {
 				size_t x = i / 4, y = i % 4;
 				if (y < v.vec.size() && v.vec[y]->type == Value::VECTOR && x < v.vec[y]->vec.size())
-					v.vec[y]->vec[x]->getnum(node->matrix[i]);
+					v.vec[y]->vec[x]->getnum(node->matrix(y, x));
 			}
 		}
 	}
@@ -229,7 +188,7 @@ std::string TransformNode::toString() const
 		stream << "[";
 		for (int i=0;i<4;i++) {
 			// FIXME: The 0 test is to avoid a leading minus before a single 0 (cosmetics)
-			stream << ((this->matrix[i*4+j]==0)?0:this->matrix[i*4+j]);
+			stream << ((this->matrix(j, i)==0)?0:this->matrix(j, i));
 			if (i != 3) stream << ", ";
 		}
 		stream << "]";

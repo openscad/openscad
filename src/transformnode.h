@@ -3,6 +3,7 @@
 
 #include "node.h"
 #include "visitor.h"
+#include "linalg.h"
 
 class TransformNode : public AbstractNode
 {
@@ -14,7 +15,7 @@ public:
 	virtual std::string toString() const;
 	virtual std::string name() const;
 
-	double matrix[16];
+	Transform3d matrix;
 };
 
 #endif

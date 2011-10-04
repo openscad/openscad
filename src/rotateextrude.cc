@@ -30,8 +30,6 @@
 #include "printutils.h"
 #include "builtin.h"
 #include "polyset.h"
-#include "dxfdata.h"
-#include "progress.h"
 #include "visitor.h"
 #include "PolySetEvaluator.h"
 #include "openscad.h" // get_fragments_from_r()

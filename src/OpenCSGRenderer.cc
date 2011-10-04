@@ -24,7 +24,7 @@
  *
  */
 
-#include <GL/glew.h>
+#include "system-gl.h"
 #include "OpenCSGRenderer.h"
 #include "polyset.h"
 #include "csgterm.h"
@@ -39,11 +39,11 @@ public:
 	OpenCSGPrim(OpenCSG::Operation operation, unsigned int convexity) :
 			OpenCSG::Primitive(operation, convexity) { }
 	shared_ptr<PolySet> ps;
-	double *m;
+	Transform3d m;
 	int csgmode;
 	virtual void render() {
 		glPushMatrix();
-		glMultMatrixd(m);
+		glMultMatrixd(m.data());
 		ps->render_surface(PolySet::COLORMODE_NONE, PolySet::csgmode_e(csgmode), m);
 		glPopMatrix();
 	}
@@ -85,10 +85,10 @@ void OpenCSGRenderer::renderCSGChain(CSGChain *chain, GLint *shaderinfo,
 			}
 			if (shaderinfo) glUseProgram(shaderinfo[0]);
 			for (; j < i; j++) {
-				double *m = chain->matrices[j];
+				const Transform3d &m = chain->matrices[j];
 				double *c = chain->colors[j];
 				glPushMatrix();
-				glMultMatrixd(m);
+				glMultMatrixd(m.data());
 				int csgmode = chain->types[j] == CSGTerm::TYPE_DIFFERENCE ? PolySet::CSGMODE_DIFFERENCE : PolySet::CSGMODE_NORMAL;
 				if (highlight) {
 					chain->polysets[j]->render_surface(PolySet::COLORMODE_HIGHLIGHT, PolySet::csgmode_e(csgmode + 20), m, shaderinfo);

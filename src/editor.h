@@ -22,7 +22,7 @@ public slots:
 	//void zoomOut() { zoom(-1); } 
 	void zoomOut(int n = 1) { zoom(-n); } 
 #else
-	Editor(QWidget *parent) : QTextEdit(parent) {}
+	Editor(QWidget *parent) : QTextEdit(parent) { setAcceptRichText(false); }
 public slots:
 	void setLineWrapping(bool on) { if(on) setWordWrapMode(QTextOption::WrapAnywhere); }
 	void setContentModified(bool y) { document()->setModified(y); }

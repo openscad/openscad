@@ -29,18 +29,8 @@
 #include "context.h"
 #include "printutils.h"
 #include "builtin.h"
-#include "dxfdata.h"
-#include "dxftess.h"
-#include "polyset.h"
-#include "export.h"
-#include "progress.h"
 #include "visitor.h"
 #include "PolySetEvaluator.h"
-
-#ifdef ENABLE_CGAL
-#  include <CGAL/assertions_behaviour.h>
-#  include <CGAL/exceptions.h>
-#endif
 
 #include <assert.h>
 #include <sstream>

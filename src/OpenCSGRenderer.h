@@ -2,8 +2,7 @@
 #define OPENCSGRENDERER_H_
 
 #include "renderer.h"
-#include <GL/glew.h> // this must be included before the GL headers
-#include <qgl.h>
+#include "system-gl.h"
 
 class OpenCSGRenderer : public Renderer
 {

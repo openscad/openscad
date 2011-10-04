@@ -28,7 +28,6 @@
 #include "module.h"
 #include "context.h"
 #include "builtin.h"
-#include "printutils.h"
 #include "PolySetEvaluator.h"
 #include <sstream>
 #include <assert.h>

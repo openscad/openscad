@@ -86,8 +86,8 @@ Response CSGTermEvaluator::visit(State &state, const AbstractIntersectionNode &n
 }
 
 static CSGTerm *evaluate_csg_term_from_ps(const State &state, 
-																					vector<CSGTerm*> &highlights, 
-																					vector<CSGTerm*> &background, 
+																					std::vector<CSGTerm*> &highlights, 
+																					std::vector<CSGTerm*> &background, 
 																					const shared_ptr<PolySet> &ps, 
 																					const ModuleInstantiation *modinst, 
 																					const AbstractNode &node)
@@ -147,18 +147,7 @@ Response CSGTermEvaluator::visit(State &state, const CsgNode &node)
 Response CSGTermEvaluator::visit(State &state, const TransformNode &node)
 {
 	if (state.isPrefix()) {
-		double m[16];
-		
-		for (int i = 0; i < 16; i++)
-		{
-			int c_row = i%4;
-			int m_col = i/4;
-			m[i] = 0;
-			for (int j = 0; j < 4; j++) {
-				m[i] += state.matrix()[c_row + j*4] * node.matrix[m_col*4 + j];
-			}
-		}
-		state.setMatrix(m);
+		state.setMatrix(state.matrix() * node.matrix);
 	}
 	if (state.isPostfix()) {
 		applyToChildren(node, CSGT_UNION);

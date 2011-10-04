@@ -1,19 +1,10 @@
 #ifndef POLYSET_H_
 #define POLYSET_H_
 
-#ifndef __APPLE__
-#define EIGEN_DONT_VECTORIZE 1
-#define EIGEN_DISABLE_UNALIGNED_ARRAY_ASSERT 1
-#endif
-
-#include <GL/glew.h>
+#include "system-gl.h"
 #include "grid.h"
-#include <Eigen/Core>
-#include <Eigen/Geometry>
+#include "linalg.h"
 #include <vector>
-
-using Eigen::Vector3d;
-typedef Eigen::AlignedBox<double, 3> BoundingBox;
 
 class PolySet
 {
@@ -54,7 +45,7 @@ public:
 		CSGMODE_HIGHLIGHT_DIFFERENCE = 22
 	};
 
-	void render_surface(colormode_e colormode, csgmode_e csgmode, double *m, GLint *shaderinfo = NULL) const;
+	void render_surface(colormode_e colormode, csgmode_e csgmode, const Transform3d &m, GLint *shaderinfo = NULL) const;
 	void render_edges(colormode_e colormode, csgmode_e csgmode) const;
 };
 

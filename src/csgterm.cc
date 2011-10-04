@@ -47,10 +47,10 @@
  */
 
 
-CSGTerm::CSGTerm(const shared_ptr<PolySet> &polyset, const double matrix[16], const double color[4], const std::string &label)
+CSGTerm::CSGTerm(const shared_ptr<PolySet> &polyset, const Transform3d &matrix, const double color[4], const std::string &label)
 	: type(TYPE_PRIMITIVE), polyset(polyset), label(label), left(NULL), right(NULL)
 {
-	for (int i = 0; i < 16; i++) this->m[i] = matrix[i];
+	this->m = matrix;
 	for (int i = 0; i < 4; i++) this->color[i] = color[i];
 	refcounter = 1;
 }
@@ -188,7 +188,7 @@ CSGChain::CSGChain()
 {
 }
 
-void CSGChain::add(const shared_ptr<PolySet> &polyset, double *m, double *color, CSGTerm::type_e type, std::string label)
+void CSGChain::add(const shared_ptr<PolySet> &polyset, const Transform3d &m, double *color, CSGTerm::type_e type, std::string label)
 {
 	polysets.push_back(polyset);
 	matrices.push_back(m);
@@ -256,11 +256,7 @@ BoundingBox CSGChain::getBoundingBox() const
 			if (!psbox.isNull()) {
 				Eigen::Transform3d t;
 				// Column-major vs. Row-major
-				t.matrix()	<< 
-					matrices[i][0], matrices[i][4], matrices[i][8], matrices[i][12],
-					matrices[i][1], matrices[i][5], matrices[i][9], matrices[i][13],
-					matrices[i][2], matrices[i][6], matrices[i][10], matrices[i][14],
-					matrices[i][3], matrices[i][7], matrices[i][11], matrices[i][15];
+				t = matrices[i];
 				bbox.extend(t * psbox.min());
 				bbox.extend(t * psbox.max());
 			}

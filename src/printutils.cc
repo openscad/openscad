@@ -1,5 +1,6 @@
 #include "printutils.h"
 #include <stdio.h>
+#include <QDate>
 
 QList<QString> print_messages_stack;
 OutputHandlerFunc *outputhandler = NULL;

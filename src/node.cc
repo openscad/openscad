@@ -24,17 +24,13 @@
  *
  */
 
-#include "printutils.h"
 #include "node.h"
 #include "module.h"
-#include "csgterm.h"
 #include "progress.h"
-#include "polyset.h"
 #include "visitor.h"
-#include "nodedumper.h"
 #include "stl-utils.h"
 
-#include <sstream>
+#include <iostream>
 #include <algorithm>
 
 size_t AbstractNode::idx_counter;

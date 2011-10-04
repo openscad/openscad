@@ -30,11 +30,6 @@
 #include "context.h"
 #include "printutils.h"
 #include "builtin.h"
-#include "dxfdata.h"
-#include "dxftess.h"
-#include "polyset.h"
-#include "progress.h"
-#include "visitor.h"
 #include "PolySetEvaluator.h"
 #include "openscad.h" // get_fragments_from_r()
 
@@ -124,7 +119,7 @@ void register_builtin_dxf_linear_extrude()
 	builtin_modules["linear_extrude"] = new LinearExtrudeModule();
 }
 
-PolySet *LinearExtrudeNode::evaluate_polyset(PolySetEvaluator *evaluator) const
+class PolySet *LinearExtrudeNode::evaluate_polyset(PolySetEvaluator *evaluator) const
 {
 	if (!evaluator) {
 		PRINTF("WARNING: No suitable PolySetEvaluator found for %s module!", this->name().c_str());

@@ -29,7 +29,6 @@
 #include "context.h"
 #include "builtin.h"
 #include "printutils.h"
-#include "visitor.h"
 #include <sstream>
 #include <assert.h>
 #include <QColor>
