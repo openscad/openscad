@@ -181,7 +181,11 @@ int main(int argc, char **argv)
 // match with csgtest ends
 	csgInfo.glview = new OffscreenView(512,512);
 
-	//glewInit();
+  GLenum err = glewInit();
+  if (GLEW_OK != err) {
+    fprintf(stderr, "Unable to init GLEW: %s\n", glewGetErrorString(err));
+    exit(1);
+  }
 #ifdef DEBUG
 	cout << "GLEW version " << glewGetString(GLEW_VERSION) << "\n";
 	cout << (const char *)glGetString(GL_RENDERER) << "(" << (const char *)glGetString(GL_VENDOR) << ")\n"

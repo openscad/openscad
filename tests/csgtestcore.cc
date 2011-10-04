@@ -1,7 +1,7 @@
 // csg test core, used by throwntegether test and opencsg test
 #include "csgtestcore.h"
 
-#include <GL/glew.h>
+#include "system-gl.h"
 #include "openscad.h"
 #include "handle_dep.h"
 #include "builtin.h"
@@ -51,9 +51,9 @@ public:
 CsgInfo::CsgInfo() {
         root_norm_term = NULL;
         root_chain = NULL;
-        highlight_terms = vector<CSGTerm*>();
+        highlight_terms = std::vector<CSGTerm*>();
         highlights_chain = NULL;
-        background_terms = vector<CSGTerm*>();
+        background_terms = std::vector<CSGTerm*>();
         background_chain = NULL;
         glview = NULL;
 }
@@ -74,7 +74,7 @@ int csgtestcore(int argc, char *argv[], test_type_e test_type)
 		exit(1);
 	}
 
-	const char *filename = argv[1];
+	std::string filename(argv[1]);
 
 	initialize_builtin_functions();
 	initialize_builtin_modules();
@@ -124,11 +124,11 @@ int csgtestcore(int argc, char *argv[], test_type_e test_type)
 	AbstractModule *root_module;
 	ModuleInstantiation root_inst;
 
-	QFileInfo fileInfo(filename);
+	QFileInfo fileInfo(filename.c_str());
 	handle_dep(filename);
-	FILE *fp = fopen(filename, "rt");
+	FILE *fp = fopen(filename.c_str(), "rt");
 	if (!fp) {
-		fprintf(stderr, "Can't open input file `%s'!\n", filename);
+		fprintf(stderr, "Can't open input file `%s'!\n", filename.c_str());
 		exit(1);
 	} else {
 		std::stringstream text;
@@ -228,25 +228,6 @@ int csgtestcore(int argc, char *argv[], test_type_e test_type)
 	Vector3d cameradir(1, 1, -0.5);
 	Vector3d camerapos = center - radius*1.8*cameradir;
 	csgInfo.glview->setCamera(camerapos, center);
-
-	glewInit();
-#ifdef DEBUG
-	cout << "GLEW version " << glewGetString(GLEW_VERSION) << "\n";
-	cout << (const char *)glGetString(GL_RENDERER) << "(" << (const char *)glGetString(GL_VENDOR) << ")\n"
-			 << "OpenGL version " << (const char *)glGetString(GL_VERSION) << "\n";
-	cout  << "Extensions: " << (const char *)glGetString(GL_EXTENSIONS) << "\n";
-
-
-	if (GLEW_ARB_framebuffer_object) {
-		cout << "ARB_FBO supported\n";
-	}
-	if (GLEW_EXT_framebuffer_object) {
-		cout << "EXT_FBO supported\n";
-	}
-	if (GLEW_EXT_packed_depth_stencil) {
-		cout << "EXT_packed_depth_stencil\n";
-	}
-#endif
 
 	OpenCSGRenderer opencsgRenderer(csgInfo.root_chain, csgInfo.highlights_chain, csgInfo.background_chain, csgInfo.glview->shaderinfo);
 	ThrownTogetherRenderer thrownTogetherRenderer(csgInfo.root_chain, csgInfo.highlights_chain, csgInfo.background_chain);

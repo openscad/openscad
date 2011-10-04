@@ -1,8 +1,11 @@
 #include "OffscreenContext.h"
 #include "imageutils.h"
-#include "fboutils.h"
+#include "fbo.h"
 
 #import <AppKit/AppKit.h>   // for NSOpenGL...
+
+
+#define REPORTGLERROR(task) { GLenum tGLErr = glGetError(); if (tGLErr != GL_NO_ERROR) { std::cout << "OpenGL error " << tGLErr << " while " << task << "\n"; } }
 
 struct OffscreenContext
 {
@@ -10,7 +13,7 @@ struct OffscreenContext
   NSAutoreleasePool *pool;
   int width;
   int height;
-  GLuint fbo;
+  fbo_t *fbo;
 };
 
 
@@ -42,15 +45,38 @@ OffscreenContext *create_offscreen_context(int w, int h)
   }
 
   [ctx->openGLContext makeCurrentContext];
+  
+  glewInit();
+#ifdef DEBUG
+  cout << "GLEW version " << glewGetString(GLEW_VERSION) << "\n";
+  cout << (const char *)glGetString(GL_RENDERER) << "(" << (const char *)glGetString(GL_VENDOR) << ")\n"
+       << "OpenGL version " << (const char *)glGetString(GL_VERSION) << "\n";
+  cout  << "Extensions: " << (const char *)glGetString(GL_EXTENSIONS) << "\n";
+  
+  
+  if (GLEW_ARB_framebuffer_object) {
+    cout << "ARB_FBO supported\n";
+  }
+  if (GLEW_EXT_framebuffer_object) {
+    cout << "EXT_FBO supported\n";
+  }
+  if (GLEW_EXT_packed_depth_stencil) {
+    cout << "EXT_packed_depth_stencil\n";
+  }
+#endif
 
-  ctx->fbo = fbo_create(w, h);
+  ctx->fbo = fbo_new();
+  if (!fbo_init(ctx->fbo, w, h)) {
+    return NULL;
+  }
 
   return ctx;
 }
 
 bool teardown_offscreen_context(OffscreenContext *ctx)
 {
-  fbo_unbind();
+  fbo_unbind(ctx->fbo);
+  fbo_delete(ctx->fbo);
 
   /*
    * Cleanup
