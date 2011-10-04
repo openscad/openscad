@@ -15,4 +15,4 @@ multmatrix([[1,0.4,0.1,-25],
             [0.2,0.2,0.5,0],
             [0,0,0,1]]) mycyl();
 
-//FIXME: mirror()
+//FIXME: mirror() and scale()
