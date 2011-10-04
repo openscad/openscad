@@ -239,7 +239,7 @@ std::string CSGChain::fulldump()
 	dump << " labels: " << labels.size();
 	dump << "\ndata: \n";
 	for (size_t i = 0; i < polysets.size(); i++) dump << (*polysets[i]).polygons.size()   << "\n";
-	for (size_t i = 0; i < matrices.size(); i++) dump << *matrices[i]  << "\n";
+	for (size_t i = 0; i < matrices.size(); i++) dump << matrices[i].matrix()  << "\n";
 	for (size_t i = 0; i < colors.size(); i++) dump << *colors[i]  << "\n";
 	for (size_t i = 0; i < types.size(); i++) dump << types[i]   << "\n";
 	for (size_t i = 0; i < labels.size(); i++) dump << labels[i]  << "\n";
