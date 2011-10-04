@@ -31,7 +31,7 @@
 #include <CGAL/assertions_behaviour.h>
 #include <CGAL/exceptions.h>
 #endif
-#include <Eigen/Core>
+#include "linalg.h"
 #include <Eigen/LU>
 #include <QColor>
 
@@ -112,13 +112,9 @@ static void gl_draw_triangle(GLint *shaderinfo, const Vector3d &p0, const Vector
 	}
 }
 
-void PolySet::render_surface(colormode_e colormode, csgmode_e csgmode, double *m, GLint *shaderinfo) const
+void PolySet::render_surface(colormode_e colormode, csgmode_e csgmode, const Transform3d &m, GLint *shaderinfo) const
 {
-	Eigen::Matrix3f m3f;
-	m3f << m[0], m[4], m[8],
-		m[1], m[5], m[9],
-		m[2], m[6], m[10];
-	bool mirrored = m3f.determinant() < 0;
+	bool mirrored = m.matrix().determinant() < 0;
 
 	if (colormode == COLORMODE_MATERIAL) {
 // FIXME: Reenable/rewrite - don't be dependant on GUI

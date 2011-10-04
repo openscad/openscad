@@ -60,14 +60,14 @@ void ThrownTogetherRenderer::renderCSGChain(CSGChain *chain, bool highlight,
 																						bool fberror) const
 {
 	glDepthFunc(GL_LEQUAL);
-	QHash<QPair<PolySet*,double*>,int> polySetVisitMark;
+	QHash<QPair<PolySet*,Transform3d*>,int> polySetVisitMark;
 	for (size_t i = 0; i < chain->polysets.size(); i++) {
-		if (polySetVisitMark[QPair<PolySet*,double*>(chain->polysets[i].get(), chain->matrices[i])]++ > 0)
+		if (polySetVisitMark[QPair<PolySet*,Transform3d*>(chain->polysets[i].get(), &chain->matrices[i])]++ > 0)
 			continue;
-		double *m = chain->matrices[i];
+		const Transform3d &m = chain->matrices[i];
 		double *c = chain->colors[i];
 		glPushMatrix();
-		glMultMatrixd(m);
+		glMultMatrixd(m.data());
 		int csgmode = chain->types[i] == CSGTerm::TYPE_DIFFERENCE ? PolySet::CSGMODE_DIFFERENCE : PolySet::CSGMODE_NORMAL;
 		if (highlight) {
 			chain->polysets[i]->render_surface(PolySet::COLORMODE_HIGHLIGHT, PolySet::csgmode_e(csgmode + 20), m);

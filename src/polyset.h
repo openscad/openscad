@@ -45,7 +45,7 @@ public:
 		CSGMODE_HIGHLIGHT_DIFFERENCE = 22
 	};
 
-	void render_surface(colormode_e colormode, csgmode_e csgmode, double *m, GLint *shaderinfo = NULL) const;
+	void render_surface(colormode_e colormode, csgmode_e csgmode, const Transform3d &m, GLint *shaderinfo = NULL) const;
 	void render_edges(colormode_e colormode, csgmode_e csgmode) const;
 };
 

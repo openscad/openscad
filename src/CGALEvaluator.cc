@@ -206,8 +206,8 @@ Response CGALEvaluator::visit(State &state, const TransformNode &node)
 				// tesselate it and create a new CGAL_Nef_polyhedron2 from it.. What a hack!
 				
 				CGAL_Aff_transformation2 t(
-					node.matrix[0], node.matrix[4], node.matrix[12],
-					node.matrix[1], node.matrix[5], node.matrix[13], node.matrix[15]);
+					node.matrix(0,0), node.matrix(0,1), node.matrix(0,3),
+					node.matrix(1,0), node.matrix(1,1), node.matrix(1,3), node.matrix(3,3));
 				
 				DxfData *dd = N.convertToDxfData();
 				for (size_t i=0; i < dd->points.size(); i++) {
@@ -226,9 +226,9 @@ Response CGALEvaluator::visit(State &state, const TransformNode &node)
 			}
 			else if (N.dim == 3) {
 				CGAL_Aff_transformation t(
-					node.matrix[0], node.matrix[4], node.matrix[ 8], node.matrix[12],
-					node.matrix[1], node.matrix[5], node.matrix[ 9], node.matrix[13],
-					node.matrix[2], node.matrix[6], node.matrix[10], node.matrix[14], node.matrix[15]);
+					node.matrix(0,0), node.matrix(0,1), node.matrix(0,2), node.matrix(0,3),
+					node.matrix(1,0), node.matrix(1,1), node.matrix(1,2), node.matrix(1,3),
+					node.matrix(2,0), node.matrix(2,1), node.matrix(2,2), node.matrix(2,3), node.matrix(3,3));
 				N.p3->transform(t);
 			}
 			CGALCache::instance()->insert(this->tree.getIdString(node), N);
