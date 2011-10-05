@@ -16,4 +16,5 @@ glew {
 
   unix:LIBS += -lGLEW
   win32:LIBS += -lglew32s
+  CONFIG(mingw-cross-env):DEFINES += GLEW_STATIC
 }
