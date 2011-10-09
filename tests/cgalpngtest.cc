@@ -179,7 +179,12 @@ int main(int argc, char **argv)
 	QDir::setCurrent(original_path.absolutePath());
 
 // match with csgtest ends
-	csgInfo.glview = new OffscreenView(512,512);
+       try {
+                csgInfo.glview = new OffscreenView(512,512);
+        } catch (int error) {
+                fprintf(stderr,"Can't create OpenGL OffscreenView. exiting.\n");
+                exit(1);
+        }
 
   GLenum err = glewInit();
   if (GLEW_OK != err) {

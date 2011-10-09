@@ -218,7 +218,12 @@ int csgtestcore(int argc, char *argv[], test_type_e test_type)
 	
 	QDir::setCurrent(original_path.absolutePath());
 
-	csgInfo.glview = new OffscreenView(512,512);
+        try {
+                csgInfo.glview = new OffscreenView(512,512);
+        } catch (int error) {
+                fprintf(stderr,"Can't create OpenGL OffscreenView. exiting.\n");
+                exit(1);
+        }
 	BoundingBox bbox = csgInfo.root_chain->getBoundingBox();
 
 	Vector3d center = (bbox.min() + bbox.max()) / 2;

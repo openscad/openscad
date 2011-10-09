@@ -31,14 +31,17 @@ be ignored for the test apps in question.
 Troubleshooting a failed test:
 ------------------------------
 
-You can run a single test by running
- $ ctest -R testname
+You can run a single test by passing the test name to ctest:
+ $ ctest -R throwntogethertest_sphere
 
-You can run a series by running
+You can run a series of tests by passing part of a name to ctest:
  $ ctest -R cgalpng  # runs all cgalpng tests
  $ ctest -R sphere   # runs all sphere tests
-   
+    
 Logs of test runs are found in tests/build/Testing/Temporary
 Expected results are found in tests/regression/*
 Actual results are found in tests/build/testname-output/*
 
+You can also compile a single test program:
+
+ $ make cgalpngtest

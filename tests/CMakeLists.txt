@@ -57,21 +57,6 @@ if (NOT OPENCSG_INCLUDE_DIR)
 endif()
 include_directories(${OPENCSG_INCLUDE_DIR})
 
-# SDL (for OpenCSG on Linux & other platforms)
-if (NOT $ENV{MACOSX_DEPLOY_DIR} STREQUAL "")
-  message(STATU "SDL not needed for Mac OSX")
-else()
-  find_package(SDL REQUIRED)
-  if (NOT SDL_FOUND)
-    message(FATAL_ERROR "SDL not found.")
-  else()
-    message(STATUS "SDL library found in " ${SDL_LIBRARY})
-    message(STATUS "SDL header found in " ${SDL_INCLUDE_DIR})
-    set(OPENGL_LIBRARY ${OPENGL_LIBRARY} ${SDL_LIBRARY})
-  endif()
-endif()
-include_directories(${SDL_INCLUDE_DIR})
-
 # GLEW
 
 if (NOT $ENV{MACOSX_DEPLOY_DIR} STREQUAL "")
