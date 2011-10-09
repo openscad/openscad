@@ -1,6 +1,7 @@
 #include "fbo.h"
 #include <stdio.h>
 #include <iostream>
+using namespace std;
 
 fbo_t *fbo_new()
 {
@@ -13,7 +14,15 @@ fbo_t *fbo_new()
   return fbo;
 }
 
-#define REPORTGLERROR(task) { GLenum tGLErr = glGetError(); if (tGLErr != GL_NO_ERROR) { std::cout << "OpenGL error " << tGLErr << " while " << task << "\n"; } }
+bool REPORTGLERROR(const char * task)
+{
+	GLenum tGLErr = glGetError();
+	if (tGLErr != GL_NO_ERROR) {
+		std::cerr << "OpenGL error " << tGLErr << " while " << task << "\n"; 
+		return true;
+	} else
+		return false;
+}
 
 bool use_ext()
 {
@@ -38,29 +47,28 @@ bool check_fbo_status()
 	else
 		status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 
-	if (glGetError() != GL_NO_ERROR)
-		fprintf(stderr, "OpenGL Error %i\n",glGetError());
+	if (REPORTGLERROR("checking framebuffer status")) return false;
 
 	if (status == GL_FRAMEBUFFER_COMPLETE)
 		result = true;
 	else if (status == GL_FRAMEBUFFER_UNSUPPORTED)
-		fprintf(stderr, "GL_FRAMEBUFFER_UNSUPPORTED\n");
+		cerr << "GL_FRAMEBUFFER_UNSUPPORTED\n";
 	else if (status == GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT)
-		fprintf(stderr, "GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT\n");
+		cerr << "GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT\n";
 	else if (status == GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT)
-		fprintf(stderr, "GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT\n");
+		cerr << "GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT\n";
 	else if (status == GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS_EXT)
-		fprintf(stderr, "GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS_EXT\n");
+		cerr << "GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS_EXT\n";
 	else if (status == GL_FRAMEBUFFER_INCOMPLETE_FORMATS_EXT)
-		fprintf(stderr, "GL_FRAMEBUFFER_INCOMPLETE_FORMATS_EXT\n");
+		cerr << "GL_FRAMEBUFFER_INCOMPLETE_FORMATS_EXT\n";
 	else if (status == GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER_EXT)
-		fprintf(stderr, "GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER_EXT\n");
+		cerr << "GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER_EXT\n";
 	else if (status == GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER_EXT)
-		fprintf(stderr, "GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER_EXT\n");
+		cerr << "GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER_EXT\n";
 	else if (status == GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE_EXT)
-		fprintf(stderr, "GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE_EXT\n");
+		cerr << "GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE_EXT\n";
 	else
-		fprintf(stderr, "Unknown Code: glCheckFramebufferStatusEXT returned %i\n",status);
+		cerr << "Unknown Code: glCheckFramebufferStatusEXT returned %i\n",status;
 	return result;
 }
 
@@ -69,7 +77,7 @@ bool fbo_ext_init(fbo_t *fbo, size_t width, size_t height)
   // Generate and bind FBO
   glGenFramebuffersEXT(1, &fbo->fbo_id);
   glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fbo->fbo_id);
-  REPORTGLERROR("binding framebuffer");
+  if (REPORTGLERROR("binding framebuffer")) return false;
 
   // Generate depth and render buffers
   glGenRenderbuffersEXT(1, &fbo->depthbuf_id);
@@ -81,20 +89,20 @@ bool fbo_ext_init(fbo_t *fbo, size_t width, size_t height)
   // Attach render and depth buffers
   glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, 
                                GL_RENDERBUFFER_EXT, fbo->renderbuf_id);
-  REPORTGLERROR("specifying color render buffer");
+  if (REPORTGLERROR("specifying color render buffer")) return false;
 
 
   if (!check_fbo_status()) {
-    fprintf(stderr, "Problem with OpenGL framebuffer after specifying color render buffer.\n");
+    cerr << "Problem with OpenGL framebuffer after specifying color render buffer.\n";
     return false;
   }
 
   glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT, 
                                GL_RENDERBUFFER_EXT, fbo->depthbuf_id);
-  REPORTGLERROR("specifying depth render buffer");
+  if (REPORTGLERROR("specifying depth render buffer")) return false;
 
   if (!check_fbo_status()) {
-    fprintf(stderr, "Problem with OpenGL framebuffer after specifying depth render buffer.\n");
+    cerr << "Problem with OpenGL framebuffer after specifying depth render buffer.\n";
     return false;
   }
 
@@ -106,7 +114,7 @@ bool fbo_arb_init(fbo_t *fbo, size_t width, size_t height)
   // Generate and bind FBO
   glGenFramebuffers(1, &fbo->fbo_id);
   glBindFramebuffer(GL_FRAMEBUFFER, fbo->fbo_id);
-  REPORTGLERROR("binding framebuffer");
+  if (REPORTGLERROR("binding framebuffer")) return false;
 
   // Generate depth and render buffers
   glGenRenderbuffers(1, &fbo->depthbuf_id);
@@ -118,19 +126,19 @@ bool fbo_arb_init(fbo_t *fbo, size_t width, size_t height)
   // Attach render and depth buffers
   glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, 
                                GL_RENDERBUFFER, fbo->renderbuf_id);
-  REPORTGLERROR("specifying color render buffer");
+  if (REPORTGLERROR("specifying color render buffer")) return false;
 
-  if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-    fprintf(stderr, "Problem with OpenGL framebuffer after specifying color render buffer.\n");
+  if (!check_fbo_status()) {
+    cerr << "Problem with OpenGL framebuffer after specifying color render buffer.\n";
     return false;
   }
 
   glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, 
                                GL_RENDERBUFFER, fbo->depthbuf_id);
-  REPORTGLERROR("specifying depth render buffer");
+  if (REPORTGLERROR("specifying depth render buffer")) return false;
 
-  if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-    fprintf(stderr, "Problem with OpenGL framebuffer after specifying depth render buffer.\n");
+  if (!check_fbo_status()) {
+    cerr << "Problem with OpenGL framebuffer after specifying depth render buffer.\n";
     return false;
   }
 
@@ -156,7 +164,7 @@ bool fbo_init(fbo_t *fbo, size_t width, size_t height)
   else if (use_ext())
     result = fbo_ext_init(fbo, width, height);
   else
-    fprintf(stderr, "Framebuffer Object extension not found by GLEW\n");
+    cerr << "Framebuffer Object extension not found by GLEW\n";
   return result;
 }
 
@@ -165,19 +173,19 @@ bool fbo_resize(fbo_t *fbo, size_t width, size_t height)
   if (use_ext()) {
     glBindRenderbufferEXT(GL_RENDERBUFFER, fbo->depthbuf_id);
     glRenderbufferStorageEXT(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, width, height);
-    REPORTGLERROR("creating depth render buffer");
+    if (REPORTGLERROR("creating depth render buffer")) return false;
 
     glBindRenderbufferEXT(GL_RENDERBUFFER, fbo->renderbuf_id);
     glRenderbufferStorageEXT(GL_RENDERBUFFER, GL_RGBA8, width, height);
-    REPORTGLERROR("creating color render buffer");
+    if (REPORTGLERROR("creating color render buffer")) return false;
   } else {
     glBindRenderbuffer(GL_RENDERBUFFER, fbo->depthbuf_id);
     glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, width, height);
-    REPORTGLERROR("creating depth render buffer");
+    if (REPORTGLERROR("creating depth render buffer")) return false;
 
     glBindRenderbuffer(GL_RENDERBUFFER, fbo->renderbuf_id);
     glRenderbufferStorage(GL_RENDERBUFFER, GL_RGBA8, width, height);
-    REPORTGLERROR("creating color render buffer");
+    if (REPORTGLERROR("creating color render buffer")) return false;
   }
 
   return true;

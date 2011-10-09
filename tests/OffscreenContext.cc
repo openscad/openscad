@@ -19,7 +19,7 @@ based on
 #include <GL/gl.h>
 #include <GL/glx.h>
 
-#define REPORTGLERROR(task) { GLenum tGLErr = glGetError(); if (tGLErr != GL_NO_ERROR) { std::cout << "OpenGL error " << tGLErr << " while " << task << "\n"; } }
+using namespace std;
 
 struct OffscreenContext
 {
@@ -49,13 +49,13 @@ Bool glx_1_3_pixmap_dummy_context(OffscreenContext *ctx, Bool hybrid)
 	 	DefaultScreen(ctx->xDisplay),
 		dummyAttributes_1_3, &numReturned );
 	if ( fbConfigs == NULL ) {
-		REPORTGLERROR("glXChooseFBConfig failed") ;
+		cerr << "GLX error: glXChooseFBConfig failed";
 		return False;
 	}
 
 	vInfo = glXGetVisualFromFBConfig( ctx->xDisplay, fbConfigs[0] );
 	if ( vInfo == NULL ) {
-		REPORTGLERROR("glXGetVisualFromFBConfig failed") ;
+		cerr <<  "GLX error: glXGetVisualFromFBConfig failed";
 		return False;
 	}
 
@@ -71,13 +71,13 @@ Bool glx_1_3_pixmap_dummy_context(OffscreenContext *ctx, Bool hybrid)
 
 	ctx->openGLContext = glXCreateNewContext( ctx->xDisplay, fbConfigs[0], GLX_RGBA_TYPE, NULL, True );
 	if ( ctx->openGLContext == NULL ) {
-		REPORTGLERROR("glXCreateNewContext failed" );
+		cerr <<  "GLX error: glXCreateNewContext failed";
 		return False;
 	}
 
 	result = glXMakeContextCurrent( ctx->xDisplay, ctx->glx_pixmap, ctx->glx_pixmap, ctx->openGLContext );
 	if ( result == False ) {
-		REPORTGLERROR("glXMakeContextCurrent failed" );
+		cerr <<  "GLX error: glXMakeContextCurrent failed";
 		return False;
 	}
 
@@ -96,7 +96,7 @@ Bool make_glx_dummy_context(OffscreenContext *ctx)
 
 	ctx->xDisplay = XOpenDisplay( NULL );
 	if ( ctx->xDisplay == NULL ) {
-		fprintf(stderr, "Unable to open a connection to the X server\n" );
+		cerr << "Unable to open a connection to the X server\n";
 		return False;
 	}
 
@@ -115,7 +115,7 @@ Bool make_glx_dummy_context(OffscreenContext *ctx)
 		if (glXCreatePixmap!=NULL) { // 1.3 function exists, even though its 1.2
 			return glx_1_3_pixmap_dummy_context(ctx,True);
 		} else {
-			fprintf(stderr,"OpenGL error: GLX version 1.3 functions missing. Your GLX: %i.%i\n",major,minor);
+			cerr << "OpenGL error: GLX version 1.3 functions missing. Your GLX: " << major << "." << minor << endl;
 			return False;
 		}
 	} else if (major>=1 && minor>=3) {
@@ -125,19 +125,19 @@ Bool make_glx_dummy_context(OffscreenContext *ctx)
 
 void glewCheck() {
 #ifdef DEBUG
-  cout << "GLEW version " << glewGetString(GLEW_VERSION) << "\n";
-  cout << (const char *)glGetString(GL_RENDERER) << "(" << (const char *)glGetString(GL_VENDOR) << ")\n"
+  cerr << "GLEW version " << glewGetString(GLEW_VERSION) << "\n";
+  cerr << (const char *)glGetString(GL_RENDERER) << "(" << (const char *)glGetString(GL_VENDOR) << ")\n"
        << "OpenGL version " << (const char *)glGetString(GL_VERSION) << "\n";
-  cout  << "Extensions: " << (const char *)glGetString(GL_EXTENSIONS) << "\n";
+  cerr  << "Extensions: " << (const char *)glGetString(GL_EXTENSIONS) << "\n";
 
   if (GLEW_ARB_framebuffer_object) {
-    cout << "ARB_FBO supported\n";
+    cerr << "ARB_FBO supported\n";
   }
   if (GLEW_EXT_framebuffer_object) {
-    cout << "EXT_FBO supported\n";
+    cerr << "EXT_FBO supported\n";
   }
   if (GLEW_EXT_packed_depth_stencil) {
-    cout << "EXT_packed_depth_stencil\n";
+    cerr << "EXT_packed_depth_stencil\n";
   }
 #endif
 }
@@ -192,7 +192,7 @@ bool save_framebuffer(OffscreenContext *ctx, const char *filename)
   int rowBytes = samplesPerPixel * ctx->width;
   unsigned char *flippedBuffer = (unsigned char *)malloc(rowBytes * ctx->height);
   if (!flippedBuffer) {
-    std::cout << "Unable to allocate flipped buffer for corrected image.";
+    std::cerr << "Unable to allocate flipped buffer for corrected image.";
     return 1;
   }
   flip_image(pixels, flippedBuffer, samplesPerPixel, ctx->width, ctx->height);
