@@ -123,8 +123,8 @@ bool create_glx_dummy_window(OffscreenContext &ctx)
 
   if (!glXMakeContextCurrent( dpy, xWin, xWin, context )) {
     cerr << "glXMakeContextCurrent failed\n";
-    XDestroyWindow( dpy, xWin );
     glXDestroyContext( dpy, context );
+    XDestroyWindow( dpy, xWin );
     XFree( visinfo );
     XFree( fbconfigs );
     return false;
