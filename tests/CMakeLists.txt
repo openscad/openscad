@@ -8,6 +8,16 @@ if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Debug)
 endif()
 
+# Disable some warnings in Windows 
+if(WIN32)
+  # too long decorated names
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4503")
+  # int cast to bool in CGAL
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4800")
+  # unreferenced parameters in CGAL
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4100")
+endif()
+
 #
 # Build test apps
 #
@@ -59,7 +69,7 @@ include_directories(${OPENCSG_INCLUDE_DIR})
 
 # GLEW
 
-if (NOT $ENV{MACOSX_DEPLOY_DIR} STREQUAL "")
+if ()
   set(GLEW_DIR "$ENV{MACOSX_DEPLOY_DIR}")
 endif()
 find_package(GLEW REQUIRED)
@@ -69,7 +79,10 @@ include_directories(${GLEW_INCLUDE_PATH})
 find_package(BISON)
 find_package(FLEX)
 # The COMPILE_FLAGS and forced C++ compiler is just to be compatible with qmake
-FLEX_TARGET(OpenSCADlexer ../src/lexer.l ${CMAKE_CURRENT_BINARY_DIR}/lexer.cpp COMPILE_FLAGS "-Plexer")
+if (WIN32)
+  set(FLEX_UNISTD_FLAG "-DYY_NO_UNISTD_H")
+endif()
+FLEX_TARGET(OpenSCADlexer ../src/lexer.l ${CMAKE_CURRENT_BINARY_DIR}/lexer.cpp COMPILE_FLAGS "-Plexer ${FLEX_UNISTD_FLAG}")
 BISON_TARGET(OpenSCADparser ../src/parser.y ${CMAKE_CURRENT_BINARY_DIR}/parser_yacc.c COMPILE_FLAGS "-p parser")
 ADD_FLEX_BISON_DEPENDENCY(OpenSCADlexer OpenSCADparser)
 set_source_files_properties(${CMAKE_CURRENT_BINARY_DIR}/parser_yacc.c PROPERTIES LANGUAGE "CXX")
@@ -81,6 +94,7 @@ include_directories(../src)
 add_definitions(-DOPENSCAD_VERSION=test -DOPENSCAD_YEAR=2011 -DOPENSCAD_MONTH=10)
 
 set(COMMON_SOURCES
+  ../src/mathc99.cc
   ../src/handle_dep.cc 
   ../src/qhash.cc
   ../src/export.cc 
@@ -121,10 +135,12 @@ set(COMMON_SOURCES
 #
 # Offscreen OpenGL context source code
 #
-if (NOT $ENV{MACOSX_DEPLOY_DIR} STREQUAL "")
+if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 	set(OFFSCREEN_CTX_SOURCE "OffscreenContext.mm")
-else()
+elseif(UNIX)
 	set(OFFSCREEN_CTX_SOURCE "OffscreenContext.cc")
+elseif(WIN32)
+	set(OFFSCREEN_CTX_SOURCE "OffscreenContextWGL.cc")
 endif()
 
 #

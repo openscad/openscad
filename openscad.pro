@@ -42,6 +42,11 @@ win32:DEFINES += _USE_MATH_DEFINES NOMINMAX _CRT_SECURE_NO_WARNINGS YY_NO_UNISTD
 #disable warning about too long decorated names
 win32:QMAKE_CXXFLAGS += -wd4503
 
+#disable warning about casting int to bool
+win32:QMAKE_CXXFLAGS += -wd4800
+
+#disable warning about CGAL's unreferenced formal parameters
+win32:QMAKE_CXXFLAGS += -wd4100
 
 TEMPLATE = app
 RESOURCES = openscad.qrc

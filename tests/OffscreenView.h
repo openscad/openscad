@@ -1,15 +1,21 @@
 #ifndef OFFSCREENVIEW_H_
 #define OFFSCREENVIEW_H_
 
-#ifndef __APPLE__ // Eigen SIMD alignment
+// workaround Eigen SIMD alignment problems
+#ifndef __APPLE__ 
 #define EIGEN_DONT_VECTORIZE 1
 #define EIGEN_DISABLE_UNALIGNED_ARRAY_ASSERT 1
+#endif
+#ifdef _MSC_VER
+#define EIGEN_DONT_ALIGN
 #endif
 
 #include "OffscreenContext.h"
 #include <Eigen/Core>
 #include <Eigen/Geometry>
+#ifndef _MSC_VER
 #include <stdint.h>
+#endif
 
 class OffscreenView
 {

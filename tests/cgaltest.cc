@@ -42,7 +42,9 @@
 #include <QDir>
 #include <QSet>
 #include <QTextStream>
+#ifndef _MSC_VER
 #include <getopt.h>
+#endif
 #include <iostream>
 #include <assert.h>
 #include <sstream>

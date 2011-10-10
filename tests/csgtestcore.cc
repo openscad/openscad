@@ -221,7 +221,7 @@ int csgtestcore(int argc, char *argv[], test_type_e test_type)
         try {
                 csgInfo.glview = new OffscreenView(512,512);
         } catch (int error) {
-                fprintf(stderr,"Can't create OpenGL OffscreenView. exiting.\n");
+                fprintf(stderr,"Can't create OpenGL OffscreenView. Code: %i. Exiting.\n", error);
                 exit(1);
         }
 	BoundingBox bbox = csgInfo.root_chain->getBoundingBox();

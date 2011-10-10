@@ -32,6 +32,7 @@
 #include "builtin.h"
 #include "PolySetEvaluator.h"
 #include "openscad.h" // get_fragments_from_r()
+#include "mathc99.h" 
 
 #include <sstream>
 #include <boost/assign/std/vector.hpp>
