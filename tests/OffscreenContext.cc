@@ -25,7 +25,7 @@ struct OffscreenContext
 {
   GLXContext openGLContext;
   Display *xdisplay;
-	Window xwindow;
+  Window xwindow;
   int width;
   int height;
   fbo_t *fbo;
@@ -37,7 +37,7 @@ void offscreen_context_init(OffscreenContext &ctx, int width, int height)
   ctx.height = height;
   ctx.openGLContext = NULL;
   ctx.xdisplay = NULL;
-	ctx.xwindow = NULL;
+  ctx.xwindow = NULL;
   ctx.fbo = NULL;
 }
 
@@ -45,124 +45,126 @@ static XErrorHandler original_xlib_handler = (XErrorHandler) NULL;
 static bool XCreateWindow_failed = false;
 static int XCreateWindow_error(Display *dpy, XErrorEvent *event) 
 {
-	cerr << "XCreateWindow failed: XID: " << event->resourceid 
-	     << " request: " << (int)event->request_code 
-       << " minor: " << (int)event->minor_code << "\n";
-	char description[1024];
-	XGetErrorText( dpy, event->error_code, description, 1023 );
-	cerr << " error message: " << description << "\n";
-	XCreateWindow_failed = true;
-	return 0;
+  cerr << "XCreateWindow failed: XID: " << event->resourceid 
+        << " request: " << (int)event->request_code 
+        << " minor: " << (int)event->minor_code << "\n";
+  char description[1024];
+  XGetErrorText( dpy, event->error_code, description, 1023 );
+  cerr << " error message: " << description << "\n";
+  XCreateWindow_failed = true;
+  return 0;
 }
 
 bool create_glx_dummy_window(OffscreenContext &ctx) 
 {
-	/*
-	create a dummy X window without showing it. (without 'mapping' it)
-	save information to the ctx
+  /*
+  create a dummy X window without showing it. (without 'mapping' it)
+  save information to the ctx
 
-	based on http://www.opengl.org/sdk/docs/man/xhtml/glXIntro.xml
-	which was originally Copyright © 1991-2006 Silicon Graphics, Inc.
-	licensed under the SGI Free Software B License.
-	See http://oss.sgi.com/projects/FreeB/.
+  based on http://www.opengl.org/sdk/docs/man/xhtml/glXIntro.xml
+  which was originally Copyright © 1991-2006 Silicon Graphics, Inc.
+  licensed under the SGI Free Software B License.
+  See http://oss.sgi.com/projects/FreeB/.
 
-	also based on glxgears.c by Brian Paul from mesa-demos (mesa3d.org)
+  also based on glxgears.c by Brian Paul from mesa-demos (mesa3d.org)
 
-	purposely does not use glxCreateWindow, to avoid Mesa warnings. 
+  purposely does not use glxCreateWindow, to avoid crashes,
+  "failed to create drawable" errors, and Mesa "This is an application bug!"
+  warnings about GLX 1.3. 
 
-	this will alter ctx.openGLContext and ctx.xwindow if successfull
-	*/
+  this function will alter ctx.openGLContext and ctx.xwindow if successfull
+  */
 
-	int attributes[] = {
-		GLX_DRAWABLE_TYPE, GLX_WINDOW_BIT,
-		GLX_RENDER_TYPE,   GLX_RGBA_BIT,
-		GLX_RED_SIZE, 1,
-		GLX_GREEN_SIZE, 1,
-		GLX_BLUE_SIZE, 1,
-		None
-	};
+  int attributes[] = {
+    GLX_DRAWABLE_TYPE, GLX_WINDOW_BIT,
+    GLX_RENDER_TYPE,   GLX_RGBA_BIT,
+    GLX_RED_SIZE, 1,
+    GLX_GREEN_SIZE, 1,
+    GLX_BLUE_SIZE, 1,
+    None
+  };
 
-	Display *dpy = ctx.xdisplay;
+  Display *dpy = ctx.xdisplay;
 
-	int numReturned = 0;
-	GLXFBConfig *fbconfigs = glXChooseFBConfig( dpy, DefaultScreen(dpy), attributes, &numReturned );
-	if ( fbconfigs == NULL ) {
-		cerr << "glXChooseFBConfig failed\n";
-		return false;
-	}
+  int numReturned = 0;
+  GLXFBConfig *fbconfigs = glXChooseFBConfig( dpy, DefaultScreen(dpy), attributes, &numReturned );
+  if ( fbconfigs == NULL ) {
+    cerr << "glXChooseFBConfig failed\n";
+    return false;
+  }
 
-	XVisualInfo *visinfo = glXGetVisualFromFBConfig( dpy, fbconfigs[0] );
-	if ( visinfo == NULL ) {
-		cerr << "glXGetVisualFromFBConfig failed\n";
-		XFree( fbconfigs );
-		return false;
-	}
+  XVisualInfo *visinfo = glXGetVisualFromFBConfig( dpy, fbconfigs[0] );
+  if ( visinfo == NULL ) {
+    cerr << "glXGetVisualFromFBConfig failed\n";
+    XFree( fbconfigs );
+    return false;
+  }
 
-	original_xlib_handler = XSetErrorHandler( XCreateWindow_error );
-	Window xWin = XCreateSimpleWindow( dpy, DefaultRootWindow(dpy), 0,0,10,10, 0,0,0 );
-	// can't depend on xWin==NULL at failure. catch Xlib Errors instead.
-	XSync( dpy, false ); 
-	if ( XCreateWindow_failed ) { 
-		XFree( visinfo );
-		XFree( fbconfigs );
-		return false;		
-	}
-	XSetErrorHandler( original_xlib_handler );
-	// do not call XMapWindow - keep the window hidden
+  original_xlib_handler = XSetErrorHandler( XCreateWindow_error );
+  Window xWin = XCreateSimpleWindow( dpy, DefaultRootWindow(dpy), 0,0,10,10, 0,0,0 );
+  // can't depend on xWin==NULL at failure. catch Xlib Errors instead.
+  XSync( dpy, false ); 
+  if ( XCreateWindow_failed ) { 
+    XFree( visinfo );
+    XFree( fbconfigs );
+    return false;    
+  }
+  XSetErrorHandler( original_xlib_handler );
+  // do not call XMapWindow - keep the window hidden
 
-	GLXContext context = glXCreateNewContext( dpy, fbconfigs[0], GLX_RGBA_TYPE, NULL, True );
-	if ( context == NULL ) {
-		cerr << "glXGetVisualFromFBConfig failed\n";
-		XDestroyWindow( dpy, xWin );
-		XFree( visinfo );
-		XFree( fbconfigs );
-		return false;
-	}	
+  GLXContext context = glXCreateNewContext( dpy, fbconfigs[0], GLX_RGBA_TYPE, NULL, True );
+  if ( context == NULL ) {
+    cerr << "glXGetVisualFromFBConfig failed\n";
+    XDestroyWindow( dpy, xWin );
+    XFree( visinfo );
+    XFree( fbconfigs );
+    return false;
+  }  
 
-	if (!glXMakeContextCurrent( dpy, xWin, xWin, context )) {
-		cerr << "glXMakeContextCurrent failed\n";
-		XDestroyWindow( dpy, xWin );
-		glXDestroyContext( dpy, context );
-		XFree( visinfo );
-		XFree( fbconfigs );
-		return false;
-	}
+  if (!glXMakeContextCurrent( dpy, xWin, xWin, context )) {
+    cerr << "glXMakeContextCurrent failed\n";
+    XDestroyWindow( dpy, xWin );
+    glXDestroyContext( dpy, context );
+    XFree( visinfo );
+    XFree( fbconfigs );
+    return false;
+  }
 
   ctx.openGLContext = context;
-	ctx.xwindow = xWin;
+  ctx.xwindow = xWin;
 
-	XFree( visinfo );
-	XFree( fbconfigs );
+  XFree( visinfo );
+  XFree( fbconfigs );
 
-	return true;
+  return true;
 }
 
 
 Bool create_glx_dummy_context(OffscreenContext &ctx)
 {
-	// This will alter ctx.openGLContext and ctx.xdisplay and ctx.xwindow if successfull
-	int major;
-	int minor;
-	Bool result = False;
+  // This will alter ctx.openGLContext and ctx.xdisplay and ctx.xwindow if successfull
+  int major;
+  int minor;
+  Bool result = False;
 
-	ctx.xdisplay = XOpenDisplay( NULL );
-	if ( ctx.xdisplay == NULL ) {
-		cerr << "Unable to open a connection to the X server\n";
-		return False;
-	}
+  ctx.xdisplay = XOpenDisplay( NULL );
+  if ( ctx.xdisplay == NULL ) {
+    cerr << "Unable to open a connection to the X server\n";
+    return False;
+  }
 
-	glXQueryVersion(ctx.xdisplay, &major, &minor);
+  glXQueryVersion(ctx.xdisplay, &major, &minor);
 
-	if ( major==1 && minor<=2 && glXGetVisualFromFBConfig==NULL ) {
-		cerr << "Error: GLX version 1.3 functions missing. "
-				<< "Your GLX version: " << major << "." << minor << endl;
-		XCloseDisplay( ctx.xdisplay );
-	} else {
-		// if glXGetVisualFromFBConfig exists, pretend we have >=1.3
-		result = create_glx_dummy_window(ctx);
-	}
+  if ( major==1 && minor<=2 && glXGetVisualFromFBConfig==NULL ) {
+    cerr << "Error: GLX version 1.3 functions missing. "
+        << "Your GLX version: " << major << "." << minor << endl;
+  } else {
+    // if glXGetVisualFromFBConfig exists, pretend we have >=1.3
+    result = create_glx_dummy_window(ctx);
+  }
 
-	return result;
+  if (!result) XCloseDisplay( ctx.xdisplay );
+  return result;
 }
 
 void glewCheck() {
@@ -187,11 +189,11 @@ void glewCheck() {
 OffscreenContext *create_offscreen_context(int w, int h)
 {
   OffscreenContext *ctx = new OffscreenContext;
-	offscreen_context_init( *ctx, w, h );
+  offscreen_context_init( *ctx, w, h );
 
-	// before an FBO can be setup, a GLX context must be created
+  // before an FBO can be setup, a GLX context must be created
   // this call alters ctx->xDisplay and ctx->openGLContext 
-	//  and ctx->xwindow if successfull
+  //  and ctx->xwindow if successfull
   if (!create_glx_dummy_context( *ctx )) {
     return NULL;
   }
@@ -209,15 +211,15 @@ OffscreenContext *create_offscreen_context(int w, int h)
 
 bool teardown_offscreen_context(OffscreenContext *ctx)
 {
-	if (ctx) {
-		fbo_unbind(ctx->fbo);
-		fbo_delete(ctx->fbo);
-		XDestroyWindow( ctx->xdisplay, ctx->xwindow );
-		glXDestroyContext( ctx->xdisplay, ctx->openGLContext );
-		XCloseDisplay( ctx->xdisplay );
-		return true;
-	}
-	return false;
+  if (ctx) {
+    fbo_unbind(ctx->fbo);
+    fbo_delete(ctx->fbo);
+    XDestroyWindow( ctx->xdisplay, ctx->xwindow );
+    glXDestroyContext( ctx->xdisplay, ctx->openGLContext );
+    XCloseDisplay( ctx->xdisplay );
+    return true;
+  }
+  return false;
 }
 
 /*!
@@ -225,7 +227,7 @@ bool teardown_offscreen_context(OffscreenContext *ctx)
 */
 bool save_framebuffer(OffscreenContext *ctx, const char *filename)
 {
-	if (!ctx || !filename) return false;
+  if (!ctx || !filename) return false;
   int samplesPerPixel = 4; // R, G, B and A
   GLubyte pixels[ctx->width * ctx->height * samplesPerPixel];
   glReadPixels(0, 0, ctx->width, ctx->height, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
@@ -248,5 +250,5 @@ bool save_framebuffer(OffscreenContext *ctx, const char *filename)
 
 void bind_offscreen_context(OffscreenContext *ctx)
 {
-	if (ctx) fbo_bind(ctx->fbo);
+  if (ctx) fbo_bind(ctx->fbo);
 }
