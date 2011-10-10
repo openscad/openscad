@@ -20,4 +20,6 @@ void fbo_delete(fbo_t *fbo);
 GLuint fbo_bind(fbo_t *fbo);
 void fbo_unbind(fbo_t *fbo);
 
+bool REPORTGLERROR(const char * task);
+
 #endif
