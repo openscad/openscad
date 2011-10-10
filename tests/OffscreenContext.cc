@@ -190,7 +190,8 @@ OffscreenContext *create_offscreen_context(int w, int h)
 	offscreen_context_init( *ctx, w, h );
 
 	// before an FBO can be setup, a GLX context must be created
-  // this call alters ctx->xDisplay and ctx->openGLContext
+  // this call alters ctx->xDisplay and ctx->openGLContext 
+	//  and ctx->xwindow if successfull
   if (!create_glx_dummy_context( *ctx )) {
     return NULL;
   }
