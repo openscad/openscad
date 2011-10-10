@@ -37,7 +37,7 @@ void offscreen_context_init(OffscreenContext &ctx, int width, int height)
   ctx.height = height;
   ctx.openGLContext = NULL;
   ctx.xdisplay = NULL;
-  ctx.xwindow = NULL;
+  ctx.xwindow = (Window)NULL;
   ctx.fbo = NULL;
 }
 
