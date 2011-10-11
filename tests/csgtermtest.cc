@@ -41,7 +41,9 @@
 #include <QFile>
 #include <QDir>
 #include <QSet>
+#ifndef _MSC_VER
 #include <getopt.h>
+#endif
 #include <assert.h>
 #include <iostream>
 #include <sstream>

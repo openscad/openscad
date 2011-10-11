@@ -8,6 +8,24 @@ if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Debug)
 endif()
 
+set(WIN32_STATIC_BUILD "True")
+
+if(WIN32_STATIC_BUILD)
+  if(${CMAKE_BUILD_TYPE} STREQUAL "Debug")
+    set(EMSG "\nTo build Win32 STATIC OpenSCAD you must run cmake .. -DCMAKE_BUILD_TYPE=Release")
+    set(EMSG "${EMSG} \nand replace /MD with /MT in CMakeCache.txt")
+    set(EMSG "${EMSG} \ni.e. sed -i s/\\/MD/\\/MT/ CMakeCache.txt") 
+    message(FATAL_ERROR ${EMSG})
+  endif()
+endif()
+
+# Win32 linker debugging
+# If you uncomment this, use nmake -F Makefile > log.txt 
+# (the link log can be several megabytes long)
+if(WIN32)
+  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -VERBOSE")
+endif()
+
 # Disable some warnings in Windows 
 if(WIN32)
   # too long decorated names
@@ -16,6 +34,8 @@ if(WIN32)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4800")
   # unreferenced parameters in CGAL
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4100")
+  # fopen_s advertisement
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_CRT_SECURE_NO_DEPRECATE")
 endif()
 
 #
@@ -72,8 +92,13 @@ include_directories(${OPENCSG_INCLUDE_DIR})
 if ()
   set(GLEW_DIR "$ENV{MACOSX_DEPLOY_DIR}")
 endif()
+
 find_package(GLEW REQUIRED)
 include_directories(${GLEW_INCLUDE_PATH})
+
+if(WIN32_STATIC_BUILD)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DGLEW_STATIC")
+endif()
 
 # Flex/Bison
 find_package(BISON)

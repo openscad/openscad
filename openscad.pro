@@ -9,6 +9,10 @@
 }
 
 win32 {
+        QMAKE_LFLAGS   += -VERBOSE
+}
+
+win32 {
   isEmpty(VERSION) VERSION = $$system(date /t)
 } else {
   isEmpty(VERSION) VERSION = $$system(date "+%Y.%m.%d")
