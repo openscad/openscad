@@ -8,7 +8,9 @@ if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Debug)
 endif()
 
-set(WIN32_STATIC_BUILD "True")
+if (WIN32)
+  set(WIN32_STATIC_BUILD "True")
+endif()
 
 if(WIN32_STATIC_BUILD)
   if(${CMAKE_BUILD_TYPE} STREQUAL "Debug")
