@@ -4,6 +4,8 @@ Create an OpenGL context without creating an OpenGL Window. for Windows.
 
 */
 
+#include <windows.h>
+
 #include "OffscreenContext.h"
 #include "printutils.h"
 #include "imageutils.h"
@@ -15,7 +17,9 @@ using namespace std;
 
 struct OffscreenContext
 {
-//  GLXContext openGLContext;
+  HWND window;
+  HDC dev_context;
+  HGLRC openGLContext;
   int width;
   int height;
   fbo_t *fbo;
@@ -23,6 +27,9 @@ struct OffscreenContext
 
 void offscreen_context_init(OffscreenContext &ctx, int width, int height)
 {
+  ctx.window = (HWND)NULL;
+  ctx.dev_context = (HDC)NULL;
+  ctx.openGLContext = (HGLRC)NULL;
   ctx.width = width;
   ctx.height = height;
   ctx.fbo = NULL;
@@ -48,17 +55,60 @@ void glewCheck() {
 #endif
 }
 
+LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam) 
+{
+	return DefWindowProc( hwnd, message, wparam, lparam );
+}
+
+bool create_wgl_dummy_context(OffscreenContext &ctx)
+{
+	// create window
+
+        HINSTANCE inst = GetModuleHandle(0);
+	WNDCLASS wc;
+        ZeroMemory( &wc, sizeof( wc ) );
+	wc.style = CS_OWNDC;
+	wc.lpfnWndProc = WndProc;
+	wc.hInstance = inst;
+	wc.lpszClassName = "OpenSCAD";
+	RegisterClass( &wc );
+	
+	HWND window = CreateWindow( "OpenSCAD", "OpenSCAD", 
+		WS_CAPTION | WS_POPUPWINDOW | WS_VISIBLE,
+		0, 0, 256, 256,	NULL, NULL, inst, NULL );
+	
+	
+	// create WGL context, make current
+
+	PIXELFORMATDESCRIPTOR pixformat;
+	int chosenformat;
+	HDC dev_context = GetDC( window );
+	ZeroMemory( &pixformat, sizeof( pixformat ) );
+	pixformat.nSize = sizeof( pixformat );
+	pixformat.nVersion = 1;
+	pixformat.dwFlags = PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL;
+	pixformat.iPixelType = PFD_TYPE_RGBA;
+	pixformat.cColorBits = 24;
+	pixformat.cDepthBits = 16;
+	pixformat.iLayerType = PFD_MAIN_PLANE;
+	chosenformat = ChoosePixelFormat( dev_context, &pixformat );
+	SetPixelFormat( dev_context, chosenformat, &pixformat );
+	HGLRC gl_render_context = wglCreateContext( dev_context );
+	wglMakeCurrent( dev_context, gl_render_context );
+
+	return true;
+}
+
+
 OffscreenContext *create_offscreen_context(int w, int h)
 {
   OffscreenContext *ctx = new OffscreenContext;
   offscreen_context_init( *ctx, w, h );
 
-  // before an FBO can be setup, a GLX context must be created
-  // this call alters ctx->xDisplay and ctx->openGLContext 
-  //  and ctx->xwindow if successfull
-  cerr << "WGL not implemented\n";
-/*
-  if (!create_glx_dummy_context( *ctx )) {
+  // before an FBO can be setup, a WGL context must be created
+  // this call alters ctx->window and ctx->openGLContext 
+  //  and ctx->dev_context if successfull
+  if (!create_wgl_dummy_context( *ctx )) {
     return NULL;
   }
 
@@ -70,7 +120,6 @@ OffscreenContext *create_offscreen_context(int w, int h)
     return NULL;
   }
 
-*/
   ctx = NULL;
   return ctx;
 }
@@ -78,6 +127,10 @@ OffscreenContext *create_offscreen_context(int w, int h)
 bool teardown_offscreen_context(OffscreenContext *ctx)
 {
   if (ctx) {
+    wglMakeCurrent( NULL, NULL );
+    wglDeleteContext( ctx->openGLContext );
+    ReleaseDC( ctx->window, ctx->dev_context );
+
     fbo_unbind(ctx->fbo);
     fbo_delete(ctx->fbo);
     return true;
