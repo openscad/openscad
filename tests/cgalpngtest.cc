@@ -23,10 +23,6 @@
  *
  */
 
-#ifdef _MSC_VER
-#define EIGEN_DONT_ALIGN
-#endif
-
 #include "myqhash.h"
 #include "openscad.h"
 #include "node.h"
@@ -87,6 +83,11 @@ struct CsgInfo
 {
 	OffscreenView *glview;
 };
+
+
+extern Vector3d getBoundingCenter(BoundingBox bbox);
+extern double getBoundingRadius(BoundingBox bbox);
+
 
 int main(int argc, char **argv)
 {
@@ -217,21 +218,19 @@ int main(int argc, char **argv)
 
 	CGALRenderer cgalRenderer(N);
 
-/*	Eigen::AlignedBox<double, 3> bbox;
+	BoundingBox bbox;
 	if (cgalRenderer.polyhedron) {
 		CGAL::Bbox_3 cgalbbox = cgalRenderer.polyhedron->bbox();
-		bbox = BoundingBox(Vector3d(cgalbbox.xmin(), cgalbbox.ymin(), cgalbbox.zmin()),
-				 Vector3d(cgalbbox.xmax(), cgalbbox.ymax(), cgalbbox.zmax()));
-	}
-	else if (cgalRenderer.polyset) {
+		Vector3d min = Vector3d(cgalbbox.xmin(), cgalbbox.ymin(), cgalbbox.zmin());
+		Vector3d max = Vector3d(cgalbbox.xmax(), cgalbbox.ymax(), cgalbbox.zmax());
+		bbox = BoundingBox(min, max);
+	} else if (cgalRenderer.polyset) {
 		bbox = cgalRenderer.polyset->getBoundingBox();
 	}
 
-	Vector3d center = (bbox.min() + bbox.max()) / 2;
-	double radius = (bbox.max() - bbox.min()).norm() / 2;
-*/
-	Vector3d center(0,0,0);
-	double radius = 5.0;
+	Vector3d center = getBoundingCenter(bbox);
+	double radius = getBoundingRadius(bbox);
+
 	Vector3d cameradir(1, 1, -0.5);
 	Vector3d camerapos = center - radius*2*cameradir;
 	csgInfo.glview->setCamera(camerapos, center);
@@ -246,3 +245,4 @@ int main(int argc, char **argv)
 
 	return 0;
 }
+

@@ -9,11 +9,12 @@
 }
 
 win32 {
-        QMAKE_LFLAGS   += -VERBOSE
+# for debugging link problems (use nmake -f Makefile.Release > log.txt)
+#        QMAKE_LFLAGS   += -VERBOSE
 }
 
 win32 {
-  isEmpty(VERSION) VERSION = $$system(date /t)
+  isEmpty(VERSION) VERSION = "2011.10.15"
 } else {
   isEmpty(VERSION) VERSION = $$system(date "+%Y.%m.%d")
 }
@@ -51,6 +52,8 @@ win32:QMAKE_CXXFLAGS += -wd4800
 
 #disable warning about CGAL's unreferenced formal parameters
 win32:QMAKE_CXXFLAGS += -wd4100
+
+win32:QMAKE_CXXFLAGS += -DEIGEN_DONT_ALIGN
 
 TEMPLATE = app
 RESOURCES = openscad.qrc

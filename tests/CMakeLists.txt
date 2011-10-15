@@ -8,25 +8,32 @@ if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Debug)
 endif()
 
-set(WIN32_STATIC_BUILD "True")
+
+#
+# Windows
+#
+
+if(WIN32)
+  set(WIN32_STATIC_BUILD "True")
+endif()
 
 if(WIN32_STATIC_BUILD)
   if(${CMAKE_BUILD_TYPE} STREQUAL "Debug")
-    set(EMSG "\nTo build Win32 STATIC OpenSCAD you must run cmake .. -DCMAKE_BUILD_TYPE=Release")
-    set(EMSG "${EMSG} \nand replace /MD with /MT in CMakeCache.txt")
+    set(EMSG "\nTo build Win32 STATIC OpenSCAD tests you must run")
+    set(EMSG "${EMSG} \ncmake .. -DCMAKE_BUILD_TYPE=Release")
+    set(EMSG "${EMSG} \nthen replace /MD with /MT in CMakeCache.txt")
     set(EMSG "${EMSG} \ni.e. sed -i s/\\/MD/\\/MT/ CMakeCache.txt") 
+    set(EMSG "${EMSG} \nthen re-run cmake ..") 
     message(FATAL_ERROR ${EMSG})
   endif()
 endif()
 
-# Win32 linker debugging
-# If you uncomment this, use nmake -F Makefile > log.txt 
-# (the link log can be several megabytes long)
+# Turn off Eigen SIMD optimization
 if(WIN32)
-  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -VERBOSE")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DEIGEN_DONT_ALIGN")
 endif()
 
-# Disable some warnings in Windows 
+# Disable warnings
 if(WIN32)
   # too long decorated names
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4503")
@@ -37,6 +44,18 @@ if(WIN32)
   # fopen_s advertisement
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_CRT_SECURE_NO_DEPRECATE")
 endif()
+
+# Debugging - if you uncomment, use nmake -f Makefile > log.txt (the log is big)
+if(WIN32)
+  # Linker debugging
+  #set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -VERBOSE")
+
+  # Compiler debugging
+  # you have to pass -DCMAKE_VERBOSE_MAKEFILE=ON to cmake when you run it. 
+endif()
+
+# Compilation debugging
+
 
 #
 # Build test apps
@@ -89,7 +108,7 @@ include_directories(${OPENCSG_INCLUDE_DIR})
 
 # GLEW
 
-if ()
+if (NOT $ENV{MACOSX_DEPLOY_DIR} STREQUAL "")
   set(GLEW_DIR "$ENV{MACOSX_DEPLOY_DIR}")
 endif()
 
@@ -161,10 +180,13 @@ set(COMMON_SOURCES
 # Offscreen OpenGL context source code
 #
 if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+	message(STATUS "Offscreen OpenGL Context - using Apple CGL")
 	set(OFFSCREEN_CTX_SOURCE "OffscreenContext.mm")
 elseif(UNIX)
+	message(STATUS "Offscreen OpenGL Context - using Unix GLX")
 	set(OFFSCREEN_CTX_SOURCE "OffscreenContext.cc")
 elseif(WIN32)
+	message(STATUS "Offscreen OpenGL Context - using Microsoft WGL")
 	set(OFFSCREEN_CTX_SOURCE "OffscreenContextWGL.cc")
 endif()
 
@@ -212,7 +234,7 @@ target_link_libraries(cgaltest ${CGAL_LIBRARY} ${CGAL_3RD_PARTY_LIBRARIES} ${QT_
 #
 # cgalpngtest
 #
-add_executable(cgalpngtest cgalpngtest.cc OffscreenView.cc ${OFFSCREEN_CTX_SOURCE} imageutils.cc fbo.cc
+add_executable(cgalpngtest cgalpngtest.cc OffscreenView.cc bboxhelp.cc ${OFFSCREEN_CTX_SOURCE} imageutils.cc fbo.cc
                            ../src/CGALRenderer.cc ../src/CGAL_Nef_polyhedron.cc ../src/cgalutils.cc
                            ../src/CSGTermEvaluator.cc ../src/CGALEvaluator.cc ../src/CGALCache.cc
                            ../src/PolySetCGALEvaluator.cc ../src/qhash.cc

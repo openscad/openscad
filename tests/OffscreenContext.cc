@@ -1,9 +1,11 @@
-/*
+﻿/*
 
 Create an OpenGL context without creating an OpenGL Window. for Linux.
 
-based on
+See Also
 
+ glxgears.c by Brian Paul from mesa-demos (mesa3d.org)
+ http://cgit.freedesktop.org/mesa/demos/tree/src/xdemos?id=mesa-demos-8.0.1
  http://www.opengl.org/sdk/docs/man/xhtml/glXIntro.xml
  http://www.mesa3d.org/brianp/sig97/offscrn.htm
  http://glprogramming.com/blue/ch07.html
@@ -59,20 +61,13 @@ bool create_glx_dummy_window(OffscreenContext &ctx)
 {
   /*
   create a dummy X window without showing it. (without 'mapping' it)
-  save information to the ctx
+  and save information to the ctx.
 
-  based on http://www.opengl.org/sdk/docs/man/xhtml/glXIntro.xml
-  which was originally Copyright © 1991-2006 Silicon Graphics, Inc.
-  licensed under the SGI Free Software B License.
-  See http://oss.sgi.com/projects/FreeB/.
+  This purposely does not use glxCreateWindow, to avoid crashes,
+  "failed to create drawable" errors, and Mesa "WARNING: Application calling 
+    GLX 1.3 function when GLX 1.3 is not supported! This is an application bug!"
 
-  also based on glxgears.c by Brian Paul from mesa-demos (mesa3d.org)
-
-  purposely does not use glxCreateWindow, to avoid crashes,
-  "failed to create drawable" errors, and Mesa "This is an application bug!"
-  warnings about GLX 1.3. 
-
-  this function will alter ctx.openGLContext and ctx.xwindow if successfull
+  This function will alter ctx.openGLContext and ctx.xwindow if successfull
   */
 
   int attributes[] = {
@@ -86,8 +81,8 @@ bool create_glx_dummy_window(OffscreenContext &ctx)
 
   Display *dpy = ctx.xdisplay;
 
-  int numReturned = 0;
-  GLXFBConfig *fbconfigs = glXChooseFBConfig( dpy, DefaultScreen(dpy), attributes, &numReturned );
+  int num_returned = 0;
+  GLXFBConfig *fbconfigs = glXChooseFBConfig( dpy, DefaultScreen(dpy), attributes, &num_returned );
   if ( fbconfigs == NULL ) {
     cerr << "glXChooseFBConfig failed\n";
     return false;
@@ -100,9 +95,9 @@ bool create_glx_dummy_window(OffscreenContext &ctx)
     return false;
   }
 
+  // can't depend on xWin==NULL at failure. use a custom Xlib error handler instead.
   original_xlib_handler = XSetErrorHandler( XCreateWindow_error );
   Window xWin = XCreateSimpleWindow( dpy, DefaultRootWindow(dpy), 0,0,10,10, 0,0,0 );
-  // can't depend on xWin==NULL at failure. catch Xlib Errors instead.
   XSync( dpy, false ); 
   if ( XCreateWindow_failed ) { 
     XFree( visinfo );
@@ -110,7 +105,8 @@ bool create_glx_dummy_window(OffscreenContext &ctx)
     return false;    
   }
   XSetErrorHandler( original_xlib_handler );
-  // do not call XMapWindow - keep the window hidden
+
+  // Most programs would call XMapWindow here. But we don't, to keep the window hidden
 
   GLXContext context = glXCreateNewContext( dpy, fbconfigs[0], GLX_RGBA_TYPE, NULL, True );
   if ( context == NULL ) {
@@ -153,13 +149,15 @@ Bool create_glx_dummy_context(OffscreenContext &ctx)
     return False;
   }
 
+  // glxQueryVersion is not always reliable. Use it, but then
+  // also check to see if GLX 1.3 functions exist 
+
   glXQueryVersion(ctx.xdisplay, &major, &minor);
 
   if ( major==1 && minor<=2 && glXGetVisualFromFBConfig==NULL ) {
     cerr << "Error: GLX version 1.3 functions missing. "
         << "Your GLX version: " << major << "." << minor << endl;
   } else {
-    // if glXGetVisualFromFBConfig exists, pretend we have >=1.3
     result = create_glx_dummy_window(ctx);
   }
 
@@ -198,7 +196,12 @@ OffscreenContext *create_offscreen_context(int w, int h)
     return NULL;
   }
 
-  glewInit(); //must come after Context creation and before FBO calls.
+  // glewInit must come after Context creation and before FBO calls.
+  glewInit(); 
+  if (GLEW_OK != err) {
+    fprintf(stderr, "Unable to init GLEW: %s\n", glewGetErrorString(err));
+    exit(1);
+  }
   glewCheck();
 
   ctx->fbo = fbo_new();
