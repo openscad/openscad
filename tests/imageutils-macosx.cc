@@ -4,7 +4,8 @@
 bool write_png(const char *filename, unsigned char *pixels, int width, int height)
 {
   size_t rowBytes = width * 4;
-  CGColorSpaceRef colorSpace = CGColorSpaceCreateWithName(kCGColorSpaceGenericRGB);
+//  CGColorSpaceRef colorSpace = CGColorSpaceCreateWithName(kCGColorSpaceGenericRGB);
+	CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
   CGBitmapInfo bitmapInfo = kCGImageAlphaNoneSkipLast | kCGBitmapByteOrder32Big; // BGRA
   int bitsPerComponent = 8;
   CGContextRef contextRef = CGBitmapContextCreate(pixels, width, height, 
