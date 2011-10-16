@@ -151,14 +151,12 @@ OffscreenContext *create_offscreen_context(int w, int h)
   // This call alters ctx->window and ctx->openGLContext 
   //  and ctx->dev_context if successfull
   if (!create_wgl_dummy_context( *ctx )) {
-    fflush(stderr);
     return NULL;
   }
 
   GLenum err = glewInit(); // must come after Context creation and before FBO calls.
   if (GLEW_OK != err) {
     cerr << "Unable to init GLEW: " << glewGetErrorString(err) << "\n";
-    fflush(stderr);
     return NULL;
   }
   glewCheck();
