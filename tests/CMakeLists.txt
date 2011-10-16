@@ -1,7 +1,9 @@
 cmake_minimum_required(VERSION 2.8)
-# Explicitly use new include policy to avoid globally shadowing included modules
-# http://www.cmake.org/cmake/help/cmake-2-8-docs.html#policy:CMP0017
-cmake_policy(SET CMP0017 NEW)
+if("${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}.${CMAKE_PATCH_VERSION}" GREATER 2.8.3)
+  # Explicitly use new include policy to avoid globally shadowing included modules
+  # http://www.cmake.org/cmake/help/cmake-2-8-docs.html#policy:CMP0017
+  cmake_policy(SET CMP0017 NEW)
+endif()
 project(tests)
 
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}")
@@ -183,18 +185,6 @@ set(COMMON_SOURCES
   lodepng.cpp
   ${FLEX_OpenSCADlexer_OUTPUTS}
   ${BISON_OpenSCADparser_OUTPUTS})
-
-#
-# echotest
-#
-add_executable(echotest echotest.cc ${CORE_SOURCES})
-target_link_libraries(echotest ${QT_LIBRARIES} ${OPENGL_LIBRARY})
-
-#
-# echotest
-#
-add_executable(echotest echotest.cc ${CORE_SOURCES})
-target_link_libraries(echotest ${QT_LIBRARIES} ${OPENGL_LIBRARY})
 
 #
 # echotest
