@@ -12,6 +12,7 @@ o if() and else() can now take any value type as parameter. false, 0, empty stri
 o Strings can now be lexographically compared using the <, <=, >, >= operators
 o The version() function will return the OpenSCAD version as a vector, e.g. [2011, 09]
 o The version_num() function will return the OpenSCAD version as a number, e.g. 20110923
+o Added PI constant.
 
 Bugfixes:
 o square() crashed if any of the dimensions were zero
