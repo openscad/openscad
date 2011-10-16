@@ -27,11 +27,6 @@ if(WIN32_STATIC_BUILD)
   endif()
 endif()
 
-# Turn off Eigen SIMD optimization
-if(WIN32)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DEIGEN_DONT_ALIGN")
-endif()
-
 # Disable warnings
 if(WIN32)
   # too long decorated names
@@ -53,8 +48,6 @@ if(WIN32)
   # you have to pass -DCMAKE_VERBOSE_MAKEFILE=ON to cmake when you run it. 
 endif()
 
-# Compilation debugging
-
 
 #
 # Build test apps
@@ -71,6 +64,12 @@ find_package(Qt4 COMPONENTS QtCore QtGui QtOpenGL REQUIRED)
 include(${QT_USE_FILE})
 
 # Eigen2
+
+# Turn off Eigen SIMD optimization
+if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DEIGEN_DONT_ALIGN")
+endif()
+
 if (NOT EIGEN2_INCLUDE_DIR)
   find_path(EIGEN2_INCLUDE_DIR
             Eigen/Core 

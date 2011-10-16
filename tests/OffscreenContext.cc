@@ -197,7 +197,7 @@ OffscreenContext *create_offscreen_context(int w, int h)
   }
 
   // glewInit must come after Context creation and before FBO calls.
-  glewInit(); 
+  GLenum err = glewInit();
   if (GLEW_OK != err) {
     fprintf(stderr, "Unable to init GLEW: %s\n", glewGetErrorString(err));
     exit(1);

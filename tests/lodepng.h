@@ -1,3 +1,6 @@
+#ifndef LODEPNG_H_
+#define LODEPNG_H_
+
 /*
 LodePNG version 20110908
 
@@ -1891,3 +1894,6 @@ Account: lode dot vandevenne.
 
 Copyright (c) 2005-2011 Lode Vandevenne
 */
+
+#endif
+

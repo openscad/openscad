@@ -14,7 +14,8 @@ win32 {
 }
 
 win32 {
-  isEmpty(VERSION) VERSION = "2011.10.15"
+  isEmpty(VERSION) VERSION = $$system(date /t)
+  # isEmpty(VERSION) VERSION = "2011.10.15" # for XP, set version manually
 } else {
   isEmpty(VERSION) VERSION = $$system(date "+%Y.%m.%d")
 }
@@ -53,7 +54,9 @@ win32:QMAKE_CXXFLAGS += -wd4800
 #disable warning about CGAL's unreferenced formal parameters
 win32:QMAKE_CXXFLAGS += -wd4100
 
+# disable Eigen SIMD optimizations for non-Mac OSX
 win32:QMAKE_CXXFLAGS += -DEIGEN_DONT_ALIGN
+unix:QMAKE_CXXFLAGS += -DEIGEN_DONT_ALIGN
 
 TEMPLATE = app
 RESOURCES = openscad.qrc

@@ -1,4 +1,8 @@
+#ifndef _yee_compare_h
+#define _yee_compare_h
+
 // source code modified for OpenSCAD, Sept 2011
+// original copyright notice follows:
 /*
 Metric
 RGBAImage.h
@@ -17,9 +21,6 @@ See the GNU General Public License for more details.
 You should have received a copy of the GNU General Public License along with this program;
 if not, write to the Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 */
-
-#ifndef _yee_compare_h
-#define _yee_compare_h
 
 #include <string>
 
@@ -123,4 +124,3 @@ protected:
 };
 
 #endif
-

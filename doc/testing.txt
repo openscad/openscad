@@ -10,10 +10,20 @@ cmake ..
 make
 make test
 
-Building on Windows:
-Follow http://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Building_on_Windows 
-and build openscad, to verify your setup. Then, from the same command prompt, 
-run the above commands, but use 'nmake -f Makefile' instead of make
+Windows:
+
+First, get a normal build working by following instructions at 
+http://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Building_on_Windows
+Then, from the QT command prompt:
+
+cd tests
+mkdir build
+cd build
+cmake .. -DCMAKE_BUILD_TYPE=Release
+sed -i s/\/MD/\/MT/ CMakeCache.txt
+cmake ..
+nmake -f Makefile
+nmake -f Makefile test
 
 Adding  a new regression test:
 ------------------------------

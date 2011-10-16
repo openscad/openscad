@@ -71,9 +71,6 @@ bool create_wgl_dummy_context(OffscreenContext &ctx)
   // this function alters ctx->window and ctx->openGLContext 
   //  and ctx->dev_context if successfull
 
-  // stop Windows from producing dialog boxes about "this application has failed"
-  SetErrorMode(SEM_NOGPFAULTERRORBOX|SEM_NOOPENFILEERRORBOX|SEM_FAILCRITICALERRORS);
-
   // create window
 
   HINSTANCE inst = GetModuleHandle(0);
@@ -84,7 +81,7 @@ bool create_wgl_dummy_context(OffscreenContext &ctx)
   wc.hInstance = inst;
   wc.lpszClassName = "OpenSCAD";
   RegisterClass( &wc );
-	
+
   HWND window = CreateWindow( "OpenSCAD", "OpenSCAD", 
     WS_CAPTION | WS_POPUPWINDOW,  //| WS_VISIBLE,
     0, 0, ctx.width, ctx.height, NULL, NULL, inst, NULL );
@@ -133,7 +130,7 @@ bool create_wgl_dummy_context(OffscreenContext &ctx)
 
   bool mcok = wglMakeCurrent( dev_context, gl_render_context );
   if (!mcok) {
-    cerr << "MS GDI - wglMakeCurrent failed\n";
+    cerr << "MS WGL - wglMakeCurrent failed\n";
     return false;
   }
 
@@ -154,7 +151,6 @@ OffscreenContext *create_offscreen_context(int w, int h)
   // This call alters ctx->window and ctx->openGLContext 
   //  and ctx->dev_context if successfull
   if (!create_wgl_dummy_context( *ctx )) {
-    cerr << "wgl dummy fail\n";
     fflush(stderr);
     return NULL;
   }
@@ -169,7 +165,6 @@ OffscreenContext *create_offscreen_context(int w, int h)
 
   ctx->fbo = fbo_new();
   if (!fbo_init(ctx->fbo, w, h)) {
-    cerr << "fbo didn't init\n";
     return NULL;
   }
 

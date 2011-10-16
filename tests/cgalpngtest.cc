@@ -222,9 +222,8 @@ int main(int argc, char **argv)
 	BoundingBox bbox;
 	if (cgalRenderer.polyhedron) {
 		CGAL::Bbox_3 cgalbbox = cgalRenderer.polyhedron->bbox();
-		Vector3d min = Vector3d(cgalbbox.xmin(), cgalbbox.ymin(), cgalbbox.zmin());
-		Vector3d max = Vector3d(cgalbbox.xmax(), cgalbbox.ymax(), cgalbbox.zmax());
-		bbox = BoundingBox(min, max);
+		bbox = BoundingBox(Vector3d(cgalbbox.xmin(), cgalbbox.ymin(), cgalbbox.zmin()),
+				Vector3d(cgalbbox.xmax(), cgalbbox.ymax(), cgalbbox.zmax()));
 	} else if (cgalRenderer.polyset) {
 		bbox = cgalRenderer.polyset->getBoundingBox();
 	}
