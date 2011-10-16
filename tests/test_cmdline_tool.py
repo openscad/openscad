@@ -57,7 +57,6 @@ def execute_and_redirect(cmd, params, outfile):
     return retval
 
 def get_normalized_text(filename):
-    print >> sys.stderr, "debug normalize" , filename
     text = open(filename).read()
     return text.strip("\r\n").replace("\r\n", "\n") + "\n"
 
@@ -146,7 +145,6 @@ def run_test(testname, cmd, args):
 
     outfile = open(outputname, "wb")
     try:
-        print >> sys.stderr, "debug ", [cmd], args, [outputname]
         proc = subprocess.Popen([cmd] + args + [outputname], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         errtext = proc.communicate()[1]
         if errtext != None and len(errtext) > 0:

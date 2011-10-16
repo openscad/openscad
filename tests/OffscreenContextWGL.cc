@@ -68,8 +68,12 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam)
 
 bool create_wgl_dummy_context(OffscreenContext &ctx)
 {
-  // this call alters ctx->window and ctx->openGLContext 
+  // this function alters ctx->window and ctx->openGLContext 
   //  and ctx->dev_context if successfull
+
+  // stop Windows from producing dialog boxes about "this application has failed"
+  SetErrorMode(SEM_NOGPFAULTERRORBOX|SEM_NOOPENFILEERRORBOX|SEM_FAILCRITICALERRORS);
+
   // create window
 
   HINSTANCE inst = GetModuleHandle(0);
