@@ -40,6 +40,8 @@ if(WIN32)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4100")
   # fopen_s advertisement
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_CRT_SECURE_NO_DEPRECATE")
+  # M_PI
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_USE_MATH_DEFINES")
 endif()
 
 # Debugging - if you uncomment, use nmake -f Makefile > log.txt (the log is big)
