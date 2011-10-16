@@ -10,7 +10,8 @@ bool write_png(const char *filename, unsigned char *pixels, int width, int heigh
   unsigned char *dataout = (unsigned char *)malloc(width*height*4);
   LodePNG_encode(&dataout, &dataout_size, pixels, width, height, LCT_RGBA, 8);
   //LodePNG_saveFile(dataout, dataout_size, "blah2.png");
-  FILE *f = fopen(filename, "w");
+
+  FILE *f = fopen(filename, "wb");
   if (!f) {
 		free(dataout);
 		return false;

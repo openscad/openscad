@@ -57,6 +57,7 @@ def execute_and_redirect(cmd, params, outfile):
     return retval
 
 def get_normalized_text(filename):
+    print >> sys.stderr, "debug normalize" , filename
     text = open(filename).read()
     return text.strip("\r\n").replace("\r\n", "\n") + "\n"
 
@@ -70,10 +71,10 @@ def compare_default(resultfilename):
     return True
 
 def append_html_output(expectedfilename, resultfilename):
-	# if html directory & file not there, create them
-	# copy expected filename and result filename to dir
-	# append html to show differences
-	# dump platform.platform()
+	# 1 if html directory & file not there, create them
+	# 2 copy expected filename image and result filename image to dir
+	# 3 append html to show differences
+	# 4 dump platform.platform()
 	expectedimg = os.path.basename(expectedfilename)
 	resultimg = os.path.basename(resultfilename)
 	template = '''
@@ -133,6 +134,7 @@ def run_test(testname, cmd, args):
 
     outputdir = os.path.join(os.getcwd(), cmdname + "-output")
     actualfilename = os.path.join(outputdir, testname + "-actual." + options.suffix)
+    actualfilename = os.path.normpath(actualfilename)
 
     if options.generate: 
         if not os.path.exists(expecteddir): os.makedirs(expecteddir)
@@ -140,9 +142,12 @@ def run_test(testname, cmd, args):
     else:
         if not os.path.exists(outputdir): os.makedirs(outputdir)
         outputname = actualfilename
+    outputname = os.path.normpath( outputname )
+
     outfile = open(outputname, "wb")
     try:
-        proc = subprocess.Popen([cmd] + args, stdout=outfile, stderr=subprocess.PIPE)
+        print >> sys.stderr, "debug ", [cmd], args, [outputname]
+        proc = subprocess.Popen([cmd] + args + [outputname], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         errtext = proc.communicate()[1]
         if errtext != None and len(errtext) > 0:
             print >> sys.stderr, "Error output: " + errtext

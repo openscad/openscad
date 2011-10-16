@@ -69,12 +69,13 @@ AbstractNode *find_root_tag(AbstractNode *n)
 
 int csgtestcore(int argc, char *argv[], test_type_e test_type)
 {
-	if (argc < 2) {
-		fprintf(stderr, "Usage: %s <file.scad>\n", argv[0]);
+	if (argc != 3) {
+		fprintf(stderr, "Usage: %s <file.scad> <output.png>\n", argv[0]);
 		exit(1);
 	}
 
 	std::string filename(argv[1]);
+	std::string outfile(argv[2]);
 
 	initialize_builtin_functions();
 	initialize_builtin_modules();
@@ -244,7 +245,7 @@ int csgtestcore(int argc, char *argv[], test_type_e test_type)
 
 	csgInfo.glview->paintGL();
 
-	csgInfo.glview->save("/dev/stdout");
+	csgInfo.glview->save(outfile.c_str());
 	
 	destroy_builtin_functions();
 	destroy_builtin_modules();

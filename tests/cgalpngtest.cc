@@ -91,12 +91,13 @@ extern double getBoundingRadius(BoundingBox bbox);
 
 int main(int argc, char **argv)
 {
-	if (argc != 2) {
-		fprintf(stderr, "Usage: %s <file.scad>\n", argv[0]);
+	if (argc != 3) {
+		fprintf(stderr, "Usage: %s <file.scad> <output.png>\n", argv[0]);
 		exit(1);
 	}
 
 	const char *filename = argv[1];
+	const char *outfile = argv[2];
 
 	initialize_builtin_functions();
 	initialize_builtin_modules();
@@ -238,7 +239,7 @@ int main(int argc, char **argv)
 
 	csgInfo.glview->setRenderer(&cgalRenderer);
 	csgInfo.glview->paintGL();
-	csgInfo.glview->save("/dev/stdout");
+	csgInfo.glview->save(outfile);
 
 	destroy_builtin_functions();
 	destroy_builtin_modules();
