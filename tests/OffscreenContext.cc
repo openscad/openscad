@@ -110,7 +110,7 @@ bool create_glx_dummy_window(OffscreenContext &ctx)
 
   GLXContext context = glXCreateNewContext( dpy, fbconfigs[0], GLX_RGBA_TYPE, NULL, True );
   if ( context == NULL ) {
-    cerr << "glXGetVisualFromFBConfig failed\n";
+    cerr << "glXCreateNewContext failed\n";
     XDestroyWindow( dpy, xWin );
     XFree( visinfo );
     XFree( fbconfigs );
@@ -150,7 +150,7 @@ Bool create_glx_dummy_context(OffscreenContext &ctx)
   }
 
   // glxQueryVersion is not always reliable. Use it, but then
-  // also check to see if GLX 1.3 functions exist 
+  // also check to see if GLX 1.3 functions exist
 
   glXQueryVersion(ctx.xdisplay, &major, &minor);
 
