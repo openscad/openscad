@@ -116,6 +116,7 @@ o Misc
     (e.g Preview, Render)
   - If trying to export STL/DXF but source is newer than the CGAL rendering, ask
     for confirmation.
+  - Go through keyboard shortcuts and make them more conformant to platform standards
 o Cmd-line
   - Add verbose option (PRINT command from mainwin.cc and progress output)
 

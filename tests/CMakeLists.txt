@@ -1,4 +1,7 @@
 cmake_minimum_required(VERSION 2.8)
+# Explicitly use new include policy to avoid globally shadowing included modules
+# http://www.cmake.org/cmake/help/cmake-2-8-docs.html#policy:CMP0017
+cmake_policy(SET CMP0017 NEW)
 project(tests)
 
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}")
@@ -37,6 +40,8 @@ if(WIN32)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4100")
   # fopen_s advertisement
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_CRT_SECURE_NO_DEPRECATE")
+  # M_PI
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_USE_MATH_DEFINES")
 endif()
 
 # Debugging - if you uncomment, use nmake -f Makefile > log.txt (the log is big)
@@ -135,11 +140,10 @@ include_directories(../src)
 
 add_definitions(-DOPENSCAD_VERSION=test -DOPENSCAD_YEAR=2011 -DOPENSCAD_MONTH=10)
 
-set(COMMON_SOURCES
+set(CORE_SOURCES
   ../src/mathc99.cc
   ../src/handle_dep.cc 
   ../src/qhash.cc
-  ../src/export.cc 
   ../src/value.cc 
   ../src/expr.cc 
   ../src/func.cc 
@@ -165,6 +169,12 @@ set(COMMON_SOURCES
   ../src/rotateextrude.cc 
   ../src/printutils.cc 
   ../src/progress.cc 
+  ${FLEX_OpenSCADlexer_OUTPUTS}
+  ${BISON_OpenSCADparser_OUTPUTS})
+
+set(COMMON_SOURCES
+  ${CORE_SOURCES}
+  ../src/export.cc 
   ../src/nodedumper.cc 
   ../src/traverser.cc 
   ../src/PolySetEvaluator.cc 
@@ -173,6 +183,24 @@ set(COMMON_SOURCES
   lodepng.cpp
   ${FLEX_OpenSCADlexer_OUTPUTS}
   ${BISON_OpenSCADparser_OUTPUTS})
+
+#
+# echotest
+#
+add_executable(echotest echotest.cc ${CORE_SOURCES})
+target_link_libraries(echotest ${QT_LIBRARIES} ${OPENGL_LIBRARY})
+
+#
+# echotest
+#
+add_executable(echotest echotest.cc ${CORE_SOURCES})
+target_link_libraries(echotest ${QT_LIBRARIES} ${OPENGL_LIBRARY})
+
+#
+# echotest
+#
+add_executable(echotest echotest.cc ${CORE_SOURCES})
+target_link_libraries(echotest ${QT_LIBRARIES} ${OPENGL_LIBRARY})
 
 #
 # Offscreen OpenGL context source code
@@ -290,6 +318,12 @@ file(GLOB FEATURES_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/features/*.scad)
 file(GLOB BUGS_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/*.scad)
 file(GLOB SCAD_DXF_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/dxf/*.scad)
 
+list(APPEND ECHO_FILES
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/minimal/echo.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/features/echo-tests.scad)
+
+# Add echotest tests to CTest
+add_cmdline_test(echotest txt ${ECHO_FILES})
 # Add dumptest tests to CTest
 add_cmdline_test(dumptest txt ${MINIMAL_FILES})
 # Add csgtexttest tests to CTest

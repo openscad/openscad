@@ -34,7 +34,6 @@
 #include <algorithm>
 #include "stl-utils.h"
 #include <boost/foreach.hpp>
-#include "openscad.h" //M_PI
 
 AbstractFunction::~AbstractFunction()
 {
