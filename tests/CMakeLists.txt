@@ -195,6 +195,12 @@ add_executable(echotest echotest.cc ${CORE_SOURCES})
 target_link_libraries(echotest ${QT_LIBRARIES} ${OPENGL_LIBRARY})
 
 #
+# echotest
+#
+add_executable(echotest echotest.cc ${CORE_SOURCES})
+target_link_libraries(echotest ${QT_LIBRARIES} ${OPENGL_LIBRARY})
+
+#
 # Offscreen OpenGL context source code
 #
 if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
