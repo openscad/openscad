@@ -14,16 +14,16 @@ void glew_dump() {
        << "Vendor: " << (const char *)glGetString(GL_VENDOR) << endl
        << "OpenGL version: " << (const char *)glGetString(GL_VERSION) << endl;
 
-  string extensions((const char *)glGetString(GL_EXTENSIONS));
-  replace_all( extensions, " ", "\n " );
-  cerr << "Extensions: " << endl << " " << extensions << endl
-       << "Framebuffer and Stencil support:" << endl
-       << " GLEW_ARB_framebuffer_object: " << (bool)GLEW_ARB_framebuffer_object << endl
-       << " GLEW_EXT_framebuffer_object: " << (bool)GLEW_EXT_framebuffer_object << endl
-       << " GLEW_EXT_packed_depth_stencil: " << (bool)GLEW_EXT_packed_depth_stencil << endl
-       << " glewIsSupported(\"GL_ARB_framebuffer_object\"): " << (bool)glewIsSupported("GL_ARB_framebuffer_object") << endl
-       << " glewIsSupported(\"GL_EXT_framebuffer_object\"): " << (bool)glewIsSupported("GL_EXT_framebuffer_object") << endl
-       << " glewIsSupported(\"GL_EXT_packed_depth_stencil\"): " << (bool)glewIsSupported("GL_EXT_packed_depth_stencil") << endl;
+  bool dumpall = false;
+  if (dumpall) {
+    string extensions((const char *)glGetString(GL_EXTENSIONS));
+    replace_all( extensions, " ", "\n " );
+    cerr << "Extensions: " << endl << " " << extensions << endl;
+  }
+
+  cerr << " GLEW_ARB_framebuffer_object: " << ((GLEW_ARB_framebuffer_object==1) ? "yes" : "no" ) << endl
+       << " GLEW_EXT_framebuffer_object: " << ((GLEW_EXT_framebuffer_object==1) ? "yes" : "no")  << endl
+       << " GLEW_EXT_packed_depth_stencil: " << ((GLEW_EXT_packed_depth_stencil==1) ? "yes" : "no") << endl;
 };
 
 const char * gl_errors[] = {
@@ -33,14 +33,14 @@ const char * gl_errors[] = {
   "GL_OUT_OF_MEMORY" // 0x0503
 };
 
-bool report_glerror(const char * task)
+bool report_glerror(const char * function)
 {
   GLenum tGLErr = glGetError();
   if (tGLErr != GL_NO_ERROR) {
     if ( (tGLErr-0x500)<=3 && (tGLErr-0x500)>=0 )
-      cerr << "OpenGL error " << gl_errors[tGLErr-0x500] << " while " << task << endl;
+      cerr << "OpenGL error " << gl_errors[tGLErr-0x500] << " after " << function << endl;
     else
-      cerr << "OpenGL error " << hex << tGLErr << " while " << task << endl;
+      cerr << "OpenGL error 0x" << hex << tGLErr << " after " << function << endl;
     return true;
   }
   return false;

@@ -81,20 +81,20 @@ bool fbo_ext_init(fbo_t *fbo, size_t width, size_t height)
   // Attach render and depth buffers
   glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, 
                                GL_RENDERBUFFER_EXT, fbo->renderbuf_id);
-  if (report_glerror("specifying color render buffer")) return false;
+  if (report_glerror("specifying color render buffer EXT")) return false;
 
 
   if (!check_fbo_status()) {
-    cerr << "Problem with OpenGL framebuffer after specifying color render buffer.\n";
+    cerr << "Problem with OpenGL EXT framebuffer after specifying color render buffer.\n";
     return false;
   }
 
   glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT, 
                                GL_RENDERBUFFER_EXT, fbo->depthbuf_id);
-  if (report_glerror("specifying depth render buffer")) return false;
+  if (report_glerror("specifying depth render buffer EXT")) return false;
 
   if (!check_fbo_status()) {
-    cerr << "Problem with OpenGL framebuffer after specifying depth render buffer.\n";
+    cerr << "Problem with OpenGL EXT framebuffer after specifying depth render buffer.\n";
     return false;
   }
 
