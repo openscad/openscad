@@ -352,19 +352,19 @@ std::string Value::toString() const
 		stream << ']';
 		break;
 	case RANGE:
-		stream	<< "[ "
+		stream	<< '['
 			<< this->range_begin
 			<< " : "
 			<< this->range_step
 			<< " : "
 			<< this->range_end
-			<< " ]";
+			<< ']';
 		break;
 	case NUMBER:
 		stream << this->num;
 		break;
 	case BOOL:
-		stream << this->b;
+		stream << (this->b ? "true" : "false");
 		break;
 	default:
 		stream << "undef";
