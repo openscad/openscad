@@ -74,13 +74,20 @@ include(${QT_USE_FILE})
 
 # Turn off Eigen SIMD optimization
 if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DEIGEN_DONT_ALIGN")
+  if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "FreeBSD")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DEIGEN_DONT_ALIGN")
+  endif()
 endif()
 
 if (NOT EIGEN2_INCLUDE_DIR)
   find_path(EIGEN2_INCLUDE_DIR
             Eigen/Core 
             PATHS ENV EIGEN2DIR /opt/local/include/eigen2 /usr/include/eigen2)
+  if (${CMAKE_SYSTEM_NAME} MATCHES "FreeBSD") 
+    find_path(EIGEN2_INCLUDE_DIR 
+              Eigen/Core 
+              PATHS ENV EIGEN2DIR /usr/local/include/eigen2 )
+  endif()
   if (NOT EIGEN2_INCLUDE_DIR)
     message(FATAL_ERROR "Eigen2 not found")
   else()
@@ -126,6 +133,12 @@ endif()
 
 # Flex/Bison
 find_package(BISON)
+
+if(${CMAKE_SYSTEM_NAME} MATCHES "FreeBSD")
+  # FreeBSD has an old flex in /usr/bin and a new flex in /usr/local/bin
+  set(FLEX_EXECUTABLE /usr/local/bin/flex)
+endif()
+
 find_package(FLEX)
 # The COMPILE_FLAGS and forced C++ compiler is just to be compatible with qmake
 if (WIN32)

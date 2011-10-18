@@ -1,4 +1,4 @@
-﻿/*
+/*
 
 Create an OpenGL context without creating an OpenGL Window. for Linux.
 
