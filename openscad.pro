@@ -25,6 +25,10 @@ VERSION_MONTH=$$member(VERSION_SPLIT, 1)
 VERSION_DAY=$$member(VERSION_SPLIT, 2)
 
 #configure lex / yacc
+unix:freebsd-g++ {
+  QMAKE_LEX = /usr/local/bin/flex
+  QMAKE_YACC = /usr/local/bin/bison
+}
 win32 {
   include(flex.pri)
   include(bison.pri)

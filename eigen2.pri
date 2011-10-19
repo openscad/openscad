@@ -5,7 +5,9 @@ EIGEN2_DIR = $$(EIGEN2DIR)
   INCLUDEPATH += $$EIGEN2_DIR
 }
 else {
-  macx {
+  unix:freebsd-g++ {
+    INCLUDEPATH += /usr/local/include/eigen2
+  } else macx {
     INCLUDEPATH += /opt/local/include/eigen2
   }
   else {
