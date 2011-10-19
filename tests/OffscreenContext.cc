@@ -46,10 +46,10 @@ void offscreen_context_init(OffscreenContext &ctx, int width, int height)
 
 static XErrorHandler original_xlib_handler = (XErrorHandler) NULL;
 static bool XCreateWindow_failed = false;
-static int XCreateWindow_error(Display *dpy, XErrorEvent *event) 
+static int XCreateWindow_error(Display *dpy, XErrorEvent *event)
 {
-  cerr << "XCreateWindow failed: XID: " << event->resourceid 
-        << " request: " << (int)event->request_code 
+  cerr << "XCreateWindow failed: XID: " << event->resourceid
+        << " request: " << (int)event->request_code
         << " minor: " << (int)event->minor_code << "\n";
   char description[1024];
   XGetErrorText( dpy, event->error_code, description, 1023 );
@@ -58,7 +58,7 @@ static int XCreateWindow_error(Display *dpy, XErrorEvent *event)
   return 0;
 }
 
-bool create_glx_dummy_window(OffscreenContext &ctx) 
+bool create_glx_dummy_window(OffscreenContext &ctx)
 {
   /*
   create a dummy X window without showing it. (without 'mapping' it)
@@ -108,7 +108,7 @@ bool create_glx_dummy_window(OffscreenContext &ctx)
   XSetErrorHandler( original_xlib_handler );
 
   // Most programs would call XMapWindow here. But we don't, to keep the window hidden
-  XMapWindow( dpy, xWin );
+  // XMapWindow( dpy, xWin );
 
   GLXContext context = glXCreateNewContext( dpy, fbconfigs[0], GLX_RGBA_TYPE, NULL, True );
   if ( context == NULL ) {
@@ -119,10 +119,10 @@ bool create_glx_dummy_window(OffscreenContext &ctx)
     return false;
   }
 
-  GLXWindow glxWin = glXCreateWindow( dpy, fbconfigs[0], xWin, NULL );
+  //GLXWindow glxWin = glXCreateWindow( dpy, fbconfigs[0], xWin, NULL );
 
-  //if (!glXMakeContextCurrent( dpy, xWin, xWin, context )) {
-  if (!glXMakeContextCurrent( dpy, glxWin, glxWin, context )) {
+  if (!glXMakeContextCurrent( dpy, xWin, xWin, context )) {
+  //if (!glXMakeContextCurrent( dpy, glxWin, glxWin, context )) {
     cerr << "glXMakeContextCurrent failed\n";
     glXDestroyContext( dpy, context );
     XDestroyWindow( dpy, xWin );
@@ -188,11 +188,11 @@ OffscreenContext *create_offscreen_context(int w, int h)
     cerr << "Unable to init GLEW: " << glewGetErrorString(err) << endl;
     return NULL;
   }
+  glew_dump();
 
   ctx->fbo = fbo_new();
   if (!fbo_init(ctx->fbo, w, h)) {
-    cerr << "Framebuffer init failed; dumping GLEW info" << endl;
-    glew_dump();
+    cerr << "GL Framebuffer Object init failed; dumping GLEW info" << endl;
     return NULL;
   }
 
