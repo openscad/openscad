@@ -16,6 +16,7 @@ See Also
 #include "OffscreenContext.h"
 #include "printutils.h"
 #include "imageutils.h"
+#include "system-gl.h"
 #include "fbo.h"
 
 #include <GL/gl.h>
@@ -98,15 +99,16 @@ bool create_glx_dummy_window(OffscreenContext &ctx)
   // can't depend on xWin==NULL at failure. use a custom Xlib error handler instead.
   original_xlib_handler = XSetErrorHandler( XCreateWindow_error );
   Window xWin = XCreateSimpleWindow( dpy, DefaultRootWindow(dpy), 0,0,10,10, 0,0,0 );
-  XSync( dpy, false ); 
-  if ( XCreateWindow_failed ) { 
+  XSync( dpy, false );
+  if ( XCreateWindow_failed ) {
     XFree( visinfo );
     XFree( fbconfigs );
-    return false;    
+    return false;
   }
   XSetErrorHandler( original_xlib_handler );
 
   // Most programs would call XMapWindow here. But we don't, to keep the window hidden
+  XMapWindow( dpy, xWin );
 
   GLXContext context = glXCreateNewContext( dpy, fbconfigs[0], GLX_RGBA_TYPE, NULL, True );
   if ( context == NULL ) {
@@ -115,9 +117,12 @@ bool create_glx_dummy_window(OffscreenContext &ctx)
     XFree( visinfo );
     XFree( fbconfigs );
     return false;
-  }  
+  }
 
-  if (!glXMakeContextCurrent( dpy, xWin, xWin, context )) {
+  GLXWindow glxWin = glXCreateWindow( dpy, fbconfigs[0], xWin, NULL );
+
+  //if (!glXMakeContextCurrent( dpy, xWin, xWin, context )) {
+  if (!glXMakeContextCurrent( dpy, glxWin, glxWin, context )) {
     cerr << "glXMakeContextCurrent failed\n";
     glXDestroyContext( dpy, context );
     XDestroyWindow( dpy, xWin );
@@ -165,25 +170,6 @@ Bool create_glx_dummy_context(OffscreenContext &ctx)
   return result;
 }
 
-void glewCheck() {
-#ifdef DEBUG
-  cerr << "GLEW version " << glewGetString(GLEW_VERSION) << "\n";
-  cerr << (const char *)glGetString(GL_RENDERER) << "(" << (const char *)glGetString(GL_VENDOR) << ")\n"
-       << "OpenGL version " << (const char *)glGetString(GL_VERSION) << "\n";
-  cerr  << "Extensions: " << (const char *)glGetString(GL_EXTENSIONS) << "\n";
-
-  if (GLEW_ARB_framebuffer_object) {
-    cerr << "ARB_FBO supported\n";
-  }
-  if (GLEW_EXT_framebuffer_object) {
-    cerr << "EXT_FBO supported\n";
-  }
-  if (GLEW_EXT_packed_depth_stencil) {
-    cerr << "EXT_packed_depth_stencil\n";
-  }
-#endif
-}
-
 OffscreenContext *create_offscreen_context(int w, int h)
 {
   OffscreenContext *ctx = new OffscreenContext;
@@ -199,13 +185,14 @@ OffscreenContext *create_offscreen_context(int w, int h)
   // glewInit must come after Context creation and before FBO calls.
   GLenum err = glewInit();
   if (GLEW_OK != err) {
-    fprintf(stderr, "Unable to init GLEW: %s\n", glewGetErrorString(err));
-    exit(1);
+    cerr << "Unable to init GLEW: " << glewGetErrorString(err) << endl;
+    return NULL;
   }
-  glewCheck();
 
   ctx->fbo = fbo_new();
   if (!fbo_init(ctx->fbo, w, h)) {
+    cerr << "Framebuffer init failed; dumping GLEW info" << endl;
+    glew_dump();
     return NULL;
   }
 
