@@ -59,7 +59,11 @@ win32:QMAKE_CXXFLAGS += -wd4800
 win32:QMAKE_CXXFLAGS += -wd4100
 
 # disable Eigen SIMD optimizations for non-Mac OSX
-!macx:QMAKE_CXXFLAGS += -DEIGEN_DONT_ALIGN
+!macx {
+  !unix:freebsd-g++ {
+    QMAKE_CXXFLAGS += -DEIGEN_DONT_ALIGN
+  }
+}
 
 TEMPLATE = app
 RESOURCES = openscad.qrc

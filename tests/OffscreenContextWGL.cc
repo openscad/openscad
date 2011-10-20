@@ -12,13 +12,14 @@ For more info:
 */
 
 #include <windows.h>
+#include <vector>
+#include <GL/gl.h>
 
 #include "OffscreenContext.h"
 #include "printutils.h"
 #include "imageutils.h"
+#include "system-gl.h"
 #include "fbo.h"
-#include <vector>
-#include <GL/gl.h>
 
 using namespace std;
 
@@ -40,25 +41,6 @@ void offscreen_context_init(OffscreenContext &ctx, int width, int height)
   ctx.width = width;
   ctx.height = height;
   ctx.fbo = NULL;
-}
-
-void glewCheck() {
-#ifdef DEBUG
-  cerr << "GLEW version " << glewGetString(GLEW_VERSION) << "\n";
-  cerr << (const char *)glGetString(GL_RENDERER) << "(" << (const char *)glGetString(GL_VENDOR) << ")\n"
-       << "OpenGL version " << (const char *)glGetString(GL_VERSION) << "\n";
-  //cerr  << "Extensions: " << (const char *)glGetString(GL_EXTENSIONS) << "\n";
-
-  if (GLEW_ARB_framebuffer_object) {
-    cerr << "ARB_FBO supported\n";
-  }
-  if (GLEW_EXT_framebuffer_object) {
-    cerr << "EXT_FBO supported\n";
-  }
-  if (GLEW_EXT_packed_depth_stencil) {
-    cerr << "EXT_packed_depth_stencil\n";
-  }
-#endif
 }
 
 LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam) 
@@ -159,7 +141,7 @@ OffscreenContext *create_offscreen_context(int w, int h)
     cerr << "Unable to init GLEW: " << glewGetErrorString(err) << "\n";
     return NULL;
   }
-  glewCheck();
+  glew_dump();
 
   ctx->fbo = fbo_new();
   if (!fbo_init(ctx->fbo, w, h)) {

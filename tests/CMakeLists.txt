@@ -253,7 +253,7 @@ include_directories(${CGAL_INCLUDE_DIRS})
 #
 # cgaltest
 #
-add_executable(cgaltest cgaltest.cc ../src/CGAL_Nef_polyhedron.cc ../src/cgalutils.cc ../src/CSGTermEvaluator.cc system-gl.cc
+add_executable(cgaltest cgaltest.cc ../src/CGAL_Nef_polyhedron.cc ../src/cgalutils.cc ../src/CSGTermEvaluator.cc 
                         ../src/CGALEvaluator.cc ../src/CGALCache.cc ../src/PolySetCGALEvaluator.cc ../src/qhash.cc
                         ../src/CGAL_Nef_polyhedron_DxfData.cc ../src/cgaladv_minkowski2.cc ../src/cgaladv_convexhull2.cc
                         ${COMMON_SOURCES})

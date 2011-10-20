@@ -21,9 +21,15 @@ void glew_dump() {
     cerr << "Extensions: " << endl << " " << extensions << endl;
   }
 
-  cerr << " GLEW_ARB_framebuffer_object: " << ((GLEW_ARB_framebuffer_object==1) ? "yes" : "no" ) << endl
-       << " GLEW_EXT_framebuffer_object: " << ((GLEW_EXT_framebuffer_object==1) ? "yes" : "no")  << endl
-       << " GLEW_EXT_packed_depth_stencil: " << ((GLEW_EXT_packed_depth_stencil==1) ? "yes" : "no") << endl;
+  cerr << " GL_ARB_framebuffer_object: " 
+       << (glewIsSupported("GL_ARB_framebuffer_object") ? "yes" : "no")
+       << endl
+       << " GL_EXT_framebuffer_object: " 
+       << (glewIsSupported("GL_EXT_framebuffer_object") ? "yes" : "no")  
+       << endl
+       << " GL_EXT_packed_depth_stencil: " 
+       << (glewIsSupported("GL_EXT_packed_depth_stencil") ? "yes" : "no") 
+       << endl;
 };
 
 const char * gl_errors[] = {
