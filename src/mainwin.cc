@@ -285,6 +285,7 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this->designActionExportSTL, SIGNAL(triggered()), this, SLOT(actionExportSTL()));
 	connect(this->designActionExportOFF, SIGNAL(triggered()), this, SLOT(actionExportOFF()));
 	connect(this->designActionExportDXF, SIGNAL(triggered()), this, SLOT(actionExportDXF()));
+	connect(this->designActionExportCSG, SIGNAL(triggered()), this, SLOT(actionExportCSG()));
 	connect(this->designActionExportImage, SIGNAL(triggered()), this, SLOT(actionExportImage()));
 	connect(this->designActionFlushCaches, SIGNAL(triggered()), this, SLOT(actionFlushCaches()));
 
@@ -1473,6 +1474,38 @@ void MainWindow::actionExportDXF()
 
 	clearCurrentOutput();
 #endif /* ENABLE_CGAL */
+}
+
+void MainWindow::actionExportCSG()
+{
+	setCurrentOutput();
+
+	if (!this->root_node) {
+		PRINT("Nothing to export. Please try compiling first...");
+		clearCurrentOutput();
+		return;
+	}
+
+	QString csg_filename = QFileDialog::getSaveFileName(this, "Export CSG File", 
+																											this->fileName.isEmpty() ? "Untitled.csg" : QFileInfo(this->fileName).baseName()+".csg",
+																											"CSG Files (*.csg)");
+	if (csg_filename.isEmpty()) {
+		PRINTF("No filename specified. CSG export aborted.");
+		clearCurrentOutput();
+		return;
+	}
+
+	std::ofstream fstream(csg_filename.toUtf8());
+	if (!fstream.is_open()) {
+		PRINTA("Can't open file \"%s\" for export", csg_filename);
+	}
+	else {
+		fstream << this->tree.getString(*this->root_node) << "\n";
+		fstream.close();
+		PRINTF("CSG export finished.");
+	}
+
+	clearCurrentOutput();
 }
 
 void MainWindow::actionExportImage()
