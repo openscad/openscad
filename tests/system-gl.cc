@@ -38,8 +38,8 @@ bool report_glerror(const char * function)
   GLenum tGLErr = glGetError();
   if (tGLErr != GL_NO_ERROR) {
     if ( (tGLErr-0x500)<=3 && (tGLErr-0x500)>=0 )
-      cerr << "OpenGL error " << hex << tGLErr << "(" <<
-           << gl_errors[tGLErr-0x500] << ") while " << task << endl;
+      cerr << "OpenGL error " << hex << tGLErr << "("
+           << gl_errors[tGLErr-0x500] << ") while " << function << endl;
     else
       cerr << "OpenGL error 0x" << hex << tGLErr << " after " << function << endl;
     return true;
