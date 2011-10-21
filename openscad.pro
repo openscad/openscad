@@ -60,7 +60,7 @@ win32:QMAKE_CXXFLAGS += -wd4100
 
 # disable Eigen SIMD optimizations for non-Mac OSX
 !macx {
-  !unix:freebsd-g++ {
+  !freebsd-g++ {
     QMAKE_CXXFLAGS += -DEIGEN_DONT_ALIGN
   }
 }
