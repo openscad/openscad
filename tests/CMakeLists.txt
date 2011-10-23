@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8)
-if("${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}.${CMAKE_PATCH_VERSION}" GREATER 2.8.3)
+if("${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}.${CMAKE_PATCH_VERSION}" VERSION_GREATER 2.8.3)
   # Explicitly use new include policy to avoid globally shadowing included modules
   # http://www.cmake.org/cmake/help/cmake-2-8-docs.html#policy:CMP0017
   cmake_policy(SET CMP0017 NEW)

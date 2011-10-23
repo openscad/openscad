@@ -178,6 +178,7 @@
     <addaction name="designActionExportSTL"/>
     <addaction name="designActionExportOFF"/>
     <addaction name="designActionExportDXF"/>
+    <addaction name="designActionExportCSG"/>
     <addaction name="designActionExportImage"/>
     <addaction name="designActionFlushCaches"/>
    </widget>
@@ -655,6 +656,11 @@
   <action name="designActionExportImage">
    <property name="text">
     <string>Export as Image...</string>
+   </property>
+  </action>
+  <action name="designActionExportCSG">
+   <property name="text">
+    <string>Export as CSG...</string>
    </property>
   </action>
  </widget>
