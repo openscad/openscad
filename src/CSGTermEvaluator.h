@@ -4,6 +4,7 @@
 #include <map>
 #include <list>
 #include <vector>
+#include <cstddef>
 #include "visitor.h"
 
 class CSGTermEvaluator : public Visitor

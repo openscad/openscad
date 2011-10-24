@@ -75,9 +75,7 @@ Value Expression::evaluate(const Context *context) const
 		return this->children[0]->evaluate(context) > this->children[1]->evaluate(context);
 	if (this->type == "?:") {
 		Value v = this->children[0]->evaluate(context);
-		if (v.type == Value::BOOL)
-			return this->children[v.b ? 1 : 2]->evaluate(context);
-		return Value();
+		return this->children[v.toBool() ? 1 : 2]->evaluate(context);
 	}
 	if (this->type == "[]") {
 		Value v1 = this->children[0]->evaluate(context);
