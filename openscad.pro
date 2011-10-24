@@ -8,10 +8,12 @@
   }
 }
 
-win32 {
 # for debugging link problems (use nmake -f Makefile.Release > log.txt)
-#        QMAKE_LFLAGS   += -VERBOSE
+win32 {
+  # QMAKE_LFLAGS   += -VERBOSE
 }
+
+# get VERSION from system date
 
 isEmpty(VERSION) {
   win32 {
@@ -97,14 +99,17 @@ DEFINES += OPENSCAD_VERSION=$$VERSION OPENSCAD_YEAR=$$VERSION_YEAR OPENSCAD_MONT
 !isEmpty(VERSION_DAY): DEFINES += OPENSCAD_DAY=$$VERSION_DAY
 win32:DEFINES += _USE_MATH_DEFINES NOMINMAX _CRT_SECURE_NO_WARNINGS YY_NO_UNISTD_H
 
-#disable warning about too long decorated names
-win32:QMAKE_CXXFLAGS += -wd4503
-
-#disable warning about casting int to bool
-win32:QMAKE_CXXFLAGS += -wd4800
-
-#disable warning about CGAL's unreferenced formal parameters
-win32:QMAKE_CXXFLAGS += -wd4100
+# disable MSVC warnings that are of very low importance
+win32:*msvc* {
+  # disable warning about too long decorated names
+  QMAKE_CXXFLAGS += -wd4503
+  # CGAL casting int to bool
+  QMAKE_CXXFLAGS += -wd4800
+  # CGAL's unreferenced formal parameters
+  QMAKE_CXXFLAGS += -wd4100
+  # lexer uses strdup() & other POSIX stuff
+  QMAKE_CXXFLAGS += -D_CRT_NONSTDC_NO_DEPRECATE
+}
 
 # disable Eigen SIMD optimizations for non-Mac OSX
 !macx {
