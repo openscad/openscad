@@ -13,13 +13,14 @@ For more info:
 
 #include <windows.h>
 #include <vector>
-#include <GL/gl.h>
 
 #include "OffscreenContext.h"
 #include "printutils.h"
 #include "imageutils.h"
 #include "system-gl.h"
 #include "fbo.h"
+
+#include <GL/gl.h> // must be included after glew.h
 
 using namespace std;
 
