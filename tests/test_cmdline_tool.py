@@ -69,56 +69,12 @@ def compare_default(resultfilename):
         return False
     return True
 
-def append_html_output(expectedfilename, resultfilename):
-	# 1 if html directory & file not there, create them
-	# 2 copy expected filename image and result filename image to dir
-	# 3 append html to show differences
-	# 4 dump platform.platform()
-	expectedimg = os.path.basename(expectedfilename)
-	resultimg = os.path.basename(resultfilename)
-	template = '''
-<p>
-<div style="border:1px solid gray;padding:10px;">
-Test command: <b>///TESTCMD///</b> Test name: <b>///TESTNAME///</b> <br/>
-  <div style="float: left; width: 50%;">
-  &nbsp;<br/>
-  Expected:<br/>
-  <img style="border:1px solid gray; width:90%;" src="///EXPECTED///"/>
-  </div>
-
-  <div style="float: right; width: 50%;">
-  Actual:<br/>
-  (Platform: ///PLATFORM///)<br/>
-  <img style="border:1px solid gray; width:90%;" src="///RESULT///"/>
-  </div>
-<br style="clear:both;"/>
-</div>
-<p>
-'''
-	html = template
-	html = html.replace('///EXPECTED///',expectedimg)
-	html = html.replace('///RESULT///',resultimg)
-	html = html.replace('///TESTCMD///',os.path.basename(options.cmd))
-	html = html.replace('///TESTNAME///',options.testname)
-	html = html.replace('///PLATFORM///',platform.platform())
-	try:
-		shutil.copy(expectedfilename,options.imgdiff_dir)
-		shutil.copy(resultfilename,options.imgdiff_dir)
-		f = open(options.imgdiff_htmlfile,'a')
-		f.write(html)
-		f.close()
-	        print >> sys.stderr, "appended " + options.imgdiff_htmlfile
-	except:
-	        print >> sys.stderr, "error appending " + options.imgdiff_htmlfile
-		print >> sys.stderr, sys.exc_info()
-
 def compare_png(resultfilename):
     if not resultfilename:
         print >> sys.stderr, "Error: OpenSCAD did not generate an image"
         return False
     print >> sys.stderr, 'Yee image compare: ', expectedfilename, ' ', resultfilename
     if execute_and_redirect("./yee_compare", [expectedfilename, resultfilename, "-downsample", "2", "-threshold", "200"], sys.stderr) != 0:
-	append_html_output(expectedfilename, resultfilename)
         return False
     return True
 
@@ -187,14 +143,6 @@ if __name__ == '__main__':
     options.regressiondir = os.path.join(os.path.split(sys.argv[0])[0], "regression")
     options.generate = False
     options.suffix = "txt"
-
-    options.imgdiff_dir = 'imgdiff-fail'
-    options.imgdiff_htmlfile = os.path.join(options.imgdiff_dir,'failed.html')
-    try:
-	if not os.path.isdir(options.imgdiff_dir):
-	        os.mkdir(options.imgdiff_dir)
-    except:
-        print >> sys.stderr, "error creating " + options.imgdiff_dir, sys.exc_info()
 
     for o, a in opts:
         if o in ("-g", "--generate"): options.generate = True
