@@ -30,14 +30,14 @@ public:
 	const Tree &getTree() const { return this->tree; }
 
 private:
-  void addToParent(const State &state, const AbstractNode &node);
+  void addToParent(const State &state, const AbstractNode &node, const CGAL_Nef_polyhedron &N);
   bool isCached(const AbstractNode &node) const;
 	void process(CGAL_Nef_polyhedron &target, const CGAL_Nef_polyhedron &src, CGALEvaluator::CsgOp op);
 	CGAL_Nef_polyhedron applyToChildren(const AbstractNode &node, CGALEvaluator::CsgOp op);
 	CGAL_Nef_polyhedron applyHull(const CgaladvNode &node);
 
 	std::string currindent;
-  typedef std::pair<const AbstractNode *, std::string> ChildItem;
+  typedef std::pair<const AbstractNode *, CGAL_Nef_polyhedron> ChildItem;
   typedef std::list<ChildItem> ChildList;
 	std::map<int, ChildList> visitedchildren;
 

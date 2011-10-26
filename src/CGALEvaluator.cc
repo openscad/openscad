@@ -79,22 +79,20 @@ CGAL_Nef_polyhedron CGALEvaluator::applyToChildren(const AbstractNode &node, CGA
 	CGAL_Nef_polyhedron N;
 	BOOST_FOREACH(const ChildItem &item, this->visitedchildren[node.index()]) {
 		const AbstractNode *chnode = item.first;
-		const std::string &chcacheid = item.second;
+		const CGAL_Nef_polyhedron &chN = item.second;
 		// FIXME: Don't use deep access to modinst members
 		if (chnode->modinst->tag_background) continue;
-//		assert(isCached(*chnode));
-		if (!isCached(*chnode)) {
-			PRINTF("Error - Not cached: Node %d", chnode->index());
-			PRINTF("  chcacheid = %s", chcacheid.c_str());
-			PRINTF("  getIdString() = %s", this->tree.getIdString(node).c_str());
-			assert(false);
-		}
 
-		if (N.empty()) {
-			N = CGALCache::instance()->get(chcacheid).copy();
-		} else {
-			process(N, CGALCache::instance()->get(chcacheid), op);
+    // NB! We insert into the cache here to ensure that all children of
+    // a node is a valid object. If we inserted as we created them, the 
+    // cache could have been modified before we reach this point due to a large
+    // sibling object. 
+		if (!isCached(*chnode)) {
+			CGALCache::instance()->insert(this->tree.getIdString(*chnode), chN);
 		}
+		if (N.empty()) N = chN.copy();
+		else process(N, chN, op);
+
 		chnode->progress_report();
 	}
 	return N;
@@ -105,31 +103,25 @@ extern CGAL_Nef_polyhedron2 *convexhull2(std::list<CGAL_Nef_polyhedron2*> a);
 CGAL_Nef_polyhedron CGALEvaluator::applyHull(const CgaladvNode &node)
 {
 	CGAL_Nef_polyhedron N;
-	if (this->visitedchildren[node.index()].size() > 0) {
-		std::list<CGAL_Nef_polyhedron2*> polys;
-		bool all2d = true;
-		for (ChildList::const_iterator iter = this->visitedchildren[node.index()].begin();
-				 iter != this->visitedchildren[node.index()].end();
-				 iter++) {
-			const AbstractNode *chnode = iter->first;
-			const std::string &chcacheid = iter->second;
-			// FIXME: Don't use deep access to modinst members
-			if (chnode->modinst->tag_background) continue;
-			assert(isCached(*chnode));
-			const CGAL_Nef_polyhedron &ch = CGALCache::instance()->get(chcacheid);
-			if (ch.dim == 2) {
-		    polys.push_back(ch.p2.get());
-			}
-			else if (ch.dim == 3) {
-				PRINT("WARNING: hull() is not implemented yet for 3D objects!");
-		    all2d = false;
-			}
-			chnode->progress_report();
+	std::list<CGAL_Nef_polyhedron2*> polys;
+	bool all2d = true;
+	BOOST_FOREACH(const ChildItem &item, this->visitedchildren[node.index()]) {
+		const AbstractNode *chnode = item.first;
+		const CGAL_Nef_polyhedron &chN = item.second;
+		// FIXME: Don't use deep access to modinst members
+		if (chnode->modinst->tag_background) continue;
+		if (chN.dim == 2) {
+			polys.push_back(chN.p2.get());
 		}
-
-		if (all2d) {
-			N = CGAL_Nef_polyhedron(convexhull2(polys));
+		else if (chN.dim == 3) {
+			PRINT("WARNING: hull() is not implemented yet for 3D objects!");
+			all2d = false;
 		}
+		chnode->progress_report();
+	}
+	
+	if (all2d) {
+		N = CGAL_Nef_polyhedron(convexhull2(polys));
 	}
 	return N;
 }
@@ -145,11 +137,10 @@ Response CGALEvaluator::visit(State &state, const AbstractNode &node)
 {
 	if (state.isPrefix() && isCached(node)) return PruneTraversal;
 	if (state.isPostfix()) {
-		if (!isCached(node)) {
-			CGAL_Nef_polyhedron N = applyToChildren(node, CGE_UNION);
-			CGALCache::instance()->insert(this->tree.getIdString(node), N);
-		}
-		addToParent(state, node);
+		CGAL_Nef_polyhedron N;
+		if (!isCached(node)) N = applyToChildren(node, CGE_UNION);
+		else N = CGALCache::instance()->get(this->tree.getIdString(node));
+		addToParent(state, node, N);
 	}
 	return ContinueTraversal;
 }
@@ -158,11 +149,10 @@ Response CGALEvaluator::visit(State &state, const AbstractIntersectionNode &node
 {
 	if (state.isPrefix() && isCached(node)) return PruneTraversal;
 	if (state.isPostfix()) {
-		if (!isCached(node)) {
-			CGAL_Nef_polyhedron N = applyToChildren(node, CGE_INTERSECTION);
-			CGALCache::instance()->insert(this->tree.getIdString(node), N);
-		}
-		addToParent(state, node);
+		CGAL_Nef_polyhedron N;
+		if (!isCached(node)) N = applyToChildren(node, CGE_INTERSECTION);
+		else N = CGALCache::instance()->get(this->tree.getIdString(node));
+		addToParent(state, node, N);
 	}
 	return ContinueTraversal;
 }
@@ -171,6 +161,7 @@ Response CGALEvaluator::visit(State &state, const CsgNode &node)
 {
 	if (state.isPrefix() && isCached(node)) return PruneTraversal;
 	if (state.isPostfix()) {
+		CGAL_Nef_polyhedron N;
 		if (!isCached(node)) {
 			CGALEvaluator::CsgOp op;
 			switch (node.type) {
@@ -186,10 +177,12 @@ Response CGALEvaluator::visit(State &state, const CsgNode &node)
 			default:
 				assert(false);
 			}
-			CGAL_Nef_polyhedron N = applyToChildren(node, op);
-			CGALCache::instance()->insert(this->tree.getIdString(node), N);
+			N = applyToChildren(node, op);
 		}
-		addToParent(state, node);
+		else {
+			N = CGALCache::instance()->get(this->tree.getIdString(node));
+		}
+		addToParent(state, node, N);
 	}
 	return ContinueTraversal;
 }
@@ -198,9 +191,10 @@ Response CGALEvaluator::visit(State &state, const TransformNode &node)
 {
 	if (state.isPrefix() && isCached(node)) return PruneTraversal;
 	if (state.isPostfix()) {
+		CGAL_Nef_polyhedron N;
 		if (!isCached(node)) {
 			// First union all children
-			CGAL_Nef_polyhedron N = applyToChildren(node, CGE_UNION);
+			N = applyToChildren(node, CGE_UNION);
 
 			// Then apply transform
 			// If there is no geometry under the transform, N will be empty and of dim 0,
@@ -236,9 +230,11 @@ Response CGALEvaluator::visit(State &state, const TransformNode &node)
 					node.matrix(2,0), node.matrix(2,1), node.matrix(2,2), node.matrix(2,3), node.matrix(3,3));
 				N.p3->transform(t);
 			}
-			CGALCache::instance()->insert(this->tree.getIdString(node), N);
 		}
-		addToParent(state, node);
+		else {
+			N = CGALCache::instance()->get(this->tree.getIdString(node));
+		}
+		addToParent(state, node, N);
 	}
 	return ContinueTraversal;
 }
@@ -247,18 +243,20 @@ Response CGALEvaluator::visit(State &state, const AbstractPolyNode &node)
 {
 	if (state.isPrefix() && isCached(node)) return PruneTraversal;
 	if (state.isPostfix()) {
+		CGAL_Nef_polyhedron N;
 		if (!isCached(node)) {
 			// Apply polyset operation
 			shared_ptr<PolySet> ps = this->psevaluator.getPolySet(node, false);
-			CGAL_Nef_polyhedron N;
 			if (ps) {
 				N = evaluateCGALMesh(*ps);
 //				print_messages_pop();
 				node.progress_report();
 			}
-			CGALCache::instance()->insert(this->tree.getIdString(node), N);
 		}
-		addToParent(state, node);
+		else {
+			N = CGALCache::instance()->get(this->tree.getIdString(node));
+		}
+		addToParent(state, node, N);
 	}
 	return ContinueTraversal;
 }
@@ -267,8 +265,8 @@ Response CGALEvaluator::visit(State &state, const CgaladvNode &node)
 {
 	if (state.isPrefix() && isCached(node)) return PruneTraversal;
 	if (state.isPostfix()) {
+		CGAL_Nef_polyhedron N;
 		if (!isCached(node)) {
-			CGAL_Nef_polyhedron N;
 			CGALEvaluator::CsgOp op;
 			switch (node.type) {
 			case MINKOWSKI:
@@ -287,9 +285,11 @@ Response CGALEvaluator::visit(State &state, const CgaladvNode &node)
 				N = applyHull(node);
 				break;
 			}
-			CGALCache::instance()->insert(this->tree.getIdString(node), N);
 		}
-		addToParent(state, node);
+		else {
+			N = CGALCache::instance()->get(this->tree.getIdString(node));
+		}
+		addToParent(state, node, N);
 	}
 	return ContinueTraversal;
 }
@@ -298,12 +298,18 @@ Response CGALEvaluator::visit(State &state, const CgaladvNode &node)
 	Adds ourself to out parent's list of traversed children.
 	Call this for _every_ node which affects output during the postfix traversal.
 */
-void CGALEvaluator::addToParent(const State &state, const AbstractNode &node)
+void CGALEvaluator::addToParent(const State &state, const AbstractNode &node, const CGAL_Nef_polyhedron &N)
 {
 	assert(state.isPostfix());
 	this->visitedchildren.erase(node.index());
 	if (state.parent()) {
-		this->visitedchildren[state.parent()->index()].push_back(std::make_pair(&node, this->tree.getIdString(node)));
+		this->visitedchildren[state.parent()->index()].push_back(std::make_pair(&node, N));
+	}
+	else {
+		// Root node, insert into cache
+		if (!isCached(node)) {
+			CGALCache::instance()->insert(this->tree.getIdString(node), N);
+		}
 	}
 }
 
