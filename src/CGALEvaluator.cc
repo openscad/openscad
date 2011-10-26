@@ -27,6 +27,8 @@
 #include <assert.h>
 #include <QRegExp>
 
+#include <boost/foreach.hpp>
+
 CGAL_Nef_polyhedron CGALEvaluator::evaluateCGALMesh(const AbstractNode &node)
 {
 	if (!isCached(node)) {
@@ -75,22 +77,25 @@ void CGALEvaluator::process(CGAL_Nef_polyhedron &target, const CGAL_Nef_polyhedr
 CGAL_Nef_polyhedron CGALEvaluator::applyToChildren(const AbstractNode &node, CGALEvaluator::CsgOp op)
 {
 	CGAL_Nef_polyhedron N;
-	if (this->visitedchildren[node.index()].size() > 0) {
-		for (ChildList::const_iterator iter = this->visitedchildren[node.index()].begin();
-				 iter != this->visitedchildren[node.index()].end();
-				 iter++) {
-			const AbstractNode *chnode = iter->first;
-			const string &chcacheid = iter->second;
-			// FIXME: Don't use deep access to modinst members
-			if (chnode->modinst->tag_background) continue;
-			assert(isCached(*chnode));
-			if (N.empty()) {
-				N = CGALCache::instance()->get(chcacheid).copy();
-			} else {
-				process(N, CGALCache::instance()->get(chcacheid), op);
-			}
-			chnode->progress_report();
+	BOOST_FOREACH(const ChildItem &item, this->visitedchildren[node.index()]) {
+		const AbstractNode *chnode = item.first;
+		const std::string &chcacheid = item.second;
+		// FIXME: Don't use deep access to modinst members
+		if (chnode->modinst->tag_background) continue;
+//		assert(isCached(*chnode));
+		if (!isCached(*chnode)) {
+			PRINTF("Error - Not cached: Node %d", chnode->index());
+			PRINTF("  chcacheid = %s", chcacheid.c_str());
+			PRINTF("  getIdString() = %s", this->tree.getIdString(node).c_str());
+			assert(false);
 		}
+
+		if (N.empty()) {
+			N = CGALCache::instance()->get(chcacheid).copy();
+		} else {
+			process(N, CGALCache::instance()->get(chcacheid), op);
+		}
+		chnode->progress_report();
 	}
 	return N;
 }
@@ -107,7 +112,7 @@ CGAL_Nef_polyhedron CGALEvaluator::applyHull(const CgaladvNode &node)
 				 iter != this->visitedchildren[node.index()].end();
 				 iter++) {
 			const AbstractNode *chnode = iter->first;
-			const string &chcacheid = iter->second;
+			const std::string &chcacheid = iter->second;
 			// FIXME: Don't use deep access to modinst members
 			if (chnode->modinst->tag_background) continue;
 			assert(isCached(*chnode));
@@ -520,9 +525,12 @@ CGAL_Nef_polyhedron CGALEvaluator::evaluateCGALMesh(const PolySet &ps)
 		};
 
 		PolyReducer pr(ps);
-		PRINTF("Number of polygons before reduction: %d\n", pr.polygons.size());
+		int numpolygons_before = pr.polygons.size();
 		pr.reduce();
-		PRINTF("Number of polygons after reduction: %d\n", pr.polygons.size());
+		int numpolygons_after = pr.polygons.size();
+		if (numpolygons_after < numpolygons_before) {
+			PRINTF("reduce polygons: %d -> %d", numpolygons_before, numpolygons_after);
+		}
 		return CGAL_Nef_polyhedron(pr.toNef());
 #endif
 #if 0

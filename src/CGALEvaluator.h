@@ -37,7 +37,8 @@ private:
 	CGAL_Nef_polyhedron applyHull(const CgaladvNode &node);
 
 	std::string currindent;
-  typedef std::list<std::pair<const AbstractNode *, std::string> > ChildList;
+  typedef std::pair<const AbstractNode *, std::string> ChildItem;
+  typedef std::list<ChildItem> ChildList;
 	std::map<int, ChildList> visitedchildren;
 
 	const Tree &tree;
