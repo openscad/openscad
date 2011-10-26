@@ -8,10 +8,11 @@ o New import() statement reads the correct file format based on the filename ext
   (.stl, .dxf and .off is supported)
 o The color() statement now supports an alpha parameter, e.g. color(c=[1,0,0], alpha=0.4)
 o The color() statement now supports specifying colors as strings, e.g. color("Red")
-o if() and else() can now take any value type as parameter. false, 0, empty string and empty vector or illegal value type will evaluate as false, everything else as true.
+o if()/else() and the ternary operator can now take any value type as parameter. false, 0, empty string and empty vector or illegal value type will evaluate as false, everything else as true.
 o Strings can now be lexographically compared using the <, <=, >, >= operators
 o The version() function will return the OpenSCAD version as a vector, e.g. [2011, 09]
 o The version_num() function will return the OpenSCAD version as a number, e.g. 20110923
+o Added PI constant.
 
 Bugfixes:
 o square() crashed if any of the dimensions were zero
@@ -26,6 +27,7 @@ o dxf_linear_extrude() and dxf_rotate_extrude() are now deprecated.
 o The file, layer, origin and scale parameters to linear_extrude() and rotate_extrude()
   are now deprecated. Use an import() child instead.
 o import_dxf(), import_stl() and import_off() are now deprecated. Use import() instead.
+o When exporting geometry from the cmd-line, use the universal -o option. It will export to the correct file format based on the given suffix (dxf, stl, off).
 
 OpenSCAD 2011.06
 ================

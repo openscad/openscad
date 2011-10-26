@@ -78,10 +78,10 @@ include_directories(../src)
 
 add_definitions(-DOPENSCAD_VERSION=test -DOPENSCAD_YEAR=2011 -DOPENSCAD_MONTH=10)
 
-set(COMMON_SOURCES
+
+set(CORE_SOURCES
   ../src/handle_dep.cc 
   ../src/qhash.cc
-  ../src/export.cc 
   ../src/value.cc 
   ../src/expr.cc 
   ../src/func.cc 
@@ -107,13 +107,24 @@ set(COMMON_SOURCES
   ../src/rotateextrude.cc 
   ../src/printutils.cc 
   ../src/progress.cc 
+  ${FLEX_OpenSCADlexer_OUTPUTS}
+  ${BISON_OpenSCADparser_OUTPUTS})
+
+set(COMMON_SOURCES
+  ${CORE_SOURCES}
+  ../src/export.cc 
   ../src/nodedumper.cc 
   ../src/traverser.cc 
   ../src/PolySetEvaluator.cc 
   ../src/PolySetCache.cc 
   ../src/Tree.cc
-  ${FLEX_OpenSCADlexer_OUTPUTS}
-  ${BISON_OpenSCADparser_OUTPUTS})
+)
+
+#
+# echotest
+#
+add_executable(echotest echotest.cc ${CORE_SOURCES})
+target_link_libraries(echotest ${QT_LIBRARIES} ${OPENGL_LIBRARY})
 
 #
 # dumptest
@@ -195,6 +206,12 @@ file(GLOB FEATURES_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/features/*.scad)
 file(GLOB BUGS_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/*.scad)
 file(GLOB SCAD_DXF_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/dxf/*.scad)
 
+list(APPEND ECHO_FILES
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/minimal/echo.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/features/echo-tests.scad)
+
+# Add echotest tests to CTest
+add_cmdline_test(echotest txt ${ECHO_FILES})
 # Add dumptest tests to CTest
 add_cmdline_test(dumptest txt ${MINIMAL_FILES})
 # Add csgtexttest tests to CTest

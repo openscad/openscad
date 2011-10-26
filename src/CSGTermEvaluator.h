@@ -4,6 +4,7 @@
 #include <map>
 #include <list>
 #include <vector>
+#include <cstddef>
 #include "visitor.h"
 
 #if defined __WIN32__ && ! defined _MSC_VER

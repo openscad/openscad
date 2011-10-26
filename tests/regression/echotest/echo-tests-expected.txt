@@ -1,0 +1,8 @@
+ECHO: undef
+ECHO: "string"
+ECHO: "stringvar"
+ECHO: a = 1, b = 2, true, c = false
+ECHO: [1, "vecstr", 2.34, false]
+ECHO: [1 : 2 : 10]
+ECHO: vec = [1, 2, 3]
+ECHO: range = [0 : 1 : 2]
