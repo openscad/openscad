@@ -8,14 +8,8 @@ else {
   CONFIG(mingw-cross-env) {
     INCLUDEPATH += mingw-cross-env/include/eigen2
   } else {
-    unix {
-      freebsd-g++ {
-        INCLUDEPATH += /usr/local/include/eigen2
-      } else {
-        macx: INCLUDEPATH += /opt/local/include/eigen2
-      }
-    } else {
-      INCLUDEPATH += /usr/include/eigen2
-    }
+    freebsd-g++: INCLUDEPATH += /usr/local/include/eigen2
+    macx: INCLUDEPATH += /opt/local/include/eigen2
+    !macx:!freebsd-g++:INCLUDEPATH += /usr/include/eigen2
   }
 }
