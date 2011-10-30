@@ -7,6 +7,10 @@
 #include <cstddef>
 #include "visitor.h"
 
+#if defined __WIN32__ && ! defined _MSC_VER
+#include <cstddef>
+#endif
+
 class CSGTermEvaluator : public Visitor
 {
 public:

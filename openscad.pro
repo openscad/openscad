@@ -39,8 +39,14 @@ DEFINES += OPENSCAD_VERSION=$$VERSION OPENSCAD_YEAR=$$VERSION_YEAR OPENSCAD_MONT
 !isEmpty(VERSION_DAY): DEFINES += OPENSCAD_DAY=$$VERSION_DAY
 win32:DEFINES += _USE_MATH_DEFINES NOMINMAX _CRT_SECURE_NO_WARNINGS YY_NO_UNISTD_H
 
-#disable warning about too long decorated names
-win32:QMAKE_CXXFLAGS += -wd4503
+CONFIG(mingw-cross-env) {
+  LIBS += mingw-cross-env/lib/libglew32s.a mingw-cross-env/lib/libglut.a mingw-cross-env/lib/libopengl32.a mingw-cross-env/lib/libGLEW.a mingw-cross-env/lib/libglaux.a mingw-cross-env/lib/libglu32.a mingw-cross-env/lib/libopencsg.a mingw-cross-env/lib/libmpfr.a mingw-cross-env/lib/libCGAL.a
+  QMAKE_CXXFLAGS += -fpermissive
+}
+else {
+  #disable warning about too long decorated names
+  win32:QMAKE_CXXFLAGS += -wd4503
+}
 
 
 TEMPLATE = app

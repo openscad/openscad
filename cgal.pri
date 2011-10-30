@@ -1,5 +1,6 @@
 cgal {
   DEFINES += ENABLE_CGAL
+  CONFIG(mingw-cross-env):DEFINES += BOOST_STATIC BOOST_THREAD_USE_LIB Boost_USE_STATIC_LIBS
 
   isEmpty(DEPLOYDIR) {
     # Optionally specify location of CGAL using the 
@@ -13,10 +14,15 @@ cgal {
     }
   }
 
-  win32 {
-    LIBS += $$CGAL_DIR/auxiliary/gmp/lib/libmpfr-4.lib -lCGAL-vc90-mt-s
-  } else {
-    LIBS += -lgmp -lmpfr -lCGAL
+  CONFIG(mingw-cross-env) {
+      LIBS += -lgmp -lmpfr -lCGAL
+  }
+  else {
+    win32 {
+      LIBS += $$CGAL_DIR/auxiliary/gmp/lib/libmpfr-4.lib -lCGAL-vc90-mt-s
+    } else {
+      LIBS += -lgmp -lmpfr -lCGAL
+    }
   }
   QMAKE_CXXFLAGS += -frounding-math
 }

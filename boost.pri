@@ -10,9 +10,14 @@ boost {
     }
   }
 
-  win32 {
-     LIBS += -llibboost_thread-vc90-mt-s-1_46_1 -llibboost_program_options-vc90-mt-s-1_46_1
-  } else {
-     LIBS += -lboost_thread -lboost_program_options
+  CONFIG(mingw-cross-env) {
+    LIBS += -lboost_thread_win32-mt -lboost_program_options-mt
+  }
+  else {
+    win32 {
+      LIBS += -llibboost_thread-vc90-mt-s-1_46_1 -llibboost_program_options-vc90-mt-s-1_46_1
+    } else {
+      LIBS += -lboost_thread -lboost_program_options
+    }
   }
 }

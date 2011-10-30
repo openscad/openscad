@@ -9,6 +9,11 @@ else {
     INCLUDEPATH += /opt/local/include/eigen2
   }
   else {
-    INCLUDEPATH += /usr/include/eigen2
+    CONFIG(mingw-cross-env) {
+      INCLUDEPATH += mingw-cross-env/include/eigen2
+    }
+    else {
+      INCLUDEPATH += /usr/include/eigen2
+    }
   }
 }
