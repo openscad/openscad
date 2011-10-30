@@ -4,7 +4,9 @@
 #include "OffscreenContext.h"
 #include <Eigen/Core>
 #include <Eigen/Geometry>
+#ifndef _MSC_VER
 #include <stdint.h>
+#endif
 
 class OffscreenView
 {

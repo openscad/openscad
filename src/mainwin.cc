@@ -876,7 +876,6 @@ void MainWindow::compileCSG(bool procevents)
 		this->thrownTogetherRenderer = new ThrownTogetherRenderer(this->root_chain, 
 																															this->highlights_chain, 
 																															this->background_chain);
-		
 		PRINT("CSG generation finished.");
 		int s = t.elapsed() / 1000;
 		PRINTF("Total rendering time: %d hours, %d minutes, %d seconds", s / (60*60), (s / 60) % 60, s % 60);

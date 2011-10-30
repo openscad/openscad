@@ -3,7 +3,9 @@
 
 #include <Eigen/Core>
 #include <Eigen/Geometry>
+#include <Eigen/Dense>
 
+using Eigen::Vector2d;
 using Eigen::Vector3d;
 typedef Eigen::AlignedBox<double, 3> BoundingBox;
 using Eigen::Matrix3f;

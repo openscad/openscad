@@ -24,6 +24,8 @@ import glob
 import subprocess
 import re
 import getopt
+import shutil
+import platform
 
 def initialize_environment():
     if not options.generate: options.generate = bool(os.getenv("TEST_GENERATE"))
@@ -43,8 +45,15 @@ def verify_test(testname, cmd):
     return True
 
 def execute_and_redirect(cmd, params, outfile):
-    proc = subprocess.Popen([cmd] + params, stdout=outfile)
-    retval = proc.wait()
+    retval = -1
+    try:
+        proc = subprocess.Popen([cmd] + params, stdout=outfile)
+        retval = proc.wait()
+    except:
+        print >> sys.stderr, "Error running subprocess: ", sys.exc_info()[1]
+        print >> sys.stderr, " cmd:", cmd
+        print >> sys.stderr, " params:", params
+        print >> sys.stderr, " outfile:", outfile
     return retval
 
 def get_normalized_text(filename):
@@ -61,7 +70,11 @@ def compare_default(resultfilename):
     return True
 
 def compare_png(resultfilename):
-    if execute_and_redirect("diff", [expectedfilename, resultfilename], sys.stderr) != 0:
+    if not resultfilename:
+        print >> sys.stderr, "Error: OpenSCAD did not generate an image"
+        return False
+    print >> sys.stderr, 'Yee image compare: ', expectedfilename, ' ', resultfilename
+    if execute_and_redirect("./yee_compare", [expectedfilename, resultfilename, "-downsample", "2", "-threshold", "300"], sys.stderr) != 0:
         return False
     return True
 
@@ -76,6 +89,7 @@ def run_test(testname, cmd, args):
 
     outputdir = os.path.join(os.getcwd(), cmdname + "-output")
     actualfilename = os.path.join(outputdir, testname + "-actual." + options.suffix)
+    actualfilename = os.path.normpath(actualfilename)
 
     if options.generate: 
         if not os.path.exists(expecteddir): os.makedirs(expecteddir)
@@ -83,9 +97,11 @@ def run_test(testname, cmd, args):
     else:
         if not os.path.exists(outputdir): os.makedirs(outputdir)
         outputname = actualfilename
+    outputname = os.path.normpath( outputname )
+
     outfile = open(outputname, "wb")
     try:
-        proc = subprocess.Popen([cmd] + args, stdout=outfile, stderr=subprocess.PIPE)
+        proc = subprocess.Popen([cmd] + args + [outputname], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         errtext = proc.communicate()[1]
         if errtext != None and len(errtext) > 0:
             print >> sys.stderr, "Error output: " + errtext
@@ -127,6 +143,7 @@ if __name__ == '__main__':
     options.regressiondir = os.path.join(os.path.split(sys.argv[0])[0], "regression")
     options.generate = False
     options.suffix = "txt"
+
     for o, a in opts:
         if o in ("-g", "--generate"): options.generate = True
         elif o in ("-s", "--suffix"):
@@ -134,7 +151,7 @@ if __name__ == '__main__':
             else: options.suffix = a
         elif o in ("-t", "--test"):
             options.testname = a
-            
+
     # <cmdline-tool> and <argument>
     if len(args) < 2:
         usage()

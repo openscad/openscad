@@ -17,6 +17,7 @@
 #include <sstream>
 #include <iostream>
 #include <assert.h>
+#include <cstddef>
 
 /*!
 	\class CSGTermEvaluator
