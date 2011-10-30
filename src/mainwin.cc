@@ -218,8 +218,12 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this->fileActionReload, SIGNAL(triggered()), this, SLOT(actionReload()));
 	connect(this->fileActionQuit, SIGNAL(triggered()), this, SLOT(quit()));
 #ifndef __APPLE__
-	this->fileActionSave->setShortcut(QKeySequence(Qt::Key_F2));
-	this->fileActionReload->setShortcut(QKeySequence(Qt::Key_F3));
+	QList<QKeySequence> shortcuts = this->fileActionSave->shortcuts();
+	shortcuts.push_back(QKeySequence(Qt::Key_F2));
+	this->fileActionSave->setShortcuts(shortcuts);
+	shortcuts = this->fileActionReload->shortcuts();
+	shortcuts.push_back(QKeySequence(Qt::Key_F3));
+	this->fileActionReload->setShortcuts(shortcuts);
 #endif
 	// Open Recent
 	for (int i = 0;i<maxRecentFiles; i++) {
