@@ -1,10 +1,8 @@
 #ifndef DXFDATA_H_
 #define DXFDATA_H_
 
-#include <Eigen/Dense>
+#include "linalg.h"
 #include <vector>
-
-using Eigen::Vector2d;
 
 class DxfData
 {
