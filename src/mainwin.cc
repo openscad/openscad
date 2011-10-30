@@ -92,8 +92,6 @@ using namespace boost::lambda;
 
 #endif // ENABLE_CGAL
 
-using std::cerr;
-
 // Global application state
 unsigned int GuiLocker::gui_locked = 0;
 
