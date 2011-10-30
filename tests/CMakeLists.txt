@@ -373,7 +373,8 @@ LIST(APPEND CGALPNGTEST_FILES
             ${CMAKE_SOURCE_DIR}/../testdata/scad/features/assign-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/features/include-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/features/child-tests.scad
-            ${CMAKE_SOURCE_DIR}/../testdata/scad/features/ifelse-tests.scad)
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/features/ifelse-tests.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/features/rotate_extrude_dxf-tests.scad)
 LIST(APPEND CGALPNGTEST_FILES ${SCAD_DXF_FILES})
 #LIST(APPEND CGALPNGTEST_FILES ${CMAKE_SOURCE_DIR}/../examples/example001.scad)
 add_cmdline_test(cgalpngtest png ${CGALPNGTEST_FILES})
