@@ -80,7 +80,7 @@ int csgtestcore(int argc, char *argv[], test_type_e test_type)
 	initialize_builtin_functions();
 	initialize_builtin_modules();
 
-	QApplication app(argc, argv);
+	QApplication app(argc, argv, false);
 
 	QDir original_path = QDir::current();
 
