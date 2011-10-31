@@ -52,9 +52,9 @@ QString currentdir;
 QString examplesdir;
 QString librarydir;
 
-static void outfile_handler(const QString &msg, void *userdata) {
+static void outfile_handler(const std::string &msg, void *userdata) {
 	std::ostream *str = static_cast<std::ostream*>(userdata);
-	*str << msg.toUtf8().data() << std::endl;
+	*str << msg << std::endl;
 }
 
 int main(int argc, char **argv)

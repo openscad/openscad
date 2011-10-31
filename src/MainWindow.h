@@ -79,8 +79,8 @@ private:
 	bool maybeSave();
 	bool checkModified();
 	QString dumpCSGTree(AbstractNode *root);
-	static void consoleOutput(const QString &msg, void *userdata) {
-		static_cast<MainWindow*>(userdata)->console->append(msg);
+	static void consoleOutput(const std::string &msg, void *userdata) {
+		static_cast<MainWindow*>(userdata)->console->append(QString::fromStdString(msg));
 	}
 	void loadViewSettings();
 	void loadDesignSettings();

@@ -649,7 +649,7 @@ Module *Module::compile_library(std::string filename)
 
 	if (lib_mod) {
 		libs_cache[filename].mod = lib_mod;
-		libs_cache[filename].msg = print_messages_stack.last().toStdString();
+		libs_cache[filename].msg = print_messages_stack.back();
 	} else {
 		libs_cache.erase(filename);
 	}
