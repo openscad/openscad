@@ -100,7 +100,7 @@ include[ \t\r\n>]*"<"	{ BEGIN(include); }
 }
 
 
-use[ \t\r\n>]*"<"[^ \t\r\n>]+">" {
+use[ \t\r\n>]*"<"[^\t\r\n>]+">" {
 	QString filename(yytext);
 	filename.remove(QRegExp("^use[ \t\r\n>]*<"));
 	filename.remove(QRegExp(">$"));
