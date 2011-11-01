@@ -1,8 +1,6 @@
 #ifndef LINALG_H_
 #define LINALG_H_
-#ifndef EIGEN_DONT_ALIGN
-#define EIGEN_DONT_ALIGN
-#endif
+
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 #include <Eigen/Dense>

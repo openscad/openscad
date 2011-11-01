@@ -1,8 +1,5 @@
 #ifndef DXFDATA_H_
 #define DXFDATA_H_
-#ifndef EIGEN_DONT_ALIGN
-#define EIGEN_DONT_ALIGN
-#endif
 
 #include "linalg.h"
 #include <vector>

@@ -1,6 +1,5 @@
 cgal {
   DEFINES += ENABLE_CGAL
-  CONFIG(mingw-cross-env):DEFINES += BOOST_STATIC BOOST_THREAD_USE_LIB Boost_USE_STATIC_LIBS
 
   isEmpty(DEPLOYDIR) {
     # Optionally specify location of CGAL using the 
