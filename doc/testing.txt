@@ -10,6 +10,20 @@ cmake ..
 make
 make test
 
+Windows:
+
+First, get a normal build working by following instructions at 
+http://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Building_on_Windows
+Then, from the QT command prompt:
+
+cd tests
+mkdir build
+cd build
+cmake .. -DCMAKE_BUILD_TYPE=Release
+sed -i s/\/MD/\/MT/ CMakeCache.txt
+cmake ..
+nmake -f Makefile
+nmake -f Makefile test
 
 Adding  a new regression test:
 ------------------------------
@@ -27,3 +41,21 @@ Adding  a new regression test:
 
 Note that test files which don't have an *-expected.<suffix> file will
 be ignored for the test apps in question.
+
+Troubleshooting a failed test:
+------------------------------
+
+You can run a single test by passing the test name to ctest:
+ $ ctest -R throwntogethertest_sphere
+
+You can run a series of tests by passing part of a name to ctest:
+ $ ctest -R cgalpng  # runs all cgalpng tests
+ $ ctest -R sphere   # runs all sphere tests
+    
+Logs of test runs are found in tests/build/Testing/Temporary
+Expected results are found in tests/regression/*
+Actual results are found in tests/build/testname-output/*
+
+You can also compile a single test program:
+
+ $ make cgalpngtest

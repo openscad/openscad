@@ -23,7 +23,7 @@ private:
 
 	struct cache_entry {
 		shared_ptr<class PolySet> ps;
-		QString msg;
+		std::string msg;
 		cache_entry(const shared_ptr<PolySet> &ps);
 		~cache_entry() { }
 	};

@@ -42,8 +42,6 @@ public:
 	virtual AbstractNode *evaluate(const Context *ctx, const ModuleInstantiation *inst) const;
 };
 
-using std::string;
-
 AbstractNode *ColorModule::evaluate(const Context *ctx, const ModuleInstantiation *inst) const
 {
 	ColorNode *node = new ColorNode(inst);
@@ -87,7 +85,7 @@ AbstractNode *ColorModule::evaluate(const Context *ctx, const ModuleInstantiatio
 	return node;
 }
 
-string ColorNode::toString() const
+std::string ColorNode::toString() const
 {
 	std::stringstream stream;
 
@@ -96,7 +94,7 @@ string ColorNode::toString() const
 	return stream.str();
 }
 
-string ColorNode::name() const
+std::string ColorNode::name() const
 {
 	return "color";
 }

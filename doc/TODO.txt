@@ -217,7 +217,6 @@ TESTING
 o Caching and MDI looks suspicious when the code relies on external resources
   which might be loaded from difference locations in different documents
   -> we might get a false cache hit
-o Are contructs like "child(0)" cached? Could this give false cache hits?
 o Collect "all" available OpenSCAD scripts from the internets and run the integration
   tests on them all
 o dumptest tests:

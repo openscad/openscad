@@ -47,7 +47,9 @@
 #include <QDir>
 #include <QSet>
 #include <QTextStream>
+#ifndef _MSC_VER
 #include <getopt.h>
+#endif
 #include <iostream>
 #include <assert.h>
 #include <sstream>
@@ -82,14 +84,20 @@ struct CsgInfo
 	OffscreenView *glview;
 };
 
+
+extern Vector3d getBoundingCenter(BoundingBox bbox);
+extern double getBoundingRadius(BoundingBox bbox);
+
+
 int main(int argc, char **argv)
 {
-	if (argc != 2) {
-		fprintf(stderr, "Usage: %s <file.scad>\n", argv[0]);
+	if (argc != 3) {
+		fprintf(stderr, "Usage: %s <file.scad> <output.png>\n", argv[0]);
 		exit(1);
 	}
 
 	const char *filename = argv[1];
+	const char *outfile = argv[2];
 
 	initialize_builtin_functions();
 	initialize_builtin_modules();
@@ -178,9 +186,19 @@ int main(int argc, char **argv)
 
 	QDir::setCurrent(original_path.absolutePath());
 
-	csgInfo.glview = new OffscreenView(512,512);
+// match with csgtest ends
+       try {
+                csgInfo.glview = new OffscreenView(512,512);
+        } catch (int error) {
+                fprintf(stderr,"Can't create OpenGL OffscreenView. Code: %i. Exiting.\n", error);
+                exit(1);
+        }
 
-	glewInit();
+  GLenum err = glewInit();
+  if (GLEW_OK != err) {
+    fprintf(stderr, "Unable to init GLEW: %s\n", glewGetErrorString(err));
+    exit(1);
+  }
 #ifdef DEBUG
 	cout << "GLEW version " << glewGetString(GLEW_VERSION) << "\n";
 	cout << (const char *)glGetString(GL_RENDERER) << "(" << (const char *)glGetString(GL_VENDOR) << ")\n"
@@ -205,14 +223,14 @@ int main(int argc, char **argv)
 	if (cgalRenderer.polyhedron) {
 		CGAL::Bbox_3 cgalbbox = cgalRenderer.polyhedron->bbox();
 		bbox = BoundingBox(Vector3d(cgalbbox.xmin(), cgalbbox.ymin(), cgalbbox.zmin()),
-											 Vector3d(cgalbbox.xmax(), cgalbbox.ymax(), cgalbbox.zmax()));
+							Vector3d(cgalbbox.xmax(), cgalbbox.ymax(), cgalbbox.zmax()));
 	}
 	else if (cgalRenderer.polyset) {
 		bbox = cgalRenderer.polyset->getBoundingBox();
 	}
-	Vector3d center = (bbox.min() + bbox.max()) / 2;
-	double radius = (bbox.max() - bbox.min()).norm() / 2;
 
+	Vector3d center = getBoundingCenter(bbox);
+	double radius = getBoundingRadius(bbox);
 
 	Vector3d cameradir(1, 1, -0.5);
 	Vector3d camerapos = center - radius*2*cameradir;
@@ -221,7 +239,7 @@ int main(int argc, char **argv)
 
 	csgInfo.glview->setRenderer(&cgalRenderer);
 	csgInfo.glview->paintGL();
-	csgInfo.glview->save("/dev/stdout");
+	csgInfo.glview->save(outfile);
 
 	destroy_builtin_functions();
 	destroy_builtin_modules();

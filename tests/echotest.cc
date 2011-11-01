@@ -37,10 +37,13 @@
 #include <QFile>
 #include <QDir>
 #include <QSet>
+#ifndef _MSC_VER
 #include <getopt.h>
+#endif
 #include <assert.h>
 #include <iostream>
 #include <sstream>
+#include <fstream>
 
 using std::string;
 
@@ -49,22 +52,29 @@ QString currentdir;
 QString examplesdir;
 QString librarydir;
 
-static void stdout_handler(const QString &msg, void *userdata) {
-	std::cout << msg.toUtf8().data() << std::endl;
+static void outfile_handler(const std::string &msg, void *userdata) {
+	std::ostream *str = static_cast<std::ostream*>(userdata);
+	*str << msg << std::endl;
 }
 
 int main(int argc, char **argv)
 {
-	if (argc != 2) {
-		fprintf(stderr, "Usage: %s <file.scad>\n", argv[0]);
+	if (argc != 3) {
+		fprintf(stderr, "Usage: %s <file.scad> <output.txt>\n", argv[0]);
 		exit(1);
 	}
 
 	const char *filename = argv[1];
+	const char *outfile = argv[2];
 
 	int rc = 0;
 
-	set_output_handler(&stdout_handler, NULL);
+	std::ofstream ofile(outfile);
+	if (!ofile.good()) {
+		std::cerr << "Unable to open output file\n";
+		return 0;
+	}
+	set_output_handler(&outfile_handler, &ofile);
 
 	initialize_builtin_functions();
 	initialize_builtin_modules();
@@ -144,5 +154,6 @@ int main(int argc, char **argv)
 	destroy_builtin_functions();
 	destroy_builtin_modules();
 
+	ofile.close();
 	return rc;
 }

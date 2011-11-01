@@ -13,6 +13,7 @@ o Strings can now be lexographically compared using the <, <=, >, >= operators
 o The version() function will return the OpenSCAD version as a vector, e.g. [2011, 09]
 o The version_num() function will return the OpenSCAD version as a number, e.g. 20110923
 o Added PI constant.
+o Now uses standard shortcuts for save and reload on Linux and Windows. F2/F3 will still work but is deprecated.
 
 Bugfixes:
 o square() crashed if any of the dimensions were zero
@@ -28,6 +29,7 @@ o The file, layer, origin and scale parameters to linear_extrude() and rotate_ex
   are now deprecated. Use an import() child instead.
 o import_dxf(), import_stl() and import_off() are now deprecated. Use import() instead.
 o When exporting geometry from the cmd-line, use the universal -o option. It will export to the correct file format based on the given suffix (dxf, stl, off).
+o F2 and F3 for Save and Reload is now deprecated
 
 OpenSCAD 2011.06
 ================

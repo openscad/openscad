@@ -17,5 +17,5 @@ void PolySetCache::print()
 
 PolySetCache::cache_entry::cache_entry(const shared_ptr<PolySet> &ps) : ps(ps)
 {
-	if (print_messages_stack.size() > 0) this->msg = print_messages_stack.last();
+	if (print_messages_stack.size() > 0) this->msg = print_messages_stack.back();
 }

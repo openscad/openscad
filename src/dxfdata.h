@@ -4,10 +4,8 @@
 #define EIGEN_DONT_ALIGN
 #endif
 
+#include "linalg.h"
 #include <vector>
-#include <Eigen/Dense>
-
-using Eigen::Vector2d;
 
 class DxfData
 {
@@ -33,7 +31,11 @@ public:
 		}
 	};
 
+#ifdef __APPLE__
+	std::vector<Vector2d, Eigen::aligned_allocator<Vector2d> > points;
+#else
 	std::vector<Vector2d> points;
+#endif
 	std::vector<Path> paths;
 	std::vector<Dim> dims;
 
