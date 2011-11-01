@@ -5,10 +5,11 @@ EIGEN2_DIR = $$(EIGEN2DIR)
   INCLUDEPATH += $$EIGEN2_DIR
 }
 else {
-  macx {
-    INCLUDEPATH += /opt/local/include/eigen2
-  }
-  else {
-    INCLUDEPATH += /usr/include/eigen2
+  CONFIG(mingw-cross-env) {
+    INCLUDEPATH += mingw-cross-env/include/eigen2
+  } else {
+    freebsd-g++: INCLUDEPATH += /usr/local/include/eigen2
+    macx: INCLUDEPATH += /opt/local/include/eigen2
+    !macx:!freebsd-g++:INCLUDEPATH += /usr/include/eigen2
   }
 }

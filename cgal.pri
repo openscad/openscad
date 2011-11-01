@@ -13,10 +13,19 @@ cgal {
     }
   }
 
-  win32 {
-    LIBS += $$CGAL_DIR/auxiliary/gmp/lib/libmpfr-4.lib -lCGAL-vc90-mt-s
-  } else {
+  CONFIG(mingw-cross-env) {
     LIBS += -lgmp -lmpfr -lCGAL
+    QMAKE_CXXFLAGS += -frounding-math 
+  } else {
+    windows {
+      *-g++* { 
+        QMAKE_CXXFLAGS += -frounding-math 
+      }
+      LIBS += $$CGAL_DIR/auxiliary/gmp/lib/libmpfr-4.lib -lCGAL-vc90-mt-s
+    } else {
+      LIBS += -lgmp -lmpfr -lCGAL
+      QMAKE_CXXFLAGS += -frounding-math 
+    }
   }
-  QMAKE_CXXFLAGS += -frounding-math
+
 }

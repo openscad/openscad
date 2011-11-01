@@ -35,8 +35,11 @@
 #include <QDir>
 #include <assert.h>
 
-//isatty for visual c++
-#ifdef _MSC_VER
+//isatty for visual c++ and mingw-cross-env
+#if defined __WIN32__ && ! defined _MSC_VER
+#include "unistd.h"
+#endif
+#if defined __WIN32__ || defined _MSC_VER
 extern "C" int __cdecl _isatty(int _FileHandle);
 #define isatty _isatty
 #endif
@@ -97,7 +100,7 @@ include[ \t\r\n>]*"<"	{ BEGIN(include); }
 }
 
 
-use[ \t\r\n>]*"<"[^ \t\r\n>]+">" {
+use[ \t\r\n>]*"<"[^\t\r\n>]+">" {
 	QString filename(yytext);
 	filename.remove(QRegExp("^use[ \t\r\n>]*<"));
 	filename.remove(QRegExp(">$"));

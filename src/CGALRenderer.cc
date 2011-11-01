@@ -24,10 +24,12 @@
  *
  */
 
-#include "CGALRenderer.h"
-#include "polyset.h"
-#include "CGAL_renderer.h"
+// dxfdata.h must come first for Eigen SIMD alignment issues
 #include "dxfdata.h"
+#include "polyset.h"
+
+#include "CGALRenderer.h"
+#include "CGAL_renderer.h"
 #include "dxftess.h"
 #include "CGAL_Nef_polyhedron.h"
 #include "cgal.h"

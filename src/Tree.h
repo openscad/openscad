@@ -3,8 +3,6 @@
 
 #include "nodecache.h"
 
-using std::string;
-
 /*!  
 	For now, just an abstraction of the node tree which keeps a dump
 	cache based on node indices around.
@@ -20,8 +18,8 @@ public:
 	void setRoot(const AbstractNode *root);
 	const AbstractNode *root() const { return this->root_node; }
 
-	const string &getString(const AbstractNode &node) const;
-	const string &getIdString(const AbstractNode &node) const;
+	const std::string &getString(const AbstractNode &node) const;
+	const std::string &getIdString(const AbstractNode &node) const;
 
 private:
 	const AbstractNode *root_node;

@@ -1,4 +1,9 @@
 cmake_minimum_required(VERSION 2.8)
+if("${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}.${CMAKE_PATCH_VERSION}" VERSION_GREATER 2.8.3)
+  # Explicitly use new include policy to avoid globally shadowing included modules
+  # http://www.cmake.org/cmake/help/cmake-2-8-docs.html#policy:CMP0017
+  cmake_policy(SET CMP0017 NEW)
+endif()
 project(tests)
 
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}")
@@ -7,6 +12,51 @@ set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}")
 if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Debug)
 endif()
+
+#
+# Windows
+#
+
+if(WIN32)
+  set(WIN32_STATIC_BUILD "True")
+endif()
+
+if(WIN32_STATIC_BUILD)
+  if(${CMAKE_BUILD_TYPE} STREQUAL "Debug")
+    set(EMSG "\nTo build Win32 STATIC OpenSCAD tests you must run")
+    set(EMSG "${EMSG} \ncmake .. -DCMAKE_BUILD_TYPE=Release")
+    set(EMSG "${EMSG} \nthen replace /MD with /MT in CMakeCache.txt")
+    set(EMSG "${EMSG} \ni.e. sed -i s/\\/MD/\\/MT/ CMakeCache.txt") 
+    set(EMSG "${EMSG} \nthen re-run cmake ..") 
+    message(FATAL_ERROR ${EMSG})
+  endif()
+endif()
+
+# Disable warnings
+if(WIN32)
+  # too long decorated names
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4503")
+  # int cast to bool in CGAL
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4800")
+  # unreferenced parameters in CGAL
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4100")
+  # fopen_s advertisement
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_CRT_SECURE_NO_DEPRECATE")
+  # lexer uses strdup & other POSIX stuff
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_CRT_NONSTDC_NO_DEPRECATE")
+  # M_PI
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_USE_MATH_DEFINES")
+endif()
+
+# Debugging - if you uncomment, use nmake -f Makefile > log.txt (the log is big)
+if(WIN32)
+  # Linker debugging
+  #set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -VERBOSE")
+
+  # Compiler debugging
+  # you have to pass -DCMAKE_VERBOSE_MAKEFILE=ON to cmake when you run it. 
+endif()
+
 
 #
 # Build test apps
@@ -23,10 +73,23 @@ find_package(Qt4 COMPONENTS QtCore QtGui QtOpenGL REQUIRED)
 include(${QT_USE_FILE})
 
 # Eigen2
+
+# Turn off Eigen SIMD optimization
+if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+  if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "FreeBSD")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DEIGEN_DONT_ALIGN")
+  endif()
+endif()
+
 if (NOT EIGEN2_INCLUDE_DIR)
   find_path(EIGEN2_INCLUDE_DIR
             Eigen/Core 
             PATHS ENV EIGEN2DIR /opt/local/include/eigen2 /usr/include/eigen2)
+  if (${CMAKE_SYSTEM_NAME} MATCHES "FreeBSD") 
+    find_path(EIGEN2_INCLUDE_DIR 
+              Eigen/Core 
+              PATHS ENV EIGEN2DIR /usr/local/include/eigen2 )
+  endif()
   if (NOT EIGEN2_INCLUDE_DIR)
     message(FATAL_ERROR "Eigen2 not found")
   else()
@@ -57,17 +120,33 @@ if (NOT OPENCSG_INCLUDE_DIR)
 endif()
 include_directories(${OPENCSG_INCLUDE_DIR})
 
+# GLEW
+
 if (NOT $ENV{MACOSX_DEPLOY_DIR} STREQUAL "")
   set(GLEW_DIR "$ENV{MACOSX_DEPLOY_DIR}")
 endif()
+
 find_package(GLEW REQUIRED)
 include_directories(${GLEW_INCLUDE_PATH})
 
+if(WIN32_STATIC_BUILD)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DGLEW_STATIC")
+endif()
+
 # Flex/Bison
 find_package(BISON)
+
+if(${CMAKE_SYSTEM_NAME} MATCHES "FreeBSD")
+  # FreeBSD has an old flex in /usr/bin and a new flex in /usr/local/bin
+  set(FLEX_EXECUTABLE /usr/local/bin/flex)
+endif()
+
 find_package(FLEX)
 # The COMPILE_FLAGS and forced C++ compiler is just to be compatible with qmake
-FLEX_TARGET(OpenSCADlexer ../src/lexer.l ${CMAKE_CURRENT_BINARY_DIR}/lexer.cpp COMPILE_FLAGS "-Plexer")
+if (WIN32)
+  set(FLEX_UNISTD_FLAG "-DYY_NO_UNISTD_H")
+endif()
+FLEX_TARGET(OpenSCADlexer ../src/lexer.l ${CMAKE_CURRENT_BINARY_DIR}/lexer.cpp COMPILE_FLAGS "-Plexer ${FLEX_UNISTD_FLAG}")
 BISON_TARGET(OpenSCADparser ../src/parser.y ${CMAKE_CURRENT_BINARY_DIR}/parser_yacc.c COMPILE_FLAGS "-p parser")
 ADD_FLEX_BISON_DEPENDENCY(OpenSCADlexer OpenSCADparser)
 set_source_files_properties(${CMAKE_CURRENT_BINARY_DIR}/parser_yacc.c PROPERTIES LANGUAGE "CXX")
@@ -78,8 +157,8 @@ include_directories(../src)
 
 add_definitions(-DOPENSCAD_VERSION=test -DOPENSCAD_YEAR=2011 -DOPENSCAD_MONTH=10)
 
-
 set(CORE_SOURCES
+  ../src/mathc99.cc
   ../src/handle_dep.cc 
   ../src/qhash.cc
   ../src/value.cc 
@@ -118,13 +197,35 @@ set(COMMON_SOURCES
   ../src/PolySetEvaluator.cc 
   ../src/PolySetCache.cc 
   ../src/Tree.cc
-)
+  lodepng.cpp
+  ${FLEX_OpenSCADlexer_OUTPUTS}
+  ${BISON_OpenSCADparser_OUTPUTS})
 
 #
 # echotest
 #
 add_executable(echotest echotest.cc ${CORE_SOURCES})
 target_link_libraries(echotest ${QT_LIBRARIES} ${OPENGL_LIBRARY})
+
+#
+# Offscreen OpenGL context source code
+#
+if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+	message(STATUS "Offscreen OpenGL Context - using Apple CGL")
+	set(OFFSCREEN_CTX_SOURCE "OffscreenContext.mm")
+elseif(UNIX)
+	message(STATUS "Offscreen OpenGL Context - using Unix GLX")
+	set(OFFSCREEN_CTX_SOURCE "OffscreenContext.cc")
+elseif(WIN32)
+	message(STATUS "Offscreen OpenGL Context - using Microsoft WGL")
+	set(OFFSCREEN_CTX_SOURCE "OffscreenContextWGL.cc")
+endif()
+
+#
+# Yangli Hector Yee's PerceptualDiff code
+#
+
+add_executable(yee_compare yee_compare.cpp lodepng.cpp)
 
 #
 # dumptest
@@ -154,7 +255,7 @@ include_directories(${CGAL_INCLUDE_DIRS})
 #
 # cgaltest
 #
-add_executable(cgaltest cgaltest.cc ../src/CGAL_Nef_polyhedron.cc ../src/cgalutils.cc ../src/CSGTermEvaluator.cc
+add_executable(cgaltest cgaltest.cc ../src/CGAL_Nef_polyhedron.cc ../src/cgalutils.cc ../src/CSGTermEvaluator.cc 
                         ../src/CGALEvaluator.cc ../src/CGALCache.cc ../src/PolySetCGALEvaluator.cc ../src/qhash.cc
                         ../src/CGAL_Nef_polyhedron_DxfData.cc ../src/cgaladv_minkowski2.cc ../src/cgaladv_convexhull2.cc
                         ${COMMON_SOURCES})
@@ -164,7 +265,7 @@ target_link_libraries(cgaltest ${CGAL_LIBRARY} ${CGAL_3RD_PARTY_LIBRARIES} ${QT_
 #
 # cgalpngtest
 #
-add_executable(cgalpngtest cgalpngtest.cc OffscreenView.cc OffscreenContext.mm
+add_executable(cgalpngtest cgalpngtest.cc OffscreenView.cc bboxhelp.cc ${OFFSCREEN_CTX_SOURCE} imageutils.cc fbo.cc system-gl.cc
                            ../src/CGALRenderer.cc ../src/CGAL_Nef_polyhedron.cc ../src/cgalutils.cc
                            ../src/CSGTermEvaluator.cc ../src/CGALEvaluator.cc ../src/CGALCache.cc
                            ../src/PolySetCGALEvaluator.cc ../src/qhash.cc
@@ -176,7 +277,8 @@ target_link_libraries(cgalpngtest ${CGAL_LIBRARY} ${CGAL_3RD_PARTY_LIBRARIES} ${
 #
 # opencsgtest
 #
-add_executable(opencsgtest opencsgtest.cc OffscreenView.cc OffscreenContext.mm
+
+add_executable(opencsgtest opencsgtest.cc csgtestcore.cc OffscreenView.cc ${OFFSCREEN_CTX_SOURCE} imageutils.cc fbo.cc system-gl.cc
                            ../src/OpenCSGRenderer.cc ../src/ThrownTogetherRenderer.cc
                            ../src/CSGTermEvaluator.cc ../src/CGAL_Nef_polyhedron.cc ../src/cgalutils.cc
                            ../src/CGALEvaluator.cc ../src/CGALCache.cc ../src/PolySetCGALEvaluator.cc ../src/qhash.cc
@@ -186,15 +288,30 @@ set_target_properties(opencsgtest PROPERTIES COMPILE_FLAGS "-DENABLE_OPENCSG -DE
 target_link_libraries(opencsgtest ${CGAL_LIBRARY} ${CGAL_3RD_PARTY_LIBRARIES} ${QT_LIBRARIES} ${OPENCSG_LIBRARY} ${GLEW_LIBRARY} ${COCOA_LIBRARY} ${OPENGL_LIBRARY})
 
 #
+# throwntogethertest
+#
+
+add_executable(throwntogethertest throwntogethertest.cc csgtestcore.cc OffscreenView.cc ${OFFSCREEN_CTX_SOURCE} imageutils.cc fbo.cc system-gl.cc
+                           ../src/OpenCSGRenderer.cc ../src/ThrownTogetherRenderer.cc
+                           ../src/CSGTermEvaluator.cc ../src/CGAL_Nef_polyhedron.cc ../src/cgalutils.cc
+                           ../src/CGALEvaluator.cc ../src/CGALCache.cc ../src/PolySetCGALEvaluator.cc ../src/qhash.cc
+                           ../src/CGAL_Nef_polyhedron_DxfData.cc ../src/cgaladv_minkowski2.cc ../src/cgaladv_convexhull2.cc 
+                           ${COMMON_SOURCES})
+set_target_properties(throwntogethertest PROPERTIES COMPILE_FLAGS "-DENABLE_OPENCSG -DENABLE_CGAL ${CGAL_CXX_FLAGS_INIT}")
+target_link_libraries(throwntogethertest ${CGAL_LIBRARY} ${CGAL_3RD_PARTY_LIBRARIES} ${QT_LIBRARIES} ${OPENCSG_LIBRARY} ${GLEW_LIBRARY} ${COCOA_LIBRARY} ${OPENGL_LIBRARY})
+
+
+#
 # This functions adds cmd-line tests given files.
 # Files are sent as the parameters following TESTSUFFIX
 #
+find_package(PythonInterp)
 function(add_cmdline_test TESTCMD TESTSUFFIX)
   get_filename_component(TESTCMD_NAME ${TESTCMD} NAME_WE)
   foreach (SCADFILE ${ARGN})
     get_filename_component(TESTNAME ${SCADFILE} NAME_WE)
     string(REPLACE " " "_" TESTNAME ${TESTNAME}) # Test names cannot include spaces
-    add_test("${TESTCMD_NAME}_${TESTNAME}" ${tests_SOURCE_DIR}/test_cmdline_tool.py -s ${TESTSUFFIX} ${CMAKE_BINARY_DIR}/${TESTCMD} "${SCADFILE}")
+    add_test("${TESTCMD_NAME}_${TESTNAME}" ${PYTHON_EXECUTABLE} ${tests_SOURCE_DIR}/test_cmdline_tool.py -s ${TESTSUFFIX} ${CMAKE_BINARY_DIR}/${TESTCMD} "${SCADFILE}")
   endforeach()
 endfunction()
 
@@ -256,7 +373,8 @@ LIST(APPEND CGALPNGTEST_FILES
             ${CMAKE_SOURCE_DIR}/../testdata/scad/features/assign-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/features/include-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/features/child-tests.scad
-            ${CMAKE_SOURCE_DIR}/../testdata/scad/features/ifelse-tests.scad)
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/features/ifelse-tests.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/features/rotate_extrude_dxf-tests.scad)
 LIST(APPEND CGALPNGTEST_FILES ${SCAD_DXF_FILES})
 #LIST(APPEND CGALPNGTEST_FILES ${CMAKE_SOURCE_DIR}/../examples/example001.scad)
 add_cmdline_test(cgalpngtest png ${CGALPNGTEST_FILES})
@@ -269,5 +387,9 @@ LIST(APPEND OPENCSGTEST_FILES
 LIST(APPEND OPENCSGTEST_FILES ${SCAD_DXF_FILES})
 add_cmdline_test(opencsgtest png ${OPENCSGTEST_FILES})
 
+# Add throwntogether tests to CTest
+LIST(APPEND THROWNTOGETHERTEST_FILES ${CGALPNGTEST_FILES})
+add_cmdline_test(throwntogethertest png ${THROWNTOGETHERTEST_FILES})
+
 # Add dxfexport tests to CTest
-#add_cmdline_test(${CMAKE_SOURCE_DIR}/../test-code/exportdxf dxf ${SCAD_FILES})
+add_cmdline_test(${CMAKE_SOURCE_DIR}/../test-code/exportdxf dxf ${SCAD_FILES})

@@ -70,7 +70,7 @@ namespace po = boost::program_options;
 
 static void help(const char *progname)
 {
-	fprintf(stderr, "Usage: %s [ { -s stl_file | -o off_file | -x dxf_file } [ -d deps_file ] ]\\\n"
+	fprintf(stderr, "Usage: %s [ { -o output_file } [ -d deps_file ] ]\\\n"
 					"%*s[ -m make_command ] [ -D var=val [..] ] filename\n",
 					progname, int(strlen(progname))+8, "");
 	exit(1);
@@ -126,18 +126,14 @@ int main(int argc, char **argv)
 	QCoreApplication::setApplicationName("OpenSCAD");
 
 	const char *filename = NULL;
-	const char *stl_output_file = NULL;
-	const char *off_output_file = NULL;
-	const char *dxf_output_file = NULL;
+	const char *output_file = NULL;
 	const char *deps_output_file = NULL;
 
 	po::options_description desc("Allowed options");
 	desc.add_options()
 		("help,h", "help message")
 		("version,v", "print the version")
-		("s,s", po::value<string>(), "stl-file")
-		("o,o", po::value<string>(), "off-file")
-		("x,x", po::value<string>(), "dxf-file")
+		("o,o", po::value<string>(), "out-file")
 		("d,d", po::value<string>(), "deps-file")
 		("m,m", po::value<string>(), "makefile")
 		("D,D", po::value<vector<string> >(), "var=val");
@@ -159,20 +155,10 @@ int main(int argc, char **argv)
 	if (vm.count("help")) help(argv[0]);
 	if (vm.count("version")) version();
 
-	if (vm.count("s")) {
-		if (stl_output_file || off_output_file || dxf_output_file)
-			help(argv[0]);
-		stl_output_file = vm["s"].as<string>().c_str();
-	}
 	if (vm.count("o")) {
-		if (stl_output_file || off_output_file || dxf_output_file)
-			help(argv[0]);
-		off_output_file = vm["o"].as<string>().c_str();
-	}
-	if (vm.count("x")) { 
-		if (stl_output_file || off_output_file || dxf_output_file)
-			help(argv[0]);
-		dxf_output_file = vm["x"].as<string>().c_str();
+		// FIXME: Allow for multiple output files?
+		if (output_file) help(argv[0]);
+		output_file = vm["o"].as<string>().c_str();
 	}
 	if (vm.count("d")) {
 		if (deps_output_file)
@@ -253,10 +239,24 @@ int main(int argc, char **argv)
 	PolySetCGALEvaluator psevaluator(cgalevaluator);
 #endif
 
-	if (stl_output_file || off_output_file || dxf_output_file)
+	if (output_file)
 	{
-		if (!filename)
-			help(argv[0]);
+		const char *stl_output_file = NULL;
+		const char *off_output_file = NULL;
+		const char *dxf_output_file = NULL;
+		const char *csg_output_file = NULL;
+
+		QString suffix = QFileInfo(output_file).suffix().toLower();
+		if (suffix == "stl") stl_output_file = output_file;
+		else if (suffix == "off") off_output_file = output_file;
+		else if (suffix == "dxf") dxf_output_file = output_file;
+		else if (suffix == "csg") csg_output_file = output_file;
+		else {
+			fprintf(stderr, "Unknown suffix for output file %s\n", output_file);
+			exit(1);
+		}
+
+		if (!filename) help(argv[0]);
 
 #ifdef ENABLE_CGAL
 		Context root_ctx;
@@ -304,68 +304,80 @@ int main(int argc, char **argv)
 
 		AbstractNode::resetIndexCounter();
 		root_node = root_module->evaluate(&root_ctx, &root_inst);
-
 		tree.setRoot(root_node);
- 		CGAL_Nef_polyhedron root_N = cgalevaluator.evaluateCGALMesh(*tree.root());
 
-		QDir::setCurrent(original_path.absolutePath());
-
-		if (deps_output_file) {
-			if (!write_deps(deps_output_file, 
-											stl_output_file ? stl_output_file : off_output_file)) {
-				exit(1);
-			}
-		}
-
-		if (stl_output_file) {
-			if (root_N.dim != 3) {
-				fprintf(stderr, "Current top level object is not a 3D object.\n");
-				exit(1);
-			}
-			if (!root_N.p3->is_simple()) {
-				fprintf(stderr, "Object isn't a valid 2-manifold! Modify your design.\n");
-				exit(1);
-			}
-			std::ofstream fstream(stl_output_file);
+		if (csg_output_file) {
+			QDir::setCurrent(original_path.absolutePath());
+			std::ofstream fstream(csg_output_file);
 			if (!fstream.is_open()) {
-				PRINTF("Can't open file \"%s\" for export", stl_output_file);
+				PRINTF("Can't open file \"%s\" for export", csg_output_file);
 			}
 			else {
-				export_stl(&root_N, fstream, NULL);
+				fstream << tree.getString(*root_node) << "\n";
 				fstream.close();
 			}
 		}
+		else {
+			CGAL_Nef_polyhedron root_N = cgalevaluator.evaluateCGALMesh(*tree.root());
+			
+			QDir::setCurrent(original_path.absolutePath());
+			
+			if (deps_output_file) {
+				if (!write_deps(deps_output_file, 
+												stl_output_file ? stl_output_file : off_output_file)) {
+					exit(1);
+				}
+			}
 
-		if (off_output_file) {
-			if (root_N.dim != 3) {
-				fprintf(stderr, "Current top level object is not a 3D object.\n");
-				exit(1);
+			if (stl_output_file) {
+				if (root_N.dim != 3) {
+					fprintf(stderr, "Current top level object is not a 3D object.\n");
+					exit(1);
+				}
+				if (!root_N.p3->is_simple()) {
+					fprintf(stderr, "Object isn't a valid 2-manifold! Modify your design.\n");
+					exit(1);
+				}
+				std::ofstream fstream(stl_output_file);
+				if (!fstream.is_open()) {
+					PRINTF("Can't open file \"%s\" for export", stl_output_file);
+				}
+				else {
+					export_stl(&root_N, fstream, NULL);
+					fstream.close();
+				}
 			}
-			if (!root_N.p3->is_simple()) {
-				fprintf(stderr, "Object isn't a valid 2-manifold! Modify your design.\n");
-				exit(1);
+			
+			if (off_output_file) {
+				if (root_N.dim != 3) {
+					fprintf(stderr, "Current top level object is not a 3D object.\n");
+					exit(1);
+				}
+				if (!root_N.p3->is_simple()) {
+					fprintf(stderr, "Object isn't a valid 2-manifold! Modify your design.\n");
+					exit(1);
+				}
+				std::ofstream fstream(off_output_file);
+				if (!fstream.is_open()) {
+					PRINTF("Can't open file \"%s\" for export", off_output_file);
+				}
+				else {
+					export_off(&root_N, fstream, NULL);
+					fstream.close();
+				}
 			}
-			std::ofstream fstream(off_output_file);
-			if (!fstream.is_open()) {
-				PRINTF("Can't open file \"%s\" for export", off_output_file);
-			}
-			else {
-				export_off(&root_N, fstream, NULL);
-				fstream.close();
+			
+			if (dxf_output_file) {
+				std::ofstream fstream(dxf_output_file);
+				if (!fstream.is_open()) {
+					PRINTF("Can't open file \"%s\" for export", dxf_output_file);
+				}
+				else {
+					export_dxf(&root_N, fstream, NULL);
+					fstream.close();
+				}
 			}
 		}
-
-		if (dxf_output_file) {
-			std::ofstream fstream(dxf_output_file);
-			if (!fstream.is_open()) {
-				PRINTF("Can't open file \"%s\" for export", dxf_output_file);
-			}
-			else {
-				export_dxf(&root_N, fstream, NULL);
-				fstream.close();
-			}
-		}
-
 		delete root_node;
 #else
 		fprintf(stderr, "OpenSCAD has been compiled without CGAL support!\n");
@@ -415,3 +427,4 @@ int main(int argc, char **argv)
 
 	return rc;
 }
+

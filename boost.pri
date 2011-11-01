@@ -1,4 +1,5 @@
 boost {
+
   isEmpty(DEPLOYDIR) {
     # Optionally specify location of boost using the
     # BOOSTDIR env. variable
@@ -10,9 +11,16 @@ boost {
     }
   }
 
-  win32 {
-     LIBS += -llibboost_thread-vc90-mt-s-1_46_1 -llibboost_program_options-vc90-mt-s-1_46_1
+  CONFIG(mingw-cross-env) {
+    DEFINES += BOOST_STATIC
+    DEFINES += BOOST_THREAD_USE_LIB
+    DEFINES += Boost_USE_STATIC_LIBS
+    LIBS += -lboost_thread_win32-mt -lboost_program_options-mt
   } else {
-     LIBS += -lboost_thread -lboost_program_options
+    win32 {
+      LIBS += -llibboost_thread-vc90-mt-s-1_46_1 -llibboost_program_options-vc90-mt-s-1_46_1
+    } else {
+      LIBS += -lboost_thread -lboost_program_options
+    }
   }
 }

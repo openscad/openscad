@@ -7,10 +7,6 @@
 #include "visitor.h"
 #include "nodecache.h"
 
-using std::string;
-using std::map;
-using std::list;
-
 class NodeDumper : public Visitor
 {
 public:
@@ -26,15 +22,15 @@ private:
   void handleVisitedChildren(const State &state, const AbstractNode &node);
   bool isCached(const AbstractNode &node) const;
   void handleIndent(const State &state);
-	string dumpChildren(const AbstractNode &node);
+	std::string dumpChildren(const AbstractNode &node);
 
   NodeCache &cache;
 	bool idprefix;
 
-  string currindent;
+  std::string currindent;
   const AbstractNode *root;
-  typedef list<const AbstractNode *> ChildList;
-  map<int, ChildList> visitedchildren;
+  typedef std::list<const AbstractNode *> ChildList;
+	std::map<int, ChildList> visitedchildren;
 };
 
 #endif

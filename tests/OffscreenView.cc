@@ -1,8 +1,11 @@
 #include <GL/glew.h>
 #include "OffscreenView.h"
 #include <opencsg.h>
-#include "Renderer.h"
+#include "renderer.h"
 #include <math.h>
+#include <stdio.h>
+#include <string.h>
+#include <cstdlib>
 
 #define FAR_FAR_AWAY 100000.0
 
@@ -11,7 +14,8 @@ OffscreenView::OffscreenView(size_t width, size_t height)
 		object_rot(35, 0, 25), camera_eye(0, 0, 0), camera_center(0, 0, 0)
 {
 	for (int i = 0; i < 10; i++) this->shaderinfo[i] = 0;
-  this->ctx = create_offscreen_context(width, height);
+	this->ctx = create_offscreen_context(width, height);
+	if ( this->ctx == NULL ) throw -1;
 	initializeGL();
 	resizeGL(width, height);
 }
@@ -182,7 +186,7 @@ void OffscreenView::paintGL()
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 
-	glClearColor(1.0, 1.0, 0.92, 0.0);
+	glClearColor(1.0f, 1.0f, 0.92f, 1.0f);
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 

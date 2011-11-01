@@ -8,17 +8,34 @@
   }
 }
 
+# Populate VERSION, VERSION_YEAR, VERSION_MONTH, VERSION_DATE from system date
+include(version.pri)
+
+# for debugging link problems (use nmake -f Makefile.Release > log.txt)
 win32 {
-  isEmpty(VERSION) VERSION = $$system(date /t)
-} else {
-  isEmpty(VERSION) VERSION = $$system(date "+%Y.%m.%d")
+  # QMAKE_LFLAGS   += -VERBOSE
 }
-VERSION_SPLIT=$$split(VERSION, ".")
-VERSION_YEAR=$$member(VERSION_SPLIT, 0)
-VERSION_MONTH=$$member(VERSION_SPLIT, 1)
-VERSION_DAY=$$member(VERSION_SPLIT, 2)
+
+# cross compilation unix->win32
+
+CONFIG(mingw-cross-env) {
+  LIBS += mingw-cross-env/lib/libglew32s.a 
+  LIBS += mingw-cross-env/lib/libglut.a 
+  LIBS += mingw-cross-env/lib/libopengl32.a 
+  LIBS += mingw-cross-env/lib/libGLEW.a 
+  LIBS += mingw-cross-env/lib/libglaux.a 
+  LIBS += mingw-cross-env/lib/libglu32.a 
+  LIBS += mingw-cross-env/lib/libopencsg.a 
+  LIBS += mingw-cross-env/lib/libmpfr.a 
+  LIBS += mingw-cross-env/lib/libCGAL.a
+  QMAKE_CXXFLAGS += -fpermissive
+}
 
 #configure lex / yacc
+unix:freebsd-g++ {
+  QMAKE_LEX = /usr/local/bin/flex
+  QMAKE_YACC = /usr/local/bin/bison
+}
 win32 {
   include(flex.pri)
   include(bison.pri)
@@ -39,9 +56,24 @@ DEFINES += OPENSCAD_VERSION=$$VERSION OPENSCAD_YEAR=$$VERSION_YEAR OPENSCAD_MONT
 !isEmpty(VERSION_DAY): DEFINES += OPENSCAD_DAY=$$VERSION_DAY
 win32:DEFINES += _USE_MATH_DEFINES NOMINMAX _CRT_SECURE_NO_WARNINGS YY_NO_UNISTD_H
 
-#disable warning about too long decorated names
-win32:QMAKE_CXXFLAGS += -wd4503
+# disable MSVC warnings that are of very low importance
+win32:*msvc* {
+  # disable warning about too long decorated names
+  QMAKE_CXXFLAGS += -wd4503
+  # CGAL casting int to bool
+  QMAKE_CXXFLAGS += -wd4800
+  # CGAL's unreferenced formal parameters
+  QMAKE_CXXFLAGS += -wd4100
+  # lexer uses strdup() & other POSIX stuff
+  QMAKE_CXXFLAGS += -D_CRT_NONSTDC_NO_DEPRECATE
+}
 
+# disable Eigen SIMD optimizations for non-Mac OSX
+!macx {
+  !freebsd-g++ {
+    QMAKE_CXXFLAGS += -DEIGEN_DONT_ALIGN
+  }
+}
 
 TEMPLATE = app
 RESOURCES = openscad.qrc
