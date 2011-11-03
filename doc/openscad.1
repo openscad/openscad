@@ -1,0 +1,47 @@
+.TH OPENSCAD 1 "2011-11-03"
+.\" Please adjust this date whenever revising the manpage.
+.SH NAME
+openscad \- script file based graphical CAD environment
+.SH SYNOPSIS
+.B openscad
+.RI [ options ]
+.RI [ file ]
+.SH DESCRIPTION
+This manual page documents briefly the \fBopenscad\fP command.
+.PP
+\fBopenscad\fP is a software for creating solid 3D CAD objects. It focuses on
+CAD aspects rather than artistic ones.
+
+OpenSCAD will start as a graphical program unless export options are given (see
+below). For the usage of the GUI and a description of the OpenSCAD language see
+the OpenSCAD user manual at http://en.wikibooks.org/wiki/OpenSCAD_User_Manual.
+.SH OPTIONS
+
+.TP
+\fB-o\fP \fIoutputfile\fP
+Export the given file to \fIoutputfile\fP in STL, OFF, DXF or CSG format,
+depending on file extension of \fIoutputfile\fP (which has to be lower case).
+If this option is given, the GUI will not be started.
+.TP
+\fB\-d\fP \fIfile.deps\fP
+If the \fB-d\fP option is given, all files accessed while exporting are written
+to the given deps file in the syntax of a Makefile.
+.TP
+\fB-m\fP \fImake_command\fP
+If a nonexisting file is accessed during OpenSCAD's operation, it will try to
+invoke \fImake_command missing_file\fP to create the missing file, and then
+read it again.
+.TP
+\fB-D\fP \fIvar=val\fP
+This option can be used to assign constant values to OpenSCAD variables. The
+variable's value is an expression, so if this mechanism is used to assign
+strings, care has to be taken that the shell does not consume quotation marks.
+More than one \fB-D\fP options can be given.
+.TP
+.B \-v, \-\-version
+Show version of program.
+.SH AUTHOR
+OpenSCAD was written by Clifford Wolf, Marius Kintel, and others.
+.PP
+This manual page was written by chrysn <chrysn@fsfe.org>,
+for the Debian project (and may be used by others).
