@@ -279,13 +279,15 @@ macx {
   SOURCES += src/AppleEvents.cc
 }
 
-target.path = /usr/local/bin/
+isEmpty(PREFIX):PREFIX = /usr/local
+
+target.path = $$PREFIX/bin/
 INSTALLS += target
 
-examples.path = /usr/local/share/openscad/examples/
+examples.path = $$PREFIX/share/openscad/examples/
 examples.files = examples/*
 INSTALLS += examples
 
-libraries.path = /usr/local/share/openscad/libraries/
+libraries.path = $$PREFIX/share/openscad/libraries/
 libraries.files = libraries/*
 INSTALLS += libraries
