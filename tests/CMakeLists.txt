@@ -323,6 +323,9 @@ file(GLOB FEATURES_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/features/*.scad)
 file(GLOB BUGS_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/*.scad)
 file(GLOB SCAD_DXF_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/dxf/*.scad)
 
+list(APPEND DUMPTEST_FILES ${MINIMAL_FILES}
+                           ${CMAKE_SOURCE_DIR}/../examples/example001.scad)
+
 list(APPEND ECHO_FILES
             ${CMAKE_SOURCE_DIR}/../testdata/scad/minimal/echo.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/features/echo-tests.scad)
@@ -330,7 +333,7 @@ list(APPEND ECHO_FILES
 # Add echotest tests to CTest
 add_cmdline_test(echotest txt ${ECHO_FILES})
 # Add dumptest tests to CTest
-add_cmdline_test(dumptest txt ${MINIMAL_FILES})
+add_cmdline_test(dumptest txt ${DUMPTEST_FILES})
 # Add csgtexttest tests to CTest
 add_cmdline_test(csgtexttest txt ${MINIMAL_FILES})
 # Add csgtermtest tests to CTest
