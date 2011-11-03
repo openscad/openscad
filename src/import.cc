@@ -236,7 +236,7 @@ std::string ImportNode::toString() const
 	stream << "(file = \"" << this->filename << "\", "
 		"cache = \"" << std::hex << (int)st.st_mtime << "." << (int)st.st_size << "\", "
 		"layer = \"" << this->layername << "\", "
-		"origin = [ " << std::dec << this->origin_x << " " << this->origin_y << " ], "
+		"origin = [" << std::dec << this->origin_x << ", " << this->origin_y << "], "
 		"scale = " << this->scale << ", "
 		"convexity = " << this->convexity << ", "
 		"$fn = " << this->fn << ", $fa = " << this->fa << ", $fs = " << this->fs << ")";
