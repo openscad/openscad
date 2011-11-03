@@ -70,7 +70,7 @@ namespace po = boost::program_options;
 
 static void help(const char *progname)
 {
-	fprintf(stderr, "Usage: %s [ { -o output_file } [ -d deps_file ] ]\\\n"
+	fprintf(stderr, "Usage: %s [ -o output_file [ -d deps_file ] ]\\\n"
 					"%*s[ -m make_command ] [ -D var=val [..] ] filename\n",
 					progname, int(strlen(progname))+8, "");
 	exit(1);
