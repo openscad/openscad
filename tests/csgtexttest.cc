@@ -153,6 +153,7 @@ int main(int argc, char **argv)
 	csgTree(csgcache, *root_node);
 // 	std::cout << tree.getString(*root_node) << "\n";
 
+	QDir::setCurrent(original_path.absolutePath());
 	std::ofstream outfile;
 	outfile.open(outfilename);
 	outfile << csgcache[*root_node] << "\n";

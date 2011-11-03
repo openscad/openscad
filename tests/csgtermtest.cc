@@ -163,6 +163,7 @@ int main(int argc, char **argv)
 	// if (evaluator.background) cout << "Background terms: " << evaluator.background->size() << "\n";
 	// if (evaluator.highlights) cout << "Highlights terms: " << evaluator.highlights->size() << "\n";
 
+	QDir::setCurrent(original_path.absolutePath());
 	std::ofstream outfile;
 	outfile.open(outfilename);
 	if (root_term) {
