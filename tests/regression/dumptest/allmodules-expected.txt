@@ -15,10 +15,10 @@ group() {
 	linear_extrude(height = 100, center = false, convexity = 1, $fn = 0, $fa = 12, $fs = 1);
 	rotate_extrude(convexity = 1, $fn = 0, $fa = 12, $fs = 1);
 	rotate_extrude(convexity = 1, $fn = 0, $fa = 12, $fs = 1);
-	import(file = "", cache = "0.0", layer = "", origin = [ 0 0 ], scale = 1, convexity = 1, $fn = 0, $fa = 12, $fs = 1);
-	import(file = "", cache = "0.0", layer = "", origin = [ 0 0 ], scale = 1, convexity = 1, $fn = 0, $fa = 12, $fs = 1);
-	import(file = "", cache = "0.0", layer = "", origin = [ 0 0 ], scale = 1, convexity = 1, $fn = 0, $fa = 12, $fs = 1);
-	import(file = "", cache = "0.0", layer = "", origin = [ 0 0 ], scale = 1, convexity = 1, $fn = 0, $fa = 12, $fs = 1);
+	import(file = "", cache = "0.0", layer = "", origin = [0, 0], scale = 1, convexity = 1, $fn = 0, $fa = 12, $fs = 1);
+	import(file = "", cache = "0.0", layer = "", origin = [0, 0], scale = 1, convexity = 1, $fn = 0, $fa = 12, $fs = 1);
+	import(file = "", cache = "0.0", layer = "", origin = [0, 0], scale = 1, convexity = 1, $fn = 0, $fa = 12, $fs = 1);
+	import(file = "", cache = "0.0", layer = "", origin = [0, 0], scale = 1, convexity = 1, $fn = 0, $fa = 12, $fs = 1);
 	group();
 	cube(size = [1, 1, 1], center = false);
 	sphere($fn = 0, $fa = 12, $fs = 1, r = 1);
