@@ -143,22 +143,7 @@ MainWindow::MainWindow(const QString &filename)
 {
 	setupUi(this);
 
-	root_ctx.functions_p = &builtin_functions;
-	root_ctx.modules_p = &builtin_modules;
-	root_ctx.set_variable("$fn", Value(0.0));
-	root_ctx.set_variable("$fs", Value(1.0));
-	root_ctx.set_variable("$fa", Value(12.0));
-	root_ctx.set_variable("$t", Value(0.0));
-
-	root_ctx.set_constant("PI",Value(M_PI));
-
-	Value zero3;
-	zero3.type = Value::VECTOR;
-	zero3.append(new Value(0.0));
-	zero3.append(new Value(0.0));
-	zero3.append(new Value(0.0));
-	root_ctx.set_variable("$vpt", zero3);
-	root_ctx.set_variable("$vpr", zero3);
+	register_builtin(root_ctx);
 
 	root_module = NULL;
 	absolute_root_node = NULL;

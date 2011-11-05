@@ -26,4 +26,6 @@ extern void register_builtin_dxf_linear_extrude();
 extern void register_builtin_dxf_rotate_extrude();
 extern void initialize_builtin_dxf_dim();
 
+extern void register_builtin(class Context &ctx);
+
 #endif
