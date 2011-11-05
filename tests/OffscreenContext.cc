@@ -98,7 +98,24 @@ bool create_glx_dummy_window(OffscreenContext &ctx)
 
   // can't depend on xWin==NULL at failure. use a custom Xlib error handler instead.
   original_xlib_handler = XSetErrorHandler( XCreateWindow_error );
-  Window xWin = XCreateSimpleWindow( dpy, DefaultRootWindow(dpy), 0,0,10,10, 0,0,0 );
+
+  Window root = DefaultRootWindow( dpy );
+  XSetWindowAttributes xwin_attr;
+  int width = 42;
+  int height = 42;
+  xwin_attr.background_pixel = 0;
+  xwin_attr.border_pixel = 0;
+  xwin_attr.colormap = XCreateColormap( dpy, root, visinfo->visual, AllocNone);
+  xwin_attr.event_mask = StructureNotifyMask | ExposureMask | KeyPressMask;
+  unsigned long int mask = CWBackPixel | CWBorderPixel | CWColormap | CWEventMask;
+
+  Window xWin = XCreateWindow( dpy, root, 0, 0, width, height,
+                               0, visinfo->depth, InputOutput,
+                               visinfo->visual, mask, &xwin_attr );
+
+  // Window xWin = XCreateSimpleWindow( dpy, DefaultRootWindow(dpy), 0,0,42,42, 0,0,0 );
+
+
   XSync( dpy, false );
   if ( XCreateWindow_failed ) {
     XFree( visinfo );
