@@ -25,8 +25,16 @@ CGAL_Nef_polyhedron& CGAL_Nef_polyhedron::operator*=(const CGAL_Nef_polyhedron &
 
 CGAL_Nef_polyhedron& CGAL_Nef_polyhedron::operator-=(const CGAL_Nef_polyhedron &other)
 {
-	if (this->dim == 2) (*this->p2) -= (*other.p2);
-	else if (this->dim == 3) (*this->p3) -= (*other.p3);
+  // Triggered by testdata/scad/bugs/rotate-diff-nonmanifold-crash.scad
+	CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
+	try {
+		if (this->dim == 2) (*this->p2) -= (*other.p2);
+		else if (this->dim == 3) (*this->p3) -= (*other.p3);
+	}
+	catch (CGAL::Assertion_exception e) {
+		PRINTF("CGAL error in CGAL_Nef_polyhedron::operator-=(): %s", e.what());
+	}
+	CGAL::set_error_behaviour(old_behaviour);
 	return *this;
 }
 
