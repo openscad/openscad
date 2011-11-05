@@ -14,6 +14,7 @@ o The version() function will return the OpenSCAD version as a vector, e.g. [201
 o The version_num() function will return the OpenSCAD version as a number, e.g. 20110923
 o Added PI constant.
 o Now uses standard shortcuts for save and reload on Linux and Windows. F2/F3 will still work but is deprecated.
+o Number literals in scientific notation are now accepted by the parser
 
 Bugfixes:
 o square() crashed if any of the dimensions were zero
@@ -21,6 +22,7 @@ o Flush Caches didn't flush cached USE'd modules
 o STL export should be a bit more robust
 o Dropping a file into the editor under Windows didn't work (double C:/C:/ problem)
 o On some platforms it was possible to insertion rich text in the editor, causing confusion.
+o Less crashes due to CGAL assertions
 
 Deprecations:
 o dxf_linear_extrude() and dxf_rotate_extrude() are now deprecated.

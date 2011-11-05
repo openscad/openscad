@@ -230,7 +230,5 @@ o Use a logging framework to get debugging/info output more under control?
 
 MISC
 ----
-o Streamline the cmd-line interface a bit
-  - Implicit output file format
 o Write checklists for typical extension work (add new module, add new function)
   -> make sure new test files are added

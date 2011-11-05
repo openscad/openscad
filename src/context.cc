@@ -193,3 +193,23 @@ std::string Context::getAbsolutePath(const std::string &filename) const
 		return filename;
 	}
 }
+
+void register_builtin(Context &ctx)
+{
+	ctx.functions_p = &builtin_functions;
+	ctx.modules_p = &builtin_modules;
+	ctx.set_variable("$fn", Value(0.0));
+	ctx.set_variable("$fs", Value(1.0));
+	ctx.set_variable("$fa", Value(12.0));
+	ctx.set_variable("$t", Value(0.0));
+	
+	Value zero3;
+	zero3.type = Value::VECTOR;
+	zero3.append(new Value(0.0));
+	zero3.append(new Value(0.0));
+	zero3.append(new Value(0.0));
+	ctx.set_variable("$vpt", zero3);
+	ctx.set_variable("$vpr", zero3);
+
+	ctx.set_constant("PI",Value(M_PI));
+}
