@@ -62,6 +62,30 @@ endif()
 # Build test apps
 #
 
+# Boost
+#
+# usually it's found automatically, but some systems may need a custom install.
+# in that case, run cmake with -DBOOST_ROOT=/path/to/boost/install
+# (being the same path you passed to boost's --prefix when you built it)
+if(BOOST_ROOT)
+  set(Boost_NO_SYSTEM_PATHS TRUE)
+  set(Boost_ADDITIONAL_VERSIONS "1.47.0")
+  find_package( Boost 1.36.0 COMPONENTS thread program_options )
+  if(Boost_FOUND)
+    message(STATUS "Boost includes found: " ${Boost_INCLUDE_DIRS})
+    message(STATUS "Boost libraries found:")
+    foreach(boostlib ${Boost_LIBRARIES})
+      message(STATUS "  " ${boostlib})
+    endforeach()
+    include_directories(${Boost_INCLUDE_DIRS})
+  else()
+    message(STATUS "BOOST_ROOT:" ${BOOST_ROOT})
+    message(FATAL_ERROR "BOOST_ROOT specified but no boost found")
+  endif()
+else()
+  message(STATUS "BOOST_ROOT unset. Assuming it will be found automatically.")
+endif()
+
 # Mac OS X
 if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
   FIND_LIBRARY(COCOA_LIBRARY Cocoa)
@@ -105,7 +129,7 @@ elseif (NOT $ENV{MACOSX_DEPLOY_DIR} STREQUAL "")
   set(OPENCSG_DIR "$ENV{MACOSX_DEPLOY_DIR}")
 endif()
 if (NOT OPENCSG_INCLUDE_DIR)
-   message(STATUS ${OPENCSG_DIR})
+  message(STATUS "OPENCSG_DIR: " ${OPENCSG_DIR})
   find_path(OPENCSG_INCLUDE_DIR
             opencsg.h
             PATHS ${OPENCSG_DIR}/include)
@@ -260,7 +284,7 @@ add_executable(cgaltest cgaltest.cc ../src/CGAL_Nef_polyhedron.cc ../src/cgaluti
                         ../src/CGAL_Nef_polyhedron_DxfData.cc ../src/cgaladv_minkowski2.cc ../src/cgaladv_convexhull2.cc
                         ${COMMON_SOURCES})
 set_target_properties(cgaltest PROPERTIES COMPILE_FLAGS "-DENABLE_CGAL ${CGAL_CXX_FLAGS_INIT}")
-target_link_libraries(cgaltest ${CGAL_LIBRARY} ${CGAL_3RD_PARTY_LIBRARIES} ${QT_LIBRARIES} ${OPENGL_LIBRARY})
+target_link_libraries(cgaltest ${CGAL_LIBRARY} ${CGAL_3RD_PARTY_LIBRARIES} ${QT_LIBRARIES} ${OPENGL_LIBRARY} ${Boost_LIBRARIES})
 
 #
 # cgalpngtest
@@ -272,7 +296,7 @@ add_executable(cgalpngtest cgalpngtest.cc OffscreenView.cc bboxhelp.cc ${OFFSCRE
                            ../src/CGAL_Nef_polyhedron_DxfData.cc ../src/cgaladv_minkowski2.cc ../src/cgaladv_convexhull2.cc
                            ${COMMON_SOURCES})
 set_target_properties(cgalpngtest PROPERTIES COMPILE_FLAGS "-DENABLE_CGAL ${CGAL_CXX_FLAGS_INIT}")
-target_link_libraries(cgalpngtest ${CGAL_LIBRARY} ${CGAL_3RD_PARTY_LIBRARIES} ${QT_LIBRARIES}  ${GLEW_LIBRARY} ${COCOA_LIBRARY} ${OPENGL_LIBRARY})
+target_link_libraries(cgalpngtest ${CGAL_LIBRARY} ${CGAL_3RD_PARTY_LIBRARIES} ${QT_LIBRARIES}  ${GLEW_LIBRARY} ${COCOA_LIBRARY} ${OPENGL_LIBRARY} ${Boost_LIBRARIES})
 
 #
 # opencsgtest
@@ -285,7 +309,7 @@ add_executable(opencsgtest opencsgtest.cc csgtestcore.cc OffscreenView.cc ${OFFS
                            ../src/CGAL_Nef_polyhedron_DxfData.cc ../src/cgaladv_minkowski2.cc ../src/cgaladv_convexhull2.cc
                            ${COMMON_SOURCES})
 set_target_properties(opencsgtest PROPERTIES COMPILE_FLAGS "-DENABLE_OPENCSG -DENABLE_CGAL ${CGAL_CXX_FLAGS_INIT}")
-target_link_libraries(opencsgtest ${CGAL_LIBRARY} ${CGAL_3RD_PARTY_LIBRARIES} ${QT_LIBRARIES} ${OPENCSG_LIBRARY} ${GLEW_LIBRARY} ${COCOA_LIBRARY} ${OPENGL_LIBRARY})
+target_link_libraries(opencsgtest ${CGAL_LIBRARY} ${CGAL_3RD_PARTY_LIBRARIES} ${QT_LIBRARIES} ${OPENCSG_LIBRARY} ${GLEW_LIBRARY} ${COCOA_LIBRARY} ${OPENGL_LIBRARY} ${Boost_LIBRARIES})
 
 #
 # throwntogethertest
@@ -298,7 +322,7 @@ add_executable(throwntogethertest throwntogethertest.cc csgtestcore.cc Offscreen
                            ../src/CGAL_Nef_polyhedron_DxfData.cc ../src/cgaladv_minkowski2.cc ../src/cgaladv_convexhull2.cc 
                            ${COMMON_SOURCES})
 set_target_properties(throwntogethertest PROPERTIES COMPILE_FLAGS "-DENABLE_OPENCSG -DENABLE_CGAL ${CGAL_CXX_FLAGS_INIT}")
-target_link_libraries(throwntogethertest ${CGAL_LIBRARY} ${CGAL_3RD_PARTY_LIBRARIES} ${QT_LIBRARIES} ${OPENCSG_LIBRARY} ${GLEW_LIBRARY} ${COCOA_LIBRARY} ${OPENGL_LIBRARY})
+target_link_libraries(throwntogethertest ${CGAL_LIBRARY} ${CGAL_3RD_PARTY_LIBRARIES} ${QT_LIBRARIES} ${OPENCSG_LIBRARY} ${GLEW_LIBRARY} ${COCOA_LIBRARY} ${OPENGL_LIBRARY} ${Boost_LIBRARIES})
 
 
 #

@@ -20,6 +20,8 @@ boost {
     win32 {
       LIBS += -llibboost_thread-vc90-mt-s-1_46_1 -llibboost_program_options-vc90-mt-s-1_46_1
     } else {
+      # some platforms have only '-mt' versions. uncomment if needed. 
+      # LIBS += -lboost_thread-mt -lboost_program_options-mt
       LIBS += -lboost_thread -lboost_program_options
     }
   }
