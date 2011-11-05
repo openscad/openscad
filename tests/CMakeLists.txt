@@ -328,7 +328,8 @@ list(APPEND DUMPTEST_FILES ${MINIMAL_FILES}
 
 list(APPEND ECHO_FILES
             ${CMAKE_SOURCE_DIR}/../testdata/scad/minimal/echo.scad
-            ${CMAKE_SOURCE_DIR}/../testdata/scad/features/echo-tests.scad)
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/features/echo-tests.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/parser-tests.scad)
 
 # Add echotest tests to CTest
 add_cmdline_test(echotest txt ${ECHO_FILES})
