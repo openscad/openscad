@@ -56,20 +56,29 @@ void CGALEvaluator::process(CGAL_Nef_polyhedron &target, const CGAL_Nef_polyhedr
 	if (src.empty()) return; // Empty polyhedron. This can happen for e.g. square([0,0])
 	if (target.dim != src.dim) return; // If someone tries to e.g. union 2d and 3d objects
 
-	switch (op) {
-	case CGE_UNION:
-		target += src;
-		break;
-	case CGE_INTERSECTION:
-		target *= src;
-		break;
-	case CGE_DIFFERENCE:
-		target -= src;
-		break;
-	case CGE_MINKOWSKI:
-		target.minkowski(src);
-		break;
+	CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
+	try {
+		switch (op) {
+		case CGE_UNION:
+			target += src;
+			break;
+		case CGE_INTERSECTION:
+			target *= src;
+			break;
+		case CGE_DIFFERENCE:
+			target -= src;
+			break;
+		case CGE_MINKOWSKI:
+			target.minkowski(src);
+			break;
+		}
 	}
+	catch (CGAL::Assertion_exception e) {
+		// union && difference assert triggered by testdata/scad/bugs/rotate-diff-nonmanifold-crash.scad
+		std::string opstr = op == CGE_UNION ? "union" : op == CGE_INTERSECTION ? "intersection" : op == CGE_DIFFERENCE ? "difference" : op == CGE_MINKOWSKI ? "minkowski" : "UNKNOWN";
+		PRINTF("CGAL error in CGAL_Nef_polyhedron's %s operator: %s", opstr.c_str(), e.what());
+	}
+	CGAL::set_error_behaviour(old_behaviour);
 }
 
 /*!
