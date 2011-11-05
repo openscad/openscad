@@ -22,6 +22,7 @@ o Flush Caches didn't flush cached USE'd modules
 o STL export should be a bit more robust
 o Dropping a file into the editor under Windows didn't work (double C:/C:/ problem)
 o On some platforms it was possible to insertion rich text in the editor, causing confusion.
+o Less crashes due to CGAL assertions
 
 Deprecations:
 o dxf_linear_extrude() and dxf_rotate_extrude() are now deprecated.
