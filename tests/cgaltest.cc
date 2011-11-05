@@ -111,21 +111,7 @@ int main(int argc, char **argv)
 	}
 
 	Context root_ctx;
-	root_ctx.functions_p = &builtin_functions;
-	root_ctx.modules_p = &builtin_modules;
-	root_ctx.set_variable("$fn", Value(0.0));
-	root_ctx.set_variable("$fs", Value(1.0));
-	root_ctx.set_variable("$fa", Value(12.0));
-	root_ctx.set_variable("$t", Value(0.0));
-
-	Value zero3;
-	zero3.type = Value::VECTOR;
-	zero3.append(new Value(0.0));
-	zero3.append(new Value(0.0));
-	zero3.append(new Value(0.0));
-	root_ctx.set_variable("$vpt", zero3);
-	root_ctx.set_variable("$vpr", zero3);
-
+	register_builtin(root_ctx);
 
 	AbstractModule *root_module;
 	ModuleInstantiation root_inst;
