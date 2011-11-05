@@ -1,9 +1,9 @@
 // csg test core, used by throwntegether test and opencsg test
 #include "csgtestcore.h"
 
+#include "tests-common.h"
 #include "system-gl.h"
 #include "openscad.h"
-#include "handle_dep.h"
 #include "builtin.h"
 #include "context.h"
 #include "node.h"
@@ -74,8 +74,8 @@ int csgtestcore(int argc, char *argv[], test_type_e test_type)
 		exit(1);
 	}
 
-	std::string filename(argv[1]);
-	std::string outfile(argv[2]);
+	const char *filename = argv[1];
+	const char *outfilename = argv[2];
 
 	initialize_builtin_functions();
 	initialize_builtin_modules();
@@ -111,28 +111,12 @@ int csgtestcore(int argc, char *argv[], test_type_e test_type)
 	AbstractModule *root_module;
 	ModuleInstantiation root_inst;
 
-	QFileInfo fileInfo(filename.c_str());
-	handle_dep(filename);
-	FILE *fp = fopen(filename.c_str(), "rt");
-	if (!fp) {
-		fprintf(stderr, "Can't open input file `%s'!\n", filename.c_str());
+	root_module = parsefile(filename);
+	if (!root_module) {
 		exit(1);
-	} else {
-		std::stringstream text;
-		char buffer[513];
-		int ret;
-		while ((ret = fread(buffer, 1, 512, fp)) > 0) {
-			buffer[ret] = 0;
-			text << buffer;
-		}
-		fclose(fp);
-		text << commandline_commands;
-		root_module = parse(text.str().c_str(), fileInfo.absolutePath().toLocal8Bit(), false);
-		if (!root_module) {
-			exit(1);
-		}
 	}
 
+	QFileInfo fileInfo(filename);
 	QDir::setCurrent(fileInfo.absolutePath());
 
 	AbstractNode::resetIndexCounter();
@@ -231,7 +215,7 @@ int csgtestcore(int argc, char *argv[], test_type_e test_type)
 
 	csgInfo.glview->paintGL();
 
-	csgInfo.glview->save(outfile.c_str());
+	csgInfo.glview->save(outfilename);
 	
 	destroy_builtin_functions();
 	destroy_builtin_modules();

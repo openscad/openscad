@@ -158,6 +158,7 @@ include_directories(../src)
 add_definitions(-DOPENSCAD_VERSION=test -DOPENSCAD_YEAR=2011 -DOPENSCAD_MONTH=10)
 
 set(CORE_SOURCES
+  tests-common.cc 
   ../src/mathc99.cc
   ../src/handle_dep.cc 
   ../src/qhash.cc
