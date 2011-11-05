@@ -88,7 +88,8 @@ QString filepath;
 %x comment string
 %x include
 
-DIGIT [0-9]
+D [0-9]
+E [Ee][+-]?{D}+
 
 %%
 
@@ -155,8 +156,10 @@ use[ \t\r\n>]*"<"[^\t\r\n>]+">" {
 "false"		return TOK_FALSE;
 "undef"		return TOK_UNDEF;
 
-{DIGIT}+|{DIGIT}*\.{DIGIT}+|{DIGIT}+\.{DIGIT}* { parserlval.number = QString(yytext).toDouble(); return TOK_NUMBER; }
-"$"?[a-zA-Z0-9_]+ { parserlval.text = strdup(yytext); return TOK_ID; }
+{D}+{E}? | 
+{D}*\.{D}+{E}? |
+{D}+\.{D}*{E}?          { parserlval.number = QString(yytext).toDouble(); return TOK_NUMBER; }
+"$"?[a-zA-Z0-9_]+       { parserlval.text = strdup(yytext); return TOK_ID; }
 
 \"			{ BEGIN(string); stringcontents = new QString(); }
 <string>{
