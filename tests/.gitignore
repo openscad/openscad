@@ -1,3 +1,4 @@
+*.a
 *-output
 CMakeFiles
 CMakeCache.txt
