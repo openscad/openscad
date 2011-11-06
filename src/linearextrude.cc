@@ -146,7 +146,7 @@ std::string LinearExtrudeNode::toString() const
 			"file = \"" << this->filename << "\", "
 			"cache = \"" << 	QFileInfo(QString::fromStdString(this->filename)) << "\", "
 			"layer = \"" << this->layername << "\", "
-			"origin = [ " << this->origin_x << " " << this->origin_y << " ], "
+			"origin = [" << this->origin_x << ", " << this->origin_y << "], "
 			"scale = " << this->scale << ", ";
 	}
 	stream <<
