@@ -58,7 +58,7 @@ public:
 	virtual std::string toString() const;
 	virtual std::string name() const { return "surface"; }
 
-	std::string filename;
+	Filename filename;
 	bool center;
 	int convexity;
 	virtual PolySet *evaluate_polyset(class PolySetEvaluator *) const;
