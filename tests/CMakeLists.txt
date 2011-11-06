@@ -68,6 +68,7 @@ endif()
 # in that case, run cmake with -DBOOST_ROOT=/path/to/boost/install
 # (being the same path you passed to boost's --prefix when you built it)
 if(BOOST_ROOT)
+  #set(Boost_DEBUG TRUE)
   set(Boost_NO_SYSTEM_PATHS TRUE)
   set(Boost_ADDITIONAL_VERSIONS "1.47.0")
   find_package( Boost 1.35.0 COMPONENTS thread program_options )
