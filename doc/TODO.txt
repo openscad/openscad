@@ -52,6 +52,7 @@ o Preferences
   - OpenGL params
   - Default language feature settings
   - Make the library search path configurable?
+  - Turn on/off caching (advanced)
 o MDI
   - Think about how to do MDI the right way
   - Ctrl-W should close the current dialog, not the current main window
@@ -117,6 +118,7 @@ o Misc
   - If trying to export STL/DXF but source is newer than the CGAL rendering, ask
     for confirmation.
   - Go through keyboard shortcuts and make them more conformant to platform standards
+  - Show design info/stats (sizes, caches etc.)
 o Cmd-line
   - Add verbose option (PRINT command from mainwin.cc and progress output)
 
