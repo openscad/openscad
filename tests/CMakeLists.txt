@@ -323,9 +323,9 @@ file(GLOB MINIMAL_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/minimal/*.scad)
 file(GLOB FEATURES_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/features/*.scad)
 file(GLOB BUGS_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/*.scad)
 file(GLOB SCAD_DXF_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/dxf/*.scad)
+file(GLOB EXAMPLE_FILES ${CMAKE_SOURCE_DIR}/../examples/*.scad)
 
-list(APPEND DUMPTEST_FILES ${MINIMAL_FILES}
-                           ${CMAKE_SOURCE_DIR}/../examples/example001.scad)
+list(APPEND DUMPTEST_FILES ${MINIMAL_FILES} ${FEATURES_FILES} ${EXAMPLE_FILES})
 
 list(APPEND ECHO_FILES
             ${CMAKE_SOURCE_DIR}/../testdata/scad/minimal/echo.scad
