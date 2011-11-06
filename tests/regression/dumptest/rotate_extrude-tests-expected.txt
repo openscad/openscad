@@ -1,7 +1,45 @@
-group() {
-	rotate_extrude(file = "", cache = "0.0", layer = "", origin = [ 0 0 ], scale = 1, convexity = 1, $fn = 0, $fa = 12, $fs = 1) {
+	rotate_extrude(convexity = 1, $fn = 0, $fa = 12, $fs = 1);
+	rotate_extrude(convexity = 1, $fn = 0, $fa = 12, $fs = 1);
+	rotate_extrude(convexity = 1, $fn = 0, $fa = 12, $fs = 1) {
+		cube(size = [1, 1, 1], center = false);
+	}
+	rotate_extrude(convexity = 1, $fn = 0, $fa = 12, $fs = 1) {
 		multmatrix([[1, 0, 0, 20], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 			circle($fn = 0, $fa = 12, $fs = 1, r = 10);
 		}
 	}
-}
+	multmatrix([[1, 0, 0, 50], [0, 1, 0, -20], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+		difference() {
+			rotate_extrude(convexity = 1, $fn = 0, $fa = 12, $fs = 1) {
+				multmatrix([[1, 0, 0, 20], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+					difference() {
+						circle($fn = 0, $fa = 12, $fs = 1, r = 10);
+						circle($fn = 0, $fa = 12, $fs = 1, r = 8);
+					}
+				}
+			}
+			multmatrix([[1, 0, 0, -50], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+				cube(size = [100, 100, 100], center = true);
+			}
+		}
+	}
+	multmatrix([[1, 0, 0, 50], [0, 1, 0, 50], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+		difference() {
+			difference() {
+				rotate_extrude(convexity = 1, $fn = 0, $fa = 12, $fs = 1) {
+					multmatrix([[1, 0, 0, 20], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+						circle($fn = 0, $fa = 12, $fs = 1, r = 10);
+					}
+				}
+				rotate_extrude(convexity = 1, $fn = 0, $fa = 12, $fs = 1) {
+					multmatrix([[1, 0, 0, 20], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+						circle($fn = 0, $fa = 12, $fs = 1, r = 8);
+					}
+				}
+			}
+			multmatrix([[1, 0, 0, -50], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+				cube(size = [100, 100, 100], center = true);
+			}
+		}
+	}
+

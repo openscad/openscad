@@ -1,1 +1,1 @@
-group1(intersection_for2)
+group1(intersection2)

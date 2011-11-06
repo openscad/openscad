@@ -1,0 +1,71 @@
+	render(convexity = 1);
+	render(convexity = 1);
+	group() {
+		difference() {
+			cube(size = [100, 100, 100], center = true);
+			multmatrix([[1, 0, 0, -50], [0, 1, 0, -50], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+				multmatrix([[-1, -1.22465e-16, 0, 0], [1.22465e-16, -1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+					group() {
+						difference() {
+							cube(size = [20, 20, 150], center = true);
+							multmatrix([[1, 0, 0, -10], [0, 1, 0, -10], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+								cylinder($fn = 0, $fa = 12, $fs = 1, h = 80, r1 = 10, r2 = 10, center = true);
+							}
+						}
+					}
+				}
+			}
+			multmatrix([[1, 0, 0, 50], [0, 1, 0, -50], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+				multmatrix([[-1.83697e-16, 1, 0, 0], [-1, -1.83697e-16, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+					group() {
+						difference() {
+							cube(size = [20, 20, 150], center = true);
+							multmatrix([[1, 0, 0, -10], [0, 1, 0, -10], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+								cylinder($fn = 0, $fa = 12, $fs = 1, h = 80, r1 = 10, r2 = 10, center = true);
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+	multmatrix([[1, 0, 0, 110], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+		group() {
+			difference() {
+				cube(size = [100, 100, 100], center = true);
+				multmatrix([[1, 0, 0, -50], [0, 1, 0, -50], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+					multmatrix([[-1, -1.22465e-16, 0, 0], [1.22465e-16, -1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+						group() {
+							render(convexity = 2) {
+								group() {
+									difference() {
+										cube(size = [20, 20, 150], center = true);
+										multmatrix([[1, 0, 0, -10], [0, 1, 0, -10], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+											cylinder($fn = 0, $fa = 12, $fs = 1, h = 80, r1 = 10, r2 = 10, center = true);
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+				multmatrix([[1, 0, 0, 50], [0, 1, 0, -50], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+					multmatrix([[-1.83697e-16, 1, 0, 0], [-1, -1.83697e-16, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+						group() {
+							render(convexity = 2) {
+								group() {
+									difference() {
+										cube(size = [20, 20, 150], center = true);
+										multmatrix([[1, 0, 0, -10], [0, 1, 0, -10], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+											cylinder($fn = 0, $fa = 12, $fs = 1, h = 80, r1 = 10, r2 = 10, center = true);
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+

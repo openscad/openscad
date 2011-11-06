@@ -1,3 +1,3 @@
-group() {
-	surface(file = "/Users/kintel/code/metalab/checkout/OpenSCAD/openscad-visitor/testdata/scad/surface.dat", center = false);
-}
+	surface(file = "", center = false);
+	surface(file = "/Users/kintel/code/OpenSCAD/openscad/testdata/scad/features/surface.dat", center = true);
+
