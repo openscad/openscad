@@ -134,6 +134,8 @@ int main(int argc, char **argv)
 		("help,h", "help message")
 		("version,v", "print the version")
 		("o,o", po::value<string>(), "out-file")
+		("s,s", po::value<string>(), "stl-file")
+		("x,x", po::value<string>(), "dxf-file")
 		("d,d", po::value<string>(), "deps-file")
 		("m,m", po::value<string>(), "makefile")
 		("D,D", po::value<vector<string> >(), "var=val");
@@ -159,6 +161,16 @@ int main(int argc, char **argv)
 		// FIXME: Allow for multiple output files?
 		if (output_file) help(argv[0]);
 		output_file = vm["o"].as<string>().c_str();
+	}
+	if (vm.count("s")) {
+		fprintf(stderr, "DEPRECATED: The -s option is deprecated. Use -o instead.\n");
+		if (output_file) help(argv[0]);
+		output_file = vm["s"].as<string>().c_str();
+	}
+	if (vm.count("x")) { 
+		fprintf(stderr, "DEPRECATED: The -x option is deprecated. Use -o instead.\n");
+		if (output_file) help(argv[0]);
+		output_file = vm["x"].as<string>().c_str();
 	}
 	if (vm.count("d")) {
 		if (deps_output_file)
