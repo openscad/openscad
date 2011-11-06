@@ -1,8 +1,6 @@
 #ifndef CGAL_NEF_POLYHEDRON_H_
 #define CGAL_NEF_POLYHEDRON_H_
 
-#ifdef ENABLE_CGAL
-
 #include "cgalfwd.h"
 #include "memory.h"
 
@@ -28,7 +26,5 @@ public:
 	shared_ptr<CGAL_Nef_polyhedron2> p2;
 	shared_ptr<CGAL_Nef_polyhedron3> p3;
 };
-
-#endif /* ENABLE_CGAL */
 
 #endif

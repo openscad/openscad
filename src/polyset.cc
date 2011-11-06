@@ -27,10 +27,6 @@
 #include "polyset.h"
 // FIXME: Reenable/rewrite - don't be dependant on GUI
 // #include "Preferences.h"
-#ifdef ENABLE_CGAL
-#include <CGAL/assertions_behaviour.h>
-#include <CGAL/exceptions.h>
-#endif
 #include "linalg.h"
 #include <Eigen/LU>
 #include <QColor>
