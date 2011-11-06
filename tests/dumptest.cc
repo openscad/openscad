@@ -32,7 +32,6 @@
 #include "value.h"
 #include "export.h"
 #include "builtin.h"
-#include "nodedumper.h"
 #include "Tree.h"
 
 #include <QApplication>
@@ -53,6 +52,16 @@ std::string commandline_commands;
 QString currentdir;
 QString examplesdir;
 QString librarydir;
+
+string dumptree(const Tree &tree, const AbstractNode &node)
+{
+	std::stringstream str;
+	const std::vector<AbstractNode*> &children = node.getChildren();
+	for (std::vector<AbstractNode*>::const_iterator iter = children.begin(); iter != children.end(); iter++) {
+		str << tree.getString(**iter) << "\n";
+	}
+	return str.str();
+}
 
 int main(int argc, char **argv)
 {
@@ -114,9 +123,12 @@ int main(int argc, char **argv)
 	Tree tree;
 	tree.setRoot(root_node);
 
-	string dumpstdstr = tree.getString(*root_node);
-	string dumpstdstr_cached = tree.getString(*root_node);
-	assert(dumpstdstr == dumpstdstr_cached);
+	string dumpstdstr = dumptree(tree, *root_node);
+	string dumpstdstr_cached = dumptree(tree, *root_node);
+	if (dumpstdstr != dumpstdstr_cached) {
+		fprintf(stderr, "Error: Dump cached failed\n");
+		exit(1);
+	}
 
 	QDir::setCurrent(original_path.absolutePath());
 	std::ofstream outfile;
@@ -124,10 +136,29 @@ int main(int argc, char **argv)
 	outfile << dumpstdstr << "\n";
 	outfile.close();
 
-	if (!parsefile(outfilename)) {
+	root_module = parsefile(outfilename);
+	if (!root_module) {
 		fprintf(stderr, "Error: Unable to read back dumped file\n");
 		exit(1);
 	}
+	fileInfo = QFileInfo(outfilename);
+	QDir::setCurrent(fileInfo.absolutePath());
+
+	AbstractNode::resetIndexCounter();
+	root_node = root_module->evaluate(&root_ctx, &root_inst);
+
+	tree.setRoot(root_node);
+
+	string readbackstr = dumptree(tree, *root_node);
+	if (dumpstdstr != readbackstr) {
+		fprintf(stderr, "Error: Readback is different from original dump:\n");
+		fprintf(stderr, "Original:\n");
+		fprintf(stderr, dumpstdstr.c_str());
+		fprintf(stderr, "Readback:\n");
+		fprintf(stderr, readbackstr.c_str());
+		exit(1);
+	}
+
 
 	destroy_builtin_functions();
 	destroy_builtin_modules();
