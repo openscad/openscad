@@ -262,7 +262,7 @@ PolySet *PolySetCGALEvaluator::evaluatePolySet(const LinearExtrudeNode &node)
 			if (v->modinst->tag_background) continue;
 			CGAL_Nef_polyhedron N = this->cgalevaluator.evaluateCGALMesh(*v);
 			if (N.dim != 2) {
-				PRINT("ERROR: rotate_extrude() is not defined for 3D child objects!");
+				PRINT("ERROR: linear_extrude() is not defined for 3D child objects!");
 			}
 			else {
 				if (sum.empty()) sum = N.copy();
