@@ -173,7 +173,6 @@ set(CORE_SOURCES
   ../src/func.cc 
   ../src/module.cc 
   ../src/node.cc 
-  ../src/builtin.cc 
   ../src/context.cc 
   ../src/csgterm.cc 
   ../src/polyset.cc 
@@ -196,6 +195,7 @@ set(CORE_SOURCES
   ${BISON_OpenSCADparser_OUTPUTS})
 
 set(NOCGAL_SOURCES
+  ../src/builtin.cc 
   ../src/dxftess.cc 
   ../src/import.cc
   ../src/export.cc) 
