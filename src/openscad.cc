@@ -124,6 +124,7 @@ int main(int argc, char **argv)
 	QCoreApplication::setOrganizationName("OpenSCAD");
 	QCoreApplication::setOrganizationDomain("openscad.org");
 	QCoreApplication::setApplicationName("OpenSCAD");
+	QCoreApplication::setApplicationVersion(TOSTRING(OPENSCAD_VERSION));
 
 	const char *filename = NULL;
 	const char *output_file = NULL;
