@@ -84,8 +84,7 @@ int main(int argc, char **argv)
 
 	const char *filename = argv[1];
 
-	initialize_builtin_functions();
-	initialize_builtin_modules();
+	Builtins::instance()->initialize();
 
 	QApplication app(argc, argv, false);
 	QDir original_path = QDir::current();
@@ -142,8 +141,8 @@ int main(int argc, char **argv)
 	if (!N.empty()) {
 		export_stl(&N, std::cout, NULL);
 	}
-	destroy_builtin_functions();
-	destroy_builtin_modules();
+
+	Builtins::instance(true);
 
 	return 0;
 }

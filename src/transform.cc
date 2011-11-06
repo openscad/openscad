@@ -206,9 +206,9 @@ std::string TransformNode::name() const
 
 void register_builtin_transform()
 {
-	builtin_modules["scale"] = new TransformModule(SCALE);
-	builtin_modules["rotate"] = new TransformModule(ROTATE);
-	builtin_modules["mirror"] = new TransformModule(MIRROR);
-	builtin_modules["translate"] = new TransformModule(TRANSLATE);
-	builtin_modules["multmatrix"] = new TransformModule(MULTMATRIX);
+	Builtins::init("scale", new TransformModule(SCALE));
+	Builtins::init("rotate", new TransformModule(ROTATE));
+	Builtins::init("mirror", new TransformModule(MIRROR));
+	Builtins::init("translate", new TransformModule(TRANSLATE));
+	Builtins::init("multmatrix", new TransformModule(MULTMATRIX));
 }

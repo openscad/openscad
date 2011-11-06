@@ -76,8 +76,7 @@ int main(int argc, char **argv)
 	}
 	set_output_handler(&outfile_handler, &ofile);
 
-	initialize_builtin_functions();
-	initialize_builtin_modules();
+	Builtins::instance()->initialize();
 
 	QApplication app(argc, argv, false);
 	QDir original_path = QDir::current();
@@ -121,9 +120,7 @@ int main(int argc, char **argv)
 	AbstractNode::resetIndexCounter();
 	root_node = root_module->evaluate(&root_ctx, &root_inst);
 
-	destroy_builtin_functions();
-	destroy_builtin_modules();
-
+	Builtins::instance(true);
 	ofile.close();
 	return rc;
 }

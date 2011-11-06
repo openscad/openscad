@@ -194,7 +194,6 @@ Value builtin_dxf_cross(const Context *ctx, const std::vector<std::string> &argn
 
 void initialize_builtin_dxf_dim()
 {
-	builtin_functions["dxf_dim"] = new BuiltinFunction(&builtin_dxf_dim);
-	builtin_functions["dxf_cross"] = new BuiltinFunction(&builtin_dxf_cross);
+	Builtins::init("dxf_dim", new BuiltinFunction(&builtin_dxf_dim));
+	Builtins::init("dxf_cross", new BuiltinFunction(&builtin_dxf_cross));
 }
-

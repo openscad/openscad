@@ -114,12 +114,6 @@ AbstractNode *LinearExtrudeModule::evaluate(const Context *ctx, const ModuleInst
 	return node;
 }
 
-void register_builtin_dxf_linear_extrude()
-{
-	builtin_modules["dxf_linear_extrude"] = new LinearExtrudeModule();
-	builtin_modules["linear_extrude"] = new LinearExtrudeModule();
-}
-
 class PolySet *LinearExtrudeNode::evaluate_polyset(PolySetEvaluator *evaluator) const
 {
 	if (!evaluator) {
@@ -160,4 +154,10 @@ std::string LinearExtrudeNode::toString() const
 	stream << ", $fn = " << this->fn << ", $fa = " << this->fa << ", $fs = " << this->fs << ")";
 	
 	return stream.str();
+}
+
+void register_builtin_dxf_linear_extrude()
+{
+	Builtins::init("dxf_linear_extrude", new LinearExtrudeModule());
+	Builtins::init("linear_extrude", new LinearExtrudeModule());
 }

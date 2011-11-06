@@ -150,20 +150,9 @@ AbstractNode *Context::evaluate_module(const ModuleInstantiation &inst) const
 {
 	if (this->modules_p && this->modules_p->find(inst.modname) != this->modules_p->end()) {
 		AbstractModule *m = this->modules_p->find(inst.modname)->second;
-		if (m == builtin_modules["dxf_linear_extrude"]) {
-			PRINTF("DEPRECATED: The dxf_linear_extrude() module will be removed in future releases. Use a linear_extrude() instead.");
-		}
-		else if (m == builtin_modules["dxf_rotate_extrude"]) {
-			PRINTF("DEPRECATED: The dxf_rotate_extrude() module will be removed in future releases. Use a rotate_extrude() instead.");
-		}
-		else if (m == builtin_modules["import_stl"]) {
-			PRINTF("DEPRECATED: The import_stl() module will be removed in future releases. Use import() instead.");
-		}
-		else if (m == builtin_modules["import_dxf"]) {
-			PRINTF("DEPRECATED: The import_dxf() module will be removed in future releases. Use import() instead.");
-		}
-		else if (m == builtin_modules["import_off"]) {
-			PRINTF("DEPRECATED: The import_off() module will be removed in future releases. Use import() instead.");
+		std::string replacement = Builtins::instance()->isDeprecated(inst.modname);
+		if (!replacement.empty()) {
+			PRINTF("DEPRECATED: The %s() module will be removed in future releases. Use %s() instead.", inst.modname.c_str(), replacement.c_str());
 		}
 		return m->evaluate(this, &inst);
 	}
@@ -196,8 +185,8 @@ std::string Context::getAbsolutePath(const std::string &filename) const
 
 void register_builtin(Context &ctx)
 {
-	ctx.functions_p = &builtin_functions;
-	ctx.modules_p = &builtin_modules;
+	ctx.functions_p = &Builtins::instance()->functions();
+	ctx.modules_p = &Builtins::instance()->modules();
 	ctx.set_variable("$fn", Value(0.0));
 	ctx.set_variable("$fs", Value(1.0));
 	ctx.set_variable("$fa", Value(12.0));

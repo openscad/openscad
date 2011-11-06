@@ -101,8 +101,7 @@ int main(int argc, char **argv)
 	// (which we don't catch). This gives us stack traces without rerunning in gdb.
 	CGAL::set_error_behaviour(CGAL::ABORT);
 #endif
-	initialize_builtin_functions();
-	initialize_builtin_modules();
+	Builtins::instance()->initialize();
 
 #ifdef Q_WS_X11
 	// see <http://qt.nokia.com/doc/4.5/qapplication.html#QApplication-2>:
@@ -409,8 +408,7 @@ int main(int argc, char **argv)
 		exit(1);
 	}
 
-	destroy_builtin_functions();
-	destroy_builtin_modules();
+	Builtins::instance(true);
 
 	return rc;
 }

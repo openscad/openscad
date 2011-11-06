@@ -218,6 +218,7 @@ SOURCES += src/openscad.cc \
            src/func.cc \
            src/module.cc \
            src/node.cc \
+           src/builtin.cc \
            src/context.cc \
            src/csgterm.cc \
            src/polyset.cc \
