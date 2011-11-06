@@ -1,3 +1,8 @@
+
+isEmpty(QT_VERSION) {
+  error("Please use qmake for Qt 4 (probably qmake-qt4)")
+}
+
 # Auto-include config_<variant>.pri if the VARIANT variable is give on the
 # command-line, e.g. qmake VARIANT=mybuild
 !isEmpty(VARIANT) {
