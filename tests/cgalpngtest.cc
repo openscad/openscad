@@ -25,6 +25,7 @@
  */
 
 #include "myqhash.h"
+#include "tests-common.h"
 #include "openscad.h"
 #include "node.h"
 #include "module.h"
@@ -41,7 +42,6 @@
 #include "CGAL_renderer.h"
 #include "cgal.h"
 #include "OffscreenView.h"
-#include "handle_dep.h"
 
 #include <QApplication>
 #include <QFile>
@@ -133,28 +133,12 @@ int main(int argc, char **argv)
 	AbstractModule *root_module;
 	ModuleInstantiation root_inst;
 
-	QFileInfo fileInfo(filename);
-	handle_dep(filename);
-	FILE *fp = fopen(filename, "rt");
-	if (!fp) {
-		fprintf(stderr, "Can't open input file `%s'!\n", filename);
+	root_module = parsefile(filename);
+	if (!root_module) {
 		exit(1);
-	} else {
-		std::stringstream text;
-		char buffer[513];
-		int ret;
-		while ((ret = fread(buffer, 1, 512, fp)) > 0) {
-			buffer[ret] = 0;
-			text << buffer;
-		}
-		fclose(fp);
-		text << commandline_commands;
-		root_module = parse(text.str().c_str(), fileInfo.absolutePath().toLocal8Bit(), false);
-		if (!root_module) {
-			exit(1);
-		}
 	}
 
+	QFileInfo fileInfo(filename);
 	QDir::setCurrent(fileInfo.absolutePath());
 
 	AbstractNode::resetIndexCounter();

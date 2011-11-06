@@ -124,7 +124,7 @@ std::string RotateExtrudeNode::toString() const
 			"file = \"" << this->filename << "\", "
 			"cache = \"" << QFileInfo(QString::fromStdString(this->filename)) << "\", "
 			"layer = \"" << this->layername << "\", "
-			"origin = [ " << std::dec << this->origin_x << " " << this->origin_y << " ], "
+			"origin = [" << std::dec << this->origin_x << ", " << this->origin_y << "], "
 			"scale = " << this->scale << ", ";
 	}
 	stream <<

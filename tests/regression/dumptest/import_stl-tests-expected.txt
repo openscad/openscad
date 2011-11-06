@@ -1,3 +1,2 @@
-group() {
-	import_stl(file = "/Users/kintel/code/metalab/checkout/OpenSCAD/openscad-visitor/testdata/scad/import.stl", cache = "4c34b4bc.2506", convexity = 1);
-}
+	import(file = "/Users/kintel/code/OpenSCAD/openscad/testdata/scad/features/import.stl", cache = "4e823ddd.2506", layer = "", origin = [0, 0], scale = 1, convexity = 1, $fn = 0, $fa = 12, $fs = 1);
+

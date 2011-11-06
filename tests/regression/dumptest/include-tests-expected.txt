@@ -1,0 +1,32 @@
+	group() {
+		group() {
+			cube(size = [1, 1, 1], center = true);
+		}
+		multmatrix([[1, 0, 0, 2], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+			group() {
+				cylinder($fn = 0, $fa = 12, $fs = 1, h = 1, r1 = 0.7, r2 = 0.2, center = true);
+			}
+		}
+		multmatrix([[1, 0, 0, 2], [0, 1, 0, -2], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+			group() {
+				cylinder($fn = 10, $fa = 12, $fs = 1, h = 1, r1 = 0.5, r2 = 0.5, center = true);
+			}
+		}
+		multmatrix([[1, 0, 0, -2], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+			group() {
+				sphere($fn = 8, $fa = 12, $fs = 1, r = 0.5);
+			}
+		}
+		multmatrix([[1, 0, 0, -2], [0, 1, 0, -2], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+			group() {
+				difference() {
+					cube(size = [1, 1, 1], center = true);
+					cylinder($fn = 0, $fa = 12, $fs = 1, h = 2, r1 = 0.4, r2 = 0.4, center = true);
+				}
+			}
+		}
+		multmatrix([[1, 0, 0, 0], [0, 1, 0, -2], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+			sphere($fn = 16, $fa = 12, $fs = 1, r = 0.7);
+		}
+	}
+

@@ -38,7 +38,6 @@ public:
   /*! Should return a PolySet of the given geometry. Returns NULL if smth. goes wrong */
 	virtual class PolySet *evaluate_polyset(class PolySetEvaluator *) const { return NULL; }
 
-  // FIXME: Make return value a reference
 	const std::vector<AbstractNode*> &getChildren() const { 
 		return this->children;
 	}
