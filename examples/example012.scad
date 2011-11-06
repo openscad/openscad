@@ -8,5 +8,5 @@ difference()
 	sphere(20);
 	
 	translate([ -2.92, 0.5, +20 ]) rotate([180, 0, 180])
-			import_stl("example012.stl", convexity = 5);
+			import("example012.stl", convexity = 5);
 }
