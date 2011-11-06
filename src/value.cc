@@ -341,6 +341,7 @@ std::string Value::toString() const
 
 	switch (this->type) {
 	case STRING:
+		// FIXME: Escape special characters when outputting
 		stream << '"' << this->text << '"';
 		break;
 	case VECTOR:
