@@ -29,7 +29,6 @@
 #include "context.h"
 #include "expression.h"
 #include "function.h"
-#include "builtin.h"
 #include "printutils.h"
 #include <boost/foreach.hpp>
 #include <sstream>
@@ -200,32 +199,4 @@ std::string Module::dump(const std::string &indent, const std::string &name) con
 		dump << indent << "}\n";
 	}
 	return dump.str();
-}
-
-Module::AbstractModuleContainer builtin_modules;
-
-void initialize_builtin_modules()
-{
-	builtin_modules["group"] = new AbstractModule();
-
-	register_builtin_csgops();
-	register_builtin_transform();
-	register_builtin_color();
-	register_builtin_primitives();
-	register_builtin_surface();
-	register_builtin_control();
-	register_builtin_render();
-	register_builtin_import();
-	register_builtin_projection();
-	register_builtin_cgaladv();
-	register_builtin_dxf_linear_extrude();
-	register_builtin_dxf_rotate_extrude();
-}
-
-void destroy_builtin_modules()
-{
-	BOOST_FOREACH(Module::AbstractModuleContainer::value_type &m, builtin_modules) {
-		delete m.second;
-	}
-	builtin_modules.clear();
 }

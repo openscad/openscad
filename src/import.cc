@@ -251,9 +251,8 @@ std::string ImportNode::name() const
 
 void register_builtin_import()
 {
-	builtin_modules["import_stl"] = new ImportModule(TYPE_STL);
-	builtin_modules["import_off"] = new ImportModule(TYPE_OFF);
-	builtin_modules["import_dxf"] = new ImportModule(TYPE_DXF);
-	builtin_modules["import"] = new ImportModule();
+	Builtins::init("import_stl", new ImportModule(TYPE_STL));
+	Builtins::init("import_off", new ImportModule(TYPE_OFF));
+	Builtins::init("import_dxf", new ImportModule(TYPE_DXF));
+	Builtins::init("import", new ImportModule());
 }
-

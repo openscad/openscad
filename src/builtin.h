@@ -4,27 +4,30 @@
 #include <string>
 #include <boost/unordered_map.hpp>
 
-extern boost::unordered_map<std::string, class AbstractFunction*> builtin_functions;
-extern void initialize_builtin_functions();
-extern void destroy_builtin_functions();
+class Builtins
+{
+public:
+	typedef boost::unordered_map<std::string, class AbstractFunction*> FunctionContainer;
+	typedef boost::unordered_map<std::string, class AbstractModule*> ModuleContainer;
 
-extern boost::unordered_map<std::string, class AbstractModule*> builtin_modules;
-extern void initialize_builtin_modules();
-extern void destroy_builtin_modules();
+	static Builtins *instance(bool erase = false);
+	static void init(const char *name, class AbstractModule *module);
+	static void init(const char *name, class AbstractFunction *function);
+	void initialize();
+	std::string isDeprecated(const std::string &name);
 
-extern void register_builtin_csgops();
-extern void register_builtin_transform();
-extern void register_builtin_color();
-extern void register_builtin_primitives();
-extern void register_builtin_surface();
-extern void register_builtin_control();
-extern void register_builtin_render();
-extern void register_builtin_import();
-extern void register_builtin_projection();
-extern void register_builtin_cgaladv();
-extern void register_builtin_dxf_linear_extrude();
-extern void register_builtin_dxf_rotate_extrude();
-extern void initialize_builtin_dxf_dim();
+	const FunctionContainer &functions() { return this->builtinfunctions; }
+	const ModuleContainer &modules() { return this->builtinmodules; }
+
+private:
+	Builtins() { }
+	~Builtins();
+
+	FunctionContainer builtinfunctions;
+	ModuleContainer builtinmodules;
+
+	boost::unordered_map<std::string, std::string> deprecations;
+};
 
 extern void register_builtin(class Context &ctx);
 

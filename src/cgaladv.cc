@@ -97,14 +97,6 @@ PolySet *CgaladvNode::evaluate_polyset(PolySetEvaluator *ps) const
 	return ps->evaluatePolySet(*this);
 }
 
-void register_builtin_cgaladv()
-{
-	builtin_modules["minkowski"] = new CgaladvModule(MINKOWSKI);
-	builtin_modules["glide"] = new CgaladvModule(GLIDE);
-	builtin_modules["subdiv"] = new CgaladvModule(SUBDIV);
-	builtin_modules["hull"] = new CgaladvModule(HULL);
-}
-
 std::string CgaladvNode::name() const
 {
 	switch (this->type) {
@@ -148,4 +140,12 @@ std::string CgaladvNode::toString() const
 	}
 
 	return stream.str();
+}
+
+void register_builtin_cgaladv()
+{
+	Builtins::init("minkowski", new CgaladvModule(MINKOWSKI));
+	Builtins::init("glide", new CgaladvModule(GLIDE));
+	Builtins::init("subdiv", new CgaladvModule(SUBDIV));
+	Builtins::init("hull", new CgaladvModule(HULL));
 }

@@ -67,11 +67,6 @@ class PolySet *RenderNode::evaluate_polyset(PolySetEvaluator *ps) const
 	return ps->evaluatePolySet(*this);
 }
 
-void register_builtin_render()
-{
-	builtin_modules["render"] = new RenderModule();
-}
-
 std::string RenderNode::toString() const
 {
 	std::stringstream stream;
@@ -79,4 +74,9 @@ std::string RenderNode::toString() const
 	stream << this->name() << "(convexity = " << convexity << ")";
 
 	return stream.str();
+}
+
+void register_builtin_render()
+{
+	Builtins::init("render", new RenderModule());
 }

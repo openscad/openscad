@@ -101,5 +101,5 @@ std::string ColorNode::name() const
 
 void register_builtin_color()
 {
-	builtin_modules["color"] = new ColorModule();
+	Builtins::init("color", new ColorModule());
 }

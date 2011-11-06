@@ -72,8 +72,8 @@ std::string CsgNode::name() const
 
 void register_builtin_csgops()
 {
-	builtin_modules["union"] = new CsgModule(CSG_TYPE_UNION);
-	builtin_modules["difference"] = new CsgModule(CSG_TYPE_DIFFERENCE);
-	builtin_modules["intersection"] = new CsgModule(CSG_TYPE_INTERSECTION);
+	Builtins::init("union", new CsgModule(CSG_TYPE_UNION));
+	Builtins::init("difference", new CsgModule(CSG_TYPE_DIFFERENCE));
+	Builtins::init("intersection", new CsgModule(CSG_TYPE_INTERSECTION));
 }
 

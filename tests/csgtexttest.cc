@@ -72,8 +72,7 @@ int main(int argc, char **argv)
 
 	int rc = 0;
 
-	initialize_builtin_functions();
-	initialize_builtin_modules();
+	Builtins::instance()->initialize();
 
 	QApplication app(argc, argv, false);
 	QDir original_path = QDir::current();
@@ -130,8 +129,7 @@ int main(int argc, char **argv)
 	outfile << csgcache[*root_node] << "\n";
 	outfile.close();
 
-	destroy_builtin_functions();
-	destroy_builtin_modules();
+	Builtins::instance(true);
 
 	return rc;
 }

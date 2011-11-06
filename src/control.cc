@@ -169,11 +169,10 @@ AbstractNode *ControlModule::evaluate(const Context*, const ModuleInstantiation 
 
 void register_builtin_control()
 {
-	builtin_modules["child"] = new ControlModule(CHILD);
-	builtin_modules["echo"] = new ControlModule(ECHO);
-	builtin_modules["assign"] = new ControlModule(ASSIGN);
-	builtin_modules["for"] = new ControlModule(FOR);
-	builtin_modules["intersection_for"] = new ControlModule(INT_FOR);
-	builtin_modules["if"] = new ControlModule(IF);
+	Builtins::init("child", new ControlModule(CHILD));
+	Builtins::init("echo", new ControlModule(ECHO));
+	Builtins::init("assign", new ControlModule(ASSIGN));
+	Builtins::init("for", new ControlModule(FOR));
+	Builtins::init("intersection_for", new ControlModule(INT_FOR));
+	Builtins::init("if", new ControlModule(IF));
 }
-

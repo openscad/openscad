@@ -33,7 +33,6 @@
 #include "mathc99.h"
 #include <algorithm>
 #include "stl-utils.h"
-#include <boost/foreach.hpp>
 
 AbstractFunction::~AbstractFunction()
 {
@@ -80,9 +79,6 @@ std::string Function::dump(const std::string &indent, const std::string &name) c
 	dump << ") = " << *expr << ";\n";
 	return dump.str();
 }
-
-typedef boost::unordered_map<std::string, AbstractFunction*> BuiltinContainer;
-BuiltinContainer builtin_functions;
 
 BuiltinFunction::~BuiltinFunction()
 {
@@ -375,38 +371,30 @@ Value builtin_version_num(const Context *ctx, const std::vector<std::string>& ca
 	return Value(y * 10000 + m * 100 + d);
 }
 
-void initialize_builtin_functions()
+void register_builtin_functions()
 {
-	builtin_functions["abs"] = new BuiltinFunction(&builtin_abs);
-	builtin_functions["sign"] = new BuiltinFunction(&builtin_sign);
-	builtin_functions["rands"] = new BuiltinFunction(&builtin_rands);
-	builtin_functions["min"] = new BuiltinFunction(&builtin_min);
-	builtin_functions["max"] = new BuiltinFunction(&builtin_max);
-	builtin_functions["sin"] = new BuiltinFunction(&builtin_sin);
-	builtin_functions["cos"] = new BuiltinFunction(&builtin_cos);
-	builtin_functions["asin"] = new BuiltinFunction(&builtin_asin);
-	builtin_functions["acos"] = new BuiltinFunction(&builtin_acos);
-	builtin_functions["tan"] = new BuiltinFunction(&builtin_tan);
-	builtin_functions["atan"] = new BuiltinFunction(&builtin_atan);
-	builtin_functions["atan2"] = new BuiltinFunction(&builtin_atan2);
-	builtin_functions["round"] = new BuiltinFunction(&builtin_round);
-	builtin_functions["ceil"] = new BuiltinFunction(&builtin_ceil);
-	builtin_functions["floor"] = new BuiltinFunction(&builtin_floor);
-	builtin_functions["pow"] = new BuiltinFunction(&builtin_pow);
-	builtin_functions["sqrt"] = new BuiltinFunction(&builtin_sqrt);
-	builtin_functions["exp"] = new BuiltinFunction(&builtin_exp);
-	builtin_functions["log"] = new BuiltinFunction(&builtin_log);
-	builtin_functions["ln"] = new BuiltinFunction(&builtin_ln);
-	builtin_functions["str"] = new BuiltinFunction(&builtin_str);
-	builtin_functions["lookup"] = new BuiltinFunction(&builtin_lookup);
-	builtin_functions["version"] = new BuiltinFunction(&builtin_version);
-	builtin_functions["version_num"] = new BuiltinFunction(&builtin_version_num);
-	initialize_builtin_dxf_dim();
-}
-
-void destroy_builtin_functions()
-{
-	BOOST_FOREACH(BuiltinContainer::value_type &f, builtin_functions) delete f.second;
-//std::for_each(builtin_functions.begin(), builtin_functions.end(), del_fun<AbstractFunction>());
-	builtin_functions.clear();
+	Builtins::init("abs", new BuiltinFunction(&builtin_abs));
+	Builtins::init("sign", new BuiltinFunction(&builtin_sign));
+	Builtins::init("rands", new BuiltinFunction(&builtin_rands));
+	Builtins::init("min", new BuiltinFunction(&builtin_min));
+	Builtins::init("max", new BuiltinFunction(&builtin_max));
+	Builtins::init("sin", new BuiltinFunction(&builtin_sin));
+	Builtins::init("cos", new BuiltinFunction(&builtin_cos));
+	Builtins::init("asin", new BuiltinFunction(&builtin_asin));
+	Builtins::init("acos", new BuiltinFunction(&builtin_acos));
+	Builtins::init("tan", new BuiltinFunction(&builtin_tan));
+	Builtins::init("atan", new BuiltinFunction(&builtin_atan));
+	Builtins::init("atan2", new BuiltinFunction(&builtin_atan2));
+	Builtins::init("round", new BuiltinFunction(&builtin_round));
+	Builtins::init("ceil", new BuiltinFunction(&builtin_ceil));
+	Builtins::init("floor", new BuiltinFunction(&builtin_floor));
+	Builtins::init("pow", new BuiltinFunction(&builtin_pow));
+	Builtins::init("sqrt", new BuiltinFunction(&builtin_sqrt));
+	Builtins::init("exp", new BuiltinFunction(&builtin_exp));
+	Builtins::init("log", new BuiltinFunction(&builtin_log));
+	Builtins::init("ln", new BuiltinFunction(&builtin_ln));
+	Builtins::init("str", new BuiltinFunction(&builtin_str));
+	Builtins::init("lookup", new BuiltinFunction(&builtin_lookup));
+	Builtins::init("version", new BuiltinFunction(&builtin_version));
+	Builtins::init("version_num", new BuiltinFunction(&builtin_version_num));
 }

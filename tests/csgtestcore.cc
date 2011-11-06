@@ -77,8 +77,7 @@ int csgtestcore(int argc, char *argv[], test_type_e test_type)
 	const char *filename = argv[1];
 	const char *outfilename = argv[2];
 
-	initialize_builtin_functions();
-	initialize_builtin_modules();
+	Builtins::instance()->initialize();
 
 	QApplication app(argc, argv, false);
 
@@ -217,8 +216,7 @@ int csgtestcore(int argc, char *argv[], test_type_e test_type)
 
 	csgInfo.glview->save(outfilename);
 	
-	destroy_builtin_functions();
-	destroy_builtin_modules();
+	Builtins::instance(true);
 
 	return 0;
 }

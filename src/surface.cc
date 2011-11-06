@@ -92,11 +92,6 @@ AbstractNode *SurfaceModule::evaluate(const Context *ctx, const ModuleInstantiat
 	return node;
 }
 
-void register_builtin_surface()
-{
-	builtin_modules["surface"] = new SurfaceModule();
-}
-
 PolySet *SurfaceNode::evaluate_polyset(class PolySetEvaluator *) const
 {
 	handle_dep(filename);
@@ -218,4 +213,9 @@ std::string SurfaceNode::toString() const
 				 << "\", center = " << (this->center ? "true" : "false") << ")";
 
 	return stream.str();
+}
+
+void register_builtin_surface()
+{
+	Builtins::init("surface", new SurfaceModule());
 }

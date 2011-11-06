@@ -236,17 +236,6 @@ AbstractNode *PrimitiveModule::evaluate(const Context *ctx, const ModuleInstanti
 	return node;
 }
 
-void register_builtin_primitives()
-{
-	builtin_modules["cube"] = new PrimitiveModule(CUBE);
-	builtin_modules["sphere"] = new PrimitiveModule(SPHERE);
-	builtin_modules["cylinder"] = new PrimitiveModule(CYLINDER);
-	builtin_modules["polyhedron"] = new PrimitiveModule(POLYHEDRON);
-	builtin_modules["square"] = new PrimitiveModule(SQUARE);
-	builtin_modules["circle"] = new PrimitiveModule(CIRCLE);
-	builtin_modules["polygon"] = new PrimitiveModule(POLYGON);
-}
-
 /*!
 	Returns the number of subdivision of a whole circle, given radius and
 	the three special variables $fn, $fs and $fa
@@ -605,4 +594,15 @@ std::string PrimitiveNode::toString() const
 	}
 
 	return stream.str();
+}
+
+void register_builtin_primitives()
+{
+	Builtins::init("cube", new PrimitiveModule(CUBE));
+	Builtins::init("sphere", new PrimitiveModule(SPHERE));
+	Builtins::init("cylinder", new PrimitiveModule(CYLINDER));
+	Builtins::init("polyhedron", new PrimitiveModule(POLYHEDRON));
+	Builtins::init("square", new PrimitiveModule(SQUARE));
+	Builtins::init("circle", new PrimitiveModule(CIRCLE));
+	Builtins::init("polygon", new PrimitiveModule(POLYGON));
 }

@@ -97,5 +97,5 @@ std::string ProjectionNode::toString() const
 
 void register_builtin_projection()
 {
-	builtin_modules["projection"] = new ProjectionModule();
+	Builtins::init("projection", new ProjectionModule());
 }
