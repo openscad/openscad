@@ -181,6 +181,12 @@ BISON_TARGET(OpenSCADparser ../src/parser.y ${CMAKE_CURRENT_BINARY_DIR}/parser_y
 ADD_FLEX_BISON_DEPENDENCY(OpenSCADlexer OpenSCADparser)
 set_source_files_properties(${CMAKE_CURRENT_BINARY_DIR}/parser_yacc.c PROPERTIES LANGUAGE "CXX")
 
+if (NOT $ENV{MACOSX_DEPLOY_DIR} STREQUAL "")
+  set(CGAL_DIR "$ENV{MACOSX_DEPLOY_DIR}/lib/CGAL")
+  set(CMAKE_MODULE_PATH "${CGAL_DIR}")
+endif()
+find_package(CGAL REQUIRED)
+include_directories(${CGAL_INCLUDE_DIRS})
 
 # Internal includes
 include_directories(../src)
@@ -197,7 +203,6 @@ set(CORE_SOURCES
   ../src/func.cc 
   ../src/module.cc 
   ../src/node.cc 
-  ../src/builtin.cc 
   ../src/context.cc 
   ../src/csgterm.cc 
   ../src/polyset.cc 
@@ -210,9 +215,7 @@ set(CORE_SOURCES
   ../src/surface.cc 
   ../src/control.cc 
   ../src/render.cc 
-  ../src/import.cc 
   ../src/dxfdata.cc 
-  ../src/dxftess.cc 
   ../src/dxfdim.cc 
   ../src/linearextrude.cc 
   ../src/rotateextrude.cc 
@@ -221,23 +224,32 @@ set(CORE_SOURCES
   ${FLEX_OpenSCADlexer_OUTPUTS}
   ${BISON_OpenSCADparser_OUTPUTS})
 
+set(NOCGAL_SOURCES
+  ../src/builtin.cc 
+  ../src/dxftess.cc 
+  ../src/import.cc
+  ../src/export.cc) 
+
+set(CGAL_SOURCES
+  ${NOCGAL_SOURCES}
+  ../src/CSGTermEvaluator.cc 
+  ../src/CGAL_Nef_polyhedron.cc 
+  ../src/cgalutils.cc 
+  ../src/CGALEvaluator.cc
+  ../src/CGALCache.cc
+  ../src/PolySetCGALEvaluator.cc
+  ../src/qhash.cc
+  ../src/CGAL_Nef_polyhedron_DxfData.cc
+  ../src/cgaladv_minkowski2.cc
+  ../src/cgaladv_convexhull2.cc)
+
 set(COMMON_SOURCES
-  ${CORE_SOURCES}
-  ../src/export.cc 
   ../src/nodedumper.cc 
   ../src/traverser.cc 
   ../src/PolySetEvaluator.cc 
   ../src/PolySetCache.cc 
   ../src/Tree.cc
-  lodepng.cpp
-  ${FLEX_OpenSCADlexer_OUTPUTS}
-  ${BISON_OpenSCADparser_OUTPUTS})
-
-#
-# echotest
-#
-add_executable(echotest echotest.cc ${CORE_SOURCES})
-target_link_libraries(echotest ${QT_LIBRARIES} ${OPENGL_LIBRARY})
+  lodepng.cpp)
 
 #
 # Offscreen OpenGL context source code
@@ -253,6 +265,29 @@ elseif(WIN32)
 	set(OFFSCREEN_CTX_SOURCE "OffscreenContextWGL.cc")
 endif()
 
+set(OFFSCREEN_SOURCES
+  OffscreenView.cc
+  ${OFFSCREEN_CTX_SOURCE}
+  imageutils.cc
+  fbo.cc
+  system-gl.cc)
+
+add_library(tests-core STATIC ${CORE_SOURCES})
+add_library(tests-common STATIC ${COMMON_SOURCES})
+target_link_libraries(tests-common tests-core)
+add_library(tests-cgal STATIC ${CGAL_SOURCES})
+set_target_properties(tests-cgal PROPERTIES COMPILE_FLAGS "-DENABLE_CGAL ${CGAL_CXX_FLAGS_INIT}")
+target_link_libraries(tests-cgal tests-common)
+add_library(tests-nocgal STATIC ${NOCGAL_SOURCES})
+target_link_libraries(tests-nocgal tests-common)
+add_library(tests-offscreen STATIC ${OFFSCREEN_SOURCES})
+
+#
+# echotest
+#
+add_executable(echotest echotest.cc)
+target_link_libraries(echotest tests-nocgal tests-core ${QT_LIBRARIES} ${OPENGL_LIBRARY} ${Boost_LIBRARIES})
+
 #
 # Yangli Hector Yee's PerceptualDiff code
 #
@@ -262,76 +297,50 @@ add_executable(yee_compare yee_compare.cpp lodepng.cpp)
 #
 # dumptest
 #
-add_executable(dumptest dumptest.cc ${COMMON_SOURCES})
-target_link_libraries(dumptest ${QT_LIBRARIES} ${OPENGL_LIBRARY})
+add_executable(dumptest dumptest.cc)
+target_link_libraries(dumptest tests-common tests-nocgal ${QT_LIBRARIES} ${OPENGL_LIBRARY} ${Boost_LIBRARIES})
 
 #
 # csgtexttest
 #
-add_executable(csgtexttest csgtexttest.cc CSGTextRenderer.cc CSGTextCache.cc ../src/qhash.cc ${COMMON_SOURCES})
-target_link_libraries(csgtexttest ${QT_LIBRARIES} ${OPENGL_LIBRARY})
+add_executable(csgtexttest csgtexttest.cc CSGTextRenderer.cc CSGTextCache.cc ../src/qhash.cc)
+target_link_libraries(csgtexttest tests-common tests-nocgal ${QT_LIBRARIES} ${OPENGL_LIBRARY} ${Boost_LIBRARIES})
 
 #
 # csgtermtest
 #
-add_executable(csgtermtest csgtermtest.cc ../src/CSGTermEvaluator.cc ${COMMON_SOURCES})
-target_link_libraries(csgtermtest ${QT_LIBRARIES} ${OPENGL_LIBRARY})
-
-if (NOT $ENV{MACOSX_DEPLOY_DIR} STREQUAL "")
-  set(CGAL_DIR "$ENV{MACOSX_DEPLOY_DIR}/lib/CGAL")
-  set(CMAKE_MODULE_PATH "${CGAL_DIR}")
-endif()
-find_package(CGAL REQUIRED)
-include_directories(${CGAL_INCLUDE_DIRS})
+add_executable(csgtermtest csgtermtest.cc ../src/CSGTermEvaluator.cc)
+target_link_libraries(csgtermtest tests-common tests-nocgal ${QT_LIBRARIES} ${OPENGL_LIBRARY} ${Boost_LIBRARIES})
 
 #
 # cgaltest
 #
-add_executable(cgaltest cgaltest.cc ../src/CGAL_Nef_polyhedron.cc ../src/cgalutils.cc ../src/CSGTermEvaluator.cc 
-                        ../src/CGALEvaluator.cc ../src/CGALCache.cc ../src/PolySetCGALEvaluator.cc ../src/qhash.cc
-                        ../src/CGAL_Nef_polyhedron_DxfData.cc ../src/cgaladv_minkowski2.cc ../src/cgaladv_convexhull2.cc
-                        ${COMMON_SOURCES})
+add_executable(cgaltest cgaltest.cc)
 set_target_properties(cgaltest PROPERTIES COMPILE_FLAGS "-DENABLE_CGAL ${CGAL_CXX_FLAGS_INIT}")
-target_link_libraries(cgaltest ${CGAL_LIBRARY} ${CGAL_3RD_PARTY_LIBRARIES} ${QT_LIBRARIES} ${OPENGL_LIBRARY} ${Boost_LIBRARIES})
+target_link_libraries(cgaltest tests-cgal ${CGAL_LIBRARY} ${CGAL_3RD_PARTY_LIBRARIES} ${QT_LIBRARIES} ${OPENGL_LIBRARY} ${Boost_LIBRARIES})
 
 #
 # cgalpngtest
 #
-add_executable(cgalpngtest cgalpngtest.cc OffscreenView.cc bboxhelp.cc ${OFFSCREEN_CTX_SOURCE} imageutils.cc fbo.cc system-gl.cc
-                           ../src/CGALRenderer.cc ../src/CGAL_Nef_polyhedron.cc ../src/cgalutils.cc
-                           ../src/CSGTermEvaluator.cc ../src/CGALEvaluator.cc ../src/CGALCache.cc
-                           ../src/PolySetCGALEvaluator.cc ../src/qhash.cc
-                           ../src/CGAL_Nef_polyhedron_DxfData.cc ../src/cgaladv_minkowski2.cc ../src/cgaladv_convexhull2.cc
-                           ${COMMON_SOURCES})
+add_executable(cgalpngtest cgalpngtest.cc bboxhelp.cc ../src/CGALRenderer.cc)
 set_target_properties(cgalpngtest PROPERTIES COMPILE_FLAGS "-DENABLE_CGAL ${CGAL_CXX_FLAGS_INIT}")
-target_link_libraries(cgalpngtest ${CGAL_LIBRARY} ${CGAL_3RD_PARTY_LIBRARIES} ${QT_LIBRARIES}  ${GLEW_LIBRARY} ${COCOA_LIBRARY} ${OPENGL_LIBRARY} ${Boost_LIBRARIES})
+target_link_libraries(cgalpngtest tests-offscreen tests-cgal ${CGAL_LIBRARY} ${CGAL_3RD_PARTY_LIBRARIES} ${QT_LIBRARIES}  ${GLEW_LIBRARY} ${COCOA_LIBRARY} ${OPENGL_LIBRARY} ${Boost_LIBRARIES})
 
 #
 # opencsgtest
 #
 
-add_executable(opencsgtest opencsgtest.cc csgtestcore.cc OffscreenView.cc ${OFFSCREEN_CTX_SOURCE} imageutils.cc fbo.cc system-gl.cc
-                           ../src/OpenCSGRenderer.cc ../src/ThrownTogetherRenderer.cc
-                           ../src/CSGTermEvaluator.cc ../src/CGAL_Nef_polyhedron.cc ../src/cgalutils.cc
-                           ../src/CGALEvaluator.cc ../src/CGALCache.cc ../src/PolySetCGALEvaluator.cc ../src/qhash.cc
-                           ../src/CGAL_Nef_polyhedron_DxfData.cc ../src/cgaladv_minkowski2.cc ../src/cgaladv_convexhull2.cc
-                           ${COMMON_SOURCES})
+add_executable(opencsgtest opencsgtest.cc csgtestcore.cc ../src/OpenCSGRenderer.cc ../src/ThrownTogetherRenderer.cc)
 set_target_properties(opencsgtest PROPERTIES COMPILE_FLAGS "-DENABLE_OPENCSG -DENABLE_CGAL ${CGAL_CXX_FLAGS_INIT}")
-target_link_libraries(opencsgtest ${CGAL_LIBRARY} ${CGAL_3RD_PARTY_LIBRARIES} ${QT_LIBRARIES} ${OPENCSG_LIBRARY} ${GLEW_LIBRARY} ${COCOA_LIBRARY} ${OPENGL_LIBRARY} ${Boost_LIBRARIES})
+target_link_libraries(opencsgtest tests-offscreen tests-cgal ${CGAL_LIBRARY} ${CGAL_3RD_PARTY_LIBRARIES} ${QT_LIBRARIES} ${OPENCSG_LIBRARY} ${GLEW_LIBRARY} ${COCOA_LIBRARY} ${OPENGL_LIBRARY} ${Boost_LIBRARIES})
 
 #
 # throwntogethertest
 #
 
-add_executable(throwntogethertest throwntogethertest.cc csgtestcore.cc OffscreenView.cc ${OFFSCREEN_CTX_SOURCE} imageutils.cc fbo.cc system-gl.cc
-                           ../src/OpenCSGRenderer.cc ../src/ThrownTogetherRenderer.cc
-                           ../src/CSGTermEvaluator.cc ../src/CGAL_Nef_polyhedron.cc ../src/cgalutils.cc
-                           ../src/CGALEvaluator.cc ../src/CGALCache.cc ../src/PolySetCGALEvaluator.cc ../src/qhash.cc
-                           ../src/CGAL_Nef_polyhedron_DxfData.cc ../src/cgaladv_minkowski2.cc ../src/cgaladv_convexhull2.cc 
-                           ${COMMON_SOURCES})
+add_executable(throwntogethertest throwntogethertest.cc csgtestcore.cc ../src/OpenCSGRenderer.cc ../src/ThrownTogetherRenderer.cc)
 set_target_properties(throwntogethertest PROPERTIES COMPILE_FLAGS "-DENABLE_OPENCSG -DENABLE_CGAL ${CGAL_CXX_FLAGS_INIT}")
-target_link_libraries(throwntogethertest ${CGAL_LIBRARY} ${CGAL_3RD_PARTY_LIBRARIES} ${QT_LIBRARIES} ${OPENCSG_LIBRARY} ${GLEW_LIBRARY} ${COCOA_LIBRARY} ${OPENGL_LIBRARY} ${Boost_LIBRARIES})
-
+target_link_libraries(throwntogethertest tests-offscreen tests-cgal ${CGAL_LIBRARY} ${CGAL_3RD_PARTY_LIBRARIES} ${QT_LIBRARIES} ${OPENCSG_LIBRARY} ${GLEW_LIBRARY} ${COCOA_LIBRARY} ${OPENGL_LIBRARY} ${Boost_LIBRARIES})
 
 #
 # This functions adds cmd-line tests given files.
