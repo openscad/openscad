@@ -67,6 +67,10 @@ endif()
 # usually it's found automatically, but some systems may need a custom install.
 # in that case, run cmake with -DBOOST_ROOT=/path/to/boost/install
 # (being the same path you passed to boost's --prefix when you built it)
+if (NOT $ENV{MACOSX_DEPLOY_DIR} STREQUAL "")
+  set(BOOST_ROOT "$ENV{MACOSX_DEPLOY_DIR}")
+endif()
+
 if(BOOST_ROOT)
   #set(Boost_DEBUG TRUE)
   set(Boost_NO_SYSTEM_PATHS TRUE)
