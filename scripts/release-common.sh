@@ -59,8 +59,8 @@ case $OS in
     LINXWIN) 
         unset CONFIG
         TARGET=release
-	ZIP="zip"
-	ZIPARGS="-r"
+        ZIP="zip"
+        ZIPARGS="-r"
         ;;
 esac
 
@@ -143,9 +143,9 @@ case $OS in
         cp $TARGET/openscad.exe openscad-$VERSION
         rm -f OpenSCAD-$VERSION.zip
         "$ZIP" $ZIPARGS OpenSCAD-$VERSION.zip openscad-$VERSION
-	cp scripts/installer.nsi openscad-$VERSION/
-	cd openscad-$VERSION && makensis installer.nsi && cd ..
-	cp openscad-$VERSION/openscad_setup.exe OpenSCAD-$VERSION-Installer.exe 
+        cp scripts/installer.nsi openscad-$VERSION/
+        cd openscad-$VERSION && makensis installer.nsi && cd ..
+        cp openscad-$VERSION/openscad_setup.exe OpenSCAD-$VERSION-Installer.exe 
         rm -rf openscad-$VERSION
         echo "Binary created: OpenSCAD-$VERSION.zip"
         echo "Installer created: OpenSCAD-$VERSION-Installer.exe"
