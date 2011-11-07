@@ -16,6 +16,20 @@ OffscreenView::OffscreenView(size_t width, size_t height)
 	for (int i = 0; i < 10; i++) this->shaderinfo[i] = 0;
 	this->ctx = create_offscreen_context(width, height);
 	if ( this->ctx == NULL ) throw -1;
+
+#ifdef DEBUG
+	GLint rbits, gbits, bbits, abits, dbits, sbits;
+	glGetIntegerv(GL_RED_BITS, &rbits);
+	glGetIntegerv(GL_GREEN_BITS, &gbits);
+	glGetIntegerv(GL_BLUE_BITS, &bbits);
+	glGetIntegerv(GL_ALPHA_BITS, &abits);
+	glGetIntegerv(GL_DEPTH_BITS, &dbits);
+	glGetIntegerv(GL_STENCIL_BITS, &sbits);
+
+	fprintf(stderr, "FBO: RGBA(%d%d%d%d), depth(%d), stencil(%d)\n", 
+					rbits, gbits, bbits, abits, dbits, sbits);
+#endif
+
 	initializeGL();
 	resizeGL(width, height);
 }

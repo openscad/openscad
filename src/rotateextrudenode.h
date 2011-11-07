@@ -3,6 +3,7 @@
 
 #include "node.h"
 #include "visitor.h"
+#include "value.h"
 
 class RotateExtrudeNode : public AbstractPolyNode
 {
@@ -21,7 +22,8 @@ public:
 	int convexity;
 	double fn, fs, fa;
 	double origin_x, origin_y, scale;
-	std::string filename, layername;
+	Filename filename;
+	std::string layername;
 	virtual PolySet *evaluate_polyset(class PolySetEvaluator *) const;
 };
 

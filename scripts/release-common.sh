@@ -1,7 +1,9 @@
 #!/bin/sh
 #
 # This script creates a binary release of OpenSCAD.
-# This should work under Mac OS X and Windows (msys). Linux support pending.
+# This should work under Mac OS X, Windows (msys), and Linux cross-compiling
+# for windows using mingw-cross-env (use like: OS=LINXWIN release-common.sh).
+# Linux support pending.
 # The script will create a file called openscad-<versionstring>.zip
 # in the current directory.
 # 
@@ -54,9 +56,23 @@ case $OS in
         ZIPARGS="a -tzip"
         TARGET=release
         ;;
+    LINXWIN) 
+        unset CONFIG
+        TARGET=release
+        ZIP="zip"
+        ZIPARGS="-r"
+        ;;
 esac
 
-qmake VERSION=$VERSION CONFIG+=$CONFIG CONFIG-=debug openscad.pro
+case $OS in
+    LINXWIN)
+        i686-pc-mingw32-qmake VERSION=$VERSION CONFIG+=$CONFIG CONFIG+=mingw-cross-env CONFIG-=debug openscad.pro
+    ;;
+    *)
+        qmake VERSION=$VERSION CONFIG+=$CONFIG CONFIG-=debug openscad.pro
+    ;;
+esac
+
 make -s clean
 case $OS in
     MACOSX) 
@@ -121,5 +137,17 @@ case $OS in
         "$ZIP" $ZIPARGS openscad-$VERSION.zip openscad-$VERSION
         rm -rf openscad-$VERSION
         echo "Binary created: openscad-$VERSION.zip"
+        ;;
+    LINXWIN)
+        #package
+        cp $TARGET/openscad.exe openscad-$VERSION
+        rm -f OpenSCAD-$VERSION.zip
+        "$ZIP" $ZIPARGS OpenSCAD-$VERSION.zip openscad-$VERSION
+        cp scripts/installer.nsi openscad-$VERSION/
+        cd openscad-$VERSION && makensis installer.nsi && cd ..
+        cp openscad-$VERSION/openscad_setup.exe OpenSCAD-$VERSION-Installer.exe 
+        rm -rf openscad-$VERSION
+        echo "Binary created: OpenSCAD-$VERSION.zip"
+        echo "Installer created: OpenSCAD-$VERSION-Installer.exe"
         ;;
 esac

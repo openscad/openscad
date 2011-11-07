@@ -1,14 +1,14 @@
-	linear_extrude(file = "/Users/kintel/code/OpenSCAD/openscad/examples/example009.dxf", cache = "4d38d4de.59bc", layer = "body", origin = [0, 0], scale = 1, height = 22, center = true, convexity = 10, $fn = 0, $fa = 12, $fs = 1);
+	linear_extrude(file = "example009.dxf", layer = "body", origin = [0, 0], scale = 1, height = 22, center = true, convexity = 10, $fn = 0, $fa = 12, $fs = 1);
 	group() {
 		multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 12], [0, 0, 0, 1]]) {
-			linear_extrude(file = "/Users/kintel/code/OpenSCAD/openscad/examples/example009.dxf", cache = "4d38d4de.59bc", layer = "plate", origin = [0, 0], scale = 1, height = 2, center = true, convexity = 10, $fn = 0, $fa = 12, $fs = 1);
+			linear_extrude(file = "example009.dxf", layer = "plate", origin = [0, 0], scale = 1, height = 2, center = true, convexity = 10, $fn = 0, $fa = 12, $fs = 1);
 		}
 		multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, -12], [0, 0, 0, 1]]) {
-			linear_extrude(file = "/Users/kintel/code/OpenSCAD/openscad/examples/example009.dxf", cache = "4d38d4de.59bc", layer = "plate", origin = [0, 0], scale = 1, height = 2, center = true, convexity = 10, $fn = 0, $fa = 12, $fs = 1);
+			linear_extrude(file = "example009.dxf", layer = "plate", origin = [0, 0], scale = 1, height = 2, center = true, convexity = 10, $fn = 0, $fa = 12, $fs = 1);
 		}
 	}
 	intersection() {
-		linear_extrude(file = "/Users/kintel/code/OpenSCAD/openscad/examples/example009.dxf", cache = "4d38d4de.59bc", layer = "fan_top", origin = [0, 0], scale = 1, height = 20, center = true, convexity = 10, twist = -57.5288, slices = 4, $fn = 0, $fa = 12, $fs = 1);
-		rotate_extrude(file = "/Users/kintel/code/OpenSCAD/openscad/examples/example009.dxf", cache = "4d38d4de.59bc", layer = "fan_side", origin = [0, -40], scale = 1, convexity = 10, $fn = 0, $fa = 12, $fs = 1);
+		linear_extrude(file = "example009.dxf", layer = "fan_top", origin = [0, 0], scale = 1, height = 20, center = true, convexity = 10, twist = -57.5288, slices = 4, $fn = 0, $fa = 12, $fs = 1);
+		rotate_extrude(file = "example009.dxf", layer = "fan_side", origin = [0, -40], scale = 1, convexity = 10, $fn = 0, $fa = 12, $fs = 1);
 	}
 

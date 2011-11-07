@@ -3,6 +3,7 @@
 
 #include "node.h"
 #include "visitor.h"
+#include "value.h"
 
 class LinearExtrudeNode : public AbstractPolyNode
 {
@@ -23,7 +24,8 @@ public:
 	double fn, fs, fa, height, twist;
 	double origin_x, origin_y, scale;
 	bool center, has_twist;
-	std::string filename, layername;
+	Filename filename;
+	std::string layername;
 	virtual PolySet *evaluate_polyset(class PolySetEvaluator *) const;
 };
 

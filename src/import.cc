@@ -43,7 +43,6 @@
 #include <QRegExp>
 #include <QStringList>
 #include <sys/types.h>
-#include <sys/stat.h>
 #include <fstream>
 #include <sstream>
 #include <assert.h>
@@ -228,13 +227,8 @@ std::string ImportNode::toString() const
 {
 	std::stringstream stream;
 
-	struct stat st;
-	memset(&st, 0, sizeof(struct stat));
-	stat(this->filename.c_str(), &st);
-
 	stream << this->name();
 	stream << "(file = \"" << this->filename << "\", "
-		"cache = \"" << std::hex << (int)st.st_mtime << "." << (int)st.st_size << "\", "
 		"layer = \"" << this->layername << "\", "
 		"origin = [" << std::dec << this->origin_x << ", " << this->origin_y << "], "
 		"scale = " << this->scale << ", "
