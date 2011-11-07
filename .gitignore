@@ -5,8 +5,8 @@ Makefile
 objects
 *.stl
 *.dxf
-lexer_lex.cpp
-parser_yacc.cpp
+/lexer_lex.cpp
+/parser_yacc.cpp
 parser_yacc.h
-tmp
-OpenSCAD.app
+/tmp
+/OpenSCAD.app
