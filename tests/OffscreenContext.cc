@@ -13,6 +13,28 @@ See Also
 
 */
 
+/*
+ * Some portions of the code below are:
+ * Copyright (C) 1999-2001  Brian Paul   All Rights Reserved.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
+ * to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included
+ * in all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+ * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
+ * BRIAN PAUL BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+ * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
+
 #include "OffscreenContext.h"
 #include "printutils.h"
 #include "imageutils.h"
@@ -98,7 +120,24 @@ bool create_glx_dummy_window(OffscreenContext &ctx)
 
   // can't depend on xWin==NULL at failure. use a custom Xlib error handler instead.
   original_xlib_handler = XSetErrorHandler( XCreateWindow_error );
-  Window xWin = XCreateSimpleWindow( dpy, DefaultRootWindow(dpy), 0,0,10,10, 0,0,0 );
+
+  Window root = DefaultRootWindow( dpy );
+  XSetWindowAttributes xwin_attr;
+  int width = 42;
+  int height = 42;
+  xwin_attr.background_pixel = 0;
+  xwin_attr.border_pixel = 0;
+  xwin_attr.colormap = XCreateColormap( dpy, root, visinfo->visual, AllocNone);
+  xwin_attr.event_mask = StructureNotifyMask | ExposureMask | KeyPressMask;
+  unsigned long int mask = CWBackPixel | CWBorderPixel | CWColormap | CWEventMask;
+
+  Window xWin = XCreateWindow( dpy, root, 0, 0, width, height,
+                               0, visinfo->depth, InputOutput,
+                               visinfo->visual, mask, &xwin_attr );
+
+  // Window xWin = XCreateSimpleWindow( dpy, DefaultRootWindow(dpy), 0,0,42,42, 0,0,0 );
+
+
   XSync( dpy, false );
   if ( XCreateWindow_failed ) {
     XFree( visinfo );

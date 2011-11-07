@@ -62,6 +62,31 @@ endif()
 # Build test apps
 #
 
+# Boost
+#
+# usually it's found automatically, but some systems may need a custom install.
+# in that case, run cmake with -DBOOST_ROOT=/path/to/boost/install
+# (being the same path you passed to boost's --prefix when you built it)
+if(BOOST_ROOT)
+  #set(Boost_DEBUG TRUE)
+  set(Boost_NO_SYSTEM_PATHS TRUE)
+  set(Boost_ADDITIONAL_VERSIONS "1.47.0")
+  find_package( Boost 1.35.0 COMPONENTS thread program_options )
+  if(Boost_FOUND)
+    message(STATUS "Boost includes found: " ${Boost_INCLUDE_DIRS})
+    message(STATUS "Boost libraries found:")
+    foreach(boostlib ${Boost_LIBRARIES})
+      message(STATUS "  " ${boostlib})
+    endforeach()
+    include_directories(${Boost_INCLUDE_DIRS})
+  else()
+    message(STATUS "BOOST_ROOT:" ${BOOST_ROOT})
+    message(FATAL_ERROR "BOOST_ROOT specified but no boost found")
+  endif()
+else()
+  message(STATUS "BOOST_ROOT unset. Assuming it will be found automatically.")
+endif()
+
 # Mac OS X
 if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
   FIND_LIBRARY(COCOA_LIBRARY Cocoa)
@@ -105,7 +130,7 @@ elseif (NOT $ENV{MACOSX_DEPLOY_DIR} STREQUAL "")
   set(OPENCSG_DIR "$ENV{MACOSX_DEPLOY_DIR}")
 endif()
 if (NOT OPENCSG_INCLUDE_DIR)
-   message(STATUS ${OPENCSG_DIR})
+  message(STATUS "OPENCSG_DIR: " ${OPENCSG_DIR})
   find_path(OPENCSG_INCLUDE_DIR
             opencsg.h
             PATHS ${OPENCSG_DIR}/include)
@@ -115,7 +140,8 @@ if (NOT OPENCSG_INCLUDE_DIR)
   if (NOT OPENCSG_INCLUDE_DIR OR NOT OPENCSG_LIBRARY)
     message(FATAL_ERROR "OpenCSG not found")
   else()
-    message(STATUS "OpenCSG found in " ${OPENCSG_LIBRARY})
+    message(STATUS "OpenCSG include found in " ${OPENCSG_INCLUDE_DIR})
+    message(STATUS "OpenCSG library found in " ${OPENCSG_LIBRARY})
   endif()
 endif()
 include_directories(${OPENCSG_INCLUDE_DIR})
@@ -256,7 +282,7 @@ add_library(tests-offscreen STATIC ${OFFSCREEN_SOURCES})
 # echotest
 #
 add_executable(echotest echotest.cc)
-target_link_libraries(echotest tests-nocgal tests-core ${QT_LIBRARIES} ${OPENGL_LIBRARY})
+target_link_libraries(echotest tests-nocgal tests-core ${QT_LIBRARIES} ${OPENGL_LIBRARY} ${Boost_LIBRARIES})
 
 #
 # Yangli Hector Yee's PerceptualDiff code
@@ -268,33 +294,33 @@ add_executable(yee_compare yee_compare.cpp lodepng.cpp)
 # dumptest
 #
 add_executable(dumptest dumptest.cc)
-target_link_libraries(dumptest tests-common tests-nocgal ${QT_LIBRARIES} ${OPENGL_LIBRARY})
+target_link_libraries(dumptest tests-common tests-nocgal ${QT_LIBRARIES} ${OPENGL_LIBRARY} ${Boost_LIBRARIES})
 
 #
 # csgtexttest
 #
 add_executable(csgtexttest csgtexttest.cc CSGTextRenderer.cc CSGTextCache.cc ../src/qhash.cc)
-target_link_libraries(csgtexttest tests-common tests-nocgal ${QT_LIBRARIES} ${OPENGL_LIBRARY})
+target_link_libraries(csgtexttest tests-common tests-nocgal ${QT_LIBRARIES} ${OPENGL_LIBRARY} ${Boost_LIBRARIES})
 
 #
 # csgtermtest
 #
 add_executable(csgtermtest csgtermtest.cc ../src/CSGTermEvaluator.cc)
-target_link_libraries(csgtermtest tests-common tests-nocgal ${QT_LIBRARIES} ${OPENGL_LIBRARY})
+target_link_libraries(csgtermtest tests-common tests-nocgal ${QT_LIBRARIES} ${OPENGL_LIBRARY} ${Boost_LIBRARIES})
 
 #
 # cgaltest
 #
 add_executable(cgaltest cgaltest.cc)
 set_target_properties(cgaltest PROPERTIES COMPILE_FLAGS "-DENABLE_CGAL ${CGAL_CXX_FLAGS_INIT}")
-target_link_libraries(cgaltest tests-cgal ${CGAL_LIBRARY} ${CGAL_3RD_PARTY_LIBRARIES} ${QT_LIBRARIES} ${OPENGL_LIBRARY})
+target_link_libraries(cgaltest tests-cgal ${CGAL_LIBRARY} ${CGAL_3RD_PARTY_LIBRARIES} ${QT_LIBRARIES} ${OPENGL_LIBRARY} ${Boost_LIBRARIES})
 
 #
 # cgalpngtest
 #
 add_executable(cgalpngtest cgalpngtest.cc bboxhelp.cc ../src/CGALRenderer.cc)
 set_target_properties(cgalpngtest PROPERTIES COMPILE_FLAGS "-DENABLE_CGAL ${CGAL_CXX_FLAGS_INIT}")
-target_link_libraries(cgalpngtest tests-offscreen tests-cgal ${CGAL_LIBRARY} ${CGAL_3RD_PARTY_LIBRARIES} ${QT_LIBRARIES}  ${GLEW_LIBRARY} ${COCOA_LIBRARY} ${OPENGL_LIBRARY})
+target_link_libraries(cgalpngtest tests-offscreen tests-cgal ${CGAL_LIBRARY} ${CGAL_3RD_PARTY_LIBRARIES} ${QT_LIBRARIES}  ${GLEW_LIBRARY} ${COCOA_LIBRARY} ${OPENGL_LIBRARY} ${Boost_LIBRARIES})
 
 #
 # opencsgtest
@@ -302,7 +328,7 @@ target_link_libraries(cgalpngtest tests-offscreen tests-cgal ${CGAL_LIBRARY} ${C
 
 add_executable(opencsgtest opencsgtest.cc csgtestcore.cc ../src/OpenCSGRenderer.cc ../src/ThrownTogetherRenderer.cc)
 set_target_properties(opencsgtest PROPERTIES COMPILE_FLAGS "-DENABLE_OPENCSG -DENABLE_CGAL ${CGAL_CXX_FLAGS_INIT}")
-target_link_libraries(opencsgtest tests-offscreen tests-cgal ${CGAL_LIBRARY} ${CGAL_3RD_PARTY_LIBRARIES} ${QT_LIBRARIES} ${OPENCSG_LIBRARY} ${GLEW_LIBRARY} ${COCOA_LIBRARY} ${OPENGL_LIBRARY})
+target_link_libraries(opencsgtest tests-offscreen tests-cgal ${CGAL_LIBRARY} ${CGAL_3RD_PARTY_LIBRARIES} ${QT_LIBRARIES} ${OPENCSG_LIBRARY} ${GLEW_LIBRARY} ${COCOA_LIBRARY} ${OPENGL_LIBRARY} ${Boost_LIBRARIES})
 
 #
 # throwntogethertest
@@ -310,8 +336,7 @@ target_link_libraries(opencsgtest tests-offscreen tests-cgal ${CGAL_LIBRARY} ${C
 
 add_executable(throwntogethertest throwntogethertest.cc csgtestcore.cc ../src/OpenCSGRenderer.cc ../src/ThrownTogetherRenderer.cc)
 set_target_properties(throwntogethertest PROPERTIES COMPILE_FLAGS "-DENABLE_OPENCSG -DENABLE_CGAL ${CGAL_CXX_FLAGS_INIT}")
-target_link_libraries(throwntogethertest tests-offscreen tests-cgal ${CGAL_LIBRARY} ${CGAL_3RD_PARTY_LIBRARIES} ${QT_LIBRARIES} ${OPENCSG_LIBRARY} ${GLEW_LIBRARY} ${COCOA_LIBRARY} ${OPENGL_LIBRARY})
-
+target_link_libraries(throwntogethertest tests-offscreen tests-cgal ${CGAL_LIBRARY} ${CGAL_3RD_PARTY_LIBRARIES} ${QT_LIBRARIES} ${OPENCSG_LIBRARY} ${GLEW_LIBRARY} ${COCOA_LIBRARY} ${OPENGL_LIBRARY} ${Boost_LIBRARIES})
 
 #
 # This functions adds cmd-line tests given files.
