@@ -10,7 +10,7 @@ cmake ..
 make
 make test
 
-Windows:
+Running on Windows:
 
 First, get a normal build working by following instructions at 
 http://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Building_on_Windows
@@ -24,6 +24,12 @@ sed -i s/\/MD/\/MT/ CMakeCache.txt
 cmake ..
 nmake -f Makefile
 nmake -f Makefile test
+
+Running on headless (no X) servers:
+
+Xvnc :5 -screen 0 800x600x24 &
+DISPLAY=:5 make test
+
 
 Adding  a new regression test:
 ------------------------------
