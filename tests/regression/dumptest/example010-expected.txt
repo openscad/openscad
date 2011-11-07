@@ -1,7 +1,7 @@
 	intersection() {
-		surface(file = "/Users/kintel/code/OpenSCAD/openscad/examples/example010.dat", center = true);
+		surface(file = "example010.dat", center = true);
 		multmatrix([[0.707107, -0.707107, 0, 0], [0.707107, 0.707107, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-			surface(file = "/Users/kintel/code/OpenSCAD/openscad/examples/example010.dat", center = true);
+			surface(file = "example010.dat", center = true);
 		}
 	}
 

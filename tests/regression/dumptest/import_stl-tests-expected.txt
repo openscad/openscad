@@ -1,2 +1,2 @@
-	import(file = "/Users/kintel/code/OpenSCAD/openscad/testdata/scad/features/import.stl", cache = "4e823ddd.2506", layer = "", origin = [0, 0], scale = 1, convexity = 1, $fn = 0, $fa = 12, $fs = 1);
+	import(file = "import.stl", cache = "4e823ddd.2506", layer = "", origin = [0, 0], scale = 1, convexity = 1, $fn = 0, $fa = 12, $fs = 1);
 
