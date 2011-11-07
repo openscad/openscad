@@ -77,5 +77,6 @@ private:
 };
 
 std::ostream &operator<<(std::ostream &stream, const Value &value);
+std::ostream &operator<<(std::ostream &stream, const Filename &filename);
 
 #endif

@@ -28,6 +28,7 @@
 #include "mathc99.h"
 #include <assert.h>
 #include <sstream>
+#include <QDir>
 
 Value::Value()
 {
@@ -410,6 +411,12 @@ void Value::append(Value *val)
 std::ostream &operator<<(std::ostream &stream, const Value &value)
 {
 	stream << value.toString();
+	return stream;
+}
+
+std::ostream &operator<<(std::ostream &stream, const Filename &filename)
+{
+	stream << QDir::current().relativeFilePath(QString::fromStdString(filename)).toStdString();
 	return stream;
 }
 
