@@ -384,7 +384,7 @@ list(REMOVE_ITEM DUMPTEST_FILES ${CMAKE_SOURCE_DIR}/../examples/example021.scad)
 list(APPEND ECHO_FILES
             ${CMAKE_SOURCE_DIR}/../testdata/scad/minimal/echo.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/features/echo-tests.scad
-            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/string-test.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/escape-test.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/parser-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/builtin-tests.scad)
 
