@@ -50,8 +50,3 @@ void PRINT_NOCACHE(const std::string &msg)
 		outputhandler(msg, outputhandler_data);
 	}
 }
-
-std::ostream &operator<<(std::ostream &os, const QFileInfo &fi) {
-	os << std::hex << (fi.exists()?fi.lastModified().toTime_t():0) << "." << fi.size();
-	return os; 
-}

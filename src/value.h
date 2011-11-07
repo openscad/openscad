@@ -4,6 +4,13 @@
 #include <vector>
 #include <string>
 
+class Filename : public std::string
+{
+public:
+	Filename() : std::string() {}
+	Filename(const std::string &f) : std::string(f) {}
+};
+
 class Value
 {
 public:
@@ -70,5 +77,6 @@ private:
 };
 
 std::ostream &operator<<(std::ostream &stream, const Value &value);
+std::ostream &operator<<(std::ostream &stream, const Filename &filename);
 
 #endif

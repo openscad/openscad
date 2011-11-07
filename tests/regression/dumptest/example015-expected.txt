@@ -24,6 +24,6 @@
 				}
 			}
 		}
-		import(file = "/Users/kintel/code/OpenSCAD/openscad/examples/example009.dxf", cache = "4d38d4de.59bc", layer = "body", origin = [0, 0], scale = 2, convexity = 6, $fn = 0, $fa = 12, $fs = 1);
+		import(file = "example009.dxf", layer = "body", origin = [0, 0], scale = 2, convexity = 6, $fn = 0, $fa = 12, $fs = 1);
 	}
 

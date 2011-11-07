@@ -144,7 +144,6 @@ int main(int argc, char **argv)
 		fprintf(stderr, "Error: Unable to read back dumped file\n");
 		exit(1);
 	}
-	fileInfo = QFileInfo(outfilename);
 	QDir::setCurrent(fileInfo.absolutePath());
 
 	AbstractNode::resetIndexCounter();
@@ -155,10 +154,8 @@ int main(int argc, char **argv)
 	string readbackstr = dumptree(tree, *root_node);
 	if (dumpstdstr != readbackstr) {
 		fprintf(stderr, "Error: Readback is different from original dump:\n");
-		fprintf(stderr, "Original:\n");
-		fprintf(stderr, dumpstdstr.c_str());
-		fprintf(stderr, "Readback:\n");
-		fprintf(stderr, readbackstr.c_str());
+		fprintf(stderr, "Original:\n%s", dumpstdstr.c_str());
+		fprintf(stderr, "Readback:\n%s", readbackstr.c_str());
 		exit(1);
 	}
 

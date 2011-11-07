@@ -3,6 +3,7 @@
 
 #include "node.h"
 #include "visitor.h"
+#include "value.h"
 
 enum import_type_e {
 	TYPE_UNKNOWN,
@@ -22,7 +23,7 @@ public:
 	virtual std::string name() const;
 
 	import_type_e type;
-	std::string filename;
+	Filename filename;
 	std::string layername;
 	int convexity;
 	double fn, fs, fa;
