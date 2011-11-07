@@ -59,6 +59,10 @@ static void outfile_handler(const std::string &msg, void *userdata) {
 
 int main(int argc, char **argv)
 {
+#ifdef WIN32
+  _set_output_format(_TWO_DIGIT_EXPONENT);
+#endif
+
 	if (argc != 3) {
 		fprintf(stderr, "Usage: %s <file.scad> <output.txt>\n", argv[0]);
 		exit(1);
