@@ -16,7 +16,7 @@
 						}
 						group() {
 							multmatrix([[1, 0, 0, -14], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-								import(file = "example016.stl", cache = "4d38d4de.1954", layer = "", origin = [0, 0], scale = 1, convexity = 12, $fn = 0, $fa = 12, $fs = 1);
+								import(file = "example016.stl", layer = "", origin = [0, 0], scale = 1, convexity = 12, $fn = 0, $fa = 12, $fs = 1);
 							}
 						}
 					}
@@ -35,7 +35,7 @@
 						}
 						group() {
 							multmatrix([[1, 0, 0, -14], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-								import(file = "example016.stl", cache = "4d38d4de.1954", layer = "", origin = [0, 0], scale = 1, convexity = 12, $fn = 0, $fa = 12, $fs = 1);
+								import(file = "example016.stl", layer = "", origin = [0, 0], scale = 1, convexity = 12, $fn = 0, $fa = 12, $fs = 1);
 							}
 						}
 					}
@@ -54,7 +54,7 @@
 						}
 						group() {
 							multmatrix([[1, 0, 0, -14], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-								import(file = "example016.stl", cache = "4d38d4de.1954", layer = "", origin = [0, 0], scale = 1, convexity = 12, $fn = 0, $fa = 12, $fs = 1);
+								import(file = "example016.stl", layer = "", origin = [0, 0], scale = 1, convexity = 12, $fn = 0, $fa = 12, $fs = 1);
 							}
 						}
 					}
@@ -73,7 +73,7 @@
 						}
 						group() {
 							multmatrix([[1, 0, 0, -14], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-								import(file = "example016.stl", cache = "4d38d4de.1954", layer = "", origin = [0, 0], scale = 1, convexity = 12, $fn = 0, $fa = 12, $fs = 1);
+								import(file = "example016.stl", layer = "", origin = [0, 0], scale = 1, convexity = 12, $fn = 0, $fa = 12, $fs = 1);
 							}
 						}
 					}
