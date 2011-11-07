@@ -4,12 +4,21 @@
 #include <vector>
 #include <string>
 
-class Filename : public std::string
+class QuotedString : public std::string
 {
 public:
-	Filename() : std::string() {}
-	Filename(const std::string &f) : std::string(f) {}
+	QuotedString() : std::string() {}
+	QuotedString(const std::string &s) : std::string(s) {}
 };
+std::ostream &operator<<(std::ostream &stream, const QuotedString &s);
+
+class Filename : public QuotedString
+{
+public:
+	Filename() : QuotedString() {}
+	Filename(const std::string &f) : QuotedString(f) {}
+};
+std::ostream &operator<<(std::ostream &stream, const Filename &filename);
 
 class Value
 {
@@ -77,6 +86,5 @@ private:
 };
 
 std::ostream &operator<<(std::ostream &stream, const Value &value);
-std::ostream &operator<<(std::ostream &stream, const Filename &filename);
 
 #endif

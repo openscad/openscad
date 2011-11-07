@@ -228,8 +228,8 @@ std::string ImportNode::toString() const
 	std::stringstream stream;
 
 	stream << this->name();
-	stream << "(file = \"" << this->filename << "\", "
-		"layer = \"" << this->layername << "\", "
+	stream << "(file = " << this->filename << ", "
+		"layer = " << QuotedString(this->layername) << ", "
 		"origin = [" << std::dec << this->origin_x << ", " << this->origin_y << "], "
 		"scale = " << this->scale << ", "
 		"convexity = " << this->convexity << ", "

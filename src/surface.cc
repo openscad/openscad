@@ -209,8 +209,8 @@ std::string SurfaceNode::toString() const
 {
 	std::stringstream stream;
 
-	stream << this->name() << "(file = \"" << this->filename
-				 << "\", center = " << (this->center ? "true" : "false") << ")";
+	stream << this->name() << "(file = " << this->filename << ", "
+		"center = " << (this->center ? "true" : "false") << ")";
 
 	return stream.str();
 }

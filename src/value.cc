@@ -29,6 +29,7 @@
 #include <assert.h>
 #include <sstream>
 #include <QDir>
+#include <boost/foreach.hpp>
 
 Value::Value()
 {
@@ -416,7 +417,30 @@ std::ostream &operator<<(std::ostream &stream, const Value &value)
 
 std::ostream &operator<<(std::ostream &stream, const Filename &filename)
 {
-	stream << QDir::current().relativeFilePath(QString::fromStdString(filename)).toStdString();
+	stream << QuotedString(QDir::current().relativeFilePath(QString::fromStdString(filename)).toStdString());
 	return stream;
 }
 
+std::ostream &operator<<(std::ostream &stream, const QuotedString &s)
+{
+	stream << '"';
+	BOOST_FOREACH(char c, s) {
+		switch (c) {
+		case '\t':
+			stream << "\\t";
+			break;
+		case '\n':
+			stream << "\\n";
+			break;
+		case '"':
+		case '\\':
+			stream << '\\';
+			stream << c;
+			break;
+		default:
+			stream << c;
+		}
+	}
+	stream << '"';
+	return stream;
+}
