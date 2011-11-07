@@ -366,6 +366,7 @@ file(GLOB SCAD_DXF_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/dxf/*.scad)
 file(GLOB EXAMPLE_FILES ${CMAKE_SOURCE_DIR}/../examples/*.scad)
 
 list(APPEND DUMPTEST_FILES ${MINIMAL_FILES} ${FEATURES_FILES} ${EXAMPLE_FILES})
+list(APPEND DUMPTEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/escape-test.scad)
 # Disable tests which are known to cause floating point comparison issues
 # Once we're capable of comparing these across platforms, we can put these back in
 list(REMOVE_ITEM DUMPTEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/features/transform-tests.scad)
@@ -383,6 +384,7 @@ list(REMOVE_ITEM DUMPTEST_FILES ${CMAKE_SOURCE_DIR}/../examples/example021.scad)
 list(APPEND ECHO_FILES
             ${CMAKE_SOURCE_DIR}/../testdata/scad/minimal/echo.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/features/echo-tests.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/string-test.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/parser-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/builtin-tests.scad)
 
