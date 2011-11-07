@@ -1,4 +1,4 @@
-*.scad
+/*.scad
 *.dmg
 *.tar*
 Makefile
