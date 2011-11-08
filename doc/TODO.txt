@@ -214,17 +214,6 @@ BUILD SYSTEM
 o Fedora is reported to ship with byacc, which doesn't support bison extensions (e.g. %debuig). Look into this, either be yacc-compatible or force the build system to use bison.
 o We currently link in -lboost_thread. Should we always use -lboost_thread-mt under Linux or can we pick this up using qmake?
 
-TESTING
--------
-o Caching and MDI looks suspicious when the code relies on external resources
-  which might be loaded from difference locations in different documents
-  -> we might get a false cache hit
-o Collect "all" available OpenSCAD scripts from the internets and run the integration
-  tests on them all
-o dumptest tests:
-  - filename are dumped as absolute filenames - this will fail on other systems
-o Write a regression test for the hexagonal cylinder orientation issue
-
 INFRASTRUCTURE
 --------------
 o Use a logging framework to get debugging/info output more under control?
@@ -234,3 +223,38 @@ MISC
 ----
 o Write checklists for typical extension work (add new module, add new function)
   -> make sure new test files are added
+
+TESTING
+-------
+o Caching and MDI looks suspicious when the code relies on external resources
+  which might be loaded from difference locations in different documents
+  -> we might get a false cache hit
+o Collect "all" available OpenSCAD scripts from the internets and run the integration
+  tests on them all
+
+MISSING TESTS:
+--------------
+o all functions
+o mirror
+o scale
+o 3D hull
+o open polyline from dxf using new method
+o linear_extrude DXF
+o rotate_extrude DXF
+o import_*
+  - basic
+  - open polylines
+o include: test subdirs under librarydir (e.g. include <MCAD/gears.scad> doesn't work
+o use: Basically same tests as include. + use restrictions
+o include and use: remember filenames with space
+o variants of module transparent() { %child(); }
+o define modules
+o define functions
+o built-in variables and constants (builtin-tests.scad)
+o Write a regression test for the hexagonal cylinder orientation issue
+o other tests
+  - export
+  - cmd-line tests
+  - leaf nodes having children, e.g. cube() cylinder();
+  - caching
+  - dependency tracking
