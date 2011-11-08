@@ -383,7 +383,10 @@ PolySet *PolySetCGALEvaluator::evaluatePolySet(const CgaladvNode &node)
 {
 	CGAL_Nef_polyhedron N = this->cgalevaluator.evaluateCGALMesh(node);
 	PolySet *ps = NULL;
-	if (!N.empty()) ps = N.convertToPolyset();
+	if (!N.empty()) {
+		ps = N.convertToPolyset();
+		ps->convexity = node.convexity;
+	}
 
 	return ps;
 }
@@ -392,7 +395,10 @@ PolySet *PolySetCGALEvaluator::evaluatePolySet(const RenderNode &node)
 {
 	CGAL_Nef_polyhedron N = this->cgalevaluator.evaluateCGALMesh(node);
 	PolySet *ps = NULL;
-	if (!N.empty()) ps = N.convertToPolyset();
+	if (!N.empty()) {
+		ps = N.convertToPolyset();
+		ps->convexity = node.convexity;
+	}
 	return ps;
 }
 
