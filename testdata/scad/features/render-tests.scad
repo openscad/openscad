@@ -33,4 +33,16 @@ render();
 render() { }
 
 mycube();
+
 translate([110,0,0]) rendered_mycube();
+
+// This may trigger a convexity issue
+translate([-110,0,0]) {
+  difference() {
+    render(convexity=2) difference() {
+      cube(100, center = true);
+      cylinder(r=30,h=110,center=true);
+    }
+    translate([-55, -55, 45]) cube(10);
+  }
+}
