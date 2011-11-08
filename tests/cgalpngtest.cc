@@ -170,20 +170,20 @@ int main(int argc, char **argv)
     exit(1);
   }
 #ifdef DEBUG
-	cout << "GLEW version " << glewGetString(GLEW_VERSION) << "\n";
-	cout << (const char *)glGetString(GL_RENDERER) << "(" << (const char *)glGetString(GL_VENDOR) << ")\n"
-			 << "OpenGL version " << (const char *)glGetString(GL_VERSION) << "\n";
-	cout  << "Extensions: " << (const char *)glGetString(GL_EXTENSIONS) << "\n";
+	std::cout << "GLEW version " << glewGetString(GLEW_VERSION) << "\n";
+	std::cout << (const char *)glGetString(GL_RENDERER) << "(" << (const char *)glGetString(GL_VENDOR) << ")\n"
+						<< "OpenGL version " << (const char *)glGetString(GL_VERSION) << "\n";
+	std::cout  << "Extensions: " << (const char *)glGetString(GL_EXTENSIONS) << "\n";
 
 
 	if (GLEW_ARB_framebuffer_object) {
-		cout << "ARB_FBO supported\n";
+		std::cout << "ARB_FBO supported\n";
 	}
 	if (GLEW_EXT_framebuffer_object) {
-		cout << "EXT_FBO supported\n";
+		std::cout << "EXT_FBO supported\n";
 	}
 	if (GLEW_EXT_packed_depth_stencil) {
-		cout << "EXT_packed_depth_stencil\n";
+		std::cout << "EXT_packed_depth_stencil\n";
 	}
 #endif
 
