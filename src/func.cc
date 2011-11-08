@@ -351,10 +351,10 @@ Value builtin_version(const Context *, const std::vector<std::string>&, const st
 {
 	Value val;
 	val.type = Value::VECTOR;
-	val.append(new Value(double(OPENSCAD_YEAR)));
-	val.append(new Value(double(OPENSCAD_MONTH)));
+	val.append(new Value(OPENSCAD_YEAR));
+	val.append(new Value(OPENSCAD_MONTH));
 #ifdef OPENSCAD_DAY
-	val.append(new Value(double(OPENSCAD_DAY)));
+	val.append(new Value(OPENSCAD_DAY));
 #endif
 	return val;
 }
