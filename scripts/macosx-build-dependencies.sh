@@ -23,11 +23,8 @@ SRCDIR=$BASEDIR/src
 DEPLOYDIR=$BASEDIR/install
 
 # Hack warning: gmplib is built separately in 32-bit and 64-bit mode
-# and then merged afterwards.  Somehow, gmplib's header files appear
-# to be dependant on the CPU architecture on which configure was
-# run. Not nice, but as long as we also build mpfr in two separate
-# steps and nobody else uses these architecture-dependent macros, we
-# should be fine.
+# and then merged afterwards. gmplib's header files are dependant on
+# the CPU architecture on which configure was run and will be patched accordingly.
 build_gmp()
 {
   version=$1
@@ -59,6 +56,42 @@ build_gmp()
   mkdir -p include
   cp x86_64/include/gmp.h include/
   cp x86_64/include/gmpxx.h include/
+
+  patch -p0 include/gmp.h << EOF
+--- gmp.h.orig	2011-11-08 01:03:41.000000000 +0100
++++ gmp.h	2011-11-08 01:06:21.000000000 +0100
+@@ -26,12 +26,28 @@
+ #endif
+ 
+ 
+-/* Instantiated by configure. */
+-#if ! defined (__GMP_WITHIN_CONFIGURE)
++#if defined(__i386__)
++#define __GMP_HAVE_HOST_CPU_FAMILY_power   0
++#define __GMP_HAVE_HOST_CPU_FAMILY_powerpc 0
++#define GMP_LIMB_BITS                      32
++#define GMP_NAIL_BITS                      0
++#elif defined(__x86_64__)
+ #define __GMP_HAVE_HOST_CPU_FAMILY_power   0
+ #define __GMP_HAVE_HOST_CPU_FAMILY_powerpc 0
+ #define GMP_LIMB_BITS                      64
+ #define GMP_NAIL_BITS                      0
++#elif defined(__ppc__)
++#define __GMP_HAVE_HOST_CPU_FAMILY_power   0
++#define __GMP_HAVE_HOST_CPU_FAMILY_powerpc 1
++#define GMP_LIMB_BITS                      32
++#define GMP_NAIL_BITS                      0
++#elif defined(__powerpc64__)
++#define __GMP_HAVE_HOST_CPU_FAMILY_power   0
++#define __GMP_HAVE_HOST_CPU_FAMILY_powerpc 1
++#define GMP_LIMB_BITS                      64
++#define GMP_NAIL_BITS                      0
++#else
++#error Unsupported architecture
+ #endif
+ #define GMP_NUMB_BITS     (GMP_LIMB_BITS - GMP_NAIL_BITS)
+ #define GMP_NUMB_MASK     ((~ __GMP_CAST (mp_limb_t, 0)) >> GMP_NAIL_BITS)
+EOF
 }
 
 # As with gmplib, mpfr is built separately in 32-bit and 64-bit mode and then merged
@@ -162,10 +195,10 @@ build_opencsg()
 
 echo "Using basedir:" $BASEDIR
 mkdir -p $SRCDIR $DEPLOYDIR
-build_gmp 5.0.1
-build_mpfr 3.0.1
+build_gmp 5.0.2
+build_mpfr 3.1.0
 build_boost 1.47.0
 # NB! For CGAL, also update the actual download URL in the function
 build_cgal 3.9
-build_glew 1.6.0
+build_glew 1.7.0
 build_opencsg 1.3.0
