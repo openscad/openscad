@@ -33,6 +33,7 @@ OffscreenContext *create_offscreen_context(int w, int h)
     NSOpenGLPFANoRecovery,
     NSOpenGLPFAAccelerated,
     NSOpenGLPFADepthSize, 24,
+    NSOpenGLPFAStencilSize, 8,
     (NSOpenGLPixelFormatAttribute) 0
   };
   NSOpenGLPixelFormat *pixFormat = [[[NSOpenGLPixelFormat alloc] initWithAttributes:attributes] autorelease];
