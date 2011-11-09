@@ -24,7 +24,6 @@
  *
  */
 
-#include "myqhash.h"
 #include "tests-common.h"
 #include "openscad.h"
 #include "node.h"
