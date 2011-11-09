@@ -433,7 +433,8 @@ static void report_func(const class AbstractNode*, void *vp, int mark)
 #ifdef USE_PROGRESSWIDGET
 	ProgressWidget *pw = static_cast<ProgressWidget*>(vp);
 	int v = (int)((mark*100.0) / progress_report_count);
-	pw->setValue(v < 100 ? v : 99);
+	int percent = v < 100 ? v : 99; 
+	if (percent > pw->value()) pw->setValue(percent);
 	QApplication::processEvents();
 	if (pw->wasCanceled()) throw ProgressCancelException();
 #else
