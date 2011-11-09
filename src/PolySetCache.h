@@ -1,8 +1,7 @@
 #ifndef POLYSETCACHE_H_
 #define POLYSETCACHE_H_
 
-#include "myqhash.h"
-#include <QCache>
+#include "cache.h"
 #include "memory.h"
 
 class PolySetCache
@@ -28,7 +27,7 @@ private:
 		~cache_entry() { }
 	};
 
-	QCache<std::string, cache_entry> cache;
+	Cache<std::string, cache_entry> cache;
 };
 
 #endif

@@ -1,13 +1,14 @@
 #include "handle_dep.h"
-#include "myqhash.h"
 #include <string>
 #include <sstream>
 #include <QString>
 #include <QDir>
 #include <QSet>
 #include <stdlib.h> // for system()
+#include <boost/unordered_set.hpp>
+#include <boost/foreach.hpp>
 
-QSet<std::string> dependencies;
+boost::unordered_set<std::string> dependencies;
 const char *make_command = NULL;
 
 void handle_dep(const std::string &filename)
@@ -33,9 +34,10 @@ bool write_deps(const std::string &filename, const std::string &output_file)
 		return false;
 	}
 	fprintf(fp, "%s:", output_file.c_str());
-	QSetIterator<std::string> i(dependencies);
-	while (i.hasNext())
-		fprintf(fp, " \\\n\t%s", i.next().c_str());
+
+	BOOST_FOREACH(const std::string &str, dependencies) {
+		fprintf(fp, " \\\n\t%s", str.c_str());
+	}
 	fprintf(fp, "\n");
 	fclose(fp);
 	return true;

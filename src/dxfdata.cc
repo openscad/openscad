@@ -24,7 +24,6 @@
  *
  */
 
-#include "myqhash.h"
 #include "dxfdata.h"
 #include "grid.h"
 #include "printutils.h"
