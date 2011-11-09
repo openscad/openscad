@@ -343,7 +343,7 @@ std::string Value::toString() const
 
 	switch (this->type) {
 	case STRING:
-		stream << '"' << this->text << '"';
+		stream << this->text;
 		break;
 	case VECTOR:
 		stream << '[';
@@ -411,7 +411,8 @@ void Value::append(Value *val)
 
 std::ostream &operator<<(std::ostream &stream, const Value &value)
 {
-	stream << value.toString();
+	if (value.type == Value::STRING) stream << QuotedString(value.toString());
+	else stream << value.toString();
 	return stream;
 }
 

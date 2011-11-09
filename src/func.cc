@@ -311,7 +311,7 @@ Value builtin_str(const Context *, const std::vector<std::string>&, const std::v
 	std::stringstream stream;
 
 	for (size_t i = 0; i < args.size(); i++) {
-		stream << args[i];
+		stream << args[i].toString();
 	}
 	return Value(stream.str());
 }
