@@ -290,6 +290,17 @@ Value builtin_exp(const Context *, const std::vector<std::string>&, const std::v
 	return Value();
 }
 
+Value builtin_length(const Context *, const std::vector<std::string>&, const std::vector<Value> &args)
+{
+	if (args.size() == 1){
+		if (args[0].type == Value::VECTOR)
+			return Value((double) args[0].vec.size());
+		if (args[0].type == Value::STRING)
+			return Value((double) args[0].text.size());
+	}
+	return Value();
+}
+
 Value builtin_log(const Context *, const std::vector<std::string>&, const std::vector<Value> &args)
 {
 	if (args.size() == 2 && args[0].type == Value::NUMBER && args[1].type == Value::NUMBER)
@@ -391,6 +402,7 @@ void register_builtin_functions()
 	Builtins::init("pow", new BuiltinFunction(&builtin_pow));
 	Builtins::init("sqrt", new BuiltinFunction(&builtin_sqrt));
 	Builtins::init("exp", new BuiltinFunction(&builtin_exp));
+	Builtins::init("len", new BuiltinFunction(&builtin_length));
 	Builtins::init("log", new BuiltinFunction(&builtin_log));
 	Builtins::init("ln", new BuiltinFunction(&builtin_ln));
 	Builtins::init("str", new BuiltinFunction(&builtin_str));
