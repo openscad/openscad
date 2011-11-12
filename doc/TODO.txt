@@ -239,8 +239,9 @@ o 3D hull
 o open polyline from dxf using new method
 o linear_extrude DXF
 o rotate_extrude DXF
+o import_stl
+o import_off
 o import_*
-  - basic
   - open polylines
 o include: test subdirs under librarydir (e.g. include <MCAD/gears.scad> doesn't work
 o use: Basically same tests as include. + use restrictions
