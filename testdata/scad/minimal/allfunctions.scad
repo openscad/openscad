@@ -24,3 +24,4 @@ a = dxf_dim();
 a = dxf_cross();
 a = version();
 a = version_num();
+a = len();
