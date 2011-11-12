@@ -15,6 +15,7 @@ o The version_num() function will return the OpenSCAD version as a number, e.g. 
 o Added PI constant.
 o Now uses standard shortcuts for save and reload on Linux and Windows. F2/F3 will still work but is deprecated.
 o Number literals in scientific notation are now accepted by the parser
+o Added len() function. Takes one vector or string parameter and returns its length.
 
 Bugfixes:
 o square() crashed if any of the dimensions were zero
