@@ -370,6 +370,7 @@ list(REMOVE_ITEM FEATURES_FILES
      ${CMAKE_SOURCE_DIR}/../testdata/scad/features/include-test5.scad)
 file(GLOB BUGS_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/*.scad)
 file(GLOB SCAD_DXF_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/dxf/*.scad)
+file(GLOB FUNCTION_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/functions/*.scad)
 file(GLOB EXAMPLE_FILES ${CMAKE_SOURCE_DIR}/../examples/*.scad)
 
 list(APPEND DUMPTEST_FILES ${MINIMAL_FILES} ${FEATURES_FILES} ${EXAMPLE_FILES})
@@ -388,7 +389,7 @@ list(REMOVE_ITEM DUMPTEST_FILES ${CMAKE_SOURCE_DIR}/../examples/example016.scad)
 list(REMOVE_ITEM DUMPTEST_FILES ${CMAKE_SOURCE_DIR}/../examples/example020.scad)
 list(REMOVE_ITEM DUMPTEST_FILES ${CMAKE_SOURCE_DIR}/../examples/example021.scad)
 
-list(APPEND ECHO_FILES
+list(APPEND ECHO_FILES ${FUNCTION_FILES}
             ${CMAKE_SOURCE_DIR}/../testdata/scad/minimal/echo.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/echo-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/escape-test.scad
