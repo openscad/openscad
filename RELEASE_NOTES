@@ -16,6 +16,7 @@ o Added PI constant.
 o Now uses standard shortcuts for save and reload on Linux and Windows. F2/F3 will still work but is deprecated.
 o Number literals in scientific notation are now accepted by the parser
 o Added len() function. Takes one vector or string parameter and returns its length.
+o The index operator [] now works on strings
 
 Bugfixes:
 o square() crashed if any of the dimensions were zero
