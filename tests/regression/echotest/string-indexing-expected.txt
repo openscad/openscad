@@ -1,0 +1,11 @@
+ECHO: "t"
+ECHO: "e"
+ECHO: "s"
+ECHO: "t"
+ECHO: undef
+ECHO: undef
+ECHO: undef
+ECHO: undef
+ECHO: undef
+ECHO: undef
+ECHO: "e"
