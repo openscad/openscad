@@ -25,8 +25,15 @@
 #include <QDir>
 #include <QSet>
 #include <QTimer>
-#include <sstream>
 
+#include <sstream>
+#include <vector>
+
+#include <boost/program_options.hpp>
+namespace po = boost::program_options;
+
+using std::string;
+using std::vector;
 using std::cerr;
 using std::cout;
 
@@ -41,9 +48,9 @@ public:
 	CsgInfo();
 	CSGTerm *root_norm_term;          // Normalized CSG products
 	class CSGChain *root_chain;
-	std::vector<CSGTerm*> highlight_terms;
+	vector<CSGTerm*> highlight_terms;
 	CSGChain *highlights_chain;
-	std::vector<CSGTerm*> background_terms;
+	vector<CSGTerm*> background_terms;
 	CSGChain *background_chain;
 	OffscreenView *glview;
 };
@@ -51,9 +58,9 @@ public:
 CsgInfo::CsgInfo() {
         root_norm_term = NULL;
         root_chain = NULL;
-        highlight_terms = std::vector<CSGTerm*>();
+        highlight_terms = vector<CSGTerm*>();
         highlights_chain = NULL;
-        background_terms = std::vector<CSGTerm*>();
+        background_terms = vector<CSGTerm*>();
         background_chain = NULL;
         glview = NULL;
 }
@@ -67,15 +74,52 @@ AbstractNode *find_root_tag(AbstractNode *n)
 	return NULL;
 }
 
+string info_dump(OffscreenView *glview)
+{
+	std::stringstream out;
+	out << "test";
+	return out.str();
+}
+
+po::variables_map parse_options(int argc, char *argv[])
+{
+        po::options_description desc("Allowed options");
+        desc.add_options()
+                ("info,i", "information on GLEW, OpenGL, OpenSCAD, and OS");
+
+        po::options_description hidden("Hidden options");
+        hidden.add_options()
+                ("input-file", po::value< vector<string> >(), "input file");
+                ("output-file", po::value< vector<string> >(), "ouput file");
+
+        po::positional_options_description p;
+        p.add("input-file", -1);
+        p.add("output-file", -1);
+
+        po::options_description all_options;
+        all_options.add(desc).add(hidden);
+
+        po::variables_map vm;
+        po::store(po::command_line_parser(argc, argv).options(all_options).positional(p).run(), vm);
+
+	return vm;
+}
+
 int csgtestcore(int argc, char *argv[], test_type_e test_type)
 {
-	if (argc != 3) {
-		fprintf(stderr, "Usage: %s <file.scad> <output.png>\n", argv[0]);
-		exit(1);
+	bool sysinfo_dump = false;
+	const char *filename, *outfilename = NULL;
+	po::variables_map vm = parse_options(argc, argv);
+	if (vm.count("info")) sysinfo_dump = true;
+	if (vm.count("input-file") && vm.count("output-file")) {
+		filename = vm["input-file"].as< vector<string> >().begin()->c_str();
+		outfilename = vm["output-file"].as< vector<string> >().begin()->c_str();
 	}
 
-	const char *filename = argv[1];
-	const char *outfilename = argv[2];
+	if (!filename || !outfilename || !sysinfo_dump) {
+		cerr << "Usage: " << argv[0] << " <file.scad> <output.png>\n";
+		exit(1);
+	}
 
 	Builtins::instance()->initialize();
 
@@ -194,6 +238,7 @@ int csgtestcore(int argc, char *argv[], test_type_e test_type)
 		fprintf(stderr,"Can't create OpenGL OffscreenView. Code: %i. Exiting.\n", error);
 		exit(1);
 	}
+	if (sysinfo_dump) cout << info_dump(csgInfo.glview);
 	BoundingBox bbox = csgInfo.root_chain->getBoundingBox();
 
 	Vector3d center = (bbox.min() + bbox.max()) / 2;

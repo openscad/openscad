@@ -99,6 +99,7 @@ bool create_glx_dummy_window(OffscreenContext &ctx)
     GLX_RED_SIZE, 1,
     GLX_GREEN_SIZE, 1,
     GLX_BLUE_SIZE, 1,
+    GLX_DEPTH_SIZE, 1,
     None
   };
 
@@ -123,8 +124,8 @@ bool create_glx_dummy_window(OffscreenContext &ctx)
 
   Window root = DefaultRootWindow( dpy );
   XSetWindowAttributes xwin_attr;
-  int width = 42;
-  int height = 42;
+  int width = ctx.width;
+  int height = ctx.height;
   xwin_attr.background_pixel = 0;
   xwin_attr.border_pixel = 0;
   xwin_attr.colormap = XCreateColormap( dpy, root, visinfo->visual, AllocNone);
@@ -147,7 +148,7 @@ bool create_glx_dummy_window(OffscreenContext &ctx)
   XSetErrorHandler( original_xlib_handler );
 
   // Most programs would call XMapWindow here. But we don't, to keep the window hidden
-  // XMapWindow( dpy, xWin );
+  XMapWindow( dpy, xWin );
 
   GLXContext context = glXCreateNewContext( dpy, fbconfigs[0], GLX_RGBA_TYPE, NULL, True );
   if ( context == NULL ) {
@@ -229,11 +230,11 @@ OffscreenContext *create_offscreen_context(int w, int h)
   }
   glew_dump();
 
-  ctx->fbo = fbo_new();
+/*  ctx->fbo = fbo_new();
   if (!fbo_init(ctx->fbo, w, h)) {
     cerr << "GL Framebuffer Object init failed; dumping GLEW info" << endl;
     return NULL;
-  }
+  }*/
 
   return ctx;
 }
