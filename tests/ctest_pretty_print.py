@@ -2,12 +2,30 @@
 import string,platform,sys,re,os
 
 wiki_basepath = 'OpenSCAD'
-platform = 'ubuntu linux i686'.replace(' ','_') + '_abcd'
-logfilename = 'LastTest.log.tmp'
-builddir = 'build'
+logfilename = 'LastTest.log'
+builddir = '.'
 logpath = os.path.join(builddir,'Testing','Temporary',logfilename)
 NO_END = False
 if logfilename.endswith('.tmp'): NO_END = True
+
+def read_sysinfo():
+	try:
+		f=open('sysinfo.txt')
+	except:
+		return ''
+	data=f.read()
+	machine_str, osplain_str, renderer_str = '','',''
+	machine = re.search('Machine:(.*?)\n',data)
+	osinfo = re.search('OS info:(.*?)\n',data)
+	renderer = re.search('GL Renderer:(.*?)\n',data)
+	if machine: machine_str = machine.group(1).strip()
+	if osinfo: osplain_str = osinfo.group(1).strip().split(' ')[0].strip()
+	if renderer: 
+		tmp = renderer.group(1).strip().split(' ')
+		renderer_str = string.join(tmp[0:3],'-')
+	platform = osplain_str + '_' + machine_str + '_' + renderer_str
+	platform = platform.lower()
+	return data, platform
 
 def readlog():
 	try:
@@ -60,7 +78,8 @@ def gettest_strings(data):
 		#print test
 		#print '----------<<<<<<<<<<<<<<<<'
 		test = ''
-	return startdate, tests, enddate, platform
+	sysinfo, platform = read_sysinfo()
+	return startdate, tests, enddate, sysinfo, platform
 
 def parsetest(teststring):
 	s = teststring
@@ -89,15 +108,15 @@ def parsetest(teststring):
 	return test
 
 def parse(data):
-	startdate, test_strs, enddate, platform = gettest_strings(data)
+	startdate, test_strs, enddate, sysinfo, platform = gettest_strings(data)
 	print 'found', len(test_strs),'test results'
 	tests = []
 	for i in range(len(test_strs)):
 		test = parsetest(test_strs[i])
 		tests += [test]
-	return startdate, tests, enddate, platform
+	return startdate, tests, enddate, sysinfo, platform
 
-def towiki(startdate, tests, enddate, platform):
+def towiki(startdate, tests, enddate, sysinfo, platform):
 	def convert_path(fulltestname,platform,path):
 		# convert system path name (image file) to wiki path name
 		testprogram = fulltestname[0:fulltestname.find('_')]
@@ -119,6 +138,11 @@ def towiki(startdate, tests, enddate, platform):
 <h3>OpenSCAD test run</h3>
 
 platform: PLATFORM
+
+detailed system info: 
+<pre>
+SYSINFO
+</pre>
 
 runtime: STARTDATE to ENDDATE
 
@@ -153,6 +177,7 @@ Passed tests
 	x = x.replace('TABLESTYLE','border=1 cellspacing=0 cellpadding=1 align="center"')
 	x = x.replace('STARTDATE',startdate)
 	x = x.replace('ENDDATE',enddate)
+	x = x.replace('SYSINFO',sysinfo)
 	x = x.replace('PLATFORM',platform)
 
 	for t in tests:
@@ -172,6 +197,19 @@ Passed tests
 	x = x.replace(repeat1,'')
 	x = x.replace(repeat2,'')
 	return x
+
+def wikitohtml(data):
+	# not pretty 
+	data = data.replace('\n\n','\n<p>\n')
+	data = re.sub('\{\|.*?\n','<table border=1>\n',data)
+	data = re.sub('\n\! ','\n<tr>\n<td>',data)
+	data = data.replace(' !! ','<td>')
+	data = data.replace('|-','<tr>')
+	data = re.sub('\n\| ','\n<td>',data)
+	data = data.replace(' || ','<td>')
+	data = data.replace('|}','\n</table>')
+	data = re.sub('[[File:(.*?)|.*?]]','<img src="(\1)">',data)
+	return data
 
 def testsort(tests):
 	passed = []
@@ -193,10 +231,12 @@ def save(data,filename):
 
 def main():
 	data = readlog()
-	startdate, tests, enddate, platform = parse(data)
+	startdate, tests, enddate, sysinfo, platform = parse(data)
 	tests = testsort(tests)
-	out = towiki(startdate, tests, enddate, platform)
-	save(out, platform+'.wiki')
+	wikidata = towiki(startdate, tests, enddate, sysinfo, platform)
+	htmldata = wikitohtml(wikidata) 
+	save(wikidata, platform+'.wiki')
+	save(htmldata, platform+'.html')
 
 main()
 

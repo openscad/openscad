@@ -76,8 +76,27 @@ AbstractNode *find_root_tag(AbstractNode *n)
 
 string info_dump(OffscreenView *glview)
 {
+#define STRINGIFY(x) #x
+#define TOSTRING(x) STRINGIFY(x)
+#ifdef __GNUG__
+#define compiler_info "GCC " << __VERSION__
+#elif defined(_MSC_VER)
+#define compiler_info "MSVC " << _MSC_FULL_VER
+#else
+#define compiler_info "unknown compiler"
+#endif
+	assert(glview);
 	std::stringstream out;
-	out << "test";
+	out << "OpenSCAD info dump:"
+	  << "\nOpenSCAD Year/Month/Day: " << int(OPENSCAD_YEAR) << "."
+	  << int(OPENSCAD_MONTH) << "." 
+#ifdef OPENSCAD_DAY
+	  << int(OPENSCAD_DAY)
+#endif
+	  << "\nOpenSCAD Version: " << TOSTRING(OPENSCAD_VERSION)
+          << "\nCompiled with: " << compiler_info
+	  << "\nGL Context info: \n" << glview->getInfo()
+	  << "\n";
 	return out.str();
 }
 
@@ -85,22 +104,23 @@ po::variables_map parse_options(int argc, char *argv[])
 {
         po::options_description desc("Allowed options");
         desc.add_options()
-                ("info,i", "information on GLEW, OpenGL, OpenSCAD, and OS");
+                ("help,h", "help message")//;
+                ("info,i", "information on GLEW, OpenGL, OpenSCAD, and OS")//;
 
-        po::options_description hidden("Hidden options");
-        hidden.add_options()
-                ("input-file", po::value< vector<string> >(), "input file");
+//        po::options_description hidden("Hidden options");
+//        hidden.add_options()
+                ("input-file", po::value< vector<string> >(), "input file")
                 ("output-file", po::value< vector<string> >(), "ouput file");
 
         po::positional_options_description p;
-        p.add("input-file", -1);
-        p.add("output-file", -1);
+        p.add("input-file", 1).add("output-file", 1);
 
         po::options_description all_options;
-        all_options.add(desc).add(hidden);
+        all_options.add(desc); // .add(hidden);
 
         po::variables_map vm;
         po::store(po::command_line_parser(argc, argv).options(all_options).positional(p).run(), vm);
+	po::notify(vm);
 
 	return vm;
 }
@@ -109,14 +129,19 @@ int csgtestcore(int argc, char *argv[], test_type_e test_type)
 {
 	bool sysinfo_dump = false;
 	const char *filename, *outfilename = NULL;
-	po::variables_map vm = parse_options(argc, argv);
-	if (vm.count("info")) sysinfo_dump = true;
-	if (vm.count("input-file") && vm.count("output-file")) {
-		filename = vm["input-file"].as< vector<string> >().begin()->c_str();
-		outfilename = vm["output-file"].as< vector<string> >().begin()->c_str();
+	po::variables_map vm;
+	try {
+		vm = parse_options(argc, argv);
+	} catch ( po::error e ) {
+		cerr << "error parsing options\n";
 	}
+	if (vm.count("info")) sysinfo_dump = true;
+	if (vm.count("input-file"))
+		filename = vm["input-file"].as< vector<string> >().begin()->c_str();
+	if (vm.count("output-file"))
+		outfilename = vm["output-file"].as< vector<string> >().begin()->c_str();
 
-	if (!filename || !outfilename || !sysinfo_dump) {
+	if ((!filename || !outfilename) && !sysinfo_dump) {
 		cerr << "Usage: " << argv[0] << " <file.scad> <output.png>\n";
 		exit(1);
 	}
@@ -154,7 +179,11 @@ int csgtestcore(int argc, char *argv[], test_type_e test_type)
 	AbstractModule *root_module;
 	ModuleInstantiation root_inst;
 
-	root_module = parsefile(filename);
+	if (sysinfo_dump)
+		root_module = parse("sphere();","",false);
+	else
+		root_module = parsefile(filename);
+
 	if (!root_module) {
 		exit(1);
 	}

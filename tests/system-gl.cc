@@ -2,34 +2,40 @@
 /* OpenGL helper functions */
 
 #include <iostream>
+#include <sstream>
+#include <string>
 #include "system-gl.h"
 #include <boost/algorithm/string.hpp>
 
 using namespace std;
 using namespace boost;
 
-void glew_dump() {
-  cerr << "GLEW version: " << glewGetString(GLEW_VERSION) << endl
-       << "Renderer: " << (const char *)glGetString(GL_RENDERER) << endl
-       << "Vendor: " << (const char *)glGetString(GL_VENDOR) << endl
-       << "OpenGL version: " << (const char *)glGetString(GL_VERSION) << endl;
+string glew_dump(bool dumpall)
+{
+  stringstream out;
+  out << "GLEW version: " << glewGetString(GLEW_VERSION) << endl
+       << "GL Renderer: " << (const char *)glGetString(GL_RENDERER) << endl
+       << "GL Vendor: " << (const char *)glGetString(GL_VENDOR) << endl
+       << "OpenGL Version: " << (const char *)glGetString(GL_VERSION) << endl;
 
-  bool dumpall = false;
+  out << "GL Extensions: " << endl;
   if (dumpall) {
     string extensions((const char *)glGetString(GL_EXTENSIONS));
     replace_all( extensions, " ", "\n " );
-    cerr << "Extensions: " << endl << " " << extensions << endl;
+    out << " " << extensions << endl;
   }
 
-  cerr << " GL_ARB_framebuffer_object: " 
-       << (glewIsSupported("GL_ARB_framebuffer_object") ? "yes" : "no")
-       << endl
-       << " GL_EXT_framebuffer_object: " 
-       << (glewIsSupported("GL_EXT_framebuffer_object") ? "yes" : "no")  
-       << endl
-       << " GL_EXT_packed_depth_stencil: " 
-       << (glewIsSupported("GL_EXT_packed_depth_stencil") ? "yes" : "no") 
-       << endl;
+  out << "GL_ARB_framebuffer_object: "
+      << (glewIsSupported("GL_ARB_framebuffer_object") ? "yes" : "no")
+      << endl
+      << "GL_EXT_framebuffer_object: "
+      << (glewIsSupported("GL_EXT_framebuffer_object") ? "yes" : "no")
+      << endl
+      << "GL_EXT_packed_depth_stencil: "
+      << (glewIsSupported("GL_EXT_packed_depth_stencil") ? "yes" : "no")
+      << endl;
+
+  return out.str();
 };
 
 bool report_glerror(const char * function)

@@ -364,6 +364,7 @@ set(INFOCMD "execute_process(COMMAND ${CMAKE_CURRENT_BINARY_DIR}/opencsgtest --i
 set(PRETTYCMD "\"${PYTHON_EXECUTABLE} ctest_pretty_print.py\"")
 set(CTEST_CUSTOM_FILE ${CMAKE_CURRENT_BINARY_DIR}/CTestCustom.cmake)
 set(CTEST_CUSTOM_TXT "\n
+  message(\"running 'opencsgtest --info' to generate sysinfo.txt\")\n
   ${INFOCMD}\n
   set(CTEST_CUSTOM_POST_TEST ${PRETTYCMD})\n
 ")

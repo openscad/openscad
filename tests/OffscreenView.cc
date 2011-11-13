@@ -249,6 +249,11 @@ bool OffscreenView::save(const char *filename)
 	return save_framebuffer(this->ctx, filename);
 }
 
+std::string OffscreenView::getInfo()
+{
+	return offscreen_context_getinfo(this->ctx);
+}
+
 void OffscreenView::setCamera(const Eigen::Vector3d &pos, const Eigen::Vector3d &center)
 {
 	this->camera_eye = pos;

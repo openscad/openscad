@@ -44,10 +44,15 @@ See Also
 #include <GL/gl.h>
 #include <GL/glx.h>
 
+#include <assert.h>
+#include <sstream>
+
+#include <sys/utsname.h> // for uname
+
 using namespace std;
 
 struct OffscreenContext
-{
+	{
   GLXContext openGLContext;
   Display *xdisplay;
   Window xwindow;
@@ -64,6 +69,42 @@ void offscreen_context_init(OffscreenContext &ctx, int width, int height)
   ctx.xdisplay = NULL;
   ctx.xwindow = (Window)NULL;
   ctx.fbo = NULL;
+}
+
+string get_unix_info()
+{
+  struct utsname u;
+  stringstream out;
+
+  if (uname(&u) < 0)
+    out << "OS info: unknown, uname() error\n";
+  else {
+    out << "OS info: "
+      << u.sysname << " "
+      << u.release << " "
+      << u.version << "\n";
+    out << "Machine: " << u.machine;
+  }
+  return out.str();
+}
+
+string offscreen_context_getinfo(OffscreenContext *ctx)
+{
+  assert(ctx);
+
+  if (!ctx->xdisplay)
+    return string("No GL Context initialized. No information to report\n");
+
+  int major, minor;
+  glXQueryVersion(ctx->xdisplay, &major, &minor);
+
+  stringstream out;
+  out << "GLX version: " << major << "." << minor << "\n";
+  out << glew_dump(false);
+
+  out << get_unix_info();
+
+  return out.str();
 }
 
 static XErrorHandler original_xlib_handler = (XErrorHandler) NULL;
@@ -228,7 +269,7 @@ OffscreenContext *create_offscreen_context(int w, int h)
     cerr << "Unable to init GLEW: " << glewGetErrorString(err) << endl;
     return NULL;
   }
-  glew_dump();
+  // cerr << glew_dump(0);
 
 /*  ctx->fbo = fbo_new();
   if (!fbo_init(ctx->fbo, w, h)) {
@@ -266,7 +307,7 @@ bool save_framebuffer(OffscreenContext *ctx, const char *filename)
   int rowBytes = samplesPerPixel * ctx->width;
   unsigned char *flippedBuffer = (unsigned char *)malloc(rowBytes * ctx->height);
   if (!flippedBuffer) {
-    std::cerr << "Unable to allocate flipped buffer for corrected image.";
+    cerr << "Unable to allocate flipped buffer for corrected image.";
     return 1;
   }
   flip_image(pixels, flippedBuffer, samplesPerPixel, ctx->width, ctx->height);

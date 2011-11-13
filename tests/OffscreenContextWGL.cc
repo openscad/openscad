@@ -22,6 +22,9 @@ For more info:
 
 #include <GL/gl.h> // must be included after glew.h
 
+#include <string>
+#include <sstream>
+
 using namespace std;
 
 struct OffscreenContext
@@ -42,6 +45,34 @@ void offscreen_context_init(OffscreenContext &ctx, int width, int height)
   ctx.width = width;
   ctx.height = height;
   ctx.fbo = NULL;
+}
+
+string get_windows_info()
+{
+  OSVERSIONINFO osvi;
+
+  ZeroMemory(&osvi, sizeof(OSVERSIONINFO));
+  osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
+  GetVersionEx(&osvi);
+
+  SYSTEM_INFO si;
+  GetSystemInfo(&si);
+
+  stringstream out;
+  out << "OS info: "
+    << "Microsoft(TM) Windows(TM) " << osvi.dwMajorVersion << " "
+    << osvi.dwMinorVersion << " " << osvi.dwBuildNumber << " "
+    << osvi.szCSDVersion << "\n";
+
+  out << "Machine: " << si.dwOemID << " " << si.dwProcessorType;
+}
+
+string offscreen_context_getinfo(OffscreenContext *ctx)
+{
+  stringstream out;
+  out << glew_dump(false);
+  out << get_windows_info();
+  return result;
 }
 
 LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam) 
@@ -142,7 +173,7 @@ OffscreenContext *create_offscreen_context(int w, int h)
     cerr << "Unable to init GLEW: " << glewGetErrorString(err) << "\n";
     return NULL;
   }
-  glew_dump();
+  //cerr << glew_dump(0);
 
   ctx->fbo = fbo_new();
   if (!fbo_init(ctx->fbo, w, h)) {
