@@ -396,7 +396,8 @@ list(APPEND ECHO_FILES ${FUNCTION_FILES}
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/parser-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/builtin-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/dim-all.scad
-            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/string-test.scad)
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/string-test.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/string-indexing.scad)
 
 # Add echotest tests to CTest
 add_cmdline_test(echotest txt ${ECHO_FILES})
