@@ -56,4 +56,9 @@ isEmpty(VERSION) {
     VERSION_MONTH=$$member(VERSION_SPLIT, 1)
     VERSION_DAY=$$member(VERSION_SPLIT, 2)
   }
+  # Fix for problem with integers with leading zeros
+  # being interpreted by C++ as octals. Now they're doubles.
+  VERSION_YEAR=$${VERSION_YEAR}.0
+  VERSION_MONTH=$${VERSION_MONTH}.0
+  VERSION_DAY=$${VERSION_DAY}.0
 }

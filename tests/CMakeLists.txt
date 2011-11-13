@@ -374,8 +374,12 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/ctest_pretty_print.py
 # Find all scad files
 file(GLOB MINIMAL_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/minimal/*.scad)
 file(GLOB FEATURES_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/features/*.scad)
+list(REMOVE_ITEM FEATURES_FILES
+     ${CMAKE_SOURCE_DIR}/../testdata/scad/features/include\ test6.scad
+     ${CMAKE_SOURCE_DIR}/../testdata/scad/features/include-test5.scad)
 file(GLOB BUGS_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/*.scad)
 file(GLOB SCAD_DXF_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/dxf/*.scad)
+file(GLOB FUNCTION_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/functions/*.scad)
 file(GLOB EXAMPLE_FILES ${CMAKE_SOURCE_DIR}/../examples/*.scad)
 
 list(APPEND DUMPTEST_FILES ${MINIMAL_FILES} ${FEATURES_FILES} ${EXAMPLE_FILES})
@@ -394,12 +398,14 @@ list(REMOVE_ITEM DUMPTEST_FILES ${CMAKE_SOURCE_DIR}/../examples/example016.scad)
 list(REMOVE_ITEM DUMPTEST_FILES ${CMAKE_SOURCE_DIR}/../examples/example020.scad)
 list(REMOVE_ITEM DUMPTEST_FILES ${CMAKE_SOURCE_DIR}/../examples/example021.scad)
 
-list(APPEND ECHO_FILES
+list(APPEND ECHO_FILES ${FUNCTION_FILES}
             ${CMAKE_SOURCE_DIR}/../testdata/scad/minimal/echo.scad
-            ${CMAKE_SOURCE_DIR}/../testdata/scad/features/echo-tests.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/echo-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/escape-test.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/parser-tests.scad
-            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/builtin-tests.scad)
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/builtin-tests.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/dim-all.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/string-test.scad)
 
 # Add echotest tests to CTest
 add_cmdline_test(echotest txt ${ECHO_FILES})
@@ -414,55 +420,28 @@ add_cmdline_test(csgtermtest txt ${MINIMAL_FILES})
 add_cmdline_test(cgaltest stl ${CGALTEST_FILES})
 
 # Add cgalpngtest tests to CTest
-LIST(APPEND CGALPNGTEST_FILES 
-            ${CMAKE_SOURCE_DIR}/../testdata/scad/features/2d-3d.scad
-            ${CMAKE_SOURCE_DIR}/../testdata/scad/features/circle-tests.scad
-            ${CMAKE_SOURCE_DIR}/../testdata/scad/features/square-tests.scad
-            ${CMAKE_SOURCE_DIR}/../testdata/scad/features/polygon-tests.scad
-            ${CMAKE_SOURCE_DIR}/../testdata/scad/features/cube-tests.scad
-            ${CMAKE_SOURCE_DIR}/../testdata/scad/features/sphere-tests.scad
-            ${CMAKE_SOURCE_DIR}/../testdata/scad/features/cylinder-tests.scad
-            ${CMAKE_SOURCE_DIR}/../testdata/scad/features/polyhedron-tests.scad
-            ${CMAKE_SOURCE_DIR}/../testdata/scad/features/union-tests.scad
-            ${CMAKE_SOURCE_DIR}/../testdata/scad/features/difference-tests.scad
-            ${CMAKE_SOURCE_DIR}/../testdata/scad/features/intersection-tests.scad
-            ${CMAKE_SOURCE_DIR}/../testdata/scad/features/linear_extrude-tests.scad
-            ${CMAKE_SOURCE_DIR}/../testdata/scad/features/rotate_extrude-tests.scad
-            ${CMAKE_SOURCE_DIR}/../testdata/scad/features/minkowski2-tests.scad
-            ${CMAKE_SOURCE_DIR}/../testdata/scad/features/minkowski3-tests.scad
-            ${CMAKE_SOURCE_DIR}/../testdata/scad/features/hull2-tests.scad
-            ${CMAKE_SOURCE_DIR}/../testdata/scad/features/surface-tests.scad
-            ${CMAKE_SOURCE_DIR}/../testdata/scad/features/import_dxf-tests.scad
-            ${CMAKE_SOURCE_DIR}/../testdata/scad/features/transform-tests.scad
-            ${CMAKE_SOURCE_DIR}/../testdata/scad/features/color-tests.scad
-            ${CMAKE_SOURCE_DIR}/../testdata/scad/features/background-modifier.scad
-            ${CMAKE_SOURCE_DIR}/../testdata/scad/features/highlight-modifier.scad
-            ${CMAKE_SOURCE_DIR}/../testdata/scad/features/root-modifier.scad
-            ${CMAKE_SOURCE_DIR}/../testdata/scad/features/disable-modifier.scad
-            ${CMAKE_SOURCE_DIR}/../testdata/scad/features/for-tests.scad
-            ${CMAKE_SOURCE_DIR}/../testdata/scad/features/for-nested-tests.scad
-            ${CMAKE_SOURCE_DIR}/../testdata/scad/features/intersection_for-tests.scad
-            ${CMAKE_SOURCE_DIR}/../testdata/scad/features/render-tests.scad
-            ${CMAKE_SOURCE_DIR}/../testdata/scad/features/projection-tests.scad
-            ${CMAKE_SOURCE_DIR}/../testdata/scad/features/assign-tests.scad
-            ${CMAKE_SOURCE_DIR}/../testdata/scad/features/include-tests.scad
-            ${CMAKE_SOURCE_DIR}/../testdata/scad/features/child-tests.scad
-            ${CMAKE_SOURCE_DIR}/../testdata/scad/features/ifelse-tests.scad
-            ${CMAKE_SOURCE_DIR}/../testdata/scad/features/rotate_extrude_dxf-tests.scad)
-LIST(APPEND CGALPNGTEST_FILES ${SCAD_DXF_FILES})
-#LIST(APPEND CGALPNGTEST_FILES ${CMAKE_SOURCE_DIR}/../examples/example001.scad)
+list(APPEND CGALPNGTEST_FILES ${FEATURES_FILES})
+list(APPEND CGALPNGTEST_FILES ${SCAD_DXF_FILES})
+list(APPEND OPENCSGTEST_FILES ${CGALPNGTEST_FILES})
+
+list(REMOVE_ITEM CGALPNGTEST_FILES
+     ${CMAKE_SOURCE_DIR}/../testdata/scad/features/child-background.scad
+     ${CMAKE_SOURCE_DIR}/../testdata/scad/features/highlight-and-background-modifier.scad
+     ${CMAKE_SOURCE_DIR}/../testdata/scad/features/testcolornames.scad)
+
 add_cmdline_test(cgalpngtest png ${CGALPNGTEST_FILES})
 
 # Add opencsg tests to CTest
-LIST(APPEND OPENCSGTEST_FILES ${CGALPNGTEST_FILES})
-LIST(APPEND OPENCSGTEST_FILES 
-            ${CMAKE_SOURCE_DIR}/../testdata/scad/features/highlight-and-background-modifier.scad
-            ${CMAKE_SOURCE_DIR}/../testdata/scad/features/child-background.scad)
-LIST(APPEND OPENCSGTEST_FILES ${SCAD_DXF_FILES})
+
+# FIXME: This test illustrates a weakness in child() combined with modifiers.
+# Reenable it when this is improved
+list(REMOVE_ITEM OPENCSGTEST_FILES
+     ${CMAKE_SOURCE_DIR}/../testdata/scad/features/child-background.scad)
+
 add_cmdline_test(opencsgtest png ${OPENCSGTEST_FILES})
 
 # Add throwntogether tests to CTest
-LIST(APPEND THROWNTOGETHERTEST_FILES ${CGALPNGTEST_FILES})
+list(APPEND THROWNTOGETHERTEST_FILES ${CGALPNGTEST_FILES})
 add_cmdline_test(throwntogethertest png ${THROWNTOGETHERTEST_FILES})
 
 # Add dxfexport tests to CTest

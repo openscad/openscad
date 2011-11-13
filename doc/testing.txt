@@ -45,9 +45,6 @@ Adding  a new regression test:
 7) run the test normally and verify that it passes:
   $ ctest -R mytest
 
-Note that test files which don't have an *-expected.<suffix> file will
-be ignored for the test apps in question.
-
 Troubleshooting a failed test:
 ------------------------------
 

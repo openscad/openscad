@@ -37,10 +37,6 @@ Using STL-imported models is tricky and triggers multiple issues:
      import_stl("adns2610_dev_circuit_inv.stl");
    }
 
-CRASH BUGS
-----------
-o Broken polyhedron() entities are not correctly detected and cause CGAL segfaults
-
 USER INTERFACE
 --------------
 o Preferences
@@ -72,13 +68,8 @@ o 3D View
   - View All
   - Allow specifying viewpoint in the scad file
   - overlay indicator displaying current view mode
-  - OpenCSG rendering: Coincident surfaces causes z-buffer fighting. Is this somehow
-    avoidable tuning the depth tests in OpenCSG? 
-  - Make the 10.000 element OpenCSG limit configurable (Preferences) ?
   - Use OpenGL picking to facilitate ray-tracing like features like measuring
     thicknesses, distances, slot thicknesses etc.
-  - When specifying a transparency with the color() statement,
-    the object is not sorted and will be rendered wrongly
   - Add option to change lights, e.g. add an optional camera light
 o Editor wishlist
   - More infrastructure for external editor (allow communication from the outside)
@@ -122,6 +113,16 @@ o Misc
 o Cmd-line
   - Add verbose option (PRINT command from mainwin.cc and progress output)
 
+OpenCSG-related
+---------------
+o OpenCSG rendering: Coincident surfaces causes z-buffer fighting. Is this somehow
+  avoidable tuning the depth tests in OpenCSG? 
+o Make the 10.000 element OpenCSG limit configurable (Preferences) ?
+o When specifying a transparency with the color() statement,
+  the object is not sorted and will be rendered wrongly
+o Bug: Using the background operator (%) on the only object in a scene triggers a
+  CSG error: No top level object found
+
 ENGINE
 ------
 o Primitives
@@ -149,7 +150,6 @@ o Language Frontend
   - Rethink for vs. intersection_for vs. group. Should for loops
     generate child lists instead, and make these passable to other
     modules or accessible by child()?
-  - constants: PI, OpenSCAD version
 o DXF Import/Export
   - Use dxflib from RibbonSoft for import/export? -> investigate
   - Import
@@ -167,8 +167,6 @@ o Misc
   - Add 'lines' object type for non-solid 2d drawings
   - Is there a reason why modules like echo, empty if, empty for loop returns an
     empty AbstractNode instead of being ignored?
-  - Bug: Using the background operator (%) on the only object in a scene triggers a
-    CSG error: No top level object found
   - Dependency tracking of libraries (USE'd modules) isn't implemented. See Mail from nophead 20110823.
 o Grammar
   - dim->name -> dim->label
@@ -214,6 +212,16 @@ BUILD SYSTEM
 o Fedora is reported to ship with byacc, which doesn't support bison extensions (e.g. %debuig). Look into this, either be yacc-compatible or force the build system to use bison.
 o We currently link in -lboost_thread. Should we always use -lboost_thread-mt under Linux or can we pick this up using qmake?
 
+INFRASTRUCTURE
+--------------
+o Use a logging framework to get debugging/info output more under control?
+  (check log4j, google project)
+
+DOCUMENTATION
+-------------
+o Write checklists for typical extension work (add new module, add new function)
+  -> make sure new test files are added
+
 TESTING
 -------
 o Caching and MDI looks suspicious when the code relies on external resources
@@ -221,16 +229,31 @@ o Caching and MDI looks suspicious when the code relies on external resources
   -> we might get a false cache hit
 o Collect "all" available OpenSCAD scripts from the internets and run the integration
   tests on them all
-o dumptest tests:
-  - filename are dumped as absolute filenames - this will fail on other systems
-o Write a regression test for the hexagonal cylinder orientation issue
 
-INFRASTRUCTURE
+MISSING TESTS:
 --------------
-o Use a logging framework to get debugging/info output more under control?
-  (check log4j, google project)
-
-MISC
-----
-o Write checklists for typical extension work (add new module, add new function)
-  -> make sure new test files are added
+o all functions
+o mirror
+o scale
+o 3D hull
+o open polyline from dxf using new method
+o linear_extrude DXF
+o rotate_extrude DXF
+o import_stl
+o import_off
+o import_*
+  - open polylines
+o include: test subdirs under librarydir (e.g. include <MCAD/gears.scad> doesn't work
+o use: Basically same tests as include. + use restrictions
+o include and use: remember filenames with space
+o variants of module transparent() { %child(); }
+o define modules
+o define functions
+o built-in variables and constants (builtin-tests.scad)
+o Write a regression test for the hexagonal cylinder orientation issue
+o other tests
+  - export
+  - cmd-line tests
+  - leaf nodes having children, e.g. cube() cylinder();
+  - caching
+  - dependency tracking

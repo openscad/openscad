@@ -29,3 +29,8 @@ void ProgressWidget::setValue(int progress)
 {
 	this->progressBar->setValue(progress);
 }
+
+int ProgressWidget::value() const
+{
+	return this->progressBar->value();
+}
