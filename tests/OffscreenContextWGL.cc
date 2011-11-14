@@ -22,6 +22,7 @@ For more info:
 
 #include <GL/gl.h> // must be included after glew.h
 
+#include <map>
 #include <string>
 #include <sstream>
 
@@ -57,14 +58,24 @@ string get_windows_info()
 
   SYSTEM_INFO si;
   GetSystemInfo(&si);
+  map<WORD,const char*> archs;
+  archs[PROCESSOR_ARCHITECTURE_AMD64] = "amd64";
+  archs[PROCESSOR_ARCHITECTURE_IA64] = "itanium";
+  archs[PROCESSOR_ARCHITECTURE_INTEL] = "x86";
+  archs[PROCESSOR_ARCHITECTURE_UNKNOWN] = "unknown";
 
   stringstream out;
   out << "OS info: "
-    << "Microsoft(TM) Windows(TM) " << osvi.dwMajorVersion << " "
-    << osvi.dwMinorVersion << " " << osvi.dwBuildNumber << " "
-    << osvi.szCSDVersion << "\n";
+      << "Microsoft(TM) Windows(TM) " << osvi.dwMajorVersion << " "
+      << osvi.dwMinorVersion << " " << osvi.dwBuildNumber << " "
+      << osvi.szCSDVersion;
+  if (archs.find(si.wProcessorArchitecture) != archs.end()) 
+    out << " " << archs[si.wProcessorArchitecture];
+  out << "\n";
 
-  out << "Machine: " << si.dwOemID << " " << si.dwProcessorType;
+  out << "Machine: " << si.dwProcessorType;
+
+  return out.str();
 }
 
 string offscreen_context_getinfo(OffscreenContext *ctx)
@@ -72,7 +83,7 @@ string offscreen_context_getinfo(OffscreenContext *ctx)
   stringstream out;
   out << glew_dump(false);
   out << get_windows_info();
-  return result;
+  return out.str();
 }
 
 LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam) 

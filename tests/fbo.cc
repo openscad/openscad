@@ -93,6 +93,7 @@ bool fbo_ext_init(fbo_t *fbo, size_t width, size_t height)
 		glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT,
 																 GL_RENDERBUFFER_EXT, fbo->depthbuf_id);
 		if (report_glerror("specifying depth render buffer EXT")) return false;
+
 		glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_STENCIL_ATTACHMENT_EXT,
 																 GL_RENDERBUFFER_EXT, fbo->depthbuf_id);
 		if (report_glerror("specifying stencil render buffer EXT")) return false;
@@ -142,7 +143,8 @@ bool fbo_arb_init(fbo_t *fbo, size_t width, size_t height)
     return false;
   }
 
-  glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, 
+  //glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, 
+  glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, 
                                GL_RENDERBUFFER, fbo->depthbuf_id);
   if (report_glerror("specifying depth stencil render buffer")) return false;
 
@@ -181,21 +183,22 @@ bool fbo_resize(fbo_t *fbo, size_t width, size_t height)
 {
   if (use_ext()) {
     glBindRenderbufferEXT(GL_RENDERBUFFER, fbo->depthbuf_id);
-		if (glewIsSupported("GL_EXT_packed_depth_stencil")) {
+		if (0) { // glewIsSupported("GL_EXT_packed_depth_stencil")) {
 			glRenderbufferStorageEXT(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, width, height);
-			if (report_glerror("creating depth stencil render buffer")) return false;
+			if (report_glerror("creating EXT depth stencil render buffer")) return false;
 		}
 		else {
 			glRenderbufferStorageEXT(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, width, height);
-			if (report_glerror("creating depth render buffer")) return false;
+			if (report_glerror("creating EXT depth render buffer")) return false;
 		}
 
     glBindRenderbufferEXT(GL_RENDERBUFFER, fbo->renderbuf_id);
     glRenderbufferStorageEXT(GL_RENDERBUFFER, GL_RGBA8, width, height);
-    if (report_glerror("creating color render buffer")) return false;
+    if (report_glerror("creating EXT color render buffer")) return false;
   } else {
     glBindRenderbuffer(GL_RENDERBUFFER, fbo->depthbuf_id);
-    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, width, height);
+    //glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, width, height);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT32, width, height);
     if (report_glerror("creating depth stencil render buffer")) return false;
 
     glBindRenderbuffer(GL_RENDERBUFFER, fbo->renderbuf_id);

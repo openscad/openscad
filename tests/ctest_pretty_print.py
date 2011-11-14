@@ -3,7 +3,7 @@ import string,platform,sys,re,os
 
 wiki_basepath = 'OpenSCAD'
 logfilename = 'LastTest.log'
-builddir = '.'
+builddir = os.getcwd()
 logpath = os.path.join(builddir,'Testing','Temporary',logfilename)
 NO_END = False
 if logfilename.endswith('.tmp'): NO_END = True
@@ -18,11 +18,15 @@ def read_sysinfo():
 	machine = re.search('Machine:(.*?)\n',data)
 	osinfo = re.search('OS info:(.*?)\n',data)
 	renderer = re.search('GL Renderer:(.*?)\n',data)
-	if machine: machine_str = machine.group(1).strip()
-	if osinfo: osplain_str = osinfo.group(1).strip().split(' ')[0].strip()
+	if machine: machine_str = machine.group(1).strip().replace(' ','-').replace('/','-')
+	if osinfo: 
+		osplain_str = osinfo.group(1).strip().split(' ')[0].strip().replace('/','-')
+		if 'windows' in osinfo.group(1).lower(): osplain_str = 'win'
 	if renderer: 
 		tmp = renderer.group(1).strip().split(' ')
-		renderer_str = string.join(tmp[0:3],'-')
+		tmp = string.join(tmp[0:3],'-')
+		if '/' in tmp: tmp = tmp.split('/')[0]
+		renderer_str = tmp
 	platform = osplain_str + '_' + machine_str + '_' + renderer_str
 	platform = platform.lower()
 	return data, platform
@@ -119,12 +123,11 @@ def parse(data):
 def towiki(startdate, tests, enddate, sysinfo, platform):
 	def convert_path(fulltestname,platform,path):
 		# convert system path name (image file) to wiki path name
-		testprogram = fulltestname[0:fulltestname.find('_')]
+		testprogram = fulltestname[0:fulltestname.rfind('_')]
 		testprogram = testprogram.replace('test','')
 		filename = os.path.basename(path)
-		filename = filename.replace('-actual','')
-		filename = filename.replace('-tests','')
-		filename = filename.replace('-expected','')
+		filename = filename.replace('-tests-actual.png','.png')
+		filename = filename.replace('-tests-expected.png','.png')
 		try:
 			platform = platform[0].upper() + platform[1:]
 		except:
@@ -144,7 +147,8 @@ detailed system info:
 SYSINFO
 </pre>
 
-runtime: STARTDATE to ENDDATE
+start time: STARTDATE 
+end time  : ENDDATE
 
 Failed tests
 
@@ -181,17 +185,25 @@ Passed tests
 	x = x.replace('PLATFORM',platform)
 
 	for t in tests:
+		print t.type, t.fullname, t.expectedfile, t.outputfile
 		if t.passed:
 			tmp = str(repeat2)
 			tmp = tmp.replace('PTESTNAME',t.fullname)
 			x = x.replace(repeat2,tmp + repeat2)
-		else:
+		elif not t.passed and t.type=='png':
 			tmp = str(repeat1)
 			tmp = tmp.replace('FTESTNAME',t.fullname)
+
 			wiki_imgpath1 = convert_path(t.fullname,'expected',t.expectedfile)
+			if t.type!='png': wiki_imgpath1 = ''
+			if t.expectedfile=='': wiki_imgpath2 = ''
 			tmp = tmp.replace('EXPECTEDIMG',wiki_imgpath1)
+
 			wiki_imgpath2 = convert_path(t.fullname,platform,t.outputfile)
+			if t.type!='png': wiki_imgpath2 = ''
+			if t.outputfile=='': wiki_imgpath2 = ''
 			tmp = tmp.replace('ACTUALIMG',wiki_imgpath2)
+
 			x = x.replace(repeat1,tmp + repeat1)
 
 	x = x.replace(repeat1,'')
