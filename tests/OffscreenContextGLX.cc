@@ -52,7 +52,7 @@ See Also
 using namespace std;
 
 struct OffscreenContext
-	{
+{
   GLXContext openGLContext;
   Display *xdisplay;
   Window xwindow;
@@ -71,7 +71,7 @@ void offscreen_context_init(OffscreenContext &ctx, int width, int height)
   ctx.fbo = NULL;
 }
 
-string get_unix_info()
+string get_os_info()
 {
   struct utsname u;
   stringstream out;
@@ -99,10 +99,9 @@ string offscreen_context_getinfo(OffscreenContext *ctx)
   glXQueryVersion(ctx->xdisplay, &major, &minor);
 
   stringstream out;
-  out << "GLX version: " << major << "." << minor << "\n";
-  out << glew_dump(false);
-
-  out << get_unix_info();
+  out << "GL context creator: GLX\n"
+      << "GLX version: " << major << "." << minor << "\n"
+      << get_os_info();
 
   return out.str();
 }

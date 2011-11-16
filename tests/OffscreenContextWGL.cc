@@ -48,7 +48,7 @@ void offscreen_context_init(OffscreenContext &ctx, int width, int height)
   ctx.fbo = NULL;
 }
 
-string get_windows_info()
+string get_os_info()
 {
   OSVERSIONINFO osvi;
 
@@ -81,8 +81,8 @@ string get_windows_info()
 string offscreen_context_getinfo(OffscreenContext *ctx)
 {
   stringstream out;
-  out << glew_dump(false);
-  out << get_windows_info();
+  out << "GL context creator: WGL\n"
+      << get_windows_info();
   return out.str();
 }
 

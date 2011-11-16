@@ -76,8 +76,8 @@ AbstractNode *find_root_tag(AbstractNode *n)
 
 string info_dump(OffscreenView *glview)
 {
-#define STRINGIFY(x) #x
-#define TOSTRING(x) STRINGIFY(x)
+	assert(glview);
+
 #ifdef __GNUG__
 #define compiler_info "GCC " << __VERSION__
 #elif defined(_MSC_VER)
@@ -85,18 +85,26 @@ string info_dump(OffscreenView *glview)
 #else
 #define compiler_info "unknown compiler"
 #endif
-	assert(glview);
+
 	std::stringstream out;
 	out << "OpenSCAD info dump:"
-	  << "\nOpenSCAD Year/Month/Day: " << int(OPENSCAD_YEAR) << "."
-	  << int(OPENSCAD_MONTH) << "." 
+	    << "\nOpenSCAD Year/Month/Day: " << int(OPENSCAD_YEAR) << "."
+	    << int(OPENSCAD_MONTH) << "."
 #ifdef OPENSCAD_DAY
-	  << int(OPENSCAD_DAY)
+	    << int(OPENSCAD_DAY);
 #endif
-	  << "\nOpenSCAD Version: " << TOSTRING(OPENSCAD_VERSION)
-          << "\nCompiled with: " << compiler_info
-	  << "\nGL Context info: \n" << glview->getInfo()
-	  << "\n";
+#define STRINGIFY(x) #x
+#define TOSTRING(x) STRINGIFY(x)
+	    << "\nOpenSCAD Version: " << TOSTRING(OPENSCAD_VERSION)
+            << "\nCompiled by: " << compiler_info
+	    << "\nBoost version: " << BOOST_LIB_VERSION
+	    << "\nEigen version: " << EIGEN_WORLD_VERSION << "."
+	    << EIGEN_MAJOR_VERSION << "." << EIGEN_MINOR_VERSION
+	    // << "\nCGAL version: " << CGAL_VERSION ???
+	    // << "\nOpenCSG" << ???
+	    << "\n" << glview->getInfo()
+	    << "\n";
+
 	return out.str();
 }
 

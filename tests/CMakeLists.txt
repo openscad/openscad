@@ -265,7 +265,7 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 	set(OFFSCREEN_CTX_SOURCE "OffscreenContext.mm" CACHE TYPE STRING)
 elseif(UNIX)
 	message(STATUS "Offscreen OpenGL Context - using Unix GLX")
-	set(OFFSCREEN_CTX_SOURCE "OffscreenContext.cc" CACHE TYPE STRING)
+	set(OFFSCREEN_CTX_SOURCE "OffscreenContextGLX.cc" CACHE TYPE STRING)
 elseif(WIN32)
 	message(STATUS "Offscreen OpenGL Context - using Microsoft WGL")
 	set(OFFSCREEN_CTX_SOURCE "OffscreenContextWGL.cc" CACHE TYPE STRING)
@@ -367,16 +367,20 @@ enable_testing()
 # set up custom pretty printing of results
 
 set(INFOCMD "execute_process(COMMAND ${CMAKE_CURRENT_BINARY_DIR}/opencsgtest --info OUTPUT_FILE sysinfo.txt)")
-set(PRETTYCMD "\"${PYTHON_EXECUTABLE} ctest_pretty_print.py\"")
+set(PRETTYCMD "\"${PYTHON_EXECUTABLE} test_pretty_print.py\"")
 set(CTEST_CUSTOM_FILE ${CMAKE_CURRENT_BINARY_DIR}/CTestCustom.cmake)
 set(CTEST_CUSTOM_TXT "\n
   message(\"running 'opencsgtest --info' to generate sysinfo.txt\")\n
   ${INFOCMD}\n
-  set(CTEST_CUSTOM_POST_TEST ${PRETTYCMD})\n
+  # set(CTEST_CUSTOM_POST_TEST ${PRETTYCMD})\n # doesn't work. log is written
+  # after all tests run.
 ")
 file(WRITE ${CTEST_CUSTOM_FILE} ${CTEST_CUSTOM_TXT})
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/ctest_pretty_print.py 
-                 ${CMAKE_CURRENT_BINARY_DIR}/ctest_pretty_print.py COPYONLY)
+
+foreach(FILE test_pretty_print.py)
+  configure_file(${CMAKE_CURRENT_SOURCE_DIR}/${FILE}
+                 ${CMAKE_CURRENT_BINARY_DIR}/${FILE} COPYONLY)
+endforeach()
 
 # Find all scad files
 file(GLOB MINIMAL_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/minimal/*.scad)

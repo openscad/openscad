@@ -18,10 +18,11 @@ struct OffscreenContext
 
 string offscreen_context_getinfo(OffscreenContext *ctx)
 {
-  sstream result;
-  result << "OS info: Mac OSX\n";
-  result << "Machine: Apple(TM) Mac(TM)\n";
-  return result.str();
+  stringstream out;
+  out << "GL context creator: Cocoa / CGL\n"
+      << "OS info: Mac OSX\n"
+      << "Machine: Apple(TM) Mac(TM)\n";
+  return out.str();
 }
 
 OffscreenContext *create_offscreen_context(int w, int h)
