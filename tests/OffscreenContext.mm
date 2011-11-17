@@ -20,6 +20,7 @@ string offscreen_context_getinfo(OffscreenContext *ctx)
 {
   stringstream out;
   out << "GL context creator: Cocoa / CGL\n"
+      << "PNG generator: Core Foundation\n"
       << "OS info: Mac OSX\n"
       << "Machine: Apple(TM) Mac(TM)\n";
   return out.str();

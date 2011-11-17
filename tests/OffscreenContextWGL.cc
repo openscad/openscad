@@ -82,6 +82,7 @@ string offscreen_context_getinfo(OffscreenContext *ctx)
 {
   stringstream out;
   out << "GL context creator: WGL\n"
+  out << "PNG generator: lodepng\n"
       << get_windows_info();
   return out.str();
 }

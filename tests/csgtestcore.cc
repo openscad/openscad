@@ -87,16 +87,11 @@ string info_dump(OffscreenView *glview)
 #endif
 
 	std::stringstream out;
-	out << "OpenSCAD info dump:"
-	    << "\nOpenSCAD Year/Month/Day: " << int(OPENSCAD_YEAR) << "."
-	    << int(OPENSCAD_MONTH) << "."
-#ifdef OPENSCAD_DAY
-	    << int(OPENSCAD_DAY);
-#endif
 #define STRINGIFY(x) #x
 #define TOSTRING(x) STRINGIFY(x)
-	    << "\nOpenSCAD Version: " << TOSTRING(OPENSCAD_VERSION)
+	out << "\nOpenSCAD Version: " << TOSTRING(OPENSCAD_VERSION)
             << "\nCompiled by: " << compiler_info
+	    << "\nCompile date: " << __DATE__
 	    << "\nBoost version: " << BOOST_LIB_VERSION
 	    << "\nEigen version: " << EIGEN_WORLD_VERSION << "."
 	    << EIGEN_MAJOR_VERSION << "." << EIGEN_MINOR_VERSION

@@ -100,6 +100,7 @@ string offscreen_context_getinfo(OffscreenContext *ctx)
 
   stringstream out;
   out << "GL context creator: GLX\n"
+      << "PNG generator: lodepng\n"
       << "GLX version: " << major << "." << minor << "\n"
       << get_os_info();
 
@@ -139,7 +140,8 @@ bool create_glx_dummy_window(OffscreenContext &ctx)
     GLX_RED_SIZE, 1,
     GLX_GREEN_SIZE, 1,
     GLX_BLUE_SIZE, 1,
-    GLX_DEPTH_SIZE, 1,
+    GLX_ALPHA_SIZE, 1, // extra stuff for fbo-disbaled on-screen testing.
+    GLX_DEPTH_SIZE, 24,
     None
   };
 
@@ -177,7 +179,6 @@ bool create_glx_dummy_window(OffscreenContext &ctx)
                                visinfo->visual, mask, &xwin_attr );
 
   // Window xWin = XCreateSimpleWindow( dpy, DefaultRootWindow(dpy), 0,0,42,42, 0,0,0 );
-
 
   XSync( dpy, false );
   if ( XCreateWindow_failed ) {
