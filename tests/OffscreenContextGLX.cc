@@ -189,7 +189,7 @@ bool create_glx_dummy_window(OffscreenContext &ctx)
   XSetErrorHandler( original_xlib_handler );
 
   // Most programs would call XMapWindow here. But we don't, to keep the window hidden
-  XMapWindow( dpy, xWin );
+  // XMapWindow( dpy, xWin );
 
   GLXContext context = glXCreateNewContext( dpy, fbconfigs[0], GLX_RGBA_TYPE, NULL, True );
   if ( context == NULL ) {
