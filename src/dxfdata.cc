@@ -30,12 +30,13 @@
 #include "handle_dep.h"
 #include "openscad.h" // get_fragments_from_r()
 
-#include <QFile>
-#include <QTextStream>
+#include <fstream>
 #include "mathc99.h"
 #include <assert.h>
 #include <boost/unordered_map.hpp>
 #include <boost/foreach.hpp>
+#include <boost/lexical_cast.hpp>
+#include <boost/algorithm/string.hpp>
 #include <algorithm>
 
 struct Line {
@@ -57,12 +58,11 @@ DxfData::DxfData(double fn, double fs, double fa,
 {
 	handle_dep(filename); // Register ourselves as a dependency
 
-	QFile f(QString::fromStdString(filename));
-	if (!f.open(QIODevice::ReadOnly | QIODevice::Text)) {
+	std::ifstream stream(filename.c_str());
+	if (!stream.good()) {
 		PRINTF("WARNING: Can't open DXF file `%s'.", filename.c_str());
 		return;
 	}
-	QTextStream stream(&f);
 
 	Grid2d< std::vector<int> > grid(GRID_COARSE);
 	std::vector<Line> lines;                       // Global lines
@@ -110,35 +110,41 @@ DxfData::DxfData(double fn, double fs, double fa,
 	//
 	// Parse DXF file. Will populate this->points, this->dims, lines and blockdata
 	//
-	while (!stream.atEnd())
+	while (!stream.eof())
 	{
-		QString id_str = stream.readLine();
-		QString data = stream.readLine();
+		std::string id_str, data;
+		std::getline(stream, id_str);
+		boost::trim(id_str);
+		std::getline(stream, data);
+		boost::trim(data);
 
-		bool status;
-		int id = id_str.toInt(&status);
-
-		if (!status) {
-			PRINTF("WARNING: Illegal ID `%s' in `%s'.", id_str.toUtf8().data(), filename.c_str());
+		int id;
+    try {
+		  id = boost::lexical_cast<int>(id_str);
+    }
+    catch (boost::bad_lexical_cast &blc) {
+			if (!stream.eof()) {
+				PRINTF("WARNING: Illegal ID '%s' in `%s'", id_str.c_str(), filename.c_str());
+			}
 			break;
-		}
-
+  	}
+    try {
 		if (id >= 10 && id <= 16) {
 			if (in_blocks_section)
-				coords[id-10][0] = data.toDouble();
+				coords[id-10][0] = boost::lexical_cast<double>(data);
 			else if (id == 11 || id == 12 || id == 16)
-				coords[id-10][0] = data.toDouble() * scale;
+				coords[id-10][0] = boost::lexical_cast<double>(data) * scale;
 			else
-				coords[id-10][0] = (data.toDouble() - xorigin) * scale;
+				coords[id-10][0] = (boost::lexical_cast<double>(data) - xorigin) * scale;
 		}
 
 		if (id >= 20 && id <= 26) {
 			if (in_blocks_section)
-				coords[id-20][1] = data.toDouble();
+				coords[id-20][1] = boost::lexical_cast<double>(data);
 			else if (id == 21 || id == 22 || id == 26)
-				coords[id-20][1] = data.toDouble() * scale;
+				coords[id-20][1] = boost::lexical_cast<double>(data) * scale;
 			else
-				coords[id-20][1] = (data.toDouble() - yorigin) * scale;
+				coords[id-20][1] = (boost::lexical_cast<double>(data) - yorigin) * scale;
 		}
 
 		switch (id)
@@ -274,7 +280,7 @@ DxfData::DxfData(double fn, double fs, double fa,
 					(layername.empty() || layername == layer))) {
 				unsupported_entities_list[mode]++;
 			}
-			mode = data.toStdString();
+			mode = data;
 			layer.erase();
 			name.erase();
 			iddata.erase();
@@ -291,70 +297,74 @@ DxfData::DxfData(double fn, double fs, double fa,
 			}
 			break;
 		case 1:
-			name = data.toStdString();
+			name = data;
 			break;
 		case 2:
-			iddata = data.toStdString();
+			iddata = data;
 			break;
 		case 8:
-			layer = data.toStdString();
+			layer = data;
 			break;
 		case 10:
 			if (in_blocks_section)
-				xverts.push_back((data.toDouble()));
+				xverts.push_back((boost::lexical_cast<double>(data)));
 			else
-				xverts.push_back((data.toDouble() - xorigin) * scale);
+				xverts.push_back((boost::lexical_cast<double>(data) - xorigin) * scale);
 			break;
 		case 11:
 			if (in_blocks_section)
-				xverts.push_back((data.toDouble()));
+				xverts.push_back((boost::lexical_cast<double>(data)));
 			else
-				xverts.push_back((data.toDouble() - xorigin) * scale);
+				xverts.push_back((boost::lexical_cast<double>(data) - xorigin) * scale);
 			break;
 		case 20:
 			if (in_blocks_section)
-				yverts.push_back((data.toDouble()));
+				yverts.push_back((boost::lexical_cast<double>(data)));
 			else
-				yverts.push_back((data.toDouble() - yorigin) * scale);
+				yverts.push_back((boost::lexical_cast<double>(data) - yorigin) * scale);
 			break;
 		case 21:
 			if (in_blocks_section)
-				yverts.push_back((data.toDouble()));
+				yverts.push_back((boost::lexical_cast<double>(data)));
 			else
-				yverts.push_back((data.toDouble() - yorigin) * scale);
+				yverts.push_back((boost::lexical_cast<double>(data) - yorigin) * scale);
 			break;
 		case 40:
 			// CIRCLE, ARC: radius
 			// ELLIPSE: minor to major ratio
 			// DIMENSION (radial, diameter): Leader length
-			radius = data.toDouble();
+			radius = boost::lexical_cast<double>(data);
 			if (!in_blocks_section) radius *= scale;
 			break;
 		case 41:
 			// ELLIPSE: start_angle
 			// INSERT: X scale
-			ellipse_start_angle = data.toDouble();
+			ellipse_start_angle = boost::lexical_cast<double>(data);
 			break;
 		case 50:
 			// ARC: start_angle
 			// INSERT: rot angle
       // DIMENSION: linear and rotated: angle
-			arc_start_angle = data.toDouble();
+			arc_start_angle = boost::lexical_cast<double>(data);
 			break;
 		case 42:
 			// ELLIPSE: stop_angle
 			// INSERT: Y scale
-			ellipse_stop_angle = data.toDouble();
+			ellipse_stop_angle = boost::lexical_cast<double>(data);
 			break;
 		case 51: // ARC
-			arc_stop_angle = data.toDouble();
+			arc_stop_angle = boost::lexical_cast<double>(data);
 			break;
 		case 70:
 			// LWPOLYLINE: polyline flag
 			// DIMENSION: dimension type
-			dimtype = data.toInt();
+			dimtype = boost::lexical_cast<int>(data);
 			break;
 		}
+    }
+    catch (boost::bad_lexical_cast &blc) {
+	  	PRINTF("WARNING: Illegal value %s in `%s'", data.c_str(), filename.c_str());
+  	}
 	}
 
 	BOOST_FOREACH(const EntityList::value_type &i, unsupported_entities_list) {
