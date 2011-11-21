@@ -203,7 +203,6 @@ set(CORE_SOURCES
   tests-common.cc 
   ../src/mathc99.cc
   ../src/handle_dep.cc 
-  ../src/qhash.cc
   ../src/value.cc 
   ../src/expr.cc 
   ../src/func.cc 
@@ -244,7 +243,6 @@ set(CGAL_SOURCES
   ../src/CGALEvaluator.cc
   ../src/CGALCache.cc
   ../src/PolySetCGALEvaluator.cc
-  ../src/qhash.cc
   ../src/CGAL_Nef_polyhedron_DxfData.cc
   ../src/cgaladv_minkowski2.cc
   ../src/cgaladv_convexhull2.cc)
@@ -309,7 +307,7 @@ target_link_libraries(dumptest tests-common tests-nocgal ${QT_LIBRARIES} ${OPENG
 #
 # csgtexttest
 #
-add_executable(csgtexttest csgtexttest.cc CSGTextRenderer.cc CSGTextCache.cc ../src/qhash.cc)
+add_executable(csgtexttest csgtexttest.cc CSGTextRenderer.cc CSGTextCache.cc)
 target_link_libraries(csgtexttest tests-common tests-nocgal ${QT_LIBRARIES} ${OPENGL_LIBRARY} ${Boost_LIBRARIES})
 
 #
@@ -416,7 +414,8 @@ list(APPEND ECHO_FILES ${FUNCTION_FILES}
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/parser-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/builtin-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/dim-all.scad
-            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/string-test.scad)
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/string-test.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/string-indexing.scad)
 
 # Add echotest tests to CTest
 add_cmdline_test(echotest txt ${ECHO_FILES})

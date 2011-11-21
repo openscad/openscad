@@ -24,7 +24,6 @@
  *
  */
 
-#include "myqhash.h"
 #include "openscad.h"
 #include "MainWindow.h"
 #include "node.h"

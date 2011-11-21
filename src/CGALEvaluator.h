@@ -1,7 +1,6 @@
 #ifndef CGALEVALUATOR_H_
 #define CGALEVALUATOR_H_
 
-#include "myqhash.h"
 #include "visitor.h"
 #include "CGAL_Nef_polyhedron.h"
 #include "PolySetCGALEvaluator.h"

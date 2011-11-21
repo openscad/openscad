@@ -1,9 +1,9 @@
 #ifndef CSGTEXTCACHE_H_
 #define CSGTEXTCACHE_H_
 
-#include "myqhash.h"
 #include "Tree.h"
 #include <string>
+#include <boost/unordered_map.hpp>
 
 using std::string;
 
@@ -20,7 +20,7 @@ public:
 	void clear();
 
 private:
-	QHash<string, string> cache;
+	boost::unordered_map<string, string> cache;
 	const Tree &tree;
 };
 

@@ -1,8 +1,7 @@
 #ifndef CGALCACHE_H_
 #define CGALCACHE_H_
 
-#include "myqhash.h"
-#include <QCache>
+#include "cache.h"
 
 /*!
 */
@@ -22,7 +21,7 @@ public:
 private:
 	static CGALCache *inst;
 
-	QCache<std::string, CGAL_Nef_polyhedron> cache;
+	Cache<std::string, CGAL_Nef_polyhedron> cache;
 };
 
 #endif

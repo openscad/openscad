@@ -130,6 +130,7 @@ o Primitives
   - (TTF) Text
   - Image-based height field like http://www.thingiverse.com/thing:2078
   - mesh (coordinates and indices)
+  - polygon(): Allow omitting the paths parameter to create a single polygon from a list of vertices.
 o 2D Subsystem
   - Performance: Is it necessary to union children before extrusion
     when compiling? Can this be postponed to CGAL evaluation time?

@@ -24,7 +24,6 @@
  *
  */
 
-#include "myqhash.h"
 #include "tests-common.h"
 #include "PolySetEvaluator.h"
 #include "CSGTermEvaluator.h"
