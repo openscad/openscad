@@ -205,7 +205,6 @@ HEADERS += src/renderer.h \
            src/PolySetCache.h \
            src/PolySetEvaluator.h \
            src/CSGTermEvaluator.h \
-           src/myqhash.h \
            src/Tree.h \
            src/mathc99.h \
            src/memory.h \
@@ -253,7 +252,6 @@ SOURCES += src/openscad.cc \
            src/traverser.cc \
            src/nodedumper.cc \
            src/CSGTermEvaluator.cc \
-           src/qhash.cc \
            src/Tree.cc \
 	   src/mathc99.cc \
            src/PolySetCache.cc \
