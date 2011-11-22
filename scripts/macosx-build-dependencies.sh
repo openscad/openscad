@@ -140,11 +140,12 @@ build_boost()
   tar xjf boost_$bversion.tar.bz2
   cd boost_$bversion
   # We only need the thread and program_options libraries
-  ./bootstrap.sh --prefix=$DEPLOYDIR --with-libraries=thread,program_options
+  ./bootstrap.sh --prefix=$DEPLOYDIR --with-libraries=thread,program_options,filesystem
   ./bjam cflags="-mmacosx-version-min=10.5 -arch i386 -arch x86_64" linkflags="-mmacosx-version-min=10.5 -arch i386 -arch x86_64"
   ./bjam install
   install_name_tool -id $DEPLOYDIR/lib/libboost_thread.dylib $DEPLOYDIR/lib/libboost_thread.dylib 
   install_name_tool -id $DEPLOYDIR/lib/libboost_program_options.dylib $DEPLOYDIR/lib/libboost_program_options.dylib 
+  install_name_tool -id $DEPLOYDIR/lib/libboost_filesystem.dylib $DEPLOYDIR/lib/libboost_filesystem.dylib 
 }
 
 build_cgal()
@@ -197,7 +198,7 @@ echo "Using basedir:" $BASEDIR
 mkdir -p $SRCDIR $DEPLOYDIR
 build_gmp 5.0.2
 build_mpfr 3.1.0
-build_boost 1.47.0
+build_boost 1.48.0
 # NB! For CGAL, also update the actual download URL in the function
 build_cgal 3.9
 build_glew 1.7.0
