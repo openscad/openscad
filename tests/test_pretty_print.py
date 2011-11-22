@@ -9,6 +9,11 @@
 
 # todo
 # ban opencsg<2.0 from opencsgtest
+# copy all images, sysinfo.txt to bundle for html/upload (images 
+# can be altered  by subsequent runs)
+# figure out hwo to make the thing run after the test
+# figure out how CTEST treats the logfiles.
+# why is hash differing
 
 import string,sys,re,os,hashlib,subprocess
 

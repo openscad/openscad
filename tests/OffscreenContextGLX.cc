@@ -137,11 +137,12 @@ bool create_glx_dummy_window(OffscreenContext &ctx)
   int attributes[] = {
     GLX_DRAWABLE_TYPE, GLX_WINDOW_BIT,
     GLX_RENDER_TYPE,   GLX_RGBA_BIT,
-    GLX_RED_SIZE, 1,
-    GLX_GREEN_SIZE, 1,
-    GLX_BLUE_SIZE, 1,
-    GLX_ALPHA_SIZE, 1, // extra stuff for fbo-disbaled on-screen testing.
+    GLX_RED_SIZE, 8,
+    GLX_GREEN_SIZE, 8,
+    GLX_BLUE_SIZE, 8,
+    GLX_ALPHA_SIZE, 8, // extra stuff for fbo-disbaled on-screen testing.
     GLX_DEPTH_SIZE, 24,
+    GLX_STENCIL_SIZE, 8,
     None
   };
 
@@ -271,11 +272,11 @@ OffscreenContext *create_offscreen_context(int w, int h)
   }
   // cerr << glew_dump(0);
 
-/*  ctx->fbo = fbo_new();
+  ctx->fbo = fbo_new();
   if (!fbo_init(ctx->fbo, w, h)) {
     cerr << "GL Framebuffer Object init failed; dumping GLEW info" << endl;
     return NULL;
-  }*/
+  }
 
   return ctx;
 }
