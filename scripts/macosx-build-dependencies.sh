@@ -198,7 +198,7 @@ echo "Using basedir:" $BASEDIR
 mkdir -p $SRCDIR $DEPLOYDIR
 build_gmp 5.0.2
 build_mpfr 3.1.0
-build_boost 1.48.0
+build_boost 1.47.0
 # NB! For CGAL, also update the actual download URL in the function
 build_cgal 3.9
 build_glew 1.7.0
