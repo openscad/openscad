@@ -14,6 +14,10 @@
 # figure out hwo to make the thing run after the test
 # figure out how CTEST treats the logfiles.
 # why is hash differing
+# instead of having special '-info' prerun, put it as yet-another-test
+#  and parse the log
+# provide option to replace 'expected' images on wiki
+#  (yes sometimes you do need to change/update them)
 
 import string,sys,re,os,hashlib,subprocess
 
@@ -83,7 +87,7 @@ def read_sysinfo(filename):
 	
 	data += read_gitinfo()
 
-	data += 'Image comparison: PerceptualDiff'
+	data += 'Image comparison: PerceptualDiff by H. Yee'
 	return data, sysid
 
 class Test:
@@ -293,7 +297,8 @@ def upload(wikiurl,api_php_path,wikidata,manifest,wiki_rootpath,sysid,botname,bo
 					skip=True
 			if not skip:
 				print wikifile,'...'
-				site.upload(localf,wikifile,wiki_rootpath + ' test')
+				site.upload(localf,wikifile,wiki_rootpath + ' test', ignore=True)
+
 wikisite = 'cakebaby.referata.com'
 wiki_rootpath = 'OpenSCAD'
 builddir = os.getcwd()
@@ -305,6 +310,7 @@ def main():
 	startdate, tests, enddate = parselog(testlog)
 	tests = sorted(tests, key = lambda t:t.passed)
 	sysinfo, sysid = read_sysinfo('sysinfo.txt')
+	if '--hack' in sys.argv: sysid+='_hack'
 	manifest, wikidata = towiki(wiki_rootpath, startdate, tests, enddate, sysinfo, sysid, testlog)
 	trysave(wikidata, os.path.join(logpath,sysid+'.wiki'))
 	htmldata = wikitohtml(wiki_rootpath, sysid, wikidata, manifest)

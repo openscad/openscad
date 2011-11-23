@@ -135,14 +135,15 @@ bool create_glx_dummy_window(OffscreenContext &ctx)
   */
 
   int attributes[] = {
-    GLX_DRAWABLE_TYPE, GLX_WINDOW_BIT,
+    GLX_DRAWABLE_TYPE, GLX_WINDOW_BIT | GLX_PIXMAP_BIT | GLX_PBUFFER_BIT, //support all 3, for OpenCSG
     GLX_RENDER_TYPE,   GLX_RGBA_BIT,
     GLX_RED_SIZE, 8,
     GLX_GREEN_SIZE, 8,
     GLX_BLUE_SIZE, 8,
-    GLX_ALPHA_SIZE, 8, // extra stuff for fbo-disbaled on-screen testing.
-    GLX_DEPTH_SIZE, 24,
+    GLX_ALPHA_SIZE, 8,
+    GLX_DEPTH_SIZE, 24, // depth-stencil for OpenCSG
     GLX_STENCIL_SIZE, 8,
+    GLX_DOUBLEBUFFER, True,
     None
   };
 
@@ -169,6 +170,7 @@ bool create_glx_dummy_window(OffscreenContext &ctx)
   XSetWindowAttributes xwin_attr;
   int width = ctx.width;
   int height = ctx.height;
+  xwin_attr.background_pixmap = None;
   xwin_attr.background_pixel = 0;
   xwin_attr.border_pixel = 0;
   xwin_attr.colormap = XCreateColormap( dpy, root, visinfo->visual, AllocNone);
@@ -270,7 +272,6 @@ OffscreenContext *create_offscreen_context(int w, int h)
     cerr << "Unable to init GLEW: " << glewGetErrorString(err) << endl;
     return NULL;
   }
-  // cerr << glew_dump(0);
 
   ctx->fbo = fbo_new();
   if (!fbo_init(ctx->fbo, w, h)) {
@@ -299,6 +300,7 @@ bool teardown_offscreen_context(OffscreenContext *ctx)
 */
 bool save_framebuffer(OffscreenContext *ctx, const char *filename)
 {
+  glXSwapBuffers(ctx->xdisplay, ctx->xwindow);
   if (!ctx || !filename) return false;
   int samplesPerPixel = 4; // R, G, B and A
   GLubyte pixels[ctx->width * ctx->height * samplesPerPixel];
