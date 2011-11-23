@@ -1,27 +1,17 @@
-// 3d not currently implemented
-module convex3dSimple() {
-    hull() {
-        translate([15,10]) cylinder(r=10);
-        cylinder(r=10);
-    }
-}
-
-// 3d not currently implemented
-module convex3dHole() {
-    hull() {
-        translate([15,10,0]) cylinder(10);
-        difference() {
-            cylinder(10);
-            cylinder(5);
-        }
-    }
-}
-
-translate([0,40,0]) convex3dHole();
-translate([40,40,0]) convex3dSimple();
-
 // Empty
 hull();
 // No children
 hull() { }
 
+hull() {
+  cylinder(r=10, h=1);
+  translate([0,0,10]) cube([5,5,5], center=true);
+}
+
+translate([25,0,0]) hull() {
+  translate([0,0,10]) cylinder(r=3);
+  difference() {
+    cylinder(r=10, h=4, center=true);
+    cylinder(r=5, h=5, center=true);
+  }
+}
