@@ -39,6 +39,9 @@
 #include <boost/algorithm/string.hpp>
 #include <algorithm>
 
+#include <QDir>
+#include "value.h"
+
 struct Line {
 	int idx[2]; // indices into DxfData::points
 	bool disabled;
@@ -370,10 +373,10 @@ DxfData::DxfData(double fn, double fs, double fa,
 	BOOST_FOREACH(const EntityList::value_type &i, unsupported_entities_list) {
 		if (layername.empty()) {
 			PRINTF("WARNING: Unsupported DXF Entity `%s' (%x) in `%s'.",
-						 i.first.c_str(), i.second, filename.c_str());
+						 i.first.c_str(), i.second, QuotedString(QDir::current().relativeFilePath(QString::fromStdString(filename)).toStdString()).c_str());
 		} else {
 			PRINTF("WARNING: Unsupported DXF Entity `%s' (%x) in layer `%s' of `%s'.",
-						 i.first.c_str(), i.second, layername.c_str(), filename.c_str());
+						 i.first.c_str(), i.second, layername.c_str(), QuotedString(QDir::current().relativeFilePath(QString::fromStdString(filename)).toStdString()).c_str());
 		}
 	}
 
