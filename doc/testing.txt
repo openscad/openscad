@@ -25,11 +25,10 @@ cmake ..
 nmake -f Makefile
 nmake -f Makefile test
 
-Running on headless (no X) servers:
+Running on headless (no X) unix servers:
 
 Xvnc :5 -screen 0 800x600x24 &
 DISPLAY=:5 make test
-
 
 Adding  a new regression test:
 ------------------------------

@@ -35,6 +35,7 @@ def init_expected_filename(testname, cmd):
     global expecteddir, expectedfilename
     expecteddir = os.path.join(options.regressiondir, os.path.split(cmd)[1])
     expectedfilename = os.path.join(expecteddir, testname + "-expected." + options.suffix)
+    expectedfilename = os.path.normpath( expectedfilename )
 
 def verify_test(testname, cmd):
     global expectedfilename

@@ -196,11 +196,11 @@ FAILED_TESTLOGS
 	s = wiki_template
 	repeat1 = ezsearch('(<REPEAT1>.*?</REPEAT1>)',s)
 	repeat2 = ezsearch('(<REPEAT2>.*?</REPEAT2>)',s)
-	dic = { 'STARTDATE': startdate, 'ENDDATE': enddate, 'WIKI_ROOTPATH': wiki_rootpath,
-		'SYSINFO': sysinfo, 'SYSID':sysid, 'LASTTESTLOG':testlog, 
-		'NUMTESTS':len(tests), 'NUMPASSED':numpassed, 'PERCENTPASSED':percent }
+	dic = { 'STARTDATE': str(startdate), 'ENDDATE': str(enddate), 'WIKI_ROOTPATH': str(wiki_rootpath),
+		'SYSINFO': str(sysinfo), 'SYSID':str(sysid), 'LASTTESTLOG':str(testlog), 
+		'NUMTESTS':str(len(tests)), 'NUMPASSED':str(numpassed), 'PERCENTPASSED':str(percent) }
 	for key in dic.keys():
-		s = re.sub(key,str(dic[key]),s)
+		s = s.replace(key,dic[key])
 	testlogs = ''
 	for t in tests:
 		# if t.passed: noop
@@ -236,7 +236,7 @@ def wikitohtml(wiki_rootpath, sysid, wikidata, manifest):
 	x=re.sub("'''(.*?)'''","<b>\\1</b>",x)
 	filestrs=re.findall('\[\[File\:(.*?)\|.*?\]\]',x)
 	for f in filestrs:
-		newfile_html='<img src="'+revmanifest[f]+'" width=250/>'
+		newfile_html='<img src="'+os.path.abspath(revmanifest[f])+'" width=250/>'
 		x=re.sub('\[\[File\:'+f+'\|.*?\]\]',newfile_html,x)
 	dic = { '|}':'</table>', '|-':'<tr>', '||':'<td>', '|':'<td>', 
 		'!!':'<th>', '!':'<tr><th>', '\n\n':'\n<p>\n'} #order matters
@@ -262,7 +262,7 @@ def upload(wikiurl,api_php_path,wikidata,manifest,wiki_rootpath,sysid,botname,bo
 	try:
 		import mwclient
 	except:
-		print 'please download mwclient and unpack here:', os.cwd()
+		print 'please download mwclient and unpack here:', os.getcwd()
 	print 'open site',wikiurl
 	if not api_php_path == '':
 		site = mwclient.Site(wikiurl,api_php_path)
@@ -287,7 +287,7 @@ def upload(wikiurl,api_php_path,wikidata,manifest,wiki_rootpath,sysid,botname,bo
 	print 'upload images'
 	for localfile in sorted(manifest.keys()):
 		if localfile:
-			localf=open(localfile)
+			localf = open(localfile,'rb')
 			wikifile = manifest[localfile]
 			skip=False
 			if 'expected.png' in wikifile.lower():
