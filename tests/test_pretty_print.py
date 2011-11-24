@@ -295,7 +295,7 @@ def upload(wikiurl,api_php_path,wikidata,manifest,wiki_rootpath,sysid,botname,bo
 			if 'expected.png' in wikifile.lower():
 				image = site.Images[wikifile]
 				if image.exists and forceupload==False:
-					print 'skipping ',wikifile, '(image with same name and size ',localsize,'already on wiki)'
+					print 'skipping',wikifile, '(already on wiki)'
 					skip=True
 			if not skip:
 				print 'uploading',wikifile,'...'
@@ -312,13 +312,13 @@ def main():
 	startdate, tests, enddate = parselog(testlog)
 	tests = sorted(tests, key = lambda t:t.passed)
 	sysinfo, sysid = read_sysinfo('sysinfo.txt')
-	if '--forceupload' in sys.argv: forceupload=True
-	else: forceupload=False
-	manifest, wikidata = towiki(wiki_rootpath, startdate, tests, enddate, sysinfo, sysid, testlog, forceupload)
+	if '--forceupload' in sys.argv: forceupl=True
+	else: forceupl=False
+	manifest, wikidata = towiki(wiki_rootpath, startdate, tests, enddate, sysinfo, sysid, testlog)
 	trysave(wikidata, os.path.join(logpath,sysid+'.wiki'))
 	htmldata = wikitohtml(wiki_rootpath, sysid, wikidata, manifest)
 	trysave(htmldata, os.path.join(logpath,sysid+'.html'))
 	if '--upload' in sys.argv:
-		upload(wikisite,'',wikidata,manifest,wiki_rootpath,sysid,'openscadbot','tobdacsnepo',dryrun=False)
+		upload(wikisite,'',wikidata,manifest,wiki_rootpath,sysid,'openscadbot','tobdacsnepo',dryrun=False,forceupload=forceupl)
 main()
 
