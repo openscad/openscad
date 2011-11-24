@@ -1,7 +1,20 @@
-Only in OpenCSG-1.3.1-fbo-patch/: lib
-diff -ur OpenCSG-1.3.1/src/frameBufferObject.cpp OpenCSG-1.3.1-fbo-patch/src/frameBufferObject.cpp
+Only in OpenCSG-1.3.1-fbopatch/: lib
+diff -ur OpenCSG-1.3.1/Makefile OpenCSG-1.3.1-fbopatch/Makefile
+--- OpenCSG-1.3.1/Makefile	2010-06-09 14:39:58.000000000 -0500
++++ OpenCSG-1.3.1-fbopatch/Makefile	2011-11-23 21:44:21.285641445 -0600
+@@ -1,4 +1,4 @@
+-SUBDIRS = glew src example
++SUBDIRS = src
+ 
+ all:
+ 	for X in $(SUBDIRS); do make -C $$X ; done
+Only in OpenCSG-1.3.1-fbopatch/src: area.o
+Only in OpenCSG-1.3.1-fbopatch/src: batch.o
+Only in OpenCSG-1.3.1-fbopatch/src: channelManager.o
+Only in OpenCSG-1.3.1-fbopatch/src: context.o
+diff -ur OpenCSG-1.3.1/src/frameBufferObject.cpp OpenCSG-1.3.1-fbopatch/src/frameBufferObject.cpp
 --- OpenCSG-1.3.1/src/frameBufferObject.cpp	2010-06-09 14:39:58.000000000 -0500
-+++ OpenCSG-1.3.1-fbo-patch/src/frameBufferObject.cpp	2011-11-23 21:42:42.709641637 -0600
++++ OpenCSG-1.3.1-fbopatch/src/frameBufferObject.cpp	2011-11-23 22:19:33.545641258 -0600
 @@ -3,8 +3,8 @@
  //
  // This library is free software; you can redistribute it and/or 
@@ -30,10 +43,18 @@ diff -ur OpenCSG-1.3.1/src/frameBufferObject.cpp OpenCSG-1.3.1-fbo-patch/src/fra
              glBindTexture(GL_TEXTURE_2D, 0);
  
              textureTarget = GL_TEXTURE_2D;
-Only in OpenCSG-1.3.1-fbo-patch/src: frameBufferObject.cpp~
-diff -ur OpenCSG-1.3.1/src/frameBufferObjectExt.cpp OpenCSG-1.3.1-fbo-patch/src/frameBufferObjectExt.cpp
+@@ -135,7 +136,7 @@
+         // Unbinds frame buffer texture.
+         bool FrameBufferObject::EndCapture()
+         {
+-            glBindFramebuffer(GL_FRAMEBUFFER, 0);
++            glBindFramebuffer(GL_FRAMEBUFFER, oldFramebufferID);
+             return true;
+         }
+ 
+diff -ur OpenCSG-1.3.1/src/frameBufferObjectExt.cpp OpenCSG-1.3.1-fbopatch/src/frameBufferObjectExt.cpp
 --- OpenCSG-1.3.1/src/frameBufferObjectExt.cpp	2010-06-09 14:39:58.000000000 -0500
-+++ OpenCSG-1.3.1-fbo-patch/src/frameBufferObjectExt.cpp	2011-11-23 21:07:00.073641732 -0600
++++ OpenCSG-1.3.1-fbopatch/src/frameBufferObjectExt.cpp	2011-11-23 21:43:17.701638949 -0600
 @@ -3,8 +3,8 @@
  //
  // This library is free software; you can redistribute it and/or 
@@ -71,9 +92,9 @@ diff -ur OpenCSG-1.3.1/src/frameBufferObjectExt.cpp OpenCSG-1.3.1-fbo-patch/src/
              return true;
          }
  
-diff -ur OpenCSG-1.3.1/src/frameBufferObjectExt.h OpenCSG-1.3.1-fbo-patch/src/frameBufferObjectExt.h
+diff -ur OpenCSG-1.3.1/src/frameBufferObjectExt.h OpenCSG-1.3.1-fbopatch/src/frameBufferObjectExt.h
 --- OpenCSG-1.3.1/src/frameBufferObjectExt.h	2010-06-09 14:39:58.000000000 -0500
-+++ OpenCSG-1.3.1-fbo-patch/src/frameBufferObjectExt.h	2011-11-23 21:07:15.529642039 -0600
++++ OpenCSG-1.3.1-fbopatch/src/frameBufferObjectExt.h	2011-11-23 21:43:17.701638949 -0600
 @@ -3,8 +3,8 @@
  //
  // This library is free software; you can redistribute it and/or 
@@ -93,9 +114,10 @@ diff -ur OpenCSG-1.3.1/src/frameBufferObjectExt.h OpenCSG-1.3.1-fbo-patch/src/fr
  
              bool         initialized;
          };
-diff -ur OpenCSG-1.3.1/src/frameBufferObject.h OpenCSG-1.3.1-fbo-patch/src/frameBufferObject.h
+Only in OpenCSG-1.3.1-fbopatch/src: frameBufferObjectExt.o
+diff -ur OpenCSG-1.3.1/src/frameBufferObject.h OpenCSG-1.3.1-fbopatch/src/frameBufferObject.h
 --- OpenCSG-1.3.1/src/frameBufferObject.h	2010-06-09 14:39:58.000000000 -0500
-+++ OpenCSG-1.3.1-fbo-patch/src/frameBufferObject.h	2011-11-23 21:37:07.565641308 -0600
++++ OpenCSG-1.3.1-fbopatch/src/frameBufferObject.h	2011-11-23 21:43:17.701638949 -0600
 @@ -3,8 +3,8 @@
  //
  // This library is free software; you can redistribute it and/or 
@@ -115,3 +137,17 @@ diff -ur OpenCSG-1.3.1/src/frameBufferObject.h OpenCSG-1.3.1-fbo-patch/src/frame
  
              bool         initialized;
          };
+Only in OpenCSG-1.3.1-fbopatch/src: frameBufferObject.o
+Only in OpenCSG-1.3.1-fbopatch/src: occlusionQuery.o
+Only in OpenCSG-1.3.1-fbopatch/src: offscreenBuffer.o
+Only in OpenCSG-1.3.1-fbopatch/src: opencsgRender.o
+Only in OpenCSG-1.3.1-fbopatch/src: openglHelper.o
+Only in OpenCSG-1.3.1-fbopatch/src: pBufferTexture.o
+Only in OpenCSG-1.3.1-fbopatch/src: primitiveHelper.o
+Only in OpenCSG-1.3.1-fbopatch/src: primitive.o
+Only in OpenCSG-1.3.1-fbopatch/src: renderGoldfeather.o
+Only in OpenCSG-1.3.1-fbopatch/src: renderSCS.o
+Only in OpenCSG-1.3.1-fbopatch/src: RenderTexture.o
+Only in OpenCSG-1.3.1-fbopatch/src: scissorMemo.o
+Only in OpenCSG-1.3.1-fbopatch/src: settings.o
+Only in OpenCSG-1.3.1-fbopatch/src: stencilManager.o

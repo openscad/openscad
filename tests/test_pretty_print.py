@@ -74,18 +74,20 @@ def read_sysinfo(filename):
 	tmp = tmp.split('/')[0]
 	renderer = tmp
 
+	data += read_gitinfo()
+
+	data += 'Image comparison: PerceptualDiff by H. Yee'
+
+	data = data.strip()
+
 	hexhash = hashlib.md5()
 	hexhash.update(data)
 	hexhash = hexhash.hexdigest()[-4:].upper()
 	hash = ''
 	for c in hexhash: hash += chr(ord(c)+97-48) 
-
 	sysid = osplain + '_' + machine + '_' + renderer + '_' + hash
 	sysid = sysid.lower()
-	
-	data += read_gitinfo()
 
-	data += 'Image comparison: PerceptualDiff by H. Yee'
 	return data, sysid
 
 class Test:
@@ -234,7 +236,7 @@ def wikitohtml(wiki_rootpath, sysid, wikidata, manifest):
 	x=re.sub("'''(.*?)'''","<b>\\1</b>",x)
 	filestrs=re.findall('\[\[File\:(.*?)\|.*?\]\]',x)
 	for f in filestrs:
-		newfile_html='<img src="'+revmanifest[f]+'" width=250/>'
+		newfile_html='<img src="'+revmanifest[f]+'" width=250 />'
 		x=re.sub('\[\[File\:'+f+'\|.*?\]\]',newfile_html,x)
 	dic = { '|}':'</table>', '|-':'<tr>', '||':'<td>', '|':'<td>', 
 		'!!':'<th>', '!':'<tr><th>', '\n\n':'\n<p>\n'} #order matters
