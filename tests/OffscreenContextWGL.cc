@@ -82,8 +82,8 @@ string offscreen_context_getinfo(OffscreenContext *ctx)
 {
   stringstream out;
   out << "GL context creator: WGL\n"
-  out << "PNG generator: lodepng\n"
-      << get_windows_info();
+      << "PNG generator: lodepng\n"
+      << get_os_info();
   return out.str();
 }
 
@@ -130,11 +130,15 @@ bool create_wgl_dummy_context(OffscreenContext &ctx)
   ZeroMemory( &pixformat, sizeof( pixformat ) );
   pixformat.nSize = sizeof( pixformat );
   pixformat.nVersion = 1;
-  pixformat.dwFlags = PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL;
+  pixformat.dwFlags = PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER;
   pixformat.iPixelType = PFD_TYPE_RGBA;
-  pixformat.cColorBits = 24;
-  pixformat.cDepthBits = 16;
-  pixformat.iLayerType = PFD_MAIN_PLANE;
+  pixformat.cGreenBits = 8;
+  pixformat.cRedBits = 8;
+  pixformat.cBlueBits = 8;
+  pixformat.cAlphaBits = 8;
+  pixformat.cDepthBits = 24;
+  pixformat.cStencilBits = 8;
+
   chosenformat = ChoosePixelFormat( dev_context, &pixformat );
   if (chosenformat==0) {
     cerr << "MS GDI - ChoosePixelFormat failed\n";
@@ -215,6 +219,7 @@ bool teardown_offscreen_context(OffscreenContext *ctx)
 */
 bool save_framebuffer(OffscreenContext *ctx, const char *filename)
 {
+  wglSwapLayerBuffers( ctx->dev_context, WGL_SWAP_MAIN_PLANE );
   if (!ctx || !filename) return false;
   int samplesPerPixel = 4; // R, G, B and A
   vector<GLubyte> pixels(ctx->width * ctx->height * samplesPerPixel);
