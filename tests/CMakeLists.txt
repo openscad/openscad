@@ -190,6 +190,9 @@ if (NOT $ENV{MACOSX_DEPLOY_DIR} STREQUAL "")
   set(CMAKE_MODULE_PATH "${CGAL_DIR}")
 endif()
 find_package(CGAL REQUIRED)
+if("${CGAL_MAJOR_VERSION}.${CGAL_MINOR_VERSION}" VERSION_LESS 3.6)
+  message(FATAL_ERROR "CGAL >= 3.6 required")
+endif()
 include_directories(${CGAL_INCLUDE_DIRS})
 
 # Internal includes
