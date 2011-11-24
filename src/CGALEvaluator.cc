@@ -18,6 +18,7 @@
 #include "cgalutils.h"
 #include <CGAL/assertions_behaviour.h>
 #include <CGAL/exceptions.h>
+#include <CGAL/convex_hull_3.h>
 
 #include <string>
 #include <map>
@@ -29,6 +30,7 @@
 
 #include <boost/foreach.hpp>
 #include <boost/unordered_map.hpp>
+#include <boost/bind.hpp>
 
 CGAL_Nef_polyhedron CGALEvaluator::evaluateCGALMesh(const AbstractNode &node)
 {
@@ -114,24 +116,39 @@ CGAL_Nef_polyhedron CGALEvaluator::applyHull(const CgaladvNode &node)
 {
 	CGAL_Nef_polyhedron N;
 	std::list<CGAL_Nef_polyhedron2*> polys;
-	bool all2d = true;
+	std::list<CGAL_Polyhedron::Vertex::Point_3> points;
+	int dim = 0;
 	BOOST_FOREACH(const ChildItem &item, this->visitedchildren[node.index()]) {
 		const AbstractNode *chnode = item.first;
 		const CGAL_Nef_polyhedron &chN = item.second;
 		// FIXME: Don't use deep access to modinst members
 		if (chnode->modinst->tag_background) continue;
-		if (chN.dim == 2) {
+		if (dim == 0) {
+			dim = chN.dim;
+		}
+		else if (dim != chN.dim) {
+			PRINT("WARNING: hull() does not support mixing 2D and 3D objects.");
+			continue;
+		}
+		if (dim == 2) {
 			polys.push_back(chN.p2.get());
 		}
-		else if (chN.dim == 3) {
-			PRINT("WARNING: hull() is not implemented yet for 3D objects!");
-			all2d = false;
+		else if (dim == 3) {
+			CGAL_Polyhedron P;
+			chN.p3->convert_to_Polyhedron(P);
+			std::transform(P.vertices_begin(), P.vertices_end(), std::back_inserter(points), 
+										 boost::bind(static_cast<const CGAL_Polyhedron::Vertex::Point_3&(CGAL_Polyhedron::Vertex::*)() const>(&CGAL_Polyhedron::Vertex::point), _1));
 		}
 		chnode->progress_report();
 	}
 	
-	if (all2d) {
+	if (dim == 2) {
 		N = CGAL_Nef_polyhedron(convexhull2(polys));
+	}
+	else if (dim == 3) {
+		CGAL_Polyhedron P;
+		CGAL::convex_hull_3(points.begin(), points.end(), P);
+		N = CGAL_Nef_polyhedron(new CGAL_Nef_polyhedron3(P));
 	}
 	return N;
 }
