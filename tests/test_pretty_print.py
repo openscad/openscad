@@ -80,8 +80,10 @@ def read_sysinfo(filename):
 
 	data = data.strip()
 
+	# create 4 letter hash and stick on end of sysid
+	nondate_data = re.sub("\n.*?ompile date.*?\n","",data)
 	hexhash = hashlib.md5()
-	hexhash.update(data)
+	hexhash.update(nondate_data)
 	hexhash = hexhash.hexdigest()[-4:].upper()
 	hash = ''
 	for c in hexhash: hash += chr(ord(c)+97-48) 
