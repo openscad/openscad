@@ -363,7 +363,20 @@ std::string Value::toString() const
 			<< ']';
 		break;
 	case NUMBER:
+#ifdef OPENSCAD_TESTING
+		// Quick and dirty hack to work around floating point rounding differences
+		// across platforms for testing purposes.
+	{
+		std::stringstream tmp;
+		tmp.precision(16);
+		tmp << this->num;
+		std::string tmpstr = tmp.str();
+		if (tmpstr.size() > 16) tmpstr.erase(16);
+		stream << tmpstr;
+	}
+#else
 		stream << this->num;
+#endif
 		break;
 	case BOOL:
 		stream << (this->b ? "true" : "false");

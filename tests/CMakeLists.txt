@@ -199,6 +199,7 @@ include_directories(${CGAL_INCLUDE_DIRS})
 include_directories(../src)
 
 add_definitions(-DOPENSCAD_VERSION=test -DOPENSCAD_YEAR=2011 -DOPENSCAD_MONTH=10)
+add_definitions(-DOPENSCAD_TESTING)
 
 set(CORE_SOURCES
   tests-common.cc 
