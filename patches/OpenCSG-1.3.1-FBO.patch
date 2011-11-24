@@ -1,0 +1,117 @@
+Only in OpenCSG-1.3.1-fbo-patch/: lib
+diff -ur OpenCSG-1.3.1/src/frameBufferObject.cpp OpenCSG-1.3.1-fbo-patch/src/frameBufferObject.cpp
+--- OpenCSG-1.3.1/src/frameBufferObject.cpp	2010-06-09 14:39:58.000000000 -0500
++++ OpenCSG-1.3.1-fbo-patch/src/frameBufferObject.cpp	2011-11-23 21:42:42.709641637 -0600
+@@ -3,8 +3,8 @@
+ //
+ // This library is free software; you can redistribute it and/or 
+ // modify it under the terms of the GNU General Public License, 
+-// Version 2, as published by the Free Software Foundation.
+-// As a special exception, you have permission to link this library
++// Version 2, as published by the Free Software Foundation.
++// As a special exception, you have permission to link this library
+ // with the CGAL library and distribute executables.
+ //
+ // This library is distributed in the hope that it will be useful, 
+@@ -59,6 +59,7 @@
+             glGenRenderbuffers(1, &depthID); 
+             glGenTextures(1, &textureID);
+ 
++            glGetIntegerv(GL_FRAMEBUFFER_BINDING, &oldFramebufferID);
+             glBindFramebuffer(GL_FRAMEBUFFER, framebufferID);
+             glBindTexture(GL_TEXTURE_2D, textureID);
+             glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_INT, 0);
+@@ -78,7 +79,7 @@
+                 return false;
+             }
+ 
+-            glBindFramebuffer(GL_FRAMEBUFFER, 0);
++            glBindFramebuffer(GL_FRAMEBUFFER, oldFramebufferID);
+             glBindTexture(GL_TEXTURE_2D, 0);
+ 
+             textureTarget = GL_TEXTURE_2D;
+Only in OpenCSG-1.3.1-fbo-patch/src: frameBufferObject.cpp~
+diff -ur OpenCSG-1.3.1/src/frameBufferObjectExt.cpp OpenCSG-1.3.1-fbo-patch/src/frameBufferObjectExt.cpp
+--- OpenCSG-1.3.1/src/frameBufferObjectExt.cpp	2010-06-09 14:39:58.000000000 -0500
++++ OpenCSG-1.3.1-fbo-patch/src/frameBufferObjectExt.cpp	2011-11-23 21:07:00.073641732 -0600
+@@ -3,8 +3,8 @@
+ //
+ // This library is free software; you can redistribute it and/or 
+ // modify it under the terms of the GNU General Public License, 
+-// Version 2, as published by the Free Software Foundation.
+-// As a special exception, you have permission to link this library
++// Version 2, as published by the Free Software Foundation.
++// As a special exception, you have permission to link this library
+ // with the CGAL library and distribute executables.
+ //
+ // This library is distributed in the hope that it will be useful, 
+@@ -60,6 +60,7 @@
+             glGenRenderbuffersEXT(1, &depthID); 
+             glGenTextures(1, &textureID);
+ 
++            glGetIntegerv(GL_FRAMEBUFFER_BINDING_EXT, &oldFramebufferID);
+             glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, framebufferID);	
+             glBindTexture(GL_TEXTURE_2D, textureID);
+             glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_INT, 0);
+@@ -79,7 +80,7 @@
+                 return false;
+             }
+ 
+-            glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
++            glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, oldFramebufferID);
+             glBindTexture(GL_TEXTURE_2D, 0);
+ 
+             textureTarget = GL_TEXTURE_2D;
+@@ -136,7 +137,7 @@
+         // Unbinds frame buffer texture.
+         bool FrameBufferObjectExt::EndCapture()
+         {
+-            glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
++            glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, oldFramebufferID);
+             return true;
+         }
+ 
+diff -ur OpenCSG-1.3.1/src/frameBufferObjectExt.h OpenCSG-1.3.1-fbo-patch/src/frameBufferObjectExt.h
+--- OpenCSG-1.3.1/src/frameBufferObjectExt.h	2010-06-09 14:39:58.000000000 -0500
++++ OpenCSG-1.3.1-fbo-patch/src/frameBufferObjectExt.h	2011-11-23 21:07:15.529642039 -0600
+@@ -3,8 +3,8 @@
+ //
+ // This library is free software; you can redistribute it and/or 
+ // modify it under the terms of the GNU General Public License, 
+-// Version 2, as published by the Free Software Foundation.
+-// As a special exception, you have permission to link this library
++// Version 2, as published by the Free Software Foundation.
++// As a special exception, you have permission to link this library
+ // with the CGAL library and distribute executables.
+ //
+ // This library is distributed in the hope that it will be useful, 
+@@ -85,6 +85,7 @@
+             unsigned int depthID;
+ 
+             unsigned int framebufferID;
++            int oldFramebufferID;
+ 
+             bool         initialized;
+         };
+diff -ur OpenCSG-1.3.1/src/frameBufferObject.h OpenCSG-1.3.1-fbo-patch/src/frameBufferObject.h
+--- OpenCSG-1.3.1/src/frameBufferObject.h	2010-06-09 14:39:58.000000000 -0500
++++ OpenCSG-1.3.1-fbo-patch/src/frameBufferObject.h	2011-11-23 21:37:07.565641308 -0600
+@@ -3,8 +3,8 @@
+ //
+ // This library is free software; you can redistribute it and/or 
+ // modify it under the terms of the GNU General Public License, 
+-// Version 2, as published by the Free Software Foundation.
+-// As a special exception, you have permission to link this library
++// Version 2, as published by the Free Software Foundation. 
++// As a special exception, you have permission to link this library 
+ // with the CGAL library and distribute executables.
+ //
+ // This library is distributed in the hope that it will be useful, 
+@@ -85,6 +85,7 @@
+             unsigned int depthID;
+ 
+             unsigned int framebufferID;
++            int oldFramebufferID;
+ 
+             bool         initialized;
+         };

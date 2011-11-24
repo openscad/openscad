@@ -10,14 +10,12 @@
 # todo
 # ban opencsg<2.0 from opencsgtest
 # copy all images, sysinfo.txt to bundle for html/upload (images 
-# can be altered  by subsequent runs)
+#  can be altered  by subsequent runs)
 # figure out hwo to make the thing run after the test
 # figure out how CTEST treats the logfiles.
 # why is hash differing
 # instead of having special '-info' prerun, put it as yet-another-test
 #  and parse the log
-# provide option to replace 'expected' images on wiki
-#  (yes sometimes you do need to change/update them)
 
 import string,sys,re,os,hashlib,subprocess
 
@@ -196,11 +194,11 @@ FAILED_TESTLOGS
 	s = wiki_template
 	repeat1 = ezsearch('(<REPEAT1>.*?</REPEAT1>)',s)
 	repeat2 = ezsearch('(<REPEAT2>.*?</REPEAT2>)',s)
-	dic = { 'STARTDATE': str(startdate), 'ENDDATE': str(enddate), 'WIKI_ROOTPATH': str(wiki_rootpath),
-		'SYSINFO': str(sysinfo), 'SYSID':str(sysid), 'LASTTESTLOG':str(testlog), 
-		'NUMTESTS':str(len(tests)), 'NUMPASSED':str(numpassed), 'PERCENTPASSED':str(percent) }
+	dic = { 'STARTDATE': startdate, 'ENDDATE': enddate, 'WIKI_ROOTPATH': wiki_rootpath,
+		'SYSINFO': sysinfo, 'SYSID':sysid, 'LASTTESTLOG':testlog, 
+		'NUMTESTS':len(tests), 'NUMPASSED':numpassed, 'PERCENTPASSED':percent }
 	for key in dic.keys():
-		s = s.replace(key,dic[key])
+		s = re.sub(key,str(dic[key]),s)
 	testlogs = ''
 	for t in tests:
 		# if t.passed: noop
@@ -236,7 +234,7 @@ def wikitohtml(wiki_rootpath, sysid, wikidata, manifest):
 	x=re.sub("'''(.*?)'''","<b>\\1</b>",x)
 	filestrs=re.findall('\[\[File\:(.*?)\|.*?\]\]',x)
 	for f in filestrs:
-		newfile_html='<img src="'+os.path.abspath(revmanifest[f])+'" width=250/>'
+		newfile_html='<img src="'+revmanifest[f]+'" width=250/>'
 		x=re.sub('\[\[File\:'+f+'\|.*?\]\]',newfile_html,x)
 	dic = { '|}':'</table>', '|-':'<tr>', '||':'<td>', '|':'<td>', 
 		'!!':'<th>', '!':'<tr><th>', '\n\n':'\n<p>\n'} #order matters
@@ -255,14 +253,14 @@ def upload_dryrun(wikiurl,api_php_path,wikidata,manifest,wiki_rootpath,sysid,bot
 			wikifile = manifest[localfile]
 			print 'upload',localfile,wikifile
 
-def upload(wikiurl,api_php_path,wikidata,manifest,wiki_rootpath,sysid,botname,botpass,dryrun=True):
+def upload(wikiurl,api_php_path,wikidata,manifest,wiki_rootpath,sysid,botname,botpass,dryrun=True,forceupload=False):
 	if dryrun: 
 		upload_dryrun(wikiurl,api_php_path,wikidata,manifest,wiki_rootpath,sysid,botname,botpass)
 		return None
 	try:
 		import mwclient
 	except:
-		print 'please download mwclient and unpack here:', os.getcwd()
+		print 'please download mwclient and unpack here:', os.cwd()
 	print 'open site',wikiurl
 	if not api_php_path == '':
 		site = mwclient.Site(wikiurl,api_php_path)
@@ -287,16 +285,16 @@ def upload(wikiurl,api_php_path,wikidata,manifest,wiki_rootpath,sysid,botname,bo
 	print 'upload images'
 	for localfile in sorted(manifest.keys()):
 		if localfile:
-			localf = open(localfile,'rb')
+			localf = open(localfile)
 			wikifile = manifest[localfile]
 			skip=False
 			if 'expected.png' in wikifile.lower():
 				image = site.Images[wikifile]
-				if image.exists: 
-					print 'skipping ',wikifile, '(expected image, already on wiki)'
+				if image.exists and forceupload==False:
+					print 'skipping ',wikifile, '(image with same name and size ',localsize,'already on wiki)'
 					skip=True
 			if not skip:
-				print wikifile,'...'
+				print 'uploading',wikifile,'...'
 				site.upload(localf,wikifile,wiki_rootpath + ' test', ignore=True)
 
 wikisite = 'cakebaby.referata.com'
@@ -310,8 +308,9 @@ def main():
 	startdate, tests, enddate = parselog(testlog)
 	tests = sorted(tests, key = lambda t:t.passed)
 	sysinfo, sysid = read_sysinfo('sysinfo.txt')
-	if '--hack' in sys.argv: sysid+='_hack'
-	manifest, wikidata = towiki(wiki_rootpath, startdate, tests, enddate, sysinfo, sysid, testlog)
+	if '--forceupload' in sys.argv: forceupload=True
+	else: forceupload=False
+	manifest, wikidata = towiki(wiki_rootpath, startdate, tests, enddate, sysinfo, sysid, testlog, forceupload)
 	trysave(wikidata, os.path.join(logpath,sysid+'.wiki'))
 	htmldata = wikitohtml(wiki_rootpath, sysid, wikidata, manifest)
 	trysave(htmldata, os.path.join(logpath,sysid+'.html'))
