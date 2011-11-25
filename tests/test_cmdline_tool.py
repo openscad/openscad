@@ -74,7 +74,7 @@ def compare_png(resultfilename):
         print >> sys.stderr, "Error: OpenSCAD did not generate an image"
         return False
     print >> sys.stderr, 'Yee image compare: ', expectedfilename, ' ', resultfilename
-    if execute_and_redirect("./yee_compare", [expectedfilename, resultfilename, "-downsample", "2", "-threshold", "300"], sys.stderr) != 0:
+    if execute_and_redirect("./yee_compare", [expectedfilename, resultfilename, "-downsample", "1", "-threshold", "150"], sys.stderr) != 0:
         return False
     return True
 
