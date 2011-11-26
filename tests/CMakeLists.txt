@@ -349,16 +349,97 @@ set_target_properties(throwntogethertest PROPERTIES COMPILE_FLAGS "-DENABLE_OPEN
 target_link_libraries(throwntogethertest tests-offscreen tests-cgal ${CGAL_LIBRARY} ${CGAL_3RD_PARTY_LIBRARIES} ${QT_LIBRARIES} ${OPENCSG_LIBRARY} ${GLEW_LIBRARY} ${COCOA_LIBRARY} ${OPENGL_LIBRARY} ${Boost_LIBRARIES})
 
 #
+# Tags tests as disabled. This is more convenient than removing them manually
+# from the lists of filenames
+#
+macro(disable_tests)
+  foreach (TESTNAME ${ARGN})
+#    message("Disabling ${TESTNAME}")
+    list(APPEND DISABLED_TESTS ${TESTNAME})
+  endforeach()
+endmacro()
+
+#
+# Tags the given tests as belonging to the given CONFIG, i.e. will
+# only be executed when run using ctest -C <CONFIG>
+#
+# Usage example: set_test_config(Heavy dumptest_testname opencsgtest_testname2)
+#
+function(set_test_config CONFIG)
+  list(APPEND ${CONFIG}_TEST_CONFIG ${ARGN})
+  list(FIND TEST_CONFIGS ${CONFIG} FOUND)
+  if (FOUND EQUAL -1)
+    list(APPEND TEST_CONFIGS ${CONFIG})
+    # Export to parent scope
+    set(TEST_CONFIGS ${TEST_CONFIGS} PARENT_SCOPE)
+  endif()
+  # Export to parent scope
+  set(${CONFIG}_TEST_CONFIG ${${CONFIG}_TEST_CONFIG} PARENT_SCOPE)
+endfunction()
+
+#
+# Returns a list of test configs 
+#
+function(get_test_config TESTNAME CONFIGS)
+  foreach(CONFIG ${TEST_CONFIGS})
+    list(FIND ${CONFIG}_TEST_CONFIG ${TESTNAME} IDX)
+    if (${IDX} GREATER -1)
+      list(APPEND ${CONFIGS} ${CONFIG})
+    endif()
+  endforeach()
+  if (${CONFIGS})
+    # Convert to a format understood by add_test()
+    string(REPLACE ";" "|" ${${CONFIGS}} ${CONFIGS})
+    # Export to parent scope
+    set(${CONFIGS} ${${CONFIGS}} PARENT_SCOPE)
+  endif()
+endfunction()
+
+#
+# Returns into the FULLNAME variable the global full test name (identifier) 
+# given a test command and source filename
+#
+function(get_test_fullname TESTCMD FILENAME FULLNAME)
+  get_filename_component(TESTCMD_NAME ${TESTCMD} NAME_WE)
+  get_filename_component(TESTNAME ${FILENAME} NAME_WE)
+  string(REPLACE " " "_" TESTNAME ${TESTNAME}) # Test names cannot include spaces
+  set(${FULLNAME} ${TESTCMD_NAME}_${TESTNAME})
+  # Export to parent scope
+  set(${FULLNAME} ${${FULLNAME}} PARENT_SCOPE)
+endfunction()
+
+#
 # This functions adds cmd-line tests given files.
 # Files are sent as the parameters following TESTSUFFIX
+#
+# Usage add_cmdline_test(TESTCMD TESTSUFFIX <test files>)
 #
 find_package(PythonInterp)
 function(add_cmdline_test TESTCMD TESTSUFFIX)
   get_filename_component(TESTCMD_NAME ${TESTCMD} NAME_WE)
+
+  # Add tests from args
   foreach (SCADFILE ${ARGN})
     get_filename_component(TESTNAME ${SCADFILE} NAME_WE)
     string(REPLACE " " "_" TESTNAME ${TESTNAME}) # Test names cannot include spaces
-    add_test("${TESTCMD_NAME}_${TESTNAME}" ${PYTHON_EXECUTABLE} ${tests_SOURCE_DIR}/test_cmdline_tool.py -s ${TESTSUFFIX} ${CMAKE_BINARY_DIR}/${TESTCMD} "${SCADFILE}")
+    set(TEST_FULLNAME "${TESTCMD_NAME}_${TESTNAME}")
+
+    list(FIND DISABLED_TESTS ${TEST_FULLNAME} DISABLED)
+    if (${DISABLED} EQUAL -1)
+      # Handle configurations
+      unset(FOUNDCONFIGS)
+      get_test_config(${TEST_FULLNAME} FOUNDCONFIGS)
+      if (FOUNDCONFIGS)
+        #message("config ${TEST_FULLNAME}: ${FOUNDCONFIGS}")
+        set(CONFARG CONFIGURATIONS)
+        set(CONFVAL ${FOUNDCONFIGS})
+      else()
+        unset(CONFARG)
+        unset(CONFVAL)
+      endif()
+
+      add_test(NAME ${TEST_FULLNAME} ${CONFARG} ${CONFVAL} COMMAND ${PYTHON_EXECUTABLE} ${tests_SOURCE_DIR}/test_cmdline_tool.py -s ${TESTSUFFIX} ${CMAKE_BINARY_DIR}/${TESTCMD} "${SCADFILE}")
+    endif()
   endforeach()
 endfunction()
 
@@ -367,6 +448,7 @@ enable_testing()
 # Find all scad files
 file(GLOB MINIMAL_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/minimal/*.scad)
 file(GLOB FEATURES_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/features/*.scad)
+# Remove included files not to be used as tests
 list(REMOVE_ITEM FEATURES_FILES
      ${CMAKE_SOURCE_DIR}/../testdata/scad/features/include\ test6.scad
      ${CMAKE_SOURCE_DIR}/../testdata/scad/features/include-test5.scad)
@@ -374,22 +456,6 @@ file(GLOB BUGS_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/*.scad)
 file(GLOB SCAD_DXF_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/dxf/*.scad)
 file(GLOB FUNCTION_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/functions/*.scad)
 file(GLOB EXAMPLE_FILES ${CMAKE_SOURCE_DIR}/../examples/*.scad)
-
-list(APPEND DUMPTEST_FILES ${MINIMAL_FILES} ${FEATURES_FILES} ${EXAMPLE_FILES})
-list(APPEND DUMPTEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/escape-test.scad)
-# Disable tests which are known to cause floating point comparison issues
-# Once we're capable of comparing these across platforms, we can put these back in
-list(REMOVE_ITEM DUMPTEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/features/transform-tests.scad)
-list(REMOVE_ITEM DUMPTEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/features/render-tests.scad)
-list(REMOVE_ITEM DUMPTEST_FILES ${CMAKE_SOURCE_DIR}/../examples/example001.scad)
-list(REMOVE_ITEM DUMPTEST_FILES ${CMAKE_SOURCE_DIR}/../examples/example005.scad)
-list(REMOVE_ITEM DUMPTEST_FILES ${CMAKE_SOURCE_DIR}/../examples/example006.scad)
-list(REMOVE_ITEM DUMPTEST_FILES ${CMAKE_SOURCE_DIR}/../examples/example007.scad)
-list(REMOVE_ITEM DUMPTEST_FILES ${CMAKE_SOURCE_DIR}/../examples/example008.scad)
-list(REMOVE_ITEM DUMPTEST_FILES ${CMAKE_SOURCE_DIR}/../examples/example012.scad)
-list(REMOVE_ITEM DUMPTEST_FILES ${CMAKE_SOURCE_DIR}/../examples/example016.scad)
-list(REMOVE_ITEM DUMPTEST_FILES ${CMAKE_SOURCE_DIR}/../examples/example020.scad)
-list(REMOVE_ITEM DUMPTEST_FILES ${CMAKE_SOURCE_DIR}/../examples/example021.scad)
 
 list(APPEND ECHO_FILES ${FUNCTION_FILES}
             ${CMAKE_SOURCE_DIR}/../testdata/scad/minimal/echo.scad
@@ -401,42 +467,75 @@ list(APPEND ECHO_FILES ${FUNCTION_FILES}
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/string-test.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/string-indexing.scad)
 
-# Add echotest tests to CTest
-add_cmdline_test(echotest txt ${ECHO_FILES})
-# Add dumptest tests to CTest
-add_cmdline_test(dumptest txt ${DUMPTEST_FILES})
-# Add csgtexttest tests to CTest
-add_cmdline_test(csgtexttest txt ${MINIMAL_FILES})
-# Add csgtermtest tests to CTest
-add_cmdline_test(csgtermtest txt ${MINIMAL_FILES})
+list(APPEND DUMPTEST_FILES ${MINIMAL_FILES} ${FEATURES_FILES} ${EXAMPLE_FILES})
+list(APPEND DUMPTEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/escape-test.scad)
 
-# Add cgaltest tests to CTest
-add_cmdline_test(cgaltest stl ${CGALTEST_FILES})
-
-# Add cgalpngtest tests to CTest
-list(APPEND CGALPNGTEST_FILES ${FEATURES_FILES})
-list(APPEND CGALPNGTEST_FILES ${SCAD_DXF_FILES})
+list(APPEND CGALPNGTEST_FILES ${FEATURES_FILES} ${SCAD_DXF_FILES} ${EXAMPLE_FILES})
 list(APPEND OPENCSGTEST_FILES ${CGALPNGTEST_FILES})
+list(APPEND THROWNTOGETHERTEST_FILES ${CGALPNGTEST_FILES})
 
-list(REMOVE_ITEM CGALPNGTEST_FILES
-     ${CMAKE_SOURCE_DIR}/../testdata/scad/features/child-background.scad
-     ${CMAKE_SOURCE_DIR}/../testdata/scad/features/highlight-and-background-modifier.scad
-     ${CMAKE_SOURCE_DIR}/../testdata/scad/features/testcolornames.scad)
-
-add_cmdline_test(cgalpngtest png ${CGALPNGTEST_FILES})
-
-# Add opencsg tests to CTest
+# Disable tests which are known to cause floating point comparison issues
+# Once we're capable of comparing these across platforms, we can put these back in
+disable_tests(dumptest_transform-tests
+              dumptest_render-tests
+              dumptest_example001
+              dumptest_example005
+              dumptest_example006
+              dumptest_example007
+              dumptest_example008
+              dumptest_example012
+              dumptest_example016
+              dumptest_example020
+              dumptest_example021)
 
 # FIXME: This test illustrates a weakness in child() combined with modifiers.
 # Reenable it when this is improved
-list(REMOVE_ITEM OPENCSGTEST_FILES
-     ${CMAKE_SOURCE_DIR}/../testdata/scad/features/child-background.scad)
+disable_tests(opencsgtest_child-background)
 
+# These tests only makes sense in OpenCSG mode
+disable_tests(cgalpngtest_child-background
+              cgalpngtest_highlight-and-background-modifier
+              cgalpngtest_testcolornames
+              throwntogethertest_child-background
+              throwntogethertest_highlight-and-background-modifier
+              throwntogethertest_testcolornames)
+
+# Test config handling
+
+set_test_config(Heavy opencsgtest_minkowski3-tests
+                      opencsgtest_projection-tests
+                      throwntogethertest_minkowski3-tests
+                      throwntogethertest_projection-tests
+                      cgalpngtest_projection-tests
+                      cgalpngtest_rotate_extrude-tests
+                      cgalpngtest_surface-tests
+                      cgalpngtest_sphere-tests
+                      cgalpngtest_minkowski3-tests
+                      cgalpngtest_for-tests
+                      cgalpngtest_for-nested-tests
+                      cgalpngtest_difference-tests
+                      cgalpngtest_intersection-tests)
+
+foreach(FILE ${EXAMPLE_FILES})
+  get_test_fullname(cgalpngtest ${FILE} TEST_FULLNAME)
+  set_test_config(Examples ${TEST_FULLNAME})
+  get_test_fullname(opencsgtest ${FILE} TEST_FULLNAME)
+  set_test_config(Examples ${TEST_FULLNAME})
+  get_test_fullname(throwntogethertest ${FILE} TEST_FULLNAME)
+  set_test_config(Examples ${TEST_FULLNAME})
+endforeach()
+
+# Add tests
+
+add_cmdline_test(echotest txt ${ECHO_FILES})
+add_cmdline_test(dumptest txt ${DUMPTEST_FILES})
+add_cmdline_test(csgtexttest txt ${MINIMAL_FILES})
+add_cmdline_test(csgtermtest txt ${MINIMAL_FILES})
+add_cmdline_test(cgalpngtest png ${CGALPNGTEST_FILES})
 add_cmdline_test(opencsgtest png ${OPENCSGTEST_FILES})
-
-# Add throwntogether tests to CTest
-list(APPEND THROWNTOGETHERTEST_FILES ${CGALPNGTEST_FILES})
 add_cmdline_test(throwntogethertest png ${THROWNTOGETHERTEST_FILES})
 
-# Add dxfexport tests to CTest
-add_cmdline_test(${CMAKE_SOURCE_DIR}/../test-code/exportdxf dxf ${SCAD_FILES})
+message("Available test configurations: ${TEST_CONFIGS}")
+#foreach(CONF ${TEST_CONFIGS})
+#  message("${CONF}: ${${CONF}_TEST_CONFIG}")
+#endforeach()
