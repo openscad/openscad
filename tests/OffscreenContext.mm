@@ -1,6 +1,7 @@
 #include "OffscreenContext.h"
 #include "imageutils.h"
 #include "fbo.h"
+#include <iostream>
 
 #import <AppKit/AppKit.h>   // for NSOpenGL...
 
@@ -47,24 +48,13 @@ OffscreenContext *create_offscreen_context(int w, int h)
 
   [ctx->openGLContext makeCurrentContext];
   
-  glewInit();
-#ifdef DEBUG
-  std::cout << "GLEW version " << glewGetString(GLEW_VERSION) << "\n";
-  std::cout << (const char *)glGetString(GL_RENDERER) << "(" << (const char *)glGetString(GL_VENDOR) << ")\n"
-       << "OpenGL version " << (const char *)glGetString(GL_VERSION) << "\n";
-  std::cout  << "Extensions: " << (const char *)glGetString(GL_EXTENSIONS) << "\n";
-  
-  
-  if (GLEW_ARB_framebuffer_object) {
-    std::cout << "ARB_FBO supported\n";
+  // glewInit must come after Context creation and before FBO calls.
+  GLenum err = glewInit();
+  if (GLEW_OK != err) {
+    std::cerr << "Unable to init GLEW: " << glewGetErrorString(err) << std::endl;
+    return NULL;
   }
-  if (GLEW_EXT_framebuffer_object) {
-    std::cout << "EXT_FBO supported\n";
-  }
-  if (GLEW_EXT_packed_depth_stencil) {
-    std::cout << "EXT_packed_depth_stencil\n";
-  }
-#endif
+  glew_dump();
 
   ctx->fbo = fbo_new();
   if (!fbo_init(ctx->fbo, w, h)) {

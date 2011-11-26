@@ -8,13 +8,13 @@
 using namespace std;
 using namespace boost;
 
-void glew_dump() {
+void glew_dump(bool dumpall) {
+#ifdef DEBUG
   cerr << "GLEW version: " << glewGetString(GLEW_VERSION) << endl
        << "Renderer: " << (const char *)glGetString(GL_RENDERER) << endl
        << "Vendor: " << (const char *)glGetString(GL_VENDOR) << endl
        << "OpenGL version: " << (const char *)glGetString(GL_VERSION) << endl;
 
-  bool dumpall = false;
   if (dumpall) {
     string extensions((const char *)glGetString(GL_EXTENSIONS));
     replace_all( extensions, " ", "\n " );
@@ -30,6 +30,7 @@ void glew_dump() {
        << " GL_EXT_packed_depth_stencil: " 
        << (glewIsSupported("GL_EXT_packed_depth_stencil") ? "yes" : "no") 
        << endl;
+#endif
 };
 
 bool report_glerror(const char * function)
