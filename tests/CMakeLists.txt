@@ -415,7 +415,7 @@ endfunction()
 # Usage add_cmdline_test(TESTCMD TESTSUFFIX <test files>)
 #
 find_package(PythonInterp)
-function(add_cmdline_test TESTCMD TESTSUFFIX)
+macro(add_cmdline_test TESTCMD TESTSUFFIX)
   get_filename_component(TESTCMD_NAME ${TESTCMD} NAME_WE)
 
   # Add tests from args
@@ -441,7 +441,7 @@ function(add_cmdline_test TESTCMD TESTSUFFIX)
       add_test(NAME ${TEST_FULLNAME} ${CONFARG} ${CONFVAL} COMMAND ${PYTHON_EXECUTABLE} ${tests_SOURCE_DIR}/test_cmdline_tool.py -s ${TESTSUFFIX} ${CMAKE_BINARY_DIR}/${TESTCMD} "${SCADFILE}")
     endif()
   endforeach()
-endfunction()
+endmacro()
 
 enable_testing()
 
