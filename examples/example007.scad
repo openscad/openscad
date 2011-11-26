@@ -22,7 +22,7 @@ module clip()
 		// NB! We have to use the deprecated module here since the "dorn"
                 // layer contains an open polyline, which is not yet supported
                 // by the import() module.
-		dxf_rotate_extrude(
+		rotate_extrude(
 			file = "example007.dxf",
 			layer="dorn",
 			convexity = 3);
