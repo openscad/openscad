@@ -3,32 +3,46 @@ Running regression tests:
 
 Prerequisites: cmake, python
 
-cd tests
-mkdir build
-cd build
-cmake ..
-make
-make test
+A) Building test environment
 
-Running on Windows:
+Linux, Mac:
+$ cd tests
+$ cmake .
+$ make
+
+Windows:
 
 First, get a normal build working by following instructions at 
 http://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Building_on_Windows
 Then, from the QT command prompt:
 
-cd tests
-mkdir build
-cd build
-cmake .. -DCMAKE_BUILD_TYPE=Release
-sed -i s/\/MD/\/MT/ CMakeCache.txt
-cmake ..
-nmake -f Makefile
-nmake -f Makefile test
+$ cd tests
+$ cmake . -DCMAKE_BUILD_TYPE=Release
+$ sed -i s/\/MD/\/MT/ CMakeCache.txt
+$ cmake .
+$ nmake -f Makefile
 
-Running on headless (no X) servers:
+B) Running tests
 
-Xvnc :5 -screen 0 800x600x24 &
-DISPLAY=:5 make test
+Easy version:
+$ make test
+
+Windows:
+$ nmake -f Makefile test
+
+Headless servers (no X11):
+$ Xvnc :5 -screen 0 800x600x24 &
+$ DISPLAY=:5 make test
+
+Partial or extended test runs:
+$ ctest               Runs tests enabled by default
+$ ctest -R <regex>    Runs only matching tests, e.g. ctest -R dxf
+$ ctest -C <configs>  Adds extended tests belonging to configs.
+                      Valid configs:
+                      Default  - Run default tests
+                      Heavy    - Run more time consuming tests (> ~10 seconds)
+                      Examples - test all examples
+                      All      - test everything
 
 
 Adding  a new regression test:
