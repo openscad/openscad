@@ -54,6 +54,10 @@
 #include <assert.h>
 #include <sstream>
 
+#ifdef ENABLE_CGAL
+#include <CGAL/assertions_behaviour.h>
+#endif
+
 std::string commandline_commands;
 QString currentdir;
 QString examplesdir;
@@ -99,6 +103,11 @@ int main(int argc, char **argv)
 	const char *filename = argv[1];
 	const char *outfile = argv[2];
 
+#ifdef ENABLE_CGAL
+	// Causes CGAL errors to abort directly instead of throwing exceptions
+	// (which we don't catch). This gives us stack traces without rerunning in gdb.
+	CGAL::set_error_behaviour(CGAL::ABORT);
+#endif
 	Builtins::instance()->initialize();
 
 	QApplication app(argc, argv, false);
@@ -162,29 +171,6 @@ int main(int argc, char **argv)
                 fprintf(stderr,"Can't create OpenGL OffscreenView. Code: %i. Exiting.\n", error);
                 exit(1);
         }
-
-  GLenum err = glewInit();
-  if (GLEW_OK != err) {
-    fprintf(stderr, "Unable to init GLEW: %s\n", glewGetErrorString(err));
-    exit(1);
-  }
-#ifdef DEBUG
-	std::cout << "GLEW version " << glewGetString(GLEW_VERSION) << "\n";
-	std::cout << (const char *)glGetString(GL_RENDERER) << "(" << (const char *)glGetString(GL_VENDOR) << ")\n"
-						<< "OpenGL version " << (const char *)glGetString(GL_VERSION) << "\n";
-	std::cout  << "Extensions: " << (const char *)glGetString(GL_EXTENSIONS) << "\n";
-
-
-	if (GLEW_ARB_framebuffer_object) {
-		std::cout << "ARB_FBO supported\n";
-	}
-	if (GLEW_EXT_framebuffer_object) {
-		std::cout << "EXT_FBO supported\n";
-	}
-	if (GLEW_EXT_packed_depth_stencil) {
-		std::cout << "EXT_packed_depth_stencil\n";
-	}
-#endif
 
 	CGALRenderer cgalRenderer(N);
 
