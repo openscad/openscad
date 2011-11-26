@@ -140,8 +140,10 @@ CGAL_Polyhedron *createPolyhedronFromPolySet(const PolySet &ps)
 	}
 	catch (CGAL::Assertion_exception e) {
 		PRINTF("CGAL error in CGAL_Build_PolySet: %s", e.what());
-		CGAL::set_error_behaviour(old_behaviour);
+		delete P;
+		P = NULL;
 	}
+	CGAL::set_error_behaviour(old_behaviour);
 	return P;
 }
 

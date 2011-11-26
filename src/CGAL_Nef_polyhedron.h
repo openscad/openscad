@@ -8,8 +8,8 @@ class CGAL_Nef_polyhedron
 {
 public:
 	CGAL_Nef_polyhedron() : dim(0) {}
-	CGAL_Nef_polyhedron(CGAL_Nef_polyhedron2 *p) : dim(2), p2(p) {}
-	CGAL_Nef_polyhedron(CGAL_Nef_polyhedron3 *p) : dim(3), p3(p) {}
+	CGAL_Nef_polyhedron(CGAL_Nef_polyhedron2 *p);
+	CGAL_Nef_polyhedron(CGAL_Nef_polyhedron3 *p);
 	~CGAL_Nef_polyhedron() {}
 
 	bool empty() const { return (dim == 0 || (!p2 && !p3)); }
