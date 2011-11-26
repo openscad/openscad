@@ -240,6 +240,7 @@ def wikitohtml(wiki_rootpath, sysid, wikidata, manifest):
 	head = '<html><head><title>'+wiki_rootpath+' test run for '+sysid +'</title></head><body>'
 	revmanifest = dict((val,key) for key, val in manifest.iteritems())
 	x=re.sub('\{\|(.*?)\n','<table \\1>\n',wikidata)
+	x=re.sub('\|(.*?colspan.*?)\|','<td \\1>',x)
 	x=re.sub("'''(.*?)'''","<b>\\1</b>",x)
 	filestrs=re.findall('\[\[File\:(.*?)\|.*?\]\]',x)
 	for f in filestrs:
@@ -270,28 +271,28 @@ def upload(wikiurl,api_php_path,wikidata,manifest,wiki_rootpath,sysid,botname,bo
 		import mwclient
 	except:
 		print 'please download mwclient and unpack here:', os.cwd()
-	print 'open site',wikiurl
+	print 'opening site:',wikiurl
 	if not api_php_path == '':
 		site = mwclient.Site(wikiurl,api_php_path)
 	else:
 		site = mwclient.Site(wikiurl)
 		
-	print 'bot login'
+	print 'bot login:', botname
 	site.login(botname,botpass)
 
-	print 'edit ',wiki_rootpath
+	print 'edit page:',wiki_rootpath
 	page = site.Pages[wiki_rootpath]
 	text = page.edit()
 	rootpage = wiki_rootpath + sysid
 	if not '[['+rootpage+']]' in text:
 		page.save(text +'\n*[['+rootpage+']]\n')
 
-	print 'upload wiki data to',rootpage
+	print 'upload wiki page:',rootpage
 	page = site.Pages[rootpage]
 	text = page.edit()
 	page.save(wikidata)
 
-	print 'upload images'
+	print 'upload images:'
 	for localfile in sorted(manifest.keys()):
 		if localfile:
 			localf = open(localfile,'rb')
