@@ -48,13 +48,15 @@ def execute_and_redirect(cmd, params, outfile):
     retval = -1
     try:
         proc = subprocess.Popen([cmd] + params, stdout=outfile)
+        out = proc.communicate()[0]
         retval = proc.wait()
     except:
         print >> sys.stderr, "Error running subprocess: ", sys.exc_info()[1]
         print >> sys.stderr, " cmd:", cmd
         print >> sys.stderr, " params:", params
         print >> sys.stderr, " outfile:", outfile
-    return retval
+    if outfile == subprocess.PIPE: return (retval, out)
+    else: return retval
 
 def get_normalized_text(filename):
     text = open(filename).read()
@@ -73,10 +75,22 @@ def compare_png(resultfilename):
     if not resultfilename:
         print >> sys.stderr, "Error: OpenSCAD did not generate an image"
         return False
-    print >> sys.stderr, 'Yee image compare: ', expectedfilename, ' ', resultfilename
-    if execute_and_redirect("./yee_compare", [expectedfilename, resultfilename, "-downsample", "1", "-threshold", "150"], sys.stderr) != 0:
-        return False
-    return True
+
+#    args = [expectedfilename, resultfilename, "-alpha", "Off", "-compose", "difference", "-composite", "-threshold", "10%", "-blur", "2", "-threshold", "30%", "-format", "%[fx:w*h*mean]", "info:"]
+    args = [expectedfilename, resultfilename, "-alpha", "Off", "-compose", "difference", "-composite", "-threshold", "10%", "-morphology", "Erode", "Square", "-format", "%[fx:w*h*mean]", "info:"]
+    print >> sys.stderr, 'convert ', ' '.join(args)
+    (retval, output) = execute_and_redirect("convert", args, subprocess.PIPE)
+    if retval == 0:
+        pixelerr = int(float(output.strip()))
+        if pixelerr < 32: return True
+        else: print >> sys.stderr, pixelerr, ' pixel errors'
+    return False
+
+# Old compare solution, based on yee_compare
+#    print >> sys.stderr, 'Yee image compare: ', expectedfilename, ' ', resultfilename
+#    if execute_and_redirect("./yee_compare", [expectedfilename, resultfilename, "-downsample", "1", "-threshold", "150"], sys.stderr) != 0:
+#        return False
+#    return True
 
 def compare_with_expected(resultfilename):
     if not options.generate:
