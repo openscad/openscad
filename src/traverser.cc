@@ -3,6 +3,7 @@
 #include "node.h"
 #include "state.h"
 #include <algorithm>
+#include <boost/foreach.hpp>
 
 void Traverser::execute() 
 {
@@ -10,35 +11,37 @@ void Traverser::execute()
 	traverse(this->root, state);
 }
 
-struct TraverseNode
+Response Traverser::traverse(const AbstractNode &node, const State &state)
 {
-	Traverser *traverser;
-	const State &state;
-	TraverseNode(Traverser *traverser, const State &state) : 
-		traverser(traverser), state(state) {}
-	void operator()(const AbstractNode *node) { traverser->traverse(*node, state); }
-};
-
-void Traverser::traverse(const AbstractNode &node, const State &state)
-{
-	// FIXME: Handle abort
-	
 	State newstate = state;
 	newstate.setNumChildren(node.getChildren().size());
 	
+	Response response;
 	if (traversaltype == PREFIX || traversaltype == PRE_AND_POSTFIX) {
 		newstate.setPrefix(true);
 		newstate.setParent(state.parent());
-		node.accept(newstate, this->visitor);
+		response = node.accept(newstate, this->visitor);
 	}
-	
-	newstate.setParent(&node);
-	std::for_each(node.getChildren().begin(), node.getChildren().end(), TraverseNode(this, newstate));
-	
-	if (traversaltype == POSTFIX || traversaltype == PRE_AND_POSTFIX) {
-		newstate.setParent(state.parent());
-		newstate.setPrefix(false);
-		newstate.setPostfix(true);
-		node.accept(newstate, this->visitor);
+
+	// Pruned traversals mean don't traverse children
+	if (response == ContinueTraversal) {
+		newstate.setParent(&node);
+		BOOST_FOREACH(const AbstractNode *chnode, node.getChildren()) {
+			response = this->traverse(*chnode, newstate);
+			if (response == AbortTraversal) return response; // Abort immediately
+		}
 	}
+
+	// Postfix is executed for all non-aborted traversals
+	if (response != AbortTraversal) {
+		if (traversaltype == POSTFIX || traversaltype == PRE_AND_POSTFIX) {
+			newstate.setParent(state.parent());
+			newstate.setPrefix(false);
+			newstate.setPostfix(true);
+			response = node.accept(newstate, this->visitor);
+		}
+	}
+
+	if (response != AbortTraversal) response = ContinueTraversal;
+	return response;
 }

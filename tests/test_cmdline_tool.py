@@ -49,13 +49,15 @@ def execute_and_redirect(cmd, params, outfile):
     retval = -1
     try:
         proc = subprocess.Popen([cmd] + params, stdout=outfile)
+        out = proc.communicate()[0]
         retval = proc.wait()
     except:
         print >> sys.stderr, "Error running subprocess: ", sys.exc_info()[1]
         print >> sys.stderr, " cmd:", cmd
         print >> sys.stderr, " params:", params
         print >> sys.stderr, " outfile:", outfile
-    return retval
+    if outfile == subprocess.PIPE: return (retval, out)
+    else: return retval
 
 def get_normalized_text(filename):
     text = open(filename).read()
@@ -74,15 +76,21 @@ def compare_default(resultfilename):
     return True
 
 def compare_png(resultfilename):
-    print >> sys.stderr, 'Yee image compare:'
+#    args = [expectedfilename, resultfilename, "-alpha", "Off", "-compose", "difference", "-composite", "-threshold", "10%", "-blur", "2", "-threshold", "30%", "-format", "%[fx:w*h*mean]", "info:"]
+    args = [expectedfilename, resultfilename, "-alpha", "Off", "-compose", "difference", "-composite", "-threshold", "10%", "-morphology", "Erode", "Square", "-format", "%[fx:w*h*mean]", "info:"]
+    print >> sys.stderr, 'ImageMagick image comparison: convert ', ' '.join(args[2:])
     print >> sys.stderr, ' expected image: ', expectedfilename
     if not resultfilename:
         print >> sys.stderr, "Error: OpenSCAD did not generate an image to test"
         return False
     print >> sys.stderr, ' actual image: ', resultfilename
-    if execute_and_redirect("./yee_compare", [expectedfilename, resultfilename, "-downsample", "2", "-threshold", "300"], sys.stderr) != 0:
-        return False
-    return True
+
+    (retval, output) = execute_and_redirect(options.convert_exec, args, subprocess.PIPE)
+    if retval == 0:
+        pixelerr = int(float(output.strip()))
+        if pixelerr < 32: return True
+        else: print >> sys.stderr, pixelerr, ' pixel errors'
+    return False
 
 def compare_with_expected(resultfilename):
     if not options.generate:
@@ -135,11 +143,12 @@ def usage():
     print >> sys.stderr, "  -g, --generate        Generate expected output for the given tests"
     print >> sys.stderr, "  -s, --suffix=<suffix> Write -expected and -actual files with the given suffix instead of .txt"
     print >> sys.stderr, "  -t, --test=<name>     Specify test name instead of deducting it from the argument"
+    print >> sys.stderr, "  -c, --convexec=<name> Path to ImageMagick 'convert' executable"
 
 if __name__ == '__main__':
     # Handle command-line arguments
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "gs:t:", ["generate", "suffix=", "test="])
+        opts, args = getopt.getopt(sys.argv[1:], "gs:c:t:", ["generate", "convexec=", "suffix=", "test="])
     except getopt.GetoptError, err:
         usage()
         sys.exit(2)
@@ -157,6 +166,8 @@ if __name__ == '__main__':
             else: options.suffix = a
         elif o in ("-t", "--test"):
             options.testname = a
+	elif o in ("-c", "--convexec"): 
+            options.convert_exec = os.path.normpath( a )
 
     # <cmdline-tool> and <argument>
     if len(args) < 2:

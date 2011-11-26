@@ -11,6 +11,11 @@ using boost::intmax_t;
 using boost::uintmax_t;
 #endif
 
+#include <CGAL/version.h>
+#if CGAL_VERSION_NR < 1030601000
+  #error CGAL >= 3.6 is required!
+#endif
+
 #include <CGAL/Gmpq.h>
 #include <CGAL/Extended_cartesian.h>
 #include <CGAL/Nef_polyhedron_2.h>

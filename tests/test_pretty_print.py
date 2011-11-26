@@ -76,7 +76,7 @@ def read_sysinfo(filename):
 
 	data += read_gitinfo()
 
-	data += 'Image comparison: PerceptualDiff by H. Yee'
+	data += 'Image comparison: ImageMagick'
 
 	data = data.strip()
 
@@ -116,7 +116,7 @@ class Test:
 def parsetest(teststring):
 	patterns = ["Test:(.*?)\n", # fullname
 		"Test time =(.*?) sec\n",
-		"Test time.*?Test (Passed)",
+		"Test time.*?Test (Passed)", # pass/fail
 		"Output:(.*?)<end of output>",
 		'Command:.*?-s" "(.*?)"', # type
 		"actual .*?:(.*?)\n",
@@ -147,7 +147,8 @@ def wikify_filename(testname,filename,sysid):
 	return result.replace('/','_')
 
 
-def towiki(wiki_rootpath, startdate, tests, enddate, sysinfo, sysid, testlog):
+def towiki(wiki_rootpath, startdate, tests, enddate, sysinfo, sysid):
+
 	wiki_template = """
 <h3>[[WIKI_ROOTPATH]] test run report</h3>
 
@@ -165,13 +166,24 @@ end time  : ENDDATE <br>
 
 '''Failed image tests'''
 
-{| border=1 cellspacing=0 cellpadding=1
-! Testname !! expected output !! actual output
 <REPEAT1>
+{| border=1 cellspacing=0 cellpadding=1
 |-
-| FTESTNAME || [[File:EXPECTEDFILE|thumb|250px]] || ACTUALFILE_WIKI
-</REPEAT1>
+| colspan=2 | FTESTNAME  
+|-
+| Expected image || Actual image
+|-
+| [[File:EXPECTEDFILE|250px]] || ACTUALFILE_WIKI
 |}
+
+<pre>
+ TESTLOG
+</pre>
+
+
+
+</REPEAT1>
+
 
 '''Failed text tests'''
 
@@ -183,47 +195,40 @@ end time  : ENDDATE <br>
 </REPEAT2>
 |}
 
-'''Test logs'''
-
-(excerpted from Testing/Temporary/LastTest.Log)
-
-<pre>
-FAILED_TESTLOGS
-</pre>
 
 """
-	numpassed = len(filter(lambda x: x.passed, tests))
-	percent = str(int(100.0*numpassed / len(tests)))
+	passed_tests = filter(lambda x: x.passed, tests)
+	failed_tests = filter(lambda x: not x.passed, tests)
+	percent = str(int(100.0*len(passed_tests) / len(tests)))
 	manifest = {}
 	s = wiki_template
 	repeat1 = ezsearch('(<REPEAT1>.*?</REPEAT1>)',s)
 	repeat2 = ezsearch('(<REPEAT2>.*?</REPEAT2>)',s)
 	dic = { 'STARTDATE': startdate, 'ENDDATE': enddate, 'WIKI_ROOTPATH': wiki_rootpath,
-		'SYSINFO': sysinfo, 'SYSID':sysid, 'LASTTESTLOG':testlog, 
-		'NUMTESTS':len(tests), 'NUMPASSED':numpassed, 'PERCENTPASSED':percent }
+		'SYSINFO': sysinfo, 'SYSID':sysid, 
+		'NUMTESTS':len(tests), 'NUMPASSED':len(passed_tests), 'PERCENTPASSED':percent }
 	for key in dic.keys():
-		s = re.sub(key,str(dic[key]),s)
+		s = s.replace(key,str(dic[key]))
 	testlogs = ''
-	for t in tests:
-		# if t.passed: noop
-		if not t.passed:
-			testlogs += '\n\n'+t.fulltestlog
-			if t.type=='txt':
-				newchunk = re.sub('FTEST_OUTPUTFILE',t.fullname,repeat2)
-				newchunk = re.sub('FTESTNAME',t.fullname,repeat2)
-				s = s.replace(repeat2, newchunk+repeat2)
-			elif t.type=='png':
-				manifest[t.actualfile] = wikify_filename(t.fullname,t.actualfile,sysid)
-				manifest[t.expectedfile] = wikify_filename(t.fullname,t.expectedfile,sysid)
-				if t.actualfile: 
-					actualfile_wiki = '[[File:'+manifest[t.actualfile]+'|thumb|250px]]'
-				else:
-					actualfile_wiki = 'No file generated.<br/>See log for details'
-				newchunk = re.sub('FTESTNAME',t.fullname,repeat1)
-				newchunk = newchunk.replace('ACTUALFILE_WIKI',actualfile_wiki)
-				newchunk = newchunk.replace('EXPECTEDFILE',manifest[t.expectedfile])
-				s = s.replace(repeat1, newchunk+repeat1)
-	s = s.replace('FAILED_TESTLOGS',testlogs)
+	for t in failed_tests:
+		testlogs += '\n\n'+t.fulltestlog
+		if t.type=='txt':
+			newchunk = re.sub('FTEST_OUTPUTFILE',t.fullname,repeat2)
+			newchunk = re.sub('FTESTNAME',t.fullname,repeat2)
+			s = s.replace(repeat2, newchunk+repeat2)
+		elif t.type=='png':
+			manifest[t.actualfile] = wikify_filename(t.fullname,t.actualfile,sysid)
+			manifest[t.expectedfile] = wikify_filename(t.fullname,t.expectedfile,sysid)
+			if t.actualfile: 
+				actualfile_wiki = '[[File:'+manifest[t.actualfile]+'|250px]]'
+			else:
+				actualfile_wiki = 'No image generated.'
+			newchunk = re.sub('FTESTNAME',t.fullname,repeat1)
+			newchunk = newchunk.replace('ACTUALFILE_WIKI',actualfile_wiki)
+			newchunk = newchunk.replace('EXPECTEDFILE',manifest[t.expectedfile])
+			newchunk = newchunk.replace('TESTLOG',t.fulltestlog)
+			s = s.replace(repeat1, newchunk+repeat1)
+
 	s = s.replace(repeat1,'')
 	s = s.replace(repeat2,'')
 	s = re.sub('<REPEAT.*?>\n','',s)
@@ -253,7 +258,7 @@ def upload_dryrun(wikiurl,api_php_path,wikidata,manifest,wiki_rootpath,sysid,bot
 	print 'save ', len(wikidata), ' bytes to page ',wiki_rootpath+sysid
 	for localfile in manifest.keys():
 		if localfile:
-			localf=open(localfile)
+			localf=open(localfile,'rb')
 			wikifile = manifest[localfile]
 			print 'upload',localfile,wikifile
 
@@ -289,7 +294,7 @@ def upload(wikiurl,api_php_path,wikidata,manifest,wiki_rootpath,sysid,botname,bo
 	print 'upload images'
 	for localfile in sorted(manifest.keys()):
 		if localfile:
-			localf = open(localfile)
+			localf = open(localfile,'rb')
 			wikifile = manifest[localfile]
 			skip=False
 			if 'expected.png' in wikifile.lower():
@@ -301,7 +306,10 @@ def upload(wikiurl,api_php_path,wikidata,manifest,wiki_rootpath,sysid,botname,bo
 				print 'uploading',wikifile,'...'
 				site.upload(localf,wikifile,wiki_rootpath + ' test', ignore=True)
 
-wikisite = 'cakebaby.referata.com'
+#wikisite = 'cakebaby.referata.com'
+#wiki_api_path = ''
+wikisite = 'cakebaby.wikia.com'
+wiki_api_path = '/'
 wiki_rootpath = 'OpenSCAD'
 builddir = os.getcwd()
 logpath = os.path.join(builddir,'Testing','Temporary')
@@ -314,11 +322,11 @@ def main():
 	sysinfo, sysid = read_sysinfo('sysinfo.txt')
 	if '--forceupload' in sys.argv: forceupl=True
 	else: forceupl=False
-	manifest, wikidata = towiki(wiki_rootpath, startdate, tests, enddate, sysinfo, sysid, testlog)
+	manifest, wikidata = towiki(wiki_rootpath, startdate, tests, enddate, sysinfo, sysid)
 	trysave(wikidata, os.path.join(logpath,sysid+'.wiki'))
 	htmldata = wikitohtml(wiki_rootpath, sysid, wikidata, manifest)
 	trysave(htmldata, os.path.join(logpath,sysid+'.html'))
 	if '--upload' in sys.argv:
-		upload(wikisite,'',wikidata,manifest,wiki_rootpath,sysid,'openscadbot','tobdacsnepo',dryrun=False,forceupload=forceupl)
+		upload(wikisite,wiki_api_path,wikidata,manifest,wiki_rootpath,sysid,'openscadbot','tobdacsnepo',dryrun=False,forceupload=forceupl)
 main()
 

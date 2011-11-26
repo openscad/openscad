@@ -187,17 +187,32 @@ BISON_TARGET(OpenSCADparser ../src/parser.y ${CMAKE_CURRENT_BINARY_DIR}/parser_y
 ADD_FLEX_BISON_DEPENDENCY(OpenSCADlexer OpenSCADparser)
 set_source_files_properties(${CMAKE_CURRENT_BINARY_DIR}/parser_yacc.c PROPERTIES LANGUAGE "CXX")
 
+# CGAL
+
 if (NOT $ENV{MACOSX_DEPLOY_DIR} STREQUAL "")
   set(CGAL_DIR "$ENV{MACOSX_DEPLOY_DIR}/lib/CGAL")
   set(CMAKE_MODULE_PATH "${CGAL_DIR}")
 endif()
 find_package(CGAL REQUIRED)
+if("${CGAL_MAJOR_VERSION}.${CGAL_MINOR_VERSION}" VERSION_LESS 3.6)
+  message(FATAL_ERROR "CGAL >= 3.6 required")
+endif()
 include_directories(${CGAL_INCLUDE_DIRS})
+
+# Imagemagick
+
+find_package(ImageMagick COMPONENTS convert)
+if (ImageMagick_convert_FOUND)
+  message(STATUS "ImageMagick convert executable found: " ${ImageMagick_convert_EXECUTABLE})
+else()
+  message(FATAL_ERROR "Couldn't find imagemagick 'convert' program")
+endif()
 
 # Internal includes
 include_directories(../src)
 
 add_definitions(-DOPENSCAD_VERSION=test -DOPENSCAD_YEAR=2011 -DOPENSCAD_MONTH=10)
+add_definitions(-DOPENSCAD_TESTING)
 
 set(CORE_SOURCES
   tests-common.cc 
@@ -293,12 +308,6 @@ add_executable(echotest echotest.cc)
 target_link_libraries(echotest tests-nocgal tests-core ${QT_LIBRARIES} ${OPENGL_LIBRARY} ${Boost_LIBRARIES})
 
 #
-# Yangli Hector Yee's PerceptualDiff code
-#
-
-add_executable(yee_compare yee_compare.cpp lodepng.cpp)
-
-#
 # dumptest
 #
 add_executable(dumptest dumptest.cc)
@@ -356,7 +365,7 @@ function(add_cmdline_test TESTCMD TESTSUFFIX)
   foreach (SCADFILE ${ARGN})
     get_filename_component(TESTNAME ${SCADFILE} NAME_WE)
     string(REPLACE " " "_" TESTNAME ${TESTNAME}) # Test names cannot include spaces
-    add_test("${TESTCMD_NAME}_${TESTNAME}" ${PYTHON_EXECUTABLE} ${tests_SOURCE_DIR}/test_cmdline_tool.py -s ${TESTSUFFIX} ${CMAKE_BINARY_DIR}/${TESTCMD} "${SCADFILE}")
+    add_test("${TESTCMD_NAME}_${TESTNAME}" ${PYTHON_EXECUTABLE} ${tests_SOURCE_DIR}/test_cmdline_tool.py -c ${ImageMagick_convert_EXECUTABLE} -s ${TESTSUFFIX} ${CMAKE_BINARY_DIR}/${TESTCMD} "${SCADFILE}" )
   endforeach()
 endfunction()
 

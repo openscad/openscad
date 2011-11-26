@@ -71,6 +71,7 @@ o 3D View
   - Use OpenGL picking to facilitate ray-tracing like features like measuring
     thicknesses, distances, slot thicknesses etc.
   - Add option to change lights, e.g. add an optional camera light
+  - 2D objects are rendered at z = -0.1 - why?
 o Editor wishlist
   - More infrastructure for external editor (allow communication from the outside)
   - Preferences GUI for the features below
