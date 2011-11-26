@@ -192,6 +192,7 @@ if (NOT $ENV{MACOSX_DEPLOY_DIR} STREQUAL "")
   set(CMAKE_MODULE_PATH "${CGAL_DIR}")
 endif()
 find_package(CGAL REQUIRED)
+message(STATUS "CGAL found in ${CGAL_USE_FILE} ${CGAL_INCLUDE_DIRS} ${CGAL_LIBRARIES_DIR}")
 include_directories(${CGAL_INCLUDE_DIRS})
 
 # Internal includes

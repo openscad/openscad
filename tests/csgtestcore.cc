@@ -95,7 +95,7 @@ string info_dump(OffscreenView *glview)
 	    << "\nBoost version: " << BOOST_LIB_VERSION
 	    << "\nEigen version: " << EIGEN_WORLD_VERSION << "."
 	    << EIGEN_MAJOR_VERSION << "." << EIGEN_MINOR_VERSION
-	    // << "\nCGAL version: " << CGAL_VERSION ???
+	    << "\nCGAL version: " << TOSTRING(CGAL_VERSION)
 	    // << "\nOpenCSG" << ???
 	    << "\n" << glview->getInfo()
 	    << "\n";
