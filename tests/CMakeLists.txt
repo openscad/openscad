@@ -423,20 +423,20 @@ function(add_cmdline_test TESTCMD TESTSUFFIX)
     get_filename_component(TESTNAME ${SCADFILE} NAME_WE)
     string(REPLACE " " "_" TESTNAME ${TESTNAME}) # Test names cannot include spaces
     set(TEST_FULLNAME "${TESTCMD_NAME}_${TESTNAME}")
-
     list(FIND DISABLED_TESTS ${TEST_FULLNAME} DISABLED)
     if (${DISABLED} EQUAL -1)
+
       # Handle configurations
       unset(FOUNDCONFIGS)
       get_test_config(${TEST_FULLNAME} FOUNDCONFIGS)
-      if (FOUNDCONFIGS)
-        #message("config ${TEST_FULLNAME}: ${FOUNDCONFIGS}")
-        set(CONFARG CONFIGURATIONS)
-        set(CONFVAL ${FOUNDCONFIGS})
-      else()
-        unset(CONFARG)
-        unset(CONFVAL)
+      if (NOT FOUNDCONFIGS)
+        set_test_config(Default ${TEST_FULLNAME})
       endif()
+      set_test_config(All ${TEST_FULLNAME})
+      unset(FOUNDCONFIGS)
+      get_test_config(${TEST_FULLNAME} FOUNDCONFIGS)
+      set(CONFARG CONFIGURATIONS)
+      set(CONFVAL ${FOUNDCONFIGS})
 
       add_test(NAME ${TEST_FULLNAME} ${CONFARG} ${CONFVAL} COMMAND ${PYTHON_EXECUTABLE} ${tests_SOURCE_DIR}/test_cmdline_tool.py -s ${TESTSUFFIX} ${CMAKE_BINARY_DIR}/${TESTCMD} "${SCADFILE}")
     endif()
@@ -444,6 +444,8 @@ function(add_cmdline_test TESTCMD TESTSUFFIX)
 endfunction()
 
 enable_testing()
+
+set_directory_properties(PROPERTIES TEST_INCLUDE_FILE "${CMAKE_SOURCE_DIR}/EnforceConfig.cmake")
 
 # Find all scad files
 file(GLOB MINIMAL_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/minimal/*.scad)
