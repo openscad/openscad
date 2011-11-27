@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>384</width>
+    <width>418</width>
     <height>243</height>
    </rect>
   </property>
@@ -21,7 +21,7 @@
     <item>
      <widget class="QStackedWidget" name="stackedWidget">
       <property name="currentIndex">
-       <number>1</number>
+       <number>2</number>
       </property>
       <widget class="QWidget" name="page3DView">
        <layout class="QVBoxLayout" name="verticalLayout_4">
@@ -181,9 +181,9 @@
         <item>
          <layout class="QVBoxLayout" name="verticalLayout_6">
           <item>
-           <widget class="QCheckBox" name="OpenGL20WarningCheckbox">
+           <widget class="QCheckBox" name="openCSGWarningBox">
             <property name="text">
-             <string>Show OpenGL 2.0 warning &amp;&amp; rendering info</string>
+             <string>Show OpenCSG capability warning</string>
             </property>
            </widget>
           </item>
@@ -239,7 +239,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset resource="openscad.qrc">
+    <iconset>
      <normaloff>:/icons/prefs3DView.png</normaloff>:/icons/prefs3DView.png</iconset>
    </property>
    <property name="text">
@@ -251,7 +251,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset resource="openscad.qrc">
+    <iconset>
      <normaloff>:/icons/prefsAdvanced.png</normaloff>:/icons/prefsAdvanced.png</iconset>
    </property>
    <property name="text">
@@ -263,7 +263,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset resource="openscad.qrc">
+    <iconset>
      <normaloff>:/icons/prefsEditor.png</normaloff>:/icons/prefsEditor.png</iconset>
    </property>
    <property name="text">

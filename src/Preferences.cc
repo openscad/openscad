@@ -98,8 +98,8 @@ Preferences::Preferences(QWidget *parent) : QMainWindow(parent)
 					this, SLOT(fontFamilyChanged(const QString &)));
 	connect(this->fontSize, SIGNAL(editTextChanged(const QString &)),
 					this, SLOT(fontSizeChanged(const QString &)));
-	connect(this->OpenGL20WarningCheckbox, SIGNAL(clicked(bool)),
-					this, SLOT(OpenGL20WarningChanged(bool)));
+	connect(this->openCSGWarningBox, SIGNAL(clicked(bool)),
+					this, SLOT(openCSGWarningChanged(bool)));
 	updateGUI();
 }
 
@@ -151,7 +151,7 @@ void Preferences::fontSizeChanged(const QString &size)
 }
 
 void
-Preferences::OpenGL20WarningChanged(bool state)
+Preferences::openCSGWarningChanged(bool state)
 {
 	QSettings settings;
 	settings.setValue("editor/opengl20_warning_show",state);
@@ -215,8 +215,7 @@ void Preferences::updateGUI()
 		this->fontSize->setEditText(fontsize);
 	}
 
-	bool opengl20_warning_show = getValue("editor/opengl20_warning_show").toBool();
-	this->OpenGL20WarningCheckbox->setChecked(opengl20_warning_show);
+	this->openCSGWarningBox->setChecked(getValue("editor/opengl20_warning_show").toBool());
 }
 
 void Preferences::apply() const

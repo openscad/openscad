@@ -34,7 +34,7 @@ public slots:
 	void colorSchemeChanged();
 	void fontFamilyChanged(const QString &);
 	void fontSizeChanged(const QString &);
-	void OpenGL20WarningChanged(bool);
+	void openCSGWarningChanged(bool);
 
 signals:
 	void requestRedraw() const;

@@ -152,7 +152,7 @@ void GLView::initializeGL()
 		QSettings settings;
 		// FIXME: This should be an OpenCSG capability warning, not an OpenGL 2 warning
 		if (settings.value("editor/opengl20_warning_show",true).toBool()) {
-			QTimer::singleShot(0, this, SLOT(display_opengl20_warning()));
+			QTimer::singleShot(0, this, SLOT(display_opencsg_warning()));
 		}
 	}
 	if (opencsg_support && this->has_shaders) {
@@ -244,10 +244,10 @@ void GLView::initializeGL()
 }
 
 #ifdef ENABLE_OPENCSG
-void GLView::display_opengl20_warning()
+void GLView::display_opencsg_warning()
 {
 	// data
-	QString title = QString("GLEW: GL_VERSION_2_0 is not supported!");
+	QString title = QString("OpenGL context is not OpenCSG capable");
 
 	QString rendererinfo;
 	rendererinfo.sprintf("GLEW version %s\n"
@@ -257,10 +257,10 @@ void GLView::display_opengl20_warning()
 											 glGetString(GL_RENDERER), glGetString(GL_VENDOR),
 											 glGetString(GL_VERSION));
 
-	QString message = QString("Warning: No support for OpenGL 2.0 found! OpenCSG View has been disabled.\n\n"
-			"It is highly recommended to use OpenSCAD on a system with OpenGL 2.0 "
-			"support. Please check if OpenGL 2.0 drivers are available for your "	
-			"graphics hardware. Your renderer information is as follows:\n\n%1").arg(rendererinfo);
+	QString message = QString("Warning: Missing OpenGL capabilities for OpenCSG - OpenCSG has been disabled.\n\n"
+			"It is highly recommended to use OpenSCAD on a system with OpenGL 2.0, "
+			"or support for the framebuffer_object or pbuffer extensions. "
+			"Your renderer information is as follows:\n\n%1").arg(rendererinfo);
 
 	QString note = QString("Uncheck to hide this message in the future");
 
@@ -290,9 +290,9 @@ void GLView::display_opengl20_warning()
 	// action
 	connect(buttonbox, SIGNAL(accepted()), dialog, SLOT(accept()));
 	connect(checkbox, SIGNAL(clicked(bool)),
-		Preferences::inst()->OpenGL20WarningCheckbox, SLOT(setChecked(bool)));
+		Preferences::inst()->openCSGWarningBox, SLOT(setChecked(bool)));
 	connect(checkbox, SIGNAL(clicked(bool)),
-		Preferences::inst(), SLOT(OpenGL20WarningChanged(bool)));
+		Preferences::inst(), SLOT(openCSGWarningChanged(bool)));
 	dialog->exec();
 }
 #endif
