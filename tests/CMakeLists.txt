@@ -303,6 +303,7 @@ target_link_libraries(tests-cgal tests-common)
 add_library(tests-nocgal STATIC ${NOCGAL_SOURCES})
 target_link_libraries(tests-nocgal tests-common)
 add_library(tests-offscreen STATIC ${OFFSCREEN_SOURCES})
+# set_target_properties(tests-offscreen PROPERTIES COMPILE_FLAGS "-DENABLE_OPENCSG -DENABLE_CGAL ${CGAL_CXX_FLAGS_INIT}")
 
 #
 # echotest

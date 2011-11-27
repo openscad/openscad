@@ -27,6 +27,8 @@ public:
 
 	GLint shaderinfo[11];
 	OffscreenContext *ctx;
+	size_t width;
+	size_t height;
 private:
 	Renderer *renderer;
 	double w_h_ratio;
