@@ -39,3 +39,14 @@
    fun:(below main)
 }
 
+{
+   Qt misc leaks
+   Memcheck:Leak
+   fun:calloc
+   ...
+   fun:_Z7qt_initP19QApplicationPrivatei
+   fun:_ZN19QApplicationPrivate9constructEv
+   fun:_ZN12QApplicationC2ERiPPcbi
+   fun:main
+}
+

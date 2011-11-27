@@ -129,6 +129,9 @@ int main(int argc, char **argv)
 	outfile << csgcache[*root_node] << "\n";
 	outfile.close();
 
+	delete root_node;
+	delete root_module;
+
 	Builtins::instance(true);
 
 	return rc;

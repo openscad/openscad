@@ -216,6 +216,9 @@ int csgtestcore(int argc, char *argv[], test_type_e test_type)
 
 	csgInfo.glview->save(outfilename);
 	
+	delete root_node;
+	delete root_module;
+
 	Builtins::instance(true);
 
 	return 0;
