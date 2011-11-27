@@ -3,6 +3,9 @@
 VERSION=`date "+%Y.%m.%d"`
 #VERSION=2011.06
 
+# Turn off ccache, just for safety
+PATH=${PATH//\/opt\/local\/libexec\/ccache:}
+
 # This is the same location as DEPLOYDIR in macosx-build-dependencies.sh
 export MACOSX_DEPLOY_DIR=$PWD/../libraries/install
 
