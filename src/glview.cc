@@ -83,6 +83,8 @@ void GLView::init()
 
 	setMouseTracking(true);
 #ifdef ENABLE_OPENCSG
+	this->is_opencsg_capable = false;
+	this->has_shaders = false;
 	this->opencsg_support = true;
 	static int sId = 0;
 	this->opencsg_id = sId++;
@@ -124,11 +126,36 @@ void GLView::initializeGL()
 	if (GLEW_OK != err) {
 		fprintf(stderr, "GLEW Error: %s\n", glewGetErrorString(err));
 	}
+
 	const char *openscad_disable_gl20_env = getenv("OPENSCAD_DISABLE_GL20");
-	if (openscad_disable_gl20_env && !strcmp(openscad_disable_gl20_env, "0"))
+	if (openscad_disable_gl20_env && !strcmp(openscad_disable_gl20_env, "0")) {
 		openscad_disable_gl20_env = NULL;
-	if (glewIsSupported("GL_VERSION_2_0") && openscad_disable_gl20_env == NULL)
-	{
+	}
+
+	// All OpenGL 2 contexts are OpenCSG capable
+	if (GLEW_VERSION_2_0 && !openscad_disable_gl20_env) this->is_opencsg_capable = true;
+	// If OpenGL < 2, check for extensions
+	else if (GLEW_ARB_framebuffer_object) this->is_opencsg_capable = true;
+	else if (GLEW_EXT_framebuffer_object && GLEW_EXT_packed_depth_stencil) {
+		this->is_opencsg_capable = true;
+	}
+#ifdef WIN32
+	else if (WGLEW_ARB_pbuffer && WGLEW_ARB_pixel_format) this->is_opencsg_capable = true;
+#elif !defined(__APPLE__)
+	else if (GLXEW_SGIX_pbuffer && GLXEW_SGIX_fbconfig) this->is_opencsg_capable = true;
+#endif
+
+	if (GLEW_VERSION_2_0 && !openscad_disable_gl20_env) this->has_shaders = true;
+
+	if (!this->is_opencsg_capable) {
+		opencsg_support = false;
+		QSettings settings;
+		// FIXME: This should be an OpenCSG capability warning, not an OpenGL 2 warning
+		if (settings.value("editor/opengl20_warning_show",true).toBool()) {
+			QTimer::singleShot(0, this, SLOT(display_opengl20_warning()));
+		}
+	}
+	if (opencsg_support && this->has_shaders) {
 		const char *vs_source =
 			"uniform float xscale, yscale;\n"
 			"attribute vec3 pos_b, pos_c;\n"
@@ -211,12 +238,6 @@ void GLView::initializeGL()
 			if (loglen > 0) {
 				fprintf(stderr, "OpenGL Program Validation results:\n%.*s", loglen, logbuffer);
 			}
-		}
-	} else {
-		opencsg_support = false;
-		QSettings settings;
-		if (settings.value("editor/opengl20_warning_show",true).toBool()) {
-			QTimer::singleShot(0, this, SLOT(display_opengl20_warning()));
 		}
 	}
 #endif /* ENABLE_OPENCSG */
