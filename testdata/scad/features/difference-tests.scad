@@ -10,7 +10,7 @@ difference() {
 
 translate([12,0,0]) difference() {
   cube([10,10,10], center=true);
-  cylinder(r=4, h=10, center=true);
+  cylinder(r=4, h=10.5, center=true);
 }
 
 translate([0,12,0]) difference() {
@@ -21,7 +21,7 @@ translate([0,12,0]) difference() {
 
 translate([12,12,0]) difference() {
   cube([10,10,10], center=true);
-  translate([0,0,7]) cylinder(r=4, h=4, center=true);
+  translate([0,0,7.01]) cylinder(r=4, h=4, center=true);
 }
 
 translate([24,0,0]) difference() {

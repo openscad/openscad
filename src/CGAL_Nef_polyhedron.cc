@@ -7,6 +7,29 @@
 #include "dxftess.h"
 #include <CGAL/minkowski_sum_3.h>
 
+CGAL_Nef_polyhedron::CGAL_Nef_polyhedron(CGAL_Nef_polyhedron2 *p)
+{
+	if (p) {
+		dim = 2;
+		p2.reset(p);
+	}
+	else {
+		dim = 0;
+	}
+}
+
+CGAL_Nef_polyhedron::CGAL_Nef_polyhedron(CGAL_Nef_polyhedron3 *p)
+{
+	if (p) {
+		dim = 3;
+		p3.reset(p);
+	}
+	else {
+		dim = 0;
+	}
+}
+
+
 CGAL_Nef_polyhedron& CGAL_Nef_polyhedron::operator+=(const CGAL_Nef_polyhedron &other)
 {
 	if (this->dim == 2) (*this->p2) += (*other.p2);
