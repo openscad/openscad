@@ -187,7 +187,7 @@
 					}
 				}
 			}
-			multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 12], [0, 0, 0, 1]]) {
+			%multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 12], [0, 0, 0, 1]]) {
 				group() {
 					rotate_extrude(convexity = 2, $fn = 0, $fa = 12, $fs = 1) {
 						square(size = [25, 68], center = false);
