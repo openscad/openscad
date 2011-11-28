@@ -46,6 +46,12 @@
 #  include <opencsg.h>
 #endif
 
+#ifdef _WIN32
+#include <GL/wglew.h>
+#elif !defined(__APPLE__)
+#include <GL/glxew.h>
+#endif
+
 #define FAR_FAR_AWAY 100000.0
 
 GLView::GLView(QWidget *parent) : QGLWidget(parent), renderer(NULL)
