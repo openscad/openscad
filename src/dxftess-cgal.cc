@@ -25,6 +25,8 @@ typedef CDT::Point CDTPoint;
 
 #include <CGAL/Mesh_2/Face_badness.h>
 
+#include <boost/unordered_map.hpp>
+
 template <class T> class DummyCriteria {
 public:
 	typedef double Quality;
@@ -51,7 +53,7 @@ struct point_info_t
 	double x, y;
 	int pathidx, pointidx;
 	int max_pointidx_in_path;
-	QList<int> triangles;
+	std::vector<int> triangles;
 
 	struct point_info_t *neigh_next;
 	struct point_info_t *neigh_prev;
@@ -61,10 +63,11 @@ struct point_info_t
 	point_info_t() : x(0), y(0), pathidx(-1), pointidx(-1), max_pointidx_in_path(-1) { }
 };
 
-typedef QPair<point_info_t*,point_info_t*> edge_t;
+typedef std::pair<point_info_t*,point_info_t*> edge_t;
 
-void mark_inner_outer(QList<struct triangle> &tri, Grid2d<point_info_t> &point_info,
-		QHash<edge_t,int> &edge_to_triangle, QHash<edge_t,int> &edge_to_path, int idx, bool inner)
+void mark_inner_outer(std::vector<struct triangle> &tri, Grid2d<point_info_t> &point_info,
+											boost::unordered_map<edge_t,int> &edge_to_triangle,
+											boost::unordered_map<edge_t,int> &edge_to_path, int idx, bool inner)
 {
 	if (tri[idx].is_marked)
 		return;
@@ -85,8 +88,8 @@ void mark_inner_outer(QList<struct triangle> &tri, Grid2d<point_info_t> &point_i
 	};
 
 	for (int i = 0; i < 3; i++) {
-		if (edge_to_triangle.contains(edges[i])) {
-			bool next_inner = edge_to_path.contains(edges[i]) ? !inner : inner;
+		if (edge_to_triangle.find(edges[i]) != edge_to_triangle.end()) {
+			bool next_inner = (edge_to_path.find(edges[i]) != edge_to_path.end()) ? !inner : inner;
 			mark_inner_outer(tri, point_info, edge_to_triangle, edge_to_path,
 					edge_to_triangle[edges[i]], next_inner);
 		}
@@ -97,10 +100,10 @@ void dxf_tesselate(PolySet *ps, DxfData &dxf, double rot, bool up, bool /* do_tr
 {
 	CDT cdt;
 
-	QList<struct triangle> tri;
+	std::vector<struct triangle> tri;
 	Grid2d<point_info_t> point_info(GRID_FINE);
-	QHash<edge_t,int> edge_to_triangle;
-	QHash<edge_t,int> edge_to_path;
+	boost::unordered_map<edge_t,int> edge_to_triangle;
+	boost::unordered_map<edge_t,int> edge_to_path;
 
 	CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
 	try {
@@ -177,14 +180,14 @@ void dxf_tesselate(PolySet *ps, DxfData &dxf, double rot, bool up, bool /* do_tr
 			continue;
 
 		int idx = tri.size();
-		tri.append(triangle());
+		tri.push_back(triangle());
 
 		point_info_t *pi[3];
 		for (int i=0; i<3; i++) {
 			double px = iter->vertex(i)->point()[0];
 			double py = iter->vertex(i)->point()[1];
 			pi[i] = &point_info.align(px, py);
-			pi[i]->triangles.append(idx);
+			pi[i]->triangles.push_back(idx);
 			tri[idx].p[i].x = px;
 			tri[idx].p[i].y = py;
 		}
@@ -200,7 +203,7 @@ void dxf_tesselate(PolySet *ps, DxfData &dxf, double rot, bool up, bool /* do_tr
 		double far_left_x = 0;
 		struct point_info_t *far_left_p = NULL;
 
-		for (int i = 0; i < tri.size(); i++)
+		for (size_t i = 0; i < tri.size(); i++)
 		{
 			if (tri[i].is_marked)
 				continue;
@@ -219,7 +222,7 @@ void dxf_tesselate(PolySet *ps, DxfData &dxf, double rot, bool up, bool /* do_tr
 			break;
 
 		// find one inner triangle and run recursive marking
-		for (int i = 0; i < far_left_p->triangles.size(); i++)
+		for (size_t i = 0; i < far_left_p->triangles.size(); i++)
 		{
 			int idx = far_left_p->triangles[i];
 
@@ -273,7 +276,7 @@ void dxf_tesselate(PolySet *ps, DxfData &dxf, double rot, bool up, bool /* do_tr
 
 		// far left point is in the middle of a vertical segment
 		// -> it is ok to use any unmarked triangle connected to this point
-		for (int i = 0; i < far_left_p->triangles.size(); i++)
+		for (size_t i = 0; i < far_left_p->triangles.size(); i++)
 		{
 			int idx = far_left_p->triangles[i];
 
@@ -288,7 +291,7 @@ void dxf_tesselate(PolySet *ps, DxfData &dxf, double rot, bool up, bool /* do_tr
 	}
 
 	// add all inner triangles to target polyset
-	for(int i = 0; i < tri.size(); i++)
+	for(size_t i = 0; i < tri.size(); i++)
 	{
 		if (!tri[i].is_inner)
 			continue;
