@@ -3,7 +3,7 @@
 ;; Author:     Len Trigg
 ;; Maintainer: Len Trigg <lenbok@gmail.com>
 ;; Created:    March 2010
-;; Modified:   March 2010
+;; Modified:   November 2011
 ;; Version:    $Revision: 88 $
 
 ;; This program is free software; you can redistribute it and/or modify
@@ -38,6 +38,12 @@
 ;;; Autoload mode trigger
 (add-to-list 'auto-mode-alist '("\\.scad$" . scad-mode))
 
+(defcustom scad-command
+  '"openscad"
+  "Path to openscad executable"
+  :type 'string
+  )
+
 (defcustom scad-keywords
   '("return" "true" "false")
   "SCAD keywords."
@@ -45,25 +51,32 @@
   :group 'scad-font-lock)
 
 (defcustom scad-functions
-  '("cos" "acos" "sin" "asin" "tan" "atan" 
-    "pow" "log" "ln"
-    "abs" "min" "max" "sqrt" "round" "ceil" "floor" "lookup" 
+  '("cos" "acos" "sin" "asin" "tan" "atan" "atan2"                      ;;func.cc
+    "abs" "sign" "rands" "min" "max" 
+    "round" "ceil" "floor" 
+    "pow" "sqrt" "exp" "log" "ln"
     "str" 
-    "dxf_dim" "dxf_cross"
+    "lookup" "version" "version_num"
+    "dxf_dim" "dxf_cross"                                               ;;dxfdim.cc
     )
   "SCAD functions."
   :type 'list
   :group 'scad-font-lock)
 
 (defcustom scad-modules
-  '("for" "if" "assign" "intersection_for"
-    "echo"
-    "cube" "sphere" "cylinder" "polyhedron" 
-    "scale" "rotate" "translate" "mirror" "multmatrix" "color"
-    "union" "difference" "intersection" "render" "surface"
-    "square" "circle" "polygon" "dxf_linear_extrude" "linear_extrude" "dxf_rotate_extrude" "rotate_extrude"
-    "import_stl" "import_off" "import_dxf" "group"
-    "projection" "minkowski" "glide" "subdiv" "child"
+  '("child" "echo" "assign" "for" "intersection_for" "if"               ;;control.cc
+    "cube" "sphere" "cylinder" "polyhedron" "square" "circle" "polygon" ;;primitives.cc
+    "scale" "rotate" "translate" "mirror" "multmatrix"                  ;;transform.cc
+    "union" "difference" "intersection"                                 ;;csgops.cc
+    "render"                                                            ;;render.cc
+    "color"                                                             ;;color.cc
+    "surface"                                                           ;;surface.cc
+    "dxf_linear_extrude" "linear_extrude"                               ;;linearextrude.cc
+    "dxf_rotate_extrude" "rotate_extrude"                               ;;rotateextrude.cc
+    "import_stl" "import_off" "import_dxf" "import"                     ;;import.cc
+    "group"                                                             ;;builtin.cc
+    "projection"                                                        ;;projection.cc
+    "minkowski" "glide" "subdiv" "hull"                                 ;;cgaladv.cc
     )
   "SCAD modules."
   :type 'list
@@ -81,6 +94,7 @@
 (defvar scad-mode-map
   (let ((map (make-sparse-keymap)))
     (define-key map "\t" 'scad-indent-line)
+    (define-key map [(control c) (control o)] 'scad-open-current-buffer)
     (define-key map [return] 'newline-and-indent) 
     map)
   "Keymap for `scad-mode'.")
@@ -200,6 +214,9 @@
            )))
       (- open-count close-count))))
 
+(defun scad-open-current-buffer ()
+  (interactive)
+  (call-process scad-command nil 0 nil (buffer-file-name)))
 
 (provide 'scad)
 ;;; scad.el ends here
