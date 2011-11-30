@@ -8,7 +8,8 @@
 #  python test_pretty_print.py --upload
 
 # todo
-# do something if tests for opencsg extensions fail (fail, no image production)
+# repair html output
+# do something if tests for GL extensions for OpenCSG fail (test fail, no image production)
 # copy all images, sysinfo.txt to bundle for html/upload (images 
 #  can be altered  by subsequent runs)
 # figure out hwo to make the thing run after the test
@@ -16,7 +17,9 @@
 # why is hash differing
 # instead of having special '-info' prerun, put it as yet-another-test
 #  and parse the log
-
+# fix windows so that it won't keep asking 'this program crashed' over and over. 
+#  (you can set this in the registry to never happen, but itd be better if the program
+#   itself was able to disable that temporarily in it's own process)
 
 import string,sys,re,os,hashlib,subprocess,textwrap
 
@@ -215,7 +218,6 @@ TESTLOG
 	passed_tests = filter(lambda x: x.passed, tests)
 	failed_tests = filter(lambda x: not x.passed, tests)
 	percent = str(int(100.0*len(passed_tests) / len(tests)))
-	manifest = {}
 	s = wiki_template
 	repeat1 = ezsearch('(<REPEAT1>.*?</REPEAT1>)',s)
 	repeat2 = ezsearch('(<REPEAT2>.*?</REPEAT2>)',s)
@@ -271,6 +273,7 @@ TESTLOG
 	return imgs, txtpages
 
 def wikitohtml(wiki_rootpath, sysid, wikidata, manifest):
+	# temporarily defunct/broken 
 	head = '<html><head><title>'+wiki_rootpath+' test run for '+sysid +'</title></head><body>'
 	revmanifest = dict((val,key) for key, val in manifest.iteritems())
 	x=re.sub('\{\|(.*?)\n','<table \\1>\n',wikidata)
@@ -364,6 +367,8 @@ def main():
 		upload(wikisite,wiki_api_path,wiki_rootpath,sysid,'openscadbot',
 			'tobdacsnepo',wikidir,dryrun=dry)
 	
+	print 'test_pretty_print complete'
+
 #wikisite = 'cakebaby.referata.com'
 #wiki_api_path = ''
 wikisite = 'cakebaby.wikia.com'
