@@ -8,7 +8,7 @@
 #  python test_pretty_print.py --upload
 
 # todo
-# ban opencsg<2.0 from opencsgtest
+# do something if tests for opencsg extensions fail (fail, no image production)
 # copy all images, sysinfo.txt to bundle for html/upload (images 
 #  can be altered  by subsequent runs)
 # figure out hwo to make the thing run after the test
@@ -17,7 +17,7 @@
 # instead of having special '-info' prerun, put it as yet-another-test
 #  and parse the log
 
-import string,sys,re,os,hashlib,subprocess
+import string,sys,re,os,hashlib,subprocess,textwrap
 
 def tryread(filename):
 	data = None
@@ -81,7 +81,7 @@ def read_sysinfo(filename):
 	data = data.strip()
 
 	# create 4 letter hash and stick on end of sysid
-	nondate_data = re.sub("\n.*?ompile date.*?\n","",data)
+	nondate_data = re.sub("\n.*?ompile date.*?\n","\n",data).strip()
 	hexhash = hashlib.md5()
 	hexhash.update(nondate_data)
 	hexhash = hexhash.hexdigest()[-4:].upper()
@@ -144,8 +144,22 @@ def wikify_filename(testname,filename,sysid):
 	actual = ezsearch(os.sep+'.*?-output.*?(actual.*)',filename)
 	if actual!='': 
 		result += sysid+'_'+actual
-	return result.replace('/','_')
+	return result.replace('/','_').replace('\\','_')
 
+def parsemakes_towiki(wiki_rootpath, sysid):
+	filelist = []
+	for root, dirs, files in os.walk('.'):
+		for fname in files: filelist += [ os.path.join(root, fname) ]
+	files  = filter(lambda x: 'build.make' in os.path.basename(x), filelist)
+	files += filter(lambda x: 'flags.make' in os.path.basename(x), filelist)
+	manifest = {}
+	for fname in files:
+		wikifname = fname.replace('/','_').replace('\\','_').strip('.')
+		wikifname = wikifname.replace('CMakeFiles','').replace('.dir','')
+		manifest[fname] = wiki_rootpath + '_' + sysid + '_' + wikifname
+	wikicode = "\n'''build.make and flags.make'''\n\n\n"
+	for key in sorted(manifest.keys()): wikicode += '*[[' + manifest[key] + ']]\n'
+	return manifest, wikicode
 
 def towiki(wiki_rootpath, startdate, tests, enddate, sysinfo, sysid):
 
@@ -252,60 +266,67 @@ def wikitohtml(wiki_rootpath, sysid, wikidata, manifest):
 	x=re.sub("\[\[(.*?)\]\]","\\1",x)
 	return head + x + '</body></html>'
 
-def upload_dryrun(wikiurl,api_php_path,wikidata,manifest,wiki_rootpath,sysid,botname,botpass):
-	print 'dry run. no files to be uploaded'
-	print 'log in', wikiurl, api_php_path, botname, botpass
-	print 'save ' + '*[['+wiki_rootpath+sysid+']]' + ' to page ' + wiki_rootpath
-	print 'save ', len(wikidata), ' bytes to page ',wiki_rootpath+sysid
-	for localfile in manifest.keys():
-		if localfile:
-			localf=open(localfile,'rb')
-			wikifile = manifest[localfile]
-			print 'upload',localfile,wikifile
-
 def upload(wikiurl,api_php_path,wikidata,manifest,wiki_rootpath,sysid,botname,botpass,dryrun=True,forceupload=False):
-	if dryrun: 
-		upload_dryrun(wikiurl,api_php_path,wikidata,manifest,wiki_rootpath,sysid,botname,botpass)
-		return None
+	if dryrun: print 'dry run'
 	try:
 		import mwclient
 	except:
 		print 'please download mwclient and unpack here:', os.cwd()
 	print 'opening site:',wikiurl
-	if not api_php_path == '':
-		site = mwclient.Site(wikiurl,api_php_path)
-	else:
-		site = mwclient.Site(wikiurl)
+	if not dryrun:
+		if not api_php_path == '':
+			site = mwclient.Site(wikiurl,api_php_path)
+		else:
+			site = mwclient.Site(wikiurl)
 		
 	print 'bot login:', botname
-	site.login(botname,botpass)
+	if not dryrun: site.login(botname,botpass)
 
 	print 'edit page:',wiki_rootpath
-	page = site.Pages[wiki_rootpath]
-	text = page.edit()
 	rootpage = wiki_rootpath + sysid
-	if not '[['+rootpage+']]' in text:
-		page.save(text +'\n*[['+rootpage+']]\n')
+	if not dryrun: 
+		page = site.Pages[wiki_rootpath]
+		text = page.edit()
+		if not '[['+rootpage+']]' in text:
+			page.save(text +'\n*[['+rootpage+']]\n')
 
 	print 'upload wiki page:',rootpage
-	page = site.Pages[rootpage]
-	text = page.edit()
-	page.save(wikidata)
+	if not dryrun: 
+		page = site.Pages[rootpage]
+		text = page.edit()
+		page.save(wikidata)
 
 	print 'upload images:'
-	for localfile in sorted(manifest.keys()):
+	imagekeys = filter(lambda x: x.endswith('.png'), manifest.keys())
+	for localfile in sorted(imagekeys):
 		if localfile:
 			localf = open(localfile,'rb')
 			wikifile = manifest[localfile]
 			skip=False
 			if 'expected.png' in wikifile.lower():
-				image = site.Images[wikifile]
-				if image.exists and forceupload==False:
-					print 'skipping',wikifile, '(already on wiki)'
-					skip=True
+				if not dryrun: 
+					image = site.Images[wikifile]
+					if image.exists and forceupload==False:
+						print 'skipping',wikifile, '(already on wiki)'
+						skip=True
 			if not skip:
 				print 'uploading',wikifile,'...'
-				site.upload(localf,wikifile,wiki_rootpath + ' test', ignore=True)
+				if not dryrun:
+					site.upload(localf,wikifile,wiki_rootpath + ' test', ignore=True)
+
+	print 'upload makefiles:'
+	makekeys = filter(lambda x: x.endswith('.make'), manifest.keys())	
+	for localfile in sorted(makekeys):
+		if localfile:
+			localf = open(localfile,'rb')
+			wikifile = manifest[localfile]
+			print 'uploading',wikifile,'...'
+			if not dryrun:
+				page = site.Pages[wikifile]
+				text = page.edit()
+				page.save('<pre>\n'+localf.read()+'\n</pre>')
+
+
 
 #wikisite = 'cakebaby.referata.com'
 #wiki_api_path = ''
@@ -323,11 +344,19 @@ def main():
 	sysinfo, sysid = read_sysinfo('sysinfo.txt')
 	if '--forceupload' in sys.argv: forceupl=True
 	else: forceupl=False
+	if '--dryrun' in sys.argv: dry=True
+	else: dry=False
+
+	manifest_makes, wiki_makes = parsemakes_towiki(wiki_rootpath, sysid)
 	manifest, wikidata = towiki(wiki_rootpath, startdate, tests, enddate, sysinfo, sysid)
+	manifest.update(manifest_makes)
+	wikidata += wiki_makes
 	trysave(wikidata, os.path.join(logpath,sysid+'.wiki'))
 	htmldata = wikitohtml(wiki_rootpath, sysid, wikidata, manifest)
 	trysave(htmldata, os.path.join(logpath,sysid+'.html'))
 	if '--upload' in sys.argv:
-		upload(wikisite,wiki_api_path,wikidata,manifest,wiki_rootpath,sysid,'openscadbot','tobdacsnepo',dryrun=False,forceupload=forceupl)
+		upload(wikisite,wiki_api_path,wikidata,manifest,wiki_rootpath,sysid,'openscadbot','tobdacsnepo',dryrun=dry,forceupload=forceupl)
+
+
 main()
 
