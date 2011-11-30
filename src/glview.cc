@@ -535,7 +535,14 @@ void GLView::mouseMoveEvent(QMouseEvent *event)
 	double dx = (this_mouse.x()-last_mouse.x()) * 0.7;
 	double dy = (this_mouse.y()-last_mouse.y()) * 0.7;
 	if (mouse_drag_active) {
-		if ((event->buttons() & Qt::LeftButton) != 0) {
+		int i = event->buttons();
+		if (event->buttons() & Qt::LeftButton
+#ifdef Q_WS_MAC
+				&& !(event->modifiers() & Qt::MetaModifier)
+#endif
+			) {
+			// Left button rotates in xz, Shift-left rotates in xy
+			// On Mac, Ctrl-Left is handled as right button on other platforms
 			object_rot_x += dy;
 			if ((QApplication::keyboardModifiers() & Qt::ShiftModifier) != 0)
 				object_rot_y += dx;
@@ -546,6 +553,8 @@ void GLView::mouseMoveEvent(QMouseEvent *event)
 			normalizeAngle(object_rot_y);
 			normalizeAngle(object_rot_z);
 		} else {
+			// Right button pans
+			// Shift-right zooms
 			if ((QApplication::keyboardModifiers() & Qt::ShiftModifier) != 0) {
 				viewer_distance += (GLdouble)dy;
 			} else {
