@@ -2,7 +2,7 @@
 #
 # This program 'pretty prints' the ctest output, namely
 # files from builddir/Testing/Temporary. 
-# html & wiki output are produced
+# html & wiki output are produced in Testing/Temporary/wiki
 # wiki uploading is available by running 
 # 
 #  python test_pretty_print.py --upload
@@ -16,6 +16,7 @@
 # why is hash differing
 # instead of having special '-info' prerun, put it as yet-another-test
 #  and parse the log
+
 
 import string,sys,re,os,hashlib,subprocess,textwrap
 
@@ -88,6 +89,7 @@ def read_sysinfo(filename):
 	hexhash = hexhash.hexdigest()[-4:].upper()
 	hash = ''
 	for c in hexhash: hash += chr(ord(c)+97-48) 
+
 	sysid = osplain + '_' + machine + '_' + renderer + '_' + hash
 	sysid = sysid.lower()
 
@@ -233,7 +235,6 @@ TESTLOG
 		elif t.type=='png':
 			tmp = t.actualfile.replace(builddir,'')
 			wikiname_a = wikify_filename(tmp,wiki_rootpath,sysid)
-			# erase /home/whatever/openscad/tests/regression
 			tmp = t.expectedfile.replace(os.path.dirname(builddir),'')
 			wikiname_e = wikify_filename(tmp,wiki_rootpath,sysid)
 			imgs[wikiname_e] = t.expectedfile_data
@@ -265,7 +266,7 @@ TESTLOG
 	mainpage_wikiname = wiki_rootpath + '_' + sysid + '_test_report'
 	txtpages[ mainpage_wikiname ] = s
 	for mf in sorted(makefiles.keys()):
-		txtpages[ makefiles_wikinames[ mf ] ] = '<pre>\n'+makefiles[mf]+'\n</pre>'
+		txtpages[ makefiles_wikinames[ mf ] ] = '\n*Subreport from [['+mainpage_wikiname+']]\n\n\n<pre>\n'+makefiles[mf]+'\n</pre>'
 
 	return imgs, txtpages
 
