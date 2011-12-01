@@ -8,6 +8,8 @@
 #include "mathc99.h"
 
 #include <QVector>
+#include <QPair>
+#include <QHash>
 
 #ifdef WIN32
 #  define STDCALL __stdcall

@@ -124,6 +124,9 @@ int main(int argc, char **argv)
 	AbstractNode::resetIndexCounter();
 	root_node = root_module->evaluate(&root_ctx, &root_inst);
 
+	delete root_node;
+	delete root_module;
+
 	Builtins::instance(true);
 	ofile.close();
 	return rc;

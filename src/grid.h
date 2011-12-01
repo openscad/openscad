@@ -1,7 +1,6 @@
 #ifndef GRID_H_
 #define GRID_H_
 
-#include <QHash>
 #include "mathc99.h"
 #ifdef WIN32
 typedef __int64 int64_t;
@@ -9,6 +8,8 @@ typedef __int64 int64_t;
 #include <stdint.h>
 #endif
 #include <stdlib.h>
+#include <boost/unordered_map.hpp>
+#include <utility>
 
 const double GRID_COARSE = 0.001;
 const double GRID_FINE   = 0.000001;
@@ -18,7 +19,7 @@ class Grid2d
 {
 public:
 	double res;
-	QHash<QPair<int64_t,int64_t>, T> db;
+	boost::unordered_map<std::pair<int64_t,int64_t>, T> db;
 
 	Grid2d(double resolution) {
 		res = resolution;
@@ -31,11 +32,11 @@ public:
 	T &align(double &x, double &y) {
 		int64_t ix = (int64_t)round(x / res);
 		int64_t iy = (int64_t)round(y / res);
-		if (!db.contains(QPair<int64_t,int64_t>(ix, iy))) {
+		if (db.find(std::make_pair(ix, iy)) == db.end()) {
 			int dist = 10;
 			for (int64_t jx = ix - 1; jx <= ix + 1; jx++) {
 				for (int64_t jy = iy - 1; jy <= iy + 1; jy++) {
-					if (!db.contains(QPair<int64_t,int64_t>(jx, jy)))
+					if (db.find(std::make_pair(jx, jy)) == db.end())
 						continue;
 					int d = abs(int(ix-jx)) + abs(int(iy-jy));
 					if (d < dist) {
@@ -47,16 +48,16 @@ public:
 			}
 		}
 		x = ix * res, y = iy * res;
-		return db[QPair<int64_t,int64_t>(ix, iy)];
+		return db[std::make_pair(ix, iy)];
 	}
 	bool has(double x, double y) const {
 		int64_t ix = (int64_t)round(x / res);
 		int64_t iy = (int64_t)round(y / res);
-		if (db.contains(QPair<int64_t,int64_t>(ix, iy)))
+		if (db.find(std::make_pair(ix, iy)) != db.end())
 			return true;
 		for (int64_t jx = ix - 1; jx <= ix + 1; jx++)
 		for (int64_t jy = iy - 1; jy <= iy + 1; jy++) {
-			if (db.contains(QPair<int64_t,int64_t>(jx, jy)))
+			if (db.find(std::make_pair(jx, jy)) != db.end())
 				return true;
 		}
 		return false;
@@ -81,7 +82,7 @@ class Grid3d
 {
 public:
 	double res;
-	QHash<QPair<QPair<int64_t,int64_t>,int64_t>, T> db;
+	boost::unordered_map<std::pair<std::pair<int64_t,int64_t>,int64_t>, T> db;
 
 	Grid3d(double resolution) {
 		res = resolution;
@@ -90,12 +91,12 @@ public:
 		int64_t ix = (int64_t)round(x / res);
 		int64_t iy = (int64_t)round(y / res);
 		int64_t iz = (int64_t)round(z / res);
-		if (!db.contains(QPair<QPair<int64_t,int64_t>,int64_t>(QPair<int64_t,int64_t>(ix, iy), iz))) {
+		if (db.find(std::make_pair(std::make_pair(ix, iy), iz)) == db.end()) {
 			int dist = 10;
 			for (int64_t jx = ix - 1; jx <= ix + 1; jx++) {
 				for (int64_t jy = iy - 1; jy <= iy + 1; jy++) {
 					for (int64_t jz = iz - 1; jz <= iz + 1; jz++) {
-						if (!db.contains(QPair<QPair<int64_t,int64_t>,int64_t>(QPair<int64_t,int64_t>(jx, jy), jz)))
+						if (db.find(std::make_pair(std::make_pair(jx, jy), jz)) == db.end())
 							continue;
 						int d = abs(int(ix-jx)) + abs(int(iy-jy)) + abs(int(iz-jz));
 						if (d < dist) {
@@ -109,18 +110,18 @@ public:
 			}
 		}
 		x = ix * res, y = iy * res, z = iz * res;
-		return db[QPair<QPair<int64_t,int64_t>,int64_t>(QPair<int64_t,int64_t>(ix, iy), iz)];
+			return db[std::make_pair(std::make_pair(ix, iy), iz)];
 	}
 	bool has(double x, double y, double z) {
 		int64_t ix = (int64_t)round(x / res);
 		int64_t iy = (int64_t)round(y / res);
 		int64_t iz = (int64_t)round(z / res);
-		if (db.contains(QPair<QPair<int64_t,int64_t>,int64_t>(QPair<int64_t,int64_t>(ix, iy), iz)))
+		if (db.find(std::make_pair(std::make_pair(ix, iy), iz)) != db.end())
 			return true;
 		for (int64_t jx = ix - 1; jx <= ix + 1; jx++)
 		for (int64_t jy = iy - 1; jy <= iy + 1; jy++)
 		for (int64_t jz = iz - 1; jz <= iz + 1; jz++) {
-			if (db.contains(QPair<QPair<int64_t,int64_t>,int64_t>(QPair<int64_t,int64_t>(jx, jy), jz)))
+			if (db.find(std::make_pair(std::make_pair(jx, jy), jz)) != db.end())
 				return true;
 		}
 		return false;

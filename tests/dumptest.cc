@@ -139,6 +139,9 @@ int main(int argc, char **argv)
 	outfile << dumpstdstr << "\n";
 	outfile.close();
 
+	delete root_node;
+	delete root_module;
+
 	root_module = parsefile(outfilename);
 	if (!root_module) {
 		fprintf(stderr, "Error: Unable to read back dumped file\n");
@@ -158,6 +161,9 @@ int main(int argc, char **argv)
 		fprintf(stderr, "Readback:\n%s", readbackstr.c_str());
 		exit(1);
 	}
+
+	delete root_node;
+	delete root_module;
 
 	Builtins::instance(true);
 

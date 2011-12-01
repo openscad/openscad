@@ -79,8 +79,10 @@ private:
 	void normalizeAngle(GLdouble& angle);
 
 #ifdef ENABLE_OPENCSG
+  bool is_opencsg_capable;
+  bool has_shaders;
 private slots:
-	void display_opengl20_warning();
+	void display_opencsg_warning();
 #endif
 
 signals:

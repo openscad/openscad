@@ -199,6 +199,9 @@ int main(int argc, char **argv)
 	csgInfo.glview->paintGL();
 	csgInfo.glview->save(outfile);
 
+	delete root_node;
+	delete root_module;
+
 	Builtins::instance(true);
 
 	return 0;

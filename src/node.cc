@@ -96,6 +96,8 @@ void AbstractNode::progress_report() const
 
 std::ostream &operator<<(std::ostream &stream, const AbstractNode &node)
 {
+	// FIXME: Don't use deep access to modinst members
+	if (node.modinst->tag_background) stream << "%";
 	stream << node.toString();
 	return stream;
 }

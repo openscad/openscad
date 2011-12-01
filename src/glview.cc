@@ -46,6 +46,12 @@
 #  include <opencsg.h>
 #endif
 
+#ifdef _WIN32
+#include <GL/wglew.h>
+#elif !defined(__APPLE__)
+#include <GL/glxew.h>
+#endif
+
 #define FAR_FAR_AWAY 100000.0
 
 GLView::GLView(QWidget *parent) : QGLWidget(parent), renderer(NULL)
@@ -83,6 +89,8 @@ void GLView::init()
 
 	setMouseTracking(true);
 #ifdef ENABLE_OPENCSG
+	this->is_opencsg_capable = false;
+	this->has_shaders = false;
 	this->opencsg_support = true;
 	static int sId = 0;
 	this->opencsg_id = sId++;
@@ -124,11 +132,36 @@ void GLView::initializeGL()
 	if (GLEW_OK != err) {
 		fprintf(stderr, "GLEW Error: %s\n", glewGetErrorString(err));
 	}
+
 	const char *openscad_disable_gl20_env = getenv("OPENSCAD_DISABLE_GL20");
-	if (openscad_disable_gl20_env && !strcmp(openscad_disable_gl20_env, "0"))
+	if (openscad_disable_gl20_env && !strcmp(openscad_disable_gl20_env, "0")) {
 		openscad_disable_gl20_env = NULL;
-	if (glewIsSupported("GL_VERSION_2_0") && openscad_disable_gl20_env == NULL)
-	{
+	}
+
+	// All OpenGL 2 contexts are OpenCSG capable
+	if (GLEW_VERSION_2_0 && !openscad_disable_gl20_env) this->is_opencsg_capable = true;
+	// If OpenGL < 2, check for extensions
+	else if (GLEW_ARB_framebuffer_object) this->is_opencsg_capable = true;
+	else if (GLEW_EXT_framebuffer_object && GLEW_EXT_packed_depth_stencil) {
+		this->is_opencsg_capable = true;
+	}
+#ifdef WIN32
+	else if (WGLEW_ARB_pbuffer && WGLEW_ARB_pixel_format) this->is_opencsg_capable = true;
+#elif !defined(__APPLE__)
+	else if (GLXEW_SGIX_pbuffer && GLXEW_SGIX_fbconfig) this->is_opencsg_capable = true;
+#endif
+
+	if (GLEW_VERSION_2_0 && !openscad_disable_gl20_env) this->has_shaders = true;
+
+	if (!this->is_opencsg_capable) {
+		opencsg_support = false;
+		QSettings settings;
+		// FIXME: This should be an OpenCSG capability warning, not an OpenGL 2 warning
+		if (settings.value("editor/opengl20_warning_show",true).toBool()) {
+			QTimer::singleShot(0, this, SLOT(display_opencsg_warning()));
+		}
+	}
+	if (opencsg_support && this->has_shaders) {
 		const char *vs_source =
 			"uniform float xscale, yscale;\n"
 			"attribute vec3 pos_b, pos_c;\n"
@@ -212,21 +245,15 @@ void GLView::initializeGL()
 				fprintf(stderr, "OpenGL Program Validation results:\n%.*s", loglen, logbuffer);
 			}
 		}
-	} else {
-		opencsg_support = false;
-		QSettings settings;
-		if (settings.value("editor/opengl20_warning_show",true).toBool()) {
-			QTimer::singleShot(0, this, SLOT(display_opengl20_warning()));
-		}
 	}
 #endif /* ENABLE_OPENCSG */
 }
 
 #ifdef ENABLE_OPENCSG
-void GLView::display_opengl20_warning()
+void GLView::display_opencsg_warning()
 {
 	// data
-	QString title = QString("GLEW: GL_VERSION_2_0 is not supported!");
+	QString title = QString("OpenGL context is not OpenCSG capable");
 
 	QString rendererinfo;
 	rendererinfo.sprintf("GLEW version %s\n"
@@ -236,10 +263,10 @@ void GLView::display_opengl20_warning()
 											 glGetString(GL_RENDERER), glGetString(GL_VENDOR),
 											 glGetString(GL_VERSION));
 
-	QString message = QString("Warning: No support for OpenGL 2.0 found! OpenCSG View has been disabled.\n\n"
-			"It is highly recommended to use OpenSCAD on a system with OpenGL 2.0 "
-			"support. Please check if OpenGL 2.0 drivers are available for your "	
-			"graphics hardware. Your renderer information is as follows:\n\n%1").arg(rendererinfo);
+	QString message = QString("Warning: Missing OpenGL capabilities for OpenCSG - OpenCSG has been disabled.\n\n"
+			"It is highly recommended to use OpenSCAD on a system with OpenGL 2.0, "
+			"or support for the framebuffer_object or pbuffer extensions. "
+			"Your renderer information is as follows:\n\n%1").arg(rendererinfo);
 
 	QString note = QString("Uncheck to hide this message in the future");
 
@@ -269,9 +296,9 @@ void GLView::display_opengl20_warning()
 	// action
 	connect(buttonbox, SIGNAL(accepted()), dialog, SLOT(accept()));
 	connect(checkbox, SIGNAL(clicked(bool)),
-		Preferences::inst()->OpenGL20WarningCheckbox, SLOT(setChecked(bool)));
+		Preferences::inst()->openCSGWarningBox, SLOT(setChecked(bool)));
 	connect(checkbox, SIGNAL(clicked(bool)),
-		Preferences::inst(), SLOT(OpenGL20WarningChanged(bool)));
+		Preferences::inst(), SLOT(openCSGWarningChanged(bool)));
 	dialog->exec();
 }
 #endif
@@ -508,7 +535,14 @@ void GLView::mouseMoveEvent(QMouseEvent *event)
 	double dx = (this_mouse.x()-last_mouse.x()) * 0.7;
 	double dy = (this_mouse.y()-last_mouse.y()) * 0.7;
 	if (mouse_drag_active) {
-		if ((event->buttons() & Qt::LeftButton) != 0) {
+		int i = event->buttons();
+		if (event->buttons() & Qt::LeftButton
+#ifdef Q_WS_MAC
+				&& !(event->modifiers() & Qt::MetaModifier)
+#endif
+			) {
+			// Left button rotates in xz, Shift-left rotates in xy
+			// On Mac, Ctrl-Left is handled as right button on other platforms
 			object_rot_x += dy;
 			if ((QApplication::keyboardModifiers() & Qt::ShiftModifier) != 0)
 				object_rot_y += dx;
@@ -519,6 +553,8 @@ void GLView::mouseMoveEvent(QMouseEvent *event)
 			normalizeAngle(object_rot_y);
 			normalizeAngle(object_rot_z);
 		} else {
+			// Right button pans
+			// Shift-right zooms
 			if ((QApplication::keyboardModifiers() & Qt::ShiftModifier) != 0) {
 				viewer_distance += (GLdouble)dy;
 			} else {

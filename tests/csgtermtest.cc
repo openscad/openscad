@@ -143,6 +143,10 @@ int main(int argc, char **argv)
 	}
 	outfile.close();
 
+	if (root_term) root_term->unlink();
+	delete root_node;
+	delete root_module;
+
 	Builtins::instance(true);
 
 	return rc;
