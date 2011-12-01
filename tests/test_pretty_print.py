@@ -1,4 +1,21 @@
 #!/usr/bin/python
+
+#  Copyright (C) 2011 Don Bright <hugh.m.bright@gmail.com> 
+#
+#  This program is free software; you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation; either version 2 of the License, or
+#  (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program; if not, write to the Free Software
+#  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
 #
 # This program 'pretty prints' the ctest output, namely
 # files from builddir/Testing/Temporary. 
@@ -6,6 +23,12 @@
 # wiki uploading is available by running 
 # 
 #  python test_pretty_print.py --upload
+#
+# Design philosophy
+#
+# 1. parse the data (images, logs) into easy-to-use data structures
+# 2. wikifiy the data 
+# 3. save the wikified data to disk
 
 # todo
 # do something if tests for opencsg extensions fail (fail, no image production)
@@ -197,13 +220,17 @@ TESTLOG
 
 '''Failed text tests'''
 
-{|border=1 cellspacing=0 cellpadding=1
-! Testname 
 <REPEAT2>
+{|border=1 cellspacing=0 cellpadding=1
 |-
 | FTESTNAME
-</REPEAT2>
 |}
+
+<pre>
+TESTLOG
+</pre>
+
+</REPEAT2>
 
 '''build.make and flags.make'''
 <REPEAT3>
@@ -225,12 +252,10 @@ TESTLOG
 		'NUMTESTS':len(tests), 'NUMPASSED':len(passed_tests), 'PERCENTPASSED':percent }
 	for key in dic.keys():
 		s = s.replace(key,str(dic[key]))
-	testlogs = ''
 	for t in failed_tests:
-		testlogs += '\n\n'+t.fulltestlog
 		if t.type=='txt':
-			newchunk = re.sub('FTEST_OUTPUTFILE',t.fullname,repeat2)
 			newchunk = re.sub('FTESTNAME',t.fullname,repeat2)
+			newchunk = newchunk.replace('TESTLOG',t.fulltestlog)
 			s = s.replace(repeat2, newchunk+repeat2)
 		elif t.type=='png':
 			tmp = t.actualfile.replace(builddir,'')
@@ -336,12 +361,21 @@ def upload(wikiurl,api_php_path='/',wiki_rootpath='test', sysid='null', botname=
 
 def findlogfile(builddir):
 	logpath = os.path.join(builddir,'Testing','Temporary')
-	logfilename = os.path.join(logpath,'LastTest.log')
+	logfilename = os.path.join(logpath,'LastTest.log.tmp')
+	if not os.path.isfile(logfilename):
+		logfilename = os.path.join(logpath,'LastTest.log')
+	if not os.path.isfile(logfilename):
+		print 'cant find and/or open logfile',logfilename
+		sys.exit()
 	return logpath, logfilename
 
 def main():
 	dry = False
+	print 'running test_pretty_print'
 	if '--dryrun' in sys.argv: dry=True
+	suffix = ezsearch('--suffix=(.*?) ',string.join(sys.argv)+' ')
+	builddir = ezsearch('--builddir=(.*?) ',string.join(sys.argv)+' ')
+	if builddir=='': builddir=os.getcwd()
 	print 'build dir set to', builddir
 
 	sysinfo, sysid = read_sysinfo(os.path.join(builddir,'sysinfo.txt'))
@@ -355,7 +389,7 @@ def main():
 
 	imgs, txtpages = towiki(wiki_rootpath, startdate, tests, enddate, sysinfo, sysid, makefiles)
 
-	wikidir = os.path.join(logpath,'wiki')
+	wikidir = os.path.join(logpath,sysid+'_wiki')
 	print 'writing',len(imgs),'images and',len(txtpages),'wiki pages to:\n ', wikidir
 	for k in sorted(imgs): trysave( os.path.join(wikidir,k), imgs[k])
 	for k in sorted(txtpages): trysave( os.path.join(wikidir,k), txtpages[k])

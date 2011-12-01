@@ -87,6 +87,10 @@ string info_dump(OffscreenView *glview)
 #define compiler_info "unknown compiler"
 #endif
 
+#ifndef OPENCSG_VERSION_STRING
+#define OPENCSG_VERSION_STRING "unknown, <1.3.2"
+#endif
+
 	std::stringstream out;
 #define STRINGIFY(x) #x
 #define TOSTRING(x) STRINGIFY(x)
@@ -97,7 +101,7 @@ string info_dump(OffscreenView *glview)
 	    << "\nEigen version: " << EIGEN_WORLD_VERSION << "."
 	    << EIGEN_MAJOR_VERSION << "." << EIGEN_MINOR_VERSION
 	    << "\nCGAL version: " << TOSTRING(CGAL_VERSION)
-	    // << "\nOpenCSG" << ???
+	    << "\nOpenCSG version: " << OPENCSG_VERSION_STRING
 	    << "\n" << glview->getInfo()
 	    << "\n";
 

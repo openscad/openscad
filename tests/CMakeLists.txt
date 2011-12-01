@@ -27,11 +27,7 @@ endif()
 
 if(WIN32_STATIC_BUILD)
   if(${CMAKE_BUILD_TYPE} STREQUAL "Debug")
-    set(EMSG "\nTo build Win32 STATIC OpenSCAD tests you must run")
-    set(EMSG "${EMSG} \ncmake .. -DCMAKE_BUILD_TYPE=Release")
-    set(EMSG "${EMSG} \nthen replace /MD with /MT in CMakeCache.txt")
-    set(EMSG "${EMSG} \ni.e. sed -i s/\\/MD/\\/MT/ CMakeCache.txt") 
-    set(EMSG "${EMSG} \nthen re-run cmake ..") 
+    set(EMSG "\nTo build Win32 STATIC OpenSCAD please see doc/testing.txt")
     message(FATAL_ERROR ${EMSG})
   endif()
 endif()
@@ -158,7 +154,9 @@ include_directories(${OPENCSG_INCLUDE_DIR})
 
 # GLEW
 
-if (NOT $ENV{MACOSX_DEPLOY_DIR} STREQUAL "")
+if (NOT $ENV{GLEW_DIR} STREQUAL "")
+  set(GLEW_DIR "$ENV{GLEW_DIR}")
+elseif (NOT $ENV{MACOSX_DEPLOY_DIR} STREQUAL "")
   set(GLEW_DIR "$ENV{MACOSX_DEPLOY_DIR}")
 endif()
 
@@ -195,8 +193,13 @@ elseif (NOT $ENV{MACOSX_DEPLOY_DIR} STREQUAL "")
   set(CGAL_DIR "$ENV{MACOSX_DEPLOY_DIR}/lib/CGAL")
   set(CMAKE_MODULE_PATH "${CGAL_DIR}")
 endif()
+message(STATUS "CGAL_DIR: " ${CGAL_DIR})
 find_package(CGAL REQUIRED)
-message(STATUS "CGAL found in ${CGAL_USE_FILE} ${CGAL_INCLUDE_DIRS} ${CGAL_LIBRARIES_DIR}")
+message(STATUS "CGAL config found in " ${CGAL_USE_FILE} )
+foreach(cgal_incdir ${CGAL_INCLUDE_DIRS})
+  message(STATUS "CGAL include found in " ${cgal_incdir} )
+endforeach()
+message(STATUS "CGAL libraries found in " ${CGAL_LIBRARIES_DIR} )
 if("${CGAL_MAJOR_VERSION}.${CGAL_MINOR_VERSION}" VERSION_LESS 3.6)
   message(FATAL_ERROR "CGAL >= 3.6 required")
 endif()
@@ -255,7 +258,7 @@ set(NOCGAL_SOURCES
 
 set(CGAL_SOURCES
   ${NOCGAL_SOURCES}
-  ../src/CSGTermEvaluator.cc 
+	  ../src/CSGTermEvaluator.cc 
   ../src/CGAL_Nef_polyhedron.cc 
   ../src/cgalutils.cc 
   ../src/CGALEvaluator.cc
@@ -459,13 +462,12 @@ enable_testing()
 # set up custom pretty printing of results
 
 set(INFOCMD "execute_process(COMMAND ${CMAKE_CURRENT_BINARY_DIR}/opencsgtest --info OUTPUT_FILE sysinfo.txt)")
-set(PRETTYCMD "\"${PYTHON_EXECUTABLE} test_pretty_print.py\"")
+set(PRETTYCMD "\"${PYTHON_EXECUTABLE} test_pretty_print.py --builddir=${CMAKE_CURRENT_BINARY_DIR}\"")
 set(CTEST_CUSTOM_FILE ${CMAKE_CURRENT_BINARY_DIR}/CTestCustom.cmake)
 set(CTEST_CUSTOM_TXT "\n
   message(\"running 'opencsgtest --info' to generate sysinfo.txt\")\n
   ${INFOCMD}\n
-  # set(CTEST_CUSTOM_POST_TEST ${PRETTYCMD})\n # doesn't work. log is written
-  # after all tests run.
+  set(CTEST_CUSTOM_POST_TEST ${PRETTYCMD})\n
 ")
 file(WRITE ${CTEST_CUSTOM_FILE} ${CTEST_CUSTOM_TXT})
 
@@ -475,6 +477,7 @@ foreach(FILE test_pretty_print.py)
 endforeach()
 
 set_directory_properties(PROPERTIES TEST_INCLUDE_FILE "${CMAKE_SOURCE_DIR}/EnforceConfig.cmake")
+
 
 # Find all scad files
 file(GLOB MINIMAL_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/minimal/*.scad)
@@ -522,6 +525,9 @@ disable_tests(dumptest_transform-tests
 # FIXME: This test illustrates a weakness in child() combined with modifiers.
 # Reenable it when this is improved
 disable_tests(opencsgtest_child-background)
+
+# FIXME: This single test takes over an hour to run on a 2.7 GHz P4
+disable_tests(opencsgtest_example006)
 
 # These tests only makes sense in OpenCSG mode
 disable_tests(cgalpngtest_child-background
