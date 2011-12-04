@@ -849,11 +849,11 @@ void MainWindow::compileCSG(bool procevents)
 		}
 
 		if (root_chain->polysets.size() > 1000) {
-			PRINTF("WARNING: Normalized tree has %d elements!", root_chain->polysets.size());
+			PRINTF("WARNING: Normalized tree has %d elements!", int(root_chain->polysets.size()));
 			PRINTF("WARNING: OpenCSG rendering has been disabled.");
 		}
 		else {
-			PRINTF("Normalized CSG tree has %d elements", root_chain->polysets.size());
+			PRINTF("Normalized CSG tree has %d elements", int(root_chain->polysets.size()));
 			this->opencsgRenderer = new OpenCSGRenderer(this->root_chain, 
 																									this->highlights_chain, 
 																									this->background_chain, 
