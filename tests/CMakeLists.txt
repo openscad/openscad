@@ -296,9 +296,8 @@ target_link_libraries(echotest tests-nocgal tests-core ${QT_LIBRARIES} ${OPENGL_
 
 #
 # Yangli Hector Yee's PerceptualDiff code
-#
-
-add_executable(yee_compare yee_compare.cpp lodepng.cpp)
+# FIXME: Disabled since we use ImageMagick now. Eventually remove this and the files.
+# add_executable(yee_compare yee_compare.cpp lodepng.cpp)
 
 #
 # dumptest
