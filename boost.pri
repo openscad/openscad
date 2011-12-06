@@ -22,7 +22,7 @@ boost {
     } else {
       # some platforms have only '-mt' versions. uncomment if needed. 
       # LIBS += -lboost_thread-mt -lboost_program_options-mt
-      LIBS += -lboost_thread -lboost_program_options -lboost_filesystem -lboost_system
+      LIBS += -lboost_thread -lboost_program_options -lboost_filesystem -lboost_system -lboost_regex
     }
   }
 }
