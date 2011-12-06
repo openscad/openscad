@@ -54,10 +54,6 @@
 #include <assert.h>
 #include <sstream>
 
-#ifdef ENABLE_CGAL
-#include <CGAL/assertions_behaviour.h>
-#endif
-
 std::string commandline_commands;
 QString currentdir;
 QString examplesdir;

@@ -5,7 +5,6 @@
 #include "polyset.h"
 #include "dxfdata.h"
 #include "dxftess.h"
-#include <CGAL/minkowski_sum_3.h>
 
 CGAL_Nef_polyhedron::CGAL_Nef_polyhedron(CGAL_Nef_polyhedron2 *p)
 {

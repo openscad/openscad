@@ -30,9 +30,6 @@
 #include "grid.h"
 #include "cgal.h"
 
-
-#include <CGAL/minkowski_sum_2.h>
-
 extern CGAL_Poly2 nef2p2(CGAL_Nef_polyhedron2 p);
 
 //-----------------------------------------------------------------------------

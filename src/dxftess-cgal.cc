@@ -3,15 +3,22 @@
 #include "dxfdata.h"
 #include "polyset.h"
 #include "grid.h"
+#include "cgal.h"
 
+#ifdef NDEBUG
+#define PREV_NDEBUG NDEBUG
+#undef NDEBUG
+#endif
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
 #include <CGAL/Constrained_Delaunay_triangulation_2.h>
 #include <CGAL/Delaunay_mesher_2.h>
 #include <CGAL/Delaunay_mesher_no_edge_refinement_2.h>
 #include <CGAL/Delaunay_mesh_face_base_2.h>
 #include <CGAL/Delaunay_mesh_criteria_2.h>
-#include <CGAL/assertions_behaviour.h>
-#include <CGAL/exceptions.h>
+#include <CGAL/Mesh_2/Face_badness.h>
+#ifdef PREV_NDEBUG
+#define NDEBUG PREV_NDEBUG
+#endif
 
 typedef CGAL::Exact_predicates_inexact_constructions_kernel K;
 typedef CGAL::Triangulation_vertex_base_2<K> Vb;
@@ -22,8 +29,6 @@ typedef CGAL::Constrained_Delaunay_triangulation_2<K, Tds> CDT;
 
 typedef CDT::Vertex_handle Vertex_handle;
 typedef CDT::Point CDTPoint;
-
-#include <CGAL/Mesh_2/Face_badness.h>
 
 #include <boost/unordered_map.hpp>
 
