@@ -38,8 +38,6 @@
 #include <boost/assign/std/vector.hpp>
 using namespace boost::assign; // bring 'operator+=()' into scope
 
-#include <QFileInfo>
-
 class RotateExtrudeModule : public AbstractModule
 {
 public:
