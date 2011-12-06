@@ -33,11 +33,13 @@
 #include "handle_dep.h" // handle_dep()
 #include "visitor.h"
 
-#include <QFile>
-#include <QRegExp>
-#include <QStringList>
 #include <sstream>
+#include <fstream>
+#include <boost/foreach.hpp>
 #include <boost/unordered_map.hpp>
+#include <boost/tokenizer.hpp>
+#include <boost/lexical_cast.hpp>
+#include <boost/algorithm/string.hpp>
 #include <boost/assign/std/vector.hpp>
 using namespace boost::assign; // bring 'operator+=()' into scope
 
@@ -95,9 +97,9 @@ AbstractNode *SurfaceModule::evaluate(const Context *ctx, const ModuleInstantiat
 PolySet *SurfaceNode::evaluate_polyset(class PolySetEvaluator *) const
 {
 	handle_dep(filename);
-	QFile f(QString::fromStdString(filename));
+	std::ifstream stream(filename.c_str());
 
-	if (!f.open(QIODevice::ReadOnly | QIODevice::Text)) {
+	if (!stream.good()) {
 		PRINTF("WARNING: Can't open DAT file `%s'.", filename.c_str());
 		return NULL;
 	}
@@ -107,23 +109,34 @@ PolySet *SurfaceNode::evaluate_polyset(class PolySetEvaluator *) const
 	boost::unordered_map<std::pair<int,int>,double> data;
 	double min_val = 0;
 
-	while (!f.atEnd())
-	{
-		QString line = QString(f.readLine()).remove("\n").remove("\r");
-		line.replace(QRegExp("^[ \t]+"), "");
-		line.replace(QRegExp("[ \t]+$"), "");
+	typedef boost::tokenizer<boost::char_separator<char> > tokenizer;
+	boost::char_separator<char> sep(" \t");
 
-		if (line.startsWith("#"))
-			continue;
-
-		QStringList fields = line.split(QRegExp("[ \t]+"));
-		for (int i = 0; i < fields.count(); i++) {
-			if (i >= columns)
-				columns = i + 1;
-			double v = fields[i].toDouble();
-			data[std::make_pair(lines, i)] = v;
-			min_val = fmin(v-1, min_val);
+	while (!stream.eof()) {
+		std::string line;
+		while (!stream.eof() && (line.size() == 0 || line[0] == '#')) {
+			std::getline(stream, line);
+			boost::trim(line);
 		}
+		if (stream.eof()) break;
+
+		int col = 0;
+		tokenizer tokens(line, sep);
+		try {
+			BOOST_FOREACH(const std::string &token, tokens) {
+				double v = boost::lexical_cast<double>(token);
+				data[std::make_pair(lines, col++)] = v;
+				if (col > columns) columns = col;
+				min_val = std::min(v-1, min_val);
+			}
+		}
+		catch (boost::bad_lexical_cast &blc) {
+			if (!stream.eof()) {
+				PRINTF("WARNING: Illegal value in '%s': %s", filename.c_str(), blc.what());
+			}
+			break;
+  	}
+
 		lines++;
 	}
 
