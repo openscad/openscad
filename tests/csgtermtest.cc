@@ -116,11 +116,11 @@ int main(int argc, char **argv)
 
 //	cout << tree.getString(*root_node) << "\n";
 
-	std::vector<CSGTerm*> highlights;
-	std::vector<CSGTerm*> background;
+	std::vector<shared_ptr<CSGTerm> > highlights;
+	std::vector<shared_ptr<CSGTerm> > background;
 	PolySetEvaluator psevaluator(tree);
 	CSGTermEvaluator evaluator(tree, &psevaluator);
-	CSGTerm *root_term = evaluator.evaluateCSGTerm(*root_node, highlights, background);
+	shared_ptr<CSGTerm> root_term = evaluator.evaluateCSGTerm(*root_node, highlights, background);
 	
 	// cout << "Stored terms: " << evaluator.stored_term.size() << "\n";
 	// for (map<int, class CSGTerm*>::iterator iter = evaluator.stored_term.begin();
@@ -143,7 +143,6 @@ int main(int argc, char **argv)
 	}
 	outfile.close();
 
-	if (root_term) root_term->unlink();
 	delete root_node;
 	delete root_module;
 
