@@ -46,6 +46,10 @@
 #include <fstream>
 #include <sstream>
 #include <assert.h>
+#include <boost/algorithm/string.hpp>
+#include <boost/regex.hpp>
+#include <boost/filesystem.hpp>
+using namespace boost::filesystem;
 #include <boost/assign/std/vector.hpp>
 using namespace boost::assign; // bring 'operator+=()' into scope
 
@@ -79,10 +83,10 @@ AbstractNode *ImportModule::evaluate(const Context *ctx, const ModuleInstantiati
 	std::string filename = c.getAbsolutePath(v.text);
 	import_type_e actualtype = this->type;
 	if (actualtype == TYPE_UNKNOWN) {
-		QFileInfo fi(QString::fromStdString(filename));
-		if (fi.suffix().toLower() == "stl") actualtype = TYPE_STL;
-		else if (fi.suffix().toLower() == "off") actualtype = TYPE_OFF;
-		else if (fi.suffix().toLower() == "dxf") actualtype = TYPE_DXF;
+		std::string ext = boost::algorithm::to_lower_copy(path(filename).extension().native());
+		if (ext == ".stl") actualtype = TYPE_STL;
+		else if (ext == ".off") actualtype = TYPE_OFF;
+		else if (ext == ".dxf") actualtype = TYPE_DXF;
 	}
 
 	ImportNode *node = new ImportNode(inst, actualtype);
@@ -124,22 +128,36 @@ PolySet *ImportNode::evaluate_polyset(class PolySetEvaluator *evaluator) const
 		}
 
 		p = new PolySet();
+
+		// char data[5];
+		// f.read(data, 5);
+		// if (!f.eof() && memcmp(data, "solid", 5)) {
 		QByteArray data = f.read(5);
-		if (data.size() == 5 && QString(data) == QString("solid"))
-		{
+		if (data.size() == 5 && QString(data) == QString("solid")) {
 			int i = 0;
 			double vdata[3][3];
 			QRegExp splitre = QRegExp("\\s*(vertex)?\\s+");
+			// std::string line;
+			// std::getline(f, line);
 			f.readLine();
-			while (!f.atEnd())
-			{
+//			while (!f.eof()) {
+// boost::regex ex_sfe("solid|facet|endloop");
+// boost::regex ex_outer("outer loop");
+// boost::regex ex_vertex("vertex");
+			while (!f.atEnd()) {
+			// std::getline(f, line);
+      //		boost::trim(line);
 				QString line = QString(f.readLine()).remove("\n").remove("\r");
-				if (line.contains("solid") || line.contains("facet") || line.contains("endloop"))
+//				if (boost.regex_search(line, ex_sfe)) {
+				if (line.contains("solid") || line.contains("facet") || line.contains("endloop")) {
 					continue;
+				}
+//				if (boost.regex_search(line, ex_outer)) {
 				if (line.contains("outer loop")) {
 					i = 0;
 					continue;
 				}
+//				if (boost.regex_search(line, ex_vertex)) {
 				if (line.contains("vertex")) {
 					QStringList tokens = line.split(splitre);
 					bool ok[3] = { false, false, false };
