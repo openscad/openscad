@@ -30,9 +30,9 @@
 #include "module.h"
 #include "builtin.h"
 #include "printutils.h"
-#include <QFileInfo>
-#include <QDir>
 #include <boost/foreach.hpp>
+#include <boost/filesystem.hpp>
+using namespace boost::filesystem;
 
 std::vector<const Context*> Context::ctx_stack;
 
@@ -175,8 +175,7 @@ AbstractNode *Context::evaluate_module(const ModuleInstantiation &inst) const
 std::string Context::getAbsolutePath(const std::string &filename) const
 {
 	if (!filename.empty()) {
-		return QFileInfo(QDir(QString::fromStdString(this->document_path)), 
-										 QString::fromStdString(filename)).absoluteFilePath().toStdString();
+		return absolute(path(this->document_path) / filename).native();
 	}
 	else {
 		return filename;
