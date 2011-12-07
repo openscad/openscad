@@ -274,7 +274,6 @@ SOURCES += src/cgalutils.cc \
            src/CGALRenderer.cc \
            src/CGAL_Nef_polyhedron.cc \
            src/CGAL_Nef_polyhedron_DxfData.cc \
-	   src/cgaladv_convexhull2.cc \
            src/cgaladv_minkowski2.cc
 }
 

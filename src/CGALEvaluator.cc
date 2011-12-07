@@ -116,13 +116,12 @@ CGAL_Nef_polyhedron CGALEvaluator::applyToChildren(const AbstractNode &node, CGA
 	return N;
 }
 
-extern CGAL_Nef_polyhedron2 *convexhull2(std::list<CGAL_Nef_polyhedron2*> a);
-
 CGAL_Nef_polyhedron CGALEvaluator::applyHull(const CgaladvNode &node)
 {
 	CGAL_Nef_polyhedron N;
 	std::list<CGAL_Nef_polyhedron2*> polys;
-	std::list<CGAL_Polyhedron::Vertex::Point_3> points;
+	std::list<CGAL_Nef_polyhedron2::Point> points2d;
+	std::list<CGAL_Polyhedron::Vertex::Point_3> points3d;
 	int dim = 0;
 	BOOST_FOREACH(const ChildItem &item, this->visitedchildren[node.index()]) {
 		const AbstractNode *chnode = item.first;
@@ -137,23 +136,32 @@ CGAL_Nef_polyhedron CGALEvaluator::applyHull(const CgaladvNode &node)
 			continue;
 		}
 		if (dim == 2) {
-			polys.push_back(chN.p2.get());
+			CGAL_Nef_polyhedron2::Explorer explorer = chN.p2->explorer();
+			BOOST_FOREACH(const CGAL_Nef_polyhedron2::Explorer::Vertex &vh, 
+										std::make_pair(explorer.vertices_begin(), explorer.vertices_end())) {
+				if (explorer.is_standard(&vh)) {
+					points2d.push_back(explorer.point(&vh));
+				}
+			}
 		}
 		else if (dim == 3) {
 			CGAL_Polyhedron P;
 			chN.p3->convert_to_Polyhedron(P);
-			std::transform(P.vertices_begin(), P.vertices_end(), std::back_inserter(points), 
+			std::transform(P.vertices_begin(), P.vertices_end(), std::back_inserter(points3d), 
 										 boost::bind(static_cast<const CGAL_Polyhedron::Vertex::Point_3&(CGAL_Polyhedron::Vertex::*)() const>(&CGAL_Polyhedron::Vertex::point), _1));
 		}
 		chnode->progress_report();
 	}
 	
 	if (dim == 2) {
-		N = CGAL_Nef_polyhedron(convexhull2(polys));
+		std::list<CGAL_Nef_polyhedron2::Point> result;
+		CGAL::convex_hull_2(points2d.begin(), points2d.end(),std:: back_inserter(result));
+		N = CGAL_Nef_polyhedron(new CGAL_Nef_polyhedron2(result.begin(), result.end(), 
+																										 CGAL_Nef_polyhedron2::INCLUDED));
 	}
 	else if (dim == 3) {
 		CGAL_Polyhedron P;
-		CGAL::convex_hull_3(points.begin(), points.end(), P);
+		CGAL::convex_hull_3(points3d.begin(), points3d.end(), P);
 		N = CGAL_Nef_polyhedron(new CGAL_Nef_polyhedron3(P));
 	}
 	return N;
