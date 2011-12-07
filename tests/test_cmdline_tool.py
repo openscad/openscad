@@ -26,6 +26,7 @@ import re
 import getopt
 import shutil
 import platform
+import string
 
 def initialize_environment():
     if not options.generate: options.generate = bool(os.getenv("TEST_GENERATE"))
@@ -91,8 +92,7 @@ def compare_png(resultfilename):
       options.convert_exec = 'compare'
       compare_method = 'NCC'
 
-    msg = 'ImageMagick image comparison: ' 
-    msg += os.path.basename(options.convert_exec) + ' ' + ' '.join(args)
+    msg = 'ImageMagick image comparison: '  + options.convert_exec + ' '+ ' '.join(args[2:])
     msg += '\nexpected image: ' + expectedfilename + '\n'
     print >> sys.stderr, msg
     if not resultfilename:

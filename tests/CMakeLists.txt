@@ -71,14 +71,24 @@ if (NOT $ENV{MACOSX_DEPLOY_DIR} STREQUAL "")
   set(BOOST_ROOT "$ENV{MACOSX_DEPLOY_DIR}")
 endif()
 
+if (NOT $ENV{BOOST_DIR} STREQUAL "")
+  set(BOOST_DIR "$ENV{BOOST_DIR}")
+endif()
+
+if (NOT ${BOOST_DIR} STREQUAL "")
+  set(BOOST_ROOT ${BOOST_DIR})
+  message(STATUS "BOOST_ROOT: " ${BOOST_ROOT})
+  set(Boost_NO_SYSTEM_PATHS "TRUE")
+  set(Boost_DEBUG TRUE)
+endif()
+
+
 if (WIN32)
   set(Boost_USE_STATIC_LIBS TRUE)
   set(BOOST_STATIC TRUE)
   set(BOOST_THREAD_USE_LIB TRUE)
 endif()
 
-#set(Boost_DEBUG TRUE)
-set(Boost_NO_SYSTEM_PATHS TRUE)
 set(Boost_ADDITIONAL_VERSIONS "1.47.0" "1.46.0")
 find_package( Boost 1.35.0 COMPONENTS thread program_options )
 if(Boost_FOUND)
