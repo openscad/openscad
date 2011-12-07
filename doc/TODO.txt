@@ -71,6 +71,8 @@ o 3D View
     thicknesses, distances, slot thicknesses etc.
   - Add option to change lights, e.g. add an optional camera light
   - 2D objects are rendered at z = -0.1 - why?
+  - Rewrite to use VBOs or smth. - avoid inline calculations
+  - Rewrite to a higher-level library (e.g. OSG)?
 o Editor wishlist
   - More infrastructure for external editor (allow communication from the outside)
   - Preferences GUI for the features below
