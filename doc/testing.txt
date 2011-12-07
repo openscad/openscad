@@ -50,13 +50,15 @@ Adding  a new regression test:
 Troubleshooting:
 ------------------------------
 
-0. Headless unix servers (no X11):
+0. Headless unix servers (no X11)
 
 $ Xvfb :5 -screen 0 800x600x24 &        
 $ DISPLAY=:5 ctest
 
-1. To help CMAKE find eigen2, OpenCSG, CGAL, Boost, and GLEW, you can use 
- the -D option. See CMakeLists.txt for more information. Examples:
+1. Trouble finding libraries
+
+ To help CMAKE find eigen2, OpenCSG, CGAL, Boost, and GLEW, you can use 
+  the -D option. See CMakeLists.txt for more information. Examples:
 
  cmake . -DOPENCSG_DIR=~/OpenCSG-1.3.2
  cmake . -DCGAL_DIR=c:\CGAL-3.7 -DBOOST_ROOT=c:\boost_1_46_0
@@ -68,4 +70,11 @@ Pretty-printed html output is in a subdir of tests/build/Testing/Temporary
 Expected results are found in tests/regression/*
 Actual results are found in tests/build/testname-output/*
 
-3. Cross-compiling of tests has not been automated nor tested. 
+3. Cross-compiling 
+
+Cross-compiling of tests has not been automated nor tested
+
+4. Testing images takes forever, they fail, and it says 'return -11'
+
+Imagemagick may have crashed. Try passing -DCOMPARATOR=ncc to cmake
+

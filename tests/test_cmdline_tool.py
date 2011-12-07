@@ -78,16 +78,18 @@ def compare_default(resultfilename):
 def compare_png(resultfilename):
     compare_method = 'pixel'
     #args = [expectedfilename, resultfilename, "-alpha", "Off", "-compose", "difference", "-composite", "-threshold", "10%", "-blur", "2", "-threshold", "30%", "-format", "%[fx:w*h*mean]", "info:"]
-    #args = [expectedfilename, resultfilename, "-alpha", "Off", "-compose", "difference", "-composite", "-threshold", "10%", "-morphology", "Erode", "Square", "-format", "%[fx:w*h*mean]", "info:"]
+    args = [expectedfilename, resultfilename, "-alpha", "Off", "-compose", "difference", "-composite", "-threshold", "10%", "-morphology", "Erode", "Square", "-format", "%[fx:w*h*mean]", "info:"]
 
     # for systems with older imagemagick that doesnt support '-morphology'
     # http://www.imagemagick.org/Usage/morphology/#alturnative
-    args = [expectedfilename, resultfilename, "-alpha", "Off", "-compose", "difference", "-composite", "-threshold", "10%", "-gaussian-blur","3x65535", "-threshold", "99.99%", "-format", "%[fx:w*h*mean]", "info:"]
+    if options.comparator == 'old':
+      args = [expectedfilename, resultfilename, "-alpha", "Off", "-compose", "difference", "-composite", "-threshold", "10%", "-gaussian-blur","3x65535", "-threshold", "99.99%", "-format", "%[fx:w*h*mean]", "info:"]
 
-    # for systems where imagemagick crashes when using the above comparators
-    # args = [expectedfilename, resultfilename, "-alpha", "Off", "-compose", "difference", "-metric", "NCC", "tmp.png"]
-    # options.convert_exec = 'compare'
-    # compare_method = 'NCC'
+    if options.comparator == 'ncc':
+      # for systems where imagemagick crashes when using the above comparators
+      args = [expectedfilename, resultfilename, "-alpha", "Off", "-compose", "difference", "-metric", "NCC", "tmp.png"]
+      options.convert_exec = 'compare'
+      compare_method = 'NCC'
 
     msg = 'ImageMagick image comparison: ' 
     msg += os.path.basename(options.convert_exec) + ' ' + ' '.join(args)
@@ -168,7 +170,7 @@ def usage():
 if __name__ == '__main__':
     # Handle command-line arguments
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "gs:c:t:", ["generate", "convexec=", "suffix=", "test="])
+        opts, args = getopt.getopt(sys.argv[1:], "gs:c:t:m:", ["generate", "convexec=", "suffix=", "test=", "comparator="])
     except getopt.GetoptError, err:
         usage()
         sys.exit(2)
@@ -186,8 +188,10 @@ if __name__ == '__main__':
             else: options.suffix = a
         elif o in ("-t", "--test"):
             options.testname = a
-	elif o in ("-c", "--convexec"): 
+        elif o in ("-c", "--convexec"): 
             options.convert_exec = os.path.normpath( a )
+        elif o in ("-m", "--comparator"):
+            options.comparator = a
 
     # <cmdline-tool> and <argument>
     if len(args) < 2:

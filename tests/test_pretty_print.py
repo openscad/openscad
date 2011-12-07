@@ -19,11 +19,13 @@
 #
 # This program 'pretty prints' the ctest output, namely
 # files from builddir/Testing/Temporary. 
-# html & wiki output are produced in Testing/Temporary/wiki
-# wiki uploading is available by running 
+# html & wiki output are produced in Testing/Temporary/sysid_report
+#
+# experimental wiki uploading is available by running 
 # 
 #  python test_pretty_print.py --upload
 #
+
 # Design philosophy
 #
 # 1. parse the data (images, logs) into easy-to-use data structures

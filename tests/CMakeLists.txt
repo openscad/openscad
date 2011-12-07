@@ -422,6 +422,12 @@ function(get_test_fullname TESTCMD FILENAME FULLNAME)
   set(${FULLNAME} ${${FULLNAME}} PARENT_SCOPE)
 endfunction()
 
+# comparison method to use
+if (NOT $ENV{COMPARATOR} STREQUAL "")
+  set(COMPARATOR "$ENV{COMPARATOR}")
+endif()
+message(STATUS "COMPARATOR: " ${COMPARATOR})
+
 #
 # This functions adds cmd-line tests given files.
 # Files are sent as the parameters following TESTSUFFIX
@@ -452,7 +458,7 @@ macro(add_cmdline_test TESTCMD TESTSUFFIX)
       set(CONFARG CONFIGURATIONS)
       set(CONFVAL ${FOUNDCONFIGS})
 
-      add_test(NAME ${TEST_FULLNAME} ${CONFARG} ${CONFVAL} COMMAND ${PYTHON_EXECUTABLE} ${tests_SOURCE_DIR}/test_cmdline_tool.py -c ${ImageMagick_convert_EXECUTABLE} -s ${TESTSUFFIX} ${CMAKE_BINARY_DIR}/${TESTCMD} "${SCADFILE}")
+      add_test(NAME ${TEST_FULLNAME} ${CONFARG} ${CONFVAL} COMMAND ${PYTHON_EXECUTABLE} ${tests_SOURCE_DIR}/test_cmdline_tool.py --comparator=${COMPARATOR} -c ${ImageMagick_convert_EXECUTABLE} -s ${TESTSUFFIX} ${CMAKE_BINARY_DIR}/${TESTCMD} "${SCADFILE}")
     endif()
   endforeach()
 endmacro()
