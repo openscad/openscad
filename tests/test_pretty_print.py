@@ -33,7 +33,6 @@
 # 3. save the wikified data to disk
 
 # todo
-# repair html output
 # do something if tests for GL extensions for OpenCSG fail (test fail, no image production)
 # copy all images, sysinfo.txt to bundle for html/upload (images 
 #  can be altered  by subsequent runs)

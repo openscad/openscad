@@ -83,3 +83,8 @@ based on Normalized Cross Correlation. Pass -DCOMPARATOR=ncc to cmake
 
 Your version of imagemagick is old. Upgrade, or pass -DCOMPARATOR=old to cmake.
 The comparison will be of lowered reliability.  
+
+6. Many cgalpngtests are failing with weird assertion errors. 
+
+Edit CMakeCache.txt and replace '-DNDEBUG' or '/D NDEBUG' with blank spaces
+
