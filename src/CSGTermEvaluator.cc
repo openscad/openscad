@@ -18,6 +18,7 @@
 #include <iostream>
 #include <assert.h>
 #include <cstddef>
+#include <boost/foreach.hpp>
 
 /*!
 	\class CSGTermEvaluator
@@ -26,9 +27,9 @@
 	with OpenCSG.
 */
 
-CSGTerm *CSGTermEvaluator::evaluateCSGTerm(const AbstractNode &node, 
-																					 std::vector<CSGTerm*> &highlights, 
-																					 std::vector<CSGTerm*> &background)
+shared_ptr<CSGTerm> CSGTermEvaluator::evaluateCSGTerm(const AbstractNode &node, 
+																					 std::vector<shared_ptr<CSGTerm> > &highlights, 
+																					 std::vector<shared_ptr<CSGTerm> > &background)
 {
 	Traverser evaluate(*this, node, Traverser::PRE_AND_POSTFIX);
 	evaluate.execute();
@@ -39,31 +40,28 @@ CSGTerm *CSGTermEvaluator::evaluateCSGTerm(const AbstractNode &node,
 
 void CSGTermEvaluator::applyToChildren(const AbstractNode &node, CSGTermEvaluator::CsgOp op)
 {
-	CSGTerm *t1 = NULL;
-	for (ChildList::const_iterator iter = this->visitedchildren[node.index()].begin();
-			 iter != this->visitedchildren[node.index()].end();
-			 iter++) {
-		const AbstractNode *chnode = *iter;
-		CSGTerm *t2 = this->stored_term[chnode->index()];
+	shared_ptr<CSGTerm> t1;
+	BOOST_FOREACH(const AbstractNode *chnode, this->visitedchildren[node.index()]) {
+		shared_ptr<CSGTerm> t2(this->stored_term[chnode->index()]);
 		this->stored_term.erase(chnode->index());
 		if (t2 && !t1) {
 			t1 = t2;
 		} else if (t2 && t1) {
 			if (op == CSGT_UNION) {
-				t1 = new CSGTerm(CSGTerm::TYPE_UNION, t1, t2);
+				t1.reset(new CSGTerm(CSGTerm::TYPE_UNION, t1, t2));
 			} else if (op == CSGT_DIFFERENCE) {
-				t1 = new CSGTerm(CSGTerm::TYPE_DIFFERENCE, t1, t2);
+				t1.reset(new CSGTerm(CSGTerm::TYPE_DIFFERENCE, t1, t2));
 			} else if (op == CSGT_INTERSECTION) {
-				t1 = new CSGTerm(CSGTerm::TYPE_INTERSECTION, t1, t2);
+				t1.reset(new CSGTerm(CSGTerm::TYPE_INTERSECTION, t1, t2));
 			}
 		}
 	}
 	if (t1 && node.modinst->tag_highlight) {
-		this->highlights.push_back(t1->link());
+		this->highlights.push_back(t1);
 	}
 	if (t1 && node.modinst->tag_background) {
 		this->background.push_back(t1);
-		t1 = NULL; // don't propagate background tagged nodes
+		t1.reset(); // don't propagate background tagged nodes
 	}
 	this->stored_term[node.index()] = t1;
 }
@@ -86,21 +84,22 @@ Response CSGTermEvaluator::visit(State &state, const AbstractIntersectionNode &n
 	return ContinueTraversal;
 }
 
-static CSGTerm *evaluate_csg_term_from_ps(const State &state, 
-																					std::vector<CSGTerm*> &highlights, 
-																					std::vector<CSGTerm*> &background, 
+static shared_ptr<CSGTerm> evaluate_csg_term_from_ps(const State &state, 
+																					std::vector<shared_ptr<CSGTerm> > &highlights, 
+																					std::vector<shared_ptr<CSGTerm> > &background, 
 																					const shared_ptr<PolySet> &ps, 
 																					const ModuleInstantiation *modinst, 
 																					const AbstractNode &node)
 {
 	std::stringstream stream;
 	stream << node.name() << node.index();
-	CSGTerm *t = new CSGTerm(ps, state.matrix(), state.color(), stream.str());
-	if (modinst->tag_highlight)
-		highlights.push_back(t->link());
+	shared_ptr<CSGTerm> t(new CSGTerm(ps, state.matrix(), state.color(), stream.str()));
+	if (modinst->tag_highlight) {
+		highlights.push_back(t);
+	}
 	if (modinst->tag_background) {
 		background.push_back(t);
-		return NULL;
+		t.reset();
 	}
 	return t;
 }
@@ -108,7 +107,7 @@ static CSGTerm *evaluate_csg_term_from_ps(const State &state,
 Response CSGTermEvaluator::visit(State &state, const AbstractPolyNode &node)
 {
 	if (state.isPostfix()) {
-		CSGTerm *t1 = NULL;
+		shared_ptr<CSGTerm> t1;
 		if (this->psevaluator) {
 			shared_ptr<PolySet> ps = this->psevaluator->getPolySet(node, true);
 			if (ps) {
@@ -173,7 +172,7 @@ Response CSGTermEvaluator::visit(State &state, const ColorNode &node)
 Response CSGTermEvaluator::visit(State &state, const RenderNode &node)
 {
 	if (state.isPostfix()) {
-		CSGTerm *t1 = NULL;
+		shared_ptr<CSGTerm> t1;
 		shared_ptr<PolySet> ps;
 		if (this->psevaluator) {
 			ps = this->psevaluator->getPolySet(node, true);
@@ -191,7 +190,7 @@ Response CSGTermEvaluator::visit(State &state, const RenderNode &node)
 Response CSGTermEvaluator::visit(State &state, const CgaladvNode &node)
 {
 	if (state.isPostfix()) {
-		CSGTerm *t1 = NULL;
+		shared_ptr<CSGTerm> t1;
     // FIXME: Calling evaluator directly since we're not a PolyNode. Generalize this.
 		shared_ptr<PolySet> ps;
 		if (this->psevaluator) {

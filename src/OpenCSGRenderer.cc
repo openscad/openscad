@@ -56,7 +56,7 @@ OpenCSGRenderer::OpenCSGRenderer(CSGChain *root_chain, CSGChain *highlights_chai
 {
 }
 
-void OpenCSGRenderer::draw(bool showfaces, bool showedges) const
+void OpenCSGRenderer::draw(bool /*showfaces*/, bool showedges) const
 {
 	if (this->root_chain) {
 		GLint *shaderinfo = this->shaderinfo;

@@ -43,25 +43,25 @@ development. Other versions may or may not work as well..
 * GMP (5.0.x):
   http://www.gmplib.org/
 
-* MPFR (3.0.x):
+* MPFR (3.x):
   http://www.mpfr.org/
 
 * boost (1.35 - 1.47)
   http://www.boost.org/
 
-* cmake (2.6.x, required by CGAL)
+* cmake (2.6 - 2.8, required by CGAL and the test framework)
   http://www.cmake.org/
 
-* OpenCSG (1.3.0):
+* OpenCSG (1.3.2):
   http://www.opencsg.org/
 
-* GLEW (1.5.x, 1.6.x, also bundled with OpenCSG)
+* GLEW (1.5 ->)
   http://glew.sourceforge.net/
 
 * Eigen2 (2.0.13->)
   http://eigen.tuxfamily.org/
 
-* GCC C++ Compiler (4.2, 4.3.1):
+* GCC C++ Compiler (4.2 ->):
   http://gcc.gnu.org/
 
 * Bison (2.4):

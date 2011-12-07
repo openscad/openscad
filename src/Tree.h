@@ -13,7 +13,7 @@ class Tree
 {
 public:
 	Tree(const AbstractNode *root = NULL) : root_node(root) {}
-	~Tree() {}
+	~Tree();
 
 	void setRoot(const AbstractNode *root);
 	const AbstractNode *root() const { return this->root_node; }

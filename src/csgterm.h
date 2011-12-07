@@ -21,20 +21,19 @@ public:
 	type_e type;
 	shared_ptr<PolySet> polyset;
 	std::string label;
-	CSGTerm *left;
-	CSGTerm *right;
+	shared_ptr<CSGTerm> left;
+	shared_ptr<CSGTerm> right;
 	Transform3d m;
 	double color[4];
-	int refcounter;
 
 	CSGTerm(const shared_ptr<PolySet> &polyset, const Transform3d &matrix, const double color[4], const std::string &label);
+	CSGTerm(type_e type, shared_ptr<CSGTerm> left, shared_ptr<CSGTerm> right);
 	CSGTerm(type_e type, CSGTerm *left, CSGTerm *right);
+	~CSGTerm();
 
-	CSGTerm *normalize();
-	CSGTerm *normalize_tail();
+	static shared_ptr<CSGTerm> normalize(shared_ptr<CSGTerm> &term);
+	static shared_ptr<CSGTerm> normalize_tail(shared_ptr<CSGTerm> &term);
 
-	CSGTerm *link();
-	void unlink();
 	std::string dump();
 };
 
@@ -50,7 +49,7 @@ public:
 	CSGChain();
 
 	void add(const shared_ptr<PolySet> &polyset, const Transform3d &m, double *color, CSGTerm::type_e type, std::string label);
-	void import(CSGTerm *term, CSGTerm::type_e type = CSGTerm::TYPE_UNION);
+	void import(shared_ptr<CSGTerm> term, CSGTerm::type_e type = CSGTerm::TYPE_UNION);
 	std::string dump();
 
 	BoundingBox getBoundingBox() const;

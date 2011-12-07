@@ -6,6 +6,7 @@
 #include <vector>
 #include <cstddef>
 #include "visitor.h"
+#include "memory.h"
 
 class CSGTermEvaluator : public Visitor
 {
@@ -24,9 +25,9 @@ public:
  	virtual Response visit(State &state, const class RenderNode &node);
  	virtual Response visit(State &state, const class CgaladvNode &node);
 
-	class CSGTerm *evaluateCSGTerm(const AbstractNode &node,
-																 std::vector<CSGTerm*> &highlights, 
-																 std::vector<CSGTerm*> &background);
+	shared_ptr<class CSGTerm> evaluateCSGTerm(const AbstractNode &node,
+																 std::vector<shared_ptr<CSGTerm> > &highlights, 
+																 std::vector<shared_ptr<CSGTerm> > &background);
 
 private:
 	enum CsgOp {CSGT_UNION, CSGT_INTERSECTION, CSGT_DIFFERENCE, CSGT_MINKOWSKI};
@@ -38,10 +39,10 @@ private:
 	std::map<int, ChildList> visitedchildren;
 
 public:
-	std::map<int, class CSGTerm*> stored_term; // The term evaluated from each node index
+	std::map<int, shared_ptr<CSGTerm> > stored_term; // The term evaluated from each node index
 
-	std::vector<CSGTerm*> highlights;
-	std::vector<CSGTerm*> background;
+	std::vector<shared_ptr<CSGTerm> > highlights;
+	std::vector<shared_ptr<CSGTerm> > background;
 	const Tree &tree;
 	class PolySetEvaluator *psevaluator;
 };

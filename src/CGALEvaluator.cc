@@ -16,9 +16,15 @@
 #include "CGALCache.h"
 #include "cgal.h"
 #include "cgalutils.h"
-#include <CGAL/assertions_behaviour.h>
-#include <CGAL/exceptions.h>
+
+#ifdef NDEBUG
+#define PREV_NDEBUG NDEBUG
+#undef NDEBUG
+#endif
 #include <CGAL/convex_hull_3.h>
+#ifdef PREV_NDEBUG
+#define NDEBUG PREV_NDEBUG
+#endif
 
 #include <string>
 #include <map>

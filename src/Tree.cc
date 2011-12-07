@@ -4,6 +4,12 @@
 #include <assert.h>
 #include <algorithm>
 
+Tree::~Tree()
+{
+	this->nodecache.clear();
+	this->nodeidcache.clear();
+}
+
 /*!
 	Returns the cached string representation of the subtree rooted by \a node.
 	If node is not cached, the cache will be rebuilt.

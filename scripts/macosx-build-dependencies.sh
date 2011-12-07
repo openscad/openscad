@@ -185,10 +185,10 @@ build_opencsg()
   version=$1
   echo "Building OpenCSG" $version "..."
   cd $BASEDIR/src
+  rm -rf OpenCSG-$version
   curl -O http://www.opencsg.org/OpenCSG-$version.tar.gz
   tar xzf OpenCSG-$version.tar.gz
   cd OpenCSG-$version
-  patch -p1 < $OPENSCADDIR/patches/OpenCSG-$version-FBO.patch
   patch -p1 < $OPENSCADDIR/patches/OpenCSG-$version-MacOSX-port.patch
   MACOSX_DEPLOY_DIR=$DEPLOYDIR qmake -r CONFIG+="x86 x86_64"
   make install
@@ -202,4 +202,4 @@ build_boost 1.47.0
 # NB! For CGAL, also update the actual download URL in the function
 build_cgal 3.9
 build_glew 1.7.0
-build_opencsg 1.3.0
+build_opencsg 1.3.2

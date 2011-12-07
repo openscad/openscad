@@ -47,21 +47,18 @@ class CsgInfo
 {
 public:
 	CsgInfo();
-	CSGTerm *root_norm_term;          // Normalized CSG products
+	shared_ptr<CSGTerm> root_norm_term;          // Normalized CSG products
 	class CSGChain *root_chain;
-	vector<CSGTerm*> highlight_terms;
+	std::vector<shared_ptr<CSGTerm> > highlight_terms;
 	CSGChain *highlights_chain;
-	vector<CSGTerm*> background_terms;
+	std::vector<shared_ptr<CSGTerm> > background_terms;
 	CSGChain *background_chain;
 	OffscreenView *glview;
 };
 
 CsgInfo::CsgInfo() {
-        root_norm_term = NULL;
         root_chain = NULL;
-        highlight_terms = vector<CSGTerm*>();
         highlights_chain = NULL;
-        background_terms = vector<CSGTerm*>();
         background_chain = NULL;
         glview = NULL;
 }
@@ -306,9 +303,9 @@ int csgtestcore(int argc, char *argv[], test_type_e test_type)
 	CsgInfo csgInfo = CsgInfo();
 	CGALEvaluator cgalevaluator(tree);
 	CSGTermEvaluator evaluator(tree, &cgalevaluator.psevaluator);
-	CSGTerm *root_raw_term = evaluator.evaluateCSGTerm(*root_node, 
-																										 csgInfo.highlight_terms, 
-																										 csgInfo.background_terms);
+	shared_ptr<CSGTerm> root_raw_term = evaluator.evaluateCSGTerm(*root_node, 
+																																csgInfo.highlight_terms, 
+																																csgInfo.background_terms);
 
 	if (!root_raw_term) {
 		cerr << "Error: CSG generation failed! (no top level object found)\n";
@@ -316,16 +313,17 @@ int csgtestcore(int argc, char *argv[], test_type_e test_type)
 	}
 
 	// CSG normalization
-	csgInfo.root_norm_term = root_raw_term->link();
+	csgInfo.root_norm_term = root_raw_term;
 	while (1) {
-		CSGTerm *n = csgInfo.root_norm_term->normalize();
-		csgInfo.root_norm_term->unlink();
-		if (csgInfo.root_norm_term == n)
-			break;
+		shared_ptr<CSGTerm> n = CSGTerm::normalize(csgInfo.root_norm_term);
+		if (csgInfo.root_norm_term == n) break;
 		csgInfo.root_norm_term = n;
 	}
 		
 	assert(csgInfo.root_norm_term);
+	if (csgInfo.root_norm_term.use_count() <= 1) {
+		fprintf(stderr, "XXX\n");
+	}
 	
 	csgInfo.root_chain = new CSGChain();
 	csgInfo.root_chain->import(csgInfo.root_norm_term);
@@ -337,10 +335,8 @@ int csgtestcore(int argc, char *argv[], test_type_e test_type)
 		csgInfo.highlights_chain = new CSGChain();
 		for (unsigned int i = 0; i < csgInfo.highlight_terms.size(); i++) {
 			while (1) {
-				CSGTerm *n = csgInfo.highlight_terms[i]->normalize();
-				csgInfo.highlight_terms[i]->unlink();
-				if (csgInfo.highlight_terms[i] == n)
-					break;
+				shared_ptr<CSGTerm> n = CSGTerm::normalize(csgInfo.highlight_terms[i]);
+				if (csgInfo.highlight_terms[i] == n) break;
 				csgInfo.highlight_terms[i] = n;
 			}
 			csgInfo.highlights_chain->import(csgInfo.highlight_terms[i]);
@@ -353,10 +349,8 @@ int csgtestcore(int argc, char *argv[], test_type_e test_type)
 		csgInfo.background_chain = new CSGChain();
 		for (unsigned int i = 0; i < csgInfo.background_terms.size(); i++) {
 			while (1) {
-				CSGTerm *n = csgInfo.background_terms[i]->normalize();
-				csgInfo.background_terms[i]->unlink();
-				if (csgInfo.background_terms[i] == n)
-					break;
+				shared_ptr<CSGTerm> n = CSGTerm::normalize(csgInfo.background_terms[i]);
+				if (csgInfo.background_terms[i] == n) break;
 				csgInfo.background_terms[i] = n;
 			}
 			csgInfo.background_chain->import(csgInfo.background_terms[i]);

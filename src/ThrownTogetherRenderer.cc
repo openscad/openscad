@@ -40,7 +40,7 @@ ThrownTogetherRenderer::ThrownTogetherRenderer(CSGChain *root_chain,
 {
 }
 
-void ThrownTogetherRenderer::draw(bool showfaces, bool showedges) const
+void ThrownTogetherRenderer::draw(bool /*showfaces*/, bool showedges) const
 {
 	if (this->root_chain) {
 		glEnable(GL_CULL_FACE);

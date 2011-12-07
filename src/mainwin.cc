@@ -147,8 +147,6 @@ MainWindow::MainWindow(const QString &filename)
 
 	root_module = NULL;
 	absolute_root_node = NULL;
-	root_raw_term = NULL;
-	root_norm_term = NULL;
 	root_chain = NULL;
 #ifdef ENABLE_CGAL
 	this->root_N = NULL;
@@ -619,30 +617,18 @@ void MainWindow::compile(bool procevents)
 		this->absolute_root_node = NULL;
 	}
 
-	if (this->root_raw_term) {
-		this->root_raw_term->unlink();
-		this->root_raw_term = NULL;
-	}
-
-	if (this->root_norm_term) {
-		this->root_norm_term->unlink();
-		this->root_norm_term = NULL;
-	}
+	this->root_raw_term.reset();
+	this->root_norm_term.reset();
 
 	if (this->root_chain) {
 		delete this->root_chain;
 		this->root_chain = NULL;
 	}
 
-	std::for_each(this->highlight_terms.begin(), this->highlight_terms.end(), 
-								bind(&CSGTerm::unlink, _1));
-
 	this->highlight_terms.clear();
 	delete this->highlights_chain;
 	this->highlights_chain = NULL;
 
-	std::for_each(this->background_terms.begin(), this->background_terms.end(), 
-								bind(&CSGTerm::unlink, _1));
 	this->background_terms.clear();
 	delete this->background_chain;
 	this->background_chain = NULL;
@@ -771,7 +757,7 @@ void MainWindow::compileCSG(bool procevents)
 		CGALEvaluator cgalevaluator(this->tree);
 		PolySetCGALEvaluator psevaluator(cgalevaluator);
 		CSGTermEvaluator csgrenderer(this->tree, &psevaluator);
-		root_raw_term = csgrenderer.evaluateCSGTerm(*root_node, highlight_terms, background_terms);
+		this->root_raw_term = csgrenderer.evaluateCSGTerm(*root_node, highlight_terms, background_terms);
 		if (!root_raw_term) {
 			PRINT("ERROR: CSG generation failed! (no top level object found)");
 			if (procevents)
@@ -794,21 +780,19 @@ void MainWindow::compileCSG(bool procevents)
 		if (procevents)
 			QApplication::processEvents();
 		
-		root_norm_term = root_raw_term->link();
+		this->root_norm_term = this->root_raw_term;
 		
 		// CSG normalization
 		while (1) {
-			CSGTerm *n = root_norm_term->normalize();
-			root_norm_term->unlink();
-			if (root_norm_term == n)
-				break;
-			root_norm_term = n;
+			shared_ptr<CSGTerm> n = CSGTerm::normalize(this->root_norm_term);
+			if (this->root_norm_term == n) break;
+			this->root_norm_term = n;
 		}
 		
-		assert(root_norm_term);
+		assert(this->root_norm_term);
 
 		root_chain = new CSGChain();
-		root_chain->import(root_norm_term);
+		root_chain->import(this->root_norm_term);
 		
 		if (highlight_terms.size() > 0)
 		{
@@ -819,10 +803,8 @@ void MainWindow::compileCSG(bool procevents)
 			highlights_chain = new CSGChain();
 			for (unsigned int i = 0; i < highlight_terms.size(); i++) {
 				while (1) {
-					CSGTerm *n = highlight_terms[i]->normalize();
-					highlight_terms[i]->unlink();
-					if (highlight_terms[i] == n)
-						break;
+					shared_ptr<CSGTerm> n = CSGTerm::normalize(highlight_terms[i]);
+					if (highlight_terms[i] == n) break;
 					highlight_terms[i] = n;
 				}
 				highlights_chain->import(highlight_terms[i]);
@@ -838,10 +820,8 @@ void MainWindow::compileCSG(bool procevents)
 			background_chain = new CSGChain();
 			for (unsigned int i = 0; i < background_terms.size(); i++) {
 				while (1) {
-					CSGTerm *n = background_terms[i]->normalize();
-					background_terms[i]->unlink();
-					if (background_terms[i] == n)
-						break;
+					shared_ptr<CSGTerm> n = CSGTerm::normalize(background_terms[i]);
+					if (background_terms[i] == n) break;
 					background_terms[i] = n;
 				}
 				background_chain->import(background_terms[i]);
@@ -849,11 +829,11 @@ void MainWindow::compileCSG(bool procevents)
 		}
 
 		if (root_chain->polysets.size() > 1000) {
-			PRINTF("WARNING: Normalized tree has %d elements!", root_chain->polysets.size());
+			PRINTF("WARNING: Normalized tree has %d elements!", int(root_chain->polysets.size()));
 			PRINTF("WARNING: OpenCSG rendering has been disabled.");
 		}
 		else {
-			PRINTF("Normalized CSG tree has %d elements", root_chain->polysets.size());
+			PRINTF("Normalized CSG tree has %d elements", int(root_chain->polysets.size()));
 			this->opencsgRenderer = new OpenCSGRenderer(this->root_chain, 
 																									this->highlights_chain, 
 																									this->background_chain, 

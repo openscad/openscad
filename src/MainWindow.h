@@ -7,6 +7,7 @@
 #include "context.h"
 #include "module.h"
 #include "Tree.h"
+#include "memory.h"
 #include <vector>
 
 class MainWindow : public QMainWindow, public Ui::MainWindow
@@ -34,8 +35,8 @@ public:
 	AbstractNode *root_node;          // Root if the root modifier (!) is used
 	Tree tree;
 
-	class CSGTerm *root_raw_term;           // Result of CSG term rendering
-	CSGTerm *root_norm_term;          // Normalized CSG products
+	shared_ptr<class CSGTerm> root_raw_term;           // Result of CSG term rendering
+	shared_ptr<CSGTerm> root_norm_term;          // Normalized CSG products
 	class CSGChain *root_chain;
 #ifdef ENABLE_CGAL
 	class CGAL_Nef_polyhedron *root_N;
@@ -46,9 +47,9 @@ public:
 #endif
 	class ThrownTogetherRenderer *thrownTogetherRenderer;
 
-	std::vector<CSGTerm*> highlight_terms;
+	std::vector<shared_ptr<CSGTerm> > highlight_terms;
 	CSGChain *highlights_chain;
-	std::vector<CSGTerm*> background_terms;
+	std::vector<shared_ptr<CSGTerm> > background_terms;
 	CSGChain *background_chain;
 	QString last_compiled_doc;
 

@@ -505,7 +505,7 @@ sphere_next_r2:
 		for (size_t i=0; i<this->points.vec.size(); i++) {
 			double x,y;
 			if (!this->points.vec[i]->getv2(x, y)) {
-				PRINTF("ERROR: Unable to convert point at index %d to a vec2 of numbers", i);
+				PRINTF("ERROR: Unable to convert point at index %d to a vec2 of numbers", int(i));
 				delete p;
 				return NULL;
 			}

@@ -42,7 +42,6 @@
 
 #ifdef ENABLE_CGAL
 #include "CGAL_Nef_polyhedron.h"
-#include <CGAL/assertions_behaviour.h>
 #include "CGALEvaluator.h"
 #include "PolySetCGALEvaluator.h"
 #endif
