@@ -330,6 +330,7 @@ def wiki_upload(wikiurl,api_php_path,botname,botpass,filedata,wikipgname):
 		try:
 			print 'login',botname,'to',wikiurl
 			site = wiki_login(wikiurl,api_php_path,botname,botpass)
+			print 'uploading...',
 			if wikipgname.endswith('png'):
 				site.upload(filedata,wikipgname,descrip,ignore=True)
 			else:
@@ -337,6 +338,7 @@ def wiki_upload(wikiurl,api_php_path,botname,botpass,filedata,wikipgname):
 				text = page.edit()
 				page.save(filedata)
 			done = True
+			print 'transfer ok'
 		except Exception, e:
 			print 'Error:', type(e),e
 			counter += 1
@@ -378,7 +380,7 @@ def upload(wikiurl,api_php_path='/',wiki_rootpath='test', sysid='null', botname=
 	for wikiname in wikifiles:
 		filename = os.path.join(wikidir,wikiname)
 		filedata = tryread(filename)
-		print 'upload',len(filedata),'bytes from',wikiname,'...'
+		print 'upload',len(filedata),'bytes from',wikiname
 		if wetrun: 
 			wiki_upload(wikiurl,api_php_path,botname,botpass,filedata,wikiname)
 def findlogfile(builddir):
@@ -413,6 +415,8 @@ def main():
 	imgs, txtpages = towiki(wiki_rootpath, startdate, tests, enddate, sysinfo, sysid, makefiles)
 
 	wikidir = os.path.join(logpath,sysid+'_report')
+	if verbose: print 'erasing files in',wikidir
+	map(lambda x:os.remove(os.path.join(wikidir,x)), os.listdir(wikidir))
 	print 'writing',len(imgs),'images and',len(txtpages),'text pages to:\n', ' .'+wikidir.replace(os.getcwd(),'')
 	for k in sorted(imgs): trysave( os.path.join(wikidir,k), imgs[k])
 	for k in sorted(txtpages): trysave( os.path.join(wikidir,k), txtpages[k])
@@ -420,7 +424,8 @@ def main():
 	if '--upload' in sys.argv:
 		upload(wikisite,wiki_api_path,wiki_rootpath,sysid,'openscadbot',
 			'tobdacsnepo',wikidir,dryrun=dry)
-	
+		print 'upload attempt complete'
+
 	if verbose: print 'test_pretty_print complete'
 
 #wikisite = 'cakebaby.referata.com'

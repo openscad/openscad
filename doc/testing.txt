@@ -78,3 +78,7 @@ Cross-compiling of tests has not been automated nor tested
 
 Imagemagick may have crashed. Try passing -DCOMPARATOR=ncc to cmake
 
+5. Testing images fails with 'morphology' not found for ImageMagick
+
+Your version of imagemagick is old. Upgrade, or pass -DCOMPARATOR=old to cmake.
+The comparison will be of lowered reliability.  
