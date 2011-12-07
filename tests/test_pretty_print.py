@@ -44,7 +44,7 @@
 #  (you can set this in the registry to never happen, but itd be better if the program
 #   itself was able to disable that temporarily in it's own process)
 
-import string,sys,re,os,hashlib,subprocess,textwrap
+import string,sys,re,os,hashlib,subprocess,textwrap,time
 
 def tryread(filename):
 	data = None
@@ -254,7 +254,7 @@ TESTLOG
 		'NUMTESTS':len(tests), 'NUMPASSED':len(passed_tests), 'PERCENTPASSED':percent }
 	for key in dic.keys():
 		s = s.replace(key,str(dic[key]))
-	for t in failed_tests:
+	for t in tests:
 		if t.type=='txt':
 			newchunk = re.sub('FTESTNAME',t.fullname,repeat2)
 			newchunk = newchunk.replace('TESTLOG',t.fulltestlog)
@@ -314,26 +314,55 @@ def wikitohtml(wiki_rootpath, sysid, wikidata, manifest):
 	x=re.sub("\[\[(.*?)\]\]","\\1",x)
 	return head + x + '</body></html>'
 
+def wiki_login(wikiurl,api_php_path,botname,botpass):
+	site = mwclient.Site(wikiurl,api_php_path)
+	site.login(botname,botpass)
+	return site
+
+def wiki_upload(wikiurl,api_php_path,botname,botpass,filedata,wikipgname):
+	counter = 0
+	done = False
+	descrip = 'test'
+	time.sleep(1)
+	while not done:
+		try:
+			print 'login',botname,'to',wikiurl
+			site = wiki_login(wikiurl,api_php_path,botname,botpass)
+			if wikipgname.endswith('png'):
+				site.upload(filedata,wikipgname,descrip,ignore=True)
+			else:
+				page = site.Pages[wikipgname]
+				text = page.edit()
+				page.save(filedata)
+			done = True
+		except Exception, e:
+			print 'Error:', type(e),e
+			counter += 1
+			if counter>maxretry: 
+				print 'giving up. please try a different wiki site'
+				done = True
+			else:
+				print 'wiki',wikiurl,'down. retrying in 15 seconds'
+				time.sleep(15)	
+
 def upload(wikiurl,api_php_path='/',wiki_rootpath='test', sysid='null', botname='cakebaby',botpass='anniew',wikidir='.',dryrun=True):
 	wetrun = not dryrun
 	if dryrun: print 'dry run'
 	try:
+		global mwclient
 		import mwclient
 	except:
-		print 'please download mwclient and unpack here:', os.getcwd()
+		print 'please download mwclient 0.6.5 and unpack here:', os.getcwd()
 		sys.exit()
-	print 'opening site:',wikiurl
-	if wetrun:
-		site = mwclient.Site(wikiurl,api_php_path)
-		
-	print 'bot login:', botname
-	if wetrun: site.login(botname,botpass)
+
+	if wetrun: site = wiki_login(wikiurl,api_php_path,botname,botpass)
 
 	wikifiles = os.listdir(wikidir)
 	testreport_page = filter( lambda x: 'test_report' in x, wikifiles )
 	if (len(testreport_page)>1): 
 		print 'multiple test reports found, please clean dir',wikidir
 		sys.exit()
+
 	rootpage = testreport_page[0]
 	print 'add',rootpage,' to main report page ',wiki_rootpath
 	if wetrun:
@@ -347,21 +376,9 @@ def upload(wikiurl,api_php_path='/',wiki_rootpath='test', sysid='null', botname=
 	for wikiname in wikifiles:
 		filename = os.path.join(wikidir,wikiname)
 		filedata = tryread(filename)
-		print 'upload',len(filedata),'bytes from',wikiname,'...',
-		sys.stdout.flush()
-		if wikiname.endswith('.png'):
-			localf = open(filename,'rb') # mwclient needs file handle
-			descrip = wiki_rootpath + ' test'
-			if wetrun:
-				site.upload(localf,wikiname,descrip,ignore=True)
-			print 'image uploaded'
-		else: # textpage
-			if wetrun:
-				page = site.Pages[wikiname]
-				text = page.edit()
-				page.save(filedata)
-			print 'text page uploaded'
-
+		print 'upload',len(filedata),'bytes from',wikiname,'...'
+		if wetrun: 
+			wiki_upload(wikiurl,api_php_path,botname,botpass,filedata,wikiname)
 def findlogfile(builddir):
 	logpath = os.path.join(builddir,'Testing','Temporary')
 	logfilename = os.path.join(logpath,'LastTest.log.tmp')
@@ -374,26 +391,27 @@ def findlogfile(builddir):
 
 def main():
 	dry = False
-	print 'running test_pretty_print'
+	if verbose: print 'running test_pretty_print'
 	if '--dryrun' in sys.argv: dry=True
 	suffix = ezsearch('--suffix=(.*?) ',string.join(sys.argv)+' ')
 	builddir = ezsearch('--builddir=(.*?) ',string.join(sys.argv)+' ')
 	if builddir=='': builddir=os.getcwd()
-	print 'build dir set to', builddir
+	if verbose: print 'build dir set to', builddir
 
 	sysinfo, sysid = read_sysinfo(os.path.join(builddir,'sysinfo.txt'))
 	makefiles = load_makefiles(builddir)
 	logpath, logfilename = findlogfile(builddir)
 	testlog = tryread(logfilename)
 	startdate, tests, enddate = parselog(testlog)
-	print 'found sysinfo.txt,',
-	print 'found', len(makefiles),'makefiles,',
-	print 'found', len(tests),'test results'
+	if verbose:
+		print 'found sysinfo.txt,',
+		print 'found', len(makefiles),'makefiles,',
+		print 'found', len(tests),'test results'
 
 	imgs, txtpages = towiki(wiki_rootpath, startdate, tests, enddate, sysinfo, sysid, makefiles)
 
-	wikidir = os.path.join(logpath,sysid+'_wiki')
-	print 'writing',len(imgs),'images and',len(txtpages),'wiki pages to:\n ', '.'+wikidir.replace(os.getcwd(),'')
+	wikidir = os.path.join(logpath,sysid+'_report')
+	print 'writing',len(imgs),'images and',len(txtpages),'text pages to:\n', ' .'+wikidir.replace(os.getcwd(),'')
 	for k in sorted(imgs): trysave( os.path.join(wikidir,k), imgs[k])
 	for k in sorted(txtpages): trysave( os.path.join(wikidir,k), txtpages[k])
 
@@ -401,7 +419,7 @@ def main():
 		upload(wikisite,wiki_api_path,wiki_rootpath,sysid,'openscadbot',
 			'tobdacsnepo',wikidir,dryrun=dry)
 	
-	print 'test_pretty_print complete'
+	if verbose: print 'test_pretty_print complete'
 
 #wikisite = 'cakebaby.referata.com'
 #wiki_api_path = ''
@@ -409,5 +427,7 @@ wikisite = 'cakebaby.wikia.com'
 wiki_api_path = '/'
 wiki_rootpath = 'OpenSCAD'
 builddir = os.getcwd() # os.getcwd()+'/build'
+verbose = False
+maxretry = 10
 
 main()

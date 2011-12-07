@@ -82,16 +82,16 @@ def compare_png(resultfilename):
 
     # for systems with older imagemagick that doesnt support '-morphology'
     # http://www.imagemagick.org/Usage/morphology/#alturnative
-    # args = [expectedfilename, resultfilename, "-alpha", "Off", "-compose", "difference", "-composite", "-threshold", "10%", "-gaussian-blur","3x65535", "-format", "%[fx:w*h*mean]", "info:"]
+    args = [expectedfilename, resultfilename, "-alpha", "Off", "-compose", "difference", "-composite", "-threshold", "10%", "-gaussian-blur","3x65535", "-threshold", "99.99%", "-format", "%[fx:w*h*mean]", "info:"]
 
     # for systems where imagemagick crashes when using the above comparators
-    args = [expectedfilename, resultfilename, "-alpha", "Off", "-compose", "difference", "-metric", "NCC", "tmp.png"]
-    options.convert_exec = 'compare'
-    compare_method = 'NCC'
+    # args = [expectedfilename, resultfilename, "-alpha", "Off", "-compose", "difference", "-metric", "NCC", "tmp.png"]
+    # options.convert_exec = 'compare'
+    # compare_method = 'NCC'
 
     msg = 'ImageMagick image comparison: ' 
-    msg += os.path.basename(options.convert_exec) + ' '.join(args)
-    msg += ' expected image: ' + expectedfilename
+    msg += os.path.basename(options.convert_exec) + ' ' + ' '.join(args)
+    msg += '\nexpected image: ' + expectedfilename + '\n'
     print >> sys.stderr, msg
     if not resultfilename:
         print >> sys.stderr, "Error: OpenSCAD did not generate an image to test"
@@ -106,7 +106,7 @@ def compare_png(resultfilename):
             if pixelerr < 32: return True
             else: print >> sys.stderr, pixelerr, ' pixel errors'
 	elif compare_method=='NCC':
-            thresh = 0.99
+            thresh = 0.95
             ncc_err = float(output.strip())
             if ncc_err > thresh: return True
             else: print >> sys.stderr, ncc_err, ' Images differ: NCC comparison < ', thresh
