@@ -457,7 +457,8 @@ def main():
 
 	wikidir = os.path.join(logpath,sysid+'_report')
 	if verbose: print 'erasing files in',wikidir
-	map(lambda x:os.remove(os.path.join(wikidir,x)), os.listdir(wikidir))
+	try: map(lambda x:os.remove(os.path.join(wikidir,x)), os.listdir(wikidir))
+	except: pass
 	print 'writing',len(imgs),'images and',len(txtpages),'text pages to:\n', ' .'+wikidir.replace(os.getcwd(),'')
 	for pgname in sorted(imgs): trysave( os.path.join(wikidir,pgname), imgs[pgname])
 	for pgname in sorted(txtpages): trysave( os.path.join(wikidir,pgname), txtpages[pgname])
