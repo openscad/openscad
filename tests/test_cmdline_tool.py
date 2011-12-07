@@ -48,7 +48,7 @@ def verify_test(testname, cmd):
 def execute_and_redirect(cmd, params, outfile):
     retval = -1
     try:
-        proc = subprocess.Popen([cmd] + params, stdout=outfile)
+        proc = subprocess.Popen([cmd] + params, stdout=outfile, stderr=subprocess.STDOUT)
         out = proc.communicate()[0]
         retval = proc.wait()
     except:
@@ -76,27 +76,40 @@ def compare_default(resultfilename):
     return True
 
 def compare_png(resultfilename):
+    compare_method = 'pixel'
     #args = [expectedfilename, resultfilename, "-alpha", "Off", "-compose", "difference", "-composite", "-threshold", "10%", "-blur", "2", "-threshold", "30%", "-format", "%[fx:w*h*mean]", "info:"]
     #args = [expectedfilename, resultfilename, "-alpha", "Off", "-compose", "difference", "-composite", "-threshold", "10%", "-morphology", "Erode", "Square", "-format", "%[fx:w*h*mean]", "info:"]
-    # 'morphology' is only available in newer versions of ImageMagick. 
+
+    # for systems with older imagemagick that doesnt support '-morphology'
     # http://www.imagemagick.org/Usage/morphology/#alturnative
-    args = [expectedfilename, resultfilename, "-alpha", "Off", 
-        "-compose", "difference", "-composite", "-threshold", "10%", 
-        #"-morphology", "Erode", "Square", 
-        "-gaussian-blur","3x65535", "-threshold","99.999%",
-        "-format", "%[fx:w*h*mean]", "info:"]
-    print >> sys.stderr, 'ImageMagick image comparison: convert ', ' '.join(args[2:])
-    print >> sys.stderr, ' expected image: ', expectedfilename
+    # args = [expectedfilename, resultfilename, "-alpha", "Off", "-compose", "difference", "-composite", "-threshold", "10%", "-gaussian-blur","3x65535", "-format", "%[fx:w*h*mean]", "info:"]
+
+    # for systems where imagemagick crashes when using the above comparators
+    args = [expectedfilename, resultfilename, "-alpha", "Off", "-compose", "difference", "-metric", "NCC", "tmp.png"]
+    options.convert_exec = 'compare'
+    compare_method = 'NCC'
+
+    msg = 'ImageMagick image comparison: ' 
+    msg += os.path.basename(options.convert_exec) + ' '.join(args)
+    msg += ' expected image: ' + expectedfilename
+    print >> sys.stderr, msg
     if not resultfilename:
         print >> sys.stderr, "Error: OpenSCAD did not generate an image to test"
         return False
     print >> sys.stderr, ' actual image: ', resultfilename
 
     (retval, output) = execute_and_redirect(options.convert_exec, args, subprocess.PIPE)
+    print "Imagemagick return", retval, "output:", output
     if retval == 0:
-        pixelerr = int(float(output.strip()))
-        if pixelerr < 32: return True
-        else: print >> sys.stderr, pixelerr, ' pixel errors'
+	if compare_method=='pixel':
+            pixelerr = int(float(output.strip()))
+            if pixelerr < 32: return True
+            else: print >> sys.stderr, pixelerr, ' pixel errors'
+	elif compare_method=='NCC':
+            thresh = 0.99
+            ncc_err = float(output.strip())
+            if ncc_err > thresh: return True
+            else: print >> sys.stderr, ncc_err, ' Images differ: NCC comparison < ', thresh
     return False
 
 def compare_with_expected(resultfilename):
