@@ -44,6 +44,11 @@ See Also
 #include <GL/gl.h>
 #include <GL/glx.h>
 
+#include <assert.h>
+#include <sstream>
+
+#include <sys/utsname.h> // for uname
+
 using namespace std;
 
 struct OffscreenContext
@@ -64,6 +69,42 @@ void offscreen_context_init(OffscreenContext &ctx, int width, int height)
   ctx.xdisplay = NULL;
   ctx.xwindow = (Window)NULL;
   ctx.fbo = NULL;
+}
+
+string get_os_info()
+{
+  struct utsname u;
+  stringstream out;
+
+  if (uname(&u) < 0)
+    out << "OS info: unknown, uname() error\n";
+  else {
+    out << "OS info: "
+      << u.sysname << " "
+      << u.release << " "
+      << u.version << "\n";
+    out << "Machine: " << u.machine;
+  }
+  return out.str();
+}
+
+string offscreen_context_getinfo(OffscreenContext *ctx)
+{
+  assert(ctx);
+
+  if (!ctx->xdisplay)
+    return string("No GL Context initialized. No information to report\n");
+
+  int major, minor;
+  glXQueryVersion(ctx->xdisplay, &major, &minor);
+
+  stringstream out;
+  out << "GL context creator: GLX\n"
+      << "PNG generator: lodepng\n"
+      << "GLX version: " << major << "." << minor << "\n"
+      << get_os_info();
+
+  return out.str();
 }
 
 static XErrorHandler original_xlib_handler = (XErrorHandler) NULL;
@@ -94,11 +135,15 @@ bool create_glx_dummy_window(OffscreenContext &ctx)
   */
 
   int attributes[] = {
-    GLX_DRAWABLE_TYPE, GLX_WINDOW_BIT,
+    GLX_DRAWABLE_TYPE, GLX_WINDOW_BIT | GLX_PIXMAP_BIT | GLX_PBUFFER_BIT, //support all 3, for OpenCSG
     GLX_RENDER_TYPE,   GLX_RGBA_BIT,
-    GLX_RED_SIZE, 1,
-    GLX_GREEN_SIZE, 1,
-    GLX_BLUE_SIZE, 1,
+    GLX_RED_SIZE, 8,
+    GLX_GREEN_SIZE, 8,
+    GLX_BLUE_SIZE, 8,
+    GLX_ALPHA_SIZE, 8,
+    GLX_DEPTH_SIZE, 24, // depth-stencil for OpenCSG
+    GLX_STENCIL_SIZE, 8,
+    GLX_DOUBLEBUFFER, True,
     None
   };
 
@@ -123,8 +168,9 @@ bool create_glx_dummy_window(OffscreenContext &ctx)
 
   Window root = DefaultRootWindow( dpy );
   XSetWindowAttributes xwin_attr;
-  int width = 42;
-  int height = 42;
+  int width = ctx.width;
+  int height = ctx.height;
+  xwin_attr.background_pixmap = None;
   xwin_attr.background_pixel = 0;
   xwin_attr.border_pixel = 0;
   xwin_attr.colormap = XCreateColormap( dpy, root, visinfo->visual, AllocNone);
@@ -136,7 +182,6 @@ bool create_glx_dummy_window(OffscreenContext &ctx)
                                visinfo->visual, mask, &xwin_attr );
 
   // Window xWin = XCreateSimpleWindow( dpy, DefaultRootWindow(dpy), 0,0,42,42, 0,0,0 );
-
 
   XSync( dpy, false );
   if ( XCreateWindow_failed ) {
@@ -227,7 +272,6 @@ OffscreenContext *create_offscreen_context(int w, int h)
     cerr << "Unable to init GLEW: " << glewGetErrorString(err) << endl;
     return NULL;
   }
-  glew_dump();
 
   ctx->fbo = fbo_new();
   if (!fbo_init(ctx->fbo, w, h)) {
@@ -256,6 +300,7 @@ bool teardown_offscreen_context(OffscreenContext *ctx)
 */
 bool save_framebuffer(OffscreenContext *ctx, const char *filename)
 {
+  glXSwapBuffers(ctx->xdisplay, ctx->xwindow);
   if (!ctx || !filename) return false;
   int samplesPerPixel = 4; // R, G, B and A
   GLubyte pixels[ctx->width * ctx->height * samplesPerPixel];
@@ -265,7 +310,7 @@ bool save_framebuffer(OffscreenContext *ctx, const char *filename)
   int rowBytes = samplesPerPixel * ctx->width;
   unsigned char *flippedBuffer = (unsigned char *)malloc(rowBytes * ctx->height);
   if (!flippedBuffer) {
-    std::cerr << "Unable to allocate flipped buffer for corrected image.";
+    cerr << "Unable to allocate flipped buffer for corrected image.";
     return 1;
   }
   flip_image(pixels, flippedBuffer, samplesPerPixel, ctx->width, ctx->height);

@@ -17,6 +17,15 @@ struct OffscreenContext
   fbo_t *fbo;
 };
 
+string offscreen_context_getinfo(OffscreenContext *ctx)
+{
+  stringstream out;
+  out << "GL context creator: Cocoa / CGL\n"
+      << "PNG generator: Core Foundation\n"
+      << "OS info: Mac OSX\n"
+      << "Machine: Apple(TM) Mac(TM)\n";
+  return out.str();
+}
 
 OffscreenContext *create_offscreen_context(int w, int h)
 {
@@ -84,6 +93,7 @@ bool teardown_offscreen_context(OffscreenContext *ctx)
 */
 bool save_framebuffer(OffscreenContext *ctx, const char *filename)
 {
+  if (!ctx || !filename) return false;
   // Read pixels from OpenGL
   int samplesPerPixel = 4; // R, G, B and A
   int rowBytes = samplesPerPixel * ctx->width;
