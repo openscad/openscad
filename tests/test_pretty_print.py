@@ -299,22 +299,59 @@ TESTLOG
 
 	return imgs, txtpages
 
-def wikitohtml(wiki_rootpath, sysid, wikidata, manifest):
-	# temporarily defunct/broken 
+def tohtml(wiki_rootpath, startdate, tests, enddate, sysinfo, sysid, makefiles):
+	# kludge. assume wiki stuff has alreayd run and dumped files properly
 	head = '<html><head><title>'+wiki_rootpath+' test run for '+sysid +'</title></head><body>'
-	revmanifest = dict((val,key) for key, val in manifest.iteritems())
-	x=re.sub('\{\|(.*?)\n','<table \\1>\n',wikidata)
-	x=re.sub('\|(.*?colspan.*?)\|','<td \\1>',x)
-	x=re.sub("'''(.*?)'''","<b>\\1</b>",x)
-	filestrs=re.findall('\[\[File\:(.*?)\|.*?\]\]',x)
-	for f in filestrs:
-		newfile_html='<img src="'+revmanifest[f]+'" width=250 />'
-		x=re.sub('\[\[File\:'+f+'\|.*?\]\]',newfile_html,x)
-	dic = { '|}':'</table>', '|-':'<tr>', '||':'<td>', '|':'<td>', 
-		'!!':'<th>', '!':'<tr><th>', '\n\n':'\n<p>\n'} #order matters
-	for key in dic: x=x.replace(key,dic[key])
-	x=re.sub("\[\[(.*?)\]\]","\\1",x)
-	return head + x + '</body></html>'
+	tail = '</body></html>'
+
+	passed_tests = filter(lambda x: x.passed, tests)
+	failed_tests = filter(lambda x: not x.passed, tests)
+	percent = str(int(100.0*len(passed_tests) / len(tests)))
+
+	s=''
+
+	s+= '\n<pre>'
+	s+= '\nSYSINFO\n'+ sysinfo
+	s+= '\n</pre><p>'
+
+	s+= '\n<pre>'
+	s+= '\nSTARTDATE: '+ startdate
+	s+= '\nENDDATE: '+ enddate
+	s+= '\nWIKI_ROOTPATH: '+ wiki_rootpath
+	s+= '\nSYSID: '+sysid
+	s+= '\nNUMTESTS: '+str(len(tests))
+	s+= '\nNUMPASSED: '+str(len(passed_tests))
+	s+= '\nPERCENTPASSED: '+ percent
+	s+= '\n</pre>'
+
+	for t in tests:
+		if t.type=='txt':
+			s+='\n<pre>'+t.fullname+'</pre>\n'
+			s+='<p><pre>'+t.fulltestlog+'</pre>\n\n'
+		elif t.type=='png':
+			tmp = t.actualfile.replace(builddir,'')
+			wikiname_a = wikify_filename(tmp,wiki_rootpath,sysid)
+			tmp = t.expectedfile.replace(os.path.dirname(builddir),'')
+			wikiname_e = wikify_filename(tmp,wiki_rootpath,sysid)
+			s+='<table>'
+			s+='\n<tr><td colspan=2>'+t.fullname
+			s+='\n<tr><td>Expected<td>Actual'
+			s+='\n<tr><td><img src='+wikiname_e+' width=250/>'
+			s+='\n    <td><img src='+wikiname_a+' width=250/>'
+			s+='\n</table>'
+			s+='\n<pre>'
+			s+=t.fulltestlog
+			s+='\n</pre>'
+
+	s+='\n\n<p>\n\n'
+	makefiles_wikinames = {}
+	for mf in sorted(makefiles.keys()):
+		tmp = mf.replace('CMakeFiles','').replace('.dir','')
+		wikiname = wikify_filename(tmp,wiki_rootpath,sysid)
+		s += '\n<a href='+wikiname+'>'+wikiname+'</a><br>'
+	s+='\n'
+
+	return head + s + tail
 
 def wiki_login(wikiurl,api_php_path,botname,botpass):
 	site = mwclient.Site(wikiurl,api_php_path)
@@ -418,8 +455,11 @@ def main():
 	if verbose: print 'erasing files in',wikidir
 	map(lambda x:os.remove(os.path.join(wikidir,x)), os.listdir(wikidir))
 	print 'writing',len(imgs),'images and',len(txtpages),'text pages to:\n', ' .'+wikidir.replace(os.getcwd(),'')
-	for k in sorted(imgs): trysave( os.path.join(wikidir,k), imgs[k])
-	for k in sorted(txtpages): trysave( os.path.join(wikidir,k), txtpages[k])
+	for pgname in sorted(imgs): trysave( os.path.join(wikidir,pgname), imgs[pgname])
+	for pgname in sorted(txtpages): trysave( os.path.join(wikidir,pgname), txtpages[pgname])
+
+	htmldata = tohtml(wiki_rootpath, startdate, tests, enddate, sysinfo, sysid, makefiles)
+	trysave( os.path.join(wikidir,'index.html'), htmldata )
 
 	if '--upload' in sys.argv:
 		upload(wikisite,wiki_api_path,wiki_rootpath,sysid,'openscadbot',
