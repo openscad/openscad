@@ -1,7 +1,7 @@
 Running regression tests:
 -------------------------
 
-Prerequisites: cmake, python, OpenCSG with FBO patch from ../patches applied
+Prerequisites: cmake, python, ImageMagick 6.5.9.3 or newer
 
 A) Building test environment
 
@@ -16,25 +16,14 @@ First, get a normal build working by following instructions at
 http://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Building_on_Windows
 Then, from the QT command prompt:
 
-$ cd tests
-$ cmake . -DCMAKE_BUILD_TYPE=Release
-$ sed -i s/\/MD/\/MT/ CMakeCache.txt
-$ cmake .
-$ nmake -f Makefile
+> cd tests
+> cmake . -DCMAKE_BUILD_TYPE=Release
+> sed -i s/\/MD/\/MT/ CMakeCache.txt
+> cmake .
+> nmake -f Makefile
 
 B) Running tests
 
-Easy version:
-$ make test
-
-Windows:
-$ nmake -f Makefile test
-
-Headless unix servers (no X11):
-$ Xvfb :5 -screen 0 800x600x24 &
-$ DISPLAY=:5 make test
-
-Partial or extended test runs:
 $ ctest               Runs tests enabled by default
 $ ctest -R <regex>    Runs only matching tests, e.g. ctest -R dxf
 $ ctest -C <configs>  Adds extended tests belonging to configs.
@@ -43,6 +32,10 @@ $ ctest -C <configs>  Adds extended tests belonging to configs.
                       Heavy    - Run more time consuming tests (> ~10 seconds)
                       Examples - test all examples
                       All      - test everything
+
+Headless unix servers (no X11):
+$ Xvfb :5 -screen 0 800x600x24 &
+$ DISPLAY=:5 ctest
 
 Adding  a new regression test:
 ------------------------------
@@ -58,13 +51,16 @@ Adding  a new regression test:
 7) run the test normally and verify that it passes:
   $ ctest -R mytest
 
-Troubleshooting a failed test:
+Troubleshooting:
 ------------------------------
 
+To helping CMAKE find eigen2, OpenCSG, CGAL, Boost, and GLEW, you can use the
+-D option. Here are some examples:
+
+ cmake . -DOPENCSG_DIR=~/OpenCSG-1.3.2
+ cmake . -DCGAL_DIR=c:\CGAL-3.7 -DBOOST_ROOT=c:\boost_1_46_0
+ 
 Logs of test runs are found in tests/build/Testing/Temporary
+Pretty-printed html output is in a subdir of tests/build/Testing/Temporary
 Expected results are found in tests/regression/*
 Actual results are found in tests/build/testname-output/*
-
-You can also compile a single test program:
-
- $ make cgalpngtest

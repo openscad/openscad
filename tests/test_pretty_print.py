@@ -59,7 +59,7 @@ def tryread(filename):
 def trysave(filename,data):
 	try:
 		if not os.path.isdir(os.path.dirname(filename)):
-			print 'creating',os.path.dirname(filename)
+			#print 'creating',os.path.dirname(filename)
 			os.mkdir(os.path.dirname(filename))
 		f=open(filename,'wb')
 		f.write(data)
@@ -386,14 +386,14 @@ def main():
 	logpath, logfilename = findlogfile(builddir)
 	testlog = tryread(logfilename)
 	startdate, tests, enddate = parselog(testlog)
-	print 'found sysinfo.txt'
-	print 'found', len(makefiles),'makefiles'
+	print 'found sysinfo.txt,',
+	print 'found', len(makefiles),'makefiles,',
 	print 'found', len(tests),'test results'
 
 	imgs, txtpages = towiki(wiki_rootpath, startdate, tests, enddate, sysinfo, sysid, makefiles)
 
 	wikidir = os.path.join(logpath,sysid+'_wiki')
-	print 'writing',len(imgs),'images and',len(txtpages),'wiki pages to:\n ', wikidir
+	print 'writing',len(imgs),'images and',len(txtpages),'wiki pages to:\n ', '.'+wikidir.replace(os.getcwd(),'')
 	for k in sorted(imgs): trysave( os.path.join(wikidir,k), imgs[k])
 	for k in sorted(txtpages): trysave( os.path.join(wikidir,k), txtpages[k])
 

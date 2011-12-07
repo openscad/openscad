@@ -462,7 +462,7 @@ enable_testing()
 # set up custom pretty printing of results
 
 set(INFOCMD "execute_process(COMMAND ${CMAKE_CURRENT_BINARY_DIR}/opencsgtest --info OUTPUT_FILE sysinfo.txt)")
-set(PRETTYCMD "\"${PYTHON_EXECUTABLE} test_pretty_print.py --builddir=${CMAKE_CURRENT_BINARY_DIR}\"")
+set(PRETTYCMD "\"${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test_pretty_print.py --builddir=${CMAKE_CURRENT_BINARY_DIR}\"")
 set(CTEST_CUSTOM_FILE ${CMAKE_CURRENT_BINARY_DIR}/CTestCustom.cmake)
 set(CTEST_CUSTOM_TXT "\n
   message(\"running 'opencsgtest --info' to generate sysinfo.txt\")\n
@@ -471,13 +471,12 @@ set(CTEST_CUSTOM_TXT "\n
 ")
 file(WRITE ${CTEST_CUSTOM_FILE} ${CTEST_CUSTOM_TXT})
 
-foreach(FILE test_pretty_print.py)
-  configure_file(${CMAKE_CURRENT_SOURCE_DIR}/${FILE}
-                 ${CMAKE_CURRENT_BINARY_DIR}/${FILE} COPYONLY)
-endforeach()
+#foreach(FILE test_pretty_print.py)
+#  configure_file(${CMAKE_CURRENT_SOURCE_DIR}/${FILE}
+#                 ${CMAKE_CURRENT_BINARY_DIR}/${FILE} COPYONLY)
+#endforeach()
 
 set_directory_properties(PROPERTIES TEST_INCLUDE_FILE "${CMAKE_SOURCE_DIR}/EnforceConfig.cmake")
-
 
 # Find all scad files
 file(GLOB MINIMAL_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/minimal/*.scad)
@@ -527,7 +526,7 @@ disable_tests(dumptest_transform-tests
 disable_tests(opencsgtest_child-background)
 
 # FIXME: This single test takes over an hour to run on a 2.7 GHz P4
-disable_tests(opencsgtest_example006)
+disable_tests(opencsgtest_example006 cgalpngtest_example006)
 
 # These tests only makes sense in OpenCSG mode
 disable_tests(cgalpngtest_child-background
