@@ -2,8 +2,9 @@
 #define SYSTEMGL_H_
 
 #include <GL/glew.h>
+#include <string>
 
-void glew_dump(bool dumpall = false);
+std::string glew_dump(bool dumpall=false);
 bool report_glerror(const char *task);
 
 #endif

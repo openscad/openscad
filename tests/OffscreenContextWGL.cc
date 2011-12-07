@@ -22,6 +22,10 @@ For more info:
 
 #include <GL/gl.h> // must be included after glew.h
 
+#include <map>
+#include <string>
+#include <sstream>
+
 using namespace std;
 
 struct OffscreenContext
@@ -42,6 +46,45 @@ void offscreen_context_init(OffscreenContext &ctx, int width, int height)
   ctx.width = width;
   ctx.height = height;
   ctx.fbo = NULL;
+}
+
+string get_os_info()
+{
+  OSVERSIONINFO osvi;
+
+  ZeroMemory(&osvi, sizeof(OSVERSIONINFO));
+  osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
+  GetVersionEx(&osvi);
+
+  SYSTEM_INFO si;
+  GetSystemInfo(&si);
+  map<WORD,const char*> archs;
+  archs[PROCESSOR_ARCHITECTURE_AMD64] = "amd64";
+  archs[PROCESSOR_ARCHITECTURE_IA64] = "itanium";
+  archs[PROCESSOR_ARCHITECTURE_INTEL] = "x86";
+  archs[PROCESSOR_ARCHITECTURE_UNKNOWN] = "unknown";
+
+  stringstream out;
+  out << "OS info: "
+      << "Microsoft(TM) Windows(TM) " << osvi.dwMajorVersion << " "
+      << osvi.dwMinorVersion << " " << osvi.dwBuildNumber << " "
+      << osvi.szCSDVersion;
+  if (archs.find(si.wProcessorArchitecture) != archs.end()) 
+    out << " " << archs[si.wProcessorArchitecture];
+  out << "\n";
+
+  out << "Machine: " << si.dwProcessorType;
+
+  return out.str();
+}
+
+string offscreen_context_getinfo(OffscreenContext *ctx)
+{
+  stringstream out;
+  out << "GL context creator: WGL\n"
+      << "PNG generator: lodepng\n"
+      << get_os_info();
+  return out.str();
 }
 
 LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam) 
@@ -87,11 +130,15 @@ bool create_wgl_dummy_context(OffscreenContext &ctx)
   ZeroMemory( &pixformat, sizeof( pixformat ) );
   pixformat.nSize = sizeof( pixformat );
   pixformat.nVersion = 1;
-  pixformat.dwFlags = PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL;
+  pixformat.dwFlags = PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER;
   pixformat.iPixelType = PFD_TYPE_RGBA;
-  pixformat.cColorBits = 24;
-  pixformat.cDepthBits = 16;
-  pixformat.iLayerType = PFD_MAIN_PLANE;
+  pixformat.cGreenBits = 8;
+  pixformat.cRedBits = 8;
+  pixformat.cBlueBits = 8;
+  pixformat.cAlphaBits = 8;
+  pixformat.cDepthBits = 24;
+  pixformat.cStencilBits = 8;
+
   chosenformat = ChoosePixelFormat( dev_context, &pixformat );
   if (chosenformat==0) {
     cerr << "MS GDI - ChoosePixelFormat failed\n";
@@ -142,7 +189,7 @@ OffscreenContext *create_offscreen_context(int w, int h)
     cerr << "Unable to init GLEW: " << glewGetErrorString(err) << "\n";
     return NULL;
   }
-  glew_dump();
+  //cerr << glew_dump(0);
 
   ctx->fbo = fbo_new();
   if (!fbo_init(ctx->fbo, w, h)) {
@@ -172,6 +219,7 @@ bool teardown_offscreen_context(OffscreenContext *ctx)
 */
 bool save_framebuffer(OffscreenContext *ctx, const char *filename)
 {
+  wglSwapLayerBuffers( ctx->dev_context, WGL_SWAP_MAIN_PLANE );
   if (!ctx || !filename) return false;
   int samplesPerPixel = 4; // R, G, B and A
   vector<GLubyte> pixels(ctx->width * ctx->height * samplesPerPixel);

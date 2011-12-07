@@ -172,16 +172,19 @@ int main(int argc, char **argv)
 
 	BoundingBox bbox;
 	if (cgalRenderer.polyhedron) {
+		std::cout << "polyhedron\n" ;
 		CGAL::Bbox_3 cgalbbox = cgalRenderer.polyhedron->bbox();
 		bbox = BoundingBox(Vector3d(cgalbbox.xmin(), cgalbbox.ymin(), cgalbbox.zmin()),
 							Vector3d(cgalbbox.xmax(), cgalbbox.ymax(), cgalbbox.zmax()));
 	}
 	else if (cgalRenderer.polyset) {
+		std::cout << "polyset\n" ;
 		bbox = cgalRenderer.polyset->getBoundingBox();
 	}
 
 	Vector3d center = getBoundingCenter(bbox);
 	double radius = getBoundingRadius(bbox);
+	std::cout << "radius: "  << radius << "\n";
 
 	Vector3d cameradir(1, 1, -0.5);
 	Vector3d camerapos = center - radius*2*cameradir;
