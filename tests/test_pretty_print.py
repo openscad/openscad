@@ -202,7 +202,7 @@ SYSINFO
 start time: STARTDATE <br>
 end time  : ENDDATE <br>
 
-'''Failed image tests'''
+'''Image tests'''
 
 <REPEAT1>
 {| border=1 cellspacing=0 cellpadding=1
@@ -223,7 +223,7 @@ TESTLOG
 </REPEAT1>
 
 
-'''Failed text tests'''
+'''Text tests'''
 
 <REPEAT2>
 {|border=1 cellspacing=0 cellpadding=1
@@ -413,6 +413,8 @@ def upload(wikiurl,api_php_path='/',wiki_rootpath='test', sysid='null', botname=
 			page.save(text +'\n*[['+rootpage+']]\n')
 
 	wikifiles = os.listdir(wikidir)
+	wikifiles = filter(lambda x: not x.endswith('html'), wikifiles)
+
 	print 'upload wiki pages:'
 	for wikiname in wikifiles:
 		filename = os.path.join(wikidir,wikiname)
@@ -420,6 +422,7 @@ def upload(wikiurl,api_php_path='/',wiki_rootpath='test', sysid='null', botname=
 		print 'upload',len(filedata),'bytes from',wikiname
 		if wetrun: 
 			wiki_upload(wikiurl,api_php_path,botname,botpass,filedata,wikiname)
+
 def findlogfile(builddir):
 	logpath = os.path.join(builddir,'Testing','Temporary')
 	logfilename = os.path.join(logpath,'LastTest.log.tmp')
