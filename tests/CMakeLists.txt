@@ -487,10 +487,10 @@ set(CTEST_CUSTOM_TXT "\n
 ")
 file(WRITE ${CTEST_CUSTOM_FILE} ${CTEST_CUSTOM_TXT})
 
-#foreach(FILE test_pretty_print.py)
-#  configure_file(${CMAKE_CURRENT_SOURCE_DIR}/${FILE}
-#                 ${CMAKE_CURRENT_BINARY_DIR}/${FILE} COPYONLY)
-#endforeach()
+foreach(FILE test_pretty_print.py)
+  configure_file(${CMAKE_CURRENT_SOURCE_DIR}/${FILE}
+                 ${CMAKE_CURRENT_BINARY_DIR}/${FILE} COPYONLY)
+endforeach()
 
 set_directory_properties(PROPERTIES TEST_INCLUDE_FILE "${CMAKE_SOURCE_DIR}/EnforceConfig.cmake")
 
