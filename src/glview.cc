@@ -136,15 +136,26 @@ void GLView::initializeGL()
 		fprintf(stderr, "GLEW Error: %s\n", glewGetErrorString(err));
 	}
 
+	GLint rbits, gbits, bbits, abits, dbits, sbits;
+	glGetIntegerv(GL_RED_BITS, &rbits);
+	glGetIntegerv(GL_GREEN_BITS, &gbits);
+	glGetIntegerv(GL_BLUE_BITS, &bbits);
+	glGetIntegerv(GL_ALPHA_BITS, &abits);
+	glGetIntegerv(GL_DEPTH_BITS, &dbits);
+	glGetIntegerv(GL_STENCIL_BITS, &sbits);
+
+
 	this->rendererInfo.sprintf("GLEW version %s\n"
 														 "OpenGL version %s\n"
 														 "%s (%s)\n\n"
+														 "RGBA(%d%d%d%d), depth(%d), stencil(%d)\n"
 														 "Extensions:\n"
 														 "%s\n",
 														 glewGetString(GLEW_VERSION),
 														 glGetString(GL_RENDERER),
 														 glGetString(GL_VENDOR),
 														 glGetString(GL_VERSION),
+														 rbits, gbits, bbits, abits, dbits, sbits,
 														 glGetString(GL_EXTENSIONS));
 	
 
