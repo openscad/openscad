@@ -159,7 +159,8 @@ include(boost.pri)
 
 
 FORMS   += src/MainWindow.ui \
-           src/Preferences.ui
+           src/Preferences.ui \
+           src/OpenCSGWarningDialog.ui
 
 HEADERS += src/renderer.h \
            src/ThrownTogetherRenderer.h \
@@ -168,6 +169,7 @@ HEADERS += src/renderer.h \
            src/GLView.h \
            src/MainWindow.h \
            src/Preferences.h \
+           src/OpenCSGWarningDialog.h \
            src/builtin.h \
            src/context.h \
            src/csgterm.h \
@@ -247,6 +249,7 @@ SOURCES += src/openscad.cc \
            src/highlighter.cc \
            src/printutils.cc \
            src/Preferences.cc \
+           src/OpenCSGWarningDialog.cc \
            src/progress.cc \
            src/editor.cc \
            src/traverser.cc \
@@ -274,7 +277,6 @@ SOURCES += src/cgalutils.cc \
            src/CGALRenderer.cc \
            src/CGAL_Nef_polyhedron.cc \
            src/CGAL_Nef_polyhedron_DxfData.cc \
-	   src/cgaladv_convexhull2.cc \
            src/cgaladv_minkowski2.cc
 }
 

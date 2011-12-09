@@ -4,6 +4,7 @@ OpenSCAD 20xx.yy
 Features:
 o The MCAD library is now bundled with OpenSCAD
 o hull() Now supports 3D objects
+o hull() with 2D object can now use for loops and boolean operations as children
 o Added import and export of the OFF file format
 o New import() statement reads the correct file format based on the filename extension
   (.stl, .dxf and .off is supported)

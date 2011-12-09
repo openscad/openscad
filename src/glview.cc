@@ -39,6 +39,9 @@
 #include <QTimer>
 #include <QTextEdit>
 #include <QVBoxLayout>
+#include <QErrorMessage>
+#include "OpenCSGWarningDialog.h"
+
 #include "mathc99.h"
 #include <stdio.h>
 
@@ -133,31 +136,45 @@ void GLView::initializeGL()
 		fprintf(stderr, "GLEW Error: %s\n", glewGetErrorString(err));
 	}
 
+	this->rendererInfo.sprintf("GLEW version %s\n"
+														 "OpenGL version %s\n"
+														 "%s (%s)\n\n"
+														 "Extensions:\n"
+														 "%s\n",
+														 glewGetString(GLEW_VERSION),
+														 glGetString(GL_RENDERER),
+														 glGetString(GL_VENDOR),
+														 glGetString(GL_VERSION),
+														 glGetString(GL_EXTENSIONS));
+	
+
 	const char *openscad_disable_gl20_env = getenv("OPENSCAD_DISABLE_GL20");
 	if (openscad_disable_gl20_env && !strcmp(openscad_disable_gl20_env, "0")) {
 		openscad_disable_gl20_env = NULL;
 	}
 
 	// All OpenGL 2 contexts are OpenCSG capable
-	if (GLEW_VERSION_2_0 && !openscad_disable_gl20_env) this->is_opencsg_capable = true;
-	// If OpenGL < 2, check for extensions
-	else if (GLEW_ARB_framebuffer_object) this->is_opencsg_capable = true;
-	else if (GLEW_EXT_framebuffer_object && GLEW_EXT_packed_depth_stencil) {
-		this->is_opencsg_capable = true;
+	if (GLEW_VERSION_2_0) {
+		if (!openscad_disable_gl20_env) {
+			this->is_opencsg_capable = true;
+			this->has_shaders = true;
+		}
 	}
+	// If OpenGL < 2, check for extensions
+	else {
+		if (GLEW_ARB_framebuffer_object) this->is_opencsg_capable = true;
+		else if (GLEW_EXT_framebuffer_object && GLEW_EXT_packed_depth_stencil) {
+			this->is_opencsg_capable = true;
+		}
 #ifdef WIN32
-	else if (WGLEW_ARB_pbuffer && WGLEW_ARB_pixel_format) this->is_opencsg_capable = true;
+		else if (WGLEW_ARB_pbuffer && WGLEW_ARB_pixel_format) this->is_opencsg_capable = true;
 #elif !defined(__APPLE__)
-	else if (GLXEW_SGIX_pbuffer && GLXEW_SGIX_fbconfig) this->is_opencsg_capable = true;
+		else if (GLXEW_SGIX_pbuffer && GLXEW_SGIX_fbconfig) this->is_opencsg_capable = true;
 #endif
+	}
 
-	if (GLEW_VERSION_2_0 && !openscad_disable_gl20_env) this->has_shaders = true;
-
-	if (!this->is_opencsg_capable) {
-		opencsg_support = false;
-		QSettings settings;
-		// FIXME: This should be an OpenCSG capability warning, not an OpenGL 2 warning
-		if (settings.value("editor/opengl20_warning_show",true).toBool()) {
+	if (!GLEW_VERSION_2_0 || !this->is_opencsg_capable) {
+		if (Preferences::inst()->getValue("advanced/opencsg_show_warning").toBool()) {
 			QTimer::singleShot(0, this, SLOT(display_opencsg_warning()));
 		}
 	}
@@ -252,9 +269,19 @@ void GLView::initializeGL()
 #ifdef ENABLE_OPENCSG
 void GLView::display_opencsg_warning()
 {
-	// data
-	QString title = QString("OpenGL context is not OpenCSG capable");
+	OpenCSGWarningDialog *dialog = new OpenCSGWarningDialog(this);
 
+	QString message;
+	if (this->is_opencsg_capable) {
+		message += "Warning: You may experience OpenCSG rendering errors.\n\n";
+	}
+	else {
+		message += "Warning: Missing OpenGL capabilities for OpenCSG - OpenCSG has been disabled.\n\n";
+		dialog->enableOpenCSGBox->hide();
+	}
+	message += "It is highly recommended to use OpenSCAD on a system with "
+		"OpenGL 2.0 or later.\n"
+		"Your renderer information is as follows:\n";
 	QString rendererinfo;
 	rendererinfo.sprintf("GLEW version %s\n"
 											 "%s (%s)\n"
@@ -262,44 +289,13 @@ void GLView::display_opencsg_warning()
 											 glewGetString(GLEW_VERSION),
 											 glGetString(GL_RENDERER), glGetString(GL_VENDOR),
 											 glGetString(GL_VERSION));
+	message += rendererinfo;
 
-	QString message = QString("Warning: Missing OpenGL capabilities for OpenCSG - OpenCSG has been disabled.\n\n"
-			"It is highly recommended to use OpenSCAD on a system with OpenGL 2.0, "
-			"or support for the framebuffer_object or pbuffer extensions. "
-			"Your renderer information is as follows:\n\n%1").arg(rendererinfo);
-
-	QString note = QString("Uncheck to hide this message in the future");
-
-	// presentation
-	QDialog *dialog = new QDialog(this);
-	dialog->setSizeGripEnabled(true);
-	dialog->setWindowTitle(title);
-	dialog->resize(500,300);
-
-	QVBoxLayout *layout = new QVBoxLayout(dialog);
-	dialog->setLayout(layout);
-
-	QTextEdit *textEdit = new QTextEdit(dialog);
-	textEdit->setPlainText(message);
-	layout->addWidget(textEdit);
-
-	QCheckBox *checkbox = new QCheckBox(note,dialog);
-	checkbox->setCheckState(Qt::Checked);
-	layout->addWidget(checkbox);
-
-	QDialogButtonBox *buttonbox =
-		new QDialogButtonBox(	QDialogButtonBox::Ok, Qt::Horizontal,dialog);
-	layout->addWidget(buttonbox);
-	buttonbox->button(QDialogButtonBox::Ok)->setFocus();
-	buttonbox->button(QDialogButtonBox::Ok)->setDefault(true);
-
-	// action
-	connect(buttonbox, SIGNAL(accepted()), dialog, SLOT(accept()));
-	connect(checkbox, SIGNAL(clicked(bool)),
-		Preferences::inst()->openCSGWarningBox, SLOT(setChecked(bool)));
-	connect(checkbox, SIGNAL(clicked(bool)),
-		Preferences::inst(), SLOT(openCSGWarningChanged(bool)));
+	dialog->setText(message);
+	dialog->enableOpenCSGBox->setChecked(Preferences::inst()->getValue("advanced/enable_opencsg_opengl1x").toBool());
 	dialog->exec();
+
+	opencsg_support = this->is_opencsg_capable && Preferences::inst()->getValue("advanced/enable_opencsg_opengl1x").toBool();
 }
 #endif
 

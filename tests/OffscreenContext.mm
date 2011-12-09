@@ -2,9 +2,11 @@
 #include "imageutils.h"
 #include "fbo.h"
 #include <iostream>
+#include <sstream>
 
 #import <AppKit/AppKit.h>   // for NSOpenGL...
-
+#include <CoreServices/CoreServices.h>
+#include <sys/utsname.h>
 
 #define REPORTGLERROR(task) { GLenum tGLErr = glGetError(); if (tGLErr != GL_NO_ERROR) { std::cout << "OpenGL error " << tGLErr << " while " << task << "\n"; } }
 
@@ -17,13 +19,27 @@ struct OffscreenContext
   fbo_t *fbo;
 };
 
-string offscreen_context_getinfo(OffscreenContext *ctx)
+std::string offscreen_context_getinfo(OffscreenContext *ctx)
 {
-  stringstream out;
+  std::stringstream out;
+
+  struct utsname name;
+  uname(&name);
+
+  SInt32 majorVersion,minorVersion,bugFixVersion;
+  
+  Gestalt(gestaltSystemVersionMajor, &majorVersion);
+  Gestalt(gestaltSystemVersionMinor, &minorVersion);
+  Gestalt(gestaltSystemVersionBugFix, &bugFixVersion);
+
+  char *arch = "unknown";
+  if (sizeof(int*) == 4) arch = "32-bit";
+  else if (sizeof(int*) == 8) arch = "64-bit";
+
   out << "GL context creator: Cocoa / CGL\n"
       << "PNG generator: Core Foundation\n"
-      << "OS info: Mac OSX\n"
-      << "Machine: Apple(TM) Mac(TM)\n";
+      << "OS info: Mac OS X " << majorVersion << "." << minorVersion << "." << bugFixVersion << " (" << name.machine << " kernel)\n"
+      << "Machine: " << arch << "\n";
   return out.str();
 }
 

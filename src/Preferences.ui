@@ -185,6 +185,16 @@
             <property name="text">
              <string>Show OpenCSG capability warning</string>
             </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="enableOpenCSGBox">
+            <property name="text">
+             <string>Enable OpenCSG for OpenGL 1.x</string>
+            </property>
            </widget>
           </item>
           <item>
@@ -239,7 +249,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset>
+    <iconset resource="../openscad.qrc">
      <normaloff>:/icons/prefs3DView.png</normaloff>:/icons/prefs3DView.png</iconset>
    </property>
    <property name="text">
@@ -251,7 +261,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset>
+    <iconset resource="../openscad.qrc">
      <normaloff>:/icons/prefsAdvanced.png</normaloff>:/icons/prefsAdvanced.png</iconset>
    </property>
    <property name="text">
@@ -263,7 +273,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset>
+    <iconset resource="../openscad.qrc">
      <normaloff>:/icons/prefsEditor.png</normaloff>:/icons/prefsEditor.png</iconset>
    </property>
    <property name="text">
@@ -272,7 +282,7 @@
   </action>
  </widget>
  <resources>
-  <include location="openscad.qrc"/>
+  <include location="../openscad.qrc"/>
  </resources>
  <connections/>
 </ui>
