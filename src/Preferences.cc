@@ -40,7 +40,8 @@ Preferences::Preferences(QWidget *parent) : QMainWindow(parent)
 	this->defaultmap["3dview/colorscheme"] = this->colorSchemeChooser->currentItem()->text();
 	this->defaultmap["editor/fontfamily"] = this->fontChooser->currentText();
 	this->defaultmap["editor/fontsize"] = this->fontSize->currentText().toUInt();
-	this->defaultmap["editor/opengl20_warning_show"] = true;
+	this->defaultmap["advanced/opencsg_show_warning"] = true;
+	this->defaultmap["advanced/enable_opencsg_opengl1x"] = false;
 
 	// Toolbar
 	QActionGroup *group = new QActionGroup(this);
@@ -98,7 +99,7 @@ Preferences::Preferences(QWidget *parent) : QMainWindow(parent)
 					this, SLOT(fontFamilyChanged(const QString &)));
 	connect(this->fontSize, SIGNAL(editTextChanged(const QString &)),
 					this, SLOT(fontSizeChanged(const QString &)));
-	connect(this->openCSGWarningBox, SIGNAL(clicked(bool)),
+	connect(this->openCSGWarningBox, SIGNAL(toggled(bool)),
 					this, SLOT(openCSGWarningChanged(bool)));
 	updateGUI();
 }
@@ -154,7 +155,14 @@ void
 Preferences::openCSGWarningChanged(bool state)
 {
 	QSettings settings;
-	settings.setValue("editor/opengl20_warning_show",state);
+	settings.setValue("advanced/opencsg_show_warning",state);
+}
+
+void
+Preferences::enableOpenCSGChanged(bool state)
+{
+	QSettings settings;
+	settings.setValue("advanced/enable_opencsg_opengl1x", state);
 }
 
 void Preferences::keyPressEvent(QKeyEvent *e)
@@ -215,7 +223,8 @@ void Preferences::updateGUI()
 		this->fontSize->setEditText(fontsize);
 	}
 
-	this->openCSGWarningBox->setChecked(getValue("editor/opengl20_warning_show").toBool());
+	this->openCSGWarningBox->setChecked(getValue("advanced/opencsg_show_warning").toBool());
+	this->enableOpenCSGBox->setChecked(getValue("advanced/enable_opencsg_opengl1x").toBool());
 }
 
 void Preferences::apply() const

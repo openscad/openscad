@@ -86,6 +86,8 @@ private:
 	void loadViewSettings();
 	void loadDesignSettings();
 
+  class QMessageBox *openglbox;
+
 private slots:
 	void actionNew();
 	void actionOpen();
@@ -156,6 +158,7 @@ public slots:
 	void helpAbout();
 	void helpHomepage();
 	void helpManual();
+	void helpOpenGL();
 	void quit();
 	void actionReloadCompile();
 	void checkAutoReload();

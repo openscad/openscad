@@ -312,6 +312,7 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this->helpActionAbout, SIGNAL(triggered()), this, SLOT(helpAbout()));
 	connect(this->helpActionHomepage, SIGNAL(triggered()), this, SLOT(helpHomepage()));
 	connect(this->helpActionManual, SIGNAL(triggered()), this, SLOT(helpManual()));
+	connect(this->helpActionOpenGLInfo, SIGNAL(triggered()), this, SLOT(helpOpenGL()));
 
 
 	console->setReadOnly(true);
@@ -1752,6 +1753,18 @@ MainWindow::helpManual()
 	QDesktopServices::openUrl(QUrl("http://en.wikibooks.org/wiki/OpenSCAD_User_Manual"));
 }
 
+void MainWindow::helpOpenGL()
+{
+	if (!this->openglbox) {
+		this->openglbox = new QMessageBox(QMessageBox::Information, 
+																			"OpenGL Info", "Detailed OpenGL Info",
+																			QMessageBox::Ok, this);
+		
+	}
+	this->openglbox->setDetailedText(this->glview->getRendererInfo());
+	this->openglbox->show();
+}
+
 /*!
 	FIXME: In MDI mode, should this be called on both reload functions?
  */
@@ -1822,3 +1835,4 @@ void MainWindow::clearCurrentOutput()
 {
 	set_output_handler(NULL, NULL);
 }
+
