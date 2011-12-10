@@ -1798,9 +1798,7 @@ void MainWindow::helpOpenGL()
 		<< "\nCGAL version: " << TOSTRING(CGAL_VERSION)
 		<< "\nOpenCSG version: " << OPENCSG_VERSION_STRING
 		<< "\n"
-		<< "\nRenderer information:"
-		<< "\n"
-		<< "\nRenderer information is determined at run-time and is likely accurate"
+		<< "\nRenderer information (determined at run-time):"
 		<< "\n"
 		<< "\n" << glview->getRendererInfo()
 		<< "\n";

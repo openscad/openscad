@@ -45,7 +45,7 @@ public:
 	GLint shaderinfo[11];
 
 #ifdef ENABLE_OPENCSG
-	QString opencsg_enabler;
+	QString opencsg_offscreentype;
 	bool opencsg_support;
 	int opencsg_id;
 #endif

@@ -137,7 +137,7 @@ QString GLView::getRendererInfo()
 	// Extensions
 
 #ifdef ENABLE_OPENCSG
-//	out << "OpenCSG enabler: " << this->opencsg_enabler << "\n";
+	out << "OpenCSG Offscreen type: " << QString(this->opencsg_offscreentype) << "\n";
 #endif
 	out << "GL Extensions: \n";
 	QString extensions((const char *)glGetString(GL_EXTENSIONS));
@@ -187,28 +187,28 @@ void GLView::initializeGL()
 		if (!openscad_disable_gl20_env) {
 			this->is_opencsg_capable = true;
 			this->has_shaders = true;
-			this->opencsg_enabler = QString("OpenGL >= 2.0");
+			this->opencsg_offscreentype = QString("OpenGL >= 2.0");
 		}
 	}
 	// If OpenGL < 2, check for extensions
 	else {
 		if (GLEW_ARB_framebuffer_object) {
 			this->is_opencsg_capable = true;
-			this->opencsg_enabler = QString("ARB Framebuffer");
+			this->opencsg_offscreentype = QString("ARB_framebuffer_object");
 		}
 		else if (GLEW_EXT_framebuffer_object && GLEW_EXT_packed_depth_stencil) {
 			this->is_opencsg_capable = true;
-			this->opencsg_enabler = QString("EXT Framebuffer && Packed Depth Stencil");
+			this->opencsg_offscreentype = QString("EXT_framebuffer_object && EXT_packed_depth_stencil");
 		}
 #ifdef WIN32
 		else if (WGLEW_ARB_pbuffer && WGLEW_ARB_pixel_format) {
 			this->is_opencsg_capable = true;
-			this->opencsg_enabler = QString("Win pbuffer");
+			this->opencsg_offscreentype = QString("Win ARB_pbuffer & ARB_pixel_format");
 		}
 #elif !defined(__APPLE__)
 		else if (GLXEW_SGIX_pbuffer && GLXEW_SGIX_fbconfig) {
-			this->opencsg_enabler = QString("SGIX pbuffer");
-			this->is_op encsg_capable = true;
+			this->opencsg_offscreentype = QString("GLX SGIX_pbuffer & GLX SGIX_fbconfig");
+			this->is_opencsg_capable = true;
 		}
 #endif
 	}

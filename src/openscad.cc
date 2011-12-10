@@ -117,9 +117,9 @@ int main(int argc, char **argv)
 #endif
 	QDir original_path = QDir::current();
 
-	//QGLFormat glformat;
-	//glformat.setAlpha( true );
-	//QGLFormat::setDefaultFormat( glformat );
+	QGLFormat glformat;
+	glformat.setAlpha( true );
+	QGLFormat::setDefaultFormat( glformat );
 
 	// set up groups for QSettings
 	QCoreApplication::setOrganizationName("OpenSCAD");
