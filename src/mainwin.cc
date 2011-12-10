@@ -1785,9 +1785,14 @@ void MainWindow::helpOpenGL()
 #define TOSTRING(x) STRINGIFY(x)
 	out << "\nLibrary information: "
 		<< "\n"
+#ifndef __WIN32__
+#ifndef __APPLE__
 		<< "\nPlease note that library information is compile-time information."
-		<< "\nYour system might erroneously link different library versions at run-time"
-		<< "\nif LD_LIBRARY_PATH (Unix) or PATH (Win) are set incorrectly."
+		<< "\nIf your system has multiple versions of a library, and"
+		<< "\nif LD_LIBRARY_PATH is set incorrectly, then the dynamic"
+		<< "\nloader ld.so might load the wrong version of the library at runtime."
+#endif
+#endif
 		<< "\n"
 		<< "\nOpenSCAD Version: " << TOSTRING(OPENSCAD_VERSION)
 		<< "\nCompiled by: " << compiler_info
