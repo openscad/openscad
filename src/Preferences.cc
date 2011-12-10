@@ -158,13 +158,6 @@ Preferences::openCSGWarningChanged(bool state)
 	settings.setValue("advanced/opencsg_show_warning",state);
 }
 
-void
-Preferences::enableOpenCSGChanged(bool state)
-{
-	QSettings settings;
-	settings.setValue("advanced/enable_opencsg_opengl1x", state);
-}
-
 void Preferences::keyPressEvent(QKeyEvent *e)
 {
 #ifdef Q_WS_MAC
@@ -224,7 +217,6 @@ void Preferences::updateGUI()
 	}
 
 	this->openCSGWarningBox->setChecked(getValue("advanced/opencsg_show_warning").toBool());
-	this->enableOpenCSGBox->setChecked(getValue("advanced/enable_opencsg_opengl1x").toBool());
 }
 
 void Preferences::apply() const

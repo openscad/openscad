@@ -148,6 +148,7 @@ MainWindow::MainWindow(const QString &filename)
 
 	register_builtin(root_ctx);
 
+	this->openglbox = NULL;
 	root_module = NULL;
 	absolute_root_node = NULL;
 	root_chain = NULL;
