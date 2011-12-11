@@ -246,6 +246,10 @@ TESTLOG
 	imgs = {}
 	passed_tests = filter(lambda x: x.passed, tests)
 	failed_tests = filter(lambda x: not x.passed, tests)
+
+	tests_to_report = tests
+	if failed_only: tests_to_report = failed_tests
+
 	percent = str(int(100.0*len(passed_tests) / len(tests)))
 	s = wiki_template
 	repeat1 = ezsearch('(<REPEAT1>.*?</REPEAT1>)',s)
@@ -256,7 +260,8 @@ TESTLOG
 		'NUMTESTS':len(tests), 'NUMPASSED':len(passed_tests), 'PERCENTPASSED':percent }
 	for key in dic.keys():
 		s = s.replace(key,str(dic[key]))
-	for t in tests:
+
+	for t in tests_to_report:
 		if t.type=='txt':
 			newchunk = re.sub('FTESTNAME',t.fullname,repeat2)
 			newchunk = newchunk.replace('TESTLOG',t.fulltestlog)
@@ -308,6 +313,9 @@ def tohtml(wiki_rootpath, startdate, tests, enddate, sysinfo, sysid, makefiles):
 	failed_tests = filter(lambda x: not x.passed, tests)
 	percent = str(int(100.0*len(passed_tests) / len(tests)))
 
+	tests_to_report = tests
+	if failed_only: tests_to_report = failed_tests
+
 	s=''
 
 	s+= '\n<pre>'
@@ -324,7 +332,7 @@ def tohtml(wiki_rootpath, startdate, tests, enddate, sysinfo, sysid, makefiles):
 	s+= '\nPERCENTPASSED: '+ percent
 	s+= '\n</pre>'
 
-	for t in tests:
+	for t in tests_to_report:
 		if t.type=='txt':
 			s+='\n<pre>'+t.fullname+'</pre>\n'
 			s+='<p><pre>'+t.fulltestlog+'</pre>\n\n'
@@ -480,5 +488,8 @@ wiki_rootpath = 'OpenSCAD'
 builddir = os.getcwd() # os.getcwd()+'/build'
 verbose = False
 maxretry = 10
+
+failed_only = False
+if '--failed-only' in sys.argv: failed_only = True
 
 main()
