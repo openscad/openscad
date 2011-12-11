@@ -39,6 +39,7 @@
 #include <QSettings>
 #include <QTimer>
 #include <QTextEdit>
+#include <QTextStream>
 #include <QVBoxLayout>
 #include <QErrorMessage>
 #include "OpenCSGWarningDialog.h"
@@ -107,6 +108,46 @@ void GLView::setRenderer(Renderer *r)
 	updateGL();
 }
 
+QString GLView::getRendererInfo()
+{
+	QString outs;
+	QTextStream out(&outs);
+
+	// assume glew_init() has been called during "this" initialization
+
+	// GLEW
+
+	out << "GLEW version: " << (const char*)glewGetString(GLEW_VERSION)
+	  << "\nGL Renderer: " << (const char *)glGetString(GL_RENDERER)
+	  << "\nGL Vendor: " << (const char *)glGetString(GL_VENDOR)
+	  << "\nOpenGL Version: " << (const char *)glGetString(GL_VERSION) << "\n";
+
+	// FBO
+
+	GLint rbits, gbits, bbits, abits, dbits, sbits;
+	glGetIntegerv(GL_RED_BITS, &rbits);
+	glGetIntegerv(GL_GREEN_BITS, &gbits);
+	glGetIntegerv(GL_BLUE_BITS, &bbits);
+	glGetIntegerv(GL_ALPHA_BITS, &abits);
+	glGetIntegerv(GL_DEPTH_BITS, &dbits);
+	glGetIntegerv(GL_STENCIL_BITS, &sbits);
+	out	<< "FBO: RGBA(" << rbits << gbits << bbits << abits
+		<< "), depth(" << dbits
+		<< "), stencil(" << sbits << ")\n";
+
+	// Extensions
+
+#ifdef ENABLE_OPENCSG
+	out << "OpenCSG Offscreen type: " << QString(this->opencsg_offscreentype) << "\n";
+#endif
+	out << "GL Extensions: \n";
+	QString extensions((const char *)glGetString(GL_EXTENSIONS));
+	extensions.replace( " ", "\n " );
+	out << " " << extensions << "\n";
+
+	return outs;
+}
+
 void GLView::initializeGL()
 {
 	glEnable(GL_DEPTH_TEST);
@@ -137,29 +178,6 @@ void GLView::initializeGL()
 		fprintf(stderr, "GLEW Error: %s\n", glewGetErrorString(err));
 	}
 
-	GLint rbits, gbits, bbits, abits, dbits, sbits;
-	glGetIntegerv(GL_RED_BITS, &rbits);
-	glGetIntegerv(GL_GREEN_BITS, &gbits);
-	glGetIntegerv(GL_BLUE_BITS, &bbits);
-	glGetIntegerv(GL_ALPHA_BITS, &abits);
-	glGetIntegerv(GL_DEPTH_BITS, &dbits);
-	glGetIntegerv(GL_STENCIL_BITS, &sbits);
-
-
-	this->rendererInfo.sprintf("GLEW version %s\n"
-														 "OpenGL version %s\n"
-														 "%s (%s)\n\n"
-														 "RGBA(%d%d%d%d), depth(%d), stencil(%d)\n"
-														 "Extensions:\n"
-														 "%s\n",
-														 glewGetString(GLEW_VERSION),
-														 glGetString(GL_RENDERER),
-														 glGetString(GL_VENDOR),
-														 glGetString(GL_VERSION),
-														 rbits, gbits, bbits, abits, dbits, sbits,
-														 glGetString(GL_EXTENSIONS));
-	
-
 	const char *openscad_disable_gl20_env = getenv("OPENSCAD_DISABLE_GL20");
 	if (openscad_disable_gl20_env && !strcmp(openscad_disable_gl20_env, "0")) {
 		openscad_disable_gl20_env = NULL;
@@ -170,22 +188,33 @@ void GLView::initializeGL()
 		if (!openscad_disable_gl20_env) {
 			this->is_opencsg_capable = true;
 			this->has_shaders = true;
+			this->opencsg_offscreentype = QString("OpenGL >= 2.0");
 		}
 	}
 	// If OpenGL < 2, check for extensions
 	else {
-		if (GLEW_ARB_framebuffer_object) this->is_opencsg_capable = true;
+		if (GLEW_ARB_framebuffer_object) {
+			this->is_opencsg_capable = true;
+			this->opencsg_offscreentype = QString("ARB_framebuffer_object");
+		}
 		else if (GLEW_EXT_framebuffer_object && GLEW_EXT_packed_depth_stencil) {
 			this->is_opencsg_capable = true;
+			this->opencsg_offscreentype = QString("EXT_framebuffer_object && EXT_packed_depth_stencil");
 		}
 #ifdef WIN32
-		else if (WGLEW_ARB_pbuffer && WGLEW_ARB_pixel_format) this->is_opencsg_capable = true;
+		else if (WGLEW_ARB_pbuffer && WGLEW_ARB_pixel_format) {
+			this->is_opencsg_capable = true;
+			this->opencsg_offscreentype = QString("Win ARB_pbuffer & ARB_pixel_format");
+		}
 #elif !defined(__APPLE__)
-		else if (GLXEW_SGIX_pbuffer && GLXEW_SGIX_fbconfig) this->is_opencsg_capable = true;
+		else if (GLXEW_SGIX_pbuffer && GLXEW_SGIX_fbconfig) {
+			this->opencsg_offscreentype = QString("GLX SGIX_pbuffer & GLX SGIX_fbconfig");
+			this->is_opencsg_capable = true;
+		}
 #endif
 	}
 
-	if (!GLEW_VERSION_2_0 || !this->is_opencsg_capable) {
+	if (!this->is_opencsg_capable) {
 		if (Preferences::inst()->getValue("advanced/opencsg_show_warning").toBool()) {
 			QTimer::singleShot(0, this, SLOT(display_opencsg_warning()));
 		}
@@ -311,36 +340,23 @@ void GLView::display_opencsg_warning()
 	OpenCSGWarningDialog *dialog = new OpenCSGWarningDialog(this);
 
 	QString message;
-	if (this->is_opencsg_capable) {
-		message += "Warning: You may experience OpenCSG rendering errors.\n\n";
+	if (!this->is_opencsg_capable) {
+		message += "Warning: Missing OpenGL Extensions required for OpenCSG - OpenCSG has been disabled.\n\n";
 	}
-	else {
-		message += "Warning: Missing OpenGL capabilities for OpenCSG - OpenCSG has been disabled.\n\n";
-		dialog->enableOpenCSGBox->hide();
-	}
-	message += "It is highly recommended to use OpenSCAD on a system with "
-		"OpenGL 2.0 or later.\n"
-		"Your renderer information is as follows:\n";
-	QString rendererinfo;
-	rendererinfo.sprintf("GLEW version %s\n"
-											 "%s (%s)\n"
-											 "OpenGL version %s\n",
-											 glewGetString(GLEW_VERSION),
-											 glGetString(GL_RENDERER), glGetString(GL_VENDOR),
-											 glGetString(GL_VERSION));
-	message += rendererinfo;
+	message += "\nRenderer information:\n";
+	message += GLView::getRendererInfo();
 
 	dialog->setText(message);
-	dialog->enableOpenCSGBox->setChecked(Preferences::inst()->getValue("advanced/enable_opencsg_opengl1x").toBool());
 	dialog->exec();
 
-	opencsg_support = this->is_opencsg_capable && Preferences::inst()->getValue("advanced/enable_opencsg_opengl1x").toBool();
+	opencsg_support = this->is_opencsg_capable;
 }
 #endif
 
 void GLView::resizeGL(int w, int h)
 {
 #ifdef ENABLE_OPENCSG
+
 	shaderinfo[9] = w;
 	shaderinfo[10] = h;
 #endif

@@ -23,7 +23,6 @@ public slots:
 	void fontFamilyChanged(const QString &);
 	void fontSizeChanged(const QString &);
 	void openCSGWarningChanged(bool);
-	void enableOpenCSGChanged(bool);
 
 signals:
 	void requestRedraw() const;

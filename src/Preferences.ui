@@ -191,13 +191,6 @@
            </widget>
           </item>
           <item>
-           <widget class="QCheckBox" name="enableOpenCSGBox">
-            <property name="text">
-             <string>Enable OpenCSG for OpenGL 1.x</string>
-            </property>
-           </widget>
-          </item>
-          <item>
            <spacer name="verticalSpacer_2">
             <property name="orientation">
              <enum>Qt::Vertical</enum>

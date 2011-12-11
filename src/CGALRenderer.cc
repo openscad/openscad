@@ -24,6 +24,11 @@
  *
  */
 
+#ifdef _MSC_VER 
+// Boost conflicts with MPFR under MSVC (google it)
+#include <mpfr.h>
+#endif
+
 // dxfdata.h must come first for Eigen SIMD alignment issues
 #include "dxfdata.h"
 #include "polyset.h"

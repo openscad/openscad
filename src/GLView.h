@@ -32,7 +32,7 @@ public:
 	void setShowCrosshairs(bool enabled) { this->showcrosshairs = enabled; }
 	bool orthoMode() const { return this->orthomode; }
 	void setOrthoMode(bool enabled) { this->orthomode = enabled; }
-	const QString &getRendererInfo() const { return this->rendererInfo; }
+	QString getRendererInfo();
 
 public:
 	QLabel *statusLabel;
@@ -45,6 +45,7 @@ public:
 	GLint shaderinfo[11];
 
 #ifdef ENABLE_OPENCSG
+	QString opencsg_offscreentype;
 	bool opencsg_support;
 	int opencsg_id;
 #endif

@@ -40,6 +40,7 @@
 #ifdef ENABLE_OPENCSG
 #include "CSGTermEvaluator.h"
 #include "OpenCSGRenderer.h"
+#include "opencsg.h"
 #endif
 #ifdef USE_PROGRESSWIDGET
 #include "ProgressWidget.h"
@@ -59,6 +60,7 @@
 #include <QLabel>
 #include <QFileInfo>
 #include <QTextStream>
+#include <QTextEdit>
 #include <QStatusBar>
 #include <QDropEvent>
 #include <QMimeData>
@@ -76,6 +78,7 @@
 #include <fstream>
 
 #include <algorithm>
+#include <boost/version.hpp>
 #include <boost/foreach.hpp>
 #include <boost/lambda/lambda.hpp>
 #include <boost/lambda/bind.hpp>
@@ -1756,14 +1759,65 @@ MainWindow::helpManual()
 
 void MainWindow::helpOpenGL()
 {
-	if (!this->openglbox) {
-		this->openglbox = new QMessageBox(QMessageBox::Information, 
-																			"OpenGL Info", "Detailed OpenGL Info",
-																			QMessageBox::Ok, this);
-		
-	}
-	this->openglbox->setDetailedText(this->glview->getRendererInfo());
-	this->openglbox->show();
+	QString outs;
+	QTextStream out(&outs);
+
+#ifdef __GNUG__
+#define compiler_info "GCC " << __VERSION__
+#elif defined(_MSC_VER)
+#define compiler_info "MSVC " << _MSC_FULL_VER
+#else
+#define compiler_info "unknown compiler"
+#endif
+
+#ifdef ENABLE_OPENCSG
+#ifndef OPENCSG_VERSION_STRING
+#error "OpenSCAD requires OpenCSG version 1.3.2 or newer, your version is older"
+#endif
+#else
+#define OPENCSG_VERSION_STRING "disabled"
+#endif
+
+#ifndef ENABLE_CGAL
+#define CGAL_VERSION "disabled"
+#endif
+
+#define STRINGIFY(x) #x
+#define TOSTRING(x) STRINGIFY(x)
+	out << "\nLibrary information: "
+		<< "\n"
+#ifndef __WIN32__
+#ifndef __APPLE__
+		<< "\nPlease note that library information is compile-time information."
+		<< "\nIf your system has multiple versions of a library, and"
+		<< "\nif LD_LIBRARY_PATH is set incorrectly, then the dynamic"
+		<< "\nloader ld.so might load the wrong version of the library at runtime."
+#endif
+#endif
+		<< "\n"
+		<< "\nOpenSCAD Version: " << TOSTRING(OPENSCAD_VERSION)
+		<< "\nCompiled by: " << compiler_info
+		<< "\nCompile date: " << __DATE__
+		<< "\nBoost version: " << BOOST_LIB_VERSION
+		<< "\nEigen version: " << EIGEN_WORLD_VERSION << "."
+		<< EIGEN_MAJOR_VERSION << "." << EIGEN_MINOR_VERSION
+		<< "\nCGAL version: " << TOSTRING(CGAL_VERSION)
+		<< "\nOpenCSG version: " << OPENCSG_VERSION_STRING
+		<< "\n"
+		<< "\nRenderer information (determined at run-time):"
+		<< "\n"
+		<< "\n" << glview->getRendererInfo()
+		<< "\n";
+
+	QTextEdit *e = new QTextEdit(this);
+	e->setWindowFlags(Qt::Window);
+	e->setTabStopWidth(30);
+	e->setWindowTitle("OpenSCAD renderer information");
+	e->setReadOnly(true);
+	e->setPlainText(outs);
+	e->show();
+	e->resize(600, 400);
+	clearCurrentOutput();
 }
 
 /*!
