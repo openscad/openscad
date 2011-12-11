@@ -27,6 +27,7 @@
 #include "GLView.h"
 #include "Preferences.h"
 #include "renderer.h"
+#include "rendersettings.h"
 
 #include <QApplication>
 #include <QWheelEvent>
@@ -190,6 +191,28 @@ void GLView::initializeGL()
 		}
 	}
 	if (opencsg_support && this->has_shaders) {
+  /*
+		Uniforms:
+		  1 color1 - face color
+			2 color2 - edge color
+			7 xscale
+			8 yscale
+
+		Attributes:
+		  3 trig
+			4 pos_b
+			5 pos_c
+			6 mask
+
+		Other:
+		  9 width
+			10 height
+
+		Outputs:
+		  tp
+			tr
+			shading
+	 */
 		const char *vs_source =
 			"uniform float xscale, yscale;\n"
 			"attribute vec3 pos_b, pos_c;\n"
@@ -215,6 +238,11 @@ void GLView::initializeGL()
 			"  shading = abs(dot(normal, lightDir));\n"
 			"}\n";
 
+		/*
+			Inputs:
+			  tp && tr - if any components of tp < tr, use color2 (edge color)
+				shading  - multiplied by color1. color2 is is without lighting
+		 */
 		const char *fs_source =
 			"uniform vec4 color1, color2;\n"
 			"varying vec3 tp, tr, tmp;\n"
@@ -351,7 +379,7 @@ void GLView::paintGL()
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 
-	const QColor &bgcol = Preferences::inst()->color(Preferences::BACKGROUND_COLOR);
+	const QColor &bgcol = RenderSettings::inst()->color(RenderSettings::BACKGROUND_COLOR);
 	glClearColor(bgcol.redF(), bgcol.greenF(), bgcol.blueF(), 0.0);
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
@@ -369,7 +397,7 @@ void GLView::paintGL()
 	if (showcrosshairs)
 	{
 		glLineWidth(3);
-		const QColor &col = Preferences::inst()->color(Preferences::CROSSHAIR_COLOR);
+		const QColor &col = RenderSettings::inst()->color(RenderSettings::CROSSHAIR_COLOR);
 		glColor3f(col.redF(), col.greenF(), col.blueF());
 		glBegin(GL_LINES);
 		for (double xf = -1; xf <= +1; xf += 2)
@@ -470,7 +498,7 @@ void GLView::paintGL()
 		// FIXME: This was an attempt to keep contrast with background, but is suboptimal
 		// (e.g. nearly invisible against a gray background).
 		int r,g,b;
-		bgcol.getRgb(&r, &g, &b);
+//		bgcol.getRgb(&r, &g, &b);
 		glColor3d((255.0-r)/255.0, (255.0-g)/255.0, (255.0-b)/255.0);
 		glBegin(GL_LINES);
 		// X Label

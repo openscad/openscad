@@ -54,38 +54,38 @@ Preferences::Preferences(QWidget *parent) : QMainWindow(parent)
 	this->actionTriggered(this->prefsAction3DView);
 
 	// 3D View pane
-	this->colorschemes["Cornfield"][BACKGROUND_COLOR] = QColor(0xff, 0xff, 0xe5);
-	this->colorschemes["Cornfield"][OPENCSG_FACE_FRONT_COLOR] = QColor(0xf9, 0xd7, 0x2c);
-	this->colorschemes["Cornfield"][OPENCSG_FACE_BACK_COLOR] = QColor(0x9d, 0xcb, 0x51);
-	this->colorschemes["Cornfield"][CGAL_FACE_FRONT_COLOR] = QColor(0xf9, 0xd7, 0x2c);
-	this->colorschemes["Cornfield"][CGAL_FACE_BACK_COLOR] = QColor(0x9d, 0xcb, 0x51);
-	this->colorschemes["Cornfield"][CGAL_FACE_2D_COLOR] = QColor(0x00, 0xbf, 0x99);
-	this->colorschemes["Cornfield"][CGAL_EDGE_FRONT_COLOR] = QColor(0xff, 0x00, 0x00);
-	this->colorschemes["Cornfield"][CGAL_EDGE_BACK_COLOR] = QColor(0xff, 0x00, 0x00);
-	this->colorschemes["Cornfield"][CGAL_EDGE_2D_COLOR] = QColor(0xff, 0x00, 0x00);
-	this->colorschemes["Cornfield"][CROSSHAIR_COLOR] = QColor(0x80, 0x00, 0x00);
+	this->colorschemes["Cornfield"][RenderSettings::BACKGROUND_COLOR] = QColor(0xff, 0xff, 0xe5);
+	this->colorschemes["Cornfield"][RenderSettings::OPENCSG_FACE_FRONT_COLOR] = QColor(0xf9, 0xd7, 0x2c);
+	this->colorschemes["Cornfield"][RenderSettings::OPENCSG_FACE_BACK_COLOR] = QColor(0x9d, 0xcb, 0x51);
+	this->colorschemes["Cornfield"][RenderSettings::CGAL_FACE_FRONT_COLOR] = QColor(0xf9, 0xd7, 0x2c);
+	this->colorschemes["Cornfield"][RenderSettings::CGAL_FACE_BACK_COLOR] = QColor(0x9d, 0xcb, 0x51);
+	this->colorschemes["Cornfield"][RenderSettings::CGAL_FACE_2D_COLOR] = QColor(0x00, 0xbf, 0x99);
+	this->colorschemes["Cornfield"][RenderSettings::CGAL_EDGE_FRONT_COLOR] = QColor(0xff, 0x00, 0x00);
+	this->colorschemes["Cornfield"][RenderSettings::CGAL_EDGE_BACK_COLOR] = QColor(0xff, 0x00, 0x00);
+	this->colorschemes["Cornfield"][RenderSettings::CGAL_EDGE_2D_COLOR] = QColor(0xff, 0x00, 0x00);
+	this->colorschemes["Cornfield"][RenderSettings::CROSSHAIR_COLOR] = QColor(0x80, 0x00, 0x00);
 
-	this->colorschemes["Metallic"][BACKGROUND_COLOR] = QColor(0xaa, 0xaa, 0xff);
-	this->colorschemes["Metallic"][OPENCSG_FACE_FRONT_COLOR] = QColor(0xdd, 0xdd, 0xff);
-	this->colorschemes["Metallic"][OPENCSG_FACE_BACK_COLOR] = QColor(0xdd, 0x22, 0xdd);
-	this->colorschemes["Metallic"][CGAL_FACE_FRONT_COLOR] = QColor(0xdd, 0xdd, 0xff);
-	this->colorschemes["Metallic"][CGAL_FACE_BACK_COLOR] = QColor(0xdd, 0x22, 0xdd);
-	this->colorschemes["Metallic"][CGAL_FACE_2D_COLOR] = QColor(0x00, 0xbf, 0x99);
-	this->colorschemes["Metallic"][CGAL_EDGE_FRONT_COLOR] = QColor(0xff, 0x00, 0x00);
-	this->colorschemes["Metallic"][CGAL_EDGE_BACK_COLOR] = QColor(0xff, 0x00, 0x00);
-	this->colorschemes["Metallic"][CGAL_EDGE_2D_COLOR] = QColor(0xff, 0x00, 0x00);
-	this->colorschemes["Metallic"][CROSSHAIR_COLOR] = QColor(0x80, 0x00, 0x00);
+	this->colorschemes["Metallic"][RenderSettings::BACKGROUND_COLOR] = QColor(0xaa, 0xaa, 0xff);
+	this->colorschemes["Metallic"][RenderSettings::OPENCSG_FACE_FRONT_COLOR] = QColor(0xdd, 0xdd, 0xff);
+	this->colorschemes["Metallic"][RenderSettings::OPENCSG_FACE_BACK_COLOR] = QColor(0xdd, 0x22, 0xdd);
+	this->colorschemes["Metallic"][RenderSettings::CGAL_FACE_FRONT_COLOR] = QColor(0xdd, 0xdd, 0xff);
+	this->colorschemes["Metallic"][RenderSettings::CGAL_FACE_BACK_COLOR] = QColor(0xdd, 0x22, 0xdd);
+	this->colorschemes["Metallic"][RenderSettings::CGAL_FACE_2D_COLOR] = QColor(0x00, 0xbf, 0x99);
+	this->colorschemes["Metallic"][RenderSettings::CGAL_EDGE_FRONT_COLOR] = QColor(0xff, 0x00, 0x00);
+	this->colorschemes["Metallic"][RenderSettings::CGAL_EDGE_BACK_COLOR] = QColor(0xff, 0x00, 0x00);
+	this->colorschemes["Metallic"][RenderSettings::CGAL_EDGE_2D_COLOR] = QColor(0xff, 0x00, 0x00);
+	this->colorschemes["Metallic"][RenderSettings::CROSSHAIR_COLOR] = QColor(0x80, 0x00, 0x00);
 
-	this->colorschemes["Sunset"][BACKGROUND_COLOR] = QColor(0xaa, 0x44, 0x44);
-	this->colorschemes["Sunset"][OPENCSG_FACE_FRONT_COLOR] = QColor(0xff, 0xaa, 0xaa);
-	this->colorschemes["Sunset"][OPENCSG_FACE_BACK_COLOR] = QColor(0x88, 0x22, 0x33);
-	this->colorschemes["Sunset"][CGAL_FACE_FRONT_COLOR] = QColor(0xff, 0xaa, 0xaa);
-	this->colorschemes["Sunset"][CGAL_FACE_BACK_COLOR] = QColor(0x88, 0x22, 0x33);
-	this->colorschemes["Sunset"][CGAL_FACE_2D_COLOR] = QColor(0x00, 0xbf, 0x99);
-	this->colorschemes["Sunset"][CGAL_EDGE_FRONT_COLOR] = QColor(0xff, 0x00, 0x00);
-	this->colorschemes["Sunset"][CGAL_EDGE_BACK_COLOR] = QColor(0xff, 0x00, 0x00);
-	this->colorschemes["Sunset"][CGAL_EDGE_2D_COLOR] = QColor(0xff, 0x00, 0x00);
-	this->colorschemes["Sunset"][CROSSHAIR_COLOR] = QColor(0x80, 0x00, 0x00);
+	this->colorschemes["Sunset"][RenderSettings::BACKGROUND_COLOR] = QColor(0xaa, 0x44, 0x44);
+	this->colorschemes["Sunset"][RenderSettings::OPENCSG_FACE_FRONT_COLOR] = QColor(0xff, 0xaa, 0xaa);
+	this->colorschemes["Sunset"][RenderSettings::OPENCSG_FACE_BACK_COLOR] = QColor(0x88, 0x22, 0x33);
+	this->colorschemes["Sunset"][RenderSettings::CGAL_FACE_FRONT_COLOR] = QColor(0xff, 0xaa, 0xaa);
+	this->colorschemes["Sunset"][RenderSettings::CGAL_FACE_BACK_COLOR] = QColor(0x88, 0x22, 0x33);
+	this->colorschemes["Sunset"][RenderSettings::CGAL_FACE_2D_COLOR] = QColor(0x00, 0xbf, 0x99);
+	this->colorschemes["Sunset"][RenderSettings::CGAL_EDGE_FRONT_COLOR] = QColor(0xff, 0x00, 0x00);
+	this->colorschemes["Sunset"][RenderSettings::CGAL_EDGE_BACK_COLOR] = QColor(0xff, 0x00, 0x00);
+	this->colorschemes["Sunset"][RenderSettings::CGAL_EDGE_2D_COLOR] = QColor(0xff, 0x00, 0x00);
+	this->colorschemes["Sunset"][RenderSettings::CROSSHAIR_COLOR] = QColor(0x80, 0x00, 0x00);
 
 	// Editor pane
 	QFontDatabase db;
@@ -102,6 +102,8 @@ Preferences::Preferences(QWidget *parent) : QMainWindow(parent)
 	connect(this->openCSGWarningBox, SIGNAL(toggled(bool)),
 					this, SLOT(openCSGWarningChanged(bool)));
 	updateGUI();
+
+	RenderSettings::inst()->setColors(this->colorschemes[getValue("3dview/colorscheme").toString()]);
 }
 
 Preferences::~Preferences()
@@ -125,15 +127,13 @@ Preferences::actionTriggered(QAction *action)
 
 void Preferences::colorSchemeChanged()
 {
+	QString scheme = this->colorSchemeChooser->currentItem()->text();
 	QSettings settings;
-	settings.setValue("3dview/colorscheme", this->colorSchemeChooser->currentItem()->text());
+	settings.setValue("3dview/colorscheme", scheme);
+
+	RenderSettings::inst()->setColors(this->colorschemes[scheme]);
 
 	emit requestRedraw();
-}
-
-const QColor &Preferences::color(RenderColor idx)
-{
-	return this->colorschemes[getValue("3dview/colorscheme").toString()][idx];
 }
 
 void Preferences::fontFamilyChanged(const QString &family)
