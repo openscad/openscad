@@ -28,6 +28,7 @@ o Dropping a file into the editor under Windows didn't work (double C:/C:/ probl
 o On some platforms it was possible to insertion rich text in the editor, causing confusion.
 o Less crashes due to CGAL assertions
 o OpenCSG should now work on systems with OpenGL 1.x, given that the right extensions are available
+o include now searches librarydir
 
 Deprecations:
 o dxf_linear_extrude() and dxf_rotate_extrude() are now deprecated.
