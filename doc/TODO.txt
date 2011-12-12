@@ -90,6 +90,7 @@ o Editor wishlist
     in the source code in the 3D view
   - Tabbed editor for designs including other files
   - C-c/C-v should work on the focused widget, not always in the editor
+  - Auto-indent on enter and on tab
 o Error reporting/debugging
   - Provide better error messages when polygon ordering causes CGAL errors:
     o Supply syntax highlighting of the exact polygon indices which are 
