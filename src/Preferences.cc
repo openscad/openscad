@@ -36,6 +36,15 @@ Preferences::Preferences(QWidget *parent) : QMainWindow(parent)
 {
 	setupUi(this);
 
+	// Editor pane
+	QFontDatabase db;
+	foreach(int size, db.standardSizes()) {
+		this->fontSize->addItem(QString::number(size));
+		if (size == 12) {
+			this->fontSize->setCurrentIndex(this->fontSize->count()-1);
+		}
+	}
+
 	// Setup default settings
 	this->defaultmap["3dview/colorscheme"] = this->colorSchemeChooser->currentItem()->text();
 	this->defaultmap["editor/fontfamily"] = this->fontChooser->currentText();
@@ -86,12 +95,6 @@ Preferences::Preferences(QWidget *parent) : QMainWindow(parent)
 	this->colorschemes["Sunset"][RenderSettings::CGAL_EDGE_BACK_COLOR] = QColor(0xff, 0x00, 0x00);
 	this->colorschemes["Sunset"][RenderSettings::CGAL_EDGE_2D_COLOR] = QColor(0xff, 0x00, 0x00);
 	this->colorschemes["Sunset"][RenderSettings::CROSSHAIR_COLOR] = QColor(0x80, 0x00, 0x00);
-
-	// Editor pane
-	QFontDatabase db;
-	foreach(int size, db.standardSizes()) {
-		this->fontSize->addItem(QString::number(size));
-	}
 
 	connect(this->colorSchemeChooser, SIGNAL(itemSelectionChanged()),
 					this, SLOT(colorSchemeChanged()));
