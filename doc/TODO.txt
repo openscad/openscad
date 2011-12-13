@@ -245,7 +245,7 @@ o import_stl
 o import_off
 o import_*
   - open polylines
-o include: test subdirs under librarydir (e.g. include <MCAD/gears.scad> doesn't work
+o include: test subdirs under librarydir (e.g. include <MCAD/gears.scad>)
 o use: Basically same tests as include. + use restrictions
 o include and use: remember filenames with space
 o variants of module transparent() { %child(); }
