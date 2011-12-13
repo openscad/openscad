@@ -489,6 +489,8 @@ builddir = os.getcwd() # os.getcwd()+'/build'
 verbose = False
 maxretry = 10
 
+if bool(os.getenv("TEST_GENERATE")): sys.exit(0)
+
 failed_only = False
 if '--failed-only' in sys.argv: failed_only = True
 
