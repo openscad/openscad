@@ -250,7 +250,8 @@ TESTLOG
 	tests_to_report = tests
 	if failed_only: tests_to_report = failed_tests
 
-	percent = str(int(100.0*len(passed_tests) / len(tests)))
+	try: percent = str(int(100.0*len(passed_tests) / len(tests)))
+	except ZeroDivisionError: percent = 'n/a'
 	s = wiki_template
 	repeat1 = ezsearch('(<REPEAT1>.*?</REPEAT1>)',s)
 	repeat2 = ezsearch('(<REPEAT2>.*?</REPEAT2>)',s)
@@ -311,7 +312,8 @@ def tohtml(wiki_rootpath, startdate, tests, enddate, sysinfo, sysid, makefiles):
 
 	passed_tests = filter(lambda x: x.passed, tests)
 	failed_tests = filter(lambda x: not x.passed, tests)
-	percent = str(int(100.0*len(passed_tests) / len(tests)))
+	try: percent = str(int(100.0*len(passed_tests) / len(tests)))
+	except ZeroDivisionError: percent = 'n/a'
 
 	tests_to_report = tests
 	if failed_only: tests_to_report = failed_tests
