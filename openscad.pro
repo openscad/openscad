@@ -1,3 +1,13 @@
+# Environment variables which can be set to specify library locations:
+#   MPIRDIR
+#   MPFRDIR
+#   BOOSTDIR
+#   CGALDIR
+#   EIGEN2DIR
+#   GLEWDIR
+#   OPENCSGDIR
+#   MACOSX_DEPLOY_DIR
+#
 
 isEmpty(QT_VERSION) {
   error("Please use qmake for Qt 4 (probably qmake-qt4)")
