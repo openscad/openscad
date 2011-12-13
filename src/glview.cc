@@ -158,7 +158,9 @@ void GLView::initializeGL()
 														 glGetString(GL_VERSION),
 														 rbits, gbits, bbits, abits, dbits, sbits,
 														 glGetString(GL_EXTENSIONS));
-	
+// FIXME: glGetString(GL_EXTENSIONS) is deprecated in OpenGL 3.0.
+// Use: glGetIntegerv(GL_NUM_EXTENSIONS, &NumberOfExtensions) and 
+// glGetStringi(GL_EXTENSIONS, i)
 
 	const char *openscad_disable_gl20_env = getenv("OPENSCAD_DISABLE_GL20");
 	if (openscad_disable_gl20_env && !strcmp(openscad_disable_gl20_env, "0")) {
