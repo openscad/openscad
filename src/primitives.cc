@@ -327,7 +327,7 @@ PolySet *PrimitiveNode::evaluate_polyset(class PolySetEvaluator *) const
 		};
 
 		int fragments = get_fragments_from_r(r1, fn, fs, fa);
-		int rings = fragments/2;
+		int rings = (fragments+1)/2;
 // Uncomment the following three lines to enable experimental sphere tesselation
 //		if (rings % 2 == 0) rings++; // To ensure that the middle ring is at phi == 0 degrees
 
