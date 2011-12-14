@@ -3,6 +3,10 @@
 
 #include "system-gl.h"
 
+#ifdef _MSC_VER // NULL
+#include <cstdlib>
+#endif
+
 class Renderer
 {
 public:
