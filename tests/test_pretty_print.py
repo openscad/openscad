@@ -33,19 +33,16 @@
 # 3. save the wikified data to disk
 
 # todo
+# deal better with the situation where Offscreen rendering fails
 # do something if tests for GL extensions for OpenCSG fail (test fail, no image production)
 # copy all images, sysinfo.txt to bundle for html/upload (images 
 #  can be altered  by subsequent runs)
-# figure out hwo to make the thing run after the test
-# figure out how CTEST treats the logfiles.
 # why is hash differing
-# instead of having special '-info' prerun, put it as yet-another-test
-#  and parse the log
 # fix windows so that it won't keep asking 'this program crashed' over and over. 
 #  (you can set this in the registry to never happen, but itd be better if the program
 #   itself was able to disable that temporarily in it's own process)
 
-import string,sys,re,os,hashlib,subprocess,textwrap,time
+import string,sys,re,os,hashlib,subprocess,textwrap,time,platform
 
 def tryread(filename):
 	data = None
@@ -88,7 +85,12 @@ def read_gitinfo():
 
 def read_sysinfo(filename):
 	data = tryread(filename)
-	if not data: return 'sysinfo: unknown'
+	if not data: 
+		sinfo = platform.sys.platform
+		sinfo += '\nsystem cannot create offscreen GL framebuffer object'
+		sinfo += '\nsystem cannot create images'
+		sysid = platform.sys.platform+'_no_images'
+		return sinfo, sysid
 
 	machine = ezsearch('Machine:(.*?)\n',data)
 	machine = machine.replace(' ','-').replace('/','-')
@@ -468,7 +470,7 @@ def main():
 	if verbose: print 'erasing files in',wikidir
 	try: map(lambda x:os.remove(os.path.join(wikidir,x)), os.listdir(wikidir))
 	except: pass
-	print 'writing',len(imgs),'images and',len(txtpages),'text pages to:\n', ' .'+wikidir.replace(os.getcwd(),'')
+	print 'writing',len(imgs),'images, ',len(txtpages)-1,'text pages, and index.html to:\n', ' .'+wikidir.replace(os.getcwd(),'')
 	for pgname in sorted(imgs): trysave( os.path.join(wikidir,pgname), imgs[pgname])
 	for pgname in sorted(txtpages): trysave( os.path.join(wikidir,pgname), txtpages[pgname])
 

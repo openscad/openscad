@@ -1,3 +1,5 @@
+# instructions - see ../doc/testing.txt
+
 cmake_minimum_required(VERSION 2.8)
 if("${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}.${CMAKE_PATCH_VERSION}" VERSION_GREATER 2.8.3)
   # Explicitly use new include policy to avoid globally shadowing included modules
@@ -57,16 +59,11 @@ if(WIN32)
   # you have to pass -DCMAKE_VERBOSE_MAKEFILE=ON to cmake when you run it. 
 endif()
 
-
 #
 # Build test apps
 #
 
 # Boost
-#
-# usually it's found automatically, but some systems may need a custom install.
-# in that case, run cmake with -DBOOST_ROOT=/path/to/boost/install
-# (being the same path you passed to boost's --prefix when you built it)
 if (NOT $ENV{MACOSX_DEPLOY_DIR} STREQUAL "")
   set(BOOST_ROOT "$ENV{MACOSX_DEPLOY_DIR}")
 endif()
@@ -109,9 +106,19 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 endif(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 
 # Qt4
+
+if(${CMAKE_SYSTEM_NAME} MATCHES "FreeBSD")
+  # make /usr/local/include/qt4 come before /usr/local/include (QT4 vs QT3)
+  set(CMAKE_INCLUDE_DIRECTORIES_BEFORE ON)
+endif()
+
 find_package(OpenGL)
 find_package(Qt4 COMPONENTS QtCore QtGui QtOpenGL REQUIRED)
 include(${QT_USE_FILE})
+
+if(${CMAKE_SYSTEM_NAME} MATCHES "FreeBSD")
+  set(CMAKE_INCLUDE_DIRECTORIES_BEFORE OFF)
+endif()
 
 # Eigen2
 
@@ -125,11 +132,13 @@ endif()
 if (NOT EIGEN2_INCLUDE_DIR)
   find_path(EIGEN2_INCLUDE_DIR
             Eigen/Core 
-            PATHS ENV EIGEN2DIR /opt/local/include/eigen2 /usr/include/eigen2)
+            HINTS $ENV{EIGEN2DIR}
+            PATHS /opt/local/include/eigen2 /usr/include/eigen2)
   if (${CMAKE_SYSTEM_NAME} MATCHES "FreeBSD") 
     find_path(EIGEN2_INCLUDE_DIR 
               Eigen/Core 
-              PATHS ENV EIGEN2DIR /usr/local/include/eigen2 )
+              HINTS $ENV{EIGEN2DIR}
+              PATHS /usr/local/include/eigen2 )
   endif()
   if (NOT EIGEN2_INCLUDE_DIR)
     message(FATAL_ERROR "Eigen2 not found")
