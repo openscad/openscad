@@ -61,7 +61,6 @@ $ DISPLAY=:5 ctest
  environment variables, just like for the main qmake & openscad.pro. Examples:
 
  OPENCSGDIR=~/OpenCSG-1.3.2 EIGEN2DIR=~/eigen2 cmake .
- CGALDIR=c:\CGAL-3.7 BOOSTDIR=c:\boost_1_46_0 cmake .
 
  Valid variables are as follows (see CMakeLists.txt for more info):
 
