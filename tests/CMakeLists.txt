@@ -132,12 +132,12 @@ endif()
 if (NOT EIGEN2_INCLUDE_DIR)
   find_path(EIGEN2_INCLUDE_DIR
             Eigen/Core 
-            HINTS ENV EIGEN2DIR 
+            HINTS $ENV{EIGEN2DIR}
             PATHS /opt/local/include/eigen2 /usr/include/eigen2)
   if (${CMAKE_SYSTEM_NAME} MATCHES "FreeBSD") 
     find_path(EIGEN2_INCLUDE_DIR 
               Eigen/Core 
-              HINTS ENV EIGEN2DIR 
+              HINTS $ENV{EIGEN2DIR}
               PATHS /usr/local/include/eigen2 )
   endif()
   if (NOT EIGEN2_INCLUDE_DIR)
