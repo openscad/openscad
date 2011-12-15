@@ -33,12 +33,7 @@ win32 {
 debug: DEFINES += DEBUG
 
 TEMPLATE = app
-RESOURCES = openscad.qrc
 
-OBJECTS_DIR = objects
-MOC_DIR = objects
-UI_DIR = objects
-RCC_DIR = objects
 INCLUDEPATH += src
 
 # Handle custom library location.
@@ -47,6 +42,13 @@ OPENSCAD_LIBDIR = $$(OPENSCAD_LIBRARIES)
 !isEmpty(OPENSCAD_LIBDIR) {
   QMAKE_INCDIR += $$OPENSCAD_LIBDIR/include
   QMAKE_LIBDIR += $$OPENSCAD_LIBDIR/lib
+}
+else {
+  macx {
+    # Default to MacPorts on Mac OS X
+    QMAKE_INCDIR = /opt/local/include
+    QMAKE_LIBDIR = /opt/local/lib
+  }
 }
 
 macx {
@@ -107,6 +109,8 @@ win32 {
   LEXSOURCES += src/lexer.l
   YACCSOURCES += src/parser.y
 }
+
+RESOURCES = openscad.qrc
 
 FORMS   += src/MainWindow.ui \
            src/Preferences.ui \
@@ -212,6 +216,11 @@ SOURCES += src/openscad.cc \
 	   src/mathc99.cc \
            src/PolySetCache.cc \
            src/PolySetEvaluator.cc
+
+opencsg {
+  HEADERS += src/OpenCSGRenderer.h
+  SOURCES += src/OpenCSGRenderer.cc
+}
 
 cgal {
 HEADERS += src/cgal.h \

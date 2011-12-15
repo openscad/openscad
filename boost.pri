@@ -1,14 +1,12 @@
 boost {
 
-  isEmpty(OPENSCAD_LIBDIR) {
-    # Optionally specify location of boost using the
-    # BOOSTDIR env. variable
-    BOOST_DIR = $$(BOOSTDIR)
-    !isEmpty(BOOST_DIR) {
-      QMAKE_INCDIR += $$BOOST_DIR
-      message("boost location: $$BOOST_DIR")
-      win32:QMAKE_LIBDIR += -L$$BOOST_DIR/lib
-    }
+  # Optionally specify location of boost using the
+  # BOOSTDIR env. variable
+  BOOST_DIR = $$(BOOSTDIR)
+  !isEmpty(BOOST_DIR) {
+    QMAKE_INCDIR += $$BOOST_DIR
+    message("boost location: $$BOOST_DIR")
+    win32:QMAKE_LIBDIR += -L$$BOOST_DIR/lib
   }
 
   CONFIG(mingw-cross-env) {
