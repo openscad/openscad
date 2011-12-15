@@ -1,14 +1,14 @@
 cgal {
   DEFINES += ENABLE_CGAL
 
-  isEmpty(DEPLOYDIR) {
+  isEmpty(OPENSCAD_LIBDIR) {
     # Optionally specify location of CGAL using the 
     # CGALDIR env. variable
     CGAL_DIR = $$(CGALDIR)
     !isEmpty(CGAL_DIR) {
-      INCLUDEPATH += $$CGAL_DIR/include
-      win32: INCLUDEPATH += $$CGAL_DIR/auxiliary/gmp/include
-      LIBS += -L$$CGAL_DIR/lib
+      QMAKE_INCDIR += $$CGAL_DIR/include
+      win32: QMAKE_INCDIR += $$CGAL_DIR/auxiliary/gmp/include
+      QMAKE_LIBDIR += $$CGAL_DIR/lib
       message("CGAL location: $$CGAL_DIR")
     }
   }
@@ -17,7 +17,7 @@ cgal {
     LIBS += -lgmp -lmpfr -lCGAL
     QMAKE_CXXFLAGS += -frounding-math 
   } else {
-    windows {
+    win32 {
       *-g++* { 
         QMAKE_CXXFLAGS += -frounding-math 
       }

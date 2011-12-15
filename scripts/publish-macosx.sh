@@ -7,7 +7,7 @@ VERSION=`date "+%Y.%m.%d"`
 PATH=${PATH//\/opt\/local\/libexec\/ccache:}
 
 # This is the same location as DEPLOYDIR in macosx-build-dependencies.sh
-export MACOSX_DEPLOY_DIR=$PWD/../libraries/install
+export OPENSCAD_LIBRARIES=$PWD/../libraries/install
 
 `dirname $0`/release-common.sh -v $VERSION
 if [[ $? != 0 ]]; then

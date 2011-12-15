@@ -1,13 +1,13 @@
 boost {
 
-  isEmpty(DEPLOYDIR) {
+  isEmpty(OPENSCAD_LIBDIR) {
     # Optionally specify location of boost using the
     # BOOSTDIR env. variable
     BOOST_DIR = $$(BOOSTDIR)
     !isEmpty(BOOST_DIR) {
-      INCLUDEPATH += $$BOOST_DIR
+      QMAKE_INCDIR += $$BOOST_DIR
       message("boost location: $$BOOST_DIR")
-      win32:LIBS += -L$$BOOST_DIR/lib
+      win32:QMAKE_LIBDIR += -L$$BOOST_DIR/lib
     }
   }
 

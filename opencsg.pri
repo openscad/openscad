@@ -6,13 +6,13 @@ opencsg {
   HEADERS += src/OpenCSGRenderer.h
   SOURCES += src/OpenCSGRenderer.cc
 
-  isEmpty(DEPLOYDIR) {
+  isEmpty(OPENSCAD_LIBDIR) {
     # Optionally specify location of OpenCSG using the 
     # OPENCSGDIR env. variable
     OPENCSG_DIR = $$(OPENCSGDIR)
     !isEmpty(OPENCSG_DIR) {
-      INCLUDEPATH += $$OPENCSG_DIR/include
-      LIBS += -L$$OPENCSG_DIR/lib
+      QMAKE_INCDIR += $$OPENCSG_DIR/include
+      QMAKE_LIBDIR += $$OPENCSG_DIR/lib
       message("OpenCSG location: $$OPENCSG_DIR")
     }
   }

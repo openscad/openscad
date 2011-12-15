@@ -1,0 +1,7 @@
+include(win32.pri)
+include(flex.pri)
+include(bison.pri)
+include(cgal.pri)
+include(opencsg.pri)
+include(eigen2.pri)
+include(boost.pri)

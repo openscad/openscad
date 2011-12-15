@@ -6,7 +6,7 @@
 #   EIGEN2DIR
 #   GLEWDIR
 #   OPENCSGDIR
-#   MACOSX_DEPLOY_DIR
+#   OPENSCAD_LIBRARIES
 #
 
 isEmpty(QT_VERSION) {
@@ -28,68 +28,9 @@ include(version.pri)
 
 # for debugging link problems (use nmake -f Makefile.Release > log.txt)
 win32 {
-  # QMAKE_LFLAGS   += -VERBOSE
+  # QMAKE_LFLAGS += -VERBOSE
 }
 debug: DEFINES += DEBUG
-
-# cross compilation unix->win32
-
-CONFIG(mingw-cross-env) {
-  LIBS += mingw-cross-env/lib/libglew32s.a 
-  LIBS += mingw-cross-env/lib/libglut.a 
-  LIBS += mingw-cross-env/lib/libopengl32.a 
-  LIBS += mingw-cross-env/lib/libGLEW.a 
-  LIBS += mingw-cross-env/lib/libglaux.a 
-  LIBS += mingw-cross-env/lib/libglu32.a 
-  LIBS += mingw-cross-env/lib/libopencsg.a 
-  LIBS += mingw-cross-env/lib/libmpfr.a 
-  LIBS += mingw-cross-env/lib/libCGAL.a
-  QMAKE_CXXFLAGS += -fpermissive
-}
-
-#configure lex / yacc
-unix:freebsd-g++ {
-  QMAKE_LEX = /usr/local/bin/flex
-  QMAKE_YACC = /usr/local/bin/bison
-}
-win32 {
-  include(flex.pri)
-  include(bison.pri)
-  FLEXSOURCES = src/lexer.l
-  BISONSOURCES = src/parser.y
-} else {
-  LEXSOURCES += src/lexer.l
-  YACCSOURCES += src/parser.y
-}
-
-#configure additional directories
-win32 {
-    INCLUDEPATH += $$(MPIRDIR)
-    INCLUDEPATH += $$(MPFRDIR)
-}
-
-DEFINES += OPENSCAD_VERSION=$$VERSION OPENSCAD_YEAR=$$VERSION_YEAR OPENSCAD_MONTH=$$VERSION_MONTH
-!isEmpty(VERSION_DAY): DEFINES += OPENSCAD_DAY=$$VERSION_DAY
-win32:DEFINES += _USE_MATH_DEFINES NOMINMAX _CRT_SECURE_NO_WARNINGS YY_NO_UNISTD_H
-
-# disable MSVC warnings that are of very low importance
-win32:*msvc* {
-  # disable warning about too long decorated names
-  QMAKE_CXXFLAGS += -wd4503
-  # CGAL casting int to bool
-  QMAKE_CXXFLAGS += -wd4800
-  # CGAL's unreferenced formal parameters
-  QMAKE_CXXFLAGS += -wd4100
-  # lexer uses strdup() & other POSIX stuff
-  QMAKE_CXXFLAGS += -D_CRT_NONSTDC_NO_DEPRECATE
-}
-
-# disable Eigen SIMD optimizations for non-Mac OSX
-!macx {
-  !freebsd-g++ {
-    QMAKE_CXXFLAGS += -DEIGEN_DONT_ALIGN
-  }
-}
 
 TEMPLATE = app
 RESOURCES = openscad.qrc
@@ -100,12 +41,15 @@ UI_DIR = objects
 RCC_DIR = objects
 INCLUDEPATH += src
 
+# Handle custom library location.
+# Used when manually installing 3rd party libraries
+OPENSCAD_LIBDIR = $$(OPENSCAD_LIBRARIES)
+!isEmpty(OPENSCAD_LIBDIR) {
+  QMAKE_INCDIR += $$OPENSCAD_LIBDIR/include
+  QMAKE_LIBDIR += $$OPENSCAD_LIBDIR/lib
+}
+
 macx {
-  DEPLOYDIR = $$(MACOSX_DEPLOY_DIR)
-  !isEmpty(DEPLOYDIR) {
-    INCLUDEPATH += $$DEPLOYDIR/include
-    LIBS += -L$$DEPLOYDIR/lib
-  }
   # add CONFIG+=deploy to the qmake command-line to make a deployment build
   deploy {
     message("Building deployment version")
@@ -135,17 +79,18 @@ QT += opengl
 macx:CONFIG += mdi
 CONFIG += cgal
 CONFIG += opencsg
-CONFIG += progresswidget
 CONFIG += boost
+CONFIG += eigen2
 
 #Uncomment the following line to enable QCodeEdit
 #CONFIG += qcodeedit
 
 mdi {
-  # MDI needs an OpenCSG library that is compiled with OpenCSG-Reset-Hack.patch applied
   DEFINES += ENABLE_MDI
 }
 
+# FIXME: This can be made default by now
+CONFIG += progresswidget
 progresswidget {
   DEFINES += USE_PROGRESSWIDGET
   FORMS   += src/ProgressWidget.ui
@@ -153,20 +98,15 @@ progresswidget {
   SOURCES += src/ProgressWidget.cc
 }
 
-include(cgal.pri)
-include(opencsg.pri)
-include(eigen2.pri)
-include(boost.pri)
+include(common.pri)
 
-# Standard include path for misc external libs
-#macx {
-#  INCLUDEPATH += /opt/local/include
-#}
-
-# QMAKE_CFLAGS   += -pg
-# QMAKE_CXXFLAGS += -pg
-# QMAKE_LFLAGS   += -pg
-
+win32 {
+  FLEXSOURCES = src/lexer.l
+  BISONSOURCES = src/parser.y
+} else {
+  LEXSOURCES += src/lexer.l
+  YACCSOURCES += src/parser.y
+}
 
 FORMS   += src/MainWindow.ui \
            src/Preferences.ui \

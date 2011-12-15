@@ -1,5 +1,5 @@
 glew {
-  isEmpty(DEPLOYDIR) {
+  isEmpty(OPENSCAD_LIBDIR) {
     # Optionally specify location of GLEW using the 
     # GLEWDIR env. variable
     GLEW_DIR = $$(GLEWDIR)
@@ -8,8 +8,8 @@ glew {
       macx: GLEW_DIR = /opt/local
     }
     !isEmpty(GLEW_DIR) {
-      INCLUDEPATH += $$GLEW_DIR/include
-      LIBS += -L$$GLEW_DIR/lib
+      QMAKE_INCDIR += $$GLEW_DIR/include
+      QMAKE_LIBDIR += -L$$GLEW_DIR/lib
       message("GLEW location: $$GLEW_DIR")
     }
   }
@@ -18,4 +18,3 @@ glew {
   win32:LIBS += -lglew32s
   CONFIG(mingw-cross-env):DEFINES += GLEW_STATIC
 }
-
