@@ -32,7 +32,7 @@ std::string offscreen_context_getinfo(OffscreenContext *ctx)
   Gestalt(gestaltSystemVersionMinor, &minorVersion);
   Gestalt(gestaltSystemVersionBugFix, &bugFixVersion);
 
-  char *arch = "unknown";
+  const char *arch = "unknown";
   if (sizeof(int*) == 4) arch = "32-bit";
   else if (sizeof(int*) == 8) arch = "64-bit";
 

@@ -11,5 +11,10 @@ win32 {
 
 unix:freebsd-g++ {
   QMAKE_LEX = /usr/local/bin/flex
-  QMAKE_YACC = /usr/local/bin/bison
+}
+
+unix:linux* {
+  exists(/usr/bin/flex) {
+    QMAKE_LEX = /usr/bin/flex
+  }
 }
