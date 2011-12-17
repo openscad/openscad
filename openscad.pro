@@ -77,8 +77,13 @@ win32 {
 CONFIG += qt
 QT += opengl
 
+# Fedora Linux + DSO fix
 linux*:exists(/usr/lib64/libGLU*)|linux*:exists(/usr/lib/libGLU*) {
-  LIBS += -lGLU # Fedora + DSO 
+  LIBS += -lGLU
+}
+
+CONFIG(mingw-cross-env) {
+  include(mingw-cross-env.pri)
 }
 
 # Application configuration
