@@ -10,16 +10,11 @@ win32 {
 }
 
 unix:freebsd-g++ {
-  # on bsd /usr/bin/bison is outdated, dont use it
   QMAKE_LEX = /usr/local/bin/flex
-  QMAKE_YACC = /usr/local/bin/bison
 }
 
 unix:linux* {
   exists(/usr/bin/flex) {
     QMAKE_LEX = /usr/bin/flex
-  }
-  exists(/usr/bin/bison) {
-    QMAKE_YACC = /usr/bin/bison
   }
 }
