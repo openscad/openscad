@@ -20,7 +20,7 @@ boost {
     LIBS += -lboost_thread_win32-mt -lboost_program_options-mt
   } 
 
-  unix* {
+  unix {
     BMT_TEST1 = /usr/lib64/libboost*thread-mt*
     BMT_TEST2 = /usr/lib/libboost*thread-mt*
     BMT_TEST3 = $$BOOST_DIR/lib/libboost*thread-mt*
