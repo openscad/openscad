@@ -1,6 +1,6 @@
-# win32-specific general settings
+# win32-specific MSVC compiler general settings
 
-win32 {
+win32*msvc* {
   #configure additional directories
   INCLUDEPATH += $$(MPIRDIR)
   INCLUDEPATH += $$(MPFRDIR)
