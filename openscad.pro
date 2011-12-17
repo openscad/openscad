@@ -40,8 +40,8 @@ INCLUDEPATH += src
 # Used when manually installing 3rd party libraries
 OPENSCAD_LIBDIR = $$(OPENSCAD_LIBRARIES)
 !isEmpty(OPENSCAD_LIBDIR) {
-  QMAKE_INCDIR += $$OPENSCAD_LIBDIR/include
-  QMAKE_LIBDIR += $$OPENSCAD_LIBDIR/lib
+  INCLUDEPATH = $$OPENSCAD_LIBDIR/include $$INCLUDEPATH
+  QMAKE_LIBDIR = $$OPENSCAD_LIBDIR/lib $$QMAKE_LIBDIR
 }
 else {
   macx {
