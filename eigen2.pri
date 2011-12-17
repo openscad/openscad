@@ -11,7 +11,7 @@ eigen2 {
     } else {
       freebsd-g++: EIGEN2_INCLUDEPATH *= /usr/local/include/eigen2
       macx: EIGEN2_INCLUDEPATH *= /opt/local/include/eigen2
-      !macx:!freebsd-g++:EIGEN2_INCLUDEPATH *= /usr/include/eigen2
+      !macx:!freebsd-g++:!win32:EIGEN2_INCLUDEPATH *= /usr/include/eigen2
     }
   }
 
