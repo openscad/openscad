@@ -290,7 +290,8 @@ int csgtestcore(int argc, char *argv[], test_type_e test_type)
 	}
 
 	QFileInfo fileInfo(filename);
-	QDir::setCurrent(fileInfo.absolutePath());
+	if (!sysinfo_dump)
+		QDir::setCurrent(fileInfo.absolutePath());
 
 	AbstractNode::resetIndexCounter();
 	AbstractNode *absolute_root_node = root_module->evaluate(&root_ctx, &root_inst);
