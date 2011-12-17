@@ -40,8 +40,8 @@ INCLUDEPATH += src
 # Used when manually installing 3rd party libraries
 OPENSCAD_LIBDIR = $$(OPENSCAD_LIBRARIES)
 !isEmpty(OPENSCAD_LIBDIR) {
-  INCLUDEPATH = $$OPENSCAD_LIBDIR/include $$INCLUDEPATH
-  QMAKE_LIBDIR = $$OPENSCAD_LIBDIR/lib $$QMAKE_LIBDIR
+  QMAKE_INCDIR_QT = $$OPENSCAD_LIBDIR/include $$QMAKE_INCDIR_QT 
+  QMAKE_LIBDIR_QT = $$OPENSCAD_LIBDIR/lib $$QMAKE_LIBDIR_QT
 }
 else {
   macx {
@@ -76,6 +76,10 @@ win32 {
 
 CONFIG += qt
 QT += opengl
+
+linux*:exists(/usr/lib64/libGLU*)|linux*:exists(/usr/lib/libGLU*) {
+  LIBS += -lGLU # Fedora + DSO 
+}
 
 # Application configuration
 macx:CONFIG += mdi
