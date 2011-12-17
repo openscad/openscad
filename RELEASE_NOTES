@@ -1,24 +1,24 @@
-OpenSCAD 20xx.yy
+OpenSCAD 2011.12
 ================
 
 Features:
 o The MCAD library is now bundled with OpenSCAD
+o Added len() function. Takes one vector or string parameter and returns its length.
+o The index operator [] now works on strings
+o The version() function will return the OpenSCAD version as a vector, e.g. [2011, 09]
+o The version_num() function will return the OpenSCAD version as a number, e.g. 20110923
 o hull() Now supports 3D objects
 o hull() with 2D object can now use for loops and boolean operations as children
-o Added import and export of the OFF file format
 o New import() statement reads the correct file format based on the filename extension
   (.stl, .dxf and .off is supported)
 o The color() statement now supports an alpha parameter, e.g. color(c=[1,0,0], alpha=0.4)
 o The color() statement now supports specifying colors as strings, e.g. color("Red")
 o if()/else() and the ternary operator can now take any value type as parameter. false, 0, empty string and empty vector or illegal value type will evaluate as false, everything else as true.
 o Strings can now be lexographically compared using the <, <=, >, >= operators
-o The version() function will return the OpenSCAD version as a vector, e.g. [2011, 09]
-o The version_num() function will return the OpenSCAD version as a number, e.g. 20110923
 o Added PI constant.
-o Now uses standard shortcuts for save, reload and quit on Linux and Windows. F2/F3 will still work but is deprecated.
 o Number literals in scientific notation are now accepted by the parser
-o Added len() function. Takes one vector or string parameter and returns its length.
-o The index operator [] now works on strings
+o Added import and export of the OFF file format
+o Now uses standard shortcuts for save, reload and quit on Linux and Windows. F2/F3 will still work but is deprecated.
 
 Bugfixes:
 o square() crashed if any of the dimensions were zero

@@ -9,24 +9,24 @@ o Update version
 o Update RELEASE_NOTES
 
 o Tag release
-  git tag "openscad-2011.01"
+  git tag "openscad-2011.12"
 
 o build source package
-  git archive --format=tar openscad-2011.01  --prefix=openscad-2011.01/ | gzip > openscad-2011.01.src.tar.gz
+  git archive --format=tar openscad-2011.12  --prefix=openscad-2011.12/ | gzip > openscad-2011.12.src.tar.gz
 
 o build binaries
-  tar xzf openscad-2011.01.src.tar.gz
-  cd openscad-2011.01
+  tar xzf openscad-2011.12.src.tar.gz
+  cd openscad-2011.12
   Mac OS X
-    For Qt-4.7.3: Remove /Developers/Applications/Qt/plugins/qmltooling
-    ./scripts/publish-macosx.sh -> OpenSCAD-2011.01.dmg
+    (For Qt-4.7.3: Remove /Developers/Applications/Qt/plugins/qmltooling)
+    ./scripts/publish-macosx.sh -> OpenSCAD-2011.12.dmg
   Linux: FIXME 32 vs. 64 bit
     ./scripts/release-linux.sh
   Windows: FIXME 32 vs. 64 bit
 
 o FIXME: Run some tests
 
-o Set back version: release-linux.sh, publish-macosx.sh, FIXME: Windows
+o Set back version to being date-tagged: release-linux.sh, publish-macosx.sh, FIXME: Windows
 
 o  git push --tags
 
@@ -37,3 +37,7 @@ o Upload
 
 o Update web page
 o Write email to mailing list
+o Update external resources:
+  - http://en.wikipedia.org/wiki/OpenSCAD
+o Notify package managers
+  - Ubuntu: https://launchpad.net/~chrysn
