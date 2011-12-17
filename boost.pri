@@ -31,7 +31,7 @@ boost {
     } 
   }
 
-  unix*|macx {
+  unix|macx {
     isEmpty(BOOST_IS_MT) { 
       LIBS += -lboost_thread -lboost_program_options
     }
