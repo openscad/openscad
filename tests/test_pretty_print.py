@@ -432,8 +432,10 @@ def upload(wikiurl,api_php_path='/',wiki_rootpath='test', sysid='null', botname=
 		filename = os.path.join(wikidir,wikiname)
 		filedata = tryread(filename)
 		print 'upload',len(filedata),'bytes from',wikiname
-		if wetrun: 
+		if wetrun and len(filedata)>0: 
 			wiki_upload(wikiurl,api_php_path,botname,botpass,filedata,wikiname)
+		if len(filedata)==0: 
+			print 'cancelling empty upload'
 
 def findlogfile(builddir):
 	logpath = os.path.join(builddir,'Testing','Temporary')
