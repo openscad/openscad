@@ -594,8 +594,8 @@ void GLView::mouseMoveEvent(QMouseEvent *event)
 			if ((QApplication::keyboardModifiers() & Qt::ShiftModifier) != 0) {
 				viewer_distance += (GLdouble)dy;
 			} else {
-				object_trans_x += dx;
-				object_trans_z -= dy;
+				object_trans_x += dx * viewer_distance/1000;
+				object_trans_z -= dy * viewer_distance/1000;
 			}
 		}
 		updateGL();
