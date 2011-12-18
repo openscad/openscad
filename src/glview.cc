@@ -388,11 +388,11 @@ void GLView::paintGL()
 
 	gluLookAt(0.0, -viewer_distance, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0);
 
-	glTranslated(object_trans_x, object_trans_y, object_trans_z);
-
 	glRotated(object_rot_x, 1.0, 0.0, 0.0);
 	glRotated(object_rot_y, 0.0, 1.0, 0.0);
 	glRotated(object_rot_z, 0.0, 0.0, 1.0);
+
+	glTranslated(object_trans_x, object_trans_y, object_trans_z);
 
   // FIXME: Crosshairs and axes are lighted, this doesn't make sense and causes them
   // to change color based on view orientation.
