@@ -58,6 +58,8 @@
 
 #define FAR_FAR_AWAY 100000.0
 
+#include <Eigen/Geometry>
+
 GLView::GLView(QWidget *parent) : QGLWidget(parent), renderer(NULL)
 {
 	init();
@@ -558,7 +560,6 @@ void GLView::mousePressEvent(QMouseEvent *event)
 	setFocus();
 }
 
-
 void GLView::normalizeAngle(GLdouble& angle)
 {
 	while(angle < 0)
@@ -595,8 +596,37 @@ void GLView::mouseMoveEvent(QMouseEvent *event)
 			if ((QApplication::keyboardModifiers() & Qt::ShiftModifier) != 0) {
 				viewer_distance += (GLdouble)dy;
 			} else {
-				object_trans_x += dx * viewer_distance/1000;
-				object_trans_z -= dy * viewer_distance/1000;
+
+      double mx = +(dx) * viewer_distance/1000;
+      double my = -(dy) * viewer_distance/1000;
+
+			Eigen::Matrix3d aax, aay, aaz, tm3;
+			aax = Eigen::AngleAxisd(-(object_rot_x/180) * M_PI,Eigen::Vector3d::UnitX());
+			aay = Eigen::AngleAxisd(-(object_rot_y/180) * M_PI,Eigen::Vector3d::UnitY());
+			aaz = Eigen::AngleAxisd(-(object_rot_z/180) * M_PI,Eigen::Vector3d::UnitZ());
+			tm3 = Eigen::Matrix3d::Identity();
+			tm3 = aaz * (aay * (aax * tm3));
+
+			Eigen::Matrix4d tm;
+			tm = Eigen::Matrix4d::Identity();
+			for (int i=0;i<3;i++) for (int j=0;j<3;j++) tm(j,i)=tm3(j,i);
+
+			Eigen::Matrix4d vec;
+			vec <<
+        0,  0,  0,  mx,
+        0,  0,  0,  0,
+        0,  0,  0,  my,
+        0,  0,  0,  1
+			;
+			if ((QApplication::keyboardModifiers() & Qt::ShiftModifier) != 0) {
+        vec(0,3) = 0;
+        vec(1,3) = my;
+        vec(2,3) = 0;
+      }
+      tm = tm * vec;
+      object_trans_x += tm(0,3);
+      object_trans_y += tm(1,3);
+      object_trans_z += tm(2,3);
 			}
 		}
 		updateGL();
