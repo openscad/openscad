@@ -249,8 +249,8 @@ TESTLOG
 	passed_tests = filter(lambda x: x.passed, tests)
 	failed_tests = filter(lambda x: not x.passed, tests)
 
-	tests_to_report = tests
-	if failed_only: tests_to_report = failed_tests
+	tests_to_report = failed_tests
+	if include_passed: tests_to_report = tests
 
 	try: percent = str(int(100.0*len(passed_tests) / len(tests)))
 	except ZeroDivisionError: percent = 'n/a'
@@ -317,8 +317,8 @@ def tohtml(wiki_rootpath, startdate, tests, enddate, sysinfo, sysid, makefiles):
 	try: percent = str(int(100.0*len(passed_tests) / len(tests)))
 	except ZeroDivisionError: percent = 'n/a'
 
-	tests_to_report = tests
-	if failed_only: tests_to_report = failed_tests
+	tests_to_report = failed_tests
+	if include_passed: tests_to_report = tests
 
 	s=''
 
@@ -497,7 +497,7 @@ maxretry = 10
 
 if bool(os.getenv("TEST_GENERATE")): sys.exit(0)
 
-failed_only = False
-if '--failed-only' in sys.argv: failed_only = True
+include_passed = False
+if '--include-passed' in sys.argv: include_passed = True
 
 main()

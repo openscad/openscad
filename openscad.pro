@@ -8,6 +8,10 @@
 #   OPENCSGDIR
 #   OPENSCAD_LIBRARIES
 #
+# Please see the 'Buildling' sections of the OpenSCAD user manual 
+# for updated tips & workarounds.
+#
+# http://en.wikibooks.org/wiki/OpenSCAD_User_Manual
 
 isEmpty(QT_VERSION) {
   error("Please use qmake for Qt 4 (probably qmake-qt4)")
@@ -80,6 +84,11 @@ QT += opengl
 # Fedora Linux + DSO fix
 linux*:exists(/usr/lib64/libGLU*)|linux*:exists(/usr/lib/libGLU*) {
   LIBS += -lGLU
+}
+
+# See Dec 2011 OpenSCAD mailing list, re: CGAL/GCC bugs.
+*g++* {
+  QMAKE_CXXFLAGS *= -fno-strict-aliasing
 }
 
 CONFIG(mingw-cross-env) {
