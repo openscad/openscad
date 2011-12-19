@@ -40,11 +40,11 @@ public:
 			OpenCSG::Primitive(operation, convexity) { }
 	shared_ptr<PolySet> ps;
 	Transform3d m;
-	int csgmode;
+	PolySet::csgmode_e csgmode;
 	virtual void render() {
 		glPushMatrix();
 		glMultMatrixd(m.data());
-		ps->render_surface(PolySet::COLORMODE_NONE, PolySet::csgmode_e(csgmode), m);
+		ps->render_surface(csgmode, m);
 		glPopMatrix();
 	}
 };
@@ -89,24 +89,23 @@ void OpenCSGRenderer::renderCSGChain(CSGChain *chain, GLint *shaderinfo,
 				double *c = chain->colors[j];
 				glPushMatrix();
 				glMultMatrixd(m.data());
-				int csgmode = chain->types[j] == CSGTerm::TYPE_DIFFERENCE ? PolySet::CSGMODE_DIFFERENCE : PolySet::CSGMODE_NORMAL;
+				PolySet::csgmode_e csgmode = chain->types[j] == CSGTerm::TYPE_DIFFERENCE ? PolySet::CSGMODE_DIFFERENCE : PolySet::CSGMODE_NORMAL;
 				if (highlight) {
-					chain->polysets[j]->render_surface(PolySet::COLORMODE_HIGHLIGHT, PolySet::csgmode_e(csgmode + 20), m, shaderinfo);
-				} else if (background) {
-					chain->polysets[j]->render_surface(PolySet::COLORMODE_BACKGROUND, PolySet::csgmode_e(csgmode + 10), m, shaderinfo);
-				} else if (c[0] >= 0 || c[1] >= 0 || c[2] >= 0) {
-					// User-defined color from source
-					glColor4dv(c);
-					if (shaderinfo) {
-						glUniform4f(shaderinfo[1], c[0], c[1], c[2], c[3]);
-						glUniform4f(shaderinfo[2], (c[0]+1)/2, (c[1]+1)/2, (c[2]+1)/2, 1.0);
-					}
-					chain->polysets[j]->render_surface(PolySet::COLORMODE_NONE, PolySet::csgmode_e(csgmode), m, shaderinfo);
-				} else if (chain->types[j] == CSGTerm::TYPE_DIFFERENCE) {
-					chain->polysets[j]->render_surface(PolySet::COLORMODE_CUTOUT, PolySet::csgmode_e(csgmode), m, shaderinfo);
-				} else {
-					chain->polysets[j]->render_surface(PolySet::COLORMODE_MATERIAL, PolySet::csgmode_e(csgmode), m, shaderinfo);
+					setColor(COLORMODE_HIGHLIGHT, shaderinfo);
+					csgmode = PolySet::csgmode_e(csgmode + 20);
 				}
+				else if (background) {
+					setColor(COLORMODE_BACKGROUND, shaderinfo);
+					csgmode = PolySet::csgmode_e(csgmode + 10);
+				} else if (c[0] >= 0 || c[1] >= 0 || c[2] >= 0 || c[3] >= 0) {
+					// User-defined color or alpha from source
+					setColor(c, shaderinfo);
+				} else if (chain->types[j] == CSGTerm::TYPE_DIFFERENCE) {
+					setColor(COLORMODE_CUTOUT, shaderinfo);
+				} else {
+					setColor(COLORMODE_MATERIAL, shaderinfo);
+				}
+				chain->polysets[j]->render_surface(csgmode, m, shaderinfo);
 				glPopMatrix();
 			}
 			if (shaderinfo) glUseProgram(0);
@@ -124,8 +123,8 @@ void OpenCSGRenderer::renderCSGChain(CSGChain *chain, GLint *shaderinfo,
 		prim->ps = chain->polysets[i];
 		prim->m = chain->matrices[i];
 		prim->csgmode = chain->types[i] == CSGTerm::TYPE_DIFFERENCE ? PolySet::CSGMODE_DIFFERENCE : PolySet::CSGMODE_NORMAL;
-		if (highlight) prim->csgmode += 20;
-		else if (background) prim->csgmode += 10;
+		if (highlight) prim->csgmode = PolySet::csgmode_e(prim->csgmode + 20);
+		else if (background) prim->csgmode = PolySet::csgmode_e(prim->csgmode + 10);
 		primitives.push_back(prim);
 	}
 	std::for_each(primitives.begin(), primitives.end(), del_fun<OpenCSG::Primitive>());

@@ -1,13 +1,13 @@
 #!/bin/sh
 
 VERSION=`date "+%Y.%m.%d"`
-#VERSION=2011.06
+#VERSION=2011.12
 
 # Turn off ccache, just for safety
 PATH=${PATH//\/opt\/local\/libexec\/ccache:}
 
 # This is the same location as DEPLOYDIR in macosx-build-dependencies.sh
-export MACOSX_DEPLOY_DIR=$PWD/../libraries/install
+export OPENSCAD_LIBRARIES=$PWD/../libraries/install
 
 `dirname $0`/release-common.sh -v $VERSION
 if [[ $? != 0 ]]; then

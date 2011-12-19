@@ -27,14 +27,6 @@ public:
 
 	BoundingBox getBoundingBox() const;
 
-	enum colormode_e {
-		COLORMODE_NONE,
-		COLORMODE_MATERIAL,
-		COLORMODE_CUTOUT,
-		COLORMODE_HIGHLIGHT,
-		COLORMODE_BACKGROUND
-	};
-
 	enum csgmode_e {
 		CSGMODE_NONE,
 		CSGMODE_NORMAL = 1,
@@ -45,8 +37,8 @@ public:
 		CSGMODE_HIGHLIGHT_DIFFERENCE = 22
 	};
 
-	void render_surface(colormode_e colormode, csgmode_e csgmode, const Transform3d &m, GLint *shaderinfo = NULL) const;
-	void render_edges(colormode_e colormode, csgmode_e csgmode) const;
+	void render_surface(csgmode_e csgmode, const Transform3d &m, GLint *shaderinfo = NULL) const;
+	void render_edges(csgmode_e csgmode) const;
 };
 
 #endif

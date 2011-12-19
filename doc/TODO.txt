@@ -71,6 +71,8 @@ o 3D View
     thicknesses, distances, slot thicknesses etc.
   - Add option to change lights, e.g. add an optional camera light
   - 2D objects are rendered at z = -0.1 - why?
+  - Rewrite to use VBOs or smth. - avoid inline calculations
+  - Rewrite to a higher-level library (e.g. OSG)?
 o Editor wishlist
   - More infrastructure for external editor (allow communication from the outside)
   - Preferences GUI for the features below
@@ -88,6 +90,7 @@ o Editor wishlist
     in the source code in the 3D view
   - Tabbed editor for designs including other files
   - C-c/C-v should work on the focused widget, not always in the editor
+  - Auto-indent on enter and on tab
 o Error reporting/debugging
   - Provide better error messages when polygon ordering causes CGAL errors:
     o Supply syntax highlighting of the exact polygon indices which are 
@@ -138,7 +141,6 @@ o 2D Subsystem
 o Built-in modules
   - extrude*: Allow the base 2D primitive to have a Z value
   - rotate_extrude(): Allow for specification of start/stop/sweep angle?
-  - Convex hull of 3D objects
 o Advanced Transformations
   - Add statement for refinement via surface subdivision
   - Add statement for intersections in cartesian product of childs
@@ -236,7 +238,6 @@ MISSING TESTS:
 o all functions
 o mirror
 o scale
-o 3D hull
 o open polyline from dxf using new method
 o linear_extrude DXF
 o rotate_extrude DXF
@@ -244,7 +245,7 @@ o import_stl
 o import_off
 o import_*
   - open polylines
-o include: test subdirs under librarydir (e.g. include <MCAD/gears.scad> doesn't work
+o include: test subdirs under librarydir (e.g. include <MCAD/gears.scad>)
 o use: Basically same tests as include. + use restrictions
 o include and use: remember filenames with space
 o variants of module transparent() { %child(); }

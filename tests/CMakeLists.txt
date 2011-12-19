@@ -1,3 +1,5 @@
+# instructions - see ../doc/testing.txt
+
 cmake_minimum_required(VERSION 2.8)
 if("${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}.${CMAKE_PATCH_VERSION}" VERSION_GREATER 2.8.3)
   # Explicitly use new include policy to avoid globally shadowing included modules
@@ -10,7 +12,7 @@ set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}")
 
 # Build debug build as default
 if(NOT CMAKE_BUILD_TYPE)
-  set(CMAKE_BUILD_TYPE Debug)
+  set(CMAKE_BUILD_TYPE RelWithDebInfo)
 endif()
 
 if(${CMAKE_BUILD_TYPE} STREQUAL "Debug")
@@ -27,11 +29,7 @@ endif()
 
 if(WIN32_STATIC_BUILD)
   if(${CMAKE_BUILD_TYPE} STREQUAL "Debug")
-    set(EMSG "\nTo build Win32 STATIC OpenSCAD tests you must run")
-    set(EMSG "${EMSG} \ncmake .. -DCMAKE_BUILD_TYPE=Release")
-    set(EMSG "${EMSG} \nthen replace /MD with /MT in CMakeCache.txt")
-    set(EMSG "${EMSG} \ni.e. sed -i s/\\/MD/\\/MT/ CMakeCache.txt") 
-    set(EMSG "${EMSG} \nthen re-run cmake ..") 
+    set(EMSG "\nTo build Win32 STATIC OpenSCAD please see doc/testing.txt")
     message(FATAL_ERROR ${EMSG})
   endif()
 endif()
@@ -61,38 +59,45 @@ if(WIN32)
   # you have to pass -DCMAKE_VERBOSE_MAKEFILE=ON to cmake when you run it. 
 endif()
 
-
 #
 # Build test apps
 #
 
 # Boost
-#
-# usually it's found automatically, but some systems may need a custom install.
-# in that case, run cmake with -DBOOST_ROOT=/path/to/boost/install
-# (being the same path you passed to boost's --prefix when you built it)
-if (NOT $ENV{MACOSX_DEPLOY_DIR} STREQUAL "")
-  set(BOOST_ROOT "$ENV{MACOSX_DEPLOY_DIR}")
+if (NOT $ENV{OPENSCAD_LIBRARIES} STREQUAL "")
+  set(BOOST_ROOT "$ENV{OPENSCAD_LIBRARIES}")
 endif()
 
-if(BOOST_ROOT)
-  #set(Boost_DEBUG TRUE)
-  set(Boost_NO_SYSTEM_PATHS TRUE)
-  set(Boost_ADDITIONAL_VERSIONS "1.47.0")
-  find_package( Boost 1.35.0 COMPONENTS thread program_options filesystem system regex )
-  if(Boost_FOUND)
-    message(STATUS "Boost includes found: " ${Boost_INCLUDE_DIRS})
-    message(STATUS "Boost libraries found:")
-    foreach(boostlib ${Boost_LIBRARIES})
-      message(STATUS "  " ${boostlib})
-    endforeach()
-    include_directories(${Boost_INCLUDE_DIRS})
-  else()
-    message(STATUS "BOOST_ROOT:" ${BOOST_ROOT})
-    message(FATAL_ERROR "BOOST_ROOT specified but no boost found")
-  endif()
+if (NOT $ENV{BOOSTDIR} STREQUAL "")
+  set(BOOST_DIR "$ENV{BOOSTDIR}")
+endif()
+
+if (NOT ${BOOST_DIR} STREQUAL "")
+  set(BOOST_ROOT ${BOOST_DIR})
+  message(STATUS "BOOST_ROOT: " ${BOOST_ROOT})
+  set(Boost_NO_SYSTEM_PATHS "TRUE")
+  set(Boost_DEBUG TRUE)
+endif()
+
+
+if (WIN32)
+  set(Boost_USE_STATIC_LIBS TRUE)
+  set(BOOST_STATIC TRUE)
+  set(BOOST_THREAD_USE_LIB TRUE)
+endif()
+
+set(Boost_ADDITIONAL_VERSIONS "1.47.0" "1.46.0")
+find_package( Boost 1.35.0 COMPONENTS thread program_options filesystem system regex )
+if(Boost_FOUND)
+  message(STATUS "Boost includes found: " ${Boost_INCLUDE_DIRS})
+  message(STATUS "Boost libraries found:")
+  foreach(boostlib ${Boost_LIBRARIES})
+    message(STATUS "  " ${boostlib})
+  endforeach()
+  include_directories(${Boost_INCLUDE_DIRS})
 else()
-  message(STATUS "BOOST_ROOT unset. Assuming it will be found automatically.")
+  message(STATUS "BOOST_ROOT: ${BOOST_ROOT}")
+  message(FATAL_ERROR "Boost not found.")
 endif()
 
 # Mac OS X
@@ -101,9 +106,19 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 endif(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 
 # Qt4
+
+if(${CMAKE_SYSTEM_NAME} MATCHES "FreeBSD")
+  # make /usr/local/include/qt4 come before /usr/local/include (QT4 vs QT3)
+  set(CMAKE_INCLUDE_DIRECTORIES_BEFORE ON)
+endif()
+
 find_package(OpenGL)
 find_package(Qt4 COMPONENTS QtCore QtGui QtOpenGL REQUIRED)
 include(${QT_USE_FILE})
+
+if(${CMAKE_SYSTEM_NAME} MATCHES "FreeBSD")
+  set(CMAKE_INCLUDE_DIRECTORIES_BEFORE OFF)
+endif()
 
 # Eigen2
 
@@ -117,11 +132,13 @@ endif()
 if (NOT EIGEN2_INCLUDE_DIR)
   find_path(EIGEN2_INCLUDE_DIR
             Eigen/Core 
-            PATHS ENV EIGEN2DIR /opt/local/include/eigen2 /usr/include/eigen2)
+            HINTS $ENV{EIGEN2DIR}
+            PATHS /opt/local/include/eigen2 /usr/include/eigen2)
   if (${CMAKE_SYSTEM_NAME} MATCHES "FreeBSD") 
     find_path(EIGEN2_INCLUDE_DIR 
               Eigen/Core 
-              PATHS ENV EIGEN2DIR /usr/local/include/eigen2 )
+              HINTS $ENV{EIGEN2DIR}
+              PATHS /usr/local/include/eigen2 )
   endif()
   if (NOT EIGEN2_INCLUDE_DIR)
     message(FATAL_ERROR "Eigen2 not found")
@@ -132,19 +149,19 @@ endif()
 include_directories(${EIGEN2_INCLUDE_DIR})
 
 # OpenCSG
-if (NOT $ENV{OPENCSG_DIR} STREQUAL "")
-  set(OPENCSG_DIR "$ENV{OPENCSG_DIR}")
-elseif (NOT $ENV{MACOSX_DEPLOY_DIR} STREQUAL "")
-  set(OPENCSG_DIR "$ENV{MACOSX_DEPLOY_DIR}")
+if (NOT $ENV{OPENCSGDIR} STREQUAL "")
+  set(OPENCSG_DIR "$ENV{OPENCSGDIR}")
+elseif (NOT $ENV{OPENSCAD_LIBRARIES} STREQUAL "")
+  set(OPENCSG_DIR "$ENV{OPENSCAD_LIBRARIES}")
 endif()
 if (NOT OPENCSG_INCLUDE_DIR)
   message(STATUS "OPENCSG_DIR: " ${OPENCSG_DIR})
   find_path(OPENCSG_INCLUDE_DIR
             opencsg.h
-            PATHS ${OPENCSG_DIR}/include)
+            HINTS ${OPENCSG_DIR}/include)
   find_library(OPENCSG_LIBRARY
                opencsg
-               PATHS ${OPENCSG_DIR}/lib)
+               HINTS ${OPENCSG_DIR}/lib)
   if (NOT OPENCSG_INCLUDE_DIR OR NOT OPENCSG_LIBRARY)
     message(FATAL_ERROR "OpenCSG not found")
   else()
@@ -156,8 +173,10 @@ include_directories(${OPENCSG_INCLUDE_DIR})
 
 # GLEW
 
-if (NOT $ENV{MACOSX_DEPLOY_DIR} STREQUAL "")
-  set(GLEW_DIR "$ENV{MACOSX_DEPLOY_DIR}")
+if (NOT $ENV{GLEWDIR} STREQUAL "")
+  set(GLEW_DIR "$ENV{GLEWDIR}")
+elseif (NOT $ENV{OPENSCAD_LIBRARIES} STREQUAL "")
+  set(GLEW_DIR "$ENV{OPENSCAD_LIBRARIES}")
 endif()
 
 find_package(GLEW REQUIRED)
@@ -185,15 +204,34 @@ BISON_TARGET(OpenSCADparser ../src/parser.y ${CMAKE_CURRENT_BINARY_DIR}/parser_y
 ADD_FLEX_BISON_DEPENDENCY(OpenSCADlexer OpenSCADparser)
 set_source_files_properties(${CMAKE_CURRENT_BINARY_DIR}/parser_yacc.c PROPERTIES LANGUAGE "CXX")
 
-if (NOT $ENV{MACOSX_DEPLOY_DIR} STREQUAL "")
-  set(CGAL_DIR "$ENV{MACOSX_DEPLOY_DIR}/lib/CGAL")
+# CGAL
+
+if (NOT $ENV{CGALDIR} STREQUAL "")
+  set(CGAL_DIR "$ENV{CGALDIR}")
+elseif (NOT $ENV{OPENSCAD_LIBRARIES} STREQUAL "")
+  set(CGAL_DIR "$ENV{OPENSCAD_LIBRARIES}/lib/CGAL")
   set(CMAKE_MODULE_PATH "${CGAL_DIR}")
 endif()
+message(STATUS "CGAL_DIR: " ${CGAL_DIR})
 find_package(CGAL REQUIRED)
+message(STATUS "CGAL config found in " ${CGAL_USE_FILE} )
+foreach(cgal_incdir ${CGAL_INCLUDE_DIRS})
+  message(STATUS "CGAL include found in " ${cgal_incdir} )
+endforeach()
+message(STATUS "CGAL libraries found in " ${CGAL_LIBRARIES_DIR} )
 if("${CGAL_MAJOR_VERSION}.${CGAL_MINOR_VERSION}" VERSION_LESS 3.6)
   message(FATAL_ERROR "CGAL >= 3.6 required")
 endif()
 include_directories(${CGAL_INCLUDE_DIRS})
+
+# Imagemagick
+
+find_package(ImageMagick COMPONENTS convert)
+if (ImageMagick_convert_FOUND)
+  message(STATUS "ImageMagick convert executable found: " ${ImageMagick_convert_EXECUTABLE})
+else()
+  message(FATAL_ERROR "Couldn't find imagemagick 'convert' program")
+endif()
 
 # Internal includes
 include_directories(../src)
@@ -239,15 +277,14 @@ set(NOCGAL_SOURCES
 
 set(CGAL_SOURCES
   ${NOCGAL_SOURCES}
-  ../src/CSGTermEvaluator.cc 
+	  ../src/CSGTermEvaluator.cc 
   ../src/CGAL_Nef_polyhedron.cc 
   ../src/cgalutils.cc 
   ../src/CGALEvaluator.cc
   ../src/CGALCache.cc
   ../src/PolySetCGALEvaluator.cc
   ../src/CGAL_Nef_polyhedron_DxfData.cc
-  ../src/cgaladv_minkowski2.cc
-  ../src/cgaladv_convexhull2.cc)
+  ../src/cgaladv_minkowski2.cc)
 
 set(COMMON_SOURCES
   ../src/nodedumper.cc 
@@ -262,13 +299,13 @@ set(COMMON_SOURCES
 #
 if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 	message(STATUS "Offscreen OpenGL Context - using Apple CGL")
-	set(OFFSCREEN_CTX_SOURCE "OffscreenContext.mm")
+	set(OFFSCREEN_CTX_SOURCE "OffscreenContext.mm" CACHE TYPE STRING)
 elseif(UNIX)
 	message(STATUS "Offscreen OpenGL Context - using Unix GLX")
-	set(OFFSCREEN_CTX_SOURCE "OffscreenContext.cc")
+	set(OFFSCREEN_CTX_SOURCE "OffscreenContextGLX.cc" CACHE TYPE STRING)
 elseif(WIN32)
 	message(STATUS "Offscreen OpenGL Context - using Microsoft WGL")
-	set(OFFSCREEN_CTX_SOURCE "OffscreenContextWGL.cc")
+	set(OFFSCREEN_CTX_SOURCE "OffscreenContextWGL.cc" CACHE TYPE STRING)
 endif()
 
 set(OFFSCREEN_SOURCES
@@ -287,17 +324,13 @@ target_link_libraries(tests-cgal tests-common)
 add_library(tests-nocgal STATIC ${NOCGAL_SOURCES})
 target_link_libraries(tests-nocgal tests-common)
 add_library(tests-offscreen STATIC ${OFFSCREEN_SOURCES})
+# set_target_properties(tests-offscreen PROPERTIES COMPILE_FLAGS "-DENABLE_OPENCSG -DENABLE_CGAL ${CGAL_CXX_FLAGS_INIT}")
 
 #
 # echotest
 #
 add_executable(echotest echotest.cc)
 target_link_libraries(echotest tests-nocgal tests-core ${QT_LIBRARIES} ${OPENGL_LIBRARY} ${Boost_LIBRARIES})
-
-#
-# Yangli Hector Yee's PerceptualDiff code
-# FIXME: Disabled since we use ImageMagick now. Eventually remove this and the files.
-# add_executable(yee_compare yee_compare.cpp lodepng.cpp)
 
 #
 # dumptest
@@ -327,7 +360,7 @@ target_link_libraries(cgaltest tests-cgal ${CGAL_LIBRARY} ${CGAL_3RD_PARTY_LIBRA
 #
 # cgalpngtest
 #
-add_executable(cgalpngtest cgalpngtest.cc bboxhelp.cc ../src/CGALRenderer.cc)
+add_executable(cgalpngtest cgalpngtest.cc bboxhelp.cc ../src/CGALRenderer.cc ../src/renderer.cc ../src/rendersettings.cc)
 set_target_properties(cgalpngtest PROPERTIES COMPILE_FLAGS "-DENABLE_CGAL ${CGAL_CXX_FLAGS_INIT}")
 target_link_libraries(cgalpngtest tests-offscreen tests-cgal ${CGAL_LIBRARY} ${CGAL_3RD_PARTY_LIBRARIES} ${QT_LIBRARIES}  ${GLEW_LIBRARY} ${COCOA_LIBRARY} ${OPENGL_LIBRARY} ${Boost_LIBRARIES})
 
@@ -335,7 +368,7 @@ target_link_libraries(cgalpngtest tests-offscreen tests-cgal ${CGAL_LIBRARY} ${C
 # opencsgtest
 #
 
-add_executable(opencsgtest opencsgtest.cc csgtestcore.cc ../src/OpenCSGRenderer.cc ../src/ThrownTogetherRenderer.cc)
+add_executable(opencsgtest opencsgtest.cc csgtestcore.cc ../src/OpenCSGRenderer.cc ../src/ThrownTogetherRenderer.cc ../src/renderer.cc ../src/rendersettings.cc)
 set_target_properties(opencsgtest PROPERTIES COMPILE_FLAGS "-DENABLE_OPENCSG -DENABLE_CGAL ${CGAL_CXX_FLAGS_INIT}")
 target_link_libraries(opencsgtest tests-offscreen tests-cgal ${CGAL_LIBRARY} ${CGAL_3RD_PARTY_LIBRARIES} ${QT_LIBRARIES} ${OPENCSG_LIBRARY} ${GLEW_LIBRARY} ${COCOA_LIBRARY} ${OPENGL_LIBRARY} ${Boost_LIBRARIES})
 
@@ -343,7 +376,7 @@ target_link_libraries(opencsgtest tests-offscreen tests-cgal ${CGAL_LIBRARY} ${C
 # throwntogethertest
 #
 
-add_executable(throwntogethertest throwntogethertest.cc csgtestcore.cc ../src/OpenCSGRenderer.cc ../src/ThrownTogetherRenderer.cc)
+add_executable(throwntogethertest throwntogethertest.cc csgtestcore.cc ../src/OpenCSGRenderer.cc ../src/ThrownTogetherRenderer.cc ../src/renderer.cc ../src/rendersettings.cc)
 set_target_properties(throwntogethertest PROPERTIES COMPILE_FLAGS "-DENABLE_OPENCSG -DENABLE_CGAL ${CGAL_CXX_FLAGS_INIT}")
 target_link_libraries(throwntogethertest tests-offscreen tests-cgal ${CGAL_LIBRARY} ${CGAL_3RD_PARTY_LIBRARIES} ${QT_LIBRARIES} ${OPENCSG_LIBRARY} ${GLEW_LIBRARY} ${COCOA_LIBRARY} ${OPENGL_LIBRARY} ${Boost_LIBRARIES})
 
@@ -407,6 +440,12 @@ function(get_test_fullname TESTCMD FILENAME FULLNAME)
   set(${FULLNAME} ${${FULLNAME}} PARENT_SCOPE)
 endfunction()
 
+# comparison method to use
+if (NOT $ENV{COMPARATOR} STREQUAL "")
+  set(COMPARATOR "$ENV{COMPARATOR}")
+endif()
+message(STATUS "COMPARATOR: " ${COMPARATOR})
+
 #
 # This functions adds cmd-line tests given files.
 # Files are sent as the parameters following TESTSUFFIX
@@ -437,12 +476,29 @@ macro(add_cmdline_test TESTCMD TESTSUFFIX)
       set(CONFARG CONFIGURATIONS)
       set(CONFVAL ${FOUNDCONFIGS})
 
-      add_test(NAME ${TEST_FULLNAME} ${CONFARG} ${CONFVAL} COMMAND ${PYTHON_EXECUTABLE} ${tests_SOURCE_DIR}/test_cmdline_tool.py -s ${TESTSUFFIX} ${CMAKE_BINARY_DIR}/${TESTCMD} "${SCADFILE}")
+      add_test(NAME ${TEST_FULLNAME} ${CONFARG} ${CONFVAL} COMMAND ${PYTHON_EXECUTABLE} ${tests_SOURCE_DIR}/test_cmdline_tool.py --comparator=${COMPARATOR} -c ${ImageMagick_convert_EXECUTABLE} -s ${TESTSUFFIX} ${CMAKE_BINARY_DIR}/${TESTCMD} "${SCADFILE}")
     endif()
   endforeach()
 endmacro()
 
 enable_testing()
+
+# set up custom pretty printing of results
+
+set(INFOCMD "execute_process(COMMAND ${CMAKE_CURRENT_BINARY_DIR}/opencsgtest --info OUTPUT_FILE sysinfo.txt)")
+set(PRETTYCMD "\"${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test_pretty_print.py --builddir=${CMAKE_CURRENT_BINARY_DIR}\"")
+set(CTEST_CUSTOM_FILE ${CMAKE_CURRENT_BINARY_DIR}/CTestCustom.cmake)
+set(CTEST_CUSTOM_TXT "\n
+  message(\"running 'opencsgtest --info' to generate sysinfo.txt\")\n
+  ${INFOCMD}\n
+  set(CTEST_CUSTOM_POST_TEST ${PRETTYCMD})\n
+")
+file(WRITE ${CTEST_CUSTOM_FILE} ${CTEST_CUSTOM_TXT})
+
+foreach(FILE test_pretty_print.py)
+  configure_file(${CMAKE_CURRENT_SOURCE_DIR}/${FILE}
+                 ${CMAKE_CURRENT_BINARY_DIR}/${FILE} COPYONLY)
+endforeach()
 
 set_directory_properties(PROPERTIES TEST_INCLUDE_FILE "${CMAKE_SOURCE_DIR}/EnforceConfig.cmake")
 
@@ -492,6 +548,9 @@ disable_tests(dumptest_transform-tests
 # FIXME: This test illustrates a weakness in child() combined with modifiers.
 # Reenable it when this is improved
 disable_tests(opencsgtest_child-background)
+
+# FIXME: This single test takes over an hour to run on a 2.7 GHz P4
+disable_tests(opencsgtest_example006 cgalpngtest_example006)
 
 # These tests only makes sense in OpenCSG mode
 disable_tests(cgalpngtest_child-background

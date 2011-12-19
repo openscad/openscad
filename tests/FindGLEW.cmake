@@ -32,19 +32,22 @@ IF (WIN32)
 ELSE (WIN32)
         message(STATUS "GLEW_DIR: " ${GLEW_DIR})
 	FIND_PATH( GLEW_INCLUDE_PATH GL/glew.h
-                PATHS ${GLEW_DIR}/include /usr/include /usr/local/include
+                HINTS ${GLEW_DIR}/include 
+		PATHS /usr/include /usr/local/include
                 NO_DEFAULT_PATH
 		DOC "The directory where GL/glew.h resides")
 	FIND_LIBRARY( GLEW_LIBRARY
 		NAMES GLEW glew
-		PATHS ${GLEW_DIR}/lib /usr/lib /usr/local/lib
+		HINTS ${GLEW_DIR}/lib 
+		PATHS /usr/lib /usr/local/lib
                 NO_DEFAULT_PATH
 		DOC "The GLEW library")
 ENDIF (WIN32)
 
 IF (GLEW_INCLUDE_PATH)
 	SET( GLEW_FOUND 1 CACHE STRING "Set to 1 if GLEW is found, 0 otherwise")
-        MESSAGE(STATUS "GLEW found in " ${GLEW_INCLUDE_PATH} " " ${GLEW_LIBRARY})
+        MESSAGE(STATUS "GLEW include found in " ${GLEW_INCLUDE_PATH} )
+        MESSAGE(STATUS "GLEW library found in " ${GLEW_LIBRARY} )
 ELSE (GLEW_INCLUDE_PATH)
 	SET( GLEW_FOUND 0 CACHE STRING "Set to 1 if GLEW is found, 0 otherwise")
 ENDIF (GLEW_INCLUDE_PATH)

@@ -4,6 +4,7 @@
 #include "OffscreenContext.h"
 #include <Eigen/Core>
 #include <Eigen/Geometry>
+#include <string>
 #ifndef _MSC_VER
 #include <stdint.h>
 #endif
@@ -22,9 +23,12 @@ public:
 	void setupOrtho(bool offset=false);
 	void paintGL();
 	bool save(const char *filename);
+	std::string getInfo();
 
 	GLint shaderinfo[11];
 	OffscreenContext *ctx;
+	size_t width;
+	size_t height;
 private:
 	Renderer *renderer;
 	double w_h_ratio;

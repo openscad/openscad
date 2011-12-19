@@ -71,6 +71,8 @@ int CGAL_Nef_polyhedron::weight() const
 
 	This method is not const since convert_to_Polyhedron() wasn't const
   in earlier versions of CGAL.
+
+	Note: Can return NULL if an error occurred
 */
 PolySet *CGAL_Nef_polyhedron::convertToPolyset()
 {
@@ -85,9 +87,16 @@ PolySet *CGAL_Nef_polyhedron::convertToPolyset()
 		delete dd;
 	}
 	else if (this->dim == 3) {
-		CGAL_Polyhedron P;
-		this->p3->convert_to_Polyhedron(P);
-		ps = createPolySetFromPolyhedron(P);
+		CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
+		try {
+			CGAL_Polyhedron P;
+			this->p3->convert_to_Polyhedron(P);
+			ps = createPolySetFromPolyhedron(P);
+		}
+		catch (CGAL::Precondition_exception e) {
+			PRINTF("CGAL error in CGAL_Nef_polyhedron::convertToPolyset(): %s", e.what());
+		}
+		CGAL::set_error_behaviour(old_behaviour);
 	}
 	return ps;
 }

@@ -4,6 +4,7 @@
 #include <QMainWindow>
 #include <QSettings>
 #include "ui_Preferences.h"
+#include "rendersettings.h"
 
 class Preferences : public QMainWindow, public Ui::Preferences
 {
@@ -13,19 +14,6 @@ public:
 	~Preferences();
 	static Preferences *inst() { if (!instance) instance = new Preferences(); return instance; }
 
-	enum RenderColor {
-		BACKGROUND_COLOR,
-		OPENCSG_FACE_FRONT_COLOR,
-		OPENCSG_FACE_BACK_COLOR,
-		CGAL_FACE_FRONT_COLOR,
-		CGAL_FACE_2D_COLOR,
-		CGAL_FACE_BACK_COLOR,
-		CGAL_EDGE_FRONT_COLOR,
-		CGAL_EDGE_BACK_COLOR,
-		CGAL_EDGE_2D_COLOR,
-		CROSSHAIR_COLOR
-	};
-	const QColor &color(RenderColor idx);
 	QVariant getValue(const QString &key) const;
 	void apply() const;
 
@@ -35,6 +23,7 @@ public slots:
 	void fontFamilyChanged(const QString &);
 	void fontSizeChanged(const QString &);
 	void openCSGWarningChanged(bool);
+	void enableOpenCSGChanged(bool);
 
 signals:
 	void requestRedraw() const;
@@ -47,7 +36,7 @@ private:
 	void removeDefaultSettings();
 
 	QSettings::SettingsMap defaultmap;
-	QHash<QString, QMap<RenderColor, QColor> > colorschemes;
+	QHash<QString, QMap<RenderSettings::RenderColor, QColor> > colorschemes;
 
 	static Preferences *instance;
 };

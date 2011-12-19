@@ -396,8 +396,13 @@ PolySet *PolySetCGALEvaluator::evaluatePolySet(const RenderNode &node)
 	CGAL_Nef_polyhedron N = this->cgalevaluator.evaluateCGALMesh(node);
 	PolySet *ps = NULL;
 	if (!N.empty()) {
-		ps = N.convertToPolyset();
-		ps->convexity = node.convexity;
+		if (!N.p3->is_simple()) {
+			PRINTF("WARNING: Body of render() isn't valid 2-manifold!");
+		}
+		else {
+			ps = N.convertToPolyset();
+			ps->convexity = node.convexity;
+		}
 	}
 	return ps;
 }

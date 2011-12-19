@@ -32,7 +32,8 @@ public:
 	void setShowCrosshairs(bool enabled) { this->showcrosshairs = enabled; }
 	bool orthoMode() const { return this->orthomode; }
 	void setOrthoMode(bool enabled) { this->orthomode = enabled; }
-	
+	const QString &getRendererInfo() const { return this->rendererInfo; }
+
 public:
 	QLabel *statusLabel;
 	double object_rot_x;
@@ -51,6 +52,8 @@ public:
 private:
 	void init();
 	Renderer *renderer;
+
+	QString rendererInfo;
 
 	bool showfaces;
 	bool showedges;
