@@ -1,11 +1,11 @@
 	group() {
 		hull() {
 			multmatrix([[1, 0, 0, 15], [0, 1, 0, 10], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-				circle($fn = 0, $fa = 12, $fs = 1, r = 10);
+				circle($fn = 0, $fa = 12, $fs = 2, r = 10);
 			}
 			difference() {
-				circle($fn = 0, $fa = 12, $fs = 1, r = 10);
-				circle($fn = 0, $fa = 12, $fs = 1, r = 5);
+				circle($fn = 0, $fa = 12, $fs = 2, r = 10);
+				circle($fn = 0, $fa = 12, $fs = 2, r = 5);
 			}
 		}
 	}
@@ -13,9 +13,9 @@
 		group() {
 			hull() {
 				multmatrix([[1, 0, 0, 15], [0, 1, 0, 10], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-					circle($fn = 0, $fa = 12, $fs = 1, r = 10);
+					circle($fn = 0, $fa = 12, $fs = 2, r = 10);
 				}
-				circle($fn = 0, $fa = 12, $fs = 1, r = 10);
+				circle($fn = 0, $fa = 12, $fs = 2, r = 10);
 			}
 		}
 	}
@@ -38,18 +38,18 @@
 				group() {
 					group() {
 						multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-							circle($fn = 0, $fa = 12, $fs = 1, r = 3);
+							circle($fn = 0, $fa = 12, $fs = 2, r = 3);
 						}
 						multmatrix([[1, 0, 0, 0], [0, 1, 0, 10], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-							circle($fn = 0, $fa = 12, $fs = 1, r = 3);
+							circle($fn = 0, $fa = 12, $fs = 2, r = 3);
 						}
 					}
 					group() {
 						multmatrix([[1, 0, 0, 10], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-							circle($fn = 0, $fa = 12, $fs = 1, r = 3);
+							circle($fn = 0, $fa = 12, $fs = 2, r = 3);
 						}
 						multmatrix([[1, 0, 0, 10], [0, 1, 0, 10], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-							circle($fn = 0, $fa = 12, $fs = 1, r = 3);
+							circle($fn = 0, $fa = 12, $fs = 2, r = 3);
 						}
 					}
 				}
