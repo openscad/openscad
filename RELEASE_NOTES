@@ -29,6 +29,7 @@ o On some platforms it was possible to insertion rich text in the editor, causin
 o Less crashes due to CGAL assertions
 o OpenCSG should now work on systems with OpenGL 1.x, given that the right extensions are available
 o include now searches librarydir
+o The $fs parameter yielded only half the number of segments it should have
 
 Deprecations:
 o dxf_linear_extrude() and dxf_rotate_extrude() are now deprecated.
