@@ -226,6 +226,7 @@ DOCUMENTATION
 o Auto-generate API documentation instead of, in addition to or combined with, the wikibooks docs.
 o Write checklists for typical extension work (add new module, add new function)
   -> make sure new test files are added
+o Clarify include/use better in the wikibook docs (e.g. that use'd modules have to be self-contained)
 
 TESTING
 -------
