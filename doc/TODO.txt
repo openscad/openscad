@@ -223,6 +223,7 @@ o Use a logging framework to get debugging/info output more under control?
 
 DOCUMENTATION
 -------------
+o Auto-generate API documentation instead of, in addition to or combined with, the wikibooks docs.
 o Write checklists for typical extension work (add new module, add new function)
   -> make sure new test files are added
 
