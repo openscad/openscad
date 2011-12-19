@@ -86,8 +86,9 @@ if (WIN32)
   set(BOOST_THREAD_USE_LIB TRUE)
 endif()
 
-set(Boost_ADDITIONAL_VERSIONS "1.47.0" "1.46.0")
-find_package( Boost 1.35.0 COMPONENTS thread program_options )
+# Update this if FindBoost.cmake gets out of sync with the current boost release
+# set(Boost_ADDITIONAL_VERSIONS "1.47.0" "1.46.0")
+find_package( Boost 1.35.0 COMPONENTS thread program_options REQUIRED)
 if(Boost_FOUND)
   message(STATUS "Boost includes found: " ${Boost_INCLUDE_DIRS})
   message(STATUS "Boost libraries found:")
@@ -102,7 +103,7 @@ endif()
 
 # Mac OS X
 if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-  FIND_LIBRARY(COCOA_LIBRARY Cocoa)
+  FIND_LIBRARY(COCOA_LIBRARY Cocoa REQUIRED)
 endif(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 
 # Qt4
@@ -112,7 +113,7 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "FreeBSD")
   set(CMAKE_INCLUDE_DIRECTORIES_BEFORE ON)
 endif()
 
-find_package(OpenGL)
+find_package(OpenGL REQUIRED)
 find_package(Qt4 COMPONENTS QtCore QtGui QtOpenGL REQUIRED)
 include(${QT_USE_FILE})
 
@@ -187,14 +188,14 @@ if(WIN32_STATIC_BUILD)
 endif()
 
 # Flex/Bison
-find_package(BISON)
+find_package(BISON REQUIRED)
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "FreeBSD")
   # FreeBSD has an old flex in /usr/bin and a new flex in /usr/local/bin
   set(FLEX_EXECUTABLE /usr/local/bin/flex)
 endif()
 
-find_package(FLEX)
+find_package(FLEX REQUIRED)
 # The COMPILE_FLAGS and forced C++ compiler is just to be compatible with qmake
 if (WIN32)
   set(FLEX_UNISTD_FLAG "-DYY_NO_UNISTD_H")
