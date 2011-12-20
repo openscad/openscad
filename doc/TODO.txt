@@ -98,6 +98,7 @@ o Error reporting/debugging
     o Provide some interaction for debug walk-through?
   - Provide visual highlighting of geometry corresponding to code
     -> could aid debugging a lot
+  - Optionally output console log to a file
 o Computation
   - Run CGAL rendering in a background thread
   - Enable viewing/editing while rendering
