@@ -21,6 +21,7 @@ o Added import and export of the OFF file format
 o Now uses standard shortcuts for save, reload and quit on Linux and Windows. F2/F3 will still work but is deprecated.
 
 Bugfixes:
+o Complex CSG models sometimes took extremely long time to normalize before OpenCSG preview
 o square() crashed if any of the dimensions were zero
 o Flush Caches didn't flush cached USE'd modules
 o STL export should be a bit more robust
