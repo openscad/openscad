@@ -81,6 +81,12 @@ shared_ptr<CSGTerm> CSGTerm::normalize(shared_ptr<CSGTerm> &term)
 
 	if (term->type == TYPE_PRIMITIVE) return term;
 
+	// FIXME: We can optimize the normalized tree by pruning based on bounding boxes
+	// as described in the above mentioned paper:
+	// 1) If the bounding boxes of two intersected nodes don't intersect, prune the 
+	//    intersection node
+	// 2) If the bounding boxes of two subtracted nodes don't intersect, replace the
+	//    difference node with the positive operator
 	do {
 		while (normalize_tail(term)) {}
 		normalize(term->left);
