@@ -72,31 +72,29 @@ CSGTerm::~CSGTerm()
 shared_ptr<CSGTerm> CSGTerm::normalize(shared_ptr<CSGTerm> &term)
 {
 	// This function implements the CSG normalization
-	// Reference: Florian Kirsch, Juergen Doeller,
-	// OpenCSG: A Library for Image-Based CSG Rendering,
-	// University of Potsdam, Hasso-Plattner-Institute, Germany
-	// http://www.opencsg.org/data/csg_freenix2005_paper.pdf
+  // Reference:
+	// Goldfeather, J., Molnar, S., Turk, G., and Fuchs, H. Near
+	// Realtime CSG Rendering Using Tree Normalization and Geometric
+	// Pruning. IEEE Computer Graphics and Applications, 9(3):20-28,
+	// 1989.
+  // http://www.cc.gatech.edu/~turk/my_papers/pxpl_csg.pdf
 
 	if (term->type == TYPE_PRIMITIVE) return term;
 
-	shared_ptr<CSGTerm> x = normalize(term->left);
-	shared_ptr<CSGTerm> y = normalize(term->right);
+	do {
+		while (normalize_tail(term)) {}
+		normalize(term->left);
+	} while (term->type != TYPE_UNION &&
+					 (term->right->type != TYPE_PRIMITIVE || term->left->type == TYPE_UNION));
+	normalize(term->right);
 
-	shared_ptr<CSGTerm> t1(term);
-	if (x != term->left || y != term->right) t1.reset(new CSGTerm(term->type, x, y));
-
-	shared_ptr<CSGTerm> t2;
-	while (1) {
-		t2 = normalize_tail(t1);
-		if (t1 == t2)	break;
-		t1 = t2;
-	}
-
-	return t1;
+	return term;
 }
 
-shared_ptr<CSGTerm> CSGTerm::normalize_tail(shared_ptr<CSGTerm> &term)
+bool CSGTerm::normalize_tail(shared_ptr<CSGTerm> &term)
 {
+	if (term->type == TYPE_UNION) return false; // Don't normalize outer union
+
 	// Part A: The 'x . (y . z)' expressions
 
 	shared_ptr<CSGTerm> x = term->left;
@@ -141,7 +139,10 @@ shared_ptr<CSGTerm> CSGTerm::normalize_tail(shared_ptr<CSGTerm> &term)
 												 shared_ptr<CSGTerm>(new CSGTerm(TYPE_INTERSECTION, x, y)),
 												 z);
 	}
-	if (result) return shared_ptr<CSGTerm>(result);
+	if (result) {
+		term.reset(result);
+		return true;
+	}
 
 	// Part B: The '(x . y) . z' expressions
 
@@ -168,9 +169,12 @@ shared_ptr<CSGTerm> CSGTerm::normalize_tail(shared_ptr<CSGTerm> &term)
 												 new CSGTerm(TYPE_INTERSECTION, y, z));
 	}
 
-	if (result) return shared_ptr<CSGTerm>(result);
+	if (result) {
+		term.reset(result);
+		return true;
+	}
 	
-	return term;
+	return false;
 }
 
 std::string CSGTerm::dump()

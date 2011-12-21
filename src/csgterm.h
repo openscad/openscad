@@ -32,7 +32,7 @@ public:
 	~CSGTerm();
 
 	static shared_ptr<CSGTerm> normalize(shared_ptr<CSGTerm> &term);
-	static shared_ptr<CSGTerm> normalize_tail(shared_ptr<CSGTerm> &term);
+	static bool normalize_tail(shared_ptr<CSGTerm> &term);
 
 	std::string dump();
 };
