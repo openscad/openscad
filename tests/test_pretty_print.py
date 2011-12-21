@@ -151,14 +151,14 @@ def parsetest(teststring):
 		"Test time.*?Test (Passed)", # pass/fail
 		"Output:(.*?)<end of output>",
 		'Command:.*?-s" "(.*?)"', # type
-		"actual .*?:(.*?)\n",
-		"expected .*?:(.*?)\n",
+		"^ actual .*?:(.*?)\n",
+		"^ expected .*?:(.*?)\n",
 		'Command:.*?(testdata.*?)"' # scadfile 
 		]
 	hits = map( lambda pattern: ezsearch(pattern,teststring), patterns )
 	test = Test(hits[0],hits[1],hits[2]=='Passed',hits[3],hits[4],hits[5],hits[6],hits[7],teststring)
-	test.actualfile_data = tryread(test.actualfile)
-	test.expectedfile_data = tryread(test.expectedfile)
+	if len(test.actualfile) > 0: test.actualfile_data = tryread(test.actualfile)
+	if len(test.actualfile) > 0: test.expectedfile_data = tryread(test.expectedfile)
 	return test
 
 def parselog(data):
@@ -274,10 +274,12 @@ TESTLOG
 			wikiname_a = wikify_filename(tmp,wiki_rootpath,sysid)
 			tmp = t.expectedfile.replace(os.path.dirname(builddir),'')
 			wikiname_e = wikify_filename(tmp,wiki_rootpath,sysid)
-			imgs[wikiname_e] = t.expectedfile_data
+			if hasattr(t, 'expectedfile_data'): 
+                                imgs[wikiname_e] = t.expectedfile_data
 			if t.actualfile: 
 				actualfile_wiki = '[[File:'+wikiname_a+'|250px]]'
-				imgs[wikiname_a] = t.actualfile_data
+                                if hasattr(t, 'actualfile_data'): 
+                                        imgs[wikiname_a] = t.actualfile_data
 			else:
 				actualfile_wiki = 'No image generated.'
 			newchunk = re.sub('FTESTNAME',t.fullname,repeat1)
