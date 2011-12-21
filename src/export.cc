@@ -90,12 +90,14 @@ void export_stl(CGAL_Nef_polyhedron *root_N, std::ostream &output, QProgressDial
 				// of vs1-vs2 and vs1-vs3. This has no effect on the resulting unit
 				// normal vector.
 				double dn[6] = { x1-x2, y1-y2, z1-z2, x1-x3, y1-y3, z1-z3 };
-				double mindn = 1;
-				for (int i = 0; i < 6; ++i) {
-					double dx = abs(dn[i]);
-					if (dx < mindn && dx != 0) mindn = dx;
+				double maxdn = 0;
+				int i;
+				for (i = 0; i < 6; ++i) {
+					double dx = dn[i];
+					if (dx < 0) dx = -dx;
+					if (dx > maxdn) maxdn = dx;
 				}
-				for (int i = 0; i < 6; ++i) dn[i] /= mindn;
+				for (i = 0; i < 6; ++i) dn[i] /= maxdn;
 				double nx = dn[1]*dn[5] - dn[2]*dn[4];
 				double ny = dn[2]*dn[3] - dn[0]*dn[5];
 				double nz = dn[0]*dn[4] - dn[1]*dn[3];
