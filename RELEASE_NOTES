@@ -30,6 +30,7 @@ o Less crashes due to CGAL assertions
 o OpenCSG should now work on systems with OpenGL 1.x, given that the right extensions are available
 o include now searches librarydir
 o The $fs parameter yielded only half the number of segments it should have
+o surface(center=true) is now correctly centered in the XY plane
 
 Deprecations:
 o dxf_linear_extrude() and dxf_rotate_extrude() are now deprecated.
