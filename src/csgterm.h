@@ -18,23 +18,35 @@ public:
 		TYPE_DIFFERENCE
 	};
 
+	static shared_ptr<CSGTerm> createCSGTerm(type_e type, shared_ptr<CSGTerm> left, shared_ptr<CSGTerm> right);
+	static shared_ptr<CSGTerm> createCSGTerm(type_e type, CSGTerm *left, CSGTerm *right);
+
 	type_e type;
 	shared_ptr<PolySet> polyset;
 	std::string label;
 	shared_ptr<CSGTerm> left;
 	shared_ptr<CSGTerm> right;
-	Transform3d m;
-	double color[4];
+	BoundingBox bbox;
 
 	CSGTerm(const shared_ptr<PolySet> &polyset, const Transform3d &matrix, const double color[4], const std::string &label);
-	CSGTerm(type_e type, shared_ptr<CSGTerm> left, shared_ptr<CSGTerm> right);
-	CSGTerm(type_e type, CSGTerm *left, CSGTerm *right);
 	~CSGTerm();
 
-	static shared_ptr<CSGTerm> normalize(shared_ptr<CSGTerm> &term);
+	const BoundingBox &getBoundingBox() const { return this->bbox; }
+
+	static shared_ptr<CSGTerm> normalize(shared_ptr<CSGTerm> term);
 	static bool normalize_tail(shared_ptr<CSGTerm> &term);
 
 	std::string dump();
+private:
+	CSGTerm(type_e type, shared_ptr<CSGTerm> left, shared_ptr<CSGTerm> right);
+	CSGTerm(type_e type, CSGTerm *left, CSGTerm *right);
+
+	void initBoundingBox();
+
+	Transform3d m;
+	double color[4];
+
+	friend class CSGChain;
 };
 
 class CSGChain
