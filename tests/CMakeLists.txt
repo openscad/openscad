@@ -531,7 +531,8 @@ list(APPEND DUMPTEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/escape-test
 
 list(APPEND CGALPNGTEST_FILES ${FEATURES_FILES} ${SCAD_DXF_FILES} ${EXAMPLE_FILES})
 list(APPEND OPENCSGTEST_FILES ${CGALPNGTEST_FILES})
-list(APPEND THROWNTOGETHERTEST_FILES ${CGALPNGTEST_FILES})
+list(APPEND OPENCSGTEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/bbox-transform-bug.scad)
+list(APPEND THROWNTOGETHERTEST_FILES ${OPENCSGTEST_FILES})
 
 # Disable tests which are known to cause floating point comparison issues
 # Once we're capable of comparing these across platforms, we can put these back in
