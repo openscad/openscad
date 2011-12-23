@@ -244,6 +244,7 @@ add_definitions(-DOPENSCAD_TESTING)
 set(CORE_SOURCES
   tests-common.cc 
   ../src/mathc99.cc
+  ../src/linalg.cc
   ../src/handle_dep.cc 
   ../src/value.cc 
   ../src/expr.cc 

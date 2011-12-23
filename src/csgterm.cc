@@ -115,25 +115,22 @@ CSGTerm::~CSGTerm()
 void CSGTerm::initBoundingBox()
 {
 	if (this->type == TYPE_PRIMITIVE) {
-		BoundingBox polybox = this->polyset->getBoundingBox();
-		this->bbox.extend(this->m * polybox.min());
-		this->bbox.extend(this->m * polybox.max());
+		this->bbox = this->m * this->polyset->getBoundingBox();
 	}
 	else {
 		const BoundingBox &leftbox = this->left->getBoundingBox();
 		const BoundingBox &rightbox = this->right->getBoundingBox();
 		switch (this->type) {
 		case TYPE_UNION:
-			this->bbox.extend(this->m * leftbox.min().cwise().min(rightbox.min()));
-			this->bbox.extend(this->m * leftbox.max().cwise().max(rightbox.max()));
+			this->bbox = this->m * BoundingBox(leftbox.min().cwise().min(rightbox.min()), 
+																				 leftbox.max().cwise().max(rightbox.max()));
 			break;
 		case TYPE_INTERSECTION:
-			this->bbox.extend(this->m * leftbox.min().cwise().max(rightbox.min()));
-			this->bbox.extend(this->m * leftbox.max().cwise().min(rightbox.max()));
+			this->bbox = this->m * BoundingBox(leftbox.min().cwise().max(rightbox.min()),
+																				 leftbox.max().cwise().min(rightbox.max()));
 			break;
 		case TYPE_DIFFERENCE:
-			this->bbox.extend(this->m * leftbox.min());
-			this->bbox.extend(this->m * leftbox.max());
+			this->bbox = this->m * leftbox;
 			break;
 		case TYPE_PRIMITIVE:
 			break;
@@ -330,11 +327,7 @@ BoundingBox CSGChain::getBoundingBox() const
 		if (types[i] != CSGTerm::TYPE_DIFFERENCE) {
 			BoundingBox psbox = polysets[i]->getBoundingBox();
 			if (!psbox.isNull()) {
-				Eigen::Transform3d t;
-				// Column-major vs. Row-major
-				t = matrices[i];
-				bbox.extend(t * psbox.min());
-				bbox.extend(t * psbox.max());
+				bbox.extend(matrices[i] * psbox);
 			}
 		}
 	}

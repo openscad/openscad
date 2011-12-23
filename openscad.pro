@@ -232,6 +232,7 @@ SOURCES += src/openscad.cc \
            src/CSGTermEvaluator.cc \
            src/Tree.cc \
 	   src/mathc99.cc \
+	   src/linalg.cc \
            src/PolySetCache.cc \
            src/PolySetEvaluator.cc
 
