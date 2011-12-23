@@ -93,7 +93,7 @@ def compare_png(resultfilename):
       compare_method = 'NCC'
 
     msg = 'ImageMagick image comparison: '  + options.convert_exec + ' '+ ' '.join(args[2:])
-    msg += '\nexpected image: ' + expectedfilename + '\n'
+    msg += '\n expected image: ' + expectedfilename + '\n'
     print >> sys.stderr, msg
     if not resultfilename:
         print >> sys.stderr, "Error: OpenSCAD did not generate an image to test"

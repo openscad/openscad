@@ -245,7 +245,7 @@ int get_fragments_from_r(double r, double fn, double fs, double fa)
 	if (r < GRID_FINE) return 0;
 	if (fn > 0.0)
 		return (int)fn;
-	return (int)ceil(fmax(fmin(360.0 / fa, r*M_PI / fs), 5));
+	return (int)ceil(fmax(fmin(360.0 / fa, r*2*M_PI / fs), 5));
 }
 
 struct point2d {

@@ -396,7 +396,7 @@ PolySet *PolySetCGALEvaluator::evaluatePolySet(const RenderNode &node)
 	CGAL_Nef_polyhedron N = this->cgalevaluator.evaluateCGALMesh(node);
 	PolySet *ps = NULL;
 	if (!N.empty()) {
-		if (!N.p3->is_simple()) {
+		if (N.dim == 3 && !N.p3->is_simple()) {
 			PRINTF("WARNING: Body of render() isn't valid 2-manifold!");
 		}
 		else {

@@ -13,6 +13,7 @@ set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}")
 # Build debug build as default
 if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE RelWithDebInfo)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-strict-aliasing")
 endif()
 
 if(${CMAKE_BUILD_TYPE} STREQUAL "Debug")
@@ -86,7 +87,8 @@ if (WIN32)
   set(BOOST_THREAD_USE_LIB TRUE)
 endif()
 
-set(Boost_ADDITIONAL_VERSIONS "1.47.0" "1.46.0")
+# Update this if FindBoost.cmake gets out of sync with the current boost release
+# set(Boost_ADDITIONAL_VERSIONS "1.47.0" "1.46.0")
 find_package( Boost 1.35.0 COMPONENTS thread program_options filesystem system regex )
 if(Boost_FOUND)
   message(STATUS "Boost includes found: " ${Boost_INCLUDE_DIRS})
@@ -102,7 +104,7 @@ endif()
 
 # Mac OS X
 if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-  FIND_LIBRARY(COCOA_LIBRARY Cocoa)
+  FIND_LIBRARY(COCOA_LIBRARY Cocoa REQUIRED)
 endif(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 
 # Qt4
@@ -112,7 +114,7 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "FreeBSD")
   set(CMAKE_INCLUDE_DIRECTORIES_BEFORE ON)
 endif()
 
-find_package(OpenGL)
+find_package(OpenGL REQUIRED)
 find_package(Qt4 COMPONENTS QtCore QtGui QtOpenGL REQUIRED)
 include(${QT_USE_FILE})
 
@@ -187,14 +189,14 @@ if(WIN32_STATIC_BUILD)
 endif()
 
 # Flex/Bison
-find_package(BISON)
+find_package(BISON REQUIRED)
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "FreeBSD")
   # FreeBSD has an old flex in /usr/bin and a new flex in /usr/local/bin
   set(FLEX_EXECUTABLE /usr/local/bin/flex)
 endif()
 
-find_package(FLEX)
+find_package(FLEX REQUIRED)
 # The COMPILE_FLAGS and forced C++ compiler is just to be compatible with qmake
 if (WIN32)
   set(FLEX_UNISTD_FLAG "-DYY_NO_UNISTD_H")
@@ -242,6 +244,7 @@ add_definitions(-DOPENSCAD_TESTING)
 set(CORE_SOURCES
   tests-common.cc 
   ../src/mathc99.cc
+  ../src/linalg.cc
   ../src/handle_dep.cc 
   ../src/value.cc 
   ../src/expr.cc 
@@ -529,7 +532,8 @@ list(APPEND DUMPTEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/escape-test
 
 list(APPEND CGALPNGTEST_FILES ${FEATURES_FILES} ${SCAD_DXF_FILES} ${EXAMPLE_FILES})
 list(APPEND OPENCSGTEST_FILES ${CGALPNGTEST_FILES})
-list(APPEND THROWNTOGETHERTEST_FILES ${CGALPNGTEST_FILES})
+list(APPEND OPENCSGTEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/bbox-transform-bug.scad)
+list(APPEND THROWNTOGETHERTEST_FILES ${OPENCSGTEST_FILES})
 
 # Disable tests which are known to cause floating point comparison issues
 # Once we're capable of comparing these across platforms, we can put these back in

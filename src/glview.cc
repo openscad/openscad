@@ -28,6 +28,7 @@
 #include "Preferences.h"
 #include "renderer.h"
 #include "rendersettings.h"
+#include "linalg.h"
 
 #include <QApplication>
 #include <QWheelEvent>
@@ -388,11 +389,11 @@ void GLView::paintGL()
 
 	gluLookAt(0.0, -viewer_distance, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0);
 
-	glTranslated(object_trans_x, object_trans_y, object_trans_z);
-
 	glRotated(object_rot_x, 1.0, 0.0, 0.0);
 	glRotated(object_rot_y, 0.0, 1.0, 0.0);
 	glRotated(object_rot_z, 0.0, 0.0, 1.0);
+
+	glTranslated(object_trans_x, object_trans_y, object_trans_z);
 
   // FIXME: Crosshairs and axes are lighted, this doesn't make sense and causes them
   // to change color based on view orientation.
@@ -500,6 +501,7 @@ void GLView::paintGL()
 		// FIXME: This was an attempt to keep contrast with background, but is suboptimal
 		// (e.g. nearly invisible against a gray background).
 		int r,g,b;
+		r=g=b=0;
 //		bgcol.getRgb(&r, &g, &b);
 		glColor3d((255.0-r)/255.0, (255.0-g)/255.0, (255.0-b)/255.0);
 		glBegin(GL_LINES);
@@ -557,7 +559,6 @@ void GLView::mousePressEvent(QMouseEvent *event)
 	setFocus();
 }
 
-
 void GLView::normalizeAngle(GLdouble& angle)
 {
 	while(angle < 0)
@@ -594,8 +595,37 @@ void GLView::mouseMoveEvent(QMouseEvent *event)
 			if ((QApplication::keyboardModifiers() & Qt::ShiftModifier) != 0) {
 				viewer_distance += (GLdouble)dy;
 			} else {
-				object_trans_x += dx;
-				object_trans_z -= dy;
+
+      double mx = +(dx) * viewer_distance/1000;
+      double my = -(dy) * viewer_distance/1000;
+
+			Matrix3d aax, aay, aaz, tm3;
+			aax = Eigen::AngleAxisd(-(object_rot_x/180) * M_PI, Vector3d::UnitX());
+			aay = Eigen::AngleAxisd(-(object_rot_y/180) * M_PI, Vector3d::UnitY());
+			aaz = Eigen::AngleAxisd(-(object_rot_z/180) * M_PI, Vector3d::UnitZ());
+			tm3 = Matrix3d::Identity();
+			tm3 = aaz * (aay * (aax * tm3));
+
+			Matrix4d tm;
+			tm = Matrix4d::Identity();
+			for (int i=0;i<3;i++) for (int j=0;j<3;j++) tm(j,i)=tm3(j,i);
+
+			Matrix4d vec;
+			vec <<
+        0,  0,  0,  mx,
+        0,  0,  0,  0,
+        0,  0,  0,  my,
+        0,  0,  0,  1
+			;
+			if ((QApplication::keyboardModifiers() & Qt::ShiftModifier) != 0) {
+        vec(0,3) = 0;
+        vec(1,3) = my;
+        vec(2,3) = 0;
+      }
+      tm = tm * vec;
+      object_trans_x += tm(0,3);
+      object_trans_y += tm(1,3);
+      object_trans_z += tm(2,3);
 			}
 		}
 		updateGL();

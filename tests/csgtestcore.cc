@@ -289,9 +289,10 @@ int csgtestcore(int argc, char *argv[], test_type_e test_type)
 		exit(1);
 	}
 
-	QFileInfo fileInfo(filename);
-	if (!sysinfo_dump)
+	if (!sysinfo_dump) {
+		QFileInfo fileInfo(filename);
 		QDir::setCurrent(fileInfo.absolutePath());
+	}
 
 	AbstractNode::resetIndexCounter();
 	AbstractNode *absolute_root_node = root_module->evaluate(&root_ctx, &root_inst);
@@ -322,10 +323,7 @@ int csgtestcore(int argc, char *argv[], test_type_e test_type)
 	}
 		
 	assert(csgInfo.root_norm_term);
-	if (csgInfo.root_norm_term.use_count() <= 1) {
-		fprintf(stderr, "XXX\n");
-	}
-	
+
 	csgInfo.root_chain = new CSGChain();
 	csgInfo.root_chain->import(csgInfo.root_norm_term);
 	fprintf(stderr, "Normalized CSG tree has %d elements\n", int(csgInfo.root_chain->polysets.size()));

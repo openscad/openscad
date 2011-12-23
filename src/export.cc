@@ -84,17 +84,27 @@ void export_stl(CGAL_Nef_polyhedron *root_N, std::ostream &output, QProgressDial
 			stream << x3 << " " << y3 << " " << z3;
 			std::string vs3 = stream.str();
 			if (vs1 != vs2 && vs1 != vs3 && vs2 != vs3) {
-				
-				double nx = (y1-y2)*(z1-z3) - (z1-z2)*(y1-y3);
-				double ny = (z1-z2)*(x1-x3) - (x1-x2)*(z1-z3);
-				double nz = (x1-x2)*(y1-y3) - (y1-y2)*(x1-x3);
+				// The above condition ensures that vs1-vs2, vs1-vs3, and their cross
+				// product are non-zero. Floating point arithmetic may however truncate
+				// small values to 0. This can be avoided by first scaling the components
+				// of vs1-vs2 and vs1-vs3. This has no effect on the resulting unit
+				// normal vector.
+				double dn[6] = { x1-x2, y1-y2, z1-z2, x1-x3, y1-y3, z1-z3 };
+				double maxdn = 0;
+				int i;
+				for (i = 0; i < 6; ++i) {
+					double dx = dn[i];
+					if (dx < 0) dx = -dx;
+					if (dx > maxdn) maxdn = dx;
+				}
+				for (i = 0; i < 6; ++i) dn[i] /= maxdn;
+				double nx = dn[1]*dn[5] - dn[2]*dn[4];
+				double ny = dn[2]*dn[3] - dn[0]*dn[5];
+				double nz = dn[0]*dn[4] - dn[1]*dn[3];
 				double nlength = sqrt(nx*nx + ny*ny + nz*nz);
-				// Avoid generating normals for polygons with zero area
-				double eps = 0.000001;
-				if (nlength < eps) nlength = 1.0;
-				output << "  facet normal " 
-							 << nx / nlength << " " 
-							 << ny / nlength << " " 
+				output << "  facet normal "
+							 << nx / nlength << " "
+							 << ny / nlength << " "
 							 << nz / nlength << "\n";
 				output << "    outer loop\n";
 				output << "      vertex " << vs1 << "\n";
@@ -164,7 +174,7 @@ void export_dxf(CGAL_Nef_polyhedron *root_N, std::ostream &output, QProgressDial
 						 << y2 << "\n";
 		}
 	}
-	
+
 	output << "  0\n"
 				 << "ENDSEC\n";
 

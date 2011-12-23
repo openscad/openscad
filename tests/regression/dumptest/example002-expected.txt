@@ -14,7 +14,7 @@
 				}
 			}
 			multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 5], [0, 0, 0, 1]]) {
-				cylinder($fn = 0, $fa = 12, $fs = 1, h = 50, r1 = 20, r2 = 5, center = true);
+				cylinder($fn = 0, $fa = 12, $fs = 2, h = 50, r1 = 20, r2 = 5, center = true);
 			}
 		}
 	}

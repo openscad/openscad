@@ -187,7 +187,7 @@ void register_builtin(Context &ctx)
 	ctx.functions_p = &Builtins::instance()->functions();
 	ctx.modules_p = &Builtins::instance()->modules();
 	ctx.set_variable("$fn", Value(0.0));
-	ctx.set_variable("$fs", Value(1.0));
+	ctx.set_variable("$fs", Value(2.0));
 	ctx.set_variable("$fa", Value(12.0));
 	ctx.set_variable("$t", Value(0.0));
 	

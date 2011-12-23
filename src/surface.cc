@@ -142,8 +142,8 @@ PolySet *SurfaceNode::evaluate_polyset(class PolySetEvaluator *) const
 
 	p->convexity = convexity;
 
-	double ox = center ? -columns/2.0 : 0;
-	double oy = center ? -lines/2.0 : 0;
+	double ox = center ? -(columns-1)/2.0 : 0;
+	double oy = center ? -(lines-1)/2.0 : 0;
 
 	for (int i = 1; i < lines; i++)
 	for (int j = 1; j < columns; j++)

@@ -96,3 +96,9 @@ log as well as your sysinfo.txt file, as well as running 'ldd' against
 your binaries, to make sure that the proper versions of libraries are
 getting compiled and linked with the test binaries. 
 
+7. Other issues
+
+The OpenSCAD User Manual has a section on buildling. Check there for updates:
+
+http://en.wikibooks.org/wiki/OpenSCAD_User_Manual
+

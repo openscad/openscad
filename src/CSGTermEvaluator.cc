@@ -48,11 +48,11 @@ void CSGTermEvaluator::applyToChildren(const AbstractNode &node, CSGTermEvaluato
 			t1 = t2;
 		} else if (t2 && t1) {
 			if (op == CSGT_UNION) {
-				t1.reset(new CSGTerm(CSGTerm::TYPE_UNION, t1, t2));
+				t1 = CSGTerm::createCSGTerm(CSGTerm::TYPE_UNION, t1, t2);
 			} else if (op == CSGT_DIFFERENCE) {
-				t1.reset(new CSGTerm(CSGTerm::TYPE_DIFFERENCE, t1, t2));
+				t1 = CSGTerm::createCSGTerm(CSGTerm::TYPE_DIFFERENCE, t1, t2);
 			} else if (op == CSGT_INTERSECTION) {
-				t1.reset(new CSGTerm(CSGTerm::TYPE_INTERSECTION, t1, t2));
+				t1 = CSGTerm::createCSGTerm(CSGTerm::TYPE_INTERSECTION, t1, t2);
 			}
 		}
 	}

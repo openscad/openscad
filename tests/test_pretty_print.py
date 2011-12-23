@@ -151,14 +151,14 @@ def parsetest(teststring):
 		"Test time.*?Test (Passed)", # pass/fail
 		"Output:(.*?)<end of output>",
 		'Command:.*?-s" "(.*?)"', # type
-		"actual .*?:(.*?)\n",
-		"expected .*?:(.*?)\n",
+		"^ actual .*?:(.*?)\n",
+		"^ expected .*?:(.*?)\n",
 		'Command:.*?(testdata.*?)"' # scadfile 
 		]
 	hits = map( lambda pattern: ezsearch(pattern,teststring), patterns )
 	test = Test(hits[0],hits[1],hits[2]=='Passed',hits[3],hits[4],hits[5],hits[6],hits[7],teststring)
-	test.actualfile_data = tryread(test.actualfile)
-	test.expectedfile_data = tryread(test.expectedfile)
+	if len(test.actualfile) > 0: test.actualfile_data = tryread(test.actualfile)
+	if len(test.expectedfile) > 0: test.expectedfile_data = tryread(test.expectedfile)
 	return test
 
 def parselog(data):
@@ -249,8 +249,8 @@ TESTLOG
 	passed_tests = filter(lambda x: x.passed, tests)
 	failed_tests = filter(lambda x: not x.passed, tests)
 
-	tests_to_report = tests
-	if failed_only: tests_to_report = failed_tests
+	tests_to_report = failed_tests
+	if include_passed: tests_to_report = tests
 
 	try: percent = str(int(100.0*len(passed_tests) / len(tests)))
 	except ZeroDivisionError: percent = 'n/a'
@@ -274,10 +274,12 @@ TESTLOG
 			wikiname_a = wikify_filename(tmp,wiki_rootpath,sysid)
 			tmp = t.expectedfile.replace(os.path.dirname(builddir),'')
 			wikiname_e = wikify_filename(tmp,wiki_rootpath,sysid)
-			imgs[wikiname_e] = t.expectedfile_data
+			if hasattr(t, 'expectedfile_data'): 
+                                imgs[wikiname_e] = t.expectedfile_data
 			if t.actualfile: 
 				actualfile_wiki = '[[File:'+wikiname_a+'|250px]]'
-				imgs[wikiname_a] = t.actualfile_data
+                                if hasattr(t, 'actualfile_data'): 
+                                        imgs[wikiname_a] = t.actualfile_data
 			else:
 				actualfile_wiki = 'No image generated.'
 			newchunk = re.sub('FTESTNAME',t.fullname,repeat1)
@@ -317,8 +319,8 @@ def tohtml(wiki_rootpath, startdate, tests, enddate, sysinfo, sysid, makefiles):
 	try: percent = str(int(100.0*len(passed_tests) / len(tests)))
 	except ZeroDivisionError: percent = 'n/a'
 
-	tests_to_report = tests
-	if failed_only: tests_to_report = failed_tests
+	tests_to_report = failed_tests
+	if include_passed: tests_to_report = tests
 
 	s=''
 
@@ -497,7 +499,7 @@ maxretry = 10
 
 if bool(os.getenv("TEST_GENERATE")): sys.exit(0)
 
-failed_only = False
-if '--failed-only' in sys.argv: failed_only = True
+include_passed = False
+if '--include-passed' in sys.argv: include_passed = True
 
 main()
