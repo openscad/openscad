@@ -158,7 +158,7 @@ def parsetest(teststring):
 	hits = map( lambda pattern: ezsearch(pattern,teststring), patterns )
 	test = Test(hits[0],hits[1],hits[2]=='Passed',hits[3],hits[4],hits[5],hits[6],hits[7],teststring)
 	if len(test.actualfile) > 0: test.actualfile_data = tryread(test.actualfile)
-	if len(test.actualfile) > 0: test.expectedfile_data = tryread(test.expectedfile)
+	if len(test.expectedfile) > 0: test.expectedfile_data = tryread(test.expectedfile)
 	return test
 
 def parselog(data):
