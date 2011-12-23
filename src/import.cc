@@ -115,7 +115,7 @@ AbstractNode *ImportModule::evaluate(const Context *ctx, const ModuleInstantiati
 	return node;
 }
 
-PolySet *ImportNode::evaluate_polyset(class PolySetEvaluator *evaluator) const
+PolySet *ImportNode::evaluate_polyset(class PolySetEvaluator *) const
 {
 	PolySet *p = NULL;
 
@@ -188,8 +188,8 @@ PolySet *ImportNode::evaluate_polyset(class PolySetEvaluator *evaluator) const
 		}
 		else
 		{
-/*
-			f.read(80-5+4);
+			f.ignore(80-5+4);
+			int total = 84;
 			while (1) {
 #ifdef _MSC_VER
 #pragma pack(push,1)
@@ -204,19 +204,18 @@ PolySet *ImportNode::evaluate_polyset(class PolySetEvaluator *evaluator) const
 #ifdef __GNUC__
 				__attribute__ ((packed))
 #endif
-				data;
+				stldata;
 #ifdef _MSC_VER
 #pragma pack(pop)
 #endif
 
-				if (f.read((char*)&data, sizeof(data)) != sizeof(data))
-					break;
+				f.read((char*)&stldata, sizeof(stldata));
+				if (f.eof()) break;
 				p->append_poly();
-				p->append_vertex(data.x1, data.y1, data.z1);
-				p->append_vertex(data.x2, data.y2, data.z2);
-				p->append_vertex(data.x3, data.y3, data.z3);
+				p->append_vertex(stldata.x1, stldata.y1, stldata.z1);
+				p->append_vertex(stldata.x2, stldata.y2, stldata.z2);
+				p->append_vertex(stldata.x3, stldata.y3, stldata.z3);
 			}
-*/
 		}
 	}
 
