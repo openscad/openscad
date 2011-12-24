@@ -177,7 +177,6 @@ MainWindow::MainWindow(const QString &filename)
 	editor->setTabStopWidth(30);
 #endif
 	editor->setLineWrapping(true); // Not designable
-	setFont("", 12); // Init default font
 
 	this->glview->statusLabel = new QLabel(this);
 	statusBar()->addWidget(this->glview->statusLabel);
@@ -251,8 +250,8 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this->editActionUncomment, SIGNAL(triggered()), editor, SLOT(uncommentSelection()));
 	connect(this->editActionPasteVPT, SIGNAL(triggered()), this, SLOT(pasteViewportTranslation()));
 	connect(this->editActionPasteVPR, SIGNAL(triggered()), this, SLOT(pasteViewportRotation()));
-	connect(this->editActionZoomIn, SIGNAL(triggered()), editor, SLOT(zoomIn()));
-	connect(this->editActionZoomOut, SIGNAL(triggered()), editor, SLOT(zoomOut()));
+	connect(this->editActionZoomIn, SIGNAL(triggered()), this, SLOT(zoomIn()));
+	connect(this->editActionZoomOut, SIGNAL(triggered()), this, SLOT(zoomOut()));
 	connect(this->editActionHide, SIGNAL(triggered()), this, SLOT(hideEditor()));
 	connect(this->editActionPreferences, SIGNAL(triggered()), this, SLOT(preferences()));
 
@@ -347,6 +346,8 @@ MainWindow::MainWindow(const QString &filename)
 
 	// make sure it looks nice..
 	QSettings settings;
+	setFont(settings.value("editor/fontfamily","").toString(),
+		settings.value("editor/fontsize",12).toInt());
 	resize(settings.value("window/size", QSize(800, 600)).toSize());
 	move(settings.value("window/position", QPoint(0, 0)).toPoint());
 	QList<int> s1sizes = settings_valueList("window/splitter1sizes",QList<int>()<<400<<400);
@@ -1810,6 +1811,16 @@ MainWindow::preferences()
 	Preferences::inst()->activateWindow();
 	Preferences::inst()->raise();
 }
+
+void MainWindow::zoom(int n)
+{
+	QSettings settings;
+	editor->zoomIn(n);
+	QString pointsize = QString(editor->font().pointSize());
+	settings.setValue("editor/fontsize", pointsize );
+}
+void MainWindow::zoomIn() { zoom(1); }
+void MainWindow::zoomOut() { zoom(-1); }
 
 void MainWindow::setFont(const QString &family, uint size)
 {
