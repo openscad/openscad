@@ -23,16 +23,16 @@
 #include "OffscreenView.h"
 
 #include <QApplication>
-#include <QFile>
-#include <QDir>
-#include <QSet>
 #include <QTimer>
 
 #include <sstream>
 #include <vector>
 
 #include <boost/program_options.hpp>
+#include <boost/filesystem.hpp>
+
 namespace po = boost::program_options;
+namespace fs = boost::filesystem;
 
 using std::string;
 using std::vector;
@@ -251,9 +251,9 @@ int csgtestcore(int argc, char *argv[], test_type_e test_type)
 
 	QApplication app(argc, argv, false);
 
-	QDir original_path = QDir::current();
+	fs::path original_path = fs::current_path();
 
-	QString currentdir = QDir::currentPath();
+	std::string currentdir = fs::current_path().generic_string();
 
 	parser_init();
 
@@ -273,8 +273,7 @@ int csgtestcore(int argc, char *argv[], test_type_e test_type)
 	}
 
 	if (!sysinfo_dump) {
-		QFileInfo fileInfo(filename);
-		QDir::setCurrent(fileInfo.absolutePath());
+		fs::current_path(fs::path(filename).parent_path());
 	}
 
 	AbstractNode::resetIndexCounter();
@@ -339,7 +338,7 @@ int csgtestcore(int argc, char *argv[], test_type_e test_type)
 		}
 	}
 	
-	QDir::setCurrent(original_path.absolutePath());
+	fs::current_path(original_path);
 
 	try {
 		csgInfo.glview = new OffscreenView(512,512);

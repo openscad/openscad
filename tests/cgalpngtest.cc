@@ -26,6 +26,7 @@
 
 #include "tests-common.h"
 #include "openscad.h"
+#include "parsersettings.h"
 #include "node.h"
 #include "module.h"
 #include "polyset.h"
@@ -43,10 +44,6 @@
 #include "OffscreenView.h"
 
 #include <QApplication>
-#include <QFile>
-#include <QDir>
-#include <QSet>
-#include <QTextStream>
 #ifndef _MSC_VER
 #include <getopt.h>
 #endif
@@ -54,8 +51,11 @@
 #include <assert.h>
 #include <sstream>
 
+#include <boost/filesystem.hpp>
+namespace fs = boost::filesystem;
+
 std::string commandline_commands;
-QString currentdir;
+std::string currentdir;
 QString examplesdir;
 
 using std::string;
@@ -106,9 +106,11 @@ int main(int argc, char **argv)
 	Builtins::instance()->initialize();
 
 	QApplication app(argc, argv, false);
-	QDir original_path = QDir::current();
+	fs::path original_path = fs::current_path();
 
-	currentdir = QDir::currentPath();
+	currentdir = fs::current_path().generic_string();
+
+	parser_init();
 
 	Context root_ctx;
 	register_builtin(root_ctx);
@@ -121,8 +123,7 @@ int main(int argc, char **argv)
 		exit(1);
 	}
 
-	QFileInfo fileInfo(filename);
-	QDir::setCurrent(fileInfo.absolutePath());
+	fs::current_path(fs::path(filename).parent_path());
 
 	AbstractNode::resetIndexCounter();
 	AbstractNode *absolute_root_node = root_module->evaluate(&root_ctx, &root_inst);
@@ -138,7 +139,7 @@ int main(int argc, char **argv)
 
 	CGAL_Nef_polyhedron N = cgalevaluator.evaluateCGALMesh(*root_node);
 
-	QDir::setCurrent(original_path.absolutePath());
+	current_path(original_path);
 
 // match with csgtest ends
        try {

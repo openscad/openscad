@@ -649,7 +649,7 @@ Module *Module::compile_library(const std::string &filename)
 	libs_cache[filename] = e;
 
 	Module *backup_mod = module;
-	Module *lib_mod = dynamic_cast<Module*>(parse(text.str().c_str(), absolute(filename).generic_string().c_str(), 0));
+	Module *lib_mod = dynamic_cast<Module*>(parse(text.str().c_str(), path(filename).parent_path().generic_string().c_str(), 0));
 	module = backup_mod;
 
 	if (lib_mod) {

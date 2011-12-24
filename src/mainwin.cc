@@ -490,7 +490,7 @@ MainWindow::setFileName(const QString &filename)
 {
 	if (filename.isEmpty()) {
 		this->fileName.clear();
-		this->root_ctx.setDocumentPath(currentdir.toStdString());
+		this->root_ctx.setDocumentPath(currentdir);
 		setWindowTitle("OpenSCAD - New Document[*]");
 	}
 	else {
