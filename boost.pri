@@ -23,9 +23,11 @@ boost {
   # check for OPENSCAD_LIBDIR + multithread
   isEmpty(BOOST_LINK_FLAGS) {
     OPENSCAD_LIBDIR = $$(OPENSCAD_LIBRARIES)
-    !isEmpty($$OPENSCAD_LIBDIR) {
+    !isEmpty(OPENSCAD_LIBDIR) {
       exists($$OPENSCAD_LIBDIR/lib/libboost*thread-mt*) {
         BOOST_LINK_FLAGS = -lboost_thread-mt -lboost_program_options-mt
+      } else {
+        BOOST_LINK_FLAGS = -lboost_thread -lboost_program_options
       }
     }
   }
@@ -33,9 +35,11 @@ boost {
   # check for BOOSTDIR + multithread
   isEmpty(BOOST_LINK_FLAGS) {
     BOOST_DIR = $$(BOOSTDIR)
-    !isEmpty($$BOOST_DIR) {
+    !isEmpty(BOOST_DIR) {
       exists($$BOOST_DIR/lib/libboost*thread-mt*) {
         BOOST_LINK_FLAGS = -lboost_thread-mt -lboost_program_options-mt
+      } else {
+        BOOST_LINK_FLAGS = -lboost_thread -lboost_program_options
       }
     }
   }
