@@ -27,7 +27,9 @@ boost {
       exists($$OPENSCAD_LIBDIR/lib/libboost*thread-mt*) {
         BOOST_LINK_FLAGS = -lboost_thread-mt -lboost_program_options-mt
       } else {
-        BOOST_LINK_FLAGS = -lboost_thread -lboost_program_options
+        exists($$OPENSCAD_LIBDIR/lib/libboost*thread*) {
+          BOOST_LINK_FLAGS = -lboost_thread -lboost_program_options
+        }
       }
     }
   }
@@ -39,7 +41,9 @@ boost {
       exists($$BOOST_DIR/lib/libboost*thread-mt*) {
         BOOST_LINK_FLAGS = -lboost_thread-mt -lboost_program_options-mt
       } else {
-        BOOST_LINK_FLAGS = -lboost_thread -lboost_program_options
+        exists($$BOOST_DIR/lib/libboost*thread*) {
+          BOOST_LINK_FLAGS = -lboost_thread -lboost_program_options
+        }
       }
     }
   }
