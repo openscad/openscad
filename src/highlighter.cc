@@ -25,7 +25,7 @@
  */
 
 #include "highlighter.h"
-#include "openscad.h" // extern int parser_error_pos;
+#include "parsersettings.h" // extern int parser_error_pos;
 
 #ifdef _QCODE_EDIT_
 Highlighter::Highlighter(QDocument *parent)

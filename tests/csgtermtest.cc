@@ -28,6 +28,7 @@
 #include "PolySetEvaluator.h"
 #include "CSGTermEvaluator.h"
 #include "openscad.h"
+#include "parsersettings.h"
 #include "node.h"
 #include "module.h"
 #include "context.h"
@@ -54,7 +55,6 @@ using std::cout;
 std::string commandline_commands;
 QString currentdir;
 QString examplesdir;
-QString librarydir;
 
 int main(int argc, char **argv)
 {
@@ -75,24 +75,7 @@ int main(int argc, char **argv)
 
 	currentdir = QDir::currentPath();
 
-	QDir libdir(QApplication::instance()->applicationDirPath());
-#ifdef Q_WS_MAC
-	libdir.cd("../Resources"); // Libraries can be bundled
-	if (!libdir.exists("libraries")) libdir.cd("../../..");
-#elif defined(Q_OS_UNIX)
-	if (libdir.cd("../share/openscad/libraries")) {
-		librarydir = libdir.path();
-	} else
-	if (libdir.cd("../../share/openscad/libraries")) {
-		librarydir = libdir.path();
-	} else
-	if (libdir.cd("../../libraries")) {
-		librarydir = libdir.path();
-	} else
-#endif
-	if (libdir.cd("libraries")) {
-		librarydir = libdir.path();
-	}
+	parser_init();
 
 	Context root_ctx;
 	register_builtin(root_ctx);

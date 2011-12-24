@@ -32,7 +32,6 @@ extern int get_fragments_from_r(double r, double fn, double fs, double fa);
 
 #include <string>
 extern std::string commandline_commands;
-extern int parser_error_pos;
 
 #include <QString>
 // The CWD when application started. We shouldn't change CWD, but until we stop
@@ -40,7 +39,6 @@ extern int parser_error_pos;
 extern QString currentdir;
 
 extern QString examplesdir;
-extern QString librarydir;
 
 #endif
 

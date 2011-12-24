@@ -27,8 +27,8 @@
 %{
 
 #include "handle_dep.h"
-#include "openscad.h" // librarydir
 #include "printutils.h"
+#include "parsersettings.h"
 #include "parser_yacc.h"
 #include <QStack>
 #include <QFileInfo>

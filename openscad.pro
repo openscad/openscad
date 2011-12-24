@@ -134,7 +134,8 @@ FORMS   += src/MainWindow.ui \
            src/Preferences.ui \
            src/OpenCSGWarningDialog.ui
 
-HEADERS += src/renderer.h \
+HEADERS += src/parsersettings.h \
+           src/renderer.h \
            src/rendersettings.h \
            src/ThrownTogetherRenderer.h \
            src/CGAL_renderer.h \
@@ -187,7 +188,8 @@ HEADERS += src/renderer.h \
            src/system-gl.h \
            src/stl-utils.h
 
-SOURCES += src/openscad.cc \
+SOURCES += src/parsersettings.cc \
+           src/openscad.cc \
            src/mainwin.cc \
            src/handle_dep.cc \
            src/renderer.cc \

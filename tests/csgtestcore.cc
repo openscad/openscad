@@ -4,6 +4,7 @@
 #include "tests-common.h"
 #include "system-gl.h"
 #include "openscad.h"
+#include "parsersettings.h"
 #include "builtin.h"
 #include "context.h"
 #include "node.h"
@@ -39,7 +40,6 @@ using std::cerr;
 using std::cout;
 
 std::string commandline_commands;
-QString librarydir;
 
 //#define DEBUG
 
@@ -255,24 +255,7 @@ int csgtestcore(int argc, char *argv[], test_type_e test_type)
 
 	QString currentdir = QDir::currentPath();
 
-	QDir libdir(QApplication::instance()->applicationDirPath());
-#ifdef Q_WS_MAC
-	libdir.cd("../Resources"); // Libraries can be bundled
-	if (!libdir.exists("libraries")) libdir.cd("../../..");
-#elif defined(Q_OS_UNIX)
-	if (libdir.cd("../share/openscad/libraries")) {
-		librarydir = libdir.path();
-	} else
-	if (libdir.cd("../../share/openscad/libraries")) {
-		librarydir = libdir.path();
-	} else
-	if (libdir.cd("../../libraries")) {
-		librarydir = libdir.path();
-	} else
-#endif
-	if (libdir.cd("libraries")) {
-		librarydir = libdir.path();
-	}
+	parser_init();
 
 	Context root_ctx;
 	register_builtin(root_ctx);

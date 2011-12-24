@@ -57,7 +57,6 @@
 std::string commandline_commands;
 QString currentdir;
 QString examplesdir;
-QString librarydir;
 
 using std::string;
 
@@ -110,25 +109,6 @@ int main(int argc, char **argv)
 	QDir original_path = QDir::current();
 
 	currentdir = QDir::currentPath();
-
-	QDir libdir(QApplication::instance()->applicationDirPath());
-#ifdef Q_WS_MAC
-	libdir.cd("../Resources"); // Libraries can be bundled
-	if (!libdir.exists("libraries")) libdir.cd("../../..");
-#elif defined(Q_OS_UNIX)
-	if (libdir.cd("../share/openscad/libraries")) {
-		librarydir = libdir.path();
-	} else
-	if (libdir.cd("../../share/openscad/libraries")) {
-		librarydir = libdir.path();
-	} else
-	if (libdir.cd("../../libraries")) {
-		librarydir = libdir.path();
-	} else
-#endif
-	if (libdir.cd("libraries")) {
-		librarydir = libdir.path();
-	}
 
 	Context root_ctx;
 	register_builtin(root_ctx);

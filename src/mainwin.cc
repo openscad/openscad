@@ -27,6 +27,7 @@
 #include "PolySetCache.h"
 #include "MainWindow.h"
 #include "openscad.h" // examplesdir
+#include "parsersettings.h"
 #include "Preferences.h"
 #include "printutils.h"
 #include "node.h"
