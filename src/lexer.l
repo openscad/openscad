@@ -30,10 +30,11 @@
 #include "printutils.h"
 #include "parsersettings.h"
 #include "parser_yacc.h"
-#include <QStack>
-#include <QFileInfo>
-#include <QDir>
 #include <assert.h>
+#include <boost/foreach.hpp>
+#include <boost/lexical_cast.hpp>
+#include <boost/filesystem.hpp>
+using namespace boost::filesystem;
 
 //isatty for visual c++ and mingw-cross-env
 #if defined __WIN32__ && ! defined _MSC_VER
@@ -44,7 +45,7 @@ extern "C" int __cdecl _isatty(int _FileHandle);
 #define isatty _isatty
 #endif
 
-QString* stringcontents;
+std::string stringcontents;
 int lexerget_lineno(void);
 #ifdef __GNUC__
 static void yyunput(int, char*) __attribute__((unused));
@@ -73,12 +74,12 @@ extern const char *parser_source_path;
 }
 
 void includefile();
-QDir sourcepath();
-QStack<QDir> path_stack;
-QStack<FILE*> openfiles;
+path sourcepath();
+std::vector<path> path_stack;
+std::vector<FILE*> openfiles;
 
-QString filename;
-QString filepath;
+std::string filename;
+std::string filepath;
 
 %}
 
@@ -87,6 +88,7 @@ QString filepath;
 
 %x comment string
 %x include
+%x use
 
 D [0-9]
 E [Ee][+-]?{D}+
@@ -101,34 +103,36 @@ include[ \t\r\n>]*"<"	{ BEGIN(include); }
 }
 
 
-use[ \t\r\n>]*"<"[^\t\r\n>]+">" {
-	QString filename(yytext);
-	filename.remove(QRegExp("^use[ \t\r\n>]*<"));
-	filename.remove(QRegExp(">$"));
-	QFileInfo finfo(QDir(parser_source_path), filename);
-	if (!finfo.exists()) {
-		finfo = QFileInfo(QDir(librarydir), filename);
+use[ \t\r\n>]*"<"	{ BEGIN(use); }
+<use>{
+[^\t\r\n>]+	{ filename = yytext; }
+ ">"		{ 
+	BEGIN(INITIAL); 
+	path usepath = path(parser_source_path) / filename;
+        if (!exists(usepath)) {
+          usepath = librarydir / filename;
 	}
-	handle_dep(finfo.absoluteFilePath().toStdString());
-	parserlval.text = strdup(finfo.absoluteFilePath().toLocal8Bit());
+	handle_dep(absolute(usepath).generic_string());
+	parserlval.text = strdup(absolute(usepath).c_str());
 	return TOK_USE;
+ }
 }
 
 "<"[^ \t\r\n>]+">" {
 	char *filename = strdup(yytext+1);
 	filename[strlen(filename)-1] = 0;
-	QFileInfo finfo(QDir(parser_source_path), filename);
-	if (!finfo.exists()) {
-		finfo = QFileInfo(QDir(librarydir), filename);
+	path incpath = path(parser_source_path) / filename;
+	if (!exists(incpath)) {
+          incpath = librarydir / filename;
 	}
 
 	PRINTF("DEPRECATED: Support for implicit include will be removed in future releases. Use `include <filename>' instead.");
-	handle_dep(finfo.absoluteFilePath().toStdString());
-	yyin = fopen(finfo.absoluteFilePath().toLocal8Bit(), "r");
+	handle_dep(absolute(incpath).generic_string());
+	yyin = fopen(absolute(incpath).c_str(), "r");
 	if (!yyin) {
 		PRINTF("WARNING: Can't open input file `%s'.", filename);
 	} else {
-		openfiles.append(yyin);
+		openfiles.push_back(yyin);
 		yypush_buffer_state(yy_create_buffer( yyin, YY_BUF_SIZE ));
 		BEGIN(INITIAL);
 	}
@@ -136,11 +140,11 @@ use[ \t\r\n>]*"<"[^\t\r\n>]+">" {
 }
 
 <<EOF>> {
-	if(!path_stack.empty())
-		path_stack.pop();
+	if(!path_stack.empty()) path_stack.pop_back();
 	if (yyin && yyin != stdin) {
 		assert(!openfiles.empty());
-		fclose(openfiles.pop());
+		fclose(openfiles.back());
+		openfiles.pop_back();
 	}
 	yypop_buffer_state();
 	if (!YY_CURRENT_BUFFER)
@@ -158,20 +162,19 @@ use[ \t\r\n>]*"<"[^\t\r\n>]+">" {
 
 {D}+{E}? | 
 {D}*\.{D}+{E}? |
-{D}+\.{D}*{E}?          { parserlval.number = QString(yytext).toDouble(); return TOK_NUMBER; }
+{D}+\.{D}*{E}?          { parserlval.number = boost::lexical_cast<double>(yytext); return TOK_NUMBER; }
 "$"?[a-zA-Z0-9_]+       { parserlval.text = strdup(yytext); return TOK_ID; }
 
-\"			{ BEGIN(string); stringcontents = new QString(); }
+\"			{ BEGIN(string); stringcontents.clear(); }
 <string>{
-\\n			{ stringcontents->append('\n'); }
-\\t			{ stringcontents->append('\t'); }
-\\r			{ stringcontents->append('\r'); }
-\\\\			{ stringcontents->append('\\'); }
-\\\"			{ stringcontents->append('"'); }
-[^\\\n\"]+		{ stringcontents->append(lexertext); }
+\\n			{ stringcontents += '\n'; }
+\\t			{ stringcontents += '\t'; }
+\\r			{ stringcontents += '\r'; }
+\\\\			{ stringcontents += '\\'; }
+\\\"			{ stringcontents += '"'; }
+[^\\\n\"]+		{ stringcontents += lexertext; }
 \"			{ BEGIN(INITIAL); 
-			parserlval.text = strdup(stringcontents->toLocal8Bit()); 
-			delete stringcontents; 
+			parserlval.text = strdup(stringcontents.c_str()); 
 			return TOK_STRING; }
 }
 
@@ -192,12 +195,11 @@ use[ \t\r\n>]*"<"[^\t\r\n>]+">" {
 
 %%
 
-QDir sourcepath()
+path sourcepath()
 {
-	if(!path_stack.empty())
-		return path_stack.top();
-
-	return QDir(parser_source_path);
+  if (!path_stack.empty()) return path_stack.back();
+  
+  return path(parser_source_path);
 }
 
 /*
@@ -207,29 +209,29 @@ QDir sourcepath()
  */
 void includefile()
 {
-  if (filename.isEmpty()) return;
+  if (filename.empty()) return;
 
-  QDir dirinfo(sourcepath());
-  if (!filepath.isEmpty()) {
-    dirinfo.cd(filepath);
+  path dirinfo = sourcepath();
+  if (!filepath.empty()) {
+    dirinfo /= filepath;
   }
 
-  QFileInfo finfo(dirinfo, filename);
-  if (!finfo.exists()) {
-    finfo = QFileInfo(QFileInfo(QDir(librarydir), filepath).dir(), filename);
+  path finfo = dirinfo / filename;
+  if (!exists(finfo)) {
+    finfo = librarydir / filepath / filename;
   }
 
   filepath.clear();
-  path_stack.push(dirinfo);
+  path_stack.push_back(dirinfo);
 
-  handle_dep(finfo.absoluteFilePath().toStdString());
-  yyin = fopen(finfo.absoluteFilePath().toLocal8Bit(), "r");
+  handle_dep(absolute(finfo).generic_string());
+  yyin = fopen(absolute(finfo).c_str(), "r");
   if (!yyin) {
-    PRINTA("WARNING: Can't open input file `%1'.", filename);
-    path_stack.pop();
+    PRINTF("WARNING: Can't open input file `%s'.", filename.c_str());
+    path_stack.pop_back();
     return;
   }
-  openfiles.append(yyin);
+  openfiles.push_back(yyin);
   filename.clear();
   
   yypush_buffer_state(yy_create_buffer(yyin, YY_BUF_SIZE));
@@ -241,7 +243,7 @@ void includefile()
 */
 void lexerdestroy()
 {
-  foreach (FILE *f, openfiles) fclose(f);
+  BOOST_FOREACH (FILE *f, openfiles) fclose(f);
   openfiles.clear();
   path_stack.clear();
 }

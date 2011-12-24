@@ -1,9 +1,9 @@
 #ifndef PARSERSETTINGS_H_
 #define PARSERSETTINGS_H_
 
-#include <QString>
+#include <string>
 
-extern QString librarydir;
+extern std::string librarydir;
 extern int parser_error_pos;
 
 void parser_init();
