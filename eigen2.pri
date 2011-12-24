@@ -13,22 +13,23 @@ eigen2 {
         EIGEN2_INCLUDEPATH = $$OPENSCAD_LIBRARIES_DIR/include/eigen2
       }
     }
+    message("EIGEN2 location: $$EIGEN2_INCLUDEPATH")
   }
 
   # Optionally specify location of Eigen2 using the 
   # EIGEN2DIR env. variable
   isEmpty(EIGEN2_INCLUDEPATH) {
     EIGEN2_DIR = $$(EIGEN2DIR)
-    !isEmpty(EIGEN2_DIR):isEmpty(EIGEN2_INCLUDE_PATH) { 
-      message("EIGEN2: OPENSCAD_LIBRARIES NOT")
+    !isEmpty(EIGEN2_DIR) { 
       EIGEN2_INCLUDEPATH = $$EIGEN2_DIR
     }
+    message("EIGEN2 location: $$EIGEN2_INCLUDEPATH")
   }
 
   isEmpty(EIGEN2_INCLUDEPATH) {
-    freebsd-g++: EIGEN2_INCLUDEPATH *= /usr/local/include/eigen2
-    macx: EIGEN2_INCLUDEPATH *= /opt/local/include/eigen2
-    linux*: EIGEN2_INCLUDEPATH *= /usr/include/eigen2
+    freebsd-g++: EIGEN2_INCLUDEPATH = /usr/local/include/eigen2
+    macx: EIGEN2_INCLUDEPATH = /opt/local/include/eigen2
+    linux*: EIGEN2_INCLUDEPATH = /usr/include/eigen2
   }
 
   # eigen2 being under 'include/eigen2' needs special prepending
