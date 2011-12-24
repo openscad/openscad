@@ -56,7 +56,7 @@ public:
 		std::string cache_id, msg;
 	};
 	static boost::unordered_map<std::string, libs_cache_ent> libs_cache;
-	static Module *compile_library(std::string filename);
+	static Module *compile_library(const std::string &filename);
 
 	std::vector<std::string> argnames;
 	std::vector<Expression*> argexpr;
