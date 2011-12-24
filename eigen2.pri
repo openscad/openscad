@@ -7,9 +7,11 @@ eigen2 {
   # Optionally specify location of Eigen2 using the 
   # OPENSCAD_LIBRARIES env. variable
   isEmpty(EIGEN2_INCLUDEPATH) {
-    OPENSCAD_LIBRARIES_EIGEN2 = $$(OPENSCAD_LIBRARIES)
-    !isEmpty(OPENSCAD_LIBRARIES_EIGEN2) {
-      EIGEN2_INCLUDEPATH = $$OPENSCAD_LIBRARIES_EIGEN2/include/eigen2
+    OPENSCAD_LIBRARIES_DIR = $$(OPENSCAD_LIBRARIES)
+    !isEmpty(OPENSCAD_LIBRARIES_DIR) {
+      exists($$OPENSCAD_LIBRARIES_DIR/include/eigen2) {
+        EIGEN2_INCLUDEPATH = $$OPENSCAD_LIBRARIES_DIR/include/eigen2
+      }
     }
   }
 
