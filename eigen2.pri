@@ -11,7 +11,6 @@ eigen2 {
     !isEmpty(OPENSCAD_LIBRARIES_DIR) {
       exists($$OPENSCAD_LIBRARIES_DIR/include/eigen2) {
         EIGEN2_INCLUDEPATH = $$OPENSCAD_LIBRARIES_DIR/include/eigen2
-        message("EIGEN2 location: $$EIGEN2_INCLUDEPATH")
       }
     }
   }
