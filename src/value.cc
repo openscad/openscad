@@ -435,6 +435,7 @@ std::ostream &operator<<(std::ostream &stream, const Filename &filename)
 	return stream;
 }
 
+// FIXME: This could probably be done more elegantly using boost::regex
 std::ostream &operator<<(std::ostream &stream, const QuotedString &s)
 {
 	stream << '"';
