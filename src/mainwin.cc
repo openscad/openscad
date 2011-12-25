@@ -144,7 +144,8 @@ MainWindow::MainWindow(const QString &filename)
 	setupUi(this);
 
 	this->cgalworker = new CGALWorker();
-	connect(this->cgalworker, SIGNAL(done(CGAL_Nef_polyhedron *)), this, SLOT(actionRenderCGALDone(CGAL_Nef_polyhedron *)));
+	connect(this->cgalworker, SIGNAL(done(CGAL_Nef_polyhedron *)), 
+					this, SLOT(actionRenderCGALDone(CGAL_Nef_polyhedron *)));
 
 	register_builtin(root_ctx);
 
@@ -1132,7 +1133,7 @@ void MainWindow::actionCompile()
 void MainWindow::actionRenderCGAL()
 {
 	if (GuiLocker::isLocked()) return;
-	GuiLocker::lock();
+	GuiLocker lock;
 
 	setCurrentOutput();
 	console->clear();
@@ -1161,6 +1162,7 @@ void MainWindow::actionRenderCGAL()
 
 	progress_report_prep(this->root_node, report_func, this);
 
+	GuiLocker::lock(); // Will be unlocked in actionRenderCGALDone()
 	this->cgalworker->start(this->tree);
 }
 
