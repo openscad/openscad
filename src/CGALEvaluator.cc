@@ -32,7 +32,6 @@
 #include <sstream>
 #include <iostream>
 #include <assert.h>
-#include <QRegExp>
 
 #include <boost/foreach.hpp>
 #include <boost/unordered_map.hpp>
