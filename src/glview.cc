@@ -105,7 +105,7 @@ void GLView::init()
 void GLView::setRenderer(Renderer *r)
 {
 	this->renderer = r;
-	updateGL();
+	if (r) updateGL(); // Let the last image stay, e.g. to avoid animation flickering
 }
 
 void GLView::initializeGL()
