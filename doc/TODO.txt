@@ -103,8 +103,6 @@ o Computation
   - Multi-threaded computation (mostly important for CGAL)
   - Progress: Call progresswidget more often to improve feedback
 o Misc
-  - Reload and compile: Ask for confirmation if file is locally edited
-    (make this configurable in preferences?)
   - Save: Ask for confirmation if file has been externally changed
   - Rename OpenCSG and CGAL to smth. not specific to the underlying libraries
     (e.g Preview, Render)
