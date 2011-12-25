@@ -131,21 +131,20 @@ if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
   endif()
 endif()
 
-if (NOT $ENV{OPENSCAD_LIBRARIES} STREQUAL "")
-  set(EIGEN2_INCLUDE_DIR "$ENV{OPENSCAD_LIBRARIES}/include/eigen2")
-endif()
-
 if (NOT EIGEN2_INCLUDE_DIR)
+  if (NOT $ENV{OPENSCAD_LIBRARIES} STREQUAL "")
+    set(EIGEN2_FIND_HINTS "$ENV{OPENSCAD_LIBRARIES}/include/eigen2")
+  endif()
+  set(EIGEN2_FIND_HINTS ${EIGEN2_HINTS} $ENV{EIGEN2DIR})
+  if (${CMAKE_SYSTEM_NAME} MATCHES "FreeBSD")
+    set(EIGEN2_FIND_PATHS /usr/local/include/eigen2)
+  else()
+    set(EIGEN2_FIND_PATHS /opt/local/include/eigen2 /usr/include/eigen2)
+  endif()
   find_path(EIGEN2_INCLUDE_DIR
             Eigen/Core 
-            HINTS $ENV{EIGEN2DIR}
-            PATHS /opt/local/include/eigen2 /usr/include/eigen2)
-  if (${CMAKE_SYSTEM_NAME} MATCHES "FreeBSD") 
-    find_path(EIGEN2_INCLUDE_DIR 
-              Eigen/Core 
-              HINTS $ENV{EIGEN2DIR}
-              PATHS /usr/local/include/eigen2 )
-  endif()
+            HINTS ${EIGEN2_FIND_HINTS}
+            PATHS ${EIGEN2_FIND_PATHS})
   if (NOT EIGEN2_INCLUDE_DIR)
     message(FATAL_ERROR "Eigen2 not found")
   else()
