@@ -6,6 +6,6 @@
 extern std::string librarydir;
 extern int parser_error_pos;
 
-void parser_init();
+void parser_init(const std::string &applicationpath);
 
 #endif

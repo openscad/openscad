@@ -255,7 +255,7 @@ int csgtestcore(int argc, char *argv[], test_type_e test_type)
 
 	std::string currentdir = fs::current_path().generic_string();
 
-	parser_init();
+	parser_init(QApplication::instance()->applicationDirPath().toStdString());
 
 	Context root_ctx;
 	register_builtin(root_ctx);

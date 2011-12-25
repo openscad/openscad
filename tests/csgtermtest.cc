@@ -75,7 +75,7 @@ int main(int argc, char **argv)
 
 	currentdir = fs::current_path().generic_string();
 
-	parser_init();
+	parser_init(QApplication::instance()->applicationDirPath().toStdString());
 
 	Context root_ctx;
 	register_builtin(root_ctx);

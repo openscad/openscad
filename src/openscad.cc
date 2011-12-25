@@ -220,7 +220,7 @@ int main(int argc, char **argv)
 					examplesdir = exdir.path();
 				}
 
-	parser_init();
+	parser_init(QApplication::instance()->applicationDirPath().toStdString());
 
 	// Initialize global visitors
 	NodeCache nodecache;

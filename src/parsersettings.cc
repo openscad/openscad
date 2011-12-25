@@ -1,15 +1,13 @@
 #include "parsersettings.h"
-#include <QApplication>
-#include <QDir>
 #include <boost/filesystem.hpp>
 
 using namespace boost::filesystem;
 
 std::string librarydir;
 
-void parser_init()
+void parser_init(const std::string &applicationpath)
 {
-	path libdir(QApplication::instance()->applicationDirPath().toStdString());
+	path libdir(applicationpath);
 	path tmpdir;
 #ifdef Q_WS_MAC
 	libdir /= "../Resources"; // Libraries can be bundled
