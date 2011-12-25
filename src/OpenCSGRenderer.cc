@@ -86,7 +86,7 @@ void OpenCSGRenderer::renderCSGChain(CSGChain *chain, GLint *shaderinfo,
 			if (shaderinfo) glUseProgram(shaderinfo[0]);
 			for (; j < i; j++) {
 				const Transform3d &m = chain->matrices[j];
-				double *c = chain->colors[j];
+				const Color4f &c = chain->colors[j];
 				glPushMatrix();
 				glMultMatrixd(m.data());
 				PolySet::csgmode_e csgmode = chain->types[j] == CSGTerm::TYPE_DIFFERENCE ? PolySet::CSGMODE_DIFFERENCE : PolySet::CSGMODE_NORMAL;
@@ -99,7 +99,7 @@ void OpenCSGRenderer::renderCSGChain(CSGChain *chain, GLint *shaderinfo,
 					csgmode = PolySet::csgmode_e(csgmode + 10);
 				} else if (c[0] >= 0 || c[1] >= 0 || c[2] >= 0 || c[3] >= 0) {
 					// User-defined color or alpha from source
-					setColor(c, shaderinfo);
+					setColor(c.data(), shaderinfo);
 				} else if (chain->types[j] == CSGTerm::TYPE_DIFFERENCE) {
 					setColor(COLORMODE_CUTOUT, shaderinfo);
 				} else {

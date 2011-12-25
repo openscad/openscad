@@ -89,10 +89,9 @@ shared_ptr<CSGTerm> CSGTerm::createCSGTerm(type_e type, CSGTerm *left, CSGTerm *
 	return createCSGTerm(type, shared_ptr<CSGTerm>(left), shared_ptr<CSGTerm>(right));
 }
 
-CSGTerm::CSGTerm(const shared_ptr<PolySet> &polyset, const Transform3d &matrix, const double color[4], const std::string &label)
-	: type(TYPE_PRIMITIVE), polyset(polyset), label(label), m(matrix)
+CSGTerm::CSGTerm(const shared_ptr<PolySet> &polyset, const Transform3d &matrix, const Color4f &color, const std::string &label)
+	: type(TYPE_PRIMITIVE), polyset(polyset), label(label), m(matrix), color(color)
 {
-	for (int i = 0; i < 4; i++) this->color[i] = color[i];
 	initBoundingBox();
 }
 
@@ -281,7 +280,7 @@ CSGChain::CSGChain()
 {
 }
 
-void CSGChain::add(const shared_ptr<PolySet> &polyset, const Transform3d &m, double *color, CSGTerm::type_e type, std::string label)
+void CSGChain::add(const shared_ptr<PolySet> &polyset, const Transform3d &m, const Color4f &color, CSGTerm::type_e type, std::string label)
 {
 	polysets.push_back(polyset);
 	matrices.push_back(m);

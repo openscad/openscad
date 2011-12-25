@@ -187,8 +187,8 @@ HEADERS += src/renderer.h \
            src/system-gl.h \
            src/stl-utils.h
 
-SOURCES += src/openscad.cc \
-           src/mainwin.cc \
+SOURCES += src/mathc99.cc \
+	   src/linalg.cc \
            src/handle_dep.cc \
            src/renderer.cc \
            src/rendersettings.cc \
@@ -231,10 +231,10 @@ SOURCES += src/openscad.cc \
            src/nodedumper.cc \
            src/CSGTermEvaluator.cc \
            src/Tree.cc \
-	   src/mathc99.cc \
-	   src/linalg.cc \
            src/PolySetCache.cc \
-           src/PolySetEvaluator.cc
+           src/PolySetEvaluator.cc \
+           src/openscad.cc \
+           src/mainwin.cc
 
 opencsg {
   HEADERS += src/OpenCSGRenderer.h

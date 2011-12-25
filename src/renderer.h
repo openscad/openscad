@@ -25,7 +25,7 @@ public:
 		COLORMODE_BACKGROUND_EDGES
 	};
 
-	virtual void setColor(const double color[4], GLint *shaderinfo = NULL) const;
+	virtual void setColor(const float color[4], GLint *shaderinfo = NULL) const;
 	virtual void setColor(ColorMode colormode, GLint *shaderinfo = NULL) const;
 };
 

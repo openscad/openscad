@@ -28,7 +28,7 @@ public:
 	shared_ptr<CSGTerm> right;
 	BoundingBox bbox;
 
-	CSGTerm(const shared_ptr<PolySet> &polyset, const Transform3d &matrix, const double color[4], const std::string &label);
+	CSGTerm(const shared_ptr<PolySet> &polyset, const Transform3d &matrix, const Color4f &color, const std::string &label);
 	~CSGTerm();
 
 	const BoundingBox &getBoundingBox() const { return this->bbox; }
@@ -44,7 +44,7 @@ private:
 	void initBoundingBox();
 
 	Transform3d m;
-	double color[4];
+	Color4f color;
 
 	friend class CSGChain;
 };
@@ -54,13 +54,13 @@ class CSGChain
 public:
 	std::vector<shared_ptr<PolySet> > polysets;
 	std::vector<Transform3d> matrices;
-	std::vector<double*> colors;
+	std::vector<Color4f> colors;
 	std::vector<CSGTerm::type_e> types;
 	std::vector<std::string> labels;
 
 	CSGChain();
 
-	void add(const shared_ptr<PolySet> &polyset, const Transform3d &m, double *color, CSGTerm::type_e type, std::string label);
+	void add(const shared_ptr<PolySet> &polyset, const Transform3d &m, const Color4f &color, CSGTerm::type_e type, std::string label);
 	void import(shared_ptr<CSGTerm> term, CSGTerm::type_e type = CSGTerm::TYPE_UNION);
 	std::string dump();
 

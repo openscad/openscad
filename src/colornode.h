@@ -3,6 +3,7 @@
 
 #include "node.h"
 #include "visitor.h"
+#include "linalg.h"
 
 class ColorNode : public AbstractNode
 {
@@ -14,7 +15,7 @@ public:
 	virtual std::string toString() const;
 	virtual std::string name() const;
 
-	double color[4];
+	Color4f color;
 };
 
 #endif
