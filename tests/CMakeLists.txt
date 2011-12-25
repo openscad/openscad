@@ -131,6 +131,10 @@ if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
   endif()
 endif()
 
+if (NOT $ENV{OPENSCAD_LIBRARIES} STREQUAL "")
+  set(EIGEN2_INCLUDE_DIR "$ENV{OPENSCAD_LIBRARIES}/include/eigen2")
+endif()
+
 if (NOT EIGEN2_INCLUDE_DIR)
   find_path(EIGEN2_INCLUDE_DIR
             Eigen/Core 
