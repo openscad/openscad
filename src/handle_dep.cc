@@ -1,10 +1,10 @@
 #include "handle_dep.h"
 #include <string>
 #include <sstream>
-#include <QString>
 #include <stdlib.h> // for system()
 #include <boost/unordered_set.hpp>
 #include <boost/foreach.hpp>
+#include <boost/regex.hpp>
 #include <boost/filesystem.hpp>
 using namespace boost::filesystem;
 
@@ -22,7 +22,7 @@ void handle_dep(const std::string &filename)
 	}
 	if (!exists(filepath) && make_command) {
 		std::stringstream buf;
-		buf << make_command << " '" << QString::fromStdString(filename).replace("'", "'\\''").toUtf8().data() << "'";
+		buf << make_command << " '" << boost::regex_replace(filename, boost::regex("'"), "'\\''") << "'";
 		system(buf.str().c_str()); // FIXME: Handle error
 	}
 }
