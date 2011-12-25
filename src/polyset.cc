@@ -29,7 +29,6 @@
 // #include "Preferences.h"
 #include "linalg.h"
 #include <Eigen/LU>
-#include <QColor>
 
 PolySet::PolySet() : grid(GRID_FINE), is2d(false), convexity(1)
 {
