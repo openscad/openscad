@@ -41,9 +41,7 @@
 #include "CSGTermEvaluator.h"
 #include "OpenCSGRenderer.h"
 #endif
-#ifdef USE_PROGRESSWIDGET
 #include "ProgressWidget.h"
-#endif
 #include "ThrownTogetherRenderer.h"
 
 #include <QMenu>
@@ -52,8 +50,6 @@
 #include <QSplitter>
 #include <QFileDialog>
 #include <QApplication>
-#include <QProgressDialog>
-#include <QProgressBar>
 #include <QHBoxLayout>
 #include <QVBoxLayout>
 #include <QLabel>
@@ -67,6 +63,8 @@
 #include <QMessageBox>
 #include <QDesktopServices>
 #include <QSettings>
+#include <QProgressDialog>
+#include <QMutexLocker>
 #ifdef _QCODE_EDIT_
 #include "qdocument.h"
 #include "qformatscheme.h"
@@ -89,6 +87,7 @@ using namespace boost::lambda;
 #include "CGALRenderer.h"
 #include "CGAL_Nef_polyhedron.h"
 #include "cgal.h"
+#include "cgalworker.h"
 
 #endif // ENABLE_CGAL
 
@@ -140,8 +139,12 @@ settings_valueList(const QString &key, const QList<int> &defaultList = QList<int
 }
 
 MainWindow::MainWindow(const QString &filename)
+	: progresswidget(NULL)
 {
 	setupUi(this);
+
+	this->cgalworker = new CGALWorker();
+	connect(this->cgalworker, SIGNAL(done(CGAL_Nef_polyhedron *)), this, SLOT(actionRenderCGALDone(CGAL_Nef_polyhedron *)));
 
 	register_builtin(root_ctx);
 
@@ -316,7 +319,6 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this->helpActionOpenGLInfo, SIGNAL(triggered()), this, SLOT(helpOpenGL()));
 
 
-	console->setReadOnly(true);
 	setCurrentOutput();
 
 	PRINT(helptitle);
@@ -421,32 +423,23 @@ MainWindow::~MainWindow()
 #endif
 }
 
-#ifdef USE_PROGRESSWIDGET
 void MainWindow::showProgress()
 {
 	this->statusBar()->addPermanentWidget(qobject_cast<ProgressWidget*>(sender()));
 }
-#endif
 
-static void report_func(const class AbstractNode*, void *vp, int mark)
+void MainWindow::report_func(const class AbstractNode*, void *vp, int mark)
 {
-#ifdef USE_PROGRESSWIDGET
-	ProgressWidget *pw = static_cast<ProgressWidget*>(vp);
+	MainWindow *thisp = static_cast<MainWindow*>(vp);
 	int v = (int)((mark*100.0) / progress_report_count);
 	int percent = v < 100 ? v : 99; 
-	if (percent > pw->value()) pw->setValue(percent);
-	QApplication::processEvents();
-	if (pw->wasCanceled()) throw ProgressCancelException();
-#else
-	QProgressDialog *pd = static_cast<QProgressDialog*>(vp);
-	int v = (int)((mark*100.0) / progress_report_count);
-	pd->setValue(v < 100 ? v : 99);
-	QString label;
-	label.sprintf("Rendering Polygon Mesh (%d/%d)", mark, progress_report_count);
-	pd->setLabelText(label);
-	QApplication::processEvents();
-	if (pd->wasCanceled()) throw ProgressCancelException();
-#endif
+	
+	if (percent > thisp->progresswidget->value()) {
+		QMetaObject::invokeMethod(thisp->progresswidget, "setValue", Qt::QueuedConnection,
+															Q_ARG(int, percent));
+	}
+
+	if (thisp->progresswidget->wasCanceled()) throw ProgressCancelException();
 }
 
 /*!
@@ -740,21 +733,11 @@ void MainWindow::compileCSG(bool procevents)
 	QTime t;
 	t.start();
 
-#ifdef USE_PROGRESSWIDGET
-	ProgressWidget *pd = new ProgressWidget(this);
-	pd->setRange(0, 100);
-	pd->setValue(0);
-	connect(pd, SIGNAL(requestShow()), this, SLOT(showProgress()));
-#else
-	QProgressDialog *pd = new QProgressDialog("Rendering CSG products...", "Cancel", 0, 100);
-	pd->setRange(0, 100);
-	pd->setValue(0);
-	pd->setAutoClose(false);
-	pd->show();
-#endif
+	this->progresswidget = new ProgressWidget(this);
+	connect(this->progresswidget, SIGNAL(requestShow()), this, SLOT(showProgress()));
 	QApplication::processEvents();
 
-	progress_report_prep(root_node, report_func, pd);
+	progress_report_prep(root_node, report_func, this);
 	try {
 		CGALEvaluator cgalevaluator(this->tree);
 		PolySetCGALEvaluator psevaluator(cgalevaluator);
@@ -772,10 +755,9 @@ void MainWindow::compileCSG(bool procevents)
 		PRINT("CSG generation cancelled.");
 	}
 	progress_report_fin();
-#ifdef USE_PROGRESSWIDGET
-	this->statusBar()->removeWidget(pd);
-#endif
-	delete pd;
+	this->statusBar()->removeWidget(this->progresswidget);
+	delete this->progresswidget;
+	this->progresswidget = NULL;
 
 	if (root_raw_term) {
 		PRINT("Compiling design (CSG Products normalization)...");
@@ -1150,7 +1132,7 @@ void MainWindow::actionCompile()
 void MainWindow::actionRenderCGAL()
 {
 	if (GuiLocker::isLocked()) return;
-	GuiLocker lock;
+	GuiLocker::lock();
 
 	setCurrentOutput();
 	console->clear();
@@ -1172,88 +1154,52 @@ void MainWindow::actionRenderCGAL()
 	PRINT("Rendering Polygon Mesh using CGAL...");
 	QApplication::processEvents();
 
-	QTime t;
-	t.start();
-
-
-#ifdef USE_PROGRESSWIDGET
-	ProgressWidget *pd = new ProgressWidget(this);
-	pd->setRange(0, 100);
-	pd->setValue(0);
-	connect(pd, SIGNAL(requestShow()), this, SLOT(showProgress()));
-#else
-	QProgressDialog *pd = new QProgressDialog("Rendering Polygon Mesh using CGAL...", "Cancel", 0, 100);
-	pd->setRange(0, 100);
-	pd->setValue(0);
-	pd->setAutoClose(false);
-	pd->show();
-#endif
+	this->progresswidget = new ProgressWidget(this);
+	connect(this->progresswidget, SIGNAL(requestShow()), this, SLOT(showProgress()));
 
 	QApplication::processEvents();
 
-	progress_report_prep(this->root_node, report_func, pd);
-	try {
-		CGALEvaluator evaluator(this->tree);
-		this->root_N = new CGAL_Nef_polyhedron(evaluator.evaluateCGALMesh(*this->root_node));
-		PolySetCache::instance()->print();
-		CGALCache::instance()->print();
-	}
-	catch (ProgressCancelException e) {
-		PRINT("Rendering cancelled.");
-	}
+	progress_report_prep(this->root_node, report_func, this);
+
+	this->cgalworker->start(this->tree);
+}
+
+void MainWindow::actionRenderCGALDone(CGAL_Nef_polyhedron *root_N)
+{
 	progress_report_fin();
 
-	if (this->root_N)
-	{
-		// FIXME: Reenable cache cost info
-// 		PRINTF("Number of vertices currently in CGAL cache: %d", AbstractNode::cgal_nef_cache.totalCost());
-// 		PRINTF("Number of objects currently in CGAL cache: %d", AbstractNode::cgal_nef_cache.size());
-		QApplication::processEvents();
+	if (root_N) {
+		PolySetCache::instance()->print();
+		CGALCache::instance()->print();
 
-		if (this->root_N->dim == 2) {
+		if (root_N->dim == 2) {
 			PRINTF("   Top level object is a 2D object:");
-			QApplication::processEvents();
-			PRINTF("   Empty:      %6s", this->root_N->p2->is_empty() ? "yes" : "no");
-			QApplication::processEvents();
-			PRINTF("   Plane:      %6s", this->root_N->p2->is_plane() ? "yes" : "no");
-			QApplication::processEvents();
-			PRINTF("   Vertices:   %6d", (int)this->root_N->p2->explorer().number_of_vertices());
-			QApplication::processEvents();
-			PRINTF("   Halfedges:  %6d", (int)this->root_N->p2->explorer().number_of_halfedges());
-			QApplication::processEvents();
-			PRINTF("   Edges:      %6d", (int)this->root_N->p2->explorer().number_of_edges());
-			QApplication::processEvents();
-			PRINTF("   Faces:      %6d", (int)this->root_N->p2->explorer().number_of_faces());
-			QApplication::processEvents();
-			PRINTF("   FaceCycles: %6d", (int)this->root_N->p2->explorer().number_of_face_cycles());
-			QApplication::processEvents();
-			PRINTF("   ConnComp:   %6d", (int)this->root_N->p2->explorer().number_of_connected_components());
-			QApplication::processEvents();
+			PRINTF("   Empty:      %6s", root_N->p2->is_empty() ? "yes" : "no");
+			PRINTF("   Plane:      %6s", root_N->p2->is_plane() ? "yes" : "no");
+			PRINTF("   Vertices:   %6d", (int)root_N->p2->explorer().number_of_vertices());
+			PRINTF("   Halfedges:  %6d", (int)root_N->p2->explorer().number_of_halfedges());
+			PRINTF("   Edges:      %6d", (int)root_N->p2->explorer().number_of_edges());
+			PRINTF("   Faces:      %6d", (int)root_N->p2->explorer().number_of_faces());
+			PRINTF("   FaceCycles: %6d", (int)root_N->p2->explorer().number_of_face_cycles());
+			PRINTF("   ConnComp:   %6d", (int)root_N->p2->explorer().number_of_connected_components());
 		}
 
-		if (this->root_N->dim == 3) {
+		if (root_N->dim == 3) {
 			PRINTF("   Top level object is a 3D object:");
-			PRINTF("   Simple:     %6s", this->root_N->p3->is_simple() ? "yes" : "no");
-			QApplication::processEvents();
-			PRINTF("   Valid:      %6s", this->root_N->p3->is_valid() ? "yes" : "no");
-			QApplication::processEvents();
-			PRINTF("   Vertices:   %6d", (int)this->root_N->p3->number_of_vertices());
-			QApplication::processEvents();
-			PRINTF("   Halfedges:  %6d", (int)this->root_N->p3->number_of_halfedges());
-			QApplication::processEvents();
-			PRINTF("   Edges:      %6d", (int)this->root_N->p3->number_of_edges());
-			QApplication::processEvents();
-			PRINTF("   Halffacets: %6d", (int)this->root_N->p3->number_of_halffacets());
-			QApplication::processEvents();
-			PRINTF("   Facets:     %6d", (int)this->root_N->p3->number_of_facets());
-			QApplication::processEvents();
-			PRINTF("   Volumes:    %6d", (int)this->root_N->p3->number_of_volumes());
-			QApplication::processEvents();
+			PRINTF("   Simple:     %6s", root_N->p3->is_simple() ? "yes" : "no");
+			PRINTF("   Valid:      %6s", root_N->p3->is_valid() ? "yes" : "no");
+			PRINTF("   Vertices:   %6d", (int)root_N->p3->number_of_vertices());
+			PRINTF("   Halfedges:  %6d", (int)root_N->p3->number_of_halfedges());
+			PRINTF("   Edges:      %6d", (int)root_N->p3->number_of_edges());
+			PRINTF("   Halffacets: %6d", (int)root_N->p3->number_of_halffacets());
+			PRINTF("   Facets:     %6d", (int)root_N->p3->number_of_facets());
+			PRINTF("   Volumes:    %6d", (int)root_N->p3->number_of_volumes());
 		}
 
-		int s = t.elapsed() / 1000;
+		int s = this->progresswidget->elapsedTime() / 1000;
 		PRINTF("Total rendering time: %d hours, %d minutes, %d seconds", s / (60*60), (s / 60) % 60, s % 60);
 
+		this->root_N = root_N;
 		if (!this->root_N->empty()) {
 			this->cgalRenderer = new CGALRenderer(*this->root_N);
 			// Go to CGAL view mode
@@ -1271,11 +1217,12 @@ void MainWindow::actionRenderCGAL()
 		}
 	}
 
-#ifdef USE_PROGRESSWIDGET
-	this->statusBar()->removeWidget(pd);
-#endif
-	delete pd;
+	this->statusBar()->removeWidget(this->progresswidget);
+	delete this->progresswidget;
+	this->progresswidget = NULL;
 	clearCurrentOutput();
+
+	GuiLocker::unlock();
 }
 
 #endif /* ENABLE_CGAL */
@@ -1827,6 +1774,15 @@ void MainWindow::quit()
 	if (ev.isAccepted()) QApplication::instance()->quit();
 }
 
+void MainWindow::consoleOutput(const std::string &msg, void *userdata)
+{
+	// Invoke the append function in the main thread in case the output
+  // originates in a worker thread.
+	MainWindow *thisp = static_cast<MainWindow*>(userdata);
+	QMetaObject::invokeMethod(thisp->console, "append", Qt::QueuedConnection,
+														 Q_ARG(QString, QString::fromStdString(msg)));
+}
+
 void MainWindow::setCurrentOutput()
 {
 	set_output_handler(&MainWindow::consoleOutput, this);
@@ -1836,4 +1792,3 @@ void MainWindow::clearCurrentOutput()
 {
 	set_output_handler(NULL, NULL);
 }
-

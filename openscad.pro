@@ -249,7 +249,8 @@ HEADERS += src/cgal.h \
            src/CGALCache.h \
            src/PolySetCGALEvaluator.h \
            src/CGALRenderer.h \
-           src/CGAL_Nef_polyhedron.h
+           src/CGAL_Nef_polyhedron.h \
+           src/cgalworker.h
 
 SOURCES += src/cgalutils.cc \
            src/CGALEvaluator.cc \
@@ -258,7 +259,8 @@ SOURCES += src/cgalutils.cc \
            src/CGALRenderer.cc \
            src/CGAL_Nef_polyhedron.cc \
            src/CGAL_Nef_polyhedron_DxfData.cc \
-           src/cgaladv_minkowski2.cc
+           src/cgaladv_minkowski2.cc \
+           src/cgalworker.cc
 }
 
 macx {

@@ -9,6 +9,7 @@
 #include "Tree.h"
 #include "memory.h"
 #include <vector>
+#include <QMutex>
 
 class MainWindow : public QMainWindow, public Ui::MainWindow
 {
@@ -67,9 +68,7 @@ private slots:
 	void updateTVal();
 	void setFileName(const QString &filename);
 	void setFont(const QString &family, uint size);
-#ifdef USE_PROGRESSWIDGET
 	void showProgress();
-#endif
 
 private:
 	void openFile(const QString &filename);
@@ -80,9 +79,7 @@ private:
 	bool maybeSave();
 	bool checkModified();
 	QString dumpCSGTree(AbstractNode *root);
-	static void consoleOutput(const std::string &msg, void *userdata) {
-		static_cast<MainWindow*>(userdata)->console->append(QString::fromStdString(msg));
-	}
+	static void consoleOutput(const std::string &msg, void *userdata);
 	void loadViewSettings();
 	void loadDesignSettings();
 
@@ -110,6 +107,7 @@ private slots:
 	void actionCompile();
 #ifdef ENABLE_CGAL
 	void actionRenderCGAL();
+	void actionRenderCGALDone(class CGAL_Nef_polyhedron *);
 #endif
 	void actionDisplayAST();
 	void actionDisplayCSGTree();
@@ -163,6 +161,13 @@ public slots:
 	void actionReloadCompile();
 	void checkAutoReload();
 	void autoReloadSet(bool);
+
+private:
+	static void report_func(const class AbstractNode*, void *vp, int mark);
+
+	class ProgressWidget *progresswidget;
+	class CGALWorker *cgalworker;
+	QMutex consolemutex;
 };
 
 class GuiLocker
@@ -175,6 +180,8 @@ public:
 		gui_locked--;
 	}
 	static bool isLocked() { return gui_locked > 0; }
+	static void lock() { gui_locked++; }
+	static void unlock() { gui_locked--; }
 
 private:
 	static unsigned int gui_locked;

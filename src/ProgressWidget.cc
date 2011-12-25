@@ -5,7 +5,11 @@ ProgressWidget::ProgressWidget(QWidget *parent)
 	:QWidget(parent)
 {
 	setupUi(this);
+	setRange(0, 100);
+	setValue(0);
 	this->wascanceled = false;
+	this->starttime.start();
+
 	connect(this->stopButton, SIGNAL(clicked()), this, SLOT(cancel()));
 	QTimer::singleShot(1000, this, SIGNAL(requestShow()));
 }
@@ -13,6 +17,14 @@ ProgressWidget::ProgressWidget(QWidget *parent)
 bool ProgressWidget::wasCanceled() const
 {
 	return this->wascanceled;
+}
+
+/*!
+	Returns milliseconds since this widget was created
+*/
+int ProgressWidget::elapsedTime() const
+{
+	return this->starttime.elapsed();
 }
 
 void ProgressWidget::cancel()

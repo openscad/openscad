@@ -39,7 +39,11 @@
            <enum>Qt::Vertical</enum>
           </property>
           <widget class="GLView" name="glview" native="true"/>
-          <widget class="QTextEdit" name="console"/>
+          <widget class="QTextEdit" name="console">
+           <property name="readOnly">
+            <bool>true</bool>
+           </property>
+          </widget>
          </widget>
         </item>
         <item>
