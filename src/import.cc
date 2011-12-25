@@ -39,9 +39,6 @@
 #include "cgalutils.h"
 #endif
 
-#include <QFile>
-#include <QRegExp>
-#include <QStringList>
 #include <sys/types.h>
 #include <fstream>
 #include <sstream>
@@ -124,8 +121,6 @@ PolySet *ImportNode::evaluate_polyset(class PolySetEvaluator *) const
 		handle_dep(this->filename);
 		std::ifstream f(this->filename.c_str());
 		if (!f.good()) {
-//		QFile f(QString::fromStdString(this->filename));
-//		if (!f.open(QIODevice::ReadOnly)) {
 			PRINTF("WARNING: Can't open import file `%s'.", this->filename.c_str());
 			return p;
 		}
@@ -140,33 +135,23 @@ PolySet *ImportNode::evaluate_polyset(class PolySetEvaluator *) const
 		char data[5];
 		f.read(data, 5);
 		if (!f.eof() && !memcmp(data, "solid", 5)) {
-//		QByteArray data = f.read(5);
-//		if (data.size() == 5 && QString(data) == QString("solid")) {
 			int i = 0;
 			double vdata[3][3];
-			QRegExp splitre = QRegExp("\\s*(vertex)?\\s+");
 			std::string line;
 			std::getline(f, line);
-//			f.readLine();
 			while (!f.eof()) {
 				
-//			while (!f.atEnd()) {
 				std::getline(f, line);
 				boost::trim(line);
-//				QString line = QString(f.readLine()).remove("\n").remove("\r");
 				if (boost::regex_search(line, ex_sfe)) {
-//				if (line.contains("solid") || line.contains("facet") || line.contains("endloop")) {
 					continue;
 				}
 				if (boost::regex_search(line, ex_outer)) {
-//				if (line.contains("outer loop")) {
 					i = 0;
 					continue;
 				}
 				boost::smatch results;
 				if (boost::regex_search(line, results, ex_vertices)) {
-//				if (line.contains("vertex")) {
-//						QStringList tokens = QString::fromStdString(line).split(splitre);
 					try {
 						for (int v=0;v<3;v++) {
 							vdata[i][v] = boost::lexical_cast<double>(results[v+1]);
@@ -189,7 +174,6 @@ PolySet *ImportNode::evaluate_polyset(class PolySetEvaluator *) const
 		else
 		{
 			f.ignore(80-5+4);
-			int total = 84;
 			while (1) {
 #ifdef _MSC_VER
 #pragma pack(push,1)
