@@ -1,3 +1,9 @@
+OpenSCAD 2012.XX
+================
+
+Features:
+o Snappier GUI while performing CGAL computations (computations running in separate thread)
+
 OpenSCAD 2011.12
 ================
 
