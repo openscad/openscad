@@ -100,10 +100,8 @@ o Error reporting/debugging
     -> could aid debugging a lot
   - Optionally output console log to a file
 o Computation
-  - Run CGAL rendering in a background thread
-  - Enable viewing/editing while rendering
-  - Progress: Call progresswidget more often to avoid app hanging for multiple
-    seconds (i.e. make cancel button more responsive)
+  - Multi-threaded computation (mostly important for CGAL)
+  - Progress: Call progresswidget more often to improve feedback
 o Misc
   - Reload and compile: Ask for confirmation if file is locally edited
     (make this configurable in preferences?)
