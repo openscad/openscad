@@ -146,6 +146,7 @@ HEADERS += src/renderer.h \
            src/builtin.h \
            src/context.h \
            src/csgterm.h \
+           src/csgtermnormalizer.h \
            src/dxfdata.h \
            src/dxfdim.h \
            src/dxftess.h \
@@ -197,6 +198,7 @@ SOURCES += src/mathc99.cc \
            src/node.cc \
            src/context.cc \
            src/csgterm.cc \
+           src/csgtermnormalizer.cc \
            src/polyset.cc \
            src/csgops.cc \
            src/transform.cc \
