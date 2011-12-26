@@ -576,7 +576,7 @@ void MainWindow::load()
 AbstractNode *MainWindow::find_root_tag(AbstractNode *n)
 {
 	BOOST_FOREACH (AbstractNode *v, n->children) {
-		if (v->modinst->tag_root) return v;
+		if (v->modinst->isRoot()) return v;
 		if (AbstractNode *vroot = find_root_tag(v)) return vroot;
 	}
 	return NULL;
@@ -1453,7 +1453,7 @@ void MainWindow::actionFlushCaches()
 #endif
 	dxf_dim_cache.clear();
 	dxf_cross_cache.clear();
-	Module::libs_cache.clear();
+	Module::clear_library_cache();
 }
 
 void MainWindow::viewModeActionsUncheck()

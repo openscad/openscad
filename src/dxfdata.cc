@@ -42,6 +42,20 @@
 #include <QDir>
 #include "value.h"
 
+/*! \class DxfData
+
+	The DxfData class fulfils multiple tasks, partially for historical reasons.
+	FIXME: It's a bit messy and is a prime target for refactoring.
+
+	1) Read DXF file from disk
+	2) Store contents of DXF files as points, paths and dims
+	3) Store 2D polygons, both from the polygon() module and from 2D CSG operations.
+	   Used for tesselation into triangles
+  4) Store 2D polygons before exporting to DXF
+	
+
+ */
+
 struct Line {
 	int idx[2]; // indices into DxfData::points
 	bool disabled;
