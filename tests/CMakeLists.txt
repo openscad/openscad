@@ -65,21 +65,8 @@ endif()
 #
 
 # Boost
-if (NOT $ENV{OPENSCAD_LIBRARIES} STREQUAL "")
-  set(BOOST_DIR "$ENV{OPENSCAD_LIBRARIES}")
-endif()
-
-if (NOT $ENV{BOOSTDIR} STREQUAL "")
-  set(BOOST_DIR "$ENV{BOOSTDIR}")
-  set(Boost_DEBUG TRUE)
-endif()
-
-if (NOT ${BOOST_DIR} STREQUAL "")
-  set(BOOST_ROOT ${BOOST_DIR})
-  message(STATUS "BOOST_ROOT: " ${BOOST_ROOT})
-  set(Boost_NO_SYSTEM_PATHS "TRUE")
-endif()
-
+# Update this if FindBoost.cmake gets out of sync with the current boost release
+# set(Boost_ADDITIONAL_VERSIONS "1.47.0" "1.46.0")
 
 if (WIN32)
   set(Boost_USE_STATIC_LIBS TRUE)
@@ -87,8 +74,22 @@ if (WIN32)
   set(BOOST_THREAD_USE_LIB TRUE)
 endif()
 
-# Update this if FindBoost.cmake gets out of sync with the current boost release
-# set(Boost_ADDITIONAL_VERSIONS "1.47.0" "1.46.0")
+if (NOT $ENV{OPENSCAD_LIBRARIES} STREQUAL "")
+  set(BOOST_ROOT "$ENV{OPENSCAD_LIBRARIES}")
+  if (EXISTS ${BOOST_ROOT}/include/boost)
+    # workaround bugs in FindBoost.cmake with multiple versions of boost
+    set(Boost_NO_SYSTEM_PATHS "TRUE")
+  endif()
+  message(STATUS "BOOST_ROOT: " ${BOOST_ROOT})
+endif()
+
+if (NOT $ENV{BOOSTDIR} STREQUAL "")
+  set(BOOST_ROOT "$ENV{BOOSTDIR}")
+  set(Boost_NO_SYSTEM_PATHS "TRUE")
+  set(Boost_DEBUG TRUE)
+  message(STATUS "BOOST_ROOT: " ${BOOST_ROOT})
+endif()
+
 find_package( Boost 1.35.0 COMPONENTS thread program_options REQUIRED)
 if(Boost_FOUND)
   message(STATUS "Boost includes found: " ${Boost_INCLUDE_DIRS})
