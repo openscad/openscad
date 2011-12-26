@@ -88,7 +88,7 @@ linux*:exists(/usr/lib64/libGLU*)|linux*:exists(/usr/lib/libGLU*) {
 
 # See Dec 2011 OpenSCAD mailing list, re: CGAL/GCC bugs.
 *g++* {
-  QMAKE_CXXFLAGS *= -fno-strict-aliasing
+  QMAKE_CXXFLAGS *= -fstrict-aliasing -Wstrict-aliasing
 }
 
 CONFIG(mingw-cross-env) {

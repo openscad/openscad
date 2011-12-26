@@ -77,10 +77,11 @@ endif()
 if (NOT $ENV{OPENSCAD_LIBRARIES} STREQUAL "")
   set(BOOST_ROOT "$ENV{OPENSCAD_LIBRARIES}")
   if (EXISTS ${BOOST_ROOT}/include/boost)
-    # workaround bugs in FindBoost.cmake with multiple versions of boost
+    # if boost is under OPENSCAD_LIBRARIES, then 
+    # don't look in the system paths (workaround FindBoost.cmake bug)
     set(Boost_NO_SYSTEM_PATHS "TRUE")
+    message(STATUS "BOOST_ROOT: " ${BOOST_ROOT})
   endif()
-  message(STATUS "BOOST_ROOT: " ${BOOST_ROOT})
 endif()
 
 if (NOT $ENV{BOOSTDIR} STREQUAL "")
