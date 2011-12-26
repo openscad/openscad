@@ -66,18 +66,18 @@ endif()
 
 # Boost
 if (NOT $ENV{OPENSCAD_LIBRARIES} STREQUAL "")
-  set(BOOST_ROOT "$ENV{OPENSCAD_LIBRARIES}")
+  set(BOOST_DIR "$ENV{OPENSCAD_LIBRARIES}")
 endif()
 
 if (NOT $ENV{BOOSTDIR} STREQUAL "")
   set(BOOST_DIR "$ENV{BOOSTDIR}")
+  set(Boost_DEBUG TRUE)
 endif()
 
 if (NOT ${BOOST_DIR} STREQUAL "")
   set(BOOST_ROOT ${BOOST_DIR})
   message(STATUS "BOOST_ROOT: " ${BOOST_ROOT})
   set(Boost_NO_SYSTEM_PATHS "TRUE")
-  set(Boost_DEBUG TRUE)
 endif()
 
 
