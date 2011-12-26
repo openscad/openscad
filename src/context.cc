@@ -45,6 +45,7 @@ Context::Context(const Context *parent, const Module *library)
 	ctx_stack.push_back(this);
 	if (parent) document_path = parent->document_path;
 	if (library) {
+		// FIXME: Don't access module members directly
 		this->functions_p = &library->functions;
 		this->modules_p = &library->modules;
 		this->usedlibs_p = &library->usedlibs;
@@ -148,24 +149,24 @@ Value Context::evaluate_function(const std::string &name,
 
 AbstractNode *Context::evaluate_module(const ModuleInstantiation &inst) const
 {
-	if (this->modules_p && this->modules_p->find(inst.modname) != this->modules_p->end()) {
-		AbstractModule *m = this->modules_p->find(inst.modname)->second;
-		std::string replacement = Builtins::instance()->isDeprecated(inst.modname);
+	if (this->modules_p && this->modules_p->find(inst.name()) != this->modules_p->end()) {
+		AbstractModule *m = this->modules_p->find(inst.name())->second;
+		std::string replacement = Builtins::instance()->isDeprecated(inst.name());
 		if (!replacement.empty()) {
-			PRINTF("DEPRECATED: The %s() module will be removed in future releases. Use %s() instead.", inst.modname.c_str(), replacement.c_str());
+			PRINTF("DEPRECATED: The %s() module will be removed in future releases. Use %s() instead.", inst.name().c_str(), replacement.c_str());
 		}
 		return m->evaluate(this, &inst);
 	}
 	if (this->usedlibs_p) {
 		BOOST_FOREACH(const ModuleContainer::value_type &m, *this->usedlibs_p) {
-			if (m.second->modules.find(inst.modname) != m.second->modules.end()) {
+			if (m.second->modules.find(inst.name()) != m.second->modules.end()) {
 				Context ctx(this->parent, m.second);
-				return m.second->modules[inst.modname]->evaluate(&ctx, &inst);
+				return m.second->modules[inst.name()]->evaluate(&ctx, &inst);
 			}
 		}
 	}
 	if (this->parent) return this->parent->evaluate_module(inst);
-	PRINTF("WARNING: Ignoring unknown module '%s'.", inst.modname.c_str());
+	PRINTF("WARNING: Ignoring unknown module '%s'.", inst.name().c_str());
 	return NULL;
 }
 

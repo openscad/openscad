@@ -188,21 +188,14 @@ HEADERS += src/parsersettings.h \
            src/system-gl.h \
            src/stl-utils.h
 
-SOURCES += src/parsersettings.cc \
-           src/openscad.cc \
-           src/mainwin.cc \
+SOURCES += src/mathc99.cc \
+	   src/linalg.cc \
            src/handle_dep.cc \
-           src/renderer.cc \
-           src/rendersettings.cc \
-           src/ThrownTogetherRenderer.cc \
-           src/glview.cc \
-           src/export.cc \
            src/value.cc \
            src/expr.cc \
            src/func.cc \
            src/module.cc \
            src/node.cc \
-           src/builtin.cc \
            src/context.cc \
            src/csgterm.cc \
            src/polyset.cc \
@@ -215,28 +208,39 @@ SOURCES += src/parsersettings.cc \
            src/surface.cc \
            src/control.cc \
            src/render.cc \
-           src/import.cc \
            src/dxfdata.cc \
-           src/dxftess.cc \
-           src/dxftess-glu.cc \
-           src/dxftess-cgal.cc \
            src/dxfdim.cc \
            src/linearextrude.cc \
            src/rotateextrude.cc \
-           src/highlighter.cc \
            src/printutils.cc \
+           src/progress.cc \
+           src/parsersettings.cc \
+           \
+           src/nodedumper.cc \
+           src/traverser.cc \
+           src/PolySetEvaluator.cc \
+           src/PolySetCache.cc \
+           src/Tree.cc \
+           \
+           src/rendersettings.cc \
+           src/highlighter.cc \
            src/Preferences.cc \
            src/OpenCSGWarningDialog.cc \
-           src/progress.cc \
            src/editor.cc \
-           src/traverser.cc \
-           src/nodedumper.cc \
+           src/glview.cc \
+           \
+           src/builtin.cc \
+           src/export.cc \
+           src/import.cc \
+           src/renderer.cc \
+           src/ThrownTogetherRenderer.cc \
+           src/dxftess.cc \
+           src/dxftess-glu.cc \
+           src/dxftess-cgal.cc \
            src/CSGTermEvaluator.cc \
-           src/Tree.cc \
-	   src/mathc99.cc \
-	   src/linalg.cc \
-           src/PolySetCache.cc \
-           src/PolySetEvaluator.cc
+           \
+           src/openscad.cc \
+           src/mainwin.cc
 
 opencsg {
   HEADERS += src/OpenCSGRenderer.h

@@ -98,7 +98,7 @@ CGAL_Nef_polyhedron CGALEvaluator::applyToChildren(const AbstractNode &node, CGA
 		const AbstractNode *chnode = item.first;
 		const CGAL_Nef_polyhedron &chN = item.second;
 		// FIXME: Don't use deep access to modinst members
-		if (chnode->modinst->tag_background) continue;
+		if (chnode->modinst->isBackground()) continue;
 
     // NB! We insert into the cache here to ensure that all children of
     // a node is a valid object. If we inserted as we created them, the 
@@ -126,7 +126,7 @@ CGAL_Nef_polyhedron CGALEvaluator::applyHull(const CgaladvNode &node)
 		const AbstractNode *chnode = item.first;
 		const CGAL_Nef_polyhedron &chN = item.second;
 		// FIXME: Don't use deep access to modinst members
-		if (chnode->modinst->tag_background) continue;
+		if (chnode->modinst->isBackground()) continue;
 		if (dim == 0) {
 			dim = chN.dim;
 		}

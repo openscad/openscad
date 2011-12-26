@@ -362,6 +362,13 @@ set_target_properties(cgaltest PROPERTIES COMPILE_FLAGS "-DENABLE_CGAL ${CGAL_CX
 target_link_libraries(cgaltest tests-cgal ${CGAL_LIBRARY} ${CGAL_3RD_PARTY_LIBRARIES} ${QT_LIBRARIES} ${OPENGL_LIBRARY} ${Boost_LIBRARIES})
 
 #
+# cgalstlsanitytest
+#
+add_executable(cgalstlsanitytest cgalstlsanitytest.cc)
+set_target_properties(cgalstlsanitytest PROPERTIES COMPILE_FLAGS "-DENABLE_CGAL ${CGAL_CXX_FLAGS_INIT}")
+target_link_libraries(cgalstlsanitytest tests-cgal ${CGAL_LIBRARY} ${CGAL_3RD_PARTY_LIBRARIES} ${QT_LIBRARIES} ${OPENGL_LIBRARY} ${Boost_LIBRARIES})
+
+#
 # cgalpngtest
 #
 add_executable(cgalpngtest cgalpngtest.cc bboxhelp.cc ../src/CGALRenderer.cc ../src/renderer.cc ../src/rendersettings.cc)
@@ -536,6 +543,8 @@ list(APPEND OPENCSGTEST_FILES ${CGALPNGTEST_FILES})
 list(APPEND OPENCSGTEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/bbox-transform-bug.scad)
 list(APPEND THROWNTOGETHERTEST_FILES ${OPENCSGTEST_FILES})
 
+list(APPEND CGALSTLSANITYTEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/normal-nan.scad)
+
 # Disable tests which are known to cause floating point comparison issues
 # Once we're capable of comparing these across platforms, we can put these back in
 disable_tests(dumptest_transform-tests
@@ -599,6 +608,9 @@ add_cmdline_test(csgtermtest txt ${MINIMAL_FILES})
 add_cmdline_test(cgalpngtest png ${CGALPNGTEST_FILES})
 add_cmdline_test(opencsgtest png ${OPENCSGTEST_FILES})
 add_cmdline_test(throwntogethertest png ${THROWNTOGETHERTEST_FILES})
+# FIXME: We don't actually need to compare the output of cgalstlsanitytest
+# with anything. It's self-contained and returns != 0 on error
+add_cmdline_test(cgalstlsanitytest txt ${CGALSTLSANITYTEST_FILES})
 
 message("Available test configurations: ${TEST_CONFIGS}")
 #foreach(CONF ${TEST_CONFIGS})
