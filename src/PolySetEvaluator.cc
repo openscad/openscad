@@ -7,8 +7,8 @@
 /*!
 	The task of PolySetEvaluator is to create, keep track of and cache PolySet instances.
 
-	All instances of PolySet which are not strictly temporary should be requested through this
-	class.
+	All instances of PolySet which are not strictly temporary should be
+	requested through this class.
 */
 
 /*!

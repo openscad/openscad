@@ -146,7 +146,7 @@ statement:
 	'{' inner_input '}' |
 	module_instantiation {
 		if ($1) {
-			module->children.push_back($1);
+			module->addChild($1);
 		} else {
 			delete $1;
 		}
@@ -193,10 +193,8 @@ statement:
 children_instantiation:
 	module_instantiation {
 		$$ = new ModuleInstantiation();
-		if ($1) {
+		if ($1) { 
 			$$->children.push_back($1);
-		} else {
-			delete $1;
 		}
 	} |
 	'{' module_instantiation_list '}' {
@@ -206,7 +204,6 @@ children_instantiation:
 if_statement:
 	TOK_IF '(' expr ')' children_instantiation {
 		$$ = new IfElseModuleInstantiation();
-		$$->modname = "if";
 		$$->argnames.push_back("");
 		$$->argexpr.push_back($3);
 
@@ -262,8 +259,7 @@ module_instantiation_list:
 	module_instantiation_list module_instantiation {
 		$$ = $1;
 		if ($$) {
-			if ($2)
-				$$->children.push_back($2);
+			if ($2) $$->children.push_back($2);
 		} else {
 			delete $2;
 		}
@@ -271,18 +267,11 @@ module_instantiation_list:
 
 single_module_instantiation:
 	TOK_ID '(' arguments_call ')' {
-		$$ = new ModuleInstantiation();
-		$$->modname = $1;
+		$$ = new ModuleInstantiation($1);
 		$$->argnames = $3->argnames;
 		$$->argexpr = $3->argexpr;
 		free($1);
 		delete $3;
-	} |
-	TOK_ID ':' single_module_instantiation {
-		$$ = $3;
-		if ($$)
-			$$->label = $1;
-		free($1);
 	} |
 	'!' single_module_instantiation {
 		$$ = $2;

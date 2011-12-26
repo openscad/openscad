@@ -33,9 +33,6 @@ public:
 
 	const BoundingBox &getBoundingBox() const { return this->bbox; }
 
-	static shared_ptr<CSGTerm> normalize(shared_ptr<CSGTerm> term);
-	static bool normalize_tail(shared_ptr<CSGTerm> &term);
-
 	std::string dump();
 private:
 	CSGTerm(type_e type, shared_ptr<CSGTerm> left, shared_ptr<CSGTerm> right);

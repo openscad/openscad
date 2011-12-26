@@ -102,6 +102,9 @@ void export_stl(CGAL_Nef_polyhedron *root_N, std::ostream &output, QProgressDial
 				double ny = dn[2]*dn[3] - dn[0]*dn[5];
 				double nz = dn[0]*dn[4] - dn[1]*dn[3];
 				double nlength = sqrt(nx*nx + ny*ny + nz*nz);
+				// Avoid generating normals for polygons with zero area
+				double eps = 0.000001;
+				if (nlength < eps) nlength = 1.0;
 				output << "  facet normal "
 							 << nx / nlength << " "
 							 << ny / nlength << " "

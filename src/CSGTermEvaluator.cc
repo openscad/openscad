@@ -56,10 +56,10 @@ void CSGTermEvaluator::applyToChildren(const AbstractNode &node, CSGTermEvaluato
 			}
 		}
 	}
-	if (t1 && node.modinst->tag_highlight) {
+	if (t1 && node.modinst->isHighlight()) {
 		this->highlights.push_back(t1);
 	}
-	if (t1 && node.modinst->tag_background) {
+	if (t1 && node.modinst->isBackground()) {
 		this->background.push_back(t1);
 		t1.reset(); // don't propagate background tagged nodes
 	}
@@ -94,10 +94,10 @@ static shared_ptr<CSGTerm> evaluate_csg_term_from_ps(const State &state,
 	std::stringstream stream;
 	stream << node.name() << node.index();
 	shared_ptr<CSGTerm> t(new CSGTerm(ps, state.matrix(), state.color(), stream.str()));
-	if (modinst->tag_highlight) {
+	if (modinst->isHighlight()) {
 		highlights.push_back(t);
 	}
-	if (modinst->tag_background) {
+	if (modinst->isBackground()) {
 		background.push_back(t);
 		t.reset();
 	}
