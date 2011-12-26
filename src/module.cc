@@ -68,7 +68,6 @@ std::string ModuleInstantiation::dump(const std::string &indent) const
 {
 	std::stringstream dump;
 	dump << indent;
-	if (!label.empty()) dump << label <<": ";
 	dump << modname + "(";
 	for (size_t i=0; i < argnames.size(); i++) {
 		if (i > 0) dump << ", ";
@@ -96,10 +95,11 @@ AbstractNode *ModuleInstantiation::evaluate(const Context *ctx) const
 	if (this->ctx) {
 		PRINTF("WARNING: Ignoring recursive module instantiation of '%s'.", modname.c_str());
 	} else {
+		// FIXME: Casting away const..
 		ModuleInstantiation *that = (ModuleInstantiation*)this;
 		that->argvalues.clear();
-		BOOST_FOREACH (Expression *v, that->argexpr) {
-			that->argvalues.push_back(v->evaluate(ctx));
+		BOOST_FOREACH (Expression *expr, that->argexpr) {
+			that->argvalues.push_back(expr->evaluate(ctx));
 		}
 		that->ctx = ctx;
 		node = ctx->evaluate_module(*this);
@@ -113,9 +113,9 @@ std::vector<AbstractNode*> ModuleInstantiation::evaluateChildren(const Context *
 {
 	if (!ctx) ctx = this->ctx;
 	std::vector<AbstractNode*> childnodes;
-	BOOST_FOREACH (ModuleInstantiation *v, this->children) {
-		AbstractNode *n = v->evaluate(ctx);
-		if (n != NULL) childnodes.push_back(n);
+	BOOST_FOREACH (ModuleInstantiation *modinst, this->children) {
+		AbstractNode *node = modinst->evaluate(ctx);
+		if (node) childnodes.push_back(node);
 	}
 	return childnodes;
 }
@@ -124,9 +124,9 @@ std::vector<AbstractNode*> IfElseModuleInstantiation::evaluateElseChildren(const
 {
 	if (!ctx) ctx = this->ctx;
 	std::vector<AbstractNode*> childnodes;
-	BOOST_FOREACH (ModuleInstantiation *v, this->else_children) {
-		AbstractNode *n = v->evaluate(this->ctx);
-		if (n != NULL) childnodes.push_back(n);
+	BOOST_FOREACH (ModuleInstantiation *modinst, this->else_children) {
+		AbstractNode *node = modinst->evaluate(ctx);
+		if (node != NULL) childnodes.push_back(node);
 	}
 	return childnodes;
 }
@@ -199,4 +199,9 @@ std::string Module::dump(const std::string &indent, const std::string &name) con
 		dump << indent << "}\n";
 	}
 	return dump.str();
+}
+
+void Module::clear_library_cache()
+{
+	Module::libs_cache.clear();
 }
