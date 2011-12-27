@@ -364,6 +364,10 @@ int main(int argc, char **argv)
 			}
 			
 			if (dxf_output_file) {
+				if (root_N.dim != 2) {
+					fprintf(stderr, "Current top level object is not a 2D object.\n");
+					exit(1);
+				}
 				std::ofstream fstream(dxf_output_file);
 				if (!fstream.is_open()) {
 					PRINTF("Can't open file \"%s\" for export", dxf_output_file);
