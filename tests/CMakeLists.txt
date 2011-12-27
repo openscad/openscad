@@ -64,6 +64,29 @@ endif()
 # Build test apps
 #
 
+function(inclusion user_set_path found_paths)
+  # This function exists as a wrapper for INCLUDE_DIRECTORIES
+  # to deal with systems in which some libraries are found 
+  # in the system paths, (/usr) but others are found in customized 
+  # paths set in environment variables (CGAL_DIR). 
+  # message(STATUS "inclusion ${user_set_path} ${found_paths}")
+  # message(STATUS "inclusion ${${user_set_path}} ${${found_paths}}")
+  set( inclusion_match 0 )
+  foreach( found_path ${${found_paths}} )
+    if (${found_path} MATCHES ${${user_set_path}}.*)
+      set( inclusion_match 1 )
+    endif()
+  endforeach()
+  if (user_set_path AND inclusion_match)
+    include_directories(BEFORE ${${found_paths}})
+    # message(STATUS "inclusion prepend ${${found_paths}} for ${user_set_path}")
+  else()
+    include_directories(AFTER ${${found_paths}})
+    # message(STATUS "inclusion append ${${found_paths}} for ${user_set_path}")
+  endif()
+  set( inclusion_match 0 )
+endfunction()
+
 # Boost
 # Update this if FindBoost.cmake gets out of sync with the current boost release
 # set(Boost_ADDITIONAL_VERSIONS "1.47.0" "1.46.0")
@@ -92,17 +115,13 @@ if (NOT $ENV{BOOSTDIR} STREQUAL "")
 endif()
 
 find_package( Boost 1.35.0 COMPONENTS thread program_options REQUIRED)
-if(Boost_FOUND)
-  message(STATUS "Boost includes found: " ${Boost_INCLUDE_DIRS})
-  message(STATUS "Boost libraries found:")
-  foreach(boostlib ${Boost_LIBRARIES})
-    message(STATUS "  " ${boostlib})
-  endforeach()
-  include_directories(${Boost_INCLUDE_DIRS})
-else()
-  message(STATUS "BOOST_ROOT: ${BOOST_ROOT}")
-  message(FATAL_ERROR "Boost not found.")
-endif()
+message(STATUS "Boost includes found: " ${Boost_INCLUDE_DIRS})
+message(STATUS "Boost libraries found:")
+foreach(boostlib ${Boost_LIBRARIES})
+  message(STATUS "  " ${boostlib})
+endforeach()
+
+inclusion(BOOST_ROOT Boost_INCLUDE_DIRS)
 
 # Mac OS X
 if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
@@ -111,18 +130,11 @@ endif(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 
 # Qt4
 
-if(${CMAKE_SYSTEM_NAME} MATCHES "FreeBSD")
-  # make /usr/local/include/qt4 come before /usr/local/include (QT4 vs QT3)
-  set(CMAKE_INCLUDE_DIRECTORIES_BEFORE ON)
-endif()
-
+set(CMAKE_INCLUDE_DIRECTORIES_BEFORE ON)
 find_package(OpenGL REQUIRED)
 find_package(Qt4 COMPONENTS QtCore QtGui QtOpenGL REQUIRED)
 include(${QT_USE_FILE})
-
-if(${CMAKE_SYSTEM_NAME} MATCHES "FreeBSD")
-  set(CMAKE_INCLUDE_DIRECTORIES_BEFORE OFF)
-endif()
+set(CMAKE_INCLUDE_DIRECTORIES_BEFORE OFF)
 
 # Eigen2
 
@@ -133,11 +145,16 @@ if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
   endif()
 endif()
 
+if (NOT $ENV{EIGEN2DIR} STREQUAL "")
+  set(EIGEN2_DIR "$ENV{EIGEN2DIR}")
+elseif (NOT $ENV{OPENSCAD_LIBRARIES} STREQUAL "")
+  set(EIGEN2_DIR "$ENV{OPENSCAD_LIBRARIES}")
+endif()
+
 if (NOT EIGEN2_INCLUDE_DIR)
-  if (NOT $ENV{OPENSCAD_LIBRARIES} STREQUAL "")
-    set(EIGEN2_FIND_HINTS "$ENV{OPENSCAD_LIBRARIES}/include/eigen2")
+  if (EIGEN2_DIR)
+    set(EIGEN2_FIND_HINTS "${EIGEN2_DIR}/include/eigen2")
   endif()
-  set(EIGEN2_FIND_HINTS ${EIGEN2_FIND_HINTS} $ENV{EIGEN2DIR})
   if (${CMAKE_SYSTEM_NAME} MATCHES "FreeBSD")
     set(EIGEN2_FIND_PATHS /usr/local/include/eigen2)
   else()
@@ -153,7 +170,7 @@ if (NOT EIGEN2_INCLUDE_DIR)
     message(STATUS "Eigen2 found in " ${EIGEN2_INCLUDE_DIR})
   endif()
 endif()
-include_directories(${EIGEN2_INCLUDE_DIR})
+inclusion(EIGEN2_DIR EIGEN2_INCLUDE_DIR)
 
 # OpenCSG
 if (NOT $ENV{OPENCSGDIR} STREQUAL "")
@@ -176,9 +193,13 @@ if (NOT OPENCSG_INCLUDE_DIR)
     message(STATUS "OpenCSG library found in " ${OPENCSG_LIBRARY})
   endif()
 endif()
-include_directories(${OPENCSG_INCLUDE_DIR})
+inclusion(OPENCSG_DIR OPENCSG_INCLUDE_DIR)
 
 # GLEW
+
+if(WIN32_STATIC_BUILD)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DGLEW_STATIC")
+endif()
 
 if (NOT $ENV{GLEWDIR} STREQUAL "")
   set(GLEW_DIR "$ENV{GLEWDIR}")
@@ -187,11 +208,8 @@ elseif (NOT $ENV{OPENSCAD_LIBRARIES} STREQUAL "")
 endif()
 
 find_package(GLEW REQUIRED)
-include_directories(${GLEW_INCLUDE_PATH})
 
-if(WIN32_STATIC_BUILD)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DGLEW_STATIC")
-endif()
+inclusion( GLEW_DIR GLEW_INCLUDE_PATH )
 
 # Flex/Bison
 find_package(BISON REQUIRED)
@@ -234,7 +252,7 @@ message(STATUS "CGAL libraries found in " ${CGAL_LIBRARIES_DIR} )
 if("${CGAL_MAJOR_VERSION}.${CGAL_MINOR_VERSION}" VERSION_LESS 3.6)
   message(FATAL_ERROR "CGAL >= 3.6 required")
 endif()
-include_directories(${CGAL_INCLUDE_DIRS})
+inclusion(CGAL_DIR CGAL_INCLUDE_DIRS)
 
 # Imagemagick
 
@@ -464,8 +482,8 @@ endfunction()
 # comparison method to use
 if (NOT $ENV{COMPARATOR} STREQUAL "")
   set(COMPARATOR "$ENV{COMPARATOR}")
+  message(STATUS "ImageMagick method modified with COMPARATOR: " ${COMPARATOR})
 endif()
-message(STATUS "COMPARATOR: " ${COMPARATOR})
 
 #
 # This functions adds cmd-line tests given files.
