@@ -50,7 +50,7 @@ Preferences::Preferences(QWidget *parent) : QMainWindow(parent)
 	this->defaultmap["editor/fontfamily"] = this->fontChooser->currentText();
 	this->defaultmap["editor/fontsize"] = this->fontSize->currentText().toUInt();
 	this->defaultmap["advanced/opencsg_show_warning"] = true;
-	this->defaultmap["advanced/enable_opencsg_opengl1x"] = false;
+	this->defaultmap["advanced/enable_opencsg_opengl1x"] = true;
 
 	// Toolbar
 	QActionGroup *group = new QActionGroup(this);
