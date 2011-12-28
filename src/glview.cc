@@ -500,10 +500,11 @@ void GLView::paintGL()
 
 		// FIXME: This was an attempt to keep contrast with background, but is suboptimal
 		// (e.g. nearly invisible against a gray background).
-		int r,g,b;
-		r=g=b=0;
+//		int r,g,b;
+//		r=g=b=0;
 //		bgcol.getRgb(&r, &g, &b);
-		glColor3d((255.0-r)/255.0, (255.0-g)/255.0, (255.0-b)/255.0);
+//		glColor3f((255.0f-r)/255.0f, (255.0f-g)/255.0f, (255.0f-b)/255.0f);
+		glColor3f(0.0f, 0.0f, 0.0f);
 		glBegin(GL_LINES);
 		// X Label
 		glVertex3d(xlabel_x-3, xlabel_y-3, 0); glVertex3d(xlabel_x+3, xlabel_y+3, 0);
