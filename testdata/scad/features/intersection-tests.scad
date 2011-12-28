@@ -22,7 +22,7 @@ translate([12,0,0]) intersection() {
 
 translate([12,12,0]) intersection() {
   cube([10,10,10], center=true);
-  translate([0,0,7]) cylinder(r=4, h=4, center=true);
+  translate([0,0,7.01]) cylinder(r=4, h=4, center=true);
 }
 
 translate([24,0,0]) intersection() {
