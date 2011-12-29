@@ -1,7 +1,7 @@
 #!/bin/sh
 
-VERSION=`date "+%Y.%m.%d"`
-#VERSION=2011.12
+#VERSION=`date "+%Y.%m.%d"`
+VERSION=2011.12
 
 # Turn off ccache, just for safety
 PATH=${PATH//\/opt\/local\/libexec\/ccache:}
