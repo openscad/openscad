@@ -2,8 +2,8 @@ OpenSCAD Release Checklist
 --------------------------
 
 o Update version
-  release-linux.sh
-  publish-macosx.sh
+  scripts/release-linux.sh
+  scripts/publish-macosx.sh
   FIXME: Windows
 
 o Update RELEASE_NOTES
