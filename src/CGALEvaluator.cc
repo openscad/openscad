@@ -269,15 +269,7 @@ Response CGALEvaluator::visit(State &state, const TransformNode &node)
 					node.matrix(0,0), node.matrix(0,1), node.matrix(0,2), node.matrix(0,3),
 					node.matrix(1,0), node.matrix(1,1), node.matrix(1,2), node.matrix(1,3),
 					node.matrix(2,0), node.matrix(2,1), node.matrix(2,2), node.matrix(2,3), node.matrix(3,3));
-				CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
-				try {
-					N.p3->transform(t);
-				}
-				catch (CGAL::Assertion_exception e) {
-					// CGAL-3.6 sometimes throws an exception here
-					PRINTF("CGAL error in CGAL_Nef_polyhedron3::transform(): %s", e.what());
-				}
-				CGAL::set_error_behaviour(old_behaviour);
+				N.p3->transform(t);
 			}
 		}
 		else {
