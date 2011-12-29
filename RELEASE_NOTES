@@ -13,6 +13,7 @@ o New import() statement reads the correct file format based on the filename ext
   (.stl, .dxf and .off is supported)
 o The color() statement now supports an alpha parameter, e.g. color(c=[1,0,0], alpha=0.4)
 o The color() statement now supports specifying colors as strings, e.g. color("Red")
+o The color() statement now overrides colors specified further down in the tree
 o if()/else() and the ternary operator can now take any value type as parameter. false, 0, empty string and empty vector or illegal value type will evaluate as false, everything else as true.
 o Strings can now be lexographically compared using the <, <=, >, >= operators
 o Added PI constant.
