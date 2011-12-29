@@ -1799,7 +1799,7 @@ MainWindow::preferences()
 
 void MainWindow::setFont(const QString &family, uint size)
 {
-	QFont font(editor->font());
+	QFont font;
 	if (!family.isEmpty()) font.setFamily(family);
 	if (size > 0)	font.setPointSize(size);
 	font.setStyleHint(QFont::TypeWriter);
