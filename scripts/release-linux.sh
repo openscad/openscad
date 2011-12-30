@@ -1,8 +1,8 @@
 #!/bin/bash
 # WARNING: This script might only work with the authors setup...
 
-VERSION=`date "+%Y.%m.%d"`
-#VERSION=2011.12
+#VERSION=`date "+%Y.%m.%d"`
+VERSION=2011.12
 
 set -ex
 
