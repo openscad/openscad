@@ -12,7 +12,7 @@ o Tag release
   git tag "openscad-2011.12"
 
 o build source package
-  git archive --format=tar openscad-2011.12  --prefix=openscad-2011.12/ | gzip > openscad-2011.12.src.tar.gz
+  scripts/git-archive-all.py --prefix=openscad-2011.12/ openscad-2011.12.src.tar.gz
 
 o build binaries
   tar xzf openscad-2011.12.src.tar.gz
