@@ -45,6 +45,7 @@
 #include <iostream>
 #include <sstream>
 #include <fstream>
+#include <stdio.h>
 
 using std::string;
 

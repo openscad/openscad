@@ -24,11 +24,11 @@ endif()
 # Windows
 #
 
-if(WIN32)
+if(WIN32 AND MSVC)
   set(WIN32_STATIC_BUILD "True")
 endif()
 
-if(WIN32_STATIC_BUILD)
+if(WIN32_STATIC_BUILD AND MSVC)
   if(${CMAKE_BUILD_TYPE} STREQUAL "Debug")
     set(EMSG "\nTo build Win32 STATIC OpenSCAD please see doc/testing.txt")
     message(FATAL_ERROR ${EMSG})
@@ -36,7 +36,7 @@ if(WIN32_STATIC_BUILD)
 endif()
 
 # Disable warnings
-if(WIN32)
+if(WIN32 AND MSVC)
   # too long decorated names
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4503")
   # int cast to bool in CGAL
@@ -52,12 +52,16 @@ if(WIN32)
 endif()
 
 # Debugging - if you uncomment, use nmake -f Makefile > log.txt (the log is big)
-if(WIN32)
+if(WIN32 AND MSVC)
   # Linker debugging
   #set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -VERBOSE")
 
   # Compiler debugging
   # you have to pass -DCMAKE_VERBOSE_MAKEFILE=ON to cmake when you run it. 
+endif()
+
+if(WIN32 AND CMAKE_COMPILER_IS_GNUCXX)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fpermissive -frounding-math")
 endif()
 
 #
@@ -256,11 +260,13 @@ inclusion(CGAL_DIR CGAL_INCLUDE_DIRS)
 
 # Imagemagick
 
-find_package(ImageMagick COMPONENTS convert)
-if (ImageMagick_convert_FOUND)
-  message(STATUS "ImageMagick convert executable found: " ${ImageMagick_convert_EXECUTABLE})
-else()
-  message(FATAL_ERROR "Couldn't find imagemagick 'convert' program")
+if (NOT SKIP_IMAGEMAGICK)
+  find_package(ImageMagick COMPONENTS convert)
+  if (ImageMagick_convert_FOUND)
+    message(STATUS "ImageMagick convert executable found: " ${ImageMagick_convert_EXECUTABLE})
+  else()
+    message(FATAL_ERROR "Couldn't find imagemagick 'convert' program")
+  endif()
 endif()
 
 # Internal includes
@@ -348,6 +354,7 @@ set(OFFSCREEN_SOURCES
   system-gl.cc)
 
 add_library(tests-core STATIC ${CORE_SOURCES})
+target_link_libraries(tests-core ${OPENGL_LIBRARY})
 add_library(tests-common STATIC ${COMMON_SOURCES})
 target_link_libraries(tests-common tests-core)
 add_library(tests-cgal STATIC ${CGAL_SOURCES})
@@ -418,6 +425,10 @@ target_link_libraries(opencsgtest tests-offscreen tests-cgal ${CGAL_LIBRARY} ${C
 add_executable(throwntogethertest throwntogethertest.cc csgtestcore.cc ../src/OpenCSGRenderer.cc ../src/ThrownTogetherRenderer.cc ../src/renderer.cc ../src/rendersettings.cc)
 set_target_properties(throwntogethertest PROPERTIES COMPILE_FLAGS "-DENABLE_OPENCSG -DENABLE_CGAL ${CGAL_CXX_FLAGS_INIT}")
 target_link_libraries(throwntogethertest tests-offscreen tests-cgal ${CGAL_LIBRARY} ${CGAL_3RD_PARTY_LIBRARIES} ${QT_LIBRARIES} ${OPENCSG_LIBRARY} ${GLEW_LIBRARY} ${COCOA_LIBRARY} ${OPENGL_LIBRARY} ${Boost_LIBRARIES})
+
+if (MINGW_CROSS_ENV_DIR)
+  mingw_cross_env_add_missing_libs()
+endif()
 
 #
 # Tags tests as disabled. This is more convenient than removing them manually

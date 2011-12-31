@@ -10,7 +10,7 @@ $ cd tests
 $ cmake .
 $ make
 
-Windows:
+Windows + MSVC:
 
 First, get a normal build working by following instructions at 
 http://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Building_on_Windows
@@ -21,6 +21,15 @@ Then, from the QT command prompt:
 > sed -i s/\/MD/\/MT/ CMakeCache.txt
 > cmake .
 > nmake -f Makefile
+
+Cross compiling Linux->Windows:
+
+Follow the instructions for cross-compiling with qmake at 
+http://en.wikibooks.org/wiki/OpenSCAD_User_Manual
+
+$ cd tests
+$ cmake . -DMINGW_CROSS_ENV_DIR=<mingw dir> -DCMAKE_TOOLCHAIN_FILE=CMingw-env-cross.cmake
+$ make
 
 B) Running tests
 
