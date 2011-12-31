@@ -61,7 +61,11 @@ def execute_and_redirect(cmd, params, outfile):
     else: return retval
 
 def get_normalized_text(filename):
-    text = open(filename).read()
+    try: 
+        f = open(filename)
+        text = f.read()
+    except: 
+        text = ''
     return text.strip("\r\n").replace("\r\n", "\n") + "\n"
 
 def compare_text(expected, actual):
@@ -71,8 +75,9 @@ def compare_default(resultfilename):
     print >> sys.stderr, 'diff text compare: '
     print >> sys.stderr, ' expected textfile: ', expectedfilename
     print >> sys.stderr, ' actual textfile: ', resultfilename
-    if not compare_text(expectedfilename, resultfilename): 
-        execute_and_redirect("diff", [expectedfilename, resultfilename], sys.stderr)
+    if not compare_text(expectedfilename, resultfilename):
+	if resultfilename: 
+            execute_and_redirect("diff", [expectedfilename, resultfilename], sys.stderr)
         return False
     return True
 
@@ -136,8 +141,13 @@ def run_test(testname, cmd, args):
     outputname = os.path.normpath( outputname )
 
     outfile = open(outputname, "wb")
+
     try:
-        proc = subprocess.Popen([cmd] + args + [outputname], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        if os.path.isfile(cmd+'.exe'):
+            cmdline = ['wine']+[cmd+'.exe'] + args + [outputname]
+        else:
+            cmdline = [cmd] + args + [outputname]
+        proc = subprocess.Popen(cmdline, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         errtext = proc.communicate()[1]
         if errtext != None and len(errtext) > 0:
             print >> sys.stderr, "Error output: " + errtext

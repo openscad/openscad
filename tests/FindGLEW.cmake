@@ -17,7 +17,7 @@ IF (WIN32 AND MSVC)
 	ELSE ()
 		SET(GLEW_LIB_SEARCH_NAME glew32.lib) # other. untested with OpenSCAD
 	ENDIF()
-ELSEIF () # GCC
+ELSE () # GCC
 	SET(GLEW_LIB_SEARCH_NAME "libglew32s.a")
 ENDIF ()
 

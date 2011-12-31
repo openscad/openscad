@@ -24,11 +24,16 @@ Then, from the QT command prompt:
 
 Cross compiling Linux->Windows:
 
+Additional prerequisities: wine, mingw-cross-env
+
+Note: CTest harness will only run under Wine under *nix, not under Win32.
+
 Follow the instructions for cross-compiling with qmake at 
-http://en.wikibooks.org/wiki/OpenSCAD_User_Manual
+http://en.wikibooks.org/wiki/OpenSCAD_User_Manual , especially the part 
+about including the cross-compiler in your PATH. Then:
 
 $ cd tests
-$ cmake . -DMINGW_CROSS_ENV_DIR=<mingw dir> -DCMAKE_TOOLCHAIN_FILE=CMingw-env-cross.cmake
+$ cmake . -DMINGW_CROSS_ENV_DIR=<mingw-dir> -DCMAKE_TOOLCHAIN_FILE=CMingw-env-cross.cmake
 $ make
 
 B) Running tests
@@ -89,11 +94,7 @@ A pretty-printed index.html is in a subdir of tests/build/Testing/Temporary
 Expected results are found in tests/regression/*
 Actual results are found in tests/build/testname-output/*
 
-3. Cross-compiling 
-
-Cross-compiling of tests has not been automated nor tested
-
-4. Image-based tests takes a long time, they fail, and the log says 'return -11'
+3. Image-based tests takes a long time, they fail, and the log says 'return -11'
 
 Imagemagick may have crashed while comparing the expected images to the 
 test-run generated (actual) images. You can try using the alternate 
@@ -101,12 +102,12 @@ ImageMagick comparison method by by erasing CMakeCache, and re-running
 cmake with -DCOMPARATOR=ncc. This will enable the Normalized Cross 
 Comparison method.
 
-5. Testing images fails with 'morphology not found" for ImageMagick in the log
+4. Testing images fails with 'morphology not found" for ImageMagick in the log
 
 Your version of imagemagick is old. Upgrade, or pass -DCOMPARATOR=old to 
 cmake. The comparison will be of lowered reliability.
 
-6. Other issues
+5. Other issues
 
 The OpenSCAD User Manual has a section on buildling. Please check there 
 for updates:
