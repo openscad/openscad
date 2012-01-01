@@ -28,12 +28,16 @@ Additional prerequisities: wine, mingw-cross-env
 
 Note: CTest harness will only run under Wine under *nix, not under Win32.
 
-Follow the instructions for cross-compiling with qmake at 
+Follow the instructions for installing the mingw-env cross build system at 
 http://en.wikibooks.org/wiki/OpenSCAD_User_Manual , especially the part 
-about including the cross-compiler in your PATH. Then:
+about including the cross-compiler in your PATH. If you do cross-builds,
+it's recommended to use out-of-source builds (mkdir buildx; cd buildx; cmake ..)
+in order to keep your native *nix build separate from your cross-build. 
 
 $ cd tests
-$ cmake . -DMINGW_CROSS_ENV_DIR=<mingw-dir> -DCMAKE_TOOLCHAIN_FILE=CMingw-env-cross.cmake
+$ mkdir build-mingw32
+$ cd build-mingw32
+$ cmake .. -DMINGW_CROSS_ENV_DIR=<mingw-env-dir> -DCMAKE_TOOLCHAIN_FILE=CMingw-env-cross.cmake
 $ make
 
 B) Running tests
