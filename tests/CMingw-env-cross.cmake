@@ -88,7 +88,8 @@ endfunction()
 
 function(mingw_cross_env_add_missing_libs)
   # mingw_cross_env_info()
-  set(mingw_cross_libs imm32 winmm ws2_32 glu32 opengl32 mng lcms tiff jpeg png z lzma)
+  # some systems may need more libs, like -lzma
+  set(mingw_cross_libs imm32 winmm ws2_32 glu32 opengl32 mng lcms tiff jpeg png z)
   target_link_libraries(opencsgtest ${mingw_cross_libs})
   target_link_libraries(csgtermtest ${mingw_cross_libs})
   target_link_libraries(csgtexttest ${mingw_cross_libs})
