@@ -588,12 +588,17 @@ AbstractModule *parse(const char *text, const char *path, int debug)
 	if (!module)
 		return NULL;
 
-        BOOST_FOREACH(Module::ModuleContainer::value_type &m, module->usedlibs) {
+	std::vector<std::string> to_erase;
+
+	BOOST_FOREACH(Module::ModuleContainer::value_type &m, module->usedlibs) {
 		module->usedlibs[m.first] = Module::compile_library(m.first);
 		if (!module->usedlibs[m.first]) {
 			PRINTF("WARNING: Failed to compile library `%s'.", m.first.c_str());
-			module->usedlibs.erase(m.first);
+			to_erase.push_back( m.first );
 		}
+	}
+	BOOST_FOREACH( std::string s, to_erase ) {
+		module->usedlibs.erase( s );
 	}
 
 	parser_error_pos = -1;
