@@ -82,7 +82,7 @@ set(CMAKE_RC_COMPILER ${MINGW_CROSS_ENV_DIR}/usr/bin/i686-pc-mingw32-windres)
 set(PKG_CONFIG_EXECUTABLE ${MINGW_CROSS_ENV_DIR}/usr/bin/i686-pc-mingw32-pkg-config)
 set(QT_QMAKE_EXECUTABLE ${MINGW_CROSS_ENV_DIR}/usr/bin/i686-pc-mingw32-qmake)
 set(CMAKE_INSTALL_PREFIX ${MINGW_CROSS_ENV_DIR}/usr/i686-pc-mingw32 CACHE PATH "Installation Prefix")
-# set(CMAKE_BUILD_TYPE Release CACHE STRING "Debug|Release|RelWithDebInfo|MinSizeRel")
+set(CMAKE_BUILD_TYPE RelWithDebInfo)
 
 #
 # Part 3. library settings for mingw-cross-env

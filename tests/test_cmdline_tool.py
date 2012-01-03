@@ -143,7 +143,7 @@ def run_test(testname, cmd, args):
     outfile = open(outputname, "wb")
 
     try:
-        if os.path.isfile(cmd+'.exe'):
+        if os.path.isfile(cmd+'.exe') and options.mingw_cross_env:
             cmdline = ['wine']+[cmd+'.exe'] + args + [outputname]
         else:
             cmdline = [cmd] + args + [outputname]
@@ -176,11 +176,11 @@ def usage():
     print >> sys.stderr, "  -s, --suffix=<suffix> Write -expected and -actual files with the given suffix instead of .txt"
     print >> sys.stderr, "  -t, --test=<name>     Specify test name instead of deducting it from the argument"
     print >> sys.stderr, "  -c, --convexec=<name> Path to ImageMagick 'convert' executable"
-
+    print >> sys.stderr, "  -x, --mingw-cross-env Mingw-cross-env cross compilation"
 if __name__ == '__main__':
     # Handle command-line arguments
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "gs:c:t:m:", ["generate", "convexec=", "suffix=", "test=", "comparator="])
+        opts, args = getopt.getopt(sys.argv[1:], "gs:c:t:m:x", ["generate", "convexec=", "suffix=", "test=", "comparator=", "mingw-cross-env"])
     except getopt.GetoptError, err:
         usage()
         sys.exit(2)
@@ -202,6 +202,8 @@ if __name__ == '__main__':
             options.convert_exec = os.path.normpath( a )
         elif o in ("-m", "--comparator"):
             options.comparator = a
+        elif o in ("-x", "--mingw-cross-env"):
+            options.mingw_cross_env = True
 
     # <cmdline-tool> and <argument>
     if len(args) < 2:
