@@ -72,10 +72,10 @@ endif()
 #
 
 function(inclusion user_set_path found_paths)
-  # This function exists as a wrapper for INCLUDE_DIRECTORIES
-  # to deal with systems in which some libraries are found 
-  # in the system paths, (/usr) but others are found in customized 
-  # paths set in environment variables (CGAL_DIR). 
+  # If user_set_path indicates an env. variable was specifically
+  # set by the user, then found_paths become an include priority (prepend);
+  # otherwise found_paths are stuck on the end of the include flags (append).
+
   # message(STATUS "inclusion ${user_set_path} ${found_paths}")
   # message(STATUS "inclusion ${${user_set_path}} ${${found_paths}}")
   set( inclusion_match 0 )
@@ -95,6 +95,10 @@ function(inclusion user_set_path found_paths)
 endfunction()
 
 # Boost
+# 
+# FindBoost.cmake has been included from Cmake's GIT circa the end of 2011
+# because most existing installs of cmake had a buggy older version. 
+#
 # Update this if FindBoost.cmake gets out of sync with the current boost release
 # set(Boost_ADDITIONAL_VERSIONS "1.47.0" "1.46.0")
 
@@ -139,8 +143,17 @@ endif(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 
 set(CMAKE_INCLUDE_DIRECTORIES_BEFORE ON)
 find_package(OpenGL REQUIRED)
-find_package(Qt4 COMPONENTS QtCore QtGui QtOpenGL REQUIRED)
-include(${QT_USE_FILE})
+
+if (MINGW_CROSS_ENV_DIR) 
+  mingw_cross_env_find_qt()
+  mingw_cross_env_info()
+  include_directories( ${QT_INCLUDE_DIRS} )
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${QT_CFLAGS_OTHER}")
+else()
+  find_package(Qt4 COMPONENTS QtCore QtGui QtOpenGL REQUIRED)
+  include(${QT_USE_FILE})
+endif()
+
 set(CMAKE_INCLUDE_DIRECTORIES_BEFORE OFF)
 
 # Eigen2
@@ -428,10 +441,6 @@ target_link_libraries(opencsgtest tests-offscreen tests-cgal ${CGAL_LIBRARY} ${C
 add_executable(throwntogethertest throwntogethertest.cc csgtestcore.cc ../src/OpenCSGRenderer.cc ../src/ThrownTogetherRenderer.cc ../src/renderer.cc ../src/rendersettings.cc)
 set_target_properties(throwntogethertest PROPERTIES COMPILE_FLAGS "-DENABLE_OPENCSG -DENABLE_CGAL ${CGAL_CXX_FLAGS_INIT}")
 target_link_libraries(throwntogethertest tests-offscreen tests-cgal ${CGAL_LIBRARY} ${CGAL_3RD_PARTY_LIBRARIES} ${QT_LIBRARIES} ${OPENCSG_LIBRARY} ${GLEW_LIBRARY} ${COCOA_LIBRARY} ${OPENGL_LIBRARY} ${Boost_LIBRARIES})
-
-if (MINGW_CROSS_ENV_DIR)
-  mingw_cross_env_add_missing_libs()
-endif()
 
 #
 # Tags tests as disabled. This is more convenient than removing them manually
