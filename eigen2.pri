@@ -29,6 +29,7 @@ eigen2 {
     freebsd-g++: EIGEN2_INCLUDEPATH = /usr/local/include/eigen2
     macx: EIGEN2_INCLUDEPATH = /opt/local/include/eigen2
     linux*: EIGEN2_INCLUDEPATH = /usr/include/eigen2
+    netbsd*: EIGEN2_INCLUDEPATH = /usr/pkg/include/eigen2
   }
 
   # eigen2 being under 'include/eigen2' needs special prepending

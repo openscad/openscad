@@ -22,6 +22,10 @@ unix:freebsd-g++ {
   QMAKE_YACC = /usr/local/bin/bison
 }
 
+unix:netbsd* {
+  QMAKE_YACC = /usr/pkg/bin/bison
+}
+
 unix:linux* {
   exists(/usr/bin/bison) {
     QMAKE_YACC = /usr/bin/bison

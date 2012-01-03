@@ -219,6 +219,11 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "FreeBSD")
   set(FLEX_EXECUTABLE /usr/local/bin/flex)
 endif()
 
+if(${CMAKE_SYSTEM_NAME} MATCHES "NetBSD")
+  include_directories(/usr/pkg/include)
+  set(FLEX_EXECUTABLE /usr/pkg/bin/flex)
+endif()
+
 find_package(FLEX REQUIRED)
 # The COMPILE_FLAGS and forced C++ compiler is just to be compatible with qmake
 if (WIN32)
