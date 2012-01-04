@@ -25,11 +25,20 @@
  */
 
 #include "polyset.h"
-// FIXME: Reenable/rewrite - don't be dependant on GUI
-// #include "Preferences.h"
 #include "linalg.h"
 #include <Eigen/LU>
 #include <QColor>
+
+/*! /class PolySet
+
+	The PolySet class fulfils multiple tasks, partially for historical reasons.
+	FIXME: It's a bit messy and is a prime target for refactoring.
+
+	1) Store 2D and 3D polygon meshes from all origins
+	2) Store 2D outlines, used for rendering edges
+	3) Rendering of polygons and edges
+
+ */
 
 PolySet::PolySet() : grid(GRID_FINE), is2d(false), convexity(1)
 {

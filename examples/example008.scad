@@ -20,13 +20,13 @@ difference()
 
 	intersection()
 	{
-		translate([ -125, -25, -25])
-		linear_extrude(height = 50, convexity = 1)
+		translate([ -125, -25, -26])
+		linear_extrude(height = 52, convexity = 1)
 			import(file = "example008.dxf", layer = "X");
 
 		rotate(90, [0, 1, 0])
-		translate([ -125, -25, -25])
-		linear_extrude(height = 50, convexity = 1)
+		translate([ -125, -25, -26])
+		linear_extrude(height = 52, convexity = 1)
 			import(file = "example008.dxf", layer = "X");
 	}
 }

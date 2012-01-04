@@ -110,7 +110,7 @@ def compare_png(resultfilename):
 	elif compare_method=='NCC':
             thresh = 0.95
             ncc_err = float(output.strip())
-            if ncc_err > thresh: return True
+            if ncc_err > thresh or ncc_err==0.0: return True
             else: print >> sys.stderr, ncc_err, ' Images differ: NCC comparison < ', thresh
     return False
 

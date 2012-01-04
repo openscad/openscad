@@ -26,7 +26,7 @@ PolySet *PolySetCGALEvaluator::evaluatePolySet(const ProjectionNode &node)
 	// Before projecting, union all children
 	CGAL_Nef_polyhedron sum;
 	BOOST_FOREACH (AbstractNode * v, node.getChildren()) {
-		if (v->modinst->tag_background) continue;
+		if (v->modinst->isBackground()) continue;
 		CGAL_Nef_polyhedron N = this->cgalevaluator.evaluateCGALMesh(*v);
 		if (N.dim == 3) {
 			if (sum.empty()) sum = N.copy();
@@ -259,7 +259,7 @@ PolySet *PolySetCGALEvaluator::evaluatePolySet(const LinearExtrudeNode &node)
 		// to a single DxfData, then tesselate this into a PolySet
 		CGAL_Nef_polyhedron sum;
 		BOOST_FOREACH (AbstractNode * v, node.getChildren()) {
-			if (v->modinst->tag_background) continue;
+			if (v->modinst->isBackground()) continue;
 			CGAL_Nef_polyhedron N = this->cgalevaluator.evaluateCGALMesh(*v);
 			if (N.dim != 2) {
 				PRINT("ERROR: linear_extrude() is not defined for 3D child objects!");
@@ -357,7 +357,7 @@ PolySet *PolySetCGALEvaluator::evaluatePolySet(const RotateExtrudeNode &node)
 		// to a single DxfData, then tesselate this into a PolySet
 		CGAL_Nef_polyhedron sum;
 		BOOST_FOREACH (AbstractNode * v, node.getChildren()) {
-			if (v->modinst->tag_background) continue;
+			if (v->modinst->isBackground()) continue;
 			CGAL_Nef_polyhedron N = this->cgalevaluator.evaluateCGALMesh(*v);
 			if (N.dim != 2) {
 				PRINT("ERROR: rotate_extrude() is not defined for 3D child objects!");
