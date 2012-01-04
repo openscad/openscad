@@ -178,7 +178,6 @@ MainWindow::MainWindow(const QString &filename)
 	editor->setTabStopWidth(30);
 #endif
 	editor->setLineWrapping(true); // Not designable
-	setFont("", 12); // Init default font
 
 	this->glview->statusLabel = new QLabel(this);
 	statusBar()->addWidget(this->glview->statusLabel);
