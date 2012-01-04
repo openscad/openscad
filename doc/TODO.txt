@@ -255,7 +255,6 @@ o variants of module transparent() { %child(); }
 o define modules
 o define functions
 o built-in variables and constants (builtin-tests.scad)
-o Write a regression test for the hexagonal cylinder orientation issue
 o Caching
   - Test that caching is actually performed (speedup + same results)
   - Test the modifier characters correctly influence the cache (also when

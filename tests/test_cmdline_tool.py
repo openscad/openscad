@@ -61,7 +61,11 @@ def execute_and_redirect(cmd, params, outfile):
     else: return retval
 
 def get_normalized_text(filename):
-    text = open(filename).read()
+    try: 
+        f = open(filename)
+        text = f.read()
+    except: 
+        text = ''
     return text.strip("\r\n").replace("\r\n", "\n") + "\n"
 
 def compare_text(expected, actual):
@@ -71,8 +75,9 @@ def compare_default(resultfilename):
     print >> sys.stderr, 'diff text compare: '
     print >> sys.stderr, ' expected textfile: ', expectedfilename
     print >> sys.stderr, ' actual textfile: ', resultfilename
-    if not compare_text(expectedfilename, resultfilename): 
-        execute_and_redirect("diff", [expectedfilename, resultfilename], sys.stderr)
+    if not compare_text(expectedfilename, resultfilename):
+	if resultfilename: 
+            execute_and_redirect("diff", [expectedfilename, resultfilename], sys.stderr)
         return False
     return True
 
@@ -110,7 +115,7 @@ def compare_png(resultfilename):
 	elif compare_method=='NCC':
             thresh = 0.95
             ncc_err = float(output.strip())
-            if ncc_err > thresh: return True
+            if ncc_err > thresh or ncc_err==0.0: return True
             else: print >> sys.stderr, ncc_err, ' Images differ: NCC comparison < ', thresh
     return False
 
@@ -136,8 +141,13 @@ def run_test(testname, cmd, args):
     outputname = os.path.normpath( outputname )
 
     outfile = open(outputname, "wb")
+
     try:
-        proc = subprocess.Popen([cmd] + args + [outputname], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        if os.path.isfile(cmd+'.exe') and options.mingw_cross_env:
+            cmdline = ['wine']+[cmd+'.exe'] + args + [outputname]
+        else:
+            cmdline = [cmd] + args + [outputname]
+        proc = subprocess.Popen(cmdline, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         errtext = proc.communicate()[1]
         if errtext != None and len(errtext) > 0:
             print >> sys.stderr, "Error output: " + errtext
@@ -166,11 +176,11 @@ def usage():
     print >> sys.stderr, "  -s, --suffix=<suffix> Write -expected and -actual files with the given suffix instead of .txt"
     print >> sys.stderr, "  -t, --test=<name>     Specify test name instead of deducting it from the argument"
     print >> sys.stderr, "  -c, --convexec=<name> Path to ImageMagick 'convert' executable"
-
+    print >> sys.stderr, "  -x, --mingw-cross-env Mingw-cross-env cross compilation"
 if __name__ == '__main__':
     # Handle command-line arguments
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "gs:c:t:m:", ["generate", "convexec=", "suffix=", "test=", "comparator="])
+        opts, args = getopt.getopt(sys.argv[1:], "gs:c:t:m:x", ["generate", "convexec=", "suffix=", "test=", "comparator=", "mingw-cross-env"])
     except getopt.GetoptError, err:
         usage()
         sys.exit(2)
@@ -192,6 +202,8 @@ if __name__ == '__main__':
             options.convert_exec = os.path.normpath( a )
         elif o in ("-m", "--comparator"):
             options.comparator = a
+        elif o in ("-x", "--mingw-cross-env"):
+            options.mingw_cross_env = True
 
     # <cmdline-tool> and <argument>
     if len(args) < 2:

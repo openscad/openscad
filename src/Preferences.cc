@@ -47,10 +47,16 @@ Preferences::Preferences(QWidget *parent) : QMainWindow(parent)
 
 	// Setup default settings
 	this->defaultmap["3dview/colorscheme"] = this->colorSchemeChooser->currentItem()->text();
-	this->defaultmap["editor/fontfamily"] = this->fontChooser->currentText();
-	this->defaultmap["editor/fontsize"] = this->fontSize->currentText().toUInt();
+#ifdef Q_WS_X11
+	this->defaultmap["editor/fontfamily"] = "Mono";
+#elif defined (Q_WS_WIN)
+	this->defaultmap["editor/fontfamily"] = "Console";
+#elif defined (Q_WS_MAC)
+	this->defaultmap["editor/fontfamily"] = "Monaco";
+#endif
+ 	this->defaultmap["editor/fontsize"] = 12;
 	this->defaultmap["advanced/opencsg_show_warning"] = true;
-	this->defaultmap["advanced/enable_opencsg_opengl1x"] = false;
+	this->defaultmap["advanced/enable_opencsg_opengl1x"] = true;
 
 	// Toolbar
 	QActionGroup *group = new QActionGroup(this);
@@ -212,7 +218,7 @@ void Preferences::updateGUI()
 	if (!found.isEmpty()) this->colorSchemeChooser->setCurrentItem(found.first());
 
 	QString fontfamily = getValue("editor/fontfamily").toString();
-	int fidx = this->fontChooser->findText(fontfamily);
+	int fidx = this->fontChooser->findText(fontfamily,Qt::MatchContains);
 	if (fidx >= 0) {
 		this->fontChooser->setCurrentIndex(fidx);
 	}

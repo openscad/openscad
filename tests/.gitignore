@@ -19,4 +19,6 @@ out.png
 /echotest
 /opencsgtest
 /throwntogethertest
-/yee_compare
+/cgalstlsanitytest
+/sysinfo.txt
+/CTestCustom.cmake
