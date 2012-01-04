@@ -105,10 +105,10 @@ bool create_wgl_dummy_context(OffscreenContext &ctx)
   wc.style = CS_OWNDC;
   wc.lpfnWndProc = WndProc;
   wc.hInstance = inst;
-  wc.lpszClassName = "OpenSCAD";
+  wc.lpszClassName = (LPCWSTR)"OpenSCAD";
   RegisterClass( &wc );
 
-  HWND window = CreateWindow( "OpenSCAD", "OpenSCAD", 
+  HWND window = CreateWindow( (LPCWSTR)"OpenSCAD", (LPCWSTR)"OpenSCAD",
     WS_CAPTION | WS_POPUPWINDOW,  //| WS_VISIBLE,
     0, 0, ctx.width, ctx.height, NULL, NULL, inst, NULL );
 
