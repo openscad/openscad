@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=OpenSCAD
+Icon=openscad
+Exec=openscad %f
+Categories=Graphics;3DGraphics;Engineering;

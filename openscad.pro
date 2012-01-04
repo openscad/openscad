@@ -294,3 +294,11 @@ INSTALLS += examples
 libraries.path = $$PREFIX/share/openscad/libraries/
 libraries.files = libraries/*
 INSTALLS += libraries
+
+applications.path = $$PREFIX/share/applications
+applications.files = icons/openscad.desktop
+INSTALLS += applications
+
+icons.path = $$PREFIX/share/pixmaps
+icons.files = icons/openscad.png
+INSTALLS += icons
