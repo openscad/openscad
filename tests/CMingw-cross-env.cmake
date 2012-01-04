@@ -78,10 +78,8 @@ set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
 
 set(CMAKE_C_COMPILER ${MINGW_CROSS_ENV_DIR}/usr/bin/i686-pc-mingw32-gcc)
 set(CMAKE_CXX_COMPILER ${MINGW_CROSS_ENV_DIR}/usr/bin/i686-pc-mingw32-g++)
-set(CMAKE_RC_COMPILER ${MINGW_CROSS_ENV_DIR}/usr/bin/i686-pc-mingw32-windres)
-set(PKG_CONFIG_EXECUTABLE ${MINGW_CROSS_ENV_DIR}/usr/bin/i686-pc-mingw32-pkg-config)
 set(QT_QMAKE_EXECUTABLE ${MINGW_CROSS_ENV_DIR}/usr/bin/i686-pc-mingw32-qmake)
-set(CMAKE_INSTALL_PREFIX ${MINGW_CROSS_ENV_DIR}/usr/i686-pc-mingw32 CACHE PATH "Installation Prefix")
+set(PKG_CONFIG_EXECUTABLE ${MINGW_CROSS_ENV_DIR}/usr/bin/i686-pc-mingw32-pkg-config)
 set(CMAKE_BUILD_TYPE RelWithDebInfo)
 
 #
