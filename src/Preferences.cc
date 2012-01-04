@@ -49,8 +49,14 @@ Preferences::Preferences(QWidget *parent) : QMainWindow(parent)
 
 	// Setup default settings
 	this->defaultmap["3dview/colorscheme"] = this->colorSchemeChooser->currentItem()->text();
+#ifdef Q_WS_X11
 	this->defaultmap["editor/fontfamily"] = "Mono";
-	this->defaultmap["editor/fontsize"] = 12;
+#elif defined (Q_WS_WIN)
+	this->defaultmap["editor/fontfamily"] = "Console";
+#elif defined (Q_WS_MAC)
+	this->defaultmap["editor/fontfamily"] = "Monaco";
+#endif
+ 	this->defaultmap["editor/fontsize"] = 12;
 	this->defaultmap["advanced/opencsg_show_warning"] = true;
 	this->defaultmap["advanced/enable_opencsg_opengl1x"] = true;
 
