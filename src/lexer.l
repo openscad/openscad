@@ -114,27 +114,6 @@ use[ \t\r\n>]*"<"[^\t\r\n>]+">" {
 	return TOK_USE;
 }
 
-"<"[^ \t\r\n>]+">" {
-	char *filename = strdup(yytext+1);
-	filename[strlen(filename)-1] = 0;
-	QFileInfo finfo(QDir(parser_source_path), filename);
-	if (!finfo.exists()) {
-		finfo = QFileInfo(QDir(librarydir), filename);
-	}
-
-	PRINTF("DEPRECATED: Support for implicit include will be removed in future releases. Use `include <filename>' instead.");
-	handle_dep(finfo.absoluteFilePath().toStdString());
-	yyin = fopen(finfo.absoluteFilePath().toLocal8Bit(), "r");
-	if (!yyin) {
-		PRINTF("WARNING: Can't open input file `%s'.", filename);
-	} else {
-		openfiles.append(yyin);
-		yypush_buffer_state(yy_create_buffer( yyin, YY_BUF_SIZE ));
-		BEGIN(INITIAL);
-	}
-	free(filename);
-}
-
 <<EOF>> {
 	if(!path_stack.empty())
 		path_stack.pop();

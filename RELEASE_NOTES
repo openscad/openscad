@@ -1,3 +1,10 @@
+OpenSCAD 2012.XX
+================
+
+Deprecations:
+o The old include syntax "<filename.scad>" without the include keyword is no
+  longer supported and will cause a syntax error.
+
 OpenSCAD 2011.12
 ================
 
