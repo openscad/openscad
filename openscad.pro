@@ -86,6 +86,15 @@ linux*:exists(/usr/lib64/libGLU*)|linux*:exists(/usr/lib/libGLU*) {
   LIBS += -lGLU
 }
 
+netbsd* {
+   LIBS += -L/usr/X11R7/lib
+   QMAKE_LFLAGS += -Wl,-R/usr/X11R7/lib
+   QMAKE_LFLAGS += -Wl,-R/usr/pkg/lib
+   !isEmpty(OPENSCAD_LIBDIR) {
+     QMAKE_LFLAGS += -Wl,-R$$OPENSCAD_LIBDIR/lib
+   }
+}
+
 # See Dec 2011 OpenSCAD mailing list, re: CGAL/GCC bugs.
 *g++* {
   QMAKE_CXXFLAGS *= -fno-strict-aliasing
