@@ -46,6 +46,7 @@
 #include "ProgressWidget.h"
 #endif
 #include "ThrownTogetherRenderer.h"
+#include "csgtermnormalizer.h"
 
 #include <QMenu>
 #include <QTime>
@@ -178,7 +179,6 @@ MainWindow::MainWindow(const QString &filename)
 	editor->setTabStopWidth(30);
 #endif
 	editor->setLineWrapping(true); // Not designable
-	setFont("", 12); // Init default font
 
 	this->glview->statusLabel = new QLabel(this);
 	statusBar()->addWidget(this->glview->statusLabel);
@@ -783,15 +783,8 @@ void MainWindow::compileCSG(bool procevents)
 		if (procevents)
 			QApplication::processEvents();
 		
-		this->root_norm_term = this->root_raw_term;
-		
-		// CSG normalization
-		while (1) {
-			shared_ptr<CSGTerm> n = CSGTerm::normalize(this->root_norm_term);
-			if (this->root_norm_term == n) break;
-			this->root_norm_term = n;
-		}
-		
+		CSGTermNormalizer normalizer;
+		this->root_norm_term = normalizer.normalize(this->root_raw_term);
 		assert(this->root_norm_term);
 
 		root_chain = new CSGChain();
@@ -805,11 +798,7 @@ void MainWindow::compileCSG(bool procevents)
 			
 			highlights_chain = new CSGChain();
 			for (unsigned int i = 0; i < highlight_terms.size(); i++) {
-				while (1) {
-					shared_ptr<CSGTerm> n = CSGTerm::normalize(highlight_terms[i]);
-					if (highlight_terms[i] == n) break;
-					highlight_terms[i] = n;
-				}
+				highlight_terms[i] = normalizer.normalize(highlight_terms[i]);
 				highlights_chain->import(highlight_terms[i]);
 			}
 		}
@@ -822,11 +811,7 @@ void MainWindow::compileCSG(bool procevents)
 			
 			background_chain = new CSGChain();
 			for (unsigned int i = 0; i < background_terms.size(); i++) {
-				while (1) {
-					shared_ptr<CSGTerm> n = CSGTerm::normalize(background_terms[i]);
-					if (background_terms[i] == n) break;
-					background_terms[i] = n;
-				}
+				background_terms[i] = normalizer.normalize(background_terms[i]);
 				background_chain->import(background_terms[i]);
 			}
 		}
@@ -1814,8 +1799,9 @@ MainWindow::preferences()
 
 void MainWindow::setFont(const QString &family, uint size)
 {
-	QFont font(editor->font());
+	QFont font;
 	if (!family.isEmpty()) font.setFamily(family);
+	else font.setFixedPitch(true);
 	if (size > 0)	font.setPointSize(size);
 	font.setStyleHint(QFont::TypeWriter);
 	editor->setFont(font);

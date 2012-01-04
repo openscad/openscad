@@ -118,27 +118,6 @@ use[ \t\r\n>]*"<"	{ BEGIN(use); }
  }
 }
 
-"<"[^ \t\r\n>]+">" {
-	char *filename = strdup(yytext+1);
-	filename[strlen(filename)-1] = 0;
-	path incpath = path(parser_source_path) / filename;
-	if (!exists(incpath)) {
-          incpath = librarydir / filename;
-	}
-
-	PRINTF("DEPRECATED: Support for implicit include will be removed in future releases. Use `include <filename>' instead.");
-	handle_dep(absolute(incpath).generic_string());
-	yyin = fopen(absolute(incpath).c_str(), "r");
-	if (!yyin) {
-		PRINTF("WARNING: Can't open input file `%s'.", filename);
-	} else {
-		openfiles.push_back(yyin);
-		yypush_buffer_state(yy_create_buffer( yyin, YY_BUF_SIZE ));
-		BEGIN(INITIAL);
-	}
-	free(filename);
-}
-
 <<EOF>> {
 	if(!path_stack.empty()) path_stack.pop_back();
 	if (yyin && yyin != stdin) {

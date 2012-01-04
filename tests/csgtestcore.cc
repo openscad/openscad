@@ -20,6 +20,7 @@
 #include "ThrownTogetherRenderer.h"
 
 #include "csgterm.h"
+#include "csgtermnormalizer.h"
 #include "OffscreenView.h"
 
 #include <QApplication>
@@ -297,12 +298,8 @@ int csgtestcore(int argc, char *argv[], test_type_e test_type)
 	}
 
 	// CSG normalization
-	csgInfo.root_norm_term = root_raw_term;
-	while (1) {
-		shared_ptr<CSGTerm> n = CSGTerm::normalize(csgInfo.root_norm_term);
-		if (csgInfo.root_norm_term == n) break;
-		csgInfo.root_norm_term = n;
-	}
+	CSGTermNormalizer normalizer;
+	csgInfo.root_norm_term = normalizer.normalize(root_raw_term);
 		
 	assert(csgInfo.root_norm_term);
 
@@ -315,11 +312,7 @@ int csgtestcore(int argc, char *argv[], test_type_e test_type)
 		
 		csgInfo.highlights_chain = new CSGChain();
 		for (unsigned int i = 0; i < csgInfo.highlight_terms.size(); i++) {
-			while (1) {
-				shared_ptr<CSGTerm> n = CSGTerm::normalize(csgInfo.highlight_terms[i]);
-				if (csgInfo.highlight_terms[i] == n) break;
-				csgInfo.highlight_terms[i] = n;
-			}
+			csgInfo.highlight_terms[i] = normalizer.normalize(csgInfo.highlight_terms[i]);
 			csgInfo.highlights_chain->import(csgInfo.highlight_terms[i]);
 		}
 	}
@@ -329,11 +322,7 @@ int csgtestcore(int argc, char *argv[], test_type_e test_type)
 		
 		csgInfo.background_chain = new CSGChain();
 		for (unsigned int i = 0; i < csgInfo.background_terms.size(); i++) {
-			while (1) {
-				shared_ptr<CSGTerm> n = CSGTerm::normalize(csgInfo.background_terms[i]);
-				if (csgInfo.background_terms[i] == n) break;
-				csgInfo.background_terms[i] = n;
-			}
+			csgInfo.background_terms[i] = normalizer.normalize(csgInfo.background_terms[i]);
 			csgInfo.background_chain->import(csgInfo.background_terms[i]);
 		}
 	}

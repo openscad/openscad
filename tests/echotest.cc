@@ -59,7 +59,7 @@ static void outfile_handler(const std::string &msg, void *userdata) {
 
 int main(int argc, char **argv)
 {
-#ifdef WIN32
+#ifdef _MSC_VER
   _set_output_format(_TWO_DIGIT_EXPONENT);
 #endif
 

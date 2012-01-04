@@ -10,7 +10,7 @@ $ cd tests
 $ cmake .
 $ make
 
-Windows:
+Windows + MSVC:
 
 First, get a normal build working by following instructions at 
 http://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Building_on_Windows
@@ -21,6 +21,10 @@ Then, from the QT command prompt:
 > sed -i s/\/MD/\/MT/ CMakeCache.txt
 > cmake .
 > nmake -f Makefile
+
+Cross compiling Linux->Win32:
+
+Please see openscad/tests/CMingw-cross-env.cmake for instructions.
 
 B) Running tests
 
@@ -50,55 +54,53 @@ Adding a new regression test:
 Troubleshooting:
 ------------------------------
 
-0. Headless unix servers (no X11)
+0. Headless unix servers
 
-$ Xvfb :5 -screen 0 800x600x24 &        
+If you are attempting to run the tests on a unix-like system but only
+have shell-console access, you may be able to run the tests by using a 
+virtual framebuffer program like Xvnc or Xvfb. For example:
+
+$ Xvfb :5 -screen 0 800x600x24 &
 $ DISPLAY=:5 ctest
 
-1. Trouble finding libraries
+Some versions of Xvfb may fail, however. 
+
+1. Trouble finding libraries on unix
 
  To help CMAKE find eigen2, OpenCSG, CGAL, Boost, and GLEW, you can use 
  environment variables, just like for the main qmake & openscad.pro. Examples:
 
- OPENCSGDIR=~/OpenCSG-1.3.2 EIGEN2DIR=~/eigen2 cmake .
+ OPENSCAD_LIBRARIES=~ cmake .
+ CGALDIR=~/CGAL-3.9 BOOSTDIR=~/boost-1.47.0 cmake .
 
- Valid variables are as follows (see CMakeLists.txt for more info):
+ Valid variables are as follows:
 
  BOOSTDIR, CGALDIR, EIGEN2DIR, GLEWDIR, OPENCSGDIR, OPENSCAD_LIBRARIES
 
-2. Logs
+2. Location of logs
  
 Logs of test runs are found in tests/build/Testing/Temporary
-Pretty-printed index.html is in a subdir of tests/build/Testing/Temporary
+A pretty-printed index.html is in a subdir of tests/build/Testing/Temporary
 Expected results are found in tests/regression/*
 Actual results are found in tests/build/testname-output/*
 
-3. Cross-compiling 
+3. Image-based tests takes a long time, they fail, and the log says 'return -11'
 
-Cross-compiling of tests has not been automated nor tested
+Imagemagick may have crashed while comparing the expected images to the 
+test-run generated (actual) images. You can try using the alternate 
+ImageMagick comparison method by by erasing CMakeCache, and re-running 
+cmake with -DCOMPARATOR=ncc. This will enable the Normalized Cross 
+Comparison method.
 
-4. Image-based tests takes a long time, they fail, and it says 'return -11'
-
-Imagemagick may have crashed. You can try using the alternate IM comparator
-based on Normalized Cross Correlation. Pass -DCOMPARATOR=ncc to cmake
-
-5. Testing images fails with 'morphology' not found for ImageMagick
+4. Testing images fails with 'morphology not found" for ImageMagick in the log
 
 Your version of imagemagick is old. Upgrade, or pass -DCOMPARATOR=old to 
 cmake. The comparison will be of lowered reliability.
 
-6. Unexplained or bizarre errors. 
+5. Other issues
 
-This can happen on dynamic-library systems (linux) where you try to use 
-your own version of a library while the system still has another version 
-under the system paths. You can diagnose this by looking at your cmake 
-log as well as your sysinfo.txt file, as well as running 'ldd' against 
-your binaries, to make sure that the proper versions of libraries are
-getting compiled and linked with the test binaries. 
-
-7. Other issues
-
-The OpenSCAD User Manual has a section on buildling. Check there for updates:
+The OpenSCAD User Manual has a section on buildling. Please check there 
+for updates:
 
 http://en.wikibooks.org/wiki/OpenSCAD_User_Manual
 

@@ -86,6 +86,15 @@ linux*:exists(/usr/lib64/libGLU*)|linux*:exists(/usr/lib/libGLU*) {
   LIBS += -lGLU
 }
 
+netbsd* {
+   LIBS += -L/usr/X11R7/lib
+   QMAKE_LFLAGS += -Wl,-R/usr/X11R7/lib
+   QMAKE_LFLAGS += -Wl,-R/usr/pkg/lib
+   !isEmpty(OPENSCAD_LIBDIR) {
+     QMAKE_LFLAGS += -Wl,-R$$OPENSCAD_LIBDIR/lib
+   }
+}
+
 # See Dec 2011 OpenSCAD mailing list, re: CGAL/GCC bugs.
 *g++* {
   QMAKE_CXXFLAGS *= -fno-strict-aliasing
@@ -147,6 +156,7 @@ HEADERS += src/parsersettings.h \
            src/builtin.h \
            src/context.h \
            src/csgterm.h \
+           src/csgtermnormalizer.h \
            src/dxfdata.h \
            src/dxfdim.h \
            src/dxftess.h \
@@ -198,6 +208,7 @@ SOURCES += src/mathc99.cc \
            src/node.cc \
            src/context.cc \
            src/csgterm.cc \
+           src/csgtermnormalizer.cc \
            src/polyset.cc \
            src/csgops.cc \
            src/transform.cc \

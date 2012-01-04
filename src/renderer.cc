@@ -2,7 +2,7 @@
 #include "rendersettings.h"
 #include <QColor>
 
-void Renderer::setColor(const double color[4], GLint *shaderinfo) const
+void Renderer::setColor(const float color[4], GLint *shaderinfo) const
 {
 	QColor col = RenderSettings::inst()->color(RenderSettings::OPENCSG_FACE_FRONT_COLOR);
 	double c[4] = {color[0], color[1], color[2], color[3]};

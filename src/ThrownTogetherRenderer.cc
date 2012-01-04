@@ -67,7 +67,7 @@ void ThrownTogetherRenderer::renderCSGChain(CSGChain *chain, bool highlight,
 		if (polySetVisitMark[std::make_pair(chain->polysets[i].get(), &chain->matrices[i])]++ > 0)
 			continue;
 		const Transform3d &m = chain->matrices[i];
-		double *c = chain->colors[i];
+		const Color4f &c = chain->colors[i];
 		glPushMatrix();
 		glMultMatrixd(m.data());
 		PolySet::csgmode_e csgmode  = chain->types[i] == CSGTerm::TYPE_DIFFERENCE ? PolySet::CSGMODE_DIFFERENCE : PolySet::CSGMODE_NORMAL;
@@ -93,10 +93,10 @@ void ThrownTogetherRenderer::renderCSGChain(CSGChain *chain, bool highlight,
 			else csgmode = PolySet::csgmode_e(csgmode);
 			chain->polysets[i]->render_surface(csgmode, m);
 		} else if (c[0] >= 0 || c[1] >= 0 || c[2] >= 0 || c[3] >= 0) {
-			setColor(c);
+			setColor(c.data());
 			chain->polysets[i]->render_surface(csgmode, m);
 			if (showedges) {
-				glColor4d((c[0]+1)/2, (c[1]+1)/2, (c[2]+1)/2, 1.0);
+				glColor4f((c[0]+1)/2, (c[1]+1)/2, (c[2]+1)/2, 1.0);
 				chain->polysets[i]->render_edges(csgmode);
 			}
 		} else if (chain->types[i] == CSGTerm::TYPE_DIFFERENCE) {
