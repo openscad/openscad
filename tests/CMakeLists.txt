@@ -583,7 +583,9 @@ file(GLOB FEATURES_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/features/*.scad)
 # Remove included files not to be used as tests
 list(REMOVE_ITEM FEATURES_FILES
      ${CMAKE_SOURCE_DIR}/../testdata/scad/features/include\ test6.scad
-     ${CMAKE_SOURCE_DIR}/../testdata/scad/features/include-test5.scad)
+     ${CMAKE_SOURCE_DIR}/../testdata/scad/features/include-test5.scad
+     ${CMAKE_SOURCE_DIR}/../testdata/scad/features/use\ test6.scad
+     ${CMAKE_SOURCE_DIR}/../testdata/scad/features/use-test5.scad)
 file(GLOB BUGS_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/*.scad)
 file(GLOB SCAD_DXF_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/dxf/*.scad)
 file(GLOB FUNCTION_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/functions/*.scad)
