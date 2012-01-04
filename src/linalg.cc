@@ -1,16 +1,5 @@
 #include "linalg.h"
 
-<<<<<<< HEAD
-BoundingBox operator*(const Transform3d &m, const BoundingBox &box)
-{
-  BoundingBox bbox(box);
-  bbox.extend(m * box.min());
-  bbox.extend(m * box.max());
-  return bbox;
-}
-
-
-=======
 // FIXME: We can achieve better pruning by either:
 // o Recalculate the box based on the transformed object
 // o Store boxes are oriented bounding boxes and implement oriented
@@ -36,4 +25,3 @@ BoundingBox operator*(const Transform3d &m, const BoundingBox &box)
 	return newbox;
 }
 
->>>>>>> upstream/master
