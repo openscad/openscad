@@ -11,13 +11,17 @@
 # http://openlibraries.org/browser/trunk/FindGLEW.cmake?rev=1383 
 
 
-IF (WIN32)
+IF (WIN32 AND MSVC)
 	IF (WIN32_STATIC_BUILD) # passed from caller
 		SET(GLEW_LIB_SEARCH_NAME glew32s.lib) # static, non-debug (Release)
 	ELSE ()
 		SET(GLEW_LIB_SEARCH_NAME glew32.lib) # other. untested with OpenSCAD
 	ENDIF()
+ELSE () # GCC
+	SET(GLEW_LIB_SEARCH_NAME "libglew32s.a")
+ENDIF ()
 
+IF (WIN32)
 	FIND_PATH( GLEW_INCLUDE_PATH GL/glew.h
 		$ENV{PROGRAMFILES}/GLEW/include
 		${PROJECT_SOURCE_DIR}/src/nvgl/glew/include

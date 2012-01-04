@@ -13,6 +13,9 @@ set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}")
 # Build debug build as default
 if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE RelWithDebInfo)
+endif()
+
+if(CMAKE_COMPILER_IS_GNUCXX)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-strict-aliasing")
 endif()
 
@@ -24,11 +27,11 @@ endif()
 # Windows
 #
 
-if(WIN32)
+if(WIN32 AND MSVC)
   set(WIN32_STATIC_BUILD "True")
 endif()
 
-if(WIN32_STATIC_BUILD)
+if(WIN32_STATIC_BUILD AND MSVC)
   if(${CMAKE_BUILD_TYPE} STREQUAL "Debug")
     set(EMSG "\nTo build Win32 STATIC OpenSCAD please see doc/testing.txt")
     message(FATAL_ERROR ${EMSG})
@@ -36,7 +39,7 @@ if(WIN32_STATIC_BUILD)
 endif()
 
 # Disable warnings
-if(WIN32)
+if(WIN32 AND MSVC)
   # too long decorated names
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4503")
   # int cast to bool in CGAL
@@ -52,7 +55,7 @@ if(WIN32)
 endif()
 
 # Debugging - if you uncomment, use nmake -f Makefile > log.txt (the log is big)
-if(WIN32)
+if(WIN32 AND MSVC)
   # Linker debugging
   #set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -VERBOSE")
 
@@ -60,15 +63,19 @@ if(WIN32)
   # you have to pass -DCMAKE_VERBOSE_MAKEFILE=ON to cmake when you run it. 
 endif()
 
+if(WIN32 AND CMAKE_COMPILER_IS_GNUCXX)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fpermissive -frounding-math")
+endif()
+
 #
 # Build test apps
 #
 
 function(inclusion user_set_path found_paths)
-  # This function exists as a wrapper for INCLUDE_DIRECTORIES
-  # to deal with systems in which some libraries are found 
-  # in the system paths, (/usr) but others are found in customized 
-  # paths set in environment variables (CGAL_DIR). 
+  # If user_set_path indicates an env. variable was specifically
+  # set by the user, then found_paths become an include priority (prepend);
+  # otherwise found_paths are stuck on the end of the include flags (append).
+
   # message(STATUS "inclusion ${user_set_path} ${found_paths}")
   # message(STATUS "inclusion ${${user_set_path}} ${${found_paths}}")
   set( inclusion_match 0 )
@@ -88,6 +95,10 @@ function(inclusion user_set_path found_paths)
 endfunction()
 
 # Boost
+# 
+# FindBoost.cmake has been included from Cmake's GIT circa the end of 2011
+# because most existing installs of cmake had a buggy older version. 
+#
 # Update this if FindBoost.cmake gets out of sync with the current boost release
 # set(Boost_ADDITIONAL_VERSIONS "1.47.0" "1.46.0")
 
@@ -132,8 +143,17 @@ endif(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 
 set(CMAKE_INCLUDE_DIRECTORIES_BEFORE ON)
 find_package(OpenGL REQUIRED)
-find_package(Qt4 COMPONENTS QtCore QtGui QtOpenGL REQUIRED)
-include(${QT_USE_FILE})
+
+if (MINGW_CROSS_ENV_DIR) 
+  mingw_cross_env_find_qt()
+  mingw_cross_env_info()
+  include_directories( ${QT_INCLUDE_DIRS} )
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${QT_CFLAGS_OTHER}")
+else()
+  find_package(Qt4 COMPONENTS QtCore QtGui QtOpenGL REQUIRED)
+  include(${QT_USE_FILE})
+endif()
+
 set(CMAKE_INCLUDE_DIRECTORIES_BEFORE OFF)
 
 # Eigen2
@@ -256,11 +276,13 @@ inclusion(CGAL_DIR CGAL_INCLUDE_DIRS)
 
 # Imagemagick
 
-find_package(ImageMagick COMPONENTS convert)
-if (ImageMagick_convert_FOUND)
-  message(STATUS "ImageMagick convert executable found: " ${ImageMagick_convert_EXECUTABLE})
-else()
-  message(FATAL_ERROR "Couldn't find imagemagick 'convert' program")
+if (NOT SKIP_IMAGEMAGICK)
+  find_package(ImageMagick COMPONENTS convert)
+  if (ImageMagick_convert_FOUND)
+    message(STATUS "ImageMagick convert executable found: " ${ImageMagick_convert_EXECUTABLE})
+  else()
+    message(FATAL_ERROR "Couldn't find imagemagick 'convert' program")
+  endif()
 endif()
 
 # Internal includes
@@ -348,6 +370,7 @@ set(OFFSCREEN_SOURCES
   system-gl.cc)
 
 add_library(tests-core STATIC ${CORE_SOURCES})
+target_link_libraries(tests-core ${OPENGL_LIBRARY})
 add_library(tests-common STATIC ${COMMON_SOURCES})
 target_link_libraries(tests-common tests-core)
 add_library(tests-cgal STATIC ${CGAL_SOURCES})
@@ -515,7 +538,10 @@ macro(add_cmdline_test TESTCMD TESTSUFFIX)
       set(CONFARG CONFIGURATIONS)
       set(CONFVAL ${FOUNDCONFIGS})
 
-      add_test(NAME ${TEST_FULLNAME} ${CONFARG} ${CONFVAL} COMMAND ${PYTHON_EXECUTABLE} ${tests_SOURCE_DIR}/test_cmdline_tool.py --comparator=${COMPARATOR} -c ${ImageMagick_convert_EXECUTABLE} -s ${TESTSUFFIX} ${CMAKE_BINARY_DIR}/${TESTCMD} "${SCADFILE}")
+      if (MINGW_CROSS_ENV_DIR)
+        set( MINGW_CROSS_ARG "--mingw-cross-env" )
+      endif()
+      add_test(NAME ${TEST_FULLNAME} ${CONFARG} ${CONFVAL} COMMAND ${PYTHON_EXECUTABLE} ${tests_SOURCE_DIR}/test_cmdline_tool.py ${MINGW_CROSS_ARG} --comparator=${COMPARATOR} -c ${ImageMagick_convert_EXECUTABLE} -s ${TESTSUFFIX} ${CMAKE_BINARY_DIR}/${TESTCMD} "${SCADFILE}")
     endif()
   endforeach()
 endmacro()
@@ -525,6 +551,9 @@ enable_testing()
 # set up custom pretty printing of results
 
 set(INFOCMD "execute_process(COMMAND ${CMAKE_CURRENT_BINARY_DIR}/opencsgtest --info OUTPUT_FILE sysinfo.txt)")
+if (MINGW_CROSS_ENV_DIR)
+  set(INFOCMD "execute_process(COMMAND wine ${CMAKE_CURRENT_BINARY_DIR}/opencsgtest --info OUTPUT_FILE sysinfo.txt)")
+endif()
 set(PRETTYCMD "\"${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test_pretty_print.py --builddir=${CMAKE_CURRENT_BINARY_DIR}\"")
 set(CTEST_CUSTOM_FILE ${CMAKE_CURRENT_BINARY_DIR}/CTestCustom.cmake)
 set(CTEST_CUSTOM_TXT "\n
