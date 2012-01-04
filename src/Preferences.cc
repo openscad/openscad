@@ -1,3 +1,5 @@
+#include <iostream>
+using namespace std;
 /*
  *  OpenSCAD (www.openscad.org)
  *  Copyright (C) 2009-2011 Clifford Wolf <clifford@clifford.at> and
@@ -47,8 +49,8 @@ Preferences::Preferences(QWidget *parent) : QMainWindow(parent)
 
 	// Setup default settings
 	this->defaultmap["3dview/colorscheme"] = this->colorSchemeChooser->currentItem()->text();
-	this->defaultmap["editor/fontfamily"] = this->fontChooser->currentText();
-	this->defaultmap["editor/fontsize"] = this->fontSize->currentText().toUInt();
+	this->defaultmap["editor/fontfamily"] = "Mono";
+	this->defaultmap["editor/fontsize"] = 12;
 	this->defaultmap["advanced/opencsg_show_warning"] = true;
 	this->defaultmap["advanced/enable_opencsg_opengl1x"] = true;
 
@@ -212,7 +214,7 @@ void Preferences::updateGUI()
 	if (!found.isEmpty()) this->colorSchemeChooser->setCurrentItem(found.first());
 
 	QString fontfamily = getValue("editor/fontfamily").toString();
-	int fidx = this->fontChooser->findText(fontfamily);
+	int fidx = this->fontChooser->findText(fontfamily,Qt::MatchContains);
 	if (fidx >= 0) {
 		this->fontChooser->setCurrentIndex(fidx);
 	}
