@@ -52,7 +52,8 @@ boost {
     unix {
       BMT_TEST1 = /usr/lib64/libboost*thread-mt*
       BMT_TEST2 = /usr/lib/libboost*thread-mt*
-      exists($$BMT_TEST1)|exists($$BMT_TEST2) {
+      BMT_TEST3 = /usr/pkg/lib/libboost*thread-mt* # netbsd
+      exists($$BMT_TEST1)|exists($$BMT_TEST2)|exists($$BMT_TEST3) {
         BOOST_LINK_FLAGS = -lboost_thread-mt -lboost_program_options-mt
       }
     }

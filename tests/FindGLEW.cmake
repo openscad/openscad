@@ -37,13 +37,13 @@ ELSE (WIN32)
         message(STATUS "GLEW_DIR: " ${GLEW_DIR})
 	FIND_PATH( GLEW_INCLUDE_PATH GL/glew.h
                 HINTS ${GLEW_DIR}/include 
-		PATHS /usr/include /usr/local/include
+		PATHS /usr/include /usr/local/include /usr/pkg/include
                 NO_DEFAULT_PATH
 		DOC "The directory where GL/glew.h resides")
 	FIND_LIBRARY( GLEW_LIBRARY
 		NAMES GLEW glew
 		HINTS ${GLEW_DIR}/lib 
-		PATHS /usr/lib /usr/local/lib
+		PATHS /usr/lib /usr/local/lib /usr/pkg/lib
                 NO_DEFAULT_PATH
 		DOC "The GLEW library")
 ENDIF (WIN32)
