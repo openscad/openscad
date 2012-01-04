@@ -154,9 +154,9 @@ void GLView::initializeGL()
 														 "Extensions:\n"
 														 "%s\n",
 														 glewGetString(GLEW_VERSION),
+														 glGetString(GL_VERSION),
 														 glGetString(GL_RENDERER),
 														 glGetString(GL_VENDOR),
-														 glGetString(GL_VERSION),
 														 rbits, gbits, bbits, abits, dbits, sbits,
 														 glGetString(GL_EXTENSIONS));
 // FIXME: glGetString(GL_EXTENSIONS) is deprecated in OpenGL 3.0.
