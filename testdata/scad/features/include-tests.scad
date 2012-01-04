@@ -7,7 +7,7 @@ include <non/existent/path/non-file>
 //Test with empty path 
 include <include-test5.scad>
 
-//Test without preceeding space
+//Test without preceding space
 include<include-test5.scad>
 
 //Test with other strange character that is allowed
@@ -34,7 +34,7 @@ module test1()
 	translate([-2,-2,0]) test6();
 
 	//Just to give a top level object
-	translate([0,-2,0]) sphere(0.7, $fn=16);
+	translate([0,-2,0]) sphere(test2_variable, $fn=16);
 }
 
 test1();
