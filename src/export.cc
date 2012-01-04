@@ -83,7 +83,6 @@ void export_stl(CGAL_Nef_polyhedron *root_N, std::ostream &output, QProgressDial
 			stream.str("");
 			stream << x3 << " " << y3 << " " << z3;
 			std::string vs3 = stream.str();
-			CGAL_Polyhedron::Traits::Vector_3 normal(1,0,0);
 			if (vs1 != vs2 && vs1 != vs3 && vs2 != vs3) {
 				// The above condition ensures that there are 3 distinct vertices, but
 				// they may be collinear. If they are, the unit normal is meaningless
@@ -91,16 +90,16 @@ void export_stl(CGAL_Nef_polyhedron *root_N, std::ostream &output, QProgressDial
 				// collinear then the unit normal must be calculated from the
 				// components.
 				if (!CGAL::collinear(v1.point(),v2.point(),v3.point())) {
-					// Pseudocode: CGAL kernel must be set up to enable unit_normal and
-					// Vector type must be declared as Vector_3<Kernel>.
-					// http://www.cgal.org/Manual/latest/doc_html/cgal_manual/Kernel_23_ref/Function_unit_normal.html
-					normal = CGAL::normal(v1.point(),v2.point(),v3.point());
-					normal = normal / sqrt(CGAL::to_double(normal.squared_length()));
-				}	
-				output << "  facet normal "
-							 << CGAL::to_double(normal.x()) << " "
-							 << CGAL::to_double(normal.y()) << " "
-							 << CGAL::to_double(normal.z()) << "\n";
+					CGAL_Polyhedron::Traits::Vector_3 normal = CGAL::normal(v1.point(),v2.point(),v3.point());
+					output << "  facet normal "
+								 << CGAL::sign(normal.x()) * sqrt(CGAL::to_double(normal.x()*normal.x()/normal.squared_length()))
+								 << " "
+								 << CGAL::sign(normal.y()) * sqrt(CGAL::to_double(normal.y()*normal.y()/normal.squared_length()))
+								 << " "
+								 << CGAL::sign(normal.z()) * sqrt(CGAL::to_double(normal.z()*normal.z()/normal.squared_length()))
+								 << "\n";
+				}
+				else output << "  facet normal 1 0 0\n";
 				output << "    outer loop\n";
 				output << "      vertex " << vs1 << "\n";
 				output << "      vertex " << vs2 << "\n";
