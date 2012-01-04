@@ -1,6 +1,10 @@
 OpenSCAD 2012.XX
 ================
 
+Bugfixes:
+o use'ing an non-existing file sometimes crashed under Windows
+o Better font handling: Ensure a monospace font is chosen as default
+
 Deprecations:
 o The old include syntax "<filename.scad>" without the include keyword is no
   longer supported and will cause a syntax error.
