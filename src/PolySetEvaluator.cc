@@ -19,11 +19,13 @@
  */
 shared_ptr<PolySet> PolySetEvaluator::getPolySet(const AbstractNode &node, bool cache)
 {
-	std::string cacheid = this->tree.getIdString(node);
+	const std::string &cacheid = this->tree.getIdString(node);
 
 	if (PolySetCache::instance()->contains(cacheid)) {
-// For cache debugging
-//		PRINTF("Cache hit: %s", cacheid.substr(0, 40).c_str());
+#ifdef DEBUG
+    // For cache debugging
+		PRINTF("PolySetCache hit: %s", cacheid.substr(0, 40).c_str());
+#endif
 		return PolySetCache::instance()->get(cacheid);
 	}
 

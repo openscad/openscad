@@ -6,13 +6,23 @@ PolySetCache *PolySetCache::inst = NULL;
 
 void PolySetCache::insert(const std::string &id, const shared_ptr<PolySet> &ps)
 {
-	this->cache.insert(id, new cache_entry(ps), ps ? ps->polygons.size() : 0);
+	this->cache.insert(id, new cache_entry(ps), ps ? ps->memsize() : 0);
+}
+
+size_t PolySetCache::maxSize() const
+{
+	return this->cache.maxCost();
+}
+
+void PolySetCache::setMaxSize(size_t limit)
+{
+	this->cache.setMaxCost(limit);
 }
 
 void PolySetCache::print()
 {
 	PRINTF("PolySets in cache: %d", this->cache.size());
-	PRINTF("Polygons in cache: %d", this->cache.totalCost());
+	PRINTF("PolySet cache size in bytes: %d", this->cache.totalCost());
 }
 
 PolySetCache::cache_entry::cache_entry(const shared_ptr<PolySet> &ps) : ps(ps)

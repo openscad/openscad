@@ -8,12 +8,27 @@ void CGALCache::insert(const std::string &id, const CGAL_Nef_polyhedron &N)
 {
 	this->cache.insert(id, new CGAL_Nef_polyhedron(N), N.weight());
 #ifdef DEBUG
-	PRINTF("CGAL Cache insert: %s (%d verts)", id.substr(0, 40).c_str(), N.weight());
+	PRINTF("CGAL Cache insert: %s (%d bytes)", id.substr(0, 40).c_str(), N.weight());
 #endif
+}
+
+size_t CGALCache::maxSize() const
+{
+	return this->cache.maxCost();
+}
+
+void CGALCache::setMaxSize(size_t limit)
+{
+	this->cache.setMaxCost(limit);
+}
+
+void CGALCache::clear()
+{
+	cache.clear();
 }
 
 void CGALCache::print()
 {
 	PRINTF("CGAL Polyhedrons in cache: %d", this->cache.size());
-	PRINTF("Vertices in cache: %d", this->cache.totalCost());
+	PRINTF("CGAL cache size in bytes: %d", this->cache.totalCost());
 }

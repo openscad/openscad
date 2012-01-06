@@ -8,14 +8,16 @@
 class CGALCache
 {
 public:	
-	CGALCache(size_t limit = 100000) : cache(limit) {}
+	CGALCache(size_t limit = 100*1024*1024) : cache(limit) {}
 
 	static CGALCache *instance() { if (!inst) inst = new CGALCache; return inst; }
 
 	bool contains(const std::string &id) const { return this->cache.contains(id); }
 	const class CGAL_Nef_polyhedron &get(const std::string &id) const { return *this->cache[id]; }
 	void insert(const std::string &id, const CGAL_Nef_polyhedron &N);
-	void clear() { cache.clear(); }
+	size_t maxSize() const;
+	void setMaxSize(size_t limit);
+	void clear();
 	void print();
 
 private:

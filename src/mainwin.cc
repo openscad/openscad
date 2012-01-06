@@ -408,8 +408,13 @@ void
 MainWindow::loadDesignSettings()
 {
 	QSettings settings;
-	if (settings.value("design/autoReload").toBool())
+	if (settings.value("design/autoReload").toBool()) {
 		designActionAutoReload->setChecked(true);
+	}
+	uint polySetCacheSize = Preferences::inst()->getValue("caches/polysetCacheSize").toUInt();
+	PolySetCache::instance()->setMaxSize(polySetCacheSize);
+	uint cgalCacheSize = Preferences::inst()->getValue("caches/cgalCacheSize").toUInt();
+	CGALCache::instance()->setMaxSize(cgalCacheSize);
 }
 
 MainWindow::~MainWindow()

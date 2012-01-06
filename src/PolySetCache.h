@@ -7,13 +7,15 @@
 class PolySetCache
 {
 public:	
-	PolySetCache(size_t polygonlimit = 100000) : cache(polygonlimit) {}
+	PolySetCache(size_t memorylimit = 100*1024*1024) : cache(memorylimit) {}
 
 	static PolySetCache *instance() { if (!inst) inst = new PolySetCache; return inst; }
 
 	bool contains(const std::string &id) const { return this->cache.contains(id); }
 	shared_ptr<class PolySet> get(const std::string &id) const { return this->cache[id]->ps; }
 	void insert(const std::string &id, const shared_ptr<PolySet> &ps);
+	size_t maxSize() const;
+	void setMaxSize(size_t limit);
 	void clear() { cache.clear(); }
 	void print();
 

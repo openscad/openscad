@@ -27,6 +27,7 @@
 #include "polyset.h"
 #include "linalg.h"
 #include <Eigen/LU>
+#include <boost/foreach.hpp>
 
 /*! /class PolySet
 
@@ -265,4 +266,14 @@ BoundingBox PolySet::getBoundingBox() const
 		}
 	}
 	return bbox;
+}
+
+size_t PolySet::memsize() const
+{
+	size_t mem = 0;
+	BOOST_FOREACH(const Polygon &p, this->polygons) mem += p.size() * sizeof(Vector3d);
+	BOOST_FOREACH(const Polygon &p, this->borders) mem += p.size() * sizeof(Vector3d);
+	mem += this->grid.db.size() * (3 * sizeof(int64_t) + sizeof(void*)) + sizeof(Grid3d<void*>);
+	mem += sizeof(PolySet);
+	return mem;
 }

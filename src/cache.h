@@ -46,6 +46,7 @@
 #define CACHE_H
 
 #include <boost/unordered_map.hpp>
+#include "printutils.h"
 
 template <class Key, class T>
 class Cache
@@ -175,6 +176,9 @@ void Cache<Key,T>::trim(int m)
 	while (n && total > m) {
 		Node *u = n;
 		n = n->p;
+#ifdef DEBUG
+		PRINTF("Trimming cache: %p", u->t);
+#endif
 		unlink(*u);
 	}
 }

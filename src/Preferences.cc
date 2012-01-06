@@ -29,6 +29,8 @@
 #include <QFontDatabase>
 #include <QKeyEvent>
 #include <QSettings>
+#include "PolySetCache.h"
+#include "CGALCache.h"
 
 Preferences *Preferences::instance = NULL;
 
@@ -49,6 +51,8 @@ Preferences::Preferences(QWidget *parent) : QMainWindow(parent)
 	this->defaultmap["3dview/colorscheme"] = this->colorSchemeChooser->currentItem()->text();
 	this->defaultmap["advanced/opencsg_show_warning"] = true;
 	this->defaultmap["advanced/enable_opencsg_opengl1x"] = true;
+	this->defaultmap["caches/polysetCacheSize"] = uint(PolySetCache::instance()->maxSize());
+	this->defaultmap["caches/cgalCacheSize"] = uint(CGALCache::instance()->maxSize());
 
 	// Setup default font (Try to use a nice monospace font)
 	QString fontfamily;
