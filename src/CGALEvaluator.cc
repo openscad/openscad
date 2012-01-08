@@ -49,6 +49,7 @@ CGAL_Nef_polyhedron CGALEvaluator::evaluateCGALMesh(const AbstractNode &node)
 		//    explicitly telling the caller what happened
 		// 3) Somehow ask the user to increase cache size and continue processing
 		assert(isCached(node));
+		assert(this->visitedchildren.empty());
 	}
 	return CGALCache::instance()->get(this->tree.getIdString(node));
 }
