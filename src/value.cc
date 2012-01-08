@@ -369,6 +369,7 @@ std::string Value::toString() const
 	{
 		std::stringstream tmp;
 		tmp.precision(16);
+		tmp.setf(std::ios_base::fixed);
 		tmp << this->num;
 		std::string tmpstr = tmp.str();
 		if (tmpstr.size() > 16) tmpstr.erase(16);

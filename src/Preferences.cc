@@ -47,16 +47,24 @@ Preferences::Preferences(QWidget *parent) : QMainWindow(parent)
 
 	// Setup default settings
 	this->defaultmap["3dview/colorscheme"] = this->colorSchemeChooser->currentItem()->text();
-#ifdef Q_WS_X11
-	this->defaultmap["editor/fontfamily"] = "Mono";
-#elif defined (Q_WS_WIN)
-	this->defaultmap["editor/fontfamily"] = "Console";
-#elif defined (Q_WS_MAC)
-	this->defaultmap["editor/fontfamily"] = "Monaco";
-#endif
- 	this->defaultmap["editor/fontsize"] = 12;
 	this->defaultmap["advanced/opencsg_show_warning"] = true;
 	this->defaultmap["advanced/enable_opencsg_opengl1x"] = true;
+
+	// Setup default font (Try to use a nice monospace font)
+	QString fontfamily;
+#ifdef Q_WS_X11
+	fontfamily = "Mono";
+#elif defined (Q_WS_WIN)
+	fontfamily = "Console";
+#elif defined (Q_WS_MAC)
+	fontfamily = "Monaco";
+#endif
+	QFont font;
+	font.setStyleHint(QFont::TypeWriter);
+	font.setFamily(fontfamily); // this runs Qt's font matching algorithm
+	QString found_family(QFontInfo(font).family());
+	this->defaultmap["editor/fontfamily"] = found_family;
+ 	this->defaultmap["editor/fontsize"] = 12;
 
 	// Toolbar
 	QActionGroup *group = new QActionGroup(this);
