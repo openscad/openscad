@@ -4,6 +4,10 @@
 
 CGALCache *CGALCache::inst = NULL;
 
+CGALCache::CGALCache(size_t limit) : cache(limit)
+{
+}
+
 void CGALCache::insert(const std::string &id, const CGAL_Nef_polyhedron &N)
 {
 	this->cache.insert(id, new CGAL_Nef_polyhedron(N), N.weight());
