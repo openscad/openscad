@@ -10,7 +10,7 @@
 #    http://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Cross-compiling_for_Windows_on_Linux_or_Mac_OS_X
 #  - cross-compile openscad.exe, to verify your installation works properly.
 #  - cd openscad/tests && mkdir build-mingw32 && cd build-mingw32
-#  - cmake .. -DCMAKE_TOOLCHAIN_FILE=CMingw-cross-env.cmake \
+#  - cmake .. -DCMAKE_TOOLCHAIN_FILE=../CMingw-cross-env.cmake \
 #             -DMINGW_CROSS_ENV_DIR=<where mingw-cross-env is installed>
 #  - make should proceed as normal. 
 #  - now run 'ctest' on your *nix machine.
@@ -78,6 +78,7 @@ set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
 
 set(CMAKE_C_COMPILER ${MINGW_CROSS_ENV_DIR}/usr/bin/i686-pc-mingw32-gcc)
 set(CMAKE_CXX_COMPILER ${MINGW_CROSS_ENV_DIR}/usr/bin/i686-pc-mingw32-g++)
+set(CMAKE_RC_COMPILER ${MINGW_CROSS_ENV_DIR}/usr/bin/i686-pc-mingw32-windres)
 set(QT_QMAKE_EXECUTABLE ${MINGW_CROSS_ENV_DIR}/usr/bin/i686-pc-mingw32-qmake)
 set(PKG_CONFIG_EXECUTABLE ${MINGW_CROSS_ENV_DIR}/usr/bin/i686-pc-mingw32-pkg-config)
 set(CMAKE_BUILD_TYPE RelWithDebInfo)

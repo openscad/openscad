@@ -1,27 +1,28 @@
 #include "handle_dep.h"
 #include <string>
 #include <sstream>
-#include <QString>
-#include <QDir>
-#include <QSet>
 #include <stdlib.h> // for system()
 #include <boost/unordered_set.hpp>
 #include <boost/foreach.hpp>
+#include <boost/regex.hpp>
+#include <boost/filesystem.hpp>
+using namespace boost::filesystem;
 
 boost::unordered_set<std::string> dependencies;
 const char *make_command = NULL;
 
 void handle_dep(const std::string &filename)
 {
-	if (filename[0] == '/')
+	path filepath(filename);
+	if (filepath.is_absolute()) {
 		dependencies.insert(filename);
-	else {
-		QString dep = QDir::currentPath() + QString("/") + QString::fromStdString(filename);
-		dependencies.insert(dep.toStdString());
 	}
-	if (!QFile(QString::fromStdString(filename)).exists() && make_command) {
+	else {
+		dependencies.insert((current_path() / filepath).string());
+	}
+	if (!exists(filepath) && make_command) {
 		std::stringstream buf;
-		buf << make_command << " '" << QString::fromStdString(filename).replace("'", "'\\''").toUtf8().data() << "'";
+		buf << make_command << " '" << boost::regex_replace(filename, boost::regex("'"), "'\\''") << "'";
 		system(buf.str().c_str()); // FIXME: Handle error
 	}
 }

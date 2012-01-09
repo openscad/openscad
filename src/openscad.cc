@@ -35,6 +35,7 @@
 #include "nodedumper.h"
 #include "printutils.h"
 #include "handle_dep.h"
+#include "parsersettings.h"
 
 #include <string>
 #include <vector>
@@ -47,12 +48,7 @@
 #endif
 
 #include <QApplication>
-#include <QFile>
 #include <QDir>
-#include <QSet>
-#include <QSettings>
-#include <QTextStream>
-#include <boost/program_options.hpp>
 #include <sstream>
 
 #ifdef Q_WS_MAC
@@ -60,11 +56,15 @@
 #include "AppleEvents.h"
 #endif
 
+#include <boost/program_options.hpp>
+#include <boost/filesystem.hpp>
+
 #ifdef _MSC_VER
 #define snprintf _snprintf
 #endif
 
 namespace po = boost::program_options;
+namespace fs = boost::filesystem;
 
 static void help(const char *progname)
 {
@@ -83,9 +83,8 @@ static void version()
 }
 
 std::string commandline_commands;
-QString currentdir;
+std::string currentdir;
 QString examplesdir;
-QString librarydir;
 
 using std::string;
 using std::vector;
@@ -115,7 +114,7 @@ int main(int argc, char **argv)
 #ifdef Q_WS_MAC
 	app.installEventFilter(new EventFilter(&app));
 #endif
-	QDir original_path = QDir::current();
+	fs::path original_path = fs::current_path();
 
 	// set up groups for QSettings
 	QCoreApplication::setOrganizationName("OpenSCAD");
@@ -200,7 +199,7 @@ int main(int argc, char **argv)
 	}
 #endif
 
-	currentdir = QDir::currentPath();
+	currentdir = fs::current_path().generic_string();
 
 	QDir exdir(QApplication::instance()->applicationDirPath());
 #ifdef Q_WS_MAC
@@ -221,24 +220,7 @@ int main(int argc, char **argv)
 					examplesdir = exdir.path();
 				}
 
-	QDir libdir(QApplication::instance()->applicationDirPath());
-#ifdef Q_WS_MAC
-	libdir.cd("../Resources"); // Libraries can be bundled
-	if (!libdir.exists("libraries")) libdir.cd("../../..");
-#elif defined(Q_OS_UNIX)
-	if (libdir.cd("../share/openscad/libraries")) {
-		librarydir = libdir.path();
-	} else
-		if (libdir.cd("../../share/openscad/libraries")) {
-			librarydir = libdir.path();
-		} else
-			if (libdir.cd("../../libraries")) {
-				librarydir = libdir.path();
-			} else
-#endif
-				if (libdir.cd("libraries")) {
-					librarydir = libdir.path();
-				}
+	parser_init(QApplication::instance()->applicationDirPath().toStdString());
 
 	// Initialize global visitors
 	NodeCache nodecache;
@@ -276,7 +258,6 @@ int main(int argc, char **argv)
 		ModuleInstantiation root_inst;
 		AbstractNode *root_node;
 
-		QFileInfo fileInfo(filename);
 		handle_dep(filename);
 		FILE *fp = fopen(filename, "rt");
 		if (!fp) {
@@ -292,18 +273,17 @@ int main(int argc, char **argv)
 			}
 			fclose(fp);
 			text << commandline_commands;
-			root_module = parse(text.str().c_str(), fileInfo.absolutePath().toLocal8Bit(), false);
+			root_module = parse(text.str().c_str(), fs::absolute(filename).generic_string().c_str(), false);
 			if (!root_module) exit(1);
 		}
 
-		QDir::setCurrent(fileInfo.absolutePath());
-
+		fs::current_path(fs::path(filename).parent_path());
 		AbstractNode::resetIndexCounter();
 		root_node = root_module->evaluate(&root_ctx, &root_inst);
 		tree.setRoot(root_node);
 
 		if (csg_output_file) {
-			QDir::setCurrent(original_path.absolutePath());
+			fs::current_path(original_path);
 			std::ofstream fstream(csg_output_file);
 			if (!fstream.is_open()) {
 				PRINTF("Can't open file \"%s\" for export", csg_output_file);
@@ -316,7 +296,7 @@ int main(int argc, char **argv)
 		else {
 			CGAL_Nef_polyhedron root_N = cgalevaluator.evaluateCGALMesh(*tree.root());
 			
-			QDir::setCurrent(original_path.absolutePath());
+			fs::current_path(original_path);
 			
 			if (deps_output_file) {
 				if (!write_deps(deps_output_file, 
@@ -391,7 +371,7 @@ int main(int argc, char **argv)
 #endif		
 
 		QString qfilename;
-		if (filename) qfilename = QFileInfo(original_path, filename).absoluteFilePath();
+		if (filename) qfilename = QString::fromStdString((original_path / filename).generic_string());
 
 #if 0 /*** disabled by clifford wolf: adds rendering artefacts with OpenCSG ***/
 		// turn on anti-aliasing
@@ -405,8 +385,8 @@ int main(int argc, char **argv)
 		vector<string> inputFiles;
 		if (vm.count("input-file")) {
 			inputFiles = vm["input-file"].as<vector<string> >();
-			for (vector<string>::const_iterator i = inputFiles.begin()+1; i != inputFiles.end(); i++) {
-				new MainWindow(QFileInfo(original_path, i->c_str()).absoluteFilePath());
+			for (vector<string>::const_iterator infile = inputFiles.begin()+1; infile != inputFiles.end(); infile++) {
+				new MainWindow(QString::fromStdString((original_path / *infile).generic_string()));
 			}
 		}
 		app.connect(&app, SIGNAL(lastWindowClosed()), &app, SLOT(quit()));

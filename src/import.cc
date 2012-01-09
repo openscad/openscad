@@ -39,13 +39,15 @@
 #include "cgalutils.h"
 #endif
 
-#include <QFile>
-#include <QRegExp>
-#include <QStringList>
 #include <sys/types.h>
 #include <fstream>
 #include <sstream>
 #include <assert.h>
+#include <boost/algorithm/string.hpp>
+#include <boost/regex.hpp>
+#include <boost/lexical_cast.hpp>
+#include <boost/filesystem.hpp>
+using namespace boost::filesystem;
 #include <boost/assign/std/vector.hpp>
 using namespace boost::assign; // bring 'operator+=()' into scope
 
@@ -79,10 +81,10 @@ AbstractNode *ImportModule::evaluate(const Context *ctx, const ModuleInstantiati
 	std::string filename = c.getAbsolutePath(v.text);
 	import_type_e actualtype = this->type;
 	if (actualtype == TYPE_UNKNOWN) {
-		QFileInfo fi(QString::fromStdString(filename));
-		if (fi.suffix().toLower() == "stl") actualtype = TYPE_STL;
-		else if (fi.suffix().toLower() == "off") actualtype = TYPE_OFF;
-		else if (fi.suffix().toLower() == "dxf") actualtype = TYPE_DXF;
+		std::string ext = boost::algorithm::to_lower_copy(path(filename).extension().string());
+		if (ext == ".stl") actualtype = TYPE_STL;
+		else if (ext == ".off") actualtype = TYPE_OFF;
+		else if (ext == ".dxf") actualtype = TYPE_DXF;
 	}
 
 	ImportNode *node = new ImportNode(inst, actualtype);
@@ -110,48 +112,57 @@ AbstractNode *ImportModule::evaluate(const Context *ctx, const ModuleInstantiati
 	return node;
 }
 
-PolySet *ImportNode::evaluate_polyset(class PolySetEvaluator *evaluator) const
+PolySet *ImportNode::evaluate_polyset(class PolySetEvaluator *) const
 {
 	PolySet *p = NULL;
 
 	if (this->type == TYPE_STL)
 	{
 		handle_dep(this->filename);
-		QFile f(QString::fromStdString(this->filename));
-		if (!f.open(QIODevice::ReadOnly)) {
+		std::ifstream f(this->filename.c_str());
+		if (!f.good()) {
 			PRINTF("WARNING: Can't open import file `%s'.", this->filename.c_str());
 			return p;
 		}
 
 		p = new PolySet();
-		QByteArray data = f.read(5);
-		if (data.size() == 5 && QString(data) == QString("solid"))
-		{
+
+		boost::regex ex_sfe("solid|facet|endloop");
+		boost::regex ex_outer("outer loop");
+		boost::regex ex_vertex("vertex");
+		boost::regex ex_vertices("\\s*vertex\\s+([^\\s]+)\\s+([^\\s]+)\\s+([^\\s]+)");
+
+		char data[5];
+		f.read(data, 5);
+		if (!f.eof() && !memcmp(data, "solid", 5)) {
 			int i = 0;
 			double vdata[3][3];
-			QRegExp splitre = QRegExp("\\s*(vertex)?\\s+");
-			f.readLine();
-			while (!f.atEnd())
-			{
-				QString line = QString(f.readLine()).remove("\n").remove("\r");
-				if (line.contains("solid") || line.contains("facet") || line.contains("endloop"))
+			std::string line;
+			std::getline(f, line);
+			while (!f.eof()) {
+				
+				std::getline(f, line);
+				boost::trim(line);
+				if (boost::regex_search(line, ex_sfe)) {
 					continue;
-				if (line.contains("outer loop")) {
+				}
+				if (boost::regex_search(line, ex_outer)) {
 					i = 0;
 					continue;
 				}
-				if (line.contains("vertex")) {
-					QStringList tokens = line.split(splitre);
-					bool ok[3] = { false, false, false };
-					if (tokens.size() == 4) {
-						vdata[i][0] = tokens[1].toDouble(&ok[0]);
-						vdata[i][1] = tokens[2].toDouble(&ok[1]);
-						vdata[i][2] = tokens[3].toDouble(&ok[2]);
+				boost::smatch results;
+				if (boost::regex_search(line, results, ex_vertices)) {
+					try {
+						for (int v=0;v<3;v++) {
+							vdata[i][v] = boost::lexical_cast<double>(results[v+1]);
+						}
 					}
-					if (!ok[0] || !ok[1] || !ok[2]) {
-						PRINTF("WARNING: Can't parse vertex line `%s'.", line.toAscii().data());
+					catch (boost::bad_lexical_cast &blc) {
+						PRINTF("WARNING: Can't parse vertex line `%s'.", line.c_str());
 						i = 10;
-					} else if (++i == 3) {
+						continue;
+					}
+					if (++i == 3) {
 						p->append_poly();
 						p->append_vertex(vdata[0][0], vdata[0][1], vdata[0][2]);
 						p->append_vertex(vdata[1][0], vdata[1][1], vdata[1][2]);
@@ -162,7 +173,7 @@ PolySet *ImportNode::evaluate_polyset(class PolySetEvaluator *evaluator) const
 		}
 		else
 		{
-			f.read(80-5+4);
+			f.ignore(80-5+4);
 			while (1) {
 #ifdef _MSC_VER
 #pragma pack(push,1)
@@ -177,17 +188,17 @@ PolySet *ImportNode::evaluate_polyset(class PolySetEvaluator *evaluator) const
 #ifdef __GNUC__
 				__attribute__ ((packed))
 #endif
-				data;
+				stldata;
 #ifdef _MSC_VER
 #pragma pack(pop)
 #endif
 
-				if (f.read((char*)&data, sizeof(data)) != sizeof(data))
-					break;
+				f.read((char*)&stldata, sizeof(stldata));
+				if (f.eof()) break;
 				p->append_poly();
-				p->append_vertex(data.x1, data.y1, data.z1);
-				p->append_vertex(data.x2, data.y2, data.z2);
-				p->append_vertex(data.x3, data.y3, data.z3);
+				p->append_vertex(stldata.x1, stldata.y1, stldata.z1);
+				p->append_vertex(stldata.x2, stldata.y2, stldata.z2);
+				p->append_vertex(stldata.x3, stldata.y3, stldata.z3);
 			}
 		}
 	}

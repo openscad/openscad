@@ -32,7 +32,6 @@
 #include <sstream>
 #include <iostream>
 #include <assert.h>
-#include <QRegExp>
 
 #include <boost/foreach.hpp>
 #include <boost/unordered_map.hpp>
@@ -86,6 +85,11 @@ void CGALEvaluator::process(CGAL_Nef_polyhedron &target, const CGAL_Nef_polyhedr
 		// union && difference assert triggered by testdata/scad/bugs/rotate-diff-nonmanifold-crash.scad
 		std::string opstr = op == CGE_UNION ? "union" : op == CGE_INTERSECTION ? "intersection" : op == CGE_DIFFERENCE ? "difference" : op == CGE_MINKOWSKI ? "minkowski" : "UNKNOWN";
 		PRINTF("CGAL error in CGAL_Nef_polyhedron's %s operator: %s", opstr.c_str(), e.what());
+
+		// Minkowski errors can result in corrupt polyhedrons
+		if (op == CGE_MINKOWSKI) {
+			target = src;
+		}
 	}
 	CGAL::set_error_behaviour(old_behaviour);
 }

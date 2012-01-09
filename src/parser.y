@@ -28,11 +28,6 @@
 
 %{
 
-#include <QDir>
-#include <QFile>
-#include <QFileInfo>
-#include <QTextStream>
-
 #include <sys/types.h>
 #include <sys/stat.h>
 #ifndef _MSC_VER
@@ -46,6 +41,9 @@
 #include "printutils.h"
 #include <sstream>
 #include <boost/foreach.hpp>
+#include <boost/filesystem.hpp>
+
+using namespace boost::filesystem;
 
 int parser_error_pos = -1;
 
@@ -605,7 +603,7 @@ AbstractModule *parse(const char *text, const char *path, int debug)
 
 boost::unordered_map<std::string, Module::libs_cache_ent> Module::libs_cache;
 
-Module *Module::compile_library(std::string filename)
+Module *Module::compile_library(const std::string &filename)
 {
 	struct stat st;
 	memset(&st, 0, sizeof(struct stat));
@@ -620,12 +618,19 @@ Module *Module::compile_library(std::string filename)
           return &(*libs_cache[filename].mod);
 	}
 
-	QFile f(QString::fromStdString(filename));
-	if (!f.open(QIODevice::ReadOnly | QIODevice::Text)) {
-		PRINTF("WARNING: Can't open library file `%s'.", filename.c_str());
-		return NULL;
-	}
-	QString text = QTextStream(&f).readAll();
+        FILE *fp = fopen(filename.c_str(), "rt");
+        if (!fp) {
+          fprintf(stderr, "WARNING: Can't open library file '%s'\n", filename.c_str());
+          return NULL;
+        }
+        std::stringstream text;
+        char buffer[513];
+        int ret;
+        while ((ret = fread(buffer, 1, 512, fp)) > 0) {
+          buffer[ret] = 0;
+          text << buffer;
+        }
+        fclose(fp);
 
 	print_messages_push();
 
@@ -636,7 +641,7 @@ Module *Module::compile_library(std::string filename)
 	libs_cache[filename] = e;
 
 	Module *backup_mod = module;
-	Module *lib_mod = dynamic_cast<Module*>(parse(text.toLocal8Bit(), QFileInfo(QString::fromStdString(filename)).absoluteDir().absolutePath().toLocal8Bit(), 0));
+	Module *lib_mod = dynamic_cast<Module*>(parse(text.str().c_str(), path(filename).parent_path().generic_string().c_str(), 0));
 	module = backup_mod;
 
 	if (lib_mod) {

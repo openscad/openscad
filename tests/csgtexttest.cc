@@ -28,6 +28,7 @@
 #include "CSGTextRenderer.h"
 #include "CSGTextCache.h"
 #include "openscad.h"
+#include "parsersettings.h"
 #include "node.h"
 #include "module.h"
 #include "context.h"
@@ -37,9 +38,6 @@
 #include "Tree.h"
 
 #include <QApplication>
-#include <QFile>
-#include <QDir>
-#include <QSet>
 #ifndef _MSC_VER
 #include <getopt.h>
 #endif
@@ -48,10 +46,12 @@
 #include <sstream>
 #include <fstream>
 
+#include <boost/filesystem.hpp>
+namespace fs = boost::filesystem;
+
 std::string commandline_commands;
-QString currentdir;
+std::string currentdir;
 QString examplesdir;
-QString librarydir;
 
 void csgTree(CSGTextCache &cache, const AbstractNode &root)
 {
@@ -75,28 +75,11 @@ int main(int argc, char **argv)
 	Builtins::instance()->initialize();
 
 	QApplication app(argc, argv, false);
-	QDir original_path = QDir::current();
+	fs::path original_path = fs::current_path();
 
-	currentdir = QDir::currentPath();
+	currentdir = fs::current_path().generic_string();
 
-	QDir libdir(QApplication::instance()->applicationDirPath());
-#ifdef Q_WS_MAC
-	libdir.cd("../Resources"); // Libraries can be bundled
-	if (!libdir.exists("libraries")) libdir.cd("../../..");
-#elif defined(Q_OS_UNIX)
-	if (libdir.cd("../share/openscad/libraries")) {
-		librarydir = libdir.path();
-	} else
-	if (libdir.cd("../../share/openscad/libraries")) {
-		librarydir = libdir.path();
-	} else
-	if (libdir.cd("../../libraries")) {
-		librarydir = libdir.path();
-	} else
-#endif
-	if (libdir.cd("libraries")) {
-		librarydir = libdir.path();
-	}
+	parser_init(QApplication::instance()->applicationDirPath().toStdString());
 
 	Context root_ctx;
 	register_builtin(root_ctx);
@@ -110,8 +93,7 @@ int main(int argc, char **argv)
 		exit(1);
 	}
 
-	QFileInfo fileInfo(filename);
-	QDir::setCurrent(fileInfo.absolutePath());
+	fs::current_path(fs::path(filename).parent_path());
 
 	AbstractNode::resetIndexCounter();
 	root_node = root_module->evaluate(&root_ctx, &root_inst);
@@ -123,7 +105,7 @@ int main(int argc, char **argv)
 	csgTree(csgcache, *root_node);
 // 	std::cout << tree.getString(*root_node) << "\n";
 
-	QDir::setCurrent(original_path.absolutePath());
+	current_path(original_path);
 	std::ofstream outfile;
 	outfile.open(outfilename);
 	outfile << csgcache[*root_node] << "\n";

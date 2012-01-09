@@ -171,10 +171,12 @@ o Misc
   - Is there a reason why modules like echo, empty if, empty for loop returns an
     empty AbstractNode instead of being ignored?
   - Dependency tracking of libraries (USE'd modules) isn't implemented. See Mail from nophead 20110823.
-o Grammar
+o Grammar/Parser
   - dim->name -> dim->label
   - A random(seed) function
   - linear_extrude()/rotate_extrude(): Cumbersome names? -> (extrude, revolve, lathe, sweep ?) 
+  - If a compile error occurs in an included file, line numbers are global
+    and doesn't say in which file the error occurred.
 o Hollow donut problem
   When extruding a 2D CSG tree (e.g. a polygon with a hole), the hole
   information is lost when performing the extrusion. For linear

@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>BBEditDocumentType</key>
+	<string>CodelessLanguageModule</string>
+	<key>BBLMCanSpellCheckCodeRuns</key>
+	<true/>
+	<key>BBLMColorsSyntax</key>
+	<true/>
+	<key>BBLMIsCaseSensitive</key>
+	<true/>
+	<key>BBLMKeywordList</key>
+	<array>
+		<string>!</string>
+		<string>#</string>
+		<string>$fa</string>
+		<string>$fn</string>
+		<string>$fs</string>
+		<string>$t</string>
+		<string>%</string>
+		<string>*</string>
+		<string>assign</string>
+		<string>center</string>
+		<string>circle</string>
+		<string>color</string>
+		<string>cube</string>
+		<string>cylinder</string>
+		<string>difference</string>
+		<string>echo</string>
+		<string>for</string>
+		<string>function</string>
+		<string>hull</string>
+		<string>if</string>
+		<string>import_dxf</string>
+		<string>import_stl</string>
+		<string>include</string>
+		<string>intersection</string>
+		<string>intersection_for</string>
+		<string>linear_extrude</string>
+		<string>minkowski</string>
+		<string>mirror</string>
+		<string>module</string>
+		<string>multmatrix</string>
+		<string>polygon</string>
+		<string>polyhedron</string>
+		<string>projection</string>
+		<string>render</string>
+		<string>rotate</string>
+		<string>rotate_extrude</string>
+		<string>scale</string>
+		<string>sphere</string>
+		<string>square</string>
+		<string>str</string>
+		<string>surface</string>
+		<string>translate</string>
+		<string>union</string>
+		<string>use</string>
+	</array>
+	<key>BBLMLanguageCode</key>
+	<string>Oscd</string>
+	<key>BBLMLanguageDisplayName</key>
+	<string>OpenSCAD</string>
+	<key>BBLMScansFunctions</key>
+	<true/>
+	<key>BBLMSuffixMap</key>
+	<array>
+		<dict>
+			<key>BBLMLanguageSuffix</key>
+			<string>.scad</string>
+		</dict>
+	</array>
+	<key>BBLMSupportsTextCompletion</key>
+	<true/>
+	<key>Language Features</key>
+	<dict>
+		<key>Close Block Comments</key>
+		<string>*/</string>
+		<key>Close Parameter Lists</key>
+		<string>)</string>
+		<key>Close Statement Blocks</key>
+		<string>}</string>
+		<key>Close Strings 1</key>
+		<string>"</string>
+		<key>Close Strings 2</key>
+		<string>'</string>
+		<key>End-of-line Ends Strings 1</key>
+		<true/>
+		<key>End-of-line Ends Strings 2</key>
+		<true/>
+		<key>Escape Char in Strings 1</key>
+		<string></string>
+		<key>Escape Char in Strings 2</key>
+		<string></string>
+		<key>Identifier and Keyword Characters</key>
+		<string>!$%*0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz</string>
+		<key>Open Block Comments</key>
+		<string>/*</string>
+		<key>Open Line Comments</key>
+		<string>//</string>
+		<key>Open Parameter Lists</key>
+		<string>(</string>
+		<key>Open Statement Blocks</key>
+		<string>{</string>
+		<key>Open Strings 1</key>
+		<string>"</string>
+		<key>Open Strings 2</key>
+		<string>'</string>
+		<key>Prefix for Functions</key>
+		<string>function</string>
+		<key>Prefix for Procedures</key>
+		<string>module</string>
+		<key>Terminator for Prototypes 1</key>
+		<string></string>
+		<key>Terminator for Prototypes 2</key>
+		<string></string>
+	</dict>
+</dict>
+</plist>

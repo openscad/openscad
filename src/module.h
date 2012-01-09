@@ -65,7 +65,7 @@ public:
 
 	void addChild(ModuleInstantiation *ch) { this->children.push_back(ch); }
 
-	static Module *compile_library(std::string filename);
+	static Module *compile_library(const std::string &filename);
 	static void clear_library_cache();
 
 	typedef boost::unordered_map<std::string, class Module*> ModuleContainer;

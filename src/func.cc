@@ -96,24 +96,14 @@ std::string BuiltinFunction::dump(const std::string &indent, const std::string &
 	return dump.str();
 }
 
-static double deg2rad(double x)
+static inline double deg2rad(double x)
 {
-	while (x < 0.0)
-		x += 360.0;
-	while (x >= 360.0)
-		x -= 360.0;
-	x = x * M_PI * 2.0 / 360.0;
-	return x;
+	return x * M_PI / 180.0;
 }
 
-static double rad2deg(double x)
+static inline double rad2deg(double x)
 {
-	x = x * 360.0 / (M_PI * 2.0);
-	while (x < 0.0)
-		x += 360.0;
-	while (x >= 360.0)
-		x -= 360.0;
-	return x;
+	return x * 180.0 / M_PI;
 }
 
 Value builtin_abs(const Context *, const std::vector<std::string>&, const std::vector<Value> &args)

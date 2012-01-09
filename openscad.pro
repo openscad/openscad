@@ -143,7 +143,8 @@ FORMS   += src/MainWindow.ui \
            src/Preferences.ui \
            src/OpenCSGWarningDialog.ui
 
-HEADERS += src/renderer.h \
+HEADERS += src/parsersettings.h \
+           src/renderer.h \
            src/rendersettings.h \
            src/ThrownTogetherRenderer.h \
            src/CGAL_renderer.h \
@@ -224,6 +225,7 @@ SOURCES += src/mathc99.cc \
            src/rotateextrude.cc \
            src/printutils.cc \
            src/progress.cc \
+           src/parsersettings.cc \
            \
            src/nodedumper.cc \
            src/traverser.cc \
@@ -296,3 +298,11 @@ INSTALLS += examples
 libraries.path = $$PREFIX/share/openscad/libraries/
 libraries.files = libraries/*
 INSTALLS += libraries
+
+applications.path = $$PREFIX/share/applications
+applications.files = icons/openscad.desktop
+INSTALLS += applications
+
+icons.path = $$PREFIX/share/pixmaps
+icons.files = icons/openscad.png
+INSTALLS += icons

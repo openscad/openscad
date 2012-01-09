@@ -27,7 +27,6 @@
 #include "polyset.h"
 #include "linalg.h"
 #include <Eigen/LU>
-#include <QColor>
 
 /*! /class PolySet
 

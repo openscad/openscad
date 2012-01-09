@@ -4,6 +4,7 @@
 #include "tests-common.h"
 #include "system-gl.h"
 #include "openscad.h"
+#include "parsersettings.h"
 #include "builtin.h"
 #include "context.h"
 #include "node.h"
@@ -23,16 +24,16 @@
 #include "OffscreenView.h"
 
 #include <QApplication>
-#include <QFile>
-#include <QDir>
-#include <QSet>
 #include <QTimer>
 
 #include <sstream>
 #include <vector>
 
 #include <boost/program_options.hpp>
+#include <boost/filesystem.hpp>
+
 namespace po = boost::program_options;
+namespace fs = boost::filesystem;
 
 using std::string;
 using std::vector;
@@ -40,7 +41,6 @@ using std::cerr;
 using std::cout;
 
 std::string commandline_commands;
-QString librarydir;
 
 //#define DEBUG
 
@@ -116,7 +116,7 @@ po::variables_map parse_options(int argc, char *argv[])
 //        po::options_description hidden("Hidden options");
 //        hidden.add_options()
                 ("input-file", po::value< vector<string> >(), "input file")
-                ("output-file", po::value< vector<string> >(), "ouput file");
+                ("output-file", po::value< vector<string> >(), "output file");
 
         po::positional_options_description p;
         p.add("input-file", 1).add("output-file", 1);
@@ -252,28 +252,11 @@ int csgtestcore(int argc, char *argv[], test_type_e test_type)
 
 	QApplication app(argc, argv, false);
 
-	QDir original_path = QDir::current();
+	fs::path original_path = fs::current_path();
 
-	QString currentdir = QDir::currentPath();
+	std::string currentdir = fs::current_path().generic_string();
 
-	QDir libdir(QApplication::instance()->applicationDirPath());
-#ifdef Q_WS_MAC
-	libdir.cd("../Resources"); // Libraries can be bundled
-	if (!libdir.exists("libraries")) libdir.cd("../../..");
-#elif defined(Q_OS_UNIX)
-	if (libdir.cd("../share/openscad/libraries")) {
-		librarydir = libdir.path();
-	} else
-	if (libdir.cd("../../share/openscad/libraries")) {
-		librarydir = libdir.path();
-	} else
-	if (libdir.cd("../../libraries")) {
-		librarydir = libdir.path();
-	} else
-#endif
-	if (libdir.cd("libraries")) {
-		librarydir = libdir.path();
-	}
+	parser_init(QApplication::instance()->applicationDirPath().toStdString());
 
 	Context root_ctx;
 	register_builtin(root_ctx);
@@ -291,8 +274,7 @@ int csgtestcore(int argc, char *argv[], test_type_e test_type)
 	}
 
 	if (!sysinfo_dump) {
-		QFileInfo fileInfo(filename);
-		QDir::setCurrent(fileInfo.absolutePath());
+		fs::current_path(fs::path(filename).parent_path());
 	}
 
 	AbstractNode::resetIndexCounter();
@@ -345,7 +327,7 @@ int csgtestcore(int argc, char *argv[], test_type_e test_type)
 		}
 	}
 	
-	QDir::setCurrent(original_path.absolutePath());
+	fs::current_path(original_path);
 
 	try {
 		csgInfo.glview = new OffscreenView(512,512);

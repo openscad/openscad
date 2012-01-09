@@ -368,10 +368,17 @@ std::string Value::toString() const
 		// across platforms for testing purposes.
 	{
 		std::stringstream tmp;
-		tmp.precision(16);
+		tmp.precision(12);
+		tmp.setf(std::ios_base::fixed);
 		tmp << this->num;
 		std::string tmpstr = tmp.str();
-		if (tmpstr.size() > 16) tmpstr.erase(16);
+		size_t endpos = tmpstr.find_last_not_of('0');
+		if (endpos >= 0 && tmpstr[endpos] == '.') endpos--;
+		tmpstr = tmpstr.substr(0, endpos+1);
+		size_t dotpos = tmpstr.find('.');
+		if (dotpos != std::string::npos) {
+			if (tmpstr.size() - dotpos > 12) tmpstr.erase(dotpos + 12);
+		}
 		stream << tmpstr;
 	}
 #else
@@ -435,6 +442,7 @@ std::ostream &operator<<(std::ostream &stream, const Filename &filename)
 	return stream;
 }
 
+// FIXME: This could probably be done more elegantly using boost::regex
 std::ostream &operator<<(std::ostream &stream, const QuotedString &s)
 {
 	stream << '"';

@@ -125,7 +125,7 @@ if (NOT $ENV{BOOSTDIR} STREQUAL "")
   message(STATUS "BOOST_ROOT: " ${BOOST_ROOT})
 endif()
 
-find_package( Boost 1.35.0 COMPONENTS thread program_options REQUIRED)
+find_package( Boost 1.35.0 COMPONENTS thread program_options filesystem system regex REQUIRED)
 message(STATUS "Boost includes found: " ${Boost_INCLUDE_DIRS})
 message(STATUS "Boost libraries found:")
 foreach(boostlib ${Boost_LIBRARIES})
@@ -300,6 +300,7 @@ add_definitions(-DOPENSCAD_TESTING)
 
 set(CORE_SOURCES
   tests-common.cc 
+  ../src/parsersettings.cc
   ../src/mathc99.cc
   ../src/linalg.cc
   ../src/handle_dep.cc 

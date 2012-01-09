@@ -33,9 +33,10 @@
 #include "context.h"
 
 #include "mathc99.h"
-#include <QDateTime>
-#include <QFileInfo>
 #include <sstream>
+
+#include <boost/filesystem.hpp>
+using namespace boost::filesystem;
 
 boost::unordered_map<std::string,Value> dxf_dim_cache;
 boost::unordered_map<std::string,Value> dxf_cross_cache;
@@ -62,12 +63,10 @@ Value builtin_dxf_dim(const Context *ctx, const std::vector<std::string> &argnam
 			name = args[i].text;
 	}
 
-	QFileInfo fileInfo(QString::fromStdString(filename));
-
 	std::stringstream keystream;
 	keystream << filename << "|" << layername << "|" << name << "|" << xorigin
-						<< "|" << yorigin <<"|" << scale << "|" << fileInfo.lastModified().toTime_t() 
-						<< "|" << fileInfo.size();
+						<< "|" << yorigin <<"|" << scale << "|" << last_write_time(filename)
+						<< "|" << file_size(filename);
 	std::string key = keystream.str();
 	if (dxf_dim_cache.find(key) != dxf_dim_cache.end())
 		return dxf_dim_cache.find(key)->second;
@@ -144,12 +143,10 @@ Value builtin_dxf_cross(const Context *ctx, const std::vector<std::string> &argn
 			args[i].getnum(scale);
 	}
 
-	QFileInfo fileInfo(QString::fromStdString(filename));
-
 	std::stringstream keystream;
 	keystream << filename << "|" << layername << "|" << xorigin << "|" << yorigin
-						<< "|" << scale << "|" << fileInfo.lastModified().toTime_t()
-						<< "|" << fileInfo.size();
+						<< "|" << scale << "|" << last_write_time(filename)
+						<< "|" << file_size(filename);
 	std::string key = keystream.str();
 
 	if (dxf_cross_cache.find(key) != dxf_cross_cache.end())
