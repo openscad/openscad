@@ -46,6 +46,7 @@
 #define CACHE_H
 
 #include <boost/unordered_map.hpp>
+#include <boost/format.hpp>
 #include "printutils.h"
 
 template <class Key, class T>
@@ -177,7 +178,7 @@ void Cache<Key,T>::trim(int m)
 		Node *u = n;
 		n = n->p;
 #ifdef DEBUG
-		PRINTF("Trimming cache: %p", u->t);
+		PRINTF("Trimming cache: %s (%d bytes)", str(boost::format("%1%") % *u->keyPtr).c_str(), u->c);
 #endif
 		unlink(*u);
 	}

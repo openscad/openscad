@@ -42,16 +42,12 @@ CGAL_Nef_polyhedron CGALEvaluator::evaluateCGALMesh(const AbstractNode &node)
 	if (!isCached(node)) {
 		Traverser evaluate(*this, node, Traverser::PRE_AND_POSTFIX);
 		evaluate.execute();
-		// FIXME: If the root node didn't fit into the cache, the following assert
-    // will fail. We should handle this differently:
-		// 1) Return a NULL polyhedron, so the caller knows what happens
-		// 2) Return the polyhedron in a reference parameter and return a status code
-		//    explicitly telling the caller what happened
-		// 3) Somehow ask the user to increase cache size and continue processing
-		assert(isCached(node));
+		return this->root;
 		assert(this->visitedchildren.empty());
 	}
-	return CGALCache::instance()->get(this->tree.getIdString(node));
+	else {
+		return CGALCache::instance()->get(this->tree.getIdString(node));
+	}
 }
 
 bool CGALEvaluator::isCached(const AbstractNode &node) const
@@ -360,11 +356,11 @@ void CGALEvaluator::addToParent(const State &state, const AbstractNode &node, co
 	else {
 		// Root node, insert into cache
 		if (!isCached(node)) {
-			CGALCache::instance()->insert(this->tree.getIdString(node), N);
-  		// FIXME: If the root node didn't fit into the cache, the following assert
-      // will fail. See evaluateCGALMesh(const AbstractNode &node)
-			assert(isCached(node));
+			if (!CGALCache::instance()->insert(this->tree.getIdString(node), N)) {
+				PRINTF("WARNING: CGAL Evaluator: Root node didn't fit into cache");
+			}
 		}
+		this->root = N;
 	}
 }
 

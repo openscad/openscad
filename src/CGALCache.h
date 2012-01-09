@@ -13,8 +13,8 @@ public:
 	static CGALCache *instance() { if (!inst) inst = new CGALCache; return inst; }
 
 	bool contains(const std::string &id) const { return this->cache.contains(id); }
-	const class CGAL_Nef_polyhedron &get(const std::string &id) const { return *this->cache[id]; }
-	void insert(const std::string &id, const CGAL_Nef_polyhedron &N);
+	const class CGAL_Nef_polyhedron &get(const std::string &id) const;
+	bool insert(const std::string &id, const CGAL_Nef_polyhedron &N);
 	size_t maxSize() const;
 	void setMaxSize(size_t limit);
 	void clear();
