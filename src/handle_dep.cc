@@ -18,7 +18,7 @@ void handle_dep(const std::string &filename)
 		dependencies.insert(filename);
 	}
 	else {
-		dependencies.insert((current_path() / filepath).native());
+		dependencies.insert((current_path() / filepath).string());
 	}
 	if (!exists(filepath) && make_command) {
 		std::stringstream buf;

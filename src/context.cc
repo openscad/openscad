@@ -176,7 +176,7 @@ AbstractNode *Context::evaluate_module(const ModuleInstantiation &inst) const
 std::string Context::getAbsolutePath(const std::string &filename) const
 {
 	if (!filename.empty()) {
-		return absolute(path(this->document_path) / filename).native();
+		return absolute(path(this->document_path) / filename).string();
 	}
 	else {
 		return filename;
