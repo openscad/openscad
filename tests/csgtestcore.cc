@@ -116,7 +116,7 @@ po::variables_map parse_options(int argc, char *argv[])
 //        po::options_description hidden("Hidden options");
 //        hidden.add_options()
                 ("input-file", po::value< vector<string> >(), "input file")
-                ("output-file", po::value< vector<string> >(), "ouput file");
+                ("output-file", po::value< vector<string> >(), "output file");
 
         po::positional_options_description p;
         p.add("input-file", 1).add("output-file", 1);
