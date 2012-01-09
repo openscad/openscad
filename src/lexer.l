@@ -34,7 +34,7 @@
 #include <boost/foreach.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/filesystem.hpp>
-using namespace boost::filesystem;
+namespace fs = boost::filesystem;
 
 //isatty for visual c++ and mingw-cross-env
 #if defined __WIN32__ && ! defined _MSC_VER
@@ -74,8 +74,8 @@ extern const char *parser_source_path;
 }
 
 void includefile();
-path sourcepath();
-std::vector<path> path_stack;
+fs::path sourcepath();
+std::vector<fs::path> path_stack;
 std::vector<FILE*> openfiles;
 
 std::string filename;
@@ -86,34 +86,34 @@ std::string filepath;
 %option yylineno
 %option noyywrap
 
-%x comment string
-%x include
-%x use
+%x cond_comment cond_string
+%x cond_include
+%x cond_use
 
 D [0-9]
 E [Ee][+-]?{D}+
 
 %%
 
-include[ \t\r\n>]*"<"	{ BEGIN(include); }
-<include>{
+include[ \t\r\n>]*"<"	{ BEGIN(cond_include); }
+<cond_include>{
 [^\t\r\n>]*"/"	{ filepath = yytext; }
 [^\t\r\n>/]+	{ filename = yytext; }
 ">"		{ BEGIN(INITIAL); includefile(); }
 }
 
 
-use[ \t\r\n>]*"<"	{ BEGIN(use); }
-<use>{
+use[ \t\r\n>]*"<"	{ BEGIN(cond_use); }
+<cond_use>{
 [^\t\r\n>]+	{ filename = yytext; }
  ">"		{ 
 	BEGIN(INITIAL); 
-	path usepath = path(parser_source_path) / filename;
-        if (!exists(usepath)) {
-          usepath = librarydir / filename;
+	fs::path usepath = fs::path(parser_source_path) / filename;
+        if (!fs::exists(usepath)) {
+          usepath = fs::path(librarydir) / filename;
 	}
-	handle_dep(absolute(usepath).generic_string());
-	parserlval.text = strdup(absolute(usepath).c_str());
+	handle_dep(fs::absolute(usepath).string());
+	parserlval.text = strdup(fs::absolute(usepath).string().c_str());
 	return TOK_USE;
  }
 }
@@ -144,8 +144,8 @@ use[ \t\r\n>]*"<"	{ BEGIN(use); }
 {D}+\.{D}*{E}?          { parserlval.number = boost::lexical_cast<double>(yytext); return TOK_NUMBER; }
 "$"?[a-zA-Z0-9_]+       { parserlval.text = strdup(yytext); return TOK_ID; }
 
-\"			{ BEGIN(string); stringcontents.clear(); }
-<string>{
+\"			{ BEGIN(cond_string); stringcontents.clear(); }
+<cond_string>{
 \\n			{ stringcontents += '\n'; }
 \\t			{ stringcontents += '\t'; }
 \\r			{ stringcontents += '\r'; }
@@ -159,9 +159,9 @@ use[ \t\r\n>]*"<"	{ BEGIN(use); }
 
 [\n\r\t ]
 \/\/[^\n]*\n?
-"/*" BEGIN(comment);
-<comment>"*/" BEGIN(INITIAL);
-<comment>.|\n
+"/*" BEGIN(cond_comment);
+<cond_comment>"*/" BEGIN(INITIAL);
+<cond_comment>.|\n
 
 "<="	return LE;
 ">="	return GE;
@@ -174,11 +174,11 @@ use[ \t\r\n>]*"<"	{ BEGIN(use); }
 
 %%
 
-path sourcepath()
+fs::path sourcepath()
 {
   if (!path_stack.empty()) return path_stack.back();
   
-  return path(parser_source_path);
+  return fs::path(parser_source_path);
 }
 
 /*
@@ -190,21 +190,21 @@ void includefile()
 {
   if (filename.empty()) return;
 
-  path dirinfo = sourcepath();
+  fs::path dirinfo = sourcepath();
   if (!filepath.empty()) {
     dirinfo /= filepath;
   }
 
-  path finfo = dirinfo / filename;
+  fs::path finfo = dirinfo / filename;
   if (!exists(finfo)) {
-    finfo = librarydir / filepath / filename;
+    finfo = fs::path(librarydir) / filepath / filename;
   }
 
   filepath.clear();
   path_stack.push_back(dirinfo);
 
-  handle_dep(absolute(finfo).generic_string());
-  yyin = fopen(absolute(finfo).c_str(), "r");
+  handle_dep(fs::absolute(finfo).string());
+  yyin = fopen(fs::absolute(finfo).string().c_str(), "r");
   if (!yyin) {
     PRINTF("WARNING: Can't open input file `%s'.", filename.c_str());
     path_stack.pop_back();
