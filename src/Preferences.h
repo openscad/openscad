@@ -19,11 +19,14 @@ public:
 
 public slots:
 	void actionTriggered(class QAction *);
-	void colorSchemeChanged();
-	void fontFamilyChanged(const QString &);
-	void fontSizeChanged(const QString &);
-	void openCSGWarningChanged(bool);
-	void enableOpenCSGChanged(bool);
+	void on_colorSchemeChooser_itemSelectionChanged();
+	void on_fontChooser_activated(const QString &);
+	void on_fontSize_editTextChanged(const QString &);
+	void on_openCSGWarningBox_toggled(bool);
+	void on_enableOpenCSGBox_toggled(bool);
+	void on_cgalCacheSizeEdit_textChanged(const QString &);
+	void on_polysetCacheSizeEdit_textChanged(const QString &);
+	void on_opencsgLimitEdit_textChanged(const QString &);
 
 signals:
 	void requestRedraw() const;

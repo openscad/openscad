@@ -411,9 +411,9 @@ MainWindow::loadDesignSettings()
 	if (settings.value("design/autoReload").toBool()) {
 		designActionAutoReload->setChecked(true);
 	}
-	uint polySetCacheSize = Preferences::inst()->getValue("caches/polysetCacheSize").toUInt();
+	uint polySetCacheSize = Preferences::inst()->getValue("advanced/polysetCacheSize").toUInt();
 	PolySetCache::instance()->setMaxSize(polySetCacheSize);
-	uint cgalCacheSize = Preferences::inst()->getValue("caches/cgalCacheSize").toUInt();
+	uint cgalCacheSize = Preferences::inst()->getValue("advanced/cgalCacheSize").toUInt();
 	CGALCache::instance()->setMaxSize(cgalCacheSize);
 }
 
@@ -804,7 +804,7 @@ void MainWindow::compileCSG(bool procevents)
 			}
 		}
 
-		if (root_chain->polysets.size() > 1000) {
+		if (root_chain->polysets.size() > Preferences::inst()->getValue("advanced/openCSGLimit").toUInt()) {
 			PRINTF("WARNING: Normalized tree has %d elements!", int(root_chain->polysets.size()));
 			PRINTF("WARNING: OpenCSG rendering has been disabled.");
 		}
