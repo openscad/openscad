@@ -113,7 +113,7 @@ use[ \t\r\n>]*"<"	{ BEGIN(use); }
           usepath = librarydir / filename;
 	}
 	handle_dep(absolute(usepath).generic_string());
-	parserlval.text = strdup(absolute(usepath).c_str());
+	parserlval.text = strdup((char*)absolute(usepath).c_str());
 	return TOK_USE;
  }
 }
@@ -204,7 +204,7 @@ void includefile()
   path_stack.push_back(dirinfo);
 
   handle_dep(absolute(finfo).generic_string());
-  yyin = fopen(absolute(finfo).c_str(), "r");
+  yyin = fopen((char*)absolute(finfo).c_str(), "r");
   if (!yyin) {
     PRINTF("WARNING: Can't open input file `%s'.", filename.c_str());
     path_stack.pop_back();
