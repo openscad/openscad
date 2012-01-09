@@ -20,5 +20,6 @@ out.png
 /opencsgtest
 /throwntogethertest
 /cgalstlsanitytest
+/cgalcachetest
 /sysinfo.txt
 /CTestCustom.cmake
