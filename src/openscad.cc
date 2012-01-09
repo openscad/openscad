@@ -276,8 +276,11 @@ int main(int argc, char **argv)
 			root_module = parse(text.str().c_str(), fs::absolute(filename).generic_string().c_str(), false);
 			if (!root_module) exit(1);
 		}
+		
+		fs::path fpath = fs::absolute(fs::path(filename));
+		fs::path fparent = fpath.parent_path();
+		fs::current_path( fparent );
 
-		fs::current_path(fs::path(filename).parent_path());
 		AbstractNode::resetIndexCounter();
 		root_node = root_module->evaluate(&root_ctx, &root_inst);
 		tree.setRoot(root_node);
