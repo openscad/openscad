@@ -3,6 +3,8 @@ OpenSCAD 2012.XX
 
 Features:
 o Snappier GUI while performing CGAL computations (computations running in separate thread)
+o The size of the misc. caches can now be adjusted from Preferences
+o The limit for when to disable OpenCSGcan now be adjusted from Preferences
 
 Bugfixes:
 o use'ing an non-existing file sometimes crashed under Windows
