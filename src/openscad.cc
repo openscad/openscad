@@ -374,7 +374,7 @@ int main(int argc, char **argv)
 #endif		
 
 		QString qfilename;
-		if (filename) qfilename = QString::fromStdString((original_path / filename).generic_string());
+		if (filename) qfilename = QString::fromStdString(fs::absolute(filename).string());
 
 #if 0 /*** disabled by clifford wolf: adds rendering artefacts with OpenCSG ***/
 		// turn on anti-aliasing
