@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>418</width>
-    <height>269</height>
+    <width>531</width>
+    <height>418</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -176,20 +176,64 @@
       <widget class="QWidget" name="pageAdvanced">
        <layout class="QVBoxLayout" name="verticalLayout_3">
         <item>
-         <widget class="QCheckBox" name="openCSGWarningBox">
-          <property name="text">
-           <string>Show OpenCSG capability warning</string>
+         <widget class="QGroupBox" name="groupBox">
+          <property name="title">
+           <string>OpenCSG</string>
           </property>
-          <property name="checked">
-           <bool>true</bool>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QCheckBox" name="enableOpenCSGBox">
-          <property name="text">
-           <string>Enable OpenCSG for OpenGL 1.x</string>
-          </property>
+          <layout class="QVBoxLayout" name="verticalLayout_6">
+           <item>
+            <widget class="QCheckBox" name="openCSGWarningBox">
+             <property name="text">
+              <string>Show capability warning</string>
+             </property>
+             <property name="checked">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QCheckBox" name="enableOpenCSGBox">
+             <property name="text">
+              <string>Enable for OpenGL 1.x</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <layout class="QHBoxLayout" name="horizontalLayout_4">
+             <item>
+              <widget class="QLabel" name="label_7">
+               <property name="text">
+                <string>Turn off rendering at </string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLineEdit" name="opencsgLimitEdit"/>
+             </item>
+             <item>
+              <widget class="QLabel" name="label_8">
+               <property name="text">
+                <string>elements</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <widget class="QCheckBox" name="forceGoldfeatherBox">
+             <property name="text">
+              <string>Force Goldfeather</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+          <zorder>openCSGWarningBox</zorder>
+          <zorder></zorder>
+          <zorder>enableOpenCSGBox</zorder>
+          <zorder>enableOpenCSGBox</zorder>
+          <zorder></zorder>
+          <zorder>openCSGWarningBox</zorder>
+          <zorder>forceGoldfeatherBox</zorder>
          </widget>
         </item>
         <item>
@@ -229,27 +273,6 @@
            <widget class="QLabel" name="label_6">
             <property name="text">
              <string>bytes</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </item>
-        <item>
-         <layout class="QHBoxLayout" name="horizontalLayout_4">
-          <item>
-           <widget class="QLabel" name="label_7">
-            <property name="text">
-             <string>Turn off OpenCSG rendering at </string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QLineEdit" name="opencsgLimitEdit"/>
-          </item>
-          <item>
-           <widget class="QLabel" name="label_8">
-            <property name="text">
-             <string>elements</string>
             </property>
            </widget>
           </item>

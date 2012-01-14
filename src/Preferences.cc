@@ -70,6 +70,7 @@ Preferences::Preferences(QWidget *parent) : QMainWindow(parent)
 	this->defaultmap["advanced/polysetCacheSize"] = uint(PolySetCache::instance()->maxSize());
 	this->defaultmap["advanced/cgalCacheSize"] = uint(CGALCache::instance()->maxSize());
 	this->defaultmap["advanced/openCSGLimit"] = 2000;
+	this->defaultmap["advanced/forceGoldfeather"] = false;
 
 
 	// Toolbar
@@ -207,6 +208,13 @@ void Preferences::on_opencsgLimitEdit_textChanged(const QString &text)
 	// FIXME: Set this globally?
 }
 
+void Preferences::on_forceGoldfeatherBox_toggled(bool state)
+{
+	QSettings settings;
+	settings.setValue("advanced/forceGoldfeather", state);
+	emit openCSGSettingsChanged();
+}
+
 void Preferences::keyPressEvent(QKeyEvent *e)
 {
 #ifdef Q_WS_MAC
@@ -271,10 +279,12 @@ void Preferences::updateGUI()
 	this->cgalCacheSizeEdit->setText(getValue("advanced/cgalCacheSize").toString());
 	this->polysetCacheSizeEdit->setText(getValue("advanced/polysetCacheSize").toString());
 	this->opencsgLimitEdit->setText(getValue("advanced/openCSGLimit").toString());
+	this->forceGoldfeatherBox->setChecked(getValue("advanced/forceGoldfeather").toBool());
 }
 
 void Preferences::apply() const
 {
 	emit fontChanged(getValue("editor/fontfamily").toString(), getValue("editor/fontsize").toUInt());
 	emit requestRedraw();
+	emit openCSGSettingsChanged();
 }

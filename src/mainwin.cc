@@ -41,6 +41,7 @@
 #ifdef ENABLE_OPENCSG
 #include "CSGTermEvaluator.h"
 #include "OpenCSGRenderer.h"
+#include <opencsg.h>
 #endif
 #include "ProgressWidget.h"
 #include "ThrownTogetherRenderer.h"
@@ -347,6 +348,8 @@ MainWindow::MainWindow(const QString &filename)
 	connect(Preferences::inst(), SIGNAL(requestRedraw()), this->glview, SLOT(updateGL()));
 	connect(Preferences::inst(), SIGNAL(fontChanged(const QString&,uint)), 
 					this, SLOT(setFont(const QString&,uint)));
+	connect(Preferences::inst(), SIGNAL(openCSGSettingsChanged()),
+					this, SLOT(openCSGSettingsChanged()));
 	Preferences::inst()->apply();
 
 	// make sure it looks nice..
@@ -1785,4 +1788,11 @@ void MainWindow::setCurrentOutput()
 void MainWindow::clearCurrentOutput()
 {
 	set_output_handler(NULL, NULL);
+}
+
+void MainWindow::openCSGSettingsChanged()
+{
+#ifdef ENABLE_OPENCSG
+	OpenCSG::setOption(OpenCSG::AlgorithmSetting, Preferences::inst()->getValue("advanced/forceGoldfeather").toBool() ? OpenCSG::Goldfeather : OpenCSG::Automatic);
+#endif
 }

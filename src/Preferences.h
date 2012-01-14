@@ -27,10 +27,12 @@ public slots:
 	void on_cgalCacheSizeEdit_textChanged(const QString &);
 	void on_polysetCacheSizeEdit_textChanged(const QString &);
 	void on_opencsgLimitEdit_textChanged(const QString &);
+	void on_forceGoldfeatherBox_toggled(bool);
 
 signals:
 	void requestRedraw() const;
 	void fontChanged(const QString &family, uint size) const;
+	void openCSGSettingsChanged() const;
 
 private:
 	Preferences(QWidget *parent = NULL);

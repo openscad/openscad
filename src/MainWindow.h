@@ -69,6 +69,7 @@ private slots:
 	void setFileName(const QString &filename);
 	void setFont(const QString &family, uint size);
 	void showProgress();
+	void openCSGSettingsChanged();
 
 private:
 	void openFile(const QString &filename);
