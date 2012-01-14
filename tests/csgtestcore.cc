@@ -34,6 +34,7 @@
 
 namespace po = boost::program_options;
 namespace fs = boost::filesystem;
+#include "boosty.h"
 
 using std::string;
 using std::vector;
@@ -254,7 +255,7 @@ int csgtestcore(int argc, char *argv[], test_type_e test_type)
 
 	fs::path original_path = fs::current_path();
 
-	std::string currentdir = fs::current_path().generic_string();
+	std::string currentdir = boosty::stringy( fs::current_path() );
 
 	parser_init(QApplication::instance()->applicationDirPath().toStdString());
 

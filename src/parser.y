@@ -44,6 +44,7 @@
 #include <boost/filesystem.hpp>
 
 using namespace boost::filesystem;
+#include "boosty.h"
 
 int parser_error_pos = -1;
 
@@ -641,7 +642,8 @@ Module *Module::compile_library(const std::string &filename)
 	libs_cache[filename] = e;
 
 	Module *backup_mod = module;
-	Module *lib_mod = dynamic_cast<Module*>(parse(text.str().c_str(), path(filename).parent_path().generic_string().c_str(), 0));
+	std::string pathname = boosty::stringy( fs::path(filename).parent_path() );
+	Module *lib_mod = dynamic_cast<Module*>(parse(text.str().c_str(), pathname.c_str(), 0));
 	module = backup_mod;
 
 	if (lib_mod) {

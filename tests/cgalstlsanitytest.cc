@@ -52,6 +52,7 @@
 
 #include <boost/filesystem.hpp>
 namespace fs = boost::filesystem;
+#include "boosty.h"
 
 std::string commandline_commands;
 std::string currentdir;
@@ -94,7 +95,7 @@ int main(int argc, char **argv)
 	QApplication app(argc, argv, false);
 	fs::path original_path = fs::current_path();
 
-	currentdir = fs::current_path().generic_string();
+	currentdir = boosty::stringy( fs::current_path() );
 
 	parser_init(QApplication::instance()->applicationDirPath().toStdString());
 

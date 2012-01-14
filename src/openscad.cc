@@ -58,6 +58,7 @@
 
 #include <boost/program_options.hpp>
 #include <boost/filesystem.hpp>
+#include "boosty.h"
 
 #ifdef _MSC_VER
 #define snprintf _snprintf
@@ -199,7 +200,7 @@ int main(int argc, char **argv)
 	}
 #endif
 
-	currentdir = fs::current_path().generic_string();
+	currentdir = boosty::stringy( fs::current_path() );
 
 	QDir exdir(QApplication::instance()->applicationDirPath());
 #ifdef Q_WS_MAC
@@ -273,11 +274,13 @@ int main(int argc, char **argv)
 			}
 			fclose(fp);
 			text << commandline_commands;
-			root_module = parse(text.str().c_str(), fs::absolute(filename).generic_string().c_str(), false);
+			fs::path abspath = boosty::absolute( filename );
+			std::string fname = boosty::stringy( abspath );
+			root_module = parse(text.str().c_str(), fname.c_str(), false);
 			if (!root_module) exit(1);
 		}
 		
-		fs::path fpath = fs::absolute(fs::path(filename));
+		fs::path fpath = boosty::absolute( fs::path(filename) );
 		fs::path fparent = fpath.parent_path();
 		fs::current_path( fparent );
 
@@ -374,7 +377,9 @@ int main(int argc, char **argv)
 #endif		
 
 		QString qfilename;
-		if (filename) qfilename = QString::fromStdString(fs::absolute(filename).string());
+		fs::path abspath = boosty::absolute( filename );
+		std::string absname = boosty::stringy( abspath );
+		if (filename) qfilename = QString::fromStdString( absname );
 
 #if 0 /*** disabled by clifford wolf: adds rendering artefacts with OpenCSG ***/
 		// turn on anti-aliasing
