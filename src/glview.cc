@@ -377,8 +377,8 @@ void GLView::paintGL()
 {
 	glEnable(GL_LIGHTING);
 
-	if (orthomode)
-		setupOrtho(viewer_distance);
+	if (orthomode) setupOrtho(viewer_distance);
+	else setupPerspective();
 
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
