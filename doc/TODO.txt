@@ -123,14 +123,24 @@ o When specifying a transparency with the color() statement,
 o Bug: Using the background operator (%) on the only object in a scene triggers a
   CSG error: No top level object found
 
-ENGINE
-------
+CGAL-related
+------------
+o Hollow donut problem
+  When extruding a 2D CSG tree (e.g. a polygon with a hole), the hole
+  information is lost when performing the extrusion. For linear
+  extrusions, this has only a minor visual impact, but for rotate
+  extrusion, the resulting CGAL models will lose the hole. The OpenCSG
+  rendering keeps the hole, but renders slightly incorrect.
+o CGAL issues
+  - CGAL doesn't handle almost planar polygons. Consider splitting into triangles ourselves. See WillamAdams/dodec.scad
+
+LANGUAGE && BUILTINS
+--------------------
 o Primitives
   - Springs, spirals (requested by Cathal Garvey)
   - (TTF) Text
   - Image-based height field like http://www.thingiverse.com/thing:2078
   - mesh (coordinates and indices)
-  - polygon(): Allow omitting the paths parameter to create a single polygon from a list of vertices.
 o 2D Subsystem
   - Performance: Is it necessary to union children before extrusion
     when compiling? Can this be postponed to CGAL evaluation time?
@@ -141,7 +151,6 @@ o Built-in modules
 o Advanced Transformations
   - Add statement for refinement via surface subdivision
   - Add statement for intersections in cartesian product of childs
-  - non-convex minkowski example from chrysn fails with an exception (testdata/scad/bugs/minkowski-assert.scad)
 o Function-Module-Interface
   - Pass a module instanciation to a function (e.g. for a volume() function)
   - Pass a function to a module instanciation (e.g. for dynamic extrusion paths)
@@ -150,17 +159,6 @@ o Language Frontend
   - Rethink for vs. intersection_for vs. group. Should for loops
     generate child lists instead, and make these passable to other
     modules or accessible by child()?
-o DXF Import/Export
-  - Use dxflib from RibbonSoft for import/export? -> investigate
-  - Import
-    - Support for POLYLINE entity
-    - Support for SPLINE entity
-    - Support for LEADER entity
-    - Support for MTEXT entity ?
-    - idea: DXF inline - convert from dxf to OpenSCAD syntax -> parametrize dxf content
-o Mesh optimization on STL export
-  - Remove super small triangles (all sides are short)
-  - Replace super thin triangles (one h is short)
 o Misc
   - center as default: Very often, center=true is used everywhere.
     Make a global variable ($center?) control this to beautify code
@@ -177,14 +175,22 @@ o Grammar/Parser
   - linear_extrude()/rotate_extrude(): Cumbersome names? -> (extrude, revolve, lathe, sweep ?) 
   - If a compile error occurs in an included file, line numbers are global
     and doesn't say in which file the error occurred.
-o Hollow donut problem
-  When extruding a 2D CSG tree (e.g. a polygon with a hole), the hole
-  information is lost when performing the extrusion. For linear
-  extrusions, this has only a minor visual impact, but for rotate
-  extrusion, the resulting CGAL models will lose the hole. The OpenCSG
-  rendering keeps the hole, but renders slightly incorrect.
-o CGAL issues
-  - CGAL doesn't handle almost planar polygons. Consider splitting into triangles ourselves. See WillamAdams/dodec.scad
+
+INFRASTRUCTURE
+--------------
+o DXF Import/Export
+  - Use dxflib from RibbonSoft for import/export? -> investigate
+  - Import
+    - Support for POLYLINE entity
+    - Support for SPLINE entity
+    - Support for LEADER entity
+    - Support for MTEXT entity ?
+    - idea: DXF inline - convert from dxf to OpenSCAD syntax -> parametrize dxf content
+o Mesh optimization on STL export
+  - Remove super small triangles (all sides are short)
+  - Replace super thin triangles (one h is short)
+o Use a logging framework to get debugging/info output more under control?
+  (check log4j, google project)
 
 
 IDEAS FOR LANGUAGE CHANGES
@@ -202,26 +208,15 @@ o Refactor from MainWindow:
   - CSG data structure (compiled model)
   - CGAL data structure (compiled model)
 o C++-ify
-  - Use smart pointers where it makes sense (e.g. instead of homegrown refcount,
-    and to get memory ownership under control)
   - Use static_cast/dynamic_cast instead of C-style casts
 o dxflinextrude and dxfrotextrude could share code
 o Consider decoupling DXF-specific functionality from the 2D subsystem
 o Visitation refactoring
   - Make AbstractNode members private/protected?
-o Consider evaluating all referenced files relative to the document path instead
-  of being absolute. This would e.g. make regression testing of dumpcaching easier.
-  This would require us to pass a document contect to all traversal methods though.
 
 BUILD SYSTEM
 ------------
 o Fedora is reported to ship with byacc, which doesn't support bison extensions (e.g. %debuig). Look into this, either be yacc-compatible or force the build system to use bison.
-o We currently link in -lboost_thread. Should we always use -lboost_thread-mt under Linux or can we pick this up using qmake?
-
-INFRASTRUCTURE
---------------
-o Use a logging framework to get debugging/info output more under control?
-  (check log4j, google project)
 
 DOCUMENTATION
 -------------
@@ -251,8 +246,6 @@ o import_off
 o import_*
   - open polylines
 o include: test subdirs under librarydir (e.g. include <MCAD/gears.scad>)
-o use: Basically same tests as include. + use restrictions
-o include and use: remember filenames with space
 o variants of module transparent() { %child(); }
 o define modules
 o define functions
