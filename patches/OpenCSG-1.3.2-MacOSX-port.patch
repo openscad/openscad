@@ -45,14 +45,14 @@ index 4843a12..04d3f4d 100644
 +INCLUDEPATH += ../include ../
 +
 +# Optionally specify deployment location using the 
-+# MACOSX_DEPLOY_DIR env. variable
-+DEPLOYDIR = $$(MACOSX_DEPLOY_DIR)
++# OPENSCAD_LIBRARIES env. variable
++OPENSCAD_LIBDIR = $$(OPENSCAD_LIBRARIES)
 +
-+!isEmpty(DEPLOYDIR) {
++!isEmpty(OPENSCAD_LIBDIR) {
 +  message("Deploy")
-+  INSTALLDIR     = $$(MACOSX_DEPLOY_DIR)
-+  INCLUDEPATH += $$(MACOSX_DEPLOY_DIR)/include
-+  LIBS += -L$$(MACOSX_DEPLOY_DIR)/lib -lGLEW
++  INSTALLDIR     = $$OPENSCAD_LIBDIR
++  INCLUDEPATH += $$OPENSCAD_LIBDIR/include
++  LIBS += -L$$OPENSCAD_LIBDIR/lib -lGLEW
 +  CONFIG += absolute_library_soname
 +  headers.files = ../include/opencsg.h
 +  headers.path = $$INSTALLDIR/include
