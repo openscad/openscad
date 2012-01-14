@@ -7,16 +7,19 @@
 # The script will create a file called openscad-<versionstring>.zip
 # in the current directory.
 # 
-# Usage: release-common.sh [-v <versionstring>]
+# Usage: release-common.sh [-v <versionstring>] [-c]
 #  -v   Version string (e.g. -v 2010.01)
+#  -c   Build with commit info
 #
 # If no version string is given, todays date will be used (YYYY-MM-DD)
 # If no make target is given, release will be used on Windows, none one Mac OS X
 #
+# The commit info will extracted from git and be passed to qmake as OPENSCAD_COMMIT
+# to identify a build in the about box.
 
 printUsage()
 {
-  echo "Usage: $0 -v <versionstring>
+  echo "Usage: $0 -v <versionstring> -c
   echo
   echo "  Example: $0 -v 2010.01
 }
@@ -29,10 +32,11 @@ fi
 
 echo "Detected OS: $OS"
 
-while getopts 'v:' c
+while getopts 'v:c' c
 do
   case $c in
     v) VERSION=$OPTARG;;
+    c) OPENSCAD_COMMIT=`git log -1 --pretty=format:"%h"`
   esac
 done
 
@@ -66,10 +70,10 @@ esac
 
 case $OS in
     LINXWIN)
-        i686-pc-mingw32-qmake VERSION=$VERSION CONFIG+=$CONFIG CONFIG+=mingw-cross-env CONFIG-=debug openscad.pro
+        i686-pc-mingw32-qmake VERSION=$VERSION OPENSCAD_COMMIT=$OPENSCAD_COMMIT CONFIG+=$CONFIG CONFIG+=mingw-cross-env CONFIG-=debug openscad.pro
     ;;
     *)
-        qmake VERSION=$VERSION CONFIG+=$CONFIG CONFIG-=debug openscad.pro
+        qmake VERSION=$VERSION OPENSCAD_COMMIT=$OPENSCAD_COMMIT CONFIG+=$CONFIG CONFIG-=debug openscad.pro
     ;;
 esac
 

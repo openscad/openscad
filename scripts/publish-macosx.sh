@@ -1,7 +1,12 @@
 #!/bin/sh
 
-VERSION=`date "+%Y.%m.%d"`
+# Set this if we're doing a release build. Comment it out for development builds
 #VERSION=2011.12
+
+if test -z "$VERSION"; then
+  VERSION=`date "+%Y.%m.%d"`
+  COMMIT=-c
+fi
 
 # Turn off ccache, just for safety
 PATH=${PATH//\/opt\/local\/libexec\/ccache:}
@@ -9,7 +14,7 @@ PATH=${PATH//\/opt\/local\/libexec\/ccache:}
 # This is the same location as DEPLOYDIR in macosx-build-dependencies.sh
 export OPENSCAD_LIBRARIES=$PWD/../libraries/install
 
-`dirname $0`/release-common.sh -v $VERSION
+`dirname $0`/release-common.sh -v $VERSION $COMMIT
 if [[ $? != 0 ]]; then
   exit 1
 fi
