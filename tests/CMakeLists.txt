@@ -588,15 +588,15 @@ endforeach()
 
 set_directory_properties(PROPERTIES TEST_INCLUDE_FILE "${CMAKE_SOURCE_DIR}/EnforceConfig.cmake")
 
+# Subst files
+configure_file(${CMAKE_SOURCE_DIR}/../testdata/scad/misc/include-tests-template.scad
+               ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/include-tests.scad)
+configure_file(${CMAKE_SOURCE_DIR}/../testdata/scad/misc/use-tests-template.scad
+               ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/use-tests.scad)
+
 # Find all scad files
 file(GLOB MINIMAL_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/minimal/*.scad)
 file(GLOB FEATURES_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/features/*.scad)
-# Remove included files not to be used as tests
-list(REMOVE_ITEM FEATURES_FILES
-     ${CMAKE_SOURCE_DIR}/../testdata/scad/features/include\ test6.scad
-     ${CMAKE_SOURCE_DIR}/../testdata/scad/features/include-test5.scad
-     ${CMAKE_SOURCE_DIR}/../testdata/scad/features/use\ test6.scad
-     ${CMAKE_SOURCE_DIR}/../testdata/scad/features/use-test5.scad)
 file(GLOB BUGS_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/*.scad)
 file(GLOB SCAD_DXF_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/dxf/*.scad)
 file(GLOB FUNCTION_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/functions/*.scad)
@@ -613,9 +613,13 @@ list(APPEND ECHO_FILES ${FUNCTION_FILES}
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/string-indexing.scad)
 
 list(APPEND DUMPTEST_FILES ${MINIMAL_FILES} ${FEATURES_FILES} ${EXAMPLE_FILES})
-list(APPEND DUMPTEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/escape-test.scad)
+list(APPEND DUMPTEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/escape-test.scad
+                           ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/include-tests.scad
+                           ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/use-tests.scad)
 
 list(APPEND CGALPNGTEST_FILES ${FEATURES_FILES} ${SCAD_DXF_FILES} ${EXAMPLE_FILES})
+list(APPEND CGALPNGTEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/include-tests.scad
+                           ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/use-tests.scad)
 list(APPEND OPENCSGTEST_FILES ${CGALPNGTEST_FILES})
 list(APPEND OPENCSGTEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/bbox-transform-bug.scad)
 list(APPEND THROWNTOGETHERTEST_FILES ${OPENCSGTEST_FILES})

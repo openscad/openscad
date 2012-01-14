@@ -108,12 +108,18 @@ use[ \t\r\n>]*"<"	{ BEGIN(cond_use); }
 [^\t\r\n>]+	{ filename = yytext; }
  ">"		{ 
 	BEGIN(INITIAL); 
-	fs::path usepath = fs::path(parser_source_path) / filename;
-        if (!fs::exists(usepath)) {
-          usepath = fs::path(librarydir) / filename;
-	}
-	handle_dep(fs::absolute(usepath).string());
-	parserlval.text = strdup(fs::absolute(usepath).string().c_str());
+        fs::path usepath;
+        if (fs::path(filename).is_absolute()) {
+          usepath = filename;
+        }
+        else {
+          usepath = fs::path(parser_source_path) / filename;
+          if (!fs::exists(usepath)) {
+            usepath = fs::absolute(fs::path(librarydir) / filename);
+          }
+        }
+	handle_dep(usepath.string());
+	parserlval.text = strdup(usepath.string().c_str());
 	return TOK_USE;
  }
 }
@@ -192,7 +198,12 @@ void includefile()
 
   fs::path dirinfo = sourcepath();
   if (!filepath.empty()) {
-    dirinfo /= filepath;
+    if (fs::path(filepath).is_absolute()) {
+      dirinfo = filepath;
+    }
+    else {
+      dirinfo /= filepath;
+    }
   }
 
   fs::path finfo = dirinfo / filename;

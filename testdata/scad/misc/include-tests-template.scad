@@ -22,8 +22,8 @@ include<test/>
 //Test with empty path and file
 include </>
 
-//Test with empty
-include <>
+//Test with absolute path
+include <@CMAKE_SOURCE_DIR@/../testdata/scad/misc/sub2/test7.scad>
 
 module test1()
 {
@@ -32,6 +32,7 @@ module test1()
 	translate([2,-2,0]) test4();
 	translate([-2,0,0]) test5();
 	translate([-2,-2,0]) test6();
+	translate([0,2,0]) test7();
 
 	//Just to give a top level object
 	translate([0,-2,0]) sphere(test2_variable, $fn=16);
