@@ -33,6 +33,7 @@
 #include <boost/foreach.hpp>
 #include <boost/filesystem.hpp>
 using namespace boost::filesystem;
+#include "boosty.h"
 
 std::vector<const Context*> Context::ctx_stack;
 
@@ -176,7 +177,7 @@ AbstractNode *Context::evaluate_module(const ModuleInstantiation &inst) const
 std::string Context::getAbsolutePath(const std::string &filename) const
 {
 	if (!filename.empty()) {
-		return absolute(path(this->document_path) / filename).string();
+		return boosty::absolute(path(this->document_path) / filename).string();
 	}
 	else {
 		return filename;

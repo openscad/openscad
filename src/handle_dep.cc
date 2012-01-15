@@ -7,6 +7,7 @@
 #include <boost/regex.hpp>
 #include <boost/filesystem.hpp>
 using namespace boost::filesystem;
+#include "boosty.h"
 
 boost::unordered_set<std::string> dependencies;
 const char *make_command = NULL;
@@ -14,7 +15,7 @@ const char *make_command = NULL;
 void handle_dep(const std::string &filename)
 {
 	path filepath(filename);
-	if (filepath.is_absolute()) {
+	if ( boosty::is_absolute( filepath )) {
 		dependencies.insert(filename);
 	}
 	else {

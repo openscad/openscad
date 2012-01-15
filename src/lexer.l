@@ -35,6 +35,7 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/filesystem.hpp>
 namespace fs = boost::filesystem;
+#include "boosty.h"
 
 //isatty for visual c++ and mingw-cross-env
 #if defined __WIN32__ && ! defined _MSC_VER
@@ -109,13 +110,13 @@ use[ \t\r\n>]*"<"	{ BEGIN(cond_use); }
  ">"		{ 
 	BEGIN(INITIAL); 
         fs::path usepath;
-        if (fs::path(filename).is_absolute()) {
+        if ( boosty::is_absolute( fs::path(filename) ) ) {
           usepath = filename;
         }
         else {
           usepath = fs::path(parser_source_path) / filename;
           if (!fs::exists(usepath)) {
-            usepath = fs::absolute(fs::path(librarydir) / filename);
+            usepath = boosty::absolute(fs::path(librarydir) / filename);
           }
         }
 	handle_dep(usepath.string());
@@ -198,7 +199,7 @@ void includefile()
 
   fs::path dirinfo = sourcepath();
   if (!filepath.empty()) {
-    if (fs::path(filepath).is_absolute()) {
+    if (boosty::is_absolute( fs::path(filepath) ) ) {
       dirinfo = filepath;
     }
     else {
@@ -214,8 +215,8 @@ void includefile()
   filepath.clear();
   path_stack.push_back(dirinfo);
 
-  handle_dep(fs::absolute(finfo).string());
-  yyin = fopen(fs::absolute(finfo).string().c_str(), "r");
+  handle_dep(boosty::absolute(finfo).string());
+  yyin = fopen(boosty::absolute(finfo).string().c_str(), "r");
   if (!yyin) {
     PRINTF("WARNING: Can't open input file `%s'.", filename.c_str());
     path_stack.pop_back();

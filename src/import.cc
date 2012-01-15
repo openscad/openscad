@@ -50,6 +50,7 @@
 using namespace boost::filesystem;
 #include <boost/assign/std/vector.hpp>
 using namespace boost::assign; // bring 'operator+=()' into scope
+#include "boosty.h"
 
 class ImportModule : public AbstractModule
 {
@@ -81,7 +82,8 @@ AbstractNode *ImportModule::evaluate(const Context *ctx, const ModuleInstantiati
 	std::string filename = c.getAbsolutePath(v.text);
 	import_type_e actualtype = this->type;
 	if (actualtype == TYPE_UNKNOWN) {
-		std::string ext = boost::algorithm::to_lower_copy(path(filename).extension().string());
+		std::string extraw = boosty::extension_str( path(filename) );
+		std::string ext = boost::algorithm::to_lower_copy( extraw );
 		if (ext == ".stl") actualtype = TYPE_STL;
 		else if (ext == ".off") actualtype = TYPE_OFF;
 		else if (ext == ".dxf") actualtype = TYPE_DXF;
