@@ -60,7 +60,7 @@ inline bool is_absolute( fs::path p )
 
 inline fs::path absolute( fs::path p )
 {
-	return fs::complete( p );
+	return fs::complete(p, fs::current_path());
 }
 
 inline std::string stringy( fs::path p )
