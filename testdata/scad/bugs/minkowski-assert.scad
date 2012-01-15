@@ -7,7 +7,7 @@
    File: /usr/include/CGAL/convex_decomposition_3.h
    Line: 113
 
-   This appears to have been a CGAL issue and it appears to work correctly in OpenSCAD-2011.12 with CGAL-3.9
+   This appears to have been a CGAL issue which was fixe in CGAL-3.9.
 */
 
 minkowski() {
