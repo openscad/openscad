@@ -31,6 +31,9 @@
 #include "stl-utils.h"
 #ifdef ENABLE_OPENCSG
 #  include <opencsg.h>
+#ifndef OPENCSG_VERSION
+#error "OpenCSG 1.3.2 or newer is required"
+#endif
 #endif
 
 class OpenCSGPrim : public OpenCSG::Primitive

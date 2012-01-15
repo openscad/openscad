@@ -37,7 +37,7 @@ development. Other versions may or may not work as well..
 * Qt4 (4.4 - 4.7):
   http://www.qt.nokia.com/
 
-* CGAL (3.6 - 3.9):
+* CGAL (3.9):
   http://www.cgal.org/
 
 * GMP (5.0.x):
