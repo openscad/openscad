@@ -121,7 +121,7 @@ PolySet *ImportNode::evaluate_polyset(class PolySetEvaluator *) const
 	if (this->type == TYPE_STL)
 	{
 		handle_dep(this->filename);
-		std::ifstream f(this->filename.c_str());
+		std::ifstream f(this->filename.c_str(), std::ios::in | std::ios::binary);
 		if (!f.good()) {
 			PRINTF("WARNING: Can't open import file `%s'.", this->filename.c_str());
 			return p;
@@ -209,7 +209,7 @@ PolySet *ImportNode::evaluate_polyset(class PolySetEvaluator *) const
 	{
 #ifdef ENABLE_CGAL
 		CGAL_Polyhedron poly;
-		std::ifstream file(this->filename.c_str());
+		std::ifstream file(this->filename.c_str(), std::ios::in | std::ios::binary);
 		file >> poly;
 		file.close();
 		
