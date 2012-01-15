@@ -101,7 +101,11 @@ unsigned int GuiLocker::gui_locked = 0;
 #define QUOTED(x__) QUOTE(x__)
 
 static char helptitle[] =
-	"OpenSCAD " QUOTED(OPENSCAD_VERSION) " (www.openscad.org)\n\n";
+	"OpenSCAD " QUOTED(OPENSCAD_VERSION)
+#ifdef OPENSCAD_COMMIT
+	" (git " QUOTED(OPENSCAD_COMMIT) ")"
+#endif
+	"\nhttp://www.openscad.org\n\n";
 static char copyrighttext[] =
 	"Copyright (C) 2009-2011 Marius Kintel <marius@kintel.net> and Clifford Wolf <clifford@clifford.at>\n"
 	"\n"
