@@ -2,7 +2,8 @@
 #include "csgterm.h"
 #include "printutils.h"
 
-shared_ptr<CSGTerm> CSGTermNormalizer::normalize(const shared_ptr<CSGTerm> &root)
+shared_ptr<CSGTerm> CSGTermNormalizer::normalize(const shared_ptr<CSGTerm> &root, 
+																								 size_t limit)
 {
 	shared_ptr<CSGTerm> temp = root;
 	while (1) {
@@ -14,8 +15,8 @@ shared_ptr<CSGTerm> CSGTermNormalizer::normalize(const shared_ptr<CSGTerm> &root
 #ifdef DEBUG
 		PRINTF("Normalize count: %d\n", num);
 #endif
-		if (num > 5000) {
-			PRINTF("WARNING: Normalized tree is growing past 5000 elements. Aborting normalization.\n");
+		if (num > limit) {
+			PRINTF("WARNING: Normalized tree is growing past %d elements. Aborting normalization.\n", limit);
 			return root;
 		}
 	}

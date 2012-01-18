@@ -779,7 +779,8 @@ void MainWindow::compileCSG(bool procevents)
 			QApplication::processEvents();
 		
 		CSGTermNormalizer normalizer;
-		this->root_norm_term = normalizer.normalize(this->root_raw_term);
+		size_t normalizelimit = 2 * Preferences::inst()->getValue("advanced/openCSGLimit").toUInt();
+		this->root_norm_term = normalizer.normalize(this->root_raw_term, normalizelimit);
 		assert(this->root_norm_term);
 
 		root_chain = new CSGChain();
@@ -793,7 +794,7 @@ void MainWindow::compileCSG(bool procevents)
 			
 			highlights_chain = new CSGChain();
 			for (unsigned int i = 0; i < highlight_terms.size(); i++) {
-				highlight_terms[i] = normalizer.normalize(highlight_terms[i]);
+				highlight_terms[i] = normalizer.normalize(highlight_terms[i], normalizelimit);
 				highlights_chain->import(highlight_terms[i]);
 			}
 		}
@@ -806,7 +807,7 @@ void MainWindow::compileCSG(bool procevents)
 			
 			background_chain = new CSGChain();
 			for (unsigned int i = 0; i < background_terms.size(); i++) {
-				background_terms[i] = normalizer.normalize(background_terms[i]);
+				background_terms[i] = normalizer.normalize(background_terms[i], normalizelimit);
 				background_chain->import(background_terms[i]);
 			}
 		}

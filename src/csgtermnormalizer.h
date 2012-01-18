@@ -9,7 +9,7 @@ public:
 	CSGTermNormalizer() : counter(0) {}
 	~CSGTermNormalizer() {}
 
-	shared_ptr<class CSGTerm> normalize(const shared_ptr<CSGTerm> &term);
+	shared_ptr<class CSGTerm> normalize(const shared_ptr<CSGTerm> &term, size_t limit);
 
 private:
 	shared_ptr<CSGTerm> normalizePass(shared_ptr<CSGTerm> term) ;
