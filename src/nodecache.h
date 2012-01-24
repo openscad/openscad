@@ -20,12 +20,17 @@ public:
  		return !(*this)[node].empty();
 	}
 
+  /*! Returns a reference to the cached string copy. NB! don't rely on
+	 *  this reference to be valid for long - if the cache is resized
+	 *  internally, existing values are lost.  */
   const std::string & operator[](const AbstractNode &node) const {
     if (this->cache.size() > node.index()) return this->cache[node.index()];
     else return this->nullvalue;
   }
 
-  /*! Returns a reference to the cached string copy */
+  /*! Returns a reference to the cached string copy. NB! don't rely on
+	 *  this reference to be valid for long - if the cache is resized
+	 *  internally, existing values are lost. */
   const std::string &insert(const class AbstractNode &node, const std::string & value) {
     if (this->cache.size() <= node.index()) this->cache.resize(node.index() + 1);
     return this->cache[node.index()] = value;
