@@ -788,7 +788,7 @@ void MainWindow::compileCSG(bool procevents)
 		
 		if (highlight_terms.size() > 0)
 		{
-			PRINTB("Compiling highlights (%zu CSG Trees)...", highlight_terms.size());
+			PRINTB("Compiling highlights (%d CSG Trees)...", highlight_terms.size());
 			if (procevents)
 				QApplication::processEvents();
 			
@@ -801,7 +801,7 @@ void MainWindow::compileCSG(bool procevents)
 		
 		if (background_terms.size() > 0)
 		{
-			PRINTB("Compiling background (%zu CSG Trees)...", background_terms.size());
+			PRINTB("Compiling background (%d CSG Trees)...", background_terms.size());
 			if (procevents)
 				QApplication::processEvents();
 			
