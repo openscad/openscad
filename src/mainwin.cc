@@ -451,6 +451,7 @@ void MainWindow::report_func(const class AbstractNode*, void *vp, int mark)
 	if (percent > thisp->progresswidget->value()) {
 		QMetaObject::invokeMethod(thisp->progresswidget, "setValue", Qt::QueuedConnection,
 															Q_ARG(int, percent));
+		QApplication::processEvents();
 	}
 
 	if (thisp->progresswidget->wasCanceled()) throw ProgressCancelException();
@@ -749,9 +750,8 @@ void MainWindow::compileCSG(bool procevents)
 
 	this->progresswidget = new ProgressWidget(this);
 	connect(this->progresswidget, SIGNAL(requestShow()), this, SLOT(showProgress()));
-	QApplication::processEvents();
 
-	progress_report_prep(root_node, report_func, this);
+	progress_report_prep(this->root_node, report_func, this);
 	try {
 		CGALEvaluator cgalevaluator(this->tree);
 		PolySetCGALEvaluator psevaluator(cgalevaluator);
@@ -1152,12 +1152,9 @@ void MainWindow::actionRenderCGAL()
 	}
 
 	PRINT("Rendering Polygon Mesh using CGAL...");
-	QApplication::processEvents();
 
 	this->progresswidget = new ProgressWidget(this);
 	connect(this->progresswidget, SIGNAL(requestShow()), this, SLOT(showProgress()));
-
-	QApplication::processEvents();
 
 	progress_report_prep(this->root_node, report_func, this);
 
