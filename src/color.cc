@@ -31,8 +31,9 @@
 #include "printutils.h"
 #include <sstream>
 #include <assert.h>
-#include <QColor>
+#include <boost/algorithm/string/case_conv.hpp>
 #include <boost/assign/std/vector.hpp>
+#include <boost/assign/list_of.hpp>
 using namespace boost::assign; // bring 'operator+=()' into scope
 
 class ColorModule : public AbstractModule
@@ -40,7 +41,12 @@ class ColorModule : public AbstractModule
 public:
 	ColorModule() { }
 	virtual AbstractNode *evaluate(const Context *ctx, const ModuleInstantiation *inst) const;
+
+private:
+	static boost::unordered_map<std::string, Vector3f> colormap;
 };
+
+#include "colormap.h"
 
 AbstractNode *ColorModule::evaluate(const Context *ctx, const ModuleInstantiation *inst) const
 {
@@ -63,12 +69,13 @@ AbstractNode *ColorModule::evaluate(const Context *ctx, const ModuleInstantiatio
 			node->color[i] = i < v.vec.size() ? v.vec[i]->num : 1.0;
 	} else if (v.type == Value::STRING) {
 		std::string colorname = v.text;
-		QColor color;
-		color.setNamedColor(QString::fromStdString(colorname));
-		if (color.isValid()) {
-			node->color[0] = color.redF();
-			node->color[1] = color.greenF();
-			node->color[2] = color.blueF();
+		boost::algorithm::to_lower(colorname);
+		Vector3f color;
+		if (colormap.find(colorname) != colormap.end())	{
+			color = colormap[colorname];
+			node->color[0] = color[0]/255;
+			node->color[1] = color[1]/255;
+			node->color[2] = color[2]/255;
 		} else {
 			PRINTF_NOCACHE("WARNING: Color name \"%s\" unknown. Please see", colorname.c_str());
 			PRINTF_NOCACHE("WARNING: http://en.wikipedia.org/wiki/Web_colors");
