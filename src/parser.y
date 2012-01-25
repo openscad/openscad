@@ -559,7 +559,7 @@ int parserlex(void)
 void yyerror (char const *s)
 {
 	// FIXME: We leak memory on parser errors...
-	PRINTF("Parser error in line %d: %s\n", lexerget_lineno(), s);
+	PRINTB("Parser error in line %d: %s\n", lexerget_lineno() % s);
 	module = NULL;
 }
 
@@ -593,7 +593,7 @@ AbstractModule *parse(const char *text, const char *path, int debug)
           Module::ModuleContainer::iterator curr = iter++;
           curr->second = Module::compile_library(curr->first);
           if (!curr->second) {
-            PRINTF("WARNING: Failed to compile library `%s'.", curr->first.c_str());
+            PRINTB("WARNING: Failed to compile library '%s'.", curr->first);
             module->usedlibs.erase(curr);
           }
 	}
@@ -615,7 +615,7 @@ Module *Module::compile_library(const std::string &filename)
         std::string cache_id = idstream.str();
 
 	if (libs_cache.find(filename) != libs_cache.end() && libs_cache[filename].cache_id == cache_id) {
-          PRINTF("%s", libs_cache[filename].msg.c_str());
+          PRINTB("%s", libs_cache[filename].msg);
           return &(*libs_cache[filename].mod);
 	}
 
@@ -635,7 +635,7 @@ Module *Module::compile_library(const std::string &filename)
 
 	print_messages_push();
 
-	PRINTF("Compiling library `%s'.", filename.c_str());
+	PRINTB("Compiling library '%s'.", filename);
 	libs_cache_ent e = { NULL, cache_id, std::string("WARNING: Library `") + filename + "' tries to recursively use itself!" };
 	if (libs_cache.find(filename) != libs_cache.end())
 		delete libs_cache[filename].mod;

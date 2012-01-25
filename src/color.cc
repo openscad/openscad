@@ -47,7 +47,6 @@ private:
 };
 
 #include "colormap.h"
-
 AbstractNode *ColorModule::evaluate(const Context *ctx, const ModuleInstantiation *inst) const
 {
 	ColorNode *node = new ColorNode(inst);
@@ -77,8 +76,8 @@ AbstractNode *ColorModule::evaluate(const Context *ctx, const ModuleInstantiatio
 			node->color[1] = color[1]/255;
 			node->color[2] = color[2]/255;
 		} else {
-			PRINTF_NOCACHE("WARNING: Color name \"%s\" unknown. Please see", colorname.c_str());
-			PRINTF_NOCACHE("WARNING: http://en.wikipedia.org/wiki/Web_colors");
+			PRINTB_NOCACHE("WARNING: Color name \"%s\" unknown. Please see", colorname);
+			PRINT_NOCACHE("WARNING: http://en.wikipedia.org/wiki/Web_colors");
 		}
 	}
 	Value alpha = c.lookup_variable("alpha");

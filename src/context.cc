@@ -101,10 +101,12 @@ void Context::set_variable(const std::string &name, const Value &value)
 
 void Context::set_constant(const std::string &name, const Value &value)
 {
-	if (this->constants.find(name) != this->constants.end())
-		PRINTF("WARNING: Attempt to modify constant '%s'.",name.c_str());
-	else
+	if (this->constants.find(name) != this->constants.end()) {
+		PRINTB("WARNING: Attempt to modify constant '%s'.", name);
+	}
+	else {
 		this->constants[name] = value;
+	}
 }
 
 Value Context::lookup_variable(const std::string &name, bool silent) const
@@ -124,7 +126,7 @@ Value Context::lookup_variable(const std::string &name, bool silent) const
 	if (this->parent)
 		return this->parent->lookup_variable(name, silent);
 	if (!silent)
-		PRINTF("WARNING: Ignoring unknown variable '%s'.", name.c_str());
+		PRINTB("WARNING: Ignoring unknown variable '%s'.", name);
 	return Value();
 }
 
@@ -144,7 +146,7 @@ Value Context::evaluate_function(const std::string &name,
 	}
 	if (this->parent)
 		return this->parent->evaluate_function(name, argnames, argvalues);
-	PRINTF("WARNING: Ignoring unknown function '%s'.", name.c_str());
+	PRINTB("WARNING: Ignoring unknown function '%s'.", name);
 	return Value();
 }
 
@@ -154,7 +156,7 @@ AbstractNode *Context::evaluate_module(const ModuleInstantiation &inst) const
 		AbstractModule *m = this->modules_p->find(inst.name())->second;
 		std::string replacement = Builtins::instance()->isDeprecated(inst.name());
 		if (!replacement.empty()) {
-			PRINTF("DEPRECATED: The %s() module will be removed in future releases. Use %s() instead.", inst.name().c_str(), replacement.c_str());
+			PRINTB("DEPRECATED: The %s() module will be removed in future releases. Use %s() instead.", inst.name() % replacement);
 		}
 		return m->evaluate(this, &inst);
 	}
@@ -167,7 +169,7 @@ AbstractNode *Context::evaluate_module(const ModuleInstantiation &inst) const
 		}
 	}
 	if (this->parent) return this->parent->evaluate_module(inst);
-	PRINTF("WARNING: Ignoring unknown module '%s'.", inst.name().c_str());
+	PRINTB("WARNING: Ignoring unknown module '%s'.", inst.name());
 	return NULL;
 }
 

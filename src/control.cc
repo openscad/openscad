@@ -132,7 +132,7 @@ AbstractNode *ControlModule::evaluate(const Context*, const ModuleInstantiation 
 			if (!inst->argnames[i].empty()) msg << inst->argnames[i] << " = ";
 			msg << inst->argvalues[i];
 		}
-		PRINTF("%s", msg.str().c_str());
+		PRINTB("%s", msg.str());
 	}
 
 	if (type == ASSIGN)

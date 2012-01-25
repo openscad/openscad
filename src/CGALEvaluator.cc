@@ -87,7 +87,7 @@ void CGALEvaluator::process(CGAL_Nef_polyhedron &target, const CGAL_Nef_polyhedr
 	catch (CGAL::Assertion_exception e) {
 		// union && difference assert triggered by testdata/scad/bugs/rotate-diff-nonmanifold-crash.scad
 		std::string opstr = op == CGE_UNION ? "union" : op == CGE_INTERSECTION ? "intersection" : op == CGE_DIFFERENCE ? "difference" : op == CGE_MINKOWSKI ? "minkowski" : "UNKNOWN";
-		PRINTF("CGAL error in CGAL_Nef_polyhedron's %s operator: %s", opstr.c_str(), e.what());
+		PRINTB("CGAL error in CGAL_Nef_polyhedron's %s operator: %s", opstr % e.what());
 
 		// Minkowski errors can result in corrupt polyhedrons
 		if (op == CGE_MINKOWSKI) {
@@ -357,7 +357,7 @@ void CGALEvaluator::addToParent(const State &state, const AbstractNode &node, co
 		// Root node, insert into cache
 		if (!isCached(node)) {
 			if (!CGALCache::instance()->insert(this->tree.getIdString(node), N)) {
-				PRINTF("WARNING: CGAL Evaluator: Root node didn't fit into cache");
+				PRINT("WARNING: CGAL Evaluator: Root node didn't fit into cache");
 			}
 		}
 		this->root = N;
@@ -583,7 +583,7 @@ CGAL_Nef_polyhedron CGALEvaluator::evaluateCGALMesh(const PolySet &ps)
 		pr.reduce();
 		int numpolygons_after = pr.polygons.size();
 		if (numpolygons_after < numpolygons_before) {
-			PRINTF("reduce polygons: %d -> %d", numpolygons_before, numpolygons_after);
+			PRINTB("reduce polygons: %d -> %d", numpolygons_before % numpolygons_after);
 		}
 		return CGAL_Nef_polyhedron(pr.toNef());
 #endif
@@ -632,7 +632,7 @@ CGAL_Nef_polyhedron CGALEvaluator::evaluateCGALMesh(const PolySet &ps)
 			}
 		}
 		catch (CGAL::Assertion_exception e) {
-			PRINTF("CGAL error in CGAL_Nef_polyhedron3(): %s", e.what());
+			PRINTB("CGAL error in CGAL_Nef_polyhedron3(): %s", e.what());
 		}
 		CGAL::set_error_behaviour(old_behaviour);
 		return CGAL_Nef_polyhedron(N);

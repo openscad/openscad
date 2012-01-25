@@ -85,7 +85,7 @@ PolySet *PolySetCGALEvaluator::evaluatePolySet(const ProjectionNode &node)
 		// N.p3 *= CGAL_Nef_polyhedron3(CGAL_Plane(0, 0, 1, 0), CGAL_Nef_polyhedron3::INCLUDED);
 		sum *= Ncube;
 		if (!sum.p3->is_simple()) {
-			PRINTF("WARNING: Body of projection(cut = true) isn't valid 2-manifold! Modify your design..");
+			PRINT("WARNING: Body of projection(cut = true) isn't valid 2-manifold! Modify your design..");
 			goto cant_project_non_simple_polyhedron;
 		}
 
@@ -116,7 +116,7 @@ PolySet *PolySetCGALEvaluator::evaluatePolySet(const ProjectionNode &node)
 	else
 	{
 		if (!sum.p3->is_simple()) {
-			PRINTF("WARNING: Body of projection(cut = false) isn't valid 2-manifold! Modify your design..");
+			PRINT("WARNING: Body of projection(cut = false) isn't valid 2-manifold! Modify your design..");
 			goto cant_project_non_simple_polyhedron;
 		}
 
@@ -302,15 +302,15 @@ PolySet *PolySetCGALEvaluator::extrudeDxfData(const LinearExtrudeNode &node, Dxf
 		if (dxf.paths[i].is_closed)
 			continue;
 		if (first_open_path) {
-			PRINTF("WARNING: Open paths in dxf_linear_extrude(file = \"%s\", layer = \"%s\"):",
-					node.filename.c_str(), node.layername.c_str());
+			PRINTB("WARNING: Open paths in dxf_linear_extrude(file = \"%s\", layer = \"%s\"):",
+					node.filename % node.layername);
 			first_open_path = false;
 		}
-		PRINTF("   %9.5f %10.5f ... %10.5f %10.5f",
-					 dxf.points[dxf.paths[i].indices.front()][0] / node.scale + node.origin_x,
-					 dxf.points[dxf.paths[i].indices.front()][1] / node.scale + node.origin_y, 
-					 dxf.points[dxf.paths[i].indices.back()][0] / node.scale + node.origin_x,
-					 dxf.points[dxf.paths[i].indices.back()][1] / node.scale + node.origin_y);
+		PRINTB("   %9.5f %10.5f ... %10.5f %10.5f",
+					 (dxf.points[dxf.paths[i].indices.front()][0] / node.scale + node.origin_x) %
+					 (dxf.points[dxf.paths[i].indices.front()][1] / node.scale + node.origin_y) %
+					 (dxf.points[dxf.paths[i].indices.back()][0] / node.scale + node.origin_x) %
+					 (dxf.points[dxf.paths[i].indices.back()][1] / node.scale + node.origin_y));
 	}
 
 
@@ -397,7 +397,7 @@ PolySet *PolySetCGALEvaluator::evaluatePolySet(const RenderNode &node)
 	PolySet *ps = NULL;
 	if (!N.empty()) {
 		if (N.dim == 3 && !N.p3->is_simple()) {
-			PRINTF("WARNING: Body of render() isn't valid 2-manifold!");
+			PRINT("WARNING: Body of render() isn't valid 2-manifold!");
 		}
 		else {
 			ps = N.convertToPolyset();

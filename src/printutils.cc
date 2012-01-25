@@ -1,6 +1,5 @@
 #include "printutils.h"
 #include <stdio.h>
-#include <QDate>
 
 std::list<std::string> print_messages_stack;
 OutputHandlerFunc *outputhandler = NULL;

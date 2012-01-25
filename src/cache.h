@@ -178,7 +178,7 @@ void Cache<Key,T>::trim(int m)
 		Node *u = n;
 		n = n->p;
 #ifdef DEBUG
-		PRINTF("Trimming cache: %s (%d bytes)", str(boost::format("%1%") % *u->keyPtr).c_str(), u->c);
+		PRINTB("Trimming cache: %1% (%d bytes)", *u->keyPtr % u->c);
 #endif
 		unlink(*u);
 	}

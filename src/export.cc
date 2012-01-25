@@ -113,7 +113,7 @@ void export_stl(CGAL_Nef_polyhedron *root_N, std::ostream &output)
 
 	}
 	catch (CGAL::Assertion_exception e) {
-		PRINTF("CGAL error in CGAL_Nef_polyhedron3::convert_to_Polyhedron(): %s", e.what());
+		PRINTB("CGAL error in CGAL_Nef_polyhedron3::convert_to_Polyhedron(): %s", e.what());
 	}
 	CGAL::set_error_behaviour(old_behaviour);
 }
@@ -127,7 +127,7 @@ void export_off(CGAL_Nef_polyhedron *root_N, std::ostream &output)
 		output << P;
 	}
 	catch (CGAL::Assertion_exception e) {
-		PRINTF("CGAL error in CGAL_Nef_polyhedron3::convert_to_Polyhedron(): %s", e.what());
+		PRINTB("CGAL error in CGAL_Nef_polyhedron3::convert_to_Polyhedron(): %s", e.what());
 	}
 	CGAL::set_error_behaviour(old_behaviour);
 }

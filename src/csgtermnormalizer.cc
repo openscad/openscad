@@ -13,10 +13,10 @@ shared_ptr<CSGTerm> CSGTermNormalizer::normalize(const shared_ptr<CSGTerm> &root
 
 		int num = count(temp);
 #ifdef DEBUG
-		PRINTF("Normalize count: %d\n", num);
+		PRINTB("Normalize count: %d\n", num);
 #endif
 		if (num > limit) {
-			PRINTF("WARNING: Normalized tree is growing past %d elements. Aborting normalization.\n", limit);
+			PRINTB("WARNING: Normalized tree is growing past %d elements. Aborting normalization.\n", limit);
 			return root;
 		}
 	}

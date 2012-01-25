@@ -4,7 +4,7 @@
 #include <string>
 #include <list>
 #include <iostream>
-#include <QFileInfo>
+#include <boost/format.hpp>
 
 typedef void (OutputHandlerFunc)(const std::string &msg, void *userdata);
 extern OutputHandlerFunc *outputhandler;
@@ -17,13 +17,9 @@ void print_messages_push();
 void print_messages_pop();
 
 void PRINT(const std::string &msg);
-#define PRINTF(_fmt, ...) do { QString _m; _m.sprintf(_fmt, ##__VA_ARGS__); PRINT(_m.toStdString()); } while (0)
-#define PRINTA(_fmt, ...) do { QString _m = QString(_fmt).arg(__VA_ARGS__); PRINT(_m.toStdString()); } while (0)
+#define PRINTB(_fmt, _arg) do { PRINT(str(boost::format(_fmt) % _arg)); } while (0)
 
 void PRINT_NOCACHE(const std::string &msg);
-#define PRINTF_NOCACHE(_fmt, ...) do { QString _m; _m.sprintf(_fmt, ##__VA_ARGS__); PRINT_NOCACHE(_m.toStdString()); } while (0)
-#define PRINTA_NOCACHE(_fmt, ...) do { QString _m = QString(_fmt).arg(__VA_ARGS__); PRINT_NOCACHE(_m.toStdString()); } while (0)
-
-std::ostream &operator<<(std::ostream &os, const QFileInfo &fi);
+#define PRINTB_NOCACHE(_fmt, _arg) do { PRINT_NOCACHE(str(boost::format(_fmt) % _arg)); } while (0)
 
 #endif

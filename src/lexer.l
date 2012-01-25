@@ -218,7 +218,7 @@ void includefile()
   handle_dep(boosty::absolute(finfo).string());
   yyin = fopen(boosty::absolute(finfo).string().c_str(), "r");
   if (!yyin) {
-    PRINTF("WARNING: Can't open input file `%s'.", filename.c_str());
+    PRINTB("WARNING: Can't open input file '%s'.", filename);
     path_stack.pop_back();
     return;
   }

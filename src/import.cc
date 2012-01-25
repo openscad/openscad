@@ -123,7 +123,7 @@ PolySet *ImportNode::evaluate_polyset(class PolySetEvaluator *) const
 		handle_dep(this->filename);
 		std::ifstream f(this->filename.c_str(), std::ios::in | std::ios::binary);
 		if (!f.good()) {
-			PRINTF("WARNING: Can't open import file `%s'.", this->filename.c_str());
+			PRINTB("WARNING: Can't open import file '%s'.", this->filename);
 			return p;
 		}
 
@@ -160,7 +160,7 @@ PolySet *ImportNode::evaluate_polyset(class PolySetEvaluator *) const
 						}
 					}
 					catch (boost::bad_lexical_cast &blc) {
-						PRINTF("WARNING: Can't parse vertex line `%s'.", line.c_str());
+						PRINTB("WARNING: Can't parse vertex line '%s'.", line);
 						i = 10;
 						continue;
 					}
@@ -215,7 +215,7 @@ PolySet *ImportNode::evaluate_polyset(class PolySetEvaluator *) const
 		
 		p = createPolySetFromPolyhedron(poly);
 #else
-  PRINTF("WARNING: OFF import requires CGAL.");
+  PRINT("WARNING: OFF import requires CGAL.");
 #endif
 	}
 
@@ -229,7 +229,7 @@ PolySet *ImportNode::evaluate_polyset(class PolySetEvaluator *) const
 	}
 	else 
 	{
-		PRINTF("ERROR: Unsupported file format while trying to import file '%s'", this->filename.c_str());
+		PRINTB("ERROR: Unsupported file format while trying to import file '%s'", this->filename);
 	}
 
 	if (p) p->convexity = this->convexity;

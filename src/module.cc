@@ -93,7 +93,7 @@ AbstractNode *ModuleInstantiation::evaluate(const Context *ctx) const
 {
 	AbstractNode *node = NULL;
 	if (this->ctx) {
-		PRINTF("WARNING: Ignoring recursive module instantiation of '%s'.", modname.c_str());
+		PRINTB("WARNING: Ignoring recursive module instantiation of '%s'.", modname);
 	} else {
 		// FIXME: Casting away const..
 		ModuleInstantiation *that = (ModuleInstantiation*)this;

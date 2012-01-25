@@ -109,45 +109,45 @@ static void STDCALL tess_end(void)
 static void STDCALL tess_error(GLenum errno)
 {
 	fprintf(stderr, "GLU tesselation error %s", gluErrorString(errno));
-	PRINTF("GLU tesselation error %s", gluErrorString(errno));
+	PRINTB("GLU tesselation error %s", gluErrorString(errno));
 }
 
 static void STDCALL tess_begin_data()
 {
-	PRINTF("GLU tesselation BEGIN_DATA\n");
+	PRINT("GLU tesselation BEGIN_DATA\n");
 }
 
 static void STDCALL tess_edge_flag(GLboolean flag)
 {
-//	PRINTF("GLU tesselation EDGE_FLAG\n");
+//	PRINT("GLU tesselation EDGE_FLAG\n");
 }
 
 static void STDCALL tess_edge_flag_data(GLboolean flag, void *polygon_data)
 {
-	PRINTF("GLU tesselation EDGE_FLAG_DATA\n");
+	PRINT("GLU tesselation EDGE_FLAG_DATA\n");
 }
 static void STDCALL tess_vertex_data(void *vertex_data, void *polygon_data)
 {
-	PRINTF("GLU tesselation VERTEX_DATA\n");
+	PRINT("GLU tesselation VERTEX_DATA\n");
 }
 static void STDCALL tess_end_data(void *polygon_data)
 {
-	PRINTF("GLU tesselation END_DATA\n");
+	PRINT("GLU tesselation END_DATA\n");
 }
 static void STDCALL tess_combine(GLdouble coords[3], void *vertex_data[4],
                                GLfloat weight[4], void **outData )
 {
-	PRINTF("GLU tesselation COMBINE\n");
+	PRINT("GLU tesselation COMBINE\n");
 }
 static void STDCALL tess_combine_data(GLdouble coords[3], void *vertex_data[4],
                                     GLfloat weight[4], void **outData,
                                     void *polygon_data)
 {
-	PRINTF("GLU tesselation COMBINE_DATA\n");
+	PRINT("GLU tesselation COMBINE_DATA\n");
 }
 static void STDCALL tess_error_data(GLenum errno, void *polygon_data )
 {
-	PRINTF("GLU tesselation ERROR_DATA\n");
+	PRINT("GLU tesselation ERROR_DATA\n");
 }
 
 static bool point_on_line(double *p1, double *p2, double *p3)

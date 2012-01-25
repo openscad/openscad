@@ -24,7 +24,7 @@ shared_ptr<PolySet> PolySetEvaluator::getPolySet(const AbstractNode &node, bool 
 	if (PolySetCache::instance()->contains(cacheid)) {
 #ifdef DEBUG
     // For cache debugging
-		PRINTF("PolySetCache hit: %s", cacheid.substr(0, 40).c_str());
+		PRINTB("PolySetCache hit: %s", cacheid.substr(0, 40));
 #endif
 		return PolySetCache::instance()->get(cacheid);
 	}

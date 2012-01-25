@@ -292,7 +292,7 @@ int main(int argc, char **argv)
 			fs::current_path(original_path);
 			std::ofstream fstream(csg_output_file);
 			if (!fstream.is_open()) {
-				PRINTF("Can't open file \"%s\" for export", csg_output_file);
+				PRINTB("Can't open file \"%s\" for export", csg_output_file);
 			}
 			else {
 				fstream << tree.getString(*root_node) << "\n";
@@ -322,7 +322,7 @@ int main(int argc, char **argv)
 				}
 				std::ofstream fstream(stl_output_file);
 				if (!fstream.is_open()) {
-					PRINTF("Can't open file \"%s\" for export", stl_output_file);
+					PRINTB("Can't open file \"%s\" for export", stl_output_file);
 				}
 				else {
 					export_stl(&root_N, fstream);
@@ -341,7 +341,7 @@ int main(int argc, char **argv)
 				}
 				std::ofstream fstream(off_output_file);
 				if (!fstream.is_open()) {
-					PRINTF("Can't open file \"%s\" for export", off_output_file);
+					PRINTB("Can't open file \"%s\" for export", off_output_file);
 				}
 				else {
 					export_off(&root_N, fstream);
@@ -356,7 +356,7 @@ int main(int argc, char **argv)
 				}
 				std::ofstream fstream(dxf_output_file);
 				if (!fstream.is_open()) {
-					PRINTF("Can't open file \"%s\" for export", dxf_output_file);
+					PRINTB("Can't open file \"%s\" for export", dxf_output_file);
 				}
 				else {
 					export_dxf(&root_N, fstream);

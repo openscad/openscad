@@ -77,7 +77,7 @@ DxfData::DxfData(double fn, double fs, double fa,
 
 	std::ifstream stream(filename.c_str());
 	if (!stream.good()) {
-		PRINTF("WARNING: Can't open DXF file `%s'.", filename.c_str());
+		PRINTB("WARNING: Can't open DXF file '%s'.", filename);
 		return;
 	}
 
@@ -141,7 +141,7 @@ DxfData::DxfData(double fn, double fs, double fa,
     }
     catch (boost::bad_lexical_cast &blc) {
 			if (!stream.eof()) {
-				PRINTF("WARNING: Illegal ID '%s' in `%s'", id_str.c_str(), filename.c_str());
+				PRINTB("WARNING: Illegal ID '%s' in `%s'", id_str % filename);
 			}
 			break;
   	}
@@ -380,17 +380,17 @@ DxfData::DxfData(double fn, double fs, double fa,
 		}
     }
     catch (boost::bad_lexical_cast &blc) {
-	  	PRINTF("WARNING: Illegal value %s in `%s'", data.c_str(), filename.c_str());
+	  	PRINTB("WARNING: Illegal value %s in '%s'", data % filename);
   	}
 	}
 
 	BOOST_FOREACH(const EntityList::value_type &i, unsupported_entities_list) {
 		if (layername.empty()) {
-			PRINTF("WARNING: Unsupported DXF Entity `%s' (%x) in `%s'.",
-						 i.first.c_str(), i.second, QuotedString(QDir::current().relativeFilePath(QString::fromStdString(filename)).toStdString()).c_str());
+			PRINTB("WARNING: Unsupported DXF Entity '%s' (%x) in %s.",
+						 i.first % i.second % QuotedString(QDir::current().relativeFilePath(QString::fromStdString(filename)).toStdString()));
 		} else {
-			PRINTF("WARNING: Unsupported DXF Entity `%s' (%x) in layer `%s' of `%s'.",
-						 i.first.c_str(), i.second, layername.c_str(), QuotedString(QDir::current().relativeFilePath(QString::fromStdString(filename)).toStdString()).c_str());
+			PRINTB("WARNING: Unsupported DXF Entity '%s' (%x) in layer '%s' of %s.",
+						 i.first % i.second % layername % QuotedString(QDir::current().relativeFilePath(QString::fromStdString(filename)).toStdString()));
 		}
 	}
 

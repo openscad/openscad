@@ -72,7 +72,7 @@ AbstractNode *ProjectionModule::evaluate(const Context *ctx, const ModuleInstant
 PolySet *ProjectionNode::evaluate_polyset(PolySetEvaluator *evaluator) const
 {
 	if (!evaluator) {
-		PRINTF("WARNING: No suitable PolySetEvaluator found for %s module!", this->name().c_str());
+		PRINTB("WARNING: No suitable PolySetEvaluator found for %s module!", this->name());
 		return NULL;
 	}
 
