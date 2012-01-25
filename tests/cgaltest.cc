@@ -120,7 +120,7 @@ int main(int argc, char **argv)
 
 	current_path(original_path);
 	if (!N.empty()) {
-		export_stl(&N, std::cout, NULL);
+		export_stl(&N, std::cout);
 	}
 
 	Builtins::instance(true);

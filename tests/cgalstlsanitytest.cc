@@ -131,7 +131,7 @@ int main(int argc, char **argv)
 		outfile.open(outfilename);
 
 		std::stringstream out;
-		export_stl(&N, out, NULL);
+		export_stl(&N, out);
 		if (out.str().find("nan") != string::npos) {
 			outfile << "Error: nan found\n";
 			retval = 2;

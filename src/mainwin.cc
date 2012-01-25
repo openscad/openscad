@@ -1318,26 +1318,17 @@ void MainWindow::actionExportSTLorOFF(bool)
 		return;
 	}
 
-	QProgressDialog *pd = new QProgressDialog(
-			stl_mode ? "Exporting object to STL file..." : "Exporting object to OFF file...",
-			QString(), 0, this->root_N->p3->number_of_facets() + 1);
-	pd->setValue(0);
-	pd->setAutoClose(false);
-	pd->show();
-	QApplication::processEvents();
-
 	std::ofstream fstream(stl_filename.toUtf8());
 	if (!fstream.is_open()) {
 		PRINTA("Can't open file \"%1\" for export", stl_filename);
 	}
 	else {
-		if (stl_mode) export_stl(this->root_N, fstream, pd);
-		else export_off(this->root_N, fstream, pd);
+		if (stl_mode) export_stl(this->root_N, fstream);
+		else export_off(this->root_N, fstream);
 		fstream.close();
 
 		PRINTF("%s export finished.", stl_mode ? "STL" : "OFF");
 	}
-	delete pd;
 
 	clearCurrentOutput();
 #endif /* ENABLE_CGAL */
@@ -1385,7 +1376,7 @@ void MainWindow::actionExportDXF()
 		PRINTA("Can't open file \"%s\" for export", dxf_filename);
 	}
 	else {
-		export_dxf(this->root_N, fstream, NULL);
+		export_dxf(this->root_N, fstream);
 		fstream.close();
 		PRINTF("DXF export finished.");
 	}

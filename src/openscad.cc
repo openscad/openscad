@@ -325,7 +325,7 @@ int main(int argc, char **argv)
 					PRINTF("Can't open file \"%s\" for export", stl_output_file);
 				}
 				else {
-					export_stl(&root_N, fstream, NULL);
+					export_stl(&root_N, fstream);
 					fstream.close();
 				}
 			}
@@ -344,7 +344,7 @@ int main(int argc, char **argv)
 					PRINTF("Can't open file \"%s\" for export", off_output_file);
 				}
 				else {
-					export_off(&root_N, fstream, NULL);
+					export_off(&root_N, fstream);
 					fstream.close();
 				}
 			}
@@ -359,7 +359,7 @@ int main(int argc, char **argv)
 					PRINTF("Can't open file \"%s\" for export", dxf_output_file);
 				}
 				else {
-					export_dxf(&root_N, fstream, NULL);
+					export_dxf(&root_N, fstream);
 					fstream.close();
 				}
 			}
