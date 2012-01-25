@@ -43,7 +43,7 @@ public:
 	virtual AbstractNode *evaluate(const Context *ctx, const ModuleInstantiation *inst) const;
 
 private:
-	static boost::unordered_map<std::string, Vector3f> colormap;
+	static boost::unordered_map<std::string, Color4f> colormap;
 };
 
 #include "colormap.h"
@@ -69,12 +69,12 @@ AbstractNode *ColorModule::evaluate(const Context *ctx, const ModuleInstantiatio
 	} else if (v.type == Value::STRING) {
 		std::string colorname = v.text;
 		boost::algorithm::to_lower(colorname);
-		Vector3f color;
+		Color4f color;
 		if (colormap.find(colorname) != colormap.end())	{
 			color = colormap[colorname];
-			node->color[0] = color[0]/255;
-			node->color[1] = color[1]/255;
-			node->color[2] = color[2]/255;
+			node->color[0] = color[0];
+			node->color[1] = color[1];
+			node->color[2] = color[2];
 		} else {
 			PRINTB_NOCACHE("WARNING: Color name \"%s\" unknown. Please see", colorname);
 			PRINT_NOCACHE("WARNING: http://en.wikipedia.org/wiki/Web_colors");

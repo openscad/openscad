@@ -5,6 +5,8 @@
 #include <QSettings>
 #include "ui_Preferences.h"
 #include "rendersettings.h"
+#include "linalg.h"
+#include <map>
 
 class Preferences : public QMainWindow, public Ui::Preferences
 {
@@ -41,7 +43,7 @@ private:
 	void removeDefaultSettings();
 
 	QSettings::SettingsMap defaultmap;
-	QHash<QString, QMap<RenderSettings::RenderColor, QColor> > colorschemes;
+	QHash<QString, std::map<RenderSettings::RenderColor, Color4f> > colorschemes;
 
 	static Preferences *instance;
 };

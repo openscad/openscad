@@ -12,24 +12,24 @@ RenderSettings *RenderSettings::inst(bool erase)
 
 RenderSettings::RenderSettings()
 {
-	this->colors[BACKGROUND_COLOR] = QColor(0xff, 0xff, 0xe5);
-	this->colors[OPENCSG_FACE_FRONT_COLOR] = QColor(0xf9, 0xd7, 0x2c);
-	this->colors[OPENCSG_FACE_BACK_COLOR] = QColor(0x9d, 0xcb, 0x51);
-	this->colors[CGAL_FACE_FRONT_COLOR] = QColor(0xf9, 0xd7, 0x2c);
-	this->colors[CGAL_FACE_BACK_COLOR] = QColor(0x9d, 0xcb, 0x51);
-	this->colors[CGAL_FACE_2D_COLOR] = QColor(0x00, 0xbf, 0x99);
-	this->colors[CGAL_EDGE_FRONT_COLOR] = QColor(0xff, 0x00, 0x00);
-	this->colors[CGAL_EDGE_BACK_COLOR] = QColor(0xff, 0x00, 0x00);
-	this->colors[CGAL_EDGE_2D_COLOR] = QColor(0xff, 0x00, 0x00);
-	this->colors[CROSSHAIR_COLOR] = QColor(0x80, 0x00, 0x00);
+	this->colors[BACKGROUND_COLOR] = Color4f(0xff, 0xff, 0xe5);
+	this->colors[OPENCSG_FACE_FRONT_COLOR] = Color4f(0xf9, 0xd7, 0x2c);
+	this->colors[OPENCSG_FACE_BACK_COLOR] = Color4f(0x9d, 0xcb, 0x51);
+	this->colors[CGAL_FACE_FRONT_COLOR] = Color4f(0xf9, 0xd7, 0x2c);
+	this->colors[CGAL_FACE_BACK_COLOR] = Color4f(0x9d, 0xcb, 0x51);
+	this->colors[CGAL_FACE_2D_COLOR] = Color4f(0x00, 0xbf, 0x99);
+	this->colors[CGAL_EDGE_FRONT_COLOR] = Color4f(0xff, 0x00, 0x00);
+	this->colors[CGAL_EDGE_BACK_COLOR] = Color4f(0xff, 0x00, 0x00);
+	this->colors[CGAL_EDGE_2D_COLOR] = Color4f(0xff, 0x00, 0x00);
+	this->colors[CROSSHAIR_COLOR] = Color4f(0x80, 0x00, 0x00);
 }
 
-QColor RenderSettings::color(RenderColor idx) const
+Color4f RenderSettings::color(RenderColor idx)
 {
 	return this->colors[idx];
 }
 
-void RenderSettings::setColors(const QMap<RenderColor, QColor> &colors)
+void RenderSettings::setColors(const std::map<RenderColor, Color4f> &colors)
 {
 	this->colors = colors;
 }

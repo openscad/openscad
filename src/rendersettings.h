@@ -1,8 +1,8 @@
 #ifndef RENDERSETTINGS_H_
 #define RENDERSETTINGS_H_
 
-#include <QColor>
-#include <QMap>
+#include <map>
+#include "linalg.h"
 
 class RenderSettings
 {
@@ -22,14 +22,14 @@ public:
 		CROSSHAIR_COLOR
 	};
 
-	void setColors(const QMap<RenderColor, QColor> &colors);
-	QColor color(RenderColor idx) const;
+	void setColors(const std::map<RenderColor, Color4f> &colors);
+	Color4f color(RenderColor idx);
 
 private:
 	RenderSettings();
 	~RenderSettings() {}
 
-	QMap<RenderColor, QColor> colors;
+	std::map<RenderColor, Color4f> colors;
 };
 
 #endif

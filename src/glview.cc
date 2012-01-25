@@ -383,8 +383,8 @@ void GLView::paintGL()
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 
-	const QColor &bgcol = RenderSettings::inst()->color(RenderSettings::BACKGROUND_COLOR);
-	glClearColor(bgcol.redF(), bgcol.greenF(), bgcol.blueF(), 0.0);
+	Color4f bgcol = RenderSettings::inst()->color(RenderSettings::BACKGROUND_COLOR);
+	glClearColor(bgcol[0], bgcol[1], bgcol[2], 0.0);
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
@@ -399,8 +399,8 @@ void GLView::paintGL()
 	if (showcrosshairs)
 	{
 		glLineWidth(3);
-		const QColor &col = RenderSettings::inst()->color(RenderSettings::CROSSHAIR_COLOR);
-		glColor3f(col.redF(), col.greenF(), col.blueF());
+		Color4f col = RenderSettings::inst()->color(RenderSettings::CROSSHAIR_COLOR);
+		glColor3f(col[0], col[1], col[2]);
 		glBegin(GL_LINES);
 		for (double xf = -1; xf <= +1; xf += 2)
 		for (double yf = -1; yf <= +1; yf += 2) {

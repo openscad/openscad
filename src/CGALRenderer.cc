@@ -85,8 +85,7 @@ void CGALRenderer::draw(bool showfaces, bool showedges) const
 		// Draw 2D polygons
 		glDisable(GL_LIGHTING);
 // FIXME:		const QColor &col = Preferences::inst()->color(Preferences::CGAL_FACE_2D_COLOR);
-		const QColor &col = QColor(0x00, 0xbf, 0x99);
-		glColor3f(col.redF(), col.greenF(), col.blueF());
+		glColor3f(0.0f, 0.75f, 0.60f);
 		
 		for (size_t i=0; i < this->polyset->polygons.size(); i++) {
 			glBegin(GL_POLYGON);
@@ -108,8 +107,7 @@ void CGALRenderer::draw(bool showfaces, bool showedges) const
 		glDisable(GL_LIGHTING);
 		glLineWidth(2);
 // FIXME:		const QColor &col2 = Preferences::inst()->color(Preferences::CGAL_EDGE_2D_COLOR);
-		const QColor &col2 = QColor(0xff, 0x00, 0x00);
-		glColor3f(col2.redF(), col2.greenF(), col2.blueF());
+		glColor3f(1.0f, 0.0f, 0.0f);
 		
 		// Extract the boundary, including inner boundaries of the polygons
 		for (fci_t fit = E.faces_begin(), facesend = E.faces_end(); fit != facesend; ++fit) {
