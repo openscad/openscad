@@ -150,7 +150,7 @@ if (MINGW_CROSS_ENV_DIR)
   include_directories( ${QT_INCLUDE_DIRS} )
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${QT_CFLAGS_OTHER}")
 else()
-  find_package(Qt4 COMPONENTS QtCore QtGui QtOpenGL REQUIRED)
+  find_package(Qt4 COMPONENTS QtCore REQUIRED)
   include(${QT_USE_FILE})
 endif()
 
