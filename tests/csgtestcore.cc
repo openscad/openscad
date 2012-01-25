@@ -23,7 +23,7 @@
 #include "csgtermnormalizer.h"
 #include "OffscreenView.h"
 
-#include <QApplication>
+#include <QCoreApplication>
 #include <QTimer>
 
 #include <sstream>
@@ -251,13 +251,13 @@ int csgtestcore(int argc, char *argv[], test_type_e test_type)
 
 	Builtins::instance()->initialize();
 
-	QApplication app(argc, argv, false);
+	QCoreApplication app(argc, argv);
 
 	fs::path original_path = fs::current_path();
 
 	std::string currentdir = boosty::stringy( fs::current_path() );
 
-	parser_init(QApplication::instance()->applicationDirPath().toStdString());
+	parser_init(QCoreApplication::instance()->applicationDirPath().toStdString());
 
 	Context root_ctx;
 	register_builtin(root_ctx);

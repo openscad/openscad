@@ -43,7 +43,7 @@
 #include "cgal.h"
 #include "OffscreenView.h"
 
-#include <QApplication>
+#include <QCoreApplication>
 #ifndef _MSC_VER
 #include <getopt.h>
 #endif
@@ -106,12 +106,12 @@ int main(int argc, char **argv)
 #endif
 	Builtins::instance()->initialize();
 
-	QApplication app(argc, argv, false);
+	QCoreApplication app(argc, argv);
 	fs::path original_path = fs::current_path();
 
 	currentdir = boosty::stringy( fs::current_path() );
 
-	parser_init(QApplication::instance()->applicationDirPath().toStdString());
+	parser_init(QCoreApplication::instance()->applicationDirPath().toStdString());
 
 	Context root_ctx;
 	register_builtin(root_ctx);
