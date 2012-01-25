@@ -55,13 +55,17 @@ Preferences::Preferences(QWidget *parent) : QMainWindow(parent)
 	this->defaultmap["editor/fontfamily"] = found_family;
  	this->defaultmap["editor/fontsize"] = 12;
 
+	uint savedsize = getValue("editor/fontsize").toUInt();
 	QFontDatabase db;
 	foreach(int size, db.standardSizes()) {
 		this->fontSize->addItem(QString::number(size));
-		if (size == 12) {
+		if (size == savedsize) {
 			this->fontSize->setCurrentIndex(this->fontSize->count()-1);
 		}
 	}
+
+	connect(this->fontSize, SIGNAL(currentIndexChanged(const QString&)),
+					this, SLOT(on_fontSize_editTextChanged(const QString &)));
 
 	// Setup default settings
 	this->defaultmap["3dview/colorscheme"] = this->colorSchemeChooser->currentItem()->text();
