@@ -11,6 +11,7 @@ o use'ing an non-existing file sometimes crashed under Windows
 o Better font handling: Ensure a monospace font is chosen as default
 o Division by zero caused hang in some cases (e.g. sin(1/0))
 o Larger minkowski operations sometimes caused a crash after a CGAL assert was thrown
+o Fixed crashes in shared_ptr.hpp (or similar places) due to a cache management bug
 
 Deprecations:
 o The old include syntax "<filename.scad>" without the include keyword is no
