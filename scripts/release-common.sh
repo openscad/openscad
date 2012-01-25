@@ -110,7 +110,7 @@ case $OS in
     ;;
 esac
 
-if [ -n .git ]; then
+if [ -d .git ]; then
   git submodule update
 fi
 
