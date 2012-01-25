@@ -579,12 +579,7 @@ CGAL_Nef_polyhedron CGALEvaluator::evaluateCGALMesh(const PolySet &ps)
 		};
 
 		PolyReducer pr(ps);
-		int numpolygons_before = pr.polygons.size();
 		pr.reduce();
-		int numpolygons_after = pr.polygons.size();
-		if (numpolygons_after < numpolygons_before) {
-			PRINTB("reduce polygons: %d -> %d", numpolygons_before % numpolygons_after);
-		}
 		return CGAL_Nef_polyhedron(pr.toNef());
 #endif
 #if 0
