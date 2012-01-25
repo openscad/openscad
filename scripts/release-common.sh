@@ -110,6 +110,10 @@ case $OS in
     ;;
 esac
 
+if [ -d .git ]; then
+  git submodule update
+fi
+
 if [ -n $EXAMPLESDIR ]; then
   echo $EXAMPLESDIR
   mkdir -p $EXAMPLESDIR
