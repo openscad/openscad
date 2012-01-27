@@ -2,12 +2,16 @@
 #include "csgterm.h"
 #include "printutils.h"
 
+/*!
+	NB! for e.g. empty intersections, this can normalize a tree to nothing and return NULL.
+*/
 shared_ptr<CSGTerm> CSGTermNormalizer::normalize(const shared_ptr<CSGTerm> &root, 
 																								 size_t limit)
 {
 	shared_ptr<CSGTerm> temp = root;
 	while (1) {
 		shared_ptr<CSGTerm> n = normalizePass(temp);
+		if (!n) return n; // If normalized to nothing
 		if (temp == n) break;
 		temp = n;
 

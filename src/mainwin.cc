@@ -159,7 +159,7 @@ MainWindow::MainWindow(const QString &filename)
 	this->openglbox = NULL;
 	root_module = NULL;
 	absolute_root_node = NULL;
-	root_chain = NULL;
+	this->root_chain = NULL;
 #ifdef ENABLE_CGAL
 	this->root_N = NULL;
 	this->cgalRenderer = NULL;
@@ -781,10 +781,16 @@ void MainWindow::compileCSG(bool procevents)
 		CSGTermNormalizer normalizer;
 		size_t normalizelimit = 2 * Preferences::inst()->getValue("advanced/openCSGLimit").toUInt();
 		this->root_norm_term = normalizer.normalize(this->root_raw_term, normalizelimit);
-		assert(this->root_norm_term);
-
-		root_chain = new CSGChain();
-		root_chain->import(this->root_norm_term);
+		if (this->root_norm_term) {
+			this->root_chain = new CSGChain();
+			this->root_chain->import(this->root_norm_term);
+		}
+		else {
+			this->root_chain = NULL;
+			PRINT("WARNING: CSG normalization resulted in an empty tree");
+			if (procevents)
+				QApplication::processEvents();
+		}
 		
 		if (highlight_terms.size() > 0)
 		{
@@ -812,12 +818,15 @@ void MainWindow::compileCSG(bool procevents)
 			}
 		}
 
-		if (root_chain->polysets.size() > Preferences::inst()->getValue("advanced/openCSGLimit").toUInt()) {
-			PRINTB("WARNING: Normalized tree has %d elements!", root_chain->polysets.size());
+		if (this->root_chain && 
+				(this->root_chain->polysets.size() > 
+				 Preferences::inst()->getValue("advanced/openCSGLimit").toUInt())) {
+			PRINTB("WARNING: Normalized tree has %d elements!", this->root_chain->polysets.size());
 			PRINT("WARNING: OpenCSG rendering has been disabled.");
 		}
 		else {
-			PRINTB("Normalized CSG tree has %d elements", root_chain->polysets.size());
+			PRINTB("Normalized CSG tree has %d elements", 
+						 (this->root_chain ? this->root_chain->polysets.size() : 0));
 			this->opencsgRenderer = new OpenCSGRenderer(this->root_chain, 
 																									this->highlights_chain, 
 																									this->background_chain, 
@@ -1269,7 +1278,7 @@ void MainWindow::actionDisplayCSGProducts()
 	e->setTabStopWidth(30);
 	e->setWindowTitle("CSG Products Dump");
 	e->setReadOnly(true);
-	e->setPlainText(QString("\nCSG before normalization:\n%1\n\n\nCSG after normalization:\n%2\n\n\nCSG rendering chain:\n%3\n\n\nHighlights CSG rendering chain:\n%4\n\n\nBackground CSG rendering chain:\n%5\n").arg(root_raw_term ? QString::fromStdString(root_raw_term->dump()) : "N/A", root_norm_term ? QString::fromStdString(root_norm_term->dump()) : "N/A", root_chain ? QString::fromStdString(root_chain->dump()) : "N/A", highlights_chain ? QString::fromStdString(highlights_chain->dump()) : "N/A", background_chain ? QString::fromStdString(background_chain->dump()) : "N/A"));
+	e->setPlainText(QString("\nCSG before normalization:\n%1\n\n\nCSG after normalization:\n%2\n\n\nCSG rendering chain:\n%3\n\n\nHighlights CSG rendering chain:\n%4\n\n\nBackground CSG rendering chain:\n%5\n").arg(root_raw_term ? QString::fromStdString(root_raw_term->dump()) : "N/A", root_norm_term ? QString::fromStdString(root_norm_term->dump()) : "N/A", this->root_chain ? QString::fromStdString(this->root_chain->dump()) : "N/A", highlights_chain ? QString::fromStdString(highlights_chain->dump()) : "N/A", background_chain ? QString::fromStdString(background_chain->dump()) : "N/A"));
 	e->show();
 	e->resize(600, 400);
 	clearCurrentOutput();
