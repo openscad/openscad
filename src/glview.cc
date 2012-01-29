@@ -371,6 +371,7 @@ void GLView::setupOrtho(double distance, bool offset)
 	glOrtho(-w_h_ratio*l, +w_h_ratio*l,
 			-(1/w_h_ratio)*l, +(1/w_h_ratio)*l,
 			-FAR_FAR_AWAY, +FAR_FAR_AWAY);
+	gluLookAt(0.0, -viewer_distance, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0);
 }
 
 void GLView::paintGL()
@@ -449,8 +450,6 @@ void GLView::paintGL()
 		glDepthFunc(GL_ALWAYS);
 
 		setupOrtho(1000,true);
-
-		gluLookAt(0.0, -1000, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0);
 
 		glMatrixMode(GL_MODELVIEW);
 		glLoadIdentity();
