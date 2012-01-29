@@ -442,7 +442,7 @@ CGAL_Nef_polyhedron CGALEvaluator::evaluateCGALMesh(const PolySet &ps)
 
 			void add_edges(int pn)
 			{
-				for (int j = 1; j <= this->polygons[pn].size(); j++) {
+				for (unsigned int j = 1; j <= this->polygons[pn].size(); j++) {
 					int a = this->polygons[pn][j-1];
 					int b = this->polygons[pn][j % this->polygons[pn].size()];
 					if (a > b) { a = a^b; b = a^b; a = a^b; }
@@ -457,7 +457,7 @@ CGAL_Nef_polyhedron CGALEvaluator::evaluateCGALMesh(const PolySet &ps)
 
 			void del_poly(int pn)
 			{
-				for (int j = 1; j <= this->polygons[pn].size(); j++) {
+				for (unsigned int j = 1; j <= this->polygons[pn].size(); j++) {
 					int a = this->polygons[pn][j-1];
 					int b = this->polygons[pn][j % this->polygons[pn].size()];
 					if (a > b) { a = a^b; b = a^b; a = a^b; }
@@ -504,11 +504,11 @@ CGAL_Nef_polyhedron CGALEvaluator::evaluateCGALMesh(const PolySet &ps)
 
 			int merge(int p1, int p1e, int p2, int p2e)
 			{
-				for (int i = 1; i < this->polygons[p1].size(); i++) {
+				for (unsigned int i = 1; i < this->polygons[p1].size(); i++) {
 					int j = (p1e + i) % this->polygons[p1].size();
 					this->polygons[this->poly_n].push_back(this->polygons[p1][j]);
 				}
-				for (int i = 1; i < this->polygons[p2].size(); i++) {
+				for (unsigned int i = 1; i < this->polygons[p2].size(); i++) {
 					int j = (p2e + i) % this->polygons[p2].size();
 					this->polygons[this->poly_n].push_back(this->polygons[p2][j]);
 				}
@@ -528,7 +528,7 @@ CGAL_Nef_polyhedron CGALEvaluator::evaluateCGALMesh(const PolySet &ps)
 					int poly1_n = work_queue.front();
 					work_queue.pop_front();
 					if (this->polygons.find(poly1_n) == this->polygons.end()) continue;
-					for (int j = 1; j <= this->polygons[poly1_n].size(); j++) {
+					for (unsigned int j = 1; j <= this->polygons[poly1_n].size(); j++) {
 						int a = this->polygons[poly1_n][j-1];
 						int b = this->polygons[poly1_n][j % this->polygons[poly1_n].size()];
 						if (a > b) { a = a^b; b = a^b; a = a^b; }
@@ -537,7 +537,7 @@ CGAL_Nef_polyhedron CGALEvaluator::evaluateCGALMesh(const PolySet &ps)
 							int poly2_n = this->edge_to_poly[std::pair<int,int>(a, b)].first +
 									this->edge_to_poly[std::pair<int,int>(a, b)].second - poly1_n;
 							int poly2_edge = -1;
-							for (int k = 1; k <= this->polygons[poly2_n].size(); k++) {
+							for (unsigned int k = 1; k <= this->polygons[poly2_n].size(); k++) {
 								int c = this->polygons[poly2_n][k-1];
 								int d = this->polygons[poly2_n][k % this->polygons[poly2_n].size()];
 								if (c > d) { c = c^d; d = c^d; c = c^d; }
@@ -567,7 +567,7 @@ CGAL_Nef_polyhedron CGALEvaluator::evaluateCGALMesh(const PolySet &ps)
 
 				BOOST_FOREACH(const PolygonMap::value_type &i, polygons) {
 					std::list<CGAL_Nef_polyhedron2::Point> plist;
-					for (int j = 0; j < i.second.size(); j++) {
+					for (unsigned int j = 0; j < i.second.size(); j++) {
 						int p = i.second[j];
 						plist.push_back(points[p]);
 					}
