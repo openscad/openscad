@@ -254,8 +254,6 @@ o Caching
   - Test that caching is actually performed (speedup + same results)
   - Test the modifier characters correctly influence the cache (also when
     added/removed)
-o CSG normalization
-  - Empty top-level intersection
 o other tests
   - export
   - cmd-line tests
