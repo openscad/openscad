@@ -301,13 +301,16 @@ int csgtestcore(int argc, char *argv[], test_type_e test_type)
 	// CSG normalization
 	CSGTermNormalizer normalizer;
 	csgInfo.root_norm_term = normalizer.normalize(root_raw_term, 5000);
-		
-	assert(csgInfo.root_norm_term);
+	if (csgInfo.root_norm_term) {
+		csgInfo.root_chain = new CSGChain();
+		csgInfo.root_chain->import(csgInfo.root_norm_term);
+		fprintf(stderr, "Normalized CSG tree has %d elements\n", int(csgInfo.root_chain->polysets.size()));
+	}
+	else {
+		csgInfo.root_chain = NULL;
+		fprintf(stderr, "WARNING: CSG normalization resulted in an empty tree\n");
+	}
 
-	csgInfo.root_chain = new CSGChain();
-	csgInfo.root_chain->import(csgInfo.root_norm_term);
-	fprintf(stderr, "Normalized CSG tree has %d elements\n", int(csgInfo.root_chain->polysets.size()));
-	
 	if (csgInfo.highlight_terms.size() > 0) {
 		cerr << "Compiling highlights (" << csgInfo.highlight_terms.size() << " CSG Trees)...\n";
 		
@@ -339,12 +342,14 @@ int csgtestcore(int argc, char *argv[], test_type_e test_type)
 	enable_opencsg_shaders(csgInfo.glview);
 
 	if (sysinfo_dump) cout << info_dump(csgInfo.glview);
-	BoundingBox bbox = csgInfo.root_chain->getBoundingBox();
+	Vector3d center(0,0,0);
+	double radius = 1.0;
 
-	Vector3d center = (bbox.min() + bbox.max()) / 2;
-	double radius = (bbox.max() - bbox.min()).norm() / 2;
-
-
+	if (csgInfo.root_chain) {
+		BoundingBox bbox = csgInfo.root_chain->getBoundingBox();
+		center = (bbox.min() + bbox.max()) / 2;
+		radius = (bbox.max() - bbox.min()).norm() / 2;
+	}
 	Vector3d cameradir(1, 1, -0.5);
 	Vector3d camerapos = center - radius*1.8*cameradir;
 	csgInfo.glview->setCamera(camerapos, center);
