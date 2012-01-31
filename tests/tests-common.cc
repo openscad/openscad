@@ -25,7 +25,7 @@ AbstractModule *parsefile(const char *filename)
 			text << buffer;
 		}
 		fclose(fp);
-		text << commandline_commands;
+		text << "\n" << commandline_commands;
 		root_module = parse(text.str().c_str(), fileInfo.absolutePath().toLocal8Bit(), false);
 	}
 	return root_module;
