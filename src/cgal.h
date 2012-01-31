@@ -12,8 +12,8 @@ using boost::uintmax_t;
 #endif
 
 #include <CGAL/version.h>
-#if CGAL_VERSION_NR < 1030601000
-  #error CGAL >= 3.6 is required!
+#if CGAL_VERSION_NR < 1030901000
+  #error CGAL >= 3.9 is required!
 #endif
 
 // NDEBUG must be disabled when including CGAL headers, otherwise CGAL assertions
