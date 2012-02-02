@@ -114,7 +114,7 @@ use[ \t\r\n>]*"<"	{ BEGIN(cond_use); }
           usepath = filename;
         }
         else {
-          usepath = fs::path(parser_source_path) / filename;
+          usepath = sourcepath() / filename;
           if (!fs::exists(usepath)) {
             usepath = boosty::absolute(fs::path(get_librarydir()) / filename);
           }
@@ -213,7 +213,7 @@ void includefile()
   }
 
   filepath.clear();
-  path_stack.push_back(dirinfo);
+  path_stack.push_back(finfo.parent_path());
 
   handle_dep(boosty::absolute(finfo).string());
   yyin = fopen(boosty::absolute(finfo).string().c_str(), "r");
