@@ -133,6 +133,7 @@ foreach(boostlib ${Boost_LIBRARIES})
 endforeach()
 
 inclusion(BOOST_ROOT Boost_INCLUDE_DIRS)
+add_definitions(-DBOOST_FILESYSTEM_VERSION=3) # Use V3 for boost 1.44-1.45
 
 # Mac OS X
 if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")

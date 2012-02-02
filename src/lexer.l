@@ -110,13 +110,13 @@ use[ \t\r\n>]*"<"	{ BEGIN(cond_use); }
  ">"		{ 
 	BEGIN(INITIAL); 
         fs::path usepath;
-        if ( boosty::is_absolute( fs::path(filename) ) ) {
+        if (boosty::is_absolute(fs::path(filename))) {
           usepath = filename;
         }
         else {
           usepath = fs::path(parser_source_path) / filename;
           if (!fs::exists(usepath)) {
-            usepath = boosty::absolute(fs::path(librarydir) / filename);
+            usepath = boosty::absolute(fs::path(get_librarydir()) / filename);
           }
         }
 	handle_dep(usepath.string());
@@ -199,7 +199,7 @@ void includefile()
 
   fs::path dirinfo = sourcepath();
   if (!filepath.empty()) {
-    if (boosty::is_absolute( fs::path(filepath) ) ) {
+    if (boosty::is_absolute(fs::path(filepath))) {
       dirinfo = filepath;
     }
     else {
@@ -209,7 +209,7 @@ void includefile()
 
   fs::path finfo = dirinfo / filename;
   if (!exists(finfo)) {
-    finfo = fs::path(librarydir) / filepath / filename;
+    finfo = fs::path(get_librarydir()) / filepath / filename;
   }
 
   filepath.clear();
