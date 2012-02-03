@@ -90,6 +90,7 @@ PolySet *PolySetCGALEvaluator::evaluatePolySet(const ProjectionNode &node)
 		}
 
 		PolySet *ps3 = sum.convertToPolyset();
+		if (!ps3) return NULL;
 		Grid2d<int> conversion_grid(GRID_COARSE);
 		for (size_t i = 0; i < ps3->polygons.size(); i++) {
 			for (size_t j = 0; j < ps3->polygons[i].size(); j++) {
@@ -121,6 +122,7 @@ PolySet *PolySetCGALEvaluator::evaluatePolySet(const ProjectionNode &node)
 		}
 
 		PolySet *ps3 = sum.convertToPolyset();
+		if (!ps3) return NULL;
 		CGAL_Nef_polyhedron np;
 		for (size_t i = 0; i < ps3->polygons.size(); i++)
 		{
@@ -385,7 +387,7 @@ PolySet *PolySetCGALEvaluator::evaluatePolySet(const CgaladvNode &node)
 	PolySet *ps = NULL;
 	if (!N.empty()) {
 		ps = N.convertToPolyset();
-		ps->convexity = node.convexity;
+		if (ps) ps->convexity = node.convexity;
 	}
 
 	return ps;
@@ -401,7 +403,7 @@ PolySet *PolySetCGALEvaluator::evaluatePolySet(const RenderNode &node)
 		}
 		else {
 			ps = N.convertToPolyset();
-			ps->convexity = node.convexity;
+			if (ps) ps->convexity = node.convexity;
 		}
 	}
 	return ps;
