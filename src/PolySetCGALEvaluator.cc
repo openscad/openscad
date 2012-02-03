@@ -39,6 +39,8 @@ PolySet *PolySetCGALEvaluator::evaluatePolySet(const ProjectionNode &node)
 	ps->convexity = node.convexity;
 	ps->is2d = true;
 
+  // In cut mode, the model is intersected by a large but very thin box living on the 
+	// XY plane.
 	if (node.cut_mode)
 	{
 		PolySet cube;
@@ -82,8 +84,17 @@ PolySet *PolySetCGALEvaluator::evaluatePolySet(const ProjectionNode &node)
 		cube.append_vertex(x1, y2, z2);
 		CGAL_Nef_polyhedron Ncube = this->cgalevaluator.evaluateCGALMesh(cube);
 
-		// N.p3 *= CGAL_Nef_polyhedron3(CGAL_Plane(0, 0, 1, 0), CGAL_Nef_polyhedron3::INCLUDED);
 		sum *= Ncube;
+
+		// FIXME: Instead of intersecting with a thin volume, we could intersect
+		// with a plane. This feels like a better solution. However, as the result
+		// of such an intersection isn't simple, we cannot convert the resulting
+		// Nef polyhedron to a Polyhedron using convertToPolyset() and we need
+		// another way of extracting the result. kintel 20120203.
+//		*sum.p3 = sum.p3->intersection(CGAL_Nef_polyhedron3::Plane_3(0, 0, 1, 0), 
+//																	CGAL_Nef_polyhedron3::PLANE_ONLY);
+
+
 		if (!sum.p3->is_simple()) {
 			PRINT("WARNING: Body of projection(cut = true) isn't valid 2-manifold! Modify your design..");
 			goto cant_project_non_simple_polyhedron;
@@ -91,6 +102,12 @@ PolySet *PolySetCGALEvaluator::evaluatePolySet(const ProjectionNode &node)
 
 		PolySet *ps3 = sum.convertToPolyset();
 		if (!ps3) return NULL;
+
+		// Extract polygons in the XY plane, ignoring all other polygons
+    // FIXME: If the polyhedron is really thin, there might be unwanted polygons
+    // in the XY plane, causing the resulting 2D polygon to be self-intersection
+    // and cause a crash in CGALEvaluator::PolyReducer. The right solution is to
+    // filter these polygons here. kintel 20120203.
 		Grid2d<int> conversion_grid(GRID_COARSE);
 		for (size_t i = 0; i < ps3->polygons.size(); i++) {
 			for (size_t j = 0; j < ps3->polygons[i].size(); j++) {
@@ -114,6 +131,7 @@ PolySet *PolySetCGALEvaluator::evaluatePolySet(const ProjectionNode &node)
 		}
 		delete ps3;
 	}
+	// In projection mode all the triangles are projected manually into the XY plane
 	else
 	{
 		if (!sum.p3->is_simple()) {
