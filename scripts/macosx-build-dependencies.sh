@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/sh -e
 #
 # This script builds all library dependencies of OpenSCAD for Mac OS X.
 # The libraries will be build in 32- and 64-bit mode and backwards compatible with 
@@ -201,7 +201,7 @@ build_opencsg()
 
 echo "Using basedir:" $BASEDIR
 mkdir -p $SRCDIR $DEPLOYDIR
-build_gmp 5.0.2
+build_gmp 5.0.3
 build_mpfr 3.1.0
 build_boost 1.47.0
 # NB! For CGAL, also update the actual download URL in the function
