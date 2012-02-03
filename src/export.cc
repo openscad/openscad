@@ -53,7 +53,6 @@ void export_stl(CGAL_Nef_polyhedron *root_N, std::ostream &output)
 
 	output << "solid OpenSCAD_Model\n";
 
-	int facet_count = 0;
 	for (FCI fi = P.facets_begin(); fi != P.facets_end(); ++fi) {
 		HFCC hc = fi->facet_begin();
 		HFCC hc_end = hc;
@@ -198,3 +197,20 @@ void export_dxf(CGAL_Nef_polyhedron *root_N, std::ostream &output)
 
 #endif
 
+#ifdef DEBUG
+#include <boost/foreach.hpp>
+void export_stl(const PolySet &ps, std::ostream &output)
+{
+	output << "solid OpenSCAD_PolySet\n";
+	BOOST_FOREACH(const PolySet::Polygon &p, ps.polygons) {
+		output << "facet\n";
+		output << "outer loop\n";
+		BOOST_FOREACH(const Vector3d &v, p) {
+			output << "vertex " << v[0] << " " << v[1] << " " << v[2] << "\n";
+		}
+		output << "endloop\n";
+		output << "endfacet\n";
+	}
+	output << "endsolid OpenSCAD_PolySet\n";
+}
+#endif
