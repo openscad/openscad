@@ -1,5 +1,5 @@
 export OPENSCAD_LIBRARIES=$PWD/../libraries/install
-export DYLD_LIBRARY_PATH=$MACOSX_DEPLOY_DIR/lib
+export DYLD_LIBRARY_PATH=$OPENSCAD_LIBRARIES/lib
 
 #export OPENCSGDIR=$PWD/../OpenCSG-1.3.0
 #export CGALDIR=$PWD/../install/CGAL-3.6
