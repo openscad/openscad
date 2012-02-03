@@ -191,6 +191,8 @@ o Mesh optimization on STL export
   - Replace super thin triangles (one h is short)
 o Use a logging framework to get debugging/info output more under control?
   (check log4j, google project)
+o Export to other file formats
+  - IGES: Should support CSG so it might be possible to keep some structure
 
 
 IDEAS FOR LANGUAGE CHANGES
