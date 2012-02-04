@@ -572,7 +572,6 @@ std::string parser_source_path;
 
 Module *parse(const char *text, const char *path, int debug)
 {
-  PRINT_NOCACHE("New parser");
 	lexerin = NULL;
 	parser_error_pos = -1;
 	parser_input_buffer = text;
@@ -580,7 +579,7 @@ Module *parse(const char *text, const char *path, int debug)
 
 	module_stack.clear();
 	Module *rootmodule = currmodule = new Module();
-        PRINTB_NOCACHE("New module: %s %p", "root" % rootmodule);
+        //        PRINTB_NOCACHE("New module: %s %p", "root" % rootmodule);
 
 	parserdebug = debug;
 	parserparse();

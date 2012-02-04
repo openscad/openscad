@@ -205,7 +205,7 @@ std::string Module::dump(const std::string &indent, const std::string &name) con
 
 void Module::handleDependencies()
 {
-	PRINTB_NOCACHE("Module::handleDependencies(): %p (%d libs %p)", this % this->usedlibs.size() % &this->usedlibs);
+//	PRINTB_NOCACHE("Module::handleDependencies(): %p (%d libs %p)", this % this->usedlibs.size() % &this->usedlibs);
 	// Iterating manually since we want to modify the container while iterating
 	Module::ModuleContainer::iterator iter = this->usedlibs.begin();
 	while (iter != this->usedlibs.end()) {
