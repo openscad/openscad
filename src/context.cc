@@ -162,6 +162,7 @@ AbstractNode *Context::evaluate_module(const ModuleInstantiation &inst) const
 	}
 	if (this->usedlibs_p) {
 		BOOST_FOREACH(const ModuleContainer::value_type &m, *this->usedlibs_p) {
+			assert(m.second);
 			if (m.second->modules.find(inst.name()) != m.second->modules.end()) {
 				Context ctx(this->parent, m.second);
 				return m.second->modules[inst.name()]->evaluate(&ctx, &inst);

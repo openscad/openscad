@@ -25,11 +25,13 @@
  */
 
 #include "module.h"
+#include "ModuleCache.h"
 #include "node.h"
 #include "context.h"
 #include "expression.h"
 #include "function.h"
 #include "printutils.h"
+
 #include <boost/foreach.hpp>
 #include <sstream>
 
@@ -201,7 +203,18 @@ std::string Module::dump(const std::string &indent, const std::string &name) con
 	return dump.str();
 }
 
-void Module::clear_library_cache()
+void Module::handleDependencies()
 {
-	Module::libs_cache.clear();
+	PRINTB_NOCACHE("Module::handleDependencies(): %p (%d libs %p)", this % this->usedlibs.size() % &this->usedlibs);
+	// Iterating manually since we want to modify the container while iterating
+	Module::ModuleContainer::iterator iter = this->usedlibs.begin();
+	while (iter != this->usedlibs.end()) {
+		Module::ModuleContainer::iterator curr = iter++;
+		curr->second = ModuleCache::instance()->evaluate(curr->first);
+		PRINTB_NOCACHE("  %s: %p", curr->first % curr->second);
+		if (!curr->second) {
+			PRINTB_NOCACHE("WARNING: Failed to compile library '%s'.", curr->first);
+			this->usedlibs.erase(curr);
+		}
+	}
 }

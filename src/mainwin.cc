@@ -25,6 +25,7 @@
  */
 
 #include "PolySetCache.h"
+#include "ModuleCache.h"
 #include "MainWindow.h"
 #include "openscad.h" // examplesdir
 #include "parsersettings.h"
@@ -694,6 +695,8 @@ void MainWindow::compile(bool procevents)
 		}
 		goto fail;
 	}
+
+	this->root_module->handleDependencies();
 
 	// Evaluate CSG tree
 	PRINT("Compiling design (CSG Tree generation)...");
@@ -1449,7 +1452,7 @@ void MainWindow::actionFlushCaches()
 #endif
 	dxf_dim_cache.clear();
 	dxf_cross_cache.clear();
-	Module::clear_library_cache();
+	ModuleCache::instance()->clear();
 }
 
 void MainWindow::viewModeActionsUncheck()
@@ -1797,7 +1800,7 @@ void MainWindow::consoleOutput(const std::string &msg, void *userdata)
 
 void MainWindow::setCurrentOutput()
 {
-	set_output_handler(&MainWindow::consoleOutput, this);
+//	set_output_handler(&MainWindow::consoleOutput, this);
 }
 
 void MainWindow::clearCurrentOutput()

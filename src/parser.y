@@ -43,7 +43,7 @@
 #include <boost/foreach.hpp>
 #include <boost/filesystem.hpp>
 
-using namespace boost::filesystem;
+namespace fs = boost::filesystem;
 #include "boosty.h"
 
 int parser_error_pos = -1;
@@ -56,7 +56,7 @@ int lexerlex_destroy(void);
 int lexerlex(void);
 
 std::vector<Module*> module_stack;
-Module *module;
+Module *currmodule;
 
 class ArgContainer {
 public: 
@@ -133,7 +133,7 @@ public:
 
 input: 
 	/* empty */ |
-	TOK_USE { module->usedlibs[$1] = NULL; } input |
+	TOK_USE { currmodule->usedlibs[$1] = NULL; } input |
 	statement input ;
 
 inner_input: 
@@ -145,37 +145,38 @@ statement:
 	'{' inner_input '}' |
 	module_instantiation {
 		if ($1) {
-			module->addChild($1);
+			currmodule->addChild($1);
 		} else {
 			delete $1;
 		}
 	} |
 	TOK_ID '=' expr ';' {
 		bool add_new_assignment = true;
-		for (size_t i = 0; i < module->assignments_var.size(); i++) {
-			if (module->assignments_var[i] != $1)
+		for (size_t i = 0; i < currmodule->assignments_var.size(); i++) {
+			if (currmodule->assignments_var[i] != $1)
 				continue;
-			delete module->assignments_expr[i];
-			module->assignments_expr[i] = $3;
+			delete currmodule->assignments_expr[i];
+			currmodule->assignments_expr[i] = $3;
 			add_new_assignment = false;
 		}
 		if (add_new_assignment) {
-			module->assignments_var.push_back($1);
-			module->assignments_expr.push_back($3);
+			currmodule->assignments_var.push_back($1);
+			currmodule->assignments_expr.push_back($3);
 			free($1);
 		}
 	} |
 	TOK_MODULE TOK_ID '(' arguments_decl optional_commas ')' {
-		Module *p = module;
-		module_stack.push_back(module);
-		module = new Module();
-		p->modules[$2] = module;
-		module->argnames = $4->argnames;
-		module->argexpr = $4->argexpr;
+		Module *p = currmodule;
+		module_stack.push_back(currmodule);
+		currmodule = new Module();
+                PRINTB_NOCACHE("New module: %s %p", $2 % currmodule);
+		p->modules[$2] = currmodule;
+		currmodule->argnames = $4->argnames;
+		currmodule->argexpr = $4->argexpr;
 		free($2);
 		delete $4;
 	} statement {
-		module = module_stack.back();
+		currmodule = module_stack.back();
 		module_stack.pop_back();
 	} |
 	TOK_FUNCTION TOK_ID '(' arguments_decl optional_commas ')' '=' expr {
@@ -183,7 +184,7 @@ statement:
 		func->argnames = $4->argnames;
 		func->argexpr = $4->argexpr;
 		func->expr = $8;
-		module->functions[$2] = func;
+		currmodule->functions[$2] = func;
 		free($2);
 		delete $4;
 	} ';' ;
@@ -560,101 +561,34 @@ void yyerror (char const *s)
 {
 	// FIXME: We leak memory on parser errors...
 	PRINTB("Parser error in line %d: %s\n", lexerget_lineno() % s);
-	module = NULL;
+	currmodule = NULL;
 }
 
 extern void lexerdestroy();
 extern FILE *lexerin;
 extern const char *parser_input_buffer;
 const char *parser_input_buffer;
-const char *parser_source_path;
+std::string parser_source_path;
 
-AbstractModule *parse(const char *text, const char *path, int debug)
+Module *parse(const char *text, const char *path, int debug)
 {
+  PRINT_NOCACHE("New parser");
 	lexerin = NULL;
 	parser_error_pos = -1;
 	parser_input_buffer = text;
-	parser_source_path = path;
+	parser_source_path = std::string(path);
 
 	module_stack.clear();
-	module = new Module();
+	Module *rootmodule = currmodule = new Module();
+        PRINTB_NOCACHE("New module: %s %p", "root" % rootmodule);
 
 	parserdebug = debug;
 	parserparse();
         lexerdestroy();
 	lexerlex_destroy();
 
-	if (!module)
-		return NULL;
-
-        // Iterating manually since we want to modify the container while iterating
-        Module::ModuleContainer::iterator iter = module->usedlibs.begin();
-        while (iter != module->usedlibs.end()) {
-          Module::ModuleContainer::iterator curr = iter++;
-          curr->second = Module::compile_library(curr->first);
-          if (!curr->second) {
-            PRINTB("WARNING: Failed to compile library '%s'.", curr->first);
-            module->usedlibs.erase(curr);
-          }
-	}
+	if (!rootmodule) return NULL;
 
 	parser_error_pos = -1;
-	return module;
+	return rootmodule;
 }
-
-boost::unordered_map<std::string, Module::libs_cache_ent> Module::libs_cache;
-
-Module *Module::compile_library(const std::string &filename)
-{
-	struct stat st;
-	memset(&st, 0, sizeof(struct stat));
-	stat(filename.c_str(), &st);
-
-        std::stringstream idstream;
-        idstream << std::hex << st.st_mtime << "." << st.st_size;
-        std::string cache_id = idstream.str();
-
-	if (libs_cache.find(filename) != libs_cache.end() && libs_cache[filename].cache_id == cache_id) {
-          PRINTB("%s", libs_cache[filename].msg);
-          return &(*libs_cache[filename].mod);
-	}
-
-        FILE *fp = fopen(filename.c_str(), "rt");
-        if (!fp) {
-          fprintf(stderr, "WARNING: Can't open library file '%s'\n", filename.c_str());
-          return NULL;
-        }
-        std::stringstream text;
-        char buffer[513];
-        int ret;
-        while ((ret = fread(buffer, 1, 512, fp)) > 0) {
-          buffer[ret] = 0;
-          text << buffer;
-        }
-        fclose(fp);
-
-	print_messages_push();
-
-	PRINTB("Compiling library '%s'.", filename);
-	libs_cache_ent e = { NULL, cache_id, std::string("WARNING: Library `") + filename + "' tries to recursively use itself!" };
-	if (libs_cache.find(filename) != libs_cache.end())
-		delete libs_cache[filename].mod;
-	libs_cache[filename] = e;
-
-	Module *backup_mod = module;
-	std::string pathname = boosty::stringy( fs::path(filename).parent_path() );
-	Module *lib_mod = dynamic_cast<Module*>(parse(text.str().c_str(), pathname.c_str(), 0));
-	module = backup_mod;
-
-	if (lib_mod) {
-		libs_cache[filename].mod = lib_mod;
-		libs_cache[filename].msg = print_messages_stack.back();
-	} else {
-		libs_cache.erase(filename);
-	}
-
-	print_messages_pop();
-
-	return lib_mod;
-}
-

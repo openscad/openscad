@@ -1,6 +1,6 @@
 #ifndef TESTS_COMMON_H_
 #define TESTS_COMMON_H_
 
-class AbstractModule *parsefile(const char *filename);
+class Module *parsefile(const char *filename);
 
 #endif

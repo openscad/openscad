@@ -255,7 +255,7 @@ int main(int argc, char **argv)
 		Context root_ctx;
 		register_builtin(root_ctx);
 
-		AbstractModule *root_module;
+		Module *root_module;
 		ModuleInstantiation root_inst;
 		AbstractNode *root_node;
 
@@ -278,6 +278,7 @@ int main(int argc, char **argv)
 			std::string fpath = boosty::stringy(abspath.parent_path());
 			root_module = parse(text.str().c_str(), fpath.c_str(), false);
 			if (!root_module) exit(1);
+			root_module->handleDependencies();
 		}
 		
 		fs::path fpath = boosty::absolute( fs::path(filename) );

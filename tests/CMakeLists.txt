@@ -309,6 +309,7 @@ set(CORE_SOURCES
   ../src/expr.cc 
   ../src/func.cc 
   ../src/module.cc 
+  ../src/ModuleCache.cc 
   ../src/node.cc 
   ../src/context.cc 
   ../src/csgterm.cc 
@@ -401,6 +402,12 @@ target_link_libraries(echotest tests-nocgal tests-core ${QT_LIBRARIES} ${OPENGL_
 #
 add_executable(dumptest dumptest.cc)
 target_link_libraries(dumptest tests-common tests-nocgal ${QT_LIBRARIES} ${OPENGL_LIBRARY} ${Boost_LIBRARIES})
+
+#
+# modulecachetest
+#
+add_executable(modulecachetest modulecachetest.cc)
+target_link_libraries(modulecachetest tests-common tests-nocgal ${QT_LIBRARIES} ${OPENGL_LIBRARY} ${Boost_LIBRARIES})
 
 #
 # csgtexttest

@@ -52,7 +52,7 @@ int lexerget_lineno(void);
 static void yyunput(int, char*) __attribute__((unused));
 #endif
 extern const char *parser_input_buffer;
-extern const char *parser_source_path;
+ extern std::string parser_source_path;
 
 #define YY_INPUT(buf,result,max_size) {   \
   if (yyin && yyin != stdin) {            \
@@ -108,6 +108,7 @@ use[ \t\r\n>]*"<"	{ BEGIN(cond_use); }
 <cond_use>{
 [^\t\r\n>]+	{ filename = yytext; }
  ">"		{ 
+   PRINTB("USE: %s", filename);
 	BEGIN(INITIAL); 
         fs::path usepath;
         if (boosty::is_absolute(fs::path(filename))) {

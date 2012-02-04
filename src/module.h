@@ -65,11 +65,9 @@ public:
 
 	void addChild(ModuleInstantiation *ch) { this->children.push_back(ch); }
 
-	static Module *compile_library(const std::string &filename);
-	static void clear_library_cache();
-
 	typedef boost::unordered_map<std::string, class Module*> ModuleContainer;
 	ModuleContainer usedlibs;
+	void handleDependencies();
 
 	std::vector<std::string> assignments_var;
 	std::vector<Expression*> assignments_expr;
@@ -87,11 +85,6 @@ public:
 protected:
 
 private:
-	struct libs_cache_ent {
-		Module *mod;
-		std::string cache_id, msg;
-	};
-	static boost::unordered_map<std::string, libs_cache_ent> libs_cache;
 };
 
 #endif
