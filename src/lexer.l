@@ -120,9 +120,12 @@ use[ \t\r\n>]*"<"	{ BEGIN(cond_use); }
             usepath = boosty::absolute(fs::path(get_librarydir()) / filename);
           }
         }
-	handle_dep(usepath.string());
-	parserlval.text = strdup(usepath.string().c_str());
-	return TOK_USE;
+        /* Only accept regular files which exists */
+        if (usepath.has_parent_path() && fs::exists(usepath)) {
+          handle_dep(usepath.string());
+          parserlval.text = strdup(usepath.string().c_str());
+          return TOK_USE;
+        }
  }
 }
 
