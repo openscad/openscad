@@ -15,7 +15,7 @@ shared_ptr<CSGTerm> CSGTermNormalizer::normalize(const shared_ptr<CSGTerm> &root
 		if (temp == n) break;
 		temp = n;
 
-		int num = count(temp);
+		unsigned int num = count(temp);
 #ifdef DEBUG
 		PRINTB("Normalize count: %d\n", num);
 #endif
@@ -148,7 +148,7 @@ bool CSGTermNormalizer::normalize_tail(shared_ptr<CSGTerm> &term)
 	return false;
 }
 
-int CSGTermNormalizer::count(const shared_ptr<CSGTerm> &term) const
+unsigned int CSGTermNormalizer::count(const shared_ptr<CSGTerm> &term) const
 {
 	if (!term) return 0;
 	return term->type == CSGTerm::TYPE_PRIMITIVE ? 1 : 0 + count(term->left) + count(term->right);

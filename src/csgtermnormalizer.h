@@ -6,7 +6,7 @@
 class CSGTermNormalizer
 {
 public:
-	CSGTermNormalizer() : counter(0) {}
+	CSGTermNormalizer() {}
 	~CSGTermNormalizer() {}
 
 	shared_ptr<class CSGTerm> normalize(const shared_ptr<CSGTerm> &term, size_t limit);
@@ -14,9 +14,7 @@ public:
 private:
 	shared_ptr<CSGTerm> normalizePass(shared_ptr<CSGTerm> term) ;
 	bool normalize_tail(shared_ptr<CSGTerm> &term);
-	int count(const shared_ptr<CSGTerm> &term) const;
-
-	int counter;
+	unsigned int count(const shared_ptr<CSGTerm> &term) const;
 };
 
 #endif
