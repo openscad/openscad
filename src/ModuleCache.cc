@@ -71,6 +71,7 @@ Module *ModuleCache::evaluate(const std::string &filename)
 	if (lib_mod) {
 		this->entries[filename].module = lib_mod;
 		this->entries[filename].msg = print_messages_stack.back();
+		lib_mod->handleDependencies();
 	} else {
 		this->entries.erase(filename);
 	}
