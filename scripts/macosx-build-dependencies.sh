@@ -17,8 +17,6 @@
 # o Port to other platforms?
 #
 
-BASEDIR=/Users/kintel/code/OpenSCAD/libraries
-OPENSCADDIR=/Users/kintel/code/OpenSCAD/openscad
 BASEDIR=$PWD/../libraries
 OPENSCADDIR=$PWD
 SRCDIR=$BASEDIR/src
