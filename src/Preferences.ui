@@ -228,11 +228,7 @@
            </item>
           </layout>
           <zorder>openCSGWarningBox</zorder>
-          <zorder></zorder>
           <zorder>enableOpenCSGBox</zorder>
-          <zorder>enableOpenCSGBox</zorder>
-          <zorder></zorder>
-          <zorder>openCSGWarningBox</zorder>
           <zorder>forceGoldfeatherBox</zorder>
          </widget>
         </item>
