@@ -1,41 +1,4 @@
 #!/bin/bash
-# WARNING: This script might only work with the authors setup...
-
-VERSION=`date "+%Y.%m.%d"`
-#VERSION=2011.12
-
-set -ex
-
-# svnclean
-
-qmake-qt4 VERSION=$VERSION QMAKE_CXXFLAGS_RELEASE="-O3 -march=pentium"
-make
-
-rm -rf release
-mkdir -p release/{bin,lib/openscad,examples,libraries}
-
-cat > release/bin/openscad << "EOT"
-#!/bin/bash
-
-cd "$( dirname "$( type -p $0 )" )"
-libdir=$PWD/../lib/openscad/
-cd "$OLDPWD"
-
-export LD_LIBRARY_PATH="$libdir${LD_LIBRARY_PATH:+:}$LD_LIBRARY_PATH"
-exec $libdir/openscad "$@"
-EOT
-
-cp openscad release/lib/openscad/
-gcc -o chrpath_linux scripts/chrpath_linux.c
-./chrpath_linux -d release/lib/openscad/openscad
-
-ldd openscad | sed -re 's,.* => ,,; s,[\t ].*,,;' -e '/Qt|boost/ { p; d; };' \
-    -e '/lib(audio|CGAL|GLEW|opencsg|png|gmp|gmpxx|mpfr)\.so/ { p; d; };' \
-    -e 'd;' | xargs cp -vt release/lib/openscad/
-strip release/lib/openscad/*
-
-cat > release/install.sh << "EOT"
-#!/bin/bash
 
 # change to the install source directory
 cd "$( dirname "$( type -p $0 )" )"
@@ -80,13 +43,3 @@ echo "Copying libraries..."
 cp -rv libraries/. "$prefix"/share/openscad/libraries/
 
 echo "Installation finished. Have a nice day."
-EOT
-
-chmod 755 -R release/
-
-cp examples/* release/examples/
-chmod 644 -R release/examples/*
-
-cp -R libraries/* release/libraries/
-chmod -R u=rwx,go=r,+X release/libraries/*
-rm -rf `find release/libraries -name ".git"`
