@@ -199,6 +199,11 @@ build_opencsg()
   make install
 }
 
+if [ ! -f $OPENSCADDIR/openscad.pro ]; then
+  echo "Must be run from the OpenSCAD source root directory"
+  exit 0
+fi
+
 echo "Using basedir:" $BASEDIR
 mkdir -p $SRCDIR $DEPLOYDIR
 build_gmp 5.0.3
