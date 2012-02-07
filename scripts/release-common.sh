@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # This script creates a binary release of OpenSCAD.
 # This should work under Mac OS X, Windows (msys), and Linux cross-compiling
@@ -24,10 +24,20 @@ printUsage()
   echo "  Example: $0 -v 2010.01
 }
 
-if [[ $OSTYPE =~ "darwin" ]]; then
+if [[ "$OSTYPE" =~ "darwin" ]]; then
   OS=MACOSX
 elif [[ $OSTYPE == "msys" ]]; then
   OS=WIN
+elif [[ $OSTYPE == "linux-gnu" ]]; then
+  OS=LINUX
+  if [[ `uname -m` == "x86_64" ]]; then
+    ARCH=64
+  else
+    ARCH=32
+  fi
+  echo "Detected ARCH: $ARCH"
+elif [[ $OSTYPE == "mingw-cross-env" ]]; then
+  OS=LINXWIN
 fi
 
 echo "Detected OS: $OS"
@@ -47,7 +57,7 @@ fi
 echo "Building openscad-$VERSION $CONFIGURATION..."
 
 case $OS in
-    MACOSX) 
+    LINUX|MACOSX) 
         CONFIG=deploy
         TARGET=
         ;;
@@ -83,7 +93,7 @@ case $OS in
         rm -rf OpenSCAD.app
         ;;
     WIN)
-            #if the following files are missing their tried removal stops the build process on msys
+        #if the following files are missing their tried removal stops the build process on msys
         touch -t 200012121010 parser_yacc.h parser_yacc.cpp lexer_lex.cpp
         ;;
 esac
@@ -157,5 +167,25 @@ case $OS in
         rm -rf openscad-$VERSION
         echo "Binary created: OpenSCAD-$VERSION.zip"
         echo "Installer created: OpenSCAD-$VERSION-Installer.exe"
+        ;;
+    LINUX)
+        # Do stuff from release-linux.sh
+        mkdir openscad-$VERSION/bin
+        mkdir -p openscad-$VERSION/lib/openscad
+        cp scripts/openscad-linux openscad-$VERSION/bin/openscad
+        cp openscad openscad-$VERSION/lib/openscad/
+        if [[ $ARCH == 64 ]]; then
+              gcc -o chrpath_linux -DSIZEOF_VOID_P=8 scripts/chrpath_linux.c
+        else
+              gcc -o chrpath_linux -DSIZEOF_VOID_P=4 scripts/chrpath_linux.c
+        fi
+        ./chrpath_linux -d openscad-$VERSION/lib/openscad/openscad
+        ldd openscad | sed -re 's,.* => ,,; s,[\t ].*,,;' -e '/Qt|boost/ { p; d; };' \
+            -e '/lib(icu.*|stdc.*|audio|CGAL|GLEW|opencsg|png|gmp|gmpxx|mpfr)\.so/ { p; d; };' \
+            -e 'd;' | xargs cp -vt openscad-$VERSION/lib/openscad/
+        strip openscad-$VERSION/lib/openscad/*
+        cp scripts/installer-linux.sh openscad-$VERSION/install.sh
+        chmod 755 -R openscad-$VERSION/
+        tar cz openscad-$VERSION > openscad-$VERSION.x86-64.tar.gz
         ;;
 esac
