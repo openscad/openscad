@@ -30,8 +30,10 @@ build_gmp()
   version=$1
   echo "Building gmp" $version "..."
   cd $BASEDIR/src
-  rm -rf gmp*
-  curl -O ftp://ftp.gmplib.org/pub/gmp-$version/gmp-$version.tar.bz2
+  rm -rf gmp-$version
+  if [ ! -f gmp-$version.tar.bz2 ]; then
+    curl -O ftp://ftp.gmplib.org/pub/gmp-$version/gmp-$version.tar.bz2
+  fi
   tar xjf gmp-$version.tar.bz2
   cd gmp-$version
   # 32-bit version
@@ -101,8 +103,10 @@ build_mpfr()
   version=$1
   echo "Building mpfr" $version "..."
   cd $BASEDIR/src
-  rm -rf mpfr*
-  curl -O http://www.mpfr.org/mpfr-current/mpfr-$version.tar.bz2
+  rm -rf mpfr-$version
+  if [ ! -f mpfr-$version.tar.bz2 ]; then
+    curl -O http://www.mpfr.org/mpfr-current/mpfr-$version.tar.bz2
+  fi
   tar xjf mpfr-$version.tar.bz2
   cd mpfr-$version
 
@@ -135,8 +139,10 @@ build_boost()
   bversion=`echo $version | tr "." "_"`
   echo "Building boost" $version "..."
   cd $BASEDIR/src
-  rm -rf boost*
-  curl -LO http://downloads.sourceforge.net/project/boost/boost/$version/boost_$bversion.tar.bz2
+  rm -rf boost_$bversion
+  if [ ! -f boost_$bversion.tar.bz2 ]; then
+    curl -LO http://downloads.sourceforge.net/project/boost/boost/$version/boost_$bversion.tar.bz2
+  fi
   tar xjf boost_$bversion.tar.bz2
   cd boost_$bversion
   # We only need the thread and program_options libraries
@@ -158,10 +164,12 @@ build_cgal()
   version=$1
   echo "Building CGAL" $version "..."
   cd $BASEDIR/src
-  rm -rf CGAL*
-  curl -O https://gforge.inria.fr/frs/download.php/29125/CGAL-$version.tar.gz
-#  curl -O https://gforge.inria.fr/frs/download.php/28500/CGAL-$version.tar.gz
-#  curl -O https://gforge.inria.fr/frs/download.php/27641/CGAL-$version.tar.gz
+  rm -rf CGAL-$version
+  if [ ! -f CGAL-$version.tar.gz ]; then
+    curl -O https://gforge.inria.fr/frs/download.php/29125/CGAL-$version.tar.gz
+    #  curl -O https://gforge.inria.fr/frs/download.php/28500/CGAL-$version.tar.gz
+    #  curl -O https://gforge.inria.fr/frs/download.php/27641/CGAL-$version.tar.gz
+  fi
   tar xzf CGAL-$version.tar.gz
   cd CGAL-$version
   # We build a static lib. Not really necessary, but it's well tested.
@@ -175,8 +183,10 @@ build_glew()
   version=$1
   echo "Building GLEW" $version "..."
   cd $BASEDIR/src
-  rm -r glew-*
-  curl -LO http://downloads.sourceforge.net/project/glew/glew/$version/glew-$version.tgz
+  rm -rf glew-$version
+  if [ ! -f glew-$version.tgz ]; then
+    curl -LO http://downloads.sourceforge.net/project/glew/glew/$version/glew-$version.tgz
+  fi
   tar xzf glew-$version.tgz
   cd glew-$version
   mkdir -p $DEPLOYDIR/lib/pkgconfig
@@ -191,13 +201,20 @@ build_opencsg()
   echo "Building OpenCSG" $version "..."
   cd $BASEDIR/src
   rm -rf OpenCSG-$version
-  curl -O http://www.opencsg.org/OpenCSG-$version.tar.gz
+  if [ ! -f OpenCSG-$version.tar.gz ]; then
+    curl -O http://www.opencsg.org/OpenCSG-$version.tar.gz
+  fi
   tar xzf OpenCSG-$version.tar.gz
   cd OpenCSG-$version
   patch -p1 < $OPENSCADDIR/patches/OpenCSG-$version-MacOSX-port.patch
   OPENSCAD_LIBRARIES=$DEPLOYDIR qmake -r CONFIG+="x86 x86_64"
   make install
 }
+
+if [ ! -f $OPENSCADDIR/openscad.pro ]; then
+  echo "Must be run from the OpenSCAD source root directory"
+  exit 0
+fi
 
 echo "Using basedir:" $BASEDIR
 mkdir -p $SRCDIR $DEPLOYDIR
