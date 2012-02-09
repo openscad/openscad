@@ -260,30 +260,23 @@ int main(int argc, char **argv)
 		AbstractNode *root_node;
 
 		handle_dep(filename);
-		FILE *fp = fopen(filename, "rt");
-		if (!fp) {
-			fprintf(stderr, "Can't open input file `%s'!\n", filename);
-			exit(1);
-		} else {
-			std::stringstream text;
-			char buffer[513];
-			int ret;
-			while ((ret = fread(buffer, 1, 512, fp)) > 0) {
-				buffer[ret] = 0;
-				text << buffer;
-			}
-			fclose(fp);
-			text << "\n" << commandline_commands;
-			fs::path abspath = boosty::absolute( filename );
-			std::string fpath = boosty::stringy(abspath.parent_path());
-			root_module = parse(text.str().c_str(), fpath.c_str(), false);
-			if (!root_module) exit(1);
-			root_module->handleDependencies();
-		}
 		
-		fs::path fpath = boosty::absolute( fs::path(filename) );
+		std::ifstream ifs(filename);
+		if (!ifs.is_open()) {
+			fprintf(stderr, "Can't open input file '%s'!\n", filename);
+			exit(1);
+		}
+		std::string text((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
+		text += "\n" + commandline_commands;
+		fs::path abspath = boosty::absolute(filename);
+		std::string parentpath = boosty::stringy(abspath.parent_path());
+		root_module = parse(text.c_str(), parentpath.c_str(), false);
+		if (!root_module) exit(1);
+		root_module->handleDependencies();
+		
+		fs::path fpath = boosty::absolute(fs::path(filename));
 		fs::path fparent = fpath.parent_path();
-		fs::current_path( fparent );
+		fs::current_path(fparent);
 
 		AbstractNode::resetIndexCounter();
 		root_node = root_module->evaluate(&root_ctx, &root_inst);
