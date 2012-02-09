@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE QtCreatorProject>
-<!-- Written by Qt Creator 2.4.1, 2012-02-06T09:01:56. -->
+<!-- Written by Qt Creator 2.4.1, 2012-02-09T10:35:52. -->
 <qtcreator>
  <data>
   <variable>ProjectExplorer.Project.ActiveTarget</variable>
@@ -150,6 +150,8 @@
     <value type="bool" key="ProjectExplorer.BuildConfiguration.ClearSystemEnvironment">false</value>
     <valuelist type="QVariantList" key="ProjectExplorer.BuildConfiguration.UserEnvironmentChanges">
      <value type="QString">OPENSCAD_LIBRARIES=$$PWD/../libraries/install</value>
+     <value type="QString">CCACHE_BASEDIR=$$PWD/..</value>
+     <value type="QString">PATH=/opt/local/libexec/ccache:/usr/bin:/Users/clothbot/QtSDK/Desktop/Qt/474/gcc/bin:/usr/bin:/bin:/usr/sbin:/sbin:/opt/local/bin</value>
     </valuelist>
     <value type="QString" key="ProjectExplorer.ProjectConfiguration.DefaultDisplayName">Desktop Qt 4.7.4 for GCC (Qt SDK) Debug</value>
     <value type="QString" key="ProjectExplorer.ProjectConfiguration.DisplayName"></value>
