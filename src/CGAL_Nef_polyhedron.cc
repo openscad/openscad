@@ -5,6 +5,7 @@
 #include "polyset.h"
 #include "dxfdata.h"
 #include "dxftess.h"
+#include <sstream>
 
 CGAL_Nef_polyhedron::CGAL_Nef_polyhedron(CGAL_Nef_polyhedron2 *p)
 {

@@ -131,6 +131,7 @@ void dxf_tesselate(PolySet *ps, DxfData &dxf, double rot, bool up, bool /* do_tr
 				// ..maybe it would be better to assert here. But this would
 				// break compatibility with the glu tesselator that handled such
 				// cases just fine.
+				PRINT( "WARNING: Duplicate vertex during Tessellation. Render may be incorrect." );
 				continue;
 			}
 
