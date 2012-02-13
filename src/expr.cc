@@ -86,8 +86,8 @@ Value Expression::evaluate(const Context *context) const
 				return *v1.vec[i];
 		}
 		if (v1.type == Value::STRING && v2.type == Value::NUMBER) {
-			int i = int(v2.num);
-			if (i >= 0 && i < v1.text.size())
+			unsigned int i = int(v2.num);
+			if (i < v1.text.size())
 				return Value(v1.text.substr(i, 1));
 		}
 		return Value();
