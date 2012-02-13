@@ -21,7 +21,7 @@ BASEDIR=$PWD/../libraries
 OPENSCADDIR=$PWD
 SRCDIR=$BASEDIR/src
 DEPLOYDIR=$BASEDIR/install
-MAC_OSX_VERSION_MIN=10.7
+MAC_OSX_VERSION_MIN=10.5
 
 # Hack warning: gmplib is built separately in 32-bit and 64-bit mode
 # and then merged afterwards. gmplib's header files are dependant on
