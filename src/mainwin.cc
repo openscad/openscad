@@ -79,9 +79,7 @@
 
 #include <algorithm>
 #include <boost/foreach.hpp>
-#include <boost/lambda/lambda.hpp>
-#include <boost/lambda/bind.hpp>
-using namespace boost::lambda;
+#include <sys/stat.h>
 
 #ifdef ENABLE_CGAL
 
@@ -200,8 +198,8 @@ MainWindow::MainWindow(const QString &filename)
 	autoReloadTimer->setSingleShot(false);
 	connect(autoReloadTimer, SIGNAL(timeout()), this, SLOT(checkAutoReload()));
 
-	connect(e_tval, SIGNAL(textChanged(QString)), this, SLOT(actionCompile()));
-	connect(e_fps, SIGNAL(textChanged(QString)), this, SLOT(updatedFps()));
+	connect(this->e_tval, SIGNAL(textChanged(QString)), this, SLOT(actionCompile()));
+	connect(this->e_fps, SIGNAL(textChanged(QString)), this, SLOT(updatedFps()));
 
 	animate_panel->hide();
 
@@ -489,7 +487,7 @@ MainWindow::openFile(const QString &new_filename)
 #endif
 	setFileName(new_filename);
 
-	load();
+	refreshDocument();
 	updateRecentFiles();
 }
 
@@ -545,11 +543,11 @@ void MainWindow::updateRecentFiles()
 void MainWindow::updatedFps()
 {
 	bool fps_ok;
-	double fps = e_fps->text().toDouble(&fps_ok);
+	double fps = this->e_fps->text().toDouble(&fps_ok);
 	animate_timer->stop();
 	if (fps_ok && fps > 0) {
 		animate_timer->setSingleShot(false);
-		animate_timer->setInterval(int(1000 / e_fps->text().toDouble()));
+		animate_timer->setInterval(int(1000 / this->e_fps->text().toDouble()));
 		animate_timer->start();
 	}
 }
@@ -557,27 +555,28 @@ void MainWindow::updatedFps()
 void MainWindow::updateTVal()
 {
 	bool fps_ok;
-	double fps = e_fps->text().toDouble(&fps_ok);
+	double fps = this->e_fps->text().toDouble(&fps_ok);
 	if (fps_ok) {
 		if (fps <= 0) {
 			actionCompile();
 		} else {
-			double s = e_fsteps->text().toDouble();
-			double t = e_tval->text().toDouble() + 1/s;
+			double s = this->e_fsteps->text().toDouble();
+			double t = this->e_tval->text().toDouble() + 1/s;
 			QString txt;
 			txt.sprintf("%.5f", t >= 1.0 ? 0.0 : t);
-			e_tval->setText(txt);
+			this->e_tval->setText(txt);
 		}
 	}
 }
 
-void MainWindow::load()
+void MainWindow::refreshDocument()
 {
 	setCurrentOutput();
 	if (!this->fileName.isEmpty()) {
 		QFile file(this->fileName);
 		if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-			PRINTB("Failed to open file: %s (%s)", this->fileName.toStdString() % file.errorString().toStdString());
+			PRINTB("Failed to open file %s: %s", 
+						 this->fileName.toStdString() % file.errorString().toStdString());
 		}
 		else {
 			QString text = QTextStream(&file).readAll();
@@ -600,41 +599,26 @@ AbstractNode *MainWindow::find_root_tag(AbstractNode *n)
 /*!
 	Parse and evaluate the design => this->root_node
 */
-void MainWindow::compile(bool procevents)
+void MainWindow::compile(bool reload, bool procevents)
 {
-	PRINT("Parsing design (AST generation)...");
-	if (procevents)
-		QApplication::processEvents();
+	compileTopLevelDocument(reload);
 
   // Invalidate renderers before we kill the CSG tree
 	this->glview->setRenderer(NULL);
-	if (this->opencsgRenderer) {
-		delete this->opencsgRenderer;
-		this->opencsgRenderer = NULL;
-	}
-	if (this->thrownTogetherRenderer) {
-		delete this->thrownTogetherRenderer;
-		this->thrownTogetherRenderer = NULL;
-	}
+	delete this->opencsgRenderer;
+	this->opencsgRenderer = NULL;
+	delete this->thrownTogetherRenderer;
+	this->thrownTogetherRenderer = NULL;
 
 	// Remove previous CSG tree
-	if (this->root_module) {
-		delete this->root_module;
-		this->root_module = NULL;
-	}
-
-	if (this->absolute_root_node) {
-		delete this->absolute_root_node;
-		this->absolute_root_node = NULL;
-	}
+	delete this->absolute_root_node;
+	this->absolute_root_node = NULL;
 
 	this->root_raw_term.reset();
 	this->root_norm_term.reset();
 
-	if (this->root_chain) {
-		delete this->root_chain;
-		this->root_chain = NULL;
-	}
+	delete this->root_chain;
+	this->root_chain = NULL;
 
 	this->highlight_terms.clear();
 	delete this->highlights_chain;
@@ -647,98 +631,44 @@ void MainWindow::compile(bool procevents)
 	this->root_node = NULL;
 	this->tree.setRoot(NULL);
 
-	// Initialize special variables
-	this->root_ctx.set_variable("$t", Value(e_tval->text().toDouble()));
+	if (this->root_module) {
+		// Evaluate CSG tree
+		PRINT("Compiling design (CSG Tree generation)...");
+		if (procevents) QApplication::processEvents();
+		
+		AbstractNode::resetIndexCounter();
+		this->root_inst = ModuleInstantiation();
+		this->absolute_root_node = this->root_module->evaluate(&this->root_ctx, &this->root_inst);
+		
+		if (this->absolute_root_node) {
+			// Do we have an explicit root node (! modifier)?
+			if (!(this->root_node = find_root_tag(this->absolute_root_node))) {
+				this->root_node = this->absolute_root_node;
+			}
+			// FIXME: Consider giving away ownership of root_node to the Tree, or use reference counted pointers
+			this->tree.setRoot(this->root_node);
+			// Dump the tree (to initialize caches).
+			// FIXME: We shouldn't really need to do this explicitly..
+			this->tree.getString(*this->root_node);
 
-	Value vpt;
-	vpt.type = Value::VECTOR;
-	vpt.append(new Value(-this->glview->object_trans_x));
-	vpt.append(new Value(-this->glview->object_trans_y));
-	vpt.append(new Value(-this->glview->object_trans_z));
-	this->root_ctx.set_variable("$vpt", vpt);
-
-	Value vpr;
-	vpr.type = Value::VECTOR;
-	vpr.append(new Value(fmodf(360 - this->glview->object_rot_x + 90, 360)));
-	vpr.append(new Value(fmodf(360 - this->glview->object_rot_y, 360)));
-	vpr.append(new Value(fmodf(360 - this->glview->object_rot_z, 360)));
-	root_ctx.set_variable("$vpr", vpr);
-
-	// Parse
-	this->last_compiled_doc = editor->toPlainText();
-	this->root_module = parse((this->last_compiled_doc + "\n" + 
-														 QString::fromStdString(commandline_commands)).toAscii().data(), 
-														this->fileName.isEmpty() ? 
-														"" : 
-														QFileInfo(this->fileName).absolutePath().toLocal8Bit(), 
-														false);
-
-	// Error highlighting
-	if (this->highlighter) {
-		delete this->highlighter;
-		this->highlighter = NULL;
-	}
-	if (parser_error_pos >= 0) {
-		this->highlighter = new Highlighter(editor->document());
-	}
-
-	if (!this->root_module) {
-		if (!animate_panel->isVisible()) {
-#ifdef _QCODE_EDIT_
-			QDocumentCursor cursor = editor->cursor();
-			cursor.setPosition(parser_error_pos);
-#else
-			QTextCursor cursor = editor->textCursor();
-			cursor.setPosition(parser_error_pos);
-			editor->setTextCursor(cursor);
-#endif
+			PRINT("Compilation finished.");
+			if (procevents) QApplication::processEvents();
 		}
-		goto fail;
 	}
 
-	this->root_module->handleDependencies();
-
-	// Evaluate CSG tree
-	PRINT("Compiling design (CSG Tree generation)...");
-	if (procevents)
-		QApplication::processEvents();
-
-	AbstractNode::resetIndexCounter();
-	this->root_inst = ModuleInstantiation();
-	this->absolute_root_node = this->root_module->evaluate(&this->root_ctx, &this->root_inst);
-
-	if (!this->absolute_root_node)
-		goto fail;
-
-	// Do we have an explicit root node (! modifier)?
-	if (!(this->root_node = find_root_tag(this->absolute_root_node))) {
-		this->root_node = this->absolute_root_node;
-	}
-	// FIXME: Consider giving away ownership of root_node to the Tree, or use reference counted pointers
-	this->tree.setRoot(this->root_node);
-  // Dump the tree (to initialize caches).
-  // FIXME: We shouldn't really need to do this explicitly..
-	this->tree.getString(*this->root_node);
-
- 	if (1) {
-		PRINT("Compilation finished.");
-		if (procevents)
-			QApplication::processEvents();
-	} else {
-fail:
+	if (!this->root_node) {
 		if (parser_error_pos < 0) {
 			PRINT("ERROR: Compilation failed! (no top level object found)");
 		} else {
 			PRINT("ERROR: Compilation failed!");
 		}
-		if (procevents)
-			QApplication::processEvents();
+		if (procevents) QApplication::processEvents();
 	}
 }
 
 /*!
 	Generates CSG tree for OpenCSG evaluation.
-	Assumes that the design has been parsed and evaluated
+	Assumes that the design has been parsed and evaluated (this->root_node is set)
 */
 void MainWindow::compileCSG(bool procevents)
 {
@@ -994,7 +924,7 @@ void MainWindow::actionSaveAs()
 
 void MainWindow::actionReload()
 {
-	if (checkModified()) load();
+	if (checkModified()) refreshDocument();
 }
 
 void MainWindow::hideEditor()
@@ -1034,16 +964,99 @@ void MainWindow::pasteViewportRotation()
 	cursor.insertText(txt);
 }
 
-void MainWindow::checkAutoReload()
+void MainWindow::updateTemporalVariables()
+{
+	this->root_ctx.set_variable("$t", Value(this->e_tval->text().toDouble()));
+	
+	Value vpt;
+	vpt.type = Value::VECTOR;
+	vpt.append(new Value(-this->glview->object_trans_x));
+	vpt.append(new Value(-this->glview->object_trans_y));
+	vpt.append(new Value(-this->glview->object_trans_z));
+	this->root_ctx.set_variable("$vpt", vpt);
+	
+	Value vpr;
+	vpr.type = Value::VECTOR;
+	vpr.append(new Value(fmodf(360 - this->glview->object_rot_x + 90, 360)));
+	vpr.append(new Value(fmodf(360 - this->glview->object_rot_y, 360)));
+	vpr.append(new Value(fmodf(360 - this->glview->object_rot_z, 360)));
+	root_ctx.set_variable("$vpr", vpr);
+}
+
+bool MainWindow::fileChangedOnDisk()
 {
 	if (!this->fileName.isEmpty()) {
-		QString new_stinfo;
-		QFileInfo finfo(this->fileName);
-		new_stinfo = QString::number(finfo.size()) + QString::number(finfo.lastModified().toTime_t());
-		if (new_stinfo != autoReloadInfo)
-			actionReloadCompile();
-		autoReloadInfo = new_stinfo;
+		struct stat st;
+		memset(&st, 0, sizeof(struct stat));
+		stat(this->fileName.toLocal8Bit(), &st);
+		std::string newid = str(boost::format("%x.%x") % st.st_mtime % st.st_size);
+
+		if (newid != this->autoReloadId) {
+			this->autoReloadId = newid;
+			return true;
+		}
 	}
+	return false;
+}
+
+/*!
+	If reload is true, does a timestamp check on the document and tries to reload it.
+	Otherwise, just reparses the current document and any dependencies, updates the 
+	GUI accordingly and populates this->root_module.
+*/
+void MainWindow::compileTopLevelDocument(bool reload)
+{
+	bool shouldcompiletoplevel = true;
+
+	if (reload && fileChangedOnDisk()) {
+		if (!checkModified()) shouldcompiletoplevel = false;
+		refreshDocument();
+	}
+	
+	if (shouldcompiletoplevel) {
+		updateTemporalVariables();
+		
+		this->last_compiled_doc = editor->toPlainText();
+		std::string fulltext = 
+			this->last_compiled_doc.toStdString() + "\n" + commandline_commands;
+		
+		delete this->root_module;
+		this->root_module = NULL;
+		
+		this->root_module = parse(fulltext.c_str(),
+															this->fileName.isEmpty() ? 
+															"" : 
+															QFileInfo(this->fileName).absolutePath().toLocal8Bit(), 
+															false);
+
+		// Error highlighting
+		delete this->highlighter;
+		this->highlighter = NULL;
+		
+		if (!this->root_module) {
+			this->highlighter = new Highlighter(editor->document());
+
+			if (!animate_panel->isVisible()) {
+#ifdef _QCODE_EDIT_
+				QDocumentCursor cursor = editor->cursor();
+				cursor.setPosition(parser_error_pos);
+#else
+				QTextCursor cursor = editor->textCursor();
+				cursor.setPosition(parser_error_pos);
+				editor->setTextCursor(cursor);
+#endif
+			}
+		}
+	}
+
+	if (this->root_module) this->root_module->handleDependencies();
+}
+
+void MainWindow::checkAutoReload()
+{
+	if (GuiLocker::isLocked()) return;
+	GuiLocker lock;
+	compile(true, true);
 }
 
 void MainWindow::autoReloadSet(bool on)
@@ -1051,7 +1064,7 @@ void MainWindow::autoReloadSet(bool on)
 	QSettings settings;
 	settings.setValue("design/autoReload",designActionAutoReload->isChecked());
 	if (on) {
-		autoReloadInfo = QString();
+		autoReloadId = "";
 		autoReloadTimer->start(200);
 	} else {
 		autoReloadTimer->stop();
@@ -1083,10 +1096,12 @@ void MainWindow::actionReloadCompile()
 
 	console->clear();
 
-	load();
+	refreshDocument();
 
 	setCurrentOutput();
-	compile(true);
+	PRINT("Parsing design (AST generation)...");
+	QApplication::processEvents();
+	compile(true, true);
 	if (this->root_node) compileCSG(true);
 
 	// Go to non-CGAL view mode
@@ -1112,7 +1127,9 @@ void MainWindow::actionCompile()
 	setCurrentOutput();
 	console->clear();
 
-	compile(!viewActionAnimate->isChecked());
+	PRINT("Parsing design (AST generation)...");
+	QApplication::processEvents();
+	compile(false, !viewActionAnimate->isChecked());
 	if (this->root_node) compileCSG(!viewActionAnimate->isChecked());
 
 	// Go to non-CGAL view mode
@@ -1130,8 +1147,8 @@ void MainWindow::actionCompile()
 	if (viewActionAnimate->isChecked() && e_dump->isChecked()) {
 		QImage img = this->glview->grabFrameBuffer();
 		QString filename;
-		double s = e_fsteps->text().toDouble();
-		double t = e_tval->text().toDouble();
+		double s = this->e_fsteps->text().toDouble();
+		double t = this->e_tval->text().toDouble();
 		filename.sprintf("frame%05d.png", int(round(s*t)));
 		img.save(filename, "PNG");
 	}
@@ -1149,7 +1166,9 @@ void MainWindow::actionRenderCGAL()
 	setCurrentOutput();
 	console->clear();
 
-	compile(true);
+	PRINT("Parsing design (AST generation)...");
+	QApplication::processEvents();
+	compile(false, true);
 
 	if (!this->root_module || !this->root_node) {
 		return;
@@ -1559,7 +1578,7 @@ void MainWindow::animateUpdate()
 {
 	if (animate_panel->isVisible()) {
 		bool fps_ok;
-		double fps = e_fps->text().toDouble(&fps_ok);
+		double fps = this->e_fps->text().toDouble(&fps_ok);
 		if (fps_ok && fps <= 0 && !animate_timer->isActive()) {
 			animate_timer->stop();
 			animate_timer->setSingleShot(true);

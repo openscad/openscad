@@ -1,13 +1,20 @@
 #include "ModuleCache.h"
 #include "module.h"
 #include "printutils.h"
-#include "boosty.h"
 #include "openscad.h"
+
+#include "boosty.h"
+#include <boost/format.hpp>
+#include <boost/filesystem.hpp>
 
 #include <stdio.h>
 #include <fstream>
 #include <sstream>
 #include <sys/stat.h>
+
+/*!
+	FIXME: Implement an LRU scheme to avoid having an ever-growing module cache
+*/
 
 ModuleCache *ModuleCache::inst = NULL;
 
@@ -20,9 +27,7 @@ Module *ModuleCache::evaluate(const std::string &filename)
 	memset(&st, 0, sizeof(struct stat));
 	stat(filename.c_str(), &st);
 
-	std::stringstream idstream;
-	idstream << std::hex << st.st_mtime << "." << st.st_size;
-	std::string cache_id = idstream.str();
+	std::string cache_id = str(boost::format("%x.%x") % st.st_mtime % st.st_size);
 
   // Lookup in cache
 	if (this->entries.find(filename) != this->entries.end() && 

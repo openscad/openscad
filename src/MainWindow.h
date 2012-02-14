@@ -27,7 +27,7 @@ public:
 	double tval, fps, fsteps;
 
 	QTimer *autoReloadTimer;
-	QString autoReloadInfo;
+	std::string autoReloadId;
 
 	Context root_ctx;
 	Module *root_module;      // Result of parsing
@@ -73,9 +73,12 @@ private slots:
 
 private:
 	void openFile(const QString &filename);
-	void load();
+	void refreshDocument();
 	AbstractNode *find_root_tag(AbstractNode *n);
-	void compile(bool procevents);
+	void updateTemporalVariables();
+	bool fileChangedOnDisk();
+	void compileTopLevelDocument(bool reload);
+	void compile(bool reload, bool procevents);
 	void compileCSG(bool procevents);
 	bool maybeSave();
 	bool checkModified();
