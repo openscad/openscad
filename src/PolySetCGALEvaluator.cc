@@ -52,7 +52,7 @@ public:
 		//
 		CGAL::Direction_3<CGAL_Kernel3> up(0,0,1);
 		CGAL::Plane_3<CGAL_Kernel3> plane = hfacet->plane();
-		out << " direction == up? " << ( plane.orthogonal_direction() == up ) << "\n";
+		// out << " direction == up? " << ( plane.orthogonal_direction() == up ) << "\n";
 		if ( plane.orthogonal_direction() != up ) {
 			// out << "direction == down. skipping";
 			return;
