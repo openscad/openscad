@@ -84,7 +84,7 @@ public:
 				//out << " contour is a body. joining. " << contour.size() << " points.\n" ;
 				*nefpoly2d += *tmpnef;
 			} else {
-				//out << " contour is a hole. intersecting. " << contour.size() << "points.\n";
+				//out << " contour is a hole. intersecting. " << contour.size() << " points.\n";
 				*nefpoly2d *= *tmpnef;
 			}
 			numcontours++;
