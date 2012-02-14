@@ -43,13 +43,12 @@ public:
 		// This method is fed each 'facet' of the Nef_polyhedron3 that's been intersected
 		// with the flat x-y plane. I.e. it's fed a bunch of flat 3d polygons with z==0 at all vertexes.
 		//
-		// It takes the contours of the polygons, and either does join() or intersection() based
+		// It takes the contours of the 2d polygons, and either does join() or intersection() based
 		// on whether the contour is a 'hole' or 'body'. The result is stored in nefpoly2d.
 		//
-		// Now. CGAL_Nef_poly3d objects have two 'half facets'.
-		// On a flat square in 3d space, there are 2 half-facets, one pointing 'up' and one 'down'.
-		// Now, we only want the vertexes--- so we only don't need both 'up' and 'down' facets.
-		// What do we do? Just skip the 'down' facets!
+		// On a Nef_Poly3 flat square in 3d space, there are 2 half-facets, one pointing 'up' and one 'down'.
+		// Now, we only want the vertexes--- and we only want one set of them. Not a duplicate set.
+		// So we don't need both 'up' and 'down' facets. What do we do? Just skip the 'down' facets!
 		//
 		CGAL::Direction_3<CGAL_Kernel3> up(0,0,1);
 		CGAL::Plane_3<CGAL_Kernel3> plane = hfacet->plane();
