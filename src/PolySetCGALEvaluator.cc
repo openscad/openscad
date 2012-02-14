@@ -116,7 +116,7 @@ PolySet *PolySetCGALEvaluator::evaluatePolySet(const ProjectionNode &node)
 				double z = ps3->polygons[i][j][2];
 				if (z != 0)
 					goto next_ps3_polygon_cut_mode;
-				if (conversion_grid.align(x, y) == i+1)
+				if ((unsigned) conversion_grid.align(x, y) == i+1)
 					goto next_ps3_polygon_cut_mode;
 				conversion_grid.data(x, y) = i+1;
 			}
