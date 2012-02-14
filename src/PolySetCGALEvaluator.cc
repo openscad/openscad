@@ -108,7 +108,7 @@ PolySet *PolySetCGALEvaluator::evaluatePolySet(const ProjectionNode &node)
     // in the XY plane, causing the resulting 2D polygon to be self-intersection
     // and cause a crash in CGALEvaluator::PolyReducer. The right solution is to
     // filter these polygons here. kintel 20120203.
-		Grid2d<int> conversion_grid(GRID_COARSE);
+		Grid2d<unsigned int> conversion_grid(GRID_COARSE);
 		for (size_t i = 0; i < ps3->polygons.size(); i++) {
 			for (size_t j = 0; j < ps3->polygons[i].size(); j++) {
 				double x = ps3->polygons[i][j][0];
