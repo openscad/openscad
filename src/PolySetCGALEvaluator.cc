@@ -22,9 +22,9 @@
 class NefShellVisitor_for_cut {
 public:
 	std::stringstream out;
+	CGAL_Nef_polyhedron2::Boundary boundary;
 	shared_ptr<CGAL_Nef_polyhedron2> tmpnef;
 	shared_ptr<CGAL_Nef_polyhedron2> nefpoly2d;
-	CGAL_Nef_polyhedron2::Boundary boundary;
 	NefShellVisitor_for_cut()
 	{
 		nefpoly2d.reset( new CGAL_Nef_polyhedron2() );
@@ -43,14 +43,14 @@ public:
 		// This method is fed each 'facet' of the Nef_polyhedron3 that's been intersected
 		// with the flat x-y plane. I.e. it's fed a bunch of flat 3d polygons with z==0 at all vertexes.
 		//
+		// It takes the contours of the polygons, and either does join() or intersection() based
+		// on whether the contour is a 'hole' or 'body'. The result is stored in nefpoly2d.
+		//
 		// Now. CGAL_Nef_poly3d objects have two 'half facets'.
 		// On a flat square in 3d space, there are 2 half-facets, one pointing 'up' and one 'down'.
 		// Now, we only want the vertexes--- so we only don't need both 'up' and 'down' facets.
 		// What do we do? Just skip the 'down' facets!
 		//
-		// By the way, 'up' facets list vertexes in CounterClockwise Order, and 'down' facets list vertexes
-		// in Clockwise order. (or is it the other way round?).
-
 		CGAL::Direction_3<CGAL_Kernel3> up(0,0,1);
 		CGAL::Plane_3<CGAL_Kernel3> plane = hfacet->plane();
 		out << " direction == up? " << ( plane.orthogonal_direction() == up ) << "\n";
@@ -124,16 +124,16 @@ PolySet *PolySetCGALEvaluator::evaluatePolySet(const ProjectionNode &node)
 		CGAL_Nef_polyhedron3::Plane_3 plane = CGAL_Nef_polyhedron3::Plane_3( 0,0,1,0 );
 		*sum.p3 = sum.p3->intersection( plane, CGAL_Nef_polyhedron3::PLANE_ONLY);
 
-                NefShellVisitor_for_cut shell_visitor;
-                CGAL_Nef_polyhedron3::Volume_const_iterator i;
-                CGAL_Nef_polyhedron3::Shell_entry_const_iterator j;
+		NefShellVisitor_for_cut shell_visitor;
+		CGAL_Nef_polyhedron3::Volume_const_iterator i;
+		CGAL_Nef_polyhedron3::Shell_entry_const_iterator j;
 		CGAL_Nef_polyhedron3::SFace_const_handle sface_handle;
-                for ( i = sum.p3->volumes_begin(); i != sum.p3->volumes_end(); ++i ) {
-                        for ( j = i->shells_begin(); j != i->shells_end(); ++j ) {
+		for ( i = sum.p3->volumes_begin(); i != sum.p3->volumes_end(); ++i ) {
+			for ( j = i->shells_begin(); j != i->shells_end(); ++j ) {
 				sface_handle = CGAL_Nef_polyhedron3::SFace_const_handle( j );
-                                sum.p3->visit_shell_objects( sface_handle , shell_visitor );
-                        }
-                }
+				sum.p3->visit_shell_objects( sface_handle , shell_visitor );
+			}
+		}
 		// std::cout << "shell visitor\n" << shell_visitor.dump() << "\n";
 
 		/*if (!sum.p3->is_simple()) {
