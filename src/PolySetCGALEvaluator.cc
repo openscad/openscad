@@ -41,16 +41,14 @@ public:
 	void visit( CGAL_Nef_polyhedron3::SFace_const_handle ) {}
 	void visit( CGAL_Nef_polyhedron3::Halffacet_const_handle hfacet ) {
 		// This method is fed each 'facet' of the Nef_polyhedron3 that's been intersected
-		// with the flat x-y plane. I.e. it's fed a bunch of flat polygons.
-		//
-		// So, we assume that all z coordinates are 0.
+		// with the flat x-y plane. I.e. it's fed a bunch of flat 3d polygons with z==0 at all vertexes.
 		//
 		// Now. CGAL_Nef_poly3d objects have two 'half facets'.
 		// On a flat square in 3d space, there are 2 half-facets, one pointing 'up' and one 'down'.
 		// Now, we only want the vertexes--- so we only don't need both 'up' and 'down' facets.
 		// What do we do? Just skip the 'down' facets!
 		//
-		// By the way, 'up' facets list vertexs in CounterClockwise Order, and 'down' facets list vertexs
+		// By the way, 'up' facets list vertexes in CounterClockwise Order, and 'down' facets list vertexes
 		// in Clockwise order. (or is it the other way round?).
 
 		CGAL::Direction_3<CGAL_Kernel3> up(0,0,1);
@@ -156,6 +154,7 @@ PolySet *PolySetCGALEvaluator::evaluatePolySet(const ProjectionNode &node)
 		// in the XY plane, causing the resulting 2D polygon to be self-intersection
 		// and cause a crash in CGALEvaluator::PolyReducer. The right solution is to
 		// filter these polygons here. kintel 20120203.
+		/*
 		Grid2d<int> conversion_grid(GRID_COARSE);
 		for (size_t i = 0; i < ps3->polygons.size(); i++) {
 			for (size_t j = 0; j < ps3->polygons[i].size(); j++) {
@@ -177,8 +176,7 @@ PolySet *PolySetCGALEvaluator::evaluatePolySet(const ProjectionNode &node)
 			}
 		next_ps3_polygon_cut_mode:;
 		}
-		delete ps3;
-
+		*/
 	}
 	// In projection mode all the triangles are projected manually into the XY plane
 	else
