@@ -40,16 +40,14 @@ public:
 	void visit( CGAL_Nef_polyhedron3::SHalfloop_const_handle ) {}
 	void visit( CGAL_Nef_polyhedron3::SFace_const_handle ) {}
 	void visit( CGAL_Nef_polyhedron3::Halffacet_const_handle hfacet ) {
-		// This method is fed each 'facet' of the Nef_polyhedron3 that's been intersected
+		// This method is fed each 'half-facet' of the Nef_polyhedron3 that's been intersected
 		// with the flat x-y plane. I.e. it's fed a bunch of flat 3d polygons with z==0 at all vertexes.
+		// It is fed both the 'up' pointing half-facets and the 'down' pointing half-facets.
+		// We only need one set of vertexes, so we skip all of the 'down' facets.
 		//
-		// It takes the contours of the 2d polygons, and either does join() or intersection() based
-		// on whether the contour is a 'hole' or 'body'. The result is stored in nefpoly2d.
-		//
-		// On a Nef_Poly3 flat square in 3d space, there are 2 half-facets, one pointing 'up' and one 'down'.
-		// Now, we only want the vertexes--- and we only want one set of them. Not a duplicate set.
-		// So we don't need both 'up' and 'down' facets. What do we do? Just skip the 'down' facets!
-		//
+		// The vertexes are recorded in lists called 'contours'. Those are 'joined' or 'intersected'
+		// with the main result polyhedron, 'nefpoly2d', depending on whether it's a "hole" contour
+		// or a "body" contour.
 		CGAL::Direction_3<CGAL_Kernel3> up(0,0,1);
 		CGAL::Plane_3<CGAL_Kernel3> plane = hfacet->plane();
 		// out << " direction == up? " << ( plane.orthogonal_direction() == up ) << "\n";
