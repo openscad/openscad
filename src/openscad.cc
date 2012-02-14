@@ -275,8 +275,8 @@ int main(int argc, char **argv)
 			fclose(fp);
 			text << "\n" << commandline_commands;
 			fs::path abspath = boosty::absolute( filename );
-			std::string fname = boosty::stringy( abspath );
-			root_module = parse(text.str().c_str(), fname.c_str(), false);
+			std::string fpath = boosty::stringy(abspath.parent_path());
+			root_module = parse(text.str().c_str(), fpath.c_str(), false);
 			if (!root_module) exit(1);
 		}
 		
