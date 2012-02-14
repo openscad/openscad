@@ -77,28 +77,28 @@ DxfData *CGAL_Nef_polyhedron::convertToDxfData() const
 	return dxfdata;
 }
 
-// moved here to reduce compile size/time of CGAL_Nef_polyhedron.cc
+// moved here to reduce compile size/time of compiling CGAL_Nef_polyhedron.cc
 std::string CGAL_Nef_polyhedron::dump_p2() const
 {
         std::stringstream out;
         CGAL_Nef_polyhedron2::Explorer explorer = this->p2->explorer();
         CGAL_Nef_polyhedron2::Explorer::Vertex_const_iterator i;
-        out << "CGAL_Nef_polyhedron::p2 vertices";
+        out << "CGAL_Nef_polyhedron::p2 Vertices";
         for (i = explorer.vertices_begin(); i != explorer.vertices_end(); ++i) {
                 if ( explorer.is_standard( i ) ) {
                         CGAL_Nef_polyhedron2::Explorer::Point point = explorer.point( i );
-                        out << "\n Standard vertex x y: "
+                        out << "\n Point x y: "
                           << CGAL::to_double(point.x()) << " "
                           << CGAL::to_double(point.y());
                 }  else {
                         CGAL_Nef_polyhedron2::Explorer::Ray ray = explorer.ray( i );
                         CGAL_Nef_polyhedron2::Explorer::Point point = ray.point( 0 );
                         out << "\n Ray x y dx dy: "
-                          << CGAL::to_double(point.x()) << " " << CGAL::to_double(point.y())
-                          << CGAL::to_double(ray.direction().dx()) << " " << CGAL::to_double(ray.direction().dy()) << "\n";
+                          << CGAL::to_double(point.x()) << " " << CGAL::to_double(point.y()) << " "
+                          << CGAL::to_double(ray.direction().dx()) << " " << CGAL::to_double(ray.direction().dy());
                 }
         }
-        out << "\nCGAL_Nef_polyhedron::p2 vertices end";
+        out << "\nCGAL_Nef_polyhedron::p2 Vertices end";
         return out.str();
 }
 
