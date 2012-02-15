@@ -650,9 +650,6 @@ void MainWindow::compile(bool reload, bool procevents)
 			// Dump the tree (to initialize caches).
 			// FIXME: We shouldn't really need to do this explicitly..
 			this->tree.getString(*this->root_node);
-
-			PRINT("Compilation finished.");
-			if (procevents) QApplication::processEvents();
 		}
 	}
 
@@ -1049,7 +1046,10 @@ void MainWindow::compileTopLevelDocument(bool reload)
 		}
 	}
 
-	if (this->root_module) this->root_module->handleDependencies();
+	if (this->root_module) {
+		this->root_module->handleDependencies();
+		PRINTB("Module cache size: %d modules", ModuleCache::instance()->size());
+	}
 }
 
 void MainWindow::checkAutoReload()

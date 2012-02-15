@@ -6,6 +6,7 @@ class ModuleCache
 public:
 	static ModuleCache *instance() { if (!inst) inst = new ModuleCache; return inst; }
 	class Module *evaluate(const std::string &filename);
+	size_t size() { return this->entries.size(); }
 	void clear();
 
 private:
