@@ -609,7 +609,8 @@ list(APPEND ECHO_FILES ${FUNCTION_FILES}
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/dim-all.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/string-test.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/string-indexing.scad
-            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/vector-values.scad)
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/vector-values.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/search-tests.scad)
 
 list(APPEND DUMPTEST_FILES ${MINIMAL_FILES} ${FEATURES_FILES} ${EXAMPLE_FILES})
 list(APPEND DUMPTEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/escape-test.scad
