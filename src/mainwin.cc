@@ -323,7 +323,7 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this->helpActionAbout, SIGNAL(triggered()), this, SLOT(helpAbout()));
 	connect(this->helpActionHomepage, SIGNAL(triggered()), this, SLOT(helpHomepage()));
 	connect(this->helpActionManual, SIGNAL(triggered()), this, SLOT(helpManual()));
-	connect(this->helpActionOpenGLInfo, SIGNAL(triggered()), this, SLOT(helpOpenGL()));
+	connect(this->helpActionLibraryInfo, SIGNAL(triggered()), this, SLOT(helpLibrary()));
 
 
 	setCurrentOutput();
@@ -1699,15 +1699,28 @@ MainWindow::helpManual()
 	QDesktopServices::openUrl(QUrl("http://en.wikibooks.org/wiki/OpenSCAD_User_Manual"));
 }
 
-void MainWindow::helpOpenGL()
+#define STRINGIFY(x) #x
+#define TOSTRING(x) STRINGIFY(x)
+void MainWindow::helpLibrary()
 {
+	QString libinfo;
+	libinfo.sprintf("Boost version: %s\n"
+									"Eigen version: %d.%d.%d\n"
+									"CGAL version: %s\n"
+									"OpenCSG version: %s\n\n",
+									BOOST_LIB_VERSION,
+									EIGEN_WORLD_VERSION, EIGEN_MAJOR_VERSION, EIGEN_MINOR_VERSION,
+									TOSTRING(CGAL_VERSION),
+									OPENCSG_VERSION_STRING);
+
 	if (!this->openglbox) {
 		this->openglbox = new QMessageBox(QMessageBox::Information, 
-																			"OpenGL Info", "Detailed OpenGL Info",
+																			"OpenGL Info", "Detailed Library Info",
 																			QMessageBox::Ok, this);
 		
 	}
-	this->openglbox->setDetailedText(this->glview->getRendererInfo());
+
+	this->openglbox->setDetailedText(libinfo + this->glview->getRendererInfo());
 	this->openglbox->show();
 }
 

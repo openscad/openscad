@@ -157,7 +157,7 @@ public slots:
 	void helpAbout();
 	void helpHomepage();
 	void helpManual();
-	void helpOpenGL();
+	void helpLibrary();
 	void quit();
 	void actionReloadCompile();
 	void checkAutoReload();

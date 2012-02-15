@@ -222,7 +222,7 @@
     <addaction name="helpActionAbout"/>
     <addaction name="helpActionHomepage"/>
     <addaction name="helpActionManual"/>
-    <addaction name="helpActionOpenGLInfo"/>
+    <addaction name="helpActionLibraryInfo"/>
    </widget>
    <addaction name="menu_File"/>
    <addaction name="menu_Edit"/>
@@ -671,9 +671,9 @@
     <string>Export as CSG...</string>
    </property>
   </action>
-  <action name="helpActionOpenGLInfo">
+  <action name="helpActionLibraryInfo">
    <property name="text">
-    <string>OpenGL info</string>
+    <string>Library info</string>
    </property>
   </action>
  </widget>
