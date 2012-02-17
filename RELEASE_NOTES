@@ -5,6 +5,8 @@ Features:
 o Snappier GUI while performing CGAL computations (computations running in separate thread)
 o The size of the misc. caches can now be adjusted from Preferences
 o The limit for when to disable OpenCSG can now be adjusted from Preferences
+o Added Dot product operator: vec * vec
+o Added Matrix multiplication operator: vec * mat, mat * mat
 
 Bugfixes:
 o use'ing an non-existing file sometimes crashed under Windows
