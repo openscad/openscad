@@ -78,6 +78,7 @@
 #include <fstream>
 
 #include <algorithm>
+#include <boost/version.hpp>
 #include <boost/foreach.hpp>
 #include <boost/version.hpp>
 #include <sys/stat.h>
