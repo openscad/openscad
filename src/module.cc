@@ -34,6 +34,7 @@
 
 #include <boost/foreach.hpp>
 #include <sstream>
+#include <sys/stat.h>
 
 AbstractModule::~AbstractModule()
 {
@@ -203,18 +204,33 @@ std::string Module::dump(const std::string &indent, const std::string &name) con
 	return dump.str();
 }
 
-void Module::handleDependencies()
+void Module::registerInclude(const std::string &filename)
 {
-//	PRINTB_NOCACHE("Module::handleDependencies(): %p (%d libs %p)", this % this->usedlibs.size() % &this->usedlibs);
+	struct stat st;
+	memset(&st, 0, sizeof(struct stat));
+	stat(filename.c_str(), &st);
+	this->includes[filename] = st.st_mtime;
+}
+
+/*!
+	Check if any dependencies have been modified and recompile them.
+	Returns true if anything was recompiled.
+*/
+bool Module::handleDependencies()
+{
+	bool changed = false;
 	// Iterating manually since we want to modify the container while iterating
 	Module::ModuleContainer::iterator iter = this->usedlibs.begin();
 	while (iter != this->usedlibs.end()) {
 		Module::ModuleContainer::iterator curr = iter++;
+		Module *oldmodule = curr->second;
 		curr->second = ModuleCache::instance()->evaluate(curr->first);
+		if (curr->second != oldmodule) changed = true;
 		PRINTB_NOCACHE("  %s: %p", curr->first % curr->second);
 		if (!curr->second) {
 			PRINTB_NOCACHE("WARNING: Failed to compile library '%s'.", curr->first);
 			this->usedlibs.erase(curr);
 		}
 	}
+	return changed;
 }

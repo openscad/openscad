@@ -79,6 +79,7 @@
 
 #include <algorithm>
 #include <boost/foreach.hpp>
+#include <boost/version.hpp>
 #include <sys/stat.h>
 
 #ifdef ENABLE_CGAL
@@ -598,10 +599,13 @@ AbstractNode *MainWindow::find_root_tag(AbstractNode *n)
 
 /*!
 	Parse and evaluate the design => this->root_node
+
+	Returns true if something was compiled, false if nothing was changed
+  and the root_node was left untouched.
 */
-void MainWindow::compile(bool reload, bool procevents)
+bool MainWindow::compile(bool reload, bool procevents)
 {
-	compileTopLevelDocument(reload);
+	if (!compileTopLevelDocument(reload)) return false;
 
   // Invalidate renderers before we kill the CSG tree
 	this->glview->setRenderer(NULL);
@@ -661,6 +665,8 @@ void MainWindow::compile(bool reload, bool procevents)
 		}
 		if (procevents) QApplication::processEvents();
 	}
+
+	return true;
 }
 
 /*!
@@ -1000,13 +1006,15 @@ bool MainWindow::fileChangedOnDisk()
 	If reload is true, does a timestamp check on the document and tries to reload it.
 	Otherwise, just reparses the current document and any dependencies, updates the 
 	GUI accordingly and populates this->root_module.
-*/
-void MainWindow::compileTopLevelDocument(bool reload)
-{
-	bool shouldcompiletoplevel = true;
 
-	if (reload && fileChangedOnDisk()) {
-		if (!checkModified()) shouldcompiletoplevel = false;
+	Returns true if anything was compiled.
+*/
+bool MainWindow::compileTopLevelDocument(bool reload)
+{
+	bool shouldcompiletoplevel = !reload;
+
+	if (reload && fileChangedOnDisk() && checkModified()) {
+		shouldcompiletoplevel = true;
 		refreshDocument();
 	}
 	
@@ -1046,17 +1054,18 @@ void MainWindow::compileTopLevelDocument(bool reload)
 		}
 	}
 
+	bool changed = shouldcompiletoplevel;
 	if (this->root_module) {
-		this->root_module->handleDependencies();
-		PRINTB("Module cache size: %d modules", ModuleCache::instance()->size());
+		changed |= this->root_module->handleDependencies();
+		if (changed) PRINTB("Module cache size: %d modules", ModuleCache::instance()->size());
 	}
+
+	return changed;
 }
 
 void MainWindow::checkAutoReload()
 {
-	if (GuiLocker::isLocked()) return;
-	GuiLocker lock;
-	compile(true, true);
+	if (!this->fileName.isEmpty()) actionReloadCompile();
 }
 
 void MainWindow::autoReloadSet(bool on)
@@ -1091,17 +1100,12 @@ void MainWindow::actionReloadCompile()
 {
 	if (GuiLocker::isLocked()) return;
 	GuiLocker lock;
-
-	if (!checkModified()) return;
-
+	setCurrentOutput();
 	console->clear();
 
-	refreshDocument();
-
-	setCurrentOutput();
-	PRINT("Parsing design (AST generation)...");
-	QApplication::processEvents();
-	compile(true, true);
+	// PRINT("Parsing design (AST generation)...");
+	// QApplication::processEvents();
+	if (!compile(true, true)) return;
 	if (this->root_node) compileCSG(true);
 
 	// Go to non-CGAL view mode
@@ -1123,7 +1127,6 @@ void MainWindow::actionCompile()
 {
 	if (GuiLocker::isLocked()) return;
 	GuiLocker lock;
-
 	setCurrentOutput();
 	console->clear();
 
@@ -1819,7 +1822,7 @@ void MainWindow::consoleOutput(const std::string &msg, void *userdata)
 
 void MainWindow::setCurrentOutput()
 {
-	set_output_handler(&MainWindow::consoleOutput, this);
+//	set_output_handler(&MainWindow::consoleOutput, this);
 }
 
 void MainWindow::clearCurrentOutput()

@@ -6,10 +6,12 @@
 #include "boosty.h"
 #include <boost/format.hpp>
 #include <boost/filesystem.hpp>
+#include <boost/foreach.hpp>
 
 #include <stdio.h>
 #include <fstream>
 #include <sstream>
+#include <time.h>
 #include <sys/stat.h>
 
 /*!
@@ -18,10 +20,18 @@
 
 ModuleCache *ModuleCache::inst = NULL;
 
+static bool is_modified(const std::string &filename, const time_t &mtime)
+{
+	struct stat st;
+	memset(&st, 0, sizeof(struct stat));
+	stat(filename.c_str(), &st);
+	return (st.st_mtime > mtime);
+}
+
 Module *ModuleCache::evaluate(const std::string &filename)
 {
 	Module *lib_mod = NULL;
-	
+
   // Create cache ID
 	struct stat st;
 	memset(&st, 0, sizeof(struct stat));
@@ -35,8 +45,14 @@ Module *ModuleCache::evaluate(const std::string &filename)
 #ifdef DEBUG
 		PRINTB("Using cached library: %s (%s)", filename % cache_id);
 #endif
-		PRINTB("%s", this->entries[filename].msg);
 		lib_mod = &(*this->entries[filename].module);
+
+		BOOST_FOREACH(const Module::IncludeContainer::value_type &item, lib_mod->includes) {
+			if (is_modified(item.first, item.second)) {
+				lib_mod = NULL;
+				break;
+			}
+		}
 	}
 
   // If cache lookup failed (non-existing or old timestamp), compile module
@@ -59,9 +75,10 @@ Module *ModuleCache::evaluate(const std::string &filename)
 
 		print_messages_push();
 		
-		cache_entry e = { NULL, cache_id, std::string("WARNING: Library `") + filename + "' tries to recursively use itself!" };
-		if (this->entries.find(filename) != this->entries.end())
+		cache_entry e = { NULL, cache_id };
+		if (this->entries.find(filename) != this->entries.end()) {
 			delete this->entries[filename].module;
+		}
 		this->entries[filename] = e;
 		
 		std::string pathname = boosty::stringy(fs::path(filename).parent_path());
@@ -69,7 +86,6 @@ Module *ModuleCache::evaluate(const std::string &filename)
 		
 		if (lib_mod) {
 			this->entries[filename].module = lib_mod;
-			this->entries[filename].msg = print_messages_stack.back();
 		} else {
 			this->entries.erase(filename);
 		}

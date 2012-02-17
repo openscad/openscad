@@ -77,8 +77,8 @@ private:
 	AbstractNode *find_root_tag(AbstractNode *n);
 	void updateTemporalVariables();
 	bool fileChangedOnDisk();
-	void compileTopLevelDocument(bool reload);
-	void compile(bool reload, bool procevents);
+	bool compileTopLevelDocument(bool reload);
+	bool compile(bool reload, bool procevents);
 	void compileCSG(bool procevents);
 	bool maybeSave();
 	bool checkModified();

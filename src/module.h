@@ -3,6 +3,7 @@
 
 #include <string>
 #include <vector>
+#include <list>
 #include <boost/unordered_map.hpp>
 #include "value.h"
 
@@ -67,7 +68,10 @@ public:
 
 	typedef boost::unordered_map<std::string, class Module*> ModuleContainer;
 	ModuleContainer usedlibs;
-	void handleDependencies();
+	void registerInclude(const std::string &filename);
+	typedef boost::unordered_map<std::string, time_t> IncludeContainer;
+	IncludeContainer includes;
+	bool handleDependencies();
 
 	std::vector<std::string> assignments_var;
 	std::vector<Expression*> assignments_expr;

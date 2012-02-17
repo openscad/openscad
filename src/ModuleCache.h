@@ -17,7 +17,7 @@ private:
 
 	struct cache_entry {
 		class Module *module;
-		std::string cache_id, msg;
+		std::string cache_id;
 	};
 	boost::unordered_map<std::string, cache_entry> entries;
 };
