@@ -116,7 +116,7 @@
      <x>0</x>
      <y>0</y>
      <width>681</width>
-     <height>22</height>
+     <height>23</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_File">
@@ -180,6 +180,7 @@
     <addaction name="designActionDisplayCSGTree"/>
     <addaction name="designActionDisplayCSGProducts"/>
     <addaction name="designActionExportSTL"/>
+    <addaction name="designActionExportAMF"/>
     <addaction name="designActionExportOFF"/>
     <addaction name="designActionExportDXF"/>
     <addaction name="designActionExportCSG"/>
@@ -676,6 +677,11 @@
     <string>Library info</string>
    </property>
   </action>
+  <action name="designActionExportAMF">
+   <property name="text">
+    <string>Export as A&amp;MF...</string>
+   </property>
+  </action>
  </widget>
  <customwidgets>
   <customwidget>
@@ -690,9 +696,7 @@
    <header>editor.h</header>
   </customwidget>
  </customwidgets>
- <resources>
-  <include location="../openscad.qrc"/>
- </resources>
+ <resources/>
  <connections>
   <connection>
    <sender>fileActionClose</sender>
