@@ -17,9 +17,9 @@ if (PKG_CONFIG_FOUND)
   pkg_check_modules(GLEW glew>=1.5)
 endif()
 
-if (GLEW_FOUND)
-  set(GLEW_INCLUDE_DIR ${GLEW_INCLUDE_DIRS})  
-  set(GLEW_LIBRARY ${GLEW_LDFLAGS})  
+if (GLEW_LIBRARIES)
+  set(GLEW_INCLUDE_DIR "${GLEW_INCLUDE_DIRS}")
+  set(GLEW_LIBRARY ${GLEW_LDFLAGS})
 else()
   if (WIN32 AND MSVC)
     if (WIN32_STATIC_BUILD) # passed from caller
