@@ -24,8 +24,7 @@
  *
  */
 
-#include <QVector>
-#include <QStringList>
+#include <boost/algorithm/string.hpp>
 #include "export.h"
 #include "printutils.h"
 #include "polyset.h"
@@ -142,8 +141,8 @@ void export_amf(CGAL_Nef_polyhedron *root_N, std::ostream &output)
 
     setlocale(LC_NUMERIC, "C"); // Ensure radix is . (not ,) in output
 
-    QVector<std::string> vertices;
-    QVector<triangle> triangles;
+    std::vector<std::string> vertices;
+    std::vector<triangle> triangles;
 
     for (FCI fi = P.facets_begin(); fi != P.facets_end(); ++fi) {
         HFCC hc = fi->facet_begin();
@@ -172,12 +171,12 @@ void export_amf(CGAL_Nef_polyhedron *root_N, std::ostream &output)
             stream.str("");
             stream << x3 << " " << y3 << " " << z3;
             std::string vs3 = stream.str();
-            if(!vertices.contains(vs1))
-                vertices.append(vs1);
-            if(!vertices.contains(vs2))
-                vertices.append(vs2);
-            if(!vertices.contains(vs3))
-                vertices.append(vs3);
+            if(std::find(vertices.begin(), vertices.end(), vs1) == vertices.end())
+                vertices.push_back(vs1);
+            if(std::find(vertices.begin(), vertices.end(), vs2) == vertices.end())
+                vertices.push_back(vs2);
+            if(std::find(vertices.begin(), vertices.end(), vs3) == vertices.end())
+                vertices.push_back(vs3);
 
             if (vs1 != vs2 && vs1 != vs3 && vs2 != vs3) {
                 // The above condition ensures that there are 3 distinct vertices, but
@@ -186,7 +185,7 @@ void export_amf(CGAL_Nef_polyhedron *root_N, std::ostream &output)
                 // collinear then the unit normal must be calculated from the
                 // components.
                 triangle tri = {vs1, vs2, vs3};
-                triangles.append(tri);
+                triangles.push_back(tri);
             }
         } while (hc != hc_end);
     }
@@ -196,23 +195,31 @@ void export_amf(CGAL_Nef_polyhedron *root_N, std::ostream &output)
            << " <object id=\"0\">\r\n"
            << "  <mesh>\r\n";
     output << "   <vertices>\r\n";
-    foreach(std::string s, vertices) {
-        QString str = QString::fromStdString(s);
+    for(size_t i=0;i<vertices.size();i++) {
+        std::string s = vertices[i];
         output << "    <vertex><coordinates>\r\n";
-        QStringList coords = str.split(" ");
-        QString x = coords.at(0);
-        output << "     <x>" << x.toStdString() << "</x>\r\n";
-        output << "     <y>" << coords.at(1).toStdString() << "</y>\r\n";
-        output << "     <z>" << coords.at(2).toStdString() << "</z>\r\n";
+        char* chrs = new char[s.length()];
+        strcpy(chrs, s.c_str());
+        std::string coords = strtok(chrs, " ");
+        output << "     <x>" << coords << "</x>\r\n";
+        coords = strtok(NULL, " ");
+        output << "     <y>" << coords << "</y>\r\n";
+        coords = strtok(NULL, " ");
+        output << "     <z>" << coords << "</z>\r\n";
         output << "    </coordinates></vertex>\r\n";
     }
     output << "   </vertices>\r\n";
     output << "   <volume>\r\n";
-    foreach(triangle t, triangles) {
+    for(size_t i=0;i<triangles.size();i++) {
+        triangle t = triangles[i];
         output << "    <triangle>\r\n";
-        output << "     <v1>" << vertices.indexOf(t.vs1) << "</v1>\r\n";
-        output << "     <v2>" << vertices.indexOf(t.vs2) << "</v2>\r\n";
-        output << "     <v3>" << vertices.indexOf(t.vs3) << "</v3>\r\n";
+        size_t index;
+        index = std::distance(vertices.begin(), std::find(vertices.begin(), vertices.end(), t.vs1));
+        output << "     <v1>" << index << "</v1>\r\n";
+        index = std::distance(vertices.begin(), std::find(vertices.begin(), vertices.end(), t.vs2));
+        output << "     <v2>" << index << "</v2>\r\n";
+        index = std::distance(vertices.begin(), std::find(vertices.begin(), vertices.end(), t.vs3));
+        output << "     <v3>" << index << "</v3>\r\n";
         output << "    </triangle>\r\n";
     }
     output << "   </volume>\r\n";

@@ -1,30 +1,9 @@
-/*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-/*
- * $Id: ImportHandlers.hpp 679377 2008-07-24 11:56:42Z borisk $
- */
-
-
 // ---------------------------------------------------------------------------
 //  Includes
 // ---------------------------------------------------------------------------
 #include <xercesc/sax/HandlerBase.hpp>
-#include <QVector>
+#include <string>
+#include <vector>
 
 XERCES_CPP_NAMESPACE_USE
 
@@ -56,41 +35,15 @@ public:
     // -----------------------------------------------------------------------
     //  Getter methods
     // -----------------------------------------------------------------------
-    QVector<vertex> getVertices() const
+    std::vector<vertex> getVertices() const
     {
         return vertices;
     }
 
-    QVector<triangle> getTriangles() const
+    std::vector<triangle> getTriangles() const
     {
         return triangles;
     }
-    /*
-    XMLSize_t getElementCount() const
-    {
-        return fElementCount;
-    }
-
-    XMLSize_t getAttrCount() const
-    {
-        return fAttrCount;
-    }
-
-    XMLSize_t getCharacterCount() const
-    {
-        return fCharacterCount;
-    }
-
-    bool getSawErrors() const
-    {
-        return fSawErrors;
-    }
-
-    XMLSize_t getSpaceCount() const
-    {
-        return fSpaceCount;
-    }
-*/
 
     // -----------------------------------------------------------------------
     //  Handlers for the SAX DocumentHandler interface
@@ -114,20 +67,9 @@ public:
 private:
     // -----------------------------------------------------------------------
     //  Private data members
-    //
-    //  fAttrCount
-    //  fCharacterCount
-    //  fElementCount
-    //  fSpaceCount
-    //      These are just counters that are run upwards based on the input
-    //      from the document handlers.
-    //
-    //  fSawErrors
-    //      This is set by the error handlers, and is queryable later to
-    //      see if any errors occured.
     // -----------------------------------------------------------------------
-    QVector<vertex> vertices;
-    QVector<triangle> triangles;
+    std::vector<vertex> vertices;
+    std::vector<triangle> triangles;
 
     XMLSize_t       el_amf;
     XMLSize_t       el_object;

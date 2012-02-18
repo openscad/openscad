@@ -1,24 +1,3 @@
-/*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-/*
- * $Id: ImportHandlers.cpp 557282 2007-07-18 14:54:15Z amassari $
- */
-
 // ---------------------------------------------------------------------------
 //  Includes
 // ---------------------------------------------------------------------------
@@ -173,7 +152,7 @@ void ImportHandlers::endElement(const XMLCh* const name)
                         v.x = XMLString::transcode(el_x);
                         v.y = XMLString::transcode(el_y);
                         v.z = XMLString::transcode(el_z);
-                        vertices.append(v);
+                        vertices.push_back(v);
                         el_vertex--;
                     }
                     else if(el_vertex > 0) {
@@ -204,7 +183,7 @@ void ImportHandlers::endElement(const XMLCh* const name)
                         t.vs1 = XMLString::transcode(el_v1);
                         t.vs2 = XMLString::transcode(el_v2);
                         t.vs3 = XMLString::transcode(el_v3);
-                        triangles.append(t);
+                        triangles.push_back(t);
                         el_triangle--;
                     }
                     else if(el_triangle > 0) {

@@ -1342,7 +1342,7 @@ void MainWindow::actionExportSTLorOFF(EXPORT_MODE)
         break;
     }
 
-	QString stl_filename = QFileDialog::getSaveFileName(this,
+    QString stl_filename = QFileDialog::getSaveFileName(this,
             stl_caption,
 			this->fileName.isEmpty() ? "Untitled"+suffix : QFileInfo(this->fileName).baseName()+suffix,
             stl_filter);
