@@ -30,6 +30,7 @@
 #include <sstream>
 #include <QDir>
 #include <boost/foreach.hpp>
+#include "printutils.h"
 
 Value::Value()
 {
@@ -156,6 +157,64 @@ Value Value::operator * (const Value &v) const
 	}
 	if (this->type == NUMBER && v.type == NUMBER) {
 		return Value(this->num * v.num);
+	}
+	if (this->type == VECTOR && v.type == VECTOR && this->vec.size() == v.vec.size() ) {
+	  if ( this->vec[0]->type == NUMBER && v.vec[0]->type == NUMBER ) {
+		// Vector dot product.
+		double r=0.0;
+		for (size_t i=0; i <this->vec.size(); i++) {
+		  if ( this->vec[i]->type != NUMBER || v.vec[i]->type != NUMBER ) return Value();
+		  r = r + (this->vec[i]->num * v.vec[i]->num);
+		}
+		return Value(r);
+	  } else if ( this->vec[0]->type == VECTOR && v.vec[0]->type == NUMBER ) {
+		// Matrix * Vector
+		Value r;
+		r.type = VECTOR;
+		for ( size_t i=0; i < this->vec.size(); i++) {
+		  double r_e=0.0;
+		  if ( this->vec[i]->vec.size() != v.vec.size() ) return Value();
+		  for ( size_t j=0; j < this->vec[i]->vec.size(); j++) {
+		    if ( this->vec[i]->vec[j]->type != NUMBER || v.vec[i]->type != NUMBER ) return Value();
+		    r_e = r_e + (this->vec[i]->vec[j]->num * v.vec[j]->num);
+		  }
+		  r.vec.push_back(new Value(r_e));
+		}
+		return r;
+	  } else if (this->vec[0]->type == NUMBER && v.vec[0]->type == VECTOR ) {
+		// Vector * Matrix
+		Value r;
+		r.type = VECTOR;
+		for ( size_t i=0; i < v.vec[0]->vec.size(); i++) {
+		  double r_e=0.0;
+		  for ( size_t j=0; j < v.vec.size(); j++) {
+		    if ( v.vec[j]->vec.size() != v.vec[0]->vec.size() ) return Value();
+		    if ( this->vec[j]->type != NUMBER || v.vec[j]->vec[i]->type != NUMBER ) return Value();
+		    r_e = r_e + (this->vec[j]->num * v.vec[j]->vec[i]->num);
+		  }
+		  r.vec.push_back(new Value(r_e));
+		}
+		return r;
+	  }
+	}
+	if (this->type == VECTOR && v.type == VECTOR &&  this->vec[0]->type == VECTOR && v.vec[0]->type == VECTOR && this->vec[0]->vec.size() == v.vec.size() ) {
+		// Matrix * Matrix
+		Value rrow;
+		rrow.type = VECTOR;
+		for ( size_t i=0; i < this->vec.size(); i++ ) {
+		  Value * rcol=new Value();
+		  rcol->type = VECTOR;
+		  for ( size_t j=0; j < this->vec.size(); j++ ) {
+		    double r_e=0.0;
+		    for ( size_t k=0; k < v.vec.size(); k++ ) {
+		      r_e = r_e + (this->vec[i]->vec[k]->num * v.vec[k]->vec[j]->num);
+		    }
+		    // PRINTB("  r_e = %s",r_e);
+		    rcol->vec.push_back(new Value(r_e));
+		  }
+		  rrow.vec.push_back(rcol);
+		}
+		return rrow;
 	}
 	return Value();
 }

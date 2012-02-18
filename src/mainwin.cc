@@ -77,6 +77,7 @@
 #include <fstream>
 
 #include <algorithm>
+#include <boost/version.hpp>
 #include <boost/foreach.hpp>
 #include <boost/lambda/lambda.hpp>
 #include <boost/lambda/bind.hpp>
