@@ -25,6 +25,7 @@
  */
 
 #include "importnode.h"
+#include "importhandlers.h"
 
 #include "module.h"
 #include "polyset.h"
@@ -51,6 +52,11 @@ using namespace boost::filesystem;
 #include <boost/assign/std/vector.hpp>
 using namespace boost::assign; // bring 'operator+=()' into scope
 #include "boosty.h"
+#include <xercesc/util/PlatformUtils.hpp>
+#include <xercesc/parsers/SAXParser.hpp>
+#include <xercesc/sax/HandlerBase.hpp>
+#include <xercesc/util/XMLString.hpp>
+using namespace xercesc;
 
 class ImportModule : public AbstractModule
 {
@@ -85,6 +91,7 @@ AbstractNode *ImportModule::evaluate(const Context *ctx, const ModuleInstantiati
 		std::string extraw = boosty::extension_str( path(filename) );
 		std::string ext = boost::algorithm::to_lower_copy( extraw );
 		if (ext == ".stl") actualtype = TYPE_STL;
+        else if (ext == ".amf") actualtype = TYPE_AMF;
 		else if (ext == ".off") actualtype = TYPE_OFF;
 		else if (ext == ".dxf") actualtype = TYPE_DXF;
 	}
@@ -118,94 +125,213 @@ PolySet *ImportNode::evaluate_polyset(class PolySetEvaluator *) const
 {
 	PolySet *p = NULL;
 
-	if (this->type == TYPE_STL)
-	{
-		handle_dep(this->filename);
-		std::ifstream f(this->filename.c_str(), std::ios::in | std::ios::binary);
-		if (!f.good()) {
-			PRINTB("WARNING: Can't open import file '%s'.", this->filename);
-			return p;
-		}
+    if (this->type == TYPE_STL)
+    {
+        handle_dep(this->filename);
+        std::ifstream f(this->filename.c_str(), std::ios::in | std::ios::binary);
+        if (!f.good()) {
+            PRINTB("WARNING: Can't open import file '%s'.", this->filename);
+            return p;
+        }
 
-		p = new PolySet();
+        p = new PolySet();
 
-		boost::regex ex_sfe("solid|facet|endloop");
-		boost::regex ex_outer("outer loop");
-		boost::regex ex_vertex("vertex");
-		boost::regex ex_vertices("\\s*vertex\\s+([^\\s]+)\\s+([^\\s]+)\\s+([^\\s]+)");
+        boost::regex ex_sfe("solid|facet|endloop");
+        boost::regex ex_outer("outer loop");
+        boost::regex ex_vertex("vertex");
+        boost::regex ex_vertices("\\s*vertex\\s+([^\\s]+)\\s+([^\\s]+)\\s+([^\\s]+)");
 
-		char data[5];
-		f.read(data, 5);
-		if (!f.eof() && !memcmp(data, "solid", 5)) {
-			int i = 0;
-			double vdata[3][3];
-			std::string line;
-			std::getline(f, line);
-			while (!f.eof()) {
-				
-				std::getline(f, line);
-				boost::trim(line);
-				if (boost::regex_search(line, ex_sfe)) {
-					continue;
-				}
-				if (boost::regex_search(line, ex_outer)) {
-					i = 0;
-					continue;
-				}
-				boost::smatch results;
-				if (boost::regex_search(line, results, ex_vertices)) {
-					try {
-						for (int v=0;v<3;v++) {
-							vdata[i][v] = boost::lexical_cast<double>(results[v+1]);
-						}
-					}
-					catch (boost::bad_lexical_cast &blc) {
-						PRINTB("WARNING: Can't parse vertex line '%s'.", line);
-						i = 10;
-						continue;
-					}
-					if (++i == 3) {
-						p->append_poly();
-						p->append_vertex(vdata[0][0], vdata[0][1], vdata[0][2]);
-						p->append_vertex(vdata[1][0], vdata[1][1], vdata[1][2]);
-						p->append_vertex(vdata[2][0], vdata[2][1], vdata[2][2]);
-					}
-				}
-			}
-		}
-		else
-		{
-			f.ignore(80-5+4);
-			while (1) {
+        char data[5];
+        f.read(data, 5);
+        if (!f.eof() && !memcmp(data, "solid", 5)) {
+            int i = 0;
+            double vdata[3][3];
+            std::string line;
+            std::getline(f, line);
+            while (!f.eof()) {
+
+                std::getline(f, line);
+                boost::trim(line);
+                if (boost::regex_search(line, ex_sfe)) {
+                    continue;
+                }
+                if (boost::regex_search(line, ex_outer)) {
+                    i = 0;
+                    continue;
+                }
+                boost::smatch results;
+                if (boost::regex_search(line, results, ex_vertices)) {
+                    try {
+                        for (int v=0;v<3;v++) {
+                            vdata[i][v] = boost::lexical_cast<double>(results[v+1]);
+                        }
+                    }
+                    catch (boost::bad_lexical_cast &blc) {
+                        PRINTB("WARNING: Can't parse vertex line '%s'.", line);
+                        i = 10;
+                        continue;
+                    }
+                    if (++i == 3) {
+                        p->append_poly();
+                        p->append_vertex(vdata[0][0], vdata[0][1], vdata[0][2]);
+                        p->append_vertex(vdata[1][0], vdata[1][1], vdata[1][2]);
+                        p->append_vertex(vdata[2][0], vdata[2][1], vdata[2][2]);
+                    }
+                }
+            }
+        }
+        else
+        {
+            f.ignore(80-5+4);
+            while (1) {
 #ifdef _MSC_VER
 #pragma pack(push,1)
 #endif
-				struct {
-					float i, j, k;
-					float x1, y1, z1;
-					float x2, y2, z2;
-					float x3, y3, z3;
-					unsigned short acount;
-				}
+                struct {
+                    float i, j, k;
+                    float x1, y1, z1;
+                    float x2, y2, z2;
+                    float x3, y3, z3;
+                    unsigned short acount;
+                }
 #ifdef __GNUC__
-				__attribute__ ((packed))
+                __attribute__ ((packed))
 #endif
-				stldata;
+                stldata;
 #ifdef _MSC_VER
 #pragma pack(pop)
 #endif
 
-				f.read((char*)&stldata, sizeof(stldata));
-				if (f.eof()) break;
-				p->append_poly();
-				p->append_vertex(stldata.x1, stldata.y1, stldata.z1);
-				p->append_vertex(stldata.x2, stldata.y2, stldata.z2);
-				p->append_vertex(stldata.x3, stldata.y3, stldata.z3);
-			}
-		}
-	}
+                f.read((char*)&stldata, sizeof(stldata));
+                if (f.eof()) break;
+                p->append_poly();
+                p->append_vertex(stldata.x1, stldata.y1, stldata.z1);
+                p->append_vertex(stldata.x2, stldata.y2, stldata.z2);
+                p->append_vertex(stldata.x3, stldata.y3, stldata.z3);
+            }
+        }
+    }
+//****************************************************************************************
+    else if (this->type == TYPE_AMF)
+    {
+        handle_dep(this->filename);
+        std::ifstream f(this->filename.c_str(), std::ios::in | std::ios::binary);
+        if (!f.good()) {
+            PRINTB("WARNING: Can't open import file '%s'.", this->filename);
+            return p;
+        }
 
-	else if (this->type == TYPE_OFF)
+        try {
+            XMLPlatformUtils::Initialize();
+        }
+        catch (const XMLException& toCatch) {
+            char* message = XMLString::transcode(toCatch.getMessage());
+            PRINTB("WARNING: Error during XML initialization! :\n%s", message);
+            return p;
+        }
+
+        const char* xmlFile = this->filename.c_str();
+        SAXParser* parser = new SAXParser();
+        //parser->setValidationScheme(SAXParser::Val_Auto);
+        //parser->setDoNamespaces(true);
+        //parser->setDoSchema(true);
+        //parser->setHandleMultipleImports (true);
+        //parser->setValidationSchemaFullChecking(true);
+
+        ImportHandlers* importHandler = new ImportHandlers();
+        DocumentHandler* docHandler = (DocumentHandler*) importHandler;
+        ErrorHandler* errHandler = (ErrorHandler*) importHandler;
+        parser->setDocumentHandler(docHandler);
+        parser->setErrorHandler(errHandler);
+
+        try {
+            parser->parse(xmlFile);
+        }
+        catch (const XMLException& toCatch) {
+            char* message = XMLString::transcode(toCatch.getMessage());
+            PRINTB("WARNING: Error during XML parse:\n%s", message);
+            XMLString::release(&message);
+            return p;
+        }
+        catch (const SAXParseException& toCatch) {
+            char* message = XMLString::transcode(toCatch.getMessage());
+            PRINTB("WARNING: Error during XML parse:\n%s", message);
+            XMLString::release(&message);
+            return p;
+        }
+        catch (...) {
+            PRINT("WARNING: Error during XML parse.");
+            return p;
+        }
+
+
+        p = new PolySet();
+
+        QVector<triangle> ts = importHandler->getTriangles();
+        QVector<vertex> vs = importHandler->getVertices();
+        foreach(triangle t, ts) {
+            vertex v1 = vs.at(atoi(t.vs1.c_str()));
+            vertex v2 = vs.at(atoi(t.vs2.c_str()));
+            vertex v3 = vs.at(atoi(t.vs3.c_str()));
+            p->append_poly();
+            p->append_vertex(atof(v1.x.c_str()), atof(v1.y.c_str()), atof(v1.z.c_str()));
+            p->append_vertex(atof(v2.x.c_str()), atof(v2.y.c_str()), atof(v2.z.c_str()));
+            p->append_vertex(atof(v3.x.c_str()), atof(v3.y.c_str()), atof(v3.z.c_str()));
+        }
+
+        /*
+        boost::regex ex_sfe("solid|facet|endloop");
+        boost::regex ex_outer("outer loop");
+        boost::regex ex_vertex("vertex");
+        boost::regex ex_vertices("\\s*vertex\\s+([^\\s]+)\\s+([^\\s]+)\\s+([^\\s]+)");
+
+        char data[5];
+        f.read(data, 5);
+        if (!f.eof() && !memcmp(data, "solid", 5)) {
+            int i = 0;
+            double vdata[3][3];
+            std::string line;
+            std::getline(f, line);
+            while (!f.eof()) {
+
+                std::getline(f, line);
+                boost::trim(line);
+                if (boost::regex_search(line, ex_sfe)) {
+                    continue;
+                }
+                if (boost::regex_search(line, ex_outer)) {
+                    i = 0;
+                    continue;
+                }
+                boost::smatch results;
+                if (boost::regex_search(line, results, ex_vertices)) {
+                    try {
+                        for (int v=0;v<3;v++) {
+                            vdata[i][v] = boost::lexical_cast<double>(results[v+1]);
+                        }
+                    }
+                    catch (boost::bad_lexical_cast &blc) {
+                        PRINTB("WARNING: Can't parse vertex line '%s'.", line);
+                        i = 10;
+                        continue;
+                    }
+                    if (++i == 3) {
+                        p->append_poly();
+                        p->append_vertex(vdata[0][0], vdata[0][1], vdata[0][2]);
+                        p->append_vertex(vdata[1][0], vdata[1][1], vdata[1][2]);
+                        p->append_vertex(vdata[2][0], vdata[2][1], vdata[2][2]);
+                    }
+                }
+            }
+        }
+        */
+        delete parser;
+        delete docHandler;
+
+        XMLPlatformUtils::Terminate();
+    }
+    //*****************************************************************************************
+    else if (this->type == TYPE_OFF)
 	{
 #ifdef ENABLE_CGAL
 		CGAL_Polyhedron poly;
@@ -219,7 +345,7 @@ PolySet *ImportNode::evaluate_polyset(class PolySetEvaluator *) const
 #endif
 	}
 
-	else if (this->type == TYPE_DXF)
+    else if (this->type == TYPE_DXF)
 	{
 		p = new PolySet();
 		DxfData dd(this->fn, this->fs, this->fa, this->filename, this->layername, this->origin_x, this->origin_y, this->scale);
@@ -259,6 +385,7 @@ std::string ImportNode::name() const
 void register_builtin_import()
 {
 	Builtins::init("import_stl", new ImportModule(TYPE_STL));
+    Builtins::init("import_amf", new ImportModule(TYPE_AMF));
 	Builtins::init("import_off", new ImportModule(TYPE_OFF));
 	Builtins::init("import_dxf", new ImportModule(TYPE_DXF));
 	Builtins::init("import", new ImportModule());
