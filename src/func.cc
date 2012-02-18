@@ -390,99 +390,95 @@ Value builtin_lookup(const Context *, const std::vector<std::string>&, const std
 */
 Value builtin_search(const Context *, const std::vector<std::string>&, const std::vector<Value> &args)
 {
-	Value findThis;
-	Value searchTable;
+	if (args.size() < 2) return Value();
+
+	const Value &findThis = args[0];
+	const Value &searchTable = args[1];
+	unsigned int num_returns_per_match = (args.size() > 2) ? args[2].num : 1;
+	unsigned int index_col_num = (args.size() > 3) ? args[3].num : 0;
+
 	Value returnVector;
 	returnVector.type = Value::VECTOR;
-	unsigned int num_returns_per_match = 1;
-	unsigned int index_col_num=0;
-	if (args.size() < 2 )
-		return Value();
-	findThis=args[0];
-	// PRINTB("  builtin_search: findThis = %s",findThis);
-	searchTable=args[1];
-	// PRINTB("  builtin_search: searchTable = %s",searchTable);
-	if ( args.size() > 2 ) num_returns_per_match=args[2].num;
-	if ( args.size() > 3 ) index_col_num=args[3].num;
-	if ( findThis.type==Value::NUMBER ) {
-		// PRINTB("  builtin_search: findThis type: NUMBER %s",findThis);
-		unsigned int matchCount=0;
+
+	if (findThis.type == Value::NUMBER) {
+		unsigned int matchCount = 0;
 		Value *resultVector = new Value();
 		resultVector->type = Value::VECTOR;
 		for (size_t j = 0; j < searchTable.vec.size(); j++) {
-		  if ( searchTable.vec[j]->vec[index_col_num]->type==Value::NUMBER && findThis.num == searchTable.vec[j]->vec[index_col_num]->num ) {
-		    Value *resultValue;
-		    resultValue = new Value(double(j));
-		    returnVector.append(resultValue);
+		  if (searchTable.vec[j]->vec[index_col_num]->type == Value::NUMBER && 
+					findThis.num == searchTable.vec[j]->vec[index_col_num]->num) {
+		    returnVector.append(new Value(double(j)));
 		    matchCount++;
-		    if(num_returns_per_match!=0 && matchCount>=num_returns_per_match) break;
+		    if (num_returns_per_match != 0 && matchCount >= num_returns_per_match) break;
 		  }
 		}
-	} else if ( findThis.type==Value::STRING ) {
-		//PRINTB("    builtin_search: findThis type STRING %s",findThis);
-		//PRINTB("    builtin_search: checking findThis.text.size()==%s",findThis.text.size());
+	} else if (findThis.type == Value::STRING) {
 		unsigned int searchTableSize;
-		if(searchTable.type == Value::STRING) {
-		  searchTableSize=searchTable.text.size();
-		} else {
-		  searchTableSize=searchTable.vec.size();
-		}
+		if (searchTable.type == Value::STRING) searchTableSize = searchTable.text.size();
+		else searchTableSize = searchTable.vec.size();
 		for (size_t i = 0; i < findThis.text.size(); i++) {
-		  unsigned int matchCount=0;
+		  unsigned int matchCount = 0;
 		  Value *resultVector = new Value();
 		  resultVector->type = Value::VECTOR;
 		  for (size_t j = 0; j < searchTableSize; j++) {
-		    // PRINTB("      builtin_search: checking findThis.text[i]==%s",findThis.text[i]);
-		    if ( searchTable.type==Value::VECTOR && findThis.text[i] == searchTable.vec[j]->vec[index_col_num]->text[0]
-			|| searchTable.type==Value::STRING && findThis.text[i] == searchTable.text[j]
-			 ) {
-		      Value *resultValue;
-		      resultValue = new Value(double(j));
+		    if (searchTable.type == Value::VECTOR && 
+						findThis.text[i] == searchTable.vec[j]->vec[index_col_num]->text[0] ||
+						searchTable.type == Value::STRING && 
+						findThis.text[i] == searchTable.text[j]) {
+		      Value *resultValue = new Value(double(j));
 		      matchCount++;
-		      if(num_returns_per_match==1) {
-			returnVector.append(resultValue);
-			break;
+		      if (num_returns_per_match==1) {
+						returnVector.append(resultValue);
+						break;
 		      } else {
-			resultVector->append(resultValue);
+						resultVector->append(resultValue);
 		      }
-		      if(num_returns_per_match>1 && matchCount>=num_returns_per_match) break;
+		      if (num_returns_per_match > 1 && matchCount >= num_returns_per_match) break;
 		    }
 		  }
-		  if(matchCount==0) PRINTB("  search term not found: \"%s\"",findThis.text[i]);
-		  if(num_returns_per_match==0 || num_returns_per_match>1) returnVector.append(resultVector);
+		  if (matchCount == 0) PRINTB("  search term not found: \"%s\"", findThis.text[i]);
+		  if (num_returns_per_match == 0 || num_returns_per_match > 1) {
+				returnVector.append(resultVector);
+			}
 		}
-	;
-	} else if ( findThis.type==Value::VECTOR ) {
-		// PRINTB("  builtin_search: findThis type: VECTOR %s",findThis);
+	} else if (findThis.type == Value::VECTOR) {
 		for (size_t i = 0; i < findThis.vec.size(); i++) {
-		  unsigned int matchCount=0;
+		  unsigned int matchCount = 0;
 		  Value *resultVector = new Value();
 		  resultVector->type = Value::VECTOR;
 		  for (size_t j = 0; j < searchTable.vec.size(); j++) {
-		    Value *resultValue;
-		    resultValue = new Value(double(j));
-		    if ( findThis.vec[i]->type==Value::NUMBER && searchTable.vec[j]->vec[index_col_num]->type==Value::NUMBER && findThis.vec[i]->num == searchTable.vec[j]->vec[index_col_num]->num
-		      || findThis.vec[i]->type==Value::STRING && searchTable.vec[j]->vec[index_col_num]->type==Value::STRING && findThis.vec[i]->text == searchTable.vec[j]->vec[index_col_num]->text ) {
-		      resultValue = new Value(double(j));
+		    if (findThis.vec[i]->type == Value::NUMBER && 
+						searchTable.vec[j]->vec[index_col_num]->type == Value::NUMBER &&
+						findThis.vec[i]->num == searchTable.vec[j]->vec[index_col_num]->num ||
+						findThis.vec[i]->type == Value::STRING && 
+						searchTable.vec[j]->vec[index_col_num]->type == Value::STRING && 
+						findThis.vec[i]->text == searchTable.vec[j]->vec[index_col_num]->text) {
+					Value *resultValue = new Value(double(j));
 		      matchCount++;
-		      if(num_returns_per_match==1) {
-			returnVector.append(resultValue);
-			break;
+		      if (num_returns_per_match==1) {
+						returnVector.append(resultValue);
+						break;
 		      } else {
-			resultVector->append(resultValue);
+						resultVector->append(resultValue);
 		      }
-		      if(num_returns_per_match>1 && matchCount>=num_returns_per_match) break;
+		      if (num_returns_per_match > 1 && matchCount >= num_returns_per_match) break;
 		    }
 		  }
-		  if( num_returns_per_match==1 && matchCount==0 ) {
-		    if(findThis.vec[i]->type==Value::NUMBER) PRINTB("  search term not found: %s",findThis.vec[i]->num);
-		    if(findThis.vec[i]->type==Value::STRING) PRINTB("  search term not found: \"%s\"",findThis.vec[i]->text);
+		  if (num_returns_per_match == 1 && matchCount == 0) {
+		    if (findThis.vec[i]->type == Value::NUMBER) {
+					PRINTB("  search term not found: %s",findThis.vec[i]->num);
+				}
+		    else if (findThis.vec[i]->type == Value::STRING) {
+					PRINTB("  search term not found: \"%s\"",findThis.vec[i]->text);
+				}
 		    returnVector.append(resultVector);
 		  }
-		  if(num_returns_per_match==0 || num_returns_per_match>1) returnVector.append(resultVector);
+		  if (num_returns_per_match == 0 || num_returns_per_match > 1) {
+				returnVector.append(resultVector);
+			}
 		}
 	} else {
-		PRINTB("  search: none performed on input %s",findThis);
+		PRINTB("  search: none performed on input %s", findThis);
 		return Value();
 	}
 	return returnVector;
