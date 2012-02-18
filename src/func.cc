@@ -421,10 +421,10 @@ Value builtin_search(const Context *, const std::vector<std::string>&, const std
 		  Value *resultVector = new Value();
 		  resultVector->type = Value::VECTOR;
 		  for (size_t j = 0; j < searchTableSize; j++) {
-		    if (searchTable.type == Value::VECTOR && 
-						findThis.text[i] == searchTable.vec[j]->vec[index_col_num]->text[0] ||
-						searchTable.type == Value::STRING && 
-						findThis.text[i] == searchTable.text[j]) {
+		    if ((searchTable.type == Value::VECTOR && 
+						 findThis.text[i] == searchTable.vec[j]->vec[index_col_num]->text[0]) ||
+						(searchTable.type == Value::STRING && 
+						 findThis.text[i] == searchTable.text[j])) {
 		      Value *resultValue = new Value(double(j));
 		      matchCount++;
 		      if (num_returns_per_match==1) {
@@ -447,12 +447,12 @@ Value builtin_search(const Context *, const std::vector<std::string>&, const std
 		  Value *resultVector = new Value();
 		  resultVector->type = Value::VECTOR;
 		  for (size_t j = 0; j < searchTable.vec.size(); j++) {
-		    if (findThis.vec[i]->type == Value::NUMBER && 
-						searchTable.vec[j]->vec[index_col_num]->type == Value::NUMBER &&
-						findThis.vec[i]->num == searchTable.vec[j]->vec[index_col_num]->num ||
-						findThis.vec[i]->type == Value::STRING && 
-						searchTable.vec[j]->vec[index_col_num]->type == Value::STRING && 
-						findThis.vec[i]->text == searchTable.vec[j]->vec[index_col_num]->text) {
+		    if ((findThis.vec[i]->type == Value::NUMBER && 
+						 searchTable.vec[j]->vec[index_col_num]->type == Value::NUMBER &&
+						 findThis.vec[i]->num == searchTable.vec[j]->vec[index_col_num]->num) ||
+						(findThis.vec[i]->type == Value::STRING && 
+						 searchTable.vec[j]->vec[index_col_num]->type == Value::STRING && 
+						 findThis.vec[i]->text == searchTable.vec[j]->vec[index_col_num]->text)) {
 					Value *resultValue = new Value(double(j));
 		      matchCount++;
 		      if (num_returns_per_match==1) {
