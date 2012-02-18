@@ -229,10 +229,28 @@ if (NOT $ENV{GLEWDIR} STREQUAL "")
 elseif (NOT $ENV{OPENSCAD_LIBRARIES} STREQUAL "")
   set(GLEW_DIR "$ENV{OPENSCAD_LIBRARIES}")
 endif()
+if (NOT GLEW_INCLUDE_DIR)
+  message(STATUS "OPENCSG_DIR: " ${OPENCSG_DIR})
+  find_path(GLEW_INCLUDE_DIR
+            GL/glew.h
+            HINTS ${GLEW_DIR}/include
+	    NO_DEFAULT_PATH)
+  find_library(GLEW_LIBRARY
+               NAMES GLEW glew
+               HINTS ${GLEW_DIR}/lib
+	       NO_DEFAULT_PATH)
+  if (NOT GLEW_INCLUDE_DIR OR NOT GLEW_LIBRARY)
+    find_package(GLEW REQUIRED)
+    if (NOT GLEW_INCLUDE_DIR OR NOT GLEW_LIBRARY)
+      message(FATAL_ERROR "GLEW not found")
+    endif()
+  else()
+    message(STATUS "GLEW include found in " ${GLEW_INCLUDE_DIR})
+    message(STATUS "GLEW library found in " ${GLEW_LIBRARY})
+  endif()
+endif()
 
-find_package(GLEW REQUIRED)
-
-inclusion( GLEW_DIR GLEW_INCLUDE_PATH )
+inclusion(GLEW_DIR GLEW_INCLUDE_DIR)
 
 # Flex/Bison
 find_package(BISON REQUIRED)
@@ -419,7 +437,7 @@ target_link_libraries(csgtexttest tests-common tests-nocgal ${QT_LIBRARIES} ${OP
 # csgtermtest
 #
 add_executable(csgtermtest csgtermtest.cc ../src/CSGTermEvaluator.cc)
-target_link_libraries(csgtermtest tests-common tests-nocgal ${QT_LIBRARIES} ${OPENGL_LIBRARY} ${Boost_LIBRARIES})
+target_link_libraries(csgtermtest tests-nocgal ${QT_LIBRARIES} ${OPENGL_LIBRARY} ${Boost_LIBRARIES})
 
 #
 # cgaltest
