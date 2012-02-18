@@ -657,6 +657,7 @@ disable_tests(dumptest_transform-tests
               dumptest_render-tests
               dumptest_difference-tests
               dumptest_intersection-tests
+              dumptest_text-search-test
               dumptest_example001
               dumptest_example005
               dumptest_example006
