@@ -426,6 +426,10 @@ std::string Value::toString() const
 		// Quick and dirty hack to work around floating point rounding differences
 		// across platforms for testing purposes.
 	{
+		if (this->num != this->num) { // Fix for avoiding nan vs. -nan across platforms
+			stream << "nan";
+			break;
+		}
 		std::stringstream tmp;
 		tmp.precision(12);
 		tmp.setf(std::ios_base::fixed);
