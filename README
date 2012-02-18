@@ -70,6 +70,9 @@ development. Other versions may or may not work as well..
 * Flex (2.5.35):
   http://flex.sourceforge.net/
 
+* Xerces (3.1.0):
+  http://xerces.apache.org/
+
 
 BUILDING OPENSCAD
 ================
