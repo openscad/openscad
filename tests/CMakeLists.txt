@@ -401,25 +401,25 @@ target_link_libraries(echotest tests-nocgal tests-core ${QT_LIBRARIES} ${OPENGL_
 # dumptest
 #
 add_executable(dumptest dumptest.cc)
-target_link_libraries(dumptest tests-common tests-nocgal ${QT_LIBRARIES} ${OPENGL_LIBRARY} ${Boost_LIBRARIES})
+target_link_libraries(dumptest tests-nocgal ${QT_LIBRARIES} ${OPENGL_LIBRARY} ${Boost_LIBRARIES})
 
 #
 # modulecachetest
 #
 add_executable(modulecachetest modulecachetest.cc)
-target_link_libraries(modulecachetest tests-common tests-nocgal ${QT_LIBRARIES} ${OPENGL_LIBRARY} ${Boost_LIBRARIES})
+target_link_libraries(modulecachetest tests-nocgal ${QT_LIBRARIES} ${OPENGL_LIBRARY} ${Boost_LIBRARIES})
 
 #
 # csgtexttest
 #
 add_executable(csgtexttest csgtexttest.cc CSGTextRenderer.cc CSGTextCache.cc)
-target_link_libraries(csgtexttest tests-common tests-nocgal ${QT_LIBRARIES} ${OPENGL_LIBRARY} ${Boost_LIBRARIES})
+target_link_libraries(csgtexttest tests-nocgal ${QT_LIBRARIES} ${OPENGL_LIBRARY} ${Boost_LIBRARIES})
 
 #
 # csgtermtest
 #
 add_executable(csgtermtest csgtermtest.cc ../src/CSGTermEvaluator.cc)
-target_link_libraries(csgtermtest tests-common tests-nocgal ${QT_LIBRARIES} ${OPENGL_LIBRARY} ${Boost_LIBRARIES})
+target_link_libraries(csgtermtest tests-nocgal ${QT_LIBRARIES} ${OPENGL_LIBRARY} ${Boost_LIBRARIES})
 
 #
 # cgaltest
