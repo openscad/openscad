@@ -252,31 +252,45 @@ Response CGALEvaluator::visit(State &state, const TransformNode &node)
 				// objects. So we convert in to our internal 2d data format, transform it,
 				// tesselate it and create a new CGAL_Nef_polyhedron2 from it.. What a hack!
 				
-				CGAL_Aff_transformation2 t(
-					node.matrix(0,0), node.matrix(0,1), node.matrix(0,3),
-					node.matrix(1,0), node.matrix(1,1), node.matrix(1,3), node.matrix(3,3));
-				
-				DxfData *dd = N.convertToDxfData();
-				for (size_t i=0; i < dd->points.size(); i++) {
-					CGAL_Kernel2::Point_2 p = CGAL_Kernel2::Point_2(dd->points[i][0], dd->points[i][1]);
-					p = t.transform(p);
-					dd->points[i][0] = to_double(p.x());
-					dd->points[i][1] = to_double(p.y());
+				Eigen::Matrix2f testmat;
+				testmat << node.matrix(0,0), node.matrix(0,1), node.matrix(1,0), node.matrix(1,1);
+				if (testmat.determinant() == 0) {
+					PRINT("Warning: Scaling a 2D object with 0 - removing object");
+					N.p2.reset();
 				}
-				
-				PolySet ps;
-				ps.is2d = true;
-				dxf_tesselate(&ps, *dd, 0, true, false, 0);
-				
-				N = evaluateCGALMesh(ps);
-				delete dd;
+				else {
+					CGAL_Aff_transformation2 t(
+						node.matrix(0,0), node.matrix(0,1), node.matrix(0,3),
+						node.matrix(1,0), node.matrix(1,1), node.matrix(1,3), node.matrix(3,3));
+					
+					DxfData *dd = N.convertToDxfData();
+					for (size_t i=0; i < dd->points.size(); i++) {
+						CGAL_Kernel2::Point_2 p = CGAL_Kernel2::Point_2(dd->points[i][0], dd->points[i][1]);
+						p = t.transform(p);
+						dd->points[i][0] = to_double(p.x());
+						dd->points[i][1] = to_double(p.y());
+					}
+					
+					PolySet ps;
+					ps.is2d = true;
+					dxf_tesselate(&ps, *dd, 0, true, false, 0);
+					
+					N = evaluateCGALMesh(ps);
+					delete dd;
+				}
 			}
 			else if (N.dim == 3) {
-				CGAL_Aff_transformation t(
-					node.matrix(0,0), node.matrix(0,1), node.matrix(0,2), node.matrix(0,3),
-					node.matrix(1,0), node.matrix(1,1), node.matrix(1,2), node.matrix(1,3),
-					node.matrix(2,0), node.matrix(2,1), node.matrix(2,2), node.matrix(2,3), node.matrix(3,3));
-				N.p3->transform(t);
+				if (node.matrix.matrix().determinant() == 0) {
+					PRINT("Warning: Scaling a 3D object with 0 - removing object");
+					N.p3.reset();
+				}
+				else {
+					CGAL_Aff_transformation t(
+						node.matrix(0,0), node.matrix(0,1), node.matrix(0,2), node.matrix(0,3),
+						node.matrix(1,0), node.matrix(1,1), node.matrix(1,2), node.matrix(1,3),
+						node.matrix(2,0), node.matrix(2,1), node.matrix(2,2), node.matrix(2,3), node.matrix(3,3));
+					N.p3->transform(t);
+				}
 			}
 		}
 		else {
