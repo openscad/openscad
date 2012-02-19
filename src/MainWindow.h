@@ -12,9 +12,9 @@
 #include <QMutex>
 
 enum EXPORT_MODE{
-    STL,
-    OFF,
-    AMF
+	STL,
+	OFF,
+	AMF
 };
 
 class MainWindow : public QMainWindow, public Ui::MainWindow
@@ -123,10 +123,10 @@ private slots:
 	void actionDisplayAST();
 	void actionDisplayCSGTree();
 	void actionDisplayCSGProducts();
-    void actionExportSTLorOFF(EXPORT_MODE stl_mode);
-    void actionExportSTL();
-    void actionExportAMF();
-    void actionExportOFF();
+	void actionExportSTLorOFF(EXPORT_MODE stl_mode);
+	void actionExportSTL();
+	void actionExportAMF();
+	void actionExportOFF();
 	void actionExportDXF();
 	void actionExportCSG();
 	void actionExportImage();

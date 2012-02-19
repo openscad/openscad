@@ -1362,7 +1362,6 @@ void MainWindow::actionExportSTLorOFF(EXPORT_MODE)
 		return;
 	}
 
-    //QString suffix = stl_mode ? ".stl" : ".off";
     QString suffix;
     QString stl_caption;
     QString stl_filter;
@@ -1416,8 +1415,6 @@ void MainWindow::actionExportSTLorOFF(EXPORT_MODE)
             export_off(this->root_N, fstream);
             break;
         }
-        //if (stl_mode) export_stl(this->root_N, fstream);
-        //else export_off(this->root_N, fstream);
 		fstream.close();
 
         PRINTB("%s export finished.", (stl_modename.toStdString()));
