@@ -197,6 +197,7 @@ HEADERS += src/parsersettings.h \
            src/memory.h \
            src/linalg.h \
            src/system-gl.h \
+           src/importhandlers.h \
            src/stl-utils.h
 
 SOURCES += src/mathc99.cc \
@@ -245,6 +246,7 @@ SOURCES += src/mathc99.cc \
            src/builtin.cc \
            src/export.cc \
            src/import.cc \
+           src/importhandlers.cpp \
            src/renderer.cc \
            src/ThrownTogetherRenderer.cc \
            src/dxftess.cc \
@@ -308,3 +310,5 @@ INSTALLS += applications
 icons.path = $$PREFIX/share/pixmaps
 icons.files = icons/openscad.png
 INSTALLS += icons
+
+unix|win32: LIBS += -lxerces-c
