@@ -1313,7 +1313,7 @@ void MainWindow::actionDisplayCSGProducts()
 }
 
 #ifdef ENABLE_CGAL
-void MainWindow::actionExportSTLorOFF(EXPORT_MODE stl_mode)
+void MainWindow::actionExportSTLorOFF(export_type_e stl_mode)
 #else
 void MainWindow::actionExportSTLorOFF(EXPORT_MODE)
 #endif
@@ -1346,19 +1346,19 @@ void MainWindow::actionExportSTLorOFF(EXPORT_MODE)
 	QString stl_filter;
 	QString stl_modename;
 	switch(stl_mode) {
-	case STL:
+	case TYPE_STL:
 		stl_caption = "Export STL File";
 		stl_filter = "STL Files (*.stl)";
 		stl_modename = "STL";
 		suffix = ".stl";
 		break;
-	case AMF:
+	case TYPE_AMF:
 		stl_caption = "Export AMF File";
 		stl_filter = "AMF Files (*.amf)";
 		stl_modename = "AMF";
 		suffix = ".amf";
 		break;
-	case OFF:
+	case TYPE_OFF:
 	default:
 		stl_caption = "Export OFF File";
 		stl_filter = "OFF Files (*.off)";
@@ -1383,13 +1383,13 @@ void MainWindow::actionExportSTLorOFF(EXPORT_MODE)
 	}
 	else {
 		switch(stl_mode) {
-		case STL:
+		case TYPE_STL:
 			export_stl(this->root_N, fstream);
 			break;
-		case AMF:
+		case TYPE_AMF:
 			export_amf(this->root_N, fstream);
 			break;
-		case OFF:
+		case TYPE_OFF:
 		default:
 			export_off(this->root_N, fstream);
 			break;
@@ -1405,17 +1405,17 @@ void MainWindow::actionExportSTLorOFF(EXPORT_MODE)
 
 void MainWindow::actionExportSTL()
 {
-	actionExportSTLorOFF(STL);
+	actionExportSTLorOFF(TYPE_STL);
 }
 
 void MainWindow::actionExportAMF()
 {
-	actionExportSTLorOFF(AMF);
+	actionExportSTLorOFF(TYPE_AMF);
 }
 
 void MainWindow::actionExportOFF()
 {
-	actionExportSTLorOFF(OFF);
+	actionExportSTLorOFF(TYPE_OFF);
 }
 
 void MainWindow::actionExportDXF()
