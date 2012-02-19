@@ -149,7 +149,7 @@ PolySet *ImportNode::evaluate_polyset(class PolySetEvaluator *) const
 			std::string line;
 			std::getline(f, line);
 			while (!f.eof()) {
-
+				
 				std::getline(f, line);
 				boost::trim(line);
 				if (boost::regex_search(line, ex_sfe)) {

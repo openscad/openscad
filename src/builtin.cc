@@ -65,7 +65,7 @@ void Builtins::initialize()
 	this->deprecations["dxf_linear_extrude"] = "linear_extrude";
 	this->deprecations["dxf_rotate_extrude"] = "rotate_extrude";
 	this->deprecations["import_stl"] = "import";
-    this->deprecations["import_aml"] = "import";
+	this->deprecations["import_aml"] = "import";
 	this->deprecations["import_dxf"] = "import";
 	this->deprecations["import_off"] = "import";
 }
