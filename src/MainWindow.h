@@ -123,7 +123,7 @@ private slots:
 	void actionDisplayAST();
 	void actionDisplayCSGTree();
 	void actionDisplayCSGProducts();
-    void actionExportSTLorOFF(export_type_e stl_mode);
+	void actionExportSTLorOFF(export_type_e stl_mode);
 	void actionExportSTL();
 	void actionExportAMF();
 	void actionExportOFF();

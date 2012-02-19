@@ -1315,7 +1315,7 @@ void MainWindow::actionDisplayCSGProducts()
 #ifdef ENABLE_CGAL
 void MainWindow::actionExportSTLorOFF(export_type_e stl_mode)
 #else
-void MainWindow::actionExportSTLorOFF(EXPORT_MODE)
+void MainWindow::actionExportSTLorOFF(export_type_e)
 #endif
 {
 	if (GuiLocker::isLocked()) return;
