@@ -149,9 +149,14 @@ int main(int argc, char **argv)
 	all_options.add(desc).add(hidden);
 
 	po::variables_map vm;
-	po::store(po::command_line_parser(argc, argv).options(all_options).positional(p).run(), vm);
-//	po::notify(vm);
-	
+	try {
+		po::store(po::command_line_parser(argc, argv).options(all_options).positional(p).run(), vm);
+	}
+	catch(std::exception &e) { // Catches e.g. unknown options
+		fprintf(stderr, "%s\n", e.what());
+		help(argv[0]);
+	}
+
 	if (vm.count("help")) help(argv[0]);
 	if (vm.count("version")) version();
 
