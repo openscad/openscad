@@ -1020,6 +1020,8 @@ bool MainWindow::compileTopLevelDocument(bool reload)
 	}
 	
 	if (shouldcompiletoplevel) {
+		console->clear();
+
 		updateTemporalVariables();
 		
 		this->last_compiled_doc = editor->toPlainText();
@@ -1102,7 +1104,6 @@ void MainWindow::actionReloadCompile()
 	if (GuiLocker::isLocked()) return;
 	GuiLocker lock;
 	setCurrentOutput();
-	console->clear();
 
 	// PRINT("Parsing design (AST generation)...");
 	// QApplication::processEvents();
