@@ -73,7 +73,7 @@ public:
 
 	bool getnum(double &v) const;
 	bool getv2(double &x, double &y) const;
-	bool getv3(double &x, double &y, double &z) const;
+	bool getv3(double &x, double &y, double &z, double defaultval = 0.0) const;
 
 	std::string toString() const;
 

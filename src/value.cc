@@ -359,11 +359,11 @@ bool Value::getv2(double &x, double &y) const
 	return true;
 }
 
-bool Value::getv3(double &x, double &y, double &z) const
+bool Value::getv3(double &x, double &y, double &z, double defaultval) const
 {
 	if (this->type == VECTOR && this->vec.size() == 2) {
 		if (getv2(x, y)) {
-			z = 0;
+			z = defaultval;
 			return true;
 		}
 		return false;
@@ -426,6 +426,10 @@ std::string Value::toString() const
 		// Quick and dirty hack to work around floating point rounding differences
 		// across platforms for testing purposes.
 	{
+		if (this->num != this->num) { // Fix for avoiding nan vs. -nan across platforms
+			stream << "nan";
+			break;
+		}
 		std::stringstream tmp;
 		tmp.precision(12);
 		tmp.setf(std::ios_base::fixed);

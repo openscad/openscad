@@ -256,8 +256,13 @@ o Caching
   - Test that caching is actually performed (speedup + same results)
   - Test the modifier characters correctly influence the cache (also when
     added/removed)
+  - Test the individual caches
+    - PolySetCache
+    - CGALCache
+    - nodecache
+    - ModuleCache
 o other tests
   - export
   - cmd-line tests
   - leaf nodes having children, e.g. cube() cylinder();
-  - dependency tracking
+  - dependency tracking (use and include)

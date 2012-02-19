@@ -7,6 +7,8 @@ o The size of the misc. caches can now be adjusted from Preferences
 o The limit for when to disable OpenCSG can now be adjusted from Preferences
 o Added Dot product operator: vec * vec
 o Added Matrix multiplication operator: vec * mat, mat * mat
+o Added search() function
+o Dependencies are now tracked - any changes in uses/included files will be detected and cause a recompile
 
 Bugfixes:
 o use'ing an non-existing file sometimes crashed under Windows
@@ -14,6 +16,9 @@ o Better font handling: Ensure a monospace font is chosen as default
 o Division by zero caused hang in some cases (e.g. sin(1/0))
 o Larger minkowski operations sometimes caused a crash after a CGAL assert was thrown
 o Fixed crashes in shared_ptr.hpp (or similar places) due to a cache management bug
+o scale() with a scale factor of zero could cause a crash
+o Fixed a number of issues related to use/include
+o Providing an unknown parameter on the cmd-line caused a crash
 
 Deprecations:
 o The old include syntax "<filename.scad>" without the include keyword is no
