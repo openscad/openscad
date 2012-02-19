@@ -279,9 +279,9 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this->designActionDisplayAST, SIGNAL(triggered()), this, SLOT(actionDisplayAST()));
 	connect(this->designActionDisplayCSGTree, SIGNAL(triggered()), this, SLOT(actionDisplayCSGTree()));
 	connect(this->designActionDisplayCSGProducts, SIGNAL(triggered()), this, SLOT(actionDisplayCSGProducts()));
-    connect(this->designActionExportSTL, SIGNAL(triggered()), this, SLOT(actionExportSTL()));
-    connect(this->designActionExportAMF, SIGNAL(triggered()), this, SLOT(actionExportAMF()));
-    connect(this->designActionExportOFF, SIGNAL(triggered()), this, SLOT(actionExportOFF()));
+	connect(this->designActionExportSTL, SIGNAL(triggered()), this, SLOT(actionExportSTL()));
+	connect(this->designActionExportAMF, SIGNAL(triggered()), this, SLOT(actionExportAMF()));
+	connect(this->designActionExportOFF, SIGNAL(triggered()), this, SLOT(actionExportOFF()));
 	connect(this->designActionExportDXF, SIGNAL(triggered()), this, SLOT(actionExportDXF()));
 	connect(this->designActionExportCSG, SIGNAL(triggered()), this, SLOT(actionExportCSG()));
 	connect(this->designActionExportImage, SIGNAL(triggered()), this, SLOT(actionExportImage()));
@@ -1341,38 +1341,38 @@ void MainWindow::actionExportSTLorOFF(EXPORT_MODE)
 		return;
 	}
 
-    QString suffix;
-    QString stl_caption;
-    QString stl_filter;
-    QString stl_modename;
-    switch(stl_mode) {
-    case STL:
-        stl_caption = "Export STL File";
-        stl_filter = "STL Files (*.stl)";
-        stl_modename = "STL";
-        suffix = ".stl";
-        break;
-    case AMF:
-        stl_caption = "Export AMF File";
-        stl_filter = "AMF Files (*.amf)";
-        stl_modename = "AMF";
-        suffix = ".amf";
-        break;
-    case OFF:
-    default:
-        stl_caption = "Export OFF File";
-        stl_filter = "OFF Files (*.off)";
-        stl_modename = "OFF";
-        suffix = ".off";
-        break;
-    }
+	QString suffix;
+	QString stl_caption;
+	QString stl_filter;
+	QString stl_modename;
+	switch(stl_mode) {
+	case STL:
+		stl_caption = "Export STL File";
+		stl_filter = "STL Files (*.stl)";
+		stl_modename = "STL";
+		suffix = ".stl";
+		break;
+	case AMF:
+		stl_caption = "Export AMF File";
+		stl_filter = "AMF Files (*.amf)";
+		stl_modename = "AMF";
+		suffix = ".amf";
+		break;
+	case OFF:
+	default:
+		stl_caption = "Export OFF File";
+		stl_filter = "OFF Files (*.off)";
+		stl_modename = "OFF";
+		suffix = ".off";
+		break;
+	}
 
-    QString stl_filename = QFileDialog::getSaveFileName(this,
-            stl_caption,
+	QString stl_filename = QFileDialog::getSaveFileName(this,
+			stl_caption,
 			this->fileName.isEmpty() ? "Untitled"+suffix : QFileInfo(this->fileName).baseName()+suffix,
-            stl_filter);
+			stl_filter);
 	if (stl_filename.isEmpty()) {
-        PRINTB("No filename specified. %s export aborted.", (stl_modename.toStdString()));
+		PRINTB("No filename specified. %s export aborted.", (stl_modename.toStdString()));
 		clearCurrentOutput();
 		return;
 	}
@@ -1382,21 +1382,21 @@ void MainWindow::actionExportSTLorOFF(EXPORT_MODE)
 		PRINTB("Can't open file \"%s\" for export", stl_filename.toStdString());
 	}
 	else {
-        switch(stl_mode) {
-        case STL:
-            export_stl(this->root_N, fstream);
-            break;
-        case AMF:
-            export_amf(this->root_N, fstream);
-            break;
-        case OFF:
-        default:
-            export_off(this->root_N, fstream);
-            break;
-        }
+		switch(stl_mode) {
+		case STL:
+			export_stl(this->root_N, fstream);
+			break;
+		case AMF:
+			export_amf(this->root_N, fstream);
+			break;
+		case OFF:
+		default:
+			export_off(this->root_N, fstream);
+			break;
+		}
 		fstream.close();
 
-        PRINTB("%s export finished.", (stl_modename.toStdString()));
+		PRINTB("%s export finished.", (stl_modename.toStdString()));
 	}
 
 	clearCurrentOutput();
@@ -1405,17 +1405,17 @@ void MainWindow::actionExportSTLorOFF(EXPORT_MODE)
 
 void MainWindow::actionExportSTL()
 {
-    actionExportSTLorOFF(STL);
+	actionExportSTLorOFF(STL);
 }
 
 void MainWindow::actionExportAMF()
 {
-    actionExportSTLorOFF(AMF);
+	actionExportSTLorOFF(AMF);
 }
 
 void MainWindow::actionExportOFF()
 {
-    actionExportSTLorOFF(OFF);
+	actionExportSTLorOFF(OFF);
 }
 
 void MainWindow::actionExportDXF()
