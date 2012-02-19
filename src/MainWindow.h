@@ -33,10 +33,10 @@ public:
 	double tval, fps, fsteps;
 
 	QTimer *autoReloadTimer;
-	QString autoReloadInfo;
+	std::string autoReloadId;
 
 	Context root_ctx;
-	AbstractModule *root_module;      // Result of parsing
+	Module *root_module;      // Result of parsing
 	ModuleInstantiation root_inst;    // Top level instance
 	AbstractNode *absolute_root_node; // Result of tree evaluation
 	AbstractNode *root_node;          // Root if the root modifier (!) is used
@@ -79,9 +79,12 @@ private slots:
 
 private:
 	void openFile(const QString &filename);
-	void load();
+	void refreshDocument();
 	AbstractNode *find_root_tag(AbstractNode *n);
-	void compile(bool procevents);
+	void updateTemporalVariables();
+	bool fileChangedOnDisk();
+	bool compileTopLevelDocument(bool reload);
+	bool compile(bool reload, bool procevents);
 	void compileCSG(bool procevents);
 	bool maybeSave();
 	bool checkModified();

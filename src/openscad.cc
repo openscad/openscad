@@ -149,9 +149,14 @@ int main(int argc, char **argv)
 	all_options.add(desc).add(hidden);
 
 	po::variables_map vm;
-	po::store(po::command_line_parser(argc, argv).options(all_options).positional(p).run(), vm);
-//	po::notify(vm);
-	
+	try {
+		po::store(po::command_line_parser(argc, argv).options(all_options).positional(p).run(), vm);
+	}
+	catch(std::exception &e) { // Catches e.g. unknown options
+		fprintf(stderr, "%s\n", e.what());
+		help(argv[0]);
+	}
+
 	if (vm.count("help")) help(argv[0]);
 	if (vm.count("version")) version();
 
@@ -255,34 +260,28 @@ int main(int argc, char **argv)
 		Context root_ctx;
 		register_builtin(root_ctx);
 
-		AbstractModule *root_module;
+		Module *root_module;
 		ModuleInstantiation root_inst;
 		AbstractNode *root_node;
 
 		handle_dep(filename);
-		FILE *fp = fopen(filename, "rt");
-		if (!fp) {
-			fprintf(stderr, "Can't open input file `%s'!\n", filename);
-			exit(1);
-		} else {
-			std::stringstream text;
-			char buffer[513];
-			int ret;
-			while ((ret = fread(buffer, 1, 512, fp)) > 0) {
-				buffer[ret] = 0;
-				text << buffer;
-			}
-			fclose(fp);
-			text << "\n" << commandline_commands;
-			fs::path abspath = boosty::absolute( filename );
-			std::string fpath = boosty::stringy(abspath.parent_path());
-			root_module = parse(text.str().c_str(), fpath.c_str(), false);
-			if (!root_module) exit(1);
-		}
 		
-		fs::path fpath = boosty::absolute( fs::path(filename) );
+		std::ifstream ifs(filename);
+		if (!ifs.is_open()) {
+			fprintf(stderr, "Can't open input file '%s'!\n", filename);
+			exit(1);
+		}
+		std::string text((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
+		text += "\n" + commandline_commands;
+		fs::path abspath = boosty::absolute(filename);
+		std::string parentpath = boosty::stringy(abspath.parent_path());
+		root_module = parse(text.c_str(), parentpath.c_str(), false);
+		if (!root_module) exit(1);
+		root_module->handleDependencies();
+		
+		fs::path fpath = boosty::absolute(fs::path(filename));
 		fs::path fparent = fpath.parent_path();
-		fs::current_path( fparent );
+		fs::current_path(fparent);
 
 		AbstractNode::resetIndexCounter();
 		root_node = root_module->evaluate(&root_ctx, &root_inst);

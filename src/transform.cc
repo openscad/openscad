@@ -87,11 +87,10 @@ AbstractNode *TransformModule::evaluate(const Context *ctx, const ModuleInstanti
 	{
 		Vector3d scalevec(1,1,1);
 		Value v = c.lookup_variable("v");
-		v.getnum(scalevec[0]);
-		v.getnum(scalevec[1]);
-		v.getnum(scalevec[2]);
-		v.getv3(scalevec[0], scalevec[1], scalevec[2]);
-		if (scalevec[2] == 0) scalevec[2] = 1;
+		if (!v.getv3(scalevec[0], scalevec[1], scalevec[2], 1.0)) {
+			double num;
+			if (v.getnum(num)) scalevec.setConstant(num);
+		}
 		node->matrix.scale(scalevec);
 	}
 	else if (this->type == ROTATE)
