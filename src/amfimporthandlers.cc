@@ -1,7 +1,7 @@
 // ---------------------------------------------------------------------------
 //  Includes
 // ---------------------------------------------------------------------------
-#include "importhandlers.h"
+#include "amfimporthandlers.h"
 #include <xercesc/sax/AttributeList.hpp>
 #include <xercesc/sax/SAXParseException.hpp>
 #include <xercesc/sax/SAXException.hpp>

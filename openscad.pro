@@ -197,8 +197,8 @@ HEADERS += src/parsersettings.h \
            src/memory.h \
            src/linalg.h \
            src/system-gl.h \
-           src/importhandlers.h \
-           src/stl-utils.h
+           src/stl-utils.h \
+    src/amfimporthandlers.h
 
 SOURCES += src/mathc99.cc \
 	   src/linalg.cc \
@@ -246,7 +246,6 @@ SOURCES += src/mathc99.cc \
            src/builtin.cc \
            src/export.cc \
            src/import.cc \
-           src/importhandlers.cpp \
            src/renderer.cc \
            src/ThrownTogetherRenderer.cc \
            src/dxftess.cc \
@@ -255,7 +254,8 @@ SOURCES += src/mathc99.cc \
            src/CSGTermEvaluator.cc \
            \
            src/openscad.cc \
-           src/mainwin.cc
+           src/mainwin.cc \
+    src/amfimporthandlers.cc
 
 opencsg {
   HEADERS += src/OpenCSGRenderer.h
