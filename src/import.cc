@@ -25,7 +25,7 @@
  */
 
 #include "importnode.h"
-#include "importhandlers.h"
+#include "amfimporthandlers.h"
 
 #include "module.h"
 #include "polyset.h"
