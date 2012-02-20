@@ -173,6 +173,7 @@ HEADERS += src/parsersettings.h \
            src/projectionnode.h \
            src/cgaladvnode.h \
            src/importnode.h \
+           src/amfimporthandlers.h \
            src/transformnode.h \
            src/colornode.h \
            src/rendernode.h \
@@ -197,8 +198,7 @@ HEADERS += src/parsersettings.h \
            src/memory.h \
            src/linalg.h \
            src/system-gl.h \
-           src/stl-utils.h \
-    src/amfimporthandlers.h
+           src/stl-utils.h
 
 SOURCES += src/mathc99.cc \
 	   src/linalg.cc \
@@ -246,6 +246,7 @@ SOURCES += src/mathc99.cc \
            src/builtin.cc \
            src/export.cc \
            src/import.cc \
+           src/amfimporthandlers.cc \
            src/renderer.cc \
            src/ThrownTogetherRenderer.cc \
            src/dxftess.cc \
@@ -254,8 +255,7 @@ SOURCES += src/mathc99.cc \
            src/CSGTermEvaluator.cc \
            \
            src/openscad.cc \
-           src/mainwin.cc \
-    src/amfimporthandlers.cc
+           src/mainwin.cc
 
 opencsg {
   HEADERS += src/OpenCSGRenderer.h
