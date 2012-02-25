@@ -1014,8 +1014,10 @@ static bool is_modified(const std::string &filename, const time_t &mtime)
 
 bool MainWindow::includesChanged()
 {
-	BOOST_FOREACH(const Module::IncludeContainer::value_type &item, this->root_module->includes) {
-		if (is_modified(item.first, item.second)) return true;
+	if (this->root_module) {
+		BOOST_FOREACH(const Module::IncludeContainer::value_type &item, this->root_module->includes) {
+			if (is_modified(item.first, item.second)) return true;
+		}
 	}
 	return false;
 }
