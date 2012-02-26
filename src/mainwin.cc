@@ -929,7 +929,7 @@ void MainWindow::actionSaveAs()
 
 void MainWindow::actionReload()
 {
-	if (checkModified()) refreshDocument();
+	if (checkEditorModified()) refreshDocument();
 }
 
 void MainWindow::hideEditor()
@@ -1004,6 +1004,25 @@ bool MainWindow::fileChangedOnDisk()
 	return false;
 }
 
+// FIXME: The following two methods are duplicated in ModuleCache.cc - refactor
+static bool is_modified(const std::string &filename, const time_t &mtime)
+{
+	struct stat st;
+	memset(&st, 0, sizeof(struct stat));
+	stat(filename.c_str(), &st);
+	return (st.st_mtime > mtime);
+}
+
+bool MainWindow::includesChanged()
+{
+	if (this->root_module) {
+		BOOST_FOREACH(const Module::IncludeContainer::value_type &item, this->root_module->includes) {
+			if (is_modified(item.first, item.second)) return true;
+		}
+	}
+	return false;
+}
+
 /*!
 	If reload is true, does a timestamp check on the document and tries to reload it.
 	Otherwise, just reparses the current document and any dependencies, updates the 
@@ -1015,7 +1034,9 @@ bool MainWindow::compileTopLevelDocument(bool reload)
 {
 	bool shouldcompiletoplevel = !reload;
 
-	if (reload && fileChangedOnDisk() && checkModified()) {
+	if (reload && 
+			(fileChangedOnDisk() && checkEditorModified()) ||
+			includesChanged()) {
 		shouldcompiletoplevel = true;
 		refreshDocument();
 	}
@@ -1084,7 +1105,7 @@ void MainWindow::autoReloadSet(bool on)
 	}
 }
 
-bool MainWindow::checkModified()
+bool MainWindow::checkEditorModified()
 {
 	if (editor->isContentModified()) {
 		QMessageBox::StandardButton ret;
