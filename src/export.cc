@@ -24,6 +24,9 @@
  *
  */
 
+#define QUOTE(x__) # x__
+#define QUOTED(x__) QUOTE(x__)
+
 #include <boost/algorithm/string.hpp>
 #include "export.h"
 #include "printutils.h"
@@ -192,6 +195,11 @@ void export_amf(CGAL_Nef_polyhedron *root_N, std::ostream &output)
 
     output << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n"
            << "<amf unit=\"millimeter\">\r\n"
+           << " <metadata type=\"cad\">OpenSCAD " << QUOTED(OPENSCAD_VERSION)
+#ifdef OPENSCAD_COMMIT
+           << " (git " << QUOTED(OPENSCAD_COMMIT) << ")"
+#endif
+           << "</metadata>\r\n"
            << " <object id=\"0\">\r\n"
            << "  <mesh>\r\n";
     output << "   <vertices>\r\n";
