@@ -173,7 +173,7 @@ HEADERS += src/parsersettings.h \
            src/projectionnode.h \
            src/cgaladvnode.h \
            src/importnode.h \
-           src/amfimporthandlers.h \
+           src/importamfhandlers.h \
            src/transformnode.h \
            src/colornode.h \
            src/rendernode.h \
@@ -246,7 +246,7 @@ SOURCES += src/mathc99.cc \
            src/builtin.cc \
            src/export.cc \
            src/import.cc \
-           src/amfimporthandlers.cc \
+           src/importamfhandlers.cc \
            src/renderer.cc \
            src/ThrownTogetherRenderer.cc \
            src/dxftess.cc \
