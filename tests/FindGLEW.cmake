@@ -14,7 +14,7 @@ include(FindPkgConfig)
 
 if (PKG_CONFIG_FOUND)
   message("Doing pkg config glew check...")
-  pkg_check_modules(GLEW glew>=1.5)
+  pkg_check_modules(GLEW glew>=1.6)
 endif()
 
 if (GLEW_LIBRARIES)
