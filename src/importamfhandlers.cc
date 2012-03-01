@@ -1,7 +1,7 @@
 // ---------------------------------------------------------------------------
 //  Includes
 // ---------------------------------------------------------------------------
-#include "amfimporthandlers.h"
+#include "importamfhandlers.h"
 #include <xercesc/sax/AttributeList.hpp>
 #include <xercesc/sax/SAXParseException.hpp>
 #include <xercesc/sax/SAXException.hpp>
@@ -9,7 +9,7 @@
 // ---------------------------------------------------------------------------
 //  ImportHandlers: Constructors and Destructor
 // ---------------------------------------------------------------------------
-ImportHandlers::ImportHandlers() :
+ImportAmfHandlers::ImportAmfHandlers() :
 
     el_amf(false)
   , el_object(0)
@@ -23,7 +23,7 @@ ImportHandlers::ImportHandlers() :
 {
 }
 
-ImportHandlers::~ImportHandlers()
+ImportAmfHandlers::~ImportAmfHandlers()
 {
 }
 
@@ -31,7 +31,7 @@ ImportHandlers::~ImportHandlers()
 // ---------------------------------------------------------------------------
 //  ImportHandlers: Implementation of the SAX DocumentHandler interface
 // ---------------------------------------------------------------------------
-void ImportHandlers::startElement(const   XMLCh* const   name
+void ImportAmfHandlers::startElement(const   XMLCh* const   name
                                     ,       AttributeList&  /* attributes */)
 {
     char* el = XMLString::transcode(name);
@@ -98,7 +98,7 @@ void ImportHandlers::startElement(const   XMLCh* const   name
     //fAttrCount += attributes.getLength();
 }
 
-void ImportHandlers::characters(  const   XMLCh* const    chars
+void ImportAmfHandlers::characters(  const   XMLCh* const    chars
                                     , const XMLSize_t      /* length */)
 {
     char* state = XMLString::transcode(el_state);
@@ -130,7 +130,7 @@ void ImportHandlers::characters(  const   XMLCh* const    chars
     //fCharacterCount += length;
 }
 
-void ImportHandlers::endElement(const XMLCh* const name)
+void ImportAmfHandlers::endElement(const XMLCh* const name)
 {
     char* el = XMLString::transcode(name);
     if(0 == strcmp(el, "amf"))
@@ -208,13 +208,13 @@ void ImportHandlers::endElement(const XMLCh* const name)
     //fFormatter << XMLFormatter::NoEscapes << gEndElement << name << chCloseAngle;
 }
 
-void ImportHandlers::ignorableWhitespace( const   XMLCh* const /* chars */
+void ImportAmfHandlers::ignorableWhitespace( const   XMLCh* const /* chars */
                                             , const XMLSize_t    /* length */)
 {
     //fSpaceCount += length;
 }
 
-void ImportHandlers::resetDocument()
+void ImportAmfHandlers::resetDocument()
 {
   el_amf = false;
   el_object = 0;
@@ -239,7 +239,7 @@ void ImportHandlers::resetDocument()
 // ---------------------------------------------------------------------------
 //  ImportHandlers: Overrides of the SAX ErrorHandler interface
 // ---------------------------------------------------------------------------
-void ImportHandlers::error(const SAXParseException& /*e*/)
+void ImportAmfHandlers::error(const SAXParseException& /*e*/)
 {
     fSawErrors = true;
     // display error
@@ -251,18 +251,18 @@ void ImportHandlers::error(const SAXParseException& /*e*/)
     */
 }
 
-void ImportHandlers::fatalError(const SAXParseException& /*e*/)
+void ImportAmfHandlers::fatalError(const SAXParseException& /*e*/)
 {
     fSawErrors = true;
     // display error
 }
 
-void ImportHandlers::warning(const SAXParseException& /*e*/)
+void ImportAmfHandlers::warning(const SAXParseException& /*e*/)
 {
     // display warning
 }
 
-void ImportHandlers::resetErrors()
+void ImportAmfHandlers::resetErrors()
 {
     fSawErrors = false;
 }

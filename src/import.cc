@@ -25,7 +25,7 @@
  */
 
 #include "importnode.h"
-#include "amfimporthandlers.h"
+#include "importamfhandlers.h"
 
 #include "module.h"
 #include "polyset.h"
@@ -233,7 +233,7 @@ PolySet *ImportNode::evaluate_polyset(class PolySetEvaluator *) const
 		//parser->setHandleMultipleImports (true);
 		//parser->setValidationSchemaFullChecking(true);
 
-		ImportHandlers* importHandler = new ImportHandlers();
+		ImportAmfHandlers* importHandler = new ImportAmfHandlers();
 		DocumentHandler* docHandler = (DocumentHandler*) importHandler;
 		ErrorHandler* errHandler = (ErrorHandler*) importHandler;
 		parser->setDocumentHandler(docHandler);

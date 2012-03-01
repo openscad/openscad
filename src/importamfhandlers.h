@@ -23,14 +23,14 @@ struct vertex {
     std::string z;
 };
 
-class ImportHandlers : public HandlerBase
+class ImportAmfHandlers : public HandlerBase
 {
 public:
     // -----------------------------------------------------------------------
     //  Constructors and Destructor
     // -----------------------------------------------------------------------
-    ImportHandlers();
-    ~ImportHandlers();
+    ImportAmfHandlers();
+    ~ImportAmfHandlers();
 
     // -----------------------------------------------------------------------
     //  Getter methods
