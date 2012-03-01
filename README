@@ -55,7 +55,7 @@ development. Other versions may or may not work as well..
 * OpenCSG (1.3.2):
   http://www.opencsg.org/
 
-* GLEW (1.5 ->)
+* GLEW (1.6 ->)
   http://glew.sourceforge.net/
 
 * Eigen2 (2.0.13->)
