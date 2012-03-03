@@ -102,6 +102,8 @@ public:
 	int convexity;
 	Value points, paths, triangles;
 	virtual PolySet *evaluate_polyset(class PolySetEvaluator *) const;
+
+	double vertex_radius_from_inner_radius(double inner_radius);
 };
 
 AbstractNode *PrimitiveModule::evaluate(const Context *ctx, const ModuleInstantiation *inst) const
@@ -114,6 +116,9 @@ AbstractNode *PrimitiveModule::evaluate(const Context *ctx, const ModuleInstanti
 	std::vector<std::string> argnames;
 	std::vector<Expression*> argexpr;
 
+	// argnames is the signature of positional args to the function
+	// when not called with named args.
+	// argexpr would be the default values, but we don't set any.
 	switch (this->type) {
 	case CUBE:
 		argnames += "size", "center";
@@ -183,6 +188,25 @@ AbstractNode *PrimitiveModule::evaluate(const Context *ctx, const ModuleInstanti
 		r2 = c.lookup_variable("r2");
 		r = c.lookup_variable("r", true); // silence warning since r has no default value
 		Value center = c.lookup_variable("center");
+
+		// Maybe use interior radius values
+		Value ir = c.lookup_variable("ir");
+		Value ir1 = c.lookup_variable("ir1");
+		Value ir2 = c.lookup_variable("ir2");
+		if (ir.type == Value::NUMBER) {
+			double vertex_radius = node->vertex_radius_from_inner_radius(ir.num);
+			node->r1 = vertex_radius;
+			node->r2 = vertex_radius;
+		}
+		if (ir1.type == Value::NUMBER) {
+			double vertex_radius = node->vertex_radius_from_inner_radius(ir1.num);
+			node->r1 = vertex_radius;
+		}
+		if (ir2.type == Value::NUMBER) {
+			double vertex_radius = node->vertex_radius_from_inner_radius(ir2.num);
+			node->r2 = vertex_radius;
+		}
+
 		if (h.type == Value::NUMBER) {
 			node->h = h.num;
 		}
@@ -234,6 +258,19 @@ AbstractNode *PrimitiveModule::evaluate(const Context *ctx, const ModuleInstanti
 		node->convexity = 1;
 
 	return node;
+}
+
+// forward declaration
+int get_fragments_from_r(double r, double fn, double fs, double fa);
+
+double PrimitiveNode::vertex_radius_from_inner_radius(double inner_radius) {
+	int fragments = get_fragments_from_r(inner_radius, this->fn, this->fs, this->fa);
+	if (this->fn <= 0.0) {
+		// set this for later
+		this->fn = fragments;
+	}
+	double vertex_radius = inner_radius / cos(M_PI / fragments);
+	return vertex_radius;
 }
 
 /*!
