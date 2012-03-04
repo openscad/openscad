@@ -190,9 +190,9 @@ AbstractNode *PrimitiveModule::evaluate(const Context *ctx, const ModuleInstanti
 		Value center = c.lookup_variable("center");
 
 		// Maybe use interior radius values
-		Value ir = c.lookup_variable("ir");
-		Value ir1 = c.lookup_variable("ir1");
-		Value ir2 = c.lookup_variable("ir2");
+		Value ir = c.lookup_variable("ir", true);
+		Value ir1 = c.lookup_variable("ir1", true);
+		Value ir2 = c.lookup_variable("ir2", true);
 		if (ir.type == Value::NUMBER) {
 			double vertex_radius = node->vertex_radius_from_inner_radius(ir.num);
 			node->r1 = vertex_radius;
