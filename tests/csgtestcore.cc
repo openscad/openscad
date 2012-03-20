@@ -276,7 +276,9 @@ int csgtestcore(int argc, char *argv[], test_type_e test_type)
 	}
 
 	if (!sysinfo_dump) {
-		fs::current_path(fs::path(filename).parent_path());
+		if (fs::path(filename).has_parent_path()) {
+			fs::current_path(fs::path(filename).parent_path());
+		}
 	}
 
 	AbstractNode::resetIndexCounter();
