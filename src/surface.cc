@@ -79,16 +79,17 @@ AbstractNode *SurfaceModule::evaluate(const Context *ctx, const ModuleInstantiat
 	Context c(ctx);
 	c.args(argnames, argexpr, inst->argnames, inst->argvalues);
 
-	node->filename = c.getAbsolutePath(c.lookup_variable("file").text);
+	Value fileval = c.lookup_variable("file");
+	node->filename = c.getAbsolutePath(fileval.isUndefined() ? "" : fileval.toString());
 
 	Value center = c.lookup_variable("center", true);
-	if (center.type == Value::BOOL) {
-		node->center = center.b;
+	if (center.type() == Value::BOOL) {
+		node->center = center.toBool();
 	}
 
 	Value convexity = c.lookup_variable("convexity", true);
-	if (convexity.type == Value::NUMBER) {
-		node->convexity = (int)convexity.num;
+	if (convexity.type() == Value::NUMBER) {
+		node->convexity = (int)convexity.toDouble();
 	}
 
 	return node;

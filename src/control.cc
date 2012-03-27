@@ -57,29 +57,27 @@ void for_eval(AbstractNode &node, const ModuleInstantiation &inst, size_t l,
 		const std::string &it_name = call_argnames[l];
 		const Value &it_values = call_argvalues[l];
 		Context c(arg_context);
-		if (it_values.type == Value::RANGE) {
-			double range_begin = it_values.range_begin;
-			double range_end = it_values.range_end;
-			double range_step = it_values.range_step;
-			if (range_end < range_begin) {
-				double t = range_begin;
-				range_begin = range_end;
-				range_end = t;
+		if (it_values.type() == Value::RANGE) {
+			Value::RangeType range = it_values.toRange();
+			if (range.end < range.begin) {
+				double t = range.begin;
+				range.begin = range.end;
+				range.end = t;
 			}
-			if (range_step > 0 && (range_begin-range_end)/range_step < 10000) {
-				for (double i = range_begin; i <= range_end; i += range_step) {
+			if (range.step > 0 && (range.begin-range.end)/range.step < 10000) {
+				for (double i = range.begin; i <= range.end; i += range.step) {
 					c.set_variable(it_name, Value(i));
 					for_eval(node, inst, l+1, call_argnames, call_argvalues, &c);
 				}
 			}
 		}
-		else if (it_values.type == Value::VECTOR) {
-			for (size_t i = 0; i < it_values.vec.size(); i++) {
-				c.set_variable(it_name, *it_values.vec[i]);
+		else if (it_values.type() == Value::VECTOR) {
+			for (size_t i = 0; i < it_values.toVector().size(); i++) {
+				c.set_variable(it_name, it_values.toVector()[i]);
 				for_eval(node, inst, l+1, call_argnames, call_argvalues, &c);
 			}
 		}
-		else if (it_values.type != Value::UNDEFINED) {
+		else if (it_values.type() != Value::UNDEFINED) {
 			c.set_variable(it_name, it_values);
 			for_eval(node, inst, l+1, call_argnames, call_argvalues, &c);
 		}
@@ -98,7 +96,7 @@ AbstractNode *ControlModule::evaluate(const Context*, const ModuleInstantiation 
 		size_t n = 0;
 		if (inst->argvalues.size() > 0) {
 			double v;
-			if (inst->argvalues[0].getnum(v))
+			if (inst->argvalues[0].getDouble(v))
 				n = v;
 		}
 		for (int i = Context::ctx_stack.size()-1; i >= 0; i--) {

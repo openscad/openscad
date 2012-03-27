@@ -56,9 +56,9 @@ AbstractNode *LinearExtrudeModule::evaluate(const Context *ctx, const ModuleInst
 	Context c(ctx);
 	c.args(argnames, argexpr, inst->argnames, inst->argvalues);
 
-	node->fn = c.lookup_variable("$fn").num;
-	node->fs = c.lookup_variable("$fs").num;
-	node->fa = c.lookup_variable("$fa").num;
+	node->fn = c.lookup_variable("$fn").toDouble();
+	node->fs = c.lookup_variable("$fs").toDouble();
+	node->fa = c.lookup_variable("$fa").toDouble();
 
 	Value file = c.lookup_variable("file");
 	Value layer = c.lookup_variable("layer", true);
@@ -70,19 +70,19 @@ AbstractNode *LinearExtrudeModule::evaluate(const Context *ctx, const ModuleInst
 	Value twist = c.lookup_variable("twist", true);
 	Value slices = c.lookup_variable("slices", true);
 
-	if (!file.text.empty()) {
+	if (!file.isUndefined()) {
 		PRINT("DEPRECATED: Support for reading files in linear_extrude will be removed in future releases. Use a child import() instead.");
-		node->filename = c.getAbsolutePath(file.text);
+		node->filename = c.getAbsolutePath(file.toString());
 	}
 
-	node->layername = layer.text;
-	node->height = height.num;
-	node->convexity = (int)convexity.num;
-	origin.getv2(node->origin_x, node->origin_y);
-	node->scale = scale.num;
+	node->layername = layer.isUndefined() ? "" : layer.toString();
+	node->height = height.toDouble();
+	node->convexity = (int)convexity.toDouble();
+	origin.getVec2(node->origin_x, node->origin_y);
+	node->scale = scale.toDouble();
 
-	if (center.type == Value::BOOL)
-		node->center = center.b;
+	if (center.type() == Value::BOOL)
+		node->center = center.toBool();
 
 	if (node->height <= 0)
 		node->height = 100;
@@ -93,10 +93,10 @@ AbstractNode *LinearExtrudeModule::evaluate(const Context *ctx, const ModuleInst
 	if (node->scale <= 0)
 		node->scale = 1;
 
-	if (twist.type == Value::NUMBER) {
-		node->twist = twist.num;
-		if (slices.type == Value::NUMBER) {
-			node->slices = (int)slices.num;
+	if (twist.type() == Value::NUMBER) {
+		node->twist = twist.toDouble();
+		if (slices.type() == Value::NUMBER) {
+			node->slices = (int)slices.toDouble();
 		} else {
 			node->slices = (int)fmax(2, fabs(get_fragments_from_r(node->height,
 					node->fn, node->fs, node->fa) * node->twist / 360));

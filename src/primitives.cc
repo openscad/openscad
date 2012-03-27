@@ -143,9 +143,9 @@ AbstractNode *PrimitiveModule::evaluate(const Context *ctx, const ModuleInstanti
 	Context c(ctx);
 	c.args(argnames, argexpr, inst->argnames, inst->argvalues);
 
-	node->fn = c.lookup_variable("$fn").num;
-	node->fs = c.lookup_variable("$fs").num;
-	node->fa = c.lookup_variable("$fa").num;
+	node->fn = c.lookup_variable("$fn").toDouble();
+	node->fs = c.lookup_variable("$fs").toDouble();
+	node->fa = c.lookup_variable("$fa").toDouble();
 
 	if (node->fs < F_MINIMUM) {
 		PRINTB("WARNING: $fs too small - clamping to %f", F_MINIMUM);
@@ -160,19 +160,19 @@ AbstractNode *PrimitiveModule::evaluate(const Context *ctx, const ModuleInstanti
 	if (type == CUBE) {
 		Value size = c.lookup_variable("size");
 		Value center = c.lookup_variable("center");
-		size.getnum(node->x);
-		size.getnum(node->y);
-		size.getnum(node->z);
-		size.getv3(node->x, node->y, node->z);
-		if (center.type == Value::BOOL) {
-			node->center = center.b;
+		size.getDouble(node->x);
+		size.getDouble(node->y);
+		size.getDouble(node->z);
+		size.getVec3(node->x, node->y, node->z);
+		if (center.type() == Value::BOOL) {
+			node->center = center.toBool();
 		}
 	}
 
 	if (type == SPHERE) {
 		Value r = c.lookup_variable("r");
-		if (r.type == Value::NUMBER) {
-			node->r1 = r.num;
+		if (r.type() == Value::NUMBER) {
+			node->r1 = r.toDouble();
 		}
 	}
 
@@ -183,21 +183,21 @@ AbstractNode *PrimitiveModule::evaluate(const Context *ctx, const ModuleInstanti
 		r2 = c.lookup_variable("r2");
 		r = c.lookup_variable("r", true); // silence warning since r has no default value
 		Value center = c.lookup_variable("center");
-		if (h.type == Value::NUMBER) {
-			node->h = h.num;
+		if (h.type() == Value::NUMBER) {
+			node->h = h.toDouble();
 		}
-		if (r.type == Value::NUMBER) {
-			node->r1 = r.num;
-			node->r2 = r.num;
+		if (r.type() == Value::NUMBER) {
+			node->r1 = r.toDouble();
+			node->r2 = r.toDouble();
 		}
-		if (r1.type == Value::NUMBER) {
-			node->r1 = r1.num;
+		if (r1.type() == Value::NUMBER) {
+			node->r1 = r1.toDouble();
 		}
-		if (r2.type == Value::NUMBER) {
-			node->r2 = r2.num;
+		if (r2.type() == Value::NUMBER) {
+			node->r2 = r2.toDouble();
 		}
-		if (center.type == Value::BOOL) {
-			node->center = center.b;
+		if (center.type() == Value::BOOL) {
+			node->center = center.toBool();
 		}
 	}
 
@@ -209,18 +209,18 @@ AbstractNode *PrimitiveModule::evaluate(const Context *ctx, const ModuleInstanti
 	if (type == SQUARE) {
 		Value size = c.lookup_variable("size");
 		Value center = c.lookup_variable("center");
-		size.getnum(node->x);
-		size.getnum(node->y);
-		size.getv2(node->x, node->y);
-		if (center.type == Value::BOOL) {
-			node->center = center.b;
+		size.getDouble(node->x);
+		size.getDouble(node->y);
+		size.getVec2(node->x, node->y);
+		if (center.type() == Value::BOOL) {
+			node->center = center.toBool();
 		}
 	}
 
 	if (type == CIRCLE) {
 		Value r = c.lookup_variable("r");
-		if (r.type == Value::NUMBER) {
-			node->r1 = r.num;
+		if (r.type() == Value::NUMBER) {
+			node->r1 = r.toDouble();
 		}
 	}
 
@@ -229,7 +229,7 @@ AbstractNode *PrimitiveModule::evaluate(const Context *ctx, const ModuleInstanti
 		node->paths = c.lookup_variable("paths");
 	}
 
-	node->convexity = c.lookup_variable("convexity", true).num;
+	node->convexity = c.lookup_variable("convexity", true).toDouble();
 	if (node->convexity < 1)
 		node->convexity = 1;
 
@@ -449,14 +449,14 @@ sphere_next_r2:
 	if (this->type == POLYHEDRON)
 	{
 		p->convexity = this->convexity;
-		for (size_t i=0; i<this->triangles.vec.size(); i++)
+		for (size_t i=0; i<this->triangles.toVector().size(); i++)
 		{
 			p->append_poly();
-			for (size_t j=0; j<this->triangles.vec[i]->vec.size(); j++) {
-				size_t pt = this->triangles.vec[i]->vec[j]->num;
-				if (pt < this->points.vec.size()) {
+			for (size_t j=0; j<this->triangles.toVector()[i].toVector().size(); j++) {
+				size_t pt = this->triangles.toVector()[i].toVector()[j].toDouble();
+				if (pt < this->points.toVector().size()) {
 					double px, py, pz;
-					if (this->points.vec[pt]->getv3(px, py, pz))
+					if (this->points.toVector()[pt].getVec3(px, py, pz))
 						p->insert_vertex(px, py, pz);
 				}
 			}
@@ -502,9 +502,9 @@ sphere_next_r2:
 	{
 		DxfData dd;
 
-		for (size_t i=0; i<this->points.vec.size(); i++) {
+		for (size_t i=0; i<this->points.toVector().size(); i++) {
 			double x,y;
-			if (!this->points.vec[i]->getv2(x, y)) {
+			if (!this->points.toVector()[i].getVec2(x, y)) {
 				PRINTB("ERROR: Unable to convert point at index %d to a vec2 of numbers", i);
 				delete p;
 				return NULL;
@@ -512,10 +512,10 @@ sphere_next_r2:
 			dd.points.push_back(Vector2d(x, y));
 		}
 
-		if (this->paths.vec.size() == 0)
+		if (this->paths.toVector().size() == 0)
 		{
 			dd.paths.push_back(DxfData::Path());
-			for (size_t i=0; i<this->points.vec.size(); i++) {
+			for (size_t i=0; i<this->points.toVector().size(); i++) {
 				assert(i < dd.points.size()); // FIXME: Not needed, but this used to be an 'if'
 				dd.paths.back().indices.push_back(i);
 			}
@@ -526,11 +526,11 @@ sphere_next_r2:
 		}
 		else
 		{
-			for (size_t i=0; i<this->paths.vec.size(); i++)
+			for (size_t i=0; i<this->paths.toVector().size(); i++)
 			{
 				dd.paths.push_back(DxfData::Path());
-				for (size_t j=0; j<this->paths.vec[i]->vec.size(); j++) {
-					unsigned int idx = this->paths.vec[i]->vec[j]->num;
+				for (size_t j=0; j<this->paths.toVector()[i].toVector().size(); j++) {
+					unsigned int idx = this->paths.toVector()[i].toVector()[j].toDouble();
 					if (idx < dd.points.size()) {
 						dd.paths.back().indices.push_back(idx);
 					}

@@ -58,10 +58,10 @@ AbstractNode *ProjectionModule::evaluate(const Context *ctx, const ModuleInstant
 	Value convexity = c.lookup_variable("convexity", true);
 	Value cut = c.lookup_variable("cut", true);
 
-	node->convexity = (int)convexity.num;
+	node->convexity = (int)convexity.toDouble();
 
-	if (cut.type == Value::BOOL)
-		node->cut_mode = cut.b;
+	if (cut.type() == Value::BOOL)
+		node->cut_mode = cut.toBool();
 
 	std::vector<AbstractNode *> evaluatednodes = inst->evaluateChildren();
 	node->children.insert(node->children.end(), evaluatednodes.begin(), evaluatednodes.end());

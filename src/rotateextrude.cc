@@ -56,9 +56,9 @@ AbstractNode *RotateExtrudeModule::evaluate(const Context *ctx, const ModuleInst
 	Context c(ctx);
 	c.args(argnames, argexpr, inst->argnames, inst->argvalues);
 
-	node->fn = c.lookup_variable("$fn").num;
-	node->fs = c.lookup_variable("$fs").num;
-	node->fa = c.lookup_variable("$fa").num;
+	node->fn = c.lookup_variable("$fn").toDouble();
+	node->fs = c.lookup_variable("$fs").toDouble();
+	node->fa = c.lookup_variable("$fa").toDouble();
 
 	Value file = c.lookup_variable("file");
 	Value layer = c.lookup_variable("layer", true);
@@ -66,15 +66,15 @@ AbstractNode *RotateExtrudeModule::evaluate(const Context *ctx, const ModuleInst
 	Value origin = c.lookup_variable("origin", true);
 	Value scale = c.lookup_variable("scale", true);
 
-	if (!file.text.empty()) {
+	if (!file.isUndefined()) {
 		PRINT("DEPRECATED: Support for reading files in rotate_extrude will be removed in future releases. Use a child import() instead.");
-		node->filename = c.getAbsolutePath(file.text);
+		node->filename = c.getAbsolutePath(file.toString());
 	}
 
-	node->layername = layer.text;
-	node->convexity = (int)convexity.num;
-	origin.getv2(node->origin_x, node->origin_y);
-	node->scale = scale.num;
+	node->layername = layer.isUndefined() ? "" : layer.toString();
+	node->convexity = (int)convexity.toDouble();
+	origin.getVec2(node->origin_x, node->origin_y);
+	node->scale = scale.toDouble();
 
 	if (node->convexity <= 0)
 		node->convexity = 1;

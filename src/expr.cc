@@ -31,16 +31,20 @@
 #include <sstream>
 #include <algorithm>
 #include "stl-utils.h"
+#include <boost/bind.hpp>
+#include <boost/foreach.hpp>
 
 Expression::Expression()
 {
-	this->const_value = NULL;
+}
+
+Expression::Expression(const Value &val) : const_value(val), type("C")
+{
 }
 
 Expression::~Expression()
 {
 	std::for_each(this->children.begin(), this->children.end(), del_fun<Expression>());
-	delete this->const_value;
 }
 
 Value Expression::evaluate(const Context *context) const
@@ -78,44 +82,27 @@ Value Expression::evaluate(const Context *context) const
 		return this->children[v.toBool() ? 1 : 2]->evaluate(context);
 	}
 	if (this->type == "[]") {
-		Value v1 = this->children[0]->evaluate(context);
-		Value v2 = this->children[1]->evaluate(context);
-		if (v1.type == Value::VECTOR && v2.type == Value::NUMBER) {
-			int i = int(v2.num);
-			if (i >= 0 && i < int(v1.vec.size()))
-				return *v1.vec[i];
-		}
-		if (v1.type == Value::STRING && v2.type == Value::NUMBER) {
-			unsigned int i = int(v2.num);
-			if (i < v1.text.size())
-				return Value(v1.text.substr(i, 1));
-		}
-		return Value();
+		return this->children[0]->evaluate(context)[this->children[1]->evaluate(context)];
 	}
 	if (this->type == "I")
-		return this->children[0]->evaluate(context).inv();
+		return -this->children[0]->evaluate(context);
 	if (this->type == "C")
-		return *this->const_value;
+		return this->const_value;
 	if (this->type == "R") {
 		Value v1 = this->children[0]->evaluate(context);
 		Value v2 = this->children[1]->evaluate(context);
 		Value v3 = this->children[2]->evaluate(context);
-		if (v1.type == Value::NUMBER && v2.type == Value::NUMBER && v3.type == Value::NUMBER) {
-			Value r = Value();
-			r.type = Value::RANGE;
-			r.range_begin = v1.num;
-			r.range_step = v2.num;
-			r.range_end = v3.num;
-			return r;
+		if (v1.type() == Value::NUMBER && v2.type() == Value::NUMBER && v3.type() == Value::NUMBER) {
+			return Value(v1.toDouble(), v2.toDouble(), v3.toDouble());
 		}
 		return Value();
 	}
 	if (this->type == "V") {
-		Value v;
-		v.type = Value::VECTOR;
-		for (size_t i = 0; i < this->children.size(); i++)
-			v.append(new Value(this->children[i]->evaluate(context)));
-		return v;
+		Value::VectorType vec;
+		BOOST_FOREACH(const Expression *e, this->children) {
+			vec.push_back(e->evaluate(context));
+		}
+		return Value(vec);
 	}
 	if (this->type == "L")
 		return context->lookup_variable(this->var_name);
@@ -123,26 +110,29 @@ Value Expression::evaluate(const Context *context) const
 	{
 		Value v = this->children[0]->evaluate(context);
 
-		if (v.type == Value::VECTOR && this->var_name == "x")
-			return *v.vec[0];
-		if (v.type == Value::VECTOR && this->var_name == "y")
-			return *v.vec[1];
-		if (v.type == Value::VECTOR && this->var_name == "z")
-			return *v.vec[2];
+		if (v.type() == Value::VECTOR && this->var_name == "x")
+			return v[0];
+		if (v.type() == Value::VECTOR && this->var_name == "y")
+			return v[1];
+		if (v.type() == Value::VECTOR && this->var_name == "z")
+			return v[2];
 
-		if (v.type == Value::RANGE && this->var_name == "begin")
-			return Value(v.range_begin);
-		if (v.type == Value::RANGE && this->var_name == "step")
-			return Value(v.range_step);
-		if (v.type == Value::RANGE && this->var_name == "end")
-			return Value(v.range_end);
+		if (v.type() == Value::RANGE && this->var_name == "begin")
+			return Value(v[0]);
+		if (v.type() == Value::RANGE && this->var_name == "step")
+			return Value(v[1]);
+		if (v.type() == Value::RANGE && this->var_name == "end")
+			return Value(v[2]);
 
 		return Value();
 	}
 	if (this->type == "F") {
-		std::vector<Value> argvalues;
-		for (size_t i=0; i < this->children.size(); i++)
-			argvalues.push_back(this->children[i]->evaluate(context));
+		Value::VectorType argvalues;
+		std::transform(this->children.begin(), this->children.end(), 
+									 std::back_inserter(argvalues), 
+									 boost::bind(&Expression::evaluate, _1, context));
+		// for (size_t i=0; i < this->children.size(); i++)
+		// 	argvalues.push_back(this->children[i]->evaluate(context));
 		return context->evaluate_function(this->call_funcname, this->call_argnames, argvalues);
 	}
 	abort();
@@ -167,7 +157,7 @@ std::string Expression::toString() const
 		stream << "(-" << *this->children[0] << ")";
 	}
 	else if (this->type == "C") {
-		stream << *this->const_value;
+		stream << this->const_value;
 	}
 	else if (this->type == "R") {
 		stream << "[" << *this->children[0] << " : " << *this->children[1] << " : " << this->children[2] << "]";

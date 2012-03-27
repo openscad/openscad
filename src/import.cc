@@ -69,17 +69,15 @@ AbstractNode *ImportModule::evaluate(const Context *ctx, const ModuleInstantiati
 	// Map old argnames to new argnames for compatibility
 	std::vector<std::string> inst_argnames = inst->argnames;
 	for (size_t i=0; i<inst_argnames.size(); i++) {
-		if (inst_argnames[i] == "filename")
-			inst_argnames[i] = "file";
-		if (inst_argnames[i] == "layername")
-			inst_argnames[i] = "layer";
+		if (inst_argnames[i] == "filename") inst_argnames[i] = "file";
+		if (inst_argnames[i] == "layername") inst_argnames[i] = "layer";
 	}
 
 	Context c(ctx);
 	c.args(argnames, argexpr, inst_argnames, inst->argvalues);
 
 	Value v = c.lookup_variable("file");
-	std::string filename = c.getAbsolutePath(v.text);
+	std::string filename = c.getAbsolutePath(v.isUndefined() ? "" : v.toString());
 	import_type_e actualtype = this->type;
 	if (actualtype == TYPE_UNKNOWN) {
 		std::string extraw = boosty::extension_str( path(filename) );
@@ -91,22 +89,22 @@ AbstractNode *ImportModule::evaluate(const Context *ctx, const ModuleInstantiati
 
 	ImportNode *node = new ImportNode(inst, actualtype);
 
-	node->fn = c.lookup_variable("$fn").num;
-	node->fs = c.lookup_variable("$fs").num;
-	node->fa = c.lookup_variable("$fa").num;
+	node->fn = c.lookup_variable("$fn").toDouble();
+	node->fs = c.lookup_variable("$fs").toDouble();
+	node->fa = c.lookup_variable("$fa").toDouble();
 
 	node->filename = filename;
-	node->layername = c.lookup_variable("layer", true).text;
-	node->convexity = c.lookup_variable("convexity", true).num;
+	Value layerval = c.lookup_variable("layer", true);
+	node->layername = layerval.isUndefined() ? ""  : layerval.toString();
+	node->convexity = c.lookup_variable("convexity", true).toDouble();
 
-	if (node->convexity <= 0)
-		node->convexity = 1;
+	if (node->convexity <= 0) node->convexity = 1;
 
 	Value origin = c.lookup_variable("origin", true);
 	node->origin_x = node->origin_y = 0;
-	origin.getv2(node->origin_x, node->origin_y);
+	origin.getVec2(node->origin_x, node->origin_y);
 
-	node->scale = c.lookup_variable("scale", true).num;
+	node->scale = c.lookup_variable("scale", true).toDouble();
 
 	if (node->scale <= 0)
 		node->scale = 1;
