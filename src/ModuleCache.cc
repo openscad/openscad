@@ -43,7 +43,8 @@ Module *ModuleCache::evaluate(const std::string &filename)
 	if (this->entries.find(filename) != this->entries.end() && 
 			this->entries[filename].cache_id == cache_id) {
 #ifdef DEBUG
-		PRINTB("Using cached library: %s (%s)", filename % cache_id);
+// Causes too much debug output
+//		PRINTB("Using cached library: %s (%s)", filename % cache_id);
 #endif
 		lib_mod = &(*this->entries[filename].module);
 
