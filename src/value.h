@@ -113,6 +113,10 @@ public:
   typedef boost::variant< boost::blank, bool, double, std::string, VectorType, RangeType > Variant;
 
 private:
+  static Value multvecnum(const Value &vecval, const Value &numval);
+  static Value multmatvec(const Value &matrixval, const Value &vectorval);
+  static Value multvecmat(const Value &vectorval, const Value &matrixval);
+
   Variant value;
 };
 

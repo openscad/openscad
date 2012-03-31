@@ -423,92 +423,102 @@ Value Value::operator-(const Value &v) const
   return boost::apply_visitor(minus_visitor(), this->value, v.value);
 }
 
+Value Value::multvecnum(const Value &vecval, const Value &numval)
+{
+  // Vector * Number
+  VectorType dstv;
+  BOOST_FOREACH(const Value &val, vecval.toVector()) {
+    dstv.push_back(val * numval);
+  }
+  return Value(dstv);
+}
+
+Value Value::multmatvec(const Value &matrixval, const Value &vectorval)
+{
+  const VectorType &matrixvec = matrixval.toVector();
+  const VectorType &vectorvec = vectorval.toVector();
+
+  // Matrix * Vector
+  VectorType dstv;
+  for (size_t i=0;i<matrixvec.size();i++) {
+    if (matrixvec[i].type() != VECTOR || 
+        matrixvec[i].toVector().size() != vectorvec.size()) {
+      return Value();
+    }
+    double r_e = 0.0;
+    for (size_t j=0;j<matrixvec[i].toVector().size();j++) {
+      if (matrixvec[i].toVector()[j].type() != NUMBER || vectorvec[j].type() != NUMBER) {
+        return Value();
+      }
+      r_e += matrixvec[i].toVector()[j].toDouble() * vectorvec[j].toDouble();
+    }
+    dstv.push_back(Value(r_e));
+  }
+  return Value(dstv);
+}
+
+Value Value::multvecmat(const Value &vectorval, const Value &matrixval)
+{
+  const VectorType &vectorvec = vectorval.toVector();
+  const VectorType &matrixvec = matrixval.toVector();
+  assert(vectorvec.size() == matrixvec.size());
+  // Vector * Matrix
+  VectorType dstv;
+  for (size_t i=0;i<matrixvec[0].toVector().size();i++) {
+    double r_e = 0.0;
+    for (size_t j=0;j<vectorvec.size();j++) {
+      if (matrixvec[j].type() != VECTOR ||
+          matrixvec[j].toVector()[i].type() != NUMBER || 
+          vectorvec[j].type() != NUMBER) {
+        return Value::undefined;
+      }
+      r_e += vectorvec[j].toDouble() * matrixvec[j].toVector()[i].toDouble();
+    }
+    dstv.push_back(Value(r_e));
+  }
+  return Value(dstv);
+}
+
 Value Value::operator*(const Value &v) const
 {
   if (this->type() == NUMBER && v.type() == NUMBER) {
     return Value(this->toDouble() * v.toDouble());
   }
   else if (this->type() == VECTOR && v.type() == NUMBER) {
-    const VectorType &vec = this->toVector();
-    VectorType tmpv;
-    Value result(tmpv);
-    VectorType &dstv = boost::get<VectorType>(result.value);
-    BOOST_FOREACH(const Value &vecval, vec) {
-      dstv.push_back(vecval * v);
-    }
-    return result;
+    return multvecnum(*this, v);
   }
   else if (this->type() == NUMBER && v.type() == VECTOR) {
-    const VectorType &vec = v.toVector();
-    VectorType tmpv;
-    Value result(tmpv);
-    VectorType &dstv = boost::get<VectorType>(result.value);
-    BOOST_FOREACH(const Value &vecval, vec) {
-      dstv.push_back(*this * vecval);
-    }
-    return result;
+    return multvecnum(v, *this);
   }
-  else if (this->type() == VECTOR && v.type() == VECTOR &&
-      this->toVector().size() == v.toVector().size()) {
+  else if (this->type() == VECTOR && v.type() == VECTOR) {
     const VectorType &vec1 = this->toVector();
     const VectorType &vec2 = v.toVector();
-    if (vec1[0].type() == NUMBER && vec2[0].type() == NUMBER) {
-      // Vector dot product.
-      double r = 0.0;
-      for (size_t i=0;i<vec1.size();i++) {
-        if (vec1[i].type() != NUMBER || vec2[i].type() != NUMBER) {
-          return Value::undefined;
+    if (vec1[0].type() == NUMBER && vec2[0].type() == NUMBER &&
+        vec1.size() == vec2.size()) { 
+        // Vector dot product.
+        double r = 0.0;
+        for (size_t i=0;i<vec1.size();i++) {
+          if (vec1[i].type() != NUMBER || vec2[i].type() != NUMBER) {
+            return Value::undefined;
+          }
+          r += (vec1[i].toDouble() * vec2[i].toDouble());
         }
-        r += (vec1[i].toDouble() * vec2[i].toDouble());
+        return Value(r);
+    } else if (vec1[0].type() == VECTOR && vec2[0].type() == NUMBER &&
+               vec1[0].toVector().size() == vec2.size()) {
+      return multmatvec(vec1, vec2);
+    } else if (vec1[0].type() == NUMBER && vec2[0].type() == VECTOR &&
+               vec1.size() == vec2.size()) {
+      return multvecmat(vec1, vec2);
+    } else if (vec1[0].type() == VECTOR && vec2[0].type() == VECTOR &&
+               vec1[0].toVector().size() == vec2.size()) {
+      // Matrix * Matrix
+      VectorType dstv;
+      BOOST_FOREACH(const Value &srcrow, vec1) {
+        dstv.push_back(multvecmat(srcrow, vec2));
       }
-      return Value(r);
-  //   } else if ( this->vec[0]->type() == VECTOR && v.vec[0]->type() == NUMBER ) {
-  // 	// Matrix * Vector
-  // 	Value r;
-  // 	r.type() = VECTOR;
-  // 	for ( size_t i=0; i < this->vec.size(); i++) {
-  // 	  double r_e=0.0;
-  // 	  if ( this->vec[i]->vec.size() != v.vec.size() ) return Value();
-  // 	  for ( size_t j=0; j < this->vec[i]->vec.size(); j++) {
-  // 	    if ( this->vec[i]->vec[j]->type() != NUMBER || v.vec[i]->type() != NUMBER ) return Value();
-  // 	    r_e = r_e + (this->vec[i]->vec[j]->num * v.vec[j]->num);
-  // 	  }
-  // 	  r.vec.push_back(new Value(r_e));
-  // 	}
-  // 	return r;
-  //   } else if (this->vec[0]->type() == NUMBER && v.vec[0]->type() == VECTOR ) {
-  // 	// Vector * Matrix
-  // 	Value r;
-  // 	r.type() = VECTOR;
-  // 	for ( size_t i=0; i < v.vec[0]->vec.size(); i++) {
-  // 	  double r_e=0.0;
-  // 	  for ( size_t j=0; j < v.vec.size(); j++) {
-  // 	    if ( v.vec[j]->vec.size() != v.vec[0]->vec.size() ) return Value();
-  // 	    if ( this->vec[j]->type() != NUMBER || v.vec[j]->vec[i]->type() != NUMBER ) return Value();
-  // 	    r_e = r_e + (this->vec[j]->num * v.vec[j]->vec[i]->num);
-  // 	  }
-  // 	  r.vec.push_back(new Value(r_e));
-  // 	}
-  // 	return r;
-  //   }
+      return Value(dstv);
     }
-  // if (this->type() == VECTOR && v.type() == VECTOR &&  this->vec[0]->type() == VECTOR && v.vec[0]->type() == VECTOR && this->vec[0]->vec.size() == v.vec.size() ) {
-  // 	// Matrix * Matrix
-  // 	Value rrow;
-  // 	rrow.type() = VECTOR;
-  // 	for ( size_t i=0; i < this->vec.size(); i++ ) {
-  // 	  Value * rcol=new Value();
-  // 	  rcol->type() = VECTOR;
-  // 	  for ( size_t j=0; j < this->vec.size(); j++ ) {
-  // 	    double r_e=0.0;
-  // 	    for ( size_t k=0; k < v.vec.size(); k++ ) {
-  // 	      r_e = r_e + (this->vec[i]->vec[k]->num * v.vec[k]->vec[j]->num);
-  // 	    }
-  // 	    rcol->vec.push_back(new Value(r_e));
-  // 	  }
-  // 	  rrow.vec.push_back(rcol);
-  // 	}
-  // 	return rrow;
   }
   return Value::undefined;
 }
@@ -520,23 +530,19 @@ Value Value::operator/(const Value &v) const
   }
   else if (this->type() == VECTOR && v.type() == NUMBER) {
     const VectorType &vec = this->toVector();
-    VectorType tmpv;
-    Value result(tmpv);
-    VectorType &dstv = boost::get<VectorType>(result.value);
+    VectorType dstv;
     BOOST_FOREACH(const Value &vecval, vec) {
       dstv.push_back(vecval / v);
     }
-    return result;
+    return Value(dstv);
   }
   else if (this->type() == NUMBER && v.type() == VECTOR) {
     const VectorType &vec = v.toVector();
-    VectorType tmpv;
-    Value result(tmpv);
-    VectorType &dstv = boost::get<VectorType>(result.value);
+    VectorType dstv;
     BOOST_FOREACH(const Value &vecval, vec) {
       dstv.push_back(*this / vecval);
     }
-    return result;
+    return Value(dstv);
   }
   return Value::undefined;
 }
@@ -556,13 +562,11 @@ Value Value::operator-() const
   }
   else if (this->type() == VECTOR) {
     const VectorType &vec = this->toVector();
-    VectorType tmpv;
-    Value result(tmpv);
-    VectorType &dstv = boost::get<VectorType>(result.value);
+    VectorType dstv;
     BOOST_FOREACH(const Value &vecval, vec) {
       dstv.push_back(-vecval);
     }
-    return result;
+    return Value(dstv);
   }
   return Value::undefined;
 }
