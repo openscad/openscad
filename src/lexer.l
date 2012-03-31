@@ -110,7 +110,6 @@ use[ \t\r\n>]*"<"	{ BEGIN(cond_use); }
 <cond_use>{
 [^\t\r\n>]+	{ filename = yytext; }
  ">"		{ 
-   PRINTB("USE: %s", filename);
 	BEGIN(INITIAL); 
         fs::path usepath;
         if (boosty::is_absolute(fs::path(filename))) {

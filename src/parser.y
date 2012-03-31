@@ -169,7 +169,6 @@ statement:
 		Module *p = currmodule;
 		module_stack.push_back(currmodule);
 		currmodule = new Module();
-                PRINTB_NOCACHE("New module: %s %p", $2 % currmodule);
 		p->modules[$2] = currmodule;
 		currmodule->argnames = $4->argnames;
 		currmodule->argexpr = $4->argexpr;

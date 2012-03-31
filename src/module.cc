@@ -225,8 +225,12 @@ bool Module::handleDependencies()
 		Module::ModuleContainer::iterator curr = iter++;
 		Module *oldmodule = curr->second;
 		curr->second = ModuleCache::instance()->evaluate(curr->first);
-		if (curr->second != oldmodule) changed = true;
-		PRINTB_NOCACHE("  %s: %p", curr->first % curr->second);
+		if (curr->second != oldmodule) {
+			changed = true;
+#ifdef DEBUG
+			PRINTB_NOCACHE("  %s: %p", curr->first % curr->second);
+#endif
+		}
 		if (!curr->second) {
 			PRINTB_NOCACHE("WARNING: Failed to compile library '%s'.", curr->first);
 			this->usedlibs.erase(curr);
