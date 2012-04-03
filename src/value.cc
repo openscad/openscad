@@ -201,7 +201,7 @@ public:
 #endif
   }
 
-  std::string operator()(const boost::blank &v) const {
+  std::string operator()(const boost::blank &) const {
     return "undef";
   }
 
@@ -292,7 +292,7 @@ Value Value::operator!() const
 class equals_visitor : public boost::static_visitor<bool>
 {
 public:
-  template <typename T, typename U> bool operator()(const T &op1, const U &op2) const {
+  template <typename T, typename U> bool operator()(const T &, const U &) const {
     return false;
   }
 
@@ -324,7 +324,7 @@ bool Value::operator||(const Value &v) const
 class less_visitor : public boost::static_visitor<bool>
 {
 public:
-  template <typename T, typename U> bool operator()(const T &op1, const U &op2) const {
+  template <typename T, typename U> bool operator()(const T &, const U &) const {
     return false;
   }
 
@@ -340,7 +340,7 @@ public:
 class greater_visitor : public boost::static_visitor<bool>
 {
 public:
-  template <typename T, typename U> bool operator()(const T &op1, const U &op2) const {
+  template <typename T, typename U> bool operator()(const T &, const U &) const {
     return false;
   }
 
@@ -376,7 +376,7 @@ bool Value::operator<=(const Value &v) const
 class plus_visitor : public boost::static_visitor<Value>
 {
 public:
-  template <typename T, typename U> Value operator()(const T &op1, const U &op2) const {
+  template <typename T, typename U> Value operator()(const T &, const U &) const {
     return Value::undefined;
   }
 
@@ -401,7 +401,7 @@ Value Value::operator+(const Value &v) const
 class minus_visitor : public boost::static_visitor<Value>
 {
 public:
-  template <typename T, typename U> Value operator()(const T &op1, const U &op2) const {
+  template <typename T, typename U> Value operator()(const T &, const U &) const {
     return Value::undefined;
   }
 
@@ -611,7 +611,7 @@ public:
     return Value::undefined;
   }
 
-  template <typename T, typename U> Value operator()(const T &op1, const U &op2) const {
+  template <typename T, typename U> Value operator()(const T &, const U &) const {
     //    std::cout << "generic bracket_visitor\n";
     return Value::undefined;
   }
