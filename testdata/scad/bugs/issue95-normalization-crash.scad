@@ -1,7 +1,7 @@
-#
-# Reported by Triffid Hunter.
-# Causes a crash in CCGTermNormalizer::normalizePass()
-#
+//
+// Reported by Triffid Hunter.
+// Causes a crash in CCGTermNormalizer::normalizePass()
+//
 
 pi = 3.141592653589;
 sl = 0.5;
