@@ -1,6 +1,6 @@
 
-BUGS
-----
+BUGS (FIXME: Verify and move these to github)
+---------------------------------------------
 o Some invalid DXF data gets pass the import checks and breaks the tessing code
 o Tesselation via GLU sometimes produces strange results
 o Export STL: Exports existing CGAL model even though the current model is changed, but not CGAL rendered
@@ -8,8 +8,8 @@ o Look into the polygon winding and rotate_extrude() problem reported by Britton
 o CGAL Aff_transformation_3 doesn't support non-affine transformations (non-aff-matrix.scad)
 o 2D union of polygons with a touching vertex doesn't work. see testdata/scad/bugs/polygon-touch.scad
 
-STL Import BUGS
----------------
+STL Import BUGS (FIXME: Verify and move these to github)
+--------------------------------------------------------
 
 Using STL-imported models is tricky and triggers multiple issues:
 (these all fail with the usual "Illegal polygonal object" error)
@@ -117,7 +117,6 @@ OpenCSG-related
 ---------------
 o OpenCSG rendering: Coincident surfaces causes z-buffer fighting. Is this somehow
   avoidable tuning the depth tests in OpenCSG? 
-o Make the 10.000 element OpenCSG limit configurable (Preferences) ?
 o When specifying a transparency with the color() statement,
   the object is not sorted and will be rendered wrongly
 o Bug: Using the background operator (%) on the only object in a scene triggers a
