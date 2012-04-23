@@ -46,8 +46,8 @@ shared_ptr<CSGTerm> CSGTermNormalizer::normalizePass(shared_ptr<CSGTerm> term)
 		if (!term || term->type == CSGTerm::TYPE_PRIMITIVE) return term;
 		if (term->left) term->left = normalizePass(term->left);
 	} while (term->type != CSGTerm::TYPE_UNION &&
-					 (term->right && term->right->type != CSGTerm::TYPE_PRIMITIVE ||
-						term->left && term->left->type == CSGTerm::TYPE_UNION));
+					 ((term->right && term->right->type != CSGTerm::TYPE_PRIMITIVE) ||
+						(term->left && term->left->type == CSGTerm::TYPE_UNION)));
 	term->right = normalizePass(term->right);
 
 	// FIXME: Do we need to take into account any transformation of item here?

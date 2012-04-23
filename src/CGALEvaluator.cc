@@ -43,11 +43,8 @@ CGAL_Nef_polyhedron CGALEvaluator::evaluateCGALMesh(const AbstractNode &node)
 		Traverser evaluate(*this, node, Traverser::PRE_AND_POSTFIX);
 		evaluate.execute();
 		return this->root;
-		assert(this->visitedchildren.empty());
 	}
-	else {
-		return CGALCache::instance()->get(this->tree.getIdString(node));
-	}
+	return CGALCache::instance()->get(this->tree.getIdString(node));
 }
 
 bool CGALEvaluator::isCached(const AbstractNode &node) const
