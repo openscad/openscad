@@ -102,6 +102,9 @@ public:
 	int convexity;
 	Value points, paths, triangles;
 	virtual PolySet *evaluate_polyset(class PolySetEvaluator *) const;
+
+	double vertex_radius_from_inner_radius(double inner_radius);
+	double vertex_radius_from_midpoint_radius(double inner_radius);
 };
 
 AbstractNode *PrimitiveModule::evaluate(const Context *ctx, const ModuleInstantiation *inst) const
@@ -111,6 +114,9 @@ AbstractNode *PrimitiveModule::evaluate(const Context *ctx, const ModuleInstanti
 	node->center = false;
 	node->x = node->y = node->z = node->h = node->r1 = node->r2 = 1;
 
+	// argnames is the signature of positional args to the function
+	// when not called with named args.
+	// argexpr would be the default values, but we don't set any.
 	std::vector<std::string> argnames;
 	std::vector<Expression*> argexpr;
 
@@ -147,6 +153,8 @@ AbstractNode *PrimitiveModule::evaluate(const Context *ctx, const ModuleInstanti
 	node->fs = c.lookup_variable("$fs").num;
 	node->fa = c.lookup_variable("$fa").num;
 
+	Value radius_mode = c.lookup_variable("$rm");
+
 	if (node->fs < F_MINIMUM) {
 		PRINTB("WARNING: $fs too small - clamping to %f", F_MINIMUM);
 		node->fs = F_MINIMUM;
@@ -174,6 +182,7 @@ AbstractNode *PrimitiveModule::evaluate(const Context *ctx, const ModuleInstanti
 		if (r.type == Value::NUMBER) {
 			node->r1 = r.num;
 		}
+		// TODO: how do we triangulate a sphere? Figure out the meaning of INNER_RADIUS, MIDPOINT_RADIUS
 	}
 
 	if (type == CYLINDER) {
@@ -195,6 +204,15 @@ AbstractNode *PrimitiveModule::evaluate(const Context *ctx, const ModuleInstanti
 		}
 		if (r2.type == Value::NUMBER) {
 			node->r2 = r2.num;
+		}
+		if (radius_mode.type == Value::NUMBER) {
+			if (radius_mode.num == INNER_RADIUS) {
+				node->r1 = node->vertex_radius_from_inner_radius(node->r1);
+				node->r2 = node->vertex_radius_from_inner_radius(node->r2);
+			} else if (radius_mode.num == MIDPOINT_RADIUS) {
+				node->r1 = node->vertex_radius_from_midpoint_radius(node->r1);
+				node->r2 = node->vertex_radius_from_midpoint_radius(node->r2);
+			}
 		}
 		if (center.type == Value::BOOL) {
 			node->center = center.b;
@@ -222,6 +240,13 @@ AbstractNode *PrimitiveModule::evaluate(const Context *ctx, const ModuleInstanti
 		if (r.type == Value::NUMBER) {
 			node->r1 = r.num;
 		}
+		if (radius_mode.type == Value::NUMBER) {
+			if (radius_mode.num == INNER_RADIUS) {
+				node->r1 = node->vertex_radius_from_inner_radius(node->r1);
+			} else if (radius_mode.num == MIDPOINT_RADIUS) {
+				node->r1 = node->vertex_radius_from_midpoint_radius(node->r1);
+			}
+		}
 	}
 
 	if (type == POLYGON) {
@@ -246,6 +271,35 @@ int get_fragments_from_r(double r, double fn, double fs, double fa)
 	if (fn > 0.0)
 		return (int)fn;
 	return (int)ceil(fmax(fmin(360.0 / fa, r*2*M_PI / fs), 5));
+}
+
+// Translate given radius to vertex radius such that the given radius
+// is tangent to the segments of the generated polygon. (Thus the
+// given radius is the radius of a circle inside the generated
+// polygon.)
+double PrimitiveNode::vertex_radius_from_inner_radius(double inner_radius) {
+	int fragments = get_fragments_from_r(inner_radius, this->fn, this->fs, this->fa);
+	if (this->fn <= 0.0) {
+		// set this for later
+		this->fn = fragments;
+	}
+	double vertex_radius = inner_radius / cos(M_PI / fragments);
+	return vertex_radius;
+}
+
+// Somewhat awkwardly named "midpoint radius" specifies that the
+// polygon segments cross the given radius at 1/4 and 3/4 of the arc
+// they span. I'd call this "average" radius but I don't think it's a
+// true average in that the area between the arc curve and the segment
+// wouldn't come out to quite the same above and below the segment.
+double PrimitiveNode::vertex_radius_from_midpoint_radius(double midpoint_radius) {
+	int fragments = get_fragments_from_r(midpoint_radius, this->fn, this->fs, this->fa);
+	if (this->fn <= 0.0) {
+		// set this for later
+		this->fn = fragments;
+	}
+	double vertex_radius = midpoint_radius * cos(M_PI / (2.0 * fragments)) / cos(M_PI / fragments);
+	return vertex_radius;
 }
 
 struct point2d {
