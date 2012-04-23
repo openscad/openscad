@@ -589,14 +589,21 @@ void GLView::mouseMoveEvent(QMouseEvent *event)
 			normalizeAngle(object_rot_y);
 			normalizeAngle(object_rot_z);
 		} else {
-			// Right button pans
-			// Shift-right zooms
+			// Right button pans in the xz plane
+			// Middle button pans in the xy plane
+			// Shift-right and Shift-middle zooms
 			if ((QApplication::keyboardModifiers() & Qt::ShiftModifier) != 0) {
 				viewer_distance += (GLdouble)dy;
 			} else {
 
       double mx = +(dx) * viewer_distance/1000;
-      double my = -(dy) * viewer_distance/1000;
+      double mz = -(dy) * viewer_distance/1000;
+
+			double my = 0;
+			if (event->buttons() & Qt::MiddleButton) {
+				my = mz;
+				mz = 0;
+			}
 
 			Matrix3d aax, aay, aaz, tm3;
 			aax = Eigen::AngleAxisd(-(object_rot_x/180) * M_PI, Vector3d::UnitX());
@@ -612,15 +619,10 @@ void GLView::mouseMoveEvent(QMouseEvent *event)
 			Matrix4d vec;
 			vec <<
         0,  0,  0,  mx,
-        0,  0,  0,  0,
         0,  0,  0,  my,
+        0,  0,  0,  mz,
         0,  0,  0,  1
 			;
-			if ((QApplication::keyboardModifiers() & Qt::ShiftModifier) != 0) {
-        vec(0,3) = 0;
-        vec(1,3) = my;
-        vec(2,3) = 0;
-      }
       tm = tm * vec;
       object_trans_x += tm(0,3);
       object_trans_y += tm(1,3);
