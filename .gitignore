@@ -4,6 +4,7 @@
 Makefile
 objects
 /*.stl
+/*.amf
 /*.dxf
 /lexer_lex.cpp
 /parser_yacc.cpp

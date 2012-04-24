@@ -25,6 +25,7 @@
  */
 
 #include "importnode.h"
+#include "importamfhandlers.h"
 
 #include "module.h"
 #include "polyset.h"
@@ -51,6 +52,11 @@ using namespace boost::filesystem;
 #include <boost/assign/std/vector.hpp>
 using namespace boost::assign; // bring 'operator+=()' into scope
 #include "boosty.h"
+#include <xercesc/util/PlatformUtils.hpp>
+#include <xercesc/parsers/SAXParser.hpp>
+#include <xercesc/sax/HandlerBase.hpp>
+#include <xercesc/util/XMLString.hpp>
+using namespace xercesc;
 
 class ImportModule : public AbstractModule
 {
@@ -85,6 +91,7 @@ AbstractNode *ImportModule::evaluate(const Context *ctx, const ModuleInstantiati
 		std::string extraw = boosty::extension_str( path(filename) );
 		std::string ext = boost::algorithm::to_lower_copy( extraw );
 		if (ext == ".stl") actualtype = TYPE_STL;
+		else if (ext == ".amf") actualtype = TYPE_AMF;
 		else if (ext == ".off") actualtype = TYPE_OFF;
 		else if (ext == ".dxf") actualtype = TYPE_DXF;
 	}
@@ -205,6 +212,75 @@ PolySet *ImportNode::evaluate_polyset(class PolySetEvaluator *) const
 		}
 	}
 
+	else if (this->type == TYPE_AMF)
+	{
+		handle_dep(this->filename);
+
+		try {
+			XMLPlatformUtils::Initialize();
+		}
+		catch (const XMLException& toCatch) {
+			char* message = XMLString::transcode(toCatch.getMessage());
+			PRINTB("WARNING: Error during XML initialization! :\n%s", message);
+			return p;
+		}
+
+		const char* xmlFile = this->filename.c_str();
+		SAXParser* parser = new SAXParser();
+		//parser->setValidationScheme(SAXParser::Val_Auto);
+		//parser->setDoNamespaces(true);
+		//parser->setDoSchema(true);
+		//parser->setHandleMultipleImports (true);
+		//parser->setValidationSchemaFullChecking(true);
+
+		ImportAmfHandlers* importHandler = new ImportAmfHandlers();
+		DocumentHandler* docHandler = (DocumentHandler*) importHandler;
+		ErrorHandler* errHandler = (ErrorHandler*) importHandler;
+		parser->setDocumentHandler(docHandler);
+		parser->setErrorHandler(errHandler);
+
+		try {
+			parser->parse(xmlFile);
+		}
+		catch (const XMLException& toCatch) {
+			char* message = XMLString::transcode(toCatch.getMessage());
+			PRINTB("WARNING: Error during XML parse:\n%s", message);
+			XMLString::release(&message);
+			return p;
+		}
+		catch (const SAXParseException& toCatch) {
+			char* message = XMLString::transcode(toCatch.getMessage());
+			PRINTB("WARNING: Error during XML parse:\n%s", message);
+			XMLString::release(&message);
+			return p;
+		}
+		catch (...) {
+			PRINT("WARNING: Error during XML parse.");
+			return p;
+		}
+
+
+		p = new PolySet();
+
+		std::vector<triangle> ts = importHandler->getTriangles();
+		std::vector<vertex> vs = importHandler->getVertices();
+		for(size_t i=0;i<ts.size();i++) {
+			triangle t = ts[i];
+			vertex v1 = vs.at(atoi(t.vs1.c_str()));
+			vertex v2 = vs.at(atoi(t.vs2.c_str()));
+			vertex v3 = vs.at(atoi(t.vs3.c_str()));
+			p->append_poly();
+			p->append_vertex(atof(v1.x.c_str()), atof(v1.y.c_str()), atof(v1.z.c_str()));
+			p->append_vertex(atof(v2.x.c_str()), atof(v2.y.c_str()), atof(v2.z.c_str()));
+			p->append_vertex(atof(v3.x.c_str()), atof(v3.y.c_str()), atof(v3.z.c_str()));
+		}
+
+		delete parser;
+		delete docHandler;
+
+		XMLPlatformUtils::Terminate();
+	}
+
 	else if (this->type == TYPE_OFF)
 	{
 #ifdef ENABLE_CGAL
@@ -259,6 +335,7 @@ std::string ImportNode::name() const
 void register_builtin_import()
 {
 	Builtins::init("import_stl", new ImportModule(TYPE_STL));
+	Builtins::init("import_amf", new ImportModule(TYPE_AMF));
 	Builtins::init("import_off", new ImportModule(TYPE_OFF));
 	Builtins::init("import_dxf", new ImportModule(TYPE_DXF));
 	Builtins::init("import", new ImportModule());

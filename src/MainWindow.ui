@@ -180,6 +180,7 @@
     <addaction name="designActionDisplayCSGTree"/>
     <addaction name="designActionDisplayCSGProducts"/>
     <addaction name="designActionExportSTL"/>
+    <addaction name="designActionExportAMF"/>
     <addaction name="designActionExportOFF"/>
     <addaction name="designActionExportDXF"/>
     <addaction name="designActionExportCSG"/>
@@ -674,6 +675,11 @@
   <action name="helpActionLibraryInfo">
    <property name="text">
     <string>Library info</string>
+   </property>
+  </action>
+  <action name="designActionExportAMF">
+   <property name="text">
+    <string>Export as A&amp;MF...</string>
    </property>
   </action>
  </widget>
