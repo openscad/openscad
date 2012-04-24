@@ -95,6 +95,10 @@
 
 #endif // ENABLE_CGAL
 
+#ifndef OPENCSG_VERSION_STRING
+#define OPENCSG_VERSION_STRING "unknown, <1.3.2"
+#endif
+
 // Global application state
 unsigned int GuiLocker::gui_locked = 0;
 
@@ -1031,8 +1035,7 @@ bool MainWindow::compileTopLevelDocument(bool reload)
 {
 	bool shouldcompiletoplevel = !reload;
 
-	if (reload && 
-			(fileChangedOnDisk() && checkEditorModified()) ||
+	if ((reload && fileChangedOnDisk() && checkEditorModified()) ||
 			includesChanged()) {
 		shouldcompiletoplevel = true;
 		refreshDocument();
