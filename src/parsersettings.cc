@@ -1,6 +1,5 @@
 #include "parsersettings.h"
 #include <boost/filesystem.hpp>
-#include <qglobal.h> // Needed for Q_ defines - move the offending code somewhere else
 
 using namespace boost::filesystem;
 #include "boosty.h"
@@ -22,10 +21,10 @@ void parser_init(const std::string &applicationpath)
 	std::string librarydir;
 	path libdir(applicationpath);
 	path tmpdir;
-#ifdef Q_WS_MAC
+#ifdef __APPLE__
 	libdir /= "../Resources"; // Libraries can be bundled
 	if (!is_directory(libdir / "libraries")) libdir /= "../../..";
-#elif defined(Q_OS_UNIX)
+#elif !defined(WIN32)
 	if (is_directory(tmpdir = libdir / "../share/openscad/libraries")) {
 		librarydir = boosty::stringy( tmpdir );
 	} else if (is_directory(tmpdir = libdir / "../../share/openscad/libraries")) {
