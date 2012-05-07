@@ -34,45 +34,18 @@ To build OpenSCAD, you need some libraries and tools. The version
 numbers in brackets specify the versions which have been used for
 development. Other versions may or may not work as well..
 
-* Qt4 (4.4 - 4.7):
-  http://www.qt.nokia.com/
-
-* CGAL (3.6 - 3.9):
-  http://www.cgal.org/
-
-* GMP (5.0.x):
-  http://www.gmplib.org/
-
-* MPFR (3.x):
-  http://www.mpfr.org/
-
-* boost (1.35 - 1.47)
-  http://www.boost.org/
-
-* cmake (2.6 - 2.8, required by CGAL and the test framework)
-  http://www.cmake.org/
-
-* OpenCSG (1.3.2):
-  http://www.opencsg.org/
-
-* GLEW (1.6 ->)
-  http://glew.sourceforge.net/
-
-* Eigen2 (2.0.13->)
-  http://eigen.tuxfamily.org/
-
-* GCC C++ Compiler (4.2 ->):
-  http://gcc.gnu.org/
-
-* Bison (2.4):
-  http://www.gnu.org/software/bison/
-
-* Flex (2.5.35):
-  http://flex.sourceforge.net/
-
-
-BUILDING OPENSCAD
-================
+* [Qt4 (4.4 - 4.7)](http://www.qt.nokia.com/)
+* [CGAL (3.6 - 3.9)](http://www.cgal.org/)
+* [GMP (5.0.x)](http://www.gmplib.org/)
+* [MPFR (3.x)](http://www.mpfr.org/)
+* [boost (1.35 - 1.47)](http://www.boost.org/)
+* [cmake (2.6 - 2.8, required by CGAL and the test framework)](http://www.cmake.org/)
+* [OpenCSG (1.3.2)](http://www.opencsg.org/)
+* [GLEW (1.6 ->)](http://glew.sourceforge.net/)
+* [Eigen2 (2.0.13->)](http://eigen.tuxfamily.org/)
+* [GCC C++ Compiler (4.2 ->)](http://gcc.gnu.org/)
+* [Bison (2.4)](http://www.gnu.org/software/bison/)
+* [Flex (2.5.35)](http://flex.sourceforge.net/)
 
 First, run 'qmake' from Qt4 to generate a Makefile. On some systems you need to
 run 'qmake4', 'qmake-qt4' or something alike to run the qt4 version of the tool.
