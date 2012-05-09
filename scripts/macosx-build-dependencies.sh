@@ -133,7 +133,8 @@ build_mpfr()
   fi
   tar xjf mpfr-$version.tar.bz2
   cd mpfr-$version
-
+  curl -O http://www.mpfr.org/mpfr-current/allpatches
+  patch -N -Z -p1 < allpatches 
   if $OPTION_32BIT; then
     mkdir build-i386
     cd build-i386
