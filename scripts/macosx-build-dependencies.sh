@@ -296,7 +296,7 @@ done
 echo "Using basedir:" $BASEDIR
 mkdir -p $SRCDIR $DEPLOYDIR
 build_eigen 2.0.17
-build_gmp 5.0.4
+build_gmp 5.0.5
 build_mpfr 3.1.0
 build_boost 1.47.0
 # NB! For CGAL, also update the actual download URL in the function
