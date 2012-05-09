@@ -133,7 +133,8 @@ build_mpfr()
   fi
   tar xjf mpfr-$version.tar.bz2
   cd mpfr-$version
-
+  curl -O http://www.mpfr.org/mpfr-current/allpatches
+  patch -N -Z -p1 < allpatches 
   if $OPTION_32BIT; then
     mkdir build-i386
     cd build-i386
@@ -296,7 +297,7 @@ done
 echo "Using basedir:" $BASEDIR
 mkdir -p $SRCDIR $DEPLOYDIR
 build_eigen 2.0.17
-build_gmp 5.0.4
+build_gmp 5.0.5
 build_mpfr 3.1.0
 build_boost 1.47.0
 # NB! For CGAL, also update the actual download URL in the function

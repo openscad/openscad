@@ -73,6 +73,7 @@ o 3D View
   - 2D objects are rendered at z = -0.1 - why?
   - Rewrite to use VBOs or smth. - avoid inline calculations
   - Rewrite to a higher-level library (e.g. OSG)?
+  - Make navigation (e.g. zoom) available through menu entries (requested by disabled user)
 o Editor wishlist
   - More infrastructure for external editor (allow communication from the outside)
   - Preferences GUI for the features below
@@ -93,12 +94,14 @@ o Editor wishlist
   - Auto-indent on enter and on tab
 o Error reporting/debugging
   - Provide better error messages when polygon ordering causes CGAL errors:
+    o Detect common error: self-intersecting polyhedron()
     o Supply syntax highlighting of the exact polygon indices which are 
       reported to be wrong
     o Provide some interaction for debug walk-through?
   - Provide visual highlighting of geometry corresponding to code
     -> could aid debugging a lot
   - Optionally output console log to a file
+  - Common error: detect and report (and ignore?) duplicate line segments in DXF
 o Computation
   - Multi-threaded computation (mostly important for CGAL)
   - Progress: Call progresswidget more often to improve feedback

@@ -603,6 +603,9 @@ void GLView::mouseMoveEvent(QMouseEvent *event)
 			if (event->buttons() & Qt::MiddleButton) {
 				my = mz;
 				mz = 0;
+				// actually lock the x-position
+				// (turns out to be easier to use than xy panning)
+				mx = 0;
 			}
 
 			Matrix3d aax, aay, aaz, tm3;
