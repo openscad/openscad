@@ -294,6 +294,20 @@ do
   esac
 done
 
+OSVERSION=`sw_vers -productVersion | cut -d. -f2`
+if [[ $OSVERSION -ge 7 ]]; then
+  echo "Detected Lion or later"
+  export LION=1
+  export CC=gcc
+  export CXX=g++
+  export CPP=cpp
+  # Somehow, qmake in Qt-4.8.2 doesn't detect Lion's gcc and falls back into
+  # project file mode unless manually given a QMAKESPEC
+  export QMAKESPEC=macx-llvm
+else
+  echo "Detected Snow Leopard or earlier"
+fi
+
 echo "Using basedir:" $BASEDIR
 mkdir -p $SRCDIR $DEPLOYDIR
 build_eigen 2.0.17
