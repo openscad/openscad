@@ -82,8 +82,10 @@ CONFIG += qt
 QT += opengl
 
 # Fedora Linux + DSO fix
-linux*:exists(/usr/lib64/libGLU*)|linux*:exists(/usr/lib/libGLU*) {
-  LIBS += -lGLU
+linux* {
+  exists(/usr/lib64/libGLU*)|exists(/usr/lib/libGLU*) {
+    LIBS += -lGLU
+  }
 }
 
 netbsd* {
