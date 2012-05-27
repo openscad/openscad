@@ -34,7 +34,7 @@ diff --git a/src/src.pro b/src/src.pro
 index 4843a12..04d3f4d 100644
 --- a/src/src.pro
 +++ b/src/src.pro
-@@ -1,10 +1,31 @@
+@@ -1,10 +1,32 @@
  TEMPLATE	= lib
  TARGET		= opencsg
  VERSION     = 1.3.2
@@ -43,6 +43,7 @@ index 4843a12..04d3f4d 100644
  CONFIG		+= opengl warn_on release
 -INCLUDEPATH += ../include ../glew/include ../
 +INCLUDEPATH += ../include ../
++CONFIG -= qt
 +
 +# Optionally specify deployment location using the 
 +# OPENSCAD_LIBRARIES env. variable
