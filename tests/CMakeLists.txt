@@ -6,6 +6,20 @@ if("${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}.${CMAKE_PATCH_VERSION}" VERSIO
   # http://www.cmake.org/cmake/help/cmake-2-8-docs.html#policy:CMP0017
   cmake_policy(SET CMP0017 NEW)
 endif()
+
+# Detect Lion and force gcc
+IF (APPLE)
+   EXECUTE_PROCESS(COMMAND sw_vers -productVersion OUTPUT_VARIABLE MACOSX_VERSION)
+   IF (NOT ${MACOSX_VERSION} VERSION_LESS "10.7.0")
+     message("Detected Lion or later")
+     set(CMAKE_C_COMPILER "gcc")
+     set(CMAKE_CXX_COMPILER "g++")
+   ELSE()
+     message("Detected Snow Leopard or older")
+   ENDIF()
+ENDIF(APPLE)
+
+
 project(tests)
 
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}")
