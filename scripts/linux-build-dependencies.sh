@@ -17,7 +17,7 @@ BASEDIR=$HOME
 OPENSCADDIR=$PWD
 SRCDIR=$BASEDIR/src
 DEPLOYDIR=$BASEDIR
-NUMCPU=4 # paralell builds
+NUMCPU=4 # paralell builds for some libraries
 
 printUsage()
 {
