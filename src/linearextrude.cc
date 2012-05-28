@@ -56,10 +56,6 @@ AbstractNode *LinearExtrudeModule::evaluate(const Context *ctx, const ModuleInst
 	std::vector<Expression*> argexpr;
 
 	Context c(ctx);
-	for ( int i = 0 ; i < inst->argnames.size() ; i++ ) {
-		std::cout << "n: " << inst->argnames[i] << "\n" ;
-		std::cout << "v: " << inst->argvalues[i] << "\n";
-	}
 	c.args(argnames, argexpr, inst->argnames, inst->argvalues);
 
 	node->fn = c.lookup_variable("$fn").num;
