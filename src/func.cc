@@ -33,6 +33,7 @@
 #include "mathc99.h"
 #include <algorithm>
 #include "stl-utils.h"
+#include "printutils.h"
 
 AbstractFunction::~AbstractFunction()
 {
@@ -345,6 +346,144 @@ Value builtin_lookup(const Context *, const std::vector<std::string>&, const std
 	return Value(high_v * f + low_v * (1-f));
 }
 
+/*
+ Pattern:
+
+  "search" "(" ( match_value | list_of_match_values ) "," vector_of_vectors
+        ("," num_returns_per_match
+          ("," index_col_num )? )?
+        ")";
+  match_value : ( Value::NUMBER | Value::STRING );
+  list_of_values : "[" match_value ("," match_value)* "]";
+  vector_of_vectors : "[" ("[" Value ("," Value)* "]")+ "]";
+  num_returns_per_match : int;
+  index_col_num : int;
+
+ Examples:
+  Index values return as list:
+    search("a","abcdabcd");
+        - returns [0,4]
+    search("a","abcdabcd",1);
+        - returns [0]
+    search("e","abcdabcd",1);
+        - returns []
+    search("a",[ ["a",1],["b",2],["c",3],["d",4],["a",5],["b",6],["c",7],["d",8],["e",9] ]);
+        - returns [0,4]
+
+  Search on different column; return Index values:
+    search(3,[ ["a",1],["b",2],["c",3],["d",4],["a",5],["b",6],["c",7],["d",8],["e",3] ], 0, 1);
+        - returns [0,8]
+
+  Search on list of values:
+    Return all matches per search vector element:
+      search("abc",[ ["a",1],["b",2],["c",3],["d",4],["a",5],["b",6],["c",7],["d",8],["e",9] ], 0);
+        - returns [[0,4],[1,5],[2,6]]
+
+    Return first match per search vector element; special case return vector:
+      search("abc",[ ["a",1],["b",2],["c",3],["d",4],["a",5],["b",6],["c",7],["d",8],["e",9] ], 1);
+        - returns [0,1,2]
+
+    Return first two matches per search vector element; vector of vectors:
+      search("abce",[ ["a",1],["b",2],["c",3],["d",4],["a",5],["b",6],["c",7],["d",8],["e",9] ], 2);
+        - returns [[0,4],[1,5],[2,6],[8]]
+
+*/
+Value builtin_search(const Context *, const std::vector<std::string>&, const std::vector<Value> &args)
+{
+	if (args.size() < 2) return Value();
+
+	const Value &findThis = args[0];
+	const Value &searchTable = args[1];
+	unsigned int num_returns_per_match = (args.size() > 2) ? args[2].num : 1;
+	unsigned int index_col_num = (args.size() > 3) ? args[3].num : 0;
+
+	Value returnVector;
+	returnVector.type = Value::VECTOR;
+
+	if (findThis.type == Value::NUMBER) {
+		unsigned int matchCount = 0;
+		Value *resultVector = new Value();
+		resultVector->type = Value::VECTOR;
+		for (size_t j = 0; j < searchTable.vec.size(); j++) {
+		  if (searchTable.vec[j]->vec[index_col_num]->type == Value::NUMBER && 
+					findThis.num == searchTable.vec[j]->vec[index_col_num]->num) {
+		    returnVector.append(new Value(double(j)));
+		    matchCount++;
+		    if (num_returns_per_match != 0 && matchCount >= num_returns_per_match) break;
+		  }
+		}
+	} else if (findThis.type == Value::STRING) {
+		unsigned int searchTableSize;
+		if (searchTable.type == Value::STRING) searchTableSize = searchTable.text.size();
+		else searchTableSize = searchTable.vec.size();
+		for (size_t i = 0; i < findThis.text.size(); i++) {
+		  unsigned int matchCount = 0;
+		  Value *resultVector = new Value();
+		  resultVector->type = Value::VECTOR;
+		  for (size_t j = 0; j < searchTableSize; j++) {
+		    if ((searchTable.type == Value::VECTOR && 
+						 findThis.text[i] == searchTable.vec[j]->vec[index_col_num]->text[0]) ||
+						(searchTable.type == Value::STRING && 
+						 findThis.text[i] == searchTable.text[j])) {
+		      Value *resultValue = new Value(double(j));
+		      matchCount++;
+		      if (num_returns_per_match==1) {
+						returnVector.append(resultValue);
+						break;
+		      } else {
+						resultVector->append(resultValue);
+		      }
+		      if (num_returns_per_match > 1 && matchCount >= num_returns_per_match) break;
+		    }
+		  }
+		  if (matchCount == 0) PRINTB("  search term not found: \"%s\"", findThis.text[i]);
+		  if (num_returns_per_match == 0 || num_returns_per_match > 1) {
+				returnVector.append(resultVector);
+			}
+		}
+	} else if (findThis.type == Value::VECTOR) {
+		for (size_t i = 0; i < findThis.vec.size(); i++) {
+		  unsigned int matchCount = 0;
+		  Value *resultVector = new Value();
+		  resultVector->type = Value::VECTOR;
+		  for (size_t j = 0; j < searchTable.vec.size(); j++) {
+		    if ((findThis.vec[i]->type == Value::NUMBER && 
+						 searchTable.vec[j]->vec[index_col_num]->type == Value::NUMBER &&
+						 findThis.vec[i]->num == searchTable.vec[j]->vec[index_col_num]->num) ||
+						(findThis.vec[i]->type == Value::STRING && 
+						 searchTable.vec[j]->vec[index_col_num]->type == Value::STRING && 
+						 findThis.vec[i]->text == searchTable.vec[j]->vec[index_col_num]->text)) {
+					Value *resultValue = new Value(double(j));
+		      matchCount++;
+		      if (num_returns_per_match==1) {
+						returnVector.append(resultValue);
+						break;
+		      } else {
+						resultVector->append(resultValue);
+		      }
+		      if (num_returns_per_match > 1 && matchCount >= num_returns_per_match) break;
+		    }
+		  }
+		  if (num_returns_per_match == 1 && matchCount == 0) {
+		    if (findThis.vec[i]->type == Value::NUMBER) {
+					PRINTB("  search term not found: %s",findThis.vec[i]->num);
+				}
+		    else if (findThis.vec[i]->type == Value::STRING) {
+					PRINTB("  search term not found: \"%s\"",findThis.vec[i]->text);
+				}
+		    returnVector.append(resultVector);
+		  }
+		  if (num_returns_per_match == 0 || num_returns_per_match > 1) {
+				returnVector.append(resultVector);
+			}
+		}
+	} else {
+		PRINTB("  search: none performed on input %s", findThis);
+		return Value();
+	}
+	return returnVector;
+}
+
 #define QUOTE(x__) # x__
 #define QUOTED(x__) QUOTE(x__)
 
@@ -397,6 +536,7 @@ void register_builtin_functions()
 	Builtins::init("ln", new BuiltinFunction(&builtin_ln));
 	Builtins::init("str", new BuiltinFunction(&builtin_str));
 	Builtins::init("lookup", new BuiltinFunction(&builtin_lookup));
+	Builtins::init("search", new BuiltinFunction(&builtin_search));
 	Builtins::init("version", new BuiltinFunction(&builtin_version));
 	Builtins::init("version_num", new BuiltinFunction(&builtin_version_num));
 }

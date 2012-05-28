@@ -30,6 +30,7 @@
 #include "printutils.h"
 #include "parsersettings.h"
 #include "parser_yacc.h"
+#include "module.h"
 #include <assert.h>
 #include <boost/foreach.hpp>
 #include <boost/lexical_cast.hpp>
@@ -52,7 +53,8 @@ int lexerget_lineno(void);
 static void yyunput(int, char*) __attribute__((unused));
 #endif
 extern const char *parser_input_buffer;
-extern const char *parser_source_path;
+extern std::string parser_source_path;
+extern Module *currmodule;
 
 #define YY_INPUT(buf,result,max_size) {   \
   if (yyin && yyin != stdin) {            \
@@ -119,9 +121,12 @@ use[ \t\r\n>]*"<"	{ BEGIN(cond_use); }
             usepath = boosty::absolute(fs::path(get_librarydir()) / filename);
           }
         }
-	handle_dep(usepath.string());
-	parserlval.text = strdup(usepath.string().c_str());
-	return TOK_USE;
+        /* Only accept regular files which exists */
+        if (usepath.has_parent_path() && fs::exists(usepath)) {
+          handle_dep(usepath.string());
+          parserlval.text = strdup(usepath.string().c_str());
+          return TOK_USE;
+        }
  }
 }
 
@@ -215,8 +220,10 @@ void includefile()
   filepath.clear();
   path_stack.push_back(finfo.parent_path());
 
-  handle_dep(boosty::absolute(finfo).string());
-  yyin = fopen(boosty::absolute(finfo).string().c_str(), "r");
+  std::string fullname = boosty::absolute(finfo).string();
+  handle_dep(fullname);
+  currmodule->registerInclude(fullname);
+  yyin = fopen(fullname.c_str(), "r");
   if (!yyin) {
     PRINTB("WARNING: Can't open input file '%s'.", filename);
     path_stack.pop_back();

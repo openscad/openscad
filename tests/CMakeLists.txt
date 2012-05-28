@@ -229,10 +229,27 @@ if (NOT $ENV{GLEWDIR} STREQUAL "")
 elseif (NOT $ENV{OPENSCAD_LIBRARIES} STREQUAL "")
   set(GLEW_DIR "$ENV{OPENSCAD_LIBRARIES}")
 endif()
+if (NOT GLEW_INCLUDE_DIR)
+  message(STATUS "OPENCSG_DIR: " ${OPENCSG_DIR})
+  find_path(GLEW_INCLUDE_DIR
+            GL/glew.h
+            HINTS ${GLEW_DIR}/include
+	    NO_DEFAULT_PATH)
+  find_library(GLEW_LIBRARY
+               NAMES GLEW glew
+               HINTS ${GLEW_DIR}/lib
+	       NO_DEFAULT_PATH)
+  if (NOT GLEW_LIBRARY)
+    find_package(GLEW REQUIRED)
+    if (NOT GLEW_LIBRARY)
+      message(FATAL_ERROR "GLEW not found")
+    endif()
+  endif()
+  message(STATUS "GLEW include: " ${GLEW_INCLUDE_DIR})
+  message(STATUS "GLEW library: " ${GLEW_LIBRARY})
+endif()
 
-find_package(GLEW REQUIRED)
-
-inclusion( GLEW_DIR GLEW_INCLUDE_PATH )
+inclusion(GLEW_DIR GLEW_INCLUDE_DIR)
 
 # Flex/Bison
 find_package(BISON REQUIRED)
@@ -309,6 +326,7 @@ set(CORE_SOURCES
   ../src/expr.cc 
   ../src/func.cc 
   ../src/module.cc 
+  ../src/ModuleCache.cc 
   ../src/node.cc 
   ../src/context.cc 
   ../src/csgterm.cc 
@@ -400,19 +418,25 @@ target_link_libraries(echotest tests-nocgal tests-core ${QT_LIBRARIES} ${OPENGL_
 # dumptest
 #
 add_executable(dumptest dumptest.cc)
-target_link_libraries(dumptest tests-common tests-nocgal ${QT_LIBRARIES} ${OPENGL_LIBRARY} ${Boost_LIBRARIES})
+target_link_libraries(dumptest tests-nocgal ${QT_LIBRARIES} ${OPENGL_LIBRARY} ${Boost_LIBRARIES})
+
+#
+# modulecachetest
+#
+add_executable(modulecachetest modulecachetest.cc)
+target_link_libraries(modulecachetest tests-nocgal ${QT_LIBRARIES} ${OPENGL_LIBRARY} ${Boost_LIBRARIES})
 
 #
 # csgtexttest
 #
 add_executable(csgtexttest csgtexttest.cc CSGTextRenderer.cc CSGTextCache.cc)
-target_link_libraries(csgtexttest tests-common tests-nocgal ${QT_LIBRARIES} ${OPENGL_LIBRARY} ${Boost_LIBRARIES})
+target_link_libraries(csgtexttest tests-nocgal ${QT_LIBRARIES} ${OPENGL_LIBRARY} ${Boost_LIBRARIES})
 
 #
 # csgtermtest
 #
 add_executable(csgtermtest csgtermtest.cc ../src/CSGTermEvaluator.cc)
-target_link_libraries(csgtermtest tests-common tests-nocgal ${QT_LIBRARIES} ${OPENGL_LIBRARY} ${Boost_LIBRARIES})
+target_link_libraries(csgtermtest tests-nocgal ${QT_LIBRARIES} ${OPENGL_LIBRARY} ${Boost_LIBRARIES})
 
 #
 # cgaltest
@@ -608,7 +632,9 @@ list(APPEND ECHO_FILES ${FUNCTION_FILES}
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/builtin-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/dim-all.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/string-test.scad
-            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/string-indexing.scad)
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/string-indexing.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/vector-values.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/search-tests.scad)
 
 list(APPEND DUMPTEST_FILES ${MINIMAL_FILES} ${FEATURES_FILES} ${EXAMPLE_FILES})
 list(APPEND DUMPTEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/escape-test.scad
@@ -631,6 +657,7 @@ disable_tests(dumptest_transform-tests
               dumptest_render-tests
               dumptest_difference-tests
               dumptest_intersection-tests
+              dumptest_text-search-test
               dumptest_example001
               dumptest_example005
               dumptest_example006
@@ -642,7 +669,8 @@ disable_tests(dumptest_transform-tests
               dumptest_example017
               dumptest_example020
               dumptest_example021
-              dumptest_example022)
+              dumptest_example022
+              dumptest_example023)
 
 # FIXME: This test illustrates a weakness in child() combined with modifiers.
 # Reenable it when this is improved

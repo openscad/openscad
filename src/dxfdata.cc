@@ -519,7 +519,7 @@ void DxfData::fixup_path_direction()
 			break;
 		this->paths[i].is_inner = true;
 		double min_x = this->points[this->paths[i].indices[0]][0];
-		int min_x_point = 0;
+		size_t min_x_point = 0;
 		for (size_t j = 1; j < this->paths[i].indices.size(); j++) {
 			if (this->points[this->paths[i].indices[j]][0] < min_x) {
 				min_x = this->points[this->paths[i].indices[j]][0];
@@ -527,9 +527,9 @@ void DxfData::fixup_path_direction()
 			}
 		}
 		// rotate points if the path is in non-standard rotation
-		int b = min_x_point;
-		int a = b == 0 ? this->paths[i].indices.size() - 2 : b - 1;
-		int c = b == this->paths[i].indices.size() - 1 ? 1 : b + 1;
+		size_t b = min_x_point;
+		size_t a = b == 0 ? this->paths[i].indices.size() - 2 : b - 1;
+		size_t c = b == this->paths[i].indices.size() - 1 ? 1 : b + 1;
 		double ax = this->points[this->paths[i].indices[a]][0] - this->points[this->paths[i].indices[b]][0];
 		double ay = this->points[this->paths[i].indices[a]][1] - this->points[this->paths[i].indices[b]][1];
 		double cx = this->points[this->paths[i].indices[c]][0] - this->points[this->paths[i].indices[b]][0];

@@ -1,6 +1,6 @@
 
-BUGS
-----
+BUGS (FIXME: Verify and move these to github)
+---------------------------------------------
 o Some invalid DXF data gets pass the import checks and breaks the tessing code
 o Tesselation via GLU sometimes produces strange results
 o Export STL: Exports existing CGAL model even though the current model is changed, but not CGAL rendered
@@ -8,8 +8,8 @@ o Look into the polygon winding and rotate_extrude() problem reported by Britton
 o CGAL Aff_transformation_3 doesn't support non-affine transformations (non-aff-matrix.scad)
 o 2D union of polygons with a touching vertex doesn't work. see testdata/scad/bugs/polygon-touch.scad
 
-STL Import BUGS
----------------
+STL Import BUGS (FIXME: Verify and move these to github)
+--------------------------------------------------------
 
 Using STL-imported models is tricky and triggers multiple issues:
 (these all fail with the usual "Illegal polygonal object" error)
@@ -73,6 +73,7 @@ o 3D View
   - 2D objects are rendered at z = -0.1 - why?
   - Rewrite to use VBOs or smth. - avoid inline calculations
   - Rewrite to a higher-level library (e.g. OSG)?
+  - Make navigation (e.g. zoom) available through menu entries (requested by disabled user)
 o Editor wishlist
   - More infrastructure for external editor (allow communication from the outside)
   - Preferences GUI for the features below
@@ -93,12 +94,14 @@ o Editor wishlist
   - Auto-indent on enter and on tab
 o Error reporting/debugging
   - Provide better error messages when polygon ordering causes CGAL errors:
+    o Detect common error: self-intersecting polyhedron()
     o Supply syntax highlighting of the exact polygon indices which are 
       reported to be wrong
     o Provide some interaction for debug walk-through?
   - Provide visual highlighting of geometry corresponding to code
     -> could aid debugging a lot
   - Optionally output console log to a file
+  - Common error: detect and report (and ignore?) duplicate line segments in DXF
 o Computation
   - Multi-threaded computation (mostly important for CGAL)
   - Progress: Call progresswidget more often to improve feedback
@@ -117,7 +120,6 @@ OpenCSG-related
 ---------------
 o OpenCSG rendering: Coincident surfaces causes z-buffer fighting. Is this somehow
   avoidable tuning the depth tests in OpenCSG? 
-o Make the 10.000 element OpenCSG limit configurable (Preferences) ?
 o When specifying a transparency with the color() statement,
   the object is not sorted and will be rendered wrongly
 o Bug: Using the background operator (%) on the only object in a scene triggers a
@@ -256,8 +258,13 @@ o Caching
   - Test that caching is actually performed (speedup + same results)
   - Test the modifier characters correctly influence the cache (also when
     added/removed)
+  - Test the individual caches
+    - PolySetCache
+    - CGALCache
+    - nodecache
+    - ModuleCache
 o other tests
   - export
   - cmd-line tests
   - leaf nodes having children, e.g. cube() cylinder();
-  - dependency tracking
+  - dependency tracking (use and include)

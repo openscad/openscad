@@ -51,6 +51,20 @@ Adding a new regression test:
 7) run the test normally and verify that it passes:
   $ ctest -R mytest
 
+Adding a new example:
+---------------------
+
+This is almost the same as adding a new regression test:
+1) Create the example under examples/
+2) run the test with the environment variable TEST_GENERATE=1, e.g.:
+   $ TEST_GENERATE=1 ctest -C Examples -R exampleNNN
+   (this will generate a exampleNNN-expected.txt file which is used for regression testing)
+3) manually verify that the output is correct (tests/regression/<testapp>/exampleNNN.<suffix>)
+4) run the test normally and verify that it passes:
+  $ ctest -C Examples -R exampleNNN
+
+
+
 Troubleshooting:
 ------------------------------
 

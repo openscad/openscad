@@ -91,7 +91,9 @@ int main(int argc, char **argv)
 		exit(1);
 	}
 
-	fs::current_path(fs::path(filename).parent_path());
+	if (fs::path(filename).has_parent_path()) {
+		fs::current_path(fs::path(filename).parent_path());
+	}
 
 	AbstractNode::resetIndexCounter();
 	root_node = root_module->evaluate(&root_ctx, &root_inst);

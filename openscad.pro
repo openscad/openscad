@@ -188,6 +188,7 @@ HEADERS += src/parsersettings.h \
            src/traverser.h \
            src/nodecache.h \
            src/nodedumper.h \
+           src/ModuleCache.h \
            src/PolySetCache.h \
            src/PolySetEvaluator.h \
            src/CSGTermEvaluator.h \
@@ -230,6 +231,7 @@ SOURCES += src/mathc99.cc \
            src/nodedumper.cc \
            src/traverser.cc \
            src/PolySetEvaluator.cc \
+           src/ModuleCache.cc \
            src/PolySetCache.cc \
            src/Tree.cc \
            \

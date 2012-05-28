@@ -530,7 +530,7 @@ sphere_next_r2:
 			{
 				dd.paths.push_back(DxfData::Path());
 				for (size_t j=0; j<this->paths.vec[i]->vec.size(); j++) {
-					int idx = this->paths.vec[i]->vec[j]->num;
+					unsigned int idx = this->paths.vec[i]->vec[j]->num;
 					if (idx < dd.points.size()) {
 						dd.paths.back().indices.push_back(idx);
 					}
