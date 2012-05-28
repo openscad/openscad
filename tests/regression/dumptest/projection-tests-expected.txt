@@ -35,4 +35,22 @@
 			}
 		}
 	}
+	multmatrix([[1, 0, 0, 0], [0, 1, 0, -44], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+		linear_extrude(height = 5, center = false, convexity = 1, $fn = 0, $fa = 12, $fs = 2) {
+			projection(cut = true, convexity = 0) {
+				union() {
+					difference() {
+						cube(size = [5, 5, 5], center = true);
+						cube(size = [4, 4, 4], center = true);
+					}
+					multmatrix([[1, 0, 0, 2.1], [0, 1, 0, 2.1], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+						difference() {
+							cube(size = [5, 5, 5], center = true);
+							cube(size = [4, 4, 4], center = true);
+						}
+					}
+				}
+			}
+		}
+	}
 
