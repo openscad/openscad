@@ -45,6 +45,8 @@ public:
 	virtual AbstractNode *evaluate(const Context *ctx, const ModuleInstantiation *inst) const;
 };
 
+#include <iostream>
+
 AbstractNode *LinearExtrudeModule::evaluate(const Context *ctx, const ModuleInstantiation *inst) const
 {
 	LinearExtrudeNode *node = new LinearExtrudeNode(inst);
@@ -54,6 +56,10 @@ AbstractNode *LinearExtrudeModule::evaluate(const Context *ctx, const ModuleInst
 	std::vector<Expression*> argexpr;
 
 	Context c(ctx);
+	for ( int i = 0 ; i < inst->argnames.size() ; i++ ) {
+		std::cout << "n: " << inst->argnames[i] << "\n" ;
+		std::cout << "v: " << inst->argvalues[i] << "\n";
+	}
 	c.args(argnames, argexpr, inst->argnames, inst->argvalues);
 
 	node->fn = c.lookup_variable("$fn").num;
@@ -74,6 +80,12 @@ AbstractNode *LinearExtrudeModule::evaluate(const Context *ctx, const ModuleInst
 		PRINT("DEPRECATED: Support for reading files in linear_extrude will be removed in future releases. Use a child import() instead.");
 		node->filename = c.getAbsolutePath(file.text);
 	}
+
+	// if height not given, and first argument is a number,
+	// then assume it should be the height.
+	if ( c.lookup_variable("height").type == Value::UNDEFINED )
+		if ( inst->argnames[0] == "" )
+			height = inst->argvalues[0];
 
 	node->layername = layer.text;
 	node->height = height.num;
