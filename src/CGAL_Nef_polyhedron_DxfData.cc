@@ -77,7 +77,7 @@ DxfData *CGAL_Nef_polyhedron::convertToDxfData() const
 	return dxfdata;
 }
 
-// moved here to reduce compile size/time of compiling CGAL_Nef_polyhedron.cc
+// dump the 2 dimensional nef_poly.
 std::string CGAL_Nef_polyhedron::dump_p2() const
 {
         std::stringstream out;
