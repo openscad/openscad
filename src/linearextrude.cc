@@ -45,8 +45,6 @@ public:
 	virtual AbstractNode *evaluate(const Context *ctx, const ModuleInstantiation *inst) const;
 };
 
-#include <iostream>
-
 AbstractNode *LinearExtrudeModule::evaluate(const Context *ctx, const ModuleInstantiation *inst) const
 {
 	LinearExtrudeNode *node = new LinearExtrudeNode(inst);
