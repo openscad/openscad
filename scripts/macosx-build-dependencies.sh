@@ -6,8 +6,9 @@
 # 
 # This script must be run from the OpenSCAD source root directory
 #
-# Usage: macosx-build-dependencies.sh [-6]
+# Usage: macosx-build-dependencies.sh [-6l]
 #  -6   Build only 64-bit binaries
+#  -l   Force use of LLVM compiler
 #
 # Prerequisites:
 # - MacPorts: curl
@@ -24,12 +25,14 @@ SRCDIR=$BASEDIR/src
 DEPLOYDIR=$BASEDIR/install
 MAC_OSX_VERSION_MIN=10.5
 OPTION_32BIT=true
+OPTION_LLVM=false
 
 printUsage()
 {
-  echo "Usage: $0 [-6]"
+  echo "Usage: $0 [-6l]"
   echo
   echo "  -6   Build only 64-bit binaries"
+  echo "  -l   Force use of LLVM compiler"
 }
 
 # Hack warning: gmplib is built separately in 32-bit and 64-bit mode
@@ -170,9 +173,9 @@ build_boost()
   echo "Building boost" $version "..."
   cd $BASEDIR/src
   rm -rf boost_$bversion
-  if [ ! -f boost_$bversion.tar.bz2 ]; then
-    curl -LO http://downloads.sourceforge.net/project/boost/boost/$version/boost_$bversion.tar.bz2
-  fi
+#  if [ ! -f boost_$bversion.tar.bz2 ]; then
+#    curl -LO http://downloads.sourceforge.net/project/boost/boost/$version/boost_$bversion.tar.bz2
+#  fi
   tar xjf boost_$bversion.tar.bz2
   cd boost_$bversion
   # We only need the thread and program_options libraries
@@ -180,8 +183,11 @@ build_boost()
   if $OPTION_32BIT; then
     BOOST_EXTRA_FLAGS="-arch i386"
   fi
-  ./bjam cflags="-mmacosx-version-min=$MAC_OSX_VERSION_MIN -arch x86_64 $BOOST_EXTRA_FLAGS" linkflags="-mmacosx-version-min=$MAC_OSX_VERSION_MIN -arch x86_64 $BOOST_EXTRA_FLAGS"
-  ./bjam install
+  if $OPTION_LLVM; then
+    BOOST_TOOLSET="toolset=darwin-llvm"
+    echo "using darwin : llvm : llvm-g++ ;" >> tools/build/v2/user-config.jam 
+  fi
+  ./b2 -d+2 $BOOST_TOOLSET cflags="-mmacosx-version-min=$MAC_OSX_VERSION_MIN -arch x86_64 $BOOST_EXTRA_FLAGS" linkflags="-mmacosx-version-min=$MAC_OSX_VERSION_MIN -arch x86_64 $BOOST_EXTRA_FLAGS" install
   install_name_tool -id $DEPLOYDIR/lib/libboost_thread.dylib $DEPLOYDIR/lib/libboost_thread.dylib 
   install_name_tool -id $DEPLOYDIR/lib/libboost_program_options.dylib $DEPLOYDIR/lib/libboost_program_options.dylib 
   install_name_tool -id $DEPLOYDIR/lib/libboost_filesystem.dylib $DEPLOYDIR/lib/libboost_filesystem.dylib 
@@ -286,10 +292,11 @@ if [ ! -f $OPENSCADDIR/openscad.pro ]; then
   exit 0
 fi
 
-while getopts '6' c
+while getopts '6l' c
 do
   case $c in
-    6) OPTION_32BIT=false
+    6) OPTION_32BIT=false;;
+    l) OPTION_LLVM=true;;
   esac
 done
 
@@ -305,6 +312,13 @@ if [[ $OSVERSION -ge 7 ]]; then
   export QMAKESPEC=macx-llvm
 else
   echo "Detected Snow Leopard or earlier"
+fi
+
+if $OPTION_LLVM; then
+  echo "Using LLVM compiler"
+  export CC=llvm-gcc
+  export CXX=llvm-g++
+  export QMAKESPEC=macx-llvm
 fi
 
 echo "Using basedir:" $BASEDIR
