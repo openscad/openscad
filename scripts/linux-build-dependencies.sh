@@ -144,9 +144,10 @@ build_opencsg()
   tar xzf OpenCSG-$version.tar.gz
   cd OpenCSG-$version
   sed -i s/example// opencsg.pro # examples might be broken without GLUT
-  OPENSCAD_LIBRARIES=$DEPLOYDIR qmake-qt4
-  make install
-  cp -av include/opencsg.h $BASEDIR/include/ # kludge
+  qmake-qt4
+  make
+  install -v lib/* $DEPLOYDIR/lib
+  install -v include/* $DEPLOYDIR/include
 }
 
 build_eigen()
@@ -181,14 +182,14 @@ fi
 
 echo "Using basedir:" $BASEDIR
 mkdir -p $SRCDIR $DEPLOYDIR
-build_curl 7.26.0
-build_eigen 2.0.17
-build_gmp 5.0.5
-build_mpfr 3.1.0
-build_boost 1.47.0
+#build_curl 7.26.0
+#build_eigen 2.0.17
+#build_gmp 5.0.5
+#build_mpfr 3.1.0
+#build_boost 1.47.0
 # NB! For CGAL, also update the actual download URL in the function
-build_cgal 4.0
-build_glew 1.7.0
+#build_cgal 4.0
+#build_glew 1.7.0
 build_opencsg 1.3.2
 
 echo "Now do this:"
