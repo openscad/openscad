@@ -129,7 +129,8 @@ build_glew()
   tar xzf glew-$version.tgz
   cd glew-$version
   mkdir -p $DEPLOYDIR/lib/pkgconfig
-  make GLEW_DEST=$DEPLOYDIR install
+  GLEW_DEST=$DEPLOYDIR make -j$NUMCPU
+  GLEW_DEST=$DEPLOYDIR make install
 }
 
 build_opencsg()
@@ -189,11 +190,11 @@ mkdir -p $SRCDIR $DEPLOYDIR
 #build_boost 1.47.0
 # NB! For CGAL, also update the actual download URL in the function
 #build_cgal 4.0
-#build_glew 1.7.0
+build_glew 1.7.0
 build_opencsg 1.3.2
 
 echo "Now do this:"
-echo "export LD_LIBRARY_PATH=$BASEDIR/lib"
-echo "OPENSCAD_LIBRARIES=$BASEDIR qmake-qt4"
+echo "export LD_LIBRARY_PATH=$DEPLOYDIR/lib:$DEPLOYDIR/lib64"
+echo "GLEWDIR=$DEPLOYDIR OPENSCAD_LIBRARIES=$DEPLOYDIR qmake-qt4"
 echo "make"
 
