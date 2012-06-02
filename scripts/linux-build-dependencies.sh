@@ -8,21 +8,41 @@
 #
 # Prerequisites:
 # - curl
-# -- if you dont have curl, but do have wget, uncomment 'build_curl')
+# -- you can uncomment 'build_curl' at the bottom
 # -- and add $BASEDIR/bin to your PATH, i.e. in .bash_profile
 # - Qt4
+# - cmake 2.8 
+# -- you can uncomment 'build_cmake' at the bottom
 #
 
 BASEDIR=$HOME
 OPENSCADDIR=$PWD
 SRCDIR=$BASEDIR/src
 DEPLOYDIR=$BASEDIR
-NUMCPU=4 # paralell builds for some libraries
+NUMCPU=2 # paralell builds for some libraries
 
 printUsage()
 {
   echo "Usage: $0"
   echo
+}
+
+build_cmake()
+{
+  version=$1
+  echo "Building cmake" $version "..."
+  cd $BASEDIR/src
+  rm -rf cmake-$version
+  if [ ! -f cmake-$version.tar.gz ]; then
+    curl -O http://www.cmake.org/files/v2.8/cmake-$version.tar.gz
+  fi
+  tar zxf cmake-$version.tar.gz
+  cd cmake-$version
+  mkdir build
+  cd build
+  ../configure --prefix=$DEPLOYDIR
+  make -j$NUMCPU
+  make install
 }
 
 build_curl()
@@ -185,8 +205,12 @@ fi
 echo "Using basedir:" $BASEDIR
 echo "Using deploydir:" $DEPLOYDIR
 echo "Using srcdir:" $SRCDIR
+echo "Number of CPUs for parallel builds:" $NUMCPU
 mkdir -p $SRCDIR $DEPLOYDIR
-build_curl 7.26.0
+
+#build_curl 7.26.0
+# NB! For cmake, also update the actual download URL in the function
+#build_cmake 2.8.8
 build_eigen 2.0.17
 build_gmp 5.0.5
 build_mpfr 3.1.0
