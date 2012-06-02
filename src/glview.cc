@@ -600,7 +600,11 @@ void GLView::mouseMoveEvent(QMouseEvent *event)
       double mz = -(dy) * viewer_distance/1000;
 
 			double my = 0;
+#if (QT_VERSION < QT_VERSION_CHECK(4, 7, 0))
 			if (event->buttons() & Qt::MidButton) {
+#else
+			if (event->buttons() & Qt::MiddleButton) {
+#endif
 				my = mz;
 				mz = 0;
 				// actually lock the x-position
