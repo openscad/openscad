@@ -39,7 +39,8 @@ build_curl()
   mkdir build
   cd build
   ../configure --prefix=$DEPLOYDIR
-  make -j$NUMCPU install
+  make -j$NUMCPU
+  make install
 }
 
 build_gmp()
@@ -93,7 +94,7 @@ build_boost()
   cd boost_$bversion
   # We only need certain portions of boost
   ./bootstrap.sh --prefix=$DEPLOYDIR --with-libraries=thread,program_options,filesystem,system,regex
-  ./bjam
+  ./bjam -j$NUMCPU
   ./bjam install
 }
 
@@ -182,19 +183,21 @@ if [ ! -d $BASEDIR/bin ]; then
 fi
 
 echo "Using basedir:" $BASEDIR
+echo "Using deploydir:" $DEPLOYDIR
+echo "Using srcdir:" $SRCDIR
 mkdir -p $SRCDIR $DEPLOYDIR
-#build_curl 7.26.0
-#build_eigen 2.0.17
-#build_gmp 5.0.5
-#build_mpfr 3.1.0
-#build_boost 1.47.0
+build_curl 7.26.0
+build_eigen 2.0.17
+build_gmp 5.0.5
+build_mpfr 3.1.0
+build_boost 1.47.0
 # NB! For CGAL, also update the actual download URL in the function
-#build_cgal 4.0
+build_cgal 4.0
 build_glew 1.7.0
 build_opencsg 1.3.2
 
 echo "Now do this:"
 echo "export LD_LIBRARY_PATH=$DEPLOYDIR/lib:$DEPLOYDIR/lib64"
 echo "GLEWDIR=$DEPLOYDIR OPENSCAD_LIBRARIES=$DEPLOYDIR qmake-qt4"
-echo "make"
+echo "make -j$NUMCPU"
 
