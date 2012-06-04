@@ -48,6 +48,36 @@ PolySet::~PolySet()
 {
 }
 
+std::string PolySet::dump() const
+{
+	std::stringstream out;
+	out << "PolySet:"
+	  << "\n dimensions:" << std::string( this->is2d ? "2" : "3" )
+	  << "\n convexity:" << this->convexity
+	  << "\n num polygons: " << polygons.size()
+	  << "\n num borders: " << borders.size()
+	  << "\n polygons data:";
+	for (size_t i = 0; i < polygons.size(); i++) {
+		out << "\n  polygon begin:";
+		const Polygon *poly = &polygons[i];
+		for (size_t j = 0; j < poly->size(); j++) {
+			Vector3d v = poly->at(j);
+			out << "\n   vertex:" << v.transpose();
+		}
+	}
+	out << "\n borders data:";
+	for (size_t i = 0; i < borders.size(); i++) {
+		out << "\n  border polygon begin:";
+		const Polygon *poly = &borders[i];
+		for (size_t j = 0; j < poly->size(); j++) {
+			Vector3d v = poly->at(j);
+			out << "\n   vertex:" << v.transpose();
+		}
+	}
+	out << "\nPolySet end";
+	return out.str();
+}
+
 void PolySet::append_poly()
 {
 	polygons.push_back(Polygon());
