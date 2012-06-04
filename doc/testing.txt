@@ -98,7 +98,8 @@ Some versions of Xvfb may fail, however.
  When running, this might help find your locally built libraries (assuming
  you installed into $HOME)
 
- export LD_LIBRARY_PATH=$HOME/lib:$HOME/lib64
+ Linux: export LD_LIBRARY_PATH=$HOME/lib:$HOME/lib64
+ Mac: export DYLD_LIBRARY_PATH=$HOME/lib
 
 2. Location of logs
  
