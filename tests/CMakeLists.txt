@@ -237,7 +237,7 @@ if (NOT GLEW_INCLUDE_DIR)
 	    NO_DEFAULT_PATH)
   find_library(GLEW_LIBRARY
                NAMES GLEW glew
-               HINTS ${GLEW_DIR}/lib
+               HINTS ${GLEW_DIR}/lib ${GLEW_DIR}/lib64
 	       NO_DEFAULT_PATH)
   if (NOT GLEW_LIBRARY)
     find_package(GLEW REQUIRED)
