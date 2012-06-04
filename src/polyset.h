@@ -5,6 +5,7 @@
 #include "grid.h"
 #include "linalg.h"
 #include <vector>
+#include <string>
 
 class PolySet
 {
@@ -40,6 +41,7 @@ public:
 
 	void render_surface(csgmode_e csgmode, const Transform3d &m, GLint *shaderinfo = NULL) const;
 	void render_edges(csgmode_e csgmode) const;
+	std::string dump() const;
 };
 
 #endif
