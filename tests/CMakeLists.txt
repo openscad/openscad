@@ -611,10 +611,14 @@ endforeach()
 set_directory_properties(PROPERTIES TEST_INCLUDE_FILE "${CMAKE_SOURCE_DIR}/EnforceConfig.cmake")
 
 # Subst files
-configure_file(${CMAKE_SOURCE_DIR}/../testdata/scad/misc/include-tests-template.scad
+configure_file(${CMAKE_SOURCE_DIR}/../testdata/scad/templates/include-tests-template.scad
                ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/include-tests.scad)
-configure_file(${CMAKE_SOURCE_DIR}/../testdata/scad/misc/use-tests-template.scad
+configure_file(${CMAKE_SOURCE_DIR}/../testdata/scad/templates/use-tests-template.scad
                ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/use-tests.scad)
+configure_file(${CMAKE_SOURCE_DIR}/../testdata/scad/templates/import_stl-tests-template.scad
+               ${CMAKE_SOURCE_DIR}/../testdata/scad/features/import_stl-tests.scad)
+configure_file(${CMAKE_SOURCE_DIR}/../testdata/scad/templates/import_dxf-tests-template.scad
+               ${CMAKE_SOURCE_DIR}/../testdata/scad/features/import_dxf-tests.scad)
 
 # Find all scad files
 file(GLOB MINIMAL_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/minimal/*.scad)
