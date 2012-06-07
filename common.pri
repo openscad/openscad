@@ -11,3 +11,5 @@ include(opencsg.pri)
 include(glew.pri)
 include(eigen2.pri)
 include(boost.pri)
+include(imagemagick.pri)
+

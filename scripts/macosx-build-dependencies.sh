@@ -281,6 +281,23 @@ build_eigen()
   make install
 }
 
+build_imagemagick()
+{
+  version=$1
+  echo "Building ImageMagick" $version "..."
+  cd $BASEDIR/src
+  rm -rf ImageMagick-$version
+  if [ ! -f ImageMagick-$version.tar.bz2 ]; then
+        curl -LO http://www.imagemagick.org/download/ImageMagick-$version.tar.bz2
+  fi
+  tar xjf ImageMagick-$version.tar.bz2
+  cd ImageMagick-$version
+  # ./configure --prefix=$DEPLOYDIR "CFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN -arch x86_64" LDFLAGS="-mmacosx-version-min=$MAC_OSX_VERSION_MIN -arch x86_64" ABI=64 --enable-cxx
+  ./configure --prefix=$DEPLOYDIR "CFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN -arch x86_64" LDFLAGS="-mmacosx-version-min=$MAC_OSX_VERSION_MIN -arch x86_64" ABI=64
+  make -j4
+  make install
+}
+
 if [ ! -f $OPENSCADDIR/openscad.pro ]; then
   echo "Must be run from the OpenSCAD source root directory"
   exit 0
@@ -295,6 +312,7 @@ done
 
 echo "Using basedir:" $BASEDIR
 mkdir -p $SRCDIR $DEPLOYDIR
+build_imagemagick 6.7.5-6
 build_eigen 2.0.17
 build_gmp 5.0.5
 build_mpfr 3.1.0
