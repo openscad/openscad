@@ -5,6 +5,7 @@
 #include <string>
 #include <boost/variant.hpp>
 #include <boost/lexical_cast.hpp>
+#include "polyset.h"
 
 class QuotedString : public std::string
 {
@@ -48,7 +49,8 @@ public:
     NUMBER,
     STRING,
     VECTOR,
-    RANGE
+    RANGE,
+    POLYSET
   };
   static Value undefined;
 
@@ -61,6 +63,7 @@ public:
   Value(const char v);
   Value(const VectorType &v);
   Value(const RangeType &v);
+  Value(PolySet *ps);
   Value(double begin, double step, double end);
   ~Value() {}
 
@@ -75,6 +78,7 @@ public:
   bool getVec2(double &x, double &y) const;
   bool getVec3(double &x, double &y, double &z, double defaultval = 0.0) const;
   RangeType toRange() const;
+  PolySet * toPolySet() const;
 
   Value &operator=(const Value &v);
   Value operator!() const;
@@ -110,7 +114,7 @@ public:
     return stream;
   }
 
-  typedef boost::variant< boost::blank, bool, double, std::string, VectorType, RangeType > Variant;
+  typedef boost::variant< boost::blank, bool, double, std::string, VectorType, RangeType, PolySet * > Variant;
 
 private:
   static Value multvecnum(const Value &vecval, const Value &numval);
