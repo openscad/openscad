@@ -37,6 +37,7 @@
 #include "CGAL_Nef_polyhedron.h"
 #include "CGALEvaluator.h"
 #include "PolySetCGALEvaluator.h"
+#include "polyutils.h"
 
 #include <QCoreApplication>
 #ifndef _MSC_VER

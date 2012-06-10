@@ -33,6 +33,7 @@
 #include "value.h"
 #include "builtin.h"
 #include "printutils.h"
+#include "polyutils.h"
 
 #include <QCoreApplication>
 #ifndef _MSC_VER

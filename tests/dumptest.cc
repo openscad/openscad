@@ -34,6 +34,7 @@
 #include "export.h"
 #include "builtin.h"
 #include "Tree.h"
+#include "polyutils.h"
 
 #include <QCoreApplication>
 #ifndef _MSC_VER

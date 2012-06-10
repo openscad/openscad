@@ -39,6 +39,7 @@
 #include "CGALEvaluator.h"
 #include "PolySetCGALEvaluator.h"
 #include "CGALCache.h"
+#include "polyutils.h"
 
 #include <QCoreApplication>
 #ifndef _MSC_VER

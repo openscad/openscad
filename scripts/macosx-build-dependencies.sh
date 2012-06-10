@@ -293,7 +293,7 @@ build_imagemagick()
   tar xjf ImageMagick-$version.tar.bz2
   cd ImageMagick-$version
   # ./configure --prefix=$DEPLOYDIR "CFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN -arch x86_64" LDFLAGS="-mmacosx-version-min=$MAC_OSX_VERSION_MIN -arch x86_64" ABI=64 --enable-cxx
-  ./configure --prefix=$DEPLOYDIR "CFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN -arch x86_64" LDFLAGS="-mmacosx-version-min=$MAC_OSX_VERSION_MIN -arch x86_64" ABI=64
+    ./configure --prefix=$DEPLOYDIR "CFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN -arch x86_64" LDFLAGS="-mmacosx-version-min=$MAC_OSX_VERSION_MIN -arch x86_64" ABI=64
   make -j4
   make install
 }
