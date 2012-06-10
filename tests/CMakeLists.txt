@@ -681,7 +681,8 @@ disable_tests(dumptest_transform-tests
               dumptest_example020
               dumptest_example021
               dumptest_example022
-              dumptest_example023)
+              dumptest_example023
+              dumptest_example024)
 
 # FIXME: This test illustrates a weakness in child() combined with modifiers.
 # Reenable it when this is improved
