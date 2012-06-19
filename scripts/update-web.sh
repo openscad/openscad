@@ -11,6 +11,8 @@ fi
 
 if [[ $OSTYPE =~ "darwin" ]]; then
   OS=MACOSX
+elif [[ $OSTYPE == "linux-gnu" ]]; then
+  OS=LINUX
 fi
 
 indexfile=../openscad.github.com/index.html
@@ -21,6 +23,10 @@ if [ -f $indexfile ]; then
     file2=$2
     sed -i .backup -e "s/^\(.*win-snapshot-zip.*\)\(OpenSCAD-.*\.zip\)\(.*\)\(OpenSCAD-.*zip\)\(.*$\)/\\1$file1\\3$file1\\5/" $indexfile
     sed -i .backup -e "s/^\(.*win-snapshot-exe.*\)\(OpenSCAD-.*-Installer\.exe\)\(.*\)\(OpenSCAD-.*-Installer.exe\)\(.*$\)/\\1$file2\\3$file2\\5/" $indexfile
+  elif [ $OS == LINUX ]; then
+    file2=$2
+    sed -i .backup -e "s/^\(.*linux-snapshot-32.*\)\(openscad-.*-32\.tar\.gz\)\(.*\)\(openscad-.*-32\.tar\.gz\)\(.*$\)/\\1$file1\\3$file1\\5/" $indexfile
+    sed -i .backup -e "s/^\(.*linux-snapshot-64.*\)\(openscad-.*-64\.tar\.gz\)\(.*\)\(openscad-.*-64\.tar\.gz\)\(.*$\)/\\1$file2\\3$file2\\5/" $indexfile
   fi
   echo "Web page updated. Remember to commit and push openscad.github.com"
 else
