@@ -84,7 +84,7 @@ int main(int argc, char **argv)
 	QCoreApplication app(argc, argv);
 	fs::path original_path = fs::current_path();
 
-	currentdir = boosty::stringy( fs::current_path() );
+	currentdir = boosty::stringy(fs::current_path());
 
 	parser_init(QCoreApplication::instance()->applicationDirPath().toStdString());
 	set_librarydir(boosty::stringy(fs::path(QCoreApplication::instance()->applicationDirPath().toStdString()) / "../libraries"));
