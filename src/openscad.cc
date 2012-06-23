@@ -294,6 +294,7 @@ int main(int argc, char **argv)
 				PRINTB("Can't open file \"%s\" for export", csg_output_file);
 			}
 			else {
+				fs::current_path(fparent); // Force exported filenames to be relative to document path
 				fstream << tree.getString(*root_node) << "\n";
 				fstream.close();
 			}
