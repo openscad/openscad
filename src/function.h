@@ -41,4 +41,10 @@ public:
 	virtual std::string dump(const std::string &indent, const std::string &name) const;
 };
 
+Value read_image(const Context *, const std::vector<std::string>&, const std::vector<Value> &);
+Value read_dxf(const Context *, const std::vector<std::string>&, const std::vector<Value> &);
+Value read_stl(const Context *, const std::vector<std::string>&, const std::vector<Value> &);
+
+Value builtin_read_rgb(const Context *, const std::vector<std::string>&, const std::vector<Value> &);
+
 #endif
