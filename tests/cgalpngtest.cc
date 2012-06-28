@@ -42,7 +42,6 @@
 #include "CGAL_renderer.h"
 #include "cgal.h"
 #include "OffscreenView.h"
-#include "polyutils.h"
 
 #include <QCoreApplication>
 #ifndef _MSC_VER

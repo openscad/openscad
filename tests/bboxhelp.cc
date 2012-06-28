@@ -5,7 +5,6 @@
 */
 
 #include "linalg.h"
-#include "polyutils.h"
 
 Vector3d getBoundingCenter(BoundingBox bbox)
 {
