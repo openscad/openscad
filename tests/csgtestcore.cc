@@ -302,8 +302,8 @@ int csgtestcore(int argc, char *argv[], test_type_e test_type)
 	}
 
 	// CSG normalization
-	CSGTermNormalizer normalizer;
-	csgInfo.root_norm_term = normalizer.normalize(root_raw_term, 5000);
+	CSGTermNormalizer normalizer(5000);
+	csgInfo.root_norm_term = normalizer.normalize(root_raw_term);
 	if (csgInfo.root_norm_term) {
 		csgInfo.root_chain = new CSGChain();
 		csgInfo.root_chain->import(csgInfo.root_norm_term);
@@ -319,7 +319,7 @@ int csgtestcore(int argc, char *argv[], test_type_e test_type)
 		
 		csgInfo.highlights_chain = new CSGChain();
 		for (unsigned int i = 0; i < csgInfo.highlight_terms.size(); i++) {
-			csgInfo.highlight_terms[i] = normalizer.normalize(csgInfo.highlight_terms[i], 5000);
+			csgInfo.highlight_terms[i] = normalizer.normalize(csgInfo.highlight_terms[i]);
 			csgInfo.highlights_chain->import(csgInfo.highlight_terms[i]);
 		}
 	}
@@ -329,7 +329,7 @@ int csgtestcore(int argc, char *argv[], test_type_e test_type)
 		
 		csgInfo.background_chain = new CSGChain();
 		for (unsigned int i = 0; i < csgInfo.background_terms.size(); i++) {
-			csgInfo.background_terms[i] = normalizer.normalize(csgInfo.background_terms[i], 5000);
+			csgInfo.background_terms[i] = normalizer.normalize(csgInfo.background_terms[i]);
 			csgInfo.background_chain->import(csgInfo.background_terms[i]);
 		}
 	}
