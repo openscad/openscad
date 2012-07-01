@@ -1359,7 +1359,7 @@ void MainWindow::actionExportSTLorOFF(bool)
 	}
 
 	if (!this->root_N->p3->is_simple()) {
-		PRINT("Object isn't a valid 2-manifold! Modify your design..");
+		PRINT("Object isn't a valid 2-manifold! Modify your design. See http://en.wikibooks.org/wiki/OpenSCAD_User_Manual/STL_Import_and_Export");
 		clearCurrentOutput();
 		return;
 	}
