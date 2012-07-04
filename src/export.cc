@@ -39,13 +39,10 @@
 #include "CGAL_Nef_polyhedron.h"
 #include "cgal.h"
 
-using namespace std;
-
 void export_png(CGAL_Nef_polyhedron *root_N, std::string outfile, std::string renderer)
 {
 	assert(root_N!=NULL);
 	renderer = "CGAL";
-	cout << "begin\n";
 	OffscreenView *glview;
 	try {
 		glview = new OffscreenView(512,512);
@@ -65,7 +62,7 @@ void export_png(CGAL_Nef_polyhedron *root_N, std::string outfile, std::string re
                 bbox = cgalRenderer.polyset->getBoundingBox();
         }
 
-	cout << bbox.min() << "\n" << bbox.max() << "\n";
+	//cout << bbox.min() << "\n" << bbox.max() << "\n";
 
 	Vector3d center = getBoundingCenter(bbox);
         double radius = getBoundingRadius(bbox);
@@ -78,7 +75,6 @@ void export_png(CGAL_Nef_polyhedron *root_N, std::string outfile, std::string re
         glview->paintGL();
         glview->save(outfile.c_str());
 
-	cout << "end\n";
 }
 
 /*!
