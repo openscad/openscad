@@ -243,12 +243,15 @@ int main(int argc, char **argv)
 		const char *off_output_file = NULL;
 		const char *dxf_output_file = NULL;
 		const char *csg_output_file = NULL;
-
-		QString suffix = QFileInfo(output_file).suffix().toLower();
-		if (suffix == "stl") stl_output_file = output_file;
-		else if (suffix == "off") off_output_file = output_file;
-		else if (suffix == "dxf") dxf_output_file = output_file;
-		else if (suffix == "csg") csg_output_file = output_file;
+		const char *png_output_file = NULL;
+		fs::path outpath(output_file);
+		std::string suffix = boosty::stringy( outpath.extension() );
+		std::transform(suffix.begin(),suffix.end(),suffix.begin(),::tolower);
+		if (suffix == ".stl") stl_output_file = output_file;
+		else if (suffix == ".off") off_output_file = output_file;
+		else if (suffix == ".dxf") dxf_output_file = output_file;
+		else if (suffix == ".csg") csg_output_file = output_file;
+		else if (suffix == ".png") png_output_file = output_file;
 		else {
 			fprintf(stderr, "Unknown suffix for output file %s\n", output_file);
 			exit(1);
