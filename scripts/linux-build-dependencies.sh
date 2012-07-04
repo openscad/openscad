@@ -7,7 +7,7 @@
 # Usage: linux-build-dependencies.sh
 #
 # Prerequisites:
-# - wget
+# - wget or curl
 # - Qt4
 # - cmake 2.8 ( force build_cmake at bottom if yours is too old )
 #
