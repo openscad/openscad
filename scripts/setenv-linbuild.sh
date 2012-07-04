@@ -1,3 +1,8 @@
+# setup env variables for building OpenSCAD against custom built
+# dependency libraries from linux-build-dependencies.sh
+
+# run this file with 'source setenv-linbuild.sh'
+
 # BASEDIR and DEPLOYDIR must be the same as in linux-build-dependencies.sh
 BASEDIR=$HOME/openscad_deps
 DEPLOYDIR=$BASEDIR
