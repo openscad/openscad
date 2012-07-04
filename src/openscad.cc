@@ -85,42 +85,53 @@ static void version()
 
 std::string commandline_commands;
 std::string currentdir;
-QString examplesdir;
+QString examplesdirq;
+std::string examplesdir;
 
 using std::string;
 using std::vector;
 
-void start_QT_gui( const char * filename )
+int start_qt_gui( const char * filename, int argc, char ** argv, bool useGUI )
 {
+	QApplication app(argc, argv, useGUI);
 #ifdef Q_WS_MAC
-		installAppleEventHandlers();
+	app.installEventFilter(new EventFilter(&app));
+#endif
+	// set up groups for QSettings
+	QCoreApplication::setOrganizationName("OpenSCAD");
+	QCoreApplication::setOrganizationDomain("openscad.org");
+	QCoreApplication::setApplicationName("OpenSCAD");
+	QCoreApplication::setApplicationVersion(TOSTRING(OPENSCAD_VERSION));
+
+#ifdef Q_WS_MAC
+	installAppleEventHandlers();
 #endif
 
-		QString qfilename;
-		if (filename) qfilename = QString::fromStdString(boosty::stringy(boosty::absolute(filename)));
+	QString qfilename;
+	if (filename) qfilename = QString::fromStdString(boosty::stringy(boosty::absolute(filename)));
 
 #if 0 /*** disabled by clifford wolf: adds rendering artefacts with OpenCSG ***/
-		// turn on anti-aliasing
-		QGLFormat f;
-		f.setSampleBuffers(true);
-		f.setSamples(4);
-		QGLFormat::setDefaultFormat(f);
+	// turn on anti-aliasing
+	QGLFormat f;
+	f.setSampleBuffers(true);
+	f.setSamples(4);
+	QGLFormat::setDefaultFormat(f);
 #endif
 #ifdef ENABLE_MDI
-		new MainWindow(qfilename);
-		vector<string> inputFiles;
-		if (vm.count("input-file")) {
-			inputFiles = vm["input-file"].as<vector<string> >();
-			for (vector<string>::const_iterator infile = inputFiles.begin()+1; infile != inputFiles.end(); infile++) {
-				new MainWindow(QString::fromStdString(boosty::stringy((original_path / *infile))));
-			}
+	new MainWindow(qfilename);
+	vector<string> inputFiles;
+	if (vm.count("input-file")) {
+		inputFiles = vm["input-file"].as<vector<string> >();
+		for (vector<string>::const_iterator infile = inputFiles.begin()+1; infile != inputFiles.end(); infile++) {
+			new MainWindow(QString::fromStdString(boosty::stringy((original_path / *infile))));
 		}
-		app.connect(&app, SIGNAL(lastWindowClosed()), &app, SLOT(quit()));
+	}
+	app.connect(&app, SIGNAL(lastWindowClosed()), &app, SLOT(quit()));
 #else
-		MainWindow *m = new MainWindow(qfilename);
-		app.connect(m, SIGNAL(destroyed()), &app, SLOT(quit()));
+	MainWindow *m = new MainWindow(qfilename);
+	app.connect(m, SIGNAL(destroyed()), &app, SLOT(quit()));
 #endif
-		return app.exec();
+	return app.exec();
 }
 
 
@@ -133,7 +144,6 @@ int main(int argc, char **argv)
 	// (which we don't catch). This gives us stack traces without rerunning in gdb.
 	CGAL::set_error_behaviour(CGAL::ABORT);
 #endif
-	Builtins::instance()->initialize();
 
 #ifdef Q_WS_X11
 	// see <http://qt.nokia.com/doc/4.5/qapplication.html#QApplication-2>:
@@ -145,17 +155,10 @@ int main(int argc, char **argv)
 #else
 	bool useGUI = true;
 #endif
-	QApplication app(argc, argv, useGUI);
-#ifdef Q_WS_MAC
-	app.installEventFilter(new EventFilter(&app));
-#endif
-	fs::path original_path = fs::current_path();
 
-	// set up groups for QSettings
-	QCoreApplication::setOrganizationName("OpenSCAD");
-	QCoreApplication::setOrganizationDomain("openscad.org");
-	QCoreApplication::setApplicationName("OpenSCAD");
-	QCoreApplication::setApplicationVersion(TOSTRING(OPENSCAD_VERSION));
+	Builtins::instance()->initialize();
+
+	fs::path original_path = fs::current_path();
 
 	const char *filename = NULL;
 	const char *output_file = NULL;
@@ -241,24 +244,25 @@ int main(int argc, char **argv)
 
 	currentdir = boosty::stringy( fs::current_path() );
 
-	QDir exdir(QApplication::instance()->applicationDirPath());
+	fs::path expath( argv[0] );
+	fs::path exdir( expath.parent_path() );
+	fs::path examples_path;
+	fs::path test0( exdir / fs::path("../Resources/examples") );
+	fs::path test1( exdir / fs::path("../share/openscad/examples") );
+	fs::path test2( exdir / fs::path("../../share/openscad/examples") );
+	fs::path test3( exdir / fs::path("../../examples") );
+	fs::path test4( exdir / fs::path("./examples") );
+
 #ifdef Q_WS_MAC
-	exdir.cd("../Resources"); // Examples can be bundled
-	if (!exdir.exists("examples")) exdir.cd("../../..");
+	if ( fs::is_directory( test0 ) ) exdir /= fs::path("../..");
 #elif defined(Q_OS_UNIX)
-	if (exdir.cd("../share/openscad/examples")) {
-		examplesdir = exdir.path();
-	} else
-		if (exdir.cd("../../share/openscad/examples")) {
-			examplesdir = exdir.path();
-		} else
-			if (exdir.cd("../../examples")) {
-				examplesdir = exdir.path();
-			} else
+	if ( fs::is_directory( test1 ) ) examples_path = test1;
+	else if ( fs::is_directory( test2 ) ) examples_path = test2;
+	else if ( fs::is_directory( test3 ) ) examples_path = test3;
+	else
 #endif
-				if (exdir.cd("examples")) {
-					examplesdir = exdir.path();
-				}
+	if ( fs::is_directory( test4 ) ) examples_path = test4;
+	examplesdir = boosty::stringy( examples_path );
 
 	parser_init(QApplication::instance()->applicationDirPath().toStdString());
 
@@ -408,7 +412,7 @@ int main(int argc, char **argv)
 	}
 	else if (useGUI)
 	{
-		rc = start_QT_gui( filename );
+		rc = start_qt_gui( filename, argc, argv, useGUI );
 	}
 	else
 	{

@@ -38,7 +38,8 @@ extern std::string commandline_commands;
 // doing this, use currentdir to get the original CWD.
 extern std::string currentdir;
 
-extern QString examplesdir;
+extern QString examplesdirq;
+extern std::string examplesdir;
 
 #endif
 
