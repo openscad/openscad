@@ -79,10 +79,10 @@ To build OpenSCAD, you need some libraries and tools. The version
 numbers in brackets specify the versions which have been used for
 development. Other versions may or may not work as well.
 
-If you're using Ubuntu, you can install these libraries from
-aptitude. If you're using Mac, there is a build script that compiles
-the libraries from source. Follow the instructions for the platform
-you're compiling on below.
+If you're using a newer version of Ubuntu, you can install these 
+libraries from aptitude. If you're using Mac, or an older Linux, there 
+are build scripts that download and compile the libraries from source. 
+Follow the instructions for the platform you're compiling on below.
 
 * [Qt4 (4.4 - 4.7)](http://www.qt.nokia.com/)
 * [CGAL (3.6 - 3.9)](http://www.cgal.org/)
@@ -117,15 +117,34 @@ compilation process.
 
 After that, follow the Compilation instructions below.
 
-### Building for Ubuntu
+### Building for newer Ubunutu
 
-If you have done this and want to contribute, fork the repo and
-contribute docs on how to build for windows!
+sudo apt-get install libqt4-dev libqt4-opengl-dev libxmu-dev cmake \
+ libglew1.5-dev bison flex libeigen2-dev git-core libboost-all-dev \
+ libXi-dev libcgal-dev libglut3-dev libopencsg-dev libopencsg1
+
+Check your library versions against the list above. After that, follow 
+the Compilation instructions below.
+
+### Building for older Linux or without root access
+
+First, make sure that you have compiler tools (build-essential on ubuntu).
+Then after you've cloned this git repository, run the script that sets up the
+environment variables.
+
+    source ./scripts/setenv-linbuild.sh
+
+Then run the script to download & compile all the prerequisite libraries above:
+
+    ./scripts/linux-build-dependencies.sh
+
+After that, follow the Compilation instructions below.
 
 ### Building for Windows
 
-If you have done this and want to contribute, fork the repo and
-contribute docs on how to build for windows!
+OpenSCAD for Windows is usually cross-compiled from Linux. If you wish to
+attempt an MSVC build, please see this site:
+http://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Building_on_Windows
 
 ### Compilation
 
@@ -138,3 +157,5 @@ Then run make. Finally you might run 'make install' as root or simply copy the
 If you had problems compiling from source, raise a new issue in the
 [issue tracker on the github page](https://github.com/openscad/openscad/issues).
 
+The four subsections of this site can also be helpful:
+http://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Building_OpenSCAD_from_Sources
