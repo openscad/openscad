@@ -205,9 +205,13 @@ HEADERS += src/parsersettings.h \
            src/stl-utils.h \
            tests/OffscreenView.h \
            tests/OffscreenContext.h \
+           tests/CGAL_renderer.h \
+           tests/CGALRenderer.h \
+           tests/bboxhelp.h \
            tests/fbo.h \
            tests/lodepng.h \
-           tests/imageutils.h
+           tests/imageutils.h \
+           tests/system-gl.h
 
 SOURCES += src/mathc99.cc \
 	   src/linalg.cc \
@@ -256,6 +260,8 @@ SOURCES += src/mathc99.cc \
            tests/fbo.cc \
            tests/lodepng.cpp \
            tests/imageutils.cc \
+           tests/system-gl.cc \
+           tests/bboxhelp.cc \
            \
            src/builtin.cc \
            src/export.cc \
