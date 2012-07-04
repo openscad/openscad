@@ -6,7 +6,7 @@
 extern int parser_error_pos;
 
 void parser_init(const std::string &applicationpath);
-void set_librarydir(const std::string &libdir);
-const std::string &get_librarydir();
+void add_librarydir(const std::string &libdir);
+std::string locate_file(const std::string &filename);
 
 #endif

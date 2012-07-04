@@ -25,6 +25,8 @@
  */
 
 #include "value.h"
+#include <stdio.h>
+#include <math.h>
 #include <assert.h>
 #include <sstream>
 #include <boost/foreach.hpp>

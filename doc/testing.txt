@@ -77,6 +77,10 @@ virtual framebuffer program like Xvnc or Xvfb. For example:
 $ Xvfb :5 -screen 0 800x600x24 &
 $ DISPLAY=:5 ctest
 
+or
+
+$ xvfb-run ctest
+
 Some versions of Xvfb may fail, however. 
 
 1. Trouble finding libraries on unix
@@ -84,12 +88,18 @@ Some versions of Xvfb may fail, however.
  To help CMAKE find eigen2, OpenCSG, CGAL, Boost, and GLEW, you can use 
  environment variables, just like for the main qmake & openscad.pro. Examples:
 
- OPENSCAD_LIBRARIES=~ cmake .
- CGALDIR=~/CGAL-3.9 BOOSTDIR=~/boost-1.47.0 cmake .
-
+ OPENSCAD_LIBRARIES=$HOME cmake .
+ CGALDIR=$HOME/CGAL-3.9 BOOSTDIR=$HOME/boost-1.47.0 cmake .
+ 
  Valid variables are as follows:
 
  BOOSTDIR, CGALDIR, EIGEN2DIR, GLEWDIR, OPENCSGDIR, OPENSCAD_LIBRARIES
+
+ When running, this might help find your locally built libraries (assuming
+ you installed into $HOME)
+
+ Linux: export LD_LIBRARY_PATH=$HOME/lib:$HOME/lib64
+ Mac: export DYLD_LIBRARY_PATH=$HOME/lib
 
 2. Location of logs
  
@@ -111,7 +121,16 @@ Comparison method.
 Your version of imagemagick is old. Upgrade, or pass -DCOMPARATOR=old to 
 cmake. The comparison will be of lowered reliability.
 
-5. Other issues
+5. Locale errors
+
+"terminate called after throwing an instance of 'std::runtime_error'
+  what():  locale::facet::_S_create_c_locale name not valid" 
+
+Is a boost/libstdc++ bug. Fix like so:
+
+  $ export LC_MESSAGES=
+
+6. Other issues
 
 The OpenSCAD User Manual has a section on buildling. Please check there 
 for updates:

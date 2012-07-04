@@ -44,6 +44,7 @@ public:
 	int addPoint(double x, double y);
 
 	void fixup_path_direction();
+	std::string dump() const;
 };
 
 #endif
