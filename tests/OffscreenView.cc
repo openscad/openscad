@@ -11,8 +11,8 @@
 #define FAR_FAR_AWAY 100000.0
 
 OffscreenView::OffscreenView(size_t width, size_t height)
-	: orthomode(false), showaxes(false), showfaces(true), showedges(false),
-		object_rot(35, 0, 25), camera_eye(0, 0, 0), camera_center(0, 0, 0)
+	: object_rot(35, 0, 25), camera_eye(0, 0, 0), camera_center(0, 0, 0),
+		orthomode(false), showaxes(false), showfaces(true), showedges(false)
 {
 	for (int i = 0; i < 10; i++) this->shaderinfo[i] = 0;
 	this->ctx = create_offscreen_context(width, height);
