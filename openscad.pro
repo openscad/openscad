@@ -39,6 +39,7 @@ debug: DEFINES += DEBUG
 TEMPLATE = app
 
 INCLUDEPATH += src
+INCLUDEPATH += tests
 
 # Handle custom library location.
 # Used when manually installing 3rd party libraries
@@ -201,7 +202,12 @@ HEADERS += src/parsersettings.h \
            src/memory.h \
            src/linalg.h \
            src/system-gl.h \
-           src/stl-utils.h
+           src/stl-utils.h \
+           tests/OffscreenView.h \
+           tests/OffscreenContext.h \
+           tests/fbo.h \
+           tests/lodepng.h \
+           tests/imageutils.h
 
 SOURCES += src/mathc99.cc \
 	   src/linalg.cc \
@@ -246,6 +252,11 @@ SOURCES += src/mathc99.cc \
            src/editor.cc \
            src/glview.cc \
            \
+           tests/OffscreenView.cc \
+           tests/fbo.cc \
+           tests/lodepng.cpp \
+           tests/imageutils.cc \
+           \
            src/builtin.cc \
            src/export.cc \
            src/import.cc \
@@ -289,7 +300,16 @@ SOURCES += src/cgalutils.cc \
 macx {
   HEADERS += src/AppleEvents.h \
              src/EventFilter.h
-  SOURCES += src/AppleEvents.cc
+  SOURCES += src/AppleEvents.cc \
+             tests/OffscreenContext.mm
+}
+
+unix {
+  SOURCES += tests/OffscreenContextGLX.cc
+}
+
+win32 {
+  SOURCES += tests/OffscreenContextWGL.cc
 }
 
 isEmpty(PREFIX):PREFIX = /usr/local

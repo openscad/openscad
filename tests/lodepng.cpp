@@ -1497,7 +1497,7 @@ static unsigned encodeLZ77(uivector* out, const unsigned char* in, size_t insize
     unsigned length, tablepos;
 #ifdef LAZY_MATCHING
     unsigned lazy = 0;
-    unsigned lazylength, lazyoffset;
+    unsigned lazylength = 0, lazyoffset = 0;
 #endif /*LAZY_MATCHING*/
     unsigned hash, initialZeros = 0;
     unsigned backpos, current_offset, t1, t2, t11, current_length;
@@ -4679,7 +4679,7 @@ static unsigned filter(unsigned char* out, const unsigned char* in, unsigned w, 
     This is very slow and gives only slightly smaller, sometimes even larger, result*/
     size_t size[5];
     ucvector attempt[5]; /*five filtering attempts, one for each filter type*/
-    size_t smallest;
+    size_t smallest = 0;
     unsigned type = 0, bestType = 0;
     unsigned char* dummy;
     LodePNG_CompressSettings zlibsettings = settings->zlibsettings;

@@ -270,6 +270,17 @@ void render_to_file( const char *filename, const char *output_file, fs::path ori
 					fstream.close();
 				}
 			}
+
+			if (png_output_file) {
+				std::ofstream fstream(png_output_file);
+				if (!fstream.is_open()) {
+					PRINTB("Can't open file \"%s\" for export", off_output_file);
+				}
+				else {
+					export_png(&root_N, fstream, "CGAL");
+					fstream.close();
+				}
+			}
 		}
 		delete root_node;
 #else

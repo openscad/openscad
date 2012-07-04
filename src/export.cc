@@ -29,9 +29,25 @@
 #include "polyset.h"
 #include "dxfdata.h"
 
+#include "OffscreenView.h"
+
 #ifdef ENABLE_CGAL
 #include "CGAL_Nef_polyhedron.h"
 #include "cgal.h"
+
+using namespace std;
+
+void export_png(CGAL_Nef_polyhedron *root_N, std::ostream &output, std::string renderer)
+{
+	cout << "begin\n";
+	OffscreenView *glview;
+	try {
+		glview = new OffscreenView(512,512);
+	} catch (int error) {
+		PRINT("Can't create OpenGL OffscreenView. Exiting.\n");
+	}
+	cout << "end\n";
+}
 
 /*!
 	Saves the current 3D CGAL Nef polyhedron as STL to the given file.
