@@ -90,6 +90,40 @@ QString examplesdir;
 using std::string;
 using std::vector;
 
+void start_QT_gui( const char * filename )
+{
+#ifdef Q_WS_MAC
+		installAppleEventHandlers();
+#endif
+
+		QString qfilename;
+		if (filename) qfilename = QString::fromStdString(boosty::stringy(boosty::absolute(filename)));
+
+#if 0 /*** disabled by clifford wolf: adds rendering artefacts with OpenCSG ***/
+		// turn on anti-aliasing
+		QGLFormat f;
+		f.setSampleBuffers(true);
+		f.setSamples(4);
+		QGLFormat::setDefaultFormat(f);
+#endif
+#ifdef ENABLE_MDI
+		new MainWindow(qfilename);
+		vector<string> inputFiles;
+		if (vm.count("input-file")) {
+			inputFiles = vm["input-file"].as<vector<string> >();
+			for (vector<string>::const_iterator infile = inputFiles.begin()+1; infile != inputFiles.end(); infile++) {
+				new MainWindow(QString::fromStdString(boosty::stringy((original_path / *infile))));
+			}
+		}
+		app.connect(&app, SIGNAL(lastWindowClosed()), &app, SLOT(quit()));
+#else
+		MainWindow *m = new MainWindow(qfilename);
+		app.connect(m, SIGNAL(destroyed()), &app, SLOT(quit()));
+#endif
+		return app.exec();
+}
+
+
 int main(int argc, char **argv)
 {
 	int rc = 0;
@@ -237,8 +271,7 @@ int main(int argc, char **argv)
 	PolySetCGALEvaluator psevaluator(cgalevaluator);
 #endif
 
-	if (output_file)
-	{
+	if (output_file) {
 		const char *stl_output_file = NULL;
 		const char *off_output_file = NULL;
 		const char *dxf_output_file = NULL;
@@ -375,35 +408,7 @@ int main(int argc, char **argv)
 	}
 	else if (useGUI)
 	{
-#ifdef Q_WS_MAC
-		installAppleEventHandlers();
-#endif		
-
-		QString qfilename;
-		if (filename) qfilename = QString::fromStdString(boosty::stringy(boosty::absolute(filename)));
-
-#if 0 /*** disabled by clifford wolf: adds rendering artefacts with OpenCSG ***/
-		// turn on anti-aliasing
-		QGLFormat f;
-		f.setSampleBuffers(true);
-		f.setSamples(4);
-		QGLFormat::setDefaultFormat(f);
-#endif
-#ifdef ENABLE_MDI
-		new MainWindow(qfilename);
-		vector<string> inputFiles;
-		if (vm.count("input-file")) {
-			inputFiles = vm["input-file"].as<vector<string> >();
-			for (vector<string>::const_iterator infile = inputFiles.begin()+1; infile != inputFiles.end(); infile++) {
-				new MainWindow(QString::fromStdString(boosty::stringy((original_path / *infile))));
-			}
-		}
-		app.connect(&app, SIGNAL(lastWindowClosed()), &app, SLOT(quit()));
-#else
-		MainWindow *m = new MainWindow(qfilename);
-		app.connect(m, SIGNAL(destroyed()), &app, SLOT(quit()));
-#endif
-		rc = app.exec();
+		rc = start_QT_gui( filename );
 	}
 	else
 	{
