@@ -237,9 +237,9 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this->fileActionClearRecent, SIGNAL(triggered()),
 					this, SLOT(clearRecentFiles()));
 
-	if (!examplesdir.isEmpty()) {
+	if (!examplesdir.empty()) {
 		bool found_example = false;
-		QStringList examples = QDir(examplesdir).entryList(QStringList("*.scad"), 
+		QStringList examples = QDir(examplesdir.c_str()).entryList(QStringList("*.scad"), 
 		QDir::Files | QDir::Readable, QDir::Name);
 		foreach (const QString &ex, examples) {
 			this->menuExamples->addAction(ex, this, SLOT(actionOpenExample()));
@@ -880,7 +880,7 @@ void MainWindow::actionOpenExample()
 {
 	QAction *action = qobject_cast<QAction *>(sender());
 	if (action) {
-		openFile(examplesdir + QDir::separator() + action->text());
+		openFile(QString(examplesdir.c_str()) + QDir::separator() + action->text());
 	}
 }
 

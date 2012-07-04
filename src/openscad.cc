@@ -85,7 +85,6 @@ static void version()
 
 std::string commandline_commands;
 std::string currentdir;
-QString examplesdirq;
 std::string examplesdir;
 
 using std::string;
