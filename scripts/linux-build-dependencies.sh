@@ -7,12 +7,9 @@
 # Usage: linux-build-dependencies.sh
 #
 # Prerequisites:
-# - curl
-# -- you can uncomment 'build_curl' at the bottom
-# -- and add $BASEDIR/bin to your PATH, i.e. in .bash_profile
+# - wget
 # - Qt4
-# - cmake 2.8 
-# -- you can uncomment 'build_cmake' at the bottom
+# - cmake 2.8 ( force build_cmake at bottom if yours is too old )
 #
 
 BASEDIR=$HOME/openscad_deps
@@ -209,9 +206,9 @@ mkdir -p $SRCDIR $DEPLOYDIR
 export PATH=$BASEDIR/bin:$PATH
 export LD_LIBRARY_PATH=$DEPLOYDIR/lib:$DEPLOYDIR/lib64:$LD_LIBRARY_PATH
 export LD_RUN_PATH=$DEPLOYDIR/lib:$DEPLOYDIR/lib64:$LD_RUN_PATH
-echo "PATH modified"
-echo "LD_LIBRARY_PATH modified"
-echo "LD_RUN_PATH modified"
+echo "PATH modified temporarily"
+echo "LD_LIBRARY_PATH modified temporarily"
+echo "LD_RUN_PATH modified temporarily"
 
 if [ ! "`command -v curl`" ]; then
 	build_curl 7.26.0
@@ -232,8 +229,3 @@ build_glew 1.7.0
 build_opencsg 1.3.2
 
 echo "OpenSCAD dependencies built in " $BASEDIR
-echo "To build OpenSCAD, copy/paste these lines to your shell prompt: "
-echo "export LD_LIBRARY_PATH=$DEPLOYDIR/lib:$DEPLOYDIR/lib64"
-echo "GLEWDIR=$DEPLOYDIR OPENSCAD_LIBRARIES=$DEPLOYDIR qmake-qt4"
-echo "make -j$NUMCPU"
-
