@@ -16,7 +16,7 @@ BASEDIR=$HOME/openscad_deps
 OPENSCADDIR=$PWD
 SRCDIR=$BASEDIR/src
 DEPLOYDIR=$BASEDIR
-NUMCPU=4 # paralell builds for some libraries
+NUMCPU=2 # paralell builds for some libraries
 
 printUsage()
 {
@@ -145,6 +145,10 @@ build_glew()
   tar xzf glew-$version.tgz
   cd glew-$version
   mkdir -p $DEPLOYDIR/lib/pkgconfig
+
+  # uncomment this kludge for Fedora 64bit
+  # sed -i s/"\-lXmu"/"\-L\/usr\/lib64\/libXmu.so.6"/ config/Makefile.linux
+
   GLEW_DEST=$DEPLOYDIR make -j$NUMCPU
   GLEW_DEST=$DEPLOYDIR make install
 }
@@ -161,6 +165,10 @@ build_opencsg()
   tar xzf OpenCSG-$version.tar.gz
   cd OpenCSG-$version
   sed -i s/example// opencsg.pro # examples might be broken without GLUT
+
+  # uncomment this kludge for Fedora 64bit
+  # sed -i s/"\-lXmu"/"\-L\/usr\/lib64\/libXmu.so.6"/ src/Makefile 
+
   qmake-qt4
   make
   install -v lib/* $DEPLOYDIR/lib
