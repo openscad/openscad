@@ -117,6 +117,15 @@ compilation process.
 
 After that, follow the Compilation instructions below.
 
+### Building for newer Ubunutu
+
+sudo apt-get install libqt4-dev libqt4-opengl-dev libxmu-dev cmake \
+ libglew1.5-dev bison flex libeigen2-dev git-core libboost-all-dev \
+ libXi-dev libcgal-dev libglut3-dev libopencsg-dev libopencsg1
+
+Check your library versions against the list above. After that, follow 
+the Compilation instructions below.
+
 ### Building for older Linux or without root access
 
 First, make sure that you have compiler tools (build-essential on ubuntu).
@@ -148,3 +157,5 @@ Then run make. Finally you might run 'make install' as root or simply copy the
 If you had problems compiling from source, raise a new issue in the
 [issue tracker on the github page](https://github.com/openscad/openscad/issues).
 
+The four subsections of this site can also be helpful:
+http://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Building_OpenSCAD_from_Sources
