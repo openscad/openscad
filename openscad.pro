@@ -203,10 +203,9 @@ HEADERS += src/parsersettings.h \
            src/linalg.h \
            src/system-gl.h \
            src/stl-utils.h \
+           src/CGALRenderer.h \
            tests/OffscreenView.h \
            tests/OffscreenContext.h \
-           tests/CGAL_renderer.h \
-           tests/CGALRenderer.h \
            tests/bboxhelp.h \
            tests/fbo.h \
            tests/lodepng.h \
