@@ -6,15 +6,20 @@
 class CSGTermNormalizer
 {
 public:
-	CSGTermNormalizer() {}
+	CSGTermNormalizer(size_t limit) : limit(limit) {}
 	~CSGTermNormalizer() {}
 
-	shared_ptr<class CSGTerm> normalize(const shared_ptr<CSGTerm> &term, size_t limit);
+	shared_ptr<class CSGTerm> normalize(const shared_ptr<CSGTerm> &term);
 
 private:
 	shared_ptr<CSGTerm> normalizePass(shared_ptr<CSGTerm> term) ;
-	bool normalize_tail(shared_ptr<CSGTerm> &term);
+	bool match_and_replace(shared_ptr<CSGTerm> &term);
+	shared_ptr<CSGTerm> collapse_null_terms(const shared_ptr<CSGTerm> &term);
 	unsigned int count(const shared_ptr<CSGTerm> &term) const;
+
+	size_t limit;
+	size_t nodecount;
+	shared_ptr<class CSGTerm> rootnode;
 };
 
 #endif

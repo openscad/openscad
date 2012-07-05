@@ -7,15 +7,12 @@
 # Usage: linux-build-dependencies.sh
 #
 # Prerequisites:
-# - curl
-# -- you can uncomment 'build_curl' at the bottom
-# -- and add $BASEDIR/bin to your PATH, i.e. in .bash_profile
+# - wget or curl
 # - Qt4
-# - cmake 2.8 
-# -- you can uncomment 'build_cmake' at the bottom
+# - cmake 2.8 ( force build_cmake at bottom if yours is too old )
 #
 
-BASEDIR=$HOME
+BASEDIR=$HOME/openscad_deps
 OPENSCADDIR=$PWD
 SRCDIR=$BASEDIR/src
 DEPLOYDIR=$BASEDIR
@@ -87,12 +84,10 @@ build_mpfr()
   cd $BASEDIR/src
   rm -rf mpfr-$version
   if [ ! -f mpfr-$version.tar.bz2 ]; then
-    curl -O http://www.mpfr.org/mpfr-current/mpfr-$version.tar.bz2
+    curl -O http://www.mpfr.org/mpfr-$version/mpfr-$version.tar.bz2
   fi
   tar xjf mpfr-$version.tar.bz2
   cd mpfr-$version
-  curl -O http://www.mpfr.org/mpfr-current/allpatches
-  patch -N -Z -p1 < allpatches
   mkdir build
   cd build
   ../configure --prefix=$DEPLOYDIR --with-gmp=$DEPLOYDIR
@@ -150,6 +145,10 @@ build_glew()
   tar xzf glew-$version.tgz
   cd glew-$version
   mkdir -p $DEPLOYDIR/lib/pkgconfig
+
+  # uncomment this kludge for Fedora 64bit
+  # sed -i s/"\-lXmu"/"\-L\/usr\/lib64\/libXmu.so.6"/ config/Makefile.linux
+
   GLEW_DEST=$DEPLOYDIR make -j$NUMCPU
   GLEW_DEST=$DEPLOYDIR make install
 }
@@ -166,6 +165,10 @@ build_opencsg()
   tar xzf OpenCSG-$version.tar.gz
   cd OpenCSG-$version
   sed -i s/example// opencsg.pro # examples might be broken without GLUT
+
+  # uncomment this kludge for Fedora 64bit
+  # sed -i s/"\-lXmu"/"\-L\/usr\/lib64\/libXmu.so.6"/ src/Makefile 
+
   qmake-qt4
   make
   install -v lib/* $DEPLOYDIR/lib
@@ -208,20 +211,29 @@ echo "Using srcdir:" $SRCDIR
 echo "Number of CPUs for parallel builds:" $NUMCPU
 mkdir -p $SRCDIR $DEPLOYDIR
 
-#build_curl 7.26.0
+export PATH=$BASEDIR/bin:$PATH
+export LD_LIBRARY_PATH=$DEPLOYDIR/lib:$DEPLOYDIR/lib64:$LD_LIBRARY_PATH
+export LD_RUN_PATH=$DEPLOYDIR/lib:$DEPLOYDIR/lib64:$LD_RUN_PATH
+echo "PATH modified temporarily"
+echo "LD_LIBRARY_PATH modified temporarily"
+echo "LD_RUN_PATH modified temporarily"
+
+if [ ! "`command -v curl`" ]; then
+	build_curl 7.26.0
+fi
+
 # NB! For cmake, also update the actual download URL in the function
-#build_cmake 2.8.8
+if [ ! "`command -v cmake`" ]; then
+	build_cmake 2.8.8
+fi
+
 build_eigen 2.0.17
 build_gmp 5.0.5
-build_mpfr 3.1.0
+build_mpfr 3.1.1
 build_boost 1.47.0
 # NB! For CGAL, also update the actual download URL in the function
 build_cgal 4.0
 build_glew 1.7.0
 build_opencsg 1.3.2
 
-echo "Now do this:"
-echo "export LD_LIBRARY_PATH=$DEPLOYDIR/lib:$DEPLOYDIR/lib64"
-echo "GLEWDIR=$DEPLOYDIR OPENSCAD_LIBRARIES=$DEPLOYDIR qmake-qt4"
-echo "make -j$NUMCPU"
-
+echo "OpenSCAD dependencies built in " $BASEDIR
