@@ -4,6 +4,7 @@
 ;; Maintainer: Len Trigg <lenbok@gmail.com>
 ;; Created:    March 2010
 ;; Modified:   November 2011
+;; URL:        https://raw.github.com/openscad/openscad/master/contrib/scad.el
 ;; Version:    $Revision: 88 $
 
 ;; This program is free software; you can redistribute it and/or modify
