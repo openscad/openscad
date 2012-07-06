@@ -168,8 +168,12 @@ build_glew()
   cd glew-$version
   mkdir -p $DEPLOYDIR/lib/pkgconfig
 
-  # uncomment this kludge for Fedora 64bit
-  # sed -i s/"\-lXmu"/"\-L\/usr\/lib64\/libXmu.so.6"/ config/Makefile.linux
+  # kludge for Fedora 64bit
+  if [ ! -e /usr/lib64/libXmu.so ]; then
+    if [ -e /usr/lib64/libXmu.so.6 ] ; then
+      sed -i s/"\-lXmu"/"\-L\/usr\/lib64\/libXmu.so.6"/ config/Makefile.linux
+    fi
+  fi
 
   GLEW_DEST=$DEPLOYDIR make -j$NUMCPU
   GLEW_DEST=$DEPLOYDIR make install
@@ -188,8 +192,12 @@ build_opencsg()
   cd OpenCSG-$version
   sed -i s/example// opencsg.pro # examples might be broken without GLUT
 
-  # uncomment this kludge for Fedora 64bit
-  # sed -i s/"\-lXmu"/"\-L\/usr\/lib64\/libXmu.so.6"/ src/Makefile 
+  # kludge for Fedora 64bit
+  if [ ! -e /usr/lib64/libXmu.so ]; then
+    if [ -e /usr/lib64/libXmu.so.6 ] ; then
+      sed -i s/"\-lXmu"/"\-L\/usr\/lib64\/libXmu.so.6"/ src/Makefile
+    fi
+  fi
 
   qmake-qt4
   make
@@ -261,4 +269,7 @@ build_cgal 4.0
 build_glew 1.7.0
 build_opencsg 1.3.2
 
-echo "OpenSCAD dependencies built in " $BASEDIR
+echo
+echo "OpenSCAD dependencies built and installed into " $BASEDIR
+echo
+
