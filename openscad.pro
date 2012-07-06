@@ -84,11 +84,10 @@ QT += opengl
 
 # see http://fedoraproject.org/wiki/UnderstandingDSOLinkChange
 # and https://github.com/openscad/openscad/pull/119
-# ( QT += opengl does not automatically link glu on some DSO systems. )
+# ( QT += opengl does not automatically link glu+X11 on some DSO systems. )
 unix:!macx {
-  !contains ( QMAKE_LIBS_OPENGL, "-lGLU" ) {
-    QMAKE_LIBS_OPENGL += -lGLU
-  }
+  QMAKE_LIBS_OPENGL *= -lGLU
+  QMAKE_LIBS_OPENGL *= -lX11
 }
 
 netbsd* {
