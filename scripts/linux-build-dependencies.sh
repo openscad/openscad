@@ -10,6 +10,10 @@
 # - wget or curl
 # - Qt4
 #
+# Note:
+#
+# If you cancel during a download, it will break. rm the d/l file and restart
+#
 
 BASEDIR=$HOME/openscad_deps
 OPENSCADDIR=$PWD
@@ -29,7 +33,7 @@ build_git()
   echo "Building git" $version "..."
   cd $BASEDIR/src
   rm -rf git-$version
-  if [ ! -f git-$version.tar.gz ]; then
+  if [ ! -e git-$version.tar.gz ]; then
     curl -O http://git-core.googlecode.com/files/git-$version.tar.gz
   fi
   tar xf git-$version.tar.gz
@@ -48,7 +52,7 @@ build_cmake()
   echo "Building cmake" $version "..."
   cd $BASEDIR/src
   rm -rf cmake-$version
-  if [ ! -f cmake-$version.tar.gz ]; then
+  if [ ! -e cmake-$version.tar.gz ]; then
     curl -O http://www.cmake.org/files/v$version_major.$version_minor/cmake-$version.tar.gz
   fi
   tar zxf cmake-$version.tar.gz
@@ -66,7 +70,7 @@ build_curl()
   echo "Building curl" $version "..."
   cd $BASEDIR/src
   rm -rf curl-$version
-  if [ ! -f curl-$version.tar.bz2 ]; then
+  if [ ! -e curl-$version.tar.bz2 ]; then
     wget http://curl.haxx.se/download/curl-$version.tar.bz2
   fi
   tar xjf curl-$version.tar.bz2
@@ -84,7 +88,7 @@ build_gmp()
   echo "Building gmp" $version "..."
   cd $BASEDIR/src
   rm -rf gmp-$version
-  if [ ! -f gmp-$version.tar.bz2 ]; then
+  if [ ! -e gmp-$version.tar.bz2 ]; then
     curl -O ftp://ftp.gmplib.org/pub/gmp-$version/gmp-$version.tar.bz2
   fi
   tar xjf gmp-$version.tar.bz2
@@ -101,7 +105,7 @@ build_mpfr()
   echo "Building mpfr" $version "..."
   cd $BASEDIR/src
   rm -rf mpfr-$version
-  if [ ! -f mpfr-$version.tar.bz2 ]; then
+  if [ ! -e mpfr-$version.tar.bz2 ]; then
     curl -O http://www.mpfr.org/mpfr-$version/mpfr-$version.tar.bz2
   fi
   tar xjf mpfr-$version.tar.bz2
@@ -120,7 +124,7 @@ build_boost()
   echo "Building boost" $version "..."
   cd $BASEDIR/src
   rm -rf boost_$bversion
-  if [ ! -f boost_$bversion.tar.bz2 ]; then
+  if [ ! -e boost_$bversion.tar.bz2 ]; then
     curl -LO http://downloads.sourceforge.net/project/boost/boost/$version/boost_$bversion.tar.bz2
   fi
   tar xjf boost_$bversion.tar.bz2
@@ -137,7 +141,7 @@ build_cgal()
   echo "Building CGAL" $version "..."
   cd $BASEDIR/src
   rm -rf CGAL-$version
-  if [ ! -f CGAL-$version.tar.gz ]; then
+  if [ ! -e CGAL-$version.tar.gz ]; then
     #4.0
     curl -k -O https://gforge.inria.fr/frs/download.php/30387/CGAL-$version.tar.gz
     # 3.9 curl -O https://gforge.inria.fr/frs/download.php/29125/CGAL-$version.tar.gz
@@ -157,7 +161,7 @@ build_glew()
   echo "Building GLEW" $version "..."
   cd $BASEDIR/src
   rm -rf glew-$version
-  if [ ! -f glew-$version.tgz ]; then
+  if [ ! -e glew-$version.tgz ]; then
     curl -LO http://downloads.sourceforge.net/project/glew/glew/$version/glew-$version.tgz
   fi
   tar xzf glew-$version.tgz
@@ -176,8 +180,8 @@ build_opencsg()
   version=$1
   echo "Building OpenCSG" $version "..."
   cd $BASEDIR/src
-  rm -rf OpenCSG-$version
-  if [ ! -f OpenCSG-$version.tar.gz ]; then
+    rm -rf OpenCSG-$version
+  if [ ! -e OpenCSG-$version.tar.gz ]; then
     curl -O http://www.opencsg.org/OpenCSG-$version.tar.gz
   fi
   tar xzf OpenCSG-$version.tar.gz
@@ -201,7 +205,7 @@ build_eigen()
   rm -rf eigen-$version
   ## Directory name for v2.0.17
   rm -rf eigen-eigen-b23437e61a07
-  if [ ! -f eigen-$version.tar.bz2 ]; then
+  if [ ! -e eigen-$version.tar.bz2 ]; then
     curl -k -LO http://bitbucket.org/eigen/eigen/get/$version.tar.bz2
     mv $version.tar.bz2 eigen-$version.tar.bz2
   fi
