@@ -240,8 +240,7 @@ if [ ! "`command -v curl`" ]; then
 	build_curl 7.26.0
 fi
 
-build_git 1.7.11
-exit
+# build_git 1.7.11 # for working on very old machines
 
 if [ ! "`command -v cmake`" ]; then
 	build_cmake 2 8 8
