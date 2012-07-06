@@ -3,7 +3,7 @@
 ;; Author:     Len Trigg
 ;; Maintainer: Len Trigg <lenbok@gmail.com>
 ;; Created:    March 2010
-;; Modified:   November 2011
+;; Modified:   06 July 2012
 ;; Version:    $Revision: 89 $
 
 ;; This program is free software; you can redistribute it and/or modify
