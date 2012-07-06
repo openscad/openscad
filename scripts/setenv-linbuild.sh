@@ -21,3 +21,12 @@ echo LD_RUN_PATH modified
 echo OPENSCAD_LIBRARIES modified
 echo GLEWDIR modified
 
+if [ "`uname -a | grep ppc`" ]; then
+	# workaround for https://bugs.freedesktop.org/show_bug.cgi?id=42540
+	export GALLIUM_DRIVER=softpipe
+	export DRAW_USE_LLVM=n
+	echo "detected ppc.."
+	echo "GALLIUM_DRIVER modified"
+	echo "DRAW_USE_LLVM modified"
+fi
+
