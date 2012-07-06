@@ -171,116 +171,116 @@ void render_to_file( const char *filename, const char *output_file, fs::path ori
 	ModuleInstantiation root_inst;
 	AbstractNode *root_node;
 
-		handle_dep(filename);
+	handle_dep(filename);
 		
-		std::ifstream ifs(filename);
-		if (!ifs.is_open()) {
-			fprintf(stderr, "Can't open input file '%s'!\n", filename);
-			exit(1);
+	std::ifstream ifs(filename);
+	if (!ifs.is_open()) {
+		fprintf(stderr, "Can't open input file '%s'!\n", filename);
+		exit(1);
+	}
+	std::string text((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
+	text += "\n" + commandline_commands;
+	fs::path abspath = boosty::absolute(filename);
+	std::string parentpath = boosty::stringy(abspath.parent_path());
+	root_module = parse(text.c_str(), parentpath.c_str(), false);
+	if (!root_module) exit(1);
+	root_module->handleDependencies();
+		
+	fs::path fpath = boosty::absolute(fs::path(filename));
+	fs::path fparent = fpath.parent_path();
+	fs::current_path(fparent);
+
+	AbstractNode::resetIndexCounter();
+	root_node = root_module->evaluate(&root_ctx, &root_inst);
+	tree.setRoot(root_node);
+
+	if (csg_output_file) {
+		fs::current_path(original_path);
+		std::ofstream fstream(csg_output_file);
+		if (!fstream.is_open()) {
+			PRINTB("Can't open file \"%s\" for export", csg_output_file);
 		}
-		std::string text((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
-		text += "\n" + commandline_commands;
-		fs::path abspath = boosty::absolute(filename);
-		std::string parentpath = boosty::stringy(abspath.parent_path());
-		root_module = parse(text.c_str(), parentpath.c_str(), false);
-		if (!root_module) exit(1);
-		root_module->handleDependencies();
+		else {
+			fs::current_path(fparent); // Force exported filenames to be relative to document path
+			fstream << tree.getString(*root_node) << "\n";
+			fstream.close();
+		}
+	}
+	else {
+		CGAL_Nef_polyhedron root_N = cgalevaluator.evaluateCGALMesh(*tree.root());
 		
-		fs::path fpath = boosty::absolute(fs::path(filename));
-		fs::path fparent = fpath.parent_path();
-		fs::current_path(fparent);
+		fs::current_path(original_path);
+		
+		if (deps_output_file) {
+			if (!write_deps(deps_output_file, 
+											stl_output_file ? stl_output_file : off_output_file)) {
+				exit(1);
+			}
+		}
+			if (stl_output_file) {
 
-		AbstractNode::resetIndexCounter();
-		root_node = root_module->evaluate(&root_ctx, &root_inst);
-		tree.setRoot(root_node);
-
-		if (csg_output_file) {
-			fs::current_path(original_path);
-			std::ofstream fstream(csg_output_file);
+			if (root_N.dim != 3) {
+				fprintf(stderr, "Current top level object is not a 3D object.\n");
+				exit(1);
+			}
+			if (!root_N.p3->is_simple()) {
+				fprintf(stderr, "Object isn't a valid 2-manifold! Modify your design.\n");
+				exit(1);
+			}
+			std::ofstream fstream(stl_output_file);
 			if (!fstream.is_open()) {
-				PRINTB("Can't open file \"%s\" for export", csg_output_file);
+				PRINTB("Can't open file \"%s\" for export", stl_output_file);
 			}
 			else {
-				fs::current_path(fparent); // Force exported filenames to be relative to document path
-				fstream << tree.getString(*root_node) << "\n";
+				export_stl(&root_N, fstream);
 				fstream.close();
 			}
 		}
-		else {
-			CGAL_Nef_polyhedron root_N = cgalevaluator.evaluateCGALMesh(*tree.root());
-			
-			fs::current_path(original_path);
-			
-			if (deps_output_file) {
-				if (!write_deps(deps_output_file, 
-												stl_output_file ? stl_output_file : off_output_file)) {
-					exit(1);
-				}
+		
+		if (off_output_file) {
+			if (root_N.dim != 3) {
+				fprintf(stderr, "Current top level object is not a 3D object.\n");
+				exit(1);
 			}
-
-			if (stl_output_file) {
-				if (root_N.dim != 3) {
-					fprintf(stderr, "Current top level object is not a 3D object.\n");
-					exit(1);
-				}
-				if (!root_N.p3->is_simple()) {
-					fprintf(stderr, "Object isn't a valid 2-manifold! Modify your design.\n");
-					exit(1);
-				}
-				std::ofstream fstream(stl_output_file);
-				if (!fstream.is_open()) {
-					PRINTB("Can't open file \"%s\" for export", stl_output_file);
-				}
-				else {
-					export_stl(&root_N, fstream);
-					fstream.close();
-				}
+			if (!root_N.p3->is_simple()) {
+				fprintf(stderr, "Object isn't a valid 2-manifold! Modify your design.\n");
+				exit(1);
 			}
-			
-			if (off_output_file) {
-				if (root_N.dim != 3) {
-					fprintf(stderr, "Current top level object is not a 3D object.\n");
-					exit(1);
-				}
-				if (!root_N.p3->is_simple()) {
-					fprintf(stderr, "Object isn't a valid 2-manifold! Modify your design.\n");
-					exit(1);
-				}
-				std::ofstream fstream(off_output_file);
-				if (!fstream.is_open()) {
-					PRINTB("Can't open file \"%s\" for export", off_output_file);
-				}
-				else {
-					export_off(&root_N, fstream);
-					fstream.close();
-				}
+			std::ofstream fstream(off_output_file);
+			if (!fstream.is_open()) {
+				PRINTB("Can't open file \"%s\" for export", off_output_file);
 			}
-			
-			if (dxf_output_file) {
-				if (root_N.dim != 2) {
-					fprintf(stderr, "Current top level object is not a 2D object.\n");
-					exit(1);
-				}
-				std::ofstream fstream(dxf_output_file);
-				if (!fstream.is_open()) {
-					PRINTB("Can't open file \"%s\" for export", dxf_output_file);
-				}
-				else {
-					export_dxf(&root_N, fstream);
-					fstream.close();
-				}
-			}
-
-			if (png_output_file) {
-				// can't use fstream because of the way
-				// 'imageutils-macosx.cc' & etc works
-				export_png(&root_N, png_output_file, "CGAL");
+			else {
+				export_off(&root_N, fstream);
+				fstream.close();
 			}
 		}
-		delete root_node;
+			
+		if (dxf_output_file) {
+			if (root_N.dim != 2) {
+				fprintf(stderr, "Current top level object is not a 2D object.\n");
+				exit(1);
+			}
+			std::ofstream fstream(dxf_output_file);
+			if (!fstream.is_open()) {
+				PRINTB("Can't open file \"%s\" for export", dxf_output_file);
+			}
+			else {
+				export_dxf(&root_N, fstream);
+				fstream.close();
+			}
+		}
+
+		if (png_output_file) {
+			// can't use fstream because of the way
+			// 'imageutils-macosx.cc' & etc works
+			export_png(&root_N, png_output_file, "CGAL");
+		}
+	}
+	delete root_node;
 #else
-		fprintf(stderr, "OpenSCAD has been compiled without CGAL support!\n");
-		exit(1);
+	fprintf(stderr, "OpenSCAD has been compiled without CGAL support!\n");
+	exit(1);
 #endif
 }
 
