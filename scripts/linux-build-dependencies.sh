@@ -26,12 +26,15 @@ printUsage()
 
 build_cmake()
 {
-  version=$1
+  version_major=$1
+  version_minor=$2
+  version_patch=$3
+  version=$version_major.$version_minor.$version_patch
   echo "Building cmake" $version "..."
   cd $BASEDIR/src
   rm -rf cmake-$version
   if [ ! -f cmake-$version.tar.gz ]; then
-    curl -O http://www.cmake.org/files/v2.8/cmake-$version.tar.gz
+    curl -O http://www.cmake.org/files/v$major.$minor/cmake-$version.tar.gz
   fi
   tar zxf cmake-$version.tar.gz
   cd cmake-$version
@@ -222,9 +225,10 @@ if [ ! "`command -v curl`" ]; then
 	build_curl 7.26.0
 fi
 
-# NB! For cmake, also update the actual download URL in the function
 if [ ! "`command -v cmake`" ]; then
-	build_cmake 2.8.8
+	build_cmake 2 8 8
+elif [ "`cmake --version | grep 2.[1-7][^0-9]`" ]; then
+	build_cmake 2 8 8
 fi
 
 build_eigen 2.0.17
