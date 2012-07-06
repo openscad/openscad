@@ -9,7 +9,6 @@
 # Prerequisites:
 # - wget or curl
 # - Qt4
-# - cmake 2.8 ( force build_cmake at bottom if yours is too old )
 #
 
 BASEDIR=$HOME/openscad_deps
@@ -22,6 +21,22 @@ printUsage()
 {
   echo "Usage: $0"
   echo
+}
+
+build_git()
+{
+  version=$1
+  echo "Building git" $version "..."
+  cd $BASEDIR/src
+  rm -rf git-$version
+  if [ ! -f git-$version.tar.gz ]; then
+    curl -O http://git-core.googlecode.com/files/git-$version.tar.gz
+  fi
+  tar xf git-$version.tar.gz
+  cd git-$version
+  ./configure --prefix=$DEPLOYDIR
+  make -j$NUMCPU
+  make install
 }
 
 build_cmake()
@@ -224,6 +239,9 @@ echo "LD_RUN_PATH modified temporarily"
 if [ ! "`command -v curl`" ]; then
 	build_curl 7.26.0
 fi
+
+build_git 1.7.11
+exit
 
 if [ ! "`command -v cmake`" ]; then
 	build_cmake 2 8 8
