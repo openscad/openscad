@@ -15,7 +15,7 @@ BASEDIR=$HOME/openscad_deps
 OPENSCADDIR=$PWD
 SRCDIR=$BASEDIR/src
 DEPLOYDIR=$BASEDIR
-NUMCPU=2 # paralell builds for some libraries
+NUMCPU=1 # paralell builds for some libraries
 
 printUsage()
 {
@@ -49,7 +49,7 @@ build_cmake()
   cd $BASEDIR/src
   rm -rf cmake-$version
   if [ ! -f cmake-$version.tar.gz ]; then
-    curl -O http://www.cmake.org/files/v$major.$minor/cmake-$version.tar.gz
+    curl -O http://www.cmake.org/files/v$version_major.$version_minor/cmake-$version.tar.gz
   fi
   tar zxf cmake-$version.tar.gz
   cd cmake-$version
@@ -139,7 +139,7 @@ build_cgal()
   rm -rf CGAL-$version
   if [ ! -f CGAL-$version.tar.gz ]; then
     #4.0
-    curl -O https://gforge.inria.fr/frs/download.php/30387/CGAL-$version.tar.gz
+    curl -k -O https://gforge.inria.fr/frs/download.php/30387/CGAL-$version.tar.gz
     # 3.9 curl -O https://gforge.inria.fr/frs/download.php/29125/CGAL-$version.tar.gz
     # 3.8 curl -O https://gforge.inria.fr/frs/download.php/28500/CGAL-$version.tar.gz
     # 3.7 curl -O https://gforge.inria.fr/frs/download.php/27641/CGAL-$version.tar.gz
@@ -202,7 +202,7 @@ build_eigen()
   ## Directory name for v2.0.17
   rm -rf eigen-eigen-b23437e61a07
   if [ ! -f eigen-$version.tar.bz2 ]; then
-    curl -LO http://bitbucket.org/eigen/eigen/get/$version.tar.bz2
+    curl -k -LO http://bitbucket.org/eigen/eigen/get/$version.tar.bz2
     mv $version.tar.bz2 eigen-$version.tar.bz2
   fi
   tar xjf eigen-$version.tar.bz2
@@ -220,7 +220,7 @@ if [ ! -f $OPENSCADDIR/openscad.pro ]; then
 fi
 
 if [ ! -d $BASEDIR/bin ]; then
-  mkdir --parents $BASEDIR/bin
+  mkdir -p $BASEDIR/bin
 fi
 
 echo "Using basedir:" $BASEDIR
