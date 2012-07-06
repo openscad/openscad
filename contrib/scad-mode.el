@@ -28,7 +28,7 @@
 ;;
 ;; To use, insert the following into your emacs startup:
 ;;
-;; (autoload 'scad-mode "scad" "Major mode for editing SCAD code." t)
+;; (autoload 'scad-mode "scad-mode" "Major mode for editing SCAD code." t)
 ;; (add-to-list 'auto-mode-alist '("\\.scad$" . scad-mode))
 
 ;;; To Do:
