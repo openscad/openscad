@@ -39,6 +39,7 @@ debug: DEFINES += DEBUG
 TEMPLATE = app
 
 INCLUDEPATH += src
+INCLUDEPATH += tests
 
 # Handle custom library location.
 # Used when manually installing 3rd party libraries
@@ -83,11 +84,10 @@ QT += opengl
 
 # see http://fedoraproject.org/wiki/UnderstandingDSOLinkChange
 # and https://github.com/openscad/openscad/pull/119
-# ( QT += opengl does not automatically link glu on some DSO systems. )
+# ( QT += opengl does not automatically link glu+X11 on some DSO systems. )
 unix:!macx {
-  !contains ( QMAKE_LIBS_OPENGL, "-lGLU" ) {
-    QMAKE_LIBS_OPENGL += -lGLU
-  }
+  QMAKE_LIBS_OPENGL *= -lGLU
+  QMAKE_LIBS_OPENGL *= -lX11
 }
 
 netbsd* {
@@ -201,7 +201,15 @@ HEADERS += src/parsersettings.h \
            src/memory.h \
            src/linalg.h \
            src/system-gl.h \
-           src/stl-utils.h
+           src/stl-utils.h \
+           src/CGALRenderer.h \
+           tests/OffscreenView.h \
+           tests/OffscreenContext.h \
+           tests/bboxhelp.h \
+           tests/fbo.h \
+           tests/lodepng.h \
+           tests/imageutils.h \
+           tests/system-gl.h
 
 SOURCES += src/mathc99.cc \
 	   src/linalg.cc \
@@ -246,6 +254,13 @@ SOURCES += src/mathc99.cc \
            src/editor.cc \
            src/glview.cc \
            \
+           tests/OffscreenView.cc \
+           tests/fbo.cc \
+           tests/lodepng.cpp \
+           tests/imageutils.cc \
+           tests/system-gl.cc \
+           tests/bboxhelp.cc \
+           \
            src/builtin.cc \
            src/export.cc \
            src/import.cc \
@@ -289,7 +304,16 @@ SOURCES += src/cgalutils.cc \
 macx {
   HEADERS += src/AppleEvents.h \
              src/EventFilter.h
-  SOURCES += src/AppleEvents.cc
+  SOURCES += src/AppleEvents.cc \
+             tests/OffscreenContext.mm
+}
+
+unix {
+  SOURCES += tests/OffscreenContextGLX.cc
+}
+
+win32 {
+  SOURCES += tests/OffscreenContextWGL.cc
 }
 
 isEmpty(PREFIX):PREFIX = /usr/local

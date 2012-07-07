@@ -85,10 +85,226 @@ static void version()
 
 std::string commandline_commands;
 std::string currentdir;
-QString examplesdir;
+std::string examplesdir;
 
 using std::string;
 using std::vector;
+
+int start_qt_gui( const char * filename, int argc, char ** argv, bool useGUI )
+{
+	QApplication app(argc, argv, useGUI);
+#ifdef Q_WS_MAC
+	app.installEventFilter(new EventFilter(&app));
+#endif
+	// set up groups for QSettings
+	QCoreApplication::setOrganizationName("OpenSCAD");
+	QCoreApplication::setOrganizationDomain("openscad.org");
+	QCoreApplication::setApplicationName("OpenSCAD");
+	QCoreApplication::setApplicationVersion(TOSTRING(OPENSCAD_VERSION));
+
+#ifdef Q_WS_MAC
+	installAppleEventHandlers();
+#endif
+
+	QString qfilename;
+	if (filename) qfilename = QString::fromStdString(boosty::stringy(boosty::absolute(filename)));
+
+#if 0 /*** disabled by clifford wolf: adds rendering artefacts with OpenCSG ***/
+	// turn on anti-aliasing
+	QGLFormat f;
+	f.setSampleBuffers(true);
+	f.setSamples(4);
+	QGLFormat::setDefaultFormat(f);
+#endif
+#ifdef ENABLE_MDI
+	new MainWindow(qfilename);
+	vector<string> inputFiles;
+	if (vm.count("input-file")) {
+		inputFiles = vm["input-file"].as<vector<string> >();
+		for (vector<string>::const_iterator infile = inputFiles.begin()+1; infile != inputFiles.end(); infile++) {
+			new MainWindow(QString::fromStdString(boosty::stringy((original_path / *infile))));
+		}
+	}
+	app.connect(&app, SIGNAL(lastWindowClosed()), &app, SLOT(quit()));
+#else
+	MainWindow *m = new MainWindow(qfilename);
+	app.connect(m, SIGNAL(destroyed()), &app, SLOT(quit()));
+#endif
+	return app.exec();
+}
+
+
+void render_to_file( const char *filename, const char *output_file, fs::path original_path, const char * deps_output_file )
+{
+	// Initialize global visitors
+	NodeCache nodecache;
+	NodeDumper dumper(nodecache);
+	Tree tree;
+#ifdef ENABLE_CGAL
+	CGALEvaluator cgalevaluator(tree);
+	PolySetCGALEvaluator psevaluator(cgalevaluator);
+#endif
+
+	const char *stl_output_file = NULL;
+	const char *off_output_file = NULL;
+	const char *dxf_output_file = NULL;
+	const char *csg_output_file = NULL;
+	const char *png_output_file = NULL;
+	fs::path outpath(output_file);
+	std::string suffix = boosty::stringy( outpath.extension() );
+	std::transform(suffix.begin(),suffix.end(),suffix.begin(),::tolower);
+	if (suffix == ".stl") stl_output_file = output_file;
+	else if (suffix == ".off") off_output_file = output_file;
+	else if (suffix == ".dxf") dxf_output_file = output_file;
+	else if (suffix == ".csg") csg_output_file = output_file;
+	else if (suffix == ".png") png_output_file = output_file;
+	else {
+		fprintf(stderr, "Unknown suffix for output file %s\n", output_file);
+		exit(1);
+	}
+
+#ifdef ENABLE_CGAL
+	Context root_ctx;
+	register_builtin(root_ctx);
+
+	Module *root_module;
+	ModuleInstantiation root_inst;
+	AbstractNode *root_node;
+
+	handle_dep(filename);
+		
+	std::ifstream ifs(filename);
+	if (!ifs.is_open()) {
+		fprintf(stderr, "Can't open input file '%s'!\n", filename);
+		exit(1);
+	}
+	std::string text((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
+	text += "\n" + commandline_commands;
+	fs::path abspath = boosty::absolute(filename);
+	std::string parentpath = boosty::stringy(abspath.parent_path());
+	root_module = parse(text.c_str(), parentpath.c_str(), false);
+	if (!root_module) exit(1);
+	root_module->handleDependencies();
+		
+	fs::path fpath = boosty::absolute(fs::path(filename));
+	fs::path fparent = fpath.parent_path();
+	fs::current_path(fparent);
+
+	AbstractNode::resetIndexCounter();
+	root_node = root_module->evaluate(&root_ctx, &root_inst);
+	tree.setRoot(root_node);
+
+	if (csg_output_file) {
+		fs::current_path(original_path);
+		std::ofstream fstream(csg_output_file);
+		if (!fstream.is_open()) {
+			PRINTB("Can't open file \"%s\" for export", csg_output_file);
+		}
+		else {
+			fs::current_path(fparent); // Force exported filenames to be relative to document path
+			fstream << tree.getString(*root_node) << "\n";
+			fstream.close();
+		}
+	}
+	else {
+		CGAL_Nef_polyhedron root_N = cgalevaluator.evaluateCGALMesh(*tree.root());
+		
+		fs::current_path(original_path);
+		
+		if (deps_output_file) {
+			if (!write_deps(deps_output_file, 
+											stl_output_file ? stl_output_file : off_output_file)) {
+				exit(1);
+			}
+		}
+			if (stl_output_file) {
+
+			if (root_N.dim != 3) {
+				fprintf(stderr, "Current top level object is not a 3D object.\n");
+				exit(1);
+			}
+			if (!root_N.p3->is_simple()) {
+				fprintf(stderr, "Object isn't a valid 2-manifold! Modify your design.\n");
+				exit(1);
+			}
+			std::ofstream fstream(stl_output_file);
+			if (!fstream.is_open()) {
+				PRINTB("Can't open file \"%s\" for export", stl_output_file);
+			}
+			else {
+				export_stl(&root_N, fstream);
+				fstream.close();
+			}
+		}
+		
+		if (off_output_file) {
+			if (root_N.dim != 3) {
+				fprintf(stderr, "Current top level object is not a 3D object.\n");
+				exit(1);
+			}
+			if (!root_N.p3->is_simple()) {
+				fprintf(stderr, "Object isn't a valid 2-manifold! Modify your design.\n");
+				exit(1);
+			}
+			std::ofstream fstream(off_output_file);
+			if (!fstream.is_open()) {
+				PRINTB("Can't open file \"%s\" for export", off_output_file);
+			}
+			else {
+				export_off(&root_N, fstream);
+				fstream.close();
+			}
+		}
+			
+		if (dxf_output_file) {
+			if (root_N.dim != 2) {
+				fprintf(stderr, "Current top level object is not a 2D object.\n");
+				exit(1);
+			}
+			std::ofstream fstream(dxf_output_file);
+			if (!fstream.is_open()) {
+				PRINTB("Can't open file \"%s\" for export", dxf_output_file);
+			}
+			else {
+				export_dxf(&root_N, fstream);
+				fstream.close();
+			}
+		}
+
+		if (png_output_file) {
+			// can't use fstream because of the way
+			// 'imageutils-macosx.cc' & etc works
+			export_png(&root_N, png_output_file, "CGAL");
+		}
+	}
+	delete root_node;
+#else
+	fprintf(stderr, "OpenSCAD has been compiled without CGAL support!\n");
+	exit(1);
+#endif
+}
+
+
+std::string find_examples( fs::path exdir )
+{
+	fs::path examples_path( "" );
+	fs::path test0( exdir / fs::path("../Resources/examples") );
+	fs::path test1( exdir / fs::path("../share/openscad/examples") );
+	fs::path test2( exdir / fs::path("../../share/openscad/examples") );
+	fs::path test3( exdir / fs::path("../../examples") );
+	fs::path test4( exdir / fs::path("./examples") );
+
+#ifdef Q_WS_MAC
+	if ( fs::is_directory( test0 ) ) exdir /= fs::path("../..");
+#elif defined(Q_OS_UNIX)
+	if ( fs::is_directory( test1 ) ) examples_path = test1;
+	else if ( fs::is_directory( test2 ) ) examples_path = test2;
+	else if ( fs::is_directory( test3 ) ) examples_path = test3;
+	else
+#endif
+	if ( fs::is_directory( test4 ) ) examples_path = test4;
+	return boosty::stringy( examples_path );
+}
 
 int main(int argc, char **argv)
 {
@@ -99,7 +315,6 @@ int main(int argc, char **argv)
 	// (which we don't catch). This gives us stack traces without rerunning in gdb.
 	CGAL::set_error_behaviour(CGAL::ABORT);
 #endif
-	Builtins::instance()->initialize();
 
 #ifdef Q_WS_X11
 	// see <http://qt.nokia.com/doc/4.5/qapplication.html#QApplication-2>:
@@ -111,17 +326,10 @@ int main(int argc, char **argv)
 #else
 	bool useGUI = true;
 #endif
-	QApplication app(argc, argv, useGUI);
-#ifdef Q_WS_MAC
-	app.installEventFilter(new EventFilter(&app));
-#endif
-	fs::path original_path = fs::current_path();
 
-	// set up groups for QSettings
-	QCoreApplication::setOrganizationName("OpenSCAD");
-	QCoreApplication::setOrganizationDomain("openscad.org");
-	QCoreApplication::setApplicationName("OpenSCAD");
-	QCoreApplication::setApplicationVersion(TOSTRING(OPENSCAD_VERSION));
+	Builtins::instance()->initialize();
+
+	fs::path original_path = fs::current_path();
 
 	const char *filename = NULL;
 	const char *output_file = NULL;
@@ -205,202 +413,22 @@ int main(int argc, char **argv)
 	}
 #endif
 
+	if (!filename) help(argv[0]);
+
 	currentdir = boosty::stringy( fs::current_path() );
 
-	QDir exdir(QApplication::instance()->applicationDirPath());
-#ifdef Q_WS_MAC
-	exdir.cd("../Resources"); // Examples can be bundled
-	if (!exdir.exists("examples")) exdir.cd("../../..");
-#elif defined(Q_OS_UNIX)
-	if (exdir.cd("../share/openscad/examples")) {
-		examplesdir = exdir.path();
-	} else
-		if (exdir.cd("../../share/openscad/examples")) {
-			examplesdir = exdir.path();
-		} else
-			if (exdir.cd("../../examples")) {
-				examplesdir = exdir.path();
-			} else
-#endif
-				if (exdir.cd("examples")) {
-					examplesdir = exdir.path();
-				}
+	fs::path expath( argv[0] );
+	fs::path exdir( expath.parent_path() );
+	examplesdir = find_examples( exdir );
 
-	parser_init(QApplication::instance()->applicationDirPath().toStdString());
+	parser_init( boosty::stringy( exdir ) );
 
-	// Initialize global visitors
-	NodeCache nodecache;
-	NodeDumper dumper(nodecache);
-	Tree tree;
-#ifdef ENABLE_CGAL
-	CGALEvaluator cgalevaluator(tree);
-	PolySetCGALEvaluator psevaluator(cgalevaluator);
-#endif
-
-	if (output_file)
-	{
-		const char *stl_output_file = NULL;
-		const char *off_output_file = NULL;
-		const char *dxf_output_file = NULL;
-		const char *csg_output_file = NULL;
-
-		QString suffix = QFileInfo(output_file).suffix().toLower();
-		if (suffix == "stl") stl_output_file = output_file;
-		else if (suffix == "off") off_output_file = output_file;
-		else if (suffix == "dxf") dxf_output_file = output_file;
-		else if (suffix == "csg") csg_output_file = output_file;
-		else {
-			fprintf(stderr, "Unknown suffix for output file %s\n", output_file);
-			exit(1);
-		}
-
-		if (!filename) help(argv[0]);
-
-#ifdef ENABLE_CGAL
-		Context root_ctx;
-		register_builtin(root_ctx);
-
-		Module *root_module;
-		ModuleInstantiation root_inst;
-		AbstractNode *root_node;
-
-		handle_dep(filename);
-		
-		std::ifstream ifs(filename);
-		if (!ifs.is_open()) {
-			fprintf(stderr, "Can't open input file '%s'!\n", filename);
-			exit(1);
-		}
-		std::string text((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
-		text += "\n" + commandline_commands;
-		fs::path abspath = boosty::absolute(filename);
-		std::string parentpath = boosty::stringy(abspath.parent_path());
-		root_module = parse(text.c_str(), parentpath.c_str(), false);
-		if (!root_module) exit(1);
-		root_module->handleDependencies();
-		
-		fs::path fpath = boosty::absolute(fs::path(filename));
-		fs::path fparent = fpath.parent_path();
-		fs::current_path(fparent);
-
-		AbstractNode::resetIndexCounter();
-		root_node = root_module->evaluate(&root_ctx, &root_inst);
-		tree.setRoot(root_node);
-
-		if (csg_output_file) {
-			fs::current_path(original_path);
-			std::ofstream fstream(csg_output_file);
-			if (!fstream.is_open()) {
-				PRINTB("Can't open file \"%s\" for export", csg_output_file);
-			}
-			else {
-				fs::current_path(fparent); // Force exported filenames to be relative to document path
-				fstream << tree.getString(*root_node) << "\n";
-				fstream.close();
-			}
-		}
-		else {
-			CGAL_Nef_polyhedron root_N = cgalevaluator.evaluateCGALMesh(*tree.root());
-			
-			fs::current_path(original_path);
-			
-			if (deps_output_file) {
-				if (!write_deps(deps_output_file, 
-												stl_output_file ? stl_output_file : off_output_file)) {
-					exit(1);
-				}
-			}
-
-			if (stl_output_file) {
-				if (root_N.dim != 3) {
-					fprintf(stderr, "Current top level object is not a 3D object.\n");
-					exit(1);
-				}
-				if (!root_N.p3->is_simple()) {
-					fprintf(stderr, "Object isn't a valid 2-manifold! Modify your design.\n");
-					exit(1);
-				}
-				std::ofstream fstream(stl_output_file);
-				if (!fstream.is_open()) {
-					PRINTB("Can't open file \"%s\" for export", stl_output_file);
-				}
-				else {
-					export_stl(&root_N, fstream);
-					fstream.close();
-				}
-			}
-			
-			if (off_output_file) {
-				if (root_N.dim != 3) {
-					fprintf(stderr, "Current top level object is not a 3D object.\n");
-					exit(1);
-				}
-				if (!root_N.p3->is_simple()) {
-					fprintf(stderr, "Object isn't a valid 2-manifold! Modify your design.\n");
-					exit(1);
-				}
-				std::ofstream fstream(off_output_file);
-				if (!fstream.is_open()) {
-					PRINTB("Can't open file \"%s\" for export", off_output_file);
-				}
-				else {
-					export_off(&root_N, fstream);
-					fstream.close();
-				}
-			}
-			
-			if (dxf_output_file) {
-				if (root_N.dim != 2) {
-					fprintf(stderr, "Current top level object is not a 2D object.\n");
-					exit(1);
-				}
-				std::ofstream fstream(dxf_output_file);
-				if (!fstream.is_open()) {
-					PRINTB("Can't open file \"%s\" for export", dxf_output_file);
-				}
-				else {
-					export_dxf(&root_N, fstream);
-					fstream.close();
-				}
-			}
-		}
-		delete root_node;
-#else
-		fprintf(stderr, "OpenSCAD has been compiled without CGAL support!\n");
-		exit(1);
-#endif
+	if (output_file) {
+		render_to_file( filename, output_file, original_path, deps_output_file );
 	}
 	else if (useGUI)
 	{
-#ifdef Q_WS_MAC
-		installAppleEventHandlers();
-#endif		
-
-		QString qfilename;
-		if (filename) qfilename = QString::fromStdString(boosty::stringy(boosty::absolute(filename)));
-
-#if 0 /*** disabled by clifford wolf: adds rendering artefacts with OpenCSG ***/
-		// turn on anti-aliasing
-		QGLFormat f;
-		f.setSampleBuffers(true);
-		f.setSamples(4);
-		QGLFormat::setDefaultFormat(f);
-#endif
-#ifdef ENABLE_MDI
-		new MainWindow(qfilename);
-		vector<string> inputFiles;
-		if (vm.count("input-file")) {
-			inputFiles = vm["input-file"].as<vector<string> >();
-			for (vector<string>::const_iterator infile = inputFiles.begin()+1; infile != inputFiles.end(); infile++) {
-				new MainWindow(QString::fromStdString(boosty::stringy((original_path / *infile))));
-			}
-		}
-		app.connect(&app, SIGNAL(lastWindowClosed()), &app, SLOT(quit()));
-#else
-		MainWindow *m = new MainWindow(qfilename);
-		app.connect(m, SIGNAL(destroyed()), &app, SLOT(quit()));
-#endif
-		rc = app.exec();
+		rc = start_qt_gui( filename, argc, argv, useGUI );
 	}
 	else
 	{

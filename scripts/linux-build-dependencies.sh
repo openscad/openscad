@@ -9,14 +9,17 @@
 # Prerequisites:
 # - wget or curl
 # - Qt4
-# - cmake 2.8 ( force build_cmake at bottom if yours is too old )
+#
+# Note:
+#
+# If you cancel during a download, it will break. rm the d/l file and restart
 #
 
 BASEDIR=$HOME/openscad_deps
 OPENSCADDIR=$PWD
 SRCDIR=$BASEDIR/src
 DEPLOYDIR=$BASEDIR
-NUMCPU=2 # paralell builds for some libraries
+NUMCPU=1 # paralell builds for some libraries
 
 printUsage()
 {
@@ -24,14 +27,33 @@ printUsage()
   echo
 }
 
-build_cmake()
+build_git()
 {
   version=$1
+  echo "Building git" $version "..."
+  cd $BASEDIR/src
+  rm -rf git-$version
+  if [ ! -e git-$version.tar.gz ]; then
+    curl -O http://git-core.googlecode.com/files/git-$version.tar.gz
+  fi
+  tar xf git-$version.tar.gz
+  cd git-$version
+  ./configure --prefix=$DEPLOYDIR
+  make -j$NUMCPU
+  make install
+}
+
+build_cmake()
+{
+  version_major=$1
+  version_minor=$2
+  version_patch=$3
+  version=$version_major.$version_minor.$version_patch
   echo "Building cmake" $version "..."
   cd $BASEDIR/src
   rm -rf cmake-$version
-  if [ ! -f cmake-$version.tar.gz ]; then
-    curl -O http://www.cmake.org/files/v2.8/cmake-$version.tar.gz
+  if [ ! -e cmake-$version.tar.gz ]; then
+    curl -O http://www.cmake.org/files/v$version_major.$version_minor/cmake-$version.tar.gz
   fi
   tar zxf cmake-$version.tar.gz
   cd cmake-$version
@@ -48,7 +70,7 @@ build_curl()
   echo "Building curl" $version "..."
   cd $BASEDIR/src
   rm -rf curl-$version
-  if [ ! -f curl-$version.tar.bz2 ]; then
+  if [ ! -e curl-$version.tar.bz2 ]; then
     wget http://curl.haxx.se/download/curl-$version.tar.bz2
   fi
   tar xjf curl-$version.tar.bz2
@@ -66,7 +88,7 @@ build_gmp()
   echo "Building gmp" $version "..."
   cd $BASEDIR/src
   rm -rf gmp-$version
-  if [ ! -f gmp-$version.tar.bz2 ]; then
+  if [ ! -e gmp-$version.tar.bz2 ]; then
     curl -O ftp://ftp.gmplib.org/pub/gmp-$version/gmp-$version.tar.bz2
   fi
   tar xjf gmp-$version.tar.bz2
@@ -83,7 +105,7 @@ build_mpfr()
   echo "Building mpfr" $version "..."
   cd $BASEDIR/src
   rm -rf mpfr-$version
-  if [ ! -f mpfr-$version.tar.bz2 ]; then
+  if [ ! -e mpfr-$version.tar.bz2 ]; then
     curl -O http://www.mpfr.org/mpfr-$version/mpfr-$version.tar.bz2
   fi
   tar xjf mpfr-$version.tar.bz2
@@ -102,7 +124,7 @@ build_boost()
   echo "Building boost" $version "..."
   cd $BASEDIR/src
   rm -rf boost_$bversion
-  if [ ! -f boost_$bversion.tar.bz2 ]; then
+  if [ ! -e boost_$bversion.tar.bz2 ]; then
     curl -LO http://downloads.sourceforge.net/project/boost/boost/$version/boost_$bversion.tar.bz2
   fi
   tar xjf boost_$bversion.tar.bz2
@@ -119,9 +141,9 @@ build_cgal()
   echo "Building CGAL" $version "..."
   cd $BASEDIR/src
   rm -rf CGAL-$version
-  if [ ! -f CGAL-$version.tar.gz ]; then
+  if [ ! -e CGAL-$version.tar.gz ]; then
     #4.0
-    curl -O https://gforge.inria.fr/frs/download.php/30387/CGAL-$version.tar.gz
+    curl -k -O https://gforge.inria.fr/frs/download.php/30387/CGAL-$version.tar.gz
     # 3.9 curl -O https://gforge.inria.fr/frs/download.php/29125/CGAL-$version.tar.gz
     # 3.8 curl -O https://gforge.inria.fr/frs/download.php/28500/CGAL-$version.tar.gz
     # 3.7 curl -O https://gforge.inria.fr/frs/download.php/27641/CGAL-$version.tar.gz
@@ -139,15 +161,19 @@ build_glew()
   echo "Building GLEW" $version "..."
   cd $BASEDIR/src
   rm -rf glew-$version
-  if [ ! -f glew-$version.tgz ]; then
+  if [ ! -e glew-$version.tgz ]; then
     curl -LO http://downloads.sourceforge.net/project/glew/glew/$version/glew-$version.tgz
   fi
   tar xzf glew-$version.tgz
   cd glew-$version
   mkdir -p $DEPLOYDIR/lib/pkgconfig
 
-  # uncomment this kludge for Fedora 64bit
-  # sed -i s/"\-lXmu"/"\-L\/usr\/lib64\/libXmu.so.6"/ config/Makefile.linux
+  # kludge for Fedora 64bit
+  if [ ! -e /usr/lib64/libXmu.so ]; then
+    if [ -e /usr/lib64/libXmu.so.6 ] ; then
+      sed -i s/"\-lXmu"/"\-L\/usr\/lib64\/libXmu.so.6"/ config/Makefile.linux
+    fi
+  fi
 
   GLEW_DEST=$DEPLOYDIR make -j$NUMCPU
   GLEW_DEST=$DEPLOYDIR make install
@@ -158,16 +184,20 @@ build_opencsg()
   version=$1
   echo "Building OpenCSG" $version "..."
   cd $BASEDIR/src
-  rm -rf OpenCSG-$version
-  if [ ! -f OpenCSG-$version.tar.gz ]; then
+    rm -rf OpenCSG-$version
+  if [ ! -e OpenCSG-$version.tar.gz ]; then
     curl -O http://www.opencsg.org/OpenCSG-$version.tar.gz
   fi
   tar xzf OpenCSG-$version.tar.gz
   cd OpenCSG-$version
   sed -i s/example// opencsg.pro # examples might be broken without GLUT
 
-  # uncomment this kludge for Fedora 64bit
-  # sed -i s/"\-lXmu"/"\-L\/usr\/lib64\/libXmu.so.6"/ src/Makefile 
+  # kludge for Fedora 64bit
+  if [ ! -e /usr/lib64/libXmu.so ]; then
+    if [ -e /usr/lib64/libXmu.so.6 ] ; then
+      sed -i s/"\-lXmu"/"\-L\/usr\/lib64\/libXmu.so.6"/ src/Makefile
+    fi
+  fi
 
   qmake-qt4
   make
@@ -183,8 +213,8 @@ build_eigen()
   rm -rf eigen-$version
   ## Directory name for v2.0.17
   rm -rf eigen-eigen-b23437e61a07
-  if [ ! -f eigen-$version.tar.bz2 ]; then
-    curl -LO http://bitbucket.org/eigen/eigen/get/$version.tar.bz2
+  if [ ! -e eigen-$version.tar.bz2 ]; then
+    curl -k -LO http://bitbucket.org/eigen/eigen/get/$version.tar.bz2
     mv $version.tar.bz2 eigen-$version.tar.bz2
   fi
   tar xjf eigen-$version.tar.bz2
@@ -202,7 +232,7 @@ if [ ! -f $OPENSCADDIR/openscad.pro ]; then
 fi
 
 if [ ! -d $BASEDIR/bin ]; then
-  mkdir --parents $BASEDIR/bin
+  mkdir -p $BASEDIR/bin
 fi
 
 echo "Using basedir:" $BASEDIR
@@ -222,9 +252,12 @@ if [ ! "`command -v curl`" ]; then
 	build_curl 7.26.0
 fi
 
-# NB! For cmake, also update the actual download URL in the function
+# build_git 1.7.11 # for working on very old machines
+
 if [ ! "`command -v cmake`" ]; then
-	build_cmake 2.8.8
+	build_cmake 2 8 8
+elif [ "`cmake --version | grep 2.[1-7][^0-9]`" ]; then
+	build_cmake 2 8 8
 fi
 
 build_eigen 2.0.17
@@ -236,4 +269,7 @@ build_cgal 4.0
 build_glew 1.7.0
 build_opencsg 1.3.2
 
-echo "OpenSCAD dependencies built in " $BASEDIR
+echo
+echo "OpenSCAD dependencies built and installed into " $BASEDIR
+echo
+
