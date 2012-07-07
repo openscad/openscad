@@ -75,6 +75,14 @@ AbstractNode *LinearExtrudeModule::evaluate(const Context *ctx, const ModuleInst
 		node->filename = c.getAbsolutePath(file.text);
 	}
 
+	// if height not given, and first argument is a number,
+	// then assume it should be the height.
+	if ( c.lookup_variable("height").type == Value::UNDEFINED )
+		if ( inst->argnames.size()>0 )
+			if ( inst->argnames[0] == "" )
+				if ( inst->argvalues[0].type == Value::NUMBER )
+					height = Value(inst->argvalues[0]);
+
 	node->layername = layer.text;
 	node->height = height.num;
 	node->convexity = (int)convexity.num;
