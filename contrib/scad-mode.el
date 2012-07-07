@@ -1,4 +1,4 @@
-;;; scad.el --- SCAD mode derived mode
+;;; scad-mode.el --- SCAD mode derived mode
 
 ;; Author:     Len Trigg
 ;; Maintainer: Len Trigg <lenbok@gmail.com>
@@ -226,4 +226,4 @@
   (call-process scad-command nil 0 nil (buffer-file-name)))
 
 (provide 'scad)
-;;; scad.el ends here
+;;; scad-mode.el ends here
