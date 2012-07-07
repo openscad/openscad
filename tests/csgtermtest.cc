@@ -77,7 +77,7 @@ int main(int argc, char **argv)
 	currentdir = boosty::stringy( fs::current_path() );
 
 	parser_init(QCoreApplication::instance()->applicationDirPath().toStdString());
-	set_librarydir(boosty::stringy(fs::path(QCoreApplication::instance()->applicationDirPath().toStdString()) / "../libraries"));
+	add_librarydir(boosty::stringy(fs::path(QCoreApplication::instance()->applicationDirPath().toStdString()) / "../libraries"));
 
 	Context root_ctx;
 	register_builtin(root_ctx);

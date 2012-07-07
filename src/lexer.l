@@ -118,7 +118,7 @@ use[ \t\r\n>]*"<"	{ BEGIN(cond_use); }
         else {
           usepath = sourcepath() / filename;
           if (!fs::exists(usepath)) {
-            usepath = boosty::absolute(fs::path(get_librarydir()) / filename);
+            usepath = locate_file(filename);
           }
         }
         /* Only accept regular files which exists */
@@ -214,7 +214,7 @@ void includefile()
 
   fs::path finfo = dirinfo / filename;
   if (!exists(finfo)) {
-    finfo = fs::path(get_librarydir()) / filepath / filename;
+    finfo = locate_file((fs::path(filepath) / filename).string());
   }
 
   filepath.clear();

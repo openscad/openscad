@@ -81,9 +81,13 @@ win32 {
 CONFIG += qt
 QT += opengl
 
-# Fedora Linux + DSO fix
-linux*:exists(/usr/lib64/libGLU*)|linux*:exists(/usr/lib/libGLU*) {
-  LIBS += -lGLU
+# see http://fedoraproject.org/wiki/UnderstandingDSOLinkChange
+# and https://github.com/openscad/openscad/pull/119
+# ( QT += opengl does not automatically link glu on some DSO systems. )
+unix:!macx {
+  !contains ( QMAKE_LIBS_OPENGL, "-lGLU" ) {
+    QMAKE_LIBS_OPENGL += -lGLU
+  }
 }
 
 netbsd* {
