@@ -121,7 +121,7 @@ After that, follow the Compilation instructions below.
 
 sudo apt-get install libqt4-dev libqt4-opengl-dev libxmu-dev cmake \
  libglew1.5-dev bison flex libeigen2-dev git-core libboost-all-dev \
- libXi-dev libcgal-dev libglut3-dev libopencsg-dev libopencsg1
+ libXi-dev libcgal-dev libopencsg-dev libopencsg1
 
 Check your library versions against the list above. After that, follow 
 the Compilation instructions below.
