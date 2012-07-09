@@ -11,7 +11,7 @@
 #  -l   Force use of LLVM compiler
 #
 # Prerequisites:
-# - MacPorts: curl
+# - MacPorts: curl, cmake
 # - Qt4
 #
 # FIXME:
@@ -26,6 +26,7 @@ DEPLOYDIR=$BASEDIR/install
 MAC_OSX_VERSION_MIN=10.5
 OPTION_32BIT=true
 OPTION_LLVM=false
+export QMAKESPEC=macx-g++
 
 printUsage()
 {
@@ -132,11 +133,11 @@ build_mpfr()
   cd $BASEDIR/src
   rm -rf mpfr-$version
   if [ ! -f mpfr-$version.tar.bz2 ]; then
-    curl -O http://www.mpfr.org/mpfr-current/mpfr-$version.tar.bz2
+    curl -O http://www.mpfr.org/mpfr-$version/mpfr-$version.tar.bz2
   fi
   tar xjf mpfr-$version.tar.bz2
   cd mpfr-$version
-  curl -O http://www.mpfr.org/mpfr-current/allpatches
+  curl -O http://www.mpfr.org/mpfr-$version/allpatches
   patch -N -Z -p1 < allpatches 
   if $OPTION_32BIT; then
     mkdir build-i386

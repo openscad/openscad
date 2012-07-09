@@ -81,6 +81,15 @@ AbstractNode *LinearExtrudeModule::evaluate(const Context *ctx, const ModuleInst
 	origin.getVec2(node->origin_x, node->origin_y);
 	node->scale = scale.toDouble();
 
+	// if height not given, and first argument is a number,
+	// then assume it should be the height.
+	if (c.lookup_variable("height").type == Value::UNDEFINED &&
+			inst->argnames.size() > 0 && 
+			inst->argnames[0] == "" &&
+			inst->argvalues[0].type == Value::NUMBER) {
+		height = Value(inst->argvalues[0]);
+	}
+
 	if (center.type() == Value::BOOL)
 		node->center = center.toBool();
 
