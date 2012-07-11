@@ -205,7 +205,7 @@ if [ ! -f $OPENSCADDIR/openscad.pro ]; then
   exit 0
 fi
 
-source ./scripts/setenv-linbuild.sh
+. ./scripts/setenv-linbuild.sh # '.' is equivalent to 'source'
 SRCDIR=$BASEDIR/src
 DEPLOYDIR=$BASEDIR
 if [ ! $NUMCPU ]; then
@@ -219,7 +219,7 @@ fi
 echo "Using basedir:" $BASEDIR
 echo "Using deploydir:" $DEPLOYDIR
 echo "Using srcdir:" $SRCDIR
-echo "Number of CPUs for parallel builds:" $NUMCPU
+echo "Number of CPUs for parallel builds:" $NUMCPU "(export NUMCPU=x to modify)"
 mkdir -p $SRCDIR $DEPLOYDIR
 
 if [ ! "`command -v curl`" ]; then
@@ -234,13 +234,15 @@ fi
 # Singly build CGAL or OpenCSG
 # (Most systems have all libraries available as packages except CGAL/OpenCSG)
 # (They can be built singly here by passing a command line arg to the script)
-if [ $1 = "cgal-use-sys-libs" ]; then
-  build_cgal 4.0 use-sys-libs
-  exit
-fi
-if [ $1 = "opencsg" ]; then
-  build_opencsg 1.3.2
-  exit
+if [ $1 ]; then
+  if [ $1 = "cgal-use-sys-libs" ]; then
+    build_cgal 4.0 use-sys-libs
+    exit
+  fi
+  if [ $1 = "opencsg" ]; then
+    build_opencsg 1.3.2
+    exit
+  fi
 fi
 
 
