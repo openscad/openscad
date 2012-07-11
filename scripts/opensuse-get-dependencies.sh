@@ -1,3 +1,5 @@
+echo "tested on OpenSUSE 12. If this fails try 'old linux' build (see README.md)"
+
 sudo zypper install libeigen2-devel mpfr-devel gmp-devel boost-devel \
  libqt4-devel glew-devel cmake git 
 
