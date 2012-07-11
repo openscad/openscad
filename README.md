@@ -117,14 +117,23 @@ compilation process.
 
 After that, follow the Compilation instructions below.
 
-### Building for newer Ubunutu
+### Building for newer Linux distributions
 
-sudo apt-get install libqt4-dev libqt4-opengl-dev libxmu-dev cmake \
- libglew1.5-dev bison flex libeigen2-dev git-core libboost-all-dev \
- libXi-dev libcgal-dev libopencsg-dev libopencsg1
+First, make sure that you have development tools installed. Then use a 
+package manager to download the appropriate packages. Scripts are 
+available for popular systems:
 
-Check your library versions against the list above. After that, follow 
-the Compilation instructions below.
+Aptitude based systems (ubuntu, debian): 
+
+    ./scripts/ubuntu-build-dependencies.sh
+
+Zypper based systems (opensuse)
+
+    ./scripts/opensuse-build-dependencies.sh
+
+Check your binary packaged library versions to make sure they meet the 
+minimum requirements listed above. After that, follow the Compilation 
+instructions below.
 
 ### Building for older Linux or without root access
 
