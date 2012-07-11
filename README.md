@@ -121,7 +121,7 @@ After that, follow the Compilation instructions below.
 
 First, make sure that you have development tools installed. Then use a 
 package manager to download the appropriate packages. Scripts are 
-available for popular systems:
+available for popular systems to attempt semi-automatic installation:
 
 Aptitude based systems (ubuntu, debian): 
 
@@ -132,7 +132,7 @@ Zypper based systems (opensuse)
     ./scripts/opensuse-build-dependencies.sh
 
 Check your binary packaged library versions to make sure they meet the 
-minimum requirements listed above. After that, follow the Compilation 
+minimum requirements listed above. After that follow the Compilation 
 instructions below.
 
 ### Building for older Linux or without root access
