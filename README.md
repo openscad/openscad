@@ -119,23 +119,24 @@ After that, follow the Compilation instructions below.
 
 ### Building for newer Linux distributions
 
-Use a package manager to download development tools for your machine as 
-well as the appropriate packages based on the list above. Convenience 
+First, make sure that you have development tools installed to get GCC. 
+Then after you've cloned this git repository, use a package manager to 
+download packages for the dependency libraries listed above. Convenience 
 scripts are provided for some popular systems:
 
 Ubuntu, Debian:    ./scripts/ubuntu-build-dependencies.sh
 OpenSUSE:          ./scripts/opensuse-build-dependencies.sh
 Fedora, Redhat:    ./scripts/fedora-build-dependencies.sh
 
-Check your binary packaged library versions to make sure they meet the 
-minimum requirements listed above. After that follow the Compilation 
+Check your library versions to make sure they meet the minimum 
+requirements listed above. After that follow the Compilation 
 instructions below.
 
 ### Building for older Linux or building without root access
 
-First, make sure that you have compiler tools (build-essential on ubuntu).
-Then after you've cloned this git repository, run the script that sets up the
-environment variables.
+First, make sure that you have development tools installed to get GCC.
+Then after you've cloned this git repository, run the script that sets 
+up the environment variables.
 
     source ./scripts/setenv-linbuild.sh
 
@@ -143,8 +144,7 @@ Then run the script to download & compile all the prerequisite libraries above:
 
     ./scripts/linux-build-dependencies.sh
 
-If you logoff your shell, you will have to re-run setenv-linbuild.sh to run
-your new openscad. You can add it's contents to your .bashrc if you wish. 
+Then add LD_LIBRARY_PATH=$HOME/openscad_deps to your ~/.bashrc
 After that, follow the Compilation instructions below.
 
 ### Building for Windows
@@ -164,5 +164,5 @@ Then run make. Finally you might run 'make install' as root or simply copy the
 If you had problems compiling from source, raise a new issue in the
 [issue tracker on the github page](https://github.com/openscad/openscad/issues).
 
-The four subsections of this site can also be helpful:
+This site and it's subpages can also be helpful:
 http://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Building_OpenSCAD_from_Sources

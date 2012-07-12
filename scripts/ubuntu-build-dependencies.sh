@@ -2,6 +2,7 @@
 too_old()
 {
 	echo "System version too low. Please try 'old linux' build (see README.md)"
+	exit
 }
 
 if [ "`cat /etc/issue | grep 'Debian GNU/Linux 6.0'`" ]; then
