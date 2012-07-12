@@ -172,8 +172,8 @@ build_opencsg()
     qmake
   fi
   make
-  install -v lib/* $DEPLOYDIR/lib
-  install -v include/* $DEPLOYDIR/include
+  cp -av lib/* $DEPLOYDIR/lib
+  cp -av include/* $DEPLOYDIR/include
 }
 
 build_eigen()
