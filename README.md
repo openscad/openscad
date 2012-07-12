@@ -119,23 +119,19 @@ After that, follow the Compilation instructions below.
 
 ### Building for newer Linux distributions
 
-First, make sure that you have development tools installed. Then use a 
-package manager to download the appropriate packages. Scripts are 
-available for popular systems to attempt semi-automatic installation:
+Use a package manager to download development tools for your machine as 
+well as the appropriate packages based on the list above. Convenience 
+scripts are provided for some popular systems:
 
-Aptitude based systems (ubuntu, debian): 
-
-    ./scripts/ubuntu-build-dependencies.sh
-
-Zypper based systems (opensuse)
-
-    ./scripts/opensuse-build-dependencies.sh
+Ubuntu, Debian:    ./scripts/ubuntu-build-dependencies.sh
+OpenSUSE:          ./scripts/opensuse-build-dependencies.sh
+Fedora, Redhat:    ./scripts/fedora-build-dependencies.sh
 
 Check your binary packaged library versions to make sure they meet the 
 minimum requirements listed above. After that follow the Compilation 
 instructions below.
 
-### Building for older Linux or without root access
+### Building for older Linux or building without root access
 
 First, make sure that you have compiler tools (build-essential on ubuntu).
 Then after you've cloned this git repository, run the script that sets up the
@@ -147,6 +143,8 @@ Then run the script to download & compile all the prerequisite libraries above:
 
     ./scripts/linux-build-dependencies.sh
 
+If you logoff your shell, you will have to re-run setenv-linbuild.sh to run
+your new openscad. You can add it's contents to your .bashrc if you wish. 
 After that, follow the Compilation instructions below.
 
 ### Building for Windows
