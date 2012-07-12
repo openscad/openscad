@@ -4,6 +4,12 @@ too_old()
 	echo "System version too low. Please try 'old linux' build (see README.md)"
 }
 
+if [ "`cat /etc/issue | grep 'Debian GNU/Linux 6.0'`" ]; then
+	too_old
+fi
+if [ "`cat /etc/issue | grep 'Debian GNU/Linux 5'`" ]; then
+	too_old
+fi
 if [ "`cat /etc/issue | grep 'Ubunutu 10'`" ]; then
 	too_old
 fi
