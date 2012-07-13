@@ -59,7 +59,7 @@ a time, to avoid confusion.
 #warning "."
 #warning "."
 #warning "."
-#warning CGAL library version is old, risking buggy behavior. Please see README.md. Compiling anyway.
+#warning CGAL library version is old, risking buggy behavior. Please see README.md. Continuing anyway.
 #warning "."
 #warning "."
 #warning "."
