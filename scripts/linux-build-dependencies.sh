@@ -9,14 +9,7 @@
 # Prerequisites:
 # - wget or curl
 # - Qt4
-# - cmake 2.8 ( force build_cmake at bottom if yours is too old )
 #
-
-BASEDIR=$HOME/openscad_deps
-OPENSCADDIR=$PWD
-SRCDIR=$BASEDIR/src
-DEPLOYDIR=$BASEDIR
-NUMCPU=2 # paralell builds for some libraries
 
 printUsage()
 {
@@ -128,7 +121,11 @@ build_cgal()
   fi
   tar xzf CGAL-$version.tar.gz
   cd CGAL-$version
-  cmake -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR -DGMP_INCLUDE_DIR=$DEPLOYDIR/include -DGMP_LIBRARIES=$DEPLOYDIR/lib/libgmp.so -DGMPXX_LIBRARIES=$DEPLOYDIR/lib/libgmpxx.so -DGMPXX_INCLUDE_DIR=$DEPLOYDIR/include -DMPFR_INCLUDE_DIR=$DEPLOYDIR/include -DMPFR_LIBRARIES=$DEPLOYDIR/lib/libmpfr.so -DWITH_CGAL_Qt3=OFF -DWITH_CGAL_Qt4=OFF -DWITH_CGAL_ImageIO=OFF -DBOOST_ROOT=$DEPLOYDIR -DCMAKE_BUILD_TYPE=Debug
+  if [ $2 = use-sys-libs ]; then 
+    cmake -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR -DWITH_CGAL_Qt3=OFF -DWITH_CGAL_Qt4=OFF -DWITH_CGAL_ImageIO=OFF -DCMAKE_BUILD_TYPE=Debug
+  else
+    cmake -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR -DGMP_INCLUDE_DIR=$DEPLOYDIR/include -DGMP_LIBRARIES=$DEPLOYDIR/lib/libgmp.so -DGMPXX_LIBRARIES=$DEPLOYDIR/lib/libgmpxx.so -DGMPXX_INCLUDE_DIR=$DEPLOYDIR/include -DMPFR_INCLUDE_DIR=$DEPLOYDIR/include -DMPFR_LIBRARIES=$DEPLOYDIR/lib/libmpfr.so -DWITH_CGAL_Qt3=OFF -DWITH_CGAL_Qt4=OFF -DWITH_CGAL_ImageIO=OFF -DBOOST_ROOT=$DEPLOYDIR -DCMAKE_BUILD_TYPE=Debug
+  fi
   make -j$NUMCPU
   make install
 }
@@ -169,10 +166,14 @@ build_opencsg()
   # uncomment this kludge for Fedora 64bit
   # sed -i s/"\-lXmu"/"\-L\/usr\/lib64\/libXmu.so.6"/ src/Makefile 
 
-  qmake-qt4
+  if [ "`command -v qmake-qt4`" ]; then
+    qmake-qt4
+  else
+    qmake
+  fi
   make
-  install -v lib/* $DEPLOYDIR/lib
-  install -v include/* $DEPLOYDIR/include
+  cp -av lib/* $DEPLOYDIR/lib
+  cp -av include/* $DEPLOYDIR/include
 }
 
 build_eigen()
@@ -196,9 +197,19 @@ build_eigen()
   make install
 }
 
+
+
+OPENSCADDIR=$PWD
 if [ ! -f $OPENSCADDIR/openscad.pro ]; then
   echo "Must be run from the OpenSCAD source root directory"
   exit 0
+fi
+
+. ./scripts/setenv-linbuild.sh # '.' is equivalent to 'source'
+SRCDIR=$BASEDIR/src
+DEPLOYDIR=$BASEDIR
+if [ ! $NUMCPU ]; then
+  NUMCPU=1 # paralell builds for some libraries
 fi
 
 if [ ! -d $BASEDIR/bin ]; then
@@ -208,15 +219,8 @@ fi
 echo "Using basedir:" $BASEDIR
 echo "Using deploydir:" $DEPLOYDIR
 echo "Using srcdir:" $SRCDIR
-echo "Number of CPUs for parallel builds:" $NUMCPU
+echo "Number of CPUs for parallel builds:" $NUMCPU "(export NUMCPU=x to modify)"
 mkdir -p $SRCDIR $DEPLOYDIR
-
-export PATH=$BASEDIR/bin:$PATH
-export LD_LIBRARY_PATH=$DEPLOYDIR/lib:$DEPLOYDIR/lib64:$LD_LIBRARY_PATH
-export LD_RUN_PATH=$DEPLOYDIR/lib:$DEPLOYDIR/lib64:$LD_RUN_PATH
-echo "PATH modified temporarily"
-echo "LD_LIBRARY_PATH modified temporarily"
-echo "LD_RUN_PATH modified temporarily"
 
 if [ ! "`command -v curl`" ]; then
 	build_curl 7.26.0
@@ -227,6 +231,26 @@ if [ ! "`command -v cmake`" ]; then
 	build_cmake 2.8.8
 fi
 
+# Singly build CGAL or OpenCSG
+# (Most systems have all libraries available as packages except CGAL/OpenCSG)
+# (They can be built singly here by passing a command line arg to the script)
+if [ $1 ]; then
+  if [ $1 = "cgal-use-sys-libs" ]; then
+    build_cgal 4.0 use-sys-libs
+    exit
+  fi
+  if [ $1 = "opencsg" ]; then
+    build_opencsg 1.3.2
+    exit
+  fi
+fi
+
+
+#
+# Main build of libraries
+# edit version numbers here as needed.
+#
+
 build_eigen 2.0.17
 build_gmp 5.0.5
 build_mpfr 3.1.1
@@ -236,4 +260,4 @@ build_cgal 4.0
 build_glew 1.7.0
 build_opencsg 1.3.2
 
-echo "OpenSCAD dependencies built in " $BASEDIR
+echo "OpenSCAD dependencies built and installed to " $BASEDIR
