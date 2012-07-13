@@ -1,10 +1,15 @@
-# setup env variables for building OpenSCAD against custom built
-# dependency libraries from linux-build-dependencies.sh
+# setup environment variables for building OpenSCAD against custom built
+# dependency libraries. called by linux-build-dependencies.sh
 
-# run this file with 'source setenv-linbuild.sh'
+# run this file with 'source setenv-linbuild.sh' every time you re-login
+# and want to build or run openscad against custom libraries installed
+# into BASEDIR.  
 
-# BASEDIR and DEPLOYDIR must be the same as in linux-build-dependencies.sh
-BASEDIR=$HOME/openscad_deps
+# copy this file to your .bashrc if desired. 
+
+if [ ! $BASEDIR ]; then
+  BASEDIR=$HOME/openscad_deps
+fi
 DEPLOYDIR=$BASEDIR
 
 export PATH=$BASEDIR/bin:$PATH
