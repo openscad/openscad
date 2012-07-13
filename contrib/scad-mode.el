@@ -4,8 +4,9 @@
 ;; Maintainer: Len Trigg <lenbok@gmail.com>
 ;; Created:    March 2010
 ;; Modified:   06 July 2012
+;; Keywords:   languages
 ;; URL:        https://raw.github.com/openscad/openscad/master/contrib/scad-mode.el
-;; Version:    $Revision: 89 $
+;; Version:    90.0
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -24,19 +25,27 @@
 
 ;;; Commentary:
 ;;
-;; This is a separate mode to implement the SCAD constructs and
-;; font-locking.
+;; This is a major-mode to implement the SCAD constructs and
+;; font-locking for openscad
 ;;
-;; To use, insert the following into your emacs startup:
+;; If installing manually, insert the following into your emacs startup:
 ;;
 ;; (autoload 'scad-mode "scad-mode" "Major mode for editing SCAD code." t)
 ;; (add-to-list 'auto-mode-alist '("\\.scad$" . scad-mode))
+;;
+;; or
+;;
+;; install from marmalade: http://marmalade-repo.org/
+;; M-x install-package <ENTER> scad-mode <ENTER>
+
 
 ;;; To Do:
 ;; - Support for background/debug/root/disable modifiers
 ;; - Font lock of non-built-in function calls
 
-;;; Autoload mode trigger
+;;; Code:
+
+;;;###autoload
 (add-to-list 'auto-mode-alist '("\\.scad$" . scad-mode))
 
 (defcustom scad-command
