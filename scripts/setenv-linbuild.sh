@@ -21,3 +21,9 @@ echo LD_RUN_PATH modified
 echo OPENSCAD_LIBRARIES modified
 echo GLEWDIR modified
 
+if [ "`command -v qmake-qt4`" ]; then 
+	echo "Please re-run qmake-qt4"
+else
+	echo "Please re-run qmake"
+fi
+
