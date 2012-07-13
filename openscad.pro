@@ -108,6 +108,11 @@ CONFIG(mingw-cross-env) {
   include(mingw-cross-env.pri)
 }
 
+CONFIG(skip-version-check) {
+  # force the use of outdated libraries
+  DEFINES += OPENSCAD_SKIP_VERSION_CHECK
+}
+
 # Application configuration
 macx:CONFIG += mdi
 CONFIG += cgal
@@ -122,14 +127,7 @@ mdi {
   DEFINES += ENABLE_MDI
 }
 
-# FIXME: This can be made default by now
-CONFIG += progresswidget
-progresswidget {
-  DEFINES += USE_PROGRESSWIDGET
-  FORMS   += src/ProgressWidget.ui
-  HEADERS += src/ProgressWidget.h
-  SOURCES += src/ProgressWidget.cc
-}
+DEFINES += USE_PROGRESSWIDGET
 
 include(common.pri)
 
@@ -145,9 +143,12 @@ RESOURCES = openscad.qrc
 
 FORMS   += src/MainWindow.ui \
            src/Preferences.ui \
-           src/OpenCSGWarningDialog.ui
+           src/OpenCSGWarningDialog.ui \
+           src/ProgressWidget.ui
 
-HEADERS += src/parsersettings.h \
+HEADERS += src/version_check.h \
+           src/ProgressWidget.h \
+           src/parsersettings.h \
            src/renderer.h \
            src/rendersettings.h \
            src/ThrownTogetherRenderer.h \
@@ -203,8 +204,10 @@ HEADERS += src/parsersettings.h \
            src/system-gl.h \
            src/stl-utils.h
 
-SOURCES += src/mathc99.cc \
-	   src/linalg.cc \
+SOURCES += src/version_check.cc \
+           src/ProgressWidget.cc \
+           src/mathc99.cc \
+           src/linalg.cc \
            src/handle_dep.cc \
            src/value.cc \
            src/expr.cc \

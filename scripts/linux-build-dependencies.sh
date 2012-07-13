@@ -16,12 +16,30 @@ BASEDIR=$HOME/openscad_deps
 OPENSCADDIR=$PWD
 SRCDIR=$BASEDIR/src
 DEPLOYDIR=$BASEDIR
-NUMCPU=2 # paralell builds for some libraries
+if [ ! $NUMCPU ]; then
+	NUMCPU=1 # paralell builds for some libraries
+fi
 
 printUsage()
 {
   echo "Usage: $0"
   echo
+}
+
+build_git()
+{
+  version=$1
+  echo "Building git" $version "..."
+  cd $BASEDIR/src
+  rm -rf git-$version
+  if [ ! -f git-$version.tar.gz ]; then
+    curl -O http://git-core.googlecode.com/files/git-$version.tar.gz
+  fi
+  tar zxf git-$version.tar.gz
+  cd git-$version
+  ./configure --prefix=$DEPLOYDIR
+  make -j$NUMCPU
+  make install
 }
 
 build_cmake()
@@ -208,7 +226,7 @@ fi
 echo "Using basedir:" $BASEDIR
 echo "Using deploydir:" $DEPLOYDIR
 echo "Using srcdir:" $SRCDIR
-echo "Number of CPUs for parallel builds:" $NUMCPU
+echo "Number of CPUs for parallel builds:" $NUMCPU "(use export NUMCPU=x)"
 mkdir -p $SRCDIR $DEPLOYDIR
 
 export PATH=$BASEDIR/bin:$PATH
@@ -226,6 +244,11 @@ fi
 if [ ! "`command -v cmake`" ]; then
 	build_cmake 2.8.8
 fi
+if [ "`cmake --version | grep 'version 2.[1-6][^0-9]'`" ]; then
+	build_cmake 2.8.8
+fi
+
+# build_git 1.7.10.3
 
 build_eigen 2.0.17
 build_gmp 5.0.5

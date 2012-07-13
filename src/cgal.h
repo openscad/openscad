@@ -11,11 +11,6 @@ using boost::intmax_t;
 using boost::uintmax_t;
 #endif
 
-#include <CGAL/version.h>
-#if CGAL_VERSION_NR < 1030601000
-  #error CGAL >= 3.6 is required!
-#endif
-
 // NDEBUG must be disabled when including CGAL headers, otherwise CGAL assertions
 // will not be thrown, causing OpenSCAD's CGAL error checking to fail.
 // To be on the safe side, this has to be done when including any CGAL header file.
