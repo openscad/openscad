@@ -11,14 +11,6 @@
 # - Qt4
 #
 
-BASEDIR=$HOME/openscad_deps
-OPENSCADDIR=$PWD
-SRCDIR=$BASEDIR/src
-DEPLOYDIR=$BASEDIR
-if [ ! $NUMCPU ]; then
-	NUMCPU=1 # paralell builds for some libraries
-fi
-
 printUsage()
 {
   echo "Usage: $0"
@@ -222,7 +214,6 @@ build_eigen()
 }
 
 
-
 OPENSCADDIR=$PWD
 if [ ! -f $OPENSCADDIR/openscad.pro ]; then
   echo "Must be run from the OpenSCAD source root directory"
@@ -231,9 +222,10 @@ fi
 
 . ./scripts/setenv-linbuild.sh # '.' is equivalent to 'source'
 SRCDIR=$BASEDIR/src
-DEPLOYDIR=$BASEDIR
+
 if [ ! $NUMCPU ]; then
-  NUMCPU=1 # paralell builds for some libraries
+	echo "Note: The NUMCPU environment variable can be set for paralell builds"
+	NUMCPU=1 
 fi
 
 if [ ! -d $BASEDIR/bin ]; then
@@ -243,7 +235,7 @@ fi
 echo "Using basedir:" $BASEDIR
 echo "Using deploydir:" $DEPLOYDIR
 echo "Using srcdir:" $SRCDIR
-echo "Number of CPUs for parallel builds:" $NUMCPU "(export NUMCPU=x to modify)"
+echo "Number of CPUs for parallel builds:" $NUMCPU
 mkdir -p $SRCDIR $DEPLOYDIR
 
 if [ ! "`command -v curl`" ]; then
