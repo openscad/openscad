@@ -554,8 +554,6 @@ void GLView::mousePressEvent(QMouseEvent *event)
 {
 	mouse_drag_active = true;
 	last_mouse = event->globalPos();
-	grabMouse();
-	setFocus();
 }
 
 void GLView::normalizeAngle(GLdouble& angle)
