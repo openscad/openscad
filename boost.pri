@@ -25,10 +25,10 @@ boost {
     OPENSCAD_LIBDIR = $$(OPENSCAD_LIBRARIES)
     !isEmpty(OPENSCAD_LIBDIR) {
       exists($$OPENSCAD_LIBDIR/lib/libboost*thread-mt*) {
-        BOOST_LINK_FLAGS = -lboost_thread-mt -lboost_program_options-mt -lboost_filesystem-mt -lboost_system-mt -lboost_regex-mt -lboost_chrono-mt
+        BOOST_LINK_FLAGS = -lboost_thread-mt -lboost_program_options-mt -lboost_filesystem-mt -lboost_system-mt -lboost_regex-mt
       } else {
         exists($$OPENSCAD_LIBDIR/lib/libboost*thread*) {
-          BOOST_LINK_FLAGS = -lboost_thread -lboost_program_options -lboost_filesystem -lboost_system -lboost_regex -lboost_chrono
+          BOOST_LINK_FLAGS = -lboost_thread -lboost_program_options -lboost_filesystem -lboost_system -lboost_regex
         }
       }
     }
