@@ -17,7 +17,6 @@ isEmpty(QT_VERSION) {
   error("Please use qmake for Qt 4 (probably qmake-qt4)")
 }
 
-
 # Auto-include config_<variant>.pri if the VARIANT variable is give on the
 # command-line, e.g. qmake VARIANT=mybuild
 !isEmpty(VARIANT) {
@@ -128,7 +127,7 @@ DEFINES += USE_PROGRESSWIDGET
 
 include(common.pri)
 
-# mingw has to after other items so OBJECT_DIRS will work properly
+# mingw has to come after other items so OBJECT_DIRS will work properly
 CONFIG(mingw-cross-env) {
   include(mingw-cross-env.pri)
 }
