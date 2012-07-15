@@ -22,6 +22,7 @@ fi
 BASEDIR=$HOME/openscad_deps
 MXEDIR=$BASEDIR/mxe
 PATH=$MXEDIR/usr/bin:$PATH
+mkdir -p $BASEDIR
 
 echo MXEDIR: $MXEDIR
 echo BASEDIR: $BASEDIR
