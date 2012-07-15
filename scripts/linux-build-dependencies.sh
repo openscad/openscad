@@ -159,8 +159,11 @@ build_glew()
   cd glew-$version
   mkdir -p $DEPLOYDIR/lib/pkgconfig
 
-  # uncomment this kludge for Fedora 64bit
-  # sed -i s/"\-lXmu"/"\-L\/usr\/lib64\/libXmu.so.6"/ config/Makefile.linux
+  # Fedora 64-bit
+  if [ "`ls /usr/lib64 | grep Xmu`" ]; then 
+    echo "modifying glew makefile for 64 bit machine"
+    sed -ibak s/"\-lXmu"/"\-L\/usr\/lib64\/libXmu.so.6"/ config/Makefile.linux
+  fi
 
   GLEW_DEST=$DEPLOYDIR make -j$NUMCPU
   GLEW_DEST=$DEPLOYDIR make install
@@ -177,10 +180,13 @@ build_opencsg()
   fi
   tar xzf OpenCSG-$version.tar.gz
   cd OpenCSG-$version
-  sed -i s/example// opencsg.pro # examples might be broken without GLUT
+  sed -ibak s/example// opencsg.pro # examples might be broken without GLUT
 
-  # uncomment this kludge for Fedora 64bit
-  # sed -i s/"\-lXmu"/"\-L\/usr\/lib64\/libXmu.so.6"/ src/Makefile 
+  # Fedora 64-bit
+  if [ "`ls /usr/lib64 | grep Xmu`" ]; then 
+    echo "modifying opencsg makefile for 64 bit machine"
+    sed -ibak s/"\-lXmu"/"\-L\/usr\/lib64\/libXmu.so.6"/ src/Makefile 
+  fi
 
   if [ "`command -v qmake-qt4`" ]; then
     qmake-qt4
