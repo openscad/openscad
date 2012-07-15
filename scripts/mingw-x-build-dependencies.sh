@@ -16,8 +16,8 @@
 
 OPENSCADDIR=$PWD
 if [ ! -f $OPENSCADDIR/openscad.pro ]; then
-  echo "Must be run from the OpenSCAD source root directory"
-  exit 0
+	echo "Must be run from the OpenSCAD source root directory"
+	exit 0
 fi
 BASEDIR=$HOME/openscad_deps
 MXEDIR=$BASEDIR/mxe
@@ -28,10 +28,19 @@ echo BASEDIR: $BASEDIR
 echo OPENSCADDIR: $OPENSCADDIR
 echo PATH modified with $MXEDIR/usr/bin
 if [ ! $NUMCPU ]; then
-	echo "note: you can 'export NUMCPU=x' for paralell builds (x=number)";
+	echo "note: you can 'export NUMCPU=x' for multi-core compiles (x=number)";
 	NUMCPU=1
 fi
+if [ ! $NUMJOBS ]; then
+	echo "note: you can 'export NUMJOBS=x' for building multiple pkgs at once"
+	if [ $NUMCPU -gt 2 ]; then
+		NUMJOBS=$((NUMCPU/2))
+	else
+		NUMJOBS=1
+	fi
+fi
 echo NUMCPU: $NUMCPU
+echo NUMJOBS: $NUMJOBS
 
 echo "Downloading MXE into " $MXEDIR
 cd $BASEDIR
@@ -39,8 +48,8 @@ cd $BASEDIR
 git clone git://github.com/mxe/mxe.git
 
 cd $MXEDIR
-make -j $NUMCPU JOBS=$NUMCPU mpfr eigen opencsg cgal qt
-#make -j $NUMCPU JOBS=1 mpfr # for testing
+make mpfr eigen opencsg cgal qt -j $NUMCPU JOBS=$NUMJOBS
+#make mpfr -j$NUMCPU JOBS=$NUMJOBS # for testing
 echo 'make'
 
 echo "leaving" $MXEDIR
