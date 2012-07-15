@@ -42,13 +42,13 @@ fi
 echo NUMCPU: $NUMCPU
 echo NUMJOBS: $NUMJOBS
 
-echo "Downloading MXE into " $MXEDIR
 cd $BASEDIR
-
 if [ ! -e mxe ]; then
+	echo "Downloading MXE into " $MXEDIR
 	git clone git://github.com/mxe/mxe.git
 fi
 
+echo "entering" $MXEDIR
 cd $MXEDIR
 echo "make mpfr eigen opencsg cgal qt -j $NUMCPU JOBS=$NUMJOBS"
 make mpfr eigen opencsg cgal qt -j $NUMCPU JOBS=$NUMJOBS
@@ -69,5 +69,5 @@ echo "now copy/paste the following to cross-build openscad"
 echo
 echo "export PATH=$MXEDIR/usr/bin:\$PATH"
 echo "i686-pc-mingw32-qmake CONFIG+=mingw-cross-env openscad.pro"
-echo "make"
+echo "make -j$NUMCPU"
 echo
