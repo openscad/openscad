@@ -13,7 +13,7 @@ boost {
     DEFINES += BOOST_STATIC
     DEFINES += BOOST_THREAD_USE_LIB
     DEFINES += Boost_USE_STATIC_LIBS
-    BOOST_LINK_FLAGS = -lboost_thread_win32-mt -lboost_program_options-mt -lboost_filesystem-mt -lboost_system-mt -lboost_regex-mt
+    BOOST_LINK_FLAGS = -lboost_thread_win32-mt -lboost_program_options-mt -lboost_filesystem-mt -lboost_system-mt -lboost_regex-mt -lboost_chrono-mt
   } 
 
   isEmpty(BOOST_LINK_FLAGS):win32 {
@@ -25,10 +25,10 @@ boost {
     OPENSCAD_LIBDIR = $$(OPENSCAD_LIBRARIES)
     !isEmpty(OPENSCAD_LIBDIR) {
       exists($$OPENSCAD_LIBDIR/lib/libboost*thread-mt*) {
-        BOOST_LINK_FLAGS = -lboost_thread-mt -lboost_program_options-mt -lboost_filesystem-mt -lboost_system-mt -lboost_regex-mt
+        BOOST_LINK_FLAGS = -lboost_thread-mt -lboost_program_options-mt -lboost_filesystem-mt -lboost_system-mt -lboost_regex-mt -lboost_chrono-mt
       } else {
         exists($$OPENSCAD_LIBDIR/lib/libboost*thread*) {
-          BOOST_LINK_FLAGS = -lboost_thread -lboost_program_options -lboost_filesystem -lboost_system -lboost_regex
+          BOOST_LINK_FLAGS = -lboost_thread -lboost_program_options -lboost_filesystem -lboost_system -lboost_regex -lboost_chrono
         }
       }
     }
