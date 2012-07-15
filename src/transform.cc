@@ -87,29 +87,29 @@ AbstractNode *TransformModule::evaluate(const Context *ctx, const ModuleInstanti
 	{
 		Vector3d scalevec(1,1,1);
 		Value v = c.lookup_variable("v");
-		if (!v.getv3(scalevec[0], scalevec[1], scalevec[2], 1.0)) {
+		if (!v.getVec3(scalevec[0], scalevec[1], scalevec[2], 1.0)) {
 			double num;
-			if (v.getnum(num)) scalevec.setConstant(num);
+			if (v.getDouble(num)) scalevec.setConstant(num);
 		}
 		node->matrix.scale(scalevec);
 	}
 	else if (this->type == ROTATE)
 	{
 		Value val_a = c.lookup_variable("a");
-		if (val_a.type == Value::VECTOR)
+		if (val_a.type() == Value::VECTOR)
 		{
 			Eigen::AngleAxisd rotx, roty, rotz;
 			double a;
-			if (val_a.vec.size() > 0) {
-				val_a.vec[0]->getnum(a);
+			if (val_a.toVector().size() > 0) {
+				val_a.toVector()[0].getDouble(a);
 				rotx = Eigen::AngleAxisd(a*M_PI/180, Vector3d::UnitX());
 			}
-			if (val_a.vec.size() > 1) {
-				val_a.vec[1]->getnum(a);
+			if (val_a.toVector().size() > 1) {
+				val_a.toVector()[1].getDouble(a);
 				roty = Eigen::AngleAxisd(a*M_PI/180, Vector3d::UnitY());
 			}
-			if (val_a.vec.size() > 2) {
-				val_a.vec[2]->getnum(a);
+			if (val_a.toVector().size() > 2) {
+				val_a.toVector()[2].getDouble(a);
 				rotz = Eigen::AngleAxisd(a*M_PI/180, Vector3d::UnitZ());
 			}
 			node->matrix.rotate(rotz * roty * rotx);
@@ -119,10 +119,10 @@ AbstractNode *TransformModule::evaluate(const Context *ctx, const ModuleInstanti
 			Value val_v = c.lookup_variable("v");
 			double a = 0;
 
-			val_a.getnum(a);
+			val_a.getDouble(a);
 
 			Vector3d axis(0,0,1);
-			if (val_v.getv3(axis[0], axis[1], axis[2])) {
+			if (val_v.getVec3(axis[0], axis[1], axis[2])) {
 				if (axis.squaredNorm() > 0) axis.normalize();
 			}
 
@@ -136,7 +136,7 @@ AbstractNode *TransformModule::evaluate(const Context *ctx, const ModuleInstanti
 		Value val_v = c.lookup_variable("v");
 		double x = 1, y = 0, z = 0;
 	
-		if (val_v.getv3(x, y, z)) {
+		if (val_v.getVec3(x, y, z)) {
 			if (x != 0.0 || y != 0.0 || z != 0.0) {
 				double sn = 1.0 / sqrt(x*x + y*y + z*z);
 				x *= sn, y *= sn, z *= sn;
@@ -157,17 +157,17 @@ AbstractNode *TransformModule::evaluate(const Context *ctx, const ModuleInstanti
 	{
 		Value v = c.lookup_variable("v");
 		Vector3d translatevec(0,0,0);
-		v.getv3(translatevec[0], translatevec[1], translatevec[2]);
+		v.getVec3(translatevec[0], translatevec[1], translatevec[2]);
 		node->matrix.translate(translatevec);
 	}
 	else if (this->type == MULTMATRIX)
 	{
 		Value v = c.lookup_variable("m");
-		if (v.type == Value::VECTOR) {
+		if (v.type() == Value::VECTOR) {
 			for (int i = 0; i < 16; i++) {
 				size_t x = i / 4, y = i % 4;
-				if (y < v.vec.size() && v.vec[y]->type == Value::VECTOR && x < v.vec[y]->vec.size())
-					v.vec[y]->vec[x]->getnum(node->matrix(y, x));
+				if (y < v.toVector().size() && v.toVector()[y].type() == Value::VECTOR && x < v.toVector()[y].toVector().size())
+					v.toVector()[y].toVector()[x].getDouble(node->matrix(y, x));
 			}
 		}
 	}

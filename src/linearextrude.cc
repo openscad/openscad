@@ -38,6 +38,9 @@
 #include <boost/assign/std/vector.hpp>
 using namespace boost::assign; // bring 'operator+=()' into scope
 
+#include <boost/filesystem.hpp>
+namespace fs = boost::filesystem;
+
 class LinearExtrudeModule : public AbstractModule
 {
 public:
@@ -56,9 +59,9 @@ AbstractNode *LinearExtrudeModule::evaluate(const Context *ctx, const ModuleInst
 	Context c(ctx);
 	c.args(argnames, argexpr, inst->argnames, inst->argvalues);
 
-	node->fn = c.lookup_variable("$fn").num;
-	node->fs = c.lookup_variable("$fs").num;
-	node->fa = c.lookup_variable("$fa").num;
+	node->fn = c.lookup_variable("$fn").toDouble();
+	node->fs = c.lookup_variable("$fs").toDouble();
+	node->fa = c.lookup_variable("$fa").toDouble();
 
 	Value file = c.lookup_variable("file");
 	Value layer = c.lookup_variable("layer", true);
@@ -70,28 +73,28 @@ AbstractNode *LinearExtrudeModule::evaluate(const Context *ctx, const ModuleInst
 	Value twist = c.lookup_variable("twist", true);
 	Value slices = c.lookup_variable("slices", true);
 
-	if (!file.text.empty()) {
+	if (!file.isUndefined()) {
 		PRINT("DEPRECATED: Support for reading files in linear_extrude will be removed in future releases. Use a child import() instead.");
-		node->filename = c.getAbsolutePath(file.text);
+		node->filename = c.getAbsolutePath(file.toString());
 	}
 
 	// if height not given, and first argument is a number,
 	// then assume it should be the height.
-	if (c.lookup_variable("height").type == Value::UNDEFINED &&
+	if (c.lookup_variable("height").isUndefined() &&
 			inst->argnames.size() > 0 && 
 			inst->argnames[0] == "" &&
-			inst->argvalues[0].type == Value::NUMBER) {
+			inst->argvalues[0].type() == Value::NUMBER) {
 		height = Value(inst->argvalues[0]);
 	}
 
-	node->layername = layer.text;
-	node->height = height.num;
-	node->convexity = (int)convexity.num;
-	origin.getv2(node->origin_x, node->origin_y);
-	node->scale = scale.num;
+	node->layername = layer.isUndefined() ? "" : layer.toString();
+	node->height = height.toDouble();
+	node->convexity = (int)convexity.toDouble();
+	origin.getVec2(node->origin_x, node->origin_y);
+	node->scale = scale.toDouble();
 
-	if (center.type == Value::BOOL)
-		node->center = center.b;
+	if (center.type() == Value::BOOL)
+		node->center = center.toBool();
 
 	if (node->height <= 0)
 		node->height = 100;
@@ -102,10 +105,10 @@ AbstractNode *LinearExtrudeModule::evaluate(const Context *ctx, const ModuleInst
 	if (node->scale <= 0)
 		node->scale = 1;
 
-	if (twist.type == Value::NUMBER) {
-		node->twist = twist.num;
-		if (slices.type == Value::NUMBER) {
-			node->slices = (int)slices.num;
+	if (twist.type() == Value::NUMBER) {
+		node->twist = twist.toDouble();
+		if (slices.type() == Value::NUMBER) {
+			node->slices = (int)slices.toDouble();
 		} else {
 			node->slices = (int)fmax(2, fabs(get_fragments_from_r(node->height,
 					node->fn, node->fs, node->fa) * node->twist / 360));
@@ -143,11 +146,17 @@ std::string LinearExtrudeNode::toString() const
 
 	stream << this->name() << "(";
 	if (!this->filename.empty()) { // Ignore deprecated parameters if empty 
+		fs::path path(this->filename);
 		stream <<
 			"file = " << this->filename << ", "
 			"layer = " << QuotedString(this->layername) << ", "
 			"origin = [" << this->origin_x << ", " << this->origin_y << "], "
-			"scale = " << this->scale << ", ";
+			"scale = " << this->scale << ", "
+#ifndef OPENSCAD_TESTING
+			// timestamp is needed for caching, but disturbs the test framework
+			<< "timestamp = " << (fs::exists(path) ? fs::last_write_time(path) : 0) << ", "
+#endif
+			;
 	}
 	stream <<
 		"height = " << std::dec << this->height << ", "

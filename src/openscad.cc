@@ -205,7 +205,7 @@ int main(int argc, char **argv)
 	}
 #endif
 
-	currentdir = boosty::stringy( fs::current_path() );
+	currentdir = boosty::stringy(fs::current_path());
 
 	QDir exdir(QApplication::instance()->applicationDirPath());
 #ifdef Q_WS_MAC

@@ -109,15 +109,15 @@ static inline double rad2deg(double x)
 
 Value builtin_abs(const Context *, const std::vector<std::string>&, const std::vector<Value> &args)
 {
-	if (args.size() == 1 && args[0].type == Value::NUMBER)
-		return Value(fabs(args[0].num));
+	if (args.size() == 1 && args[0].type() == Value::NUMBER)
+		return Value(fabs(args[0].toDouble()));
 	return Value();
 }
 
 Value builtin_sign(const Context *, const std::vector<std::string>&, const std::vector<Value> &args)
 {
-	if (args.size() == 1 && args[0].type == Value::NUMBER)
-		return Value((args[0].num<0) ? -1.0 : ((args[0].num>0) ? 1.0 : 0.0));
+	if (args.size() == 1 && args[0].type() == Value::NUMBER)
+		return Value((args[0].toDouble()<0) ? -1.0 : ((args[0].toDouble()>0) ? 1.0 : 0.0));
 	return Value();
 }
 
@@ -134,45 +134,41 @@ double frand(double min, double max)
 Value builtin_rands(const Context *, const std::vector<std::string>&, const std::vector<Value> &args)
 {
 	if (args.size() == 3 &&
-			args[0].type == Value::NUMBER && 
-			args[1].type == Value::NUMBER && 
-			args[2].type == Value::NUMBER)
+			args[0].type() == Value::NUMBER && 
+			args[1].type() == Value::NUMBER && 
+			args[2].type() == Value::NUMBER)
 	{
 		srand((unsigned int)time(0));
 	}
 	else if (args.size() == 4 && 
-					 args[0].type == Value::NUMBER && 
-					 args[1].type == Value::NUMBER && 
-					 args[2].type == Value::NUMBER && 
-					 args[3].type == Value::NUMBER)
+					 args[0].type() == Value::NUMBER && 
+					 args[1].type() == Value::NUMBER && 
+					 args[2].type() == Value::NUMBER && 
+					 args[3].type() == Value::NUMBER)
 	{
-		srand((unsigned int)args[3].num);
+		srand((unsigned int)args[3].toDouble());
 	}
 	else
 	{
 		return Value();
 	}
 	
-	Value v;
-	v.type = Value::VECTOR;
-	
-	for (int i=0; i<args[2].num; i++)
-	{	
-		Value * r = new Value(frand(args[0].num, args[1].num));
-		v.vec.push_back(r);
+	Value::VectorType vec;
+	for (int i=0; i<args[2].toDouble(); i++) {
+		vec.push_back(Value(frand(args[0].toDouble(), args[1].toDouble())));
 	}
 	
-	return v;
+	return Value(vec);
 }
 
 
 Value builtin_min(const Context *, const std::vector<std::string>&, const std::vector<Value> &args)
 {
-	if (args.size() >= 1 && args[0].type == Value::NUMBER) {
-		double val = args[0].num;
+	if (args.size() >= 1 && args[0].type() == Value::NUMBER) {
+		double val = args[0].toDouble();
 		for (size_t i = 1; i < args.size(); i++)
-			if (args[1].type == Value::NUMBER)
-				val = fmin(val, args[i].num);
+			if (args[1].type() == Value::NUMBER)
+				val = fmin(val, args[i].toDouble());
 		return Value(val);
 	}
 	return Value();
@@ -180,11 +176,11 @@ Value builtin_min(const Context *, const std::vector<std::string>&, const std::v
 
 Value builtin_max(const Context *, const std::vector<std::string>&, const std::vector<Value> &args)
 {
-	if (args.size() >= 1 && args[0].type == Value::NUMBER) {
-		double val = args[0].num;
+	if (args.size() >= 1 && args[0].type() == Value::NUMBER) {
+		double val = args[0].toDouble();
 		for (size_t i = 1; i < args.size(); i++)
-			if (args[1].type == Value::NUMBER)
-				val = fmax(val, args[i].num);
+			if (args[1].type() == Value::NUMBER)
+				val = fmax(val, args[i].toDouble());
 		return Value(val);
 	}
 	return Value();
@@ -192,119 +188,117 @@ Value builtin_max(const Context *, const std::vector<std::string>&, const std::v
 
 Value builtin_sin(const Context *, const std::vector<std::string>&, const std::vector<Value> &args)
 {
-	if (args.size() == 1 && args[0].type == Value::NUMBER)
-		return Value(sin(deg2rad(args[0].num)));
+	if (args.size() == 1 && args[0].type() == Value::NUMBER)
+		return Value(sin(deg2rad(args[0].toDouble())));
 	return Value();
 }
 
 Value builtin_cos(const Context *, const std::vector<std::string>&, const std::vector<Value> &args)
 {
-	if (args.size() == 1 && args[0].type == Value::NUMBER)
-		return Value(cos(deg2rad(args[0].num)));
+	if (args.size() == 1 && args[0].type() == Value::NUMBER)
+		return Value(cos(deg2rad(args[0].toDouble())));
 	return Value();
 }
 
 Value builtin_asin(const Context *, const std::vector<std::string>&, const std::vector<Value> &args)
 {
-	if (args.size() == 1 && args[0].type == Value::NUMBER)
-		return Value(rad2deg(asin(args[0].num)));
+	if (args.size() == 1 && args[0].type() == Value::NUMBER)
+		return Value(rad2deg(asin(args[0].toDouble())));
 	return Value();
 }
 
 Value builtin_acos(const Context *, const std::vector<std::string>&, const std::vector<Value> &args)
 {
-	if (args.size() == 1 && args[0].type == Value::NUMBER)
-		return Value(rad2deg(acos(args[0].num)));
+	if (args.size() == 1 && args[0].type() == Value::NUMBER)
+		return Value(rad2deg(acos(args[0].toDouble())));
 	return Value();
 }
 
 Value builtin_tan(const Context *, const std::vector<std::string>&, const std::vector<Value> &args)
 {
-	if (args.size() == 1 && args[0].type == Value::NUMBER)
-		return Value(tan(deg2rad(args[0].num)));
+	if (args.size() == 1 && args[0].type() == Value::NUMBER)
+		return Value(tan(deg2rad(args[0].toDouble())));
 	return Value();
 }
 
 Value builtin_atan(const Context *, const std::vector<std::string>&, const std::vector<Value> &args)
 {
-	if (args.size() == 1 && args[0].type == Value::NUMBER)
-		return Value(rad2deg(atan(args[0].num)));
+	if (args.size() == 1 && args[0].type() == Value::NUMBER)
+		return Value(rad2deg(atan(args[0].toDouble())));
 	return Value();
 }
 
 Value builtin_atan2(const Context *, const std::vector<std::string>&, const std::vector<Value> &args)
 {
-	if (args.size() == 2 && args[0].type == Value::NUMBER && args[1].type == Value::NUMBER)
-		return Value(rad2deg(atan2(args[0].num, args[1].num)));
+	if (args.size() == 2 && args[0].type() == Value::NUMBER && args[1].type() == Value::NUMBER)
+		return Value(rad2deg(atan2(args[0].toDouble(), args[1].toDouble())));
 	return Value();
 }
 
 Value builtin_pow(const Context *, const std::vector<std::string>&, const std::vector<Value> &args)
 {
-	if (args.size() == 2 && args[0].type == Value::NUMBER && args[1].type == Value::NUMBER)
-		return Value(pow(args[0].num, args[1].num));
+	if (args.size() == 2 && args[0].type() == Value::NUMBER && args[1].type() == Value::NUMBER)
+		return Value(pow(args[0].toDouble(), args[1].toDouble()));
 	return Value();
 }
 
 Value builtin_round(const Context *, const std::vector<std::string>&, const std::vector<Value> &args)
 {
-	if (args.size() == 1 && args[0].type == Value::NUMBER)
-		return Value(round(args[0].num));
+	if (args.size() == 1 && args[0].type() == Value::NUMBER)
+		return Value(round(args[0].toDouble()));
 	return Value();
 }
 
 Value builtin_ceil(const Context *, const std::vector<std::string>&, const std::vector<Value> &args)
 {
-	if (args.size() == 1 && args[0].type == Value::NUMBER)
-		return Value(ceil(args[0].num));
+	if (args.size() == 1 && args[0].type() == Value::NUMBER)
+		return Value(ceil(args[0].toDouble()));
 	return Value();
 }
 
 Value builtin_floor(const Context *, const std::vector<std::string>&, const std::vector<Value> &args)
 {
-	if (args.size() == 1 && args[0].type == Value::NUMBER)
-		return Value(floor(args[0].num));
+	if (args.size() == 1 && args[0].type() == Value::NUMBER)
+		return Value(floor(args[0].toDouble()));
 	return Value();
 }
 
 Value builtin_sqrt(const Context *, const std::vector<std::string>&, const std::vector<Value> &args)
 {
-	if (args.size() == 1 && args[0].type == Value::NUMBER)
-		return Value(sqrt(args[0].num));
+	if (args.size() == 1 && args[0].type() == Value::NUMBER)
+		return Value(sqrt(args[0].toDouble()));
 	return Value();
 }
 
 Value builtin_exp(const Context *, const std::vector<std::string>&, const std::vector<Value> &args)
 {
-	if (args.size() == 1 && args[0].type == Value::NUMBER)
-		return Value(exp(args[0].num));
+	if (args.size() == 1 && args[0].type() == Value::NUMBER)
+		return Value(exp(args[0].toDouble()));
 	return Value();
 }
 
 Value builtin_length(const Context *, const std::vector<std::string>&, const std::vector<Value> &args)
 {
-	if (args.size() == 1){
-		if (args[0].type == Value::VECTOR)
-			return Value((double) args[0].vec.size());
-		if (args[0].type == Value::STRING)
-			return Value((double) args[0].text.size());
+	if (args.size() == 1) {
+		if (args[0].type() == Value::VECTOR) return Value(int(args[0].toVector().size()));
+		if (args[0].type() == Value::STRING) return Value(int(args[0].toString().size()));
 	}
 	return Value();
 }
 
 Value builtin_log(const Context *, const std::vector<std::string>&, const std::vector<Value> &args)
 {
-	if (args.size() == 2 && args[0].type == Value::NUMBER && args[1].type == Value::NUMBER)
-		return Value(log(args[1].num) / log(args[0].num));
-	if (args.size() == 1 && args[0].type == Value::NUMBER)
-		return Value(log(args[0].num) / log(10.0));
+	if (args.size() == 2 && args[0].type() == Value::NUMBER && args[1].type() == Value::NUMBER)
+		return Value(log(args[1].toDouble()) / log(args[0].toDouble()));
+	if (args.size() == 1 && args[0].type() == Value::NUMBER)
+		return Value(log(args[0].toDouble()) / log(10.0));
 	return Value();
 }
 
 Value builtin_ln(const Context *, const std::vector<std::string>&, const std::vector<Value> &args)
 {
-	if (args.size() == 1 && args[0].type == Value::NUMBER)
-		return Value(log(args[0].num));
+	if (args.size() == 1 && args[0].type() == Value::NUMBER)
+		return Value(log(args[0].toDouble()));
 	return Value();
 }
 
@@ -321,13 +315,16 @@ Value builtin_str(const Context *, const std::vector<std::string>&, const std::v
 Value builtin_lookup(const Context *, const std::vector<std::string>&, const std::vector<Value> &args)
 {
 	double p, low_p, low_v, high_p, high_v;
-	if (args.size() < 2 || !args[0].getnum(p) || args[1].vec.size() < 2 || args[1].vec[0]->vec.size() < 2)
+	if (args.size() < 2 ||                     // Needs two args
+			!args[0].getDouble(p) ||                  // First must be a number
+			args[1].toVector().size() < 2 ||       // Second must be a vector of vectors
+			args[1].toVector()[0].toVector().size() < 2)
 		return Value();
-	if (!args[1].vec[0]->getv2(low_p, low_v) || !args[1].vec[0]->getv2(high_p, high_v))
+	if (!args[1].toVector()[0].getVec2(low_p, low_v) || !args[1].toVector()[0].getVec2(high_p, high_v))
 		return Value();
-	for (size_t i = 1; i < args[1].vec.size(); i++) {
+	for (size_t i = 1; i < args[1].toVector().size(); i++) {
 		double this_p, this_v;
-		if (args[1].vec[i]->getv2(this_p, this_v)) {
+		if (args[1].toVector()[i].getVec2(this_p, this_v)) {
 			if (this_p <= p && (this_p > low_p || low_p > p)) {
 				low_p = this_p;
 				low_v = this_v;
@@ -394,94 +391,90 @@ Value builtin_search(const Context *, const std::vector<std::string>&, const std
 
 	const Value &findThis = args[0];
 	const Value &searchTable = args[1];
-	unsigned int num_returns_per_match = (args.size() > 2) ? args[2].num : 1;
-	unsigned int index_col_num = (args.size() > 3) ? args[3].num : 0;
+	unsigned int num_returns_per_match = (args.size() > 2) ? args[2].toDouble() : 1;
+	unsigned int index_col_num = (args.size() > 3) ? args[3].toDouble() : 0;
 
-	Value returnVector;
-	returnVector.type = Value::VECTOR;
+	Value::VectorType returnvec;
 
-	if (findThis.type == Value::NUMBER) {
+	if (findThis.type() == Value::NUMBER) {
 		unsigned int matchCount = 0;
-		Value *resultVector = new Value();
-		resultVector->type = Value::VECTOR;
-		for (size_t j = 0; j < searchTable.vec.size(); j++) {
-		  if (searchTable.vec[j]->vec[index_col_num]->type == Value::NUMBER && 
-					findThis.num == searchTable.vec[j]->vec[index_col_num]->num) {
-		    returnVector.append(new Value(double(j)));
+		Value::VectorType resultvec;
+		for (size_t j = 0; j < searchTable.toVector().size(); j++) {
+		  if (searchTable.toVector()[j].toVector()[index_col_num].type() == Value::NUMBER && 
+					findThis.toDouble() == searchTable.toVector()[j].toVector()[index_col_num].toDouble()) {
+		    returnvec.push_back(Value(double(j)));
 		    matchCount++;
 		    if (num_returns_per_match != 0 && matchCount >= num_returns_per_match) break;
 		  }
 		}
-	} else if (findThis.type == Value::STRING) {
+	} else if (findThis.type() == Value::STRING) {
 		unsigned int searchTableSize;
-		if (searchTable.type == Value::STRING) searchTableSize = searchTable.text.size();
-		else searchTableSize = searchTable.vec.size();
-		for (size_t i = 0; i < findThis.text.size(); i++) {
+		if (searchTable.type() == Value::STRING) searchTableSize = searchTable.toString().size();
+		else searchTableSize = searchTable.toVector().size();
+		for (size_t i = 0; i < findThis.toString().size(); i++) {
 		  unsigned int matchCount = 0;
-		  Value *resultVector = new Value();
-		  resultVector->type = Value::VECTOR;
+			Value::VectorType resultvec;
 		  for (size_t j = 0; j < searchTableSize; j++) {
-		    if ((searchTable.type == Value::VECTOR && 
-						 findThis.text[i] == searchTable.vec[j]->vec[index_col_num]->text[0]) ||
-						(searchTable.type == Value::STRING && 
-						 findThis.text[i] == searchTable.text[j])) {
-		      Value *resultValue = new Value(double(j));
+		    if ((searchTable.type() == Value::VECTOR && 
+						 findThis.toString()[i] == searchTable.toVector()[j].toVector()[index_col_num].toString()[0]) ||
+						(searchTable.type() == Value::STRING && 
+						 findThis.toString()[i] == searchTable.toString()[j])) {
+		      Value resultValue((double(j)));
 		      matchCount++;
-		      if (num_returns_per_match==1) {
-						returnVector.append(resultValue);
+		      if (num_returns_per_match == 1) {
+						returnvec.push_back(resultValue);
 						break;
 		      } else {
-						resultVector->append(resultValue);
+						resultvec.push_back(resultValue);
 		      }
 		      if (num_returns_per_match > 1 && matchCount >= num_returns_per_match) break;
 		    }
 		  }
-		  if (matchCount == 0) PRINTB("  search term not found: \"%s\"", findThis.text[i]);
+		  if (matchCount == 0) PRINTB("  search term not found: \"%s\"", findThis.toString()[i]);
 		  if (num_returns_per_match == 0 || num_returns_per_match > 1) {
-				returnVector.append(resultVector);
+				returnvec.push_back(Value(resultvec));
 			}
 		}
-	} else if (findThis.type == Value::VECTOR) {
-		for (size_t i = 0; i < findThis.vec.size(); i++) {
+	} else if (findThis.type() == Value::VECTOR) {
+		for (size_t i = 0; i < findThis.toVector().size(); i++) {
 		  unsigned int matchCount = 0;
-		  Value *resultVector = new Value();
-		  resultVector->type = Value::VECTOR;
-		  for (size_t j = 0; j < searchTable.vec.size(); j++) {
-		    if ((findThis.vec[i]->type == Value::NUMBER && 
-						 searchTable.vec[j]->vec[index_col_num]->type == Value::NUMBER &&
-						 findThis.vec[i]->num == searchTable.vec[j]->vec[index_col_num]->num) ||
-						(findThis.vec[i]->type == Value::STRING && 
-						 searchTable.vec[j]->vec[index_col_num]->type == Value::STRING && 
-						 findThis.vec[i]->text == searchTable.vec[j]->vec[index_col_num]->text)) {
-					Value *resultValue = new Value(double(j));
+			Value::VectorType resultvec;
+		  for (size_t j = 0; j < searchTable.toVector().size(); j++) {
+		    if ((findThis.toVector()[i].type() == Value::NUMBER && 
+						 searchTable.toVector()[j].toVector()[index_col_num].type() == Value::NUMBER &&
+						 findThis.toVector()[i].toDouble() == searchTable.toVector()[j].toVector()[index_col_num].toDouble()) ||
+						(findThis.toVector()[i].type() == Value::STRING && 
+						 searchTable.toVector()[j].toVector()[index_col_num].type() == Value::STRING && 
+						 findThis.toVector()[i].toString() == searchTable.toVector()[j].toVector()[index_col_num].toString())) {
+					Value resultValue((double(j)));
 		      matchCount++;
-		      if (num_returns_per_match==1) {
-						returnVector.append(resultValue);
+		      if (num_returns_per_match == 1) {
+						returnvec.push_back(resultValue);
 						break;
 		      } else {
-						resultVector->append(resultValue);
+						resultvec.push_back(resultValue);
 		      }
 		      if (num_returns_per_match > 1 && matchCount >= num_returns_per_match) break;
 		    }
 		  }
 		  if (num_returns_per_match == 1 && matchCount == 0) {
-		    if (findThis.vec[i]->type == Value::NUMBER) {
-					PRINTB("  search term not found: %s",findThis.vec[i]->num);
+		    if (findThis.toVector()[i].type() == Value::NUMBER) {
+					PRINTB("  search term not found: %s",findThis.toVector()[i].toDouble());
 				}
-		    else if (findThis.vec[i]->type == Value::STRING) {
-					PRINTB("  search term not found: \"%s\"",findThis.vec[i]->text);
+		    else if (findThis.toVector()[i].type() == Value::STRING) {
+					PRINTB("  search term not found: \"%s\"",findThis.toVector()[i].toString());
 				}
-		    returnVector.append(resultVector);
+		    returnvec.push_back(Value(resultvec));
 		  }
 		  if (num_returns_per_match == 0 || num_returns_per_match > 1) {
-				returnVector.append(resultVector);
+				returnvec.push_back(Value(resultvec));
 			}
 		}
 	} else {
 		PRINTB("  search: none performed on input %s", findThis);
 		return Value();
 	}
-	return returnVector;
+	return Value(returnvec);
 }
 
 #define QUOTE(x__) # x__
@@ -489,22 +482,21 @@ Value builtin_search(const Context *, const std::vector<std::string>&, const std
 
 Value builtin_version(const Context *, const std::vector<std::string>&, const std::vector<Value> &)
 {
-	Value val;
-	val.type = Value::VECTOR;
-	val.append(new Value(double(OPENSCAD_YEAR)));
-	val.append(new Value(double(OPENSCAD_MONTH)));
+	Value::VectorType val;
+	val.push_back(Value(double(OPENSCAD_YEAR)));
+	val.push_back(Value(double(OPENSCAD_MONTH)));
 #ifdef OPENSCAD_DAY
-	val.append(new Value(double(OPENSCAD_DAY)));
+	val.push_back(Value(double(OPENSCAD_DAY)));
 #endif
-	return val;
+	return Value(val);
 }
 
 Value builtin_version_num(const Context *ctx, const std::vector<std::string>& call_argnames, const std::vector<Value> &args)
 {
 	Value val = (args.size() == 0) ? builtin_version(ctx, call_argnames, args) : args[0];
 	double y, m, d = 0;
-	if (!val.getv3(y, m, d)) {
-		if (!val.getv2(y, m)) {
+	if (!val.getVec3(y, m, d)) {
+		if (!val.getVec2(y, m)) {
 			return Value();
 		}
 	}

@@ -83,7 +83,7 @@ Module *ModuleCache::evaluate(const std::string &filename)
 		this->entries[filename] = e;
 		
 		std::string pathname = boosty::stringy(fs::path(filename).parent_path());
-		lib_mod = dynamic_cast<Module*>(parse(text.c_str(), pathname.c_str(), 0));
+		lib_mod = dynamic_cast<Module*>(parse(text.c_str(), pathname.c_str(), false));
 		
 		if (lib_mod) {
 			this->entries[filename].module = lib_mod;

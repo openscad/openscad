@@ -52,15 +52,15 @@ Value builtin_dxf_dim(const Context *ctx, const std::vector<std::string> &argnam
 
 	for (size_t i = 0; i < argnames.size() && i < args.size(); i++) {
 		if (argnames[i] == "file")
-			filename = ctx->getAbsolutePath(args[i].text);
+			filename = ctx->getAbsolutePath(args[i].toString());
 		if (argnames[i] == "layer")
-			layername = args[i].text;
+			layername = args[i].toString();
 		if (argnames[i] == "origin")
-			args[i].getv2(xorigin, yorigin);
+			args[i].getVec2(xorigin, yorigin);
 		if (argnames[i] == "scale")
-			args[i].getnum(scale);
+			args[i].getDouble(scale);
 		if (argnames[i] == "name")
-			name = args[i].text;
+			name = args[i].toString();
 	}
 
 	std::stringstream keystream;
@@ -136,13 +136,13 @@ Value builtin_dxf_cross(const Context *ctx, const std::vector<std::string> &argn
 
 	for (size_t i = 0; i < argnames.size() && i < args.size(); i++) {
 		if (argnames[i] == "file")
-			filename = ctx->getAbsolutePath(args[i].text);
+			filename = ctx->getAbsolutePath(args[i].toString());
 		if (argnames[i] == "layer")
-			layername = args[i].text;
+			layername = args[i].toString();
 		if (argnames[i] == "origin")
-			args[i].getv2(xorigin, yorigin);
+			args[i].getVec2(xorigin, yorigin);
 		if (argnames[i] == "scale")
-			args[i].getnum(scale);
+			args[i].getDouble(scale);
 	}
 
 	std::stringstream keystream;
@@ -178,11 +178,10 @@ Value builtin_dxf_cross(const Context *ctx, const std::vector<std::string> &argn
 			// double ub = ((x2 - x1)*(y1 - y3) - (y2 - y1)*(x1 - x3)) / dem;
 			double x = x1 + ua*(x2 - x1);
 			double y = y1 + ua*(y2 - y1);
-			Value ret;
-			ret.type = Value::VECTOR;
-			ret.append(new Value(x));
-			ret.append(new Value(y));
-			return dxf_cross_cache[key] = ret;
+			Value::VectorType ret;
+			ret.push_back(Value(x));
+			ret.push_back(Value(y));
+			return dxf_cross_cache[key] = Value(ret);
 		}
 	}
 

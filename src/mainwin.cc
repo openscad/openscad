@@ -99,6 +99,8 @@
 #define OPENCSG_VERSION_STRING "unknown, <1.3.2"
 #endif
 
+extern QString examplesdir;
+
 // Global application state
 unsigned int GuiLocker::gui_locked = 0;
 
@@ -976,19 +978,17 @@ void MainWindow::updateTemporalVariables()
 {
 	this->root_ctx.set_variable("$t", Value(this->e_tval->text().toDouble()));
 	
-	Value vpt;
-	vpt.type = Value::VECTOR;
-	vpt.append(new Value(-this->glview->object_trans_x));
-	vpt.append(new Value(-this->glview->object_trans_y));
-	vpt.append(new Value(-this->glview->object_trans_z));
-	this->root_ctx.set_variable("$vpt", vpt);
+	Value::VectorType vpt;
+	vpt.push_back(Value(-this->glview->object_trans_x));
+	vpt.push_back(Value(-this->glview->object_trans_y));
+	vpt.push_back(Value(-this->glview->object_trans_z));
+	this->root_ctx.set_variable("$vpt", Value(vpt));
 	
-	Value vpr;
-	vpr.type = Value::VECTOR;
-	vpr.append(new Value(fmodf(360 - this->glview->object_rot_x + 90, 360)));
-	vpr.append(new Value(fmodf(360 - this->glview->object_rot_y, 360)));
-	vpr.append(new Value(fmodf(360 - this->glview->object_rot_z, 360)));
-	root_ctx.set_variable("$vpr", vpr);
+	Value::VectorType vpr;
+	vpr.push_back(Value(fmodf(360 - this->glview->object_rot_x + 90, 360)));
+	vpr.push_back(Value(fmodf(360 - this->glview->object_rot_y, 360)));
+	vpr.push_back(Value(fmodf(360 - this->glview->object_rot_z, 360)));
+	root_ctx.set_variable("$vpr", Value(vpr));
 }
 
 bool MainWindow::fileChangedOnDisk()

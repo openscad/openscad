@@ -78,10 +78,10 @@ AbstractNode *CgaladvModule::evaluate(const Context *ctx, const ModuleInstantiat
 		level = c.lookup_variable("level", true);
 	}
 
-	node->convexity = (int)convexity.num;
+	node->convexity = (int)convexity.toDouble();
 	node->path = path;
-	node->subdiv_type = subdiv_type.text;
-	node->level = (int)level.num;
+	node->subdiv_type = subdiv_type.toString();
+	node->level = (int)level.toDouble();
 
 	if (node->level <= 1)
 		node->level = 1;

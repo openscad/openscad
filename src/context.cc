@@ -196,13 +196,13 @@ void register_builtin(Context &ctx)
 	ctx.set_variable("$fa", Value(12.0));
 	ctx.set_variable("$t", Value(0.0));
 	
-	Value zero3;
-	zero3.type = Value::VECTOR;
-	zero3.append(new Value(0.0));
-	zero3.append(new Value(0.0));
-	zero3.append(new Value(0.0));
-	ctx.set_variable("$vpt", zero3);
-	ctx.set_variable("$vpr", zero3);
+	Value::VectorType zero3;
+	zero3.push_back(Value(0.0));
+	zero3.push_back(Value(0.0));
+	zero3.push_back(Value(0.0));
+	Value zero3val(zero3);
+	ctx.set_variable("$vpt", zero3val);
+	ctx.set_variable("$vpr", zero3val);
 
 	ctx.set_constant("PI",Value(M_PI));
 }

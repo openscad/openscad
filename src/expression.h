@@ -3,13 +3,14 @@
 
 #include <string>
 #include <vector>
+#include "value.h"
 
 class Expression
 {
 public:
 	std::vector<Expression*> children;
 
-	class Value *const_value;
+	const Value const_value;
 	std::string var_name;
 
 	std::string call_funcname;
@@ -31,6 +32,7 @@ public:
   std::string type;
 
 	Expression();
+	Expression(const Value &val);
 	~Expression();
 
 	Value evaluate(const class Context *context) const;

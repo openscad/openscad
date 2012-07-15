@@ -13,7 +13,6 @@
 #include <sstream>
 #include <iostream>
 #include <assert.h>
-#include <QRegExp>
 
 bool CSGTextRenderer::isCached(const AbstractNode &node)
 {
