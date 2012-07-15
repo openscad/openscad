@@ -17,6 +17,7 @@ isEmpty(QT_VERSION) {
   error("Please use qmake for Qt 4 (probably qmake-qt4)")
 }
 
+
 # Auto-include config_<variant>.pri if the VARIANT variable is give on the
 # command-line, e.g. qmake VARIANT=mybuild
 !isEmpty(VARIANT) {
@@ -104,10 +105,6 @@ netbsd* {
   QMAKE_CXXFLAGS *= -fno-strict-aliasing
 }
 
-CONFIG(mingw-cross-env) {
-  include(mingw-cross-env.pri)
-}
-
 CONFIG(skip-version-check) {
   # force the use of outdated libraries
   DEFINES += OPENSCAD_SKIP_VERSION_CHECK
@@ -130,6 +127,11 @@ mdi {
 DEFINES += USE_PROGRESSWIDGET
 
 include(common.pri)
+
+# mingw has to after other items so OBJECT_DIRS will work properly
+CONFIG(mingw-cross-env) {
+  include(mingw-cross-env.pri)
+}
 
 win32 {
   FLEXSOURCES = src/lexer.l
@@ -315,3 +317,4 @@ INSTALLS += applications
 icons.path = $$PREFIX/share/pixmaps
 icons.files = icons/openscad.png
 INSTALLS += icons
+
