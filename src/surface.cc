@@ -225,7 +225,7 @@ PolySet *SurfaceNode::evaluate_polyset(class PolySetEvaluator *) const
 std::string SurfaceNode::toString() const
 {
 	std::stringstream stream;
-	fs::path path(this->filename);
+	fs::path path((std::string)this->filename);
 
 	stream << this->name() << "(file = " << this->filename << ", "
 		"center = " << (this->center ? "true" : "false")
