@@ -38,6 +38,9 @@
 #include <boost/assign/std/vector.hpp>
 using namespace boost::assign; // bring 'operator+=()' into scope
 
+#include <boost/filesystem.hpp>
+namespace fs = boost::filesystem;
+
 class LinearExtrudeModule : public AbstractModule
 {
 public:
@@ -143,11 +146,17 @@ std::string LinearExtrudeNode::toString() const
 
 	stream << this->name() << "(";
 	if (!this->filename.empty()) { // Ignore deprecated parameters if empty 
+		fs::path path(this->filename);
 		stream <<
 			"file = " << this->filename << ", "
 			"layer = " << QuotedString(this->layername) << ", "
 			"origin = [" << this->origin_x << ", " << this->origin_y << "], "
-			"scale = " << this->scale << ", ";
+			"scale = " << this->scale << ", "
+#ifndef OPENSCAD_TESTING
+			// timestamp is needed for caching, but disturbs the test framework
+			<< "timestamp = " << (fs::exists(path) ? fs::last_write_time(path) : 0) << ", "
+#endif
+			;
 	}
 	stream <<
 		"height = " << std::dec << this->height << ", "

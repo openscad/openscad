@@ -43,6 +43,9 @@
 #include <boost/assign/std/vector.hpp>
 using namespace boost::assign; // bring 'operator+=()' into scope
 
+#include <boost/filesystem.hpp>
+namespace fs = boost::filesystem;
+
 class SurfaceModule : public AbstractModule
 {
 public:
@@ -222,9 +225,15 @@ PolySet *SurfaceNode::evaluate_polyset(class PolySetEvaluator *) const
 std::string SurfaceNode::toString() const
 {
 	std::stringstream stream;
+	fs::path path(this->filename);
 
 	stream << this->name() << "(file = " << this->filename << ", "
-		"center = " << (this->center ? "true" : "false") << ")";
+		"center = " << (this->center ? "true" : "false")
+#ifndef OPENSCAD_TESTING
+		// timestamp is needed for caching, but disturbs the test framework
+				 << ", " "timestamp = " << (fs::exists(path) ? fs::last_write_time(path) : 0)
+#endif
+				 << ")";
 
 	return stream.str();
 }
