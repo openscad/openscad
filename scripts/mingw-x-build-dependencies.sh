@@ -69,5 +69,6 @@ echo "now copy/paste the following to cross-build openscad"
 echo
 echo "export PATH=$MXEDIR/usr/bin:\$PATH"
 echo "i686-pc-mingw32-qmake CONFIG+=mingw-cross-env openscad.pro"
-echo "make -j$NUMCPU"
+#echo "make -j$NUMCPU" # causes parser_yacc.hpp errors
+echo "make"
 echo
