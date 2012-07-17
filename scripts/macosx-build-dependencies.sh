@@ -232,7 +232,7 @@ build_glew()
   cd glew-$version
   mkdir -p $DEPLOYDIR/lib/pkgconfig
   # To avoid running strip on a fat archive as this is not supported by strip
-  sed -i bak -e "s/\$(STRIP) -x lib\/\$(LIB.STATIC)//" Makefile 
+  sed -ibak -e "s/\$(STRIP) -x lib\/\$(LIB.STATIC)//" Makefile 
   if $OPTION_32BIT; then
     GLEW_EXTRA_FLAGS="-arch i386"
   fi
