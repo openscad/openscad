@@ -78,15 +78,6 @@ AbstractNode *LinearExtrudeModule::evaluate(const Context *ctx, const ModuleInst
 		node->filename = c.getAbsolutePath(file.toString());
 	}
 
-<<<<<<< HEAD
-	node->layername = layer.isUndefined() ? "" : layer.toString();
-	node->height = height.toDouble();
-	node->convexity = (int)convexity.toDouble();
-	origin.getVec2(node->origin_x, node->origin_y);
-	node->scale = scale.toDouble();
-
-=======
->>>>>>> master
 	// if height not given, and first argument is a number,
 	// then assume it should be the height.
 	if (c.lookup_variable("height").isUndefined() &&
@@ -96,15 +87,12 @@ AbstractNode *LinearExtrudeModule::evaluate(const Context *ctx, const ModuleInst
 		height = Value(inst->argvalues[0]);
 	}
 
-<<<<<<< HEAD
-=======
 	node->layername = layer.isUndefined() ? "" : layer.toString();
 	node->height = height.toDouble();
 	node->convexity = (int)convexity.toDouble();
 	origin.getVec2(node->origin_x, node->origin_y);
 	node->scale = scale.toDouble();
 
->>>>>>> master
 	if (center.type() == Value::BOOL)
 		node->center = center.toBool();
 
