@@ -118,7 +118,7 @@ PolySet *ImportNode::evaluate_polyset(class PolySetEvaluator *) const
 
 	if (this->type == TYPE_STL)
 	{
-		handle_dep(this->filename);
+		handle_dep((std::string)this->filename);
 		std::ifstream f(this->filename.c_str(), std::ios::in | std::ios::binary);
 		if (!f.good()) {
 			PRINTB("WARNING: Can't open import file '%s'.", this->filename);
@@ -237,6 +237,7 @@ PolySet *ImportNode::evaluate_polyset(class PolySetEvaluator *) const
 std::string ImportNode::toString() const
 {
 	std::stringstream stream;
+	fs::path path((std::string)this->filename);
 
 	stream << this->name();
 	stream << "(file = " << this->filename << ", "
@@ -244,7 +245,13 @@ std::string ImportNode::toString() const
 		"origin = [" << std::dec << this->origin_x << ", " << this->origin_y << "], "
 		"scale = " << this->scale << ", "
 		"convexity = " << this->convexity << ", "
-		"$fn = " << this->fn << ", $fa = " << this->fa << ", $fs = " << this->fs << ")";
+		"$fn = " << this->fn << ", $fa = " << this->fa << ", $fs = " << this->fs
+#ifndef OPENSCAD_TESTING
+  // timestamp is needed for caching, but disturbs the test framework
+				 << ", " "timestamp = " << (fs::exists(path) ? fs::last_write_time(path) : 0)
+#endif
+				 << ")";
+
 
 	return stream.str();
 }

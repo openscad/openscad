@@ -38,6 +38,9 @@
 #include <boost/assign/std/vector.hpp>
 using namespace boost::assign; // bring 'operator+=()' into scope
 
+#include <boost/filesystem.hpp>
+namespace fs = boost::filesystem;
+
 class LinearExtrudeModule : public AbstractModule
 {
 public:
@@ -75,21 +78,33 @@ AbstractNode *LinearExtrudeModule::evaluate(const Context *ctx, const ModuleInst
 		node->filename = c.getAbsolutePath(file.toString());
 	}
 
+<<<<<<< HEAD
 	node->layername = layer.isUndefined() ? "" : layer.toString();
 	node->height = height.toDouble();
 	node->convexity = (int)convexity.toDouble();
 	origin.getVec2(node->origin_x, node->origin_y);
 	node->scale = scale.toDouble();
 
+=======
+>>>>>>> master
 	// if height not given, and first argument is a number,
 	// then assume it should be the height.
-	if (c.lookup_variable("height").type == Value::UNDEFINED &&
+	if (c.lookup_variable("height").isUndefined() &&
 			inst->argnames.size() > 0 && 
 			inst->argnames[0] == "" &&
-			inst->argvalues[0].type == Value::NUMBER) {
+			inst->argvalues[0].type() == Value::NUMBER) {
 		height = Value(inst->argvalues[0]);
 	}
 
+<<<<<<< HEAD
+=======
+	node->layername = layer.isUndefined() ? "" : layer.toString();
+	node->height = height.toDouble();
+	node->convexity = (int)convexity.toDouble();
+	origin.getVec2(node->origin_x, node->origin_y);
+	node->scale = scale.toDouble();
+
+>>>>>>> master
 	if (center.type() == Value::BOOL)
 		node->center = center.toBool();
 
@@ -143,11 +158,17 @@ std::string LinearExtrudeNode::toString() const
 
 	stream << this->name() << "(";
 	if (!this->filename.empty()) { // Ignore deprecated parameters if empty 
+		fs::path path((std::string)this->filename);
 		stream <<
 			"file = " << this->filename << ", "
 			"layer = " << QuotedString(this->layername) << ", "
 			"origin = [" << this->origin_x << ", " << this->origin_y << "], "
-			"scale = " << this->scale << ", ";
+			"scale = " << this->scale << ", "
+#ifndef OPENSCAD_TESTING
+			// timestamp is needed for caching, but disturbs the test framework
+			<< "timestamp = " << (fs::exists(path) ? fs::last_write_time(path) : 0) << ", "
+#endif
+			;
 	}
 	stream <<
 		"height = " << std::dec << this->height << ", "
