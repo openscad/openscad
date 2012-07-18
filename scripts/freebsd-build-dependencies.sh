@@ -1,5 +1,7 @@
 #!/bin/sh -e
 
+echo "Tested on FreeBSD 9. Not guaranteed to work on older"
+
 OPENSCADDIR=$PWD
 if [ ! -f $OPENSCADDIR/openscad.pro ]; then
   echo "Must be run from the OpenSCAD source root directory"
