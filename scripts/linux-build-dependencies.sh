@@ -167,10 +167,12 @@ build_glew()
   mkdir -p $DEPLOYDIR/lib/pkgconfig
 
   # Fedora 64-bit
-  if [ "`ls /usr/lib64 | grep Xmu`" ]; then 
-    echo "modifying glew makefile for 64 bit machine"
-    sed -ibak s/"\-lXmu"/"\-L\/usr\/lib64\/libXmu.so.6"/ config/Makefile.linux
-  fi
+	if [ -e /usr/lib64 ]; then
+	  if [ "`ls /usr/lib64 | grep Xmu`" ]; then
+	    echo "modifying glew makefile for 64 bit machine"
+	    sed -ibak s/"\-lXmu"/"\-L\/usr\/lib64\/libXmu.so.6"/ config/Makefile.linux
+	  fi
+	fi
 
 	if [ $CC ]; then
 		if [ $CC = "clang" ]; then
@@ -197,23 +199,25 @@ build_opencsg()
   sed -ibak s/example// opencsg.pro # examples might be broken without GLUT
 
   # Fedora 64-bit
-  if [ "`ls /usr/lib64 | grep Xmu`" ]; then 
-    echo "modifying opencsg makefile for 64 bit machine"
-    sed -ibak s/"\-lXmu"/"\-L\/usr\/lib64\/libXmu.so.6"/ src/Makefile 
-  fi
+	if [ -e /usr/lib64 ]; then
+	  if [ "`ls /usr/lib64 | grep Xmu`" ]; then
+	    echo "modifying opencsg makefile for 64 bit machine"
+	    sed -ibak s/"\-lXmu"/"\-L\/usr\/lib64\/libXmu.so.6"/ src/Makefile 
+	  fi
+	fi
 
   if [ "`command -v qmake-qt4`" ]; then
-    OPCSG_QM = qmake-qt4
+    OPENCSG_QMAKE=qmake-qt4
   else
-    OPCSG_QM = qmake
+    OPENCSG_QMAKE=qmake
   fi
 
 	if [ $CXX ]; then
 		if [ $CXX = "clang++" ]; then
-		  cd $BASEDIR/src/opencsg-$version/src
-			$(OPCSG_QM)
-		  cd $BASEDIR/src/opencsg-$version
-			$(OPCSG_QM)
+		  cd $BASEDIR/src/OpenCSG-$version/src
+			$OPCSG_QMAKE
+		  cd $BASEDIR/src/OpenCSG-$version
+			$OPCSG_QMAKE
 		fi
 	fi
 
