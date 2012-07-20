@@ -14,6 +14,7 @@ public:
 	~CGAL_Nef_polyhedron() {}
 
 	bool empty() const { return (dim == 0 || (!p2 && !p3)); }
+	void reset() { dim=0; p2.rest(); p3.reset(); }
 	CGAL_Nef_polyhedron &operator+=(const CGAL_Nef_polyhedron &other);
 	CGAL_Nef_polyhedron &operator*=(const CGAL_Nef_polyhedron &other);
 	CGAL_Nef_polyhedron &operator-=(const CGAL_Nef_polyhedron &other);
