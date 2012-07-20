@@ -85,7 +85,7 @@ are build scripts that download and compile the libraries from source.
 Follow the instructions for the platform you're compiling on below.
 
 * [Qt4 (4.4 - 4.7)](http://www.qt.nokia.com/)
-* [CGAL (3.6 - 3.9)](http://www.cgal.org/)
+* [CGAL (3.6 - 4.0.2)](http://www.cgal.org/)
  * [GMP (5.0.x)](http://www.gmplib.org/)
  * [cmake (2.6 - 2.8, required by CGAL and the test framework)](http://www.cmake.org/)
  * [MPFR (3.x)](http://www.mpfr.org/)
