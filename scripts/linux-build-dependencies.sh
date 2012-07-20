@@ -120,7 +120,8 @@ build_boost()
   ./bootstrap.sh --prefix=$DEPLOYDIR --with-libraries=thread,program_options,filesystem,system,regex
 	if [ $CXX ]; then
 		if [ $CXX = "clang" ]; then
-		  ./b2 -j$NUMCPU toolset=clang cxxflags="-stdlib=libc++" linkflags="-stdlib=libc++" install
+		  ./b2 -j$NUMCPU toolset=clang install
+		  # ./b2 -j$NUMCPU toolset=clang cxxflags="-stdlib=libc++" linkflags="-stdlib=libc++" install
 		fi
 	else
 	  ./b2 -j$NUMCPU
@@ -171,7 +172,14 @@ build_glew()
     sed -ibak s/"\-lXmu"/"\-L\/usr\/lib64\/libXmu.so.6"/ config/Makefile.linux
   fi
 
-  GLEW_DEST=$DEPLOYDIR make -j$NUMCPU
+	if [ $CC ]; then
+		if [ $CC = "clang" ]; then
+			echo "modifying glew makefile for clang"
+			sed -i s/\$\(CC\)/clang/ Makefile
+		fi
+	fi
+
+	GLEW_DEST=$DEPLOYDIR make -j$NUMCPU
   GLEW_DEST=$DEPLOYDIR make install
 }
 
@@ -195,10 +203,20 @@ build_opencsg()
   fi
 
   if [ "`command -v qmake-qt4`" ]; then
-    qmake-qt4
+    OPCSG_QM = qmake-qt4
   else
-    qmake
+    OPCSG_QM = qmake
   fi
+
+	if [ $CXX ]; then
+		if [ $CXX = "clang++" ]; then
+		  cd $BASEDIR/src/opencsg-$version/src
+			$(OPCSG_QM)
+		  cd $BASEDIR/src/opencsg-$version
+			$(OPCSG_QM)
+		fi
+	fi
+
   make
   cp -av lib/* $DEPLOYDIR/lib
   cp -av include/* $DEPLOYDIR/include
