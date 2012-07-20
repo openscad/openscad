@@ -118,8 +118,14 @@ build_boost()
   cd boost_$bversion
   # We only need certain portions of boost
   ./bootstrap.sh --prefix=$DEPLOYDIR --with-libraries=thread,program_options,filesystem,system,regex
-  ./bjam -j$NUMCPU
-  ./bjam install
+	if [ $CXX ]; then
+		if [ $CXX = "clang" ]; then
+		  ./b2 -j$NUMCPU toolset=clang cxxflags="-stdlib=libc++" linkflags="-stdlib=libc++" install
+		fi
+	else
+	  ./b2 -j$NUMCPU
+	  ./b2 install
+	fi
 }
 
 build_cgal()
@@ -137,7 +143,7 @@ build_cgal()
   fi
   tar xzf CGAL-$version.tar.gz
   cd CGAL-$version
-  if [ $2 = use-sys-libs ]; then 
+  if [ $2 = use-sys-libs ]; then
     cmake -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR -DWITH_CGAL_Qt3=OFF -DWITH_CGAL_Qt4=OFF -DWITH_CGAL_ImageIO=OFF -DCMAKE_BUILD_TYPE=Debug
   else
     cmake -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR -DGMP_INCLUDE_DIR=$DEPLOYDIR/include -DGMP_LIBRARIES=$DEPLOYDIR/lib/libgmp.so -DGMPXX_LIBRARIES=$DEPLOYDIR/lib/libgmpxx.so -DGMPXX_INCLUDE_DIR=$DEPLOYDIR/include -DMPFR_INCLUDE_DIR=$DEPLOYDIR/include -DMPFR_LIBRARIES=$DEPLOYDIR/lib/libmpfr.so -DWITH_CGAL_Qt3=OFF -DWITH_CGAL_Qt4=OFF -DWITH_CGAL_ImageIO=OFF -DBOOST_ROOT=$DEPLOYDIR -DCMAKE_BUILD_TYPE=Debug

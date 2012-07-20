@@ -103,6 +103,14 @@ netbsd* {
   QMAKE_CXXFLAGS *= -fno-strict-aliasing
 }
 
+*clang* {
+	# disable enormous amount of warnings about CGAL
+	QMAKE_CXXFLAGS_WARN_ON += -Wno-unused-parameter
+	QMAKE_CXXFLAGS_WARN_ON += -Wno-unused-variable
+	QMAKE_CXXFLAGS_WARN_ON += -Wno-unused-function
+	QMAKE_CXXFLAGS_WARN_ON += -Wno-c++11-extensions
+}
+
 CONFIG(skip-version-check) {
   # force the use of outdated libraries
   DEFINES += OPENSCAD_SKIP_VERSION_CHECK
