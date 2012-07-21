@@ -215,11 +215,12 @@ build_opencsg()
 	if [ $CXX ]; then
 		if [ $CXX = "clang++" ]; then
 		  cd $BASEDIR/src/OpenCSG-$version/src
-			$OPCSG_QMAKE
+			$OPENCSG_QMAKE
 		  cd $BASEDIR/src/OpenCSG-$version
-			$OPCSG_QMAKE
+			$OPENCSG_QMAKE
 		fi
-	fi
+	else
+		$OPENCSG_QMAKE
 
   make
   cp -av lib/* $DEPLOYDIR/lib
