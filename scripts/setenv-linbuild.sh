@@ -3,9 +3,9 @@
 
 # run this file with 'source setenv-linbuild.sh' every time you re-login
 # and want to build or run openscad against custom libraries installed
-# into BASEDIR.  
+# into BASEDIR.
 
-# copy this file to your .bashrc if desired. 
+# copy this file to your .bashrc if desired.
 
 if [ ! $BASEDIR ]; then
   BASEDIR=$HOME/openscad_deps

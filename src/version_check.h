@@ -53,7 +53,7 @@ a time, to avoid confusion.
 #error CGAL library missing or version too old. See README.md. To force compile, run qmake CONFIG=skip-version-check
 #else
 
-#if CGAL_VERSION_NR < 1040001000
+#if CGAL_VERSION_NR < 1040021000
 #warning "======================="
 #warning "."
 #warning "."
