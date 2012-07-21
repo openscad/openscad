@@ -221,6 +221,7 @@ build_opencsg()
 		fi
 	else
 		$OPENCSG_QMAKE
+	fi
 
   make
   cp -av lib/* $DEPLOYDIR/lib
