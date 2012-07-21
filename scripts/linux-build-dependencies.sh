@@ -226,6 +226,7 @@ build_opencsg()
   make
   cp -av lib/* $DEPLOYDIR/lib
   cp -av include/* $DEPLOYDIR/include
+  cd $OPENSCADDIR
 }
 
 build_eigen()
