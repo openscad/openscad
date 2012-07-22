@@ -2,7 +2,7 @@
 
 echo "Tested on FreeBSD 9. Please see README.md for info on older systems."
 
-if [ "`pkg_info | grep -i cgal | echo hi`" ]; then
+if [ "`pkg_info | grep -i cgal `" ]; then
 	echo Stopping. Please remove any CGAL packages you have installed and restart
 	exit
 fi
