@@ -1,6 +1,16 @@
-#!/bin/sh -e
+#!/usr/local/bin/bash -e
 
-echo "Tested on FreeBSD 9. Not guaranteed to work on older"
+echo "Tested on FreeBSD 9. Please see README.md for info on older systems."
+
+if [ "`pkg_info | grep -i cgal | echo hi`" ]; then
+	echo Stopping. Please remove any CGAL packages you have installed and restart
+	exit
+fi
+
+if [ "`pkg_info | grep -i opencsg`" ]; then
+	echo Stopping. Please remove any OpenCSG packages you have installed and restart
+	exit
+fi
 
 OPENSCADDIR=$PWD
 if [ ! -f $OPENSCADDIR/openscad.pro ]; then
