@@ -1,6 +1,7 @@
 #include <QObject>
 #include <QString>
 #include <QWidget>
+#include <QWheelEvent>
 
 #ifdef _QCODE_EDIT_
 #include <qeditor.h>
@@ -33,5 +34,7 @@ public slots:
 	void unindentSelection();
 	void commentSelection();
 	void uncommentSelection();
+private:
+	void wheelEvent ( QWheelEvent * event );
 #endif
 };

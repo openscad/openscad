@@ -97,4 +97,14 @@ void Editor::zoomOut()
 	this->setFont( tmp_font );
 }
 
+void Editor::wheelEvent ( QWheelEvent * event )
+{
+	if (event->modifiers() == Qt::ControlModifier) {
+		if (event->delta() > 0 )
+			zoomIn();
+		else if (event->delta() < 0 )
+			zoomOut();
+	}
+}
+
 #endif
