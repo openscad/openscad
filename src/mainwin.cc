@@ -1822,6 +1822,9 @@ MainWindow::preferences()
 
 void MainWindow::setFont(const QString &family, uint size)
 {
+#include <iostream>
+	std::cout << "mainwin setFont\n";
+	std::cout << "pref size: " << Preferences::inst()->getValue("editor/fontsize").toUInt() << "\n";
 	QFont font;
 	if (!family.isEmpty()) font.setFamily(family);
 	else font.setFixedPitch(true);

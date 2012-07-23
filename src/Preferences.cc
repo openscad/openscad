@@ -55,17 +55,33 @@ Preferences::Preferences(QWidget *parent) : QMainWindow(parent)
 	this->defaultmap["editor/fontfamily"] = found_family;
  	this->defaultmap["editor/fontsize"] = 12;
 
+
 	uint savedsize = getValue("editor/fontsize").toUInt();
+
+//	disconnect(this->fontSize, SIGNAL(currentIndexChanged(const QString&)),0,0);
+//					this, SLOT(on_fontSize_editTextChanged(const QString &)));
+#include <iostream>
+	std::cout << "pref constructor: savedsize" << savedsize << "\n";
 	QFontDatabase db;
 	foreach(uint size, db.standardSizes()) {
+		std::cout << "pref iterate standard sizes" << size << "\n";
+		std::cout <<"fontsize->additem started\n";
 		this->fontSize->addItem(QString::number(size));
+		std::cout <<"fontsize->additem completed\n";
 		if (size == savedsize) {
+			std::cout << "pref iterate standard sizes - size=savedsize, set index" << this->fontSize->count() - 1 << "\n";
 			this->fontSize->setCurrentIndex(this->fontSize->count()-1);
 		}
 	}
 
+
+	std::cout << "connect fontsize to onfontsize_edittextchanged\n";
 	connect(this->fontSize, SIGNAL(currentIndexChanged(const QString&)),
 					this, SLOT(on_fontSize_editTextChanged(const QString &)));
+	std::cout << "connect fontsize to onfontsize_edittextchanged done \n";
+
+	std::cout << "pref constr: setedtext\n";
+	this->fontSize->setEditText( QString("%1").arg( savedsize ) );
 
 	// Setup default settings
 	this->defaultmap["3dview/colorscheme"] = this->colorSchemeChooser->currentItem()->text();
@@ -164,14 +180,20 @@ void Preferences::on_colorSchemeChooser_itemSelectionChanged()
 
 void Preferences::on_fontChooser_activated(const QString &family)
 {
+	std::cout << "on fontchooser activated\n";
 	QSettings settings;
 	settings.setValue("editor/fontfamily", family);
+	std::cout << "emitting fontchanged " << getValue("editor/fontsize").toString().toStdString() << "\n";
 	emit fontChanged(family, getValue("editor/fontsize").toUInt());
 }
 
 void Preferences::on_fontSize_editTextChanged(const QString &size)
 {
+	/// size can be wrong. ignore it. 
+	std::cout << "on fontsize edittextchanged. set settings: " << size.toStdString() << "\n";
 	uint intsize = size.toUInt();
+	std::cout << "on fontsize edittextchanged. intsize: " << intsize << "\n";
+	std::cout << "on fontisze edittextchanged. othsize" << 	fontSize->currentText().toStdString() << "\n";
 	QSettings settings;
 	settings.setValue("editor/fontsize", intsize);
 	emit fontChanged(getValue("editor/fontfamily").toString(), intsize);
@@ -251,6 +273,11 @@ void Preferences::removeDefaultSettings()
 QVariant Preferences::getValue(const QString &key) const
 {
 	QSettings settings;
+#include <iostream>
+	std::cout << "prefs: getvalue of key: " << key.toStdString() << "\n";
+	std::cout << "prefs: settings.contains key: " << settings.contains(key) << "\n";
+	std::cout << "prefs: settings[key]: " << settings.value(key).toString().toStdString() << "\n";
+	std::cout << "prefs: defaultmap" << this->defaultmap[key].toString().toStdString() << "\n";
 	assert(settings.contains(key) || this->defaultmap.contains(key));
 	return settings.value(key, this->defaultmap[key]);
 }
@@ -263,20 +290,25 @@ void Preferences::updateGUI()
 																				Qt::MatchExactly);
 	if (!found.isEmpty()) this->colorSchemeChooser->setCurrentItem(found.first());
 
+#include <iostream>
 	QString fontfamily = getValue("editor/fontfamily").toString();
 	int fidx = this->fontChooser->findText(fontfamily,Qt::MatchContains);
 	if (fidx >= 0) {
+		std::cout << "font family nofind, set curent index\n";
 		this->fontChooser->setCurrentIndex(fidx);
 	}
 
 	QString fontsize = getValue("editor/fontsize").toString();
+	std::cout << "updateGUI fontsize:" << fontsize.toStdString() << "\n";
 	int sidx = this->fontSize->findText(fontsize);
 	if (sidx >= 0) {
+		std::cout << "font size nofind, set curent index\n";
 		this->fontSize->setCurrentIndex(sidx);
 	}
 	else {
 		this->fontSize->setEditText(fontsize);
 	}
+	std::cout << "updateGUI sidx:" << sidx << "\n";
 
 	this->openCSGWarningBox->setChecked(getValue("advanced/opencsg_show_warning").toBool());
 	this->enableOpenCSGBox->setChecked(getValue("advanced/enable_opencsg_opengl1x").toBool());
@@ -288,6 +320,8 @@ void Preferences::updateGUI()
 
 void Preferences::apply() const
 {
+	std::cout << "Prefs: apply\n";
+	std::cout << "editor/fontsize: " << getValue("editor/fontsize").toString().toStdString() << "\n";
 	emit fontChanged(getValue("editor/fontfamily").toString(), getValue("editor/fontsize").toUInt());
 	emit requestRedraw();
 	emit openCSGSettingsChanged();
