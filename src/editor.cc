@@ -74,7 +74,7 @@ void Editor::uncommentSelection()
 
 void Editor::zoomIn()
 {
-	// See also QT's implementation of QEditor.
+	// See also QT's implementation in QEditor.cpp
 	QSettings settings;
 	QFont tmp_font = this->font() ;
 	if ( font().pointSize() >= 1 )
