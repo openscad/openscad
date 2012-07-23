@@ -1,8 +1,6 @@
 #include "editor.h"
 #include "Preferences.h"
 
-#include <iostream>
-
 #ifndef _QCODE_EDIT_
 void Editor::indentSelection()
 {
@@ -76,23 +74,13 @@ void Editor::uncommentSelection()
 
 void Editor::zoomIn()
 {
-	// We have the fontsize in two places. one, in the in-memory window font
-	// information that the user sees on the screen, and two, in the
-	// settings which are persistent on disk. Here we make sure they are
-	// in sync - we assume the fontsize from the in-memory window to be accurate,
-	// and trust that there is code elsewhere in OpenSCAD that has initialized
-	// it properly. We update the on-disk Settings with whatever is in the window.
-	//
-	// And of course we increment by one before we do all this.
-	// See also QT's implementation of QEditor
+	// See also QT's implementation of QEditor.
 	QSettings settings;
 	QFont tmp_font = this->font() ;
-	std::cout << "in  fontsize cur" << tmp_font.pointSize() << "\n";
 	if ( font().pointSize() >= 1 )
 		tmp_font.setPointSize( 1 + font().pointSize() );
 	else
 		tmp_font.setPointSize( 1 );
-	std::cout << "in new fontsize cur" << tmp_font.pointSize() << "\n";
 	settings.setValue("editor/fontsize", tmp_font.pointSize());
 	this->setFont( tmp_font );
 }
@@ -101,12 +89,10 @@ void Editor::zoomOut()
 {
 	QSettings settings;
 	QFont tmp_font = this->font();
-	std::cout << "out fontsize cur" << tmp_font.pointSize() << "\n";
 	if ( font().pointSize() >= 2 )
 		tmp_font.setPointSize( -1 + font().pointSize() );
 	else
 		tmp_font.setPointSize( 1 );
-	std::cout << "out new fontsize cur" << tmp_font.pointSize() << "\n";
 	settings.setValue("editor/fontsize", tmp_font.pointSize());
 	this->setFont( tmp_font );
 }
