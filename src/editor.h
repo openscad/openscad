@@ -1,6 +1,7 @@
 #include <QObject>
 #include <QString>
 #include <QWidget>
+#include <QWheelEvent>
 
 #ifdef _QCODE_EDIT_
 #include <qeditor.h>
@@ -24,6 +25,8 @@ public slots:
 #else
 	Editor(QWidget *parent) : QTextEdit(parent) { setAcceptRichText(false); }
 public slots:
+	void zoomIn();
+	void zoomOut();
 	void setLineWrapping(bool on) { if(on) setWordWrapMode(QTextOption::WrapAnywhere); }
 	void setContentModified(bool y) { document()->setModified(y); }
 	bool isContentModified() { return document()->isModified(); }
@@ -31,5 +34,7 @@ public slots:
 	void unindentSelection();
 	void commentSelection();
 	void uncommentSelection();
+private:
+	void wheelEvent ( QWheelEvent * event );
 #endif
 };
