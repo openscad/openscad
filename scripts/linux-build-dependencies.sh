@@ -188,12 +188,18 @@ build_opencsg()
     sed -ibak s/"\-lXmu"/"\-L\/usr\/lib64\/libXmu.so.6"/ src/Makefile 
   fi
 
+  if [ `uname | grep FreeBSD` ]; then
+    sed -ibak s/X11R6/local/g src/Makefile
+   fi
+
   if [ "`command -v qmake-qt4`" ]; then
     qmake-qt4
   else
     qmake
   fi
+
   make
+
   cp -av lib/* $DEPLOYDIR/lib
   cp -av include/* $DEPLOYDIR/include
 }
@@ -235,7 +241,7 @@ if [ ! $NUMCPU ]; then
 fi
 
 if [ ! -d $BASEDIR/bin ]; then
-  mkdir --parents $BASEDIR/bin
+  mkdir -p $BASEDIR/bin
 fi
 
 echo "Using basedir:" $BASEDIR
