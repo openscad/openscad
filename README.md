@@ -97,6 +97,20 @@ Follow the instructions for the platform you're compiling on below.
 * [Bison (2.4)](http://www.gnu.org/software/bison/)
 * [Flex (2.5.35)](http://flex.sourceforge.net/)
 
+### Getting the source code
+
+Install git (http://git-scm.com/) onto your system. Then run a clone:
+
+    git clone git://github.com/openscad/openscad.git
+
+This will download the latest sources into a directory named 'openscad'. 
+
+To pull the MCAD library (http://reprap.org/wiki/MCAD), do the following:
+
+    cd openscad
+    git submodule init
+    git submodule update
+
 ### Building for Mac OS X
 
 First, make sure that you have XCode installed to get GCC. Then after
@@ -124,9 +138,9 @@ Then after you've cloned this git repository, use a package manager to
 download packages for the dependency libraries listed above. Convenience 
 scripts are provided for some popular systems:
 
-Ubuntu, Debian:    ./scripts/ubuntu-build-dependencies.sh
-OpenSUSE:          ./scripts/opensuse-build-dependencies.sh
-Fedora, Redhat:    ./scripts/fedora-build-dependencies.sh
+    Ubuntu, Debian:    ./scripts/ubuntu-build-dependencies.sh
+    OpenSUSE:          ./scripts/opensuse-build-dependencies.sh
+    Fedora:            ./scripts/fedora-build-dependencies.sh
 
 Check your library versions to make sure they meet the minimum 
 requirements listed above. After that follow the Compilation 

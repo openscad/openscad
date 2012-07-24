@@ -207,6 +207,10 @@ build_opencsg()
 	  fi
 	fi
 
+  if [ `uname | grep FreeBSD` ]; then
+    sed -ibak s/X11R6/local/g src/Makefile
+   fi
+
   if [ "`command -v qmake-qt4`" ]; then
     OPENCSG_QMAKE=qmake-qt4
   else
@@ -225,6 +229,7 @@ build_opencsg()
 	fi
 
   make
+
   cp -av lib/* $DEPLOYDIR/lib
   cp -av include/* $DEPLOYDIR/include
   cd $OPENSCADDIR
@@ -267,7 +272,7 @@ if [ ! $NUMCPU ]; then
 fi
 
 if [ ! -d $BASEDIR/bin ]; then
-  mkdir --parents $BASEDIR/bin
+  mkdir -p $BASEDIR/bin
 fi
 
 echo "Using basedir:" $BASEDIR
