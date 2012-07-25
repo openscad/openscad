@@ -300,7 +300,7 @@ fi
 # (They can be built singly here by passing a command line arg to the script)
 if [ $1 ]; then
   if [ $1 = "cgal-use-sys-libs" ]; then
-    build_cgal 4.0 use-sys-libs
+    build_cgal 4.0.2 use-sys-libs
     exit
   fi
   if [ $1 = "opencsg" ]; then
@@ -320,7 +320,7 @@ build_gmp 5.0.5
 build_mpfr 3.1.1
 build_boost 1.47.0
 # NB! For CGAL, also update the actual download URL in the function
-build_cgal 4.0
+build_cgal 4.0.2
 build_glew 1.7.0
 build_opencsg 1.3.2
 
