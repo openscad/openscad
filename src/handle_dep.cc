@@ -8,6 +8,8 @@
 #include <boost/filesystem.hpp>
 using namespace boost::filesystem;
 #include "boosty.h"
+#include <Magick++.h>
+
 
 boost::unordered_set<std::string> dependencies;
 const char *make_command = NULL;
@@ -43,4 +45,36 @@ bool write_deps(const std::string &filename, const std::string &output_file)
 	fprintf(fp, "\n");
 	fclose(fp);
 	return true;
+}
+
+bool is_image(const std::string &filename) {
+    Magick::Image image;
+    bool isImage;
+    try {
+        image.read( filename );
+        isImage=true;
+    } catch( Magick::Exception &error_ ) {
+        isImage=false;
+    }
+    return isImage;
+}
+
+bool is_stl(const std::string &filename) {
+    boost::regex expression(".*\\.([Ss][Tt][Ll])$");
+    // path file_ext = path(filename).extension();
+    if( boost::regex_match(filename, expression) ) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
+bool is_dxf(const std::string &filename) {
+    boost::regex expression(".*\\.([Dd][Xx][Ff])$");
+    // path file_ext = path(filename).extension();
+    if( boost::regex_match(filename, expression) ) {
+        return true;
+    } else {
+        return false;
+    }
 }

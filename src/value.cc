@@ -25,12 +25,15 @@
  */
 
 #include "value.h"
-#include <assert.h>
+#include <math.h>
+#include <assert.h> // fmod
 #include <sstream>
 #include <boost/foreach.hpp>
 #include <boost/variant/apply_visitor.hpp>
 #include <boost/variant/static_visitor.hpp>
 #include <boost/format.hpp>
+#include "printutils.h"
+
 
 #include <QtCore/QDir>
 
@@ -110,6 +113,11 @@ Value::Value(const VectorType &v) : value(v)
 Value::Value(const RangeType &v) : value(v)
 {
   //  std::cout << "creating range\n";
+}
+
+Value::Value(PolySet *v) : value(v)
+{
+  //  std::cout << "creating polyset\n";
 }
 
 Value::Value(double begin, double step, double end) : value(RangeType(begin, step, end))
@@ -276,11 +284,22 @@ Value::RangeType Value::toRange() const
   else return RangeType(0,0,0);
 }
 
+PolySet * Value::toPolySet() const
+{
+  PolySet * ps = boost::get<PolySet *>(this->value);
+  return ps;
+}
+
+
 Value &Value::operator=(const Value &v)
 {
-  if (this != &v) {
-    this->value = v.value;
-  }
+    if (this != &v ) {
+        this->value = v.value;
+    }
+    //if(v.type() == Value::POLYSET) {
+    //    PRINT("  equals for Value::POLYSET");
+    //    this->value = v.value;
+    //}
   return *this;
 }
 

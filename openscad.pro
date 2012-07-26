@@ -85,9 +85,8 @@ QT += opengl
 # and https://github.com/openscad/openscad/pull/119
 # ( QT += opengl does not automatically link glu on some DSO systems. )
 unix:!macx {
-  !contains ( QMAKE_LIBS_OPENGL, "-lGLU" ) {
-    QMAKE_LIBS_OPENGL += -lGLU
-  }
+  QMAKE_LIBS_OPENGL *= -lGLU
+  QMAKE_LIBS_OPENGL *= -lX11
 }
 
 netbsd* {
@@ -104,8 +103,14 @@ netbsd* {
   QMAKE_CXXFLAGS *= -fno-strict-aliasing
 }
 
-CONFIG(mingw-cross-env) {
-  include(mingw-cross-env.pri)
+*clang* {
+	# disable enormous amount of warnings about CGAL
+	QMAKE_CXXFLAGS_WARN_ON += -Wno-unused-parameter
+	QMAKE_CXXFLAGS_WARN_ON += -Wno-unused-variable
+	QMAKE_CXXFLAGS_WARN_ON += -Wno-unused-function
+	QMAKE_CXXFLAGS_WARN_ON += -Wno-c++11-extensions
+	# might want to actually turn this on once in a while
+	QMAKE_CXXFLAGS_WARN_ON += -Wno-sign-compare
 }
 
 CONFIG(skip-version-check) {
@@ -119,6 +124,7 @@ CONFIG += cgal
 CONFIG += opencsg
 CONFIG += boost
 CONFIG += eigen2
+CONFIG += imagemagick
 
 #Uncomment the following line to enable QCodeEdit
 #CONFIG += qcodeedit
@@ -130,6 +136,11 @@ mdi {
 DEFINES += USE_PROGRESSWIDGET
 
 include(common.pri)
+
+# mingw has to come after other items so OBJECT_DIRS will work properly
+CONFIG(mingw-cross-env) {
+  include(mingw-cross-env.pri)
+}
 
 win32 {
   FLEXSOURCES = src/lexer.l
@@ -184,6 +195,7 @@ HEADERS += src/version_check.h \
            src/openscad.h \
            src/handle_dep.h \
            src/polyset.h \
+           src/polyutils.h \
            src/printutils.h \
            src/value.h \
            src/progress.h \
@@ -218,6 +230,7 @@ SOURCES += src/version_check.cc \
            src/csgterm.cc \
            src/csgtermnormalizer.cc \
            src/polyset.cc \
+           src/polyutils.cc \
            src/csgops.cc \
            src/transform.cc \
            src/color.cc \

@@ -82,7 +82,27 @@ Value Expression::evaluate(const Context *context) const
 		return this->children[v.toBool() ? 1 : 2]->evaluate(context);
 	}
 	if (this->type == "[]") {
-		return this->children[0]->evaluate(context)[this->children[1]->evaluate(context)];
+        Value v1 = this->children[0]->evaluate(context);
+        Value v2 = this->children[1]->evaluate(context);
+        if(v1.type() == Value::POLYSET && v2.type() == Value::NUMBER) {
+            unsigned int polyIndex = int(v2.toDouble());
+            Value::VectorType returnMatrix;
+            PolySet::Polygon thisPoly;
+            Vector3d thisPt;
+            if(polyIndex>=v1.toPolySet()->polygons.size()) return Value();
+            thisPoly=v1.toPolySet()->polygons[polyIndex];
+            for(size_t i=0; i<(unsigned)thisPoly.size(); i++) {
+                thisPt=thisPoly.at(i);
+                Value::VectorType addVector;
+                for(size_t j=0; j<(unsigned)thisPt.size(); j++) {
+                    addVector.push_back(Value(thisPt[j]));
+                }
+                returnMatrix.push_back(addVector);
+            }
+            return Value(returnMatrix);
+        } else {
+            return this->children[0]->evaluate(context)[this->children[1]->evaluate(context)];
+        }
 	}
 	if (this->type == "I")
 		return -this->children[0]->evaluate(context);

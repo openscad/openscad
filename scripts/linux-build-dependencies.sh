@@ -11,14 +11,6 @@
 # - Qt4
 #
 
-BASEDIR=$HOME/openscad_deps
-OPENSCADDIR=$PWD
-SRCDIR=$BASEDIR/src
-DEPLOYDIR=$BASEDIR
-if [ ! $NUMCPU ]; then
-	NUMCPU=1 # paralell builds for some libraries
-fi
-
 printUsage()
 {
   echo "Usage: $0"
@@ -126,8 +118,15 @@ build_boost()
   cd boost_$bversion
   # We only need certain portions of boost
   ./bootstrap.sh --prefix=$DEPLOYDIR --with-libraries=thread,program_options,filesystem,system,regex
-  ./bjam -j$NUMCPU
-  ./bjam install
+	if [ $CXX ]; then
+		if [ $CXX = "clang" ]; then
+		  ./b2 -j$NUMCPU toolset=clang install
+		  # ./b2 -j$NUMCPU toolset=clang cxxflags="-stdlib=libc++" linkflags="-stdlib=libc++" install
+		fi
+	else
+	  ./b2 -j$NUMCPU
+	  ./b2 install
+	fi
 }
 
 build_cgal()
@@ -137,15 +136,16 @@ build_cgal()
   cd $BASEDIR/src
   rm -rf CGAL-$version
   if [ ! -f CGAL-$version.tar.gz ]; then
-    #4.0
-    curl -O https://gforge.inria.fr/frs/download.php/30387/CGAL-$version.tar.gz
+    #4.0.2
+    curl -O https://gforge.inria.fr/frs/download.php/31174/CGAL-$version.tar.bz2
+    # 4.0 curl -O https://gforge.inria.fr/frs/download.php/30387/CGAL-$version.tar.gz
     # 3.9 curl -O https://gforge.inria.fr/frs/download.php/29125/CGAL-$version.tar.gz
     # 3.8 curl -O https://gforge.inria.fr/frs/download.php/28500/CGAL-$version.tar.gz
     # 3.7 curl -O https://gforge.inria.fr/frs/download.php/27641/CGAL-$version.tar.gz
   fi
-  tar xzf CGAL-$version.tar.gz
+  tar jxf CGAL-$version.tar.bz2
   cd CGAL-$version
-  if [ $2 = use-sys-libs ]; then 
+  if [ $2 = use-sys-libs ]; then
     cmake -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR -DWITH_CGAL_Qt3=OFF -DWITH_CGAL_Qt4=OFF -DWITH_CGAL_ImageIO=OFF -DCMAKE_BUILD_TYPE=Debug
   else
     cmake -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR -DGMP_INCLUDE_DIR=$DEPLOYDIR/include -DGMP_LIBRARIES=$DEPLOYDIR/lib/libgmp.so -DGMPXX_LIBRARIES=$DEPLOYDIR/lib/libgmpxx.so -DGMPXX_INCLUDE_DIR=$DEPLOYDIR/include -DMPFR_INCLUDE_DIR=$DEPLOYDIR/include -DMPFR_LIBRARIES=$DEPLOYDIR/lib/libmpfr.so -DWITH_CGAL_Qt3=OFF -DWITH_CGAL_Qt4=OFF -DWITH_CGAL_ImageIO=OFF -DBOOST_ROOT=$DEPLOYDIR -DCMAKE_BUILD_TYPE=Debug
@@ -167,10 +167,22 @@ build_glew()
   cd glew-$version
   mkdir -p $DEPLOYDIR/lib/pkgconfig
 
-  # uncomment this kludge for Fedora 64bit
-  # sed -i s/"\-lXmu"/"\-L\/usr\/lib64\/libXmu.so.6"/ config/Makefile.linux
+  # Fedora 64-bit
+	if [ -e /usr/lib64 ]; then
+	  if [ "`ls /usr/lib64 | grep Xmu`" ]; then
+	    echo "modifying glew makefile for 64 bit machine"
+	    sed -ibak s/"\-lXmu"/"\-L\/usr\/lib64\/libXmu.so.6"/ config/Makefile.linux
+	  fi
+	fi
 
-  GLEW_DEST=$DEPLOYDIR make -j$NUMCPU
+	if [ $CC ]; then
+		if [ $CC = "clang" ]; then
+			echo "modifying glew makefile for clang"
+			sed -i s/\$\(CC\)/clang/ Makefile
+		fi
+	fi
+
+	GLEW_DEST=$DEPLOYDIR make -j$NUMCPU
   GLEW_DEST=$DEPLOYDIR make install
 }
 
@@ -185,19 +197,42 @@ build_opencsg()
   fi
   tar xzf OpenCSG-$version.tar.gz
   cd OpenCSG-$version
-  sed -i s/example// opencsg.pro # examples might be broken without GLUT
+  sed -ibak s/example// opencsg.pro # examples might be broken without GLUT
 
-  # uncomment this kludge for Fedora 64bit
-  # sed -i s/"\-lXmu"/"\-L\/usr\/lib64\/libXmu.so.6"/ src/Makefile 
+  # Fedora 64-bit
+	if [ -e /usr/lib64 ]; then
+	  if [ "`ls /usr/lib64 | grep Xmu`" ]; then
+	    echo "modifying opencsg makefile for 64 bit machine"
+	    sed -ibak s/"\-lXmu"/"\-L\/usr\/lib64\/libXmu.so.6"/ src/Makefile 
+	  fi
+	fi
+
+  if [ `uname | grep FreeBSD` ]; then
+    sed -ibak s/X11R6/local/g src/Makefile
+   fi
 
   if [ "`command -v qmake-qt4`" ]; then
-    qmake-qt4
+    OPENCSG_QMAKE=qmake-qt4
   else
-    qmake
+    OPENCSG_QMAKE=qmake
   fi
+
+	if [ $CXX ]; then
+		if [ $CXX = "clang++" ]; then
+		  cd $BASEDIR/src/OpenCSG-$version/src
+			$OPENCSG_QMAKE
+		  cd $BASEDIR/src/OpenCSG-$version
+			$OPENCSG_QMAKE
+		fi
+	else
+		$OPENCSG_QMAKE
+	fi
+
   make
+
   cp -av lib/* $DEPLOYDIR/lib
   cp -av include/* $DEPLOYDIR/include
+  cd $OPENSCADDIR
 }
 
 build_eigen()
@@ -222,7 +257,6 @@ build_eigen()
 }
 
 
-
 OPENSCADDIR=$PWD
 if [ ! -f $OPENSCADDIR/openscad.pro ]; then
   echo "Must be run from the OpenSCAD source root directory"
@@ -231,19 +265,20 @@ fi
 
 . ./scripts/setenv-linbuild.sh # '.' is equivalent to 'source'
 SRCDIR=$BASEDIR/src
-DEPLOYDIR=$BASEDIR
+
 if [ ! $NUMCPU ]; then
-  NUMCPU=1 # paralell builds for some libraries
+	echo "Note: The NUMCPU environment variable can be set for paralell builds"
+	NUMCPU=1 
 fi
 
 if [ ! -d $BASEDIR/bin ]; then
-  mkdir --parents $BASEDIR/bin
+  mkdir -p $BASEDIR/bin
 fi
 
 echo "Using basedir:" $BASEDIR
 echo "Using deploydir:" $DEPLOYDIR
 echo "Using srcdir:" $SRCDIR
-echo "Number of CPUs for parallel builds:" $NUMCPU "(export NUMCPU=x to modify)"
+echo "Number of CPUs for parallel builds:" $NUMCPU
 mkdir -p $SRCDIR $DEPLOYDIR
 
 if [ ! "`command -v curl`" ]; then
@@ -265,7 +300,7 @@ fi
 # (They can be built singly here by passing a command line arg to the script)
 if [ $1 ]; then
   if [ $1 = "cgal-use-sys-libs" ]; then
-    build_cgal 4.0 use-sys-libs
+    build_cgal 4.0.2 use-sys-libs
     exit
   fi
   if [ $1 = "opencsg" ]; then
@@ -285,7 +320,7 @@ build_gmp 5.0.5
 build_mpfr 3.1.1
 build_boost 1.47.0
 # NB! For CGAL, also update the actual download URL in the function
-build_cgal 4.0
+build_cgal 4.0.2
 build_glew 1.7.0
 build_opencsg 1.3.2
 

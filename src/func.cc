@@ -34,6 +34,11 @@
 #include <algorithm>
 #include "stl-utils.h"
 #include "printutils.h"
+#include <Magick++.h>
+#include "polyutils.h"
+#include <string>
+
+using namespace Magick;
 
 AbstractFunction::~AbstractFunction()
 {
@@ -282,6 +287,7 @@ Value builtin_length(const Context *, const std::vector<std::string>&, const std
 	if (args.size() == 1) {
 		if (args[0].type() == Value::VECTOR) return Value(int(args[0].toVector().size()));
 		if (args[0].type() == Value::STRING) return Value(int(args[0].toString().size()));
+        if (args[0].type() == Value::POLYSET) return Value(int(args[0].toPolySet()->polygons.size()));
 	}
 	return Value();
 }
@@ -477,6 +483,145 @@ Value builtin_search(const Context *, const std::vector<std::string>&, const std
 	return Value(returnvec);
 }
 
+Value builtin_read(const Context *c, const std::vector<std::string>&s, const std::vector<Value> &args)
+{
+    if(args.size() ==0 || args[0].type() != Value::STRING ) {
+        PRINT( "Usage:");
+        PRINT( "   DXF: read(file_name[,layername[,origin[,scale[,convexity]]])");
+        PRINT( " Image: read(file_name[,center[,scale[,convexity]]])");
+        PRINT( "   STL: read(file_name[,convexity])");
+        return Value();
+    }
+    Value fname=args[0];
+    Filename filename=fname.toString();
+    if( is_image(filename) ) {
+        return read_image(c,s,args);
+    }
+    if( is_stl(filename)) {
+        return read_stl(c,s,args);
+    }
+    if( is_dxf(filename)) {
+        return read_dxf(c,s,args);
+    }
+    return Value();
+}
+
+Value read_dxf(const Context *c, const std::vector<std::string>&, const std::vector<Value> &args)
+{
+    double fn=c->lookup_variable("$fn").toDouble();
+    double fs=c->lookup_variable("$fs").toDouble();
+    double fa=c->lookup_variable("$fa").toDouble();
+    double scale=1.0;
+    int convexity = 2;
+    if(args.size() ==0 || args[0].type() != Value::STRING ) {
+        PRINT( "Usage: read_dxf(file_name[,layername[,origin[,scale[,convexity]]])" );
+        return Value();
+    }
+    Value fname=args[0];
+    Filename filename=fname.toString();
+    std::string layername="";
+    double origin_x,origin_y;
+    origin_x = origin_y = 0;
+
+    if ( args.size() >1 && args[1].type() == Value::STRING ) {
+        layername = args[1].toString();
+    }
+    if ( args.size() >2 && args[2].type() == Value::VECTOR ) {
+        args[2].getVec2(origin_x,origin_y);
+    }
+    if ( args.size() >3 && args[3].type() == Value::NUMBER ) {
+        scale = args[3].toDouble();
+    }
+    if ( args.size() >4 && args[4].type() == Value::NUMBER ) {
+        convexity = args[4].toDouble();
+    }
+
+    PolySet *p = readPolySetFromDXF( filename, layername, origin_x, origin_y, scale, fn, fs, fa, convexity );
+    return Value(p);
+}
+
+Value read_image(const Context *, const std::vector<std::string>&, const std::vector<Value> &args)
+{
+    double center=false;
+    double scale=1.0;
+    int convexity = 2;
+    if(args.size() ==0 || args[0].type() != Value::STRING ) {
+        PRINT( "Usage: read_image(file_name[,center[,scale[,convexity]]])" );
+        PRINT( "  Defaults:");
+        PRINTB("            center : %s",center);
+        PRINTB("            scale  : %s",scale);
+        return Value();
+    }
+    Value fname=args[0];
+    Filename filename=fname.toString();
+    Value returnPoly;
+    if ( args.size() >3 && args[3].type() == Value::NUMBER ) {
+        convexity = args[3].toDouble();
+    }
+
+    if ( args.size() >1 && args[1].type() == Value::BOOL ) {
+        center = args[1].toBool();
+    }
+
+    if ( args.size() >2 && args[2].type() == Value::NUMBER ) {
+        scale = args[2].toDouble();
+    }
+    PolySet *p = readPolySetFromImage( filename, center, scale, convexity );
+    returnPoly=p;
+    return returnPoly;
+}
+
+Value read_stl(const Context *, const std::vector<std::string>&, const std::vector<Value> &args)
+{
+    int convexity = 2;
+    if(args.size() ==0 || args[0].type() != Value::STRING ) {
+        PRINT( "Usage: read_stl(file_name[,convexity])" );
+        return Value();
+    }
+    Value fname=args[0];
+    Filename filename=fname.toString();
+    Value returnPoly;
+    //returnPoly.type = Value::POLYSET;
+    if ( args.size() >1 && args[1].type() == Value::NUMBER ) {
+        convexity = args[1].toDouble();
+    }
+    PolySet *p = readPolySetFromSTL( filename, convexity );
+    returnPoly=p;
+    return returnPoly;
+}
+
+Value builtin_read_rgb(const Context *, const std::vector<std::string>&, const std::vector<Value> &args)
+{
+    double center=false;
+    double scale=1.0;
+    int convexity = 2;
+    if(args.size() ==0 || args[0].type() != Value::STRING ) {
+        PRINT( "**EXPERIMENTAL** Usage: read_rgb(file_name[,center[,scale[,convexity]]])" );
+        PRINT( "  Defaults:");
+        PRINTB("            center : %s",center);
+        PRINTB("            scale  : %s",scale);
+        return Value();
+    }
+    Value fname=args[0];
+    Filename filename=fname.toString();
+    Value returnPoly;
+    //returnPoly.type = Value::POLYSET;
+    if ( args.size() >3 && args[3].type() == Value::NUMBER ) {
+        convexity = args[3].toDouble();
+    }
+
+    if ( args.size() >1 && args[1].type() == Value::BOOL ) {
+        center = args[1].toBool();
+    }
+
+    if ( args.size() >2 && args[2].type() == Value::NUMBER ) {
+        scale = args[2].toDouble();
+    }
+    PolySet *p = readPolySetFromRiseGroundBase( filename, center, scale, convexity );
+    returnPoly=p;
+    return returnPoly;
+}
+
 #define QUOTE(x__) # x__
 #define QUOTED(x__) QUOTE(x__)
 
@@ -529,6 +674,11 @@ void register_builtin_functions()
 	Builtins::init("str", new BuiltinFunction(&builtin_str));
 	Builtins::init("lookup", new BuiltinFunction(&builtin_lookup));
 	Builtins::init("search", new BuiltinFunction(&builtin_search));
+    Builtins::init("read", new BuiltinFunction(&builtin_read));
+//    Builtins::init("read_dxf", new BuiltinFunction(&builtin_read_dxf));
+//    Builtins::init("read_image", new BuiltinFunction(&builtin_read_image));
+    Builtins::init("read_rgb", new BuiltinFunction(&builtin_read_rgb));
+//    Builtins::init("read_stl", new BuiltinFunction(&builtin_read_stl));
 	Builtins::init("version", new BuiltinFunction(&builtin_version));
 	Builtins::init("version_num", new BuiltinFunction(&builtin_version_num));
 }

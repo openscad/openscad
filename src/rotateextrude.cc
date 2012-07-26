@@ -115,7 +115,7 @@ std::string RotateExtrudeNode::toString() const
 
 	stream << this->name() << "(";
 	if (!this->filename.empty()) { // Ignore deprecated parameters if empty 
-		fs::path path(this->filename);
+		fs::path path((std::string)this->filename);
 		stream <<
 			"file = " << this->filename << ", "
 			"layer = " << QuotedString(this->layername) << ", "
