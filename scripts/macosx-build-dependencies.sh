@@ -10,7 +10,7 @@
 #  -6   Build only 64-bit binaries
 #
 # Prerequisites:
-# - MacPorts: curl
+# - MacPorts: curl, cmake
 # - Qt4
 #
 # FIXME:
@@ -24,6 +24,7 @@ SRCDIR=$BASEDIR/src
 DEPLOYDIR=$BASEDIR/install
 MAC_OSX_VERSION_MIN=10.5
 OPTION_32BIT=true
+export QMAKESPEC=macx-g++
 
 printUsage()
 {
@@ -129,11 +130,11 @@ build_mpfr()
   cd $BASEDIR/src
   rm -rf mpfr-$version
   if [ ! -f mpfr-$version.tar.bz2 ]; then
-    curl -O http://www.mpfr.org/mpfr-current/mpfr-$version.tar.bz2
+    curl -O http://www.mpfr.org/mpfr-$version/mpfr-$version.tar.bz2
   fi
   tar xjf mpfr-$version.tar.bz2
   cd mpfr-$version
-  curl -O http://www.mpfr.org/mpfr-current/allpatches
+  curl -O http://www.mpfr.org/mpfr-$version/allpatches
   patch -N -Z -p1 < allpatches 
   if $OPTION_32BIT; then
     mkdir build-i386
@@ -231,7 +232,7 @@ build_glew()
   cd glew-$version
   mkdir -p $DEPLOYDIR/lib/pkgconfig
   # To avoid running strip on a fat archive as this is not supported by strip
-  sed -i bak -e "s/\$(STRIP) -x lib\/\$(LIB.STATIC)//" Makefile 
+  sed -ibak -e "s/\$(STRIP) -x lib\/\$(LIB.STATIC)//" Makefile 
   if $OPTION_32BIT; then
     GLEW_EXTRA_FLAGS="-arch i386"
   fi

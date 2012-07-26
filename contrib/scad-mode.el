@@ -1,10 +1,12 @@
-;;; scad.el --- SCAD mode derived mode
+;;; scad-mode.el --- SCAD mode derived mode
 
 ;; Author:     Len Trigg
 ;; Maintainer: Len Trigg <lenbok@gmail.com>
 ;; Created:    March 2010
-;; Modified:   November 2011
-;; Version:    $Revision: 88 $
+;; Modified:   06 July 2012
+;; Keywords:   languages
+;; URL:        https://raw.github.com/openscad/openscad/master/contrib/scad-mode.el
+;; Version:    90.0
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -23,19 +25,27 @@
 
 ;;; Commentary:
 ;;
-;; This is a separate mode to implement the SCAD constructs and
-;; font-locking.
+;; This is a major-mode to implement the SCAD constructs and
+;; font-locking for openscad
 ;;
-;; To use, insert the following into your emacs startup:
+;; If installing manually, insert the following into your emacs startup:
 ;;
-;; (autoload 'scad-mode "scad" "Major mode for editing SCAD code." t)
+;; (autoload 'scad-mode "scad-mode" "Major mode for editing SCAD code." t)
 ;; (add-to-list 'auto-mode-alist '("\\.scad$" . scad-mode))
+;;
+;; or
+;;
+;; install from marmalade: http://marmalade-repo.org/
+;; M-x install-package <ENTER> scad-mode <ENTER>
+
 
 ;;; To Do:
 ;; - Support for background/debug/root/disable modifiers
 ;; - Font lock of non-built-in function calls
 
-;;; Autoload mode trigger
+;;; Code:
+
+;;;###autoload
 (add-to-list 'auto-mode-alist '("\\.scad$" . scad-mode))
 
 (defcustom scad-command
@@ -152,8 +162,14 @@
   :syntax-table scad-mode-syntax-table
   (set (make-local-variable 'font-lock-defaults) '(scad-font-lock-keywords))
   (set (make-local-variable 'indent-line-function) 'scad-indent-line)
-  ;(set (make-local-variable 'imenu-generic-expression) scad-imenu-generic-expression)
-  ;(set (make-local-variable 'outline-regexp) scad-outline-regexp)
+                                        ;(set (make-local-variable 'imenu-generic-expression) scad-imenu-generic-expression)
+                                        ;(set (make-local-variable 'outline-regexp) scad-outline-regexp)
+  ;; set comment styles for scad mode
+  (set (make-local-variable 'comment-start) "//")
+  (set (make-local-variable 'comment-end) "")
+  (set (make-local-variable 'block-comment-start) "/*")
+  (set (make-local-variable 'block-comment-end) "*/")
+  
   )
 
 
@@ -219,4 +235,4 @@
   (call-process scad-command nil 0 nil (buffer-file-name)))
 
 (provide 'scad)
-;;; scad.el ends here
+;;; scad-mode.el ends here

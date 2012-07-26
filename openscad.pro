@@ -85,9 +85,8 @@ QT += opengl
 # and https://github.com/openscad/openscad/pull/119
 # ( QT += opengl does not automatically link glu on some DSO systems. )
 unix:!macx {
-  !contains ( QMAKE_LIBS_OPENGL, "-lGLU" ) {
-    QMAKE_LIBS_OPENGL += -lGLU
-  }
+  QMAKE_LIBS_OPENGL *= -lGLU
+  QMAKE_LIBS_OPENGL *= -lX11
 }
 
 netbsd* {
@@ -104,8 +103,19 @@ netbsd* {
   QMAKE_CXXFLAGS *= -fno-strict-aliasing
 }
 
-CONFIG(mingw-cross-env) {
-  include(mingw-cross-env.pri)
+*clang* {
+	# disable enormous amount of warnings about CGAL
+	QMAKE_CXXFLAGS_WARN_ON += -Wno-unused-parameter
+	QMAKE_CXXFLAGS_WARN_ON += -Wno-unused-variable
+	QMAKE_CXXFLAGS_WARN_ON += -Wno-unused-function
+	QMAKE_CXXFLAGS_WARN_ON += -Wno-c++11-extensions
+	# might want to actually turn this on once in a while
+	QMAKE_CXXFLAGS_WARN_ON += -Wno-sign-compare
+}
+
+CONFIG(skip-version-check) {
+  # force the use of outdated libraries
+  DEFINES += OPENSCAD_SKIP_VERSION_CHECK
 }
 
 # Application configuration
@@ -123,16 +133,14 @@ mdi {
   DEFINES += ENABLE_MDI
 }
 
-# FIXME: This can be made default by now
-CONFIG += progresswidget
-progresswidget {
-  DEFINES += USE_PROGRESSWIDGET
-  FORMS   += src/ProgressWidget.ui
-  HEADERS += src/ProgressWidget.h
-  SOURCES += src/ProgressWidget.cc
-}
+DEFINES += USE_PROGRESSWIDGET
 
 include(common.pri)
+
+# mingw has to come after other items so OBJECT_DIRS will work properly
+CONFIG(mingw-cross-env) {
+  include(mingw-cross-env.pri)
+}
 
 win32 {
   FLEXSOURCES = src/lexer.l
@@ -146,9 +154,12 @@ RESOURCES = openscad.qrc
 
 FORMS   += src/MainWindow.ui \
            src/Preferences.ui \
-           src/OpenCSGWarningDialog.ui
+           src/OpenCSGWarningDialog.ui \
+           src/ProgressWidget.ui
 
-HEADERS += src/parsersettings.h \
+HEADERS += src/version_check.h \
+           src/ProgressWidget.h \
+           src/parsersettings.h \
            src/renderer.h \
            src/rendersettings.h \
            src/ThrownTogetherRenderer.h \
@@ -205,8 +216,10 @@ HEADERS += src/parsersettings.h \
            src/system-gl.h \
            src/stl-utils.h
 
-SOURCES += src/mathc99.cc \
-	   src/linalg.cc \
+SOURCES += src/version_check.cc \
+           src/ProgressWidget.cc \
+           src/mathc99.cc \
+           src/linalg.cc \
            src/handle_dep.cc \
            src/value.cc \
            src/expr.cc \
