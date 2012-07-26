@@ -67,6 +67,9 @@ Preferences::Preferences(QWidget *parent) : QMainWindow(parent)
 	connect(this->fontSize, SIGNAL(currentIndexChanged(const QString&)),
 					this, SLOT(on_fontSize_editTextChanged(const QString &)));
 
+	// reset GUI fontsize if fontSize->addItem emitted signals that changed it.
+	this->fontSize->setEditText( QString("%1").arg( savedsize ) );
+
 	// Setup default settings
 	this->defaultmap["3dview/colorscheme"] = this->colorSchemeChooser->currentItem()->text();
 	this->defaultmap["advanced/opencsg_show_warning"] = true;

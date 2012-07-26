@@ -1,4 +1,5 @@
 #include "editor.h"
+#include "Preferences.h"
 
 #ifndef _QCODE_EDIT_
 void Editor::indentSelection()
@@ -70,4 +71,40 @@ void Editor::uncommentSelection()
 	cursor.setPosition(p2, QTextCursor::KeepAnchor);
 	setTextCursor(cursor);
 }
+
+void Editor::zoomIn()
+{
+	// See also QT's implementation in QEditor.cpp
+	QSettings settings;
+	QFont tmp_font = this->font() ;
+	if ( font().pointSize() >= 1 )
+		tmp_font.setPointSize( 1 + font().pointSize() );
+	else
+		tmp_font.setPointSize( 1 );
+	settings.setValue("editor/fontsize", tmp_font.pointSize());
+	this->setFont( tmp_font );
+}
+
+void Editor::zoomOut()
+{
+	QSettings settings;
+	QFont tmp_font = this->font();
+	if ( font().pointSize() >= 2 )
+		tmp_font.setPointSize( -1 + font().pointSize() );
+	else
+		tmp_font.setPointSize( 1 );
+	settings.setValue("editor/fontsize", tmp_font.pointSize());
+	this->setFont( tmp_font );
+}
+
+void Editor::wheelEvent ( QWheelEvent * event )
+{
+	if (event->modifiers() == Qt::ControlModifier) {
+		if (event->delta() > 0 )
+			zoomIn();
+		else if (event->delta() < 0 )
+			zoomOut();
+	}
+}
+
 #endif
