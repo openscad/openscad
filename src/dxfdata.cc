@@ -238,7 +238,7 @@ DxfData::DxfData(double fn, double fs, double fa,
 				int n = get_fragments_from_r(r_major, fn, fs, fa);
 				n = (int)ceil(n * sweep_angle / (2 * M_PI));
 //				Vector2d p1;
-				Vector2d p1; p1 << 0,0,0;
+				Vector2d p1; p1 << 0,0;
 				for (int i=0;i<=n;i++) {
 					double a = (ellipse_start_angle + sweep_angle*i/n);
 //					Vector2d p2(cos(a)*r_major, sin(a)*r_minor);
