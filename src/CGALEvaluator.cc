@@ -253,7 +253,7 @@ Response CGALEvaluator::visit(State &state, const TransformNode &node)
 				testmat << node.matrix(0,0), node.matrix(0,1), node.matrix(1,0), node.matrix(1,1);
 				if (testmat.determinant() == 0) {
 					PRINT("Warning: Scaling a 2D object with 0 - removing object");
-					N.p2.reset();
+					N.reset();
 				}
 				else {
 					CGAL_Aff_transformation2 t(
@@ -279,7 +279,7 @@ Response CGALEvaluator::visit(State &state, const TransformNode &node)
 			else if (N.dim == 3) {
 				if (node.matrix.matrix().determinant() == 0) {
 					PRINT("Warning: Scaling a 3D object with 0 - removing object");
-					N.p3.reset();
+					N.reset();
 				}
 				else {
 					CGAL_Aff_transformation t(
