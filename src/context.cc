@@ -91,6 +91,39 @@ void Context::args(const std::vector<std::string> &argnames,
 	}
 }
 
+bool Context::check_for_unknown_args(
+        const std::vector<std::string> &argnames,
+        const std::vector<std::string> &opt_argnames,
+  		const std::vector<std::string> &call_argnames)
+{
+	bool any_bad = false;
+	for (size_t ci=0; ci<call_argnames.size(); ci++) {
+		const std::string& call_argname = call_argnames[ci];
+		if (call_argname.empty()) {
+			continue;
+		}
+		bool found = false;
+		for (size_t ai = 0; ai < argnames.size(); ai++) {
+			if (argnames[ai] == call_argname) {
+				found = true;
+				break;
+			}
+		}
+		for (size_t ai = 0; (!found) && (ai < opt_argnames.size()); ai++) {
+			if (opt_argnames[ai] == call_argname) {
+				found = true;
+				break;
+			}
+		}
+		if (!found) {
+			PRINTB("WARNING: unknown argument \"%s\"", call_argname);
+			any_bad = true;
+		}
+	}
+	return any_bad;
+}
+
+
 void Context::set_variable(const std::string &name, const Value &value)
 {
 	if (name[0] == '$')

@@ -119,6 +119,8 @@ AbstractNode *PrimitiveModule::evaluate(const Context *ctx, const ModuleInstanti
 	// argexpr would be the default values, but we don't set any.
 	std::vector<std::string> argnames;
 	std::vector<Expression*> argexpr;
+	std::vector<std::string> optional_named_args;
+	optional_named_args += "$fn", "$fs", "$fa";
 
 	switch (this->type) {
 	case CUBE:
@@ -129,6 +131,7 @@ AbstractNode *PrimitiveModule::evaluate(const Context *ctx, const ModuleInstanti
 		break;
 	case CYLINDER:
 		argnames += "h", "r1", "r2", "center";
+		optional_named_args += "r", "$rm";
 		break;
 	case POLYHEDRON:
 		argnames += "points", "triangles", "convexity";
@@ -138,6 +141,7 @@ AbstractNode *PrimitiveModule::evaluate(const Context *ctx, const ModuleInstanti
 		break;
 	case CIRCLE:
 		argnames += "r";
+		optional_named_args += "$rm";
 		break;
 	case POLYGON:
 		argnames += "points", "paths", "convexity";
@@ -148,6 +152,7 @@ AbstractNode *PrimitiveModule::evaluate(const Context *ctx, const ModuleInstanti
 
 	Context c(ctx);
 	c.args(argnames, argexpr, inst->argnames, inst->argvalues);
+	c.check_for_unknown_args(argnames, optional_named_args, inst->argnames);
 
 	node->fn = c.lookup_variable("$fn").num;
 	node->fs = c.lookup_variable("$fs").num;

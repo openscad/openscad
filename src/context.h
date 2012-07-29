@@ -19,6 +19,11 @@ public:
 						const std::vector<std::string> &call_argnames, 
 						const std::vector<Value> &call_argvalues);
 
+	bool check_for_unknown_args(
+        const std::vector<std::string> &argnames,
+        const std::vector<std::string> &opt_argnames,
+  		const std::vector<std::string> &call_argnames);
+
 	void set_variable(const std::string &name, const Value &value);
 	void set_constant(const std::string &name, const Value &value);
 
