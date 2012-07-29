@@ -5,7 +5,7 @@
 #
 # This script must be run from the OpenSCAD source root directory
 #
-# Usage: ./scripts/mingw-x-build-release.sh
+# Usage: ./scripts/mingw-x-build-installer.sh
 #
 # Result: binary installer in ./release_mingw32 directory
 #
