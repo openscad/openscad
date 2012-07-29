@@ -19,6 +19,12 @@ if [ ! -f $OPENSCADDIR/openscad.pro ]; then
 	echo "Must be run from the OpenSCAD source root directory"
 	exit 0
 fi
+
+if [ $OPENSCAD_LIBRARIES ]; then
+	echo "OPENSCAD_LIBRARIES env variable is already set. Please re-run from a clean shell."
+	exit 0
+fi
+
 BASEDIR=$HOME/openscad_deps
 MXEDIR=$BASEDIR/mxe
 PATH=$MXEDIR/usr/bin:$PATH
