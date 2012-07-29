@@ -32,7 +32,7 @@
 #include "printutils.h"
 #include <boost/foreach.hpp>
 #include <boost/filesystem.hpp>
-using namespace boost::filesystem;
+namespace fs = boost::filesystem;
 #include "boosty.h"
 
 std::vector<const Context*> Context::ctx_stack;
@@ -212,8 +212,8 @@ AbstractNode *Context::evaluate_module(const ModuleInstantiation &inst) const
  */
 std::string Context::getAbsolutePath(const std::string &filename) const
 {
-	if (!filename.empty()) {
-		return boosty::absolute(path(this->document_path) / filename).string();
+	if (!filename.empty() && !boosty::is_absolute(fs::path(filename))) {
+		return boosty::absolute(fs::path(this->document_path) / filename).string();
 	}
 	else {
 		return filename;
@@ -229,13 +229,13 @@ void register_builtin(Context &ctx)
 	ctx.set_variable("$fa", Value(12.0));
 	ctx.set_variable("$t", Value(0.0));
 	
-	Value zero3;
-	zero3.type = Value::VECTOR;
-	zero3.append(new Value(0.0));
-	zero3.append(new Value(0.0));
-	zero3.append(new Value(0.0));
-	ctx.set_variable("$vpt", zero3);
-	ctx.set_variable("$vpr", zero3);
+	Value::VectorType zero3;
+	zero3.push_back(Value(0.0));
+	zero3.push_back(Value(0.0));
+	zero3.push_back(Value(0.0));
+	Value zero3val(zero3);
+	ctx.set_variable("$vpt", zero3val);
+	ctx.set_variable("$vpr", zero3val);
 
 	ctx.set_constant("PI",Value(M_PI));
 

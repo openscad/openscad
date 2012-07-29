@@ -43,6 +43,9 @@
 #include <boost/assign/std/vector.hpp>
 using namespace boost::assign; // bring 'operator+=()' into scope
 
+#include <boost/filesystem.hpp>
+namespace fs = boost::filesystem;
+
 class SurfaceModule : public AbstractModule
 {
 public:
@@ -79,16 +82,17 @@ AbstractNode *SurfaceModule::evaluate(const Context *ctx, const ModuleInstantiat
 	Context c(ctx);
 	c.args(argnames, argexpr, inst->argnames, inst->argvalues);
 
-	node->filename = c.getAbsolutePath(c.lookup_variable("file").text);
+	Value fileval = c.lookup_variable("file");
+	node->filename = c.getAbsolutePath(fileval.isUndefined() ? "" : fileval.toString());
 
 	Value center = c.lookup_variable("center", true);
-	if (center.type == Value::BOOL) {
-		node->center = center.b;
+	if (center.type() == Value::BOOL) {
+		node->center = center.toBool();
 	}
 
 	Value convexity = c.lookup_variable("convexity", true);
-	if (convexity.type == Value::NUMBER) {
-		node->convexity = (int)convexity.num;
+	if (convexity.type() == Value::NUMBER) {
+		node->convexity = (int)convexity.toDouble();
 	}
 
 	return node;
@@ -221,9 +225,15 @@ PolySet *SurfaceNode::evaluate_polyset(class PolySetEvaluator *) const
 std::string SurfaceNode::toString() const
 {
 	std::stringstream stream;
+	fs::path path((std::string)this->filename);
 
 	stream << this->name() << "(file = " << this->filename << ", "
-		"center = " << (this->center ? "true" : "false") << ")";
+		"center = " << (this->center ? "true" : "false")
+#ifndef OPENSCAD_TESTING
+		// timestamp is needed for caching, but disturbs the test framework
+				 << ", " "timestamp = " << (fs::exists(path) ? fs::last_write_time(path) : 0)
+#endif
+				 << ")";
 
 	return stream.str();
 }

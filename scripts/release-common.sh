@@ -186,6 +186,6 @@ case $OS in
         strip openscad-$VERSION/lib/openscad/*
         cp scripts/installer-linux.sh openscad-$VERSION/install.sh
         chmod 755 -R openscad-$VERSION/
-        tar cz openscad-$VERSION > openscad-$VERSION.x86-64.tar.gz
+        tar cz openscad-$VERSION > openscad-$VERSION.x86-$ARCH.tar.gz
         ;;
 esac

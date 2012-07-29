@@ -25,4 +25,8 @@ cgal {
       QMAKE_CXXFLAGS += -frounding-math 
     }
   }
+
+	*clang* {
+		QMAKE_CXXFLAGS -= -frounding-math
+	}
 }

@@ -84,10 +84,10 @@ int main(int argc, char **argv)
 	QCoreApplication app(argc, argv);
 	fs::path original_path = fs::current_path();
 
-	currentdir = boosty::stringy( fs::current_path() );
+	currentdir = boosty::stringy(fs::current_path());
 
 	parser_init(QCoreApplication::instance()->applicationDirPath().toStdString());
-	set_librarydir(boosty::stringy(fs::path(QCoreApplication::instance()->applicationDirPath().toStdString()) / "../libraries"));
+	add_librarydir(boosty::stringy(fs::path(QCoreApplication::instance()->applicationDirPath().toStdString()) / "../libraries"));
 
 	Context root_ctx;
 	register_builtin(root_ctx);
@@ -132,7 +132,10 @@ int main(int argc, char **argv)
 		fprintf(stderr, "Error: Unable to read back dumped file\n");
 		exit(1);
 	}
-	fs::current_path(original_path);
+
+	if (fs::path(filename).has_parent_path()) {
+		fs::current_path(fs::path(filename).parent_path());
+	}
 
 	AbstractNode::resetIndexCounter();
 	root_node = root_module->evaluate(&root_ctx, &root_inst);

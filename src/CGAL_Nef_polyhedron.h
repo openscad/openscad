@@ -3,6 +3,7 @@
 
 #include "cgalfwd.h"
 #include "memory.h"
+#include <string>
 
 class CGAL_Nef_polyhedron
 {
@@ -13,11 +14,13 @@ public:
 	~CGAL_Nef_polyhedron() {}
 
 	bool empty() const { return (dim == 0 || (!p2 && !p3)); }
+	void reset() { dim=0; p2.reset(); p3.reset(); }
 	CGAL_Nef_polyhedron &operator+=(const CGAL_Nef_polyhedron &other);
 	CGAL_Nef_polyhedron &operator*=(const CGAL_Nef_polyhedron &other);
 	CGAL_Nef_polyhedron &operator-=(const CGAL_Nef_polyhedron &other);
 	CGAL_Nef_polyhedron &minkowski(const CGAL_Nef_polyhedron &other);
 	CGAL_Nef_polyhedron copy() const;
+	std::string dump_p2() const;
 	int weight() const;
 	class PolySet *convertToPolyset();
 	class DxfData *convertToDxfData() const;

@@ -10,7 +10,7 @@
 #  -6   Build only 64-bit binaries
 #
 # Prerequisites:
-# - MacPorts: curl
+# - MacPorts: curl, cmake
 # - Qt4
 #
 # FIXME:
@@ -24,6 +24,7 @@ SRCDIR=$BASEDIR/src
 DEPLOYDIR=$BASEDIR/install
 MAC_OSX_VERSION_MIN=10.5
 OPTION_32BIT=true
+export QMAKESPEC=macx-g++
 
 printUsage()
 {
@@ -65,13 +66,19 @@ build_gmp()
   mkdir -p lib
   if $OPTION_32BIT; then
     lipo -create i386/lib/libgmp.dylib x86_64/lib/libgmp.dylib -output lib/libgmp.dylib
+    lipo -create i386/lib/libgmpxx.dylib x86_64/lib/libgmpxx.dylib -output lib/libgmpxx.dylib
   else
     cp x86_64/lib/libgmp.dylib lib/libgmp.dylib
+    cp x86_64/lib/libgmpxx.dylib lib/libgmpxx.dylib
   fi
   install_name_tool -id $DEPLOYDIR/lib/libgmp.dylib lib/libgmp.dylib
+  install_name_tool -id $DEPLOYDIR/lib/libgmpxx.dylib lib/libgmpxx.dylib
+  install_name_tool -change $DEPLOYDIR/x86_64/lib/libgmp.10.dylib $DEPLOYDIR/lib/libgmp.dylib lib/libgmpxx.dylib
   if $OPTION_32BIT; then
     cp lib/libgmp.dylib i386/lib/
     cp lib/libgmp.dylib x86_64/lib/
+    cp lib/libgmpxx.dylib i386/lib/
+    cp lib/libgmpxx.dylib x86_64/lib/
   fi
   mkdir -p include
   cp x86_64/include/gmp.h include/
@@ -123,11 +130,12 @@ build_mpfr()
   cd $BASEDIR/src
   rm -rf mpfr-$version
   if [ ! -f mpfr-$version.tar.bz2 ]; then
-    curl -O http://www.mpfr.org/mpfr-current/mpfr-$version.tar.bz2
+    curl -O http://www.mpfr.org/mpfr-$version/mpfr-$version.tar.bz2
   fi
   tar xjf mpfr-$version.tar.bz2
   cd mpfr-$version
-
+  curl -O http://www.mpfr.org/mpfr-$version/allpatches
+  patch -N -Z -p1 < allpatches 
   if $OPTION_32BIT; then
     mkdir build-i386
     cd build-i386
@@ -203,10 +211,12 @@ build_cgal()
   if $OPTION_32BIT; then
     CGAL_EXTRA_FLAGS=";i386"
   fi
-  # We build a static lib. Not really necessary, but it's well tested.
-  cmake -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR -DGMP_INCLUDE_DIR=$DEPLOYDIR/include -DGMP_LIBRARIES=$DEPLOYDIR/lib/libgmp.dylib -DGMPXX_INCLUDE_DIR=$DEPLOYDIR/include -DMPFR_INCLUDE_DIR=$DEPLOYDIR/include -DMPFR_LIBRARIES=$DEPLOYDIR/lib/libmpfr.dylib -DWITH_CGAL_Qt3=OFF -DWITH_CGAL_Qt4=OFF -DWITH_CGAL_ImageIO=OFF -DBUILD_SHARED_LIBS=FALSE -DCMAKE_OSX_DEPLOYMENT_TARGET="$MAC_OSX_VERSION_MIN" -DCMAKE_OSX_ARCHITECTURES="x86_64$CGAL_EXTRA_FLAGS" -DBOOST_ROOT=$DEPLOYDIR
+  cmake -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR -DGMP_INCLUDE_DIR=$DEPLOYDIR/include -DGMP_LIBRARIES=$DEPLOYDIR/lib/libgmp.dylib -DGMPXX_LIBRARIES=$DEPLOYDIR/lib/libgmpxx.dylib -DGMPXX_INCLUDE_DIR=$DEPLOYDIR/include -DMPFR_INCLUDE_DIR=$DEPLOYDIR/include -DMPFR_LIBRARIES=$DEPLOYDIR/lib/libmpfr.dylib -DWITH_CGAL_Qt3=OFF -DWITH_CGAL_Qt4=OFF -DWITH_CGAL_ImageIO=OFF -DBUILD_SHARED_LIBS=TRUE -DCMAKE_OSX_DEPLOYMENT_TARGET="$MAC_OSX_VERSION_MIN" -DCMAKE_OSX_ARCHITECTURES="x86_64$CGAL_EXTRA_FLAGS" -DBOOST_ROOT=$DEPLOYDIR
   make -j4
   make install
+  install_name_tool -id $DEPLOYDIR/lib/libCGAL.dylib $DEPLOYDIR/lib/libCGAL.dylib
+  install_name_tool -id $DEPLOYDIR/lib/libCGAL_Core.dylib $DEPLOYDIR/lib/libCGAL_Core.dylib
+  install_name_tool -change $PWD/lib/libCGAL.9.dylib $DEPLOYDIR/lib/libCGAL.dylib $DEPLOYDIR/lib/libCGAL_Core.dylib
 }
 
 build_glew()
@@ -222,7 +232,7 @@ build_glew()
   cd glew-$version
   mkdir -p $DEPLOYDIR/lib/pkgconfig
   # To avoid running strip on a fat archive as this is not supported by strip
-  sed -i bak -e "s/\$(STRIP) -x lib\/\$(LIB.STATIC)//" Makefile 
+  sed -ibak -e "s/\$(STRIP) -x lib\/\$(LIB.STATIC)//" Makefile 
   if $OPTION_32BIT; then
     GLEW_EXTRA_FLAGS="-arch i386"
   fi
@@ -287,7 +297,7 @@ done
 echo "Using basedir:" $BASEDIR
 mkdir -p $SRCDIR $DEPLOYDIR
 build_eigen 2.0.17
-build_gmp 5.0.4
+build_gmp 5.0.5
 build_mpfr 3.1.0
 build_boost 1.47.0
 # NB! For CGAL, also update the actual download URL in the function

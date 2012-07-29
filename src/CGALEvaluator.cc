@@ -43,11 +43,8 @@ CGAL_Nef_polyhedron CGALEvaluator::evaluateCGALMesh(const AbstractNode &node)
 		Traverser evaluate(*this, node, Traverser::PRE_AND_POSTFIX);
 		evaluate.execute();
 		return this->root;
-		assert(this->visitedchildren.empty());
 	}
-	else {
-		return CGALCache::instance()->get(this->tree.getIdString(node));
-	}
+	return CGALCache::instance()->get(this->tree.getIdString(node));
 }
 
 bool CGALEvaluator::isCached(const AbstractNode &node) const
@@ -84,7 +81,7 @@ void CGALEvaluator::process(CGAL_Nef_polyhedron &target, const CGAL_Nef_polyhedr
 			break;
 		}
 	}
-	catch (CGAL::Assertion_exception e) {
+	catch (CGAL::Failure_exception e) {
 		// union && difference assert triggered by testdata/scad/bugs/rotate-diff-nonmanifold-crash.scad
 		std::string opstr = op == CGE_UNION ? "union" : op == CGE_INTERSECTION ? "intersection" : op == CGE_DIFFERENCE ? "difference" : op == CGE_MINKOWSKI ? "minkowski" : "UNKNOWN";
 		PRINTB("CGAL error in CGAL_Nef_polyhedron's %s operator: %s", opstr % e.what());
@@ -256,7 +253,7 @@ Response CGALEvaluator::visit(State &state, const TransformNode &node)
 				testmat << node.matrix(0,0), node.matrix(0,1), node.matrix(1,0), node.matrix(1,1);
 				if (testmat.determinant() == 0) {
 					PRINT("Warning: Scaling a 2D object with 0 - removing object");
-					N.p2.reset();
+					N.reset();
 				}
 				else {
 					CGAL_Aff_transformation2 t(
@@ -282,7 +279,7 @@ Response CGALEvaluator::visit(State &state, const TransformNode &node)
 			else if (N.dim == 3) {
 				if (node.matrix.matrix().determinant() == 0) {
 					PRINT("Warning: Scaling a 3D object with 0 - removing object");
-					N.p3.reset();
+					N.reset();
 				}
 				else {
 					CGAL_Aff_transformation t(

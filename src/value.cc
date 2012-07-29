@@ -25,507 +25,600 @@
  */
 
 #include "value.h"
-#include "mathc99.h"
-#include <assert.h>
+#include <math.h>
+#include <assert.h> // fmod
 #include <sstream>
-#include <QDir>
 #include <boost/foreach.hpp>
-#include "printutils.h"
+#include <boost/variant/apply_visitor.hpp>
+#include <boost/variant/static_visitor.hpp>
+#include <boost/format.hpp>
 
-Value::Value()
-{
-	reset_undef();
-}
-
-Value::~Value()
-{
-	for (size_t i = 0; i < this->vec.size(); i++) delete this->vec[i];
-	this->vec.clear();
-}
-
-Value::Value(bool v)
-{
-	reset_undef();
-	this->type = BOOL;
-	this->b = v;
-}
-
-Value::Value(double v)
-{
-	reset_undef();
-	this->type = NUMBER;
-	this->num = v;
-}
-
-Value::Value(const std::string &t)
-{
-	reset_undef();
-	this->type = STRING;
-	this->text = t;
-}
-
-Value::Value(const Value &v)
-{
-	*this = v;
-}
-
-Value& Value::operator = (const Value &v)
-{
-	reset_undef();
-	this->type = v.type;
-	this->b = v.b;
-	this->num = v.num;
-	for (size_t i = 0; i < v.vec.size(); i++) {
-		this->vec.push_back(new Value(*v.vec[i]));
-	}
-	this->range_begin = v.range_begin;
-	this->range_step = v.range_step;
-	this->range_end = v.range_end;
-	this->text = v.text;
-	return *this;
-}
-
-Value Value::operator ! () const
-{
-	if (this->type == BOOL) {
-		return Value(!this->b);
-	}
-	return Value();
-}
-
-Value Value::operator && (const Value &v) const
-{
-	if (this->type == BOOL && v.type == BOOL) {
-		return Value(this->b && v.b);
-	}
-	return Value();
-}
-
-Value Value::operator || (const Value &v) const
-{
-	if (this->type == BOOL && v.type == BOOL) {
-		return Value(this->b || v.b);
-	}
-	return Value();
-}
-
-Value Value::operator + (const Value &v) const
-{
-	if (this->type == VECTOR && v.type == VECTOR) {
-		Value r;
-		r.type = VECTOR;
-		for (size_t i = 0; i < this->vec.size() && i < v.vec.size(); i++)
-			r.vec.push_back(new Value(*this->vec[i] + *v.vec[i]));
-		return r;
-	}
-	if (this->type == NUMBER && v.type == NUMBER) {
-		return Value(this->num + v.num);
-	}
-	return Value();
-}
-
-Value Value::operator - (const Value &v) const
-{
-	if (this->type == VECTOR && v.type == VECTOR) {
-		Value r;
-		r.type = VECTOR;
-		for (size_t i = 0; i < this->vec.size() && i < v.vec.size(); i++)
-			r.vec.push_back(new Value(*this->vec[i] - *v.vec[i]));
-		return r;
-	}
-	if (this->type == NUMBER && v.type == NUMBER) {
-		return Value(this->num - v.num);
-	}
-	return Value();
-}
-
-Value Value::operator * (const Value &v) const
-{
-	if (this->type == VECTOR && v.type == NUMBER) {
-		Value r;
-		r.type = VECTOR;
-		for (size_t i = 0; i < this->vec.size(); i++)
-			r.vec.push_back(new Value(*this->vec[i] * v));
-		return r;
-	}
-	if (this->type == NUMBER && v.type == VECTOR) {
-		Value r;
-		r.type = VECTOR;
-		for (size_t i = 0; i < v.vec.size(); i++)
-			r.vec.push_back(new Value(*this * *v.vec[i]));
-		return r;
-	}
-	if (this->type == NUMBER && v.type == NUMBER) {
-		return Value(this->num * v.num);
-	}
-	if (this->type == VECTOR && v.type == VECTOR && this->vec.size() == v.vec.size() ) {
-	  if ( this->vec[0]->type == NUMBER && v.vec[0]->type == NUMBER ) {
-		// Vector dot product.
-		double r=0.0;
-		for (size_t i=0; i <this->vec.size(); i++) {
-		  if ( this->vec[i]->type != NUMBER || v.vec[i]->type != NUMBER ) return Value();
-		  r = r + (this->vec[i]->num * v.vec[i]->num);
-		}
-		return Value(r);
-	  } else if ( this->vec[0]->type == VECTOR && v.vec[0]->type == NUMBER ) {
-		// Matrix * Vector
-		Value r;
-		r.type = VECTOR;
-		for ( size_t i=0; i < this->vec.size(); i++) {
-		  double r_e=0.0;
-		  if ( this->vec[i]->vec.size() != v.vec.size() ) return Value();
-		  for ( size_t j=0; j < this->vec[i]->vec.size(); j++) {
-		    if ( this->vec[i]->vec[j]->type != NUMBER || v.vec[i]->type != NUMBER ) return Value();
-		    r_e = r_e + (this->vec[i]->vec[j]->num * v.vec[j]->num);
-		  }
-		  r.vec.push_back(new Value(r_e));
-		}
-		return r;
-	  } else if (this->vec[0]->type == NUMBER && v.vec[0]->type == VECTOR ) {
-		// Vector * Matrix
-		Value r;
-		r.type = VECTOR;
-		for ( size_t i=0; i < v.vec[0]->vec.size(); i++) {
-		  double r_e=0.0;
-		  for ( size_t j=0; j < v.vec.size(); j++) {
-		    if ( v.vec[j]->vec.size() != v.vec[0]->vec.size() ) return Value();
-		    if ( this->vec[j]->type != NUMBER || v.vec[j]->vec[i]->type != NUMBER ) return Value();
-		    r_e = r_e + (this->vec[j]->num * v.vec[j]->vec[i]->num);
-		  }
-		  r.vec.push_back(new Value(r_e));
-		}
-		return r;
-	  }
-	}
-	if (this->type == VECTOR && v.type == VECTOR &&  this->vec[0]->type == VECTOR && v.vec[0]->type == VECTOR && this->vec[0]->vec.size() == v.vec.size() ) {
-		// Matrix * Matrix
-		Value rrow;
-		rrow.type = VECTOR;
-		for ( size_t i=0; i < this->vec.size(); i++ ) {
-		  Value * rcol=new Value();
-		  rcol->type = VECTOR;
-		  for ( size_t j=0; j < this->vec.size(); j++ ) {
-		    double r_e=0.0;
-		    for ( size_t k=0; k < v.vec.size(); k++ ) {
-		      r_e = r_e + (this->vec[i]->vec[k]->num * v.vec[k]->vec[j]->num);
-		    }
-		    // PRINTB("  r_e = %s",r_e);
-		    rcol->vec.push_back(new Value(r_e));
-		  }
-		  rrow.vec.push_back(rcol);
-		}
-		return rrow;
-	}
-	return Value();
-}
-
-Value Value::operator / (const Value &v) const
-{
-	if (this->type == VECTOR && v.type == NUMBER) {
-		Value r;
-		r.type = VECTOR;
-		for (size_t i = 0; i < this->vec.size(); i++)
-			r.vec.push_back(new Value(*this->vec[i] / v));
-		return r;
-	}
-	if (this->type == NUMBER && v.type == VECTOR) {
-		Value r;
-		r.type = VECTOR;
-		for (size_t i = 0; i < v.vec.size(); i++)
-			r.vec.push_back(new Value(v / *v.vec[i]));
-		return r;
-	}
-	if (this->type == NUMBER && v.type == NUMBER) {
-		return Value(this->num / v.num);
-	}
-	return Value();
-}
-
-Value Value::operator % (const Value &v) const
-{
-	if (this->type == NUMBER && v.type == NUMBER) {
-		return Value(fmod(this->num, v.num));
-	}
-	return Value();
-}
-
-Value Value::operator < (const Value &v) const
-{
-	if (this->type == NUMBER && v.type == NUMBER) {
-		return Value(this->num < v.num);
-	}
-	else if (this->type == STRING && v.type == STRING) {
-		return Value(this->text < v.text);
-	}
-	return Value();
-}
-
-Value Value::operator <= (const Value &v) const
-{
-	if (this->type == NUMBER && v.type == NUMBER) {
-		return Value(this->num <= v.num);
-	}
-	else if (this->type == STRING && v.type == STRING) {
-		return Value(this->text <= v.text);
-	}
-	return Value();
-}
-
-Value Value::operator == (const Value &v) const
-{
-	if (this->type == BOOL && v.type == BOOL) {
-		return Value(this->b == v.b);
-	}
-	if (this->type == NUMBER && v.type == NUMBER) {
-		return Value(this->num == v.num);
-	}
-	if (this->type == RANGE && v.type == RANGE) {
-		return Value(this->range_begin == v.range_begin && this->range_step == v.range_step && this->range_end == v.range_end);
-	}
-	if (this->type == VECTOR && v.type == VECTOR) {
-		if (this->vec.size() != v.vec.size())
-			return Value(false);
-		for (size_t i=0; i<this->vec.size(); i++)
-			if (!(*this->vec[i] == *v.vec[i]).b)
-				return Value(false);
-		return Value(true);
-	}
-	if (this->type == STRING && v.type == STRING) {
-		return Value(this->text == v.text);
-	}
-	return Value(false);
-}
-
-Value Value::operator != (const Value &v) const
-{
-	Value eq = *this == v;
-	return Value(!eq.b);
-}
-
-Value Value::operator >= (const Value &v) const
-{
-	if (this->type == NUMBER && v.type == NUMBER) {
-		return Value(this->num >= v.num);
-	}
-	else if (this->type == STRING && v.type == STRING) {
-		return Value(this->text >= v.text);
-	}
-	return Value();
-}
-
-Value Value::operator > (const Value &v) const
-{
-	if (this->type == NUMBER && v.type == NUMBER) {
-		return Value(this->num > v.num);
-	}
-	else if (this->type == STRING && v.type == STRING) {
-		return Value(this->text > v.text);
-	}
-	return Value();
-}
-
-Value Value::inv() const
-{
-	if (this->type == VECTOR) {
-		Value r;
-		r.type = VECTOR;
-		for (size_t i = 0; i < this->vec.size(); i++)
-			r.vec.push_back(new Value(this->vec[i]->inv()));
-		return r;
-	}
-	if (this->type == NUMBER)
-		return Value(-this->num);
-	return Value();
-}
-
-bool Value::getnum(double &v) const
-{
-	if (this->type != NUMBER)
-		return false;
-	v = this->num;
-	return true;
-}
-
-bool Value::getv2(double &x, double &y) const
-{
-	if (this->type != VECTOR || this->vec.size() != 2)
-		return false;
-	if (this->vec[0]->type != NUMBER)
-		return false;
-	if (this->vec[1]->type != NUMBER)
-		return false;
-	x = this->vec[0]->num;	
-	y = this->vec[1]->num;	
-	return true;
-}
-
-bool Value::getv3(double &x, double &y, double &z, double defaultval) const
-{
-	if (this->type == VECTOR && this->vec.size() == 2) {
-		if (getv2(x, y)) {
-			z = defaultval;
-			return true;
-		}
-		return false;
-	}
-	if (this->type != VECTOR || this->vec.size() != 3)
-		return false;
-	if (this->vec[0]->type != NUMBER)
-		return false;
-	if (this->vec[1]->type != NUMBER)
-		return false;
-	if (this->vec[2]->type != NUMBER)
-		return false;
-	x = this->vec[0]->num;	
-	y = this->vec[1]->num;	
-	z = this->vec[2]->num;	
-	return true;
-}
-
-void Value::reset_undef()
-{
-	this->type = UNDEFINED;
-	this->b = false;
-	this->num = 0;
-	for (size_t i = 0; i < this->vec.size(); i++) delete this->vec[i];
-	this->vec.clear();
-	this->range_begin = 0;
-	this->range_step = 0;
-	this->range_end = 0;
-	this->text = "";
-}
-
-std::string Value::toString() const
-{
-	std::stringstream stream;
-	stream.precision(16);
-
-	switch (this->type) {
-	case STRING:
-		stream << this->text;
-		break;
-	case VECTOR:
-		stream << '[';
-		for (size_t i = 0; i < this->vec.size(); i++) {
-			if (i > 0) stream << ", ";
-			stream << *(this->vec[i]);
-		}
-		stream << ']';
-		break;
-	case RANGE:
-		stream	<< '['
-			<< this->range_begin
-			<< " : "
-			<< this->range_step
-			<< " : "
-			<< this->range_end
-			<< ']';
-		break;
-	case NUMBER:
-#ifdef OPENSCAD_TESTING
-		// Quick and dirty hack to work around floating point rounding differences
-		// across platforms for testing purposes.
-	{
-		if (this->num != this->num) { // Fix for avoiding nan vs. -nan across platforms
-			stream << "nan";
-			break;
-		}
-		std::stringstream tmp;
-		tmp.precision(12);
-		tmp.setf(std::ios_base::fixed);
-		tmp << this->num;
-		std::string tmpstr = tmp.str();
-		size_t endpos = tmpstr.find_last_not_of('0');
-		if (endpos >= 0 && tmpstr[endpos] == '.') endpos--;
-		tmpstr = tmpstr.substr(0, endpos+1);
-		size_t dotpos = tmpstr.find('.');
-		if (dotpos != std::string::npos) {
-			if (tmpstr.size() - dotpos > 12) tmpstr.erase(dotpos + 12);
-		}
-		stream << tmpstr;
-	}
-#else
-		stream << this->num;
-#endif
-		break;
-	case BOOL:
-		stream << (this->b ? "true" : "false");
-		break;
-	default:
-		stream << "undef";
-	}
-
-	return stream.str();
-}
-
-bool Value::toBool() const
-{
-	switch (this->type) {
-	case STRING:
-		return this->text.size() > 0;
-		break;
-	case VECTOR:
-		return this->vec.size() > 0;
-		break;
-	case RANGE:
-		return true;
-		break;
-	case NUMBER:
-		return this->num != 0;
-		break;
-	case BOOL:
-		return this->b;
-		break;
-	default:
-		return false;
-		break;
-	}
-}
-
-/*!
-	Append a value to this vector.
-	This must be of type VECTOR.
-*/
-void Value::append(Value *val)
-{
-	assert(this->type == VECTOR);
-	this->vec.push_back(val);
-}
-
-std::ostream &operator<<(std::ostream &stream, const Value &value)
-{
-	if (value.type == Value::STRING) stream << QuotedString(value.toString());
-	else stream << value.toString();
-	return stream;
-}
+#include <QtCore/QDir>
 
 std::ostream &operator<<(std::ostream &stream, const Filename &filename)
 {
-	stream << QuotedString(QDir::current().relativeFilePath(QString::fromStdString(filename)).toStdString());
-	return stream;
+  stream << QuotedString(QDir::current().relativeFilePath(QString::fromStdString(filename)).toStdString());
+  return stream;
 }
 
 // FIXME: This could probably be done more elegantly using boost::regex
 std::ostream &operator<<(std::ostream &stream, const QuotedString &s)
 {
-	stream << '"';
-	BOOST_FOREACH(char c, s) {
-		switch (c) {
-		case '\t':
-			stream << "\\t";
-			break;
-		case '\n':
-			stream << "\\n";
-			break;
-		case '"':
-		case '\\':
-			stream << '\\';
-			stream << c;
-			break;
-		default:
-			stream << c;
-		}
-	}
-	stream << '"';
-	return stream;
+  stream << '"';
+  BOOST_FOREACH(char c, s) {
+    switch (c) {
+    case '\t':
+      stream << "\\t";
+      break;
+    case '\n':
+      stream << "\\n";
+      break;
+    case '"':
+    case '\\':
+      stream << '\\';
+      stream << c;
+      break;
+    default:
+      stream << c;
+    }
+  }
+  stream << '"';
+  return stream;
+}
+
+Value Value::undefined;
+
+Value::Value() : value(boost::blank())
+{
+  //  std::cout << "creating undef\n";
+}
+
+Value::Value(bool v) : value(v)
+{
+  //  std::cout << "creating bool\n";
+}
+
+Value::Value(int v) : value(double(v))
+{
+  //  std::cout << "creating int\n";
+}
+
+Value::Value(double v) : value(v)
+{
+  //  std::cout << "creating double " << v << "\n";
+}
+
+Value::Value(const std::string &v) : value(v)
+{
+  //  std::cout << "creating string\n";
+}
+
+Value::Value(const char *v) : value(std::string(v))
+{
+  //  std::cout << "creating string from char *\n";
+}
+
+Value::Value(char v) : value(std::string(1, v))
+{
+  //  std::cout << "creating string from char\n";
+}
+
+Value::Value(const VectorType &v) : value(v)
+{
+  //  std::cout << "creating vector\n";
+}
+
+Value::Value(const RangeType &v) : value(v)
+{
+  //  std::cout << "creating range\n";
+}
+
+Value::Value(double begin, double step, double end) : value(RangeType(begin, step, end))
+{
+  //  std::cout << "creating range from numbers\n";
+}
+
+Value::ValueType Value::type() const
+{
+  return static_cast<ValueType>(this->value.which());
+}
+
+bool Value::isUndefined() const
+{
+  return this->type() == UNDEFINED;
+}
+
+bool Value::toBool() const
+{
+  switch (this->type()) {
+  case BOOL:
+    return boost::get<bool>(this->value);
+    break;
+  case NUMBER:
+    return boost::get<double>(this->value)!= 0;
+    break;
+  case STRING:
+    return boost::get<std::string>(this->value).size() > 0;
+    break;
+  case VECTOR:
+    return boost::get<VectorType >(this->value).size() > 0;
+    break;
+  case RANGE:
+    return true;
+    break;
+  default:
+    return false;
+    break;
+  }
+}
+
+double Value::toDouble() const
+{
+  double d = 0;
+  getDouble(d);
+  return d;
+}
+
+bool Value::getDouble(double &v) const
+{
+  const double *d = boost::get<double>(&this->value);
+  if (d) {
+    v = *d;
+    return true;
+  }
+  return false;
+}
+
+class tostring_visitor : public boost::static_visitor<std::string>
+{
+public:
+  template <typename T> std::string operator()(const T &op1) const {
+    //    std::cout << "[generic tostring_visitor]\n";
+    return boost::lexical_cast<std::string>(op1);	
+  }
+
+  std::string operator()(const double &op1) const {
+#ifdef OPENSCAD_TESTING
+    // Quick and dirty hack to work around floating point rounding differences
+    // across platforms for testing purposes.
+    if (op1 != op1) { // Fix for avoiding nan vs. -nan across platforms
+      return "nan";
+    }
+    std::stringstream tmp;
+    tmp.precision(12);
+    tmp.setf(std::ios_base::fixed);
+    tmp << op1;
+    std::string tmpstr = tmp.str();
+    size_t endpos = tmpstr.find_last_not_of('0');
+    if (endpos >= 0 && tmpstr[endpos] == '.') endpos--;
+    tmpstr = tmpstr.substr(0, endpos+1);
+    size_t dotpos = tmpstr.find('.');
+    if (dotpos != std::string::npos) {
+      if (tmpstr.size() - dotpos > 12) tmpstr.erase(dotpos + 12);
+    }
+    return tmpstr;
+#else
+    return boost::lexical_cast<std::string>(op1);	
+#endif
+  }
+
+  std::string operator()(const boost::blank &) const {
+    return "undef";
+  }
+
+  std::string operator()(const bool &v) const {
+    return v ? "true" : "false";
+  }
+
+  std::string operator()(const Value::VectorType &v) const {
+    std::stringstream stream;
+    stream << '[';
+    for (size_t i = 0; i < v.size(); i++) {
+      if (i > 0) stream << ", ";
+      stream << v[i];
+    }
+    stream << ']';
+    return stream.str();
+  }
+
+  std::string operator()(const Value::RangeType &v) const {
+    return (boost::format("[%1% : %2% : %3%]") % v.begin % v.step % v.end).str();
+  }
+};
+
+std::string Value::toString() const
+{
+  return boost::apply_visitor(tostring_visitor(), this->value);
+}
+
+const Value::VectorType &Value::toVector() const
+{
+  static VectorType empty;
+  
+  const VectorType *v = boost::get<VectorType>(&this->value);
+  if (v) return *v;
+  else return empty;
+}
+
+bool Value::getVec2(double &x, double &y) const
+{
+  if (this->type() != VECTOR) return false;
+
+  const VectorType &v = toVector();
+  
+  if (v.size() != 2) return false;
+  return (v[0].getDouble(x) && v[1].getDouble(y));
+}
+
+bool Value::getVec3(double &x, double &y, double &z, double defaultval) const
+{
+  if (this->type() != VECTOR) return false;
+
+  const VectorType &v = toVector();
+
+  if (v.size() == 2) {
+    getVec2(x, y);
+    z = defaultval;
+    return true;
+  }
+  else {
+    if (v.size() != 3) return false;
+  }
+
+  return (v[0].getDouble(x) && v[1].getDouble(y) && v[2].getDouble(z));
+}
+
+Value::RangeType Value::toRange() const
+{
+  const RangeType *val = boost::get<RangeType>(&this->value);
+  if (val) {
+    return *val;
+  }
+  else return RangeType(0,0,0);
+}
+
+Value &Value::operator=(const Value &v)
+{
+  if (this != &v) {
+    this->value = v.value;
+  }
+  return *this;
+}
+
+Value Value::operator!() const
+{
+  return Value(!this->toBool());
+}
+
+class equals_visitor : public boost::static_visitor<bool>
+{
+public:
+  template <typename T, typename U> bool operator()(const T &, const U &) const {
+    return false;
+  }
+
+  template <typename T> bool operator()(const T &op1, const T &op2) const {
+    return op1 == op2;
+  }
+};
+
+bool Value::operator==(const Value &v) const
+{
+  return boost::apply_visitor(equals_visitor(), this->value, v.value);
+}
+
+bool Value::operator!=(const Value &v) const
+{
+  return !(*this == v);
+}
+
+bool Value::operator&&(const Value &v) const
+{
+  return this->toBool() && v.toBool();
+}
+
+bool Value::operator||(const Value &v) const
+{
+  return this->toBool() || v.toBool();
+}
+
+class less_visitor : public boost::static_visitor<bool>
+{
+public:
+  template <typename T, typename U> bool operator()(const T &, const U &) const {
+    return false;
+  }
+
+  bool operator()(const double &op1, const double &op2) const {
+    return op1 < op2;
+  }
+
+  bool operator()(const std::string &op1, const std::string &op2) const {
+    return op1 < op2;
+  }
+};
+
+class greater_visitor : public boost::static_visitor<bool>
+{
+public:
+  template <typename T, typename U> bool operator()(const T &, const U &) const {
+    return false;
+  }
+
+  bool operator()(const double &op1, const double &op2) const {
+    return op1 > op2;
+  }
+
+  bool operator()(const std::string &op1, const std::string &op2) const {
+    return op1 > op2;
+  }
+};
+
+bool Value::operator<(const Value &v) const
+{
+  return boost::apply_visitor(less_visitor(), this->value, v.value);
+}
+
+bool Value::operator>=(const Value &v) const
+{
+  return !(*this < v);
+}
+
+bool Value::operator>(const Value &v) const
+{
+  return boost::apply_visitor(greater_visitor(), this->value, v.value);
+}
+
+bool Value::operator<=(const Value &v) const
+{
+  return !(*this > v);
+}
+
+class plus_visitor : public boost::static_visitor<Value>
+{
+public:
+  template <typename T, typename U> Value operator()(const T &, const U &) const {
+    return Value::undefined;
+  }
+
+  Value operator()(const double &op1, const double &op2) const {
+    return Value(op1 + op2);
+  }
+
+  Value operator()(const Value::VectorType &op1, const Value::VectorType &op2) const {
+    Value::VectorType sum;
+    for (size_t i = 0; i < op1.size() && i < op2.size(); i++) {
+      sum.push_back(op1[i] + op2[i]);
+    }
+    return Value(sum);
+  }
+};
+
+Value Value::operator+(const Value &v) const
+{
+  return boost::apply_visitor(plus_visitor(), this->value, v.value);
+}
+
+class minus_visitor : public boost::static_visitor<Value>
+{
+public:
+  template <typename T, typename U> Value operator()(const T &, const U &) const {
+    return Value::undefined;
+  }
+
+  Value operator()(const double &op1, const double &op2) const {
+    return Value(op1 - op2);
+  }
+
+  Value operator()(const Value::VectorType &op1, const Value::VectorType &op2) const {
+    Value::VectorType sum;
+    for (size_t i = 0; i < op1.size() && i < op2.size(); i++) {
+      sum.push_back(op1[i] - op2[i]);
+    }
+    return Value(sum);
+  }
+};
+
+Value Value::operator-(const Value &v) const
+{
+  return boost::apply_visitor(minus_visitor(), this->value, v.value);
+}
+
+Value Value::multvecnum(const Value &vecval, const Value &numval)
+{
+  // Vector * Number
+  VectorType dstv;
+  BOOST_FOREACH(const Value &val, vecval.toVector()) {
+    dstv.push_back(val * numval);
+  }
+  return Value(dstv);
+}
+
+Value Value::multmatvec(const Value &matrixval, const Value &vectorval)
+{
+  const VectorType &matrixvec = matrixval.toVector();
+  const VectorType &vectorvec = vectorval.toVector();
+
+  // Matrix * Vector
+  VectorType dstv;
+  for (size_t i=0;i<matrixvec.size();i++) {
+    if (matrixvec[i].type() != VECTOR || 
+        matrixvec[i].toVector().size() != vectorvec.size()) {
+      return Value();
+    }
+    double r_e = 0.0;
+    for (size_t j=0;j<matrixvec[i].toVector().size();j++) {
+      if (matrixvec[i].toVector()[j].type() != NUMBER || vectorvec[j].type() != NUMBER) {
+        return Value();
+      }
+      r_e += matrixvec[i].toVector()[j].toDouble() * vectorvec[j].toDouble();
+    }
+    dstv.push_back(Value(r_e));
+  }
+  return Value(dstv);
+}
+
+Value Value::multvecmat(const Value &vectorval, const Value &matrixval)
+{
+  const VectorType &vectorvec = vectorval.toVector();
+  const VectorType &matrixvec = matrixval.toVector();
+  assert(vectorvec.size() == matrixvec.size());
+  // Vector * Matrix
+  VectorType dstv;
+  for (size_t i=0;i<matrixvec[0].toVector().size();i++) {
+    double r_e = 0.0;
+    for (size_t j=0;j<vectorvec.size();j++) {
+      if (matrixvec[j].type() != VECTOR ||
+          matrixvec[j].toVector()[i].type() != NUMBER || 
+          vectorvec[j].type() != NUMBER) {
+        return Value::undefined;
+      }
+      r_e += vectorvec[j].toDouble() * matrixvec[j].toVector()[i].toDouble();
+    }
+    dstv.push_back(Value(r_e));
+  }
+  return Value(dstv);
+}
+
+Value Value::operator*(const Value &v) const
+{
+  if (this->type() == NUMBER && v.type() == NUMBER) {
+    return Value(this->toDouble() * v.toDouble());
+  }
+  else if (this->type() == VECTOR && v.type() == NUMBER) {
+    return multvecnum(*this, v);
+  }
+  else if (this->type() == NUMBER && v.type() == VECTOR) {
+    return multvecnum(v, *this);
+  }
+  else if (this->type() == VECTOR && v.type() == VECTOR) {
+    const VectorType &vec1 = this->toVector();
+    const VectorType &vec2 = v.toVector();
+    if (vec1[0].type() == NUMBER && vec2[0].type() == NUMBER &&
+        vec1.size() == vec2.size()) { 
+        // Vector dot product.
+        double r = 0.0;
+        for (size_t i=0;i<vec1.size();i++) {
+          if (vec1[i].type() != NUMBER || vec2[i].type() != NUMBER) {
+            return Value::undefined;
+          }
+          r += (vec1[i].toDouble() * vec2[i].toDouble());
+        }
+        return Value(r);
+    } else if (vec1[0].type() == VECTOR && vec2[0].type() == NUMBER &&
+               vec1[0].toVector().size() == vec2.size()) {
+      return multmatvec(vec1, vec2);
+    } else if (vec1[0].type() == NUMBER && vec2[0].type() == VECTOR &&
+               vec1.size() == vec2.size()) {
+      return multvecmat(vec1, vec2);
+    } else if (vec1[0].type() == VECTOR && vec2[0].type() == VECTOR &&
+               vec1[0].toVector().size() == vec2.size()) {
+      // Matrix * Matrix
+      VectorType dstv;
+      BOOST_FOREACH(const Value &srcrow, vec1) {
+        dstv.push_back(multvecmat(srcrow, vec2));
+      }
+      return Value(dstv);
+    }
+  }
+  return Value::undefined;
+}
+
+Value Value::operator/(const Value &v) const
+{
+  if (this->type() == NUMBER && v.type() == NUMBER) {
+    return Value(this->toDouble() / v.toDouble());
+  }
+  else if (this->type() == VECTOR && v.type() == NUMBER) {
+    const VectorType &vec = this->toVector();
+    VectorType dstv;
+    BOOST_FOREACH(const Value &vecval, vec) {
+      dstv.push_back(vecval / v);
+    }
+    return Value(dstv);
+  }
+  else if (this->type() == NUMBER && v.type() == VECTOR) {
+    const VectorType &vec = v.toVector();
+    VectorType dstv;
+    BOOST_FOREACH(const Value &vecval, vec) {
+      dstv.push_back(*this / vecval);
+    }
+    return Value(dstv);
+  }
+  return Value::undefined;
+}
+
+Value Value::operator%(const Value &v) const
+{
+  if (this->type() == NUMBER && v.type() == NUMBER) {
+    return Value(fmod(boost::get<double>(this->value), boost::get<double>(v.value)));
+  }
+  return Value::undefined;
+}
+
+Value Value::operator-() const
+{
+  if (this->type() == NUMBER) {
+    return Value(-this->toDouble());
+  }
+  else if (this->type() == VECTOR) {
+    const VectorType &vec = this->toVector();
+    VectorType dstv;
+    BOOST_FOREACH(const Value &vecval, vec) {
+      dstv.push_back(-vecval);
+    }
+    return Value(dstv);
+  }
+  return Value::undefined;
+}
+
+/*!
+  Append a value to this vector.
+  This must be of valtype VECTOR.
+*/
+/*
+  void Value::append(Value *val)
+  {
+  assert(this->type() == VECTOR);
+  this->vec.push_back(val);
+  }
+*/
+
+class bracket_visitor : public boost::static_visitor<Value>
+{
+public:
+  Value operator()(const std::string &str, const double &idx) const {
+    int i = int(idx);
+    Value v;
+    if (i >= 0 && i < str.size()) {
+      v = Value(str[int(idx)]);
+      //      std::cout << "bracket_visitor: " <<  v << "\n";
+    }
+    return v;
+  }
+
+  Value operator()(const Value::VectorType &vec, const double &idx) const {
+    int i = int(idx);
+    if (i >= 0 && i < vec.size()) return vec[int(idx)];
+    return Value::undefined;
+  }
+
+  Value operator()(const Value::RangeType &range, const double &idx) const {
+    switch(int(idx)) {
+    case 0: return Value(range.begin);
+    case 1: return Value(range.step);
+    case 2: return Value(range.end);
+    }
+    return Value::undefined;
+  }
+
+  template <typename T, typename U> Value operator()(const T &, const U &) const {
+    //    std::cout << "generic bracket_visitor\n";
+    return Value::undefined;
+  }
+};
+
+Value Value::operator[](const Value &v)
+{
+  return boost::apply_visitor(bracket_visitor(), this->value, v.value);
 }

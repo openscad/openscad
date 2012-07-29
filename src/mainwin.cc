@@ -95,6 +95,12 @@
 
 #endif // ENABLE_CGAL
 
+#ifndef OPENCSG_VERSION_STRING
+#define OPENCSG_VERSION_STRING "unknown, <1.3.2"
+#endif
+
+extern QString examplesdir;
+
 // Global application state
 unsigned int GuiLocker::gui_locked = 0;
 
@@ -715,9 +721,9 @@ void MainWindow::compileCSG(bool procevents)
 		if (procevents)
 			QApplication::processEvents();
 		
-		CSGTermNormalizer normalizer;
 		size_t normalizelimit = 2 * Preferences::inst()->getValue("advanced/openCSGLimit").toUInt();
-		this->root_norm_term = normalizer.normalize(this->root_raw_term, normalizelimit);
+		CSGTermNormalizer normalizer(normalizelimit);
+		this->root_norm_term = normalizer.normalize(this->root_raw_term);
 		if (this->root_norm_term) {
 			this->root_chain = new CSGChain();
 			this->root_chain->import(this->root_norm_term);
@@ -737,7 +743,7 @@ void MainWindow::compileCSG(bool procevents)
 			
 			highlights_chain = new CSGChain();
 			for (unsigned int i = 0; i < highlight_terms.size(); i++) {
-				highlight_terms[i] = normalizer.normalize(highlight_terms[i], normalizelimit);
+				highlight_terms[i] = normalizer.normalize(highlight_terms[i]);
 				highlights_chain->import(highlight_terms[i]);
 			}
 		}
@@ -750,7 +756,7 @@ void MainWindow::compileCSG(bool procevents)
 			
 			background_chain = new CSGChain();
 			for (unsigned int i = 0; i < background_terms.size(); i++) {
-				background_terms[i] = normalizer.normalize(background_terms[i], normalizelimit);
+				background_terms[i] = normalizer.normalize(background_terms[i]);
 				background_chain->import(background_terms[i]);
 			}
 		}
@@ -972,19 +978,17 @@ void MainWindow::updateTemporalVariables()
 {
 	this->root_ctx.set_variable("$t", Value(this->e_tval->text().toDouble()));
 	
-	Value vpt;
-	vpt.type = Value::VECTOR;
-	vpt.append(new Value(-this->glview->object_trans_x));
-	vpt.append(new Value(-this->glview->object_trans_y));
-	vpt.append(new Value(-this->glview->object_trans_z));
-	this->root_ctx.set_variable("$vpt", vpt);
+	Value::VectorType vpt;
+	vpt.push_back(Value(-this->glview->object_trans_x));
+	vpt.push_back(Value(-this->glview->object_trans_y));
+	vpt.push_back(Value(-this->glview->object_trans_z));
+	this->root_ctx.set_variable("$vpt", Value(vpt));
 	
-	Value vpr;
-	vpr.type = Value::VECTOR;
-	vpr.append(new Value(fmodf(360 - this->glview->object_rot_x + 90, 360)));
-	vpr.append(new Value(fmodf(360 - this->glview->object_rot_y, 360)));
-	vpr.append(new Value(fmodf(360 - this->glview->object_rot_z, 360)));
-	root_ctx.set_variable("$vpr", vpr);
+	Value::VectorType vpr;
+	vpr.push_back(Value(fmodf(360 - this->glview->object_rot_x + 90, 360)));
+	vpr.push_back(Value(fmodf(360 - this->glview->object_rot_y, 360)));
+	vpr.push_back(Value(fmodf(360 - this->glview->object_rot_z, 360)));
+	root_ctx.set_variable("$vpr", Value(vpr));
 }
 
 bool MainWindow::fileChangedOnDisk()
@@ -1033,8 +1037,7 @@ bool MainWindow::compileTopLevelDocument(bool reload)
 {
 	bool shouldcompiletoplevel = !reload;
 
-	if (reload && 
-			(fileChangedOnDisk() && checkEditorModified()) ||
+	if ((reload && fileChangedOnDisk() && checkEditorModified()) ||
 			includesChanged()) {
 		shouldcompiletoplevel = true;
 		refreshDocument();
@@ -1356,7 +1359,7 @@ void MainWindow::actionExportSTLorOFF(bool)
 	}
 
 	if (!this->root_N->p3->is_simple()) {
-		PRINT("Object isn't a valid 2-manifold! Modify your design..");
+		PRINT("Object isn't a valid 2-manifold! Modify your design. See http://en.wikibooks.org/wiki/OpenSCAD_User_Manual/STL_Import_and_Export");
 		clearCurrentOutput();
 		return;
 	}

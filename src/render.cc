@@ -53,8 +53,8 @@ AbstractNode *RenderModule::evaluate(const Context *ctx, const ModuleInstantiati
 	c.args(argnames, argexpr, inst->argnames, inst->argvalues);
 
 	Value v = c.lookup_variable("convexity");
-	if (v.type == Value::NUMBER)
-		node->convexity = (int)v.num;
+	if (v.type() == Value::NUMBER)
+		node->convexity = (int)v.toDouble();
 
 	std::vector<AbstractNode *> evaluatednodes = inst->evaluateChildren();
 	node->children.insert(node->children.end(), evaluatednodes.begin(), evaluatednodes.end());

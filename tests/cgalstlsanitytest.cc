@@ -98,7 +98,7 @@ int main(int argc, char **argv)
 	currentdir = boosty::stringy( fs::current_path() );
 
 	parser_init(QCoreApplication::instance()->applicationDirPath().toStdString());
-	set_librarydir(boosty::stringy(fs::path(QCoreApplication::instance()->applicationDirPath().toStdString()) / "../libraries"));
+	add_librarydir(boosty::stringy(fs::path(QCoreApplication::instance()->applicationDirPath().toStdString()) / "../libraries"));
 
 	Context root_ctx;
 	register_builtin(root_ctx);
@@ -132,16 +132,26 @@ int main(int argc, char **argv)
 	if (!N.empty()) {
 		std::ofstream outfile;
 		outfile.open(outfilename);
-
-		std::stringstream out;
-		export_stl(&N, out);
-		if (out.str().find("nan") != string::npos) {
-			outfile << "Error: nan found\n";
+			
+		if (N.dim != 3) {
+			outfile << "Error: Current top level object is not a 3D object.\n";
 			retval = 2;
 		}
-		if (out.str().find("inf") != string::npos) {
-			outfile << "Error: inf found\n";
+		else if (!N.p3->is_simple()) {
+			outfile << "Error: Object isn't a valid 2-manifold! Modify your design.\n";
 			retval = 2;
+		}
+		else {
+			std::stringstream out;
+			export_stl(&N, out);
+			if (out.str().find("nan") != string::npos) {
+				outfile << "Error: nan found\n";
+				retval = 2;
+			}
+			if (out.str().find("inf") != string::npos) {
+				outfile << "Error: inf found\n";
+				retval = 2;
+			}
 		}
 		outfile.close();
 	}

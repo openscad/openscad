@@ -5,25 +5,29 @@
 /*!
 	NB! for e.g. empty intersections, this can normalize a tree to nothing and return NULL.
 */
-shared_ptr<CSGTerm> CSGTermNormalizer::normalize(const shared_ptr<CSGTerm> &root, 
-																								 size_t limit)
+shared_ptr<CSGTerm> CSGTermNormalizer::normalize(const shared_ptr<CSGTerm> &root)
 {
 	shared_ptr<CSGTerm> temp = root;
 	while (1) {
+		this->rootnode = temp;
+		this->nodecount = 0;
 		shared_ptr<CSGTerm> n = normalizePass(temp);
 		if (!n) return n; // If normalized to nothing
 		if (temp == n) break;
 		temp = n;
 
-		unsigned int num = count(temp);
-#ifdef DEBUG
-		PRINTB("Normalize count: %d\n", num);
-#endif
-		if (num > limit) {
-			PRINTB("WARNING: Normalized tree is growing past %d elements. Aborting normalization.\n", limit);
-			return root;
+		if (this->nodecount > this->limit) {
+			PRINTB("WARNING: Normalized tree is growing past %d elements. Aborting normalization.\n", this->limit);
+      // Clean up any partially evaluated terms
+			shared_ptr<CSGTerm> newroot = root, tmproot;
+			while (newroot != tmproot) {
+				tmproot = newroot;
+				newroot = collapse_null_terms(tmproot);
+			}
+			return newroot;
 		}
 	}
+	this->rootnode.reset();
 	return temp;
 }
 
@@ -42,15 +46,24 @@ shared_ptr<CSGTerm> CSGTermNormalizer::normalizePass(shared_ptr<CSGTerm> term)
 	}
 
 	do {
-		while (term && normalize_tail(term)) { }
+		while (term && match_and_replace(term)) {	}
+		this->nodecount++;
+		if (nodecount > this->limit) {
+			return shared_ptr<CSGTerm>();
+		}
 		if (!term || term->type == CSGTerm::TYPE_PRIMITIVE) return term;
 		if (term->left) term->left = normalizePass(term->left);
 	} while (term->type != CSGTerm::TYPE_UNION &&
-					 (term->right && term->right->type != CSGTerm::TYPE_PRIMITIVE ||
-						term->left && term->left->type == CSGTerm::TYPE_UNION));
+					 ((term->right && term->right->type != CSGTerm::TYPE_PRIMITIVE) ||
+						(term->left && term->left->type == CSGTerm::TYPE_UNION)));
 	term->right = normalizePass(term->right);
 
 	// FIXME: Do we need to take into account any transformation of item here?
+	return collapse_null_terms(term);
+}
+
+shared_ptr<CSGTerm> CSGTermNormalizer::collapse_null_terms(const shared_ptr<CSGTerm> &term)
+{
 	if (!term->right) {
 		if (term->type == CSGTerm::TYPE_UNION || term->type == CSGTerm::TYPE_DIFFERENCE) return term->left;
 		else return term->right;
@@ -59,13 +72,14 @@ shared_ptr<CSGTerm> CSGTermNormalizer::normalizePass(shared_ptr<CSGTerm> term)
 		if (term->type == CSGTerm::TYPE_UNION) return term->right;
 		else return term->left;
 	}
-
 	return term;
 }
 
-bool CSGTermNormalizer::normalize_tail(shared_ptr<CSGTerm> &term)
+bool CSGTermNormalizer::match_and_replace(shared_ptr<CSGTerm> &term)
 {
-	if (term->type == CSGTerm::TYPE_UNION || term->type == CSGTerm::TYPE_PRIMITIVE) return false;
+	if (term->type == CSGTerm::TYPE_UNION || term->type == CSGTerm::TYPE_PRIMITIVE) {
+		return false;
+	}
 
 	// Part A: The 'x . (y . z)' expressions
 
@@ -149,8 +163,9 @@ bool CSGTermNormalizer::normalize_tail(shared_ptr<CSGTerm> &term)
 	return false;
 }
 
+// Counts all non-leaf nodes
 unsigned int CSGTermNormalizer::count(const shared_ptr<CSGTerm> &term) const
 {
 	if (!term) return 0;
-	return term->type == CSGTerm::TYPE_PRIMITIVE ? 1 : 0 + count(term->left) + count(term->right);
+	return term->type == CSGTerm::TYPE_PRIMITIVE ? 0 : 1 + count(term->left) + count(term->right);
 }
