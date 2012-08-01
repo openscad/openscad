@@ -104,6 +104,8 @@ void Editor::wheelEvent ( QWheelEvent * event )
 			zoomIn();
 		else if (event->delta() < 0 )
 			zoomOut();
+	} else {
+		QTextEdit::wheelEvent( event );
 	}
 }
 
