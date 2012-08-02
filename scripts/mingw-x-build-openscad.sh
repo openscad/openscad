@@ -37,10 +37,8 @@ cd $OPENSCADDIR
 OPENSCAD_EXE=$DEPLOYDIR/release/openscad.exe
 
 if [ -e $OPENSCAD_EXE ] ; then
-	echo Build finished. Executable:
-	echo
-	echo " "$OPENSCAD_EXE
-	echo
+	echo Build finished. Executable file ready:
+	echo " " $OPENSCAD_EXE
 else
 	echo Cannot find $OPENSCAD_EXE. The build appears to have had an error.
 fi
