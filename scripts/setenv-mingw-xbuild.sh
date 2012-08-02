@@ -14,12 +14,13 @@
 if [ ! $BASEDIR ]; then
 	BASEDIR=$HOME/openscad_deps
 fi
+export OPENSCADDIR=$PWD
 export DEPLOYDIR=$OPENSCADDIR/mingw32
 export MXEDIR=$BASEDIR/mxe
 export PATH=$MXEDIR/usr/bin:$PATH
 
-echo MXEDIR: $MXEDIR
 echo BASEDIR: $BASEDIR
+echo MXEDIR: $MXEDIR
 echo DEPLOYDIR: $DEPLOYDIR
 echo PATH modified with $MXEDIR/usr/bin
 
