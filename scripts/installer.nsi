@@ -5,7 +5,7 @@ InstallDir $PROGRAMFILES\OpenSCAD
 DirText "This will install OpenSCAD on your computer. Choose a directory"
 Section "install"
 SetOutPath $INSTDIR
-File openscad.exe
+File release/openscad.exe
 File /r examples
 File /r libraries
 ${registerExtension} "$INSTDIR\openscad.exe" ".scad" "OpenSCAD_File"

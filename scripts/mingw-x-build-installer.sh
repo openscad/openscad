@@ -21,10 +21,6 @@
 #
 # You need the Nullsoft installer system, on ubuntu 'sudo apt-get install nsis'
 #
-# You need to copy/paste the FileAssociation.nsh file from
-# http://nsis.sourceforge.net/File_Association into DEPLOYDIR
-# (it has no license information so cannot be included directly)
-#
 # Also see http://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Cross-compiling_for_Windows_on_Linux_or_Mac_OS_X
 #
 
@@ -47,8 +43,10 @@ if [ ! -e $DEPLOYDIR ]; then
 	exit 0
 fi
 
-if [ ! -e $DEPLOYDIR/openscad.exe ]; then
-	echo "Can't find" $DEPLOYDIR"/openscad.exe Please build OpenSCAD for mingw32 first."
+OPENSCAD_EXE=$DEPLOYDIR/release/openscad.exe
+
+if [ ! -e $OPESCAD_EXE ]; then
+	echo "Can't find" $OPENSCAD_EXE "Please build OpenSCAD for mingw32 first."
 	exit 0
 fi
 
@@ -57,27 +55,31 @@ if [ ! "`command -v makensis`" ]; then
 	exit 0
 fi
 
-if [ ! -e $DEPLOYDIR/FileAssociation.nsh ]; then
-	echo "Please install FileAssociation.nsh into" $DEPLOYDIR
-	echo "You can copy/paste it from http://nsis.sourceforge.net/File_Association"
-fi
 
 echo "Copying files to" $DEPLOYDIR
 
-cp -av $OPENSCADDIR/libraries $DEPLOYDIR
-cp -av $OPENSCADDIR/examples $DEPLOYDIR
-cp -av $OPENSCADDIR/scripts/installer.nsi $DEPLOYDIR
+copy_files()
+{
+	echo "copying" $1
+	cp -a $1 $2
+}
 
-echo "running nsis"
+copy_files $OPENSCADDIR/libraries $DEPLOYDIR
+copy_files $OPENSCADDIR/examples $DEPLOYDIR
+copy_files $OPENSCADDIR/scripts/installer.nsi $DEPLOYDIR
+copy_files $OPENSCADDIR/scripts/mingw-file-association.nsh $DEPLOYDIR
 
-cd $DEPLOYDIR && makensis installer.nsi
+echo "running makensis in" $DEPLOYDIR
+
+cd $DEPLOYDIR && makensis -V2 installer.nsi
 
 cd $OPENSCADDIR
 
 INSTALLFILE=$DEPLOYDIR/openscad_setup.exe
 
 if [ -e $INSTALLFILE ]; then
-	echo "Build complete. Install file ready: $INSTALLFILE"
+	echo "Build complete. Install file ready:"
+	echo " " $INSTALLFILE
 else
 	echo "Build failed. Sorry."
 fi

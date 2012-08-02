@@ -19,6 +19,20 @@ if [ ! -f $OPENSCADDIR/openscad.pro ]; then
 	echo "Must be run from the OpenSCAD source root directory"
 	exit 0
 fi
+echo OPENSCADDIR: $OPENSCADDIR
+
+if [ ! $NUMCPU ]; then
+	echo "note: you can 'export NUMCPU=x' for multi-core compiles (x=number)";
+	NUMCPU=1
+fi
+if [ ! $NUMJOBS ]; then
+	echo "note: you can 'export NUMJOBS=x' for building multiple pkgs at once"
+	if [ $NUMCPU -gt 2 ]; then
+		NUMJOBS=$((NUMCPU/2))
+	else
+		NUMJOBS=1
+	fi
+fi
 
 . ./scripts/setenv-mingw-xbuild.sh
 
@@ -54,10 +68,11 @@ echo "linking mxe to" $DEPLOYDIR/mingw-cross-env
 ln -s $MXEDIR/usr/i686-pc-mingw32/ $DEPLOYDIR/mingw-cross-env
 
 echo
-echo "now copy/paste the following to cross-build openscad"
+echo "now copy/paste the following to cross-build openscad in" $DEPLOYDIR
 echo
 echo cd $DEPLOYDIR
 echo "i686-pc-mingw32-qmake CONFIG+=mingw-cross-env ../openscad.pro"
 #echo "make -j$NUMCPU" # causes parser_yacc.hpp errors
 echo "make"
+echo cd $OPENSCADDIR
 echo
