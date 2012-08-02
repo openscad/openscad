@@ -198,7 +198,12 @@ public:
     }
     return tmpstr;
 #else
-    return boost::lexical_cast<std::string>(op1);	
+		// attempt to emulate Qt's QString.sprintf("%g"); from old OpenSCAD.
+		// see https://github.com/openscad/openscad/issues/158
+		std::stringstream tmp;
+		tmp.unsetf(std::ios::floatfield);
+		tmp << op1;
+		return tmp.str();
 #endif
   }
 
