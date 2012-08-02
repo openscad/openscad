@@ -67,12 +67,3 @@ fi
 echo "linking mxe to" $DEPLOYDIR/mingw-cross-env
 ln -s $MXEDIR/usr/i686-pc-mingw32/ $DEPLOYDIR/mingw-cross-env
 
-echo
-echo "now copy/paste the following to cross-build openscad in" $DEPLOYDIR
-echo
-echo cd $DEPLOYDIR
-echo "i686-pc-mingw32-qmake CONFIG+=mingw-cross-env ../openscad.pro"
-#echo "make -j$NUMCPU" # causes parser_yacc.hpp errors
-echo "make"
-echo cd $OPENSCADDIR
-echo

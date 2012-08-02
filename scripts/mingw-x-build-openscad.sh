@@ -24,19 +24,24 @@ if [ ! -e $BASEDIR/lib ]; then
 	echo "please run the mingw-x-build-dependencies.sh script first"
 fi
 
-echo cd $DEPLOYDIR
-echo "i686-pc-mingw32-qmake CONFIG+=mingw-cross-env ../openscad.pro"
-#echo "make -j$NUMCPU" # causes parser_yacc.hpp errors
-echo "make"
+echo "entering $DEPLOYDIR"
+cd $DEPLOYDIR
+i686-pc-mingw32-qmake CONFIG+=mingw-cross-env ../openscad.pro
+#"make -j$NUMCPU" # causes parser_yacc.hpp errors
+make
+echo "leaving $DEPLOYDIR"
+
+echo "entering $OPENSCADDIR"
+cd $OPENSCADDIR
 
 OPENSCAD_EXE=$DEPLOYDIR/release/openscad.exe
 
 if [ -e $OPENSCAD_EXE ] ; then
+	echo Build finished. Executable:
 	echo
-	echo $OPENSCAD_EXE built in $DEPLOYDIR/release
+	echo " "$OPENSCAD_EXE
 	echo
 else
 	echo Cannot find $OPENSCAD_EXE. The build appears to have had an error.
 fi
 
-echo cd $OPENSCADDIR

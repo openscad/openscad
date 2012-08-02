@@ -177,8 +177,9 @@ Then run the script to download & compile all the prerequisite libraries above:
 
     ./scripts/mingw-x-build-dependencies.sh
 
-After that, follow the Compilation instructions that are printed at the 
-end of the script (not the ones below).
+After that (it may take several hours), run the Compilation script:
+
+    ./scripts/mingw-x-build-openscad.sh
 
 ### Compilation
 
