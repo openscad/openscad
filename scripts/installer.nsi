@@ -1,4 +1,4 @@
-!include "FileAssociation.nsh"
+!include "mingw-file-association.nsh"
 Name "OpenSCAD"
 OutFile "openscad_setup.exe"
 InstallDir $PROGRAMFILES\OpenSCAD
