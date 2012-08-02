@@ -1,4 +1,38 @@
 /*
+nsis.sourceforge.net COPYRIGHT
+Copyright (C) 1995-2009 Contributors
+
+Note the 'edit' page of the wiki at nsis.sourceforge.net specifically 
+states the following:
+
+"All contributions sent to this wiki are generally considered to be in 
+the zlib/libpng license (see License for details)."
+
+The NSIS 'license' link on the wiki states the following:
+
+"All NSIS source code, plug-ins, documentation, examples, header files 
+and graphics, with the exception of the compression modules and where 
+otherwise noted, are licensed under the zlib/libpng license."
+
+http://nsis.sourceforge.net/File_Assocation lists these authors:
+
+Author: Vytautas (talk, contrib)
+Author: intersol (talk, contrib)
+Author: chefkoch (talk, contrib)
+
+ZLIB/LIBPNG LICENSE
+-------------------
+
+This software is provided 'as-is', without any express or implied warranty. In no event will the authors be held liable for any damages arising from the use of this software.
+
+Permission is granted to anyone to use this software for any purpose, including commercial applications, and to alter it and redistribute it freely, subject to the following restrictions:
+
+      1. The origin of this software must not be misrepresented; you must not claim that you wrote the original software. If you use this software in a product, an acknowledgment in the product documentation would be appreciated but is not required.
+      2. Altered source versions must be plainly marked as such, and must not be misrepresented as being the original software.
+      3. This notice may not be removed or altered from any source distribution.
+*/
+
+/*
 _____________________________________________________________________________
  
                        File Association
