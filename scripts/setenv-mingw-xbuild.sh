@@ -24,3 +24,14 @@ echo MXEDIR: $MXEDIR
 echo DEPLOYDIR: $DEPLOYDIR
 echo PATH modified with $MXEDIR/usr/bin
 
+if [ ! -e $DEPLOYDIR ]; then
+  mkdir -p $DEPLOYDIR
+fi
+if [ ! -e $DEPLOYDIR/mingw-cross-env ]; then
+	echo linking $MXEDIR/usr/i686-pc-mingw32/ to $DEPLOYDIR/mingw-cross-env
+	ln -s $MXEDIR/usr/i686-pc-mingw32/ $DEPLOYDIR/mingw-cross-env
+else
+	echo $DEPLOYDIR/mingw-cross-env is already symlinked
+fi
+
+

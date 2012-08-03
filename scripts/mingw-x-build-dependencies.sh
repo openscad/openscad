@@ -39,9 +39,6 @@ fi
 if [ ! -e $BASEDIR ]; then
 	mkdir -p $BASEDIR
 fi
-if [ ! -e $DEPLOYDIR ]; then
-	mkdir -p $DEPLOYDIR
-fi
 
 cd $BASEDIR
 
@@ -60,10 +57,4 @@ echo "leaving" $MXEDIR
 
 echo "entering $OPENSCADDIR"
 cd $OPENSCADDIR
-
-if [ -e $DEPLOYDIR/mingw-cross-env ]; then
-	rm $DEPLOYDIR/mingw-cross-env
-fi
-echo "linking mxe to" $DEPLOYDIR/mingw-cross-env
-ln -s $MXEDIR/usr/i686-pc-mingw32/ $DEPLOYDIR/mingw-cross-env
 

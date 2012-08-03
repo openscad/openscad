@@ -1,28 +1,32 @@
 OpenSCAD Release Checklist
 --------------------------
 
-o Update version
+o Update VERSION in these files:
   scripts/release-linux.sh
-  scripts/publish-macosx.sh
-  FIXME: Windows
+ 	scripts/publish-macosx.sh
+  scripts/publish-mingw-x.sh
+
+o Update VERSION env variable
+  export VERSION=2012.08
 
 o Update RELEASE_NOTES
 
 o Tag release
-  git tag "openscad-2011.12"
+  git tag "openscad-$VERSION"
 
 o build source package
-  scripts/git-archive-all.py --prefix=openscad-2011.12/ openscad-2011.12.src.tar.gz
+  scripts/git-archive-all.py --prefix=openscad-$VERSION/ openscad-$VERSION.src.tar.gz
 
 o build binaries
-  tar xzf openscad-2011.12.src.tar.gz
-  cd openscad-2011.12
+  tar xzf openscad-$VERSION.src.tar.gz
+  cd openscad-$VERSION
   Mac OS X
     (For Qt-4.7.3: Remove /Developers/Applications/Qt/plugins/qmltooling)
-    ./scripts/publish-macosx.sh -> OpenSCAD-2011.12.dmg
+    ./scripts/publish-macosx.sh -> OpenSCAD-$VERSION.dmg
   Linux: FIXME 32 vs. 64 bit
     ./scripts/release-linux.sh
-  Windows: FIXME 32 vs. 64 bit
+  Windows mingw cross-build: FIXME 32 vs. 64 bit
+    ./scripts/publish-mingw-x.sh
 
 o FIXME: Run some tests
 

@@ -202,6 +202,7 @@ case $OS in
         "$ZIP" $ZIPARGS OpenSCAD-$VERSION.zip openscad-$VERSION
         rm -rf ./openscad-$VERSION
         cd $OPENSCADDIR
+        echo "Binary package created"
 
         echo "Creating installer"
         ./scripts/mingw-x-build-installer.sh
