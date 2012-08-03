@@ -72,6 +72,7 @@ copy_files $OPENSCADDIR/scripts/mingw-file-association.nsh $DEPLOYDIR
 echo "running makensis in" $DEPLOYDIR
 
 cd $DEPLOYDIR && makensis -V2 installer.nsi
+# cd $DEPLOYDIR && makensis installer.nsi # debug nsis
 
 cd $OPENSCADDIR
 

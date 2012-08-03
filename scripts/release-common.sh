@@ -5,7 +5,7 @@
 # for windows using mingw-cross-env (use like: OS=LINXWIN release-common.sh).
 # Linux support pending.
 # The script will create a file called openscad-<versionstring>.zip
-# in the current directory.
+# in the current directory (or in the $DEPLOYDIR of a mingw cross build)
 # 
 # Usage: release-common.sh [-v <versionstring>] [-c]
 #  -v   Version string (e.g. -v 2010.01)
@@ -23,6 +23,16 @@ printUsage()
   echo
   echo "  Example: $0 -v 2010.01
 }
+
+OPENSCADDIR=$PWD
+if [ ! -f $OPENSCADDIR/openscad.pro ]; then
+  echo "Must be run from the OpenSCAD source root directory"
+  exit 0
+fi
+
+if [ $OS == "LINXWIN" ]; then
+  OSTYPE=mingw-cross-env
+fi
 
 if [[ "$OSTYPE" =~ "darwin" ]]; then
   OS=MACOSX
@@ -72,22 +82,34 @@ case $OS in
         ;;
     LINXWIN) 
         unset CONFIG
+        . ./scripts/setenv-mingw-xbuild.sh
         TARGET=release
         ZIP="zip"
         ZIPARGS="-r"
         ;;
 esac
 
+
 case $OS in
     LINXWIN)
-        i686-pc-mingw32-qmake VERSION=$VERSION OPENSCAD_COMMIT=$OPENSCAD_COMMIT CONFIG+=$CONFIG CONFIG+=mingw-cross-env CONFIG-=debug openscad.pro
+        cd $DEPLOYDIR && i686-pc-mingw32-qmake VERSION=$VERSION OPENSCAD_COMMIT=$OPENSCAD_COMMIT CONFIG+=$CONFIG CONFIG+=mingw-cross-env CONFIG-=debug ../openscad.pro
+        cd $OPENSCADDIR
     ;;
     *)
         qmake VERSION=$VERSION OPENSCAD_COMMIT=$OPENSCAD_COMMIT CONFIG+=$CONFIG CONFIG-=debug openscad.pro
     ;;
 esac
 
-make -s clean
+case $OS in
+    LINXWIN)
+#        cd $DEPLOYDIR && make -s clean
+        cd $OPENSCADDIR
+    ;;
+    *)
+				make -s clean
+    ;;
+esac
+
 case $OS in
     MACOSX) 
         rm -rf OpenSCAD.app
@@ -98,7 +120,16 @@ case $OS in
         ;;
 esac
 
-make -j2 $TARGET
+case $OS in
+    LINXWIN)
+        # make -j2 sometimes has problems with parser_yacc
+        cd $DEPLOYDIR && make $TARGET
+        cd $OPENSCADDIR
+    ;;
+    *)
+				make -j2 $TARGET
+    ;;
+esac
 
 if [[ $? != 0 ]]; then
   echo "Error building OpenSCAD. Aborting."
@@ -112,6 +143,12 @@ case $OS in
         EXAMPLESDIR=OpenSCAD.app/Contents/Resources/examples
         LIBRARYDIR=OpenSCAD.app/Contents/Resources/libraries
     ;;
+    LINXWIN)
+        EXAMPLESDIR=$DEPLOYDIR/openscad-$VERSION/examples/
+        LIBRARYDIR=$DEPLOYDIR/openscad-$VERSION/libraries/
+        rm -rf $DEPLOYDIR/openscad-$VERSION
+        mkdir $DEPLOYDIR/openscad-$VERSION
+		;;
     *)
         EXAMPLESDIR=openscad-$VERSION/examples/
         LIBRARYDIR=openscad-$VERSION/libraries/
@@ -158,15 +195,21 @@ case $OS in
         ;;
     LINXWIN)
         #package
+        echo "Creating binary package"
+        cd $DEPLOYDIR
         cp $TARGET/openscad.exe openscad-$VERSION
         rm -f OpenSCAD-$VERSION.zip
         "$ZIP" $ZIPARGS OpenSCAD-$VERSION.zip openscad-$VERSION
-        cp scripts/installer.nsi openscad-$VERSION/
-        cd openscad-$VERSION && makensis installer.nsi && cd ..
-        cp openscad-$VERSION/openscad_setup.exe OpenSCAD-$VERSION-Installer.exe 
-        rm -rf openscad-$VERSION
-        echo "Binary created: OpenSCAD-$VERSION.zip"
-        echo "Installer created: OpenSCAD-$VERSION-Installer.exe"
+        rm -rf ./openscad-$VERSION
+        cd $OPENSCADDIR
+
+        echo "Creating installer"
+        ./scripts/mingw-x-build-installer.sh
+        cp $DEPLOYDIR/openscad_setup.exe $DEPLOYDIR/OpenSCAD-$VERSION-Installer.exe
+        echo
+        echo "Binary created: $DEPLOYDIR/OpenSCAD-$VERSION.zip"
+        echo "Installer created: $DEPLOYDIR/OpenSCAD-$VERSION-Installer.exe"
+        echo
         ;;
     LINUX)
         # Do stuff from release-linux.sh

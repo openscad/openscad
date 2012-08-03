@@ -6,8 +6,8 @@ DirText "This will install OpenSCAD on your computer. Choose a directory"
 Section "install"
 SetOutPath $INSTDIR
 File release/openscad.exe
-File /r examples
-File /r libraries
+File /r /x mingw-cross-env examples
+File /r /x mingw-cross-env libraries
 ${registerExtension} "$INSTDIR\openscad.exe" ".scad" "OpenSCAD_File"
 CreateShortCut $SMPROGRAMS\OpenSCAD.lnk $INSTDIR\openscad.exe
 WriteUninstaller $INSTDIR\Uninstall.exe
