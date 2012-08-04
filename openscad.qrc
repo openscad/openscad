@@ -4,5 +4,6 @@
     <file>icons/prefsAdvanced.png</file>
     <file>icons/prefs3DView.png</file>
     <file>icons/prefsEditor.png</file>
+    <file>icons/flattr.png</file>
   </qresource>
 </RCC>
