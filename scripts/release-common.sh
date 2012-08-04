@@ -30,6 +30,12 @@ if [ ! -f $OPENSCADDIR/openscad.pro ]; then
   exit 1
 fi
 
+if [ ! -e $OPENSCADDIR/libraries/MCAD/__init__.py ]; then
+  echo "Downloading MCAD"
+  git submodule init
+  git submodule update
+fi
+
 if [[ "$OSTYPE" =~ "darwin" ]]; then
   OS=MACOSX
 elif [[ $OSTYPE == "msys" ]]; then
@@ -152,12 +158,6 @@ case $OS in
         mkdir openscad-$VERSION
     ;;
 esac
-
-if [ ! -e $OPENSCADDIR/libraries/MCAD/__init__.py ]; then
-  echo "Downloading MCAD"
-  git submodule init
-  git submodule update
-fi
 
 if [ -n $EXAMPLESDIR ]; then
   echo $EXAMPLESDIR
