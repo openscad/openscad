@@ -29,7 +29,7 @@ o build binaries
     32-bit: run on a 32-bit machine or VM
     64-bit: run on a 64-bit machine or VM
     ./scripts/release-common.sh -> openscad-$VERSION.x86-ARCH.tar.gz
-    (where ARCH will be detected and set to 32 or 64)
+    (where ARCH will be auto-detected and set to 32 or 64)
   Windows mingw cross-build: FIXME 32 vs. 64 bit
     ./scripts/publish-mingw-x.sh -> mingw32/Openscad-$VERSION.zip
                                  -> mingw32/Openscad-$VERSION-Installer.exe

@@ -171,6 +171,12 @@ if [ -n $LIBRARYDIR ]; then
   rm -rf `find $LIBRARYDIR -name ".git"`
 fi
 
+if [ ! -e $OPENSCADDIR/libraries/MCAD/__init__.py ]; then
+  echo "Downloading MCAD"
+  git submodule init
+  git submodule update
+fi
+
 echo "Creating archive.."
 
 case $OS in
@@ -203,6 +209,8 @@ case $OS in
         echo "Creating installer"
         ./scripts/mingw-x-build-installer.sh
         cp $DEPLOYDIR/openscad_setup.exe $DEPLOYDIR/OpenSCAD-$VERSION-Installer.exe
+				echo "Installer created"
+
         echo
         echo "Binary created: $DEPLOYDIR/OpenSCAD-$VERSION.zip"
         echo "Installer created: $DEPLOYDIR/OpenSCAD-$VERSION-Installer.exe"
