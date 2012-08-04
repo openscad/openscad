@@ -52,11 +52,11 @@ fi
 
 MAKENSIS=
 
-if [ ! "`command -v makensis`" ]; then
+if [ "`command -v makensis`" ]; then
 	MAKENSIS=makensis
 fi
 
-if [ ! "`command -v i686-pc-mingw32-makensis`" ]; then
+if [ "`command -v i686-pc-mingw32-makensis`" ]; then
 	MAKENSIS=i686-pc-mingw32-makensis
 fi
 
@@ -65,13 +65,12 @@ if [ ! $MAKENSIS ]; then
 	exit 1
 fi
 
-
 echo "Copying files to" $DEPLOYDIR
 
 copy_files()
 {
 	echo "copying" $1
-	cp -a $1 $2
+	cp -af $1 $2
 }
 
 copy_files $OPENSCADDIR/libraries $DEPLOYDIR
@@ -79,10 +78,11 @@ copy_files $OPENSCADDIR/examples $DEPLOYDIR
 copy_files $OPENSCADDIR/scripts/installer.nsi $DEPLOYDIR
 copy_files $OPENSCADDIR/scripts/mingw-file-association.nsh $DEPLOYDIR
 
-echo "running makensis in" $DEPLOYDIR
+echo running $MAKENSIS in $DEPLOYDIR
 
-cd $DEPLOYDIR && makensis -V2 installer.nsi
-# cd $DEPLOYDIR && makensis installer.nsi # debug nsis
+NSIS_DEBUG_FLAG=-V2
+#NSIS_DEBUG_FLAG=    # leave blank for full log
+cd $DEPLOYDIR && $MAKENSIS $NSIS_DEBUG_FLAG installer.nsi
 
 cd $OPENSCADDIR
 
