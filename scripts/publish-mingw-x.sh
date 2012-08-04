@@ -1,5 +1,7 @@
 #!/bin/sh
 
+# This is run as part of the checklist in docs/release-checklist.txt
+#
 # Set this if we're doing a release build. Comment it out for development builds
 #VERSION=2011.12
 
@@ -13,6 +15,13 @@ CCACHE_DISABLE=1
 
 . ./scripts/setenv-mingw-xbuild.sh
 
+if [ ! -e $MXEDIR ]; then
+	echo "Mingw cross tools not found."
+	echo " Please run ./scripts/mingw-x-build-dependencies.sh to install "
+	echo " or modify MXEDIR to point to the root of your cross-tools setup"
+	echo " ( Please see setenv-mingw-xbuild.sh for more info ) "
+fi
+
 if [ ! -f $OPENSCADDIR/openscad.pro ]; then
   echo "Must be run from the OpenSCAD source root directory"
   exit 0
@@ -20,9 +29,8 @@ fi
 
 OS=LINXWIN ./scripts/release-common.sh -v $VERSION $COMMIT
 
-echo $? return value 
-
 if [ $? != 0 ]; then
+	echo "release-common.sh returned error code: $?. build stopped."
   exit 1
 fi
 

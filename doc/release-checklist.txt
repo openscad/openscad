@@ -2,6 +2,7 @@ OpenSCAD Release Checklist
 --------------------------
 
 o Update VERSION environment variable
+
   export VERSION=2012.08
 
   It will be used by the commands below, as well as these files: 
@@ -27,7 +28,8 @@ o build binaries
   Linux: FIXME 32 vs. 64 bit
     ./scripts/release-linux.sh
   Windows mingw cross-build: FIXME 32 vs. 64 bit
-    ./scripts/publish-mingw-x.sh
+    ./scripts/publish-mingw-x.sh -> mingw32/Openscad-$VERSION.zip
+                                 -> mingw32/Openscad-$VERSION-Installer.exe
 
 o FIXME: Run some tests
 
