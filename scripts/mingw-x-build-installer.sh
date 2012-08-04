@@ -27,12 +27,12 @@
 OPENSCADDIR=$PWD
 if [ ! -f $OPENSCADDIR/openscad.pro ]; then
 	echo "Must be run from the OpenSCAD source root directory"
-	exit 0
+	exit 1
 fi
 
 . ./scripts/setenv-mingw-xbuild.sh
 
-if [ ! -e $OPENSCADDIR/libraries/MCAD ]; then
+if [ ! -e $OPENSCADDIR/libraries/MCAD/__init__.py ]; then
 	echo "Downloading MCAD"
 	git submodule init
 	git submodule update
@@ -40,19 +40,29 @@ fi
 
 if [ ! -e $DEPLOYDIR ]; then
 	echo $DEPLOYDIR "empty. Please build OpenSCAD for mingw32 first."
-	exit 0
+	exit 1
 fi
 
 OPENSCAD_EXE=$DEPLOYDIR/release/openscad.exe
 
 if [ ! -e $OPESCAD_EXE ]; then
 	echo "Can't find" $OPENSCAD_EXE "Please build OpenSCAD for mingw32 first."
-	exit 0
+	exit 1
 fi
 
+MAKENSIS=
+
 if [ ! "`command -v makensis`" ]; then
+	MAKENSIS=makensis
+fi
+
+if [ ! "`command -v i686-pc-mingw32-makensis`" ]; then
+	MAKENSIS=i686-pc-mingw32-makensis
+fi
+
+if [ ! $MAKENSIS ]; then
 	echo "makensis not found. please install nsis"
-	exit 0
+	exit 1
 fi
 
 

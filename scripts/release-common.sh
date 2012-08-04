@@ -27,7 +27,7 @@ printUsage()
 OPENSCADDIR=$PWD
 if [ ! -f $OPENSCADDIR/openscad.pro ]; then
   echo "Must be run from the OpenSCAD source root directory"
-  exit 0
+  exit 1
 fi
 
 if [[ "$OSTYPE" =~ "darwin" ]]; then

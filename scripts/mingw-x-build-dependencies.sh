@@ -40,17 +40,16 @@ if [ ! -e $BASEDIR ]; then
 	mkdir -p $BASEDIR
 fi
 
-cd $BASEDIR
-
-if [ ! -e mxe ]; then
+if [ ! -e $MXEDIR ]; then
 	echo "Downloading MXE into " $MXEDIR
+	cd $MXEDIR/..
 	git clone git://github.com/mxe/mxe.git
 fi
 
 echo "entering" $MXEDIR
 cd $MXEDIR
 echo "make mpfr eigen opencsg cgal qt -j $NUMCPU JOBS=$NUMJOBS"
-make mpfr eigen opencsg cgal qt -j $NUMCPU JOBS=$NUMJOBS
+make mpfr eigen opencsg cgal qt nsis -j $NUMCPU JOBS=$NUMJOBS
 #make mpfr -j $NUMCPU JOBS=$NUMJOBS # for testing
 
 echo "leaving" $MXEDIR
