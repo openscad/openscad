@@ -153,7 +153,9 @@ case $OS in
     ;;
 esac
 
-if [ -d .git ]; then
+if [ ! -e $OPENSCADDIR/libraries/MCAD/__init__.py ]; then
+  echo "Downloading MCAD"
+  git submodule init
   git submodule update
 fi
 
@@ -169,12 +171,6 @@ if [ -n $LIBRARYDIR ]; then
   cp -R libraries/* $LIBRARYDIR
   chmod -R u=rwx,go=r,+X $LIBRARYDIR/*
   rm -rf `find $LIBRARYDIR -name ".git"`
-fi
-
-if [ ! -e $OPENSCADDIR/libraries/MCAD/__init__.py ]; then
-  echo "Downloading MCAD"
-  git submodule init
-  git submodule update
 fi
 
 echo "Creating archive.."
