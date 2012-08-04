@@ -12,11 +12,13 @@
 #
 
 if [ ! $BASEDIR ]; then
-	BASEDIR=$HOME/openscad_deps
+	export BASEDIR=$HOME/openscad_deps
 fi
 export OPENSCADDIR=$PWD
 export DEPLOYDIR=$OPENSCADDIR/mingw32
-export MXEDIR=$BASEDIR/mxe
+if [ ! $MXEDIR ]; then
+	export MXEDIR=$BASEDIR/mxe
+fi
 export PATH=$MXEDIR/usr/bin:$PATH
 
 echo BASEDIR: $BASEDIR
@@ -28,11 +30,8 @@ if [ ! -e $DEPLOYDIR ]; then
   mkdir -p $DEPLOYDIR
 fi
 
-if [ ! -h $DEPLOYDIR/mingw-cross-env ]; then
-	echo linking $MXEDIR/usr/i686-pc-mingw32/ to $DEPLOYDIR/mingw-cross-env
-	ln -s $MXEDIR/usr/i686-pc-mingw32/ $DEPLOYDIR/mingw-cross-env
-else
-	echo $DEPLOYDIR/mingw-cross-env is already symlinked
-fi
+echo linking $MXEDIR/usr/i686-pc-mingw32/ to $DEPLOYDIR/mingw-cross-env
+rm -f $DEPLOYDIR/mingw-cross-env
+ln -s $MXEDIR/usr/i686-pc-mingw32/ $DEPLOYDIR/mingw-cross-env
 
 
