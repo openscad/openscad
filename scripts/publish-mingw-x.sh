@@ -19,7 +19,10 @@ if [ ! -f $OPENSCADDIR/openscad.pro ]; then
 fi
 
 OS=LINXWIN ./scripts/release-common.sh -v $VERSION $COMMIT
-if [[ $? != 0 ]]; then
+
+echo $? return value 
+
+if [ $? != 0 ]; then
   exit 1
 fi
 
