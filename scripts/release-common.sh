@@ -102,7 +102,7 @@ case $OS in
         cd $OPENSCADDIR
     ;;
     *)
-				make -s clean
+        make -s clean
     ;;
 esac
 
@@ -123,7 +123,7 @@ case $OS in
         cd $OPENSCADDIR
     ;;
     *)
-				make -j2 $TARGET
+        make -j2 $TARGET
     ;;
 esac
 
@@ -226,6 +226,10 @@ case $OS in
         strip openscad-$VERSION/lib/openscad/*
         cp scripts/installer-linux.sh openscad-$VERSION/install.sh
         chmod 755 -R openscad-$VERSION/
-        tar cz openscad-$VERSION > openscad-$VERSION.x86-$ARCH.tar.gz
+        PACKAGEFILE=openscad-$VERSION.x86-$ARCH.tar.gz
+        tar cz openscad-$VERSION > $PACKAGEFILE
+        echo
+        echo "Binary created:" $PACKAGEFILE
+        echo
         ;;
 esac

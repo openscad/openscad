@@ -7,7 +7,7 @@ o Update VERSION environment variable
 
   It will be used by the commands below, as well as these files: 
 
-  scripts/release-linux.sh
+  scripts/release-common.sh
   scripts/publish-macosx.sh
   scripts/publish-mingw-x.sh
 
@@ -26,7 +26,8 @@ o build binaries
     (For Qt-4.7.3: Remove /Developers/Applications/Qt/plugins/qmltooling)
     ./scripts/publish-macosx.sh -> OpenSCAD-$VERSION.dmg
   Linux: FIXME 32 vs. 64 bit
-    ./scripts/release-linux.sh
+    ./scripts/release-common.sh -> openscad-$VERSION.ARCH.tar.gz
+		(where ARCH is x86-64 or x86-32)
   Windows mingw cross-build: FIXME 32 vs. 64 bit
     ./scripts/publish-mingw-x.sh -> mingw32/Openscad-$VERSION.zip
                                  -> mingw32/Openscad-$VERSION-Installer.exe
