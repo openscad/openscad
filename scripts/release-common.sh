@@ -2,11 +2,11 @@
 #
 # This script creates a binary release of OpenSCAD.
 # This should work under Mac OS X, Windows (msys), and Linux cross-compiling
-# for windows using mingw-cross-env (use like: OS=LINXWIN release-common.sh).
+# for windows using mingw-cross-env (use like: OSTYPE=mingw-cross-env release-common.sh).
 # Linux support pending.
 # The script will create a file called openscad-<versionstring>.zip
 # in the current directory (or in the $DEPLOYDIR of a mingw cross build)
-# 
+#
 # Usage: release-common.sh [-v <versionstring>] [-c]
 #  -v   Version string (e.g. -v 2010.01)
 #  -c   Build with commit info
@@ -28,10 +28,6 @@ OPENSCADDIR=$PWD
 if [ ! -f $OPENSCADDIR/openscad.pro ]; then
   echo "Must be run from the OpenSCAD source root directory"
   exit 0
-fi
-
-if [ $OS == "LINXWIN" ]; then
-  OSTYPE=mingw-cross-env
 fi
 
 if [[ "$OSTYPE" =~ "darwin" ]]; then
