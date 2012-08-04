@@ -1,13 +1,13 @@
-!include "FileAssociation.nsh"
+!include "mingw-file-association.nsh"
 Name "OpenSCAD"
 OutFile "openscad_setup.exe"
 InstallDir $PROGRAMFILES\OpenSCAD
 DirText "This will install OpenSCAD on your computer. Choose a directory"
 Section "install"
 SetOutPath $INSTDIR
-File openscad.exe
-File /r examples
-File /r libraries
+File release/openscad.exe
+File /r /x mingw-cross-env examples
+File /r /x mingw-cross-env libraries
 ${registerExtension} "$INSTDIR\openscad.exe" ".scad" "OpenSCAD_File"
 CreateShortCut $SMPROGRAMS\OpenSCAD.lnk $INSTDIR\openscad.exe
 WriteUninstaller $INSTDIR\Uninstall.exe
