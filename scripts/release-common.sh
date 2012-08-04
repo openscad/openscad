@@ -98,7 +98,7 @@ esac
 
 case $OS in
     LINXWIN)
-#        cd $DEPLOYDIR && make -s clean
+        cd $DEPLOYDIR && make -s clean
         cd $OPENSCADDIR
     ;;
     *)
