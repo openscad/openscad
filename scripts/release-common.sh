@@ -60,6 +60,31 @@ if test -z "$VERSION"; then
     VERSION=`date "+%Y.%m.%d"`
 fi
 
+
+echo "Checking pre-requisitie..."
+
+case $OS in
+    LINXWIN)
+        MAKENSIS=
+
+        if [ ! "`command -v makensis`" ]; then
+            MAKENSIS=makensis
+        elif [ ! "`command -v i686-pc-mingw32-makensis`" ]; then
+            MAKENSIS=i686-pc-mingw32-makensis
+        else
+            echo "makensis not found. please install nsis"
+            exit 1
+        fi
+    ;;
+esac
+
+if [ ! -e $OPENSCADDIR/libraries/MCAD/__init__.py ]; then
+  echo "Downloading MCAD"
+  git submodule init
+  git submodule update
+fi
+
+
 echo "Building openscad-$VERSION $CONFIGURATION..."
 
 case $OS in
@@ -134,12 +159,6 @@ fi
 
 echo "Creating directory structure..."
 
-if [ ! -e $OPENSCADDIR/libraries/MCAD/__init__.py ]; then
-  echo "Downloading MCAD"
-  git submodule init
-  git submodule update
-fi
-
 case $OS in
     MACOSX)
         EXAMPLESDIR=OpenSCAD.app/Contents/Resources/examples
@@ -168,8 +187,12 @@ fi
 if [ -n $LIBRARYDIR ]; then
   echo $LIBRARYDIR
   mkdir -p $LIBRARYDIR
-  tar cf libraries.tar --exclude=.git*
-  cd $LIBRARYDIR && tar xf $OPENSCADDIR/libraries.tar && cd $OPENSCADDIR
+  # exclude the .git stuff from MCAD which is a git submodule.
+  # tar is a relatively portable way to do exclusion
+  rm libraries.tar
+  tar cf libraries.tar --exclude=.git* libraries
+  cd $LIBRARYDIR/.. && tar xf $OPENSCADDIR/libraries.tar && cd $OPENSCADDIR
+  rm libraries.tar
   chmod -R u=rwx,go=r,+X $LIBRARYDIR/*
 fi
 
@@ -198,13 +221,19 @@ case $OS in
         cp $TARGET/openscad.exe openscad-$VERSION
         rm -f OpenSCAD-$VERSION.zip
         "$ZIP" $ZIPARGS OpenSCAD-$VERSION.zip openscad-$VERSION
-        rm -rf ./openscad-$VERSION
         cd $OPENSCADDIR
         echo "Binary package created"
 
         echo "Creating installer"
-        ./scripts/mingw-x-build-installer.sh
-        cp $DEPLOYDIR/openscad_setup.exe $DEPLOYDIR/OpenSCAD-$VERSION-Installer.exe
+        cp ./scripts/installer.nsi $DEPLOYDIR/openscad-$VERSION
+        cp ./scripts/mingw-file-association.nsh $DEPLOYDIR/openscad-$VERSION
+        cd $DEPLOYDIR/openscad-$VERSION
+        NSISDEBUG=-V2
+        # NSISDEBUG=      # leave blank for full log
+        $MAKENSIS $NSISDEBUG installer.nsi
+        cd $OPENSCADDIR
+        cp $DEPLOYDIR/openscad-$VERSION/openscad_setup.exe $DEPLOYDIR/OpenSCAD-$VERSION-Installer.exe
+
         echo
         echo "Binary created: $DEPLOYDIR/OpenSCAD-$VERSION.zip"
         echo "Installer created: $DEPLOYDIR/OpenSCAD-$VERSION-Installer.exe"

@@ -11,14 +11,20 @@
 # Also see http://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Cross-compiling_for_Windows_on_Linux_or_Mac_OS_X
 #
 
+export OPENSCADDIR=$PWD
+
 if [ ! $BASEDIR ]; then
 	export BASEDIR=$HOME/openscad_deps
 fi
-export OPENSCADDIR=$PWD
-export DEPLOYDIR=$OPENSCADDIR/mingw32
+
+if [ ! $DEPLOYDIR ]; then
+	export DEPLOYDIR=$OPENSCADDIR/mingw32
+fi
+
 if [ ! $MXEDIR ]; then
 	export MXEDIR=$BASEDIR/mxe
 fi
+
 export PATH=$MXEDIR/usr/bin:$PATH
 
 echo BASEDIR: $BASEDIR
