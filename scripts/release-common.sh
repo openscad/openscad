@@ -67,9 +67,9 @@ case $OS in
     LINXWIN)
         MAKENSIS=
 
-        if [ ! "`command -v makensis`" ]; then
+        if [ "`command -v makensis`" ]; then
             MAKENSIS=makensis
-        elif [ ! "`command -v i686-pc-mingw32-makensis`" ]; then
+        elif [ "`command -v i686-pc-mingw32-makensis`" ]; then
             MAKENSIS=i686-pc-mingw32-makensis
         else
             echo "makensis not found. please install nsis"
@@ -189,10 +189,10 @@ if [ -n $LIBRARYDIR ]; then
   mkdir -p $LIBRARYDIR
   # exclude the .git stuff from MCAD which is a git submodule.
   # tar is a relatively portable way to do exclusion
-  rm libraries.tar
+  rm -f libraries.tar
   tar cf libraries.tar --exclude=.git* libraries
   cd $LIBRARYDIR/.. && tar xf $OPENSCADDIR/libraries.tar && cd $OPENSCADDIR
-  rm libraries.tar
+  rm -f libraries.tar
   chmod -R u=rwx,go=r,+X $LIBRARYDIR/*
 fi
 

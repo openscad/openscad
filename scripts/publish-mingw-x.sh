@@ -16,15 +16,19 @@ CCACHE_DISABLE=1
 . ./scripts/setenv-mingw-xbuild.sh
 
 if [ ! -e $MXEDIR ]; then
-	echo "Mingw cross tools not found."
-	echo " Please run ./scripts/mingw-x-build-dependencies.sh to install "
-	echo " or modify MXEDIR to point to the root of your cross-tools setup"
-	echo " ( Please see setenv-mingw-xbuild.sh for more info ) "
+  echo "MXEDIR: $MXEDIR"
+  echo "MXEDIR is a non-existent path. Mingw cross tools not found."
+  echo
+  echo " Please run ./scripts/mingw-x-build-dependencies.sh to install MXE"
+  echo " or modify MXEDIR to point to the root of your cross-tools setup"
+  echo " ( Please see http://mxe.cc for more info ) "
+  echo
+  exit 1
 fi
 
 if [ ! -f $OPENSCADDIR/openscad.pro ]; then
   echo "Must be run from the OpenSCAD source root directory"
-  exit 0
+  exit 1
 fi
 
 OSTYPE=mingw-cross-env ./scripts/release-common.sh -v $VERSION $COMMIT
