@@ -84,7 +84,7 @@ a time, to avoid confusion.
 #endif // ENABLE_OPENCSG
 
 #include <QtCore/qglobal.h>
-#if QT_VERSION < 0x040603
+#if QT_VERSION < 0x040400
 #error QT library missing or version too old. See README.md. To force compile, run qmake CONFIG=skip-version-check
 #endif // QT
 
