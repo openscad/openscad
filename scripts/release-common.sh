@@ -146,7 +146,7 @@ esac
 
 case $OS in
     LINXWIN)
-        # make -j2 sometimes has problems with parser_yacc
+        # make -jx sometimes has problems with parser_yacc
         cd $DEPLOYDIR && make $TARGET
         cd $OPENSCADDIR
     ;;
@@ -228,19 +228,33 @@ case $OS in
         echo "Binary package created"
 
         echo "Creating installer"
+        echo "Copying NSIS files to $DEPLOYDIR/openscad-$VERSION"
         cp ./scripts/installer.nsi $DEPLOYDIR/openscad-$VERSION
         cp ./scripts/mingw-file-association.nsh $DEPLOYDIR/openscad-$VERSION
         cd $DEPLOYDIR/openscad-$VERSION
         NSISDEBUG=-V2
         # NSISDEBUG=      # leave blank for full log
+        echo $MAKENSIS $NSISDEBUG installer.nsi
         $MAKENSIS $NSISDEBUG installer.nsi
-        cd $OPENSCADDIR
         cp $DEPLOYDIR/openscad-$VERSION/openscad_setup.exe $DEPLOYDIR/OpenSCAD-$VERSION-Installer.exe
+        cd $OPENSCADDIR
 
-        echo
-        echo "Binary created: $DEPLOYDIR/OpenSCAD-$VERSION.zip"
-        echo "Installer created: $DEPLOYDIR/OpenSCAD-$VERSION-Installer.exe"
-        echo
+        BINFILE=$DEPLOYDIR/OpenSCAD-$VERSION.zip
+        INSTFILE=$DEPLOYDIR/OpenSCAD-$VERSION-Installer.exe
+        if [ -e $BINFILE ]; then
+            if [ -e $INSTFILE ]; then
+                echo
+                echo "Binary created:" $BINFILE
+                echo "Installer created:" $INSTFILE
+                echo
+            else
+              echo "Build failed. Cannot find" $INSTFILE
+              exit 1
+            fi
+        else
+          echo "Build failed. Cannot find" $BINFILE
+          exit 1
+        fi
         ;;
     LINUX)
         # Do stuff from release-linux.sh
