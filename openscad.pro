@@ -103,10 +103,6 @@ netbsd* {
   QMAKE_CXXFLAGS *= -fno-strict-aliasing
 }
 
-*lyoob* {
-	message("lyoobyoo")
-}
-
 *clang* {
 	# disable enormous amount of warnings about CGAL
 	QMAKE_CXXFLAGS_WARN_ON += -Wno-unused-parameter
