@@ -194,7 +194,8 @@ if [ -n $LIBRARYDIR ]; then
   echo $LIBRARYDIR
   mkdir -p $LIBRARYDIR
   # exclude the .git stuff from MCAD which is a git submodule.
-  # tar is a relatively portable way to do exclusion
+  # tar is a relatively portable way to do exclusion, without the
+  # risks of rm
   rm -f libraries.tar
   tar cf libraries.tar --exclude=.git* libraries
   cd $LIBRARYDIR/.. && tar xf $OPENSCADDIR/libraries.tar && cd $OPENSCADDIR
