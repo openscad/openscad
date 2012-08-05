@@ -179,7 +179,7 @@ Then run the script to download & compile all the prerequisite libraries above:
 
 Then skip the compilation instructions below. Instead, build an installer:
 
-    ./scripts/publish-mingw-x.sh
+    OSTYPE=mingw-cross-env ./scripts/release-common.sh
 
 ### Compilation
 
