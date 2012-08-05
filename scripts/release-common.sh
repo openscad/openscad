@@ -61,7 +61,7 @@ if test -z "$VERSION"; then
 fi
 
 
-echo "Checking pre-requisitie..."
+echo "Checking pre-requisites..."
 
 case $OS in
     LINXWIN)
@@ -75,6 +75,7 @@ case $OS in
             echo "makensis not found. please install nsis"
             exit 1
         fi
+        echo NSIS makensis found: $MAKENSIS
     ;;
 esac
 
@@ -82,6 +83,8 @@ if [ ! -e $OPENSCADDIR/libraries/MCAD/__init__.py ]; then
   echo "Downloading MCAD"
   git submodule init
   git submodule update
+else
+  echo "MCAD found:" $OPENSCADDIR/libraries/MCAD
 fi
 
 
