@@ -87,6 +87,9 @@ else
   echo "MCAD found:" $OPENSCADDIR/libraries/MCAD
 fi
 
+if [ -d .git ]; then
+  git submodule update
+fi
 
 echo "Building openscad-$VERSION $CONFIGURATION..."
 
