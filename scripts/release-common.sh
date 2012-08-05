@@ -134,6 +134,12 @@ fi
 
 echo "Creating directory structure..."
 
+if [ ! -e $OPENSCADDIR/libraries/MCAD/__init__.py ]; then
+  echo "Downloading MCAD"
+  git submodule init
+  git submodule update
+fi
+
 case $OS in
     MACOSX)
         EXAMPLESDIR=OpenSCAD.app/Contents/Resources/examples
@@ -153,10 +159,6 @@ case $OS in
     ;;
 esac
 
-if [ -d .git ]; then
-  git submodule update
-fi
-
 if [ -n $EXAMPLESDIR ]; then
   echo $EXAMPLESDIR
   mkdir -p $EXAMPLESDIR
@@ -166,9 +168,9 @@ fi
 if [ -n $LIBRARYDIR ]; then
   echo $LIBRARYDIR
   mkdir -p $LIBRARYDIR
-  cp -R libraries/* $LIBRARYDIR
+  tar cf libraries.tar --exclude=.git*
+  cd $LIBRARYDIR && tar xf $OPENSCADDIR/libraries.tar && cd $OPENSCADDIR
   chmod -R u=rwx,go=r,+X $LIBRARYDIR/*
-  rm -rf `find $LIBRARYDIR -name ".git"`
 fi
 
 echo "Creating archive.."
