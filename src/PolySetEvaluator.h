@@ -16,6 +16,7 @@ public:
 	virtual PolySet *evaluatePolySet(const class ProjectionNode &) { return NULL; }
 	virtual PolySet *evaluatePolySet(const class LinearExtrudeNode &) { return NULL; }
 	virtual PolySet *evaluatePolySet(const class RotateExtrudeNode &) { return NULL; }
+	virtual PolySet *evaluatePolySet(const class ExportCurvesNode &) { return NULL; }
 	virtual PolySet *evaluatePolySet(const class CgaladvNode &) { return NULL; }
 	virtual PolySet *evaluatePolySet(const class RenderNode &) { return NULL; }
 

@@ -6,6 +6,8 @@
 #include "projectionnode.h"
 #include "linearextrudenode.h"
 #include "rotateextrudenode.h"
+#include "exportcurvesnode.h"
+#include "export.h"
 #include "cgaladvnode.h"
 #include "rendernode.h"
 #include "dxfdata.h"
@@ -340,6 +342,43 @@ PolySet *PolySetCGALEvaluator::evaluatePolySet(const LinearExtrudeNode &node)
 	PolySet *ps = extrudeDxfData(node, *dxf);
 	delete dxf;
 	return ps;
+}
+
+PolySet *PolySetCGALEvaluator::evaluatePolySet(const ExportCurvesNode &node)
+{
+	// Before exporting, union all (2D) children nodes
+	// to a single DxfData
+	CGAL_Nef_polyhedron sum;
+	BOOST_FOREACH (AbstractNode * v, node.getChildren()) {
+		if (v->modinst->isBackground()) continue;
+		CGAL_Nef_polyhedron N = this->cgalevaluator.evaluateCGALMesh(*v);
+		if (!N.empty()) {
+			if (N.dim != 2) {
+				PRINT("ERROR: export_curves() is not defined for 3D child objects!");
+			}
+			else {
+				if (sum.empty()) sum = N.copy();
+				else sum += N;
+			}
+		}
+	}
+
+	if (sum.empty()) return NULL;
+
+	std::ofstream fstream(node.filename.c_str());
+	if (!fstream.is_open()) {
+		PRINTB("Can't open file \"%s\" for export", node.filename.c_str());
+	}
+	else {
+		export_dxf(&sum, fstream);
+		fstream.close();
+		PRINTB("DXF export finished (\"%s\").", node.filename.c_str());
+	}
+
+//TODO: an argument to export_curves that defines whether the curves should be consumed by the export routine (ending up not rendered in the scene) or made available for parent nodes for further operations. Possible param name: propagate="true"
+
+	return NULL; //for now we simply do not propagate the consumed geometry.
+//	return sum.convertToPolyset();
 }
 
 PolySet *PolySetCGALEvaluator::extrudeDxfData(const LinearExtrudeNode &node, DxfData &dxf)

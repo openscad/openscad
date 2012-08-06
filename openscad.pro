@@ -185,6 +185,7 @@ HEADERS += src/version_check.h \
            src/csgnode.h \
            src/linearextrudenode.h \
            src/rotateextrudenode.h \
+           src/exportcurvesnode.h \
            src/projectionnode.h \
            src/cgaladvnode.h \
            src/importnode.h \
@@ -241,6 +242,7 @@ SOURCES += src/version_check.cc \
            src/dxfdim.cc \
            src/linearextrude.cc \
            src/rotateextrude.cc \
+           src/exportcurves.cc \
            src/printutils.cc \
            src/progress.cc \
            src/parsersettings.cc \
