@@ -69,6 +69,8 @@ GLView::GLView(const QGLFormat & format, QWidget *parent) : QGLWidget(format, pa
 	init();
 }
 
+static bool running_under_wine = false;
+
 void GLView::init()
 {
 	this->viewer_distance = 500;
@@ -99,6 +101,15 @@ void GLView::init()
 	this->opencsg_support = true;
 	static int sId = 0;
 	this->opencsg_id = sId++;
+#endif
+
+// see paintGL() + issue160 + wine FAQ
+#ifdef _WIN32
+#include <windows.h>
+	HMODULE hntdll = GetModuleHandle(L"ntdll.dll");
+	if (hntdll)
+		if ( (void *)GetProcAddress(hntdll, "wine_get_version") )
+			running_under_wine = true;
 #endif
 }
 
@@ -374,19 +385,6 @@ void GLView::setupOrtho(double distance, bool offset)
 	gluLookAt(0.0, -viewer_distance, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0);
 }
 
-static bool running_under_wine()
-{
-	bool result=false;
-#ifdef _WIN32
-#include <windows.h>
-	HMODULE hntdll = GetModuleHandle(L"ntdll.dll");	// see Wine FAQ
-	if (hntdll)
-		if ( (void *)GetProcAddress(hntdll, "wine_get_version") )
-			result=true;
-#endif
-	return result;
-}
-
 void GLView::paintGL()
 {
 	glEnable(GL_LIGHTING);
@@ -542,10 +540,7 @@ void GLView::paintGL()
 		statusLabel->setText(msg);
 	}
 
-	if (running_under_wine()) {
-		// wine+qglwidget autobufferswap not reliable. issue 160.
-		swapBuffers();
-	}
+	if (running_under_wine) swapBuffers();
 }
 
 void GLView::keyPressEvent(QKeyEvent *event)
