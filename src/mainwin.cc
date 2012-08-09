@@ -1173,8 +1173,6 @@ void MainWindow::actionCompile()
 #endif
 	}
 
-	glview->updateGL(); // issue 160
-
 	if (viewActionAnimate->isChecked() && e_dump->isChecked()) {
 		QImage img = this->glview->grabFrameBuffer();
 		QString filename;

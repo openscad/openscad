@@ -374,6 +374,19 @@ void GLView::setupOrtho(double distance, bool offset)
 	gluLookAt(0.0, -viewer_distance, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0);
 }
 
+static bool running_under_wine()
+{
+	bool result=false;
+#ifdef _WIN32
+#include <windows.h>
+	HMODULE hntdll = GetModuleHandle(L"ntdll.dll");	// see Wine FAQ
+	if (hntdll)
+		if ( (void *)GetProcAddress(hntdll, "wine_get_version") )
+			result=true;
+#endif
+	return result;
+}
+
 void GLView::paintGL()
 {
 	glEnable(GL_LIGHTING);
@@ -527,6 +540,11 @@ void GLView::paintGL()
 			-object_trans_x, -object_trans_y, -object_trans_z,
 			fmodf(360 - object_rot_x + 90, 360), fmodf(360 - object_rot_y, 360), fmodf(360 - object_rot_z, 360), viewer_distance);
 		statusLabel->setText(msg);
+	}
+
+	if (running_under_wine()) {
+		// wine+qglwidget autobufferswap not reliable. issue 160.
+		swapBuffers();
 	}
 }
 
