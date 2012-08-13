@@ -1,0 +1,6 @@
+WE the undersigned contributors, grant perpetual license for the 
+original authors of OpenSCAD, Marius Kintel and Clifford Wolf, to 
+change the license under which the code we have contributed to OpenSCAD is
+released, in future versions of OpenSCAD. 
+
+Don Bright <hugh.m.bright@gmail.com> 2012

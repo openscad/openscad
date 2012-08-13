@@ -1,5 +1,6 @@
 // version_check.h copyright 2012 don bright. released under the GPL 2, or
 // later, as described in the file named 'COPYING' in OpenSCAD's project root.
+// permission to change this license is given to Marius Kintel & Clifford Wolf
 
 /* This file will check versions of libraries at compile time. If they
 are too old, the user will be warned. If the user wishes to force
