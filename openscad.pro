@@ -154,6 +154,7 @@ RESOURCES = openscad.qrc
 FORMS   += src/MainWindow.ui \
            src/Preferences.ui \
            src/OpenCSGWarningDialog.ui \
+           src/AboutDialog.ui \
            src/ProgressWidget.ui
 
 HEADERS += src/version_check.h \
@@ -168,6 +169,7 @@ HEADERS += src/version_check.h \
            src/MainWindow.h \
            src/Preferences.h \
            src/OpenCSGWarningDialog.h \
+           src/AboutDialog.h \
            src/builtin.h \
            src/context.h \
            src/csgterm.h \
