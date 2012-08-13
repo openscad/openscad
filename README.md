@@ -164,8 +164,22 @@ After that, follow the Compilation instructions below.
 ### Building for Windows
 
 OpenSCAD for Windows is usually cross-compiled from Linux. If you wish to
-attempt an MSVC build, please see this site:
+attempt an MSVC build on Windows, please see this site:
 http://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Building_on_Windows
+
+To cross-build, first make sure that you have development tools 
+installed to get GCC. Then after you've cloned this git repository, run 
+the script that sets up the environment variables.
+
+    source ./scripts/setenv-mingw-xbuild.sh
+
+Then run the script to download & compile all the prerequisite libraries above:
+
+    ./scripts/mingw-x-build-dependencies.sh
+
+Then skip the compilation instructions below. Instead, build an installer:
+
+    OSTYPE=mingw-cross-env ./scripts/release-common.sh
 
 ### Compilation
 
