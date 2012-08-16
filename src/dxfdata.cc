@@ -39,6 +39,7 @@
 #include <boost/algorithm/string.hpp>
 #include <algorithm>
 #include <sstream>
+#include <map>
 
 #include <QDir>
 #include "value.h"
@@ -397,7 +398,7 @@ DxfData::DxfData(double fn, double fs, double fa,
 
 	// Extract paths from parsed data
 
-	typedef boost::unordered_map<int, int> LineMap;
+	typedef std::map<int, int> LineMap;
 	LineMap enabled_lines;
 	for (size_t i = 0; i < lines.size(); i++) {
 		enabled_lines[i] = i;
