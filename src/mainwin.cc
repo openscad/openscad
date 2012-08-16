@@ -39,6 +39,7 @@
 #include "builtin.h"
 #include "progress.h"
 #include "dxfdim.h"
+#include "AboutDialog.h"
 #ifdef ENABLE_OPENCSG
 #include "CSGTermEvaluator.h"
 #include "OpenCSGRenderer.h"
@@ -1735,7 +1736,9 @@ void
 MainWindow::helpAbout()
 {
 	qApp->setWindowIcon(QApplication::windowIcon());
-	QMessageBox::information(this, "About OpenSCAD", QString(helptitle) + QString(copyrighttext));
+	AboutDialog *dialog = new AboutDialog(this);
+	dialog->exec();
+	//QMessageBox::information(this, "About OpenSCAD", QString(helptitle) + QString(copyrighttext));
 }
 
 void

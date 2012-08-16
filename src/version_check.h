@@ -1,5 +1,6 @@
 // version_check.h copyright 2012 don bright. released under the GPL 2, or
 // later, as described in the file named 'COPYING' in OpenSCAD's project root.
+// permission to change this license is given to Marius Kintel & Clifford Wolf
 
 /* This file will check versions of libraries at compile time. If they
 are too old, the user will be warned. If the user wishes to force
@@ -84,7 +85,7 @@ a time, to avoid confusion.
 #endif // ENABLE_OPENCSG
 
 #include <QtCore/qglobal.h>
-#if QT_VERSION < 0x040603
+#if QT_VERSION < 0x040400
 #error QT library missing or version too old. See README.md. To force compile, run qmake CONFIG=skip-version-check
 #endif // QT
 
