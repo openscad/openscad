@@ -178,7 +178,7 @@ void CSGChain::import(shared_ptr<CSGTerm> term, CSGTerm::type_e type)
 	}
 }
 
-std::string CSGChain::dump()
+std::string CSGChain::dump(bool full=false)
 {
 	std::stringstream dump;
 
@@ -193,6 +193,11 @@ std::string CSGChain::dump()
 		else if (types[i] == CSGTerm::TYPE_INTERSECTION)
 			dump << " *";
 		dump << labels[i];
+		if (full) {
+			dump << " polyset: \n" << polysets[i]->dump() << "\n";
+			dump << " matrix: \n" << matrices[i].matrix() << "\n";
+			dump << " color: \n" << colors[i] << "\n";
+		}
 	}
 	dump << "\n";
 	return dump.str();
