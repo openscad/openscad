@@ -124,7 +124,7 @@ build_boost()
   # We only need certain portions of boost
   ./bootstrap.sh --prefix=$DEPLOYDIR --with-libraries=thread,program_options,filesystem,system,regex
 	if [ $CXX ]; then
-		if [ $CXX = "clang" ]; then
+		if [ $CXX = "clang++" ]; then
 		  ./b2 -j$NUMCPU toolset=clang install
 		  # ./b2 -j$NUMCPU toolset=clang cxxflags="-stdlib=libc++" linkflags="-stdlib=libc++" install
 		fi
@@ -326,9 +326,9 @@ fi
 # edit version numbers here as needed.
 #
 
-build_eigen 3.1.1
-build_gmp 5.0.5
-build_mpfr 3.1.1
+#build_eigen 3.1.1
+#build_gmp 5.0.5
+#build_mpfr 3.1.1
 build_boost 1.50.0
 # NB! For CGAL, also update the actual download URL in the function
 build_cgal 4.0.2
