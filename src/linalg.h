@@ -12,10 +12,10 @@ typedef Eigen::AlignedBox<double, 3> BoundingBox;
 using Eigen::Matrix3f;
 using Eigen::Matrix3d;
 using Eigen::Matrix4d;
-#if EIGEN_WORLD_VERSION>=3
+#if EIGEN_WORLD_VERSION >= 3
 #define Transform3d Eigen::Affine3d
 #else
-using Eigen::Transform3d
+using Eigen::Transform3d;
 #endif
 
 BoundingBox operator*(const Transform3d &m, const BoundingBox &box);

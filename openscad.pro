@@ -124,12 +124,7 @@ macx:CONFIG += mdi
 CONFIG += cgal
 CONFIG += opencsg
 CONFIG += boost
-#macx {
-unix {
-  CONFIG += eigen3
-} else {
-  CONFIG += eigen2
-}
+CONFIG += eigen
 
 #Uncomment the following line to enable QCodeEdit
 #CONFIG += qcodeedit

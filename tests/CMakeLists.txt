@@ -159,15 +159,43 @@ set(CMAKE_INCLUDE_DIRECTORIES_BEFORE OFF)
 
 
 # Eigen
+# First try to find Eigen3. If it's not there, fallback to Eigen2
 
-set( EIGEN_VERSION 3 )
-if( ${CMAKE_SYSTEM_NAME} MATCHES "Darwin" )
-  set( EIGEN_VERSION 3 )
+# Eigen3
+
+if (NOT $ENV{EIGEN3DIR} STREQUAL "")
+  set(EIGEN3_DIR "$ENV{EIGEN3DIR}")
+elseif (NOT $ENV{OPENSCAD_LIBRARIES} STREQUAL "")
+  set(EIGEN3_DIR "$ENV{OPENSCAD_LIBRARIES}")
 endif()
+
+if (NOT EIGEN3_INCLUDE_DIR)
+  if (EIGEN3_DIR)
+    set(EIGEN3_FIND_HINTS "${EIGEN3_DIR}/include/eigen3")
+  endif()
+  if (${CMAKE_SYSTEM_NAME} MATCHES "FreeBSD")
+    set(EIGEN3_FIND_PATHS /usr/local/include/eigen3)
+  elseif (${CMAKE_SYSTEM_NAME} MATCHES "NetBSD")
+    set(EIGEN3_FIND_PATHS /usr/pkg/include/eigen3)
+  else()
+    set(EIGEN3_FIND_PATHS /opt/local/include/eigen3 /usr/include/eigen3)
+  endif()
+  find_path(EIGEN3_INCLUDE_DIR
+            Eigen/Core 
+            HINTS ${EIGEN3_FIND_HINTS}
+            PATHS ${EIGEN3_FIND_PATHS})
+  if (NOT EIGEN3_INCLUDE_DIR)
+    message(STATUS "Eigen3 not found, will attempt to find Eigen2")
+  else()
+    message(STATUS "Eigen3 found in " ${EIGEN3_INCLUDE_DIR})
+    inclusion(EIGEN3_DIR EIGEN3_INCLUDE_DIR)
+  endif()
+endif()
+
 
 # Eigen2
 
-if( ${EIGEN_VERSION} EQUAL 2)
+if (NOT EIGEN3_INCLUDE_DIR)
 
 # Turn off Eigen SIMD optimization
 if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
@@ -205,44 +233,7 @@ if (NOT EIGEN2_INCLUDE_DIR)
 endif()
 inclusion(EIGEN2_DIR EIGEN2_INCLUDE_DIR)
 
-endif() # EIGEN_VERSION 2
-
-
-# Eigen3
-
-if( ${EIGEN_VERSION} EQUAL 3)
-
-if (NOT $ENV{EIGEN3DIR} STREQUAL "")
-  set(EIGEN3_DIR "$ENV{EIGEN3DIR}")
-elseif (NOT $ENV{OPENSCAD_LIBRARIES} STREQUAL "")
-  set(EIGEN3_DIR "$ENV{OPENSCAD_LIBRARIES}")
-endif()
-
-if (NOT EIGEN3_INCLUDE_DIR)
-  if (EIGEN3_DIR)
-    set(EIGEN3_FIND_HINTS "${EIGEN3_DIR}/include/eigen3")
-  endif()
-  if (${CMAKE_SYSTEM_NAME} MATCHES "FreeBSD")
-    set(EIGEN3_FIND_PATHS /usr/local/include/eigen3)
-  elseif (${CMAKE_SYSTEM_NAME} MATCHES "NetBSD")
-    set(EIGEN3_FIND_PATHS /usr/pkg/include/eigen3)
-  else()
-    set(EIGEN3_FIND_PATHS /opt/local/include/eigen3 /usr/include/eigen3)
-  endif()
-  find_path(EIGEN3_INCLUDE_DIR
-            Eigen/Core 
-            HINTS ${EIGEN3_FIND_HINTS}
-            PATHS ${EIGEN3_FIND_PATHS})
-  if (NOT EIGEN3_INCLUDE_DIR)
-    message(FATAL_ERROR "Eigen3 not found")
-  else()
-    message(STATUS "Eigen3 found in " ${EIGEN3_INCLUDE_DIR})
-  endif()
-endif()
-inclusion(EIGEN3_DIR EIGEN3_INCLUDE_DIR)
-
-endif() # EIGEN_VERSION 3
-
+endif()   # if (NOT EIGEN3_INCLUDE_DIR)
 
 # OpenCSG
 if (NOT $ENV{OPENCSGDIR} STREQUAL "")
