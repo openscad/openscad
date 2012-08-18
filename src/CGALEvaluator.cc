@@ -34,8 +34,8 @@
 #include <assert.h>
 
 #include <boost/foreach.hpp>
-#include <boost/unordered_map.hpp>
 #include <boost/bind.hpp>
+#include <map>
 
 CGAL_Nef_polyhedron CGALEvaluator::evaluateCGALMesh(const AbstractNode &node)
 {
@@ -445,9 +445,9 @@ CGAL_Nef_polyhedron CGALEvaluator::evaluateCGALMesh(const PolySet &ps)
 		struct PolyReducer
 		{
 			Grid2d<int> grid;
-			boost::unordered_map<std::pair<int,int>, std::pair<int,int> > edge_to_poly;
-			boost::unordered_map<int, CGAL_Nef_polyhedron2::Point> points;
-			typedef boost::unordered_map<int, std::vector<int> > PolygonMap;
+			std::map<std::pair<int,int>, std::pair<int,int> > edge_to_poly;
+			std::map<int, CGAL_Nef_polyhedron2::Point> points;
+			typedef std::map<int, std::vector<int> > PolygonMap;
 			PolygonMap polygons;
 			int poly_n;
 

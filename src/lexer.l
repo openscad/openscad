@@ -122,10 +122,16 @@ use[ \t\r\n>]*"<"	{ BEGIN(cond_use); }
           }
         }
         /* Only accept regular files which exists */
-        if (usepath.has_parent_path() && fs::exists(usepath)) {
+        if (usepath.has_parent_path() && fs::exists(usepath) && !fs::is_directory(usepath)) {
           handle_dep(usepath.string());
           parserlval.text = strdup(usepath.string().c_str());
           return TOK_USE;
+        } else {
+          PRINTB("WARNING: Can't open 'use' file '%s'.", filename);
+          if ( filename.size() == 0 )
+            PRINT("WARNING: 'use' filename is blank");
+          else if ( fs::is_directory( usepath ) )
+            PRINTB("WARNING: 'use' file points to a directory: %s",filename);
         }
  }
 }
@@ -217,6 +223,10 @@ void includefile()
     finfo = locate_file((fs::path(filepath) / filename).string());
   }
 
+  if (finfo.empty()) {
+    PRINTB("WARNING: Can't find 'include' file '%s'.", filename);
+  }
+
   filepath.clear();
   path_stack.push_back(finfo.parent_path());
 
@@ -225,7 +235,7 @@ void includefile()
   currmodule->registerInclude(fullname);
   yyin = fopen(fullname.c_str(), "r");
   if (!yyin) {
-    PRINTB("WARNING: Can't open input file '%s'.", filename);
+    PRINTB("WARNING: Can't open 'include' file '%s'.", filename);
     path_stack.pop_back();
     return;
   }

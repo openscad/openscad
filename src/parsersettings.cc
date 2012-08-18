@@ -15,13 +15,13 @@ void add_librarydir(const std::string &libdir)
 
 /*!
 	Searces for the given file in library paths and returns the full path if found.
-	Returns an empty path if file cannot be found.
+	Returns an empty path if file cannot be found or filename is a directory.
 */
 std::string locate_file(const std::string &filename)
 {
 	BOOST_FOREACH(const std::string &dir, librarypath) {
 		fs::path usepath = fs::path(dir) / filename;
-		if (fs::exists(usepath)) return usepath.string();
+		if (fs::exists(usepath) && !fs::is_directory(usepath)) return usepath.string();
 	}
 	return std::string();
 }
