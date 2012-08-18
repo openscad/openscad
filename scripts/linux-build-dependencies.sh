@@ -248,6 +248,7 @@ build_eigen()
   rm -rf eigen-$version
   ## Directory name for v2.0.17
   rm -rf eigen-eigen-b23437e61a07
+  rm -rf eigen-eigen-43d9075b23ef  # 3.1.1
   if [ ! -f eigen-$version.tar.bz2 ]; then
     curl -LO http://bitbucket.org/eigen/eigen/get/$version.tar.bz2
     mv $version.tar.bz2 eigen-$version.tar.bz2
@@ -255,12 +256,14 @@ build_eigen()
   tar xjf eigen-$version.tar.bz2
   ## File name for v2.0.17
   ln -s eigen-eigen-b23437e61a07 eigen-$version
+  ln -s eigen-eigen-43d9075b23ef eigen-$version # 3.1.1
   cd eigen-$version
-  cmake -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR
+  mkdir build
+  cd build
+  cmake -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR ..
   make -j$NUMCPU
   make install
 }
-
 
 OPENSCADDIR=$PWD
 if [ ! -f $OPENSCADDIR/openscad.pro ]; then
@@ -321,12 +324,13 @@ fi
 #
 
 build_eigen 2.0.17
-build_gmp 5.0.5
-build_mpfr 3.1.1
-build_boost 1.47.0
+#build_eigen 3.1.1
+#build_gmp 5.0.5
+#build_mpfr 3.1.1
+#build_boost 1.47.0
 # NB! For CGAL, also update the actual download URL in the function
-build_cgal 4.0.2
-build_glew 1.7.0
-build_opencsg 1.3.2
+#build_cgal 4.0.2
+#build_glew 1.7.0
+#build_opencsg 1.3.2
 
 echo "OpenSCAD dependencies built and installed to " $BASEDIR

@@ -47,7 +47,7 @@
 #include <boost/regex.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/filesystem.hpp>
-using namespace boost::filesystem;
+namespace fs = boost::filesystem;
 #include <boost/assign/std/vector.hpp>
 using namespace boost::assign; // bring 'operator+=()' into scope
 #include "boosty.h"

@@ -1,5 +1,5 @@
 eigen2 {
-
+message("hi 2")
   CONFIG(mingw-cross-env) {
     EIGEN2_INCLUDEPATH = mingw-cross-env/include/eigen2
   }

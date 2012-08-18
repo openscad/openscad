@@ -9,5 +9,8 @@ include(bison.pri)
 include(cgal.pri)
 include(opencsg.pri)
 include(glew.pri)
-include(eigen2.pri)
 include(boost.pri)
+
+CONFIG(eigen2) { include(eigen2.pri) }
+CONFIG(eigen3) { include(eigen3.pri) }
+

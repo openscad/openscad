@@ -66,16 +66,29 @@ shared_ptr<CSGTerm> CSGTerm::createCSGTerm(type_e type, shared_ptr<CSGTerm> left
   // http://www.cc.gatech.edu/~turk/my_papers/pxpl_csg.pdf
 	const BoundingBox &leftbox = left->getBoundingBox();
 	const BoundingBox &rightbox = right->getBoundingBox();
+	Vector3d newmin, newmax;
 	if (type == TYPE_INTERSECTION) {
-		BoundingBox newbox(leftbox.min().cwise().max(rightbox.min()),
-											 leftbox.max().cwise().min(rightbox.max()));
+#if EIGEN_WORLD_VERSION == 2
+		newmin = leftbox.min().cwise().max( rightbox.min() );
+		newmax = leftbox.max().cwise().min( rightbox.max() );
+#else
+		newmin = leftbox.min().array().cwiseMax( rightbox.min().array() );
+		newmax = leftbox.max().array().cwiseMin( rightbox.max().array() );
+#endif
+		BoundingBox newbox( newmin, newmax );
 		if (newbox.isNull()) {
 			return shared_ptr<CSGTerm>(); // Prune entire product
 		}
 	}
 	else if (type == TYPE_DIFFERENCE) {
-		BoundingBox newbox(leftbox.min().cwise().max(rightbox.min()),
-											 leftbox.max().cwise().min(rightbox.max()));
+#if EIGEN_WORLD_VERSION == 2
+		newmin = leftbox.min().cwise().max( rightbox.min() );
+		newmax = leftbox.max().cwise().min( rightbox.max() );
+#else
+		newmin = leftbox.min().array().cwiseMax( rightbox.min().array() );
+		newmax = leftbox.max().array().cwiseMin( rightbox.max().array() );
+#endif
+		BoundingBox newbox( newmin, newmax );
 		if (newbox.isNull()) {
 			return left; // Prune the negative component
 		}
@@ -119,14 +132,27 @@ void CSGTerm::initBoundingBox()
 	else {
 		const BoundingBox &leftbox = this->left->getBoundingBox();
 		const BoundingBox &rightbox = this->right->getBoundingBox();
+		Vector3d newmin, newmax;
 		switch (this->type) {
 		case TYPE_UNION:
-			this->bbox = this->m * BoundingBox(leftbox.min().cwise().min(rightbox.min()), 
-																				 leftbox.max().cwise().max(rightbox.max()));
+#if EIGEN_WORLD_VERSION == 2
+			newmin = leftbox.min().cwise().min( rightbox.min() );
+			newmax = leftbox.max().cwise().max( rightbox.max() );
+#else
+			newmin = leftbox.min().array().cwiseMin( rightbox.min().array() );
+			newmax = leftbox.max().array().cwiseMax( rightbox.max().array() );
+#endif
+			this->bbox = this->m * BoundingBox( newmin, newmax );
 			break;
 		case TYPE_INTERSECTION:
-			this->bbox = this->m * BoundingBox(leftbox.min().cwise().max(rightbox.min()),
-																				 leftbox.max().cwise().min(rightbox.max()));
+#if EIGEN_WORLD_VERSION == 2
+			newmin = leftbox.min().cwise().max( rightbox.min() );
+			newmax = leftbox.max().cwise().min( rightbox.max() );
+#else
+			newmin = leftbox.min().array().cwiseMax( rightbox.min().array() );
+			newmax = leftbox.max().array().cwiseMin( rightbox.max().array() );
+#endif
+			this->bbox = this->m * BoundingBox( newmin, newmax );
 			break;
 		case TYPE_DIFFERENCE:
 			this->bbox = this->m * leftbox;

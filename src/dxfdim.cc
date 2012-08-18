@@ -36,10 +36,10 @@
 #include <sstream>
 
 #include <boost/filesystem.hpp>
-using namespace boost::filesystem;
 
 boost::unordered_map<std::string,Value> dxf_dim_cache;
 boost::unordered_map<std::string,Value> dxf_cross_cache;
+namespace fs = boost::filesystem;
 
 Value builtin_dxf_dim(const Context *ctx, const std::vector<std::string> &argnames, const std::vector<Value> &args)
 {
@@ -65,13 +65,14 @@ Value builtin_dxf_dim(const Context *ctx, const std::vector<std::string> &argnam
 
 	std::stringstream keystream;
 	keystream << filename << "|" << layername << "|" << name << "|" << xorigin
-						<< "|" << yorigin <<"|" << scale << "|" << last_write_time(filename)
-						<< "|" << file_size(filename);
+						<< "|" << yorigin <<"|" << scale << "|" << fs::last_write_time(filename)
+						<< "|" << fs::file_size(filename);
 	std::string key = keystream.str();
 	if (dxf_dim_cache.find(key) != dxf_dim_cache.end())
 		return dxf_dim_cache.find(key)->second;
 
 	DxfData dxf(36, 0, 0, filename, layername, xorigin, yorigin, scale);
+/*
 
 	for (size_t i = 0; i < dxf.dims.size(); i++)
 	{
@@ -123,12 +124,13 @@ Value builtin_dxf_dim(const Context *ctx, const std::vector<std::string> &argnam
 	PRINTB("WARNING: Can't find dimension '%s' in '%s', layer '%s'!",
 				 name % filename % layername);
 
+*/
 	return Value();
 }
 
 Value builtin_dxf_cross(const Context *ctx, const std::vector<std::string> &argnames, const std::vector<Value> &args)
 {
-	std::string filename;
+/*	std::string filename;
 	std::string layername;
 	double xorigin = 0;
 	double yorigin = 0;
@@ -186,7 +188,7 @@ Value builtin_dxf_cross(const Context *ctx, const std::vector<std::string> &argn
 	}
 
 	PRINTB("WARNING: Can't find cross in '%s', layer '%s'!", filename % layername);
-
+*/
 	return Value();
 }
 
