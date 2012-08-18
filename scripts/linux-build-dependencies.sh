@@ -326,14 +326,13 @@ fi
 # edit version numbers here as needed.
 #
 
-#build_eigen 2.0.17
 build_eigen 3.1.1
-#build_gmp 5.0.5
-#build_mpfr 3.1.1
-#build_boost 1.47.0
+build_gmp 5.0.5
+build_mpfr 3.1.1
+build_boost 1.50.0
 # NB! For CGAL, also update the actual download URL in the function
-#build_cgal 4.0.2
-#build_glew 1.7.0
-#build_opencsg 1.3.2
+build_cgal 4.0.2
+build_glew 1.7.0
+build_opencsg 1.3.2
 
 echo "OpenSCAD dependencies built and installed to " $BASEDIR
