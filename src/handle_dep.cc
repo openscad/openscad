@@ -6,7 +6,7 @@
 #include <boost/foreach.hpp>
 #include <boost/regex.hpp>
 #include <boost/filesystem.hpp>
-using namespace boost::filesystem;
+namespace fs = boost::filesystem;
 #include "boosty.h"
 
 boost::unordered_set<std::string> dependencies;
@@ -14,14 +14,14 @@ const char *make_command = NULL;
 
 void handle_dep(const std::string &filename)
 {
-	path filepath(filename);
+	fs::path filepath(filename);
 	if ( boosty::is_absolute( filepath )) {
 		dependencies.insert(filename);
 	}
 	else {
-		dependencies.insert((current_path() / filepath).string());
+		dependencies.insert((fs::current_path() / filepath).string());
 	}
-	if (!exists(filepath) && make_command) {
+	if (!fs::exists(filepath) && make_command) {
 		std::stringstream buf;
 		buf << make_command << " '" << boost::regex_replace(filename, boost::regex("'"), "'\\''") << "'";
 		system(buf.str().c_str()); // FIXME: Handle error

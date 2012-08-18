@@ -72,7 +72,6 @@ Value builtin_dxf_dim(const Context *ctx, const std::vector<std::string> &argnam
 		return dxf_dim_cache.find(key)->second;
 
 	DxfData dxf(36, 0, 0, filename, layername, xorigin, yorigin, scale);
-/*
 
 	for (size_t i = 0; i < dxf.dims.size(); i++)
 	{
@@ -124,13 +123,12 @@ Value builtin_dxf_dim(const Context *ctx, const std::vector<std::string> &argnam
 	PRINTB("WARNING: Can't find dimension '%s' in '%s', layer '%s'!",
 				 name % filename % layername);
 
-*/
 	return Value();
 }
 
 Value builtin_dxf_cross(const Context *ctx, const std::vector<std::string> &argnames, const std::vector<Value> &args)
 {
-/*	std::string filename;
+	std::string filename;
 	std::string layername;
 	double xorigin = 0;
 	double yorigin = 0;
@@ -149,8 +147,8 @@ Value builtin_dxf_cross(const Context *ctx, const std::vector<std::string> &argn
 
 	std::stringstream keystream;
 	keystream << filename << "|" << layername << "|" << xorigin << "|" << yorigin
-						<< "|" << scale << "|" << last_write_time(filename)
-						<< "|" << file_size(filename);
+						<< "|" << scale << "|" << fs::last_write_time(filename)
+						<< "|" << fs::file_size(filename);
 	std::string key = keystream.str();
 
 	if (dxf_cross_cache.find(key) != dxf_cross_cache.end())
@@ -188,7 +186,6 @@ Value builtin_dxf_cross(const Context *ctx, const std::vector<std::string> &argn
 	}
 
 	PRINTB("WARNING: Can't find cross in '%s', layer '%s'!", filename % layername);
-*/
 	return Value();
 }
 

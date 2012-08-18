@@ -80,7 +80,7 @@ AbstractNode *ImportModule::evaluate(const Context *ctx, const ModuleInstantiati
 	std::string filename = c.getAbsolutePath(v.isUndefined() ? "" : v.toString());
 	import_type_e actualtype = this->type;
 	if (actualtype == TYPE_UNKNOWN) {
-		std::string extraw = boosty::extension_str( path(filename) );
+		std::string extraw = boosty::extension_str( fs::path(filename) );
 		std::string ext = boost::algorithm::to_lower_copy( extraw );
 		if (ext == ".stl") actualtype = TYPE_STL;
 		else if (ext == ".off") actualtype = TYPE_OFF;
