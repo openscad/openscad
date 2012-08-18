@@ -178,7 +178,7 @@ void CSGChain::import(shared_ptr<CSGTerm> term, CSGTerm::type_e type)
 	}
 }
 
-std::string CSGChain::dump(bool full=false)
+std::string CSGChain::dump(bool full)
 {
 	std::stringstream dump;
 
