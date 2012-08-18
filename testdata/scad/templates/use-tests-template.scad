@@ -1,3 +1,6 @@
+//Test blank
+use <>
+
 //Test that the entire path is pushed onto the stack upto the last '/' 
 use <sub1/sub2/sub3/sub4/use-test2.scad>
 
