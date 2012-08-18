@@ -7,7 +7,7 @@ class AboutDialog : public QDialog, public Ui::AboutDialog
 {
 	Q_OBJECT;
 public:
-	AboutDialog(QWidget *parent) {
+	AboutDialog(QWidget *) {
 		setupUi(this);
 		this->aboutText->setOpenExternalLinks(true);
 		QUrl flattr_qurl(":icons/flattr.png" );
