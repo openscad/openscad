@@ -30,7 +30,8 @@ typedef CGAL::Constrained_Delaunay_triangulation_2<K, Tds> CDT;
 typedef CDT::Vertex_handle Vertex_handle;
 typedef CDT::Point CDTPoint;
 
-#include <boost/unordered_map.hpp>
+//#include <boost/unordered_map.hpp>
+#include <map>
 
 template <class T> class DummyCriteria {
 public:
@@ -71,8 +72,10 @@ struct point_info_t
 typedef std::pair<point_info_t*,point_info_t*> edge_t;
 
 void mark_inner_outer(std::vector<struct triangle> &tri, Grid2d<point_info_t> &point_info,
-											boost::unordered_map<edge_t,int> &edge_to_triangle,
-											boost::unordered_map<edge_t,int> &edge_to_path, int idx, bool inner)
+											std::map<edge_t,int> &edge_to_triangle,
+											std::map<edge_t,int> &edge_to_path, int idx, bool inner)
+//											boost::unordered_map<edge_t,int> &edge_to_triangle,
+//											boost::unordered_map<edge_t,int> &edge_to_path, int idx, bool inner)
 {
 	if (tri[idx].is_marked)
 		return;
@@ -107,8 +110,10 @@ void dxf_tesselate(PolySet *ps, DxfData &dxf, double rot, bool up, bool /* do_tr
 
 	std::vector<struct triangle> tri;
 	Grid2d<point_info_t> point_info(GRID_FINE);
-	boost::unordered_map<edge_t,int> edge_to_triangle;
-	boost::unordered_map<edge_t,int> edge_to_path;
+//	boost::unordered_map<edge_t,int> edge_to_triangle;
+//	boost::unordered_map<edge_t,int> edge_to_path;
+	std::map<edge_t,int> edge_to_triangle;
+	std::map<edge_t,int> edge_to_path;
 
 	CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
 	try {

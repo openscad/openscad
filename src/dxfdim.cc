@@ -36,9 +36,11 @@
 #include <sstream>
 
 #include <boost/filesystem.hpp>
-
-boost::unordered_map<std::string,Value> dxf_dim_cache;
-boost::unordered_map<std::string,Value> dxf_cross_cache;
+//boost::unordered_map<std::string,Value> dxf_dim_cache;
+//boost::unordered_map<std::string,Value> dxf_cross_cache;
+#include <map>
+std::map<std::string,Value> dxf_dim_cache;
+std::map<std::string,Value> dxf_cross_cache;
 namespace fs = boost::filesystem;
 
 Value builtin_dxf_dim(const Context *ctx, const std::vector<std::string> &argnames, const std::vector<Value> &args)

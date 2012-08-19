@@ -42,6 +42,7 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/assign/std/vector.hpp>
 using namespace boost::assign; // bring 'operator+=()' into scope
+#include <map>
 
 #include <boost/filesystem.hpp>
 namespace fs = boost::filesystem;
@@ -110,7 +111,8 @@ PolySet *SurfaceNode::evaluate_polyset(class PolySetEvaluator *) const
 
 	PolySet *p = new PolySet();
 	int lines = 0, columns = 0;
-	boost::unordered_map<std::pair<int,int>,double> data;
+	//boost::unordered_map<std::pair<int,int>,double> data;
+	std::map<std::pair<int,int>,double> data;
 	double min_val = 0;
 
 	typedef boost::tokenizer<boost::char_separator<char> > tokenizer;
