@@ -30,8 +30,7 @@
 
 #include "system-gl.h"
 
-//#include <boost/unordered_map.hpp>
-#include <map>
+#include <boost/unordered_map.hpp>
 
 ThrownTogetherRenderer::ThrownTogetherRenderer(CSGChain *root_chain, 
 																							 CSGChain *highlights_chain,
@@ -63,8 +62,7 @@ void ThrownTogetherRenderer::renderCSGChain(CSGChain *chain, bool highlight,
 																						bool fberror) const
 {
 	glDepthFunc(GL_LEQUAL);
-	//boost::unordered_map<std::pair<PolySet*,Transform3d*>,int> polySetVisitMark;
-	std::map<std::pair<PolySet*,Transform3d*>,int> polySetVisitMark;
+	boost::unordered_map<std::pair<PolySet*,Transform3d*>,int> polySetVisitMark;
 	for (size_t i = 0; i < chain->polysets.size(); i++) {
 		if (polySetVisitMark[std::make_pair(chain->polysets[i].get(), &chain->matrices[i])]++ > 0)
 			continue;

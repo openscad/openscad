@@ -8,10 +8,8 @@
 #include <boost/filesystem.hpp>
 namespace fs = boost::filesystem;
 #include "boosty.h"
-#include <set>
 
-//boost::unordered_set<std::string> dependencies;
-std::set<std::string> dependencies;
+boost::unordered_set<std::string> dependencies;
 const char *make_command = NULL;
 
 void handle_dep(const std::string &filename)

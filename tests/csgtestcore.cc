@@ -357,13 +357,6 @@ int csgtestcore(int argc, char *argv[], test_type_e test_type)
 	Vector3d camerapos = center - radius*1.8*cameradir;
 	csgInfo.glview->setCamera(camerapos, center);
 
-#include <iostream>
-	if (csgInfo.background_chain)
-		std::cout << csgInfo.background_chain->dump( true ) << "\n";
-	if (csgInfo.root_chain)
-		std::cout << csgInfo.root_chain->dump( true ) << "\n";
-	if (csgInfo.highlights_chain)
-		std::cout << csgInfo.highlights_chain->dump( true ) << "\n";
 	OpenCSGRenderer opencsgRenderer(csgInfo.root_chain, csgInfo.highlights_chain, csgInfo.background_chain, csgInfo.glview->shaderinfo);
 	ThrownTogetherRenderer thrownTogetherRenderer(csgInfo.root_chain, csgInfo.highlights_chain, csgInfo.background_chain);
 
