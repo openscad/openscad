@@ -268,6 +268,7 @@ build_eigen()
   make install
 }
 
+
 OPENSCADDIR=$PWD
 if [ ! -f $OPENSCADDIR/openscad.pro ]; then
   echo "Must be run from the OpenSCAD source root directory"
@@ -329,7 +330,7 @@ fi
 build_eigen 3.1.1
 build_gmp 5.0.5
 build_mpfr 3.1.1
-build_boost 1.50.0
+build_boost 1.47.0
 # NB! For CGAL, also update the actual download URL in the function
 build_cgal 4.0.2
 build_glew 1.7.0

@@ -107,10 +107,8 @@ void dxf_tesselate(PolySet *ps, DxfData &dxf, double rot, bool up, bool /* do_tr
 
 	std::vector<struct triangle> tri;
 	Grid2d<point_info_t> point_info(GRID_FINE);
-//	boost::unordered_map<edge_t,int> edge_to_triangle;
-//	boost::unordered_map<edge_t,int> edge_to_path;
-	std::map<edge_t,int> edge_to_triangle;
-	std::map<edge_t,int> edge_to_path;
+	boost::unordered_map<edge_t,int> edge_to_triangle;
+	boost::unordered_map<edge_t,int> edge_to_path;
 
 	CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
 	try {

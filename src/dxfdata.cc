@@ -39,6 +39,7 @@
 #include <boost/algorithm/string.hpp>
 #include <algorithm>
 #include <sstream>
+#include <map>
 
 #include <QDir>
 #include "value.h"

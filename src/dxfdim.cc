@@ -183,7 +183,9 @@ Value builtin_dxf_cross(const Context *ctx, const std::vector<std::string> &argn
 			return dxf_cross_cache[key] = Value(ret);
 		}
 	}
+
 	PRINTB("WARNING: Can't find cross in '%s', layer '%s'!", filename % layername);
+
 	return Value();
 }
 

@@ -22,12 +22,12 @@ CONFIG(mingw-cross-env) {
 # Optionally specify location of Eigen3 using the 
 # OPENSCAD_LIBRARIES env. variable
 !isEmpty(OPENSCAD_LIBRARIES_DIR) {
-	isEmpty(EIGEN_INCLUDEPATH) {
+  isEmpty(EIGEN_INCLUDEPATH) {
     exists($$OPENSCAD_LIBRARIES_DIR/include/eigen3) {
       EIGEN_INCLUDEPATH = $$OPENSCAD_LIBRARIES_DIR/include/eigen3
     } 
   }
-	isEmpty(EIGEN_INCLUDEPATH) {
+  isEmpty(EIGEN_INCLUDEPATH) {
     exists($$OPENSCAD_LIBRARIES_DIR/include/eigen2) {
       EIGEN_INCLUDEPATH = $$OPENSCAD_LIBRARIES_DIR/include/eigen2
     } 
