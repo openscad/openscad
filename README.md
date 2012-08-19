@@ -92,7 +92,7 @@ Follow the instructions for the platform you're compiling on below.
  * [boost (1.35 - 1.47)](http://www.boost.org/)
 * [OpenCSG (1.3.2)](http://www.opencsg.org/)
 * [GLEW (1.6 ->)](http://glew.sourceforge.net/)
-* [Eigen2 (2.0.13->)](http://eigen.tuxfamily.org/)
+* [Eigen (2.0.13->3.1.1)](http://eigen.tuxfamily.org/)
 * [GCC C++ Compiler (4.2 ->)](http://gcc.gnu.org/)
 * [Bison (2.4)](http://www.gnu.org/software/bison/)
 * [Flex (2.5.35)](http://flex.sourceforge.net/)
