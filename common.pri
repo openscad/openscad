@@ -9,6 +9,5 @@ include(bison.pri)
 include(cgal.pri)
 include(opencsg.pri)
 include(glew.pri)
-include(boost.pri)
 include(eigen.pri)
-
+include(boost.pri)

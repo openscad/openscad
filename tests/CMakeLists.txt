@@ -179,18 +179,19 @@ if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 endif()
 
 # Priority
-# 3. EIGEN3DIR / EIGEN2DIR if set
+# 3. EIGENDIR if set (EIGEN2DIR for backwards compatability)
 # 1. OPENSCAD_LIBRARIES eigen3
 # 2. OPENSCAD_LIBRARIES eigen2
 # 4. system's standard include paths for eigen3
 # 5. system's standard include paths for eigen2
 
-set(EIGEN3_DIR "$ENV{EIGEN3DIR}")
 set(EIGEN2_DIR "$ENV{EIGEN2DIR}")
+set(EIGEN_DIR "$ENV{EIGENDIR}")
 set(OPENSCAD_LIBDIR "$ENV{OPENSCAD_LIBRARIES}")
 
-if (EIGEN3_DIR)
-  find_path(EIGEN_INCLUDE_DIR Eigen/Core HINTS "${EIGEN3_DIR}/include/eigen3" "${EIGEN3_DIR}")
+if (EIGEN_DIR)
+  set(EIGEN_HINTS "${EIGEN_DIR}/include/eigen3" "${EIGEN_DIR}/include/eigen2" "${EIGEN_DIR}")
+  find_path(EIGEN_INCLUDE_DIR Eigen/Core HINTS "${EIGEN_HINTS}")
 endif()
 if (EIGEN2_DIR)
   find_path(EIGEN_INCLUDE_DIR Eigen/Core HINTS "${EIGEN2_DIR}/include/eigen2" "${EIGEN2_DIR}")

@@ -2,18 +2,18 @@
 # which eigen to use:
 #
 # Priority
-# 3. EIGEN3DIR / EIGEN2DIR if set
+# 0. EIGENDIR if set (also EIGEN2DIR for backwards compatability)
 # 1. OPENSCAD_LIBRARIES eigen3
 # 2. OPENSCAD_LIBRARIES eigen2
-# 4. system's standard include paths for eigen3
-# 5. system's standard include paths for eigen2
+# 3. system's standard include paths for eigen3
+# 4. system's standard include paths for eigen2
 
 eigen {
 
 # read environment variables
 OPENSCAD_LIBRARIES_DIR = $$(OPENSCAD_LIBRARIES)
 EIGEN2_DIR = $$(EIGEN2DIR)
-EIGEN3_DIR = $$(EIGEN3DIR)
+EIGEN_DIR = $$(EIGENDIR)
 
 CONFIG(mingw-cross-env) {
   EIGEN_INCLUDEPATH = mingw-cross-env/include/eigen2
@@ -36,17 +36,14 @@ CONFIG(mingw-cross-env) {
 
 
 # Optionally specify location of Eigen using the 
-# EIGEN3DIR env. variable
-!isEmpty(EIGEN3_DIR) { 
-  EIGEN_INCLUDEPATH = $$EIGEN3_DIR
-  message("EIGEN3 location: $$EIGEN3_INCLUDEPATH")
-}
-
-# Optionally specify location of Eigen using the 
-# EIGEN2DIR env. variable
+# EIGENDIR env. variable (EIGEN2 for backwards compatability)
 !isEmpty(EIGEN2_DIR) { 
   EIGEN_INCLUDEPATH = $$EIGEN2_DIR
-  message("EIGEN2 location: $$EIGEN2_INCLUDEPATH")
+  message("User set EIGEN location: $$EIGEN2_INCLUDEPATH")
+}
+!isEmpty(EIGEN_DIR) { 
+  EIGEN_INCLUDEPATH = $$EIGEN_DIR
+  message("User set EIGEN location: $$EIGEN_INCLUDEPATH")
 }
 
 isEmpty(EIGEN_INCLUDEPATH) {
