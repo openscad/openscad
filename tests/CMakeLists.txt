@@ -67,6 +67,17 @@ if(WIN32 AND CMAKE_COMPILER_IS_GNUCXX)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fpermissive -frounding-math")
 endif()
 
+# Clang compiler
+
+if(CMAKE_CXX_COMPILER MATCHES ".*clang.*")
+  # disable enormous amount of warnings about CGAL
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-parameter")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-variable")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-function")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-c++11-extensions")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-sign-compare")
+endif()
+
 #
 # Build test apps
 #
@@ -159,6 +170,14 @@ set(CMAKE_INCLUDE_DIRECTORIES_BEFORE OFF)
 
 
 # Eigen
+
+# Turn off Eigen SIMD optimization
+if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+  if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "FreeBSD")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DEIGEN_DONT_ALIGN")
+  endif()
+endif()
+
 # First try to find Eigen3. If it's not there, fallback to Eigen2
 
 # Eigen3
@@ -196,13 +215,6 @@ endif()
 # Eigen2
 
 if (NOT EIGEN3_INCLUDE_DIR)
-
-# Turn off Eigen SIMD optimization
-if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-  if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "FreeBSD")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DEIGEN_DONT_ALIGN")
-  endif()
-endif()
 
 if (NOT $ENV{EIGEN2DIR} STREQUAL "")
   set(EIGEN2_DIR "$ENV{EIGEN2DIR}")
