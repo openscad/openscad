@@ -32,8 +32,6 @@
 
 //#include <boost/unordered_map.hpp>
 #include <map>
-#include <iostream>
-using std::cout;
 
 ThrownTogetherRenderer::ThrownTogetherRenderer(CSGChain *root_chain, 
 																							 CSGChain *highlights_chain,
@@ -72,8 +70,6 @@ void ThrownTogetherRenderer::renderCSGChain(CSGChain *chain, bool highlight,
 			continue;
 		const Transform3d &m = chain->matrices[i];
 		const Color4f &c = chain->colors[i];
-		cout << "m\n" << m.matrix() << "\n";
-		cout << "color\n" << c << "\n";
 		glPushMatrix();
 		glMultMatrixd(m.data());
 		PolySet::csgmode_e csgmode  = chain->types[i] == CSGTerm::TYPE_DIFFERENCE ? PolySet::CSGMODE_DIFFERENCE : PolySet::CSGMODE_NORMAL;
