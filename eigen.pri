@@ -39,7 +39,7 @@ CONFIG(mingw-cross-env) {
 # EIGENDIR env. variable (EIGEN2 for backwards compatability)
 !isEmpty(EIGEN2_DIR) { 
   EIGEN_INCLUDEPATH = $$EIGEN2_DIR
-  message("User set EIGEN location: $$EIGEN2_INCLUDEPATH")
+  message("User set EIGEN location: $$EIGEN_INCLUDEPATH")
 }
 !isEmpty(EIGEN_DIR) { 
   EIGEN_INCLUDEPATH = $$EIGEN_DIR
