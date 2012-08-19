@@ -188,6 +188,7 @@ endif()
 set(EIGEN2_DIR "$ENV{EIGEN2DIR}")
 set(EIGEN_DIR "$ENV{EIGENDIR}")
 set(OPENSCAD_LIBDIR "$ENV{OPENSCAD_LIBRARIES}")
+
 if (EIGEN_DIR)
   set(EIGHINT ${EIGEN_DIR}/include/eigen3 ${EIGEN_DIR}/include/eigen2 ${EIGEN_DIR})
   find_path(EIGEN_INCLUDE_DIR Eigen/Core HINTS ${EIGHINT})
