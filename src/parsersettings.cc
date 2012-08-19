@@ -15,13 +15,13 @@ void add_librarydir(const std::string &libdir)
 
 /*!
 	Searces for the given file in library paths and returns the full path if found.
-	Returns an empty path if file cannot be found.
+	Returns an empty path if file cannot be found or filename is a directory.
 */
 std::string locate_file(const std::string &filename)
 {
 	BOOST_FOREACH(const std::string &dir, librarypath) {
 		fs::path usepath = fs::path(dir) / filename;
-		if (fs::exists(usepath)) return usepath.string();
+		if (fs::exists(usepath) && !fs::is_directory(usepath)) return usepath.string();
 	}
 	return std::string();
 }
@@ -33,10 +33,10 @@ void parser_init(const std::string &applicationpath)
 	std::string librarydir;
 	fs::path libdir(applicationpath);
 	fs::path tmpdir;
-#ifdef Q_WS_MAC
+#ifdef __APPLE__
 	libdir /= "../Resources"; // Libraries can be bundled
 	if (!is_directory(libdir / "libraries")) libdir /= "../../..";
-#elif defined(Q_OS_UNIX)
+#elif !defined(WIN32)
 	if (is_directory(tmpdir = libdir / "../share/openscad/libraries")) {
 		librarydir = boosty::stringy( tmpdir );
 	} else if (is_directory(tmpdir = libdir / "../../share/openscad/libraries")) {

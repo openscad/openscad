@@ -59,7 +59,7 @@ public:
 
 	void add(const shared_ptr<PolySet> &polyset, const Transform3d &m, const Color4f &color, CSGTerm::type_e type, std::string label);
 	void import(shared_ptr<CSGTerm> term, CSGTerm::type_e type = CSGTerm::TYPE_UNION);
-	std::string dump();
+	std::string dump(bool full = false);
 
 	BoundingBox getBoundingBox() const;
 };

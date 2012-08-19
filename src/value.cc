@@ -25,8 +25,9 @@
  */
 
 #include "value.h"
+#include <stdio.h>
 #include <math.h>
-#include <assert.h> // fmod
+#include <assert.h>
 #include <sstream>
 #include <boost/foreach.hpp>
 #include <boost/variant/apply_visitor.hpp>
