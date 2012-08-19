@@ -167,7 +167,7 @@ void dxf_tesselate(PolySet *ps, DxfData &dxf, double rot, bool up, bool /* do_tr
 	}
 
 	if ( duplicate_vertices > 0 )
-		PRINT( "WARNING: duplicate vertices and/or intersecting lines found during DXF Tessellation. Render may be incorrect." );
+		PRINT( "WARNING: Duplicate vertices and/or intersecting lines found during DXF Tessellation. Render may be incorrect." );
 
 	}
 	catch (CGAL::Assertion_exception e) {
