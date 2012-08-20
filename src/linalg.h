@@ -14,6 +14,9 @@ using Eigen::Matrix3d;
 using Eigen::Matrix4d;
 using Eigen::Transform3d;
 
+bool matrix_contains_infinity( const Eigen::Transform3d &m );
+bool matrix_contains_nan( const Eigen::Transform3d &m );
+
 BoundingBox operator*(const Transform3d &m, const BoundingBox &box);
 
 class Color4f : public Eigen::Vector4f

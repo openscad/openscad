@@ -241,6 +241,15 @@ Response CGALEvaluator::visit(State &state, const TransformNode &node)
 			// First union all children
 			N = applyToChildren(node, CGE_UNION);
 
+			if ( matrix_contains_infinity( node.matrix ) ) {
+				PRINT("Warning: Transformation matrix contains Infinity - removing object.");
+				N.reset();
+			}
+			if ( matrix_contains_nan( node.matrix ) ) {
+				PRINT("Warning: Transformation matrix contains Not-a-Number - removing object");
+				N.reset();
+			}
+
 			// Then apply transform
 			// If there is no geometry under the transform, N will be empty and of dim 0,
 			// just just silently ignore such nodes
@@ -248,7 +257,7 @@ Response CGALEvaluator::visit(State &state, const TransformNode &node)
 				// Unfortunately CGAL provides no transform method for CGAL_Nef_polyhedron2
 				// objects. So we convert in to our internal 2d data format, transform it,
 				// tesselate it and create a new CGAL_Nef_polyhedron2 from it.. What a hack!
-				
+
 				Eigen::Matrix2f testmat;
 				testmat << node.matrix(0,0), node.matrix(0,1), node.matrix(1,0), node.matrix(1,1);
 				if (testmat.determinant() == 0) {
