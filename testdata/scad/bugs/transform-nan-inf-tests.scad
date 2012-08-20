@@ -1,10 +1,10 @@
 // Test translation by NaN and Infinity
 
-// NaN test - cube(2) should not be rendered
-cube(1);
+// NaN test - cube() should not be rendered
+sphere();
 angle = asin(1.1);
 render()
 rotate([0, 0, angle])
-cube(2);
+cube();
 
 // FIXME: how do you test infinity?
