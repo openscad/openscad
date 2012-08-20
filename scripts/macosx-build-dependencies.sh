@@ -174,9 +174,9 @@ build_boost()
   echo "Building boost" $version "..."
   cd $BASEDIR/src
   rm -rf boost_$bversion
-  if [ ! -f boost_$bversion.tar.bz2 ]; then
-    curl -LO http://downloads.sourceforge.net/project/boost/boost/$version/boost_$bversion.tar.bz2
-  fi
+#  if [ ! -f boost_$bversion.tar.bz2 ]; then
+#    curl -LO http://downloads.sourceforge.net/project/boost/boost/$version/boost_$bversion.tar.bz2
+#  fi
   tar xjf boost_$bversion.tar.bz2
   cd boost_$bversion
   # We only need the thread and program_options libraries
