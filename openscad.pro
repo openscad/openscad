@@ -3,7 +3,7 @@
 #   MPFRDIR
 #   BOOSTDIR
 #   CGALDIR
-#   EIGEN2DIR
+#   EIGENDIR
 #   GLEWDIR
 #   OPENCSGDIR
 #   OPENSCAD_LIBRARIES
@@ -123,7 +123,7 @@ macx:CONFIG += mdi
 CONFIG += cgal
 CONFIG += opencsg
 CONFIG += boost
-CONFIG += eigen2
+CONFIG += eigen
 
 #Uncomment the following line to enable QCodeEdit
 #CONFIG += qcodeedit

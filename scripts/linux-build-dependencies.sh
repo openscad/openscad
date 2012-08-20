@@ -124,7 +124,7 @@ build_boost()
   # We only need certain portions of boost
   ./bootstrap.sh --prefix=$DEPLOYDIR --with-libraries=thread,program_options,filesystem,system,regex
 	if [ $CXX ]; then
-		if [ $CXX = "clang" ]; then
+		if [ $CXX = "clang++" ]; then
 		  ./b2 -j$NUMCPU toolset=clang install
 		  # ./b2 -j$NUMCPU toolset=clang cxxflags="-stdlib=libc++" linkflags="-stdlib=libc++" install
 		fi
@@ -246,17 +246,24 @@ build_eigen()
   echo "Building eigen" $version "..."
   cd $BASEDIR/src
   rm -rf eigen-$version
-  ## Directory name for v2.0.17
-  rm -rf eigen-eigen-b23437e61a07
+  EIGENDIR="none"
+  if [ $version = "2.0.17" ]; then EIGENDIR=eigen-eigen-b23437e61a07; fi
+  if [ $version = "3.1.1" ]; then EIGENDIR=eigen-eigen-43d9075b23ef; fi
+  if [ $EIGENDIR = "none" ]; then
+    echo Unknown eigen version. Please edit script.
+    exit 1
+  fi
+  rm -rf ./$EIGENDIR
   if [ ! -f eigen-$version.tar.bz2 ]; then
     curl -LO http://bitbucket.org/eigen/eigen/get/$version.tar.bz2
     mv $version.tar.bz2 eigen-$version.tar.bz2
   fi
   tar xjf eigen-$version.tar.bz2
-  ## File name for v2.0.17
-  ln -s eigen-eigen-b23437e61a07 eigen-$version
+  ln -s ./$EIGENDIR eigen-$version
   cd eigen-$version
-  cmake -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR
+  mkdir build
+  cd build
+  cmake -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR ..
   make -j$NUMCPU
   make install
 }
@@ -320,7 +327,7 @@ fi
 # edit version numbers here as needed.
 #
 
-build_eigen 2.0.17
+build_eigen 3.1.1
 build_gmp 5.0.5
 build_mpfr 3.1.1
 build_boost 1.47.0

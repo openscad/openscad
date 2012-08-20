@@ -271,20 +271,29 @@ build_eigen()
   echo "Building eigen" $version "..."
   cd $BASEDIR/src
   rm -rf eigen-$version
-  ## Directory name for v2.0.17
-  rm -rf eigen-eigen-b23437e61a07
+
+  EIGENDIR="none"
+  if [ $version = "2.0.17" ]; then EIGENDIR=eigen-eigen-b23437e61a07; fi
+  if [ $version = "3.1.1" ]; then EIGENDIR=eigen-eigen-43d9075b23ef; fi
+  if [ $EIGENDIR = "none" ]; then
+    echo Unknown eigen version. Please edit script.
+    exit 1
+  fi
+  rm -rf ./$EIGENDIR
+
   if [ ! -f eigen-$version.tar.bz2 ]; then
     curl -LO http://bitbucket.org/eigen/eigen/get/$version.tar.bz2
     mv $version.tar.bz2 eigen-$version.tar.bz2
   fi
   tar xjf eigen-$version.tar.bz2
-  ## File name for v2.0.17
-  ln -s eigen-eigen-b23437e61a07 eigen-$version
+  ln -s ./$EIGENDIR eigen-$version
   cd eigen-$version
+  mkdir build
+  cd build
   if $OPTION_32BIT; then
     EIGEN_EXTRA_FLAGS=";i386"
   fi
-  cmake -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR -DEIGEN_BUILD_LIB=ON -DBUILD_SHARED_LIBS=FALSE -DCMAKE_OSX_DEPLOYMENT_TARGET="$MAC_OSX_VERSION_MIN" -DCMAKE_OSX_ARCHITECTURES="x86_64$EIGEN_EXTRA_FLAGS"
+  cmake -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR -DEIGEN_BUILD_LIB=ON -DBUILD_SHARED_LIBS=FALSE -DCMAKE_OSX_DEPLOYMENT_TARGET="$MAC_OSX_VERSION_MIN" -DCMAKE_OSX_ARCHITECTURES="x86_64$EIGEN_EXTRA_FLAGS" ..
   make -j4
   make install
 }
@@ -325,7 +334,7 @@ fi
 
 echo "Using basedir:" $BASEDIR
 mkdir -p $SRCDIR $DEPLOYDIR
-build_eigen 2.0.17
+build_eigen 3.1.1
 build_gmp 5.0.5
 build_mpfr 3.1.0
 build_boost 1.47.0

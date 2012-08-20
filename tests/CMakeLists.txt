@@ -86,6 +86,17 @@ if(WIN32 AND CMAKE_COMPILER_IS_GNUCXX)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fpermissive -frounding-math")
 endif()
 
+# Clang compiler
+
+if(CMAKE_CXX_COMPILER MATCHES ".*clang.*")
+  # disable enormous amount of warnings about CGAL
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-parameter")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-variable")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-function")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-c++11-extensions")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-sign-compare")
+endif()
+
 #
 # Build test apps
 #
@@ -176,7 +187,8 @@ endif()
 
 set(CMAKE_INCLUDE_DIRECTORIES_BEFORE OFF)
 
-# Eigen2
+
+# Eigen
 
 # Turn off Eigen SIMD optimization
 if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
@@ -185,34 +197,63 @@ if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
   endif()
 endif()
 
-if (NOT $ENV{EIGEN2DIR} STREQUAL "")
-  set(EIGEN2_DIR "$ENV{EIGEN2DIR}")
-elseif (NOT $ENV{OPENSCAD_LIBRARIES} STREQUAL "")
-  set(EIGEN2_DIR "$ENV{OPENSCAD_LIBRARIES}")
+# Priority
+# 3. EIGENDIR if set (EIGEN2DIR for backwards compatability)
+# 1. OPENSCAD_LIBRARIES eigen3
+# 2. OPENSCAD_LIBRARIES eigen2
+# 4. system's standard include paths for eigen3
+# 5. system's standard include paths for eigen2
+
+set(EIGEN2_DIR "$ENV{EIGEN2DIR}")
+set(EIGEN_DIR "$ENV{EIGENDIR}")
+set(OPENSCAD_LIBDIR "$ENV{OPENSCAD_LIBRARIES}")
+
+if (EIGEN_DIR)
+  set(EIGHINT ${EIGEN_DIR}/include/eigen3 ${EIGEN_DIR}/include/eigen2 ${EIGEN_DIR})
+  find_path(EIGEN_INCLUDE_DIR Eigen/Core HINTS ${EIGHINT})
+endif()
+if (EIGEN2_DIR)
+  find_path(EIGEN_INCLUDE_DIR Eigen/Core HINTS ${EIGEN2_DIR}/include/eigen2 ${EIGEN2_DIR})
 endif()
 
-if (NOT EIGEN2_INCLUDE_DIR)
-  if (EIGEN2_DIR)
-    set(EIGEN2_FIND_HINTS "${EIGEN2_DIR}/include/eigen2")
-  endif()
+if (NOT EIGEN_INCLUDE_DIR)
+  find_path(EIGEN_INCLUDE_DIR Eigen/Core HINTS ${OPENSCAD_LIBDIR}/include/eigen3)
+endif()
+if (NOT EIGEN_INCLUDE_DIR)
+  find_path(EIGEN_INCLUDE_DIR Eigen/Core HINTS ${OPENSCAD_LIBDIR}/include/eigen2)
+endif()
+
+if (NOT EIGEN_INCLUDE_DIR)
   if (${CMAKE_SYSTEM_NAME} MATCHES "FreeBSD")
-    set(EIGEN2_FIND_PATHS /usr/local/include/eigen2)
+    find_path(EIGEN_INCLUDE_DIR Eigen/Core HINTS /usr/local/include/eigen3)
   elseif (${CMAKE_SYSTEM_NAME} MATCHES "NetBSD")
-    set(EIGEN2_FIND_PATHS /usr/pkg/include/eigen2)
+    find_path(EIGEN_INCLUDE_DIR Eigen/Core HINTS /usr/pkg/include/eigen3)
+  elseif (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+    find_path(EIGEN_INCLUDE_DIR Eigen/Core HINTS /opt/local/include/eigen3)
   else()
-    set(EIGEN2_FIND_PATHS /opt/local/include/eigen2 /usr/include/eigen2)
-  endif()
-  find_path(EIGEN2_INCLUDE_DIR
-            Eigen/Core 
-            HINTS ${EIGEN2_FIND_HINTS}
-            PATHS ${EIGEN2_FIND_PATHS})
-  if (NOT EIGEN2_INCLUDE_DIR)
-    message(FATAL_ERROR "Eigen2 not found")
-  else()
-    message(STATUS "Eigen2 found in " ${EIGEN2_INCLUDE_DIR})
+    find_path(EIGEN_INCLUDE_DIR Eigen/Core HINTS /usr/include/eigen3)
   endif()
 endif()
-inclusion(EIGEN2_DIR EIGEN2_INCLUDE_DIR)
+
+if (NOT EIGEN_INCLUDE_DIR)
+  if (${CMAKE_SYSTEM_NAME} MATCHES "FreeBSD")
+    find_path(EIGEN_INCLUDE_DIR Eigen/Core HINTS /usr/local/include/eigen2)
+  elseif (${CMAKE_SYSTEM_NAME} MATCHES "NetBSD")
+    find_path(EIGEN_INCLUDE_DIR Eigen/Core HINTS /usr/pkg/include/eigen2)
+  elseif (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+    find_path(EIGEN_INCLUDE_DIR Eigen/Core HINTS /opt/local/include/eigen2)
+  else()
+    find_path(EIGEN_INCLUDE_DIR Eigen/Core HINTS /usr/include/eigen2)
+  endif()
+endif()
+
+if (NOT EIGEN_INCLUDE_DIR)
+  message(STATUS "Eigen not found")
+else()
+  message(STATUS "Eigen found in " ${EIGEN_INCLUDE_DIR})
+  inclusion(EIGEN_DIR EIGEN_INCLUDE_DIR)
+endif()
+
 
 # OpenCSG
 if (NOT $ENV{OPENCSGDIR} STREQUAL "")
