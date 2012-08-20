@@ -367,6 +367,8 @@ int csgtestcore(int argc, char *argv[], test_type_e test_type)
 
 	OpenCSG::setContext(0);
 	OpenCSG::setOption(OpenCSG::OffscreenSetting, OpenCSG::FrameBufferObject);
+  // FIXME: This is necessary for Mac OS X 10.7 for now. kintel 20120527.
+	OpenCSG::setOption(OpenCSG::AlgorithmSetting, OpenCSG::Goldfeather);
 
 	csgInfo.glview->paintGL();
 	
