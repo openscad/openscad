@@ -666,11 +666,11 @@ list(APPEND DUMPTEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/escape-test
 
 list(APPEND CGALPNGTEST_FILES ${FEATURES_FILES} ${SCAD_DXF_FILES} ${EXAMPLE_FILES})
 list(APPEND CGALPNGTEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/include-tests.scad
-                           ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/use-tests.scad)
+                           ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/use-tests.scad
+                           ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/transform-nan-inf-tests.scad)
 list(APPEND OPENCSGTEST_FILES ${CGALPNGTEST_FILES})
 list(APPEND OPENCSGTEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/bbox-transform-bug.scad)
 list(APPEND OPENCSGTEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/intersection-prune-test.scad)
-list(APPEND OPENCSGTEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/transform-nan-inf-tests.scad)
 list(APPEND THROWNTOGETHERTEST_FILES ${OPENCSGTEST_FILES})
 
 list(APPEND CGALSTLSANITYTEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/normal-nan.scad)
