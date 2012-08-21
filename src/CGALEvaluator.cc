@@ -241,6 +241,12 @@ Response CGALEvaluator::visit(State &state, const TransformNode &node)
 			// First union all children
 			N = applyToChildren(node, CGE_UNION);
 
+			if ( matrix_contains_infinity( node.matrix ) || matrix_contains_nan( node.matrix ) ) {
+				// due to the way parse/eval works we can't currently distinguish between NaN and Inf
+				PRINT("Warning: Transformation matrix contains Not-a-Number and/or Infinity - removing object.");
+				N.reset();
+			}
+
 			// Then apply transform
 			// If there is no geometry under the transform, N will be empty and of dim 0,
 			// just just silently ignore such nodes
