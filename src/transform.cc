@@ -98,7 +98,9 @@ AbstractNode *TransformModule::evaluate(const Context *ctx, const ModuleInstanti
 		Value val_a = c.lookup_variable("a");
 		if (val_a.type() == Value::VECTOR)
 		{
-			Eigen::AngleAxisd rotx, roty, rotz;
+			Eigen::AngleAxisd rotx(0, Vector3d::UnitX());
+			Eigen::AngleAxisd roty(0, Vector3d::UnitY());
+			Eigen::AngleAxisd rotz(0, Vector3d::UnitZ());
 			double a;
 			if (val_a.toVector().size() > 0) {
 				val_a.toVector()[0].getDouble(a);
