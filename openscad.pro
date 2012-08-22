@@ -246,6 +246,7 @@ SOURCES += src/version_check.cc \
            src/printutils.cc \
            src/progress.cc \
            src/parsersettings.cc \
+           src/stl-utils.cc \
            \
            src/nodedumper.cc \
            src/traverser.cc \
