@@ -26,6 +26,9 @@ DEPLOYDIR=$BASEDIR/install
 MAC_OSX_VERSION_MIN=10.5
 OPTION_32BIT=true
 OPTION_LLVM=false
+OPTION_CLANG=false
+OPTION_GCC=false
+DETECTED_LION=false
 export QMAKESPEC=macx-g++
 
 printUsage()
@@ -187,6 +190,9 @@ build_boost()
   if $OPTION_LLVM; then
     BOOST_TOOLSET="toolset=darwin-llvm"
     echo "using darwin : llvm : llvm-g++ ;" >> tools/build/v2/user-config.jam 
+  elif $OPTION_CLANG; then
+    BOOST_TOOLSET="toolset=clang"
+    echo "using clang ;" >> tools/build/v2/user-config.jam 
   fi
   ./b2 -d+2 $BOOST_TOOLSET cflags="-mmacosx-version-min=$MAC_OSX_VERSION_MIN -arch x86_64 $BOOST_EXTRA_FLAGS" linkflags="-mmacosx-version-min=$MAC_OSX_VERSION_MIN -arch x86_64 $BOOST_EXTRA_FLAGS" install
   install_name_tool -id $DEPLOYDIR/lib/libboost_thread.dylib $DEPLOYDIR/lib/libboost_thread.dylib 
@@ -319,15 +325,46 @@ if [[ $OSVERSION -ge 7 ]]; then
   # Somehow, qmake in Qt-4.8.2 doesn't detect Lion's gcc and falls back into
   # project file mode unless manually given a QMAKESPEC
   export QMAKESPEC=macx-llvm
+  DETECTED_LION=true
 else
   echo "Detected Snow Leopard or earlier"
 fi
 
+USING_LLVM=false
+USING_GCC=false
+USING_CLANG=false
 if $OPTION_LLVM; then
   echo "Using LLVM compiler"
   export CC=llvm-gcc
   export CXX=llvm-g++
   export QMAKESPEC=macx-llvm
+  USING_LLCM=true
+elif $OPTION_GCC; then
+  USING_GCC=true
+elif $OPTION_CLANG; then
+  USING_CLANG=true
+elif $DETECTED_LION; then
+  USING_GCC=true
+fi
+
+if $USING_LLVM; then
+  echo "Using gcc LLVM compiler"
+  export CC=llvm-gcc
+  export CXX=llvm-g++
+  export QMAKESPEC=macx-llvm
+elif $USING_GCC; then
+  echo "Using gcc compiler"
+  export CC=gcc
+  export CXX=g++
+  export CPP=cpp
+  # Somehow, qmake in Qt-4.8.2 doesn't detect Lion's gcc and falls back into
+  # project file mode unless manually given a QMAKESPEC
+  export QMAKESPEC=macx-llvm
+elif $USING_CLANG; then
+  echo "Using clang compiler"
+  export CC=clang
+  export CXX=clang++
+  export QMAKESPEC=unsupported/macx-clang
 fi
 
 echo "Using basedir:" $BASEDIR
