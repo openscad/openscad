@@ -137,8 +137,8 @@ build_mpfr()
   fi
   tar xjf mpfr-$version.tar.bz2
   cd mpfr-$version
-  curl -O http://www.mpfr.org/mpfr-$version/allpatches
-  patch -N -Z -p1 < allpatches 
+#  curl -O http://www.mpfr.org/mpfr-$version/allpatches
+#  patch -N -Z -p1 < allpatches 
   if $OPTION_32BIT; then
     mkdir build-i386
     cd build-i386
@@ -238,12 +238,10 @@ build_glew()
   tar xzf glew-$version.tgz
   cd glew-$version
   mkdir -p $DEPLOYDIR/lib/pkgconfig
-  # To avoid running strip on a fat archive as this is not supported by strip
-  sed -ibak -e "s/\$(STRIP) -x lib\/\$(LIB.STATIC)//" Makefile 
   if $OPTION_32BIT; then
     GLEW_EXTRA_FLAGS="-arch i386"
   fi
-  make GLEW_DEST=$DEPLOYDIR CFLAGS.EXTRA="-no-cpp-precomp -dynamic -fno-common -mmacosx-version-min=$MAC_OSX_VERSION_MIN $GLEW_EXTRA_FLAGS -arch x86_64" LDFLAGS.EXTRA="-mmacosx-version-min=$MAC_OSX_VERSION_MIN $GLEW_EXTRA_FLAGS -arch x86_64" install
+  make GLEW_DEST=$DEPLOYDIR CFLAGS.EXTRA="-no-cpp-precomp -dynamic -fno-common -mmacosx-version-min=$MAC_OSX_VERSION_MIN $GLEW_EXTRA_FLAGS -arch x86_64" LDFLAGS.EXTRA="-mmacosx-version-min=$MAC_OSX_VERSION_MIN $GLEW_EXTRA_FLAGS -arch x86_64" STRIP= install
 }
 
 build_opencsg()
@@ -336,9 +334,9 @@ echo "Using basedir:" $BASEDIR
 mkdir -p $SRCDIR $DEPLOYDIR
 build_eigen 3.1.1
 build_gmp 5.0.5
-build_mpfr 3.1.0
-build_boost 1.47.0
+build_mpfr 3.1.1
+build_boost 1.50.0
 # NB! For CGAL, also update the actual download URL in the function
 build_cgal 4.0.2
-build_glew 1.7.0
+build_glew 1.9.0
 build_opencsg 1.3.2
