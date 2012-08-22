@@ -18,8 +18,8 @@ using Eigen::Matrix4d;
 using Eigen::Transform3d;
 #endif
 
-bool matrix_contains_infinity( const Eigen::Transform3d &m );
-bool matrix_contains_nan( const Eigen::Transform3d &m );
+bool matrix_contains_infinity( const Transform3d &m );
+bool matrix_contains_nan( const Transform3d &m );
 
 BoundingBox operator*(const Transform3d &m, const BoundingBox &box);
 
