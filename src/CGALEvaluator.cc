@@ -151,7 +151,7 @@ CGAL_Nef_polyhedron CGALEvaluator::applyHull(const CgaladvNode &node)
 		else if (dim == 3) {
 			CGAL_Polyhedron P;
 			if (!chN.p3->is_simple()) {
-		    PRINT("Object isn't a valid 2-manifold! Please modify your design. See http://en.wikibooks.org/wiki/OpenSCAD_User_Manual/STL_Import_and_Export");
+				PRINT("Object isn't a valid 2-manifold! Please modify your design. See http://en.wikibooks.org/wiki/OpenSCAD_User_Manual/STL_Import_and_Export");
 			}
 			else {
 				chN.p3->convert_to_Polyhedron(P);
@@ -161,7 +161,6 @@ CGAL_Nef_polyhedron CGALEvaluator::applyHull(const CgaladvNode &node)
 		}
 		chnode->progress_report();
 	}
-
 	if (dim == 2) {
 		std::list<CGAL_Nef_polyhedron2::Point> result;
 		CGAL::convex_hull_2(points2d.begin(), points2d.end(),std:: back_inserter(result));
