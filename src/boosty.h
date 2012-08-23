@@ -1,5 +1,6 @@
 // boosty.h copyright 2012 don bright. released under the GPL 2, or later,
 // as described in the file named 'COPYING' in OpenSCAD's project root.
+// permission is given to Marius Kintel & Clifford Wolf to change this license.
 
 #ifndef boosty_h_
 #define boosty_h_
@@ -16,6 +17,7 @@
 
  see also
   http://www.boost.org/doc/libs/1_48_0/libs/filesystem/v3/doc/index.htm
+  http://www.boost.org/doc/libs/1_45_0/libs/filesystem/v2/doc/index.htm
   http://www.boost.org/doc/libs/1_42_0/libs/filesystem/doc/index.htm
   http://www.boost.org/doc/libs/1_35_0/libs/filesystem/doc/index.htm
   include/boost/wave/util/filesystem_compatability.hpp
@@ -29,7 +31,7 @@ namespace fs = boost::filesystem;
 
 namespace boosty {
 
-#if BOOST_VERSION >= 104600 && BOOST_FILESYSTEM_VERSION >= 3
+#if BOOST_VERSION >= 104400 && BOOST_FILESYSTEM_VERSION >= 3
 
 inline bool is_absolute( fs::path p )
 {
