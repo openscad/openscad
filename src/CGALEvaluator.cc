@@ -150,9 +150,14 @@ CGAL_Nef_polyhedron CGALEvaluator::applyHull(const CgaladvNode &node)
 		}
 		else if (dim == 3) {
 			CGAL_Polyhedron P;
-			chN.p3->convert_to_Polyhedron(P);
-			std::transform(P.vertices_begin(), P.vertices_end(), std::back_inserter(points3d), 
-										 boost::bind(static_cast<const CGAL_Polyhedron::Vertex::Point_3&(CGAL_Polyhedron::Vertex::*)() const>(&CGAL_Polyhedron::Vertex::point), _1));
+			if (!chN.p3->is_simple()) {
+				PRINT("Hull() currently requires a valid 2-manifold. Please modify your design. See http://en.wikibooks.org/wiki/OpenSCAD_User_Manual/STL_Import_and_Export");
+			}
+			else {
+				chN.p3->convert_to_Polyhedron(P);
+				std::transform(P.vertices_begin(), P.vertices_end(), std::back_inserter(points3d), 
+											 boost::bind(static_cast<const CGAL_Polyhedron::Vertex::Point_3&(CGAL_Polyhedron::Vertex::*)() const>(&CGAL_Polyhedron::Vertex::point), _1));
+			}
 		}
 		chnode->progress_report();
 	}
@@ -165,7 +170,8 @@ CGAL_Nef_polyhedron CGALEvaluator::applyHull(const CgaladvNode &node)
 	}
 	else if (dim == 3) {
 		CGAL_Polyhedron P;
-		CGAL::convex_hull_3(points3d.begin(), points3d.end(), P);
+		if (points3d.size()>3)
+			CGAL::convex_hull_3(points3d.begin(), points3d.end(), P);
 		N = CGAL_Nef_polyhedron(new CGAL_Nef_polyhedron3(P));
 	}
 	return N;
