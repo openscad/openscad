@@ -218,6 +218,9 @@ void Module::registerInclude(const std::string &filename)
 */
 bool Module::handleDependencies()
 {
+	if (this->is_handling_dependencies) return false;
+	this->is_handling_dependencies = true;
+
 	bool changed = false;
 	// Iterating manually since we want to modify the container while iterating
 	Module::ModuleContainer::iterator iter = this->usedlibs.begin();
@@ -236,5 +239,7 @@ bool Module::handleDependencies()
 			this->usedlibs.erase(curr);
 		}
 	}
+
+	this->is_handling_dependencies = false;
 	return changed;
 }
