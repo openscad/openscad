@@ -802,7 +802,8 @@ void MainWindow::actionNew()
 
 void MainWindow::actionOpen()
 {
-	QString new_filename = QFileDialog::getOpenFileName(this, "Open File", "", "OpenSCAD Designs (*.scad)");
+	QString new_filename = QFileDialog::getOpenFileName(this, "Open File", "",
+																											"OpenSCAD Designs (*.scad *.csg)");
 #ifdef ENABLE_MDI
 	if (!new_filename.isEmpty()) {
 		new MainWindow(new_filename);
