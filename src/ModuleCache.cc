@@ -75,17 +75,22 @@ Module *ModuleCache::evaluate(const std::string &filename)
 		std::string text((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
 
 		print_messages_push();
-		
+
+		Module *oldmodule = NULL;
 		cache_entry e = { NULL, cache_id };
 		if (this->entries.find(filename) != this->entries.end()) {
-			delete this->entries[filename].module;
+			oldmodule = this->entries[filename].module;
 		}
 		this->entries[filename] = e;
 		
 		std::string pathname = boosty::stringy(fs::path(filename).parent_path());
 		lib_mod = dynamic_cast<Module*>(parse(text.c_str(), pathname.c_str(), false));
+		PRINTB_NOCACHE("  compiled module: %p", lib_mod);
 		
 		if (lib_mod) {
+			// We defer deletion so we can ensure that the new module won't
+      // have the same address as the old
+			delete oldmodule;
 			this->entries[filename].module = lib_mod;
 		} else {
 			this->entries.erase(filename);
