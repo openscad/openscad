@@ -566,11 +566,11 @@ Module *parse(const char *text, const char *path, int debug)
         //        PRINTB_NOCACHE("New module: %s %p", "root" % rootmodule);
 
 	parserdebug = debug;
-	parserparse();
+	int parserretval = parserparse();
         lexerdestroy();
 	lexerlex_destroy();
 
-	if (!rootmodule) return NULL;
+	if (parserretval != 0) return NULL;
 
 	parser_error_pos = -1;
 	return rootmodule;
