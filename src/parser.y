@@ -233,6 +233,22 @@ ifelse_statement:
 	} ;
 
 module_instantiation:
+	'!' module_instantiation {
+		$$ = $2;
+		if ($$) $$->tag_root = true;
+	} |
+	'#' module_instantiation {
+		$$ = $2;
+		if ($$) $$->tag_highlight = true;
+	} |
+	'%' module_instantiation {
+		$$ = $2;
+		if ($$) $$->tag_background = true;
+	} |
+	'*' module_instantiation {
+		delete $2;
+		$$ = NULL;
+	} |
 	single_module_instantiation ';' {
 		$$ = $1;
 	} |
@@ -271,26 +287,7 @@ single_module_instantiation:
 		$$->argexpr = $3->argexpr;
 		free($1);
 		delete $3;
-	} |
-	'!' single_module_instantiation {
-		$$ = $2;
-		if ($$)
-			$$->tag_root = true;
-	} |
-	'#' single_module_instantiation {
-		$$ = $2;
-		if ($$)
-			$$->tag_highlight = true;
-	} |
-	'%' single_module_instantiation {
-		$$ = $2;
-		if ($$)
-			$$->tag_background = true;
-	} |
-	'*' single_module_instantiation {
-		delete $2;
-		$$ = NULL;
-	};
+	}
 
 expr:
 	TOK_TRUE {

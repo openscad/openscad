@@ -19,10 +19,10 @@ translate([25,0,0]) hull() {
 // Don't Crash (issue 188)
 
 translate([-5,-5,-5]) {
-	hull() {
-		intersection(){
-		cube([1,1,1]);
-	  translate([-1,-1,-1]) cube([1,1,1]);
-	}
+  hull() {
+    intersection() {
+      cube([1,1,1]);
+      translate([-1,-1,-1]) cube([1,1,1]);
+    }
+  }
 }
-
