@@ -81,7 +81,7 @@ public:
 			const CGALPoint &p = vertices[i];
 			B.add_vertex(p);
 #ifdef GEN_SURFACE_DEBUG
-			printf("%d: %f %f %f\n", i, p[0], p[1], p[2]);
+			printf("%d: %f %f %f\n", i, p.x().to_double(), p.y().to_double(), p.z().to_double());
 #endif
 		}
 
