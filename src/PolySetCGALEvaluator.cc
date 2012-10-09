@@ -122,30 +122,36 @@ PolySet *PolySetCGALEvaluator::evaluatePolySet(const ProjectionNode &node)
 
 	CGAL_Nef_polyhedron nef_poly;
 
-	if (node.cut_mode)
-	{
-		// intersect 'sum' with the x-y plane
-		CGAL_Nef_polyhedron3::Plane_3 xy_plane = CGAL_Nef_polyhedron3::Plane_3( 0,0,1,0 );
-		*sum.p3 = sum.p3->intersection( xy_plane, CGAL_Nef_polyhedron3::PLANE_ONLY);
-
-		// Visit each polygon in sum.p3 and union/intersect into a 2d polygon (with holes)
-		// For info on Volumes, Shells, Facets, and the 'visitor' pattern, please see
-		// http://www.cgal.org/Manual/latest/doc_html/cgal_manual/Nef_3/Chapter_main.html
-		NefShellVisitor_for_cut shell_visitor;
-		CGAL_Nef_polyhedron3::Volume_const_iterator i;
-		CGAL_Nef_polyhedron3::Shell_entry_const_iterator j;
-		CGAL_Nef_polyhedron3::SFace_const_handle sface_handle;
-		for ( i = sum.p3->volumes_begin(); i != sum.p3->volumes_end(); ++i ) {
-			for ( j = i->shells_begin(); j != i->shells_end(); ++j ) {
-				sface_handle = CGAL_Nef_polyhedron3::SFace_const_handle( j );
-				sum.p3->visit_shell_objects( sface_handle , shell_visitor );
+	if (node.cut_mode) {
+		CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
+		try {
+			// intersect 'sum' with the x-y plane
+			CGAL_Nef_polyhedron3::Plane_3 xy_plane = CGAL_Nef_polyhedron3::Plane_3( 0,0,1,0 );
+			*sum.p3 = sum.p3->intersection( xy_plane, CGAL_Nef_polyhedron3::PLANE_ONLY);
+			
+			// Visit each polygon in sum.p3 and union/intersect into a 2d polygon (with holes)
+			// For info on Volumes, Shells, Facets, and the 'visitor' pattern, please see
+			// http://www.cgal.org/Manual/latest/doc_html/cgal_manual/Nef_3/Chapter_main.html
+			NefShellVisitor_for_cut shell_visitor;
+			CGAL_Nef_polyhedron3::Volume_const_iterator i;
+			CGAL_Nef_polyhedron3::Shell_entry_const_iterator j;
+			CGAL_Nef_polyhedron3::SFace_const_handle sface_handle;
+			for ( i = sum.p3->volumes_begin(); i != sum.p3->volumes_end(); ++i ) {
+				for ( j = i->shells_begin(); j != i->shells_end(); ++j ) {
+					sface_handle = CGAL_Nef_polyhedron3::SFace_const_handle( j );
+					sum.p3->visit_shell_objects( sface_handle , shell_visitor );
+				}
 			}
+			if (debug) std::cout << "shell visitor\n" << shell_visitor.dump() << "\nshell visitor end\n";
+			
+			nef_poly.p2 = shell_visitor.output_nefpoly2d;
+			nef_poly.dim = 2;
+			if (debug) std::cout << "--\n" << nef_poly.dump_p2() << "\n";
 		}
-		if (debug) std::cout << "shell visitor\n" << shell_visitor.dump() << "\nshell visitor end\n";
-
-		nef_poly.p2 = shell_visitor.output_nefpoly2d;
-		nef_poly.dim = 2;
-		if (debug) std::cout << "--\n" << nef_poly.dump_p2() << "\n";
+		catch (const CGAL::Failure_exception &e) {
+			PRINTB("CGAL error in projection node: %s", e.what());
+			return NULL;
+		}
 
 		// Extract polygons in the XY plane, ignoring all other polygons
 		// FIXME: If the polyhedron is really thin, there might be unwanted polygons
