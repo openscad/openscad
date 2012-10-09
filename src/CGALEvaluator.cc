@@ -81,15 +81,13 @@ void CGALEvaluator::process(CGAL_Nef_polyhedron &target, const CGAL_Nef_polyhedr
 			break;
 		}
 	}
-	catch (CGAL::Failure_exception e) {
-		// union && difference assert triggered by testdata/scad/bugs/rotate-diff-nonmanifold-crash.scad
+	catch (const CGAL::Failure_exception &e) {
+		// union && difference assert triggered by testdata/scad/bugs/rotate-diff-nonmanifold-crash.scad and testdata/scad/bugs/issue204.scad
 		std::string opstr = op == CGE_UNION ? "union" : op == CGE_INTERSECTION ? "intersection" : op == CGE_DIFFERENCE ? "difference" : op == CGE_MINKOWSKI ? "minkowski" : "UNKNOWN";
 		PRINTB("CGAL error in CGAL_Nef_polyhedron's %s operator: %s", opstr % e.what());
 
-		// Minkowski errors can result in corrupt polyhedrons
-		if (op == CGE_MINKOWSKI) {
-			target = src;
-		}
+		// Errors can result in corrupt polyhedrons, so put back the old one
+		target = src;
 	}
 	CGAL::set_error_behaviour(old_behaviour);
 }
@@ -649,7 +647,7 @@ CGAL_Nef_polyhedron CGALEvaluator::evaluateCGALMesh(const PolySet &ps)
 				N = new CGAL_Nef_polyhedron3(*P);
 			}
 		}
-		catch (CGAL::Assertion_exception e) {
+		catch (const CGAL::Assertion_exception &e) {
 			PRINTB("CGAL error in CGAL_Nef_polyhedron3(): %s", e.what());
 		}
 		CGAL::set_error_behaviour(old_behaviour);
