@@ -153,7 +153,7 @@ int main(int argc, char **argv)
 	try {
 		po::store(po::command_line_parser(argc, argv).options(all_options).positional(p).run(), vm);
 	}
-	catch(std::exception &e) { // Catches e.g. unknown options
+	catch(const std::exception &e) { // Catches e.g. unknown options
 		fprintf(stderr, "%s\n", e.what());
 		help(argv[0]);
 	}

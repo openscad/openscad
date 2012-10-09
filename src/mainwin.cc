@@ -709,7 +709,7 @@ void MainWindow::compileCSG(bool procevents)
 		PolySetCache::instance()->print();
 		CGALCache::instance()->print();
 	}
-	catch (ProgressCancelException e) {
+	catch (const ProgressCancelException &e) {
 		PRINT("CSG generation cancelled.");
 	}
 	progress_report_fin();

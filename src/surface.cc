@@ -134,7 +134,7 @@ PolySet *SurfaceNode::evaluate_polyset(class PolySetEvaluator *) const
 				min_val = std::min(v-1, min_val);
 			}
 		}
-		catch (boost::bad_lexical_cast &blc) {
+		catch (const boost::bad_lexical_cast &blc) {
 			if (!stream.eof()) {
 				PRINTB("WARNING: Illegal value in '%s': %s", filename % blc.what());
 			}

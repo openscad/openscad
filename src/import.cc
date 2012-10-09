@@ -157,7 +157,7 @@ PolySet *ImportNode::evaluate_polyset(class PolySetEvaluator *) const
 							vdata[i][v] = boost::lexical_cast<double>(results[v+1]);
 						}
 					}
-					catch (boost::bad_lexical_cast &blc) {
+					catch (const boost::bad_lexical_cast &blc) {
 						PRINTB("WARNING: Can't parse vertex line '%s'.", line);
 						i = 10;
 						continue;
