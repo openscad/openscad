@@ -63,9 +63,7 @@ Value Function::evaluate(const Context *ctx,
 {
 	Context c(ctx);
 	c.args(argnames, argexpr, call_argnames, call_argvalues);
-	if (expr)
-		return expr->evaluate(&c);
-	return Value();
+	return expr ? expr->evaluate(&c) : Value();
 }
 
 std::string Function::dump(const std::string &indent, const std::string &name) const
