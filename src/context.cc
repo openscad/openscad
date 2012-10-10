@@ -43,6 +43,7 @@ std::vector<const Context*> Context::ctx_stack;
 Context::Context(const Context *parent, const Module *library)
 	: parent(parent), inst_p(NULL)
 {
+	if (parent) recursioncount = parent->recursioncount;
 	ctx_stack.push_back(this);
 	if (parent) document_path = parent->document_path;
 	if (library) {
@@ -130,10 +131,26 @@ Value Context::lookup_variable(const std::string &name, bool silent) const
 	return Value();
 }
 
+class RecursionGuard
+{
+public:
+	RecursionGuard(const Context &c, const std::string &name) : c(c), name(name) { c.recursioncount[name]++; }
+	~RecursionGuard() { if (--c.recursioncount[name] == 0) c.recursioncount.erase(name); }
+	bool recursion_detected() const { return (c.recursioncount[name] > 100); }
+private:
+	const Context &c;
+	const std::string &name;
+};
+
 Value Context::evaluate_function(const std::string &name, 
 																 const std::vector<std::string> &argnames, 
 																 const std::vector<Value> &argvalues) const
 {
+	RecursionGuard g(*this, name);
+	if (g.recursion_detected()) { 
+		PRINTB("Recursion detected calling function '%s'", name);
+		return Value();
+	}
 	if (this->functions_p && this->functions_p->find(name) != this->functions_p->end())
 		return this->functions_p->find(name)->second->evaluate(this, argnames, argvalues);
 	if (this->usedlibs_p) {
@@ -144,8 +161,7 @@ Value Context::evaluate_function(const std::string &name,
 			}
 		}
 	}
-	if (this->parent)
-		return this->parent->evaluate_function(name, argnames, argvalues);
+	if (this->parent) return this->parent->evaluate_function(name, argnames, argvalues);
 	PRINTB("WARNING: Ignoring unknown function '%s'.", name);
 	return Value();
 }
