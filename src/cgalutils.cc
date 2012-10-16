@@ -6,7 +6,8 @@
 #include "cgal.h"
 #include <CGAL/bounding_box.h>
 typedef CGAL::Point_3<CGAL_Kernel3> CGAL_Point_3;
-typedef CGAL::Point_2<CGAL_Kernel2> CGAL_Point_2;
+typedef CGAL::Point_2<CGAL::Simple_cartesian<NT> > CGAL_Point_2;
+typedef CGAL::Simple_cartesian<NT>::Iso_rectangle_2 CGAL_Iso_rectangle_2;
 #include <boost/algorithm/string.hpp>
 #include <map>
 
@@ -150,7 +151,7 @@ CGAL_Polyhedron *createPolyhedronFromPolySet(const PolySet &ps)
 
 
 
-CGAL::Point project_svg3( CGAL_Point_3 p, CGAL_Iso_cuboid_3 bbox )
+CGAL_Point_2 project_svg_3to2( CGAL_Point_3 p, CGAL_Iso_cuboid_3 bbox )
 {
 	// do extremely simple fake isometric projection, based on bounding box
 	double x = CGAL::to_double( p.x() );
@@ -168,13 +169,16 @@ CGAL::Point project_svg3( CGAL_Point_3 p, CGAL_Iso_cuboid_3 bbox )
 	double zscale = (zdist==0) ? 1 : screenh / (zdist * 1.618);
 	double tx = xcenter + x * xscale + y * yscale;
 	double ty = ycenter - z * zscale - y * yscale;
-	return CGAL::Point( tx, ty, 0 );
+	return CGAL_Point_2( tx, ty );
 }
 
-CGAL::Point project_svg2( CGAL::Point p, CGAL_Iso_cuboid_3 bbox )
+CGAL_Point_2 project_svg_2to2( CGAL_Point_2 p, CGAL_Iso_rectangle_2 bbox )
 {
-	CGAL_Point_3 pnew( p.x(), 0, p.y() );
-	return project_svg3( pnew, bbox );
+	CGAL_Point_3 origin( 0, 0, 0 );
+	CGAL_Iso_cuboid_3 bbox3d( bbox.xmin(), bbox.ymin(), origin.z(),
+													  bbox.xmax(), bbox.ymax(), origin.z() );
+	CGAL_Point_3 point3d( p.x(), origin.z() , p.y() );
+	return project_svg_3to2( point3d, bbox3d );
 }
 
 // for debugging, not necessarily pretty or useful for users.
@@ -183,13 +187,23 @@ std::string dump_cgal_nef_polyhedron2_face_svg(
 	CGAL_Nef_polyhedron2::Explorer::Halfedge_around_face_const_circulator c2,
 	CGAL_Nef_polyhedron2::Explorer explorer )
 {
+	std::vector<CGAL_Point_2> points;
+	CGAL_For_all(c1, c2)
+		if ( explorer.is_standard( explorer.source( c1 ) ) ) {
+			points.push_back( explorer.point( explorer.source( c1 ) ) );
+			std::cout << points.size() << " point size\n";
+		}
+	CGAL_Iso_rectangle_2 bbox( 0,0,0,0 );
+	if ( points.size() > 0 )
+		bbox = CGAL::bounding_box( points.begin(), points.end() );
+
   std::stringstream out;
 	CGAL_For_all(c1, c2) {
 		if ( explorer.is_standard( explorer.target(c1) ) ) {
-			CGAL_Nef_polyhedron2::Explorer::Point source = explorer.point( explorer.source( c1 ) );
-			CGAL_Nef_polyhedron2::Explorer::Point target = explorer.point( explorer.target( c1 ) );
-			CGAL::Point tp1 = project_svg2( source );
-			CGAL::Point tp2 = project_svg2( target );
+			CGAL_Point_2 source = explorer.point( explorer.source( c1 ) );
+			CGAL_Point_2 target = explorer.point( explorer.target( c1 ) );
+			CGAL_Point_2 tp1 = project_svg_2to2( source, bbox );
+			CGAL_Point_2 tp2 = project_svg_2to2( target, bbox );
       out << " <line"
 			  << " x1='" << CGAL::to_double(tp1.x()) << "'"
 			  << " x2='" << CGAL::to_double(tp1.y()) << "'"
@@ -314,8 +328,8 @@ public:
 				// don't know why we use source()->source(), except thats what CGAL does internally
 				CGAL_Point_3 source = c1->source()->source()->point();
 				CGAL_Point_3 target = c1->source()->target()->point();
-				tp1 = project_svg ( source );
-				tp2 = project_svg ( target );
+				CGAL_Point_2 tp1 = project_svg_3to2 ( source, bbox );
+				CGAL_Point_2 tp2 = project_svg_3to2 ( target, bbox );
 				out << " "
 					<< "x1='" << CGAL::to_double(tp1.x()) << "' "
 					<< "y1='" << CGAL::to_double(tp1.y()) << "' "
