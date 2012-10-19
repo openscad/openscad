@@ -74,20 +74,77 @@ public:
 			}
 			tmpnef2d.reset( new CGAL_Nef_polyhedron2( contour.begin(), contour.end(), boundary ) );
 			if ( contour_counter == 0 ) {
-				if (debug) out << "\ncontour is a body. make union(). " << contour.size() << " points.\n" ;
+				out << "\n <!-- contour is a body. make union(). " << contour.size() << " points. -->\n" ;
 				*(output_nefpoly2d) += *(tmpnef2d);
 			} else {
 				*(output_nefpoly2d) *= *(tmpnef2d);
-				if (debug) out << "\ncontour is a hole. make intersection(). " << contour.size() << " points.\n";
+				if (debug) out << "\n<!-- contour is a hole. make intersection(). " << contour.size() << " points. -->\n";
 			}
-      out << "\n------- tmp: -------\n";
-			if (debug) out << dump_cgal_nef_polyhedron2( *tmpnef2d );
-      out << "\n------- output accumulator: -------\n";
-			if (debug) out << dump_cgal_nef_polyhedron2( *output_nefpoly2d );
+      out << "\n<!-- ======== output tmp nef2d: ====== -->\n";
+			out << dump_cgal_nef_polyhedron2_svg( *tmpnef2d );
+      out << "\n<!-- ======== output accumulator: ==== -->\n";
+			out << dump_cgal_nef_polyhedron2_svg( *output_nefpoly2d );
 			contour_counter++;
 		} // next facet cycle (i.e. next contour)
 	} // visit()
 };
+
+
+
+
+class Flattener2 {
+public:
+	std::stringstream out;
+	CGAL_Nef_polyhedron2::Boundary boundary;
+	shared_ptr<CGAL_Nef_polyhedron2> tmpnef2d;
+	shared_ptr<CGAL_Nef_polyhedron2> output_nefpoly2d;
+	CGAL::Direction_3<CGAL_Kernel3> up;
+	bool debug;
+	Flattener2(bool debug=false)
+	{
+		output_nefpoly2d.reset( new CGAL_Nef_polyhedron2() );
+		boundary = CGAL_Nef_polyhedron2::INCLUDED;
+		up = CGAL::Direction_3<CGAL_Kernel3>(0,0,1);
+		this->debug = debug;
+	}
+	std::string dump()
+	{
+		return out.str();
+	}
+	void visit( CGAL_Nef_polyhedron3::Vertex_const_handle ) {}
+	void visit( CGAL_Nef_polyhedron3::Halfedge_const_handle ) {}
+	void visit( CGAL_Nef_polyhedron3::SHalfedge_const_handle ) {}
+	void visit( CGAL_Nef_polyhedron3::SHalfloop_const_handle ) {}
+	void visit( CGAL_Nef_polyhedron3::SFace_const_handle ) {}
+	void visit( CGAL_Nef_polyhedron3::Halffacet_const_handle hfacet ) {
+		int contour_counter = 0;
+		CGAL_Nef_polyhedron3::Halffacet_cycle_const_iterator i;
+		CGAL_forall_facet_cycles_of( i, hfacet ) {
+			CGAL_Nef_polyhedron3::SHalfedge_around_facet_const_circulator c1(i), c2(c1);
+			std::list<CGAL_Nef_polyhedron2::Point> contour;
+			CGAL_For_all( c1, c2 ) {
+				CGAL_Nef_polyhedron3::Point_3 point3d = c1->source()->source()->point();
+				CGAL_Nef_polyhedron2::Point point2d( point3d.x(), point3d.y() );
+				contour.push_back( point2d );
+			}
+			tmpnef2d.reset( new CGAL_Nef_polyhedron2( contour.begin(), contour.end(), boundary ) );
+      out << "\n<!-- ======== output tmp nef2d: ====== -->\n";
+			out << dump_cgal_nef_polyhedron2_svg( *tmpnef2d );
+			if ( contour_counter == 0 ) {
+				out << "\n <!-- contour is a body. make union(). " << contour.size() << " points. -->\n" ;
+				*(output_nefpoly2d) += *(tmpnef2d);
+			} else {
+				out << "\n <!-- contour is a hole. make intersection(). " << contour.size() << " points. -->\n";
+				*(output_nefpoly2d) *= *(tmpnef2d);
+			}
+      out << "\n<!-- ======== output accumulator: ==== -->\n";
+			out << dump_cgal_nef_polyhedron2_svg( *output_nefpoly2d );
+			contour_counter++;
+		} // next facet cycle (i.e. next contour)
+	} // visit()
+};
+
+
 
 PolySetCGALEvaluator::PolySetCGALEvaluator(CGALEvaluator &cgalevaluator)
 	: PolySetEvaluator(cgalevaluator.getTree()), cgalevaluator(cgalevaluator)
@@ -115,7 +172,7 @@ PolySet *PolySetCGALEvaluator::evaluatePolySet(const ProjectionNode &node)
 		}
 	}
 
-	// std::cout << "----- input dump \n" << sum.dump_svg() << "\n";
+	// std::cout << sum.dump_svg() << std::flush; // input dump
 
 	CGAL_Nef_polyhedron nef_poly;
 
@@ -160,8 +217,9 @@ PolySet *PolySetCGALEvaluator::evaluatePolySet(const ProjectionNode &node)
 		}
 
 		// remove z coordinates to make CGAL_Nef_polyhedron2
+		std::cout << "<svg width=\"480px\" height=\"100000px\" xmlns=\"http://www.w3.org/2000/svg\" version=\"1.1\">";
 		try {
-			Flattener flattener(true);
+			Flattener2 flattener(true);
 			CGAL_Nef_polyhedron3::Volume_const_iterator i;
 			CGAL_Nef_polyhedron3::Shell_entry_const_iterator j;
 			CGAL_Nef_polyhedron3::SFace_const_handle sface_handle;
@@ -171,8 +229,10 @@ PolySet *PolySetCGALEvaluator::evaluatePolySet(const ProjectionNode &node)
 					sum.p3->visit_shell_objects( sface_handle , flattener );
 				}
 			}
+			std::cout << flattener.out.str();
+			std::cout << "</svg>" << std::flush;
 
-			std::cout << "------- flattener dump \n" << flattener.dump() << "\n";
+			//std::cout << "------- flattener dump \n" << flattener.dump() << "\n";
 			nef_poly.p2 = flattener.output_nefpoly2d;
 			nef_poly.dim = 2;
 		}	catch (const CGAL::Failure_exception &e) {
@@ -181,8 +241,10 @@ PolySet *PolySetCGALEvaluator::evaluatePolySet(const ProjectionNode &node)
 
 		CGAL::set_error_behaviour(old_behaviour);
 
-		std::cout << "------- 3d cut dump \n" << sum.dump_svg() << "\n";
-		std::cout << "------- 2d output dump \n" << nef_poly.dump_svg() << "\n";
+		//std::cout << sum.dump_svg() << std::flush; // cut dump
+		//std::cout << nef_poly.dump_svg() << std::flush; // post-flattener dump
+
+		//std::cout << "------- 2d output dump \n" << nef_poly.dump_svg() << "\n";
 		// Extract polygons in the XY plane, ignoring all other polygons
 		// FIXME: If the polyhedron is really thin, there might be unwanted polygons
 		// in the XY plane, causing the resulting 2D polygon to be self-intersection

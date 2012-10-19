@@ -54,8 +54,6 @@ typedef CGAL::Polyhedron_3<CGAL_Kernel3> CGAL_Polyhedron;
 typedef CGAL_Polyhedron::HalfedgeDS CGAL_HDS;
 typedef CGAL::Polyhedron_incremental_builder_3<CGAL_HDS> CGAL_Polybuilder;
 
-typedef CGAL::Cartesian<NT>::Iso_cuboid_3 CGAL_Iso_cuboid_3;
-
 #ifdef PREV_NDEBUG
 #define NDEBUG PREV_NDEBUG
 #endif
