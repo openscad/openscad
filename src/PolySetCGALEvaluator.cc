@@ -34,7 +34,7 @@ OGL_helper.h
 */
 class Flattener {
 public:
-	std::stringstream out;
+	std::ostringstream out;
 	CGAL_Nef_polyhedron2::Boundary boundary;
 	shared_ptr<CGAL_Nef_polyhedron2> tmpnef2d;
 	shared_ptr<CGAL_Nef_polyhedron2> output_nefpoly2d;
@@ -57,8 +57,12 @@ public:
 	void visit( CGAL_Nef_polyhedron3::SHalfloop_const_handle ) {}
 	void visit( CGAL_Nef_polyhedron3::SFace_const_handle ) {}
 	void visit( CGAL_Nef_polyhedron3::Halffacet_const_handle hfacet ) {
+		out << " <!-- Halffacet visit -->\n";
+		out << " <!-- mark:" << hfacet->mark() << " -->\n";
 		if ( hfacet->plane().orthogonal_direction() != this->up ) {
 			out << "\ndown facing half-facet. skipping\n";
+			out << " <!-- Halffacet visit end-->\n";
+			std::cout << out.str();
 			return;
 		}
 
@@ -86,64 +90,10 @@ public:
 			out << dump_cgal_nef_polyhedron2_svg( *output_nefpoly2d );
 			contour_counter++;
 		} // next facet cycle (i.e. next contour)
+		out << " <!-- Halffacet visit end -->\n";
+		std::cout << out.str();
 	} // visit()
 };
-
-
-
-
-class Flattener2 {
-public:
-	std::stringstream out;
-	CGAL_Nef_polyhedron2::Boundary boundary;
-	shared_ptr<CGAL_Nef_polyhedron2> tmpnef2d;
-	shared_ptr<CGAL_Nef_polyhedron2> output_nefpoly2d;
-	CGAL::Direction_3<CGAL_Kernel3> up;
-	bool debug;
-	Flattener2(bool debug=false)
-	{
-		output_nefpoly2d.reset( new CGAL_Nef_polyhedron2() );
-		boundary = CGAL_Nef_polyhedron2::INCLUDED;
-		up = CGAL::Direction_3<CGAL_Kernel3>(0,0,1);
-		this->debug = debug;
-	}
-	std::string dump()
-	{
-		return out.str();
-	}
-	void visit( CGAL_Nef_polyhedron3::Vertex_const_handle ) {}
-	void visit( CGAL_Nef_polyhedron3::Halfedge_const_handle ) {}
-	void visit( CGAL_Nef_polyhedron3::SHalfedge_const_handle ) {}
-	void visit( CGAL_Nef_polyhedron3::SHalfloop_const_handle ) {}
-	void visit( CGAL_Nef_polyhedron3::SFace_const_handle ) {}
-	void visit( CGAL_Nef_polyhedron3::Halffacet_const_handle hfacet ) {
-		int contour_counter = 0;
-		CGAL_Nef_polyhedron3::Halffacet_cycle_const_iterator i;
-		CGAL_forall_facet_cycles_of( i, hfacet ) {
-			CGAL_Nef_polyhedron3::SHalfedge_around_facet_const_circulator c1(i), c2(c1);
-			std::list<CGAL_Nef_polyhedron2::Point> contour;
-			CGAL_For_all( c1, c2 ) {
-				CGAL_Nef_polyhedron3::Point_3 point3d = c1->source()->source()->point();
-				CGAL_Nef_polyhedron2::Point point2d( point3d.x(), point3d.y() );
-				contour.push_back( point2d );
-			}
-			tmpnef2d.reset( new CGAL_Nef_polyhedron2( contour.begin(), contour.end(), boundary ) );
-      out << "\n<!-- ======== output tmp nef2d: ====== -->\n";
-			out << dump_cgal_nef_polyhedron2_svg( *tmpnef2d );
-			if ( contour_counter == 0 ) {
-				out << "\n <!-- contour is a body. make union(). " << contour.size() << " points. -->\n" ;
-				*(output_nefpoly2d) += *(tmpnef2d);
-			} else {
-				out << "\n <!-- contour is a hole. make intersection(). " << contour.size() << " points. -->\n";
-				*(output_nefpoly2d) *= *(tmpnef2d);
-			}
-      out << "\n<!-- ======== output accumulator: ==== -->\n";
-			out << dump_cgal_nef_polyhedron2_svg( *output_nefpoly2d );
-			contour_counter++;
-		} // next facet cycle (i.e. next contour)
-	} // visit()
-};
-
 
 
 PolySetCGALEvaluator::PolySetCGALEvaluator(CGALEvaluator &cgalevaluator)
@@ -210,7 +160,7 @@ PolySet *PolySetCGALEvaluator::evaluatePolySet(const ProjectionNode &node)
 			}
 			catch (const CGAL::Failure_exception &e) {
 				PRINTB("CGAL error in projection node during bigbox intersection: %s", e.what());
-				// fixme , can we just return empty polyset?
+				// can we just return empty polyset?
 				CGAL::set_error_behaviour(old_behaviour);
 				return NULL;
 			}
@@ -219,17 +169,21 @@ PolySet *PolySetCGALEvaluator::evaluatePolySet(const ProjectionNode &node)
 		// remove z coordinates to make CGAL_Nef_polyhedron2
 		std::cout << "<svg width=\"480px\" height=\"100000px\" xmlns=\"http://www.w3.org/2000/svg\" version=\"1.1\">";
 		try {
-			Flattener2 flattener(true);
+			Flattener flattener(true);
 			CGAL_Nef_polyhedron3::Volume_const_iterator i;
 			CGAL_Nef_polyhedron3::Shell_entry_const_iterator j;
 			CGAL_Nef_polyhedron3::SFace_const_handle sface_handle;
 			for ( i = sum.p3->volumes_begin(); i != sum.p3->volumes_end(); ++i ) {
+				std::cout << "<!-- volume. mark: " << i->mark() << " -->\n";
 				for ( j = i->shells_begin(); j != i->shells_end(); ++j ) {
+					std::cout << "<!-- shell. mark: " << i->mark() << " -->\n";
 					sface_handle = CGAL_Nef_polyhedron3::SFace_const_handle( j );
 					sum.p3->visit_shell_objects( sface_handle , flattener );
+					std::cout << "<!-- shell. end. -->\n";
 				}
+				std::cout << "<!-- volume end. -->\n";
 			}
-			std::cout << flattener.out.str();
+			//std::cout << flattener.out.str() << "\n";
 			std::cout << "</svg>" << std::flush;
 
 			//std::cout << "------- flattener dump \n" << flattener.dump() << "\n";

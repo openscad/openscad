@@ -81,21 +81,11 @@ DxfData *CGAL_Nef_polyhedron::convertToDxfData() const
 std::string CGAL_Nef_polyhedron::dump() const
 {
 	if (this->dim==2)
-		return dump_cgal_nef_polyhedron2( *this->p2 );
-	else if (this->dim==3)
-		return dump_cgal_nef_polyhedron3( *this->p3 );
-	else
-		return std::string("Nef Polyhedron with dimension != 2 or 3");
-}
-
-std::string CGAL_Nef_polyhedron::dump_svg() const
-{
-	if (this->dim==2)
 		return dump_cgal_nef_polyhedron2_svg( *this->p2 );
 	else if (this->dim==3)
 		return dump_cgal_nef_polyhedron3_svg( *this->p3 );
 	else
-		return std::string("<svg><!--Nef Polyhedron with dimension != 2 or 3--></svg>");
+		return std::string("Nef Polyhedron with dimension != 2 or 3");
 }
 
 #endif // ENABLE_CGAL

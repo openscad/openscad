@@ -20,7 +20,6 @@ public:
 	CGAL_Nef_polyhedron &operator-=(const CGAL_Nef_polyhedron &other);
 	CGAL_Nef_polyhedron &minkowski(const CGAL_Nef_polyhedron &other);
 	CGAL_Nef_polyhedron copy() const;
-	std::string dump_svg() const;
 	std::string dump() const;
 	int weight() const;
 	class PolySet *convertToPolyset();

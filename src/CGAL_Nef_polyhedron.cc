@@ -84,7 +84,8 @@ int CGAL_Nef_polyhedron::weight() const
 */
 PolySet *CGAL_Nef_polyhedron::convertToPolyset()
 {
-	assert(!this->empty());
+	if (this->empty())
+		return new PolySet();
 	PolySet *ps = NULL;
 	if (this->dim == 2) {
 		ps = new PolySet();

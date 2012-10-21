@@ -9,5 +9,6 @@ std::string dump_cgal_nef_polyhedron2( const CGAL_Nef_polyhedron2 &N );
 std::string dump_cgal_nef_polyhedron3( const CGAL_Nef_polyhedron3 &N );
 std::string dump_cgal_nef_polyhedron2_svg( const CGAL_Nef_polyhedron2 &N );
 std::string dump_cgal_nef_polyhedron3_svg( const CGAL_Nef_polyhedron3 &N );
+static int svg_counter = 0;
 
 #endif
