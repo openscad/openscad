@@ -1,4 +1,4 @@
-export OPENSCAD_LIBRARIES=$PWD/../libraries/install-clang
+export OPENSCAD_LIBRARIES=$PWD/../libraries/install
 export DYLD_LIBRARY_PATH=$OPENSCAD_LIBRARIES/lib
 export QMAKESPEC=unsupported/macx-clang
 
