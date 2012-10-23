@@ -161,6 +161,12 @@ std::string svg_header()
 	return out.str();
 }
 
+std::string svg_label(std::string s)
+{
+	std::stringstream out;
+	out << "<text fill='black' x='20' y='40' font-size='24'>" << s << "</text>";
+	return out.str();
+}
 std::string svg_border()
 {
 	std::stringstream out;
@@ -263,6 +269,7 @@ std::string dump_cgal_nef_polyhedron2_face_svg(
 	CGAL_Nef_polyhedron2::Explorer::Halfedge_around_face_const_circulator c2,
 	CGAL_Nef_polyhedron2::Explorer explorer,
 	std::string color,
+	bool mark,
 	CGAL_Iso_rectangle_2 bbox )
 {
   std::stringstream out;
@@ -272,16 +279,21 @@ std::string dump_cgal_nef_polyhedron2_face_svg(
 			CGAL_Point_2 target = explorer.point( explorer.target( c1 ) );
 			CGAL_Point_2 tp1 = project_svg_2to2( source, bbox );
 			CGAL_Point_2 tp2 = project_svg_2to2( target, bbox );
+			double mod=0;
+			if (color=="green") mod=10;
+			out << "      <!-- mark: " << c1->mark() << " -->\n";
       out << "      <line"
-			  << " x1='" << CGAL::to_double(tp1.x()) << "'"
-			  << " y1='" << CGAL::to_double(tp1.y()) << "'"
-			  << " x2='" << CGAL::to_double(tp2.x()) << "'"
-			  << " y2='" << CGAL::to_double(tp2.y()) << "'"
-			  << " stroke='" << color << "' />\n";
+			  << " x1='" << CGAL::to_double(tp1.x()) + mod << "'"
+			  << " y1='" << CGAL::to_double(tp1.y()) - mod << "'"
+			  << " x2='" << CGAL::to_double(tp2.x()) + mod << "'"
+			  << " y2='" << CGAL::to_double(tp2.y()) - mod << "'"
+			  << " stroke='" << color << "'";
+			if (mark) out << " stroke-dasharray='4 4' />\n";
+			else out << " />\n";
 			// crude "arrowhead" to indicate directionality
 			out << "      <circle"
-			  << " cx='" << CGAL::to_double(tp1.x()+ (tp2.x()-tp1.x())* 7/8) << "'"
-			  << " cy='" << CGAL::to_double(tp1.y()+ (tp2.y()-tp1.y())* 7/8) << "'"
+			  << " cx='" << CGAL::to_double(tp1.x()+ (tp2.x()-tp1.x())* 7/8) + mod << "'"
+			  << " cy='" << CGAL::to_double(tp1.y()+ (tp2.y()-tp1.y())* 7/8) - mod << "'"
 			  << " r='2'"
 			  << " fill='" << color << "' stroke='" << color << "' />\n";
 		}
@@ -300,18 +312,22 @@ std::string dump_cgal_nef_polyhedron2_svg( const CGAL_Nef_polyhedron2 &N )
   out << " <svg y='" << svg_counter << "' width='480px' height='480px' xmlns='http://www.w3.org/2000/svg' version='1.1'>\n";
 	out << svg_border() << "\n" << svg_axes() << "\n";
 	svg_counter+=480;
-	if ((svg_counter/480)%2==0) svg_counter += 24;
+	if ((svg_counter/480)%3==0) svg_counter += 24;
+	if ((svg_counter/480)%3==1) out << svg_label("old accumulator") << "\n";
+	if ((svg_counter/480)%3==2) out << svg_label("new nef poly") << "\n";
+	if ((svg_counter/480)%3==0) out << svg_label("new accumulator") << "\n";
+
 	for ( i = explorer.faces_begin(); i!= explorer.faces_end(); ++i ) {
-			out << "  <!-- face begin -->\n";
+			out << "  <!-- face begin. mark: " << i->mark() << "  -->\n";
 			CGAL_Nef_polyhedron2::Explorer::Halfedge_around_face_const_circulator c1
 				= explorer.face_cycle( i ), c2 ( c1 );
-			out << dump_cgal_nef_polyhedron2_face_svg( c1, c2, explorer, "red", bbox );
+			out << dump_cgal_nef_polyhedron2_face_svg( c1, c2, explorer, "red", i->mark(), bbox );
 
 		  CGAL_Nef_polyhedron2::Explorer::Hole_const_iterator j;
 			for ( j = explorer.holes_begin( i ); j!= explorer.holes_end( i ); ++j ) {
-				out << "   <!-- hole begin -->\n";
+				out << "   <!-- hole begin. mark: " << j->mark() << " -->\n";
 				CGAL_Nef_polyhedron2::Explorer::Halfedge_around_face_const_circulator c3( j ), c4 ( c3 );
-				out << dump_cgal_nef_polyhedron2_face_svg( c3, c4, explorer, "green", bbox );
+				out << dump_cgal_nef_polyhedron2_face_svg( c3, c4, explorer, "green", j->mark(), bbox );
 				out << "   <!-- hole end -->\n";
 			}
 			out << "  <!-- face end -->\n";
