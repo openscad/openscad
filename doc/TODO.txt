@@ -240,6 +240,7 @@ o Collect "all" available OpenSCAD scripts from the internets and run the integr
 MISSING TESTS:
 --------------
 o cmd-line -D variable override
+o OPENSCADPATH env.variable
 o all functions
 o mirror
 o scale
