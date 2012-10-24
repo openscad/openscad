@@ -72,7 +72,9 @@ Module *ModuleCache::evaluate(const std::string &filename)
 			PRINTB("WARNING: Can't open library file '%s'\n", filename);
 			return NULL;
 		}
-		std::string text((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
+		std::stringstream textbuf;
+		textbuf << ifs.rdbuf();
+		textbuf << "\n" << commandline_commands;
 
 		print_messages_push();
 
@@ -84,7 +86,7 @@ Module *ModuleCache::evaluate(const std::string &filename)
 		this->entries[filename] = e;
 		
 		std::string pathname = boosty::stringy(fs::path(filename).parent_path());
-		lib_mod = dynamic_cast<Module*>(parse(text.c_str(), pathname.c_str(), false));
+		lib_mod = dynamic_cast<Module*>(parse(textbuf.str().c_str(), pathname.c_str(), false));
 		PRINTB_NOCACHE("  compiled module: %p", lib_mod);
 		
 		if (lib_mod) {
