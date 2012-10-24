@@ -9,7 +9,8 @@ typedef CGAL::Point_3<CGAL_Kernel3> CGAL_Point_3;
 typedef CGAL::Iso_cuboid_3<CGAL_Kernel3> CGAL_Iso_cuboid_3;
 
 typedef CGAL_Nef_polyhedron2::Explorer::Point CGAL_Point_2;
-// Iso_rectangle is different- CGAL_Kernel2::Point != CGAL_Nef2::Explorer::Point
+// Iso_rectangle needs to match  CGAL_Nef2::Explorer::Point
+// which is different than CGAL_Kernel2::Point
 typedef CGAL::Iso_rectangle_2< CGAL::Simple_cartesian<NT> > CGAL_Iso_rectangle_2;
 
 #include <boost/algorithm/string.hpp>
