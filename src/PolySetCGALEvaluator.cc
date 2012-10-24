@@ -31,13 +31,24 @@ stripping off the z coordinate of each face vertex and doing unions and
 intersections. It uses the 'visitor' pattern from the CGAL manual.
 Output is in the 'output_nefpoly2d' variable.
 
+Note that the input 3d Nef polyhedron, as used here, is typically of
+two types. The first is the result of an intersection between
+the 3d Nef polyhedron and the xy-plane, with all z set to 0.
+
+The second is the result of an intersection between the 3d nef
+polyhedron and a very large, very thin box. This is used when CGAL
+crashes during plane intersection. The thin box is used to 'simulate'
+the xy plane. The result is that the 'top' of the box and the
+'bottom' of the box will both contain 2d projections, quite similar
+to what one would get at xy=0, but not exactly. these are then
+unioned together.
+
 Some key things to know about Nef Polyhedron2:
 
 1. The 'mark' on a face is important when doing unions/intersections
-2. The 'mark' on a face is determined by the order of the points given
- to the Nef2 constructor.
-3. The points given to a constructor might be influenced by whether
- they are 'is_simple' or not.
+2. The 'mark' can be non-deterministic based on the constructor.
+ Possible factors include whether 'is_simple_2' returns true on the
+ inputted points, and also perhaps the order of points fed to the constructor.
 
 See also
 http://www.cgal.org/Manual/latest/doc_html/cgal_manual/Nef_3/Chapter_main.html
@@ -145,22 +156,22 @@ public:
 			return;
 		}
 
-		bool skip=false;
 		CGAL_Nef_polyhedron3::Halffacet_cycle_const_iterator i;
+/*		bool skip=false;
 		CGAL_forall_facet_cycles_of( i, hfacet ) {
 			CGAL_Nef_polyhedron3::SHalfedge_around_facet_const_circulator c1a(i), c2a(c1a);
 			CGAL_For_all( c1a, c2a ) {
 				CGAL_Nef_polyhedron3::Point_3 point3d = c1a->source()->source()->point();
-				if (point3d.z()!=0) skip=true;
+				if (CGAL::to_double(point3d.z())!=floor) skip=true;
 			}
 		}
 		if (skip) {
-				out << "\n facet not on zero plane. skipping\n";
+				out << "\n facet not on floor plane (z=" << floor <<"). skipping\n";
 			out << " <!-- Halffacet visit end-->\n";
 			std::cout << out.str();
 			return;
 		}
-
+*/
 		int contour_counter = 0;
 		CGAL_forall_facet_cycles_of( i, hfacet ) {
 			if ( i.is_shalfedge() ) {
@@ -168,6 +179,8 @@ public:
 				std::vector<CGAL_Nef_polyhedron2::Explorer::Point> contour;
 				CGAL_For_all( c1, c2 ) {
 					out << "around facet. c1 mark:" << c1->mark() << "\n";
+					// c1->source() gives us an SVertex for the SHalfedge
+					// c1->source()->target() gives us a Vertex??
 					CGAL_Nef_polyhedron3::Point_3 point3d = c1->source()->target()->point();
 					CGAL_Nef_polyhedron2::Explorer::Point point2d( point3d.x(), point3d.y() );
 					out << "around facet. point3d:" << CGAL::to_double(point3d.x()) << "," << CGAL::to_double(point3d.y()) << "\n";;
@@ -263,8 +276,9 @@ PolySet *PolySetCGALEvaluator::evaluatePolySet(const ProjectionNode &node)
  		if (plane_intersect_fail) {
 			try {
 				PRINT("Trying alternative intersection using very large thin box: ");
-			  double inf = 1e8, eps = 0.1;
-			  double x1 = -inf, x2 = +inf, y1 = -inf, y2 = +inf, z1 = 0, z2 = eps;
+			  double inf = 1e8, eps = 0.001;
+			  double x1 = -inf, x2 = +inf, y1 = -inf, y2 = +inf, z1 = -eps, z2 = eps;
+				// dont use z of 0. there are bugs in CGAL.
 
 				std::vector<Point_3> pts;
 				pts.push_back( Point_3( x1, y1, z1 ) );
