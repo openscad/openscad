@@ -104,10 +104,10 @@ public:
 					*(output_nefpoly2d) *= *(tmpnef2d);
 				}
 
-	      log << "\n<!-- ======== output tmp nef: ==== -->\n"
-				  << OpenSCAD::dump_svg( *tmpnef2d ) << "\n"
-	        << "\n<!-- ======== output accumulator: ==== -->\n"
-				  << OpenSCAD::dump_svg( *output_nefpoly2d ) << "\n";
+				log << "\n<!-- ======== output tmp nef: ==== -->\n"
+					<< OpenSCAD::dump_svg( *tmpnef2d ) << "\n"
+					<< "\n<!-- ======== output accumulator: ==== -->\n"
+					<< OpenSCAD::dump_svg( *output_nefpoly2d ) << "\n";
 
 				contour_counter++;
 			} else {
@@ -176,15 +176,8 @@ PolySet *PolySetCGALEvaluator::evaluatePolySet(const ProjectionNode &node)
 			}
 			catch (const CGAL::Failure_exception &e) {
 				PRINTB("CGAL error in projection node during bigbox intersection: %s", e.what());
-				sum.reset();
+				sum.p3.reset( new CGAL_Nef_polyhedron3() );
 			}
-		}
-
-		CGAL::set_error_behaviour(old_behaviour);
-
-		if (sum.empty()) {
-			PRINT("WARNING: Projection failed.");
-			return NULL;
 		}
 
 		// remove z coordinates to make CGAL_Nef_polyhedron2
@@ -204,15 +197,19 @@ PolySet *PolySetCGALEvaluator::evaluatePolySet(const ProjectionNode &node)
 				}
 				log << "<!-- volume end. -->\n";
 			}
-			log << "</svg>\n";
-
 			nef_poly.p2 = zremover.output_nefpoly2d;
 			nef_poly.dim = 2;
 		}	catch (const CGAL::Failure_exception &e) {
 			PRINTB("CGAL error in projection node while flattening: %s", e.what());
 		}
+		log << "</svg>\n";
 
 		CGAL::set_error_behaviour(old_behaviour);
+
+		if ( sum.p3->is_empty() ) {
+			PRINT("WARNING: projection() failed.");
+			return NULL;
+		}
 
 		// Extract polygons in the XY plane, ignoring all other polygons
 		// FIXME: If the polyhedron is really thin, there might be unwanted polygons

@@ -8,10 +8,10 @@ namespace OpenSCAD {
 // SVG code
 // currently for debugging, not necessarily pretty or useful for users. (yet)
 
-std::string svg_header()
+std::string svg_header( int widthpx, int heightpx )
 {
 	std::stringstream out;
-	out << "<svg width='" << svg_px_width << "px' height='" << svg_px_height << "px'"
+	out << "<svg width='" << widthpx << "px' height='" << heightpx << "px'"
 		<< " xmlns='http://www.w3.org/2000/svg' version='1.1'>";
 	return out.str();
 }
