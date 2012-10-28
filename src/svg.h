@@ -9,8 +9,8 @@ namespace OpenSCAD {
 
 // currently for debugging, not necessarily pretty or useful for users. (yet)
 
-#define SVG_PXW 480;
-#define SVG_PXH 480;
+#define SVG_PXW 480
+#define SVG_PXH 480
 static int svg_cursor_py = 0;
 static int svg_px_width = SVG_PXW;
 static int svg_px_height = SVG_PXH;
