@@ -1,9 +1,7 @@
 #include "PolySetCGALEvaluator.h"
 #include "cgal.h"
 #include "cgalutils.h"
-
 #include <CGAL/convex_hull_3.h>
-#include <CGAL/Polygon_2_algorithms.h>
 
 #include "polyset.h"
 #include "CGALEvaluator.h"
@@ -16,21 +14,20 @@
 #include "dxftess.h"
 #include "module.h"
 
+#include "svg.h"
 #include "printutils.h"
 #include "openscad.h" // get_fragments_from_r()
 #include <boost/foreach.hpp>
 #include <vector>
-#include <deque>
 
-#include "svg.h"
 
 
 /*
 
 ZRemover
 
-This class converts an already 'flat' Nef3 polyhedra into a Nef2
-polyhedron by stripping off the 'z' coordinate.
+This class converts one or more already 'flat' Nef3 polyhedra into a Nef2
+polyhedron by stripping off the 'z' coordinates from the vertices.
 
 The class uses the 'visitor' pattern from the CGAL manual -- multiple 3d
 Nef polys fed to this class, with the resulting Nef2 poly accumulating
@@ -38,10 +35,6 @@ in the 'output_nefpoly2d' member variable.
 
 Some notes on CGAL's Nef Polyhedron2:
 
-0. The method for iterating through CGAL Nef2 poly and Nef3 polys is different.
- Nef2 requires 'Explorer', which uses it's own Point type that is not strictly
- the same as Nef2::Point_2. Nef3, in contrast, uses straightforward
- iterators and circulators using the standard Nef3::Point_3 type.
 1. The 'mark' on a 2d Nef face is important when doing unions/intersections.
  If the 'mark' of a face is wrong the resulting nef2 poly will be unexpected.
 2. The 'mark' can be dependent on the points fed to the Nef2 constructor.
@@ -49,6 +42,7 @@ Some notes on CGAL's Nef Polyhedron2:
  source()->target() instead of the ordinary source()->source(). The
  the latter can generate sequences of points that will fail the
  the CGAL::is_simple_2() test, resulting in improperly marked nef2 polys.
+3. 3d facets have 'two sides'. we throw out the 'down' side to prevent dups.
 
 Debugging output is in heavily commented SVG format.
 
@@ -95,7 +89,6 @@ public:
 				CGAL_Nef_polyhedron3::SHalfedge_around_facet_const_circulator c1(fci), cend(c1);
 				std::vector<CGAL_Nef_polyhedron2::Explorer::Point> contour;
 				CGAL_For_all( c1, cend ) {
-					// c1->source()->target() seems to work better than c1->source()->source()
 					CGAL_Nef_polyhedron3::Point_3 point3d = c1->source()->target()->point();
 					CGAL_Nef_polyhedron2::Explorer::Point point2d( point3d.x(), point3d.y() );
 					contour.push_back( point2d );
@@ -111,8 +104,8 @@ public:
 					log << " <!-- contour is a body. make union(). " << contour.size() << " points. -->\n" ;
 					*(output_nefpoly2d) += *(tmpnef2d);
 				} else {
-					*(output_nefpoly2d) *= *(tmpnef2d);
 					log << " <!-- contour is a hole. make intersection(). " << contour.size() << " points. -->\n";
+					*(output_nefpoly2d) *= *(tmpnef2d);
 				}
 
 	      log << "\n<!-- ======== output tmp nef: ==== -->\n";
@@ -128,9 +121,6 @@ public:
 		log << " <!-- Halffacet visit end -->\n";
 	} // visit()
 };
-
-
-
 
 PolySetCGALEvaluator::PolySetCGALEvaluator(CGALEvaluator &cgalevaluator)
 	: PolySetEvaluator(cgalevaluator.getTree()), cgalevaluator(cgalevaluator)
@@ -175,20 +165,12 @@ PolySet *PolySetCGALEvaluator::evaluatePolySet(const ProjectionNode &node)
 			PRINTB("CGAL error in projection node during plane intersection: %s", e.what());
 			try {
 				PRINT("Trying alternative intersection using very large thin box: ");
-			  double inf = 1e8, eps = 0.001;
-			  double x1 = -inf, x2 = +inf, y1 = -inf, y2 = +inf, z1 = -eps, z2 = eps;
+				std::vector<CGAL_Point_3> pts;
 				// dont use z of 0. there are bugs in CGAL.
-
-				std::vector<CGAL_Nef_polyhedron3::Point_3> pts;
-				pts.push_back( CGAL_Nef_polyhedron3::Point_3( x1, y1, z1 ) );
-				pts.push_back( CGAL_Nef_polyhedron3::Point_3( x1, y2, z1 ) );
-				pts.push_back( CGAL_Nef_polyhedron3::Point_3( x2, y2, z1 ) );
-				pts.push_back( CGAL_Nef_polyhedron3::Point_3( x2, y1, z1 ) );
-				pts.push_back( CGAL_Nef_polyhedron3::Point_3( x1, y1, z2 ) );
-				pts.push_back( CGAL_Nef_polyhedron3::Point_3( x1, y2, z2 ) );
-				pts.push_back( CGAL_Nef_polyhedron3::Point_3( x2, y2, z2 ) );
-				pts.push_back( CGAL_Nef_polyhedron3::Point_3( x2, y1, z2 ) );
-
+				CGAL_Point_3 minpt( -1e8, -1e8, -0.001 );
+				CGAL_Point_3 maxpt(  1e8,  1e8,  0.001 );
+				CGAL_Iso_cuboid_3 bigcuboid( minpt, maxpt );
+				for ( int i=0;i<8;i++ ) pts.push_back( bigcuboid.vertex(i) );
 				CGAL_Polyhedron bigbox;
 				CGAL::convex_hull_3( pts.begin(), pts.end(), bigbox );
 				CGAL_Nef_polyhedron3 nef_bigbox( bigbox );
