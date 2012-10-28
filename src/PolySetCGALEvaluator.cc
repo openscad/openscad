@@ -160,6 +160,9 @@ PolySet *PolySetCGALEvaluator::evaluatePolySet(const ProjectionNode &node)
 		}
 	}
 
+	//std::cout << sum.dump();
+	//std::cout.flush();
+
 	CGAL_Nef_polyhedron nef_poly;
 
 	if (node.cut_mode) {
@@ -205,7 +208,7 @@ PolySet *PolySetCGALEvaluator::evaluatePolySet(const ProjectionNode &node)
 		}
 
 		// remove z coordinates to make CGAL_Nef_polyhedron2
-		log << "<svg width=\"480px\" height=\"100000px\" xmlns=\"http://www.w3.org/2000/svg\" version=\"1.1\">";
+		log << OpenSCAD::svg_header( 480, 100000 ) << "\n";
 		try {
 			ZRemover zremover;
 			CGAL_Nef_polyhedron3::Volume_const_iterator i;

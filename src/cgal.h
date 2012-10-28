@@ -34,6 +34,7 @@ using boost::uintmax_t;
 #include <CGAL/minkowski_sum_2.h>
 #include <CGAL/minkowski_sum_3.h>
 #include <CGAL/bounding_box.h>
+#include <CGAL/utils.h>
 
 #include <CGAL/assertions_behaviour.h>
 #include <CGAL/exceptions.h>

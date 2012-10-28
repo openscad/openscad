@@ -5,10 +5,14 @@
 
 namespace OpenSCAD {
 
-std::string svg_header()
+
+// SVG code
+// currently for debugging, not necessarily pretty or useful for users.
+
+std::string svg_header( int pixw, int pixh )
 {
 	std::stringstream out;
-	out << "<svg width='480px' height='480px'"
+	out << "<svg width='" << pixw << "px' height='" << pixh << "px'"
 		<< " xmlns='http://www.w3.org/2000/svg' version='1.1'>";
 	return out.str();
 }
@@ -16,7 +20,7 @@ std::string svg_header()
 std::string svg_label(std::string s)
 {
 	std::stringstream out;
-	out << "<text fill='black' x='20' y='40' font-size='24'>" << s << "</text>";
+	out << "   <text fill='black' x='20' y='40' font-size='24'>" << s << "</text>";
 	return out.str();
 }
 
@@ -42,26 +46,23 @@ std::string svg_axes()
 
 CGAL_Point_2e project_svg_3to2( CGAL_Point_3 p, CGAL_Iso_cuboid_3 bbox )
 {
-	// do simple fake isometric projection
-	double x = CGAL::to_double( p.x() );
-	double y = CGAL::to_double( p.y() );
-	double z = CGAL::to_double( p.z() );
-	double screenw = 480;
-	double screenh = 480;
-	double borderw = screenw * 0.1618;
-	double borderh = screenh * 0.1618;
-	double vizw = screenw - borderw*2;
-	double vizh = screenh - borderh*2;
-	double bboxx = CGAL::to_double( bbox.xmax() - bbox.xmin() );
-	double bboxy = CGAL::to_double( bbox.ymax() - bbox.ymin() );
-	double bboxz = CGAL::to_double( bbox.zmax() - bbox.zmin() );
-	double xinbox = CGAL::to_double( p.x() ) - CGAL::to_double( bbox.xmin() );
-	double yinbox = CGAL::to_double( p.y() ) - CGAL::to_double( bbox.ymin() );
-	double zinbox = CGAL::to_double( p.z() ) - CGAL::to_double( bbox.zmin() );
-	double tx = borderw + ( xinbox / ( bboxx==0?1:bboxx ) ) * ( vizw );
-	double ty = screenh - borderh - ( zinbox / ( bboxz==0?1:bboxz ) ) * ( vizh );
-	tx += ( yinbox / ( bboxy==0?1:bboxy ) ) / 3;
-	ty -= ( yinbox / ( bboxy==0?1:bboxy ) ) / 3;
+	NT screenw(480);
+	NT screenh(480);
+	NT screenxc = screenw / 2;
+	NT screenyc = screenh / 2;
+	NT bboxx = ( bbox.xmax() - bbox.xmin() );
+	NT bboxy = ( bbox.ymax() - bbox.ymin() );
+	NT bboxz = ( bbox.zmax() - bbox.zmin() );
+	NT largest_dim = CGAL::max( CGAL::max( bboxx, bboxy ), bboxz );
+	NT bboxxc = bboxx / 2 + bbox.xmin();
+	NT bboxyc = bboxy / 2 + bbox.ymin();
+	NT bboxzc = bboxz / 2 + bbox.zmin();
+	NT xinbox = ( p.x() - bboxxc ) / largest_dim;
+	NT yinbox = ( p.y() - bboxyc ) / largest_dim;
+	NT zinbox = ( p.z() - bboxzc ) / largest_dim;
+	// do simple fake paralell projection
+	NT tx = screenxc + xinbox * screenw / 1.618 + yinbox * screenh / 3.2;
+	NT ty = screenyc - zinbox * screenh / 1.618 - yinbox * screenh / 3.2;
 	return CGAL_Point_2e( tx, ty );
 }
 
@@ -81,16 +82,9 @@ CGAL_Point_2e project_svg_2to2( CGAL_Point_2e p, CGAL_Iso_rectangle_2e bbox )
 	double yinbox = CGAL::to_double( p.y() ) - CGAL::to_double( bbox.ymin() );
 	double tx = borderw + ( xinbox / ( bboxw==0?1:bboxw ) ) * ( vizw );
 	double ty = screenh - borderh - ( yinbox / ( bboxh==0?1:bboxh ) ) * ( vizh );
-/*	std::cout << "\nx, y " << x << "," << y << "\n";
-	std::cout << "bbw, bbh " << bboxw << "," << bboxh << "\n";
-	std::cout << "xinb, yinb " << xinbox << "," << yinbox << "\n";
-	std::cout << "vizw, vizh " << vizw <<  "," << vizh << "\n";
-	std::cout << "tx, ty " << tx << "," << ty << "\n";
-*/
 	return CGAL_Point_2e( tx, ty );
 }
 
-// for debugging, not necessarily pretty or useful for users.
 std::string dump_cgal_nef_polyhedron2_face_svg(
 	CGAL_Nef_polyhedron2::Explorer::Halfedge_around_face_const_circulator c1,
 	CGAL_Nef_polyhedron2::Explorer::Halfedge_around_face_const_circulator c2,
@@ -115,7 +109,7 @@ std::string dump_cgal_nef_polyhedron2_face_svg(
 			  << " x2='" << CGAL::to_double(tp2.x()) + mod << "'"
 			  << " y2='" << CGAL::to_double(tp2.y()) - mod << "'"
 			  << " stroke='" << color << "'";
-			if (mark) out << " stroke-dasharray='4 4' />\n";
+			if (!mark) out << " stroke-dasharray='4 4' />\n";
 			else out << " />\n";
 			// crude "arrowhead" to indicate directionality
 			out << "       <circle"
@@ -123,6 +117,8 @@ std::string dump_cgal_nef_polyhedron2_face_svg(
 			  << " cy='" << CGAL::to_double(tp1.y()+ (tp2.y()-tp1.y())* 7/8) - mod << "'"
 			  << " r='2'"
 			  << " fill='" << color << "' stroke='" << color << "' />\n";
+		} else {
+			out << "       <!-- 2d Nef Rays - not implemented -->\n";
 		}
 	}
 	return out.str();
@@ -139,10 +135,6 @@ std::string dump_svg( const CGAL_Nef_polyhedron2 &N )
   out << " <svg y='" << svg_cursor << "' width='480px' height='480px' xmlns='http://www.w3.org/2000/svg' version='1.1'>\n";
 	out << svg_border() << "\n" << svg_axes() << "\n";
 	svg_cursor+=480;
-	if ((svg_cursor/480)%3==0) svg_cursor += 24;
-	if ((svg_cursor/480)%3==1) out << svg_label("old accumulator") << "\n";
-	if ((svg_cursor/480)%3==2) out << svg_label("new nef poly") << "\n";
-	if ((svg_cursor/480)%3==0) out << svg_label("new accumulator") << "\n";
 
 	for ( i = explorer.faces_begin(); i!= explorer.faces_end(); ++i ) {
 			out << "  <!-- face begin. mark: " << i->mark() << "  -->\n";
@@ -185,6 +177,8 @@ public:
 	{
 		int contour_count = 0;
 		out << "  <!-- Halffacet. Mark: " << (*hfacet).mark() << " -->\n";
+		std::string color = "gold";
+		if (!(*hfacet).mark()) color = "green";
 		CGAL_Nef_polyhedron3::Halffacet_cycle_const_iterator i;
 		CGAL_forall_facet_cycles_of( i, hfacet ) {
 			CGAL_Nef_polyhedron3::SHalfloop_const_handle shl_handle;
@@ -207,7 +201,9 @@ public:
 					<< "y1='" << CGAL::to_double(tp1.y()) << "' "
 					<< "x2='" << CGAL::to_double(tp2.x()) << "' "
 					<< "y2='" << CGAL::to_double(tp2.y()) << "' "
-				  << "stroke='red' />\n";
+				  << " stroke='" << color << "'";
+				if (!(*hfacet).mark()) out << " stroke-dasharray='4 4' />\n";
+				else out << " />\n";
 			}
 			contour_count++;
 		} // next facet cycle (i.e. next contour)
@@ -219,7 +215,7 @@ public:
 std::string dump_svg( const CGAL_Nef_polyhedron3 &N )
 {
   std::stringstream out;
-	out << svg_header << "\n" << svg_border() << "\n" << svg_axes() << "\n";
+	out << svg_header() << "\n" << svg_border() << "\n" << svg_axes() << "\n";
 	out << "<!--CGAL_Nef_polyhedron3 dump begin-->\n";
 
   CGAL_Nef_polyhedron3::Volume_const_iterator c;

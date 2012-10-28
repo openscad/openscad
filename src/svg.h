@@ -9,7 +9,7 @@ namespace OpenSCAD {
 
 static int svg_cursor = 0;
 
-std::string svg_header();
+std::string svg_header( int pixwidth = 480, int pixheight = 480 );
 std::string svg_label(std::string s);
 std::string svg_border();
 std::string svg_axes();
