@@ -94,7 +94,7 @@ public:
 					contour.push_back( point2d );
 				}
 
-				assert(contour.size()>1);
+				if (contour.size()==0) continue;
 
 				log << " <!-- is_simple_2:" << CGAL::is_simple_2( contour.begin(), contour.end() ) << " --> \n";
 
@@ -108,10 +108,10 @@ public:
 					*(output_nefpoly2d) *= *(tmpnef2d);
 				}
 
-	      log << "\n<!-- ======== output tmp nef: ==== -->\n";
-				log << OpenSCAD::dump_svg( *tmpnef2d ) << "\n";
-	      log << "\n<!-- ======== output accumulator: ==== -->\n";
-				log << OpenSCAD::dump_svg( *output_nefpoly2d ) << "\n";
+	      log << "\n<!-- ======== output tmp nef: ==== -->\n"
+				  << OpenSCAD::dump_svg( *tmpnef2d ) << "\n"
+	        << "\n<!-- ======== output accumulator: ==== -->\n"
+				  << OpenSCAD::dump_svg( *output_nefpoly2d ) << "\n";
 
 				contour_counter++;
 			} else {

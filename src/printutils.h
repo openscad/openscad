@@ -3,9 +3,7 @@
 
 #include <string>
 #include <list>
-#include <map>
 #include <iostream>
-#include <sstream>
 #include <boost/format.hpp>
 
 typedef void (OutputHandlerFunc)(const std::string &msg, void *userdata);

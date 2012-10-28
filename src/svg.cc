@@ -5,14 +5,13 @@
 
 namespace OpenSCAD {
 
-
 // SVG code
-// currently for debugging, not necessarily pretty or useful for users.
+// currently for debugging, not necessarily pretty or useful for users. (yet)
 
-std::string svg_header( int pixw, int pixh )
+std::string svg_header()
 {
 	std::stringstream out;
-	out << "<svg width='" << pixw << "px' height='" << pixh << "px'"
+	out << "<svg width='" << svg_px_width << "px' height='" << svg_px_height << "px'"
 		<< " xmlns='http://www.w3.org/2000/svg' version='1.1'>";
 	return out.str();
 }
@@ -28,7 +27,10 @@ std::string svg_border()
 {
 	std::stringstream out;
 	out << " <!-- border -->\n";
-	out << "  <polyline points='0,0 480,0 480,480 0,480'"
+	out << "  <polyline points='0,0 "
+		<< svg_px_width  << ",0 "
+		<< svg_px_width  << "," << svg_px_height
+		<< " 0," << svg_px_height << "'"
 		<< " style='fill:none;stroke:black' />\n";
 	out << " <!-- /border -->";
 	return out.str();
@@ -46,8 +48,8 @@ std::string svg_axes()
 
 CGAL_Point_2e project_svg_3to2( CGAL_Point_3 p, CGAL_Iso_cuboid_3 bbox )
 {
-	NT screenw(480);
-	NT screenh(480);
+	NT screenw(svg_px_width);
+	NT screenh(svg_px_height);
 	NT screenxc = screenw / 2;
 	NT screenyc = screenh / 2;
 	NT bboxx = ( bbox.xmax() - bbox.xmin() );
@@ -70,8 +72,8 @@ CGAL_Point_2e project_svg_2to2( CGAL_Point_2e p, CGAL_Iso_rectangle_2e bbox )
 {
 	double x = CGAL::to_double( p.x() );
 	double y = CGAL::to_double( p.y() );
-	double screenw = 480;
-	double screenh = 480;
+	double screenw = svg_px_width;
+	double screenh = svg_px_height;
 	double borderw = screenw * 0.1618;
 	double borderh = screenh * 0.1618;
 	double vizw = screenw - borderw*2;
@@ -132,9 +134,11 @@ std::string dump_svg( const CGAL_Nef_polyhedron2 &N )
 	CGAL_Iso_rectangle_2e bbox = bounding_box( N );
 
   CGAL_Nef_polyhedron2::Explorer::Face_const_iterator i;
-  out << " <svg y='" << svg_cursor << "' width='480px' height='480px' xmlns='http://www.w3.org/2000/svg' version='1.1'>\n";
+  out << " <svg y='" << svg_cursor_py << "' width='" << svg_px_width
+		<< "' height='" << svg_px_height
+		<< "' xmlns='http://www.w3.org/2000/svg' version='1.1'>\n";
 	out << svg_border() << "\n" << svg_axes() << "\n";
-	svg_cursor+=480;
+	svg_cursor_py += svg_px_height;
 
 	for ( i = explorer.faces_begin(); i!= explorer.faces_end(); ++i ) {
 			out << "  <!-- face begin. mark: " << i->mark() << "  -->\n";

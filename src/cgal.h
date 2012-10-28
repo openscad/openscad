@@ -59,8 +59,9 @@ typedef CGAL::Polyhedron_incremental_builder_3<CGAL_HDS> CGAL_Polybuilder;
 typedef CGAL::Point_3<CGAL_Kernel3> CGAL_Point_3;
 typedef CGAL::Iso_cuboid_3<CGAL_Kernel3> CGAL_Iso_cuboid_3;
 
-// The type given to Iso_rectangle_2 needs to match CGAL_Nef2::Explorer::Point
-// which is different than a CGAL_Kernel2::Point. Hence the suffix 'e'
+// CGAL_Nef_polyhedron2 uses CGAL_Kernel2, but Iso_rectangle_2 needs to match
+// CGAL_Nef_polyhedron2::Explorer::Point which is different than
+// CGAL_Kernel2::Point. Hence the suffix 'e'
 typedef CGAL_Nef_polyhedron2::Explorer::Point CGAL_Point_2e;
 typedef CGAL::Iso_rectangle_2< CGAL::Simple_cartesian<NT> > CGAL_Iso_rectangle_2e;
 

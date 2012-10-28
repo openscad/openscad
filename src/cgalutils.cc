@@ -3,7 +3,10 @@
 #include "cgalutils.h"
 #include "polyset.h"
 #include "printutils.h"
+
 #include "cgal.h"
+
+#include <map>
 
 PolySet *createPolySetFromPolyhedron(const CGAL_Polyhedron &p)
 {
@@ -142,7 +145,6 @@ CGAL_Polyhedron *createPolyhedronFromPolySet(const PolySet &ps)
 	return P;
 }
 
-
 CGAL_Iso_cuboid_3 bounding_box( const CGAL_Nef_polyhedron3 &N )
 {
 	CGAL_Iso_cuboid_3 result(-1,-1,-1,1,1,1);
@@ -170,9 +172,6 @@ CGAL_Iso_rectangle_2e bounding_box( const CGAL_Nef_polyhedron2 &N )
 		result = CGAL::bounding_box( points.begin(), points.end() );
 	return result;
 }
-
-
-
 
 #endif /* ENABLE_CGAL */
 
