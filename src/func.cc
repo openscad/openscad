@@ -530,3 +530,4 @@ void register_builtin_functions()
 	Builtins::init("version", new BuiltinFunction(&builtin_version));
 	Builtins::init("version_num", new BuiltinFunction(&builtin_version_num));
 }
+
