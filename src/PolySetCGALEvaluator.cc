@@ -20,20 +20,15 @@
 #include <boost/foreach.hpp>
 #include <vector>
 
-
-
 /*
 
 ZRemover
 
 This class converts one or more already 'flat' Nef3 polyhedra into a Nef2
-polyhedron by stripping off the 'z' coordinates from the vertices.
+polyhedron by stripping off the 'z' coordinates from the vertices. The
+resulting Nef2 poly is accumulated in the 'output_nefpoly2d' member variable.
 
-The class uses the 'visitor' pattern from the CGAL manual -- multiple 3d
-Nef polys fed to this class, with the resulting Nef2 poly accumulating
-in the 'output_nefpoly2d' member variable.
-
-Some notes on CGAL's Nef Polyhedron2:
+Notes on CGAL's Nef Polyhedron2:
 
 1. The 'mark' on a 2d Nef face is important when doing unions/intersections.
  If the 'mark' of a face is wrong the resulting nef2 poly will be unexpected.
@@ -44,9 +39,7 @@ Some notes on CGAL's Nef Polyhedron2:
  the CGAL::is_simple_2() test, resulting in improperly marked nef2 polys.
 3. 3d facets have 'two sides'. we throw out the 'down' side to prevent dups.
 
-Debugging output is in heavily commented SVG format.
-
-See also
+The class uses the 'visitor' pattern from the CGAL manual. See also
 http://www.cgal.org/Manual/latest/doc_html/cgal_manual/Nef_3/Chapter_main.html
 http://www.cgal.org/Manual/latest/doc_html/cgal_manual/Nef_3_ref/Class_Nef_polyhedron3.html
 OGL_helper.h
