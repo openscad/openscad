@@ -11,9 +11,9 @@ namespace OpenSCAD {
 
 #define SVG_PXW 480
 #define SVG_PXH 480
-static int svg_cursor_py = 0;
-static int svg_px_width = SVG_PXW;
-static int svg_px_height = SVG_PXH;
+extern int svg_cursor_py;
+extern int svg_px_width;
+extern int svg_px_height;
 
 std::string svg_header( int widthpx = SVG_PXW, int heightpx = SVG_PXH );
 std::string svg_label( std::string s );

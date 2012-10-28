@@ -425,7 +425,8 @@ set(CGAL_SOURCES
   ../src/CGALCache.cc
   ../src/PolySetCGALEvaluator.cc
   ../src/CGAL_Nef_polyhedron_DxfData.cc
-  ../src/cgaladv_minkowski2.cc)
+  ../src/cgaladv_minkowski2.cc
+  ../src/svg.cc)
 
 set(COMMON_SOURCES
   ../src/nodedumper.cc 

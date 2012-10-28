@@ -7,6 +7,9 @@ namespace OpenSCAD {
 
 // SVG code
 // currently for debugging, not necessarily pretty or useful for users. (yet)
+int svg_cursor_py = 0;
+int svg_px_width = SVG_PXW;
+int svg_px_height = SVG_PXH;
 
 std::string svg_header( int widthpx, int heightpx )
 {
@@ -70,8 +73,6 @@ CGAL_Point_2e project_svg_3to2( CGAL_Point_3 p, CGAL_Iso_cuboid_3 bbox )
 
 CGAL_Point_2e project_svg_2to2( CGAL_Point_2e p, CGAL_Iso_rectangle_2e bbox )
 {
-	double x = CGAL::to_double( p.x() );
-	double y = CGAL::to_double( p.y() );
 	double screenw = svg_px_width;
 	double screenh = svg_px_height;
 	double borderw = screenw * 0.1618;
@@ -172,10 +173,10 @@ public:
 	{
 		bbox = bounding_box( N );
 	}
-	void visit(CGAL_Nef_polyhedron3::Vertex_const_handle v) {}
+	void visit(CGAL_Nef_polyhedron3::Vertex_const_handle ) {}
 	void visit(CGAL_Nef_polyhedron3::Halfedge_const_handle ) {}
 	void visit(CGAL_Nef_polyhedron3::SHalfedge_const_handle ) {}
-	void visit(CGAL_Nef_polyhedron3::SHalfloop_const_handle shh ){}
+	void visit(CGAL_Nef_polyhedron3::SHalfloop_const_handle ) {}
 	void visit(CGAL_Nef_polyhedron3::SFace_const_handle ) {}
 	void visit( CGAL_Nef_polyhedron3::Halffacet_const_handle hfacet )
 	{
