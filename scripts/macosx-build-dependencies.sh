@@ -216,8 +216,9 @@ build_cgal()
   cd $BASEDIR/src
   rm -rf CGAL-$version
   if [ ! -f CGAL-$version.tar.gz ]; then
-    # 4.1-beta1
-    curl -O https://gforge.inria.fr/frs/download.php/31348/CGAL-$version.tar.gz
+    # 4.1
+    curl -O https://gforge.inria.fr/frs/download.php/31641/CGAL-$version.tar.gz
+    # 4.1-beta1 curl -O https://gforge.inria.fr/frs/download.php/31348/CGAL-$version.tar.gz
     # 4.0.2 curl -O https://gforge.inria.fr/frs/download.php/31175/CGAL-$version.tar.gz
     # 4.0 curl -O https://gforge.inria.fr/frs/download.php/30387/CGAL-$version.tar.gz
     # 3.9 curl -O https://gforge.inria.fr/frs/download.php/29125/CGAL-$version.tar.gz
@@ -229,7 +230,7 @@ build_cgal()
   if $OPTION_32BIT; then
     CGAL_EXTRA_FLAGS=";i386"
   fi
-  cmake -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR -DGMP_INCLUDE_DIR=$DEPLOYDIR/include -DGMP_LIBRARIES=$DEPLOYDIR/lib/libgmp.dylib -DGMPXX_LIBRARIES=$DEPLOYDIR/lib/libgmpxx.dylib -DGMPXX_INCLUDE_DIR=$DEPLOYDIR/include -DMPFR_INCLUDE_DIR=$DEPLOYDIR/include -DMPFR_LIBRARIES=$DEPLOYDIR/lib/libmpfr.dylib -DWITH_CGAL_Qt3=OFF -DWITH_CGAL_Qt4=OFF -DWITH_CGAL_ImageIO=OFF -DBUILD_SHARED_LIBS=TRUE -DCMAKE_OSX_DEPLOYMENT_TARGET="$MAC_OSX_VERSION_MIN" -DCMAKE_OSX_ARCHITECTURES="x86_64$CGAL_EXTRA_FLAGS" -DBOOST_ROOT=$DEPLOYDIR
+  cmake -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR -DGMP_INCLUDE_DIR=$DEPLOYDIR/include -DGMP_LIBRARIES=$DEPLOYDIR/lib/libgmp.dylib -DGMPXX_LIBRARIES=$DEPLOYDIR/lib/libgmpxx.dylib -DGMPXX_INCLUDE_DIR=$DEPLOYDIR/include -DMPFR_INCLUDE_DIR=$DEPLOYDIR/include -DMPFR_LIBRARIES=$DEPLOYDIR/lib/libmpfr.dylib -DWITH_CGAL_Qt3=OFF -DWITH_CGAL_Qt4=OFF -DWITH_CGAL_ImageIO=OFF -DBUILD_SHARED_LIBS=TRUE -DCMAKE_OSX_DEPLOYMENT_TARGET="$MAC_OSX_VERSION_MIN" -DCMAKE_OSX_ARCHITECTURES="x86_64$CGAL_EXTRA_FLAGS" -DBOOST_ROOT=$DEPLOYDIR -DBoost_USE_MULTITHREADED=false
   make -j4
   make install
   install_name_tool -id $DEPLOYDIR/lib/libCGAL.dylib $DEPLOYDIR/lib/libCGAL.dylib
@@ -369,6 +370,6 @@ build_gmp 5.0.5
 build_mpfr 3.1.1
 build_boost 1.51.0
 # NB! For CGAL, also update the actual download URL in the function
-build_cgal 4.1-beta1
+build_cgal 4.1
 build_glew 1.9.0
 build_opencsg 1.3.2
