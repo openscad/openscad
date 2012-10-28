@@ -28,6 +28,9 @@ This class converts one or more already 'flat' Nef3 polyhedra into a Nef2
 polyhedron by stripping off the 'z' coordinates from the vertices. The
 resulting Nef2 poly is accumulated in the 'output_nefpoly2d' member variable.
 
+The 'z' coordinates will either be all 0s, for an xy-plane intersected Nef3,
+or, they will be a mixture of -eps and +eps, for a thin-box intersected Nef3.
+
 Notes on CGAL's Nef Polyhedron2:
 
 1. The 'mark' on a 2d Nef face is important when doing unions/intersections.
@@ -160,8 +163,10 @@ PolySet *PolySetCGALEvaluator::evaluatePolySet(const ProjectionNode &node)
 				PRINT("Trying alternative intersection using very large thin box: ");
 				std::vector<CGAL_Point_3> pts;
 				// dont use z of 0. there are bugs in CGAL.
-				CGAL_Point_3 minpt( -1e8, -1e8, -0.001 );
-				CGAL_Point_3 maxpt(  1e8,  1e8,  0.001 );
+				double inf = 1e8;
+				double eps = 0.001;
+				CGAL_Point_3 minpt( -inf, -inf, -eps );
+				CGAL_Point_3 maxpt(  inf,  inf,  eps );
 				CGAL_Iso_cuboid_3 bigcuboid( minpt, maxpt );
 				for ( int i=0;i<8;i++ ) pts.push_back( bigcuboid.vertex(i) );
 				CGAL_Polyhedron bigbox;
