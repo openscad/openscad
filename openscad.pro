@@ -214,7 +214,8 @@ HEADERS += src/version_check.h \
            src/memory.h \
            src/linalg.h \
            src/system-gl.h \
-           src/stl-utils.h
+           src/stl-utils.h \
+           src/svg.h
 
 SOURCES += src/version_check.cc \
            src/ProgressWidget.cc \
@@ -271,6 +272,7 @@ SOURCES += src/version_check.cc \
            src/dxftess-glu.cc \
            src/dxftess-cgal.cc \
            src/CSGTermEvaluator.cc \
+           src/svg.cc \
            \
            src/openscad.cc \
            src/mainwin.cc

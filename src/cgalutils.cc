@@ -145,5 +145,33 @@ CGAL_Polyhedron *createPolyhedronFromPolySet(const PolySet &ps)
 	return P;
 }
 
+CGAL_Iso_cuboid_3 bounding_box( const CGAL_Nef_polyhedron3 &N )
+{
+	CGAL_Iso_cuboid_3 result(-1,-1,-1,1,1,1);
+	CGAL_Nef_polyhedron3::Vertex_const_iterator vi;
+	std::vector<CGAL_Nef_polyhedron3::Point_3> points;
+	// can be optimized by rewriting bounding_box to accept vertices
+	CGAL_forall_vertices( vi, N )
+		points.push_back( vi->point() );
+	if (points.size())
+		result = CGAL::bounding_box( points.begin(), points.end() );
+	return result;
+}
+
+CGAL_Iso_rectangle_2e bounding_box( const CGAL_Nef_polyhedron2 &N )
+{
+	CGAL_Iso_rectangle_2e result(-1,-1,1,1);
+	CGAL_Nef_polyhedron2::Explorer explorer = N.explorer();
+	CGAL_Nef_polyhedron2::Explorer::Vertex_const_iterator vi;
+	std::vector<CGAL_Point_2e> points;
+	// can be optimized by rewriting bounding_box to accept vertices
+	for ( vi = explorer.vertices_begin(); vi != explorer.vertices_end(); ++vi )
+		if ( explorer.is_standard( vi ) )
+			points.push_back( explorer.point( vi ) );
+	if (points.size())
+		result = CGAL::bounding_box( points.begin(), points.end() );
+	return result;
+}
+
 #endif /* ENABLE_CGAL */
 

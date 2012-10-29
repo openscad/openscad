@@ -33,6 +33,8 @@ using boost::uintmax_t;
 #include <CGAL/Polygon_with_holes_2.h>
 #include <CGAL/minkowski_sum_2.h>
 #include <CGAL/minkowski_sum_3.h>
+#include <CGAL/bounding_box.h>
+#include <CGAL/utils.h>
 
 #include <CGAL/assertions_behaviour.h>
 #include <CGAL/exceptions.h>
@@ -53,6 +55,16 @@ typedef CGAL_Nef_polyhedron3::Aff_transformation_3 CGAL_Aff_transformation;
 typedef CGAL::Polyhedron_3<CGAL_Kernel3> CGAL_Polyhedron;
 typedef CGAL_Polyhedron::HalfedgeDS CGAL_HDS;
 typedef CGAL::Polyhedron_incremental_builder_3<CGAL_HDS> CGAL_Polybuilder;
+
+typedef CGAL::Point_3<CGAL_Kernel3> CGAL_Point_3;
+typedef CGAL::Iso_cuboid_3<CGAL_Kernel3> CGAL_Iso_cuboid_3;
+
+// CGAL_Nef_polyhedron2 uses CGAL_Kernel2, but Iso_rectangle_2 needs to match
+// CGAL_Nef_polyhedron2::Explorer::Point which is different than
+// CGAL_Kernel2::Point. Hence the suffix 'e'
+typedef CGAL_Nef_polyhedron2::Explorer::Point CGAL_Point_2e;
+typedef CGAL::Iso_rectangle_2< CGAL::Simple_cartesian<NT> > CGAL_Iso_rectangle_2e;
+
 
 #ifdef PREV_NDEBUG
 #define NDEBUG PREV_NDEBUG

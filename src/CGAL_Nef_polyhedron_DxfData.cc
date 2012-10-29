@@ -28,6 +28,8 @@
 #include "grid.h"
 #include "CGAL_Nef_polyhedron.h"
 #include "cgal.h"
+#include "cgalutils.h"
+#include "svg.h"
 
 #ifdef ENABLE_CGAL
 
@@ -77,29 +79,14 @@ DxfData *CGAL_Nef_polyhedron::convertToDxfData() const
 	return dxfdata;
 }
 
-// dump the 2 dimensional nef_poly.
-std::string CGAL_Nef_polyhedron::dump_p2() const
+std::string CGAL_Nef_polyhedron::dump() const
 {
-        std::stringstream out;
-        CGAL_Nef_polyhedron2::Explorer explorer = this->p2->explorer();
-        CGAL_Nef_polyhedron2::Explorer::Vertex_const_iterator i;
-        out << "CGAL_Nef_polyhedron::p2 Vertices";
-        for (i = explorer.vertices_begin(); i != explorer.vertices_end(); ++i) {
-                if ( explorer.is_standard( i ) ) {
-                        CGAL_Nef_polyhedron2::Explorer::Point point = explorer.point( i );
-                        out << "\n Point x y: "
-                          << CGAL::to_double(point.x()) << " "
-                          << CGAL::to_double(point.y());
-                }  else {
-                        CGAL_Nef_polyhedron2::Explorer::Ray ray = explorer.ray( i );
-                        CGAL_Nef_polyhedron2::Explorer::Point point = ray.point( 0 );
-                        out << "\n Ray x y dx dy: "
-                          << CGAL::to_double(point.x()) << " " << CGAL::to_double(point.y()) << " "
-                          << CGAL::to_double(ray.direction().dx()) << " " << CGAL::to_double(ray.direction().dy());
-                }
-        }
-        out << "\nCGAL_Nef_polyhedron::p2 Vertices end";
-        return out.str();
+	if (this->dim==2)
+		return OpenSCAD::dump_svg( *this->p2 );
+	else if (this->dim==3)
+		return OpenSCAD::dump_svg( *this->p3 );
+	else
+		return std::string("Nef Polyhedron with dimension != 2 or 3");
 }
 
 #endif // ENABLE_CGAL
