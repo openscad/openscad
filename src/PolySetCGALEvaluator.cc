@@ -176,8 +176,14 @@ PolySet *PolySetCGALEvaluator::evaluatePolySet(const ProjectionNode &node)
 			}
 			catch (const CGAL::Failure_exception &e) {
 				PRINTB("CGAL error in projection node during bigbox intersection: %s", e.what());
-				sum.p3.reset( new CGAL_Nef_polyhedron3() );
+				sum.p3->clear();
 			}
+		}
+
+		if ( sum.p3->is_empty() ) {
+			CGAL::set_error_behaviour(old_behaviour);
+			PRINT("WARNING: projection() failed.");
+			return NULL;
 		}
 
 		// remove z coordinates to make CGAL_Nef_polyhedron2
@@ -205,11 +211,6 @@ PolySet *PolySetCGALEvaluator::evaluatePolySet(const ProjectionNode &node)
 		log << "</svg>\n";
 
 		CGAL::set_error_behaviour(old_behaviour);
-
-		if ( sum.p3->is_empty() ) {
-			PRINT("WARNING: projection() failed.");
-			return NULL;
-		}
 
 		// Extract polygons in the XY plane, ignoring all other polygons
 		// FIXME: If the polyhedron is really thin, there might be unwanted polygons
