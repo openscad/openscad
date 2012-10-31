@@ -49,6 +49,7 @@ void Renderer::setColor(ColorMode colormode, GLint *shaderinfo) const
 		col.setRgb(150, 150, 150, 128);
 		break;
 	default:
+		return;
 		break;
 	}
 	float rgba[4];
