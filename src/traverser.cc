@@ -16,7 +16,7 @@ Response Traverser::traverse(const AbstractNode &node, const State &state)
 	State newstate = state;
 	newstate.setNumChildren(node.getChildren().size());
 	
-	Response response;
+	Response response = ContinueTraversal;
 	if (traversaltype == PREFIX || traversaltype == PRE_AND_POSTFIX) {
 		newstate.setPrefix(true);
 		newstate.setParent(state.parent());
