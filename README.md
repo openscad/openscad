@@ -92,7 +92,7 @@ Follow the instructions for the platform you're compiling on below.
  * [boost (1.35 - 1.47)](http://www.boost.org/)
 * [OpenCSG (1.3.2)](http://www.opencsg.org/)
 * [GLEW (1.6 ->)](http://glew.sourceforge.net/)
-* [Eigen2 (2.0.13->)](http://eigen.tuxfamily.org/)
+* [Eigen (2.0.13->3.1.1)](http://eigen.tuxfamily.org/)
 * [GCC C++ Compiler (4.2 ->)](http://gcc.gnu.org/)
 * [Bison (2.4)](http://www.gnu.org/software/bison/)
 * [Flex (2.5.35)](http://flex.sourceforge.net/)
@@ -164,8 +164,22 @@ After that, follow the Compilation instructions below.
 ### Building for Windows
 
 OpenSCAD for Windows is usually cross-compiled from Linux. If you wish to
-attempt an MSVC build, please see this site:
+attempt an MSVC build on Windows, please see this site:
 http://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Building_on_Windows
+
+To cross-build, first make sure that you have development tools 
+installed to get GCC. Then after you've cloned this git repository, run 
+the script that sets up the environment variables.
+
+    source ./scripts/setenv-mingw-xbuild.sh
+
+Then run the script to download & compile all the prerequisite libraries above:
+
+    ./scripts/mingw-x-build-dependencies.sh
+
+Then skip the compilation instructions below. Instead, build an installer:
+
+    OSTYPE=mingw-cross-env ./scripts/release-common.sh
 
 ### Compilation
 

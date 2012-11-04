@@ -1,0 +1,2 @@
+Recursion detected calling function 'crash'
+ECHO: undef

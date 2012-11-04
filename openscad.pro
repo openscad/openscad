@@ -3,7 +3,7 @@
 #   MPFRDIR
 #   BOOSTDIR
 #   CGALDIR
-#   EIGEN2DIR
+#   EIGENDIR
 #   GLEWDIR
 #   OPENCSGDIR
 #   OPENSCAD_LIBRARIES
@@ -123,7 +123,7 @@ macx:CONFIG += mdi
 CONFIG += cgal
 CONFIG += opencsg
 CONFIG += boost
-CONFIG += eigen2
+CONFIG += eigen
 
 #Uncomment the following line to enable QCodeEdit
 #CONFIG += qcodeedit
@@ -154,6 +154,7 @@ RESOURCES = openscad.qrc
 FORMS   += src/MainWindow.ui \
            src/Preferences.ui \
            src/OpenCSGWarningDialog.ui \
+           src/AboutDialog.ui \
            src/ProgressWidget.ui
 
 HEADERS += src/version_check.h \
@@ -168,6 +169,7 @@ HEADERS += src/version_check.h \
            src/MainWindow.h \
            src/Preferences.h \
            src/OpenCSGWarningDialog.h \
+           src/AboutDialog.h \
            src/builtin.h \
            src/context.h \
            src/csgterm.h \
@@ -213,7 +215,8 @@ HEADERS += src/version_check.h \
            src/memory.h \
            src/linalg.h \
            src/system-gl.h \
-           src/stl-utils.h
+           src/stl-utils.h \
+           src/svg.h
 
 SOURCES += src/version_check.cc \
            src/ProgressWidget.cc \
@@ -246,6 +249,7 @@ SOURCES += src/version_check.cc \
            src/printutils.cc \
            src/progress.cc \
            src/parsersettings.cc \
+           src/stl-utils.cc \
            \
            src/nodedumper.cc \
            src/traverser.cc \
@@ -270,6 +274,7 @@ SOURCES += src/version_check.cc \
            src/dxftess-glu.cc \
            src/dxftess-cgal.cc \
            src/CSGTermEvaluator.cc \
+           src/svg.cc \
            \
            src/openscad.cc \
            src/mainwin.cc

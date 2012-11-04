@@ -1,32 +1,44 @@
 OpenSCAD Release Checklist
 --------------------------
 
-o Update version
-  scripts/release-linux.sh
+o Update VERSION environment variable
+
+  export VERSION=2012.08
+
+  It will be used by the commands below, as well as these files: 
+
+  scripts/release-common.sh
   scripts/publish-macosx.sh
-  FIXME: Windows
+  scripts/publish-mingw-x.sh
 
 o Update RELEASE_NOTES
 
 o Tag release
-  git tag "openscad-2011.12"
+  git tag "openscad-$VERSION"
 
 o build source package
-  scripts/git-archive-all.py --prefix=openscad-2011.12/ openscad-2011.12.src.tar.gz
+  scripts/git-archive-all.py --prefix=openscad-$VERSION/ openscad-$VERSION.src.tar.gz
 
 o build binaries
-  tar xzf openscad-2011.12.src.tar.gz
-  cd openscad-2011.12
+  tar xzf openscad-$VERSION.src.tar.gz
+  cd openscad-$VERSION
   Mac OS X
     (For Qt-4.7.3: Remove /Developers/Applications/Qt/plugins/qmltooling)
-    ./scripts/publish-macosx.sh -> OpenSCAD-2011.12.dmg
-  Linux: FIXME 32 vs. 64 bit
-    ./scripts/release-linux.sh
-  Windows: FIXME 32 vs. 64 bit
+    ./scripts/publish-macosx.sh -> OpenSCAD-$VERSION.dmg
+  Linux:
+    32-bit: run on a 32-bit machine or VM
+    64-bit: run on a 64-bit machine or VM
+    ./scripts/release-common.sh -> openscad-$VERSION.x86-ARCH.tar.gz
+    (where ARCH will be detected and set to 32 or 64)
+  Windows mingw cross-build: FIXME 32 vs. 64 bit
+    ./scripts/publish-mingw-x.sh -> mingw32/Openscad-$VERSION.zip
+                                 -> mingw32/Openscad-$VERSION-Installer.exe
 
 o FIXME: Run some tests
 
-o Set back version to being date-tagged: release-linux.sh, publish-macosx.sh, FIXME: Windows
+o Remove VERSION environment variable
+
+  export VERSION=
 
 o  git push --tags
 

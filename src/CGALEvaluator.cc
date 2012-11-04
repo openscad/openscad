@@ -34,8 +34,8 @@
 #include <assert.h>
 
 #include <boost/foreach.hpp>
-#include <boost/unordered_map.hpp>
 #include <boost/bind.hpp>
+#include <map>
 
 CGAL_Nef_polyhedron CGALEvaluator::evaluateCGALMesh(const AbstractNode &node)
 {
@@ -81,15 +81,13 @@ void CGALEvaluator::process(CGAL_Nef_polyhedron &target, const CGAL_Nef_polyhedr
 			break;
 		}
 	}
-	catch (CGAL::Failure_exception e) {
-		// union && difference assert triggered by testdata/scad/bugs/rotate-diff-nonmanifold-crash.scad
+	catch (const CGAL::Failure_exception &e) {
+		// union && difference assert triggered by testdata/scad/bugs/rotate-diff-nonmanifold-crash.scad and testdata/scad/bugs/issue204.scad
 		std::string opstr = op == CGE_UNION ? "union" : op == CGE_INTERSECTION ? "intersection" : op == CGE_DIFFERENCE ? "difference" : op == CGE_MINKOWSKI ? "minkowski" : "UNKNOWN";
 		PRINTB("CGAL error in CGAL_Nef_polyhedron's %s operator: %s", opstr % e.what());
 
-		// Minkowski errors can result in corrupt polyhedrons
-		if (op == CGE_MINKOWSKI) {
-			target = src;
-		}
+		// Errors can result in corrupt polyhedrons, so put back the old one
+		target = src;
 	}
 	CGAL::set_error_behaviour(old_behaviour);
 }
@@ -150,9 +148,14 @@ CGAL_Nef_polyhedron CGALEvaluator::applyHull(const CgaladvNode &node)
 		}
 		else if (dim == 3) {
 			CGAL_Polyhedron P;
-			chN.p3->convert_to_Polyhedron(P);
-			std::transform(P.vertices_begin(), P.vertices_end(), std::back_inserter(points3d), 
-										 boost::bind(static_cast<const CGAL_Polyhedron::Vertex::Point_3&(CGAL_Polyhedron::Vertex::*)() const>(&CGAL_Polyhedron::Vertex::point), _1));
+			if (!chN.p3->is_simple()) {
+				PRINT("Hull() currently requires a valid 2-manifold. Please modify your design. See http://en.wikibooks.org/wiki/OpenSCAD_User_Manual/STL_Import_and_Export");
+			}
+			else {
+				chN.p3->convert_to_Polyhedron(P);
+				std::transform(P.vertices_begin(), P.vertices_end(), std::back_inserter(points3d), 
+											 boost::bind(static_cast<const CGAL_Polyhedron::Vertex::Point_3&(CGAL_Polyhedron::Vertex::*)() const>(&CGAL_Polyhedron::Vertex::point), _1));
+			}
 		}
 		chnode->progress_report();
 	}
@@ -165,7 +168,8 @@ CGAL_Nef_polyhedron CGALEvaluator::applyHull(const CgaladvNode &node)
 	}
 	else if (dim == 3) {
 		CGAL_Polyhedron P;
-		CGAL::convex_hull_3(points3d.begin(), points3d.end(), P);
+		if (points3d.size()>3)
+			CGAL::convex_hull_3(points3d.begin(), points3d.end(), P);
 		N = CGAL_Nef_polyhedron(new CGAL_Nef_polyhedron3(P));
 	}
 	return N;
@@ -240,6 +244,12 @@ Response CGALEvaluator::visit(State &state, const TransformNode &node)
 		if (!isCached(node)) {
 			// First union all children
 			N = applyToChildren(node, CGE_UNION);
+
+			if ( matrix_contains_infinity( node.matrix ) || matrix_contains_nan( node.matrix ) ) {
+				// due to the way parse/eval works we can't currently distinguish between NaN and Inf
+				PRINT("Warning: Transformation matrix contains Not-a-Number and/or Infinity - removing object.");
+				N.reset();
+			}
 
 			// Then apply transform
 			// If there is no geometry under the transform, N will be empty and of dim 0,
@@ -445,9 +455,9 @@ CGAL_Nef_polyhedron CGALEvaluator::evaluateCGALMesh(const PolySet &ps)
 		struct PolyReducer
 		{
 			Grid2d<int> grid;
-			boost::unordered_map<std::pair<int,int>, std::pair<int,int> > edge_to_poly;
-			boost::unordered_map<int, CGAL_Nef_polyhedron2::Point> points;
-			typedef boost::unordered_map<int, std::vector<int> > PolygonMap;
+			std::map<std::pair<int,int>, std::pair<int,int> > edge_to_poly;
+			std::map<int, CGAL_Nef_polyhedron2::Point> points;
+			typedef std::map<int, std::vector<int> > PolygonMap;
 			PolygonMap polygons;
 			int poly_n;
 
@@ -637,7 +647,7 @@ CGAL_Nef_polyhedron CGALEvaluator::evaluateCGALMesh(const PolySet &ps)
 				N = new CGAL_Nef_polyhedron3(*P);
 			}
 		}
-		catch (CGAL::Assertion_exception e) {
+		catch (const CGAL::Assertion_exception &e) {
 			PRINTB("CGAL error in CGAL_Nef_polyhedron3(): %s", e.what());
 		}
 		CGAL::set_error_behaviour(old_behaviour);

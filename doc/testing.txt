@@ -85,7 +85,7 @@ Some versions of Xvfb may fail, however.
 
 1. Trouble finding libraries on unix
 
- To help CMAKE find eigen2, OpenCSG, CGAL, Boost, and GLEW, you can use 
+ To help CMAKE find eigen, OpenCSG, CGAL, Boost, and GLEW, you can use 
  environment variables, just like for the main qmake & openscad.pro. Examples:
 
  OPENSCAD_LIBRARIES=$HOME cmake .
@@ -93,7 +93,7 @@ Some versions of Xvfb may fail, however.
  
  Valid variables are as follows:
 
- BOOSTDIR, CGALDIR, EIGEN2DIR, GLEWDIR, OPENCSGDIR, OPENSCAD_LIBRARIES
+ BOOSTDIR, CGALDIR, EIGENDIR, GLEWDIR, OPENCSGDIR, OPENSCAD_LIBRARIES
 
  When running, this might help find your locally built libraries (assuming
  you installed into $HOME)

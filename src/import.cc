@@ -47,7 +47,7 @@
 #include <boost/regex.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/filesystem.hpp>
-using namespace boost::filesystem;
+namespace fs = boost::filesystem;
 #include <boost/assign/std/vector.hpp>
 using namespace boost::assign; // bring 'operator+=()' into scope
 #include "boosty.h"
@@ -80,7 +80,7 @@ AbstractNode *ImportModule::evaluate(const Context *ctx, const ModuleInstantiati
 	std::string filename = c.getAbsolutePath(v.isUndefined() ? "" : v.toString());
 	import_type_e actualtype = this->type;
 	if (actualtype == TYPE_UNKNOWN) {
-		std::string extraw = boosty::extension_str( path(filename) );
+		std::string extraw = boosty::extension_str( fs::path(filename) );
 		std::string ext = boost::algorithm::to_lower_copy( extraw );
 		if (ext == ".stl") actualtype = TYPE_STL;
 		else if (ext == ".off") actualtype = TYPE_OFF;
@@ -157,7 +157,7 @@ PolySet *ImportNode::evaluate_polyset(class PolySetEvaluator *) const
 							vdata[i][v] = boost::lexical_cast<double>(results[v+1]);
 						}
 					}
-					catch (boost::bad_lexical_cast &blc) {
+					catch (const boost::bad_lexical_cast &blc) {
 						PRINTB("WARNING: Can't parse vertex line '%s'.", line);
 						i = 10;
 						continue;

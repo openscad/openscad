@@ -84,7 +84,8 @@ int CGAL_Nef_polyhedron::weight() const
 */
 PolySet *CGAL_Nef_polyhedron::convertToPolyset()
 {
-	assert(!this->empty());
+	if (this->empty())
+		return new PolySet();
 	PolySet *ps = NULL;
 	if (this->dim == 2) {
 		ps = new PolySet();
@@ -101,7 +102,7 @@ PolySet *CGAL_Nef_polyhedron::convertToPolyset()
 			this->p3->convert_to_Polyhedron(P);
 			ps = createPolySetFromPolyhedron(P);
 		}
-		catch (CGAL::Precondition_exception e) {
+		catch (const CGAL::Precondition_exception &e) {
 			PRINTB("CGAL error in CGAL_Nef_polyhedron::convertToPolyset(): %s", e.what());
 		}
 		CGAL::set_error_behaviour(old_behaviour);

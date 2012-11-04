@@ -1,0 +1,22 @@
+#ifndef ABOUTDIALOG_H_
+#define ABOUTDIALOG_H_
+
+#include "ui_AboutDialog.h"
+
+#define STRINGIFY(x) #x
+#define TOSTRING(x) STRINGIFY(x)
+
+class AboutDialog : public QDialog, public Ui::AboutDialog
+{
+	Q_OBJECT;
+public:
+	AboutDialog(QWidget *) {
+		setupUi(this);
+		this->setWindowTitle( QString("About OpenSCAD ") + QString(TOSTRING( OPENSCAD_VERSION)) );
+		this->aboutText->setOpenExternalLinks(true);
+		QUrl flattr_qurl(":icons/flattr.png" );
+		this->aboutText->loadResource( QTextDocument::ImageResource, flattr_qurl );
+	}
+};
+
+#endif

@@ -59,7 +59,7 @@ public:
 class Module : public AbstractModule
 {
 public:
-	Module() { }
+	Module() : is_handling_dependencies(false) { }
 	virtual ~Module();
 	virtual AbstractNode *evaluate(const Context *ctx, const ModuleInstantiation *inst) const;
 	virtual std::string dump(const std::string &indent, const std::string &name) const;
@@ -71,6 +71,7 @@ public:
 	void registerInclude(const std::string &filename);
 	typedef boost::unordered_map<std::string, time_t> IncludeContainer;
 	IncludeContainer includes;
+	bool is_handling_dependencies;
 	bool handleDependencies();
 
 	std::vector<std::string> assignments_var;

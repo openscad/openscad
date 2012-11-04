@@ -1,4 +1,5 @@
 #include "linalg.h"
+#include <boost/math/special_functions/fpclassify.hpp>
 
 // FIXME: We can achieve better pruning by either:
 // o Recalculate the box based on the transformed object
@@ -23,5 +24,25 @@ BoundingBox operator*(const Transform3d &m, const BoundingBox &box)
 		}
 	}
 	return newbox;
+}
+
+bool matrix_contains_infinity( const Transform3d &m )
+{
+  for (int i=0;i<m.matrix().rows();i++) {
+    for (int j=0;j<m.matrix().cols();j++) {
+      if ((boost::math::isinf)(m(i,j))) return true;
+    }
+  }
+	return false;
+}
+
+bool matrix_contains_nan( const Transform3d &m )
+{
+  for (int i=0;i<m.matrix().rows();i++) {
+    for (int j=0;j<m.matrix().cols();j++) {
+      if ((boost::math::isnan)(m(i,j))) return true;
+    }
+  }
+	return false;
 }
 

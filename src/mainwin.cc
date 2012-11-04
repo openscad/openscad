@@ -39,6 +39,7 @@
 #include "builtin.h"
 #include "progress.h"
 #include "dxfdim.h"
+#include "AboutDialog.h"
 #ifdef ENABLE_OPENCSG
 #include "CSGTermEvaluator.h"
 #include "OpenCSGRenderer.h"
@@ -114,11 +115,11 @@ static char helptitle[] =
 #endif
 	"\nhttp://www.openscad.org\n\n";
 static char copyrighttext[] =
-	"Copyright (C) 2009-2011 Marius Kintel <marius@kintel.net> and Clifford Wolf <clifford@clifford.at>\n"
+	"Copyright (C) 2009-2012 Marius Kintel <marius@kintel.net> and Clifford Wolf <clifford@clifford.at>\n"
 	"\n"
-	"This program is free software; you can redistribute it and/or modify"
-	"it under the terms of the GNU General Public License as published by"
-	"the Free Software Foundation; either version 2 of the License, or"
+	"This program is free software; you can redistribute it and/or modify "
+	"it under the terms of the GNU General Public License as published by "
+	"the Free Software Foundation; either version 2 of the License, or "
 	"(at your option) any later version.";
 
 static void
@@ -708,7 +709,7 @@ void MainWindow::compileCSG(bool procevents)
 		PolySetCache::instance()->print();
 		CGALCache::instance()->print();
 	}
-	catch (ProgressCancelException e) {
+	catch (const ProgressCancelException &e) {
 		PRINT("CSG generation cancelled.");
 	}
 	progress_report_fin();
@@ -801,7 +802,8 @@ void MainWindow::actionNew()
 
 void MainWindow::actionOpen()
 {
-	QString new_filename = QFileDialog::getOpenFileName(this, "Open File", "", "OpenSCAD Designs (*.scad)");
+	QString new_filename = QFileDialog::getOpenFileName(this, "Open File", "",
+																											"OpenSCAD Designs (*.scad *.csg)");
 #ifdef ENABLE_MDI
 	if (!new_filename.isEmpty()) {
 		new MainWindow(new_filename);
@@ -1735,7 +1737,9 @@ void
 MainWindow::helpAbout()
 {
 	qApp->setWindowIcon(QApplication::windowIcon());
-	QMessageBox::information(this, "About OpenSCAD", QString(helptitle) + QString(copyrighttext));
+	AboutDialog *dialog = new AboutDialog(this);
+	dialog->exec();
+	//QMessageBox::information(this, "About OpenSCAD", QString(helptitle) + QString(copyrighttext));
 }
 
 void

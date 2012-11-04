@@ -166,7 +166,7 @@ void dxf_tesselate(PolySet *ps, DxfData &dxf, double rot, bool up, bool /* do_tr
 	}
 
 	}
-	catch (CGAL::Assertion_exception e) {
+	catch (const CGAL::Assertion_exception &e) {
 		PRINTB("CGAL error in dxf_tesselate(): %s", e.what());
 		CGAL::set_error_behaviour(old_behaviour);
 		return;
