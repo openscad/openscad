@@ -77,6 +77,8 @@
 #endif
 
 #include <fstream>
+#include <iostream>
+#include <map>
 
 #include <algorithm>
 #include <boost/version.hpp>
@@ -290,6 +292,7 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this->designActionExportOFF, SIGNAL(triggered()), this, SLOT(actionExportOFF()));
 	connect(this->designActionExportDXF, SIGNAL(triggered()), this, SLOT(actionExportDXF()));
 	connect(this->designActionExportCSG, SIGNAL(triggered()), this, SLOT(actionExportCSG()));
+	connect(this->designActionExportYafaray, SIGNAL(triggered()), this, SLOT(actionExportYafaray()));
 	connect(this->designActionExportImage, SIGNAL(triggered()), this, SLOT(actionExportImage()));
 	connect(this->designActionFlushCaches, SIGNAL(triggered()), this, SLOT(actionFlushCaches()));
 
@@ -1472,6 +1475,279 @@ void MainWindow::actionExportCSG()
 		fstream.close();
 		PRINT("CSG export finished.");
 	}
+
+	clearCurrentOutput();
+}
+
+struct Point {
+  double x;
+  double y;
+  double z;
+
+  bool operator<( const struct Point & p ) const {
+    if (this->x != p.x)
+      return (this->x < p.x);
+
+    if (this->y != p.y)
+      return (this->y < p.y);
+
+    return (this->z < p.z);
+  }
+};
+
+typedef CGAL_Polyhedron::Vertex Vertex;
+
+static void output_yafray_header(std::ofstream &stream){
+  stream << "<?xml version=\"1.0\"?>\n\
+<scene type=\"triangle\">\n\n";
+  return;
+}
+
+static void output_yafray_footer(std::ofstream &stream){
+  stream << "<background name=\"world_background\">\n\
+	<color r=\"0.437557\" g=\"1\" b=\"0.546283\" a=\"1\"/>\n\
+	<power fval=\"1\"/>\n\
+	<type sval=\"constant\"/>\n\
+</background>\n\
+\n\
+<integrator name=\"default\">\n\
+	<bounces ival=\"3\"/>\n\
+	<caustic_mix ival=\"5\"/>\n\
+	<diffuseRadius fval=\"1\"/>\n\
+	<fg_bounces ival=\"3\"/>\n\
+	<fg_samples ival=\"32\"/>\n\
+	<finalGather bval=\"true\"/>\n\
+	<photons ival=\"200000\"/>\n\
+	<raydepth ival=\"4\"/>\n\
+	<search ival=\"150\"/>\n\
+	<shadowDepth ival=\"2\"/>\n\
+	<show_map bval=\"false\"/>\n\
+	<transpShad bval=\"false\"/>\n\
+	<type sval=\"photonmapping\"/>\n\
+	<use_background bval=\"false\"/>\n\
+</integrator>\n\
+\n\
+<integrator name=\"volintegr\">\n\
+	<type sval=\"none\"/>\n\
+</integrator>\n\
+\n\
+<render>\n\
+	<AA_inc_samples ival=\"2\"/>\n\
+	<AA_minsamples ival=\"4\"/>\n\
+	<AA_passes ival=\"2\"/>\n\
+	<AA_pixelwidth fval=\"1.5\"/>\n\
+	<AA_threshold fval=\"0.05\"/>\n\
+	<background_name sval=\"world_background\"/>\n\
+	<camera_name sval=\"cam\"/>\n\
+	<clamp_rgb bval=\"true\"/>\n\
+	<filter_type sval=\"mitchell\"/>\n\
+	<gamma fval=\"2.2\"/>\n\
+	<height ival=\"375\"/>\n\
+	<integrator_name sval=\"default\"/>\n\
+	<threads ival=\"1\"/>\n\
+	<volintegrator_name sval=\"volintegr\"/>\n\
+	<width ival=\"375\"/>\n\
+	<xstart ival=\"0\"/>\n\
+	<ystart ival=\"0\"/>\n\
+	<z_channel bval=\"true\"/>\n\
+</render>\n\
+</scene>\n";
+
+  return;
+}
+
+static void output_yafray_light_and_camera(std::ofstream &stream){
+  stream << "<material name=\"Lamp.001\">\n\
+	<IOR fval=\"1\"/>\n\
+	<color r=\"1\" g=\"1\" b=\"1\" a=\"1\"/>\n\
+	<diffuse_reflect fval=\"1\"/>\n\
+	<emit fval=\"0\"/>\n\
+	<fresnel_effect bval=\"false\"/>\n\
+	<mirror_color r=\"1\" g=\"1\" b=\"1\" a=\"1\"/>\n\
+	<power fval=\"5\"/>\n\
+	<specular_reflect fval=\"0\"/>\n\
+	<translucency fval=\"0\"/>\n\
+	<transmit_filter fval=\"1\"/>\n\
+	<transparency fval=\"0\"/>\n\
+	<type sval=\"light_mat\"/>\n\
+</material>\n\
+\n\
+<mesh vertices=\"4\" faces=\"2\" has_orco=\"false\" has_uv=\"false\" type=\"0\">\n\
+			<p x=\"-25\" y=\"-25\" z=\"199.646\"/>\n\
+			<p x=\"-25\" y=\"25\" z=\"199.646\"/>\n\
+			<p x=\"25\" y=\"25\" z=\"199.646\"/>\n\
+			<p x=\"25\" y=\"-25\" z=\"199.646\"/>\n\
+			<set_material sval=\"Lamp.001\"/>\n\
+			<f a=\"1\" b=\"1\" c=\"1\"/>\n\
+			<f a=\"1\" b=\"1\" c=\"1\"/>\n\
+</mesh>\n\
+\n\
+<light name=\"Lamp.001\">\n\
+	<color r=\"1\" g=\"1\" b=\"1\" a=\"1\"/>\n\
+	<corner x=\"-25\" y=\"-25\" z=\"199.646\"/>\n\
+	<from x=\"0\" y=\"0\" z=\"1.99646\"/>\n\
+	<point1 x=\"-25\" y=\"25\" z=\"199.646\"/>\n\
+	<point2 x=\"25\" y=\"-25\" z=\"199.646\"/>\n\
+	<power fval=\"5\"/>\n\
+	<samples ival=\"16\"/>\n\
+	<type sval=\"arealight\"/>\n\
+</light>\n\
+\n\
+<camera name=\"cam\">\n\
+	<aperture fval=\"0\"/>\n\
+	<bokeh_rotation fval=\"0\"/>\n\
+	<bokeh_type sval=\"disk1\"/>\n\
+	<dof_distance fval=\"0\"/>\n\
+	<focal fval=\"1.37374\"/>\n\
+	<from x=\"0\" y=\"-395.542\" z=\"100\"/>\n\
+	<resx ival=\"375\"/>\n\
+	<resy ival=\"375\"/>\n\
+	<to x=\"0\" y=\"-370.598\" z=\"100\"/>\n\
+	<type sval=\"perspective\"/>\n\
+	<up x=\"0\" y=\"-395.542\" z=\"124.944\"/>\n\
+</camera>\n\n";
+  return;
+}
+
+static void output_shiny_diffuse_material(std::ofstream &stream, float r, float g, float b, float a, int material_id){
+  stream << "\
+<material name=\"material_" << material_id << "\">\n\
+	<IOR fval=\"1\"/>\n\
+	<color r=\"" << r << "\" g=\"" << g << "\" b=\"" << b << "\" a=\"" << a << "\"/>\n\
+	<diffuse_reflect fval=\"1\"/>\n\
+	<emit fval=\"0\"/>\n\
+	<fresnel_effect bval=\"false\"/>\n\
+	<mirror_color r=\"1\" g=\"1\" b=\"1\" a=\"1\"/>\n\
+	<specular_reflect fval=\"0\"/>\n\
+	<translucency fval=\"0\"/>\n\
+	<transmit_filter fval=\"1\"/>\n\
+	<transparency fval=\"0\"/>\n\
+	<type sval=\"shinydiffusemat\"/>\n\
+</material>\n\n";
+
+  return;
+}
+
+static void output_point(std::ostream &stream, std::map<struct Point, int> &point_map, struct Point &p, int &point_id){
+  if ( point_map.count(p) == 0 ){
+    stream << "\t<p x=\"" << p.x << "\" y=\"" << p.y << "\" z=\"" << p.z << "\"/>\n";
+//    point_map.insert(std::pair<struct Point, int>(p, point_id++));
+    point_map[p] = point_id++;
+  }
+}
+
+void output_yafray_geometry(std::ostream &stream, CGAL_Nef_polyhedron *node, int material_id){
+	typedef CGAL_Polyhedron::Vertex_const_iterator                  VCI;
+	typedef CGAL_Polyhedron::Facet_const_iterator                   FCI;
+	typedef CGAL_Polyhedron::Halfedge_around_facet_const_circulator HFCC;
+  std::map<struct Point, int> point_map;
+
+	CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
+	try {
+  	CGAL_Polyhedron P;
+    node->p3->convert_to_Polyhedron(P);
+
+  	setlocale(LC_NUMERIC, "C"); // Ensure radix is . (not ,) in output
+
+    int num_vertices = P.size_of_vertices();
+    int num_faces = 0;
+    int point_id=0;
+    std::stringstream points_stream;
+    std::stringstream faces_stream;
+
+	  for (FCI fi = P.facets_begin(); fi != P.facets_end(); ++fi) {
+  		HFCC hc = fi->facet_begin();
+		  HFCC hc_end = hc;
+		  Vertex v;
+      struct Point p1, p2, p3;
+
+		  v = *VCI((hc++)->vertex());
+      p1.x = CGAL::to_double(v.point().x());
+      p1.y = CGAL::to_double(v.point().y());
+      p1.z = CGAL::to_double(v.point().z());
+      output_point(points_stream, point_map, p1, point_id);
+
+		  v = *VCI((hc++)->vertex());
+      p3.x = CGAL::to_double(v.point().x());
+      p3.y = CGAL::to_double(v.point().y());
+      p3.z = CGAL::to_double(v.point().z());
+      output_point(points_stream, point_map, p3, point_id);
+ 
+      do {
+        p2 = p3;
+
+        v = *VCI((hc++)->vertex());
+        p3.x = CGAL::to_double(v.point().x());
+        p3.y = CGAL::to_double(v.point().y());
+        p3.z = CGAL::to_double(v.point().z());
+        output_point(points_stream, point_map, p3, point_id);
+
+        num_faces++;
+//        faces_stream << "\t<f a=\"" << point_map.find(p1)->second << "\" b=\"" << point_map.find(p2)->second << "\" c=\"" << point_map.find(p3)->second << "\"/>\n";
+        faces_stream << "\t<f a=\"" << point_map[p1] << "\" b=\"" << point_map[p2] << "\" c=\"" << point_map[p3] << "\"/>\n";
+
+      } while(hc != hc_end);
+    }
+
+    stream << "<mesh vertices=\"" << num_vertices << "\" faces=\"" << num_faces << "\" has_orco=\"false\" has_uv=\"false\" type=\"0\">\n";
+    stream << points_stream.str();
+    stream << "\t<set_material sval=\"material_" << material_id << "\"/>\n";
+    stream << faces_stream.str();
+    stream << "</mesh>\n\n";
+
+  }
+	catch (const CGAL::Assertion_exception &e) {
+		PRINTB("CGAL error in CGAL_Nef_polyhedron3::convert_to_Polyhedron(): %s", e.what());
+	}
+	CGAL::set_error_behaviour(old_behaviour);
+
+	setlocale(LC_NUMERIC, "");      // Set default locale
+  return;
+}
+
+void MainWindow::actionExportYafaray()
+{
+	setCurrentOutput();
+
+	if (!this->root_N) {
+    //This is temporary. 
+    //We'll build separate chunks as part of the export routine itself
+    //in later versions of this code.
+		PRINT("Nothing to export! Try building first (press F6).");
+		clearCurrentOutput();
+		return;
+	}
+
+	QString yafaray_filename = QFileDialog::getSaveFileName(this, "Export YafaRay XML File", 
+																											this->fileName.isEmpty() ? "Untitled.xml" : QFileInfo(this->fileName).baseName()+".xml",
+																											"YafaRay Files (*.xml)");
+	if (yafaray_filename.isEmpty()) {
+		PRINT("No filename specified. YafaRay export aborted.");
+		clearCurrentOutput();
+		return;
+	}
+
+	std::ofstream fstream(yafaray_filename.toUtf8());
+	if (!fstream.is_open()) {
+		PRINTB("Can't open file \"%s\" for export", yafaray_filename.toStdString());
+  	clearCurrentOutput();
+    return;
+	}
+
+
+  int material_id = 1;
+  float r=0.5, g=0.5, b=1, a=1;
+
+  output_yafray_header(fstream);
+  output_yafray_light_and_camera(fstream);
+  output_shiny_diffuse_material(fstream, r, g, b, a, material_id);
+
+  output_yafray_geometry(fstream, this->root_N, material_id);
+
+  output_yafray_footer(fstream);
+
+	fstream.close();
+	PRINT("YafaRay export finished.");
 
 	clearCurrentOutput();
 }

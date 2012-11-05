@@ -119,6 +119,7 @@ private slots:
 	void actionDisplayCSGProducts();
 	void actionExportSTLorOFF(bool stl_mode);
 	void actionExportSTL();
+	void actionExportYafaray();
 	void actionExportOFF();
 	void actionExportDXF();
 	void actionExportCSG();
