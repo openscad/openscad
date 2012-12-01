@@ -51,9 +51,8 @@ Context::Context(const Context *parent, const Module *library)
 		this->functions_p = &library->functions;
 		this->modules_p = &library->modules;
 		this->usedlibs_p = &library->usedlibs;
-		for (size_t j = 0; j < library->assignments_var.size(); j++) {
-			this->set_variable(library->assignments_var[j], 
-												 library->assignments_expr[j]->evaluate(this));
+		BOOST_FOREACH(const std::string &var, library->assignments_var) {
+			this->set_variable(var, library->assignments.at(var)->evaluate(this));
 		}
 	}
 	else {
