@@ -1,15 +1,16 @@
 #!/bin/bash
 #
-# This script creates a binary release of OpenSCAD.
-# This should work under Mac OS X, Windows (msys), and Linux cross-compiling
-# for windows using mingw-cross-env (use like: OSTYPE=mingw-cross-env release-common.sh).
-# Linux support pending.
-# The script will create a file called openscad-<versionstring>.zip
-# in the current directory (or in the $DEPLOYDIR of a mingw cross build)
+# This script creates a binary release of OpenSCAD. This should work
+# under Mac OS X, Windows (msys), Linux 32, Linux 64, and Linux->Win32 MXE
+# cross-build.
 #
-# Usage: release-common.sh [-v <versionstring>] [-c]
-#  -v   Version string (e.g. -v 2010.01)
-#  -c   Build with commit info
+# The script will create a file called openscad-<versionstring>.<extension> in
+# the current directory (or under ./mingw32)
+#
+# Usage: release-common.sh [-v <versionstring>] [-c] [-x32]
+#  -v       Version string (e.g. -v 2010.01)
+#  -c       Build with commit info
+#  -mingw32 Cross-compile for win32 using MXE
 #
 # If no version string is given, todays date will be used (YYYY-MM-DD)
 # If no make target is given, release will be used on Windows, none one Mac OS X
@@ -42,11 +43,18 @@ elif [[ $OSTYPE == "linux-gnu" ]]; then
     ARCH=32
   fi
   echo "Detected ARCH: $ARCH"
-elif [[ $OSTYPE == "mingw-cross-env" ]]; then
+fi
+
+if [ "`echo $* | grep mingw32`" ]; then
   OS=LINXWIN
 fi
 
-echo "Detected OS: $OS"
+if [ $OS ]; then
+  echo "Detected OS: $OS"
+else
+  echo "Error: Couldn't detect OSTYPE"
+  exit
+fi
 
 while getopts 'v:c' c
 do
@@ -147,14 +155,19 @@ case $OS in
         ;;
 esac
 
+if [ ! $NUMCPU ]; then
+  echo "note: you can 'export NUMCPU=x' for multi-core compiles (x=number)";
+  NUMCPU=2
+fi
+
 case $OS in
     LINXWIN)
-        # make -jx sometimes has problems with parser_yacc
+        # dont use paralell builds, it can error-out on parser_yacc.
         cd $DEPLOYDIR && make $TARGET
         cd $OPENSCADDIR
     ;;
     *)
-        make -j2 $TARGET
+        make -j$NUMCPU $TARGET
     ;;
 esac
 
