@@ -1,8 +1,8 @@
 #!/bin/sh -e
 
-# test_pretty_print copyright 2012 don bright. released under the GPL 2, or
+# linux-build-dependencies by don bright 2012. copyright assigned to
+# Marius Kintel and Clifford Wolf, 2012. released under the GPL 2, or
 # later, as described in the file named 'COPYING' in OpenSCAD's project root.
-# permission to change this license is given to Marius Kintel & Clifford Wolf
 
 #
 # This script builds all library dependencies of OpenSCAD for Linux
