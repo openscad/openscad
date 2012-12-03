@@ -17,10 +17,13 @@
 #
 # The commit info will extracted from git and be passed to qmake as OPENSCAD_COMMIT
 # to identify a build in the about box.
+#
+# The mingw32 cross compile depends on the mxe tools + dependencies. Please
+# see scripts/*mingw-* & the OpenSCAD manual for more information.
 
 printUsage()
 {
-  echo "Usage: $0 -v <versionstring> -c
+  echo "Usage: $0 -v <versionstring> -c -mingw32
   echo
   echo "  Example: $0 -v 2010.01
 }
