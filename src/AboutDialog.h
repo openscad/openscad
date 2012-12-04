@@ -16,6 +16,9 @@ public:
 		this->aboutText->setOpenExternalLinks(true);
 		QUrl flattr_qurl(":icons/flattr.png" );
 		this->aboutText->loadResource( QTextDocument::ImageResource, flattr_qurl );
+		QString tmp = this->aboutText->toHtml();
+		tmp.replace("__VERSION__",QString(TOSTRING(OPENSCAD_VERSION)));
+		this->aboutText->setHtml(tmp);
 	}
 };
 
