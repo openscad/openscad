@@ -1,19 +1,20 @@
 #!/bin/sh -e
 
-# linux-build-dependencies by don bright 2012. copyright assigned to
+# uni-build-dependencies by don bright 2012. copyright assigned to
 # Marius Kintel and Clifford Wolf, 2012. released under the GPL 2, or
 # later, as described in the file named 'COPYING' in OpenSCAD's project root.
 
 #
-# This script builds all library dependencies of OpenSCAD for Linux
+# This script builds all library dependencies of OpenSCAD for Linux/BSD
 #
 # This script must be run from the OpenSCAD source root directory
 #
-# Usage: linux-build-dependencies.sh
+# Usage: uni-build-dependencies.sh
 #
 # Prerequisites:
 # - wget or curl
 # - Qt4
+# - other
 #
 
 printUsage()
@@ -275,7 +276,7 @@ if [ ! -f $OPENSCADDIR/openscad.pro ]; then
   exit 0
 fi
 
-. ./scripts/setenv-linbuild.sh # '.' is equivalent to 'source'
+. ./scripts/setenv-unibuild.sh # '.' is equivalent to 'source'
 SRCDIR=$BASEDIR/src
 
 if [ ! $NUMCPU ]; then

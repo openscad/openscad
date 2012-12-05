@@ -131,35 +131,29 @@ compilation process.
 
 After that, follow the Compilation instructions below.
 
-### Building for newer Linux distributions
+### Building for Linux/BSD
 
-First, make sure that you have development tools installed to get GCC. 
-Then after you've cloned this git repository, use a package manager to 
-download packages for the dependency libraries listed above. Convenience 
-scripts are provided for some popular systems:
+First, make sure that you have git installed. Then after you've cloned 
+this git repository, run the script that attempts to download the 
+dependency packages for your system:
 
-    Ubuntu, Debian:    ./scripts/ubuntu-build-dependencies.sh
-    OpenSUSE:          ./scripts/opensuse-build-dependencies.sh
-    Fedora:            ./scripts/fedora-build-dependencies.sh
+    ./scripts/uni-get-dependencies.sh
 
-Check your library versions to make sure they meet the minimum 
-requirements listed above. After that follow the Compilation 
-instructions below.
+This will get the majority of necessary packages, although your 
+particular system may require you to manually install some. After installing
+dependencies, check their versions. You can run this script to help you:
 
-### Building for older Linux or building without root access
+    ./scripts/check-dependencies.sh
 
-First, make sure that you have development tools installed to get GCC.
-Then after you've cloned this git repository, run the script that sets 
-up the environment variables.
+If some of yours are out of date, you can build newer versions automatically
+into $HOME/openscad_deps with the following commands:
 
     source ./scripts/setenv-linbuild.sh
-
-Then run the script to download & compile all the prerequisite libraries above:
-
     ./scripts/linux-build-dependencies.sh
+    ./scripts/check-dependencies.sh
 
-Then add LD_LIBRARY_PATH=$HOME/openscad_deps to your ~/.bashrc
-After that, follow the Compilation instructions below.
+This may take several hours. If successfull, follow the Compilation 
+instructions below. If not, file an 'issue' on the OpenSCAD github.
 
 ### Building for Windows
 
@@ -173,13 +167,13 @@ the script that sets up the environment variables.
 
     source ./scripts/setenv-mingw-xbuild.sh
 
-Then run the script to download & compile all the prerequisite libraries above:
+Then run the script to download & compile all the dependency libraries:
 
     ./scripts/mingw-x-build-dependencies.sh
 
-Then skip the compilation instructions below. Instead, build an installer:
+Then, build OpenSCAD and package it to an installer:
 
-    OSTYPE=mingw-cross-env ./scripts/release-common.sh
+    ./scripts/release-common.sh mingw32
 
 ### Compilation
 
