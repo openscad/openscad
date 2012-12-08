@@ -588,7 +588,9 @@ void MainWindow::refreshDocument()
 						 this->fileName.toStdString() % file.errorString().toStdString());
 		}
 		else {
-			QString text = QTextStream(&file).readAll();
+			QTextStream reader(&file);
+			reader.setCodec("UTF-8");
+			QString text = reader.readAll();
 			PRINTB("Loaded design '%s'.", this->fileName.toStdString());
 			editor->setPlainText(text);
 		}
@@ -900,7 +902,9 @@ void MainWindow::actionSave()
 			PRINTB("Failed to open file for writing: %s (%s)", this->fileName.toStdString() % file.errorString().toStdString());
 		}
 		else {
-			QTextStream(&file) << this->editor->toPlainText();
+			QTextStream writer(&file);
+			writer.setCodec("UTF-8");
+			writer << this->editor->toPlainText();
 			PRINTB("Saved design '%s'.", this->fileName.toStdString());
 			this->editor->setContentModified(false);
 		}
