@@ -284,7 +284,7 @@ build_eigen()
 
   EIGENDIR="none"
   if [ $version = "2.0.17" ]; then EIGENDIR=eigen-eigen-b23437e61a07; fi
-  if [ $version = "3.1.1" ]; then EIGENDIR=eigen-eigen-43d9075b23ef; fi
+  if [ $version = "3.1.2" ]; then EIGENDIR=eigen-eigen-5097c01bcdc4; fi
   if [ $EIGENDIR = "none" ]; then
     echo Unknown eigen version. Please edit script.
     exit 1
@@ -365,7 +365,7 @@ fi
 
 echo "Using basedir:" $BASEDIR
 mkdir -p $SRCDIR $DEPLOYDIR
-build_eigen 3.1.1
+build_eigen 3.1.2
 build_gmp 5.0.5
 build_mpfr 3.1.1
 build_boost 1.51.0
