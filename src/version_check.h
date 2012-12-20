@@ -66,6 +66,9 @@ a time, to avoid confusion.
 #warning "."
 #warning "."
 #warning "======================="
+#ifdef __clang__
+#error For Clang to work, CGAL must be >= 4.0.2
+#endif
 #endif // CGAL_VERSION_NR < 10400010000
 #endif //ENABLE_CGAL
 
