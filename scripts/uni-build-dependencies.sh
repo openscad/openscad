@@ -217,41 +217,36 @@ build_opencsg()
   fi
   tar xzf OpenCSG-$version.tar.gz
   cd OpenCSG-$version
-  sed -ibak s/example// opencsg.pro # examples might be broken without GLUT
 
-  # Fedora 64-bit
-  if [ -e /usr/lib64 ]; then
-    if [ "`ls /usr/lib64 | grep Xmu`" ]; then
-      echo "modifying opencsg makefile for 64 bit machine"
-      sed -ibak s/"\-lXmu"/"\-L\/usr\/lib64\/libXmu.so.6"/ src/Makefile 
-    fi
-  fi
+  # modify the .pro file for qmake, then use qmake to
+  # manually rebuild the src/Makefile (some systems don't auto-rebuild it)
 
-  if [ `uname | grep FreeBSD` ]; then
-    sed -ibak s/X11R6/local/g src/Makefile
-   fi
+  cp opencsg.pro opencsg.pro.bak
+  cat opencsg.pro.bak | sed s/example// > opencsg.pro
 
   if [ "`command -v qmake-qt4`" ]; then
     OPENCSG_QMAKE=qmake-qt4
+  elif [ "`command -v qmake4`" ]; then
+    OPENCSG_QMAKE=qmake4
   else
     OPENCSG_QMAKE=qmake
   fi
 
-  if [ $CXX ]; then
-    if [ $CXX = "clang++" ]; then
-      cd $BASEDIR/src/OpenCSG-$version/src
-      $OPENCSG_QMAKE
-      cd $BASEDIR/src/OpenCSG-$version
-      $OPENCSG_QMAKE
-    fi
-  else
-    $OPENCSG_QMAKE
-  fi
+  cd $BASEDIR/src/OpenCSG-$version/src
+  $OPENCSG_QMAKE
+
+  cd $BASEDIR/src/OpenCSG-$version
+  $OPENCSG_QMAKE
 
   make
 
-  cp -av lib/* $DEPLOYDIR/lib
-  cp -av include/* $DEPLOYDIR/include
+  ls lib/* include/*
+  echo "installing to -->" $DEPLOYDIR
+  mkdir -p $DEPLOYDIR/lib
+  mkdir -p $DEPLOYDIR/include
+  install lib/* $DEPLOYDIR/lib
+  install include/* $DEPLOYDIR/include
+
   cd $BASEDIR
 }
 
