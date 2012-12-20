@@ -80,7 +80,7 @@ numbers in brackets specify the versions which have been used for
 development. Other versions may or may not work as well.
 
 If you're using a newer version of Ubuntu, you can install these 
-libraries from aptitude. If you're using Mac, or an older Linux, there 
+libraries from aptitude. If you're using Mac, or an older Linux/BSD, there 
 are build scripts that download and compile the libraries from source. 
 Follow the instructions for the platform you're compiling on below.
 
@@ -147,7 +147,7 @@ dependencies, check their versions. You can run this script to help you:
 
 If all dependencies are present and of a high enough version, skip ahead 
 to the Compilation instructions. If some are missing or old, then you 
-can download and build them into $HOME/openscad_deps as follows
+can download and build dependencies into $HOME/openscad_deps as follows:
 
     source ./scripts/setenv-unibuild.sh
     ./scripts/uni-build-dependencies.sh
