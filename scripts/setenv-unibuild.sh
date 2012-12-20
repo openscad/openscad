@@ -18,7 +18,7 @@ setenv_common()
     # otherwise, assume its being run 'out of tree'. treat it somewhat like
     # "configure" or "cmake", so you can build dependencies where u wish.
     echo "Not in OpenSCAD dir... using current directory as base of build"
-    BASEDIR=$PWD
+    BASEDIR=$PWD/openscad_deps
   fi
  fi
  DEPLOYDIR=$BASEDIR
