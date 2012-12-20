@@ -104,6 +104,9 @@ gmp_sysver()
 qt4_sysver()
 {
   qt4path=$1/include/qt4/QtCore/qglobal.h
+  if [ ! -e $qt4path ]; then
+    qt4path=$1/include/QtCore/qglobal.h
+  fi
   if [ ! -e $qt4path ]; then return; fi
   qt4ver=`grep 'define  *QT_VERSION_STR  *' $qt4path | awk '{print $3}'`
   qt4ver=`echo $qt4ver | sed s/'"'//g`
