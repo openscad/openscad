@@ -128,15 +128,15 @@ build_boost()
   fi
   # We only need certain portions of boost
   ./bootstrap.sh --prefix=$DEPLOYDIR --with-libraries=thread,program_options,filesystem,system,regex
-	if [ $CXX ]; then
-		if [ $CXX = "clang++" ]; then
-		  ./b2 -j$NUMCPU toolset=clang install
-		  # ./b2 -j$NUMCPU toolset=clang cxxflags="-stdlib=libc++" linkflags="-stdlib=libc++" install
-		fi
-	else
-	  ./b2 -j$NUMCPU
-	  ./b2 install
-	fi
+  if [ $CXX ]; then
+    if [ $CXX = "clang++" ]; then
+      ./b2 -j$NUMCPU toolset=clang install
+      # ./b2 -j$NUMCPU toolset=clang cxxflags="-stdlib=libc++" linkflags="-stdlib=libc++" install
+    fi
+  else
+    ./b2 -j$NUMCPU
+    ./b2 install
+  fi
 }
 
 build_cgal()
@@ -178,22 +178,32 @@ build_glew()
   mkdir -p $DEPLOYDIR/lib/pkgconfig
 
   # Fedora 64-bit
-	if [ -e /usr/lib64 ]; then
-	  if [ "`ls /usr/lib64 | grep Xmu`" ]; then
-	    echo "modifying glew makefile for 64 bit machine"
-	    sed -ibak s/"\-lXmu"/"\-L\/usr\/lib64\/libXmu.so.6"/ config/Makefile.linux
-	  fi
-	fi
+  if [ -e /usr/lib64 ]; then
+    if [ "`ls /usr/lib64 | grep Xmu`" ]; then
+      echo "modifying glew makefile for 64 bit machine"
+      sed -ibak s/"\-lXmu"/"\-L\/usr\/lib64\/libXmu.so.6"/ config/Makefile.linux
+    fi
+  fi
 
-	if [ $CC ]; then
-		if [ $CC = "clang" ]; then
-			echo "modifying glew makefile for clang"
-			sed -i s/\$\(CC\)/clang/ Makefile
-		fi
-	fi
+  if [ $CC ]; then
+    if [ $CC = "clang" ]; then
+      echo "modifying glew makefile for clang"
+      sed -i s/\$\(CC\)/clang/ Makefile
+    fi
+  fi
 
-	GLEW_DEST=$DEPLOYDIR make -j$NUMCPU
-  GLEW_DEST=$DEPLOYDIR make install
+  MAKER=make
+  if [ "`uname | grep BSD`" ]; then
+    if [ "`command -v gmake`" ]; then
+      MAKER=gmake
+    else
+      echo "building glew on BSD requires gmake (gnu make)"
+      exit
+    fi
+  fi
+
+  GLEW_DEST=$DEPLOYDIR $MAKER -j$NUMCPU
+  GLEW_DEST=$DEPLOYDIR $MAKER install
 }
 
 build_opencsg()
@@ -210,12 +220,12 @@ build_opencsg()
   sed -ibak s/example// opencsg.pro # examples might be broken without GLUT
 
   # Fedora 64-bit
-	if [ -e /usr/lib64 ]; then
-	  if [ "`ls /usr/lib64 | grep Xmu`" ]; then
-	    echo "modifying opencsg makefile for 64 bit machine"
-	    sed -ibak s/"\-lXmu"/"\-L\/usr\/lib64\/libXmu.so.6"/ src/Makefile 
-	  fi
-	fi
+  if [ -e /usr/lib64 ]; then
+    if [ "`ls /usr/lib64 | grep Xmu`" ]; then
+      echo "modifying opencsg makefile for 64 bit machine"
+      sed -ibak s/"\-lXmu"/"\-L\/usr\/lib64\/libXmu.so.6"/ src/Makefile 
+    fi
+  fi
 
   if [ `uname | grep FreeBSD` ]; then
     sed -ibak s/X11R6/local/g src/Makefile
@@ -227,16 +237,16 @@ build_opencsg()
     OPENCSG_QMAKE=qmake
   fi
 
-	if [ $CXX ]; then
-		if [ $CXX = "clang++" ]; then
-		  cd $BASEDIR/src/OpenCSG-$version/src
-			$OPENCSG_QMAKE
-		  cd $BASEDIR/src/OpenCSG-$version
-			$OPENCSG_QMAKE
-		fi
-	else
-		$OPENCSG_QMAKE
-	fi
+  if [ $CXX ]; then
+    if [ $CXX = "clang++" ]; then
+      cd $BASEDIR/src/OpenCSG-$version/src
+      $OPENCSG_QMAKE
+      cd $BASEDIR/src/OpenCSG-$version
+      $OPENCSG_QMAKE
+    fi
+  else
+    $OPENCSG_QMAKE
+  fi
 
   make
 
@@ -289,8 +299,8 @@ fi
 SRCDIR=$BASEDIR/src
 
 if [ ! $NUMCPU ]; then
-	echo "Note: The NUMCPU environment variable can be set for paralell builds"
-	NUMCPU=1 
+  echo "Note: The NUMCPU environment variable can be set for paralell builds"
+  NUMCPU=1 
 fi
 
 if [ ! -d $BASEDIR/bin ]; then
@@ -304,15 +314,15 @@ echo "Number of CPUs for parallel builds:" $NUMCPU
 mkdir -p $SRCDIR $DEPLOYDIR
 
 if [ ! "`command -v curl`" ]; then
-	build_curl 7.26.0
+  build_curl 7.26.0
 fi
 
 # NB! For cmake, also update the actual download URL in the function
 if [ ! "`command -v cmake`" ]; then
-	build_cmake 2.8.8
+  build_cmake 2.8.8
 fi
 if [ "`cmake --version | grep 'version 2.[1-6][^0-9]'`" ]; then
-	build_cmake 2.8.8
+  build_cmake 2.8.8
 fi
 
 # build_git 1.7.10.3

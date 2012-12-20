@@ -337,7 +337,7 @@ pkg_search()
     yum_pkg_search $*
     pkg_search_result=$yum_pkg_search_result
   else
-    echo unknown system type. cannot search packages.
+    debug unknown system type. cannot search packages.
   fi
 }
 
