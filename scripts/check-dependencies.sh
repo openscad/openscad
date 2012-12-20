@@ -491,7 +491,7 @@ pretty_print()
 
   ppstr="%s%-12s"
   pp_format='{printf("'$ppstr$ppstr$ppstr$ppstr$nocolor'\n",$1,$2,$3,$4,$5,$6,$7,$8)}'
-  pp_title="$gray depname $gray minimum $gray system $gray OKness"
+  pp_title="$gray depname $gray minimum $gray found $gray OKness"
   if [ $1 ]; then pp_dep=$1; fi
   if [ $pp_dep = "title" ]; then
     echo -e $pp_title | awk $pp_format
