@@ -107,6 +107,10 @@ qt4_sysver()
   if [ ! -e $qt4path ]; then
     qt4path=$1/include/QtCore/qglobal.h
   fi
+  if [ ! -e $qt4path ]; then
+    # netbsd
+    qt4path=$1/qt4/include/QtCore/qglobal.h 
+  fi
   if [ ! -e $qt4path ]; then return; fi
   qt4ver=`grep 'define  *QT_VERSION_STR  *' $qt4path | awk '{print $3}'`
   qt4ver=`echo $qt4ver | sed s/'"'//g`
@@ -169,11 +173,21 @@ cmake_sysver()
 
 make_sysver()
 {
+  make_sysver_tmp=
   binmake=$1/bin/make
   if [ -x $1/bin/gmake ]; then binmake=$1/bin/gmake ;fi
   if [ ! -x $binmake ]; then return ;fi
-  make_sysver_result=`$binmake --version 2>&1 | grep -i 'gnu make' | sed s/"[^0-9.]"/" "/g`
-  if [ ! "`echo $make_sysver_result | grep [0-9]`" ]; then return; fi
+  make_sysver_tmp=`$binmake --version 2>&1`
+
+  debug finding gnu make: raw make response: $make_sysver_tmp
+  if [ ! "`echo $make_sysver_tmp | grep -i gnu`" ]; then
+    return;
+  fi
+
+  make_sysver_tmp=`$binmake --version 2>&1 | grep -i 'gnu make' | sed s/"[^0-9.]"/" "/g`
+  if [ "`echo $make_sysver_tmp | grep [0-9]`" ]; then
+    make_sysver_result=$make_sysver_tmp
+  fi
 }
 
 bash_sysver()
@@ -402,10 +416,13 @@ find_min_version()
   fmvdep=$1
   get_minversion_from_readme $fmvdep
   fmvtmp=$get_minversion_from_readme_result
+
+  # items not included in README.md
   if [ $fmvdep = "git" ]; then fmvtmp=1.5 ; fi
   if [ $fmvdep = "curl" ]; then fmvtmp=6 ; fi
   if [ $fmvdep = "make" ]; then fmvtmp=3 ; fi
   if [ $fmvdep = "python" ]; then fmvtmp=2 ; fi
+
   find_min_version_result=$fmvtmp
 }
 
@@ -574,7 +591,8 @@ checkargs()
 main()
 {
   deps="qt4 cgal gmp cmake mpfr boost opencsg glew eigen gcc"
-  deps="$deps python bison flex git curl make"
+  deps="$deps bison flex git curl make"
+  #deps="$deps python" # needs work, only needed for tests
   #deps="$deps imagemagick" # needs work, only needed for tests
   #deps="eigen glew opencsg" # debug
   pretty_print title

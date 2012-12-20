@@ -28,7 +28,7 @@ build_git()
   cd $BASEDIR/src
   rm -rf git-$version
   if [ ! -f git-$version.tar.gz ]; then
-    curl -O http://git-core.googlecode.com/files/git-$version.tar.gz
+    curl --insecure -O http://git-core.googlecode.com/files/git-$version.tar.gz
   fi
   tar zxf git-$version.tar.gz
   cd git-$version
@@ -44,7 +44,7 @@ build_cmake()
   cd $BASEDIR/src
   rm -rf cmake-$version
   if [ ! -f cmake-$version.tar.gz ]; then
-    curl -O http://www.cmake.org/files/v2.8/cmake-$version.tar.gz
+    curl --insecure -O http://www.cmake.org/files/v2.8/cmake-$version.tar.gz
   fi
   tar zxf cmake-$version.tar.gz
   cd cmake-$version
@@ -80,7 +80,7 @@ build_gmp()
   cd $BASEDIR/src
   rm -rf gmp-$version
   if [ ! -f gmp-$version.tar.bz2 ]; then
-    curl -O ftp://ftp.gmplib.org/pub/gmp-$version/gmp-$version.tar.bz2
+    curl --insecure -O ftp://ftp.gmplib.org/pub/gmp-$version/gmp-$version.tar.bz2
   fi
   tar xjf gmp-$version.tar.bz2
   cd gmp-$version
@@ -97,7 +97,7 @@ build_mpfr()
   cd $BASEDIR/src
   rm -rf mpfr-$version
   if [ ! -f mpfr-$version.tar.bz2 ]; then
-    curl -O http://www.mpfr.org/mpfr-$version/mpfr-$version.tar.bz2
+    curl --insecure -O http://www.mpfr.org/mpfr-$version/mpfr-$version.tar.bz2
   fi
   tar xjf mpfr-$version.tar.bz2
   cd mpfr-$version
@@ -116,7 +116,7 @@ build_boost()
   cd $BASEDIR/src
   rm -rf boost_$bversion
   if [ ! -f boost_$bversion.tar.bz2 ]; then
-    curl -LO http://downloads.sourceforge.net/project/boost/boost/$version/boost_$bversion.tar.bz2
+    curl --insecure -LO http://downloads.sourceforge.net/project/boost/boost/$version/boost_$bversion.tar.bz2
   fi
   tar xjf boost_$bversion.tar.bz2
   cd boost_$bversion
@@ -147,11 +147,11 @@ build_cgal()
   rm -rf CGAL-$version
   if [ ! -f CGAL-$version.tar.gz ]; then
     #4.0.2
-    curl -O https://gforge.inria.fr/frs/download.php/31174/CGAL-$version.tar.bz2
-    # 4.0 curl -O https://gforge.inria.fr/frs/download.php/30387/CGAL-$version.tar.gz
-    # 3.9 curl -O https://gforge.inria.fr/frs/download.php/29125/CGAL-$version.tar.gz
-    # 3.8 curl -O https://gforge.inria.fr/frs/download.php/28500/CGAL-$version.tar.gz
-    # 3.7 curl -O https://gforge.inria.fr/frs/download.php/27641/CGAL-$version.tar.gz
+    curl --insecure -O https://gforge.inria.fr/frs/download.php/31174/CGAL-$version.tar.bz2
+    # 4.0 curl --insecure -O https://gforge.inria.fr/frs/download.php/30387/CGAL-$version.tar.gz
+    # 3.9 curl --insecure -O https://gforge.inria.fr/frs/download.php/29125/CGAL-$version.tar.gz
+    # 3.8 curl --insecure -O https://gforge.inria.fr/frs/download.php/28500/CGAL-$version.tar.gz
+    # 3.7 curl --insecure -O https://gforge.inria.fr/frs/download.php/27641/CGAL-$version.tar.gz
   fi
   tar jxf CGAL-$version.tar.bz2
   cd CGAL-$version
@@ -171,7 +171,7 @@ build_glew()
   cd $BASEDIR/src
   rm -rf glew-$version
   if [ ! -f glew-$version.tgz ]; then
-    curl -LO http://downloads.sourceforge.net/project/glew/glew/$version/glew-$version.tgz
+    curl --insecure -LO http://downloads.sourceforge.net/project/glew/glew/$version/glew-$version.tgz
   fi
   tar xzf glew-$version.tgz
   cd glew-$version
@@ -213,7 +213,7 @@ build_opencsg()
   cd $BASEDIR/src
   rm -rf OpenCSG-$version
   if [ ! -f OpenCSG-$version.tar.gz ]; then
-    curl -O http://www.opencsg.org/OpenCSG-$version.tar.gz
+    curl --insecure -O http://www.opencsg.org/OpenCSG-$version.tar.gz
   fi
   tar xzf OpenCSG-$version.tar.gz
   cd OpenCSG-$version
@@ -265,7 +265,7 @@ build_eigen()
   fi
   rm -rf ./$EIGENDIR
   if [ ! -f eigen-$version.tar.bz2 ]; then
-    curl -LO http://bitbucket.org/eigen/eigen/get/$version.tar.bz2
+    curl --insecure -LO http://bitbucket.org/eigen/eigen/get/$version.tar.bz2
     mv $version.tar.bz2 eigen-$version.tar.bz2
   fi
   tar xjf eigen-$version.tar.bz2

@@ -152,7 +152,9 @@ can download and build dependencies into $HOME/openscad_deps as follows:
     source ./scripts/setenv-unibuild.sh
     ./scripts/uni-build-dependencies.sh
 
-This may take several hours. After completion, again check dependencies
+This may take an hour or two. Note it will not build huge deps like gcc 
+or qt, only the main ones (boost, CGAL, opencsg, etc). After completion, 
+again check dependencies
 
     source ./scripts/setenv-unibuild.sh
     ./scripts/check-dependencies.sh

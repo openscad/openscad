@@ -23,6 +23,7 @@ setenv_common()
  fi
  DEPLOYDIR=$BASEDIR
 
+ export BASEDIR
  export PATH=$BASEDIR/bin:$PATH
  export LD_LIBRARY_PATH=$DEPLOYDIR/lib:$DEPLOYDIR/lib64
  export LD_RUN_PATH=$DEPLOYDIR/lib:$DEPLOYDIR/lib64
@@ -51,6 +52,20 @@ setenv_freebsd()
  QTDIR=/usr/local/share/qt4
 }
 
+setenv_netbsd()
+{
+ setenv_common
+ QMAKESPEC=netbsd-g++
+ QTDIR=/usr/pkg/qt4
+ PATH=/usr/pkg/qt4/bin:$PATH
+ LD_LIBRARY_PATH=/usr/pkg/qt4/lib:$LD_LIBRARY_PATH
+
+ export QMAKESPEC
+ export QTDIR
+ export PATH
+ export LD_LIBRARY_PATH
+}
+
 setenv_linux_clang()
 {
  export CC=clang
@@ -69,4 +84,8 @@ if [ "`uname | grep -i 'linux\|debian'`" ]; then
  fi
 elif [ "`uname | grep -i freebsd`" ]; then
  setenv_freebsd
+elif [ "`uname | grep -i netbsd`" ]; then
+ setenv_netbsd
+else
+ echo unknown system. edit $0
 fi
