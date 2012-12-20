@@ -120,6 +120,12 @@ build_boost()
   fi
   tar xjf boost_$bversion.tar.bz2
   cd boost_$bversion
+  if [ "`gcc --version|grep 4.7`" ]; then
+    if [ "`echo $version | grep 1.47`" ]; then
+      echo gcc 4.7 incompatible with boost 1.47. edit boost version in $0
+      exit
+    fi
+  fi
   # We only need certain portions of boost
   ./bootstrap.sh --prefix=$DEPLOYDIR --with-libraries=thread,program_options,filesystem,system,regex
 	if [ $CXX ]; then
@@ -334,7 +340,7 @@ fi
 build_eigen 3.1.1
 build_gmp 5.0.5
 build_mpfr 3.1.1
-build_boost 1.47.0
+build_boost 1.49.0
 # NB! For CGAL, also update the actual download URL in the function
 build_cgal 4.0.2
 build_glew 1.7.0

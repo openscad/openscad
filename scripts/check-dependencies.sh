@@ -161,7 +161,7 @@ curl_sysver()
 cmake_sysver()
 {
   if [ ! -x $1/bin/cmake ]; then return ; fi
-  cmake_sysver_result=`$1/bin/cmake --version | grep cmake | sed s/"[^0-9.]"/" "/g`
+  cmake_sysver_result=`$1/bin/cmake --version | grep cmake | sed s/"[^0-9.]"/" "/g | awk '{ print $1 }'`
 }
 
 make_sysver()
@@ -364,6 +364,11 @@ get_minversion_from_readme()
 {
   if [ -e README.md ]; then READFILE=README.md; fi
   if [ -e ../README.md ]; then READFILE=../README.md; fi
+  if [ ! $READFILE ]; then
+    if [ "`command -v dirname`" ]; then
+      READFILE=`dirname $0`/../README.md
+    fi
+  fi
   if [ ! $READFILE ]; then echo "cannot find README.md"; exit; fi
   debug get_minversion_from_readme $*
   if [ ! $1 ]; then return; fi
