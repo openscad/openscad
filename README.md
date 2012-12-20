@@ -133,27 +133,31 @@ After that, follow the Compilation instructions below.
 
 ### Building for Linux/BSD
 
-First, make sure that you have git installed. Then after you've cloned 
-this git repository, run the script that attempts to download the 
+First, make sure that you have git installed (git-core in debian). Once you've 
+cloned this git repository, run the script that attempts to download the 
 dependency packages for your system:
 
     ./scripts/uni-get-dependencies.sh
 
-This will get the majority of necessary packages, although your 
-particular system may require you to manually install some. After installing
+If this fails then you have to download and install the dependency packages 
+on your own using your system's package manager. After installing 
 dependencies, check their versions. You can run this script to help you:
 
     ./scripts/check-dependencies.sh
 
-If some of yours are out of date, you can build newer versions automatically
-into $HOME/openscad_deps with the following commands:
+If all dependencies are present and of a high enough version, skip ahead 
+to the Compilation instructions. If some are missing or old, then you 
+can download and build them into $HOME/openscad_deps as follows
 
-    source ./scripts/setenv-linbuild.sh
-    ./scripts/linux-build-dependencies.sh
+    source ./scripts/setenv-unibuild.sh
+    ./scripts/uni-build-dependencies.sh
+
+This may take several hours. After completion, again check dependencies
+
+    source ./scripts/setenv-unibuild.sh
     ./scripts/check-dependencies.sh
 
-This may take several hours. If successfull, follow the Compilation 
-instructions below. If not, file an 'issue' on the OpenSCAD github.
+Then follow the Compilation instructions below.
 
 ### Building for Windows
 
