@@ -145,6 +145,7 @@ dependencies, check their versions. You can run this script to help you:
 
     ./scripts/check-dependencies.sh
 
+Take care that you don't have old local copies anywhere (/usr/local/). 
 If all dependencies are present and of a high enough version, skip ahead 
 to the Compilation instructions. If some are missing or old, then you 
 can download and build dependencies into $HOME/openscad_deps as follows:
