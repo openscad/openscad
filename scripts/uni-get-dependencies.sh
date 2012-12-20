@@ -43,16 +43,16 @@ get_debian_deps()
  if [ "`cat /etc/issue | grep 'Debian GNU/Linux 5'`" ]; then
   debian_too_old
  fi
- if [ "`cat /etc/issue | grep 'Ubunutu 10'`" ]; then
+ if [ "`cat /etc/issue | grep 'Ubuntu 10'`" ]; then
   debian_too_old
  fi
- if [ "`cat /etc/issue | grep 'Ubunutu 9'`" ]; then
+ if [ "`cat /etc/issue | grep 'Ubuntu 9'`" ]; then
   debian_too_old
  fi
- if [ "`cat /etc/issue | grep 'Ubunutu 8'`" ]; then
+ if [ "`cat /etc/issue | grep 'Ubuntu 8'`" ]; then
   debian_too_old
  fi
- if [ "`cat /etc/issue | grep 'Ubunutu 7'`" ]; then
+ if [ "`cat /etc/issue | grep 'Ubuntu 7'`" ]; then
   debian_too_old
  fi
  echo "tested on Ubuntu 12. If this fails try 'old linux' build (see README.md)"

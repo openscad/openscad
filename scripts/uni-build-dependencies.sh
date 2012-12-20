@@ -7,8 +7,6 @@
 #
 # This script builds all library dependencies of OpenSCAD for Linux/BSD
 #
-# This script must be run from the OpenSCAD source root directory
-#
 # Usage: uni-build-dependencies.sh
 #
 # Prerequisites:
@@ -238,7 +236,7 @@ build_opencsg()
 
   cp -av lib/* $DEPLOYDIR/lib
   cp -av include/* $DEPLOYDIR/include
-  cd $OPENSCADDIR
+  cd $BASEDIR
 }
 
 build_eigen()
@@ -270,13 +268,18 @@ build_eigen()
 }
 
 
-OPENSCADDIR=$PWD
-if [ ! -f $OPENSCADDIR/openscad.pro ]; then
-  echo "Must be run from the OpenSCAD source root directory"
-  exit 0
+if [ "`command -v dirname`" ]; then
+  OPENSCAD_SCRIPTDIR=`dirname $0`
+else
+  if [ ! -f openscad.pro ]; then
+    echo "Must be run from the OpenSCAD source root directory (dont have 'dirname')"
+    exit 1
+  else
+    OPENSCAD_SCRIPTDIR=$PWD
+  fi
 fi
 
-. ./scripts/setenv-unibuild.sh # '.' is equivalent to 'source'
+. $OPENSCAD_SCRIPTDIR/setenv-unibuild.sh # '.' is equivalent to 'source'
 SRCDIR=$BASEDIR/src
 
 if [ ! $NUMCPU ]; then
@@ -312,7 +315,7 @@ fi
 # (Most systems have all libraries available as packages except CGAL/OpenCSG)
 # (They can be built singly here by passing a command line arg to the script)
 if [ $1 ]; then
-  if [ $1 = "cgal-use-sys-libs" ]; then
+  if [ $1 = "cgal" ]; then
     build_cgal 4.0.2 use-sys-libs
     exit
   fi
