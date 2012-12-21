@@ -158,9 +158,17 @@ running these commands:
     source ./scripts/setenv-unibuild.sh
     ./scripts/uni-build-dependencies.sh
 
-This may take several hours. Note it will not build huge deps like gcc 
-or qt, only the smaller ones (boost, CGAL, opencsg, etc). After 
-completion, again check dependencies
+This may take an hour or more, depending on your network and system. As 
+a special timesaver if you are only missing CGAL and OpenCSG, you can do 
+this instead:
+
+    source ./scripts/setenv-unibuild.sh
+    ./scripts/uni-build-dependencies.sh opencsg
+    ./scripts/uni-build-dependencies.sh cgal
+
+Note that huge dependencies like gcc or qt are not included here, only 
+the smaller ones (boost, CGAL, opencsg, etc). After the build, again 
+check dependencies
 
     source ./scripts/setenv-unibuild.sh
     ./scripts/check-dependencies.sh
