@@ -15,6 +15,11 @@ get_freebsd_deps()
  pkg_add -r opencsg cgal
 }
 
+get_opensuse_deps()
+{
+ sudo zypper install libeigen2-devel mpfr-devel gmp-devel boost-devel \
+  libqt4-devel glew-devel cmake git bison flex cgal-devel opencsg-devel
+}
 
 debian_too_old()
 {
@@ -49,13 +54,6 @@ get_debian_deps()
   libxmu-dev cmake bison flex libeigen2-dev git-core libboost-all-dev \
   libXi-dev libmpfr-dev libgmp-dev libboost-dev libglew1.6-dev \
   libcgal-dev libopencsg-dev
-}
-
-
-get_opensuse_deps()
-{
- sudo zypper install libeigen2-devel mpfr-devel gmp-devel boost-devel \
-  libqt4-devel glew-devel cmake git cgal-devel
 }
 
 
