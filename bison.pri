@@ -19,11 +19,19 @@ win32 {
 
 unix:freebsd-g++ {
   # on bsd /usr/bin/bison is outdated, dont use it
-  QMAKE_YACC = /usr/local/bin/bison
+  exists(/usr/local/bin/bison) {
+    QMAKE_YACC = /usr/local/bin/bison
+  } else { # look in $PATH
+    QMAKE_YACC = bison
+  }
 }
 
 unix:netbsd* {
-  QMAKE_YACC = /usr/pkg/bin/bison
+  exists(/usr/pkg/bin/bison) {
+    QMAKE_YACC = /usr/pkg/bin/bison
+  } else { # look in $PATH
+    QMAKE_YACC = bison
+  }
 }
 
 unix:linux* {

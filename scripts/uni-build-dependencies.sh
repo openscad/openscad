@@ -21,6 +21,22 @@ printUsage()
   echo
 }
 
+build_bison()
+{
+  version=$1
+  echo "Building bison" $version
+  cd $BASEDIR/src
+  rm -rf bison-$version
+  if [ ! -f bison-$version.tar.gz ]; then
+    curl --insecure -O http://ftp.gnu.org/gnu/bison/bison-$version.tar.gz
+  fi
+  tar zxf bison-$version.tar.gz
+  cd bison-$version
+  ./configure --prefix=$DEPLOYDIR
+  make -j$NUMCPU
+  make install
+}
+
 build_git()
 {
   version=$1
@@ -310,6 +326,10 @@ mkdir -p $SRCDIR $DEPLOYDIR
 
 if [ ! "`command -v curl`" ]; then
   build_curl 7.26.0
+fi
+
+if [ ! "`command -v bison`" ]; then
+  build_bison 2.6.1
 fi
 
 # NB! For cmake, also update the actual download URL in the function
