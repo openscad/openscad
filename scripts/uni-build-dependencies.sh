@@ -145,7 +145,7 @@ build_cgal()
   echo "Building CGAL" $version "..."
   cd $BASEDIR/src
   rm -rf CGAL-$version
-  if [ ! -f CGAL-$version.tar.gz ]; then
+  if [ ! -f CGAL-$version.tar.* ]; then
     #4.0.2
     curl --insecure -O https://gforge.inria.fr/frs/download.php/31174/CGAL-$version.tar.bz2
     # 4.0 curl --insecure -O https://gforge.inria.fr/frs/download.php/30387/CGAL-$version.tar.gz

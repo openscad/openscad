@@ -1,6 +1,5 @@
-# Determine which versions of dependency libraries and tools are
-# available on the system. Compare these versions with the minimum parsed
-# from README.md and print results.
+# Parse the minimum versions of dependencies from README.md, and compare
+# with what is found on the system. Print results.
 #
 # usage
 #  check-dependencies.sh                # check version of all dependencies
@@ -23,7 +22,6 @@
 #  if /usr/ and /usr/local/ on linux both hit, throw an error
 #  fallback- pkgconfig --exists, then --modversion
 #  fallback2 - pkg manager
-#  todo - use OPENSCAD_LIBRARIES ???
 #  - print location found, how found???
 #
 DEBUG=
@@ -386,7 +384,7 @@ get_minversion_from_readme()
       READFILE=`dirname $0`/../README.md
     fi
   fi
-  if [ ! $READFILE ]; then echo "cannot find README.md"; exit; fi
+  if [ ! $READFILE ]; then echo "cannot find README.md"; exit 1; fi
   debug get_minversion_from_readme $*
   if [ ! $1 ]; then return; fi
   depname=$1
