@@ -496,15 +496,15 @@ pretty_print()
 {
   debug pretty_print $*
 
-  brightred="\033[1;31m"
-  red="\033[0;31m"
-  brown="\033[0;33m"
-  yellow="\033[1;33m"
-  white="\033[1;37m"
-  purple="\033[1;35m"
-  green="\033[0;32m"
-  cyan="\033[0;36m"
-  gray="\033[0;37m"
+  brightred="\033[40;31m"
+  red="\033[40;31m"
+  brown="\033[40;33m"
+  yellow="\033[40;33m"
+  white="\033[40;37m"
+  purple="\033[40;35m"
+  green="\033[40;32m"
+  cyan="\033[40;36m"
+  gray="\033[40;37m"
   nocolor="\033[0m"
 
   ppstr="%s%-12s"
@@ -517,20 +517,20 @@ pretty_print()
   fi
 
   if [ $2 ]; then pp_minver=$2; else pp_minver="unknown"; fi
-  if [ $3 ]; then pp_sysver=$3; else pp_sysver="unknown"; fi
+  if [ $3 ]; then pp_foundver=$3; else pp_foundver="unknown"; fi
   if [ $4 ]; then pp_compared=$4; else pp_compared="NotOK"; fi
 
   if [ $pp_compared = "NotOK" ]; then
+    pp_foundcolor=$purple;
     pp_cmpcolor=$purple;
-    pp_ivcolor=$purple;
   else
+    pp_foundcolor=$gray;
     pp_cmpcolor=$green;
-    pp_ivcolor=$gray;
   fi
-  echo -e $cyan $pp_dep $gray $pp_minver $pp_ivcolor $pp_sysver $pp_cmpcolor $pp_compared | awk $pp_format
+  echo -e $cyan $pp_dep $gray $pp_minver $pp_foundcolor $pp_foundver $pp_cmpcolor $pp_compared | awk $pp_format
   pp_dep=
   pp_minver=
-  pp_sysver=
+  pp_foundver=
   pp_compared=
 }
 

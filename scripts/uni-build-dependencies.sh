@@ -297,13 +297,14 @@ build_opencsg()
 
   make
 
-  ls lib/* lib/.libs/* include/*
+  ls lib/* include/*
+  if [ -e lib/.libs ]; then ls lib/.libs/*; fi # netbsd
   echo "installing to -->" $DEPLOYDIR
   mkdir -p $DEPLOYDIR/lib
   mkdir -p $DEPLOYDIR/include
   install lib/* $DEPLOYDIR/lib
-  install lib/.libs/* $DEPLOYDIR/lib  # netbsd
   install include/* $DEPLOYDIR/include
+  if [ -e lib/.libs ]; then install lib/.libs/* $DEPLOYDIR/lib; fi #netbsd
 
   cd $BASEDIR
 }
