@@ -133,29 +133,34 @@ After that, follow the Compilation instructions below.
 
 ### Building for Linux/BSD
 
-First, make sure that you have git installed (git-core in debian). Once you've 
-cloned this git repository, run the script that attempts to download the 
-dependency packages for your system:
+First, make sure that you have git installed (git-core in debian). Once 
+you've cloned this git repository, download and install the dependency 
+packages listed above using your system's package manager. A convenience 
+script is provided that can help with this process:
 
     ./scripts/uni-get-dependencies.sh
 
-If this fails then you have to download and install the dependency packages 
-on your own using your system's package manager. After installing 
-dependencies, check their versions. You can run this script to help you:
+After installing dependencies, check their versions. You can run this 
+script to help you:
 
     ./scripts/check-dependencies.sh
 
 Take care that you don't have old local copies anywhere (/usr/local/). 
 If all dependencies are present and of a high enough version, skip ahead 
-to the Compilation instructions. If some are missing or old, then you 
-can download and build dependencies into $HOME/openscad_deps as follows:
+to the Compilation instructions. 
+
+### Building for Linux/BSD on systems with older or missing dependencies
+
+If some of your system dependency libraries are missing or old, then you 
+can download and build newer versions into $HOME/openscad_deps by 
+running these commands:
 
     source ./scripts/setenv-unibuild.sh
     ./scripts/uni-build-dependencies.sh
 
-This may take an hour or two. Note it will not build huge deps like gcc 
-or qt, only the main ones (boost, CGAL, opencsg, etc). After completion, 
-again check dependencies
+This may take several hours. Note it will not build huge deps like gcc 
+or qt, only the smaller ones (boost, CGAL, opencsg, etc). After 
+completion, again check dependencies
 
     source ./scripts/setenv-unibuild.sh
     ./scripts/check-dependencies.sh
