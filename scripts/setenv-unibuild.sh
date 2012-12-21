@@ -87,5 +87,7 @@ elif [ "`uname | grep -i freebsd`" ]; then
 elif [ "`uname | grep -i netbsd`" ]; then
  setenv_netbsd
 else
- echo unknown system. edit $0
+ # guess
+ setenv_common
+ echo unknown system. guessed env variables. see 'setenv-unibuild.sh'
 fi
