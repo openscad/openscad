@@ -593,7 +593,6 @@ main()
   #deps="$deps python" # needs work, only needed for tests
   #deps="$deps imagemagick" # needs work, only needed for tests
   #deps="eigen glew opencsg" # debug
-  deps=glew
   pretty_print title
   for dep in $deps; do
     debug "processing $dep"
