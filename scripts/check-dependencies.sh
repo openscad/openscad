@@ -580,7 +580,27 @@ find_installed_version()
 }
 
 
-
+check_old_local()
+{
+  warnon=
+  if [ "`uname | grep -i linux`" ]; then
+    header_list="opencsg.h CGAL boost GL/glew.h"
+    liblist="libboost libopencsg libCGAL libglew"
+    for i in $header_list $liblist; do
+      if [ -e /usr/local/include/$i ]; then
+        echo "Warning: you have a copy of " $i " under /usr/local/include"
+        warnon=1
+      fi
+      if [ -e /usr/local/lib/$i ]; then
+        echo "Warning: you have a copy of " $i " under /usr/local/lib"
+        warnon=1
+      fi
+    done
+  fi
+  if [ $warnon ]; then
+    echo "Please verify your local copies don't conflict with the system"
+  fi
+}
 
 
 
@@ -609,6 +629,7 @@ main()
     dep_compare=$compare_version_result
   	pretty_print $dep $dep_minver $dep_sysver $dep_compare
   done
+  check_old_local
 }
 
 checkargs $*

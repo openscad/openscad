@@ -11,14 +11,22 @@ get_fedora_deps()
 get_freebsd_deps()
 {
  echo "Tested on FreeBSD 9"
- pkg_add -r bison boost-libs cmake git bash eigen2 flex gmake gmp mpfr
- pkg_add -r xorg libGLU libXmu libXi xorg-vfbserver glew
- pkg_add -r qt4-corelib qt4-gui qt4-moc qt4-opengl qt4-qmake qt4-rcc qt4-uic
- pkg_add -r opencsg cgal
+ pkg_add -r bison boost-libs cmake git bash eigen2 flex gmake gmp mpfr \
+  xorg libGLU libXmu libXi xorg-vfbserver glew \
+  qt4-corelib qt4-gui qt4-moc qt4-opengl qt4-qmake qt4-rcc qt4-uic \
+  opencsg cgal
+}
+
+get_netbsd_deps()
+{
+ echo tested on netbsd 6
+ sudo pkgin install bison boost cmake git bash eigen flex gmake gmp mpfr \
+  qt4 glew cgal opencsg modular-xorg
 }
 
 get_opensuse_deps()
 {
+ echo tested on opensuse 12
  sudo zypper install libeigen2-devel mpfr-devel gmp-devel boost-devel \
   libqt4-devel glew-devel cmake git bison flex cgal-devel opencsg-devel
 }
@@ -52,22 +60,27 @@ get_debian_deps()
 }
 
 
-if [ "`grep -i ubuntu /etc/issue`" ]; then
- get_debian_deps
-elif [ "`grep -i debian /etc/issue`" ]; then
- get_debian_deps
-elif [ "`grep -i suse /etc/issue`" ]; then
- get_opensuse_deps
-elif [ "`grep -i freebsd /etc/issue`" ]; then
+
+if [ -e /etc/issue ]; then
+ if [ "`grep -i ubuntu /etc/issue`" ]; then
+  get_debian_deps
+ elif [ "`grep -i debian /etc/issue`" ]; then
+  get_debian_deps
+ elif [ "`grep -i suse /etc/issue`" ]; then
+  get_opensuse_deps
+ elif [ "`grep -i fedora /etc/issue`" ]; then
+  get_fedora_deps
+ elif [ "`grep -i redhat /etc/issue`" ]; then
+  get_fedora_deps
+ elif [ "`grep -i mageia /etc/issue`" ]; then
+  get_mageia_deps
+ fi
+elif [ "`uname | grep -i freebsd `" ]; then
  get_freebsd_deps
-elif [ "`grep -i fedora /etc/issue`" ]; then
- get_fedora_deps
-elif [ "`grep -i redhat /etc/issue`" ]; then
- get_fedora_deps
-elif [ "`grep -i mageia /etc/issue`" ]; then
- get_mageia_deps
+elif [ "`uname | grep -i netbsd`" ]; then
+ get_netbsd_deps
 else
- echo "Unknown system type. Please install the dependency packages listed"
- echo "in README.md using your system's package manager."
+  echo "Unknown system type. Please install the dependency packages listed"
+  echo "in README.md using your system's package manager."
 fi
 
