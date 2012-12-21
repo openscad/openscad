@@ -6,13 +6,23 @@
 
 #
 # This script builds all library dependencies of OpenSCAD for Linux/BSD
+# (Except large ones like qt and gcc)
 #
-# Usage: uni-build-dependencies.sh
+# Standard usage:
+#   cd openscad
+#   . ./scripts/setenv-unibuild.sh
+#   ./scripts/uni-build-dependencies.sh
+#   
+# Out-of-tree usage
+#
+#   cd somepath
+#   . /path/to/openscad/scripts/setenv-unibuild.sh
+#   ./path/to/openscad/scripts/uni-build-dependencies.sh
 #
 # Prerequisites:
 # - wget or curl
 # - Qt4
-# - other
+# - gcc (clang=experimental)
 #
 
 printUsage()
@@ -287,11 +297,12 @@ build_opencsg()
 
   make
 
-  ls lib/* include/*
+  ls lib/* lib/.libs/* include/*
   echo "installing to -->" $DEPLOYDIR
   mkdir -p $DEPLOYDIR/lib
   mkdir -p $DEPLOYDIR/include
   install lib/* $DEPLOYDIR/lib
+  install lib/.libs/* $DEPLOYDIR/lib  # netbsd
   install include/* $DEPLOYDIR/include
 
   cd $BASEDIR
