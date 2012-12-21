@@ -27,7 +27,7 @@ get_mageia_deps()
 {
  pklist="task-c-devel task-c++-devel"
  pklist="$pklist libqt4-devel libgmp-devel libmpfr-devel"
- pklist="$pklist libboost-devel eigen3-devel"
+ pklist="$pklist libboost-devel eigen3-devel libglew-devel"
  pklist="$pklist bison flex"
  pklist="$pklist cmake imagemagick python curl git"
  # cgal + opencsg don't exist
