@@ -18,7 +18,6 @@
 #  funcname_abbreviated_tmp. Local vars are not used for portability.
 #
 # todo
-#  look in /usr/local/ on linux
 #  if /usr/ and /usr/local/ on linux both hit, throw an error
 #  fallback- pkgconfig --exists, then --modversion
 #  fallback2 - pkg manager
@@ -588,17 +587,17 @@ check_old_local()
     liblist="libboost libopencsg libCGAL libglew"
     for i in $header_list $liblist; do
       if [ -e /usr/local/include/$i ]; then
-        echo "Warning: you have a copy of " $i " under /usr/local/include"
+        echo "Warning: you have a copy of "$i" under /usr/local/include"
         warnon=1
       fi
       if [ -e /usr/local/lib/$i ]; then
-        echo "Warning: you have a copy of " $i " under /usr/local/lib"
+        echo "Warning: you have a copy of "$i" under /usr/local/lib"
         warnon=1
       fi
     done
   fi
   if [ $warnon ]; then
-    echo "Please verify your local copies don't conflict with the system"
+    echo "Please verify these local copies don't conflict with the system"
   fi
 }
 

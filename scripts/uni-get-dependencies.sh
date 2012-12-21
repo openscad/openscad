@@ -1,16 +1,17 @@
 # auto-install dependency packages using the systems package manager.
 # after running this, run ./script/check-dependencies.sh. see README.md
+#
+# this assumes you have sudo installed or are running as root.
+#
 
 get_fedora_deps()
 {
- echo "Tested on Fedora 17"
  sudo yum install qt-devel bison flex eigen2-devel \
   boost-devel mpfr-devel gmp-devel glew-devel CGAL-devel gcc pkgconfig git
 }
 
 get_freebsd_deps()
 {
- echo "Tested on FreeBSD 9"
  pkg_add -r bison boost-libs cmake git bash eigen2 flex gmake gmp mpfr \
   xorg libGLU libXmu libXi xorg-vfbserver glew \
   qt4-corelib qt4-gui qt4-moc qt4-opengl qt4-qmake qt4-rcc qt4-uic \
@@ -19,14 +20,12 @@ get_freebsd_deps()
 
 get_netbsd_deps()
 {
- echo tested on netbsd 6
  sudo pkgin install bison boost cmake git bash eigen flex gmake gmp mpfr \
   qt4 glew cgal opencsg modular-xorg
 }
 
 get_opensuse_deps()
 {
- echo tested on opensuse 12
  sudo zypper install libeigen2-devel mpfr-devel gmp-devel boost-devel \
   libqt4-devel glew-devel cmake git bison flex cgal-devel opencsg-devel
 }
@@ -54,6 +53,11 @@ get_debian_deps()
 }
 
 
+unknown()
+{
+ echo "Unknown system type. Please install the dependency packages listed"
+ echo "in README.md using your system's package manager."
+}
 
 if [ -e /etc/issue ]; then
  if [ "`grep -i ubuntu /etc/issue`" ]; then
@@ -64,17 +68,18 @@ if [ -e /etc/issue ]; then
   get_opensuse_deps
  elif [ "`grep -i fedora /etc/issue`" ]; then
   get_fedora_deps
- elif [ "`grep -i redhat /etc/issue`" ]; then
+ elif [ "`grep -i red.hat /etc/issue`" ]; then
   get_fedora_deps
  elif [ "`grep -i mageia /etc/issue`" ]; then
   get_mageia_deps
+ else
+  unknown
  fi
 elif [ "`uname | grep -i freebsd `" ]; then
  get_freebsd_deps
 elif [ "`uname | grep -i netbsd`" ]; then
  get_netbsd_deps
 else
-  echo "Unknown system type. Please install the dependency packages listed"
-  echo "in README.md using your system's package manager."
+ unknown
 fi
 
