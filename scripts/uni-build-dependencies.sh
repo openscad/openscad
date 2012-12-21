@@ -221,13 +221,6 @@ build_glew()
     fi
   fi
 
-  if [ $CC ]; then
-    if [ $CC = "clang" ]; then
-      echo "modifying glew makefile for clang"
-      sed -i s/\$\(CC\)/clang/ Makefile
-    fi
-  fi
-
   MAKER=make
   if [ "`uname | grep BSD`" ]; then
     if [ "`command -v gmake`" ]; then
@@ -238,8 +231,8 @@ build_glew()
     fi
   fi
 
-  GLEW_DEST=$DEPLOYDIR $MAKER -j$NUMCPU
-  GLEW_DEST=$DEPLOYDIR $MAKER install
+  GLEW_DEST=$DEPLOYDIR CC=$CC $MAKER -j$NUMCPU
+  GLEW_DEST=$DEPLOYDIR CC=$CC $MAKER install
 }
 
 build_opencsg()
