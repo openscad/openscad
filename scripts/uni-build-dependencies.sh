@@ -92,6 +92,10 @@ build_curl()
 build_gmp()
 {
   version=$1
+  if [ -e $DEPLOYDIR/include/gmp.h ]; then
+    echo "gmp already installed. not building"
+    return
+  fi
   echo "Building gmp" $version "..."
   cd $BASEDIR/src
   rm -rf gmp-$version
@@ -109,6 +113,10 @@ build_gmp()
 build_mpfr()
 {
   version=$1
+  if [ -e $DEPLOYDIR/include/mpfr.h ]; then
+    echo "mpfr already installed. not building"
+    return
+  fi
   echo "Building mpfr" $version "..."
   cd $BASEDIR/src
   rm -rf mpfr-$version
@@ -126,6 +134,10 @@ build_mpfr()
 
 build_boost()
 {
+  if [ -e $DEPLOYDIR/include/boost ]; then
+    echo "boost already installed. not building"
+    return
+  fi
   version=$1
   bversion=`echo $version | tr "." "_"`
   echo "Building boost" $version "..."
@@ -157,6 +169,10 @@ build_boost()
 
 build_cgal()
 {
+  if [ -e $DEPLOYDIR/include/CGAL/version.h ]; then
+    echo "CGAL already installed. not building"
+    return
+  fi
   version=$1
   echo "Building CGAL" $version "..."
   cd $BASEDIR/src
@@ -182,6 +198,10 @@ build_cgal()
 
 build_glew()
 {
+  if [ -e $DEPLOYDIR/include/GL/glew.h ]; then
+    echo "glew already installed. not building"
+    return
+  fi
   version=$1
   echo "Building GLEW" $version "..."
   cd $BASEDIR/src
@@ -224,6 +244,10 @@ build_glew()
 
 build_opencsg()
 {
+  if [ -e $DEPLOYDIR/include/opencsg.h ]; then
+    echo "OpenCSG already installed. not building"
+    return
+  fi
   version=$1
   echo "Building OpenCSG" $version "..."
   cd $BASEDIR/src
@@ -269,6 +293,18 @@ build_opencsg()
 build_eigen()
 {
   version=$1
+  if [ -e $DEPLOYDIR/include/eigen2 ]; then
+    if [ `echo $version | grep 2....` ]; then
+      echo "Eigen2 already installed. not building"
+      return
+    fi
+  fi
+  if [ -e $DEPLOYDIR/include/eigen3 ]; then
+    if [ `echo $version | grep 3....` ]; then
+      echo "Eigen3 already installed. not building"
+      return
+    fi
+  fi
   echo "Building eigen" $version "..."
   cd $BASEDIR/src
   rm -rf eigen-$version
@@ -368,7 +404,7 @@ build_mpfr 3.1.1
 build_boost 1.49.0
 # NB! For CGAL, also update the actual download URL in the function
 build_cgal 4.0.2
-build_glew 1.7.0
+build_glew 1.9.0
 build_opencsg 1.3.2
 
 echo "OpenSCAD dependencies built and installed to " $BASEDIR
