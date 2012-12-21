@@ -21,39 +21,20 @@ get_opensuse_deps()
   libqt4-devel glew-devel cmake git bison flex cgal-devel opencsg-devel
 }
 
-debian_too_old()
-{
-  echo "System version too low. Please try 'old linux' build (see README.md)"
-  exit 1
-}
-
 get_debian_deps()
 {
- if [ "`cat /etc/issue | grep 'Debian GNU/Linux 6.0'`" ]; then
-  debian_too_old
- fi
- if [ "`cat /etc/issue | grep 'Debian GNU/Linux 5'`" ]; then
-  debian_too_old
- fi
- if [ "`cat /etc/issue | grep 'Ubuntu 10'`" ]; then
-  debian_too_old
- fi
- if [ "`cat /etc/issue | grep 'Ubuntu 9'`" ]; then
-  debian_too_old
- fi
- if [ "`cat /etc/issue | grep 'Ubuntu 8'`" ]; then
-  debian_too_old
- fi
- if [ "`cat /etc/issue | grep 'Ubuntu 7'`" ]; then
-  debian_too_old
- fi
-
  echo "Tested on Ubuntu 12.04"
 
  sudo apt-get install build-essential libqt4-dev libqt4-opengl-dev \
   libxmu-dev cmake bison flex libeigen2-dev git-core libboost-all-dev \
-  libXi-dev libmpfr-dev libgmp-dev libboost-dev libglew1.6-dev \
+  libXi-dev libmpfr-dev libboost-dev libglew1.6-dev \
   libcgal-dev libopencsg-dev
+
+ if [ "`apt-cache search libgmp | grep libgmp3-dev`" ]; then
+   sudo apt-get install libgmp3-dev
+ else
+   sudo apt-get install libgmp-dev
+ fi
 }
 
 
