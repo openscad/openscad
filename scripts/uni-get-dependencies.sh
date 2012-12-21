@@ -45,18 +45,12 @@ get_mageia_deps()
 
 get_debian_deps()
 {
- echo "Tested on Ubuntu 12.04"
-
- sudo apt-get install build-essential libqt4-dev libqt4-opengl-dev \
-  libxmu-dev cmake bison flex libeigen2-dev git-core libboost-all-dev \
-  libXi-dev libmpfr-dev libboost-dev libglew1.6-dev \
-  libcgal-dev libopencsg-dev
-
- if [ "`apt-cache search libgmp | grep libgmp3-dev`" ]; then
-   sudo apt-get install libgmp3-dev
- else
-   sudo apt-get install libgmp-dev
- fi
+ for pkg in build-essential libqt4-dev libqt4-opengl-dev \
+  libxmu-dev cmake bison flex git-core libboost-all-dev \
+  libXi-dev libmpfr-dev libboost-dev libglew-dev libeigen2-dev \
+  libeigen3-dev libcgal-dev libopencsg-dev libgmp3-dev libgmp-dev; do
+   sudo apt-get -y install $pkg;
+ done
 }
 
 
