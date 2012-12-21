@@ -213,12 +213,26 @@ build_glew()
   cd glew-$version
   mkdir -p $DEPLOYDIR/lib/pkgconfig
 
+  # Glew makefiles are not built for Linux Multiarch. We aren't trying
+  # to fix everything here, just the test machines OScad normally runs on
+
   # Fedora 64-bit
-  if [ -e /usr/lib64 ]; then
-    if [ "`ls /usr/lib64 | grep Xmu`" ]; then
-      echo "modifying glew makefile for 64 bit machine"
+  if [ "`uname -m | grep 64`" ]; then
+    if [ -e /usr/lib64/libXmu.so.6 ]; then
       sed -ibak s/"\-lXmu"/"\-L\/usr\/lib64\/libXmu.so.6"/ config/Makefile.linux
     fi
+  fi
+
+  # debian hurd i386
+  if [ "`uname -m | grep 386`" ]; then
+    if [ -e /usr/lib/i386-gnu/libXi.so.6 ]; then
+      sed -ibak s/"-lXi"/"\-L\/usr\/lib\/i386-gnu\/libXi.so.6"/ config/Makefile.gnu
+    fi
+  fi
+
+  # clang linux
+  if [ $CC ]; then
+    sed -ibak s/"CC = cc"/"CC = $(CC)"/ config/Makefile.linux
   fi
 
   MAKER=make
@@ -231,8 +245,8 @@ build_glew()
     fi
   fi
 
-  GLEW_DEST=$DEPLOYDIR CC=$CC $MAKER -j$NUMCPU
-  GLEW_DEST=$DEPLOYDIR CC=$CC $MAKER install
+  GLEW_DEST=$DEPLOYDIR $MAKER -j$NUMCPU
+  GLEW_DEST=$DEPLOYDIR $MAKER install
 }
 
 build_opencsg()
