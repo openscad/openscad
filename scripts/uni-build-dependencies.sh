@@ -1,4 +1,4 @@
-#!/bin/sh -e
+ #!/bin/sh -e
 
 # uni-build-dependencies by don bright 2012. copyright assigned to
 # Marius Kintel and Clifford Wolf, 2012. released under the GPL 2, or
@@ -197,7 +197,7 @@ build_cgal()
   fi
   tar jxf CGAL-$version.tar.bz2
   cd CGAL-$version
-  if [ $2 = use-sys-libs ]; then
+  if [ "`echo $2 | grep use-sys-libs`" ]; then
     cmake -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR -DWITH_CGAL_Qt3=OFF -DWITH_CGAL_Qt4=OFF -DWITH_CGAL_ImageIO=OFF -DCMAKE_BUILD_TYPE=Debug
   else
     cmake -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR -DGMP_INCLUDE_DIR=$DEPLOYDIR/include -DGMP_LIBRARIES=$DEPLOYDIR/lib/libgmp.so -DGMPXX_LIBRARIES=$DEPLOYDIR/lib/libgmpxx.so -DGMPXX_INCLUDE_DIR=$DEPLOYDIR/include -DMPFR_INCLUDE_DIR=$DEPLOYDIR/include -DMPFR_LIBRARIES=$DEPLOYDIR/lib/libmpfr.so -DWITH_CGAL_Qt3=OFF -DWITH_CGAL_Qt4=OFF -DWITH_CGAL_ImageIO=OFF -DBOOST_ROOT=$DEPLOYDIR -DCMAKE_BUILD_TYPE=Debug
