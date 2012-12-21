@@ -1,3 +1,5 @@
+# auto-install dependency packages using the systems package manager.
+# after running this, run ./script/check-dependencies.sh. see README.md
 
 get_fedora_deps()
 {
@@ -21,6 +23,18 @@ get_opensuse_deps()
   libqt4-devel glew-devel cmake git bison flex cgal-devel opencsg-devel
 }
 
+get_mageia_deps()
+{
+ pklist="task-c-devel task-c++-devel"
+ pklist="$pklist libqt4-devel libgmp-devel libmpfr-devel"
+ pklist="$pklist libboost-devel eigen3-devel"
+ pklist="$pklist bison flex"
+ pklist="$pklist cmake imagemagick python curl git"
+ # cgal + opencsg don't exist
+ sudo urpmi ctags
+ sudo urpmi $pklist
+}
+
 get_debian_deps()
 {
  echo "Tested on Ubuntu 12.04"
@@ -38,18 +52,20 @@ get_debian_deps()
 }
 
 
-if [ "`cat /etc/issue | grep -i ubuntu`" ]; then
+if [ "`grep -i ubuntu /etc/issue`" ]; then
  get_debian_deps
-elif [ "`cat /etc/issue | grep -i debian`" ]; then
+elif [ "`grep -i debian /etc/issue`" ]; then
  get_debian_deps
-elif [ "`cat /etc/issue | grep -i opensuse`" ]; then
+elif [ "`grep -i suse /etc/issue`" ]; then
  get_opensuse_deps
-elif [ "`cat /etc/issue | grep -i freebsd`" ]; then
+elif [ "`grep -i freebsd /etc/issue`" ]; then
  get_freebsd_deps
-elif [ "`cat /etc/issue | grep  -i fedora`" ]; then
+elif [ "`grep -i fedora /etc/issue`" ]; then
  get_fedora_deps
-elif [ "`cat /etc/issue | grep  -i redhat`" ]; then
+elif [ "`grep -i redhat /etc/issue`" ]; then
  get_fedora_deps
+elif [ "`grep -i mageia /etc/issue`" ]; then
+ get_mageia_deps
 else
  echo "Unknown system type. Please install the dependency packages listed"
  echo "in README.md using your system's package manager."

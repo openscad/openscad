@@ -144,7 +144,12 @@ bison_sysver()
 gcc_sysver()
 {
   bingcc=$1/bin/gcc
-  if [ ! -x $1/bin/gcc ]; then bingcc=gcc; fi
+  if [ ! -x $1/bin/gcc ]; then
+    if [ "`command -v gcc`" ]; then # fallback to $PATH
+      bingcc=gcc;
+    fi
+  fi
+  if [ ! -x $bingcc ]; then return; fi
   if [ ! "`$bingcc --version`" ]; then return; fi
   gccver=`$bingcc --version| grep -i gcc`
   gccver=`echo $gccver | sed s/"[^0-9. ]"/" "/g | awk '{print $1}'`
