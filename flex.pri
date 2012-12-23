@@ -9,16 +9,17 @@ win32 {
   QMAKE_EXTRA_COMPILERS += flex
 }
 
-unix:freebsd-g++ {
-  QMAKE_LEX = /usr/local/bin/flex
-}
-
-unix:netbsd* {
-  QMAKE_LEX = /usr/pkg/bin/flex
-}
-
 unix:linux* {
   exists(/usr/bin/flex) {
     QMAKE_LEX = /usr/bin/flex
   }
 }
+
+freebsd* {
+  QMAKE_LEX = /usr/local/bin/flex
+}
+
+netbsd* {
+  QMAKE_LEX = /usr/pkg/bin/flex
+}
+

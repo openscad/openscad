@@ -116,11 +116,6 @@ netbsd* {
 	QMAKE_CXXFLAGS_WARN_ON += -Wno-sign-compare
 }
 
-CONFIG(skip-version-check) {
-  # force the use of outdated libraries
-  DEFINES += OPENSCAD_SKIP_VERSION_CHECK
-}
-
 # Application configuration
 macx:CONFIG += mdi
 CONFIG += cgal
@@ -143,6 +138,12 @@ include(common.pri)
 CONFIG(mingw-cross-env) {
   include(mingw-cross-env.pri)
 }
+
+# force the use of outdated libraries
+CONFIG(skip-version-check) {
+  DEFINES += OPENSCAD_SKIP_VERSION_CHECK
+}
+
 
 win32 {
   FLEXSOURCES = src/lexer.l

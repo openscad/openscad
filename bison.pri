@@ -17,7 +17,13 @@ win32 {
   QMAKE_EXTRA_COMPILERS += bison_header
 }
 
-unix:freebsd-g++ {
+unix:linux* {
+  exists(/usr/bin/bison) {
+    QMAKE_YACC = /usr/bin/bison
+  }
+}
+
+freebsd* {
   # on bsd /usr/bin/bison is outdated, dont use it
   exists(/usr/local/bin/bison) {
     QMAKE_YACC = /usr/local/bin/bison
@@ -26,16 +32,10 @@ unix:freebsd-g++ {
   }
 }
 
-unix:netbsd* {
+netbsd* {
   exists(/usr/pkg/bin/bison) {
     QMAKE_YACC = /usr/pkg/bin/bison
   } else { # look in $PATH
     QMAKE_YACC = bison
-  }
-}
-
-unix:linux* {
-  exists(/usr/bin/bison) {
-    QMAKE_YACC = /usr/bin/bison
   }
 }
