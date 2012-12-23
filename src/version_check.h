@@ -6,7 +6,7 @@
 are too old, the user will be warned. If the user wishes to force
 compilation, they can run
 
- qmake CONFIG=skip-version-check
+ qmake CONFIG+=skip-version-check
 
 Otherwise they will be guided to README.md and an -build-dependencies script.
 
