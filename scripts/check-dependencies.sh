@@ -614,7 +614,7 @@ check_old_local()
         echo "Warning: you have a copy of "$i" under /usr/local/include"
         warnon=1
       fi
-      if [ -e /usr/local/lib/$i ]; then
+      if [ -e /usr/local/lib/$i.so ]; then
         echo "Warning: you have a copy of "$i" under /usr/local/lib"
         warnon=1
       fi
@@ -625,6 +625,13 @@ check_old_local()
   fi
 }
 
+
+check_misc()
+{
+  if [ "`uname -a|grep -i netbsd`" ]; then
+    echo "NetBSD: Please manually verify the X Sets have been installed"
+  fi
+}
 
 
 checkargs()
@@ -654,6 +661,7 @@ main()
   	pretty_print $dep $dep_minver $dep_sysver $dep_compare
   done
   check_old_local
+  check_misc
 }
 
 checkargs $*
