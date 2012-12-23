@@ -12,8 +12,8 @@ get_fedora_deps()
 
 get_altlinux_deps()
 {
- for i in boost-devel boost-filesystem-devel gcc4.5 gcc4.5-c++ \
-  eigen2 libmpfr libgmp libgmp_cxx qt4-devel libcgal-devel git-core \
+ for i in boost-devel boost-filesystem-devel gcc4.5 gcc4.5-c++ boost-program_options-devel \
+  boost-thread-devel boost-system-devel boost-regex-devel eigen2 libmpfr libgmp libgmp_cxx-devel qt4-devel libcgal-devel git-core \
   libglew-devel flex bison; do sudo apt-get install $i; done
 }
 
