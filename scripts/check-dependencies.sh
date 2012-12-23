@@ -116,7 +116,23 @@ qt4_sysver()
 
 glew_sysver()
 {
-  glew_sysver_result= # glew has no traditional version numbers
+  glewh=$1/include/GL/glew.h
+  if [ -e $glewh ]; then
+    # glew has no traditional version number in it's headers
+    # so we either test for what we need and 'guess', or assign it to 0.0
+    # the resulting number is a 'lower bound', not exactly what is installed
+    if [ "`grep __GLEW_VERSION_4_2 $glewh`" ]; then
+      glew_sysver_result=1.7.0
+    fi
+    if [ ! $glew_sysver_result ]; then
+      if [ "`grep __GLEW_ARB_occlusion_query2 $glewh`" ]; then
+        glew_sysver_result=1.5.4
+      fi
+    fi
+    if [ ! $glew_sysver_result ]; then
+      glew_sysver_result=0.0
+    fi
+  fi
 }
 
 imagemagick_sysver()
@@ -148,9 +164,13 @@ gcc_sysver()
       bingcc=gcc;
     fi
   fi
+  debug using bingcc: $bingcc
   if [ ! -x $bingcc ]; then return; fi
   if [ ! "`$bingcc --version`" ]; then return; fi
   gccver=`$bingcc --version| grep -i gcc`
+  debug gcc output1: $gccver
+  gccver=`echo $gccver | sed s/"(.*)"//g `
+  debug gcc output2: $gccver
   gccver=`echo $gccver | sed s/"[^0-9. ]"/" "/g | awk '{print $1}'`
   gcc_sysver_result=$gccver
 }
@@ -562,6 +582,7 @@ find_installed_version()
   # use pkg-config to search
   if [ ! $fsv_tmp ]; then
     if [ "`command -v pkg-config`" ]; then
+      debug plain search failed. trying pkg_config...
       pkg_config_search $dep
       fsv_tmp=$pkg_config_search_result
     fi
@@ -569,12 +590,15 @@ find_installed_version()
 
   # use the package system to search
   if [ ! $fsv_tmp ]; then
+    debug plain + pkg_config search both failed... trying package search
     pkg_search $dep
     fsv_tmp=$pkg_search_result
   fi
 
   if [ $fsv_tmp ]; then
     find_installed_version_result=$fsv_tmp
+  else
+    debug all searches failed. unknown version.
   fi
 }
 
