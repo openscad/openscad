@@ -158,20 +158,17 @@ bison_sysver()
 
 gcc_sysver()
 {
-  bingcc=$1/bin/gcc
-  if [ ! -x $1/bin/gcc ]; then
-    if [ "`command -v gcc`" ]; then # fallback to $PATH
-      bingcc=gcc;
+  bingcc=$1/bin/g++
+  if [ ! -x $1/bin/g++ ]; then
+    if [ "`command -v g++`" ]; then # fallback to $PATH
+      bingcc=g++;
     fi
   fi
   debug using bingcc: $bingcc
   if [ ! -x $bingcc ]; then return; fi
   if [ ! "`$bingcc --version`" ]; then return; fi
-  gccver=`$bingcc --version| grep -i gcc`
-  debug gcc output1: $gccver
-  gccver=`echo $gccver | sed s/"(.*)"//g `
-  debug gcc output2: $gccver
-  gccver=`echo $gccver | sed s/"[^0-9. ]"/" "/g | awk '{print $1}'`
+  gccver=`$bingcc --version| grep -i g++ | awk ' { print $3 } '`
+  debug g++ output1: $gccver
   gcc_sysver_result=$gccver
 }
 
@@ -252,6 +249,13 @@ set_default_package_map()
 
 apt_pkg_search()
 {
+
+  if [ ! "`command -v dpkg`" ]; then
+    # can't handle systems that use apt-get for RPMs (alt linux)
+    debug command dpkg not found. cannot search packages.
+    return
+  fi
+
   debug apt_pkg_search $*
   apt_pkg_search_result=
   pkgname=$1
@@ -279,10 +283,6 @@ apt_pkg_search()
   fi
 
   debug $pkgname ".deb name:" $debpkgname
-  if [ ! "`command -v dpkg`" ]; then
-    debug command dpkg not found. cannot search packages.
-    return
-  fi
 
   # examples of apt version strings
   # cgal 4.0-4   gmp 2:5.0.5+dfsg  bison 1:2.5.dfsg-2.1 cmake 2.8.9~rc1
@@ -636,10 +636,10 @@ checkargs()
 
 main()
 {
-  deps="qt4 cgal gmp cmake mpfr boost opencsg glew eigen gcc"
+  deps="qt4 cgal gmp mpfr boost opencsg glew eigen gcc"
   deps="$deps bison flex make"
-  #deps=$deps curl git # not technically necessary for build
-  #deps="$deps python" # only needed for tests
+  #deps="$deps curl git" # not technically necessary for build
+  #deps="$deps python cmake" # only needed for tests
   #deps="$deps imagemagick" # needs work, only needed for tests
   #deps="eigen glew opencsg" # debugging
   pretty_print title

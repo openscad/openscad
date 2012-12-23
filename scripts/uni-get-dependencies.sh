@@ -10,6 +10,13 @@ get_fedora_deps()
   boost-devel mpfr-devel gmp-devel glew-devel CGAL-devel gcc pkgconfig git
 }
 
+get_altlinux_deps()
+{
+ for i in boost-devel boost-filesystem-devel gcc4.5 gcc4.5-c++ \
+  eigen2 libmpfr libgmp libgmp_cxx qt4-devel libcgal-devel git-core \
+  libglew-devel flex bison; do sudo apt-get install $i; done
+}
+
 get_freebsd_deps()
 {
  pkg_add -r bison boost-libs cmake git bash eigen2 flex gmake gmp mpfr \
@@ -20,8 +27,6 @@ get_freebsd_deps()
 
 get_netbsd_deps()
 {
- echo Netbsd: You must install the X sets before running..
- sleep 2
  sudo pkgin install bison boost cmake git bash eigen flex gmake gmp mpfr \
   qt4 glew cgal opencsg modular-xorg
 }
@@ -34,14 +39,10 @@ get_opensuse_deps()
 
 get_mageia_deps()
 {
- pklist="task-c-devel task-c++-devel"
- pklist="$pklist libqt4-devel libgmp-devel libmpfr-devel"
- pklist="$pklist libboost-devel eigen3-devel libglew-devel"
- pklist="$pklist bison flex"
- pklist="$pklist cmake imagemagick python curl git"
- # cgal + opencsg don't exist
  sudo urpmi ctags
- sudo urpmi $pklist
+ sudo urpmi task-c-devel task-c++-devel libqt4-devel libgmp-devel \
+  libmpfr-devel libboost-devel eigen3-devel libglew-devel bison flex \
+  cmake imagemagick python curl git
 }
 
 get_debian_deps()
@@ -74,8 +75,10 @@ if [ -e /etc/issue ]; then
   get_fedora_deps
  elif [ "`grep -i mageia /etc/issue`" ]; then
   get_mageia_deps
- else
-  unknown
+ elif [ "`command -v rpm`" ]; then
+  if [ "`rpm -qa | grep altlinux`" ]; then
+   get_altlinux_deps
+  fi
  fi
 elif [ "`uname | grep -i freebsd `" ]; then
  get_freebsd_deps
