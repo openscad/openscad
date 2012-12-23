@@ -637,10 +637,11 @@ checkargs()
 main()
 {
   deps="qt4 cgal gmp cmake mpfr boost opencsg glew eigen gcc"
-  deps="$deps bison flex git curl make"
-  #deps="$deps python" # needs work, only needed for tests
+  deps="$deps bison flex make"
+  #deps=$deps curl git # not technically necessary for build
+  #deps="$deps python" # only needed for tests
   #deps="$deps imagemagick" # needs work, only needed for tests
-  #deps="eigen glew opencsg" # debug
+  #deps="eigen glew opencsg" # debugging
   pretty_print title
   for dep in $deps; do
     debug "processing $dep"
