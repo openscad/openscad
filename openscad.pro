@@ -90,11 +90,14 @@ unix:!macx {
 }
 
 netbsd* {
-   LIBS += -L/usr/X11R7/lib
+   QMAKE_LFLAGS += -L/usr/X11R7/lib
    QMAKE_LFLAGS += -Wl,-R/usr/X11R7/lib
    QMAKE_LFLAGS += -Wl,-R/usr/pkg/lib
    !isEmpty(OPENSCAD_LIBDIR) {
-     QMAKE_LFLAGS += -Wl,-R$$OPENSCAD_LIBDIR/lib
+     QMAKE_CFLAGS = -I$$OPENSCAD_LIBDIR/include $$QMAKE_CFLAGS
+     QMAKE_CXXFLAGS = -I$$OPENSCAD_LIBDIR/include $$QMAKE_CXXFLAGS
+     QMAKE_LFLAGS = -L$$OPENSCAD_LIBDIR/lib $$QMAKE_LFLAGS
+     QMAKE_LFLAGS = -Wl,-R$$OPENSCAD_LIBDIR/lib $$QMAKE_LFLAGS
    }
 }
 

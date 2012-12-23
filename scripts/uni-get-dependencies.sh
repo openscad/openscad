@@ -20,6 +20,8 @@ get_freebsd_deps()
 
 get_netbsd_deps()
 {
+ echo Netbsd: You must install the X sets before running..
+ sleep 2
  sudo pkgin install bison boost cmake git bash eigen flex gmake gmp mpfr \
   qt4 glew cgal opencsg modular-xorg
 }

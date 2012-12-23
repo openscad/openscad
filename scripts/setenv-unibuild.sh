@@ -58,7 +58,7 @@ setenv_netbsd()
  QMAKESPEC=netbsd-g++
  QTDIR=/usr/pkg/qt4
  PATH=/usr/pkg/qt4/bin:$PATH
- LD_LIBRARY_PATH=/usr/pkg/qt4/lib:$LD_LIBRARY_PATH
+ LD_LIBRARY_PATH=/usr/pkg/qt4/lib:/usr/X11R7/lib:$LD_LIBRARY_PATH
 
  export QMAKESPEC
  export QTDIR

@@ -69,4 +69,8 @@ isEmpty(EIGEN_INCLUDEPATH) {
 # EIGEN being under 'include/eigen[2-3]' needs special prepending
 QMAKE_INCDIR_QT = $$EIGEN_INCLUDEPATH $$QMAKE_INCDIR_QT
 
+netbsd* {
+  QMAKE_CXXFLAGS = -I$$EIGEN_INCLUDEPATH $$QMAKE_CXXFLAGS
+}
+
 } # eigen

@@ -133,10 +133,11 @@ After that, follow the Compilation instructions below.
 
 ### Building for Linux/BSD
 
-First, make sure that you have git installed (git-core in debian). Once 
-you've cloned this git repository, download and install the dependency 
-packages listed above using your system's package manager. A convenience 
-script is provided that can help with this process:
+First, make sure that you have git installed (often packaged as 'git-core' 
+or 'scmgit'). Once you've cloned this git repository, download and install 
+the dependency packages listed above using your system's package 
+manager. A convenience script is provided that can help with this 
+process:
 
     ./scripts/uni-get-dependencies.sh
 
