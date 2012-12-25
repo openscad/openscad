@@ -242,7 +242,7 @@ build_glew()
 
   # clang linux
   if [ $CC ]; then
-    sed -ibak s/"CC = cc"/"CC = $(CC)"/ config/Makefile.linux
+    sed -ibak s/"CC = cc"/"# CC = cc"/ config/Makefile.linux
   fi
 
   MAKER=make
@@ -350,6 +350,9 @@ build_eigen()
 }
 
 
+# this section allows 'out of tree' builds, as long as the system has
+# the 'dirname' command installed
+
 if [ "`command -v dirname`" ]; then
   OPENSCAD_SCRIPTDIR=`dirname $0`
 else
@@ -378,6 +381,9 @@ echo "Using deploydir:" $DEPLOYDIR
 echo "Using srcdir:" $SRCDIR
 echo "Number of CPUs for parallel builds:" $NUMCPU
 mkdir -p $SRCDIR $DEPLOYDIR
+
+# this section builds some basic tools, if they are missing or outdated
+# they are installed under $BASEDIR/bin which we have added to our PATH
 
 if [ ! "`command -v curl`" ]; then
   build_curl 7.26.0
