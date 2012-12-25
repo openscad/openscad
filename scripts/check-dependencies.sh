@@ -171,6 +171,8 @@ gcc_sysver()
   debug g++ output1: $gccver
   gccver=`echo $gccver | awk -F ")" ' { print $2 } '`
   debug g++ output2: $gccver
+  gccver=`echo $gccver | awk ' { print $1 } '`
+  debug g++ output3: $gccver
   gcc_sysver_result=$gccver
 }
 
