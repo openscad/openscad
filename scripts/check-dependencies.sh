@@ -167,8 +167,10 @@ gcc_sysver()
   debug using bingcc: $bingcc
   if [ ! -x $bingcc ]; then return; fi
   if [ ! "`$bingcc --version`" ]; then return; fi
-  gccver=`$bingcc --version| grep -i g++ | awk ' { print $3 } '`
+  gccver=`$bingcc --version| grep -i g++ | awk -F "(" ' { print $2 } '`
   debug g++ output1: $gccver
+  gccver=`echo $gccver | awk -F ")" ' { print $2 } '`
+  debug g++ output2: $gccver
   gcc_sysver_result=$gccver
 }
 
