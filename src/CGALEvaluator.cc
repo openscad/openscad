@@ -130,6 +130,7 @@ CGAL_Nef_polyhedron CGALEvaluator::applyHull(const CgaladvNode &node)
 		const CGAL_Nef_polyhedron &chN = item.second;
 		// FIXME: Don't use deep access to modinst members
 		if (chnode->modinst->isBackground()) continue;
+		if (chN.dim == 0) continue; // Ignore object with dimension 0 (e.g. echo)
 		if (dim == 0) {
 			dim = chN.dim;
 		}
