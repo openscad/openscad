@@ -5,24 +5,27 @@
 #  check-dependencies.sh                # check version of all dependencies
 #  check-dependencies.sh debug          # debug this script
 #
+# output
+#   a table displaying the minimum version from README, the found version,
+#   and whether it is OK or not.
+#
 # design
-#  Detection is done through stages and fallbacks in case of failure.
+#   stage 1. search by parsing header files and/or binary output (_sysver)
+#   stage 2. search with pkg-config
 #
-#    1st stage, search by parsing header files and/or binary output
-#    2nd stage, search with pkg-config
-#    3rd stage, search by parsing output of package systems like dpkg or yum
-#
-#  Goal is portability and lack of complicated regex.
-#  Code style is 'pretend its python'. functions return strings under
-#  the $function_name_result variable. tmp variables are
-#  funcname_abbreviated_tmp. Local vars are not used for portability.
+#  Code style is portability and simplicity. Plain sed, awk, grep, sh.
+#  Functions return strings under $function_name_result variable.
+#  tmp variables are named funcname_abbreviated_tmp.
+#  Local vars are not used.
 #
 # todo
-#  if /usr/ and /usr/local/ on linux both hit, throw an error
-#  fallback- pkgconfig --exists, then --modversion
-#  fallback2 - pkg manager
-#  - print location found, how found???
+#  testing of non-bash shells
+#  if /usr/ and /usr/local/ on linux both hit, throw a warning
+#  print location found, how found???
+#  look at pkgconfig --exists & --modversion
+#  deal with deps like GLEW that don't have proper version strings?
 #
+
 DEBUG=
 
 debug()
@@ -228,162 +231,6 @@ python_sysver()
   python_sysver_result=`$1/bin/python --version 2>&1 | awk '{print $2}'`
 }
 
-set_default_package_map()
-{
-  glew=glew
-  boost=boost
-  eigen=eigen3
-  imagemagick=imagemagick
-  make=make
-  python=python
-  opencsg=opencsg
-  cgal=cgal
-  bison=bison
-  gmp=gmp
-  mpfr=mpfr
-  bash=bash
-  flex=flex
-  gcc=gcc
-  cmake=cmake
-  curl=curl
-  git=git
-  qt4=qt4
-}
-
-
-apt_pkg_search()
-{
-
-  if [ ! "`command -v dpkg`" ]; then
-    # can't handle systems that use apt-get for RPMs (alt linux)
-    debug command dpkg not found. cannot search packages.
-    return
-  fi
-
-  debug apt_pkg_search $*
-  apt_pkg_search_result=
-  pkgname=$1
-  dps_ver=
-
-  # translate pkgname to apt packagename
-  set_default_package_map
-  for pn in cgal boost mpfr opencsg qt4; do eval $pn="lib"$pn"-dev" ; done
-
-  # handle multiple version names of same package (ubuntu, debian, etc)
-  if [ $pkgname = glew ]; then
-    glewtest=`apt-cache search libglew-dev`
-    if [ "`echo $glewtest | grep glew1.6-dev`" ]; then glew=libglew1.6-dev;
-    elif [ "`echo $glewtest | grep glew1.5-dev`" ]; then glew=libglew1.5-dev;
-    elif [ "`echo $glewtest | grep glew-dev`" ]; then glew=libglew-dev; fi
-  elif [ $pkgname = gmp ]; then
-    if [ "`apt-cache search libgmp3-dev`" ]; then gmp=libgmp3-dev ;fi
-    if [ "`apt-cache search libgmp-dev`" ]; then gmp=libgmp-dev ;fi
-  fi
-
-  debpkgname=`eval echo "$"$pkgname`
-
-  if [ ! $debpkgname ]; then
-    debug "unknown package" $pkgname; return;
-  fi
-
-  debug $pkgname ".deb name:" $debpkgname
-
-  # examples of apt version strings
-  # cgal 4.0-4   gmp 2:5.0.5+dfsg  bison 1:2.5.dfsg-2.1 cmake 2.8.9~rc1
-
-  if [ $pkgname = eigen ]; then
-    aps_null=`dpkg --status libeigen3-dev 2>&1`
-    if [ $? = 0 ]; then
-      debpkgname=libeigen3-dev
-    else
-      debpkgname=libeigen2-dev
-    fi
-  fi
-
-  debug "test dpkg on $debpkgname"
-  testdpkg=`dpkg --status $debpkgname 2>&1`
-  if [ "$testdpkg" ]; then
-    #debug test dpkg: $testdpkg
-    if [ "`echo $testdpkg | grep -i version`" ]; then
-      dps_ver=`dpkg --status $debpkgname | grep -i ^version: | awk ' { print $2 }'`
-      debug version line from dpkg: $dps_ver
-      dps_ver=`echo $dps_ver | tail -1 | sed s/"[-~].*"// | sed s/".*:"// | sed s/".dfsg*"//`
-      debug version: $dps_ver
-    else
-      debug couldnt find version string after dpkg --status $debpkgname
-    fi
-  else
-    debug testdpkg failed on $debpkgname
-  fi
-
-  # Available to be system
-  #dps_ver=
-  #debug "test apt-cache on $debpkgname"
-  # apt-cache show is flaky on older apt. dont run unless search is OK
-  #test_aptcache=`apt-cache search $debpkgname`
-  #if [ "$test_aptcache" ]; then
-  #  test_aptcache=`apt-cache show $debpkgname`
-  #  if [ ! "`echo $test_aptcache | grep -i no.packages`" ]; then
-  #    ver=`apt-cache show $debpkgname | grep ^Version: | awk ' { print $2 }'`
-  #    ver=`echo $ver | tail -1 | sed s/"[-~].*"// | sed s/".*:"// | sed s/".dfsg*"//`
-  #    if [ $ver ] ; then vera=$ver ; fi
-  #  fi
-  #fi
-
-  apt_pkg_search_result="$dps_ver"
-}
-
-set_fedora_package_map()
-{
-  cgal=CGAL-devel
-  eigen=eigen2-devel
-  qt4=qt-devel
-  imagemagick=ImageMagick
-  for pn in  boost gmp mpfr glew; do eval $pn=$pn"-devel" ; done
-}
-
-yum_pkg_search()
-{
-  yum_pkg_search_result=
-  pkgname=$1
-
-  set_default_package_map
-  set_fedora_package_map
-  fedora_pkgname=`eval echo "$"$pkgname`
-
-  debug $pkgname". fedora name:" $fedora_pkgname
-  if [ ! $fedora_pkgname ]; then
-    debug "unknown package" $pkgname; return;
-  fi
-
-  test_yum=`yum info $fedora_pkgname 2>&1`
-  if [ "$test_yum" ]; then
-    debug test_yum: $test_yum
-    ydvver=`yum info $fedora_pkgname 2>&1 | grep ^Version | awk '{print $3}' `
-    if [ $ydvver ]; then ydvver=$ydvver ; fi
-  else
-    debug test_yum failed on $pkgname
-  fi
-  yum_pkg_search_result="$ydvver"
-}
-
-
-pkg_search()
-{
-  debug pkg_search $*
-  pkg_search_result=
-
-  if [ "`command -v apt-get`" ]; then
-    apt_pkg_search $*
-    pkg_search_result=$apt_pkg_search_result
-  elif [ "`command -v yum`" ]; then
-    yum_pkg_search $*
-    pkg_search_result=$yum_pkg_search_result
-  else
-    debug unknown system type. cannot search packages.
-  fi
-}
-
 pkg_config_search()
 {
   debug pkg_config_search $*
@@ -399,9 +246,6 @@ pkg_config_search()
     debug pkg_config_search failed on $*, result of run was: $pcstmp
   fi
 }
-
-
-
 
 get_minversion_from_readme()
 {
@@ -433,7 +277,6 @@ get_minversion_from_readme()
   get_minversion_from_readme_result=$grv_tmp
 }
 
-
 find_min_version()
 {
   find_min_version_result=
@@ -454,13 +297,12 @@ find_min_version()
 
 vers_to_int()
 {
-  # change x.y.z.p into x0y0z0p for purposes of comparison with -lt or -gt
-  # it will work as long as the resulting int is less than 2.147 billion
-  # and y z and p are less than 99
+  # change x.y.z.p into an integer that can be compared using -lt or -gt
   # 1.2.3.4 into 1020304
   # 1.11.0.12 into 1110012
   # 2011.2.3 into 20110020300
-  # the resulting integer can be simply compared using -lt or -gt
+  # it will work as long as the resulting int is less than 2.147 billion
+  # and y z and p are less than 99
   vers_to_int_result=
   if [ ! $1 ] ; then return ; fi
   vtoi_ver=$1
@@ -562,9 +404,6 @@ pretty_print()
   pp_compared=
 }
 
-
-
-
 find_installed_version()
 {
   debug find_installed_version $*
@@ -592,13 +431,6 @@ find_installed_version()
     fi
   fi
 
-  # use the package system to search
-  if [ ! $fsv_tmp ]; then
-    debug plain + pkg_config search both failed... trying package search
-    pkg_search $dep
-    fsv_tmp=$pkg_search_result
-  fi
-
   if [ $fsv_tmp ]; then
     find_installed_version_result=$fsv_tmp
   else
@@ -606,12 +438,11 @@ find_installed_version()
   fi
 }
 
-
 check_old_local()
 {
   warnon=
   if [ "`uname | grep -i linux`" ]; then
-    header_list="opencsg.h CGAL boost GL/glew.h"
+    header_list="opencsg.h CGAL boost GL/glew.h gmp.h mpfr.h eigen2 eigen3"
     liblist="libboost libopencsg libCGAL libglew"
     for i in $header_list $liblist; do
       if [ -e /usr/local/include/$i ]; then
@@ -629,14 +460,12 @@ check_old_local()
   fi
 }
 
-
 check_misc()
 {
   if [ "`uname -a|grep -i netbsd`" ]; then
     echo "NetBSD: Please manually verify the X Sets have been installed"
   fi
 }
-
 
 checkargs()
 {
@@ -650,9 +479,7 @@ main()
   deps="qt4 cgal gmp mpfr boost opencsg glew eigen gcc"
   deps="$deps bison flex make"
   #deps="$deps curl git" # not technically necessary for build
-  #deps="$deps python cmake" # only needed for tests
-  #deps="$deps imagemagick" # needs work, only needed for tests
-  #deps="eigen glew opencsg" # debugging
+  #deps="$deps python cmake imagemagick" # only needed for tests
   pretty_print title
   for dep in $deps; do
     debug "processing $dep"
