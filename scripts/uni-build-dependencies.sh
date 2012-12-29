@@ -4,16 +4,20 @@
 # Marius Kintel and Clifford Wolf, 2012. released under the GPL 2, or
 # later, as described in the file named 'COPYING' in OpenSCAD's project root.
 
+# This script builds most dependencies, both libraries and binary tools,
+# of OpenSCAD for Linux/BSD. It won't build QT or gcc. It is based on
+# macosx-build-dependencies.sh
 #
-# This script builds all library dependencies of OpenSCAD for Linux/BSD
-# (Except large ones like qt or gcc). It is based on macosx-build-dependencies.sh
+# By default it builds under $HOME/openscad_deps. You can alter this by
+# setting the BASEDIR environment variable or with the 'out of tree'
+# feature
 #
-# Standard usage:
+# Usage:
 #   cd openscad
 #   . ./scripts/setenv-unibuild.sh
 #   ./scripts/uni-build-dependencies.sh
 #
-# Out-of-tree usage
+# Out-of-tree usage:
 #
 #   cd somepath
 #   . /path/to/openscad/scripts/setenv-unibuild.sh
@@ -22,7 +26,11 @@
 # Prerequisites:
 # - wget or curl
 # - Qt4
-# - gcc (clang=experimental)
+# - gcc
+#
+# Enable Clang (experimental, only works on linux):
+#
+#   . ./scripts/setenv-unibuild.sh clang
 #
 
 printUsage()
@@ -223,7 +231,7 @@ build_glew()
   cd glew-$version
   mkdir -p $DEPLOYDIR/lib/pkgconfig
 
-  # Glew makefiles are not built for Linux Multiarch. We aren't trying
+  # Glew's makefile is not built for Linux Multiarch. We aren't trying
   # to fix everything here, just the test machines OScad normally runs on
 
   # Fedora 64-bit
@@ -369,7 +377,7 @@ SRCDIR=$BASEDIR/src
 
 if [ ! $NUMCPU ]; then
   echo "Note: The NUMCPU environment variable can be set for paralell builds"
-  NUMCPU=1 
+  NUMCPU=1
 fi
 
 if [ ! -d $BASEDIR/bin ]; then

@@ -1,8 +1,8 @@
 #!/bin/bash
 #
 # This script creates a binary release of OpenSCAD. This should work
-# under Mac OS X, Windows (msys), Linux 32, Linux 64, and Linux->Win32 MXE
-# cross-build.
+# under Mac OS X, Linux 32, Linux 64, and Linux->Win32 MXE cross-build.
+# Windows under msys has not been tested recently.
 #
 # The script will create a file called openscad-<versionstring>.<extension> in
 # the current directory (or under ./mingw32)
@@ -18,8 +18,8 @@
 # The commit info will extracted from git and be passed to qmake as OPENSCAD_COMMIT
 # to identify a build in the about box.
 #
-# The mingw32 cross compile depends on the mxe tools + dependencies. Please
-# see scripts/*mingw-* & the OpenSCAD manual for more information.
+# The mingw32 cross compile depends on the MXE cross-build tools. Please
+# see the README.md file on how to install these dependencies.
 
 printUsage()
 {
