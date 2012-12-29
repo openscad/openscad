@@ -24,7 +24,8 @@ unix:linux* {
 }
 
 freebsd* {
-  # on bsd /usr/bin/bison is outdated, dont use it
+  # on some BSD, /usr/local/bin/bison is newer than
+  # /usr/bin/bison, so try to prefer it.
   exists(/usr/local/bin/bison) {
     QMAKE_YACC = /usr/local/bin/bison
   } else { # look in $PATH
