@@ -101,6 +101,15 @@ netbsd* {
    }
 }
 
+# Prevent LD_LIBRARY_PATH problems when running the openscad binary
+# on systems where uni-build-dependencies.sh was used. 
+# Will not affect 'normal' builds. Also this is not tested on Mac
+!isEmpty(OPENSCAD_LIBDIR) {
+  unix:!macx {
+    QMAKE_LFLAGS = -Wl,-R$$OPENSCAD_LIBDIR/lib $$QMAKE_LFLAGS
+  }
+}
+
 # See Dec 2011 OpenSCAD mailing list, re: CGAL/GCC bugs.
 *g++* {
   QMAKE_CXXFLAGS *= -fno-strict-aliasing

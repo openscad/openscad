@@ -176,13 +176,6 @@ check dependencies
 
 Then follow the Compilation instructions below. 
 
-Note that if you build dependencies with this method, you may have to 
-modify your LD_LIBRARY_PATH environment variable every time you run the 
-openscad binary to avoid library problems. A workaround script called 
-"openscad-unirun.sh" has been included to solve this: copy it somewhere 
-in your PATH (/usr/local/bin) and run 'openscad-unirun.sh' instead of 
-the openscad binary.
-
 ### Building for Windows
 
 OpenSCAD for Windows is usually cross-compiled from Linux. If you wish to
