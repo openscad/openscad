@@ -137,7 +137,7 @@ First, make sure that you have git installed (often packaged as 'git-core'
 or 'scmgit'). Once you've cloned this git repository, download and install 
 the dependency packages listed above using your system's package 
 manager. A convenience script is provided that can help with this 
-process:
+process on some systems:
 
     ./scripts/uni-get-dependencies.sh
 
@@ -154,27 +154,30 @@ to the Compilation instructions.
 
 If some of your system dependency libraries are missing or old, then you 
 can download and build newer versions into $HOME/openscad_deps by 
-running these commands:
+following this process. First, run the script that sets up the 
+environment variables. 
 
     source ./scripts/setenv-unibuild.sh
+
+Then run the script to compile all the prerequisite libraries above:
+
     ./scripts/uni-build-dependencies.sh
 
-This may take an hour or more, depending on your network and system. As 
-a special timesaver if you are only missing CGAL and OpenCSG, you can do 
+This may take an hour or more, depending on your network and system. It 
+is recommended to have at least 1 gigabyte of free disk space. As a 
+special timesaver if you are only missing CGAL and OpenCSG, you can do 
 this instead:
 
-    source ./scripts/setenv-unibuild.sh
     ./scripts/uni-build-dependencies.sh opencsg
     ./scripts/uni-build-dependencies.sh cgal
 
 Note that huge dependencies like gcc or qt are not included here, only 
 the smaller ones (boost, CGAL, opencsg, etc). After the build, again 
-check dependencies
+check dependencies.
 
-    source ./scripts/setenv-unibuild.sh
     ./scripts/check-dependencies.sh
 
-Then follow the Compilation instructions below. 
+After that, follow the Compilation instructions below.
 
 ### Building for Windows
 
@@ -188,7 +191,7 @@ the script that sets up the environment variables.
 
     source ./scripts/setenv-mingw-xbuild.sh
 
-Then run the script to download & compile all the dependency libraries:
+Then run the script to download & compile all the prerequisite libraries above:
 
     ./scripts/mingw-x-build-dependencies.sh
 
