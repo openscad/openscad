@@ -364,6 +364,12 @@ compare_version()
 
 pretty_print()
 {
+  # there are four columns, passed as $1 $2 $3 and $4
+  # 1 = name of dependency
+  # 2 = version found in README
+  # 3 = version found on system
+  # 4 = whether it is OK or not
+
   debug pretty_print $*
 
   brightred="\033[40;31m"
@@ -380,28 +386,28 @@ pretty_print()
   ppstr="%s%-12s"
   pp_format='{printf("'$ppstr$ppstr$ppstr$ppstr$nocolor'\n",$1,$2,$3,$4,$5,$6,$7,$8)}'
   pp_title="$gray depname $gray minimum $gray found $gray OKness"
-  if [ $1 ]; then pp_dep=$1; fi
-  if [ $pp_dep = "title" ]; then
+  if [ $1 ]; then pp_depname=$1; fi
+  if [ $pp_depname = "title" ]; then
     echo -e $pp_title | awk $pp_format
     return ;
   fi
 
   if [ $2 ]; then pp_minver=$2; else pp_minver="unknown"; fi
   if [ $3 ]; then pp_foundver=$3; else pp_foundver="unknown"; fi
-  if [ $4 ]; then pp_compared=$4; else pp_compared="NotOK"; fi
+  if [ $4 ]; then pp_okness=$4; else pp_okness="NotOK"; fi
 
-  if [ $pp_compared = "NotOK" ]; then
+  if [ $pp_okness = "NotOK" ]; then
     pp_foundcolor=$purple;
     pp_cmpcolor=$purple;
   else
     pp_foundcolor=$gray;
     pp_cmpcolor=$green;
   fi
-  echo -e $cyan $pp_dep $gray $pp_minver $pp_foundcolor $pp_foundver $pp_cmpcolor $pp_compared | awk $pp_format
-  pp_dep=
+  echo -e $cyan $pp_depname $gray $pp_minver $pp_foundcolor $pp_foundver $pp_cmpcolor $pp_okness | awk $pp_format
+  pp_depname=
   pp_minver=
   pp_foundver=
-  pp_compared=
+  pp_okness=
 }
 
 find_installed_version()
