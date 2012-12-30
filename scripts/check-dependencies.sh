@@ -415,15 +415,15 @@ find_installed_version()
   debug find_installed_version $*
   find_installed_version_result=unknown
   fsv_tmp=
-  dep=$1
+  depname=$1
 
   # try to find/parse headers and/or binary output
   if [ ! $fsv_tmp ]; then
     for syspath in "/opt" "/usr/pkg" "/usr" "/usr/local" $OPENSCAD_LIBRARIES; do
       if [ -e $syspath ]; then
-        debug $dep"_sysver" $syspath
-        eval $dep"_sysver" $syspath
-        fsv_tmp=`eval echo "$"$dep"_sysver_result"`
+        debug $depname"_sysver" $syspath
+        eval $depname"_sysver" $syspath
+        fsv_tmp=`eval echo "$"$depname"_sysver_result"`
       fi
     done
   fi
@@ -432,7 +432,7 @@ find_installed_version()
   if [ ! $fsv_tmp ]; then
     if [ "`command -v pkg-config`" ]; then
       debug plain search failed. trying pkg_config...
-      pkg_config_search $dep
+      pkg_config_search $depname
       fsv_tmp=$pkg_config_search_result
     fi
   fi
@@ -482,20 +482,19 @@ checkargs()
 
 main()
 {
-  deps="qt4 cgal gmp mpfr boost opencsg glew eigen gcc"
-  deps="$deps bison flex make"
+  deps="qt4 cgal gmp mpfr boost opencsg glew eigen gcc bison flex make"
   #deps="$deps curl git" # not technically necessary for build
   #deps="$deps python cmake imagemagick" # only needed for tests
   pretty_print title
-  for dep in $deps; do
+  for depname in $deps; do
     debug "processing $dep"
-    find_installed_version $dep
+    find_installed_version $depname
     dep_sysver=$find_installed_version_result
-    find_min_version $dep
+    find_min_version $depname
     dep_minver=$find_min_version_result
     compare_version $dep_minver $dep_sysver
     dep_compare=$compare_version_result
-  	pretty_print $dep $dep_minver $dep_sysver $dep_compare
+  	pretty_print $depname $dep_minver $dep_sysver $dep_compare
   done
   check_old_local
   check_misc
