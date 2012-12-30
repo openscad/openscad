@@ -96,7 +96,7 @@ std::string dump_cgal_nef_polyhedron2_face_svg(
 	bool mark,
 	CGAL_Iso_rectangle_2e bbox )
 {
-	std::stringstream out;
+  std::stringstream out;
 	CGAL_For_all(c1, c2) {
 		if ( explorer.is_standard( explorer.target(c1) ) ) {
 			CGAL_Point_2e source = explorer.point( explorer.source( c1 ) );
@@ -106,7 +106,7 @@ std::string dump_cgal_nef_polyhedron2_face_svg(
 			double mod=0;
 			if (color=="green") mod=10;
 			out << "      <!-- Halfedge. Mark: " << c1->mark() << " -->\n";
-			out << "       <line"
+      out << "       <line"
 			  << " x1='" << CGAL::to_double(tp1.x()) + mod << "'"
 			  << " y1='" << CGAL::to_double(tp1.y()) - mod << "'"
 			  << " x2='" << CGAL::to_double(tp2.x()) + mod << "'"
@@ -129,34 +129,34 @@ std::string dump_cgal_nef_polyhedron2_face_svg(
 
 std::string dump_svg( const CGAL_Nef_polyhedron2 &N )
 {
-	std::stringstream out;
-	CGAL_Nef_polyhedron2::Explorer explorer = N.explorer();
+  std::stringstream out;
+  CGAL_Nef_polyhedron2::Explorer explorer = N.explorer();
 
 	CGAL_Iso_rectangle_2e bbox = bounding_box( N );
 
-	CGAL_Nef_polyhedron2::Explorer::Face_const_iterator i;
-	out << " <svg y='" << svg_cursor_py << "' width='" << svg_px_width
+  CGAL_Nef_polyhedron2::Explorer::Face_const_iterator i;
+  out << " <svg y='" << svg_cursor_py << "' width='" << svg_px_width
 		<< "' height='" << svg_px_height
 		<< "' xmlns='http://www.w3.org/2000/svg' version='1.1'>\n";
 	out << svg_border() << "\n" << svg_axes() << "\n";
 	svg_cursor_py += svg_px_height;
 
 	for ( i = explorer.faces_begin(); i!= explorer.faces_end(); ++i ) {
-		out << "  <!-- face begin. mark: " << i->mark() << "  -->\n";
-		CGAL_Nef_polyhedron2::Explorer::Halfedge_around_face_const_circulator c1
-			= explorer.face_cycle( i ), c2 ( c1 );
-		out << dump_cgal_nef_polyhedron2_face_svg( c1, c2, explorer, "red", i->mark(), bbox );
+			out << "  <!-- face begin. mark: " << i->mark() << "  -->\n";
+			CGAL_Nef_polyhedron2::Explorer::Halfedge_around_face_const_circulator c1
+				= explorer.face_cycle( i ), c2 ( c1 );
+			out << dump_cgal_nef_polyhedron2_face_svg( c1, c2, explorer, "red", i->mark(), bbox );
 
-		CGAL_Nef_polyhedron2::Explorer::Hole_const_iterator j;
-		for ( j = explorer.holes_begin( i ); j!= explorer.holes_end( i ); ++j ) {
-			out << "   <!-- hole begin. mark: " << j->mark() << " -->\n";
-			CGAL_Nef_polyhedron2::Explorer::Halfedge_around_face_const_circulator c3( j ), c4 ( c3 );
-			out << dump_cgal_nef_polyhedron2_face_svg( c3, c4, explorer, "green", j->mark(), bbox );
-			out << "   <!-- hole end -->\n";
-		}
-		out << "  <!-- face end -->\n";
-	}
-	out << "</svg>";
+		  CGAL_Nef_polyhedron2::Explorer::Hole_const_iterator j;
+			for ( j = explorer.holes_begin( i ); j!= explorer.holes_end( i ); ++j ) {
+				out << "   <!-- hole begin. mark: " << j->mark() << " -->\n";
+				CGAL_Nef_polyhedron2::Explorer::Halfedge_around_face_const_circulator c3( j ), c4 ( c3 );
+				out << dump_cgal_nef_polyhedron2_face_svg( c3, c4, explorer, "green", j->mark(), bbox );
+				out << "   <!-- hole end -->\n";
+			}
+			out << "  <!-- face end -->\n";
+  }
+  out << "</svg>";
 	std::string tmp = out.str();
 	boost::replace_all( tmp, "'", "\"" );
 	return tmp;
@@ -219,29 +219,29 @@ public:
 
 std::string dump_svg( const CGAL_Nef_polyhedron3 &N )
 {
-	std::stringstream out;
+  std::stringstream out;
 	out << svg_header() << "\n" << svg_border() << "\n" << svg_axes() << "\n";
 	out << "<!--CGAL_Nef_polyhedron3 dump begin-->\n";
 
-	CGAL_Nef_polyhedron3::Volume_const_iterator c;
-	CGAL_forall_volumes(c,N) {
-		out << " <!--Processing volume...-->\n";
-		out << "  <!--Mark: " << (*c).mark() << "-->\n";
-		CGAL_Nef_polyhedron3::Shell_entry_const_iterator it;
-		CGAL_forall_shells_of(it,c) {
-			out << "  <!--Processing shell...-->\n";
-			NefPoly3_dumper_svg dumper_svg(N);
-			N.visit_shell_objects(CGAL_Nef_polyhedron3::SFace_const_handle(it), dumper_svg );
+  CGAL_Nef_polyhedron3::Volume_const_iterator c;
+  CGAL_forall_volumes(c,N) {
+    out << " <!--Processing volume...-->\n";
+    out << "  <!--Mark: " << (*c).mark() << "-->\n";
+    CGAL_Nef_polyhedron3::Shell_entry_const_iterator it;
+    CGAL_forall_shells_of(it,c) {
+      out << "  <!--Processing shell...-->\n";
+      NefPoly3_dumper_svg dumper_svg(N);
+      N.visit_shell_objects(CGAL_Nef_polyhedron3::SFace_const_handle(it), dumper_svg );
 			out << dumper_svg.out.str();
-			out << "  <!--Processing shell end-->\n";
-		}
-		out << " <!--Processing volume end-->\n";
-	}
-	out << "<!--CGAL_Nef_polyhedron3 dump end-->\n";
+      out << "  <!--Processing shell end-->\n";
+    }
+    out << " <!--Processing volume end-->\n";
+  }
+  out << "<!--CGAL_Nef_polyhedron3 dump end-->\n";
 	out << "</svg>";
 	std::string tmp = out.str();
 	boost::replace_all( tmp, "'", "\"" );
-	return tmp;
+  return tmp;
 }
 
 } // namespace
