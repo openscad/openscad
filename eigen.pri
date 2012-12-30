@@ -48,14 +48,14 @@ CONFIG(mingw-cross-env) {
 
 isEmpty(EIGEN_INCLUDEPATH) {
   freebsd-g++: EIGEN_INCLUDEPATH = /usr/local/include/eigen3
-  macx: EIGEN_INCLUDEPATH = /opt/local/include/eigen3
-  linux*|hurd*: EIGEN_INCLUDEPATH = /usr/include/eigen3
   netbsd*: EIGEN_INCLUDEPATH = /usr/pkg/include/eigen3
-  !exists($$EIGEN_INCLUDEPATH) {
+  linux*|hurd*|unix: EIGEN_INCLUDEPATH = /usr/include/eigen3
+  macx: EIGEN_INCLUDEPATH = /opt/local/include/eigen3
+  !exists(EIGEN_INCLUDEPATH) {
     freebsd-g++: EIGEN_INCLUDEPATH = /usr/local/include/eigen2
-    macx: EIGEN_INCLUDEPATH = /opt/local/include/eigen2
-    linux*|hurd*: EIGEN_INCLUDEPATH = /usr/include/eigen2
     netbsd*: EIGEN_INCLUDEPATH = /usr/pkg/include/eigen2
+    linux*|hurd*|unix*: EIGEN_INCLUDEPATH = /usr/include/eigen2
+    macx: EIGEN_INCLUDEPATH = /opt/local/include/eigen2
   }
 }
 
@@ -68,5 +68,10 @@ isEmpty(EIGEN_INCLUDEPATH) {
 
 # EIGEN being under 'include/eigen[2-3]' needs special prepending
 QMAKE_INCDIR_QT = $$EIGEN_INCLUDEPATH $$QMAKE_INCDIR_QT
+
+# qmakespecs on netbsd prepend system includes, we need eigen first. 
+netbsd* {
+  QMAKE_CXXFLAGS = -I$$EIGEN_INCLUDEPATH $$QMAKE_CXXFLAGS
+}
 
 } # eigen

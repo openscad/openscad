@@ -31,7 +31,7 @@ if [ ! -f $OPENSCADDIR/openscad.pro ]; then
   exit 1
 fi
 
-OSTYPE=mingw-cross-env ./scripts/release-common.sh -v $VERSION $COMMIT
+./scripts/release-common.sh -v $VERSION $COMMIT mingw32
 
 if [ $? != 0 ]; then
 	echo "release-common.sh returned error code: $?. build stopped."
