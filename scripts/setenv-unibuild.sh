@@ -1,12 +1,8 @@
 # setup environment variables for building OpenSCAD against custom built
-# dependency libraries.
+# dependency libraries. works on Linux/BSD.
 #
-# run with 'source ./scripts/setenv-unibuild.sh'
+# Please see the 'uni-build-dependencies.sh' file for usage information
 #
-# run it every time you re-login and want to build or run openscad
-# against custom libraries installed into BASEDIR.
-#
-# used in conjuction with uni-build-dependencies.sh
 
 setenv_common()
 {
