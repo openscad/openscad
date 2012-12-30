@@ -5,8 +5,7 @@
 # later, as described in the file named 'COPYING' in OpenSCAD's project root.
 
 # This script builds most dependencies, both libraries and binary tools,
-# of OpenSCAD for Linux/BSD. It won't build QT or gcc. It is based on
-# macosx-build-dependencies.sh
+# of OpenSCAD for Linux/BSD. It is based on macosx-build-dependencies.sh
 #
 # By default it builds under $HOME/openscad_deps. You can alter this by
 # setting the BASEDIR environment variable or with the 'out of tree'
