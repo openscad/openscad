@@ -217,7 +217,7 @@
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
-     <string>Help</string>
+     <string>&amp;Help</string>
     </property>
     <addaction name="helpActionAbout"/>
     <addaction name="helpActionHomepage"/>
