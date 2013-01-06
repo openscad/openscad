@@ -34,6 +34,14 @@
 #include <algorithm>
 #include "stl-utils.h"
 #include "printutils.h"
+#include <boost/random/random_device.hpp>
+#include <boost/random/mersenne_twister.hpp>
+#include <boost/random/uniform_real_distribution.hpp>
+
+boost::random::random_device nondeterministic_rng;
+boost::random::mt19937 deterministic_rng;
+
+#include "random_device.cpp"
 
 AbstractFunction::~AbstractFunction()
 {
@@ -131,12 +139,13 @@ double frand(double min, double max)
 
 Value builtin_rands(const Context *, const std::vector<std::string>&, const std::vector<Value> &args)
 {
+	bool deterministic = false;
 	if (args.size() == 3 &&
 			args[0].type() == Value::NUMBER && 
 			args[1].type() == Value::NUMBER && 
 			args[2].type() == Value::NUMBER)
 	{
-		srand((unsigned int)time(0));
+		deterministic = false;
 	}
 	else if (args.size() == 4 && 
 					 args[0].type() == Value::NUMBER && 
@@ -144,7 +153,8 @@ Value builtin_rands(const Context *, const std::vector<std::string>&, const std:
 					 args[2].type() == Value::NUMBER && 
 					 args[3].type() == Value::NUMBER)
 	{
-		srand((unsigned int)args[3].toDouble());
+		deterministic_rng.seed( (unsigned int) args[3].toDouble() );
+		deterministic = true;
 	}
 	else
 	{
@@ -153,7 +163,14 @@ Value builtin_rands(const Context *, const std::vector<std::string>&, const std:
 	
 	Value::VectorType vec;
 	for (int i=0; i<args[2].toDouble(); i++) {
-		vec.push_back(Value(frand(args[0].toDouble(), args[1].toDouble())));
+		double min = std::min( args[0].toDouble(), args[1].toDouble() );
+		double max = std::max( args[0].toDouble(), args[1].toDouble() );
+		boost::random::uniform_real_distribution<> dist( min, max );
+		if ( deterministic ) {
+			vec.push_back( Value( dist( deterministic_rng ) ) );
+		} else {
+			vec.push_back( Value( dist( nondeterministic_rng ) ) );
+		}
 	}
 	
 	return Value(vec);
