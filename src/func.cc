@@ -34,6 +34,14 @@
 #include <algorithm>
 #include "stl-utils.h"
 #include "printutils.h"
+
+/*
+ Random numbers
+
+ Newer versions of boost/C++ include a non-deterministic random_device and
+ auto/bind()s for random function objects, but we are supporting older systems.
+*/
+
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/uniform_real_distribution.hpp>
 
@@ -47,9 +55,7 @@ int process_id = getpid();
 #endif
 
 boost::random::mt19937 deterministic_rng;
-// this is technically not non-deterministic, but boost::random::random_device
-// has non-header library and/or version issues that would complicate the build
-boost::random::mt19937 nondeterministic_rng( std::time(0) + process_id );
+boost::random::mt19937 lessdeterministic_rng( std::time(0) + process_id );
 
 AbstractFunction::~AbstractFunction()
 {
@@ -177,7 +183,7 @@ Value builtin_rands(const Context *, const std::vector<std::string>&, const std:
 		if ( deterministic ) {
 			vec.push_back( Value( distributor( deterministic_rng ) ) );
 		} else {
-			vec.push_back( Value( distributor( nondeterministic_rng ) ) );
+			vec.push_back( Value( distributor( lessdeterministic_rng ) ) );
 		}
 	}
 	
