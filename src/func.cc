@@ -141,16 +141,6 @@ Value builtin_sign(const Context *, const std::vector<std::string>&, const std::
 	return Value();
 }
 
-double frand() 
-{ 
-    return rand()/(double(RAND_MAX)+1); 
-} 
-
-double frand(double min, double max) 
-{ 
-    return (min>max) ? frand()*(min-max)+max : frand()*(max-min)+min;  
-} 
-
 Value builtin_rands(const Context *, const std::vector<std::string>&, const std::vector<Value> &args)
 {
 	bool deterministic = false;
