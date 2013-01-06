@@ -34,14 +34,13 @@
 #include <algorithm>
 #include "stl-utils.h"
 #include "printutils.h"
-#include <boost/random/random_device.hpp>
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/uniform_real_distribution.hpp>
 
-boost::random::random_device nondeterministic_rng;
-boost::random::mt19937 deterministic_rng;
-
-#include "random_device.cpp"
+boost::random::mt19937 deterministic_prng;
+// not technically non-deterministic, but boost::random::random_device has
+// non-header library and/or version issues that would complicate the build
+boost::random::mt19937 nondeterministic_prng( std::time(0) );
 
 AbstractFunction::~AbstractFunction()
 {
@@ -161,15 +160,15 @@ Value builtin_rands(const Context *, const std::vector<std::string>&, const std:
 		return Value();
 	}
 	
+	double min = std::min( args[0].toDouble(), args[1].toDouble() );
+	double max = std::max( args[0].toDouble(), args[1].toDouble() );
+	boost::random::uniform_real_distribution<> distributor( min, max );
 	Value::VectorType vec;
 	for (int i=0; i<args[2].toDouble(); i++) {
-		double min = std::min( args[0].toDouble(), args[1].toDouble() );
-		double max = std::max( args[0].toDouble(), args[1].toDouble() );
-		boost::random::uniform_real_distribution<> dist( min, max );
 		if ( deterministic ) {
-			vec.push_back( Value( dist( deterministic_rng ) ) );
+			vec.push_back( Value( distributor( deterministic_rng ) ) );
 		} else {
-			vec.push_back( Value( dist( nondeterministic_rng ) ) );
+			vec.push_back( Value( distributor( nondeterministic_rng ) ) );
 		}
 	}
 	
