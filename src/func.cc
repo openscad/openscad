@@ -37,10 +37,19 @@
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/uniform_real_distribution.hpp>
 
+#ifdef __WIN32__
+#include <process.h>
+int process_id = _getpid();
+#else
+#include <sys/types.h>
+#include <unistd.h>
+int process_id = getpid();
+#endif
+
 boost::random::mt19937 deterministic_rng;
-// not technically non-deterministic, but boost::random::random_device has
-// non-header library and/or version issues that would complicate the build
-boost::random::mt19937 nondeterministic_rng( std::time(0) );
+// this is technically not non-deterministic, but boost::random::random_device
+// has non-header library and/or version issues that would complicate the build
+boost::random::mt19937 nondeterministic_rng( std::time(0) + process_id );
 
 AbstractFunction::~AbstractFunction()
 {
