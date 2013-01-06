@@ -37,10 +37,10 @@
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/uniform_real_distribution.hpp>
 
-boost::random::mt19937 deterministic_prng;
+boost::random::mt19937 deterministic_rng;
 // not technically non-deterministic, but boost::random::random_device has
 // non-header library and/or version issues that would complicate the build
-boost::random::mt19937 nondeterministic_prng( std::time(0) );
+boost::random::mt19937 nondeterministic_rng( std::time(0) );
 
 AbstractFunction::~AbstractFunction()
 {
