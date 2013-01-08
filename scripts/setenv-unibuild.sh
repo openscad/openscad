@@ -75,30 +75,36 @@ setenv_linux_clang()
 
 setenv_qt5()
 {
- export QTDIR=/opt/qt5
- export PATH=$QTDIR/bin:$PATH
- export LD_LIBRARY_PATH=$QTDIR/lib:$LD_LIBRARY_PATH
- export LD_RUN_PATH=$QTDIR/lib:$LD_RUN_PATH
+ if [ ! $QTDIR ]; then
+  QTDIR=/opt/qt5
+  echo Please set QTDIR before running this qt5 script. Assuming $QTDIR
+ fi
+ PATH=$QTDIR/bin:$PATH
+ LD_LIBRARY_PATH=$QTDIR/lib:$LD_LIBRARY_PATH
+ LD_RUN_PATH=$QTDIR/lib:$LD_RUN_PATH
  if [ "`echo $CC | grep clang`" ]; then
   if [ "`uname | grep -i linux\|debian`" ]; then
-   export QMAKESPEC=linux-clang
+   QMAKESPEC=linux-clang
    echo QMAKESPEC has been modified: $QMAKESPEC
   fi
  fi
 
+ export QTDIR
+ export PATH
+ export LD_LIBRARY_PATH
+ export LD_RUN_PATH
+ export QMAKESPEC
+
+ echo QTDIR is set to: $QTDIR
  echo PATH has been modified with $QTDIR/bin
  echo LD_LIBRARY_PATH has been modified with $QTDIR/lib
  echo LD_RUN_PATH has been modified with $QTDIR/lib
- echo QTDIR has been modified: $QTDIR
 }
 
 if [ "`uname | grep -i 'linux\|debian'`" ]; then
  setenv_common
  if [ "`echo $* | grep clang`" ]; then
   setenv_linux_clang
- fi
- if [ "`echo $* | grep qt5`" ]; then
-  setenv_qt5
  fi
 elif [ "`uname | grep -i freebsd`" ]; then
  setenv_freebsd
@@ -108,4 +114,8 @@ else
  # guess
  setenv_common
  echo unknown system. guessed env variables. see 'setenv-unibuild.sh'
+fi
+
+if [ "`echo $* | grep qt5`" ]; then
+ setenv_qt5
 fi
