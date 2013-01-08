@@ -73,10 +73,32 @@ setenv_linux_clang()
  echo QMAKESPEC has been modified: $QMAKESPEC
 }
 
+setenv_qt5()
+{
+ export QTDIR=/opt/qt5
+ export PATH=$QTDIR/bin:$PATH
+ export LD_LIBRARY_PATH=$QTDIR/lib:$LD_LIBRARY_PATH
+ export LD_RUN_PATH=$QTDIR/lib:$LD_RUN_PATH
+ if [ "`echo $CC | grep clang`" ]; then
+  if [ "`uname | grep -i linux\|debian`" ]; then
+   export QMAKESPEC=linux-clang
+   echo QMAKESPEC has been modified: $QMAKESPEC
+  fi
+ fi
+
+ echo PATH has been modified with $QTDIR/bin
+ echo LD_LIBRARY_PATH has been modified with $QTDIR/lib
+ echo LD_RUN_PATH has been modified with $QTDIR/lib
+ echo QTDIR has been modified: $QTDIR
+}
+
 if [ "`uname | grep -i 'linux\|debian'`" ]; then
  setenv_common
  if [ "`echo $* | grep clang`" ]; then
   setenv_linux_clang
+ fi
+ if [ "`echo $* | grep qt5`" ]; then
+  setenv_qt5
  fi
 elif [ "`uname | grep -i freebsd`" ]; then
  setenv_freebsd

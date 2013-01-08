@@ -31,6 +31,10 @@
 #
 #   . ./scripts/setenv-unibuild.sh clang
 #
+# Enable Qt5 (experimental)
+#
+#   . ./scripts/setenv-unibuild.sh qt5
+#
 
 printUsage()
 {
