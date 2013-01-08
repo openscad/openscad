@@ -34,11 +34,6 @@ setenv_common()
  echo OPENSCAD_LIBRARIES modified
  echo GLEWDIR modified
 
- if [ "`command -v qmake-qt4`" ]; then
- 	echo "Please re-run qmake-qt4 and run 'make clean' if necessary"
- else
- 	echo "Please re-run qmake and run 'make clean' if necessary"
- fi
 }
 
 setenv_freebsd()
@@ -73,8 +68,21 @@ setenv_linux_clang()
  echo QMAKESPEC has been modified: $QMAKESPEC
 }
 
+clean_note()
+{
+ if [ $QT5_SETUP ]; then
+  QMAKEBIN=qmake
+ elif [ "`command -v qmake-qt4`" ]; then
+  QMAKEBIN=qmake-qt4
+ else
+  QMAKEBIN=qmake
+ fi
+ echo "Please re-run" $QMAKEBIN "and run 'make clean' if necessary"
+}
+
 setenv_qt5()
 {
+ QT5_SETUP=true
  if [ ! $QTDIR ]; then
   QTDIR=/opt/qt5
   echo Please set QTDIR before running this qt5 script. Assuming $QTDIR
@@ -83,7 +91,7 @@ setenv_qt5()
  LD_LIBRARY_PATH=$QTDIR/lib:$LD_LIBRARY_PATH
  LD_RUN_PATH=$QTDIR/lib:$LD_RUN_PATH
  if [ "`echo $CC | grep clang`" ]; then
-  if [ "`uname | grep -i linux\|debian`" ]; then
+  if [ "`uname | grep -i linux`" ]; then
    QMAKESPEC=linux-clang
    echo QMAKESPEC has been modified: $QMAKESPEC
   fi
@@ -99,6 +107,8 @@ setenv_qt5()
  echo PATH has been modified with $QTDIR/bin
  echo LD_LIBRARY_PATH has been modified with $QTDIR/lib
  echo LD_RUN_PATH has been modified with $QTDIR/lib
+
+ export QT5_SETUP
 }
 
 if [ "`uname | grep -i 'linux\|debian'`" ]; then
@@ -119,3 +129,6 @@ fi
 if [ "`echo $* | grep qt5`" ]; then
  setenv_qt5
 fi
+
+clean_note
+
