@@ -27,11 +27,7 @@
 #include "highlighter.h"
 #include "parsersettings.h" // extern int parser_error_pos;
 
-#ifdef _QCODE_EDIT_
-Highlighter::Highlighter(QDocument *parent)
-#else
 Highlighter::Highlighter(QTextDocument *parent)
-#endif
 		: QSyntaxHighlighter(parent)
 {
 }

@@ -70,11 +70,6 @@
 #include <QSettings>
 #include <QProgressDialog>
 #include <QMutexLocker>
-#ifdef _QCODE_EDIT_
-#include "qdocument.h"
-#include "qformatscheme.h"
-#include "qlanguagefactory.h"
-#endif
 
 #include <fstream>
 
@@ -186,15 +181,7 @@ MainWindow::MainWindow(const QString &filename)
 	fsteps = 1;
 
 	highlighter = NULL;
-#ifdef _QCODE_EDIT_
-	QFormatScheme *formats = new QFormatScheme("qxs/openscad.qxf");
-	QDocument::setDefaultFormatScheme(formats);
-	QLanguageFactory *languages = new QLanguageFactory(formats,this);
-	languages->addDefinitionPath("qxs");
-	languages->setLanguage(editor, "openscad");
-#else
 	editor->setTabStopWidth(30);
-#endif
 	editor->setLineWrapping(true); // Not designable
 
 	this->glview->statusLabel = new QLabel(this);
@@ -348,13 +335,8 @@ MainWindow::MainWindow(const QString &filename)
 	updateRecentFileActions();
 
 	connect(editor->document(), SIGNAL(contentsChanged()), this, SLOT(animateUpdateDocChanged()));
-#ifdef _QCODE_EDIT_
-	connect(editor, SIGNAL(contentModified(bool)), this, SLOT(setWindowModified(bool)));
-	connect(editor, SIGNAL(contentModified(bool)), fileActionSave, SLOT(setEnabled(bool)));
-#else
 	connect(editor->document(), SIGNAL(modificationChanged(bool)), this, SLOT(setWindowModified(bool)));
 	connect(editor->document(), SIGNAL(modificationChanged(bool)), fileActionSave, SLOT(setEnabled(bool)));
-#endif
 	connect(this->glview, SIGNAL(doAnimateUpdate()), this, SLOT(animateUpdate()));
 
 	connect(Preferences::inst(), SIGNAL(requestRedraw()), this->glview, SLOT(updateGL()));
@@ -483,12 +465,7 @@ void
 MainWindow::openFile(const QString &new_filename)
 {
 #ifdef ENABLE_MDI
-#ifdef _QCODE_EDIT_
-	if (this->editor->document()->lines() > 1 ||
-			!this->editor->document()->text(true, false).trimmed().isEmpty()) {
-#else
 	if (!editor->toPlainText().isEmpty()) {
-#endif
 		new MainWindow(new_filename);
 		clearCurrentOutput();
 		return;
@@ -957,11 +934,7 @@ void MainWindow::hideEditor()
 
 void MainWindow::pasteViewportTranslation()
 {
-#ifdef _QCODE_EDIT_
-	QDocumentCursor cursor = editor->cursor();
-#else
 	QTextCursor cursor = editor->textCursor();
-#endif
 	QString txt;
 	txt.sprintf("[ %.2f, %.2f, %.2f ]", -this->glview->object_trans_x, -this->glview->object_trans_y, -this->glview->object_trans_z);
 	cursor.insertText(txt);
@@ -969,11 +942,7 @@ void MainWindow::pasteViewportTranslation()
 
 void MainWindow::pasteViewportRotation()
 {
-#ifdef _QCODE_EDIT_
-	QDocumentCursor cursor = editor->cursor();
-#else
 	QTextCursor cursor = editor->textCursor();
-#endif
 	QString txt;
 	txt.sprintf("[ %.2f, %.2f, %.2f ]",
 		fmodf(360 - this->glview->object_rot_x + 90, 360), fmodf(360 - this->glview->object_rot_y, 360), fmodf(360 - this->glview->object_rot_z, 360));
@@ -1075,14 +1044,9 @@ bool MainWindow::compileTopLevelDocument(bool reload)
 			this->highlighter = new Highlighter(editor->document());
 
 			if (!animate_panel->isVisible()) {
-#ifdef _QCODE_EDIT_
-				QDocumentCursor cursor = editor->cursor();
-				cursor.setPosition(parser_error_pos);
-#else
 				QTextCursor cursor = editor->textCursor();
 				cursor.setPosition(parser_error_pos);
 				editor->setTextCursor(cursor);
-#endif
 			}
 		}
 	}
