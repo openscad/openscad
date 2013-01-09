@@ -180,7 +180,7 @@ MainWindow::MainWindow(const QString &filename)
 	fps = 0;
 	fsteps = 1;
 
-	highlighter = NULL;
+	highlighter = new Highlighter(editor->document(), Highlighter::NORMAL_MODE);
 	editor->setTabStopWidth(30);
 	editor->setLineWrapping(true); // Not designable
 
@@ -1036,18 +1036,22 @@ bool MainWindow::compileTopLevelDocument(bool reload)
 															QFileInfo(this->fileName).absolutePath().toLocal8Bit(), 
 															false);
 
-		// Error highlighting
-		delete this->highlighter;
-		this->highlighter = NULL;
+		// Syntax & Error highlighting
 		
 		if (!this->root_module) {
-			this->highlighter = new Highlighter(editor->document());
+			if (highlighter->mode==Highlighter::NORMAL_MODE) {
+				delete this->highlighter;
+				highlighter = new Highlighter(editor->document(), Highlighter::ERROR_MODE);
+			}
 
 			if (!animate_panel->isVisible()) {
 				QTextCursor cursor = editor->textCursor();
 				cursor.setPosition(parser_error_pos);
 				editor->setTextCursor(cursor);
 			}
+		} else if (highlighter->mode==Highlighter::ERROR_MODE) {
+			delete this->highlighter;
+			this->highlighter = new Highlighter(editor->document(), Highlighter::NORMAL_MODE);
 		}
 	}
 

@@ -24,16 +24,103 @@
  *
  */
 
+// Syntax Highlight code by Chris Olah
+
 #include "highlighter.h"
 #include "parsersettings.h" // extern int parser_error_pos;
 
-Highlighter::Highlighter(QTextDocument *parent)
+Highlighter::Highlighter(QTextDocument *parent, mode_e mode)
 		: QSyntaxHighlighter(parent)
 {
+	this->mode = mode;
+	operators << "!" << "&&" << "||" << "+" << "-" << "*" << "/" << "%" << "!" << "#" << ";";
+	KeyWords << "for" << "intersection_for" << "if" << "assign"
+		<< "module" << "function"
+		<< "$children" << "child" << "$fn" << "$fa" << "$fb"     // Lump special variables in here
+		<< "union" << "intersection" << "difference" << "render"; //Lump CSG in here
+	Primitives3D << "cube" << "cylinder" << "sphere" << "polyhedron";
+	Primitives2D << "square" << "polygon" << "circle";
+	Transforms << "scale" << "translate" << "rotate" << "multmatrix" << "color"
+		<< "linear_extrude" << "rotate_extrude"; // Lump extrudes in here.
+	Imports << "include" << "use" << "import_stl";
+
+	//this->OperatorStyle.setForeground
+	KeyWordStyle.setForeground(Qt::darkGreen);
+	TransformStyle.setForeground(Qt::darkGreen);
+	PrimitiveStyle3D.setForeground(Qt::darkBlue);
+	PrimitiveStyle2D.setForeground(Qt::blue);
+	ImportStyle.setForeground(Qt::darkYellow);
+	QuoteStyle.setForeground(Qt::darkMagenta);
+	CommentStyle.setForeground(Qt::darkCyan);
+	ErrorStyle.setForeground(Qt::red);
 }
 
 void Highlighter::highlightBlock(const QString &text)
 {
+	if ( mode == NORMAL_MODE) {
+	state_e state = (state_e) previousBlockState();
+	//Key words and Primitives
+	QStringList::iterator it;
+
+	for (it = KeyWords.begin(); it != KeyWords.end(); ++it){
+		for (int i = 0; i < text.count(*it); ++i){
+			setFormat(text.indexOf(*it),it->size(),KeyWordStyle);
+		}
+	}
+	for (it = Primitives3D.begin(); it != Primitives3D.end(); ++it){
+		for (int i = 0; i < text.count(*it); ++i){
+			setFormat(text.indexOf(*it),it->size(),PrimitiveStyle3D);
+		}
+	}
+	for (it = Primitives2D.begin(); it != Primitives2D.end(); ++it){
+		for (int i = 0; i < text.count(*it); ++i){
+			setFormat(text.indexOf(*it),it->size(),PrimitiveStyle2D);
+		}
+	}
+	for (it = Transforms.begin(); it != Transforms.end(); ++it){
+		for (int i = 0; i < text.count(*it); ++i){
+			setFormat(text.indexOf(*it),it->size(),TransformStyle);
+		}
+	}
+	for (it = Imports.begin(); it != Imports.end(); ++it){
+		for (int i = 0; i < text.count(*it); ++i){
+			setFormat(text.indexOf(*it),it->size(),ImportStyle);
+		}
+	}
+
+	// Quoting and Comments.
+	for (int n = 0; n < text.size(); ++n){
+		if (state == NORMAL){
+			if (text[n] == '"'){
+				state = QUOTE;
+				setFormat(n,1,QuoteStyle);
+			} else if (text[n] == '/'){
+				if (text[n+1] == '/'){
+					setFormat(n,text.size(),CommentStyle);
+					break;
+				} else if (text[n+1] == '*'){
+					setFormat(n++,2,CommentStyle);
+					state = COMMENT;
+				}
+			}
+		} else if (state == QUOTE){
+			setFormat(n,1,QuoteStyle);
+			if (text[n] == '"' && text[n-1] != '\\')
+				state = NORMAL;
+		} else if (state == COMMENT){
+			setFormat(n,1,CommentStyle);
+			if (text[n] == '*' && text[n+1] == '/'){
+				setFormat(++n,1,CommentStyle);
+				state = NORMAL;
+			}
+		}
+	}
+
+	} // not ErrorMode (syntax highlighting)
+
+
+	// Errors
+	else if (mode == ERROR_MODE) {
 	int n = previousBlockState();
 	if (n < 0)
 		n = 0;
@@ -49,5 +136,6 @@ void Highlighter::highlightBlock(const QString &text)
 		setFormat(parser_error_pos - n, 1, style);
 #endif
 	}
+	} // if errormode
 }
 
