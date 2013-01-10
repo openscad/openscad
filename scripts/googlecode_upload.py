@@ -4,27 +4,35 @@
 # OpenSCAD Usage:
 #
 # 1. get a google account, get it added to the Google Code OpenSCAD project
-# 2. go to https://code.google.com/hosting/settings to find your password
+# 2. go to https://code.google.com/hosting/settings for username & password
 # -----
 #
 #              security note - 
 #
-#              dont use the ~/.netrc file to store your password
-#              keep your password secret
+#              it's not advisable to use a ~/.netrc file to store your password
+#              keep your googlecode password secret
 #              only upload from a secure machine
 #              user's personal data can be at risk if your account 
-#              is compromised and a fake openscad were to be uploaded
-#
+#              is compromised and a fake openscad were to be uploaded.
+#              notify the OpenSCAD maintainer if your computer is stolen or 
+#              your google account is ever compromised. 
 # -----
 # 4. if you are making a Stable Release, check 'docs/release_checklist.txt'
 # 5. create an OpenSCAD package (linux dev snapshot: ./scripts/release-common.sh)
 # 6. Run this to do the upload:
 #  export SUMMARY="Linux x86-64 Snapshot" # replace as appropriate
 #  export PACKAGEFILE=openscad-2013.01.10.x86-64.tar.gz # replace as appropriate
-#  python ./scripts/googlecode_upload.py -s $SUMMARY -p openscad $PACKAGEFILE
-# 7. Wait.... (there is no progress meter). It should say 'success' eventually.
+#  python ./scripts/googlecode_upload.py -s '$SUMMARY' -p openscad $PACKAGEFILE
+# 7. It will ask for username. Use user.name@gmail.com (include the @ mail address)
+# 8. It will ask for password. Copy/paste the password from the https google code settings page above
+#   Don't use the big bold password, use the 'plain font' password from the 'machine' line
+# 9. Wait.... (there is no progress meter). It should say 'success' eventually.
 #
-# The rest of this file is original from Google.
+# The rest of this file is original from Google with slight modifications by the
+# OpenSCAD team. Modifications licensed under the same license as the
+# original code from google - the Apache Software License 2.0:
+#  http://www.apache.org/licenses/LICENSE-2.0
+
 
 #
 # Copyright 2006, 2007 Google Inc. All Rights Reserved.
@@ -196,7 +204,11 @@ def upload_find_auth(file_path, project_name, summary, labels=None,
   """
   if user_name is None or password is None:
     from netrc import netrc
-    authenticators = netrc().authenticators("code.google.com")
+    authenticators = None
+    try:
+      authenticators = netrc().authenticators("code.google.com")
+    except:
+      print "Error accessing netrc authenticator. Trying alternate method"
     if authenticators:
       if user_name is None:
         user_name = authenticators[0]
