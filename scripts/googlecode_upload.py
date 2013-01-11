@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # Google Code binary package uploader
 # with Insturctions for uploading packages for OpenSCAD
 #
