@@ -155,9 +155,6 @@ Highlighter::Highlighter(QTextDocument *parent)
 	commentFormat.setForeground(Qt::darkCyan);
 	errorFormat.setBackground(Qt::red);
 
-	// format tweaks
-	formatMap[ "%" ].setFontWeight(QFont::Bold);
-
 	lastErrorBlock = parent->begin();
 }
 
@@ -216,13 +213,13 @@ void Highlighter::highlightBlock(const QString &text)
 	QString newtext = text;
 	QStringList splitHelpers;
 	QStringList::iterator sh, token;
-	int tokindex = -1; // tokindex helps w duplicate tokens in a single block
+	// splitHelpers - so "a+b" is treated as "a + b" and formatted
 	splitHelpers << tokentypes["operator"] << "(" << ")" << "[" << "]";
 	for ( sh = splitHelpers.begin(); sh!=splitHelpers.end(); ++sh ) {
-		// so "a+b" is treated as "a + b" and formatted
 		newtext = newtext.replace( *sh, " " + *sh + " ");
 	}
 	QStringList tokens = newtext.split(QRegExp("\\s"));
+	int tokindex = -1; // tokindex helps w duplicate tokens in a single block
 	for ( token = tokens.begin(); token!=tokens.end(); ++token ){
 		if ( formatMap.contains( *token ) ) {
 			tokindex = text.indexOf( *token, tokindex+1 );
