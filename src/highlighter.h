@@ -2,6 +2,8 @@
 #define HIGHLIGHTER_H_
 
 #include <QSyntaxHighlighter>
+#include <QTextFormat>
+#include <QHash>
 
 class Highlighter : public QSyntaxHighlighter
 {
@@ -17,8 +19,9 @@ private:
 	QTextBlock lastErrorBlock;
 	int errorPos;
 	bool errorState;
-  QMap<QString,QStringList> tokentypes;
-  QMap<QString,QTextCharFormat> typeformats;
+	QMap<QString,QStringList> tokentypes;
+	QMap<QString,QTextCharFormat> typeformats;
+	int lastDocumentPos();
 	void portable_rehighlightBlock( const QTextBlock &text );
 };
 

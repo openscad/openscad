@@ -39,8 +39,13 @@
  Also, QT 4.5 and lower do not have rehighlightBlock(), so they will be slow
  on large files as well, as they re-highlight everything after each compile.
 
- The vast majority of OpenSCAD files, however, are not 50,000 lines
+ The vast majority of OpenSCAD files, however, are not 50,000 lines and 
+ most machines ship with Qt > 4.5
 
+ See Also:
+
+ Giles Bathgate's Rapcad lexer-based highlighter: rapcad.org
+ 
  Test suite:
 
 1. action: open example001, remove first {, hit f5
@@ -177,7 +182,7 @@ void Highlighter::highlightError(int error_pos)
 		err_block = err_block.previous();
 		errorPos = err_block.position()+err_block.length() - 2;
 	}
-	if ( errorPos == document()->characterCount()-1 ) {
+	if ( errorPos == lastDocumentPos()-1 ) {
 		errorPos--;
 	}
 
@@ -204,9 +209,21 @@ void Highlighter::portable_rehighlightBlock( const QTextBlock &block )
 #if (QT_VERSION >= QT_VERSION_CHECK(4, 6, 0))
 	rehighlightBlock( block );
 #else
-	rehighlight(); // slow on big files
+	rehighlight(); // slow on very large files
 #endif
 }
+
+int Highlighter::lastDocumentPos()
+{
+// fixme - test it
+#if (QT_VERSION >= QT_VERSION_CHECK(4, 5, 0))
+	return document()->characterCount();
+#else
+	QTextBlock lastblock = document()->lastBlock();
+	return lastblock.position() + lastblock.length();
+#endif
+}
+
 
 void Highlighter::highlightBlock(const QString &text)
 {
