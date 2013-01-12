@@ -24,33 +24,78 @@
  *
  */
 
-// based on Syntax Highlight code by Chris Olah
+/*
+ Syntax Highlighter for OpenSCAD
+ based on Syntax Highlight code by Christopher Olah
 
-/* test suite
+ Speed Note: setFormat() is very slow, making 'full re-highlight' impractical.
+ Thus QT only updates 'blocks' (usually lines).
+
+ Test suite:
 
 1. action: open example001, remove first {, hit f5
-   expected result: red highlight appears on last }, cursor moves there
+   expected result: error highlight appears on last }, cursor moves there
    action: replace first {, hit f5
-   expected result: red highlight disappears
+   expected result: error highlight disappears
 
-2. action: type a=b
-   expected result: '=' is highlighted as appropriate
+1a. action: open example001, remove first {, hit f5
+   expected result: error highlight appears on last }, cursor moves there
+   action: replace first { with the letter 'P', hit f5
+   expected result: error highlight on last } disappears, appears on elsewhere
+   action: replace first {, hit f5
+   expected result: error highlight disappears
 
-3. action: open example001, put '===' after first ;
-   expected result: red highlight appears in ===
+2. action: type a=b into any file
+   expected result: '=' is highlighted with its appropriate format
+
+2a. action: type a=b=c=d=e=f= into any file
+   expected result: each '=' is highlighted with its appropriate format
+
+3. action: open example001, put '===' after first ; hit f5
+   expected result: error highlight appears in ===
    action: remove '==='
-   expected result: red highlight disappears
+   expected result: error highlight disappears
+
+3a. action: open example001, put '=' after first ; hit f5
+   expected result: error highlight appears
+   action: remove '='
+   expected result: error highlight disappears
+
+3b. action: open example001, put '=' after first {
+   expected result: error highlight appears
+   action: remove '='
+   expected result: error highlight disappears
+
+3c. action: open example001, replace first { with '='
+   expected result: error highlight appears
+   action: remove '=', replace with {
+   expected result: error highlight disappears
 
 4. action: open example001, remove last ';' but not trailing whitespace/\n
-   expected result: red highlight appears on last line
+   expected result: error highlight appears somewhere near end
    action: replace last ';'
-   expected result: red highlight disappears
+   expected result: error highlight disappears
 
 5. action: open file, type in a multi-line comment
    expected result: multiline comment should be highlighted appropriately
 
 6. action: open example001, put a single '=' after first {
-   expected result: red highlight of '=' you added
+   expected result: error highlight of '=' you added
+
+7. action: open example001, remove first ')'
+   expected result: highlight should appear appropriately
+
+8. action: create a large file (50,000 lines). eg at a bash prompt:
+     for i in {1..1000}; do cat examples/example001.scad >> test5k.scad ; done
+   action: open file in openscad
+   expected result: there should not be a slowdown due to highlighting
+   action: scroll to bottom, put '=' after last ;
+   expected result: there should be a highlight, and a report of syntax error
+   action: comment out the highlighter code from mainwin.cc, recompile, put '=' after last ;
+   expected result: there should be almost no difference in speed
+
+9. action: open any file, and hold down 'f5' key to repeatedly reparse
+   expected result: no crashing!
 
 */
 
@@ -61,9 +106,6 @@
 Highlighter::Highlighter(QTextDocument *parent)
 		: QSyntaxHighlighter(parent)
 {
-	QMap<QString,QStringList> tokentypes;
-	QMap<QString,QTextCharFormat> typeformats;
-
 	tokentypes["operator"] << "=" << "!" << "&&" << "||" << "+" << "-" << "*" << "/" << "%" << "!" << "#" << ";";
 	typeformats["operator"].setForeground(Qt::blue);
 
@@ -111,19 +153,32 @@ Highlighter::Highlighter(QTextDocument *parent)
 	// format tweaks
 	formatMap[ "%" ].setFontWeight(QFont::Bold);
 
-	separators << tokentypes["operator"];
-	separators << "(" << ")" << "[" << "]";
-
 	lastErrorBlock = parent->begin();
 }
 
 void Highlighter::highlightError(int error_pos)
 {
 	QTextBlock err_block = document()->findBlock(error_pos);
-	std::cout << "error pos: "  << error_pos << " doc len: " << document()->characterCount() << "\n";
+	//std::cout << "error pos: "  << error_pos << " doc len: " << document()->characterCount() << "\n";
 	errorPos = error_pos;
 	errorState = true;
-	//if (errorPos == document()->characterCount()-1) errorPos--;
+
+	while (err_block.text().remove(QRegExp("\\s+")).size()==0) {
+		//std::cout << "special case - errors at end of file w whitespace\n";
+		err_block = err_block.previous();
+		errorPos = err_block.position()+err_block.length() - 2;
+	}
+	if ( errorPos == document()->characterCount()-1 ) {
+		errorPos--;
+	}
+
+	int block_last_pos = err_block.position() + err_block.length() - 1;
+	if ( errorPos == block_last_pos ) {
+		errorPos--;
+		//std::cout << "special case - errors at ends of certain blocks\n";
+	}
+	err_block = document()->findBlock(errorPos);
+
 	rehighlightBlock( err_block ); // QT 4.6
 	errorState = false;
 	lastErrorBlock = err_block;
@@ -131,36 +186,38 @@ void Highlighter::highlightError(int error_pos)
 
 void Highlighter::unhighlightLastError()
 {
-	rehighlightBlock( lastErrorBlock );
+	rehighlightBlock( lastErrorBlock ); // QT 4.6
 }
 
 #include <iostream>
 void Highlighter::highlightBlock(const QString &text)
 {
-	std::cout << "block[" << currentBlock().position() << ":"
-	  << currentBlock().length() + currentBlock().position() << "]"
-	  << ", err:" << errorPos << ", text:'" << text.toStdString() << "'\n";
+	int block_first_pos = currentBlock().position();
+	int block_last_pos = block_first_pos + currentBlock().length() - 1;
+	//std::cout << "block[" << block_first_pos << ":" << block_last_pos << "]"
+	//  << ", err:" << errorPos << "," << errorState
+	//  << ", text:'" << text.toStdString() << "'\n";
 
 	// Split the block into pieces and highlight each as appropriate
 	QString newtext = text;
-	QStringList::iterator sep, token;
-	int tokindex = -1; // deals w duplicate tokens in a single block
-	for ( sep = separators.begin(); sep!=separators.end(); ++sep ) {
-		// so a=b will have '=' highlighted
-		newtext = newtext.replace( *sep, " " + *sep + " ");
+	QStringList splitHelpers;
+	QStringList::iterator sh, token;
+	int tokindex = -1; // tokindex helps w duplicate tokens in a single block
+	splitHelpers << tokentypes["operator"] << "(" << ")" << "[" << "]";
+	for ( sh = splitHelpers.begin(); sh!=splitHelpers.end(); ++sh ) {
+		// so "a+b" is treated as "a + b" and formatted
+		newtext = newtext.replace( *sh, " " + *sh + " ");
 	}
 	QStringList tokens = newtext.split(QRegExp("\\s"));
 	for ( token = tokens.begin(); token!=tokens.end(); ++token ){
 		if ( formatMap.contains( *token ) ) {
 			tokindex = text.indexOf( *token, tokindex+1 );
-			// Speed note: setFormat() is the big slowdown in all of this code
 			setFormat( tokindex, token->size(), formatMap[ *token ]);
 			// std::cout  << "found tok '" << (*token).toStdString() << "' at " << tokindex << "\n";
 		}
 	}
 
 	// Quoting and Comments.
-	// fixme multiline coments dont work
 	state_e state = (state_e) previousBlockState();
 	for (int n = 0; n < text.size(); ++n){
 		if (state == NORMAL){
@@ -188,10 +245,12 @@ void Highlighter::highlightBlock(const QString &text)
 			}
 		}
 	}
+	setCurrentBlockState((int) state);
 
 	// Highlight an error. Do it last to 'overwrite' other formatting.
 	if (errorState) {
-		setFormat( errorPos - currentBlock().position() - 1, 1, errorFormat);
+		setFormat( errorPos - block_first_pos, 1, errorFormat);
 	}
+
 }
 

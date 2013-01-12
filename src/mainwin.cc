@@ -1038,6 +1038,7 @@ bool MainWindow::compileTopLevelDocument(bool reload)
 
 		if (!animate_panel->isVisible()) {
 			if (!this->root_module) {
+				highlighter->unhighlightLastError();
 				QTextCursor cursor = editor->textCursor();
 				cursor.setPosition( parser_error_pos );
 				editor->setTextCursor( cursor );
@@ -1046,6 +1047,7 @@ bool MainWindow::compileTopLevelDocument(bool reload)
 				highlighter->unhighlightLastError();
 			}
 		}
+
 	}
 
 	bool changed = shouldcompiletoplevel;

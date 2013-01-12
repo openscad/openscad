@@ -17,7 +17,8 @@ private:
 	QTextBlock lastErrorBlock;
 	int errorPos = -1;
 	bool errorState = false;
-	QStringList separators;
+  QMap<QString,QStringList> tokentypes;
+  QMap<QString,QTextCharFormat> typeformats;
 };
 
 #endif
