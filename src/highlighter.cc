@@ -24,118 +24,174 @@
  *
  */
 
-// Syntax Highlight code by Chris Olah
+// based on Syntax Highlight code by Chris Olah
+
+/* test suite
+
+1. action: open example001, remove first {, hit f5
+   expected result: red highlight appears on last }, cursor moves there
+   action: replace first {, hit f5
+   expected result: red highlight disappears
+
+2. action: type a=b
+   expected result: '=' is highlighted as appropriate
+
+3. action: open example001, put '===' after first ;
+   expected result: red highlight appears in ===
+   action: remove '==='
+   expected result: red highlight disappears
+
+4. action: open example001, remove last ';' but not trailing whitespace/\n
+   expected result: red highlight appears on last line
+   action: replace last ';'
+   expected result: red highlight disappears
+
+5. action: open file, type in a multi-line comment
+   expected result: multiline comment should be highlighted appropriately
+
+6. action: open example001, put a single '=' after first {
+   expected result: red highlight of '=' you added
+
+*/
 
 #include "highlighter.h"
-#include "parsersettings.h" // extern int parser_error_pos;
+#include <QTextDocument>
 
-Highlighter::Highlighter(QTextDocument *parent, mode_e mode)
+#include <iostream>
+Highlighter::Highlighter(QTextDocument *parent)
 		: QSyntaxHighlighter(parent)
 {
-	this->mode = mode;
-	operators << "!" << "&&" << "||" << "+" << "-" << "*" << "/" << "%" << "!" << "#" << ";";
-	KeyWords << "for" << "intersection_for" << "if" << "assign"
-		<< "module" << "function"
-		<< "$children" << "child" << "$fn" << "$fa" << "$fb"     // Lump special variables in here
-		<< "union" << "intersection" << "difference" << "render"; //Lump CSG in here
-	Primitives3D << "cube" << "cylinder" << "sphere" << "polyhedron";
-	Primitives2D << "square" << "polygon" << "circle";
-	Transforms << "scale" << "translate" << "rotate" << "multmatrix" << "color"
-		<< "linear_extrude" << "rotate_extrude"; // Lump extrudes in here.
-	Imports << "include" << "use" << "import_stl";
+	QMap<QString,QStringList> tokentypes;
+	QMap<QString,QTextCharFormat> typeformats;
 
-	//this->OperatorStyle.setForeground
-	KeyWordStyle.setForeground(Qt::darkGreen);
-	TransformStyle.setForeground(Qt::darkGreen);
-	PrimitiveStyle3D.setForeground(Qt::darkBlue);
-	PrimitiveStyle2D.setForeground(Qt::blue);
-	ImportStyle.setForeground(Qt::darkYellow);
-	QuoteStyle.setForeground(Qt::darkMagenta);
-	CommentStyle.setForeground(Qt::darkCyan);
-	ErrorStyle.setForeground(Qt::red);
+	tokentypes["operator"] << "=" << "!" << "&&" << "||" << "+" << "-" << "*" << "/" << "%" << "!" << "#" << ";";
+	typeformats["operator"].setForeground(Qt::blue);
+
+	tokentypes["keyword"] << "for" << "intersection_for" << "if" << "assign" << "module" << "function";
+	typeformats["keyword"].setForeground(Qt::darkGreen);
+
+	tokentypes["prim3d"] << "cube" << "cylinder" << "sphere" << "polyhedron";
+	typeformats["prim3d"].setForeground(Qt::darkBlue);
+
+	tokentypes["prim2d"] << "square" << "polygon" << "circle";
+	typeformats["prim2d"].setForeground(Qt::blue);
+
+	tokentypes["transform"] << "scale" << "translate" << "rotate" << "multmatrix" << "color" << "projection";
+	typeformats["transform"].setForeground(Qt::darkGreen);
+
+	tokentypes["import"] << "include" << "use" << "import_stl";
+	typeformats["import"].setForeground(Qt::darkYellow);
+
+	tokentypes["special"] << "$children" << "child" << "$fn" << "$fa" << "$fb";
+	typeformats["special"].setForeground(Qt::darkGreen);
+
+	tokentypes["csgop"]	<< "union" << "intersection" << "difference" << "render";
+	typeformats["csgop"].setForeground(Qt::darkGreen);
+
+	tokentypes["extrude"] << "linear_extrude" << "rotate_extrude";
+	typeformats["extrude"].setForeground(Qt::darkGreen);
+
+	// for speed - put all tokens into single QHash, mapped to their format
+	QList<QString>::iterator ki;
+	QList<QString> toktypes = tokentypes.keys();
+	for ( ki=toktypes.begin(); ki!=toktypes.end(); ++ki ) {
+		QString toktype = *ki;
+		QStringList::iterator it;
+		for ( it = tokentypes[toktype].begin(); it < tokentypes[toktype].end(); ++it) {
+			QString token = *it;
+			//std::cout << token.toStdString() << "\n";
+			formatMap[ token ] = typeformats [ toktype ];
+		}
+	}
+
+	quoteFormat.setForeground(Qt::darkMagenta);
+	commentFormat.setForeground(Qt::darkCyan);
+	errorFormat.setBackground(Qt::red);
+
+	// format tweaks
+	formatMap[ "%" ].setFontWeight(QFont::Bold);
+
+	separators << tokentypes["operator"];
+	separators << "(" << ")" << "[" << "]";
+
+	lastErrorBlock = parent->begin();
 }
 
+void Highlighter::highlightError(int error_pos)
+{
+	QTextBlock err_block = document()->findBlock(error_pos);
+	std::cout << "error pos: "  << error_pos << " doc len: " << document()->characterCount() << "\n";
+	errorPos = error_pos;
+	errorState = true;
+	//if (errorPos == document()->characterCount()-1) errorPos--;
+	rehighlightBlock( err_block ); // QT 4.6
+	errorState = false;
+	lastErrorBlock = err_block;
+}
+
+void Highlighter::unhighlightLastError()
+{
+	rehighlightBlock( lastErrorBlock );
+}
+
+#include <iostream>
 void Highlighter::highlightBlock(const QString &text)
 {
-	if ( mode == NORMAL_MODE) {
-	state_e state = (state_e) previousBlockState();
-	//Key words and Primitives
-	QStringList::iterator it;
+	std::cout << "block[" << currentBlock().position() << ":"
+	  << currentBlock().length() + currentBlock().position() << "]"
+	  << ", err:" << errorPos << ", text:'" << text.toStdString() << "'\n";
 
-	for (it = KeyWords.begin(); it != KeyWords.end(); ++it){
-		for (int i = 0; i < text.count(*it); ++i){
-			setFormat(text.indexOf(*it),it->size(),KeyWordStyle);
-		}
+	// Split the block into pieces and highlight each as appropriate
+	QString newtext = text;
+	QStringList::iterator sep, token;
+	int tokindex = -1; // deals w duplicate tokens in a single block
+	for ( sep = separators.begin(); sep!=separators.end(); ++sep ) {
+		// so a=b will have '=' highlighted
+		newtext = newtext.replace( *sep, " " + *sep + " ");
 	}
-	for (it = Primitives3D.begin(); it != Primitives3D.end(); ++it){
-		for (int i = 0; i < text.count(*it); ++i){
-			setFormat(text.indexOf(*it),it->size(),PrimitiveStyle3D);
-		}
-	}
-	for (it = Primitives2D.begin(); it != Primitives2D.end(); ++it){
-		for (int i = 0; i < text.count(*it); ++i){
-			setFormat(text.indexOf(*it),it->size(),PrimitiveStyle2D);
-		}
-	}
-	for (it = Transforms.begin(); it != Transforms.end(); ++it){
-		for (int i = 0; i < text.count(*it); ++i){
-			setFormat(text.indexOf(*it),it->size(),TransformStyle);
-		}
-	}
-	for (it = Imports.begin(); it != Imports.end(); ++it){
-		for (int i = 0; i < text.count(*it); ++i){
-			setFormat(text.indexOf(*it),it->size(),ImportStyle);
+	QStringList tokens = newtext.split(QRegExp("\\s"));
+	for ( token = tokens.begin(); token!=tokens.end(); ++token ){
+		if ( formatMap.contains( *token ) ) {
+			tokindex = text.indexOf( *token, tokindex+1 );
+			// Speed note: setFormat() is the big slowdown in all of this code
+			setFormat( tokindex, token->size(), formatMap[ *token ]);
+			// std::cout  << "found tok '" << (*token).toStdString() << "' at " << tokindex << "\n";
 		}
 	}
 
 	// Quoting and Comments.
+	// fixme multiline coments dont work
+	state_e state = (state_e) previousBlockState();
 	for (int n = 0; n < text.size(); ++n){
 		if (state == NORMAL){
 			if (text[n] == '"'){
 				state = QUOTE;
-				setFormat(n,1,QuoteStyle);
+				setFormat(n,1,quoteFormat);
 			} else if (text[n] == '/'){
 				if (text[n+1] == '/'){
-					setFormat(n,text.size(),CommentStyle);
+					setFormat(n,text.size(),commentFormat);
 					break;
 				} else if (text[n+1] == '*'){
-					setFormat(n++,2,CommentStyle);
+					setFormat(n++,2,commentFormat);
 					state = COMMENT;
 				}
 			}
 		} else if (state == QUOTE){
-			setFormat(n,1,QuoteStyle);
+			setFormat(n,1,quoteFormat);
 			if (text[n] == '"' && text[n-1] != '\\')
 				state = NORMAL;
 		} else if (state == COMMENT){
-			setFormat(n,1,CommentStyle);
+			setFormat(n,1,commentFormat);
 			if (text[n] == '*' && text[n+1] == '/'){
-				setFormat(++n,1,CommentStyle);
+				setFormat(++n,1,commentFormat);
 				state = NORMAL;
 			}
 		}
 	}
 
-	} // not ErrorMode (syntax highlighting)
-
-
-	// Errors
-	else if (mode == ERROR_MODE) {
-	int n = previousBlockState();
-	if (n < 0)
-		n = 0;
-	int k = n + text.size() + 1;
-	setCurrentBlockState(k);
-	if (parser_error_pos >= n && parser_error_pos < k) {
-		QTextCharFormat style;
-		style.setBackground(Qt::red);
-		setFormat(0, text.size(), style);
-#if 0
-		style.setBackground(Qt::black);
-		style.setForeground(Qt::white);
-		setFormat(parser_error_pos - n, 1, style);
-#endif
+	// Highlight an error. Do it last to 'overwrite' other formatting.
+	if (errorState) {
+		setFormat( errorPos - currentBlock().position() - 1, 1, errorFormat);
 	}
-	} // if errormode
 }
 
