@@ -1037,14 +1037,12 @@ bool MainWindow::compileTopLevelDocument(bool reload)
 															false);
 
 		if (!animate_panel->isVisible()) {
+			highlighter->unhighlightLastError();
 			if (!this->root_module) {
-				highlighter->unhighlightLastError();
 				QTextCursor cursor = editor->textCursor();
-				cursor.setPosition( parser_error_pos );
-				editor->setTextCursor( cursor );
+				cursor.setPosition(parser_error_pos);
+				editor->setTextCursor(cursor);
 				highlighter->highlightError( parser_error_pos );
-			} else {
-				highlighter->unhighlightLastError();
 			}
 		}
 

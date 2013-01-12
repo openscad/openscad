@@ -15,8 +15,8 @@ public:
 	void unhighlightLastError();
 private:
 	QTextBlock lastErrorBlock;
-	int errorPos = -1;
-	bool errorState = false;
+	int errorPos;
+	bool errorState;
   QMap<QString,QStringList> tokentypes;
   QMap<QString,QTextCharFormat> typeformats;
 	void portable_rehighlightBlock( const QTextBlock &text );
