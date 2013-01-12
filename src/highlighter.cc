@@ -28,8 +28,13 @@
  Syntax Highlighter for OpenSCAD
  based on Syntax Highlight code by Christopher Olah
 
- Speed Note: setFormat() is very slow, making 'full re-highlight' impractical.
- Thus QT only updates 'blocks' (usually lines).
+ Speed Note:
+
+ setFormat() is very slow. normally this doesnt matter because we
+ only highlight a block or two at once. But when OpenSCAD first starts,
+ QT automatigically calls 'highlightBlock' on every single textblock in the file
+ even if it's not visible in the window. On a large file (50,000 lines) this
+ can take several seconds.
 
  Test suite:
 
@@ -101,8 +106,8 @@
 
 #include "highlighter.h"
 #include <QTextDocument>
+#include <QTextCursor>
 
-#include <iostream>
 Highlighter::Highlighter(QTextDocument *parent)
 		: QSyntaxHighlighter(parent)
 {
@@ -133,7 +138,7 @@ Highlighter::Highlighter(QTextDocument *parent)
 	tokentypes["extrude"] << "linear_extrude" << "rotate_extrude";
 	typeformats["extrude"].setForeground(Qt::darkGreen);
 
-	// for speed - put all tokens into single QHash, mapped to their format
+	// Put all tokens into single QHash, mapped to their format
 	QList<QString>::iterator ki;
 	QList<QString> toktypes = tokentypes.keys();
 	for ( ki=toktypes.begin(); ki!=toktypes.end(); ++ki ) {
@@ -174,22 +179,31 @@ void Highlighter::highlightError(int error_pos)
 
 	int block_last_pos = err_block.position() + err_block.length() - 1;
 	if ( errorPos == block_last_pos ) {
-		errorPos--;
 		//std::cout << "special case - errors at ends of certain blocks\n";
+		errorPos--;
 	}
 	err_block = document()->findBlock(errorPos);
 
-	rehighlightBlock( err_block ); // QT 4.6
+	portable_rehighlightBlock( err_block );
+
 	errorState = false;
 	lastErrorBlock = err_block;
 }
 
 void Highlighter::unhighlightLastError()
 {
-	rehighlightBlock( lastErrorBlock ); // QT 4.6
+	portable_rehighlightBlock( lastErrorBlock );
 }
 
-#include <iostream>
+void Highlighter::portable_rehighlightBlock( const QTextBlock &block )
+{
+#if (QT_VERSION >= QT_VERSION_CHECK(4, 6, 0))
+	rehighlightBlock( block );
+#else
+	rehighlight(); // slow on big files
+#endif
+}
+
 void Highlighter::highlightBlock(const QString &text)
 {
 	int block_first_pos = currentBlock().position();

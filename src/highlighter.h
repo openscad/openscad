@@ -19,6 +19,7 @@ private:
 	bool errorState = false;
   QMap<QString,QStringList> tokentypes;
   QMap<QString,QTextCharFormat> typeformats;
+	void portable_rehighlightBlock( const QTextBlock &text );
 };
 
 #endif
