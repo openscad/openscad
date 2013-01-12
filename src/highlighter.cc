@@ -36,6 +36,11 @@
  even if it's not visible in the window. On a large file (50,000 lines) this
  can take several seconds.
 
+ Also, QT 4.5 and lower do not have rehighlightBlock(), so they will be slow
+ on large files as well, as they re-highlight everything after each compile.
+
+ The vast majority of OpenSCAD files, however, are not 50,000 lines
+
  Test suite:
 
 1. action: open example001, remove first {, hit f5
