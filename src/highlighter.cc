@@ -39,13 +39,13 @@
  Also, QT 4.5 and lower do not have rehighlightBlock(), so they will be slow
  on large files as well, as they re-highlight everything after each compile.
 
- The vast majority of OpenSCAD files, however, are not 50,000 lines and 
+ The vast majority of OpenSCAD files, however, are not 50,000 lines and
  most machines ship with Qt > 4.5
 
  See Also:
 
  Giles Bathgate's Rapcad lexer-based highlighter: rapcad.org
- 
+
  Test suite:
 
 1. action: open example001, remove first {, hit f5
@@ -117,6 +117,7 @@
 #include "highlighter.h"
 #include <QTextDocument>
 #include <QTextCursor>
+//#include <iostream>
 
 Highlighter::Highlighter(QTextDocument *parent)
 		: QSyntaxHighlighter(parent)
@@ -148,6 +149,9 @@ Highlighter::Highlighter(QTextDocument *parent)
 	tokentypes["extrude"] << "linear_extrude" << "rotate_extrude";
 	typeformats["extrude"].setForeground(Qt::darkGreen);
 
+	tokentypes["bracket"] << "[" << "]";
+	typeformats["bracket"].setForeground(Qt::darkGreen);
+
 	// Put all tokens into single QHash, mapped to their format
 	QList<QString>::iterator ki;
 	QList<QString> toktypes = tokentypes.keys();
@@ -164,6 +168,7 @@ Highlighter::Highlighter(QTextDocument *parent)
 	quoteFormat.setForeground(Qt::darkMagenta);
 	commentFormat.setForeground(Qt::darkCyan);
 	errorFormat.setBackground(Qt::red);
+	formatMap["number"].setForeground(Qt::red);
 
 	errorState = false;
 	errorPos = -1;
@@ -172,10 +177,11 @@ Highlighter::Highlighter(QTextDocument *parent)
 
 void Highlighter::highlightError(int error_pos)
 {
-	QTextBlock err_block = document()->findBlock(error_pos);
-	//std::cout << "error pos: "  << error_pos << " doc len: " << document()->characterCount() << "\n";
-	errorPos = error_pos;
 	errorState = true;
+	errorPos = error_pos;
+
+	QTextBlock err_block = document()->findBlock( errorPos );
+	//std::cout << "error pos: "  << error_pos << " doc len: " << document()->characterCount() << "\n";
 
 	while (err_block.text().remove(QRegExp("\\s+")).size()==0) {
 		//std::cout << "special case - errors at end of file w whitespace\n";
@@ -224,7 +230,6 @@ int Highlighter::lastDocumentPos()
 #endif
 }
 
-
 void Highlighter::highlightBlock(const QString &text)
 {
 	int block_first_pos = currentBlock().position();
@@ -237,18 +242,23 @@ void Highlighter::highlightBlock(const QString &text)
 	QString newtext = text;
 	QStringList splitHelpers;
 	QStringList::iterator sh, token;
-	// splitHelpers - so "a+b" is treated as "a + b" and formatted
-	splitHelpers << tokentypes["operator"] << "(" << ")" << "[" << "]";
+	// splitHelpers - so "[a+b]" is treated as "[ a + b ]" and formatted
+	splitHelpers << tokentypes["operator"] << "(" << ")" << "[" << "]" << ",";
 	for ( sh = splitHelpers.begin(); sh!=splitHelpers.end(); ++sh ) {
 		newtext = newtext.replace( *sh, " " + *sh + " ");
 	}
+	//std::cout << "newtext: " << newtext.toStdString() << "\n";
 	QStringList tokens = newtext.split(QRegExp("\\s"));
-	int tokindex = -1; // tokindex helps w duplicate tokens in a single block
+	int tokindex = 0; // tokindex helps w duplicate tokens in a single block
+	bool numtest;
 	for ( token = tokens.begin(); token!=tokens.end(); ++token ){
+		tokindex = text.indexOf( *token, tokindex );
 		if ( formatMap.contains( *token ) ) {
-			tokindex = text.indexOf( *token, tokindex+1 );
 			setFormat( tokindex, token->size(), formatMap[ *token ]);
-			// std::cout  << "found tok '" << (*token).toStdString() << "' at " << tokindex << "\n";
+			//std::cout  << "found tok '" << (*token).toStdString() << "' at " << tokindex << "\n";
+		} else {
+			(*token).toDouble( &numtest );
+			if ( numtest ) setFormat( tokindex, token->size(), formatMap["number"] );
 		}
 	}
 
