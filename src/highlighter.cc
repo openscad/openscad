@@ -40,7 +40,7 @@
  on large files as well, as they re-highlight everything after each compile.
 
  The vast majority of OpenSCAD files, however, are not 50,000 lines and
- most machines ship with Qt > 4.5
+ most machines have Qt > 4.5
 
  See Also:
 
@@ -112,11 +112,18 @@
 9. action: open any file, and hold down 'f5' key to repeatedly reparse
    expected result: no crashing!
 
+10. action: for i in examples/ex* ; do ./openscad $i ; done
+    expected result: make sure the colors look harmonious
+
+11. action: type random string of [][][][]()()[][90,3904,00,000]
+    expected result: all should be highlighted correctly
+
 */
 
 #include "highlighter.h"
 #include <QTextDocument>
 #include <QTextCursor>
+#include <QColor>
 //#include <iostream>
 
 Highlighter::Highlighter(QTextDocument *parent)
@@ -125,34 +132,41 @@ Highlighter::Highlighter(QTextDocument *parent)
 	tokentypes["operator"] << "=" << "!" << "&&" << "||" << "+" << "-" << "*" << "/" << "%" << "!" << "#" << ";";
 	typeformats["operator"].setForeground(Qt::blue);
 
-	tokentypes["keyword"] << "for" << "intersection_for" << "if" << "assign" << "module" << "function";
-	typeformats["keyword"].setForeground(Qt::darkGreen);
+	tokentypes["keyword"] << "module" << "function" << "for" << "intersection_for" << "if" << "assign";
+	typeformats["keyword"].setForeground(QColor("Green"));
+	typeformats["keyword"].setToolTip("Keyword");
+
+	tokentypes["transform"] << "scale" << "translate" << "rotate" << "multmatrix" << "color" << "projection" << "hull";
+	typeformats["transform"].setForeground(QColor("Indigo"));
+
+	tokentypes["csgop"]	<< "union" << "intersection" << "difference" << "render";
+	typeformats["csgop"].setForeground(QColor("DarkGreen"));
 
 	tokentypes["prim3d"] << "cube" << "cylinder" << "sphere" << "polyhedron";
-	typeformats["prim3d"].setForeground(Qt::darkBlue);
+	typeformats["prim3d"].setForeground(QColor("DarkBlue"));
 
 	tokentypes["prim2d"] << "square" << "polygon" << "circle";
-	typeformats["prim2d"].setForeground(Qt::blue);
+	typeformats["prim2d"].setForeground(QColor("MidnightBlue"));
 
-	tokentypes["transform"] << "scale" << "translate" << "rotate" << "multmatrix" << "color" << "projection";
-	typeformats["transform"].setForeground(Qt::darkGreen);
-
-	tokentypes["import"] << "include" << "use" << "import_stl";
+	tokentypes["import"] << "include" << "use" << "import_stl" << "import" << "import_dxf" << "dxf_dim" << "dxf_cross";
 	typeformats["import"].setForeground(Qt::darkYellow);
 
 	tokentypes["special"] << "$children" << "child" << "$fn" << "$fa" << "$fb";
 	typeformats["special"].setForeground(Qt::darkGreen);
 
-	tokentypes["csgop"]	<< "union" << "intersection" << "difference" << "render";
-	typeformats["csgop"].setForeground(Qt::darkGreen);
-
 	tokentypes["extrude"] << "linear_extrude" << "rotate_extrude";
 	typeformats["extrude"].setForeground(Qt::darkGreen);
 
-	tokentypes["bracket"] << "[" << "]";
-	typeformats["bracket"].setForeground(Qt::darkGreen);
+	tokentypes["bracket"] << "[" << "]" << "(" << ")";
+	typeformats["bracket"].setForeground(QColor("Green"));
 
-	// Put all tokens into single QHash, mapped to their format
+	tokentypes["curlies"] << "{" << "}";
+	typeformats["curlies"].setForeground(QColor(32,32,20));
+
+	tokentypes["bool"] << "true" << "false";
+	typeformats["bool"].setForeground(QColor("DarkRed"));
+
+	// Put each tokens into single QHash, mapped to it's format
 	QList<QString>::iterator ki;
 	QList<QString> toktypes = tokentypes.keys();
 	for ( ki=toktypes.begin(); ki!=toktypes.end(); ++ki ) {
@@ -161,14 +175,14 @@ Highlighter::Highlighter(QTextDocument *parent)
 		for ( it = tokentypes[toktype].begin(); it < tokentypes[toktype].end(); ++it) {
 			QString token = *it;
 			//std::cout << token.toStdString() << "\n";
-			formatMap[ token ] = typeformats [ toktype ];
+			tokenFormats[ token ] = typeformats [ toktype ];
 		}
 	}
 
 	quoteFormat.setForeground(Qt::darkMagenta);
 	commentFormat.setForeground(Qt::darkCyan);
 	errorFormat.setBackground(Qt::red);
-	formatMap["number"].setForeground(Qt::red);
+	numberFormat.setForeground(QColor("DarkRed"));
 
 	errorState = false;
 	errorPos = -1;
@@ -243,22 +257,28 @@ void Highlighter::highlightBlock(const QString &text)
 	QStringList splitHelpers;
 	QStringList::iterator sh, token;
 	// splitHelpers - so "[a+b]" is treated as "[ a + b ]" and formatted
-	splitHelpers << tokentypes["operator"] << "(" << ")" << "[" << "]" << ",";
+	splitHelpers << tokentypes["operator"] << "(" << ")" << "[" << "]" << "," << ":";
 	for ( sh = splitHelpers.begin(); sh!=splitHelpers.end(); ++sh ) {
 		newtext = newtext.replace( *sh, " " + *sh + " ");
 	}
-	//std::cout << "newtext: " << newtext.toStdString() << "\n";
+	//std::cout << "\nnewtext: " << newtext.toStdString() << "\n";
 	QStringList tokens = newtext.split(QRegExp("\\s"));
 	int tokindex = 0; // tokindex helps w duplicate tokens in a single block
 	bool numtest;
 	for ( token = tokens.begin(); token!=tokens.end(); ++token ){
-		tokindex = text.indexOf( *token, tokindex );
-		if ( formatMap.contains( *token ) ) {
-			setFormat( tokindex, token->size(), formatMap[ *token ]);
+		if ( tokenFormats.contains( *token ) ) {
+			tokindex = text.indexOf( *token, tokindex );
+			setFormat( tokindex, token->size(), tokenFormats[ *token ]);
 			//std::cout  << "found tok '" << (*token).toStdString() << "' at " << tokindex << "\n";
+			tokindex += token->size();
 		} else {
 			(*token).toDouble( &numtest );
-			if ( numtest ) setFormat( tokindex, token->size(), formatMap["number"] );
+			if ( numtest ) {
+				tokindex = text.indexOf( *token, tokindex );
+				setFormat( tokindex, token->size(), numberFormat );
+				//std::cout  << "found num '" << (*token).toStdString() << "' at " << tokindex << "\n";
+				tokindex += token->size();
+			}
 		}
 	}
 

@@ -9,8 +9,8 @@ class Highlighter : public QSyntaxHighlighter
 {
 public:
 	enum state_e {NORMAL=-1,QUOTE,COMMENT};
-	QHash<QString, QTextCharFormat> formatMap;
-	QTextCharFormat errorFormat, commentFormat, quoteFormat;
+	QHash<QString, QTextCharFormat> tokenFormats;
+	QTextCharFormat errorFormat, commentFormat, quoteFormat, numberFormat;
 	Highlighter(QTextDocument *parent);
 	void highlightBlock(const QString &text);
 	void highlightError(int error_pos);
