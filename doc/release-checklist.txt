@@ -43,9 +43,15 @@ o Remove VERSION environment variable
 o  git push --tags
 
 o Upload
-  - Github
-    Upload manually here: https://github.com/openscad/openscad/downloads
-    FIXME: Write a script
+  - Source:
+      scripts/googlecode_upload.py -s 'Source Code' -p openscad OpenSCAD-2013.01.08.dmg -l Featured,Type-Source openscad-$VERSION.src.tar.gz
+  - Linux:
+      scripts/googlecode_upload.py -s 'Linux Binaries' -p openscad OpenSCAD-2013.01.08.dmg -l Featured,OpSys-Linux,Type-Archive openscad-$VERSION.x86-32.tar.gz
+      scripts/googlecode_upload.py -s 'Linux Binaries' -p openscad OpenSCAD-2013.01.08.dmg -l Featured,OpSys-Linux,Type-Archive openscad-$VERSION.x86-64.tar.gz
+  - Windows:
+      scripts/googlecode_upload.py -s 'Windows Binaries' -p openscad OpenSCAD-2013.01.08.dmg -l Featured,OpSys-Windows,Type-Archive OpenSCAD-$VERSION.zip
+      scripts/googlecode_upload.py -s 'Windows Installer' -p openscad OpenSCAD-2013.01.08.dmg -l Featured,OpSys-Windows,Type-Installer OpenSCAD-$VERSION-Installer.exe
+  - Mac: Already done by public-macosx.sh
 
 o Update web page
 o Write email to mailing list
