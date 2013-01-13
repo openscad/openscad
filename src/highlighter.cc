@@ -235,7 +235,6 @@ void Highlighter::portable_rehighlightBlock( const QTextBlock &block )
 
 int Highlighter::lastDocumentPos()
 {
-// fixme - test it
 #if (QT_VERSION >= QT_VERSION_CHECK(4, 5, 0))
 	return document()->characterCount();
 #else
