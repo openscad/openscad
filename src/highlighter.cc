@@ -94,28 +94,26 @@
 5. action: open file, type in a multi-line comment
    expected result: multiline comment should be highlighted appropriately
 
-6. action: open example001, put a single '=' after first {
-   expected result: error highlight of '=' you added
-
-7. action: open example001, remove first ')'
+6. action: open example001, remove first ')'
    expected result: highlight should appear appropriately
 
-8. action: create a large file (50,000 lines). eg at a bash prompt:
-     for i in {1..1000}; do cat examples/example001.scad >> test5k.scad ; done
+7. action: create a large file (50,000 lines). eg at a bash prompt:
+     for i in {1..2000}; do cat examples/example001.scad >> test5k.scad ; done
    action: open file in openscad
-   expected result: there should not be a slowdown due to highlighting
+   expected result: it should load in a reasonable amount of time
    action: scroll to bottom, put '=' after last ;
    expected result: there should be a highlight, and a report of syntax error
-   action: comment out the highlighter code from mainwin.cc, recompile, put '=' after last ;
-   expected result: there should be almost no difference in speed
+   action: comment out the highlighter code from mainwin.cc, recompile,
+    run openscad again on the large file. put '=' after last ;
+   expected result: there should be only a small difference in speed.
 
-9. action: open any file, and hold down 'f5' key to repeatedly reparse
+8. action: open any file, and hold down 'f5' key to repeatedly reparse
    expected result: no crashing!
 
-10. action: for i in examples/ex* ; do ./openscad $i ; done
+9. action: for i in examples/ex* ; do ./openscad $i ; done
     expected result: make sure the colors look harmonious
 
-11. action: type random string of [][][][]()()[][90,3904,00,000]
+10. action: type random string of [][][][]()()[][90,3904,00,000]
     expected result: all should be highlighted correctly
 
 */
