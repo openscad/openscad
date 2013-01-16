@@ -1,4 +1,4 @@
-OpenSCAD 2012.11
+OpenSCAD 2013.01
 ================
 
 Features:
@@ -26,6 +26,8 @@ o cmd-line overrides using -D now also work for USEd modules
 o Modifier characters can now be used in front of if statements
 o rotate() with a vector argument with less that 3 elements used uninitialized variables, ending up being non-deterministic.
 o .csg files will now have relative filenames whenever possible
+o Don't just ignore geometric nodes having zero volume/area - when doing difference/intersection, they tend to turn negative objects into positive ones.
+o Always use utf-8 file encoding, also under Windows
 o A lot of build script fixes
 o Some other crash bugs fixes
 
