@@ -195,7 +195,9 @@ Then run the script to download & compile all the prerequisite libraries above:
 
     ./scripts/mingw-x-build-dependencies.sh
 
-Then, build OpenSCAD and package it to an installer:
+Note that this process can take several hours, as it uses the 
+http://mxe.cc system to cross-build many libraries. After it is 
+complete, build OpenSCAD and package it to an installer:
 
     ./scripts/release-common.sh mingw32
 
