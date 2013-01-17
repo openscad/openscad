@@ -61,7 +61,7 @@ CGAL_Nef_polyhedron &CGAL_Nef_polyhedron::minkowski(const CGAL_Nef_polyhedron &o
 
 int CGAL_Nef_polyhedron::weight() const
 {
-	if (this->empty()) return 0;
+	if (this->isNull()) return 0;
 
 	size_t memsize = sizeof(CGAL_Nef_polyhedron);
 	if (this->dim == 2) {
@@ -84,8 +84,7 @@ int CGAL_Nef_polyhedron::weight() const
 */
 PolySet *CGAL_Nef_polyhedron::convertToPolyset()
 {
-	if (this->empty())
-		return new PolySet();
+	if (this->isNull()) return new PolySet();
 	PolySet *ps = NULL;
 	if (this->dim == 2) {
 		ps = new PolySet();

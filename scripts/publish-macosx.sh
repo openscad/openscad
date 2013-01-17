@@ -6,6 +6,7 @@
 if test -z "$VERSION"; then
   VERSION=`date "+%Y.%m.%d"`
   COMMIT=-c
+  SNAPSHOT=true
 fi
 
 # Turn off ccache, just for safety
@@ -24,10 +25,11 @@ echo "Sanity check of the app bundle..."
 if [[ $? != 0 ]]; then
   exit 1
 fi
-cp OpenSCAD-$VERSION.dmg ~/Dropbox/Public
-ln -sf OpenSCAD-$VERSION.dmg ~/Dropbox/Public/OpenSCAD-latest.dmg
 
-echo "Upload in progress..."
+echo "Uploading..."
+LABELS=OpSys-OSX,Type-Executable
+if ! $SNAPSHOT; then LABELS=$LABELS,Featured; fi
+`dirname $0`/googlecode_upload.py -s 'Mac OS X Snapshot' -p openscad OpenSCAD-$VERSION.dmg -l $LABELS
 
 # Update snapshot filename on wab page
 `dirname $0`/update-web.sh OpenSCAD-$VERSION.dmg

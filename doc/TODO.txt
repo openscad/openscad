@@ -113,6 +113,7 @@ o Misc
     for confirmation.
   - Go through keyboard shortcuts and make them more conformant to platform standards
   - Show design info/stats (sizes, caches etc.)
+  - Support Voice Over and related technologies for vision-impaired users
 o Cmd-line
   - Add verbose option (PRINT command from mainwin.cc and progress output)
 
@@ -135,6 +136,7 @@ o Hollow donut problem
   rendering keeps the hole, but renders slightly incorrect.
 o CGAL issues
   - CGAL doesn't handle almost planar polygons. Consider splitting into triangles ourselves. See WillamAdams/dodec.scad
+o Look at the EPEC kernel for improved performance (suggested by Giles)
 
 LANGUAGE && BUILTINS
 --------------------

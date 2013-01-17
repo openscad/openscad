@@ -43,7 +43,11 @@
 
 CGALRenderer::CGALRenderer(const CGAL_Nef_polyhedron &root) : root(root)
 {
-	if (root.dim == 2) {
+	if (this->root.isNull()) {
+		this->polyhedron = NULL;
+		this->polyset = NULL;
+	}
+	else if (root.dim == 2) {
 		DxfData *dd = root.convertToDxfData();
 		this->polyhedron = NULL;
 		this->polyset = new PolySet();
@@ -67,10 +71,6 @@ CGALRenderer::CGALRenderer(const CGAL_Nef_polyhedron &root) : root(root)
 		CGAL::OGL::Nef3_Converter<CGAL_Nef_polyhedron3>::convert_to_OGLPolyhedron(*this->root.p3, this->polyhedron);
 		this->polyhedron->init();
 	}
-	else {
-		this->polyhedron = NULL;
-		this->polyset = NULL;
-	}
 }
 
 CGALRenderer::~CGALRenderer()
@@ -81,6 +81,7 @@ CGALRenderer::~CGALRenderer()
 
 void CGALRenderer::draw(bool showfaces, bool showedges) const
 {
+	if (this->root.isNull()) return;
 	if (this->root.dim == 2) {
 		// Draw 2D polygons
 		glDisable(GL_LIGHTING);

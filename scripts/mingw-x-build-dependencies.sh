@@ -41,8 +41,9 @@ if [ ! -e $BASEDIR ]; then
 fi
 
 if [ ! -e $MXEDIR ]; then
-	echo "Downloading MXE into " $MXEDIR
+	mkdir -p $MXEDIR
 	cd $MXEDIR/..
+	echo "Downloading MXE into " $PWD
 	git clone git://github.com/mxe/mxe.git
 fi
 

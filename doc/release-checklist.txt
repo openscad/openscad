@@ -1,6 +1,8 @@
 OpenSCAD Release Checklist
 --------------------------
 
+(See bottom of this file for how to build release binaries)
+
 o Update VERSION environment variable
 
   export VERSION=2012.08
@@ -19,22 +21,7 @@ o Tag release
 o build source package
   scripts/git-archive-all.py --prefix=openscad-$VERSION/ openscad-$VERSION.src.tar.gz
 
-o build binaries
-  tar xzf openscad-$VERSION.src.tar.gz
-  cd openscad-$VERSION
-  Mac OS X
-    (For Qt-4.7.3: Remove /Developers/Applications/Qt/plugins/qmltooling)
-    ./scripts/publish-macosx.sh -> OpenSCAD-$VERSION.dmg
-  Linux:
-    32-bit: run on a 32-bit machine or VM
-    64-bit: run on a 64-bit machine or VM
-    ./scripts/release-common.sh -> openscad-$VERSION.x86-ARCH.tar.gz
-    (where ARCH will be detected and set to 32 or 64)
-  Windows mingw cross-build: FIXME 32 vs. 64 bit
-    ./scripts/publish-mingw-x.sh -> mingw32/Openscad-$VERSION.zip
-                                 -> mingw32/Openscad-$VERSION-Installer.exe
-
-o FIXME: Run some tests
+o Sanity check; build a binary or two and manually run some tests
 
 o Remove VERSION environment variable
 
@@ -42,10 +29,8 @@ o Remove VERSION environment variable
 
 o  git push --tags
 
-o Upload
-  - Github
-    Upload manually here: https://github.com/openscad/openscad/downloads
-    FIXME: Write a script
+o Upload Source package
+  $ ./scripts/googlecode_upload.py -s 'Source Code' -p openscad openscad-$VERSION.src.tar.gz -l Featured,Type-Source openscad-$VERSION.src.tar.gz
 
 o Update web page
 o Write email to mailing list
@@ -53,3 +38,33 @@ o Update external resources:
   - http://en.wikipedia.org/wiki/OpenSCAD
 o Notify package managers
   - Ubuntu: https://launchpad.net/~chrysn
+  - MacPorts: 
+
+
+Build and Upload Release Binaries
+---------------------------------
+
+$ export VERSION=<openscad version, e.g. 2013.01>
+$ tar xzf openscad-$VERSION.src.tar.gz
+$ cd openscad-$VERSION
+
+Mac OS X:
+
+    $ ./scripts/publish-macosx.sh -> OpenSCAD-$VERSION.dmg
+
+Linux:
+    32-bit: run on a 32-bit machine or VM
+    64-bit: run on a 64-bit machine or VM
+
+    $ ./scripts/release-common.sh -> openscad-$VERSION.x86-ARCH.tar.gz
+    (where ARCH will be detected and set to 32 or 64)
+    $ ./scripts/googlecode_upload.py -s 'Linux Binaries' -p openscad openscad-$VERSION.x86-ARCH.tar.gz -l Featured,OpSys-Linux,Type-Archive openscad-$VERSION.x86-ARCH.tar.gz
+    o Update web page with download links
+
+Windows mingw cross-build: FIXME 32 vs. 64 bit
+
+    $ ./scripts/publish-mingw-x.sh -> mingw32/Openscad-$VERSION.zip
+                                   -> mingw32/Openscad-$VERSION-Installer.exe
+    $ ./scripts/googlecode_upload.py -s 'Windows Binaries' -p openscad OpenSCAD-$VERSION.zip -l Featured,OpSys-Windows,Type-Archive OpenSCAD-$VERSION.zip
+    $ ./scripts/googlecode_upload.py -s 'Windows Installer' -p openscad OpenSCAD-$VERSION-Installer.exe -l Featured,OpSys-Windows,Type-Installer OpenSCAD-$VERSION-Installer.exe
+    o Update web page with download links

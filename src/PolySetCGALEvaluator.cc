@@ -134,11 +134,11 @@ PolySet *PolySetCGALEvaluator::evaluatePolySet(const ProjectionNode &node)
 		if (v->modinst->isBackground()) continue;
 		CGAL_Nef_polyhedron N = this->cgalevaluator.evaluateCGALMesh(*v);
 		if (N.dim == 3) {
-			if (sum.empty()) sum = N.copy();
+			if (sum.isNull()) sum = N.copy();
 			else sum += N;
 		}
 	}
-	if (sum.empty()) return NULL;
+	if (sum.isNull()) return NULL;
 	if (!sum.p3->is_simple()) {
 		if (!node.cut_mode) {
 			PRINT("WARNING: Body of projection(cut = false) isn't valid 2-manifold! Modify your design..");
@@ -149,7 +149,7 @@ PolySet *PolySetCGALEvaluator::evaluatePolySet(const ProjectionNode &node)
 	//std::cout << sum.dump();
 	//std::cout.flush();
 
-	CGAL_Nef_polyhedron nef_poly;
+	CGAL_Nef_polyhedron nef_poly(2);
 
 	if (node.cut_mode) {
 		CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
@@ -180,7 +180,7 @@ PolySet *PolySetCGALEvaluator::evaluatePolySet(const ProjectionNode &node)
 			}
 		}
 
-		if ( sum.p3->is_empty() ) {
+		if (sum.p3->is_empty()) {
 			CGAL::set_error_behaviour(old_behaviour);
 			PRINT("WARNING: projection() failed.");
 			return NULL;
@@ -204,7 +204,6 @@ PolySet *PolySetCGALEvaluator::evaluatePolySet(const ProjectionNode &node)
 				log << "<!-- volume end. -->\n";
 			}
 			nef_poly.p2 = zremover.output_nefpoly2d;
-			nef_poly.dim = 2;
 		}	catch (const CGAL::Failure_exception &e) {
 			PRINTB("CGAL error in projection node while flattening: %s", e.what());
 		}
@@ -284,8 +283,7 @@ PolySet *PolySetCGALEvaluator::evaluatePolySet(const ProjectionNode &node)
 					plist.push_back(p);
 			}
 			// FIXME: Should the CGAL_Nef_polyhedron2 be cached?
-			if (nef_poly.empty()) {
-				nef_poly.dim = 2;
+			if (nef_poly.isEmpty()) {
 				nef_poly.p2.reset(new CGAL_Nef_polyhedron2(plist.begin(), plist.end(), CGAL_Nef_polyhedron2::INCLUDED));
 			}
 			else {
@@ -385,18 +383,18 @@ PolySet *PolySetCGALEvaluator::evaluatePolySet(const LinearExtrudeNode &node)
 		BOOST_FOREACH (AbstractNode * v, node.getChildren()) {
 			if (v->modinst->isBackground()) continue;
 			CGAL_Nef_polyhedron N = this->cgalevaluator.evaluateCGALMesh(*v);
-			if (!N.empty()) {
+			if (!N.isNull()) {
 				if (N.dim != 2) {
 					PRINT("ERROR: linear_extrude() is not defined for 3D child objects!");
 				}
 				else {
-					if (sum.empty()) sum = N.copy();
+					if (sum.isNull()) sum = N.copy();
 					else sum += N;
 				}
 			}
 		}
 
-		if (sum.empty()) return NULL;
+		if (sum.isNull()) return NULL;
 		dxf = sum.convertToDxfData();;
 	} else {
 		dxf = new DxfData(node.fn, node.fs, node.fa, node.filename, node.layername, node.origin_x, node.origin_y, node.scale);
@@ -485,18 +483,18 @@ PolySet *PolySetCGALEvaluator::evaluatePolySet(const RotateExtrudeNode &node)
 		BOOST_FOREACH (AbstractNode * v, node.getChildren()) {
 			if (v->modinst->isBackground()) continue;
 			CGAL_Nef_polyhedron N = this->cgalevaluator.evaluateCGALMesh(*v);
-			if (!N.empty()) {
+			if (!N.isNull()) {
 				if (N.dim != 2) {
 					PRINT("ERROR: rotate_extrude() is not defined for 3D child objects!");
 				}
 				else {
-					if (sum.empty()) sum = N.copy();
+					if (sum.isNull()) sum = N.copy();
 					else sum += N;
 				}
 			}
 		}
 
-		if (sum.empty()) return NULL;
+		if (sum.isNull()) return NULL;
 		dxf = sum.convertToDxfData();
 	} else {
 		dxf = new DxfData(node.fn, node.fs, node.fa, node.filename, node.layername, node.origin_x, node.origin_y, node.scale);
@@ -511,7 +509,7 @@ PolySet *PolySetCGALEvaluator::evaluatePolySet(const CgaladvNode &node)
 {
 	CGAL_Nef_polyhedron N = this->cgalevaluator.evaluateCGALMesh(node);
 	PolySet *ps = NULL;
-	if (!N.empty()) {
+	if (!N.isNull()) {
 		ps = N.convertToPolyset();
 		if (ps) ps->convexity = node.convexity;
 	}
@@ -523,7 +521,7 @@ PolySet *PolySetCGALEvaluator::evaluatePolySet(const RenderNode &node)
 {
 	CGAL_Nef_polyhedron N = this->cgalevaluator.evaluateCGALMesh(node);
 	PolySet *ps = NULL;
-	if (!N.empty()) {
+	if (!N.isNull()) {
 		if (N.dim == 3 && !N.p3->is_simple()) {
 			PRINT("WARNING: Body of render() isn't valid 2-manifold!");
 		}

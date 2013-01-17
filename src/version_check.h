@@ -1,12 +1,12 @@
-// version_check.h copyright 2012 don bright. released under the GPL 2, or
-// later, as described in the file named 'COPYING' in OpenSCAD's project root.
-// permission to change this license is given to Marius Kintel & Clifford Wolf
+// version_check.h by don bright 2012. Copyright assigned to Marius Kintel and
+// Clifford Wolf 2012. Released under the GPL 2, or later, as described in
+// the file named 'COPYING' in OpenSCAD's project root.
 
 /* This file will check versions of libraries at compile time. If they
 are too old, the user will be warned. If the user wishes to force
 compilation, they can run
 
- qmake CONFIG=skip-version-check
+ qmake CONFIG+=skip-version-check
 
 Otherwise they will be guided to README.md and an -build-dependencies script.
 
@@ -66,6 +66,9 @@ a time, to avoid confusion.
 #warning "."
 #warning "."
 #warning "======================="
+#ifdef __clang__
+#error For Clang to work, CGAL must be >= 4.0.2
+#endif
 #endif // CGAL_VERSION_NR < 10400010000
 #endif //ENABLE_CGAL
 

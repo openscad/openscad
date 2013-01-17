@@ -773,7 +773,6 @@ set_test_config(Heavy opencsgtest_minkowski3-tests
                       cgalpngtest_minkowski3-tests
                       cgalpngtest_for-tests
                       cgalpngtest_for-nested-tests
-                      cgalpngtest_difference-tests
                       cgalpngtest_intersection-tests)
 
 foreach(FILE ${EXAMPLE_FILES})

@@ -90,12 +90,26 @@ unix:!macx {
 }
 
 netbsd* {
-   LIBS += -L/usr/X11R7/lib
+   QMAKE_LFLAGS += -L/usr/X11R7/lib
    QMAKE_LFLAGS += -Wl,-R/usr/X11R7/lib
    QMAKE_LFLAGS += -Wl,-R/usr/pkg/lib
    !isEmpty(OPENSCAD_LIBDIR) {
-     QMAKE_LFLAGS += -Wl,-R$$OPENSCAD_LIBDIR/lib
+     QMAKE_CFLAGS = -I$$OPENSCAD_LIBDIR/include $$QMAKE_CFLAGS
+     QMAKE_CXXFLAGS = -I$$OPENSCAD_LIBDIR/include $$QMAKE_CXXFLAGS
+     QMAKE_LFLAGS = -L$$OPENSCAD_LIBDIR/lib $$QMAKE_LFLAGS
+     QMAKE_LFLAGS = -Wl,-R$$OPENSCAD_LIBDIR/lib $$QMAKE_LFLAGS
    }
+}
+
+# Prevent LD_LIBRARY_PATH problems when running the openscad binary
+# on systems where uni-build-dependencies.sh was used. 
+# Will not affect 'normal' builds.
+!isEmpty(OPENSCAD_LIBDIR) {
+  unix:!macx {
+    QMAKE_LFLAGS = -Wl,-R$$OPENSCAD_LIBDIR/lib $$QMAKE_LFLAGS
+    # need /lib64 beause GLEW installs itself there on 64 bit machines
+    QMAKE_LFLAGS = -Wl,-R$$OPENSCAD_LIBDIR/lib64 $$QMAKE_LFLAGS 
+  }
 }
 
 # See Dec 2011 OpenSCAD mailing list, re: CGAL/GCC bugs.
