@@ -7,6 +7,9 @@ export QMAKESPEC=macx-g++
 #export QCODEEDITDIR=$PWD/../qcodeedit-2.2.3/install
 #export DYLD_LIBRARY_PATH=$OPENCSGDIR/lib:$QCODEEDITDIR/lib
 
+# Own own Qt
+export PATH=$OPENSCAD_LIBRARIES/bin:$PATH
+
 # ccache:
 export PATH=/opt/local/libexec/ccache:$PATH
 export CCACHE_BASEDIR=$PWD/..
