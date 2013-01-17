@@ -1768,11 +1768,13 @@ void MainWindow::helpLibrary()
 	libinfo.sprintf("Boost version: %s\n"
 									"Eigen version: %d.%d.%d\n"
 									"CGAL version: %s\n"
-									"OpenCSG version: %s\n\n",
+									"OpenCSG version: %s\n"
+									"Qt version: %s\n\n",
 									BOOST_LIB_VERSION,
 									EIGEN_WORLD_VERSION, EIGEN_MAJOR_VERSION, EIGEN_MINOR_VERSION,
 									TOSTRING(CGAL_VERSION),
-									OPENCSG_VERSION_STRING);
+									OPENCSG_VERSION_STRING,
+									qVersion());
 
 	if (!this->openglbox) {
 		this->openglbox = new QMessageBox(QMessageBox::Information, 
