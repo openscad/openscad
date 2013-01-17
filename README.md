@@ -186,8 +186,9 @@ attempt an MSVC build on Windows, please see this site:
 http://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Building_on_Windows
 
 To cross-build, first make sure that you have development tools 
-installed to get GCC. Then after you've cloned this git repository, run 
-the script that sets up the environment variables.
+installed to get GCC. Then after you've cloned this git repository, 
+start a new clean shell and run the script that sets up the environment 
+variables.
 
     source ./scripts/setenv-mingw-xbuild.sh
 
