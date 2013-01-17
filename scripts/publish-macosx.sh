@@ -1,7 +1,7 @@
 #!/bin/sh
 
-# Set this if we're doing a release build. Comment it out for development builds
-#VERSION=2011.12
+# NB! To build a release build, the VERSION environment variable needs to be set.
+# See doc/release-checklist.txt
 
 if test -z "$VERSION"; then
   VERSION=`date "+%Y.%m.%d"`
