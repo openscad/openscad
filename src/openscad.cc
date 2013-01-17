@@ -304,8 +304,19 @@ int main(int argc, char **argv)
 			fs::current_path(original_path);
 			
 			if (deps_output_file) {
-				if (!write_deps(deps_output_file, 
-												stl_output_file ? stl_output_file : off_output_file)) {
+				std::string deps_out( deps_output_file );
+				std::string geom_out;
+				if ( stl_output_file ) geom_out = std::string(stl_output_file);
+				else if ( off_output_file ) geom_out = std::string(off_output_file);
+				else if ( dxf_output_file ) geom_out = std::string(dxf_output_file);
+				else {
+					PRINTB("Output file:%s\n",output_file);
+					PRINT("Sorry, don't know how to write deps for that file type. Exiting\n");
+					exit(1);
+				}
+				int result = write_deps( deps_out, geom_out );
+				if ( !result ) {
+					PRINT("error writing deps");
 					exit(1);
 				}
 			}
