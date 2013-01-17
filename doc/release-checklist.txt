@@ -14,6 +14,7 @@ o Update VERSION environment variable
   scripts/publish-mingw-x.sh
 
 o Update RELEASE_NOTES
+o Update copyright year in AboutDialog.html and mainwin.cc
 
 o Tag release
   git tag "openscad-$VERSION"
@@ -23,14 +24,13 @@ o build source package
 
 o Sanity check; build a binary or two and manually run some tests
 
-o Remove VERSION environment variable
-
-  export VERSION=
-
 o  git push --tags
 
 o Upload Source package
-  $ ./scripts/googlecode_upload.py -s 'Source Code' -p openscad openscad-$VERSION.src.tar.gz -l Featured,Type-Source openscad-$VERSION.src.tar.gz
+  $ ./scripts/googlecode_upload.py -s 'Source Code' -p openscad -l Featured,Type-Source openscad-$VERSION.src.tar.gz
+
+o Remove VERSION environment variable
+  $ unset VERSION
 
 o Update web page
 o Write email to mailing list
