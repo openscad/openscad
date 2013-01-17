@@ -13,11 +13,9 @@
 #
 # Prerequisites:
 # - MacPorts: curl, cmake
-# - Qt4
 #
 # FIXME:
 # o Verbose option
-# o Port to other platforms?
 #
 
 BASEDIR=$PWD/../libraries
@@ -39,6 +37,25 @@ printUsage()
   echo "  -6   Build only 64-bit binaries"
   echo "  -l   Force use of LLVM compiler"
   echo "  -c   Force use of clang compiler"
+}
+
+# FIXME: Support gcc/llvm/clang flags. Use -platform <whatever> to make this work? kintel 20130117
+build_qt()
+{
+  version=$1
+  echo "Building Qt" $version "..."
+  cd $BASEDIR/src
+  rm -rf qt-everywhere-opensource-src-$version
+  if [ ! -f qt-everywhere-opensource-src-$version.tar.gz ]; then
+    curl -O http://releases.qt-project.org/qt4/source/qt-everywhere-opensource-src-$version.tar.gz
+  fi
+  tar xzf qt-everywhere-opensource-src-$version.tar.gz
+  cd qt-everywhere-opensource-src-$version
+  if $OPTION_32BIT; then
+    QT_32BIT="-arch x86"
+  fi
+  ./configure -prefix $DEPLOYDIR -release $QT_32BIT -arch x86_64 -opensource -confirm-license -fast -no-qt3support -no-svg -no-phonon -no-audio-backend -no-multimedia -no-javascript-jit -no-script -no-scripttools -no-declarative -no-xmlpatterns -nomake demos -nomake examples -nomake docs -nomake translations -no-webkit
+  make -j6 install
 }
 
 # Hack warning: gmplib is built separately in 32-bit and 64-bit mode
@@ -365,8 +382,9 @@ fi
 
 echo "Using basedir:" $BASEDIR
 mkdir -p $SRCDIR $DEPLOYDIR
+build_qt 4.8.4
 build_eigen 3.1.2
-build_gmp 5.0.5
+build_gmp 5.1.0
 build_mpfr 3.1.1
 build_boost 1.51.0
 # NB! For CGAL, also update the actual download URL in the function
