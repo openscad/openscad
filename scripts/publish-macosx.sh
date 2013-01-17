@@ -15,6 +15,9 @@ PATH=${PATH//\/opt\/local\/libexec\/ccache:}
 # This is the same location as DEPLOYDIR in macosx-build-dependencies.sh
 export OPENSCAD_LIBRARIES=$PWD/../libraries/install
 
+# Make sure that the correct Qt tools are used
+export PATH=$OPENSCAD_LIBRARIES/bin:$PATH
+
 `dirname $0`/release-common.sh -v $VERSION $COMMIT
 if [[ $? != 0 ]]; then
   exit 1
