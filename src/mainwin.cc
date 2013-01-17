@@ -462,6 +462,7 @@ void MainWindow::report_func(const class AbstractNode*, void *vp, int mark)
 		QApplication::processEvents();
 	}
 
+	// FIXME: Check if cancel was requested by e.g. Application quit
 	if (thisp->progresswidget->wasCanceled()) throw ProgressCancelException();
 }
 
@@ -1847,6 +1848,7 @@ void MainWindow::quit()
 	QCloseEvent ev;
 	QApplication::sendEvent(QApplication::instance(), &ev);
 	if (ev.isAccepted()) QApplication::instance()->quit();
+  // FIXME: Cancel any CGAL calculations
 }
 
 void MainWindow::consoleOutput(const std::string &msg, void *userdata)
