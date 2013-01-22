@@ -86,7 +86,8 @@ public:
 				std::vector<CGAL_Nef_polyhedron2::Explorer::Point> contour;
 				CGAL_For_all( c1, cend ) {
 					CGAL_Nef_polyhedron3::Point_3 point3d = c1->source()->target()->point();
-					CGAL_Nef_polyhedron2::Explorer::Point point2d( point3d.x(), point3d.y() );
+					CGAL_Nef_polyhedron2::Explorer::Point point2d(CGAL::to_double(point3d.x()),
+																												CGAL::to_double(point3d.y()));
 					contour.push_back( point2d );
 				}
 
