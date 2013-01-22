@@ -1,7 +1,6 @@
 #include "editor.h"
 #include "Preferences.h"
 
-#ifndef _QCODE_EDIT_
 void Editor::indentSelection()
 {
 	QTextCursor cursor = textCursor();
@@ -109,4 +108,3 @@ void Editor::wheelEvent ( QWheelEvent * event )
 	}
 }
 
-#endif
