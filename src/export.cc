@@ -195,20 +195,7 @@ void export_dxf(CGAL_Nef_polyhedron *root_N, std::ostream &output)
 	setlocale(LC_NUMERIC, "");      // Set default locale
 }
 
-void export_png_with_cgal(CGAL_Nef_polyhedron *root_N, std::ostream &output)
-{
-	output << "solid OpenSCAD_Model\n";
-	output << "endsolid OpenSCAD_Model\n";
-}
-
-void export_png_with_opencsg(CGAL_Nef_polyhedron *root_N, std::ostream &output)
-{
-	output << "solid OpenSCAD_Model opencsg\n";
-	output << "endsolid OpenSCAD_Model opencsg\n";
-}
-
-
-#endif
+#endif // ENABLE_CGAL
 
 #ifdef DEBUG
 #include <boost/foreach.hpp>

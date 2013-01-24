@@ -236,7 +236,8 @@ HEADERS += src/version_check.h \
            src/OffscreenView.h \
            src/fbo.h \
            src/imageutils.h \
-           src/system-gl.h
+           src/system-gl.h \
+           src/CsgInfo.h
 
 SOURCES += src/version_check.cc \
            src/ProgressWidget.cc \
@@ -286,6 +287,7 @@ SOURCES += src/version_check.cc \
            \
            src/builtin.cc \
            src/export.cc \
+           src/export_png.cc \
            src/import.cc \
            src/renderer.cc \
            src/ThrownTogetherRenderer.cc \
