@@ -1,5 +1,6 @@
 #include "lodepng.h"
 #include <stdio.h>
+#include <stdlib.h>
 
 bool write_png(const char *filename, unsigned char *pixels, int width, int height)
 {

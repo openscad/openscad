@@ -8,9 +8,3 @@ void flip_image(const unsigned char *src, unsigned char *dst, size_t pixelsize, 
     memmove(dst + (height - i - 1) * rowBytes, src + i * rowBytes, rowBytes);
   }
 }
-
-#ifdef __APPLE__
-#include "imageutils-macosx.cc"
-#else
-#include "imageutils-lodepng.cc"
-#endif

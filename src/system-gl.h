@@ -2,15 +2,9 @@
 #define SYSTEMGL_H_
 
 #include <GL/glew.h>
+#include <string>
 
-#ifdef __APPLE__
- #include <OpenGL/OpenGL.h>
-#else
- #include <GL/gl.h>
- #include <GL/glu.h>
- #ifdef _WIN32
-  #include <windows.h> // For the CALLBACK macro
- #endif
-#endif
+std::string glew_dump(bool dumpall=false);
+bool report_glerror(const char *task);
 
 #endif

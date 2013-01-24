@@ -235,7 +235,8 @@ HEADERS += src/version_check.h \
            src/OffscreenContext.h \
            src/OffscreenView.h \
            src/fbo.h \
-           src/imageutils.h
+           src/imageutils.h \
+           src/system-gl.h
 
 SOURCES += src/version_check.cc \
            src/ProgressWidget.cc \
@@ -295,6 +296,8 @@ SOURCES += src/version_check.cc \
            src/svg.cc \
            src/OffscreenView.cc \
            src/fbo.cc \
+           src/system-gl.cc \
+           src/imageutils.cc \
            \
            src/openscad.cc \
            src/mainwin.cc

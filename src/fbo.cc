@@ -59,7 +59,7 @@ bool check_fbo_status()
 	else if (status == GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE_EXT)
 		cerr << "GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE_EXT\n";
 	else
-		cerr << "Unknown Code: glCheckFramebufferStatusEXT returned %i\n",status;
+		cerr << "Unknown Code: glCheckFramebufferStatusEXT returned:" <<status <<"\n";
 	return result;
 }
 
