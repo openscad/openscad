@@ -229,7 +229,13 @@ HEADERS += src/version_check.h \
            src/linalg.h \
            src/system-gl.h \
            src/stl-utils.h \
-           src/svg.h
+           src/svg.h \
+           \
+           src/lodepng.h \
+           src/OffscreenContext.h \
+           src/OffscreenView.h \
+           src/fbo.h \
+           src/imageutils.h
 
 SOURCES += src/version_check.cc \
            src/ProgressWidget.cc \
@@ -287,9 +293,24 @@ SOURCES += src/version_check.cc \
            src/dxftess-cgal.cc \
            src/CSGTermEvaluator.cc \
            src/svg.cc \
+           src/OffscreenView.cc \
+           src/fbo.cc \
            \
            src/openscad.cc \
            src/mainwin.cc
+
+unix:!macx {
+  SOURCES += src/OffscreenContextGLX.cc
+  SOURCES += src/imageutils-lodepng.cc
+}
+macx {
+  SOURCES += src/OffscreenContext.mm
+  SOURCES += src/imageutils-macosx.cc
+}
+win32* {
+  SOURCES += src/OffscreenContextWGL.cc
+  SOURCES += src/imageutils-lodepng.cc
+}
 
 opencsg {
   HEADERS += src/OpenCSGRenderer.h
