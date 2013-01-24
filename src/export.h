@@ -8,6 +8,8 @@
 void export_stl(class CGAL_Nef_polyhedron *root_N, std::ostream &output);
 void export_off(CGAL_Nef_polyhedron *root_N, std::ostream &output);
 void export_dxf(CGAL_Nef_polyhedron *root_N, std::ostream &output);
+void export_png_with_cgal(CGAL_Nef_polyhedron *root_N, std::ostream &output);
+void export_png_with_opencsg(CGAL_Nef_polyhedron *root_N, std::ostream &output);
 
 #endif
 
