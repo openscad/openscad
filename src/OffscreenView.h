@@ -8,6 +8,7 @@
 #ifndef _MSC_VER
 #include <stdint.h>
 #endif
+#include "system-gl.h"
 
 class OffscreenView
 {
