@@ -298,6 +298,7 @@ SOURCES += src/version_check.cc \
            src/fbo.cc \
            src/system-gl.cc \
            src/imageutils.cc \
+           src/lodepng.cpp \
            \
            src/openscad.cc \
            src/mainwin.cc
