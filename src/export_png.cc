@@ -3,10 +3,12 @@
 #include "OffscreenView.h"
 #include "CsgInfo.h"
 #include <stdio.h>
+#include "polyset.h"
+
+#ifdef ENABLE_CGAL
 #include "CGALRenderer.h"
 #include "CGAL_renderer.h"
 #include "cgal.h"
-#ifdef ENABLE_CGAL
 
 void export_png_with_cgal(CGAL_Nef_polyhedron *root_N, std::ostream &output)
 {
@@ -21,8 +23,9 @@ void export_png_with_cgal(CGAL_Nef_polyhedron *root_N, std::ostream &output)
 	BoundingBox bbox;
 	if (cgalRenderer.polyhedron) {
 		CGAL::Bbox_3 cgalbbox = cgalRenderer.polyhedron->bbox();
-		bbox = BoundingBox(Vector3d(cgalbbox.xmin(), cgalbbox.ymin(), cgalbbox.zmin()),
-		  Vector3d(cgalbbox.xmax(), cgalbbox.ymax(), cgalbbox.zmax()));
+		bbox = BoundingBox(
+		  Vector3d(cgalbbox.xmin(), cgalbbox.ymin(), cgalbbox.zmin()),
+		  Vector3d(cgalbbox.xmax(), cgalbbox.ymax(), cgalbbox.zmax())  );
 	}
 	else if (cgalRenderer.polyset) {
 		bbox = cgalRenderer.polyset->getBoundingBox();
@@ -33,6 +36,8 @@ void export_png_with_cgal(CGAL_Nef_polyhedron *root_N, std::ostream &output)
 
 	Vector3d cameradir(1, 1, -0.5);
 	Vector3d camerapos = center - radius*2*cameradir;
+	output << center << "\n";
+	output << radius << "\n";
 /*
 	csgInfo.glview->setCamera(camerapos, center);
 	csgInfo.glview->setRenderer(&cgalRenderer);
