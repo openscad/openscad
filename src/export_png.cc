@@ -38,12 +38,12 @@ void export_png_with_cgal(CGAL_Nef_polyhedron *root_N, std::ostream &output)
 	Vector3d camerapos = center - radius*2*cameradir;
 	output << center << "\n";
 	output << radius << "\n";
-/*
+
 	csgInfo.glview->setCamera(camerapos, center);
 	csgInfo.glview->setRenderer(&cgalRenderer);
-        csgInfo.glview->paintGL();
-        csgInfo.glview->save(outfile);
-*/
+	csgInfo.glview->paintGL();
+	csgInfo.glview->save("test.png");
+
 	output << "solid OpenSCAD_Model\n";
 	output << "endsolid OpenSCAD_Model\n";
 }
