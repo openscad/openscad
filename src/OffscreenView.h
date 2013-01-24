@@ -32,14 +32,15 @@ public:
 private:
 	Renderer *renderer;
 	double w_h_ratio;
-	Eigen::Vector3d object_rot;
-	Eigen::Vector3d camera_eye;
-	Eigen::Vector3d camera_center;
 
 	bool orthomode;
 	bool showaxes;
 	bool showfaces;
 	bool showedges;
+
+	Eigen::Vector3d object_rot;
+	Eigen::Vector3d camera_eye;
+	Eigen::Vector3d camera_center;
 };
 
 #endif
