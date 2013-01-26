@@ -9,6 +9,7 @@
 #include <stdint.h>
 #endif
 #include "system-gl.h"
+#include <iostream>
 
 class OffscreenView
 {
@@ -24,6 +25,7 @@ public:
 	void setupOrtho(bool offset=false);
 	void paintGL();
 	bool save(const char *filename);
+	bool save(std::ostream &output);
 	std::string getInfo();
 
 	GLint shaderinfo[11];

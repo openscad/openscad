@@ -1,7 +1,7 @@
 #ifndef OFFSCREENCONTEXT_H_
 #define OFFSCREENCONTEXT_H_
 
-#include <iostream>         // for error output
+#include <iostream>
 #include <string>
 
 struct OffscreenContext *create_offscreen_context(int w, int h);

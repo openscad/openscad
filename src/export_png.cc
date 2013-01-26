@@ -17,6 +17,7 @@ void export_png_with_cgal(CGAL_Nef_polyhedron *root_N, std::ostream &output)
 		csgInfo.glview = new OffscreenView(512,512);
 	} catch (int error) {
 		fprintf(stderr,"Can't create OpenGL OffscreenView. Code: %i.\n", error);
+		return;
 	}
 	CGALRenderer cgalRenderer(*root_N);
 

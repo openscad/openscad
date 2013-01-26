@@ -232,7 +232,6 @@ HEADERS += src/version_check.h \
            src/svg.h \
            \
            src/lodepng.h \
-           src/OffscreenContext.h \
            src/OffscreenView.h \
            src/fbo.h \
            src/imageutils.h \
@@ -306,16 +305,16 @@ SOURCES += src/version_check.cc \
            src/mainwin.cc
 
 unix:!macx {
-  SOURCES += src/OffscreenContextGLX.cc
   SOURCES += src/imageutils-lodepng.cc
+  SOURCES += src/OffscreenContextGLX.cc
 }
 macx {
-  SOURCES += src/OffscreenContext.mm
   SOURCES += src/imageutils-macosx.cc
+  SOURCES += src/OffscreenContextCGL.mm
 }
 win32* {
-  SOURCES += src/OffscreenContextWGL.cc
   SOURCES += src/imageutils-lodepng.cc
+  SOURCES += src/OffscreenContextWGL.cc
 }
 
 opencsg {
