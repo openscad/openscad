@@ -45,6 +45,7 @@ See Also
 #include <GL/glx.h>
 
 #include <assert.h>
+#include <fstream>
 #include <sstream>
 
 #include <sys/utsname.h> // for uname
@@ -300,8 +301,24 @@ bool teardown_offscreen_context(OffscreenContext *ctx)
 */
 bool save_framebuffer(OffscreenContext *ctx, const char *filename)
 {
+	std::ofstream fstream(filename);
+	if (!fstream.is_open()) {
+		PRINTB("Can't open file \"%s\" for writing", filename);
+		return false;
+	} else {
+		save_framebuffer(ctx, fstream);
+		fstream.close();
+	}
+	return true;
+}
+
+/*!
+  Capture framebuffer from OpenGL and write it to the given ostream
+*/
+bool save_framebuffer(OffscreenContext *ctx, std::ostream &output)
+{
   glXSwapBuffers(ctx->xdisplay, ctx->xwindow);
-  if (!ctx || !filename) return false;
+  if (!ctx) return false;
   int samplesPerPixel = 4; // R, G, B and A
   GLubyte pixels[ctx->width * ctx->height * samplesPerPixel];
   glReadPixels(0, 0, ctx->width, ctx->height, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
@@ -315,7 +332,7 @@ bool save_framebuffer(OffscreenContext *ctx, const char *filename)
   }
   flip_image(pixels, flippedBuffer, samplesPerPixel, ctx->width, ctx->height);
 
-  bool writeok = write_png(filename, flippedBuffer, ctx->width, ctx->height);
+  bool writeok = write_png(output, flippedBuffer, ctx->width, ctx->height);
 
   free(flippedBuffer);
 

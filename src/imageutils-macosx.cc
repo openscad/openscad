@@ -11,12 +11,12 @@ size_t write_bytes_to_ostream (void *info,const void *buffer,size_t count)
 	size_t startpos = output->tellp();
 	size_t endpos = startpos;
 	try {
-		output->write( reinterpret_cast<const char *>buffer, count );
+		output->write( (const char *)buffer, count );
 		endpos = output->tellp();
 	} catch (const std::ios_base::failure& e)
-    std::cerr << "Error writing to ostream:" << e.what() << "\n";
+		std::cerr << "Error writing to ostream:" << e.what() << "\n";
 	}
-	return endpos-startpos;
+	return (endpos-startpos);
 }
 
 CGDataConsumerRef dataconsumer CGDataConsumerCreateWithOstream(std::ostream &output)
@@ -48,8 +48,8 @@ bool write_png(std::ostream &output, unsigned char *pixels, int width, int heigh
     return false;
   }
 
-	CGDataConsumerRef dataconsumer = CGDataConsumerCreateWithOstream(output);
-	/*
+  CGDataConsumerRef dataconsumer = CGDataConsumerCreateWithOstream(output);
+  /*
   CFStringRef fname = CFStringCreateWithCString(kCFAllocatorDefault, filename, kCFStringEncodingUTF8);
   CFURLRef fileURL = CFURLCreateWithFileSystemPath(kCFAllocatorDefault,
                                                   fname, kCFURLPOSIXPathStyle, false);
@@ -59,7 +59,7 @@ bool write_png(std::ostream &output, unsigned char *pixels, int width, int heigh
   }
 
 	CGDataConsumerRef dataconsumer = CGDataConsumerCreateWithURL(fileURL);
-	*/
+  */
 
   CFIndex                 fileImageIndex = 1;
   CFMutableDictionaryRef  fileDict       = NULL;
