@@ -576,15 +576,6 @@ void MainWindow::refreshDocument()
 	setCurrentOutput();
 }
 
-/*AbstractNode *MainWindow::find_root_tag(AbstractNode *n)
-{
-	BOOST_FOREACH (AbstractNode *v, n->children) {
-		if (v->modinst->isRoot()) return v;
-		if (AbstractNode *vroot = find_root_tag(v)) return vroot;
-	}
-	return NULL;
-}*/
-
 /*!
 	Parse and evaluate the design => this->root_node
 

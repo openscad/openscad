@@ -65,15 +65,6 @@ CsgInfo::CsgInfo() {
         glview = NULL;
 }
 
-/*AbstractNode *find_root_tag(AbstractNode *n)
-{
-	foreach(AbstractNode *v, n->children) {
-		if (v->modinst->tag_root) return v;
-		if (AbstractNode *vroot = find_root_tag(v)) return vroot;
-	}
-	return NULL;
-}*/
-
 string info_dump(OffscreenView *glview)
 {
 	assert(glview);
