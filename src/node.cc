@@ -103,6 +103,7 @@ std::ostream &operator<<(std::ostream &stream, const AbstractNode &node)
 	return stream;
 }
 
+// Do we have an explicit root node (! modifier)?
 AbstractNode *find_root_tag(AbstractNode *n)
 {
   BOOST_FOREACH(AbstractNode *v, n->children) {
