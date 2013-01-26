@@ -233,6 +233,8 @@ HEADERS += src/version_check.h \
            \
            src/lodepng.h \
            src/OffscreenView.h \
+           src/OffscreenContext.h \
+           src/OffscreenContextAll.hpp \
            src/fbo.h \
            src/imageutils.h \
            src/system-gl.h \
