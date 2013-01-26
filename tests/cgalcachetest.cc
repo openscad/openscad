@@ -70,14 +70,14 @@ void cgalTree(Tree &tree)
 	evaluate.execute();
 }
 
-AbstractNode *find_root_tag(AbstractNode *n)
+/*AbstractNode *find_root_tag(AbstractNode *n)
 {
 	foreach(AbstractNode *v, n->children) {
 		if (v->modinst->tag_root) return v;
 		if (AbstractNode *vroot = find_root_tag(v)) return vroot;
 	}
 	return NULL;
-}
+}*/
 
 po::variables_map parse_options(int argc, char *argv[])
 {

@@ -265,6 +265,7 @@ int main(int argc, char **argv)
 		Module *root_module;
 		ModuleInstantiation root_inst;
 		AbstractNode *root_node;
+		AbstractNode *absolute_root_node;
 
 		handle_dep(filename);
 		
@@ -286,7 +287,13 @@ int main(int argc, char **argv)
 		fs::current_path(fparent);
 
 		AbstractNode::resetIndexCounter();
+		absolute_root_node = root_module->evaluate(&root_ctx, &root_inst);
 		root_node = root_module->evaluate(&root_ctx, &root_inst);
+
+		// Do we have an explicit root node (! modifier)?
+		if (!(root_node = find_root_tag(absolute_root_node)))
+	    root_node = absolute_root_node;
+
 		tree.setRoot(root_node);
 
 		if (csg_output_file) {
