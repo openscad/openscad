@@ -386,7 +386,7 @@ int main(int argc, char **argv)
 			}
 
 			if (png_output_file) {
-				std::ofstream fstream(png_output_file);
+				std::ofstream fstream(png_output_file,std::ios::out|std::ios::binary);
 				if (!fstream.is_open()) {
 					PRINTB("Can't open file \"%s\" for export", png_output_file);
 				}

@@ -5,7 +5,6 @@
 // Objective-C with C++, it is a bit different than what's found in a textbook.
 
 #include <iostream>
-#include <fstream>
 #include <string>
 #include "fbo.h"
 

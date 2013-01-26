@@ -45,7 +45,6 @@ See Also
 #include <GL/glx.h>
 
 #include <assert.h>
-#include <fstream>
 #include <sstream>
 
 #include <sys/utsname.h> // for uname
