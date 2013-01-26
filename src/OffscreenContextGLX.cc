@@ -62,6 +62,8 @@ struct OffscreenContext
   fbo_t *fbo;
 };
 
+#include "OffscreenContextAll.hpp"
+
 void offscreen_context_init(OffscreenContext &ctx, int width, int height)
 {
   ctx.width = width;
@@ -296,30 +298,9 @@ bool teardown_offscreen_context(OffscreenContext *ctx)
   return false;
 }
 
-/*!
-  Capture framebuffer from OpenGL and write it to the given ostream
-*/
 bool save_framebuffer(OffscreenContext *ctx, std::ostream &output)
 {
   glXSwapBuffers(ctx->xdisplay, ctx->xwindow);
-  if (!ctx) return false;
-  int samplesPerPixel = 4; // R, G, B and A
-  GLubyte pixels[ctx->width * ctx->height * samplesPerPixel];
-  glReadPixels(0, 0, ctx->width, ctx->height, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
-
-  // Flip it vertically - images read from OpenGL buffers are upside-down
-  int rowBytes = samplesPerPixel * ctx->width;
-  unsigned char *flippedBuffer = (unsigned char *)malloc(rowBytes * ctx->height);
-  if (!flippedBuffer) {
-    cerr << "Unable to allocate flipped buffer for corrected image.";
-    return 1;
-  }
-  flip_image(pixels, flippedBuffer, samplesPerPixel, ctx->width, ctx->height);
-
-  bool writeok = write_png(output, flippedBuffer, ctx->width, ctx->height);
-
-  free(flippedBuffer);
-
-  return writeok;
+	return save_framebuffer_common(ctx, output);
 }
 

@@ -38,6 +38,8 @@ struct OffscreenContext
   fbo_t *fbo;
 };
 
+#include "OffscreenContextAll.hpp"
+
 void offscreen_context_init(OffscreenContext &ctx, int width, int height)
 {
   ctx.window = (HWND)NULL;
@@ -214,46 +216,10 @@ bool teardown_offscreen_context(OffscreenContext *ctx)
   return false;
 }
 
-/*!
-  Capture framebuffer from OpenGL and write it to the given filename as PNG.
-*/
-bool save_framebuffer(OffscreenContext *ctx, const char *filename)
-{
-        std::ofstream fstream(filename);
-        if (!fstream.is_open()) {
-                PRINTB("Can't open file \"%s\" for writing", filename);
-                return false;
-        } else {
-                save_framebuffer(ctx, fstream);
-                fstream.close();
-        }
-        return true;
-}
-
-/*!
-  Capture framebuffer from OpenGL and write it to the given filename as PNG.
-*/
 bool save_framebuffer(OffscreenContext *ctx, std::ostream &output)
 {
+	if (!ctx) return false;
   wglSwapLayerBuffers( ctx->dev_context, WGL_SWAP_MAIN_PLANE );
-  if (!ctx || !filename) return false;
-  int samplesPerPixel = 4; // R, G, B and A
-  vector<GLubyte> pixels(ctx->width * ctx->height * samplesPerPixel);
-  glReadPixels(0, 0, ctx->width, ctx->height, GL_RGBA, GL_UNSIGNED_BYTE, &pixels[0]);
-
-  // Flip it vertically - images read from OpenGL buffers are upside-down
-  int rowBytes = samplesPerPixel * ctx->width;
-  unsigned char *flippedBuffer = (unsigned char *)malloc(rowBytes * ctx->height);
-  if (!flippedBuffer) {
-    std::cerr << "Unable to allocate flipped buffer for corrected image.";
-    return 1;
-  }
-  flip_image(&pixels[0], flippedBuffer, samplesPerPixel, ctx->width, ctx->height);
-
-  bool writeok = write_png(output, flippedBuffer, ctx->width, ctx->height);
-
-  free(flippedBuffer);
-
-  return writeok;
+	return save_framebuffer_common( ctx, output );
 }
 

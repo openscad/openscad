@@ -19,6 +19,8 @@ struct OffscreenContext
   fbo_t *fbo;
 };
 
+#include "OffscreenContextAll.hpp"
+
 std::string offscreen_context_getinfo(OffscreenContext *ctx)
 {
   std::stringstream out;
