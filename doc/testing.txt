@@ -3,6 +3,9 @@ Running regression tests:
 
 Prerequisites: cmake, python, ImageMagick 6.5.9.3 or newer
 
+First, get a working qmake GUI build. It is used by the tests.
+Next, get MCAD installed by using 'git submodule init --update'
+
 A) Building test environment
 
 Linux, Mac:
@@ -12,9 +15,7 @@ $ make
 
 Windows + MSVC:
 
-First, get a normal build working by following instructions at 
-http://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Building_on_Windows
-Then, from the QT command prompt:
+From the QT command prompt:
 
 > cd tests
 > cmake . -DCMAKE_BUILD_TYPE=Release

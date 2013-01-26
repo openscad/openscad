@@ -2,9 +2,10 @@
 #define OFFSCREENCONTEXT_H_
 
 // Here we implement a 'portability' pattern but since we are mixing
-// Objective-C with C++, it is a bit different than what's found in a textbook.
+// Objective-C with C++, it is a bit different.
 
 #include <iostream>
+#include <fstream>
 #include <string>
 #include "fbo.h"
 
