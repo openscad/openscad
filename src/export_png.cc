@@ -43,10 +43,7 @@ void export_png_with_cgal(CGAL_Nef_polyhedron *root_N, std::ostream &output)
 	csgInfo.glview->setCamera(camerapos, center);
 	csgInfo.glview->setRenderer(&cgalRenderer);
 	csgInfo.glview->paintGL();
-	csgInfo.glview->save("test.png");
-
-	output << "solid OpenSCAD_Model\n";
-	output << "endsolid OpenSCAD_Model\n";
+	csgInfo.glview->save(output);
 }
 
 void export_png_with_opencsg(CGAL_Nef_polyhedron *root_N, std::ostream &output)

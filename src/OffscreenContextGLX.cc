@@ -269,20 +269,7 @@ OffscreenContext *create_offscreen_context(int w, int h)
     return NULL;
   }
 
-  // glewInit must come after Context creation and before FBO calls.
-  GLenum err = glewInit();
-  if (GLEW_OK != err) {
-    cerr << "Unable to init GLEW: " << glewGetErrorString(err) << endl;
-    return NULL;
-  }
-
-  ctx->fbo = fbo_new();
-  if (!fbo_init(ctx->fbo, w, h)) {
-    cerr << "GL Framebuffer Object init failed; dumping GLEW info" << endl;
-    return NULL;
-  }
-
-  return ctx;
+  return create_offscreen_context_common( ctx );
 }
 
 bool teardown_offscreen_context(OffscreenContext *ctx)

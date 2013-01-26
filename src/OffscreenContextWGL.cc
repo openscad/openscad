@@ -186,19 +186,7 @@ OffscreenContext *create_offscreen_context(int w, int h)
     return NULL;
   }
 
-  GLenum err = glewInit(); // must come after Context creation and before FBO calls.
-  if (GLEW_OK != err) {
-    cerr << "Unable to init GLEW: " << glewGetErrorString(err) << "\n";
-    return NULL;
-  }
-  //cerr << glew_dump(0);
-
-  ctx->fbo = fbo_new();
-  if (!fbo_init(ctx->fbo, w, h)) {
-    return NULL;
-  }
-
-  return ctx;
+	return create_offscreen_context_common( ctx );
 }
 
 bool teardown_offscreen_context(OffscreenContext *ctx)
@@ -206,11 +194,9 @@ bool teardown_offscreen_context(OffscreenContext *ctx)
   if (ctx) {
     fbo_unbind(ctx->fbo);
     fbo_delete(ctx->fbo);
-
     wglMakeCurrent( NULL, NULL );
     wglDeleteContext( ctx->openGLContext );
     ReleaseDC( ctx->window, ctx->dev_context );
-
     return true;
   }
   return false;
