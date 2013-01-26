@@ -1,0 +1,7 @@
+#!/bin/sh
+
+# $2 = png filename
+# $1 = scad filename
+
+./openscad $1 -o $2 --render
+

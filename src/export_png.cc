@@ -37,8 +37,8 @@ void export_png_with_cgal(CGAL_Nef_polyhedron *root_N, std::ostream &output)
 
 	Vector3d cameradir(1, 1, -0.5);
 	Vector3d camerapos = center - radius*2*cameradir;
-	output << center << "\n";
-	output << radius << "\n";
+	std::cerr << center << "\n";
+	std::cerr << radius << "\n";
 
 	csgInfo.glview->setCamera(camerapos, center);
 	csgInfo.glview->setRenderer(&cgalRenderer);
