@@ -4,7 +4,7 @@ Running regression tests:
 Prerequisites: cmake, python, ImageMagick 6.5.9.3 or newer
 
 First, get a working qmake GUI build. It is used by the tests.
-Next, get MCAD installed by using 'git submodule init --update'
+Next, get MCAD installed by using 'git submodule update --init'
 
 A) Building test environment
 
