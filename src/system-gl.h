@@ -13,4 +13,9 @@
  #endif
 #endif
 
+#include <string>
+
+std::string glew_dump(bool dumpall);
+bool report_glerror(const char * function);
+
 #endif
