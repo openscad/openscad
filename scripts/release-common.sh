@@ -166,7 +166,14 @@ fi
 case $OS in
     LINXWIN)
         # dont use paralell builds, it can error-out on parser_yacc.
+
+        # make main openscad.exe
         cd $DEPLOYDIR && make $TARGET
+
+        # make console pipe-able openscad.com - see winconsole.pri for info
+        i686-pc-mingw32-qmake CONFIG+=winconsole ../openscad.pro
+        make
+
         cd $OPENSCADDIR
     ;;
     *)
@@ -232,6 +239,7 @@ case $OS in
         #package
         cp win32deps/* openscad-$VERSION
         cp $TARGET/openscad.exe openscad-$VERSION
+        cp $TARGET/openscad.com openscad-$VERSION
         rm -f openscad-$VERSION.zip
         "$ZIP" $ZIPARGS openscad-$VERSION.zip openscad-$VERSION
         rm -rf openscad-$VERSION
@@ -242,6 +250,7 @@ case $OS in
         echo "Creating binary package"
         cd $DEPLOYDIR
         cp $TARGET/openscad.exe openscad-$VERSION
+        cp $TARGET/openscad.com openscad-$VERSION
         rm -f OpenSCAD-$VERSION.zip
         "$ZIP" $ZIPARGS OpenSCAD-$VERSION.zip openscad-$VERSION
         cd $OPENSCADDIR
