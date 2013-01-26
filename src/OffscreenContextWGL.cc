@@ -219,6 +219,22 @@ bool teardown_offscreen_context(OffscreenContext *ctx)
 */
 bool save_framebuffer(OffscreenContext *ctx, const char *filename)
 {
+        std::ofstream fstream(filename);
+        if (!fstream.is_open()) {
+                PRINTB("Can't open file \"%s\" for writing", filename);
+                return false;
+        } else {
+                save_framebuffer(ctx, fstream);
+                fstream.close();
+        }
+        return true;
+}
+
+/*!
+  Capture framebuffer from OpenGL and write it to the given filename as PNG.
+*/
+bool save_framebuffer(OffscreenContext *ctx, std::ostream &output)
+{
   wglSwapLayerBuffers( ctx->dev_context, WGL_SWAP_MAIN_PLANE );
   if (!ctx || !filename) return false;
   int samplesPerPixel = 4; // R, G, B and A
@@ -234,14 +250,10 @@ bool save_framebuffer(OffscreenContext *ctx, const char *filename)
   }
   flip_image(&pixels[0], flippedBuffer, samplesPerPixel, ctx->width, ctx->height);
 
-  bool writeok = write_png(filename, flippedBuffer, ctx->width, ctx->height);
+  bool writeok = write_png(output, flippedBuffer, ctx->width, ctx->height);
 
   free(flippedBuffer);
 
   return writeok;
 }
 
-void bind_offscreen_context(OffscreenContext *ctx)
-{
-  if (ctx) fbo_bind(ctx->fbo);
-}

@@ -297,22 +297,6 @@ bool teardown_offscreen_context(OffscreenContext *ctx)
 }
 
 /*!
-  Capture framebuffer from OpenGL and write it to the given filename as PNG.
-*/
-bool save_framebuffer(OffscreenContext *ctx, const char *filename)
-{
-	std::ofstream fstream(filename);
-	if (!fstream.is_open()) {
-		PRINTB("Can't open file \"%s\" for writing", filename);
-		return false;
-	} else {
-		save_framebuffer(ctx, fstream);
-		fstream.close();
-	}
-	return true;
-}
-
-/*!
   Capture framebuffer from OpenGL and write it to the given ostream
 */
 bool save_framebuffer(OffscreenContext *ctx, std::ostream &output)
@@ -339,7 +323,3 @@ bool save_framebuffer(OffscreenContext *ctx, std::ostream &output)
   return writeok;
 }
 
-void bind_offscreen_context(OffscreenContext *ctx)
-{
-  if (ctx) fbo_bind(ctx->fbo);
-}
