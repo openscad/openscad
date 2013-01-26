@@ -1,4 +1,5 @@
-// Functions shared by OffscreenContext[platform].cc
+// Functions shared by OffscreenContext[platform].cc (or .mm)
+// #include directly after definition of struct OffscreenContext.
 
 void bind_offscreen_context(OffscreenContext *ctx)
 {
