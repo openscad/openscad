@@ -54,7 +54,7 @@ bool write_png(std::ostream &output, unsigned char *pixels, int width, int heigh
   /*
   CFStringRef fname = CFStringCreateWithCString(kCFAllocatorDefault, filename, kCFStringEncodingUTF8);
   CFURLRef fileURL = CFURLCreateWithFileSystemPath(kCFAllocatorDefault,
-                                                  fname, kCFURLPOSIXPathStyle, false);
+                                                   fname, kCFURLPOSIXPathStyle, false);
   if (!fileURL) {
     std::cerr << "Unable to create file URL ref.";
     return false;
