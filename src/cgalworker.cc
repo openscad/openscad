@@ -31,7 +31,7 @@ void CGALWorker::work()
 		CGALEvaluator evaluator(*this->tree);
 		root_N = new CGAL_Nef_polyhedron(evaluator.evaluateCGALMesh(*this->tree->root()));
 	}
-	catch (ProgressCancelException e) {
+	catch (const ProgressCancelException &e) {
 		PRINT("Rendering cancelled.");
 	}
 

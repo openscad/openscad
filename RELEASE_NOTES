@@ -1,4 +1,4 @@
-OpenSCAD 2012.XX
+OpenSCAD 2013.01
 ================
 
 Features:
@@ -9,6 +9,9 @@ o Added Dot product operator: vec * vec
 o Added Matrix multiplication operator: vec * mat, mat * mat
 o Added search() function
 o Dependencies are now tracked - any changes in uses/included files will be detected and cause a recompile
+o The OPENSCADPATH environment variable is now implemented will have precedence when searching for libraries
+o .csg files can now be opened from the GUI
+o linear_extrude() will now assume that the first parameter means 'height' if it's a number
 
 Bugfixes:
 o use'ing an non-existing file sometimes crashed under Windows
@@ -19,6 +22,14 @@ o Fixed crashes in shared_ptr.hpp (or similar places) due bugs in cache manageme
 o scale() with a scale factor of zero could cause a crash
 o Fixed a number of issues related to use/include
 o Providing an unknown parameter on the cmd-line caused a crash
+o cmd-line overrides using -D now also work for USEd modules
+o Modifier characters can now be used in front of if statements
+o rotate() with a vector argument with less that 3 elements used uninitialized variables, ending up being non-deterministic.
+o .csg files will now have relative filenames whenever possible
+o Don't just ignore geometric nodes having zero volume/area - when doing difference/intersection, they tend to turn negative objects into positive ones.
+o Always use utf-8 file encoding, also under Windows
+o A lot of build script fixes
+o Some other crash bugs fixes
 
 Deprecations:
 o The old include syntax "<filename.scad>" without the include keyword is no

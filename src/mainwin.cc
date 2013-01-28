@@ -70,11 +70,6 @@
 #include <QSettings>
 #include <QProgressDialog>
 #include <QMutexLocker>
-#ifdef _QCODE_EDIT_
-#include "qdocument.h"
-#include "qformatscheme.h"
-#include "qlanguagefactory.h"
-#endif
 
 #include <fstream>
 
@@ -115,11 +110,11 @@ static char helptitle[] =
 #endif
 	"\nhttp://www.openscad.org\n\n";
 static char copyrighttext[] =
-	"Copyright (C) 2009-2011 Marius Kintel <marius@kintel.net> and Clifford Wolf <clifford@clifford.at>\n"
+	"Copyright (C) 2009-2013 Marius Kintel <marius@kintel.net> and Clifford Wolf <clifford@clifford.at>\n"
 	"\n"
-	"This program is free software; you can redistribute it and/or modify"
-	"it under the terms of the GNU General Public License as published by"
-	"the Free Software Foundation; either version 2 of the License, or"
+	"This program is free software; you can redistribute it and/or modify "
+	"it under the terms of the GNU General Public License as published by "
+	"the Free Software Foundation; either version 2 of the License, or "
 	"(at your option) any later version.";
 
 static void
@@ -185,16 +180,8 @@ MainWindow::MainWindow(const QString &filename)
 	fps = 0;
 	fsteps = 1;
 
-	highlighter = NULL;
-#ifdef _QCODE_EDIT_
-	QFormatScheme *formats = new QFormatScheme("qxs/openscad.qxf");
-	QDocument::setDefaultFormatScheme(formats);
-	QLanguageFactory *languages = new QLanguageFactory(formats,this);
-	languages->addDefinitionPath("qxs");
-	languages->setLanguage(editor, "openscad");
-#else
+	highlighter = new Highlighter(editor->document());
 	editor->setTabStopWidth(30);
-#endif
 	editor->setLineWrapping(true); // Not designable
 
 	this->glview->statusLabel = new QLabel(this);
@@ -348,13 +335,8 @@ MainWindow::MainWindow(const QString &filename)
 	updateRecentFileActions();
 
 	connect(editor->document(), SIGNAL(contentsChanged()), this, SLOT(animateUpdateDocChanged()));
-#ifdef _QCODE_EDIT_
-	connect(editor, SIGNAL(contentModified(bool)), this, SLOT(setWindowModified(bool)));
-	connect(editor, SIGNAL(contentModified(bool)), fileActionSave, SLOT(setEnabled(bool)));
-#else
 	connect(editor->document(), SIGNAL(modificationChanged(bool)), this, SLOT(setWindowModified(bool)));
 	connect(editor->document(), SIGNAL(modificationChanged(bool)), fileActionSave, SLOT(setEnabled(bool)));
-#endif
 	connect(this->glview, SIGNAL(doAnimateUpdate()), this, SLOT(animateUpdate()));
 
 	connect(Preferences::inst(), SIGNAL(requestRedraw()), this->glview, SLOT(updateGL()));
@@ -462,6 +444,7 @@ void MainWindow::report_func(const class AbstractNode*, void *vp, int mark)
 		QApplication::processEvents();
 	}
 
+	// FIXME: Check if cancel was requested by e.g. Application quit
 	if (thisp->progresswidget->wasCanceled()) throw ProgressCancelException();
 }
 
@@ -483,12 +466,7 @@ void
 MainWindow::openFile(const QString &new_filename)
 {
 #ifdef ENABLE_MDI
-#ifdef _QCODE_EDIT_
-	if (this->editor->document()->lines() > 1 ||
-			!this->editor->document()->text(true, false).trimmed().isEmpty()) {
-#else
 	if (!editor->toPlainText().isEmpty()) {
-#endif
 		new MainWindow(new_filename);
 		clearCurrentOutput();
 		return;
@@ -588,7 +566,9 @@ void MainWindow::refreshDocument()
 						 this->fileName.toStdString() % file.errorString().toStdString());
 		}
 		else {
-			QString text = QTextStream(&file).readAll();
+			QTextStream reader(&file);
+			reader.setCodec("UTF-8");
+			QString text = reader.readAll();
 			PRINTB("Loaded design '%s'.", this->fileName.toStdString());
 			editor->setPlainText(text);
 		}
@@ -709,7 +689,7 @@ void MainWindow::compileCSG(bool procevents)
 		PolySetCache::instance()->print();
 		CGALCache::instance()->print();
 	}
-	catch (ProgressCancelException e) {
+	catch (const ProgressCancelException &e) {
 		PRINT("CSG generation cancelled.");
 	}
 	progress_report_fin();
@@ -802,7 +782,8 @@ void MainWindow::actionNew()
 
 void MainWindow::actionOpen()
 {
-	QString new_filename = QFileDialog::getOpenFileName(this, "Open File", "", "OpenSCAD Designs (*.scad)");
+	QString new_filename = QFileDialog::getOpenFileName(this, "Open File", "",
+																											"OpenSCAD Designs (*.scad *.csg)");
 #ifdef ENABLE_MDI
 	if (!new_filename.isEmpty()) {
 		new MainWindow(new_filename);
@@ -899,7 +880,9 @@ void MainWindow::actionSave()
 			PRINTB("Failed to open file for writing: %s (%s)", this->fileName.toStdString() % file.errorString().toStdString());
 		}
 		else {
-			QTextStream(&file) << this->editor->toPlainText();
+			QTextStream writer(&file);
+			writer.setCodec("UTF-8");
+			writer << this->editor->toPlainText();
 			PRINTB("Saved design '%s'.", this->fileName.toStdString());
 			this->editor->setContentModified(false);
 		}
@@ -952,11 +935,7 @@ void MainWindow::hideEditor()
 
 void MainWindow::pasteViewportTranslation()
 {
-#ifdef _QCODE_EDIT_
-	QDocumentCursor cursor = editor->cursor();
-#else
 	QTextCursor cursor = editor->textCursor();
-#endif
 	QString txt;
 	txt.sprintf("[ %.2f, %.2f, %.2f ]", -this->glview->object_trans_x, -this->glview->object_trans_y, -this->glview->object_trans_z);
 	cursor.insertText(txt);
@@ -964,11 +943,7 @@ void MainWindow::pasteViewportTranslation()
 
 void MainWindow::pasteViewportRotation()
 {
-#ifdef _QCODE_EDIT_
-	QDocumentCursor cursor = editor->cursor();
-#else
 	QTextCursor cursor = editor->textCursor();
-#endif
 	QString txt;
 	txt.sprintf("[ %.2f, %.2f, %.2f ]",
 		fmodf(360 - this->glview->object_rot_x + 90, 360), fmodf(360 - this->glview->object_rot_y, 360), fmodf(360 - this->glview->object_rot_z, 360));
@@ -1062,24 +1037,16 @@ bool MainWindow::compileTopLevelDocument(bool reload)
 															QFileInfo(this->fileName).absolutePath().toLocal8Bit(), 
 															false);
 
-		// Error highlighting
-		delete this->highlighter;
-		this->highlighter = NULL;
-		
-		if (!this->root_module) {
-			this->highlighter = new Highlighter(editor->document());
-
-			if (!animate_panel->isVisible()) {
-#ifdef _QCODE_EDIT_
-				QDocumentCursor cursor = editor->cursor();
-				cursor.setPosition(parser_error_pos);
-#else
+		if (!animate_panel->isVisible()) {
+			highlighter->unhighlightLastError();
+			if (!this->root_module) {
 				QTextCursor cursor = editor->textCursor();
 				cursor.setPosition(parser_error_pos);
 				editor->setTextCursor(cursor);
-#endif
+				highlighter->highlightError( parser_error_pos );
 			}
 		}
+
 	}
 
 	bool changed = shouldcompiletoplevel;
@@ -1231,35 +1198,37 @@ void MainWindow::actionRenderCGALDone(CGAL_Nef_polyhedron *root_N)
 		PolySetCache::instance()->print();
 		CGALCache::instance()->print();
 
-		if (root_N->dim == 2) {
-			PRINT("   Top level object is a 2D object:");
-			PRINTB("   Empty:      %6s", (root_N->p2->is_empty() ? "yes" : "no"));
-			PRINTB("   Plane:      %6s", (root_N->p2->is_plane() ? "yes" : "no"));
-			PRINTB("   Vertices:   %6d", root_N->p2->explorer().number_of_vertices());
-			PRINTB("   Halfedges:  %6d", root_N->p2->explorer().number_of_halfedges());
-			PRINTB("   Edges:      %6d", root_N->p2->explorer().number_of_edges());
-			PRINTB("   Faces:      %6d", root_N->p2->explorer().number_of_faces());
-			PRINTB("   FaceCycles: %6d", root_N->p2->explorer().number_of_face_cycles());
-			PRINTB("   ConnComp:   %6d", root_N->p2->explorer().number_of_connected_components());
-		}
-
-		if (root_N->dim == 3) {
-			PRINT("   Top level object is a 3D object:");
-			PRINTB("   Simple:     %6s", (root_N->p3->is_simple() ? "yes" : "no"));
-			PRINTB("   Valid:      %6s", (root_N->p3->is_valid() ? "yes" : "no"));
-			PRINTB("   Vertices:   %6d", root_N->p3->number_of_vertices());
-			PRINTB("   Halfedges:  %6d", root_N->p3->number_of_halfedges());
-			PRINTB("   Edges:      %6d", root_N->p3->number_of_edges());
-			PRINTB("   Halffacets: %6d", root_N->p3->number_of_halffacets());
-			PRINTB("   Facets:     %6d", root_N->p3->number_of_facets());
-			PRINTB("   Volumes:    %6d", root_N->p3->number_of_volumes());
+		if (!root_N->isNull()) {
+			if (root_N->dim == 2) {
+				PRINT("   Top level object is a 2D object:");
+				PRINTB("   Empty:      %6s", (root_N->p2->is_empty() ? "yes" : "no"));
+				PRINTB("   Plane:      %6s", (root_N->p2->is_plane() ? "yes" : "no"));
+				PRINTB("   Vertices:   %6d", root_N->p2->explorer().number_of_vertices());
+				PRINTB("   Halfedges:  %6d", root_N->p2->explorer().number_of_halfedges());
+				PRINTB("   Edges:      %6d", root_N->p2->explorer().number_of_edges());
+				PRINTB("   Faces:      %6d", root_N->p2->explorer().number_of_faces());
+				PRINTB("   FaceCycles: %6d", root_N->p2->explorer().number_of_face_cycles());
+				PRINTB("   ConnComp:   %6d", root_N->p2->explorer().number_of_connected_components());
+			}
+			
+			if (root_N->dim == 3) {
+				PRINT("   Top level object is a 3D object:");
+				PRINTB("   Simple:     %6s", (root_N->p3->is_simple() ? "yes" : "no"));
+				PRINTB("   Valid:      %6s", (root_N->p3->is_valid() ? "yes" : "no"));
+				PRINTB("   Vertices:   %6d", root_N->p3->number_of_vertices());
+				PRINTB("   Halfedges:  %6d", root_N->p3->number_of_halfedges());
+				PRINTB("   Edges:      %6d", root_N->p3->number_of_edges());
+				PRINTB("   Halffacets: %6d", root_N->p3->number_of_halffacets());
+				PRINTB("   Facets:     %6d", root_N->p3->number_of_facets());
+				PRINTB("   Volumes:    %6d", root_N->p3->number_of_volumes());
+			}
 		}
 
 		int s = this->progresswidget->elapsedTime() / 1000;
 		PRINTB("Total rendering time: %d hours, %d minutes, %d seconds", (s / (60*60)) % ((s / 60) % 60) % (s % 60));
 
 		this->root_N = root_N;
-		if (!this->root_N->empty()) {
+		if (!this->root_N->isNull()) {
 			this->cgalRenderer = new CGALRenderer(*this->root_N);
 			// Go to CGAL view mode
 			if (viewActionCGALGrid->isChecked()) {
@@ -1761,11 +1730,13 @@ void MainWindow::helpLibrary()
 	libinfo.sprintf("Boost version: %s\n"
 									"Eigen version: %d.%d.%d\n"
 									"CGAL version: %s\n"
-									"OpenCSG version: %s\n\n",
+									"OpenCSG version: %s\n"
+									"Qt version: %s\n\n",
 									BOOST_LIB_VERSION,
 									EIGEN_WORLD_VERSION, EIGEN_MAJOR_VERSION, EIGEN_MINOR_VERSION,
 									TOSTRING(CGAL_VERSION),
-									OPENCSG_VERSION_STRING);
+									OPENCSG_VERSION_STRING,
+									qVersion());
 
 	if (!this->openglbox) {
 		this->openglbox = new QMessageBox(QMessageBox::Information, 
@@ -1838,6 +1809,7 @@ void MainWindow::quit()
 	QCloseEvent ev;
 	QApplication::sendEvent(QApplication::instance(), &ev);
 	if (ev.isAccepted()) QApplication::instance()->quit();
+  // FIXME: Cancel any CGAL calculations
 }
 
 void MainWindow::consoleOutput(const std::string &msg, void *userdata)

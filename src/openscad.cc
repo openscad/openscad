@@ -58,6 +58,7 @@
 
 #include <boost/program_options.hpp>
 #include <boost/filesystem.hpp>
+#include <boost/foreach.hpp>
 #include "boosty.h"
 
 #ifdef _MSC_VER
@@ -152,7 +153,7 @@ int main(int argc, char **argv)
 	try {
 		po::store(po::command_line_parser(argc, argv).options(all_options).positional(p).run(), vm);
 	}
-	catch(std::exception &e) { // Catches e.g. unknown options
+	catch(const std::exception &e) { // Catches e.g. unknown options
 		fprintf(stderr, "%s\n", e.what());
 		help(argv[0]);
 	}
@@ -187,10 +188,8 @@ int main(int argc, char **argv)
 	}
 
 	if (vm.count("D")) {
-		const vector<string> &commands = vm["D"].as<vector<string> >();
-
-		for (vector<string>::const_iterator i = commands.begin(); i != commands.end(); i++) {
-			commandline_commands += *i;
+		BOOST_FOREACH(const string &cmd, vm["D"].as<vector<string> >()) {
+			commandline_commands += cmd;
 			commandline_commands += ";\n";
 		}
 	}
@@ -305,8 +304,19 @@ int main(int argc, char **argv)
 			fs::current_path(original_path);
 			
 			if (deps_output_file) {
-				if (!write_deps(deps_output_file, 
-												stl_output_file ? stl_output_file : off_output_file)) {
+				std::string deps_out( deps_output_file );
+				std::string geom_out;
+				if ( stl_output_file ) geom_out = std::string(stl_output_file);
+				else if ( off_output_file ) geom_out = std::string(off_output_file);
+				else if ( dxf_output_file ) geom_out = std::string(dxf_output_file);
+				else {
+					PRINTB("Output file:%s\n",output_file);
+					PRINT("Sorry, don't know how to write deps for that file type. Exiting\n");
+					exit(1);
+				}
+				int result = write_deps( deps_out, geom_out );
+				if ( !result ) {
+					PRINT("error writing deps");
 					exit(1);
 				}
 			}

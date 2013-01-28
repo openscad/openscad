@@ -129,7 +129,7 @@ int main(int argc, char **argv)
 	CGAL_Nef_polyhedron N = cgalevaluator.evaluateCGALMesh(*root_node);
 
 	current_path(original_path);
-	if (!N.empty()) {
+	if (!N.isNull()) {
 		std::ofstream outfile;
 		outfile.open(outfilename);
 			

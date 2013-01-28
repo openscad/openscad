@@ -141,7 +141,7 @@ DxfData::DxfData(double fn, double fs, double fa,
     try {
 		  id = boost::lexical_cast<int>(id_str);
     }
-    catch (boost::bad_lexical_cast &blc) {
+    catch (const boost::bad_lexical_cast &blc) {
 			if (!stream.eof()) {
 				PRINTB("WARNING: Illegal ID '%s' in `%s'", id_str % filename);
 			}

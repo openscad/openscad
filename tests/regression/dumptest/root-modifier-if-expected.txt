@@ -1,0 +1,7 @@
+	group() {
+		sphere($fn = 0, $fa = 12, $fs = 2, r = 5);
+	}
+	group() {
+		cube(size = [5, 5, 5], center = false);
+	}
+

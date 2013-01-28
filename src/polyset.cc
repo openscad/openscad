@@ -157,7 +157,8 @@ void PolySet::render_surface(csgmode_e csgmode, const Transform3d &m, GLint *sha
 	}
 #endif /* ENABLE_OPENCSG */
 	if (this->is2d) {
-		double zbase = csgmode;
+		// Render 2D objects 1mm thick, but differences slightly larger
+		double zbase = 1 + (csgmode & CSGMODE_DIFFERENCE_FLAG) * 0.1;
 		glBegin(GL_TRIANGLES);
 		for (double z = -zbase/2; z < zbase; z += zbase)
 		{
@@ -248,7 +249,8 @@ void PolySet::render_edges(csgmode_e csgmode) const
 {
 	glDisable(GL_LIGHTING);
 	if (this->is2d) {
-		double zbase = csgmode;
+		// Render 2D objects 1mm thick, but differences slightly larger
+		double zbase = 1 + (csgmode & CSGMODE_DIFFERENCE_FLAG) * 0.1;
 		for (double z = -zbase/2; z < zbase; z += zbase)
 		{
 			for (size_t i = 0; i < borders.size(); i++) {

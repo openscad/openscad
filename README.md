@@ -80,7 +80,7 @@ numbers in brackets specify the versions which have been used for
 development. Other versions may or may not work as well.
 
 If you're using a newer version of Ubuntu, you can install these 
-libraries from aptitude. If you're using Mac, or an older Linux, there 
+libraries from aptitude. If you're using Mac, or an older Linux/BSD, there 
 are build scripts that download and compile the libraries from source. 
 Follow the instructions for the platform you're compiling on below.
 
@@ -91,8 +91,8 @@ Follow the instructions for the platform you're compiling on below.
  * [MPFR (3.x)](http://www.mpfr.org/)
  * [boost (1.35 - 1.47)](http://www.boost.org/)
 * [OpenCSG (1.3.2)](http://www.opencsg.org/)
-* [GLEW (1.6 ->)](http://glew.sourceforge.net/)
-* [Eigen2 (2.0.13->)](http://eigen.tuxfamily.org/)
+* [GLEW (1.5.4 ->)](http://glew.sourceforge.net/)
+* [Eigen (2.0.13->3.1.1)](http://eigen.tuxfamily.org/)
 * [GCC C++ Compiler (4.2 ->)](http://gcc.gnu.org/)
 * [Bison (2.4)](http://www.gnu.org/software/bison/)
 * [Flex (2.5.35)](http://flex.sourceforge.net/)
@@ -131,34 +131,52 @@ compilation process.
 
 After that, follow the Compilation instructions below.
 
-### Building for newer Linux distributions
+### Building for Linux/BSD
 
-First, make sure that you have development tools installed to get GCC. 
-Then after you've cloned this git repository, use a package manager to 
-download packages for the dependency libraries listed above. Convenience 
-scripts are provided for some popular systems:
+First, make sure that you have git installed (often packaged as 'git-core' 
+or 'scmgit'). Once you've cloned this git repository, download and install 
+the dependency packages listed above using your system's package 
+manager. A convenience script is provided that can help with this 
+process on some systems:
 
-    Ubuntu, Debian:    ./scripts/ubuntu-build-dependencies.sh
-    OpenSUSE:          ./scripts/opensuse-build-dependencies.sh
-    Fedora:            ./scripts/fedora-build-dependencies.sh
+    ./scripts/uni-get-dependencies.sh
 
-Check your library versions to make sure they meet the minimum 
-requirements listed above. After that follow the Compilation 
-instructions below.
+After installing dependencies, check their versions. You can run this 
+script to help you:
 
-### Building for older Linux or building without root access
+    ./scripts/check-dependencies.sh
 
-First, make sure that you have development tools installed to get GCC.
-Then after you've cloned this git repository, run the script that sets 
-up the environment variables.
+Take care that you don't have old local copies anywhere (/usr/local/). 
+If all dependencies are present and of a high enough version, skip ahead 
+to the Compilation instructions. 
 
-    source ./scripts/setenv-linbuild.sh
+### Building for Linux/BSD on systems with older or missing dependencies
 
-Then run the script to download & compile all the prerequisite libraries above:
+If some of your system dependency libraries are missing or old, then you 
+can download and build newer versions into $HOME/openscad_deps by 
+following this process. First, run the script that sets up the 
+environment variables. 
 
-    ./scripts/linux-build-dependencies.sh
+    source ./scripts/setenv-unibuild.sh
 
-Then add LD_LIBRARY_PATH=$HOME/openscad_deps to your ~/.bashrc
+Then run the script to compile all the prerequisite libraries above:
+
+    ./scripts/uni-build-dependencies.sh
+
+This may take an hour or more, depending on your network and system. It 
+is recommended to have at least 1 gigabyte of free disk space. As a 
+special timesaver if you are only missing CGAL and OpenCSG, you can do 
+this instead:
+
+    ./scripts/uni-build-dependencies.sh opencsg
+    ./scripts/uni-build-dependencies.sh cgal
+
+Note that huge dependencies like gcc or qt are not included here, only 
+the smaller ones (boost, CGAL, opencsg, etc). After the build, again 
+check dependencies.
+
+    ./scripts/check-dependencies.sh
+
 After that, follow the Compilation instructions below.
 
 ### Building for Windows
@@ -168,8 +186,9 @@ attempt an MSVC build on Windows, please see this site:
 http://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Building_on_Windows
 
 To cross-build, first make sure that you have development tools 
-installed to get GCC. Then after you've cloned this git repository, run 
-the script that sets up the environment variables.
+installed to get GCC. Then after you've cloned this git repository, 
+start a new clean shell and run the script that sets up the environment 
+variables.
 
     source ./scripts/setenv-mingw-xbuild.sh
 
@@ -177,9 +196,11 @@ Then run the script to download & compile all the prerequisite libraries above:
 
     ./scripts/mingw-x-build-dependencies.sh
 
-Then skip the compilation instructions below. Instead, build an installer:
+Note that this process can take several hours, as it uses the 
+http://mxe.cc system to cross-build many libraries. After it is 
+complete, build OpenSCAD and package it to an installer:
 
-    OSTYPE=mingw-cross-env ./scripts/release-common.sh
+    ./scripts/release-common.sh mingw32
 
 ### Compilation
 

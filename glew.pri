@@ -6,7 +6,6 @@ glew {
     QMAKE_INCDIR += $$GLEW_DIR/include
     QMAKE_LIBDIR += $$GLEW_DIR/lib
     QMAKE_LIBDIR += $$GLEW_DIR/lib64
-    message("GLEW location: $$GLEW_DIR")
   }
 
   unix:LIBS += -lGLEW

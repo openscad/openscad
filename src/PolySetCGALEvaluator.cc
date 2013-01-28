@@ -1,6 +1,8 @@
 #include "PolySetCGALEvaluator.h"
 #include "cgal.h"
 #include "cgalutils.h"
+#include <CGAL/convex_hull_3.h>
+
 #include "polyset.h"
 #include "CGALEvaluator.h"
 #include "projectionnode.h"
@@ -12,53 +14,53 @@
 #include "dxftess.h"
 #include "module.h"
 
+#include "svg.h"
 #include "printutils.h"
 #include "openscad.h" // get_fragments_from_r()
 #include <boost/foreach.hpp>
+#include <vector>
 
 /*
 
-This Visitor is used in the 'cut' process. Essentially, one or more of
-our 3d nef polyhedrons have been 'cut' by the xy-plane, forming a number
-of polygons that are essentially 'flat'. This Visitor object, when
-called repeatedly, collects those flat polygons together and forms a new
-2d nef polyhedron out of them. It keeps track of the 'holes' so that
-in the final resulting polygon, they are preserved properly.
+ZRemover
 
-The output polygon is stored in the output_nefpoly2d variable.
+This class converts one or more already 'flat' Nef3 polyhedra into a Nef2
+polyhedron by stripping off the 'z' coordinates from the vertices. The
+resulting Nef2 poly is accumulated in the 'output_nefpoly2d' member variable.
 
-For more information on 3d + 2d nef polyhedrons, facets, halffacets,
-facet cycles, etc, please see these websites:
+The 'z' coordinates will either be all 0s, for an xy-plane intersected Nef3,
+or, they will be a mixture of -eps and +eps, for a thin-box intersected Nef3.
 
+Notes on CGAL's Nef Polyhedron2:
+
+1. The 'mark' on a 2d Nef face is important when doing unions/intersections.
+ If the 'mark' of a face is wrong the resulting nef2 poly will be unexpected.
+2. The 'mark' can be dependent on the points fed to the Nef2 constructor.
+ This is why we iterate through the 3d faces using the halfedge cycle
+ source()->target() instead of the ordinary source()->source(). The
+ the latter can generate sequences of points that will fail the
+ the CGAL::is_simple_2() test, resulting in improperly marked nef2 polys.
+3. 3d facets have 'two sides'. we throw out the 'down' side to prevent dups.
+
+The class uses the 'visitor' pattern from the CGAL manual. See also
 http://www.cgal.org/Manual/latest/doc_html/cgal_manual/Nef_3/Chapter_main.html
-http://www.cgal.org/Manual/latest/doc_html/cgal_manual/Nef_3_ref/Class_Nef_polyhedron_3-Traits---Halffacet.html
-
-The halffacet iteration 'circulator' code is based on OGL_helper.h
-
-Why do we throw out all 'down' half-facets? Imagine a triangle in 3d
-space - it has one 'half face' for one 'side' and another 'half face' for the
-other 'side'. If we iterated over both half-faces we would get the same vertex
-coordinates twice. Instead, we only need one side, in our case, we
-chose the 'up' side.
+http://www.cgal.org/Manual/latest/doc_html/cgal_manual/Nef_3_ref/Class_Nef_polyhedron3.html
+OGL_helper.h
 */
-class NefShellVisitor_for_cut {
+
+class ZRemover {
 public:
-	std::stringstream out;
+	logstream log;
 	CGAL_Nef_polyhedron2::Boundary boundary;
 	shared_ptr<CGAL_Nef_polyhedron2> tmpnef2d;
 	shared_ptr<CGAL_Nef_polyhedron2> output_nefpoly2d;
 	CGAL::Direction_3<CGAL_Kernel3> up;
-	bool debug;
-	NefShellVisitor_for_cut(bool debug=false)
+	ZRemover()
 	{
 		output_nefpoly2d.reset( new CGAL_Nef_polyhedron2() );
 		boundary = CGAL_Nef_polyhedron2::INCLUDED;
 		up = CGAL::Direction_3<CGAL_Kernel3>(0,0,1);
-		this->debug = debug;
-	}
-	std::string dump()
-	{
-		return out.str();
+		log = logstream(5);
 	}
 	void visit( CGAL_Nef_polyhedron3::Vertex_const_handle ) {}
 	void visit( CGAL_Nef_polyhedron3::Halfedge_const_handle ) {}
@@ -66,53 +68,77 @@ public:
 	void visit( CGAL_Nef_polyhedron3::SHalfloop_const_handle ) {}
 	void visit( CGAL_Nef_polyhedron3::SFace_const_handle ) {}
 	void visit( CGAL_Nef_polyhedron3::Halffacet_const_handle hfacet ) {
+		log << " <!-- Halffacet visit. Mark: " << hfacet->mark() << " -->\n";
 		if ( hfacet->plane().orthogonal_direction() != this->up ) {
-			if (debug) out << "down facing half-facet. skipping\n";
+			log << "  <!-- down-facing half-facet. skipping -->\n";
+			log << " <!-- Halffacet visit end-->\n";
 			return;
 		}
 
-		int numcontours = 0;
-		CGAL_Nef_polyhedron3::Halffacet_cycle_const_iterator i;
-		CGAL_forall_facet_cycles_of( i, hfacet ) {
-			CGAL_Nef_polyhedron3::SHalfedge_around_facet_const_circulator c1(i), c2(c1);
-			std::list<CGAL_Nef_polyhedron2::Point> contour;
-			CGAL_For_all( c1, c2 ) {
-				CGAL_Nef_polyhedron3::Point_3 point3d = c1->source()->source()->point();
-				CGAL_Nef_polyhedron2::Point point2d( point3d.x(), point3d.y() );
-				contour.push_back( point2d );
-			}
-			tmpnef2d.reset( new CGAL_Nef_polyhedron2( contour.begin(), contour.end(), boundary ) );
-			if ( numcontours == 0 ) {
-				if (debug) out << " contour is a body. make union(). " << contour.size() << " points.\n" ;
-				*output_nefpoly2d += *tmpnef2d;
+		// possible optimization - throw out facets that are 'side facets' between
+		// the top & bottom of the big thin box. (i.e. mixture of z=-eps and z=eps)
+
+		CGAL_Nef_polyhedron3::Halffacet_cycle_const_iterator fci;
+		int contour_counter = 0;
+		CGAL_forall_facet_cycles_of( fci, hfacet ) {
+			if ( fci.is_shalfedge() ) {
+				CGAL_Nef_polyhedron3::SHalfedge_around_facet_const_circulator c1(fci), cend(c1);
+				std::vector<CGAL_Nef_polyhedron2::Explorer::Point> contour;
+				CGAL_For_all( c1, cend ) {
+					CGAL_Nef_polyhedron3::Point_3 point3d = c1->source()->target()->point();
+					CGAL_Nef_polyhedron2::Explorer::Point point2d( point3d.x(), point3d.y() );
+					contour.push_back( point2d );
+				}
+
+				if (contour.size()==0) continue;
+
+				log << " <!-- is_simple_2:" << CGAL::is_simple_2( contour.begin(), contour.end() ) << " --> \n";
+
+				tmpnef2d.reset( new CGAL_Nef_polyhedron2( contour.begin(), contour.end(), boundary ) );
+
+				if ( contour_counter == 0 ) {
+					log << " <!-- contour is a body. make union(). " << contour.size() << " points. -->\n" ;
+					*(output_nefpoly2d) += *(tmpnef2d);
+				} else {
+					log << " <!-- contour is a hole. make intersection(). " << contour.size() << " points. -->\n";
+					*(output_nefpoly2d) *= *(tmpnef2d);
+				}
+
+				log << "\n<!-- ======== output tmp nef: ==== -->\n"
+					<< OpenSCAD::dump_svg( *tmpnef2d ) << "\n"
+					<< "\n<!-- ======== output accumulator: ==== -->\n"
+					<< OpenSCAD::dump_svg( *output_nefpoly2d ) << "\n";
+
+				contour_counter++;
 			} else {
-				if (debug) out << " contour is a hole. make intersection(). " << contour.size() << " points.\n";
-				*output_nefpoly2d *= *tmpnef2d;
+				log << " <!-- trivial facet cycle skipped -->\n";
 			}
-			numcontours++;
 		} // next facet cycle (i.e. next contour)
+		log << " <!-- Halffacet visit end -->\n";
 	} // visit()
 };
 
 PolySetCGALEvaluator::PolySetCGALEvaluator(CGALEvaluator &cgalevaluator)
 	: PolySetEvaluator(cgalevaluator.getTree()), cgalevaluator(cgalevaluator)
 {
-	this->debug = false;
 }
 
 PolySet *PolySetCGALEvaluator::evaluatePolySet(const ProjectionNode &node)
 {
+	//openscad_loglevel = 6;
+	logstream log(5);
+
 	// Before projecting, union all children
 	CGAL_Nef_polyhedron sum;
 	BOOST_FOREACH (AbstractNode * v, node.getChildren()) {
 		if (v->modinst->isBackground()) continue;
 		CGAL_Nef_polyhedron N = this->cgalevaluator.evaluateCGALMesh(*v);
 		if (N.dim == 3) {
-			if (sum.empty()) sum = N.copy();
+			if (sum.isNull()) sum = N.copy();
 			else sum += N;
 		}
 	}
-	if (sum.empty()) return NULL;
+	if (sum.isNull()) return NULL;
 	if (!sum.p3->is_simple()) {
 		if (!node.cut_mode) {
 			PRINT("WARNING: Body of projection(cut = false) isn't valid 2-manifold! Modify your design..");
@@ -120,32 +146,70 @@ PolySet *PolySetCGALEvaluator::evaluatePolySet(const ProjectionNode &node)
 		}
 	}
 
-	CGAL_Nef_polyhedron nef_poly;
+	//std::cout << sum.dump();
+	//std::cout.flush();
 
-	if (node.cut_mode)
-	{
-		// intersect 'sum' with the x-y plane
-		CGAL_Nef_polyhedron3::Plane_3 xy_plane = CGAL_Nef_polyhedron3::Plane_3( 0,0,1,0 );
-		*sum.p3 = sum.p3->intersection( xy_plane, CGAL_Nef_polyhedron3::PLANE_ONLY);
+	CGAL_Nef_polyhedron nef_poly(2);
 
-		// Visit each polygon in sum.p3 and union/intersect into a 2d polygon (with holes)
-		// For info on Volumes, Shells, Facets, and the 'visitor' pattern, please see
-		// http://www.cgal.org/Manual/latest/doc_html/cgal_manual/Nef_3/Chapter_main.html
-		NefShellVisitor_for_cut shell_visitor;
-		CGAL_Nef_polyhedron3::Volume_const_iterator i;
-		CGAL_Nef_polyhedron3::Shell_entry_const_iterator j;
-		CGAL_Nef_polyhedron3::SFace_const_handle sface_handle;
-		for ( i = sum.p3->volumes_begin(); i != sum.p3->volumes_end(); ++i ) {
-			for ( j = i->shells_begin(); j != i->shells_end(); ++j ) {
-				sface_handle = CGAL_Nef_polyhedron3::SFace_const_handle( j );
-				sum.p3->visit_shell_objects( sface_handle , shell_visitor );
+	if (node.cut_mode) {
+		CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
+		try {
+			CGAL_Nef_polyhedron3::Plane_3 xy_plane = CGAL_Nef_polyhedron3::Plane_3( 0,0,1,0 );
+			*sum.p3 = sum.p3->intersection( xy_plane, CGAL_Nef_polyhedron3::PLANE_ONLY);
+		}
+		catch (const CGAL::Failure_exception &e) {
+			PRINTB("CGAL error in projection node during plane intersection: %s", e.what());
+			try {
+				PRINT("Trying alternative intersection using very large thin box: ");
+				std::vector<CGAL_Point_3> pts;
+				// dont use z of 0. there are bugs in CGAL.
+				double inf = 1e8;
+				double eps = 0.001;
+				CGAL_Point_3 minpt( -inf, -inf, -eps );
+				CGAL_Point_3 maxpt(  inf,  inf,  eps );
+				CGAL_Iso_cuboid_3 bigcuboid( minpt, maxpt );
+				for ( int i=0;i<8;i++ ) pts.push_back( bigcuboid.vertex(i) );
+				CGAL_Polyhedron bigbox;
+				CGAL::convex_hull_3( pts.begin(), pts.end(), bigbox );
+				CGAL_Nef_polyhedron3 nef_bigbox( bigbox );
+ 				*sum.p3 = nef_bigbox.intersection( *sum.p3 );
+			}
+			catch (const CGAL::Failure_exception &e) {
+				PRINTB("CGAL error in projection node during bigbox intersection: %s", e.what());
+				sum.p3->clear();
 			}
 		}
-		if (debug) std::cout << "shell visitor\n" << shell_visitor.dump() << "\nshell visitor end\n";
 
-		nef_poly.p2 = shell_visitor.output_nefpoly2d;
-		nef_poly.dim = 2;
-		if (debug) std::cout << "--\n" << nef_poly.dump_p2() << "\n";
+		if (sum.p3->is_empty()) {
+			CGAL::set_error_behaviour(old_behaviour);
+			PRINT("WARNING: projection() failed.");
+			return NULL;
+		}
+
+		// remove z coordinates to make CGAL_Nef_polyhedron2
+		log << OpenSCAD::svg_header( 480, 100000 ) << "\n";
+		try {
+			ZRemover zremover;
+			CGAL_Nef_polyhedron3::Volume_const_iterator i;
+			CGAL_Nef_polyhedron3::Shell_entry_const_iterator j;
+			CGAL_Nef_polyhedron3::SFace_const_handle sface_handle;
+			for ( i = sum.p3->volumes_begin(); i != sum.p3->volumes_end(); ++i ) {
+				log << "<!-- volume. mark: " << i->mark() << " -->\n";
+				for ( j = i->shells_begin(); j != i->shells_end(); ++j ) {
+					log << "<!-- shell. mark: " << i->mark() << " -->\n";
+					sface_handle = CGAL_Nef_polyhedron3::SFace_const_handle( j );
+					sum.p3->visit_shell_objects( sface_handle , zremover );
+					log << "<!-- shell. end. -->\n";
+				}
+				log << "<!-- volume end. -->\n";
+			}
+			nef_poly.p2 = zremover.output_nefpoly2d;
+		}	catch (const CGAL::Failure_exception &e) {
+			PRINTB("CGAL error in projection node while flattening: %s", e.what());
+		}
+		log << "</svg>\n";
+
+		CGAL::set_error_behaviour(old_behaviour);
 
 		// Extract polygons in the XY plane, ignoring all other polygons
 		// FIXME: If the polyhedron is really thin, there might be unwanted polygons
@@ -219,8 +283,7 @@ PolySet *PolySetCGALEvaluator::evaluatePolySet(const ProjectionNode &node)
 					plist.push_back(p);
 			}
 			// FIXME: Should the CGAL_Nef_polyhedron2 be cached?
-			if (nef_poly.empty()) {
-				nef_poly.dim = 2;
+			if (nef_poly.isEmpty()) {
 				nef_poly.p2.reset(new CGAL_Nef_polyhedron2(plist.begin(), plist.end(), CGAL_Nef_polyhedron2::INCLUDED));
 			}
 			else {
@@ -233,7 +296,7 @@ PolySet *PolySetCGALEvaluator::evaluatePolySet(const ProjectionNode &node)
 	PolySet *ps = nef_poly.convertToPolyset();
 	assert( ps != NULL );
 	ps->convexity = node.convexity;
-	if (debug) std::cout << "--\n" << ps->dump() << "\n";
+	logstream(9) << ps->dump() << "\n";
 
 	return ps;
 }
@@ -320,18 +383,18 @@ PolySet *PolySetCGALEvaluator::evaluatePolySet(const LinearExtrudeNode &node)
 		BOOST_FOREACH (AbstractNode * v, node.getChildren()) {
 			if (v->modinst->isBackground()) continue;
 			CGAL_Nef_polyhedron N = this->cgalevaluator.evaluateCGALMesh(*v);
-			if (!N.empty()) {
+			if (!N.isNull()) {
 				if (N.dim != 2) {
 					PRINT("ERROR: linear_extrude() is not defined for 3D child objects!");
 				}
 				else {
-					if (sum.empty()) sum = N.copy();
+					if (sum.isNull()) sum = N.copy();
 					else sum += N;
 				}
 			}
 		}
 
-		if (sum.empty()) return NULL;
+		if (sum.isNull()) return NULL;
 		dxf = sum.convertToDxfData();;
 	} else {
 		dxf = new DxfData(node.fn, node.fs, node.fa, node.filename, node.layername, node.origin_x, node.origin_y, node.scale);
@@ -420,18 +483,18 @@ PolySet *PolySetCGALEvaluator::evaluatePolySet(const RotateExtrudeNode &node)
 		BOOST_FOREACH (AbstractNode * v, node.getChildren()) {
 			if (v->modinst->isBackground()) continue;
 			CGAL_Nef_polyhedron N = this->cgalevaluator.evaluateCGALMesh(*v);
-			if (!N.empty()) {
+			if (!N.isNull()) {
 				if (N.dim != 2) {
 					PRINT("ERROR: rotate_extrude() is not defined for 3D child objects!");
 				}
 				else {
-					if (sum.empty()) sum = N.copy();
+					if (sum.isNull()) sum = N.copy();
 					else sum += N;
 				}
 			}
 		}
 
-		if (sum.empty()) return NULL;
+		if (sum.isNull()) return NULL;
 		dxf = sum.convertToDxfData();
 	} else {
 		dxf = new DxfData(node.fn, node.fs, node.fa, node.filename, node.layername, node.origin_x, node.origin_y, node.scale);
@@ -446,7 +509,7 @@ PolySet *PolySetCGALEvaluator::evaluatePolySet(const CgaladvNode &node)
 {
 	CGAL_Nef_polyhedron N = this->cgalevaluator.evaluateCGALMesh(node);
 	PolySet *ps = NULL;
-	if (!N.empty()) {
+	if (!N.isNull()) {
 		ps = N.convertToPolyset();
 		if (ps) ps->convexity = node.convexity;
 	}
@@ -458,7 +521,7 @@ PolySet *PolySetCGALEvaluator::evaluatePolySet(const RenderNode &node)
 {
 	CGAL_Nef_polyhedron N = this->cgalevaluator.evaluateCGALMesh(node);
 	PolySet *ps = NULL;
-	if (!N.empty()) {
+	if (!N.isNull()) {
 		if (N.dim == 3 && !N.p3->is_simple()) {
 			PRINT("WARNING: Body of render() isn't valid 2-manifold!");
 		}

@@ -61,14 +61,16 @@ void CGALEvaluator::process(CGAL_Nef_polyhedron &target, const CGAL_Nef_polyhedr
  	if (target.dim != 2 && target.dim != 3) {
  		assert(false && "Dimension of Nef polyhedron must be 2 or 3");
  	}
-	if (src.empty()) return; // Empty polyhedron. This can happen for e.g. square([0,0])
+	if (src.isEmpty()) return; // Empty polyhedron. This can happen for e.g. square([0,0])
+	if (target.isEmpty() && op != CGE_UNION) return; // empty op <something> => empty
 	if (target.dim != src.dim) return; // If someone tries to e.g. union 2d and 3d objects
 
 	CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
 	try {
 		switch (op) {
 		case CGE_UNION:
-			target += src;
+			if (target.isEmpty()) target = src.copy();
+			else target += src;
 			break;
 		case CGE_INTERSECTION:
 			target *= src;
@@ -81,15 +83,13 @@ void CGALEvaluator::process(CGAL_Nef_polyhedron &target, const CGAL_Nef_polyhedr
 			break;
 		}
 	}
-	catch (CGAL::Failure_exception e) {
-		// union && difference assert triggered by testdata/scad/bugs/rotate-diff-nonmanifold-crash.scad
+	catch (const CGAL::Failure_exception &e) {
+		// union && difference assert triggered by testdata/scad/bugs/rotate-diff-nonmanifold-crash.scad and testdata/scad/bugs/issue204.scad
 		std::string opstr = op == CGE_UNION ? "union" : op == CGE_INTERSECTION ? "intersection" : op == CGE_DIFFERENCE ? "difference" : op == CGE_MINKOWSKI ? "minkowski" : "UNKNOWN";
 		PRINTB("CGAL error in CGAL_Nef_polyhedron's %s operator: %s", opstr % e.what());
 
-		// Minkowski errors can result in corrupt polyhedrons
-		if (op == CGE_MINKOWSKI) {
-			target = src;
-		}
+		// Errors can result in corrupt polyhedrons, so put back the old one
+		target = src;
 	}
 	CGAL::set_error_behaviour(old_behaviour);
 }
@@ -112,7 +112,8 @@ CGAL_Nef_polyhedron CGALEvaluator::applyToChildren(const AbstractNode &node, CGA
 		if (!isCached(*chnode)) {
 			CGALCache::instance()->insert(this->tree.getIdString(*chnode), chN);
 		}
-		if (N.empty()) N = chN.copy();
+		// Initialize N on first iteration with first expected geometric object
+		if (N.isNull() && !N.isEmpty()) N = chN.copy();
 		else process(N, chN, op);
 
 		chnode->progress_report();
@@ -132,6 +133,7 @@ CGAL_Nef_polyhedron CGALEvaluator::applyHull(const CgaladvNode &node)
 		const CGAL_Nef_polyhedron &chN = item.second;
 		// FIXME: Don't use deep access to modinst members
 		if (chnode->modinst->isBackground()) continue;
+		if (chN.dim == 0) continue; // Ignore object with dimension 0 (e.g. echo)
 		if (dim == 0) {
 			dim = chN.dim;
 		}
@@ -150,9 +152,14 @@ CGAL_Nef_polyhedron CGALEvaluator::applyHull(const CgaladvNode &node)
 		}
 		else if (dim == 3) {
 			CGAL_Polyhedron P;
-			chN.p3->convert_to_Polyhedron(P);
-			std::transform(P.vertices_begin(), P.vertices_end(), std::back_inserter(points3d), 
-										 boost::bind(static_cast<const CGAL_Polyhedron::Vertex::Point_3&(CGAL_Polyhedron::Vertex::*)() const>(&CGAL_Polyhedron::Vertex::point), _1));
+			if (!chN.p3->is_simple()) {
+				PRINT("Hull() currently requires a valid 2-manifold. Please modify your design. See http://en.wikibooks.org/wiki/OpenSCAD_User_Manual/STL_Import_and_Export");
+			}
+			else {
+				chN.p3->convert_to_Polyhedron(P);
+				std::transform(P.vertices_begin(), P.vertices_end(), std::back_inserter(points3d), 
+											 boost::bind(static_cast<const CGAL_Polyhedron::Vertex::Point_3&(CGAL_Polyhedron::Vertex::*)() const>(&CGAL_Polyhedron::Vertex::point), _1));
+			}
 		}
 		chnode->progress_report();
 	}
@@ -165,7 +172,8 @@ CGAL_Nef_polyhedron CGALEvaluator::applyHull(const CgaladvNode &node)
 	}
 	else if (dim == 3) {
 		CGAL_Polyhedron P;
-		CGAL::convex_hull_3(points3d.begin(), points3d.end(), P);
+		if (points3d.size()>3)
+			CGAL::convex_hull_3(points3d.begin(), points3d.end(), P);
 		N = CGAL_Nef_polyhedron(new CGAL_Nef_polyhedron3(P));
 	}
 	return N;
@@ -240,53 +248,60 @@ Response CGALEvaluator::visit(State &state, const TransformNode &node)
 		if (!isCached(node)) {
 			// First union all children
 			N = applyToChildren(node, CGE_UNION);
+			if ( matrix_contains_infinity( node.matrix ) || matrix_contains_nan( node.matrix ) ) {
+				// due to the way parse/eval works we can't currently distinguish between NaN and Inf
+				PRINT("Warning: Transformation matrix contains Not-a-Number and/or Infinity - removing object.");
+				N.reset();
+			}
 
 			// Then apply transform
-			// If there is no geometry under the transform, N will be empty and of dim 0,
-			// just just silently ignore such nodes
-			if (N.dim == 2) {
-				// Unfortunately CGAL provides no transform method for CGAL_Nef_polyhedron2
-				// objects. So we convert in to our internal 2d data format, transform it,
-				// tesselate it and create a new CGAL_Nef_polyhedron2 from it.. What a hack!
-				
-				Eigen::Matrix2f testmat;
-				testmat << node.matrix(0,0), node.matrix(0,1), node.matrix(1,0), node.matrix(1,1);
-				if (testmat.determinant() == 0) {
-					PRINT("Warning: Scaling a 2D object with 0 - removing object");
-					N.reset();
-				}
-				else {
-					CGAL_Aff_transformation2 t(
-						node.matrix(0,0), node.matrix(0,1), node.matrix(0,3),
-						node.matrix(1,0), node.matrix(1,1), node.matrix(1,3), node.matrix(3,3));
+			// If there is no geometry under the transform, N will be empty
+			// just silently ignore such nodes
+			if (!N.isNull()) {
+				if (N.dim == 2) {
+					// Unfortunately CGAL provides no transform method for CGAL_Nef_polyhedron2
+					// objects. So we convert in to our internal 2d data format, transform it,
+					// tesselate it and create a new CGAL_Nef_polyhedron2 from it.. What a hack!
 					
-					DxfData *dd = N.convertToDxfData();
-					for (size_t i=0; i < dd->points.size(); i++) {
-						CGAL_Kernel2::Point_2 p = CGAL_Kernel2::Point_2(dd->points[i][0], dd->points[i][1]);
-						p = t.transform(p);
-						dd->points[i][0] = to_double(p.x());
-						dd->points[i][1] = to_double(p.y());
+					Eigen::Matrix2f testmat;
+					testmat << node.matrix(0,0), node.matrix(0,1), node.matrix(1,0), node.matrix(1,1);
+					if (testmat.determinant() == 0) {
+						PRINT("Warning: Scaling a 2D object with 0 - removing object");
+						N.reset();
 					}
-					
-					PolySet ps;
-					ps.is2d = true;
-					dxf_tesselate(&ps, *dd, 0, true, false, 0);
-					
-					N = evaluateCGALMesh(ps);
-					delete dd;
+					else {
+						CGAL_Aff_transformation2 t(
+							node.matrix(0,0), node.matrix(0,1), node.matrix(0,3),
+							node.matrix(1,0), node.matrix(1,1), node.matrix(1,3), node.matrix(3,3));
+						
+						DxfData *dd = N.convertToDxfData();
+						for (size_t i=0; i < dd->points.size(); i++) {
+							CGAL_Kernel2::Point_2 p = CGAL_Kernel2::Point_2(dd->points[i][0], dd->points[i][1]);
+							p = t.transform(p);
+							dd->points[i][0] = to_double(p.x());
+							dd->points[i][1] = to_double(p.y());
+						}
+						
+						PolySet ps;
+						ps.is2d = true;
+						dxf_tesselate(&ps, *dd, 0, true, false, 0);
+						
+						N = evaluateCGALMesh(ps);
+						delete dd;
+					}
 				}
-			}
-			else if (N.dim == 3) {
-				if (node.matrix.matrix().determinant() == 0) {
-					PRINT("Warning: Scaling a 3D object with 0 - removing object");
-					N.reset();
-				}
-				else {
-					CGAL_Aff_transformation t(
-						node.matrix(0,0), node.matrix(0,1), node.matrix(0,2), node.matrix(0,3),
-						node.matrix(1,0), node.matrix(1,1), node.matrix(1,2), node.matrix(1,3),
-						node.matrix(2,0), node.matrix(2,1), node.matrix(2,2), node.matrix(2,3), node.matrix(3,3));
-					N.p3->transform(t);
+				else if (N.dim == 3) {
+					if (node.matrix.matrix().determinant() == 0) {
+						PRINT("Warning: Scaling a 3D object with 0 - removing object");
+						N.reset();
+					}
+					else {
+						CGAL_Aff_transformation t(
+							node.matrix(0,0), node.matrix(0,1), node.matrix(0,2), node.matrix(0,3),
+							node.matrix(1,0), node.matrix(1,1), node.matrix(1,2), node.matrix(1,3),
+							node.matrix(2,0), node.matrix(2,1), node.matrix(2,2), node.matrix(2,3), node.matrix(3,3));
+						N.p3->transform(t);
+					}
 				}
 			}
 		}
@@ -377,7 +392,7 @@ void CGALEvaluator::addToParent(const State &state, const AbstractNode &node, co
 
 CGAL_Nef_polyhedron CGALEvaluator::evaluateCGALMesh(const PolySet &ps)
 {
-	if (ps.empty()) return CGAL_Nef_polyhedron();
+	if (ps.empty()) return CGAL_Nef_polyhedron(ps.is2d ? 2 : 3);
 
 	if (ps.is2d)
 	{
@@ -637,7 +652,7 @@ CGAL_Nef_polyhedron CGALEvaluator::evaluateCGALMesh(const PolySet &ps)
 				N = new CGAL_Nef_polyhedron3(*P);
 			}
 		}
-		catch (CGAL::Assertion_exception e) {
+		catch (const CGAL::Assertion_exception &e) {
 			PRINTB("CGAL error in CGAL_Nef_polyhedron3(): %s", e.what());
 		}
 		CGAL::set_error_behaviour(old_behaviour);

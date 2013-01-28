@@ -41,6 +41,8 @@ public:
 
 	static std::vector<const Context*> ctx_stack;
 
+	mutable unordered_map<std::string, int> recursioncount;
+
 private:
 	typedef unordered_map<std::string, Value> ValueMap;
 	ValueMap constants;

@@ -1,12 +1,12 @@
-// version_check.h copyright 2012 don bright. released under the GPL 2, or
-// later, as described in the file named 'COPYING' in OpenSCAD's project root.
-// permission to change this license is given to Marius Kintel & Clifford Wolf
+// version_check.h by don bright 2012. Copyright assigned to Marius Kintel and
+// Clifford Wolf 2012. Released under the GPL 2, or later, as described in
+// the file named 'COPYING' in OpenSCAD's project root.
 
 /* This file will check versions of libraries at compile time. If they
 are too old, the user will be warned. If the user wishes to force
 compilation, they can run
 
- qmake CONFIG=skip-version-check
+ qmake CONFIG+=skip-version-check
 
 Otherwise they will be guided to README.md and an -build-dependencies script.
 
@@ -24,26 +24,26 @@ a time, to avoid confusion.
 #define GMPPATCH 0
 #define SYS_GMP_VER  (__GNU_MP_VERSION * 10000 + __GNU_MP_VERSION_MINOR * 100 + __GNU_MP_VERSION_PATCHLEVEL * 1)
 #if SYS_GMP_VER < GMPMAJOR * 10000 + GMPMINOR * 100 + GMPPATCH * 1
-#error GNU GMP library missing or version too old. See README.md. To force compile, run qmake CONFIG=skip-version-check
+#error GNU GMP library missing or version too old. See README.md. To force compile, run qmake CONFIG+=skip-version-check
 #else
 
 
 #include <mpfr.h>
 #if MPFR_VERSION < MPFR_VERSION_NUM( 3,0,0 )
-#error GNU MPFR library missing or version too old. See README.md. To force compile, run qmake CONFIG=skip-version-check
+#error GNU MPFR library missing or version too old. See README.md. To force compile, run qmake CONFIG+=skip-version-check
 #else
 
 
 #include <Eigen/Core>
 #if not EIGEN_VERSION_AT_LEAST( 2,0,13 )
-#error eigen2 library missing or version too old. See README.md. To force compile, run qmake CONFIG=skip-version-check
+#error eigen2 library missing or version too old. See README.md. To force compile, run qmake CONFIG+=skip-version-check
 #else
 
 
 #include <boost/version.hpp>
 // boost 1.3.5 = 103500
 #if BOOST_VERSION < 103500
-#error boost library missing or version too old. See README.md. To force compile, run qmake CONFIG=skip-version-check
+#error boost library missing or version too old. See README.md. To force compile, run qmake CONFIG+=skip-version-check
 #else
 
 
@@ -51,7 +51,7 @@ a time, to avoid confusion.
 #include <CGAL/version.h>
 
 #if CGAL_VERSION_NR < 1030601000
-#error CGAL library missing or version too old. See README.md. To force compile, run qmake CONFIG=skip-version-check
+#error CGAL library missing or version too old. See README.md. To force compile, run qmake CONFIG+=skip-version-check
 #else
 
 #if CGAL_VERSION_NR < 1040021000
@@ -66,6 +66,9 @@ a time, to avoid confusion.
 #warning "."
 #warning "."
 #warning "======================="
+#ifdef __clang__
+#error For Clang to work, CGAL must be >= 4.0.2
+#endif
 #endif // CGAL_VERSION_NR < 10400010000
 #endif //ENABLE_CGAL
 
@@ -73,20 +76,20 @@ a time, to avoid confusion.
 #include <GL/glew.h>
 // kludge - GLEW doesnt have compiler-accessible version numbering
 #ifndef GLEW_ARB_occlusion_query2
-#error GLEW library missing or version too old. See README.md. To force compile, run qmake CONFIG=skip-version-check
+#error GLEW library missing or version too old. See README.md. To force compile, run qmake CONFIG+=skip-version-check
 #else
 
 
 #include <opencsg.h>
 // 1.3.2 -> 0x0132
 #if OPENCSG_VERSION < 0x0132
-#error OPENCSG library missing or version too old. See README.md. To force compile, run qmake CONFIG=skip-version-check
+#error OPENCSG library missing or version too old. See README.md. To force compile, run qmake CONFIG+=skip-version-check
 #else
 #endif // ENABLE_OPENCSG
 
 #include <QtCore/qglobal.h>
 #if QT_VERSION < 0x040400
-#error QT library missing or version too old. See README.md. To force compile, run qmake CONFIG=skip-version-check
+#error QT library missing or version too old. See README.md. To force compile, run qmake CONFIG+=skip-version-check
 #endif // QT
 
 
