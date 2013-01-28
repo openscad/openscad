@@ -68,7 +68,7 @@ macx {
   APP_RESOURCES.path = Contents/Resources
   APP_RESOURCES.files = OpenSCAD.sdef
   QMAKE_BUNDLE_DATA += APP_RESOURCES
-  LIBS += -framework Carbon
+  LIBS += -framework Cocoa
 }
 else {
   TARGET = openscad
@@ -312,7 +312,7 @@ unix:!macx {
 }
 macx {
   SOURCES += src/imageutils-macosx.cc
-  SOURCES += src/OffscreenContextCGL.mm
+  OBJECTIVE_SOURCES += src/OffscreenContextCGL.mm
 }
 win32* {
   SOURCES += src/imageutils-lodepng.cc

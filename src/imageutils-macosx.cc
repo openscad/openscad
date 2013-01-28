@@ -1,6 +1,5 @@
 #include <ApplicationServices/ApplicationServices.h>
 #include <iostream>
-#include <CGDataConsumer.h>
 #include "imageutils.h"
 #include <assert.h>
 
@@ -15,13 +14,13 @@ size_t write_bytes_to_ostream (void *info,const void *buffer,size_t count)
 	try {
 		output->write( (const char *)buffer, count );
 		endpos = output->tellp();
-	} catch (const std::ios_base::failure& e)
+	} catch (const std::ios_base::failure& e) {
 		std::cerr << "Error writing to ostream:" << e.what() << "\n";
 	}
 	return (endpos-startpos);
 }
 
-CGDataConsumerRef dataconsumer CGDataConsumerCreateWithOstream(std::ostream &output)
+CGDataConsumerRef CGDataConsumerCreateWithOstream(std::ostream &output)
 {
 	dc_callbacks.putBytes = write_bytes_to_ostream;
 	dc_callbacks.releaseConsumer = NULL; // ostream closed by caller of write_png

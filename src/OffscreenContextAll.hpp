@@ -1,6 +1,9 @@
 // Functions shared by OffscreenContext[platform].cc
 // #include this directly after definition of struct OffscreenContext.
 
+#include <vector>
+#include <ostream>
+
 void bind_offscreen_context(OffscreenContext *ctx)
 {
   if (ctx) fbo_bind(ctx->fbo);
@@ -30,7 +33,7 @@ bool save_framebuffer_common(OffscreenContext *ctx, std::ostream &output)
 {
   if (!ctx) return false;
   int samplesPerPixel = 4; // R, G, B and A
-  vector<GLubyte> pixels(ctx->width * ctx->height * samplesPerPixel);
+  std::vector<GLubyte> pixels(ctx->width * ctx->height * samplesPerPixel);
   glReadPixels(0, 0, ctx->width, ctx->height, GL_RGBA, GL_UNSIGNED_BYTE, &pixels[0]);
 
   // Flip it vertically - images read from OpenGL buffers are upside-down
@@ -56,7 +59,7 @@ OffscreenContext *create_offscreen_context_common(OffscreenContext *ctx)
 	if (!ctx) return NULL;
 	GLenum err = glewInit(); // must come after Context creation and before FBO c$
   if (GLEW_OK != err) {
-    cerr << "Unable to init GLEW: " << glewGetErrorString(err) << "\n";
+    std::cerr << "Unable to init GLEW: " << glewGetErrorString(err) << "\n";
     return NULL;
   }
   //cerr << glew_dump(0);

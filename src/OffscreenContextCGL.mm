@@ -21,7 +21,7 @@ struct OffscreenContext
 
 #include "OffscreenContextAll.hpp"
 
-std::string offscreen_context_getinfo(OffscreenContext *ctx)
+std::string offscreen_context_getinfo(OffscreenContext *)
 {
   std::stringstream out;
 
@@ -83,7 +83,7 @@ OffscreenContext *create_offscreen_context(int w, int h)
     std::cerr << "Unable to init GLEW: " << glewGetErrorString(err) << std::endl;
     return NULL;
   }
-  glew_dump();
+  glew_dump(false);
 
   ctx->fbo = fbo_new();
   if (!fbo_init(ctx->fbo, w, h)) {
@@ -109,27 +109,11 @@ bool teardown_offscreen_context(OffscreenContext *ctx)
 }
 
 /*!
-  Capture framebuffer from OpenGL and write it to the given filename as PNG.
-*/
-bool save_framebuffer(OffscreenContext *ctx, const char *filename)
-{
-        std::ofstream fstream(filename,std::ios::out|std::ios::binary);
-        if (!fstream.is_open()) {
-                PRINTB("Can't open file \"%s\" for writing", filename);
-                return false;
-        } else {
-                save_framebuffer(ctx, fstream);
-                fstream.close();
-        }
-        return true;
-}
-
-/*!
   Capture framebuffer from OpenGL and write it to the given ostream
 */
 bool save_framebuffer(OffscreenContext *ctx, std::ostream &output)
 {
-  if (!ctx || !filename) return false;
+  if (!ctx) return false;
   // Read pixels from OpenGL
   int samplesPerPixel = 4; // R, G, B and A
   int rowBytes = samplesPerPixel * ctx->width;
