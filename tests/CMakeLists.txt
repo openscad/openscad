@@ -294,8 +294,7 @@ if (NOT $ENV{GLEWDIR} STREQUAL "")
 elseif (NOT $ENV{OPENSCAD_LIBRARIES} STREQUAL "")
   set(GLEW_DIR "$ENV{OPENSCAD_LIBRARIES}")
 endif()
-if (NOT GLEW_INCLUDE_DIR)
-  message(STATUS "OPENCSG_DIR: " ${OPENCSG_DIR})
+if (GLEW_DIR)
   find_path(GLEW_INCLUDE_DIR
             GL/glew.h
             HINTS ${GLEW_DIR}/include
@@ -304,15 +303,17 @@ if (NOT GLEW_INCLUDE_DIR)
                NAMES GLEW glew
                HINTS ${GLEW_DIR}/lib ${GLEW_DIR}/lib64
 	       NO_DEFAULT_PATH)
-  if (NOT GLEW_LIBRARY)
-    find_package(GLEW REQUIRED)
-    if (NOT GLEW_LIBRARY)
-      message(FATAL_ERROR "GLEW not found")
-    endif()
+  if (GLEW_INCLUDE_DIR AND GLEW_LIBRARY)
+    set(GLEW_FOUND 1)
   endif()
-  message(STATUS "GLEW include: " ${GLEW_INCLUDE_DIR})
-  message(STATUS "GLEW library: " ${GLEW_LIBRARY})
 endif()
+
+if (NOT GLEW_FOUND)
+  find_package(GLEW REQUIRED)
+endif()
+
+message(STATUS "GLEW include: " ${GLEW_INCLUDE_DIR})
+message(STATUS "GLEW library: " ${GLEW_LIBRARY})
 
 inclusion(GLEW_DIR GLEW_INCLUDE_DIR)
 
