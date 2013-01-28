@@ -299,8 +299,6 @@ if (GLEW_DIR)
                HINTS ${GLEW_DIR}/lib ${GLEW_DIR}/lib64
 	       NO_DEFAULT_PATH)
   if (GLEW_INCLUDE_DIR AND GLEW_LIBRARY)
-    message(STATUS "GLEW include: " ${GLEW_INCLUDE_DIR})
-    message(STATUS "GLEW library: " ${GLEW_LIBRARY})
     set(GLEW_FOUND 1)
   endif()
 endif()
@@ -308,6 +306,9 @@ endif()
 if (NOT GLEW_FOUND)
   find_package(GLEW REQUIRED)
 endif()
+
+message(STATUS "GLEW include: " ${GLEW_INCLUDE_DIR})
+message(STATUS "GLEW library: " ${GLEW_LIBRARY})
 
 inclusion(GLEW_DIR GLEW_INCLUDE_DIR)
 
