@@ -35,23 +35,21 @@ if (WIN32)
 else()
   find_path(GLEW_INCLUDE_DIR GL/glew.h
     PATHS /usr/include /usr/local/include /usr/pkg/include
-    NO_DEFAULT_PATH
     DOC "The directory where GL/glew.h resides")
   find_library(GLEW_LIBRARY
     NAMES GLEW glew
     PATHS /usr/lib /usr/local/lib /usr/pkg/lib /lib /lib64 /usr/lib64
-    NO_DEFAULT_PATH
     DOC "The GLEW library")
 endif()
 
-if (GLEW_INCLUDE_DIR AND GLEW_LIBRARY)
-  set(GLEW_FOUND 1 CACHE STRING "Set to 1 if GLEW is found, 0 otherwise")
-else()
+if ("${GLEW_INCLUDE_DIR}" STREQUAL "" AND "${GLEW_LIBRARY}" STREQUAL "")
   set(GLEW_FOUND 0 CACHE STRING "Set to 1 if GLEW is found, 0 otherwise")
+else()
+  set(GLEW_FOUND 1 CACHE STRING "Set to 1 if GLEW is found, 0 otherwise")
 endif()
 
 if (NOT GLEW_FOUND)
-  include(FindPkgConfig.cmake)
+  find_package(PkgConfig REQUIRED)
   if (PKG_CONFIG_FOUND)
     message(STATUS "Doing pkg config glew check...")
     pkg_search_module(GLEW glew)
