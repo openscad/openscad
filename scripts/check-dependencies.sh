@@ -449,7 +449,7 @@ check_old_local()
   warnon=
   if [ "`uname | grep -i linux`" ]; then
     header_list="opencsg.h CGAL boost GL/glew.h gmp.h mpfr.h eigen2 eigen3"
-    liblist="libboost libopencsg libCGAL libglew"
+    liblist="libboost_system libboost_system-mt libopencsg libCGAL libglew"
     for i in $header_list $liblist; do
       if [ -e /usr/local/include/$i ]; then
         echo "Warning: you have a copy of "$i" under /usr/local/include"
