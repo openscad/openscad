@@ -361,7 +361,7 @@ int csgtestcore(int argc, char *argv[], test_type_e test_type)
 
 	csgInfo.glview->paintGL();
 	
-	csgInfo.glview->save(outfilename);
+	if (outfilename) csgInfo.glview->save(outfilename);
 	
 	delete root_node;
 	delete root_module;
