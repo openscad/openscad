@@ -176,15 +176,27 @@ build_boost()
     fi
   fi
   # We only need certain portions of boost
-  ./bootstrap.sh --prefix=$DEPLOYDIR --with-libraries=thread,program_options,filesystem,system,regex
+  if [ -e ./bootstrap.sh ]; then
+    BSTRAPBIN=./bootstrap.sh
+  else
+    BSTRAPBIN=./configure
+  fi
+  $BSTRAPBIN --prefix=$DEPLOYDIR --with-libraries=thread,program_options,filesystem,system,regex
+	if [ -e ./b2 ]; then
+    BJAMBIN=b2;
+  elif [ -e ./bjam ]; then
+    BJAMBIN=./bjam
+  elif [ -e ./Makefile ]; then
+    BJAMBIN=make
+  fi
   if [ $CXX ]; then
     if [ $CXX = "clang++" ]; then
-      ./b2 -j$NUMCPU toolset=clang install
+      $BJAMBIN -j$NUMCPU toolset=clang install
       # ./b2 -j$NUMCPU toolset=clang cxxflags="-stdlib=libc++" linkflags="-stdlib=libc++" install
     fi
   else
-    ./b2 -j$NUMCPU
-    ./b2 install
+    $BJAMBIN -j$NUMCPU
+    $BJAMBIN install
   fi
 }
 
