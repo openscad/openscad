@@ -43,7 +43,7 @@
 */
 
 #include <boost/random/mersenne_twister.hpp>
-#include <boost/random/uniform_real_distribution.hpp>
+#include <boost/random/uniform_real.hpp>
 
 #ifdef __WIN32__
 #include <process.h>
@@ -54,8 +54,8 @@ int process_id = _getpid();
 int process_id = getpid();
 #endif
 
-boost::random::mt19937 deterministic_rng;
-boost::random::mt19937 lessdeterministic_rng( std::time(0) + process_id );
+boost::mt19937 deterministic_rng;
+boost::mt19937 lessdeterministic_rng( std::time(0) + process_id );
 
 AbstractFunction::~AbstractFunction()
 {
@@ -167,7 +167,7 @@ Value builtin_rands(const Context *, const std::vector<std::string>&, const std:
 	
 	double min = std::min( args[0].toDouble(), args[1].toDouble() );
 	double max = std::max( args[0].toDouble(), args[1].toDouble() );
-	boost::random::uniform_real_distribution<> distributor( min, max );
+	boost::uniform_real<> distributor( min, max );
 	Value::VectorType vec;
 	for (int i=0; i<args[2].toDouble(); i++) {
 		if ( deterministic ) {
