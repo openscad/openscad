@@ -3,5 +3,15 @@
 # $2 = png filename
 # $1 = scad filename
 
-./openscad $1 -o $2 --render
+# Handle Mac binaries specially - somewhat hackish..
+EXE=./OpenSCAD.app/Contents/MacOS/OpenSCAD
+if [ ! -e $EXE ]; then
+  EXE=./openscad
+  if [ ! -e $EXE ]; then 
+    echo "OpenSCAD binary not found"
+    exit 1
+  fi
+fi
+
+$EXE $1 -o $2 --render
 
