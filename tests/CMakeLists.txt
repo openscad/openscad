@@ -674,11 +674,6 @@ set(CTEST_CUSTOM_TXT "\n
 ")
 file(WRITE ${CTEST_CUSTOM_FILE} ${CTEST_CUSTOM_TXT})
 
-foreach(FILE test_pretty_print.py)
-  configure_file(${CMAKE_CURRENT_SOURCE_DIR}/${FILE}
-                 ${CMAKE_CURRENT_BINARY_DIR}/${FILE} COPYONLY)
-endforeach()
-
 set_directory_properties(PROPERTIES TEST_INCLUDE_FILE "${CMAKE_SOURCE_DIR}/EnforceConfig.cmake")
 
 # Subst files
@@ -798,10 +793,15 @@ endforeach()
 # GUI test
 
 message(STATUS "copying openscad GUI binary...")
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/guicgalpngtest
-               ${CMAKE_CURRENT_BINARY_DIR}/guicgalpngtest COPYONLY)
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/../openscad
-               ${CMAKE_CURRENT_BINARY_DIR}/openscad COPYONLY)
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/guicgalpngtest
+     DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+IF (APPLE)
+  file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/../OpenSCAD.app
+       DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+ELSE()
+  file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/../openscad
+       DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+ENDIF()
 
 # Add tests
 
