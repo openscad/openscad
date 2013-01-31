@@ -554,6 +554,20 @@ set_target_properties(throwntogethertest PROPERTIES COMPILE_FLAGS "-DENABLE_OPEN
 target_link_libraries(throwntogethertest tests-offscreen tests-cgal ${OPENCSG_LIBRARY} ${TESTS-CGAL-LIBRARIES} ${GLEW_LIBRARY} ${COCOA_LIBRARY})
 
 #
+# gui tests (simple wrappers around the GUI binary built by qmake)
+#
+if(APPLE)
+  set(GUI_BINPATH "${CMAKE_CURRENT_SOURCE_DIR}/../OpenSCAD.app/Contents/MacOS/OpenSCAD")
+elseif(WIN32)
+  set(GUI_BINPATH "${CMAKE_CURRENT_SOURCE_DIR}/../Release/openscad.exe")
+else()
+  set(GUI_BINPATH "${CMAKE_CURRENT_SOURCE_DIR}/../openscad")
+endif()
+
+add_executable(guicgalpngtest guicgalpngtest.cc)
+set_target_properties(guicgalpngtest PROPERTIES COMPILE_FLAGS "-DBINPATH=${GUI_BINPATH}")
+
+#
 # Tags tests as disabled. This is more convenient than removing them manually
 # from the lists of filenames
 #
@@ -789,19 +803,6 @@ foreach(FILE ${EXAMPLE_FILES})
   get_test_fullname(guicgalpngtest ${FILE} TEST_FULLNAME)
   set_test_config(Examples ${TEST_FULLNAME})
 endforeach()
-
-# GUI test
-
-message(STATUS "copying openscad GUI binary...")
-file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/guicgalpngtest
-     DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
-IF (APPLE)
-  file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/../OpenSCAD.app
-       DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
-ELSE()
-  file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/../openscad
-       DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
-ENDIF()
 
 # Add tests
 
