@@ -34,7 +34,11 @@ def initialize_environment():
 
 def init_expected_filename(testname, cmd):
     global expecteddir, expectedfilename
-    expecteddir = os.path.join(options.regressiondir, os.path.split(cmd)[1])
+    testbinary_filename = os.path.split(cmd)[1]
+    # if you have guicgalpngtest, use the images for cgalpngtest
+    if testbinary_filename.startswith("gui"):
+        testbinary_filename = testbinary_filename[3:]
+    expecteddir = os.path.join(options.regressiondir, testbinary_filename )
     expectedfilename = os.path.join(expecteddir, testname + "-expected." + options.suffix)
     expectedfilename = os.path.normpath( expectedfilename )
 
