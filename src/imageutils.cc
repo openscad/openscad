@@ -1,7 +1,7 @@
 #include "imageutils.h"
+#include <assert.h>
 #include <string.h>
 #include <fstream>
-#include <assert>
 
 void flip_image(const unsigned char *src, unsigned char *dst, size_t pixelsize, size_t width, size_t height)
 {

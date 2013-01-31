@@ -573,7 +573,7 @@ set_target_properties(throwntogethertest PROPERTIES COMPILE_FLAGS "-DENABLE_OPEN
 target_link_libraries(throwntogethertest tests-offscreen tests-cgal ${OPENCSG_LIBRARY} ${TESTS-CGAL-LIBRARIES} ${GLEW_LIBRARY} ${COCOA_LIBRARY})
 
 #
-# gui tests (simple wrappers around the GUI binary built by qmake)
+# GUI binary tests
 #
 if(APPLE)
   set(GUI_BINPATH "${CMAKE_CURRENT_SOURCE_DIR}/../OpenSCAD.app/Contents/MacOS/OpenSCAD")
@@ -583,8 +583,14 @@ else()
   set(GUI_BINPATH "${CMAKE_CURRENT_SOURCE_DIR}/../openscad")
 endif()
 
-add_executable(guicgalpngtest guicgalpngtest.cc)
-set_target_properties(guicgalpngtest PROPERTIES COMPILE_FLAGS "-DBINPATH=${GUI_BINPATH}")
+if(EXISTS "${GUI_BINPATH}")
+  add_executable(guicgalpngtest guicgalpngtest.cc)
+  set_target_properties(guicgalpngtest PROPERTIES COMPILE_FLAGS "-DBINPATH=${GUI_BINPATH}")
+  message(STATUS "Found OpenSCAD GUI binary: ${GUI_BINPATH}")
+else()
+  message(STATUS "Couldn't find the OpenSCAD GUI binary: ${GUI_BINPATH}")
+  message(FATAL_ERROR "Please build the OpenSCAD GUI binary and place it here: ${GUI_BINPATH}" )
+endif()
 
 #
 # Tags tests as disabled. This is more convenient than removing them manually
