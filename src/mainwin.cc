@@ -89,6 +89,10 @@
 #include "cgal.h"
 #include "cgalworker.h"
 
+#else
+
+#include "PolySetEvaluator.h"
+
 #endif // ENABLE_CGAL
 
 #ifndef OPENCSG_VERSION_STRING
@@ -153,9 +157,11 @@ MainWindow::MainWindow(const QString &filename)
 {
 	setupUi(this);
 
+#ifdef ENABLE_CGAL
 	this->cgalworker = new CGALWorker();
 	connect(this->cgalworker, SIGNAL(done(CGAL_Nef_polyhedron *)), 
 					this, SLOT(actionRenderCGALDone(CGAL_Nef_polyhedron *)));
+#endif
 
 	register_builtin(root_ctx);
 
@@ -410,8 +416,10 @@ MainWindow::loadDesignSettings()
 	}
 	uint polySetCacheSize = Preferences::inst()->getValue("advanced/polysetCacheSize").toUInt();
 	PolySetCache::instance()->setMaxSize(polySetCacheSize);
+#ifdef ENABLE_CGAL
 	uint cgalCacheSize = Preferences::inst()->getValue("advanced/cgalCacheSize").toUInt();
 	CGALCache::instance()->setMaxSize(cgalCacheSize);
+#endif
 }
 
 MainWindow::~MainWindow()
@@ -668,8 +676,12 @@ void MainWindow::compileCSG(bool procevents)
 
 	progress_report_prep(this->root_node, report_func, this);
 	try {
+#ifdef ENABLE_CGAL
 		CGALEvaluator cgalevaluator(this->tree);
 		PolySetCGALEvaluator psevaluator(cgalevaluator);
+#else
+		PolySetEvaluator psevaluator(this->tree);
+#endif
 		CSGTermEvaluator csgrenderer(this->tree, &psevaluator);
 		this->root_raw_term = csgrenderer.evaluateCSGTerm(*root_node, highlight_terms, background_terms);
 		if (!root_raw_term) {
@@ -678,7 +690,9 @@ void MainWindow::compileCSG(bool procevents)
 				QApplication::processEvents();
 		}
 		PolySetCache::instance()->print();
+#ifdef ENABLE_CGAL
 		CGALCache::instance()->print();
+#endif
 	}
 	catch (const ProgressCancelException &e) {
 		PRINT("CSG generation cancelled.");
@@ -1187,8 +1201,9 @@ void MainWindow::actionRenderCGALDone(CGAL_Nef_polyhedron *root_N)
 
 	if (root_N) {
 		PolySetCache::instance()->print();
+#ifdef ENABLE_CGAL
 		CGALCache::instance()->print();
-
+#endif
 		if (!root_N->isNull()) {
 			if (root_N->dim == 2) {
 				PRINT("   Top level object is a 2D object:");

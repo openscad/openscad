@@ -258,7 +258,6 @@ int main(int argc, char **argv)
 
 		if (!filename) help(argv[0]);
 
-#ifdef ENABLE_CGAL
 		Context root_ctx;
 		register_builtin(root_ctx);
 
@@ -309,6 +308,7 @@ int main(int argc, char **argv)
 			}
 		}
 		else {
+#ifdef ENABLE_CGAL
 			CGAL_Nef_polyhedron root_N = cgalevaluator.evaluateCGALMesh(*tree.root());
 			
 			fs::current_path(original_path);
@@ -402,8 +402,8 @@ int main(int argc, char **argv)
 		}
 		delete root_node;
 #else
-		fprintf(stderr, "OpenSCAD has been compiled without CGAL support!\n");
-		exit(1);
+			fprintf(stderr, "OpenSCAD has been compiled without CGAL support!\n");
+			exit(1);
 #endif
 	}
 	else if (useGUI)

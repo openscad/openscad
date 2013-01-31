@@ -6,6 +6,7 @@ DirText "This will install OpenSCAD on your computer. Choose a directory"
 Section "install"
 SetOutPath $INSTDIR
 File openscad.exe
+File openscad.com
 File /r /x mingw-cross-env examples
 File /r /x mingw-cross-env libraries
 ${registerExtension} "$INSTDIR\openscad.exe" ".scad" "OpenSCAD_File"

@@ -372,3 +372,8 @@ INSTALLS += applications
 icons.path = $$PREFIX/share/pixmaps
 icons.files = icons/openscad.png
 INSTALLS += icons
+
+CONFIG(winconsole) {
+  include(winconsole.pri)
+}
+

@@ -119,7 +119,8 @@ PolySet *ImportNode::evaluate_polyset(class PolySetEvaluator *) const
 	if (this->type == TYPE_STL)
 	{
 		handle_dep((std::string)this->filename);
-		std::ifstream f(this->filename.c_str(), std::ios::in | std::ios::binary);
+		// Open file and position at the end
+		std::ifstream f(this->filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
 		if (!f.good()) {
 			PRINTB("WARNING: Can't open import file '%s'.", this->filename);
 			return p;
@@ -132,9 +133,20 @@ PolySet *ImportNode::evaluate_polyset(class PolySetEvaluator *) const
 		boost::regex ex_vertex("vertex");
 		boost::regex ex_vertices("\\s*vertex\\s+([^\\s]+)\\s+([^\\s]+)\\s+([^\\s]+)");
 
+		bool binary = false;
+		int file_size = f.tellg();
+		f.seekg(80);
+		if (!f.eof()) {
+			int facenum = 0;
+			// FIXME: Assumes little endian
+			f.read((char *)&facenum, sizeof(int));
+			if (file_size == 80 + 4 + 50*facenum) binary = true;
+		}
+		f.seekg(0);
+
 		char data[5];
 		f.read(data, 5);
-		if (!f.eof() && !memcmp(data, "solid", 5)) {
+		if (!binary && !f.eof() && !memcmp(data, "solid", 5)) {
 			int i = 0;
 			double vdata[3][3];
 			std::string line;
@@ -174,6 +186,7 @@ PolySet *ImportNode::evaluate_polyset(class PolySetEvaluator *) const
 		else
 		{
 			f.ignore(80-5+4);
+			// FIXME: Assumes little endian
 			while (1) {
 #ifdef _MSC_VER
 #pragma pack(push,1)

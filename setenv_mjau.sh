@@ -6,7 +6,7 @@ export QMAKESPEC=macx-g++
 #export CGALDIR=$PWD/../install/CGAL-3.6
 #export DYLD_LIBRARY_PATH=$OPENCSGDIR/lib
 
-# Own own Qt
+# Our own Qt
 export PATH=$OPENSCAD_LIBRARIES/bin:$PATH
 
 # ccache:
