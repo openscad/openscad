@@ -16,11 +16,11 @@ int main( int argc, char * argv[] )
 	}
 	char *newargs[6];
 	char *scadfilename = argv[1];
-	char *pngfile = argv[2];
+	char *pngfilename = argv[2];
 	newargs[0] = const_cast<char *>(QUOTE( BINPATH ));
 	newargs[1] = scadfilename;
 	newargs[2] = const_cast<char *>("-o");
-	newargs[3] = pngfile;
+	newargs[3] = pngfilename;
 	newargs[4] = const_cast<char *>("--render");
 	newargs[5] = NULL;
 	return execv( newargs[0], newargs );
