@@ -10,7 +10,7 @@
 int main( int argc, char * argv[] )
 {
 	fprintf(stderr,"%s: wrapper for OpenSCAD at %s\n", argv[0], QUOTE( BINPATH ) );
-	if (argc<3 || argc>3) {
+	if ( argc != 3 ) {
 		fprintf(stderr,"%s: bad number of arguments: %i\n", argv[0], argc);
 		return 1;
 	}
@@ -23,6 +23,6 @@ int main( int argc, char * argv[] )
 	newargs[3] = pngfile;
 	newargs[4] = const_cast<char *>("--render");
 	newargs[5] = NULL;
-	return execv( QUOTE( BINPATH ), newargs );
+	return execv( newargs[0], newargs );
 }
 

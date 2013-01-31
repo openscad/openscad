@@ -687,6 +687,8 @@ endmacro()
 
 enable_testing()
 
+
+
 set_directory_properties(PROPERTIES TEST_INCLUDE_FILE "${CMAKE_SOURCE_DIR}/EnforceConfig.cmake")
 
 # Subst files
