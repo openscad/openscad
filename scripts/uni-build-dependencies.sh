@@ -183,7 +183,7 @@ build_boost()
   fi
   $BSTRAPBIN --prefix=$DEPLOYDIR --with-libraries=thread,program_options,filesystem,system,regex
 	if [ -e ./b2 ]; then
-    BJAMBIN=b2;
+    BJAMBIN=./b2;
   elif [ -e ./bjam ]; then
     BJAMBIN=./bjam
   elif [ -e ./Makefile ]; then
