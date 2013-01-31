@@ -49,8 +49,7 @@ void export_png_with_cgal(CGAL_Nef_polyhedron *root_N, std::ostream &output)
 void export_png_with_opencsg(CGAL_Nef_polyhedron *root_N, std::ostream &output)
 {
 	CsgInfo csgInfo;
-	output << "solid OpenSCAD_Model opencsg\n";
-	output << "endsolid OpenSCAD_Model opencsg\n";
+	output << "not implemented: solid OpenSCAD_Model opencsg png export\n";
 }
 
 

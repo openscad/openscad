@@ -400,11 +400,11 @@ int main(int argc, char **argv)
 				}
 			}
 		}
-		delete root_node;
 #else
 			fprintf(stderr, "OpenSCAD has been compiled without CGAL support!\n");
 			exit(1);
 #endif
+		delete root_node;
 	}
 	else if (useGUI)
 	{

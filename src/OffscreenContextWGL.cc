@@ -195,9 +195,11 @@ bool teardown_offscreen_context(OffscreenContext *ctx)
   if (ctx) {
     fbo_unbind(ctx->fbo);
     fbo_delete(ctx->fbo);
+
     wglMakeCurrent( NULL, NULL );
     wglDeleteContext( ctx->openGLContext );
     ReleaseDC( ctx->window, ctx->dev_context );
+
     return true;
   }
   return false;
