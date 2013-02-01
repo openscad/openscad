@@ -24,6 +24,7 @@
 #
 # Prerequisites:
 # - wget or curl
+# - OpenGL (gl.h)
 # - gcc
 #
 # Enable Clang (experimental, only works on linux):
@@ -39,6 +40,26 @@ printUsage()
 {
   echo "Usage: $0"
   echo
+}
+
+build_glu()
+{
+  version=$1
+  if [ -e $DEPLOYDIR/lib/libGLU.so ]; then
+    echo "GLU already installed. not building"
+    return
+  fi
+  echo "Building GLU" $version "..."
+  cd $BASEDIR/src
+  rm -rf glu-$version
+  if [ ! -f glu-$version.tar.gz ]; then
+    curl -O http://cgit.freedesktop.org/mesa/glu/snapshot/glu-$version.tar.gz
+  fi
+  tar xzf glu-$version.tar.gz
+  cd glu-$version
+  ./autogen.sh --prefix=$DEPLOYDIR
+  make -j$NUMCPU
+  make install
 }
 
 build_qt4()
@@ -57,7 +78,7 @@ build_qt4()
   tar xzf qt-everywhere-opensource-src-$version.tar.gz
   cd qt-everywhere-opensource-src-$version
   ./configure -prefix $DEPLOYDIR -opensource -confirm-license -fast -no-qt3support -no-svg -no-phonon -no-audio-backend -no-multimedia -no-javascript-jit -no-script -no-scripttools -no-declarative -no-xmlpatterns -nomake demos -nomake examples -nomake docs -nomake translations -no-webkit
-  make -j $NUMCPU
+  make -j$NUMCPU
   make install
   QTDIR=$DEPLOYDIR
   export QTDIR
@@ -228,14 +249,15 @@ build_cgal()
   cd $BASEDIR/src
   rm -rf CGAL-$version
   if [ ! -f CGAL-$version.tar.* ]; then
-    #4.0.2
-    curl --insecure -O https://gforge.inria.fr/frs/download.php/31174/CGAL-$version.tar.bz2
-    # 4.0 curl --insecure -O https://gforge.inria.fr/frs/download.php/30387/CGAL-$version.tar.gz
-    # 3.9 curl --insecure -O https://gforge.inria.fr/frs/download.php/29125/CGAL-$version.tar.gz
+    # 4.1
+    curl --insecure -O https://gforge.inria.fr/frs/download.php/31640/CGAL-$version.tar.bz2
+    # 4.0.2 curl --insecure -O https://gforge.inria.fr/frs/download.php/31174/CGAL-$version.tar.bz2
+    # 4.0 curl --insecure -O https://gforge.inria.fr/frs/download.php/30387/CGAL-$version.tar.gz #4.0
+    # 3.9 curl --insecure -O https://gforge.inria.fr/frs/download.php/29125/CGAL-$version.tar.gz #3.9
     # 3.8 curl --insecure -O https://gforge.inria.fr/frs/download.php/28500/CGAL-$version.tar.gz
     # 3.7 curl --insecure -O https://gforge.inria.fr/frs/download.php/27641/CGAL-$version.tar.gz
   fi
-  tar jxf CGAL-$version.tar.bz2
+  tar xf CGAL-$version.tar.bz2
   cd CGAL-$version
   if [ "`echo $2 | grep use-sys-libs`" ]; then
     cmake -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR -DWITH_CGAL_Qt3=OFF -DWITH_CGAL_Qt4=OFF -DWITH_CGAL_ImageIO=OFF -DCMAKE_BUILD_TYPE=Debug
@@ -301,7 +323,7 @@ build_glew()
 
 build_opencsg()
 {
-  if [ -e $DEPLOYDIR/include/opencsg.h ]; then
+  if [ -e $DEPLOYDIR/lib/libopencsg.so ]; then
     echo "OpenCSG already installed. not building"
     return
   fi
@@ -460,6 +482,11 @@ if [ $1 ]; then
     build_qt4 4.8.4
     exit
   fi
+  if [ $1 == "glu" ]; then
+    # Mesa and GLU split in late 2012, so it's not on some systems
+    build_glu 9.0.0
+    exit
+  fi
 fi
 
 
@@ -472,7 +499,7 @@ build_gmp 5.0.5
 build_mpfr 3.1.1
 build_boost 1.52.0
 # NB! For CGAL, also update the actual download URL in the function
-build_cgal 4.0.2
+build_cgal 4.1
 build_glew 1.9.0
 build_opencsg 1.3.2
 
