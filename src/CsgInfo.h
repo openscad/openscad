@@ -7,7 +7,7 @@ class CsgInfo
 {
 public:
 	CsgInfo() { glview = NULL; }
-  OffscreenView *glview;
+	OffscreenView *glview;
 };
 
 
@@ -21,19 +21,19 @@ public:
 class CsgInfo_OpenCSG : public CsgInfo
 {
 public:
-  CsgInfo_OpenCSG()
-  {
-    root_chain = NULL;
-    highlights_chain = NULL;
-    background_chain = NULL;
-    glview = NULL;
-  }
+	CsgInfo_OpenCSG()
+	{
+		root_chain = NULL;
+		highlights_chain = NULL;
+		background_chain = NULL;
+		glview = NULL;
+	}
 	shared_ptr<CSGTerm> root_norm_term;    // Normalized CSG products
-  class CSGChain *root_chain;
-  std::vector<shared_ptr<CSGTerm> > highlight_terms;
-  CSGChain *highlights_chain;
-  std::vector<shared_ptr<CSGTerm> > background_terms;
-  CSGChain *background_chain;
+	class CSGChain *root_chain;
+	std::vector<shared_ptr<CSGTerm> > highlight_terms;
+	CSGChain *highlights_chain;
+	std::vector<shared_ptr<CSGTerm> > background_terms;
+	CSGChain *background_chain;
 };
 
 #endif // ENABLE_OPENCSG
