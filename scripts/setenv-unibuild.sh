@@ -130,5 +130,12 @@ if [ "`echo $* | grep qt5`" ]; then
  setenv_qt5
 fi
 
+if [ -e $DEPLOYDIR/include/Qt ]; then
+  echo "Qt found under $DEPLOYDIR ... "
+  QTDIR=$DEPLOYDIR
+  export QTDIR
+  echo "QTDIR modified to $DEPLOYDIR"
+fi
+
 clean_note
 

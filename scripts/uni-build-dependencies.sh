@@ -24,7 +24,6 @@
 #
 # Prerequisites:
 # - wget or curl
-# - Qt4
 # - gcc
 #
 # Enable Clang (experimental, only works on linux):
@@ -40,6 +39,31 @@ printUsage()
 {
   echo "Usage: $0"
   echo
+}
+
+build_qt4()
+{
+  version=$1
+  if [ -e $DEPLOYDIR/include/Qt ]; then
+    echo "qt already installed. not building"
+    return
+  fi
+  echo "Building Qt" $version "..."
+  cd $BASEDIR/src
+  rm -rf qt-everywhere-opensource-src-$version
+  if [ ! -f qt-everywhere-opensource-src-$version.tar.gz ]; then
+    curl -O http://releases.qt-project.org/qt4/source/qt-everywhere-opensource-src-$version.tar.gz
+  fi
+  tar xzf qt-everywhere-opensource-src-$version.tar.gz
+  cd qt-everywhere-opensource-src-$version
+  ./configure -prefix $DEPLOYDIR -opensource -confirm-license -fast -no-qt3support -no-svg -no-phonon -no-audio-backend -no-multimedia -no-javascript-jit -no-script -no-scripttools -no-declarative -no-xmlpatterns -nomake demos -nomake examples -nomake docs -nomake translations -no-webkit
+  make -j $NUMCPU
+  make install
+  QTDIR=$DEPLOYDIR
+  export QTDIR
+  echo "----------"
+  echo " Please set QTDIR to $DEPLOYDIR ( or run '. scripts/setenv-unibuild.sh' )
+  echo "----------"
 }
 
 build_bison()
@@ -426,6 +450,11 @@ if [ $1 ]; then
     build_opencsg 1.3.2
     exit
   fi
+  if [ $1 == "qt4" ]; then
+    # such a huge build, put here by itself
+    build_qt4 4.8.4
+    exit
+  fi
 fi
 
 
@@ -433,7 +462,6 @@ fi
 # Main build of libraries
 # edit version numbers here as needed.
 #
-
 build_eigen 3.1.1
 build_gmp 5.0.5
 build_mpfr 3.1.1
