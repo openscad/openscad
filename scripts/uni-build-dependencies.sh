@@ -62,7 +62,7 @@ build_qt4()
   QTDIR=$DEPLOYDIR
   export QTDIR
   echo "----------"
-  echo " Please set QTDIR to $DEPLOYDIR ( or run '. scripts/setenv-unibuild.sh' )
+  echo " Please set QTDIR to $DEPLOYDIR ( or run '. scripts/setenv-unibuild.sh' )"
   echo "----------"
 }
 
@@ -208,7 +208,12 @@ build_boost()
     fi
   else
     ./b2 -j$NUMCPU
-    ./b2 install
+    if [ $? = 0 ]; then
+      ./b2 install
+    else
+      echo boost build failed
+      exit 1
+    fi
   fi
 }
 
@@ -465,7 +470,7 @@ fi
 build_eigen 3.1.1
 build_gmp 5.0.5
 build_mpfr 3.1.1
-build_boost 1.49.0
+build_boost 1.52.0
 # NB! For CGAL, also update the actual download URL in the function
 build_cgal 4.0.2
 build_glew 1.9.0
