@@ -516,7 +516,7 @@ fi
 build_eigen 3.1.1
 build_gmp 5.0.5
 build_mpfr 3.1.1
-build_boost 1.52.0
+build_boost 1.49.0
 # NB! For CGAL, also update the actual download URL in the function
 build_cgal 4.1
 build_glew 1.9.0
