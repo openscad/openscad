@@ -13,8 +13,9 @@ if [ ! $VFB_BINARY ]; then
   exit 1
 fi
 
-DISPLAY=:98
-$VFB_BINARY $DISPLAY -screen 0 800x600x24 &> virtualfblog &
+DISPLAY=`echo | awk 'BEGIN{srand();} {printf ":%.0f", rand()*1000+100};'`
+#DISPLAY=:98
+$VFB_BINARY $DISPLAY -screen 0 800x600x24 &> virtualfb.log &
 echo PID=$! " "
 echo DISPLAY=$DISPLAY
 # trap "kill -KILL $xpid ||:" EXIT
