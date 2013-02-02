@@ -96,8 +96,10 @@ AbstractNode *ControlModule::evaluate(const Context*, const ModuleInstantiation 
 		size_t n = 0;
 		if (inst->argvalues.size() > 0) {
 			double v;
-			if (inst->argvalues[0].getDouble(v))
-				n = v;
+			if (inst->argvalues[0].getDouble(v)) {
+				if (v < 0) return NULL; // Disallow negative child indices
+				n = trunc(v);
+			}
 		}
 		for (int i = Context::ctx_stack.size()-1; i >= 0; i--) {
 			const Context *c = Context::ctx_stack[i];
