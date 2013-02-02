@@ -24,8 +24,7 @@ if( __cmake_system_name__ MATCHES "Linux|BSD")
  else()
   message("X11 DISPLAY environment variable not found. Calling virtualfb.sh")
   execute_process(
-   COMMAND __cmake_current_source_dir__/virtualfb.sh start
-   OUTPUT_VARIABLE SVFB_OUT)
+   COMMAND __cmake_current_source_dir__/virtualfb.sh OUTPUT_VARIABLE SVFB_OUT)
   string(REGEX MATCH "DISPLAY=:[0-9.]*" VFB_DISPLAY_STR "${SVFB_OUT}")
   string(REGEX MATCH ":[0-9.]*" VFB_DISPLAY "${VFB_DISPLAY_STR}")
   string(REGEX MATCH "PID=[0-9.]*" VFB_PID_STR "${SVFB_OUT}")
@@ -50,7 +49,7 @@ if( __cmake_system_name__ MATCHES "Linux|BSD")
   # in the build directory).
   set(ENV{DISPLAY} "${VFB_DISPLAY}")
 
-  set(CTEST_CUSTOM_POST_TEST "kill ${VFB_PID}")
+  set(CTEST_CUSTOM_POST_TEST "__cmake_current_source_dir__/virtualfb.sh")
  endif()
 endif()
 
@@ -59,7 +58,7 @@ endif()
 
 message("running 'opencsgtest --info' to generate sysinfo.txt")
 execute_process(COMMAND __wine__ __cmake_current_binary_dir__/opencsgtest --info OUTPUT_FILE sysinfo.txt)
-set(CTEST_CUSTOM_POST_TEST ${CTEST_CUSTOM_POST_TEST} "__python__ __cmake_current_source_dir__/test_pretty_print.py --builddir=__cmake_current_binary_dir__")
+set(CTEST_CUSTOM_POST_TEST ${CTEST_CUSTOM_POST_TEST} "__cmake_current_binary_dir__/test_pretty_print")
 
 if ( ${debug_openscad_template} )
   foreach(post_test ${CTEST_CUSTOM_POST_TEST} )
