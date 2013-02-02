@@ -20,7 +20,7 @@ shared_ptr<CSGTerm> CSGTermNormalizer::normalize(const shared_ptr<CSGTerm> &root
 			PRINTB("WARNING: Normalized tree is growing past %d elements. Aborting normalization.\n", this->limit);
       // Clean up any partially evaluated terms
 			shared_ptr<CSGTerm> newroot = root, tmproot;
-			while (newroot != tmproot) {
+			while (newroot && newroot != tmproot) {
 				tmproot = newroot;
 				newroot = collapse_null_terms(tmproot);
 			}
