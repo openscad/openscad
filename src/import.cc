@@ -52,6 +52,9 @@ namespace fs = boost::filesystem;
 using namespace boost::assign; // bring 'operator+=()' into scope
 #include "boosty.h"
 
+#include <boost/detail/endian.hpp>
+#include <boost/cstdint.hpp>
+
 class ImportModule : public AbstractModule
 {
 public:
@@ -112,6 +115,69 @@ AbstractNode *ImportModule::evaluate(const Context *ctx, const ModuleInstantiati
 	return node;
 }
 
+#ifdef _MSC_VER
+#pragma pack(push,1)
+#endif
+struct stl_data {
+  float i, j, k;
+  float x1, y1, z1;
+  float x2, y2, z2;
+  float x3, y3, z3;
+  unsigned short acount;
+}
+#ifdef __GNUC__
+        __attribute__ ((packed))
+#endif
+#ifdef _MSC_VER
+#pragma pack(pop)
+#endif
+;
+
+#define STL_FACET_SIZE 4*3*4+2
+union stl_facet {
+	uint8_t data8[ STL_FACET_SIZE ];
+	uint32_t data32[4*3];
+	struct facet_data {
+	// assume 'float' is 'binary32' aka 'single' IEEE 32-bit 
+	// floating point type.
+	  float i, j, k;
+	  float x1, y1, z1;
+	  float x2, y2, z2;
+	  float x3, y3, z3;
+	  uint16_t acount;
+	} data;
+};
+
+void uint32_byte_swap( uint32_t &x )
+{
+/*#if defined(__GNUC__) || defined(__clang__)
+	x = __builtin_bswap32( x );
+#elif defined(_MSVC)
+	x = _byteswap_ulong( x );
+#else*/
+	uint32_t b1 = ( 0x000000FF & x ) << 24;
+	uint32_t b2 = ( 0x0000FF00 & x ) << 8;
+	uint32_t b3 = ( 0x00FF0000 & x ) >> 8;
+	uint32_t b4 = ( 0xFF000000 & x ) >> 24;
+	x = b1 | b2 | b3 | b4;
+//#endif
+}
+
+void stl_endian_repair( uint32_t &x )
+{
+#ifdef BOOST_BIG_ENDIAN
+	uint32_byte_swap( x );
+#endif
+}
+
+void read_stl_facet( std::ifstream &f, stl_facet &facet )
+{
+	f.read( (char*)facet.data8, STL_FACET_SIZE );
+	for ( int i = 0; i < 12; i++ ) {
+		stl_endian_repair( facet.data32[ i ] );
+	}
+}
+
 PolySet *ImportNode::evaluate_polyset(class PolySetEvaluator *) const
 {
 	PolySet *p = NULL;
@@ -137,9 +203,9 @@ PolySet *ImportNode::evaluate_polyset(class PolySetEvaluator *) const
 		int file_size = f.tellg();
 		f.seekg(80);
 		if (!f.eof()) {
-			int facenum = 0;
-			// FIXME: Assumes little endian
-			f.read((char *)&facenum, sizeof(int));
+			uint32_t facenum = 0;
+			f.read((char *)&facenum, sizeof(uint32_t));
+			stl_endian_repair( facenum );
 			if (file_size == 80 + 4 + 50*facenum) binary = true;
 		}
 		f.seekg(0);
@@ -186,32 +252,24 @@ PolySet *ImportNode::evaluate_polyset(class PolySetEvaluator *) const
 		else
 		{
 			f.ignore(80-5+4);
-			// FIXME: Assumes little endian
 			while (1) {
-#ifdef _MSC_VER
-#pragma pack(push,1)
-#endif
-				struct {
-					float i, j, k;
-					float x1, y1, z1;
-					float x2, y2, z2;
-					float x3, y3, z3;
-					unsigned short acount;
-				}
-#ifdef __GNUC__
-				__attribute__ ((packed))
-#endif
-				stldata;
-#ifdef _MSC_VER
-#pragma pack(pop)
-#endif
-
-				f.read((char*)&stldata, sizeof(stldata));
+#ifdef BOOST_BIG_ENDIAN
+				stl_facet facet;
+				read_stl_facet( f, facet );
+				if (f.eof()) break;
+				p->append_poly();
+				p->append_vertex(facet.data.x1, facet.data.y1, facet.data.z1);
+				p->append_vertex(facet.data.x2, facet.data.y2, facet.data.z2);
+				p->append_vertex(facet.data.x3, facet.data.y3, facet.data.z3);
+#else
+				stl_data stldata;
+				f.read((char *)&stldata, sizeof(stldata));
 				if (f.eof()) break;
 				p->append_poly();
 				p->append_vertex(stldata.x1, stldata.y1, stldata.z1);
 				p->append_vertex(stldata.x2, stldata.y2, stldata.z2);
 				p->append_vertex(stldata.x3, stldata.y3, stldata.z3);
+#endif
 			}
 		}
 	}
@@ -244,6 +302,7 @@ PolySet *ImportNode::evaluate_polyset(class PolySetEvaluator *) const
 	}
 
 	if (p) p->convexity = this->convexity;
+	std::cout << p->dump() << "\n";
 	return p;
 }
 
