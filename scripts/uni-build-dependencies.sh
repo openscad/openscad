@@ -24,13 +24,19 @@
 #
 # Prerequisites:
 # - wget or curl
-# - OpenGL (gl.h)
+# - OpenGL (GL/gl.h)
+# - GLU (GL/glu.h)
 # - gcc
+# - Qt4
 #
 # If your system lacks qt4, build like this:
 #
 #   ./scripts/uni-build-dependencies.sh qt4
 #   . ./scripts/setenv-unibuild.sh
+#
+# If your system lacks glu, try to build like this:
+#
+#   ./scripts/uni-build-dependencies.sh glu
 #
 # If you want to try Clang compiler (experimental, only works on linux):
 #
