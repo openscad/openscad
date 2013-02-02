@@ -27,11 +27,16 @@
 # - OpenGL (gl.h)
 # - gcc
 #
-# Enable Clang (experimental, only works on linux):
+# If your system lacks qt4, build like this:
+#
+#   ./scripts/uni-build-dependencies.sh qt4
+#   . ./scripts/setenv-unibuild.sh
+#
+# If you want to try Clang compiler (experimental, only works on linux):
 #
 #   . ./scripts/setenv-unibuild.sh clang
 #
-# Enable Qt5 (experimental)
+# If you want to try Qt5 (experimental)
 #
 #   . ./scripts/setenv-unibuild.sh qt5
 #
