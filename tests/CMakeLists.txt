@@ -796,6 +796,15 @@ endif()
 # 1. Start/stop Virtual Framebuffer for linux/bsd. 2. Pretty Print
 # Please see the CTestCustom.template file for more info. 
 
+#
+# Post-test pretty print
+#
+
+add_executable(test_pretty_print test_pretty_print.cc)
+set_target_properties(test_pretty_print PROPERTIES COMPILE_FLAGS
+  "-DPYBIN=${PYTHON_EXECUTABLE} -DPYSRC=test_pretty_print.py -DBUILDDIR=--builddir=${CMAKE_CURRENT_BINARY_DIR}"
+)
+
 file(READ ${CMAKE_CURRENT_SOURCE_DIR}/CTestCustom.template TMP)
 string(REPLACE __cmake_current_binary_dir__ ${CMAKE_CURRENT_BINARY_DIR} TMP ${TMP})
 string(REPLACE __cmake_current_source_dir__ ${CMAKE_CURRENT_SOURCE_DIR} TMP ${TMP})
