@@ -47,8 +47,12 @@ stop()
 isrunning()
 {
   isrunning_result=
-  if [ -e ./virtualfb.PID ]; then isrunning_result=1 ; fi
-  if [ -e ./virtualfb.DISPLAY ]; then isrunning_result=1 ; fi
+  if [ -e ./virtualfb.PID ]; then
+    VFB_PID=`cat ./virtualfb.PID`
+    if [ "`ps cax | awk ' { print $1 } ' | grep ^$VFB_PID\$`" ]; then
+      isrunning_result=1
+    fi
+  fi
 }
 
 isrunning
