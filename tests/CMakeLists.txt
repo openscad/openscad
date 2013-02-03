@@ -569,15 +569,6 @@ set_target_properties(throwntogethertest PROPERTIES COMPILE_FLAGS "-DENABLE_OPEN
 target_link_libraries(throwntogethertest tests-offscreen tests-cgal ${OPENCSG_LIBRARY} ${TESTS-CGAL-LIBRARIES} ${GLEW_LIBRARY} ${COCOA_LIBRARY})
 
 #
-# Post-test pretty print
-#
-
-add_executable(test_pretty_print test_pretty_print.cc)
-set_target_properties(test_pretty_print PROPERTIES COMPILE_FLAGS
-  "-DPYBIN=${PYTHON_EXECUTABLE} -DPYSRC=test_pretty_print.py -DBUILDDIR=--builddir=${CMAKE_CURRENT_BINARY_DIR}"
-)
-
-#
 # Tags tests as disabled. This is more convenient than removing them manually
 # from the lists of filenames
 #
@@ -799,6 +790,15 @@ endif()
 # Set up custom commands to run before & after Ctest run.
 # 1. Start/stop Virtual Framebuffer for linux/bsd. 2. Pretty Print
 # Please see the CTestCustom.template file for more info. 
+
+#
+# Post-test pretty print
+#
+
+add_executable(test_pretty_print test_pretty_print.cc)
+set_target_properties(test_pretty_print PROPERTIES COMPILE_FLAGS
+  "-DPYBIN=${PYTHON_EXECUTABLE} -DPYSRC=test_pretty_print.py -DBUILDDIR=--builddir=${CMAKE_CURRENT_BINARY_DIR}"
+)
 
 file(READ ${CMAKE_CURRENT_SOURCE_DIR}/CTestCustom.template TMP)
 string(REPLACE __cmake_current_binary_dir__ ${CMAKE_CURRENT_BINARY_DIR} TMP ${TMP})

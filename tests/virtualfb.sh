@@ -34,7 +34,7 @@ stop()
   VFB_PID=`cat ./virtualfb.PID`
   VFB_DISPLAY=`cat ./virtualfb.DISPLAY`
 
-  echo "Stopping virtual fb, PID=$VFB_PID, DISPLAY=$VFB_DISPLAY"
+  echo "Stopping virtual fb, PID was $VFB_PID, DISPLAY was $VFB_DISPLAY"
   kill $VFB_PID
   LOCKFILE=`echo "/tmp/.X"$VFB_DISPLAY"-lock"`
   if [ -e $LOCKFILE ]; then
