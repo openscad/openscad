@@ -179,6 +179,11 @@ endif(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 
 set(CMAKE_INCLUDE_DIRECTORIES_BEFORE ON)
 find_package(OpenGL REQUIRED)
+if ( "${OPENGL_glu_LIBRARY}" MATCHES "NOTFOUND" )
+  # GLU and Mesa split in late 2012 so some systems dont have GLU
+  find_library(OPENGL_glu_LIBRARY GLU HINTS "$ENV{OPENSCAD_LIBRARIES}/lib" REQUIRED)
+  set( OPENGL_LIBRARY ${OPENGL_glu_LIBRARY} ${OPENGL_LIBRARY} )
+endif()
 
 if (MINGW_CROSS_ENV_DIR) 
   mingw_cross_env_find_qt()
