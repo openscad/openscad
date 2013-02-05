@@ -12,6 +12,8 @@
 	<string>OpenSCAD</string>
 	<key>CFBundleIdentifier</key>
 	<string>org.openscad.OpenSCAD</string>
+	<key>CFBundleShortVersionString</key>
+	<string>@SHORT_VERSION@</string>
 	<key>CFBundleDocumentTypes</key>
 	<array>
 		<dict>
