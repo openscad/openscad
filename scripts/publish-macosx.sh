@@ -21,16 +21,16 @@ export OPENSCAD_LIBRARIES=$PWD/../libraries/install
 # Make sure that the correct Qt tools are used
 export PATH=$OPENSCAD_LIBRARIES/bin:$PATH
 
-#`dirname $0`/release-common.sh -v $VERSION $COMMIT
-#if [[ $? != 0 ]]; then
-#  exit 1
-#fi
+`dirname $0`/release-common.sh -v $VERSION $COMMIT
+if [[ $? != 0 ]]; then
+  exit 1
+fi
 
 echo "Sanity check of the app bundle..."
-#`dirname $0`/macosx-sanity-check.py OpenSCAD.app/Contents/MacOS/OpenSCAD
-#if [[ $? != 0 ]]; then
-#  exit 1
-#fi
+`dirname $0`/macosx-sanity-check.py OpenSCAD.app/Contents/MacOS/OpenSCAD
+if [[ $? != 0 ]]; then
+  exit 1
+fi
 
 if [[ $VERSION == $VERSIONDATE ]]; then
   APPCASTFILE=appcast-snapshots.xml
@@ -49,5 +49,5 @@ echo "Uploading..."
 #if ! $SNAPSHOT; then LABELS=$LABELS,Featured; fi
 #`dirname $0`/googlecode_upload.py -s 'Mac OS X Snapshot' -p openscad OpenSCAD-$VERSION.dmg -l $LABELS
 
-# Update snapshot filename on wab page
+# Update snapshot filename on web page
 #`dirname $0`/update-web.sh OpenSCAD-$VERSION.dmg
