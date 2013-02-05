@@ -91,6 +91,7 @@ private:
   class QMessageBox *openglbox;
 
 private slots:
+	void actionUpdateCheck();
 	void actionNew();
 	void actionOpen();
 	void actionOpenRecent();

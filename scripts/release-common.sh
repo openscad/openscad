@@ -9,10 +9,12 @@
 #
 # Usage: release-common.sh [-v <versionstring>] [-c] [-x32]
 #  -v       Version string (e.g. -v 2010.01)
+#  -d       Version date (e.g. -d 2010.01.23)
 #  -c       Build with commit info
 #  -mingw32 Cross-compile for win32 using MXE
 #
-# If no version string is given, todays date will be used (YYYY-MM-DD)
+# If no version string or version date is given, todays date will be used (YYYY-MM-DD)
+# If only verion date is given, it will be used also as version string.
 # If no make target is given, release will be used on Windows, none one Mac OS X
 #
 # The commit info will extracted from git and be passed to qmake as OPENSCAD_COMMIT
@@ -23,7 +25,7 @@
 
 printUsage()
 {
-  echo "Usage: $0 -v <versionstring> -c -mingw32
+  echo "Usage: $0 -v <versionstring> -d <versiondate> -c -mingw32
   echo
   echo "  Example: $0 -v 2010.01
 }
@@ -59,16 +61,20 @@ else
   exit
 fi
 
-while getopts 'v:c' c
+while getopts 'v:d:c' c
 do
   case $c in
     v) VERSION=$OPTARG;;
+    d) VERSIONDATE=$OPTARG;;
     c) OPENSCAD_COMMIT=`git log -1 --pretty=format:"%h"`
   esac
 done
 
+if test -z "$VERSIONDATE"; then
+    VERSIONDATE=`date "+%Y.%m.%d"`
+fi
 if test -z "$VERSION"; then
-    VERSION=`date "+%Y.%m.%d"`
+    VERSION=$VERSIONDATE
 fi
 
 
@@ -102,7 +108,7 @@ if [ -d .git ]; then
   git submodule update
 fi
 
-echo "Building openscad-$VERSION $CONFIGURATION..."
+echo "Building openscad-$VERSION ($VERSIONDATE) $CONFIGURATION..."
 
 case $OS in
     LINUX|MACOSX) 
@@ -230,6 +236,7 @@ echo "Creating archive.."
 
 case $OS in
     MACOSX)
+        /usr/libexec/PlistBuddy -c "Set :CFBundleVersion $VERSIONDATE" OpenSCAD.app/Contents/Info.plist
         macdeployqt OpenSCAD.app -dmg -no-strip
         mv OpenSCAD.dmg OpenSCAD-$VERSION.dmg
         hdiutil internet-enable -yes -quiet OpenSCAD-$VERSION.dmg

@@ -29,7 +29,9 @@
 #include <QFontDatabase>
 #include <QKeyEvent>
 #include <QSettings>
+#include <QStatusBar>
 #include "PolySetCache.h"
+#include "AutoUpdater.h"
 #ifdef ENABLE_CGAL
 #include "CGALCache.h"
 #endif
@@ -88,6 +90,7 @@ Preferences::Preferences(QWidget *parent) : QMainWindow(parent)
 	QActionGroup *group = new QActionGroup(this);
 	group->addAction(prefsAction3DView);
 	group->addAction(prefsActionEditor);
+	group->addAction(prefsActionUpdate);
 	group->addAction(prefsActionAdvanced);
 	connect(group, SIGNAL(triggered(QAction*)), this, SLOT(actionTriggered(QAction*)));
 
@@ -155,6 +158,9 @@ Preferences::actionTriggered(QAction *action)
 	else if (action == this->prefsActionEditor) {
 		this->stackedWidget->setCurrentWidget(this->pageEditor);
 	}
+	else if (action == this->prefsActionUpdate) {
+		this->stackedWidget->setCurrentWidget(this->pageUpdate);
+	}
 	else if (action == this->prefsActionAdvanced) {
 		this->stackedWidget->setCurrentWidget(this->pageAdvanced);
 	}
@@ -184,6 +190,27 @@ void Preferences::on_fontSize_editTextChanged(const QString &size)
 	QSettings settings;
 	settings.setValue("editor/fontsize", intsize);
 	emit fontChanged(getValue("editor/fontfamily").toString(), intsize);
+}
+
+void Preferences::on_updateCheckBox_toggled(bool on)
+{
+	if (AutoUpdater *updater =AutoUpdater::updater()) {
+		updater->setAutomaticallyChecksForUpdates(on);
+	}
+}
+
+void Preferences::on_snapshotCheckBox_toggled(bool on)
+{
+	if (AutoUpdater *updater =AutoUpdater::updater()) {
+		updater->setEnableSnapshots(on);
+	}
+}
+
+void Preferences::on_checkNowButton_clicked()
+{
+	if (AutoUpdater *updater =AutoUpdater::updater()) {
+		updater->checkForUpdates();
+	}
 }
 
 void
@@ -287,6 +314,12 @@ void Preferences::updateGUI()
 	}
 	else {
 		this->fontSize->setEditText(fontsize);
+	}
+
+	if (AutoUpdater *updater = AutoUpdater::updater()) {
+		this->updateCheckBox->setChecked(updater->automaticallyChecksForUpdates());
+		this->snapshotCheckBox->setChecked(updater->enableSnapshots());
+		this->lastCheckedLabel->setText(updater->lastUpdateCheckDate());
 	}
 
 	this->openCSGWarningBox->setChecked(getValue("advanced/opencsg_show_warning").toBool());

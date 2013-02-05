@@ -68,7 +68,7 @@ macx {
   APP_RESOURCES.path = Contents/Resources
   APP_RESOURCES.files = OpenSCAD.sdef
   QMAKE_BUNDLE_DATA += APP_RESOURCES
-  LIBS += -framework Carbon
+  LIBS += -framework Cocoa -framework Sparkle
 }
 else {
   TARGET = openscad
@@ -320,8 +320,14 @@ SOURCES += src/cgalutils.cc \
 
 macx {
   HEADERS += src/AppleEvents.h \
-             src/EventFilter.h
-  SOURCES += src/AppleEvents.cc
+             src/EventFilter.h \
+             src/AutoUpdater.h \
+             src/SparkleAutoUpdater.h \
+             src/CocoaInitializer.h
+  SOURCES += src/AppleEvents.cc \
+             src/AutoUpdater.cc
+  OBJECTIVE_SOURCES += src/SparkleAutoUpdater.mm \
+             src/CocoaInitializer.mm
 }
 
 isEmpty(PREFIX):PREFIX = /usr/local
