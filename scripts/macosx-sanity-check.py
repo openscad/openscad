@@ -107,10 +107,10 @@ if __name__ == '__main__':
         deps = find_dependencies(dep)
         assert(deps)
         for d in deps:
-            if not re.match(executable_path, d):
+            absfile = lookup_library(d)
+            if not re.match(executable_path, absfile):
                 print "Error: External dependency " + d
                 sys.exit(1)
-            absfile = lookup_library(d)
             if absfile == None:
                 print "Not found: " + d
                 print "  ..required by " + str(processed[dep])
