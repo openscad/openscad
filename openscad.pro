@@ -323,11 +323,12 @@ macx {
              src/EventFilter.h \
              src/AutoUpdater.h \
              src/SparkleAutoUpdater.h \
-             src/CocoaInitializer.h
+             src/CocoaInitializer.h \
+             src/CocoaUtils.h
   SOURCES += src/AppleEvents.cc \
              src/AutoUpdater.cc
   OBJECTIVE_SOURCES += src/SparkleAutoUpdater.mm \
-             src/CocoaInitializer.mm
+             src/CocoaUtils.mm
 }
 
 isEmpty(PREFIX):PREFIX = /usr/local

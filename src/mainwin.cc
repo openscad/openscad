@@ -49,6 +49,9 @@
 #include "ThrownTogetherRenderer.h"
 #include "csgtermnormalizer.h"
 #include "AutoUpdater.h"
+#ifdef Q_OS_MAC
+#include "CocoaUtils.h"
+#endif
 
 #include <QMenu>
 #include <QTime>
@@ -1843,6 +1846,9 @@ void MainWindow::quit()
 	QApplication::sendEvent(QApplication::instance(), &ev);
 	if (ev.isAccepted()) QApplication::instance()->quit();
   // FIXME: Cancel any CGAL calculations
+#ifdef Q_OS_MAC
+	CocoaUtils::endApplication();
+#endif
 }
 
 void MainWindow::consoleOutput(const std::string &msg, void *userdata)
