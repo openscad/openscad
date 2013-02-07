@@ -803,7 +803,15 @@ set_test_config(Heavy opencsgtest_minkowski3-tests
                       cgalpngtest_minkowski3-tests
                       cgalpngtest_for-tests
                       cgalpngtest_for-nested-tests
-                      cgalpngtest_intersection-tests)
+                      cgalpngtest_intersection-tests
+                      guicgalpngtest_projection-tests
+                      guicgalpngtest_rotate_extrude-tests
+                      guicgalpngtest_surface-tests
+                      guicgalpngtest_sphere-tests
+                      guicgalpngtest_minkowski3-tests
+                      guicgalpngtest_for-tests
+                      guicgalpngtest_for-nested-tests
+                      guicgalpngtest_intersection-tests)
 
 foreach(FILE ${EXAMPLE_FILES})
   get_test_fullname(cgalpngtest ${FILE} TEST_FULLNAME)
