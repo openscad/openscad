@@ -179,6 +179,11 @@ endif(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 
 set(CMAKE_INCLUDE_DIRECTORIES_BEFORE ON)
 find_package(OpenGL REQUIRED)
+if ( "${OPENGL_glu_LIBRARY}" MATCHES "NOTFOUND" )
+  # GLU and Mesa split in late 2012 so some systems dont have GLU
+  find_library(OPENGL_glu_LIBRARY GLU HINTS "$ENV{OPENSCAD_LIBRARIES}/lib" REQUIRED)
+  set( OPENGL_LIBRARY ${OPENGL_glu_LIBRARY} ${OPENGL_LIBRARY} )
+endif()
 
 if (MINGW_CROSS_ENV_DIR) 
   mingw_cross_env_find_qt()
@@ -821,6 +826,15 @@ endif()
 # Set up custom commands to run before & after Ctest run.
 # 1. Start/stop Virtual Framebuffer for linux/bsd. 2. Pretty Print
 # Please see the CTestCustom.template file for more info. 
+
+#
+# Post-test pretty print
+#
+
+add_executable(test_pretty_print test_pretty_print.cc)
+set_target_properties(test_pretty_print PROPERTIES COMPILE_FLAGS
+  "-DPYBIN=${PYTHON_EXECUTABLE} -DPYSRC=test_pretty_print.py -DBUILDDIR=--builddir=${CMAKE_CURRENT_BINARY_DIR}"
+)
 
 file(READ ${CMAKE_CURRENT_SOURCE_DIR}/CTestCustom.template TMP)
 string(REPLACE __cmake_current_binary_dir__ ${CMAKE_CURRENT_BINARY_DIR} TMP ${TMP})
