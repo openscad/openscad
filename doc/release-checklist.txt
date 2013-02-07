@@ -3,9 +3,12 @@ OpenSCAD Release Checklist
 
 (See bottom of this file for how to build release binaries)
 
-o Update VERSION environment variable
+o Set VERSION and VERSIONDATE environment variable
+  (VERSIONDATE is new and used to identify releases. VERSION is for humans.
+   For development builds, set VERSION and VERSIONDATE to the same value)
 
   export VERSION=2013.01
+  export VERSIONDATE=2013.01.17
 
   It will be used by the commands below, as well as these files: 
 
