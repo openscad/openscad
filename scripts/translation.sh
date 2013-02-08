@@ -4,11 +4,11 @@
 
 help()
 {
- echo 'translation.sh [option]'
+ echo 'translation.sh [updateall|updatepot|updatepo|updatemo]'
  echo ' updateall - run updatepot, updatepo, and updatemo in that order'
- echo ' updatepot - update ./po/openscad.pot from source code files'
- echo ' updatepo - update old .po files with new keys from pot/openscad.pot'
- echo ' updatemo - create po/xx/LC_MESSAGES/openscad.mo files from po files'
+ echo ' updatepot - xgettext: update ./po/openscad.pot from source code files'
+ echo ' updatepo - msgmerge: update old .po files with strings in openscad.pot'
+ echo ' updatemo - msgfmt: create po/xx/LC_MESSAGES/openscad.mo files'
 }
 
 updatepot()
