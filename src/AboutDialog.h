@@ -1,6 +1,7 @@
 #ifndef ABOUTDIALOG_H_
 #define ABOUTDIALOG_H_
 
+#include "qtgettext.h"
 #include "ui_AboutDialog.h"
 
 #define STRINGIFY(x) #x

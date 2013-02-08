@@ -1,6 +1,7 @@
 #ifndef OPENCSGWARNINGDIALOG_H_
 #define OPENCSGWARNINGDIALOG_H_
 
+#include "qtgettext.h"
 #include "ui_OpenCSGWarningDialog.h"
 
 class OpenCSGWarningDialog : public QDialog, public Ui::OpenCSGWarningDialog

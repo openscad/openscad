@@ -1,6 +1,7 @@
 #ifndef PREFERENCES_H_
 #define PREFERENCES_H_
 
+#include "qtgettext.h"
 #include <QMainWindow>
 #include <QSettings>
 #include "ui_Preferences.h"

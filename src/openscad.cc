@@ -48,6 +48,10 @@
 #endif
 
 #include <QApplication>
+//#include <QtPlugin>
+
+//Q_IMPORT_PLUGIN(qtaccessiblewidgets)
+
 #include <QDir>
 #include <sstream>
 
@@ -70,8 +74,8 @@ namespace fs = boost::filesystem;
 
 static void help(const char *progname)
 {
-	fprintf(stderr, "Usage: %s [ -o output_file [ -d deps_file ] ]\\\n"
-					"%*s[ -m make_command ] [ -D var=val [..] ] filename\n",
+	fprintf(stderr, _("Usage: %s [ -o output_file [ -d deps_file ] ]\\\n"
+					"%*s[ -m make_command ] [ -D var=val [..] ] filename\n"),
 					progname, int(strlen(progname))+8, "");
 	exit(1);
 }
@@ -80,7 +84,7 @@ static void help(const char *progname)
 #define TOSTRING(x) STRINGIFY(x)
 static void version()
 {
-	printf("OpenSCAD version %s\n", TOSTRING(OPENSCAD_VERSION));
+	printf(_("OpenSCAD version %s\n"), TOSTRING(OPENSCAD_VERSION));
 	exit(1);
 }
 
@@ -94,6 +98,9 @@ using std::vector;
 int main(int argc, char **argv)
 {
 	int rc = 0;
+	setlocale(LC_ALL,"");
+	bindtextdomain("openscad","./po");
+	textdomain("openscad");
 
 #ifdef ENABLE_CGAL
 	// Causes CGAL errors to abort directly instead of throwing exceptions
@@ -167,12 +174,12 @@ int main(int argc, char **argv)
 		output_file = vm["o"].as<string>().c_str();
 	}
 	if (vm.count("s")) {
-		fprintf(stderr, "DEPRECATED: The -s option is deprecated. Use -o instead.\n");
+		fprintf(stderr, _("DEPRECATED: The -s option is deprecated. Use -o instead.\n"));
 		if (output_file) help(argv[0]);
 		output_file = vm["s"].as<string>().c_str();
 	}
 	if (vm.count("x")) { 
-		fprintf(stderr, "DEPRECATED: The -x option is deprecated. Use -o instead.\n");
+		fprintf(stderr, _("DEPRECATED: The -x option is deprecated. Use -o instead.\n"));
 		if (output_file) help(argv[0]);
 		output_file = vm["x"].as<string>().c_str();
 	}
@@ -249,7 +256,7 @@ int main(int argc, char **argv)
 		else if (suffix == "dxf") dxf_output_file = output_file;
 		else if (suffix == "csg") csg_output_file = output_file;
 		else {
-			fprintf(stderr, "Unknown suffix for output file %s\n", output_file);
+			fprintf(stderr, _("Unknown suffix for output file %s\n"), output_file);
 			exit(1);
 		}
 
@@ -266,7 +273,7 @@ int main(int argc, char **argv)
 		
 		std::ifstream ifs(filename);
 		if (!ifs.is_open()) {
-			fprintf(stderr, "Can't open input file '%s'!\n", filename);
+			fprintf(stderr, _("Can't open input file '%s'!\n"), filename);
 			exit(1);
 		}
 		std::string text((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
@@ -289,7 +296,7 @@ int main(int argc, char **argv)
 			fs::current_path(original_path);
 			std::ofstream fstream(csg_output_file);
 			if (!fstream.is_open()) {
-				PRINTB("Can't open file \"%s\" for export", csg_output_file);
+				PRINTB(_("Can't open file \"%s\" for export"), csg_output_file);
 			}
 			else {
 				fs::current_path(fparent); // Force exported filenames to be relative to document path
@@ -310,29 +317,29 @@ int main(int argc, char **argv)
 				else if ( off_output_file ) geom_out = std::string(off_output_file);
 				else if ( dxf_output_file ) geom_out = std::string(dxf_output_file);
 				else {
-					PRINTB("Output file:%s\n",output_file);
-					PRINT("Sorry, don't know how to write deps for that file type. Exiting\n");
+					PRINTB(_("Output file:%s\n"),output_file);
+					PRINT(_("Sorry, don't know how to write deps for that file type. Exiting\n"));
 					exit(1);
 				}
 				int result = write_deps( deps_out, geom_out );
 				if ( !result ) {
-					PRINT("error writing deps");
+					PRINT(_("error writing deps"));
 					exit(1);
 				}
 			}
 
 			if (stl_output_file) {
 				if (root_N.dim != 3) {
-					fprintf(stderr, "Current top level object is not a 3D object.\n");
+					fprintf(stderr, _("Current top level object is not a 3D object.\n"));
 					exit(1);
 				}
 				if (!root_N.p3->is_simple()) {
-					fprintf(stderr, "Object isn't a valid 2-manifold! Modify your design.\n");
+					fprintf(stderr, _("Object isn't a valid 2-manifold! Modify your design.\n"));
 					exit(1);
 				}
 				std::ofstream fstream(stl_output_file);
 				if (!fstream.is_open()) {
-					PRINTB("Can't open file \"%s\" for export", stl_output_file);
+					PRINTB(_("Can't open file \"%s\" for export"), stl_output_file);
 				}
 				else {
 					export_stl(&root_N, fstream);
@@ -342,16 +349,16 @@ int main(int argc, char **argv)
 			
 			if (off_output_file) {
 				if (root_N.dim != 3) {
-					fprintf(stderr, "Current top level object is not a 3D object.\n");
+					fprintf(stderr, _("Current top level object is not a 3D object.\n"));
 					exit(1);
 				}
 				if (!root_N.p3->is_simple()) {
-					fprintf(stderr, "Object isn't a valid 2-manifold! Modify your design.\n");
+					fprintf(stderr, _("Object isn't a valid 2-manifold! Modify your design.\n"));
 					exit(1);
 				}
 				std::ofstream fstream(off_output_file);
 				if (!fstream.is_open()) {
-					PRINTB("Can't open file \"%s\" for export", off_output_file);
+					PRINTB(_("Can't open file \"%s\" for export"), off_output_file);
 				}
 				else {
 					export_off(&root_N, fstream);
@@ -361,12 +368,12 @@ int main(int argc, char **argv)
 			
 			if (dxf_output_file) {
 				if (root_N.dim != 2) {
-					fprintf(stderr, "Current top level object is not a 2D object.\n");
+					fprintf(stderr, _("Current top level object is not a 2D object.\n"));
 					exit(1);
 				}
 				std::ofstream fstream(dxf_output_file);
 				if (!fstream.is_open()) {
-					PRINTB("Can't open file \"%s\" for export", dxf_output_file);
+					PRINTB(_("Can't open file \"%s\" for export"), dxf_output_file);
 				}
 				else {
 					export_dxf(&root_N, fstream);
@@ -374,7 +381,7 @@ int main(int argc, char **argv)
 				}
 			}
 #else
-			fprintf(stderr, "OpenSCAD has been compiled without CGAL support!\n");
+			fprintf(stderr, _("OpenSCAD has been compiled without CGAL support!\n"));
 			exit(1);
 #endif
 		}
@@ -414,7 +421,7 @@ int main(int argc, char **argv)
 	}
 	else
 	{
-		fprintf(stderr, "Requested GUI mode but can't open display!\n");
+		fprintf(stderr, _("Requested GUI mode but can't open display!\n"));
 		exit(1);
 	}
 

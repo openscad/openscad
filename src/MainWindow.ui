@@ -30,6 +30,12 @@
          <pointsize>8</pointsize>
         </font>
        </property>
+       <property name="accessibleName">
+        <string>Editor</string>
+       </property>
+       <property name="accessibleDescription">
+        <string>Editor for SCAD code</string>
+       </property>
       </widget>
       <widget class="QWidget" name="layoutWidget">
        <layout class="QVBoxLayout" name="verticalLayout">
@@ -38,8 +44,21 @@
           <property name="orientation">
            <enum>Qt::Vertical</enum>
           </property>
-          <widget class="GLView" name="glview" native="true"/>
+          <widget class="GLView" name="glview" native="true">
+           <property name="accessibleName">
+            <string>GLView</string>
+           </property>
+           <property name="accessibleDescription">
+            <string>OpenGL preview of SCAD model</string>
+           </property>
+          </widget>
           <widget class="QTextEdit" name="console">
+           <property name="accessibleName">
+            <string>Console</string>
+           </property>
+           <property name="accessibleDescription">
+            <string>Console messages</string>
+           </property>
            <property name="readOnly">
             <bool>true</bool>
            </property>
@@ -116,7 +135,7 @@
      <x>0</x>
      <y>0</y>
      <width>681</width>
-     <height>22</height>
+     <height>25</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_File">

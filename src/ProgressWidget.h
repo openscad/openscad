@@ -1,6 +1,7 @@
 #ifndef PROGRESSWIDGET_H_
 #define PROGRESSWIDGET_H_
 
+#include "qtgettext.h"
 #include "ui_ProgressWidget.h"
 #include <QTime>
 

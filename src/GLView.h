@@ -1,6 +1,7 @@
 #ifndef GLVIEW_H_
 #define GLVIEW_H_
 
+#include "qtgettext.h"
 #include "system-gl.h"
 #include <QGLWidget>
 #include <QLabel>

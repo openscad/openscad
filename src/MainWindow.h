@@ -1,6 +1,7 @@
 #ifndef MAINWINDOW_H_
 #define MAINWINDOW_H_
 
+#include "qtgettext.h"
 #include <QMainWindow>
 #include "ui_MainWindow.h"
 #include "openscad.h"

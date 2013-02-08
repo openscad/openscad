@@ -89,6 +89,8 @@ unix:!macx {
   QMAKE_LIBS_OPENGL *= -lX11
 }
 
+#QTPLUGIN += qtaccessiblewidgets
+
 netbsd* {
    QMAKE_LFLAGS += -L/usr/X11R7/lib
    QMAKE_LFLAGS += -Wl,-R/usr/X11R7/lib
@@ -164,6 +166,8 @@ win32 {
 }
 
 RESOURCES = openscad.qrc
+
+QMAKE_UIC += -tr _
 
 FORMS   += src/MainWindow.ui \
            src/Preferences.ui \
