@@ -18,7 +18,7 @@ shared_ptr<CSGTerm> CSGTermNormalizer::normalize(const shared_ptr<CSGTerm> &root
 		temp = n;
 
 		if (this->nodecount > this->limit) {
-			PRINTB("WARNING: Normalized tree is growing past %d elements. Aborting normalization.\n", this->limit);
+			PRINTB(_("WARNING: Normalized tree is growing past %d elements. Aborting normalization.\n"), this->limit);
       // Clean up any partially evaluated terms
 			shared_ptr<CSGTerm> newroot = root, tmproot;
 			while (newroot && newroot != tmproot) {
@@ -50,7 +50,7 @@ shared_ptr<CSGTerm> CSGTermNormalizer::normalizePass(shared_ptr<CSGTerm> term)
 		while (term && match_and_replace(term)) {	}
 		this->nodecount++;
 		if (nodecount > this->limit) {
-			PRINTB("WARNING: Normalized tree is growing past %d elements. Aborting normalization.\n", this->limit);
+			PRINTB(_("WARNING: Normalized tree is growing past %d elements. Aborting normalization.\n"), this->limit);
 			this->aborted = true;
 			return shared_ptr<CSGTerm>();
 		}

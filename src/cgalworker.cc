@@ -32,7 +32,7 @@ void CGALWorker::work()
 		root_N = new CGAL_Nef_polyhedron(evaluator.evaluateCGALMesh(*this->tree->root()));
 	}
 	catch (const ProgressCancelException &e) {
-		PRINT("Rendering cancelled.");
+		PRINT(_("Rendering cancelled."));
 	}
 
 	emit done(root_N);

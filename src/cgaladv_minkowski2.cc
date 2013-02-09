@@ -40,7 +40,7 @@ void print_polygon (const CGAL::Polygon_2<Kernel, Container>& P)
 {
   typename CGAL::Polygon_2<Kernel, Container>::Vertex_const_iterator  vit;
 
-  std::cout << "[ " << P.size() << " vertices:";
+  std::cout << "[ " << P.size() << _(" vertices:");
   for (vit = P.vertices_begin(); vit != P.vertices_end(); ++vit)
     std::cout << " (" << *vit << ')';
   std::cout << " ]" << std::endl;
@@ -52,17 +52,17 @@ void print_polygon (const CGAL::Polygon_2<Kernel, Container>& P)
 template<class Kernel, class Container>
 void print_polygon_with_holes (const CGAL::Polygon_with_holes_2<Kernel, Container>& pwh) { 
   if (! pwh.is_unbounded()) { 
-		std::cout << "{ Outer boundary = ";
+		std::cout << _("{ Outer boundary = ");
 		print_polygon (pwh.outer_boundary());
 	} else
-    std::cout << "{ Unbounded polygon." << std::endl;
+    std::cout << _("{ Unbounded polygon.") << std::endl;
 
   typename CGAL::Polygon_with_holes_2<Kernel,Container>::Hole_const_iterator  hit;
   unsigned int k = 1;
 
-  std::cout << "  " << pwh.number_of_holes() << " holes:" << std::endl;
+  std::cout << "  " << pwh.number_of_holes() << _(" holes:") << std::endl;
   for (hit = pwh.holes_begin(); hit != pwh.holes_end(); ++hit, ++k) { 
-    std::cout << "    Hole #" << k << " = ";
+    std::cout << _("    Hole #") << k << " = ";
     print_polygon (*hit);
   }
   std::cout << " }" << std::endl;
@@ -87,7 +87,7 @@ CGAL_Poly2 nef2p2(CGAL_Nef_polyhedron2 p)
 		}
 		//if (fit != E.faces_begin()) {
 		if (points.size() != 0) {
-			PRINT("WARNING: minkowski() and hull() is not implemented for 2d objects with holes!");
+			PRINT(_("WARNING: minkowski() and hull() is not implemented for 2d objects with holes!"));
 			break;
 		}
 
@@ -120,10 +120,10 @@ CGAL_Nef_polyhedron2 minkowski2(const CGAL_Nef_polyhedron2 &a, const CGAL_Nef_po
 	CGAL_Poly2 ap = nef2p2(a), bp = nef2p2(b);
 
 	if (ap.size() == 0) {
-		PRINT("WARNING: minkowski() could not get any points from object 1!");
+		PRINT(_("WARNING: minkowski() could not get any points from object 1!"));
 		return CGAL_Nef_polyhedron2();
 	} else if (bp.size() == 0) {
-		PRINT("WARNING: minkowski() could not get any points from object 2!");
+		PRINT(_("WARNING: minkowski() could not get any points from object 2!"));
 		return CGAL_Nef_polyhedron2();
 	} else {
 		CGAL_Poly2h x = minkowski_sum_2(ap, bp);

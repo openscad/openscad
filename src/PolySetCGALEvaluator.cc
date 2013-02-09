@@ -68,10 +68,10 @@ public:
 	void visit( CGAL_Nef_polyhedron3::SHalfloop_const_handle ) {}
 	void visit( CGAL_Nef_polyhedron3::SFace_const_handle ) {}
 	void visit( CGAL_Nef_polyhedron3::Halffacet_const_handle hfacet ) {
-		log << " <!-- Halffacet visit. Mark: " << hfacet->mark() << " -->\n";
+		log << _(" <!-- Halffacet visit. Mark: ") << hfacet->mark() << " -->\n";
 		if ( hfacet->plane().orthogonal_direction() != this->up ) {
-			log << "  <!-- down-facing half-facet. skipping -->\n";
-			log << " <!-- Halffacet visit end-->\n";
+			log << _("  <!-- down-facing half-facet. skipping -->\n");
+			log << _(" <!-- Halffacet visit end-->\n");
 			return;
 		}
 
@@ -141,7 +141,7 @@ PolySet *PolySetCGALEvaluator::evaluatePolySet(const ProjectionNode &node)
 	if (sum.isNull()) return NULL;
 	if (!sum.p3->is_simple()) {
 		if (!node.cut_mode) {
-			PRINT("WARNING: Body of projection(cut = false) isn't valid 2-manifold! Modify your design..");
+			PRINT(_("WARNING: Body of projection(cut = false) isn't valid 2-manifold! Modify your design.."));
 			return new PolySet();
 		}
 	}
@@ -158,9 +158,9 @@ PolySet *PolySetCGALEvaluator::evaluatePolySet(const ProjectionNode &node)
 			*sum.p3 = sum.p3->intersection( xy_plane, CGAL_Nef_polyhedron3::PLANE_ONLY);
 		}
 		catch (const CGAL::Failure_exception &e) {
-			PRINTB("CGAL error in projection node during plane intersection: %s", e.what());
+			PRINTB(_("CGAL error in projection node during plane intersection: %s"), e.what());
 			try {
-				PRINT("Trying alternative intersection using very large thin box: ");
+				PRINT(_("Trying alternative intersection using very large thin box: "));
 				std::vector<CGAL_Point_3> pts;
 				// dont use z of 0. there are bugs in CGAL.
 				double inf = 1e8;
@@ -175,14 +175,14 @@ PolySet *PolySetCGALEvaluator::evaluatePolySet(const ProjectionNode &node)
  				*sum.p3 = nef_bigbox.intersection( *sum.p3 );
 			}
 			catch (const CGAL::Failure_exception &e) {
-				PRINTB("CGAL error in projection node during bigbox intersection: %s", e.what());
+				PRINTB(_("CGAL error in projection node during bigbox intersection: %s"), e.what());
 				sum.p3->clear();
 			}
 		}
 
 		if (sum.p3->is_empty()) {
 			CGAL::set_error_behaviour(old_behaviour);
-			PRINT("WARNING: projection() failed.");
+			PRINT(_("WARNING: projection() failed."));
 			return NULL;
 		}
 
@@ -205,7 +205,7 @@ PolySet *PolySetCGALEvaluator::evaluatePolySet(const ProjectionNode &node)
 			}
 			nef_poly.p2 = zremover.output_nefpoly2d;
 		}	catch (const CGAL::Failure_exception &e) {
-			PRINTB("CGAL error in projection node while flattening: %s", e.what());
+			PRINTB(_("CGAL error in projection node while flattening: %s"), e.what());
 		}
 		log << "</svg>\n";
 
@@ -385,7 +385,7 @@ PolySet *PolySetCGALEvaluator::evaluatePolySet(const LinearExtrudeNode &node)
 			CGAL_Nef_polyhedron N = this->cgalevaluator.evaluateCGALMesh(*v);
 			if (!N.isNull()) {
 				if (N.dim != 2) {
-					PRINT("ERROR: linear_extrude() is not defined for 3D child objects!");
+					PRINT(_("ERROR: linear_extrude() is not defined for 3D child objects!"));
 				}
 				else {
 					if (sum.isNull()) sum = N.copy();
@@ -426,7 +426,7 @@ PolySet *PolySetCGALEvaluator::extrudeDxfData(const LinearExtrudeNode &node, Dxf
 		if (dxf.paths[i].is_closed)
 			continue;
 		if (first_open_path) {
-			PRINTB("WARNING: Open paths in dxf_linear_extrude(file = \"%s\", layer = \"%s\"):",
+			PRINTB(_("WARNING: Open paths in dxf_linear_extrude(file = \"%s\", layer = \"%s\"):"),
 					node.filename % node.layername);
 			first_open_path = false;
 		}
@@ -485,7 +485,7 @@ PolySet *PolySetCGALEvaluator::evaluatePolySet(const RotateExtrudeNode &node)
 			CGAL_Nef_polyhedron N = this->cgalevaluator.evaluateCGALMesh(*v);
 			if (!N.isNull()) {
 				if (N.dim != 2) {
-					PRINT("ERROR: rotate_extrude() is not defined for 3D child objects!");
+					PRINT(_("ERROR: rotate_extrude() is not defined for 3D child objects!"));
 				}
 				else {
 					if (sum.isNull()) sum = N.copy();
@@ -523,7 +523,7 @@ PolySet *PolySetCGALEvaluator::evaluatePolySet(const RenderNode &node)
 	PolySet *ps = NULL;
 	if (!N.isNull()) {
 		if (N.dim == 3 && !N.p3->is_simple()) {
-			PRINT("WARNING: Body of render() isn't valid 2-manifold!");
+			PRINT(_("WARNING: Body of render() isn't valid 2-manifold!"));
 		}
 		else {
 			ps = N.convertToPolyset();

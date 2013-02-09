@@ -108,8 +108,8 @@ static void STDCALL tess_end(void)
 
 static void STDCALL tess_error(GLenum errno)
 {
-	fprintf(stderr, "GLU tesselation error %s", gluErrorString(errno));
-	PRINTB("GLU tesselation error %s", gluErrorString(errno));
+	fprintf(stderr, _("GLU tesselation error %s"), gluErrorString(errno));
+	PRINTB(_("GLU tesselation error %s"), gluErrorString(errno));
 }
 
 static void STDCALL tess_begin_data()

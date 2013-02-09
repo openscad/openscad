@@ -114,12 +114,12 @@ Value builtin_dxf_dim(const Context *ctx, const std::vector<std::string> &argnam
 			return dxf_dim_cache[key] = Value((d->type & 64) ? d->coords[3][0] : d->coords[3][1]);
 		}
 
-		PRINTB("WARNING: Dimension '%s' in '%s', layer '%s' has unsupported type!", 
+		PRINTB(_("WARNING: Dimension '%s' in '%s', layer '%s' has unsupported type!"), 
 					 name % filename % layername);
 		return Value();
 	}
 
-	PRINTB("WARNING: Can't find dimension '%s' in '%s', layer '%s'!",
+	PRINTB(_("WARNING: Can't find dimension '%s' in '%s', layer '%s'!"),
 				 name % filename % layername);
 
 	return Value();
@@ -184,7 +184,7 @@ Value builtin_dxf_cross(const Context *ctx, const std::vector<std::string> &argn
 		}
 	}
 
-	PRINTB("WARNING: Can't find cross in '%s', layer '%s'!", filename % layername);
+	PRINTB(_("WARNING: Can't find cross in '%s', layer '%s'!"), filename % layername);
 
 	return Value();
 }

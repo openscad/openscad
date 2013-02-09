@@ -1,3 +1,4 @@
+#include "printutils.h"
 #include "handle_dep.h"
 #include <string>
 #include <sstream>
@@ -32,7 +33,7 @@ bool write_deps(const std::string &filename, const std::string &output_file)
 {
 	FILE *fp = fopen(filename.c_str(), "wt");
 	if (!fp) {
-		fprintf(stderr, "Can't open dependencies file `%s' for writing!\n", filename.c_str());
+		fprintf(stderr, _("Can't open dependencies file `%s' for writing!\n"), filename.c_str());
 		return false;
 	}
 	fprintf(fp, "%s:", output_file.c_str());

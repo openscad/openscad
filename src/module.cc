@@ -96,7 +96,7 @@ AbstractNode *ModuleInstantiation::evaluate(const Context *ctx) const
 {
 	AbstractNode *node = NULL;
 	if (this->ctx) {
-		PRINTB("WARNING: Ignoring recursive module instantiation of '%s'.", modname);
+		PRINTB(_("WARNING: Ignoring recursive module instantiation of '%s'."), modname);
 	} else {
 		// FIXME: Casting away const..
 		ModuleInstantiation *that = (ModuleInstantiation*)this;
@@ -235,7 +235,7 @@ bool Module::handleDependencies()
 #endif
 		}
 		if (!curr->second) {
-			PRINTB_NOCACHE("WARNING: Failed to compile library '%s'.", curr->first);
+			PRINTB_NOCACHE(_("WARNING: Failed to compile library '%s'."), curr->first);
 			this->usedlibs.erase(curr);
 		}
 	}

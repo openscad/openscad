@@ -74,7 +74,7 @@ AbstractNode *LinearExtrudeModule::evaluate(const Context *ctx, const ModuleInst
 	Value slices = c.lookup_variable("slices", true);
 
 	if (!file.isUndefined()) {
-		PRINT("DEPRECATED: Support for reading files in linear_extrude will be removed in future releases. Use a child import() instead.");
+		PRINT(_("DEPRECATED: Support for reading files in linear_extrude will be removed in future releases. Use a child import() instead."));
 		node->filename = c.getAbsolutePath(file.toString());
 	}
 
@@ -127,7 +127,7 @@ AbstractNode *LinearExtrudeModule::evaluate(const Context *ctx, const ModuleInst
 class PolySet *LinearExtrudeNode::evaluate_polyset(PolySetEvaluator *evaluator) const
 {
 	if (!evaluator) {
-		PRINTB("WARNING: No suitable PolySetEvaluator found for %s module!", this->name());
+		PRINTB(_("WARNING: No suitable PolySetEvaluator found for %s module!"), this->name());
 		return NULL;
 	}
 

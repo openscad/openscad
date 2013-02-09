@@ -146,7 +146,7 @@ void GLView::initializeGL()
 #ifdef ENABLE_OPENCSG
 	GLenum err = glewInit();
 	if (GLEW_OK != err) {
-		fprintf(stderr, "GLEW Error: %s\n", glewGetErrorString(err));
+		fprintf(stderr, _("GLEW Error: %s\n"), glewGetErrorString(err));
 	}
 
 	GLint rbits, gbits, bbits, abits, dbits, sbits;
@@ -158,12 +158,12 @@ void GLView::initializeGL()
 	glGetIntegerv(GL_STENCIL_BITS, &sbits);
 
 
-	this->rendererInfo.sprintf("GLEW version %s\n"
+	this->rendererInfo.sprintf(_("GLEW version %s\n"
 														 "OpenGL version %s\n"
 														 "%s (%s)\n\n"
 														 "RGBA(%d%d%d%d), depth(%d), stencil(%d)\n"
 														 "Extensions:\n"
-														 "%s\n",
+														 "%s\n"),
 														 glewGetString(GLEW_VERSION),
 														 glGetString(GL_VERSION),
 														 glGetString(GL_RENDERER),
@@ -301,18 +301,18 @@ void GLView::initializeGL()
 			int loglen;
 			char logbuffer[1000];
 			glGetProgramInfoLog(edgeshader_prog, sizeof(logbuffer), &loglen, logbuffer);
-			fprintf(stderr, "OpenGL Program Linker Error:\n%.*s", loglen, logbuffer);
+			fprintf(stderr, _("OpenGL Program Linker Error:\n%.*s"), loglen, logbuffer);
 		} else {
 			int loglen;
 			char logbuffer[1000];
 			glGetProgramInfoLog(edgeshader_prog, sizeof(logbuffer), &loglen, logbuffer);
 			if (loglen > 0) {
-				fprintf(stderr, "OpenGL Program Link OK:\n%.*s", loglen, logbuffer);
+				fprintf(stderr, _("OpenGL Program Link OK:\n%.*s"), loglen, logbuffer);
 			}
 			glValidateProgram(edgeshader_prog);
 			glGetProgramInfoLog(edgeshader_prog, sizeof(logbuffer), &loglen, logbuffer);
 			if (loglen > 0) {
-				fprintf(stderr, "OpenGL Program Validation results:\n%.*s", loglen, logbuffer);
+				fprintf(stderr, _("OpenGL Program Validation results:\n%.*s"), loglen, logbuffer);
 			}
 		}
 	}
@@ -326,19 +326,19 @@ void GLView::display_opencsg_warning()
 
 	QString message;
 	if (this->is_opencsg_capable) {
-		message += "Warning: You may experience OpenCSG rendering errors.\n\n";
+		message += _("Warning: You may experience OpenCSG rendering errors.\n\n");
 	}
 	else {
-		message += "Warning: Missing OpenGL capabilities for OpenCSG - OpenCSG has been disabled.\n\n";
+		message += _("Warning: Missing OpenGL capabilities for OpenCSG - OpenCSG has been disabled.\n\n");
 		dialog->enableOpenCSGBox->hide();
 	}
-	message += "It is highly recommended to use OpenSCAD on a system with "
+	message += _("It is highly recommended to use OpenSCAD on a system with "
 		"OpenGL 2.0 or later.\n"
-		"Your renderer information is as follows:\n";
+		"Your renderer information is as follows:\n");
 	QString rendererinfo;
-	rendererinfo.sprintf("GLEW version %s\n"
+	rendererinfo.sprintf(_("GLEW version %s\n"
 											 "%s (%s)\n"
-											 "OpenGL version %s\n",
+											 "OpenGL version %s\n"),
 											 glewGetString(GLEW_VERSION),
 											 glGetString(GL_RENDERER), glGetString(GL_VENDOR),
 											 glGetString(GL_VERSION));

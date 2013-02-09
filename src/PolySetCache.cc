@@ -21,8 +21,8 @@ void PolySetCache::setMaxSize(size_t limit)
 
 void PolySetCache::print()
 {
-	PRINTB("PolySets in cache: %d", this->cache.size());
-	PRINTB("PolySet cache size in bytes: %d", this->cache.totalCost());
+	PRINTB(_("PolySets in cache: %d"), this->cache.size());
+	PRINTB(_("PolySet cache size in bytes: %d"), this->cache.totalCost());
 }
 
 PolySetCache::cache_entry::cache_entry(const shared_ptr<PolySet> &ps) : ps(ps)

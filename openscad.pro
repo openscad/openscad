@@ -125,6 +125,8 @@ netbsd* {
 	QMAKE_CXXFLAGS_WARN_ON += -Wno-unused-variable
 	QMAKE_CXXFLAGS_WARN_ON += -Wno-unused-function
 	QMAKE_CXXFLAGS_WARN_ON += -Wno-c++11-extensions
+	# gettext
+	QMAKE_CXXFLAGS_WARN_ON += -Wno-format-security
 	# might want to actually turn this on once in a while
 	QMAKE_CXXFLAGS_WARN_ON += -Wno-sign-compare
 }

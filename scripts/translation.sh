@@ -19,28 +19,42 @@ updatepot()
  OPTS=$OPTS' --package-version='$VER
  OPTS=$OPTS' --default-domain=openscad'
  OPTS=$OPTS' --keyword=_'
- xgettext $OPTS --files-from=./po/POTFILES.in -o ./po/openscad.pot
+ cmd='xgettext '$OPTS' --files-from=./po/POTFILES.in -o ./po/openscad.pot'
+ echo $cmd
+ $cmd
+ if [ ! $? = 0 ]; then
+  echo error running xgettext
+  exit 1
+ fi
  sed -i s/"CHARSET"/"UTF-8"/g ./po/openscad.pot
- echo 'updated ./po/openscad.pot from files in po/POTFILES.in'
 }
 
 updatepo()
 {
  for LANGCODE in `cat ./po/LINGUAS | grep -v "#"`; do
-  echo "msgmerge for ./po/$LANGCODE.po from openscad.pot"
 	OPTS=
   OPTS='--update --backup=t'
-  msgmerge $OPTS ./po/$LANGCODE.po ./po/openscad.pot
+  cmd='msgmerge '$OPTS' ./po/'$LANGCODE'.po ./po/openscad.pot'
+  echo $cmd
+  $cmd
+  if [ ! $? = 0 ]; then
+   echo error running msgmerge
+   exit 1
+  fi
  done
 }
 
 updatemo()
 {
  for LANGCODE in `cat po/LINGUAS | grep -v "#"`; do
-  echo creating .mo for language $LANGCODE from $LANGCODE.po
   mkdir -p ./po/$LANGCODE/LC_MESSAGES
-  msgfmt -c -v -o ./po/$LANGCODE/LC_MESSAGES/openscad.mo ./po/$LANGCODE.po
-  echo created ./po/$LANGCODE/LC_MESSAGES/openscad.mo
+  cmd='msgfmt -c -v -o ./po/'$LANGCODE'/LC_MESSAGES/openscad.mo ./po/'$LANGCODE'.po'
+  echo $cmd
+  $cmd
+  if [ ! $? = 0 ]; then
+   echo error running msgfmt
+   exit 1
+  fi
  done
 }
 

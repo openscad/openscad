@@ -135,10 +135,10 @@ int main(int argc, char **argv)
 	const char *output_file = NULL;
 	const char *deps_output_file = NULL;
 
-	po::options_description desc("Allowed options");
+	po::options_description desc(_("Allowed options"));
 	desc.add_options()
-		("help,h", "help message")
-		("version,v", "print the version")
+		("help,h", _("help message"))
+		("version,v", _("print the version"))
 		("o,o", po::value<string>(), "out-file")
 		("s,s", po::value<string>(), "stl-file")
 		("x,x", po::value<string>(), "dxf-file")
@@ -146,7 +146,7 @@ int main(int argc, char **argv)
 		("m,m", po::value<string>(), "makefile")
 		("D,D", po::value<vector<string> >(), "var=val");
 
-	po::options_description hidden("Hidden options");
+	po::options_description hidden(_("Hidden options"));
 	hidden.add_options()
 		("input-file", po::value< vector<string> >(), "input file");
 

@@ -104,7 +104,7 @@ PolySet *SurfaceNode::evaluate_polyset(class PolySetEvaluator *) const
 	std::ifstream stream(filename.c_str());
 
 	if (!stream.good()) {
-		PRINTB("WARNING: Can't open DAT file '%s'.", filename);
+		PRINTB(_("WARNING: Can't open DAT file '%s'."), filename);
 		return NULL;
 	}
 
@@ -136,7 +136,7 @@ PolySet *SurfaceNode::evaluate_polyset(class PolySetEvaluator *) const
 		}
 		catch (const boost::bad_lexical_cast &blc) {
 			if (!stream.eof()) {
-				PRINTB("WARNING: Illegal value in '%s': %s", filename % blc.what());
+				PRINTB(_("WARNING: Illegal value in '%s': %s"), filename % blc.what());
 			}
 			break;
   	}

@@ -86,7 +86,7 @@ std::string CGAL_Nef_polyhedron::dump() const
 	else if (this->dim==3)
 		return OpenSCAD::dump_svg( *this->p3 );
 	else
-		return std::string("Nef Polyhedron with dimension != 2 or 3");
+		return std::string("Nef Polyhedron, dim != 2 && dim != 3");
 }
 
 #endif // ENABLE_CGAL

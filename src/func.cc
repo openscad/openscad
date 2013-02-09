@@ -1,4 +1,4 @@
-/*
+	/*
  *  OpenSCAD (www.openscad.org)
  *  Copyright (C) 2009-2011 Clifford Wolf <clifford@clifford.at> and
  *                          Marius Kintel <marius@kintel.net>
@@ -449,7 +449,7 @@ Value builtin_search(const Context *, const std::vector<std::string>&, const std
 		      if (num_returns_per_match > 1 && matchCount >= num_returns_per_match) break;
 		    }
 		  }
-		  if (matchCount == 0) PRINTB("  search term not found: \"%s\"", findThis.toString()[i]);
+		  if (matchCount == 0) PRINTB(_("  search term not found: \"%s\""), findThis.toString()[i]);
 		  if (num_returns_per_match == 0 || num_returns_per_match > 1) {
 				returnvec.push_back(Value(resultvec));
 			}
@@ -478,10 +478,10 @@ Value builtin_search(const Context *, const std::vector<std::string>&, const std
 		  }
 		  if (num_returns_per_match == 1 && matchCount == 0) {
 		    if (findThis.toVector()[i].type() == Value::NUMBER) {
-					PRINTB("  search term not found: %s",findThis.toVector()[i].toDouble());
+					PRINTB(_("  search term not found: %s"),findThis.toVector()[i].toDouble());
 				}
 		    else if (findThis.toVector()[i].type() == Value::STRING) {
-					PRINTB("  search term not found: \"%s\"",findThis.toVector()[i].toString());
+					PRINTB(_("  search term not found: \"%s\""),findThis.toVector()[i].toString());
 				}
 		    returnvec.push_back(Value(resultvec));
 		  }
@@ -490,7 +490,7 @@ Value builtin_search(const Context *, const std::vector<std::string>&, const std
 			}
 		}
 	} else {
-		PRINTB("  search: none performed on input %s", findThis);
+		PRINTB(_("  search: none performed on input %s"), findThis);
 		return Value();
 	}
 	return Value(returnvec);

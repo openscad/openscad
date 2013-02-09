@@ -113,13 +113,16 @@ static char helptitle[] =
 	" (git " QUOTED(OPENSCAD_COMMIT) ")"
 #endif
 	"\nhttp://www.openscad.org\n\n";
-static char copyrighttext[] =
-	"Copyright (C) 2009-2013 Marius Kintel <marius@kintel.net> and Clifford Wolf <clifford@clifford.at>\n"
+const char * copyrighttext()
+{
+	return
+	_("Copyright (C) 2009-2013 Marius Kintel <marius@kintel.net> and Clifford Wolf <clifford@clifford.at>\n"
 	"\n"
 	"This program is free software; you can redistribute it and/or modify "
 	"it under the terms of the GNU General Public License as published by "
 	"the Free Software Foundation; either version 2 of the License, or "
-	"(at your option) any later version.";
+	"(at your option) any later version.");
+}
 
 static void
 settings_setValueList(const QString &key,const QList<int> &list)
@@ -330,7 +333,7 @@ MainWindow::MainWindow(const QString &filename)
 	setCurrentOutput();
 
 	PRINT(helptitle);
-	PRINT(copyrighttext);
+	PRINTB("%s",copyrighttext());
 	PRINT("");
 
 	if (!filename.isEmpty()) {
@@ -492,7 +495,7 @@ MainWindow::setFileName(const QString &filename)
 	if (filename.isEmpty()) {
 		this->fileName.clear();
 		this->root_ctx.setDocumentPath(currentdir);
-		setWindowTitle("OpenSCAD - New Document[*]");
+		setWindowTitle(_("OpenSCAD - New Document[*]"));
 	}
 	else {
 		QFileInfo fileinfo(filename);
@@ -1159,7 +1162,7 @@ void MainWindow::actionCompile()
 		QString filename;
 		double s = this->e_fsteps->text().toDouble();
 		double t = this->e_tval->text().toDouble();
-		filename.sprintf("frame%05d.png", int(round(s*t)));
+		filename.sprintf(_("frame%05d.png"), int(round(s*t)));
 		img.save(filename, "PNG");
 	}
 	
@@ -1741,11 +1744,11 @@ MainWindow::helpManual()
 void MainWindow::helpLibrary()
 {
 	QString libinfo;
-	libinfo.sprintf("Boost version: %s\n"
+	libinfo.sprintf(_("Boost version: %s\n"
 									"Eigen version: %d.%d.%d\n"
 									"CGAL version: %s\n"
 									"OpenCSG version: %s\n"
-									"Qt version: %s\n\n",
+									"Qt version: %s\n\n"),
 									BOOST_LIB_VERSION,
 									EIGEN_WORLD_VERSION, EIGEN_MAJOR_VERSION, EIGEN_MINOR_VERSION,
 									TOSTRING(CGAL_VERSION),

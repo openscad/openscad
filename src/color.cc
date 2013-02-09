@@ -67,7 +67,7 @@ AbstractNode *ColorModule::evaluate(const Context *ctx, const ModuleInstantiatio
 		for (size_t i = 0; i < 4; i++) {
 			node->color[i] = i < v.toVector().size() ? v.toVector()[i].toDouble() : 1.0;
 			if (node->color[i] > 1)
-				PRINTB_NOCACHE("WARNING: color() expects numbers between 0.0 and 1.0. Value of %.1f is too large.", node->color[i]);
+				PRINTB_NOCACHE(_("WARNING: color() expects numbers between 0.0 and 1.0. Value of %.1f is too large."), node->color[i]);
 		}
 	} else if (v.type() == Value::STRING) {
 		std::string colorname = v.toString();
@@ -79,8 +79,8 @@ AbstractNode *ColorModule::evaluate(const Context *ctx, const ModuleInstantiatio
 			node->color[1] = color[1];
 			node->color[2] = color[2];
 		} else {
-			PRINTB_NOCACHE("WARNING: Color name \"%s\" unknown. Please see", colorname);
-			PRINT_NOCACHE("WARNING: http://en.wikipedia.org/wiki/Web_colors");
+			PRINTB_NOCACHE(_("WARNING: Color name \"%s\" unknown. Please see"), colorname);
+			PRINT_NOCACHE(_("WARNING: http://en.wikipedia.org/wiki/Web_colors"));
 		}
 	}
 	Value alpha = c.lookup_variable("alpha");

@@ -24,6 +24,7 @@
  *
  */
 
+#include "printutils.h"
 #include "polyset.h"
 #include "linalg.h"
 #include <Eigen/LU>
@@ -51,30 +52,30 @@ PolySet::~PolySet()
 std::string PolySet::dump() const
 {
 	std::stringstream out;
-	out << "PolySet:"
-	  << "\n dimensions:" << std::string( this->is2d ? "2" : "3" )
-	  << "\n convexity:" << this->convexity
-	  << "\n num polygons: " << polygons.size()
-	  << "\n num borders: " << borders.size()
-	  << "\n polygons data:";
+	out << _("PolySet:")
+	  << _("\n dimensions:") << std::string( this->is2d ? "2" : "3" )
+	  << _("\n convexity:") << this->convexity
+	  << _("\n num polygons: ") << polygons.size()
+	  << _("\n num borders: ") << borders.size()
+	  << _("\n polygons data:");
 	for (size_t i = 0; i < polygons.size(); i++) {
-		out << "\n  polygon begin:";
+		out << _("\n  polygon begin:");
 		const Polygon *poly = &polygons[i];
 		for (size_t j = 0; j < poly->size(); j++) {
 			Vector3d v = poly->at(j);
-			out << "\n   vertex:" << v.transpose();
+			out << _("\n   vertex:") << v.transpose();
 		}
 	}
-	out << "\n borders data:";
+	out << _("\n borders data:");
 	for (size_t i = 0; i < borders.size(); i++) {
-		out << "\n  border polygon begin:";
+		out << _("\n  border polygon begin:");
 		const Polygon *poly = &borders[i];
 		for (size_t j = 0; j < poly->size(); j++) {
 			Vector3d v = poly->at(j);
-			out << "\n   vertex:" << v.transpose();
+			out << _("\n   vertex:") << v.transpose();
 		}
 	}
-	out << "\nPolySet end";
+	out << _("\nPolySet end");
 	return out.str();
 }
 
