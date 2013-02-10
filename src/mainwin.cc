@@ -24,6 +24,7 @@
  *
  */
 
+#include <QString> // mingw32 gettext needs this first
 #include "PolySetCache.h"
 #include "ModuleCache.h"
 #include "MainWindow.h"
