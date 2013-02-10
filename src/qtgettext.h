@@ -4,14 +4,13 @@
 // see doc/translation.txt
 
 #include "printutils.h"
-#include <libintl.h>
-#include <locale.h>
+#undef sprintf // avoid undefined QString::libintl_sprintf link errors
 #include <QString>
 
 inline QString _( const char *msgid, int category )
 {
 	Q_UNUSED( category );
-	return QString::fromUtf8( _( msgid ) );
+	return QString::fromUtf8( gettext( msgid ) );
 }
 
 #endif

@@ -24,7 +24,6 @@
  *
  */
 
-#include <QString> // mingw32 gettext needs this first
 #include "PolySetCache.h"
 #include "ModuleCache.h"
 #include "MainWindow.h"
@@ -49,6 +48,7 @@
 #include "ProgressWidget.h"
 #include "ThrownTogetherRenderer.h"
 #include "csgtermnormalizer.h"
+#include "qtgettext.h"
 
 #include <QMenu>
 #include <QTime>
