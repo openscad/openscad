@@ -140,7 +140,7 @@ esac
 
 case $OS in
     LINXWIN)
-        cd $DEPLOYDIR && make -s clean
+#        cd $DEPLOYDIR && make -s clean
         cd $OPENSCADDIR
     ;;
     *)
@@ -192,16 +192,19 @@ case $OS in
     MACOSX)
         EXAMPLESDIR=OpenSCAD.app/Contents/Resources/examples
         LIBRARYDIR=OpenSCAD.app/Contents/Resources/libraries
+        TRANSLATIONDIR=OpenSCAD.app/Contents/Resources/po
     ;;
     LINXWIN)
         EXAMPLESDIR=$DEPLOYDIR/openscad-$VERSION/examples/
         LIBRARYDIR=$DEPLOYDIR/openscad-$VERSION/libraries/
+        TRANSLATIONDIR=$DEPLOYDIR/openscad-$VERSION/po/
         rm -rf $DEPLOYDIR/openscad-$VERSION
         mkdir $DEPLOYDIR/openscad-$VERSION
 		;;
     *)
         EXAMPLESDIR=openscad-$VERSION/examples/
         LIBRARYDIR=openscad-$VERSION/libraries/
+        TRANSLATIONDIR=openscad-$VERSION/po/
         rm -rf openscad-$VERSION
         mkdir openscad-$VERSION
     ;;
@@ -224,6 +227,13 @@ if [ -n $LIBRARYDIR ]; then
   cd $LIBRARYDIR/.. && tar xf $OPENSCADDIR/libraries.tar && cd $OPENSCADDIR
   rm -f libraries.tar
   chmod -R u=rwx,go=r,+X $LIBRARYDIR/*
+fi
+if [ -n $TRANSLATIONDIR ]; then
+  echo $TRANSLATIONDIR
+  mkdir -p $TRANSLATIONDIR
+  tar cvf translations.tar po
+  cd $TRANSLATIONDIR/.. && tar xvf $OPENSCADDIR/translations.tar && cd $OPENSCADDIR
+  rm -f translations.tar
 fi
 
 echo "Creating archive.."

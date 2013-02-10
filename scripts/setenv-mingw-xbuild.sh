@@ -18,7 +18,7 @@ if [ ! $BASEDIR ]; then
 fi
 
 if [ ! $DEPLOYDIR ]; then
-	export DEPLOYDIR=$OPENSCADDIR/mingw32
+	export DEPLOYDIR=$OPENSCADDIR/mingw32xx
 fi
 
 if [ ! $MXEDIR ]; then

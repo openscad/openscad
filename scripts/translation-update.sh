@@ -54,5 +54,9 @@ updatemo()
  done
 }
 
-updatepot && updatepo && updatemo
+if [ $1 = updatemo ]; then
+ updatemo
+else
+ updatepot && updatepo && updatemo
+fi
 
