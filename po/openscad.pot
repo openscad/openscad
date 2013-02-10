@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OpenSCAD 2013.02.09\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-02-09 19:36-0600\n"
+"POT-Creation-Date: 2013-02-09 17:48-0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,48 +16,6 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-
-#: objects/ui_AboutDialog.h:52
-msgid "About OpenSCAD"
-msgstr ""
-
-#: objects/ui_OpenCSGWarningDialog.h:87
-msgid "OpenGL Warning"
-msgstr ""
-
-#: objects/ui_OpenCSGWarningDialog.h:88
-msgid ""
-"<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/"
-"REC-html40/strict.dtd\">\n"
-"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css"
-"\">\n"
-"p, li { white-space: pre-wrap; }\n"
-"</style></head><body style=\" font-family:'Lucida Grande'; font-size:13pt; "
-"font-weight:400; font-style:normal;\">\n"
-"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; "
-"margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"></"
-"p></body></html>"
-msgstr ""
-
-#: objects/ui_OpenCSGWarningDialog.h:93
-msgid "Enable OpenCSG"
-msgstr ""
-
-#: objects/ui_OpenCSGWarningDialog.h:94
-msgid "Show this message again"
-msgstr ""
-
-#: objects/ui_OpenCSGWarningDialog.h:95 objects/ui_MainWindow.h:541
-msgid "Close"
-msgstr ""
-
-#: objects/ui_ProgressWidget.h:72
-msgid "Form"
-msgstr ""
-
-#: objects/ui_ProgressWidget.h:73
-msgid "%v / %m"
-msgstr ""
 
 #: objects/ui_MainWindow.h:453
 msgid "MainWindow"
@@ -259,7 +217,7 @@ msgstr ""
 msgid "Export as &OFF..."
 msgstr ""
 
-#: objects/ui_MainWindow.h:503 objects/ui_Preferences.h:339
+#: objects/ui_MainWindow.h:503
 msgid "OpenCSG"
 msgstr ""
 
@@ -411,11 +369,15 @@ msgstr ""
 msgid "Export as DXF..."
 msgstr ""
 
+#: objects/ui_MainWindow.h:541
+msgid "Close"
+msgstr ""
+
 #: objects/ui_MainWindow.h:542
 msgid "Ctrl+W"
 msgstr ""
 
-#: objects/ui_MainWindow.h:543 objects/ui_Preferences.h:322
+#: objects/ui_MainWindow.h:543
 msgid "Preferences"
 msgstr ""
 
@@ -443,7 +405,7 @@ msgstr ""
 msgid "Library info"
 msgstr ""
 
-#: objects/ui_MainWindow.h:551 objects/ui_Preferences.h:325
+#: objects/ui_MainWindow.h:551
 msgid "Editor"
 msgstr ""
 
@@ -509,70 +471,6 @@ msgstr ""
 
 #: objects/ui_MainWindow.h:578
 msgid "&Help"
-msgstr ""
-
-#: objects/ui_Preferences.h:323
-msgid "3D View"
-msgstr ""
-
-#: objects/ui_Preferences.h:324
-msgid "Advanced"
-msgstr ""
-
-#: objects/ui_Preferences.h:326
-msgid "Color scheme:"
-msgstr ""
-
-#: objects/ui_Preferences.h:331
-msgid "Cornfield"
-msgstr ""
-
-#: objects/ui_Preferences.h:333
-msgid "Metallic"
-msgstr ""
-
-#: objects/ui_Preferences.h:335
-msgid "Sunset"
-msgstr ""
-
-#: objects/ui_Preferences.h:338
-msgid "Font"
-msgstr ""
-
-#: objects/ui_Preferences.h:340
-msgid "Show capability warning"
-msgstr ""
-
-#: objects/ui_Preferences.h:341
-msgid "Enable for OpenGL 1.x"
-msgstr ""
-
-#: objects/ui_Preferences.h:342
-msgid "Turn off rendering at "
-msgstr ""
-
-#: objects/ui_Preferences.h:343
-msgid "elements"
-msgstr ""
-
-#: objects/ui_Preferences.h:344
-msgid "Force Goldfeather"
-msgstr ""
-
-#: objects/ui_Preferences.h:345
-msgid "CGAL Cache size"
-msgstr ""
-
-#: objects/ui_Preferences.h:346 objects/ui_Preferences.h:348
-msgid "bytes"
-msgstr ""
-
-#: objects/ui_Preferences.h:347
-msgid "PolySet Cache size"
-msgstr ""
-
-#: objects/ui_Preferences.h:349
-msgid "toolBar"
 msgstr ""
 
 #: src/cgaladv_minkowski2.cc:43

@@ -77,5 +77,9 @@ Testing:
 On unix, set the locale related environment variables. For example in 
 French, run this:
 
-   $ LANG=fr ./openscad
+   $ LANGUAGE=fr ./openscad
+
+Linux system trace tools can help find errors. To show open()s on .mo files:
+
+   $ LANGUAGE=fr strace -f ./openscad 2>&1 | grep LC_MESSAGES
 

@@ -10,6 +10,7 @@
 
 inline QString _( const char *msgid, int category )
 {
+	Q_UNUSED( category );
 	return QString::fromUtf8( _( msgid ) );
 }
 

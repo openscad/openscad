@@ -4,9 +4,13 @@
 
 updatepot()
 {
+ if [ ! -e objects/ui_MainWindow.h ]; then
+   echo cannot find objects/ui_xxxxx.h files. perhaps if you run make...?
+   exit 1
+ fi
  VER=`date +"%Y.%m.%d"`
  OPTS=
- OPTS=$OPTS'--package-name=OpenSCAD'
+ OPTS=$OPTS' --package-name=OpenSCAD'
  OPTS=$OPTS' --package-version='$VER
  OPTS=$OPTS' --default-domain=openscad'
  OPTS=$OPTS' --keyword=_'
