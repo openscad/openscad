@@ -16,9 +16,11 @@ EIGEN2_DIR = $$(EIGEN2DIR)
 EIGEN_DIR = $$(EIGENDIR)
 
 CONFIG(mingw-cross-env) {
-  EIGEN_INCLUDEPATH = mingw-cross-env/include/eigen2
-  !exists($$EIGEN_INCLUDEPATH) {
-    EIGEN_INCLUDEPATH = mingw-cross-env/include/eigen3
+  exists($$OUT_PWD/mingw-cross-env/include/eigen2) {
+    EIGEN_INCLUDEPATH += mingw-cross-env/include/eigen2
+  }
+  exists($$OUT_PWD/mingw-cross-env/include/eigen3) {
+    EIGEN_INCLUDEPATH += mingw-cross-env/include/eigen3
   }
 }
 
