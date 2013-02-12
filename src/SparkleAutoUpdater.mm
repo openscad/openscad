@@ -60,8 +60,8 @@ bool SparkleAutoUpdater::enableSnapshots()
 
 QString SparkleAutoUpdater::lastUpdateCheckDate()
 {
-  NSString *datestring = [NSString stringWithFormat:@"Last checked: %@",
-                          [d->updater lastUpdateCheckDate]];
+  NSDate *date = [d->updater lastUpdateCheckDate];
+  NSString *datestring = date ? [NSString stringWithFormat:@"Last checked: %@", date] : @"";
   return QString::fromUtf8([datestring UTF8String]);
 }
 
