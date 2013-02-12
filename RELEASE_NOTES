@@ -4,6 +4,8 @@ OpenSCAD 2013.XX
 Features:
 o Console output is now enabled on Windows through the openscad.com executable
 o Added basic syntax highlighting in the editor
+o Mac: Added document icon
+o Mac: Added auto-update check
 
 Bugfixes:
 o OpenCSG rendering sometimes crashed when rendering large models
