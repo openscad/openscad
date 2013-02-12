@@ -202,6 +202,12 @@ complete, build OpenSCAD and package it to an installer:
 
     ./scripts/release-common.sh mingw32
 
+If you wish you can only build the openscad.exe binary:
+
+    cd mingw32
+    i686-pc-mingw32-qmake .. CONFIG+=mingw-cross-env
+    make
+    
 ### Compilation
 
 First, run 'qmake' from Qt4 to generate a Makefile. On some systems you need to

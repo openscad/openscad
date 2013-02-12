@@ -458,28 +458,32 @@ set(COMMON_SOURCES
   ../src/PolySetEvaluator.cc 
   ../src/PolySetCache.cc 
   ../src/Tree.cc
-  lodepng.cpp)
+  ../src/lodepng.cpp)
 
 #
 # Offscreen OpenGL context source code
 #
 if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 	message(STATUS "Offscreen OpenGL Context - using Apple CGL")
-	set(OFFSCREEN_CTX_SOURCE "OffscreenContext.mm" CACHE TYPE STRING)
+	set(OFFSCREEN_CTX_SOURCE "OffscreenContextCGL.mm" CACHE TYPE STRING)
+	set(OFFSCREEN_IMGUTILS_SOURCE "imageutils-macosx.cc" CACHE TYPE STRING)
 elseif(UNIX)
 	message(STATUS "Offscreen OpenGL Context - using Unix GLX")
 	set(OFFSCREEN_CTX_SOURCE "OffscreenContextGLX.cc" CACHE TYPE STRING)
+	set(OFFSCREEN_IMGUTILS_SOURCE "imageutils-lodepng.cc" CACHE TYPE STRING)
 elseif(WIN32)
 	message(STATUS "Offscreen OpenGL Context - using Microsoft WGL")
 	set(OFFSCREEN_CTX_SOURCE "OffscreenContextWGL.cc" CACHE TYPE STRING)
+	set(OFFSCREEN_IMGUTILS_SOURCE "imageutils-lodepng.cc" CACHE TYPE STRING)
 endif()
 
 set(OFFSCREEN_SOURCES
-  OffscreenView.cc
-  ${OFFSCREEN_CTX_SOURCE}
-  imageutils.cc
-  fbo.cc
-  system-gl.cc)
+  ../src/OffscreenView.cc
+  ../src/${OFFSCREEN_CTX_SOURCE}
+  ../src/${OFFSCREEN_IMGUTILS_SOURCE}
+  ../src/imageutils.cc
+  ../src/fbo.cc
+  ../src/system-gl.cc)
 
 add_library(tests-core STATIC ${CORE_SOURCES})
 target_link_libraries(tests-core ${OPENGL_LIBRARY})
@@ -546,14 +550,14 @@ target_link_libraries(cgalstlsanitytest tests-cgal ${TESTS-CGAL-LIBRARIES})
 #
 # cgalpngtest
 #
-add_executable(cgalpngtest cgalpngtest.cc bboxhelp.cc ../src/CGALRenderer.cc ../src/renderer.cc ../src/rendersettings.cc)
+add_executable(cgalpngtest cgalpngtest.cc ../src/CGALRenderer.cc ../src/renderer.cc ../src/rendersettings.cc)
 set_target_properties(cgalpngtest PROPERTIES COMPILE_FLAGS "-DENABLE_CGAL ${CGAL_CXX_FLAGS_INIT}")
 target_link_libraries(cgalpngtest tests-offscreen tests-cgal ${OPENCSG_LIBRARY} ${TESTS-CGAL-LIBRARIES} ${GLEW_LIBRARY} ${COCOA_LIBRARY})
 
 #
 # cgalcachetest
 #
-add_executable(cgalcachetest cgalcachetest.cc bboxhelp.cc)
+add_executable(cgalcachetest cgalcachetest.cc)
 set_target_properties(cgalcachetest PROPERTIES COMPILE_FLAGS "-DENABLE_CGAL ${CGAL_CXX_FLAGS_INIT}")
 target_link_libraries(cgalcachetest tests-cgal ${TESTS-CGAL-LIBRARIES} ${GLEW_LIBRARY} ${COCOA_LIBRARY})
 
@@ -572,6 +576,26 @@ target_link_libraries(opencsgtest tests-offscreen tests-cgal ${OPENCSG_LIBRARY} 
 add_executable(throwntogethertest throwntogethertest.cc csgtestcore.cc ../src/OpenCSGRenderer.cc ../src/ThrownTogetherRenderer.cc ../src/renderer.cc ../src/rendersettings.cc)
 set_target_properties(throwntogethertest PROPERTIES COMPILE_FLAGS "-DENABLE_OPENCSG -DENABLE_CGAL ${CGAL_CXX_FLAGS_INIT}")
 target_link_libraries(throwntogethertest tests-offscreen tests-cgal ${OPENCSG_LIBRARY} ${TESTS-CGAL-LIBRARIES} ${GLEW_LIBRARY} ${COCOA_LIBRARY})
+
+#
+# GUI binary tests
+#
+if(APPLE)
+  set(GUI_BINPATH "${CMAKE_CURRENT_SOURCE_DIR}/../OpenSCAD.app/Contents/MacOS/OpenSCAD")
+elseif(WIN32)
+  set(GUI_BINPATH "${CMAKE_CURRENT_SOURCE_DIR}/../Release/openscad.exe")
+else()
+  set(GUI_BINPATH "${CMAKE_CURRENT_SOURCE_DIR}/../openscad")
+endif()
+
+if(EXISTS "${GUI_BINPATH}")
+  add_executable(guicgalpngtest guicgalpngtest.cc)
+  set_target_properties(guicgalpngtest PROPERTIES COMPILE_FLAGS "-DBINPATH=${GUI_BINPATH}")
+  message(STATUS "Found OpenSCAD GUI binary: ${GUI_BINPATH}")
+else()
+  message(STATUS "Couldn't find the OpenSCAD GUI binary: ${GUI_BINPATH}")
+  message(FATAL_ERROR "Please build the OpenSCAD GUI binary and place it here: ${GUI_BINPATH}" )
+endif()
 
 #
 # Tags tests as disabled. This is more convenient than removing them manually
@@ -725,6 +749,8 @@ list(APPEND THROWNTOGETHERTEST_FILES ${OPENCSGTEST_FILES})
 
 list(APPEND CGALSTLSANITYTEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/normal-nan.scad)
 
+list(APPEND GUICGALPNGTEST_FILES ${CGALPNGTEST_FILES})
+
 # Disable tests which are known to cause floating point comparison issues
 # Once we're capable of comparing these across platforms, we can put these back in
 disable_tests(dumptest_transform-tests
@@ -757,6 +783,9 @@ disable_tests(opencsgtest_example006 cgalpngtest_example006)
 disable_tests(cgalpngtest_child-background
               cgalpngtest_highlight-and-background-modifier
               cgalpngtest_testcolornames
+              guicgalpngtest_child-background
+              guicgalpngtest_highlight-and-background-modifier
+              guicgalpngtest_testcolornames
               throwntogethertest_child-background
               throwntogethertest_highlight-and-background-modifier
               throwntogethertest_testcolornames)
@@ -774,7 +803,15 @@ set_test_config(Heavy opencsgtest_minkowski3-tests
                       cgalpngtest_minkowski3-tests
                       cgalpngtest_for-tests
                       cgalpngtest_for-nested-tests
-                      cgalpngtest_intersection-tests)
+                      cgalpngtest_intersection-tests
+                      guicgalpngtest_projection-tests
+                      guicgalpngtest_rotate_extrude-tests
+                      guicgalpngtest_surface-tests
+                      guicgalpngtest_sphere-tests
+                      guicgalpngtest_minkowski3-tests
+                      guicgalpngtest_for-tests
+                      guicgalpngtest_for-nested-tests
+                      guicgalpngtest_intersection-tests)
 
 foreach(FILE ${EXAMPLE_FILES})
   get_test_fullname(cgalpngtest ${FILE} TEST_FULLNAME)
@@ -782,6 +819,8 @@ foreach(FILE ${EXAMPLE_FILES})
   get_test_fullname(opencsgtest ${FILE} TEST_FULLNAME)
   set_test_config(Examples ${TEST_FULLNAME})
   get_test_fullname(throwntogethertest ${FILE} TEST_FULLNAME)
+  set_test_config(Examples ${TEST_FULLNAME})
+  get_test_fullname(guicgalpngtest ${FILE} TEST_FULLNAME)
   set_test_config(Examples ${TEST_FULLNAME})
 endforeach()
 
@@ -833,6 +872,8 @@ add_cmdline_test(csgtermtest txt ${MINIMAL_FILES})
 add_cmdline_test(cgalpngtest png ${CGALPNGTEST_FILES})
 add_cmdline_test(opencsgtest png ${OPENCSGTEST_FILES})
 add_cmdline_test(throwntogethertest png ${THROWNTOGETHERTEST_FILES})
+add_cmdline_test(guicgalpngtest png ${GUICGALPNGTEST_FILES})
+
 # FIXME: We don't actually need to compare the output of cgalstlsanitytest
 # with anything. It's self-contained and returns != 0 on error
 add_cmdline_test(cgalstlsanitytest txt ${CGALSTLSANITYTEST_FILES})

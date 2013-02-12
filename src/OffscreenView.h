@@ -8,6 +8,8 @@
 #ifndef _MSC_VER
 #include <stdint.h>
 #endif
+#include "system-gl.h"
+#include <iostream>
 
 class OffscreenView
 {
@@ -23,6 +25,7 @@ public:
 	void setupOrtho(bool offset=false);
 	void paintGL();
 	bool save(const char *filename);
+	bool save(std::ostream &output);
 	std::string getInfo();
 
 	GLint shaderinfo[11];
@@ -32,14 +35,15 @@ public:
 private:
 	Renderer *renderer;
 	double w_h_ratio;
-	Eigen::Vector3d object_rot;
-	Eigen::Vector3d camera_eye;
-	Eigen::Vector3d camera_center;
 
 	bool orthomode;
 	bool showaxes;
 	bool showfaces;
 	bool showedges;
+
+	Eigen::Vector3d object_rot;
+	Eigen::Vector3d camera_eye;
+	Eigen::Vector3d camera_center;
 };
 
 #endif

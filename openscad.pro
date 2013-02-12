@@ -68,7 +68,7 @@ macx {
   APP_RESOURCES.path = Contents/Resources
   APP_RESOURCES.files = OpenSCAD.sdef
   QMAKE_BUNDLE_DATA += APP_RESOURCES
-  LIBS += -framework Carbon
+  LIBS += -framework Cocoa
 }
 else {
   TARGET = openscad
@@ -229,7 +229,16 @@ HEADERS += src/version_check.h \
            src/linalg.h \
            src/system-gl.h \
            src/stl-utils.h \
-           src/svg.h
+           src/svg.h \
+           \
+           src/lodepng.h \
+           src/OffscreenView.h \
+           src/OffscreenContext.h \
+           src/OffscreenContextAll.hpp \
+           src/fbo.h \
+           src/imageutils.h \
+           src/system-gl.h \
+           src/CsgInfo.h
 
 SOURCES += src/version_check.cc \
            src/ProgressWidget.cc \
@@ -279,6 +288,7 @@ SOURCES += src/version_check.cc \
            \
            src/builtin.cc \
            src/export.cc \
+           src/export_png.cc \
            src/import.cc \
            src/renderer.cc \
            src/ThrownTogetherRenderer.cc \
@@ -287,9 +297,27 @@ SOURCES += src/version_check.cc \
            src/dxftess-cgal.cc \
            src/CSGTermEvaluator.cc \
            src/svg.cc \
+           src/OffscreenView.cc \
+           src/fbo.cc \
+           src/system-gl.cc \
+           src/imageutils.cc \
+           src/lodepng.cpp \
            \
            src/openscad.cc \
            src/mainwin.cc
+
+unix:!macx {
+  SOURCES += src/imageutils-lodepng.cc
+  SOURCES += src/OffscreenContextGLX.cc
+}
+macx {
+  SOURCES += src/imageutils-macosx.cc
+  OBJECTIVE_SOURCES += src/OffscreenContextCGL.mm
+}
+win32* {
+  SOURCES += src/imageutils-lodepng.cc
+  SOURCES += src/OffscreenContextWGL.cc
+}
 
 opencsg {
   HEADERS += src/OpenCSGRenderer.h

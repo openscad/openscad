@@ -142,6 +142,11 @@ bool OffscreenView::save(const char *filename)
 	return save_framebuffer(this->ctx, filename);
 }
 
+bool OffscreenView::save(std::ostream &output)
+{
+	return save_framebuffer(this->ctx, output);
+}
+
 std::string OffscreenView::getInfo()
 {
 	std::stringstream out;
