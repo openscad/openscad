@@ -66,7 +66,7 @@ macx {
   ICON = icons/OpenSCAD.icns
   QMAKE_INFO_PLIST = Info.plist
   APP_RESOURCES.path = Contents/Resources
-  APP_RESOURCES.files = OpenSCAD.sdef dsa_pub.pem
+  APP_RESOURCES.files = OpenSCAD.sdef dsa_pub.pem icons/SCAD.icns
   QMAKE_BUNDLE_DATA += APP_RESOURCES
   LIBS += -framework Cocoa -framework Sparkle
 }
