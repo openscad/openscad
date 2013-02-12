@@ -47,9 +47,9 @@ if [[ $VERSION == $VERSIONDATE ]]; then
 fi
 
 echo "Uploading..."
-#LABELS=OpSys-OSX,Type-Executable
-#if ! $SNAPSHOT; then LABELS=$LABELS,Featured; fi
-#`dirname $0`/googlecode_upload.py -s 'Mac OS X Snapshot' -p openscad OpenSCAD-$VERSION.dmg -l $LABELS
+LABELS=OpSys-OSX,Type-Executable
+if ! $SNAPSHOT; then LABELS=$LABELS,Featured; fi
+`dirname $0`/googlecode_upload.py -s 'Mac OS X Snapshot' -p openscad OpenSCAD-$VERSION.dmg -l $LABELS
 
 # Update snapshot filename on web page
-#`dirname $0`/update-web.sh OpenSCAD-$VERSION.dmg
+`dirname $0`/update-web.sh OpenSCAD-$VERSION.dmg
