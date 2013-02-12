@@ -101,7 +101,7 @@ void mark_inner_outer(std::vector<struct triangle> &tri, Grid2d<point_info_t> &p
 	}
 }
 
-void dxf_tesselate(PolySet *ps, DxfData &dxf, double rot, bool up, bool /* do_triangle_splitting */, double h)
+void dxf_tesselate(PolySet *ps, DxfData &dxf, double rot, double scale, bool up, bool /* do_triangle_splitting */, double h)
 {
 	CDT cdt;
 
@@ -124,8 +124,8 @@ void dxf_tesselate(PolySet *ps, DxfData &dxf, double rot, bool up, bool /* do_tr
 		struct point_info_t *first_pi = NULL, *prev_pi = NULL;
 		for (size_t j = 1; j < dxf.paths[i].indices.size(); j++)
 		{
-			double x = dxf.points[dxf.paths[i].indices[j]][0];
-			double y = dxf.points[dxf.paths[i].indices[j]][1];
+			double x = scale * dxf.points[dxf.paths[i].indices[j]][0];
+			double y = scale * dxf.points[dxf.paths[i].indices[j]][1];
 
 			if (point_info.has(x, y)) {
 				// FIXME: How can the same path set contain the same point twice?

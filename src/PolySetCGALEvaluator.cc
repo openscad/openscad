@@ -202,27 +202,37 @@ PolySet *PolySetCGALEvaluator::evaluatePolySet(const ProjectionNode &node)
 	return ps;
 }
 
-static void add_slice(PolySet *ps, const DxfData &dxf, DxfData::Path &path, double rot1, double rot2, double h1, double h2)
+static void add_slice(PolySet *ps, const DxfData &dxf, DxfData::Path &path, 
+											double rot1, double rot2, 
+											double h1, double h2, 
+											double scale1, double scale2)
 {
+	// FIXME: If scale2 == 0 we need to handle tessellation separately
 	bool splitfirst = sin(rot2 - rot1) >= 0.0;
-	for (size_t j = 1; j < path.indices.size(); j++)
-	{
+	for (size_t j = 1; j < path.indices.size(); j++) {
 		int k = j - 1;
 
-		double jx1 = dxf.points[path.indices[j]][0] *  cos(rot1*M_PI/180) + dxf.points[path.indices[j]][1] * sin(rot1*M_PI/180);
-		double jy1 = dxf.points[path.indices[j]][0] * -sin(rot1*M_PI/180) + dxf.points[path.indices[j]][1] * cos(rot1*M_PI/180);
+		double jx1 = scale1 * (dxf.points[path.indices[j]][0] *  cos(rot1*M_PI/180) + 
+													 dxf.points[path.indices[j]][1] * sin(rot1*M_PI/180));
+		double jy1 = scale1 * (dxf.points[path.indices[j]][0] * -sin(rot1*M_PI/180) + 
+													 dxf.points[path.indices[j]][1] * cos(rot1*M_PI/180));
 
-		double jx2 = dxf.points[path.indices[j]][0] *  cos(rot2*M_PI/180) + dxf.points[path.indices[j]][1] * sin(rot2*M_PI/180);
-		double jy2 = dxf.points[path.indices[j]][0] * -sin(rot2*M_PI/180) + dxf.points[path.indices[j]][1] * cos(rot2*M_PI/180);
+		double jx2 = scale2 * (dxf.points[path.indices[j]][0] *  cos(rot2*M_PI/180) + 
+													 dxf.points[path.indices[j]][1] * sin(rot2*M_PI/180));
+		double jy2 = scale2 * (dxf.points[path.indices[j]][0] * -sin(rot2*M_PI/180) + 
+													 dxf.points[path.indices[j]][1] * cos(rot2*M_PI/180));
 
-		double kx1 = dxf.points[path.indices[k]][0] *  cos(rot1*M_PI/180) + dxf.points[path.indices[k]][1] * sin(rot1*M_PI/180);
-		double ky1 = dxf.points[path.indices[k]][0] * -sin(rot1*M_PI/180) + dxf.points[path.indices[k]][1] * cos(rot1*M_PI/180);
+		double kx1 = scale1 * (dxf.points[path.indices[k]][0] *  cos(rot1*M_PI/180) + 
+													 dxf.points[path.indices[k]][1] * sin(rot1*M_PI/180));
+		double ky1 = scale1 * (dxf.points[path.indices[k]][0] * -sin(rot1*M_PI/180) + 
+													 dxf.points[path.indices[k]][1] * cos(rot1*M_PI/180));
 
-		double kx2 = dxf.points[path.indices[k]][0] *  cos(rot2*M_PI/180) + dxf.points[path.indices[k]][1] * sin(rot2*M_PI/180);
-		double ky2 = dxf.points[path.indices[k]][0] * -sin(rot2*M_PI/180) + dxf.points[path.indices[k]][1] * cos(rot2*M_PI/180);
+		double kx2 = scale2 * (dxf.points[path.indices[k]][0] *  cos(rot2*M_PI/180) + 
+													 dxf.points[path.indices[k]][1] * sin(rot2*M_PI/180));
+		double ky2 = scale2 * (dxf.points[path.indices[k]][0] * -sin(rot2*M_PI/180) + 
+													 dxf.points[path.indices[k]][1] * cos(rot2*M_PI/180));
 
-		if (splitfirst)
-		{
+		if (splitfirst) {
 			ps->append_poly();
 			if (path.is_inner) {
 				ps->append_vertex(kx1, ky1, h1);
@@ -234,19 +244,20 @@ static void add_slice(PolySet *ps, const DxfData &dxf, DxfData::Path &path, doub
 				ps->insert_vertex(jx2, jy2, h2);
 			}
 
-			ps->append_poly();
-			if (path.is_inner) {
-				ps->append_vertex(kx2, ky2, h2);
-				ps->append_vertex(kx1, ky1, h1);
-				ps->append_vertex(jx2, jy2, h2);
-			} else {
-				ps->insert_vertex(kx2, ky2, h2);
-				ps->insert_vertex(kx1, ky1, h1);
-				ps->insert_vertex(jx2, jy2, h2);
+			if (scale2 > 0) {
+				ps->append_poly();
+				if (path.is_inner) {
+					ps->append_vertex(kx2, ky2, h2);
+					ps->append_vertex(kx1, ky1, h1);
+					ps->append_vertex(jx2, jy2, h2);
+				} else {
+					ps->insert_vertex(kx2, ky2, h2);
+					ps->insert_vertex(kx1, ky1, h1);
+					ps->insert_vertex(jx2, jy2, h2);
+				}
 			}
 		}
-		else
-		{
+		else {
 			ps->append_poly();
 			if (path.is_inner) {
 				ps->append_vertex(kx1, ky1, h1);
@@ -258,15 +269,17 @@ static void add_slice(PolySet *ps, const DxfData &dxf, DxfData::Path &path, doub
 				ps->insert_vertex(kx2, ky2, h2);
 			}
 
-			ps->append_poly();
-			if (path.is_inner) {
-				ps->append_vertex(jx2, jy2, h2);
-				ps->append_vertex(kx2, ky2, h2);
-				ps->append_vertex(jx1, jy1, h1);
-			} else {
-				ps->insert_vertex(jx2, jy2, h2);
-				ps->insert_vertex(kx2, ky2, h2);
-				ps->insert_vertex(jx1, jy1, h1);
+			if (scale2 > 0) {
+				ps->append_poly();
+				if (path.is_inner) {
+					ps->append_vertex(jx2, jy2, h2);
+					ps->append_vertex(kx2, ky2, h2);
+					ps->append_vertex(jx1, jy1, h1);
+				} else {
+					ps->insert_vertex(jx2, jy2, h2);
+					ps->insert_vertex(kx2, ky2, h2);
+					ps->insert_vertex(jx1, jy1, h1);
+				}
 			}
 		}
 	}
@@ -322,10 +335,8 @@ PolySet *PolySetCGALEvaluator::extrudeDxfData(const LinearExtrudeNode &node, Dxf
 	}
 
 	bool first_open_path = true;
-	for (size_t i = 0; i < dxf.paths.size(); i++)
-	{
-		if (dxf.paths[i].is_closed)
-			continue;
+	for (size_t i = 0; i < dxf.paths.size(); i++) {
+		if (dxf.paths[i].is_closed) continue;
 		if (first_open_path) {
 			PRINTB("WARNING: Open paths in dxf_linear_extrude(file = \"%s\", layer = \"%s\"):",
 					node.filename % node.layername);
@@ -339,33 +350,32 @@ PolySet *PolySetCGALEvaluator::extrudeDxfData(const LinearExtrudeNode &node, Dxf
 	}
 
 
-	if (node.has_twist)
-	{
-		dxf_tesselate(ps, dxf, 0, false, true, h1);
-		dxf_tesselate(ps, dxf, node.twist, true, true, h2);
-		for (int j = 0; j < node.slices; j++)
-		{
+	if (node.has_twist) {
+		dxf_tesselate(ps, dxf, 0, 1, false, true, h1);
+		if (node.scale > 0) {
+			dxf_tesselate(ps, dxf, node.twist, node.scale, true, true, h2);
+		}
+		for (int j = 0; j < node.slices; j++) {
 			double t1 = node.twist*j / node.slices;
 			double t2 = node.twist*(j+1) / node.slices;
 			double g1 = h1 + (h2-h1)*j / node.slices;
 			double g2 = h1 + (h2-h1)*(j+1) / node.slices;
-			for (size_t i = 0; i < dxf.paths.size(); i++)
-			{
-				if (!dxf.paths[i].is_closed)
-					continue;
-				add_slice(ps, dxf, dxf.paths[i], t1, t2, g1, g2);
+			double s1 = 1 - (1-node.scale)*j / node.slices;
+			double s2 = 1 - (1-node.scale)*(j+1) / node.slices;
+			for (size_t i = 0; i < dxf.paths.size(); i++) {
+				if (!dxf.paths[i].is_closed) continue;
+				add_slice(ps, dxf, dxf.paths[i], t1, t2, g1, g2, s1, s2);
 			}
 		}
 	}
-	else
-	{
-		dxf_tesselate(ps, dxf, 0, false, true, h1);
-		dxf_tesselate(ps, dxf, 0, true, true, h2);
-		for (size_t i = 0; i < dxf.paths.size(); i++)
-		{
-			if (!dxf.paths[i].is_closed)
-				continue;
-			add_slice(ps, dxf, dxf.paths[i], 0, 0, h1, h2);
+	else {
+		dxf_tesselate(ps, dxf, 0, 1, false, true, h1);
+		if (node.scale > 0) {
+			dxf_tesselate(ps, dxf, 0, node.scale, true, true, h2);
+		}
+		for (size_t i = 0; i < dxf.paths.size(); i++) {
+			if (!dxf.paths[i].is_closed) continue;
+			add_slice(ps, dxf, dxf.paths[i], 0, 0, h1, h2, 1, node.scale);
 		}
 	}
 

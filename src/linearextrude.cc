@@ -91,7 +91,7 @@ AbstractNode *LinearExtrudeModule::instantiate(const Context *ctx, const ModuleI
 	node->height = height.toDouble();
 	node->convexity = (int)convexity.toDouble();
 	origin.getVec2(node->origin_x, node->origin_y);
-	node->scale = scale.toDouble();
+	node->scale = scale.isUndefined() ? 1 : scale.toDouble();
 
 	if (center.type() == Value::BOOL)
 		node->center = center.toBool();
@@ -102,8 +102,8 @@ AbstractNode *LinearExtrudeModule::instantiate(const Context *ctx, const ModuleI
 	if (node->convexity <= 0)
 		node->convexity = 1;
 
-	if (node->scale <= 0)
-		node->scale = 1;
+	if (node->scale < 0)
+		node->scale = 0;
 
 	if (twist.type() == Value::NUMBER) {
 		node->twist = twist.toDouble();
@@ -166,6 +166,7 @@ std::string LinearExtrudeNode::toString() const
 	if (this->has_twist) {
 		stream << ", twist = " << this->twist << ", slices = " << this->slices;
 	}
+	stream << ", scale = " << this->scale;
 	stream << ", $fn = " << this->fn << ", $fa = " << this->fa << ", $fs = " << this->fs << ")";
 	
 	return stream.str();
