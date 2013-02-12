@@ -325,6 +325,30 @@ build_eigen()
   make install
 }
 
+build_sparkle()
+{
+  # Let Sparkle use the default compiler
+  unset CC
+  unset CXX
+  version=$1
+  echo "Building Sparkle" $version "..."
+  cd $BASEDIR/src
+  rm -rf Sparkle-$version
+  if [ ! -f Sparkle-$version.zip ]; then
+      curl -o Sparkle-$version.zip https://nodeload.github.com/andymatuschak/Sparkle/zip/$version
+  fi
+  unzip -q Sparkle-$version.zip
+  cd Sparkle-$version
+  patch -p1 < $OPENSCADDIR/patches/sparkle.patch
+  if $OPTION_32BIT; then
+    SPARKLE_EXTRA_FLAGS="-arch i386"
+  fi
+  xcodebuild -project Sparkle.xcodeproj -scheme Sparkle -configuration Release -arch x86_64 $SPARKLE_EXTRA_FLAGS
+  rm -r $DEPLOYDIR/lib/Sparkle.framework
+  cp -Rf build/Release/Sparkle.framework $DEPLOYDIR/lib/ 
+  install_name_tool -id $DEPLOYDIR/lib/Sparkle.framework/Versions/A/Sparkle $DEPLOYDIR/lib/Sparkle.framework/Sparkle
+}
+
 if [ ! -f $OPENSCADDIR/openscad.pro ]; then
   echo "Must be run from the OpenSCAD source root directory"
   exit 0
@@ -391,3 +415,4 @@ build_boost 1.51.0
 build_cgal 4.1
 build_glew 1.9.0
 build_opencsg 1.3.2
+build_sparkle 0ed83cf9f2eeb425d4fdd141c01a29d843970c20
