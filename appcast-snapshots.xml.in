@@ -11,6 +11,7 @@
       <enclosure url="https://openscad.googlecode.com/files/OpenSCAD-@VERSION@.dmg"
                  sparkle:version="@VERSIONDATE@"
                  sparkle:shortVersionString="@VERSION@"
+                 sparkle:dsaSignature="@DSASIGNATURE@"
                  length="@FILESIZE@" 
                  type="application/octet-stream"/>
     </item>

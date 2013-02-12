@@ -41,5 +41,7 @@
         <true/>
 	<key>OSAScriptingDefinition</key>
 	<string>OpenSCAD.sdef</string>
+        <key>SUPublicDSAKeyFile</key>
+        <string>dsa_pub.pem</string>
 </dict>
 </plist>

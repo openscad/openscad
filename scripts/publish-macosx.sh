@@ -32,13 +32,15 @@ if [[ $? != 0 ]]; then
   exit 1
 fi
 
+SIGNATURE=$(openssl dgst -sha1 -binary < OpenSCAD-$VERSION.dmg  | openssl dgst -dss1 -sign dsa_priv.pem | openssl enc -base64)
+
 if [[ $VERSION == $VERSIONDATE ]]; then
   APPCASTFILE=appcast-snapshots.xml
 else
   APPCASTFILE=appcast.xml
 fi
 echo "Creating appcast $APPCASTFILE..."
-sed -e "s,@VERSION@,$VERSION,g" -e "s,@VERSIONDATE@,$VERSIONDATE,g" -e "s,@FILESIZE@,$(stat -f "%z" OpenSCAD-$VERSION.dmg),g" $APPCASTFILE.in > $APPCASTFILE
+sed -e "s,@VERSION@,$VERSION,g" -e "s,@VERSIONDATE@,$VERSIONDATE,g" -e "s,@DSASIGNATURE@,$SIGNATURE,g" -e "s,@FILESIZE@,$(stat -f "%z" OpenSCAD-$VERSION.dmg),g" $APPCASTFILE.in > $APPCASTFILE
 cp $APPCASTFILE ../openscad.github.com
 if [[ $VERSION == $VERSIONDATE ]]; then
   cp $APPCASTFILE ../openscad.github.com/appcast-snapshots.xml

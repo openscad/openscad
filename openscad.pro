@@ -66,7 +66,7 @@ macx {
   ICON = icons/OpenSCAD.icns
   QMAKE_INFO_PLIST = Info.plist
   APP_RESOURCES.path = Contents/Resources
-  APP_RESOURCES.files = OpenSCAD.sdef
+  APP_RESOURCES.files = OpenSCAD.sdef dsa_pub.pem
   QMAKE_BUNDLE_DATA += APP_RESOURCES
   LIBS += -framework Cocoa -framework Sparkle
 }
@@ -323,7 +323,6 @@ macx {
              src/EventFilter.h \
              src/AutoUpdater.h \
              src/SparkleAutoUpdater.h \
-             src/CocoaInitializer.h \
              src/CocoaUtils.h
   SOURCES += src/AppleEvents.cc \
              src/AutoUpdater.cc
