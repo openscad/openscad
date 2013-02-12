@@ -2,19 +2,27 @@
 # CMake Toolchain file for cross compiling OpenSCAD tests linux->mingw-win32
 # --------------------------------------------------------------------------
 # 
+# This will only work under linux using 'wine'. It has not been tested under
+# mingw32 nor MSVC
+#
 # Prerequisites: mingw-cross-env, ImageMagick 6.5.9.3 or newer, wine
 #
 # Usage:
 #
-#  - follow Brad Pitcher's mingw-cross-env for OpenSCAD setup:
-#    http://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Cross-compiling_for_Windows_on_Linux_or_Mac_OS_X
-#  - cross-compile openscad.exe, to verify your installation works properly.
-#  - cd openscad/tests && mkdir build-mingw32 && cd build-mingw32
-#  - cmake .. -DCMAKE_TOOLCHAIN_FILE=../CMingw-cross-env.cmake \
-#             -DMINGW_CROSS_ENV_DIR=<where mingw-cross-env is installed>
-#  - make should proceed as normal. 
-#  - now run 'ctest' on your *nix machine.
-#    The test .exe programs should run under Wine. 
+# follow the README.md to do a mingw-cross build of openscad.exe
+# the setenv-mingw-xbuild.sh script will set MXEDIR
+# cd openscad/tests && mkdir build-mingw32 && cd build-mingw32
+# # set env variables: 
+# PKG_CONFIG_PATH=$PKG_CONFIG_PATH:$MXEDIR/usr/i686-pc-mingw32/qt/lib/pkgconfig
+# OPENSCADPATH=../../libraries # (to find MCAD for some tests)
+# cmake .. -DCMAKE_TOOLCHAIN_FILE=../CMingw-cross-env.cmake \
+#          -DMINGW_CROSS_ENV_DIR=$MXEDIR
+# make # (should proceed as normal.)
+# now run 'ctest' on your *nix machine.
+# The test .exe programs should run under Wine. 
+# imagemagick's "convert" comparer will be your actual linux version.
+# The pretty printer won't automatically work after the tests. You have to run
+# it manually by typing 'wine test_pretty_print.exe'
 #
 # See also:
 # 
@@ -31,6 +39,7 @@
 # cmake's FindQt4.cmake & Qt4ConfigDependentSettings.cmake files
 # mingw-cross-env's qmake.conf and *.prl files
 # mingw-cross-env's pkg-config files in usr/i686-pc-mingw32/lib/pkgconfig
+# (may have to add to env var PKG_CONFIG_PATH to find qt .pc files)
 # http://www.vtk.org/Wiki/CMake:How_To_Find_Libraries
 #
 

@@ -582,9 +582,12 @@ target_link_libraries(throwntogethertest tests-offscreen tests-cgal ${OPENCSG_LI
 #
 if(APPLE)
   set(GUI_BINPATH "${CMAKE_CURRENT_SOURCE_DIR}/../OpenSCAD.app/Contents/MacOS/OpenSCAD")
+elseif (MINGW_CROSS_ENV_DIR) 
+  set(GUI_BINPATH "${CMAKE_CURRENT_SOURCE_DIR}/../mingw32/release/openscad.exe")
 elseif(WIN32)
   set(GUI_BINPATH "${CMAKE_CURRENT_SOURCE_DIR}/../Release/openscad.exe")
 else()
+  message(STATUS "hellllllo2")
   set(GUI_BINPATH "${CMAKE_CURRENT_SOURCE_DIR}/../openscad")
 endif()
 
@@ -778,6 +781,7 @@ disable_tests(opencsgtest_child-background)
 
 # FIXME: This single test takes over an hour to run on a 2.7 GHz P4
 disable_tests(opencsgtest_example006 cgalpngtest_example006)
+disable_tests(opencsgtest_example006 guicgalpngtest_example006)
 
 # These tests only makes sense in OpenCSG mode
 disable_tests(cgalpngtest_child-background
