@@ -2,7 +2,9 @@
 #include <boost/filesystem.hpp>
 #include <boost/foreach.hpp>
 #include "boosty.h"
+#include <boost/algorithm/string.hpp>
 #include <qglobal.h> // Needed for Q_ defines - move the offending code somewhere else
+#include "CocoaUtils.h"
 
 namespace fs = boost::filesystem;
 
@@ -28,15 +30,24 @@ std::string locate_file(const std::string &filename)
 
 void parser_init(const std::string &applicationpath)
 {
-  // Add path from OPENSCADPATH before adding built-in paths
-	const char *openscadpath = getenv("OPENSCADPATH");
-	if (openscadpath) {
-		add_librarydir(boosty::absolute(fs::path(openscadpath)).string());
+  // Add paths from OPENSCADPATH before adding built-in paths
+	const char *openscadpaths = getenv("OPENSCADPATH");
+	if (openscadpaths) {
+		std::string paths(openscadpaths);
+    typedef boost::split_iterator<std::string::iterator> string_split_iterator;
+    for (string_split_iterator it =
+					 make_split_iterator(paths, first_finder(":", boost::is_iequal()));
+				 it != string_split_iterator();
+				 ++it) {
+		add_librarydir(boosty::absolute(fs::path(boost::copy_range<std::string>(*it))).string());
+    }
 	}
 
-	// FIXME: Support specifying more than one path in OPENSCADPATH
 	// FIXME: Add ~/.openscad/libraries
-	// FIXME: Add ~/Documents/OpenSCAD/libraries on Mac?
+#ifdef __APPLE__
+	fs::path docdir(CocoaUtils::documentsPath());
+	add_librarydir(boosty::stringy(docdir / "OpenSCAD" / "libraries"));
+#endif
 
 	std::string librarydir;
 	fs::path libdir(applicationpath);
