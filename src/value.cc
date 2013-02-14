@@ -25,6 +25,7 @@
  */
 
 #include "value.h"
+#include "printutils.h"
 #include <stdio.h>
 #include <math.h>
 #include <assert.h>
@@ -197,6 +198,7 @@ public:
     if (dotpos != std::string::npos) {
       if (tmpstr.size() - dotpos > 12) tmpstr.erase(dotpos + 12);
     }
+    tmpstr = two_digit_exp_format( tmpstr );
     return tmpstr;
 #else
 		// attempt to emulate Qt's QString.sprintf("%g"); from old OpenSCAD.
