@@ -41,6 +41,7 @@ o Update external resources:
   - http://en.wikipedia.org/wiki/OpenSCAD
 o Notify package managers
   - Ubuntu: https://launchpad.net/~chrysn
+  - Fedora: Miro Hrončok <miro@hroncok.cz> or <mhroncok@redhat.com>
   - MacPorts: 
 
 
