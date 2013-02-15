@@ -587,7 +587,6 @@ elseif (MINGW_CROSS_ENV_DIR)
 elseif(WIN32)
   set(GUI_BINPATH "${CMAKE_CURRENT_SOURCE_DIR}/../Release/openscad.exe")
 else()
-  message(STATUS "hellllllo2")
   set(GUI_BINPATH "${CMAKE_CURRENT_SOURCE_DIR}/../openscad")
 endif()
 
