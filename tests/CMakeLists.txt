@@ -372,7 +372,9 @@ inclusion(CGAL_DIR CGAL_INCLUDE_DIRS)
 
 # Imagemagick
 
-if (NOT SKIP_IMAGEMAGICK)
+if (SKIP_IMAGEMAGICK)
+  set(ImageMagick_convert_EXECUTABLE "echo")
+else()
   find_package(ImageMagick COMPONENTS convert)
   if (ImageMagick_convert_FOUND)
     message(STATUS "ImageMagick convert executable found: " ${ImageMagick_convert_EXECUTABLE})
