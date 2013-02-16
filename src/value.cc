@@ -186,10 +186,11 @@ public:
     if (op1 != op1) { // Fix for avoiding nan vs. -nan across platforms
       return "nan";
     }
+    double tmpop = ( op1 == 0 ) ? 0 : op1; // Fix '-0' to '0'
     std::stringstream tmp;
     tmp.precision(12);
     tmp.setf(std::ios_base::fixed);
-    tmp << op1;
+    tmp << tmpop;
     std::string tmpstr = tmp.str();
     size_t endpos = tmpstr.find_last_not_of('0');
     if (endpos >= 0 && tmpstr[endpos] == '.') endpos--;
@@ -197,16 +198,17 @@ public:
     size_t dotpos = tmpstr.find('.');
     if (dotpos != std::string::npos) {
       if (tmpstr.size() - dotpos > 12) tmpstr.erase(dotpos + 12);
+      while (tmpstr[tmpstr.size()-1] == '0') tmpstr.erase(tmpstr.size()-1);
     }
     tmpstr = two_digit_exp_format( tmpstr );
     return tmpstr;
 #else
-		// attempt to emulate Qt's QString.sprintf("%g"); from old OpenSCAD.
-		// see https://github.com/openscad/openscad/issues/158
-		std::stringstream tmp;
-		tmp.unsetf(std::ios::floatfield);
-		tmp << op1;
-		return tmp.str();
+    // attempt to emulate Qt's QString.sprintf("%g"); from old OpenSCAD.
+    // see https://github.com/openscad/openscad/issues/158
+    std::stringstream tmp;
+    tmp.unsetf(std::ios::floatfield);
+    tmp << op1;
+    return tmp.str();
 #endif
   }
 
