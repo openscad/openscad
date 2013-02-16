@@ -19,10 +19,14 @@
 #          -DMINGW_CROSS_ENV_DIR=$MXEDIR
 # make # (should proceed as normal.)
 # now run 'ctest' on your *nix machine.
-# The test .exe programs should run under Wine. 
+# The test .exe programs should run under wine
 # imagemagick's "convert" comparer will be your actual linux version.
 # The pretty printer won't automatically work after the tests. You have to run
 # it manually by typing 'wine test_pretty_print.exe'
+#
+# to debug finding MCAD with OPENSCADPATH, try something like this:
+# 
+#    strace -f ctest -R dumptest.*use 2>&1 | grep servos.scad
 #
 # See also:
 # 
