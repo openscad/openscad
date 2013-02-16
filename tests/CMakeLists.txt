@@ -373,7 +373,9 @@ inclusion(CGAL_DIR CGAL_INCLUDE_DIRS)
 # Imagemagick
 
 if (SKIP_IMAGEMAGICK)
-  set(ImageMagick_convert_EXECUTABLE "echo")
+  if (NOT MINGW_CROSS_ENV_DIR)
+    set(ImageMagick_convert_EXECUTABLE "echo")
+  endif()
 else()
   find_package(ImageMagick COMPONENTS convert)
   if (ImageMagick_convert_FOUND)
