@@ -186,11 +186,10 @@ public:
     if (op1 != op1) { // Fix for avoiding nan vs. -nan across platforms
       return "nan";
     }
-    double tmpop = ( op1 == 0 ) ? 0 : op1; // Fix '-0' to '0'
     std::stringstream tmp;
     tmp.precision(12);
     tmp.setf(std::ios_base::fixed);
-    tmp << tmpop;
+    tmp << op1;
     std::string tmpstr = tmp.str();
     size_t endpos = tmpstr.find_last_not_of('0');
     if (endpos >= 0 && tmpstr[endpos] == '.') endpos--;
@@ -200,6 +199,7 @@ public:
       if (tmpstr.size() - dotpos > 12) tmpstr.erase(dotpos + 12);
       while (tmpstr[tmpstr.size()-1] == '0') tmpstr.erase(tmpstr.size()-1);
     }
+    if ( tmpstr.compare("-0") == 0 ) tmpstr = "0";
     tmpstr = two_digit_exp_format( tmpstr );
     return tmpstr;
 #else
