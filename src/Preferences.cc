@@ -26,6 +26,7 @@
 
 #include "Preferences.h"
 
+#include <QMessageBox>
 #include <QFontDatabase>
 #include <QKeyEvent>
 #include <QSettings>
@@ -192,10 +193,19 @@ void Preferences::on_fontSize_editTextChanged(const QString &size)
 	emit fontChanged(getValue("editor/fontfamily").toString(), intsize);
 }
 
+void unimplemented_msg()
+{
+  QMessageBox mbox;
+	mbox.setText("Sorry, this feature is not implemented on your Operating System");
+	mbox.exec();
+}
+
 void Preferences::on_updateCheckBox_toggled(bool on)
 {
 	if (AutoUpdater *updater =AutoUpdater::updater()) {
 		updater->setAutomaticallyChecksForUpdates(on);
+	} else {
+		unimplemented_msg();
 	}
 }
 
@@ -203,6 +213,8 @@ void Preferences::on_snapshotCheckBox_toggled(bool on)
 {
 	if (AutoUpdater *updater =AutoUpdater::updater()) {
 		updater->setEnableSnapshots(on);
+	} else {
+		unimplemented_msg();
 	}
 }
 
@@ -210,6 +222,8 @@ void Preferences::on_checkNowButton_clicked()
 {
 	if (AutoUpdater *updater =AutoUpdater::updater()) {
 		updater->checkForUpdates();
+	} else {
+		unimplemented_msg();
 	}
 }
 
