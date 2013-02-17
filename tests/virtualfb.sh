@@ -7,6 +7,8 @@ debug=
 
 start()
 {
+  VFB_BINARY=
+
   if [ "`command -v Xvfb`" ]; then
     VFB_BINARY=Xvfb
   fi
@@ -17,6 +19,7 @@ start()
 
   if [ ! $VFB_BINARY ]; then
     echo "$0 Failed, cannot find Xvfb or Xvnc"
+    echo "$0 Failed, cannot find Xvfb or Xvnc" > ./virtualfb.log
     exit 1
   fi
 
