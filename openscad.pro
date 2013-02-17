@@ -229,7 +229,8 @@ HEADERS += src/version_check.h \
            src/linalg.h \
            src/system-gl.h \
            src/stl-utils.h \
-           src/svg.h
+           src/svg.h \
+           src/AutoUpdater.h
 
 SOURCES += src/version_check.cc \
            src/ProgressWidget.cc \
@@ -276,6 +277,7 @@ SOURCES += src/version_check.cc \
            src/OpenCSGWarningDialog.cc \
            src/editor.cc \
            src/glview.cc \
+           src/AutoUpdater.cc \
            \
            src/builtin.cc \
            src/export.cc \
@@ -321,11 +323,9 @@ SOURCES += src/cgalutils.cc \
 macx {
   HEADERS += src/AppleEvents.h \
              src/EventFilter.h \
-             src/AutoUpdater.h \
              src/SparkleAutoUpdater.h \
              src/CocoaUtils.h
-  SOURCES += src/AppleEvents.cc \
-             src/AutoUpdater.cc
+  SOURCES += src/AppleEvents.cc
   OBJECTIVE_SOURCES += src/SparkleAutoUpdater.mm \
              src/CocoaUtils.mm
 }
