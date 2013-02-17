@@ -1,4 +1,4 @@
- #!/bin/sh -e
+#!/bin/sh -e
 
 # uni-build-dependencies by don bright 2012. copyright assigned to
 # Marius Kintel and Clifford Wolf, 2012. released under the GPL 2, or
@@ -184,6 +184,7 @@ build_gmp()
   mkdir build
   cd build
   ../configure --prefix=$DEPLOYDIR --enable-cxx
+  make -j$NUMCPU
   make install
 }
 
@@ -205,6 +206,7 @@ build_mpfr()
   mkdir build
   cd build
   ../configure --prefix=$DEPLOYDIR --with-gmp=$DEPLOYDIR
+  make -j$NUMCPU
   make install
   cd ..
 }
@@ -222,6 +224,10 @@ build_boost()
   rm -rf boost_$bversion
   if [ ! -f boost_$bversion.tar.bz2 ]; then
     curl --insecure -LO http://downloads.sourceforge.net/project/boost/boost/$version/boost_$bversion.tar.bz2
+  fi
+  if [ ! $? -eq 0 ]; then
+    echo download failed. 
+    exit 1
   fi
   tar xjf boost_$bversion.tar.bz2
   cd boost_$bversion
@@ -247,17 +253,16 @@ build_boost()
   fi
   if [ $CXX ]; then
     if [ $CXX = "clang++" ]; then
-      $BJAMBIN -j$NUMCPU toolset=clang install
-      # ./b2 -j$NUMCPU toolset=clang cxxflags="-stdlib=libc++" linkflags="-stdlib=libc++" install
+      $BJAMBIN -j$NUMCPU toolset=clang
     fi
   else
     $BJAMBIN -j$NUMCPU
-    if [ $? = 0 ]; then
-      $BJAMBIN install
-    else
-      echo boost build failed
-      exit 1
-    fi
+  fi
+  if [ $? = 0 ]; then
+    $BJAMBIN install
+  else
+    echo boost build failed
+    exit 1
   fi
 }
 
@@ -281,7 +286,6 @@ build_cgal()
     # 3.7 curl --insecure -O https://gforge.inria.fr/frs/download.php/27641/CGAL-$version.tar.gz
   fi
   tar xf CGAL-$version.tar.bz2
-  cp $OPENSCAD_SCRIPTDIR/../tests/FindBoost.cmake CGAL-$version/cmake/modules/
   cd CGAL-$version
   mkdir bin
   cd bin
@@ -291,11 +295,10 @@ build_cgal()
   else
     CGAL_BUILDTYPE="Debug"
   fi
-  # -DBoost_DEBUG=1  # < add this to debug boost issues
   if [ "`echo $2 | grep use-sys-libs`" ]; then
     cmake -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR -DWITH_CGAL_Qt3=OFF -DWITH_CGAL_Qt4=OFF -DWITH_CGAL_ImageIO=OFF -DCMAKE_BUILD_TYPE=$CGAL_BUILDTYPE ..
   else
-    cmake -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR -DGMP_INCLUDE_DIR=$DEPLOYDIR/include -DGMP_LIBRARIES=$DEPLOYDIR/lib/libgmp.so -DGMPXX_LIBRARIES=$DEPLOYDIR/lib/libgmpxx.so -DGMPXX_INCLUDE_DIR=$DEPLOYDIR/include -DMPFR_INCLUDE_DIR=$DEPLOYDIR/include -DMPFR_LIBRARIES=$DEPLOYDIR/lib/libmpfr.so -DWITH_CGAL_Qt3=OFF -DWITH_CGAL_Qt4=OFF -DWITH_CGAL_ImageIO=OFF -DBOOST_ROOT=$DEPLOYDIR -DBoost_NO_SYSTEM_PATHS=1 -DCMAKE_BUILD_TYPE=$CGAL_BUILD_TYPE ..
+    cmake -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR -DGMP_INCLUDE_DIR=$DEPLOYDIR/include -DGMP_LIBRARIES=$DEPLOYDIR/lib/libgmp.so -DGMPXX_LIBRARIES=$DEPLOYDIR/lib/libgmpxx.so -DGMPXX_INCLUDE_DIR=$DEPLOYDIR/include -DMPFR_INCLUDE_DIR=$DEPLOYDIR/include -DMPFR_LIBRARIES=$DEPLOYDIR/lib/libmpfr.so -DWITH_CGAL_Qt3=OFF -DWITH_CGAL_Qt4=OFF -DWITH_CGAL_ImageIO=OFF -DBOOST_ROOT=$DEPLOYDIR -DCMAKE_BUILD_TYPE=$CGAL_BUILD_TYPE ..
   fi
   make -j$NUMCPU
   make install
@@ -449,8 +452,7 @@ build_eigen()
 # the 'dirname' command installed
 
 if [ "`command -v dirname`" ]; then
-  OPENSCAD_SCRIPTDIR=$( dirname $( cd `dirname $0`; pwd ) )
-  OPENSCAD_SCRIPTDIR=$OPENSCAD_SCRIPTDIR/scripts
+  OPENSCAD_SCRIPTDIR=`dirname $0`
 else
   if [ ! -f openscad.pro ]; then
     echo "Must be run from the OpenSCAD source root directory (dont have 'dirname')"
@@ -497,14 +499,14 @@ if [ "`cmake --version | grep 'version 2.[1-6][^0-9]'`" ]; then
   build_cmake 2.8.8
 fi
 
-# build_git 1.7.10.3
-
+build_git 1.7.10.3
+exit 1
 # Singly build CGAL or OpenCSG
 # (Most systems have all libraries available as packages except CGAL/OpenCSG)
 # (They can be built singly here by passing a command line arg to the script)
 if [ $1 ]; then
   if [ $1 = "cgal" ]; then
-    build_cgal 4.1 use-sys-libs
+    build_cgal 4.0.2 use-sys-libs
     exit
   fi
   if [ $1 = "opencsg" ]; then
