@@ -5,27 +5,33 @@
 # the file named 'COPYING' in OpenSCAD's project root.
 
 #
-# This program 'pretty prints' the ctest output, namely
-# files from builddir/Testing/Temporary. 
-# html & wiki output are produced in Testing/Temporary/sysid_report
+# This program 'pretty prints' the ctest output, including
+# - log files from builddir/Testing/Temporary/ 
+# - .png and .txt files from testname-output/*
 #
+# The result is a single html report file with images data-uri encoded
+# into the file. It can be uploaded as a single static file to a web server
+# or the 'test_upload.py' script can be used. 
 
-# Note: Wiki code is deprecated. All future development should move to 
-# create html output (or even xml output). Wiki design was based on the 
-# wrong assumption of easily accessible public wiki servers with 
-# auto-upload scripts available.
 
 # Design philosophy
 #
 # 1. parse the data (images, logs) into easy-to-use data structures
 # 2. wikifiy the data 
 # 3. save the wikified data to disk
-# 4. save html
-# 5. upload html to public site
+# 4. generate html, including base64 encoding of images
+# 5. save html file
+# 6. upload html to public site and share with others
 
-# 
 # todo
-# why is hash differing
+#
+# 1. Note: Wiki code is deprecated. All future development should move to 
+# create html output (or even xml output). Wiki design was based on the 
+# wrong assumption of easily accessible public wiki servers with 
+# auto-upload scripts available. wiki code should be removed and code 
+# simplified.
+#
+# 2. why is hash differing
 
 import string,sys,re,os,hashlib,subprocess,textwrap,time,platform
 
@@ -35,20 +41,24 @@ def tryread(filename):
 		f = open(filename,'rb')
 		data = f.read()
 		f.close()
-	except:
+	except Exception, e:
 		print 'couldn\'t open ',filename
+		print type(e), e
 	return data
 
 def trysave(filename,data):
+	dir = os.path.dirname(filename)
 	try:
-		if not os.path.isdir(os.path.dirname(filename)):
-			#print 'creating',os.path.dirname(filename)
-			os.mkdir(os.path.dirname(filename))
+		if not os.path.isdir(dir):
+			if not dir == '':
+				debug( 'creating' + dir)
+				os.mkdir(dir)
 		f=open(filename,'wb')
 		f.write(data)
 		f.close()
-	except:
+	except Exception, e:
 		print 'problem writing to',filename
+		print type(e), e
 		return None
 	return True
 
@@ -119,7 +129,7 @@ class Test:
 		self.type, self.actualfile, self.expectedfile, self.scadfile = \
 			type, actualfile, expectedfile, scadfile
 		self.fulltestlog = log
-
+		
 	def __str__(self):
 		x = 'fullname: ' + self.fullname
 		x+= '\nactualfile: ' + self.actualfile
@@ -297,6 +307,19 @@ TESTLOG
 
 	return imgs, txtpages
 
+def png_encode64( fname, width=250 ):
+	# en.wikipedia.org/wiki/Data_URI_scheme
+	f = open( fname, "rb" )
+	data = f.read()
+	data_uri = data.encode("base64").replace("\n","")
+	tag  = '<img'
+	tag += ' src="data:image/png;base64,'
+	tag +=   data_uri + '"'
+	tag += ' width="'+str(width)+'"'
+	tag += ' alt="openscad_test_image"'
+	tag += ' />\n'
+	return tag
+
 def tohtml(wiki_rootpath, startdate, tests, enddate, sysinfo, sysid, makefiles):
 	# kludge. assume wiki stuff has alreayd run and dumped files properly
 	head = '<html><head><title>'+wiki_rootpath+' test run for '+sysid +'</title></head><body>'
@@ -312,9 +335,10 @@ def tohtml(wiki_rootpath, startdate, tests, enddate, sysinfo, sysid, makefiles):
 
 	s=''
 
-	s+= '\n<pre>'
-	s+= '\nSYSINFO\n'+ sysinfo
-	s+= '\n</pre><p>'
+	s+= '\n<h3>'
+	s+= '\nSystem info\n'
+	s+= '\n</h3><p>'
+	s+= '<pre>'+sysinfo+'</pre>\n'
 
 	s+= '\n<pre>'
 	s+= '\nSTARTDATE: '+ startdate
@@ -326,6 +350,9 @@ def tohtml(wiki_rootpath, startdate, tests, enddate, sysinfo, sysid, makefiles):
 	s+= '\nPERCENTPASSED: '+ percent
 	s+= '\n</pre>'
 
+	if not include_passed:
+		s+= '<h3>Failed tests:</h3>\n'
+
 	for t in tests_to_report:
 		if t.type=='txt':
 			s+='\n<pre>'+t.fullname+'</pre>\n'
@@ -335,22 +362,34 @@ def tohtml(wiki_rootpath, startdate, tests, enddate, sysinfo, sysid, makefiles):
 			wikiname_a = wikify_filename(tmp,wiki_rootpath,sysid)
 			tmp = t.expectedfile.replace(os.path.dirname(builddir),'')
 			wikiname_e = wikify_filename(tmp,wiki_rootpath,sysid)
+			# imgtag_e = <img src='+wikiname_e+' width=250/>'
+			# imatag_a = <img src='+wikiname_a+' width=250/>'
+			imgtag_e = png_encode64( t.expectedfile, 250 )
+			imgtag_a = png_encode64( t.actualfile, 250 )
 			s+='<table>'
 			s+='\n<tr><td colspan=2>'+t.fullname
 			s+='\n<tr><td>Expected<td>Actual'
-			s+='\n<tr><td><img src='+wikiname_e+' width=250/>'
-			s+='\n    <td><img src='+wikiname_a+' width=250/>'
+			s+='\n<tr><td>' + imgtag_e + '</td>'
+			s+='\n    <td>' + imgtag_a + '</td>'
 			s+='\n</table>'
 			s+='\n<pre>'
 			s+=t.fulltestlog
 			s+='\n</pre>'
 
 	s+='\n\n<p>\n\n'
+
+	s+= '<h3> CMake .build files </h3>\n'
+	s+= '\n<pre>'
 	makefiles_wikinames = {}
 	for mf in sorted(makefiles.keys()):
+		mfname = mf.strip().lstrip(os.path.sep)
+		text = open(os.path.join(builddir,mfname)).read()
+		s+= '</pre><h4>'+mfname+'</h4><pre>'
+		s+= text
 		tmp = mf.replace('CMakeFiles','').replace('.dir','')
 		wikiname = wikify_filename(tmp,wiki_rootpath,sysid)
-		s += '\n<a href='+wikiname+'>'+wikiname+'</a><br>'
+		# s += '\n<a href='+wikiname+'>'+wikiname+'</a><br>'
+	s+= '\n</pre>'
 	s+='\n'
 
 	return head + s + tail
@@ -437,14 +476,22 @@ def findlogfile(builddir):
 		sys.exit()
 	return logpath, logfilename
 
+def debug(x):
+	if debug_test_pp: print 'test_pretty_print: '+x
+
+debug_test_pp=False
+builddir=os.getcwd()
+
 def main():
 	#wikisite = 'cakebaby.referata.com'
 	#wiki_api_path = ''
+	global wikisite, wiki_api_path, wiki_rootpath, builddir, debug_test_pp
+	global maxretry, dry, include_passed
+
 	wikisite = 'cakebaby.wikia.com'
 	wiki_api_path = '/'
 	wiki_rootpath = 'OpenSCAD'
-	builddir = os.getcwd() # os.getcwd()+'/build'
-	verbose = False
+	if '--debug' in string.join(sys.argv): debug_test_pp=True
 	maxretry = 10
 
 	if bool(os.getenv("TEST_GENERATE")): sys.exit(0)
@@ -453,19 +500,19 @@ def main():
 	if '--include-passed' in sys.argv: include_passed = True
 
 	dry = False
-	if verbose: print 'running test_pretty_print'
+	debug( 'running test_pretty_print' )
 	if '--dryrun' in sys.argv: dry=True
 	suffix = ezsearch('--suffix=(.*?) ',string.join(sys.argv)+' ')
 	builddir = ezsearch('--builddir=(.*?) ',string.join(sys.argv)+' ')
 	if builddir=='': builddir=os.getcwd()
-	if verbose: print 'build dir set to', builddir
+	debug( 'build dir set to ' +  builddir )
 
 	sysinfo, sysid = read_sysinfo(os.path.join(builddir,'sysinfo.txt'))
 	makefiles = load_makefiles(builddir)
 	logpath, logfilename = findlogfile(builddir)
 	testlog = tryread(logfilename)
 	startdate, tests, enddate = parselog(testlog)
-	if verbose:
+	if debug_test_pp:
 		print 'found sysinfo.txt,',
 		print 'found', len(makefiles),'makefiles,',
 		print 'found', len(tests),'test results'
@@ -473,22 +520,30 @@ def main():
 	imgs, txtpages = towiki(wiki_rootpath, startdate, tests, enddate, sysinfo, sysid, makefiles)
 
 	wikidir = os.path.join(logpath,sysid+'_report')
-	if verbose: print 'erasing files in',wikidir
+	debug( 'erasing files in ' + wikidir )
 	try: map(lambda x:os.remove(os.path.join(wikidir,x)), os.listdir(wikidir))
 	except: pass
-	print 'writing',len(imgs),'images, ',len(txtpages)-1,'text pages, and index.html to:\n', ' .'+wikidir.replace(os.getcwd(),'')
+	debug( 'output dir:\n' + wikidir.replace(os.getcwd(),'') )
+	debug( 'writing ' + str(len(imgs)) + ' images' )
+	debug( 'writing ' + str(len(txtpages)-1) + ' text pages' )
+	debug( 'writing index.html ' )
 	for pgname in sorted(imgs): trysave( os.path.join(wikidir,pgname), imgs[pgname])
 	for pgname in sorted(txtpages): trysave( os.path.join(wikidir,pgname), txtpages[pgname])
 
 	htmldata = tohtml(wiki_rootpath, startdate, tests, enddate, sysinfo, sysid, makefiles)
-	trysave( os.path.join(wikidir,'index.html'), htmldata )
+	html_basename = sysid+'_report.html'
+	html_filename = os.path.join(builddir,'Testing','Temporary',html_basename)
+	debug('saving ' +html_filename + ' ' + str(len(htmldata)) + ' bytes')
+	trysave( html_filename, htmldata )
+	print "report saved:", html_filename.replace(os.getcwd()+os.path.sep,'')
 
 	if '--wiki-upload' in sys.argv:
+		print "wiki upload is deprecated."
 		upload(wikisite,wiki_api_path,wiki_rootpath,sysid,'openscadbot',
 			'tobdacsnepo',wikidir,dryrun=dry)
 		print 'upload attempt complete'
 
-	if verbose: print 'test_pretty_print complete'
+	debug( 'test_pretty_print complete' )
 
 if __name__=='__main__':
 	main()

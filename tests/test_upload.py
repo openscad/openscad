@@ -88,7 +88,7 @@ usage:
 
 example1:
 
-  $ ctest # result is Testing/Temporary/linux_x86_nvidia_report.html
+  $ ctest # result is linux_x86_nvidia_report.html
   $ test_upload.py --username=andreis --host=web.sourceforge.net \
      --remotepath=/home/project-web/projectxyz/htdocs/
   $ firefox http://projectxyz.sourceforge.net/openscad_tests/index.html
@@ -96,7 +96,7 @@ example1:
 
 example2:
 
-  $ ctest # result in Testing/Temporary/freebsd_ppc_gallium_report.html
+  $ ctest # result in freebsd_ppc_gallium_report.html
   $ test_upload.py --username=agorenko --host=fontanka.org --remotepath=/tmp/
   $ ssh agorenko@fontanka.org "ls /tmp"
   # result is 'index.html' 'freebsd_ppc_gallium_report.html'
@@ -174,19 +174,19 @@ def paramiko_upload( newrept_fname, username, host, remotepath ):
 
         debug("upload local report file to remote file:")
 	debug(" local:"+newrept_fname)
-	debug("remote:"+os.path.join(ftp.getcwd(),newrept_basefname))
-
 	localf = open( newrept_fname, 'r' )
 	rept_text = localf.read()
 	localf.close()
+	debug(" bytes read:"+str(len(rept_text)))
 
+	debug("remote:"+os.path.join(ftp.getcwd(),newrept_basefname))
 	f = ftp.file( newrept_basefname, 'w+' )
 	f.write( rept_text )
 	f.close()
 	bytecount += len(rept_text)
 
 
-	debug( "update index.html (or create blank) ")
+	debug( "file uploaded. now, update index.html (or create blank) ")
 
         if not 'index.html' in ftp.listdir():
                 f = ftp.file( 'index.html', 'w+')
@@ -266,19 +266,19 @@ def main():
 		print "unable to find valid system id"
 		sys.exit(1)
 
-	sysidpath = sysid + '_report' + '.html'
-	testdir = os.path.join(builddir, 'Testing', 'Temporary', sysidpath )
-	debug("testdir:\n" + testdir )
+	rept_basename = sysid + '_report' + '.html'
+	rept_fname = os.path.join(builddir,'Testing','Temporary',rept_basename )
+	debug("report filename:\n" + rept_fname )
 		
         username = ezsearch('--username=(.*?) ',string.join(sys.argv)+' ')
         host = ezsearch('--host=(.*?) ',string.join(sys.argv)+' ')
         remotepath = ezsearch('--remotepath=(.*?) ',string.join(sys.argv)+' ')
 
-	if testdir=='' or username=='' or host=='' or remotepath=='':
+	if rept_fname=='' or username=='' or host=='' or remotepath=='':
 		help()
 		sys.exit(1)
 
-	res = upload( testdir, username, host, remotepath )	
+	res = upload( rept_fname, username, host, remotepath )	
 	if res==1:
 		print "upload failed"
 		return 1
