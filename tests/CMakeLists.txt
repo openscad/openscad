@@ -31,7 +31,8 @@ set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}")
 
 # Build debug build as default
 if(NOT CMAKE_BUILD_TYPE)
-  set(CMAKE_BUILD_TYPE RelWithDebInfo)
+#  set(CMAKE_BUILD_TYPE RelWithDebInfo)
+  set(CMAKE_BUILD_TYPE Release)
 endif()
 
 if(CMAKE_COMPILER_IS_GNUCXX)

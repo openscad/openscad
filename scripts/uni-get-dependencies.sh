@@ -6,8 +6,13 @@
 
 get_fedora_deps()
 {
- sudo yum install qt-devel bison flex eigen2-devel \
-  boost-devel mpfr-devel gmp-devel glew-devel CGAL-devel gcc pkgconfig git
+ sudo yum install qt-devel bison flex eigen2-devel python-paramiko \
+  boost-devel mpfr-devel gmp-devel glew-devel CGAL-devel gcc pkgconfig git libXmu-devel
+}
+
+get_qomo_deps()
+{
+ get_fedora_deps
 }
 
 get_altlinux_deps()
@@ -75,10 +80,14 @@ if [ -e /etc/issue ]; then
   get_fedora_deps
  elif [ "`grep -i mageia /etc/issue`" ]; then
   get_mageia_deps
+ elif [ "`grep -i qomo /etc/issue`" ]; then
+  get_qomo_deps
  elif [ "`command -v rpm`" ]; then
   if [ "`rpm -qa | grep altlinux`" ]; then
    get_altlinux_deps
   fi
+ else
+  unknown
  fi
 elif [ "`uname | grep -i freebsd `" ]; then
  get_freebsd_deps

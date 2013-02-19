@@ -9,26 +9,23 @@
 # files from builddir/Testing/Temporary. 
 # html & wiki output are produced in Testing/Temporary/sysid_report
 #
-# experimental wiki uploading is available by running 
-# 
-#  python test_pretty_print.py --upload
-#
+
+# Note: Wiki code is deprecated. All future development should move to 
+# create html output (or even xml output). Wiki design was based on the 
+# wrong assumption of easily accessible public wiki servers with 
+# auto-upload scripts available.
 
 # Design philosophy
 #
 # 1. parse the data (images, logs) into easy-to-use data structures
 # 2. wikifiy the data 
 # 3. save the wikified data to disk
+# 4. save html
+# 5. upload html to public site
 
+# 
 # todo
-# deal better with the situation where Offscreen rendering fails
-# do something if tests for GL extensions for OpenCSG fail (test fail, no image production)
-# copy all images, sysinfo.txt to bundle for html/upload (images 
-#  can be altered  by subsequent runs)
 # why is hash differing
-# fix windows so that it won't keep asking 'this program crashed' over and over. 
-#  (you can set this in the registry to never happen, but itd be better if the program
-#   itself was able to disable that temporarily in it's own process)
 
 import string,sys,re,os,hashlib,subprocess,textwrap,time,platform
 
@@ -441,6 +438,20 @@ def findlogfile(builddir):
 	return logpath, logfilename
 
 def main():
+	#wikisite = 'cakebaby.referata.com'
+	#wiki_api_path = ''
+	wikisite = 'cakebaby.wikia.com'
+	wiki_api_path = '/'
+	wiki_rootpath = 'OpenSCAD'
+	builddir = os.getcwd() # os.getcwd()+'/build'
+	verbose = False
+	maxretry = 10
+
+	if bool(os.getenv("TEST_GENERATE")): sys.exit(0)
+
+	include_passed = False
+	if '--include-passed' in sys.argv: include_passed = True
+
 	dry = False
 	if verbose: print 'running test_pretty_print'
 	if '--dryrun' in sys.argv: dry=True
@@ -472,25 +483,12 @@ def main():
 	htmldata = tohtml(wiki_rootpath, startdate, tests, enddate, sysinfo, sysid, makefiles)
 	trysave( os.path.join(wikidir,'index.html'), htmldata )
 
-	if '--upload' in sys.argv:
+	if '--wiki-upload' in sys.argv:
 		upload(wikisite,wiki_api_path,wiki_rootpath,sysid,'openscadbot',
 			'tobdacsnepo',wikidir,dryrun=dry)
 		print 'upload attempt complete'
 
 	if verbose: print 'test_pretty_print complete'
 
-#wikisite = 'cakebaby.referata.com'
-#wiki_api_path = ''
-wikisite = 'cakebaby.wikia.com'
-wiki_api_path = '/'
-wiki_rootpath = 'OpenSCAD'
-builddir = os.getcwd() # os.getcwd()+'/build'
-verbose = False
-maxretry = 10
-
-if bool(os.getenv("TEST_GENERATE")): sys.exit(0)
-
-include_passed = False
-if '--include-passed' in sys.argv: include_passed = True
-
-main()
+if __name__=='__main__':
+	main()
