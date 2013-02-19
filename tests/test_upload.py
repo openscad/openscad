@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-# Copyright 2013 Don Bright <hugh.m.bright@gmail.com>
+# test_upload.py copyright 2013 Don Bright <hugh.m.bright@gmail.com>
 # released under Zlib-style license:
 #
 # This software is provided 'as-is', without any express or implied
@@ -21,10 +21,12 @@
 #
 # This license is based on zlib license by Jean-loup Gailly and Mark Adler
 
-
-# 
-# this program takes html output by test_pretty_print.py and uploads
+# This script takes html output by test_pretty_print.py and uploads
 # it to a web server. 
+#
+# Simple example: (see help() for more info)
+#
+# ./test_upload.py  --username=andreis --host=akhma.org --remotepath=/tmp/ 
 #
 
 #
@@ -73,6 +75,7 @@ from test_cmdline_tool import execute_and_redirect
 
 debug_test_upload = False
 dryrun = False
+bytecount = 0
 
 def help():
 	text='''
@@ -83,9 +86,21 @@ usage:
   test_upload.py --username=uname --host=host --remotepath=/some/path \
 	[--dryrun] [--debug]
 
-example:
-  
-  test_upload.py andreis web.sourceforge.net /home/project-web/openscad/htdocs/
+example1:
+
+  $ ctest # result is Testing/Temporary/linux_x86_nvidia_report.html
+  $ test_upload.py --username=andreis --host=web.sourceforge.net \
+     --remotepath=/home/project-web/projectxyz/htdocs/
+  $ firefox http://projectxyz.sourceforge.net/openscad_tests/index.html
+  # should display the test results
+
+example2:
+
+  $ ctest # result in Testing/Temporary/freebsd_ppc_gallium_report.html
+  $ test_upload.py --username=agorenko --host=fontanka.org --remotepath=/tmp/
+  $ ssh agorenko@fontanka.org "ls /tmp"
+  # result is 'index.html' 'freebsd_ppc_gallium_report.html'
+
 '''
 	print text
 
@@ -120,13 +135,17 @@ entry_template='''
 
 
 def paramiko_upload( newrept_fname, username, host, remotepath ):
+	global bytecount
         debug("running paramiko upload")
 
         basepath = 'openscad_tests'
-	basefilename = os.path.basename( newrept_fname )
-        newrept_name = string.split(basefilename,'.html')[0]
-	debug("input filename: "+ newrept_fname )
-	debug("new report name: "+ newrept_name )
+	newrept_basefname = os.path.basename( newrept_fname )
+        newrept_name = string.split( newrept_basefname,'.html')[0]
+	debug("local file: "+ newrept_fname )
+	debug("base filename: "+ newrept_basefname )
+	debug("report name: "+ newrept_name )
+
+
 
         debug("connect to " + username + "@" + host)
         client = paramiko.SSHClient()
@@ -143,50 +162,69 @@ def paramiko_upload( newrept_fname, username, host, remotepath ):
 
         #stdin,stdout,stderr=client.exec_command('ls -l')
 
-        debug("find " + basepath + "/index.html (or create blank) ")
+
+
+        debug("find remote path " + basepath + " (or create) ")
         ftp = client.open_sftp()
         if not basepath in ftp.listdir():
                 ftp.mkdir( basepath )
         ftp.chdir( basepath )
 
+
+
+        debug("upload local report file to remote file:")
+	debug(" local:"+newrept_fname)
+	debug("remote:"+os.path.join(ftp.getcwd(),newrept_basefname))
+
+	localf = open( newrept_fname, 'r' )
+	rept_text = localf.read()
+	localf.close()
+
+	f = ftp.file( newrept_basefname, 'w+' )
+	f.write( rept_text )
+	f.close()
+	bytecount += len(rept_text)
+
+
+	debug( "update index.html (or create blank) ")
+
         if not 'index.html' in ftp.listdir():
                 f = ftp.file( 'index.html', 'w+')
                 f.write(index_template)
                 f.close()
+		bytecount += len(index_template)
 
-        debug("upload new report")
-        # pass
-
-        debug("add new reprt link to index.html")
         f = ftp.file( 'index.html', 'r' )
         text = f.read()
         f.close()
 
         text2 = entry_template
-        text2 = text2.replace( '__href__', newrept_fname )
+        text2 = text2.replace( '__href__', newrept_basefname )
         text2 = text2.replace( '__rept_name__', newrept_name )
 
-        if newrept_fname in text:
-                debug( newrept_fname + " already linked from index.html")
+        if newrept_basefname in text:
+                debug( newrept_basefname + " already linked from index.html")
         else:
+	        debug("add new reprt link to index.html")
                 text = text.replace( blankchunk, blankchunk+'\n'+text2 )
 
         f = ftp.file( 'index.html', 'w+' )
         f.write(text)
         f.close()
+	bytecount += len(text)
 
         debug("close connections")
         ftp.close()
         client.close()
-
+	return 0
 
 def upload_unix( reptfile, username, host, remotepath):
 	debug("detected unix-like system.")
-	paramiko_upload( reptfile, username, host, remotepath )
+	return paramiko_upload( reptfile, username, host, remotepath )
 
 def upload_darwin( reptfile, username, host, remotepath ):
 	debug("detected osx/darwin")
-	upload_unix( reptfile, username, host, remotepath )
+	return upload_unix( reptfile, username, host, remotepath )
 	
 def upload_windows( reptfile, username, host, remotepath ):
 	debug("detected windows")
@@ -245,6 +283,7 @@ def main():
 		print "upload failed"
 		return 1
 	else:
+		print "upload complete:", bytecount, "bytes written"
 		return 0
 
 
