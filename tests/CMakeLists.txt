@@ -872,9 +872,6 @@ endif()
 message(STATUS "creating CTestCustom.cmake")
 file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/CTestCustom.cmake ${TMP})
 
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/test_pretty_print.py 
-               ${CMAKE_CURRENT_BINARY_DIR}/test_pretty_print.py COPYONLY)
-
 # Add tests
 
 add_cmdline_test(echotest txt ${ECHO_FILES})
