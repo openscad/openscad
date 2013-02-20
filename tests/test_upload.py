@@ -21,8 +21,9 @@
 #
 # This license is based on zlib license by Jean-loup Gailly and Mark Adler
 
+
 # This script takes html output by test_pretty_print.py and uploads
-# it to a web server. 
+# it to a web server over ssh using sftp.
 #
 # Simple example: (see help() for more info)
 #
@@ -30,7 +31,7 @@
 #
 
 #
-# design
+# Design
 #
 # On the remote web server there is a directory called 'openscad_tests'
 # Inside of it is a file, 'index.html', that lists all the test reports
@@ -59,14 +60,17 @@
 # This script returns '1' on failure, '0' on success (shell-style)
 #
 
-import sys,os,platform,string
+# todo: support plain old ftp ??
+# todo: support new-fangled sites like dropbox ??
+
+import sys,os,platform,string,getpass
 
 try:
 	import paramiko
 except:
 	x=''' 
-please install the paramiko python library in your 
-PYTHONPATH If that is not feasible, you can upload the main html report 
+please install the paramiko python library in your PYTHONPATH 
+If that is not feasible, you can upload the single html report 
 file by hand to any site that accepts html code. 
 '''
 
@@ -88,18 +92,17 @@ usage:
 
 example1:
 
-  $ ctest # result is linux_x86_nvidia_report.html
-  $ test_upload.py --username=andreis --host=web.sourceforge.net \
-     --remotepath=/home/project-web/projectxyz/htdocs/
+  $ ctest # result is Testing/Temporary/linux_x86_nvidia_report.html
+  $ test_upload.py --username=andreis --host=web.sourceforge.net --remotepath=/home/project-web/projectxyz/htdocs/
   $ firefox http://projectxyz.sourceforge.net/openscad_tests/index.html
   # should display the test results
 
 example2:
 
-  $ ctest # result in freebsd_ppc_gallium_report.html
-  $ test_upload.py --username=agorenko --host=fontanka.org --remotepath=/tmp/
-  $ ssh agorenko@fontanka.org "ls /tmp"
-  # result is 'index.html' 'freebsd_ppc_gallium_report.html'
+  $ ctest # result is Testing/Temporary/freebsd_ppc_gallium_report.html
+  $ test_upload.py --username=annag --host=fontanka.org --remotepath=/tmp/
+  $ ssh annag@fontanka.org "ls /tmp"
+  # result is 'index.html' 'freebsd_ppc_gallium_report.html' in /tmp
 
 '''
 	print text
@@ -157,15 +160,21 @@ def paramiko_upload( newrept_fname, username, host, remotepath ):
         try:
                 client.connect(host,username=username)
         except paramiko.PasswordRequiredException, e:
-                passw = getpass.getpass('enter passphrase for private key: ')
+                passw = getpass.getpass('enter passphrase for private ssh key: ')
                 client.connect(host,username=username,password=passw)
 
         #stdin,stdout,stderr=client.exec_command('ls -l')
 
 
 
-        debug("find remote path " + basepath + " (or create) ")
+        debug("find remote path: " + remotepath)
         ftp = client.open_sftp()
+	try:
+		ftp.chdir( remotepath )
+	except:
+		debug("failed to change dir to remote path: "+remotepath)
+		return 1
+	debug("find basepath ( or create ):" + basepath )
         if not basepath in ftp.listdir():
                 ftp.mkdir( basepath )
         ftp.chdir( basepath )
@@ -205,7 +214,7 @@ def paramiko_upload( newrept_fname, username, host, remotepath ):
         if newrept_basefname in text:
                 debug( newrept_basefname + " already linked from index.html")
         else:
-	        debug("add new reprt link to index.html")
+	        debug("add new report link to index.html")
                 text = text.replace( blankchunk, blankchunk+'\n'+text2 )
 
         f = ftp.file( 'index.html', 'w+' )

@@ -86,8 +86,8 @@ def read_sysinfo(filename):
 	if not data: 
 		sinfo = platform.sys.platform
 		sinfo += '\nsystem cannot create offscreen GL framebuffer object'
-		sinfo += '\nsystem cannot create images'
-		sysid = platform.sys.platform+'_no_images'
+		sinfo += '\nsystem cannot create GL based images'
+		sysid = platform.sys.platform+'_no_GL_renderer'
 		return sinfo, sysid
 
 	machine = ezsearch('Machine:(.*?)\n',data)
@@ -118,6 +118,7 @@ def read_sysinfo(filename):
 	for c in hexhash: hash += chr(ord(c)+97-48) 
 
 	sysid = osplain + '_' + machine + '_' + renderer + '_' + hash
+	sysid = sysid.replace('(','_').replace(')','_')
 	sysid = sysid.lower()
 
 	return data, sysid
