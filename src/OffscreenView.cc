@@ -150,18 +150,8 @@ bool OffscreenView::save(std::ostream &output)
 const std::string &OffscreenView::getRendererInfo()
 {
 	std::stringstream out;
-	GLint rbits, gbits, bbits, abits, dbits, sbits;
-	glGetIntegerv(GL_RED_BITS, &rbits);
-	glGetIntegerv(GL_GREEN_BITS, &gbits);
-	glGetIntegerv(GL_BLUE_BITS, &bbits);
-	glGetIntegerv(GL_ALPHA_BITS, &abits);
-	glGetIntegerv(GL_DEPTH_BITS, &dbits);
-	glGetIntegerv(GL_STENCIL_BITS, &sbits);
 
-	out << glew_dump(false)
-	    << "FBO: RGBA(" << rbits << gbits << bbits << abits
-	    << "), depth(" << dbits
-	    << "), stencil(" << sbits << ")\n"
+	out << glew_dump()
 	    << offscreen_context_getinfo(this->ctx);
 
 	return out.str();

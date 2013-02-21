@@ -942,7 +942,7 @@ void MainWindow::pasteViewportTranslation()
 {
 	QTextCursor cursor = editor->textCursor();
 	QString txt;
-	txt.sprintf("[ %.2f, %.2f, %.2f ]", -this->qglview->object_trans_x, -this->qglview->object_trans_y, -this->qglview->object_trans_z);
+	txt.sprintf("[ %.2f, %.2f, %.2f ]", -this->qglview->object_trans.x(), -this->qglview->object_trans.y(), -this->qglview->object_trans.z());
 	cursor.insertText(txt);
 }
 
@@ -951,7 +951,7 @@ void MainWindow::pasteViewportRotation()
 	QTextCursor cursor = editor->textCursor();
 	QString txt;
 	txt.sprintf("[ %.2f, %.2f, %.2f ]",
-		fmodf(360 - this->qglview->object_rot_x + 90, 360), fmodf(360 - this->qglview->object_rot_y, 360), fmodf(360 - this->qglview->object_rot_z, 360));
+		fmodf(360 - this->qglview->object_rot.x() + 90, 360), fmodf(360 - this->qglview->object_rot.y(), 360), fmodf(360 - this->qglview->object_rot.z(), 360));
 	cursor.insertText(txt);
 }
 
@@ -960,15 +960,15 @@ void MainWindow::updateTemporalVariables()
 	this->root_ctx.set_variable("$t", Value(this->e_tval->text().toDouble()));
 	
 	Value::VectorType vpt;
-	vpt.push_back(Value(-this->qglview->object_trans_x));
-	vpt.push_back(Value(-this->qglview->object_trans_y));
-	vpt.push_back(Value(-this->qglview->object_trans_z));
+	vpt.push_back(Value(-this->qglview->object_trans.x()));
+	vpt.push_back(Value(-this->qglview->object_trans.y()));
+	vpt.push_back(Value(-this->qglview->object_trans.z()));
 	this->root_ctx.set_variable("$vpt", Value(vpt));
 	
 	Value::VectorType vpr;
-	vpr.push_back(Value(fmodf(360 - this->qglview->object_rot_x + 90, 360)));
-	vpr.push_back(Value(fmodf(360 - this->qglview->object_rot_y, 360)));
-	vpr.push_back(Value(fmodf(360 - this->qglview->object_rot_z, 360)));
+	vpr.push_back(Value(fmodf(360 - this->qglview->object_rot.x() + 90, 360)));
+	vpr.push_back(Value(fmodf(360 - this->qglview->object_rot.y(), 360)));
+	vpr.push_back(Value(fmodf(360 - this->qglview->object_rot.z(), 360)));
 	root_ctx.set_variable("$vpr", Value(vpr));
 }
 
@@ -1595,65 +1595,65 @@ void MainWindow::animateUpdate()
 
 void MainWindow::viewAngleTop()
 {
-	this->qglview->object_rot_x = 90;
-	this->qglview->object_rot_y = 0;
-	this->qglview->object_rot_z = 0;
+	this->qglview->object_rot.x() = 90;
+	this->qglview->object_rot.y() = 0;
+	this->qglview->object_rot.z() = 0;
 	this->qglview->updateGL();
 }
 
 void MainWindow::viewAngleBottom()
 {
-	this->qglview->object_rot_x = 270;
-	this->qglview->object_rot_y = 0;
-	this->qglview->object_rot_z = 0;
+	this->qglview->object_rot.x() = 270;
+	this->qglview->object_rot.y() = 0;
+	this->qglview->object_rot.z() = 0;
 	this->qglview->updateGL();
 }
 
 void MainWindow::viewAngleLeft()
 {
-	this->qglview->object_rot_x = 0;
-	this->qglview->object_rot_y = 0;
-	this->qglview->object_rot_z = 90;
+	this->qglview->object_rot.x() = 0;
+	this->qglview->object_rot.y() = 0;
+	this->qglview->object_rot.z() = 90;
 	this->qglview->updateGL();
 }
 
 void MainWindow::viewAngleRight()
 {
-	this->qglview->object_rot_x = 0;
-	this->qglview->object_rot_y = 0;
-	this->qglview->object_rot_z = 270;
+	this->qglview->object_rot.x() = 0;
+	this->qglview->object_rot.y() = 0;
+	this->qglview->object_rot.z() = 270;
 	this->qglview->updateGL();
 }
 
 void MainWindow::viewAngleFront()
 {
-	this->qglview->object_rot_x = 0;
-	this->qglview->object_rot_y = 0;
-	this->qglview->object_rot_z = 0;
+	this->qglview->object_rot.x() = 0;
+	this->qglview->object_rot.y() = 0;
+	this->qglview->object_rot.z() = 0;
 	this->qglview->updateGL();
 }
 
 void MainWindow::viewAngleBack()
 {
-	this->qglview->object_rot_x = 0;
-	this->qglview->object_rot_y = 0;
-	this->qglview->object_rot_z = 180;
+	this->qglview->object_rot.x() = 0;
+	this->qglview->object_rot.y() = 0;
+	this->qglview->object_rot.z() = 180;
 	this->qglview->updateGL();
 }
 
 void MainWindow::viewAngleDiagonal()
 {
-	this->qglview->object_rot_x = 35;
-	this->qglview->object_rot_y = 0;
-	this->qglview->object_rot_z = -25;
+	this->qglview->object_rot.x() = 35;
+	this->qglview->object_rot.y() = 0;
+	this->qglview->object_rot.z() = -25;
 	this->qglview->updateGL();
 }
 
 void MainWindow::viewCenter()
 {
-	this->qglview->object_trans_x = 0;
-	this->qglview->object_trans_y = 0;
-	this->qglview->object_trans_z = 0;
+	this->qglview->object_trans.x() = 0;
+	this->qglview->object_trans.y() = 0;
+	this->qglview->object_trans.z() = 0;
 	this->qglview->updateGL();
 }
 
@@ -1745,14 +1745,16 @@ void MainWindow::helpLibrary()
 									qVersion());
 
 	if (!this->openglbox) {
-		this->openglbox = new QMessageBox(QMessageBox::Information, 
-																			"OpenGL Info", "Detailed Library Info",
-																			QMessageBox::Ok, this);
-		
+		this->openglbox = new QDialog( this );
+		QVBoxLayout *ql = new QVBoxLayout( openglbox );
+		QTextEdit *qte = new QTextEdit( openglbox );
+		ql->addWidget( qte );
 	}
-
-	this->openglbox->setDetailedText(libinfo + QString(this->qglview->getRendererInfo()));
-	this->openglbox->show();
+	QTextEdit *qte = openglbox->findChild<QTextEdit *>();
+	qte->setText(libinfo + QString(this->qglview->getRendererInfo().c_str()));
+	qte->setReadOnly( true );
+	openglbox->setMinimumSize( QSize(400,200) );
+	openglbox->show();
 }
 
 /*!

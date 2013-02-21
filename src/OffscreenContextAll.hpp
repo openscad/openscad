@@ -62,7 +62,6 @@ OffscreenContext *create_offscreen_context_common(OffscreenContext *ctx)
 		std::cerr << "Unable to init GLEW: " << glewGetErrorString(err) << "\n";
 		return NULL;
 	}
-	//cerr << glew_dump(0);
 
 	ctx->fbo = fbo_new();
 	if (!fbo_init(ctx->fbo, ctx->width, ctx->height)) {
