@@ -35,7 +35,8 @@ public:
 	void setShowCrosshairs(bool enabled) { this->showcrosshairs = enabled; }
 	bool orthoMode() const { return this->orthomode; }
 	void setOrthoMode(bool enabled) { this->orthomode = enabled; }
-	const std::string &getRendererInfo() const { return this->rendererInfo; }
+	std::string getRendererInfo() const { return this->rendererInfo; }
+	bool save(const char *filename);
 
 public:
 	QLabel *statusLabel;

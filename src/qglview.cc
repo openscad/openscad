@@ -637,3 +637,10 @@ void QGLView::mouseReleaseEvent(QMouseEvent*)
 	mouse_drag_active = false;
 	releaseMouse();
 }
+
+bool QGLView::save(const char *filename)
+{
+  QImage img = grabFrameBuffer();
+  return img.save(filename, "PNG");
+}
+

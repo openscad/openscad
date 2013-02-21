@@ -87,7 +87,7 @@ private:
 	void loadViewSettings();
 	void loadDesignSettings();
 
-  class QDialog *openglbox;
+  class QMessageBox *openglbox;
 
 private slots:
 	void actionNew();

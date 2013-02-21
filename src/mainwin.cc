@@ -1452,20 +1452,17 @@ void MainWindow::actionExportCSG()
 
 void MainWindow::actionExportImage()
 {
-	QImage img = this->qglview->grabFrameBuffer();
 	setCurrentOutput();
 
 	QString img_filename = QFileDialog::getSaveFileName(this,
 			"Export Image", "", "PNG Files (*.png)");
 	if (img_filename.isEmpty()) {
 		PRINT("No filename specified. Image export aborted.");
-		clearCurrentOutput();
-		return;
+	} else {
+		qglview->save(img_filename.toStdString().c_str());
 	}
-
-	img.save(img_filename, "PNG");
-
 	clearCurrentOutput();
+	return;
 }
 
 void MainWindow::actionFlushCaches()
@@ -1745,16 +1742,13 @@ void MainWindow::helpLibrary()
 									qVersion());
 
 	if (!this->openglbox) {
-		this->openglbox = new QDialog( this );
-		QVBoxLayout *ql = new QVBoxLayout( openglbox );
-		QTextEdit *qte = new QTextEdit( openglbox );
-		ql->addWidget( qte );
+    this->openglbox = new QMessageBox(QMessageBox::Information, 
+                                      "OpenGL Info", "Detailed Library Info",
+                                      QMessageBox::Ok, this);
+		this->openglbox->setMinimumSize( QSize(400,200) );
 	}
-	QTextEdit *qte = openglbox->findChild<QTextEdit *>();
-	qte->setText(libinfo + QString(this->qglview->getRendererInfo().c_str()));
-	qte->setReadOnly( true );
-	openglbox->setMinimumSize( QSize(400,200) );
-	openglbox->show();
+  this->openglbox->setDetailedText(libinfo + QString(qglview->getRendererInfo().c_str()));
+	this->openglbox->show();
 }
 
 /*!

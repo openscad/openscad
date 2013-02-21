@@ -24,9 +24,9 @@ public:
 	void setupPerspective();
 	void setupOrtho(bool offset=false);
 	void paintGL();
-	bool save(const char *filename);
-	bool save(std::ostream &output);
-	const std::string &getRendererInfo();
+	bool save(const char *filename); //
+	bool save(std::ostream &output); // not implemented in qgl?
+	std::string getRendererInfo(); //
 
 	GLint shaderinfo[11];  //
 
