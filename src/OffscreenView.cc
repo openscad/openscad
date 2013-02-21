@@ -67,6 +67,16 @@ void OffscreenView::resizeGL(int w, int h)
 	w_h_ratio = sqrt((double)w / (double)h);
 }
 
+void OffscreenView::setupGimbalPerspective()
+{
+	fprintf(stderr, "gimbal camera not implemented in Offscreen View\n");
+}
+
+void OffscreenView::setupGimbalOrtho(double distance, bool offset)
+{
+	fprintf(stderr, "gimbal camera not implemented in Offscreen View\n");
+}
+
 void OffscreenView::setupPerspective()
 {
 	glMatrixMode(GL_PROJECTION);

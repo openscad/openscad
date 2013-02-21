@@ -21,9 +21,14 @@ public:
 	void setCamera(const Eigen::Vector3d &pos, const Eigen::Vector3d &center);
 	void initializeGL();
 	void resizeGL(int w, int h);
+
+	void setupGimbalPerspective();
+	void setupGimbalOrtho(double distance, bool offset=false);
+
 	void setupPerspective();
 	void setupOrtho(bool offset=false);
-	void paintGL();
+
+	void paintGL(); //
 	bool save(const char *filename); //
 	bool save(std::ostream &output); // not implemented in qgl?
 	std::string getRendererInfo(); //

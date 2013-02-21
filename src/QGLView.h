@@ -80,8 +80,13 @@ private:
 
 	void initializeGL();
 	void resizeGL(int w, int h);
+
+	void setupGimbalPerspective();
+	void setupGimbalOrtho(double distance,bool offset=false);
+
 	void setupPerspective();
-	void setupOrtho(double distance,bool offset=false);
+	void setupOrtho(bool offset=false);
+
 	void paintGL();
 	void normalizeAngle(GLdouble& angle);
 

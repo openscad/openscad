@@ -340,10 +340,20 @@ void QGLView::resizeGL(int w, int h)
 	glViewport(0, 0, w, h);
 	w_h_ratio = sqrt((double)w / (double)h);
 
-	setupPerspective();
+	setupGimbalPerspective();
 }
 
 void QGLView::setupPerspective()
+{
+	fprintf(stderr,"non-gimbal camera not implemented for qglview\n");
+}
+
+void QGLView::setupOrtho(bool offset)
+{
+	fprintf(stderr,"non-gimbal camera not implemented for qglview\n");
+}
+
+void QGLView::setupGimbalPerspective()
 {
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
@@ -351,7 +361,7 @@ void QGLView::setupPerspective()
 	gluLookAt(0.0, -viewer_distance, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0);
 }
 
-void QGLView::setupOrtho(double distance, bool offset)
+void QGLView::setupGimbalOrtho(double distance, bool offset)
 {
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
@@ -368,8 +378,8 @@ void QGLView::paintGL()
 {
 	glEnable(GL_LIGHTING);
 
-	if (orthomode) setupOrtho(viewer_distance);
-	else setupPerspective();
+	if (orthomode) setupGimbalOrtho(viewer_distance);
+	else setupGimbalPerspective();
 
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
@@ -439,7 +449,7 @@ void QGLView::paintGL()
 	{
 		glDepthFunc(GL_ALWAYS);
 
-		setupOrtho(1000,true);
+		setupGimbalOrtho(1000,true);
 
 		glMatrixMode(GL_MODELVIEW);
 		glLoadIdentity();
@@ -508,7 +518,7 @@ void QGLView::paintGL()
 
 		//Restore perspective for next paint
 		if(!orthomode)
-			setupPerspective();
+			setupGimbalPerspective();
 	}
 
 	if (statusLabel) {
