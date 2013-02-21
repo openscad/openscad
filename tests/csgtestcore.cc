@@ -92,7 +92,7 @@ string info_dump(OffscreenView *glview)
 	    << EIGEN_MAJOR_VERSION << "." << EIGEN_MINOR_VERSION
 	    << "\nCGAL version: " << TOSTRING(CGAL_VERSION)
 	    << "\nOpenCSG version: " << OPENCSG_VERSION_STRING
-	    << "\n" << glview->getInfo()
+	    << "\n" << glview->getRendererInfo()
 	    << "\n";
 
 	return out.str();

@@ -147,7 +147,7 @@ bool OffscreenView::save(std::ostream &output)
 	return save_framebuffer(this->ctx, output);
 }
 
-std::string OffscreenView::getInfo()
+const std::string &OffscreenView::getRendererInfo()
 {
 	std::stringstream out;
 	GLint rbits, gbits, bbits, abits, dbits, sbits;

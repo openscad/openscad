@@ -6,8 +6,8 @@
 class CsgInfo
 {
 public:
-	CsgInfo() { glview = NULL; }
-	OffscreenView *glview;
+	CsgInfo() { qglview = NULL; }
+	OffscreenView *qglview;
 };
 
 
@@ -26,7 +26,7 @@ public:
 		root_chain = NULL;
 		highlights_chain = NULL;
 		background_chain = NULL;
-		glview = NULL;
+		qglview = NULL;
 	}
 	shared_ptr<CSGTerm> root_norm_term;    // Normalized CSG products
 	class CSGChain *root_chain;

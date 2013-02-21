@@ -26,24 +26,25 @@ public:
 	void paintGL();
 	bool save(const char *filename);
 	bool save(std::ostream &output);
-	std::string getInfo();
+	const std::string &getRendererInfo();
 
-	GLint shaderinfo[11];
-	OffscreenContext *ctx;
-	size_t width;
-	size_t height;
+	GLint shaderinfo[11];  //
+
+	OffscreenContext *ctx; // not
+	size_t width;  // not
+	size_t height; // not
 private:
-	Renderer *renderer;
-	double w_h_ratio;
+	Renderer *renderer;//
+	double w_h_ratio;//
 
-	bool orthomode;
-	bool showaxes;
-	bool showfaces;
-	bool showedges;
+	bool orthomode;//
+	bool showaxes;//
+	bool showfaces;//
+	bool showedges;//
 
-	Eigen::Vector3d object_rot;
-	Eigen::Vector3d camera_eye;
-	Eigen::Vector3d camera_center;
+	Eigen::Vector3d object_rot;//
+	Eigen::Vector3d camera_eye;//
+	Eigen::Vector3d camera_center;//
 };
 
 #endif

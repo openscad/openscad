@@ -24,7 +24,7 @@
  *
  */
 
-#include "GLView.h"
+#include "QGLView.h"
 #include "Preferences.h"
 #include "renderer.h"
 #include "rendersettings.h"
@@ -59,27 +59,27 @@
 
 #define FAR_FAR_AWAY 100000.0
 
-GLView::GLView(QWidget *parent) : QGLWidget(parent), renderer(NULL)
+QGLView::QGLView(QWidget *parent) : QGLWidget(parent), renderer(NULL)
 {
 	init();
 }
 
-GLView::GLView(const QGLFormat & format, QWidget *parent) : QGLWidget(format, parent)
+QGLView::QGLView(const QGLFormat & format, QWidget *parent) : QGLWidget(format, parent)
 {
 	init();
 }
 
 static bool running_under_wine = false;
 
-void GLView::init()
+void QGLView::init()
 {
 	this->viewer_distance = 500;
-	this->object_rot_x = 35;
-	this->object_rot_y = 0;
-	this->object_rot_z = -25;
-	this->object_trans_x = 0;
-	this->object_trans_y = 0;
-	this->object_trans_z = 0;
+	this->object_rot.x() = 35;
+	this->object_rot.y() = 0;
+	this->object_rot.z() = -25;
+	this->object_trans.x() = 0;
+	this->object_trans.y() = 0;
+	this->object_trans.z() = 0;
 
 	this->mouse_drag_active = false;
 
@@ -113,13 +113,13 @@ void GLView::init()
 #endif
 }
 
-void GLView::setRenderer(Renderer *r)
+void QGLView::setRenderer(Renderer *r)
 {
 	this->renderer = r;
 	if (r) updateGL(); // Let the last image stay, e.g. to avoid animation flickering
 }
 
-void GLView::initializeGL()
+void QGLView::initializeGL()
 {
 	glEnable(GL_DEPTH_TEST);
 	glDepthRange(-FAR_FAR_AWAY, +FAR_FAR_AWAY);
@@ -320,7 +320,7 @@ void GLView::initializeGL()
 }
 
 #ifdef ENABLE_OPENCSG
-void GLView::display_opencsg_warning()
+void QGLView::display_opencsg_warning()
 {
 	OpenCSGWarningDialog *dialog = new OpenCSGWarningDialog(this);
 
@@ -352,7 +352,7 @@ void GLView::display_opencsg_warning()
 }
 #endif
 
-void GLView::resizeGL(int w, int h)
+void QGLView::resizeGL(int w, int h)
 {
 #ifdef ENABLE_OPENCSG
 	shaderinfo[9] = w;
@@ -364,7 +364,7 @@ void GLView::resizeGL(int w, int h)
 	setupPerspective();
 }
 
-void GLView::setupPerspective()
+void QGLView::setupPerspective()
 {
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
@@ -372,7 +372,7 @@ void GLView::setupPerspective()
 	gluLookAt(0.0, -viewer_distance, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0);
 }
 
-void GLView::setupOrtho(double distance, bool offset)
+void QGLView::setupOrtho(double distance, bool offset)
 {
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
@@ -385,7 +385,7 @@ void GLView::setupOrtho(double distance, bool offset)
 	gluLookAt(0.0, -viewer_distance, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0);
 }
 
-void GLView::paintGL()
+void QGLView::paintGL()
 {
 	glEnable(GL_LIGHTING);
 
@@ -400,9 +400,9 @@ void GLView::paintGL()
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
-	glRotated(object_rot_x, 1.0, 0.0, 0.0);
-	glRotated(object_rot_y, 0.0, 1.0, 0.0);
-	glRotated(object_rot_z, 0.0, 0.0, 1.0);
+	glRotated(object_rot.x(), 1.0, 0.0, 0.0);
+	glRotated(object_rot.y(), 0.0, 1.0, 0.0);
+	glRotated(object_rot.z(), 0.0, 0.0, 1.0);
 
   // FIXME: Crosshairs and axes are lighted, this doesn't make sense and causes them
   // to change color based on view orientation.
@@ -421,7 +421,7 @@ void GLView::paintGL()
 		glEnd();
 	}
 
-	glTranslated(object_trans_x, object_trans_y, object_trans_z);
+	glTranslated(object_trans.x(), object_trans.y(), object_trans.z());
 
 	// Large gray axis cross inline with the model
   // FIXME: This is always gray - adjust color to keep contrast with background
@@ -464,9 +464,9 @@ void GLView::paintGL()
 
 		glMatrixMode(GL_MODELVIEW);
 		glLoadIdentity();
-		glRotated(object_rot_x, 1.0, 0.0, 0.0);
-		glRotated(object_rot_y, 0.0, 1.0, 0.0);
-		glRotated(object_rot_z, 0.0, 0.0, 1.0);
+		glRotated(object_rot.x(), 1.0, 0.0, 0.0);
+		glRotated(object_rot.y(), 0.0, 1.0, 0.0);
+		glRotated(object_rot.z(), 0.0, 0.0, 1.0);
 
 		glLineWidth(1);
 		glBegin(GL_LINES);
@@ -535,15 +535,15 @@ void GLView::paintGL()
 	if (statusLabel) {
 		QString msg;
 		msg.sprintf("Viewport: translate = [ %.2f %.2f %.2f ], rotate = [ %.2f %.2f %.2f ], distance = %.2f",
-			-object_trans_x, -object_trans_y, -object_trans_z,
-			fmodf(360 - object_rot_x + 90, 360), fmodf(360 - object_rot_y, 360), fmodf(360 - object_rot_z, 360), viewer_distance);
+			-object_trans.x(), -object_trans.y(), -object_trans.z(),
+			fmodf(360 - object_rot.x() + 90, 360), fmodf(360 - object_rot.y(), 360), fmodf(360 - object_rot.z(), 360), viewer_distance);
 		statusLabel->setText(msg);
 	}
 
 	if (running_under_wine) swapBuffers();
 }
 
-void GLView::keyPressEvent(QKeyEvent *event)
+void QGLView::keyPressEvent(QKeyEvent *event)
 {
 	if (event->key() == Qt::Key_Plus) {
 		viewer_distance *= 0.9;
@@ -557,19 +557,19 @@ void GLView::keyPressEvent(QKeyEvent *event)
 	}
 }
 
-void GLView::wheelEvent(QWheelEvent *event)
+void QGLView::wheelEvent(QWheelEvent *event)
 {
 	viewer_distance *= pow(0.9, event->delta() / 120.0);
 	updateGL();
 }
 
-void GLView::mousePressEvent(QMouseEvent *event)
+void QGLView::mousePressEvent(QMouseEvent *event)
 {
 	mouse_drag_active = true;
 	last_mouse = event->globalPos();
 }
 
-void GLView::normalizeAngle(GLdouble& angle)
+void QGLView::normalizeAngle(GLdouble& angle)
 {
 	while(angle < 0)
 		angle += 360;
@@ -577,7 +577,7 @@ void GLView::normalizeAngle(GLdouble& angle)
 		angle -= 360;
 }
 
-void GLView::mouseMoveEvent(QMouseEvent *event)
+void QGLView::mouseMoveEvent(QMouseEvent *event)
 {
 	QPoint this_mouse = event->globalPos();
 	double dx = (this_mouse.x()-last_mouse.x()) * 0.7;
@@ -590,15 +590,15 @@ void GLView::mouseMoveEvent(QMouseEvent *event)
 			) {
 			// Left button rotates in xz, Shift-left rotates in xy
 			// On Mac, Ctrl-Left is handled as right button on other platforms
-			object_rot_x += dy;
+			object_rot.x() += dy;
 			if ((QApplication::keyboardModifiers() & Qt::ShiftModifier) != 0)
-				object_rot_y += dx;
+				object_rot.y() += dx;
 			else
-				object_rot_z += dx;
+				object_rot.z() += dx;
 
-			normalizeAngle(object_rot_x);
-			normalizeAngle(object_rot_y);
-			normalizeAngle(object_rot_z);
+			normalizeAngle(object_rot.x());
+			normalizeAngle(object_rot.y());
+			normalizeAngle(object_rot.z());
 		} else {
 			// Right button pans in the xz plane
 			// Middle button pans in the xy plane
@@ -624,9 +624,9 @@ void GLView::mouseMoveEvent(QMouseEvent *event)
 			}
 
 			Matrix3d aax, aay, aaz, tm3;
-			aax = Eigen::AngleAxisd(-(object_rot_x/180) * M_PI, Vector3d::UnitX());
-			aay = Eigen::AngleAxisd(-(object_rot_y/180) * M_PI, Vector3d::UnitY());
-			aaz = Eigen::AngleAxisd(-(object_rot_z/180) * M_PI, Vector3d::UnitZ());
+			aax = Eigen::AngleAxisd(-(object_rot.x()/180) * M_PI, Vector3d::UnitX());
+			aay = Eigen::AngleAxisd(-(object_rot.y()/180) * M_PI, Vector3d::UnitY());
+			aaz = Eigen::AngleAxisd(-(object_rot.z()/180) * M_PI, Vector3d::UnitZ());
 			tm3 = Matrix3d::Identity();
 			tm3 = aaz * (aay * (aax * tm3));
 
@@ -642,9 +642,9 @@ void GLView::mouseMoveEvent(QMouseEvent *event)
         0,  0,  0,  1
 			;
       tm = tm * vec;
-      object_trans_x += tm(0,3);
-      object_trans_y += tm(1,3);
-      object_trans_z += tm(2,3);
+      object_trans.x() += tm(0,3);
+      object_trans.y() += tm(1,3);
+      object_trans.z() += tm(2,3);
 			}
 		}
 		updateGL();
@@ -653,7 +653,7 @@ void GLView::mouseMoveEvent(QMouseEvent *event)
 	last_mouse = this_mouse;
 }
 
-void GLView::mouseReleaseEvent(QMouseEvent*)
+void QGLView::mouseReleaseEvent(QMouseEvent*)
 {
 	mouse_drag_active = false;
 	releaseMouse();

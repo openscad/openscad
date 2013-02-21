@@ -179,7 +179,7 @@ HEADERS += src/version_check.h \
            src/ThrownTogetherRenderer.h \
            src/CGAL_renderer.h \
            src/OGL_helper.h \
-           src/GLView.h \
+           src/QGLView.h \
            src/MainWindow.h \
            src/Preferences.h \
            src/OpenCSGWarningDialog.h \
@@ -284,7 +284,7 @@ SOURCES += src/version_check.cc \
            src/Preferences.cc \
            src/OpenCSGWarningDialog.cc \
            src/editor.cc \
-           src/glview.cc \
+           src/qglview.cc \
            \
            src/builtin.cc \
            src/export.cc \

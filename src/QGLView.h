@@ -5,7 +5,10 @@
 #include <QGLWidget>
 #include <QLabel>
 
-class GLView : public QGLWidget
+#include <Eigen/Core>
+#include <Eigen/Geometry>
+
+class QGLView : public QGLWidget
 {
 	Q_OBJECT
 	Q_PROPERTY(bool showFaces READ showFaces WRITE setShowFaces);
@@ -15,8 +18,8 @@ class GLView : public QGLWidget
 	Q_PROPERTY(bool orthoMode READ orthoMode WRITE setOrthoMode);
 
 public:
-	GLView(QWidget *parent = NULL);
-	GLView(const QGLFormat & format, QWidget *parent = NULL);
+	QGLView(QWidget *parent = NULL);
+	QGLView(const QGLFormat & format, QWidget *parent = NULL);
 	void setRenderer(class Renderer* r);
 #ifdef ENABLE_OPENCSG
 	bool hasOpenCSGSupport() { return this->opencsg_support; }
@@ -32,16 +35,16 @@ public:
 	void setShowCrosshairs(bool enabled) { this->showcrosshairs = enabled; }
 	bool orthoMode() const { return this->orthomode; }
 	void setOrthoMode(bool enabled) { this->orthomode = enabled; }
-	const QString &getRendererInfo() const { return this->rendererInfo; }
+	const std::string &getRendererInfo() const { return this->rendererInfo; }
 
 public:
 	QLabel *statusLabel;
-	double object_rot_x;
-	double object_rot_y;
-	double object_rot_z;
-	double object_trans_x;
-	double object_trans_y;
-	double object_trans_z;
+
+  Eigen::Vector3d object_rot;
+  Eigen::Vector3d object_trans;
+  Eigen::Vector3d camera_eye;
+  Eigen::Vector3d camera_center;
+
 	GLint shaderinfo[11];
 
 #ifdef ENABLE_OPENCSG
@@ -53,7 +56,7 @@ private:
 	void init();
 	Renderer *renderer;
 
-	QString rendererInfo;
+	std::string rendererInfo;
 
 	bool showfaces;
 	bool showedges;
