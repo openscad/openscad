@@ -14,19 +14,20 @@
 class OffscreenView
 {
 public:
-	OffscreenView(size_t width, size_t height);
-	~OffscreenView();
-	void setRenderer(class Renderer* r);
+	OffscreenView(size_t width, size_t height); // not
+	~OffscreenView(); // not
+	void setRenderer(class Renderer* r); //
 
-	void setCamera(const Eigen::Vector3d &pos, const Eigen::Vector3d &center);
-	void initializeGL();
-	void resizeGL(int w, int h);
+	void initializeGL(); //
+	void resizeGL(int w, int h); //
 
-	void setupGimbalPerspective();
-	void setupGimbalOrtho(double distance, bool offset=false);
+	void setGimbalCamera(const Eigen::Vector3d &pos, const Eigen::Vector3d &rot, double distance); //
+	void setupGimbalPerspective(); //
+	void setupGimbalOrtho(double distance, bool offset=false); //
 
-	void setupPerspective();
-	void setupOrtho(bool offset=false);
+	void setCamera(const Eigen::Vector3d &pos, const Eigen::Vector3d &center); //
+	void setupPerspective(); //
+	void setupOrtho(bool offset=false); //
 
 	void paintGL(); //
 	bool save(const char *filename); //
