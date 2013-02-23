@@ -1,7 +1,6 @@
-#ifndef OFFSCREENVIEW_H_
-#define OFFSCREENVIEW_H_
+#ifndef GLVIEW_H_
+#define GLVIEW_H_
 
-#include "OffscreenContext.h"
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 #include <string>
@@ -10,14 +9,14 @@
 #endif
 #include "system-gl.h"
 #include <iostream>
-#include "GLView.h"
+#include "renderer.h"
 
-class OffscreenView : public GLView
+class GLView
 {
 public:
-	OffscreenView(size_t width, size_t height); // not
-	~OffscreenView(); // not
-
+	void setRenderer(Renderer* r);
+	Renderer *renderer = 0;
+/*
 	void initializeGL(); //
 	void resizeGL(int w, int h); //
 
@@ -31,16 +30,16 @@ public:
 
 	void paintGL(); //
 	bool save(const char *filename); //
-	bool save(std::ostream &output); // not implemented in qgl?
+	//bool save(std::ostream &output); // not implemented in qgl?
 	std::string getRendererInfo(); //
 
 	GLint shaderinfo[11];  //
+*/
 
-	OffscreenContext *ctx; // not
-	size_t width;  // not
-	size_t height; // not
-private:
-	double w_h_ratio;//
+
+
+/*	double w_h_ratio;//
+
 	bool orthomode;//
 	bool showaxes;//
 	bool showfaces;//
@@ -49,6 +48,7 @@ private:
 	Eigen::Vector3d object_rot;//
 	Eigen::Vector3d camera_eye;//
 	Eigen::Vector3d camera_center;//
+*/
 };
 
 #endif

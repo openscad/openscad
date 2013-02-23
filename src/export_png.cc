@@ -14,7 +14,7 @@ void export_png_with_cgal(CGAL_Nef_polyhedron *root_N, std::ostream &output)
 {
 	CsgInfo csgInfo;
 	try {
-		csgInfo.qglview = new OffscreenView(512,512);
+		csgInfo.glview = new OffscreenView(512,512);
 	} catch (int error) {
 		fprintf(stderr,"Can't create OpenGL OffscreenView. Code: %i.\n", error);
 		return;
@@ -40,10 +40,10 @@ void export_png_with_cgal(CGAL_Nef_polyhedron *root_N, std::ostream &output)
 	//std::cerr << center << "\n";
 	//std::cerr << radius << "\n";
 
-	csgInfo.qglview->setCamera(camerapos, center);
-	csgInfo.qglview->setRenderer(&cgalRenderer);
-	csgInfo.qglview->paintGL();
-	csgInfo.qglview->save(output);
+	csgInfo.glview->setCamera(camerapos, center);
+	csgInfo.glview->setRenderer(&cgalRenderer);
+	csgInfo.glview->paintGL();
+	csgInfo.glview->save(output);
 }
 
 void export_png_with_opencsg(CGAL_Nef_polyhedron *root_N, std::ostream &output)

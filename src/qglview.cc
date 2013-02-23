@@ -59,7 +59,7 @@
 
 #define FAR_FAR_AWAY 100000.0
 
-QGLView::QGLView(QWidget *parent) : QGLWidget(parent), renderer(NULL)
+QGLView::QGLView(QWidget *parent) : QGLWidget(parent)
 {
 	init();
 }
@@ -111,12 +111,6 @@ void QGLView::init()
 		if ( (void *)GetProcAddress(hntdll, "wine_get_version") )
 			running_under_wine = true;
 #endif
-}
-
-void QGLView::setRenderer(Renderer *r)
-{
-	this->renderer = r;
-	if (r) updateGL(); // Let the last image stay, e.g. to avoid animation flickering
 }
 
 void QGLView::initializeGL()

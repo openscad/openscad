@@ -1498,6 +1498,7 @@ void MainWindow::viewModeOpenCSG()
 		viewModeActionsUncheck();
 		viewActionOpenCSG->setChecked(true);
 		this->qglview->setRenderer(this->opencsgRenderer ? (Renderer *)this->opencsgRenderer : (Renderer *)this->thrownTogetherRenderer);
+		this->qglview->updateGL();
 	} else {
 		viewModeThrownTogether();
 	}
@@ -1522,6 +1523,7 @@ void MainWindow::viewModeCGALGrid()
 	viewActionCGALGrid->setChecked(true);
 	this->qglview->setShowFaces(false);
 	this->qglview->setRenderer(this->cgalRenderer);
+	this->qglview->updateGL();
 }
 
 #endif /* ENABLE_CGAL */
@@ -1531,6 +1533,7 @@ void MainWindow::viewModeThrownTogether()
 	viewModeActionsUncheck();
 	viewActionThrownTogether->setChecked(true);
 	this->qglview->setRenderer(this->thrownTogetherRenderer);
+	this->qglview->updateGL();
 }
 
 void MainWindow::viewModeShowEdges()

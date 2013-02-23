@@ -1,7 +1,6 @@
 #include <GL/glew.h>
 #include "OffscreenView.h"
 #include "system-gl.h"
-#include "renderer.h"
 #include <math.h>
 #include <stdio.h>
 #include <string.h>
@@ -25,11 +24,6 @@ OffscreenView::OffscreenView(size_t width, size_t height)
 OffscreenView::~OffscreenView()
 {
 	teardown_offscreen_context(this->ctx);
-}
-
-void OffscreenView::setRenderer(Renderer* r)
-{
-	this->renderer = r;
 }
 
 void OffscreenView::initializeGL()

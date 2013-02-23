@@ -1,5 +1,5 @@
-#ifndef GLVIEW_H_
-#define GLVIEW_H_
+#ifndef QGLVIEW_H_
+#define QGLVIEW_H_
 
 #include "system-gl.h"
 #include <QGLWidget>
@@ -7,8 +7,10 @@
 
 #include <Eigen/Core>
 #include <Eigen/Geometry>
+#include "GLView.h"
+#include "renderer.h"
 
-class QGLView : public QGLWidget
+class QGLView : public QGLWidget, public GLView
 {
 	Q_OBJECT
 	Q_PROPERTY(bool showFaces READ showFaces WRITE setShowFaces);
@@ -20,7 +22,6 @@ class QGLView : public QGLWidget
 public:
 	QGLView(QWidget *parent = NULL);
 	QGLView(const QGLFormat & format, QWidget *parent = NULL);
-	void setRenderer(class Renderer* r);
 #ifdef ENABLE_OPENCSG
 	bool hasOpenCSGSupport() { return this->opencsg_support; }
 #endif
@@ -55,7 +56,6 @@ public:
 
 private:
 	void init();
-	Renderer *renderer;
 
 	std::string rendererInfo;
 

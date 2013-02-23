@@ -1,23 +1,11 @@
-#ifndef OFFSCREENVIEW_H_
-#define OFFSCREENVIEW_H_
-
-#include "OffscreenContext.h"
-#include <Eigen/Core>
-#include <Eigen/Geometry>
-#include <string>
-#ifndef _MSC_VER
-#include <stdint.h>
-#endif
-#include "system-gl.h"
-#include <iostream>
 #include "GLView.h"
 
-class OffscreenView : public GLView
+void GLView::setRenderer(class Renderer* r)
 {
-public:
-	OffscreenView(size_t width, size_t height); // not
-	~OffscreenView(); // not
+	this->renderer = r;
+}
 
+/*
 	void initializeGL(); //
 	void resizeGL(int w, int h); //
 
@@ -31,16 +19,15 @@ public:
 
 	void paintGL(); //
 	bool save(const char *filename); //
-	bool save(std::ostream &output); // not implemented in qgl?
+	//bool save(std::ostream &output); // not implemented in qgl?
 	std::string getRendererInfo(); //
 
 	GLint shaderinfo[11];  //
 
-	OffscreenContext *ctx; // not
-	size_t width;  // not
-	size_t height; // not
 private:
+	Renderer *renderer;//
 	double w_h_ratio;//
+
 	bool orthomode;//
 	bool showaxes;//
 	bool showfaces;//
@@ -51,4 +38,4 @@ private:
 	Eigen::Vector3d camera_center;//
 };
 
-#endif
+*/
