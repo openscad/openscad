@@ -40,8 +40,54 @@ void OffscreenView::enable_opencsg_shaders()
 		openscad_disable_gl20_env = NULL;
 	}
 
-	if (glewIsSupported("GL_VERSION_2_0") && openscad_disable_gl20_env == NULL )
-	{
+  // All OpenGL 2 contexts are OpenCSG capable
+  if (GLEW_VERSION_2_0) {
+    if (!openscad_disable_gl20_env) {
+      this->is_opencsg_capable = true;
+      this->has_shaders = true;
+    }
+  }
+
+  // If OpenGL < 2, check for extensions
+  else {
+    if (GLEW_ARB_framebuffer_object) this->is_opencsg_capable = true;
+    else if (GLEW_EXT_framebuffer_object && GLEW_EXT_packed_depth_stencil) {
+      this->is_opencsg_capable = true;
+    }
+#ifdef WIN32
+    else if (WGLEW_ARB_pbuffer && WGLEW_ARB_pixel_format) this->is_opencsg_capable = true;
+#elif !defined(__APPLE__)
+    else if (GLXEW_SGIX_pbuffer && GLXEW_SGIX_fbconfig) this->is_opencsg_capable = true;
+#endif
+  }
+
+  if (!GLEW_VERSION_2_0 || !this->is_opencsg_capable) {
+		fprintf(stderr, "OpenSCAD recommended OpenGL version is 2.0. \n");
+  }
+
+  if (opencsg_support && this->has_shaders) {
+  /*
+    Uniforms:
+      1 color1 - face color
+      2 color2 - edge color
+      7 xscale
+      8 yscale
+
+    Attributes:
+      3 trig
+      4 pos_b
+      5 pos_c
+      6 mask
+
+    Other:
+      9 width
+      10 height
+
+    Outputs:
+      tp
+      tr
+      shading
+   */
 		const char *vs_source =
 			"uniform float xscale, yscale;\n"
 			"attribute vec3 pos_b, pos_c;\n"
@@ -67,6 +113,11 @@ void OffscreenView::enable_opencsg_shaders()
 			"  shading = abs(dot(normal, lightDir));\n"
 			"}\n";
 
+    /*
+      Inputs:
+        tp && tr - if any components of tp < tr, use color2 (edge color)
+        shading  - multiplied by color1. color2 is is without lighting
+     */
 		const char *fs_source =
 			"uniform vec4 color1, color2;\n"
 			"varying vec3 tp, tr, tmp;\n"

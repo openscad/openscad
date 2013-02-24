@@ -1,8 +1,15 @@
 #ifndef GLVIEW_H_
 #define GLVIEW_H_
 
-// A basic OpenGL viewing rectangle.
-// Inherited by QGLview (for QT) and OffscreenView (non-QT)
+/* GLView: A basic OpenGL rectangle for rendering images.
+
+Inherited by QGLview (for QT GUI) and OffscreenView.
+
+There are two different types of cameras. A 'gimbal' based camera set
+using position & euler-angles (object_trans/object_rot/distance) and a
+'plain' camera set using eye-position, 'look at' center point, and 'up'
+
+*/
 
 #include <Eigen/Core>
 #include <Eigen/Geometry>
