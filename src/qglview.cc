@@ -71,31 +71,12 @@ static bool running_under_wine = false;
 
 void QGLView::init()
 {
-	this->viewer_distance = 500;
 	this->object_rot << 35, 0, -25;
-	this->object_trans << 0, 0, 0;
 
 	this->mouse_drag_active = false;
-
-	this->showedges = false;
-	this->showfaces = true;
-	this->orthomode = false;
-	this->showaxes = false;
-	this->showcrosshairs = false;
-
-	for (int i = 0; i < 10; i++)
-		this->shaderinfo[i] = 0;
-
 	this->statusLabel = NULL;
 
 	setMouseTracking(true);
-#ifdef ENABLE_OPENCSG
-	this->is_opencsg_capable = false;
-	this->has_shaders = false;
-	this->opencsg_support = true;
-	static int sId = 0;
-	this->opencsg_id = sId++;
-#endif
 
 // see paintGL() + issue160 + wine FAQ
 #ifdef _WIN32

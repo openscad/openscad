@@ -101,7 +101,6 @@ if(CMAKE_CXX_COMPILER MATCHES ".*clang.*")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-function")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-c++11-extensions")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-sign-compare")
-	string(REPLACE -frounding-math "" CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS})
 endif()
 
 #
@@ -371,6 +370,10 @@ if("${CGAL_MAJOR_VERSION}.${CGAL_MINOR_VERSION}" VERSION_LESS 3.6)
   message(FATAL_ERROR "CGAL >= 3.6 required")
 endif()
 inclusion(CGAL_DIR CGAL_INCLUDE_DIRS)
+
+if(CMAKE_CXX_COMPILER MATCHES ".*clang.*")
+	string(REPLACE "-frounding-math" "" CGAL_CXX_FLAGS_INIT ${CGAL_CXX_FLAGS_INIT})
+endif()
 
 # Imagemagick
 

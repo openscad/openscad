@@ -223,6 +223,7 @@
     <addaction name="helpActionHomepage"/>
     <addaction name="helpActionManual"/>
     <addaction name="helpActionLibraryInfo"/>
+    <addaction name="appActionUpdateCheck"/>
    </widget>
    <addaction name="menu_File"/>
    <addaction name="menu_Edit"/>
@@ -611,6 +612,9 @@
    </property>
   </action>
   <action name="helpActionAbout">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>About</string>
    </property>
@@ -674,6 +678,14 @@
   <action name="helpActionLibraryInfo">
    <property name="text">
     <string>Library info</string>
+   </property>
+  </action>
+  <action name="appActionUpdateCheck">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Check for Update..</string>
    </property>
   </action>
  </widget>

@@ -5,14 +5,29 @@
 
 GLView::GLView()
 {
-	std::cout << "glview();" << std::endl;
-	this->renderer = NULL;
+	viewer_distance = 500;
+	object_trans << 0, 0, 0;
+  camera_eye << 0, 0, 0;
+  camera_center << 0, 0, 0;
+  showedges = false;
+  showfaces = true;
+  orthomode = false;
+  showaxes = false;
+  showcrosshairs = false;
+	renderer = NULL;
+#ifdef ENABLE_OPENCSG
+  is_opencsg_capable = false;
+  has_shaders = false;
+  opencsg_support = true;
+  static int sId = 0;
+  this->opencsg_id = sId++;
+  for (int i = 0; i < 10; i++) this->shaderinfo[i] = 0;
+#endif
 }
 
 void GLView::setRenderer(Renderer* r)
 {
-	std::cout << "setr " << r << "\n"	<< std::endl;
-	this->renderer = r;
+	renderer = r;
 }
 
 void GLView::resizeGL(int w, int h)

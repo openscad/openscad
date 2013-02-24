@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
+  <channel>
+    <title>OpenSCAD Updates</title>
+    <link>http://openscad.org/appcast.xml</link>
+    <language>en</language>
+    <item>
+      <title>OpenSCAD @VERSION@</title>
+      <pubDate>@VERSIONDATE@</pubDate>
+      <sparkle:releaseNotesLink>https://raw.github.com/openscad/openscad/openscad-@VERSION@/RELEASE_NOTES</sparkle:releaseNotesLink>
+      <enclosure url="https://openscad.googlecode.com/files/OpenSCAD-@VERSION@.dmg"
+                 sparkle:version="@VERSIONDATE@"
+                 sparkle:shortVersionString="@VERSION@"
+                 sparkle:dsaSignature="@DSASIGNATURE@"
+                 length="@FILESIZE@"
+                 type="application/octet-stream"/>
+    </item>
+  </channel>
+</rss>

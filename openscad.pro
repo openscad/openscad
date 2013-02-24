@@ -66,9 +66,9 @@ macx {
   ICON = icons/OpenSCAD.icns
   QMAKE_INFO_PLIST = Info.plist
   APP_RESOURCES.path = Contents/Resources
-  APP_RESOURCES.files = OpenSCAD.sdef
+  APP_RESOURCES.files = OpenSCAD.sdef dsa_pub.pem icons/SCAD.icns
   QMAKE_BUNDLE_DATA += APP_RESOURCES
-  LIBS += -framework Cocoa
+  LIBS += -framework Cocoa -framework Sparkle
 }
 else {
   TARGET = openscad
@@ -242,6 +242,8 @@ HEADERS += src/version_check.h \
            src/imageutils.h \
            src/system-gl.h \
            src/CsgInfo.h
+           \
+           src/AutoUpdater.h
 
 SOURCES += src/version_check.cc \
            src/ProgressWidget.cc \
@@ -289,6 +291,7 @@ SOURCES += src/version_check.cc \
            src/editor.cc \
            src/qglview.cc \
            src/GLView.cc \
+           src/AutoUpdater.cc \
            \
            src/builtin.cc \
            src/export.cc \
@@ -352,8 +355,12 @@ SOURCES += src/cgalutils.cc \
 
 macx {
   HEADERS += src/AppleEvents.h \
-             src/EventFilter.h
+             src/EventFilter.h \
+             src/SparkleAutoUpdater.h \
+             src/CocoaUtils.h
   SOURCES += src/AppleEvents.cc
+  OBJECTIVE_SOURCES += src/SparkleAutoUpdater.mm \
+             src/CocoaUtils.mm
 }
 
 isEmpty(PREFIX):PREFIX = /usr/local

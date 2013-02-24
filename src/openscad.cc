@@ -54,6 +54,7 @@
 #ifdef Q_WS_MAC
 #include "EventFilter.h"
 #include "AppleEvents.h"
+#include "SparkleAutoUpdater.h"
 #endif
 
 #include <boost/program_options.hpp>
@@ -411,6 +412,14 @@ int main(int argc, char **argv)
 #ifdef Q_WS_MAC
 		installAppleEventHandlers();
 #endif		
+
+#ifndef DEBUG
+#ifdef Q_WS_MAC
+		AutoUpdater *updater = new SparkleAutoUpdater;
+		AutoUpdater::setUpdater(updater);
+		if (updater->automaticallyChecksForUpdates()) updater->checkForUpdates();
+#endif
+#endif
 
 		QString qfilename;
 		if (filename) qfilename = QString::fromStdString(boosty::stringy(boosty::absolute(filename)));

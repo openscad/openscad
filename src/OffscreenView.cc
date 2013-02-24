@@ -16,25 +16,9 @@
 
 OffscreenView::OffscreenView(size_t width, size_t height)
 {
-	orthomode = false;
-	showaxes = false;
-	showfaces = true;
-	showedges = false;
 	object_rot << 35, 0, 25;
-	camera_eye << 0, 0, 0;
-	camera_center << 0, 0, 0;
-
-#ifdef ENABLE_OPENCSG
-	is_opencsg_capable = false;
-	has_shaders = false;
-	opencsg_support = true;
-  static int sId = 0;
-  this->opencsg_id = sId++;
-	for (int i = 0; i < 10; i++) this->shaderinfo[i] = 0;
-#endif
 	this->ctx = create_offscreen_context(width, height);
 	if ( this->ctx == NULL ) throw -1;
-
 	initializeGL();
 	GLView::resizeGL(width, height);
 }

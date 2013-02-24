@@ -43,11 +43,6 @@ public:
 public:
 	QLabel *statusLabel;
 
-#ifdef ENABLE_OPENCSG
-	bool opencsg_support;
-	int opencsg_id;
-#endif
-
 private:
 	void init();
 
@@ -71,8 +66,6 @@ private:
 	void normalizeAngle(GLdouble& angle);
 
 #ifdef ENABLE_OPENCSG
-  bool is_opencsg_capable;
-  bool has_shaders;
 private slots:
 	void display_opencsg_warning();
 #endif

@@ -54,6 +54,7 @@ public:
   bool showaxes;
   bool showfaces;
   bool showedges;
+  bool showcrosshairs;
 	Eigen::Vector3d object_trans;
 	Eigen::Vector3d object_rot;
   Eigen::Vector3d camera_eye;
@@ -61,6 +62,11 @@ public:
 
 #ifdef ENABLE_OPENCSG
   GLint shaderinfo[11];
+  bool is_opencsg_capable;
+  bool has_shaders;
+//  void enable_opencsg_shaders();
+  bool opencsg_support;
+  int opencsg_id;
 #endif
 /*
 	void paintGL(); //

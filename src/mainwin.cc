@@ -49,6 +49,10 @@
 #include "ThrownTogetherRenderer.h"
 #include "csgtermnormalizer.h"
 #include "QGLView.h"
+#include "AutoUpdater.h"
+#ifdef Q_OS_MAC
+#include "CocoaUtils.h"
+#endif
 
 #include <QMenu>
 #include <QTime>
@@ -206,6 +210,16 @@ MainWindow::MainWindow(const QString &filename)
 
 	animate_panel->hide();
 
+	// Application menu
+#ifdef DEBUG
+	this->appActionUpdateCheck->setEnabled(false);
+#else
+#ifdef Q_OS_MAC
+	this->appActionUpdateCheck->setMenuRole(QAction::ApplicationSpecificRole);
+	this->appActionUpdateCheck->setEnabled(true);
+	connect(this->appActionUpdateCheck, SIGNAL(triggered()), this, SLOT(actionUpdateCheck()));
+#endif
+#endif
 	// File menu
 	connect(this->fileActionNew, SIGNAL(triggered()), this, SLOT(actionNew()));
 	connect(this->fileActionOpen, SIGNAL(triggered()), this, SLOT(actionOpen()));
@@ -770,6 +784,13 @@ void MainWindow::compileCSG(bool procevents)
 		PRINTB("Total rendering time: %d hours, %d minutes, %d seconds", (s / (60*60)) % ((s / 60) % 60) % (s % 60));
 		if (procevents)
 			QApplication::processEvents();
+	}
+}
+
+void MainWindow::actionUpdateCheck()
+{
+	if (AutoUpdater *updater =AutoUpdater::updater()) {
+		updater->checkForUpdates();
 	}
 }
 
@@ -1815,6 +1836,9 @@ void MainWindow::quit()
 	QApplication::sendEvent(QApplication::instance(), &ev);
 	if (ev.isAccepted()) QApplication::instance()->quit();
   // FIXME: Cancel any CGAL calculations
+#ifdef Q_OS_MAC
+	CocoaUtils::endApplication();
+#endif
 }
 
 void MainWindow::consoleOutput(const std::string &msg, void *userdata)

@@ -4,6 +4,8 @@ OpenSCAD 2013.XX
 Features:
 o Console output is now enabled on Windows through the openscad.com executable
 o Added basic syntax highlighting in the editor
+o Mac: Added document icon
+o Mac: Added auto-update check
 o Commandline output of CGAL render to png image using '-o f.png --render'
 o Regression test now creates single monolithic .html file for easier uploading
 
