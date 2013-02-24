@@ -241,7 +241,7 @@ HEADERS += src/version_check.h \
            src/fbo.h \
            src/imageutils.h \
            src/system-gl.h \
-           src/CsgInfo.h
+           src/CsgInfo.h \
            \
            src/AutoUpdater.h
 
