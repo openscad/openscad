@@ -41,7 +41,6 @@ public:
 
 public:
 	QLabel *statusLabel;
-	GLint shaderinfo[11];
 
 #ifdef ENABLE_OPENCSG
 	bool opencsg_support;
@@ -66,15 +65,6 @@ private:
 
 	void initializeGL();
 	void resizeGL(int w, int h);
-
-/*	void setGimbalCamera(const Eigen::Vector3d &pos, const Eigen::Vector3d &rot, double distance);
-	void setupGimbalPerspective();
-	void setupGimbalOrtho(double distance,bool offset=false);
-
-  void setCamera(const Eigen::Vector3d &pos, const Eigen::Vector3d &center);
-	void setupPerspective();
-	void setupOrtho(bool offset=false);
-*/
 
 	void paintGL();
 	void normalizeAngle(GLdouble& angle);

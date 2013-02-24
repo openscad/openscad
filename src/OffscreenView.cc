@@ -17,12 +17,14 @@ OffscreenView::OffscreenView(size_t width, size_t height)
 	camera_eye << 0, 0, 0;
 	camera_center << 0, 0, 0;
 
+#ifdef ENABLE_OPENCSG
 	for (int i = 0; i < 10; i++) this->shaderinfo[i] = 0;
+#endif
 	this->ctx = create_offscreen_context(width, height);
 	if ( this->ctx == NULL ) throw -1;
 
 	initializeGL();
-	resizeGL(width, height);
+	GLView::resizeGL(width, height);
 }
 
 OffscreenView::~OffscreenView()
@@ -56,43 +58,6 @@ void OffscreenView::initializeGL()
 
 
 }
-
-void OffscreenView::resizeGL(int w, int h)
-{
-	this->width = w;
-	this->height = h;
-	glViewport(0, 0, w, h);
-	w_h_ratio = sqrt((double)w / (double)h);
-}
-
-/*void OffscreenView::setupGimbalPerspective()
-{
-	fprintf(stderr, "gimbal camera not implemented in Offscreen View\n");
-}
-
-void OffscreenView::setupGimbalOrtho(double distance, bool offset)
-{
-	fprintf(stderr, "gimbal camera not implemented in Offscreen View\n");
-}
-
-void OffscreenView::setupPerspective()
-{
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	double dist = (this->camera_center - this->camera_eye).norm();
-	gluPerspective(45, w_h_ratio, 0.1*dist, 100*dist);
-}
-
-void OffscreenView::setupOrtho(bool offset)
-{
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	if (offset) glTranslated(-0.8, -0.8, 0);
-	double l = (this->camera_center - this->camera_eye).norm() / 10;
-	glOrtho(-w_h_ratio*l, +w_h_ratio*l,
-					-(1/w_h_ratio)*l, +(1/w_h_ratio)*l,
-					-FAR_FAR_AWAY, +FAR_FAR_AWAY);
-}*/
 
 void OffscreenView::paintGL()
 {

@@ -19,18 +19,13 @@ public:
 	~OffscreenView(); // not
 
 	void initializeGL(); //
-	void resizeGL(int w, int h); //
-
 	void paintGL(); //
-	bool save(const char *filename); //
-	bool save(std::ostream &output); // not implemented in qgl?
+
+	bool save(const char *filename);
+	bool save(std::ostream &output);
   std::string getRendererInfo() const;
 
-	GLint shaderinfo[11];  //
-
 	OffscreenContext *ctx; // not
-	size_t width;  // not
-	size_t height; // not
 };
 
 #endif

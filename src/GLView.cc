@@ -15,6 +15,18 @@ void GLView::setRenderer(Renderer* r)
 	this->renderer = r;
 }
 
+void GLView::resizeGL(int w, int h)
+{
+#ifdef ENABLE_OPENCSG
+  shaderinfo[9] = w;
+  shaderinfo[10] = h;
+#endif
+  this->width = w;
+  this->height = h;
+  glViewport(0, 0, w, h);
+  w_h_ratio = sqrt((double)w / (double)h);
+}
+
 void GLView::setGimbalCamera(const Eigen::Vector3d &pos, const Eigen::Vector3d &rot, double distance)
 {
 	PRINT("set gimbal camera not implemented");
@@ -68,7 +80,6 @@ void GLView::setupOrtho(bool offset)
 
 /*
 	void initializeGL(); //
-	void resizeGL(int w, int h); //
 
 
 	void paintGL(); //

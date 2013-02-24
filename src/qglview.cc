@@ -324,47 +324,9 @@ void QGLView::display_opencsg_warning()
 
 void QGLView::resizeGL(int w, int h)
 {
-#ifdef ENABLE_OPENCSG
-	shaderinfo[9] = w;
-	shaderinfo[10] = h;
-#endif
-	glViewport(0, 0, w, h);
-	w_h_ratio = sqrt((double)w / (double)h);
-
+	GLView::resizeGL(w,h);
 	GLView::setupGimbalPerspective();
 }
-
-/*void QGLView::setupPerspective()
-{
-	fprintf(stderr,"non-gimbal camera not implemented for qglview\n");
-}
-
-void QGLView::setupOrtho(bool offset)
-{
-	fprintf(stderr,"non-gimbal camera not implemented for qglview\n");
-}
-
-void QGLView::setupGimbalPerspective()
-{
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	glFrustum(-w_h_ratio, +w_h_ratio, -(1/w_h_ratio), +(1/w_h_ratio), +10.0, +FAR_FAR_AWAY);
-	gluLookAt(0.0, -viewer_distance, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0);
-}
-
-void QGLView::setupGimbalOrtho(double distance, bool offset)
-{
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	if(offset)
-		glTranslated(-0.8, -0.8, 0);
-	double l = distance/10;
-	glOrtho(-w_h_ratio*l, +w_h_ratio*l,
-			-(1/w_h_ratio)*l, +(1/w_h_ratio)*l,
-			-FAR_FAR_AWAY, +FAR_FAR_AWAY);
-	gluLookAt(0.0, -viewer_distance, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0);
-}
-*/
 
 void QGLView::paintGL()
 {
