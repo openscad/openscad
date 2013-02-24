@@ -48,12 +48,12 @@ public:
 
 	size_t width;
 	size_t height;
-	double viewer_distance;//
-  double w_h_ratio;//
-  bool orthomode;//
-  bool showaxes;//
-  bool showfaces;//
-  bool showedges;//
+	double viewer_distance;
+  double w_h_ratio;
+  bool orthomode;
+  bool showaxes;
+  bool showfaces;
+  bool showedges;
 	Eigen::Vector3d object_trans;
 	Eigen::Vector3d object_rot;
   Eigen::Vector3d camera_eye;

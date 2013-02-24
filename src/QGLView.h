@@ -38,6 +38,7 @@ public:
 	void setOrthoMode(bool enabled) { this->orthomode = enabled; }
 	std::string getRendererInfo() const;
 	bool save(const char *filename);
+	void enable_opencsg_shaders();
 
 public:
 	QLabel *statusLabel;

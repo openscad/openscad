@@ -7,6 +7,13 @@
 #include <cstdlib>
 #include <sstream>
 
+#ifdef _WIN32
+#include <GL/wglew.h>
+#elif !defined(__APPLE__)
+#include <GL/glxew.h>
+#endif
+
+
 OffscreenView::OffscreenView(size_t width, size_t height)
 {
 	orthomode = false;
@@ -18,6 +25,11 @@ OffscreenView::OffscreenView(size_t width, size_t height)
 	camera_center << 0, 0, 0;
 
 #ifdef ENABLE_OPENCSG
+	is_opencsg_capable = false;
+	has_shaders = false;
+	opencsg_support = true;
+  static int sId = 0;
+  this->opencsg_id = sId++;
 	for (int i = 0; i < 10; i++) this->shaderinfo[i] = 0;
 #endif
 	this->ctx = create_offscreen_context(width, height);
