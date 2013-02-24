@@ -240,7 +240,6 @@ int csgtestcore(int argc, char *argv[], test_type_e test_type)
 		fprintf(stderr,"Can't create OpenGL OffscreenView. Code: %i. Exiting.\n", error);
 		exit(1);
 	}
-	csgInfo.glview->enable_opencsg_shaders();
 
 	if (sysinfo_dump) cout << info_dump(csgInfo.glview);
 	Vector3d center(0,0,0);

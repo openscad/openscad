@@ -38,7 +38,9 @@ public:
 	void setOrthoMode(bool enabled) { this->orthomode = enabled; }
 	std::string getRendererInfo() const;
 	bool save(const char *filename);
+#ifdef ENABLE_OPENCSG
 	void enable_opencsg_shaders();
+#endif
 
 public:
 	QLabel *statusLabel;
@@ -66,8 +68,9 @@ private:
 	void normalizeAngle(GLdouble& angle);
 
 #ifdef ENABLE_OPENCSG
-private slots:
 	void display_opencsg_warning();
+private slots:
+	void display_opencsg_warning_dialog();
 #endif
 
 signals:

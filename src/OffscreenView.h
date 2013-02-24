@@ -17,15 +17,17 @@ class OffscreenView : public GLView
 public:
 	OffscreenView(size_t width, size_t height); // not
 	~OffscreenView(); // not
-	void enable_opencsg_shaders();
 	void initializeGL(); //
 	void paintGL(); //
 	bool save(std::ostream &output);
 	OffscreenContext *ctx; // not
-
 	// overrides
 	bool save(const char *filename);
   std::string getRendererInfo() const;
+#ifdef ENABLE_OPENCSG
+	void enable_opencsg_shaders();
+	void display_opencsg_warning();
+#endif
 };
 
 #endif

@@ -289,8 +289,8 @@ SOURCES += src/version_check.cc \
            src/Preferences.cc \
            src/OpenCSGWarningDialog.cc \
            src/editor.cc \
-           src/qglview.cc \
            src/GLView.cc \
+           src/QGLview.cc \
            src/AutoUpdater.cc \
            \
            src/builtin.cc \

@@ -15,7 +15,7 @@ o We didn't always print a warning when CSG normalization created too many eleme
 o Binary STLs can now be read on big endian architectures
 o Some binary STLs couldn't be read
 o Fixed some issues related to ARM builds
-o Improved regression dumptest multmatrix output portability
+o Changed multmatrix floating-point output to improve dumptest portability
 o Regression test auto-starts & stops Xvfb / Xvnc if on headless unix machine
 o CGAL triangulation more lenient- enables partial rendering of 'bad' DXF data
 
