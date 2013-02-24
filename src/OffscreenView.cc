@@ -155,7 +155,7 @@ bool OffscreenView::save(std::ostream &output)
 	return save_framebuffer(this->ctx, output);
 }
 
-std::string OffscreenView::getRendererInfo()
+std::string OffscreenView::getRendererInfo() const
 {
 	std::stringstream out;
 

@@ -66,7 +66,6 @@ void GLView::setupOrtho(bool offset)
           -FAR_FAR_AWAY, +FAR_FAR_AWAY);
 }
 
-
 /*
 	void initializeGL(); //
 	void resizeGL(int w, int h); //
@@ -75,22 +74,7 @@ void GLView::setupOrtho(bool offset)
 	void paintGL(); //
 	bool save(const char *filename); //
 	//bool save(std::ostream &output); // not implemented in qgl?
-	std::string getRendererInfo(); //
 
 	GLint shaderinfo[11];  //
-
-private:
-	Renderer *renderer;//
-	double w_h_ratio;//
-
-	bool orthomode;//
-	bool showaxes;//
-	bool showfaces;//
-	bool showedges;//
-
-	Eigen::Vector3d object_rot;//
-	Eigen::Vector3d camera_eye;//
-	Eigen::Vector3d camera_center;//
-};
 
 */

@@ -36,17 +36,11 @@ public:
 	void setShowCrosshairs(bool enabled) { this->showcrosshairs = enabled; }
 	bool orthoMode() const { return this->orthomode; }
 	void setOrthoMode(bool enabled) { this->orthomode = enabled; }
-	std::string getRendererInfo() const { return this->rendererInfo; }
+	std::string getRendererInfo() const;
 	bool save(const char *filename);
 
 public:
 	QLabel *statusLabel;
-
-/*  Eigen::Vector3d object_rot;
-  Eigen::Vector3d object_trans;
-  Eigen::Vector3d camera_eye;
-  Eigen::Vector3d camera_center;*/
-
 	GLint shaderinfo[11];
 
 #ifdef ENABLE_OPENCSG
@@ -59,15 +53,7 @@ private:
 
 	std::string rendererInfo;
 
-//	bool showfaces;
-//	bool showedges;
-//	bool showaxes;
 	bool showcrosshairs;
-//	bool orthomode;
-
-//	double viewer_distance;
-
-//	double w_h_ratio;
 
 	bool mouse_drag_active;
 	QPoint last_mouse;
@@ -81,13 +67,14 @@ private:
 	void initializeGL();
 	void resizeGL(int w, int h);
 
-	void setGimbalCamera(const Eigen::Vector3d &pos, const Eigen::Vector3d &rot, double distance);
+/*	void setGimbalCamera(const Eigen::Vector3d &pos, const Eigen::Vector3d &rot, double distance);
 	void setupGimbalPerspective();
 	void setupGimbalOrtho(double distance,bool offset=false);
 
   void setCamera(const Eigen::Vector3d &pos, const Eigen::Vector3d &center);
 	void setupPerspective();
 	void setupOrtho(bool offset=false);
+*/
 
 	void paintGL();
 	void normalizeAngle(GLdouble& angle);

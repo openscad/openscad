@@ -137,10 +137,6 @@ void QGLView::initializeGL()
 		fprintf(stderr, "GLEW Error: %s\n", glewGetErrorString(err));
 	}
 
-	std::string glewinfo = glew_dump();
-	std::string glextlist = glew_extensions_dump();
-	rendererInfo = glewinfo + std::string("\n") + glextlist;
-
 	const char *openscad_disable_gl20_env = getenv("OPENSCAD_DISABLE_GL20");
 	if (openscad_disable_gl20_env && !strcmp(openscad_disable_gl20_env, "0")) {
 		openscad_disable_gl20_env = NULL;
@@ -284,6 +280,13 @@ void QGLView::initializeGL()
 		}
 	}
 #endif /* ENABLE_OPENCSG */
+}
+
+std::string QGLView::getRendererInfo() const
+{
+  std::string glewinfo = glew_dump();
+  std::string glextlist = glew_extensions_dump();
+  return glewinfo + std::string("\nUsing QGLWidget\n\n") + glextlist;
 }
 
 #ifdef ENABLE_OPENCSG

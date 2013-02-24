@@ -18,7 +18,6 @@ class GLView
 public:
 	GLView();
 	void setRenderer(Renderer* r);
-	virtual bool save(const char *filename) = 0;
 	Renderer *renderer;
 /*
 	void initializeGL(); //
@@ -33,6 +32,8 @@ public:
 	void setupPerspective();
 	void setupOrtho(bool offset=false);
 
+	virtual bool save(const char *filename) = 0;
+	virtual std::string getRendererInfo() const = 0;
 
 	double viewer_distance;//
   double w_h_ratio;//
@@ -49,24 +50,10 @@ public:
 	void paintGL(); //
 	bool save(const char *filename); //
 	//bool save(std::ostream &output); // not implemented in qgl?
-	std::string getRendererInfo(); //
 
 	GLint shaderinfo[11];  //
 */
 
-
-
-/*	double w_h_ratio;//
-
-	bool orthomode;//
-	bool showaxes;//
-	bool showfaces;//
-	bool showedges;//
-
-	Eigen::Vector3d object_rot;//
-	Eigen::Vector3d camera_eye;//
-	Eigen::Vector3d camera_center;//
-*/
 };
 
 #endif
