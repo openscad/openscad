@@ -1749,7 +1749,6 @@ void MainWindow::helpLibrary()
     this->openglbox = new QMessageBox(QMessageBox::Information, 
                                       "OpenGL Info", "OpenSCAD Detailed Library Info                  ",
                                       QMessageBox::Ok, this);
-		this->openglbox->setMinimumSize( QSize(400,200) );
 	}
   this->openglbox->setDetailedText(libinfo + QString(qglview->getRendererInfo().c_str()));
 	this->openglbox->show();
