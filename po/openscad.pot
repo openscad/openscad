@@ -6,9 +6,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: OpenSCAD 2013.02.10\n"
+"Project-Id-Version: OpenSCAD 2013.02.24\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-02-10 04:19+0100\n"
+"POT-Creation-Date: 2013-02-24 17:59+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,6 +16,526 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+
+#: objects/ui_MainWindow.h:453
+msgid "MainWindow"
+msgstr ""
+
+#: objects/ui_MainWindow.h:454
+msgid "&New"
+msgstr ""
+
+#: objects/ui_MainWindow.h:455
+msgid "Ctrl+N"
+msgstr ""
+
+#: objects/ui_MainWindow.h:456
+msgid "&Open..."
+msgstr ""
+
+#: objects/ui_MainWindow.h:457
+msgid "Ctrl+O"
+msgstr ""
+
+#: objects/ui_MainWindow.h:458
+msgid "&Save"
+msgstr ""
+
+#: objects/ui_MainWindow.h:459
+msgid "Ctrl+S"
+msgstr ""
+
+#: objects/ui_MainWindow.h:460
+msgid "Save &As..."
+msgstr ""
+
+#: objects/ui_MainWindow.h:461
+msgid "Ctrl+Shift+S"
+msgstr ""
+
+#: objects/ui_MainWindow.h:462
+msgid "&Reload"
+msgstr ""
+
+#: objects/ui_MainWindow.h:463
+msgid "Ctrl+R"
+msgstr ""
+
+#: objects/ui_MainWindow.h:464
+msgid "&Quit"
+msgstr ""
+
+#: objects/ui_MainWindow.h:465
+msgid "Ctrl+Q"
+msgstr ""
+
+#: objects/ui_MainWindow.h:466
+msgid "&Undo"
+msgstr ""
+
+#: objects/ui_MainWindow.h:467
+msgid "Ctrl+Z"
+msgstr ""
+
+#: objects/ui_MainWindow.h:468
+msgid "&Redo"
+msgstr ""
+
+#: objects/ui_MainWindow.h:469
+msgid "Ctrl+Shift+Z"
+msgstr ""
+
+#: objects/ui_MainWindow.h:470
+msgid "Cu&t"
+msgstr ""
+
+#: objects/ui_MainWindow.h:471
+msgid "Ctrl+X"
+msgstr ""
+
+#: objects/ui_MainWindow.h:472
+msgid "&Copy"
+msgstr ""
+
+#: objects/ui_MainWindow.h:473
+msgid "Ctrl+C"
+msgstr ""
+
+#: objects/ui_MainWindow.h:474
+msgid "&Paste"
+msgstr ""
+
+#: objects/ui_MainWindow.h:475
+msgid "Ctrl+V"
+msgstr ""
+
+#: objects/ui_MainWindow.h:476
+msgid "&Indent"
+msgstr ""
+
+#: objects/ui_MainWindow.h:477
+msgid "Ctrl+I"
+msgstr ""
+
+#: objects/ui_MainWindow.h:478
+msgid "U&nindent"
+msgstr ""
+
+#: objects/ui_MainWindow.h:479
+msgid "Ctrl+Shift+I"
+msgstr ""
+
+#: objects/ui_MainWindow.h:480
+msgid "C&omment"
+msgstr ""
+
+#: objects/ui_MainWindow.h:481
+msgid "Ctrl+D"
+msgstr ""
+
+#: objects/ui_MainWindow.h:482
+msgid "Unco&mment"
+msgstr ""
+
+#: objects/ui_MainWindow.h:483
+msgid "Ctrl+Shift+D"
+msgstr ""
+
+#: objects/ui_MainWindow.h:484
+msgid "Paste viewport translation"
+msgstr ""
+
+#: objects/ui_MainWindow.h:485
+msgid "Ctrl+T"
+msgstr ""
+
+#: objects/ui_MainWindow.h:486
+msgid "Paste viewport rotation"
+msgstr ""
+
+#: objects/ui_MainWindow.h:487
+msgid "Zoom In"
+msgstr ""
+
+#: objects/ui_MainWindow.h:488
+msgid "Ctrl++"
+msgstr ""
+
+#: objects/ui_MainWindow.h:489
+msgid "Zoom Out"
+msgstr ""
+
+#: objects/ui_MainWindow.h:490
+msgid "Ctrl+-"
+msgstr ""
+
+#: objects/ui_MainWindow.h:491
+msgid "Hide editor"
+msgstr ""
+
+#: objects/ui_MainWindow.h:492
+msgid "&Reload and Compile"
+msgstr ""
+
+#: objects/ui_MainWindow.h:493
+msgid "F4"
+msgstr ""
+
+#: objects/ui_MainWindow.h:494
+msgid "&Compile"
+msgstr ""
+
+#: objects/ui_MainWindow.h:495
+msgid "F5"
+msgstr ""
+
+#: objects/ui_MainWindow.h:496
+msgid "Compile and &Render (CGAL)"
+msgstr ""
+
+#: objects/ui_MainWindow.h:497
+msgid "F6"
+msgstr ""
+
+#: objects/ui_MainWindow.h:498
+msgid "Display &AST..."
+msgstr ""
+
+#: objects/ui_MainWindow.h:499
+msgid "Display CSG &Tree..."
+msgstr ""
+
+#: objects/ui_MainWindow.h:500
+msgid "Display CSG &Products..."
+msgstr ""
+
+#: objects/ui_MainWindow.h:501
+msgid "Export as &STL..."
+msgstr ""
+
+#: objects/ui_MainWindow.h:502
+msgid "Export as &OFF..."
+msgstr ""
+
+#: objects/ui_MainWindow.h:503 objects/ui_Preferences.h:339
+msgid "OpenCSG"
+msgstr ""
+
+#: objects/ui_MainWindow.h:504
+msgid "F9"
+msgstr ""
+
+#: objects/ui_MainWindow.h:505
+msgid "CGAL Surfaces"
+msgstr ""
+
+#: objects/ui_MainWindow.h:506
+msgid "F10"
+msgstr ""
+
+#: objects/ui_MainWindow.h:507
+msgid "CGAL Grid Only"
+msgstr ""
+
+#: objects/ui_MainWindow.h:508
+msgid "F11"
+msgstr ""
+
+#: objects/ui_MainWindow.h:509
+msgid "Thrown Together"
+msgstr ""
+
+#: objects/ui_MainWindow.h:510
+msgid "F12"
+msgstr ""
+
+#: objects/ui_MainWindow.h:511
+msgid "Show Edges"
+msgstr ""
+
+#: objects/ui_MainWindow.h:512
+msgid "Ctrl+1"
+msgstr ""
+
+#: objects/ui_MainWindow.h:513
+msgid "Show Axes"
+msgstr ""
+
+#: objects/ui_MainWindow.h:514
+msgid "Ctrl+2"
+msgstr ""
+
+#: objects/ui_MainWindow.h:515
+msgid "Show Crosshairs"
+msgstr ""
+
+#: objects/ui_MainWindow.h:516
+msgid "Ctrl+3"
+msgstr ""
+
+#: objects/ui_MainWindow.h:517
+msgid "Animate"
+msgstr ""
+
+#: objects/ui_MainWindow.h:518
+msgid "Top"
+msgstr ""
+
+#: objects/ui_MainWindow.h:519
+msgid "Ctrl+4"
+msgstr ""
+
+#: objects/ui_MainWindow.h:520
+msgid "Bottom"
+msgstr ""
+
+#: objects/ui_MainWindow.h:521
+msgid "Ctrl+5"
+msgstr ""
+
+#: objects/ui_MainWindow.h:522
+msgid "Left"
+msgstr ""
+
+#: objects/ui_MainWindow.h:523
+msgid "Ctrl+6"
+msgstr ""
+
+#: objects/ui_MainWindow.h:524
+msgid "Right"
+msgstr ""
+
+#: objects/ui_MainWindow.h:525
+msgid "Ctrl+7"
+msgstr ""
+
+#: objects/ui_MainWindow.h:526
+msgid "Front"
+msgstr ""
+
+#: objects/ui_MainWindow.h:527
+msgid "Ctrl+8"
+msgstr ""
+
+#: objects/ui_MainWindow.h:528
+msgid "Back"
+msgstr ""
+
+#: objects/ui_MainWindow.h:529
+msgid "Ctrl+9"
+msgstr ""
+
+#: objects/ui_MainWindow.h:530
+msgid "Diagonal"
+msgstr ""
+
+#: objects/ui_MainWindow.h:531
+msgid "Ctrl+0"
+msgstr ""
+
+#: objects/ui_MainWindow.h:532
+msgid "Center"
+msgstr ""
+
+#: objects/ui_MainWindow.h:533
+msgid "Ctrl+P"
+msgstr ""
+
+#: objects/ui_MainWindow.h:534
+msgid "Perspective"
+msgstr ""
+
+#: objects/ui_MainWindow.h:535
+msgid "Orthogonal"
+msgstr ""
+
+#: objects/ui_MainWindow.h:536
+msgid "Hide console"
+msgstr ""
+
+#: objects/ui_MainWindow.h:537
+msgid "About"
+msgstr ""
+
+#: objects/ui_MainWindow.h:538
+msgid "OpenSCAD Manual"
+msgstr ""
+
+#: objects/ui_MainWindow.h:539
+msgid "Clear Recent"
+msgstr ""
+
+#: objects/ui_MainWindow.h:540
+msgid "Export as DXF..."
+msgstr ""
+
+#: objects/ui_MainWindow.h:541
+msgid "Close"
+msgstr ""
+
+#: objects/ui_MainWindow.h:542
+msgid "Ctrl+W"
+msgstr ""
+
+#: objects/ui_MainWindow.h:543 objects/ui_Preferences.h:322
+msgid "Preferences"
+msgstr ""
+
+#: objects/ui_MainWindow.h:544
+msgid "Flush Caches"
+msgstr ""
+
+#: objects/ui_MainWindow.h:545
+msgid "OpenSCAD Homepage"
+msgstr ""
+
+#: objects/ui_MainWindow.h:546
+msgid "Automatic Reload and Compile"
+msgstr ""
+
+#: objects/ui_MainWindow.h:547
+msgid "Export as Image..."
+msgstr ""
+
+#: objects/ui_MainWindow.h:548
+msgid "Export as CSG..."
+msgstr ""
+
+#: objects/ui_MainWindow.h:549
+msgid "Library info"
+msgstr ""
+
+#: objects/ui_MainWindow.h:551 objects/ui_Preferences.h:325
+msgid "Editor"
+msgstr ""
+
+#: objects/ui_MainWindow.h:554
+msgid "Editor for SCAD code"
+msgstr ""
+
+#: objects/ui_MainWindow.h:557
+msgid "GLView"
+msgstr ""
+
+#: objects/ui_MainWindow.h:560
+msgid "OpenGL preview of SCAD model"
+msgstr ""
+
+#: objects/ui_MainWindow.h:563
+msgid "Console"
+msgstr ""
+
+#: objects/ui_MainWindow.h:566
+msgid "Console messages"
+msgstr ""
+
+#: objects/ui_MainWindow.h:568
+msgid "Time:"
+msgstr ""
+
+#: objects/ui_MainWindow.h:569
+msgid "FPS:"
+msgstr ""
+
+#: objects/ui_MainWindow.h:570
+msgid "Steps:"
+msgstr ""
+
+#: objects/ui_MainWindow.h:571
+msgid "Dump Pictures"
+msgstr ""
+
+#: objects/ui_MainWindow.h:572
+msgid "&File"
+msgstr ""
+
+#: objects/ui_MainWindow.h:573
+msgid "Open Recent"
+msgstr ""
+
+#: objects/ui_MainWindow.h:574
+msgid "Examples"
+msgstr ""
+
+#: objects/ui_MainWindow.h:575
+msgid "&Edit"
+msgstr ""
+
+#: objects/ui_MainWindow.h:576
+msgid "&Design"
+msgstr ""
+
+#: objects/ui_MainWindow.h:577
+msgid "&View"
+msgstr ""
+
+#: objects/ui_MainWindow.h:578
+msgid "&Help"
+msgstr ""
+
+#: objects/ui_Preferences.h:323
+msgid "3D View"
+msgstr ""
+
+#: objects/ui_Preferences.h:324
+msgid "Advanced"
+msgstr ""
+
+#: objects/ui_Preferences.h:326
+msgid "Color scheme:"
+msgstr ""
+
+#: objects/ui_Preferences.h:331
+msgid "Cornfield"
+msgstr ""
+
+#: objects/ui_Preferences.h:333
+msgid "Metallic"
+msgstr ""
+
+#: objects/ui_Preferences.h:335
+msgid "Sunset"
+msgstr ""
+
+#: objects/ui_Preferences.h:338
+msgid "Font"
+msgstr ""
+
+#: objects/ui_Preferences.h:340
+msgid "Show capability warning"
+msgstr ""
+
+#: objects/ui_Preferences.h:341
+msgid "Enable for OpenGL 1.x"
+msgstr ""
+
+#: objects/ui_Preferences.h:342
+msgid "Turn off rendering at "
+msgstr ""
+
+#: objects/ui_Preferences.h:343
+msgid "elements"
+msgstr ""
+
+#: objects/ui_Preferences.h:344
+msgid "Force Goldfeather"
+msgstr ""
+
+#: objects/ui_Preferences.h:345
+msgid "CGAL Cache size"
+msgstr ""
+
+#: objects/ui_Preferences.h:346 objects/ui_Preferences.h:348
+msgid "bytes"
+msgstr ""
+
+#: objects/ui_Preferences.h:347
+msgid "PolySet Cache size"
+msgstr ""
+
+#: objects/ui_Preferences.h:349
+msgid "toolBar"
+msgstr ""
 
 #: src/cgaladv_minkowski2.cc:43
 msgid " vertices:"
@@ -347,7 +867,7 @@ msgstr ""
 msgid "WARNING: No suitable PolySetEvaluator found for %s module!"
 msgstr ""
 
-#: src/mainwin.cc:119
+#: src/mainwin.cc:120
 msgid ""
 "Copyright (C) 2009-2013 Marius Kintel <marius@kintel.net> and Clifford Wolf "
 "<clifford@clifford.at>\n"
@@ -358,261 +878,261 @@ msgid ""
 "any later version."
 msgstr ""
 
-#: src/mainwin.cc:498
+#: src/mainwin.cc:499
 msgid "OpenSCAD - New Document[*]"
 msgstr ""
 
-#: src/mainwin.cc:576
+#: src/mainwin.cc:577
 #, c-format
 msgid "Failed to open file %s: %s"
 msgstr ""
 
-#: src/mainwin.cc:583
+#: src/mainwin.cc:584
 #, c-format
 msgid "Loaded design '%s'."
 msgstr ""
 
-#: src/mainwin.cc:639
+#: src/mainwin.cc:640
 msgid "Compiling design (CSG Tree generation)..."
 msgstr ""
 
-#: src/mainwin.cc:661
+#: src/mainwin.cc:662
 msgid "ERROR: Compilation failed! (no top level object found)"
 msgstr ""
 
-#: src/mainwin.cc:663
+#: src/mainwin.cc:664
 msgid "ERROR: Compilation failed!"
 msgstr ""
 
-#: src/mainwin.cc:678
+#: src/mainwin.cc:679
 msgid "Compiling design (CSG Products generation)..."
 msgstr ""
 
-#: src/mainwin.cc:700
+#: src/mainwin.cc:701
 msgid "ERROR: CSG generation failed! (no top level object found)"
 msgstr ""
 
-#: src/mainwin.cc:710
+#: src/mainwin.cc:711
 msgid "CSG generation cancelled."
 msgstr ""
 
-#: src/mainwin.cc:718
+#: src/mainwin.cc:719
 msgid "Compiling design (CSG Products normalization)..."
 msgstr ""
 
-#: src/mainwin.cc:731
+#: src/mainwin.cc:732
 msgid "WARNING: CSG normalization resulted in an empty tree"
 msgstr ""
 
-#: src/mainwin.cc:738
+#: src/mainwin.cc:739
 #, c-format
 msgid "Compiling highlights (%d CSG Trees)..."
 msgstr ""
 
-#: src/mainwin.cc:751
+#: src/mainwin.cc:752
 #, c-format
 msgid "Compiling background (%d CSG Trees)..."
 msgstr ""
 
-#: src/mainwin.cc:765
+#: src/mainwin.cc:766
 #, c-format
 msgid "WARNING: Normalized tree has %d elements!"
 msgstr ""
 
-#: src/mainwin.cc:766
+#: src/mainwin.cc:767
 msgid "WARNING: OpenCSG rendering has been disabled."
 msgstr ""
 
-#: src/mainwin.cc:769
+#: src/mainwin.cc:770
 #, c-format
 msgid "Normalized CSG tree has %d elements"
 msgstr ""
 
-#: src/mainwin.cc:779
+#: src/mainwin.cc:780
 msgid "CSG generation finished."
 msgstr ""
 
-#: src/mainwin.cc:781 src/mainwin.cc:1245
+#: src/mainwin.cc:782 src/mainwin.cc:1246
 #, c-format
 msgid "Total rendering time: %d hours, %d minutes, %d seconds"
 msgstr ""
 
-#: src/mainwin.cc:802
+#: src/mainwin.cc:803
 msgid "Open File"
 msgstr ""
 
-#: src/mainwin.cc:803
+#: src/mainwin.cc:804
 msgid "OpenSCAD Designs (*.scad *.csg)"
 msgstr ""
 
-#: src/mainwin.cc:897
+#: src/mainwin.cc:898
 #, c-format
 msgid "Failed to open file for writing: %s (%s)"
 msgstr ""
 
-#: src/mainwin.cc:903
+#: src/mainwin.cc:904
 #, c-format
 msgid "Saved design '%s'."
 msgstr ""
 
-#: src/mainwin.cc:913
+#: src/mainwin.cc:914
 msgid "Save File"
 msgstr ""
 
-#: src/mainwin.cc:914
+#: src/mainwin.cc:915
 msgid "Untitled.scad"
 msgstr ""
 
-#: src/mainwin.cc:915
+#: src/mainwin.cc:916
 msgid "OpenSCAD Designs (*.scad)"
 msgstr ""
 
-#: src/mainwin.cc:925
+#: src/mainwin.cc:926
 msgid ""
 "%1 already exists.\n"
 "Do you want to replace it?"
 msgstr ""
 
-#: src/mainwin.cc:1072
+#: src/mainwin.cc:1073
 #, c-format
 msgid "Module cache size: %d modules"
 msgstr ""
 
-#: src/mainwin.cc:1099 src/mainwin.cc:1777
+#: src/mainwin.cc:1100 src/mainwin.cc:1778
 msgid "Application"
 msgstr ""
 
-#: src/mainwin.cc:1100
+#: src/mainwin.cc:1101
 msgid ""
 "The document has been modified.\n"
 "Do you really want to reload the file?\n"
 msgstr ""
 
-#: src/mainwin.cc:1143 src/mainwin.cc:1182
+#: src/mainwin.cc:1144 src/mainwin.cc:1183
 msgid "Parsing design (AST generation)..."
 msgstr ""
 
-#: src/mainwin.cc:1165
+#: src/mainwin.cc:1166
 #, c-format
 msgid "frame%05d.png"
 msgstr ""
 
-#: src/mainwin.cc:1198
+#: src/mainwin.cc:1199
 msgid "Rendering Polygon Mesh using CGAL..."
 msgstr ""
 
-#: src/mainwin.cc:1220
-msgid "   Top level object is a 2D object:"
-msgstr ""
-
 #: src/mainwin.cc:1221
-#, c-format
-msgid "   Empty:      %6s"
-msgstr ""
-
-#: src/mainwin.cc:1221 src/mainwin.cc:1222 src/mainwin.cc:1233
-#: src/mainwin.cc:1234
-msgid "yes"
-msgstr ""
-
-#: src/mainwin.cc:1221 src/mainwin.cc:1222 src/mainwin.cc:1233
-#: src/mainwin.cc:1234
-msgid "no"
+msgid "   Top level object is a 2D object:"
 msgstr ""
 
 #: src/mainwin.cc:1222
 #, c-format
-msgid "   Plane:      %6s"
+msgid "   Empty:      %6s"
 msgstr ""
 
-#: src/mainwin.cc:1223 src/mainwin.cc:1235
+#: src/mainwin.cc:1222 src/mainwin.cc:1223 src/mainwin.cc:1234
+#: src/mainwin.cc:1235
+msgid "yes"
+msgstr ""
+
+#: src/mainwin.cc:1222 src/mainwin.cc:1223 src/mainwin.cc:1234
+#: src/mainwin.cc:1235
+msgid "no"
+msgstr ""
+
+#: src/mainwin.cc:1223
 #, c-format
-msgid "   Vertices:   %6d"
+msgid "   Plane:      %6s"
 msgstr ""
 
 #: src/mainwin.cc:1224 src/mainwin.cc:1236
 #, c-format
-msgid "   Halfedges:  %6d"
+msgid "   Vertices:   %6d"
 msgstr ""
 
 #: src/mainwin.cc:1225 src/mainwin.cc:1237
 #, c-format
-msgid "   Edges:      %6d"
+msgid "   Halfedges:  %6d"
 msgstr ""
 
-#: src/mainwin.cc:1226
+#: src/mainwin.cc:1226 src/mainwin.cc:1238
 #, c-format
-msgid "   Faces:      %6d"
+msgid "   Edges:      %6d"
 msgstr ""
 
 #: src/mainwin.cc:1227
 #, c-format
-msgid "   FaceCycles: %6d"
+msgid "   Faces:      %6d"
 msgstr ""
 
 #: src/mainwin.cc:1228
 #, c-format
+msgid "   FaceCycles: %6d"
+msgstr ""
+
+#: src/mainwin.cc:1229
+#, c-format
 msgid "   ConnComp:   %6d"
 msgstr ""
 
-#: src/mainwin.cc:1232
-msgid "   Top level object is a 3D object:"
-msgstr ""
-
 #: src/mainwin.cc:1233
-#, c-format
-msgid "   Simple:     %6s"
+msgid "   Top level object is a 3D object:"
 msgstr ""
 
 #: src/mainwin.cc:1234
 #, c-format
-msgid "   Valid:      %6s"
+msgid "   Simple:     %6s"
 msgstr ""
 
-#: src/mainwin.cc:1238
+#: src/mainwin.cc:1235
 #, c-format
-msgid "   Halffacets: %6d"
+msgid "   Valid:      %6s"
 msgstr ""
 
 #: src/mainwin.cc:1239
 #, c-format
-msgid "   Facets:     %6d"
+msgid "   Halffacets: %6d"
 msgstr ""
 
 #: src/mainwin.cc:1240
 #, c-format
+msgid "   Facets:     %6d"
+msgstr ""
+
+#: src/mainwin.cc:1241
+#, c-format
 msgid "   Volumes:    %6d"
 msgstr ""
 
-#: src/mainwin.cc:1258
+#: src/mainwin.cc:1259
 msgid "Rendering finished."
 msgstr ""
 
-#: src/mainwin.cc:1261
+#: src/mainwin.cc:1262
 msgid "WARNING: No top level geometry to render"
 msgstr ""
 
-#: src/mainwin.cc:1281
+#: src/mainwin.cc:1282
 msgid "AST Dump"
 msgstr ""
 
-#: src/mainwin.cc:1286
+#: src/mainwin.cc:1287
 msgid "No AST to dump. Please try compiling first..."
 msgstr ""
 
-#: src/mainwin.cc:1299
+#: src/mainwin.cc:1300
 msgid "CSG Tree Dump"
 msgstr ""
 
-#: src/mainwin.cc:1304
+#: src/mainwin.cc:1305
 msgid "No CSG to dump. Please try compiling first..."
 msgstr ""
 
-#: src/mainwin.cc:1317
+#: src/mainwin.cc:1318
 msgid "CSG Products Dump"
 msgstr ""
 
-#: src/mainwin.cc:1319
+#: src/mainwin.cc:1320
 msgid ""
 "\n"
 "CSG before normalization:\n"
@@ -635,114 +1155,114 @@ msgid ""
 "%5\n"
 msgstr ""
 
-#: src/mainwin.cc:1337 src/mainwin.cc:1397
+#: src/mainwin.cc:1338 src/mainwin.cc:1398
 msgid "Nothing to export! Try building first (press F6)."
 msgstr ""
 
-#: src/mainwin.cc:1343
+#: src/mainwin.cc:1344
 msgid "Current top level object is not a 3D object."
 msgstr ""
 
-#: src/mainwin.cc:1349
+#: src/mainwin.cc:1350
 msgid ""
 "Object isn't a valid 2-manifold! Modify your design. See http://en.wikibooks."
 "org/wiki/OpenSCAD_User_Manual/STL_Import_and_Export"
 msgstr ""
 
-#: src/mainwin.cc:1356
+#: src/mainwin.cc:1357
 msgid "Export STL File"
 msgstr ""
 
-#: src/mainwin.cc:1356
+#: src/mainwin.cc:1357
 msgid "Export OFF File"
 msgstr ""
 
-#: src/mainwin.cc:1358
+#: src/mainwin.cc:1359
 msgid "STL Files (*.stl)"
 msgstr ""
 
-#: src/mainwin.cc:1358
+#: src/mainwin.cc:1359
 msgid "OFF Files (*.off)"
 msgstr ""
 
-#: src/mainwin.cc:1360
+#: src/mainwin.cc:1361
 #, c-format
 msgid "No filename specified. %s export aborted."
 msgstr ""
 
-#: src/mainwin.cc:1367 src/mainwin.cc:1420 src/mainwin.cc:1453
+#: src/mainwin.cc:1368 src/mainwin.cc:1421 src/mainwin.cc:1454
 #: src/openscad.cc:299 src/openscad.cc:342 src/openscad.cc:361
 #: src/openscad.cc:376
 #, c-format
 msgid "Can't open file \"%s\" for export"
 msgstr ""
 
-#: src/mainwin.cc:1374
+#: src/mainwin.cc:1375
 #, c-format
 msgid "%s export finished."
 msgstr ""
 
-#: src/mainwin.cc:1403
+#: src/mainwin.cc:1404
 msgid "Current top level object is not a 2D object."
 msgstr ""
 
-#: src/mainwin.cc:1409
+#: src/mainwin.cc:1410
 msgid "Export DXF File"
 msgstr ""
 
-#: src/mainwin.cc:1410
+#: src/mainwin.cc:1411
 msgid "Untitled.dxf"
 msgstr ""
 
-#: src/mainwin.cc:1411
+#: src/mainwin.cc:1412
 msgid "DXF Files (*.dxf)"
 msgstr ""
 
-#: src/mainwin.cc:1413
+#: src/mainwin.cc:1414
 msgid "No filename specified. DXF export aborted."
 msgstr ""
 
-#: src/mainwin.cc:1425
+#: src/mainwin.cc:1426
 msgid "DXF export finished."
 msgstr ""
 
-#: src/mainwin.cc:1437
+#: src/mainwin.cc:1438
 msgid "Nothing to export. Please try compiling first..."
 msgstr ""
 
-#: src/mainwin.cc:1442
+#: src/mainwin.cc:1443
 msgid "Export CSG File"
 msgstr ""
 
-#: src/mainwin.cc:1443
+#: src/mainwin.cc:1444
 msgid "Untitled.csg"
 msgstr ""
 
-#: src/mainwin.cc:1444
+#: src/mainwin.cc:1445
 msgid "CSG Files (*.csg)"
 msgstr ""
 
-#: src/mainwin.cc:1446
+#: src/mainwin.cc:1447
 msgid "No filename specified. CSG export aborted."
 msgstr ""
 
-#: src/mainwin.cc:1458
+#: src/mainwin.cc:1459
 msgid "CSG export finished."
 msgstr ""
 
-#: src/mainwin.cc:1470
+#: src/mainwin.cc:1471
 msgid "Export Image"
 msgstr ""
 
-#: src/mainwin.cc:1470
+#: src/mainwin.cc:1471
 msgid "PNG Files (*.png)"
 msgstr ""
 
-#: src/mainwin.cc:1472
+#: src/mainwin.cc:1473
 msgid "No filename specified. Image export aborted."
 msgstr ""
 
-#: src/mainwin.cc:1747
+#: src/mainwin.cc:1748
 #, c-format
 msgid ""
 "Boost version: %s\n"
@@ -753,15 +1273,15 @@ msgid ""
 "\n"
 msgstr ""
 
-#: src/mainwin.cc:1760
+#: src/mainwin.cc:1761
 msgid "OpenGL Info"
 msgstr ""
 
-#: src/mainwin.cc:1760
+#: src/mainwin.cc:1761
 msgid "Detailed Library Info"
 msgstr ""
 
-#: src/mainwin.cc:1778
+#: src/mainwin.cc:1779
 msgid ""
 "The document has been modified.\n"
 "Do you want to save your changes?"

@@ -1,22 +1,22 @@
-# French translations for OpenSCAD package.
+# Russian translations for OpenSCAD package.
 # Copyright (C) 2013 THE OpenSCAD'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the OpenSCAD package.
-# don <hugh.m.bright@gmail.com>, 2013.
+#  <hugh.m.bright@gmail.com>, 2013.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: OpenSCAD 2013.02.07\n"
+"Project-Id-Version: OpenSCAD 2013.02.10\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-02-24 17:58+0100\n"
-"PO-Revision-Date: 2013-02-08 15:06-0600\n"
-"Last-Translator: don bright <hugh.m.bright@gmail.com>\n"
-"Language-Team: French\n"
-"Language: fr\n"
+"POT-Creation-Date: 2013-02-24 17:59+0100\n"
+"PO-Revision-Date: 2013-02-24 17:50+0100\n"
+"Last-Translator:  <hugh.m.bright@gmail.com>\n"
+"Language-Team: Russian\n"
+"Language: ru\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=2; plural=(n > 1);\n"
-"X-Poedit-SourceCharset: utf-8\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
+"%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
 
 #: objects/ui_MainWindow.h:453
 msgid "MainWindow"
@@ -24,7 +24,7 @@ msgstr ""
 
 #: objects/ui_MainWindow.h:454
 msgid "&New"
-msgstr "&Nouveau"
+msgstr "&Создать"
 
 #: objects/ui_MainWindow.h:455
 msgid "Ctrl+N"
@@ -32,7 +32,7 @@ msgstr ""
 
 #: objects/ui_MainWindow.h:456
 msgid "&Open..."
-msgstr "&Ouvrir..."
+msgstr "&Открыть..."
 
 #: objects/ui_MainWindow.h:457
 msgid "Ctrl+O"
@@ -40,7 +40,7 @@ msgstr ""
 
 #: objects/ui_MainWindow.h:458
 msgid "&Save"
-msgstr "Enregi&strer"
+msgstr "&Сохранить"
 
 #: objects/ui_MainWindow.h:459
 msgid "Ctrl+S"
@@ -48,7 +48,7 @@ msgstr ""
 
 #: objects/ui_MainWindow.h:460
 msgid "Save &As..."
-msgstr "Enregistrer &sous..."
+msgstr "Сохранить &как..."
 
 #: objects/ui_MainWindow.h:461
 msgid "Ctrl+Shift+S"
@@ -56,7 +56,7 @@ msgstr ""
 
 #: objects/ui_MainWindow.h:462
 msgid "&Reload"
-msgstr "&Recharger"
+msgstr ""
 
 #: objects/ui_MainWindow.h:463
 msgid "Ctrl+R"
@@ -64,7 +64,7 @@ msgstr ""
 
 #: objects/ui_MainWindow.h:464
 msgid "&Quit"
-msgstr "&Quitter"
+msgstr "&Выход"
 
 #: objects/ui_MainWindow.h:465
 msgid "Ctrl+Q"
@@ -72,7 +72,7 @@ msgstr ""
 
 #: objects/ui_MainWindow.h:466
 msgid "&Undo"
-msgstr "Ann&uler"
+msgstr "&Отменить"
 
 #: objects/ui_MainWindow.h:467
 msgid "Ctrl+Z"
@@ -80,7 +80,7 @@ msgstr ""
 
 #: objects/ui_MainWindow.h:468
 msgid "&Redo"
-msgstr "&Refaire"
+msgstr ""
 
 #: objects/ui_MainWindow.h:469
 msgid "Ctrl+Shift+Z"
@@ -88,7 +88,7 @@ msgstr ""
 
 #: objects/ui_MainWindow.h:470
 msgid "Cu&t"
-msgstr "Co&uper"
+msgstr ""
 
 #: objects/ui_MainWindow.h:471
 msgid "Ctrl+X"
@@ -96,7 +96,7 @@ msgstr ""
 
 #: objects/ui_MainWindow.h:472
 msgid "&Copy"
-msgstr "&Copier"
+msgstr ""
 
 #: objects/ui_MainWindow.h:473
 msgid "Ctrl+C"
@@ -104,7 +104,7 @@ msgstr ""
 
 #: objects/ui_MainWindow.h:474
 msgid "&Paste"
-msgstr "&Coller"
+msgstr ""
 
 #: objects/ui_MainWindow.h:475
 msgid "Ctrl+V"
@@ -112,7 +112,7 @@ msgstr ""
 
 #: objects/ui_MainWindow.h:476
 msgid "&Indent"
-msgstr "&Indenter"
+msgstr ""
 
 #: objects/ui_MainWindow.h:477
 msgid "Ctrl+I"
@@ -120,7 +120,7 @@ msgstr ""
 
 #: objects/ui_MainWindow.h:478
 msgid "U&nindent"
-msgstr "Dési&ndenter"
+msgstr ""
 
 #: objects/ui_MainWindow.h:479
 msgid "Ctrl+Shift+I"
@@ -156,7 +156,7 @@ msgstr ""
 
 #: objects/ui_MainWindow.h:487
 msgid "Zoom In"
-msgstr "Zoom Avant"
+msgstr ""
 
 #: objects/ui_MainWindow.h:488
 msgid "Ctrl++"
@@ -164,7 +164,7 @@ msgstr ""
 
 #: objects/ui_MainWindow.h:489
 msgid "Zoom Out"
-msgstr "Zoom Arrière"
+msgstr ""
 
 #: objects/ui_MainWindow.h:490
 msgid "Ctrl+-"
@@ -260,7 +260,7 @@ msgstr ""
 
 #: objects/ui_MainWindow.h:513
 msgid "Show Axes"
-msgstr "Afficher les axes"
+msgstr ""
 
 #: objects/ui_MainWindow.h:514
 msgid "Ctrl+2"
@@ -280,7 +280,7 @@ msgstr ""
 
 #: objects/ui_MainWindow.h:518
 msgid "Top"
-msgstr "Dessus"
+msgstr ""
 
 #: objects/ui_MainWindow.h:519
 msgid "Ctrl+4"
@@ -288,7 +288,7 @@ msgstr ""
 
 #: objects/ui_MainWindow.h:520
 msgid "Bottom"
-msgstr "Dessous"
+msgstr ""
 
 #: objects/ui_MainWindow.h:521
 msgid "Ctrl+5"
@@ -296,7 +296,7 @@ msgstr ""
 
 #: objects/ui_MainWindow.h:522
 msgid "Left"
-msgstr "Gauche"
+msgstr ""
 
 #: objects/ui_MainWindow.h:523
 msgid "Ctrl+6"
@@ -304,7 +304,7 @@ msgstr ""
 
 #: objects/ui_MainWindow.h:524
 msgid "Right"
-msgstr "Droite"
+msgstr ""
 
 #: objects/ui_MainWindow.h:525
 msgid "Ctrl+7"
@@ -312,7 +312,7 @@ msgstr ""
 
 #: objects/ui_MainWindow.h:526
 msgid "Front"
-msgstr "Face"
+msgstr ""
 
 #: objects/ui_MainWindow.h:527
 msgid "Ctrl+8"
@@ -320,7 +320,7 @@ msgstr ""
 
 #: objects/ui_MainWindow.h:528
 msgid "Back"
-msgstr "Arrière"
+msgstr ""
 
 #: objects/ui_MainWindow.h:529
 msgid "Ctrl+9"
@@ -356,7 +356,7 @@ msgstr ""
 
 #: objects/ui_MainWindow.h:537
 msgid "About"
-msgstr "À propos"
+msgstr ""
 
 #: objects/ui_MainWindow.h:538
 msgid "OpenSCAD Manual"
@@ -372,7 +372,7 @@ msgstr ""
 
 #: objects/ui_MainWindow.h:541
 msgid "Close"
-msgstr "Fermer"
+msgstr ""
 
 #: objects/ui_MainWindow.h:542
 msgid "Ctrl+W"
@@ -380,7 +380,7 @@ msgstr ""
 
 #: objects/ui_MainWindow.h:543 objects/ui_Preferences.h:322
 msgid "Preferences"
-msgstr "Préférences"
+msgstr ""
 
 #: objects/ui_MainWindow.h:544
 msgid "Flush Caches"
@@ -448,19 +448,20 @@ msgstr ""
 
 #: objects/ui_MainWindow.h:572
 msgid "&File"
-msgstr "&Fichier"
+msgstr "&Файл"
 
 #: objects/ui_MainWindow.h:573
+#, fuzzy
 msgid "Open Recent"
 msgstr ""
 
 #: objects/ui_MainWindow.h:574
 msgid "Examples"
-msgstr "&Exemples"
+msgstr ""
 
 #: objects/ui_MainWindow.h:575
 msgid "&Edit"
-msgstr "&Édition"
+msgstr "&Правка"
 
 #: objects/ui_MainWindow.h:576
 msgid "&Design"
@@ -468,16 +469,15 @@ msgstr ""
 
 #: objects/ui_MainWindow.h:577
 msgid "&View"
-msgstr "&Vue"
+msgstr ""
 
 #: objects/ui_MainWindow.h:578
 msgid "&Help"
-msgstr "&Aide"
+msgstr "&Справка"
 
 #: objects/ui_Preferences.h:323
-#, fuzzy
 msgid "3D View"
-msgstr "&Vue"
+msgstr ""
 
 #: objects/ui_Preferences.h:324
 msgid "Advanced"
@@ -961,7 +961,7 @@ msgstr ""
 
 #: src/mainwin.cc:803
 msgid "Open File"
-msgstr "Ouvrir un fichier"
+msgstr "Открыть файл"
 
 #: src/mainwin.cc:804
 msgid "OpenSCAD Designs (*.scad *.csg)"
@@ -979,7 +979,7 @@ msgstr ""
 
 #: src/mainwin.cc:914
 msgid "Save File"
-msgstr ""
+msgstr "Сохранить файл"
 
 #: src/mainwin.cc:915
 msgid "Untitled.scad"
@@ -1277,7 +1277,7 @@ msgstr ""
 
 #: src/mainwin.cc:1761
 msgid "OpenGL Info"
-msgstr "Information OpenGL"
+msgstr ""
 
 #: src/mainwin.cc:1761
 msgid "Detailed Library Info"
