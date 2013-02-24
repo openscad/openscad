@@ -25,7 +25,6 @@ public:
 	bool save(const char *filename);
   std::string getRendererInfo() const;
 #ifdef ENABLE_OPENCSG
-	void enable_opencsg_shaders();
 	void display_opencsg_warning();
 #endif
 };

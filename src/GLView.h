@@ -3,10 +3,11 @@
 
 /* GLView: A basic OpenGL rectangle for rendering images.
 
-Inherited by QGLview (for QT GUI) and OffscreenView.
+Inherited by QGLview (for Qt GUI) and OffscreenView (used in tests and
+for offscreen command-line rendering).
 
 There are two different types of cameras. A 'gimbal' based camera set
-using position & euler-angles (object_trans/object_rot/distance) and a
+using translation & euler-angles (object_trans/object_rot/distance) and a
 'plain' camera set using eye-position, 'look at' center point, and 'up'
 
 */
@@ -64,7 +65,7 @@ public:
   GLint shaderinfo[11];
   bool is_opencsg_capable;
   bool has_shaders;
-//  void enable_opencsg_shaders();
+  void enable_opencsg_shaders();
 	virtual void display_opencsg_warning() = 0;
   bool opencsg_support;
   int opencsg_id;
