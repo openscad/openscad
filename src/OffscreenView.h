@@ -17,7 +17,6 @@ class OffscreenView : public GLView
 public:
 	OffscreenView(size_t width, size_t height); // not
 	~OffscreenView(); // not
-	void initializeGL(); //
 	void paintGL(); //
 	bool save(std::ostream &output);
 	OffscreenContext *ctx; // not

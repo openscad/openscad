@@ -12,7 +12,7 @@ OffscreenView::OffscreenView(size_t width, size_t height)
   object_rot << 35, 0, 25;
   this->ctx = create_offscreen_context(width, height);
   if ( this->ctx == NULL ) throw -1;
-  initializeGL();
+  GLView::initializeGL();
   GLView::resizeGL(width, height);
 }
 
@@ -27,34 +27,6 @@ void OffscreenView::display_opencsg_warning()
     fprintf(stderr, "OpenSCAD recommended OpenGL version is 2.0. \n");
 }
 #endif
-
-void OffscreenView::initializeGL()
-{
-  glEnable(GL_DEPTH_TEST);
-  glDepthRange(-FAR_FAR_AWAY, +FAR_FAR_AWAY);
-
-  glEnable(GL_BLEND);
-  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-  GLfloat light_diffuse[] = {1.0, 1.0, 1.0, 1.0};
-  GLfloat light_position0[] = {-1.0, -1.0, +1.0, 0.0};
-  GLfloat light_position1[] = {+1.0, +1.0, -1.0, 0.0};
-
-  glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse);
-  glLightfv(GL_LIGHT0, GL_POSITION, light_position0);
-  glEnable(GL_LIGHT0);
-  glLightfv(GL_LIGHT1, GL_DIFFUSE, light_diffuse);
-  glLightfv(GL_LIGHT1, GL_POSITION, light_position1);
-  glEnable(GL_LIGHT1);
-  glEnable(GL_LIGHTING);
-  glEnable(GL_NORMALIZE);
-
-  glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
-  glEnable(GL_COLOR_MATERIAL);
-#ifdef ENABLE_OPENCSG
-	enable_opencsg_shaders();
-#endif
-}
 
 void OffscreenView::paintGL()
 {

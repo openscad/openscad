@@ -30,10 +30,8 @@ public:
 	GLView();
 	void setRenderer(Renderer* r);
 	Renderer *renderer;
-/*
-	void initializeGL(); //
 
-*/
+	void initializeGL();
 	void resizeGL(int w, int h);
 
 	void setGimbalCamera(const Eigen::Vector3d &pos, const Eigen::Vector3d &rot, double distance);
