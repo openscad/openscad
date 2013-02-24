@@ -107,30 +107,8 @@ void QGLView::init()
 #endif
 }
 
-void QGLView::initializeGL()
+void QGLView::enable_opencsg_shaders()
 {
-	glEnable(GL_DEPTH_TEST);
-	glDepthRange(-FAR_FAR_AWAY, +FAR_FAR_AWAY);
-
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-	GLfloat light_diffuse[] = {1.0, 1.0, 1.0, 1.0};
-	GLfloat light_position0[] = {-1.0, -1.0, +1.0, 0.0};
-	GLfloat light_position1[] = {+1.0, +1.0, -1.0, 0.0};
-
-	glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse);
-	glLightfv(GL_LIGHT0, GL_POSITION, light_position0);
-	glEnable(GL_LIGHT0);
-	glLightfv(GL_LIGHT1, GL_DIFFUSE, light_diffuse);
-	glLightfv(GL_LIGHT1, GL_POSITION, light_position1);
-	glEnable(GL_LIGHT1);
-	glEnable(GL_LIGHTING);
-	glEnable(GL_NORMALIZE);
-
-	glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
-	glEnable(GL_COLOR_MATERIAL);
-
 #ifdef ENABLE_OPENCSG
 	GLenum err = glewInit();
 	if (GLEW_OK != err) {
@@ -279,7 +257,34 @@ void QGLView::initializeGL()
 			}
 		}
 	}
-#endif /* ENABLE_OPENCSG */
+#endif
+}
+
+void QGLView::initializeGL()
+{
+	glEnable(GL_DEPTH_TEST);
+	glDepthRange(-FAR_FAR_AWAY, +FAR_FAR_AWAY);
+
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+	GLfloat light_diffuse[] = {1.0, 1.0, 1.0, 1.0};
+	GLfloat light_position0[] = {-1.0, -1.0, +1.0, 0.0};
+	GLfloat light_position1[] = {+1.0, +1.0, -1.0, 0.0};
+
+	glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse);
+	glLightfv(GL_LIGHT0, GL_POSITION, light_position0);
+	glEnable(GL_LIGHT0);
+	glLightfv(GL_LIGHT1, GL_DIFFUSE, light_diffuse);
+	glLightfv(GL_LIGHT1, GL_POSITION, light_position1);
+	glEnable(GL_LIGHT1);
+	glEnable(GL_LIGHTING);
+	glEnable(GL_NORMALIZE);
+
+	glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
+	glEnable(GL_COLOR_MATERIAL);
+
+	enable_opencsg_shaders();
 }
 
 std::string QGLView::getRendererInfo() const

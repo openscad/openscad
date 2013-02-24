@@ -24,7 +24,7 @@ public:
 	bool save(const char *filename);
 	bool save(std::ostream &output);
   std::string getRendererInfo() const;
-
+	void enable_opencsg_shaders();
 	OffscreenContext *ctx; // not
 };
 
