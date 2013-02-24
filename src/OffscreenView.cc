@@ -7,12 +7,16 @@
 #include <cstdlib>
 #include <sstream>
 
-#define FAR_FAR_AWAY 100000.0
-
 OffscreenView::OffscreenView(size_t width, size_t height)
-	: orthomode(false), showaxes(false), showfaces(true), showedges(false),
-		object_rot(35, 0, 25), camera_eye(0, 0, 0), camera_center(0, 0, 0)
 {
+	orthomode = false;
+	showaxes = false;
+	showfaces = true;
+	showedges = false;
+	object_rot << 35, 0, 25;
+	camera_eye << 0, 0, 0;
+	camera_center << 0, 0, 0;
+
 	for (int i = 0; i < 10; i++) this->shaderinfo[i] = 0;
 	this->ctx = create_offscreen_context(width, height);
 	if ( this->ctx == NULL ) throw -1;
@@ -61,7 +65,7 @@ void OffscreenView::resizeGL(int w, int h)
 	w_h_ratio = sqrt((double)w / (double)h);
 }
 
-void OffscreenView::setupGimbalPerspective()
+/*void OffscreenView::setupGimbalPerspective()
 {
 	fprintf(stderr, "gimbal camera not implemented in Offscreen View\n");
 }
@@ -88,7 +92,7 @@ void OffscreenView::setupOrtho(bool offset)
 	glOrtho(-w_h_ratio*l, +w_h_ratio*l,
 					-(1/w_h_ratio)*l, +(1/w_h_ratio)*l,
 					-FAR_FAR_AWAY, +FAR_FAR_AWAY);
-}
+}*/
 
 void OffscreenView::paintGL()
 {
@@ -161,9 +165,11 @@ std::string OffscreenView::getRendererInfo()
 	return out.str();
 }
 
+/*
 void OffscreenView::setCamera(const Eigen::Vector3d &pos, const Eigen::Vector3d &center)
 {
 	this->camera_eye = pos;
 	this->camera_center = center;
 }
 
+*/

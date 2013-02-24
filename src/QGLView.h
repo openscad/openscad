@@ -42,10 +42,10 @@ public:
 public:
 	QLabel *statusLabel;
 
-  Eigen::Vector3d object_rot;
+/*  Eigen::Vector3d object_rot;
   Eigen::Vector3d object_trans;
   Eigen::Vector3d camera_eye;
-  Eigen::Vector3d camera_center;
+  Eigen::Vector3d camera_center;*/
 
 	GLint shaderinfo[11];
 
@@ -59,15 +59,15 @@ private:
 
 	std::string rendererInfo;
 
-	bool showfaces;
-	bool showedges;
-	bool showaxes;
+//	bool showfaces;
+//	bool showedges;
+//	bool showaxes;
 	bool showcrosshairs;
-	bool orthomode;
+//	bool orthomode;
 
-	double viewer_distance;
+//	double viewer_distance;
 
-	double w_h_ratio;
+//	double w_h_ratio;
 
 	bool mouse_drag_active;
 	QPoint last_mouse;

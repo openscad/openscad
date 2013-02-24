@@ -21,6 +21,7 @@ public:
 	void initializeGL(); //
 	void resizeGL(int w, int h); //
 
+/*
 	void setGimbalCamera(const Eigen::Vector3d &pos, const Eigen::Vector3d &rot, double distance); //
 	void setupGimbalPerspective(); //
 	void setupGimbalOrtho(double distance, bool offset=false); //
@@ -28,6 +29,7 @@ public:
 	void setCamera(const Eigen::Vector3d &pos, const Eigen::Vector3d &center); //
 	void setupPerspective(); //
 	void setupOrtho(bool offset=false); //
+*/
 
 	void paintGL(); //
 	bool save(const char *filename); //
@@ -39,7 +41,7 @@ public:
 	OffscreenContext *ctx; // not
 	size_t width;  // not
 	size_t height; // not
-private:
+/*private:
 	double w_h_ratio;//
 	bool orthomode;//
 	bool showaxes;//
@@ -48,7 +50,7 @@ private:
 
 	Eigen::Vector3d object_rot;//
 	Eigen::Vector3d camera_eye;//
-	Eigen::Vector3d camera_center;//
+	Eigen::Vector3d camera_center;//*/
 };
 
 #endif

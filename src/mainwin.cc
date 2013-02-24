@@ -48,6 +48,7 @@
 #include "ProgressWidget.h"
 #include "ThrownTogetherRenderer.h"
 #include "csgtermnormalizer.h"
+#include "QGLView.h"
 
 #include <QMenu>
 #include <QTime>

@@ -544,6 +544,7 @@ namespace OGL {
       if (switches[SNC_AXES]) glCallList(object_list_+3); // axis
    }
 
+
     void debug(std::ostream& os = std::cerr) const
     {
       os << "OGL::Polyhedron" << std::endl;

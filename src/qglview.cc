@@ -57,8 +57,6 @@
 #include <GL/glxew.h>
 #endif
 
-#define FAR_FAR_AWAY 100000.0
-
 QGLView::QGLView(QWidget *parent) : QGLWidget(parent)
 {
 	init();
@@ -74,12 +72,8 @@ static bool running_under_wine = false;
 void QGLView::init()
 {
 	this->viewer_distance = 500;
-	this->object_rot.x() = 35;
-	this->object_rot.y() = 0;
-	this->object_rot.z() = -25;
-	this->object_trans.x() = 0;
-	this->object_trans.y() = 0;
-	this->object_trans.z() = 0;
+	this->object_rot << 35, 0, -25;
+	this->object_trans << 0, 0, 0;
 
 	this->mouse_drag_active = false;
 
@@ -334,10 +328,10 @@ void QGLView::resizeGL(int w, int h)
 	glViewport(0, 0, w, h);
 	w_h_ratio = sqrt((double)w / (double)h);
 
-	setupGimbalPerspective();
+	GLView::setupGimbalPerspective();
 }
 
-void QGLView::setupPerspective()
+/*void QGLView::setupPerspective()
 {
 	fprintf(stderr,"non-gimbal camera not implemented for qglview\n");
 }
@@ -367,13 +361,14 @@ void QGLView::setupGimbalOrtho(double distance, bool offset)
 			-FAR_FAR_AWAY, +FAR_FAR_AWAY);
 	gluLookAt(0.0, -viewer_distance, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0);
 }
+*/
 
 void QGLView::paintGL()
 {
 	glEnable(GL_LIGHTING);
 
-	if (orthomode) setupGimbalOrtho(viewer_distance);
-	else setupGimbalPerspective();
+	if (orthomode) GLView::setupGimbalOrtho(viewer_distance);
+	else GLView::setupGimbalPerspective();
 
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
@@ -443,7 +438,7 @@ void QGLView::paintGL()
 	{
 		glDepthFunc(GL_ALWAYS);
 
-		setupGimbalOrtho(1000,true);
+		GLView::setupGimbalOrtho(1000,true);
 
 		glMatrixMode(GL_MODELVIEW);
 		glLoadIdentity();
@@ -512,7 +507,7 @@ void QGLView::paintGL()
 
 		//Restore perspective for next paint
 		if(!orthomode)
-			setupGimbalPerspective();
+			GLView::setupGimbalPerspective();
 	}
 
 	if (statusLabel) {

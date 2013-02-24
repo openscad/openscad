@@ -118,7 +118,9 @@ netbsd* {
 }
 
 *clang* {
-	# disable enormous amount of warnings about CGAL
+	# http://llvm.org/bugs/show_bug.cgi?id=9182
+	QMAKE_CXXFLAGS_WARN_ON += -Wno-overloaded-virtual
+	# disable enormous amount of warnings about CGAL / boost / etc
 	QMAKE_CXXFLAGS_WARN_ON += -Wno-unused-parameter
 	QMAKE_CXXFLAGS_WARN_ON += -Wno-unused-variable
 	QMAKE_CXXFLAGS_WARN_ON += -Wno-unused-function

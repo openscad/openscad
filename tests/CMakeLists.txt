@@ -483,6 +483,7 @@ elseif(WIN32)
 endif()
 
 set(OFFSCREEN_SOURCES
+  ../src/GLView.cc
   ../src/OffscreenView.cc
   ../src/${OFFSCREEN_CTX_SOURCE}
   ../src/${OFFSCREEN_IMGUTILS_SOURCE}
