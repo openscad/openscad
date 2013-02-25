@@ -31,6 +31,8 @@
 # auto-upload scripts available. wiki code should be removed and code 
 # simplified.
 #
+# to still use wiki, use args '--wiki' and/or '--wiki-upload' 
+#
 # 2. why is hash differing
 
 import string,sys,re,os,hashlib,subprocess,textwrap,time,platform
@@ -354,6 +356,9 @@ def tohtml(wiki_rootpath, startdate, tests, enddate, sysinfo, sysid, makefiles):
 	if not include_passed:
 		s+= '<h3>Failed tests:</h3>\n'
 
+	if len(tests_to_report)==0:
+		s+= '<p>none</p>'
+
 	for t in tests_to_report:
 		if t.type=='txt':
 			s+='\n<pre>'+t.fullname+'</pre>\n'
@@ -528,8 +533,10 @@ def main():
 	debug( 'writing ' + str(len(imgs)) + ' images' )
 	debug( 'writing ' + str(len(txtpages)-1) + ' text pages' )
 	debug( 'writing index.html ' )
-	for pgname in sorted(imgs): trysave( os.path.join(wikidir,pgname), imgs[pgname])
-	for pgname in sorted(txtpages): trysave( os.path.join(wikidir,pgname), txtpages[pgname])
+	if '--wiki' in string.join(sys.argv):
+		print "wiki output is deprecated"
+		for pgname in sorted(imgs): trysave( os.path.join(wikidir,pgname), imgs[pgname])
+		for pgname in sorted(txtpages): trysave( os.path.join(wikidir,pgname), txtpages[pgname])
 
 	htmldata = tohtml(wiki_rootpath, startdate, tests, enddate, sysinfo, sysid, makefiles)
 	html_basename = sysid+'_report.html'
