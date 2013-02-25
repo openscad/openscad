@@ -37,14 +37,16 @@
 # Inside of it is a file, 'index.html', that lists all the test reports
 # stored in that directory. 
 # 
-# Each test report is a single .html file, with all of the .png images
-# encoded directly into the file using the Data URI and base64 encoding.
-# The name of the report file is something like OS_cpu_GLinfo_hash, like
-# linux_x86_radeon_abcd. This is read using test_pretty_print.py
-#
 # This script uploads the last report created by test_pretty_print.py 
 # Then it modifies the remote index.html file (if necessary) to display 
 # a link to the new test report.
+#
+# Each test report is a single .html file, with all of the .png images
+# encoded directly into the file using the Data URI and base64 encoding.
+# The name of the report file is something like OS_cpu_GLinfo_hash.html, like
+# linux_x86_radeon_abcd.html
+#
+# See examples under 'usage()' below.
 #
 # Requirements for remote web server and local system:
 # 
@@ -92,17 +94,21 @@ usage:
 
 example1:
 
-  $ ctest # result is Testing/Temporary/linux_x86_nvidia_report.html
+  $ ctest # result is Testing/Temporary/linux_x86_nvidia_report_abcd.html
   $ test_upload.py --username=andreis --host=web.sourceforge.net --remotepath=/home/project-web/projectxyz/htdocs/
   $ firefox http://projectxyz.sourceforge.net/openscad_tests/index.html
-  # should display the test results
+  # this should display a page with a link to show the test results
 
 example2:
 
-  $ ctest # result is Testing/Temporary/freebsd_ppc_gallium_report.html
-  $ test_upload.py --username=annag --host=fontanka.org --remotepath=/tmp/
-  $ ssh annag@fontanka.org "ls /tmp"
-  # result is 'index.html' 'freebsd_ppc_gallium_report.html' in /tmp
+  $ # run under X11
+  $ ctest # result is Testing/Temporary/freebsd_ppc_nvidia_abc_report.html
+  $ test_upload.py --username=annag --host=fontanka.org --remotepath=/var/www/
+	$ export DISPLAY= # dont use 'display' X, use Xvfb (different drivers)
+  $ ctest # result will be Testing/Temporary/freebsd_ppc_mesa_xyz_report.html
+  $ test_upload.py --username=annag --host=fontanka.org --remotepath=/var/www/
+  $ firefox http://fontanka.org/openscad_tests/index.html
+  # result is 'index.html' with a link to the two separate test .html files
 
 '''
 	print text
