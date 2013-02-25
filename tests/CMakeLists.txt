@@ -603,6 +603,8 @@ endif()
 if(EXISTS "${GUI_BINPATH}")
   add_executable(guicgalpngtest guicgalpngtest.cc)
   set_target_properties(guicgalpngtest PROPERTIES COMPILE_FLAGS "-DBINPATH=${GUI_BINPATH}")
+  add_executable(guiopencsgtest guiopencsgtest.cc)
+  set_target_properties(guiopencsgtest PROPERTIES COMPILE_FLAGS "-DBINPATH=${GUI_BINPATH}")
   message(STATUS "Found OpenSCAD GUI binary: ${GUI_BINPATH}")
 else()
   message(STATUS "Couldn't find the OpenSCAD GUI binary: ${GUI_BINPATH}")
@@ -762,6 +764,7 @@ list(APPEND THROWNTOGETHERTEST_FILES ${OPENCSGTEST_FILES})
 list(APPEND CGALSTLSANITYTEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/normal-nan.scad)
 
 list(APPEND GUICGALPNGTEST_FILES ${CGALPNGTEST_FILES})
+list(APPEND GUIOPENCSGTEST_FILES ${OPENCSGTEST_FILES})
 
 # Disable tests which are known to cause floating point comparison issues
 # Once we're capable of comparing these across platforms, we can put these back in
@@ -787,10 +790,11 @@ disable_tests(dumptest_transform-tests
 # FIXME: This test illustrates a weakness in child() combined with modifiers.
 # Reenable it when this is improved
 disable_tests(opencsgtest_child-background)
+disable_tests(guiopencsgtest_child-background)
 
 # FIXME: This single test takes over an hour to run on a 2.7 GHz P4
 disable_tests(opencsgtest_example006 cgalpngtest_example006)
-disable_tests(opencsgtest_example006 guicgalpngtest_example006)
+disable_tests(guiopencsgtest_example006 guicgalpngtest_example006)
 
 # These tests only makes sense in OpenCSG mode
 disable_tests(cgalpngtest_child-background
@@ -807,6 +811,8 @@ disable_tests(cgalpngtest_child-background
 
 set_test_config(Heavy opencsgtest_minkowski3-tests
                       opencsgtest_projection-tests
+                      guiopencsgtest_minkowski3-tests
+                      guiopencsgtest_projection-tests
                       throwntogethertest_minkowski3-tests
                       throwntogethertest_projection-tests
                       cgalpngtest_projection-tests
@@ -834,6 +840,8 @@ foreach(FILE ${EXAMPLE_FILES})
   get_test_fullname(throwntogethertest ${FILE} TEST_FULLNAME)
   set_test_config(Examples ${TEST_FULLNAME})
   get_test_fullname(guicgalpngtest ${FILE} TEST_FULLNAME)
+  set_test_config(Examples ${TEST_FULLNAME})
+  get_test_fullname(guiopencsgtest ${FILE} TEST_FULLNAME)
   set_test_config(Examples ${TEST_FULLNAME})
 endforeach()
 
@@ -888,6 +896,7 @@ add_cmdline_test(cgalpngtest png ${CGALPNGTEST_FILES})
 add_cmdline_test(opencsgtest png ${OPENCSGTEST_FILES})
 add_cmdline_test(throwntogethertest png ${THROWNTOGETHERTEST_FILES})
 add_cmdline_test(guicgalpngtest png ${GUICGALPNGTEST_FILES})
+add_cmdline_test(guiopencsgtest png ${GUIOPENCSGTEST_FILES})
 
 # FIXME: We don't actually need to compare the output of cgalstlsanitytest
 # with anything. It's self-contained and returns != 0 on error

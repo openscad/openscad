@@ -133,7 +133,7 @@ int main(int argc, char **argv)
 	desc.add_options()
 		("help,h", "help message")
 		("version,v", "print the version")
-		("render", "if exporting an image, do a full CGAL render")
+		("render", "if exporting a png image, do a full CGAL render")
 		("o,o", po::value<string>(), "out-file")
 		("s,s", po::value<string>(), "stl-file")
 		("x,x", po::value<string>(), "dxf-file")
@@ -266,6 +266,7 @@ int main(int argc, char **argv)
 		ModuleInstantiation root_inst;
 		AbstractNode *root_node;
 		AbstractNode *absolute_root_node;
+		CGAL_Nef_polyhedron root_N;
 
 		handle_dep(filename);
 		
@@ -310,10 +311,14 @@ int main(int argc, char **argv)
 		}
 		else {
 #ifdef ENABLE_CGAL
-			CGAL_Nef_polyhedron root_N = cgalevaluator.evaluateCGALMesh(*tree.root());
-			
+			if (png_output_file && !vm.count("render")) {
+				// OpenCSG png -> don't necessarily need CGALMesh evaluation
+			} else {
+				root_N = cgalevaluator.evaluateCGALMesh(*tree.root());
+			}
+
 			fs::current_path(original_path);
-			
+
 			if (deps_output_file) {
 				std::string deps_out( deps_output_file );
 				std::string geom_out;
@@ -395,7 +400,7 @@ int main(int argc, char **argv)
 					if (vm.count("render")) {
 						export_png_with_cgal(&root_N, fstream);
 					} else {
-						export_png_with_opencsg(&root_N, fstream);
+						export_png_with_opencsg(tree, fstream);
 					}
 					fstream.close();
 				}

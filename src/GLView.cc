@@ -393,13 +393,3 @@ void GLView::showCrosshairs()
   glEnd();
 }
 
-/*
-
-
-	void paintGL(); //
-	bool save(const char *filename); //
-	//bool save(std::ostream &output); // not implemented in qgl?
-
-	GLint shaderinfo[11];  //
-
-*/

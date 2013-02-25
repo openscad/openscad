@@ -30,6 +30,7 @@ import string
 
 share_expected_imgs = {}
 share_expected_imgs["guicgalpngtest"] = "cgalpngtest"
+share_expected_imgs["guiopencsgtest"] = "opencsgtest"
 
 def initialize_environment():
     if not options.generate: options.generate = bool(os.getenv("TEST_GENERATE"))

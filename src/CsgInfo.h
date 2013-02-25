@@ -13,10 +13,7 @@ public:
 
 #ifdef ENABLE_OPENCSG
 
-#include <opencsg.h>
-#include "OpenCSGRenderer.h"
 #include "csgterm.h"
-#include "csgtermnormalizer.h"
 
 class CsgInfo_OpenCSG : public CsgInfo
 {

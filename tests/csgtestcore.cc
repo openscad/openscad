@@ -105,54 +105,6 @@ po::variables_map parse_options(int argc, char *argv[])
 	return vm;
 }
 
-int opencsg_prep( Tree &tree, AbstractNode *root_node, CsgInfo_OpenCSG &csgInfo )
-{
-	CGALEvaluator cgalevaluator(tree);
-	CSGTermEvaluator evaluator(tree, &cgalevaluator.psevaluator);
-	shared_ptr<CSGTerm> root_raw_term = evaluator.evaluateCSGTerm(*root_node, 
-																																csgInfo.highlight_terms, 
-																																csgInfo.background_terms);
-
-	if (!root_raw_term) {
-		cerr << "Error: CSG generation failed! (no top level object found)\n";
-		return 1;
-	}
-
-	// CSG normalization
-	CSGTermNormalizer normalizer(5000);
-	csgInfo.root_norm_term = normalizer.normalize(root_raw_term);
-	if (csgInfo.root_norm_term) {
-		csgInfo.root_chain = new CSGChain();
-		csgInfo.root_chain->import(csgInfo.root_norm_term);
-		fprintf(stderr, "Normalized CSG tree has %d elements\n", int(csgInfo.root_chain->polysets.size()));
-	}
-	else {
-		csgInfo.root_chain = NULL;
-		fprintf(stderr, "WARNING: CSG normalization resulted in an empty tree\n");
-	}
-
-	if (csgInfo.highlight_terms.size() > 0) {
-		cerr << "Compiling highlights (" << csgInfo.highlight_terms.size() << " CSG Trees)...\n";
-		
-		csgInfo.highlights_chain = new CSGChain();
-		for (unsigned int i = 0; i < csgInfo.highlight_terms.size(); i++) {
-			csgInfo.highlight_terms[i] = normalizer.normalize(csgInfo.highlight_terms[i]);
-			csgInfo.highlights_chain->import(csgInfo.highlight_terms[i]);
-		}
-	}
-	
-	if (csgInfo.background_terms.size() > 0) {
-		cerr << "Compiling background (" << csgInfo.background_terms.size() << " CSG Trees)...\n";
-		
-		csgInfo.background_chain = new CSGChain();
-		for (unsigned int i = 0; i < csgInfo.background_terms.size(); i++) {
-			csgInfo.background_terms[i] = normalizer.normalize(csgInfo.background_terms[i]);
-			csgInfo.background_chain->import(csgInfo.background_terms[i]);
-		}
-	}
-	return 0;
-}
-
 int csgtestcore(int argc, char *argv[], test_type_e test_type)
 {
 	bool sysinfo_dump = false;
