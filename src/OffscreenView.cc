@@ -46,26 +46,10 @@ void OffscreenView::paintGL()
             this->camera_center[0], this->camera_center[1], this->camera_center[2], 
             0.0, 0.0, 1.0);
 
-  // glRotated(object_rot[0], 1.0, 0.0, 0.0);
-  // glRotated(object_rot[1], 0.0, 1.0, 0.0);
-  // glRotated(object_rot[2], 0.0, 0.0, 1.0);
+	// fixme - showcrosshairs doesnt work with non-gimbal camera
+  // if (showcrosshairs) GLView::showCrosshairs();
 
-  // Large gray axis cross inline with the model
-  // FIXME: This is always gray - adjust color to keep contrast with background
-  if (showaxes)
-  {
-    glLineWidth(1);
-    glColor3d(0.5, 0.5, 0.5);
-    glBegin(GL_LINES);
-    double l = 3*(this->camera_center - this->camera_eye).norm();
-    glVertex3d(-l, 0, 0);
-    glVertex3d(+l, 0, 0);
-    glVertex3d(0, -l, 0);
-    glVertex3d(0, +l, 0);
-    glVertex3d(0, 0, -l);
-    glVertex3d(0, 0, +l);
-    glEnd();
-  }
+  if (showaxes) GLView::showAxes();
 
   glDepthFunc(GL_LESS);
   glCullFace(GL_BACK);
@@ -73,6 +57,9 @@ void OffscreenView::paintGL()
 
   glLineWidth(2);
   glColor3d(1.0, 0.0, 0.0);
+
+	//FIXME showSmallAxes wont work with non-gimbal camera
+  //if (showaxes) GLView::showSmallaxes();
 
   if (this->renderer) {
     this->renderer->draw(showfaces, showedges);
@@ -98,12 +85,3 @@ std::string OffscreenView::getRendererInfo() const
 
   return out.str();
 }
-
-/*
-void OffscreenView::setCamera(const Eigen::Vector3d &pos, const Eigen::Vector3d &center)
-{
-  this->camera_eye = pos;
-  this->camera_center = center;
-}
-
-*/

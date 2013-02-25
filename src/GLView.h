@@ -3,12 +3,15 @@
 
 /* GLView: A basic OpenGL rectangle for rendering images.
 
-Inherited by QGLview (for Qt GUI) and OffscreenView (used in tests and
-for offscreen command-line rendering).
+Inherited by
+
+*QGLview (for Qt GUI)
+*OffscreenView (used in tests and for offscreen command-line rendering).
 
 There are two different types of cameras. A 'gimbal' based camera set
 using translation & euler-angles (object_trans/object_rot/distance) and a
 'plain' camera set using eye-position, 'look at' center point, and 'up'
+The camera systems are not totally integrated or interchangable (yet)
 
 */
 
@@ -33,6 +36,7 @@ public:
 
 	void initializeGL();
 	void resizeGL(int w, int h);
+	virtual void paintGL() = 0;
 
 	void setGimbalCamera(const Eigen::Vector3d &pos, const Eigen::Vector3d &rot, double distance);
 	void setupGimbalPerspective();
@@ -41,6 +45,10 @@ public:
 	void setCamera(const Eigen::Vector3d &pos, const Eigen::Vector3d &center);
 	void setupPerspective();
 	void setupOrtho(bool offset=false);
+
+	void showCrosshairs();
+	void showAxes();
+	void showSmallaxes();
 
 	virtual bool save(const char *filename) = 0;
 	virtual std::string getRendererInfo() const = 0;
@@ -68,10 +76,6 @@ public:
   bool opencsg_support;
   int opencsg_id;
 #endif
-/*
-	void paintGL(); //
-*/
-
 };
 
 #endif

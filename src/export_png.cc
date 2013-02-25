@@ -49,7 +49,12 @@ void export_png_with_cgal(CGAL_Nef_polyhedron *root_N, std::ostream &output)
 void export_png_with_opencsg(CGAL_Nef_polyhedron *root_N, std::ostream &output)
 {
 	CsgInfo csgInfo;
-	PRINT("not implemented: solid OpenSCAD_Model opencsg png export\n");
+	try {
+		csgInfo.glview = new OffscreenView(512,512);
+	} catch (int error) {
+		fprintf(stderr,"Can't create OpenGL OffscreenView. Code: %i.\n", error);
+		return;
+	}
 }
 
 

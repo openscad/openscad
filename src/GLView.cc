@@ -3,6 +3,9 @@
 #include "printutils.h"
 #include "stdio.h"
 
+#include "linalg.h"
+#include "rendersettings.h"
+
 #ifdef _WIN32
 #include <GL/wglew.h>
 #elif !defined(__APPLE__)
@@ -78,6 +81,7 @@ void GLView::setCamera(const Eigen::Vector3d &pos, const Eigen::Vector3d &center
 {
   this->camera_eye = pos;
   this->camera_center = center;
+	viewer_distance = 10*3*(this->camera_center - this->camera_eye).norm();
 }
 
 void GLView::setupPerspective()
@@ -275,6 +279,119 @@ void GLView::initializeGL()
 #endif
 }
 
+void GLView::showSmallaxes()
+{
+	// Fixme - this modifies the camera and doesnt work in 'non-gimbal' camera mode
+
+  // Small axis cross in the lower left corner
+  glDepthFunc(GL_ALWAYS);
+
+	GLView::setupGimbalOrtho(1000,true);
+
+  glMatrixMode(GL_MODELVIEW);
+  glLoadIdentity();
+  glRotated(object_rot.x(), 1.0, 0.0, 0.0);
+  glRotated(object_rot.y(), 0.0, 1.0, 0.0);
+  glRotated(object_rot.z(), 0.0, 0.0, 1.0);
+
+  glLineWidth(1);
+  glBegin(GL_LINES);
+  glColor3d(1.0, 0.0, 0.0);
+  glVertex3d(0, 0, 0); glVertex3d(10, 0, 0);
+  glColor3d(0.0, 1.0, 0.0);
+  glVertex3d(0, 0, 0); glVertex3d(0, 10, 0);
+  glColor3d(0.0, 0.0, 1.0);
+  glVertex3d(0, 0, 0); glVertex3d(0, 0, 10);
+  glEnd();
+
+  GLdouble mat_model[16];
+  glGetDoublev(GL_MODELVIEW_MATRIX, mat_model);
+
+  GLdouble mat_proj[16];
+  glGetDoublev(GL_PROJECTION_MATRIX, mat_proj);
+
+  GLint viewport[4];
+  glGetIntegerv(GL_VIEWPORT, viewport);
+
+  GLdouble xlabel_x, xlabel_y, xlabel_z;
+  gluProject(12, 0, 0, mat_model, mat_proj, viewport, &xlabel_x, &xlabel_y, &xlabel_z);
+  xlabel_x = round(xlabel_x); xlabel_y = round(xlabel_y);
+
+  GLdouble ylabel_x, ylabel_y, ylabel_z;
+  gluProject(0, 12, 0, mat_model, mat_proj, viewport, &ylabel_x, &ylabel_y, &ylabel_z);
+  ylabel_x = round(ylabel_x); ylabel_y = round(ylabel_y);
+
+  GLdouble zlabel_x, zlabel_y, zlabel_z;
+  gluProject(0, 0, 12, mat_model, mat_proj, viewport, &zlabel_x, &zlabel_y, &zlabel_z);
+  zlabel_x = round(zlabel_x); zlabel_y = round(zlabel_y);
+
+  glMatrixMode(GL_PROJECTION);
+  glLoadIdentity();
+  glTranslated(-1, -1, 0);
+  glScaled(2.0/viewport[2], 2.0/viewport[3], 1);
+
+  glMatrixMode(GL_MODELVIEW);
+  glLoadIdentity();
+
+  // FIXME: This was an attempt to keep contrast with background, but is suboptimal
+  // (e.g. nearly invisible against a gray background).
+//    int r,g,b;
+//    r=g=b=0;
+//    bgcol.getRgb(&r, &g, &b);
+//    glColor3f((255.0f-r)/255.0f, (255.0f-g)/255.0f, (255.0f-b)/255.0f);
+  glColor3f(0.0f, 0.0f, 0.0f);
+  glBegin(GL_LINES);
+  // X Label
+  glVertex3d(xlabel_x-3, xlabel_y-3, 0); glVertex3d(xlabel_x+3, xlabel_y+3, 0);
+  glVertex3d(xlabel_x-3, xlabel_y+3, 0); glVertex3d(xlabel_x+3, xlabel_y-3, 0);
+  // Y Label
+  glVertex3d(ylabel_x-3, ylabel_y-3, 0); glVertex3d(ylabel_x+3, ylabel_y+3, 0);
+  glVertex3d(ylabel_x-3, ylabel_y+3, 0); glVertex3d(ylabel_x, ylabel_y, 0);
+  // Z Label
+  glVertex3d(zlabel_x-3, zlabel_y-3, 0); glVertex3d(zlabel_x+3, zlabel_y-3, 0);
+  glVertex3d(zlabel_x-3, zlabel_y+3, 0); glVertex3d(zlabel_x+3, zlabel_y+3, 0);
+  glVertex3d(zlabel_x-3, zlabel_y-3, 0); glVertex3d(zlabel_x+3, zlabel_y+3, 0);
+  glEnd();
+
+  //Restore perspective for next paint
+  if(!orthomode)
+    GLView::setupGimbalPerspective();
+}
+
+void GLView::showAxes()
+{
+	// Large gray axis cross inline with the model
+	// FIXME: This is always gray - adjust color to keep contrast with background
+  glLineWidth(1);
+  glColor3d(0.5, 0.5, 0.5);
+  glBegin(GL_LINES);
+  double l = viewer_distance/10;
+  glVertex3d(-l, 0, 0);
+  glVertex3d(+l, 0, 0);
+  glVertex3d(0, -l, 0);
+  glVertex3d(0, +l, 0);
+  glVertex3d(0, 0, -l);
+  glVertex3d(0, 0, +l);
+  glEnd();
+}
+
+void GLView::showCrosshairs()
+{
+	// FIXME: this might not work with non-gimbal camera?
+  // FIXME: Crosshairs and axes are lighted, this doesn't make sense and causes them
+  // to change color based on view orientation.
+  glLineWidth(3);
+  Color4f col = RenderSettings::inst()->color(RenderSettings::CROSSHAIR_COLOR);
+  glColor3f(col[0], col[1], col[2]);
+  glBegin(GL_LINES);
+  for (double xf = -1; xf <= +1; xf += 2)
+  for (double yf = -1; yf <= +1; yf += 2) {
+    double vd = viewer_distance/20;
+    glVertex3d(-xf*vd, -yf*vd, -vd);
+    glVertex3d(+xf*vd, +yf*vd, +vd);
+  }
+  glEnd();
+}
 
 /*
 
