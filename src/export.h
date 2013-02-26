@@ -3,14 +3,15 @@
 
 #include <iostream>
 #include "Tree.h"
+#include "linalg.h"
 
 #ifdef ENABLE_CGAL
 
 void export_stl(class CGAL_Nef_polyhedron *root_N, std::ostream &output);
 void export_off(CGAL_Nef_polyhedron *root_N, std::ostream &output);
 void export_dxf(CGAL_Nef_polyhedron *root_N, std::ostream &output);
-void export_png_with_cgal(CGAL_Nef_polyhedron *root_N, std::ostream &output);
-void export_png_with_opencsg(Tree &tree, std::ostream &output);
+void export_png_with_cgal(CGAL_Nef_polyhedron *root_N, Camera &c, std::ostream &output);
+void export_png_with_opencsg(Tree &tree, Camera &c, std::ostream &output);
 
 #endif
 

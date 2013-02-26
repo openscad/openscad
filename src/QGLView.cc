@@ -65,7 +65,7 @@ static bool running_under_wine = false;
 
 void QGLView::init()
 {
-  this->object_rot << 35, 0, -25;
+  gcam.object_rot << 35, 0, -25;
 
   this->mouse_drag_active = false;
   this->statusLabel = NULL;
@@ -141,15 +141,15 @@ void QGLView::display_opencsg_warning_dialog()
 void QGLView::resizeGL(int w, int h)
 {
   GLView::resizeGL(w,h);
-  GLView::setupGimbalPerspective();
+  GLView::setupGimbalCamPerspective();
 }
 
 void QGLView::paintGL()
 {
   glEnable(GL_LIGHTING);
 
-  if (orthomode) GLView::setupGimbalOrtho(viewer_distance);
-  else GLView::setupGimbalPerspective();
+  if (orthomode) GLView::setupGimbalCamOrtho(gcam.viewer_distance);
+  else GLView::setupGimbalCamPerspective();
 
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
@@ -159,13 +159,13 @@ void QGLView::paintGL()
 
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
-  glRotated(object_rot.x(), 1.0, 0.0, 0.0);
-  glRotated(object_rot.y(), 0.0, 1.0, 0.0);
-  glRotated(object_rot.z(), 0.0, 0.0, 1.0);
+  glRotated(gcam.object_rot.x(), 1.0, 0.0, 0.0);
+  glRotated(gcam.object_rot.y(), 0.0, 1.0, 0.0);
+  glRotated(gcam.object_rot.z(), 0.0, 0.0, 1.0);
 
   if (showcrosshairs) GLView::showCrosshairs();
 
-  glTranslated(object_trans.x(), object_trans.y(), object_trans.z());
+  glTranslated(gcam.object_trans.x(), gcam.object_trans.y(), gcam.object_trans.z());
 
   if (showaxes) GLView::showAxes();
 
@@ -190,8 +190,8 @@ void QGLView::paintGL()
   if (statusLabel) {
     QString msg;
     msg.sprintf("Viewport: translate = [ %.2f %.2f %.2f ], rotate = [ %.2f %.2f %.2f ], distance = %.2f",
-      -object_trans.x(), -object_trans.y(), -object_trans.z(),
-      fmodf(360 - object_rot.x() + 90, 360), fmodf(360 - object_rot.y(), 360), fmodf(360 - object_rot.z(), 360), viewer_distance);
+      -gcam.object_trans.x(), -gcam.object_trans.y(), -gcam.object_trans.z(),
+      fmodf(360 - gcam.object_rot.x() + 90, 360), fmodf(360 - gcam.object_rot.y(), 360), fmodf(360 - gcam.object_rot.z(), 360), gcam.viewer_distance);
     statusLabel->setText(msg);
   }
 
@@ -201,12 +201,12 @@ void QGLView::paintGL()
 void QGLView::keyPressEvent(QKeyEvent *event)
 {
   if (event->key() == Qt::Key_Plus) {
-    viewer_distance *= 0.9;
+    gcam.viewer_distance *= 0.9;
     updateGL();
     return;
   }
   if (event->key() == Qt::Key_Minus) {
-    viewer_distance /= 0.9;
+    gcam.viewer_distance /= 0.9;
     updateGL();
     return;
   }
@@ -214,7 +214,7 @@ void QGLView::keyPressEvent(QKeyEvent *event)
 
 void QGLView::wheelEvent(QWheelEvent *event)
 {
-  viewer_distance *= pow(0.9, event->delta() / 120.0);
+  gcam.viewer_distance *= pow(0.9, event->delta() / 120.0);
   updateGL();
 }
 
@@ -245,25 +245,25 @@ void QGLView::mouseMoveEvent(QMouseEvent *event)
       ) {
       // Left button rotates in xz, Shift-left rotates in xy
       // On Mac, Ctrl-Left is handled as right button on other platforms
-      object_rot.x() += dy;
+      gcam.object_rot.x() += dy;
       if ((QApplication::keyboardModifiers() & Qt::ShiftModifier) != 0)
-        object_rot.y() += dx;
+        gcam.object_rot.y() += dx;
       else
-        object_rot.z() += dx;
+        gcam.object_rot.z() += dx;
 
-      normalizeAngle(object_rot.x());
-      normalizeAngle(object_rot.y());
-      normalizeAngle(object_rot.z());
+      normalizeAngle(gcam.object_rot.x());
+      normalizeAngle(gcam.object_rot.y());
+      normalizeAngle(gcam.object_rot.z());
     } else {
       // Right button pans in the xz plane
       // Middle button pans in the xy plane
       // Shift-right and Shift-middle zooms
       if ((QApplication::keyboardModifiers() & Qt::ShiftModifier) != 0) {
-        viewer_distance += (GLdouble)dy;
+        gcam.viewer_distance += (GLdouble)dy;
       } else {
 
-      double mx = +(dx) * viewer_distance/1000;
-      double mz = -(dy) * viewer_distance/1000;
+      double mx = +(dx) * gcam.viewer_distance/1000;
+      double mz = -(dy) * gcam.viewer_distance/1000;
 
       double my = 0;
 #if (QT_VERSION < QT_VERSION_CHECK(4, 7, 0))
@@ -279,9 +279,9 @@ void QGLView::mouseMoveEvent(QMouseEvent *event)
       }
 
       Matrix3d aax, aay, aaz, tm3;
-      aax = Eigen::AngleAxisd(-(object_rot.x()/180) * M_PI, Vector3d::UnitX());
-      aay = Eigen::AngleAxisd(-(object_rot.y()/180) * M_PI, Vector3d::UnitY());
-      aaz = Eigen::AngleAxisd(-(object_rot.z()/180) * M_PI, Vector3d::UnitZ());
+      aax = Eigen::AngleAxisd(-(gcam.object_rot.x()/180) * M_PI, Vector3d::UnitX());
+      aay = Eigen::AngleAxisd(-(gcam.object_rot.y()/180) * M_PI, Vector3d::UnitY());
+      aaz = Eigen::AngleAxisd(-(gcam.object_rot.z()/180) * M_PI, Vector3d::UnitZ());
       tm3 = Matrix3d::Identity();
       tm3 = aaz * (aay * (aax * tm3));
 
@@ -297,9 +297,9 @@ void QGLView::mouseMoveEvent(QMouseEvent *event)
         0,  0,  0,  1
       ;
       tm = tm * vec;
-      object_trans.x() += tm(0,3);
-      object_trans.y() += tm(1,3);
-      object_trans.z() += tm(2,3);
+      gcam.object_trans.x() += tm(0,3);
+      gcam.object_trans.y() += tm(1,3);
+      gcam.object_trans.z() += tm(2,3);
       }
     }
     updateGL();

@@ -14,10 +14,6 @@
 
 GLView::GLView()
 {
-	viewer_distance = 500;
-	object_trans << 0, 0, 0;
-  camera_eye << 0, 0, 0;
-  camera_center << 0, 0, 0;
   showedges = false;
   showfaces = true;
   orthomode = false;
@@ -56,15 +52,15 @@ void GLView::setGimbalCamera(const Eigen::Vector3d &pos, const Eigen::Vector3d &
 	PRINT("set gimbal camera not implemented");
 }
 
-void GLView::setupGimbalPerspective()
+void GLView::setupGimbalCamPerspective()
 {
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
   glFrustum(-w_h_ratio, +w_h_ratio, -(1/w_h_ratio), +(1/w_h_ratio), +10.0, +FAR_FAR_AWAY);
-  gluLookAt(0.0, -viewer_distance, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0);
+  gluLookAt(0.0, -gcam.viewer_distance, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0);
 }
 
-void GLView::setupGimbalOrtho(double distance, bool offset)
+void GLView::setupGimbalCamOrtho(double distance, bool offset)
 {
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
@@ -74,33 +70,48 @@ void GLView::setupGimbalOrtho(double distance, bool offset)
   glOrtho(-w_h_ratio*l, +w_h_ratio*l,
       -(1/w_h_ratio)*l, +(1/w_h_ratio)*l,
       -FAR_FAR_AWAY, +FAR_FAR_AWAY);
-  gluLookAt(0.0, -viewer_distance, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0);
+  gluLookAt(0.0, -gcam.viewer_distance, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0);
 }
 
-void GLView::setCamera(const Eigen::Vector3d &pos, const Eigen::Vector3d &center)
+void GLView::setVectorCamera(const Eigen::Vector3d &pos, const Eigen::Vector3d &center)
 {
-  this->camera_eye = pos;
-  this->camera_center = center;
-	viewer_distance = 10*3*(this->camera_center - this->camera_eye).norm();
+  vcam.eye = pos;
+ 	vcam.center = center;
+	// FIXME kludge for showAxes to work in VectorCamera mode
+	gcam.viewer_distance = 10*3*(vcam.center - vcam.eye).norm();
 }
 
-void GLView::setupPerspective()
+void GLView::setupVectorCamPerspective()
 {
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
-  double dist = (this->camera_center - this->camera_eye).norm();
+  double dist = (vcam.center - vcam.eye).norm();
   gluPerspective(45, w_h_ratio, 0.1*dist, 100*dist);
 }
 
-void GLView::setupOrtho(bool offset)
+void GLView::setupVectorCamOrtho(bool offset)
 {
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
   if (offset) glTranslated(-0.8, -0.8, 0);
-  double l = (this->camera_center - this->camera_eye).norm() / 10;
+  double l = (vcam.center - vcam.eye).norm() / 10;
   glOrtho(-w_h_ratio*l, +w_h_ratio*l,
           -(1/w_h_ratio)*l, +(1/w_h_ratio)*l,
           -FAR_FAR_AWAY, +FAR_FAR_AWAY);
+}
+
+void GLView::setCamera( Camera &cam )
+{
+	// FIXME : use boost::variant, like value.cc does
+	if (cam.camtype == Camera::NULL_CAMERA) {
+		return;
+	} else if (cam.camtype == Camera::GIMBAL_CAMERA) {
+		GimbalCamera *gc = dynamic_cast<GimbalCamera *>( &cam );
+		setGimbalCamera( gc->object_trans, gc->object_rot, gc->viewer_distance );
+	} else if (cam.camtype == Camera::VECTOR_CAMERA) {
+		VectorCamera *vc = dynamic_cast<VectorCamera *>( &cam );
+		setVectorCamera( vc->eye, vc->center );
+	}
 }
 
 #ifdef ENABLE_OPENCSG
@@ -286,13 +297,13 @@ void GLView::showSmallaxes()
   // Small axis cross in the lower left corner
   glDepthFunc(GL_ALWAYS);
 
-	GLView::setupGimbalOrtho(1000,true);
+	GLView::setupGimbalCamOrtho(1000,true);
 
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
-  glRotated(object_rot.x(), 1.0, 0.0, 0.0);
-  glRotated(object_rot.y(), 0.0, 1.0, 0.0);
-  glRotated(object_rot.z(), 0.0, 0.0, 1.0);
+  glRotated(gcam.object_rot.x(), 1.0, 0.0, 0.0);
+  glRotated(gcam.object_rot.y(), 0.0, 1.0, 0.0);
+  glRotated(gcam.object_rot.z(), 0.0, 0.0, 1.0);
 
   glLineWidth(1);
   glBegin(GL_LINES);
@@ -355,17 +366,19 @@ void GLView::showSmallaxes()
 
   //Restore perspective for next paint
   if(!orthomode)
-    GLView::setupGimbalPerspective();
+    GLView::setupGimbalCamPerspective();
 }
 
 void GLView::showAxes()
 {
 	// Large gray axis cross inline with the model
 	// FIXME: This is always gray - adjust color to keep contrast with background
+	// FIXME - depends on gimbal camera 'viewer distance'.. how to fix this
+	//         for VectorCamera?
   glLineWidth(1);
   glColor3d(0.5, 0.5, 0.5);
   glBegin(GL_LINES);
-  double l = viewer_distance/10;
+  double l = gcam.viewer_distance/10;
   glVertex3d(-l, 0, 0);
   glVertex3d(+l, 0, 0);
   glVertex3d(0, -l, 0);
@@ -386,7 +399,7 @@ void GLView::showCrosshairs()
   glBegin(GL_LINES);
   for (double xf = -1; xf <= +1; xf += 2)
   for (double yf = -1; yf <= +1; yf += 2) {
-    double vd = viewer_distance/20;
+    double vd = gcam.viewer_distance/20;
     glVertex3d(-xf*vd, -yf*vd, -vd);
     glVertex3d(+xf*vd, +yf*vd, +vd);
   }

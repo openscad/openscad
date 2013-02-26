@@ -9,7 +9,6 @@
 
 OffscreenView::OffscreenView(size_t width, size_t height)
 {
-  object_rot << 35, 0, 25;
   this->ctx = create_offscreen_context(width, height);
   if ( this->ctx == NULL ) throw -1;
   GLView::initializeGL();
@@ -32,8 +31,8 @@ void OffscreenView::paintGL()
 {
   glEnable(GL_LIGHTING);
 
-  if (orthomode) setupOrtho();
-  else setupPerspective();
+  if (orthomode) setupVectorCamOrtho();
+  else setupVectorCamPerspective();
 
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
@@ -42,11 +41,11 @@ void OffscreenView::paintGL()
 
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
-  gluLookAt(this->camera_eye[0], this->camera_eye[1], this->camera_eye[2],
-            this->camera_center[0], this->camera_center[1], this->camera_center[2], 
+  gluLookAt(vcam.eye[0], vcam.eye[1], vcam.eye[2],
+            vcam.center[0], vcam.center[1], vcam.center[2],
             0.0, 0.0, 1.0);
 
-	// fixme - showcrosshairs doesnt work with non-gimbal camera
+	// fixme - showcrosshairs doesnt work with vector camera
   // if (showcrosshairs) GLView::showCrosshairs();
 
   if (showaxes) GLView::showAxes();
@@ -58,7 +57,7 @@ void OffscreenView::paintGL()
   glLineWidth(2);
   glColor3d(1.0, 0.0, 0.0);
 
-	//FIXME showSmallAxes wont work with non-gimbal camera
+	//FIXME showSmallAxes wont work with vector camera
   //if (showaxes) GLView::showSmallaxes();
 
   if (this->renderer) {

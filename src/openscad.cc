@@ -72,7 +72,8 @@ namespace fs = boost::filesystem;
 static void help(const char *progname)
 {
 	fprintf(stderr, "Usage: %s [ -o output_file [ -d deps_file ] ]\\\n"
-					"%*s[ -m make_command ] [ -D var=val [..] ] [ --render ] filename\n",
+					"%*s[ -m make_command ] [ -D var=val [..] ] [ --render ] \\\n"
+					"[ --viewport=x,y,z,xrot,yrot,zrot,dist ] filename\n",
 					progname, int(strlen(progname))+8, "");
 	exit(1);
 }
@@ -128,12 +129,15 @@ int main(int argc, char **argv)
 	const char *filename = NULL;
 	const char *output_file = NULL;
 	const char *deps_output_file = NULL;
+	GimbalCamera gimbalCamera;
+	gimbalCamera.camtype = Camera::NULL_CAMERA;
 
 	po::options_description desc("Allowed options");
 	desc.add_options()
 		("help,h", "help message")
 		("version,v", "print the version")
 		("render", "if exporting a png image, do a full CGAL render")
+		("viewport", "=x,y,z,xrot,yrot,zrot,dist for exporting png")
 		("o,o", po::value<string>(), "out-file")
 		("s,s", po::value<string>(), "stl-file")
 		("x,x", po::value<string>(), "dxf-file")
@@ -207,6 +211,15 @@ int main(int argc, char **argv)
 #endif
 
 	currentdir = boosty::stringy(fs::current_path());
+
+	if (vm.count("viewport")) {
+		vector<double> camnums = vm["viewport"].as< vector<double> >();
+		if ( camnums.size() != 7 ) {
+			fprintf(stderr,"Need 7 numbers for viewport");
+		}	else {
+			gimbalCamera.setup( camnums );
+		}
+	}
 
 	QDir exdir(QApplication::instance()->applicationDirPath());
 #ifdef Q_WS_MAC
@@ -398,9 +411,9 @@ int main(int argc, char **argv)
 				}
 				else {
 					if (vm.count("render")) {
-						export_png_with_cgal(&root_N, fstream);
+						export_png_with_cgal(&root_N, gimbalCamera, fstream);
 					} else {
-						export_png_with_opencsg(tree, fstream);
+						export_png_with_opencsg(tree, gimbalCamera, fstream);
 					}
 					fstream.close();
 				}

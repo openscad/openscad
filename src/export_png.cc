@@ -10,7 +10,7 @@
 #include "CGAL_renderer.h"
 #include "cgal.h"
 
-void export_png_with_cgal(CGAL_Nef_polyhedron *root_N, std::ostream &output)
+void export_png_with_cgal(CGAL_Nef_polyhedron *root_N, Camera &cam, std::ostream &output)
 {
 	CsgInfo csgInfo;
 	try {
@@ -32,15 +32,20 @@ void export_png_with_cgal(CGAL_Nef_polyhedron *root_N, std::ostream &output)
 		bbox = cgalRenderer.polyset->getBoundingBox();
 	}
 
-	Vector3d center = getBoundingCenter(bbox);
-	double radius = getBoundingRadius(bbox);
+	if (cam.camtype == Camera::NULL_CAMERA) {
+		csgInfo.glview->setCamera( cam );
+	} else {
+		VectorCamera vcam;
+		vcam.center = getBoundingCenter(bbox);
+		double radius = getBoundingRadius(bbox);
+		Vector3d cameradir(1, 1, -0.5);
+		vcam.eye = vcam.center - radius*2*cameradir;
+		csgInfo.glview->setCamera( vcam );
+	}
 
-	Vector3d cameradir(1, 1, -0.5);
-	Vector3d camerapos = center - radius*2*cameradir;
 	//std::cerr << center << "\n";
 	//std::cerr << radius << "\n";
 
-	csgInfo.glview->setCamera(camerapos, center);
 	csgInfo.glview->setRenderer(&cgalRenderer);
 	csgInfo.glview->paintGL();
 	csgInfo.glview->save(output);
@@ -51,7 +56,7 @@ void export_png_with_cgal(CGAL_Nef_polyhedron *root_N, std::ostream &output)
 #include <opencsg.h>
 #endif
 
-void export_png_with_opencsg(Tree &tree, std::ostream &output)
+void export_png_with_opencsg(Tree &tree, Camera &cam, std::ostream &output)
 {
 #ifdef ENABLE_OPENCSG
   CsgInfo_OpenCSG csgInfo = CsgInfo_OpenCSG();
@@ -71,17 +76,22 @@ void export_png_with_opencsg(Tree &tree, std::ostream &output)
 
 	OpenCSGRenderer opencsgRenderer(csgInfo.root_chain, csgInfo.highlights_chain, csgInfo.background_chain, csgInfo.glview->shaderinfo);
 
-  Vector3d center(0,0,0);
-  double radius = 1.0;
-  if (csgInfo.root_chain) {
-    BoundingBox bbox = csgInfo.root_chain->getBoundingBox();
-    center = (bbox.min() + bbox.max()) / 2;
-    radius = (bbox.max() - bbox.min()).norm() / 2;
-  }
+	if (cam.camtype == Camera::NULL_CAMERA) {
+		csgInfo.glview->setCamera( cam );
+	} else {
+		VectorCamera vcam;
+		vcam.center << 0,0,0;
+	  double radius = 1.0;
+	  if (csgInfo.root_chain) {
+	    BoundingBox bbox = csgInfo.root_chain->getBoundingBox();
+	    vcam.center = (bbox.min() + bbox.max()) / 2;
+	    radius = (bbox.max() - bbox.min()).norm() / 2;
+	  }
+	  Vector3d cameradir(1, 1, -0.5);
+	  vcam.eye = vcam.center - radius*1.8*cameradir;
+	  csgInfo.glview->setCamera( vcam );
+	}
 
-  Vector3d cameradir(1, 1, -0.5);
-  Vector3d camerapos = center - radius*1.8*cameradir;
-  csgInfo.glview->setCamera(camerapos, center);
   csgInfo.glview->setRenderer(&opencsgRenderer);
   OpenCSG::setContext(0);
   OpenCSG::setOption(OpenCSG::OffscreenSetting, OpenCSG::FrameBufferObject);

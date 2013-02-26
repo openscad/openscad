@@ -3,15 +3,19 @@
 
 /* GLView: A basic OpenGL rectangle for rendering images.
 
-Inherited by
+This class is inherited by
 
 *QGLview (for Qt GUI)
 *OffscreenView (used in tests and for offscreen command-line rendering).
 
-There are two different types of cameras. A 'gimbal' based camera set
-using translation & euler-angles (object_trans/object_rot/distance) and a
-'plain' camera set using eye-position, 'look at' center point, and 'up'
-The camera systems are not totally integrated or interchangable (yet)
+There are two different types of cameras (in linalg.h)
+
+*Gimbal camera - uses Euler Angles, object translation, and viewer distance
+*Vector camera - uses 'eye', 'center', and 'up' vectors
+
+Currently, the two cameras are not kept in sync and there is no way
+to switch between them at runtime. QGLView uses GimbalCamera and
+OffscreenView uses VectorCamera.
 
 */
 
@@ -24,6 +28,7 @@ The camera systems are not totally integrated or interchangable (yet)
 #include "system-gl.h"
 #include <iostream>
 #include "renderer.h"
+#include "linalg.h"
 
 #define FAR_FAR_AWAY 100000.0
 
@@ -39,12 +44,14 @@ public:
 	virtual void paintGL() = 0;
 
 	void setGimbalCamera(const Eigen::Vector3d &pos, const Eigen::Vector3d &rot, double distance);
-	void setupGimbalPerspective();
-	void setupGimbalOrtho(double distance, bool offset=false);
+	void setupGimbalCamPerspective();
+	void setupGimbalCamOrtho(double distance, bool offset=false);
 
-	void setCamera(const Eigen::Vector3d &pos, const Eigen::Vector3d &center);
-	void setupPerspective();
-	void setupOrtho(bool offset=false);
+	void setVectorCamera(const Eigen::Vector3d &pos, const Eigen::Vector3d &center);
+	void setupVectorCamPerspective();
+	void setupVectorCamOrtho(bool offset=false);
+
+	void setCamera( Camera &cam );
 
 	void showCrosshairs();
 	void showAxes();
@@ -55,17 +62,16 @@ public:
 
 	size_t width;
 	size_t height;
-	double viewer_distance;
   double w_h_ratio;
   bool orthomode;
   bool showaxes;
   bool showfaces;
   bool showedges;
   bool showcrosshairs;
-	Eigen::Vector3d object_trans;
-	Eigen::Vector3d object_rot;
-  Eigen::Vector3d camera_eye;
-  Eigen::Vector3d camera_center;
+
+	// fixme -- use boost::variant like in value.cc ??
+	VectorCamera vcam;
+	GimbalCamera gcam;
 
 #ifdef ENABLE_OPENCSG
   GLint shaderinfo[11];
