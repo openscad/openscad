@@ -418,12 +418,14 @@ find_installed_version()
   depname=$1
 
   # try to find/parse headers and/or binary output
+  # break on the first match. (change the order to change precedence)
   if [ ! $fsv_tmp ]; then
-    for syspath in "/opt" "/usr/pkg" "/usr" "/usr/local" $OPENSCAD_LIBRARIES; do
+    for syspath in "/usr/local" "/opt/local" "/usr/pkg" "/usr" $OPENSCAD_LIBRARIES; do
       if [ -e $syspath ]; then
         debug $depname"_sysver" $syspath
         eval $depname"_sysver" $syspath
         fsv_tmp=`eval echo "$"$depname"_sysver_result"`
+		if [ $fsv_tmp ]; then break; fi
       fi
     done
   fi
@@ -470,6 +472,24 @@ check_misc()
 {
   if [ "`uname -a|grep -i netbsd`" ]; then
     echo "NetBSD: Please manually verify the X Sets have been installed"
+  fi
+
+  if [ "`uname -a|grep -i darwin`" ]; then
+	sparkle=
+	libs="~/Library /Library"
+    for libhome in $libs; do
+		echo "$libhome/Frameworks/Sparkle.framework..."
+		if [ -d $libhome/Frameworks/Sparkle.framework ]; then
+			echo "Found in $libhome"
+			sparkle=$libhome
+			break
+		fi
+	done
+	if [ -n "$sparkle" ]; then
+		echo "OS X: Make sure Sparkle.framework is installed in your Frameworks path"
+	else
+		echo "OS X: Sparkle.framework found in $libhome"
+	fi
   fi
 }
 
