@@ -180,17 +180,18 @@ int csgtestcore(int argc, char *argv[], test_type_e test_type)
 	}
 
 	if (sysinfo_dump) cout << info_dump(csgInfo.glview);
-	Vector3d center(0,0,0);
+	VectorCamera vc;
+	vc.center << 0,0,0;
 	double radius = 1.0;
 
 	if (csgInfo.root_chain) {
 		BoundingBox bbox = csgInfo.root_chain->getBoundingBox();
-		center = (bbox.min() + bbox.max()) / 2;
+		vc.center = (bbox.min() + bbox.max()) / 2;
 		radius = (bbox.max() - bbox.min()).norm() / 2;
 	}
 	Vector3d cameradir(1, 1, -0.5);
-	Vector3d camerapos = center - radius*1.8*cameradir;
-	csgInfo.glview->setCamera(camerapos, center);
+	vc.eye = vc.center - radius*1.8*cameradir;
+	csgInfo.glview->setCamera(vc);
 
 	OpenCSGRenderer opencsgRenderer(csgInfo.root_chain, csgInfo.highlights_chain, csgInfo.background_chain, csgInfo.glview->shaderinfo);
 	ThrownTogetherRenderer thrownTogetherRenderer(csgInfo.root_chain, csgInfo.highlights_chain, csgInfo.background_chain);

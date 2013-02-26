@@ -49,6 +49,9 @@ void GLView::resizeGL(int w, int h)
 
 void GLView::setGimbalCamera(const Eigen::Vector3d &pos, const Eigen::Vector3d &rot, double distance)
 {
+	(void) pos;
+	(void) rot;
+	(void) distance;
 	PRINT("set gimbal camera not implemented");
 }
 
