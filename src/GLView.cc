@@ -20,6 +20,7 @@ GLView::GLView()
   showaxes = false;
   showcrosshairs = false;
 	renderer = NULL;
+	camtype = Camera::NONE;
 #ifdef ENABLE_OPENCSG
   is_opencsg_capable = false;
   has_shaders = false;
@@ -49,10 +50,10 @@ void GLView::resizeGL(int w, int h)
 
 void GLView::setGimbalCamera(const Eigen::Vector3d &pos, const Eigen::Vector3d &rot, double distance)
 {
-	(void) pos;
-	(void) rot;
-	(void) distance;
-	PRINT("set gimbal camera not implemented");
+	gcam.object_trans = pos;
+	gcam.object_rot = rot;
+	gcam.viewer_distance = distance;
+	camtype = Camera::GIMBAL;
 }
 
 void GLView::setupGimbalCamPerspective()
@@ -80,6 +81,7 @@ void GLView::setVectorCamera(const Eigen::Vector3d &pos, const Eigen::Vector3d &
 {
   vcam.eye = pos;
  	vcam.center = center;
+	camtype = Camera::VECTOR;
 	// FIXME kludge for showAxes to work in VectorCamera mode
 	gcam.viewer_distance = 10*3*(vcam.center - vcam.eye).norm();
 }
@@ -105,16 +107,22 @@ void GLView::setupVectorCamOrtho(bool offset)
 
 void GLView::setCamera( Camera &cam )
 {
-	// FIXME : use boost::variant, like value.cc does
-	if (cam.camtype == Camera::NULL_CAMERA) {
+	if ( cam.type() == Camera::NONE ) {
 		return;
-	} else if (cam.camtype == Camera::GIMBAL_CAMERA) {
-		GimbalCamera *gc = dynamic_cast<GimbalCamera *>( &cam );
-		setGimbalCamera( gc->object_trans, gc->object_rot, gc->viewer_distance );
-	} else if (cam.camtype == Camera::VECTOR_CAMERA) {
-		VectorCamera *vc = dynamic_cast<VectorCamera *>( &cam );
-		setVectorCamera( vc->eye, vc->center );
+	} else if ( cam.type() == Camera::GIMBAL ) {
+		GimbalCamera gc = boost::get<GimbalCamera>(cam.value);
+		setGimbalCamera( gc.object_trans, gc.object_rot, gc.viewer_distance );
+	} else if ( cam.type() == Camera::VECTOR ) {
+		VectorCamera vc = boost::get<VectorCamera>(cam.value);
+		setVectorCamera( vc.eye, vc.center );
 	}
+}
+
+void GLView::paintGL()
+{
+	if (camtype == Camera::NONE) return;
+	else if (camtype == Camera::GIMBAL) gimbalCamPaintGL();
+	else if (camtype == Camera::VECTOR) vectorCamPaintGL();
 }
 
 #ifdef ENABLE_OPENCSG
@@ -291,6 +299,84 @@ void GLView::initializeGL()
 #ifdef ENABLE_OPENCSG
 	enable_opencsg_shaders();
 #endif
+}
+
+void GLView::vectorCamPaintGL()
+{
+  glEnable(GL_LIGHTING);
+
+  if (orthomode) setupVectorCamOrtho();
+  else setupVectorCamPerspective();
+
+  glMatrixMode(GL_MODELVIEW);
+  glLoadIdentity();
+
+  glClearColor(1.0f, 1.0f, 0.92f, 1.0f);
+
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+
+  gluLookAt(vcam.eye[0], vcam.eye[1], vcam.eye[2],
+            vcam.center[0], vcam.center[1], vcam.center[2],
+            0.0, 0.0, 1.0);
+
+  // fixme - showcrosshairs doesnt work with vector camera
+  // if (showcrosshairs) GLView::showCrosshairs();
+
+  if (showaxes) GLView::showAxes();
+
+  glDepthFunc(GL_LESS);
+  glCullFace(GL_BACK);
+  glDisable(GL_CULL_FACE);
+
+  glLineWidth(2);
+  glColor3d(1.0, 0.0, 0.0);
+  //FIXME showSmallAxes wont work with vector camera
+  //if (showaxes) GLView::showSmallaxes();
+
+  if (this->renderer) {
+    this->renderer->draw(showfaces, showedges);
+  }
+}
+
+void GLView::gimbalCamPaintGL()
+{
+  glEnable(GL_LIGHTING);
+
+  if (orthomode) GLView::setupGimbalCamOrtho(gcam.viewer_distance);
+  else GLView::setupGimbalCamPerspective();
+
+  glMatrixMode(GL_MODELVIEW);
+  glLoadIdentity();
+
+  Color4f bgcol = RenderSettings::inst()->color(RenderSettings::BACKGROUND_COLOR);
+  glClearColor(bgcol[0], bgcol[1], bgcol[2], 0.0);
+
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+  glRotated(gcam.object_rot.x(), 1.0, 0.0, 0.0);
+  glRotated(gcam.object_rot.y(), 0.0, 1.0, 0.0);
+  glRotated(gcam.object_rot.z(), 0.0, 0.0, 1.0);
+
+  if (showcrosshairs) GLView::showCrosshairs();
+
+  glTranslated(gcam.object_trans.x(), gcam.object_trans.y(), gcam.object_trans.z() );
+
+  if (showaxes) GLView::showAxes();
+
+  glDepthFunc(GL_LESS);
+  glCullFace(GL_BACK);
+  glDisable(GL_CULL_FACE);
+  glLineWidth(2);
+  glColor3d(1.0, 0.0, 0.0);
+
+  if (this->renderer) {
+#if defined(ENABLE_MDI) && defined(ENABLE_OPENCSG)
+    // FIXME: This belongs in the OpenCSG renderer, but it doesn't know about this ID yet
+    OpenCSG::setContext(this->opencsg_id);
+#endif
+    this->renderer->draw(showfaces, showedges);
+	}
+  // Small axis cross in the lower left corner
+  if (showaxes) GLView::showSmallaxes();
 }
 
 void GLView::showSmallaxes()

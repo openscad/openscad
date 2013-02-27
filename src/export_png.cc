@@ -32,20 +32,19 @@ void export_png_with_cgal(CGAL_Nef_polyhedron *root_N, Camera &cam, std::ostream
 		bbox = cgalRenderer.polyset->getBoundingBox();
 	}
 
-	if (cam.camtype == Camera::NULL_CAMERA) {
+	if (cam.type() == Camera::NONE) {
 		VectorCamera vcam;
 		vcam.center = getBoundingCenter(bbox);
 		double radius = getBoundingRadius(bbox);
 		Vector3d cameradir(1, 1, -0.5);
 		vcam.eye = vcam.center - radius*2*cameradir;
-		csgInfo.glview->setCamera( vcam );
-	} else {
-		csgInfo.glview->setCamera( cam );
+		cam.value = vcam;
 	}
 
 	//std::cerr << center << "\n";
 	//std::cerr << radius << "\n";
 
+	csgInfo.glview->setCamera( cam );
 	csgInfo.glview->setRenderer(&cgalRenderer);
 	csgInfo.glview->paintGL();
 	csgInfo.glview->save(output);
@@ -76,7 +75,7 @@ void export_png_with_opencsg(Tree &tree, Camera &cam, std::ostream &output)
 
 	OpenCSGRenderer opencsgRenderer(csgInfo.root_chain, csgInfo.highlights_chain, csgInfo.background_chain, csgInfo.glview->shaderinfo);
 
-	if (cam.camtype == Camera::NULL_CAMERA) {
+	if (cam.type() == Camera::NONE) {
 		VectorCamera vcam;
 		vcam.center << 0,0,0;
 	  double radius = 1.0;
@@ -87,11 +86,10 @@ void export_png_with_opencsg(Tree &tree, Camera &cam, std::ostream &output)
 	  }
 	  Vector3d cameradir(1, 1, -0.5);
 	  vcam.eye = vcam.center - radius*1.8*cameradir;
-	  csgInfo.glview->setCamera( vcam );
-	} else {
-		csgInfo.glview->setCamera( cam );
+		cam.value = vcam;
 	}
 
+	csgInfo.glview->setCamera( cam );
   csgInfo.glview->setRenderer(&opencsgRenderer);
   OpenCSG::setContext(0);
   OpenCSG::setOption(OpenCSG::OffscreenSetting, OpenCSG::FrameBufferObject);

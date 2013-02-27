@@ -57,6 +57,8 @@
 #include "SparkleAutoUpdater.h"
 #endif
 
+#include "Camera.h"
+#include <boost/algorithm/string.hpp>
 #include <boost/program_options.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/foreach.hpp>
@@ -71,10 +73,11 @@ namespace fs = boost::filesystem;
 
 static void help(const char *progname)
 {
+	int tab = int(strlen(progname))+8;
 	fprintf(stderr, "Usage: %s [ -o output_file [ -d deps_file ] ]\\\n"
 					"%*s[ -m make_command ] [ -D var=val [..] ] [ --render ] \\\n"
-					"[ --viewport=x,y,z,xrot,yrot,zrot,dist ] filename\n",
-					progname, int(strlen(progname))+8, "");
+					"%*s[ --viewport=x,y,z,xrot,yrot,zrot,dist ] filename\n",
+					progname, tab, "", tab, "");
 	exit(1);
 }
 
@@ -92,6 +95,8 @@ QString examplesdir;
 
 using std::string;
 using std::vector;
+using boost::lexical_cast;
+using boost::is_any_of;
 
 int main(int argc, char **argv)
 {
@@ -129,15 +134,15 @@ int main(int argc, char **argv)
 	const char *filename = NULL;
 	const char *output_file = NULL;
 	const char *deps_output_file = NULL;
-	GimbalCamera gimbalCamera;
-	gimbalCamera.camtype = Camera::NULL_CAMERA;
+	Camera camera;
+	camera.value = NullCamera();
 
 	po::options_description desc("Allowed options");
 	desc.add_options()
 		("help,h", "help message")
 		("version,v", "print the version")
 		("render", "if exporting a png image, do a full CGAL render")
-		("viewport", "=x,y,z,xrot,yrot,zrot,dist for exporting png")
+		("gimbalcam", po::value<string>(), "=x,y,z,xrot,yrot,zrot,dist for exporting png")
 		("o,o", po::value<string>(), "out-file")
 		("s,s", po::value<string>(), "stl-file")
 		("x,x", po::value<string>(), "dxf-file")
@@ -212,12 +217,18 @@ int main(int argc, char **argv)
 
 	currentdir = boosty::stringy(fs::current_path());
 
-	if (vm.count("viewport")) {
-		vector<double> camnums = vm["viewport"].as< vector<double> >();
-		if ( camnums.size() != 7 ) {
-			fprintf(stderr,"Need 7 numbers for viewport");
-		}	else {
-			gimbalCamera.setup( camnums );
+	if (vm.count("gimbalcam")) {
+		std::cout << "x:" << vm["gimbalcam"].as<string>().c_str() << "\n";
+		vector<string> strs;
+		vector<double> nums;
+		split(strs, vm["gimbalcam"].as<string>(), is_any_of(","));
+		if ( strs.size() != 7 ) {
+			fprintf(stderr,"Need 7 numbers for gimbalcam\n");
+		} else {
+			BOOST_FOREACH(string &s, strs) nums.push_back(lexical_cast<double>(s));
+			GimbalCamera gcam;
+			gcam.setup( nums );
+			camera.value = gcam;
 		}
 	}
 
@@ -411,9 +422,9 @@ int main(int argc, char **argv)
 				}
 				else {
 					if (vm.count("render")) {
-						export_png_with_cgal(&root_N, gimbalCamera, fstream);
+						export_png_with_cgal(&root_N, camera, fstream);
 					} else {
-						export_png_with_opencsg(tree, gimbalCamera, fstream);
+						export_png_with_opencsg(tree, camera, fstream);
 					}
 					fstream.close();
 				}

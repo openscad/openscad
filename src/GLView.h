@@ -29,6 +29,7 @@ OffscreenView uses VectorCamera.
 #include <iostream>
 #include "renderer.h"
 #include "linalg.h"
+#include "Camera.h"
 
 #define FAR_FAR_AWAY 100000.0
 
@@ -41,16 +42,21 @@ public:
 
 	void initializeGL();
 	void resizeGL(int w, int h);
-	virtual void paintGL() = 0;
+	virtual void paintGL();
 
 	void setGimbalCamera(const Eigen::Vector3d &pos, const Eigen::Vector3d &rot, double distance);
 	void setupGimbalCamPerspective();
 	void setupGimbalCamOrtho(double distance, bool offset=false);
+	void gimbalCamPaintGL();
 
 	void setVectorCamera(const Eigen::Vector3d &pos, const Eigen::Vector3d &center);
 	void setupVectorCamPerspective();
 	void setupVectorCamOrtho(bool offset=false);
+	void vectorCamPaintGL();
 
+	void setCamera( NullCamera &nc );
+	void setCamera( GimbalCamera &gc );
+	void setCamera( VectorCamera &vc );
 	void setCamera( Camera &cam );
 
 	void showCrosshairs();
@@ -69,7 +75,7 @@ public:
   bool showedges;
   bool showcrosshairs;
 
-	// fixme -- use boost::variant like in value.cc ??
+	Camera::CameraType camtype;
 	VectorCamera vcam;
 	GimbalCamera gcam;
 

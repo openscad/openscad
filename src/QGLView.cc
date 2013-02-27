@@ -65,7 +65,10 @@ static bool running_under_wine = false;
 
 void QGLView::init()
 {
+	camtype = Camera::GIMBAL;
   gcam.object_rot << 35, 0, -25;
+  gcam.object_trans << 0, 0, 0;
+  gcam.viewer_distance = 500;
 
   this->mouse_drag_active = false;
   this->statusLabel = NULL;
@@ -146,46 +149,7 @@ void QGLView::resizeGL(int w, int h)
 
 void QGLView::paintGL()
 {
-  glEnable(GL_LIGHTING);
-
-  if (orthomode) GLView::setupGimbalCamOrtho(gcam.viewer_distance);
-  else GLView::setupGimbalCamPerspective();
-
-  glMatrixMode(GL_MODELVIEW);
-  glLoadIdentity();
-
-  Color4f bgcol = RenderSettings::inst()->color(RenderSettings::BACKGROUND_COLOR);
-  glClearColor(bgcol[0], bgcol[1], bgcol[2], 0.0);
-
-  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-
-  glRotated(gcam.object_rot.x(), 1.0, 0.0, 0.0);
-  glRotated(gcam.object_rot.y(), 0.0, 1.0, 0.0);
-  glRotated(gcam.object_rot.z(), 0.0, 0.0, 1.0);
-
-  if (showcrosshairs) GLView::showCrosshairs();
-
-  glTranslated(gcam.object_trans.x(), gcam.object_trans.y(), gcam.object_trans.z());
-
-  if (showaxes) GLView::showAxes();
-
-  glDepthFunc(GL_LESS);
-  glCullFace(GL_BACK);
-  glDisable(GL_CULL_FACE);
-
-  glLineWidth(2);
-  glColor3d(1.0, 0.0, 0.0);
-
-  if (this->renderer) {
-#if defined(ENABLE_MDI) && defined(ENABLE_OPENCSG)
-    // FIXME: This belongs in the OpenCSG renderer, but it doesn't know about this ID yet
-    OpenCSG::setContext(this->opencsg_id);
-#endif
-    this->renderer->draw(showfaces, showedges);
-  }
-
-  // Small axis cross in the lower left corner
-  if (showaxes) GLView::showSmallaxes();
+	GLView::gimbalCamPaintGL();
 
   if (statusLabel) {
     QString msg;

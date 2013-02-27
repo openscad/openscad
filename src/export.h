@@ -3,7 +3,7 @@
 
 #include <iostream>
 #include "Tree.h"
-#include "linalg.h"
+#include "Camera.h"
 
 #ifdef ENABLE_CGAL
 

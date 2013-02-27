@@ -230,6 +230,7 @@ HEADERS += src/version_check.h \
            src/mathc99.h \
            src/memory.h \
            src/linalg.h \
+           src/Camera.h \
            src/system-gl.h \
            src/stl-utils.h \
            src/svg.h \

@@ -27,43 +27,10 @@ void OffscreenView::display_opencsg_warning()
 }
 #endif
 
-void OffscreenView::paintGL()
+/*void OffscreenView::paintGL()
 {
-  glEnable(GL_LIGHTING);
-
-  if (orthomode) setupVectorCamOrtho();
-  else setupVectorCamPerspective();
-
-  glMatrixMode(GL_MODELVIEW);
-  glLoadIdentity();
-
-  glClearColor(1.0f, 1.0f, 0.92f, 1.0f);
-
-  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-
-  gluLookAt(vcam.eye[0], vcam.eye[1], vcam.eye[2],
-            vcam.center[0], vcam.center[1], vcam.center[2],
-            0.0, 0.0, 1.0);
-
-	// fixme - showcrosshairs doesnt work with vector camera
-  // if (showcrosshairs) GLView::showCrosshairs();
-
-  if (showaxes) GLView::showAxes();
-
-  glDepthFunc(GL_LESS);
-  glCullFace(GL_BACK);
-  glDisable(GL_CULL_FACE);
-
-  glLineWidth(2);
-  glColor3d(1.0, 0.0, 0.0);
-
-	//FIXME showSmallAxes wont work with vector camera
-  //if (showaxes) GLView::showSmallaxes();
-
-  if (this->renderer) {
-    this->renderer->draw(showfaces, showedges);
-  }
-}
+	GLView::vectorCamPaintGL();
+}*/
 
 bool OffscreenView::save(const char *filename)
 {
