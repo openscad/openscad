@@ -45,10 +45,6 @@ public:
 private:
 	void init();
 
-	std::string rendererInfo;
-
-	bool showcrosshairs;
-
 	bool mouse_drag_active;
 	QPoint last_mouse;
 

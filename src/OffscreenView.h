@@ -15,11 +15,11 @@
 class OffscreenView : public GLView
 {
 public:
-	OffscreenView(size_t width, size_t height); // not
-	~OffscreenView(); // not
-//	void paintGL(); //
+	OffscreenView(size_t width, size_t height);
+	~OffscreenView();
 	bool save(std::ostream &output);
-	OffscreenContext *ctx; // not
+	OffscreenContext *ctx;
+
 	// overrides
 	bool save(const char *filename);
   std::string getRendererInfo() const;

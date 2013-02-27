@@ -27,8 +27,6 @@
 #include "QGLView.h"
 #include "Preferences.h"
 #include "renderer.h"
-//#include "rendersettings.h"
-//#include "linalg.h"
 
 #include <QApplication>
 #include <QWheelEvent>

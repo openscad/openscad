@@ -27,11 +27,6 @@ void OffscreenView::display_opencsg_warning()
 }
 #endif
 
-/*void OffscreenView::paintGL()
-{
-	GLView::vectorCamPaintGL();
-}*/
-
 bool OffscreenView::save(const char *filename)
 {
   return save_framebuffer(this->ctx, filename);
