@@ -195,7 +195,7 @@ void export_dxf(CGAL_Nef_polyhedron *root_N, std::ostream &output)
 	setlocale(LC_NUMERIC, "");      // Set default locale
 }
 
-#endif
+#endif // ENABLE_CGAL
 
 #ifdef DEBUG
 #include <boost/foreach.hpp>

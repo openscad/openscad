@@ -74,7 +74,6 @@ private slots:
 private:
 	void openFile(const QString &filename);
 	void refreshDocument();
-	AbstractNode *find_root_tag(AbstractNode *n);
 	void updateTemporalVariables();
 	bool fileChangedOnDisk();
 	bool includesChanged();

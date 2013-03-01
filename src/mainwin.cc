@@ -48,6 +48,7 @@
 #include "ProgressWidget.h"
 #include "ThrownTogetherRenderer.h"
 #include "csgtermnormalizer.h"
+#include "QGLView.h"
 #include "AutoUpdater.h"
 #ifdef Q_OS_MAC
 #include "CocoaUtils.h"
@@ -194,8 +195,8 @@ MainWindow::MainWindow(const QString &filename)
 	editor->setTabStopWidth(30);
 	editor->setLineWrapping(true); // Not designable
 
-	this->glview->statusLabel = new QLabel(this);
-	statusBar()->addWidget(this->glview->statusLabel);
+	this->qglview->statusLabel = new QLabel(this);
+	statusBar()->addWidget(this->qglview->statusLabel);
 
 	animate_timer = new QTimer(this);
 	connect(animate_timer, SIGNAL(timeout()), this, SLOT(updateTVal()));
@@ -305,7 +306,7 @@ MainWindow::MainWindow(const QString &filename)
 	this->viewActionOpenCSG->setVisible(false);
 #else
 	connect(this->viewActionOpenCSG, SIGNAL(triggered()), this, SLOT(viewModeOpenCSG()));
-	if (!this->glview->hasOpenCSGSupport()) {
+	if (!this->qglview->hasOpenCSGSupport()) {
 		this->viewActionOpenCSG->setEnabled(false);
 	}
 #endif
@@ -357,9 +358,9 @@ MainWindow::MainWindow(const QString &filename)
 	connect(editor->document(), SIGNAL(contentsChanged()), this, SLOT(animateUpdateDocChanged()));
 	connect(editor->document(), SIGNAL(modificationChanged(bool)), this, SLOT(setWindowModified(bool)));
 	connect(editor->document(), SIGNAL(modificationChanged(bool)), fileActionSave, SLOT(setEnabled(bool)));
-	connect(this->glview, SIGNAL(doAnimateUpdate()), this, SLOT(animateUpdate()));
+	connect(this->qglview, SIGNAL(doAnimateUpdate()), this, SLOT(animateUpdate()));
 
-	connect(Preferences::inst(), SIGNAL(requestRedraw()), this->glview, SLOT(updateGL()));
+	connect(Preferences::inst(), SIGNAL(requestRedraw()), this->qglview, SLOT(updateGL()));
 	connect(Preferences::inst(), SIGNAL(fontChanged(const QString&,uint)), 
 					this, SLOT(setFont(const QString&,uint)));
 	connect(Preferences::inst(), SIGNAL(openCSGSettingsChanged()),
@@ -598,15 +599,6 @@ void MainWindow::refreshDocument()
 	setCurrentOutput();
 }
 
-AbstractNode *MainWindow::find_root_tag(AbstractNode *n)
-{
-	BOOST_FOREACH (AbstractNode *v, n->children) {
-		if (v->modinst->isRoot()) return v;
-		if (AbstractNode *vroot = find_root_tag(v)) return vroot;
-	}
-	return NULL;
-}
-
 /*!
 	Parse and evaluate the design => this->root_node
 
@@ -618,7 +610,7 @@ bool MainWindow::compile(bool reload, bool procevents)
 	if (!compileTopLevelDocument(reload)) return false;
 
   // Invalidate renderers before we kill the CSG tree
-	this->glview->setRenderer(NULL);
+	this->qglview->setRenderer(NULL);
 	delete this->opencsgRenderer;
 	this->opencsgRenderer = NULL;
 	delete this->thrownTogetherRenderer;
@@ -782,7 +774,7 @@ void MainWindow::compileCSG(bool procevents)
 			this->opencsgRenderer = new OpenCSGRenderer(this->root_chain, 
 																									this->highlights_chain, 
 																									this->background_chain, 
-																									this->glview->shaderinfo);
+																									this->qglview->shaderinfo);
 		}
 		this->thrownTogetherRenderer = new ThrownTogetherRenderer(this->root_chain, 
 																															this->highlights_chain, 
@@ -972,7 +964,7 @@ void MainWindow::pasteViewportTranslation()
 {
 	QTextCursor cursor = editor->textCursor();
 	QString txt;
-	txt.sprintf("[ %.2f, %.2f, %.2f ]", -this->glview->object_trans_x, -this->glview->object_trans_y, -this->glview->object_trans_z);
+	txt.sprintf("[ %.2f, %.2f, %.2f ]", -qglview->gcam.object_trans.x(), -qglview->gcam.object_trans.y(), -qglview->gcam.object_trans.z());
 	cursor.insertText(txt);
 }
 
@@ -981,7 +973,7 @@ void MainWindow::pasteViewportRotation()
 	QTextCursor cursor = editor->textCursor();
 	QString txt;
 	txt.sprintf("[ %.2f, %.2f, %.2f ]",
-		fmodf(360 - this->glview->object_rot_x + 90, 360), fmodf(360 - this->glview->object_rot_y, 360), fmodf(360 - this->glview->object_rot_z, 360));
+		fmodf(360 - qglview->gcam.object_rot.x() + 90, 360), fmodf(360 - qglview->gcam.object_rot.y(), 360), fmodf(360 - qglview->gcam.object_rot.z(), 360));
 	cursor.insertText(txt);
 }
 
@@ -990,15 +982,15 @@ void MainWindow::updateTemporalVariables()
 	this->root_ctx.set_variable("$t", Value(this->e_tval->text().toDouble()));
 	
 	Value::VectorType vpt;
-	vpt.push_back(Value(-this->glview->object_trans_x));
-	vpt.push_back(Value(-this->glview->object_trans_y));
-	vpt.push_back(Value(-this->glview->object_trans_z));
+	vpt.push_back(Value(-qglview->gcam.object_trans.x()));
+	vpt.push_back(Value(-qglview->gcam.object_trans.y()));
+	vpt.push_back(Value(-qglview->gcam.object_trans.z()));
 	this->root_ctx.set_variable("$vpt", Value(vpt));
 	
 	Value::VectorType vpr;
-	vpr.push_back(Value(fmodf(360 - this->glview->object_rot_x + 90, 360)));
-	vpr.push_back(Value(fmodf(360 - this->glview->object_rot_y, 360)));
-	vpr.push_back(Value(fmodf(360 - this->glview->object_rot_z, 360)));
+	vpr.push_back(Value(fmodf(360 - qglview->gcam.object_rot.x() + 90, 360)));
+	vpr.push_back(Value(fmodf(360 - qglview->gcam.object_rot.y(), 360)));
+	vpr.push_back(Value(fmodf(360 - qglview->gcam.object_rot.z(), 360)));
 	root_ctx.set_variable("$vpr", Value(vpr));
 }
 
@@ -1177,7 +1169,7 @@ void MainWindow::actionCompile()
 	}
 
 	if (viewActionAnimate->isChecked() && e_dump->isChecked()) {
-		QImage img = this->glview->grabFrameBuffer();
+		QImage img = this->qglview->grabFrameBuffer();
 		QString filename;
 		double s = this->e_fsteps->text().toDouble();
 		double t = this->e_tval->text().toDouble();
@@ -1206,7 +1198,7 @@ void MainWindow::actionRenderCGAL()
 		return;
 	}
 
-	this->glview->setRenderer(NULL);
+	this->qglview->setRenderer(NULL);
 	delete this->cgalRenderer;
 	this->cgalRenderer = NULL;
 	if (this->root_N) {
@@ -1482,20 +1474,17 @@ void MainWindow::actionExportCSG()
 
 void MainWindow::actionExportImage()
 {
-	QImage img = this->glview->grabFrameBuffer();
 	setCurrentOutput();
 
 	QString img_filename = QFileDialog::getSaveFileName(this,
 			"Export Image", "", "PNG Files (*.png)");
 	if (img_filename.isEmpty()) {
 		PRINT("No filename specified. Image export aborted.");
-		clearCurrentOutput();
-		return;
+	} else {
+		qglview->save(img_filename.toStdString().c_str());
 	}
-
-	img.save(img_filename, "PNG");
-
 	clearCurrentOutput();
+	return;
 }
 
 void MainWindow::actionFlushCaches()
@@ -1527,10 +1516,11 @@ void MainWindow::viewModeActionsUncheck()
 */
 void MainWindow::viewModeOpenCSG()
 {
-	if (this->glview->hasOpenCSGSupport()) {
+	if (this->qglview->hasOpenCSGSupport()) {
 		viewModeActionsUncheck();
 		viewActionOpenCSG->setChecked(true);
-		this->glview->setRenderer(this->opencsgRenderer ? (Renderer *)this->opencsgRenderer : (Renderer *)this->thrownTogetherRenderer);
+		this->qglview->setRenderer(this->opencsgRenderer ? (Renderer *)this->opencsgRenderer : (Renderer *)this->thrownTogetherRenderer);
+		this->qglview->updateGL();
 	} else {
 		viewModeThrownTogether();
 	}
@@ -1544,17 +1534,18 @@ void MainWindow::viewModeCGALSurface()
 {
 	viewModeActionsUncheck();
 	viewActionCGALSurfaces->setChecked(true);
-	this->glview->setShowFaces(true);
-	this->glview->setRenderer(this->cgalRenderer);
-	this->glview->updateGL();
+	this->qglview->setShowFaces(true);
+	this->qglview->setRenderer(this->cgalRenderer);
+	this->qglview->updateGL();
 }
 
 void MainWindow::viewModeCGALGrid()
 {
 	viewModeActionsUncheck();
 	viewActionCGALGrid->setChecked(true);
-	this->glview->setShowFaces(false);
-	this->glview->setRenderer(this->cgalRenderer);
+	this->qglview->setShowFaces(false);
+	this->qglview->setRenderer(this->cgalRenderer);
+	this->qglview->updateGL();
 }
 
 #endif /* ENABLE_CGAL */
@@ -1563,31 +1554,32 @@ void MainWindow::viewModeThrownTogether()
 {
 	viewModeActionsUncheck();
 	viewActionThrownTogether->setChecked(true);
-	this->glview->setRenderer(this->thrownTogetherRenderer);
+	this->qglview->setRenderer(this->thrownTogetherRenderer);
+	this->qglview->updateGL();
 }
 
 void MainWindow::viewModeShowEdges()
 {
 	QSettings settings;
 	settings.setValue("view/showEdges",viewActionShowEdges->isChecked());
-	this->glview->setShowEdges(viewActionShowEdges->isChecked());
-	this->glview->updateGL();
+	this->qglview->setShowEdges(viewActionShowEdges->isChecked());
+	this->qglview->updateGL();
 }
 
 void MainWindow::viewModeShowAxes()
 {
 	QSettings settings;
 	settings.setValue("view/showAxes",viewActionShowAxes->isChecked());
-	this->glview->setShowAxes(viewActionShowAxes->isChecked());
-	this->glview->updateGL();
+	this->qglview->setShowAxes(viewActionShowAxes->isChecked());
+	this->qglview->updateGL();
 }
 
 void MainWindow::viewModeShowCrosshairs()
 {
 	QSettings settings;
 	settings.setValue("view/showCrosshairs",viewActionShowCrosshairs->isChecked());
-	this->glview->setShowCrosshairs(viewActionShowCrosshairs->isChecked());
-	this->glview->updateGL();
+	this->qglview->setShowCrosshairs(viewActionShowCrosshairs->isChecked());
+	this->qglview->updateGL();
 }
 
 void MainWindow::viewModeAnimate()
@@ -1625,66 +1617,50 @@ void MainWindow::animateUpdate()
 
 void MainWindow::viewAngleTop()
 {
-	this->glview->object_rot_x = 90;
-	this->glview->object_rot_y = 0;
-	this->glview->object_rot_z = 0;
-	this->glview->updateGL();
+	qglview->gcam.object_rot << 90,0,0;
+	this->qglview->updateGL();
 }
 
 void MainWindow::viewAngleBottom()
 {
-	this->glview->object_rot_x = 270;
-	this->glview->object_rot_y = 0;
-	this->glview->object_rot_z = 0;
-	this->glview->updateGL();
+	qglview->gcam.object_rot << 270,0,0;
+	this->qglview->updateGL();
 }
 
 void MainWindow::viewAngleLeft()
 {
-	this->glview->object_rot_x = 0;
-	this->glview->object_rot_y = 0;
-	this->glview->object_rot_z = 90;
-	this->glview->updateGL();
+	qglview->gcam.object_rot << 0,0,90;
+	this->qglview->updateGL();
 }
 
 void MainWindow::viewAngleRight()
 {
-	this->glview->object_rot_x = 0;
-	this->glview->object_rot_y = 0;
-	this->glview->object_rot_z = 270;
-	this->glview->updateGL();
+	qglview->gcam.object_rot << 0,0,270;
+	this->qglview->updateGL();
 }
 
 void MainWindow::viewAngleFront()
 {
-	this->glview->object_rot_x = 0;
-	this->glview->object_rot_y = 0;
-	this->glview->object_rot_z = 0;
-	this->glview->updateGL();
+	qglview->gcam.object_rot << 0,0,0;
+	this->qglview->updateGL();
 }
 
 void MainWindow::viewAngleBack()
 {
-	this->glview->object_rot_x = 0;
-	this->glview->object_rot_y = 0;
-	this->glview->object_rot_z = 180;
-	this->glview->updateGL();
+	qglview->gcam.object_rot << 0,0,180;
+	this->qglview->updateGL();
 }
 
 void MainWindow::viewAngleDiagonal()
 {
-	this->glview->object_rot_x = 35;
-	this->glview->object_rot_y = 0;
-	this->glview->object_rot_z = -25;
-	this->glview->updateGL();
+	qglview->gcam.object_rot << 35,0,-25;
+	this->qglview->updateGL();
 }
 
 void MainWindow::viewCenter()
 {
-	this->glview->object_trans_x = 0;
-	this->glview->object_trans_y = 0;
-	this->glview->object_trans_z = 0;
-	this->glview->updateGL();
+	qglview->gcam.object_trans << 0,0,0;
+	this->qglview->updateGL();
 }
 
 void MainWindow::viewPerspective()
@@ -1693,8 +1669,8 @@ void MainWindow::viewPerspective()
 	settings.setValue("view/orthogonalProjection",false);
 	viewActionPerspective->setChecked(true);
 	viewActionOrthogonal->setChecked(false);
-	this->glview->setOrthoMode(false);
-	this->glview->updateGL();
+	this->qglview->setOrthoMode(false);
+	this->qglview->updateGL();
 }
 
 void MainWindow::viewOrthogonal()
@@ -1703,8 +1679,8 @@ void MainWindow::viewOrthogonal()
 	settings.setValue("view/orthogonalProjection",true);
 	viewActionPerspective->setChecked(false);
 	viewActionOrthogonal->setChecked(true);
-	this->glview->setOrthoMode(true);
-	this->glview->updateGL();
+	this->qglview->setOrthoMode(true);
+	this->qglview->updateGL();
 }
 
 void MainWindow::hideConsole()
@@ -1775,13 +1751,11 @@ void MainWindow::helpLibrary()
 									qVersion());
 
 	if (!this->openglbox) {
-		this->openglbox = new QMessageBox(QMessageBox::Information, 
-																			"OpenGL Info", "Detailed Library Info",
-																			QMessageBox::Ok, this);
-		
+    this->openglbox = new QMessageBox(QMessageBox::Information, 
+                                      "OpenGL Info", "OpenSCAD Detailed Library Info                  ",
+                                      QMessageBox::Ok, this);
 	}
-
-	this->openglbox->setDetailedText(libinfo + this->glview->getRendererInfo());
+  this->openglbox->setDetailedText(libinfo + QString(qglview->getRendererInfo().c_str()));
 	this->openglbox->show();
 }
 

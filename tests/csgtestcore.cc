@@ -32,6 +32,8 @@
 #include <boost/program_options.hpp>
 #include <boost/filesystem.hpp>
 
+#include "CsgInfo.h"
+
 namespace po = boost::program_options;
 namespace fs = boost::filesystem;
 #include "boosty.h"
@@ -44,35 +46,6 @@ using std::cout;
 std::string commandline_commands;
 
 //#define DEBUG
-
-class CsgInfo
-{
-public:
-	CsgInfo();
-	shared_ptr<CSGTerm> root_norm_term;          // Normalized CSG products
-	class CSGChain *root_chain;
-	std::vector<shared_ptr<CSGTerm> > highlight_terms;
-	CSGChain *highlights_chain;
-	std::vector<shared_ptr<CSGTerm> > background_terms;
-	CSGChain *background_chain;
-	OffscreenView *glview;
-};
-
-CsgInfo::CsgInfo() {
-        root_chain = NULL;
-        highlights_chain = NULL;
-        background_chain = NULL;
-        glview = NULL;
-}
-
-AbstractNode *find_root_tag(AbstractNode *n)
-{
-	foreach(AbstractNode *v, n->children) {
-		if (v->modinst->tag_root) return v;
-		if (AbstractNode *vroot = find_root_tag(v)) return vroot;
-	}
-	return NULL;
-}
 
 string info_dump(OffscreenView *glview)
 {
@@ -101,7 +74,7 @@ string info_dump(OffscreenView *glview)
 	    << EIGEN_MAJOR_VERSION << "." << EIGEN_MINOR_VERSION
 	    << "\nCGAL version: " << TOSTRING(CGAL_VERSION)
 	    << "\nOpenCSG version: " << OPENCSG_VERSION_STRING
-	    << "\n" << glview->getInfo()
+	    << "\n" << glview->getRendererInfo()
 	    << "\n";
 
 	return out.str();
@@ -130,102 +103,6 @@ po::variables_map parse_options(int argc, char *argv[])
 	po::notify(vm);
 
 	return vm;
-}
-
-void enable_opencsg_shaders( OffscreenView *glview )
-{
-	bool ignore_gl_version = true;
-	const char *openscad_disable_gl20_env = getenv("OPENSCAD_DISABLE_GL20");
-	if (openscad_disable_gl20_env && !strcmp(openscad_disable_gl20_env, "0"))
-		openscad_disable_gl20_env = NULL;
-	if (glewIsSupported("GL_VERSION_2_0") && openscad_disable_gl20_env == NULL )
-	{
-		const char *vs_source =
-			"uniform float xscale, yscale;\n"
-			"attribute vec3 pos_b, pos_c;\n"
-			"attribute vec3 trig, mask;\n"
-			"varying vec3 tp, tr;\n"
-			"varying float shading;\n"
-			"void main() {\n"
-			"  vec4 p0 = gl_ModelViewProjectionMatrix * gl_Vertex;\n"
-			"  vec4 p1 = gl_ModelViewProjectionMatrix * vec4(pos_b, 1.0);\n"
-			"  vec4 p2 = gl_ModelViewProjectionMatrix * vec4(pos_c, 1.0);\n"
-			"  float a = distance(vec2(xscale*p1.x/p1.w, yscale*p1.y/p1.w), vec2(xscale*p2.x/p2.w, yscale*p2.y/p2.w));\n"
-			"  float b = distance(vec2(xscale*p0.x/p0.w, yscale*p0.y/p0.w), vec2(xscale*p1.x/p1.w, yscale*p1.y/p1.w));\n"
-			"  float c = distance(vec2(xscale*p0.x/p0.w, yscale*p0.y/p0.w), vec2(xscale*p2.x/p2.w, yscale*p2.y/p2.w));\n"
-			"  float s = (a + b + c) / 2.0;\n"
-			"  float A = sqrt(s*(s-a)*(s-b)*(s-c));\n"
-			"  float ha = 2.0*A/a;\n"
-			"  gl_Position = p0;\n"
-			"  tp = mask * ha;\n"
-			"  tr = trig;\n"
-			"  vec3 normal, lightDir;\n"
-			"  normal = normalize(gl_NormalMatrix * gl_Normal);\n"
-			"  lightDir = normalize(vec3(gl_LightSource[0].position));\n"
-			"  shading = abs(dot(normal, lightDir));\n"
-			"}\n";
-
-		const char *fs_source =
-			"uniform vec4 color1, color2;\n"
-			"varying vec3 tp, tr, tmp;\n"
-			"varying float shading;\n"
-			"void main() {\n"
-			"  gl_FragColor = vec4(color1.r * shading, color1.g * shading, color1.b * shading, color1.a);\n"
-			"  if (tp.x < tr.x || tp.y < tr.y || tp.z < tr.z)\n"
-			"    gl_FragColor = color2;\n"
-			"}\n";
-
-		GLuint vs = glCreateShader(GL_VERTEX_SHADER);
-		glShaderSource(vs, 1, (const GLchar**)&vs_source, NULL);
-		glCompileShader(vs);
-
-		GLuint fs = glCreateShader(GL_FRAGMENT_SHADER);
-		glShaderSource(fs, 1, (const GLchar**)&fs_source, NULL);
-		glCompileShader(fs);
-
-		GLuint edgeshader_prog = glCreateProgram();
-		glAttachShader(edgeshader_prog, vs);
-		glAttachShader(edgeshader_prog, fs);
-		glLinkProgram(edgeshader_prog);
-
-		glview->shaderinfo[0] = edgeshader_prog;
-		glview->shaderinfo[1] = glGetUniformLocation(edgeshader_prog, "color1");
-		glview->shaderinfo[2] = glGetUniformLocation(edgeshader_prog, "color2");
-		glview->shaderinfo[3] = glGetAttribLocation(edgeshader_prog, "trig");
-		glview->shaderinfo[4] = glGetAttribLocation(edgeshader_prog, "pos_b");
-		glview->shaderinfo[5] = glGetAttribLocation(edgeshader_prog, "pos_c");
-		glview->shaderinfo[6] = glGetAttribLocation(edgeshader_prog, "mask");
-		glview->shaderinfo[7] = glGetUniformLocation(edgeshader_prog, "xscale");
-		glview->shaderinfo[8] = glGetUniformLocation(edgeshader_prog, "yscale");
-
-		GLenum err = glGetError();
-		if (err != GL_NO_ERROR) {
-			fprintf(stderr, "OpenGL Error: %s\n", gluErrorString(err));
-		}
-
-		GLint status;
-		glGetProgramiv(edgeshader_prog, GL_LINK_STATUS, &status);
-		if (status == GL_FALSE) {
-			int loglen;
-			char logbuffer[1000];
-			glGetProgramInfoLog(edgeshader_prog, sizeof(logbuffer), &loglen, logbuffer);
-			fprintf(stderr, "OpenGL Program Linker Error:\n%.*s", loglen, logbuffer);
-		} else {
-			int loglen;
-			char logbuffer[1000];
-			glGetProgramInfoLog(edgeshader_prog, sizeof(logbuffer), &loglen, logbuffer);
-			if (loglen > 0) {
-				fprintf(stderr, "OpenGL Program Link OK:\n%.*s", loglen, logbuffer);
-			}
-			glValidateProgram(edgeshader_prog);
-			glGetProgramInfoLog(edgeshader_prog, sizeof(logbuffer), &loglen, logbuffer);
-			if (loglen > 0) {
-				fprintf(stderr, "OpenGL Program Validation results:\n%.*s", loglen, logbuffer);
-			}
-		}
-	}
-	glview->shaderinfo[9] = glview->width;
-	glview->shaderinfo[10] = glview->height;
 }
 
 int csgtestcore(int argc, char *argv[], test_type_e test_type)
@@ -289,51 +166,10 @@ int csgtestcore(int argc, char *argv[], test_type_e test_type)
 
 	Tree tree(root_node);
 
-	CsgInfo csgInfo = CsgInfo();
-	CGALEvaluator cgalevaluator(tree);
-	CSGTermEvaluator evaluator(tree, &cgalevaluator.psevaluator);
-	shared_ptr<CSGTerm> root_raw_term = evaluator.evaluateCSGTerm(*root_node, 
-																																csgInfo.highlight_terms, 
-																																csgInfo.background_terms);
+	CsgInfo_OpenCSG csgInfo = CsgInfo_OpenCSG();
+	int result = opencsg_prep( tree, root_node, csgInfo );
+	if ( result == 1 ) return result;
 
-	if (!root_raw_term) {
-		cerr << "Error: CSG generation failed! (no top level object found)\n";
-		return 1;
-	}
-
-	// CSG normalization
-	CSGTermNormalizer normalizer(5000);
-	csgInfo.root_norm_term = normalizer.normalize(root_raw_term);
-	if (csgInfo.root_norm_term) {
-		csgInfo.root_chain = new CSGChain();
-		csgInfo.root_chain->import(csgInfo.root_norm_term);
-		fprintf(stderr, "Normalized CSG tree has %d elements\n", int(csgInfo.root_chain->polysets.size()));
-	}
-	else {
-		csgInfo.root_chain = NULL;
-		fprintf(stderr, "WARNING: CSG normalization resulted in an empty tree\n");
-	}
-
-	if (csgInfo.highlight_terms.size() > 0) {
-		cerr << "Compiling highlights (" << csgInfo.highlight_terms.size() << " CSG Trees)...\n";
-		
-		csgInfo.highlights_chain = new CSGChain();
-		for (unsigned int i = 0; i < csgInfo.highlight_terms.size(); i++) {
-			csgInfo.highlight_terms[i] = normalizer.normalize(csgInfo.highlight_terms[i]);
-			csgInfo.highlights_chain->import(csgInfo.highlight_terms[i]);
-		}
-	}
-	
-	if (csgInfo.background_terms.size() > 0) {
-		cerr << "Compiling background (" << csgInfo.background_terms.size() << " CSG Trees)...\n";
-		
-		csgInfo.background_chain = new CSGChain();
-		for (unsigned int i = 0; i < csgInfo.background_terms.size(); i++) {
-			csgInfo.background_terms[i] = normalizer.normalize(csgInfo.background_terms[i]);
-			csgInfo.background_chain->import(csgInfo.background_terms[i]);
-		}
-	}
-	
 	fs::current_path(original_path);
 
 	try {
@@ -342,20 +178,20 @@ int csgtestcore(int argc, char *argv[], test_type_e test_type)
 		fprintf(stderr,"Can't create OpenGL OffscreenView. Code: %i. Exiting.\n", error);
 		exit(1);
 	}
-	enable_opencsg_shaders(csgInfo.glview);
 
 	if (sysinfo_dump) cout << info_dump(csgInfo.glview);
-	Vector3d center(0,0,0);
+	VectorCamera vc;
+	vc.center << 0,0,0;
 	double radius = 1.0;
 
 	if (csgInfo.root_chain) {
 		BoundingBox bbox = csgInfo.root_chain->getBoundingBox();
-		center = (bbox.min() + bbox.max()) / 2;
+		vc.center = (bbox.min() + bbox.max()) / 2;
 		radius = (bbox.max() - bbox.min()).norm() / 2;
 	}
 	Vector3d cameradir(1, 1, -0.5);
-	Vector3d camerapos = center - radius*1.8*cameradir;
-	csgInfo.glview->setCamera(camerapos, center);
+	vc.eye = vc.center - radius*1.8*cameradir;
+	csgInfo.glview->setCamera(vc);
 
 	OpenCSGRenderer opencsgRenderer(csgInfo.root_chain, csgInfo.highlights_chain, csgInfo.background_chain, csgInfo.glview->shaderinfo);
 	ThrownTogetherRenderer thrownTogetherRenderer(csgInfo.root_chain, csgInfo.highlights_chain, csgInfo.background_chain);
@@ -370,7 +206,7 @@ int csgtestcore(int argc, char *argv[], test_type_e test_type)
 
 	csgInfo.glview->paintGL();
 	
-	csgInfo.glview->save(outfilename);
+	if (outfilename) csgInfo.glview->save(outfilename);
 	
 	delete root_node;
 	delete root_module;
