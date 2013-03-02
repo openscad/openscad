@@ -8,14 +8,14 @@ This class is inherited by
 *QGLview (for Qt GUI)
 *OffscreenView (used in tests and for offscreen command-line rendering).
 
-There are two different types of cameras (in linalg.h)
+There are two different types of cameras
 
 *Gimbal camera - uses Euler Angles, object translation, and viewer distance
 *Vector camera - uses 'eye', 'center', and 'up' vectors
 
-Currently, the two cameras are not kept in sync and there is no way
-to switch between them at runtime. QGLView uses GimbalCamera and
-OffscreenView uses VectorCamera.
+Currently, the two cameras are not kept in sync and they are not easily
+interchangable in code QGLView uses GimbalCamera while OffscreenView can
+use both (but defaults to Vector)
 
 */
 
@@ -28,7 +28,6 @@ OffscreenView uses VectorCamera.
 #include "system-gl.h"
 #include <iostream>
 #include "renderer.h"
-#include "linalg.h"
 #include "Camera.h"
 
 #define FAR_FAR_AWAY 100000.0
@@ -54,9 +53,6 @@ public:
 	void setupVectorCamOrtho(bool offset=false);
 	void vectorCamPaintGL();
 
-	void setCamera( NullCamera &nc );
-	void setCamera( GimbalCamera &gc );
-	void setCamera( VectorCamera &vc );
 	void setCamera( Camera &cam );
 
 	void showCrosshairs();
