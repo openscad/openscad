@@ -123,11 +123,10 @@ Then run the script to compile all the prerequisite libraries above:
 
     ./scripts/macosx-build-dependencies.sh
 
-We currently don't use [MacPorts](http://www.macports.org) or
-[brew](http://mxcl.github.com/homebrew/) to install the prerequisite
-libraries because CGAL doesn't exist on brew and opencsg doesn't exist
-on ports. And more importantly, there are some patches to GMP in the
-compilation process.
+You can also install the prerequisites using
+[MacPorts](http://www.macports.org).  Unfortunately,
+[brew](http://mxcl.github.com/homebrew/) doesn't yet support CGAL and
+OpenCSG.
 
 After that, follow the Compilation instructions below.
 
