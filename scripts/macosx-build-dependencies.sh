@@ -343,8 +343,9 @@ build_sparkle()
   if $OPTION_32BIT; then
     SPARKLE_EXTRA_FLAGS="-arch i386"
   fi
+  xcodebuild -project Sparkle.xcodeproj clean
   xcodebuild -project Sparkle.xcodeproj -scheme Sparkle -configuration Release -arch x86_64 $SPARKLE_EXTRA_FLAGS
-  rm -r $DEPLOYDIR/lib/Sparkle.framework
+  rm -rf $DEPLOYDIR/lib/Sparkle.framework
   cp -Rf build/Release/Sparkle.framework $DEPLOYDIR/lib/ 
   install_name_tool -id $DEPLOYDIR/lib/Sparkle.framework/Versions/A/Sparkle $DEPLOYDIR/lib/Sparkle.framework/Sparkle
 }
