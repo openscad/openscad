@@ -325,8 +325,7 @@ void GLView::gimbalCamPaintGL()
   glLoadIdentity();
 
   Color4f bgcol = RenderSettings::inst()->color(RenderSettings::BACKGROUND_COLOR);
-	fprintf(stderr, "%f %f %f", bgcol[0], bgcol[1], bgcol[2] );
-  glClearColor(bgcol[0], bgcol[1], bgcol[2], 0.0);
+  glClearColor(bgcol[0], bgcol[1], bgcol[2], 1.0);
 
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
   glRotated(cam.object_rot.x(), 1.0, 0.0, 0.0);
