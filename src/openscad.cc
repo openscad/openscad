@@ -77,10 +77,9 @@ static void help(const char *progname)
 	int tab = int(strlen(progname))+8;
 	fprintf(stderr,"Usage: %s [ -o output_file [ -d deps_file ] ]\\\n"
 	        "%*s[ -m make_command ] [ -D var=val [..] ] [ --render ] \\\n"
-	        "%*s[ --gimbalcam=x,y,z,xrot,yrot,zrot,dist ] \\\n"
-	        "%*s[ --vectorcam=eyex,eyey,eyez,centerx,centery,centerz] \\\n"
+	        "%*s[ --camera= [x,y,z,rotx,y,z,dist] | [eyex,y,z,centerx,y,z] ] \\\n"
 	        "%*s[ --imgsize=width,height ] \\\n"
-	        " filename\n",
+	        "%*sfilename\n",
 					progname, tab, "", tab, "", tab, "", tab, "");
 	exit(1);
 }
@@ -102,33 +101,22 @@ using std::vector;
 using boost::lexical_cast;
 using boost::is_any_of;
 
-Camera determine_camera( po::variables_map vm )
+Camera get_camera( po::variables_map vm )
 {
 	Camera camera;
 
-	if (vm.count("gimbalcam")) {
+	if (vm.count("camera")) {
 		vector<string> strs;
 		vector<double> cam_parameters;
-		split(strs, vm["gimbalcam"].as<string>(), is_any_of(","));
-		if ( strs.size() != 7 ) {
-			fprintf(stderr,"Need 7 numbers for gimbalcam\n");
-		} else {
+		split(strs, vm["camera"].as<string>(), is_any_of(","));
+		if ( strs.size() == 6 || strs.size() == 7 ) {
 			BOOST_FOREACH(string &s, strs)
 				cam_parameters.push_back(lexical_cast<double>(s));
 			camera.setup( cam_parameters );
-		}
-	}
-
-	if (vm.count("vectorcam")) {
-		vector<string> strs;
-		vector<double> cam_parameters;
-		split(strs, vm["vectorcam"].as<string>(), is_any_of(","));
-		if ( strs.size() != 6 ) {
-			fprintf(stderr,"Need 6 numbers for vectorcam\n");
 		} else {
-			BOOST_FOREACH(string &s, strs)
-				cam_parameters.push_back(lexical_cast<double>(s));
-			camera.setup( cam_parameters );
+			fprintf(stderr,"Camera setup requires either 7 numbers for Gimbal Camera\n");
+			fprintf(stderr,"or 6 numbers for Vector Camera\n");
+			exit(1);
 		}
 	}
 
@@ -144,6 +132,7 @@ std::pair<int,int> get_imgsize( po::variables_map vm )
 		split(strs, vm["imgsize"].as<string>(), is_any_of(","));
 		if ( strs.size() != 2 ) {
 			fprintf(stderr,"Need 2 numbers for imgsize\n");
+			exit(1);
 		} else {
 			w = lexical_cast<int>( strs[0] );
 			h = lexical_cast<int>( strs[0] );
@@ -194,8 +183,7 @@ int main(int argc, char **argv)
 		("help,h", "help message")
 		("version,v", "print the version")
 		("render", "if exporting a png image, do a full CGAL render")
-		("gimbalcam", po::value<string>(), "=x,y,z,xrot,yrot,zrot,dist for exporting png")
-		("vectorcam", po::value<string>(), "=eyex,y,z,centerx,y,z for exporting png")
+		("camera", po::value<string>(), "parameters for camera when exporting png")
 	  ("imgsize", po::value<string>(), "=width,height for exporting png")
 		("o,o", po::value<string>(), "out-file")
 		("s,s", po::value<string>(), "stl-file")
@@ -271,7 +259,7 @@ int main(int argc, char **argv)
 
 	currentdir = boosty::stringy(fs::current_path());
 
-	Camera camera = determine_camera( vm );
+	Camera camera = get_camera( vm );
 	std::pair<int,int> imgsize = get_imgsize( vm );
 	camera.pixel_width = imgsize.first;
 	camera.pixel_height = imgsize.second;
