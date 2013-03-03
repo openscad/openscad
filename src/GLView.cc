@@ -13,11 +13,10 @@ GLView::GLView()
 {
   showedges = false;
   showfaces = true;
-  orthomode = false;
   showaxes = false;
   showcrosshairs = false;
 	renderer = NULL;
-	cam.type = Camera::NONE;
+	cam = Camera();
 #ifdef ENABLE_OPENCSG
   is_opencsg_capable = false;
   has_shaders = false;
@@ -281,7 +280,7 @@ void GLView::vectorCamPaintGL()
 {
   glEnable(GL_LIGHTING);
 
-  if (orthomode) setupVectorCamOrtho();
+  if (cam.projection==Camera::ORTHOGONAL) setupVectorCamOrtho();
   else setupVectorCamPerspective();
 
   glMatrixMode(GL_MODELVIEW);
@@ -318,8 +317,10 @@ void GLView::gimbalCamPaintGL()
 {
   glEnable(GL_LIGHTING);
 
-  if (orthomode) GLView::setupGimbalCamOrtho(cam.viewer_distance);
-  else GLView::setupGimbalCamPerspective();
+  if (cam.projection == Camera::ORTHOGONAL)
+		GLView::setupGimbalCamOrtho(cam.viewer_distance);
+  else
+		GLView::setupGimbalCamPerspective();
 
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
@@ -430,7 +431,7 @@ void GLView::showSmallaxes()
   glEnd();
 
   //Restore perspective for next paint
-  if(!orthomode)
+  if(cam.projection==Camera::PERSPECTIVE)
     GLView::setupGimbalCamPerspective();
 }
 

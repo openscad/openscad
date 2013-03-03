@@ -78,7 +78,7 @@ static void help(const char *progname)
 	fprintf(stderr,"Usage: %s [ -o output_file [ -d deps_file ] ]\\\n"
 	        "%*s[ -m make_command ] [ -D var=val [..] ] [ --render ] \\\n"
 	        "%*s[ --camera= [x,y,z,rotx,y,z,dist] | [eyex,y,z,centerx,y,z] ] \\\n"
-	        "%*s[ --imgsize=width,height ] \\\n"
+	        "%*s[ --imgsize=width,height ] [ --projection=o|p] \\\n"
 	        "%*sfilename\n",
 					progname, tab, "", tab, "", tab, "", tab, "");
 	exit(1);
@@ -120,11 +120,18 @@ Camera get_camera( po::variables_map vm )
 		}
 	}
 
-	return camera;
-}
+	if (vm.count("projection")) {
+		string proj = vm["projection"].as<string>();
+		if (proj=="o" || proj=="ortho" || proj=="orthogonal")
+			camera.projection = Camera::ORTHOGONAL;
+		else if (proj=="p" || proj == "perspective")
+			camera.projection = Camera::PERSPECTIVE;
+		else {
+			fprintf(stderr,"projection needs to be 'o' or 'p' for ortho or perspective");
+			exit(1);
+		}
+	}
 
-std::pair<int,int> get_imgsize( po::variables_map vm )
-{
 	int w = RenderSettings::inst()->img_width;
 	int h = RenderSettings::inst()->img_height;
 	if (vm.count("imgsize")) {
@@ -138,7 +145,10 @@ std::pair<int,int> get_imgsize( po::variables_map vm )
 			h = lexical_cast<int>( strs[1] );
 		}
 	}
-	return std::pair<int,int>(w,h);
+	camera.pixel_width = w;
+	camera.pixel_height = h;
+
+	return camera;
 }
 
 int main(int argc, char **argv)
@@ -185,6 +195,7 @@ int main(int argc, char **argv)
 		("render", "if exporting a png image, do a full CGAL render")
 		("camera", po::value<string>(), "parameters for camera when exporting png")
 	  ("imgsize", po::value<string>(), "=width,height for exporting png")
+		("projection", po::value<string>(), "(o)rtho or (p)erspective when exporting png")
 		("o,o", po::value<string>(), "out-file")
 		("s,s", po::value<string>(), "stl-file")
 		("x,x", po::value<string>(), "dxf-file")
@@ -260,9 +271,6 @@ int main(int argc, char **argv)
 	currentdir = boosty::stringy(fs::current_path());
 
 	Camera camera = get_camera( vm );
-	std::pair<int,int> imgsize = get_imgsize( vm );
-	camera.pixel_width = imgsize.first;
-	camera.pixel_height = imgsize.second;
 
 	QDir exdir(QApplication::instance()->applicationDirPath());
 #ifdef Q_WS_MAC

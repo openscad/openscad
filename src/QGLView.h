@@ -34,8 +34,11 @@ public:
 	void setShowAxes(bool enabled) { this->showaxes = enabled; }
 	bool showCrosshairs() const { return this->showcrosshairs; }
 	void setShowCrosshairs(bool enabled) { this->showcrosshairs = enabled; }
-	bool orthoMode() const { return this->orthomode; }
-	void setOrthoMode(bool enabled) { this->orthomode = enabled; }
+	bool orthoMode() const { return (this->cam.projection == Camera::ORTHOGONAL); }
+	void setOrthoMode(bool enabled) {
+		if (enabled) this->cam.projection = Camera::ORTHOGONAL;
+		else this->cam.projection = Camera::PERSPECTIVE;
+	}
 	std::string getRendererInfo() const;
 	bool save(const char *filename);
 

@@ -12,6 +12,8 @@ There are two different types of cameras represented in this class:
 *Gimbal camera - uses Euler Angles, object translation, and viewer distance
 *Vector camera - uses 'eye', 'center', and 'up' vectors ('lookat' style)
 
+There are two modes of projection, Perspective and Orthogonal.
+
 */
 
 #include <vector>
@@ -21,8 +23,10 @@ class Camera
 {
 public:
 	enum CameraType { NONE, GIMBAL, VECTOR } type;
+	enum ProjectionType { ORTHOGONAL, PERSPECTIVE } projection;
 	Camera() {
 		type = Camera::NONE;
+		projection = Camera::PERSPECTIVE;
 	}
 	Camera( enum CameraType e )
 	{
@@ -38,6 +42,7 @@ public:
 		}
 		pixel_width = 512;
 		pixel_height = 512;
+		projection = Camera::PERSPECTIVE;
 	}
 
 	void setup( std::vector<double> params ) {
