@@ -4,6 +4,7 @@
 #include "CsgInfo.h"
 #include <stdio.h>
 #include "polyset.h"
+#include "rendersettings.h"
 
 #ifdef ENABLE_CGAL
 #include "CGALRenderer.h"
@@ -12,9 +13,11 @@
 
 void export_png_with_cgal(CGAL_Nef_polyhedron *root_N, Camera &cam, std::ostream &output)
 {
-	CsgInfo csgInfo;
+	OffscreenView *glview;
+	int w = RenderSettings::inst()->img_width;
+	int h = RenderSettings::inst()->img_height;
 	try {
-		csgInfo.glview = new OffscreenView(512,512);
+		glview = new OffscreenView( w, h );
 	} catch (int error) {
 		fprintf(stderr,"Can't create OpenGL OffscreenView. Code: %i.\n", error);
 		return;
@@ -44,10 +47,10 @@ void export_png_with_cgal(CGAL_Nef_polyhedron *root_N, Camera &cam, std::ostream
 	//std::cerr << center << "\n";
 	//std::cerr << radius << "\n";
 
-	csgInfo.glview->setCamera( cam );
-	csgInfo.glview->setRenderer(&cgalRenderer);
-	csgInfo.glview->paintGL();
-	csgInfo.glview->save(output);
+	glview->setCamera( cam );
+	glview->setRenderer(&cgalRenderer);
+	glview->paintGL();
+	glview->save(output);
 }
 
 #ifdef ENABLE_OPENCSG
@@ -58,16 +61,16 @@ void export_png_with_cgal(CGAL_Nef_polyhedron *root_N, Camera &cam, std::ostream
 void export_png_with_opencsg(Tree &tree, Camera &cam, std::ostream &output)
 {
 #ifdef ENABLE_OPENCSG
-  CsgInfo_OpenCSG csgInfo = CsgInfo_OpenCSG();
-  AbstractNode const *root_node = tree.root();
-  int result = opencsg_prep( tree, root_node, csgInfo );
-  if ( result == 1 ) {
+  CsgInfo csgInfo = CsgInfo();
+  if ( !csgInfo.prep_chains( tree ) ) {
+		fprintf(stderr,"Couldn't initialize OpenCSG chains\n");
 		return;
-		fprintf(stderr,"Couldn't init OpenCSG chainsn");
 	}
 
+	int w = RenderSettings::inst()->img_width;
+	int h = RenderSettings::inst()->img_height;
 	try {
-		csgInfo.glview = new OffscreenView(512,512);
+		csgInfo.glview = new OffscreenView( w, h );
 	} catch (int error) {
 		fprintf(stderr,"Can't create OpenGL OffscreenView. Code: %i.\n", error);
 		return;

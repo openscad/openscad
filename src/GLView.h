@@ -14,8 +14,8 @@ There are two different types of cameras
 *Vector camera - uses 'eye', 'center', and 'up' vectors
 
 Currently, the two cameras are not kept in sync and they are not easily
-interchangable in code QGLView uses GimbalCamera while OffscreenView can
-use both (but defaults to Vector)
+interchangable. QGLView uses GimbalCamera while OffscreenView can
+use either (defaulting to Vector).
 
 */
 

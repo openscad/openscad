@@ -12,6 +12,9 @@ RenderSettings *RenderSettings::inst(bool erase)
 
 RenderSettings::RenderSettings()
 {
+	openCSGTermLimit = 2000;
+	img_width = 512;
+	img_height = 512;
 	this->colors[BACKGROUND_COLOR] = Color4f(0xff, 0xff, 0xe5);
 	this->colors[OPENCSG_FACE_FRONT_COLOR] = Color4f(0xf9, 0xd7, 0x2c);
 	this->colors[OPENCSG_FACE_BACK_COLOR] = Color4f(0x9d, 0xcb, 0x51);

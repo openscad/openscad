@@ -20,9 +20,4 @@ private:
 	GLint *shaderinfo;
 };
 
-#include "Tree.h"
-#include "CsgInfo.h"
-// should we refactor this into the renderer class?
-int opencsg_prep( const Tree &tree, const AbstractNode *root_node, CsgInfo_OpenCSG &csgInfo );
-
 #endif
