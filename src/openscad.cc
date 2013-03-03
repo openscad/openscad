@@ -135,7 +135,7 @@ std::pair<int,int> get_imgsize( po::variables_map vm )
 			exit(1);
 		} else {
 			w = lexical_cast<int>( strs[0] );
-			h = lexical_cast<int>( strs[0] );
+			h = lexical_cast<int>( strs[1] );
 		}
 	}
 	return std::pair<int,int>(w,h);
