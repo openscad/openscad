@@ -45,10 +45,16 @@ Show version of program.
 If exporting an image, use a full CGAL render. (Default is an OpenCSG compile)
 .TP
 .B \-\-camera=rotx,roty,rotz,transx,transy,transz,distance
-If exporting an image, use a Gimbal camera with the given parameters
+If exporting an image, use a Gimbal camera with the given parameters. 
+Rot is rotation around the x, y, and z axis, trans is the distance to 
+move the object in the x, y, and z directions, and distance is the 
+distance between the camera and the center of the object.
 .TP
 .B \-\-camera=eyex,eyey,eyez,centerx,centery,centerz
-If exporting an image, use a Vector camera with the given parameters
+If exporting an image, use a Vector camera with the given parameters. 
+The first three are for the Eye position, while the next three are for 
+the Center (or target) that the camera will look at. The 'up' vector is 
+not currently supported.
 .TP
 .B \-\-imgsize=width,height
 If exporting an image, specify the pixel width and height 

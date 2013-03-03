@@ -508,7 +508,7 @@ fi
 
 # Singly build certain tools or libraries
 if [ $1 ]; then
-  if [ $1 == "git" ]; then
+  if [ $1 = "git" ]; then
     build_git 1.7.10.3
     exit $?
   fi
@@ -520,12 +520,12 @@ if [ $1 ]; then
     build_opencsg 1.3.2
     exit $?
   fi
-  if [ $1 == "qt4" ]; then
+  if [ $1 = "qt4" ]; then
     # such a huge build, put here by itself
     build_qt4 4.8.4
     exit $?
   fi
-  if [ $1 == "glu" ]; then
+  if [ $1 = "glu" ]; then
     # Mesa and GLU split in late 2012, so it's not on some systems
     build_glu 9.0.0
     exit $?
