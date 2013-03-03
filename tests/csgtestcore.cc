@@ -167,8 +167,7 @@ int csgtestcore(int argc, char *argv[], test_type_e test_type)
 	Tree tree(root_node);
 
 	CsgInfo csgInfo = CsgInfo();
-	int result = csgInfo.prep_chains( tree );
-	if ( result == 1 ) return result;
+	if ( !csgInfo.prep_chains( tree ) ) return 1;
 
 	fs::current_path(original_path);
 
@@ -180,18 +179,18 @@ int csgtestcore(int argc, char *argv[], test_type_e test_type)
 	}
 
 	if (sysinfo_dump) cout << info_dump(csgInfo.glview);
-	VectorCamera vc;
-	vc.center << 0,0,0;
+	Camera camera(Camera::VECTOR);
+	camera.center << 0,0,0;
 	double radius = 1.0;
 
 	if (csgInfo.root_chain) {
 		BoundingBox bbox = csgInfo.root_chain->getBoundingBox();
-		vc.center = (bbox.min() + bbox.max()) / 2;
+		camera.center = (bbox.min() + bbox.max()) / 2;
 		radius = (bbox.max() - bbox.min()).norm() / 2;
 	}
 	Vector3d cameradir(1, 1, -0.5);
-	vc.eye = vc.center - radius*1.8*cameradir;
-	csgInfo.glview->setCamera(vc);
+	camera.eye = camera.center - radius*1.8*cameradir;
+	csgInfo.glview->setCamera(camera);
 
 	OpenCSGRenderer opencsgRenderer(csgInfo.root_chain, csgInfo.highlights_chain, csgInfo.background_chain, csgInfo.glview->shaderinfo);
 	ThrownTogetherRenderer thrownTogetherRenderer(csgInfo.root_chain, csgInfo.highlights_chain, csgInfo.background_chain);

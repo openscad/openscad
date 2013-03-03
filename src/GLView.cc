@@ -94,9 +94,11 @@ void GLView::setCamera( Camera &cam )
 
 void GLView::paintGL()
 {
-	if (cam.type == Camera::NONE) return;
-	else if (cam.type == Camera::GIMBAL) gimbalCamPaintGL();
+	if (cam.type == Camera::GIMBAL) gimbalCamPaintGL();
 	else if (cam.type == Camera::VECTOR) vectorCamPaintGL();
+	else if (cam.type == Camera::NONE) {
+		fprintf(stderr,"paintGL with null camera\n");
+	}
 }
 
 #ifdef ENABLE_OPENCSG

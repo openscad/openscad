@@ -78,6 +78,7 @@ void export_png_with_opencsg(Tree &tree, Camera &cam, std::ostream &output)
 	OpenCSGRenderer opencsgRenderer(csgInfo.root_chain, csgInfo.highlights_chain, csgInfo.background_chain, csgInfo.glview->shaderinfo);
 
 	if (cam.type == Camera::NONE) {
+		cam.type = Camera::VECTOR;
 		cam.center << 0,0,0;
 	  double radius = 1.0;
 	  if (csgInfo.root_chain) {

@@ -156,15 +156,14 @@ int main(int argc, char **argv)
 		bbox = cgalRenderer.polyset->getBoundingBox();
 	}
 	
-	VectorCamera vc;
-	vc.center = getBoundingCenter(bbox);
+	Camera cam(Camera::VECTOR);
+	cam.center = getBoundingCenter(bbox);
 	double radius = getBoundingRadius(bbox);
 	
 	Vector3d cameradir(1, 1, -0.5);
-	vc.eye = vc.center - radius*2*cameradir;
-	csgInfo.glview->setCamera(vc);
-	
-	
+	cam.eye = cam.center - radius*2*cameradir;
+	csgInfo.glview->setCamera( cam );
+
 	csgInfo.glview->setRenderer(&cgalRenderer);
 	csgInfo.glview->paintGL();
 	csgInfo.glview->save(outfile);
