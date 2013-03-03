@@ -8,6 +8,7 @@
 #include "CSGTermEvaluator.h"
 #include "csgtermnormalizer.h"
 #include "rendersettings.h"
+#include "printutils.h"
 
 class CsgInfo
 {
