@@ -3,19 +3,23 @@
 
 /* GLView: A basic OpenGL rectangle for rendering images.
 
-This class is inherited by
+This class is inherited by:
 
-*QGLview (for Qt GUI)
-*OffscreenView (used in tests and for offscreen command-line rendering).
+*QGLview - for Qt GUI
+*OffscreenView - for offscreen rendering, in tests and from command-line
 
-There are two different types of cameras
+There are two different types of cameras:
 
 *Gimbal camera - uses Euler Angles, object translation, and viewer distance
-*Vector camera - uses 'eye', 'center', and 'up' vectors
+*Vector camera - uses 'eye', 'center', and 'up' vectors ('lookat' style)
 
-Currently, the two cameras are not kept in sync and they are not easily
-interchangable. QGLView uses GimbalCamera while OffscreenView can
-use either (defaulting to Vector).
+They are selectable by creating a GimbalCamera or VectorCamera (Camera.h)
+and then calling GLView.setCamera().
+
+Currently, the camera is set in two separate variables that are not kept
+in sync. Some actions (showCrossHairs) only work properly on Gimbal
+Camera. QGLView uses GimbalCamera while OffscreenView can use either one
+(defaulting to Vector).
 
 */
 
@@ -43,17 +47,15 @@ public:
 	void resizeGL(int w, int h);
 	virtual void paintGL();
 
-	void setGimbalCamera(const Eigen::Vector3d &pos, const Eigen::Vector3d &rot, double distance);
+	void setCamera( Camera &cam );
+
 	void setupGimbalCamPerspective();
 	void setupGimbalCamOrtho(double distance, bool offset=false);
 	void gimbalCamPaintGL();
 
-	void setVectorCamera(const Eigen::Vector3d &pos, const Eigen::Vector3d &center);
 	void setupVectorCamPerspective();
 	void setupVectorCamOrtho(bool offset=false);
 	void vectorCamPaintGL();
-
-	void setCamera( Camera &cam );
 
 	void showCrosshairs();
 	void showAxes();

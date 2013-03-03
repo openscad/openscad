@@ -2,18 +2,11 @@
 #define OPENSCAD_CAMERA_H_
 
 // Cameras
-// Variant design is similar to value.h/value.cc
-// see GLView.cc / export_png.cc / openscad.cc for usage
+// For usage, see GLView.cc / export_png.cc / openscad.cc
 
 #include <vector>
 #include <Eigen/Geometry>
 #include <boost/variant.hpp>
-
-class NullCamera
-{
-public:
-	NullCamera(){}
-};
 
 class GimbalCamera
 {
@@ -24,7 +17,7 @@ public:
 		object_rot << 35,0,25;
 		viewer_distance = 500;
 	}
-	void setup( std::vector<double> d )
+	GimbalCamera( std::vector<double> d )
 	{
 		assert( d.size() == 7 );
 		object_trans << d[0], d[1], d[2];
@@ -46,6 +39,12 @@ public:
 		eye = center - 500 * cameradir;
 		// "up" not currently used
 	}
+	VectorCamera( std::vector<double> d )
+	{
+		assert( d.size() == 6 );
+		eye << d[0], d[1], d[2];
+		center << d[3], d[4], d[5];
+	}
 	Eigen::Vector3d eye;
 	Eigen::Vector3d center; // (aka 'target')
 	Eigen::Vector3d up;
@@ -54,11 +53,12 @@ public:
 class Camera
 {
 public:
-	enum CameraType { NONE, GIMBAL, VECTOR };
-	typedef boost::variant<NullCamera, GimbalCamera, VectorCamera> CamVariant;
-	CamVariant value;
-	Camera() {}
-	CameraType type() { return static_cast<CameraType>(value.which()); }
+	enum CameraType { NONE, GIMBAL, VECTOR } type;
+	Camera() { type = Camera::NONE; }
+	void set( VectorCamera &c ) { vcam = c; type = Camera::VECTOR; }
+	void set( GimbalCamera &c ) { gcam = c; type = Camera::GIMBAL; }
+	GimbalCamera gcam;
+	VectorCamera vcam;
 };
 
 

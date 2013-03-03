@@ -45,14 +45,6 @@ void GLView::resizeGL(int w, int h)
   w_h_ratio = sqrt((double)w / (double)h);
 }
 
-void GLView::setGimbalCamera(const Eigen::Vector3d &pos, const Eigen::Vector3d &rot, double distance)
-{
-	gcam.object_trans = pos;
-	gcam.object_rot = rot;
-	gcam.viewer_distance = distance;
-	camtype = Camera::GIMBAL;
-}
-
 void GLView::setupGimbalCamPerspective()
 {
   glMatrixMode(GL_PROJECTION);
@@ -72,15 +64,6 @@ void GLView::setupGimbalCamOrtho(double distance, bool offset)
       -(1/w_h_ratio)*l, +(1/w_h_ratio)*l,
       -FAR_FAR_AWAY, +FAR_FAR_AWAY);
   gluLookAt(0.0, -gcam.viewer_distance, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0);
-}
-
-void GLView::setVectorCamera(const Eigen::Vector3d &pos, const Eigen::Vector3d &center)
-{
-  vcam.eye = pos;
- 	vcam.center = center;
-	camtype = Camera::VECTOR;
-	// FIXME kludge for showAxes to work in VectorCamera mode
-	gcam.viewer_distance = 10*3*(vcam.center - vcam.eye).norm();
 }
 
 void GLView::setupVectorCamPerspective()
@@ -104,14 +87,12 @@ void GLView::setupVectorCamOrtho(bool offset)
 
 void GLView::setCamera( Camera &cam )
 {
-	if ( cam.type() == Camera::NONE ) {
-		return;
-	} else if ( cam.type() == Camera::GIMBAL ) {
-		GimbalCamera gc = boost::get<GimbalCamera>(cam.value);
-		setGimbalCamera( gc.object_trans, gc.object_rot, gc.viewer_distance );
-	} else if ( cam.type() == Camera::VECTOR ) {
-		VectorCamera vc = boost::get<VectorCamera>(cam.value);
-		setVectorCamera( vc.eye, vc.center );
+	camtype = cam.type;
+	if ( camtype == Camera::GIMBAL ) {
+		gcam = cam.gcam;
+	} else if ( camtype == Camera::VECTOR ) {
+		vcam = cam.vcam;
+		gcam.viewer_distance = 10*3*(vcam.center - vcam.eye).norm();
 	}
 }
 

@@ -98,6 +98,43 @@ using std::vector;
 using boost::lexical_cast;
 using boost::is_any_of;
 
+Camera determine_camera( po::variables_map vm )
+{
+	Camera camera;
+
+	if (vm.count("gimbalcam")) {
+		std::cout << "x:" << vm["gimbalcam"].as<string>().c_str() << "\n";
+		vector<string> strs;
+		vector<double> cam_parameters;
+		split(strs, vm["gimbalcam"].as<string>(), is_any_of(","));
+		if ( strs.size() != 7 ) {
+			fprintf(stderr,"Need 7 numbers for gimbalcam\n");
+		} else {
+			BOOST_FOREACH(string &s, strs)
+				cam_parameters.push_back(lexical_cast<double>(s));
+			GimbalCamera gcam( cam_parameters );
+			camera.set( gcam );
+		}
+	}
+
+	if (vm.count("vectorcam")) {
+		std::cout << "x:" << vm["vectorcam"].as<string>().c_str() << "\n";
+		vector<string> strs;
+		vector<double> cam_parameters;
+		split(strs, vm["vectorcam"].as<string>(), is_any_of(","));
+		if ( strs.size() != 6 ) {
+			fprintf(stderr,"Need 6 numbers for vectorcam\n");
+		} else {
+			BOOST_FOREACH(string &s, strs)
+				cam_parameters.push_back(lexical_cast<double>(s));
+			VectorCamera vcam( cam_parameters );
+			camera.set( vcam );
+		}
+	}
+
+	return camera;
+}
+
 int main(int argc, char **argv)
 {
 	int rc = 0;
@@ -134,8 +171,6 @@ int main(int argc, char **argv)
 	const char *filename = NULL;
 	const char *output_file = NULL;
 	const char *deps_output_file = NULL;
-	Camera camera;
-	camera.value = NullCamera();
 
 	po::options_description desc("Allowed options");
 	desc.add_options()
@@ -217,20 +252,7 @@ int main(int argc, char **argv)
 
 	currentdir = boosty::stringy(fs::current_path());
 
-	if (vm.count("gimbalcam")) {
-		std::cout << "x:" << vm["gimbalcam"].as<string>().c_str() << "\n";
-		vector<string> strs;
-		vector<double> nums;
-		split(strs, vm["gimbalcam"].as<string>(), is_any_of(","));
-		if ( strs.size() != 7 ) {
-			fprintf(stderr,"Need 7 numbers for gimbalcam\n");
-		} else {
-			BOOST_FOREACH(string &s, strs) nums.push_back(lexical_cast<double>(s));
-			GimbalCamera gcam;
-			gcam.setup( nums );
-			camera.value = gcam;
-		}
-	}
+	Camera camera = determine_camera( vm );
 
 	QDir exdir(QApplication::instance()->applicationDirPath());
 #ifdef Q_WS_MAC
