@@ -18,6 +18,8 @@ public:
 		highlights_chain = NULL;
 		background_chain = NULL;
 		glview = NULL;
+		progress_function = NULL;
+		normalizelimit = RenderSettings::inst()->openCSGTermLimit;
 	}
 	OffscreenView *glview;
 	shared_ptr<CSGTerm> root_norm_term;    // Normalized CSG products
@@ -26,6 +28,18 @@ public:
 	CSGChain *highlights_chain;
 	std::vector<shared_ptr<CSGTerm> > background_terms;
 	CSGChain *background_chain;
+
+	int normalizelimit;
+
+	void (*progress_function)(void);
+	void set_progress_function( void (*funcname)(void) )
+	{
+		progress_function = funcname;
+	}
+	void call_progress_function()
+	{
+		if (progress_function) progress_function();
+	}
 
 	bool prep_chains( const Tree &tree )
 	{
@@ -36,11 +50,13 @@ public:
 
 		if (!root_raw_term) {
 			fprintf(stderr, "Error: CSG generation failed! (no top level object found)\n");
+			call_progress_function();
 			return false;
 		}
 
-		// CSG normalization
-		CSGTermNormalizer normalizer( RenderSettings::inst()->openCSGTermLimit );
+		PRINT("Compiling design (CSG Products normalization)...");
+		call_progress_function();
+		CSGTermNormalizer normalizer( normalizelimit );
 		this->root_norm_term = normalizer.normalize(root_raw_term);
 		if (this->root_norm_term) {
 			this->root_chain = new CSGChain();
@@ -50,11 +66,12 @@ public:
 		else {
 			this->root_chain = NULL;
 			fprintf(stderr, "WARNING: CSG normalization resulted in an empty tree\n");
+			call_progress_function();
 		}
 
 		if (this->highlight_terms.size() > 0) {
 			std::cerr << "Compiling highlights (" << this->highlight_terms.size() << " CSG Trees)...\n";
-
+			call_progress_function();
 			this->highlights_chain = new CSGChain();
 			for (unsigned int i = 0; i < this->highlight_terms.size(); i++) {
 				this->highlight_terms[i] = normalizer.normalize(this->highlight_terms[i]);
@@ -63,8 +80,8 @@ public:
 		}
 
 		if (this->background_terms.size() > 0) {
-			std::cerr << "Compiling background (" << this->background_terms.size() << " CSG Trees)...\n";
-
+			std::cerr << "Compiling background (%d CSG Trees)..." << this->background_terms.size() << " CSG Trees)...\n";
+			call_progress_function();
 			this->background_chain = new CSGChain();
 			for (unsigned int i = 0; i < this->background_terms.size(); i++) {
 				this->background_terms[i] = normalizer.normalize(this->background_terms[i]);
