@@ -112,8 +112,7 @@ Camera determine_camera( po::variables_map vm )
 		} else {
 			BOOST_FOREACH(string &s, strs)
 				cam_parameters.push_back(lexical_cast<double>(s));
-			GimbalCamera gcam( cam_parameters );
-			camera.set( gcam );
+			camera.setup( cam_parameters );
 		}
 	}
 
@@ -127,8 +126,7 @@ Camera determine_camera( po::variables_map vm )
 		} else {
 			BOOST_FOREACH(string &s, strs)
 				cam_parameters.push_back(lexical_cast<double>(s));
-			VectorCamera vcam( cam_parameters );
-			camera.set( vcam );
+			camera.setup( cam_parameters );
 		}
 	}
 

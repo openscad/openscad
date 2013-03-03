@@ -63,10 +63,10 @@ static bool running_under_wine = false;
 
 void QGLView::init()
 {
-	camtype = Camera::GIMBAL;
-  gcam.object_rot << 35, 0, -25;
-  gcam.object_trans << 0, 0, 0;
-  gcam.viewer_distance = 500;
+	cam.type = Camera::GIMBAL;
+  cam.object_rot << 35, 0, -25;
+  cam.object_trans << 0, 0, 0;
+  cam.viewer_distance = 500;
 
   this->mouse_drag_active = false;
   this->statusLabel = NULL;
@@ -152,8 +152,8 @@ void QGLView::paintGL()
   if (statusLabel) {
     QString msg;
     msg.sprintf("Viewport: translate = [ %.2f %.2f %.2f ], rotate = [ %.2f %.2f %.2f ], distance = %.2f",
-      -gcam.object_trans.x(), -gcam.object_trans.y(), -gcam.object_trans.z(),
-      fmodf(360 - gcam.object_rot.x() + 90, 360), fmodf(360 - gcam.object_rot.y(), 360), fmodf(360 - gcam.object_rot.z(), 360), gcam.viewer_distance);
+      -cam.object_trans.x(), -cam.object_trans.y(), -cam.object_trans.z(),
+      fmodf(360 - cam.object_rot.x() + 90, 360), fmodf(360 - cam.object_rot.y(), 360), fmodf(360 - cam.object_rot.z(), 360), cam.viewer_distance);
     statusLabel->setText(msg);
   }
 
@@ -163,12 +163,12 @@ void QGLView::paintGL()
 void QGLView::keyPressEvent(QKeyEvent *event)
 {
   if (event->key() == Qt::Key_Plus) {
-    gcam.viewer_distance *= 0.9;
+    cam.viewer_distance *= 0.9;
     updateGL();
     return;
   }
   if (event->key() == Qt::Key_Minus) {
-    gcam.viewer_distance /= 0.9;
+    cam.viewer_distance /= 0.9;
     updateGL();
     return;
   }
@@ -176,7 +176,7 @@ void QGLView::keyPressEvent(QKeyEvent *event)
 
 void QGLView::wheelEvent(QWheelEvent *event)
 {
-  gcam.viewer_distance *= pow(0.9, event->delta() / 120.0);
+  cam.viewer_distance *= pow(0.9, event->delta() / 120.0);
   updateGL();
 }
 
@@ -207,25 +207,25 @@ void QGLView::mouseMoveEvent(QMouseEvent *event)
       ) {
       // Left button rotates in xz, Shift-left rotates in xy
       // On Mac, Ctrl-Left is handled as right button on other platforms
-      gcam.object_rot.x() += dy;
+      cam.object_rot.x() += dy;
       if ((QApplication::keyboardModifiers() & Qt::ShiftModifier) != 0)
-        gcam.object_rot.y() += dx;
+        cam.object_rot.y() += dx;
       else
-        gcam.object_rot.z() += dx;
+        cam.object_rot.z() += dx;
 
-      normalizeAngle(gcam.object_rot.x());
-      normalizeAngle(gcam.object_rot.y());
-      normalizeAngle(gcam.object_rot.z());
+      normalizeAngle(cam.object_rot.x());
+      normalizeAngle(cam.object_rot.y());
+      normalizeAngle(cam.object_rot.z());
     } else {
       // Right button pans in the xz plane
       // Middle button pans in the xy plane
       // Shift-right and Shift-middle zooms
       if ((QApplication::keyboardModifiers() & Qt::ShiftModifier) != 0) {
-        gcam.viewer_distance += (GLdouble)dy;
+        cam.viewer_distance += (GLdouble)dy;
       } else {
 
-      double mx = +(dx) * gcam.viewer_distance/1000;
-      double mz = -(dy) * gcam.viewer_distance/1000;
+      double mx = +(dx) * cam.viewer_distance/1000;
+      double mz = -(dy) * cam.viewer_distance/1000;
 
       double my = 0;
 #if (QT_VERSION < QT_VERSION_CHECK(4, 7, 0))
@@ -241,9 +241,9 @@ void QGLView::mouseMoveEvent(QMouseEvent *event)
       }
 
       Matrix3d aax, aay, aaz, tm3;
-      aax = Eigen::AngleAxisd(-(gcam.object_rot.x()/180) * M_PI, Vector3d::UnitX());
-      aay = Eigen::AngleAxisd(-(gcam.object_rot.y()/180) * M_PI, Vector3d::UnitY());
-      aaz = Eigen::AngleAxisd(-(gcam.object_rot.z()/180) * M_PI, Vector3d::UnitZ());
+      aax = Eigen::AngleAxisd(-(cam.object_rot.x()/180) * M_PI, Vector3d::UnitX());
+      aay = Eigen::AngleAxisd(-(cam.object_rot.y()/180) * M_PI, Vector3d::UnitY());
+      aaz = Eigen::AngleAxisd(-(cam.object_rot.z()/180) * M_PI, Vector3d::UnitZ());
       tm3 = Matrix3d::Identity();
       tm3 = aaz * (aay * (aax * tm3));
 
@@ -259,9 +259,9 @@ void QGLView::mouseMoveEvent(QMouseEvent *event)
         0,  0,  0,  1
       ;
       tm = tm * vec;
-      gcam.object_trans.x() += tm(0,3);
-      gcam.object_trans.y() += tm(1,3);
-      gcam.object_trans.z() += tm(2,3);
+      cam.object_trans.x() += tm(0,3);
+      cam.object_trans.y() += tm(1,3);
+      cam.object_trans.z() += tm(2,3);
       }
     }
     updateGL();

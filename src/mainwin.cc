@@ -964,7 +964,7 @@ void MainWindow::pasteViewportTranslation()
 {
 	QTextCursor cursor = editor->textCursor();
 	QString txt;
-	txt.sprintf("[ %.2f, %.2f, %.2f ]", -qglview->gcam.object_trans.x(), -qglview->gcam.object_trans.y(), -qglview->gcam.object_trans.z());
+	txt.sprintf("[ %.2f, %.2f, %.2f ]", -qglview->cam.object_trans.x(), -qglview->cam.object_trans.y(), -qglview->cam.object_trans.z());
 	cursor.insertText(txt);
 }
 
@@ -973,7 +973,7 @@ void MainWindow::pasteViewportRotation()
 	QTextCursor cursor = editor->textCursor();
 	QString txt;
 	txt.sprintf("[ %.2f, %.2f, %.2f ]",
-		fmodf(360 - qglview->gcam.object_rot.x() + 90, 360), fmodf(360 - qglview->gcam.object_rot.y(), 360), fmodf(360 - qglview->gcam.object_rot.z(), 360));
+		fmodf(360 - qglview->cam.object_rot.x() + 90, 360), fmodf(360 - qglview->cam.object_rot.y(), 360), fmodf(360 - qglview->cam.object_rot.z(), 360));
 	cursor.insertText(txt);
 }
 
@@ -982,15 +982,15 @@ void MainWindow::updateTemporalVariables()
 	this->root_ctx.set_variable("$t", Value(this->e_tval->text().toDouble()));
 	
 	Value::VectorType vpt;
-	vpt.push_back(Value(-qglview->gcam.object_trans.x()));
-	vpt.push_back(Value(-qglview->gcam.object_trans.y()));
-	vpt.push_back(Value(-qglview->gcam.object_trans.z()));
+	vpt.push_back(Value(-qglview->cam.object_trans.x()));
+	vpt.push_back(Value(-qglview->cam.object_trans.y()));
+	vpt.push_back(Value(-qglview->cam.object_trans.z()));
 	this->root_ctx.set_variable("$vpt", Value(vpt));
 	
 	Value::VectorType vpr;
-	vpr.push_back(Value(fmodf(360 - qglview->gcam.object_rot.x() + 90, 360)));
-	vpr.push_back(Value(fmodf(360 - qglview->gcam.object_rot.y(), 360)));
-	vpr.push_back(Value(fmodf(360 - qglview->gcam.object_rot.z(), 360)));
+	vpr.push_back(Value(fmodf(360 - qglview->cam.object_rot.x() + 90, 360)));
+	vpr.push_back(Value(fmodf(360 - qglview->cam.object_rot.y(), 360)));
+	vpr.push_back(Value(fmodf(360 - qglview->cam.object_rot.z(), 360)));
 	root_ctx.set_variable("$vpr", Value(vpr));
 }
 
@@ -1617,49 +1617,49 @@ void MainWindow::animateUpdate()
 
 void MainWindow::viewAngleTop()
 {
-	qglview->gcam.object_rot << 90,0,0;
+	qglview->cam.object_rot << 90,0,0;
 	this->qglview->updateGL();
 }
 
 void MainWindow::viewAngleBottom()
 {
-	qglview->gcam.object_rot << 270,0,0;
+	qglview->cam.object_rot << 270,0,0;
 	this->qglview->updateGL();
 }
 
 void MainWindow::viewAngleLeft()
 {
-	qglview->gcam.object_rot << 0,0,90;
+	qglview->cam.object_rot << 0,0,90;
 	this->qglview->updateGL();
 }
 
 void MainWindow::viewAngleRight()
 {
-	qglview->gcam.object_rot << 0,0,270;
+	qglview->cam.object_rot << 0,0,270;
 	this->qglview->updateGL();
 }
 
 void MainWindow::viewAngleFront()
 {
-	qglview->gcam.object_rot << 0,0,0;
+	qglview->cam.object_rot << 0,0,0;
 	this->qglview->updateGL();
 }
 
 void MainWindow::viewAngleBack()
 {
-	qglview->gcam.object_rot << 0,0,180;
+	qglview->cam.object_rot << 0,0,180;
 	this->qglview->updateGL();
 }
 
 void MainWindow::viewAngleDiagonal()
 {
-	qglview->gcam.object_rot << 35,0,-25;
+	qglview->cam.object_rot << 35,0,-25;
 	this->qglview->updateGL();
 }
 
 void MainWindow::viewCenter()
 {
-	qglview->gcam.object_trans << 0,0,0;
+	qglview->cam.object_trans << 0,0,0;
 	this->qglview->updateGL();
 }
 

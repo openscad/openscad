@@ -17,7 +17,7 @@ GLView::GLView()
   showaxes = false;
   showcrosshairs = false;
 	renderer = NULL;
-	camtype = Camera::NONE;
+	cam.type = Camera::NONE;
 #ifdef ENABLE_OPENCSG
   is_opencsg_capable = false;
   has_shaders = false;
@@ -50,7 +50,7 @@ void GLView::setupGimbalCamPerspective()
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
   glFrustum(-w_h_ratio, +w_h_ratio, -(1/w_h_ratio), +(1/w_h_ratio), +10.0, +FAR_FAR_AWAY);
-  gluLookAt(0.0, -gcam.viewer_distance, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0);
+  gluLookAt(0.0, -cam.viewer_distance, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0);
 }
 
 void GLView::setupGimbalCamOrtho(double distance, bool offset)
@@ -63,14 +63,14 @@ void GLView::setupGimbalCamOrtho(double distance, bool offset)
   glOrtho(-w_h_ratio*l, +w_h_ratio*l,
       -(1/w_h_ratio)*l, +(1/w_h_ratio)*l,
       -FAR_FAR_AWAY, +FAR_FAR_AWAY);
-  gluLookAt(0.0, -gcam.viewer_distance, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0);
+  gluLookAt(0.0, -cam.viewer_distance, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0);
 }
 
 void GLView::setupVectorCamPerspective()
 {
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
-  double dist = (vcam.center - vcam.eye).norm();
+  double dist = (cam.center - cam.eye).norm();
   gluPerspective(45, w_h_ratio, 0.1*dist, 100*dist);
 }
 
@@ -79,7 +79,7 @@ void GLView::setupVectorCamOrtho(bool offset)
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
   if (offset) glTranslated(-0.8, -0.8, 0);
-  double l = (vcam.center - vcam.eye).norm() / 10;
+  double l = (cam.center - cam.eye).norm() / 10;
   glOrtho(-w_h_ratio*l, +w_h_ratio*l,
           -(1/w_h_ratio)*l, +(1/w_h_ratio)*l,
           -FAR_FAR_AWAY, +FAR_FAR_AWAY);
@@ -87,20 +87,16 @@ void GLView::setupVectorCamOrtho(bool offset)
 
 void GLView::setCamera( Camera &cam )
 {
-	camtype = cam.type;
-	if ( camtype == Camera::GIMBAL ) {
-		gcam = cam.gcam;
-	} else if ( camtype == Camera::VECTOR ) {
-		vcam = cam.vcam;
-		gcam.viewer_distance = 10*3*(vcam.center - vcam.eye).norm();
-	}
+	this->cam = cam;
+	// kludge to make showAxes() work on vector camera
+	cam.viewer_distance = 10*3*(cam.center - cam.eye).norm();
 }
 
 void GLView::paintGL()
 {
-	if (camtype == Camera::NONE) return;
-	else if (camtype == Camera::GIMBAL) gimbalCamPaintGL();
-	else if (camtype == Camera::VECTOR) vectorCamPaintGL();
+	if (cam.type == Camera::NONE) return;
+	else if (cam.type == Camera::GIMBAL) gimbalCamPaintGL();
+	else if (cam.type == Camera::VECTOR) vectorCamPaintGL();
 }
 
 #ifdef ENABLE_OPENCSG
@@ -293,8 +289,8 @@ void GLView::vectorCamPaintGL()
 
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
-  gluLookAt(vcam.eye[0], vcam.eye[1], vcam.eye[2],
-            vcam.center[0], vcam.center[1], vcam.center[2],
+  gluLookAt(cam.eye[0], cam.eye[1], cam.eye[2],
+            cam.center[0], cam.center[1], cam.center[2],
             0.0, 0.0, 1.0);
 
   // fixme - showcrosshairs doesnt work with vector camera
@@ -320,7 +316,7 @@ void GLView::gimbalCamPaintGL()
 {
   glEnable(GL_LIGHTING);
 
-  if (orthomode) GLView::setupGimbalCamOrtho(gcam.viewer_distance);
+  if (orthomode) GLView::setupGimbalCamOrtho(cam.viewer_distance);
   else GLView::setupGimbalCamPerspective();
 
   glMatrixMode(GL_MODELVIEW);
@@ -331,13 +327,13 @@ void GLView::gimbalCamPaintGL()
   glClearColor(bgcol[0], bgcol[1], bgcol[2], 0.0);
 
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-  glRotated(gcam.object_rot.x(), 1.0, 0.0, 0.0);
-  glRotated(gcam.object_rot.y(), 0.0, 1.0, 0.0);
-  glRotated(gcam.object_rot.z(), 0.0, 0.0, 1.0);
+  glRotated(cam.object_rot.x(), 1.0, 0.0, 0.0);
+  glRotated(cam.object_rot.y(), 0.0, 1.0, 0.0);
+  glRotated(cam.object_rot.z(), 0.0, 0.0, 1.0);
 
   if (showcrosshairs) GLView::showCrosshairs();
 
-  glTranslated(gcam.object_trans.x(), gcam.object_trans.y(), gcam.object_trans.z() );
+  glTranslated(cam.object_trans.x(), cam.object_trans.y(), cam.object_trans.z() );
 
   if (showaxes) GLView::showAxes();
 
@@ -360,7 +356,7 @@ void GLView::gimbalCamPaintGL()
 
 void GLView::showSmallaxes()
 {
-	// Fixme - this modifies the camera and doesnt work in 'non-gimbal' camera mode
+	// Fixme - this doesnt work in Vector Camera mode
 
   // Small axis cross in the lower left corner
   glDepthFunc(GL_ALWAYS);
@@ -369,9 +365,9 @@ void GLView::showSmallaxes()
 
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
-  glRotated(gcam.object_rot.x(), 1.0, 0.0, 0.0);
-  glRotated(gcam.object_rot.y(), 0.0, 1.0, 0.0);
-  glRotated(gcam.object_rot.z(), 0.0, 0.0, 1.0);
+  glRotated(cam.object_rot.x(), 1.0, 0.0, 0.0);
+  glRotated(cam.object_rot.y(), 0.0, 1.0, 0.0);
+  glRotated(cam.object_rot.z(), 0.0, 0.0, 1.0);
 
   glLineWidth(1);
   glBegin(GL_LINES);
@@ -446,7 +442,7 @@ void GLView::showAxes()
   glLineWidth(1);
   glColor3d(0.5, 0.5, 0.5);
   glBegin(GL_LINES);
-  double l = gcam.viewer_distance/10;
+  double l = cam.viewer_distance/10;
   glVertex3d(-l, 0, 0);
   glVertex3d(+l, 0, 0);
   glVertex3d(0, -l, 0);
@@ -467,7 +463,7 @@ void GLView::showCrosshairs()
   glBegin(GL_LINES);
   for (double xf = -1; xf <= +1; xf += 2)
   for (double yf = -1; yf <= +1; yf += 2) {
-    double vd = gcam.viewer_distance/20;
+    double vd = cam.viewer_distance/20;
     glVertex3d(-xf*vd, -yf*vd, -vd);
     glVertex3d(+xf*vd, +yf*vd, +vd);
   }

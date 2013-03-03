@@ -8,18 +8,12 @@ This class is inherited by:
 *QGLview - for Qt GUI
 *OffscreenView - for offscreen rendering, in tests and from command-line
 
-There are two different types of cameras:
+The view assumes either a Gimbal Camera (rotation,translation,distance)
+or Vector Camera (eye,center/target) is being used. See Camera.h. The
+cameras are not kept in sync.
 
-*Gimbal camera - uses Euler Angles, object translation, and viewer distance
-*Vector camera - uses 'eye', 'center', and 'up' vectors ('lookat' style)
-
-They are selectable by creating a GimbalCamera or VectorCamera (Camera.h)
-and then calling GLView.setCamera().
-
-Currently, the camera is set in two separate variables that are not kept
-in sync. Some actions (showCrossHairs) only work properly on Gimbal
-Camera. QGLView uses GimbalCamera while OffscreenView can use either one
-(defaulting to Vector).
+QGLView only uses GimbalCamera while OffscreenView can use either one.
+Some actions (showCrossHairs) only work properly on Gimbal Camera.
 
 */
 
@@ -73,9 +67,7 @@ public:
   bool showedges;
   bool showcrosshairs;
 
-	Camera::CameraType camtype;
-	VectorCamera vcam;
-	GimbalCamera gcam;
+	Camera cam;
 
 #ifdef ENABLE_OPENCSG
   GLint shaderinfo[11];

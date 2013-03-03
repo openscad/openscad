@@ -36,12 +36,11 @@ void export_png_with_cgal(CGAL_Nef_polyhedron *root_N, Camera &cam, std::ostream
 	}
 
 	if (cam.type == Camera::NONE) {
-		VectorCamera vcam;
-		vcam.center = getBoundingCenter(bbox);
+		cam.type = Camera::VECTOR;
+		cam.center = getBoundingCenter(bbox);
 		double radius = getBoundingRadius(bbox);
 		Vector3d cameradir(1, 1, -0.5);
-		vcam.eye = vcam.center - radius*2*cameradir;
-		cam.set(vcam);
+		cam.eye = cam.center - radius*2*cameradir;
 	}
 
 	//std::cerr << center << "\n";
@@ -79,17 +78,15 @@ void export_png_with_opencsg(Tree &tree, Camera &cam, std::ostream &output)
 	OpenCSGRenderer opencsgRenderer(csgInfo.root_chain, csgInfo.highlights_chain, csgInfo.background_chain, csgInfo.glview->shaderinfo);
 
 	if (cam.type == Camera::NONE) {
-		VectorCamera vcam;
-		vcam.center << 0,0,0;
+		cam.center << 0,0,0;
 	  double radius = 1.0;
 	  if (csgInfo.root_chain) {
 	    BoundingBox bbox = csgInfo.root_chain->getBoundingBox();
-	    vcam.center = (bbox.min() + bbox.max()) / 2;
+	    cam.center = (bbox.min() + bbox.max()) / 2;
 	    radius = (bbox.max() - bbox.min()).norm() / 2;
 	  }
 	  Vector3d cameradir(1, 1, -0.5);
-	  vcam.eye = vcam.center - radius*1.8*cameradir;
-		cam.set(vcam);
+	  cam.eye = cam.center - radius*1.8*cameradir;
 	}
 
 	csgInfo.glview->setCamera( cam );
