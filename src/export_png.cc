@@ -14,10 +14,8 @@
 void export_png_with_cgal(CGAL_Nef_polyhedron *root_N, Camera &cam, std::ostream &output)
 {
 	OffscreenView *glview;
-	int w = RenderSettings::inst()->img_width;
-	int h = RenderSettings::inst()->img_height;
 	try {
-		glview = new OffscreenView( w, h );
+		glview = new OffscreenView( cam.pixel_width, cam.pixel_height );
 	} catch (int error) {
 		fprintf(stderr,"Can't create OpenGL OffscreenView. Code: %i.\n", error);
 		return;
@@ -66,10 +64,8 @@ void export_png_with_opencsg(Tree &tree, Camera &cam, std::ostream &output)
 		return;
 	}
 
-	int w = RenderSettings::inst()->img_width;
-	int h = RenderSettings::inst()->img_height;
 	try {
-		csgInfo.glview = new OffscreenView( w, h );
+		csgInfo.glview = new OffscreenView( cam.pixel_width, cam.pixel_height );
 	} catch (int error) {
 		fprintf(stderr,"Can't create OpenGL OffscreenView. Code: %i.\n", error);
 		return;

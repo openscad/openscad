@@ -16,7 +16,6 @@ There are two different types of cameras represented in this class:
 
 #include <vector>
 #include <Eigen/Geometry>
-#include <boost/variant.hpp>
 
 class Camera
 {
@@ -37,6 +36,8 @@ public:
 			Eigen::Vector3d cameradir(1, 1, -0.5);
 			eye = center - 500 * cameradir;
 		}
+		pixel_width = 512;
+		pixel_height = 512;
 	}
 
 	void setup( std::vector<double> params ) {
@@ -63,6 +64,9 @@ public:
 	Eigen::Vector3d object_trans;
 	Eigen::Vector3d object_rot;
 	double viewer_distance;
+
+	unsigned int pixel_width;
+	unsigned int pixel_height;
 };
 
 
