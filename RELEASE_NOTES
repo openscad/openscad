@@ -6,7 +6,7 @@ o Console output is now enabled on Windows through the openscad.com executable
 o Added basic syntax highlighting in the editor
 o Mac: Added document icon
 o Mac: Added auto-update check
-o Commandline output to PNG, with two types of cameras, imgsize, CGAL & OpenCSG
+o Commandline output to PNG, with various camera and rendering settings
 o Regression test now creates single monolithic .html file for easier uploading
 
 Bugfixes:
