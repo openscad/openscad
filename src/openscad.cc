@@ -103,7 +103,6 @@ Camera determine_camera( po::variables_map vm )
 	Camera camera;
 
 	if (vm.count("gimbalcam")) {
-		std::cout << "x:" << vm["gimbalcam"].as<string>().c_str() << "\n";
 		vector<string> strs;
 		vector<double> cam_parameters;
 		split(strs, vm["gimbalcam"].as<string>(), is_any_of(","));
@@ -117,7 +116,6 @@ Camera determine_camera( po::variables_map vm )
 	}
 
 	if (vm.count("vectorcam")) {
-		std::cout << "x:" << vm["vectorcam"].as<string>().c_str() << "\n";
 		vector<string> strs;
 		vector<double> cam_parameters;
 		split(strs, vm["vectorcam"].as<string>(), is_any_of(","));
