@@ -17,7 +17,7 @@ GLView::GLView()
   showcrosshairs = false;
   renderer = NULL;
   cam = Camera();
-  far_far_away = RenderSettings->inst()->far_gl_clip_limit;
+  far_far_away = RenderSettings::inst()->far_gl_clip_limit;
 #ifdef ENABLE_OPENCSG
   is_opencsg_capable = false;
   has_shaders = false;
