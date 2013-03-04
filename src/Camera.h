@@ -5,7 +5,7 @@
 
 Camera
 
-For usage, see *View.cc / export_png.cc / openscad.cc
+For usage, see QGLView.cc, GLView.cc, export_png.cc, openscad.cc
 
 There are two different types of cameras represented in this class:
 

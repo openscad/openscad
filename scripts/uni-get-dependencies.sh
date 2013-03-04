@@ -55,7 +55,8 @@ get_debian_deps()
  for pkg in build-essential libqt4-dev libqt4-opengl-dev \
   libxmu-dev cmake bison flex git-core libboost-all-dev \
   libXi-dev libmpfr-dev libboost-dev libglew-dev libeigen2-dev \
-  libeigen3-dev libcgal-dev libopencsg-dev libgmp3-dev libgmp-dev; do
+  libeigen3-dev libcgal-dev libopencsg-dev libgmp3-dev libgmp-dev \
+  python-paramiko ; do
    sudo apt-get -y install $pkg;
  done
 }
