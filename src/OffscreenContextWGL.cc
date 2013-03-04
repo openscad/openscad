@@ -126,8 +126,8 @@ bool create_wgl_dummy_context(OffscreenContext &ctx)
   int chosenformat;
   HDC dev_context = GetDC( window );
   if ( dev_context == NULL ) {
-      cerr << "MS GDI - GetDC failed\n";
-      return false;
+    cerr << "MS GDI - GetDC failed\n";
+    return false;
   }
 
   ZeroMemory( &pixformat, sizeof( pixformat ) );
@@ -187,7 +187,7 @@ OffscreenContext *create_offscreen_context(int w, int h)
     return NULL;
   }
 
-	return create_offscreen_context_common( ctx );
+  return create_offscreen_context_common( ctx );
 }
 
 bool teardown_offscreen_context(OffscreenContext *ctx)
@@ -207,8 +207,8 @@ bool teardown_offscreen_context(OffscreenContext *ctx)
 
 bool save_framebuffer(OffscreenContext *ctx, std::ostream &output)
 {
-	if (!ctx) return false;
+  if (!ctx) return false;
   wglSwapLayerBuffers( ctx->dev_context, WGL_SWAP_MAIN_PLANE );
-	return save_framebuffer_common( ctx, output );
+  return save_framebuffer_common( ctx, output );
 }
 

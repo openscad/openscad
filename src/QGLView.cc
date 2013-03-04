@@ -63,7 +63,7 @@ static bool running_under_wine = false;
 
 void QGLView::init()
 {
-	cam.type = Camera::GIMBAL;
+  cam.type = Camera::GIMBAL;
   cam.object_rot << 35, 0, -25;
   cam.object_trans << 0, 0, 0;
   cam.viewer_distance = 500;
@@ -89,7 +89,7 @@ void QGLView::initializeGL()
   if (GLEW_OK != err) {
     fprintf(stderr, "GLEW Error: %s\n", glewGetErrorString(err));
   }
-	GLView::initializeGL();
+  GLView::initializeGL();
 }
 
 std::string QGLView::getRendererInfo() const

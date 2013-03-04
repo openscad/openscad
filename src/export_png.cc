@@ -75,22 +75,22 @@ void export_png_with_opencsg(Tree &tree, Camera &cam, std::ostream &output)
 
 	if (cam.type == Camera::NONE) {
 		cam.type = Camera::VECTOR;
-	  double radius = 1.0;
-	  if (csgInfo.root_chain) {
-	    BoundingBox bbox = csgInfo.root_chain->getBoundingBox();
-	    cam.center = (bbox.min() + bbox.max()) / 2;
-	    radius = (bbox.max() - bbox.min()).norm() / 2;
-	  }
-	  Vector3d cameradir(1, 1, -0.5);
-	  cam.eye = cam.center - radius*1.8*cameradir;
+		double radius = 1.0;
+		if (csgInfo.root_chain) {
+			BoundingBox bbox = csgInfo.root_chain->getBoundingBox();
+			cam.center = (bbox.min() + bbox.max()) / 2;
+			radius = (bbox.max() - bbox.min()).norm() / 2;
+		}
+		Vector3d cameradir(1, 1, -0.5);
+		cam.eye = cam.center - radius*1.8*cameradir;
 	}
 
 	csgInfo.glview->setCamera( cam );
-  csgInfo.glview->setRenderer(&opencsgRenderer);
-  OpenCSG::setContext(0);
-  OpenCSG::setOption(OpenCSG::OffscreenSetting, OpenCSG::FrameBufferObject);
-  csgInfo.glview->paintGL();
-  csgInfo.glview->save(output);
+	csgInfo.glview->setRenderer(&opencsgRenderer);
+	OpenCSG::setContext(0);
+	OpenCSG::setOption(OpenCSG::OffscreenSetting, OpenCSG::FrameBufferObject);
+	csgInfo.glview->paintGL();
+	csgInfo.glview->save(output);
 #else
 	fprintf(stderr,"This openscad was built without OpenCSG support\n");
 #endif

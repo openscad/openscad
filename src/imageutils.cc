@@ -5,15 +5,15 @@
 
 void flip_image(const unsigned char *src, unsigned char *dst, size_t pixelsize, size_t width, size_t height)
 {
-	assert( src && dst );
-	size_t rowBytes = pixelsize * width;
-	for (size_t i = 0 ; i < height ; i++) {
+  assert( src && dst );
+  size_t rowBytes = pixelsize * width;
+  for (size_t i = 0 ; i < height ; i++) {
     memmove(dst + (height - i - 1) * rowBytes, src + i * rowBytes, rowBytes);
   }
 }
 
 bool write_png(const char *filename, unsigned char *pixels, int width, int height) {
-	assert( filename && pixels );
+  assert( filename && pixels );
   std::ofstream fstream( filename, std::ios::binary );
   if (fstream.is_open()) {
     write_png( fstream, pixels, width, height );

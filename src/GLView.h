@@ -33,7 +33,6 @@ class GLView
 public:
 	GLView();
 	void setRenderer(Renderer* r);
-	Renderer *renderer;
 
 	void initializeGL();
 	void resizeGL(int w, int h);
@@ -56,6 +55,8 @@ public:
 	virtual bool save(const char *filename) = 0;
 	virtual std::string getRendererInfo() const = 0;
 
+	Renderer *renderer;
+	Camera cam;
 	size_t far_far_away;
 	size_t width;
 	size_t height;
@@ -65,8 +66,6 @@ public:
 	bool showfaces;
 	bool showedges;
 	bool showcrosshairs;
-
-	Camera cam;
 
 #ifdef ENABLE_OPENCSG
 	GLint shaderinfo[11];

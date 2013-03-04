@@ -15,9 +15,9 @@ GLView::GLView()
   showfaces = true;
   showaxes = false;
   showcrosshairs = false;
-	renderer = NULL;
-	cam = Camera();
-	far_far_away = RenderSettings->inst()->far_gl_clip_limit;
+  renderer = NULL;
+  cam = Camera();
+  far_far_away = RenderSettings->inst()->far_gl_clip_limit;
 #ifdef ENABLE_OPENCSG
   is_opencsg_capable = false;
   has_shaders = false;
@@ -30,7 +30,7 @@ GLView::GLView()
 
 void GLView::setRenderer(Renderer* r)
 {
-	renderer = r;
+  renderer = r;
 }
 
 void GLView::resizeGL(int w, int h)
@@ -57,8 +57,7 @@ void GLView::setupGimbalCamOrtho(double distance, bool offset)
 {
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
-  if(offset)
-    glTranslated(-0.8, -0.8, 0);
+  if (offset) glTranslated(-0.8, -0.8, 0);
   double l = distance/10;
   glOrtho(-w_h_ratio*l, +w_h_ratio*l,
       -(1/w_h_ratio)*l, +(1/w_h_ratio)*l,
@@ -87,16 +86,16 @@ void GLView::setupVectorCamOrtho(bool offset)
 
 void GLView::setCamera( Camera &cam )
 {
-	this->cam = cam;
+  this->cam = cam;
 }
 
 void GLView::paintGL()
 {
-	if (cam.type == Camera::GIMBAL) gimbalCamPaintGL();
-	else if (cam.type == Camera::VECTOR) vectorCamPaintGL();
-	else if (cam.type == Camera::NONE) {
-		fprintf(stderr,"paintGL with null camera\n");
-	}
+  if (cam.type == Camera::GIMBAL) gimbalCamPaintGL();
+  else if (cam.type == Camera::VECTOR) vectorCamPaintGL();
+  else if (cam.type == Camera::NONE) {
+    fprintf(stderr,"paintGL with null camera\n");
+  }
 }
 
 #ifdef ENABLE_OPENCSG
@@ -271,7 +270,7 @@ void GLView::initializeGL()
   glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
   glEnable(GL_COLOR_MATERIAL);
 #ifdef ENABLE_OPENCSG
-	enable_opencsg_shaders();
+  enable_opencsg_shaders();
 #endif
 }
 
@@ -317,9 +316,9 @@ void GLView::gimbalCamPaintGL()
   glEnable(GL_LIGHTING);
 
   if (cam.projection == Camera::ORTHOGONAL)
-		GLView::setupGimbalCamOrtho(cam.viewer_distance);
+    GLView::setupGimbalCamOrtho(cam.viewer_distance);
   else
-		GLView::setupGimbalCamPerspective();
+    GLView::setupGimbalCamPerspective();
 
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
@@ -357,12 +356,12 @@ void GLView::gimbalCamPaintGL()
 
 void GLView::showSmallaxes()
 {
-	// Fixme - this doesnt work in Vector Camera mode
+  // Fixme - this doesnt work in Vector Camera mode
 
   // Small axis cross in the lower left corner
   glDepthFunc(GL_ALWAYS);
 
-	GLView::setupGimbalCamOrtho(1000,true);
+  GLView::setupGimbalCamOrtho(1000,true);
 
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
@@ -411,10 +410,10 @@ void GLView::showSmallaxes()
 
   // FIXME: This was an attempt to keep contrast with background, but is suboptimal
   // (e.g. nearly invisible against a gray background).
-	//    int r,g,b;
-	//    r=g=b=0;
-	//    bgcol.getRgb(&r, &g, &b);
-	//    glColor3f((255.0f-r)/255.0f, (255.0f-g)/255.0f, (255.0f-b)/255.0f);
+  //    int r,g,b;
+  //    r=g=b=0;
+  //    bgcol.getRgb(&r, &g, &b);
+  //    glColor3f((255.0f-r)/255.0f, (255.0f-g)/255.0f, (255.0f-b)/255.0f);
   glColor3f(0.0f, 0.0f, 0.0f);
   glBegin(GL_LINES);
   // X Label
@@ -427,8 +426,8 @@ void GLView::showSmallaxes()
   glVertex3d(zlabel_x-3, zlabel_y-3, 0); glVertex3d(zlabel_x+3, zlabel_y-3, 0);
   glVertex3d(zlabel_x-3, zlabel_y+3, 0); glVertex3d(zlabel_x+3, zlabel_y+3, 0);
   glVertex3d(zlabel_x-3, zlabel_y-3, 0); glVertex3d(zlabel_x+3, zlabel_y+3, 0);
-	// FIXME - depends on gimbal camera 'viewer distance'.. how to fix this
-	//         for VectorCamera?
+  // FIXME - depends on gimbal camera 'viewer distance'.. how to fix this
+  //         for VectorCamera?
   glEnd();
 
   //Restore perspective for next paint
@@ -438,9 +437,9 @@ void GLView::showSmallaxes()
 
 void GLView::showAxes()
 {
-	// FIXME: doesn't work under Vector Camera
-	// Large gray axis cross inline with the model
-	// FIXME: This is always gray - adjust color to keep contrast with background
+  // FIXME: doesn't work under Vector Camera
+  // Large gray axis cross inline with the model
+  // FIXME: This is always gray - adjust color to keep contrast with background
   glLineWidth(1);
   glColor3d(0.5, 0.5, 0.5);
   glBegin(GL_LINES);
