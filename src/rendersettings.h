@@ -25,8 +25,8 @@ public:
 	void setColors(const std::map<RenderColor, Color4f> &colors);
 	Color4f color(RenderColor idx);
 
-	unsigned int openCSGTermLimit, img_width, img_height, far_gl_clip_limit;
-
+	unsigned int openCSGTermLimit, img_width, img_height;
+	double far_gl_clip_limit;
 private:
 	RenderSettings();
 	~RenderSettings() {}

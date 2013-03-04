@@ -57,7 +57,7 @@ public:
 
 	Renderer *renderer;
 	Camera cam;
-	size_t far_far_away;
+	double far_far_away;
 	size_t width;
 	size_t height;
 	double w_h_ratio;

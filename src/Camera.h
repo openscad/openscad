@@ -28,6 +28,7 @@ public:
 	enum ProjectionType { ORTHOGONAL, PERSPECTIVE } projection;
 	Camera() {
 		type = Camera::NONE;
+		projection = Camera::PERSPECTIVE;
 	}
 	Camera( enum CameraType e )
 	{
@@ -59,7 +60,6 @@ public:
 		} else {
 			assert( "Gimbal cam needs 7 numbers, Vector camera needs 6" );
 		}
-		projection = Camera::PERSPECTIVE;
 	}
 
 	// Vectorcam
