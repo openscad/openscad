@@ -396,7 +396,7 @@ int main(int argc, char **argv)
 #endif
 
 		QString qfilename;
-		if (filename) qfilename = QString::fromStdString(boosty::stringy(boosty::absolute(filename)));
+		if (filename) qfilename = QString::fromUtf8(boosty::stringy(boosty::absolute(filename)).c_str());
 
 #if 0 /*** disabled by clifford wolf: adds rendering artefacts with OpenCSG ***/
 		// turn on anti-aliasing
@@ -411,7 +411,7 @@ int main(int argc, char **argv)
 		if (vm.count("input-file")) {
 			inputFiles = vm["input-file"].as<vector<string> >();
 			for (vector<string>::const_iterator infile = inputFiles.begin()+1; infile != inputFiles.end(); infile++) {
-				new MainWindow(QString::fromStdString(boosty::stringy((original_path / *infile))));
+				new MainWindow(QString::fromUtf8(boosty::stringy((original_path / *infile).c_str()));
 			}
 		}
 		app.connect(&app, SIGNAL(lastWindowClosed()), &app, SLOT(quit()));
