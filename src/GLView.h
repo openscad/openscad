@@ -28,8 +28,6 @@ Some actions (showCrossHairs) only work properly on Gimbal Camera.
 #include "renderer.h"
 #include "Camera.h"
 
-#define FAR_FAR_AWAY 100000.0
-
 class GLView
 {
 public:
@@ -58,25 +56,26 @@ public:
 	virtual bool save(const char *filename) = 0;
 	virtual std::string getRendererInfo() const = 0;
 
+	size_t far_far_away;
 	size_t width;
 	size_t height;
-  double w_h_ratio;
-  bool orthomode;
-  bool showaxes;
-  bool showfaces;
-  bool showedges;
-  bool showcrosshairs;
+	double w_h_ratio;
+	bool orthomode;
+	bool showaxes;
+	bool showfaces;
+	bool showedges;
+	bool showcrosshairs;
 
 	Camera cam;
 
 #ifdef ENABLE_OPENCSG
-  GLint shaderinfo[11];
-  bool is_opencsg_capable;
-  bool has_shaders;
-  void enable_opencsg_shaders();
+	GLint shaderinfo[11];
+	bool is_opencsg_capable;
+	bool has_shaders;
+	void enable_opencsg_shaders();
 	virtual void display_opencsg_warning() = 0;
-  bool opencsg_support;
-  int opencsg_id;
+	bool opencsg_support;
+	int opencsg_id;
 #endif
 };
 

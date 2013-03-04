@@ -17,6 +17,7 @@ GLView::GLView()
   showcrosshairs = false;
 	renderer = NULL;
 	cam = Camera();
+	far_far_away = RenderSettings->inst()->far_gl_clip_limit;
 #ifdef ENABLE_OPENCSG
   is_opencsg_capable = false;
   has_shaders = false;
@@ -48,7 +49,7 @@ void GLView::setupGimbalCamPerspective()
 {
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
-  glFrustum(-w_h_ratio, +w_h_ratio, -(1/w_h_ratio), +(1/w_h_ratio), +10.0, +FAR_FAR_AWAY);
+  glFrustum(-w_h_ratio, +w_h_ratio, -(1/w_h_ratio), +(1/w_h_ratio), +10.0, +far_far_away);
   gluLookAt(0.0, -cam.viewer_distance, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0);
 }
 
@@ -61,7 +62,7 @@ void GLView::setupGimbalCamOrtho(double distance, bool offset)
   double l = distance/10;
   glOrtho(-w_h_ratio*l, +w_h_ratio*l,
       -(1/w_h_ratio)*l, +(1/w_h_ratio)*l,
-      -FAR_FAR_AWAY, +FAR_FAR_AWAY);
+      -far_far_away, +far_far_away);
   gluLookAt(0.0, -cam.viewer_distance, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0);
 }
 
@@ -81,7 +82,7 @@ void GLView::setupVectorCamOrtho(bool offset)
   double l = (cam.center - cam.eye).norm() / 10;
   glOrtho(-w_h_ratio*l, +w_h_ratio*l,
           -(1/w_h_ratio)*l, +(1/w_h_ratio)*l,
-          -FAR_FAR_AWAY, +FAR_FAR_AWAY);
+          -far_far_away, +far_far_away);
 }
 
 void GLView::setCamera( Camera &cam )
@@ -249,7 +250,7 @@ void GLView::enable_opencsg_shaders()
 void GLView::initializeGL()
 {
   glEnable(GL_DEPTH_TEST);
-  glDepthRange(-FAR_FAR_AWAY, +FAR_FAR_AWAY);
+  glDepthRange(-far_far_away, +far_far_away);
 
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
