@@ -22,13 +22,11 @@
 # This license is based on zlib license by Jean-loup Gailly and Mark Adler
 
 
-# This script takes html output by test_pretty_print.py and uploads
-# it to a web server over ssh using sftp.
-#
-# Simple example: (see help() for more info)
-#
-# ./test_upload.py  --username=andreis --host=akhma.org --remotepath=/tmp/ 
-#
+# This script takes html output by test_pretty_print.py and uploads it 
+# to a web server into an 'openscad_tests' subdir over ssh using sftp. 
+# It then modifies the 'index.html' file in that directory to 'add to 
+# the list' of reports on the remote web server.
+ 
 
 #
 # Design
@@ -52,6 +50,8 @@
 # 
 # 1. Local system must have sftp access to remote server
 # This can be tested by runnig this: sftp user@remotehost
+# If you are using ssh-agent or an ssh-keyring it will go automatically.
+# Otherwise it will request your password to be typed in.
 # 
 # 2. Remote web server only needs static html. There is no requirement
 # for php/cgi/etc. 
@@ -101,11 +101,11 @@ example1:
 
 example2:
 
-  $ # run under X11
-  $ ctest # result is Testing/Temporary/freebsd_ppc_nvidia_abc_report.html
+  $ # run under X11, then run under Xvfb, upload both reports to one site
+  $ ctest # X11 - result is Testing/Temporary/freebsd_x86_nvidia_abc_report.html
   $ test_upload.py --username=annag --host=fontanka.org --remotepath=/var/www/
 	$ export DISPLAY= # dont use 'display' X, use Xvfb (different drivers)
-  $ ctest # result will be Testing/Temporary/freebsd_ppc_mesa_xyz_report.html
+  $ ctest # XVfb - result is Testing/Temporary/freebsd_x86_mesa_xyz_report.html
   $ test_upload.py --username=annag --host=fontanka.org --remotepath=/var/www/
   $ firefox http://fontanka.org/openscad_tests/index.html
   # result is 'index.html' with a link to the two separate test .html files
