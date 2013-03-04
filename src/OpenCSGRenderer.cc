@@ -38,7 +38,7 @@ class OpenCSGPrim : public OpenCSG::Primitive
 public:
 	OpenCSGPrim(OpenCSG::Operation operation, unsigned int convexity) :
 			OpenCSG::Primitive(operation, convexity) { }
-	boost::shared_ptr<PolySet> ps;
+	shared_ptr<PolySet> ps;
 	Transform3d m;
 	PolySet::csgmode_e csgmode;
 	virtual void render() {
@@ -70,10 +70,6 @@ void OpenCSGRenderer::draw(bool /*showfaces*/, bool showedges) const
 		}
 	}
 }
-
-#include "CGALEvaluator.h"
-#include "CSGTermEvaluator.h"
-#include "csgtermnormalizer.h"
 
 void OpenCSGRenderer::renderCSGChain(CSGChain *chain, GLint *shaderinfo, 
 																		 bool highlight, bool background) const

@@ -124,7 +124,7 @@ Camera get_camera( po::variables_map vm )
 		string proj = vm["projection"].as<string>();
 		if (proj=="o" || proj=="ortho" || proj=="orthogonal")
 			camera.projection = Camera::ORTHOGONAL;
-		else if (proj=="p" || proj == "perspective")
+		else if (proj=="p" || proj=="perspective")
 			camera.projection = Camera::PERSPECTIVE;
 		else {
 			fprintf(stderr,"projection needs to be 'o' or 'p' for ortho or perspective");

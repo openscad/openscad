@@ -87,8 +87,6 @@ void GLView::setupVectorCamOrtho(bool offset)
 void GLView::setCamera( Camera &cam )
 {
 	this->cam = cam;
-	// kludge to make showAxes() work on vector camera
-	cam.viewer_distance = 10*3*(cam.center - cam.eye).norm();
 }
 
 void GLView::paintGL()
@@ -412,10 +410,10 @@ void GLView::showSmallaxes()
 
   // FIXME: This was an attempt to keep contrast with background, but is suboptimal
   // (e.g. nearly invisible against a gray background).
-//    int r,g,b;
-//    r=g=b=0;
-//    bgcol.getRgb(&r, &g, &b);
-//    glColor3f((255.0f-r)/255.0f, (255.0f-g)/255.0f, (255.0f-b)/255.0f);
+	//    int r,g,b;
+	//    r=g=b=0;
+	//    bgcol.getRgb(&r, &g, &b);
+	//    glColor3f((255.0f-r)/255.0f, (255.0f-g)/255.0f, (255.0f-b)/255.0f);
   glColor3f(0.0f, 0.0f, 0.0f);
   glBegin(GL_LINES);
   // X Label
@@ -428,6 +426,8 @@ void GLView::showSmallaxes()
   glVertex3d(zlabel_x-3, zlabel_y-3, 0); glVertex3d(zlabel_x+3, zlabel_y-3, 0);
   glVertex3d(zlabel_x-3, zlabel_y+3, 0); glVertex3d(zlabel_x+3, zlabel_y+3, 0);
   glVertex3d(zlabel_x-3, zlabel_y-3, 0); glVertex3d(zlabel_x+3, zlabel_y+3, 0);
+	// FIXME - depends on gimbal camera 'viewer distance'.. how to fix this
+	//         for VectorCamera?
   glEnd();
 
   //Restore perspective for next paint
@@ -437,10 +437,9 @@ void GLView::showSmallaxes()
 
 void GLView::showAxes()
 {
+	// FIXME: doesn't work under Vector Camera
 	// Large gray axis cross inline with the model
 	// FIXME: This is always gray - adjust color to keep contrast with background
-	// FIXME - depends on gimbal camera 'viewer distance'.. how to fix this
-	//         for VectorCamera?
   glLineWidth(1);
   glColor3d(0.5, 0.5, 0.5);
   glBegin(GL_LINES);
@@ -456,7 +455,7 @@ void GLView::showAxes()
 
 void GLView::showCrosshairs()
 {
-	// FIXME: this might not work with non-gimbal camera?
+	// FIXME: this might not work with Vector camera
   // FIXME: Crosshairs and axes are lighted, this doesn't make sense and causes them
   // to change color based on view orientation.
   glLineWidth(3);

@@ -29,20 +29,15 @@ public:
 	CSGChain *highlights_chain;
 	std::vector<shared_ptr<CSGTerm> > background_terms;
 	CSGChain *background_chain;
-
 	int normalizelimit;
 
-	void (*progress_function)(void);
-	void set_progress_function( void (*funcname)(void) )
-	{
-		progress_function = funcname;
-	}
+	void (*progress_function)();
 	void call_progress_function()
 	{
 		if (progress_function) progress_function();
 	}
 
-	bool prep_chains( const Tree &tree )
+	bool compile_chains( const Tree &tree )
 	{
 		const AbstractNode *root_node = tree.root();
 		CGALEvaluator cgalevaluator(tree);
@@ -50,7 +45,7 @@ public:
 		boost::shared_ptr<CSGTerm> root_raw_term = evaluator.evaluateCSGTerm( *root_node, this->highlight_terms, this->background_terms );
 
 		if (!root_raw_term) {
-			fprintf(stderr, "Error: CSG generation failed! (no top level object found)\n");
+			PRINT("Error: CSG generation failed! (no top level object found)");
 			call_progress_function();
 			return false;
 		}
@@ -62,16 +57,16 @@ public:
 		if (this->root_norm_term) {
 			this->root_chain = new CSGChain();
 			this->root_chain->import(this->root_norm_term);
-			fprintf(stderr, "Normalized CSG tree has %d elements\n", int(this->root_chain->polysets.size()));
+			fprintf(stderr, "Normalized CSG tree has %d elements", int(this->root_chain->polysets.size()));
 		}
 		else {
 			this->root_chain = NULL;
-			fprintf(stderr, "WARNING: CSG normalization resulted in an empty tree\n");
+			PRINT("WARNING: CSG normalization resulted in an empty tree");
 			call_progress_function();
 		}
 
 		if (this->highlight_terms.size() > 0) {
-			std::cerr << "Compiling highlights (" << this->highlight_terms.size() << " CSG Trees)...\n";
+			PRINTB("Compiling highlights (%i CSG Trees)...", this->highlight_terms.size() );
 			call_progress_function();
 			this->highlights_chain = new CSGChain();
 			for (unsigned int i = 0; i < this->highlight_terms.size(); i++) {
@@ -81,7 +76,7 @@ public:
 		}
 
 		if (this->background_terms.size() > 0) {
-			std::cerr << "Compiling background (%d CSG Trees)..." << this->background_terms.size() << " CSG Trees)...\n";
+			PRINTB("Compiling background (%i CSG Trees)...", this->background_terms.size());
 			call_progress_function();
 			this->background_chain = new CSGChain();
 			for (unsigned int i = 0; i < this->background_terms.size(); i++) {

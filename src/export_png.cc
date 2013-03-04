@@ -59,7 +59,7 @@ void export_png_with_opencsg(Tree &tree, Camera &cam, std::ostream &output)
 {
 #ifdef ENABLE_OPENCSG
   CsgInfo csgInfo = CsgInfo();
-  if ( !csgInfo.prep_chains( tree ) ) {
+  if ( !csgInfo.compile_chains( tree ) ) {
 		fprintf(stderr,"Couldn't initialize OpenCSG chains\n");
 		return;
 	}
@@ -75,7 +75,6 @@ void export_png_with_opencsg(Tree &tree, Camera &cam, std::ostream &output)
 
 	if (cam.type == Camera::NONE) {
 		cam.type = Camera::VECTOR;
-		cam.center << 0,0,0;
 	  double radius = 1.0;
 	  if (csgInfo.root_chain) {
 	    BoundingBox bbox = csgInfo.root_chain->getBoundingBox();

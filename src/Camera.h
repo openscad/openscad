@@ -12,12 +12,14 @@ There are two different types of cameras represented in this class:
 *Gimbal camera - uses Euler Angles, object translation, and viewer distance
 *Vector camera - uses 'eye', 'center', and 'up' vectors ('lookat' style)
 
-There are two modes of projection, Perspective and Orthogonal.
+They are not necessarily kept in sync. There are two modes of
+projection, Perspective and Orthogonal.
 
 */
 
 #include <vector>
 #include <Eigen/Geometry>
+#include "rendersettings.h"
 
 class Camera
 {
@@ -26,7 +28,6 @@ public:
 	enum ProjectionType { ORTHOGONAL, PERSPECTIVE } projection;
 	Camera() {
 		type = Camera::NONE;
-		projection = Camera::PERSPECTIVE;
 	}
 	Camera( enum CameraType e )
 	{
@@ -40,8 +41,8 @@ public:
 			Eigen::Vector3d cameradir(1, 1, -0.5);
 			eye = center - 500 * cameradir;
 		}
-		pixel_width = 512;
-		pixel_height = 512;
+		pixel_width = RenderSettings::inst()->img_width;
+		pixel_height = RenderSettings::inst()->img_height;
 		projection = Camera::PERSPECTIVE;
 	}
 
@@ -58,12 +59,13 @@ public:
 		} else {
 			assert( "Gimbal cam needs 7 numbers, Vector camera needs 6" );
 		}
+		projection = Camera::PERSPECTIVE;
 	}
 
 	// Vectorcam
 	Eigen::Vector3d eye;
 	Eigen::Vector3d center; // (aka 'target')
-	Eigen::Vector3d up;
+	Eigen::Vector3d up; // not used currently
 
 	// Gimbalcam
 	Eigen::Vector3d object_trans;

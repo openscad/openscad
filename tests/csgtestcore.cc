@@ -167,7 +167,7 @@ int csgtestcore(int argc, char *argv[], test_type_e test_type)
 	Tree tree(root_node);
 
 	CsgInfo csgInfo = CsgInfo();
-	if ( !csgInfo.prep_chains( tree ) ) return 1;
+	if ( !csgInfo.compile_chains( tree ) ) return 1;
 
 	fs::current_path(original_path);
 
