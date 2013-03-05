@@ -823,6 +823,7 @@ set_test_config(Heavy opencsgtest_minkowski3-tests
                       cgalpngtest_for-tests
                       cgalpngtest_for-nested-tests
                       cgalpngtest_intersection-tests
+                      cgalpngtest_text-search-test
                       guicgalpngtest_projection-tests
                       guicgalpngtest_rotate_extrude-tests
                       guicgalpngtest_surface-tests
