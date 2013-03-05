@@ -44,7 +44,7 @@ void parser_init(const std::string &applicationpath)
 	}
 
 	// FIXME: Add ~/.openscad/libraries
-#ifdef __APPLE__
+#if defined(__APPLE__) && !defined(OPENSCAD_TESTING)
 	fs::path docdir(CocoaUtils::documentsPath());
 	add_librarydir(boosty::stringy(docdir / "OpenSCAD" / "libraries"));
 #endif
