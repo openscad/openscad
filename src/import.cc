@@ -132,7 +132,9 @@ union stl_facet {
 
 void uint32_byte_swap( uint32_t &x )
 {
-#if defined(__GNUC__) || defined(__clang__)
+#if __GNUC__ >= 4 && __GNUC_MINOR__ >= 3
+	x = __builtin_bswap32( x );
+#elif defined(__clang__)
 	x = __builtin_bswap32( x );
 #elif defined(_MSC_VER)
 	x = _byteswap_ulong( x );

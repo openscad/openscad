@@ -83,7 +83,7 @@ Preferences::Preferences(QWidget *parent) : QMainWindow(parent)
 #ifdef ENABLE_CGAL
 	this->defaultmap["advanced/cgalCacheSize"] = uint(CGALCache::instance()->maxSize());
 #endif
-	this->defaultmap["advanced/openCSGLimit"] = 2000;
+	this->defaultmap["advanced/openCSGLimit"] = RenderSettings::inst()->openCSGTermLimit;
 	this->defaultmap["advanced/forceGoldfeather"] = false;
 
 

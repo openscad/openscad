@@ -1,4 +1,5 @@
 #include "printutils.h"
+#include <sstream>
 #include <stdio.h>
 
 std::list<std::string> print_messages_stack;
@@ -49,3 +50,24 @@ void PRINT_NOCACHE(const std::string &msg)
 		outputhandler(msg, outputhandler_data);
 	}
 }
+
+std::string two_digit_exp_format( std::string doublestr )
+{
+#ifdef _WIN32
+	size_t exppos = doublestr.find('e');
+	if ( exppos != std::string::npos) {
+		exppos += 2;
+		if ( doublestr[exppos] == '0' ) doublestr.erase(exppos,1);
+	}
+#endif
+	return doublestr;
+}
+
+std::string two_digit_exp_format( double x )
+{
+	std::stringstream s;
+	s << x;
+	return two_digit_exp_format( s.str() );
+}
+
+

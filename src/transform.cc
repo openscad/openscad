@@ -29,6 +29,8 @@
 #include "context.h"
 #include "polyset.h"
 #include "builtin.h"
+#include "value.h"
+#include "printutils.h"
 #include <sstream>
 #include <vector>
 #include <assert.h>
@@ -188,8 +190,8 @@ std::string TransformNode::toString() const
 	for (int j=0;j<4;j++) {
 		stream << "[";
 		for (int i=0;i<4;i++) {
-			// FIXME: The 0 test is to avoid a leading minus before a single 0 (cosmetics)
-			stream << ((this->matrix(j, i)==0)?0:this->matrix(j, i));
+			Value v( this->matrix(j, i) );
+			stream << v;
 			if (i != 3) stream << ", ";
 		}
 		stream << "]";
