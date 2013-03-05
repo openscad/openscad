@@ -9,6 +9,10 @@
 #include <GL/glxew.h>
 #endif
 
+#ifdef ENABLE_OPENCSG
+#include <opencsg.h>
+#endif
+
 GLView::GLView()
 {
   showedges = false;
