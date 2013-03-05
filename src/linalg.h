@@ -22,6 +22,9 @@ bool matrix_contains_infinity( const Transform3d &m );
 bool matrix_contains_nan( const Transform3d &m );
 
 BoundingBox operator*(const Transform3d &m, const BoundingBox &box);
+Vector3d getBoundingCenter(BoundingBox bbox);
+double getBoundingRadius(BoundingBox bbox);
+
 
 class Color4f : public Eigen::Vector4f
 {

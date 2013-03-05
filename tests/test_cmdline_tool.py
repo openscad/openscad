@@ -28,13 +28,20 @@ import shutil
 import platform
 import string
 
+share_expected_imgs = {}
+share_expected_imgs["guicgalpngtest"] = "cgalpngtest"
+share_expected_imgs["guiopencsgtest"] = "opencsgtest"
+
 def initialize_environment():
     if not options.generate: options.generate = bool(os.getenv("TEST_GENERATE"))
     return True
 
 def init_expected_filename(testname, cmd):
     global expecteddir, expectedfilename
-    expecteddir = os.path.join(options.regressiondir, os.path.split(cmd)[1])
+    testbinary_filename = os.path.split(cmd)[1]
+    if testbinary_filename in share_expected_imgs:
+      testbinary_filename = share_expected_imgs[testbinary_filename]
+    expecteddir = os.path.join(options.regressiondir, testbinary_filename )
     expectedfilename = os.path.join(expecteddir, testname + "-expected." + options.suffix)
     expectedfilename = os.path.normpath( expectedfilename )
 
