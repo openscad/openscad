@@ -188,7 +188,6 @@ build_mpfr()
   cp x86_64/include/mpf2mpfr.h include/
 }
 
-
 build_boost()
 {
   version=$1
@@ -343,8 +342,8 @@ build_sparkle()
   if $OPTION_32BIT; then
     SPARKLE_EXTRA_FLAGS="-arch i386"
   fi
-  xcodebuild -project Sparkle.xcodeproj clean
-  xcodebuild -project Sparkle.xcodeproj -scheme Sparkle -configuration Release -arch x86_64 $SPARKLE_EXTRA_FLAGS
+  xcodebuild clean
+  xcodebuild -arch x86_64 $SPARKLE_EXTRA_FLAGS
   rm -rf $DEPLOYDIR/lib/Sparkle.framework
   cp -Rf build/Release/Sparkle.framework $DEPLOYDIR/lib/ 
   install_name_tool -id $DEPLOYDIR/lib/Sparkle.framework/Versions/A/Sparkle $DEPLOYDIR/lib/Sparkle.framework/Sparkle
@@ -409,9 +408,9 @@ echo "Using basedir:" $BASEDIR
 mkdir -p $SRCDIR $DEPLOYDIR
 build_qt 4.8.4
 build_eigen 3.1.2
-build_gmp 5.1.0
+build_gmp 5.1.1
 build_mpfr 3.1.1
-build_boost 1.51.0
+build_boost 1.53.0
 # NB! For CGAL, also update the actual download URL in the function
 build_cgal 4.1
 build_glew 1.9.0
