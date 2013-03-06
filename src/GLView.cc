@@ -74,7 +74,7 @@ void GLView::setupVectorCamPerspective()
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
   double dist = (cam.center - cam.eye).norm();
-  gluPerspective(45, w_h_ratio, 0.1*dist, 100*dist);
+  gluPerspective(45, pow(w_h_ratio,2), 0.1*dist, 100*dist);
 }
 
 void GLView::setupVectorCamOrtho(bool offset)
@@ -83,8 +83,8 @@ void GLView::setupVectorCamOrtho(bool offset)
   glLoadIdentity();
   if (offset) glTranslated(-0.8, -0.8, 0);
   double l = (cam.center - cam.eye).norm() / 10;
-  glOrtho(-w_h_ratio*l, +w_h_ratio*l,
-          -(1/w_h_ratio)*l, +(1/w_h_ratio)*l,
+  glOrtho(-pow(w_h_ratio,2)*l, +pow(w_h_ratio,2)*l,
+          -(1/pow(w_h_ratio,2))*l, +(1/pow(w_h_ratio,2))*l,
           -far_far_away, +far_far_away);
 }
 

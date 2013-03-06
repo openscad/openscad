@@ -77,10 +77,11 @@ static void help(const char *progname)
 	int tab = int(strlen(progname))+8;
 	fprintf(stderr,"Usage: %s [ -o output_file [ -d deps_file ] ]\\\n"
 	        "%*s[ -m make_command ] [ -D var=val [..] ] [ --render ] \\\n"
-	        "%*s[ --camera= [x,y,z,rotx,y,z,dist] | [eyex,y,z,centerx,y,z] ] \\\n"
-	        "%*s[ --imgsize=width,height ] [ --projection=o|p] \\\n"
+	        "%*s[ --camera=translatex,y,z,rotx,y,z,dist | \\\n"
+	        "%*s  --camera=eyex,y,z,centerx,y,z ] \\\n"
+	        "%*s[ --imgsize=width,height ] [ --projection=(o)rtho|(p)ersp] \\\n"
 	        "%*sfilename\n",
-					progname, tab, "", tab, "", tab, "", tab, "");
+					progname, tab, "", tab, "", tab, "", tab, "", tab, "");
 	exit(1);
 }
 
@@ -127,7 +128,7 @@ Camera get_camera( po::variables_map vm )
 		else if (proj=="p" || proj=="perspective")
 			camera.projection = Camera::PERSPECTIVE;
 		else {
-			fprintf(stderr,"projection needs to be 'o' or 'p' for ortho or perspective");
+			fprintf(stderr,"projection needs to be 'o' or 'p' for ortho or perspective\n");
 			exit(1);
 		}
 	}

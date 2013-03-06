@@ -373,6 +373,7 @@ inclusion(CGAL_DIR CGAL_INCLUDE_DIRS)
 
 if(CMAKE_CXX_COMPILER MATCHES ".*clang.*")
 	string(REPLACE "-frounding-math" "" CGAL_CXX_FLAGS_INIT ${CGAL_CXX_FLAGS_INIT})
+	string(REPLACE "--param=ssp-buffer-size=4" "" CGAL_CXX_FLAGS_INIT ${CGAL_CXX_FLAGS_INIT})
 endif()
 
 # Imagemagick
