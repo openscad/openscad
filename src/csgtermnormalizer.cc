@@ -7,6 +7,7 @@
 */
 shared_ptr<CSGTerm> CSGTermNormalizer::normalize(const shared_ptr<CSGTerm> &root)
 {
+	this->aborted = false;
 	shared_ptr<CSGTerm> temp = root;
 	while (1) {
 		this->rootnode = temp;
@@ -20,7 +21,7 @@ shared_ptr<CSGTerm> CSGTermNormalizer::normalize(const shared_ptr<CSGTerm> &root
 			PRINTB("WARNING: Normalized tree is growing past %d elements. Aborting normalization.\n", this->limit);
       // Clean up any partially evaluated terms
 			shared_ptr<CSGTerm> newroot = root, tmproot;
-			while (newroot != tmproot) {
+			while (newroot && newroot != tmproot) {
 				tmproot = newroot;
 				newroot = collapse_null_terms(tmproot);
 			}
@@ -49,14 +50,16 @@ shared_ptr<CSGTerm> CSGTermNormalizer::normalizePass(shared_ptr<CSGTerm> term)
 		while (term && match_and_replace(term)) {	}
 		this->nodecount++;
 		if (nodecount > this->limit) {
+			PRINTB("WARNING: Normalized tree is growing past %d elements. Aborting normalization.\n", this->limit);
+			this->aborted = true;
 			return shared_ptr<CSGTerm>();
 		}
 		if (!term || term->type == CSGTerm::TYPE_PRIMITIVE) return term;
 		if (term->left) term->left = normalizePass(term->left);
-	} while (term->type != CSGTerm::TYPE_UNION &&
+	} while (!this->aborted && term->type != CSGTerm::TYPE_UNION &&
 					 ((term->right && term->right->type != CSGTerm::TYPE_PRIMITIVE) ||
 						(term->left && term->left->type == CSGTerm::TYPE_UNION)));
-	term->right = normalizePass(term->right);
+	if (!this->aborted) term->right = normalizePass(term->right);
 
 	// FIXME: Do we need to take into account any transformation of item here?
 	return collapse_null_terms(term);

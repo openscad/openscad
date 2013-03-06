@@ -52,6 +52,9 @@ namespace fs = boost::filesystem;
 using namespace boost::assign; // bring 'operator+=()' into scope
 #include "boosty.h"
 
+#include <boost/detail/endian.hpp>
+#include <boost/cstdint.hpp>
+
 class ImportModule : public AbstractModule
 {
 public:
@@ -112,6 +115,47 @@ AbstractNode *ImportModule::evaluate(const Context *ctx, const ModuleInstantiati
 	return node;
 }
 
+#define STL_FACET_NUMBYTES 4*3*4+2
+// as there is no 'float32_t' standard, we assume the systems 'float'
+// is a 'binary32' aka 'single' standard IEEE 32-bit floating point type
+union stl_facet {
+	uint8_t data8[ STL_FACET_NUMBYTES ];
+	uint32_t data32[4*3];
+	struct facet_data {
+	  float i, j, k;
+	  float x1, y1, z1;
+	  float x2, y2, z2;
+	  float x3, y3, z3;
+	  uint16_t attribute_byte_count;
+	} data;
+};
+
+void uint32_byte_swap( uint32_t &x )
+{
+#if defined(__GNUC__) || defined(__clang__)
+	x = __builtin_bswap32( x );
+#elif defined(_MSC_VER)
+	x = _byteswap_ulong( x );
+#else
+	uint32_t b1 = ( 0x000000FF & x ) << 24;
+	uint32_t b2 = ( 0x0000FF00 & x ) << 8;
+	uint32_t b3 = ( 0x00FF0000 & x ) >> 8;
+	uint32_t b4 = ( 0xFF000000 & x ) >> 24;
+	x = b1 | b2 | b3 | b4;
+#endif
+}
+
+void read_stl_facet( std::ifstream &f, stl_facet &facet )
+{
+	f.read( (char*)facet.data8, STL_FACET_NUMBYTES );
+#ifdef BOOST_BIG_ENDIAN
+	for ( int i = 0; i < 12; i++ ) {
+		uint32_byte_swap( facet.data32[ i ] );
+	}
+	// we ignore attribute byte count
+#endif
+}
+
 PolySet *ImportNode::evaluate_polyset(class PolySetEvaluator *) const
 {
 	PolySet *p = NULL;
@@ -119,7 +163,8 @@ PolySet *ImportNode::evaluate_polyset(class PolySetEvaluator *) const
 	if (this->type == TYPE_STL)
 	{
 		handle_dep((std::string)this->filename);
-		std::ifstream f(this->filename.c_str(), std::ios::in | std::ios::binary);
+		// Open file and position at the end
+		std::ifstream f(this->filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
 		if (!f.good()) {
 			PRINTB("WARNING: Can't open import file '%s'.", this->filename);
 			return p;
@@ -132,9 +177,22 @@ PolySet *ImportNode::evaluate_polyset(class PolySetEvaluator *) const
 		boost::regex ex_vertex("vertex");
 		boost::regex ex_vertices("\\s*vertex\\s+([^\\s]+)\\s+([^\\s]+)\\s+([^\\s]+)");
 
+		bool binary = false;
+		int file_size = f.tellg();
+		f.seekg(80);
+		if (!f.eof()) {
+			uint32_t facenum = 0;
+			f.read((char *)&facenum, sizeof(uint32_t));
+#ifdef BOOST_BIG_ENDIAN
+			uint32_byte_swap( facenum );
+#endif
+			if (file_size == 80 + 4 + 50*facenum) binary = true;
+		}
+		f.seekg(0);
+
 		char data[5];
 		f.read(data, 5);
-		if (!f.eof() && !memcmp(data, "solid", 5)) {
+		if (!binary && !f.eof() && !memcmp(data, "solid", 5)) {
 			int i = 0;
 			double vdata[3][3];
 			std::string line;
@@ -175,30 +233,13 @@ PolySet *ImportNode::evaluate_polyset(class PolySetEvaluator *) const
 		{
 			f.ignore(80-5+4);
 			while (1) {
-#ifdef _MSC_VER
-#pragma pack(push,1)
-#endif
-				struct {
-					float i, j, k;
-					float x1, y1, z1;
-					float x2, y2, z2;
-					float x3, y3, z3;
-					unsigned short acount;
-				}
-#ifdef __GNUC__
-				__attribute__ ((packed))
-#endif
-				stldata;
-#ifdef _MSC_VER
-#pragma pack(pop)
-#endif
-
-				f.read((char*)&stldata, sizeof(stldata));
+				stl_facet facet;
+				read_stl_facet( f, facet );
 				if (f.eof()) break;
 				p->append_poly();
-				p->append_vertex(stldata.x1, stldata.y1, stldata.z1);
-				p->append_vertex(stldata.x2, stldata.y2, stldata.z2);
-				p->append_vertex(stldata.x3, stldata.y3, stldata.z3);
+				p->append_vertex(facet.data.x1, facet.data.y1, facet.data.z1);
+				p->append_vertex(facet.data.x2, facet.data.y2, facet.data.z2);
+				p->append_vertex(facet.data.x3, facet.data.y3, facet.data.z3);
 			}
 		}
 	}

@@ -30,7 +30,9 @@
 #include <QKeyEvent>
 #include <QSettings>
 #include "PolySetCache.h"
+#ifdef ENABLE_CGAL
 #include "CGALCache.h"
+#endif
 
 Preferences *Preferences::instance = NULL;
 
@@ -75,7 +77,9 @@ Preferences::Preferences(QWidget *parent) : QMainWindow(parent)
 	this->defaultmap["advanced/opencsg_show_warning"] = true;
 	this->defaultmap["advanced/enable_opencsg_opengl1x"] = true;
 	this->defaultmap["advanced/polysetCacheSize"] = uint(PolySetCache::instance()->maxSize());
+#ifdef ENABLE_CGAL
 	this->defaultmap["advanced/cgalCacheSize"] = uint(CGALCache::instance()->maxSize());
+#endif
 	this->defaultmap["advanced/openCSGLimit"] = 2000;
 	this->defaultmap["advanced/forceGoldfeather"] = false;
 
@@ -126,7 +130,9 @@ Preferences::Preferences(QWidget *parent) : QMainWindow(parent)
 
   // Advanced pane	
 	QValidator *validator = new QIntValidator(this);
+#ifdef ENABLE_CGAL
 	this->cgalCacheSizeEdit->setValidator(validator);
+#endif
 	this->polysetCacheSizeEdit->setValidator(validator);
 	this->opencsgLimitEdit->setValidator(validator);
 
@@ -198,7 +204,9 @@ void Preferences::on_cgalCacheSizeEdit_textChanged(const QString &text)
 {
 	QSettings settings;
 	settings.setValue("advanced/cgalCacheSize", text);
+#ifdef ENABLE_CGAL
 	CGALCache::instance()->setMaxSize(text.toULong());
+#endif
 }
 
 void Preferences::on_polysetCacheSizeEdit_textChanged(const QString &text)

@@ -17,6 +17,7 @@ private:
 	shared_ptr<CSGTerm> collapse_null_terms(const shared_ptr<CSGTerm> &term);
 	unsigned int count(const shared_ptr<CSGTerm> &term) const;
 
+	bool aborted;
 	size_t limit;
 	size_t nodecount;
 	shared_ptr<class CSGTerm> rootnode;

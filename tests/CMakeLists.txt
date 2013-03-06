@@ -42,6 +42,11 @@ if(${CMAKE_BUILD_TYPE} STREQUAL "Debug")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DDEBUG")
 endif()
 
+# MCAD
+if(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/../libraries/MCAD/__init__.py)
+  message(FATAL_ERROR "MCAD not found. You can install from the OpenSCAD root as follows: \n  git submodule update --init")
+endif()
+
 #
 # Windows
 #
@@ -174,6 +179,11 @@ endif(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 
 set(CMAKE_INCLUDE_DIRECTORIES_BEFORE ON)
 find_package(OpenGL REQUIRED)
+if ( "${OPENGL_glu_LIBRARY}" MATCHES "NOTFOUND" )
+  # GLU and Mesa split in late 2012 so some systems dont have GLU
+  find_library(OPENGL_glu_LIBRARY GLU HINTS "$ENV{OPENSCAD_LIBRARIES}/lib" REQUIRED)
+  set( OPENGL_LIBRARY ${OPENGL_glu_LIBRARY} ${OPENGL_LIBRARY} )
+endif()
 
 if (MINGW_CROSS_ENV_DIR) 
   mingw_cross_env_find_qt()
@@ -289,8 +299,7 @@ if (NOT $ENV{GLEWDIR} STREQUAL "")
 elseif (NOT $ENV{OPENSCAD_LIBRARIES} STREQUAL "")
   set(GLEW_DIR "$ENV{OPENSCAD_LIBRARIES}")
 endif()
-if (NOT GLEW_INCLUDE_DIR)
-  message(STATUS "OPENCSG_DIR: " ${OPENCSG_DIR})
+if (GLEW_DIR)
   find_path(GLEW_INCLUDE_DIR
             GL/glew.h
             HINTS ${GLEW_DIR}/include
@@ -299,15 +308,17 @@ if (NOT GLEW_INCLUDE_DIR)
                NAMES GLEW glew
                HINTS ${GLEW_DIR}/lib ${GLEW_DIR}/lib64
 	       NO_DEFAULT_PATH)
-  if (NOT GLEW_LIBRARY)
-    find_package(GLEW REQUIRED)
-    if (NOT GLEW_LIBRARY)
-      message(FATAL_ERROR "GLEW not found")
-    endif()
+  if (GLEW_INCLUDE_DIR AND GLEW_LIBRARY)
+    set(GLEW_FOUND 1)
   endif()
-  message(STATUS "GLEW include: " ${GLEW_INCLUDE_DIR})
-  message(STATUS "GLEW library: " ${GLEW_LIBRARY})
 endif()
+
+if (NOT GLEW_FOUND)
+  find_package(GLEW REQUIRED)
+endif()
+
+message(STATUS "GLEW include: " ${GLEW_INCLUDE_DIR})
+message(STATUS "GLEW library: " ${GLEW_LIBRARY})
 
 inclusion(GLEW_DIR GLEW_INCLUDE_DIR)
 
@@ -368,6 +379,19 @@ if (NOT SKIP_IMAGEMAGICK)
   else()
     message(FATAL_ERROR "Couldn't find imagemagick 'convert' program")
   endif()
+endif()
+
+if ( "${ImageMagick_VERSION_STRING}" VERSION_LESS "6.5.9.4" )
+  message(STATUS "ImageMagick version less than 6.5.9.4, cannot use -morphology comparison")
+  message(STATUS "ImageMagick Using older image comparison method")
+  set(COMPARATOR "old")
+endif()
+
+execute_process(COMMAND ${ImageMagick_convert_EXECUTABLE} --version OUTPUT_VARIABLE IM_OUT )
+if ( ${IM_OUT} MATCHES "OpenMP" )
+  # http://www.daniloaz.com/en/617/systems/high-cpu-load-when-converting-images-with-imagemagick
+  message(STATUS "ImageMagick: OpenMP bug workaround - setting MAGICK_THREAD_LIMIT=1")
+  set(CTEST_ENVIRONMENT "${CTEST_ENVIRONMENT};MAGICK_THREAD_LIMIT=1")
 endif()
 
 # Internal includes
@@ -609,12 +633,6 @@ function(get_test_fullname TESTCMD FILENAME FULLNAME)
   set(${FULLNAME} ${${FULLNAME}} PARENT_SCOPE)
 endfunction()
 
-# comparison method to use
-if (NOT $ENV{COMPARATOR} STREQUAL "")
-  set(COMPARATOR "$ENV{COMPARATOR}")
-  message(STATUS "ImageMagick method modified with COMPARATOR: " ${COMPARATOR})
-endif()
-
 #
 # This functions adds cmd-line tests given files.
 # Files are sent as the parameters following TESTSUFFIX
@@ -649,31 +667,14 @@ macro(add_cmdline_test TESTCMD TESTSUFFIX)
         set( MINGW_CROSS_ARG "--mingw-cross-env" )
       endif()
       add_test(NAME ${TEST_FULLNAME} ${CONFARG} ${CONFVAL} COMMAND ${PYTHON_EXECUTABLE} ${tests_SOURCE_DIR}/test_cmdline_tool.py ${MINGW_CROSS_ARG} --comparator=${COMPARATOR} -c ${ImageMagick_convert_EXECUTABLE} -s ${TESTSUFFIX} ${CMAKE_BINARY_DIR}/${TESTCMD} "${SCADFILE}")
+      set_property(TEST ${TEST_FULLNAME} PROPERTY ENVIRONMENT "${CTEST_ENVIRONMENT}")
     endif()
   endforeach()
 endmacro()
 
 enable_testing()
 
-# set up custom pretty printing of results
 
-set(INFOCMD "execute_process(COMMAND ${CMAKE_CURRENT_BINARY_DIR}/opencsgtest --info OUTPUT_FILE sysinfo.txt)")
-if (MINGW_CROSS_ENV_DIR)
-  set(INFOCMD "execute_process(COMMAND wine ${CMAKE_CURRENT_BINARY_DIR}/opencsgtest --info OUTPUT_FILE sysinfo.txt)")
-endif()
-set(PRETTYCMD "\"${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test_pretty_print.py --builddir=${CMAKE_CURRENT_BINARY_DIR}\"")
-set(CTEST_CUSTOM_FILE ${CMAKE_CURRENT_BINARY_DIR}/CTestCustom.cmake)
-set(CTEST_CUSTOM_TXT "\n
-  message(\"running 'opencsgtest --info' to generate sysinfo.txt\")\n
-  ${INFOCMD}\n
-  set(CTEST_CUSTOM_POST_TEST ${PRETTYCMD})\n
-")
-file(WRITE ${CTEST_CUSTOM_FILE} ${CTEST_CUSTOM_TXT})
-
-foreach(FILE test_pretty_print.py)
-  configure_file(${CMAKE_CURRENT_SOURCE_DIR}/${FILE}
-                 ${CMAKE_CURRENT_BINARY_DIR}/${FILE} COPYONLY)
-endforeach()
 
 set_directory_properties(PROPERTIES TEST_INCLUDE_FILE "${CMAKE_SOURCE_DIR}/EnforceConfig.cmake")
 
@@ -783,6 +784,45 @@ foreach(FILE ${EXAMPLE_FILES})
   get_test_fullname(throwntogethertest ${FILE} TEST_FULLNAME)
   set_test_config(Examples ${TEST_FULLNAME})
 endforeach()
+
+# Workaround Gallium bugs
+if ( ${CMAKE_SYSTEM_PROCESSOR} MATCHES "ppc")
+  message(STATUS "Workaround PPC bug https://bugs.freedesktop.org/show_bug.cgi?id=42540")
+  set(CTEST_ENVIRONMENT "${CTEST_ENVIRONMENT};GALLIUM_DRIVER=softpipe")
+  set(CTEST_ENVIRONMENT "${CTEST_ENVIRONMENT};DRAW_USE_LLVM=no")
+endif()
+
+# Set up custom commands to run before & after Ctest run.
+# 1. Start/stop Virtual Framebuffer for linux/bsd. 2. Pretty Print
+# Please see the CTestCustom.template file for more info. 
+
+#
+# Post-test pretty print
+#
+
+add_executable(test_pretty_print test_pretty_print.cc)
+set_target_properties(test_pretty_print PROPERTIES COMPILE_FLAGS
+  "-DPYBIN=${PYTHON_EXECUTABLE} -DPYSRC=test_pretty_print.py -DBUILDDIR=--builddir=${CMAKE_CURRENT_BINARY_DIR}"
+)
+
+file(READ ${CMAKE_CURRENT_SOURCE_DIR}/CTestCustom.template TMP)
+string(REPLACE __cmake_current_binary_dir__ ${CMAKE_CURRENT_BINARY_DIR} TMP ${TMP})
+string(REPLACE __cmake_current_source_dir__ ${CMAKE_CURRENT_SOURCE_DIR} TMP ${TMP})
+string(REPLACE __python__ ${PYTHON_EXECUTABLE} TMP ${TMP})
+string(REPLACE __header__ "Generated by cmake from ${CMAKE_CURRENT_SOURCE_DIR}/CTestCustom.template" TMP ${TMP})
+string(REPLACE __cmake_system_name__ ${CMAKE_SYSTEM_NAME} TMP ${TMP})
+
+if (MINGW_CROSS_ENV_DIR)
+  string(REPLACE __wine__ wine TMP ${TMP})
+else()
+  string(REPLACE __wine__ " " TMP ${TMP})
+endif()
+
+message(STATUS "creating CTestCustom.cmake")
+file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/CTestCustom.cmake ${TMP})
+
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/test_pretty_print.py 
+               ${CMAKE_CURRENT_BINARY_DIR}/test_pretty_print.py COPYONLY)
 
 # Add tests
 

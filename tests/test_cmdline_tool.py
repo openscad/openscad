@@ -101,7 +101,7 @@ def compare_png(resultfilename):
     msg += '\n expected image: ' + expectedfilename + '\n'
     print >> sys.stderr, msg
     if not resultfilename:
-        print >> sys.stderr, "Error: OpenSCAD did not generate an image to test"
+        print >> sys.stderr, "Error: OpenSCAD error during test image generation"
         return False
     print >> sys.stderr, ' actual image: ', resultfilename
 
