@@ -451,17 +451,23 @@ check_old_local()
   warnon=
   if [ "`uname | grep -i linux`" ]; then
     header_list="opencsg.h CGAL boost GL/glew.h gmp.h mpfr.h eigen2 eigen3"
-    liblist="libboost_system libboost_system-mt libopencsg libCGAL libglew"
-    for i in $header_list $liblist; do
+    for i in $header_list; do
       if [ -e /usr/local/include/$i ]; then
         echo "Warning: you have a copy of "$i" under /usr/local/include"
         warnon=1
       fi
+    done
+    liblist="libboost_system libboost_system-mt libopencsg libCGAL libglew"
+    for i in $liblist; do
       if [ -e /usr/local/lib/$i.so ]; then
         echo "Warning: you have a copy of "$i" under /usr/local/lib"
         warnon=1
       fi
     done
+    if [ -e /usr/local/lib/pkgconfig ]; then
+      echo "Warning: you have pkgconfig under /usr/local/lib"
+      warnon=1
+    fi
   fi
   if [ $warnon ]; then
     echo "Please verify these local copies don't conflict with the system"
@@ -514,7 +520,7 @@ main()
     dep_minver=$find_min_version_result
     compare_version $dep_minver $dep_sysver
     dep_compare=$compare_version_result
-  	pretty_print $depname $dep_minver $dep_sysver $dep_compare
+    pretty_print $depname $dep_minver $dep_sysver $dep_compare
   done
   check_old_local
   check_misc

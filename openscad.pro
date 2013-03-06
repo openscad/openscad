@@ -118,7 +118,9 @@ netbsd* {
 }
 
 *clang* {
-	# disable enormous amount of warnings about CGAL
+	# http://llvm.org/bugs/show_bug.cgi?id=9182
+	QMAKE_CXXFLAGS_WARN_ON += -Wno-overloaded-virtual
+	# disable enormous amount of warnings about CGAL / boost / etc
 	QMAKE_CXXFLAGS_WARN_ON += -Wno-unused-parameter
 	QMAKE_CXXFLAGS_WARN_ON += -Wno-unused-variable
 	QMAKE_CXXFLAGS_WARN_ON += -Wno-unused-function
@@ -179,6 +181,7 @@ HEADERS += src/version_check.h \
            src/ThrownTogetherRenderer.h \
            src/CGAL_renderer.h \
            src/OGL_helper.h \
+           src/QGLView.h \
            src/GLView.h \
            src/MainWindow.h \
            src/Preferences.h \
@@ -227,9 +230,20 @@ HEADERS += src/version_check.h \
            src/mathc99.h \
            src/memory.h \
            src/linalg.h \
+           src/Camera.h \
            src/system-gl.h \
            src/stl-utils.h \
            src/svg.h \
+           \
+           src/lodepng.h \
+           src/OffscreenView.h \
+           src/OffscreenContext.h \
+           src/OffscreenContextAll.hpp \
+           src/fbo.h \
+           src/imageutils.h \
+           src/system-gl.h \
+           src/CsgInfo.h \
+           \
            src/AutoUpdater.h
 
 SOURCES += src/version_check.cc \
@@ -276,11 +290,13 @@ SOURCES += src/version_check.cc \
            src/Preferences.cc \
            src/OpenCSGWarningDialog.cc \
            src/editor.cc \
-           src/glview.cc \
+           src/GLView.cc \
+           src/QGLview.cc \
            src/AutoUpdater.cc \
            \
            src/builtin.cc \
            src/export.cc \
+           src/export_png.cc \
            src/import.cc \
            src/renderer.cc \
            src/ThrownTogetherRenderer.cc \
@@ -289,9 +305,27 @@ SOURCES += src/version_check.cc \
            src/dxftess-cgal.cc \
            src/CSGTermEvaluator.cc \
            src/svg.cc \
+           src/OffscreenView.cc \
+           src/fbo.cc \
+           src/system-gl.cc \
+           src/imageutils.cc \
+           src/lodepng.cpp \
            \
            src/openscad.cc \
            src/mainwin.cc
+
+unix:!macx {
+  SOURCES += src/imageutils-lodepng.cc
+  SOURCES += src/OffscreenContextGLX.cc
+}
+macx {
+  SOURCES += src/imageutils-macosx.cc
+  OBJECTIVE_SOURCES += src/OffscreenContextCGL.mm
+}
+win32* {
+  SOURCES += src/imageutils-lodepng.cc
+  SOURCES += src/OffscreenContextWGL.cc
+}
 
 opencsg {
   HEADERS += src/OpenCSGRenderer.h

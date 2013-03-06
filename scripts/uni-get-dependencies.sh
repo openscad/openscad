@@ -6,8 +6,13 @@
 
 get_fedora_deps()
 {
- sudo yum install qt-devel bison flex eigen2-devel \
-  boost-devel mpfr-devel gmp-devel glew-devel CGAL-devel gcc pkgconfig git
+ sudo yum install qt-devel bison flex eigen2-devel python-paramiko \
+  boost-devel mpfr-devel gmp-devel glew-devel CGAL-devel gcc pkgconfig git libXmu-devel
+}
+
+get_qomo_deps()
+{
+ get_fedora_deps
 }
 
 get_altlinux_deps()
@@ -28,7 +33,7 @@ get_freebsd_deps()
 get_netbsd_deps()
 {
  sudo pkgin install bison boost cmake git bash eigen flex gmake gmp mpfr \
-  qt4 glew cgal opencsg modular-xorg
+  qt4 glew cgal opencsg modular-xorg python27 py27-paramiko
 }
 
 get_opensuse_deps()
@@ -50,7 +55,8 @@ get_debian_deps()
  for pkg in build-essential libqt4-dev libqt4-opengl-dev \
   libxmu-dev cmake bison flex git-core libboost-all-dev \
   libXi-dev libmpfr-dev libboost-dev libglew-dev libeigen2-dev \
-  libeigen3-dev libcgal-dev libopencsg-dev libgmp3-dev libgmp-dev; do
+  libeigen3-dev libcgal-dev libopencsg-dev libgmp3-dev libgmp-dev \
+  python-paramiko ; do
    sudo apt-get -y install $pkg;
  done
 }
@@ -75,10 +81,14 @@ if [ -e /etc/issue ]; then
   get_fedora_deps
  elif [ "`grep -i mageia /etc/issue`" ]; then
   get_mageia_deps
+ elif [ "`grep -i qomo /etc/issue`" ]; then
+  get_qomo_deps
  elif [ "`command -v rpm`" ]; then
   if [ "`rpm -qa | grep altlinux`" ]; then
    get_altlinux_deps
   fi
+ else
+  unknown
  fi
 elif [ "`uname | grep -i freebsd `" ]; then
  get_freebsd_deps

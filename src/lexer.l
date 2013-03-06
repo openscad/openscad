@@ -225,6 +225,14 @@ void includefile()
     finfo = locate_file((fs::path(filepath) / filename).string());
   }
 
+  if (!exists(finfo) || finfo.empty()) {
+    // deal with some unusual situations with is_absolute() and Wine
+    fs::path fnp( fs::path(filepath) / filename );
+    if (fs::exists( fnp ) && !fs::is_directory( fnp )) {
+      finfo = fnp;
+    }
+  }
+
   if (finfo.empty()) {
     PRINTB("WARNING: Can't find 'include' file '%s'.", filename);
   }

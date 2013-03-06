@@ -38,7 +38,7 @@
           <property name="orientation">
            <enum>Qt::Vertical</enum>
           </property>
-          <widget class="GLView" name="glview" native="true"/>
+          <widget class="QGLView" name="qglview" native="true"/>
           <widget class="QTextEdit" name="console">
            <property name="readOnly">
             <bool>true</bool>
@@ -691,9 +691,9 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>GLView</class>
+   <class>QGLView</class>
    <extends>QWidget</extends>
-   <header>GLView.h</header>
+   <header>QGLView.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>
