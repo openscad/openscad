@@ -6,8 +6,6 @@
 #include <boost/unordered_map.hpp>
 #include "value.h"
 
-using boost::unordered_map;
-
 class Context
 {
 public:
@@ -33,18 +31,18 @@ public:
 
 public:
 	const Context *parent;
-	const unordered_map<std::string, class AbstractFunction*> *functions_p;
-	const unordered_map<std::string, class AbstractModule*> *modules_p;
-	typedef unordered_map<std::string, class Module*> ModuleContainer;
+	const boost::unordered_map<std::string, class AbstractFunction*> *functions_p;
+	const boost::unordered_map<std::string, class AbstractModule*> *modules_p;
+	typedef boost::unordered_map<std::string, class Module*> ModuleContainer;
 	const ModuleContainer *usedlibs_p;
 	const ModuleInstantiation *inst_p;
 
 	static std::vector<const Context*> ctx_stack;
 
-	mutable unordered_map<std::string, int> recursioncount;
+	mutable boost::unordered_map<std::string, int> recursioncount;
 
 private:
-	typedef unordered_map<std::string, Value> ValueMap;
+	typedef boost::unordered_map<std::string, Value> ValueMap;
 	ValueMap constants;
 	ValueMap variables;
 	ValueMap config_variables;
