@@ -3,8 +3,12 @@
 
 #include <vector>
 #include <string>
+
+// Workaround for https://bugreports.qt-project.org/browse/QTBUG-22829
+#ifndef Q_MOC_RUN
 #include <boost/variant.hpp>
 #include <boost/lexical_cast.hpp>
+#endif
 
 class QuotedString : public std::string
 {
