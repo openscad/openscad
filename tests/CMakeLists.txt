@@ -675,7 +675,7 @@ endfunction()
 #                        [EXPECTEDDIR <shared dir>] SUFFIX <suffix> FILES <test files>)
 #
 find_package(PythonInterp)
-macro(add_cmdline_test TESTCMD)
+function(add_cmdline_test TESTCMD)
   cmake_parse_arguments(TESTCMD "" "EXE;SUFFIX;EXPECTEDDIR" "FILES;ARGS" ${ARGN})
 
   # If sharing results with another test, pass on this to the python script
@@ -723,7 +723,7 @@ macro(add_cmdline_test TESTCMD)
       set_property(TEST ${TEST_FULLNAME} PROPERTY ENVIRONMENT "${CTEST_ENVIRONMENT}")
     endif()
   endforeach()
-endmacro()
+endfunction()
 
 enable_testing()
 
