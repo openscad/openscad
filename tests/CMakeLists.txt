@@ -602,10 +602,6 @@ else()
 endif()
 
 if(EXISTS "${GUI_BINPATH}")
-  add_executable(guicgalpngtest guicgalpngtest.cc)
-  set_target_properties(guicgalpngtest PROPERTIES COMPILE_FLAGS "-DBINPATH=${GUI_BINPATH}")
-  add_executable(guiopencsgtest guiopencsgtest.cc)
-  set_target_properties(guiopencsgtest PROPERTIES COMPILE_FLAGS "-DBINPATH=${GUI_BINPATH}")
   message(STATUS "Found OpenSCAD GUI binary: ${GUI_BINPATH}")
 else()
   message(STATUS "Couldn't find the OpenSCAD GUI binary: ${GUI_BINPATH}")
@@ -674,16 +670,28 @@ endfunction()
 
 #
 # This functions adds cmd-line tests given files.
-# Files are sent as the parameters following TESTSUFFIX
 #
-# Usage add_cmdline_test(TESTCMD TESTSUFFIX <test files>)
+# Usage add_cmdline_test(testname [EXE <executable>] [ARGS <args to exe>]
+#                        [EXPECTEDDIR <shared dir>] SUFFIX <suffix> FILES <test files>)
 #
 find_package(PythonInterp)
-macro(add_cmdline_test TESTCMD TESTSUFFIX)
+macro(add_cmdline_test TESTCMD)
+  cmake_parse_arguments(TESTCMD "" "EXE;SUFFIX;EXPECTEDDIR" "FILES;ARGS" ${ARGN})
+
+  # If sharing results with another test, pass on this to the python script
+  if (TESTCMD_EXPECTEDDIR)
+    set(EXTRA_OPTIONS -e ${TESTCMD_EXPECTEDDIR})
+  endif()
+
   get_filename_component(TESTCMD_NAME ${TESTCMD} NAME_WE)
 
+  # If no executable was specified, assume it was built by us and resides here
+  if (NOT TESTCMD_EXE)
+    set(TESTCMD_EXE ${CMAKE_BINARY_DIR}/${TESTCMD})
+  endif()
+
   # Add tests from args
-  foreach (SCADFILE ${ARGN})
+  foreach (SCADFILE ${TESTCMD_FILES})
     get_filename_component(TESTNAME ${SCADFILE} NAME_WE)
     string(REPLACE " " "_" TESTNAME ${TESTNAME}) # Test names cannot include spaces
     set(TEST_FULLNAME "${TESTCMD_NAME}_${TESTNAME}")
@@ -705,7 +713,13 @@ macro(add_cmdline_test TESTCMD TESTSUFFIX)
       if (MINGW_CROSS_ENV_DIR)
         set( MINGW_CROSS_ARG "--mingw-cross-env" )
       endif()
-      add_test(NAME ${TEST_FULLNAME} ${CONFARG} ${CONFVAL} COMMAND ${PYTHON_EXECUTABLE} ${tests_SOURCE_DIR}/test_cmdline_tool.py ${MINGW_CROSS_ARG} --comparator=${COMPARATOR} -c ${ImageMagick_convert_EXECUTABLE} -s ${TESTSUFFIX} ${CMAKE_BINARY_DIR}/${TESTCMD} "${SCADFILE}")
+
+      # The python script cannot extract the testname when given extra parameters
+      if (TESTCMD_ARGS)
+        set(TESTNAME_OPTION -t ${TESTNAME})
+      endif()
+
+      add_test(NAME ${TEST_FULLNAME} ${CONFARG} ${CONFVAL} COMMAND ${PYTHON_EXECUTABLE} ${tests_SOURCE_DIR}/test_cmdline_tool.py ${MINGW_CROSS_ARG} --comparator=${COMPARATOR} -c ${ImageMagick_convert_EXECUTABLE} -s ${TESTCMD_SUFFIX} ${EXTRA_OPTIONS} ${TESTNAME_OPTION} ${TESTCMD_EXE} "${SCADFILE}" ${TESTCMD_ARGS})
       set_property(TEST ${TEST_FULLNAME} PROPERTY ENVIRONMENT "${CTEST_ENVIRONMENT}")
     endif()
   endforeach()
@@ -890,19 +904,23 @@ file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/CTestCustom.cmake ${TMP})
 
 # Add tests
 
-add_cmdline_test(echotest txt ${ECHO_FILES})
-add_cmdline_test(dumptest txt ${DUMPTEST_FILES})
-add_cmdline_test(csgtexttest txt ${MINIMAL_FILES})
-add_cmdline_test(csgtermtest txt ${MINIMAL_FILES})
-add_cmdline_test(cgalpngtest png ${CGALPNGTEST_FILES})
-add_cmdline_test(opencsgtest png ${OPENCSGTEST_FILES})
-add_cmdline_test(throwntogethertest png ${THROWNTOGETHERTEST_FILES})
-add_cmdline_test(guicgalpngtest png ${GUICGALPNGTEST_FILES})
-add_cmdline_test(guiopencsgtest png ${GUIOPENCSGTEST_FILES})
+add_cmdline_test(echotest SUFFIX txt FILES ${ECHO_FILES})
+add_cmdline_test(dumptest SUFFIX txt FILES ${DUMPTEST_FILES})
+add_cmdline_test(csgtexttest SUFFIX txt FILES ${MINIMAL_FILES})
+add_cmdline_test(csgtermtest SUFFIX txt FILES ${MINIMAL_FILES})
+add_cmdline_test(cgalpngtest SUFFIX png FILES ${CGALPNGTEST_FILES})
+add_cmdline_test(opencsgtest SUFFIX png FILES ${OPENCSGTEST_FILES})
+add_cmdline_test(throwntogethertest SUFFIX png FILES ${THROWNTOGETHERTEST_FILES})
+add_cmdline_test(guicgalpngtest EXE ${GUI_BINPATH} ARGS --render -o 
+                 EXPECTEDDIR cgalpngtest SUFFIX png 
+                 FILES ${GUICGALPNGTEST_FILES})
+add_cmdline_test(guiopencsgtest EXE ${GUI_BINPATH} ARGS -o 
+                 EXPECTEDDIR opencsgtest SUFFIX png 
+                 FILES ${GUICGALPNGTEST_FILES})
 
 # FIXME: We don't actually need to compare the output of cgalstlsanitytest
 # with anything. It's self-contained and returns != 0 on error
-add_cmdline_test(cgalstlsanitytest txt ${CGALSTLSANITYTEST_FILES})
+add_cmdline_test(cgalstlsanitytest SUFFIX txt FILES ${CGALSTLSANITYTEST_FILES})
 
 message("Available test configurations: ${TEST_CONFIGS}")
 #foreach(CONF ${TEST_CONFIGS})

@@ -28,22 +28,20 @@ import shutil
 import platform
 import string
 
-share_expected_imgs = {}
-share_expected_imgs["guicgalpngtest"] = "cgalpngtest"
-share_expected_imgs["guiopencsgtest"] = "opencsgtest"
-
 def initialize_environment():
     if not options.generate: options.generate = bool(os.getenv("TEST_GENERATE"))
     return True
 
 def init_expected_filename(testname, cmd):
     global expecteddir, expectedfilename
-    testbinary_filename = os.path.split(cmd)[1]
-    if testbinary_filename in share_expected_imgs:
-      testbinary_filename = share_expected_imgs[testbinary_filename]
-    expecteddir = os.path.join(options.regressiondir, testbinary_filename )
+    if hasattr(options, "expecteddir"):
+        expected_basename = options.expecteddir
+    else:
+        expected_basename = os.path.split(cmd)[1]
+
+    expecteddir = os.path.join(options.regressiondir, expected_basename)
     expectedfilename = os.path.join(expecteddir, testname + "-expected." + options.suffix)
-    expectedfilename = os.path.normpath( expectedfilename )
+    expectedfilename = os.path.normpath(expectedfilename)
 
 def verify_test(testname, cmd):
     global expectedfilename
@@ -108,7 +106,7 @@ def compare_png(resultfilename):
     msg += '\n expected image: ' + expectedfilename + '\n'
     print >> sys.stderr, msg
     if not resultfilename:
-        print >> sys.stderr, "Error: OpenSCAD error during test image generation"
+        print >> sys.stderr, "Error: Error during test image generation"
         return False
     print >> sys.stderr, ' actual image: ', resultfilename
 
@@ -179,15 +177,17 @@ class Options:
 def usage():
     print >> sys.stderr, "Usage: " + sys.argv[0] + " [<options>] <cmdline-tool> <argument>"
     print >> sys.stderr, "Options:"
-    print >> sys.stderr, "  -g, --generate        Generate expected output for the given tests"
-    print >> sys.stderr, "  -s, --suffix=<suffix> Write -expected and -actual files with the given suffix instead of .txt"
-    print >> sys.stderr, "  -t, --test=<name>     Specify test name instead of deducting it from the argument"
-    print >> sys.stderr, "  -c, --convexec=<name> Path to ImageMagick 'convert' executable"
-    print >> sys.stderr, "  -x, --mingw-cross-env Mingw-cross-env cross compilation"
+    print >> sys.stderr, "  -g, --generate           Generate expected output for the given tests"
+    print >> sys.stderr, "  -s, --suffix=<suffix>    Write -expected and -actual files with the given suffix instead of .txt"
+    print >> sys.stderr, "  -e, --expected-dir=<dir> Use -expected files from the given dir (to share files between test drivers)"
+    print >> sys.stderr, "  -t, --test=<name>        Specify test name instead of deducting it from the argument"
+    print >> sys.stderr, "  -c, --convexec=<name>    Path to ImageMagick 'convert' executable"
+    print >> sys.stderr, "  -x, --mingw-cross-env    Mingw-cross-env cross compilation"
+
 if __name__ == '__main__':
     # Handle command-line arguments
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "gs:c:t:m:x", ["generate", "convexec=", "suffix=", "test=", "comparator=", "mingw-cross-env"])
+        opts, args = getopt.getopt(sys.argv[1:], "gs:e:c:t:m:x", ["generate", "convexec=", "suffix=", "expected_dir=", "test=", "comparator=", "mingw-cross-env"])
     except getopt.GetoptError, err:
         usage()
         sys.exit(2)
@@ -203,6 +203,8 @@ if __name__ == '__main__':
         elif o in ("-s", "--suffix"):
             if a[0] == '.': options.suffix = a[1:]
             else: options.suffix = a
+        elif o in ("-e", "--expected-dir"):
+            options.expecteddir = a
         elif o in ("-t", "--test"):
             options.testname = a
         elif o in ("-c", "--convexec"): 
