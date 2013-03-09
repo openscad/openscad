@@ -13,7 +13,6 @@
 # the setenv-mingw-xbuild.sh script will set MXEDIR
 # cd openscad/tests && mkdir build-mingw32 && cd build-mingw32
 # # set env variables: 
-# PKG_CONFIG_PATH=$PKG_CONFIG_PATH:$MXEDIR/usr/i686-pc-mingw32/qt/lib/pkgconfig
 # OPENSCADPATH=../../libraries # (to find MCAD for some tests)
 # cmake .. -DCMAKE_TOOLCHAIN_FILE=../CMingw-cross-env.cmake \
 #          -DMINGW_CROSS_ENV_DIR=$MXEDIR
@@ -125,6 +124,10 @@ set(QT_UIC_EXECUTABLE ${MINGW_CROSS_ENV_DIR}/usr/bin/i686-pc-mingw32-uic)
 
 function(mingw_cross_env_find_qt)
   # called from CMakeLists.txt
+  set(PKGC_DEST ${MINGW_CROSS_ENV_DIR}/usr/i686-pc-mingw32/lib/pkgconfig)
+  set(QT_PKGC_SRC ${MINGW_CROSS_ENV_DIR}/usr/i686-pc-mingw32/qt/lib/pkgconfig/)
+  file(COPY ${QT_PKGC_SRC} DESTINATION ${PKGC_DEST} FILES_MATCHING PATTERN "*.pc")
+
   find_package( PkgConfig )
   pkg_check_modules( QTCORE QtCore )
   pkg_check_modules( QTGUI QtGui )
