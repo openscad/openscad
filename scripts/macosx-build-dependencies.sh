@@ -6,10 +6,11 @@
 # 
 # This script must be run from the OpenSCAD source root directory
 #
-# Usage: macosx-build-dependencies.sh [-6l]
+# Usage: macosx-build-dependencies.sh [-6lcd]
 #  -6   Build only 64-bit binaries
 #  -l   Force use of LLVM compiler
 #  -c   Force use of clang compiler
+#  -d   Build for deployment (if not specified, e.g. Sparkle won't be built)
 #
 # Prerequisites:
 # - MacPorts: curl, cmake
@@ -32,11 +33,12 @@ export QMAKESPEC=macx-g++
 
 printUsage()
 {
-  echo "Usage: $0 [-6lc]"
+  echo "Usage: $0 [-6lcd]"
   echo
   echo "  -6   Build only 64-bit binaries"
   echo "  -l   Force use of LLVM compiler"
   echo "  -c   Force use of clang compiler"
+  echo "  -d   Build for deployment"
 }
 
 # FIXME: Support gcc/llvm/clang flags. Use -platform <whatever> to make this work? kintel 20130117
@@ -354,12 +356,13 @@ if [ ! -f $OPENSCADDIR/openscad.pro ]; then
   exit 0
 fi
 
-while getopts '6lc' c
+while getopts '6lcd' c
 do
   case $c in
     6) OPTION_32BIT=false;;
     l) OPTION_LLVM=true;;
     c) OPTION_CLANG=true;;
+    d) OPTION_DEPLOY=true;;
   esac
 done
 
@@ -415,4 +418,6 @@ build_boost 1.53.0
 build_cgal 4.1
 build_glew 1.9.0
 build_opencsg 1.3.2
-build_sparkle 0ed83cf9f2eeb425d4fdd141c01a29d843970c20
+if $OPTION_DEPLOY; then
+  build_sparkle 0ed83cf9f2eeb425d4fdd141c01a29d843970c20
+fi
