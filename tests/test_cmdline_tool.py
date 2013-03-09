@@ -150,6 +150,8 @@ def run_test(testname, cmd, args):
     try:
         if os.path.isfile(cmd+'.exe') and options.mingw_cross_env:
             cmdline = ['wine']+[cmd+'.exe'] + args + [outputname]
+        elif cmd[-4:].lower() == '.exe' and options.mingw_cross_env:
+            cmdline = ['wine']+[cmd] + args + [outputname]
         else:
             cmdline = [cmd] + args + [outputname]
         proc = subprocess.Popen(cmdline, stdout=subprocess.PIPE, stderr=subprocess.PIPE)

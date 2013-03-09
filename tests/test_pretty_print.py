@@ -312,8 +312,11 @@ TESTLOG
 
 def png_encode64( fname, width=250 ):
 	# en.wikipedia.org/wiki/Data_URI_scheme
-	f = open( fname, "rb" )
-	data = f.read()
+	try:
+		f = open( fname, "rb" )
+		data = f.read()
+	except:
+		data = ''
 	data_uri = data.encode("base64").replace("\n","")
 	tag  = '<img'
 	tag += ' src="data:image/png;base64,'
