@@ -179,6 +179,39 @@ CGAL_Nef_polyhedron CGALEvaluator::applyHull(const CgaladvNode &node)
 	return N;
 }
 
+
+CGAL_Nef_polyhedron CGALEvaluator::applyResize(const CgaladvNode &node)
+{
+	// Based on resize() in Giles Bathgate's RapCAD
+	CGAL_Nef_polyhedron N;
+  N = applyToChildren(node, CGE_UNION);
+	if (N.isNull()) {
+		PRINT("WARNING: resize() of null polyhedron");
+		return N;
+	}
+
+	int dim = N.dim;
+	if (dim==2)	N.convertTo3d();
+
+	CGAL_Iso_cuboid_3 bb = bounding_box( *N.p3 );
+	Eigen::Matrix<NT,3,1> scale, bbox_size;
+	scale << 1,1,1;
+	bbox_size << bb.xmax()-bb.xmin(), bb.ymax()-bb.ymin(), bb.zmax()-bb.zmin();
+	for (int i=0;i<3;i++)
+		if (node.newsize[i] && bbox_size[i]!=NT(0))
+			scale[i] = NT(node.newsize[i]) / NT(bbox_size[i]);
+	CGAL_Aff_transformation t( scale[0], 0,        0,        0,
+	                           0,        scale[1], 0,        0,
+	                           0,        0,        scale[2], 0,      1);
+	N.p3->transform( t );
+
+	if (dim==2) N.convertTo2d();
+
+	return N;
+}
+
+
+
 /*
 	Typical visitor behavior:
 	o In prefix: Check if we're cached -> prune
@@ -357,6 +390,9 @@ Response CGALEvaluator::visit(State &state, const CgaladvNode &node)
 				break;
 			case HULL:
 				N = applyHull(node);
+				break;
+			case RESIZE:
+				N = applyResize(node);
 				break;
 			}
 		}

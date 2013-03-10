@@ -58,6 +58,9 @@ AbstractNode *CgaladvModule::evaluate(const Context *ctx, const ModuleInstantiat
 	if (type == SUBDIV)
 		argnames += "type", "level", "convexity";
 
+	if (type == RESIZE)
+		argnames += "newsize";
+
 	Context c(ctx);
 	c.args(argnames, argexpr, inst->argnames, inst->argvalues);
 
@@ -76,6 +79,17 @@ AbstractNode *CgaladvModule::evaluate(const Context *ctx, const ModuleInstantiat
 		convexity = c.lookup_variable("convexity", true);
 		subdiv_type = c.lookup_variable("type", false);
 		level = c.lookup_variable("level", true);
+	}
+
+	if (type == RESIZE) {
+		Value ns = c.lookup_variable("newsize");
+		node->newsize << 0,0,0;
+		if ( ns.type() == Value::VECTOR ) {
+			Value::VectorType v = ns.toVector();
+			if ( v.size() >= 1 ) node->newsize[0] = v[0].toDouble();
+			if ( v.size() >= 2 ) node->newsize[1] = v[1].toDouble();
+			if ( v.size() >= 3 ) node->newsize[2] = v[2].toDouble();
+		}
 	}
 
 	node->convexity = (int)convexity.toDouble();
@@ -112,6 +126,9 @@ std::string CgaladvNode::name() const
 	case HULL:
 		return "hull";
 		break;
+	case RESIZE:
+		return "resize";
+		break;
 	default:
 		assert(false);
 	}
@@ -135,6 +152,9 @@ std::string CgaladvNode::toString() const
 	case HULL:
 		stream << "()";
 		break;
+	case RESIZE:
+		stream << "(newsize = " << this->newsize << ")";
+		break;
 	default:
 		assert(false);
 	}
@@ -148,4 +168,5 @@ void register_builtin_cgaladv()
 	Builtins::init("glide", new CgaladvModule(GLIDE));
 	Builtins::init("subdiv", new CgaladvModule(SUBDIV));
 	Builtins::init("hull", new CgaladvModule(HULL));
+	Builtins::init("resize", new CgaladvModule(RESIZE));
 }
