@@ -224,7 +224,10 @@ CGAL_Nef_polyhedron CGALEvaluator::applyResize(const CgaladvNode &node)
 			PRINT("WARNING: Cannot resize to a new size less than 0.");
 			return N;
 		}
-	std::cout << autoscale << " ascale \n";
+	std::cout << autoscale << " autoscale\n";
+	std::cout << node.autosize[0] << ",";
+	std::cout << node.autosize[1] << ",";
+	std::cout << node.autosize[2] << " node autosize \n";
 	std::cout << scale[0] << ",";
 	std::cout << scale[1] << ",";
 	std::cout << scale[2] << " scalev \n";

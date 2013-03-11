@@ -85,18 +85,20 @@ AbstractNode *CgaladvModule::evaluate(const Context *ctx, const ModuleInstantiat
 		Value ns = c.lookup_variable("newsize");
 		node->newsize << 0,0,0;
 		if ( ns.type() == Value::VECTOR ) {
-			Value::VectorType v = ns.toVector();
-			if ( v.size() >= 1 ) node->newsize[0] = v[0].toDouble();
-			if ( v.size() >= 2 ) node->newsize[1] = v[1].toDouble();
-			if ( v.size() >= 3 ) node->newsize[2] = v[2].toDouble();
+			Value::VectorType vs = ns.toVector();
+			if ( vs.size() >= 1 ) node->newsize[0] = vs[0].toDouble();
+			if ( vs.size() >= 2 ) node->newsize[1] = vs[1].toDouble();
+			if ( vs.size() >= 3 ) node->newsize[2] = vs[2].toDouble();
 		}
 		Value autosize = c.lookup_variable("auto");
 		node->autosize << false, false, false;
 		if ( autosize.type() == Value::VECTOR ) {
-			Value::VectorType v = ns.toVector();
-			if ( v.size() >= 1 ) node->autosize[0] = v[0].toBool();
-			if ( v.size() >= 2 ) node->autosize[1] = v[1].toBool();
-			if ( v.size() >= 3 ) node->autosize[2] = v[2].toBool();
+			Value::VectorType va = autosize.toVector();
+			if ( va.size() >= 1 ) node->autosize[0] = va[0].toBool();
+			if ( va.size() >= 2 ) node->autosize[1] = va[1].toBool();
+			if ( va.size() >= 3 ) node->autosize[2] = va[2].toBool();
+			std::cout << "adv.cc: " << va << "\n";
+			std::cout << "adv.cc as: " << node->autosize << "\n";
 		}
 		else if ( autosize.type() == Value::BOOL ) {
 			node->autosize << true, true, true;
