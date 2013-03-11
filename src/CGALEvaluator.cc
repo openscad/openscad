@@ -179,23 +179,19 @@ CGAL_Nef_polyhedron CGALEvaluator::applyHull(const CgaladvNode &node)
 	return N;
 }
 
-/* resize([x,y,z],auto=[x,y,z]|bool)
-	This will resize the child object to x,y,z.
-	If any of x,y,z is 0, then that dimension is left as-is in the child node.
-	If any of x,y,z is 0 and their corresponding 'auto' is true, then
-  they are auto-scaled up to match the ratio of the other dimensions (the max)
-
-  Example -
-  resize([0,2]) cube() will make a cube([1,2,1])
-  resize([0,2],auto=[true,false,false]) cube() will make a cube([2,2,1])
-	resize([0,2],auto=true) cube() will make a cube([2,2,2])
-	resize([0,0,3]) cube() will make a cube([1,1,3])
-*/
 CGAL_Nef_polyhedron CGALEvaluator::applyResize(const CgaladvNode &node)
 {
-	// Based on resize() in Giles Bathgate's RapCAD (but not exactly)
+	//	Based on resize() in Giles Bathgate's RapCAD (but not exactly)
 	CGAL_Nef_polyhedron N;
   N = applyToChildren(node, CGE_UNION);
+
+	for (int i=0;i<3;i++) {
+		if (node.newsize[i]<0) {
+			PRINT("WARNING: Cannot resize to sizes less than 0.");
+			return N;
+		}
+	}
+
 	CGAL_Iso_cuboid_3 bb;
 
 	if ( N.dim == 2 ) {
@@ -212,25 +208,21 @@ CGAL_Nef_polyhedron CGALEvaluator::applyResize(const CgaladvNode &node)
 	scale << 1,1,1;
 	bbox_size << bb.xmax()-bb.xmin(), bb.ymax()-bb.ymin(), bb.zmax()-bb.zmin();
 	for (int i=0;i<3;i++) {
-		if (bbox_size[i]==NT(0)) bbox_size[i]=NT(1);
-		if (node.newsize[i]) scale[i] = NT(node.newsize[i]) / bbox_size[i];
+		if (node.newsize[i]) {
+			if (bbox_size[i]==NT(0)) {
+				PRINT("WARNING: Cannot resize in direction normal to flat object");
+				return N;
+			}
+			else {
+				scale[i] = NT(node.newsize[i]) / bbox_size[i];
+			}
+		}
 	}
 	NT autoscale = scale.maxCoeff();
-	for (int i=0;i<3;i++)
-		if (node.autosize[i])
-			scale[i] = autoscale;
-	for (int i=0;i<3;i++)
-		if (scale[i]<NT(0)) {
-			PRINT("WARNING: Cannot resize to a new size less than 0.");
-			return N;
-		}
-	std::cout << autoscale << " autoscale\n";
-	std::cout << node.autosize[0] << ",";
-	std::cout << node.autosize[1] << ",";
-	std::cout << node.autosize[2] << " node autosize \n";
-	std::cout << scale[0] << ",";
-	std::cout << scale[1] << ",";
-	std::cout << scale[2] << " scalev \n";
+	for (int i=0;i<3;i++) {
+		if (node.autosize[i]) scale[i] = autoscale;
+	}
+
 	Eigen::Matrix4d t;
 	t << CGAL::to_double(scale[0]),           0,        0,        0,
 	     0,        CGAL::to_double(scale[1]),           0,        0,

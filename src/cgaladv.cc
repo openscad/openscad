@@ -97,8 +97,6 @@ AbstractNode *CgaladvModule::evaluate(const Context *ctx, const ModuleInstantiat
 			if ( va.size() >= 1 ) node->autosize[0] = va[0].toBool();
 			if ( va.size() >= 2 ) node->autosize[1] = va[1].toBool();
 			if ( va.size() >= 3 ) node->autosize[2] = va[2].toBool();
-			std::cout << "adv.cc: " << va << "\n";
-			std::cout << "adv.cc as: " << node->autosize << "\n";
 		}
 		else if ( autosize.type() == Value::BOOL ) {
 			node->autosize << true, true, true;
@@ -167,10 +165,10 @@ std::string CgaladvNode::toString() const
 		break;
 	case RESIZE:
 		stream << "(newsize = ["
-		  << this->newsize[0] << ","
-		  << this->newsize[1] << ","
-		  << this->newsize[2] << "]"
-		  << ", auto = " << this->autosize << ")";
+		  << this->newsize[0] << "," << this->newsize[1] << "," << this->newsize[2] << "]"
+		  << ", auto = ["
+		  << this->autosize[0] << "," << this->autosize[1] << "," << this->autosize[2] << "]"
+		  << ")";
 		break;
 	default:
 		assert(false);
