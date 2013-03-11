@@ -29,6 +29,11 @@
 #include "CGAL_Nef_polyhedron.h"
 #include "cgal.h"
 #include "cgalutils.h"
+#include <boost/variant.hpp>
+#include "polyset.h"
+#include "dxftess.h"
+#include "CGALEvaluator.h"
+#include "Tree.h"
 
 #ifdef ENABLE_CGAL
 
@@ -88,85 +93,60 @@ std::string CGAL_Nef_polyhedron::dump() const
 		return std::string("Nef Polyhedron with dimension != 2 or 3");
 }
 
-// use a try/catch block around any calls to this
-void CGAL_Nef_polyhedron::convertTo2d()
+
+void CGAL_Nef_polyhedron::transform( const Transform3d &matrix )
 {
-	logstream log(5);
-	if (dim!=3) return;
-	assert(this->p3);
-	ZRemover zremover;
-	CGAL_Nef_polyhedron3::Volume_const_iterator i;
-	CGAL_Nef_polyhedron3::Shell_entry_const_iterator j;
-	CGAL_Nef_polyhedron3::SFace_const_handle sface_handle;
-	for ( i = this->p3->volumes_begin(); i != this->p3->volumes_end(); ++i ) {
-		log << "<!-- volume begin. mark: " << i->mark() << " -->\n";
-		for ( j = i->shells_begin(); j != i->shells_end(); ++j ) {
-			log << "<!-- shell. mark: " << i->mark() << " -->\n";
-			sface_handle = CGAL_Nef_polyhedron3::SFace_const_handle( j );
-			this->p3->visit_shell_objects( sface_handle , zremover );
-			log << "<!-- shell. end. -->\n";
+	if (!this->isNull()) {
+		if (this->dim == 2) {
+			// Unfortunately CGAL provides no transform method for CGAL_Nef_polyhedron2
+			// objects. So we convert in to our internal 2d data format, transform it,
+			// tesselate it and create a new CGAL_Nef_polyhedron2 from it.. What a hack!
+
+			Eigen::Matrix2f testmat;
+			testmat << matrix(0,0), matrix(0,1), matrix(1,0), matrix(1,1);
+			if (testmat.determinant() == 0) {
+				PRINT("Warning: Scaling a 2D object with 0 - removing object");
+				this->reset();
+			}
+			else {
+				CGAL_Aff_transformation2 t(
+					matrix(0,0), matrix(0,1), matrix(0,3),
+					matrix(1,0), matrix(1,1), matrix(1,3), matrix(3,3));
+
+				DxfData *dd = this->convertToDxfData();
+				for (size_t i=0; i < dd->points.size(); i++) {
+					CGAL_Kernel2::Point_2 p = CGAL_Kernel2::Point_2(dd->points[i][0], dd->points[i][1]);
+					p = t.transform(p);
+					dd->points[i][0] = to_double(p.x());
+					dd->points[i][1] = to_double(p.y());
+				}
+
+				PolySet ps;
+				ps.is2d = true;
+				dxf_tesselate(&ps, *dd, 0, true, false, 0);
+
+				Tree nulltree;
+				CGALEvaluator tmpeval(nulltree);
+				CGAL_Nef_polyhedron N = tmpeval.evaluateCGALMesh(ps);
+				this->p2.reset();
+				*(this->p2) = *(N.p2);
+				delete dd;
+			}
 		}
-		log << "<!-- volume end. -->\n";
-	}
-	this->p3.reset();
-	this->p2 = zremover.output_nefpoly2d;
-	this->dim = 2;
-}
-
-
-std::vector<CGAL_Point_3> face2to3(
-	CGAL_Nef_polyhedron2::Explorer::Halfedge_around_face_const_circulator c1,
-	CGAL_Nef_polyhedron2::Explorer::Halfedge_around_face_const_circulator c2,
-	CGAL_Nef_polyhedron2::Explorer explorer )
-{
-	std::vector<CGAL_Point_3> result;
-	CGAL_For_all(c1, c2) {
-		if ( explorer.is_standard( explorer.target(c1) ) ) {
-			//CGAL_Point_2e source = explorer.point( explorer.source( c1 ) );
-			CGAL_Point_2e target = explorer.point( explorer.target( c1 ) );
-			if (c1->mark()) {
-				CGAL_Point_3 tmp( target.x(), target.y(), 0 );
-				result.push_back( tmp );
+		else if (this->dim == 3) {
+			if (matrix.matrix().determinant() == 0) {
+				PRINT("Warning: Scaling a 3D object with 0 - removing object");
+				this->reset();
+			}
+			else {
+				CGAL_Aff_transformation t(
+					matrix(0,0), matrix(0,1), matrix(0,2), matrix(0,3),
+					matrix(1,0), matrix(1,1), matrix(1,2), matrix(1,3),
+					matrix(2,0), matrix(2,1), matrix(2,2), matrix(2,3), matrix(3,3));
+				this->p3->transform(t);
 			}
 		}
 	}
-	return result;
 }
-
-
-// use a try/catch block around any calls to this
-void CGAL_Nef_polyhedron::convertTo3d()
-{
-	if (dim!=2) return;
-	assert(this->p2);
-  CGAL_Nef_polyhedron2::Explorer explorer = this->p2->explorer();
-  CGAL_Nef_polyhedron2::Explorer::Face_const_iterator i;
-
-	this->p3.reset( new CGAL_Nef_polyhedron3() );
-
-	for ( i = explorer.faces_begin(); i!= explorer.faces_end(); ++i ) {
-
-		CGAL_Nef_polyhedron2::Explorer::Halfedge_around_face_const_circulator c1
-			= explorer.face_cycle( i ), c2 ( c1 );
-		std::vector<CGAL_Point_3> body_pts = face2to3( c1, c2, explorer );
-		CGAL_Nef_polyhedron3 body( body_pts.begin(), body_pts.end() );
-
-		CGAL_Nef_polyhedron3 holes;
-	  CGAL_Nef_polyhedron2::Explorer::Hole_const_iterator j;
-		for ( j = explorer.holes_begin( i ); j!= explorer.holes_end( i ); ++j ) {
-			CGAL_Nef_polyhedron2::Explorer::Halfedge_around_face_const_circulator c3( j ), c4 ( c3 );
-			std::vector<CGAL_Point_3> hole_pts = face2to3( c3, c4, explorer );
-			CGAL_Nef_polyhedron3 hole( hole_pts.begin(), hole_pts.end() );
-			holes = holes.join( hole );
-		}
-
-		body = body.difference( holes );
-		*(this->p3) = this->p3->join( body );
-  }
-
-	this->p2.reset();
-	this->dim = 3;
-}
-
 
 #endif // ENABLE_CGAL

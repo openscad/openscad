@@ -4,6 +4,7 @@
 #include "cgalfwd.h"
 #include "memory.h"
 #include <string>
+#include "linalg.h"
 
 class CGAL_Nef_polyhedron
 {
@@ -27,9 +28,7 @@ public:
 	int weight() const;
 	class PolySet *convertToPolyset();
 	class DxfData *convertToDxfData() const;
-	void convertTo2d();
-	void convertTo3d();
-
+	void transform( const Transform3d &matrix );
 	int dim;
 	shared_ptr<CGAL_Nef_polyhedron2> p2;
 	shared_ptr<CGAL_Nef_polyhedron3> p3;

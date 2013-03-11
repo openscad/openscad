@@ -90,8 +90,21 @@ PolySet *PolySetCGALEvaluator::evaluatePolySet(const ProjectionNode &node)
 
 		log << OpenSCAD::svg_header( 480, 100000 ) << "\n";
 		try {
-			sum.convertTo2d();
-			nef_poly.p2 = sum.p2;
+      ZRemover zremover;
+      CGAL_Nef_polyhedron3::Volume_const_iterator i;
+      CGAL_Nef_polyhedron3::Shell_entry_const_iterator j;
+      CGAL_Nef_polyhedron3::SFace_const_handle sface_handle;
+      for ( i = sum.p3->volumes_begin(); i != sum.p3->volumes_end(); ++i ) {
+        log << "<!-- volume. mark: " << i->mark() << " -->\n";
+        for ( j = i->shells_begin(); j != i->shells_end(); ++j ) {
+          log << "<!-- shell. mark: " << i->mark() << " -->\n";
+          sface_handle = CGAL_Nef_polyhedron3::SFace_const_handle( j );
+          sum.p3->visit_shell_objects( sface_handle , zremover );
+          log << "<!-- shell. end. -->\n";
+        }
+        log << "<!-- volume end. -->\n";
+      }
+      nef_poly.p2 = zremover.output_nefpoly2d;
 		}	catch (const CGAL::Failure_exception &e) {
 			PRINTB("CGAL error in projection node while flattening: %s", e.what());
 		}

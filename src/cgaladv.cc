@@ -59,7 +59,7 @@ AbstractNode *CgaladvModule::evaluate(const Context *ctx, const ModuleInstantiat
 		argnames += "type", "level", "convexity";
 
 	if (type == RESIZE)
-		argnames += "newsize";
+		argnames += "newsize", "auto";
 
 	Context c(ctx);
 	c.args(argnames, argexpr, inst->argnames, inst->argvalues);
@@ -90,6 +90,8 @@ AbstractNode *CgaladvModule::evaluate(const Context *ctx, const ModuleInstantiat
 			if ( v.size() >= 2 ) node->newsize[1] = v[1].toDouble();
 			if ( v.size() >= 3 ) node->newsize[2] = v[2].toDouble();
 		}
+		Value autosize = c.lookup_variable("auto");
+		node->autosize = autosize.toBool();
 	}
 
 	node->convexity = (int)convexity.toDouble();
