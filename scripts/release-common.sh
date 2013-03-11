@@ -110,13 +110,12 @@ fi
 
 echo "Building openscad-$VERSION ($VERSIONDATE) $CONFIGURATION..."
 
+CONFIG=deploy
 case $OS in
     LINUX|MACOSX) 
-        CONFIG=deploy
         TARGET=
         ;;
     WIN) 
-        unset CONFIG
         export QTDIR=/c/devmingw/qt2009.03
         export QTMAKESPEC=win32-g++
         export PATH=$PATH:/c/devmingw/qt2009.03/bin:/c/devmingw/qt2009.03/qt/bin
@@ -125,7 +124,6 @@ case $OS in
         TARGET=release
         ;;
     LINXWIN) 
-        unset CONFIG
         . ./scripts/setenv-mingw-xbuild.sh
         TARGET=release
         ZIP="zip"
