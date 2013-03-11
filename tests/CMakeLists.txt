@@ -7,6 +7,9 @@ if("${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}.${CMAKE_PATCH_VERSION}" VERSIO
   cmake_policy(SET CMP0017 NEW)
 endif()
 
+# Needed for cmake < 2.8.3
+include(CMakeParseArguments.cmake)
+
 # Detect Lion and force gcc
 IF (APPLE)
    EXECUTE_PROCESS(COMMAND sw_vers -productVersion OUTPUT_VARIABLE MACOSX_VERSION)
