@@ -28,22 +28,31 @@ import shutil
 import platform
 import string
 
-share_expected_imgs = {}
-share_expected_imgs["guicgalpngtest"] = "cgalpngtest"
-share_expected_imgs["guiopencsgtest"] = "opencsgtest"
-
 def initialize_environment():
     if not options.generate: options.generate = bool(os.getenv("TEST_GENERATE"))
     return True
 
-def init_expected_filename(testname, cmd):
+def init_expected_filename():
     global expecteddir, expectedfilename
-    testbinary_filename = os.path.split(cmd)[1]
-    if testbinary_filename in share_expected_imgs:
-      testbinary_filename = share_expected_imgs[testbinary_filename]
-    expecteddir = os.path.join(options.regressiondir, testbinary_filename )
-    expectedfilename = os.path.join(expecteddir, testname + "-expected." + options.suffix)
-    expectedfilename = os.path.normpath( expectedfilename )
+
+    expected_testname = options.testname
+
+    if hasattr(options, "expecteddir"):
+        expected_dirname = options.expecteddir
+    else:
+        expected_dirname = expected_testname
+
+    expecteddir = os.path.join(options.regressiondir, expected_dirname)
+    expectedfilename = os.path.join(expecteddir, options.filename + "-expected." + options.suffix)
+    expectedfilename = os.path.normpath(expectedfilename)
+
+def init_actual_filename():
+    global actualdir, actualfilename
+
+    cmdname = os.path.split(options.cmd)[1]
+    actualdir = os.path.join(os.getcwd(), options.testname + "-output")
+    actualfilename = os.path.join(actualdir, options.filename + "-actual." + options.suffix)
+    actualfilename = os.path.normpath(actualfilename)
 
 def verify_test(testname, cmd):
     global expectedfilename
@@ -108,7 +117,7 @@ def compare_png(resultfilename):
     msg += '\n expected image: ' + expectedfilename + '\n'
     print >> sys.stderr, msg
     if not resultfilename:
-        print >> sys.stderr, "Error: OpenSCAD error during test image generation"
+        print >> sys.stderr, "Error: Error during test image generation"
         return False
     print >> sys.stderr, ' actual image: ', resultfilename
 
@@ -135,25 +144,24 @@ def compare_with_expected(resultfilename):
 def run_test(testname, cmd, args):
     cmdname = os.path.split(options.cmd)[1]
 
-    outputdir = os.path.join(os.getcwd(), cmdname + "-output")
-    actualfilename = os.path.join(outputdir, testname + "-actual." + options.suffix)
-    actualfilename = os.path.normpath(actualfilename)
-
     if options.generate: 
         if not os.path.exists(expecteddir): os.makedirs(expecteddir)
         outputname = expectedfilename
     else:
-        if not os.path.exists(outputdir): os.makedirs(outputdir)
+        if not os.path.exists(actualdir): os.makedirs(actualdir)
         outputname = actualfilename
-    outputname = os.path.normpath( outputname )
+    outputname = os.path.normpath(outputname)
 
     outfile = open(outputname, "wb")
 
     try:
         if os.path.isfile(cmd+'.exe') and options.mingw_cross_env:
             cmdline = ['wine']+[cmd+'.exe'] + args + [outputname]
+        elif cmd[-4:].lower() == '.exe' and options.mingw_cross_env:
+            cmdline = ['wine']+[cmd] + args + [outputname]
         else:
             cmdline = [cmd] + args + [outputname]
+        print cmdline
         proc = subprocess.Popen(cmdline, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         errtext = proc.communicate()[1]
         if errtext != None and len(errtext) > 0:
@@ -179,15 +187,18 @@ class Options:
 def usage():
     print >> sys.stderr, "Usage: " + sys.argv[0] + " [<options>] <cmdline-tool> <argument>"
     print >> sys.stderr, "Options:"
-    print >> sys.stderr, "  -g, --generate        Generate expected output for the given tests"
-    print >> sys.stderr, "  -s, --suffix=<suffix> Write -expected and -actual files with the given suffix instead of .txt"
-    print >> sys.stderr, "  -t, --test=<name>     Specify test name instead of deducting it from the argument"
-    print >> sys.stderr, "  -c, --convexec=<name> Path to ImageMagick 'convert' executable"
-    print >> sys.stderr, "  -x, --mingw-cross-env Mingw-cross-env cross compilation"
+    print >> sys.stderr, "  -g, --generate           Generate expected output for the given tests"
+    print >> sys.stderr, "  -s, --suffix=<suffix>    Write -expected and -actual files with the given suffix instead of .txt"
+    print >> sys.stderr, "  -e, --expected-dir=<dir> Use -expected files from the given dir (to share files between test drivers)"
+    print >> sys.stderr, "  -t, --test=<name>        Specify test name instead of deducting it from the argument (defaults to basename <exe>)"
+    print >> sys.stderr, "  -f, --file=<name>        Specify test file instead of deducting it from the argument (default to basename <first arg>)"
+    print >> sys.stderr, "  -c, --convexec=<name>    Path to ImageMagick 'convert' executable"
+    print >> sys.stderr, "  -x, --mingw-cross-env    Mingw-cross-env cross compilation"
+
 if __name__ == '__main__':
     # Handle command-line arguments
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "gs:c:t:m:x", ["generate", "convexec=", "suffix=", "test=", "comparator=", "mingw-cross-env"])
+        opts, args = getopt.getopt(sys.argv[1:], "gs:e:c:t:f:m:x", ["generate", "convexec=", "suffix=", "expected_dir=", "test=", "file=", "comparator=", "mingw-cross-env"])
     except getopt.GetoptError, err:
         usage()
         sys.exit(2)
@@ -197,14 +208,19 @@ if __name__ == '__main__':
     options.regressiondir = os.path.join(os.path.split(sys.argv[0])[0], "regression")
     options.generate = False
     options.suffix = "txt"
+    options.comparator = ""
 
     for o, a in opts:
         if o in ("-g", "--generate"): options.generate = True
         elif o in ("-s", "--suffix"):
             if a[0] == '.': options.suffix = a[1:]
             else: options.suffix = a
+        elif o in ("-e", "--expected-dir"):
+            options.expecteddir = a
         elif o in ("-t", "--test"):
             options.testname = a
+        elif o in ("-f", "--file"):
+            options.filename = a
         elif o in ("-c", "--convexec"): 
             options.convert_exec = os.path.normpath( a )
         elif o in ("-m", "--comparator"):
@@ -221,16 +237,20 @@ if __name__ == '__main__':
     # If only one test file, we can usually deduct the test name from the file
     if len(args) == 2:
         basename = os.path.splitext(args[1])[0]
-        path, options.testname = os.path.split(basename)
+        path, options.filename = os.path.split(basename)
+
+    if not hasattr(options, "filename"):
+        print >> sys.stderr, "Filename cannot be deducted from arguments. Specify test filename using the -f option"
+        sys.exit(2)
 
     if not hasattr(options, "testname"):
-        print >> sys.stderr, "Test name cannot be deducted from arguments. Specify test name using the -t option"
-        sys.exit(2)
+        options.testname = os.path.split(args[0])[1]
 
     # Initialize and verify run-time environment
     if not initialize_environment(): sys.exit(1)
 
-    init_expected_filename(options.testname, options.cmd)
+    init_expected_filename()
+    init_actual_filename()
 
     # Verify test environment
     verification = verify_test(options.testname, options.cmd)

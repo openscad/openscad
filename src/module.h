@@ -74,8 +74,9 @@ public:
 	bool is_handling_dependencies;
 	bool handleDependencies();
 
-	std::vector<std::string> assignments_var;
-	std::vector<Expression*> assignments_expr;
+	std::list<std::string> assignments_var;
+	typedef boost::unordered_map<std::string, Expression*> AssignmentContainer;
+	AssignmentContainer assignments;
 
 	typedef boost::unordered_map<std::string, class AbstractFunction*> FunctionContainer;
 	FunctionContainer functions;

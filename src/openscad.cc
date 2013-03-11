@@ -55,7 +55,9 @@
 #ifdef Q_WS_MAC
 #include "EventFilter.h"
 #include "AppleEvents.h"
-#include "SparkleAutoUpdater.h"
+#ifdef OPENSCAD_DEPLOY
+  #include "SparkleAutoUpdater.h"
+#endif
 #endif
 
 #include "Camera.h"
@@ -483,12 +485,10 @@ int main(int argc, char **argv)
 		installAppleEventHandlers();
 #endif		
 
-#ifndef DEBUG
-#ifdef Q_WS_MAC
+#if defined(OPENSCAD_DEPLOY) && defined(Q_WS_MAC)
 		AutoUpdater *updater = new SparkleAutoUpdater;
 		AutoUpdater::setUpdater(updater);
 		if (updater->automaticallyChecksForUpdates()) updater->checkForUpdates();
-#endif
 #endif
 
 		QString qfilename;
