@@ -91,7 +91,16 @@ AbstractNode *CgaladvModule::evaluate(const Context *ctx, const ModuleInstantiat
 			if ( v.size() >= 3 ) node->newsize[2] = v[2].toDouble();
 		}
 		Value autosize = c.lookup_variable("auto");
-		node->autosize = autosize.toBool();
+		node->autosize << false, false, false;
+		if ( autosize.type() == Value::VECTOR ) {
+			Value::VectorType v = ns.toVector();
+			if ( v.size() >= 1 ) node->autosize[0] = v[0].toBool();
+			if ( v.size() >= 2 ) node->autosize[1] = v[1].toBool();
+			if ( v.size() >= 3 ) node->autosize[2] = v[2].toBool();
+		}
+		else if ( autosize.type() == Value::BOOL ) {
+			node->autosize << true, true, true;
+		}
 	}
 
 	node->convexity = (int)convexity.toDouble();

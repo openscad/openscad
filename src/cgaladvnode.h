@@ -32,7 +32,7 @@ public:
 	std::string subdiv_type;
 	int convexity, level;
 	Vector3d newsize;
-	bool autosize;
+	Eigen::Matrix<bool,3,1> autosize;
 	cgaladv_type_e type;
 };
 

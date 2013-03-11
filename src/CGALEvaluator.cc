@@ -179,10 +179,21 @@ CGAL_Nef_polyhedron CGALEvaluator::applyHull(const CgaladvNode &node)
 	return N;
 }
 
+/* resize([x,y,z],auto=[x,y,z]|bool)
+	This will resize the child object to x,y,z.
+	If any of x,y,z is 0, then that dimension is left as-is in the child node.
+	If any of x,y,z is 0 and their corresponding 'auto' is true, then
+  they are auto-scaled up to match the ratio of the other dimensions (the max)
 
+  Example -
+  resize([0,2]) cube() will make a cube([1,2,1])
+  resize([0,2],auto=[true,false,false]) cube() will make a cube([2,2,1])
+	resize([0,2],auto=true) cube() will make a cube([2,2,2])
+	resize([0,0,3]) cube() will make a cube([1,1,3])
+*/
 CGAL_Nef_polyhedron CGALEvaluator::applyResize(const CgaladvNode &node)
 {
-	// Based on resize() in Giles Bathgate's RapCAD
+	// Based on resize() in Giles Bathgate's RapCAD (but not exactly)
 	CGAL_Nef_polyhedron N;
   N = applyToChildren(node, CGE_UNION);
 	CGAL_Iso_cuboid_3 bb;
@@ -200,13 +211,19 @@ CGAL_Nef_polyhedron CGALEvaluator::applyResize(const CgaladvNode &node)
 	Eigen::Matrix<NT,3,1> scale, bbox_size;
 	scale << 1,1,1;
 	bbox_size << bb.xmax()-bb.xmin(), bb.ymax()-bb.ymin(), bb.zmax()-bb.zmin();
-	for (int i=0;i<3;i++)
-		if (node.newsize[i] && bbox_size[i]!=NT(0))
-			scale[i] = NT(node.newsize[i]) / NT(bbox_size[i]);
+	for (int i=0;i<3;i++) {
+		if (bbox_size[i]==NT(0)) bbox_size[i]=NT(1);
+		if (node.newsize[i]) scale[i] = NT(node.newsize[i]) / bbox_size[i];
+	}
 	NT autoscale = scale.maxCoeff();
-	if (node.autosize)
-		for (int i=0;i<3;i++)
+	for (int i=0;i<3;i++)
+		if (node.autosize[i])
 			scale[i] = autoscale;
+	for (int i=0;i<3;i++)
+		if (scale[i]<NT(0)) {
+			PRINT("WARNING: Cannot resize to a new size less than 0.");
+			return N;
+		}
 	std::cout << autoscale << " ascale \n";
 	std::cout << scale[0] << ",";
 	std::cout << scale[1] << ",";
