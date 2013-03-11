@@ -62,6 +62,14 @@ macx {
     CONFIG += x86 x86_64
   }
 
+  # FIXME: Somehow, setting the deployment target to a lower version causes a
+  # seldom crash in debug mode (e.g. the minkowski2-test):
+  # frame #4: 0x00007fff8b7d5be5 libc++.1.dylib`std::runtime_error::~runtime_error() + 55
+  # frame #5: 0x0000000100150df5 OpenSCAD`CGAL::Uncertain_conversion_exception::~Uncertain_conversion_exception(this=0x0000000105044488) + 21 at Uncertain.h:78
+  # The reason for the crash appears to be linking with libgcc_s, 
+  # but it's unclear what's really going on
+  QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.6
+
   TARGET = OpenSCAD
   ICON = icons/OpenSCAD.icns
   QMAKE_INFO_PLIST = Info.plist
