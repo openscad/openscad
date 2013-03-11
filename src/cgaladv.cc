@@ -155,7 +155,11 @@ std::string CgaladvNode::toString() const
 		stream << "()";
 		break;
 	case RESIZE:
-		stream << "(newsize = " << this->newsize << ")";
+		stream << "(newsize = ["
+		  << this->newsize[0] << ","
+		  << this->newsize[1] << ","
+		  << this->newsize[2] << "]"
+		  << ", auto = " << this->autosize << ")";
 		break;
 	default:
 		assert(false);

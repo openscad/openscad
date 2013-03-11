@@ -96,17 +96,21 @@ std::string CGAL_Nef_polyhedron::dump() const
 
 void CGAL_Nef_polyhedron::transform( const Transform3d &matrix )
 {
+	std::cout << matrix(0,0) << "," << matrix(1,0) << "," << matrix(2,0) << "," << matrix(3,0) << "\n";
+	std::cout << matrix(0,1) << "," << matrix(1,1) << "," << matrix(2,1) << "," << matrix(3,1) << "\n";
+	std::cout << matrix(0,2) << "," << matrix(1,2) << "," << matrix(2,2) << "," << matrix(3,2) << "\n";
+	std::cout << matrix(0,3) << "," << matrix(1,3) << "," << matrix(2,3) << "," << matrix(3,3) << "\n";
 	if (!this->isNull()) {
 		if (this->dim == 2) {
 			// Unfortunately CGAL provides no transform method for CGAL_Nef_polyhedron2
 			// objects. So we convert in to our internal 2d data format, transform it,
 			// tesselate it and create a new CGAL_Nef_polyhedron2 from it.. What a hack!
-
 			Eigen::Matrix2f testmat;
 			testmat << matrix(0,0), matrix(0,1), matrix(1,0), matrix(1,1);
 			if (testmat.determinant() == 0) {
 				PRINT("Warning: Scaling a 2D object with 0 - removing object");
 				this->reset();
+				return;
 			}
 			else {
 				CGAL_Aff_transformation2 t(
@@ -128,8 +132,7 @@ void CGAL_Nef_polyhedron::transform( const Transform3d &matrix )
 				Tree nulltree;
 				CGALEvaluator tmpeval(nulltree);
 				CGAL_Nef_polyhedron N = tmpeval.evaluateCGALMesh(ps);
-				this->p2.reset();
-				*(this->p2) = *(N.p2);
+				this->p2.reset( new CGAL_Nef_polyhedron2( *N.p2 ) );
 				delete dd;
 			}
 		}

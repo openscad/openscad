@@ -185,8 +185,18 @@ CGAL_Nef_polyhedron CGALEvaluator::applyResize(const CgaladvNode &node)
 	// Based on resize() in Giles Bathgate's RapCAD
 	CGAL_Nef_polyhedron N;
   N = applyToChildren(node, CGE_UNION);
+	CGAL_Iso_cuboid_3 bb;
 
-	CGAL_Iso_cuboid_3 bb = bounding_box( *N.p3 );
+	if ( N.dim == 2 ) {
+		CGAL_Iso_rectangle_2e bbox = bounding_box( *N.p2 );
+		CGAL_Point_2e min2(bbox.min()), max2(bbox.max());
+		CGAL_Point_3 min3(min2.x(),min2.y(),0), max3(max2.x(),max2.y(),0);
+		bb = CGAL_Iso_cuboid_3( min3, max3 );
+	}
+	else {
+		bb = bounding_box( *N.p3 );
+	}
+
 	Eigen::Matrix<NT,3,1> scale, bbox_size;
 	scale << 1,1,1;
 	bbox_size << bb.xmax()-bb.xmin(), bb.ymax()-bb.ymin(), bb.zmax()-bb.zmin();
@@ -197,7 +207,10 @@ CGAL_Nef_polyhedron CGALEvaluator::applyResize(const CgaladvNode &node)
 	if (node.autosize)
 		for (int i=0;i<3;i++)
 			scale[i] = autoscale;
-
+	std::cout << autoscale << " ascale \n";
+	std::cout << scale[0] << ",";
+	std::cout << scale[1] << ",";
+	std::cout << scale[2] << " scalev \n";
 	Eigen::Matrix4d t;
 	t << CGAL::to_double(scale[0]),           0,        0,        0,
 	     0,        CGAL::to_double(scale[1]),           0,        0,

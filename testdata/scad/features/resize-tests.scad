@@ -1,6 +1,7 @@
 // bottom row = reference
 // middle row = should match reference
 // top row = should be inscribed in middle row in 'top' view
+// back row = should be all cubes auto-scaled up
 
 $fn=10;
 
@@ -39,4 +40,17 @@ translate([2.5,50.5,10]) resize([5,0,7]) sphere(0.5);
 translate([4,74.5,10]) resize([8,9]) sphere(0.5); 
 translate([4.5,80.5,10]) resize([9]) sphere(0.5); 
 translate([2.5,93,10]) resize([5,6,7]) sphere(0.5); 
+}
+
+color("green"){
+translate([10, 0, 0]) cube(); 
+translate([10,10,0]) resize([5,0,0],auto=true) cube(); 
+translate([10,20,0]) resize([0,6,0],auto=true) cube(); 
+translate([10,30,0]) resize([0,0,7],auto=true) cube(); 
+translate([10,40,0]) resize([5,6,0],true) cube(); 
+translate([10,60,0]) resize([0,6,7],auto=true) cube(); 
+translate([10,50,0]) resize([5,0,7],true) cube(); 
+translate([10,70,0]) resize([8,9],auto=true) cube(); 
+translate([10,80,0]) resize([9],true) cube(); 
+translate([10,90,0]) resize([5,6,7],auto=true) cube(); 
 }
