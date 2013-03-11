@@ -51,6 +51,10 @@ build_qt()
   fi
   tar xzf qt-everywhere-opensource-src-$version.tar.gz
   cd qt-everywhere-opensource-src-$version
+  if $OPTION_CLANG; then
+    # FIX for clang
+    sed -i "" -e "s/::TabletProximityRec/TabletProximityRec/g"  src/gui/kernel/qt_cocoa_helpers_mac_p.h
+  fi
   if $OPTION_32BIT; then
     QT_32BIT="-arch x86"
   fi
