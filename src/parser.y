@@ -151,19 +151,10 @@ statement:
 		}
 	} |
 	TOK_ID '=' expr ';' {
-		bool add_new_assignment = true;
-		for (size_t i = 0; i < currmodule->assignments_var.size(); i++) {
-			if (currmodule->assignments_var[i] != $1)
-				continue;
-			delete currmodule->assignments_expr[i];
-			currmodule->assignments_expr[i] = $3;
-			add_new_assignment = false;
-		}
-		if (add_new_assignment) {
-			currmodule->assignments_var.push_back($1);
-			currmodule->assignments_expr.push_back($3);
-			free($1);
-		}
+          std::list<std::string>::iterator found = std::find(currmodule->assignments_var.begin(), currmodule->assignments_var.end(),$1);
+          if (found != currmodule->assignments_var.end()) currmodule->assignments_var.erase(found);
+          currmodule->assignments_var.push_back($1);
+          currmodule->assignments[$1] = $3;
 	} |
 	TOK_MODULE TOK_ID '(' arguments_decl optional_commas ')' {
 		Module *p = currmodule;
