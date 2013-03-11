@@ -6,6 +6,7 @@
 #include <string.h>
 #include <cstdlib>
 #include <sstream>
+#include "printutils.h"
 
 OffscreenView::OffscreenView(size_t width, size_t height)
 {
