@@ -49,6 +49,7 @@
 #endif
 
 #include <QApplication>
+#include <QString>
 #include <QDir>
 #include <sstream>
 
@@ -294,7 +295,7 @@ int main(int argc, char **argv)
 					examplesdir = exdir.path();
 				}
 
-	parser_init(QApplication::instance()->applicationDirPath().toStdString());
+	parser_init(QApplication::instance()->applicationDirPath().toLocal8Bit().constData());
 
 	// Initialize global visitors
 	NodeCache nodecache;
@@ -492,7 +493,7 @@ int main(int argc, char **argv)
 #endif
 
 		QString qfilename;
-		if (filename) qfilename = QString::fromUtf8(boosty::stringy(boosty::absolute(filename)).c_str());
+		if (filename) qfilename = QString::fromLocal8Bit(boosty::stringy(boosty::absolute(filename)).c_str());
 
 #if 0 /*** disabled by clifford wolf: adds rendering artefacts with OpenCSG ***/
 		// turn on anti-aliasing
@@ -507,7 +508,7 @@ int main(int argc, char **argv)
 		if (vm.count("input-file")) {
 			inputFiles = vm["input-file"].as<vector<string> >();
 			for (vector<string>::const_iterator infile = inputFiles.begin()+1; infile != inputFiles.end(); infile++) {
-				new MainWindow(QString::fromUtf8(boosty::stringy((original_path / *infile).c_str()));
+				new MainWindow(QString::fromLocal8Bit(boosty::stringy(original_path / *infile).c_str()));
 			}
 		}
 		app.connect(&app, SIGNAL(lastWindowClosed()), &app, SLOT(quit()));
