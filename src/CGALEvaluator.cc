@@ -181,9 +181,11 @@ CGAL_Nef_polyhedron CGALEvaluator::applyHull(const CgaladvNode &node)
 
 CGAL_Nef_polyhedron CGALEvaluator::applyResize(const CgaladvNode &node)
 {
-	//	Based on resize() in Giles Bathgate's RapCAD (but not exactly)
+	// Based on resize() in Giles Bathgate's RapCAD (but not exactly)
 	CGAL_Nef_polyhedron N;
-  N = applyToChildren(node, CGE_UNION);
+	N = applyToChildren(node, CGE_UNION);
+
+	if ( N.isNull() || N.isEmpty() ) return N;
 
 	for (int i=0;i<3;i++) {
 		if (node.newsize[i]<0) {
@@ -309,9 +311,7 @@ Response CGALEvaluator::visit(State &state, const TransformNode &node)
 				PRINT("Warning: Transformation matrix contains Not-a-Number and/or Infinity - removing object.");
 				N.reset();
 			}
-			else {
-				N.transform( node.matrix );
-			}
+			N.transform( node.matrix );
 		}
 		else {
 			N = CGALCache::instance()->get(this->tree.getIdString(node));

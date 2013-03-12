@@ -128,7 +128,7 @@ void CGAL_Nef_polyhedron::transform( const Transform3d &matrix )
 				Tree nulltree;
 				CGALEvaluator tmpeval(nulltree);
 				CGAL_Nef_polyhedron N = tmpeval.evaluateCGALMesh(ps);
-				this->p2.reset( new CGAL_Nef_polyhedron2( *N.p2 ) );
+				if ( N.p2 ) this->p2.reset( new CGAL_Nef_polyhedron2( *N.p2 ) );
 				delete dd;
 			}
 		}
