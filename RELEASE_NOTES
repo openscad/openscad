@@ -19,6 +19,7 @@ o Fixed some issues related to ARM builds
 o Changed multmatrix floating-point output to improve dumptest portability
 o Regression test auto-starts & stops Xvfb / Xvnc if on headless unix machine
 o CGAL triangulation more lenient- enables partial rendering of 'bad' DXF data
+o Fixes problem where local changes are overwritten on automatic reload when included files has changed.
 
 OpenSCAD 2013.01
 ================

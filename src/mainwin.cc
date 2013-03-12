@@ -1040,8 +1040,9 @@ bool MainWindow::compileTopLevelDocument(bool reload)
 {
 	bool shouldcompiletoplevel = !reload;
 
-	if ((reload && fileChangedOnDisk() && checkEditorModified()) ||
-			includesChanged()) {
+	if (includesChanged()) shouldcompiletoplevel = true;
+
+	if (reload && fileChangedOnDisk() && checkEditorModified()) {
 		shouldcompiletoplevel = true;
 		refreshDocument();
 	}
