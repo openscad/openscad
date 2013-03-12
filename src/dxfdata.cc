@@ -390,10 +390,10 @@ DxfData::DxfData(double fn, double fs, double fa,
 	BOOST_FOREACH(const EntityList::value_type &i, unsupported_entities_list) {
 		if (layername.empty()) {
 			PRINTB("WARNING: Unsupported DXF Entity '%s' (%x) in %s.",
-						 i.first % i.second % QuotedString(boosty::stringy(relativePath(filename, fs::current_path()))));
+						 i.first % i.second % QuotedString(boosty::stringy(boostfs_uncomplete(filename, fs::current_path()))));
 		} else {
 			PRINTB("WARNING: Unsupported DXF Entity '%s' (%x) in layer '%s' of %s.",
-						 i.first % i.second % layername % QuotedString(boosty::stringy(relativePath(filename, fs::current_path()))));
+						 i.first % i.second % layername % QuotedString(boosty::stringy(boostfs_uncomplete(filename, fs::current_path()))));
 		}
 	}
 

@@ -39,7 +39,7 @@
 
 std::ostream &operator<<(std::ostream &stream, const Filename &filename)
 {
-  stream << QuotedString(boosty::stringy(relativePath(filename, fs::current_path())));
+  stream << QuotedString(boosty::stringy(boostfs_uncomplete(filename, fs::current_path())));
   return stream;
 }
 
