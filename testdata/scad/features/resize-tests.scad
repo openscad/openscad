@@ -1,9 +1,10 @@
 // bottom row (red) = reference
 // middle row (gold) = should match reference
-// top row (blue) = should be inscribed in middle row in 'top' view
+// top row (blue) = should be 'spherical' versions of gold row,
+//     and should be inscribed in gold row in 'top' view
 // back row (green) = should be all cubes auto-scaled up
 // back top (purple) = uses 'auto' feature
-// pink = recursive resize
+// pink = recursive resize, negative, wrong syntax, etc
 
 $fn=8;
 
@@ -17,7 +18,7 @@ translate([0,60,-10]) cube([1,6,7]);
 translate([0,50,-10]) cube([5,1,7]);
 translate([0,70,-10]) cube([8,9,1]);
 translate([0,80,-10]) cube([9,1,1]);
-translate([0,90,-10]) cube([5,6,1]);
+translate([0,90,-10]) cube([5,6,7]);
 }
 
 translate([0, 0,0]) cube(); 
@@ -66,9 +67,13 @@ translate([10,40,10]) resize([6,0,0],auto=[true,false,true]) cube();
 translate([10,50,10]) resize([7,0,7],auto=[false,true,true]) cube(); 
 translate([13.5,63.5,10]) resize([7,0,0],auto=[false,true,false]) sphere(); translate([10,70,10]) resize([8,0,0],auto=[false,false,false]) cube(); 
 translate([10,80,10]) resize([9,0,0],auto=[false,false,true]) cube(); 
-translate([10,90,10]) resize([-5,0,0]) cube(); 
+translate([10,90,10]) resize([0,0,7],auto=[true,true,false]) cube();
 }
 
 color("pink"){
 translate([10,0,-10]) resize([4,4,4]) resize([5000,100,1000]) cube();
+translate([10,10,-10]) resize([-5,0,0]) cube(); 
+translate([10,20,-10]) resize([-5,0,0],auto=3) cube(); 
+translate([10,30,-10]) resize(-5,0,0,auto=3) cube(); 
+translate([10,40,-10]) resize(5,0,0) cube(); 
 }

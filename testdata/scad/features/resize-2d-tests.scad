@@ -1,4 +1,7 @@
 // red = reference
+// gold = basic resize
+// green = auto resize
+// pink = errors, wrong syntax, trying to resize in 3rd dimension, etc
 
 $fn=10;
 
@@ -28,18 +31,25 @@ module shape3(){
 	}
 }
 
-translate([0,0]) resize([15,15]) shape();
-translate([0,16]) resize([15,15,0]) shape2();
-translate([0,32]) resize([15,15]) shape3();
-
 color("red") {
 translate([-16,0]) scale([3,3]) shape();
 translate([-16,16]) scale([3,3]) shape2();
 translate([-16,32]) scale([3,3]) shape3();
 }
 
+translate([0,0]) resize([15,15]) shape();
+translate([0,16]) resize([15,15,0]) shape2();
+translate([0,32]) resize([15,15]) shape3();
+
 color("green"){
 translate([16,0]) resize([15,0],auto=true) shape();
 translate([16,16]) resize([0,15],auto=true) shape2();
-translate([16,32]) resize([0,0,15],auto=true) shape3();
+translate([16,32]) resize([0,15],auto=[true,false]) shape3();
 }
+
+color("pink"){
+translate([32,0]) resize([0,0],auto=[false,true]) shape();
+translate([32,16]) resize([0,0,15],auto=true) shape2();
+translate([32,32]) resize([0,0,15]) shape3();
+}
+
