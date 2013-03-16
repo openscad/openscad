@@ -27,7 +27,7 @@
 			cube(size = [9, 1, 1], center = false);
 		}
 		multmatrix([[1, 0, 0, 0], [0, 1, 0, 90], [0, 0, 1, -10], [0, 0, 0, 1]]) {
-			cube(size = [5, 6, 1], center = false);
+			cube(size = [5, 6, 7], center = false);
 		}
 	}
 	multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
@@ -223,7 +223,7 @@
 			}
 		}
 		multmatrix([[1, 0, 0, 10], [0, 1, 0, 90], [0, 0, 1, 10], [0, 0, 0, 1]]) {
-			resize(newsize = [-5,0,0], auto = [0,0,0]) {
+			resize(newsize = [0,0,7], auto = [1,1,0]) {
 				cube(size = [1, 1, 1], center = false);
 			}
 		}
@@ -234,6 +234,26 @@
 				resize(newsize = [5000,100,1000], auto = [0,0,0]) {
 					cube(size = [1, 1, 1], center = false);
 				}
+			}
+		}
+		multmatrix([[1, 0, 0, 10], [0, 1, 0, 10], [0, 0, 1, -10], [0, 0, 0, 1]]) {
+			resize(newsize = [-5,0,0], auto = [0,0,0]) {
+				cube(size = [1, 1, 1], center = false);
+			}
+		}
+		multmatrix([[1, 0, 0, 10], [0, 1, 0, 20], [0, 0, 1, -10], [0, 0, 0, 1]]) {
+			resize(newsize = [-5,0,0], auto = [0,0,0]) {
+				cube(size = [1, 1, 1], center = false);
+			}
+		}
+		multmatrix([[1, 0, 0, 10], [0, 1, 0, 30], [0, 0, 1, -10], [0, 0, 0, 1]]) {
+			resize(newsize = [0,0,0], auto = [0,0,0]) {
+				cube(size = [1, 1, 1], center = false);
+			}
+		}
+		multmatrix([[1, 0, 0, 10], [0, 1, 0, 40], [0, 0, 1, -10], [0, 0, 0, 1]]) {
+			resize(newsize = [0,0,0], auto = [0,0,0]) {
+				cube(size = [1, 1, 1], center = false);
 			}
 		}
 	}
