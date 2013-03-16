@@ -4,7 +4,7 @@
 //     and should be inscribed in gold row in 'top' view
 // back row (green) = should be all cubes auto-scaled up
 // back top (purple) = uses 'auto' feature
-// pink = recursive resize, negative, wrong syntax, etc
+// pink = recursive resize, negative, <1, wrong syntax, etc
 
 $fn=8;
 
@@ -76,4 +76,6 @@ translate([10,10,-10]) resize([-5,0,0]) cube();
 translate([10,20,-10]) resize([-5,0,0],auto=3) cube(); 
 translate([10,30,-10]) resize(-5,0,0,auto=3) cube(); 
 translate([10,40,-10]) resize(5,0,0) cube(); 
+translate([10,50,-10]) resize([0.5,0,7]) cube([0.5,1,1000]);
+translate([10,60,-10]) resize([0,0,0.5]) cube([6,6,10000000000]);
 }
