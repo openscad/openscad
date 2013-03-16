@@ -604,6 +604,10 @@ else()
   set(GUI_BINPATH "${CMAKE_CURRENT_SOURCE_DIR}/../openscad")
 endif()
 
+if(EXISTS "${CMAKE_CURRENT_BINARY_DIR}/openscad")
+  set(GUI_BINPATH "${CMAKE_CURRENT_BINARY_DIR}/openscad")
+endif()
+
 if(EXISTS "${GUI_BINPATH}")
   message(STATUS "Found OpenSCAD GUI binary: ${GUI_BINPATH}")
 else()
