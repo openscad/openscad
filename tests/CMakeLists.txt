@@ -920,6 +920,14 @@ add_cmdline_test(throwntogethertest SUFFIX png FILES ${THROWNTOGETHERTEST_FILES}
 add_cmdline_test(cgalstlsanitytest SUFFIX txt FILES ${CGALSTLSANITYTEST_FILES})
 
 # Tests using the actual OpenSCAD binary
+
+# non-ASCII filenames
+add_cmdline_test(openscad-nonascii EXE ${GUI_BINPATH} ARGS -o 
+                 SUFFIX csg 
+                 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/sfære.scad)
+
+
+# Image output
 add_cmdline_test(openscad-cgalpng EXE ${GUI_BINPATH} ARGS --render -o 
                  EXPECTEDDIR cgalpngtest SUFFIX png 
                  FILES ${OPENSCAD-CGALPNG_FILES})
