@@ -57,7 +57,7 @@ public:
 		if (this->root_norm_term) {
 			this->root_chain = new CSGChain();
 			this->root_chain->import(this->root_norm_term);
-			fprintf(stderr, "Normalized CSG tree has %d elements", int(this->root_chain->polysets.size()));
+			PRINTB("Normalized CSG tree has %d elements", int(this->root_chain->polysets.size()));
 		}
 		else {
 			this->root_chain = NULL;
