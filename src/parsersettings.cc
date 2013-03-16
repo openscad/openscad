@@ -3,8 +3,9 @@
 #include <boost/foreach.hpp>
 #include "boosty.h"
 #include <boost/algorithm/string.hpp>
-#include <qglobal.h> // Needed for Q_ defines - move the offending code somewhere else
+#ifdef __APPLE__
 #include "CocoaUtils.h"
+#endif
 
 namespace fs = boost::filesystem;
 

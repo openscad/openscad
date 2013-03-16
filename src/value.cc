@@ -34,12 +34,12 @@
 #include <boost/variant/apply_visitor.hpp>
 #include <boost/variant/static_visitor.hpp>
 #include <boost/format.hpp>
-
-#include <QtCore/QDir>
+#include "boost-utils.h"
+#include "boosty.h"
 
 std::ostream &operator<<(std::ostream &stream, const Filename &filename)
 {
-  stream << QuotedString(QDir::current().relativeFilePath(QString::fromLocal8Bit(filename.c_str())).toLocal8Bit().constData());
+  stream << QuotedString(boosty::stringy(boostfs_uncomplete(filename, fs::current_path())));
   return stream;
 }
 
