@@ -117,7 +117,8 @@ inline fs::path canonical( fs::path p, fs::path p2 )
 		result /= *itr;
 		if (fs::is_symlink(result))
 		{
-			PRINT("WARNING: canonical() wrapper can't do symlinks. upgrade boost to >=1.48");
+			PRINT("WARNING: canonical() wrapper can't do symlinks. rebuild openscad with boost >=1.48");
+			PRINT("WARNING: or don't use symbolic links");
 		}
 	}
 	return result;
