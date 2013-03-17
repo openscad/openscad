@@ -10,9 +10,8 @@
  versions of boost found on popular versions of linux, circa early 2012.
 
  design
-  hope that the user is compiling with boost>1.46 + filesystem v3
-  if not, fall back to older deprecated functions, and rely on
-  testing to find bugs. implement the minimum needed by OpenSCAD and no more.
+  the boost filsystem changed around 1.46-1.48. we do a large #ifdef
+  based on boost version that wraps various functions appropriately.
   in a few years, this file should be deleted as unnecessary.
 
  see also
@@ -28,6 +27,7 @@
 #include <boost/version.hpp>
 #include <boost/filesystem.hpp>
 namespace fs = boost::filesystem;
+#include "printutils.h"
 
 namespace boosty {
 
@@ -76,6 +76,62 @@ inline std::string extension_str( fs::path p)
 }
 
 #endif
+
+
+
+
+
+#if BOOST_VERSION >= 104800
+
+inline fs::path canonical( fs::path p, fs::path p2 )
+{
+	return fs::canonical( p, p2, NULL );
+}
+
+inline fs::path canonical( fs::path p )
+{
+	return fs::canonical( p, fs::current_path(), NULL );
+}
+
+#else
+
+inline fs::path canonical( fs::path p, fs::path p2 )
+{
+	// dotpath: win32/mac builds will be using newer versions of boost
+	// so we can treat this as though it is unix only
+	const fs::path dot_path(".");
+	const fs::path dot_dot_path("..");
+	fs::path result;
+	if (p=="")
+	{
+		p=p2;
+	}
+	for (fs::path::iterator itr = p.begin(); itr != p.end(); itr++)
+	{
+		if (*itr == dot_path) continue;
+		if (*itr == dot_dot_path)
+		{
+			result.remove_filename();
+			continue;
+		}
+		result /= *itr;
+		if (fs::is_symlink(result))
+		{
+			PRINT("WARNING: canonical() wrapper can't do symlinks. upgrade boost to >1.48");
+		}
+	}
+	return result;
+}
+
+inline fs::path canonical( fs::path p )
+{
+	return canonical( p, fs::current_path() );
+}
+
+#endif
+
+
+
 
 } // namespace
 
