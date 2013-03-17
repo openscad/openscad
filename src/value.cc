@@ -39,7 +39,9 @@
 
 std::ostream &operator<<(std::ostream &stream, const Filename &filename)
 {
-  stream << QuotedString(boosty::stringy(boostfs_uncomplete(filename, fs::current_path())));
+  fs::path fnpath = fs::path( (std::string)filename );
+  fs::path fpath = boostfs_uncomplete(fnpath, fs::current_path());
+  stream << QuotedString(boosty::stringy( fpath ));
   return stream;
 }
 
