@@ -85,12 +85,12 @@ inline std::string extension_str( fs::path p)
 
 inline fs::path canonical( fs::path p, fs::path p2 )
 {
-	return fs::canonical( p, p2, NULL );
+	return fs::canonical( p, p2 );
 }
 
 inline fs::path canonical( fs::path p )
 {
-	return fs::canonical( p, fs::current_path(), NULL );
+	return fs::canonical( p );
 }
 
 #else
