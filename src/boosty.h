@@ -26,6 +26,7 @@
 #include <string>
 #include <boost/version.hpp>
 #include <boost/filesystem.hpp>
+#include <boost/algorithm/string.hpp>
 namespace fs = boost::filesystem;
 #include "printutils.h"
 
@@ -97,29 +98,33 @@ inline fs::path canonical( fs::path p )
 
 inline fs::path canonical( fs::path p, fs::path p2 )
 {
-	// dotpath: win32/mac builds will be using newer versions of boost
-	// so we can treat this as though it is unix only
-	const fs::path dot_path(".");
-	const fs::path dot_dot_path("..");
+#if defined (__WIN32__) || defined(__APPLE__)
+#error you should be using a newer version of boost on win/mac
+#endif
+	// based on the code in boost
 	fs::path result;
-	if (p=="")
+	if (p=="") p=p2;
+	std::string result_s;
+	std::vector<std::string> resultv, pieces;
+	std::vector<std::string>::iterator pi;
+	std::string tmps = boosty::stringy( p );
+	boost::split( pieces, tmps, boost::is_any_of("/") );
+	for ( pi = pieces.begin(); pi != pieces.end(); ++pi )
 	{
-		p=p2;
+		if (*pi == "..")
+			resultv.erase( resultv.end() );
+		else
+			resultv.push_back( *pi );
 	}
-	for (fs::path::iterator itr = p.begin(); itr != p.end(); itr++)
+	for ( pi = resultv.begin(); pi != resultv.end(); ++pi )
 	{
-		if (*itr == dot_path) continue;
-		if (*itr == dot_dot_path)
-		{
-			result.remove_filename();
-			continue;
-		}
-		result /= *itr;
-		if (fs::is_symlink(result))
-		{
-			PRINT("WARNING: canonical() wrapper can't do symlinks. rebuild openscad with boost >=1.48");
-			PRINT("WARNING: or don't use symbolic links");
-		}
+		if ((*pi).length()>0) result_s = result_s + "/" + *pi;
+	}
+	result = fs::path( result_s );
+	if (fs::is_symlink(result))
+	{
+		PRINT("WARNING: canonical() wrapper can't do symlinks. rebuild openscad with boost >=1.48");
+		PRINT("WARNING: or don't use symbolic links");
 	}
 	return result;
 }
