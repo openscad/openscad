@@ -113,8 +113,11 @@ To pull the MCAD library (http://reprap.org/wiki/MCAD), do the following:
 
 ### Building for Mac OS X
 
-First, make sure that you have XCode installed to get GCC. Then after
-you've cloned this git repository, run the script that sets up the
+Prerequisites:
+* XCode, including XCode command-line tools (install from XCode Preferences).
+* [CMake](http://cmake.org), which can be installed manually or through MacPorts/homebrew.
+
+Then after you've cloned this git repository, run the script that sets up the
 environment variables.
 
     source setenv_mjau.sh
