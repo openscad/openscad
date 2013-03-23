@@ -53,6 +53,11 @@ build_qt()
   fi
   tar xzf qt-everywhere-opensource-src-$version.tar.gz
   cd qt-everywhere-opensource-src-$version
+
+  if [ -f $OPENSCADDIR/patches/qt-$version.patch ]; then
+    patch -p0 < $OPENSCADDIR/patches/qt-$version.patch
+  fi
+
   if $OPTION_32BIT; then
     QT_32BIT="-arch x86"
   fi
