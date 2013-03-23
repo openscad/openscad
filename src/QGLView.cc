@@ -306,9 +306,54 @@ void QGLView::mouseReleaseEvent(QMouseEvent*)
   releaseMouse();
 }
 
+static void convertFromGLImage(QImage &img, int w, int h, bool alpha_format, bool include_alpha)
+{
+  assert (QSysInfo::ByteOrder != QSysInfo::BigEndian);
+  // OpenGL gives ABGR (i.e. RGBA backwards); Qt wants ARGB
+  for (int y = 0; y < h; y++) {
+    uint *q = (uint*)img.scanLine(y);
+    for (int x=0; x < w; ++x) {
+      const uint pixel = *q;
+      if (alpha_format && include_alpha) {
+        *q = ((pixel << 16) & 0xff0000) | ((pixel >> 16) & 0xff)
+             | (pixel & 0xff00ff00);
+      } else {
+        *q = 0xff000000 | ((pixel << 16) & 0xff0000)
+             | ((pixel >> 16) & 0xff) | (pixel & 0x00ff00);
+      }
+
+      q++;
+    }
+  }
+  img = img.mirrored();
+}
+
+QImage qt_gl_read_framebuffer(const QSize &size, bool alpha_format, bool include_alpha)
+{
+  QImage img(size, (alpha_format && include_alpha) ? QImage::Format_ARGB32_Premultiplied
+                                                   : QImage::Format_RGB32);
+  int w = size.width();
+  int h = size.height();
+  glReadPixels(0, 0, w, h, GL_RGBA, GL_UNSIGNED_BYTE, img.bits());
+  convertFromGLImage(img, w, h, alpha_format, include_alpha);
+  return img;
+}
+
+
+
 bool QGLView::save(const char *filename)
 {
-  QImage img = grabFrameBuffer();
+  // grabFrameBuffer() doesn't work right with a scale factor != 1, so don't
+  // use it.
+
+  makeCurrent();
+  QImage img;
+  int w = width() * scale_factor;
+  int h = height() * scale_factor;
+  if (format().rgba()) {
+    img = qt_gl_read_framebuffer(QSize(w, h), format().alpha(), /*withAlpha=*/false);
+  }
+
   return img.save(filename, "PNG");
 }
 
