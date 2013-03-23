@@ -49,6 +49,17 @@
 #  include <opencsg.h>
 #endif
 
+#ifdef __APPLE__
+#include <objc/message.h>
+
+// Qt 4.8.4 doesn't have retina support for QGLWidget, so we need to peek at
+// its internals to make that work.  This will likely break when updating to
+// a newer Qt version, but that version will hopefully have built-in support
+// for retina OpenGL.
+extern OSWindowRef qt_mac_window_for(const QWidget*); //qwidget_mac.mm
+extern OSViewRef qt_mac_nativeview_for(const QWidget *); //qwidget_mac.mm
+#endif
+
 QGLView::QGLView(QWidget *parent) : QGLWidget(parent)
 {
   init();
@@ -141,6 +152,25 @@ void QGLView::display_opencsg_warning_dialog()
 
 void QGLView::resizeGL(int w, int h)
 {
+#ifdef __APPLE__
+  OSViewRef view = qt_mac_nativeview_for(this);
+  if (view) {
+    // Since this isn't an Objective-C file, manually call the runtime functions:
+    if (objc_msgSend((id)view, sel_registerName("respondsToSelector:"), sel_registerName("setWantsBestResolutionOpenGLSurface:"))) {
+      objc_msgSend((id)view, sel_registerName("setWantsBestResolutionOpenGLSurface:"), 1);
+    }
+  
+    OSWindowRef window = qt_mac_window_for(this);
+    if (window && objc_msgSend((id)window, sel_registerName("respondsToSelector:"), sel_registerName("backingScaleFactor"))) {
+#if __LP64__
+      scale_factor = ((double (*)(id, SEL))(void *)objc_msgSend)((id)window, sel_registerName("backingScaleFactor"));
+#else
+      scale_factor = objc_msgSend_fpret((id)window, sel_registerName("backingScaleFactor"));
+#endif
+    }
+  }
+#endif
+
   GLView::resizeGL(w,h);
   GLView::setupGimbalCamPerspective();
 }

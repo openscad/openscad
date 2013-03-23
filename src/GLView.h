@@ -58,8 +58,8 @@ public:
 	Renderer *renderer;
 	Camera cam;
 	double far_far_away;
-	size_t width;
-	size_t height;
+
+	double scale_factor;
 	double w_h_ratio;
 	bool orthomode;
 	bool showaxes;

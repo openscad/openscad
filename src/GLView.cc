@@ -22,6 +22,7 @@ GLView::GLView()
   renderer = NULL;
   cam = Camera();
   far_far_away = RenderSettings::inst()->far_gl_clip_limit;
+  scale_factor = 1;
 #ifdef ENABLE_OPENCSG
   is_opencsg_capable = false;
   has_shaders = false;
@@ -39,6 +40,9 @@ void GLView::setRenderer(Renderer* r)
 
 void GLView::resizeGL(int w, int h)
 {
+  w *= scale_factor;
+  h *= scale_factor;
+
 #ifdef ENABLE_OPENCSG
   shaderinfo[9] = w;
   shaderinfo[10] = h;
@@ -305,7 +309,7 @@ void GLView::vectorCamPaintGL()
   glCullFace(GL_BACK);
   glDisable(GL_CULL_FACE);
 
-  glLineWidth(2);
+  glLineWidth(2 * scale_factor);
   glColor3d(1.0, 0.0, 0.0);
   //FIXME showSmallAxes wont work with vector camera
   //if (showaxes) GLView::showSmallaxes();
@@ -344,7 +348,7 @@ void GLView::gimbalCamPaintGL()
   glDepthFunc(GL_LESS);
   glCullFace(GL_BACK);
   glDisable(GL_CULL_FACE);
-  glLineWidth(2);
+  glLineWidth(2 * scale_factor);
   glColor3d(1.0, 0.0, 0.0);
 
   if (this->renderer) {
@@ -373,7 +377,7 @@ void GLView::showSmallaxes()
   glRotated(cam.object_rot.y(), 0.0, 1.0, 0.0);
   glRotated(cam.object_rot.z(), 0.0, 0.0, 1.0);
 
-  glLineWidth(1);
+  glLineWidth(1 * scale_factor);
   glBegin(GL_LINES);
   glColor3d(1.0, 0.0, 0.0);
   glVertex3d(0, 0, 0); glVertex3d(10, 0, 0);
@@ -444,7 +448,7 @@ void GLView::showAxes()
   // FIXME: doesn't work under Vector Camera
   // Large gray axis cross inline with the model
   // FIXME: This is always gray - adjust color to keep contrast with background
-  glLineWidth(1);
+  glLineWidth(1 * scale_factor);
   glColor3d(0.5, 0.5, 0.5);
   glBegin(GL_LINES);
   double l = cam.viewer_distance/10;
@@ -462,7 +466,7 @@ void GLView::showCrosshairs()
 	// FIXME: this might not work with Vector camera
   // FIXME: Crosshairs and axes are lighted, this doesn't make sense and causes them
   // to change color based on view orientation.
-  glLineWidth(3);
+  glLineWidth(3 * scale_factor);
   Color4f col = RenderSettings::inst()->color(RenderSettings::CROSSHAIR_COLOR);
   glColor3f(col[0], col[1], col[2]);
   glBegin(GL_LINES);
