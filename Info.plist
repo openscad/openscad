@@ -35,15 +35,17 @@
 			<string>Editor</string>
 			<key>CFBundleTypeIconFile</key>
 			<string>SCAD.icns</string>
-		        <key>LSIsAppleDefaultForType</key>
+			<key>LSIsAppleDefaultForType</key>
 			<true/>
 		</dict>
 	</array>
 	<key>NSAppleScriptEnabled</key>
-        <true/>
+	<true/>
+	<key>NSPrincipalClass</key>
+	<string>NSApplication</string>
 	<key>OSAScriptingDefinition</key>
 	<string>OpenSCAD.sdef</string>
-        <key>SUPublicDSAKeyFile</key>
-        <string>dsa_pub.pem</string>
+	<key>SUPublicDSAKeyFile</key>
+	<string>dsa_pub.pem</string>
 </dict>
 </plist>
