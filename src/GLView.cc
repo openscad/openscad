@@ -424,16 +424,17 @@ void GLView::showSmallaxes()
   //    glColor3f((255.0f-r)/255.0f, (255.0f-g)/255.0f, (255.0f-b)/255.0f);
   glColor3f(0.0f, 0.0f, 0.0f);
   glBegin(GL_LINES);
+  double l = 3*scale_factor;
   // X Label
-  glVertex3d(xlabel_x-3, xlabel_y-3, 0); glVertex3d(xlabel_x+3, xlabel_y+3, 0);
-  glVertex3d(xlabel_x-3, xlabel_y+3, 0); glVertex3d(xlabel_x+3, xlabel_y-3, 0);
+  glVertex3d(xlabel_x-l, xlabel_y-l, 0); glVertex3d(xlabel_x+l, xlabel_y+l, 0);
+  glVertex3d(xlabel_x-l, xlabel_y+l, 0); glVertex3d(xlabel_x+l, xlabel_y-l, 0);
   // Y Label
-  glVertex3d(ylabel_x-3, ylabel_y-3, 0); glVertex3d(ylabel_x+3, ylabel_y+3, 0);
-  glVertex3d(ylabel_x-3, ylabel_y+3, 0); glVertex3d(ylabel_x, ylabel_y, 0);
+  glVertex3d(ylabel_x-l, ylabel_y-l, 0); glVertex3d(ylabel_x+l, ylabel_y+l, 0);
+  glVertex3d(ylabel_x-l, ylabel_y+l, 0); glVertex3d(ylabel_x, ylabel_y, 0);
   // Z Label
-  glVertex3d(zlabel_x-3, zlabel_y-3, 0); glVertex3d(zlabel_x+3, zlabel_y-3, 0);
-  glVertex3d(zlabel_x-3, zlabel_y+3, 0); glVertex3d(zlabel_x+3, zlabel_y+3, 0);
-  glVertex3d(zlabel_x-3, zlabel_y-3, 0); glVertex3d(zlabel_x+3, zlabel_y+3, 0);
+  glVertex3d(zlabel_x-l, zlabel_y-l, 0); glVertex3d(zlabel_x+l, zlabel_y-l, 0);
+  glVertex3d(zlabel_x-l, zlabel_y+l, 0); glVertex3d(zlabel_x+l, zlabel_y+l, 0);
+  glVertex3d(zlabel_x-l, zlabel_y-l, 0); glVertex3d(zlabel_x+l, zlabel_y+l, 0);
   // FIXME - depends on gimbal camera 'viewer distance'.. how to fix this
   //         for VectorCamera?
   glEnd();
