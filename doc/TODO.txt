@@ -122,7 +122,7 @@ OpenCSG-related
 o OpenCSG rendering: Coincident surfaces causes z-buffer fighting. Is this somehow
   avoidable tuning the depth tests in OpenCSG? 
 o When specifying a transparency with the color() statement,
-  the object is not sorted and will be rendered wrongly
+  the object is not sorted and will be rendered wrongly. See issue #310 for some good test models.
 o Bug: Using the background operator (%) on the only object in a scene triggers a
   CSG error: No top level object found
 
