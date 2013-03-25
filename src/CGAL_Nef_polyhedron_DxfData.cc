@@ -29,7 +29,11 @@
 #include "CGAL_Nef_polyhedron.h"
 #include "cgal.h"
 #include "cgalutils.h"
-#include "svg.h"
+#include <boost/variant.hpp>
+#include "polyset.h"
+#include "dxftess.h"
+#include "CGALEvaluator.h"
+#include "Tree.h"
 
 #ifdef ENABLE_CGAL
 
@@ -87,6 +91,61 @@ std::string CGAL_Nef_polyhedron::dump() const
 		return OpenSCAD::dump_svg( *this->p3 );
 	else
 		return std::string("Nef Polyhedron with dimension != 2 or 3");
+}
+
+
+void CGAL_Nef_polyhedron::transform( const Transform3d &matrix )
+{
+	if (!this->isNull()) {
+		if (this->dim == 2) {
+			// Unfortunately CGAL provides no transform method for CGAL_Nef_polyhedron2
+			// objects. So we convert in to our internal 2d data format, transform it,
+			// tesselate it and create a new CGAL_Nef_polyhedron2 from it.. What a hack!
+			Eigen::Matrix2f testmat;
+			testmat << matrix(0,0), matrix(0,1), matrix(1,0), matrix(1,1);
+			if (testmat.determinant() == 0) {
+				PRINT("Warning: Scaling a 2D object with 0 - removing object");
+				this->reset();
+				return;
+			}
+			else {
+				CGAL_Aff_transformation2 t(
+					matrix(0,0), matrix(0,1), matrix(0,3),
+					matrix(1,0), matrix(1,1), matrix(1,3), matrix(3,3));
+
+				DxfData *dd = this->convertToDxfData();
+				for (size_t i=0; i < dd->points.size(); i++) {
+					CGAL_Kernel2::Point_2 p = CGAL_Kernel2::Point_2(dd->points[i][0], dd->points[i][1]);
+					p = t.transform(p);
+					dd->points[i][0] = to_double(p.x());
+					dd->points[i][1] = to_double(p.y());
+				}
+
+				PolySet ps;
+				ps.is2d = true;
+				dxf_tesselate(&ps, *dd, 0, true, false, 0);
+
+				Tree nulltree;
+				CGALEvaluator tmpeval(nulltree);
+				CGAL_Nef_polyhedron N = tmpeval.evaluateCGALMesh(ps);
+				if ( N.p2 ) this->p2.reset( new CGAL_Nef_polyhedron2( *N.p2 ) );
+				delete dd;
+			}
+		}
+		else if (this->dim == 3) {
+			if (matrix.matrix().determinant() == 0) {
+				PRINT("Warning: Scaling a 3D object with 0 - removing object");
+				this->reset();
+			}
+			else {
+				CGAL_Aff_transformation t(
+					matrix(0,0), matrix(0,1), matrix(0,2), matrix(0,3),
+					matrix(1,0), matrix(1,1), matrix(1,2), matrix(1,3),
+					matrix(2,0), matrix(2,1), matrix(2,2), matrix(2,3), matrix(3,3));
+				this->p3->transform(t);
+			}
+		}
+	}
 }
 
 #endif // ENABLE_CGAL

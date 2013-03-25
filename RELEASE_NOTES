@@ -7,6 +7,7 @@ o Added basic syntax highlighting in the editor
 o Mac: Added document icon
 o Mac: Added auto-update check
 o Commandline output to PNG, with various camera and rendering settings
+o resize() command introduced
 o Regression test now creates single monolithic .html file for easier uploading
 o value reassignment is now less strict
 
@@ -20,6 +21,7 @@ o Changed multmatrix floating-point output to improve dumptest portability
 o Regression test auto-starts & stops Xvfb / Xvnc if on headless unix machine
 o CGAL triangulation more lenient- enables partial rendering of 'bad' DXF data
 o Fixes problem where local changes are overwritten on automatic reload when included files has changed.
+o Non-ascii filenames are now allowed
 
 OpenSCAD 2013.01
 ================
