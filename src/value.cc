@@ -39,7 +39,7 @@
 
 std::ostream &operator<<(std::ostream &stream, const Filename &filename)
 {
-  stream << QuotedString(QDir::current().relativeFilePath(QString::fromStdString(filename)).toStdString());
+  stream << QuotedString(QDir::current().relativeFilePath(QString::fromLocal8Bit(filename.c_str())).toLocal8Bit().constData());
   return stream;
 }
 

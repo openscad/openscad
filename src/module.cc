@@ -136,7 +136,7 @@ std::vector<AbstractNode*> IfElseModuleInstantiation::evaluateElseChildren(const
 
 Module::~Module()
 {
-	BOOST_FOREACH (Expression *v, assignments_expr) delete v;
+	BOOST_FOREACH (const AssignmentContainer::value_type &v, assignments) delete v.second;
 	BOOST_FOREACH (FunctionContainer::value_type &f, functions) delete f.second;
 	BOOST_FOREACH (AbstractModuleContainer::value_type &m, modules) delete m.second;
 	BOOST_FOREACH (ModuleInstantiation *v, children) delete v;
@@ -158,8 +158,8 @@ AbstractNode *Module::evaluate(const Context *ctx, const ModuleInstantiation *in
 	else
 		c.usedlibs_p = NULL;
 
-	for (size_t i = 0; i < assignments_var.size(); i++) {
-		c.set_variable(assignments_var[i], assignments_expr[i]->evaluate(&c));
+	BOOST_FOREACH(const std::string &var, assignments_var) {
+		c.set_variable(var, assignments.at(var)->evaluate(&c));
 	}
 
 	AbstractNode *node = new AbstractNode(inst);
@@ -192,8 +192,8 @@ std::string Module::dump(const std::string &indent, const std::string &name) con
 	BOOST_FOREACH(const AbstractModuleContainer::value_type &m, modules) {
 		dump << m.second->dump(indent + tab, m.first);
 	}
-	for (size_t i = 0; i < assignments_var.size(); i++) {
-		dump << indent << tab << assignments_var[i] << " = " << *assignments_expr[i] << ";\n";
+	BOOST_FOREACH(const std::string &var, assignments_var) {
+		dump << indent << tab << var << " = " << *assignments.at(var) << ";\n";
 	}
 	for (size_t i = 0; i < children.size(); i++) {
 		dump << children[i]->dump(indent + tab);
