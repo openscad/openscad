@@ -233,6 +233,8 @@ HEADERS += src/typedefs.h \
            src/rendernode.h \
            src/openscad.h \
            src/handle_dep.h \
+           src/Geometry.h \
+           src/Polygon2d.h \
            src/polyset.h \
            src/printutils.h \
            src/fileutils.h \
@@ -245,7 +247,7 @@ HEADERS += src/typedefs.h \
            src/nodecache.h \
            src/nodedumper.h \
            src/ModuleCache.h \
-           src/PolySetCache.h \
+           src/GeometryCache.h \
            src/PolySetEvaluator.h \
            src/CSGTermEvaluator.h \
            src/Tree.h \
@@ -286,6 +288,8 @@ SOURCES += src/version_check.cc \
            src/evalcontext.cc \
            src/csgterm.cc \
            src/csgtermnormalizer.cc \
+           src/Geometry.cc \
+           src/Polygon2d.cc \
            src/polyset.cc \
            src/csgops.cc \
            src/transform.cc \
@@ -312,7 +316,7 @@ SOURCES += src/version_check.cc \
            src/traverser.cc \
            src/PolySetEvaluator.cc \
            src/ModuleCache.cc \
-           src/PolySetCache.cc \
+           src/GeometryCache.cc \
            src/Tree.cc \
            \
            src/rendersettings.cc \

@@ -353,12 +353,14 @@ Response CGALEvaluator::visit(State &state, const AbstractPolyNode &node)
 		CGAL_Nef_polyhedron N;
 		if (!isCached(node)) {
 			// Apply polyset operation
-			shared_ptr<PolySet> ps = this->psevaluator.getPolySet(node, false);
+			shared_ptr<Geometry> geom = this->psevaluator.getGeometry(node, false);
+			shared_ptr<PolySet> ps = dynamic_pointer_cast<PolySet>(geom);
 			if (ps) {
 				N = evaluateCGALMesh(*ps);
 //				print_messages_pop();
 				node.progress_report();
 			}
+			// else FIXME: Support other Geometry instances
 		}
 		else {
 			N = CGALCache::instance()->get(this->tree.getIdString(node));

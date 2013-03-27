@@ -92,7 +92,7 @@ AbstractNode *RotateExtrudeModule::instantiate(const Context *ctx, const ModuleI
 	return node;
 }
 
-PolySet *RotateExtrudeNode::evaluate_polyset(PolySetEvaluator *evaluator) const
+Geometry *RotateExtrudeNode::evaluate_geometry(PolySetEvaluator *evaluator) const
 {
 	if (!evaluator) {
 		PRINTB("WARNING: No suitable PolySetEvaluator found for %s module!", this->name());
@@ -101,7 +101,7 @@ PolySet *RotateExtrudeNode::evaluate_polyset(PolySetEvaluator *evaluator) const
 
 	print_messages_push();
 
-	PolySet *ps = evaluator->evaluatePolySet(*this);
+	Geometry *ps = evaluator->evaluateGeometry(*this);
 	
 	print_messages_pop();
 

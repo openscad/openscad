@@ -10,6 +10,7 @@
 #include "cgaladvnode.h"
 #include "printutils.h"
 #include "PolySetEvaluator.h"
+#include "polyset.h"
 
 #include <string>
 #include <map>
@@ -111,8 +112,12 @@ Response CSGTermEvaluator::visit(State &state, const AbstractPolyNode &node)
 	if (state.isPrefix()) {
 		shared_ptr<CSGTerm> t1;
 		if (this->psevaluator) {
-			shared_ptr<PolySet> ps = this->psevaluator->getPolySet(node, true);
-			if (ps) {
+			shared_ptr<Geometry> geom = this->psevaluator->getGeometry(node, true);
+			if (geom) {
+				shared_ptr<PolySet> ps = dynamic_pointer_cast<PolySet>(geom);
+				if (!ps) {
+					// FIXME: Convert geom to polyset. Refacting may resume here
+				}
 				t1 = evaluate_csg_term_from_ps(state, this->highlights, this->background, 
 																			 ps, node.modinst, node);
 				node.progress_report();
@@ -178,7 +183,8 @@ Response CSGTermEvaluator::visit(State &state, const RenderNode &node)
 		shared_ptr<CSGTerm> t1;
 		shared_ptr<PolySet> ps;
 		if (this->psevaluator) {
-			ps = this->psevaluator->getPolySet(node, true);
+			shared_ptr<Geometry> geom = this->psevaluator->getGeometry(node, true);
+			ps = dynamic_pointer_cast<PolySet>(geom);
 			node.progress_report();
 		}
 		if (ps) {
@@ -198,7 +204,8 @@ Response CSGTermEvaluator::visit(State &state, const CgaladvNode &node)
     // FIXME: Calling evaluator directly since we're not a PolyNode. Generalize this.
 		shared_ptr<PolySet> ps;
 		if (this->psevaluator) {
-			ps = this->psevaluator->getPolySet(node, true);
+			shared_ptr<Geometry> geom = this->psevaluator->getGeometry(node, true);
+			ps = dynamic_pointer_cast<PolySet>(geom);
 		}
 		if (ps) {
 			t1 = evaluate_csg_term_from_ps(state, this->highlights, this->background, 

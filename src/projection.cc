@@ -31,6 +31,7 @@
 #include "builtin.h"
 #include "visitor.h"
 #include "PolySetEvaluator.h"
+#include "polyset.h"
 
 #include <assert.h>
 #include <sstream>
@@ -68,7 +69,7 @@ AbstractNode *ProjectionModule::instantiate(const Context *ctx, const ModuleInst
 	return node;
 }
 
-PolySet *ProjectionNode::evaluate_polyset(PolySetEvaluator *evaluator) const
+Geometry *ProjectionNode::evaluate_geometry(PolySetEvaluator *evaluator) const
 {
 	if (!evaluator) {
 		PRINTB("WARNING: No suitable PolySetEvaluator found for %s module!", this->name());
@@ -77,7 +78,7 @@ PolySet *ProjectionNode::evaluate_polyset(PolySetEvaluator *evaluator) const
 
 	print_messages_push();
 
-	PolySet *ps = evaluator->evaluatePolySet(*this);
+	Geometry *ps = evaluator->evaluateGeometry(*this);
 
 	print_messages_pop();
 

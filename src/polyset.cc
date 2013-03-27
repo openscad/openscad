@@ -35,8 +35,11 @@
 	FIXME: It's a bit messy and is a prime target for refactoring.
 
 	1) Store 2D and 3D polygon meshes from all origins
-	2) Store 2D outlines, used for rendering edges
+	2) Store 2D outlines, used for rendering edges (2D only)
 	3) Rendering of polygons and edges
+
+
+	PolySet must only contain convex polygons
 
  */
 
