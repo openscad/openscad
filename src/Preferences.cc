@@ -31,7 +31,7 @@
 #include <QKeyEvent>
 #include <QSettings>
 #include <QStatusBar>
-#include "PolySetCache.h"
+#include "GeometryCache.h"
 #include "AutoUpdater.h"
 #include "feature.h"
 #ifdef ENABLE_CGAL
@@ -84,7 +84,7 @@ Preferences::Preferences(QWidget *parent) : QMainWindow(parent)
 	this->defaultmap["3dview/colorscheme"] = this->colorSchemeChooser->currentItem()->text();
 	this->defaultmap["advanced/opencsg_show_warning"] = true;
 	this->defaultmap["advanced/enable_opencsg_opengl1x"] = true;
-	this->defaultmap["advanced/polysetCacheSize"] = uint(PolySetCache::instance()->maxSize());
+	this->defaultmap["advanced/polysetCacheSize"] = uint(GeometryCache::instance()->maxSize());
 #ifdef ENABLE_CGAL
 	this->defaultmap["advanced/cgalCacheSize"] = uint(CGALCache::instance()->maxSize());
 #endif
@@ -348,7 +348,7 @@ void Preferences::on_polysetCacheSizeEdit_textChanged(const QString &text)
 {
 	QSettings settings;
 	settings.setValue("advanced/polysetCacheSize", text);
-	PolySetCache::instance()->setMaxSize(text.toULong());
+	GeometryCache::instance()->setMaxSize(text.toULong());
 }
 
 void Preferences::on_opencsgLimitEdit_textChanged(const QString &text)

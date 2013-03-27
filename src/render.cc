@@ -29,6 +29,7 @@
 #include "evalcontext.h"
 #include "builtin.h"
 #include "PolySetEvaluator.h"
+#include "polyset.h"
 
 #include <sstream>
 #include <boost/assign/std/vector.hpp>
@@ -61,9 +62,9 @@ AbstractNode *RenderModule::instantiate(const Context *ctx, const ModuleInstanti
 	return node;
 }
 
-class PolySet *RenderNode::evaluate_polyset(PolySetEvaluator *ps) const
+class Geometry *RenderNode::evaluate_geometry(PolySetEvaluator *ps) const
 {
-	return ps->evaluatePolySet(*this);
+	return ps->evaluateGeometry(*this);
 }
 
 std::string RenderNode::toString() const

@@ -24,7 +24,7 @@
  *
  */
 
-#include "PolySetCache.h"
+#include "GeometryCache.h"
 #include "ModuleCache.h"
 #include "MainWindow.h"
 #include "parsersettings.h"
@@ -81,7 +81,6 @@
 #include <algorithm>
 #include <boost/version.hpp>
 #include <boost/foreach.hpp>
-#include <boost/version.hpp>
 #include <sys/stat.h>
 
 #ifdef ENABLE_CGAL
@@ -436,7 +435,7 @@ MainWindow::loadDesignSettings()
 		designActionAutoReload->setChecked(true);
 	}
 	uint polySetCacheSize = Preferences::inst()->getValue("advanced/polysetCacheSize").toUInt();
-	PolySetCache::instance()->setMaxSize(polySetCacheSize);
+	GeometryCache::instance()->setMaxSize(polySetCacheSize);
 #ifdef ENABLE_CGAL
 	uint cgalCacheSize = Preferences::inst()->getValue("advanced/cgalCacheSize").toUInt();
 	CGALCache::instance()->setMaxSize(cgalCacheSize);
@@ -803,7 +802,7 @@ void MainWindow::compileCSG(bool procevents)
 		if (!root_raw_term) {
 			PRINT("ERROR: CSG generation failed! (no top level object found)");
 		}
-		PolySetCache::instance()->print();
+		GeometryCache::instance()->print();
 #ifdef ENABLE_CGAL
 		CGALCache::instance()->print();
 #endif
@@ -1312,7 +1311,7 @@ void MainWindow::actionRenderCGALDone(CGAL_Nef_polyhedron *root_N)
 	progress_report_fin();
 
 	if (root_N) {
-		PolySetCache::instance()->print();
+		GeometryCache::instance()->print();
 #ifdef ENABLE_CGAL
 		CGALCache::instance()->print();
 #endif
@@ -1582,7 +1581,7 @@ void MainWindow::actionExportImage()
 
 void MainWindow::actionFlushCaches()
 {
-	PolySetCache::instance()->clear();
+	GeometryCache::instance()->clear();
 #ifdef ENABLE_CGAL
 	CGALCache::instance()->clear();
 #endif

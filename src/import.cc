@@ -182,7 +182,7 @@ void read_stl_facet( std::ifstream &f, stl_facet &facet )
 #endif
 }
 
-PolySet *ImportNode::evaluate_polyset(class PolySetEvaluator *) const
+Geometry *ImportNode::evaluate_geometry(class PolySetEvaluator *) const
 {
 	PolySet *p = NULL;
 

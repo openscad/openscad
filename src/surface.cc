@@ -67,7 +67,7 @@ public:
 	Filename filename;
 	bool center;
 	int convexity;
-	virtual PolySet *evaluate_polyset(class PolySetEvaluator *) const;
+	virtual Geometry *evaluate_geometry(class PolySetEvaluator *) const;
 };
 
 AbstractNode *SurfaceModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const
@@ -98,7 +98,7 @@ AbstractNode *SurfaceModule::instantiate(const Context *ctx, const ModuleInstant
 	return node;
 }
 
-PolySet *SurfaceNode::evaluate_polyset(class PolySetEvaluator *) const
+Geometry *SurfaceNode::evaluate_geometry(class PolySetEvaluator *) const
 {
 	handle_dep(filename);
 	std::ifstream stream(filename.c_str());

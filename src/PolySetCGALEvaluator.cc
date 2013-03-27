@@ -14,6 +14,7 @@
 #include "dxftess.h"
 #include "module.h"
 #include "calc.h"
+#include "polyset.h"
 
 #include "svg.h"
 #include "printutils.h"
@@ -25,7 +26,7 @@ PolySetCGALEvaluator::PolySetCGALEvaluator(CGALEvaluator &cgalevaluator)
 {
 }
 
-PolySet *PolySetCGALEvaluator::evaluatePolySet(const ProjectionNode &node)
+Geometry *PolySetCGALEvaluator::evaluateGeometry(const ProjectionNode &node)
 {
 	//openscad_loglevel = 6;
 	logstream log(5);
@@ -286,14 +287,14 @@ static void add_slice(PolySet *ps, const DxfData &dxf, DxfData::Path &path,
 	}
 }
 
-PolySet *PolySetCGALEvaluator::evaluatePolySet(const LinearExtrudeNode &node)
+Geometry *PolySetCGALEvaluator::evaluateGeometry(const LinearExtrudeNode &node)
 {
 	DxfData *dxf;
 
 	if (node.filename.empty())
 	{
 		// Before extruding, union all (2D) children nodes
-		// to a single DxfData, then tesselate this into a PolySet
+		// to a single DxfData, then tesselate this into a Geometry
 		CGAL_Nef_polyhedron sum;
 		BOOST_FOREACH (AbstractNode * v, node.getChildren()) {
 			if (v->modinst->isBackground()) continue;
@@ -315,12 +316,12 @@ PolySet *PolySetCGALEvaluator::evaluatePolySet(const LinearExtrudeNode &node)
 		dxf = new DxfData(node.fn, node.fs, node.fa, node.filename, node.layername, node.origin_x, node.origin_y, node.scale_x);
 	}
 
-	PolySet *ps = extrudeDxfData(node, *dxf);
+	Geometry *geom = extrudeDxfData(node, *dxf);
 	delete dxf;
-	return ps;
+	return geom;
 }
 
-PolySet *PolySetCGALEvaluator::extrudeDxfData(const LinearExtrudeNode &node, DxfData &dxf)
+Geometry *PolySetCGALEvaluator::extrudeDxfData(const LinearExtrudeNode &node, DxfData &dxf)
 {
 	PolySet *ps = new PolySet();
 	ps->convexity = node.convexity;
@@ -386,7 +387,7 @@ PolySet *PolySetCGALEvaluator::extrudeDxfData(const LinearExtrudeNode &node, Dxf
 	return ps;
 }
 
-PolySet *PolySetCGALEvaluator::evaluatePolySet(const RotateExtrudeNode &node)
+Geometry *PolySetCGALEvaluator::evaluateGeometry(const RotateExtrudeNode &node)
 {
 	DxfData *dxf;
 
@@ -415,12 +416,12 @@ PolySet *PolySetCGALEvaluator::evaluatePolySet(const RotateExtrudeNode &node)
 		dxf = new DxfData(node.fn, node.fs, node.fa, node.filename, node.layername, node.origin_x, node.origin_y, node.scale);
 	}
 
-	PolySet *ps = rotateDxfData(node, *dxf);
+	Geometry *geom = rotateDxfData(node, *dxf);
 	delete dxf;
-	return ps;
+	return geom;
 }
 
-PolySet *PolySetCGALEvaluator::evaluatePolySet(const CgaladvNode &node)
+Geometry *PolySetCGALEvaluator::evaluateGeometry(const CgaladvNode &node)
 {
 	CGAL_Nef_polyhedron N = this->cgalevaluator.evaluateCGALMesh(node);
 	PolySet *ps = NULL;
@@ -432,7 +433,7 @@ PolySet *PolySetCGALEvaluator::evaluatePolySet(const CgaladvNode &node)
 	return ps;
 }
 
-PolySet *PolySetCGALEvaluator::evaluatePolySet(const RenderNode &node)
+Geometry *PolySetCGALEvaluator::evaluateGeometry(const RenderNode &node)
 {
 	CGAL_Nef_polyhedron N = this->cgalevaluator.evaluateCGALMesh(node);
 	PolySet *ps = NULL;
@@ -448,7 +449,7 @@ PolySet *PolySetCGALEvaluator::evaluatePolySet(const RenderNode &node)
 	return ps;
 }
 
-PolySet *PolySetCGALEvaluator::rotateDxfData(const RotateExtrudeNode &node, DxfData &dxf)
+Geometry *PolySetCGALEvaluator::rotateDxfData(const RotateExtrudeNode &node, DxfData &dxf)
 {
 	PolySet *ps = new PolySet();
 	ps->convexity = node.convexity;

@@ -521,6 +521,8 @@ set(CORE_SOURCES
   ../src/feature.cc
   ../src/csgterm.cc 
   ../src/csgtermnormalizer.cc 
+  ../src/Geometry.cc 
+  ../src/Polygon2d.cc 
   ../src/polyset.cc 
   ../src/csgops.cc 
   ../src/transform.cc 
@@ -565,7 +567,7 @@ set(COMMON_SOURCES
   ../src/nodedumper.cc 
   ../src/traverser.cc 
   ../src/PolySetEvaluator.cc 
-  ../src/PolySetCache.cc 
+  ../src/GeometryCache.cc 
   ../src/Tree.cc
   ../src/lodepng.cpp)
 
