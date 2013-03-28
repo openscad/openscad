@@ -2,6 +2,8 @@
 <!DOCTYPE plist SYSTEM "file://localhost/System/Library/DTDs/PropertyList.dtd">
 <plist version="0.9">
 <dict>
+	<key>CFBundleName</key>
+	<string>OpenSCAD</string>
 	<key>CFBundleIconFile</key>
 	<string>@ICON@</string>
 	<key>CFBundlePackageType</key>
@@ -12,6 +14,10 @@
 	<string>OpenSCAD</string>
 	<key>CFBundleIdentifier</key>
 	<string>org.openscad.OpenSCAD</string>
+	<key>CFBundleVersion</key>
+	<string>@SHORT_VERSION@</string>
+	<key>CFBundleShortVersionString</key>
+	<string>@SHORT_VERSION@</string>
 	<key>CFBundleDocumentTypes</key>
 	<array>
 		<dict>
@@ -27,13 +33,19 @@
 			<string>OpenSCAD Design</string>
 			<key>CFBundleTypeRole</key>
 			<string>Editor</string>
-		        <key>LSIsAppleDefaultForType</key>
+			<key>CFBundleTypeIconFile</key>
+			<string>SCAD.icns</string>
+			<key>LSIsAppleDefaultForType</key>
 			<true/>
 		</dict>
 	</array>
 	<key>NSAppleScriptEnabled</key>
-        <true/>
+	<true/>
+	<key>NSPrincipalClass</key>
+	<string>NSApplication</string>
 	<key>OSAScriptingDefinition</key>
 	<string>OpenSCAD.sdef</string>
+	<key>SUPublicDSAKeyFile</key>
+	<string>dsa_pub.pem</string>
 </dict>
 </plist>

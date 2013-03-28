@@ -55,20 +55,34 @@ else {
   }
 }
 
-macx {
-  # add CONFIG+=deploy to the qmake command-line to make a deployment build
-  deploy {
-    message("Building deployment version")
+# add CONFIG+=deploy to the qmake command-line to make a deployment build
+deploy {
+  message("Building deployment version")
+  DEFINES += OPENSCAD_DEPLOY
+  macx {
     CONFIG += x86 x86_64
+    LIBS += -framework Sparkle
+    HEADERS += src/SparkleAutoUpdater.h
+    OBJECTIVE_SOURCES += src/SparkleAutoUpdater.mm
   }
+}
 
+macx {
   TARGET = OpenSCAD
   ICON = icons/OpenSCAD.icns
   QMAKE_INFO_PLIST = Info.plist
   APP_RESOURCES.path = Contents/Resources
-  APP_RESOURCES.files = OpenSCAD.sdef
+  APP_RESOURCES.files = OpenSCAD.sdef dsa_pub.pem icons/SCAD.icns
   QMAKE_BUNDLE_DATA += APP_RESOURCES
-  LIBS += -framework Carbon
+  LIBS += -framework Cocoa
+
+  # FIXME: Somehow, setting the deployment target to a lower version causes a
+  # seldom crash in debug mode (e.g. the minkowski2-test):
+  # frame #4: 0x00007fff8b7d5be5 libc++.1.dylib`std::runtime_error::~runtime_error() + 55
+  # frame #5: 0x0000000100150df5 OpenSCAD`CGAL::Uncertain_conversion_exception::~Uncertain_conversion_exception(this=0x0000000105044488) + 21 at Uncertain.h:78
+  # The reason for the crash appears to be linking with libgcc_s, 
+  # but it's unclear what's really going on
+  QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.6
 }
 else {
   TARGET = openscad
@@ -118,7 +132,9 @@ netbsd* {
 }
 
 *clang* {
-	# disable enormous amount of warnings about CGAL
+	# http://llvm.org/bugs/show_bug.cgi?id=9182
+	QMAKE_CXXFLAGS_WARN_ON += -Wno-overloaded-virtual
+	# disable enormous amount of warnings about CGAL / boost / etc
 	QMAKE_CXXFLAGS_WARN_ON += -Wno-unused-parameter
 	QMAKE_CXXFLAGS_WARN_ON += -Wno-unused-variable
 	QMAKE_CXXFLAGS_WARN_ON += -Wno-unused-function
@@ -179,6 +195,7 @@ HEADERS += src/version_check.h \
            src/ThrownTogetherRenderer.h \
            src/CGAL_renderer.h \
            src/OGL_helper.h \
+           src/QGLView.h \
            src/GLView.h \
            src/MainWindow.h \
            src/Preferences.h \
@@ -227,9 +244,21 @@ HEADERS += src/version_check.h \
            src/mathc99.h \
            src/memory.h \
            src/linalg.h \
+           src/Camera.h \
            src/system-gl.h \
            src/stl-utils.h \
-           src/svg.h
+           src/svg.h \
+           \
+           src/lodepng.h \
+           src/OffscreenView.h \
+           src/OffscreenContext.h \
+           src/OffscreenContextAll.hpp \
+           src/fbo.h \
+           src/imageutils.h \
+           src/system-gl.h \
+           src/CsgInfo.h \
+           \
+           src/AutoUpdater.h
 
 SOURCES += src/version_check.cc \
            src/ProgressWidget.cc \
@@ -275,10 +304,13 @@ SOURCES += src/version_check.cc \
            src/Preferences.cc \
            src/OpenCSGWarningDialog.cc \
            src/editor.cc \
-           src/glview.cc \
+           src/GLView.cc \
+           src/QGLView.cc \
+           src/AutoUpdater.cc \
            \
            src/builtin.cc \
            src/export.cc \
+           src/export_png.cc \
            src/import.cc \
            src/renderer.cc \
            src/ThrownTogetherRenderer.cc \
@@ -287,9 +319,27 @@ SOURCES += src/version_check.cc \
            src/dxftess-cgal.cc \
            src/CSGTermEvaluator.cc \
            src/svg.cc \
+           src/OffscreenView.cc \
+           src/fbo.cc \
+           src/system-gl.cc \
+           src/imageutils.cc \
+           src/lodepng.cpp \
            \
            src/openscad.cc \
            src/mainwin.cc
+
+unix:!macx {
+  SOURCES += src/imageutils-lodepng.cc
+  SOURCES += src/OffscreenContextGLX.cc
+}
+macx {
+  SOURCES += src/imageutils-macosx.cc
+  OBJECTIVE_SOURCES += src/OffscreenContextCGL.mm
+}
+win32* {
+  SOURCES += src/imageutils-lodepng.cc
+  SOURCES += src/OffscreenContextWGL.cc
+}
 
 opencsg {
   HEADERS += src/OpenCSGRenderer.h
@@ -320,8 +370,10 @@ SOURCES += src/cgalutils.cc \
 
 macx {
   HEADERS += src/AppleEvents.h \
-             src/EventFilter.h
+             src/EventFilter.h \
+             src/CocoaUtils.h
   SOURCES += src/AppleEvents.cc
+  OBJECTIVE_SOURCES += src/CocoaUtils.mm
 }
 
 isEmpty(PREFIX):PREFIX = /usr/local

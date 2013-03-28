@@ -1,10 +1,13 @@
 #!/bin/sh
 
-# NB! To build a release build, the VERSION environment variable needs to be set.
+# NB! To build a release build, the VERSION and VERSIONDATE environment variables needs to be set.
 # See doc/release-checklist.txt
 
+if test -z "$VERSIONDATE"; then
+  VERSIONDATE=`date "+%Y.%m.%d"`
+fi
 if test -z "$VERSION"; then
-  VERSION=`date "+%Y.%m.%d"`
+  VERSION=$VERSIONDATE
   COMMIT=-c
   SNAPSHOT=true
 fi
@@ -29,10 +32,24 @@ if [[ $? != 0 ]]; then
   exit 1
 fi
 
+SIGNATURE=$(openssl dgst -sha1 -binary < OpenSCAD-$VERSION.dmg  | openssl dgst -dss1 -sign dsa_priv.pem | openssl enc -base64)
+
+if [[ $VERSION == $VERSIONDATE ]]; then
+  APPCASTFILE=appcast-snapshots.xml
+else
+  APPCASTFILE=appcast.xml
+fi
+echo "Creating appcast $APPCASTFILE..."
+sed -e "s,@VERSION@,$VERSION,g" -e "s,@VERSIONDATE@,$VERSIONDATE,g" -e "s,@DSASIGNATURE@,$SIGNATURE,g" -e "s,@FILESIZE@,$(stat -f "%z" OpenSCAD-$VERSION.dmg),g" $APPCASTFILE.in > $APPCASTFILE
+cp $APPCASTFILE ../openscad.github.com
+if [[ $VERSION == $VERSIONDATE ]]; then
+  cp $APPCASTFILE ../openscad.github.com/appcast-snapshots.xml
+fi
+
 echo "Uploading..."
 LABELS=OpSys-OSX,Type-Executable
 if ! $SNAPSHOT; then LABELS=$LABELS,Featured; fi
 `dirname $0`/googlecode_upload.py -s 'Mac OS X Snapshot' -p openscad OpenSCAD-$VERSION.dmg -l $LABELS
 
-# Update snapshot filename on wab page
+# Update snapshot filename on web page
 `dirname $0`/update-web.sh OpenSCAD-$VERSION.dmg

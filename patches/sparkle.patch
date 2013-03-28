@@ -1,0 +1,12 @@
+--- Sparkle-0ed83cf9f2eeb425d4fdd141c01a29d843970c20/SUConstants.h	2013-02-04 08:18:48.000000000 -0500
++++ Sparkle-new/SUConstants.h	2013-02-06 17:47:31.000000000 -0500
+@@ -24,7 +24,7 @@
+ // If your app file on disk is named "MyApp 1.1b4", Sparkle usually updates it
+ //	in place, giving you an app named 1.1b4 that is actually 1.2. Turn the
+ //	following on to always reset the name back to "MyApp":
+-#define NORMALIZE_INSTALLED_APP_NAME				0
++#define NORMALIZE_INSTALLED_APP_NAME				1
+ 
+ 
+ #define TRY_TO_APPEND_VERSION_NUMBER				1
+diff -ru Sparkle-0ed83cf9f2eeb425d4fdd141c01a29d843970c20/SUPlainInstallerInternals.m Sparkle-new/SUPlainInstallerInternals.m

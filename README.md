@@ -113,8 +113,11 @@ To pull the MCAD library (http://reprap.org/wiki/MCAD), do the following:
 
 ### Building for Mac OS X
 
-First, make sure that you have XCode installed to get GCC. Then after
-you've cloned this git repository, run the script that sets up the
+Prerequisites:
+* XCode, including XCode command-line tools (install from XCode Preferences).
+* [CMake](http://cmake.org), which can be installed manually or through MacPorts/homebrew.
+
+Then after you've cloned this git repository, run the script that sets up the
 environment variables.
 
     source setenv_mjau.sh
@@ -123,11 +126,10 @@ Then run the script to compile all the prerequisite libraries above:
 
     ./scripts/macosx-build-dependencies.sh
 
-We currently don't use [MacPorts](http://www.macports.org) or
-[brew](http://mxcl.github.com/homebrew/) to install the prerequisite
-libraries because CGAL doesn't exist on brew and opencsg doesn't exist
-on ports. And more importantly, there are some patches to GMP in the
-compilation process.
+You can also install the prerequisites using
+[MacPorts](http://www.macports.org).  Unfortunately,
+[brew](http://mxcl.github.com/homebrew/) doesn't yet support CGAL and
+OpenCSG.
 
 After that, follow the Compilation instructions below.
 
@@ -202,6 +204,12 @@ complete, build OpenSCAD and package it to an installer:
 
     ./scripts/release-common.sh mingw32
 
+If you wish you can only build the openscad.exe binary:
+
+    cd mingw32
+    i686-pc-mingw32-qmake .. CONFIG+=mingw-cross-env
+    make
+    
 ### Compilation
 
 First, run 'qmake' from Qt4 to generate a Makefile. On some systems you need to

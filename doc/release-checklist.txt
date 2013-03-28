@@ -3,9 +3,12 @@ OpenSCAD Release Checklist
 
 (See bottom of this file for how to build release binaries)
 
-o Update VERSION environment variable
+o Set VERSION and VERSIONDATE environment variable
+  (VERSIONDATE is new and used to identify releases. VERSION is for humans.
+   For development builds, set VERSION and VERSIONDATE to the same value)
 
   export VERSION=2013.01
+  export VERSIONDATE=2013.01.17
 
   It will be used by the commands below, as well as these files: 
 
@@ -38,13 +41,15 @@ o Update external resources:
   - http://en.wikipedia.org/wiki/OpenSCAD
 o Notify package managers
   - Ubuntu: https://launchpad.net/~chrysn
+  - Fedora: Miro Hrončok <miro@hroncok.cz> or <mhroncok@redhat.com>
   - MacPorts: 
 
 
 Build and Upload Release Binaries
 ---------------------------------
 
-$ export VERSION=<openscad version, e.g. 2013.01>
+$ export VERSIONDATE=<date of release in YYYY.MM.DD format, e.g. 2013.01.17>
+$ export VERSION=<openscad version, e.g. 2013.01> # If development snapshot, you don't need version is the same as VERSIONDATE
 $ tar xzf openscad-$VERSION.src.tar.gz
 $ cd openscad-$VERSION
 

@@ -26,10 +26,13 @@
 
 #include "Preferences.h"
 
+#include <QMessageBox>
 #include <QFontDatabase>
 #include <QKeyEvent>
 #include <QSettings>
+#include <QStatusBar>
 #include "PolySetCache.h"
+#include "AutoUpdater.h"
 #ifdef ENABLE_CGAL
 #include "CGALCache.h"
 #endif
@@ -80,7 +83,7 @@ Preferences::Preferences(QWidget *parent) : QMainWindow(parent)
 #ifdef ENABLE_CGAL
 	this->defaultmap["advanced/cgalCacheSize"] = uint(CGALCache::instance()->maxSize());
 #endif
-	this->defaultmap["advanced/openCSGLimit"] = 2000;
+	this->defaultmap["advanced/openCSGLimit"] = RenderSettings::inst()->openCSGTermLimit;
 	this->defaultmap["advanced/forceGoldfeather"] = false;
 
 
@@ -88,6 +91,7 @@ Preferences::Preferences(QWidget *parent) : QMainWindow(parent)
 	QActionGroup *group = new QActionGroup(this);
 	group->addAction(prefsAction3DView);
 	group->addAction(prefsActionEditor);
+	group->addAction(prefsActionUpdate);
 	group->addAction(prefsActionAdvanced);
 	connect(group, SIGNAL(triggered(QAction*)), this, SLOT(actionTriggered(QAction*)));
 
@@ -155,6 +159,9 @@ Preferences::actionTriggered(QAction *action)
 	else if (action == this->prefsActionEditor) {
 		this->stackedWidget->setCurrentWidget(this->pageEditor);
 	}
+	else if (action == this->prefsActionUpdate) {
+		this->stackedWidget->setCurrentWidget(this->pageUpdate);
+	}
 	else if (action == this->prefsActionAdvanced) {
 		this->stackedWidget->setCurrentWidget(this->pageAdvanced);
 	}
@@ -184,6 +191,40 @@ void Preferences::on_fontSize_editTextChanged(const QString &size)
 	QSettings settings;
 	settings.setValue("editor/fontsize", intsize);
 	emit fontChanged(getValue("editor/fontfamily").toString(), intsize);
+}
+
+void unimplemented_msg()
+{
+  QMessageBox mbox;
+	mbox.setText("Sorry, this feature is not implemented on your Operating System");
+	mbox.exec();
+}
+
+void Preferences::on_updateCheckBox_toggled(bool on)
+{
+	if (AutoUpdater *updater =AutoUpdater::updater()) {
+		updater->setAutomaticallyChecksForUpdates(on);
+	} else {
+		unimplemented_msg();
+	}
+}
+
+void Preferences::on_snapshotCheckBox_toggled(bool on)
+{
+	if (AutoUpdater *updater =AutoUpdater::updater()) {
+		updater->setEnableSnapshots(on);
+	} else {
+		unimplemented_msg();
+	}
+}
+
+void Preferences::on_checkNowButton_clicked()
+{
+	if (AutoUpdater *updater =AutoUpdater::updater()) {
+		updater->checkForUpdates();
+	} else {
+		unimplemented_msg();
+	}
 }
 
 void
@@ -287,6 +328,12 @@ void Preferences::updateGUI()
 	}
 	else {
 		this->fontSize->setEditText(fontsize);
+	}
+
+	if (AutoUpdater *updater = AutoUpdater::updater()) {
+		this->updateCheckBox->setChecked(updater->automaticallyChecksForUpdates());
+		this->snapshotCheckBox->setChecked(updater->enableSnapshots());
+		this->lastCheckedLabel->setText(updater->lastUpdateCheckDate());
 	}
 
 	this->openCSGWarningBox->setChecked(getValue("advanced/opencsg_show_warning").toBool());

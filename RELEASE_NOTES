@@ -4,6 +4,12 @@ OpenSCAD 2013.XX
 Features:
 o Console output is now enabled on Windows through the openscad.com executable
 o Added basic syntax highlighting in the editor
+o Mac: Added document icon
+o Mac: Added auto-update check
+o Commandline output to PNG, with various camera and rendering settings
+o resize() command introduced
+o Regression test now creates single monolithic .html file for easier uploading
+o value reassignment is now less strict
 
 Bugfixes:
 o OpenCSG rendering sometimes crashed when rendering large models
@@ -11,6 +17,11 @@ o We didn't always print a warning when CSG normalization created too many eleme
 o Binary STLs can now be read on big endian architectures
 o Some binary STLs couldn't be read
 o Fixed some issues related to ARM builds
+o Changed multmatrix floating-point output to improve dumptest portability
+o Regression test auto-starts & stops Xvfb / Xvnc if on headless unix machine
+o CGAL triangulation more lenient- enables partial rendering of 'bad' DXF data
+o Fixes problem where local changes are overwritten on automatic reload when included files has changed.
+o Non-ascii filenames are now allowed
 
 OpenSCAD 2013.01
 ================

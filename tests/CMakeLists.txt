@@ -7,6 +7,9 @@ if("${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}.${CMAKE_PATCH_VERSION}" VERSIO
   cmake_policy(SET CMP0017 NEW)
 endif()
 
+# Needed for cmake < 2.8.3
+include(CMakeParseArguments.cmake)
+
 # Detect Lion and force gcc
 IF (APPLE)
    EXECUTE_PROCESS(COMMAND sw_vers -productVersion OUTPUT_VARIABLE MACOSX_VERSION)
@@ -31,7 +34,8 @@ set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}")
 
 # Build debug build as default
 if(NOT CMAKE_BUILD_TYPE)
-  set(CMAKE_BUILD_TYPE RelWithDebInfo)
+#  set(CMAKE_BUILD_TYPE RelWithDebInfo)
+  set(CMAKE_BUILD_TYPE Release)
 endif()
 
 if(CMAKE_COMPILER_IS_GNUCXX)
@@ -370,9 +374,18 @@ if("${CGAL_MAJOR_VERSION}.${CGAL_MINOR_VERSION}" VERSION_LESS 3.6)
 endif()
 inclusion(CGAL_DIR CGAL_INCLUDE_DIRS)
 
+if(CMAKE_CXX_COMPILER MATCHES ".*clang.*")
+	string(REPLACE "-frounding-math" "" CGAL_CXX_FLAGS_INIT ${CGAL_CXX_FLAGS_INIT})
+	string(REPLACE "--param=ssp-buffer-size=4" "" CGAL_CXX_FLAGS_INIT ${CGAL_CXX_FLAGS_INIT})
+endif()
+
 # Imagemagick
 
-if (NOT SKIP_IMAGEMAGICK)
+if (SKIP_IMAGEMAGICK)
+  if (NOT MINGW_CROSS_ENV_DIR)
+    set(ImageMagick_convert_EXECUTABLE "echo")
+  endif()
+else()
   find_package(ImageMagick COMPONENTS convert)
   if (ImageMagick_convert_FOUND)
     message(STATUS "ImageMagick convert executable found: " ${ImageMagick_convert_EXECUTABLE})
@@ -458,28 +471,33 @@ set(COMMON_SOURCES
   ../src/PolySetEvaluator.cc 
   ../src/PolySetCache.cc 
   ../src/Tree.cc
-  lodepng.cpp)
+  ../src/lodepng.cpp)
 
 #
 # Offscreen OpenGL context source code
 #
 if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 	message(STATUS "Offscreen OpenGL Context - using Apple CGL")
-	set(OFFSCREEN_CTX_SOURCE "OffscreenContext.mm" CACHE TYPE STRING)
+	set(OFFSCREEN_CTX_SOURCE "OffscreenContextCGL.mm" CACHE TYPE STRING)
+	set(OFFSCREEN_IMGUTILS_SOURCE "imageutils-macosx.cc" CACHE TYPE STRING)
 elseif(UNIX)
 	message(STATUS "Offscreen OpenGL Context - using Unix GLX")
 	set(OFFSCREEN_CTX_SOURCE "OffscreenContextGLX.cc" CACHE TYPE STRING)
+	set(OFFSCREEN_IMGUTILS_SOURCE "imageutils-lodepng.cc" CACHE TYPE STRING)
 elseif(WIN32)
 	message(STATUS "Offscreen OpenGL Context - using Microsoft WGL")
 	set(OFFSCREEN_CTX_SOURCE "OffscreenContextWGL.cc" CACHE TYPE STRING)
+	set(OFFSCREEN_IMGUTILS_SOURCE "imageutils-lodepng.cc" CACHE TYPE STRING)
 endif()
 
 set(OFFSCREEN_SOURCES
-  OffscreenView.cc
-  ${OFFSCREEN_CTX_SOURCE}
-  imageutils.cc
-  fbo.cc
-  system-gl.cc)
+  ../src/GLView.cc
+  ../src/OffscreenView.cc
+  ../src/${OFFSCREEN_CTX_SOURCE}
+  ../src/${OFFSCREEN_IMGUTILS_SOURCE}
+  ../src/imageutils.cc
+  ../src/fbo.cc
+  ../src/system-gl.cc)
 
 add_library(tests-core STATIC ${CORE_SOURCES})
 target_link_libraries(tests-core ${OPENGL_LIBRARY})
@@ -546,14 +564,14 @@ target_link_libraries(cgalstlsanitytest tests-cgal ${TESTS-CGAL-LIBRARIES})
 #
 # cgalpngtest
 #
-add_executable(cgalpngtest cgalpngtest.cc bboxhelp.cc ../src/CGALRenderer.cc ../src/renderer.cc ../src/rendersettings.cc)
+add_executable(cgalpngtest cgalpngtest.cc ../src/CGALRenderer.cc ../src/renderer.cc ../src/rendersettings.cc)
 set_target_properties(cgalpngtest PROPERTIES COMPILE_FLAGS "-DENABLE_CGAL ${CGAL_CXX_FLAGS_INIT}")
 target_link_libraries(cgalpngtest tests-offscreen tests-cgal ${OPENCSG_LIBRARY} ${TESTS-CGAL-LIBRARIES} ${GLEW_LIBRARY} ${COCOA_LIBRARY})
 
 #
 # cgalcachetest
 #
-add_executable(cgalcachetest cgalcachetest.cc bboxhelp.cc)
+add_executable(cgalcachetest cgalcachetest.cc)
 set_target_properties(cgalcachetest PROPERTIES COMPILE_FLAGS "-DENABLE_CGAL ${CGAL_CXX_FLAGS_INIT}")
 target_link_libraries(cgalcachetest tests-cgal ${TESTS-CGAL-LIBRARIES} ${GLEW_LIBRARY} ${COCOA_LIBRARY})
 
@@ -572,6 +590,26 @@ target_link_libraries(opencsgtest tests-offscreen tests-cgal ${OPENCSG_LIBRARY} 
 add_executable(throwntogethertest throwntogethertest.cc csgtestcore.cc ../src/OpenCSGRenderer.cc ../src/ThrownTogetherRenderer.cc ../src/renderer.cc ../src/rendersettings.cc)
 set_target_properties(throwntogethertest PROPERTIES COMPILE_FLAGS "-DENABLE_OPENCSG -DENABLE_CGAL ${CGAL_CXX_FLAGS_INIT}")
 target_link_libraries(throwntogethertest tests-offscreen tests-cgal ${OPENCSG_LIBRARY} ${TESTS-CGAL-LIBRARIES} ${GLEW_LIBRARY} ${COCOA_LIBRARY})
+
+#
+# GUI binary tests
+#
+if(APPLE)
+  set(GUI_BINPATH "${CMAKE_CURRENT_SOURCE_DIR}/../OpenSCAD.app/Contents/MacOS/OpenSCAD")
+elseif (MINGW_CROSS_ENV_DIR) 
+  set(GUI_BINPATH "${CMAKE_CURRENT_SOURCE_DIR}/../mingw32/release/openscad.exe")
+elseif(WIN32)
+  set(GUI_BINPATH "${CMAKE_CURRENT_SOURCE_DIR}/../Release/openscad.exe")
+else()
+  set(GUI_BINPATH "${CMAKE_CURRENT_SOURCE_DIR}/../openscad")
+endif()
+
+if(EXISTS "${GUI_BINPATH}")
+  message(STATUS "Found OpenSCAD GUI binary: ${GUI_BINPATH}")
+else()
+  message(STATUS "Couldn't find the OpenSCAD GUI binary: ${GUI_BINPATH}")
+  message(FATAL_ERROR "Please build the OpenSCAD GUI binary and place it here: ${GUI_BINPATH}" )
+endif()
 
 #
 # Tags tests as disabled. This is more convenient than removing them manually
@@ -635,19 +673,31 @@ endfunction()
 
 #
 # This functions adds cmd-line tests given files.
-# Files are sent as the parameters following TESTSUFFIX
 #
-# Usage add_cmdline_test(TESTCMD TESTSUFFIX <test files>)
+# Usage add_cmdline_test(testbasename [EXE <executable>] [ARGS <args to exe>]
+#                        [EXPECTEDDIR <shared dir>] SUFFIX <suffix> FILES <test files>)
 #
 find_package(PythonInterp)
-macro(add_cmdline_test TESTCMD TESTSUFFIX)
-  get_filename_component(TESTCMD_NAME ${TESTCMD} NAME_WE)
+function(add_cmdline_test TESTCMD_BASENAME)
+  cmake_parse_arguments(TESTCMD "" "EXE;SUFFIX;EXPECTEDDIR" "FILES;ARGS" ${ARGN})
+
+  # If sharing results with another test, pass on this to the python script
+  if (TESTCMD_EXPECTEDDIR)
+    set(EXTRA_OPTIONS -e ${TESTCMD_EXPECTEDDIR})
+  endif()
+
+  if (TESTCMD_EXE)
+    set(TESTNAME_OPTION -t ${TESTCMD_BASENAME})
+  else()
+    # If no executable was specified, assume it was built by us and resides here
+    set(TESTCMD_EXE ${CMAKE_BINARY_DIR}/${TESTCMD_BASENAME})
+  endif()
 
   # Add tests from args
-  foreach (SCADFILE ${ARGN})
-    get_filename_component(TESTNAME ${SCADFILE} NAME_WE)
-    string(REPLACE " " "_" TESTNAME ${TESTNAME}) # Test names cannot include spaces
-    set(TEST_FULLNAME "${TESTCMD_NAME}_${TESTNAME}")
+  foreach (SCADFILE ${TESTCMD_FILES})
+    get_filename_component(FILE_BASENAME ${SCADFILE} NAME_WE)
+    string(REPLACE " " "_" FILE_BASENAME ${FILE_BASENAME}) # Test names cannot include spaces
+    set(TEST_FULLNAME "${TESTCMD_BASENAME}_${FILE_BASENAME}")
     list(FIND DISABLED_TESTS ${TEST_FULLNAME} DISABLED)
     if (${DISABLED} EQUAL -1)
 
@@ -666,11 +716,17 @@ macro(add_cmdline_test TESTCMD TESTSUFFIX)
       if (MINGW_CROSS_ENV_DIR)
         set( MINGW_CROSS_ARG "--mingw-cross-env" )
       endif()
-      add_test(NAME ${TEST_FULLNAME} ${CONFARG} ${CONFVAL} COMMAND ${PYTHON_EXECUTABLE} ${tests_SOURCE_DIR}/test_cmdline_tool.py ${MINGW_CROSS_ARG} --comparator=${COMPARATOR} -c ${ImageMagick_convert_EXECUTABLE} -s ${TESTSUFFIX} ${CMAKE_BINARY_DIR}/${TESTCMD} "${SCADFILE}")
+
+      # The python script cannot extract the testname when given extra parameters
+      if (TESTCMD_ARGS)
+        set(FILENAME_OPTION -f ${FILE_BASENAME})
+      endif()
+
+      add_test(NAME ${TEST_FULLNAME} ${CONFARG} ${CONFVAL} COMMAND ${PYTHON_EXECUTABLE} ${tests_SOURCE_DIR}/test_cmdline_tool.py ${MINGW_CROSS_ARG} --comparator=${COMPARATOR} -c ${ImageMagick_convert_EXECUTABLE} -s ${TESTCMD_SUFFIX} ${EXTRA_OPTIONS} ${TESTNAME_OPTION} ${FILENAME_OPTION} ${TESTCMD_EXE} "${SCADFILE}" ${TESTCMD_ARGS})
       set_property(TEST ${TEST_FULLNAME} PROPERTY ENVIRONMENT "${CTEST_ENVIRONMENT}")
     endif()
   endforeach()
-endmacro()
+endfunction()
 
 enable_testing()
 
@@ -707,7 +763,8 @@ list(APPEND ECHO_FILES ${FUNCTION_FILES}
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/string-indexing.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/vector-values.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/search-tests.scad
-            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/recursion-tests.scad)
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/recursion-tests.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/value-reassignment-tests.scad)
 
 list(APPEND DUMPTEST_FILES ${MINIMAL_FILES} ${FEATURES_FILES} ${EXAMPLE_FILES})
 list(APPEND DUMPTEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/escape-test.scad
@@ -724,6 +781,9 @@ list(APPEND OPENCSGTEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/intersec
 list(APPEND THROWNTOGETHERTEST_FILES ${OPENCSGTEST_FILES})
 
 list(APPEND CGALSTLSANITYTEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/normal-nan.scad)
+
+list(APPEND OPENSCAD-CGALPNG_FILES ${CGALPNGTEST_FILES})
+list(APPEND OPENSCAD-CSGPNG_FILES ${OPENCSGTEST_FILES})
 
 # Disable tests which are known to cause floating point comparison issues
 # Once we're capable of comparing these across platforms, we can put these back in
@@ -749,14 +809,19 @@ disable_tests(dumptest_transform-tests
 # FIXME: This test illustrates a weakness in child() combined with modifiers.
 # Reenable it when this is improved
 disable_tests(opencsgtest_child-background)
+disable_tests(openscad-csgpng_child-background)
 
 # FIXME: This single test takes over an hour to run on a 2.7 GHz P4
 disable_tests(opencsgtest_example006 cgalpngtest_example006)
+disable_tests(openscad-csgpng_example006 openscad-cgalpng_example006)
 
 # These tests only makes sense in OpenCSG mode
 disable_tests(cgalpngtest_child-background
               cgalpngtest_highlight-and-background-modifier
               cgalpngtest_testcolornames
+              openscad-cgalpng_child-background
+              openscad-cgalpng_highlight-and-background-modifier
+              openscad-cgalpng_testcolornames
               throwntogethertest_child-background
               throwntogethertest_highlight-and-background-modifier
               throwntogethertest_testcolornames)
@@ -765,6 +830,8 @@ disable_tests(cgalpngtest_child-background
 
 set_test_config(Heavy opencsgtest_minkowski3-tests
                       opencsgtest_projection-tests
+                      openscad-csgpng_minkowski3-tests
+                      openscad-csgpng_projection-tests
                       throwntogethertest_minkowski3-tests
                       throwntogethertest_projection-tests
                       cgalpngtest_projection-tests
@@ -774,7 +841,16 @@ set_test_config(Heavy opencsgtest_minkowski3-tests
                       cgalpngtest_minkowski3-tests
                       cgalpngtest_for-tests
                       cgalpngtest_for-nested-tests
-                      cgalpngtest_intersection-tests)
+                      cgalpngtest_intersection-tests
+                      cgalpngtest_text-search-test
+                      openscad-cgalpng_projection-tests
+                      openscad-cgalpng_rotate_extrude-tests
+                      openscad-cgalpng_surface-tests
+                      openscad-cgalpng_sphere-tests
+                      openscad-cgalpng_minkowski3-tests
+                      openscad-cgalpng_for-tests
+                      openscad-cgalpng_for-nested-tests
+                      openscad-cgalpng_intersection-tests)
 
 foreach(FILE ${EXAMPLE_FILES})
   get_test_fullname(cgalpngtest ${FILE} TEST_FULLNAME)
@@ -782,6 +858,10 @@ foreach(FILE ${EXAMPLE_FILES})
   get_test_fullname(opencsgtest ${FILE} TEST_FULLNAME)
   set_test_config(Examples ${TEST_FULLNAME})
   get_test_fullname(throwntogethertest ${FILE} TEST_FULLNAME)
+  set_test_config(Examples ${TEST_FULLNAME})
+  get_test_fullname(openscad-cgalpng ${FILE} TEST_FULLNAME)
+  set_test_config(Examples ${TEST_FULLNAME})
+  get_test_fullname(openscad-csgpng ${FILE} TEST_FULLNAME)
   set_test_config(Examples ${TEST_FULLNAME})
 endforeach()
 
@@ -801,9 +881,14 @@ endif()
 #
 
 add_executable(test_pretty_print test_pretty_print.cc)
+file(TO_NATIVE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/test_pretty_print.py PYSRC)
 set_target_properties(test_pretty_print PROPERTIES COMPILE_FLAGS
-  "-DPYBIN=${PYTHON_EXECUTABLE} -DPYSRC=test_pretty_print.py -DBUILDDIR=--builddir=${CMAKE_CURRENT_BINARY_DIR}"
+  "-DPYBIN=${PYTHON_EXECUTABLE} -DPYSRC=${PYSRC} -DBUILDDIR=--builddir=${CMAKE_CURRENT_BINARY_DIR}"
 )
+if (MINGW_CROSS_ENV_DIR)
+  file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/test_pretty_print "wine test_pretty_print.exe")
+  execute_process(COMMAND chmod ugo+x ${CMAKE_CURRENT_BINARY_DIR}/test_pretty_print)
+endif()
 
 file(READ ${CMAKE_CURRENT_SOURCE_DIR}/CTestCustom.template TMP)
 string(REPLACE __cmake_current_binary_dir__ ${CMAKE_CURRENT_BINARY_DIR} TMP ${TMP})
@@ -821,21 +906,81 @@ endif()
 message(STATUS "creating CTestCustom.cmake")
 file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/CTestCustom.cmake ${TMP})
 
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/test_pretty_print.py 
-               ${CMAKE_CURRENT_BINARY_DIR}/test_pretty_print.py COPYONLY)
-
 # Add tests
 
-add_cmdline_test(echotest txt ${ECHO_FILES})
-add_cmdline_test(dumptest txt ${DUMPTEST_FILES})
-add_cmdline_test(csgtexttest txt ${MINIMAL_FILES})
-add_cmdline_test(csgtermtest txt ${MINIMAL_FILES})
-add_cmdline_test(cgalpngtest png ${CGALPNGTEST_FILES})
-add_cmdline_test(opencsgtest png ${OPENCSGTEST_FILES})
-add_cmdline_test(throwntogethertest png ${THROWNTOGETHERTEST_FILES})
+add_cmdline_test(echotest SUFFIX txt FILES ${ECHO_FILES})
+add_cmdline_test(dumptest SUFFIX txt FILES ${DUMPTEST_FILES})
+add_cmdline_test(csgtexttest SUFFIX txt FILES ${MINIMAL_FILES})
+add_cmdline_test(csgtermtest SUFFIX txt FILES ${MINIMAL_FILES})
+add_cmdline_test(cgalpngtest SUFFIX png FILES ${CGALPNGTEST_FILES})
+add_cmdline_test(opencsgtest SUFFIX png FILES ${OPENCSGTEST_FILES})
+add_cmdline_test(throwntogethertest SUFFIX png FILES ${THROWNTOGETHERTEST_FILES})
 # FIXME: We don't actually need to compare the output of cgalstlsanitytest
 # with anything. It's self-contained and returns != 0 on error
-add_cmdline_test(cgalstlsanitytest txt ${CGALSTLSANITYTEST_FILES})
+add_cmdline_test(cgalstlsanitytest SUFFIX txt FILES ${CGALSTLSANITYTEST_FILES})
+
+# Tests using the actual OpenSCAD binary
+
+# non-ASCII filenames
+add_cmdline_test(openscad-nonascii EXE ${GUI_BINPATH} ARGS -o 
+                 SUFFIX csg 
+                 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/sfære.scad)
+
+
+# Image output
+add_cmdline_test(openscad-cgalpng EXE ${GUI_BINPATH} ARGS --render -o 
+                 EXPECTEDDIR cgalpngtest SUFFIX png 
+                 FILES ${OPENSCAD-CGALPNG_FILES})
+add_cmdline_test(openscad-csgpng EXE ${GUI_BINPATH} ARGS -o 
+                 EXPECTEDDIR opencsgtest SUFFIX png 
+                 FILES ${OPENSCAD-CGALPNG_FILES})
+
+add_cmdline_test(openscad-imgsize EXE ${GUI_BINPATH}
+                 ARGS --imgsize 100,100 -o 
+                 SUFFIX png 
+                 FILES ${CMAKE_SOURCE_DIR}/../examples/example001.scad)
+add_cmdline_test(openscad-imgstretch EXE ${GUI_BINPATH}
+                 ARGS --imgsize 500,100 -o 
+                 SUFFIX png 
+                 FILES ${CMAKE_SOURCE_DIR}/../examples/example001.scad)
+add_cmdline_test(openscad-imgstretch2 EXE ${GUI_BINPATH}
+                 ARGS --imgsize 100,500 -o 
+                 SUFFIX png 
+                 FILES ${CMAKE_SOURCE_DIR}/../examples/example001.scad)
+add_cmdline_test(openscad-camdist EXE ${GUI_BINPATH} 
+                 ARGS --imgsize=500,500 --camera=0,0,0,0,0,0,300  examples/example001.scad -o
+                 SUFFIX png
+                 FILES ${CMAKE_SOURCE_DIR}/../examples/example001.scad)
+add_cmdline_test(openscad-camrot EXE ${GUI_BINPATH}
+                 ARGS --imgsize=500,500 --camera=0,0,0,10,22.5,45,300  examples/example001.scad -o
+                 SUFFIX png
+                 FILES ${CMAKE_SOURCE_DIR}/../examples/example001.scad)
+add_cmdline_test(openscad-camtrans EXE ${GUI_BINPATH}
+                 ARGS --imgsize=500,500 --camera=20,100,10,0,0,0,300  examples/example001.scad -o
+                 SUFFIX png
+                 FILES ${CMAKE_SOURCE_DIR}/../examples/example001.scad)
+add_cmdline_test(openscad-camortho EXE ${GUI_BINPATH}
+                 ARGS --imgsize=500,500 --camera=20,100,10,0,0,0,300  examples/example001.scad --projection=o -o
+                 SUFFIX png
+                 FILES ${CMAKE_SOURCE_DIR}/../examples/example001.scad)
+add_cmdline_test(openscad-cameye EXE ${GUI_BINPATH}
+                 ARGS --imgsize=500,500 --camera=60,40,30,0,0,0  examples/example001.scad -o
+                 SUFFIX png
+                 FILES ${CMAKE_SOURCE_DIR}/../examples/example001.scad)
+add_cmdline_test(openscad-cameye2 EXE ${GUI_BINPATH}
+                 ARGS --imgsize=500,500 --camera=160,140,130,0,0,0  examples/example001.scad -o
+                 SUFFIX png
+                 FILES ${CMAKE_SOURCE_DIR}/../examples/example001.scad)
+add_cmdline_test(openscad-cameyeortho EXE ${GUI_BINPATH}
+                 ARGS --imgsize=500,500 --camera=160,140,130,0,0,0  examples/example001.scad --projection=o -o 
+                 SUFFIX png
+                 FILES ${CMAKE_SOURCE_DIR}/../examples/example001.scad)
+add_cmdline_test(openscad-camcenter EXE ${GUI_BINPATH}
+                 ARGS --imgsize=500,500 --camera=60,40,30,20,10,30  -o
+                 SUFFIX png
+                 FILES ${CMAKE_SOURCE_DIR}/../examples/example001.scad)
+
+
 
 message("Available test configurations: ${TEST_CONFIGS}")
 #foreach(CONF ${TEST_CONFIGS})

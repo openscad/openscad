@@ -70,15 +70,6 @@ void cgalTree(Tree &tree)
 	evaluate.execute();
 }
 
-AbstractNode *find_root_tag(AbstractNode *n)
-{
-	foreach(AbstractNode *v, n->children) {
-		if (v->modinst->tag_root) return v;
-		if (AbstractNode *vroot = find_root_tag(v)) return vroot;
-	}
-	return NULL;
-}
-
 struct CsgInfo
 {
 	OffscreenView *glview;
@@ -165,14 +156,14 @@ int main(int argc, char **argv)
 		bbox = cgalRenderer.polyset->getBoundingBox();
 	}
 	
-	Vector3d center = getBoundingCenter(bbox);
+	Camera cam(Camera::VECTOR);
+	cam.center = getBoundingCenter(bbox);
 	double radius = getBoundingRadius(bbox);
 	
 	Vector3d cameradir(1, 1, -0.5);
-	Vector3d camerapos = center - radius*2*cameradir;
-	csgInfo.glview->setCamera(camerapos, center);
-	
-	
+	cam.eye = cam.center - radius*2*cameradir;
+	csgInfo.glview->setCamera( cam );
+
 	csgInfo.glview->setRenderer(&cgalRenderer);
 	csgInfo.glview->paintGL();
 	csgInfo.glview->save(outfile);

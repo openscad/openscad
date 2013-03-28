@@ -74,7 +74,6 @@ private slots:
 private:
 	void openFile(const QString &filename);
 	void refreshDocument();
-	AbstractNode *find_root_tag(AbstractNode *n);
 	void updateTemporalVariables();
 	bool fileChangedOnDisk();
 	bool includesChanged();
@@ -91,6 +90,7 @@ private:
   class QMessageBox *openglbox;
 
 private slots:
+	void actionUpdateCheck();
 	void actionNew();
 	void actionOpen();
 	void actionOpenRecent();

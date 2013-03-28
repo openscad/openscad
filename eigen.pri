@@ -59,6 +59,21 @@ isEmpty(EIGEN_INCLUDEPATH) {
   }
 }
 
+!exists($$EIGEN_INCLUDEPATH/Eigen/Core) {
+  EIGEN_CFLAGS = $$system("pkg-config --cflags eigen2")
+  EIGEN_INCLUDEPATH = $$replace(EIGEN_CFLAGS,"-I","")
+}
+
+!exists($$EIGEN_INCLUDEPATH/Eigen/Core) {
+  EIGEN_CFLAGS = $$system("pkg-config --cflags eigen3")
+  EIGEN_INCLUDEPATH = $$replace(EIGEN_CFLAGS,"-I","")
+}
+
+mingw-cross-env {
+  EIGEN_CFLAGS = $$system("i686-pc-mingw32-pkg-config --cflags eigen3")
+  EIGEN_INCLUDEPATH = $$replace(EIGEN_CFLAGS,"-I","")
+}
+
 # disable Eigen SIMD optimizations for platforms where it breaks compilation
 !macx {
   !freebsd-g++ {

@@ -32,6 +32,7 @@
 
 #include <iostream>
 #include <algorithm>
+#include <boost/foreach.hpp>
 
 size_t AbstractNode::idx_counter;
 
@@ -101,3 +102,14 @@ std::ostream &operator<<(std::ostream &stream, const AbstractNode &node)
 	stream << node.toString();
 	return stream;
 }
+
+// Do we have an explicit root node (! modifier)?
+AbstractNode *find_root_tag(AbstractNode *n)
+{
+  BOOST_FOREACH(AbstractNode *v, n->children) {
+    if (v->modinst->tag_root) return v;
+    if (AbstractNode *vroot = find_root_tag(v)) return vroot;
+  }
+  return NULL;
+}
+

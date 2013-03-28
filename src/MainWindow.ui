@@ -38,7 +38,7 @@
           <property name="orientation">
            <enum>Qt::Vertical</enum>
           </property>
-          <widget class="GLView" name="glview" native="true"/>
+          <widget class="QGLView" name="qglview" native="true"/>
           <widget class="QTextEdit" name="console">
            <property name="readOnly">
             <bool>true</bool>
@@ -223,6 +223,7 @@
     <addaction name="helpActionHomepage"/>
     <addaction name="helpActionManual"/>
     <addaction name="helpActionLibraryInfo"/>
+    <addaction name="appActionUpdateCheck"/>
    </widget>
    <addaction name="menu_File"/>
    <addaction name="menu_Edit"/>
@@ -611,6 +612,9 @@
    </property>
   </action>
   <action name="helpActionAbout">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>About</string>
    </property>
@@ -676,12 +680,20 @@
     <string>Library info</string>
    </property>
   </action>
+  <action name="appActionUpdateCheck">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Check for Update..</string>
+   </property>
+  </action>
  </widget>
  <customwidgets>
   <customwidget>
-   <class>GLView</class>
+   <class>QGLView</class>
    <extends>QWidget</extends>
-   <header>GLView.h</header>
+   <header>QGLView.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>

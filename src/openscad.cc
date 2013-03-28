@@ -36,6 +36,7 @@
 #include "printutils.h"
 #include "handle_dep.h"
 #include "parsersettings.h"
+#include "rendersettings.h"
 
 #include <string>
 #include <vector>
@@ -48,14 +49,20 @@
 #endif
 
 #include <QApplication>
+#include <QString>
 #include <QDir>
 #include <sstream>
 
 #ifdef Q_WS_MAC
 #include "EventFilter.h"
 #include "AppleEvents.h"
+#ifdef OPENSCAD_DEPLOY
+  #include "SparkleAutoUpdater.h"
+#endif
 #endif
 
+#include "Camera.h"
+#include <boost/algorithm/string.hpp>
 #include <boost/program_options.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/foreach.hpp>
@@ -70,9 +77,14 @@ namespace fs = boost::filesystem;
 
 static void help(const char *progname)
 {
-	fprintf(stderr, "Usage: %s [ -o output_file [ -d deps_file ] ]\\\n"
-					"%*s[ -m make_command ] [ -D var=val [..] ] filename\n",
-					progname, int(strlen(progname))+8, "");
+	int tab = int(strlen(progname))+8;
+	fprintf(stderr,"Usage: %s [ -o output_file [ -d deps_file ] ]\\\n"
+	        "%*s[ -m make_command ] [ -D var=val [..] ] [ --render ] \\\n"
+	        "%*s[ --camera=translatex,y,z,rotx,y,z,dist | \\\n"
+	        "%*s  --camera=eyex,y,z,centerx,y,z ] \\\n"
+	        "%*s[ --imgsize=width,height ] [ --projection=(o)rtho|(p)ersp] \\\n"
+	        "%*sfilename\n",
+					progname, tab, "", tab, "", tab, "", tab, "", tab, "");
 	exit(1);
 }
 
@@ -90,6 +102,58 @@ QString examplesdir;
 
 using std::string;
 using std::vector;
+using boost::lexical_cast;
+using boost::is_any_of;
+
+Camera get_camera( po::variables_map vm )
+{
+	Camera camera;
+
+	if (vm.count("camera")) {
+		vector<string> strs;
+		vector<double> cam_parameters;
+		split(strs, vm["camera"].as<string>(), is_any_of(","));
+		if ( strs.size() == 6 || strs.size() == 7 ) {
+			BOOST_FOREACH(string &s, strs)
+				cam_parameters.push_back(lexical_cast<double>(s));
+			camera.setup( cam_parameters );
+		} else {
+			fprintf(stderr,"Camera setup requires either 7 numbers for Gimbal Camera\n");
+			fprintf(stderr,"or 6 numbers for Vector Camera\n");
+			exit(1);
+		}
+	}
+
+	if (vm.count("projection")) {
+		string proj = vm["projection"].as<string>();
+		if (proj=="o" || proj=="ortho" || proj=="orthogonal")
+			camera.projection = Camera::ORTHOGONAL;
+		else if (proj=="p" || proj=="perspective")
+			camera.projection = Camera::PERSPECTIVE;
+		else {
+			fprintf(stderr,"projection needs to be 'o' or 'p' for ortho or perspective\n");
+			exit(1);
+		}
+	}
+
+	int w = RenderSettings::inst()->img_width;
+	int h = RenderSettings::inst()->img_height;
+	if (vm.count("imgsize")) {
+		vector<string> strs;
+		split(strs, vm["imgsize"].as<string>(), is_any_of(","));
+		if ( strs.size() != 2 ) {
+			fprintf(stderr,"Need 2 numbers for imgsize\n");
+			exit(1);
+		} else {
+			w = lexical_cast<int>( strs[0] );
+			h = lexical_cast<int>( strs[1] );
+		}
+	}
+	camera.pixel_width = w;
+	camera.pixel_height = h;
+
+	return camera;
+}
 
 int main(int argc, char **argv)
 {
@@ -132,6 +196,10 @@ int main(int argc, char **argv)
 	desc.add_options()
 		("help,h", "help message")
 		("version,v", "print the version")
+		("render", "if exporting a png image, do a full CGAL render")
+		("camera", po::value<string>(), "parameters for camera when exporting png")
+	        ("imgsize", po::value<string>(), "=width,height for exporting png")
+		("projection", po::value<string>(), "(o)rtho or (p)erspective when exporting png")
 		("o,o", po::value<string>(), "out-file")
 		("s,s", po::value<string>(), "stl-file")
 		("x,x", po::value<string>(), "dxf-file")
@@ -206,6 +274,8 @@ int main(int argc, char **argv)
 
 	currentdir = boosty::stringy(fs::current_path());
 
+	Camera camera = get_camera( vm );
+
 	QDir exdir(QApplication::instance()->applicationDirPath());
 #ifdef Q_WS_MAC
 	exdir.cd("../Resources"); // Examples can be bundled
@@ -225,7 +295,7 @@ int main(int argc, char **argv)
 					examplesdir = exdir.path();
 				}
 
-	parser_init(QApplication::instance()->applicationDirPath().toStdString());
+	parser_init(QApplication::instance()->applicationDirPath().toLocal8Bit().constData());
 
 	// Initialize global visitors
 	NodeCache nodecache;
@@ -242,12 +312,14 @@ int main(int argc, char **argv)
 		const char *off_output_file = NULL;
 		const char *dxf_output_file = NULL;
 		const char *csg_output_file = NULL;
+		const char *png_output_file = NULL;
 
 		QString suffix = QFileInfo(output_file).suffix().toLower();
 		if (suffix == "stl") stl_output_file = output_file;
 		else if (suffix == "off") off_output_file = output_file;
 		else if (suffix == "dxf") dxf_output_file = output_file;
 		else if (suffix == "csg") csg_output_file = output_file;
+		else if (suffix == "png") png_output_file = output_file;
 		else {
 			fprintf(stderr, "Unknown suffix for output file %s\n", output_file);
 			exit(1);
@@ -261,6 +333,8 @@ int main(int argc, char **argv)
 		Module *root_module;
 		ModuleInstantiation root_inst;
 		AbstractNode *root_node;
+		AbstractNode *absolute_root_node;
+		CGAL_Nef_polyhedron root_N;
 
 		handle_dep(filename);
 		
@@ -282,7 +356,13 @@ int main(int argc, char **argv)
 		fs::current_path(fparent);
 
 		AbstractNode::resetIndexCounter();
+		absolute_root_node = root_module->evaluate(&root_ctx, &root_inst);
 		root_node = root_module->evaluate(&root_ctx, &root_inst);
+
+		// Do we have an explicit root node (! modifier)?
+		if (!(root_node = find_root_tag(absolute_root_node)))
+	    root_node = absolute_root_node;
+
 		tree.setRoot(root_node);
 
 		if (csg_output_file) {
@@ -299,16 +379,21 @@ int main(int argc, char **argv)
 		}
 		else {
 #ifdef ENABLE_CGAL
-			CGAL_Nef_polyhedron root_N = cgalevaluator.evaluateCGALMesh(*tree.root());
-			
+			if (png_output_file && !vm.count("render")) {
+				// OpenCSG png -> don't necessarily need CGALMesh evaluation
+			} else {
+				root_N = cgalevaluator.evaluateCGALMesh(*tree.root());
+			}
+
 			fs::current_path(original_path);
-			
+
 			if (deps_output_file) {
 				std::string deps_out( deps_output_file );
 				std::string geom_out;
 				if ( stl_output_file ) geom_out = std::string(stl_output_file);
 				else if ( off_output_file ) geom_out = std::string(off_output_file);
 				else if ( dxf_output_file ) geom_out = std::string(dxf_output_file);
+				else if ( png_output_file ) geom_out = std::string(png_output_file);
 				else {
 					PRINTB("Output file:%s\n",output_file);
 					PRINT("Sorry, don't know how to write deps for that file type. Exiting\n");
@@ -373,6 +458,21 @@ int main(int argc, char **argv)
 					fstream.close();
 				}
 			}
+
+			if (png_output_file) {
+				std::ofstream fstream(png_output_file,std::ios::out|std::ios::binary);
+				if (!fstream.is_open()) {
+					PRINTB("Can't open file \"%s\" for export", png_output_file);
+				}
+				else {
+					if (vm.count("render")) {
+						export_png_with_cgal(&root_N, camera, fstream);
+					} else {
+						export_png_with_opencsg(tree, camera, fstream);
+					}
+					fstream.close();
+				}
+			}
 #else
 			fprintf(stderr, "OpenSCAD has been compiled without CGAL support!\n");
 			exit(1);
@@ -386,8 +486,14 @@ int main(int argc, char **argv)
 		installAppleEventHandlers();
 #endif		
 
+#if defined(OPENSCAD_DEPLOY) && defined(Q_WS_MAC)
+		AutoUpdater *updater = new SparkleAutoUpdater;
+		AutoUpdater::setUpdater(updater);
+		if (updater->automaticallyChecksForUpdates()) updater->checkForUpdates();
+#endif
+
 		QString qfilename;
-		if (filename) qfilename = QString::fromStdString(boosty::stringy(boosty::absolute(filename)));
+		if (filename) qfilename = QString::fromLocal8Bit(boosty::stringy(boosty::absolute(filename)).c_str());
 
 #if 0 /*** disabled by clifford wolf: adds rendering artefacts with OpenCSG ***/
 		// turn on anti-aliasing
@@ -402,7 +508,7 @@ int main(int argc, char **argv)
 		if (vm.count("input-file")) {
 			inputFiles = vm["input-file"].as<vector<string> >();
 			for (vector<string>::const_iterator infile = inputFiles.begin()+1; infile != inputFiles.end(); infile++) {
-				new MainWindow(QString::fromStdString(boosty::stringy((original_path / *infile))));
+				new MainWindow(QString::fromLocal8Bit(boosty::stringy(original_path / *infile).c_str()));
 			}
 		}
 		app.connect(&app, SIGNAL(lastWindowClosed()), &app, SLOT(quit()));
