@@ -49,6 +49,9 @@ Value builtin_dxf_dim(const Context *ctx, const std::vector<std::string> &argnam
 	double yorigin = 0;
 	double scale = 1;
 
+  // FIXME: We don't lookup the file relative to where this function was instantiated
+	// since the path is only available for ModuleInstantiations, not function expressions.
+	// See isse #217
 	for (size_t i = 0; i < argnames.size() && i < args.size(); i++) {
 		if (argnames[i] == "file")
 			filename = ctx->getAbsolutePath(args[i].toString());
@@ -63,9 +66,16 @@ Value builtin_dxf_dim(const Context *ctx, const std::vector<std::string> &argnam
 	}
 
 	std::stringstream keystream;
+	fs::path filepath(filename);
+	uintmax_t filesize = -1;
+	time_t lastwritetime = -1;
+	if (fs::exists(filepath) && fs::is_regular_file(filepath)) {
+		filesize = fs::file_size(filepath);
+		lastwritetime = fs::last_write_time(filepath);
+	}
 	keystream << filename << "|" << layername << "|" << name << "|" << xorigin
-						<< "|" << yorigin <<"|" << scale << "|" << fs::last_write_time(filename)
-						<< "|" << fs::file_size(filename);
+						<< "|" << yorigin <<"|" << scale << "|" << lastwritetime
+						<< "|" << filesize;
 	std::string key = keystream.str();
 	if (dxf_dim_cache.find(key) != dxf_dim_cache.end())
 		return dxf_dim_cache.find(key)->second;
@@ -133,6 +143,9 @@ Value builtin_dxf_cross(const Context *ctx, const std::vector<std::string> &argn
 	double yorigin = 0;
 	double scale = 1;
 
+  // FIXME: We don't lookup the file relative to where this function was instantiated
+	// since the path is only available for ModuleInstantiations, not function expressions.
+	// See isse #217
 	for (size_t i = 0; i < argnames.size() && i < args.size(); i++) {
 		if (argnames[i] == "file")
 			filename = ctx->getAbsolutePath(args[i].toString());

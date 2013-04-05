@@ -80,7 +80,7 @@ AbstractNode *ImportModule::evaluate(const Context *ctx, const ModuleInstantiati
 	c.args(argnames, argexpr, inst_argnames, inst->argvalues);
 
 	Value v = c.lookup_variable("file");
-	std::string filename = c.getAbsolutePath(v.isUndefined() ? "" : v.toString());
+	std::string filename = inst->getAbsolutePath(v.isUndefined() ? "" : v.toString());
 	import_type_e actualtype = this->type;
 	if (actualtype == TYPE_UNKNOWN) {
 		std::string extraw = boosty::extension_str( fs::path(filename) );
