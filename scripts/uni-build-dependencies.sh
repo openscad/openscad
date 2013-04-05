@@ -264,6 +264,12 @@ build_boost()
     echo boost build failed
     exit 1
   fi
+  if [ "`ls $DEPLOYDIR/include/ | grep boost.[0-9]`" ]; then
+    if [ ! -e $DEPLOYDIR/include/boost ]; then
+      echo "boost is old, make a symlink to $DEPLOYDIR/include/boost & rerun"
+      exit 1
+    fi
+  fi
 }
 
 build_cgal()
@@ -276,17 +282,26 @@ build_cgal()
   echo "Building CGAL" $version "..."
   cd $BASEDIR/src
   rm -rf CGAL-$version
-  if [ ! -f CGAL-$version.tar.* ]; then
-    # 4.1
-    curl --insecure -O https://gforge.inria.fr/frs/download.php/31640/CGAL-$version.tar.bz2
-    # 4.0.2 curl --insecure -O https://gforge.inria.fr/frs/download.php/31174/CGAL-$version.tar.bz2
-    # 4.0 curl --insecure -O https://gforge.inria.fr/frs/download.php/30387/CGAL-$version.tar.gz #4.0
-    # 3.9 curl --insecure -O https://gforge.inria.fr/frs/download.php/29125/CGAL-$version.tar.gz #3.9
-    # 3.8 curl --insecure -O https://gforge.inria.fr/frs/download.php/28500/CGAL-$version.tar.gz
-    # 3.7 curl --insecure -O https://gforge.inria.fr/frs/download.php/27641/CGAL-$version.tar.gz
-  fi
-  tar xf CGAL-$version.tar.bz2
+  ver4_1="curl --insecure -O https://gforge.inria.fr/frs/download.php/31640/CGAL-4.1.tar.bz2"
+  ver4_0_2="curl --insecure -O https://gforge.inria.fr/frs/download.php/31174/CGAL-4.0.2.tar.bz2"
+  ver4_0="curl --insecure -O https://gforge.inria.fr/frs/download.php/30387/CGAL-4.0.tar.gz"
+  ver3_9="curl --insecure -O https://gforge.inria.fr/frs/download.php/29125/CGAL-3.9.tar.gz"
+  ver3_8="curl --insecure -O https://gforge.inria.fr/frs/download.php/28500/CGAL-3.8.tar.gz"
+  ver3_7="curl --insecure -O https://gforge.inria.fr/frs/download.php/27641/CGAL-3.7.tar.gz"
+  vernull="echo already downloaded..skipping"
+  download_cmd=ver`echo $version | sed s/"\."/"_"/`
+  if [ -e CGAL-$version.tar.gz ]; then download_cmd=vernull; fi
+  if [ -e CGAL-$version.tar.bz2 ]; then download_cmd=vernull; fi
+  `eval echo "$"$download_cmd`
+  if [ -e CGAL-$version.tar.gz ]; then tar xf CGAL-$version.tar.gz; fi
+  if [ -e CGAL-$version.tar.bz2 ]; then tar xf CGAL-$version.tar.bz2; fi
   cd CGAL-$version
+
+  # older cmakes have buggy FindBoost that can result in
+  # finding the system libraries but OPENSCAD_LIBRARIES include paths
+  FINDBOOST_CMAKE=$OPENSCAD_SCRIPTDIR/../tests/FindBoost.cmake
+  cp $FINDBOOST_CMAKE ./cmake/modules/
+
   mkdir bin
   cd bin
   rm -rf ./*
@@ -295,10 +310,13 @@ build_cgal()
   else
     CGAL_BUILDTYPE="Debug"
   fi
+
+  DEBUGBOOSTFIND=0 # for debugging FindBoost.cmake (not for debugging boost)
+  Boost_NO_SYSTEM_PATHS=1
   if [ "`echo $2 | grep use-sys-libs`" ]; then
-    cmake -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR -DWITH_CGAL_Qt3=OFF -DWITH_CGAL_Qt4=OFF -DWITH_CGAL_ImageIO=OFF -DCMAKE_BUILD_TYPE=$CGAL_BUILDTYPE ..
+    cmake -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR -DWITH_CGAL_Qt3=OFF -DWITH_CGAL_Qt4=OFF -DWITH_CGAL_ImageIO=OFF -DCMAKE_BUILD_TYPE=$CGAL_BUILDTYPE -DBoost_DEBUG=$DEBUGBOOSTFIND ..
   else
-    cmake -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR -DGMP_INCLUDE_DIR=$DEPLOYDIR/include -DGMP_LIBRARIES=$DEPLOYDIR/lib/libgmp.so -DGMPXX_LIBRARIES=$DEPLOYDIR/lib/libgmpxx.so -DGMPXX_INCLUDE_DIR=$DEPLOYDIR/include -DMPFR_INCLUDE_DIR=$DEPLOYDIR/include -DMPFR_LIBRARIES=$DEPLOYDIR/lib/libmpfr.so -DWITH_CGAL_Qt3=OFF -DWITH_CGAL_Qt4=OFF -DWITH_CGAL_ImageIO=OFF -DBOOST_ROOT=$DEPLOYDIR -DBoost_USE_MULTITHREADED=false -DCMAKE_BUILD_TYPE=$CGAL_BUILD_TYPE ..
+    cmake -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR -DGMP_INCLUDE_DIR=$DEPLOYDIR/include -DGMP_LIBRARIES=$DEPLOYDIR/lib/libgmp.so -DGMPXX_LIBRARIES=$DEPLOYDIR/lib/libgmpxx.so -DGMPXX_INCLUDE_DIR=$DEPLOYDIR/include -DMPFR_INCLUDE_DIR=$DEPLOYDIR/include -DMPFR_LIBRARIES=$DEPLOYDIR/lib/libmpfr.so -DWITH_CGAL_Qt3=OFF -DWITH_CGAL_Qt4=OFF -DWITH_CGAL_ImageIO=OFF -DBOOST_LIBRARYDIR=$DEPLOYDIR/lib -DBOOST_INCLUDEDIR=$DEPLOYDIR/include -DCMAKE_BUILD_TYPE=$CGAL_BUILD_TYPE -DBoost_DEBUG=$DEBUGBOOSTFIND -DBoost_NO_SYSTEM_PATHS=1 ..
   fi
   make -j$NUMCPU
   make install
@@ -459,7 +477,11 @@ build_eigen()
 # the 'dirname' command installed
 
 if [ "`command -v dirname`" ]; then
+  RUNDIR=$PWD
   OPENSCAD_SCRIPTDIR=`dirname $0`
+  cd $OPENSCAD_SCRIPTDIR
+  OPENSCAD_SCRIPTDIR=$PWD
+  cd $RUNDIR
 else
   if [ ! -f openscad.pro ]; then
     echo "Must be run from the OpenSCAD source root directory (dont have 'dirname')"
@@ -513,7 +535,7 @@ if [ $1 ]; then
     exit $?
   fi
   if [ $1 = "cgal" ]; then
-    build_cgal 4.0.2 use-sys-libs
+    build_cgal 4.1 use-sys-libs
     exit $?
   fi
   if [ $1 = "opencsg" ]; then

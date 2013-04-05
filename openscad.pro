@@ -247,6 +247,7 @@ HEADERS += src/version_check.h \
            src/Camera.h \
            src/system-gl.h \
            src/stl-utils.h \
+           src/boost-utils.h \
            src/svg.h \
            \
            src/lodepng.h \
@@ -291,6 +292,7 @@ SOURCES += src/version_check.cc \
            src/progress.cc \
            src/parsersettings.cc \
            src/stl-utils.cc \
+           src/boost-utils.cc \
            \
            src/nodedumper.cc \
            src/traverser.cc \
