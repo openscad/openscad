@@ -120,7 +120,7 @@ AbstractNode *ModuleInstantiation::evaluate_instance(const Context *ctx) const
 	}
 	c.children = this->children;
 
-#ifdef DEBUG
+#if 0 && DEBUG
 	PRINT("New eval ctx:");
 	c.dump(NULL, this);
 #endif
@@ -161,7 +161,7 @@ AbstractNode *Module::evaluate(const Context *ctx, const ModuleInstantiation *in
 	ModuleContext c(this, ctx, evalctx);
 	// FIXME: Set document path to the path of the module
 	c.set_variable("$children", Value(double(inst->children.size())));
-#ifdef DEBUG
+#if 0 && DEBUG
 	c.dump(this, inst);
 #endif
 

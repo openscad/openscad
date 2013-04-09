@@ -60,7 +60,7 @@ Value ModuleContext::evaluate_function(const std::string &name, const EvalContex
 			if (m.second->functions.find(name) != m.second->functions.end()) {
 				ModuleContext ctx(m.second, this->parent);
 				// FIXME: Set document path
-#ifdef DEBUG
+#if 0 && DEBUG
 				PRINTB("New lib Context for %s func:", name);
 				ctx.dump(NULL, NULL);
 #endif
@@ -88,7 +88,7 @@ AbstractNode *ModuleContext::evaluate_module(const ModuleInstantiation &inst, co
 			if (m.second->modules.find(inst.name()) != m.second->modules.end()) {
 				ModuleContext ctx(m.second, this->parent);
 				// FIXME: Set document path
-#ifdef DEBUG
+#if 0 && DEBUG
 				PRINT("New lib Context:");
 				ctx.dump(NULL, &inst);
 #endif

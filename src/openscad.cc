@@ -351,8 +351,9 @@ int main(int argc, char **argv)
 		ModuleContext root_ctx;
 		root_ctx.registerBuiltin();
 		PRINT("Root Context:");
+#if 0 && DEBUG
 		root_ctx.dump(NULL, NULL);
-
+#endif
 		fs::path fpath = boosty::absolute(fs::path(filename));
 		fs::path fparent = fpath.parent_path();
 		fs::current_path(fparent);
