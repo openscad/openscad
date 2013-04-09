@@ -28,7 +28,7 @@
 
 #include "module.h"
 #include "polyset.h"
-#include "context.h"
+#include "evalcontext.h"
 #include "builtin.h"
 #include "dxfdata.h"
 #include "dxftess.h"
@@ -60,10 +60,10 @@ class ImportModule : public AbstractModule
 public:
 	import_type_e type;
 	ImportModule(import_type_e type = TYPE_UNKNOWN) : type(type) { }
-	virtual AbstractNode *evaluate(const Context *ctx, const ModuleInstantiation *inst) const;
+	virtual AbstractNode *evaluate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const;
 };
 
-AbstractNode *ImportModule::evaluate(const Context *ctx, const ModuleInstantiation *inst) const
+AbstractNode *ImportModule::evaluate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const
 {
 	std::vector<std::string> argnames;
 	argnames += "file", "layer", "convexity", "origin", "scale";
@@ -77,7 +77,11 @@ AbstractNode *ImportModule::evaluate(const Context *ctx, const ModuleInstantiati
 	}
 
 	Context c(ctx);
-	c.args(argnames, argexpr, inst_argnames, inst->argvalues);
+	c.setDocumentPath(evalctx->documentPath());
+	c.setVariables(argnames, argexpr, evalctx);
+#ifdef DEBUG
+	c.dump(this, inst);
+#endif
 
 	Value v = c.lookup_variable("file");
 	std::string filename = inst->getAbsolutePath(v.isUndefined() ? "" : v.toString());

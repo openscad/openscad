@@ -4,7 +4,7 @@
 #include <QMainWindow>
 #include "ui_MainWindow.h"
 #include "openscad.h"
-#include "context.h"
+#include "modcontext.h"
 #include "module.h"
 #include "Tree.h"
 #include "memory.h"
@@ -29,7 +29,7 @@ public:
 	QTimer *autoReloadTimer;
 	std::string autoReloadId;
 
-	Context root_ctx;
+	ModuleContext root_ctx;
 	Module *root_module;      // Result of parsing
 	ModuleInstantiation root_inst;    // Top level instance
 	AbstractNode *absolute_root_node; // Result of tree evaluation

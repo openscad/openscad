@@ -426,6 +426,8 @@ set(CORE_SOURCES
   ../src/ModuleCache.cc 
   ../src/node.cc 
   ../src/context.cc 
+  ../src/modcontext.cc 
+  ../src/evalcontext.cc 
   ../src/csgterm.cc 
   ../src/csgtermnormalizer.cc 
   ../src/polyset.cc 

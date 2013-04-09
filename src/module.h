@@ -11,13 +11,12 @@ class ModuleInstantiation
 {
 public:
 	ModuleInstantiation(const std::string &name = "")
-	: ctx(NULL), 
-		tag_root(false), tag_highlight(false), tag_background(false), modname(name) { }
+	: tag_root(false), tag_highlight(false), tag_background(false), modname(name) { }
 	virtual ~ModuleInstantiation();
 
 	std::string dump(const std::string &indent) const;
-	class AbstractNode *evaluate(const class Context *ctx) const;
-	std::vector<AbstractNode*> evaluateChildren(const Context *ctx = NULL) const;
+	class AbstractNode *evaluate_instance(const class Context *ctx) const;
+	std::vector<AbstractNode*> evaluateChildren(const Context *evalctx) const;
 
 	void setPath(const std::string &path) { this->modpath = path; }
 	const std::string &path() const { return this->modpath; }
@@ -29,10 +28,8 @@ public:
 	bool isRoot() const { return this->tag_root; }
 
 	std::vector<std::string> argnames;
-	std::vector<Value> argvalues;
 	std::vector<class Expression*> argexpr;
 	std::vector<ModuleInstantiation*> children;
-	const Context *ctx;
 
 	bool tag_root;
 	bool tag_highlight;
@@ -48,7 +45,7 @@ class IfElseModuleInstantiation : public ModuleInstantiation {
 public:
 	IfElseModuleInstantiation() : ModuleInstantiation("if") { }
 	virtual ~IfElseModuleInstantiation();
-	std::vector<AbstractNode*> evaluateElseChildren(const Context *ctx = NULL) const;
+	std::vector<AbstractNode*> evaluateElseChildren(const Context *evalctx) const;
 
 	std::vector<ModuleInstantiation*> else_children;
 };
@@ -57,7 +54,7 @@ class AbstractModule
 {
 public:
 	virtual ~AbstractModule();
-	virtual class AbstractNode *evaluate(const Context *ctx, const ModuleInstantiation *inst) const;
+	virtual class AbstractNode *evaluate(const Context *ctx, const ModuleInstantiation *inst, const class EvalContext *evalctx = NULL) const;
 	virtual std::string dump(const std::string &indent, const std::string &name) const;
 };
 
@@ -67,7 +64,10 @@ public:
 	Module() : is_handling_dependencies(false) { }
 	virtual ~Module();
 
-	virtual AbstractNode *evaluate(const Context *ctx, const ModuleInstantiation *inst) const;
+	void setModulePath(const std::string &path) { this->path = path; }
+	const std::string &modulePath() const { return this->path; }
+
+	virtual AbstractNode *evaluate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const;
 	virtual std::string dump(const std::string &indent, const std::string &name) const;
 
 	void addChild(ModuleInstantiation *ch) { this->children.push_back(ch); }
@@ -97,6 +97,7 @@ public:
 protected:
 
 private:
+	std::string path;
 };
 
 #endif

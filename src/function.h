@@ -9,20 +9,20 @@ class AbstractFunction
 {
 public:
 	virtual ~AbstractFunction();
-	virtual Value evaluate(const class Context *ctx, const std::vector<std::string> &call_argnames, const std::vector<Value> &call_argvalues) const;
+	virtual Value evaluate(const class Context *ctx, const class EvalContext *evalctx) const;
 	virtual std::string dump(const std::string &indent, const std::string &name) const;
 };
 
 class BuiltinFunction : public AbstractFunction
 {
 public:
-	typedef Value (*eval_func_t)(const Context *ctx, const std::vector<std::string> &argnames, const std::vector<Value> &args);
+	typedef Value (*eval_func_t)(const Context *ctx, const EvalContext *evalctx);
 	eval_func_t eval_func;
 
 	BuiltinFunction(eval_func_t f) : eval_func(f) { }
 	virtual ~BuiltinFunction();
 
-	virtual Value evaluate(const Context *ctx, const std::vector<std::string> &call_argnames, const std::vector<Value> &call_argvalues) const;
+	virtual Value evaluate(const Context *ctx, const EvalContext *evalctx) const;
 	virtual std::string dump(const std::string &indent, const std::string &name) const;
 };
 
@@ -37,7 +37,7 @@ public:
 	Function() { }
 	virtual ~Function();
 
-	virtual Value evaluate(const Context *ctx, const std::vector<std::string> &call_argnames, const std::vector<Value> &call_argvalues) const;
+	virtual Value evaluate(const Context *ctx, const EvalContext *evalctx) const;
 	virtual std::string dump(const std::string &indent, const std::string &name) const;
 };
 

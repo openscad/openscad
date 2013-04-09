@@ -25,6 +25,7 @@
  */
 
 #include "context.h"
+#include "evalcontext.h"
 #include "expression.h"
 #include "function.h"
 #include "module.h"
@@ -40,26 +41,12 @@ std::vector<const Context*> Context::ctx_stack;
 /*!
 	Initializes this context. Optionally initializes a context for an external library
 */
-Context::Context(const Context *parent, const Module *library)
-	: parent(parent), inst_p(NULL)
+Context::Context(const Context *parent)
+	: parent(parent)
 {
 	if (parent) recursioncount = parent->recursioncount;
 	ctx_stack.push_back(this);
 	if (parent) document_path = parent->document_path;
-	if (library) {
-		// FIXME: Don't access module members directly
-		this->functions_p = &library->functions;
-		this->modules_p = &library->modules;
-		this->usedlibs_p = &library->usedlibs;
-		BOOST_FOREACH(const std::string &var, library->assignments_var) {
-			this->set_variable(var, library->assignments.at(var)->evaluate(this));
-		}
-	}
-	else {
-		functions_p = NULL;
-		modules_p = NULL;
-		usedlibs_p = NULL;
-	}
 }
 
 Context::~Context()
@@ -68,25 +55,28 @@ Context::~Context()
 }
 
 /*!
-	Initialize context from argument lists (function call/module instantiation)
- */
-void Context::args(const std::vector<std::string> &argnames, 
-									 const std::vector<Expression*> &argexpr,
-									 const std::vector<std::string> &call_argnames, 
-									 const std::vector<Value> &call_argvalues)
+	Initialize context from a module argument list and a evaluation context
+	which may pass variables which will be preferred over default values.
+*/
+void Context::setVariables(const std::vector<std::string> &argnames, 
+													 const std::vector<Expression*> &argexpr,
+													 const EvalContext *evalctx)
 {
 	for (size_t i=0; i<argnames.size(); i++) {
 		set_variable(argnames[i], i < argexpr.size() && argexpr[i] ? 
 								 argexpr[i]->evaluate(this->parent) : Value());
 	}
 
-	size_t posarg = 0;
-	for (size_t i=0; i<call_argnames.size(); i++) {
-		if (call_argnames[i].empty()) {
-			if (posarg < argnames.size())
-				set_variable(argnames[posarg++], call_argvalues[i]);
-		} else {
-			set_variable(call_argnames[i], call_argvalues[i]);
+	if (evalctx) {
+		size_t posarg = 0;
+		for (size_t i=0; i<evalctx->eval_arguments.size(); i++) {
+			const std::string &name = evalctx->eval_arguments[i].first;
+			const Value &val = evalctx->eval_arguments[i].second;
+			if (name.empty()) {
+				if (posarg < argnames.size()) this->set_variable(argnames[posarg++], val);
+			} else {
+				this->set_variable(name, val);
+			}
 		}
 	}
 }
@@ -141,50 +131,21 @@ private:
 	const std::string &name;
 };
 
-Value Context::evaluate_function(const std::string &name, 
-																 const std::vector<std::string> &argnames, 
-																 const std::vector<Value> &argvalues) const
+Value Context::evaluate_function(const std::string &name, const EvalContext *evalctx) const
 {
 	RecursionGuard g(*this, name);
 	if (g.recursion_detected()) { 
 		PRINTB("Recursion detected calling function '%s'", name);
 		return Value();
 	}
-	if (this->functions_p && this->functions_p->find(name) != this->functions_p->end())
-		return this->functions_p->find(name)->second->evaluate(this, argnames, argvalues);
-	if (this->usedlibs_p) {
-		BOOST_FOREACH(const ModuleContainer::value_type &m, *this->usedlibs_p) {
-			if (m.second->functions.find(name) != m.second->functions.end()) {
-				Context ctx(this->parent, m.second);
-				return m.second->functions[name]->evaluate(&ctx, argnames, argvalues);
-			}
-		}
-	}
-	if (this->parent) return this->parent->evaluate_function(name, argnames, argvalues);
+	if (this->parent) return this->parent->evaluate_function(name, evalctx);
 	PRINTB("WARNING: Ignoring unknown function '%s'.", name);
 	return Value();
 }
 
-AbstractNode *Context::evaluate_module(const ModuleInstantiation &inst) const
+AbstractNode *Context::evaluate_module(const ModuleInstantiation &inst, const EvalContext *evalctx) const
 {
-	if (this->modules_p && this->modules_p->find(inst.name()) != this->modules_p->end()) {
-		AbstractModule *m = this->modules_p->find(inst.name())->second;
-		std::string replacement = Builtins::instance()->isDeprecated(inst.name());
-		if (!replacement.empty()) {
-			PRINTB("DEPRECATED: The %s() module will be removed in future releases. Use %s() instead.", inst.name() % replacement);
-		}
-		return m->evaluate(this, &inst);
-	}
-	if (this->usedlibs_p) {
-		BOOST_FOREACH(const ModuleContainer::value_type &m, *this->usedlibs_p) {
-			assert(m.second);
-			if (m.second->modules.find(inst.name()) != m.second->modules.end()) {
-				Context ctx(this->parent, m.second);
-				return m.second->modules[inst.name()]->evaluate(&ctx, &inst);
-			}
-		}
-	}
-	if (this->parent) return this->parent->evaluate_module(inst);
+	if (this->parent) return this->parent->evaluate_module(inst, evalctx);
 	PRINTB("WARNING: Ignoring unknown module '%s'.", inst.name());
 	return NULL;
 }
@@ -202,22 +163,34 @@ std::string Context::getAbsolutePath(const std::string &filename) const
 	}
 }
 
-void register_builtin(Context &ctx)
+#ifdef DEBUG
+void Context::dump(const AbstractModule *mod, const ModuleInstantiation *inst)
 {
-	ctx.functions_p = &Builtins::instance()->functions();
-	ctx.modules_p = &Builtins::instance()->modules();
-	ctx.set_variable("$fn", Value(0.0));
-	ctx.set_variable("$fs", Value(2.0));
-	ctx.set_variable("$fa", Value(12.0));
-	ctx.set_variable("$t", Value(0.0));
-	
-	Value::VectorType zero3;
-	zero3.push_back(Value(0.0));
-	zero3.push_back(Value(0.0));
-	zero3.push_back(Value(0.0));
-	Value zero3val(zero3);
-	ctx.set_variable("$vpt", zero3val);
-	ctx.set_variable("$vpr", zero3val);
+	if (inst) 
+		PRINTB("ModuleContext %p (%p) for %s inst (%p)", this % this->parent % inst->name() % inst);
+	else 
+		PRINTB("Context: %p (%p)", this % this->parent);
+	PRINTB("  document path: %s", this->document_path);
+	if (mod) {
+		const Module *m = dynamic_cast<const Module*>(mod);
+		if (m) {
+			PRINT("  module args:");
+			BOOST_FOREACH(const std::string &arg, m->argnames) {
+				PRINTB("    %s = %s", arg % variables[arg]);
+			}
+		}
+	}
+	typedef std::pair<std::string, Value> ValueMapType;
+	PRINT("  vars:");
+  BOOST_FOREACH(const ValueMapType &v, constants) {
+	  PRINTB("    %s = %s", v.first % v.second);
+	}		
+  BOOST_FOREACH(const ValueMapType &v, variables) {
+	  PRINTB("    %s = %s", v.first % v.second);
+	}		
+  BOOST_FOREACH(const ValueMapType &v, config_variables) {
+	  PRINTB("    %s = %s", v.first % v.second);
+	}		
 
-	ctx.set_constant("PI",Value(M_PI));
 }
+#endif

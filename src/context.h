@@ -9,44 +9,44 @@
 class Context
 {
 public:
-	Context(const Context *parent = NULL, const class Module *library = NULL);
-	~Context();
+	Context(const Context *parent = NULL);
+	virtual ~Context();
 
-	void args(const std::vector<std::string> &argnames, 
-						const std::vector<class Expression*> &argexpr, 
-						const std::vector<std::string> &call_argnames, 
-						const std::vector<Value> &call_argvalues);
+	virtual Value evaluate_function(const std::string &name, const class EvalContext *evalctx) const;
+	virtual class AbstractNode *evaluate_module(const class ModuleInstantiation &inst, const EvalContext *evalctx) const;
+
+	void setVariables(const std::vector<std::string> &argnames, 
+										const std::vector<class Expression*> &argexpr, 
+										const class EvalContext *evalctx = NULL);
 
 	void set_variable(const std::string &name, const Value &value);
 	void set_constant(const std::string &name, const Value &value);
 
 	Value lookup_variable(const std::string &name, bool silent = false) const;
-	Value evaluate_function(const std::string &name, 
-													const std::vector<std::string> &argnames, 
-													const std::vector<Value> &argvalues) const;
-	class AbstractNode *evaluate_module(const class ModuleInstantiation &inst) const;
 
 	void setDocumentPath(const std::string &path) { this->document_path = path; }
+	const std::string &documentPath() const { return this->document_path; }
 	std::string getAbsolutePath(const std::string &filename) const;
 
 public:
 	const Context *parent;
-	const boost::unordered_map<std::string, class AbstractFunction*> *functions_p;
-	const boost::unordered_map<std::string, class AbstractModule*> *modules_p;
-	typedef boost::unordered_map<std::string, class Module*> ModuleContainer;
-	const ModuleContainer *usedlibs_p;
-	const ModuleInstantiation *inst_p;
 
 	static std::vector<const Context*> ctx_stack;
 
 	mutable boost::unordered_map<std::string, int> recursioncount;
 
-private:
+protected:
 	typedef boost::unordered_map<std::string, Value> ValueMap;
 	ValueMap constants;
 	ValueMap variables;
 	ValueMap config_variables;
+
 	std::string document_path;
+
+#ifdef DEBUG
+public:
+	virtual void dump(const class AbstractModule *mod, const ModuleInstantiation *inst);
+#endif
 };
 
 #endif

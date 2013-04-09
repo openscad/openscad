@@ -30,7 +30,7 @@
 #include "node.h"
 #include "module.h"
 #include "polyset.h"
-#include "context.h"
+#include "modcontext.h"
 #include "value.h"
 #include "export.h"
 #include "builtin.h"
@@ -105,11 +105,11 @@ int main(int argc, char **argv)
 	parser_init(QCoreApplication::instance()->applicationDirPath().toStdString());
 	add_librarydir(boosty::stringy(fs::path(QCoreApplication::instance()->applicationDirPath().toStdString()) / "../libraries"));
 
-	Context root_ctx;
-	register_builtin(root_ctx);
+	ModuleContext root_ctx;
+	root_ctx.registerBuiltin();
 
 	AbstractModule *root_module;
-	ModuleInstantiation root_inst;
+	ModuleInstantiation root_inst("group");
 
 	root_module = parsefile(filename);
 	if (!root_module) {

@@ -26,7 +26,7 @@
 
 #include "cgaladvnode.h"
 #include "module.h"
-#include "context.h"
+#include "evalcontext.h"
 #include "builtin.h"
 #include "PolySetEvaluator.h"
 #include <sstream>
@@ -39,10 +39,10 @@ class CgaladvModule : public AbstractModule
 public:
 	cgaladv_type_e type;
 	CgaladvModule(cgaladv_type_e type) : type(type) { }
-	virtual AbstractNode *evaluate(const Context *ctx, const ModuleInstantiation *inst) const;
+	virtual AbstractNode *evaluate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const;
 };
 
-AbstractNode *CgaladvModule::evaluate(const Context *ctx, const ModuleInstantiation *inst) const
+AbstractNode *CgaladvModule::evaluate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const
 {
 	CgaladvNode *node = new CgaladvNode(inst, type);
 
@@ -62,7 +62,7 @@ AbstractNode *CgaladvModule::evaluate(const Context *ctx, const ModuleInstantiat
 		argnames += "newsize", "auto";
 
 	Context c(ctx);
-	c.args(argnames, argexpr, inst->argnames, inst->argvalues);
+	c.setVariables(argnames, argexpr, evalctx);
 
 	Value convexity, path, subdiv_type, level;
 
@@ -111,7 +111,7 @@ AbstractNode *CgaladvModule::evaluate(const Context *ctx, const ModuleInstantiat
 	if (node->level <= 1)
 		node->level = 1;
 
-	std::vector<AbstractNode *> evaluatednodes = inst->evaluateChildren();
+	std::vector<AbstractNode *> evaluatednodes = inst->evaluateChildren(evalctx);
 	node->children.insert(node->children.end(), evaluatednodes.begin(), evaluatednodes.end());
 
 	return node;

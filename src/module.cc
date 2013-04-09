@@ -27,7 +27,8 @@
 #include "module.h"
 #include "ModuleCache.h"
 #include "node.h"
-#include "context.h"
+#include "modcontext.h"
+#include "evalcontext.h"
 #include "expression.h"
 #include "function.h"
 #include "printutils.h"
@@ -43,11 +44,11 @@ AbstractModule::~AbstractModule()
 {
 }
 
-AbstractNode *AbstractModule::evaluate(const Context*, const ModuleInstantiation *inst) const
+AbstractNode *AbstractModule::evaluate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const
 {
 	AbstractNode *node = new AbstractNode(inst);
 
-	node->children = inst->evaluateChildren();
+	node->children = inst->evaluateChildren(evalctx);
 
 	return node;
 }
@@ -108,43 +109,40 @@ std::string ModuleInstantiation::dump(const std::string &indent) const
 	return dump.str();
 }
 
-AbstractNode *ModuleInstantiation::evaluate(const Context *ctx) const
+AbstractNode *ModuleInstantiation::evaluate_instance(const Context *ctx) const
 {
-	AbstractNode *node = NULL;
-	if (this->ctx) {
-		PRINTB("WARNING: Ignoring recursive module instantiation of '%s'.", modname);
-	} else {
-		// FIXME: Casting away const..
-		ModuleInstantiation *that = (ModuleInstantiation*)this;
-		that->argvalues.clear();
-		BOOST_FOREACH (Expression *expr, that->argexpr) {
-			that->argvalues.push_back(expr->evaluate(ctx));
-		}
-		that->ctx = ctx;
-		node = ctx->evaluate_module(*this);
-		that->ctx = NULL;
-		that->argvalues.clear();
+	EvalContext c(ctx);
+	for (size_t i=0; i<argnames.size(); i++) {
+		c.eval_arguments.push_back(std::make_pair(argnames[i], 
+																							i < argexpr.size() && argexpr[i] ? 
+																							argexpr[i]->evaluate(ctx) : 
+																							Value()));
 	}
+	c.children = this->children;
+
+#ifdef DEBUG
+	PRINT("New eval ctx:");
+	c.dump(NULL, this);
+#endif
+	AbstractNode *node = ctx->evaluate_module(*this, &c); // Passes c as evalctx
 	return node;
 }
 
-std::vector<AbstractNode*> ModuleInstantiation::evaluateChildren(const Context *ctx) const
+std::vector<AbstractNode*> ModuleInstantiation::evaluateChildren(const Context *evalctx) const
 {
-	if (!ctx) ctx = this->ctx;
 	std::vector<AbstractNode*> childnodes;
 	BOOST_FOREACH (ModuleInstantiation *modinst, this->children) {
-		AbstractNode *node = modinst->evaluate(ctx);
+		AbstractNode *node = modinst->evaluate_instance(evalctx);
 		if (node) childnodes.push_back(node);
 	}
 	return childnodes;
 }
 
-std::vector<AbstractNode*> IfElseModuleInstantiation::evaluateElseChildren(const Context *ctx) const
+std::vector<AbstractNode*> IfElseModuleInstantiation::evaluateElseChildren(const Context *evalctx) const
 {
-	if (!ctx) ctx = this->ctx;
 	std::vector<AbstractNode*> childnodes;
 	BOOST_FOREACH (ModuleInstantiation *modinst, this->else_children) {
-		AbstractNode *node = modinst->evaluate(ctx);
+		AbstractNode *node = modinst->evaluate_instance(evalctx);
 		if (node != NULL) childnodes.push_back(node);
 	}
 	return childnodes;
@@ -158,29 +156,18 @@ Module::~Module()
 	BOOST_FOREACH (ModuleInstantiation *v, children) delete v;
 }
 
-AbstractNode *Module::evaluate(const Context *ctx, const ModuleInstantiation *inst) const
+AbstractNode *Module::evaluate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const
 {
-	Context c(ctx);
-	c.args(argnames, argexpr, inst->argnames, inst->argvalues);
-
-	c.inst_p = inst;
+	ModuleContext c(this, ctx, evalctx);
+	// FIXME: Set document path to the path of the module
 	c.set_variable("$children", Value(double(inst->children.size())));
-
-	c.functions_p = &functions;
-	c.modules_p = &modules;
-	
-	if (!usedlibs.empty())
-		c.usedlibs_p = &usedlibs;
-	else
-		c.usedlibs_p = NULL;
-	
-	BOOST_FOREACH(const std::string &var, assignments_var) {
-		c.set_variable(var, assignments.at(var)->evaluate(&c));
-  }
+#ifdef DEBUG
+	c.dump(this, inst);
+#endif
 
 	AbstractNode *node = new AbstractNode(inst);
 	for (size_t i = 0; i < children.size(); i++) {
-		AbstractNode *n = children[i]->evaluate(&c);
+		AbstractNode *n = children[i]->evaluate_instance(&c);
 		if (n != NULL)
 			node->children.push_back(n);
 	}

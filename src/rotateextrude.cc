@@ -26,7 +26,7 @@
 
 #include "rotateextrudenode.h"
 #include "module.h"
-#include "context.h"
+#include "evalcontext.h"
 #include "printutils.h"
 #include "builtin.h"
 #include "polyset.h"
@@ -45,10 +45,10 @@ class RotateExtrudeModule : public AbstractModule
 {
 public:
 	RotateExtrudeModule() { }
-	virtual AbstractNode *evaluate(const Context *ctx, const ModuleInstantiation *inst) const;
+	virtual AbstractNode *evaluate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const;
 };
 
-AbstractNode *RotateExtrudeModule::evaluate(const Context *ctx, const ModuleInstantiation *inst) const
+AbstractNode *RotateExtrudeModule::evaluate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const
 {
 	RotateExtrudeNode *node = new RotateExtrudeNode(inst);
 
@@ -57,7 +57,7 @@ AbstractNode *RotateExtrudeModule::evaluate(const Context *ctx, const ModuleInst
 	std::vector<Expression*> argexpr;
 
 	Context c(ctx);
-	c.args(argnames, argexpr, inst->argnames, inst->argvalues);
+	c.setVariables(argnames, argexpr, evalctx);
 
 	node->fn = c.lookup_variable("$fn").toDouble();
 	node->fs = c.lookup_variable("$fs").toDouble();
@@ -86,7 +86,7 @@ AbstractNode *RotateExtrudeModule::evaluate(const Context *ctx, const ModuleInst
 		node->scale = 1;
 
 	if (node->filename.empty()) {
-		std::vector<AbstractNode *> evaluatednodes = inst->evaluateChildren();
+		std::vector<AbstractNode *> evaluatednodes = inst->evaluateChildren(evalctx);
 		node->children.insert(node->children.end(), evaluatednodes.begin(), evaluatednodes.end());
 	}
 

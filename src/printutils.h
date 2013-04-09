@@ -22,6 +22,9 @@ void PRINT(const std::string &msg);
 void PRINT_NOCACHE(const std::string &msg);
 #define PRINTB_NOCACHE(_fmt, _arg) do { PRINT_NOCACHE(str(boost::format(_fmt) % _arg)); } while (0)
 
+
+void PRINT_CONTEXT(const class Context *ctx, const class Module *mod, const class ModuleInstantiation *inst);
+
 std::string two_digit_exp_format( std::string doublestr );
 std::string two_digit_exp_format( double x );
 

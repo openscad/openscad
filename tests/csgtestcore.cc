@@ -6,7 +6,7 @@
 #include "openscad.h"
 #include "parsersettings.h"
 #include "builtin.h"
-#include "context.h"
+#include "modcontext.h"
 #include "node.h"
 #include "module.h"
 #include "polyset.h"
@@ -137,11 +137,11 @@ int csgtestcore(int argc, char *argv[], test_type_e test_type)
 	parser_init(QCoreApplication::instance()->applicationDirPath().toStdString());
 	add_librarydir(boosty::stringy(fs::path(QCoreApplication::instance()->applicationDirPath().toStdString()) / "../libraries"));
 
-	Context root_ctx;
-	register_builtin(root_ctx);
+	ModuleContext root_ctx;
+	root_ctx.registerBuiltin();
 
 	AbstractModule *root_module;
-	ModuleInstantiation root_inst;
+	ModuleInstantiation root_inst("group");
 
 	if (sysinfo_dump)
 		root_module = parse("sphere();","",false);

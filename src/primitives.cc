@@ -27,12 +27,13 @@
 #include "module.h"
 #include "node.h"
 #include "polyset.h"
-#include "context.h"
+#include "evalcontext.h"
 #include "dxfdata.h"
 #include "dxftess.h"
 #include "builtin.h"
 #include "printutils.h"
 #include "visitor.h"
+#include "context.h"
 #include <sstream>
 #include <assert.h>
 #include <boost/assign/std/vector.hpp>
@@ -55,7 +56,7 @@ class PrimitiveModule : public AbstractModule
 public:
 	primitive_type_e type;
 	PrimitiveModule(primitive_type_e type) : type(type) { }
-	virtual AbstractNode *evaluate(const Context *ctx, const ModuleInstantiation *inst) const;
+	virtual AbstractNode *evaluate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const;
 };
 
 class PrimitiveNode : public AbstractPolyNode
@@ -104,7 +105,7 @@ public:
 	virtual PolySet *evaluate_polyset(class PolySetEvaluator *) const;
 };
 
-AbstractNode *PrimitiveModule::evaluate(const Context *ctx, const ModuleInstantiation *inst) const
+AbstractNode *PrimitiveModule::evaluate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const
 {
 	PrimitiveNode *node = new PrimitiveNode(inst, this->type);
 
@@ -141,7 +142,7 @@ AbstractNode *PrimitiveModule::evaluate(const Context *ctx, const ModuleInstanti
 	}
 
 	Context c(ctx);
-	c.args(argnames, argexpr, inst->argnames, inst->argvalues);
+	c.setVariables(argnames, argexpr, evalctx);
 
 	node->fn = c.lookup_variable("$fn").toDouble();
 	node->fs = c.lookup_variable("$fs").toDouble();

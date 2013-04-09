@@ -26,7 +26,7 @@
 
 #include "expression.h"
 #include "value.h"
-#include "context.h"
+#include "evalcontext.h"
 #include <assert.h>
 #include <sstream>
 #include <algorithm>
@@ -127,13 +127,18 @@ Value Expression::evaluate(const Context *context) const
 		return Value();
 	}
 	if (this->type == "F") {
-		Value::VectorType argvalues;
-		std::transform(this->children.begin(), this->children.end(), 
-									 std::back_inserter(argvalues), 
-									 boost::bind(&Expression::evaluate, _1, context));
+		EvalContext c(context);
+		for (size_t i=0; i < this->children.size(); i++) {
+			c.eval_arguments.push_back(std::make_pair(this->call_argnames[i], 
+																								this->children[i]->evaluate(context)));
+		}
+		// Value::VectorType argvalues;
+		// std::transform(this->children.begin(), this->children.end(), 
+		// 							 std::back_inserter(argvalues), 
+		// 							 boost::bind(&Expression::evaluate, _1, context));
 		// for (size_t i=0; i < this->children.size(); i++)
 		// 	argvalues.push_back(this->children[i]->evaluate(context));
-		return context->evaluate_function(this->call_funcname, this->call_argnames, argvalues);
+		return context->evaluate_function(this->call_funcname, &c);
 	}
 	abort();
 }

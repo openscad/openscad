@@ -30,7 +30,7 @@
 #include "dxfdata.h"
 #include "builtin.h"
 #include "printutils.h"
-#include "context.h"
+#include "evalcontext.h"
 
 #include "mathc99.h"
 #include <sstream>
@@ -40,7 +40,7 @@ boost::unordered_map<std::string,Value> dxf_dim_cache;
 boost::unordered_map<std::string,Value> dxf_cross_cache;
 namespace fs = boost::filesystem;
 
-Value builtin_dxf_dim(const Context *ctx, const std::vector<std::string> &argnames, const std::vector<Value> &args)
+Value builtin_dxf_dim(const Context *ctx, const EvalContext *evalctx)
 {
 	std::string filename;
 	std::string layername;
@@ -51,18 +51,18 @@ Value builtin_dxf_dim(const Context *ctx, const std::vector<std::string> &argnam
 
   // FIXME: We don't lookup the file relative to where this function was instantiated
 	// since the path is only available for ModuleInstantiations, not function expressions.
-	// See isse #217
-	for (size_t i = 0; i < argnames.size() && i < args.size(); i++) {
-		if (argnames[i] == "file")
-			filename = ctx->getAbsolutePath(args[i].toString());
-		if (argnames[i] == "layer")
-			layername = args[i].toString();
-		if (argnames[i] == "origin")
-			args[i].getVec2(xorigin, yorigin);
-		if (argnames[i] == "scale")
-			args[i].getDouble(scale);
-		if (argnames[i] == "name")
-			name = args[i].toString();
+	// See issue #217
+	for (size_t i = 0; i < evalctx->eval_arguments.size(); i++) {
+		if (evalctx->eval_arguments[i].first == "file")
+			filename = ctx->getAbsolutePath(evalctx->eval_arguments[i].second.toString());
+		if (evalctx->eval_arguments[i].first == "layer")
+			layername = evalctx->eval_arguments[i].second.toString();
+		if (evalctx->eval_arguments[i].first == "origin")
+			evalctx->eval_arguments[i].second.getVec2(xorigin, yorigin);
+		if (evalctx->eval_arguments[i].first == "scale")
+			evalctx->eval_arguments[i].second.getDouble(scale);
+		if (evalctx->eval_arguments[i].first == "name")
+			name = evalctx->eval_arguments[i].second.toString();
 	}
 
 	std::stringstream keystream;
@@ -135,7 +135,7 @@ Value builtin_dxf_dim(const Context *ctx, const std::vector<std::string> &argnam
 	return Value();
 }
 
-Value builtin_dxf_cross(const Context *ctx, const std::vector<std::string> &argnames, const std::vector<Value> &args)
+Value builtin_dxf_cross(const Context *ctx, const EvalContext *evalctx)
 {
 	std::string filename;
 	std::string layername;
@@ -146,15 +146,15 @@ Value builtin_dxf_cross(const Context *ctx, const std::vector<std::string> &argn
   // FIXME: We don't lookup the file relative to where this function was instantiated
 	// since the path is only available for ModuleInstantiations, not function expressions.
 	// See isse #217
-	for (size_t i = 0; i < argnames.size() && i < args.size(); i++) {
-		if (argnames[i] == "file")
-			filename = ctx->getAbsolutePath(args[i].toString());
-		if (argnames[i] == "layer")
-			layername = args[i].toString();
-		if (argnames[i] == "origin")
-			args[i].getVec2(xorigin, yorigin);
-		if (argnames[i] == "scale")
-			args[i].getDouble(scale);
+	for (size_t i = 0; i < evalctx->eval_arguments.size(); i++) {
+		if (evalctx->eval_arguments[i].first == "file")
+			filename = ctx->getAbsolutePath(evalctx->eval_arguments[i].second.toString());
+		if (evalctx->eval_arguments[i].first == "layer")
+			layername = evalctx->eval_arguments[i].second.toString();
+		if (evalctx->eval_arguments[i].first == "origin")
+			evalctx->eval_arguments[i].second.getVec2(xorigin, yorigin);
+		if (evalctx->eval_arguments[i].first == "scale")
+			evalctx->eval_arguments[i].second.getDouble(scale);
 	}
 
 	std::stringstream keystream;

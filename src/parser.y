@@ -551,6 +551,7 @@ Module *parse(const char *text, const char *path, int debug)
 
 	module_stack.clear();
 	Module *rootmodule = currmodule = new Module();
+        rootmodule->setModulePath(path);
         //        PRINTB_NOCACHE("New module: %s %p", "root" % rootmodule);
 
 	parserdebug = debug;
