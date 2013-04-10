@@ -92,12 +92,15 @@ AbstractNode *ControlModule::evaluate(const Context *ctx, const ModuleInstantiat
 
 	if (type == CHILD)
 	{
-		size_t n = 0;
+		int n = 0;
 		if (evalctx->eval_arguments.size() > 0) {
 			double v;
 			if (evalctx->eval_arguments[0].second.getDouble(v)) {
-				if (v < 0) return NULL; // Disallow negative child indices
 				n = trunc(v);
+				if (n < 0) {
+					PRINTB("WARNING: Negative child index (%d) not allowed", n);
+					return NULL; // Disallow negative child indices
+				}
 			}
 		}
 
@@ -107,8 +110,19 @@ AbstractNode *ControlModule::evaluate(const Context *ctx, const ModuleInstantiat
 		while (tmpc->parent) {
 			const ModuleContext *filectx = dynamic_cast<const ModuleContext*>(tmpc->parent);
 			if (filectx) {
-				if (filectx->evalctx && n < filectx->evalctx->children.size()) {
-					node = filectx->evalctx->children[n]->evaluate_instance(filectx->evalctx);
+        // This will trigger if trying to invoke child from the root of any file
+        // assert(filectx->evalctx);
+
+				if (filectx->evalctx) {
+					if (n < filectx->evalctx->children.size()) {
+						node = filectx->evalctx->children[n]->evaluate_instance(filectx->evalctx);
+					}
+					else {
+						// How to deal with negative objects in this case?
+            // (e.g. first child of difference is invalid)
+						PRINTB("WARNING: Child index (%d) out of bounds (%d children)", 
+									 n % filectx->evalctx->children.size());
+					}
 				}
 				return node;
 			}
