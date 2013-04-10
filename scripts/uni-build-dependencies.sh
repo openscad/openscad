@@ -513,7 +513,7 @@ if [ $1 ]; then
     exit $?
   fi
   if [ $1 = "cgal" ]; then
-    build_cgal 4.0.2 use-sys-libs
+    build_cgal 4.1 use-sys-libs
     exit $?
   fi
   if [ $1 = "opencsg" ]; then

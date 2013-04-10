@@ -23,9 +23,6 @@
 #include "csgtermnormalizer.h"
 #include "OffscreenView.h"
 
-#include <QCoreApplication>
-#include <QTimer>
-
 #include <sstream>
 #include <vector>
 
@@ -128,14 +125,12 @@ int csgtestcore(int argc, char *argv[], test_type_e test_type)
 
 	Builtins::instance()->initialize();
 
-	QCoreApplication app(argc, argv);
-
 	fs::path original_path = fs::current_path();
 
 	std::string currentdir = boosty::stringy( fs::current_path() );
 
-	parser_init(QCoreApplication::instance()->applicationDirPath().toStdString());
-	add_librarydir(boosty::stringy(fs::path(QCoreApplication::instance()->applicationDirPath().toStdString()) / "../libraries"));
+	parser_init(boosty::stringy(fs::path(argv[0]).branch_path()));
+	add_librarydir(boosty::stringy(fs::path(argv[0]).branch_path() / "../libraries"));
 
 	ModuleContext root_ctx;
 	root_ctx.registerBuiltin();
