@@ -49,8 +49,27 @@ void ModuleContext::registerBuiltin()
 	this->set_constant("PI",Value(M_PI));
 }
 
+class RecursionGuard
+{
+public:
+	RecursionGuard(const ModuleContext &c, const std::string &name) : c(c), name(name) { 
+		c.recursioncount[name]++; 
+	}
+	~RecursionGuard() { if (--c.recursioncount[name] == 0) c.recursioncount.erase(name); }
+	bool recursion_detected() const { return (c.recursioncount[name] > 100); }
+private:
+	const ModuleContext &c;
+	const std::string &name;
+};
+
 Value ModuleContext::evaluate_function(const std::string &name, const EvalContext *evalctx) const
 {
+	RecursionGuard g(*this, name);
+	if (g.recursion_detected()) { 
+		PRINTB("Recursion detected calling function '%s'", name);
+		return Value();
+	}
+
 	if (this->functions_p && this->functions_p->find(name) != this->functions_p->end()) {
 		return this->functions_p->find(name)->second->evaluate(this, evalctx);
 	}

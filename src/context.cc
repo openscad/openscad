@@ -44,7 +44,6 @@ std::vector<const Context*> Context::ctx_stack;
 Context::Context(const Context *parent)
 	: parent(parent)
 {
-	if (parent) recursioncount = parent->recursioncount;
 	ctx_stack.push_back(this);
 	if (parent) document_path = parent->document_path;
 }
@@ -120,24 +119,8 @@ Value Context::lookup_variable(const std::string &name, bool silent) const
 	return Value();
 }
 
-class RecursionGuard
-{
-public:
-	RecursionGuard(const Context &c, const std::string &name) : c(c), name(name) { c.recursioncount[name]++; }
-	~RecursionGuard() { if (--c.recursioncount[name] == 0) c.recursioncount.erase(name); }
-	bool recursion_detected() const { return (c.recursioncount[name] > 100); }
-private:
-	const Context &c;
-	const std::string &name;
-};
-
 Value Context::evaluate_function(const std::string &name, const EvalContext *evalctx) const
 {
-	RecursionGuard g(*this, name);
-	if (g.recursion_detected()) { 
-		PRINTB("Recursion detected calling function '%s'", name);
-		return Value();
-	}
 	if (this->parent) return this->parent->evaluate_function(name, evalctx);
 	PRINTB("WARNING: Ignoring unknown function '%s'.", name);
 	return Value();

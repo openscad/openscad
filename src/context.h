@@ -33,8 +33,6 @@ public:
 
 	static std::vector<const Context*> ctx_stack;
 
-	mutable boost::unordered_map<std::string, int> recursioncount;
-
 protected:
 	typedef boost::unordered_map<std::string, Value> ValueMap;
 	ValueMap constants;

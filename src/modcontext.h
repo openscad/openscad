@@ -2,6 +2,7 @@
 #define FILECONTEXT_H_
 
 #include "context.h"
+#include <boost/unordered_map.hpp>
 
 /*!
 	This holds the context for a Module definition; keeps track of
@@ -32,6 +33,8 @@ public:
 #ifdef DEBUG
 	virtual void dump(const class AbstractModule *mod, const ModuleInstantiation *inst);
 #endif
+
+	mutable boost::unordered_map<std::string, int> recursioncount;
 };
 
 #endif
