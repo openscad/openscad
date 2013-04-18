@@ -185,6 +185,17 @@ static bool point_on_line(double *p1, double *p2, double *p3)
 	return true;
 }
 
+typedef std::pair<int,int> pair_ii;
+inline void do_emplace( boost::unordered_multimap<int, pair_ii> &tri_by_atan2, int ai, const pair_ii &indexes)
+{
+#if BOOST_VERSION >= 104800
+			tri_by_atan2.emplace(ai, indexes);
+#else
+			std::pair< int, pair_ii > tmp( ai, indexes );
+			tri_by_atan2.insert( tmp );
+#endif
+}
+
 /*!
 	up: true if the polygon is facing in the normal direction (i.e. normal = [0,0,1])
 	rot: CLOCKWISE rotation around positive Z axis
@@ -280,7 +291,7 @@ void dxf_tesselate(PolySet *ps, DxfData &dxf, double rot, bool up, bool do_trian
 		for (int j = 0; j < 3; j++) {
 			int ai = (int)round(atan2(fabs(tess_tri[i].p[(j+1)%3][0] - tess_tri[i].p[j][0]),
 					fabs(tess_tri[i].p[(j+1)%3][1] - tess_tri[i].p[j][1])) / 0.001);
-			tri_by_atan2.emplace(ai, std::pair<int,int>(i, j));
+			do_emplace( tri_by_atan2, ai, std::pair<int,int>(i, j) );
 		}
 		while (added_triangles)
 		{
@@ -321,13 +332,13 @@ void dxf_tesselate(PolySet *ps, DxfData &dxf, double rot, bool up, bool do_trian
 						for (int m = 0; m < 2; m++) {
 							int ai = (int)round(atan2(fabs(tess_tri.back().p[(m+1)%3][0] - tess_tri.back().p[m][0]),
 									fabs(tess_tri.back().p[(m+1)%3][1] - tess_tri.back().p[m][1])) / 0.001 );
-							tri_by_atan2.emplace(ai, std::pair<int,int>(tess_tri.size()-1, m));
+							do_emplace(tri_by_atan2, ai, std::pair<int,int>(tess_tri.size()-1, m));
 						}
 						tess_tri[i].p[(k+1)%3] = tess_tri[j].p[l];
 						for (int m = 0; m < 2; m++) {
 							int ai = (int)round(atan2(fabs(tess_tri[i].p[(m+1)%3][0] - tess_tri[i].p[m][0]),
 									fabs(tess_tri[i].p[(m+1)%3][1] - tess_tri[i].p[m][1])) / 0.001 );
-							tri_by_atan2.emplace(ai, std::pair<int,int>(i, m));
+							do_emplace(tri_by_atan2, ai, std::pair<int,int>(i, m));
 						}
 						added_triangles = true;
 					}
