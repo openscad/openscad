@@ -26,6 +26,7 @@
 
 %{
 
+#include "typedefs.h"
 #include "handle_dep.h"
 #include "printutils.h"
 #include "parsersettings.h"

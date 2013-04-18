@@ -62,8 +62,8 @@ std::string AbstractModule::dump(const std::string &indent, const std::string &n
 
 ModuleInstantiation::~ModuleInstantiation()
 {
-	BOOST_FOREACH (Expression *v, argexpr) delete v;
-	BOOST_FOREACH (ModuleInstantiation *v, children) delete v;
+	BOOST_FOREACH(const Assignment &arg, this->arguments) delete arg.second;
+	BOOST_FOREACH(ModuleInstantiation *v, children) delete v;
 }
 
 IfElseModuleInstantiation::~IfElseModuleInstantiation()
@@ -89,10 +89,11 @@ std::string ModuleInstantiation::dump(const std::string &indent) const
 	std::stringstream dump;
 	dump << indent;
 	dump << modname + "(";
-	for (size_t i=0; i < argnames.size(); i++) {
+	for (size_t i=0; i < this->arguments.size(); i++) {
+		const Assignment &arg = this->arguments[i];
 		if (i > 0) dump << ", ";
-		if (!argnames[i].empty()) dump << argnames[i] << " = ";
-		dump << *argexpr[i];
+		if (!arg.first.empty()) dump << arg.first << " = ";
+		dump << *arg.second;
 	}
 	if (children.size() == 0) {
 		dump << ");\n";
@@ -112,10 +113,10 @@ std::string ModuleInstantiation::dump(const std::string &indent) const
 AbstractNode *ModuleInstantiation::evaluate_instance(const Context *ctx) const
 {
 	EvalContext c(ctx);
-	for (size_t i=0; i<argnames.size(); i++) {
-		c.eval_arguments.push_back(std::make_pair(argnames[i], 
-																							i < argexpr.size() && argexpr[i] ? 
-																							argexpr[i]->evaluate(ctx) : 
+	BOOST_FOREACH(const Assignment &arg, this->arguments) {
+		c.eval_arguments.push_back(std::make_pair(arg.first,
+																							arg.second ? 
+																							arg.second->evaluate(ctx) : 
 																							Value()));
 	}
 	c.children = this->children;
@@ -150,7 +151,7 @@ std::vector<AbstractNode*> IfElseModuleInstantiation::evaluateElseChildren(const
 
 Module::~Module()
 {
-	BOOST_FOREACH (const AssignmentContainer::value_type &v, assignments) delete v.second;
+	BOOST_FOREACH (const Assignment &v, assignments) delete v.second;
 	BOOST_FOREACH (FunctionContainer::value_type &f, functions) delete f.second;
 	BOOST_FOREACH (AbstractModuleContainer::value_type &m, modules) delete m.second;
 	BOOST_FOREACH (ModuleInstantiation *v, children) delete v;
@@ -181,10 +182,11 @@ std::string Module::dump(const std::string &indent, const std::string &name) con
 	std::string tab;
 	if (!name.empty()) {
 		dump << indent << "module " << name << "(";
-		for (size_t i=0; i < argnames.size(); i++) {
+		for (size_t i=0; i < this->definition_arguments.size(); i++) {
+			const Assignment &arg = this->definition_arguments[i];
 			if (i > 0) dump << ", ";
-			dump << argnames[i];
-			if (argexpr[i]) dump << " = " << *argexpr[i];
+			dump << arg.first;
+			if (arg.second) dump << " = " << *arg.second;
 		}
 		dump << ") {\n";
 		tab = "\t";

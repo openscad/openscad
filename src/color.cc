@@ -54,13 +54,12 @@ AbstractNode *ColorModule::evaluate(const Context *ctx, const ModuleInstantiatio
 	node->color[0] = node->color[1] = node->color[2] = -1.0;
 	node->color[3] = 1.0;
 
-	std::vector<std::string> argnames;
-	std::vector<Expression*> argexpr;
+	AssignmentList args;
 
-	argnames += "c", "alpha";
+	args += Assignment("c", NULL), Assignment("alpha", NULL);
 
 	Context c(ctx);
-	c.setVariables(argnames, argexpr, evalctx);
+	c.setVariables(args, evalctx);
 
 	Value v = c.lookup_variable("c");
 	if (v.type() == Value::VECTOR) {

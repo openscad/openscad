@@ -128,9 +128,9 @@ Value Expression::evaluate(const Context *context) const
 	}
 	if (this->type == "F") {
 		EvalContext c(context);
-		for (size_t i=0; i < this->children.size(); i++) {
-			c.eval_arguments.push_back(std::make_pair(this->call_argnames[i], 
-																								this->children[i]->evaluate(context)));
+		for (size_t i=0; i < this->call_arguments.size(); i++) {
+			c.eval_arguments.push_back(std::make_pair(this->call_arguments[i].first, 
+																								this->call_arguments[i].second->evaluate(context)));
 		}
 		// Value::VectorType argvalues;
 		// std::transform(this->children.begin(), this->children.end(), 
@@ -183,10 +183,11 @@ std::string Expression::toString() const
 	}
 	else if (this->type == "F") {
 		stream << this->call_funcname << "(";
-		for (size_t i=0; i < this->children.size(); i++) {
+		for (size_t i=0; i < this->call_arguments.size(); i++) {
+			const Assignment &arg = this->call_arguments[i];
 			if (i > 0) stream << ", ";
-			if (!this->call_argnames[i].empty()) stream << this->call_argnames[i]  << " = ";
-			stream << *this->children[i];
+			if (!arg.first.empty()) stream << arg.first  << " = ";
+			stream << *arg.second;
 		}
 		stream << ")";
 	}

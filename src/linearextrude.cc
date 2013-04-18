@@ -52,12 +52,11 @@ AbstractNode *LinearExtrudeModule::evaluate(const Context *ctx, const ModuleInst
 {
 	LinearExtrudeNode *node = new LinearExtrudeNode(inst);
 
-	std::vector<std::string> argnames;
-	argnames += "file", "layer", "height", "origin", "scale", "center", "twist", "slices";
-	std::vector<Expression*> argexpr;
+	AssignmentList args;
+	args += Assignment("file", NULL), Assignment("layer", NULL), Assignment("height", NULL), Assignment("origin", NULL), Assignment("scale", NULL), Assignment("center", NULL), Assignment("twist", NULL), Assignment("slices", NULL);
 
 	Context c(ctx);
-	c.setVariables(argnames, argexpr, evalctx);
+	c.setVariables(args, evalctx);
 
 	node->fn = c.lookup_variable("$fn").toDouble();
 	node->fs = c.lookup_variable("$fs").toDouble();

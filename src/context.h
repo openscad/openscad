@@ -5,6 +5,7 @@
 #include <vector>
 #include <boost/unordered_map.hpp>
 #include "value.h"
+#include "typedefs.h"
 
 class Context
 {
@@ -15,8 +16,7 @@ public:
 	virtual Value evaluate_function(const std::string &name, const class EvalContext *evalctx) const;
 	virtual class AbstractNode *evaluate_module(const class ModuleInstantiation &inst, const EvalContext *evalctx) const;
 
-	void setVariables(const std::vector<std::string> &argnames, 
-										const std::vector<class Expression*> &argexpr, 
+	void setVariables(const AssignmentList &args,
 										const class EvalContext *evalctx = NULL);
 
 	void set_variable(const std::string &name, const Value &value);

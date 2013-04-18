@@ -52,12 +52,11 @@ AbstractNode *RotateExtrudeModule::evaluate(const Context *ctx, const ModuleInst
 {
 	RotateExtrudeNode *node = new RotateExtrudeNode(inst);
 
-	std::vector<std::string> argnames;
-	argnames += "file", "layer", "origin", "scale";
-	std::vector<Expression*> argexpr;
+	AssignmentList args;
+	args += Assignment("file", NULL), Assignment("layer", NULL), Assignment("origin", NULL), Assignment("scale", NULL);
 
 	Context c(ctx);
-	c.setVariables(argnames, argexpr, evalctx);
+	c.setVariables(args, evalctx);
 
 	node->fn = c.lookup_variable("$fn").toDouble();
 	node->fs = c.lookup_variable("$fs").toDouble();

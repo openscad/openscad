@@ -140,7 +140,7 @@ AbstractNode *ControlModule::evaluate(const Context *ctx, const ModuleInstantiat
 	{
 		std::stringstream msg;
 		msg << "ECHO: ";
-		for (size_t i = 0; i < inst->argnames.size(); i++) {
+		for (size_t i = 0; i < inst->arguments.size(); i++) {
 			if (i > 0) msg << ", ";
 			if (!evalctx->eval_arguments[i].first.empty()) msg << evalctx->eval_arguments[i].first << " = ";
 			msg << evalctx->eval_arguments[i].second;

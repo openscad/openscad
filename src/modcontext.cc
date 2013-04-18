@@ -26,7 +26,7 @@ ModuleContext::~ModuleContext()
 
 void ModuleContext::setModule(const Module &module, const EvalContext *evalctx)
 {
-	this->setVariables(module.argnames, module.argexpr, evalctx);
+	this->setVariables(module.definition_arguments, evalctx);
 	this->evalctx = evalctx;
 
 	// FIXME: Don't access module members directly
@@ -131,8 +131,8 @@ void ModuleContext::dump(const AbstractModule *mod, const ModuleInstantiation *i
 		const Module *m = dynamic_cast<const Module*>(mod);
 		if (m) {
 			PRINT("  module args:");
-			BOOST_FOREACH(const std::string &arg, m->argnames) {
-				PRINTB("    %s = %s", arg % variables[arg]);
+			BOOST_FOREACH(const Assignment &arg, m->definition_arguments) {
+				PRINTB("    %s = %s", arg.first % variables[arg.first]);
 			}
 		}
 	}

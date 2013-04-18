@@ -34,6 +34,7 @@
 #include <unistd.h>
 #endif
 
+#include "typedefs.h"
 #include "module.h"
 #include "expression.h"
 #include "value.h"
@@ -64,17 +65,6 @@ extern const char *parser_input_buffer;
 const char *parser_input_buffer;
 std::string parser_source_path;
 
-class ArgContainer {
-public: 
-	std::string argname;
-	Expression *argexpr;
-};
-class ArgsContainer {
-public:
-	std::vector<std::string> argnames;
-	std::vector<Expression*> argexpr;
-};
-
 %}
 
 %union {
@@ -85,8 +75,8 @@ public:
 	class ModuleInstantiation *inst;
 	std::vector<ModuleInstantiation*> *instvec;
 	class IfElseModuleInstantiation *ifelse;
-	class ArgContainer *arg;
-	class ArgsContainer *args;
+	Assignment *arg;
+	AssignmentList *args;
 }
 
 %token TOK_MODULE
@@ -168,8 +158,7 @@ statement:
 		module_stack.push_back(currmodule);
 		currmodule = new Module();
 		p->modules[$2] = currmodule;
-		currmodule->argnames = $4->argnames;
-		currmodule->argexpr = $4->argexpr;
+		currmodule->definition_arguments = *$4;
 		free($2);
 		delete $4;
 	} statement {
@@ -178,8 +167,7 @@ statement:
 	} |
 	TOK_FUNCTION TOK_ID '(' arguments_decl optional_commas ')' '=' expr {
 		Function *func = new Function();
-		func->argnames = $4->argnames;
-		func->argexpr = $4->argexpr;
+		func->definition_arguments = *$4;
 		func->expr = $8;
 		currmodule->functions[$2] = func;
 		free($2);
@@ -201,8 +189,7 @@ children_instantiation:
 if_statement:
 	TOK_IF '(' expr ')' children_instantiation {
 		$$ = new IfElseModuleInstantiation();
-		$$->argnames.push_back("");
-		$$->argexpr.push_back($3);
+		$$->arguments.push_back(Assignment("", $3));
                 $$->setPath(parser_source_path);
 
 		if ($$) {
@@ -279,8 +266,7 @@ module_instantiation_list:
 single_module_instantiation:
 	TOK_ID '(' arguments_call ')' {
 		$$ = new ModuleInstantiation($1);
-		$$->argnames = $3->argnames;
-		$$->argexpr = $3->argexpr;
+		$$->arguments = *$3;
                 $$->setPath(parser_source_path);
 		free($1);
 		delete $3;
@@ -448,8 +434,7 @@ expr:
 		$$ = new Expression();
 		$$->type = "F";
 		$$->call_funcname = $1;
-		$$->call_argnames = $3->argnames;
-		$$->children = $3->argexpr;
+		$$->call_arguments = *$3;
 		free($1);
 		delete $3;
 	} ;
@@ -470,61 +455,50 @@ vector_expr:
 
 arguments_decl:
 	/* empty */ {
-		$$ = new ArgsContainer();
+		$$ = new AssignmentList();
 	} |
 	argument_decl {
-		$$ = new ArgsContainer();
-		$$->argnames.push_back($1->argname);
-		$$->argexpr.push_back($1->argexpr);
+		$$ = new AssignmentList();
+		$$->push_back(*$1);
 		delete $1;
 	} |
 	arguments_decl ',' optional_commas argument_decl {
 		$$ = $1;
-		$$->argnames.push_back($4->argname);
-		$$->argexpr.push_back($4->argexpr);
+		$$->push_back(*$4);
 		delete $4;
 	} ;
 
 argument_decl:
 	TOK_ID {
-		$$ = new ArgContainer();
-		$$->argname = $1;
-		$$->argexpr = NULL;
+		$$ = new Assignment($1, NULL);
 		free($1);
 	} |
 	TOK_ID '=' expr {
-		$$ = new ArgContainer();
-		$$->argname = $1;
-		$$->argexpr = $3;
+		$$ = new Assignment($1, $3);
 		free($1);
 	} ;
 
 arguments_call:
 	/* empty */ {
-		$$ = new ArgsContainer();
+		$$ = new AssignmentList();
 	} |
 	argument_call {
-		$$ = new ArgsContainer();
-		$$->argnames.push_back($1->argname);
-		$$->argexpr.push_back($1->argexpr);
+		$$ = new AssignmentList();
+		$$->push_back(*$1);
 		delete $1;
 	} |
 	arguments_call ',' optional_commas argument_call {
 		$$ = $1;
-		$$->argnames.push_back($4->argname);
-		$$->argexpr.push_back($4->argexpr);
+		$$->push_back(*$4);
 		delete $4;
 	} ;
 
 argument_call:
 	expr {
-		$$ = new ArgContainer();
-		$$->argexpr = $1;
+		$$ = new Assignment("", $1);
 	} |
 	TOK_ID '=' expr {
-		$$ = new ArgContainer();
-		$$->argname = $1;
-		$$->argexpr = $3;
+		$$ = new Assignment($1, $3);
 		free($1);
 	} ;
 

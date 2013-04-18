@@ -48,12 +48,11 @@ AbstractNode *ProjectionModule::evaluate(const Context *ctx, const ModuleInstant
 {
 	ProjectionNode *node = new ProjectionNode(inst);
 
-	std::vector<std::string> argnames;
-	argnames += "cut";
-	std::vector<Expression*> argexpr;
+	AssignmentList args;
+	args += Assignment("cut", NULL);
 
 	Context c(ctx);
-	c.setVariables(argnames, argexpr, evalctx);
+	c.setVariables(args, evalctx);
 
 	Value convexity = c.lookup_variable("convexity", true);
 	Value cut = c.lookup_variable("cut", true);

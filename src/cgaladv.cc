@@ -46,23 +46,22 @@ AbstractNode *CgaladvModule::evaluate(const Context *ctx, const ModuleInstantiat
 {
 	CgaladvNode *node = new CgaladvNode(inst, type);
 
-	std::vector<std::string> argnames;
-	std::vector<Expression*> argexpr;
+	AssignmentList args;
 
 	if (type == MINKOWSKI)
-		argnames += "convexity";
+		args += Assignment("convexity", NULL);
 
 	if (type == GLIDE)
-		argnames += "path", "convexity";
+		args += Assignment("path", NULL), Assignment("convexity", NULL);
 
 	if (type == SUBDIV)
-		argnames += "type", "level", "convexity";
+		args += Assignment("type", NULL), Assignment("level", NULL), Assignment("convexity", NULL);
 
 	if (type == RESIZE)
-		argnames += "newsize", "auto";
+		args += Assignment("newsize", NULL), Assignment("auto", NULL);
 
 	Context c(ctx);
-	c.setVariables(argnames, argexpr, evalctx);
+	c.setVariables(args, evalctx);
 
 	Value convexity, path, subdiv_type, level;
 

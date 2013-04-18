@@ -2,6 +2,7 @@
 #define FUNCTION_H_
 
 #include "value.h"
+#include "typedefs.h"
 #include <string>
 #include <vector>
 
@@ -29,8 +30,7 @@ public:
 class Function : public AbstractFunction
 {
 public:
-	std::vector<std::string> argnames;
-	std::vector<class Expression*> argexpr;
+	AssignmentList definition_arguments;
 
 	Expression *expr;
 

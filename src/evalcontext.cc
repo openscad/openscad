@@ -31,8 +31,8 @@ void EvalContext::dump(const AbstractModule *mod, const ModuleInstantiation *ins
 		const Module *m = dynamic_cast<const Module*>(mod);
 		if (m) {
 			PRINT("  module args:");
-			BOOST_FOREACH(const std::string &arg, m->argnames) {
-				PRINTB("    %s = %s", arg % variables[arg]);
+			BOOST_FOREACH(const Assignment &arg, m->definition_arguments) {
+				PRINTB("    %s = %s", arg.first % variables[arg.first]);
 			}
 		}
 	}

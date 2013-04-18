@@ -75,12 +75,11 @@ AbstractNode *SurfaceModule::evaluate(const Context *ctx, const ModuleInstantiat
 	node->center = false;
 	node->convexity = 1;
 
-	std::vector<std::string> argnames;
-	argnames += "file", "center", "convexity";
-	std::vector<Expression*> argexpr;
+	AssignmentList args;
+	args += Assignment("file", NULL), Assignment("center", NULL), Assignment("convexity", NULL);
 
 	Context c(ctx);
-	c.setVariables(argnames, argexpr, evalctx);
+	c.setVariables(args, evalctx);
 
 	Value fileval = c.lookup_variable("file");
 	node->filename = inst->getAbsolutePath(fileval.isUndefined() ? "" : fileval.toString());

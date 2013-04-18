@@ -57,13 +57,11 @@ Context::~Context()
 	Initialize context from a module argument list and a evaluation context
 	which may pass variables which will be preferred over default values.
 */
-void Context::setVariables(const std::vector<std::string> &argnames, 
-													 const std::vector<Expression*> &argexpr,
+void Context::setVariables(const AssignmentList &args,
 													 const EvalContext *evalctx)
 {
-	for (size_t i=0; i<argnames.size(); i++) {
-		set_variable(argnames[i], i < argexpr.size() && argexpr[i] ? 
-								 argexpr[i]->evaluate(this->parent) : Value());
+	BOOST_FOREACH(const Assignment &arg, args) {
+		set_variable(arg.first, arg.second ? arg.second->evaluate(this->parent) : Value());
 	}
 
 	if (evalctx) {
@@ -72,7 +70,7 @@ void Context::setVariables(const std::vector<std::string> &argnames,
 			const std::string &name = evalctx->eval_arguments[i].first;
 			const Value &val = evalctx->eval_arguments[i].second;
 			if (name.empty()) {
-				if (posarg < argnames.size()) this->set_variable(argnames[posarg++], val);
+				if (posarg < args.size()) this->set_variable(args[posarg++].first, val);
 			} else {
 				this->set_variable(name, val);
 			}
@@ -158,8 +156,8 @@ void Context::dump(const AbstractModule *mod, const ModuleInstantiation *inst)
 		const Module *m = dynamic_cast<const Module*>(mod);
 		if (m) {
 			PRINT("  module args:");
-			BOOST_FOREACH(const std::string &arg, m->argnames) {
-				PRINTB("    %s = %s", arg % variables[arg]);
+			BOOST_FOREACH(const Assignment &arg, m->definition_arguments) {
+				PRINTB("    %s = %s", arg.first % variables[arg.first]);
 			}
 		}
 	}

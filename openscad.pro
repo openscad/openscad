@@ -187,7 +187,8 @@ FORMS   += src/MainWindow.ui \
            src/AboutDialog.ui \
            src/ProgressWidget.ui
 
-HEADERS += src/version_check.h \
+HEADERS += src/typedefs.h \
+           src/version_check.h \
            src/ProgressWidget.h \
            src/parsersettings.h \
            src/renderer.h \

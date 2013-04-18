@@ -65,20 +65,22 @@ public:
 
 AbstractNode *ImportModule::evaluate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const
 {
-	std::vector<std::string> argnames;
-	argnames += "file", "layer", "convexity", "origin", "scale";
-	std::vector<Expression*> argexpr;
+	AssignmentList args;
+	args += Assignment("file", NULL), Assignment("layer", NULL), Assignment("convexity", NULL), Assignment("origin", NULL), Assignment("scale", NULL);
 
+  // FIXME: This is broken. Tag as deprecated and fix
 	// Map old argnames to new argnames for compatibility
+#if 0
 	std::vector<std::string> inst_argnames = inst->argnames;
 	for (size_t i=0; i<inst_argnames.size(); i++) {
 		if (inst_argnames[i] == "filename") inst_argnames[i] = "file";
 		if (inst_argnames[i] == "layername") inst_argnames[i] = "layer";
 	}
+#endif
 
 	Context c(ctx);
 	c.setDocumentPath(evalctx->documentPath());
-	c.setVariables(argnames, argexpr, evalctx);
+	c.setVariables(args, evalctx);
 #if 0 && DEBUG
 	c.dump(this, inst);
 #endif

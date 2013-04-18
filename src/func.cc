@@ -34,6 +34,7 @@
 #include <algorithm>
 #include "stl-utils.h"
 #include "printutils.h"
+#include <boost/foreach.hpp>
 
 /*
  Random numbers
@@ -75,14 +76,14 @@ std::string AbstractFunction::dump(const std::string &indent, const std::string 
 
 Function::~Function()
 {
-	std::for_each(this->argexpr.begin(), this->argexpr.end(), del_fun<Expression>());
+	BOOST_FOREACH(const Assignment &arg, this->definition_arguments) delete arg.second;
 	delete expr;
 }
 
 Value Function::evaluate(const Context *ctx, const EvalContext *evalctx) const
 {
 	Context c(ctx);
-	c.setVariables(argnames, argexpr, evalctx);
+	c.setVariables(definition_arguments, evalctx);
 	return expr ? expr->evaluate(&c) : Value();
 }
 
@@ -90,10 +91,11 @@ std::string Function::dump(const std::string &indent, const std::string &name) c
 {
 	std::stringstream dump;
 	dump << indent << "function " << name << "(";
-	for (size_t i=0; i < argnames.size(); i++) {
+	for (size_t i=0; i < definition_arguments.size(); i++) {
+		const Assignment &arg = definition_arguments[i];
 		if (i > 0) dump << ", ";
-		dump << argnames[i];
-		if (argexpr[i]) dump << " = " << *argexpr[i];
+		dump << arg.first;
+		if (arg.second) dump << " = " << *arg.second;
 	}
 	dump << ") = " << *expr << ";\n";
 	return dump.str();

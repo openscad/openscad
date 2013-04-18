@@ -112,37 +112,36 @@ AbstractNode *PrimitiveModule::evaluate(const Context *ctx, const ModuleInstanti
 	node->center = false;
 	node->x = node->y = node->z = node->h = node->r1 = node->r2 = 1;
 
-	std::vector<std::string> argnames;
-	std::vector<Expression*> argexpr;
+	AssignmentList args;
 
 	switch (this->type) {
 	case CUBE:
-		argnames += "size", "center";
+		args += Assignment("size", NULL), Assignment("center", NULL);
 		break;
 	case SPHERE:
-		argnames += "r";
+		args += Assignment("r", NULL);
 		break;
 	case CYLINDER:
-		argnames += "h", "r1", "r2", "center";
+		args += Assignment("h", NULL), Assignment("r1", NULL), Assignment("r2", NULL), Assignment("center", NULL);
 		break;
 	case POLYHEDRON:
-		argnames += "points", "triangles", "convexity";
+		args += Assignment("points", NULL), Assignment("triangles", NULL), Assignment("convexity", NULL);
 		break;
 	case SQUARE:
-		argnames += "size", "center";
+		args += Assignment("size", NULL), Assignment("center", NULL);
 		break;
 	case CIRCLE:
-		argnames += "r";
+		args += Assignment("r", NULL);
 		break;
 	case POLYGON:
-		argnames += "points", "paths", "convexity";
+		args += Assignment("points", NULL), Assignment("paths", NULL), Assignment("convexity", NULL);
 		break;
 	default:
 		assert(false && "PrimitiveModule::evaluate(): Unknown node type");
 	}
 
 	Context c(ctx);
-	c.setVariables(argnames, argexpr, evalctx);
+	c.setVariables(args, evalctx);
 
 	node->fn = c.lookup_variable("$fn").toDouble();
 	node->fs = c.lookup_variable("$fs").toDouble();

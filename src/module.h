@@ -6,6 +6,7 @@
 #include <list>
 #include <boost/unordered_map.hpp>
 #include "value.h"
+#include "typedefs.h"
 
 class ModuleInstantiation
 {
@@ -27,8 +28,7 @@ public:
 	bool isHighlight() const { return this->tag_highlight; }
 	bool isRoot() const { return this->tag_root; }
 
-	std::vector<std::string> argnames;
-	std::vector<class Expression*> argexpr;
+	AssignmentList arguments;
 	std::vector<ModuleInstantiation*> children;
 
 	bool tag_root;
@@ -81,8 +81,8 @@ public:
 	bool handleDependencies();
 
 	std::list<std::string> assignments_var;
-	typedef boost::unordered_map<std::string, Expression*> AssignmentContainer;
-	AssignmentContainer assignments;
+	typedef boost::unordered_map<std::string, Expression*> AssignmentMap;
+	AssignmentMap assignments;
 
 	typedef boost::unordered_map<std::string, class AbstractFunction*> FunctionContainer;
 	FunctionContainer functions;
@@ -91,8 +91,7 @@ public:
 
 	std::vector<ModuleInstantiation*> children;
 
-	std::vector<std::string> argnames;
-	std::vector<Expression*> argexpr;
+	std::vector<Assignment> definition_arguments;
 
 protected:
 

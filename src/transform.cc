@@ -59,31 +59,30 @@ AbstractNode *TransformModule::evaluate(const Context *ctx, const ModuleInstanti
 
 	node->matrix = Transform3d::Identity();
 
-	std::vector<std::string> argnames;
-	std::vector<Expression*> argexpr;
+	AssignmentList args;
 
 	switch (this->type) {
 	case SCALE:
-		argnames += "v";
+		args += Assignment("v", NULL);
 		break;
 	case ROTATE:
-		argnames += "a", "v";
+		args += Assignment("a", NULL), Assignment("v", NULL);
 		break;
 	case MIRROR:
-		argnames += "v";
+		args += Assignment("v", NULL);
 		break;
 	case TRANSLATE:
-		argnames += "v";
+		args += Assignment("v", NULL);
 		break;
 	case MULTMATRIX:
-		argnames += "m";
+		args += Assignment("m", NULL);
 		break;
 	default:
 		assert(false);
 	}
 
 	Context c(ctx);
-	c.setVariables(argnames, argexpr, evalctx);
+	c.setVariables(args, evalctx);
 
 	if (this->type == SCALE)
 	{

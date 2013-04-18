@@ -45,12 +45,11 @@ AbstractNode *RenderModule::evaluate(const Context *ctx, const ModuleInstantiati
 {
 	RenderNode *node = new RenderNode(inst);
 
-	std::vector<std::string> argnames;
-	argnames += "convexity";
-	std::vector<Expression*> argexpr;
+	AssignmentList args;
+	args += Assignment("convexity", NULL);
 
 	Context c(ctx);
-	c.setVariables(argnames, argexpr, evalctx);
+	c.setVariables(args, evalctx);
 
 	Value v = c.lookup_variable("convexity");
 	if (v.type() == Value::NUMBER)
