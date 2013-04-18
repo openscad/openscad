@@ -257,10 +257,15 @@ PolySet *ImportNode::evaluate_polyset(class PolySetEvaluator *) const
 #ifdef ENABLE_CGAL
 		CGAL_Polyhedron poly;
 		std::ifstream file(this->filename.c_str(), std::ios::in | std::ios::binary);
-		file >> poly;
-		file.close();
-		
-		p = createPolySetFromPolyhedron(poly);
+		if (!file.good()) {
+			PRINTB("WARNING: Can't open import file '%s'.", this->filename);
+		}
+		else {
+			file >> poly;
+			file.close();
+			
+			p = createPolySetFromPolyhedron(poly);
+		}
 #else
   PRINT("WARNING: OFF import requires CGAL.");
 #endif
