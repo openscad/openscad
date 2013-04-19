@@ -522,6 +522,23 @@ Value builtin_version_num(const Context *ctx, const std::vector<std::string>& ca
 	return Value(y * 10000 + m * 100 + d);
 }
 
+Value builtin_norm(const Context *, const std::vector<std::string>&, const std::vector<Value> &args)
+{
+	if (args.size() == 1 && args[0].type() == Value::VECTOR) {
+		double sum = 0;
+		Value::VectorType v = args[0].toVector();
+		for (size_t i = 0; i < v.size(); i++)
+			if (v[i].type() == Value::NUMBER)
+				sum += pow(v[i].toDouble(),2);
+			else {
+				PRINT("  WARNING: Incorrect arguments to norm()");
+				return Value(); 
+			}
+		return Value(sqrt(sum));
+	}
+	return Value();
+}
+
 void register_builtin_functions()
 {
 	Builtins::init("abs", new BuiltinFunction(&builtin_abs));
@@ -550,4 +567,5 @@ void register_builtin_functions()
 	Builtins::init("search", new BuiltinFunction(&builtin_search));
 	Builtins::init("version", new BuiltinFunction(&builtin_version));
 	Builtins::init("version_num", new BuiltinFunction(&builtin_version_num));
+	Builtins::init("norm", new BuiltinFunction(&builtin_norm));
 }
