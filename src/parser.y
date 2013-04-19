@@ -148,10 +148,15 @@ module_instantiation {
   }
 } |
 TOK_ID '=' expr ';' {
-  std::list<std::string>::iterator found = std::find(currmodule->assignments_var.begin(), currmodule->assignments_var.end(),$1);
-  if (found != currmodule->assignments_var.end()) currmodule->assignments_var.erase(found);
-  currmodule->assignments_var.push_back($1);
-  currmodule->assignments[$1] = $3;
+  for (AssignmentList::iterator iter = currmodule->assignments.begin(); 
+       iter != currmodule->assignments.end(); 
+       iter++) {
+    if (iter->first == $1) {
+      currmodule->assignments.erase(iter);
+      break;
+    }
+  }
+  currmodule->assignments.push_back(Assignment($1, $3));
 } |
 TOK_MODULE TOK_ID '(' arguments_decl optional_commas ')' {
   Module *p = currmodule;

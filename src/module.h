@@ -80,9 +80,7 @@ public:
 	bool is_handling_dependencies;
 	bool handleDependencies();
 
-	std::list<std::string> assignments_var;
-	typedef boost::unordered_map<std::string, Expression*> AssignmentMap;
-	AssignmentMap assignments;
+	AssignmentList assignments;
 
 	typedef boost::unordered_map<std::string, class AbstractFunction*> FunctionContainer;
 	FunctionContainer functions;

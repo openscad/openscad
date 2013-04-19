@@ -80,24 +80,18 @@ std::string Builtins::isDeprecated(const std::string &name)
 
 Builtins::Builtins()
 {
-	this->rootmodule.assignments_var.push_back("$fn");
-	this->rootmodule.assignments["$fn"] = new Expression(Value(0.0));
-	this->rootmodule.assignments_var.push_back("$fs");
-	this->rootmodule.assignments["$fs"] = new Expression(Value(2.0));
-	this->rootmodule.assignments_var.push_back("$fa");
-	this->rootmodule.assignments["$fa"] = new Expression(Value(12.0));
-	this->rootmodule.assignments_var.push_back("$t");
-	this->rootmodule.assignments["$t"] = new Expression(Value(0.0));
+	this->rootmodule.assignments.push_back(Assignment("$fn", new Expression(Value(0.0))));
+	this->rootmodule.assignments.push_back(Assignment("$fs", new Expression(Value(2.0))));
+	this->rootmodule.assignments.push_back(Assignment("$fa", new Expression(Value(12.0))));
+	this->rootmodule.assignments.push_back(Assignment("$t", new Expression(Value(0.0))));
 
 	Value::VectorType zero3;
 	zero3.push_back(Value(0.0));
 	zero3.push_back(Value(0.0));
 	zero3.push_back(Value(0.0));
 	Value zero3val(zero3);
-	this->rootmodule.assignments_var.push_back("$vpt");
-	this->rootmodule.assignments["$vpt"] = new Expression(zero3val);
-	this->rootmodule.assignments_var.push_back("$vpr");
-	this->rootmodule.assignments["$vpr"] = new Expression(zero3val);
+	this->rootmodule.assignments.push_back(Assignment("$vpt", new Expression(zero3val)));
+	this->rootmodule.assignments.push_back(Assignment("$vpr", new Expression(zero3val)));
 }
 
 Builtins::~Builtins()

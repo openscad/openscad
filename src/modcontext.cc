@@ -33,8 +33,8 @@ void ModuleContext::setModule(const Module &module, const EvalContext *evalctx)
 	this->functions_p = &module.functions;
 	this->modules_p = &module.modules;
 	this->usedlibs_p = &module.usedlibs;
-	BOOST_FOREACH(const std::string &var, module.assignments_var) {
-		this->set_variable(var, module.assignments.at(var)->evaluate(this));
+	BOOST_FOREACH(const Assignment &ass, module.assignments) {
+		this->set_variable(ass.first, ass.second->evaluate(this));
 	}
 	
 	if (!module.modulePath().empty()) this->document_path = module.modulePath();

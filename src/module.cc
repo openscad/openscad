@@ -190,8 +190,8 @@ std::string Module::dump(const std::string &indent, const std::string &name) con
 	BOOST_FOREACH(const AbstractModuleContainer::value_type &m, modules) {
 		dump << m.second->dump(indent + tab, m.first);
 	}
-	BOOST_FOREACH(const std::string &var, assignments_var) {
-		dump << indent << tab << var << " = " << *assignments.at(var) << ";\n";
+	BOOST_FOREACH(const Assignment &ass, assignments) {
+		dump << indent << tab << ass.first << " = " << *ass.second << ";\n";
 	}
 	for (size_t i = 0; i < children.size(); i++) {
 		dump << children[i]->dump(indent + tab);
