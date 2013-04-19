@@ -154,7 +154,7 @@ int csgtestcore(int argc, char *argv[], test_type_e test_type)
 	}
 
 	AbstractNode::resetIndexCounter();
-	AbstractNode *absolute_root_node = root_module->evaluate(&root_ctx, &root_inst);
+	AbstractNode *absolute_root_node = root_module->instantiate(&root_ctx, &root_inst);
 	AbstractNode *root_node;
 	// Do we have an explicit root node (! modifier)?
 	if (!(root_node = find_root_tag(absolute_root_node))) root_node = absolute_root_node;

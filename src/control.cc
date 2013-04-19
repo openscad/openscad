@@ -46,7 +46,7 @@ class ControlModule : public AbstractModule
 public:
 	control_type_e type;
 	ControlModule(control_type_e type) : type(type) { }
-	virtual AbstractNode *evaluate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const;
+	virtual AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const;
 };
 
 void for_eval(AbstractNode &node, const ModuleInstantiation &inst, size_t l, 
@@ -81,12 +81,12 @@ void for_eval(AbstractNode &node, const ModuleInstantiation &inst, size_t l,
 			for_eval(node, inst, l+1, &c, evalctx);
 		}
 	} else if (l > 0) {
-		std::vector<AbstractNode *> evaluatednodes = inst.evaluateChildren(ctx);
-		node.children.insert(node.children.end(), evaluatednodes.begin(), evaluatednodes.end());
+		std::vector<AbstractNode *> instantiatednodes = inst.instantiateChildren(ctx);
+		node.children.insert(node.children.end(), instantiatednodes.begin(), instantiatednodes.end());
 	}
 }
 
-AbstractNode *ControlModule::evaluate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const
+AbstractNode *ControlModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const
 {
 	AbstractNode *node = NULL;
 
@@ -115,7 +115,7 @@ AbstractNode *ControlModule::evaluate(const Context *ctx, const ModuleInstantiat
 
 				if (filectx->evalctx) {
 					if (n < filectx->evalctx->numChildren()) {
-						node = filectx->evalctx->getChild(n)->evaluate_instance(filectx->evalctx);
+						node = filectx->evalctx->getChild(n)->evaluate(filectx->evalctx);
 					}
 					else {
 						// How to deal with negative objects in this case?
@@ -155,8 +155,8 @@ AbstractNode *ControlModule::evaluate(const Context *ctx, const ModuleInstantiat
 			if (!evalctx->getArgName(i).empty())
 				c.set_variable(evalctx->getArgName(i), evalctx->getArgValue(i));
 		}
-		std::vector<AbstractNode *> evaluatednodes = inst->evaluateChildren(&c);
-		node->children.insert(node->children.end(), evaluatednodes.begin(), evaluatednodes.end());
+		std::vector<AbstractNode *> instantiatednodes = inst->instantiateChildren(&c);
+		node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
 	}
 
 	if (type == FOR || type == INT_FOR)
@@ -168,12 +168,12 @@ AbstractNode *ControlModule::evaluate(const Context *ctx, const ModuleInstantiat
 	{
 		const IfElseModuleInstantiation *ifelse = dynamic_cast<const IfElseModuleInstantiation*>(inst);
 		if (evalctx->numArgs() > 0 && evalctx->getArgValue(0).toBool()) {
-			std::vector<AbstractNode *> evaluatednodes = ifelse->evaluateChildren(evalctx);
-			node->children.insert(node->children.end(), evaluatednodes.begin(), evaluatednodes.end());
+			std::vector<AbstractNode *> instantiatednodes = ifelse->instantiateChildren(evalctx);
+			node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
 		}
 		else {
-			std::vector<AbstractNode *> evaluatednodes = ifelse->evaluateElseChildren(evalctx);
-			node->children.insert(node->children.end(), evaluatednodes.begin(), evaluatednodes.end());
+			std::vector<AbstractNode *> instantiatednodes = ifelse->instantiateElseChildren(evalctx);
+			node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
 		}
 	}
 

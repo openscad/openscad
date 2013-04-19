@@ -40,14 +40,14 @@ class ColorModule : public AbstractModule
 {
 public:
 	ColorModule() { }
-	virtual AbstractNode *evaluate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const;
+	virtual AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const;
 
 private:
 	static boost::unordered_map<std::string, Color4f> colormap;
 };
 
 #include "colormap.h"
-AbstractNode *ColorModule::evaluate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const
+AbstractNode *ColorModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const
 {
 	ColorNode *node = new ColorNode(inst);
 
@@ -87,8 +87,8 @@ AbstractNode *ColorModule::evaluate(const Context *ctx, const ModuleInstantiatio
 		node->color[3] = alpha.toDouble();
 	}
 
-	std::vector<AbstractNode *> evaluatednodes = inst->evaluateChildren(evalctx);
-	node->children.insert(node->children.end(), evaluatednodes.begin(), evaluatednodes.end());
+	std::vector<AbstractNode *> instantiatednodes = inst->instantiateChildren(evalctx);
+	node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
 
 	return node;
 }

@@ -7,9 +7,9 @@
 #include <sstream>
 #include <fstream>
 
-Module *parsefile(const char *filename)
+FileModule *parsefile(const char *filename)
 {
-	Module *root_module = NULL;
+	FileModule *root_module = NULL;
 
 	handle_dep(filename);
 	std::ifstream ifs(filename);

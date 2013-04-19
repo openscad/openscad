@@ -7,6 +7,7 @@
 #include <boost/unordered_map.hpp>
 #include "value.h"
 #include "typedefs.h"
+#include "localscope.h"
 
 class ModuleInstantiation
 {
@@ -16,8 +17,8 @@ public:
 	virtual ~ModuleInstantiation();
 
 	std::string dump(const std::string &indent) const;
-	class AbstractNode *evaluate_instance(const class Context *ctx) const;
-	std::vector<AbstractNode*> evaluateChildren(const Context *evalctx) const;
+	class AbstractNode *evaluate(const class Context *ctx) const;
+	std::vector<AbstractNode*> instantiateChildren(const Context *evalctx) const;
 
 	void setPath(const std::string &path) { this->modpath = path; }
 	const std::string &path() const { return this->modpath; }
@@ -29,7 +30,7 @@ public:
 	bool isRoot() const { return this->tag_root; }
 
 	AssignmentList arguments;
-	std::vector<ModuleInstantiation*> children;
+	LocalScope scope;
 
 	bool tag_root;
 	bool tag_highlight;
@@ -45,55 +46,53 @@ class IfElseModuleInstantiation : public ModuleInstantiation {
 public:
 	IfElseModuleInstantiation() : ModuleInstantiation("if") { }
 	virtual ~IfElseModuleInstantiation();
-	std::vector<AbstractNode*> evaluateElseChildren(const Context *evalctx) const;
+	std::vector<AbstractNode*> instantiateElseChildren(const Context *evalctx) const;
 
-	std::vector<ModuleInstantiation*> else_children;
+	LocalScope else_scope;
 };
 
 class AbstractModule
 {
 public:
 	virtual ~AbstractModule();
-	virtual class AbstractNode *evaluate(const Context *ctx, const ModuleInstantiation *inst, const class EvalContext *evalctx = NULL) const;
+	virtual class AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, const class EvalContext *evalctx = NULL) const;
 	virtual std::string dump(const std::string &indent, const std::string &name) const;
 };
 
 class Module : public AbstractModule
 {
 public:
-	Module() : is_handling_dependencies(false) { }
+	Module() { }
 	virtual ~Module();
+
+	virtual AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const;
+	virtual std::string dump(const std::string &indent, const std::string &name) const;
+
+	void addChild(ModuleInstantiation *ch);
+
+	AssignmentList definition_arguments;
+
+	LocalScope scope;
+};
+
+class FileModule : public Module
+{
+public:
+	FileModule() : is_handling_dependencies(false) {}
+	virtual ~FileModule() {}
 
 	void setModulePath(const std::string &path) { this->path = path; }
 	const std::string &modulePath() const { return this->path; }
-
-	virtual AbstractNode *evaluate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const;
-	virtual std::string dump(const std::string &indent, const std::string &name) const;
-
-	void addChild(ModuleInstantiation *ch) { this->children.push_back(ch); }
-
-	typedef boost::unordered_map<std::string, class Module*> ModuleContainer;
-	ModuleContainer usedlibs;
 	void registerInclude(const std::string &filename);
-	typedef boost::unordered_map<std::string, time_t> IncludeContainer;
-	IncludeContainer includes;
-	bool is_handling_dependencies;
 	bool handleDependencies();
 
-	AssignmentList assignments;
-
-	typedef boost::unordered_map<std::string, class AbstractFunction*> FunctionContainer;
-	FunctionContainer functions;
-	typedef boost::unordered_map<std::string, AbstractModule*> AbstractModuleContainer;
-	AbstractModuleContainer	modules;
-
-	std::vector<ModuleInstantiation*> children;
-
-	std::vector<Assignment> definition_arguments;
-
-protected:
+	typedef boost::unordered_map<std::string, class FileModule*> ModuleContainer;
+	ModuleContainer usedlibs;
+	typedef boost::unordered_map<std::string, time_t> IncludeContainer;
+	IncludeContainer includes;
 
 private:
+	bool is_handling_dependencies;
 	std::string path;
 };
 

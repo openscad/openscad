@@ -13,16 +13,16 @@ public:
 	typedef std::vector<class ModuleInstantiation *> InstanceList;
 
 	EvalContext(const Context *parent, 
-							const AssignmentList &args, const InstanceList *const children = NULL)
-		: Context(parent), eval_arguments(args), children(children) {}
+							const AssignmentList &args, const class LocalScope *const scope = NULL)
+		: Context(parent), eval_arguments(args), scope(scope) {}
 	virtual ~EvalContext() {}
 
 	size_t numArgs() const { return this->eval_arguments.size(); }
 	const std::string &getArgName(size_t i) const;
 	Value getArgValue(size_t i, const Context *ctx = NULL) const;
 
-	size_t numChildren() const { return this->children ? this->children->size() : 0; }
-	ModuleInstantiation *getChild(size_t i) const { return this->children ? (*this->children)[i] : NULL; }
+	size_t numChildren() const;
+	ModuleInstantiation *getChild(size_t i) const;
 
 #ifdef DEBUG
 	virtual void dump(const class AbstractModule *mod, const ModuleInstantiation *inst);
@@ -31,7 +31,7 @@ public:
 private:
 	const AssignmentList &eval_arguments;
 	std::vector<std::pair<std::string, Value> > eval_values;
-	const InstanceList *const children;
+	const LocalScope *const scope;
 };
 
 #endif

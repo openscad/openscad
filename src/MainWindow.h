@@ -30,7 +30,7 @@ public:
 	std::string autoReloadId;
 
 	ModuleContext root_ctx;
-	Module *root_module;      // Result of parsing
+	FileModule *root_module;      // Result of parsing
 	ModuleInstantiation root_inst;    // Top level instance
 	AbstractNode *absolute_root_node; // Result of tree evaluation
 	AbstractNode *root_node;          // Root if the root modifier (!) is used

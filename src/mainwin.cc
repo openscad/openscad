@@ -644,7 +644,7 @@ bool MainWindow::compile(bool reload, bool procevents)
 		
 		AbstractNode::resetIndexCounter();
 		this->root_inst = ModuleInstantiation("group");
-		this->absolute_root_node = this->root_module->evaluate(&this->root_ctx, &this->root_inst, NULL);
+		this->absolute_root_node = this->root_module->instantiate(&this->root_ctx, &this->root_inst, NULL);
 		
 		if (this->absolute_root_node) {
 			// Do we have an explicit root node (! modifier)?
@@ -1022,7 +1022,7 @@ static bool is_modified(const std::string &filename, const time_t &mtime)
 bool MainWindow::includesChanged()
 {
 	if (this->root_module) {
-		BOOST_FOREACH(const Module::IncludeContainer::value_type &item, this->root_module->includes) {
+		BOOST_FOREACH(const FileModule::IncludeContainer::value_type &item, this->root_module->includes) {
 			if (is_modified(item.first, item.second)) return true;
 		}
 	}

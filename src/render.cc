@@ -38,10 +38,10 @@ class RenderModule : public AbstractModule
 {
 public:
 	RenderModule() { }
-	virtual AbstractNode *evaluate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const;
+	virtual AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const;
 };
 
-AbstractNode *RenderModule::evaluate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const
+AbstractNode *RenderModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const
 {
 	RenderNode *node = new RenderNode(inst);
 
@@ -55,8 +55,8 @@ AbstractNode *RenderModule::evaluate(const Context *ctx, const ModuleInstantiati
 	if (v.type() == Value::NUMBER)
 		node->convexity = (int)v.toDouble();
 
-	std::vector<AbstractNode *> evaluatednodes = inst->evaluateChildren(evalctx);
-	node->children.insert(node->children.end(), evaluatednodes.begin(), evaluatednodes.end());
+	std::vector<AbstractNode *> instantiatednodes = inst->instantiateChildren(evalctx);
+	node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
 
 	return node;
 }

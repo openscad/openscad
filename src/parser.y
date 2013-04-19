@@ -58,6 +58,7 @@
 
   std::vector<Module*> module_stack;
   Module *currmodule;
+  FileModule *rootmodule;
 
   extern void lexerdestroy();
   extern FILE *lexerin;
@@ -130,7 +131,7 @@
 
 input: 
 /* empty */ |
-TOK_USE { currmodule->usedlibs[$1] = NULL; } input |
+TOK_USE { rootmodule->usedlibs[$1] = NULL; } input |
 statement input ;
 
 inner_input: 
@@ -148,21 +149,21 @@ module_instantiation {
   }
 } |
 TOK_ID '=' expr ';' {
-  for (AssignmentList::iterator iter = currmodule->assignments.begin(); 
-       iter != currmodule->assignments.end(); 
+  for (AssignmentList::iterator iter = currmodule->scope.assignments.begin(); 
+       iter != currmodule->scope.assignments.end(); 
        iter++) {
     if (iter->first == $1) {
-      currmodule->assignments.erase(iter);
+      currmodule->scope.assignments.erase(iter);
       break;
     }
   }
-  currmodule->assignments.push_back(Assignment($1, $3));
+  currmodule->scope.assignments.push_back(Assignment($1, $3));
 } |
 TOK_MODULE TOK_ID '(' arguments_decl optional_commas ')' {
   Module *p = currmodule;
   module_stack.push_back(currmodule);
   currmodule = new Module();
-  p->modules[$2] = currmodule;
+  p->scope.modules[$2] = currmodule;
   currmodule->definition_arguments = *$4;
   free($2);
   delete $4;
@@ -174,11 +175,11 @@ TOK_MODULE TOK_ID '(' arguments_decl optional_commas ')' {
     Function *func = new Function();
     func->definition_arguments = *$4;
     func->expr = $8;
-    currmodule->functions[$2] = func;
+    currmodule->scope.functions[$2] = func;
     free($2);
     delete $4;
   } ';' ;
-
+          
 /* Will return a dummy parent node with zero or more children */
 children_instantiation:
 module_instantiation {
@@ -196,9 +197,9 @@ TOK_IF '(' expr ')' children_instantiation {
   $$ = new IfElseModuleInstantiation();
   $$->arguments.push_back(Assignment("", $3));
   $$->setPath(parser_source_path);
-
+  
   if ($$) {
-    $$->children = *$5;
+    $$->scope.children = *$5;
   } else {
     for (size_t i = 0; i < $5->size(); i++)
       delete (*$5)[i];
@@ -213,7 +214,7 @@ if_statement {
 if_statement TOK_ELSE children_instantiation {
   $$ = $1;
   if ($$) {
-    $$->else_children = *$3;
+    $$->else_scope.children = *$3;
   } else {
     for (size_t i = 0; i < $3->size(); i++)
       delete (*$3)[i];
@@ -244,7 +245,7 @@ single_module_instantiation ';' {
 single_module_instantiation children_instantiation {
   $$ = $1;
   if ($$) {
-    $$->children = *$2;
+    $$->scope.children = *$2;
   } else {
     for (size_t i = 0; i < $2->size(); i++)
       delete (*$2)[i];
@@ -521,7 +522,7 @@ void yyerror (char const *s)
   currmodule = NULL;
 }
 
-Module *parse(const char *text, const char *path, int debug)
+FileModule *parse(const char *text, const char *path, int debug)
 {
   lexerin = NULL;
   parser_error_pos = -1;
@@ -529,7 +530,8 @@ Module *parse(const char *text, const char *path, int debug)
   parser_source_path = boosty::absolute(std::string(path)).string();
 
   module_stack.clear();
-  Module *rootmodule = currmodule = new Module();
+  rootmodule = new FileModule();
+  currmodule = rootmodule;
   rootmodule->setModulePath(path);
   //        PRINTB_NOCACHE("New module: %s %p", "root" % rootmodule);
 

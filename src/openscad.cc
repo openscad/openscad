@@ -327,7 +327,7 @@ int main(int argc, char **argv)
 
 		if (!filename) help(argv[0]);
 
-		Module *root_module;
+		FileModule *root_module;
 		ModuleInstantiation root_inst("group");
 		AbstractNode *root_node;
 		AbstractNode *absolute_root_node;
@@ -359,7 +359,7 @@ int main(int argc, char **argv)
 		fs::current_path(fparent);
 
 		AbstractNode::resetIndexCounter();
-		absolute_root_node = root_module->evaluate(&root_ctx, &root_inst, NULL);
+		absolute_root_node = root_module->instantiate(&root_ctx, &root_inst, NULL);
 
 		// Do we have an explicit root node (! modifier)?
 		if (!(root_node = find_root_tag(absolute_root_node)))

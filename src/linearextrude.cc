@@ -45,10 +45,10 @@ class LinearExtrudeModule : public AbstractModule
 {
 public:
 	LinearExtrudeModule() { }
-	virtual AbstractNode *evaluate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const;
+	virtual AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const;
 };
 
-AbstractNode *LinearExtrudeModule::evaluate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const
+AbstractNode *LinearExtrudeModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const
 {
 	LinearExtrudeNode *node = new LinearExtrudeNode(inst);
 
@@ -116,8 +116,8 @@ AbstractNode *LinearExtrudeModule::evaluate(const Context *ctx, const ModuleInst
 	}
 
 	if (node->filename.empty()) {
-		std::vector<AbstractNode *> evaluatednodes = inst->evaluateChildren(evalctx);
-		node->children.insert(node->children.end(), evaluatednodes.begin(), evaluatednodes.end());
+		std::vector<AbstractNode *> instantiatednodes = inst->instantiateChildren(evalctx);
+		node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
 	}
 
 	return node;

@@ -93,7 +93,7 @@ int main(int argc, char **argv)
 	}
 
 	AbstractNode::resetIndexCounter();
-	root_node = root_module->evaluate(&root_ctx, &root_inst);
+	root_node = root_module->instantiate(&root_ctx, &root_inst);
 
 	Tree tree(root_node);
 

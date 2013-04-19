@@ -94,7 +94,7 @@ int main(int argc, char **argv)
 	}
 
 	AbstractNode::resetIndexCounter();
-	root_node = root_module->evaluate(&root_ctx, &root_inst);
+	root_node = root_module->instantiate(&root_ctx, &root_inst);
 
 	delete root_node;
 	delete root_module;
@@ -109,7 +109,7 @@ int main(int argc, char **argv)
 	}
 
 	AbstractNode::resetIndexCounter();
-	root_node = root_module->evaluate(&root_ctx, &root_inst);
+	root_node = root_module->instantiate(&root_ctx, &root_inst);
 
 	delete root_node;
 	delete root_module;
