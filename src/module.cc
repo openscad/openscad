@@ -112,14 +112,7 @@ std::string ModuleInstantiation::dump(const std::string &indent) const
 
 AbstractNode *ModuleInstantiation::evaluate_instance(const Context *ctx) const
 {
-	EvalContext c(ctx);
-	BOOST_FOREACH(const Assignment &arg, this->arguments) {
-		c.eval_arguments.push_back(std::make_pair(arg.first,
-																							arg.second ? 
-																							arg.second->evaluate(ctx) : 
-																							Value()));
-	}
-	c.children = this->children;
+	EvalContext c(ctx, this->arguments, &this->children);
 
 #if 0 && DEBUG
 	PRINT("New eval ctx:");

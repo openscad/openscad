@@ -66,9 +66,9 @@ void Context::setVariables(const AssignmentList &args,
 
 	if (evalctx) {
 		size_t posarg = 0;
-		for (size_t i=0; i<evalctx->eval_arguments.size(); i++) {
-			const std::string &name = evalctx->eval_arguments[i].first;
-			const Value &val = evalctx->eval_arguments[i].second;
+		for (size_t i=0; i<evalctx->numArgs(); i++) {
+			const std::string &name = evalctx->getArgName(i);
+			const Value &val = evalctx->getArgValue(i);
 			if (name.empty()) {
 				if (posarg < args.size()) this->set_variable(args[posarg++].first, val);
 			} else {

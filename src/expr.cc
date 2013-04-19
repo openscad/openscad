@@ -127,11 +127,7 @@ Value Expression::evaluate(const Context *context) const
 		return Value();
 	}
 	if (this->type == "F") {
-		EvalContext c(context);
-		for (size_t i=0; i < this->call_arguments.size(); i++) {
-			c.eval_arguments.push_back(std::make_pair(this->call_arguments[i].first, 
-																								this->call_arguments[i].second->evaluate(context)));
-		}
+		EvalContext c(context, this->call_arguments);
 		// Value::VectorType argvalues;
 		// std::transform(this->children.begin(), this->children.end(), 
 		// 							 std::back_inserter(argvalues), 

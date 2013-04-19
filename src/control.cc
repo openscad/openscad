@@ -52,9 +52,9 @@ public:
 void for_eval(AbstractNode &node, const ModuleInstantiation &inst, size_t l, 
 							const Context *ctx, const EvalContext *evalctx)
 {
-	if (evalctx->eval_arguments.size() > l) {
-		const std::string &it_name = evalctx->eval_arguments[l].first;
-		const Value &it_values = evalctx->eval_arguments[l].second;
+	if (evalctx->numArgs() > l) {
+		const std::string &it_name = evalctx->getArgName(l);
+		const Value &it_values = evalctx->getArgValue(l, ctx);
 		Context c(ctx);
 		if (it_values.type() == Value::RANGE) {
 			Value::RangeType range = it_values.toRange();
@@ -93,9 +93,9 @@ AbstractNode *ControlModule::evaluate(const Context *ctx, const ModuleInstantiat
 	if (type == CHILD)
 	{
 		int n = 0;
-		if (evalctx->eval_arguments.size() > 0) {
+		if (evalctx->numArgs() > 0) {
 			double v;
-			if (evalctx->eval_arguments[0].second.getDouble(v)) {
+			if (evalctx->getArgValue(0).getDouble(v)) {
 				n = trunc(v);
 				if (n < 0) {
 					PRINTB("WARNING: Negative child index (%d) not allowed", n);
@@ -114,14 +114,14 @@ AbstractNode *ControlModule::evaluate(const Context *ctx, const ModuleInstantiat
         // assert(filectx->evalctx);
 
 				if (filectx->evalctx) {
-					if (n < filectx->evalctx->children.size()) {
-						node = filectx->evalctx->children[n]->evaluate_instance(filectx->evalctx);
+					if (n < filectx->evalctx->numChildren()) {
+						node = filectx->evalctx->getChild(n)->evaluate_instance(filectx->evalctx);
 					}
 					else {
 						// How to deal with negative objects in this case?
             // (e.g. first child of difference is invalid)
 						PRINTB("WARNING: Child index (%d) out of bounds (%d children)", 
-									 n % filectx->evalctx->children.size());
+									 n % filectx->evalctx->numChildren());
 					}
 				}
 				return node;
@@ -142,8 +142,8 @@ AbstractNode *ControlModule::evaluate(const Context *ctx, const ModuleInstantiat
 		msg << "ECHO: ";
 		for (size_t i = 0; i < inst->arguments.size(); i++) {
 			if (i > 0) msg << ", ";
-			if (!evalctx->eval_arguments[i].first.empty()) msg << evalctx->eval_arguments[i].first << " = ";
-			msg << evalctx->eval_arguments[i].second;
+			if (!evalctx->getArgName(i).empty()) msg << evalctx->getArgName(i) << " = ";
+			msg << evalctx->getArgValue(i);
 		}
 		PRINTB("%s", msg.str());
 	}
@@ -151,9 +151,9 @@ AbstractNode *ControlModule::evaluate(const Context *ctx, const ModuleInstantiat
 	if (type == ASSIGN)
 	{
 		Context c(evalctx);
-		for (size_t i = 0; i < evalctx->eval_arguments.size(); i++) {
-			if (!evalctx->eval_arguments[i].first.empty())
-				c.set_variable(evalctx->eval_arguments[i].first, evalctx->eval_arguments[i].second);
+		for (size_t i = 0; i < evalctx->numArgs(); i++) {
+			if (!evalctx->getArgName(i).empty())
+				c.set_variable(evalctx->getArgName(i), evalctx->getArgValue(i));
 		}
 		std::vector<AbstractNode *> evaluatednodes = inst->evaluateChildren(&c);
 		node->children.insert(node->children.end(), evaluatednodes.begin(), evaluatednodes.end());
@@ -167,7 +167,7 @@ AbstractNode *ControlModule::evaluate(const Context *ctx, const ModuleInstantiat
 	if (type == IF)
 	{
 		const IfElseModuleInstantiation *ifelse = dynamic_cast<const IfElseModuleInstantiation*>(inst);
-		if (evalctx->eval_arguments.size() > 0 && evalctx->eval_arguments[0].second.toBool()) {
+		if (evalctx->numArgs() > 0 && evalctx->getArgValue(0).toBool()) {
 			std::vector<AbstractNode *> evaluatednodes = ifelse->evaluateChildren(evalctx);
 			node->children.insert(node->children.end(), evaluatednodes.begin(), evaluatednodes.end());
 		}
