@@ -108,8 +108,7 @@ This will download the latest sources into a directory named 'openscad'.
 To pull the MCAD library (http://reprap.org/wiki/MCAD), do the following:
 
     cd openscad
-    git submodule init
-    git submodule update
+    git submodule update --init
 
 ### Building for Mac OS X
 
