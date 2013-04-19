@@ -70,6 +70,10 @@ AbstractNode *ImportModule::evaluate(const Context *ctx, const ModuleInstantiati
 
   // FIXME: This is broken. Tag as deprecated and fix
 	// Map old argnames to new argnames for compatibility
+	// To fix: 
+  // o after c.setVariables()
+	//   - if "filename" in evalctx: deprecated-warning && v.set_variable("file", value);
+	//   - if "layername" in evalctx: deprecated-warning && v.set_variable("layer", value);
 #if 0
 	std::vector<std::string> inst_argnames = inst->argnames;
 	for (size_t i=0; i<inst_argnames.size(); i++) {
