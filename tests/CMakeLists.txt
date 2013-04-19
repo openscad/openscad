@@ -97,7 +97,7 @@ endif()
 
 # Clang compiler
 
-if(CMAKE_CXX_COMPILER MATCHES ".*clang.*")
+if(${CMAKE_CXX_COMPILER} MATCHES ".*clang.*")
   # disable enormous amount of warnings about CGAL
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-parameter")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-variable")
@@ -354,7 +354,7 @@ if("${CGAL_MAJOR_VERSION}.${CGAL_MINOR_VERSION}" VERSION_LESS 3.6)
 endif()
 inclusion(CGAL_DIR CGAL_INCLUDE_DIRS)
 
-if(CMAKE_CXX_COMPILER MATCHES ".*clang.*" AND NOT STREQUAL ${CGAL_CXX_FLAGS_INIT} "" )
+if(${CMAKE_CXX_COMPILER} MATCHES ".*clang.*" AND NOT ${CGAL_CXX_FLAGS_INIT} STREQUAL "" )
 	string(REPLACE "-frounding-math" "" CGAL_CXX_FLAGS_INIT ${CGAL_CXX_FLAGS_INIT})
 	string(REPLACE "--param=ssp-buffer-size=4" "" CGAL_CXX_FLAGS_INIT ${CGAL_CXX_FLAGS_INIT})
 endif()
