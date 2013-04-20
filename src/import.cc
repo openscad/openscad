@@ -67,6 +67,7 @@ AbstractNode *ImportModule::evaluate(const Context *ctx, const ModuleInstantiati
 {
 	AssignmentList args;
 	args += Assignment("file", NULL), Assignment("layer", NULL), Assignment("convexity", NULL), Assignment("origin", NULL), Assignment("scale", NULL);
+	args += Assignment("filename",NULL), Assignment("layername", NULL);
 
   // FIXME: This is broken. Tag as deprecated and fix
 	// Map old argnames to new argnames for compatibility
@@ -90,6 +91,12 @@ AbstractNode *ImportModule::evaluate(const Context *ctx, const ModuleInstantiati
 #endif
 
 	Value v = c.lookup_variable("file");
+	if (v.isUndefined()) {
+		v = c.lookup_variable("filename");
+		if (!v.isUndefined())
+			PRINT("WARNING: filename= is deprecated. Please use file=");
+	}
+
 	std::string filename = inst->getAbsolutePath(v.isUndefined() ? "" : v.toString());
 	import_type_e actualtype = this->type;
 	if (actualtype == TYPE_UNKNOWN) {
@@ -108,6 +115,11 @@ AbstractNode *ImportModule::evaluate(const Context *ctx, const ModuleInstantiati
 
 	node->filename = filename;
 	Value layerval = c.lookup_variable("layer", true);
+	if (layerval.isUndefined()) {
+		layerval = c.lookup_variable("layername",true);
+		if (!layerval.isUndefined())
+			PRINT("WARNING: layername= is deprecated. Please use layer=");
+	}
 	node->layername = layerval.isUndefined() ? ""  : layerval.toString();
 	node->convexity = c.lookup_variable("convexity", true).toDouble();
 
