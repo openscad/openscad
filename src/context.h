@@ -17,6 +17,11 @@ public:
 						const std::vector<std::string> &call_argnames, 
 						const std::vector<Value> &call_argvalues);
 
+	bool check_for_unknown_args(
+        const std::vector<std::string> &argnames,
+        const std::vector<std::string> &opt_argnames,
+  		const std::vector<std::string> &call_argnames);
+
 	void set_variable(const std::string &name, const Value &value);
 	void set_constant(const std::string &name, const Value &value);
 
@@ -48,5 +53,18 @@ private:
 	ValueMap config_variables;
 	std::string document_path;
 };
+
+// Constants
+
+// $rm= radius mode constants
+// It's kinda weird that these are double, but that fits best with the rest of the Value class.
+
+// Default. Radius is to verticies of polygon which approximates a circle.
+static const double OUTER_RADIUS = 1;
+// Specified radius is tangent to the polygon segments approximating a circle.
+static const double INNER_RADIUS = 2;
+// Specified radius crosses segments at 1/4 and 3/4 of the arc approximated by each segment of the polygon.
+static const double MIDPOINT_RADIUS = 3;
+
 
 #endif
