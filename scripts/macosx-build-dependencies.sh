@@ -28,6 +28,7 @@ OPTION_32BIT=true
 OPTION_LLVM=false
 OPTION_CLANG=false
 OPTION_GCC=false
+OPTION_DEPLOY=false
 DETECTED_LION=false
 DETECTED_MOUNTAIN_LION=false
 export QMAKESPEC=macx-g++
@@ -421,6 +422,12 @@ if $DETECTED_MOUNTAIN_LION; then
 else
   echo "Setting build target to 10.5 or later"
   MAC_OSX_VERSION_MIN=10.5
+fi
+
+if $OPTION_DEPLOY; then
+  echo "Building deployment version of libraries"
+else
+  OPTION_32BIT=false
 fi
 
 if $OPTION_32BIT; then
