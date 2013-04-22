@@ -29,6 +29,7 @@ OPTION_LLVM=false
 OPTION_CLANG=false
 OPTION_GCC=false
 DETECTED_LION=false
+DETECTED_MOUNTAIN_LION=false
 export QMAKESPEC=macx-g++
 
 printUsage()
@@ -371,11 +372,14 @@ do
 done
 
 OSVERSION=`sw_vers -productVersion | cut -d. -f2`
-if [[ $OSVERSION -ge 7 ]]; then
-  echo "Detected Lion or later"
+if [[ $OSVERSION -ge 8 ]]; then
+  echo "Detected Mountain Lion (10.8) or later"
+  DETECTED_MOUNTAIN_LION=true
+elif [[ $OSVERSION -ge 7 ]]; then
+  echo "Detected Lion (10.7) or later"
   DETECTED_LION=true
 else
-  echo "Detected Snow Leopard or earlier"
+  echo "Detected Snow Leopard (10.6) or earlier"
 fi
 
 USING_LLVM=false
@@ -409,6 +413,20 @@ elif $USING_CLANG; then
   export CC=clang
   export CXX=clang++
   export QMAKESPEC=unsupported/macx-clang
+fi
+
+if $DETECTED_MOUNTAIN_LION; then
+  echo "Setting build target to 10.6 or later"
+  MAC_OSX_VERSION_MIN=10.6
+else
+  echo "Setting build target to 10.5 or later"
+  MAC_OSX_VERSION_MIN=10.5
+fi
+
+if $OPTION_32BIT; then
+  echo "Building combined 32/64-bit binaries"
+else
+  echo "Building 64-bit binaries"
 fi
 
 echo "Using basedir:" $BASEDIR
