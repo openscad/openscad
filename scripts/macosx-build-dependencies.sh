@@ -29,8 +29,6 @@ OPTION_LLVM=false
 OPTION_CLANG=false
 OPTION_GCC=false
 OPTION_DEPLOY=false
-DETECTED_LION=false
-DETECTED_MOUNTAIN_LION=false
 export QMAKESPEC=macx-g++
 
 printUsage()
@@ -372,13 +370,11 @@ do
   esac
 done
 
-OSVERSION=`sw_vers -productVersion | cut -d. -f2`
-if [[ $OSVERSION -ge 8 ]]; then
+OSX_VERSION=`sw_vers -productVersion | cut -d. -f2`
+if (( $OSX_VERSION >= 8 )); then
   echo "Detected Mountain Lion (10.8) or later"
-  DETECTED_MOUNTAIN_LION=true
-elif [[ $OSVERSION -ge 7 ]]; then
+elif (( $OSX_VERSION >= 7 )); then
   echo "Detected Lion (10.7) or later"
-  DETECTED_LION=true
 else
   echo "Detected Snow Leopard (10.6) or earlier"
 fi
@@ -392,7 +388,7 @@ elif $OPTION_GCC; then
   USING_GCC=true
 elif $OPTION_CLANG; then
   USING_CLANG=true
-elif $DETECTED_LION; then
+elif (( $OSX_VERSION >= 7 )); then
   USING_GCC=true
 fi
 
@@ -416,7 +412,7 @@ elif $USING_CLANG; then
   export QMAKESPEC=unsupported/macx-clang
 fi
 
-if $DETECTED_MOUNTAIN_LION; then
+if (( $OSX_VERSION >= 8 )); then
   echo "Setting build target to 10.6 or later"
   MAC_OSX_VERSION_MIN=10.6
 else
