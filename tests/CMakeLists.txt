@@ -97,7 +97,7 @@ endif()
 
 # Clang compiler
 
-if(CMAKE_CXX_COMPILER MATCHES ".*clang.*")
+if(${CMAKE_CXX_COMPILER} MATCHES ".*clang.*")
   # disable enormous amount of warnings about CGAL
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-parameter")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-variable")
@@ -179,28 +179,6 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
   FIND_LIBRARY(COCOA_LIBRARY Cocoa REQUIRED)
 endif(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 
-# Qt4
-
-set(CMAKE_INCLUDE_DIRECTORIES_BEFORE ON)
-find_package(OpenGL REQUIRED)
-if ( "${OPENGL_glu_LIBRARY}" MATCHES "NOTFOUND" )
-  # GLU and Mesa split in late 2012 so some systems dont have GLU
-  find_library(OPENGL_glu_LIBRARY GLU HINTS "$ENV{OPENSCAD_LIBRARIES}/lib" REQUIRED)
-  set( OPENGL_LIBRARY ${OPENGL_glu_LIBRARY} ${OPENGL_LIBRARY} )
-endif()
-
-if (MINGW_CROSS_ENV_DIR) 
-  mingw_cross_env_find_qt()
-  mingw_cross_env_info()
-  include_directories( ${QT_INCLUDE_DIRS} )
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${QT_CFLAGS_OTHER}")
-else()
-  find_package(Qt4 COMPONENTS QtCore REQUIRED)
-  include(${QT_USE_FILE})
-endif()
-
-set(CMAKE_INCLUDE_DIRECTORIES_BEFORE OFF)
-
 
 # Eigen
 
@@ -268,6 +246,8 @@ else()
   inclusion(EIGEN_DIR EIGEN_INCLUDE_DIR)
 endif()
 
+# OpenGL
+find_package(OpenGL REQUIRED)
 
 # OpenCSG
 if (NOT $ENV{OPENCSGDIR} STREQUAL "")
@@ -374,7 +354,7 @@ if("${CGAL_MAJOR_VERSION}.${CGAL_MINOR_VERSION}" VERSION_LESS 3.6)
 endif()
 inclusion(CGAL_DIR CGAL_INCLUDE_DIRS)
 
-if(CMAKE_CXX_COMPILER MATCHES ".*clang.*")
+if(${CMAKE_CXX_COMPILER} MATCHES ".*clang.*" AND NOT ${CGAL_CXX_FLAGS_INIT} STREQUAL "" )
 	string(REPLACE "-frounding-math" "" CGAL_CXX_FLAGS_INIT ${CGAL_CXX_FLAGS_INIT})
 	string(REPLACE "--param=ssp-buffer-size=4" "" CGAL_CXX_FLAGS_INIT ${CGAL_CXX_FLAGS_INIT})
 endif()
@@ -444,6 +424,7 @@ set(CORE_SOURCES
   ../src/rotateextrude.cc 
   ../src/printutils.cc 
   ../src/progress.cc 
+  ../src/boost-utils.cc 
   ${FLEX_OpenSCADlexer_OUTPUTS}
   ${BISON_OpenSCADparser_OUTPUTS})
 
@@ -602,6 +583,10 @@ elseif(WIN32)
   set(GUI_BINPATH "${CMAKE_CURRENT_SOURCE_DIR}/../Release/openscad.exe")
 else()
   set(GUI_BINPATH "${CMAKE_CURRENT_SOURCE_DIR}/../openscad")
+endif()
+
+if(EXISTS "${CMAKE_CURRENT_BINARY_DIR}/openscad")
+  set(GUI_BINPATH "${CMAKE_CURRENT_BINARY_DIR}/openscad")
 endif()
 
 if(EXISTS "${GUI_BINPATH}")
