@@ -58,6 +58,12 @@ int lexerlex(void);
 std::vector<Module*> module_stack;
 Module *currmodule;
 
+extern void lexerdestroy();
+extern FILE *lexerin;
+extern const char *parser_input_buffer;
+const char *parser_input_buffer;
+std::string parser_source_path;
+
 class ArgContainer {
 public: 
 	std::string argname;
@@ -77,6 +83,7 @@ public:
 	class Value *value;
 	class Expression *expr;
 	class ModuleInstantiation *inst;
+	std::vector<ModuleInstantiation*> *instvec;
 	class IfElseModuleInstantiation *ifelse;
 	class ArgContainer *arg;
 	class ArgsContainer *args;
@@ -117,8 +124,8 @@ public:
 %type <inst> module_instantiation
 %type <ifelse> if_statement
 %type <ifelse> ifelse_statement
-%type <inst> children_instantiation
-%type <inst> module_instantiation_list
+%type <instvec> children_instantiation
+%type <instvec> module_instantiation_list
 %type <inst> single_module_instantiation
 
 %type <args> arguments_call
@@ -182,9 +189,9 @@ statement:
 /* Will return a dummy parent node with zero or more children */
 children_instantiation:
 	module_instantiation {
-		$$ = new ModuleInstantiation();
+		$$ = new std::vector<ModuleInstantiation*>;
 		if ($1) { 
-			$$->children.push_back($1);
+			$$->push_back($1);
 		}
 	} |
 	'{' module_instantiation_list '}' {
@@ -196,14 +203,14 @@ if_statement:
 		$$ = new IfElseModuleInstantiation();
 		$$->argnames.push_back("");
 		$$->argexpr.push_back($3);
+                $$->setPath(parser_source_path);
 
 		if ($$) {
-			$$->children = $5->children;
+                  $$->children = *$5;
 		} else {
-			for (size_t i = 0; i < $5->children.size(); i++)
-				delete $5->children[i];
+			for (size_t i = 0; i < $5->size(); i++)
+                          delete (*$5)[i];
 		}
-		$5->children.clear();
 		delete $5;
 	} ;
 
@@ -214,12 +221,11 @@ ifelse_statement:
 	if_statement TOK_ELSE children_instantiation {
 		$$ = $1;
 		if ($$) {
-			$$->else_children = $3->children;
+                  $$->else_children = *$3;
 		} else {
-			for (size_t i = 0; i < $3->children.size(); i++)
-				delete $3->children[i];
+			for (size_t i = 0; i < $3->size(); i++)
+                          delete (*$3)[i];
 		}
-		$3->children.clear();
 		delete $3;
 	} ;
 
@@ -246,12 +252,11 @@ module_instantiation:
 	single_module_instantiation children_instantiation {
 		$$ = $1;
 		if ($$) {
-			$$->children = $2->children;
+			$$->children = *$2;
 		} else {
-			for (size_t i = 0; i < $2->children.size(); i++)
-				delete $2->children[i];
+			for (size_t i = 0; i < $2->size(); i++)
+                          delete (*$2)[i];
 		}
-		$2->children.clear();
 		delete $2;
 	} |
 	ifelse_statement {
@@ -260,12 +265,12 @@ module_instantiation:
 
 module_instantiation_list:
 	/* empty */ {
-		$$ = new ModuleInstantiation();
+		$$ = new std::vector<ModuleInstantiation*>;
 	} |
 	module_instantiation_list module_instantiation {
 		$$ = $1;
 		if ($$) {
-			if ($2) $$->children.push_back($2);
+			if ($2) $$->push_back($2);
 		} else {
 			delete $2;
 		}
@@ -276,6 +281,7 @@ single_module_instantiation:
 		$$ = new ModuleInstantiation($1);
 		$$->argnames = $3->argnames;
 		$$->argexpr = $3->argexpr;
+                $$->setPath(parser_source_path);
 		free($1);
 		delete $3;
 	}
@@ -536,18 +542,12 @@ void yyerror (char const *s)
 	currmodule = NULL;
 }
 
-extern void lexerdestroy();
-extern FILE *lexerin;
-extern const char *parser_input_buffer;
-const char *parser_input_buffer;
-std::string parser_source_path;
-
 Module *parse(const char *text, const char *path, int debug)
 {
 	lexerin = NULL;
 	parser_error_pos = -1;
 	parser_input_buffer = text;
-	parser_source_path = std::string(path);
+	parser_source_path = boosty::absolute(std::string(path)).string();
 
 	module_stack.clear();
 	Module *rootmodule = currmodule = new Module();

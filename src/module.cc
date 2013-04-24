@@ -32,6 +32,9 @@
 #include "function.h"
 #include "printutils.h"
 
+#include <boost/filesystem.hpp>
+namespace fs = boost::filesystem;
+#include "boosty.h"
 #include <boost/foreach.hpp>
 #include <sstream>
 #include <sys/stat.h>
@@ -65,6 +68,19 @@ ModuleInstantiation::~ModuleInstantiation()
 IfElseModuleInstantiation::~IfElseModuleInstantiation()
 {
 	BOOST_FOREACH (ModuleInstantiation *v, else_children) delete v;
+}
+
+/*!
+	Returns the absolute path to the given filename, unless it's empty.
+ */
+std::string ModuleInstantiation::getAbsolutePath(const std::string &filename) const
+{
+	if (!filename.empty() && !boosty::is_absolute(fs::path(filename))) {
+		return boosty::absolute(fs::path(this->modpath) / filename).string();
+	}
+	else {
+		return filename;
+	}
 }
 
 std::string ModuleInstantiation::dump(const std::string &indent) const
@@ -152,15 +168,15 @@ AbstractNode *Module::evaluate(const Context *ctx, const ModuleInstantiation *in
 
 	c.functions_p = &functions;
 	c.modules_p = &modules;
-
+	
 	if (!usedlibs.empty())
 		c.usedlibs_p = &usedlibs;
 	else
 		c.usedlibs_p = NULL;
-
+	
 	BOOST_FOREACH(const std::string &var, assignments_var) {
 		c.set_variable(var, assignments.at(var)->evaluate(&c));
-	}
+  }
 
 	AbstractNode *node = new AbstractNode(inst);
 	for (size_t i = 0; i < children.size(); i++) {

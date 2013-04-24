@@ -71,7 +71,7 @@ AbstractNode *RotateExtrudeModule::evaluate(const Context *ctx, const ModuleInst
 
 	if (!file.isUndefined()) {
 		PRINT("DEPRECATED: Support for reading files in rotate_extrude will be removed in future releases. Use a child import() instead.");
-		node->filename = c.getAbsolutePath(file.toString());
+		node->filename = inst->getAbsolutePath(file.toString());
 	}
 
 	node->layername = layer.isUndefined() ? "" : layer.toString();

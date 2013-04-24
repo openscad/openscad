@@ -75,7 +75,7 @@ AbstractNode *LinearExtrudeModule::evaluate(const Context *ctx, const ModuleInst
 
 	if (!file.isUndefined()) {
 		PRINT("DEPRECATED: Support for reading files in linear_extrude will be removed in future releases. Use a child import() instead.");
-		node->filename = c.getAbsolutePath(file.toString());
+		node->filename = inst->getAbsolutePath(file.toString());
 	}
 
 	// if height not given, and first argument is a number,
