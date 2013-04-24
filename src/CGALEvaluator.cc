@@ -206,9 +206,11 @@ CGAL_Nef_polyhedron CGALEvaluator::applyResize(const CgaladvNode &node)
 		bb = bounding_box( *N.p3 );
 	}
 
-	Eigen::Matrix<NT,3,1> scale, bbox_size;
-	scale << 1,1,1;
-	bbox_size << bb.xmax()-bb.xmin(), bb.ymax()-bb.ymin(), bb.zmax()-bb.zmin();
+	std::vector<NT> scale, bbox_size;
+	for (int i=0;i<3;i++) scale.push_back( NT(1) );
+	bbox_size.push_back( bb.xmax()-bb.xmin() );
+	bbox_size.push_back( bb.ymax()-bb.ymin() );
+	bbox_size.push_back( bb.zmax()-bb.zmin() );
 	for (int i=0;i<3;i++) {
 		if (node.newsize[i]) {
 			if (bbox_size[i]==NT(0)) {
@@ -220,7 +222,7 @@ CGAL_Nef_polyhedron CGALEvaluator::applyResize(const CgaladvNode &node)
 			}
 		}
 	}
-	NT autoscale = scale.maxCoeff();
+	NT autoscale = std::max( scale[0], std::max( scale[1], scale[2] ));
 	for (int i=0;i<3;i++) {
 		if (node.autosize[i]) scale[i] = autoscale;
 	}

@@ -28,7 +28,7 @@ OPTION_32BIT=true
 OPTION_LLVM=false
 OPTION_CLANG=false
 OPTION_GCC=false
-DETECTED_LION=false
+OPTION_DEPLOY=false
 export QMAKESPEC=macx-g++
 
 printUsage()
@@ -370,12 +370,13 @@ do
   esac
 done
 
-OSVERSION=`sw_vers -productVersion | cut -d. -f2`
-if [[ $OSVERSION -ge 7 ]]; then
-  echo "Detected Lion or later"
-  DETECTED_LION=true
+OSX_VERSION=`sw_vers -productVersion | cut -d. -f2`
+if (( $OSX_VERSION >= 8 )); then
+  echo "Detected Mountain Lion (10.8) or later"
+elif (( $OSX_VERSION >= 7 )); then
+  echo "Detected Lion (10.7) or later"
 else
-  echo "Detected Snow Leopard or earlier"
+  echo "Detected Snow Leopard (10.6) or earlier"
 fi
 
 USING_LLVM=false
@@ -387,7 +388,7 @@ elif $OPTION_GCC; then
   USING_GCC=true
 elif $OPTION_CLANG; then
   USING_CLANG=true
-elif $DETECTED_LION; then
+elif (( $OSX_VERSION >= 7 )); then
   USING_GCC=true
 fi
 
@@ -409,6 +410,26 @@ elif $USING_CLANG; then
   export CC=clang
   export CXX=clang++
   export QMAKESPEC=unsupported/macx-clang
+fi
+
+if (( $OSX_VERSION >= 8 )); then
+  echo "Setting build target to 10.6 or later"
+  MAC_OSX_VERSION_MIN=10.6
+else
+  echo "Setting build target to 10.5 or later"
+  MAC_OSX_VERSION_MIN=10.5
+fi
+
+if $OPTION_DEPLOY; then
+  echo "Building deployment version of libraries"
+else
+  OPTION_32BIT=false
+fi
+
+if $OPTION_32BIT; then
+  echo "Building combined 32/64-bit binaries"
+else
+  echo "Building 64-bit binaries"
 fi
 
 echo "Using basedir:" $BASEDIR
