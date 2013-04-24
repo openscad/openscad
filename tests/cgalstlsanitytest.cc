@@ -84,10 +84,10 @@ int main(int argc, char **argv)
 	parser_init(boosty::stringy(fs::path(argv[0]).branch_path()));
 	add_librarydir(boosty::stringy(fs::path(argv[0]).branch_path() / "../libraries"));
 
-	ModuleContext root_ctx;
-	root_ctx.registerBuiltin();
+	ModuleContext top_ctx;
+	top_ctx.registerBuiltin();
 
-	AbstractModule *root_module;
+	FileModule *root_module;
 	ModuleInstantiation root_inst("group");
 
 	root_module = parsefile(filename);
@@ -100,7 +100,7 @@ int main(int argc, char **argv)
 	}
 
 	AbstractNode::resetIndexCounter();
-	AbstractNode *absolute_root_node = root_module->instantiate(&root_ctx, &root_inst);
+	AbstractNode *absolute_root_node = root_module->instantiate(&top_ctx, &root_inst);
 	AbstractNode *root_node;
 	// Do we have an explicit root node (! modifier)?
 	if (!(root_node = find_root_tag(absolute_root_node))) root_node = absolute_root_node;

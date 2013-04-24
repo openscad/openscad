@@ -65,7 +65,7 @@ public:
 	Module() { }
 	virtual ~Module();
 
-	virtual AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const;
+	virtual AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx = NULL) const;
 	virtual std::string dump(const std::string &indent, const std::string &name) const;
 
 	void addChild(ModuleInstantiation *ch);
@@ -75,6 +75,8 @@ public:
 	LocalScope scope;
 };
 
+// FIXME: A FileModule doesn't have definition arguments, so we shouldn't really
+// inherit from a Module
 class FileModule : public Module
 {
 public:
@@ -85,6 +87,7 @@ public:
 	const std::string &modulePath() const { return this->path; }
 	void registerInclude(const std::string &filename);
 	bool handleDependencies();
+	virtual AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx = NULL) const;
 
 	typedef boost::unordered_map<std::string, class FileModule*> ModuleContainer;
 	ModuleContainer usedlibs;

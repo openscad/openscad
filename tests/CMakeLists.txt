@@ -402,6 +402,7 @@ set(CORE_SOURCES
   ../src/value.cc 
   ../src/expr.cc 
   ../src/func.cc 
+  ../src/localscope.cc 
   ../src/module.cc 
   ../src/ModuleCache.cc 
   ../src/node.cc 
@@ -751,7 +752,8 @@ list(APPEND ECHO_FILES ${FUNCTION_FILES}
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/vector-values.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/search-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/recursion-tests.scad
-            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/value-reassignment-tests.scad)
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/value-reassignment-tests.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/variable-scope-tests.scad)
 
 list(APPEND DUMPTEST_FILES ${MINIMAL_FILES} ${FEATURES_FILES} ${EXAMPLE_FILES})
 list(APPEND DUMPTEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/escape-test.scad

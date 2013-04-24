@@ -40,50 +40,6 @@ namespace fs = boost::filesystem;
 #include <sstream>
 #include <sys/stat.h>
 
-LocalScope::LocalScope()
-{
-}
-
-LocalScope::~LocalScope()
-{
-	BOOST_FOREACH(ModuleInstantiation *v, children) delete v;
-	BOOST_FOREACH (const Assignment &v, assignments) delete v.second;
-	BOOST_FOREACH (FunctionContainer::value_type &f, functions) delete f.second;
-	BOOST_FOREACH (AbstractModuleContainer::value_type &m, modules) delete m.second;
-}
-
-std::string LocalScope::dump(const std::string &indent) const
-{
-	std::stringstream dump;
-	BOOST_FOREACH(const FunctionContainer::value_type &f, this->functions) {
-		dump << f.second->dump(indent, f.first);
-	}
-	BOOST_FOREACH(const AbstractModuleContainer::value_type &m, this->modules) {
-		dump << m.second->dump(indent, m.first);
-	}
-	BOOST_FOREACH(const Assignment &ass, this->assignments) {
-		dump << indent << ass.first << " = " << *ass.second << ";\n";
-	}
-	BOOST_FOREACH(const ModuleInstantiation *inst, this->children) {
-		dump << inst->dump(indent);
-	}
-	return dump.str();
-}
-
-std::vector<AbstractNode*> LocalScope::instantiateChildren(const Context *evalctx) const
-{
-	Context c(evalctx); // FIXME: Is this correct, or should we use the parent?
-	BOOST_FOREACH (const Assignment &ass, this->assignments) {
-		c.set_variable(ass.first, ass.second->evaluate(&c));
-	}
-	std::vector<AbstractNode*> childnodes;
-	BOOST_FOREACH (ModuleInstantiation *modinst, this->children) {
-		AbstractNode *node = modinst->evaluate(&c);
-		if (node) childnodes.push_back(node);
-	}
-	return childnodes;
-}
-
 AbstractModule::~AbstractModule()
 {
 }
@@ -183,14 +139,14 @@ void Module::addChild(ModuleInstantiation *ch)
 
 AbstractNode *Module::instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const
 {
-	ModuleContext c(this, ctx, evalctx);
-	// FIXME: Set document path to the path of the module
+	ModuleContext c(ctx, evalctx);
+	c.initializeModule(*this);
 	c.set_variable("$children", Value(double(inst->scope.children.size())));
+	// FIXME: Set document path to the path of the module
 #if 0 && DEBUG
 	c.dump(this, inst);
 #endif
 
-	// FIXME: this->scope.instantiateChildren(&c) and ModuleContext c() causes set_variable to be called twice, causing duplicate warning output in e.g. echotest_search-tests
 	AbstractNode *node = new AbstractNode(inst);
 	std::vector<AbstractNode *> instantiatednodes = this->scope.instantiateChildren(&c);
 	node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
@@ -258,4 +214,21 @@ bool FileModule::handleDependencies()
 
 	this->is_handling_dependencies = false;
 	return changed;
+}
+
+AbstractNode *FileModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const
+{
+	assert(evalctx == NULL);
+	FileContext c(*this, ctx);
+	c.initializeModule(*this);
+	// FIXME: Set document path to the path of the module
+#if 0 && DEBUG
+	c.dump(this, inst);
+#endif
+
+	AbstractNode *node = new AbstractNode(inst);
+	std::vector<AbstractNode *> instantiatednodes = this->scope.instantiateChildren(ctx, &c);
+	node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
+
+	return node;
 }

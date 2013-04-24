@@ -168,7 +168,7 @@ MainWindow::MainWindow(const QString &filename)
 					this, SLOT(actionRenderCGALDone(CGAL_Nef_polyhedron *)));
 #endif
 
-	root_ctx.registerBuiltin();
+	top_ctx.registerBuiltin();
 
 	this->openglbox = NULL;
 	root_module = NULL;
@@ -506,7 +506,7 @@ MainWindow::setFileName(const QString &filename)
 {
 	if (filename.isEmpty()) {
 		this->fileName.clear();
-		this->root_ctx.setDocumentPath(currentdir);
+		this->top_ctx.setDocumentPath(currentdir);
 		setWindowTitle("OpenSCAD - New Document[*]");
 	}
 	else {
@@ -522,7 +522,7 @@ MainWindow::setFileName(const QString &filename)
 			this->fileName = fileinfo.fileName();
 		}
 		
-		this->root_ctx.setDocumentPath(fileinfo.dir().absolutePath().toLocal8Bit().constData());
+		this->top_ctx.setDocumentPath(fileinfo.dir().absolutePath().toLocal8Bit().constData());
 		QDir::setCurrent(fileinfo.dir().absolutePath());
 	}
 
@@ -644,7 +644,7 @@ bool MainWindow::compile(bool reload, bool procevents)
 		
 		AbstractNode::resetIndexCounter();
 		this->root_inst = ModuleInstantiation("group");
-		this->absolute_root_node = this->root_module->instantiate(&this->root_ctx, &this->root_inst, NULL);
+		this->absolute_root_node = this->root_module->instantiate(&top_ctx, &this->root_inst, NULL);
 		
 		if (this->absolute_root_node) {
 			// Do we have an explicit root node (! modifier)?
@@ -979,19 +979,19 @@ void MainWindow::pasteViewportRotation()
 
 void MainWindow::updateTemporalVariables()
 {
-	this->root_ctx.set_variable("$t", Value(this->e_tval->text().toDouble()));
+	this->top_ctx.set_variable("$t", Value(this->e_tval->text().toDouble()));
 	
 	Value::VectorType vpt;
 	vpt.push_back(Value(-qglview->cam.object_trans.x()));
 	vpt.push_back(Value(-qglview->cam.object_trans.y()));
 	vpt.push_back(Value(-qglview->cam.object_trans.z()));
-	this->root_ctx.set_variable("$vpt", Value(vpt));
+	this->top_ctx.set_variable("$vpt", Value(vpt));
 	
 	Value::VectorType vpr;
 	vpr.push_back(Value(fmodf(360 - qglview->cam.object_rot.x() + 90, 360)));
 	vpr.push_back(Value(fmodf(360 - qglview->cam.object_rot.y(), 360)));
 	vpr.push_back(Value(fmodf(360 - qglview->cam.object_rot.z(), 360)));
-	root_ctx.set_variable("$vpr", Value(vpr));
+	top_ctx.set_variable("$vpr", Value(vpr));
 }
 
 bool MainWindow::fileChangedOnDisk()

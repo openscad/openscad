@@ -16,12 +16,12 @@ Builtins *Builtins::instance(bool erase)
 
 void Builtins::init(const char *name, class AbstractModule *module)
 {
-	Builtins::instance()->rootmodule.scope.modules[name] = module;
+	Builtins::instance()->globalscope.modules[name] = module;
 }
 
 void Builtins::init(const char *name, class AbstractFunction *function)
 {
-	Builtins::instance()->rootmodule.scope.functions[name] = function;
+	Builtins::instance()->globalscope.functions[name] = function;
 }
 
 extern void register_builtin_functions();
@@ -80,18 +80,18 @@ std::string Builtins::isDeprecated(const std::string &name)
 
 Builtins::Builtins()
 {
-	this->rootmodule.scope.assignments.push_back(Assignment("$fn", new Expression(Value(0.0))));
-	this->rootmodule.scope.assignments.push_back(Assignment("$fs", new Expression(Value(2.0))));
-	this->rootmodule.scope.assignments.push_back(Assignment("$fa", new Expression(Value(12.0))));
-	this->rootmodule.scope.assignments.push_back(Assignment("$t", new Expression(Value(0.0))));
+	this->globalscope.assignments.push_back(Assignment("$fn", new Expression(Value(0.0))));
+	this->globalscope.assignments.push_back(Assignment("$fs", new Expression(Value(2.0))));
+	this->globalscope.assignments.push_back(Assignment("$fa", new Expression(Value(12.0))));
+	this->globalscope.assignments.push_back(Assignment("$t", new Expression(Value(0.0))));
 
 	Value::VectorType zero3;
 	zero3.push_back(Value(0.0));
 	zero3.push_back(Value(0.0));
 	zero3.push_back(Value(0.0));
 	Value zero3val(zero3);
-	this->rootmodule.scope.assignments.push_back(Assignment("$vpt", new Expression(zero3val)));
-	this->rootmodule.scope.assignments.push_back(Assignment("$vpr", new Expression(zero3val)));
+	this->globalscope.assignments.push_back(Assignment("$vpt", new Expression(zero3val)));
+	this->globalscope.assignments.push_back(Assignment("$vpr", new Expression(zero3val)));
 }
 
 Builtins::~Builtins()

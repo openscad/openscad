@@ -74,7 +74,6 @@ int main(int argc, char **argv)
 
 	const char *filename = argv[1];
 	const char *outfilename = argv[2];
-
 	int rc = 0;
 
 	Builtins::instance()->initialize();
@@ -86,10 +85,10 @@ int main(int argc, char **argv)
 	parser_init(boosty::stringy(fs::path(argv[0]).branch_path()));
 	add_librarydir(boosty::stringy(fs::path(argv[0]).branch_path() / "../libraries"));
 
-	ModuleContext root_ctx;
-	root_ctx.registerBuiltin();
+	ModuleContext top_ctx;
+	top_ctx.registerBuiltin();
 
-	AbstractModule *root_module;
+	FileModule *root_module;
 	ModuleInstantiation root_inst("group");
 	AbstractNode *root_node;
 
@@ -103,7 +102,7 @@ int main(int argc, char **argv)
 	}
 
 	AbstractNode::resetIndexCounter();
-	root_node = root_module->instantiate(&root_ctx, &root_inst);
+	root_node = root_module->instantiate(&top_ctx, &root_inst);
 
 	Tree tree;
 	tree.setRoot(root_node);
@@ -115,10 +114,17 @@ int main(int argc, char **argv)
 		exit(1);
 	}
 
+	fs::current_path(original_path);
 	std::ofstream outfile;
 	outfile.open(outfilename);
+	if (!outfile.is_open()) {
+		fprintf(stderr, "Error: Unable to open output file %s\n", outfilename);
+		exit(1);
+	}
+	std::cout << "Opened " << outfilename << "\n";
 	outfile << dumpstdstr << "\n";
 	outfile.close();
+	if (outfile.fail()) fprintf(stderr, "Failed to close file\n");
 
 	delete root_node;
 	delete root_module;
@@ -131,7 +137,7 @@ int main(int argc, char **argv)
 	}
 
 	AbstractNode::resetIndexCounter();
-	root_node = root_module->instantiate(&root_ctx, &root_inst);
+	root_node = root_module->instantiate(&top_ctx, &root_inst);
 
 	tree.setRoot(root_node);
 
