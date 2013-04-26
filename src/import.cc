@@ -93,10 +93,10 @@ AbstractNode *ImportModule::instantiate(const Context *ctx, const ModuleInstanti
 	Value v = c.lookup_variable("file");
 	if (v.isUndefined()) {
 		v = c.lookup_variable("filename");
-		if (!v.isUndefined())
-			PRINT("WARNING: filename= is deprecated. Please use file=");
+		if (!v.isUndefined()) {
+			PRINT("DEPRECATED: filename= is deprecated. Please use file=");
+		}
 	}
-
 	std::string filename = inst->getAbsolutePath(v.isUndefined() ? "" : v.toString());
 	import_type_e actualtype = this->type;
 	if (actualtype == TYPE_UNKNOWN) {
@@ -116,9 +116,10 @@ AbstractNode *ImportModule::instantiate(const Context *ctx, const ModuleInstanti
 	node->filename = filename;
 	Value layerval = c.lookup_variable("layer", true);
 	if (layerval.isUndefined()) {
-		layerval = c.lookup_variable("layername",true);
-		if (!layerval.isUndefined())
-			PRINT("WARNING: layername= is deprecated. Please use layer=");
+		layerval = c.lookup_variable("layername");
+		if (!layerval.isUndefined()) {
+			PRINT("DEPRECATED: layername= is deprecated. Please use layer=");
+		}
 	}
 	node->layername = layerval.isUndefined() ? ""  : layerval.toString();
 	node->convexity = c.lookup_variable("convexity", true).toDouble();
