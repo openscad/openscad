@@ -171,13 +171,8 @@ CONFIG(mingw-cross-env) {
   include(mingw-cross-env.pri)
 }
 
-win32 {
-  FLEXSOURCES = src/lexer.l
-  BISONSOURCES = src/parser.y
-} else {
-  LEXSOURCES += src/lexer.l
-  YACCSOURCES += src/parser.y
-}
+FLEXSOURCES = src/lexer.l
+BISONSOURCES = src/parser.y
 
 RESOURCES = openscad.qrc
 

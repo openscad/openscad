@@ -19,6 +19,12 @@ LocalScope::~LocalScope()
 	BOOST_FOREACH (AbstractModuleContainer::value_type &m, modules) delete m.second;
 }
 
+void LocalScope::addChild(ModuleInstantiation *ch) 
+{
+	assert(ch != NULL);
+	this->children.push_back(ch); 
+}
+
 std::string LocalScope::dump(const std::string &indent) const
 {
 	std::stringstream dump;

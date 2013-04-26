@@ -132,11 +132,6 @@ Module::~Module()
 {
 }
 
-void Module::addChild(ModuleInstantiation *ch) 
-{
-	this->scope.children.push_back(ch); 
-}
-
 AbstractNode *Module::instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const
 {
 	ModuleContext c(ctx, evalctx);

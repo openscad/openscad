@@ -38,6 +38,20 @@ Expression::Expression()
 {
 }
 
+Expression::Expression(const std::string &type, 
+											 Expression *left, Expression *right)
+	: type(type)
+{
+	this->children.push_back(left);
+	this->children.push_back(right);
+}
+
+Expression::Expression(const std::string &type, Expression *expr)
+	: type(type)
+{
+	this->children.push_back(expr);
+}
+
 Expression::Expression(const Value &val) : const_value(val), type("C")
 {
 }

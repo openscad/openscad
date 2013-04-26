@@ -68,8 +68,6 @@ public:
 	virtual AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx = NULL) const;
 	virtual std::string dump(const std::string &indent, const std::string &name) const;
 
-	void addChild(ModuleInstantiation *ch);
-
 	AssignmentList definition_arguments;
 
 	LocalScope scope;

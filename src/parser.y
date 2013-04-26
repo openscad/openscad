@@ -56,8 +56,7 @@
   int lexerlex_destroy(void);
   int lexerlex(void);
 
-  std::vector<Module*> module_stack;
-  Module *currmodule;
+  std::stack<LocalScope *> scope_stack;
   FileModule *rootmodule;
 
   extern void lexerdestroy();
@@ -74,7 +73,6 @@
   class Value *value;
   class Expression *expr;
   class ModuleInstantiation *inst;
-  std::vector<ModuleInstantiation*> *instvec;
   class IfElseModuleInstantiation *ifelse;
   Assignment *arg;
   AssignmentList *args;
@@ -115,8 +113,6 @@
 %type <inst> module_instantiation
 %type <ifelse> if_statement
 %type <ifelse> ifelse_statement
-%type <instvec> children_instantiation
-%type <instvec> module_instantiation_list
 %type <inst> single_module_instantiation
 
 %type <args> arguments_call
@@ -138,89 +134,66 @@ inner_input:
 /* empty */ |
 statement inner_input ;
 
+assignment:
+TOK_ID '=' expr ';' {
+  for (AssignmentList::iterator iter = scope_stack.top()->assignments.begin(); 
+       iter != scope_stack.top()->assignments.end(); 
+       iter++) {
+    if (iter->first == $1) {
+      scope_stack.top()->assignments.erase(iter);
+      break;
+    }
+  }
+  scope_stack.top()->assignments.push_back(Assignment($1, $3));
+} ;
+
 statement:
 ';' |
 '{' inner_input '}' |
 module_instantiation {
-  if ($1) {
-    currmodule->addChild($1);
-  } else {
-    delete $1;
-  }
+  if ($1) scope_stack.top()->addChild($1);
 } |
-TOK_ID '=' expr ';' {
-  for (AssignmentList::iterator iter = currmodule->scope.assignments.begin(); 
-       iter != currmodule->scope.assignments.end(); 
-       iter++) {
-    if (iter->first == $1) {
-      currmodule->scope.assignments.erase(iter);
-      break;
-    }
-  }
-  currmodule->scope.assignments.push_back(Assignment($1, $3));
-} |
+assignment |
 TOK_MODULE TOK_ID '(' arguments_decl optional_commas ')' {
-  Module *p = currmodule;
-  module_stack.push_back(currmodule);
-  currmodule = new Module();
-  p->scope.modules[$2] = currmodule;
-  currmodule->definition_arguments = *$4;
+  Module *newmodule = new Module();
+  newmodule->definition_arguments = *$4;
+  scope_stack.top()->modules[$2] = newmodule;
+  scope_stack.push(&newmodule->scope);
   free($2);
   delete $4;
 } statement {
-  currmodule = module_stack.back();
-  module_stack.pop_back();
+  scope_stack.pop();
   } |
   TOK_FUNCTION TOK_ID '(' arguments_decl optional_commas ')' '=' expr {
     Function *func = new Function();
     func->definition_arguments = *$4;
     func->expr = $8;
-    currmodule->scope.functions[$2] = func;
+    scope_stack.top()->functions[$2] = func;
     free($2);
     delete $4;
   } ';' ;
-          
-/* Will return a dummy parent node with zero or more children */
-children_instantiation:
-module_instantiation {
-  $$ = new std::vector<ModuleInstantiation*>;
-  if ($1) { 
-    $$->push_back($1);
-  }
-} |
-'{' module_instantiation_list '}' {
-  $$ = $2;
-} ;
 
 if_statement:
-TOK_IF '(' expr ')' children_instantiation {
-  $$ = new IfElseModuleInstantiation();
-  $$->arguments.push_back(Assignment("", $3));
-  $$->setPath(parser_source_path);
-  
-  if ($$) {
-    $$->scope.children = *$5;
-  } else {
-    for (size_t i = 0; i < $5->size(); i++)
-      delete (*$5)[i];
-  }
-  delete $5;
-} ;
+TOK_IF '(' expr ')' {
+  $<ifelse>if = new IfElseModuleInstantiation();
+  $<ifelse>if->arguments.push_back(Assignment("", $3));
+  $<ifelse>if->setPath(parser_source_path);
+  scope_stack.push(&$<ifelse>if->scope);
+}[if] child_statement {
+  scope_stack.pop();
+  $$ = $<ifelse>if;
+ } ;
 
 ifelse_statement:
 if_statement {
   $$ = $1;
 } |
-if_statement TOK_ELSE children_instantiation {
+if_statement TOK_ELSE {
+  scope_stack.push(&$1->else_scope);
+}[else] child_statement {
+  scope_stack.pop();
   $$ = $1;
-  if ($$) {
-    $$->else_scope.children = *$3;
-  } else {
-    for (size_t i = 0; i < $3->size(); i++)
-      delete (*$3)[i];
-  }
-  delete $3;
-} ;
+ } ;
 
 module_instantiation:
 '!' module_instantiation {
@@ -239,35 +212,28 @@ module_instantiation:
   delete $2;
   $$ = NULL;
 } |
-single_module_instantiation ';' {
-  $$ = $1;
-} |
-single_module_instantiation children_instantiation {
-  $$ = $1;
-  if ($$) {
-    $$->scope.children = *$2;
-  } else {
-    for (size_t i = 0; i < $2->size(); i++)
-      delete (*$2)[i];
-  }
-  delete $2;
-} |
-ifelse_statement {
-  $$ = $1;
-} ;
+single_module_instantiation {
+  $<inst>inst = $1;
+  scope_stack.push(&$<inst>inst->scope);
+}[inst] child_statement {
+  scope_stack.pop();
+  $$ = $<inst>inst;
+ } |
+ ifelse_statement {
+   $$ = $1;
+ } ;
 
-module_instantiation_list:
-/* empty */ {
-  $$ = new std::vector<ModuleInstantiation*>;
+child_statement:
+';' |
+'{' child_statements '}' |
+module_instantiation {
+  if ($1) scope_stack.top()->addChild($1);
 } |
-module_instantiation_list module_instantiation {
-  $$ = $1;
-  if ($$) {
-    if ($2) $$->push_back($2);
-  } else {
-    delete $2;
-  }
-} ;
+assignment ;
+
+child_statements:
+/* empty */ |
+child_statements child_statement ;
 
 single_module_instantiation:
 TOK_ID '(' arguments_call ')' {
@@ -295,9 +261,7 @@ TOK_ID {
   free($1);
 } |
 expr '.' TOK_ID {
-  $$ = new Expression();
-  $$->type = "N";
-  $$->children.push_back($1);
+  $$ = new Expression("N", $1);
   $$->var_name = $3;
   free($3);
 } |
@@ -330,95 +294,52 @@ TOK_NUMBER {
   $$ = $2;
 } |
 expr '*' expr {
-  $$ = new Expression();
-  $$->type = "*";
-  $$->children.push_back($1);
-  $$->children.push_back($3);
+  $$ = new Expression("*", $1, $3);
 } |
 expr '/' expr {
-  $$ = new Expression();
-  $$->type = "/";
-  $$->children.push_back($1);
-  $$->children.push_back($3);
+  $$ = new Expression("/", $1, $3);
 } |
 expr '%' expr {
-  $$ = new Expression();
-  $$->type = "%";
-  $$->children.push_back($1);
-  $$->children.push_back($3);
+  $$ = new Expression("%", $1, $3);
 } |
 expr '+' expr {
-  $$ = new Expression();
-  $$->type = "+";
-  $$->children.push_back($1);
-  $$->children.push_back($3);
+  $$ = new Expression("+", $1, $3);
 } |
 expr '-' expr {
-  $$ = new Expression();
-  $$->type = "-";
-  $$->children.push_back($1);
-  $$->children.push_back($3);
+  $$ = new Expression("-", $1, $3);
 } |
 expr '<' expr {
-  $$ = new Expression();
-  $$->type = "<";
-  $$->children.push_back($1);
-  $$->children.push_back($3);
+  $$ = new Expression("<", $1, $3);
 } |
 expr LE expr {
-  $$ = new Expression();
-  $$->type = "<=";
-  $$->children.push_back($1);
-  $$->children.push_back($3);
+  $$ = new Expression("<=", $1, $3);
 } |
 expr EQ expr {
-  $$ = new Expression();
-  $$->type = "==";
-  $$->children.push_back($1);
-  $$->children.push_back($3);
+  $$ = new Expression("==", $1, $3);
 } |
 expr NE expr {
-  $$ = new Expression();
-  $$->type = "!=";
-  $$->children.push_back($1);
-  $$->children.push_back($3);
+  $$ = new Expression("!=", $1, $3);
 } |
 expr GE expr {
-  $$ = new Expression();
-  $$->type = ">=";
-  $$->children.push_back($1);
-  $$->children.push_back($3);
+  $$ = new Expression(">=", $1, $3);
 } |
 expr '>' expr {
-  $$ = new Expression();
-  $$->type = ">";
-  $$->children.push_back($1);
-  $$->children.push_back($3);
+  $$ = new Expression(">", $1, $3);
 } |
 expr AND expr {
-  $$ = new Expression();
-  $$->type = "&&";
-  $$->children.push_back($1);
-  $$->children.push_back($3);
+  $$ = new Expression("&&", $1, $3);
 } |
 expr OR expr {
-  $$ = new Expression();
-  $$->type = "||";
-  $$->children.push_back($1);
-  $$->children.push_back($3);
+  $$ = new Expression("||", $1, $3);
 } |
 '+' expr {
   $$ = $2;
 } |
 '-' expr {
-  $$ = new Expression();
-  $$->type = "I";
-  $$->children.push_back($2);
+  $$ = new Expression("I", $2);
 } |
 '!' expr {
-  $$ = new Expression();
-  $$->type = "!";
-  $$->children.push_back($2);
+  $$ = new Expression("!", $2);
 } |
 '(' expr ')' {
   $$ = $2;
@@ -431,10 +352,7 @@ expr '?' expr ':' expr {
   $$->children.push_back($5);
 } |
 expr '[' expr ']' {
-  $$ = new Expression();
-  $$->type = "[]";
-  $$->children.push_back($1);
-  $$->children.push_back($3);
+  $$ = new Expression("[]", $1, $3);
 } |
 TOK_ID '(' arguments_call ')' {
   $$ = new Expression();
@@ -450,9 +368,7 @@ optional_commas:
 
 vector_expr:
 expr {
-  $$ = new Expression();
-  $$->type = 'V';
-  $$->children.push_back($1);
+  $$ = new Expression("V", $1);
 } |
 vector_expr ',' optional_commas expr {
   $$ = $1;
@@ -519,7 +435,6 @@ void yyerror (char const *s)
 {
   // FIXME: We leak memory on parser errors...
   PRINTB("Parser error in line %d: %s\n", lexerget_lineno() % s);
-  currmodule = NULL;
 }
 
 FileModule *parse(const char *text, const char *path, int debug)
@@ -529,10 +444,9 @@ FileModule *parse(const char *text, const char *path, int debug)
   parser_input_buffer = text;
   parser_source_path = boosty::absolute(std::string(path)).string();
 
-  module_stack.clear();
   rootmodule = new FileModule();
-  currmodule = rootmodule;
   rootmodule->setModulePath(path);
+  scope_stack.push(&rootmodule->scope);
   //        PRINTB_NOCACHE("New module: %s %p", "root" % rootmodule);
 
   parserdebug = debug;
@@ -543,5 +457,6 @@ FileModule *parse(const char *text, const char *path, int debug)
   if (parserretval != 0) return NULL;
 
   parser_error_pos = -1;
+  scope_stack.pop();
   return rootmodule;
 }
