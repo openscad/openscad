@@ -28,7 +28,7 @@
 
 #include "module.h"
 #include "polyset.h"
-#include "context.h"
+#include "evalcontext.h"
 #include "builtin.h"
 #include "dxfdata.h"
 #include "dxftess.h"
@@ -60,26 +60,43 @@ class ImportModule : public AbstractModule
 public:
 	import_type_e type;
 	ImportModule(import_type_e type = TYPE_UNKNOWN) : type(type) { }
-	virtual AbstractNode *evaluate(const Context *ctx, const ModuleInstantiation *inst) const;
+	virtual AbstractNode *evaluate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const;
 };
 
-AbstractNode *ImportModule::evaluate(const Context *ctx, const ModuleInstantiation *inst) const
+AbstractNode *ImportModule::evaluate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const
 {
-	std::vector<std::string> argnames;
-	argnames += "file", "layer", "convexity", "origin", "scale";
-	std::vector<Expression*> argexpr;
+	AssignmentList args;
+	args += Assignment("file", NULL), Assignment("layer", NULL), Assignment("convexity", NULL), Assignment("origin", NULL), Assignment("scale", NULL);
+	args += Assignment("filename",NULL), Assignment("layername", NULL);
 
+  // FIXME: This is broken. Tag as deprecated and fix
 	// Map old argnames to new argnames for compatibility
+	// To fix: 
+  // o after c.setVariables()
+	//   - if "filename" in evalctx: deprecated-warning && v.set_variable("file", value);
+	//   - if "layername" in evalctx: deprecated-warning && v.set_variable("layer", value);
+#if 0
 	std::vector<std::string> inst_argnames = inst->argnames;
 	for (size_t i=0; i<inst_argnames.size(); i++) {
 		if (inst_argnames[i] == "filename") inst_argnames[i] = "file";
 		if (inst_argnames[i] == "layername") inst_argnames[i] = "layer";
 	}
+#endif
 
 	Context c(ctx);
-	c.args(argnames, argexpr, inst_argnames, inst->argvalues);
+	c.setDocumentPath(evalctx->documentPath());
+	c.setVariables(args, evalctx);
+#if 0 && DEBUG
+	c.dump(this, inst);
+#endif
 
 	Value v = c.lookup_variable("file");
+	if (v.isUndefined()) {
+		v = c.lookup_variable("filename");
+		if (!v.isUndefined())
+			PRINT("WARNING: filename= is deprecated. Please use file=");
+	}
+
 	std::string filename = inst->getAbsolutePath(v.isUndefined() ? "" : v.toString());
 	import_type_e actualtype = this->type;
 	if (actualtype == TYPE_UNKNOWN) {
@@ -98,6 +115,11 @@ AbstractNode *ImportModule::evaluate(const Context *ctx, const ModuleInstantiati
 
 	node->filename = filename;
 	Value layerval = c.lookup_variable("layer", true);
+	if (layerval.isUndefined()) {
+		layerval = c.lookup_variable("layername",true);
+		if (!layerval.isUndefined())
+			PRINT("WARNING: layername= is deprecated. Please use layer=");
+	}
 	node->layername = layerval.isUndefined() ? ""  : layerval.toString();
 	node->convexity = c.lookup_variable("convexity", true).toDouble();
 

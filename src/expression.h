@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include "value.h"
+#include "typedefs.h"
 
 class Expression
 {
@@ -14,7 +15,7 @@ public:
 	std::string var_name;
 
 	std::string call_funcname;
-	std::vector<std::string> call_argnames;
+	AssignmentList call_arguments;
 
 	// Boolean: ! && ||
 	// Operators: * / % + -

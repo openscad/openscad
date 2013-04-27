@@ -187,7 +187,8 @@ FORMS   += src/MainWindow.ui \
            src/AboutDialog.ui \
            src/ProgressWidget.ui
 
-HEADERS += src/version_check.h \
+HEADERS += src/typedefs.h \
+           src/version_check.h \
            src/ProgressWidget.h \
            src/parsersettings.h \
            src/renderer.h \
@@ -203,6 +204,8 @@ HEADERS += src/version_check.h \
            src/AboutDialog.h \
            src/builtin.h \
            src/context.h \
+           src/modcontext.h \
+           src/evalcontext.h \
            src/csgterm.h \
            src/csgtermnormalizer.h \
            src/dxfdata.h \
@@ -272,6 +275,8 @@ SOURCES += src/version_check.cc \
            src/module.cc \
            src/node.cc \
            src/context.cc \
+           src/modcontext.cc \
+           src/evalcontext.cc \
            src/csgterm.cc \
            src/csgtermnormalizer.cc \
            src/polyset.cc \
