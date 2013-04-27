@@ -10,7 +10,7 @@
 class ModuleInstantiation
 {
 public:
-	ModuleInstantiation(const std::string &name = "") 
+	ModuleInstantiation(const std::string &name = "")
 	: ctx(NULL), 
 		tag_root(false), tag_highlight(false), tag_background(false), modname(name) { }
 	virtual ~ModuleInstantiation();
@@ -18,6 +18,10 @@ public:
 	std::string dump(const std::string &indent) const;
 	class AbstractNode *evaluate(const class Context *ctx) const;
 	std::vector<AbstractNode*> evaluateChildren(const Context *ctx = NULL) const;
+
+	void setPath(const std::string &path) { this->modpath = path; }
+	const std::string &path() const { return this->modpath; }
+	std::string getAbsolutePath(const std::string &filename) const;
 
 	const std::string &name() const { return this->modname; }
 	bool isBackground() const { return this->tag_background; }
@@ -35,6 +39,7 @@ public:
 	bool tag_background;
 protected:
 	std::string modname;
+	std::string modpath;
 
 	friend class Module;
 };
@@ -61,6 +66,7 @@ class Module : public AbstractModule
 public:
 	Module() : is_handling_dependencies(false) { }
 	virtual ~Module();
+
 	virtual AbstractNode *evaluate(const Context *ctx, const ModuleInstantiation *inst) const;
 	virtual std::string dump(const std::string &indent, const std::string &name) const;
 

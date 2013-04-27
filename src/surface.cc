@@ -83,7 +83,7 @@ AbstractNode *SurfaceModule::evaluate(const Context *ctx, const ModuleInstantiat
 	c.args(argnames, argexpr, inst->argnames, inst->argvalues);
 
 	Value fileval = c.lookup_variable("file");
-	node->filename = c.getAbsolutePath(fileval.isUndefined() ? "" : fileval.toString());
+	node->filename = inst->getAbsolutePath(fileval.isUndefined() ? "" : fileval.toString());
 
 	Value center = c.lookup_variable("center", true);
 	if (center.type() == Value::BOOL) {
