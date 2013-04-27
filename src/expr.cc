@@ -142,12 +142,6 @@ Value Expression::evaluate(const Context *context) const
 	}
 	if (this->type == "F") {
 		EvalContext c(context, this->call_arguments);
-		// Value::VectorType argvalues;
-		// std::transform(this->children.begin(), this->children.end(), 
-		// 							 std::back_inserter(argvalues), 
-		// 							 boost::bind(&Expression::evaluate, _1, context));
-		// for (size_t i=0; i < this->children.size(); i++)
-		// 	argvalues.push_back(this->children[i]->evaluate(context));
 		return context->evaluate_function(this->call_funcname, &c);
 	}
 	abort();

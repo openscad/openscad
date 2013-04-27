@@ -54,7 +54,7 @@ Value builtin_dxf_dim(const Context *ctx, const EvalContext *evalctx)
 	// See issue #217
 	for (size_t i = 0; i < evalctx->numArgs(); i++) {
 		if (evalctx->getArgName(i) == "file")
-			filename = ctx->getAbsolutePath(evalctx->getArgValue(i).toString());
+			filename = evalctx->getAbsolutePath(evalctx->getArgValue(i).toString());
 		if (evalctx->getArgName(i) == "layer")
 			layername = evalctx->getArgValue(i).toString();
 		if (evalctx->getArgName(i) == "origin")
