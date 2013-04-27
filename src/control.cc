@@ -26,7 +26,8 @@
 
 #include "module.h"
 #include "node.h"
-#include "context.h"
+#include "evalcontext.h"
+#include "modcontext.h"
 #include "builtin.h"
 #include "printutils.h"
 #include <sstream>
@@ -45,18 +46,16 @@ class ControlModule : public AbstractModule
 public:
 	control_type_e type;
 	ControlModule(control_type_e type) : type(type) { }
-	virtual AbstractNode *evaluate(const Context *ctx, const ModuleInstantiation *inst) const;
+	virtual AbstractNode *evaluate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const;
 };
 
 void for_eval(AbstractNode &node, const ModuleInstantiation &inst, size_t l, 
-							const std::vector<std::string> &call_argnames, 
-							const std::vector<Value> &call_argvalues, 
-							const Context *arg_context)
+							const Context *ctx, const EvalContext *evalctx)
 {
-	if (call_argnames.size() > l) {
-		const std::string &it_name = call_argnames[l];
-		const Value &it_values = call_argvalues[l];
-		Context c(arg_context);
+	if (evalctx->eval_arguments.size() > l) {
+		const std::string &it_name = evalctx->eval_arguments[l].first;
+		const Value &it_values = evalctx->eval_arguments[l].second;
+		Context c(ctx);
 		if (it_values.type() == Value::RANGE) {
 			Value::RangeType range = it_values.toRange();
 			if (range.end < range.begin) {
@@ -67,55 +66,69 @@ void for_eval(AbstractNode &node, const ModuleInstantiation &inst, size_t l,
 			if (range.step > 0 && (range.begin-range.end)/range.step < 10000) {
 				for (double i = range.begin; i <= range.end; i += range.step) {
 					c.set_variable(it_name, Value(i));
-					for_eval(node, inst, l+1, call_argnames, call_argvalues, &c);
+					for_eval(node, inst, l+1, &c, evalctx);
 				}
 			}
 		}
 		else if (it_values.type() == Value::VECTOR) {
 			for (size_t i = 0; i < it_values.toVector().size(); i++) {
 				c.set_variable(it_name, it_values.toVector()[i]);
-				for_eval(node, inst, l+1, call_argnames, call_argvalues, &c);
+				for_eval(node, inst, l+1, &c, evalctx);
 			}
 		}
 		else if (it_values.type() != Value::UNDEFINED) {
 			c.set_variable(it_name, it_values);
-			for_eval(node, inst, l+1, call_argnames, call_argvalues, &c);
+			for_eval(node, inst, l+1, &c, evalctx);
 		}
 	} else if (l > 0) {
-		std::vector<AbstractNode *> evaluatednodes = inst.evaluateChildren(arg_context);
+		std::vector<AbstractNode *> evaluatednodes = inst.evaluateChildren(ctx);
 		node.children.insert(node.children.end(), evaluatednodes.begin(), evaluatednodes.end());
 	}
 }
 
-AbstractNode *ControlModule::evaluate(const Context*, const ModuleInstantiation *inst) const
+AbstractNode *ControlModule::evaluate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const
 {
 	AbstractNode *node = NULL;
 
 	if (type == CHILD)
 	{
-		size_t n = 0;
-		if (inst->argvalues.size() > 0) {
+		int n = 0;
+		if (evalctx->eval_arguments.size() > 0) {
 			double v;
-			if (inst->argvalues[0].getDouble(v)) {
-				if (v < 0) return NULL; // Disallow negative child indices
+			if (evalctx->eval_arguments[0].second.getDouble(v)) {
 				n = trunc(v);
+				if (n < 0) {
+					PRINTB("WARNING: Negative child index (%d) not allowed", n);
+					return NULL; // Disallow negative child indices
+				}
 			}
 		}
-		for (int i = Context::ctx_stack.size()-1; i >= 0; i--) {
-			const Context *c = Context::ctx_stack[i];
-			if (c->inst_p) {
-				if (n < c->inst_p->children.size()) {
-					node = c->inst_p->children[n]->evaluate(c->inst_p->ctx);
-					// FIXME: We'd like to inherit any tags from the ModuleInstantiation
-					// given as parameter to this method. However, the instantition which belongs
-					// to the returned node cannot be changed. This causes the test
-					// features/child-background.scad to fail.
+
+		// Find the last custom module invocation, which will contain
+		// an eval context with the children of the module invokation
+		const Context *tmpc = evalctx;
+		while (tmpc->parent) {
+			const ModuleContext *filectx = dynamic_cast<const ModuleContext*>(tmpc->parent);
+			if (filectx) {
+        // This will trigger if trying to invoke child from the root of any file
+        // assert(filectx->evalctx);
+
+				if (filectx->evalctx) {
+					if (n < filectx->evalctx->children.size()) {
+						node = filectx->evalctx->children[n]->evaluate_instance(filectx->evalctx);
+					}
+					else {
+						// How to deal with negative objects in this case?
+            // (e.g. first child of difference is invalid)
+						PRINTB("WARNING: Child index (%d) out of bounds (%d children)", 
+									 n % filectx->evalctx->children.size());
+					}
 				}
 				return node;
 			}
-			c = c->parent;
+			tmpc = tmpc->parent;
 		}
-		return NULL;
+		return node;
 	}
 
 	if (type == INT_FOR)
@@ -127,20 +140,20 @@ AbstractNode *ControlModule::evaluate(const Context*, const ModuleInstantiation 
 	{
 		std::stringstream msg;
 		msg << "ECHO: ";
-		for (size_t i = 0; i < inst->argnames.size(); i++) {
+		for (size_t i = 0; i < inst->arguments.size(); i++) {
 			if (i > 0) msg << ", ";
-			if (!inst->argnames[i].empty()) msg << inst->argnames[i] << " = ";
-			msg << inst->argvalues[i];
+			if (!evalctx->eval_arguments[i].first.empty()) msg << evalctx->eval_arguments[i].first << " = ";
+			msg << evalctx->eval_arguments[i].second;
 		}
 		PRINTB("%s", msg.str());
 	}
 
 	if (type == ASSIGN)
 	{
-		Context c(inst->ctx);
-		for (size_t i = 0; i < inst->argnames.size(); i++) {
-			if (!inst->argnames[i].empty())
-				c.set_variable(inst->argnames[i], inst->argvalues[i]);
+		Context c(evalctx);
+		for (size_t i = 0; i < evalctx->eval_arguments.size(); i++) {
+			if (!evalctx->eval_arguments[i].first.empty())
+				c.set_variable(evalctx->eval_arguments[i].first, evalctx->eval_arguments[i].second);
 		}
 		std::vector<AbstractNode *> evaluatednodes = inst->evaluateChildren(&c);
 		node->children.insert(node->children.end(), evaluatednodes.begin(), evaluatednodes.end());
@@ -148,18 +161,18 @@ AbstractNode *ControlModule::evaluate(const Context*, const ModuleInstantiation 
 
 	if (type == FOR || type == INT_FOR)
 	{
-		for_eval(*node, *inst, 0, inst->argnames, inst->argvalues, inst->ctx);
+		for_eval(*node, *inst, 0, evalctx, evalctx);
 	}
 
 	if (type == IF)
 	{
 		const IfElseModuleInstantiation *ifelse = dynamic_cast<const IfElseModuleInstantiation*>(inst);
-		if (ifelse->argvalues.size() > 0 && ifelse->argvalues[0].toBool()) {
-			std::vector<AbstractNode *> evaluatednodes = ifelse->evaluateChildren();
+		if (evalctx->eval_arguments.size() > 0 && evalctx->eval_arguments[0].second.toBool()) {
+			std::vector<AbstractNode *> evaluatednodes = ifelse->evaluateChildren(evalctx);
 			node->children.insert(node->children.end(), evaluatednodes.begin(), evaluatednodes.end());
 		}
 		else {
-			std::vector<AbstractNode *> evaluatednodes = ifelse->evaluateElseChildren();
+			std::vector<AbstractNode *> evaluatednodes = ifelse->evaluateElseChildren(evalctx);
 			node->children.insert(node->children.end(), evaluatednodes.begin(), evaluatednodes.end());
 		}
 	}

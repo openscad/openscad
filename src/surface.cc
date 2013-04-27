@@ -27,7 +27,7 @@
 #include "module.h"
 #include "node.h"
 #include "polyset.h"
-#include "context.h"
+#include "evalcontext.h"
 #include "builtin.h"
 #include "printutils.h"
 #include "handle_dep.h" // handle_dep()
@@ -50,7 +50,7 @@ class SurfaceModule : public AbstractModule
 {
 public:
 	SurfaceModule() { }
-	virtual AbstractNode *evaluate(const Context *ctx, const ModuleInstantiation *inst) const;
+	virtual AbstractNode *evaluate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const;
 };
 
 class SurfaceNode : public AbstractPolyNode
@@ -69,18 +69,17 @@ public:
 	virtual PolySet *evaluate_polyset(class PolySetEvaluator *) const;
 };
 
-AbstractNode *SurfaceModule::evaluate(const Context *ctx, const ModuleInstantiation *inst) const
+AbstractNode *SurfaceModule::evaluate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const
 {
 	SurfaceNode *node = new SurfaceNode(inst);
 	node->center = false;
 	node->convexity = 1;
 
-	std::vector<std::string> argnames;
-	argnames += "file", "center", "convexity";
-	std::vector<Expression*> argexpr;
+	AssignmentList args;
+	args += Assignment("file", NULL), Assignment("center", NULL), Assignment("convexity", NULL);
 
 	Context c(ctx);
-	c.args(argnames, argexpr, inst->argnames, inst->argvalues);
+	c.setVariables(args, evalctx);
 
 	Value fileval = c.lookup_variable("file");
 	node->filename = inst->getAbsolutePath(fileval.isUndefined() ? "" : fileval.toString());

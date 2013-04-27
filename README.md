@@ -84,15 +84,15 @@ libraries from aptitude. If you're using Mac, or an older Linux/BSD, there
 are build scripts that download and compile the libraries from source. 
 Follow the instructions for the platform you're compiling on below.
 
-* [Qt4 (4.4 - 4.7)](http://www.qt.nokia.com/)
-* [CGAL (3.6 - 4.0.2)](http://www.cgal.org/)
- * [GMP (5.0.x)](http://www.gmplib.org/)
- * [cmake (2.6 - 2.8, required by CGAL and the test framework)](http://www.cmake.org/)
+* [Qt4 (4.4 - 4.8)](http://www.qt.nokia.com/)
+* [CGAL (3.6 - 4.1)](http://www.cgal.org/)
+ * [GMP (5.x)](http://www.gmplib.org/)
+ * [cmake (2.8, required by CGAL and the test framework)](http://www.cmake.org/)
  * [MPFR (3.x)](http://www.mpfr.org/)
- * [boost (1.35 - 1.47)](http://www.boost.org/)
+ * [boost (1.35 - 1.53)](http://www.boost.org/)
 * [OpenCSG (1.3.2)](http://www.opencsg.org/)
 * [GLEW (1.5.4 ->)](http://glew.sourceforge.net/)
-* [Eigen (2.0.13->3.1.1)](http://eigen.tuxfamily.org/)
+* [Eigen (2.0.x->3.x)](http://eigen.tuxfamily.org/)
 * [GCC C++ Compiler (4.2 ->)](http://gcc.gnu.org/)
 * [Bison (2.4)](http://www.gnu.org/software/bison/)
 * [Flex (2.5.35)](http://flex.sourceforge.net/)

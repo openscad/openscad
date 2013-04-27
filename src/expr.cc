@@ -26,7 +26,7 @@
 
 #include "expression.h"
 #include "value.h"
-#include "context.h"
+#include "evalcontext.h"
 #include <assert.h>
 #include <sstream>
 #include <algorithm>
@@ -127,13 +127,18 @@ Value Expression::evaluate(const Context *context) const
 		return Value();
 	}
 	if (this->type == "F") {
-		Value::VectorType argvalues;
-		std::transform(this->children.begin(), this->children.end(), 
-									 std::back_inserter(argvalues), 
-									 boost::bind(&Expression::evaluate, _1, context));
+		EvalContext c(context);
+		for (size_t i=0; i < this->call_arguments.size(); i++) {
+			c.eval_arguments.push_back(std::make_pair(this->call_arguments[i].first, 
+																								this->call_arguments[i].second->evaluate(context)));
+		}
+		// Value::VectorType argvalues;
+		// std::transform(this->children.begin(), this->children.end(), 
+		// 							 std::back_inserter(argvalues), 
+		// 							 boost::bind(&Expression::evaluate, _1, context));
 		// for (size_t i=0; i < this->children.size(); i++)
 		// 	argvalues.push_back(this->children[i]->evaluate(context));
-		return context->evaluate_function(this->call_funcname, this->call_argnames, argvalues);
+		return context->evaluate_function(this->call_funcname, &c);
 	}
 	abort();
 }
@@ -178,10 +183,11 @@ std::string Expression::toString() const
 	}
 	else if (this->type == "F") {
 		stream << this->call_funcname << "(";
-		for (size_t i=0; i < this->children.size(); i++) {
+		for (size_t i=0; i < this->call_arguments.size(); i++) {
+			const Assignment &arg = this->call_arguments[i];
 			if (i > 0) stream << ", ";
-			if (!this->call_argnames[i].empty()) stream << this->call_argnames[i]  << " = ";
-			stream << *this->children[i];
+			if (!arg.first.empty()) stream << arg.first  << " = ";
+			stream << *arg.second;
 		}
 		stream << ")";
 	}

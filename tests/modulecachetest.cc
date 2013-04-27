@@ -29,7 +29,7 @@
 #include "parsersettings.h"
 #include "node.h"
 #include "module.h"
-#include "context.h"
+#include "modcontext.h"
 #include "value.h"
 #include "export.h"
 #include "builtin.h"
@@ -76,11 +76,11 @@ int main(int argc, char **argv)
 	parser_init(boosty::stringy(fs::path(argv[0]).branch_path()));
 	add_librarydir(boosty::stringy(fs::path(argv[0]).branch_path() / "../libraries"));
 
-	Context root_ctx;
-	register_builtin(root_ctx);
+	ModuleContext root_ctx;
+	root_ctx.registerBuiltin();
 
 	AbstractModule *root_module;
-	ModuleInstantiation root_inst;
+	ModuleInstantiation root_inst("group");
 	AbstractNode *root_node;
 
 	root_module = parsefile(filename);

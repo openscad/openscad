@@ -3,6 +3,7 @@
 
 #include <string>
 #include <boost/unordered_map.hpp>
+#include "module.h"
 
 class Builtins
 {
@@ -19,16 +20,17 @@ public:
 	const FunctionContainer &functions() { return this->builtinfunctions; }
 	const ModuleContainer &modules() { return this->builtinmodules; }
 
+	const Module &getRootModule() { return this->rootmodule; }
+
 private:
-	Builtins() { }
+	Builtins();
 	~Builtins();
 
+	Module rootmodule;
 	FunctionContainer builtinfunctions;
 	ModuleContainer builtinmodules;
 
 	boost::unordered_map<std::string, std::string> deprecations;
 };
-
-extern void register_builtin(class Context &ctx);
 
 #endif

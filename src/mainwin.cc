@@ -158,7 +158,7 @@ settings_valueList(const QString &key, const QList<int> &defaultList = QList<int
 }
 
 MainWindow::MainWindow(const QString &filename)
-	: progresswidget(NULL)
+	: root_inst("group"), progresswidget(NULL)
 {
 	setupUi(this);
 
@@ -168,7 +168,7 @@ MainWindow::MainWindow(const QString &filename)
 					this, SLOT(actionRenderCGALDone(CGAL_Nef_polyhedron *)));
 #endif
 
-	register_builtin(root_ctx);
+	root_ctx.registerBuiltin();
 
 	this->openglbox = NULL;
 	root_module = NULL;
@@ -643,8 +643,8 @@ bool MainWindow::compile(bool reload, bool procevents)
 		if (procevents) QApplication::processEvents();
 		
 		AbstractNode::resetIndexCounter();
-		this->root_inst = ModuleInstantiation();
-		this->absolute_root_node = this->root_module->evaluate(&this->root_ctx, &this->root_inst);
+		this->root_inst = ModuleInstantiation("group");
+		this->absolute_root_node = this->root_module->evaluate(&this->root_ctx, &this->root_inst, NULL);
 		
 		if (this->absolute_root_node) {
 			// Do we have an explicit root node (! modifier)?

@@ -26,7 +26,7 @@
 
 #include "transformnode.h"
 #include "module.h"
-#include "context.h"
+#include "evalcontext.h"
 #include "polyset.h"
 #include "builtin.h"
 #include "value.h"
@@ -50,40 +50,39 @@ class TransformModule : public AbstractModule
 public:
 	transform_type_e type;
 	TransformModule(transform_type_e type) : type(type) { }
-	virtual AbstractNode *evaluate(const Context *ctx, const ModuleInstantiation *inst) const;
+	virtual AbstractNode *evaluate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const;
 };
 
-AbstractNode *TransformModule::evaluate(const Context *ctx, const ModuleInstantiation *inst) const
+AbstractNode *TransformModule::evaluate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const
 {
 	TransformNode *node = new TransformNode(inst);
 
 	node->matrix = Transform3d::Identity();
 
-	std::vector<std::string> argnames;
-	std::vector<Expression*> argexpr;
+	AssignmentList args;
 
 	switch (this->type) {
 	case SCALE:
-		argnames += "v";
+		args += Assignment("v", NULL);
 		break;
 	case ROTATE:
-		argnames += "a", "v";
+		args += Assignment("a", NULL), Assignment("v", NULL);
 		break;
 	case MIRROR:
-		argnames += "v";
+		args += Assignment("v", NULL);
 		break;
 	case TRANSLATE:
-		argnames += "v";
+		args += Assignment("v", NULL);
 		break;
 	case MULTMATRIX:
-		argnames += "m";
+		args += Assignment("m", NULL);
 		break;
 	default:
 		assert(false);
 	}
 
 	Context c(ctx);
-	c.args(argnames, argexpr, inst->argnames, inst->argvalues);
+	c.setVariables(args, evalctx);
 
 	if (this->type == SCALE)
 	{
@@ -176,7 +175,7 @@ AbstractNode *TransformModule::evaluate(const Context *ctx, const ModuleInstanti
 		}
 	}
 
-	std::vector<AbstractNode *> evaluatednodes = inst->evaluateChildren();
+	std::vector<AbstractNode *> evaluatednodes = inst->evaluateChildren(evalctx);
 	node->children.insert(node->children.end(), evaluatednodes.begin(), evaluatednodes.end());
 
 	return node;

@@ -27,7 +27,7 @@
 #include "linearextrudenode.h"
 
 #include "module.h"
-#include "context.h"
+#include "evalcontext.h"
 #include "printutils.h"
 #include "builtin.h"
 #include "PolySetEvaluator.h"
@@ -45,19 +45,18 @@ class LinearExtrudeModule : public AbstractModule
 {
 public:
 	LinearExtrudeModule() { }
-	virtual AbstractNode *evaluate(const Context *ctx, const ModuleInstantiation *inst) const;
+	virtual AbstractNode *evaluate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const;
 };
 
-AbstractNode *LinearExtrudeModule::evaluate(const Context *ctx, const ModuleInstantiation *inst) const
+AbstractNode *LinearExtrudeModule::evaluate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const
 {
 	LinearExtrudeNode *node = new LinearExtrudeNode(inst);
 
-	std::vector<std::string> argnames;
-	argnames += "file", "layer", "height", "origin", "scale", "center", "twist", "slices";
-	std::vector<Expression*> argexpr;
+	AssignmentList args;
+	args += Assignment("file", NULL), Assignment("layer", NULL), Assignment("height", NULL), Assignment("origin", NULL), Assignment("scale", NULL), Assignment("center", NULL), Assignment("twist", NULL), Assignment("slices", NULL);
 
 	Context c(ctx);
-	c.args(argnames, argexpr, inst->argnames, inst->argvalues);
+	c.setVariables(args, evalctx);
 
 	node->fn = c.lookup_variable("$fn").toDouble();
 	node->fs = c.lookup_variable("$fs").toDouble();
@@ -81,10 +80,10 @@ AbstractNode *LinearExtrudeModule::evaluate(const Context *ctx, const ModuleInst
 	// if height not given, and first argument is a number,
 	// then assume it should be the height.
 	if (c.lookup_variable("height").isUndefined() &&
-			inst->argnames.size() > 0 && 
-			inst->argnames[0] == "" &&
-			inst->argvalues[0].type() == Value::NUMBER) {
-		height = Value(inst->argvalues[0]);
+			evalctx->eval_arguments.size() > 0 && 
+			evalctx->eval_arguments[0].first == "" &&
+			evalctx->eval_arguments[0].second.type() == Value::NUMBER) {
+		height = Value(evalctx->eval_arguments[0].second);
 	}
 
 	node->layername = layer.isUndefined() ? "" : layer.toString();
@@ -117,7 +116,7 @@ AbstractNode *LinearExtrudeModule::evaluate(const Context *ctx, const ModuleInst
 	}
 
 	if (node->filename.empty()) {
-		std::vector<AbstractNode *> evaluatednodes = inst->evaluateChildren();
+		std::vector<AbstractNode *> evaluatednodes = inst->evaluateChildren(evalctx);
 		node->children.insert(node->children.end(), evaluatednodes.begin(), evaluatednodes.end());
 	}
 

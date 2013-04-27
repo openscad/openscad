@@ -437,7 +437,7 @@ mkdir -p $SRCDIR $DEPLOYDIR
 build_qt 4.8.4
 build_eigen 3.1.2
 build_gmp 5.1.1
-build_mpfr 3.1.1
+build_mpfr 3.1.2
 build_boost 1.53.0
 # NB! For CGAL, also update the actual download URL in the function
 build_cgal 4.1

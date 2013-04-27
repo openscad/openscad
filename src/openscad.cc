@@ -28,7 +28,7 @@
 #include "MainWindow.h"
 #include "node.h"
 #include "module.h"
-#include "context.h"
+#include "modcontext.h"
 #include "value.h"
 #include "export.h"
 #include "builtin.h"
@@ -327,11 +327,8 @@ int main(int argc, char **argv)
 
 		if (!filename) help(argv[0]);
 
-		Context root_ctx;
-		register_builtin(root_ctx);
-
 		Module *root_module;
-		ModuleInstantiation root_inst;
+		ModuleInstantiation root_inst("group");
 		AbstractNode *root_node;
 		AbstractNode *absolute_root_node;
 		CGAL_Nef_polyhedron root_N;
@@ -351,12 +348,18 @@ int main(int argc, char **argv)
 		if (!root_module) exit(1);
 		root_module->handleDependencies();
 		
+		ModuleContext root_ctx;
+		root_ctx.registerBuiltin();
+		PRINT("Root Context:");
+#if 0 && DEBUG
+		root_ctx.dump(NULL, NULL);
+#endif
 		fs::path fpath = boosty::absolute(fs::path(filename));
 		fs::path fparent = fpath.parent_path();
 		fs::current_path(fparent);
 
 		AbstractNode::resetIndexCounter();
-		absolute_root_node = root_module->evaluate(&root_ctx, &root_inst);
+		absolute_root_node = root_module->evaluate(&root_ctx, &root_inst, NULL);
 
 		// Do we have an explicit root node (! modifier)?
 		if (!(root_node = find_root_tag(absolute_root_node)))

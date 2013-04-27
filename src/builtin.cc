@@ -1,6 +1,7 @@
 #include "builtin.h"
 #include "function.h"
 #include "module.h"
+#include "expression.h"
 #include <boost/foreach.hpp>
 
 Builtins *Builtins::instance(bool erase)
@@ -15,12 +16,12 @@ Builtins *Builtins::instance(bool erase)
 
 void Builtins::init(const char *name, class AbstractModule *module)
 {
-	Builtins::instance()->builtinmodules[name] = module;
+	Builtins::instance()->rootmodule.modules[name] = module;
 }
 
 void Builtins::init(const char *name, class AbstractFunction *function)
 {
-	Builtins::instance()->builtinfunctions[name] = function;
+	Builtins::instance()->rootmodule.functions[name] = function;
 }
 
 extern void register_builtin_functions();
@@ -77,10 +78,28 @@ std::string Builtins::isDeprecated(const std::string &name)
 	return std::string();
 }
 
+Builtins::Builtins()
+{
+	this->rootmodule.assignments_var.push_back("$fn");
+	this->rootmodule.assignments["$fn"] = new Expression(Value(0.0));
+	this->rootmodule.assignments_var.push_back("$fs");
+	this->rootmodule.assignments["$fs"] = new Expression(Value(2.0));
+	this->rootmodule.assignments_var.push_back("$fa");
+	this->rootmodule.assignments["$fa"] = new Expression(Value(12.0));
+	this->rootmodule.assignments_var.push_back("$t");
+	this->rootmodule.assignments["$t"] = new Expression(Value(0.0));
+
+	Value::VectorType zero3;
+	zero3.push_back(Value(0.0));
+	zero3.push_back(Value(0.0));
+	zero3.push_back(Value(0.0));
+	Value zero3val(zero3);
+	this->rootmodule.assignments_var.push_back("$vpt");
+	this->rootmodule.assignments["$vpt"] = new Expression(zero3val);
+	this->rootmodule.assignments_var.push_back("$vpr");
+	this->rootmodule.assignments["$vpr"] = new Expression(zero3val);
+}
+
 Builtins::~Builtins()
 {
-	BOOST_FOREACH(FunctionContainer::value_type &f, this->builtinfunctions) delete f.second;
-	this->builtinfunctions.clear();
-	BOOST_FOREACH(ModuleContainer::value_type &m, this->builtinmodules) delete m.second;
-	this->builtinmodules.clear();
 }

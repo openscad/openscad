@@ -69,5 +69,3 @@ std::string two_digit_exp_format( double x )
 	s << x;
 	return two_digit_exp_format( s.str() );
 }
-
-
