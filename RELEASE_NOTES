@@ -11,6 +11,7 @@ o Commandline output to PNG, with various camera and rendering settings
 o resize() command introduced
 o Regression test now creates single monolithic .html file for easier uploading
 o value reassignment is now less strict
+o value assignments in parameters can now depend on already declared parameters
 
 Bugfixes:
 o Importing files is now always relative to the importing script, also for libraries
