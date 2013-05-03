@@ -31,7 +31,15 @@ module hull2dForLoop() {
   }
 }
 
+module hull2null() {
+  hull() {
+    square(0);
+    circle(0);
+  }
+}
+
 convex2dHole();
 translate([40,0,0]) convex2dSimple();
 translate([0,-20,0]) concave2dSimple();
 translate([30,-25,0]) hull2dForLoop();
+hull2null();

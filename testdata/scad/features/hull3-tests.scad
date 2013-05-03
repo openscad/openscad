@@ -26,3 +26,12 @@ translate([-5,-5,-5]) {
     }
   }
 }
+
+module hull3null() {
+  hull() {
+    cube(0);
+    sphere(0);
+  }
+}
+hull3null();
+
