@@ -1,0 +1,16 @@
+ECHO: "special variable inheritance"
+ECHO: 23, 5
+WARNING: Ignoring unknown variable 'a'.
+ECHO: undef
+ECHO: 23, 5
+ECHO: "inner variables shadows parameter"
+ECHO: 5, 24
+ECHO: "user-defined special variables as parameter"
+ECHO: 7
+ECHO: 7
+ECHO: "assign only visible in children's scope"
+WARNING: Ignoring unknown variable 'c'.
+ECHO: undef
+ECHO: 5
+ECHO: "undeclared variable can still be passed and used"
+ECHO: 6

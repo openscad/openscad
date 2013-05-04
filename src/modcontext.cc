@@ -7,46 +7,24 @@
 
 #include <boost/foreach.hpp>
 
-ModuleContext::ModuleContext(const class Module *module, const Context *parent, const EvalContext *evalctx)
-	: Context(parent)
+ModuleContext::ModuleContext(const Context *parent, const EvalContext *evalctx)
+	: Context(parent), functions_p(NULL), modules_p(NULL), evalctx(evalctx)
 {
-	if (module) {
-		setModule(*module, evalctx);
-	}
-	else {
-		this->functions_p = NULL;
-		this->modules_p = NULL;
-		this->usedlibs_p = NULL;
-	}
 }
 
 ModuleContext::~ModuleContext()
 {
 }
 
-void ModuleContext::setModule(const Module &module, const EvalContext *evalctx)
+void ModuleContext::initializeModule(const class Module &module)
 {
 	this->setVariables(module.definition_arguments, evalctx);
-	this->evalctx = evalctx;
-
 	// FIXME: Don't access module members directly
-	this->functions_p = &module.functions;
-	this->modules_p = &module.modules;
-	this->usedlibs_p = &module.usedlibs;
-	BOOST_FOREACH(const std::string &var, module.assignments_var) {
-		this->set_variable(var, module.assignments.at(var)->evaluate(this));
+	this->functions_p = &module.scope.functions;
+	this->modules_p = &module.scope.modules;
+	BOOST_FOREACH(const Assignment &ass, module.scope.assignments) {
+		this->set_variable(ass.first, ass.second->evaluate(this));
 	}
-	
-	if (!module.modulePath().empty()) this->document_path = module.modulePath();
-}
-
-/*!
-	Only used to initialize builtins for the top-level root context
-*/
-void ModuleContext::registerBuiltin()
-{
-	this->setModule(Builtins::instance()->getRootModule());
-	this->set_constant("PI",Value(M_PI));
 }
 
 class RecursionGuard
@@ -62,6 +40,45 @@ private:
 	const std::string &name;
 };
 
+
+/*!
+	Only used to initialize builtins for the top-level root context
+*/
+void ModuleContext::registerBuiltin()
+{
+	const LocalScope &scope = Builtins::instance()->getGlobalScope();
+
+	// FIXME: Don't access module members directly
+	this->functions_p = &scope.functions;
+	this->modules_p = &scope.modules;
+	BOOST_FOREACH(const Assignment &ass, scope.assignments) {
+		this->set_variable(ass.first, ass.second->evaluate(this));
+	}
+
+	this->set_constant("PI",Value(M_PI));
+}
+
+const AbstractFunction *ModuleContext::findLocalFunction(const std::string &name) const
+{
+	if (this->functions_p && this->functions_p->find(name) != this->functions_p->end()) {
+		return this->functions_p->find(name)->second;
+	}
+	return NULL;
+}
+
+const AbstractModule *ModuleContext::findLocalModule(const std::string &name) const
+{
+	if (this->modules_p && this->modules_p->find(name) != this->modules_p->end()) {
+		AbstractModule *m = this->modules_p->find(name)->second;
+		std::string replacement = Builtins::instance()->isDeprecated(name);
+		if (!replacement.empty()) {
+			PRINTB("DEPRECATED: The %s() module will be removed in future releases. Use %s() instead.", name % replacement);
+		}
+		return m;
+	}
+	return NULL;
+}
+
 Value ModuleContext::evaluate_function(const std::string &name, const EvalContext *evalctx) const
 {
 	RecursionGuard g(*this, name);
@@ -70,53 +87,18 @@ Value ModuleContext::evaluate_function(const std::string &name, const EvalContex
 		return Value();
 	}
 
-	if (this->functions_p && this->functions_p->find(name) != this->functions_p->end()) {
-		return this->functions_p->find(name)->second->evaluate(this, evalctx);
-	}
-	
-	if (this->usedlibs_p) {
-		BOOST_FOREACH(const ModuleContainer::value_type &m, *this->usedlibs_p) {
-			if (m.second->functions.find(name) != m.second->functions.end()) {
-				ModuleContext ctx(m.second, this->parent);
-				// FIXME: Set document path
-#if 0 && DEBUG
-				PRINTB("New lib Context for %s func:", name);
-				ctx.dump(NULL, NULL);
-#endif
-				return m.second->functions[name]->evaluate(&ctx, evalctx);
-			}
-		}
-	}
+	const AbstractFunction *foundf = findLocalFunction(name);
+	if (foundf) return foundf->evaluate(this, evalctx);
+
 	return Context::evaluate_function(name, evalctx);
 }
 
-AbstractNode *ModuleContext::evaluate_module(const ModuleInstantiation &inst, const EvalContext *evalctx) const
+AbstractNode *ModuleContext::instantiate_module(const ModuleInstantiation &inst, const EvalContext *evalctx) const
 {
-	if (this->modules_p && this->modules_p->find(inst.name()) != this->modules_p->end()) {
-		AbstractModule *m = this->modules_p->find(inst.name())->second;
-		std::string replacement = Builtins::instance()->isDeprecated(inst.name());
-		if (!replacement.empty()) {
-			PRINTB("DEPRECATED: The %s() module will be removed in future releases. Use %s() instead.", inst.name() % replacement);
-		}
-		return m->evaluate(this, &inst, evalctx);
-	}
+	const AbstractModule *foundm = this->findLocalModule(inst.name());
+	if (foundm) return foundm->instantiate(this, &inst, evalctx);
 
-	if (this->usedlibs_p) {
-		BOOST_FOREACH(const ModuleContainer::value_type &m, *this->usedlibs_p) {
-			assert(m.second);
-			if (m.second->modules.find(inst.name()) != m.second->modules.end()) {
-				ModuleContext ctx(m.second, this->parent);
-				// FIXME: Set document path
-#if 0 && DEBUG
-				PRINT("New lib Context:");
-				ctx.dump(NULL, &inst);
-#endif
-				return m.second->modules[inst.name()]->evaluate(&ctx, &inst, evalctx);
-			}
-		}
-	}
-
-	return Context::evaluate_module(inst, evalctx);
+	return Context::instantiate_module(inst, evalctx);
 }
 
 #ifdef DEBUG
@@ -150,3 +132,58 @@ void ModuleContext::dump(const AbstractModule *mod, const ModuleInstantiation *i
 
 }
 #endif
+
+FileContext::FileContext(const class FileModule &module, const Context *parent)
+	: usedlibs(module.usedlibs), ModuleContext(parent)
+{
+	if (!module.modulePath().empty()) this->document_path = module.modulePath();
+}
+
+Value FileContext::evaluate_function(const std::string &name, const EvalContext *evalctx) const
+{
+	RecursionGuard g(*this, name);
+	if (g.recursion_detected()) { 
+		PRINTB("Recursion detected calling function '%s'", name);
+		return Value();
+	}
+
+	const AbstractFunction *foundf = findLocalFunction(name);
+	if (foundf) return foundf->evaluate(this, evalctx);
+	
+	BOOST_FOREACH(const FileModule::ModuleContainer::value_type &m, this->usedlibs) {
+		if (m.second->scope.functions.find(name) != m.second->scope.functions.end()) {
+			FileContext ctx(*m.second, this->parent);
+			ctx.initializeModule(*m.second);
+			// FIXME: Set document path
+#if 0 && DEBUG
+			PRINTB("New lib Context for %s func:", name);
+			ctx.dump(NULL, NULL);
+#endif
+			return m.second->scope.functions[name]->evaluate(&ctx, evalctx);
+		}
+	}
+
+	return ModuleContext::evaluate_function(name, evalctx);
+}
+
+AbstractNode *FileContext::instantiate_module(const ModuleInstantiation &inst, const EvalContext *evalctx) const
+{
+	const AbstractModule *foundm = this->findLocalModule(inst.name());
+	if (foundm) return foundm->instantiate(this, &inst, evalctx);
+
+	BOOST_FOREACH(const FileModule::ModuleContainer::value_type &m, this->usedlibs) {
+		assert(m.second);
+		if (m.second->scope.modules.find(inst.name()) != m.second->scope.modules.end()) {
+			FileContext ctx(*m.second, this->parent);
+			ctx.initializeModule(*m.second);
+			// FIXME: Set document path
+#if 0 && DEBUG
+			PRINT("New file Context:");
+			ctx.dump(NULL, &inst);
+#endif
+			return m.second->scope.modules[inst.name()]->instantiate(&ctx, &inst, evalctx);
+		}
+	}
+
+	return ModuleContext::instantiate_module(inst, evalctx);
+}

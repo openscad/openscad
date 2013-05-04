@@ -1,4 +1,4 @@
-win32 {
+{
   flex.name = Flex ${QMAKE_FILE_IN}
   flex.input = FLEXSOURCES
   flex.output = ${QMAKE_FILE_PATH}/${QMAKE_FILE_BASE}.lexer.cpp

@@ -34,6 +34,8 @@ public:
 
 	Expression();
 	Expression(const Value &val);
+	Expression(const std::string &type, Expression *left, Expression *right);
+	Expression(const std::string &type, Expression *expr);
 	~Expression();
 
 	Value evaluate(const class Context *context) const;

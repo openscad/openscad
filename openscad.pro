@@ -171,13 +171,8 @@ CONFIG(mingw-cross-env) {
   include(mingw-cross-env.pri)
 }
 
-win32 {
-  FLEXSOURCES = src/lexer.l
-  BISONSOURCES = src/parser.y
-} else {
-  LEXSOURCES += src/lexer.l
-  YACCSOURCES += src/parser.y
-}
+FLEXSOURCES = src/lexer.l
+BISONSOURCES = src/parser.y
 
 RESOURCES = openscad.qrc
 
@@ -216,6 +211,7 @@ HEADERS += src/typedefs.h \
            src/function.h \
            src/grid.h \
            src/highlighter.h \
+           src/localscope.h \
            src/module.h \
            src/node.h \
            src/csgnode.h \
@@ -272,6 +268,7 @@ SOURCES += src/version_check.cc \
            src/value.cc \
            src/expr.cc \
            src/func.cc \
+           src/localscope.cc \
            src/module.cc \
            src/node.cc \
            src/context.cc \

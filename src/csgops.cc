@@ -38,14 +38,14 @@ class CsgModule : public AbstractModule
 public:
 	csg_type_e type;
 	CsgModule(csg_type_e type) : type(type) { }
-	virtual AbstractNode *evaluate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const;
+	virtual AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const;
 };
 
-AbstractNode *CsgModule::evaluate(const Context*, const ModuleInstantiation *inst, const EvalContext *evalctx) const
+AbstractNode *CsgModule::instantiate(const Context*, const ModuleInstantiation *inst, const EvalContext *evalctx) const
 {
 	CsgNode *node = new CsgNode(inst, type);
-	std::vector<AbstractNode *> evaluatednodes = inst->evaluateChildren(evalctx);
-	node->children.insert(node->children.end(), evaluatednodes.begin(), evaluatednodes.end());
+	std::vector<AbstractNode *> instantiatednodes = inst->instantiateChildren(evalctx);
+	node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
 	return node;
 }
 

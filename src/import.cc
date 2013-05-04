@@ -60,10 +60,10 @@ class ImportModule : public AbstractModule
 public:
 	import_type_e type;
 	ImportModule(import_type_e type = TYPE_UNKNOWN) : type(type) { }
-	virtual AbstractNode *evaluate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const;
+	virtual AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const;
 };
 
-AbstractNode *ImportModule::evaluate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const
+AbstractNode *ImportModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const
 {
 	AssignmentList args;
 	args += Assignment("file", NULL), Assignment("layer", NULL), Assignment("convexity", NULL), Assignment("origin", NULL), Assignment("scale", NULL);
@@ -93,10 +93,10 @@ AbstractNode *ImportModule::evaluate(const Context *ctx, const ModuleInstantiati
 	Value v = c.lookup_variable("file");
 	if (v.isUndefined()) {
 		v = c.lookup_variable("filename");
-		if (!v.isUndefined())
-			PRINT("WARNING: filename= is deprecated. Please use file=");
+		if (!v.isUndefined()) {
+			PRINT("DEPRECATED: filename= is deprecated. Please use file=");
+		}
 	}
-
 	std::string filename = inst->getAbsolutePath(v.isUndefined() ? "" : v.toString());
 	import_type_e actualtype = this->type;
 	if (actualtype == TYPE_UNKNOWN) {
@@ -116,9 +116,10 @@ AbstractNode *ImportModule::evaluate(const Context *ctx, const ModuleInstantiati
 	node->filename = filename;
 	Value layerval = c.lookup_variable("layer", true);
 	if (layerval.isUndefined()) {
-		layerval = c.lookup_variable("layername",true);
-		if (!layerval.isUndefined())
-			PRINT("WARNING: layername= is deprecated. Please use layer=");
+		layerval = c.lookup_variable("layername");
+		if (!layerval.isUndefined()) {
+			PRINT("DEPRECATED: layername= is deprecated. Please use layer=");
+		}
 	}
 	node->layername = layerval.isUndefined() ? ""  : layerval.toString();
 	node->convexity = c.lookup_variable("convexity", true).toDouble();

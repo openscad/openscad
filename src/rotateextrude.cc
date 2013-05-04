@@ -45,10 +45,10 @@ class RotateExtrudeModule : public AbstractModule
 {
 public:
 	RotateExtrudeModule() { }
-	virtual AbstractNode *evaluate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const;
+	virtual AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const;
 };
 
-AbstractNode *RotateExtrudeModule::evaluate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const
+AbstractNode *RotateExtrudeModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const
 {
 	RotateExtrudeNode *node = new RotateExtrudeNode(inst);
 
@@ -85,8 +85,8 @@ AbstractNode *RotateExtrudeModule::evaluate(const Context *ctx, const ModuleInst
 		node->scale = 1;
 
 	if (node->filename.empty()) {
-		std::vector<AbstractNode *> evaluatednodes = inst->evaluateChildren(evalctx);
-		node->children.insert(node->children.end(), evaluatednodes.begin(), evaluatednodes.end());
+		std::vector<AbstractNode *> instantiatednodes = inst->instantiateChildren(evalctx);
+		node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
 	}
 
 	return node;

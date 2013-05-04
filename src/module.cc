@@ -44,11 +44,11 @@ AbstractModule::~AbstractModule()
 {
 }
 
-AbstractNode *AbstractModule::evaluate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const
+AbstractNode *AbstractModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const
 {
 	AbstractNode *node = new AbstractNode(inst);
 
-	node->children = inst->evaluateChildren(evalctx);
+	node->children = inst->instantiateChildren(evalctx);
 
 	return node;
 }
@@ -63,12 +63,10 @@ std::string AbstractModule::dump(const std::string &indent, const std::string &n
 ModuleInstantiation::~ModuleInstantiation()
 {
 	BOOST_FOREACH(const Assignment &arg, this->arguments) delete arg.second;
-	BOOST_FOREACH(ModuleInstantiation *v, children) delete v;
 }
 
 IfElseModuleInstantiation::~IfElseModuleInstantiation()
 {
-	BOOST_FOREACH (ModuleInstantiation *v, else_children) delete v;
 }
 
 /*!
@@ -95,83 +93,58 @@ std::string ModuleInstantiation::dump(const std::string &indent) const
 		if (!arg.first.empty()) dump << arg.first << " = ";
 		dump << *arg.second;
 	}
-	if (children.size() == 0) {
+	if (scope.numElements() == 0) {
 		dump << ");\n";
-	} else if (children.size() == 1) {
+	} else if (scope.numElements() == 1) {
 		dump << ")\n";
-		dump << children[0]->dump(indent + "\t");
+		dump << scope.dump(indent + "\t");
 	} else {
 		dump << ") {\n";
-		for (size_t i = 0; i < children.size(); i++) {
-			dump << children[i]->dump(indent + "\t");
-		}
+		scope.dump(indent + "\t");
 		dump << indent << "}\n";
 	}
 	return dump.str();
 }
 
-AbstractNode *ModuleInstantiation::evaluate_instance(const Context *ctx) const
+AbstractNode *ModuleInstantiation::evaluate(const Context *ctx) const
 {
-	EvalContext c(ctx);
-	BOOST_FOREACH(const Assignment &arg, this->arguments) {
-		c.eval_arguments.push_back(std::make_pair(arg.first,
-																							arg.second ? 
-																							arg.second->evaluate(ctx) : 
-																							Value()));
-	}
-	c.children = this->children;
+	EvalContext c(ctx, this->arguments, &this->scope);
 
 #if 0 && DEBUG
 	PRINT("New eval ctx:");
 	c.dump(NULL, this);
 #endif
-	AbstractNode *node = ctx->evaluate_module(*this, &c); // Passes c as evalctx
+	AbstractNode *node = ctx->instantiate_module(*this, &c); // Passes c as evalctx
 	return node;
 }
 
-std::vector<AbstractNode*> ModuleInstantiation::evaluateChildren(const Context *evalctx) const
+std::vector<AbstractNode*> ModuleInstantiation::instantiateChildren(const Context *evalctx) const
 {
-	std::vector<AbstractNode*> childnodes;
-	BOOST_FOREACH (ModuleInstantiation *modinst, this->children) {
-		AbstractNode *node = modinst->evaluate_instance(evalctx);
-		if (node) childnodes.push_back(node);
-	}
-	return childnodes;
+	return this->scope.instantiateChildren(evalctx);
 }
 
-std::vector<AbstractNode*> IfElseModuleInstantiation::evaluateElseChildren(const Context *evalctx) const
+std::vector<AbstractNode*> IfElseModuleInstantiation::instantiateElseChildren(const Context *evalctx) const
 {
-	std::vector<AbstractNode*> childnodes;
-	BOOST_FOREACH (ModuleInstantiation *modinst, this->else_children) {
-		AbstractNode *node = modinst->evaluate_instance(evalctx);
-		if (node != NULL) childnodes.push_back(node);
-	}
-	return childnodes;
+	return this->else_scope.instantiateChildren(evalctx);
 }
 
 Module::~Module()
 {
-	BOOST_FOREACH (const Assignment &v, assignments) delete v.second;
-	BOOST_FOREACH (FunctionContainer::value_type &f, functions) delete f.second;
-	BOOST_FOREACH (AbstractModuleContainer::value_type &m, modules) delete m.second;
-	BOOST_FOREACH (ModuleInstantiation *v, children) delete v;
 }
 
-AbstractNode *Module::evaluate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const
+AbstractNode *Module::instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const
 {
-	ModuleContext c(this, ctx, evalctx);
+	ModuleContext c(ctx, evalctx);
+	c.initializeModule(*this);
+	c.set_variable("$children", Value(double(inst->scope.children.size())));
 	// FIXME: Set document path to the path of the module
-	c.set_variable("$children", Value(double(inst->children.size())));
 #if 0 && DEBUG
 	c.dump(this, inst);
 #endif
 
 	AbstractNode *node = new AbstractNode(inst);
-	for (size_t i = 0; i < children.size(); i++) {
-		AbstractNode *n = children[i]->evaluate_instance(&c);
-		if (n != NULL)
-			node->children.push_back(n);
-	}
+	std::vector<AbstractNode *> instantiatednodes = this->scope.instantiateChildren(&c);
+	node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
 
 	return node;
 }
@@ -191,25 +164,14 @@ std::string Module::dump(const std::string &indent, const std::string &name) con
 		dump << ") {\n";
 		tab = "\t";
 	}
-	BOOST_FOREACH(const FunctionContainer::value_type &f, functions) {
-		dump << f.second->dump(indent + tab, f.first);
-	}
-	BOOST_FOREACH(const AbstractModuleContainer::value_type &m, modules) {
-		dump << m.second->dump(indent + tab, m.first);
-	}
-	BOOST_FOREACH(const std::string &var, assignments_var) {
-		dump << indent << tab << var << " = " << *assignments.at(var) << ";\n";
-	}
-	for (size_t i = 0; i < children.size(); i++) {
-		dump << children[i]->dump(indent + tab);
-	}
+	dump << scope.dump(indent + tab);
 	if (!name.empty()) {
 		dump << indent << "}\n";
 	}
 	return dump.str();
 }
 
-void Module::registerInclude(const std::string &filename)
+void FileModule::registerInclude(const std::string &filename)
 {
 	struct stat st;
 	memset(&st, 0, sizeof(struct stat));
@@ -221,17 +183,17 @@ void Module::registerInclude(const std::string &filename)
 	Check if any dependencies have been modified and recompile them.
 	Returns true if anything was recompiled.
 */
-bool Module::handleDependencies()
+bool FileModule::handleDependencies()
 {
 	if (this->is_handling_dependencies) return false;
 	this->is_handling_dependencies = true;
 
 	bool changed = false;
 	// Iterating manually since we want to modify the container while iterating
-	Module::ModuleContainer::iterator iter = this->usedlibs.begin();
+	FileModule::ModuleContainer::iterator iter = this->usedlibs.begin();
 	while (iter != this->usedlibs.end()) {
-		Module::ModuleContainer::iterator curr = iter++;
-		Module *oldmodule = curr->second;
+		FileModule::ModuleContainer::iterator curr = iter++;
+		FileModule *oldmodule = curr->second;
 		curr->second = ModuleCache::instance()->evaluate(curr->first);
 		if (curr->second != oldmodule) {
 			changed = true;
@@ -247,4 +209,21 @@ bool Module::handleDependencies()
 
 	this->is_handling_dependencies = false;
 	return changed;
+}
+
+AbstractNode *FileModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const
+{
+	assert(evalctx == NULL);
+	FileContext c(*this, ctx);
+	c.initializeModule(*this);
+	// FIXME: Set document path to the path of the module
+#if 0 && DEBUG
+	c.dump(this, inst);
+#endif
+
+	AbstractNode *node = new AbstractNode(inst);
+	std::vector<AbstractNode *> instantiatednodes = this->scope.instantiateChildren(ctx, &c);
+	node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
+
+	return node;
 }

@@ -4,6 +4,7 @@
 #include <string>
 #include <boost/unordered_map.hpp>
 #include "module.h"
+#include "localscope.h"
 
 class Builtins
 {
@@ -17,18 +18,13 @@ public:
 	void initialize();
 	std::string isDeprecated(const std::string &name);
 
-	const FunctionContainer &functions() { return this->builtinfunctions; }
-	const ModuleContainer &modules() { return this->builtinmodules; }
-
-	const Module &getRootModule() { return this->rootmodule; }
+	const LocalScope &getGlobalScope() { return this->globalscope; }
 
 private:
 	Builtins();
 	~Builtins();
 
-	Module rootmodule;
-	FunctionContainer builtinfunctions;
-	ModuleContainer builtinmodules;
+	LocalScope globalscope;
 
 	boost::unordered_map<std::string, std::string> deprecations;
 };

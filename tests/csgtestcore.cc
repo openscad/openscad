@@ -132,10 +132,10 @@ int csgtestcore(int argc, char *argv[], test_type_e test_type)
 	parser_init(boosty::stringy(fs::path(argv[0]).branch_path()));
 	add_librarydir(boosty::stringy(fs::path(argv[0]).branch_path() / "../libraries"));
 
-	ModuleContext root_ctx;
-	root_ctx.registerBuiltin();
+	ModuleContext top_ctx;
+	top_ctx.registerBuiltin();
 
-	AbstractModule *root_module;
+	FileModule *root_module;
 	ModuleInstantiation root_inst("group");
 
 	if (sysinfo_dump)
@@ -154,7 +154,7 @@ int csgtestcore(int argc, char *argv[], test_type_e test_type)
 	}
 
 	AbstractNode::resetIndexCounter();
-	AbstractNode *absolute_root_node = root_module->evaluate(&root_ctx, &root_inst);
+	AbstractNode *absolute_root_node = root_module->instantiate(&top_ctx, &root_inst);
 	AbstractNode *root_node;
 	// Do we have an explicit root node (! modifier)?
 	if (!(root_node = find_root_tag(absolute_root_node))) root_node = absolute_root_node;

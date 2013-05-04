@@ -14,7 +14,7 @@ public:
 	virtual ~Context();
 
 	virtual Value evaluate_function(const std::string &name, const class EvalContext *evalctx) const;
-	virtual class AbstractNode *evaluate_module(const class ModuleInstantiation &inst, const EvalContext *evalctx) const;
+	virtual class AbstractNode *instantiate_module(const class ModuleInstantiation &inst, const EvalContext *evalctx) const;
 
 	void setVariables(const AssignmentList &args,
 										const class EvalContext *evalctx = NULL);
@@ -39,7 +39,7 @@ protected:
 	ValueMap variables;
 	ValueMap config_variables;
 
-	std::string document_path;
+	std::string document_path; // FIXME: This is a remnant only needed by dxfdim
 
 #ifdef DEBUG
 public:

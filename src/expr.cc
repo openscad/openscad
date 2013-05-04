@@ -38,6 +38,20 @@ Expression::Expression()
 {
 }
 
+Expression::Expression(const std::string &type, 
+											 Expression *left, Expression *right)
+	: type(type)
+{
+	this->children.push_back(left);
+	this->children.push_back(right);
+}
+
+Expression::Expression(const std::string &type, Expression *expr)
+	: type(type)
+{
+	this->children.push_back(expr);
+}
+
 Expression::Expression(const Value &val) : const_value(val), type("C")
 {
 }
@@ -127,17 +141,7 @@ Value Expression::evaluate(const Context *context) const
 		return Value();
 	}
 	if (this->type == "F") {
-		EvalContext c(context);
-		for (size_t i=0; i < this->call_arguments.size(); i++) {
-			c.eval_arguments.push_back(std::make_pair(this->call_arguments[i].first, 
-																								this->call_arguments[i].second->evaluate(context)));
-		}
-		// Value::VectorType argvalues;
-		// std::transform(this->children.begin(), this->children.end(), 
-		// 							 std::back_inserter(argvalues), 
-		// 							 boost::bind(&Expression::evaluate, _1, context));
-		// for (size_t i=0; i < this->children.size(); i++)
-		// 	argvalues.push_back(this->children[i]->evaluate(context));
+		EvalContext c(context, this->call_arguments);
 		return context->evaluate_function(this->call_funcname, &c);
 	}
 	abort();

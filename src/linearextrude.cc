@@ -45,10 +45,10 @@ class LinearExtrudeModule : public AbstractModule
 {
 public:
 	LinearExtrudeModule() { }
-	virtual AbstractNode *evaluate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const;
+	virtual AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const;
 };
 
-AbstractNode *LinearExtrudeModule::evaluate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const
+AbstractNode *LinearExtrudeModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const
 {
 	LinearExtrudeNode *node = new LinearExtrudeNode(inst);
 
@@ -80,10 +80,10 @@ AbstractNode *LinearExtrudeModule::evaluate(const Context *ctx, const ModuleInst
 	// if height not given, and first argument is a number,
 	// then assume it should be the height.
 	if (c.lookup_variable("height").isUndefined() &&
-			evalctx->eval_arguments.size() > 0 && 
-			evalctx->eval_arguments[0].first == "" &&
-			evalctx->eval_arguments[0].second.type() == Value::NUMBER) {
-		height = Value(evalctx->eval_arguments[0].second);
+			evalctx->numArgs() > 0 && 
+			evalctx->getArgName(0) == "" &&
+			evalctx->getArgValue(0).type() == Value::NUMBER) {
+		height = evalctx->getArgValue(0);
 	}
 
 	node->layername = layer.isUndefined() ? "" : layer.toString();
@@ -116,8 +116,8 @@ AbstractNode *LinearExtrudeModule::evaluate(const Context *ctx, const ModuleInst
 	}
 
 	if (node->filename.empty()) {
-		std::vector<AbstractNode *> evaluatednodes = inst->evaluateChildren(evalctx);
-		node->children.insert(node->children.end(), evaluatednodes.begin(), evaluatednodes.end());
+		std::vector<AbstractNode *> instantiatednodes = inst->instantiateChildren(evalctx);
+		node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
 	}
 
 	return node;

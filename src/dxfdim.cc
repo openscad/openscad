@@ -52,17 +52,17 @@ Value builtin_dxf_dim(const Context *ctx, const EvalContext *evalctx)
   // FIXME: We don't lookup the file relative to where this function was instantiated
 	// since the path is only available for ModuleInstantiations, not function expressions.
 	// See issue #217
-	for (size_t i = 0; i < evalctx->eval_arguments.size(); i++) {
-		if (evalctx->eval_arguments[i].first == "file")
-			filename = ctx->getAbsolutePath(evalctx->eval_arguments[i].second.toString());
-		if (evalctx->eval_arguments[i].first == "layer")
-			layername = evalctx->eval_arguments[i].second.toString();
-		if (evalctx->eval_arguments[i].first == "origin")
-			evalctx->eval_arguments[i].second.getVec2(xorigin, yorigin);
-		if (evalctx->eval_arguments[i].first == "scale")
-			evalctx->eval_arguments[i].second.getDouble(scale);
-		if (evalctx->eval_arguments[i].first == "name")
-			name = evalctx->eval_arguments[i].second.toString();
+	for (size_t i = 0; i < evalctx->numArgs(); i++) {
+		if (evalctx->getArgName(i) == "file")
+			filename = evalctx->getAbsolutePath(evalctx->getArgValue(i).toString());
+		if (evalctx->getArgName(i) == "layer")
+			layername = evalctx->getArgValue(i).toString();
+		if (evalctx->getArgName(i) == "origin")
+			evalctx->getArgValue(i).getVec2(xorigin, yorigin);
+		if (evalctx->getArgName(i) == "scale")
+			evalctx->getArgValue(i).getDouble(scale);
+		if (evalctx->getArgName(i) == "name")
+			name = evalctx->getArgValue(i).toString();
 	}
 
 	std::stringstream keystream;
@@ -146,15 +146,15 @@ Value builtin_dxf_cross(const Context *ctx, const EvalContext *evalctx)
   // FIXME: We don't lookup the file relative to where this function was instantiated
 	// since the path is only available for ModuleInstantiations, not function expressions.
 	// See isse #217
-	for (size_t i = 0; i < evalctx->eval_arguments.size(); i++) {
-		if (evalctx->eval_arguments[i].first == "file")
-			filename = ctx->getAbsolutePath(evalctx->eval_arguments[i].second.toString());
-		if (evalctx->eval_arguments[i].first == "layer")
-			layername = evalctx->eval_arguments[i].second.toString();
-		if (evalctx->eval_arguments[i].first == "origin")
-			evalctx->eval_arguments[i].second.getVec2(xorigin, yorigin);
-		if (evalctx->eval_arguments[i].first == "scale")
-			evalctx->eval_arguments[i].second.getDouble(scale);
+	for (size_t i = 0; i < evalctx->numArgs(); i++) {
+		if (evalctx->getArgName(i) == "file")
+			filename = ctx->getAbsolutePath(evalctx->getArgValue(i).toString());
+		if (evalctx->getArgName(i) == "layer")
+			layername = evalctx->getArgValue(i).toString();
+		if (evalctx->getArgName(i) == "origin")
+			evalctx->getArgValue(i).getVec2(xorigin, yorigin);
+		if (evalctx->getArgName(i) == "scale")
+			evalctx->getArgValue(i).getDouble(scale);
 	}
 
 	std::stringstream keystream;

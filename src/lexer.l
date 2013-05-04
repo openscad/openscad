@@ -55,7 +55,7 @@ static void yyunput(int, char*) __attribute__((unused));
 #endif
 extern const char *parser_input_buffer;
 extern std::string parser_source_path;
-extern Module *currmodule;
+extern FileModule *rootmodule;
 
 #define YY_INPUT(buf,result,max_size) {   \
   if (yyin && yyin != stdin) {            \
@@ -248,7 +248,7 @@ void includefile()
   path_stack.push_back(finfo.parent_path());
 
   handle_dep(fullname);
-  currmodule->registerInclude(fullname);
+  rootmodule->registerInclude(fullname);
   yyin = fopen(fullname.c_str(), "r");
   if (!yyin) {
     PRINTB("WARNING: Can't open 'include' file '%s'.", filename);

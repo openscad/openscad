@@ -327,7 +327,15 @@ int main(int argc, char **argv)
 
 		if (!filename) help(argv[0]);
 
-		Module *root_module;
+		// Top context - this context only holds builtins
+		ModuleContext top_ctx;
+		top_ctx.registerBuiltin();
+		PRINT("Root Context:");
+#if 0 && DEBUG
+		top_ctx.dump(NULL, NULL);
+#endif
+
+		FileModule *root_module;
 		ModuleInstantiation root_inst("group");
 		AbstractNode *root_node;
 		AbstractNode *absolute_root_node;
@@ -348,18 +356,12 @@ int main(int argc, char **argv)
 		if (!root_module) exit(1);
 		root_module->handleDependencies();
 		
-		ModuleContext root_ctx;
-		root_ctx.registerBuiltin();
-		PRINT("Root Context:");
-#if 0 && DEBUG
-		root_ctx.dump(NULL, NULL);
-#endif
 		fs::path fpath = boosty::absolute(fs::path(filename));
 		fs::path fparent = fpath.parent_path();
 		fs::current_path(fparent);
 
 		AbstractNode::resetIndexCounter();
-		absolute_root_node = root_module->evaluate(&root_ctx, &root_inst, NULL);
+		absolute_root_node = root_module->instantiate(&top_ctx, &root_inst, NULL);
 
 		// Do we have an explicit root node (! modifier)?
 		if (!(root_node = find_root_tag(absolute_root_node)))
