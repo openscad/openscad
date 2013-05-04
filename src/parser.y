@@ -175,13 +175,13 @@ TOK_MODULE TOK_ID '(' arguments_decl optional_commas ')' {
 
 if_statement:
 TOK_IF '(' expr ')' {
-  $<ifelse>if = new IfElseModuleInstantiation();
-  $<ifelse>if->arguments.push_back(Assignment("", $3));
-  $<ifelse>if->setPath(parser_source_path);
-  scope_stack.push(&$<ifelse>if->scope);
-}[if] child_statement {
+  $<ifelse>$ = new IfElseModuleInstantiation();
+  $<ifelse>$->arguments.push_back(Assignment("", $3));
+  $<ifelse>$->setPath(parser_source_path);
+  scope_stack.push(&$<ifelse>$->scope);
+} child_statement {
   scope_stack.pop();
-  $$ = $<ifelse>if;
+  $$ = $<ifelse>5;
  } ;
 
 ifelse_statement:
@@ -190,7 +190,7 @@ if_statement {
 } |
 if_statement TOK_ELSE {
   scope_stack.push(&$1->else_scope);
-}[else] child_statement {
+} child_statement {
   scope_stack.pop();
   $$ = $1;
  } ;
@@ -213,11 +213,11 @@ module_instantiation:
   $$ = NULL;
 } |
 single_module_instantiation {
-  $<inst>inst = $1;
-  scope_stack.push(&$<inst>inst->scope);
-}[inst] child_statement {
+  $<inst>$ = $1;
+  scope_stack.push(&$1->scope);
+} child_statement {
   scope_stack.pop();
-  $$ = $<inst>inst;
+  $$ = $<inst>2;
  } |
  ifelse_statement {
    $$ = $1;
