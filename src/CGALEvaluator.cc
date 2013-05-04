@@ -141,6 +141,9 @@ CGAL_Nef_polyhedron CGALEvaluator::applyHull(const CgaladvNode &node)
 			PRINT("WARNING: hull() does not support mixing 2D and 3D objects.");
 			continue;
 		}
+		if (chN.isNull()) { // If one of the children evaluated to a null object
+			continue;
+		}		
 		if (dim == 2) {
 			CGAL_Nef_polyhedron2::Explorer explorer = chN.p2->explorer();
 			BOOST_FOREACH(const CGAL_Nef_polyhedron2::Explorer::Vertex &vh, 
