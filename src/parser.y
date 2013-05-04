@@ -228,8 +228,13 @@ child_statement:
 '{' child_statements '}' |
 module_instantiation {
   if ($1) scope_stack.top()->addChild($1);
-} |
+} ;
+
+/*
+ FIXME: This allows for variable declaration in child blocks, not activated yet
+ |
 assignment ;
+*/
 
 child_statements:
 /* empty */ |
