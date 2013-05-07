@@ -488,12 +488,12 @@ void MainWindow::requestOpenFile(const QString &)
 void
 MainWindow::openFile(const QString &new_filename)
 {
-	QString actual_filename;
+	QString actual_filename = new_filename;
 #ifdef ENABLE_MDI
 	if (!editor->toPlainText().isEmpty()) {
 		QFileInfo fi(new_filename);
-		if (!fi.suffix().toLower().contains(QRegExp("^(stl|off|dxf)$"))) {
-			actual_filename = new_filename;
+		if (fi.suffix().toLower().contains(QRegExp("^(stl|off|dxf)$"))) {
+			actual_filename = QString();
 		}
 		new MainWindow(actual_filename);
 		clearCurrentOutput();
