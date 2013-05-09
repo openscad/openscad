@@ -73,7 +73,7 @@ AbstractNode *LinearExtrudeModule::instantiate(const Context *ctx, const ModuleI
 	Value twist = c.lookup_variable("twist", true);
 	Value slices = c.lookup_variable("slices", true);
 
-	if (!file.isUndefined()) {
+	if (!file.isUndefined() && file.type() == Value::STRING) {
 		PRINT("DEPRECATED: Support for reading files in linear_extrude will be removed in future releases. Use a child import() instead.");
 		node->filename = lookup_file(file.toString(), inst->path(), c.documentPath());
 	}
@@ -81,7 +81,7 @@ AbstractNode *LinearExtrudeModule::instantiate(const Context *ctx, const ModuleI
 	// if height not given, and first argument is a number,
 	// then assume it should be the height.
 	if (c.lookup_variable("height").isUndefined() &&
-			evalctx->numArgs() > 0 && 
+			evalctx->numArgs() > 0 &&
 			evalctx->getArgName(0) == "" &&
 			evalctx->getArgValue(0).type() == Value::NUMBER) {
 		height = evalctx->getArgValue(0);
