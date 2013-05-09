@@ -336,8 +336,7 @@ Value builtin_lookup(const Context *, const EvalContext *evalctx)
 	double p, low_p, low_v, high_p, high_v;
 	if (evalctx->numArgs() < 2 ||                     // Needs two args
 			!evalctx->getArgValue(0).getDouble(p) ||                  // First must be a number
-			evalctx->getArgValue(1).toVector().size() < 2 ||       // Second must be a vector of vectors
-			evalctx->getArgValue(1).toVector()[0].toVector().size() < 2)
+			evalctx->getArgValue(1).toVector()[0].toVector().size() < 2) // Second must be a vector of vectors
 		return Value();
 	if (!evalctx->getArgValue(1).toVector()[0].getVec2(low_p, low_v) || !evalctx->getArgValue(1).toVector()[0].getVec2(high_p, high_v))
 		return Value();
