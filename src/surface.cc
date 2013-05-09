@@ -122,7 +122,7 @@ PolySet *SurfaceNode::evaluate_polyset(class PolySetEvaluator *) const
 			std::getline(stream, line);
 			boost::trim(line);
 		}
-		if (stream.eof()) break;
+		if (line.size() == 0 && stream.eof()) break;
 
 		int col = 0;
 		tokenizer tokens(line, sep);
