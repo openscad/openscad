@@ -3,6 +3,7 @@ OpenSCAD 2013.XX
 
 Features:
 o Recursive modules and functions is now supported (including cascading child() operations)
+o Parameter list values can now depend on earlier values, e.g. for (i=[0:2], j=[0:i]) ..
 o Console output is now enabled on Windows through the openscad.com executable
 o Added basic syntax highlighting in the editor
 o Mac: Added document icon
@@ -12,6 +13,7 @@ o resize() command introduced
 o Regression test now creates single monolithic .html file for easier uploading
 o value reassignment is now less strict
 o value assignments in parameters can now depend on already declared parameters
+o Attempting to open dxf, off or stl files in the GUI will now create an import statement.
 
 Bugfixes:
 o Importing files is now always relative to the importing script, also for libraries
