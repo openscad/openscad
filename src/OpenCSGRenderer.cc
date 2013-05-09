@@ -95,7 +95,7 @@ void OpenCSGRenderer::renderCSGChain(CSGChain *chain, GLint *shaderinfo,
 					csgmode = PolySet::csgmode_e(csgmode + 20);
 				}
 				else if (background) {
-					setColor(COLORMODE_BACKGROUND, shaderinfo);
+					setColor(COLORMODE_BACKGROUND, c.data(), shaderinfo);
 					csgmode = PolySet::csgmode_e(csgmode + 10);
 				} else if (c[0] >= 0 || c[1] >= 0 || c[2] >= 0 || c[3] >= 0) {
 					// User-defined color or alpha from source

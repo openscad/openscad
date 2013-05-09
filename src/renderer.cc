@@ -17,6 +17,27 @@ void Renderer::setColor(const float color[4], GLint *shaderinfo) const
 	}
 }
 
+void Renderer::setColor(ColorMode colormode, const float color[4], GLint *shaderinfo) const
+{
+	if (colormode == COLORMODE_BACKGROUND && 
+			color[0] >= 0 || color[1] >= 0 || color[2] >= 0 || color[3] >= 0) {
+
+		Color4f col;
+    col.setRgb(180, 180, 180, 255);
+		float c[4] = {color[0], color[1], color[2], color[3]};
+		if (c[0] < 0) c[0] = col[0];
+		if (c[1] < 0) c[1] = col[1];
+		if (c[2] < 0) c[2] = col[2];
+		if (c[3] < 0) c[3] = col[3];
+
+		c[3] /= 2; // Background objects are half-transparent
+		setColor(c, shaderinfo);
+	}
+	else {
+		setColor(colormode, shaderinfo);
+	}
+}
+
 void Renderer::setColor(ColorMode colormode, GLint *shaderinfo) const
 {
 	Color4f col;

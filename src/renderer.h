@@ -27,6 +27,7 @@ public:
 
 	virtual void setColor(const float color[4], GLint *shaderinfo = NULL) const;
 	virtual void setColor(ColorMode colormode, GLint *shaderinfo = NULL) const;
+	virtual void setColor(ColorMode colormode, const float color[4], GLint *shaderinfo = NULL) const;
 };
 
 #endif // RENDERER_H
