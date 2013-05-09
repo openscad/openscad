@@ -30,6 +30,7 @@
 #include "dxfdata.h"
 #include "builtin.h"
 #include "printutils.h"
+#include "fileutils.h"
 #include "evalcontext.h"
 
 #include "mathc99.h"
@@ -54,7 +55,8 @@ Value builtin_dxf_dim(const Context *ctx, const EvalContext *evalctx)
 	// See issue #217
 	for (size_t i = 0; i < evalctx->numArgs(); i++) {
 		if (evalctx->getArgName(i) == "file")
-			filename = evalctx->getAbsolutePath(evalctx->getArgValue(i).toString());
+			filename = lookup_file(evalctx->getArgValue(i).toString(), 
+														 evalctx->documentPath(), ctx->documentPath());
 		if (evalctx->getArgName(i) == "layer")
 			layername = evalctx->getArgValue(i).toString();
 		if (evalctx->getArgName(i) == "origin")

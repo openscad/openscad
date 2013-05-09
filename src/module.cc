@@ -71,7 +71,10 @@ IfElseModuleInstantiation::~IfElseModuleInstantiation()
 
 /*!
 	Returns the absolute path to the given filename, unless it's empty.
- */
+
+	NB! This will actually search for the file, to be backwards compatible with <= 2013.01
+	(see issue #217)
+*/
 std::string ModuleInstantiation::getAbsolutePath(const std::string &filename) const
 {
 	if (!filename.empty() && !boosty::is_absolute(fs::path(filename))) {

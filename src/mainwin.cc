@@ -488,17 +488,25 @@ void MainWindow::requestOpenFile(const QString &)
 void
 MainWindow::openFile(const QString &new_filename)
 {
+	QString actual_filename = new_filename;
 #ifdef ENABLE_MDI
 	if (!editor->toPlainText().isEmpty()) {
-		new MainWindow(new_filename);
+		QFileInfo fi(new_filename);
+		if (fi.suffix().toLower().contains(QRegExp("^(stl|off|dxf)$"))) {
+			actual_filename = QString();
+		}
+		new MainWindow(actual_filename);
 		clearCurrentOutput();
 		return;
 	}
 #endif
-	setFileName(new_filename);
+	setFileName(actual_filename);
 
 	refreshDocument();
 	updateRecentFiles();
+	if (actual_filename.isEmpty()) {
+		this->editor->setPlainText(QString("import(\"%1\");\n").arg(new_filename));
+	}
 }
 
 void

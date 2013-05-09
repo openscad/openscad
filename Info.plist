@@ -38,6 +38,36 @@
 			<key>LSIsAppleDefaultForType</key>
 			<true/>
 		</dict>
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>stl</string>
+			</array>
+			<key>CFBundleTypeName</key>
+			<string>STL 3D file</string>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+		</dict>
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>off</string>
+			</array>
+			<key>CFBundleTypeName</key>
+			<string>OFF 3D file</string>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+		</dict>
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>dxf</string>
+			</array>
+			<key>CFBundleTypeName</key>
+			<string>DXF file</string>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+		</dict>
 	</array>
 	<key>NSAppleScriptEnabled</key>
 	<true/>

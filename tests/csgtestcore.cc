@@ -148,9 +148,10 @@ int csgtestcore(int argc, char *argv[], test_type_e test_type)
 	}
 
 	if (!sysinfo_dump) {
-		if (fs::path(filename).has_parent_path()) {
-			fs::current_path(fs::path(filename).parent_path());
-		}
+		fs::path fpath = boosty::absolute(fs::path(filename));
+		fs::path fparent = fpath.parent_path();
+		fs::current_path(fparent);
+		top_ctx.setDocumentPath(fparent.string());
 	}
 
 	AbstractNode::resetIndexCounter();

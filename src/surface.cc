@@ -30,6 +30,7 @@
 #include "evalcontext.h"
 #include "builtin.h"
 #include "printutils.h"
+#include "fileutils.h"
 #include "handle_dep.h" // handle_dep()
 #include "visitor.h"
 
@@ -82,7 +83,7 @@ AbstractNode *SurfaceModule::instantiate(const Context *ctx, const ModuleInstant
 	c.setVariables(args, evalctx);
 
 	Value fileval = c.lookup_variable("file");
-	node->filename = inst->getAbsolutePath(fileval.isUndefined() ? "" : fileval.toString());
+	node->filename = lookup_file(fileval.isUndefined() ? "" : fileval.toString(), inst->path(), c.documentPath());
 
 	Value center = c.lookup_variable("center", true);
 	if (center.type() == Value::BOOL) {

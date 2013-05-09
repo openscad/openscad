@@ -7,7 +7,12 @@
 #include <sstream>
 #include <fstream>
 
-FileModule *parsefile(const char *filename)
+/*!
+	fakepath is used to force the parser to believe that the file is
+	read from this location, in order to ensure that filepaths are
+	eavluated relative to this path (for testing purposes).
+*/
+FileModule *parsefile(const char *filename, const char *fakepath)
 {
 	FileModule *root_module = NULL;
 
@@ -19,7 +24,9 @@ FileModule *parsefile(const char *filename)
 	else {
 		std::string text((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
 		text += "\n" + commandline_commands;
-		std::string pathname = boosty::stringy(fs::path(filename).parent_path());
+		std::string pathname;
+		if (fakepath) pathname = fakepath;
+		else pathname = boosty::stringy(fs::path(filename).parent_path());
 		root_module = parse(text.c_str(), pathname.c_str(), false);
 		if (root_module) {
 			root_module->handleDependencies();
