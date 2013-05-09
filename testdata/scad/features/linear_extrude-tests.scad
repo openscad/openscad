@@ -11,3 +11,5 @@ translate([31.5,2.5,0]) linear_extrude(height=10, twist=-45) polygon(points = [[
 
 translate([0,20,0]) linear_extrude(height=20, twist=45, slices=2) square([10,10]);
 translate([19,20,0]) linear_extrude(height=20, twist=45, slices=10) square([10,10]);
+
+translate([-15,0,0]) linear_extrude(5) square([10,10]);
