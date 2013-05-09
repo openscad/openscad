@@ -355,9 +355,9 @@ Value builtin_lookup(const Context *, const EvalContext *evalctx)
 		}
 	}
 	if (p <= low_p)
-		return Value(low_v);
-	if (p >= high_p)
 		return Value(high_v);
+	if (p >= high_p)
+		return Value(low_v);
 	double f = (p-low_p) / (high_p-low_p);
 	return Value(high_v * f + low_v * (1-f));
 }
