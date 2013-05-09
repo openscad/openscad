@@ -28,6 +28,7 @@
 #include "module.h"
 #include "evalcontext.h"
 #include "printutils.h"
+#include "fileutils.h"
 #include "builtin.h"
 #include "polyset.h"
 #include "visitor.h"
@@ -70,7 +71,7 @@ AbstractNode *RotateExtrudeModule::instantiate(const Context *ctx, const ModuleI
 
 	if (!file.isUndefined()) {
 		PRINT("DEPRECATED: Support for reading files in rotate_extrude will be removed in future releases. Use a child import() instead.");
-		node->filename = inst->getAbsolutePath(file.toString());
+		node->filename = lookup_file(file.toString(), inst->path(), c.documentPath());
 	}
 
 	node->layername = layer.isUndefined() ? "" : layer.toString();

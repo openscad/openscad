@@ -33,6 +33,7 @@
 #include "dxfdata.h"
 #include "dxftess.h"
 #include "printutils.h"
+#include "fileutils.h"
 #include "handle_dep.h" // handle_dep()
 
 #ifdef ENABLE_CGAL
@@ -97,7 +98,7 @@ AbstractNode *ImportModule::instantiate(const Context *ctx, const ModuleInstanti
 			PRINT("DEPRECATED: filename= is deprecated. Please use file=");
 		}
 	}
-	std::string filename = inst->getAbsolutePath(v.isUndefined() ? "" : v.toString());
+	std::string filename = lookup_file(v.isUndefined() ? "" : v.toString(), inst->path(), ctx->documentPath());
 	import_type_e actualtype = this->type;
 	if (actualtype == TYPE_UNKNOWN) {
 		std::string extraw = boosty::extension_str( fs::path(filename) );

@@ -227,6 +227,7 @@ HEADERS += src/typedefs.h \
            src/handle_dep.h \
            src/polyset.h \
            src/printutils.h \
+           src/fileutils.h \
            src/value.h \
            src/progress.h \
            src/editor.h \
@@ -291,6 +292,7 @@ SOURCES += src/version_check.cc \
            src/linearextrude.cc \
            src/rotateextrude.cc \
            src/printutils.cc \
+           src/fileutils.cc \
            src/progress.cc \
            src/parsersettings.cc \
            src/stl-utils.cc \

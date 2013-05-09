@@ -359,7 +359,8 @@ int main(int argc, char **argv)
 		fs::path fpath = boosty::absolute(fs::path(filename));
 		fs::path fparent = fpath.parent_path();
 		fs::current_path(fparent);
-
+		top_ctx.setDocumentPath(fparent.string());
+		
 		AbstractNode::resetIndexCounter();
 		absolute_root_node = root_module->instantiate(&top_ctx, &root_inst, NULL);
 

@@ -97,9 +97,10 @@ int main(int argc, char **argv)
 		exit(1);
 	}
 
-	if (fs::path(filename).has_parent_path()) {
-		fs::current_path(fs::path(filename).parent_path());
-	}
+	fs::path fpath = boosty::absolute(fs::path(filename));
+	fs::path fparent = fpath.parent_path();
+	fs::current_path(fparent);
+	top_ctx.setDocumentPath(fparent.string());
 
 	AbstractNode::resetIndexCounter();
 	root_node = root_module->instantiate(&top_ctx, &root_inst);
@@ -130,7 +131,7 @@ int main(int argc, char **argv)
 	delete root_module;
 
 	fs::current_path(original_path);
-	root_module = parsefile(outfilename);
+	root_module = parsefile(outfilename, fparent.string().c_str());
 	if (!root_module) {
 		fprintf(stderr, "Error: Unable to read back dumped file\n");
 		exit(1);
@@ -141,9 +142,7 @@ int main(int argc, char **argv)
 
 	tree.setRoot(root_node);
 
-	if (fs::path(outfilename).has_parent_path()) {
-		fs::current_path(fs::path(outfilename).parent_path());
-	}
+	fs::current_path(fparent);
 
 	string readbackstr = dumptree(tree, *root_node);
 	if (dumpstdstr != readbackstr) {

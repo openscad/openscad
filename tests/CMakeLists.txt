@@ -429,6 +429,7 @@ set(CORE_SOURCES
   ../src/linearextrude.cc 
   ../src/rotateextrude.cc 
   ../src/printutils.cc 
+  ../src/fileutils.cc 
   ../src/progress.cc 
   ../src/boost-utils.cc 
   ${FLEX_OpenSCADlexer_OUTPUTS}
