@@ -178,8 +178,6 @@ win32 {
   LEXSOURCES += src/lexer.l
   YACCSOURCES += src/parser.y
 }
-FLEXSOURCES = src/lexer.l
-BISONSOURCES = src/parser.y
 
 RESOURCES = openscad.qrc
 
