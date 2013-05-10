@@ -91,7 +91,10 @@ AbstractNode *LinearExtrudeModule::instantiate(const Context *ctx, const ModuleI
 	node->height = height.toDouble();
 	node->convexity = (int)convexity.toDouble();
 	origin.getVec2(node->origin_x, node->origin_y);
-	node->scale = scale.isUndefined() ? 1 : scale.toDouble();
+	node->scale_x = node->scale_y = 1;
+	scale.getDouble(node->scale_x);
+	scale.getDouble(node->scale_y);
+	scale.getVec2(node->scale_x, node->scale_y);
 
 	if (center.type() == Value::BOOL)
 		node->center = center.toBool();
@@ -102,8 +105,8 @@ AbstractNode *LinearExtrudeModule::instantiate(const Context *ctx, const ModuleI
 	if (node->convexity <= 0)
 		node->convexity = 1;
 
-	if (node->scale < 0)
-		node->scale = 0;
+	if (node->scale_x < 0) node->scale_x = 0;
+	if (node->scale_y < 0) node->scale_y = 0;
 
 	if (twist.type() == Value::NUMBER) {
 		node->twist = twist.toDouble();
@@ -151,7 +154,6 @@ std::string LinearExtrudeNode::toString() const
 			"file = " << this->filename << ", "
 			"layer = " << QuotedString(this->layername) << ", "
 			"origin = [" << this->origin_x << ", " << this->origin_y << "], "
-			"scale = " << this->scale << ", "
 #ifndef OPENSCAD_TESTING
 			// timestamp is needed for caching, but disturbs the test framework
 			<< "timestamp = " << (fs::exists(path) ? fs::last_write_time(path) : 0) << ", "
@@ -166,7 +168,7 @@ std::string LinearExtrudeNode::toString() const
 	if (this->has_twist) {
 		stream << ", twist = " << this->twist << ", slices = " << this->slices;
 	}
-	stream << ", scale = " << this->scale;
+	stream << ", scale = [" << this->scale_x << ", " << this->scale_y << "]";
 	stream << ", $fn = " << this->fn << ", $fa = " << this->fa << ", $fs = " << this->fs << ")";
 	
 	return stream.str();

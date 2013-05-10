@@ -294,7 +294,7 @@ PolySet *ImportNode::evaluate_polyset(class PolySetEvaluator *) const
 		p = new PolySet();
 		DxfData dd(this->fn, this->fs, this->fa, this->filename, this->layername, this->origin_x, this->origin_y, this->scale);
 		p->is2d = true;
-		dxf_tesselate(p, dd, 0, 1, true, false, 0);
+		dxf_tesselate(p, dd, 0, Vector2d(1,1), true, false, 0);
 		dxf_border_to_ps(p, dd);
 	}
 	else 

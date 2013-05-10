@@ -90,7 +90,7 @@ PolySet *CGAL_Nef_polyhedron::convertToPolyset()
 		ps = new PolySet();
 		DxfData *dd = this->convertToDxfData();
 		ps->is2d = true;
-		dxf_tesselate(ps, *dd, 0, 1, true, false, 0);
+		dxf_tesselate(ps, *dd, 0, Vector2d(1,1), true, false, 0);
 		dxf_border_to_ps(ps, *dd);
 		delete dd;
 	}
