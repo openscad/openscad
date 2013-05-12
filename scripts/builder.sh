@@ -1,11 +1,13 @@
 #!/usr/bin/env bash
 
-# build&upload script for linux & windows binaries
+# build&upload script for linux & windows snapshot binaries
 # tested under linux
 
 # requirements -
 # see http://mxe.cc for required tools (scons, perl, yasm, etc etc etc)
 
+# todo - auto update webpage to link to proper snapshot
+#
 # todo - 64 bit windows (needs mxe 64 bit stable)
 #
 # todo - can we build 32 bit linux from within 64 bit linux?
