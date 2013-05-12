@@ -206,7 +206,7 @@ complete, build OpenSCAD and package it to an installer:
 If you wish you can only build the openscad.exe binary:
 
     cd mingw32
-    i686-pc-mingw32-qmake .. CONFIG+=mingw-cross-env
+    qmake .. CONFIG+=mingw-cross-env
     make
     
 ### Compilation

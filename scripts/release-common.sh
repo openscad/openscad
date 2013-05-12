@@ -134,7 +134,7 @@ esac
 
 case $OS in
     LINXWIN)
-        cd $DEPLOYDIR && i686-pc-mingw32-qmake VERSION=$VERSION OPENSCAD_COMMIT=$OPENSCAD_COMMIT CONFIG+=$CONFIG CONFIG+=mingw-cross-env CONFIG-=debug ../openscad.pro
+        cd $DEPLOYDIR && qmake VERSION=$VERSION OPENSCAD_COMMIT=$OPENSCAD_COMMIT CONFIG+=$CONFIG CONFIG+=mingw-cross-env CONFIG-=debug ../openscad.pro
         cd $OPENSCADDIR
     ;;
     *)
@@ -144,7 +144,8 @@ esac
 
 case $OS in
     LINXWIN)
-        cd $DEPLOYDIR && make -s clean
+        #cd $DEPLOYDIR
+        make -s clean ## comment out for test-run
         cd $OPENSCADDIR
     ;;
     *)
@@ -172,10 +173,14 @@ case $OS in
         # dont use paralell builds, it can error-out on parser_yacc.
 
         # make main openscad.exe
-        cd $DEPLOYDIR && make $TARGET
-
+        cd $DEPLOYDIR
+	make $TARGET ## comment out for test-run
+	if [ ! -e $TARGET/openscad.exe ]; then
+            echo 'build failed. stopping.'
+            exit
+        fi
         # make console pipe-able openscad.com - see winconsole.pri for info
-        i686-pc-mingw32-qmake CONFIG+=winconsole ../openscad.pro
+        qmake CONFIG+=winconsole ../openscad.pro
         make
 
         cd $OPENSCADDIR
@@ -245,21 +250,24 @@ case $OS in
         cp win32deps/* openscad-$VERSION
         cp $TARGET/openscad.exe openscad-$VERSION
         cp $TARGET/openscad.com openscad-$VERSION
-        rm -f openscad-$VERSION.zip
-        "$ZIP" $ZIPARGS openscad-$VERSION.zip openscad-$VERSION
+        rm -f openscad-$VERSION.x86-$ARCH.zip
+        "$ZIP" $ZIPARGS openscad-$VERSION.x86-$ARCH.zip openscad-$VERSION
         rm -rf openscad-$VERSION
         echo "Binary created: openscad-$VERSION.zip"
         ;;
     LINXWIN)
+        BINFILE=$DEPLOYDIR/OpenSCAD-$VERSION-x86-$ARCH.zip
+        INSTFILE=$DEPLOYDIR/OpenSCAD-$VERSION-x86-$ARCH-Installer.exe
+
         #package
-        echo "Creating binary package"
+        echo "Creating binary zip package"
         cd $DEPLOYDIR
         cp $TARGET/openscad.exe openscad-$VERSION
         cp $TARGET/openscad.com openscad-$VERSION
-        rm -f OpenSCAD-$VERSION.zip
-        "$ZIP" $ZIPARGS OpenSCAD-$VERSION.zip openscad-$VERSION
+        rm -f OpenSCAD-$VERSION.x86-$ARCH.zip
+        "$ZIP" $ZIPARGS $BINFILE openscad-$VERSION
         cd $OPENSCADDIR
-        echo "Binary package created"
+        echo "Binary zip package created"
 
         echo "Creating installer"
         echo "Copying NSIS files to $DEPLOYDIR/openscad-$VERSION"
@@ -270,11 +278,9 @@ case $OS in
         # NSISDEBUG=      # leave blank for full log
         echo $MAKENSIS $NSISDEBUG installer.nsi
         $MAKENSIS $NSISDEBUG installer.nsi
-        cp $DEPLOYDIR/openscad-$VERSION/openscad_setup.exe $DEPLOYDIR/OpenSCAD-$VERSION-Installer.exe
+        cp $DEPLOYDIR/openscad-$VERSION/openscad_setup.exe $INSTFILE
         cd $OPENSCADDIR
 
-        BINFILE=$DEPLOYDIR/OpenSCAD-$VERSION.zip
-        INSTFILE=$DEPLOYDIR/OpenSCAD-$VERSION-Installer.exe
         if [ -e $BINFILE ]; then
             if [ -e $INSTFILE ]; then
                 echo
