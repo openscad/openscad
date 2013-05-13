@@ -73,7 +73,7 @@ read_username_from_user()
 {
 	echo 'Please enter your username for https://code.google.com/hosting/settings'
 	echo -n 'Username:'
-	read -s USERNAME
+	read USERNAME
 	echo 'username is ' $USERNAME
 }
 

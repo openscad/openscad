@@ -144,7 +144,7 @@ esac
 
 case $OS in
     LINXWIN)
-        #cd $DEPLOYDIR
+        cd $DEPLOYDIR
         make -s clean ## comment out for test-run
         cd $OPENSCADDIR
     ;;
@@ -174,8 +174,8 @@ case $OS in
 
         # make main openscad.exe
         cd $DEPLOYDIR
-	make $TARGET ## comment out for test-run
-	if [ ! -e $TARGET/openscad.exe ]; then
+        make $TARGET ## comment out for test-run
+        if [ ! -e $TARGET/openscad.exe ]; then
             echo 'build failed. stopping.'
             exit
         fi
