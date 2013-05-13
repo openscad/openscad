@@ -189,7 +189,7 @@ def encode_upload_request(fields, file_path):
 
 
 def upload_find_auth(file_path, project_name, summary, labels=None,
-                     user_name=None, password=None, tries=3):
+                     user_name=None, password=None, tries=1):
   """Find credentials and upload a file to a Google Code project's file server.
 
   file_path, project_name, summary, and labels are passed as-is to upload.
@@ -203,6 +203,8 @@ def upload_find_auth(file_path, project_name, summary, labels=None,
     user_name: Your Google account name.
     tries: How many attempts to make.
   """
+  print 'uploading. username: ', user_name
+  print 'password detected:', password!=None
   if user_name is None or password is None:
     from netrc import netrc
     authenticators = None
@@ -255,13 +257,19 @@ def main():
                     help='Google Code project name')
   parser.add_option('-u', '--user', dest='user',
                     help='Your Google Code username')
-  parser.add_option('-w', '--password', dest='password',
-                    help='Your Google Code password')
+  #this is a massive security hole. anyone using 'ps' could steal p/w
+  #parser.add_option('-w', '--password', dest='password',
+  #                  help='Your Google Code password')
   parser.add_option('-l', '--labels', dest='labels',
                     help='An optional list of comma-separated labels to attach '
                     'to the file')
 
   options, args = parser.parse_args()
+
+  if os.environ.has_key('OSUPL_PASSWORD'):
+    options.password=os.environ['OSUPL_PASSWORD']
+  else:
+    options.password=None
 
   if not options.summary:
     parser.error('File summary is missing.')
@@ -279,6 +287,7 @@ def main():
   else:
     labels = None
 
+  print 'read arguments'
   status, reason, url = upload_find_auth(file_path, options.project,
                                          options.summary, labels,
                                          options.user, options.password)
@@ -293,4 +302,5 @@ def main():
 
 
 if __name__ == '__main__':
+  print sys.argv
   sys.exit(main())
