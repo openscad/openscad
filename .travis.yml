@@ -10,4 +10,4 @@ branches:
   only:
     - travis
 
-script: echo "Success"
+script: ./scripts/travis-ci.sh
