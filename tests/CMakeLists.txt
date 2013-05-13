@@ -329,8 +329,9 @@ if (WIN32)
   set(FLEX_UNISTD_FLAG "-DYY_NO_UNISTD_H")
 endif()
 FLEX_TARGET(OpenSCADlexer ../src/lexer.l ${CMAKE_CURRENT_BINARY_DIR}/lexer.cpp COMPILE_FLAGS "-Plexer ${FLEX_UNISTD_FLAG}")
-BISON_TARGET(OpenSCADparser ../src/parser.y ${CMAKE_CURRENT_BINARY_DIR}/parser.cpp COMPILE_FLAGS "-p parser")
+BISON_TARGET(OpenSCADparser ../src/parser.y ${CMAKE_CURRENT_BINARY_DIR}/parser_yacc.c COMPILE_FLAGS "-p parser")
 ADD_FLEX_BISON_DEPENDENCY(OpenSCADlexer OpenSCADparser)
+set_source_files_properties(${CMAKE_CURRENT_BINARY_DIR}/parser_yacc.c PROPERTIES LANGUAGE "CXX")
 
 # CGAL
 
