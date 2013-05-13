@@ -27,11 +27,6 @@ fi
 
 export PATH=$MXEDIR/usr/bin:$PATH
 
-echo BASEDIR: $BASEDIR
-echo MXEDIR: $MXEDIR
-echo DEPLOYDIR: $DEPLOYDIR
-echo PATH modified with $MXEDIR/usr/bin
-
 if [ ! -e $DEPLOYDIR ]; then
   mkdir -p $DEPLOYDIR
 fi
@@ -39,5 +34,13 @@ fi
 echo linking $MXEDIR/usr/i686-pc-mingw32/ to $DEPLOYDIR/mingw-cross-env
 rm -f $DEPLOYDIR/mingw-cross-env
 ln -s $MXEDIR/usr/i686-pc-mingw32/ $DEPLOYDIR/mingw-cross-env
+export PATH=$MXEDIR/usr/i686-pc-mingw32/qt/bin:$PATH
+
+echo BASEDIR: $BASEDIR
+echo MXEDIR: $MXEDIR
+echo DEPLOYDIR: $DEPLOYDIR
+echo PATH modified: $MXEDIR/usr/bin
+echo PATH modified: $MXEDIR/usr/i686-pc-mingw32/qt/bin
+
 
 
