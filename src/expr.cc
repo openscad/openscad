@@ -31,6 +31,7 @@
 #include <sstream>
 #include <algorithm>
 #include "stl-utils.h"
+#include "printutils.h"
 #include <boost/bind.hpp>
 #include <boost/foreach.hpp>
 
@@ -40,7 +41,7 @@ Expression::Expression()
 
 Expression::Expression(const std::string &type, 
 											 Expression *left, Expression *right)
-	: type(type)
+	: type(type), recursioncount(0)
 {
 	this->children.push_back(left);
 	this->children.push_back(right);
@@ -60,6 +61,18 @@ Expression::~Expression()
 {
 	std::for_each(this->children.begin(), this->children.end(), del_fun<Expression>());
 }
+
+class FuncRecursionGuard
+{
+public:
+	FuncRecursionGuard(const Expression &e) : expr(e) { 
+		expr.recursioncount++; 
+	}
+	~FuncRecursionGuard() { expr.recursioncount--; }
+	bool recursion_detected() const { return (expr.recursioncount > 100); }
+private:
+	const Expression &expr;
+};
 
 Value Expression::evaluate(const Context *context) const
 {
@@ -141,6 +154,12 @@ Value Expression::evaluate(const Context *context) const
 		return Value();
 	}
 	if (this->type == "F") {
+		FuncRecursionGuard g(*this);
+		if (g.recursion_detected()) { 
+			PRINTB("ERROR: Recursion detected calling function '%s'", this->call_funcname);
+			return Value();
+		}
+
 		EvalContext c(context, this->call_arguments);
 		return context->evaluate_function(this->call_funcname, &c);
 	}

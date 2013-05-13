@@ -36,8 +36,6 @@ public:
 #ifdef DEBUG
 	virtual void dump(const class AbstractModule *mod, const ModuleInstantiation *inst);
 #endif
-
-	mutable boost::unordered_map<std::string, int> recursioncount;
 };
 
 class FileContext : public ModuleContext
