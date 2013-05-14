@@ -35,7 +35,7 @@
 #include <boost/bind.hpp>
 #include <boost/foreach.hpp>
 
-Expression::Expression()
+Expression::Expression() : recursioncount(0)
 {
 }
 
@@ -48,12 +48,12 @@ Expression::Expression(const std::string &type,
 }
 
 Expression::Expression(const std::string &type, Expression *expr)
-	: type(type)
+	: type(type), recursioncount(0)
 {
 	this->children.push_back(expr);
 }
 
-Expression::Expression(const Value &val) : const_value(val), type("C")
+Expression::Expression(const Value &val) : const_value(val), type("C"), recursioncount(0)
 {
 }
 
