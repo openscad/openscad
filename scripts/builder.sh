@@ -125,7 +125,7 @@ update_www_download_links()
 	cat win_snapshot_links.js
 
 	git diff
-	echo git commit -a -m 'updated snapshot links'
+	echo git commit -a -m 'builder.sh - updated snapshot links'
 	echo git push origin
 }
 
@@ -133,6 +133,7 @@ check_ssh_agent()
 {
 	if [ ! $SSH_AUTH_SOCK ]; then
 		echo 'please start an ssh-agent for github.com/openscad/openscad.github.com uploads'
+		echo 'for example:'
 		echo
 		echo ' ssh-agent > .tmp && source .tmp && ssh-add'
 		echo
