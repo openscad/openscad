@@ -13,9 +13,12 @@
 # todo - can we build 32 bit linux from within 64 bit linux?
 #
 # todo - make linux work
+#
+# todo - detect failure and stop
 
 check_starting_path()
 {
+	STARTPATH=$PWD
 	if [ -e openscad.pro ]; then
 		echo 'please start from a clean directory outside of openscad'
 		exit
@@ -45,6 +48,7 @@ build_lin32()
 
 upload_win_generic()
 {
+	# 1=file summary, 2 = username, 3 = filename
 	if [ -e $3 ]; then
 		echo $3 found
 	else
@@ -54,7 +58,6 @@ upload_win_generic()
 	opts="$opts -p openscad"
 	opts="$opts -u $2"
 	opts="$opts $3"
-	echo python ./scripts/googlecode_upload.py -s "$1" $opts
 	python ./scripts/googlecode_upload.py -s "$1" $opts
 }
 
@@ -63,10 +66,17 @@ upload_win32()
 	SUMMARY1="Windows x86-32 Snapshot Zipfile"
 	SUMMARY2="Windows x86-32 Snapshot Installer"
 	DATECODE=`date +"%Y.%m.%d"`
-	PACKAGEFILE1=./mingw32/OpenSCAD-$DATECODE-x86-32.zip
-	PACKAGEFILE2=./mingw32/OpenSCAD-$DATECODE-x86-32-Installer.exe
-	upload_win_generic "$SUMMARY1" $USERNAME $PACKAGEFILE1
-	upload_win_generic "$SUMMARY2" $USERNAME $PACKAGEFILE2
+	BASEDIR=./mingw32/
+	WIN32_PACKAGEFILE1=OpenSCAD-$DATECODE-x86-32.zip
+	WIN32_PACKAGEFILE2=OpenSCAD-$DATECODE-x86-32-Installer.exe
+	upload_win_generic "$SUMMARY1" $USERNAME $BASEDIR/$WIN32_PACKAGEFILE1
+	upload_win_generic "$SUMMARY2" $USERNAME $BASEDIR/$WIN32_PACKAGEFILE2
+	export WIN32_PACKAGEFILE1
+	export WIN32_PACKAGEFILE2
+	WIN32_PACKAGEFILE1_SIZE=`ls -sh $BASEDIR/$WIN32_PACKAGEFILE1 | awk ' {print $1} ';`
+	WIN32_PACKAGEFILE2_SIZE=`ls -sh $BASEDIR/$WIN32_PACKAGEFILE2 | awk ' {print $1} ';`
+	export WIN32_PACKAGEFILE1_SIZE
+	export WIN32_PACKAGEFILE2_SIZE
 }
 
 read_username_from_user()
@@ -94,12 +104,49 @@ read_password_from_user()
 	export OSUPL_PASSWORD
 }
 
+update_www_download_links()
+{
+	cd $STARTPATH
+	git clone http://github.com/openscad/openscad.github.com.git
+	cd openscad.github.com
+	cd inc
+	echo `pwd`
+	BASEURL='https://openscad.google.com/files/'
+	DATECODE=`date +"%Y.%m.%d"`
+
+	rm win_snapshot_links.js
+	echo "snapinfo['WIN32_SNAPSHOT1_URL'] = '$BASEURL$WIN32_PACKAGEFILE1'" >> win_snapshot_links.js
+	echo "snapinfo['WIN32_SNAPSHOT2_URL'] = '$BASEURL$WIN32_PACKAGEFILE2'" >> win_snapshot_links.js
+	echo "snapinfo['WIN32_SNAPSHOT1_NAME'] = 'OpenSCAD $DATECODE'" >> win_snapshot_links.js
+	echo "snapinfo['WIN32_SNAPSHOT2_NAME'] = 'OpenSCAD $DATECODE'" >> win_snapshot_links.js
+	echo "snapinfo['WIN32_SNAPSHOT1_SIZE'] = '$WIN32_PACKAGEFILE1_SIZE'" >> win_snapshot_links.js
+	echo "snapinfo['WIN32_SNAPSHOT2_SIZE'] = '$WIN32_PACKAGEFILE2_SIZE'" >> win_snapshot_links.js
+	echo 'modified win_snapshot_links.js'
+	cat win_snapshot_links.js
+
+	git diff
+	echo git commit -a -m 'updated snapshot links'
+	echo git push origin
+}
+
+check_ssh_agent()
+{
+	if [ ! $SSH_AUTH_SOCK ]; then
+		echo 'please start an ssh-agent for github.com/openscad/openscad.github.com uploads'
+		echo
+		echo ' ssh-agent > .tmp && source .tmp && ssh-add'
+		echo
+	fi
+}
+
+check_ssh_agent
 check_starting_path
 read_username_from_user
 read_password_from_user
 get_source_code
 build_win32
 upload_win32
+update_www_download_links
 
 
 
