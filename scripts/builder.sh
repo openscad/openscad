@@ -16,6 +16,8 @@
 #
 # todo - detect failure and stop
 
+dryrun=
+
 check_starting_path()
 {
 	STARTPATH=$PWD
@@ -58,7 +60,11 @@ upload_win_generic()
 	opts="$opts -p openscad"
 	opts="$opts -u $2"
 	opts="$opts $3"
-	python ./scripts/googlecode_upload.py -s "$1" $opts
+	if [ ! dryrun ]; then
+		python ./scripts/googlecode_upload.py -s "$1" $opts
+	else
+		echo dry run, not uploading to googlecode
+	fi
 }
 
 upload_win32()
@@ -125,8 +131,12 @@ update_www_download_links()
 	cat win_snapshot_links.js
 
 	git diff
-	echo git commit -a -m 'builder.sh - updated snapshot links'
-	echo git push origin
+	if [ ! dryrun ]; then
+		git commit -a -m 'builder.sh - updated snapshot links'
+		git push origin
+	else
+		echo dry run, not updating www links
+	fi
 }
 
 check_ssh_agent()
