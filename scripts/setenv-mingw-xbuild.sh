@@ -2,7 +2,10 @@
 #
 # set environment variables for mingw/mxe cross-build
 #
-# Usage: source ./scripts/setenv-mingw-xbuild.sh
+# Usage:
+#
+#     source ./scripts/setenv-mingw-xbuild.sh         # 32 bit build
+#     source ./scripts/setenv-mingw-xbuild.sh 64      # 64 bit build
 #
 # Prerequisites:
 #
@@ -18,11 +21,20 @@ if [ ! $BASEDIR ]; then
 fi
 
 if [ ! $DEPLOYDIR ]; then
-	export DEPLOYDIR=$OPENSCADDIR/mingw32
+	if [ `echo $* | grep 64 ` ]; then
+		DEPLOYDIR=$OPENSCADDIR/mingw64
+	else
+		DEPLOYDIR=$OPENSCADDIR/mingw32
+	fi
+	export DEPLOYDIR
 fi
 
 if [ ! $MXEDIR ]; then
-	export MXEDIR=$BASEDIR/mxe
+	if [ `echo $* | grep 64 ` ]; then
+		export MXEDIR=$BASEDIR/mxe-w64
+	else
+		export MXEDIR=$BASEDIR/mxe
+	fi
 fi
 
 export PATH=$MXEDIR/usr/bin:$PATH
@@ -31,16 +43,21 @@ if [ ! -e $DEPLOYDIR ]; then
   mkdir -p $DEPLOYDIR
 fi
 
-echo linking $MXEDIR/usr/i686-pc-mingw32/ to $DEPLOYDIR/mingw-cross-env
+if [ `echo $* | grep 64 ` ]; then
+	MXETARGETDIR=$MXEDIR/usr/x86_64-w64-mingw32
+else
+	MXETARGETDIR=$MXEDIR/usr/i686-pc-mingw32
+fi
+echo linking $MXETARGETDIR to $DEPLOYDIR/mingw-cross-env
 rm -f $DEPLOYDIR/mingw-cross-env
-ln -s $MXEDIR/usr/i686-pc-mingw32/ $DEPLOYDIR/mingw-cross-env
-export PATH=$MXEDIR/usr/i686-pc-mingw32/qt/bin:$PATH
+ln -s $MXETARGETDIR $DEPLOYDIR/mingw-cross-env
+export PATH=$MXETARGETDIR/qt/bin:$PATH
 
 echo BASEDIR: $BASEDIR
 echo MXEDIR: $MXEDIR
 echo DEPLOYDIR: $DEPLOYDIR
 echo PATH modified: $MXEDIR/usr/bin
-echo PATH modified: $MXEDIR/usr/i686-pc-mingw32/qt/bin
+echo PATH modified: $MXETARGETDIR/qt/bin
 
 
 

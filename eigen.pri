@@ -70,7 +70,12 @@ isEmpty(EIGEN_INCLUDEPATH) {
 }
 
 mingw-cross-env {
-  EIGEN_CFLAGS = $$system("i686-pc-mingw32-pkg-config --cflags eigen3")
+  exists(mingw-cross-env/../i686-pc-mingw32-pkg-config) {
+    EIGEN_CFLAGS = $$system("i686-pc-mingw32-pkg-config --cflags eigen3")
+  }
+  exists(mingw-cross-env/../x86_64-w64-mingw32-pkg-config) {
+    EIGEN_CFLAGS = $$system("x86_64-w64-mingw32-pkg-config --cflags eigen3")
+  }
   EIGEN_INCLUDEPATH = $$replace(EIGEN_CFLAGS,"-I","")
 }
 
