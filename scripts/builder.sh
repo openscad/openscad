@@ -16,7 +16,7 @@
 #
 # todo - detect failure and stop
 
-dryrun=
+DRYRUN=
 
 check_starting_path()
 {
@@ -60,7 +60,7 @@ upload_win_generic()
 	opts="$opts -p openscad"
 	opts="$opts -u $2"
 	opts="$opts $3"
-	if [ ! dryrun ]; then
+	if [ ! $DRYRUN ]; then
 		python ./scripts/googlecode_upload.py -s "$1" $opts
 	else
 		echo dry run, not uploading to googlecode
@@ -113,7 +113,7 @@ read_password_from_user()
 update_www_download_links()
 {
 	cd $STARTPATH
-	git clone http://github.com/openscad/openscad.github.com.git
+	git clone git@github.com:openscad/openscad.github.com.git
 	cd openscad.github.com
 	cd inc
 	echo `pwd`
@@ -130,8 +130,8 @@ update_www_download_links()
 	echo 'modified win_snapshot_links.js'
 	cat win_snapshot_links.js
 
-	git diff
-	if [ ! dryrun ]; then
+	PAGER=cat git diff
+	if [ ! $DRYRUN ]; then
 		git commit -a -m 'builder.sh - updated snapshot links'
 		git push origin
 	else
