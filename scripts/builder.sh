@@ -119,7 +119,7 @@ update_www_download_links()
 	cd openscad.github.com
 	cd inc
 	echo `pwd`
-	BASEURL='https://openscad.google.com/files/'
+	BASEURL='https://openscad.googlecode.com/files/'
 	DATECODE=`date +"%Y.%m.%d"`
 
 	rm win_snapshot_links.js
