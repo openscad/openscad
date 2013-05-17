@@ -69,12 +69,12 @@ upload_win_generic()
 
 upload_win32()
 {
-	SUMMARY1="Windows x86-32 Snapshot Zipfile"
-	SUMMARY2="Windows x86-32 Snapshot Installer"
+	SUMMARY1="Windows x86-32 Snapshot Installer"
+	SUMMARY2="Windows x86-32 Snapshot Zipfile"
 	DATECODE=`date +"%Y.%m.%d"`
 	BASEDIR=./mingw32/
-	WIN32_PACKAGEFILE1=OpenSCAD-$DATECODE-x86-32.zip
-	WIN32_PACKAGEFILE2=OpenSCAD-$DATECODE-x86-32-Installer.exe
+	WIN32_PACKAGEFILE1=OpenSCAD-$DATECODE-x86-32-Installer.zip
+	WIN32_PACKAGEFILE2=OpenSCAD-$DATECODE-x86-32.exe
 	upload_win_generic "$SUMMARY1" $USERNAME $BASEDIR/$WIN32_PACKAGEFILE1
 	upload_win_generic "$SUMMARY2" $USERNAME $BASEDIR/$WIN32_PACKAGEFILE2
 	export WIN32_PACKAGEFILE1
