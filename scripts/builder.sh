@@ -6,10 +6,6 @@
 # requirements -
 # see http://mxe.cc for required tools (scons, perl, yasm, etc etc etc)
 
-# todo - auto update webpage to link to proper snapshot
-#
-# todo - 64 bit windows (needs mxe 64 bit stable)
-#
 # todo - can we build 32 bit linux from within 64 bit linux?
 #
 # todo - make linux work
@@ -36,14 +32,23 @@ get_source_code()
 
 build_win32()
 {
+	. ./scripts/setenv-mingw-xbuild.sh clean
 	. ./scripts/setenv-mingw-xbuild.sh
 	./scripts/mingw-x-build-dependencies.sh
 	./scripts/release-common.sh mingw32
 }
 
+build_win64()
+{
+	. ./scripts/setenv-mingw-xbuild.sh clean
+	. ./scripts/setenv-mingw-xbuild.sh 64
+	./scripts/mingw-x-build-dependencies.sh 64
+	./scripts/release-common.sh mingw64
+}
+
 build_lin32()
 {
-	. ./scripts/setenv-unibuild.sh clang
+	. ./scripts/setenv-unibuild.sh
 	./scripts/uni-build-dependencies.sh
 	./scripts/release-common.sh
 }
@@ -87,6 +92,26 @@ upload_win32()
 	export WIN32_PACKAGEFILE2_SIZE
 }
 
+upload_win64()
+{
+	SUMMARY1="Windows x86-64 Snapshot Zipfile"
+	SUMMARY2="Windows x86-64 Snapshot Installer"
+	DATECODE=`date +"%Y.%m.%d"`
+	BASEDIR=./mingw64/
+	WIN64_PACKAGEFILE1=OpenSCAD-$DATECODE-x86-64.zip
+	WIN64_PACKAGEFILE2=OpenSCAD-$DATECODE-x86-64-Installer.exe
+	upload_win_generic "$SUMMARY1" $USERNAME $BASEDIR/$WIN64_PACKAGEFILE1
+	upload_win_generic "$SUMMARY2" $USERNAME $BASEDIR/$WIN64_PACKAGEFILE2
+	export WIN64_PACKAGEFILE1
+	export WIN64_PACKAGEFILE2
+	WIN64_PACKAGEFILE1_SIZE=`ls -sh $BASEDIR/$WIN64_PACKAGEFILE1 | awk ' {print $1} ';`
+	WIN64_PACKAGEFILE2_SIZE=`ls -sh $BASEDIR/$WIN64_PACKAGEFILE2 | awk ' {print $1} ';`
+	WIN64_PACKAGEFILE1_SIZE=`echo "$WIN64_PACKAGEFILE1_SIZE""B"`
+	WIN64_PACKAGEFILE2_SIZE=`echo "$WIN64_PACKAGEFILE2_SIZE""B"`
+	export WIN64_PACKAGEFILE1_SIZE
+	export WIN64_PACKAGEFILE2_SIZE
+}
+
 read_username_from_user()
 {
 	echo 'Please enter your username for https://code.google.com/hosting/settings'
@@ -112,7 +137,7 @@ read_password_from_user()
 	export OSUPL_PASSWORD
 }
 
-update_www_download_links()
+update_win_www_download_links()
 {
 	cd $STARTPATH
 	git clone git@github.com:openscad/openscad.github.com.git
@@ -123,6 +148,13 @@ update_www_download_links()
 	DATECODE=`date +"%Y.%m.%d"`
 
 	rm win_snapshot_links.js
+	echo "snapinfo['WIN64_SNAPSHOT1_URL'] = '$BASEURL$WIN64_PACKAGEFILE1'" >> win_snapshot_links.js
+	echo "snapinfo['WIN64_SNAPSHOT2_URL'] = '$BASEURL$WIN64_PACKAGEFILE2'" >> win_snapshot_links.js
+	echo "snapinfo['WIN64_SNAPSHOT1_NAME'] = 'OpenSCAD $DATECODE'" >> win_snapshot_links.js
+	echo "snapinfo['WIN64_SNAPSHOT2_NAME'] = 'OpenSCAD $DATECODE'" >> win_snapshot_links.js
+	echo "snapinfo['WIN64_SNAPSHOT1_SIZE'] = '$WIN64_PACKAGEFILE1_SIZE'" >> win_snapshot_links.js
+	echo "snapinfo['WIN64_SNAPSHOT2_SIZE'] = '$WIN64_PACKAGEFILE2_SIZE'" >> win_snapshot_links.js
+
 	echo "snapinfo['WIN32_SNAPSHOT1_URL'] = '$BASEURL$WIN32_PACKAGEFILE1'" >> win_snapshot_links.js
 	echo "snapinfo['WIN32_SNAPSHOT2_URL'] = '$BASEURL$WIN32_PACKAGEFILE2'" >> win_snapshot_links.js
 	echo "snapinfo['WIN32_SNAPSHOT1_NAME'] = 'OpenSCAD $DATECODE'" >> win_snapshot_links.js
@@ -130,7 +162,6 @@ update_www_download_links()
 	echo "snapinfo['WIN32_SNAPSHOT1_SIZE'] = '$WIN32_PACKAGEFILE1_SIZE'" >> win_snapshot_links.js
 	echo "snapinfo['WIN32_SNAPSHOT2_SIZE'] = '$WIN32_PACKAGEFILE2_SIZE'" >> win_snapshot_links.js
 	echo 'modified win_snapshot_links.js'
-	cat win_snapshot_links.js
 
 	PAGER=cat git diff
 	if [ ! $DRYRUN ]; then
@@ -157,9 +188,12 @@ check_starting_path
 read_username_from_user
 read_password_from_user
 get_source_code
+
 build_win32
+build_win64
 upload_win32
-update_www_download_links
+upload_win64
+update_win_www_download_links
 
 
 

@@ -14,50 +14,82 @@
 # Also see http://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Cross-compiling_for_Windows_on_Linux_or_Mac_OS_X
 #
 
-export OPENSCADDIR=$PWD
+OPENSCADDIR=$PWD
 
 if [ ! $BASEDIR ]; then
-	export BASEDIR=$HOME/openscad_deps
+	BASEDIR=$HOME/openscad_deps
 fi
 
+DEPLOYDIR64=$OPENSCADDIR/mingw64
+DEPLOYDIR32=$OPENSCADDIR/mingw32
+
 if [ ! $DEPLOYDIR ]; then
-	if [ `echo $* | grep 64 ` ]; then
-		DEPLOYDIR=$OPENSCADDIR/mingw64
+	if [ "`echo $* | grep 64 `" ]; then
+		DEPLOYDIR=$DEPLOYDIR64
 	else
-		DEPLOYDIR=$OPENSCADDIR/mingw32
+		DEPLOYDIR=$DEPLOYDIR32
 	fi
-	export DEPLOYDIR
 fi
 
 if [ ! $MXEDIR ]; then
-	if [ `echo $* | grep 64 ` ]; then
-		export MXEDIR=$BASEDIR/mxe-w64
+	if [ "`echo $* | grep 64 `" ]; then
+		MXEDIR=$BASEDIR/mxe-w64
 	else
-		export MXEDIR=$BASEDIR/mxe
+		MXEDIR=$BASEDIR/mxe
 	fi
 fi
-
-export PATH=$MXEDIR/usr/bin:$PATH
 
 if [ ! -e $DEPLOYDIR ]; then
   mkdir -p $DEPLOYDIR
 fi
 
-if [ `echo $* | grep 64 ` ]; then
+if [ "`echo $* | grep 64 `" ]; then
 	MXETARGETDIR=$MXEDIR/usr/x86_64-w64-mingw32
 else
 	MXETARGETDIR=$MXEDIR/usr/i686-pc-mingw32
 fi
-echo linking $MXETARGETDIR to $DEPLOYDIR/mingw-cross-env
-rm -f $DEPLOYDIR/mingw-cross-env
-ln -s $MXETARGETDIR $DEPLOYDIR/mingw-cross-env
-export PATH=$MXETARGETDIR/qt/bin:$PATH
+
+if [ ! $MINGWX_SAVED_ORIGINAL_PATH ]; then
+  MINGWX_SAVED_ORIGINAL_PATH=$PATH
+  echo current path saved
+fi
+
+PATH=$MXEDIR/usr/bin:$PATH
+PATH=$MXETARGETDIR/qt/bin:$PATH
+
+
+
+
+
+if [ "`echo $* | grep clean`" ]; then
+  BASEDIR=
+  MXEDIR=
+  MXETARGETDIR=
+  DEPLOYDIR=
+  PATH=$MINGWX_SAVED_ORIGINAL_PATH
+  MINGWX_SAVED_ORIGINAL_PATH=
+else
+  echo 'linking' $MXETARGETDIR
+  echo '     to' $DEPLOYDIR/mingw-cross-env
+  rm -f $DEPLOYDIR/mingw-cross-env
+  ln -s $MXETARGETDIR $DEPLOYDIR/mingw-cross-env
+fi
+
+export BASEDIR
+export MXEDIR
+export MXETARGETDIR
+export DEPLOYDIR
+export PATH
+export MINGWX_SAVED_ORIGINAL_PATH
 
 echo BASEDIR: $BASEDIR
 echo MXEDIR: $MXEDIR
+echo MXETARGETDIR: $MXETARGETDIR
 echo DEPLOYDIR: $DEPLOYDIR
-echo PATH modified: $MXEDIR/usr/bin
-echo PATH modified: $MXETARGETDIR/qt/bin
-
-
+if [ "`echo $* | grep clean`" ]; then
+  echo PATH restored to pre-setenv-mingw-x state
+else
+  echo PATH modified: $MXEDIR/usr/bin
+  echo PATH modified: $MXETARGETDIR/qt/bin
+fi
 

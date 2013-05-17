@@ -48,7 +48,7 @@ if [ ! -e $MXEDIR ]; then
 	mkdir -p $MXEDIR
 	cd $MXEDIR/..
 	echo "Downloading MXE into " $PWD
-	if [ `echo $* | grep 64` ]; then
+	if [ "`echo $* | grep 64`" ]; then
 		git clone -b multi-rebase git://github.com/tonytheodore/mxe.git ./mxe-w64
 	else
 		git clone git://github.com/mxe/mxe.git
@@ -57,9 +57,15 @@ fi
 
 echo "entering" $MXEDIR
 cd $MXEDIR
-echo "make mpfr eigen opencsg cgal qt nsis -j $NUMCPU JOBS=$NUMJOBS"
-make mpfr eigen opencsg cgal qt nsis -j $NUMCPU JOBS=$NUMJOBS
-#make mpfr -j $NUMCPU JOBS=$NUMJOBS # for testing
+if [ "`echo $* | grep 64`" ]; then
+  MXE_TARGETS='x86_64-w64-mingw32'
+  PACKAGES='mpfr eigen opencsg cgal qt'
+else
+  MXE_TARGETS=
+  PACKAGES='mpfr eigen opencsg cgal qt nsis'
+fi
+echo make $PACKAGES MXE_TARGETS=$MXE_TARGETS -j $NUMCPU JOBS=$NUMJOBS
+make $PACKAGES MXE_TARGETS=$MXE_TARGETS -j $NUMCPU JOBS=$NUMJOBS
 
 echo "leaving" $MXEDIR
 

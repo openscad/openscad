@@ -116,6 +116,13 @@ fi
 
 echo "Building openscad-$VERSION ($VERSIONDATE) $CONFIGURATION..."
 
+if [ ! $NUMCPU ]; then
+  echo "note: you can 'export NUMCPU=x' for multi-core compiles (x=number)";
+  NUMCPU=2
+else
+  echo "NUMCPU: " $NUMCPU
+fi
+
 CONFIG=deploy
 case $OS in
     LINUX|MACOSX) 
@@ -169,17 +176,12 @@ case $OS in
         ;;
 esac
 
-if [ ! $NUMCPU ]; then
-  echo "note: you can 'export NUMCPU=x' for multi-core compiles (x=number)";
-  NUMCPU=2
-fi
-
 case $OS in
     LINXWIN)
         # make || make enables paralell builds, thanks Tony Theodore
         # make main openscad.exe
         cd $DEPLOYDIR
-        make $TARGET -j$NUMCPU || make $TARGET -j $NUMCPU ## comment 4 test
+        make $TARGET -j$NUMCPU || make $TARGET -j$NUMCPU ## comment 4 test
         if [ ! -e $TARGET/openscad.exe ]; then
             echo "cant find $TARGET/openscad.exe. build failed. stopping."
             exit
