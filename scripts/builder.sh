@@ -12,11 +12,16 @@
 #
 # todo - detect failure and stop
 
-DRYRUN=
+DRYRUN=1
+
+init_variables()
+{
+	STARTPATH=$PWD
+	export STARTPATH
+}
 
 check_starting_path()
 {
-	STARTPATH=$PWD
 	if [ -e openscad.pro ]; then
 		echo 'please start from a clean directory outside of openscad'
 		exit
@@ -36,6 +41,8 @@ build_win32()
 	. ./scripts/setenv-mingw-xbuild.sh
 	./scripts/mingw-x-build-dependencies.sh
 	./scripts/release-common.sh mingw32
+	DATECODE=`date +"%Y.%m.%d"`
+	export DATECODE
 }
 
 build_win64()
@@ -44,6 +51,8 @@ build_win64()
 	. ./scripts/setenv-mingw-xbuild.sh 64
 	./scripts/mingw-x-build-dependencies.sh 64
 	./scripts/release-common.sh mingw64
+	DATECODE=`date +"%Y.%m.%d"`
+	export DATECODE
 }
 
 build_lin32()
@@ -51,24 +60,29 @@ build_lin32()
 	. ./scripts/setenv-unibuild.sh
 	./scripts/uni-build-dependencies.sh
 	./scripts/release-common.sh
+	DATECODE=`date +"%Y.%m.%d"`
+	export DATECODE
 }
 
 upload_win_generic()
 {
-	# 1=file summary, 2 = username, 3 = filename
-	if [ -e $3 ]; then
-		echo $3 found
+	summary="$1"
+	username=$2
+	filename=$3
+	if [ -f $filename ]; then
+		echo 'file "'$filename'" found'
 	else
-		echo $3 not found
+		echo 'file "'$filename'" not found'
 	fi
 	opts=
 	opts="$opts -p openscad"
-	opts="$opts -u $2"
-	opts="$opts $3"
-	if [ ! $DRYRUN ]; then
-		python ./scripts/googlecode_upload.py -s "$1" $opts
-	else
+	opts="$opts -u $username"
+	opts="$opts $filename"
+	if [ $DRYRUN ]; then
 		echo dry run, not uploading to googlecode
+		echo cmd - python ./scripts/googlecode_upload.py -s '"'$summary'"' $opts
+	else
+		python ./scripts/googlecode_upload.py -s "$summary" $opts
 	fi
 }
 
@@ -76,7 +90,6 @@ upload_win32()
 {
 	SUMMARY1="Windows x86-32 Snapshot Zipfile"
 	SUMMARY2="Windows x86-32 Snapshot Installer"
-	DATECODE=`date +"%Y.%m.%d"`
 	BASEDIR=./mingw32/
 	WIN32_PACKAGEFILE1=OpenSCAD-$DATECODE-x86-32.zip
 	WIN32_PACKAGEFILE2=OpenSCAD-$DATECODE-x86-32-Installer.exe
@@ -96,7 +109,6 @@ upload_win64()
 {
 	SUMMARY1="Windows x86-64 Snapshot Zipfile"
 	SUMMARY2="Windows x86-64 Snapshot Installer"
-	DATECODE=`date +"%Y.%m.%d"`
 	BASEDIR=./mingw64/
 	WIN64_PACKAGEFILE1=OpenSCAD-$DATECODE-x86-64.zip
 	WIN64_PACKAGEFILE2=OpenSCAD-$DATECODE-x86-64-Installer.exe
@@ -114,6 +126,7 @@ upload_win64()
 
 read_username_from_user()
 {
+	if [ $DRYRUN ]; then USERNAME=none;export USERNAME; return; fi
 	echo 'Please enter your username for https://code.google.com/hosting/settings'
 	echo -n 'Username:'
 	read USERNAME
@@ -122,6 +135,7 @@ read_username_from_user()
 
 read_password_from_user()
 {
+	if [ $DRYRUN ]; then return; fi
 	echo 'Please enter your password for https://code.google.com/hosting/settings'
 	echo -n 'Password:'
 	read -s PASSWORD1
@@ -145,7 +159,6 @@ update_win_www_download_links()
 	cd inc
 	echo `pwd`
 	BASEURL='https://openscad.google.com/files/'
-	DATECODE=`date +"%Y.%m.%d"`
 
 	rm win_snapshot_links.js
 	echo "snapinfo['WIN64_SNAPSHOT1_URL'] = '$BASEURL$WIN64_PACKAGEFILE1'" >> win_snapshot_links.js
@@ -174,6 +187,7 @@ update_win_www_download_links()
 
 check_ssh_agent()
 {
+	if [ $DRYRUN ]; then echo 'skipping ssh, dry run'; return; fi
 	if [ ! $SSH_AUTH_SOCK ]; then
 		echo 'please start an ssh-agent for github.com/openscad/openscad.github.com uploads'
 		echo 'for example:'
@@ -183,6 +197,7 @@ check_ssh_agent()
 	fi
 }
 
+init_variables
 check_ssh_agent
 check_starting_path
 read_username_from_user

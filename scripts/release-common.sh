@@ -48,17 +48,19 @@ elif [[ $OSTYPE == "linux-gnu" ]]; then
   else
     ARCH=32
   fi
-  echo "Detected ARCH: $ARCH"
+  echo "Detected build-machine ARCH: $ARCH"
 fi
 
 if [ "`echo $* | grep mingw32`" ]; then
   OS=LINXWIN
   ARCH=32
+  echo Mingw-cross build using ARCH=32
 fi
 
 if [ "`echo $* | grep mingw64`" ]; then
   OS=LINXWIN
   ARCH=64
+  echo Mingw-cross build using ARCH=64
 fi
 
 if [ $OS ]; then

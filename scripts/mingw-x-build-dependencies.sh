@@ -46,13 +46,13 @@ fi
 
 if [ ! -e $MXEDIR ]; then
 	mkdir -p $MXEDIR
-	cd $MXEDIR/..
-	echo "Downloading MXE into " $PWD
-	if [ "`echo $* | grep 64`" ]; then
-		git clone -b multi-rebase git://github.com/tonytheodore/mxe.git ./mxe-w64
-	else
-		git clone git://github.com/mxe/mxe.git
-	fi
+fi
+cd $MXEDIR/..
+echo "Downloading MXE into " $PWD
+if [ "`echo $* | grep 64`" ]; then
+	git clone -b multi-rebase git://github.com/tonytheodore/mxe.git ./mxe-w64
+else
+	git clone git://github.com/mxe/mxe.git
 fi
 
 echo "entering" $MXEDIR
