@@ -180,10 +180,9 @@ esac
 
 case $OS in
     LINXWIN)
-        # make || make enables paralell builds, thanks Tony Theodore
         # make main openscad.exe
         cd $DEPLOYDIR
-        make $TARGET -j$NUMCPU || make $TARGET -j$NUMCPU ## comment 4 test
+        make $TARGET -j$NUMCPU ## comment 4 test
         if [ ! -e $TARGET/openscad.exe ]; then
             echo "cant find $TARGET/openscad.exe. build failed. stopping."
             exit
@@ -191,6 +190,10 @@ case $OS in
         # make console pipe-able openscad.com - see winconsole.pri for info
         qmake CONFIG+=winconsole ../openscad.pro
         make
+        if [ ! -e $TARGET/openscad.com ]; then
+            echo "cant find $TARGET/openscad.com. build failed. stopping."
+            exit
+        fi
 
         cd $OPENSCADDIR
     ;;
