@@ -142,7 +142,7 @@ case $OS in
         . ./scripts/setenv-mingw-xbuild.sh $ARCH
         TARGET=release
         ZIP="zip"
-        ZIPARGS="-r"
+        ZIPARGS="-r -q"
         ;;
 esac
 
