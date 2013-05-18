@@ -33,6 +33,7 @@ get_source_code()
 	git clone http://github.com/openscad/openscad.git
 	cd openscad
 	git submodule update --init # MCAD
+	git checkout issue341
 }
 
 build_win32()

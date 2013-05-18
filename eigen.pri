@@ -15,10 +15,6 @@ OPENSCAD_LIBRARIES_DIR = $$(OPENSCAD_LIBRARIES)
 EIGEN2_DIR = $$(EIGEN2DIR)
 EIGEN_DIR = $$(EIGENDIR)
 
-CONFIG(mingw-cross-env) {
-  EIGEN_INCLUDEPATH = mingw-cross-env/include/eigen2
-}
-
 # Optionally specify location of Eigen3 using the 
 # OPENSCAD_LIBRARIES env. variable
 !isEmpty(OPENSCAD_LIBRARIES_DIR) {
@@ -66,16 +62,6 @@ isEmpty(EIGEN_INCLUDEPATH) {
 
 !exists($$EIGEN_INCLUDEPATH/Eigen/Core) {
   EIGEN_CFLAGS = $$system("pkg-config --cflags eigen3")
-  EIGEN_INCLUDEPATH = $$replace(EIGEN_CFLAGS,"-I","")
-}
-
-mingw-cross-env {
-  exists(mingw-cross-env/../i686-pc-mingw32-pkg-config) {
-    EIGEN_CFLAGS = $$system("i686-pc-mingw32-pkg-config --cflags eigen3")
-  }
-  exists(mingw-cross-env/../x86_64-w64-mingw32-pkg-config) {
-    EIGEN_CFLAGS = $$system("x86_64-w64-mingw32-pkg-config --cflags eigen3")
-  }
   EIGEN_INCLUDEPATH = $$replace(EIGEN_CFLAGS,"-I","")
 }
 
