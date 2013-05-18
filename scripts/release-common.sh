@@ -160,7 +160,7 @@ esac
 case $OS in
     LINXWIN)
         cd $DEPLOYDIR
-        make -s clean ## comment out for test-run
+        make clean ## comment out for test-run
         cd $OPENSCADDIR
     ;;
     *)
