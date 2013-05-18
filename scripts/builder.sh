@@ -12,12 +12,24 @@
 #
 # todo - detect failure and stop
 
-DRYRUN=1
-
 init_variables()
 {
 	STARTPATH=$PWD
 	export STARTPATH
+	if [ "`echo $* | grep uploadonly`" ]; then
+		UPLOADONLY=1
+		DATECODE=`date +"%Y.%m.%d"`
+	else
+		UPLOADONLY=
+	fi
+	if [ "`echo $* | grep dry`" ]; then
+		DRYRUN=1
+	else
+		DRYRUN=
+	fi
+	export UPLOADONLY
+	export DRYRUN
+	export DATECODE
 }
 
 check_starting_path()
@@ -198,15 +210,17 @@ check_ssh_agent()
 	fi
 }
 
-init_variables
+init_variables $*
 check_ssh_agent
 check_starting_path
 read_username_from_user
 read_password_from_user
 get_source_code
 
-build_win32
-build_win64
+if [ ! $UPLOADONLY ]; then
+	build_win32
+	build_win64
+fi
 upload_win32
 upload_win64
 update_win_www_download_links
