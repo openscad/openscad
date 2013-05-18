@@ -45,7 +45,7 @@ get_source_code()
 	git clone http://github.com/openscad/openscad.git
 	cd openscad
 	git submodule update --init # MCAD
-	git checkout issue341
+	#git checkout branch ##debugging
 }
 
 build_win32()
@@ -104,8 +104,8 @@ upload_win32()
 	SUMMARY1="Windows x86-32 Snapshot Zipfile"
 	SUMMARY2="Windows x86-32 Snapshot Installer"
 	BASEDIR=./mingw32/
-	WIN32_PACKAGEFILE1=OpenSCAD-$DATECODE-x86-32.zip
-	WIN32_PACKAGEFILE2=OpenSCAD-$DATECODE-x86-32-Installer.exe
+	WIN32_PACKAGEFILE1=OpenSCAD-$DATECODE-x86-32-Installer.exe
+	WIN32_PACKAGEFILE2=OpenSCAD-$DATECODE-x86-32.zip
 	upload_win_generic "$SUMMARY1" $USERNAME $BASEDIR/$WIN32_PACKAGEFILE1
 	upload_win_generic "$SUMMARY2" $USERNAME $BASEDIR/$WIN32_PACKAGEFILE2
 	export WIN32_PACKAGEFILE1
@@ -123,8 +123,8 @@ upload_win64()
 	SUMMARY1="Windows x86-64 Snapshot Zipfile"
 	SUMMARY2="Windows x86-64 Snapshot Installer"
 	BASEDIR=./mingw64/
-	WIN64_PACKAGEFILE1=OpenSCAD-$DATECODE-x86-64.zip
-	WIN64_PACKAGEFILE2=OpenSCAD-$DATECODE-x86-64-Installer.exe
+	WIN64_PACKAGEFILE1=OpenSCAD-$DATECODE-x86-64-Installer.exe
+	WIN64_PACKAGEFILE2=OpenSCAD-$DATECODE-x86-64.zip
 	upload_win_generic "$SUMMARY1" $USERNAME $BASEDIR/$WIN64_PACKAGEFILE1
 	upload_win_generic "$SUMMARY2" $USERNAME $BASEDIR/$WIN64_PACKAGEFILE2
 	export WIN64_PACKAGEFILE1
@@ -192,7 +192,7 @@ update_win_www_download_links()
 	PAGER=cat git diff
 	if [ ! $DRYRUN ]; then
 		git commit -a -m 'builder.sh - updated snapshot links'
-		git push origin
+		git push origin master
 	else
 		echo dry run, not updating www links
 	fi
