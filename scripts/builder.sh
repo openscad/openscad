@@ -159,7 +159,7 @@ update_win_www_download_links()
 	cd openscad.github.com
 	cd inc
 	echo `pwd`
-	BASEURL='https://openscad.google.com/files/'
+	BASEURL='https://openscad.googlecode.com/files/'
 
 	rm win_snapshot_links.js
 	echo "snapinfo['WIN64_SNAPSHOT1_URL'] = '$BASEURL$WIN64_PACKAGEFILE1'" >> win_snapshot_links.js
