@@ -12,7 +12,7 @@
 #  -d       Version date (e.g. -d 2010.01.23)
 #  -c       Build with commit info
 #  -mingw32 Cross-compile for win32 using MXE
-#  -mingw64 Cross-compile for win64 using MXE
+#  -mingw64 Cross-compile for win64 using Tony Theodore's MXE fork
 #
 # If no version string or version date is given, todays date will be used (YYYY-MM-DD)
 # If only verion date is given, it will be used also as version string.
