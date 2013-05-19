@@ -19,9 +19,11 @@
 */
 
 ModuleCache *ModuleCache::inst = NULL;
+#include <iostream>
 
 static bool is_modified(const std::string &filename, const time_t &mtime)
 {
+	std::cout << "cache ismod " << filename << "\n";
 	struct stat st;
 	memset(&st, 0, sizeof(struct stat));
 	stat(filename.c_str(), &st);
@@ -30,6 +32,7 @@ static bool is_modified(const std::string &filename, const time_t &mtime)
 
 FileModule *ModuleCache::evaluate(const std::string &filename)
 {
+	std::cout << "modcache eval" << filename << "\n";
 	FileModule *lib_mod = NULL;
 
   // Create cache ID

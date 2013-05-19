@@ -1021,16 +1021,23 @@ bool MainWindow::fileChangedOnDisk()
 // FIXME: The following two methods are duplicated in ModuleCache.cc - refactor
 static bool is_modified(const std::string &filename, const time_t &mtime)
 {
+	bool modified = false;
 	struct stat st;
 	memset(&st, 0, sizeof(struct stat));
-	stat(filename.c_str(), &st);
-	return (st.st_mtime > mtime);
+	bool success = stat(filename.c_str(), &st)==0;
+	std::cout <<"success" << success << ":" << filename << "\n";
+	if (success) modified = st.st_mtime > mtime;
+	else modified = true;
+	return modified;
 }
 
+#include <iostream>
 bool MainWindow::includesChanged()
 {
 	if (this->root_module) {
 		BOOST_FOREACH(const FileModule::IncludeContainer::value_type &item, this->root_module->includes) {
+			std::cout<< item.first << "second" << item.second << "\n";
+			std::cout<< (is_modified(item.first, item.second)) <<"\n";
 			if (is_modified(item.first, item.second)) return true;
 		}
 	}

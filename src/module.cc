@@ -194,8 +194,10 @@ std::string Module::dump(const std::string &indent, const std::string &name) con
 	return dump.str();
 }
 
+#include <iostream>
 void FileModule::registerInclude(const std::string &filename)
 {
+	std::cout << "reginclude" << filename << "\n";
 	struct stat st;
 	memset(&st, 0, sizeof(struct stat));
 	stat(filename.c_str(), &st);

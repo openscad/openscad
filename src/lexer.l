@@ -113,7 +113,15 @@ use[ \t\r\n>]*"<"	{ BEGIN(cond_use); }
 [^\t\r\n>]+	{ filename = yytext; }
  ">"		{ 
 	BEGIN(INITIAL); 
-        fs::path usepath;
+        fs::path fullpath = find_valid_path( sourcepath(), filename );
+	if ( fullpath.empty() ) {
+          PRINTB("WARNING: Can't open 'use' file '%s'.", filename);
+	} else {
+          handle_dep(usepath.string());
+          parserlval.text = strdup(usepath.string().c_str());
+          return TOK_USE;
+	}
+/* 
         if (boosty::is_absolute(fs::path(filename))) {
           usepath = filename;
         }
@@ -123,18 +131,12 @@ use[ \t\r\n>]*"<"	{ BEGIN(cond_use); }
             usepath = locate_file(filename);
           }
         }
-        /* Only accept regular files which exists */
+        // Only accept regular files which exists 
         if (usepath.has_parent_path() && fs::exists(usepath) && !fs::is_directory(usepath)) {
-          handle_dep(usepath.string());
-          parserlval.text = strdup(usepath.string().c_str());
-          return TOK_USE;
+
         } else {
-          PRINTB("WARNING: Can't open 'use' file '%s'.", filename);
-          if ( filename.size() == 0 )
-            PRINT("WARNING: 'use' filename is blank");
-          else if ( fs::is_directory( usepath ) )
-            PRINTB("WARNING: 'use' file points to a directory: %s",filename);
         }
+*/
  }
 }
 
@@ -209,6 +211,10 @@ fs::path sourcepath()
  */
 void includefile()
 {
+  PRINTB("includefile lex %s",filename.c_str());
+  PRINTB("includefile filepath %s",filepath.c_str());
+  PRINTB("includefile sourcepath %s",sourcepath.c_str());
+
   if (filename.empty()) return;
 
   fs::path dirinfo = sourcepath();
@@ -222,10 +228,14 @@ void includefile()
   }
 
   fs::path finfo = dirinfo / filename;
+  PRINTB("dirinfo0 %s",boosty::stringy(dirinfo) );
+  PRINTB("finfo0 %s",boosty::stringy(finfo) );
   if (!exists(finfo)) {
     finfo = locate_file((fs::path(filepath) / filename).string());
   }
-
+  PRINTB("dinfo %s",boosty::stringy(dirinfo) );
+  PRINTB("fnam %s",boosty::stringy(filename) );
+  PRINTB("finfo %s",boosty::stringy(finfo) );
   if (!exists(finfo) || finfo.empty()) {
     // deal with some unusual situations with is_absolute() and Wine
     fs::path fnp( fs::path(filepath) / filename );
@@ -236,9 +246,12 @@ void includefile()
 
   if (finfo.empty()) {
     PRINTB("WARNING: Can't find 'include' file '%s'.", filename);
+    PRINTB("finfo %s",boosty::stringy(finfo) );
+    finfo = dirinfo / filename;
   }
 
   std::string fullname = boosty::absolute(finfo).string();
+    PRINTB("fullname1 %s",fullname.c_str() );
   // Detect circular includes
   BOOST_FOREACH(std::string &s, openfilenames) {
     if (s == fullname) return;

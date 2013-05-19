@@ -20,13 +20,50 @@ void add_librarydir(const std::string &libdir)
 	Searces for the given file in library paths and returns the full path if found.
 	Returns an empty path if file cannot be found or filename is a directory.
 */
-std::string locate_file(const std::string &filename)
+fs::path search_libs(const std::string &filename)
 {
 	BOOST_FOREACH(const std::string &dir, librarypath) {
 		fs::path usepath = fs::path(dir) / filename;
 		if (fs::exists(usepath) && !fs::is_directory(usepath)) return usepath.string();
 	}
-	return std::string();
+	return fs::path();
+}
+
+// files must be 'ordinary' - they mus exist and be non-directories
+bool check_valid( fs::path p )
+{
+	// if p empty PRINT("WARNING: 'use' filename is blank");
+	if (!p.has_parent_path()) {
+		PRINTB("WARNING: %s invalid - no parent path",p);
+		return false;
+	}
+	if (!fs::exists(p)) {
+		PRINTB("WARNING: %s invalid - file not found",p);
+		// searched ===
+		return false;
+	}
+	if (fs::is_directory(p)) {
+		PRINTB("WARNING: %s invalid - points to a directory",p);
+		return false;
+	}
+	return true;
+}
+
+// check if file is valid, search path for valid simple file
+// return empty path on failure
+fs::path find_valid_path( fs::path sourcepath, std::string filename )
+{
+	fs::path fpath = fs::path( filename );
+
+	if ( boosty::is_absolute( fpath ) )
+		if ( check_valid( fpath ) )
+			return boosty::absolute( fpath );
+
+	fpath = sourcepath / filename;
+	if ( check_valid( fpath ) ) return fpath;
+	fpath = search_libs( filename );
+	if ( check_valid( fpath ) ) return fpath;
+	return fs::path();
 }
 
 void parser_init(const std::string &applicationpath)
