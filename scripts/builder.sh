@@ -101,8 +101,9 @@ upload_win_generic()
 
 upload_win32()
 {
-	SUMMARY1="Windows x86-32 Snapshot Zipfile"
-	SUMMARY2="Windows x86-32 Snapshot Installer"
+	SUMMARY1="Windows x86-32 Snapshot Installer"
+	SUMMARY2="Windows x86-32 Snapshot Zipfile"
+	DATECODE=`date +"%Y.%m.%d"`
 	BASEDIR=./mingw32/
 	WIN32_PACKAGEFILE1=OpenSCAD-$DATECODE-x86-32-Installer.exe
 	WIN32_PACKAGEFILE2=OpenSCAD-$DATECODE-x86-32.zip
@@ -172,6 +173,7 @@ update_win_www_download_links()
 	cd inc
 	echo `pwd`
 	BASEURL='https://openscad.googlecode.com/files/'
+	DATECODE=`date +"%Y.%m.%d"`
 
 	rm win_snapshot_links.js
 	echo "snapinfo['WIN64_SNAPSHOT1_URL'] = '$BASEURL$WIN64_PACKAGEFILE1'" >> win_snapshot_links.js

@@ -21,7 +21,7 @@ update_www_download_links()
     filesize=$(human_filesize $filesize)
     webdir=../openscad.github.com
     incfile=inc/mac_snapshot_links.js
-    BASEURL='https://openscad.google.com/files/'
+    BASEURL='https://openscad.googlecode.com/files/'
     DATECODE=`date +"%Y.%m.%d"`
     
     if [ -f $webdir/$incfile ]; then
