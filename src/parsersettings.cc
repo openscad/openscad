@@ -24,15 +24,21 @@ fs::path search_libs(const std::string &filename)
 {
 	BOOST_FOREACH(const std::string &dir, librarypath) {
 		fs::path usepath = fs::path(dir) / filename;
-		if (fs::exists(usepath) && !fs::is_directory(usepath)) return usepath.string();
+		if (fs::exists(usepath) && !fs::is_directory(usepath)) {
+			PRINTB("found %s in %s", filename % dir );
+			return usepath.string();
+		}
 	}
 	return fs::path();
 }
 
 // files must be 'ordinary' - they mus exist and be non-directories
-bool check_valid( fs::path p )
+bool check_valid( fs::path p, std::vector<std::string> openfilenames )
 {
-	// if p empty PRINT("WARNING: 'use' filename is blank");
+	if (p.empty()) {
+		PRINTB("WARNING: %s invalid - file path is blank",p);
+		return false;
+	}
 	if (!p.has_parent_path()) {
 		PRINTB("WARNING: %s invalid - no parent path",p);
 		return false;
@@ -46,23 +52,30 @@ bool check_valid( fs::path p )
 		PRINTB("WARNING: %s invalid - points to a directory",p);
 		return false;
 	}
+	std::string fullname = boosty::stringy( p );
+	BOOST_FOREACH(std::string &s, openfilenames) {
+		PRINTB("WARNING: circular include with %s", fullname);
+		if (s == fullname) return false;
+	}
 	return true;
 }
 
 // check if file is valid, search path for valid simple file
 // return empty path on failure
-fs::path find_valid_path( fs::path sourcepath, std::string filename )
+fs::path find_valid_path( fs::path sourcepath, std::string filename,
+	std::vector<std::string> openfilenames )
 {
 	fs::path fpath = fs::path( filename );
 
 	if ( boosty::is_absolute( fpath ) )
-		if ( check_valid( fpath ) )
+		if ( check_valid( fpath, openfilenames ) )
 			return boosty::absolute( fpath );
 
+
 	fpath = sourcepath / filename;
-	if ( check_valid( fpath ) ) return fpath;
+	if ( check_valid( fpath, openfilenames ) ) return fpath;
 	fpath = search_libs( filename );
-	if ( check_valid( fpath ) ) return fpath;
+	if ( check_valid( fpath, openfilenames ) ) return fpath;
 	return fs::path();
 }
 
