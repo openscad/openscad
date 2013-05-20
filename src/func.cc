@@ -64,6 +64,7 @@ AbstractFunction::~AbstractFunction()
 
 Value AbstractFunction::evaluate(const Context*, const EvalContext *evalctx) const
 {
+	(void)evalctx; // unusued parameter
 	return Value();
 }
 
@@ -500,6 +501,7 @@ Value builtin_search(const Context *, const EvalContext *evalctx)
 
 Value builtin_version(const Context *, const EvalContext *evalctx)
 {
+	(void)evalctx; // unusued parameter
 	Value::VectorType val;
 	val.push_back(Value(double(OPENSCAD_YEAR)));
 	val.push_back(Value(double(OPENSCAD_MONTH)));

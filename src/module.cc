@@ -46,6 +46,8 @@ AbstractModule::~AbstractModule()
 
 AbstractNode *AbstractModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const
 {
+	(void)ctx; // avoid unusued parameter warning
+
 	AbstractNode *node = new AbstractNode(inst);
 
 	node->children = inst->instantiateChildren(evalctx);
@@ -194,14 +196,14 @@ std::string Module::dump(const std::string &indent, const std::string &name) con
 	return dump.str();
 }
 
-#include <iostream>
 void FileModule::registerInclude(const std::string &filename)
 {
-	std::cout << "reginclude" << filename << "\n";
+	PRINTB("filemodule reginclude %s", filename);
 	struct stat st;
 	memset(&st, 0, sizeof(struct stat));
-	stat(filename.c_str(), &st);
-	this->includes[filename] = st.st_mtime;
+	bool valid = stat(filename.c_str(), &st);
+	IncludeFile inc = {filename,valid,st.st_mtime};
+	this->includes[filename] = inc;
 }
 
 /*!
@@ -252,3 +254,15 @@ AbstractNode *FileModule::instantiate(const Context *ctx, const ModuleInstantiat
 
 	return node;
 }
+
+bool FileModule::include_modified(IncludeFile inc)
+{
+        struct stat st;
+        memset(&st, 0, sizeof(struct stat));
+	// todo - search paths
+        bool valid = stat(inc.filename.c_str(), &st);
+        if (inc.valid != valid) return true;
+        if (st.st_mtime > inc.mtime) return true;
+        return false;
+}
+

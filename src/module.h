@@ -5,6 +5,9 @@
 #include <vector>
 #include <list>
 #include <boost/unordered_map.hpp>
+#include <time.h>
+#include <sys/stat.h>
+
 #include "value.h"
 #include "typedefs.h"
 #include "localscope.h"
@@ -74,6 +77,12 @@ public:
 	LocalScope scope;
 };
 
+struct IncludeFile {
+	std::string filename;
+	bool valid;
+	time_t mtime;
+};
+
 // FIXME: A FileModule doesn't have definition arguments, so we shouldn't really
 // inherit from a Module
 class FileModule : public Module
@@ -90,9 +99,9 @@ public:
 
 	typedef boost::unordered_map<std::string, class FileModule*> ModuleContainer;
 	ModuleContainer usedlibs;
-	typedef boost::unordered_map<std::string, time_t> IncludeContainer;
+	typedef boost::unordered_map<std::string, struct IncludeFile> IncludeContainer;
 	IncludeContainer includes;
-
+	bool include_modified( struct IncludeFile inc );
 private:
 	bool is_handling_dependencies;
 	std::string path;

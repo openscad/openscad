@@ -615,7 +615,9 @@ void MainWindow::refreshDocument()
 */
 bool MainWindow::compile(bool reload, bool procevents)
 {
+	PRINT("compile");
 	if (!compileTopLevelDocument(reload)) return false;
+	PRINT("init render");
 
   // Invalidate renderers before we kill the CSG tree
 	this->qglview->setRenderer(NULL);
@@ -1018,29 +1020,18 @@ bool MainWindow::fileChangedOnDisk()
 	return false;
 }
 
-// FIXME: The following two methods are duplicated in ModuleCache.cc - refactor
-static bool is_modified(const std::string &filename, const time_t &mtime)
-{
-	bool modified = false;
-	struct stat st;
-	memset(&st, 0, sizeof(struct stat));
-	bool success = stat(filename.c_str(), &st)==0;
-	std::cout <<"success" << success << ":" << filename << "\n";
-	if (success) modified = st.st_mtime > mtime;
-	else modified = true;
-	return modified;
-}
-
-#include <iostream>
 bool MainWindow::includesChanged()
 {
+	PRINT("includes changed?");
 	if (this->root_module) {
 		BOOST_FOREACH(const FileModule::IncludeContainer::value_type &item, this->root_module->includes) {
-			std::cout<< item.first << "second" << item.second << "\n";
-			std::cout<< (is_modified(item.first, item.second)) <<"\n";
-			if (is_modified(item.first, item.second)) return true;
+			//std::cout<< item.first << "second" << item.second << "\n";
+			//std::cout<< (is_modified(item.first, item.second)) <<"\n";
+			if (this->root_module.include_modified(item))
+				return true;
 		}
 	}
+	PRINT("includes not changed");
 	return false;
 }
 
@@ -1053,6 +1044,7 @@ bool MainWindow::includesChanged()
 */
 bool MainWindow::compileTopLevelDocument(bool reload)
 {
+	PRINT("compile top level");
 	bool shouldcompiletoplevel = !reload;
 
 	if (includesChanged()) shouldcompiletoplevel = true;
@@ -1063,6 +1055,7 @@ bool MainWindow::compileTopLevelDocument(bool reload)
 	}
 	
 	if (shouldcompiletoplevel) {
+		PRINT("shouldcompile top level");
 		console->clear();
 
 		updateTemporalVariables();

@@ -204,6 +204,8 @@ void includefile()
     PRINTB("lex includefile openfilename: %s",of);
   }
 
+  rootmodule->registerInclude(filename);
+
   fs::path fullpath = find_valid_path( sourcepath(), filename, openfilenames );
   if ( fullpath.empty() ) {
     PRINTB("WARNING: Can't open 'include' file '%s'.", filename);
@@ -226,8 +228,6 @@ void includefile()
     path_stack.pop_back();
     return;
   }
-
-  rootmodule->registerInclude(fullname);
 
   openfiles.push_back(yyin);
   openfilenames.push_back(fullname);
