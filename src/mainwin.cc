@@ -1027,7 +1027,7 @@ bool MainWindow::includesChanged()
 		BOOST_FOREACH(const FileModule::IncludeContainer::value_type &item, this->root_module->includes) {
 			//std::cout<< item.first << "second" << item.second << "\n";
 			//std::cout<< (is_modified(item.first, item.second)) <<"\n";
-			if (this->root_module->include_modified(item))
+			if (this->root_module->include_modified(item.second))
 				return true;
 		}
 	}
