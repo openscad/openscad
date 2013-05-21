@@ -4,7 +4,7 @@
 std::string PlatformUtils::documentsPath()
 {
 	fs::path docpath(getenv("HOME"));
-	docpath /= ".local" / "share";
+	docpath = docpath / ".local" / "share";
 
 	return boosty::stringy(docpath);
 }
