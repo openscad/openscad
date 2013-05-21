@@ -384,7 +384,14 @@ macx {
              src/EventFilter.h \
              src/CocoaUtils.h
   SOURCES += src/AppleEvents.cc
-  OBJECTIVE_SOURCES += src/CocoaUtils.mm
+  OBJECTIVE_SOURCES += src/CocoaUtils.mm \
+                       src/PlatformUtils.mm
+}
+unix:!macx {
+  SOURCES += src/PlatformUtils-posix.cc
+}
+win32* {
+  SOURCES += src/PlatformUtils-win32.cc
 }
 
 isEmpty(PREFIX):PREFIX = /usr/local

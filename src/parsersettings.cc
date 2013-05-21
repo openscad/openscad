@@ -3,9 +3,7 @@
 #include <boost/foreach.hpp>
 #include "boosty.h"
 #include <boost/algorithm/string.hpp>
-#ifdef __APPLE__
-#include "CocoaUtils.h"
-#endif
+#include "PlatformUtils.h"
 
 namespace fs = boost::filesystem;
 
@@ -44,9 +42,8 @@ void parser_init(const std::string &applicationpath)
     }
 	}
 
-	// FIXME: Add ~/.openscad/libraries
-#if defined(__APPLE__) && !defined(OPENSCAD_TESTING)
-	fs::path docdir(CocoaUtils::documentsPath());
+#ifndef OPENSCAD_TESTING
+	fs::path docdir(PlatformUtils::documentsPath());
 	add_librarydir(boosty::stringy(docdir / "OpenSCAD" / "libraries"));
 #endif
 
