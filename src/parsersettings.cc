@@ -42,11 +42,15 @@ void parser_init(const std::string &applicationpath)
     }
 	}
 
+	// This is the built-in user-writable library path
 #ifndef OPENSCAD_TESTING
+  // This will resolve to ~/Documents on Mac, "My Documents" on Windows and
+  // ~/.local/share on Linux
 	fs::path docdir(PlatformUtils::documentsPath());
 	add_librarydir(boosty::stringy(docdir / "OpenSCAD" / "libraries"));
 #endif
 
+	// This is the built-in read-only library path
 	std::string librarydir;
 	fs::path libdir(applicationpath);
 	fs::path tmpdir;
