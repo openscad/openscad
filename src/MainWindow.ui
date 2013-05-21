@@ -137,6 +137,7 @@
     <addaction name="fileActionOpen"/>
     <addaction name="menuOpenRecent"/>
     <addaction name="menuExamples"/>
+    <addaction name="fileShowLibraryFolder"/>
     <addaction name="separator"/>
     <addaction name="fileActionClose"/>
     <addaction name="fileActionSave"/>
@@ -686,6 +687,11 @@
    </property>
    <property name="text">
     <string>Check for Update..</string>
+   </property>
+  </action>
+  <action name="fileShowLibraryFolder">
+   <property name="text">
+    <string>Show Library Folder...</string>
    </property>
   </action>
  </widget>

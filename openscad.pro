@@ -302,6 +302,7 @@ SOURCES += src/version_check.cc \
            src/parsersettings.cc \
            src/stl-utils.cc \
            src/boost-utils.cc \
+           src/PlatformUtils.cc \
            \
            src/nodedumper.cc \
            src/traverser.cc \
@@ -385,7 +386,7 @@ macx {
              src/CocoaUtils.h
   SOURCES += src/AppleEvents.cc
   OBJECTIVE_SOURCES += src/CocoaUtils.mm \
-                       src/PlatformUtils.mm
+                       src/PlatformUtils-mac.mm
 }
 unix:!macx {
   SOURCES += src/PlatformUtils-posix.cc

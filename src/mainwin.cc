@@ -53,6 +53,7 @@
 #ifdef Q_OS_MAC
 #include "CocoaUtils.h"
 #endif
+#include "PlatformUtils.h"
 
 #include <QMenu>
 #include <QTime>
@@ -227,6 +228,7 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this->fileActionSaveAs, SIGNAL(triggered()), this, SLOT(actionSaveAs()));
 	connect(this->fileActionReload, SIGNAL(triggered()), this, SLOT(actionReload()));
 	connect(this->fileActionQuit, SIGNAL(triggered()), this, SLOT(quit()));
+	connect(this->fileShowLibraryFolder, SIGNAL(triggered()), this, SLOT(actionShowLibraryFolder()));
 #ifndef __APPLE__
 	QList<QKeySequence> shortcuts = this->fileActionSave->shortcuts();
 	shortcuts.push_back(QKeySequence(Qt::Key_F2));
@@ -949,6 +951,11 @@ void MainWindow::actionSaveAs()
 		setFileName(new_filename);
 		actionSave();
 	}
+}
+
+void MainWindow::actionShowLibraryFolder()
+{
+	QDesktopServices::openUrl(QUrl::fromLocalFile(QString::fromStdString(PlatformUtils::libraryPath())));
 }
 
 void MainWindow::actionReload()

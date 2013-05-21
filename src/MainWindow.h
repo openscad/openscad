@@ -101,6 +101,7 @@ private slots:
 	void actionSave();
 	void actionSaveAs();
 	void actionReload();
+	void actionShowLibraryFolder();
 
 private slots:
 	void pasteViewportTranslation();
