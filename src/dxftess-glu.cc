@@ -201,7 +201,7 @@ inline void do_emplace( boost::unordered_multimap<int, pair_ii> &tri_by_atan2, i
 	rot: CLOCKWISE rotation around positive Z axis
  */
 
-void dxf_tesselate(PolySet *ps, DxfData &dxf, double rot, bool up, bool do_triangle_splitting, double h)
+void dxf_tesselate(PolySet *ps, DxfData &dxf, double rot, Vector2d scale, bool up, bool do_triangle_splitting, double h)
 {
 	GLUtesselator *tobj = gluNewTess();
 
@@ -244,8 +244,8 @@ void dxf_tesselate(PolySet *ps, DxfData &dxf, double rot, bool up, bool do_trian
 												 dxf.points[dxf.paths[i].indices[j]][1],
 												 h) = std::pair<int,int>(i, j);
 			vl.push_back(tess_vdata());
-			vl.back().v[0] = dxf.points[dxf.paths[i].indices[j]][0];
-			vl.back().v[1] = dxf.points[dxf.paths[i].indices[j]][1];
+			vl.back().v[0] = scale[0] * dxf.points[dxf.paths[i].indices[j]][0];
+			vl.back().v[1] = scale[1] * dxf.points[dxf.paths[i].indices[j]][1];
 			vl.back().v[2] = h;
 			gluTessVertex(tobj, vl.back().v, vl.back().v);
 		}

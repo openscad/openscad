@@ -1765,6 +1765,12 @@ void MainWindow::helpLibrary()
 									OPENCSG_VERSION_STRING,
 									qVersion());
 
+#if defined( __MINGW64__ )
+	libinfo += QString("Compiled for MingW64\n\n");
+#elif defined( __MINGW32__ )
+	libinfo += QString("Compiled for MingW32\n\n");
+#endif
+
 	if (!this->openglbox) {
     this->openglbox = new QMessageBox(QMessageBox::Information, 
                                       "OpenGL Info", "OpenSCAD Detailed Library Info                  ",

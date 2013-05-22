@@ -27,20 +27,6 @@ void ModuleContext::initializeModule(const class Module &module)
 	}
 }
 
-class RecursionGuard
-{
-public:
-	RecursionGuard(const ModuleContext &c, const std::string &name) : c(c), name(name) { 
-		c.recursioncount[name]++; 
-	}
-	~RecursionGuard() { if (--c.recursioncount[name] == 0) c.recursioncount.erase(name); }
-	bool recursion_detected() const { return (c.recursioncount[name] > 100); }
-private:
-	const ModuleContext &c;
-	const std::string &name;
-};
-
-
 /*!
 	Only used to initialize builtins for the top-level root context
 */
@@ -81,12 +67,6 @@ const AbstractModule *ModuleContext::findLocalModule(const std::string &name) co
 
 Value ModuleContext::evaluate_function(const std::string &name, const EvalContext *evalctx) const
 {
-	RecursionGuard g(*this, name);
-	if (g.recursion_detected()) { 
-		PRINTB("Recursion detected calling function '%s'", name);
-		return Value();
-	}
-
 	const AbstractFunction *foundf = findLocalFunction(name);
 	if (foundf) return foundf->evaluate(this, evalctx);
 
@@ -141,12 +121,6 @@ FileContext::FileContext(const class FileModule &module, const Context *parent)
 
 Value FileContext::evaluate_function(const std::string &name, const EvalContext *evalctx) const
 {
-	RecursionGuard g(*this, name);
-	if (g.recursion_detected()) { 
-		PRINTB("Recursion detected calling function '%s'", name);
-		return Value();
-	}
-
 	const AbstractFunction *foundf = findLocalFunction(name);
 	if (foundf) return foundf->evaluate(this, evalctx);
 	

@@ -40,6 +40,8 @@ public:
 
 	Value evaluate(const class Context *context) const;
 	std::string toString() const;
+
+	mutable int recursioncount;
 };
 
 std::ostream &operator<<(std::ostream &stream, const Expression &expr);

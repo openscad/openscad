@@ -135,8 +135,28 @@ Module::~Module()
 {
 }
 
+class ModRecursionGuard
+{
+public:
+	ModRecursionGuard(const ModuleInstantiation &inst) : inst(inst) { 
+		inst.recursioncount++; 
+	}
+	~ModRecursionGuard() { 
+		inst.recursioncount--; 
+	}
+	bool recursion_detected() const { return (inst.recursioncount > 100); }
+private:
+	const ModuleInstantiation &inst;
+};
+
 AbstractNode *Module::instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const
 {
+	ModRecursionGuard g(*inst);
+	if (g.recursion_detected()) { 
+		PRINTB("ERROR: Recursion detected calling module '%s'", inst->name());
+		return NULL;
+	}
+
 	ModuleContext c(ctx, evalctx);
 	c.initializeModule(*this);
 	c.set_variable("$children", Value(double(inst->scope.children.size())));

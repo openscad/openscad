@@ -123,7 +123,7 @@ void CGAL_Nef_polyhedron::transform( const Transform3d &matrix )
 
 				PolySet ps;
 				ps.is2d = true;
-				dxf_tesselate(&ps, *dd, 0, true, false, 0);
+				dxf_tesselate(&ps, *dd, 0, Vector2d(1,1), true, false, 0);
 
 				Tree nulltree;
 				CGALEvaluator tmpeval(nulltree);
