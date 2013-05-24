@@ -771,14 +771,14 @@ void MainWindow::compileCSG(bool procevents)
 		}
 
 		if (this->root_chain && 
-				(this->root_chain->polysets.size() > 
+				(this->root_chain->objects.size() > 
 				 Preferences::inst()->getValue("advanced/openCSGLimit").toUInt())) {
-			PRINTB("WARNING: Normalized tree has %d elements!", this->root_chain->polysets.size());
+			PRINTB("WARNING: Normalized tree has %d elements!", this->root_chain->objects.size());
 			PRINT("WARNING: OpenCSG rendering has been disabled.");
 		}
 		else {
 			PRINTB("Normalized CSG tree has %d elements", 
-						 (this->root_chain ? this->root_chain->polysets.size() : 0));
+						 (this->root_chain ? this->root_chain->objects.size() : 0));
 			this->opencsgRenderer = new OpenCSGRenderer(this->root_chain, 
 																									this->highlights_chain, 
 																									this->background_chain, 

@@ -31,6 +31,7 @@
 #include "system-gl.h"
 
 #include <boost/unordered_map.hpp>
+#include <boost/foreach.hpp>
 
 ThrownTogetherRenderer::ThrownTogetherRenderer(CSGChain *root_chain, 
 																							 CSGChain *highlights_chain,
@@ -62,56 +63,56 @@ void ThrownTogetherRenderer::renderCSGChain(CSGChain *chain, bool highlight,
 																						bool fberror) const
 {
 	glDepthFunc(GL_LEQUAL);
-	boost::unordered_map<std::pair<PolySet*,Transform3d*>,int> polySetVisitMark;
-	for (size_t i = 0; i < chain->polysets.size(); i++) {
-		if (polySetVisitMark[std::make_pair(chain->polysets[i].get(), &chain->matrices[i])]++ > 0)
+	boost::unordered_map<std::pair<PolySet*,const Transform3d*>,int> polySetVisitMark;
+	BOOST_FOREACH(const CSGChainObject &obj, chain->objects) {
+		if (polySetVisitMark[std::make_pair(obj.polyset.get(), &obj.matrix)]++ > 0)
 			continue;
-		const Transform3d &m = chain->matrices[i];
-		const Color4f &c = chain->colors[i];
+		const Transform3d &m = obj.matrix;
+		const Color4f &c = obj.color;
 		glPushMatrix();
 		glMultMatrixd(m.data());
-		PolySet::csgmode_e csgmode  = chain->types[i] == CSGTerm::TYPE_DIFFERENCE ? PolySet::CSGMODE_DIFFERENCE : PolySet::CSGMODE_NORMAL;
+		PolySet::csgmode_e csgmode  = obj.type == CSGTerm::TYPE_DIFFERENCE ? PolySet::CSGMODE_DIFFERENCE : PolySet::CSGMODE_NORMAL;
 		if (highlight) {
 			csgmode = PolySet::csgmode_e(csgmode + 20);
 			setColor(COLORMODE_HIGHLIGHT);
-			chain->polysets[i]->render_surface(csgmode, m);
+			obj.polyset->render_surface(csgmode, m);
 			if (showedges) {
 				setColor(COLORMODE_HIGHLIGHT_EDGES);
-				chain->polysets[i]->render_edges(csgmode);
+				obj.polyset->render_edges(csgmode);
 			}
 		} else if (background) {
 			csgmode = PolySet::csgmode_e(csgmode + 10);
 			setColor(COLORMODE_BACKGROUND);
-			chain->polysets[i]->render_surface(csgmode, m);
+			obj.polyset->render_surface(csgmode, m);
 			if (showedges) {
 				setColor(COLORMODE_BACKGROUND_EDGES);
-				chain->polysets[i]->render_edges(csgmode);
+				obj.polyset->render_edges(csgmode);
 			}
 		} else if (fberror) {
 			if (highlight) csgmode = PolySet::csgmode_e(csgmode + 20);
 			else if (background) csgmode = PolySet::csgmode_e(csgmode + 10);
 			else csgmode = PolySet::csgmode_e(csgmode);
-			chain->polysets[i]->render_surface(csgmode, m);
+			obj.polyset->render_surface(csgmode, m);
 		} else if (c[0] >= 0 || c[1] >= 0 || c[2] >= 0 || c[3] >= 0) {
 			setColor(c.data());
-			chain->polysets[i]->render_surface(csgmode, m);
+			obj.polyset->render_surface(csgmode, m);
 			if (showedges) {
 				glColor4f((c[0]+1)/2, (c[1]+1)/2, (c[2]+1)/2, 1.0);
-				chain->polysets[i]->render_edges(csgmode);
+				obj.polyset->render_edges(csgmode);
 			}
-		} else if (chain->types[i] == CSGTerm::TYPE_DIFFERENCE) {
+		} else if (obj.type == CSGTerm::TYPE_DIFFERENCE) {
 			setColor(COLORMODE_CUTOUT);
-			chain->polysets[i]->render_surface(csgmode, m);
+			obj.polyset->render_surface(csgmode, m);
 			if (showedges) {
 				setColor(COLORMODE_CUTOUT_EDGES);
-				chain->polysets[i]->render_edges(csgmode);
+				obj.polyset->render_edges(csgmode);
 			}
 		} else {
 			setColor(COLORMODE_MATERIAL);
-			chain->polysets[i]->render_surface(csgmode, m);
+			obj.polyset->render_surface(csgmode, m);
 			if (showedges) {
 				setColor(COLORMODE_MATERIAL_EDGES);
-				chain->polysets[i]->render_edges(csgmode);
+				obj.polyset->render_edges(csgmode);
 			}
 		}
 		glPopMatrix();
