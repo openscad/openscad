@@ -408,8 +408,21 @@ build_opencsg()
     OPENCSG_QMAKE=qmake-qt4
   elif [ "`command -v qmake4`" ]; then
     OPENCSG_QMAKE=qmake4
-  else
+  elif [ "`command -v qmake`" ]; then
     OPENCSG_QMAKE=qmake
+  else
+    echo qmake not found... using standard OpenCSG makefiles
+    OPENCSG_QMAKE=make
+    cp Makefile Makefile.bak
+    cp src/Makefile src/Makefile.bak
+
+    cat Makefile.bak | sed s/example// |sed s/glew// > Makefile
+    cat src/Makefile.bak | sed s@^INCPATH.*@INCPATH\ =\ -I$BASEDIR/include\ -I../include\ -I..\ -I.@ > src/Makefile
+    cp src/Makefile src/Makefile.bak2
+    cat src/Makefile.bak2 | sed s@^LIBS.*@LIBS\ =\ -L$BASEDIR/lib\ -L/usr/X11R6/lib\ -lGLU\ -lGL@ > src/Makefile
+    tmp=$version
+    build_glu 9.0.0 # todo - autodetect the need for glu
+    version=$tmp
   fi
 
   cd $BASEDIR/src/OpenCSG-$version/src
@@ -562,7 +575,7 @@ fi
 build_eigen 3.1.1
 build_gmp 5.0.5
 build_mpfr 3.1.1
-build_boost 1.49.0
+build_boost 1.53.0
 # NB! For CGAL, also update the actual download URL in the function
 build_cgal 4.1
 build_glew 1.9.0
