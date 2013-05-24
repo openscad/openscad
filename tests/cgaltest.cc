@@ -29,7 +29,7 @@
 #include "parsersettings.h"
 #include "node.h"
 #include "module.h"
-#include "context.h"
+#include "modcontext.h"
 #include "value.h"
 #include "export.h"
 #include "builtin.h"
@@ -38,7 +38,6 @@
 #include "CGALEvaluator.h"
 #include "PolySetCGALEvaluator.h"
 
-#include <QCoreApplication>
 #ifndef _MSC_VER
 #include <getopt.h>
 #endif
@@ -52,7 +51,6 @@ namespace fs = boost::filesystem;
 
 std::string commandline_commands;
 std::string currentdir;
-QString examplesdir;
 
 using std::string;
 
@@ -76,19 +74,18 @@ int main(int argc, char **argv)
 
 	Builtins::instance()->initialize();
 
-	QCoreApplication app(argc, argv);
 	fs::path original_path = fs::current_path();
 
 	currentdir = boosty::stringy( fs::current_path() );
 
-	parser_init(QCoreApplication::instance()->applicationDirPath().toStdString());
-	add_librarydir(boosty::stringy(fs::path(QCoreApplication::instance()->applicationDirPath().toStdString()) / "../libraries"));
+	parser_init(boosty::stringy(fs::path(argv[0]).branch_path()));
+	add_librarydir(boosty::stringy(fs::path(argv[0]).branch_path() / "../libraries"));
 
-	Context root_ctx;
-	register_builtin(root_ctx);
+	ModuleContext top_ctx;
+	top_ctx.registerBuiltin();
 
-	AbstractModule *root_module;
-	ModuleInstantiation root_inst;
+	FileModule *root_module;
+	ModuleInstantiation root_inst("group");
 
 	root_module = parsefile(filename);
 	if (!root_module) {
@@ -100,7 +97,7 @@ int main(int argc, char **argv)
 	}
 
 	AbstractNode::resetIndexCounter();
-	AbstractNode *absolute_root_node = root_module->evaluate(&root_ctx, &root_inst);
+	AbstractNode *absolute_root_node = root_module->instantiate(&top_ctx, &root_inst);
 	AbstractNode *root_node;
 	// Do we have an explicit root node (! modifier)?
 	if (!(root_node = find_root_tag(absolute_root_node))) root_node = absolute_root_node;

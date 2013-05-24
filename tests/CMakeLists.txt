@@ -13,7 +13,11 @@ include(CMakeParseArguments.cmake)
 # Detect Lion and force gcc
 IF (APPLE)
    EXECUTE_PROCESS(COMMAND sw_vers -productVersion OUTPUT_VARIABLE MACOSX_VERSION)
-   IF (NOT ${MACOSX_VERSION} VERSION_LESS "10.7.0")
+   IF (NOT ${MACOSX_VERSION} VERSION_LESS "10.8.0")
+     message("Detected Mountain Lion or later")
+     set(CMAKE_C_COMPILER "gcc")
+     set(CMAKE_CXX_COMPILER "g++")
+   ELSEIF (NOT ${MACOSX_VERSION} VERSION_LESS "10.7.0")
      message("Detected Lion or later")
      set(CMAKE_C_COMPILER "gcc")
      set(CMAKE_CXX_COMPILER "g++")
@@ -97,7 +101,7 @@ endif()
 
 # Clang compiler
 
-if(CMAKE_CXX_COMPILER MATCHES ".*clang.*")
+if(${CMAKE_CXX_COMPILER} MATCHES ".*clang.*")
   # disable enormous amount of warnings about CGAL
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-parameter")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-variable")
@@ -179,28 +183,6 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
   FIND_LIBRARY(COCOA_LIBRARY Cocoa REQUIRED)
 endif(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 
-# Qt4
-
-set(CMAKE_INCLUDE_DIRECTORIES_BEFORE ON)
-find_package(OpenGL REQUIRED)
-if ( "${OPENGL_glu_LIBRARY}" MATCHES "NOTFOUND" )
-  # GLU and Mesa split in late 2012 so some systems dont have GLU
-  find_library(OPENGL_glu_LIBRARY GLU HINTS "$ENV{OPENSCAD_LIBRARIES}/lib" REQUIRED)
-  set( OPENGL_LIBRARY ${OPENGL_glu_LIBRARY} ${OPENGL_LIBRARY} )
-endif()
-
-if (MINGW_CROSS_ENV_DIR) 
-  mingw_cross_env_find_qt()
-  mingw_cross_env_info()
-  include_directories( ${QT_INCLUDE_DIRS} )
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${QT_CFLAGS_OTHER}")
-else()
-  find_package(Qt4 COMPONENTS QtCore REQUIRED)
-  include(${QT_USE_FILE})
-endif()
-
-set(CMAKE_INCLUDE_DIRECTORIES_BEFORE OFF)
-
 
 # Eigen
 
@@ -268,6 +250,20 @@ else()
   inclusion(EIGEN_DIR EIGEN_INCLUDE_DIR)
 endif()
 
+# OpenGL
+find_package(OpenGL REQUIRED)
+if (NOT OPENGL_GLU_FOUND)
+  message(STATUS "GLU not found in system paths...searching $ENV{OPENSCAD_LIBRARIES} ")
+  find_library(OPENGL_glu_LIBRARY GLU HINTS $ENV{OPENSCAD_LIBRARIES}/lib)
+  if (NOT OPENGL_glu_LIBRARY)
+    message(FATAL "GLU library not found")
+  endif()
+  set(OPENGL_LIBRARIES ${OPENGL_glu_LIBRARY} ${OPENGL_LIBRARIES})
+  message(STATUS "OpenGL LIBRARIES: ")
+  foreach(GLLIB ${OPENGL_LIBRARIES})
+    message(STATUS "  " ${GLLIB})
+  endforeach()
+endif()
 
 # OpenCSG
 if (NOT $ENV{OPENCSGDIR} STREQUAL "")
@@ -374,7 +370,7 @@ if("${CGAL_MAJOR_VERSION}.${CGAL_MINOR_VERSION}" VERSION_LESS 3.6)
 endif()
 inclusion(CGAL_DIR CGAL_INCLUDE_DIRS)
 
-if(CMAKE_CXX_COMPILER MATCHES ".*clang.*")
+if(${CMAKE_CXX_COMPILER} MATCHES ".*clang.*" AND NOT ${CGAL_CXX_FLAGS_INIT} STREQUAL "" )
 	string(REPLACE "-frounding-math" "" CGAL_CXX_FLAGS_INIT ${CGAL_CXX_FLAGS_INIT})
 	string(REPLACE "--param=ssp-buffer-size=4" "" CGAL_CXX_FLAGS_INIT ${CGAL_CXX_FLAGS_INIT})
 endif()
@@ -422,10 +418,13 @@ set(CORE_SOURCES
   ../src/value.cc 
   ../src/expr.cc 
   ../src/func.cc 
+  ../src/localscope.cc 
   ../src/module.cc 
   ../src/ModuleCache.cc 
   ../src/node.cc 
   ../src/context.cc 
+  ../src/modcontext.cc 
+  ../src/evalcontext.cc 
   ../src/csgterm.cc 
   ../src/csgtermnormalizer.cc 
   ../src/polyset.cc 
@@ -443,7 +442,9 @@ set(CORE_SOURCES
   ../src/linearextrude.cc 
   ../src/rotateextrude.cc 
   ../src/printutils.cc 
+  ../src/fileutils.cc 
   ../src/progress.cc 
+  ../src/boost-utils.cc 
   ${FLEX_OpenSCADlexer_OUTPUTS}
   ${BISON_OpenSCADparser_OUTPUTS})
 
@@ -602,6 +603,10 @@ elseif(WIN32)
   set(GUI_BINPATH "${CMAKE_CURRENT_SOURCE_DIR}/../Release/openscad.exe")
 else()
   set(GUI_BINPATH "${CMAKE_CURRENT_SOURCE_DIR}/../openscad")
+endif()
+
+if(EXISTS "${CMAKE_CURRENT_BINARY_DIR}/openscad")
+  set(GUI_BINPATH "${CMAKE_CURRENT_BINARY_DIR}/openscad")
 endif()
 
 if(EXISTS "${GUI_BINPATH}")
@@ -764,17 +769,24 @@ list(APPEND ECHO_FILES ${FUNCTION_FILES}
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/vector-values.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/search-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/recursion-tests.scad
-            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/value-reassignment-tests.scad)
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/value-reassignment-tests.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/variable-scope-tests.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/lookup-tests.scad)
 
 list(APPEND DUMPTEST_FILES ${MINIMAL_FILES} ${FEATURES_FILES} ${EXAMPLE_FILES})
 list(APPEND DUMPTEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/escape-test.scad
                            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/include-tests.scad
-                           ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/use-tests.scad)
+                           ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/use-tests.scad
+                           ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/localfiles-test.scad
+                           ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/localfiles_dir/localfiles-compatibility-test.scad)
 
 list(APPEND CGALPNGTEST_FILES ${FEATURES_FILES} ${SCAD_DXF_FILES} ${EXAMPLE_FILES})
 list(APPEND CGALPNGTEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/include-tests.scad
                            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/use-tests.scad
-                           ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/transform-nan-inf-tests.scad)
+                           ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/transform-nan-inf-tests.scad
+                           ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/localfiles-test.scad
+                           ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/localfiles_dir/localfiles-compatibility-test.scad)
+
 list(APPEND OPENCSGTEST_FILES ${CGALPNGTEST_FILES})
 list(APPEND OPENCSGTEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/bbox-transform-bug.scad)
 list(APPEND OPENCSGTEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/intersection-prune-test.scad)

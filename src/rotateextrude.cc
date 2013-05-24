@@ -26,8 +26,9 @@
 
 #include "rotateextrudenode.h"
 #include "module.h"
-#include "context.h"
+#include "evalcontext.h"
 #include "printutils.h"
+#include "fileutils.h"
 #include "builtin.h"
 #include "polyset.h"
 #include "visitor.h"
@@ -45,19 +46,18 @@ class RotateExtrudeModule : public AbstractModule
 {
 public:
 	RotateExtrudeModule() { }
-	virtual AbstractNode *evaluate(const Context *ctx, const ModuleInstantiation *inst) const;
+	virtual AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const;
 };
 
-AbstractNode *RotateExtrudeModule::evaluate(const Context *ctx, const ModuleInstantiation *inst) const
+AbstractNode *RotateExtrudeModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const
 {
 	RotateExtrudeNode *node = new RotateExtrudeNode(inst);
 
-	std::vector<std::string> argnames;
-	argnames += "file", "layer", "origin", "scale";
-	std::vector<Expression*> argexpr;
+	AssignmentList args;
+	args += Assignment("file", NULL), Assignment("layer", NULL), Assignment("origin", NULL), Assignment("scale", NULL);
 
 	Context c(ctx);
-	c.args(argnames, argexpr, inst->argnames, inst->argvalues);
+	c.setVariables(args, evalctx);
 
 	node->fn = c.lookup_variable("$fn").toDouble();
 	node->fs = c.lookup_variable("$fs").toDouble();
@@ -71,7 +71,7 @@ AbstractNode *RotateExtrudeModule::evaluate(const Context *ctx, const ModuleInst
 
 	if (!file.isUndefined()) {
 		PRINT("DEPRECATED: Support for reading files in rotate_extrude will be removed in future releases. Use a child import() instead.");
-		node->filename = c.getAbsolutePath(file.toString());
+		node->filename = lookup_file(file.toString(), inst->path(), c.documentPath());
 	}
 
 	node->layername = layer.isUndefined() ? "" : layer.toString();
@@ -86,8 +86,8 @@ AbstractNode *RotateExtrudeModule::evaluate(const Context *ctx, const ModuleInst
 		node->scale = 1;
 
 	if (node->filename.empty()) {
-		std::vector<AbstractNode *> evaluatednodes = inst->evaluateChildren();
-		node->children.insert(node->children.end(), evaluatednodes.begin(), evaluatednodes.end());
+		std::vector<AbstractNode *> instantiatednodes = inst->instantiateChildren(evalctx);
+		node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
 	}
 
 	return node;

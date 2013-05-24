@@ -1,7 +1,10 @@
+InstallDir ""
+!include "LogicLib.nsh"
 !include "mingw-file-association.nsh"
+!include "x64.nsh"
 Name "OpenSCAD"
 OutFile "openscad_setup.exe"
-InstallDir $PROGRAMFILES\OpenSCAD
+!include "installer_arch.nsi"
 DirText "This will install OpenSCAD on your computer. Choose a directory"
 Section "install"
 SetOutPath $INSTDIR

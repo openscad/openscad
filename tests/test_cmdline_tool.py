@@ -256,5 +256,6 @@ if __name__ == '__main__':
     verification = verify_test(options.testname, options.cmd)
 
     resultfile = run_test(options.testname, options.cmd, args[1:])
-
+    if not resultfile: exit(1)
+    
     if not verification or not compare_with_expected(resultfile): exit(1)

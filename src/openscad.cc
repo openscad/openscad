@@ -28,7 +28,7 @@
 #include "MainWindow.h"
 #include "node.h"
 #include "module.h"
-#include "context.h"
+#include "modcontext.h"
 #include "value.h"
 #include "export.h"
 #include "builtin.h"
@@ -327,11 +327,16 @@ int main(int argc, char **argv)
 
 		if (!filename) help(argv[0]);
 
-		Context root_ctx;
-		register_builtin(root_ctx);
+		// Top context - this context only holds builtins
+		ModuleContext top_ctx;
+		top_ctx.registerBuiltin();
+		PRINT("Root Context:");
+#if 0 && DEBUG
+		top_ctx.dump(NULL, NULL);
+#endif
 
-		Module *root_module;
-		ModuleInstantiation root_inst;
+		FileModule *root_module;
+		ModuleInstantiation root_inst("group");
 		AbstractNode *root_node;
 		AbstractNode *absolute_root_node;
 		CGAL_Nef_polyhedron root_N;
@@ -354,14 +359,14 @@ int main(int argc, char **argv)
 		fs::path fpath = boosty::absolute(fs::path(filename));
 		fs::path fparent = fpath.parent_path();
 		fs::current_path(fparent);
-
+		top_ctx.setDocumentPath(fparent.string());
+		
 		AbstractNode::resetIndexCounter();
-		absolute_root_node = root_module->evaluate(&root_ctx, &root_inst);
-		root_node = root_module->evaluate(&root_ctx, &root_inst);
+		absolute_root_node = root_module->instantiate(&top_ctx, &root_inst, NULL);
 
 		// Do we have an explicit root node (! modifier)?
 		if (!(root_node = find_root_tag(absolute_root_node)))
-	    root_node = absolute_root_node;
+			root_node = absolute_root_node;
 
 		tree.setRoot(root_node);
 

@@ -1,6 +1,7 @@
 #include "builtin.h"
 #include "function.h"
 #include "module.h"
+#include "expression.h"
 #include <boost/foreach.hpp>
 
 Builtins *Builtins::instance(bool erase)
@@ -15,12 +16,12 @@ Builtins *Builtins::instance(bool erase)
 
 void Builtins::init(const char *name, class AbstractModule *module)
 {
-	Builtins::instance()->builtinmodules[name] = module;
+	Builtins::instance()->globalscope.modules[name] = module;
 }
 
 void Builtins::init(const char *name, class AbstractFunction *function)
 {
-	Builtins::instance()->builtinfunctions[name] = function;
+	Builtins::instance()->globalscope.functions[name] = function;
 }
 
 extern void register_builtin_functions();
@@ -77,10 +78,22 @@ std::string Builtins::isDeprecated(const std::string &name)
 	return std::string();
 }
 
+Builtins::Builtins()
+{
+	this->globalscope.assignments.push_back(Assignment("$fn", new Expression(Value(0.0))));
+	this->globalscope.assignments.push_back(Assignment("$fs", new Expression(Value(2.0))));
+	this->globalscope.assignments.push_back(Assignment("$fa", new Expression(Value(12.0))));
+	this->globalscope.assignments.push_back(Assignment("$t", new Expression(Value(0.0))));
+
+	Value::VectorType zero3;
+	zero3.push_back(Value(0.0));
+	zero3.push_back(Value(0.0));
+	zero3.push_back(Value(0.0));
+	Value zero3val(zero3);
+	this->globalscope.assignments.push_back(Assignment("$vpt", new Expression(zero3val)));
+	this->globalscope.assignments.push_back(Assignment("$vpr", new Expression(zero3val)));
+}
+
 Builtins::~Builtins()
 {
-	BOOST_FOREACH(FunctionContainer::value_type &f, this->builtinfunctions) delete f.second;
-	this->builtinfunctions.clear();
-	BOOST_FOREACH(ModuleContainer::value_type &m, this->builtinmodules) delete m.second;
-	this->builtinmodules.clear();
 }

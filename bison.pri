@@ -1,4 +1,4 @@
-win32 {
+{
   bison.name = Bison ${QMAKE_FILE_IN}
   bison.input = BISONSOURCES
   bison.output = ${QMAKE_FILE_PATH}/${QMAKE_FILE_BASE}_yacc.cpp

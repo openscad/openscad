@@ -28,9 +28,9 @@ static bool is_modified(const std::string &filename, const time_t &mtime)
 	return (st.st_mtime > mtime);
 }
 
-Module *ModuleCache::evaluate(const std::string &filename)
+FileModule *ModuleCache::evaluate(const std::string &filename)
 {
-	Module *lib_mod = NULL;
+	FileModule *lib_mod = NULL;
 
   // Create cache ID
 	struct stat st;
@@ -48,7 +48,7 @@ Module *ModuleCache::evaluate(const std::string &filename)
 #endif
 		lib_mod = &(*this->entries[filename].module);
 
-		BOOST_FOREACH(const Module::IncludeContainer::value_type &item, lib_mod->includes) {
+		BOOST_FOREACH(const FileModule::IncludeContainer::value_type &item, lib_mod->includes) {
 			if (is_modified(item.first, item.second)) {
 				lib_mod = NULL;
 				break;
@@ -78,7 +78,7 @@ Module *ModuleCache::evaluate(const std::string &filename)
 
 		print_messages_push();
 
-		Module *oldmodule = NULL;
+		FileModule *oldmodule = NULL;
 		cache_entry e = { NULL, cache_id };
 		if (this->entries.find(filename) != this->entries.end()) {
 			oldmodule = this->entries[filename].module;
@@ -86,7 +86,7 @@ Module *ModuleCache::evaluate(const std::string &filename)
 		this->entries[filename] = e;
 		
 		std::string pathname = boosty::stringy(fs::path(filename).parent_path());
-		lib_mod = dynamic_cast<Module*>(parse(textbuf.str().c_str(), pathname.c_str(), false));
+		lib_mod = dynamic_cast<FileModule*>(parse(textbuf.str().c_str(), pathname.c_str(), false));
 		PRINTB_NOCACHE("  compiled module: %p", lib_mod);
 		
 		if (lib_mod) {

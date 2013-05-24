@@ -26,7 +26,7 @@
 
 #include "projectionnode.h"
 #include "module.h"
-#include "context.h"
+#include "evalcontext.h"
 #include "printutils.h"
 #include "builtin.h"
 #include "visitor.h"
@@ -41,19 +41,18 @@ class ProjectionModule : public AbstractModule
 {
 public:
 	ProjectionModule() { }
-	virtual AbstractNode *evaluate(const Context *ctx, const ModuleInstantiation *inst) const;
+	virtual AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const;
 };
 
-AbstractNode *ProjectionModule::evaluate(const Context *ctx, const ModuleInstantiation *inst) const
+AbstractNode *ProjectionModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const
 {
 	ProjectionNode *node = new ProjectionNode(inst);
 
-	std::vector<std::string> argnames;
-	argnames += "cut";
-	std::vector<Expression*> argexpr;
+	AssignmentList args;
+	args += Assignment("cut", NULL);
 
 	Context c(ctx);
-	c.args(argnames, argexpr, inst->argnames, inst->argvalues);
+	c.setVariables(args, evalctx);
 
 	Value convexity = c.lookup_variable("convexity", true);
 	Value cut = c.lookup_variable("cut", true);
@@ -63,8 +62,8 @@ AbstractNode *ProjectionModule::evaluate(const Context *ctx, const ModuleInstant
 	if (cut.type() == Value::BOOL)
 		node->cut_mode = cut.toBool();
 
-	std::vector<AbstractNode *> evaluatednodes = inst->evaluateChildren();
-	node->children.insert(node->children.end(), evaluatednodes.begin(), evaluatednodes.end());
+	std::vector<AbstractNode *> instantiatednodes = inst->instantiateChildren(evalctx);
+	node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
 
 	return node;
 }

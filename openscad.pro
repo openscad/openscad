@@ -187,7 +187,8 @@ FORMS   += src/MainWindow.ui \
            src/AboutDialog.ui \
            src/ProgressWidget.ui
 
-HEADERS += src/version_check.h \
+HEADERS += src/typedefs.h \
+           src/version_check.h \
            src/ProgressWidget.h \
            src/parsersettings.h \
            src/renderer.h \
@@ -203,6 +204,8 @@ HEADERS += src/version_check.h \
            src/AboutDialog.h \
            src/builtin.h \
            src/context.h \
+           src/modcontext.h \
+           src/evalcontext.h \
            src/csgterm.h \
            src/csgtermnormalizer.h \
            src/dxfdata.h \
@@ -213,6 +216,7 @@ HEADERS += src/version_check.h \
            src/function.h \
            src/grid.h \
            src/highlighter.h \
+           src/localscope.h \
            src/module.h \
            src/node.h \
            src/csgnode.h \
@@ -228,6 +232,7 @@ HEADERS += src/version_check.h \
            src/handle_dep.h \
            src/polyset.h \
            src/printutils.h \
+           src/fileutils.h \
            src/value.h \
            src/progress.h \
            src/editor.h \
@@ -247,6 +252,7 @@ HEADERS += src/version_check.h \
            src/Camera.h \
            src/system-gl.h \
            src/stl-utils.h \
+           src/boost-utils.h \
            src/svg.h \
            \
            src/lodepng.h \
@@ -268,9 +274,12 @@ SOURCES += src/version_check.cc \
            src/value.cc \
            src/expr.cc \
            src/func.cc \
+           src/localscope.cc \
            src/module.cc \
            src/node.cc \
            src/context.cc \
+           src/modcontext.cc \
+           src/evalcontext.cc \
            src/csgterm.cc \
            src/csgtermnormalizer.cc \
            src/polyset.cc \
@@ -288,9 +297,11 @@ SOURCES += src/version_check.cc \
            src/linearextrude.cc \
            src/rotateextrude.cc \
            src/printutils.cc \
+           src/fileutils.cc \
            src/progress.cc \
            src/parsersettings.cc \
            src/stl-utils.cc \
+           src/boost-utils.cc \
            \
            src/nodedumper.cc \
            src/traverser.cc \

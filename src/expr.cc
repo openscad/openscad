@@ -26,19 +26,34 @@
 
 #include "expression.h"
 #include "value.h"
-#include "context.h"
+#include "evalcontext.h"
 #include <assert.h>
 #include <sstream>
 #include <algorithm>
 #include "stl-utils.h"
+#include "printutils.h"
 #include <boost/bind.hpp>
 #include <boost/foreach.hpp>
 
-Expression::Expression()
+Expression::Expression() : recursioncount(0)
 {
 }
 
-Expression::Expression(const Value &val) : const_value(val), type("C")
+Expression::Expression(const std::string &type, 
+											 Expression *left, Expression *right)
+	: type(type), recursioncount(0)
+{
+	this->children.push_back(left);
+	this->children.push_back(right);
+}
+
+Expression::Expression(const std::string &type, Expression *expr)
+	: type(type), recursioncount(0)
+{
+	this->children.push_back(expr);
+}
+
+Expression::Expression(const Value &val) : const_value(val), type("C"), recursioncount(0)
 {
 }
 
@@ -46,6 +61,18 @@ Expression::~Expression()
 {
 	std::for_each(this->children.begin(), this->children.end(), del_fun<Expression>());
 }
+
+class FuncRecursionGuard
+{
+public:
+	FuncRecursionGuard(const Expression &e) : expr(e) { 
+		expr.recursioncount++; 
+	}
+	~FuncRecursionGuard() { expr.recursioncount--; }
+	bool recursion_detected() const { return (expr.recursioncount > 100); }
+private:
+	const Expression &expr;
+};
 
 Value Expression::evaluate(const Context *context) const
 {
@@ -127,13 +154,14 @@ Value Expression::evaluate(const Context *context) const
 		return Value();
 	}
 	if (this->type == "F") {
-		Value::VectorType argvalues;
-		std::transform(this->children.begin(), this->children.end(), 
-									 std::back_inserter(argvalues), 
-									 boost::bind(&Expression::evaluate, _1, context));
-		// for (size_t i=0; i < this->children.size(); i++)
-		// 	argvalues.push_back(this->children[i]->evaluate(context));
-		return context->evaluate_function(this->call_funcname, this->call_argnames, argvalues);
+		FuncRecursionGuard g(*this);
+		if (g.recursion_detected()) { 
+			PRINTB("ERROR: Recursion detected calling function '%s'", this->call_funcname);
+			return Value();
+		}
+
+		EvalContext c(context, this->call_arguments);
+		return context->evaluate_function(this->call_funcname, &c);
 	}
 	abort();
 }
@@ -178,10 +206,11 @@ std::string Expression::toString() const
 	}
 	else if (this->type == "F") {
 		stream << this->call_funcname << "(";
-		for (size_t i=0; i < this->children.size(); i++) {
+		for (size_t i=0; i < this->call_arguments.size(); i++) {
+			const Assignment &arg = this->call_arguments[i];
 			if (i > 0) stream << ", ";
-			if (!this->call_argnames[i].empty()) stream << this->call_argnames[i]  << " = ";
-			stream << *this->children[i];
+			if (!arg.first.empty()) stream << arg.first  << " = ";
+			stream << *arg.second;
 		}
 		stream << ")";
 	}

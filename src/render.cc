@@ -26,7 +26,7 @@
 
 #include "rendernode.h"
 #include "module.h"
-#include "context.h"
+#include "evalcontext.h"
 #include "builtin.h"
 #include "PolySetEvaluator.h"
 
@@ -38,26 +38,25 @@ class RenderModule : public AbstractModule
 {
 public:
 	RenderModule() { }
-	virtual AbstractNode *evaluate(const Context *ctx, const ModuleInstantiation *inst) const;
+	virtual AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const;
 };
 
-AbstractNode *RenderModule::evaluate(const Context *ctx, const ModuleInstantiation *inst) const
+AbstractNode *RenderModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const
 {
 	RenderNode *node = new RenderNode(inst);
 
-	std::vector<std::string> argnames;
-	argnames += "convexity";
-	std::vector<Expression*> argexpr;
+	AssignmentList args;
+	args += Assignment("convexity", NULL);
 
 	Context c(ctx);
-	c.args(argnames, argexpr, inst->argnames, inst->argvalues);
+	c.setVariables(args, evalctx);
 
 	Value v = c.lookup_variable("convexity");
 	if (v.type() == Value::NUMBER)
 		node->convexity = (int)v.toDouble();
 
-	std::vector<AbstractNode *> evaluatednodes = inst->evaluateChildren();
-	node->children.insert(node->children.end(), evaluatednodes.begin(), evaluatednodes.end());
+	std::vector<AbstractNode *> instantiatednodes = inst->instantiateChildren(evalctx);
+	node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
 
 	return node;
 }

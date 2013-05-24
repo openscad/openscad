@@ -101,7 +101,7 @@ void mark_inner_outer(std::vector<struct triangle> &tri, Grid2d<point_info_t> &p
 	}
 }
 
-void dxf_tesselate(PolySet *ps, DxfData &dxf, double rot, bool up, bool /* do_triangle_splitting */, double h)
+void dxf_tesselate(PolySet *ps, DxfData &dxf, double rot, Vector2d scale, bool up, bool /* do_triangle_splitting */, double h)
 {
 	CDT cdt;
 
@@ -314,8 +314,8 @@ void dxf_tesselate(PolySet *ps, DxfData &dxf, double rot, bool up, bool /* do_tr
 			int idx = up ? j : (2-j);
 			double px = tri[i].p[idx].x;
 			double py = tri[i].p[idx].y;
-			ps->append_vertex(px * cos(rot*M_PI/180) + py * sin(rot*M_PI/180),
-					px * -sin(rot*M_PI/180) + py * cos(rot*M_PI/180), h);
+			ps->append_vertex(scale[0] * (px * cos(rot*M_PI/180) + py * sin(rot*M_PI/180)),
+												scale[1] * (px * -sin(rot*M_PI/180) + py * cos(rot*M_PI/180)), h);
 			path[j] = point_info.data(px, py).pathidx;
 			point[j] = point_info.data(px, py).pointidx;
 		}

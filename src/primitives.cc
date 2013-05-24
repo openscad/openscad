@@ -27,12 +27,13 @@
 #include "module.h"
 #include "node.h"
 #include "polyset.h"
-#include "context.h"
+#include "evalcontext.h"
 #include "dxfdata.h"
 #include "dxftess.h"
 #include "builtin.h"
 #include "printutils.h"
 #include "visitor.h"
+#include "context.h"
 #include <sstream>
 #include <assert.h>
 #include <boost/assign/std/vector.hpp>
@@ -55,7 +56,7 @@ class PrimitiveModule : public AbstractModule
 public:
 	primitive_type_e type;
 	PrimitiveModule(primitive_type_e type) : type(type) { }
-	virtual AbstractNode *evaluate(const Context *ctx, const ModuleInstantiation *inst) const;
+	virtual AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const;
 };
 
 class PrimitiveNode : public AbstractPolyNode
@@ -104,44 +105,43 @@ public:
 	virtual PolySet *evaluate_polyset(class PolySetEvaluator *) const;
 };
 
-AbstractNode *PrimitiveModule::evaluate(const Context *ctx, const ModuleInstantiation *inst) const
+AbstractNode *PrimitiveModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const
 {
 	PrimitiveNode *node = new PrimitiveNode(inst, this->type);
 
 	node->center = false;
 	node->x = node->y = node->z = node->h = node->r1 = node->r2 = 1;
 
-	std::vector<std::string> argnames;
-	std::vector<Expression*> argexpr;
+	AssignmentList args;
 
 	switch (this->type) {
 	case CUBE:
-		argnames += "size", "center";
+		args += Assignment("size", NULL), Assignment("center", NULL);
 		break;
 	case SPHERE:
-		argnames += "r";
+		args += Assignment("r", NULL);
 		break;
 	case CYLINDER:
-		argnames += "h", "r1", "r2", "center";
+		args += Assignment("h", NULL), Assignment("r1", NULL), Assignment("r2", NULL), Assignment("center", NULL);
 		break;
 	case POLYHEDRON:
-		argnames += "points", "triangles", "convexity";
+		args += Assignment("points", NULL), Assignment("triangles", NULL), Assignment("convexity", NULL);
 		break;
 	case SQUARE:
-		argnames += "size", "center";
+		args += Assignment("size", NULL), Assignment("center", NULL);
 		break;
 	case CIRCLE:
-		argnames += "r";
+		args += Assignment("r", NULL);
 		break;
 	case POLYGON:
-		argnames += "points", "paths", "convexity";
+		args += Assignment("points", NULL), Assignment("paths", NULL), Assignment("convexity", NULL);
 		break;
 	default:
-		assert(false && "PrimitiveModule::evaluate(): Unknown node type");
+		assert(false && "PrimitiveModule::instantiate(): Unknown node type");
 	}
 
 	Context c(ctx);
-	c.args(argnames, argexpr, inst->argnames, inst->argvalues);
+	c.setVariables(args, evalctx);
 
 	node->fn = c.lookup_variable("$fn").toDouble();
 	node->fs = c.lookup_variable("$fs").toDouble();
@@ -546,7 +546,7 @@ sphere_next_r2:
 
 		p->is2d = true;
 		p->convexity = convexity;
-		dxf_tesselate(p, dd, 0, true, false, 0);
+		dxf_tesselate(p, dd, 0, Vector2d(1,1), true, false, 0);
 		dxf_border_to_ps(p, dd);
 	}
 

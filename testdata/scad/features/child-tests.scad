@@ -1,7 +1,7 @@
 $fn=16;
 
-module parent() {
-  for (i=[0:2]) {
+module parent(range=[0:2]) {
+  for (i=range) {
     translate([2.5*i,0,0]) child(i);
   }
 }
@@ -32,3 +32,6 @@ module parent3() {
 }
 
 translate([5,3,0]) parent3() { cube(); sphere(); }
+
+// Leaking variables to child list is not allowed
+translate([0,6,0]) parent(range=[0:1], testvar=10) { sphere(); cube(testvar, center=true);}

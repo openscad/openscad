@@ -27,9 +27,10 @@
 #include "module.h"
 #include "node.h"
 #include "polyset.h"
-#include "context.h"
+#include "evalcontext.h"
 #include "builtin.h"
 #include "printutils.h"
+#include "fileutils.h"
 #include "handle_dep.h" // handle_dep()
 #include "visitor.h"
 
@@ -50,7 +51,7 @@ class SurfaceModule : public AbstractModule
 {
 public:
 	SurfaceModule() { }
-	virtual AbstractNode *evaluate(const Context *ctx, const ModuleInstantiation *inst) const;
+	virtual AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const;
 };
 
 class SurfaceNode : public AbstractPolyNode
@@ -69,21 +70,20 @@ public:
 	virtual PolySet *evaluate_polyset(class PolySetEvaluator *) const;
 };
 
-AbstractNode *SurfaceModule::evaluate(const Context *ctx, const ModuleInstantiation *inst) const
+AbstractNode *SurfaceModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const
 {
 	SurfaceNode *node = new SurfaceNode(inst);
 	node->center = false;
 	node->convexity = 1;
 
-	std::vector<std::string> argnames;
-	argnames += "file", "center", "convexity";
-	std::vector<Expression*> argexpr;
+	AssignmentList args;
+	args += Assignment("file", NULL), Assignment("center", NULL), Assignment("convexity", NULL);
 
 	Context c(ctx);
-	c.args(argnames, argexpr, inst->argnames, inst->argvalues);
+	c.setVariables(args, evalctx);
 
 	Value fileval = c.lookup_variable("file");
-	node->filename = c.getAbsolutePath(fileval.isUndefined() ? "" : fileval.toString());
+	node->filename = lookup_file(fileval.isUndefined() ? "" : fileval.toString(), inst->path(), c.documentPath());
 
 	Value center = c.lookup_variable("center", true);
 	if (center.type() == Value::BOOL) {
@@ -122,7 +122,7 @@ PolySet *SurfaceNode::evaluate_polyset(class PolySetEvaluator *) const
 			std::getline(stream, line);
 			boost::trim(line);
 		}
-		if (stream.eof()) break;
+		if (line.size() == 0 && stream.eof()) break;
 
 		int col = 0;
 		tokenizer tokens(line, sep);

@@ -26,7 +26,7 @@
 
 #include "cgaladvnode.h"
 #include "module.h"
-#include "context.h"
+#include "evalcontext.h"
 #include "builtin.h"
 #include "PolySetEvaluator.h"
 #include <sstream>
@@ -39,30 +39,29 @@ class CgaladvModule : public AbstractModule
 public:
 	cgaladv_type_e type;
 	CgaladvModule(cgaladv_type_e type) : type(type) { }
-	virtual AbstractNode *evaluate(const Context *ctx, const ModuleInstantiation *inst) const;
+	virtual AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const;
 };
 
-AbstractNode *CgaladvModule::evaluate(const Context *ctx, const ModuleInstantiation *inst) const
+AbstractNode *CgaladvModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const
 {
 	CgaladvNode *node = new CgaladvNode(inst, type);
 
-	std::vector<std::string> argnames;
-	std::vector<Expression*> argexpr;
+	AssignmentList args;
 
 	if (type == MINKOWSKI)
-		argnames += "convexity";
+		args += Assignment("convexity", NULL);
 
 	if (type == GLIDE)
-		argnames += "path", "convexity";
+		args += Assignment("path", NULL), Assignment("convexity", NULL);
 
 	if (type == SUBDIV)
-		argnames += "type", "level", "convexity";
+		args += Assignment("type", NULL), Assignment("level", NULL), Assignment("convexity", NULL);
 
 	if (type == RESIZE)
-		argnames += "newsize", "auto";
+		args += Assignment("newsize", NULL), Assignment("auto", NULL);
 
 	Context c(ctx);
-	c.args(argnames, argexpr, inst->argnames, inst->argvalues);
+	c.setVariables(args, evalctx);
 
 	Value convexity, path, subdiv_type, level;
 
@@ -111,8 +110,8 @@ AbstractNode *CgaladvModule::evaluate(const Context *ctx, const ModuleInstantiat
 	if (node->level <= 1)
 		node->level = 1;
 
-	std::vector<AbstractNode *> evaluatednodes = inst->evaluateChildren();
-	node->children.insert(node->children.end(), evaluatednodes.begin(), evaluatednodes.end());
+	std::vector<AbstractNode *> instantiatednodes = inst->instantiateChildren(evalctx);
+	node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
 
 	return node;
 }

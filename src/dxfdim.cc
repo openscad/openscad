@@ -30,7 +30,8 @@
 #include "dxfdata.h"
 #include "builtin.h"
 #include "printutils.h"
-#include "context.h"
+#include "fileutils.h"
+#include "evalcontext.h"
 
 #include "mathc99.h"
 #include <sstream>
@@ -40,7 +41,7 @@ boost::unordered_map<std::string,Value> dxf_dim_cache;
 boost::unordered_map<std::string,Value> dxf_cross_cache;
 namespace fs = boost::filesystem;
 
-Value builtin_dxf_dim(const Context *ctx, const std::vector<std::string> &argnames, const std::vector<Value> &args)
+Value builtin_dxf_dim(const Context *ctx, const EvalContext *evalctx)
 {
 	std::string filename;
 	std::string layername;
@@ -49,23 +50,34 @@ Value builtin_dxf_dim(const Context *ctx, const std::vector<std::string> &argnam
 	double yorigin = 0;
 	double scale = 1;
 
-	for (size_t i = 0; i < argnames.size() && i < args.size(); i++) {
-		if (argnames[i] == "file")
-			filename = ctx->getAbsolutePath(args[i].toString());
-		if (argnames[i] == "layer")
-			layername = args[i].toString();
-		if (argnames[i] == "origin")
-			args[i].getVec2(xorigin, yorigin);
-		if (argnames[i] == "scale")
-			args[i].getDouble(scale);
-		if (argnames[i] == "name")
-			name = args[i].toString();
+  // FIXME: We don't lookup the file relative to where this function was instantiated
+	// since the path is only available for ModuleInstantiations, not function expressions.
+	// See issue #217
+	for (size_t i = 0; i < evalctx->numArgs(); i++) {
+		if (evalctx->getArgName(i) == "file")
+			filename = lookup_file(evalctx->getArgValue(i).toString(), 
+														 evalctx->documentPath(), ctx->documentPath());
+		if (evalctx->getArgName(i) == "layer")
+			layername = evalctx->getArgValue(i).toString();
+		if (evalctx->getArgName(i) == "origin")
+			evalctx->getArgValue(i).getVec2(xorigin, yorigin);
+		if (evalctx->getArgName(i) == "scale")
+			evalctx->getArgValue(i).getDouble(scale);
+		if (evalctx->getArgName(i) == "name")
+			name = evalctx->getArgValue(i).toString();
 	}
 
 	std::stringstream keystream;
+	fs::path filepath(filename);
+	uintmax_t filesize = -1;
+	time_t lastwritetime = -1;
+	if (fs::exists(filepath) && fs::is_regular_file(filepath)) {
+		filesize = fs::file_size(filepath);
+		lastwritetime = fs::last_write_time(filepath);
+	}
 	keystream << filename << "|" << layername << "|" << name << "|" << xorigin
-						<< "|" << yorigin <<"|" << scale << "|" << fs::last_write_time(filename)
-						<< "|" << fs::file_size(filename);
+						<< "|" << yorigin <<"|" << scale << "|" << lastwritetime
+						<< "|" << filesize;
 	std::string key = keystream.str();
 	if (dxf_dim_cache.find(key) != dxf_dim_cache.end())
 		return dxf_dim_cache.find(key)->second;
@@ -125,7 +137,7 @@ Value builtin_dxf_dim(const Context *ctx, const std::vector<std::string> &argnam
 	return Value();
 }
 
-Value builtin_dxf_cross(const Context *ctx, const std::vector<std::string> &argnames, const std::vector<Value> &args)
+Value builtin_dxf_cross(const Context *ctx, const EvalContext *evalctx)
 {
 	std::string filename;
 	std::string layername;
@@ -133,15 +145,18 @@ Value builtin_dxf_cross(const Context *ctx, const std::vector<std::string> &argn
 	double yorigin = 0;
 	double scale = 1;
 
-	for (size_t i = 0; i < argnames.size() && i < args.size(); i++) {
-		if (argnames[i] == "file")
-			filename = ctx->getAbsolutePath(args[i].toString());
-		if (argnames[i] == "layer")
-			layername = args[i].toString();
-		if (argnames[i] == "origin")
-			args[i].getVec2(xorigin, yorigin);
-		if (argnames[i] == "scale")
-			args[i].getDouble(scale);
+  // FIXME: We don't lookup the file relative to where this function was instantiated
+	// since the path is only available for ModuleInstantiations, not function expressions.
+	// See isse #217
+	for (size_t i = 0; i < evalctx->numArgs(); i++) {
+		if (evalctx->getArgName(i) == "file")
+			filename = ctx->getAbsolutePath(evalctx->getArgValue(i).toString());
+		if (evalctx->getArgName(i) == "layer")
+			layername = evalctx->getArgValue(i).toString();
+		if (evalctx->getArgName(i) == "origin")
+			evalctx->getArgValue(i).getVec2(xorigin, yorigin);
+		if (evalctx->getArgName(i) == "scale")
+			evalctx->getArgValue(i).getDouble(scale);
 	}
 
 	std::stringstream keystream;

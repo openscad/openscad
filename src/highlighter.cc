@@ -151,7 +151,7 @@ Highlighter::Highlighter(QTextDocument *parent)
 	tokentypes["import"] << "include" << "use" << "import_stl" << "import" << "import_dxf" << "dxf_dim" << "dxf_cross";
 	typeformats["import"].setForeground(Qt::darkYellow);
 
-	tokentypes["special"] << "$children" << "child" << "$fn" << "$fa" << "$fb";
+	tokentypes["special"] << "$children" << "child" << "$fn" << "$fa" << "$fs" << "$t" << "$vpt" << "$vpr";
 	typeformats["special"].setForeground(Qt::darkGreen);
 
 	tokentypes["extrude"] << "linear_extrude" << "rotate_extrude";

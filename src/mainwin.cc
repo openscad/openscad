@@ -158,7 +158,7 @@ settings_valueList(const QString &key, const QList<int> &defaultList = QList<int
 }
 
 MainWindow::MainWindow(const QString &filename)
-	: progresswidget(NULL)
+	: root_inst("group"), progresswidget(NULL)
 {
 	setupUi(this);
 
@@ -168,7 +168,7 @@ MainWindow::MainWindow(const QString &filename)
 					this, SLOT(actionRenderCGALDone(CGAL_Nef_polyhedron *)));
 #endif
 
-	register_builtin(root_ctx);
+	top_ctx.registerBuiltin();
 
 	this->openglbox = NULL;
 	root_module = NULL;
@@ -488,17 +488,25 @@ void MainWindow::requestOpenFile(const QString &)
 void
 MainWindow::openFile(const QString &new_filename)
 {
+	QString actual_filename = new_filename;
 #ifdef ENABLE_MDI
 	if (!editor->toPlainText().isEmpty()) {
-		new MainWindow(new_filename);
+		QFileInfo fi(new_filename);
+		if (fi.suffix().toLower().contains(QRegExp("^(stl|off|dxf)$"))) {
+			actual_filename = QString();
+		}
+		new MainWindow(actual_filename);
 		clearCurrentOutput();
 		return;
 	}
 #endif
-	setFileName(new_filename);
+	setFileName(actual_filename);
 
 	refreshDocument();
 	updateRecentFiles();
+	if (actual_filename.isEmpty()) {
+		this->editor->setPlainText(QString("import(\"%1\");\n").arg(new_filename));
+	}
 }
 
 void
@@ -506,7 +514,7 @@ MainWindow::setFileName(const QString &filename)
 {
 	if (filename.isEmpty()) {
 		this->fileName.clear();
-		this->root_ctx.setDocumentPath(currentdir);
+		this->top_ctx.setDocumentPath(currentdir);
 		setWindowTitle("OpenSCAD - New Document[*]");
 	}
 	else {
@@ -522,7 +530,7 @@ MainWindow::setFileName(const QString &filename)
 			this->fileName = fileinfo.fileName();
 		}
 		
-		this->root_ctx.setDocumentPath(fileinfo.dir().absolutePath().toLocal8Bit().constData());
+		this->top_ctx.setDocumentPath(fileinfo.dir().absolutePath().toLocal8Bit().constData());
 		QDir::setCurrent(fileinfo.dir().absolutePath());
 	}
 
@@ -643,8 +651,8 @@ bool MainWindow::compile(bool reload, bool procevents)
 		if (procevents) QApplication::processEvents();
 		
 		AbstractNode::resetIndexCounter();
-		this->root_inst = ModuleInstantiation();
-		this->absolute_root_node = this->root_module->evaluate(&this->root_ctx, &this->root_inst);
+		this->root_inst = ModuleInstantiation("group");
+		this->absolute_root_node = this->root_module->instantiate(&top_ctx, &this->root_inst, NULL);
 		
 		if (this->absolute_root_node) {
 			// Do we have an explicit root node (! modifier)?
@@ -979,19 +987,19 @@ void MainWindow::pasteViewportRotation()
 
 void MainWindow::updateTemporalVariables()
 {
-	this->root_ctx.set_variable("$t", Value(this->e_tval->text().toDouble()));
+	this->top_ctx.set_variable("$t", Value(this->e_tval->text().toDouble()));
 	
 	Value::VectorType vpt;
 	vpt.push_back(Value(-qglview->cam.object_trans.x()));
 	vpt.push_back(Value(-qglview->cam.object_trans.y()));
 	vpt.push_back(Value(-qglview->cam.object_trans.z()));
-	this->root_ctx.set_variable("$vpt", Value(vpt));
+	this->top_ctx.set_variable("$vpt", Value(vpt));
 	
 	Value::VectorType vpr;
 	vpr.push_back(Value(fmodf(360 - qglview->cam.object_rot.x() + 90, 360)));
 	vpr.push_back(Value(fmodf(360 - qglview->cam.object_rot.y(), 360)));
 	vpr.push_back(Value(fmodf(360 - qglview->cam.object_rot.z(), 360)));
-	root_ctx.set_variable("$vpr", Value(vpr));
+	top_ctx.set_variable("$vpr", Value(vpr));
 }
 
 bool MainWindow::fileChangedOnDisk()
@@ -1022,7 +1030,7 @@ static bool is_modified(const std::string &filename, const time_t &mtime)
 bool MainWindow::includesChanged()
 {
 	if (this->root_module) {
-		BOOST_FOREACH(const Module::IncludeContainer::value_type &item, this->root_module->includes) {
+		BOOST_FOREACH(const FileModule::IncludeContainer::value_type &item, this->root_module->includes) {
 			if (is_modified(item.first, item.second)) return true;
 		}
 	}
@@ -1756,6 +1764,12 @@ void MainWindow::helpLibrary()
 									TOSTRING(CGAL_VERSION),
 									OPENCSG_VERSION_STRING,
 									qVersion());
+
+#if defined( __MINGW64__ )
+	libinfo += QString("Compiled for MingW64\n\n");
+#elif defined( __MINGW32__ )
+	libinfo += QString("Compiled for MingW32\n\n");
+#endif
 
 	if (!this->openglbox) {
     this->openglbox = new QMessageBox(QMessageBox::Information, 
