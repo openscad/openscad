@@ -1,7 +1,7 @@
 #ifndef CGAL_NEF_POLYHEDRON_H_
 #define CGAL_NEF_POLYHEDRON_H_
 
-#include "cgalfwd.h"
+#include "cgal.h"
 #include "memory.h"
 #include <string>
 #include "linalg.h"
