@@ -426,7 +426,6 @@ build_opencsg()
   fi
 
   cd $BASEDIR/src/OpenCSG-$version/src
-  OPENCSG_QMAKE=make
   $OPENCSG_QMAKE
 
   cd $BASEDIR/src/OpenCSG-$version
