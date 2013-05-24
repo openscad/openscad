@@ -252,6 +252,18 @@ endif()
 
 # OpenGL
 find_package(OpenGL REQUIRED)
+if (NOT OPENGL_GLU_FOUND)
+  message(STATUS "GLU not found in system paths...searching $ENV{OPENSCAD_LIBRARIES} ")
+  find_library(OPENGL_glu_LIBRARY GLU HINTS $ENV{OPENSCAD_LIBRARIES}/lib)
+  if (NOT OPENGL_glu_LIBRARY)
+    message(FATAL "GLU library not found")
+  endif()
+  set(OPENGL_LIBRARIES ${OPENGL_glu_LIBRARY} ${OPENGL_LIBRARIES})
+  message(STATUS "OpenGL LIBRARIES: ")
+  foreach(GLLIB ${OPENGL_LIBRARIES})
+    message(STATUS "  " ${GLLIB})
+  endforeach()
+endif()
 
 # OpenCSG
 if (NOT $ENV{OPENCSGDIR} STREQUAL "")
