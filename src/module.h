@@ -93,7 +93,7 @@ public:
 
 	void setModulePath(const std::string &path) { this->path = path; }
 	const std::string &modulePath() const { return this->path; }
-	void registerInclude(const std::string &filename);
+	void registerInclude(const std::string &localpath, const std::string &fullpath);
 	bool handleDependencies();
 	virtual AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx = NULL) const;
 
@@ -101,7 +101,7 @@ public:
 	ModuleContainer usedlibs;
 	typedef boost::unordered_map<std::string, struct IncludeFile> IncludeContainer;
 	IncludeContainer includes;
-	bool include_modified( struct IncludeFile inc );
+	bool include_modified(struct IncludeFile inc);
 private:
 	bool is_handling_dependencies;
 	std::string path;

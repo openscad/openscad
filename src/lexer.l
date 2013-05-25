@@ -113,8 +113,8 @@ use[ \t\r\n>]*"<"	{ BEGIN(cond_use); }
 [^\t\r\n>]+	{ filename = yytext; }
  ">"		{ 
 	BEGIN(INITIAL); 
-        fs::path fullpath = find_valid_path( sourcepath(), filename, openfilenames );
-	if ( fullpath.empty() ) {
+        fs::path fullpath = find_valid_path(sourcepath(), fs::path(filename), &openfilenames);
+	if (fullpath.empty()) {
           PRINTB("WARNING: Can't open 'use' file '%s'.", filename);
 	} else {
           handle_dep(fullpath.string());
@@ -200,22 +200,25 @@ void includefile()
   PRINTB("lex includefile filename %s",filename.c_str());
   PRINTB("lex includefile filepath %s",filepath.c_str());
   PRINTB("lex includefile sourcepath %s",sourcepath().c_str());
-  BOOST_FOREACH(std::string of, openfilenames ) {
+  BOOST_FOREACH(std::string of, openfilenames) {
     PRINTB("lex includefile openfilename: %s",of);
   }
 
-  rootmodule->registerInclude(filename);
-
-  fs::path fullpath = find_valid_path( sourcepath(), filename, openfilenames );
-  if ( fullpath.empty() ) {
+  fs::path localpath = fs::path(filepath) / filename;
+  fs::path fullpath = find_valid_path(sourcepath(), localpath, &openfilenames);
+  if (!fullpath.empty()) {
+    rootmodule->registerInclude(boosty::stringy(localpath), boosty::stringy(fullpath));
+  }
+  else {
+    rootmodule->registerInclude(boosty::stringy(localpath), boosty::stringy(localpath));
     PRINTB("WARNING: Can't open 'include' file '%s'.", filename);
-    if (path_stack.size()>0) path_stack.pop_back();
+    if (path_stack.size() > 0) path_stack.pop_back();
     return;
   };
-  PRINTB("lex fullpath %s",fullpath );
+  PRINTB("lex fullpath %s",fullpath);
 
-  std::string fullname = boosty::stringy( fullpath );
-  PRINTB("lex fullname %s",fullname );
+  std::string fullname = boosty::stringy(fullpath);
+  PRINTB("lex fullname %s",fullname);
 
   filepath.clear();
   path_stack.push_back(fullpath.parent_path());
