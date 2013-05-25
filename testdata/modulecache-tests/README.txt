@@ -72,10 +72,29 @@ o Compile (F5) - Verify that you get a circular disc
 o Edit radius.scad: Change RADIUS
 o Compile (F5) - Verify that the disc changed size
 
-Test9: Circular include
+Test10: Circular include
 ------
 
 o Open circularincludemain.scad
 o Compile (F5)
 o Verify that OpenSCAD won't hang or crash
 
+Test11: Missing include file appears
+------
+o rm missing.scad
+o Open includemissing.scad
+o Compile (F5)
+o Verify that you get: WARNING: Can't open 'use' file 'missing.scad'.
+o echo "module missing() { sphere(10); }" >  missing.scad
+o rm missing.scad
+o Reload and Compile (F4) - verify that the sphere is gone
+
+Test12: Missing include file in subpath appears
+------
+o rm subdir/missingsub.scad
+o Open includemissingsub.scad
+o Compile (F5)
+o Verify that you get: WARNING: Can't open 'use' file 'missingsub.scad'.
+o echo "module missingsub() { sphere(10); }" >  subdir/missingsub.scad
+o rm subdir/missingsub.scad
+o Reload and Compile (F4) - verify that the sphere is gone
