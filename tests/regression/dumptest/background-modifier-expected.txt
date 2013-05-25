@@ -5,4 +5,16 @@
 	%group() {
 		cube(size = [25, 6, 3], center = true);
 	}
+	%multmatrix([[1, 0, 0, 0], [0, 1, 0, -9], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+		difference() {
+			color([0, 0.501961, 0, 1]) {
+				cube(size = [10, 4, 10], center = true);
+			}
+			color([1, 0, 0, 1]) {
+				multmatrix([[1, 0, 0, 0], [0, 1, 0, -2], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+					sphere($fn = 0, $fa = 12, $fs = 2, r = 3);
+				}
+			}
+		}
+	}
 

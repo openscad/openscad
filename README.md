@@ -188,14 +188,14 @@ http://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Building_on_Windows
 
 To cross-build, first make sure that you have development tools 
 installed to get GCC. Then after you've cloned this git repository, 
-start a new clean shell and run the script that sets up the environment 
+start a new clean bash shell and run the script that sets up the environment 
 variables.
 
-    source ./scripts/setenv-mingw-xbuild.sh
+    source ./scripts/setenv-mingw-xbuild.sh 32
 
 Then run the script to download & compile all the prerequisite libraries above:
 
-    ./scripts/mingw-x-build-dependencies.sh
+    ./scripts/mingw-x-build-dependencies.sh 32
 
 Note that this process can take several hours, as it uses the 
 http://mxe.cc system to cross-build many libraries. After it is 
@@ -208,7 +208,9 @@ If you wish you can only build the openscad.exe binary:
     cd mingw32
     qmake .. CONFIG+=mingw-cross-env
     make
-    
+
+For a 64-bit Windows cross-build, replace 32 with 64 in the above instructions. 
+
 ### Compilation
 
 First, run 'qmake' from Qt4 to generate a Makefile. On some systems you need to
