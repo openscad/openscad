@@ -93,7 +93,12 @@ void OpenCSGRenderer::renderCSGChain(CSGChain *chain, GLint *shaderinfo,
 				PolySet::csgmode_e csgmode = j_obj.type == CSGTerm::TYPE_DIFFERENCE ? PolySet::CSGMODE_DIFFERENCE : PolySet::CSGMODE_NORMAL;
 				ColorMode colormode = COLORMODE_NONE;
 				if (background) {
-					colormode = COLORMODE_BACKGROUND;
+					if (j_obj.flag & CSGTerm::FLAG_HIGHLIGHT) {
+						colormode = COLORMODE_HIGHLIGHT;
+					}
+					else {
+						colormode = COLORMODE_BACKGROUND;
+					}
 					csgmode = PolySet::csgmode_e(csgmode + 10);
 				} else if (j_obj.type == CSGTerm::TYPE_DIFFERENCE) {
 					if (j_obj.flag & CSGTerm::FLAG_HIGHLIGHT) {

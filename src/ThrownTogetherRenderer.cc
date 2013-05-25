@@ -53,9 +53,9 @@ void ThrownTogetherRenderer::draw(bool /*showfaces*/, bool showedges) const
 		glDisable(GL_CULL_FACE);
 	}
 	if (this->background_chain)
-		renderCSGChain(this->background_chain, false, true, showedges, false);
+	 	renderCSGChain(this->background_chain, false, true, showedges, false);
 	if (this->highlights_chain)
-		renderCSGChain(this->highlights_chain, true, false, showedges, false);
+	 	renderCSGChain(this->highlights_chain, true, false, showedges, false);
 }
 
 void ThrownTogetherRenderer::renderCSGChain(CSGChain *chain, bool highlight,
@@ -72,49 +72,54 @@ void ThrownTogetherRenderer::renderCSGChain(CSGChain *chain, bool highlight,
 		glPushMatrix();
 		glMultMatrixd(m.data());
 		PolySet::csgmode_e csgmode  = obj.type == CSGTerm::TYPE_DIFFERENCE ? PolySet::CSGMODE_DIFFERENCE : PolySet::CSGMODE_NORMAL;
+		ColorMode colormode = COLORMODE_NONE;
+		ColorMode edge_colormode = COLORMODE_NONE;
+
 		if (highlight) {
 			csgmode = PolySet::csgmode_e(csgmode + 20);
-			setColor(COLORMODE_HIGHLIGHT);
-			obj.polyset->render_surface(csgmode, m);
-			if (showedges) {
-				setColor(COLORMODE_HIGHLIGHT_EDGES);
-				obj.polyset->render_edges(csgmode);
-			}
+			colormode = COLORMODE_HIGHLIGHT;
+			edge_colormode = COLORMODE_HIGHLIGHT_EDGES;
 		} else if (background) {
-			csgmode = PolySet::csgmode_e(csgmode + 10);
-			setColor(COLORMODE_BACKGROUND);
-			obj.polyset->render_surface(csgmode, m);
-			if (showedges) {
-				setColor(COLORMODE_BACKGROUND_EDGES);
-				obj.polyset->render_edges(csgmode);
+			if (obj.flag & CSGTerm::FLAG_HIGHLIGHT) {
+				colormode = COLORMODE_HIGHLIGHT;
 			}
+			else {
+				colormode = COLORMODE_BACKGROUND;
+			}
+			csgmode = PolySet::csgmode_e(csgmode + 10);
+			edge_colormode = COLORMODE_BACKGROUND_EDGES;
 		} else if (fberror) {
 			if (highlight) csgmode = PolySet::csgmode_e(csgmode + 20);
 			else if (background) csgmode = PolySet::csgmode_e(csgmode + 10);
 			else csgmode = PolySet::csgmode_e(csgmode);
-			obj.polyset->render_surface(csgmode, m);
-		} else if (c[0] >= 0 || c[1] >= 0 || c[2] >= 0 || c[3] >= 0) {
-			setColor(c.data());
-			obj.polyset->render_surface(csgmode, m);
-			if (showedges) {
-				glColor4f((c[0]+1)/2, (c[1]+1)/2, (c[2]+1)/2, 1.0);
-				obj.polyset->render_edges(csgmode);
-			}
 		} else if (obj.type == CSGTerm::TYPE_DIFFERENCE) {
-			setColor(COLORMODE_CUTOUT);
-			obj.polyset->render_surface(csgmode, m);
-			if (showedges) {
-				setColor(COLORMODE_CUTOUT_EDGES);
-				obj.polyset->render_edges(csgmode);
+			if (obj.flag & CSGTerm::FLAG_HIGHLIGHT) {
+				colormode = COLORMODE_HIGHLIGHT;
+				csgmode = PolySet::csgmode_e(csgmode + 20);
 			}
+			else {
+				colormode = COLORMODE_CUTOUT;
+			}
+			edge_colormode = COLORMODE_CUTOUT_EDGES;
 		} else {
-			setColor(COLORMODE_MATERIAL);
-			obj.polyset->render_surface(csgmode, m);
-			if (showedges) {
-				setColor(COLORMODE_MATERIAL_EDGES);
-				obj.polyset->render_edges(csgmode);
+			if (obj.flag & CSGTerm::FLAG_HIGHLIGHT) {
+				colormode = COLORMODE_HIGHLIGHT;
+				csgmode = PolySet::csgmode_e(csgmode + 20);
 			}
+			else {
+				colormode = COLORMODE_MATERIAL;
+			}
+			edge_colormode = COLORMODE_MATERIAL_EDGES;
 		}
+		
+		setColor(colormode, c.data());
+		obj.polyset->render_surface(csgmode, m);
+		if (showedges) {
+			// FIXME? glColor4f((c[0]+1)/2, (c[1]+1)/2, (c[2]+1)/2, 1.0);
+			setColor(edge_colormode);
+			obj.polyset->render_edges(csgmode);
+		}
+
 		glPopMatrix();
 	}
 }
