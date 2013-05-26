@@ -100,7 +100,7 @@ E [Ee][+-]?{D}+
 
 %%
 
-include[ \t\r\n>]*"<"	{ BEGIN(cond_include); }
+include[ \t\r\n>]*"<"	{ BEGIN(cond_include); filepath = filename = "";}
 <cond_include>{
 [^\t\r\n>]*"/"	{ filepath = yytext; }
 [^\t\r\n>/]+	{ filename = yytext; }
