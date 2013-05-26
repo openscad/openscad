@@ -23,7 +23,6 @@ ModuleCache *ModuleCache::inst = NULL;
 
 FileModule *ModuleCache::evaluate(const std::string &filename)
 {
-	std::cout << "modcache eval" << filename << "\n";
 	FileModule *lib_mod = NULL;
 
 	// Create cache ID

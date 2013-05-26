@@ -25,26 +25,25 @@ fs::path search_libs(const fs::path &localpath)
 	BOOST_FOREACH(const std::string &dir, librarypath) {
 		fs::path usepath = fs::path(dir) / localpath;
 		if (fs::exists(usepath) && !fs::is_directory(usepath)) {
-			PRINTB("found %s in %s", localpath.string() % dir);
 			return usepath.string();
 		}
 	}
 	return fs::path();
 }
 
-// files must be 'ordinary' - they mus exist and be non-directories
+// files must be 'ordinary' - they must exist and be non-directories
 static bool check_valid(const fs::path &p, const std::vector<std::string> *openfilenames)
 {
 	if (p.empty()) {
-		PRINTB("WARNING: %s invalid - file path is blank",p);
+		PRINTB("WARNING: File path is blank: %s",p);
 		return false;
 	}
 	if (!p.has_parent_path()) {
-		PRINTB("WARNING: %s invalid - no parent path",p);
+		PRINTB("WARNING: No parent path: %s",p);
 		return false;
 	}
 	if (!fs::exists(p)) {
-		PRINTB("WARNING: %s invalid - file not found",p);
+		PRINTB("WARNING: File not found: %s",p);
 		// searched ===
 		return false;
 	}
@@ -57,7 +56,7 @@ static bool check_valid(const fs::path &p, const std::vector<std::string> *openf
 	if (openfilenames) {
 		BOOST_FOREACH(const std::string &s, *openfilenames) {
 			if (s == fullname) {
-				PRINTB("WARNING: circular include with %s", fullname);
+				PRINTB("WARNING: circular include file %s", fullname);
 				return false;
 			}
 		}
@@ -78,7 +77,7 @@ fs::path find_valid_path(const fs::path &sourcepath,
 		fs::path fpath = sourcepath / localpath;
 		if (check_valid(fpath, openfilenames)) return fpath;
 		fpath = search_libs(localpath);
-		if (check_valid(fpath, openfilenames)) return fpath;
+		if (!fpath.empty() && check_valid(fpath, openfilenames)) return fpath;
 	}
 	return fs::path();
 }

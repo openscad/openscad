@@ -115,7 +115,7 @@ use[ \t\r\n>]*"<"	{ BEGIN(cond_use); }
 	BEGIN(INITIAL); 
         fs::path fullpath = find_valid_path(sourcepath(), fs::path(filename), &openfilenames);
 	if (fullpath.empty()) {
-          PRINTB("WARNING: Can't open 'use' file '%s'.", filename);
+          PRINTB("WARNING: Can't open library '%s'.", filename);
 	} else {
           handle_dep(fullpath.string());
           parserlval.text = strdup(fullpath.string().c_str());
@@ -197,13 +197,6 @@ fs::path sourcepath()
  */
 void includefile()
 {
-  PRINTB("lex includefile filename %s",filename.c_str());
-  PRINTB("lex includefile filepath %s",filepath.c_str());
-  PRINTB("lex includefile sourcepath %s",sourcepath().c_str());
-  BOOST_FOREACH(std::string of, openfilenames) {
-    PRINTB("lex includefile openfilename: %s",of);
-  }
-
   fs::path localpath = fs::path(filepath) / filename;
   fs::path fullpath = find_valid_path(sourcepath(), localpath, &openfilenames);
   if (!fullpath.empty()) {
@@ -211,14 +204,12 @@ void includefile()
   }
   else {
     rootmodule->registerInclude(boosty::stringy(localpath), boosty::stringy(localpath));
-    PRINTB("WARNING: Can't open 'include' file '%s'.", filename);
+    PRINTB("WARNING: Can't open include file '%s'.", boosty::stringy(localpath));
     if (path_stack.size() > 0) path_stack.pop_back();
     return;
   };
-  PRINTB("lex fullpath %s",fullpath);
 
   std::string fullname = boosty::stringy(fullpath);
-  PRINTB("lex fullname %s",fullname);
 
   filepath.clear();
   path_stack.push_back(fullpath.parent_path());
@@ -227,7 +218,7 @@ void includefile()
 
   yyin = fopen(fullname.c_str(), "r");
   if (!yyin) {
-    PRINTB("WARNING: Can't open 'include' file '%s'.", fullname);
+    PRINTB("WARNING: Can't open include file '%s'.", boosty::stringy(localpath));
     path_stack.pop_back();
     return;
   }

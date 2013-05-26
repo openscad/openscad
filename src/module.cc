@@ -200,10 +200,9 @@ std::string Module::dump(const std::string &indent, const std::string &name) con
 void FileModule::registerInclude(const std::string &localpath,
 																 const std::string &fullpath)
 {
-	PRINTB("filemodule reginclude %s -> %s", localpath % fullpath);
 	struct stat st;
 	memset(&st, 0, sizeof(struct stat));
-	bool valid = stat(fullpath.c_str(), &st);
+	bool valid = stat(fullpath.c_str(), &st) == 0;
 	IncludeFile inc = {fullpath, valid, st.st_mtime};
 	this->includes[localpath] = inc;
 }
@@ -261,12 +260,12 @@ bool FileModule::include_modified(IncludeFile inc)
 {
 	struct stat st;
 	memset(&st, 0, sizeof(struct stat));
-  // FIXME: Detect removal of previously found files
+
 	fs::path fullpath = find_valid_path(this->path, inc.filename);
-	if (!fullpath.empty()) {
-		bool valid = stat(inc.filename.c_str(), &st);
-		if (inc.valid != valid) return true;
-		if (st.st_mtime > inc.mtime) return true;
-	}
+	bool valid = !fullpath.empty() ? (stat(boosty::stringy(fullpath).c_str(), &st) == 0) : false;
+	
+	if (valid != inc.valid) return true;
+	if (valid && st.st_mtime > inc.mtime) return true;
+	
 	return false;
 }

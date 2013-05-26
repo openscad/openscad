@@ -615,9 +615,7 @@ void MainWindow::refreshDocument()
 */
 bool MainWindow::compile(bool reload, bool procevents)
 {
-	PRINT("compile");
 	if (!compileTopLevelDocument(reload)) return false;
-	PRINT("init render");
 
   // Invalidate renderers before we kill the CSG tree
 	this->qglview->setRenderer(NULL);
@@ -1022,16 +1020,11 @@ bool MainWindow::fileChangedOnDisk()
 
 bool MainWindow::includesChanged()
 {
-	PRINT("includes changed?");
 	if (this->root_module) {
 		BOOST_FOREACH(const FileModule::IncludeContainer::value_type &item, this->root_module->includes) {
-			//std::cout<< item.first << "second" << item.second << "\n";
-			//std::cout<< (is_modified(item.first, item.second)) <<"\n";
-			if (this->root_module->include_modified(item.second))
-				return true;
+			if (this->root_module->include_modified(item.second)) return true;
 		}
 	}
-	PRINT("includes not changed");
 	return false;
 }
 
@@ -1044,7 +1037,6 @@ bool MainWindow::includesChanged()
 */
 bool MainWindow::compileTopLevelDocument(bool reload)
 {
-	PRINT("compile top level");
 	bool shouldcompiletoplevel = !reload;
 
 	if (includesChanged()) shouldcompiletoplevel = true;
@@ -1055,7 +1047,6 @@ bool MainWindow::compileTopLevelDocument(bool reload)
 	}
 	
 	if (shouldcompiletoplevel) {
-		PRINT("shouldcompile top level");
 		console->clear();
 
 		updateTemporalVariables();
