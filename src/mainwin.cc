@@ -955,7 +955,9 @@ void MainWindow::actionSaveAs()
 
 void MainWindow::actionShowLibraryFolder()
 {
-	QDesktopServices::openUrl(QUrl::fromLocalFile(QString::fromStdString(PlatformUtils::libraryPath())));
+	QString url = QString::fromStdString(PlatformUtils::libraryPath());
+	PRINTB("Opening file browser for %s", url.toStdString() );
+	QDesktopServices::openUrl(QUrl::fromLocalFile( url ));
 }
 
 void MainWindow::actionReload()

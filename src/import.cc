@@ -204,7 +204,7 @@ PolySet *ImportNode::evaluate_polyset(class PolySetEvaluator *) const
 		boost::regex ex_vertices("\\s*vertex\\s+([^\\s]+)\\s+([^\\s]+)\\s+([^\\s]+)");
 
 		bool binary = false;
-		int file_size = f.tellg();
+		std::streampos file_size = f.tellg();
 		f.seekg(80);
 		if (!f.eof()) {
 			uint32_t facenum = 0;

@@ -31,7 +31,7 @@ isEmpty(QT_VERSION) {
 include(version.pri)
 
 # for debugging link problems (use nmake -f Makefile.Release > log.txt)
-win32 {
+win* {
   # QMAKE_LFLAGS += -VERBOSE
 }
 debug: DEFINES += DEBUG
@@ -88,7 +88,7 @@ else {
   TARGET = openscad
 }
 
-win32 {
+win* {
   RC_FILE = openscad_win32.rc
 }
 
@@ -171,7 +171,7 @@ CONFIG(mingw-cross-env) {
   include(mingw-cross-env.pri)
 }
 
-win32 {
+win* {
   FLEXSOURCES = src/lexer.l
   BISONSOURCES = src/parser.y
 } else {
@@ -348,7 +348,7 @@ macx {
   SOURCES += src/imageutils-macosx.cc
   OBJECTIVE_SOURCES += src/OffscreenContextCGL.mm
 }
-win32* {
+win* {
   SOURCES += src/imageutils-lodepng.cc
   SOURCES += src/OffscreenContextWGL.cc
 }
@@ -391,8 +391,8 @@ macx {
 unix:!macx {
   SOURCES += src/PlatformUtils-posix.cc
 }
-win32* {
-  SOURCES += src/PlatformUtils-win32.cc
+win* {
+  SOURCES += src/PlatformUtils-win.cc
 }
 
 isEmpty(PREFIX):PREFIX = /usr/local

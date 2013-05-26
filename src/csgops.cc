@@ -69,6 +69,7 @@ std::string CsgNode::name() const
 	default:
 		assert(false);
 	}
+	return "internal_error";
 }
 
 void register_builtin_csgops()

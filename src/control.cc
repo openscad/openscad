@@ -114,7 +114,7 @@ AbstractNode *ControlModule::instantiate(const Context *ctx, const ModuleInstant
         // assert(filectx->evalctx);
 
 				if (filectx->evalctx) {
-					if (n < filectx->evalctx->numChildren()) {
+					if (n < (int)filectx->evalctx->numChildren()) {
 						node = filectx->evalctx->getChild(n)->evaluate(filectx->evalctx);
 					}
 					else {

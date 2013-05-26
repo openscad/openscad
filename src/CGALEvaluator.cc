@@ -291,6 +291,7 @@ Response CGALEvaluator::visit(State &state, const CsgNode &node)
 				op = CGE_INTERSECTION;
 				break;
 			default:
+				op = -1;
 				assert(false);
 			}
 			N = applyToChildren(node, op);
