@@ -834,7 +834,7 @@ disable_tests(cgalpngtest_child-background
               openscad-cgalpng_child-background
               openscad-cgalpng_highlight-and-background-modifier
               openscad-cgalpng_testcolornames
-              throwntogethertest_highlight-and-background-modifier)
+              throwntogethertest_testcolorname)
 
 # Test config handling
 
