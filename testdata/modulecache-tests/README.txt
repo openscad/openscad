@@ -94,7 +94,7 @@ Test12: Missing include file in subpath appears
 o rm subdir/missingsub.scad
 o Open includemissingsub.scad
 o Compile (F5)
-o Verify that you get: WARNING: Can't open 'use' file 'missingsub.scad'.
+o Verify that you get: WARNING: Can't open include file 'subdir/missingsub.scad'.
 o echo "module missingsub() { sphere(10); }" >  subdir/missingsub.scad
 o rm subdir/missingsub.scad
 o Reload and Compile (F4) - verify that the sphere is gone
