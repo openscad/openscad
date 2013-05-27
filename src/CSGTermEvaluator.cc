@@ -126,7 +126,7 @@ Response CSGTermEvaluator::visit(State &state, const AbstractPolyNode &node)
 Response CSGTermEvaluator::visit(State &state, const CsgNode &node)
 {
 	if (state.isPostfix()) {
-		CsgOp op;
+		CsgOp op = CSGT_UNION;
 		switch (node.type) {
 		case CSG_TYPE_UNION:
 			op = CSGT_UNION;
