@@ -46,7 +46,8 @@ string glew_extensions_dump()
 	sort( extensions.begin(), extensions.end() );
 	stringstream out;
 	out << "GL Extensions:";
-	for ( int i=0;i<extensions.size();i++ )	out << extensions[i] << "\n";
+	for ( unsigned int i=0;i<extensions.size();i++ )
+		out << extensions[i] << "\n";
 	return out.str();
 }
 

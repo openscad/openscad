@@ -142,6 +142,7 @@ std::string CgaladvNode::name() const
 	default:
 		assert(false);
 	}
+	return "internal_error";
 }
 
 std::string CgaladvNode::toString() const
