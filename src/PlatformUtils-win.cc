@@ -1,7 +1,9 @@
 #include "PlatformUtils.h"
 #include "printutils.h"
 #include <windows.h>
+#ifndef _WIN32_IE
 #define _WIN32_IE 0x0501 // SHGFP_TYPE_CURRENT
+#endif
 #include <shlobj.h>
 
 // convert from windows api w_char strings (usually utf16) to utf8 std::string
@@ -11,22 +13,25 @@ std::string winapi_wstr_to_utf8( std::wstring wstr )
 
 	UINT CodePage = CP_UTF8;
 	DWORD dwFlags = 0;
-	LPCSTR lpMultiByteStr = NULL;
-	int cbMultiByte = 0;
-	LPWSTR lpWideCharStr = &wstr[0];
+	LPCWSTR lpWideCharStr = &wstr[0];
 	int cchWideChar = (int)wstr.size();
+	LPSTR lpMultiByteStr = NULL;
+	int cbMultiByte = 0;
+	LPCSTR lpDefaultChar = NULL;
+	LPBOOL lpUsedDefaultChar = NULL;
 
-	int numbytes = MultiByteToWideChar( CodePage, dwFlags, lpMultiByteStr,
-		cbMultiByte, lpWideCharStr, cchWideChar );
+	int numbytes = WideCharToMultiByte( CodePage, dwFlags, lpWideCharStr,
+	  cchWideChar, lpMultiByteStr, cbMultiByte, lpDefaultChar, lpUsedDefaultChar );
 
-	cbMultiByte = numbytes;
 	lpMultiByteStr = &utf8_str[0];
+	cbMultiByte = numbytes;
 
-	int result = MultiByteToWideChar( CodePage, dwFlags, lpMultiByteStr,
-		cbMultiByte, lpWideCharStr, cchWideChar );
+	int result = WideCharToMultiByte( CodePage, dwFlags, lpWideCharStr,
+	  cchWideChar, lpMultiByteStr, cbMultiByte, lpDefaultChar, lpUsedDefaultChar );
 
 	if (result != numbytes) {
 		PRINT("ERROR: error converting w_char str to utf8 string");
+		PRINTB("ERROR: error code %i",GetLastError());
 	}
 
 	return utf8_str;
