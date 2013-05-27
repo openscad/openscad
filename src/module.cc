@@ -247,9 +247,11 @@ bool FileModule::handleDependencies()
 		FileModule::ModuleContainer::iterator curr = iter++;
 		FileModule *oldmodule = curr->second;
 
+		bool wasmissing = false;
 		// Get an absolute filename for the module
 		std::string filename = curr->first;
 		if (!boosty::is_absolute(filename)) {
+			wasmissing = true;
 			fs::path fullpath = find_valid_path(this->path, filename);
 			if (!fullpath.empty()) filename = boosty::stringy(fullpath);
 		}
@@ -261,7 +263,7 @@ bool FileModule::handleDependencies()
 			PRINTB_NOCACHE("  %s: %p", filename % curr->second);
 #endif
 		}
-		if (!curr->second) {
+		if (!curr->second && !wasmissing) {
 			PRINTB_NOCACHE("WARNING: Failed to compile library '%s'.", filename);
 		}
 	}

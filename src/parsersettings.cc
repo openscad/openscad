@@ -30,23 +30,24 @@ fs::path search_libs(const fs::path &localpath)
 }
 
 // files must be 'ordinary' - they must exist and be non-directories
+// FIXME: We cannot print any output here since these function is called periodically
+// from "Automatic reload and compile"
 static bool check_valid(const fs::path &p, const std::vector<std::string> *openfilenames)
 {
 	if (p.empty()) {
-		PRINTB("WARNING: File path is blank: %s",p);
+//		PRINTB("WARNING: File path is blank: %s",p);
 		return false;
 	}
 	if (!p.has_parent_path()) {
-		PRINTB("WARNING: No parent path: %s",p);
+//		PRINTB("WARNING: No parent path: %s",p);
 		return false;
 	}
 	if (!fs::exists(p)) {
-		PRINTB("WARNING: File not found: %s",p);
-		// searched ===
+//		PRINTB("WARNING: File not found: %s",p);
 		return false;
 	}
 	if (fs::is_directory(p)) {
-		PRINTB("WARNING: %s invalid - points to a directory",p);
+//		PRINTB("WARNING: %s invalid - points to a directory",p);
 		return false;
 	}
 	std::string fullname = boosty::stringy(p);
@@ -54,7 +55,7 @@ static bool check_valid(const fs::path &p, const std::vector<std::string> *openf
 	if (openfilenames) {
 		BOOST_FOREACH(const std::string &s, *openfilenames) {
 			if (s == fullname) {
-				PRINTB("WARNING: circular include file %s", fullname);
+//				PRINTB("WARNING: circular include file %s", fullname);
 				return false;
 			}
 		}
