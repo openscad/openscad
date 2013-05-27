@@ -252,6 +252,18 @@ endif()
 
 # OpenGL
 find_package(OpenGL REQUIRED)
+if (NOT OPENGL_GLU_FOUND)
+  message(STATUS "GLU not found in system paths...searching $ENV{OPENSCAD_LIBRARIES} ")
+  find_library(OPENGL_glu_LIBRARY GLU HINTS $ENV{OPENSCAD_LIBRARIES}/lib)
+  if (NOT OPENGL_glu_LIBRARY)
+    message(FATAL "GLU library not found")
+  endif()
+  set(OPENGL_LIBRARIES ${OPENGL_glu_LIBRARY} ${OPENGL_LIBRARIES})
+  message(STATUS "OpenGL LIBRARIES: ")
+  foreach(GLLIB ${OPENGL_LIBRARIES})
+    message(STATUS "  " ${GLLIB})
+  endforeach()
+endif()
 
 # OpenCSG
 if (NOT $ENV{OPENCSGDIR} STREQUAL "")
@@ -822,8 +834,6 @@ disable_tests(cgalpngtest_child-background
               openscad-cgalpng_child-background
               openscad-cgalpng_highlight-and-background-modifier
               openscad-cgalpng_testcolornames
-              throwntogethertest_child-background
-              throwntogethertest_highlight-and-background-modifier
               throwntogethertest_testcolornames)
 
 # Test config handling

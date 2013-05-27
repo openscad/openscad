@@ -100,7 +100,7 @@ E [Ee][+-]?{D}+
 
 %%
 
-include[ \t\r\n>]*"<"	{ BEGIN(cond_include); }
+include[ \t\r\n>]*"<"	{ BEGIN(cond_include); filepath = filename = "";}
 <cond_include>{
 [^\t\r\n>]*"/"	{ filepath = yytext; }
 [^\t\r\n>/]+	{ filename = yytext; }
@@ -113,29 +113,16 @@ use[ \t\r\n>]*"<"	{ BEGIN(cond_use); }
 [^\t\r\n>]+	{ filename = yytext; }
  ">"		{ 
 	BEGIN(INITIAL); 
-        fs::path usepath;
-        if (boosty::is_absolute(fs::path(filename))) {
-          usepath = filename;
-        }
-        else {
-          usepath = sourcepath() / filename;
-          if (!fs::exists(usepath)) {
-            usepath = locate_file(filename);
-          }
-        }
-        /* Only accept regular files which exists */
-        if (usepath.has_parent_path() && fs::exists(usepath) && !fs::is_directory(usepath)) {
-          handle_dep(usepath.string());
-          parserlval.text = strdup(usepath.string().c_str());
-          return TOK_USE;
-        } else {
-          PRINTB("WARNING: Can't open 'use' file '%s'.", filename);
-          if ( filename.size() == 0 )
-            PRINT("WARNING: 'use' filename is blank");
-          else if ( fs::is_directory( usepath ) )
-            PRINTB("WARNING: 'use' file points to a directory: %s",filename);
-        }
- }
+        fs::path fullpath = find_valid_path(sourcepath(), fs::path(filename), &openfilenames);
+	if (fullpath.empty()) {
+          PRINTB("WARNING: Can't open library '%s'.", filename);
+          parserlval.text = strdup(filename.c_str());
+	} else {
+          handle_dep(fullpath.string());
+          parserlval.text = strdup(fullpath.string().c_str());
+	}
+        return TOK_USE;
+    }
 }
 
 <<EOF>> {
@@ -206,55 +193,37 @@ fs::path sourcepath()
   Rules for include <path/file>
   1) include <sourcepath/path/file>
   2) include <librarydir/path/file>
+
+  Globals used: filepath, sourcepath, filename
  */
 void includefile()
 {
-  if (filename.empty()) return;
-
-  fs::path dirinfo = sourcepath();
-  if (!filepath.empty()) {
-    if (boosty::is_absolute(fs::path(filepath))) {
-      dirinfo = filepath;
-    }
-    else {
-      dirinfo /= filepath;
-    }
+  fs::path localpath = fs::path(filepath) / filename;
+  fs::path fullpath = find_valid_path(sourcepath(), localpath, &openfilenames);
+  if (!fullpath.empty()) {
+    rootmodule->registerInclude(boosty::stringy(localpath), boosty::stringy(fullpath));
   }
+  else {
+    rootmodule->registerInclude(boosty::stringy(localpath), boosty::stringy(localpath));
+    PRINTB("WARNING: Can't open include file '%s'.", boosty::stringy(localpath));
+    if (path_stack.size() > 0) path_stack.pop_back();
+    return;
+  };
 
-  fs::path finfo = dirinfo / filename;
-  if (!exists(finfo)) {
-    finfo = locate_file((fs::path(filepath) / filename).string());
-  }
-
-  if (!exists(finfo) || finfo.empty()) {
-    // deal with some unusual situations with is_absolute() and Wine
-    fs::path fnp( fs::path(filepath) / filename );
-    if (fs::exists( fnp ) && !fs::is_directory( fnp )) {
-      finfo = fnp;
-    }
-  }
-
-  if (finfo.empty()) {
-    PRINTB("WARNING: Can't find 'include' file '%s'.", filename);
-  }
-
-  std::string fullname = boosty::absolute(finfo).string();
-  // Detect circular includes
-  BOOST_FOREACH(std::string &s, openfilenames) {
-    if (s == fullname) return;
-  }
+  std::string fullname = boosty::stringy(fullpath);
 
   filepath.clear();
-  path_stack.push_back(finfo.parent_path());
+  path_stack.push_back(fullpath.parent_path());
 
   handle_dep(fullname);
-  rootmodule->registerInclude(fullname);
+
   yyin = fopen(fullname.c_str(), "r");
   if (!yyin) {
-    PRINTB("WARNING: Can't open 'include' file '%s'.", filename);
+    PRINTB("WARNING: Can't open include file '%s'.", boosty::stringy(localpath));
     path_stack.pop_back();
     return;
   }
+
   openfiles.push_back(yyin);
   openfilenames.push_back(fullname);
   filename.clear();

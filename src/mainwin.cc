@@ -775,14 +775,14 @@ void MainWindow::compileCSG(bool procevents)
 		}
 
 		if (this->root_chain && 
-				(this->root_chain->polysets.size() > 
+				(this->root_chain->objects.size() > 
 				 Preferences::inst()->getValue("advanced/openCSGLimit").toUInt())) {
-			PRINTB("WARNING: Normalized tree has %d elements!", this->root_chain->polysets.size());
+			PRINTB("WARNING: Normalized tree has %d elements!", this->root_chain->objects.size());
 			PRINT("WARNING: OpenCSG rendering has been disabled.");
 		}
 		else {
 			PRINTB("Normalized CSG tree has %d elements", 
-						 (this->root_chain ? this->root_chain->polysets.size() : 0));
+						 (this->root_chain ? this->root_chain->objects.size() : 0));
 			this->opencsgRenderer = new OpenCSGRenderer(this->root_chain, 
 																									this->highlights_chain, 
 																									this->background_chain, 
@@ -1036,20 +1036,11 @@ bool MainWindow::fileChangedOnDisk()
 	return false;
 }
 
-// FIXME: The following two methods are duplicated in ModuleCache.cc - refactor
-static bool is_modified(const std::string &filename, const time_t &mtime)
-{
-	struct stat st;
-	memset(&st, 0, sizeof(struct stat));
-	stat(filename.c_str(), &st);
-	return (st.st_mtime > mtime);
-}
-
 bool MainWindow::includesChanged()
 {
 	if (this->root_module) {
 		BOOST_FOREACH(const FileModule::IncludeContainer::value_type &item, this->root_module->includes) {
-			if (is_modified(item.first, item.second)) return true;
+			if (this->root_module->include_modified(item.second)) return true;
 		}
 	}
 	return false;

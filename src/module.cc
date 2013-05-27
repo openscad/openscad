@@ -32,6 +32,7 @@
 #include "expression.h"
 #include "function.h"
 #include "printutils.h"
+#include "parsersettings.h"
 
 #include <boost/filesystem.hpp>
 namespace fs = boost::filesystem;
@@ -46,6 +47,8 @@ AbstractModule::~AbstractModule()
 
 AbstractNode *AbstractModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const
 {
+	(void)ctx; // avoid unusued parameter warning
+
 	AbstractNode *node = new AbstractNode(inst);
 
 	node->children = inst->instantiateChildren(evalctx);
@@ -194,12 +197,14 @@ std::string Module::dump(const std::string &indent, const std::string &name) con
 	return dump.str();
 }
 
-void FileModule::registerInclude(const std::string &filename)
+void FileModule::registerInclude(const std::string &localpath,
+																 const std::string &fullpath)
 {
 	struct stat st;
 	memset(&st, 0, sizeof(struct stat));
-	stat(filename.c_str(), &st);
-	this->includes[filename] = st.st_mtime;
+	bool valid = stat(fullpath.c_str(), &st) == 0;
+	IncludeFile inc = {fullpath, valid, st.st_mtime};
+	this->includes[localpath] = inc;
 }
 
 /*!
@@ -213,20 +218,32 @@ bool FileModule::handleDependencies()
 
 	bool changed = false;
 	// Iterating manually since we want to modify the container while iterating
+
+
+	// If a lib in usedlibs was previously missing, we need to relocate it
+	// by searching the applicable paths. We can identify a previously missing module
+	// as it will have a relative path.
 	FileModule::ModuleContainer::iterator iter = this->usedlibs.begin();
 	while (iter != this->usedlibs.end()) {
 		FileModule::ModuleContainer::iterator curr = iter++;
 		FileModule *oldmodule = curr->second;
-		curr->second = ModuleCache::instance()->evaluate(curr->first);
+
+		// Get an absolute filename for the module
+		std::string filename = curr->first;
+		if (!boosty::is_absolute(filename)) {
+			fs::path fullpath = find_valid_path(this->path, filename);
+			if (!fullpath.empty()) filename = boosty::stringy(fullpath);
+		}
+
+		curr->second = ModuleCache::instance()->evaluate(filename);
 		if (curr->second != oldmodule) {
 			changed = true;
 #ifdef DEBUG
-			PRINTB_NOCACHE("  %s: %p", curr->first % curr->second);
+			PRINTB_NOCACHE("  %s: %p", filename % curr->second);
 #endif
 		}
 		if (!curr->second) {
-			PRINTB_NOCACHE("WARNING: Failed to compile library '%s'.", curr->first);
-			this->usedlibs.erase(curr);
+			PRINTB_NOCACHE("WARNING: Failed to compile library '%s'.", filename);
 		}
 	}
 
@@ -249,4 +266,18 @@ AbstractNode *FileModule::instantiate(const Context *ctx, const ModuleInstantiat
 	node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
 
 	return node;
+}
+
+bool FileModule::include_modified(IncludeFile inc)
+{
+	struct stat st;
+	memset(&st, 0, sizeof(struct stat));
+
+	fs::path fullpath = find_valid_path(this->path, inc.filename);
+	bool valid = !fullpath.empty() ? (stat(boosty::stringy(fullpath).c_str(), &st) == 0) : false;
+	
+	if (valid != inc.valid) return true;
+	if (valid && st.st_mtime > inc.mtime) return true;
+	
+	return false;
 }
