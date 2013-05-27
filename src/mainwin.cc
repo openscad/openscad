@@ -917,6 +917,8 @@ void MainWindow::actionSave()
 		QFile file(this->fileName);
 		if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text)) {
 			PRINTB("Failed to open file for writing: %s (%s)", this->fileName.toLocal8Bit().constData() % file.errorString().toLocal8Bit().constData());
+			QMessageBox::warning(this, windowTitle(), tr("Failed to open file for writing:\n %1 (%2)")
+					.arg(this->fileName).arg(file.errorString()));
 		}
 		else {
 			QTextStream writer(&file);
