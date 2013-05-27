@@ -105,6 +105,8 @@
 #define OPENCSG_VERSION_STRING "unknown, <1.3.2"
 #endif
 
+#include "boosty.h"
+
 extern QString examplesdir;
 
 // Global application state
@@ -955,8 +957,15 @@ void MainWindow::actionSaveAs()
 
 void MainWindow::actionShowLibraryFolder()
 {
-	QString url = QString::fromStdString(PlatformUtils::libraryPath());
-	PRINTB("Opening file browser for %s", url.toStdString() );
+	std::string path = PlatformUtils::libraryPath();
+	if (!fs::exists(path)) {
+		PRINTB("WARNING: Library path %s doesnt exist. Creating", path);
+		if (!PlatformUtils::createLibraryPath()) {
+			PRINTB("ERROR: Cannot create library path: %s",path);
+		}
+	}
+	QString url = QString::fromStdString( path );
+	//PRINTB("Opening file browser for %s", url.toStdString() );
 	QDesktopServices::openUrl(QUrl::fromLocalFile( url ));
 }
 
