@@ -9,8 +9,6 @@
 // convert from windows api w_char strings (usually utf16) to utf8 std::string
 std::string winapi_wstr_to_utf8( std::wstring wstr )
 {
-	std::string utf8_str("");
-
 	UINT CodePage = CP_UTF8;
 	DWORD dwFlags = 0;
 	LPCWSTR lpWideCharStr = &wstr[0];
@@ -23,6 +21,9 @@ std::string winapi_wstr_to_utf8( std::wstring wstr )
 	int numbytes = WideCharToMultiByte( CodePage, dwFlags, lpWideCharStr,
 	  cchWideChar, lpMultiByteStr, cbMultiByte, lpDefaultChar, lpUsedDefaultChar );
 
+	//PRINTB("utf16 to utf8 conversion: numbytes %i",numbytes);
+
+	std::string utf8_str(numbytes,0);
 	lpMultiByteStr = &utf8_str[0];
 	cbMultiByte = numbytes;
 
@@ -48,12 +49,19 @@ std::string PlatformUtils::documentsPath()
 	std::string retval;
 	std::wstring path(MAX_PATH,0);
 
-	HRESULT result = SHGetFolderPathW(NULL, CSIDL_PERSONAL, NULL,
-	  SHGFP_TYPE_CURRENT, &path[0]);
+	HWND hwndOwner = 0;
+	int nFolder = CSIDL_PERSONAL;
+	HANDLE hToken = NULL;
+	DWORD dwFlags = SHGFP_TYPE_CURRENT;
+	LPTSTR pszPath = &path[0];
+
+	int result = SHGetFolderPathW( hwndOwner, nFolder, hToken, dwFlags, pszPath );
 
 	if (result == S_OK) {
 		path = std::wstring( path.c_str() ); // stip extra NULLs
+		//std::wcerr << "wchar path:" << "\n";
 		retval = winapi_wstr_to_utf8( path );
+		//PRINTB("Path found: %s",retval);
 	} else {
 		PRINT("ERROR: Could not find My Documents location");
 		retval = "";

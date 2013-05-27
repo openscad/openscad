@@ -7,7 +7,7 @@ bool PlatformUtils::createLibraryPath()
 	bool OK = false;
 	try {
 		if (!fs::exists(fs::path(path))) {
-			PRINTB("Creating library folder %s", path );
+			//PRINTB("Creating library folder %s", path );
 			OK = fs::create_directories( path );
 		}
 		if (!OK) {
@@ -23,11 +23,14 @@ std::string PlatformUtils::libraryPath()
 {
 	fs::path path;
 	try {
-		path = boosty::canonical(fs::path(PlatformUtils::documentsPath()));
+		std::string pathstr = PlatformUtils::documentsPath();
+		if (pathstr=="") return "";
+		path = boosty::canonical(fs::path( pathstr ));
+		//PRINTB("path size %i",boosty::stringy(path).size());
+		//PRINTB("lib path found: [%s]", path );
 		if (path.empty()) return "";
 		path /= "OpenSCAD";
 		path /= "libraries";
-		//PRINTB("path size %i",boosty::stringy(path).size());
 		//PRINTB("Appended path %s", path );
 		//PRINTB("Exists: %i", fs::exists(path) );
 	} catch (const fs::filesystem_error& ex) {
