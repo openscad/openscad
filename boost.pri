@@ -6,7 +6,7 @@ boost {
   !isEmpty(BOOST_DIR) {
     QMAKE_INCDIR += $$BOOST_DIR
     message("boost location: $$BOOST_DIR")
-    win32: QMAKE_LIBDIR += -L$$BOOST_DIR/lib
+    win*: QMAKE_LIBDIR += -L$$BOOST_DIR/lib
   }
 
   CONFIG(mingw-cross-env) {
@@ -16,7 +16,7 @@ boost {
     BOOST_LINK_FLAGS = -lboost_thread_win32-mt -lboost_program_options-mt -lboost_filesystem-mt -lboost_system-mt -lboost_regex-mt -lboost_chrono-mt
   } 
 
-  isEmpty(BOOST_LINK_FLAGS):win32 {
+  isEmpty(BOOST_LINK_FLAGS):win* {
     BOOST_LINK_FLAGS = -llibboost_thread-vc90-mt-s-1_46_1 -llibboost_program_options-vc90-mt-s-1_46_1 -llibboost_filesystem-vc90-mt-s-1_46_1 -llibboost_system-vc90-mt-s-1_46_1 -llibboost_regex-vc90-mt-s-1_46_1
   } 
 

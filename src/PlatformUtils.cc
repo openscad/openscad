@@ -1,26 +1,35 @@
 #include "PlatformUtils.h"
 #include "boosty.h"
 
+bool PlatformUtils::createLibraryPath()
+{
+	std::string path = PlatformUtils::libraryPath();
+	bool OK = false;
+	try {
+		if (!fs::exists(fs::path(path))) {
+			PRINTB("Creating library folder %s", path );
+			OK = fs::create_directories( path );
+		}
+		if (!OK) {
+			PRINTB("ERROR: Cannot create %s", path );
+		}
+	} catch (const fs::filesystem_error& ex) {
+		PRINTB("ERROR: %s",ex.what());
+	}
+	return OK;
+}
+
 std::string PlatformUtils::libraryPath()
 {
 	fs::path path;
-	bool OK = true;
 	try {
 		path = boosty::canonical(fs::path(PlatformUtils::documentsPath()));
 		if (path.empty()) return "";
-		PRINTB("path size %i",boosty::stringy(path).size());
 		path /= "OpenSCAD";
 		path /= "libraries";
-		PRINTB("Appended path %s", path );
-		PRINTB("Exists: %i", fs::exists(path) );
-		if (!fs::exists(path)) {
-			PRINTB("Creating library folder %s", boosty::stringy(path) );
-			OK &= fs::create_directories( path );
-		}
-		if (!OK) {
-			PRINTB("ERROR: Cannot find nor create %s", boosty::stringy(path) );
-			path = fs::path("");
-		}
+		//PRINTB("path size %i",boosty::stringy(path).size());
+		//PRINTB("Appended path %s", path );
+		//PRINTB("Exists: %i", fs::exists(path) );
 	} catch (const fs::filesystem_error& ex) {
 		PRINTB("ERROR: %s",ex.what());
 	}

@@ -279,7 +279,7 @@ Response CGALEvaluator::visit(State &state, const CsgNode &node)
 	if (state.isPostfix()) {
 		CGAL_Nef_polyhedron N;
 		if (!isCached(node)) {
-			CGALEvaluator::CsgOp op;
+			CGALEvaluator::CsgOp op = CGE_UNION;
 			switch (node.type) {
 			case CSG_TYPE_UNION:
 				op = CGE_UNION;
@@ -291,7 +291,6 @@ Response CGALEvaluator::visit(State &state, const CsgNode &node)
 				op = CGE_INTERSECTION;
 				break;
 			default:
-				op = -1;
 				assert(false);
 			}
 			N = applyToChildren(node, op);
