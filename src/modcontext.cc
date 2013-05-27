@@ -125,7 +125,9 @@ Value FileContext::evaluate_function(const std::string &name, const EvalContext 
 	if (foundf) return foundf->evaluate(this, evalctx);
 	
 	BOOST_FOREACH(const FileModule::ModuleContainer::value_type &m, this->usedlibs) {
-		if (m.second->scope.functions.find(name) != m.second->scope.functions.end()) {
+		// m.second is NULL if the library wasn't be compiled (error or file-not-found)
+		if (m.second && 
+				m.second->scope.functions.find(name) != m.second->scope.functions.end()) {
 			FileContext ctx(*m.second, this->parent);
 			ctx.initializeModule(*m.second);
 			// FIXME: Set document path
@@ -146,8 +148,9 @@ AbstractNode *FileContext::instantiate_module(const ModuleInstantiation &inst, c
 	if (foundm) return foundm->instantiate(this, &inst, evalctx);
 
 	BOOST_FOREACH(const FileModule::ModuleContainer::value_type &m, this->usedlibs) {
-		assert(m.second);
-		if (m.second->scope.modules.find(inst.name()) != m.second->scope.modules.end()) {
+		// m.second is NULL if the library wasn't be compiled (error or file-not-found)
+		if (m.second && 
+				m.second->scope.modules.find(inst.name()) != m.second->scope.modules.end()) {
 			FileContext ctx(*m.second, this->parent);
 			ctx.initializeModule(*m.second);
 			// FIXME: Set document path

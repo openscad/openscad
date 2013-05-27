@@ -116,11 +116,12 @@ use[ \t\r\n>]*"<"	{ BEGIN(cond_use); }
         fs::path fullpath = find_valid_path(sourcepath(), fs::path(filename), &openfilenames);
 	if (fullpath.empty()) {
           PRINTB("WARNING: Can't open library '%s'.", filename);
+          parserlval.text = strdup(filename.c_str());
 	} else {
           handle_dep(fullpath.string());
           parserlval.text = strdup(fullpath.string().c_str());
-          return TOK_USE;
 	}
+        return TOK_USE;
     }
 }
 

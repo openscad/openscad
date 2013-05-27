@@ -98,3 +98,13 @@ o Verify that you get: WARNING: Can't open include file 'subdir/missingsub.scad'
 o echo "module missingsub() { sphere(10); }" >  subdir/missingsub.scad
 o rm subdir/missingsub.scad
 o Reload and Compile (F4) - verify that the sphere is gone
+
+Test13: Missing library file appears
+-------
+o rm missing.scad
+o Open usemissing.scad
+o Compile (F5)
+o Verify that you get: WARNING: Can't open 'use' file 'missing.scad'.
+o echo "module missing() { sphere(10); }" >  missing.scad
+o rm missing.scad
+o Compile (F5) - verify that the sphere is gone

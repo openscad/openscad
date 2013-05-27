@@ -64,8 +64,15 @@ static bool check_valid(const fs::path &p, const std::vector<std::string> *openf
 	return true;
 }
 
-// check if file is valid, search path for valid simple file
-// return empty path on failure
+/*!
+	Check if the given filename is valid.
+
+	If the given filename is absolute, do a simple check.
+	If not, search the applicable paths for a valid file.
+
+	Returns the absolute path to a valid file, or an empty path if no
+	valid files could be found.
+*/
 fs::path find_valid_path(const fs::path &sourcepath, 
 												 const fs::path &localpath,
 												 const std::vector<std::string> *openfilenames)

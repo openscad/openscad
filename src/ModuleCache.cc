@@ -21,6 +21,13 @@
 
 ModuleCache *ModuleCache::inst = NULL;
 
+/*!
+	Reevaluate the given file and recompile if necessary.
+	Returns NULL on any error (e.g. compile error or file not found)
+
+	If the given filename is relative, it means that the module hasn't been
+	previously located.
+*/
 FileModule *ModuleCache::evaluate(const std::string &filename)
 {
 	FileModule *lib_mod = NULL;

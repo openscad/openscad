@@ -218,20 +218,32 @@ bool FileModule::handleDependencies()
 
 	bool changed = false;
 	// Iterating manually since we want to modify the container while iterating
+
+
+	// If a lib in usedlibs was previously missing, we need to relocate it
+	// by searching the applicable paths. We can identify a previously missing module
+	// as it will have a relative path.
 	FileModule::ModuleContainer::iterator iter = this->usedlibs.begin();
 	while (iter != this->usedlibs.end()) {
 		FileModule::ModuleContainer::iterator curr = iter++;
 		FileModule *oldmodule = curr->second;
-		curr->second = ModuleCache::instance()->evaluate(curr->first);
+
+		// Get an absolute filename for the module
+		std::string filename = curr->first;
+		if (!boosty::is_absolute(filename)) {
+			fs::path fullpath = find_valid_path(this->path, filename);
+			if (!fullpath.empty()) filename = boosty::stringy(fullpath);
+		}
+
+		curr->second = ModuleCache::instance()->evaluate(filename);
 		if (curr->second != oldmodule) {
 			changed = true;
 #ifdef DEBUG
-			PRINTB_NOCACHE("  %s: %p", curr->first % curr->second);
+			PRINTB_NOCACHE("  %s: %p", filename % curr->second);
 #endif
 		}
 		if (!curr->second) {
-			PRINTB_NOCACHE("WARNING: Failed to compile library '%s'.", curr->first);
-			this->usedlibs.erase(curr);
+			PRINTB_NOCACHE("WARNING: Failed to compile library '%s'.", filename);
 		}
 	}
 
