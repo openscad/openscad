@@ -114,7 +114,7 @@ Test14: Automatic reload of cascading changes
 
 o rm cascade-*.scad
 o Open cascadetest.scad
-o Compile (F5)
+o Turn on Automatic Reload and Compile
+o Verify that the 4 objects render correctly
 o ./cascade.sh
 o Verify that everything reloads at once without flickering
-
