@@ -77,7 +77,6 @@ private:
 	void refreshDocument();
 	void updateTemporalVariables();
 	bool fileChangedOnDisk();
-	bool includesChanged();
 	void compileTopLevelDocument();
 	void compile(bool reload, bool forcedone = false);
 	void compileCSG(bool procevents);

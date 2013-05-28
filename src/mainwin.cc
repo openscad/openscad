@@ -636,11 +636,12 @@ void MainWindow::compile(bool reload, bool forcedone)
 		shouldcompiletoplevel = true;
 	}
 
-	if (!shouldcompiletoplevel && includesChanged()) {
+	if (!shouldcompiletoplevel && this->root_module && this->root_module->includesChanged()) {
 		shouldcompiletoplevel = true;
 	}
 
 	if (shouldcompiletoplevel) {
+		console->clear();
 		compileTopLevelDocument();
 		didcompile = true;
 	}
@@ -655,8 +656,8 @@ void MainWindow::compile(bool reload, bool forcedone)
 	// If we're auto-reloading, listen for a cascade of changes by starting a timer
 	// if something changed _and_ there are any external dependencies
 	if (reload && didcompile && this->root_module) {
-		if (this->root_module->includes.size() > 0 ||
-				this->root_module->usedlibs.size() > 0) {
+		if (this->root_module->hasIncludes() ||
+				this->root_module->usesLibraries()) {
 			this->waitAfterReloadTimer->start();
 			return;
 		}
@@ -1116,23 +1117,11 @@ bool MainWindow::fileChangedOnDisk()
 	return false;
 }
 
-bool MainWindow::includesChanged()
-{
-	if (this->root_module) {
-		BOOST_FOREACH(const FileModule::IncludeContainer::value_type &item, this->root_module->includes) {
-			if (this->root_module->include_modified(item.second)) return true;
-		}
-	}
-	return false;
-}
-
 /*!
 	Returns true if anything was compiled.
 */
 void MainWindow::compileTopLevelDocument()
 {
-	console->clear();
-	
 	updateTemporalVariables();
 	
 	this->last_compiled_doc = editor->toPlainText();
@@ -1233,7 +1222,6 @@ void MainWindow::actionRenderCSG()
 	GuiLocker::lock();
 	autoReloadTimer->stop();
 	setCurrentOutput();
-	console->clear();
 
 	PRINT("Parsing design (AST generation)...");
 	QApplication::processEvents();
@@ -1278,7 +1266,6 @@ void MainWindow::actionRenderCGAL()
 	GuiLocker::lock();
 	autoReloadTimer->stop();
 	setCurrentOutput();
-	console->clear();
 
 	PRINT("Parsing design (AST generation)...");
 	QApplication::processEvents();
