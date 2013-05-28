@@ -108,3 +108,13 @@ o Verify that you get: WARNING: Can't open 'use' file 'missing.scad'.
 o echo "module missing() { sphere(10); }" >  missing.scad
 o rm missing.scad
 o Compile (F5) - verify that the sphere is gone
+
+Test14: Automatic reload of cascading changes
+-------
+
+o rm cascade-*.scad
+o Open cascadetest.scad
+o Compile (F5)
+o ./cascade.sh
+o Verify that everything reloads at once without flickering
+
