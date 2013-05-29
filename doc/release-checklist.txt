@@ -1,6 +1,19 @@
 OpenSCAD Release Checklist
 --------------------------
 
+o Pre-release preparations
+  - Merge MCAD
+    o In MCAD clone:
+      $ git fetch upstream
+      $ git merge upstream/master
+      $ git push
+    o In OpenSCAD:
+      $ cd libraries/MCAD
+      $ git pull
+      $ cd ../..
+      $ git commit -m "Updated MCAD"
+      $ git push
+
 (See bottom of this file for how to build release binaries)
 
 o Set VERSION and VERSIONDATE environment variable
