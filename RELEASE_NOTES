@@ -44,6 +44,7 @@ Misc:
 o Build scripts have been further improved
 o Regression test now creates single monolithic .html file for easier uploading
 o Regression test auto-starts & stops Xvfb / Xvnc if on headless unix machine
+o The backend is finally independent of Qt
 o Windows: We now have a 64-bit version
 
 OpenSCAD 2013.01
