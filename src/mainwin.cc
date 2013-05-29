@@ -205,7 +205,7 @@ MainWindow::MainWindow(const QString &filename)
 	connect(animate_timer, SIGNAL(timeout()), this, SLOT(updateTVal()));
 
 	autoReloadTimer = new QTimer(this);
-	autoReloadTimer->setSingleShot(true);
+	autoReloadTimer->setSingleShot(false);
 	autoReloadTimer->setInterval(200);
 	connect(autoReloadTimer, SIGNAL(timeout()), this, SLOT(checkAutoReload()));
 
