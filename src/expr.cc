@@ -69,7 +69,7 @@ public:
 		expr.recursioncount++; 
 	}
 	~FuncRecursionGuard() { expr.recursioncount--; }
-	bool recursion_detected() const { return (expr.recursioncount > 100); }
+	bool recursion_detected() const { return (expr.recursioncount > 1000); }
 private:
 	const Expression &expr;
 };
