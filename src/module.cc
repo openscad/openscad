@@ -166,7 +166,7 @@ public:
 	~ModRecursionGuard() { 
 		inst.recursioncount--; 
 	}
-	bool recursion_detected() const { return (inst.recursioncount > 100); }
+	bool recursion_detected() const { return (inst.recursioncount > 1000); }
 private:
 	const ModuleInstantiation &inst;
 };
