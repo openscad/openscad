@@ -86,6 +86,7 @@ private:
 	static void consoleOutput(const std::string &msg, void *userdata);
 	void loadViewSettings();
 	void loadDesignSettings();
+	void saveBackup();
 
   class QMessageBox *openglbox;
 

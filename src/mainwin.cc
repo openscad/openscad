@@ -619,6 +619,8 @@ void MainWindow::refreshDocument()
 */
 bool MainWindow::compile(bool reload, bool procevents)
 {
+	saveBackup();
+
 	if (!compileTopLevelDocument(reload)) return false;
 
   // Invalidate renderers before we kill the CSG tree
@@ -690,6 +692,9 @@ bool MainWindow::compile(bool reload, bool procevents)
 void MainWindow::compileCSG(bool procevents)
 {
 	assert(this->root_node);
+
+	saveBackup();
+
 	PRINT("Compiling design (CSG Products generation)...");
 	if (procevents)
 		QApplication::processEvents();
@@ -905,6 +910,29 @@ void MainWindow::actionOpenExample()
 	if (action) {
 		openFile(examplesdir + QDir::separator() + action->text());
 	}
+}
+
+void MainWindow::saveBackup()
+{
+	if (this->fileName.isEmpty()) {
+		return;
+	}
+
+	QString filename = this->fileName;
+	filename.append("~");
+
+	QFile file(filename);
+
+	if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+		PRINTB("Failed to open backup file for writing: %s (%s)", filename.toLocal8Bit().constData() % file.errorString().toLocal8Bit().constData());
+		return;
+	}
+
+	QTextStream writer(&file);
+	writer.setCodec("UTF-8");
+	writer << this->editor->toPlainText();
+
+	PRINTB("Saved backup file: %s", filename.toLocal8Bit().constData());
 }
 
 void MainWindow::actionSave()
