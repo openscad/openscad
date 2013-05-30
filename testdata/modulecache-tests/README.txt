@@ -118,7 +118,9 @@ o ./cascade.sh
 o Open cascadetest.scad
 o Turn on Automatic Reload and Compile
 o Verify that the 4 objects render correctly
-o rm cascade-*.scad
+o rm cascadetest.scad
+o Verify that no rerendering was triggered (the 4 objects are still there)
+o rm cascade*.scad
 o Verify that no rerendering was triggered (the 4 objects are still there)
 o ./cascade2.sh
 o Verify that everything reloads at once without flickering
