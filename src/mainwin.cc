@@ -1027,7 +1027,10 @@ bool MainWindow::fileChangedOnDisk()
 	if (!this->fileName.isEmpty()) {
 		struct stat st;
 		memset(&st, 0, sizeof(struct stat));
-		stat(this->fileName.toLocal8Bit(), &st);
+		bool valid = (stat(this->fileName.toLocal8Bit(), &st) == 0);
+		// If file isn't there, just return and use current editor text
+		if (!valid) return false;
+
 		std::string newid = str(boost::format("%x.%x") % st.st_mtime % st.st_size);
 
 		if (newid != this->autoReloadId) {

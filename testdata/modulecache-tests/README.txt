@@ -26,13 +26,6 @@ o Open use-mcad.scad
 o Compile (F5)
 o Check that you get a rounded box
 
-Test4: USE Non-existing file
-------
-
-o Open usenonexsistingfile.scad
-o Compile (F5)
-o Verify that you get: WARNING: Can't open 'use' file 'nofile.scad'.
-
 Test5: Overload USEd module
 ------
 
@@ -86,8 +79,11 @@ o Open includemissing.scad
 o Compile (F5)
 o Verify that you get: WARNING: Can't open include file 'missing.scad'.
 o echo "module missing() { sphere(10); }" >  missing.scad
+o Reload and Compile (F4) - verify that the sphere appeared
 o rm missing.scad
-o Reload and Compile (F4) - verify that the sphere is gone
+o Reload and Compile (F4) - verify that the sphere is still there
+o echo "module missing() { sphere(20); }" >  missing.scad
+o Reload and Compile (F4) - verify that the sphere increased in size
 
 Test12: Missing include file in subpath appears
 ------
@@ -96,25 +92,35 @@ o Open includemissingsub.scad
 o Compile (F5)
 o Verify that you get: WARNING: Can't open include file 'subdir/missingsub.scad'.
 o echo "module missingsub() { sphere(10); }" >  subdir/missingsub.scad
+o Reload and Compile (F4) - verify that the sphere appeared
 o rm subdir/missingsub.scad
-o Reload and Compile (F4) - verify that the sphere is gone
+o Reload and Compile (F4) - verify that the sphere is still there
+o echo "module missingsub() { sphere(20); }" >  subdir/missingsub.scad
+o Reload and Compile (F4) - verify that the sphere increased in size
 
 Test13: Missing library file appears
 -------
 o rm missing.scad
 o Open usemissing.scad
 o Compile (F5)
-o Verify that you get: WARNING: Can't open 'use' file 'missing.scad'.
+o Verify that you get: WARNING: Can't open library file 'missing.scad'.
 o echo "module missing() { sphere(10); }" >  missing.scad
+o Reload and Compile (F4) - verify that the sphere appeared
 o rm missing.scad
-o Compile (F5) - verify that the sphere is gone
+o Reload and Compile (F4) - verify that the sphere is still there
+o echo "module missing() { sphere(20); }" >  missing.scad
+o Reload and Compile (F4) - verify that the sphere increased in size
 
 Test14: Automatic reload of cascading changes
 -------
 
-o rm cascade-*.scad
+o ./cascade.sh
 o Open cascadetest.scad
 o Turn on Automatic Reload and Compile
 o Verify that the 4 objects render correctly
-o ./cascade.sh
+o rm cascadetest.scad
+o Verify that no rerendering was triggered (the 4 objects are still there)
+o rm cascade*.scad
+o Verify that no rerendering was triggered (the 4 objects are still there)
+o ./cascade2.sh
 o Verify that everything reloads at once without flickering
