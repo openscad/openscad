@@ -30,6 +30,7 @@
 #include "polyset.h"
 #include "evalcontext.h"
 #include "builtin.h"
+#include "svgdata.h"
 #include "dxfdata.h"
 #include "dxftess.h"
 #include "printutils.h"
@@ -106,6 +107,7 @@ AbstractNode *ImportModule::instantiate(const Context *ctx, const ModuleInstanti
 		if (ext == ".stl") actualtype = TYPE_STL;
 		else if (ext == ".off") actualtype = TYPE_OFF;
 		else if (ext == ".dxf") actualtype = TYPE_DXF;
+		else if (ext == ".svg") actualtype = TYPE_SVG;
 	}
 
 	ImportNode *node = new ImportNode(inst, actualtype);
@@ -296,6 +298,11 @@ PolySet *ImportNode::evaluate_polyset(class PolySetEvaluator *) const
 		p->is2d = true;
 		dxf_tesselate(p, dd, 0, Vector2d(1,1), true, false, 0);
 		dxf_border_to_ps(p, dd);
+	}
+	else if (this->type == TYPE_SVG)
+	{
+    SVGData svgd(this->filename);  
+    return svgd.convertToPolyset(this->fn);
 	}
 	else 
 	{
