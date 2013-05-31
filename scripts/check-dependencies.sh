@@ -155,8 +155,15 @@ flex_sysver()
 
 bison_sysver()
 {
+  # bison (GNU Bison) 2.7.12-4996
   if [ ! -x $1/bin/bison ]; then return ; fi
-  bison_sysver_result=`$1/bin/bison --version | grep bison | sed s/"[^0-9.]"/" "/g`
+  bison_sver=`$1/bin/bison --version | grep bison`
+  debug bison_sver1: $bison_sver
+  bison_sver=`echo $bison_sver | awk -F ")" ' { print $2 } '`
+  debug bison_sver2: $bison_sver
+  bison_sver=`echo $bison_sver | awk -F "-" ' { print $1 } '`
+  debug bison_sver3: $bison_sver
+  bison_sysver_result=$bison_sver
 }
 
 gcc_sysver()
@@ -425,7 +432,7 @@ find_installed_version()
         debug $depname"_sysver" $syspath
         eval $depname"_sysver" $syspath
         fsv_tmp=`eval echo "$"$depname"_sysver_result"`
-		if [ $fsv_tmp ]; then break; fi
+        if [ $fsv_tmp ]; then break; fi
       fi
     done
   fi
