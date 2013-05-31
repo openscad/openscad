@@ -170,7 +170,7 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this->cgalworker, SIGNAL(done(CGAL_Nef_polyhedron *)), 
 					this, SLOT(actionRenderCGALDone(CGAL_Nef_polyhedron *)));
 #endif
-
+	this->tempFile = NULL;
 	top_ctx.registerBuiltin();
 
 	this->openglbox = NULL;
@@ -445,6 +445,7 @@ MainWindow::~MainWindow()
 {
 	if (root_module) delete root_module;
 	if (root_node) delete root_node;
+	// if (tempFile) delete tempFile;
 #ifdef ENABLE_CGAL
 	if (this->root_N) delete this->root_N;
 	delete this->cgalRenderer;
@@ -912,15 +913,33 @@ void MainWindow::actionOpenExample()
 	}
 }
 
+void MainWindow::writeBackup(QFile * file)
+{
+	// see MainWindow::saveBackup()
+	file->resize(0);
+	QTextStream writer(file);
+	writer.setCodec("UTF-8");
+	writer << this->editor->toPlainText();
+
+	PRINTB("Saved backup file: %s", file->fileName().toLocal8Bit().constData());
+}
+
 void MainWindow::saveBackup()
 {
 	if (this->fileName.isEmpty()) {
-		return;
+		if (! this->tempFile) {
+			this->tempFile = new QTemporaryFile("backupfile-XXXXXXXX");
+		}
+
+		if ((! this->tempFile->isOpen()) && (! this->tempFile->open())) {
+			PRINT("Failed to create backup file");
+			return;
+		}
+		return writeBackup(this->tempFile);
 	}
 
 	QString filename = this->fileName;
 	filename.append("~");
-
 	QFile file(filename);
 
 	if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
@@ -928,11 +947,8 @@ void MainWindow::saveBackup()
 		return;
 	}
 
-	QTextStream writer(&file);
-	writer.setCodec("UTF-8");
-	writer << this->editor->toPlainText();
-
-	PRINTB("Saved backup file: %s", filename.toLocal8Bit().constData());
+	writeBackup(&file);
+	file.close();
 }
 
 void MainWindow::actionSave()
@@ -1879,6 +1895,10 @@ void MainWindow::quit()
 	QCloseEvent ev;
 	QApplication::sendEvent(QApplication::instance(), &ev);
 	if (ev.isAccepted()) QApplication::instance()->quit();
+	if (tempFile) {
+		delete tempFile;	// ~MainWindow is not getting called and
+	}				// QTemporartFile must be destroyed to remove file
+
   // FIXME: Cancel any CGAL calculations
 #ifdef Q_OS_MAC
 	CocoaUtils::endApplication();
