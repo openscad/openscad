@@ -172,23 +172,27 @@ std::string Expression::toString() const
 
 	if (this->type == "*" || this->type == "/" || this->type == "%" || this->type == "+" ||
 			this->type == "-" || this->type == "<" || this->type == "<=" || this->type == "==" || 
-			this->type == "!=" || this->type == ">=" || this->type == ">") {
+			this->type == "!=" || this->type == ">=" || this->type == ">" ||
+			this->type == "&&" || this->type == "||") {
 		stream << "(" << *this->children[0] << " " << this->type << " " << *this->children[1] << ")";
 	}
 	else if (this->type == "?:") {
-		stream << "(" << *this->children[0] << " ? " << this->type << " : " << *this->children[1] << ")";
+		stream << "(" << *this->children[0] << " ? " << *this->children[1] << " : " << *this->children[2] << ")";
 	}
 	else if (this->type == "[]") {
-		stream << "(" << *this->children[0] << "[" << *this->children[1] << "])";
+		stream << *this->children[0] << "[" << *this->children[1] << "]";
 	}
 	else if (this->type == "I") {
-		stream << "(-" << *this->children[0] << ")";
+		stream << "-" << *this->children[0];
+	}
+	else if (this->type == "!") {
+		stream << "!" << *this->children[0];
 	}
 	else if (this->type == "C") {
 		stream << this->const_value;
 	}
 	else if (this->type == "R") {
-		stream << "[" << *this->children[0] << " : " << *this->children[1] << " : " << this->children[2] << "]";
+		stream << "[" << *this->children[0] << " : " << *this->children[1] << " : " << *this->children[2] << "]";
 	}
 	else if (this->type == "V") {
 		stream << "[";
@@ -202,7 +206,7 @@ std::string Expression::toString() const
 		stream << this->var_name;
 	}
 	else if (this->type == "N") {
-		stream << "(" << *this->children[0] << "." << this->var_name << ")";
+		stream << *this->children[0] << "." << this->var_name;
 	}
 	else if (this->type == "F") {
 		stream << this->call_funcname << "(";
