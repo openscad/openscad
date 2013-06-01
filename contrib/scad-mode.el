@@ -66,7 +66,7 @@
     "round" "ceil" "floor" 
     "pow" "sqrt" "exp" "log" "ln"
     "str" 
-    "lookup" "version" "version_num"
+    "lookup" "version" "version_num" "len" "search"
     "dxf_dim" "dxf_cross"                                               ;;dxfdim.cc
     )
   "SCAD functions."
@@ -74,7 +74,7 @@
   :group 'scad-font-lock)
 
 (defcustom scad-modules
-  '("child" "echo" "assign" "for" "intersection_for" "if"               ;;control.cc
+  '("child" "echo" "assign" "for" "intersection_for" "if" "else"        ;;control.cc
     "cube" "sphere" "cylinder" "polyhedron" "square" "circle" "polygon" ;;primitives.cc
     "scale" "rotate" "translate" "mirror" "multmatrix"                  ;;transform.cc
     "union" "difference" "intersection"                                 ;;csgops.cc
@@ -86,7 +86,7 @@
     "import_stl" "import_off" "import_dxf" "import"                     ;;import.cc
     "group"                                                             ;;builtin.cc
     "projection"                                                        ;;projection.cc
-    "minkowski" "glide" "subdiv" "hull"                                 ;;cgaladv.cc
+    "minkowski" "glide" "subdiv" "hull" "resize"                        ;;cgaladv.cc
     )
   "SCAD modules."
   :type 'list
