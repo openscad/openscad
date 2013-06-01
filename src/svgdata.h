@@ -8,10 +8,10 @@
 
 class SVGData{
 public:
-  SVGData(std::string filename);
+  SVGData(double fn, double fs, double fa, std::string filename);
   ~SVGData();
 
-  class PolySet* convertToPolyset(int fn);
+  class PolySet* convertToPolyset();
   void traverse_subtree(const xmlpp::Node* node);
 
 private:
@@ -30,6 +30,7 @@ private:
   PolySet *p;
   Grid2d<int>* grid;
   int first_point, last_point;
+  double fn, fs, fa;
 };
 
 #endif

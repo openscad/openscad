@@ -35,7 +35,7 @@
 #include <fstream>
 #include <boost/regex.hpp>
 
-SVGData::SVGData(std::string filename) : filename(filename) {
+SVGData::SVGData(double fn, double fs, double fa, std::string filename) : filename(filename), fa(fa), fs(fs), fn(fn) {
 	handle_dep(filename); // Register ourselves as a dependency
 
   parser = NULL;
@@ -243,7 +243,7 @@ void SVGData::traverse_subtree(const xmlpp::Node* node){
   }
 }
 
-PolySet* SVGData::convertToPolyset(int fn){
+PolySet* SVGData::convertToPolyset(){
   if (!parser)
     return NULL;
 
