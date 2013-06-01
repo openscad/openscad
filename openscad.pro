@@ -92,6 +92,11 @@ win* {
   RC_FILE = openscad_win32.rc
 }
 
+unix{
+  CONFIG +=link_pkgconfig
+  PKGCONFIG = libxml++-2.6
+}
+
 CONFIG += qt
 QT += opengl
 

@@ -301,6 +301,13 @@ PolySet *ImportNode::evaluate_polyset(class PolySetEvaluator *) const
 	}
 	else if (this->type == TYPE_SVG)
 	{
+		handle_dep((std::string)this->filename);
+		std::ifstream f(this->filename.c_str(), std::ios::in | std::ios::binary);
+		if (!f.good()) {
+			PRINTB("WARNING: Can't open import file '%s'.", this->filename);
+			return p;
+		}
+
     SVGData svgd(this->filename);  
     return svgd.convertToPolyset(this->fn);
 	}
