@@ -55,7 +55,6 @@ SVGData::SVGData(std::string filename) : filename(filename) {
 
 SVGData::~SVGData(){
   free(dxfdata);
-  free(p);
   free(grid);
 
   if (parser)
@@ -120,11 +119,16 @@ std::vector<float> SVGData::get_params(std::string str){
 }
 
 void SVGData::render_line_to(float x0, float y0, float x1, float y1){
-  //TODO: Implement me!
+  add_point(x0,y0);
+  add_point(x1,y1);
 }
 
 void SVGData::render_curve_to(float x0, float y0, float x1, float y1, float x2, float y2, float x3, float y3){
-  //TODO: Implement me!
+//This is wrong! Implement-me correctly:
+  add_point(x0,y0);
+  add_point(x1,y1);
+  add_point(x2,y2);
+  add_point(x3,y3);
 }
 
 void SVGData::parse_path_description(Glib::ustring description){
@@ -246,12 +250,9 @@ PolySet* SVGData::convertToPolyset(int fn){
   const xmlpp::Node* pNode = parser->get_document()->get_root_node();
   traverse_subtree(pNode);
 
-/*
 	p->is2d = true;
 	dxf_tesselate(p, *dxfdata, 0, true, false, 0);
 	dxf_border_to_ps(p, *dxfdata);
   return p;
-*/
-  return NULL;
 }
 
