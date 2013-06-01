@@ -924,24 +924,37 @@ void MainWindow::writeBackup(QFile * file)
 
 void MainWindow::saveBackup()
 {
+	std::string path = PlatformUtils::backupPath();
+	if ((! fs::exists(path)) && (! PlatformUtils::createBackupPath())) {
+		PRINTB("WARNING: Cannot create backup path: %s", path);
+		return;
+	}
+
+	QString backupPath = QString::fromStdString(path);
+	if (! backupPath.endsWith("/")) backupPath.append("/");
+
 	if (this->fileName.isEmpty()) {
 		if (! this->tempFile) {
-			this->tempFile = new QTemporaryFile("backupfile-XXXXXXXX");
+			this->tempFile = new QTemporaryFile(backupPath.append("unsaved-backup-XXXXXXXX.scad"));
 		}
 
 		if ((! this->tempFile->isOpen()) && (! this->tempFile->open())) {
-			PRINT("Failed to create backup file");
+			PRINT("WARNING: Failed to create backup file");
 			return;
 		}
 		return writeBackup(this->tempFile);
 	}
 
-	QString filename = this->fileName;
-	filename.append("~");
-	QFile file(filename);
+	QFileInfo fileInfo = QFileInfo(this->fileName);
+
+	backupPath.append(fileInfo.baseName())
+			.append("-backup.")
+			.append(fileInfo.suffix());
+
+	QFile file(backupPath);
 
 	if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
-		PRINTB("Failed to open backup file for writing: %s (%s)", filename.toLocal8Bit().constData() % file.errorString().toLocal8Bit().constData());
+		PRINTB("WARNING: Failed to open backup file for writing: %s (%s)", backupPath.toLocal8Bit().constData() % file.errorString().toLocal8Bit().constData());
 		return;
 	}
 
