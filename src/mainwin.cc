@@ -694,8 +694,6 @@ void MainWindow::compileCSG(bool procevents)
 {
 	assert(this->root_node);
 
-	saveBackup();
-
 	PRINT("Compiling design (CSG Products generation)...");
 	if (procevents)
 		QApplication::processEvents();
@@ -1866,6 +1864,7 @@ void MainWindow::closeEvent(QCloseEvent *event)
 		settings.setValue("window/position", pos());
 		settings_setValueList("window/splitter1sizes",splitter1->sizes());
 		settings_setValueList("window/splitter2sizes",splitter2->sizes());
+		if (tempFile) delete tempFile;
 		event->accept();
 	} else {
 		event->ignore();
@@ -1895,9 +1894,6 @@ void MainWindow::quit()
 	QCloseEvent ev;
 	QApplication::sendEvent(QApplication::instance(), &ev);
 	if (ev.isAccepted()) QApplication::instance()->quit();
-	if (tempFile) {
-		delete tempFile;	// ~MainWindow is not getting called and
-	}				// QTemporartFile must be destroyed to remove file
 
   // FIXME: Cancel any CGAL calculations
 #ifdef Q_OS_MAC
