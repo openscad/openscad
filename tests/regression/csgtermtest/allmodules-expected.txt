@@ -1,1 +1,1 @@
-((((((cube23 + sphere24) + cylinder25) + polyhedron26) + square27) + circle28) + polygon29)
+(((((((sphere12 + cube25) + sphere26) + cylinder27) + polyhedron28) + square29) + circle30) + polygon31)
