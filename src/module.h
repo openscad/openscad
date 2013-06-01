@@ -19,7 +19,7 @@ public:
 		: tag_root(false), tag_highlight(false), tag_background(false), recursioncount(0), modname(name) { }
 	virtual ~ModuleInstantiation();
 
-	std::string dump(const std::string &indent) const;
+	virtual std::string dump(const std::string &indent) const;
 	class AbstractNode *evaluate(const class Context *ctx) const;
 	std::vector<AbstractNode*> instantiateChildren(const Context *evalctx) const;
 
@@ -51,6 +51,7 @@ public:
 	IfElseModuleInstantiation() : ModuleInstantiation("if") { }
 	virtual ~IfElseModuleInstantiation();
 	std::vector<AbstractNode*> instantiateElseChildren(const Context *evalctx) const;
+	virtual std::string dump(const std::string &indent) const;
 
 	LocalScope else_scope;
 };

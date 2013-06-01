@@ -102,12 +102,31 @@ std::string ModuleInstantiation::dump(const std::string &indent) const
 	if (scope.numElements() == 0) {
 		dump << ");\n";
 	} else if (scope.numElements() == 1) {
-		dump << ")\n";
-		dump << scope.dump(indent + "\t");
+		dump << ") ";
+		dump << scope.dump("");
 	} else {
 		dump << ") {\n";
-		scope.dump(indent + "\t");
+		dump << scope.dump(indent + "\t");
 		dump << indent << "}\n";
+	}
+	return dump.str();
+}
+
+std::string IfElseModuleInstantiation::dump(const std::string &indent) const
+{
+	std::stringstream dump;
+	dump << ModuleInstantiation::dump(indent);
+	dump << indent;
+	if (else_scope.numElements() > 0) {
+		dump << indent << "else ";
+		if (else_scope.numElements() == 1) {
+			dump << else_scope.dump("");
+		}
+		else {
+			dump << "{\n";
+			dump << else_scope.dump(indent + "\t");
+			dump << indent << "}\n";
+		}
 	}
 	return dump.str();
 }
