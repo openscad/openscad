@@ -33,25 +33,33 @@
 #include "handle_dep.h"
 #include "printutils.h"
 #include <fstream>
+#include <boost/regex.hpp>
 
 SVGData::SVGData(std::string filename) : filename(filename) {
 	handle_dep(filename); // Register ourselves as a dependency
 
+  parser = NULL;
   dxfdata = new DxfData();
   p = new PolySet();
   grid = new Grid2d<int>(GRID_COARSE);
 
-	std::ifstream stream(filename.c_str());
-	if (!stream.good()) {
-		PRINTB("WARNING: Can't open SVG file '%s'.", filename);
-		return;
-	}
+  try{
+    parser = new xmlpp::DomParser();
+    parser->parse_file(filename);
+  }
+  catch(const std::exception& ex)
+  {
+    std::cout << "Exception caught: " << ex.what() << std::endl;
+  }
 }
 
 SVGData::~SVGData(){
   free(dxfdata);
   free(p);
   free(grid);
+
+  if (parser)
+    free(parser);
 }
 
 void SVGData::add_point(double x, double y){
@@ -84,28 +92,166 @@ void SVGData::close_path(){
   }
 }
 
+std::vector<float> SVGData::get_params(std::string str){
+  std::string pattern = "\\s*(-?[0-9]+(\\.[0-9]+)?),(-?[0-9]+(\\.[0-9]+)?)";
+  boost::regex regexPattern(pattern);
+  boost::match_results<std::string::const_iterator> result;
+
+  std::string::const_iterator start, end;
+  start = str.begin();
+  end = str.end();
+
+  std::vector<float> values;
+  float value;
+
+  while(boost::regex_search(start, end, result, regexPattern)){
+    value = atof(((std::string) result[1]).c_str());
+    values.push_back(value);
+    std::cout << "value1=" << value << std::endl;
+
+    value = atof(((std::string) result[3]).c_str());
+    values.push_back(value);
+    std::cout << "value2=" << value << std::endl;
+
+    start = result[2].second;
+  }
+
+  return values;
+}
+
+void SVGData::render_line_to(float x0, float y0, float x1, float y1){
+  //TODO: Implement me!
+}
+
+void SVGData::render_curve_to(float x0, float y0, float x1, float y1, float x2, float y2, float x3, float y3){
+  //TODO: Implement me!
+}
+
+void SVGData::parse_path_description(Glib::ustring description){
+  std::string d = (std::string) description;
+  std::string pattern = "([a-zA-Z][^a-zA-Z]*)";
+  boost::regex regexPattern(pattern);
+  boost::match_results<std::string::const_iterator> result;
+
+  std::string::const_iterator start, end;
+  start = d.begin();
+  end = d.end();
+
+  float x=0, y=0;
+  while(boost::regex_search(start, end, result, regexPattern)){
+    std::cout << "result: " << std::endl << result[1] << std::endl << std::endl;
+    const char* substring = ((std::string) result[1]).c_str();
+    char instruction_code = substring[0];
+    std::vector<float> params = get_params(&substring[1]);
+
+    int idx=0;
+    switch (instruction_code){
+      case 'm':
+        while (params.size() - idx >= 2){
+          if (idx>0)
+            render_line_to(x, y, x+params[0], y+params[1]);
+          x += params[0];
+          y += params[1];
+          std::cout << "m: x=" << x << " y=" << y << std::endl;
+          idx+=2;
+        }
+        break;
+      case 'M':
+        while (params.size() - idx >= 2){
+          if (idx>0)
+            render_line_to(x, y, params[0], params[1]);
+          x = params[0];
+          y = params[1];
+          std::cout << "M: x=" << x << " y=" << y << std::endl;
+          idx+=2;
+        }
+        break;
+      case 'l':
+        while (params.size() - idx >= 2){
+          render_line_to(x, y, x+params[0], y+params[1]);
+          x += params[0];
+          y += params[1];
+          std::cout << "l: x=" << x << " y=" << y << std::endl;
+          idx+=2;
+        }
+        break;
+      case 'L':
+        while (params.size() - idx >= 2){
+          render_line_to(x, y, params[0], params[1]);
+          x = params[0];
+          y = params[1];
+          std::cout << "L: x=" << x << " y=" << y << std::endl;
+          idx+=2;
+        }
+        break;
+      case 'c':
+        while (params.size() - idx >= 6){
+          render_curve_to(x, y, x+params[idx], y+params[idx+1], x+params[idx+2], y+params[idx+3], x+params[idx+4], y+params[idx+5]);
+          x += params[idx+4];
+          y += params[idx+5];
+          std::cout << "c: x=" << x << " y=" << y << std::endl;
+          idx+=6;
+        }
+        break;
+      case 'C':
+        while (params.size() - idx >= 6){
+          render_curve_to(x, y, params[0], params[1], params[2], params[3], params[4], params[5]);
+          x = params[4];
+          y = params[5];
+          std::cout << "C: x=" << x << " y=" << y << std::endl;
+          idx+=6;
+        }
+        break;
+    }
+
+    start = result[1].second;
+  }
+}
+
+void SVGData::traverse_subtree(const xmlpp::Node* node){
+  Glib::ustring nodename = node->get_name();
+  if (nodename == "g"){
+    std::cout << "found a group!" << std::endl;
+
+    if(const xmlpp::Element* nodeElement = dynamic_cast<const xmlpp::Element*>(node)){
+      const xmlpp::Attribute* id = nodeElement->get_attribute("id");
+      if(id){
+        std::cout << "id=" << id->get_value() << std::endl;      
+      }
+    }
+  }
+
+  if (nodename== "path"){
+    if(const xmlpp::Element* nodeElement = dynamic_cast<const xmlpp::Element*>(node)){
+      const xmlpp::Attribute* d = nodeElement->get_attribute("d");
+      if(d){
+        std::cout << "path description = " << d->get_value() << std::endl;      
+        start_path();
+        parse_path_description(d->get_value());
+        close_path();
+      }
+    }
+  }
+
+  xmlpp::Node::NodeList children = node->get_children();
+  for (xmlpp::Node::NodeList::iterator it = children.begin(); it != children.end(); ++it){
+    traverse_subtree(*it);
+  }
+}
+
 PolySet* SVGData::convertToPolyset(int fn){
-  int R=15;
+  if (!parser)
+    return NULL;
+
+  const xmlpp::Node* pNode = parser->get_document()->get_root_node();
+  traverse_subtree(pNode);
+
+/*
 	p->is2d = true;
-
-  start_path();
-  for(float angle=0; angle<360; angle += 360.0/fn) {
-	  double x = R*cos(2*3.1415*angle/360);
-    double y = R*sin(2*3.1415*angle/360);
-    add_point(x,y);
-  }
-  close_path();
-
-  start_path();
-  for(float angle=0; angle<360; angle += 360.0/fn) {
-	  double x = R*cos(2*3.1415*angle/360);
-    double y = R*sin(2*3.1415*angle/360);
-    add_point(31+x,y);
-  }
-  close_path();
-
 	dxf_tesselate(p, *dxfdata, 0, true, false, 0);
 	dxf_border_to_ps(p, *dxfdata);
   return p;
+*/
+  return NULL;
 }
 
