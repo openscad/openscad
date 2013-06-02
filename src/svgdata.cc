@@ -384,11 +384,95 @@ void SVGData::parse_path_description(Glib::ustring description){
   }
 }
 
+#define NUMBER_REGEX "-?[0-9]+(\\.[0-9]+)?(e-?[0-9]+)?"
 TransformMatrix SVGData::parse_transform(std::string transform){
+  std::cout << "Parsing SVG 'transform' atrtibute = '" << transform << "'" << std::endl;
+
   TransformMatrix tm;
   tm.setIdentity();
 
-//TODO: implement-me!
+  boost::regex matrix_regex("\\s*matrix\\(\\s*(" NUMBER_REGEX ")\\s*,\\s*(" NUMBER_REGEX ")\\s*,\\s*(" NUMBER_REGEX ")\\s*,\\s*(" NUMBER_REGEX ")\\s*,\\s*(" NUMBER_REGEX ")\\s*,\\s*(" NUMBER_REGEX ")\\s*\\)");
+
+  boost::regex translate_regex("\\s*translate\\(\\s*(" NUMBER_REGEX ")\\s*,\\s*(" NUMBER_REGEX ")?\\s*\\)");
+
+  boost::regex scale_regex("\\s*scale\\(\\s*(" NUMBER_REGEX ")\\s*,\\s*(" NUMBER_REGEX ")?\\s*\\)");
+
+  boost::regex rotate_regex("\\s*rotate\\(\\s*(" NUMBER_REGEX ")\\s*,\\s*((" NUMBER_REGEX ")\\s*,\\s*(" NUMBER_REGEX "))?\\s*\\)");
+
+  boost::regex skewX_regex("\\s*skewX\\(\\s*(" NUMBER_REGEX ")\\s*\\)");
+
+  boost::regex skewY_regex("\\s*skewY\\(\\s*(" NUMBER_REGEX ")\\s*\\)");
+
+  boost::match_results<std::string::const_iterator> result;
+
+  std::string::const_iterator start, end;
+  start = transform.begin();
+  end = transform.end();
+
+  bool continue_parsing = true;
+  while(continue_parsing){
+    continue_parsing = false;
+
+    if (boost::regex_search(start, end, result, matrix_regex)){
+      float a = atof(((std::string) result[1]).c_str());
+      float b = atof(((std::string) result[4]).c_str());
+      float c = atof(((std::string) result[7]).c_str());
+      float d = atof(((std::string) result[10]).c_str());
+      float e = atof(((std::string) result[13]).c_str());
+      float f = atof(((std::string) result[16]).c_str());
+      TransformMatrix transform_matrix(a, b, c, d, e, f);
+      std::cout << "found a matrix transform!" << std::endl;
+      tm = tm * transform_matrix;
+      start = result[0].second;
+      continue_parsing = true;
+    }
+
+    if (boost::regex_search(start, end, result, translate_regex)){
+      float tx = atof(((std::string) result[1]).c_str());
+      float ty = atof(((std::string) result[4]).c_str());
+      std::cout << "found a translate transform!" << std::endl;
+      tm.translate(tx, ty);
+      start = result[0].second;
+      continue_parsing = true;
+    }
+
+    if (boost::regex_search(start, end, result, scale_regex)){
+      float sx = atof(((std::string) result[1]).c_str());
+      float sy = atof(((std::string) result[4]).c_str());
+      std::cout << "found a scale transform!" << std::endl;
+      tm.scale(sx, sy);
+      start = result[0].second;
+      continue_parsing = true;
+    }
+
+    if (boost::regex_search(start, end, result, rotate_regex)){
+      float angle = atof(((std::string) result[1]).c_str());
+      float cx = atof(((std::string) result[5]).c_str());
+      float cy = atof(((std::string) result[8]).c_str());
+      std::cout << "found a rotate transform!" << std::endl;
+      tm.rotate(angle, cx, cy);
+      start = result[0].second;
+      continue_parsing = true;
+    }
+
+    if (boost::regex_search(start, end, result, skewX_regex)){
+      float angle = atof(((std::string) result[1]).c_str());
+      std::cout << "found a skewX transform!" << std::endl;
+      tm.skewX(angle);
+      start = result[0].second;
+      continue_parsing = true;
+    }
+
+    if (boost::regex_search(start, end, result, skewY_regex)){
+      float angle = atof(((std::string) result[1]).c_str());
+      std::cout << "found a skewY transform!" << std::endl;
+      tm.skewY(angle);
+      start = result[0].second;
+      continue_parsing = true;
+    }
+
+  }
+
   return tm;
 }
 
