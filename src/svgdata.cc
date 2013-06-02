@@ -380,13 +380,25 @@ void SVGData::parse_path_description(Glib::ustring description){
   }
 }
 
-void SVGData::traverse_subtree(const xmlpp::Node* node){
-  Glib::ustring nodename = node->get_name();
-  if (nodename == "g"){
-    std::cout << "found a group!" << std::endl;
+TransformMatrix SVGData::parse_transform(std::string transform){
+  TransformMatrix tm;
+//TODO: implement-me!
+  return tm;
+}
 
-    if(const xmlpp::Element* nodeElement = dynamic_cast<const xmlpp::Element*>(node)){
-      const xmlpp::Attribute* id = nodeElement->get_attribute("id");
+void SVGData::traverse_subtree(TransformMatrix parent_matrix, const xmlpp::Node* node){
+  TransformMatrix ctm = parent_matrix;
+  Glib::ustring nodename = node->get_name();
+
+  if(const xmlpp::Element* nodeElement = dynamic_cast<const xmlpp::Element*>(node)){
+    const xmlpp::Attribute* id = nodeElement->get_attribute("id");
+    const xmlpp::Attribute* transform = nodeElement->get_attribute("transform");
+
+    if (transform)
+      ctm = parent_matrix * parse_transform(transform->get_value());
+
+    if (nodename == "g"){
+      std::cout << "found a group!" << std::endl;
       if(id){
         std::cout << "id=" << id->get_value() << std::endl;      
       }
@@ -407,7 +419,7 @@ void SVGData::traverse_subtree(const xmlpp::Node* node){
 
   xmlpp::Node::NodeList children = node->get_children();
   for (xmlpp::Node::NodeList::iterator it = children.begin(); it != children.end(); ++it){
-    traverse_subtree(*it);
+    traverse_subtree(ctm, *it);
   }
 }
 
@@ -416,7 +428,8 @@ PolySet* SVGData::convertToPolyset(){
     return NULL;
 
   const xmlpp::Node* pNode = parser->get_document()->get_root_node();
-  traverse_subtree(pNode);
+  TransformMatrix ctm;
+  traverse_subtree(ctm, pNode);
 
 	p->is2d = true;
 	dxf_tesselate(p, *dxfdata, 0, true, false, 0);
