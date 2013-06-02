@@ -92,7 +92,7 @@ void SVGData::close_path(){
 }
 
 std::vector<float> SVGData::get_params(std::string str){
-  std::string pattern = "\\s*(-?[0-9]+(\\.[0-9]+)?),(-?[0-9]+(\\.[0-9]+)?)";
+  std::string pattern = "\\s*(-?[0-9]+(\\.[0-9]+)?(e-?[0-9]+)?),(-?[0-9]+(\\.[0-9]+)?(e-?[0-9]+)?)";
   boost::regex regexPattern(pattern);
   boost::match_results<std::string::const_iterator> result;
 
@@ -108,11 +108,11 @@ std::vector<float> SVGData::get_params(std::string str){
     values.push_back(value);
     std::cout << "value1=" << value << std::endl;
 
-    value = atof(((std::string) result[3]).c_str());
+    value = atof(((std::string) result[4]).c_str());
     values.push_back(value);
     std::cout << "value2=" << value << std::endl;
 
-    start = result[3].second;
+    start = result[4].second;
   }
 
   return values;
@@ -135,7 +135,7 @@ void SVGData::render_curve_to(float x0, float y0, float x1, float y1, float x2, 
 
 void SVGData::parse_path_description(Glib::ustring description){
   std::string d = (std::string) description;
-  std::string pattern = "([a-zA-Z][^a-zA-Z]*)";
+  std::string pattern = "([a-zA-Z][^a-df-zA-Z]*)"; //we skip 'e' because it is used in scientific notation (i.e. "10e-6")
   boost::regex regexPattern(pattern);
   boost::match_results<std::string::const_iterator> result;
 
