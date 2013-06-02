@@ -124,11 +124,12 @@ void SVGData::render_line_to(float x0, float y0, float x1, float y1){
 }
 
 void SVGData::render_curve_to(float x0, float y0, float x1, float y1, float x2, float y2, float x3, float y3){
-//This is wrong! Implement-me correctly:
-  add_point(x0,y0);
-  add_point(x1,y1);
-  add_point(x2,y2);
-  add_point(x3,y3);
+  //TODO: This only deals with $fn. Add some logic to support $fa and $fs
+  for (int i=0; i<=fn; i++){
+    double t = i/fn;
+    add_point((1-t)*(1-t)*(1-t)*x0 + 3*(1-t)*(1-t)*x1*t + 3*(1-t)*x2*t*t + x3*t*t*t,
+              (1-t)*(1-t)*(1-t)*y0 + 3*(1-t)*(1-t)*y1*t + 3*(1-t)*y2*t*t + y3*t*t*t);
+  }
 }
 
 void SVGData::parse_path_description(Glib::ustring description){
