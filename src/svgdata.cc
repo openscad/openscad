@@ -160,7 +160,7 @@ void SVGData::render_elliptical_arc(float x0, float y0, float rx, float ry, floa
 
 void SVGData::parse_path_description(Glib::ustring description){
   std::string d = (std::string) description;
-  std::string pattern = "([mMzZlLhHvVcCsSqQtTaA][^mMzZlLhHvVcCsSqQtTaA]*)";
+  std::string pattern = "(([mMzZlLhHvVcCsSqQtTaA])([^mMzZlLhHvVcCsSqQtTaA]*))";
   boost::regex regexPattern(pattern);
   boost::match_results<std::string::const_iterator> result;
 
@@ -170,10 +170,12 @@ void SVGData::parse_path_description(Glib::ustring description){
 
   float x=0, y=0;
   while(boost::regex_search(start, end, result, regexPattern)){
-    //std::cout << "result: " << std::endl << result[1] << std::endl << std::endl;
-    const char* substring = ((std::string) result[1]).c_str();
-    char instruction_code = substring[0];
-    std::vector<float> params = get_params(&substring[1]);
+//    std::cout << "result: " << std::endl << result[1] << std::endl << std::endl;
+
+    char instruction_code = ((std::string) result[2]).c_str()[0];
+    std::vector<float> params = get_params(((std::string) result[3]).c_str());
+
+//    std::cout << "instruction_code=" << instruction_code << std::endl;
 
     int idx=0;
     switch (instruction_code){
