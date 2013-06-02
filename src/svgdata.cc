@@ -61,13 +61,17 @@ SVGData::~SVGData(){
     free(parser);
 }
 
-void SVGData::add_point(double x, double y){
+void SVGData::add_point(float x, float y){
+  ctm.applyTransform(&x, &y);
+  double px = (double) x;
+  double py = (double) y;
+
   int this_point = -1;
   if (grid->has(x, y)) {
-	  this_point = grid->align(x, y);
+	  this_point = grid->align(px, py);
   } else {
-	  this_point = grid->align(x, y) = dxfdata->points.size();
-	  dxfdata->points.push_back(Vector2d(x, y));
+	  this_point = grid->align(px, py) = dxfdata->points.size();
+	  dxfdata->points.push_back(Vector2d(px, py));
   }
   if (first_point < 0) {
 	  dxfdata->paths.push_back(DxfData::Path());
@@ -110,11 +114,11 @@ std::vector<float> SVGData::get_params(std::string str){
   while(boost::regex_search(start, end, result, regexPattern)){
     value = atof(((std::string) result[1]).c_str());
     values.push_back(value);
-    std::cout << "value1=" << value << std::endl;
+//    std::cout << "value1=" << value << std::endl;
 
     value = atof(((std::string) result[4]).c_str());
     values.push_back(value);
-    std::cout << "value2=" << value << std::endl;
+//    std::cout << "value2=" << value << std::endl;
 
     start = result[4].second;
   }
@@ -123,7 +127,7 @@ std::vector<float> SVGData::get_params(std::string str){
 }
 
 void SVGData::render_line_to(float x0, float y0, float x1, float y1){
-  std::cout << "render line: x0:" << x0 << " y0:" << y0 << " x1:" << x1 << " y1:" << y1 << std::endl;
+//  std::cout << "render line: x0:" << x0 << " y0:" << y0 << " x1:" << x1 << " y1:" << y1 << std::endl;
   add_point(x0,y0);
   add_point(x1,y1);
 }
@@ -166,7 +170,7 @@ void SVGData::parse_path_description(Glib::ustring description){
 
   float x=0, y=0;
   while(boost::regex_search(start, end, result, regexPattern)){
-    std::cout << "result: " << std::endl << result[1] << std::endl << std::endl;
+    //std::cout << "result: " << std::endl << result[1] << std::endl << std::endl;
     const char* substring = ((std::string) result[1]).c_str();
     char instruction_code = substring[0];
     std::vector<float> params = get_params(&substring[1]);
@@ -382,12 +386,15 @@ void SVGData::parse_path_description(Glib::ustring description){
 
 TransformMatrix SVGData::parse_transform(std::string transform){
   TransformMatrix tm;
+  tm.setIdentity();
+
 //TODO: implement-me!
   return tm;
 }
 
 void SVGData::traverse_subtree(TransformMatrix parent_matrix, const xmlpp::Node* node){
-  TransformMatrix ctm = parent_matrix;
+  TransformMatrix tm = parent_matrix;
+
   Glib::ustring nodename = node->get_name();
 
   if(const xmlpp::Element* nodeElement = dynamic_cast<const xmlpp::Element*>(node)){
@@ -395,7 +402,7 @@ void SVGData::traverse_subtree(TransformMatrix parent_matrix, const xmlpp::Node*
     const xmlpp::Attribute* transform = nodeElement->get_attribute("transform");
 
     if (transform)
-      ctm = parent_matrix * parse_transform(transform->get_value());
+      tm = parent_matrix * parse_transform(transform->get_value());
 
     if (nodename == "g"){
       std::cout << "found a group!" << std::endl;
@@ -405,7 +412,9 @@ void SVGData::traverse_subtree(TransformMatrix parent_matrix, const xmlpp::Node*
     }
   }
 
-  if (nodename== "path"){
+  setCurrentTransformMatrix(tm);
+
+  if (nodename == "path"){
     if(const xmlpp::Element* nodeElement = dynamic_cast<const xmlpp::Element*>(node)){
       const xmlpp::Attribute* d = nodeElement->get_attribute("d");
       if(d){
@@ -419,7 +428,7 @@ void SVGData::traverse_subtree(TransformMatrix parent_matrix, const xmlpp::Node*
 
   xmlpp::Node::NodeList children = node->get_children();
   for (xmlpp::Node::NodeList::iterator it = children.begin(); it != children.end(); ++it){
-    traverse_subtree(ctm, *it);
+    traverse_subtree(tm, *it);
   }
 }
 
@@ -428,8 +437,9 @@ PolySet* SVGData::convertToPolyset(){
     return NULL;
 
   const xmlpp::Node* pNode = parser->get_document()->get_root_node();
-  TransformMatrix ctm;
-  traverse_subtree(ctm, pNode);
+  TransformMatrix tm;
+  tm.setIdentity();
+  traverse_subtree(tm, pNode);
 
 	p->is2d = true;
 	dxf_tesselate(p, *dxfdata, 0, true, false, 0);

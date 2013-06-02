@@ -9,18 +9,42 @@
 
 class TransformMatrix {
 public:
-  TransformMatrix() : a(1), b(0), c(0), d(1), e(0), f(0) {}; //initialize with identity matrix;
+  TransformMatrix(){
+    setIdentity();
+  };
+
+  void setIdentity(){
+    //initialize values with identity matrix;
+    // [a c e]   [1 0 0]
+    // [b d f] = [0 1 0]
+    // [0 0 1]   [0 0 1]
+    a=1;
+    b=0;
+    c=0;
+    d=1;
+    e=0;
+    f=0;
+  };
+
   TransformMatrix(float a, float b, float c, float d, float e, float f) : a(a), b(b), c(c), d(d), e(e), f(f) {};
 
   TransformMatrix operator*(const TransformMatrix & tm) const {
     TransformMatrix result;
     result.a = a * tm.a + c * tm.b;
-    result.b = a * tm.c + c * tm.d;
-    result.c = a * tm.e + c * tm.f + e;
-    result.d = b * tm.a + d * tm.b;
-    result.e = b * tm.c + d * tm.d;
+    result.b = b * tm.a + d * tm.b;
+    result.c = a * tm.c + c * tm.d;
+    result.d = b * tm.c + d * tm.d;
+    result.e = a * tm.e + c * tm.f + e;
     result.f = b * tm.e + d * tm.f + f;
     return result;
+  }
+
+  void applyTransform(float *x, float *y){
+    float tmpx = *x;
+    float tmpy = *y;
+
+    *x = a*tmpx + c*tmpy + e;
+    *y = b*tmpx + d*tmpy + f;
   }
 
   void translate(float tx, float ty){
@@ -66,7 +90,7 @@ public:
 private:
   void start_path();
   void close_path();
-  void add_point(double x, double y);
+  void add_point(float x, float y);
 
   void parse_path_description(Glib::ustring d);
   std::vector<float> get_params(std::string str);
@@ -76,6 +100,9 @@ private:
   void render_elliptical_arc(float x0, float y0, float rx, float ry, float x_axis_rotation, int large_arc_flag, int sweep_flag, float x, float y);
 
   TransformMatrix parse_transform(std::string transform);
+  void setCurrentTransformMatrix(TransformMatrix tm){
+    ctm = tm;
+  }
 
   std::string filename;
   xmlpp::DomParser* parser;
@@ -84,6 +111,7 @@ private:
   Grid2d<int>* grid;
   int first_point, last_point;
   double fn, fs, fa;
+  TransformMatrix ctm;
 };
 
 #endif
