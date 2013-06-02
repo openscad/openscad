@@ -119,6 +119,7 @@ std::vector<float> SVGData::get_params(std::string str){
 }
 
 void SVGData::render_line_to(float x0, float y0, float x1, float y1){
+  std::cout << "render line: x0:" << x0 << " y0:" << y0 << " x1:" << x1 << " y1:" << y1 << std::endl;
   add_point(x0,y0);
   add_point(x1,y1);
 }
@@ -154,9 +155,9 @@ void SVGData::parse_path_description(Glib::ustring description){
       case 'm':
         while (params.size() - idx >= 2){
           if (idx>0)
-            render_line_to(x, y, x+params[0], y+params[1]);
-          x += params[0];
-          y += params[1];
+            render_line_to(x, y, x+params[idx], y+params[idx+1]);
+          x += params[idx];
+          y += params[idx+1];
           std::cout << "m: x=" << x << " y=" << y << std::endl;
           idx+=2;
         }
@@ -164,27 +165,27 @@ void SVGData::parse_path_description(Glib::ustring description){
       case 'M':
         while (params.size() - idx >= 2){
           if (idx>0)
-            render_line_to(x, y, params[0], params[1]);
-          x = params[0];
-          y = params[1];
+            render_line_to(x, y, params[idx], params[idx+1]);
+          x = params[idx];
+          y = params[idx+1];
           std::cout << "M: x=" << x << " y=" << y << std::endl;
           idx+=2;
         }
         break;
       case 'l':
         while (params.size() - idx >= 2){
-          render_line_to(x, y, x+params[0], y+params[1]);
-          x += params[0];
-          y += params[1];
+          render_line_to(x, y, x+params[idx], y+params[idx+1]);
+          x += params[idx];
+          y += params[idx+1];
           std::cout << "l: x=" << x << " y=" << y << std::endl;
           idx+=2;
         }
         break;
       case 'L':
         while (params.size() - idx >= 2){
-          render_line_to(x, y, params[0], params[1]);
-          x = params[0];
-          y = params[1];
+          render_line_to(x, y, params[idx], params[idx+1]);
+          x = params[idx];
+          y = params[idx+1];
           std::cout << "L: x=" << x << " y=" << y << std::endl;
           idx+=2;
         }
@@ -200,9 +201,9 @@ void SVGData::parse_path_description(Glib::ustring description){
         break;
       case 'C':
         while (params.size() - idx >= 6){
-          render_curve_to(x, y, params[0], params[1], params[2], params[3], params[4], params[5]);
-          x = params[4];
-          y = params[5];
+          render_curve_to(x, y, params[idx], params[idx+1], params[idx+2], params[idx+3], params[idx+4], params[idx+5]);
+          x = params[idx+4];
+          y = params[idx+5];
           std::cout << "C: x=" << x << " y=" << y << std::endl;
           idx+=6;
         }
