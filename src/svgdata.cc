@@ -175,6 +175,13 @@ void SVGData::parse_path_description(Glib::ustring description){
     switch (instruction_code){
       case 'm':
         //"moveto" command - relative
+
+        //Since we're doing a move, we must close the path we may have drawn so far
+        close_path();
+
+        //And prepare to start drawing something else from our new starting point after the move command
+        start_path();
+
         while (params.size() - idx >= 2){
           if (idx>0)
             render_line_to(x, y, x+params[idx], y+params[idx+1]);
@@ -186,6 +193,13 @@ void SVGData::parse_path_description(Glib::ustring description){
         break;
       case 'M':
         //"moveto" command - absolute
+
+        //Since we're doing a move, we must close the path we may have drawn so far
+        close_path();
+
+        //And prepare to start drawing something else from our new starting point after the move command
+        start_path();
+
         while (params.size() - idx >= 2){
           if (idx>0)
             render_line_to(x, y, params[idx], params[idx+1]);
