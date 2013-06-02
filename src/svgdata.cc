@@ -112,7 +112,7 @@ std::vector<float> SVGData::get_params(std::string str){
     values.push_back(value);
     std::cout << "value2=" << value << std::endl;
 
-    start = result[2].second;
+    start = result[3].second;
   }
 
   return values;
