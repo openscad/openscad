@@ -22,7 +22,9 @@ private:
   void parse_path_description(Glib::ustring d);
   std::vector<float> get_params(std::string str);
   void render_line_to(float x0, float y0, float x1, float y1);
-  void render_curve_to(float x0, float y0, float x1, float y1, float x2, float y2, float x3, float y3);
+  void render_quadratic_curve_to(float x0, float y0, float x1, float y1, float x2, float y2);
+  void render_cubic_curve_to(float x0, float y0, float x1, float y1, float x2, float y2, float x3, float y3);
+  void render_elliptical_arc(float x0, float y0, float rx, float ry, float x_axis_rotation, int large_arc_flag, int sweep_flag, float x, float y);
 
   std::string filename;
   xmlpp::DomParser* parser;

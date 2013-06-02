@@ -91,6 +91,10 @@ void SVGData::close_path(){
   }
 }
 
+//TODO: implement another method specifically
+// for parsing the elliptical arc parameters
+// because their sintax is slightly different and would
+// probably make the generic regex get too much complicated.
 std::vector<float> SVGData::get_params(std::string str){
   std::string pattern = "\\s*(-?[0-9]+(\\.[0-9]+)?(e-?[0-9]+)?),(-?[0-9]+(\\.[0-9]+)?(e-?[0-9]+)?)";
   boost::regex regexPattern(pattern);
@@ -124,7 +128,16 @@ void SVGData::render_line_to(float x0, float y0, float x1, float y1){
   add_point(x1,y1);
 }
 
-void SVGData::render_curve_to(float x0, float y0, float x1, float y1, float x2, float y2, float x3, float y3){
+void SVGData::render_quadratic_curve_to(float x0, float y0, float x1, float y1, float x2, float y2){
+  //TODO: This only deals with $fn. Add some logic to support $fa and $fs
+  for (int i=0; i<=fn; i++){
+    double t = i/fn;
+    add_point((1-t)*(1-t)*x0 + 2*(1-t)*x1*t + x2*t*t,
+              (1-t)*(1-t)*y0 + 2*(1-t)*y1*t + y2*t*t);
+  }
+}
+
+void SVGData::render_cubic_curve_to(float x0, float y0, float x1, float y1, float x2, float y2, float x3, float y3){
   //TODO: This only deals with $fn. Add some logic to support $fa and $fs
   for (int i=0; i<=fn; i++){
     double t = i/fn;
@@ -133,9 +146,17 @@ void SVGData::render_curve_to(float x0, float y0, float x1, float y1, float x2, 
   }
 }
 
+void SVGData::render_elliptical_arc(float x0, float y0, float rx, float ry, float x_axis_rotation, int large_arc_flag, int sweep_flag, float x, float y){
+  //TODO: This only deals with $fn. Add some logic to support $fa and $fs
+  for (int i=0; i<=fn; i++){
+    double t = i/fn;
+    //TODO: implement-me!
+  }
+}
+
 void SVGData::parse_path_description(Glib::ustring description){
   std::string d = (std::string) description;
-  std::string pattern = "([a-zA-Z][^a-df-zA-Z]*)"; //we skip 'e' because it is used in scientific notation (i.e. "10e-6")
+  std::string pattern = "([mMzZlLhHvVcCsSqQtTaA][^mMzZlLhHvVcCsSqQtTaA]*)";
   boost::regex regexPattern(pattern);
   boost::match_results<std::string::const_iterator> result;
 
@@ -153,6 +174,7 @@ void SVGData::parse_path_description(Glib::ustring description){
     int idx=0;
     switch (instruction_code){
       case 'm':
+        //"moveto" command - relative
         while (params.size() - idx >= 2){
           if (idx>0)
             render_line_to(x, y, x+params[idx], y+params[idx+1]);
@@ -163,6 +185,7 @@ void SVGData::parse_path_description(Glib::ustring description){
         }
         break;
       case 'M':
+        //"moveto" command - absolute
         while (params.size() - idx >= 2){
           if (idx>0)
             render_line_to(x, y, params[idx], params[idx+1]);
@@ -172,7 +195,13 @@ void SVGData::parse_path_description(Glib::ustring description){
           idx+=2;
         }
         break;
+      case 'z':
+      case 'Z':
+        //"closepath" command
+        //do nothing?
+        break;
       case 'l':
+        //"lineto" command - relative
         while (params.size() - idx >= 2){
           render_line_to(x, y, x+params[idx], y+params[idx+1]);
           x += params[idx];
@@ -182,6 +211,7 @@ void SVGData::parse_path_description(Glib::ustring description){
         }
         break;
       case 'L':
+        //"lineto" command - absolute
         while (params.size() - idx >= 2){
           render_line_to(x, y, params[idx], params[idx+1]);
           x = params[idx];
@@ -190,9 +220,46 @@ void SVGData::parse_path_description(Glib::ustring description){
           idx+=2;
         }
         break;
+      case 'h':
+        //horizontal "lineto" command - relative
+        while (params.size() - idx >= 1){
+          render_line_to(x, y, x+params[idx], y);
+          x += params[idx];
+          std::cout << "h: x=" << x << " y=" << y << std::endl;
+          idx++;
+        }
+        break;
+      case 'H':
+        //horizontal "lineto" command - absolute
+        while (params.size() - idx >= 1){
+          render_line_to(x, y, params[idx], y);
+          x = params[idx];
+          std::cout << "H: x=" << x << " y=" << y << std::endl;
+          idx++;
+        }
+        break;
+      case 'v':
+        //vertical "lineto" command - relative
+        while (params.size() - idx >= 1){
+          render_line_to(x, y, x, y+params[idx]);
+          y += params[idx];
+          std::cout << "v: x=" << x << " y=" << y << std::endl;
+          idx++;
+        }
+        break;
+      case 'V':
+        //vertical "lineto" command - absolute
+        while (params.size() - idx >= 1){
+          render_line_to(x, y, x, params[idx]);
+          y = params[idx];
+          std::cout << "V: x=" << x << " y=" << y << std::endl;
+          idx++;
+        }
+        break;
       case 'c':
+        //"curveto" cubic Bézier command - relative
         while (params.size() - idx >= 6){
-          render_curve_to(x, y, x+params[idx], y+params[idx+1], x+params[idx+2], y+params[idx+3], x+params[idx+4], y+params[idx+5]);
+          render_cubic_curve_to(x, y, x+params[idx], y+params[idx+1], x+params[idx+2], y+params[idx+3], x+params[idx+4], y+params[idx+5]);
           x += params[idx+4];
           y += params[idx+5];
           std::cout << "c: x=" << x << " y=" << y << std::endl;
@@ -200,12 +267,97 @@ void SVGData::parse_path_description(Glib::ustring description){
         }
         break;
       case 'C':
+        //"curveto" cubic Bézier command - absolute
         while (params.size() - idx >= 6){
-          render_curve_to(x, y, params[idx], params[idx+1], params[idx+2], params[idx+3], params[idx+4], params[idx+5]);
+          render_cubic_curve_to(x, y, params[idx], params[idx+1], params[idx+2], params[idx+3], params[idx+4], params[idx+5]);
           x = params[idx+4];
           y = params[idx+5];
           std::cout << "C: x=" << x << " y=" << y << std::endl;
           idx+=6;
+        }
+        break;
+      case 's':
+        //"shorthand/smooth curveto" cubic Bézier command - relative
+        while (params.size() - idx >= 4){
+          //this is wrong! TODO: implement reflection of previous control point as described in the SVG spec.
+          render_cubic_curve_to(x, y, x, y, x+params[idx], y+params[idx+1], x+params[idx+2], y+params[idx+3]);
+          x += params[idx+2];
+          y += params[idx+3];
+          std::cout << "s: x=" << x << " y=" << y << std::endl;
+          idx+=4;
+        }
+        break;
+      case 'S':
+        //"shorthand/smooth curveto" cubic Bézier command - absolute
+        while (params.size() - idx >= 4){
+          //this is wrong! TODO: implement reflection of previous control point as described in the SVG spec.
+          render_cubic_curve_to(x, y, x, y, params[idx], params[idx+1], params[idx+2], params[idx+3]);
+          x = params[idx+2];
+          y = params[idx+3];
+          std::cout << "S: x=" << x << " y=" << y << std::endl;
+          idx+=4;
+        }
+        break;
+      case 'q':
+        //"curveto" quadratic Bézier command - relative
+        while (params.size() - idx >= 4){
+          render_quadratic_curve_to(x, y, x+params[idx], y+params[idx+1], x+params[idx+2], y+params[idx+3]);
+          x += params[idx+2];
+          y += params[idx+3];
+          std::cout << "q: x=" << x << " y=" << y << std::endl;
+          idx+=4;
+        }
+        break;
+      case 'Q':
+        //"curveto" quadratic Bézier command - absolute
+        while (params.size() - idx >= 4){
+          render_quadratic_curve_to(x, y, params[idx], params[idx+1], params[idx+2], params[idx+3]);
+          x = params[idx+2];
+          y = params[idx+3];
+          std::cout << "Q: x=" << x << " y=" << y << std::endl;
+          idx+=4;
+        }
+        break;
+      case 't':
+        //"shorthand/smooth curveto" quadratic Bézier command - relative
+        while (params.size() - idx >= 2){
+          //this is wrong! TODO: implement reflection of previous control point as described in the SVG spec.
+          render_quadratic_curve_to(x, y, x, y, x+params[idx], y+params[idx+1]);
+          x += params[idx];
+          y += params[idx+1];
+          std::cout << "t: x=" << x << " y=" << y << std::endl;
+          idx+=2;
+        }
+        break;
+      case 'T':
+        //"shorthand/smooth curveto" quadratic Bézier command - absolute
+        while (params.size() - idx >= 2){
+          //this is wrong! TODO: implement reflection of previous control point as described in the SVG spec.
+          render_quadratic_curve_to(x, y, x, y, params[idx], params[idx+1]);
+          x = params[idx];
+          y = params[idx+1];
+          std::cout << "T: x=" << x << " y=" << y << std::endl;
+          idx+=2;
+        }
+        break;
+      case 'a':
+        //"elliptical arc" command - relative
+        while (params.size() - idx >= 7){
+          render_elliptical_arc(x, y, params[idx], params[idx+1], params[idx+2], params[idx+3], params[idx+4], x+params[idx+5], y+params[idx+6]);
+          x += params[idx+5];
+          y += params[idx+6];
+          std::cout << "a: x=" << x << " y=" << y << std::endl;
+          idx+=7;
+        }
+        break;
+      case 'A':
+        //"elliptical arc" command - absolute
+        while (params.size() - idx >= 7){
+          render_elliptical_arc(x, y, params[idx], params[idx+1], params[idx+2], params[idx+3], params[idx+4], params[idx+5], params[idx+6]);
+          x = params[idx+5];
+          y = params[idx+6];
+          std::cout << "A: x=" << x << " y=" << y << std::endl;
+          idx+=7;
         }
         break;
     }
