@@ -193,7 +193,7 @@ void SVGData::parse_path_description(Glib::ustring description){
             render_line_to(x, y, x+params[idx], y+params[idx+1]);
           x += params[idx];
           y += params[idx+1];
-          std::cout << "m: x=" << x << " y=" << y << std::endl;
+          //std::cout << "m: x=" << x << " y=" << y << std::endl;
           idx+=2;
         }
         break;
@@ -226,7 +226,7 @@ void SVGData::parse_path_description(Glib::ustring description){
           render_line_to(x, y, x+params[idx], y+params[idx+1]);
           x += params[idx];
           y += params[idx+1];
-          std::cout << "l: x=" << x << " y=" << y << std::endl;
+          //std::cout << "l: x=" << x << " y=" << y << std::endl;
           idx+=2;
         }
         break;
@@ -236,7 +236,7 @@ void SVGData::parse_path_description(Glib::ustring description){
           render_line_to(x, y, params[idx], params[idx+1]);
           x = params[idx];
           y = params[idx+1];
-          std::cout << "L: x=" << x << " y=" << y << std::endl;
+          //std::cout << "L: x=" << x << " y=" << y << std::endl;
           idx+=2;
         }
         break;
@@ -245,7 +245,7 @@ void SVGData::parse_path_description(Glib::ustring description){
         while (params.size() - idx >= 1){
           render_line_to(x, y, x+params[idx], y);
           x += params[idx];
-          std::cout << "h: x=" << x << " y=" << y << std::endl;
+          //std::cout << "h: x=" << x << " y=" << y << std::endl;
           idx++;
         }
         break;
@@ -254,7 +254,7 @@ void SVGData::parse_path_description(Glib::ustring description){
         while (params.size() - idx >= 1){
           render_line_to(x, y, params[idx], y);
           x = params[idx];
-          std::cout << "H: x=" << x << " y=" << y << std::endl;
+          //std::cout << "H: x=" << x << " y=" << y << std::endl;
           idx++;
         }
         break;
@@ -263,7 +263,7 @@ void SVGData::parse_path_description(Glib::ustring description){
         while (params.size() - idx >= 1){
           render_line_to(x, y, x, y+params[idx]);
           y += params[idx];
-          std::cout << "v: x=" << x << " y=" << y << std::endl;
+          //std::cout << "v: x=" << x << " y=" << y << std::endl;
           idx++;
         }
         break;
@@ -272,7 +272,7 @@ void SVGData::parse_path_description(Glib::ustring description){
         while (params.size() - idx >= 1){
           render_line_to(x, y, x, params[idx]);
           y = params[idx];
-          std::cout << "V: x=" << x << " y=" << y << std::endl;
+          //std::cout << "V: x=" << x << " y=" << y << std::endl;
           idx++;
         }
         break;
@@ -282,7 +282,7 @@ void SVGData::parse_path_description(Glib::ustring description){
           render_cubic_curve_to(x, y, x+params[idx], y+params[idx+1], x+params[idx+2], y+params[idx+3], x+params[idx+4], y+params[idx+5]);
           x += params[idx+4];
           y += params[idx+5];
-          std::cout << "c: x=" << x << " y=" << y << std::endl;
+          //std::cout << "c: x=" << x << " y=" << y << std::endl;
           idx+=6;
         }
         break;
@@ -292,7 +292,7 @@ void SVGData::parse_path_description(Glib::ustring description){
           render_cubic_curve_to(x, y, params[idx], params[idx+1], params[idx+2], params[idx+3], params[idx+4], params[idx+5]);
           x = params[idx+4];
           y = params[idx+5];
-          std::cout << "C: x=" << x << " y=" << y << std::endl;
+          //std::cout << "C: x=" << x << " y=" << y << std::endl;
           idx+=6;
         }
         break;
@@ -303,7 +303,7 @@ void SVGData::parse_path_description(Glib::ustring description){
           render_cubic_curve_to(x, y, x, y, x+params[idx], y+params[idx+1], x+params[idx+2], y+params[idx+3]);
           x += params[idx+2];
           y += params[idx+3];
-          std::cout << "s: x=" << x << " y=" << y << std::endl;
+          //std::cout << "s: x=" << x << " y=" << y << std::endl;
           idx+=4;
         }
         break;
@@ -314,7 +314,7 @@ void SVGData::parse_path_description(Glib::ustring description){
           render_cubic_curve_to(x, y, x, y, params[idx], params[idx+1], params[idx+2], params[idx+3]);
           x = params[idx+2];
           y = params[idx+3];
-          std::cout << "S: x=" << x << " y=" << y << std::endl;
+          //std::cout << "S: x=" << x << " y=" << y << std::endl;
           idx+=4;
         }
         break;
@@ -324,7 +324,7 @@ void SVGData::parse_path_description(Glib::ustring description){
           render_quadratic_curve_to(x, y, x+params[idx], y+params[idx+1], x+params[idx+2], y+params[idx+3]);
           x += params[idx+2];
           y += params[idx+3];
-          std::cout << "q: x=" << x << " y=" << y << std::endl;
+          //std::cout << "q: x=" << x << " y=" << y << std::endl;
           idx+=4;
         }
         break;
@@ -334,7 +334,7 @@ void SVGData::parse_path_description(Glib::ustring description){
           render_quadratic_curve_to(x, y, params[idx], params[idx+1], params[idx+2], params[idx+3]);
           x = params[idx+2];
           y = params[idx+3];
-          std::cout << "Q: x=" << x << " y=" << y << std::endl;
+          //std::cout << "Q: x=" << x << " y=" << y << std::endl;
           idx+=4;
         }
         break;
@@ -345,7 +345,7 @@ void SVGData::parse_path_description(Glib::ustring description){
           render_quadratic_curve_to(x, y, x, y, x+params[idx], y+params[idx+1]);
           x += params[idx];
           y += params[idx+1];
-          std::cout << "t: x=" << x << " y=" << y << std::endl;
+          //std::cout << "t: x=" << x << " y=" << y << std::endl;
           idx+=2;
         }
         break;
@@ -356,7 +356,7 @@ void SVGData::parse_path_description(Glib::ustring description){
           render_quadratic_curve_to(x, y, x, y, params[idx], params[idx+1]);
           x = params[idx];
           y = params[idx+1];
-          std::cout << "T: x=" << x << " y=" << y << std::endl;
+          //std::cout << "T: x=" << x << " y=" << y << std::endl;
           idx+=2;
         }
         break;
@@ -366,7 +366,7 @@ void SVGData::parse_path_description(Glib::ustring description){
           render_elliptical_arc(x, y, params[idx], params[idx+1], params[idx+2], params[idx+3], params[idx+4], x+params[idx+5], y+params[idx+6]);
           x += params[idx+5];
           y += params[idx+6];
-          std::cout << "a: x=" << x << " y=" << y << std::endl;
+          //std::cout << "a: x=" << x << " y=" << y << std::endl;
           idx+=7;
         }
         break;
@@ -376,7 +376,7 @@ void SVGData::parse_path_description(Glib::ustring description){
           render_elliptical_arc(x, y, params[idx], params[idx+1], params[idx+2], params[idx+3], params[idx+4], params[idx+5], params[idx+6]);
           x = params[idx+5];
           y = params[idx+6];
-          std::cout << "A: x=" << x << " y=" << y << std::endl;
+          //std::cout << "A: x=" << x << " y=" << y << std::endl;
           idx+=7;
         }
         break;
@@ -388,7 +388,7 @@ void SVGData::parse_path_description(Glib::ustring description){
 
 #define NUMBER_REGEX "-?[0-9]+(\\.[0-9]+)?(e-?[0-9]+)?"
 TransformMatrix SVGData::parse_transform(std::string transform){
-  std::cout << "Parsing SVG 'transform' atrtibute = '" << transform << "'" << std::endl;
+//  std::cout << "Parsing SVG 'transform' atrtibute = '" << transform << "'" << std::endl;
 
   TransformMatrix tm;
   tm.setIdentity();
@@ -423,7 +423,7 @@ TransformMatrix SVGData::parse_transform(std::string transform){
       float e = atof(((std::string) result[13]).c_str());
       float f = atof(((std::string) result[16]).c_str());
       TransformMatrix transform_matrix(a, b, c, d, e, f);
-      std::cout << "found a matrix transform!" << std::endl;
+      //std::cout << "found a matrix transform!" << std::endl;
       tm = tm * transform_matrix;
       start = result[0].second;
       continue_parsing = true;
@@ -432,7 +432,7 @@ TransformMatrix SVGData::parse_transform(std::string transform){
     if (boost::regex_search(start, end, result, translate_regex)){
       float tx = atof(((std::string) result[1]).c_str());
       float ty = atof(((std::string) result[4]).c_str());
-      std::cout << "found a translate transform!" << std::endl;
+      //std::cout << "found a translate transform!" << std::endl;
       tm.translate(tx, ty);
       start = result[0].second;
       continue_parsing = true;
@@ -441,7 +441,7 @@ TransformMatrix SVGData::parse_transform(std::string transform){
     if (boost::regex_search(start, end, result, scale_regex)){
       float sx = atof(((std::string) result[1]).c_str());
       float sy = atof(((std::string) result[4]).c_str());
-      std::cout << "found a scale transform!" << std::endl;
+      //std::cout << "found a scale transform!" << std::endl;
       tm.scale(sx, sy);
       start = result[0].second;
       continue_parsing = true;
@@ -451,7 +451,7 @@ TransformMatrix SVGData::parse_transform(std::string transform){
       float angle = atof(((std::string) result[1]).c_str());
       float cx = atof(((std::string) result[5]).c_str());
       float cy = atof(((std::string) result[8]).c_str());
-      std::cout << "found a rotate transform!" << std::endl;
+      //std::cout << "found a rotate transform!" << std::endl;
       tm.rotate(angle, cx, cy);
       start = result[0].second;
       continue_parsing = true;
@@ -459,7 +459,7 @@ TransformMatrix SVGData::parse_transform(std::string transform){
 
     if (boost::regex_search(start, end, result, skewX_regex)){
       float angle = atof(((std::string) result[1]).c_str());
-      std::cout << "found a skewX transform!" << std::endl;
+      //std::cout << "found a skewX transform!" << std::endl;
       tm.skewX(angle);
       start = result[0].second;
       continue_parsing = true;
@@ -467,7 +467,7 @@ TransformMatrix SVGData::parse_transform(std::string transform){
 
     if (boost::regex_search(start, end, result, skewY_regex)){
       float angle = atof(((std::string) result[1]).c_str());
-      std::cout << "found a skewY transform!" << std::endl;
+      //std::cout << "found a skewY transform!" << std::endl;
       tm.skewY(angle);
       start = result[0].second;
       continue_parsing = true;
