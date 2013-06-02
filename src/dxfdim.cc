@@ -160,9 +160,16 @@ Value builtin_dxf_cross(const Context *ctx, const EvalContext *evalctx)
 	}
 
 	std::stringstream keystream;
+	fs::path filepath(filename);
+	uintmax_t filesize = -1;
+	time_t lastwritetime = -1;
+	if (fs::exists(filepath) && fs::is_regular_file(filepath)) {
+		filesize = fs::file_size(filepath);
+		lastwritetime = fs::last_write_time(filepath);
+	}
 	keystream << filename << "|" << layername << "|" << xorigin << "|" << yorigin
-						<< "|" << scale << "|" << fs::last_write_time(filename)
-						<< "|" << fs::file_size(filename);
+						<< "|" << scale << "|" << lastwritetime
+						<< "|" << filesize;
 	std::string key = keystream.str();
 
 	if (dxf_cross_cache.find(key) != dxf_cross_cache.end())

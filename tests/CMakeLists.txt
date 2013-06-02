@@ -531,6 +531,12 @@ add_executable(dumptest dumptest.cc)
 target_link_libraries(dumptest tests-nocgal ${TESTS-NOCGAL-LIBRARIES})
 
 #
+# moduledumptest
+#
+add_executable(moduledumptest moduledumptest.cc)
+target_link_libraries(moduledumptest tests-nocgal ${TESTS-NOCGAL-LIBRARIES})
+
+#
 # modulecachetest
 #
 add_executable(modulecachetest modulecachetest.cc)
@@ -920,6 +926,10 @@ file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/CTestCustom.cmake ${TMP})
 
 add_cmdline_test(echotest SUFFIX txt FILES ${ECHO_FILES})
 add_cmdline_test(dumptest SUFFIX txt FILES ${DUMPTEST_FILES})
+add_cmdline_test(moduledumptest SUFFIX txt FILES
+                 ${CMAKE_SOURCE_DIR}/../testdata/scad/minimal/allmodules.scad
+                 ${CMAKE_SOURCE_DIR}/../testdata/scad/minimal/allfunctions.scad
+                 ${CMAKE_SOURCE_DIR}/../testdata/scad/minimal/allexpressions.scad)
 add_cmdline_test(csgtexttest SUFFIX txt FILES ${MINIMAL_FILES})
 add_cmdline_test(csgtermtest SUFFIX txt FILES ${MINIMAL_FILES})
 add_cmdline_test(cgalpngtest SUFFIX png FILES ${CGALPNGTEST_FILES})

@@ -8,7 +8,8 @@ echo();
 assign();
 for();
 intersection_for();
-if(false) { cube(); } else { sphere(); }
+if(false) cube();
+else sphere();
 union();
 difference();
 intersection();
@@ -37,3 +38,4 @@ mirror();
 translate();
 multmatrix();
 color();
+
