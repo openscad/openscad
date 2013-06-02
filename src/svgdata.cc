@@ -64,7 +64,7 @@ SVGData::~SVGData(){
 void SVGData::add_point(float x, float y){
   ctm.applyTransform(&x, &y);
   double px = (double) x;
-  double py = (double) y;
+  double py = (double) (document_height - y);
 
   int this_point = -1;
   if (grid->has(x, y)) {
@@ -497,6 +497,15 @@ void SVGData::traverse_subtree(TransformMatrix parent_matrix, const xmlpp::Node*
   }
 
   setCurrentTransformMatrix(tm);
+
+  if (nodename == "svg"){
+    if(const xmlpp::Element* nodeElement = dynamic_cast<const xmlpp::Element*>(node)){
+      const xmlpp::Attribute* height = nodeElement->get_attribute("height");
+      if(height){
+        document_height = atof(height->get_value().c_str());
+      }
+    }
+  }
 
   if (nodename == "path"){
     if(const xmlpp::Element* nodeElement = dynamic_cast<const xmlpp::Element*>(node)){

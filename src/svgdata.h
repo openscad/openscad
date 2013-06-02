@@ -109,6 +109,7 @@ private:
   DxfData *dxfdata;
   PolySet *p;
   Grid2d<int>* grid;
+  float document_height;
   int first_point, last_point;
   double fn, fs, fa;
   TransformMatrix ctm;
