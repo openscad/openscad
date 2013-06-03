@@ -30,5 +30,6 @@ Delete $INSTDIR\libraries\boxes.scad
 Delete $INSTDIR\libraries\shapes.scad
 RMDir $INSTDIR\libraries
 Delete $INSTDIR\openscad.exe
+Delete $INSTDIR\openscad.com
 RMDir $INSTDIR
 SectionEnd
