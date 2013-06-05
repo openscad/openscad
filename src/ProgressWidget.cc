@@ -5,7 +5,7 @@ ProgressWidget::ProgressWidget(QWidget *parent)
 	:QWidget(parent)
 {
 	setupUi(this);
-	setRange(0, 100);
+	setRange(0, 1000);
 	setValue(0);
 	this->wascanceled = false;
 	this->starttime.start();

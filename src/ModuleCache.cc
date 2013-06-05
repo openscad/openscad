@@ -30,34 +30,37 @@ ModuleCache *ModuleCache::inst = NULL;
 */
 FileModule *ModuleCache::evaluate(const std::string &filename)
 {
+	bool shouldCompile = true;
 	FileModule *lib_mod = NULL;
 
 	// Create cache ID
 	struct stat st;
 	memset(&st, 0, sizeof(struct stat));
-	stat(filename.c_str(), &st);
+	bool valid = (stat(filename.c_str(), &st) == 0);
+
+	// If file isn't there, just return and let the cache retain the old module
+	if (!valid) return NULL;
 
 	std::string cache_id = str(boost::format("%x.%x") % st.st_mtime % st.st_size);
 
 	// Lookup in cache
-	if (this->entries.find(filename) != this->entries.end() && 
-			this->entries[filename].cache_id == cache_id) {
-#ifdef DEBUG
-// Causes too much debug output
-//		PRINTB("Using cached library: %s (%s)", filename % cache_id);
-#endif
+	if (this->entries.find(filename) != this->entries.end()) {
 		lib_mod = &(*this->entries[filename].module);
-
-		BOOST_FOREACH(const FileModule::IncludeContainer::value_type &include, lib_mod->includes) {
-			if (lib_mod->include_modified(include.second)) {
+		if (this->entries[filename].cache_id == cache_id) {
+			shouldCompile = false;
+			
+			if (lib_mod->includesChanged()) {
 				lib_mod = NULL;
-				break;
+				shouldCompile = true;
 			}
 		}
 	}
+	else {
+		shouldCompile = valid;
+	}
 
 	// If cache lookup failed (non-existing or old timestamp), compile module
-	if (!lib_mod) {
+	if (shouldCompile) {
 #ifdef DEBUG
 		if (this->entries.find(filename) != this->entries.end()) {
 			PRINTB("Recompiling cached library: %s (%s)", filename % cache_id);

@@ -15,7 +15,7 @@ OSErr eventHandler(const AppleEvent *, AppleEvent *, SRefCon )
 		if (mainwin) break;
 	}
 	if (mainwin) {
-		mainwin->actionReloadCompile();
+		mainwin->actionReloadRenderCSG();
 	}
 	return noErr;
 }
