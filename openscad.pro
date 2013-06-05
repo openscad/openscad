@@ -222,6 +222,7 @@ HEADERS += src/typedefs.h \
            src/csgnode.h \
            src/linearextrudenode.h \
            src/rotateextrudenode.h \
+           src/loopextrudenode.h \
            src/projectionnode.h \
            src/cgaladvnode.h \
            src/importnode.h \
@@ -287,6 +288,7 @@ SOURCES += src/version_check.cc \
            src/transform.cc \
            src/color.cc \
            src/primitives.cc \
+           src/loop.cc \
            src/projection.cc \
            src/cgaladv.cc \
            src/surface.cc \
@@ -296,6 +298,7 @@ SOURCES += src/version_check.cc \
            src/dxfdim.cc \
            src/linearextrude.cc \
            src/rotateextrude.cc \
+           src/loopextrude.cc \
            src/printutils.cc \
            src/fileutils.cc \
            src/progress.cc \

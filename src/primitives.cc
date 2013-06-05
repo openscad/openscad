@@ -37,6 +37,8 @@
 #include <sstream>
 #include <assert.h>
 #include <boost/assign/std/vector.hpp>
+#include "loop.h"
+
 using namespace boost::assign; // bring 'operator+=()' into scope
 
 #define F_MINIMUM 0.01
@@ -48,7 +50,8 @@ enum primitive_type_e {
 	POLYHEDRON,
 	SQUARE,
 	CIRCLE,
-	POLYGON
+	POLYGON,
+	LOOP
 };
 
 class PrimitiveModule : public AbstractModule
@@ -90,6 +93,9 @@ public:
 		case POLYGON:
 			return "polygon";
 			break;
+		case LOOP:
+			return "loop";
+			break;
 		default:
 			assert(false && "PrimitiveNode::name(): Unknown primitive type");
 			return AbstractPolyNode::name();
@@ -102,6 +108,7 @@ public:
 	primitive_type_e type;
 	int convexity;
 	Value points, paths, triangles;
+	Value vertices,edges,poly;
 	virtual PolySet *evaluate_polyset(class PolySetEvaluator *) const;
 };
 
@@ -135,6 +142,9 @@ AbstractNode *PrimitiveModule::instantiate(const Context *ctx, const ModuleInsta
 		break;
 	case POLYGON:
 		args += Assignment("points", NULL), Assignment("paths", NULL), Assignment("convexity", NULL);
+		break;
+	case LOOP:
+		args += Assignment("points", NULL), Assignment("vertices", NULL), Assignment("edges", NULL), Assignment("poly", NULL), Assignment("convexity", NULL);
 		break;
 	default:
 		assert(false && "PrimitiveModule::instantiate(): Unknown node type");
@@ -229,6 +239,12 @@ AbstractNode *PrimitiveModule::instantiate(const Context *ctx, const ModuleInsta
 		node->paths = c.lookup_variable("paths");
 	}
 
+	if (type == LOOP) {
+		node->points     = c.lookup_variable("points");
+		node->vertices   = c.lookup_variable("vertices");
+		node->edges      = c.lookup_variable("edges");
+		node->poly       = c.lookup_variable("poly");
+	}
 	node->convexity = c.lookup_variable("convexity", true).toDouble();
 	if (node->convexity < 1)
 		node->convexity = 1;
@@ -550,6 +566,35 @@ sphere_next_r2:
 		dxf_border_to_ps(p, dd);
 	}
 
+	if (this->type == LOOP)
+	{
+	  DxfData dd;
+
+		int fragments = get_fragments_from_r(1, this->fn, this->fs, this->fa);
+    	Loop loop(fragments);
+
+		(Strip (points,false)).process(loop,Loop::POINTS);
+		(Strip (poly,true)).process(loop,Loop::POLY);
+		(Strip (vertices,true)).process(loop,Loop::VERTICES);
+		(Strip (edges,true)).process(loop,Loop::EDGES);
+
+		loop.construct(true);
+
+		for (unsigned i=0; i<loop.gStepSize(); i++)
+		{ dd.points.push_back(loop.gStep(i)); }
+
+		dd.paths.push_back(DxfData::Path());
+		for (size_t i=0; i<loop.gStepSize(); i++)
+		{ dd.paths.back().indices.push_back(i); }
+		if (dd.paths.back().indices.size() > 0)
+		{ dd.paths.back().indices.push_back(dd.paths.back().indices.front());
+		  dd.paths.back().is_closed = true; }
+
+		p->is2d = true;
+		p->convexity = convexity;
+		dxf_tesselate(p, dd, 0, Vector2d(1,1), true, false, 0);
+		dxf_border_to_ps(p, dd); }
+
 	return p;
 }
 
@@ -589,6 +634,16 @@ std::string PrimitiveNode::toString() const
 	case POLYGON:
 		stream << "(points = " << this->points << ", paths = " << this->paths << ", convexity = " << this->convexity << ")";
 			break;
+	case LOOP:
+		stream << "($fn = " << this->fn <<
+		          ", $fa = " << this->fa <<
+		          ", $fs = " << this->fs <<
+		          ", points = " << this->points <<
+		          ", vertices = " << this->vertices <<
+		          ", edges = " << this->edges <<
+		          ", poly = " << this->poly <<
+		          ", convexity = " << this->convexity << ")";
+			break;
 	default:
 		assert(false);
 	}
@@ -605,4 +660,5 @@ void register_builtin_primitives()
 	Builtins::init("square", new PrimitiveModule(SQUARE));
 	Builtins::init("circle", new PrimitiveModule(CIRCLE));
 	Builtins::init("polygon", new PrimitiveModule(POLYGON));
+	Builtins::init("loop", new PrimitiveModule(LOOP));
 }

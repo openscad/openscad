@@ -8,6 +8,7 @@
 #include "projectionnode.h"
 #include "linearextrudenode.h"
 #include "rotateextrudenode.h"
+#include "loopextrudenode.h"
 #include "cgaladvnode.h"
 #include "rendernode.h"
 #include "dxfdata.h"
@@ -419,6 +420,40 @@ PolySet *PolySetCGALEvaluator::evaluatePolySet(const RotateExtrudeNode &node)
 	return ps;
 }
 
+PolySet *PolySetCGALEvaluator::evaluatePolySet(const LoopExtrudeNode &node)
+{
+  DxfData *dxf;
+
+  if (node.filename.empty()) // this is always so, files not possible!
+  {
+    // Before extruding, union all (2D) children nodes
+    // to a single DxfData, then tesselate this into a PolySet
+    CGAL_Nef_polyhedron sum;
+    BOOST_FOREACH (AbstractNode * v, node.getChildren()) {
+      if (v->modinst->isBackground()) continue;
+      CGAL_Nef_polyhedron N = this->cgalevaluator.evaluateCGALMesh(*v);
+      if (!N.isNull()) {
+        if (N.dim != 2) {
+          PRINT("ERROR: loop_extrude() is not defined for 3D child objects!");
+        }
+        else {
+          if (sum.isNull()) sum = N.copy();
+          else sum += N;
+        }
+      }
+    }
+
+    if (sum.isNull()) return NULL;
+    dxf = sum.convertToDxfData();
+  } else {
+    dxf = new DxfData(node.fn, node.fs, node.fa, node.filename, "", 0, 0, 1);
+  }
+
+  PolySet *ps = loopDxfData(node, *dxf);
+  delete dxf;
+  return ps;
+}
+//============================================================================================================
 PolySet *PolySetCGALEvaluator::evaluatePolySet(const CgaladvNode &node)
 {
 	CGAL_Nef_polyhedron N = this->cgalevaluator.evaluateCGALMesh(node);
@@ -516,4 +551,88 @@ PolySet *PolySetCGALEvaluator::rotateDxfData(const RotateExtrudeNode &node, DxfD
 	}
 	
 	return ps;
+}
+
+PolySet *PolySetCGALEvaluator::loopDxfData(const LoopExtrudeNode &node, DxfData &dxf)
+{
+  PolySet *ps = new PolySet();
+  ps->convexity = node.convexity;
+
+  for (size_t i = 0; i < dxf.paths.size(); i++)
+  {
+    double maxr2 = 0;
+    for (size_t k=0; k < dxf.paths[i].indices.size(); k++)
+    { maxr2 = fmax(maxr2,pow(dxf.points[dxf.paths[i].indices[k]][0],2)+pow(dxf.points[dxf.paths[i].indices[k]][1],2)); }
+    double maxr = sqrt(maxr2);
+
+    int fragments = get_fragments_from_r(maxr, node.fn, node.fs, node.fa);
+    Loop loop(fragments);
+
+    (Strip (node.points,false)).process(loop,Loop::POINTS);
+    (Strip (node.poly,true)).process(loop,Loop::POLY);
+    (Strip (node.vertices,true)).process(loop,Loop::VERTICES);
+    (Strip (node.edges,true)).process(loop,Loop::EDGES);
+    (Strip (node.segments,true)).process(loop,Loop::SEGMENTS);
+
+    // Dit later naar false omzetten
+    loop.construct(false);
+    loop.extrude(maxr);
+
+    fragments = loop.gPlaneCount();
+
+    double ***points;
+    points = new double**[fragments];
+    for (int j=0; j < fragments; j++)
+    { points[j] = new double*[dxf.paths[i].indices.size()];
+      for (size_t k=0; k < dxf.paths[i].indices.size(); k++)
+      { points[j][k] = new double[3]; } }
+
+    for (int j = 0; j < fragments; j++)
+    { for (size_t k = 0; k < dxf.paths[i].indices.size(); k++)
+      { loop.extrudeTransform(j,dxf.points[dxf.paths[i].indices[k]],points[j][k]); } }
+
+    for (int j = 0; j < fragments; j++)
+      if (loop.hullIsVisible(j))
+      { int j1 = j + 1 < fragments ? j + 1 : 0;
+        for (size_t k = 0; k < dxf.paths[i].indices.size(); k++)
+        { int k1 = k + 1 < dxf.paths[i].indices.size() ? k + 1 : 0;
+          if (points[j][k][0] != points[j1][k][0] || points[j][k][1] != points[j1][k][1] || points[j][k][2] != points[j1][k][2])
+          { ps->append_poly();
+            ps->append_vertex(points[j ][k ][0], points[j ][k ][1], points[j ][k ][2]);
+            ps->append_vertex(points[j1][k ][0], points[j1][k ][1], points[j1][k ][2]);
+            ps->append_vertex(points[j ][k1][0], points[j ][k1][1], points[j ][k1][2]); }
+          if (points[j][k1][0] != points[j1][k1][0] || points[j][k1][1] != points[j1][k1][1] || points[j][k1][2] != points[j1][k1][2])
+          { ps->append_poly();
+            ps->append_vertex(points[j ][k1][0], points[j ][k1][1], points[j ][k1][2]);
+            ps->append_vertex(points[j1][k ][0], points[j1][k ][1], points[j1][k ][2]);
+            ps->append_vertex(points[j1][k1][0], points[j1][k1][1], points[j1][k1][2]); } } }
+
+    if (loop.hasCovers())
+    { PolySet pst,psb;
+      pst.convexity = node.convexity;
+      psb.convexity = node.convexity;
+      dxf_tesselate(&pst, dxf, 0, Vector2d(1,1), true, true, 0);
+      dxf_tesselate(&psb, dxf, 0, Vector2d(1,1), false, true, 0);
+      for (int l = 0; l < fragments; l++)
+      { if (loop.planeIsBottom(l))
+        { for (unsigned j=0; j< psb.polygons.size(); j++)
+          { ps->append_poly();
+            for (unsigned k=0; k< psb.polygons[j].size(); k++)
+            { double p[3];
+              loop.planeTransform(l, psb.polygons[j][k],p);
+              ps->append_vertex(p[0],p[1],p[2]); } } }
+        if (loop.planeIsTop(l))
+        { for (unsigned j=0; j< pst.polygons.size(); j++)
+          { ps->append_poly();
+            for (unsigned k=0; k< pst.polygons[j].size(); k++)
+            { double p[3];
+              loop.planeTransform(l, pst.polygons[j][k],p);
+              ps->append_vertex(p[0],p[1],p[2]); } } } } }
+
+   for (int j=0; j < fragments; j++)
+   { for (size_t k=0; k < dxf.paths[i].indices.size(); k++) { delete[] points[j][k]; }
+     delete[] points[j]; }
+   delete[] points; }
+
+  return ps;
 }

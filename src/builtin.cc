@@ -37,6 +37,7 @@ extern void register_builtin_projection();
 extern void register_builtin_cgaladv();
 extern void register_builtin_dxf_linear_extrude();
 extern void register_builtin_dxf_rotate_extrude();
+extern void register_builtin_loop_extrude();
 extern void initialize_builtin_dxf_dim();
 
 /*!
@@ -62,6 +63,7 @@ void Builtins::initialize()
 	register_builtin_cgaladv();
 	register_builtin_dxf_linear_extrude();
 	register_builtin_dxf_rotate_extrude();
+  register_builtin_loop_extrude();
 
 	this->deprecations["dxf_linear_extrude"] = "linear_extrude";
 	this->deprecations["dxf_rotate_extrude"] = "rotate_extrude";

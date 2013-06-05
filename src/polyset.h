@@ -7,6 +7,16 @@
 #include <vector>
 #include <string>
 
+/**
+ * Remark by Ruud Vlaming:
+ * Possible you have an alignment issue on the definition
+ *   std::vector<Polygon> polygons
+ * for Vector3d is an fixed sized field:
+ *   typedef Matrix< double, 3, 1 >
+ * For more information see:
+ *   http://eigen.tuxfamily.org/dox/TopicStlContainers.html
+ *   http://eigen.tuxfamily.org/dox/namespaceEigen.html
+ */
 class PolySet
 {
 public:

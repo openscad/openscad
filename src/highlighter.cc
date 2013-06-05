@@ -145,7 +145,7 @@ Highlighter::Highlighter(QTextDocument *parent)
 	tokentypes["prim3d"] << "cube" << "cylinder" << "sphere" << "polyhedron";
 	typeformats["prim3d"].setForeground(QColor("DarkBlue"));
 
-	tokentypes["prim2d"] << "square" << "polygon" << "circle";
+	tokentypes["prim2d"] << "square" << "polygon" << "circle" << "loop";
 	typeformats["prim2d"].setForeground(QColor("MidnightBlue"));
 
 	tokentypes["import"] << "include" << "use" << "import_stl" << "import" << "import_dxf" << "dxf_dim" << "dxf_cross";
@@ -154,7 +154,7 @@ Highlighter::Highlighter(QTextDocument *parent)
 	tokentypes["special"] << "$children" << "child" << "$fn" << "$fa" << "$fs" << "$t" << "$vpt" << "$vpr";
 	typeformats["special"].setForeground(Qt::darkGreen);
 
-	tokentypes["extrude"] << "linear_extrude" << "rotate_extrude";
+	tokentypes["extrude"] << "linear_extrude" << "rotate_extrude" << "loop_extrude";
 	typeformats["extrude"].setForeground(Qt::darkGreen);
 
 	tokentypes["bracket"] << "[" << "]" << "(" << ")";
