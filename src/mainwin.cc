@@ -462,12 +462,12 @@ void MainWindow::showProgress()
 void MainWindow::report_func(const class AbstractNode*, void *vp, int mark)
 {
 	MainWindow *thisp = static_cast<MainWindow*>(vp);
-	int v = (int)((mark*100.0) / progress_report_count);
-	int percent = v < 100 ? v : 99; 
-	
-	if (percent > thisp->progresswidget->value()) {
+	int v = (int)((mark*1000.0) / progress_report_count);
+	int permille = v < 1000 ? v : 999; 
+	printf("Progress: %d\n", permille);
+	if (permille > thisp->progresswidget->value()) {
 		QMetaObject::invokeMethod(thisp->progresswidget, "setValue", Qt::QueuedConnection,
-															Q_ARG(int, percent));
+															Q_ARG(int, permille));
 		QApplication::processEvents();
 	}
 
