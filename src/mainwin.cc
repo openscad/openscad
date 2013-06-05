@@ -511,7 +511,8 @@ MainWindow::openFile(const QString &new_filename)
 	}
 #endif
 	setFileName(actual_filename);
-
+	
+	fileChangedOnDisk(); // force cached autoReloadId to update
 	refreshDocument();
 	updateRecentFiles();
 	if (actual_filename.isEmpty()) {
@@ -627,9 +628,16 @@ void MainWindow::compile(bool reload, bool forcedone)
 
 	// Reload checks the timestamp of the toplevel file and refreshes if necessary,
 	if (reload) {
+		// Refresh files if it has changed on disk
 		if (fileChangedOnDisk() && checkEditorModified()) {
 			shouldcompiletoplevel = true;
 			refreshDocument();
+		}
+		// If the file hasn't changed, we might still need to compile it
+		// if we haven't yet compiled the current text.
+		else {
+			QString current_doc = editor->toPlainText();
+			if (current_doc != last_compiled_doc)	shouldcompiletoplevel = true;
 		}
 	}
 	else {
@@ -1052,7 +1060,10 @@ void MainWindow::actionShowLibraryFolder()
 
 void MainWindow::actionReload()
 {
-	if (checkEditorModified()) refreshDocument();
+	if (checkEditorModified()) {
+		fileChangedOnDisk(); // force cached autoReloadId to update
+		refreshDocument();
+	}
 }
 
 void MainWindow::hideEditor()
