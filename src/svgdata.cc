@@ -126,6 +126,15 @@ std::vector<float> SVGData::get_params(std::string str){
   return values;
 }
 
+void SVGData::render_rect(float x, float y, float width, float height){
+  start_path();
+  add_point(x,y);
+  add_point(x+width,y);
+  add_point(x+width, y+height);
+  add_point(x, y+height);
+  close_path();
+}
+
 void SVGData::render_line_to(float x0, float y0, float x1, float y1){
 //  std::cout << "render line: x0:" << x0 << " y0:" << y0 << " x1:" << x1 << " y1:" << y1 << std::endl;
   add_point(x0,y0);
@@ -517,6 +526,32 @@ void SVGData::traverse_subtree(TransformMatrix parent_matrix, const xmlpp::Node*
         start_path();
         parse_path_description(d->get_value());
         close_path();
+      }
+    }
+  }
+
+  if (nodename == "rect"){
+//    std::cout << "rectangle" << std::endl;
+
+    if(const xmlpp::Element* nodeElement = dynamic_cast<const xmlpp::Element*>(node)){
+      const xmlpp::Attribute* width_attr = nodeElement->get_attribute("width");
+      const xmlpp::Attribute* height_attr = nodeElement->get_attribute("height");
+      const xmlpp::Attribute* x_attr = nodeElement->get_attribute("x");
+      const xmlpp::Attribute* y_attr = nodeElement->get_attribute("y");
+
+      float x, y, width, height;
+
+      x = x_attr ? atof(x_attr->get_value().c_str()) : 0;
+      y = y_attr ? atof(y_attr->get_value().c_str()) : 0;
+
+      if(width_attr && height_attr){
+        width = atof(width_attr->get_value().c_str());
+        height = atof(height_attr->get_value().c_str());
+
+        if(width > 0 && height > 0){
+          render_rect(x, y, width, height);
+//          std::cout << "x:" << x << " y:" << y << " width:" << width << " height:" << height << std::endl;
+        }
       }
     }
   }
