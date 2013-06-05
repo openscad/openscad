@@ -126,7 +126,8 @@ std::vector<float> SVGData::get_params(std::string str){
   return values;
 }
 
-void SVGData::render_rect(float x, float y, float width, float height){
+void SVGData::render_rect(float x, float y, float width, float height, float /*rx*/, float /*ry*/){
+  //TODO: render rounded corners
   start_path();
   add_point(x,y);
   add_point(x+width,y);
@@ -538,19 +539,44 @@ void SVGData::traverse_subtree(TransformMatrix parent_matrix, const xmlpp::Node*
       const xmlpp::Attribute* height_attr = nodeElement->get_attribute("height");
       const xmlpp::Attribute* x_attr = nodeElement->get_attribute("x");
       const xmlpp::Attribute* y_attr = nodeElement->get_attribute("y");
+      const xmlpp::Attribute* rx_attr = nodeElement->get_attribute("rx");
+      const xmlpp::Attribute* ry_attr = nodeElement->get_attribute("ry");
 
-      float x, y, width, height;
+      float x, y, width, height, rx, ry;
 
       x = x_attr ? atof(x_attr->get_value().c_str()) : 0;
       y = y_attr ? atof(y_attr->get_value().c_str()) : 0;
+
+      if(!rx_attr && !ry_attr){
+        rx=0; ry=0;
+      }
+
+      if(rx_attr && !ry_attr){
+        rx=ry=atof(x_attr->get_value().c_str());
+      }
+
+      if(!rx_attr && ry_attr){
+        rx=ry=atof(y_attr->get_value().c_str());
+      }
+
+      if(rx_attr && ry_attr){
+        rx=atof(x_attr->get_value().c_str());
+        ry=atof(y_attr->get_value().c_str());
+      }
 
       if(width_attr && height_attr){
         width = atof(width_attr->get_value().c_str());
         height = atof(height_attr->get_value().c_str());
 
+        if (rx > width/2)
+          rx = width/2;
+
+        if (ry > height/2)
+          ry = height/2;
+
         if(width > 0 && height > 0){
-          render_rect(x, y, width, height);
-//          std::cout << "x:" << x << " y:" << y << " width:" << width << " height:" << height << std::endl;
+          render_rect(x, y, width, height, rx, ry);
+          //std::cout << "[svg:rect] x:" << x << " y:" << y << " width:" << width << " height:" << height << " rx:" << rx << " ry:" << ry << std::endl;
         }
       }
     }
