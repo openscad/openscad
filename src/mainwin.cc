@@ -691,8 +691,7 @@ void MainWindow::compileCSG(bool procevents)
 {
 	assert(this->root_node);
 	PRINT("Compiling design (CSG Products generation)...");
-	if (procevents)
-		QApplication::processEvents();
+	if (procevents) QApplication::processEvents();
 
 	// Main CSG evaluation
 	QTime t;
@@ -710,16 +709,16 @@ void MainWindow::compileCSG(bool procevents)
 		PolySetEvaluator psevaluator(this->tree);
 #endif
 		CSGTermEvaluator csgrenderer(this->tree, &psevaluator);
+		if (procevents) QApplication::processEvents();
 		this->root_raw_term = csgrenderer.evaluateCSGTerm(*root_node, highlight_terms, background_terms);
 		if (!root_raw_term) {
 			PRINT("ERROR: CSG generation failed! (no top level object found)");
-			if (procevents)
-				QApplication::processEvents();
 		}
 		PolySetCache::instance()->print();
 #ifdef ENABLE_CGAL
 		CGALCache::instance()->print();
 #endif
+		if (procevents) QApplication::processEvents();
 	}
 	catch (const ProgressCancelException &e) {
 		PRINT("CSG generation cancelled.");
@@ -731,8 +730,7 @@ void MainWindow::compileCSG(bool procevents)
 
 	if (root_raw_term) {
 		PRINT("Compiling design (CSG Products normalization)...");
-		if (procevents)
-			QApplication::processEvents();
+		if (procevents) QApplication::processEvents();
 		
 		size_t normalizelimit = 2 * Preferences::inst()->getValue("advanced/openCSGLimit").toUInt();
 		CSGTermNormalizer normalizer(normalizelimit);
@@ -744,15 +742,13 @@ void MainWindow::compileCSG(bool procevents)
 		else {
 			this->root_chain = NULL;
 			PRINT("WARNING: CSG normalization resulted in an empty tree");
-			if (procevents)
-				QApplication::processEvents();
+			if (procevents) QApplication::processEvents();
 		}
 		
 		if (highlight_terms.size() > 0)
 		{
 			PRINTB("Compiling highlights (%d CSG Trees)...", highlight_terms.size());
-			if (procevents)
-				QApplication::processEvents();
+			if (procevents) QApplication::processEvents();
 			
 			highlights_chain = new CSGChain();
 			for (unsigned int i = 0; i < highlight_terms.size(); i++) {
@@ -764,8 +760,7 @@ void MainWindow::compileCSG(bool procevents)
 		if (background_terms.size() > 0)
 		{
 			PRINTB("Compiling background (%d CSG Trees)...", background_terms.size());
-			if (procevents)
-				QApplication::processEvents();
+			if (procevents) QApplication::processEvents();
 			
 			background_chain = new CSGChain();
 			for (unsigned int i = 0; i < background_terms.size(); i++) {
@@ -794,8 +789,7 @@ void MainWindow::compileCSG(bool procevents)
 		PRINT("CSG generation finished.");
 		int s = t.elapsed() / 1000;
 		PRINTB("Total rendering time: %d hours, %d minutes, %d seconds", (s / (60*60)) % ((s / 60) % 60) % (s % 60));
-		if (procevents)
-			QApplication::processEvents();
+		if (procevents) QApplication::processEvents();
 	}
 }
 
@@ -1067,7 +1061,7 @@ bool MainWindow::compileTopLevelDocument(bool reload)
 		}
 	  // If the file hasn't changed, we might still need to compile it
 	  // if we haven't yet compiled the current text.
-		else {
+		else if (!editor->isContentModified()) {
 			QString current_doc = editor->toPlainText();
 			if (current_doc != last_compiled_doc) shouldcompiletoplevel = true;
 		}
