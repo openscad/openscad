@@ -6,6 +6,7 @@
 #
 #     source ./scripts/setenv-mingw-xbuild.sh         # 32 bit build
 #     source ./scripts/setenv-mingw-xbuild.sh 64      # 64 bit build
+#     source ./scripts/setenv-mingw-xbuild.sh clean   # Clean up exported variables
 #
 # Prerequisites:
 #
