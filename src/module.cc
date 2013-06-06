@@ -226,6 +226,28 @@ void FileModule::registerInclude(const std::string &localpath,
 	this->includes[localpath] = inc;
 }
 
+bool FileModule::includesChanged() const
+{
+	BOOST_FOREACH(const FileModule::IncludeContainer::value_type &item, this->includes) {
+		if (include_modified(item.second)) return true;
+	}
+	return false;
+}
+
+bool FileModule::include_modified(const IncludeFile &inc) const
+{
+	struct stat st;
+	memset(&st, 0, sizeof(struct stat));
+
+	fs::path fullpath = find_valid_path(this->path, inc.filename);
+	bool valid = !fullpath.empty() ? (stat(boosty::stringy(fullpath).c_str(), &st) == 0) : false;
+	
+	if (valid && !inc.valid) return true; // Detect appearance of file but not removal
+	if (valid && st.st_mtime > inc.mtime) return true;
+	
+	return false;
+}
+
 /*!
 	Check if any dependencies have been modified and recompile them.
 	Returns true if anything was recompiled.
@@ -236,12 +258,13 @@ bool FileModule::handleDependencies()
 	this->is_handling_dependencies = true;
 
 	bool changed = false;
-	// Iterating manually since we want to modify the container while iterating
-
 
 	// If a lib in usedlibs was previously missing, we need to relocate it
 	// by searching the applicable paths. We can identify a previously missing module
 	// as it will have a relative path.
+
+	// Iterating manually since we want to modify the container while iterating
+	std::vector<std::pair<std::string, FileModule*> > modified_modules;
 	FileModule::ModuleContainer::iterator iter = this->usedlibs.begin();
 	while (iter != this->usedlibs.end()) {
 		FileModule::ModuleContainer::iterator curr = iter++;
@@ -256,16 +279,27 @@ bool FileModule::handleDependencies()
 			if (!fullpath.empty()) filename = boosty::stringy(fullpath);
 		}
 
-		curr->second = ModuleCache::instance()->evaluate(filename);
-		if (curr->second != oldmodule) {
+		FileModule *newmodule = ModuleCache::instance()->evaluate(filename);
+		// Detect appearance but not removal of files
+		if (newmodule && oldmodule != newmodule) {
 			changed = true;
 #ifdef DEBUG
-			PRINTB_NOCACHE("  %s: %p", filename % curr->second);
+			PRINTB_NOCACHE("  %s: %p", filename % newmodule);
 #endif
 		}
-		if (!curr->second && !wasmissing) {
-			PRINTB_NOCACHE("WARNING: Failed to compile library '%s'.", filename);
+		if (newmodule) {
+			modified_modules.push_back(std::make_pair(filename, newmodule));
+			this->usedlibs.erase(curr);
 		}
+		else {
+			// Only print warning if we're not part of an automatic reload
+			if (!oldmodule && !wasmissing) {
+				PRINTB_NOCACHE("WARNING: Failed to compile library '%s'.", filename);
+			}
+		}
+	}
+	BOOST_FOREACH(const FileModule::ModuleContainer::value_type &mod, modified_modules) {
+		this->usedlibs[mod.first] = mod.second;
 	}
 
 	this->is_handling_dependencies = false;
@@ -287,18 +321,4 @@ AbstractNode *FileModule::instantiate(const Context *ctx, const ModuleInstantiat
 	node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
 
 	return node;
-}
-
-bool FileModule::include_modified(IncludeFile inc)
-{
-	struct stat st;
-	memset(&st, 0, sizeof(struct stat));
-
-	fs::path fullpath = find_valid_path(this->path, inc.filename);
-	bool valid = !fullpath.empty() ? (stat(boosty::stringy(fullpath).c_str(), &st) == 0) : false;
-	
-	if (valid != inc.valid) return true;
-	if (valid && st.st_mtime > inc.mtime) return true;
-	
-	return false;
 }

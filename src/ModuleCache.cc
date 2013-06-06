@@ -38,6 +38,9 @@ FileModule *ModuleCache::evaluate(const std::string &filename)
 	memset(&st, 0, sizeof(struct stat));
 	bool valid = (stat(filename.c_str(), &st) == 0);
 
+  // If file isn't there, just return and let the cache retain the old module
+	if (!valid) return NULL;
+	
 	std::string cache_id = str(boost::format("%x.%x") % st.st_mtime % st.st_size);
 
 	// Lookup in cache
@@ -45,13 +48,10 @@ FileModule *ModuleCache::evaluate(const std::string &filename)
 		lib_mod = &(*this->entries[filename].module);
 		if (this->entries[filename].cache_id == cache_id) {
 			shouldCompile = false;
-			
-			BOOST_FOREACH(const FileModule::IncludeContainer::value_type &include, lib_mod->includes) {
-				if (lib_mod->include_modified(include.second)) {
-					lib_mod = NULL;
-					shouldCompile = true;
-					break;
-				}
+
+			if (lib_mod->includesChanged()) {
+				lib_mod = NULL;
+				shouldCompile = true;
 			}
 		}
 	}

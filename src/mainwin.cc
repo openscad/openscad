@@ -1044,16 +1044,6 @@ bool MainWindow::fileChangedOnDisk()
 	return false;
 }
 
-bool MainWindow::includesChanged()
-{
-	if (this->root_module) {
-		BOOST_FOREACH(const FileModule::IncludeContainer::value_type &item, this->root_module->includes) {
-			if (this->root_module->include_modified(item.second)) return true;
-		}
-	}
-	return false;
-}
-
 /*!
 	If reload is true, does a timestamp check on the document and tries to reload it.
 	Otherwise, just reparses the current document and any dependencies, updates the 
@@ -1065,7 +1055,9 @@ bool MainWindow::compileTopLevelDocument(bool reload)
 {
 	bool shouldcompiletoplevel = !reload;
 
-	if (includesChanged()) shouldcompiletoplevel = true;
+	if (this->root_module && this->root_module->includesChanged()) {
+		shouldcompiletoplevel = true;
+	}
 
 	if (reload) {	
 		// Refresh files if it has changed on disk
