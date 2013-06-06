@@ -115,7 +115,6 @@ Response CSGTermEvaluator::visit(State &state, const AbstractPolyNode &node)
 			if (ps) {
 				t1 = evaluate_csg_term_from_ps(state, this->highlights, this->background, 
 																			 ps, node.modinst, node);
-				node.progress_report();
 			}
 		}
 		this->stored_term[node.index()] = t1;
@@ -179,7 +178,6 @@ Response CSGTermEvaluator::visit(State &state, const RenderNode &node)
 		shared_ptr<PolySet> ps;
 		if (this->psevaluator) {
 			ps = this->psevaluator->getPolySet(node, true);
-			node.progress_report();
 		}
 		if (ps) {
 			t1 = evaluate_csg_term_from_ps(state, this->highlights, this->background, 
@@ -203,7 +201,6 @@ Response CSGTermEvaluator::visit(State &state, const CgaladvNode &node)
 		if (ps) {
 			t1 = evaluate_csg_term_from_ps(state, this->highlights, this->background, 
 																		 ps, node.modinst, node);
-			node.progress_report();
 		}
 		this->stored_term[node.index()] = t1;
 		addToParent(state, node);
