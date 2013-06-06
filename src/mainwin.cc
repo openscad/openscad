@@ -464,7 +464,6 @@ void MainWindow::report_func(const class AbstractNode*, void *vp, int mark)
 	MainWindow *thisp = static_cast<MainWindow*>(vp);
 	int v = (int)((mark*1000.0) / progress_report_count);
 	int permille = v < 1000 ? v : 999; 
-	printf("Progress: %d\n", permille);
 	if (permille > thisp->progresswidget->value()) {
 		QMetaObject::invokeMethod(thisp->progresswidget, "setValue", Qt::QueuedConnection,
 															Q_ARG(int, permille));
@@ -506,6 +505,7 @@ MainWindow::openFile(const QString &new_filename)
 #endif
 	setFileName(actual_filename);
 
+	fileChangedOnDisk(); // force cached autoReloadId to update
 	refreshDocument();
 	updateRecentFiles();
 	if (actual_filename.isEmpty()) {
@@ -973,7 +973,10 @@ void MainWindow::actionShowLibraryFolder()
 
 void MainWindow::actionReload()
 {
-	if (checkEditorModified()) refreshDocument();
+	if (checkEditorModified()) {
+		fileChangedOnDisk(); // force cached autoReloadId to update
+		refreshDocument();
+	}
 }
 
 void MainWindow::hideEditor()
@@ -1064,9 +1067,18 @@ bool MainWindow::compileTopLevelDocument(bool reload)
 
 	if (includesChanged()) shouldcompiletoplevel = true;
 
-	if (reload && fileChangedOnDisk() && checkEditorModified()) {
-		shouldcompiletoplevel = true;
-		refreshDocument();
+	if (reload) {	
+		// Refresh files if it has changed on disk
+	  if (fileChangedOnDisk() && checkEditorModified()) {
+			shouldcompiletoplevel = true;
+			refreshDocument();
+		}
+	  // If the file hasn't changed, we might still need to compile it
+	  // if we haven't yet compiled the current text.
+		else {
+			QString current_doc = editor->toPlainText();
+			if (current_doc != last_compiled_doc) shouldcompiletoplevel = true;
+		}
 	}
 	
 	if (shouldcompiletoplevel) {
