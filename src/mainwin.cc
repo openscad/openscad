@@ -1060,7 +1060,7 @@ bool MainWindow::compileTopLevelDocument(bool reload)
 	}
 
 	if (reload) {	
-		// Refresh files if it has changed on disk
+		// Refresh file if it has changed on disk
 	  if (fileChangedOnDisk() && checkEditorModified()) {
 			shouldcompiletoplevel = true;
 			refreshDocument();
@@ -1123,7 +1123,6 @@ void MainWindow::autoReloadSet(bool on)
 	QSettings settings;
 	settings.setValue("design/autoReload",designActionAutoReload->isChecked());
 	if (on) {
-		autoReloadId = "";
 		autoReloadTimer->start(200);
 	} else {
 		autoReloadTimer->stop();
