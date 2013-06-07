@@ -598,7 +598,7 @@ PolySet* SVGData::convertToPolyset(){
   traverse_subtree(tm, pNode);
 
 	p->is2d = true;
-	dxf_tesselate(p, *dxfdata, 0, true, false, 0);
+	dxf_tesselate(p, *dxfdata, 0, Vector2d(1,1), true, false, 0);
 	dxf_border_to_ps(p, *dxfdata);
   return p;
 }
