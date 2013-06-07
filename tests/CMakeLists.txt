@@ -378,7 +378,12 @@ endif()
 # libxml
 find_package(PkgConfig REQUIRED)
 pkg_search_module(LIBXML REQUIRED libxml++-2.6)
-message(STATUS "LibXML++ found: ${LIBXML_INCLUDEDIR}")
+if (NOT LIBXML_FOUND)
+  message(STATUS "LibXML++ not found")
+else()
+  message(STATUS "LibXML++ found in ${LIBXML_INCLUDEDIR}")
+  inclusion(LIBXML_DIR LIBXML_INCLUDE_DIRS)
+endif()
 
 # Imagemagick
 
@@ -442,6 +447,7 @@ set(CORE_SOURCES
   ../src/surface.cc 
   ../src/control.cc 
   ../src/render.cc 
+  ../src/svgdata.cc
   ../src/dxfdata.cc 
   ../src/dxfdim.cc 
   ../src/linearextrude.cc 
@@ -507,7 +513,7 @@ set(OFFSCREEN_SOURCES
 
 add_library(tests-core STATIC ${CORE_SOURCES})
 target_link_libraries(tests-core ${OPENGL_LIBRARIES})
-set(TESTS-CORE-LIBRARIES ${OPENGL_LIBRARIES} ${Boost_LIBRARIES})
+set(TESTS-CORE-LIBRARIES ${OPENGL_LIBRARIES} ${Boost_LIBRARIES} ${LIBXML_LDFLAGS})
 
 add_library(tests-common STATIC ${COMMON_SOURCES})
 target_link_libraries(tests-common tests-core)
