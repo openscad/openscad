@@ -375,6 +375,11 @@ if(${CMAKE_CXX_COMPILER} MATCHES ".*clang.*" AND NOT ${CGAL_CXX_FLAGS_INIT} STRE
 	string(REPLACE "--param=ssp-buffer-size=4" "" CGAL_CXX_FLAGS_INIT ${CGAL_CXX_FLAGS_INIT})
 endif()
 
+# libxml
+find_package(PkgConfig REQUIRED)
+pkg_search_module(LIBXML REQUIRED libxml++-2.6)
+message(STATUS "LibXML++ found: ${LIBXML_INCLUDEDIR}")
+
 # Imagemagick
 
 if (SKIP_IMAGEMAGICK)

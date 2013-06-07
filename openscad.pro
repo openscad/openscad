@@ -92,11 +92,6 @@ win* {
   RC_FILE = openscad_win32.rc
 }
 
-unix{
-  CONFIG +=link_pkgconfig
-  PKGCONFIG = libxml++-2.6
-}
-
 CONFIG += qt
 QT += opengl
 
@@ -159,6 +154,7 @@ CONFIG += cgal
 CONFIG += opencsg
 CONFIG += boost
 CONFIG += eigen
+CONFIG += libxml
 
 #Uncomment the following line to enable QCodeEdit
 #CONFIG += qcodeedit
