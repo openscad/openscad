@@ -92,6 +92,11 @@ win* {
   RC_FILE = openscad_win32.rc
 }
 
+unix{
+  CONFIG +=link_pkgconfig
+  PKGCONFIG = libxml++-2.6
+}
+
 CONFIG += qt
 QT += opengl
 
@@ -208,6 +213,7 @@ HEADERS += src/typedefs.h \
            src/evalcontext.h \
            src/csgterm.h \
            src/csgtermnormalizer.h \
+           src/svgdata.h \
            src/dxfdata.h \
            src/dxfdim.h \
            src/dxftess.h \
@@ -292,6 +298,7 @@ SOURCES += src/version_check.cc \
            src/surface.cc \
            src/control.cc \
            src/render.cc \
+           src/svgdata.cc \
            src/dxfdata.cc \
            src/dxfdim.cc \
            src/linearextrude.cc \
