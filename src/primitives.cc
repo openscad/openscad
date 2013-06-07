@@ -571,7 +571,8 @@ sphere_next_r2:
 	  DxfData dd;
 
 		int fragments = get_fragments_from_r(1, this->fn, this->fs, this->fa);
-    	Loop loop(fragments);
+
+		Loop loop(fragments);
 
 		(Strip (points,false)).process(loop,Loop::POINTS);
 		(Strip (poly,true)).process(loop,Loop::POLY);
@@ -579,6 +580,10 @@ sphere_next_r2:
 		(Strip (edges,true)).process(loop,Loop::EDGES);
 
 		loop.construct(true);
+
+    if (loop.gResult() != Loop::SUCCES)
+    { for (unsigned j = 0; j < loop.gMessages().size(); j++)
+      { PRINT("WARNING (loop): " + loop.gMessages()[j]); } }
 
 		for (unsigned i=0; i<loop.gStepSize(); i++)
 		{ dd.points.push_back(loop.gStep(i)); }

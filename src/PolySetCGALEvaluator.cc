@@ -574,9 +574,12 @@ PolySet *PolySetCGALEvaluator::loopDxfData(const LoopExtrudeNode &node, DxfData 
     (Strip (node.edges,true)).process(loop,Loop::EDGES);
     (Strip (node.segments,true)).process(loop,Loop::SEGMENTS);
 
-    // Dit later naar false omzetten
     loop.construct(false);
     loop.extrude(maxr);
+
+    if (loop.gResult() != Loop::SUCCES)
+    { for (unsigned j = 0; j < loop.gMessages().size(); j++)
+      { PRINT("WARNING (loop_extrude): " + loop.gMessages()[j]); } }
 
     fragments = loop.gPlaneCount();
 

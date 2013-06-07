@@ -47,18 +47,30 @@ class Lib
     static bool isEven(unsigned i);
     static bool isOdd(unsigned i); };
 
+
+class Log
+{ public:
+    enum ResultType {SUCCES,WARN,FAIL};
+  public:
+    ResultType result;
+    std::vector<std::string> messages;
+  public:
+    Log();
+    void addLog(const ResultType newResult, const std::string entry); };
+
+
 class Vertex
 { public:
     enum VertexType {DEF,LIN,ARC,BEZ};
   private:
+    Log * log;
     VertexType vtype;
     double pars[4];
   public:
-    // const ervoor?
     Eigen::Vector3d loc;
     double gPar(const unsigned i);
     VertexType gVtype();
-    Vertex(Eigen::Vector3d Ploc);
+    Vertex(Log * Plog, const Eigen::Vector3d Ploc);
     void specify(const VertexType Pvtype, const std::vector<double> Ppars);
     void reset();
   public:
@@ -70,6 +82,7 @@ class Edge
     enum EdgeType {DEF,LIN,BEZ,SIN};
     enum TransType {IDN,ROT,RTX,RTY,RXY};
   private:
+    Log * log;
     EdgeType etype;
     TransType ttype;
     double pars[6];
@@ -81,7 +94,7 @@ class Edge
     double gPar(const unsigned i);
     EdgeType gEtype();
     TransType gTtype();
-    Edge();
+    Edge(Log * Plog);
     void specify(const EdgeType Petype, const TransType Pttype, const std::vector<double> Ppars, const Vector3Dvector Pbzps);
     void reset();
   public:
@@ -94,6 +107,7 @@ class Segment
     enum SegmentType {DEF,LIN,BEZ,SIN};
     enum TransType {IDN,ROT,RTL,RLR};
   private:
+    Log * log;
     bool show;
     bool outer;
     SegmentType stype;
@@ -109,7 +123,7 @@ class Segment
     TransType gTtype();
     bool gOuter();
     bool gShow();
-    Segment();
+    Segment(Log * Plog);
     void specify(const SegmentType Pstype, const TransType Pttype, const std::vector<double> Ppars, const Vector3Dvector Pbzps);
     void specify(const bool show, const bool hide, const bool out, const bool in, const std::vector<double> Ppars);
     void reset();
@@ -122,8 +136,7 @@ class Step
     Eigen::Vector3d loc;
     unsigned partnr;
     bool valid;
-    Step(const Eigen::Vector3d loc, const unsigned partnr);
-};
+    Step(const Eigen::Vector3d loc, const unsigned partnr); };
 
 
 class Plane
@@ -131,6 +144,7 @@ class Plane
     enum PlaneType {DEF,OUT,AUX};
     enum CoverType {NONE,TOP,BOTTOM,RING};
   private :
+    Log * log;
     PlaneType ptype;
     CoverType ctype;
     unsigned part;
@@ -139,7 +153,6 @@ class Plane
     Eigen::Vector3d norm;
     Eigen::Vector3d sdir;
     double loc, length, scale, stretch, angle;
-    //bool draw;
   public :
     Eigen::Vector3d gCent();
     Eigen::Vector3d gTang();
@@ -158,8 +171,8 @@ class Plane
     void sModul(const double Pstretch, const double Pangle);
     unsigned gPart();
     Eigen::Vector3d displace(const Eigen::Vector2d p);
-    Plane(const int Ppart, const Eigen::Vector3d Pcent, const Eigen::Vector3d Ptang, const PlaneType Ptype = DEF);
-    Plane(const int Ppart, const Eigen::Vector3d Pcent, const Eigen::Vector3d Ptang, const double Pscale, const Eigen::Vector3d Psdir);
+    Plane(Log * Plog, const int Ppart, const Eigen::Vector3d Pcent, const Eigen::Vector3d Ptang, const PlaneType Ptype = DEF);
+    Plane(Log * Plog, const int Ppart, const Eigen::Vector3d Pcent, const Eigen::Vector3d Ptang, const double Pscale, const Eigen::Vector3d Psdir);
 };
 
 class Loop
@@ -181,6 +194,8 @@ class Loop
     std::vector<Edge> edges;
     std::vector<Plane> planes;
     std::vector<Segment> segments;
+    Log logger;
+    Log * log;
     Eigen::Vector3d pv(const unsigned i);
     Eigen::Vector3d cv(const unsigned i);
     Eigen::Vector3d nv(const unsigned i);
@@ -223,6 +238,7 @@ class Loop
     void calcExtrusionPlane(double maxr, const unsigned i);
     void calcFrame();
   public:
+    enum ResultType {SUCCES,WARN,FAIL};
     enum PolyType {NONE,RIN,ROUT,SIDE};
     enum OptionType {UNKNOWN,POINTS,POLY,VERTICES,EDGES,SEGMENTS};
     Loop(const unsigned faces);
@@ -244,6 +260,8 @@ class Loop
     bool planeIsTop(const int plane);
     bool hullIsVisible(const int plane);
     bool hasCovers();
+    ResultType gResult();
+    std::vector<std::string> gMessages();
   public:
     static void print(const std::string s, const Eigen::Vector3d a, const int index = -1);
     static void print(const std::string s, const Eigen::Vector2d a, const int index = -1);

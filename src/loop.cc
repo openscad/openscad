@@ -38,6 +38,14 @@ bool Lib::isEven(unsigned i) { return i%2==0; }
 bool Lib::isOdd(unsigned i)  { return i%2==1; }
 
 
+/* Class : Log ================================================================================================================= */
+
+Log::Log() : result(SUCCES), messages() {}
+
+void Log::addLog(const ResultType newResult, const std::string entry)
+{ result = std::max(result,newResult);
+  messages.push_back(entry);  }
+
 /* Class : Strip =============================================================================================================== */
 
 unsigned Strip::gCount() { return count; }
@@ -75,14 +83,12 @@ void Strip::print()
   for (unsigned i=0; i<vcts.size(); i++) { std::cerr << "vcts[" <<  i << "] = (" << vcts[i][0] << "," << vcts[i][1] << ")\n"; } }
 
 void Strip::process(Loop & loop, const Loop::OptionType Otype)
-{ while (peel())
-    { //print();
-      loop.addGeneric(Otype,ints,dbls,strs,vcts); } }
+{ while (peel()) { loop.addGeneric(Otype,ints,dbls,strs,vcts); } }
 
 
 /* Class : Vertex ============================================================================================================== */
 
-Vertex::Vertex(Eigen::Vector3d Ploc) : vtype(DEF),  pars(), loc(Ploc) { };
+Vertex::Vertex(Log * Plog, const Eigen::Vector3d Ploc) : log(Plog), vtype(DEF),  pars(), loc(Ploc) { };
 
 void Vertex::specify(const VertexType Pvtype, const std::vector<double> Ppars)
 { vtype = Pvtype;
@@ -94,18 +100,18 @@ void Vertex::specify(const VertexType Pvtype, const std::vector<double> Ppars)
      break;
     case LIN :
       if (count<2) { pars[1] = pars[0]; }
-      if (count<1) { std::cerr << "Loop: to few parameters for linear construction. \n"; }
+      if (count<1) { log->addLog(Log::FAIL,"To few parameters for linear construction."); }
       break;
     case ARC :
       if (count<3) { pars[2] = 0; }
       if (count<2) { pars[1] = pars[0]; }
-      if (count<1) { std::cerr << "Loop: to few parameters for arc construction. \n"; }
+      if (count<1) { log->addLog(Log::FAIL,"To few parameters for arc construction."); }
       break;
     case BEZ :
       if (count<4) { pars[3] = pars[2]; }
       if (count<3) { pars[3] = 1; pars[2] = 1; }
       if (count<2) { pars[3] = 1; pars[2] = 1; pars[1] = pars[0]; }
-      if (count<1) { std::cerr << "Loop: to few parameters for bezier construction. \n"; }
+      if (count<1) { log->addLog(Log::FAIL,"To few parameters for bezier construction."); }
       break; } }
 
 double Vertex::gPar(const unsigned i) { return ( (i<4) ? pars[i] : 0 ); }
@@ -126,7 +132,7 @@ Vertex::VertexType Vertex::stringsHasVertexType(const std::vector<std::string> s
 
 /* Class : Edge ================================================================================================================ */
 
-Edge::Edge() : etype(DEF),  ttype(IDN), pars(), bzps(), base() { };
+Edge::Edge(Log * Plog) : log(Plog), etype(DEF),  ttype(IDN), pars(), bzps(), base() { };
 
 void Edge::specify(const EdgeType Petype, const TransType Pttype, const std::vector<double> Ppars, const Vector3Dvector Pbzps)
 { etype = Petype;
@@ -145,7 +151,7 @@ void Edge::specify(const EdgeType Petype, const TransType Pttype, const std::vec
     case SIN :
       if (ttype == IDN) { ttype = ROT; }
       if (count<3) { pars[2]=1; }
-      if (count<2) { std::cerr << "Loop: to few parameters for wave construction. \n"; }
+      if (count<2) { log->addLog(Log::FAIL,"To few parameters for wave construction. \n"); }
       break; } }
 
 double Edge::gPar(const unsigned i) { return ( (i<6) ? pars[i] : 0 ); }
@@ -206,7 +212,7 @@ bool Segment::gShow()  { return show; }
 double  Segment::gLength() { return length; }
 void  Segment::addToLength(const double len)  { length += len; }
 
-Segment::Segment() : show(true), outer(false), stype(DEF),  ttype(IDN),  pars(), length(0), bzps() { pars[0]=1; };
+Segment::Segment(Log * Plog) : log(Plog), show(true), outer(false), stype(DEF),  ttype(IDN),  pars(), length(0), bzps() { pars[0]=1; };
 
 void Segment::specify(const SegmentType Pstype, const TransType Pttype, const std::vector<double> Ppars, const Vector3Dvector Pbzps)
 { stype = Pstype;
@@ -226,9 +232,8 @@ void Segment::specify(const SegmentType Pstype, const TransType Pttype, const st
       if (ttype == IDN) { ttype = ROT; }
       if (count<5) { pars[5]=1; }
       if (count<3) { pars[2]=1; }
-      if (count<2) { std::cerr << "Loop: to few parameters for wave construction. \n"; }
-      break;
-  } }
+      if (count<2) { log->addLog(Log::FAIL,"To few parameters for wave construction."); }
+      break; } }
 
 void Segment::specify(const bool show, const bool hide, const bool out, const bool in, const std::vector<double> Ppars)
 { if (show) { this->show = true; }
@@ -260,19 +265,19 @@ Segment::TransType Segment::stringsHasTransType(const std::vector<std::string> s
 
 /* Class : Plane =============================================================================================================== */
 
-Plane::Plane(const int Ppart, const Eigen::Vector3d Pcent, const Eigen::Vector3d Ptang, const PlaneType Ptype) :
-  ptype(Ptype), ctype(NONE), part(Ppart), cent(Pcent), tang(Ptang), norm(), sdir(), loc(0), length(0), scale(1), stretch(1), angle(0) {};
+Plane::Plane(Log * Plog, const int Ppart, const Eigen::Vector3d Pcent, const Eigen::Vector3d Ptang, const PlaneType Ptype) :
+  log(Plog), ptype(Ptype), ctype(NONE), part(Ppart), cent(Pcent), tang(Ptang), norm(), sdir(), loc(0), length(0), scale(1), stretch(1), angle(0) {};
 
-Plane::Plane(const int Ppart, const Eigen::Vector3d Pcent, const Eigen::Vector3d Ptang, const double Pscale, const Eigen::Vector3d Psdir) :
-  ptype(OUT), ctype(NONE), part(Ppart), cent(Pcent), tang(Ptang), norm(), sdir(Psdir), loc(0), length(0), scale(Pscale), stretch(1), angle(0) {};
+Plane::Plane(Log * Plog, const int Ppart, const Eigen::Vector3d Pcent, const Eigen::Vector3d Ptang, const double Pscale, const Eigen::Vector3d Psdir) :
+  log(Plog), ptype(OUT), ctype(NONE), part(Ppart), cent(Pcent), tang(Ptang), norm(), sdir(Psdir), loc(0), length(0), scale(Pscale), stretch(1), angle(0) {};
 
 Eigen::Vector3d Plane::gCent() { return cent; }
 Eigen::Vector3d Plane::gTang() { return tang; }
 Eigen::Vector3d Plane::gNorm() { return norm; }
 Eigen::Vector3d Plane::gBnrm() { return tang.cross(norm); }
 Eigen::Vector3d Plane::gSdir() { return sdir; }
-double Plane::gLength() { return length; }
-double Plane::gLoc() { return loc; }
+double Plane::gLength()        { return length; }
+double Plane::gLoc()           { return loc; }
 
 Plane::CoverType Plane::gCtype() { return ctype; }
 
@@ -285,7 +290,8 @@ void Plane::defCover(const bool leftShow, const bool midShow, const bool rightSh
     else if ((leftShow==midShow) && (midShow!=rightShow))
     { ctype=BOTTOM; }
     else
-    { /* This situation should not appear. */
+    { /* This situation should not appear, except for deserted vertex planes. */
+      log->addLog(Log::WARN,"Found an invisible plane.");
       ctype=NONE; } } }
 
 void Plane::defCover(const bool leftShow, const bool rightShow)
@@ -315,7 +321,7 @@ Eigen::Vector3d Plane::displace(const Eigen::Vector2d p)
   if (ptype == OUT)
   { double c = norm.dot(sdir);
     double s = gBnrm().dot(sdir);
-    T << (c*c*scale+s*s),(c*s*(1-scale)),(c*s*(1-scale)),(s*s*scale+c*c) ;  }
+    T << (c*c*scale+s*s),(c*s*(scale-1)),(c*s*(scale-1)),(s*s*scale+c*c); }
   Eigen::Vector2d q = stretch * R * T * p;
   Eigen::Vector3d w(q[0], q[1], 0);
   A << norm , gBnrm() , tang;
@@ -330,7 +336,8 @@ Step::Step(const Eigen::Vector3d Ploc, const unsigned Ppartnr) : loc(Ploc), part
 
 /* Class : Loop ================================================================================================================ */
 
-Loop::Loop(const unsigned faces) : coverPresent(false), pure2D(true) ,faces(faces), pointCnt(0), partCnt(0), vertexCnt(0), edgeCnt(0), segmentCnt(0), steps(), vertices(), edges(), planes(), segments() {};
+Loop::Loop(const unsigned faces) : coverPresent(false), pure2D(true) ,faces(faces), pointCnt(0), partCnt(0), vertexCnt(0), edgeCnt(0), segmentCnt(0), steps(), vertices(), edges(), planes(), segments(), logger()
+{ log = &logger; };
 
 Eigen::Vector3d Loop::pv(const unsigned i) { return vertices[mod((int)i-1)].loc; }
 Eigen::Vector3d Loop::cv(const unsigned i) { return vertices[mod((int)i)].loc; }
@@ -341,6 +348,10 @@ double Loop::cp(const unsigned i, const unsigned j) { return vertices[mod((int)i
 double Loop::np(const unsigned i, const unsigned j) { return vertices[mod((int)i+1)].gPar(j); }
 
 unsigned Loop::mod(const int i) { return (i >= 0) ? (i % pointCnt) : (((i + pointCnt) % pointCnt));  }
+
+Loop::ResultType Loop::gResult() { return (Loop::ResultType) logger.result; }
+std::vector<std::string> Loop::gMessages() { return logger.messages; }
+
 
 bool Loop::hasCovers() { return coverPresent; }
 
@@ -554,10 +565,10 @@ unsigned Loop::gStepSize() { return steps.size(); }
 
 void Loop::addPoint(const Eigen::Vector3d pnt)
 { if ( (vertices.size()==0) || (((pnt - vertices.front().loc).norm() > minr()) && ((pnt - vertices.back().loc).norm() > minr())) )
-  { vertices.push_back(Vertex(pnt));
-    edges.push_back(Edge());
-    segments.push_back(Segment());
-    segments.push_back(Segment());
+  { vertices.push_back(Vertex(log,pnt));
+    edges.push_back(Edge(log));
+    segments.push_back(Segment(log));
+    segments.push_back(Segment(log));
     pointCnt++; } }
 
 void Loop::addPoints(const Vector3Dvector pnts)
@@ -705,22 +716,21 @@ void Loop::calcExtrusionPlane(double maxr, const unsigned i)
   bool outer = segments[partNr].gOuter();
   fillvectset(i,maxr,cur);
   if (cur.iszero)
-  { /* Issue some kind of warning! */ }
+  { log->addLog(Log::WARN,"Infinitely sharp angle, dropping plane."); }
   else if (cur.ispi)
-  { planes.push_back(Plane(partNr,cur.la,cur.ta,Plane::AUX)); }
+  { planes.push_back(Plane(log,partNr,cur.la,cur.ta,Plane::AUX)); }
   else
   { fillvectset(i-1,maxr,prv);
     fillvectset(i+1,maxr,nxt);
     if (prv.distance+cur.distance<cur.da)
-    { planes.push_back(Plane(partNr,cur.la,cur.ta)); }
+    { planes.push_back(Plane(log,partNr,cur.la,cur.ta)); }
     else
-    { planes.push_back(Plane(partNr,cur.ca,cur.ta)); }
-    // TODO Fix the out of plane center scaling, this gives incorrect results.
-    if (outer) { planes.push_back(Plane(partNr,cur.cc,cur.tb,cur.outscale,cur.nb)); }
+    { planes.push_back(Plane(log,partNr,cur.ca,cur.ta)); }
+    if (outer) { planes.push_back(Plane(log,partNr,cur.cc,cur.tb,cur.outscale,cur.nb)); }
     if (nxt.distance+cur.distance<cur.dc)
-    { planes.push_back(Plane(partNr,cur.lc,-cur.tc)); }
+    { planes.push_back(Plane(log,partNr,cur.lc,-cur.tc)); }
     else
-    { /* Doe niets want dat gebeurd in de volgende ronde */ } } }
+    { /* This case is handled in the next round. */ } } }
 
 void Loop::calcFrame()
 { if (gPlaneCount()<=2) { return; }
@@ -732,10 +742,9 @@ void Loop::calcFrame()
     double c = planes[modg(i-1)].gTang().dot(planes[i].gTang());
     ns = rotate(c,b,ns);
     planes[i].sNorm(ns); }
-  //TODO Fix the begin-end plane angle mismatch.
   unsigned st = 0;
   while ( (st<gPlaneCount()) && (planes[modg(st)].gPart() == planes[modg(st+1)].gPart()) ) { st++; }
-  for (unsigned i=st; i<(gPlaneCount()+st); i++)
+  for (unsigned i=(st+1); i<(gPlaneCount()+st+1); i++)
   { double length = (planes[modg(i+1)].gCent() - planes[modg(i)].gCent()).norm();
     unsigned thisPartNr = planes[modg(i)].gPart();
     unsigned nextPartNr = planes[modg(i+1)].gPart();
@@ -753,7 +762,7 @@ void Loop::calcFrame()
   { unsigned prevPart = planes[modg(i-1)].gPart();
     unsigned thisPart = planes[modg(i)].gPart();
     unsigned nextPart = planes[modg(i+1)].gPart();
-    /* odd segements directs give there visible state to the plane*/
+    /* odd segments directs give there visible state to the plane*/
     if (Lib::isOdd(thisPart))
     { planes[i].defCover(segments[thisPart].gShow(),segments[thisPart].gShow()); }
     else
@@ -763,14 +772,14 @@ void Loop::calcFrame()
       else
       { /* Yes it is, since this is an even plane it cannot have different parts on both sides */
         if ((prevPart==thisPart) && (thisPart!=nextPart))
-        { /* The border is right*/
+        { /* The border is on the right*/
           planes[i].defCover(segments[thisPart].gShow(),segments[modh(thisPart+1)].gShow()); }
         else if ((prevPart!=thisPart) && (thisPart==nextPart))
-        { /* The border is left*/
+        { /* The border is on the left*/
           planes[i].defCover(segments[modh(thisPart-1)].gShow(),segments[thisPart].gShow()); }
         else
         { /* Hmm, this is a deserted plane after all, lets remove it to draw attention. Should log it as well */
-          std::cerr << "INTERNAL ERROR: deserted vertex plane, not drawing! ";
+          log->addLog(Log::WARN,"Deserted vertex plane (this should not happen). ");
           planes[i].defCover(false,false); } } }
     coverPresent = coverPresent || (planes[i].gCtype() != Plane::RING); } }
 
@@ -789,23 +798,24 @@ Eigen::Vector3d Loop::linearSearch(const double t, const Vector3Dvector vs)
       else  { result  = (vs[i-1]+vs[i])/2; } } }
   return result; }
 
+
 void Loop::calcSegmentDef(const unsigned i)
 { /* Intentionally left empty */ }
+
 
 void Loop::calcSegmentLin(const unsigned i)
 { Vector3Dvector vs;
   if (segments[i].bzps.empty()) { return; }
-  if (segments[i].bzps.front()[0]>epsilon()-1) { vs.push_back(Eigen::Vector3d(-1,1,0)); }
-  for (unsigned j=0; j<segments[i].bzps.size(); j++) { vs.push_back(segments[i].bzps[j]); }
-  if (segments[i].bzps.back()[0]<1-epsilon()) { vs.push_back(Eigen::Vector3d(1,1,0)); }
-  for (unsigned j=0; j<vs.size(); j++) { print ("calcSegmentLin: vs",vs[j],j); }
+  if (segments[i].bzps.front()[0]>epsilon()-1)        { vs.push_back(Eigen::Vector3d(-1,1,0)); }
+  for (unsigned j=0; j<segments[i].bzps.size(); j++)  { vs.push_back(segments[i].bzps[j]);     }
+  if (segments[i].bzps.back()[0]<1-epsilon())         { vs.push_back(Eigen::Vector3d(1,1,0));  }
   double fulllen = segments[i].gLength();
   for (unsigned j=0; j<planes.size(); j++)
-    if (planes[j].gPart() == i)
+  { if (planes[j].gPart() == i)
     { Eigen::Vector3d cyl;
       switch (segments[i].gTtype())
       { case Segment::IDN :
-          /* As seperate case this makes no sense, assume rotation */
+          /* As separate case this makes no sense, assume rotation */
         case Segment::ROT :
           cyl = linearSearch(planes[j].gLoc(),vs);
           break;
@@ -814,9 +824,8 @@ void Loop::calcSegmentLin(const unsigned i)
           cyl = linearSearch(2*planes[j].gLoc()/fulllen-1,vs);
           break; }
        cyl[2] = cyl[2]/180*M_PI;
-      planes[j].sModul(cyl[1],cyl[2]);
-    }
-}
+      planes[j].sModul(cyl[1],cyl[2]); } } }
+
 
 void Loop::calcSegmentBez(const unsigned i)
 { Vector3Dvector vs,rs;
@@ -827,9 +836,9 @@ void Loop::calcSegmentBez(const unsigned i)
   double lower = lScaled ? -1 : 0;
   double upper = lScaled ?  1 : fulllen;
 
-  if (segments[i].bzps.front()[0]>lower + epsilon()) { vs.push_back(Eigen::Vector3d(lower,1,0)); }
-  for (unsigned j=0; j<segments[i].bzps.size(); j++) { vs.push_back(segments[i].bzps[j]); }
-  if (segments[i].bzps.back()[0]<upper-epsilon()) { vs.push_back(Eigen::Vector3d(upper,1,0)); }
+  if (segments[i].bzps.front()[0]>lower + epsilon())  { vs.push_back(Eigen::Vector3d(lower,1,0)); }
+  for (unsigned j=0; j<segments[i].bzps.size(); j++)  { vs.push_back(segments[i].bzps[j]);        }
+  if (segments[i].bzps.back()[0]<upper-epsilon())     { vs.push_back(Eigen::Vector3d(upper,1,0)); }
 
   for (unsigned j=0; j<=5*faces; j++) { rs.push_back( bezierFunc((double)j/(5*faces), vs)); }
   for (unsigned j=0; j<planes.size(); j++)
@@ -867,9 +876,12 @@ void Loop::calcSegmentSin(const unsigned i)
       planes[j].sModul(y,0); } } } }
 
 
-
 void Loop::extrude(const double Pmaxr)
-{ planes.reserve(faces*steps.size());
+{ if (log->result==Log::FAIL) { return; }
+  if (pure2D)
+  { log->addLog(Log::FAIL,"Extrusion not possible with pure 2D loops.");
+    return; }
+  planes.reserve(faces*steps.size());
   bool reduct = true;
   unsigned fr = 0;
   while (reduct && (fr++<100))
