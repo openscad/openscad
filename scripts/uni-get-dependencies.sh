@@ -7,8 +7,9 @@
 get_fedora_deps()
 {
  sudo yum install qt-devel bison flex eigen2-devel python-paramiko \
-  boost-devel mpfr-devel gmp-devel glew-devel CGAL-devel gcc pkgconfig \
-  git libXmu-devel curl imagemagick
+  boost-devel mpfr-devel gmp-devel glew-devel CGAL-devel gcc gcc-c++ pkgconfig \
+  opencsg-devel git libXmu-devel curl imagemagick ImageMagick make \
+  xorg-x11-server-Xvfb
 }
 
 get_qomo_deps()
@@ -73,6 +74,8 @@ if [ -e /etc/issue ]; then
  if [ "`grep -i ubuntu /etc/issue`" ]; then
   get_debian_deps
  elif [ "`grep -i debian /etc/issue`" ]; then
+  get_debian_deps
+ elif [ "`grep -i mint /etc/issue`" ]; then
   get_debian_deps
  elif [ "`grep -i suse /etc/issue`" ]; then
   get_opensuse_deps

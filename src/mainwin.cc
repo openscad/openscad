@@ -655,7 +655,11 @@ bool MainWindow::compile(bool reload, bool procevents)
 		if (procevents) QApplication::processEvents();
 		
 		AbstractNode::resetIndexCounter();
-		this->root_inst = ModuleInstantiation("group");
+
+		// split these two lines - gcc 4.7 bug
+		ModuleInstantiation mi = ModuleInstantiation( "group" );
+		this->root_inst = mi; 
+
 		this->absolute_root_node = this->root_module->instantiate(&top_ctx, &this->root_inst, NULL);
 		
 		if (this->absolute_root_node) {
