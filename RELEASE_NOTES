@@ -17,7 +17,7 @@ o Added basic syntax highlighting in the editor
 o There is now a built-in library path in user-space:
   http://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Libraries#Library_Locations
 o Commandline output to PNG, with various camera and rendering settings.        
-  Run openscad -h to see usage info.
+  Run openscad -h to see usage info or see the OpenSCAD wiki user manual.
 o Attempting to open dxf, off or stl files in the GUI will now create an import statement.
 o The preview operator (%) will now preserve any manually set color
 o The highlight operator (#) will now color the object in transparent red
@@ -46,6 +46,10 @@ o Regression test now creates single monolithic .html file for easier uploading
 o Regression test auto-starts & stops Xvfb / Xvnc if on headless unix machine
 o The backend is finally independent of Qt
 o Windows: We now have a 64-bit version
+
+Known Bugs:
+o Linux: command-line png rendering on Gallium is flaky. 
+  Workaround: use CGAL --render or hardware rendering.
 
 OpenSCAD 2013.01
 ================
