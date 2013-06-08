@@ -180,10 +180,32 @@ void SVGData::render_cubic_curve_to(float x0, float y0, float x1, float y1, floa
 }
 
 void SVGData::render_elliptical_arc(float x0, float y0, float rx, float ry, float x_axis_rotation, int large_arc_flag, int sweep_flag, float x, float y){
+
+  // Conversion from endpoint to center parameterization
+  // http://www.w3.org/TR/SVG11/implnote.html#ArcImplementationNotes
+  float cx, cy, cx_, cy_, x0_, y0_, start_angle, end_angle;
+
+  x0_ = cos(x_axis_rotation)*(x0-x)/2 - sin(x_axis_rotation)*(y0-y)/2;
+  y0_ = -sin(x_axis_rotation)*(x0-x)/2 + cos(x_axis_rotation)*(y0-y)/2;
+
+  float k = sqrt((rx*rx*ry*ry - rx*rx*y0_*y0_ - ry*ry*x0_*x0_) / (rx*rx*y0_*y0_ + ry*ry*x0_*x0_));
+  cx_ = k * rx*y0_/ry;
+  cy_ = -k * ry*x0_/rx;
+
+  if (large_arc_flag==sweep_flag){
+    cx_ = -cx_;
+    cy_ = -cy_;
+  }
+
+  cx = cos(x_axis_rotation) * cx_ - sin(x_axis_rotation) * cy_ + (x0+x)/2;
+  cy = sin(x_axis_rotation) * cx_ + cos(x_axis_rotation) * cy_ + (y0+y)/2;
+
+  //TODO: calculate start_angle and end_angle
+
   //TODO: This only deals with $fn. Add some logic to support $fa and $fs
   for (int i=0; i<=fn; i++){
     double t = i/fn;
-    //TODO: implement-me!
+    //TODO: generate points for the elliptical curve by calling add_point(x, y)
   }
 }
 
