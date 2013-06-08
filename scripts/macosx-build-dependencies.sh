@@ -238,8 +238,9 @@ build_cgal()
   cd $BASEDIR/src
   rm -rf CGAL-$version
   if [ ! -f CGAL-$version.tar.gz ]; then
-    # 4.1
-    curl -O https://gforge.inria.fr/frs/download.php/31641/CGAL-$version.tar.gz
+    # 4.2
+    curl -O https://gforge.inria.fr/frs/download.php/32359/CGAL-$version.tar.gz
+    # 4.1 curl -O https://gforge.inria.fr/frs/download.php/31641/CGAL-$version.tar.gz
     # 4.1-beta1 curl -O https://gforge.inria.fr/frs/download.php/31348/CGAL-$version.tar.gz
     # 4.0.2 curl -O https://gforge.inria.fr/frs/download.php/31175/CGAL-$version.tar.gz
     # 4.0 curl -O https://gforge.inria.fr/frs/download.php/30387/CGAL-$version.tar.gz
@@ -306,7 +307,9 @@ build_eigen()
 
   EIGENDIR="none"
   if [ $version = "2.0.17" ]; then EIGENDIR=eigen-eigen-b23437e61a07; fi
-  if [ $version = "3.1.2" ]; then EIGENDIR=eigen-eigen-5097c01bcdc4; fi
+  if [ $version = "3.1.2" ]; then EIGENDIR=eigen-eigen-5097c01bcdc4;
+  elif [ $version = "3.1.3" ]; then EIGENDIR=eigen-eigen-2249f9c22fe8; fi
+
   if [ $EIGENDIR = "none" ]; then
     echo Unknown eigen version. Please edit script.
     exit 1
@@ -435,12 +438,13 @@ fi
 echo "Using basedir:" $BASEDIR
 mkdir -p $SRCDIR $DEPLOYDIR
 build_qt 4.8.4
-build_eigen 3.1.2
-build_gmp 5.1.1
+# NB! For eigen, also update the path in the function
+build_eigen 3.1.3
+build_gmp 5.1.2
 build_mpfr 3.1.2
 build_boost 1.53.0
 # NB! For CGAL, also update the actual download URL in the function
-build_cgal 4.1
+build_cgal 4.2
 build_glew 1.9.0
 build_opencsg 1.3.2
 if $OPTION_DEPLOY; then
