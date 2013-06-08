@@ -161,6 +161,26 @@ void SVGData::render_line_to(float x0, float y0, float x1, float y1){
   add_point(x1,y1);
 }
 
+float SVGData::quadratic_curve_length(float x0, float y0, float x1, float y1, float x2, float y2){
+  // based on math described at
+  // http://segfaultlabs.com/docs/quadratic-bezier-curve-length
+
+  float ax, ay, bx, by;
+  ax = x0 - 2*x1 + x2;
+  ay = y0 - 2*y1 + y2;
+  bx = 2*x1 - 2*x0;
+  by = 2*y1 - 2*y0;
+
+  float A,B,C;
+  A = 4*(ax*ax+ay*ay);
+  B = 4*(ax*bx + ay*by);
+  C = bx*bx + by*by;
+  float S = sqrt(A+B+C);
+  float A32 = A*sqrt(A);
+
+  return (1/8*A32) * (4*A32*S + 2*sqrt(A)*B*(S-sqrt(C)) + (4*C*A-B*B)*log(abs((2*sqrt(A)+B/sqrt(A)+2*S)/(B/sqrt(A) +2*sqrt(C)))));
+}
+
 void SVGData::render_quadratic_curve_to(float x0, float y0, float x1, float y1, float x2, float y2){
   //TODO: This only deals with $fn. Add some logic to support $fa and $fs
   for (int i=0; i<=fn; i++){
