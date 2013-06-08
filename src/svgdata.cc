@@ -126,13 +126,32 @@ std::vector<float> SVGData::get_params(std::string str){
   return values;
 }
 
-void SVGData::render_rect(float x, float y, float width, float height, float /*rx*/, float /*ry*/){
-  //TODO: render rounded corners
+void SVGData::add_arc_points(float xc, float yc, float rx, float ry, float start, float end){
+  for (int i=0; i<=fn; i++){
+    float t = ((float) i) / fn;
+    float angle = start + (end-start)*t;
+    float x = xc + rx*cos(angle);
+    float y = yc + ry*sin(angle);
+    add_point(x, y);
+  }
+}
+
+#define PI 3.1415
+void SVGData::render_rect(float x, float y, float width, float height, float rx, float ry){
+//  std::cout << "x=" << x << " y=" << y << " rx=" << rx << " ry=" << ry << " width=" << width << " height=" << height << std::endl;
   start_path();
-  add_point(x,y);
-  add_point(x+width,y);
-  add_point(x+width, y+height);
-  add_point(x, y+height);
+  add_point(x+rx,y);
+  add_point(x+width-rx,y);
+  add_arc_points(x+width-rx, y+ry, rx, ry, 3*PI/2, 2*PI);
+  add_point(x+width, y+ry);
+  add_point(x+width, y+height-ry);
+  add_arc_points(x+width-rx, y+height-ry, rx, ry, 0, PI/2);
+  add_point(x+width-rx, y+height);
+  add_point(x+rx, y+height);
+  add_arc_points(x+rx, y+height-ry, rx, ry, PI/2, PI);
+  add_point(x, y+height-ry);
+  add_point(x, y+ry);
+  add_arc_points(x+rx, y+ry, rx, ry, PI, 3*PI/2);
   close_path();
 }
 
@@ -552,16 +571,16 @@ void SVGData::traverse_subtree(TransformMatrix parent_matrix, const xmlpp::Node*
       }
 
       if(rx_attr && !ry_attr){
-        rx=ry=atof(x_attr->get_value().c_str());
+        rx=ry=atof(rx_attr->get_value().c_str());
       }
 
       if(!rx_attr && ry_attr){
-        rx=ry=atof(y_attr->get_value().c_str());
+        rx=ry=atof(ry_attr->get_value().c_str());
       }
 
       if(rx_attr && ry_attr){
-        rx=atof(x_attr->get_value().c_str());
-        ry=atof(y_attr->get_value().c_str());
+        rx=atof(rx_attr->get_value().c_str());
+        ry=atof(ry_attr->get_value().c_str());
       }
 
       if(width_attr && height_attr){

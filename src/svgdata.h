@@ -116,6 +116,7 @@ private:
   void start_path();
   void close_path();
   void add_point(float x, float y);
+  void add_arc_points(float xc, float yc, float rx, float ry, float start, float end);
 
   void parse_path_description(Glib::ustring d);
   std::vector<float> get_params(std::string str);
