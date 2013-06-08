@@ -87,11 +87,16 @@ mpfr_sysver()
 gmp_sysver()
 {
   # on some systems you have VERSION in gmp-$arch.h not gmp.h. use gmp*.h
-  if [ ! -e $1/include ]; then return; fi
-  gmppaths=`ls $1/include | grep ^gmp`
+  if [ -e $1/include/multiarch-x86_64-linux ]; then
+    subdir=include/multiarch-x86_64-linux
+  else
+    subdir=include
+  fi
+  if [ ! -e $1/$subdir ]; then return; fi
+  gmppaths=`ls $1/$subdir | grep ^gmp`
   if [ ! "$gmppaths" ]; then return; fi
   for gmpfile in $gmppaths; do
-    gmppath=$1/include/$gmpfile
+    gmppath=$1/$subdir/$gmpfile
     if [ "`grep __GNU_MP_VERSION $gmppath`" ]; then
       gmpmaj=`grep "define  *__GNU_MP_VERSION  *[0-9]*" $gmppath | awk '{print $3}'`
       gmpmin=`grep "define  *__GNU_MP_VERSION_MINOR  *[0-9]*" $gmppath | awk '{print $3}'`
@@ -427,7 +432,7 @@ find_installed_version()
   # try to find/parse headers and/or binary output
   # break on the first match. (change the order to change precedence)
   if [ ! $fsv_tmp ]; then
-    for syspath in "/usr/local" "/opt/local" "/usr/pkg" "/usr" $OPENSCAD_LIBRARIES; do
+    for syspath in "/usr/local" "/opt/local" "/usr/pkg" "/usr" OPENSCAD_LIBRARIES; do
       if [ -e $syspath ]; then
         debug $depname"_sysver" $syspath
         eval $depname"_sysver" $syspath
