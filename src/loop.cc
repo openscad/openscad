@@ -120,7 +120,7 @@ Vertex::VertexType Vertex::gVtype() { return vtype; }
 
 void Vertex::reset()
 { vtype = DEF;
- for (unsigned i=0; i<6; i++) { pars[i]=0; } }
+ for (unsigned i=0; i<4; i++) { pars[i]=0; } }
 
 Vertex::VertexType Vertex::stringsHasVertexType(const std::vector<std::string> strs, const VertexType deftype)
 { if (Lib::has<std::string>(strs,"def")) { return Vertex::DEF; }
@@ -245,7 +245,7 @@ void Segment::specify(const bool show, const bool hide, const bool out, const bo
 void Segment::reset()
 { stype = DEF;
   bzps.clear();
-  for (unsigned i=0; i<6; i++) { pars[i]=0; }
+  for (unsigned i=0; i<4; i++) { pars[i]=0; }
   pars[0]=1; }
 
 Segment::SegmentType Segment::stringsHasSegmentType(const std::vector<std::string> strs, const SegmentType deftype)
@@ -363,10 +363,12 @@ void Loop::verify()
   { if (vertices[i].gVtype() != Vertex::DEF)
     { /* If the resulting curvature is too small ignore the Vertex. */
       if (cp(i,0)<minr())
-      { vertices[i].reset(); }
+      { if (cp(i,0)>epsilon()) { log->addLog(Log::WARN,"Curvature too small to render, ignoring vertex dressing."); }
+        vertices[i].reset(); }
       /* The length of the side must be enough to accommodate the reduction due to milling, otherwise ignore. */
       if ( (vertices[mod(i+1)].gPar(1)+cp(i,0)) + minr() > (nv(i)-cv(i)).norm() )
-      { vertices[i].reset();
+      { log->addLog(Log::WARN,"Cut offs exceed side length, ignoring vertex dressing.");
+        vertices[i].reset();
         vertices[mod(i+1)].reset(); }
     /* Should we check for simple polygons using Shamos-Hoey? */ }
   { if (edges[i].gEtype() == Edge::SIN)
@@ -762,7 +764,7 @@ void Loop::calcFrame()
   { unsigned prevPart = planes[modg(i-1)].gPart();
     unsigned thisPart = planes[modg(i)].gPart();
     unsigned nextPart = planes[modg(i+1)].gPart();
-    /* odd segments directs give there visible state to the plane*/
+    /* odd segments directly give there visible state to the plane */
     if (Lib::isOdd(thisPart))
     { planes[i].defCover(segments[thisPart].gShow(),segments[thisPart].gShow()); }
     else
@@ -770,7 +772,7 @@ void Loop::calcFrame()
       if ((prevPart==thisPart) && (thisPart==nextPart))
       { planes[i].defCover(segments[thisPart].gShow(),segments[thisPart].gShow()); }
       else
-      { /* Yes it is, since this is an even plane it cannot have different parts on both sides */
+      { /* Yes it is, since this is an even plane test the sides. */
         if ((prevPart==thisPart) && (thisPart!=nextPart))
         { /* The border is on the right*/
           planes[i].defCover(segments[thisPart].gShow(),segments[modh(thisPart+1)].gShow()); }
@@ -778,11 +780,11 @@ void Loop::calcFrame()
         { /* The border is on the left*/
           planes[i].defCover(segments[modh(thisPart-1)].gShow(),segments[thisPart].gShow()); }
         else
-        { /* Hmm, this is a deserted plane after all, lets remove it to draw attention. Should log it as well */
-          log->addLog(Log::WARN,"Deserted vertex plane (this should not happen). ");
-          planes[i].defCover(false,false); } } }
+        { /* This is a deserted plane, visibility is determined by the edge pieces. */
+          planes[i].defCover(segments[modh(thisPart-1)].gShow(),segments[modh(thisPart+1)].gShow()); } } }
     coverPresent = coverPresent || (planes[i].gCtype() != Plane::RING); } }
 
+/* TODO This is slow and may produce incorrect results for non monotonous functions */
 Eigen::Vector3d Loop::linearSearch(const double t, const Vector3Dvector vs)
 { Eigen::Vector3d result(0,0,0);
   if (vs.size() > 0)
@@ -803,53 +805,32 @@ void Loop::calcSegmentDef(const unsigned i)
 { /* Intentionally left empty */ }
 
 
-void Loop::calcSegmentLin(const unsigned i)
-{ Vector3Dvector vs;
-  if (segments[i].bzps.empty()) { return; }
-  if (segments[i].bzps.front()[0]>epsilon()-1)        { vs.push_back(Eigen::Vector3d(-1,1,0)); }
-  for (unsigned j=0; j<segments[i].bzps.size(); j++)  { vs.push_back(segments[i].bzps[j]);     }
-  if (segments[i].bzps.back()[0]<1-epsilon())         { vs.push_back(Eigen::Vector3d(1,1,0));  }
-  double fulllen = segments[i].gLength();
-  for (unsigned j=0; j<planes.size(); j++)
-  { if (planes[j].gPart() == i)
-    { Eigen::Vector3d cyl;
-      switch (segments[i].gTtype())
-      { case Segment::IDN :
-          /* As separate case this makes no sense, assume rotation */
-        case Segment::ROT :
-          cyl = linearSearch(planes[j].gLoc(),vs);
-          break;
-        case Segment::RTL :
-        case Segment::RLR :
-          cyl = linearSearch(2*planes[j].gLoc()/fulllen-1,vs);
-          break; }
-       cyl[2] = cyl[2]/180*M_PI;
-      planes[j].sModul(cyl[1],cyl[2]); } } }
-
-
-void Loop::calcSegmentBez(const unsigned i)
+void Loop::calcSegmentLinBez(const unsigned i, const bool isBez)
 { Vector3Dvector vs,rs;
   if (segments[i].bzps.empty()) { return; }
 
   double fulllen = segments[i].gLength();
   bool lScaled = (segments[i].gTtype() == Segment::RTL) || (segments[i].gTtype() == Segment::RLR);
+  bool single  = (segments[i].gLength()<epsilon());
   double lower = lScaled ? -1 : 0;
   double upper = lScaled ?  1 : fulllen;
 
-  if (segments[i].bzps.front()[0]>lower + epsilon())  { vs.push_back(Eigen::Vector3d(lower,1,0)); }
-  for (unsigned j=0; j<segments[i].bzps.size(); j++)  { vs.push_back(segments[i].bzps[j]);        }
-  if (segments[i].bzps.back()[0]<upper-epsilon())     { vs.push_back(Eigen::Vector3d(upper,1,0)); }
-
-  for (unsigned j=0; j<=5*faces; j++) { rs.push_back( bezierFunc((double)j/(5*faces), vs)); }
+  if ((!single) && (segments[i].bzps.front()[0]>lower + epsilon()))  { vs.push_back(Eigen::Vector3d(lower,1,0)); }
+  for (unsigned j=0; j<segments[i].bzps.size(); j++)                 { vs.push_back(segments[i].bzps[j]);        }
+  if ((!single) && (segments[i].bzps.back()[0]<upper-epsilon()) )    { vs.push_back(Eigen::Vector3d(upper,1,0)); }
+  if (isBez)
+  { for (unsigned j=0; j<=10*faces; j++) { rs.push_back( bezierFunc((double)j/(10*faces), vs)); } }
+  else
+  { rs = vs; }
   for (unsigned j=0; j<planes.size(); j++)
-    if (planes[j].gPart() == i)
+  { if (planes[j].gPart() == i)
     { Eigen::Vector3d cyl;
-      if (lScaled)
+      if ((lScaled) && (!single))
       { cyl = linearSearch(2*planes[j].gLoc()/fulllen-1,rs);}
       else
       { cyl = linearSearch(planes[j].gLoc(),rs); }
       cyl[2] = cyl[2]/180*M_PI;
-      planes[j].sModul(cyl[1],cyl[2]); } }
+      planes[j].sModul(cyl[1],cyl[2]); } } }
 
 
 void Loop::calcSegmentSin(const unsigned i)
@@ -893,10 +874,10 @@ void Loop::extrude(const double Pmaxr)
   calcFrame();
   for (unsigned i=0; i<partCnt; i++)
   { switch (segments[i].gStype())
-    { case Segment::DEF : calcSegmentDef(i);  break;
-      case Segment::LIN : calcSegmentLin(i);  break;
-      case Segment::BEZ : calcSegmentBez(i);  break;
-      case Segment::SIN : calcSegmentSin(i);  break;  } } }
+    { case Segment::DEF : calcSegmentDef(i);           break;
+      case Segment::LIN : calcSegmentLinBez(i,false);  break;
+      case Segment::BEZ : calcSegmentLinBez(i,true);   break;
+      case Segment::SIN : calcSegmentSin(i);           break;  } } }
 
 bool Loop::planeIsBottom(const int plane)  { return planes[plane].gCtype() == Plane::BOTTOM; }
 bool Loop::planeIsTop(const int plane)     { return planes[plane].gCtype() == Plane::TOP; }

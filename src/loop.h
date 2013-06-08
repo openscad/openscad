@@ -232,8 +232,7 @@ class Loop
     void calcEdgeBez(const unsigned i);
     void calcEdgeSin(const unsigned i);
     void calcSegmentDef(const unsigned i);
-    void calcSegmentLin(const unsigned i);
-    void calcSegmentBez(const unsigned i);
+    void calcSegmentLinBez(const unsigned i, const bool isBez);
     void calcSegmentSin(const unsigned i);
     void calcExtrusionPlane(double maxr, const unsigned i);
     void calcFrame();
