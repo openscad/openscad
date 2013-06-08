@@ -16,5 +16,4 @@ translate([22,11,0]) cylinder(h=15, r=5, r2=5);
 // tend to "abuse" this for captured nut slots
 translate([-10,0,0]) cylinder(h=2, r=3, $fn=6);
 
-
-// FIXME: We could test $fs, $fa, $fn as well
+translate([-10, -10, 0]) sphere(5, $fn=0.1);

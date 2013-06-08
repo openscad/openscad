@@ -242,9 +242,8 @@ AbstractNode *PrimitiveModule::instantiate(const Context *ctx, const ModuleInsta
 */
 int get_fragments_from_r(double r, double fn, double fs, double fa)
 {
-	if (r < GRID_FINE) return 0;
-	if (fn > 0.0)
-		return (int)fn;
+	if (r < GRID_FINE) return 3;
+	if (fn > 0.0) return (int)(fn >= 3 ? fn : 3);
 	return (int)ceil(fmax(fmin(360.0 / fa, r*2*M_PI / fs), 5));
 }
 
