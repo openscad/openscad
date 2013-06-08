@@ -185,8 +185,8 @@ void SVGData::render_quadratic_curve_to(float x0, float y0, float x1, float y1, 
   //TODO: This only deals with $fn. Add some logic to support $fa and $fs
   for (int i=0; i<=fn; i++){
     double t = i/fn;
-    add_point((1-t)*(1-t)*x0 + 2*(1-t)*x1*t + x2*t*t,
-              (1-t)*(1-t)*y0 + 2*(1-t)*y1*t + y2*t*t);
+    add_point(pow(1-t,2)*x0 + 2*(1-t)*x1*t + x2*pow(t,2),
+              pow(1-t,2)*y0 + 2*(1-t)*y1*t + y2*pow(t,2));
   }
 }
 
@@ -194,8 +194,8 @@ void SVGData::render_cubic_curve_to(float x0, float y0, float x1, float y1, floa
   //TODO: This only deals with $fn. Add some logic to support $fa and $fs
   for (int i=0; i<=fn; i++){
     double t = i/fn;
-    add_point((1-t)*(1-t)*(1-t)*x0 + 3*(1-t)*(1-t)*x1*t + 3*(1-t)*x2*t*t + x3*t*t*t,
-              (1-t)*(1-t)*(1-t)*y0 + 3*(1-t)*(1-t)*y1*t + 3*(1-t)*y2*t*t + y3*t*t*t);
+    add_point(pow(1-t,3)*x0 + 3*pow(1-t,2)*x1*t + 3*(1-t)*x2*pow(t,2) + x3*pow(t,3),
+              pow(1-t,3)*y0 + 3*pow(1-t,2)*y1*t + 3*(1-t)*y2*pow(t,2) + y3*pow(t,3));
   }
 }
 
