@@ -126,6 +126,8 @@ private:
   void render_cubic_curve_to(float x0, float y0, float x1, float y1, float x2, float y2, float x3, float y3);
   void render_elliptical_arc(float x0, float y0, float rx, float ry, float x_axis_rotation, int large_arc_flag, int sweep_flag, float x, float y);
 
+  float quadratic_curve_length(float x0, float y0, float x1, float y1, float x2, float y2);
+
   TransformMatrix parse_transform(std::string transform);
   void setCurrentTransformMatrix(TransformMatrix tm){
     ctm = tm;
