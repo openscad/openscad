@@ -126,6 +126,15 @@ std::vector<float> SVGData::get_params(std::string str){
   return values;
 }
 
+/*!
+	Returns the number of subdivision of a bezier curve, given its total length and the special variables $fn and $fs
+*/
+static int get_fragments_from_length(double length, double fn, double fs){
+	if (fn > 0.0)
+		return (int)fn;
+	return (int)ceil(fmax(length / fs, 5));
+}
+
 void SVGData::add_arc_points(float xc, float yc, float rx, float ry, float start, float end){
   for (int i=0; i<=fn; i++){
     float t = ((float) i) / fn;
@@ -182,18 +191,25 @@ float SVGData::quadratic_curve_length(float x0, float y0, float x1, float y1, fl
 }
 
 void SVGData::render_quadratic_curve_to(float x0, float y0, float x1, float y1, float x2, float y2){
-  //TODO: This only deals with $fn. Add some logic to support $fa and $fs
-  for (int i=0; i<=fn; i++){
-    double t = i/fn;
+  int segments = get_fragments_from_length(quadratic_curve_length(x0, y0, x1, y1, x2, y2), fn, fs);
+  for (double i=0; i<=segments; i++){
+    double t = i/segments;
     add_point(pow(1-t,2)*x0 + 2*(1-t)*x1*t + x2*pow(t,2),
               pow(1-t,2)*y0 + 2*(1-t)*y1*t + y2*pow(t,2));
   }
 }
 
 void SVGData::render_cubic_curve_to(float x0, float y0, float x1, float y1, float x2, float y2, float x3, float y3){
-  //TODO: This only deals with $fn. Add some logic to support $fa and $fs
-  for (int i=0; i<=fn; i++){
-    double t = i/fn;
+
+  int segments = 5;
+  if (fn > 0.0)
+    segments = fn;
+
+  //TODO: This only deals with $fn. Add some logic to support $fs
+  //int segments = get_fragments_from_length(cubic_curve_length(x0, y0, x1, y1, x2, y2, x3, y3), fn, fs);
+
+  for (double i=0; i<=segments; i++){
+    double t = i/segments;
     add_point(pow(1-t,3)*x0 + 3*pow(1-t,2)*x1*t + 3*(1-t)*x2*pow(t,2) + x3*pow(t,3),
               pow(1-t,3)*y0 + 3*pow(1-t,2)*y1*t + 3*(1-t)*y2*pow(t,2) + y3*pow(t,3));
   }
