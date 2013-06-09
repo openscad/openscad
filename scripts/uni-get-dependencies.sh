@@ -35,7 +35,8 @@ get_freebsd_deps()
 get_netbsd_deps()
 {
  sudo pkgin install bison boost cmake git bash eigen flex gmake gmp mpfr \
-  qt4 glew cgal opencsg modular-xorg python27 py27-paramiko curl imagemagick
+  qt4 glew cgal opencsg modular-xorg python27 py27-paramiko curl \
+  imagemagick ImageMagick
 }
 
 get_opensuse_deps()
