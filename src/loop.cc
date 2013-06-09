@@ -100,18 +100,18 @@ void Vertex::specify(const VertexType Pvtype, const std::vector<double> Ppars)
      break;
     case LIN :
       if (count<2) { pars[1] = pars[0]; }
-      if (count<1) { log->addLog(Log::FAIL,"To few parameters for linear construction."); }
+      if (count<1) { log->addLog(Log::FAIL,"To few parameters for linear construction => supply extra parameters."); }
       break;
     case ARC :
       if (count<3) { pars[2] = 0; }
       if (count<2) { pars[1] = pars[0]; }
-      if (count<1) { log->addLog(Log::FAIL,"To few parameters for arc construction."); }
+      if (count<1) { log->addLog(Log::FAIL,"To few parameters for arc construction => supply extra parameters."); }
       break;
     case BEZ :
       if (count<4) { pars[3] = pars[2]; }
       if (count<3) { pars[3] = 1; pars[2] = 1; }
       if (count<2) { pars[3] = 1; pars[2] = 1; pars[1] = pars[0]; }
-      if (count<1) { log->addLog(Log::FAIL,"To few parameters for bezier construction."); }
+      if (count<1) { log->addLog(Log::FAIL,"To few parameters for bezier construction => supply extra parameters."); }
       break; } }
 
 double Vertex::gPar(const unsigned i) { return ( (i<4) ? pars[i] : 0 ); }
@@ -151,7 +151,7 @@ void Edge::specify(const EdgeType Petype, const TransType Pttype, const std::vec
     case SIN :
       if (ttype == IDN) { ttype = ROT; }
       if (count<3) { pars[2]=1; }
-      if (count<2) { log->addLog(Log::FAIL,"To few parameters for wave construction. \n"); }
+      if (count<2) { log->addLog(Log::FAIL,"To few parameters for wave construction => supply extra parameters."); }
       break; } }
 
 double Edge::gPar(const unsigned i) { return ( (i<6) ? pars[i] : 0 ); }
@@ -203,16 +203,16 @@ Edge::TransType Edge::stringsHasTransType(const std::vector<std::string> strs, c
 
 double Segment::gPar(const unsigned i) { return ( (i<6) ? pars[i] : 0 ); }
 
-Segment::SegmentType Segment::gStype()  { return stype; }
-Segment::TransType Segment::gTtype()    { return ttype; }
+Segment::SegmentType Segment::gStype()  { return stype;    }
+Segment::TransType Segment::gTtype()    { return ttype;    }
+bool Segment::gOuter()                  { return outer;    }
+bool Segment::gShow()                   { return show;     }
+double Segment::gOutscale()             { return outscale; }
+double  Segment::gLength()              { return length;   }
 
-bool Segment::gOuter() { return outer; }
-bool Segment::gShow()  { return show; }
-
-double  Segment::gLength() { return length; }
 void  Segment::addToLength(const double len)  { length += len; }
 
-Segment::Segment(Log * Plog) : log(Plog), show(true), outer(false), stype(DEF),  ttype(IDN),  pars(), length(0), bzps() { pars[0]=1; };
+Segment::Segment(Log * Plog) : log(Plog), show(true), outer(false), stype(DEF),  ttype(IDN),  pars(), length(0), outscale(1), bzps() { pars[0]=1; };
 
 void Segment::specify(const SegmentType Pstype, const TransType Pttype, const std::vector<double> Ppars, const Vector3Dvector Pbzps)
 { stype = Pstype;
@@ -232,15 +232,15 @@ void Segment::specify(const SegmentType Pstype, const TransType Pttype, const st
       if (ttype == IDN) { ttype = ROT; }
       if (count<5) { pars[5]=1; }
       if (count<3) { pars[2]=1; }
-      if (count<2) { log->addLog(Log::FAIL,"To few parameters for wave construction."); }
+      if (count<2) { log->addLog(Log::FAIL,"To few parameters for wave construction => supply extra parameters."); }
       break; } }
 
-void Segment::specify(const bool show, const bool hide, const bool out, const bool in, const std::vector<double> Ppars)
+void Segment::specify(const bool show, const bool hide, const bool out, const bool in, const double Poutscale)
 { if (show) { this->show = true; }
   if (hide) { this->show = false; }
   if (out)  { this->outer = true; }
   if (in)   { this->outer = false; }
-  if (out || in) { if (Ppars.size()==0) { pars[0]=1; } else { pars[0]=Ppars[0]; } } }
+  if (out || in) { if (std::fabs(Poutscale)<Loop::epsilon()) { outscale=1; } else { outscale=Poutscale; } } }
 
 void Segment::reset()
 { stype = DEF;
@@ -281,19 +281,6 @@ double Plane::gLoc()           { return loc; }
 
 Plane::CoverType Plane::gCtype() { return ctype; }
 
-void Plane::defCover(const bool leftShow, const bool midShow, const bool rightShow)
-{ if ( Lib::isOdd(part) || ((leftShow==midShow) && (midShow==rightShow)) )
-  { if (midShow) { ctype=RING; } else { ctype=NONE; }  }
-  else
-  { if ((leftShow!=midShow) && (midShow==rightShow))
-    { ctype=TOP; }
-    else if ((leftShow==midShow) && (midShow!=rightShow))
-    { ctype=BOTTOM; }
-    else
-    { /* This situation should not appear, except for deserted vertex planes. */
-      log->addLog(Log::WARN,"Found an invisible plane.");
-      ctype=NONE; } } }
-
 void Plane::defCover(const bool leftShow, const bool rightShow)
 { if ((leftShow) && (rightShow))       { ctype=RING;   }
   else if ((leftShow) && (!rightShow)) { ctype=TOP;    }
@@ -303,7 +290,6 @@ void Plane::defCover(const bool leftShow, const bool rightShow)
 double Plane::gScale() { return scale; }
 Plane::PlaneType Plane::gPtype() { return ptype; }
 
-
 void Plane::sLengths(const double Plength, const double Ploc)
 { length = Plength;
   loc = Ploc; }
@@ -311,7 +297,6 @@ void Plane::sLengths(const double Plength, const double Ploc)
 void Plane::sNorm(const Eigen::Vector3d Pnorm) { norm = Pnorm; }
 void Plane::sModul(const double Pstretch, const double Pangle) { stretch = Pstretch; angle=Pangle; }
 unsigned Plane::gPart() { return part; }
-
 
 Eigen::Vector3d Plane::displace(const Eigen::Vector2d p)
 { Eigen::Matrix3d A;
@@ -363,18 +348,18 @@ void Loop::verify()
   { if (vertices[i].gVtype() != Vertex::DEF)
     { /* If the resulting curvature is too small ignore the Vertex. */
       if (cp(i,0)<minr())
-      { if (cp(i,0)>epsilon()) { log->addLog(Log::WARN,"Curvature too small to render, ignoring vertex dressing."); }
-        vertices[i].reset(); }
-      /* The length of the side must be enough to accommodate the reduction due to milling, otherwise ignore. */
-      if ( (vertices[mod(i+1)].gPar(1)+cp(i,0)) + minr() > (nv(i)-cv(i)).norm() )
-      { log->addLog(Log::WARN,"Cut offs exceed side length, ignoring vertex dressing.");
-        vertices[i].reset();
-        vertices[mod(i+1)].reset(); }
-    /* Should we check for simple polygons using Shamos-Hoey? */ }
-  { if (edges[i].gEtype() == Edge::SIN)
-    { if (edges[i].gPar(0)<minr()) { edges[i].reset(); }
-      if (edges[i].gPar(1)<minr()) { edges[i].reset(); }
-      if (edges[i].gPar(2)<minr()) { edges[i].reset(); } } } } }
+      { if (cp(i,0)>epsilon()) { log->addLog(Log::WARN,"Curvature too small to render, ignoring vertex dressing => increase curvature."); }
+        vertices[i].reset(); } }
+    /* The length of the side must be enough to accommodate the reduction due to milling, otherwise ignore. */
+    if ( (np(i,0)+cp(i,1)) + minr() > (nv(i)-cv(i)).norm() )
+    { log->addLog(Log::WARN,"Cut offs exceed side length, ignoring vertex dressing  => reduce cut offs.");
+      vertices[i].reset();
+      vertices[mod(i+1)].reset(); }
+    /* Should we check for simple polygons using Shamos-Hoey? */
+    if (edges[i].gEtype() == Edge::SIN)
+    { if ( (edges[i].gPar(0)<minr()) || (edges[i].gPar(1)<minr()) || (edges[i].gPar(2)<minr()) )
+      { log->addLog(Log::WARN,"Cannot draw a wave with such small parameters, ignoring vertex dressing  => increase parameter value(s).");
+        edges[i].reset(); } } } }
 
 Eigen::Vector3d Loop::shift(const double amp, const Eigen::Vector3d base, const Eigen::Vector3d target)
 { return base - amp*(base-target).normalized(); }
@@ -617,7 +602,7 @@ void  Loop::addSegment(const Segment::SegmentType stype, const Segment::TransTyp
 { if (snps.size() == 0)
   { for (unsigned i=segmentCnt; i<2*pointCnt; i++)
     { if (show || hide || out || in)
-      { segments[i].specify(show, hide, out, in, dbls); }
+      { segments[i].specify(show, hide, out, in, dbls.size()>0 ? dbls[0] : 0); }
       else
       { segments[i].specify(stype,ttype,dbls,bzps); } } }
   else
@@ -625,12 +610,12 @@ void  Loop::addSegment(const Segment::SegmentType stype, const Segment::TransTyp
     { unsigned index = snps[i];
       if ((index > 0) && (index<=2*pointCnt))
       { if (show || hide || out || in)
-           { segments[index-1].specify(show, hide, out, in, dbls); }
+           { segments[index-1].specify(show, hide, out, in, dbls.size()>0 ? dbls[0] : 0); }
            else
            { segments[index-1].specify(stype,ttype,dbls,bzps); } } } }
   segmentCnt++; }
 
-
+/* TODO: incorrect spelled or unrecognized strings are interpretated as default (possibly overwriting previous parameters), they should be ignored and issue a warning. */
 void Loop::addGeneric(const OptionType Otype, const std::vector<int> ints, const std::vector<double> dbls, const std::vector<std::string> strs, const Vector3Dvector vcts)
 { switch (Otype)
   { case UNKNOWN  : break;
@@ -654,9 +639,12 @@ Loop::OptionType Loop::stringsHasOptionType(const std::vector<std::string> strs,
   if (Lib::has<std::string>(strs,"segments")) { return Loop::SEGMENTS; }
   return deftype; }
 
-double Loop::minr() { return 0.001; }
+/* TODO: Should these values depend on the number of faces? The point is, they tend to
+ * make it impossible to work with small length values, although there should not be
+ * a difference between large and small values. */
 double Loop::epsilon() { return 1e-8; }
-double Loop::saved() { return 0.01; }
+double Loop::minr()    { return 1e-4; }
+double Loop::saved()   { return 1e-3; }
 
 Eigen::Vector3d Loop::pf(const unsigned i) { return steps[modf((int)i-1)].loc; }
 Eigen::Vector3d Loop::cf(const unsigned i) { return steps[modf((int)i)].loc; }
@@ -682,7 +670,8 @@ void Loop::fillvectset(const unsigned i, const double maxr, Vectset & vs)
   if ((!vs.iszero) && (!vs.ispi))
   { double ctnha = sqrt((1+vs.cosa)/(1-vs.cosa));
     double sinha = sqrt((1-vs.cosa)/2);
-    double localr = maxr * segments[steps[modf(i)].partnr].gPar(0);
+    /* TODO: This is a hack, negative values allow for absolute curvature, change of syntax required! */
+    double localr = (segments[steps[modf(i)].partnr].gOutscale() > 0 ? maxr : -1 ) * segments[steps[modf(i)].partnr].gOutscale();
     vs.distance = saved() + localr * ctnha;
     vs.outscale = 1 / sinha;
     vs.la = shift(vs.distance,cf(i),pf(i));
@@ -718,7 +707,7 @@ void Loop::calcExtrusionPlane(double maxr, const unsigned i)
   bool outer = segments[partNr].gOuter();
   fillvectset(i,maxr,cur);
   if (cur.iszero)
-  { log->addLog(Log::WARN,"Infinitely sharp angle, dropping plane."); }
+  { log->addLog(Log::WARN,"Infinitely sharp angle, dropping plane  => remove this vertex."); }
   else if (cur.ispi)
   { planes.push_back(Plane(log,partNr,cur.la,cur.ta,Plane::AUX)); }
   else
@@ -864,12 +853,19 @@ void Loop::extrude(const double Pmaxr)
     return; }
   planes.reserve(faces*steps.size());
   bool reduct = true;
+  bool lasterase = false;
   unsigned fr = 0;
-  while (reduct && (fr++<100))
+  while (reduct && (fr++<1000))
   { reduct = false;
     for (unsigned i=0; i<steps.size(); i++) { reduct = filterPlanes(Pmaxr,i) || reduct; };
     for (int i=steps.size()-1; i>=0; i--)
-    { if (!steps[i].valid) { steps.erase(steps.begin()+i); } } }
+    { if (!steps[i].valid)
+      { if ((steps[modf(i-1)].partnr != steps[i].partnr) && (steps[i].partnr != steps[modf(i+1)].partnr))
+        { lasterase = true; }
+        else
+        { steps.erase(steps.begin()+i); } } } }
+  if (lasterase) { log->addLog(Log::WARN,"Bending too tight => increase curvature.");}
+  if (fr == 0)   { log->addLog(Log::WARN,"Stopped plane reduction before convergence was reached => simplify your object.");}
   for (unsigned i=0; i<steps.size(); i++) { calcExtrusionPlane(Pmaxr,i); }
   calcFrame();
   for (unsigned i=0; i<partCnt; i++)

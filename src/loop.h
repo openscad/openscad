@@ -114,6 +114,7 @@ class Segment
     TransType ttype;
     double pars[6];
     double length;
+    double outscale;
   public:
     Vector3Dvector bzps;
     double gPar(const unsigned i);
@@ -123,9 +124,10 @@ class Segment
     TransType gTtype();
     bool gOuter();
     bool gShow();
+    double gOutscale();
     Segment(Log * Plog);
     void specify(const SegmentType Pstype, const TransType Pttype, const std::vector<double> Ppars, const Vector3Dvector Pbzps);
-    void specify(const bool show, const bool hide, const bool out, const bool in, const std::vector<double> Ppars);
+    void specify(const bool show, const bool hide, const bool out, const bool in, const double Poutscale);
     void reset();
   public:
     static SegmentType stringsHasSegmentType(const std::vector<std::string> strs, const SegmentType deftype = Segment::DEF);
@@ -164,7 +166,6 @@ class Plane
     double gLength();
     PlaneType gPtype();
     CoverType gCtype();
-    void defCover(const bool leftShow, const bool midShow, const bool rightShow);
     void defCover(const bool leftShow, const bool rightShow);
     void sLengths(const double Plength, const double Ploc);
     void sNorm(const Eigen::Vector3d Pcent);
@@ -172,8 +173,7 @@ class Plane
     unsigned gPart();
     Eigen::Vector3d displace(const Eigen::Vector2d p);
     Plane(Log * Plog, const int Ppart, const Eigen::Vector3d Pcent, const Eigen::Vector3d Ptang, const PlaneType Ptype = DEF);
-    Plane(Log * Plog, const int Ppart, const Eigen::Vector3d Pcent, const Eigen::Vector3d Ptang, const double Pscale, const Eigen::Vector3d Psdir);
-};
+    Plane(Log * Plog, const int Ppart, const Eigen::Vector3d Pcent, const Eigen::Vector3d Ptang, const double Pscale, const Eigen::Vector3d Psdir); };
 
 class Loop
 { private:
