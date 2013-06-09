@@ -432,7 +432,7 @@ find_installed_version()
   # try to find/parse headers and/or binary output
   # break on the first match. (change the order to change precedence)
   if [ ! $fsv_tmp ]; then
-    for syspath in "/usr/local" "/opt/local" "/usr/pkg" "/usr" OPENSCAD_LIBRARIES; do
+    for syspath in "/usr/local" "/opt/local" "/usr/pkg" "/usr" $OPENSCAD_LIBRARIES; do
       if [ -e $syspath ]; then
         debug $depname"_sysver" $syspath
         eval $depname"_sysver" $syspath
@@ -523,6 +523,7 @@ main()
   deps="qt4 cgal gmp mpfr boost opencsg glew eigen gcc bison flex make"
   #deps="$deps curl git" # not technically necessary for build
   #deps="$deps python cmake imagemagick" # only needed for tests
+  #deps="cgal"
   pretty_print title
   for depname in $deps; do
     debug "processing $dep"
