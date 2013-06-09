@@ -50,7 +50,7 @@ get_mageia_deps()
  sudo urpmi ctags
  sudo urpmi task-c-devel task-c++-devel libqt4-devel libgmp-devel \
   libmpfr-devel libboost-devel eigen3-devel libglew-devel bison flex \
-  cmake imagemagick python curl git
+  cmake imagemagick python curl git x11-server-xvfb
 }
 
 get_debian_deps()
