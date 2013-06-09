@@ -24,7 +24,15 @@ start()
   fi
 
   VFB_DISPLAY=`echo | awk 'BEGIN{srand();} {printf ":%.0f", rand()*1000+100};'`
-  $VFB_BINARY $VFB_DISPLAY -screen 0 800x600x24 &> ./virtualfb.log &
+  if [ $debug ]; then 
+    echo debug VFB_DISPLAY $VFB_DISPLAY
+    echo debug VFB_BINARY $VFB_BINARY
+  fi
+  if [ $BASH ]; then
+    $VFB_BINARY $VFB_DISPLAY -screen 0 800x600x24 \&> ./virtualfb.log &
+  else
+    $VFB_BINARY $VFB_DISPLAY -screen 0 800x600x24 > ./virtualfb.log &
+  fi
   # on some systems $! gives us VFB_BINARY's PID, on others we have to subtract 1
   VFB_PID_MINUS0=$!
   VFB_PID_MINUS1=$(($VFB_PID_MINUS0 - 1))
