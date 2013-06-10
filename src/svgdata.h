@@ -106,7 +106,7 @@ private:
 
 class SVGData{
 public:
-  SVGData(double fn, double fs, double fa, std::string filename);
+  SVGData(double fn, double fs, double fa, std::string filename, std::string layername);
   ~SVGData();
 
   class PolySet* convertToPolyset();
@@ -133,7 +133,6 @@ private:
     ctm = tm;
   }
 
-  std::string filename;
   xmlpp::DomParser* parser;
   DxfData *dxfdata;
   PolySet *p;
@@ -141,6 +140,9 @@ private:
   float document_height;
   int first_point, last_point;
   double fn, fs, fa;
+  std::string filename;
+  std::string layername;
+  std::string layer;
   TransformMatrix ctm;
 };
 

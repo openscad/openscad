@@ -308,7 +308,7 @@ PolySet *ImportNode::evaluate_polyset(class PolySetEvaluator *) const
 			return p;
 		}
 
-    SVGData svgd(this->fn, this->fs, this->fa, this->filename);  
+    SVGData svgd(this->fn, this->fs, this->fa, this->filename, this->layername);  
     return svgd.convertToPolyset();
 	}
 	else 

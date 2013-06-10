@@ -35,7 +35,7 @@
 #include <fstream>
 #include <boost/regex.hpp>
 
-SVGData::SVGData(double fn, double fs, double fa, std::string filename) : filename(filename), fa(fa), fs(fs), fn(fn) {
+SVGData::SVGData(double fn, double fs, double fa, std::string filename, std::string layername) : fn(fn), fs(fs), fa(fa), filename(filename), layername(layername) {
 	handle_dep(filename); // Register ourselves as a dependency
 
   parser = NULL;
@@ -62,6 +62,9 @@ SVGData::~SVGData(){
 }
 
 void SVGData::add_point(float x, float y){
+  if (!(layername.empty() || layername == layer))
+   return;
+
   ctm.applyTransform(&x, &y);
   double px = (double) x;
   double py = (double) (document_height - y);
@@ -571,16 +574,18 @@ void SVGData::traverse_subtree(TransformMatrix parent_matrix, const xmlpp::Node*
   Glib::ustring nodename = node->get_name();
 
   if(const xmlpp::Element* nodeElement = dynamic_cast<const xmlpp::Element*>(node)){
-    const xmlpp::Attribute* id = nodeElement->get_attribute("id");
+    const xmlpp::Attribute* inkscape_label = nodeElement->get_attribute("label");
+    const xmlpp::Attribute* inkscape_groupmode = nodeElement->get_attribute("groupmode");
     const xmlpp::Attribute* transform = nodeElement->get_attribute("transform");
 
     if (transform)
       tm = parent_matrix * parse_transform(transform->get_value());
 
     if (nodename == "g"){
-      std::cout << "found a group!" << std::endl;
-      if(id){
-        std::cout << "id=" << id->get_value() << std::endl;      
+      if (inkscape_label && inkscape_groupmode){
+        if (inkscape_groupmode->get_value() == "layer"){
+          layer = inkscape_label->get_value().c_str();
+        }
       }
     }
   }
@@ -663,6 +668,8 @@ void SVGData::traverse_subtree(TransformMatrix parent_matrix, const xmlpp::Node*
   for (xmlpp::Node::NodeList::iterator it = children.begin(); it != children.end(); ++it){
     traverse_subtree(tm, *it);
   }
+
+  layer.empty();
 }
 
 PolySet* SVGData::convertToPolyset(){
