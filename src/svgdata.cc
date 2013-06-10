@@ -187,7 +187,7 @@ float SVGData::quadratic_curve_length(float x0, float y0, float x1, float y1, fl
   float S = sqrt(A+B+C);
   float A32 = A*sqrt(A);
 
-  return (1/8*A32) * (4*A32*S + 2*sqrt(A)*B*(S-sqrt(C)) + (4*C*A-B*B)*log(abs((2*sqrt(A)+B/sqrt(A)+2*S)/(B/sqrt(A) +2*sqrt(C)))));
+  return (1/(8.0*A32)) * (4*A32*S + 2*sqrt(A)*B*(S-sqrt(C)) + (4*C*A-B*B)*log(abs((2*sqrt(A)+B/sqrt(A)+2*S)/(B/sqrt(A) +2*sqrt(C)))));
 }
 
 void SVGData::render_quadratic_curve_to(float x0, float y0, float x1, float y1, float x2, float y2){
