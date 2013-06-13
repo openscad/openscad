@@ -4,6 +4,7 @@
 #include "function.h"
 #include "printutils.h"
 #include "builtin.h"
+#include "ModuleCache.h"
 
 #include <boost/foreach.hpp>
 
@@ -125,17 +126,18 @@ Value FileContext::evaluate_function(const std::string &name, const EvalContext 
 	if (foundf) return foundf->evaluate(this, evalctx);
 	
 	BOOST_FOREACH(const FileModule::ModuleContainer::value_type &m, this->usedlibs) {
-		// m.second is NULL if the library wasn't be compiled (error or file-not-found)
-		if (m.second && 
-				m.second->scope.functions.find(name) != m.second->scope.functions.end()) {
-			FileContext ctx(*m.second, this->parent);
-			ctx.initializeModule(*m.second);
+		// usedmod is NULL if the library wasn't be compiled (error or file-not-found)
+		FileModule *usedmod = ModuleCache::instance()->lookup(m);
+		if (usedmod && 
+				usedmod->scope.functions.find(name) != usedmod->scope.functions.end()) {
+			FileContext ctx(*usedmod, this->parent);
+			ctx.initializeModule(*usedmod);
 			// FIXME: Set document path
 #if 0 && DEBUG
 			PRINTB("New lib Context for %s func:", name);
 			ctx.dump(NULL, NULL);
 #endif
-			return m.second->scope.functions[name]->evaluate(&ctx, evalctx);
+			return usedmod->scope.functions[name]->evaluate(&ctx, evalctx);
 		}
 	}
 
@@ -148,17 +150,18 @@ AbstractNode *FileContext::instantiate_module(const ModuleInstantiation &inst, c
 	if (foundm) return foundm->instantiate(this, &inst, evalctx);
 
 	BOOST_FOREACH(const FileModule::ModuleContainer::value_type &m, this->usedlibs) {
-		// m.second is NULL if the library wasn't be compiled (error or file-not-found)
-		if (m.second && 
-				m.second->scope.modules.find(inst.name()) != m.second->scope.modules.end()) {
-			FileContext ctx(*m.second, this->parent);
-			ctx.initializeModule(*m.second);
+		FileModule *usedmod = ModuleCache::instance()->lookup(m);
+		// usedmod is NULL if the library wasn't be compiled (error or file-not-found)
+		if (usedmod && 
+				usedmod->scope.modules.find(inst.name()) != usedmod->scope.modules.end()) {
+			FileContext ctx(*usedmod, this->parent);
+			ctx.initializeModule(*usedmod);
 			// FIXME: Set document path
 #if 0 && DEBUG
 			PRINT("New file Context:");
 			ctx.dump(NULL, &inst);
 #endif
-			return m.second->scope.modules[inst.name()]->instantiate(&ctx, &inst, evalctx);
+			return usedmod->scope.modules[inst.name()]->instantiate(&ctx, &inst, evalctx);
 		}
 	}
 

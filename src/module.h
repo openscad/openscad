@@ -5,6 +5,7 @@
 #include <vector>
 #include <list>
 #include <boost/unordered_map.hpp>
+#include <boost/unordered_set.hpp>
 #include <time.h>
 #include <sys/stat.h>
 
@@ -94,8 +95,9 @@ public:
 	virtual AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx = NULL) const;
 	bool hasIncludes() const { return !this->includes.empty(); }
 	bool usesLibraries() const { return !this->usedlibs.empty(); }
+	bool isHandlingDependencies() const { return this->is_handling_dependencies; }
 
-	typedef boost::unordered_map<std::string, class FileModule*> ModuleContainer;
+	typedef boost::unordered_set<std::string> ModuleContainer;
 	ModuleContainer usedlibs;
 private:
 	struct IncludeFile {

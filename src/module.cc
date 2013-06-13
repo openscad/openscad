@@ -264,42 +264,34 @@ bool FileModule::handleDependencies()
 	// as it will have a relative path.
 
 	// Iterating manually since we want to modify the container while iterating
-	std::vector<std::pair<std::string, FileModule*> > modified_modules;
 	FileModule::ModuleContainer::iterator iter = this->usedlibs.begin();
 	while (iter != this->usedlibs.end()) {
 		FileModule::ModuleContainer::iterator curr = iter++;
-		FileModule *oldmodule = curr->second;
 
 		bool wasmissing = false;
 		// Get an absolute filename for the module
-		std::string filename = curr->first;
+		std::string filename = *curr;
 		if (!boosty::is_absolute(filename)) {
 			wasmissing = true;
 			fs::path fullpath = find_valid_path(this->path, filename);
 			if (!fullpath.empty()) filename = boosty::stringy(fullpath);
 		}
 
+		FileModule *oldmodule = ModuleCache::instance()->lookup(filename);
 		FileModule *newmodule = ModuleCache::instance()->evaluate(filename);
 		// Detect appearance but not removal of files
 		if (newmodule && oldmodule != newmodule) {
 			changed = true;
 #ifdef DEBUG
-			PRINTB_NOCACHE("  %s: %p", filename % newmodule);
+			PRINTB_NOCACHE("  %s: %p -> %p", filename % oldmodule % newmodule);
 #endif
 		}
-		if (newmodule) {
-			modified_modules.push_back(std::make_pair(filename, newmodule));
-			this->usedlibs.erase(curr);
-		}
-		else {
+		if (!newmodule) {
 			// Only print warning if we're not part of an automatic reload
 			if (!oldmodule && !wasmissing) {
 				PRINTB_NOCACHE("WARNING: Failed to compile library '%s'.", filename);
 			}
 		}
-	}
-	BOOST_FOREACH(const FileModule::ModuleContainer::value_type &mod, modified_modules) {
-		this->usedlibs[mod.first] = mod.second;
 	}
 
 	this->is_handling_dependencies = false;

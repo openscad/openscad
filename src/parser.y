@@ -127,7 +127,7 @@
 
 input: 
 /* empty */ |
-TOK_USE { rootmodule->usedlibs[$1] = NULL; } input |
+TOK_USE { rootmodule->usedlibs.insert($1); } input |
 statement input ;
 
 inner_input: 
