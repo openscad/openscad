@@ -116,7 +116,7 @@
      <x>0</x>
      <y>0</y>
      <width>681</width>
-     <height>22</height>
+     <height>28</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_File">
@@ -177,14 +177,17 @@
     <addaction name="designActionReloadAndCompile"/>
     <addaction name="designActionCompile"/>
     <addaction name="designActionCompileAndRender"/>
+    <addaction name="separator"/>
     <addaction name="designActionDisplayAST"/>
     <addaction name="designActionDisplayCSGTree"/>
     <addaction name="designActionDisplayCSGProducts"/>
+    <addaction name="separator"/>
     <addaction name="designActionExportSTL"/>
     <addaction name="designActionExportOFF"/>
     <addaction name="designActionExportDXF"/>
     <addaction name="designActionExportCSG"/>
     <addaction name="designActionExportImage"/>
+    <addaction name="separator"/>
     <addaction name="designActionFlushCaches"/>
    </widget>
    <widget class="QMenu" name="menu_View">
