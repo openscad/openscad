@@ -136,15 +136,17 @@ statement inner_input ;
 
 assignment:
 TOK_ID '=' expr ';' {
+  bool found = false;
   for (AssignmentList::iterator iter = scope_stack.top()->assignments.begin(); 
        iter != scope_stack.top()->assignments.end(); 
        iter++) {
     if (iter->first == $1) {
-      scope_stack.top()->assignments.erase(iter);
+      iter->second = $3;
+      found = true;
       break;
     }
   }
-  scope_stack.top()->assignments.push_back(Assignment($1, $3));
+  if (!found) scope_stack.top()->assignments.push_back(Assignment($1, $3));
 } ;
 
 statement:

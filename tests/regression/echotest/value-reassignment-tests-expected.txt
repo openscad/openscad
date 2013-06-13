@@ -1,1 +1,2 @@
-ECHO: 4, 2
+WARNING: Ignoring unknown variable 'i'.
+ECHO: undef, 2

@@ -17,6 +17,51 @@ ModuleContext::~ModuleContext()
 {
 }
 
+// Experimental code. See issue #399
+#if 0
+void ModuleContext::evaluateAssignments(const AssignmentList &assignments)
+{
+	// First, assign all simple variables
+	std::list<std::string> undefined_vars;
+ 	BOOST_FOREACH(const Assignment &ass, assignments) {
+		Value tmpval = ass.second->evaluate(this);
+		if (tmpval.isUndefined()) undefined_vars.push_back(ass.first);
+ 		else this->set_variable(ass.first, tmpval);
+ 	}
+
+	// Variables which couldn't be evaluated in the first pass is attempted again,
+  // to allow for initialization out of order
+
+	boost::unordered_map<std::string, Expression *> tmpass;
+	BOOST_FOREACH (const Assignment &ass, assignments) {
+		tmpass[ass.first] = ass.second;
+	}
+		
+	bool changed = true;
+	while (changed) {
+		changed = false;
+		std::list<std::string>::iterator iter = undefined_vars.begin();
+		while (iter != undefined_vars.end()) {
+			std::list<std::string>::iterator curr = iter++;
+			boost::unordered_map<std::string, Expression *>::iterator found = tmpass.find(*curr);
+			if (found != tmpass.end()) {
+				const Expression *expr = found->second;
+				Value tmpval = expr->evaluate(this);
+				// FIXME: it's not enough to check for undefined;
+				// we need to check for any undefined variable in the subexpression
+				// For now, ignore this and revisit the validity and order of variable
+				// assignments later
+				if (!tmpval.isUndefined()) {
+					changed = true;
+					this->set_variable(*curr, tmpval);
+					undefined_vars.erase(curr);
+				}
+			}
+		}
+	}
+}
+#endif
+
 void ModuleContext::initializeModule(const class Module &module)
 {
 	this->setVariables(module.definition_arguments, evalctx);
@@ -26,6 +71,8 @@ void ModuleContext::initializeModule(const class Module &module)
 	BOOST_FOREACH(const Assignment &ass, module.scope.assignments) {
 		this->set_variable(ass.first, ass.second->evaluate(this));
 	}
+// Experimental code. See issue #399
+//	evaluateAssignments(module.scope.assignments);
 }
 
 /*!

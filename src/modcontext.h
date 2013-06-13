@@ -36,6 +36,9 @@ public:
 #ifdef DEBUG
 	virtual void dump(const class AbstractModule *mod, const ModuleInstantiation *inst);
 #endif
+private:
+// Experimental code. See issue #399
+//	void evaluateAssignments(const AssignmentList &assignments);
 };
 
 class FileContext : public ModuleContext
