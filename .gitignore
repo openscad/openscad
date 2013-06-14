@@ -13,3 +13,7 @@ parser_yacc.h
 */#*#
 /openscad
 .DS_Store
+.cproject
+.project
+/.settings
+

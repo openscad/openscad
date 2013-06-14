@@ -40,12 +40,26 @@
 #define Matrix3Dvector std::vector< Eigen::Matrix3d, Eigen::aligned_allocator<Eigen::Matrix3d> >
 
 
+template <class T>  class Circular
+{ private :
+    std::vector<T> vec;
+  public :
+    Circular();
+    void add(const T val);
+    void del(const unsigned index);
+    unsigned size() const;
+    bool isEmpty() const;
+    T operator[](const int index) const;
+};
+
 class Lib
 { public :
     template <class T> static bool has(const std::vector<T> vec, const T val);
     template <class T> static bool msz(const std::vector< std::vector<T> > vecs, const int minsize);
     static bool isEven(unsigned i);
-    static bool isOdd(unsigned i); };
+    static bool isOdd(unsigned i);
+    static double rad(const double deg);
+    static double deg(const double rad); };
 
 
 class Log
@@ -104,12 +118,13 @@ class Edge
 
 class Segment
 { public:
-    enum SegmentType {DEF,LIN,BEZ,SIN};
+    enum SegmentType {SPEC,DEF,LIN,BEZ,SIN};
     enum TransType {IDN,ROT,RTL,RLR};
   private:
     Log * log;
     bool show;
     bool outer;
+    bool abscrv;
     SegmentType stype;
     TransType ttype;
     double pars[6];
@@ -124,13 +139,12 @@ class Segment
     TransType gTtype();
     bool gOuter();
     bool gShow();
-    double gOutscale();
+    double gOutscale(const double maxr);
     Segment(Log * Plog);
-    void specify(const SegmentType Pstype, const TransType Pttype, const std::vector<double> Ppars, const Vector3Dvector Pbzps);
-    void specify(const bool show, const bool hide, const bool out, const bool in, const double Poutscale);
+    void specify(const SegmentType Pstype, const TransType Pttype, const std::vector<double> Ppars, const std::vector<std::string> strs, const Vector3Dvector Pbzps);
     void reset();
   public:
-    static SegmentType stringsHasSegmentType(const std::vector<std::string> strs, const SegmentType deftype = Segment::DEF);
+    static SegmentType stringsHasSegmentType(const std::vector<std::string> strs, const SegmentType deftype = Segment::SPEC);
     static TransType stringsHasTransType(const std::vector<std::string> strs, const TransType deftype = Segment::IDN); };
 
 class Step
@@ -202,6 +216,11 @@ class Loop
     Eigen::Vector3d pf(const unsigned i);
     Eigen::Vector3d cf(const unsigned i);
     Eigen::Vector3d nf(const unsigned i);
+    long double polyVal(const unsigned prsCnt, const long double x, const Circular<double> & prs) const;
+    long double polyDif(const unsigned prsCnt, const long double x, const Circular<double> & prs) const;
+    void polyInner(const unsigned vcnt, const Circular<double> prs, Circular<double> & radii, Circular<double> & angles);
+    void polyOuter(const unsigned vcnt, const Circular<double> prs, Circular<double> & radii, Circular<double> & angles);
+    void polyCyclic(const unsigned vcnt, const Circular<double> prs, Circular<double> & radii, Circular<double> & angles);
     double pp(const unsigned i, const unsigned j);
     double cp(const unsigned i, const unsigned j);
     double np(const unsigned i, const unsigned j);
@@ -238,16 +257,17 @@ class Loop
     void calcFrame();
   public:
     enum ResultType {SUCCES,WARN,FAIL};
+    enum CoorType {CARTESIAN,CYLINDER,SPHERE};
     enum PolyType {NONE,RIN,ROUT,SIDE};
     enum OptionType {UNKNOWN,POINTS,POLY,VERTICES,EDGES,SEGMENTS};
     Loop(const unsigned faces);
     unsigned gPlaneCount();
     void addPoint(const Eigen::Vector3d pnt);
-    void addPoints(const Vector3Dvector pnts);
-    void addRpoly(const unsigned vcnt, const PolyType ptype, const double size, const bool flat, const bool clock);
+    void addPoints(const CoorType ctype, const Vector3Dvector pnts);
+    void addPoly(const unsigned vcnt, const PolyType ptype, const std::vector<double> pars, const std::vector<std::string> strs);
     void addVertex(const Vertex::VertexType vtype, const std::vector<int> pnts, const std::vector<double> pars);
     void addEdge(const Edge::EdgeType etype, const Edge::TransType ttype, const std::vector<int> lnps, const std::vector<double> dbls, const Vector3Dvector bzps);
-    void addSegment(const Segment::SegmentType stype, const Segment::TransType ttype, const bool show, const bool hide, const bool out, const bool in, const std::vector<int> snps, const std::vector<double> dbls, const Vector3Dvector bzps);
+    void addSegment(const Segment::SegmentType stype, const Segment::TransType ttype, const std::vector<int> snps, const std::vector<double> dbls, const std::vector<std::string> strs, const Vector3Dvector bzps);
     void addGeneric(const OptionType Otype, const std::vector<int> ints, const std::vector<double> dbls, const std::vector<std::string> strs, const Vector3Dvector vcts);
     void construct(const bool Ppure2D);
     void extrude(const double maxr);
@@ -268,6 +288,7 @@ class Loop
     static double minr();
     static double saved();
     static PolyType stringsHasPolyType(const std::vector<std::string> strs, const PolyType deftype = Loop::NONE);
+    static CoorType stringsHasCoorType(const std::vector<std::string> strs, const CoorType deftype = Loop::CARTESIAN);
     static OptionType stringsHasOptionType(const std::vector<std::string> strs, const OptionType deftype = Loop::UNKNOWN); };
 
 

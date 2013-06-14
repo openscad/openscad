@@ -24,6 +24,20 @@
  */
 
 #include "loop.h"
+#include <iomanip>
+
+/* Class : Circular ============================================================================================================ */
+
+template <class T> Circular<T>::Circular() : vec() {};
+
+template <class T> void Circular<T>::add(const T val)           { vec.push_back(val); }
+template <class T> void Circular<T>::del(const unsigned index)  { vec.erase(vec.begin() + index); }
+template <class T> unsigned Circular<T>::size() const           { return vec.size(); }
+template <class T> bool Circular<T>::isEmpty() const            { return vec.empty(); }
+
+template <class T>  T Circular<T>::operator[](const int index) const
+{ return vec[(index + vec.size()) % vec.size()]; }
+
 
 /* Class : Lib ================================================================================================================= */
 
@@ -37,6 +51,8 @@ template <class T> bool Lib::msz(const std::vector< std::vector<T> > vecs, const
 bool Lib::isEven(unsigned i) { return i%2==0; }
 bool Lib::isOdd(unsigned i)  { return i%2==1; }
 
+double Lib::rad(const double deg) { return deg*M_PI/180; }
+double Lib::deg(const double rad) { return rad*180/M_PI; }
 
 /* Class : Log ================================================================================================================= */
 
@@ -207,45 +223,52 @@ Segment::SegmentType Segment::gStype()  { return stype;    }
 Segment::TransType Segment::gTtype()    { return ttype;    }
 bool Segment::gOuter()                  { return outer;    }
 bool Segment::gShow()                   { return show;     }
-double Segment::gOutscale()             { return outscale; }
 double  Segment::gLength()              { return length;   }
 
+double Segment::gOutscale(const double maxr)  { return (abscrv ? outscale : maxr*outscale); }
 void  Segment::addToLength(const double len)  { length += len; }
 
-Segment::Segment(Log * Plog) : log(Plog), show(true), outer(false), stype(DEF),  ttype(IDN),  pars(), length(0), outscale(1), bzps() { pars[0]=1; };
+Segment::Segment(Log * Plog) : log(Plog), show(true), outer(false), abscrv(false), stype(DEF),  ttype(IDN),  pars(), length(0), outscale(1), bzps() { };
 
-void Segment::specify(const SegmentType Pstype, const TransType Pttype, const std::vector<double> Ppars, const Vector3Dvector Pbzps)
+void Segment::specify(const SegmentType Pstype, const TransType Pttype, const std::vector<double> Ppars, const std::vector<std::string> strs, const Vector3Dvector Pbzps)
 { stype = Pstype;
   ttype = Pttype;
-  unsigned count = Ppars.size();
-  for (unsigned i=0; i<6; i++)
-  { if (i<count) { pars[i]=Ppars[i]; } else { pars[i] = 0; } }
-  switch (Pstype)
-  { case DEF :
-      bzps.clear();
-      break;
-    case LIN :
-    case BEZ :
-      bzps = Pbzps;
-      break;
-    case SIN :
-      if (ttype == IDN) { ttype = ROT; }
-      if (count<5) { pars[5]=1; }
-      if (count<3) { pars[2]=1; }
-      if (count<2) { log->addLog(Log::FAIL,"To few parameters for wave construction => supply extra parameters."); }
-      break; } }
-
-void Segment::specify(const bool show, const bool hide, const bool out, const bool in, const double Poutscale)
-{ if (show) { this->show = true; }
-  if (hide) { this->show = false; }
-  if (out)  { this->outer = true; }
-  if (in)   { this->outer = false; }
-  if (out || in) { if (std::fabs(Poutscale)<Loop::epsilon()) { outscale=1; } else { outscale=Poutscale; } } }
+  if ((Pstype!=SPEC) && ( (Lib::has<std::string>(strs,"show")) || (Lib::has<std::string>(strs,"hide")) || (Lib::has<std::string>(strs,"out")) || (Lib::has<std::string>(strs,"in")) || (Lib::has<std::string>(strs,"rel")) || (Lib::has<std::string>(strs,"abs")) ) )
+  { log->addLog(Log::WARN,"Ignoring ambiguous segment option  => correct syntax.");
+    stype = SPEC; }
+  else
+  { unsigned count = Ppars.size();
+    if ((Pstype!=SPEC))
+    { for (unsigned i=0; i<6; i++)
+     { if (i<count) { pars[i]=Ppars[i]; } else { pars[i] = 0; } } }
+    switch (Pstype)
+    { case SPEC :
+        if (Lib::has<std::string>(strs,"show"))  { this->show = true; }
+        if (Lib::has<std::string>(strs,"hide"))  { this->show = false; }
+        if (Lib::has<std::string>(strs,"out"))   { this->outer = true; }
+        if (Lib::has<std::string>(strs,"in"))    { this->outer = false; }
+        if (Lib::has<std::string>(strs,"rel"))   { this->abscrv = false; }
+        if (Lib::has<std::string>(strs,"abs"))   { this->abscrv = true; }
+        if (!Ppars.empty() && (Ppars[0]>Loop::epsilon()))  { outscale=Ppars[0]; }
+        break;
+      case DEF :
+        bzps.clear();
+        break;
+      case LIN :
+      case BEZ :
+        bzps = Pbzps;
+        break;
+      case SIN :
+        if (ttype == IDN) { ttype = ROT; }
+        if (count<5) { pars[5]=1; }
+        if (count<3) { pars[2]=1; }
+        if (count<2) { log->addLog(Log::FAIL,"To few parameters for wave construction => supply extra parameters."); }
+        break; } } }
 
 void Segment::reset()
 { stype = DEF;
   bzps.clear();
-  for (unsigned i=0; i<4; i++) { pars[i]=0; }
+  for (unsigned i=0; i<6; i++) { pars[i]=0; }
   pars[0]=1; }
 
 Segment::SegmentType Segment::stringsHasSegmentType(const std::vector<std::string> strs, const SegmentType deftype)
@@ -558,26 +581,108 @@ void Loop::addPoint(const Eigen::Vector3d pnt)
     segments.push_back(Segment(log));
     pointCnt++; } }
 
-void Loop::addPoints(const Vector3Dvector pnts)
-{ for (unsigned i=0; i<pnts.size(); i++) { addPoint(pnts[i]); } }
+void Loop::addPoints(const CoorType ctype, const Vector3Dvector pnts)
+{ Eigen::Vector3d p;
+  for (unsigned i=0; i<pnts.size(); i++)
+  { p = pnts[i];
+    switch (ctype)
+    { case Loop::CARTESIAN : addPoint(p); break;
+      case Loop::CYLINDER  : addPoint(Eigen::Vector3d( p[0]*cos(Lib::rad(p[1])) , p[0]*sin(Lib::rad(p[1])) , p[2]) ); break;
+      case Loop::SPHERE    : addPoint(Eigen::Vector3d( p[0]*cos(Lib::rad(p[1]))*cos(Lib::rad(p[2])) , p[0]*sin(Lib::rad(p[1]))*cos(Lib::rad(p[2])) , p[0]*sin(Lib::rad(p[2]))) );  break; } } }
 
-void Loop::addRpoly(const unsigned vcnt, const PolyType ptype, const double size, const bool flat, const bool clock)
-{ if ((vcnt<3) || (size<minr()) || ptype == NONE) { return; }
+long double Loop::polyVal(const unsigned prsCnt, const long double x, const Circular<double> & prs) const
+{ long double result = -M_PI;
+  for (unsigned j=0; j<prsCnt; j++) { result += asin(prs[j]/(2*x)); }
+  return result; }
+
+long double Loop::polyDif(const unsigned prsCnt, const long double x, const Circular<double> & prs) const
+{ long double result = 0;
+  for (unsigned j=0; j<prsCnt; j++) { result += prs[j]/(x*sqrt((4*x*x)-prs[j]*prs[j])); }
+  return result; }
+
+void Loop::polyCyclic(const unsigned vcnt, const Circular<double> prs, Circular<double> & radii, Circular<double> & angles)
+{ double amax = 0, asum = 0, lsum = 0;
+  unsigned nmax = 0;
+  for (unsigned i=0; i<vcnt; i++) { if (amax<prs[i]) { amax=prs[i]; nmax=i; } }
+  for (unsigned i=0; i<vcnt; i++) { if (i!=nmax)  { lsum += prs[i]; asum += asin(prs[i]/(amax)); } }
+  double Rmin = std::max(amax/2,(lsum+amax)/2/M_PI);
+  double Rmax = (lsum+amax)/4;
+  double Rlow = Rmin + Loop::epsilon();
+  double Rhigh = Rmax - Loop::epsilon();
+  double Flow = polyVal(vcnt,Rlow,prs);
+  double Fhigh = polyVal(vcnt,Rhigh,prs);
+  if (amax>lsum)
+  { log->addLog(Log::FAIL,"A polygon cannot be constructed using these side lengths => make longest side shorter."); }
+  else if (asum<=M_PI/2)
+  { log->addLog(Log::FAIL,"The centre of the circumcircle lies outside the polygon => make some of the shorter sides longer."); }
+  else if ( (Flow<=0) || (Fhigh>=0) )
+  { log->addLog(Log::FAIL,"I am not clever enough to find a cyclic polygon with these values => extend me or change the parameters."); }
+  else
+  { long double R = Rmin+Flow*(Rmax-Rmin)/(Flow-Fhigh);
+    long double cor = R;
+    for (unsigned i=0; (i<100) && (fabs(cor/R)>=1e-15); i++)
+    { /* Enforce convergence */
+      if ((R<Rlow) || (R>Rhigh)) { R = (Rlow+Rhigh)/2; }
+      long double tl = polyVal(vcnt,R,prs);
+      long double nm = polyDif(vcnt,R,prs);
+      if ((tl>0) && (R>Rlow))  { Rlow = R - Loop::epsilon(); }
+      if ((tl<0) && (R<Rhigh)) { Rhigh = R + Loop::epsilon(); }
+      /* Try Newton-Raphson */
+      R += (cor = (tl/nm)); }
+    if ((std::fabs(cor/R)>1e-14) || (R<Rmin) || (R>Rmax) || std::isnan(R) )
+    { log->addLog(Log::WARN,"Cannot find the correct cyclic polygon with these parameter values, this is an internal error => fix me."); }
+    else
+    { double gamma = 0;
+      for (unsigned i=0; i<vcnt; i++)
+      { radii.add(R);
+        angles.add(2*gamma);
+         gamma += asin(prs[i]/(2*R)); } } } };
+
+void Loop::polyOuter(const unsigned vcnt, const Circular<double> prs, Circular<double> & radii, Circular<double> & angles)
+{ for (unsigned i=0; i<vcnt; i++)
+  { radii.add(prs[i]);
+    angles.add(2*M_PI*i/vcnt);  } }
+
+void Loop::polyInner(const unsigned vcnt, const Circular<double> prs, Circular<double> & radii, Circular<double> & angles)
+{ double alpha = 2*M_PI/vcnt;
+  double offset = atan2( (prs[0]*cos((vcnt-1)*alpha) - prs[vcnt-1]) , (-prs[0]*sin((vcnt-1)*alpha))) ;
+  for (unsigned i=(vcnt-1); i<2*vcnt-1; i++)
+  { double x = (prs[i]*sin((i+1)*alpha) - prs[i+1]*sin(i*alpha))/sin(alpha);
+    double y = (prs[i+1]*cos(i*alpha) - prs[i]*cos((i+1)*alpha))/sin(alpha);
+    radii.add(sqrt(x*x+y*y));
+    angles.add(atan2(y,x)-offset);  } }
+
+void Loop::addPoly(const unsigned vcnt, const PolyType ptype, const std::vector<double> pars, const std::vector<std::string> strs)
+{ if ((vcnt<3) || ptype == NONE) { return; }
   vertices.clear();
   vertices.reserve(vcnt);
-  double gamma = M_PI/vcnt;
-  double radius = 0;
+  const bool flat = Lib::has<std::string>(strs,"flat");
+  const bool clock = Lib::has<std::string>(strs,"clock");
+  const bool Q1 = Lib::has<std::string>(strs,"Q1");
+  Circular<double> radii, angles, prs;
+  for (unsigned i=0; i<pars.size(); i++) { prs.add(pars[i]); }
   { switch (ptype)
-    { case NONE : radius = size;                 break;
-      case RIN  : radius = size/cos(gamma);      break;
-      case ROUT : radius = size;                 break;
-      case SIDE : radius = size/(2*sin(gamma));  break; } }
-  double alpha = clock ? -2*gamma : 2*gamma;
-  double beta  = (flat  ? -alpha/2 : 0) + ( clock ?  M_PI/2  : 0 );
-  for (unsigned i=0; i<vcnt; i++)
-  { Eigen::Vector3d p( radius*cos(alpha*i + beta), radius*sin(alpha*i + beta) , 0 );
-    addPoint(p); } };
+    { case NONE : /* Cannot draw this */              break;
+      case RIN  : polyInner(vcnt,prs,radii,angles);   break;
+      case ROUT : polyOuter(vcnt,prs,radii,angles);   break;
+      case SIDE : polyCyclic(vcnt,prs,radii,angles);  break; } }
+  if (!radii.isEmpty() && !angles.isEmpty())
+  { double dir = ( clock ? -1 : 1 );
+    double beta  = ( flat  ? -dir*angles[1]/2 : 0 ) + ( clock ?  M_PI/2  : 0 );
+    Vector3Dvector pnts;
+    pnts.reserve(vcnt);
+    double xmin=0, ymin=0;
+    for (unsigned i=0; i<vcnt; i++)
+    { Eigen::Vector3d p(radii[i]*cos(dir*angles[i] + beta), radii[i]*sin(dir*angles[i] + beta) , 0 );
+      if (Q1 && ((xmin>p[0]) || (i==0)))  { xmin = p[0]; }
+      if (Q1 && ((ymin>p[1]) || (i==0)))  { ymin = p[1]; }
+      pnts.push_back(p); }
+    for (unsigned i=0; i<vcnt; i++)
+    { Eigen::Vector3d p( pnts[i][0]-xmin, pnts[i][1]-ymin , 0 );
+      addPoint(p); } } };
 
+/* TODO: We want 0 to be recognized as the last segment, this is automatically the case when we use circular
+ * and change (index > 0) to (index >= 0) */
 void Loop::addVertex(const Vertex::VertexType vtype, const std::vector<int> pnts, const std::vector<double> pars)
 { if (pnts.size() == 0)
   { for (unsigned i=vertexCnt; i<pointCnt; i++)
@@ -598,37 +703,39 @@ void Loop::addEdge(const Edge::EdgeType etype, const Edge::TransType ttype, cons
       if ((index > 0) && (index<=pointCnt)) { edges[index-1].specify(etype,ttype,dbls,bzps); } } }
   edgeCnt++; }
 
-void  Loop::addSegment(const Segment::SegmentType stype, const Segment::TransType ttype, const bool show, const bool hide, const bool out, const bool in, const std::vector<int> snps, const std::vector<double> dbls, const Vector3Dvector bzps)
+void  Loop::addSegment(const Segment::SegmentType stype, const Segment::TransType ttype, const std::vector<int> snps, const std::vector<double> dbls,  const std::vector<std::string> strs, const Vector3Dvector bzps)
 { if (snps.size() == 0)
   { for (unsigned i=segmentCnt; i<2*pointCnt; i++)
-    { if (show || hide || out || in)
-      { segments[i].specify(show, hide, out, in, dbls.size()>0 ? dbls[0] : 0); }
-      else
-      { segments[i].specify(stype,ttype,dbls,bzps); } } }
+    { segments[i].specify(stype,ttype,dbls,strs,bzps); } }
   else
   { for (unsigned i=0; i<snps.size(); i++)
     { unsigned index = snps[i];
       if ((index > 0) && (index<=2*pointCnt))
-      { if (show || hide || out || in)
-           { segments[index-1].specify(show, hide, out, in, dbls.size()>0 ? dbls[0] : 0); }
-           else
-           { segments[index-1].specify(stype,ttype,dbls,bzps); } } } }
+      { segments[index-1].specify(stype,ttype,dbls,strs,bzps); } } }
   segmentCnt++; }
 
 /* TODO: incorrect spelled or unrecognized strings are interpretated as default (possibly overwriting previous parameters), they should be ignored and issue a warning. */
 void Loop::addGeneric(const OptionType Otype, const std::vector<int> ints, const std::vector<double> dbls, const std::vector<std::string> strs, const Vector3Dvector vcts)
 { switch (Otype)
   { case UNKNOWN  : break;
-    case POINTS   : addPoints(vcts);  break;
-    case POLY     : if ((ints.size()>0)&&(dbls.size()>0)) { addRpoly(ints[0],Loop::stringsHasPolyType(strs,Loop::SIDE),dbls[0],Lib::has<std::string>(strs,"flat"),Lib::has<std::string>(strs,"clock")); } ;  break;
+    case POINTS   : addPoints(Loop::stringsHasCoorType(strs,Loop::CARTESIAN), vcts);  break;
+    case POLY     : addPoly(ints[0],Loop::stringsHasPolyType(strs,Loop::SIDE),dbls,strs);  break;
     case VERTICES : addVertex(Vertex::stringsHasVertexType(strs),ints,dbls);  break;
     case EDGES    : addEdge(Edge::stringsHasEdgeType(strs),Edge::stringsHasTransType(strs),ints,dbls,vcts);  break;
-    case SEGMENTS : addSegment(Segment::stringsHasSegmentType(strs),Segment::stringsHasTransType(strs),Lib::has<std::string>(strs,"show"),Lib::has<std::string>(strs,"hide"),Lib::has<std::string>(strs,"out"),Lib::has<std::string>(strs,"in"),ints,dbls,vcts);  break; } }
+    case SEGMENTS : addSegment(Segment::stringsHasSegmentType(strs,(vcts.size()>0 ? Segment::DEF : Segment::SPEC)),Segment::stringsHasTransType(strs),ints,dbls,strs,vcts);  break; }
+}
 
 Loop::PolyType Loop::stringsHasPolyType(const std::vector<std::string> strs, const PolyType deftype)
 { if (Lib::has<std::string>(strs,"rin"))  { return Loop::RIN;  }
   if (Lib::has<std::string>(strs,"rout")) { return Loop::ROUT; }
   if (Lib::has<std::string>(strs,"side")) { return Loop::SIDE; }
+  return deftype; }
+
+Loop::CoorType Loop::stringsHasCoorType(const std::vector<std::string> strs, const CoorType deftype)
+{ if (Lib::has<std::string>(strs,"cartesian"))  { return Loop::CARTESIAN;  }
+  if (Lib::has<std::string>(strs,"polar"))      { return Loop::CYLINDER; }
+  if (Lib::has<std::string>(strs,"cylinder"))   { return Loop::CYLINDER; }
+  if (Lib::has<std::string>(strs,"sphere"))     { return Loop::SPHERE; }
   return deftype; }
 
 Loop::OptionType Loop::stringsHasOptionType(const std::vector<std::string> strs, const OptionType deftype)
@@ -670,8 +777,7 @@ void Loop::fillvectset(const unsigned i, const double maxr, Vectset & vs)
   if ((!vs.iszero) && (!vs.ispi))
   { double ctnha = sqrt((1+vs.cosa)/(1-vs.cosa));
     double sinha = sqrt((1-vs.cosa)/2);
-    /* TODO: This is a hack, negative values allow for absolute curvature, change of syntax required! */
-    double localr = (segments[steps[modf(i)].partnr].gOutscale() > 0 ? maxr : -1 ) * segments[steps[modf(i)].partnr].gOutscale();
+    double localr = segments[steps[modf(i)].partnr].gOutscale(maxr);
     vs.distance = saved() + localr * ctnha;
     vs.outscale = 1 / sinha;
     vs.la = shift(vs.distance,cf(i),pf(i));
@@ -818,7 +924,7 @@ void Loop::calcSegmentLinBez(const unsigned i, const bool isBez)
       { cyl = linearSearch(2*planes[j].gLoc()/fulllen-1,rs);}
       else
       { cyl = linearSearch(planes[j].gLoc(),rs); }
-      cyl[2] = cyl[2]/180*M_PI;
+      cyl[2] = Lib::rad(cyl[2]);
       planes[j].sModul(cyl[1],cyl[2]); } } }
 
 
@@ -870,10 +976,11 @@ void Loop::extrude(const double Pmaxr)
   calcFrame();
   for (unsigned i=0; i<partCnt; i++)
   { switch (segments[i].gStype())
-    { case Segment::DEF : calcSegmentDef(i);           break;
-      case Segment::LIN : calcSegmentLinBez(i,false);  break;
-      case Segment::BEZ : calcSegmentLinBez(i,true);   break;
-      case Segment::SIN : calcSegmentSin(i);           break;  } } }
+    { case Segment::SPEC : /* Nothing to calc */        break;
+      case Segment::DEF  : calcSegmentDef(i);           break;
+      case Segment::LIN  : calcSegmentLinBez(i,false);  break;
+      case Segment::BEZ  : calcSegmentLinBez(i,true);   break;
+      case Segment::SIN  : calcSegmentSin(i);           break;  } } }
 
 bool Loop::planeIsBottom(const int plane)  { return planes[plane].gCtype() == Plane::BOTTOM; }
 bool Loop::planeIsTop(const int plane)     { return planes[plane].gCtype() == Plane::TOP; }
