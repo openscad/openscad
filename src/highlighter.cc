@@ -136,7 +136,7 @@ Highlighter::Highlighter(QTextDocument *parent)
 	typeformats["keyword"].setForeground(QColor("Green"));
 	typeformats["keyword"].setToolTip("Keyword");
 
-	tokentypes["transform"] << "scale" << "translate" << "rotate" << "multmatrix" << "color" << "projection" << "hull" << "resize";
+	tokentypes["transform"] << "scale" << "translate" << "rotate" << "multmatrix" << "color" << "projection" << "hull" << "resize" << "mirror";
 	typeformats["transform"].setForeground(QColor("Indigo"));
 
 	tokentypes["csgop"]	<< "union" << "intersection" << "difference" << "render";
