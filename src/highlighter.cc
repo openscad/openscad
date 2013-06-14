@@ -132,11 +132,14 @@ Highlighter::Highlighter(QTextDocument *parent)
 	tokentypes["operator"] << "=" << "!" << "&&" << "||" << "+" << "-" << "*" << "/" << "%" << "!" << "#" << ";";
 	typeformats["operator"].setForeground(Qt::blue);
 
-	tokentypes["keyword"] << "module" << "function" << "for" << "intersection_for" << "if" << "assign";
+	tokentypes["math"] << "abs" << "sign" << "acos" << "asin" << "atan" << "atan2" << "sin" << "cos" << "floor" << "round" << "ceil" << "ln" << "log" << "lookup" << "min" << "max" << "pow" << "sqrt" << "exp" << "rands";
+	typeformats["math"].setForeground(Qt::green);
+	
+	tokentypes["keyword"] << "module" << "function" << "for" << "intersection_for" << "if" << "assign" << "echo"<< "search" << "str";
 	typeformats["keyword"].setForeground(QColor("Green"));
 	typeformats["keyword"].setToolTip("Keyword");
 
-	tokentypes["transform"] << "scale" << "translate" << "rotate" << "multmatrix" << "color" << "projection" << "hull" << "resize" << "mirror";
+	tokentypes["transform"] << "scale" << "translate" << "rotate" << "multmatrix" << "color" << "projection" << "hull" << "resize" << "mirror" << "minkowski";
 	typeformats["transform"].setForeground(QColor("Indigo"));
 
 	tokentypes["csgop"]	<< "union" << "intersection" << "difference" << "render";
@@ -148,7 +151,7 @@ Highlighter::Highlighter(QTextDocument *parent)
 	tokentypes["prim2d"] << "square" << "polygon" << "circle";
 	typeformats["prim2d"].setForeground(QColor("MidnightBlue"));
 
-	tokentypes["import"] << "include" << "use" << "import_stl" << "import" << "import_dxf" << "dxf_dim" << "dxf_cross";
+	tokentypes["import"] << "include" << "use" << "import_stl" << "import" << "import_dxf" << "dxf_dim" << "dxf_cross" << "surface";
 	typeformats["import"].setForeground(Qt::darkYellow);
 
 	tokentypes["special"] << "$children" << "child" << "$fn" << "$fa" << "$fs" << "$t" << "$vpt" << "$vpr";
