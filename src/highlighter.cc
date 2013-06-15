@@ -288,6 +288,7 @@ void Highlighter::highlightBlock(const QString &text)
 
 	// Quoting and Comments.
 	state_e state = (state_e) previousBlockState();
+	int quote_esc_state = 0;
 	for (int n = 0; n < text.size(); ++n){
 		if (state == NORMAL){
 			if (text[n] == '"'){
@@ -304,7 +305,11 @@ void Highlighter::highlightBlock(const QString &text)
 			}
 		} else if (state == QUOTE){
 			setFormat(n,1,quoteFormat);
-			if (text[n] == '"' && n-1 >=0 && text[n-1] != '\\')
+			if (quote_esc_state > 0)
+				quote_esc_state = 0;
+			else if (text[n] == '\\')
+				quote_esc_state = 1;
+			else if (text[n] == '"')
 				state = NORMAL;
 		} else if (state == COMMENT){
 			setFormat(n,1,commentFormat);
