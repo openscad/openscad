@@ -11,8 +11,8 @@ public:
 	LoopExtrudeNode(const ModuleInstantiation *mi) : AbstractPolyNode(mi) {
 		convexity = 0;
 		fn = fs = fa = 0;
-		open = false;
-		outer = false;
+		//open = false;
+		//outer = false;
 	}
   virtual Response accept(class State &state, Visitor &visitor) const {
 		return visitor.visit(state, *this);
@@ -23,8 +23,8 @@ public:
   Filename filename; // only for convenience, not really usable!
 	int convexity;
 	double fn, fs, fa;
-	bool open,outer;
-  Value points, vertices, edges, poly, segments;
+	//bool open,outer;
+  Value points, vertices, edges, segments, poly, rect;
 	virtual PolySet *evaluate_polyset(class PolySetEvaluator *) const;
 };
 

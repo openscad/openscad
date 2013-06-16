@@ -54,7 +54,7 @@ AbstractNode *LoopExtrudeModule::instantiate(const Context *ctx, const ModuleIns
 	LoopExtrudeNode *node = new LoopExtrudeNode(inst);
 
 	AssignmentList args;
-  args += Assignment("points", NULL), Assignment("vertices", NULL), Assignment("edges", NULL), Assignment("poly", NULL); //Zit er al in:?? Assignment("convexity", NULL);
+  args += Assignment("points", NULL), Assignment("vertices", NULL), Assignment("edges", NULL), Assignment("segments", NULL), Assignment("poly", NULL), Assignment("rect", NULL);
 
 	Context c(ctx);
 	c.setVariables(args, evalctx);
@@ -64,13 +64,14 @@ AbstractNode *LoopExtrudeModule::instantiate(const Context *ctx, const ModuleIns
 	node->fa = c.lookup_variable("$fa").toDouble();
 
 	//TODO These options can be removed, at the moment they have no use. Do so when we are satisfied with the syntax.
-	node->open = c.lookup_variable("open").toBool();
-  node->outer = c.lookup_variable("outer").toBool();
+	//node->open = c.lookup_variable("open").toBool();
+  //node->outer = c.lookup_variable("outer").toBool();
 
   node->points     = c.lookup_variable("points");
   node->vertices   = c.lookup_variable("vertices");
   node->edges      = c.lookup_variable("edges");
   node->poly       = c.lookup_variable("poly");
+  node->rect       = c.lookup_variable("rect");
   node->segments   = c.lookup_variable("segments");
 
   node->convexity  = c.lookup_variable("convexity", true).toDouble();
@@ -108,9 +109,10 @@ std::string LoopExtrudeNode::toString() const
       ", vertices = " << this->vertices <<
       ", edges = " << this->edges <<
       ", poly = " << this->poly <<
+      ", rect = " << this->rect <<
       ", segments = " << this->segments <<
-      ", open = " << this->open <<
-      " ,outer = " << this->outer <<
+      //", open = " << this->open <<
+      //" ,outer = " << this->outer <<
 		  " ,convexity = " << this->convexity <<
       ", $fn = " << this->fn <<
       ", $fa = " << this->fa <<

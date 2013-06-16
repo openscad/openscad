@@ -108,7 +108,7 @@ public:
 	primitive_type_e type;
 	int convexity;
 	Value points, paths, triangles;
-	Value vertices,edges,poly;
+	Value vertices,edges,poly,rect;
 	virtual PolySet *evaluate_polyset(class PolySetEvaluator *) const;
 };
 
@@ -144,7 +144,7 @@ AbstractNode *PrimitiveModule::instantiate(const Context *ctx, const ModuleInsta
 		args += Assignment("points", NULL), Assignment("paths", NULL), Assignment("convexity", NULL);
 		break;
 	case LOOP:
-		args += Assignment("points", NULL), Assignment("vertices", NULL), Assignment("edges", NULL), Assignment("poly", NULL), Assignment("convexity", NULL);
+		args += Assignment("points", NULL), Assignment("vertices", NULL), Assignment("edges", NULL), Assignment("poly", NULL), Assignment("rect", NULL), Assignment("convexity", NULL);
 		break;
 	default:
 		assert(false && "PrimitiveModule::instantiate(): Unknown node type");
@@ -244,6 +244,7 @@ AbstractNode *PrimitiveModule::instantiate(const Context *ctx, const ModuleInsta
 		node->vertices   = c.lookup_variable("vertices");
 		node->edges      = c.lookup_variable("edges");
 		node->poly       = c.lookup_variable("poly");
+    node->rect       = c.lookup_variable("rect");
 	}
 	node->convexity = c.lookup_variable("convexity", true).toDouble();
 	if (node->convexity < 1)
@@ -576,6 +577,7 @@ sphere_next_r2:
 
 		(Strip (points,false)).process(loop,Loop::POINTS);
 		(Strip (poly,true)).process(loop,Loop::POLY);
+    (Strip (rect,false)).process(loop,Loop::RECT);
 		(Strip (vertices,true)).process(loop,Loop::VERTICES);
 		(Strip (edges,true)).process(loop,Loop::EDGES);
 
@@ -647,6 +649,7 @@ std::string PrimitiveNode::toString() const
 		          ", vertices = " << this->vertices <<
 		          ", edges = " << this->edges <<
 		          ", poly = " << this->poly <<
+              ", rect = " << this->rect <<
 		          ", convexity = " << this->convexity << ")";
 			break;
 	default:

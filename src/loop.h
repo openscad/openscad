@@ -259,12 +259,13 @@ class Loop
     enum ResultType {SUCCES,WARN,FAIL};
     enum CoorType {CARTESIAN,CYLINDER,SPHERE};
     enum PolyType {NONE,RIN,ROUT,SIDE};
-    enum OptionType {UNKNOWN,POINTS,POLY,VERTICES,EDGES,SEGMENTS};
+    enum OptionType {UNKNOWN,POINTS,POLY,RECT,VERTICES,EDGES,SEGMENTS};
     Loop(const unsigned faces);
     unsigned gPlaneCount();
     void addPoint(const Eigen::Vector3d pnt);
     void addPoints(const CoorType ctype, const Vector3Dvector pnts);
-    void addPoly(const unsigned vcnt, const PolyType ptype, const std::vector<double> pars, const std::vector<std::string> strs);
+    void addRect(const std::vector<std::string> strs, const Vector3Dvector pnts);
+    void addPoly(std::vector<int> ints, const PolyType ptype, const std::vector<double> pars, const std::vector<std::string> strs);
     void addVertex(const Vertex::VertexType vtype, const std::vector<int> pnts, const std::vector<double> pars);
     void addEdge(const Edge::EdgeType etype, const Edge::TransType ttype, const std::vector<int> lnps, const std::vector<double> dbls, const Vector3Dvector bzps);
     void addSegment(const Segment::SegmentType stype, const Segment::TransType ttype, const std::vector<int> snps, const std::vector<double> dbls, const std::vector<std::string> strs, const Vector3Dvector bzps);

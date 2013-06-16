@@ -74,7 +74,7 @@ bool Strip::peel()
   dbls.clear();
   strs.clear();
   vcts.clear();
-  double x,y,z;
+//  double x,y,z;
   bool abort = false;
   const Value::VectorType pvalue = vvalue.toVector();
   for (count++; pntr<pvalue.size() && !abort; pntr++)
@@ -654,8 +654,9 @@ void Loop::polyInner(const unsigned vcnt, const Circular<double> prs, Circular<d
     radii.add(sqrt(x*x+y*y));
     angles.add(atan2(y,x)-offset);  } }
 
-void Loop::addPoly(const unsigned vcnt, const PolyType ptype, const std::vector<double> pars, const std::vector<std::string> strs)
-{ if ((vcnt<3) || ptype == NONE) { return; }
+void Loop::addPoly(std::vector<int> ints , const PolyType ptype, const std::vector<double> pars, const std::vector<std::string> strs)
+{ if ((ints.size()==0) ||  (ints[0]<3) || ptype == NONE) { return; }
+  const unsigned vcnt = (unsigned) ints[0];
   vertices.clear();
   vertices.reserve(vcnt);
   const bool flat = Lib::has<std::string>(strs,"flat");
@@ -682,6 +683,20 @@ void Loop::addPoly(const unsigned vcnt, const PolyType ptype, const std::vector<
     for (unsigned i=0; i<vcnt; i++)
     { Eigen::Vector3d p( pnts[i][0]-xmin, pnts[i][1]-ymin , 0 );
       addPoint(p); } } };
+
+void Loop::addRect(const std::vector<std::string> strs, const Vector3Dvector pnts)
+{ if (pnts.size()==0) { return; }
+  const bool clock = Lib::has<std::string>(strs,"clock");
+  const bool Q1 = true;
+  double left  =   Q1  ?           0 : -pnts[0][0]/2;
+  double right =   Q1  ?  pnts[0][0] :  pnts[0][0]/2;
+  double bottom =  Q1  ?           0 : -pnts[0][1]/2;
+  double top =     Q1  ?  pnts[0][1] :  pnts[0][1]/2;
+  if (top<epsilon()) { bottom = left; top = right; }
+  addPoint(Eigen::Vector3d(left,bottom,0));
+  if (clock) { addPoint(Eigen::Vector3d(left,top,0)); } else { addPoint(Eigen::Vector3d(right,bottom,0)); }
+  addPoint(Eigen::Vector3d(right,top,0));
+  if (clock) { addPoint(Eigen::Vector3d(right,bottom,0)); } else { addPoint(Eigen::Vector3d(left,top,0)); } }
 
 /* TODO: We want 0 to be recognized as the last segment, this is automatically the case when we use circular
  * and change (index > 0) to (index >= 0) */
@@ -721,7 +736,8 @@ void Loop::addGeneric(const OptionType Otype, const std::vector<int> ints, const
 { switch (Otype)
   { case UNKNOWN  : break;
     case POINTS   : addPoints(Loop::stringsHasCoorType(strs,Loop::CARTESIAN), vcts);  break;
-    case POLY     : addPoly(ints[0],Loop::stringsHasPolyType(strs,Loop::SIDE),dbls,strs);  break;
+    case POLY     : addPoly(ints,Loop::stringsHasPolyType(strs,Loop::SIDE),dbls,strs);  break;
+    case RECT     : addRect(strs,vcts);  break;
     case VERTICES : addVertex(Vertex::stringsHasVertexType(strs),ints,dbls);  break;
     case EDGES    : addEdge(Edge::stringsHasEdgeType(strs),Edge::stringsHasTransType(strs),ints,dbls,vcts);  break;
     case SEGMENTS : addSegment(Segment::stringsHasSegmentType(strs,(vcts.size()>0 ? Segment::DEF : Segment::SPEC)),Segment::stringsHasTransType(strs),ints,dbls,strs,vcts);  break; }

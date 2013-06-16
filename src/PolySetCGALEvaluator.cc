@@ -570,6 +570,7 @@ PolySet *PolySetCGALEvaluator::loopDxfData(const LoopExtrudeNode &node, DxfData 
 
     (Strip (node.points,false)).process(loop,Loop::POINTS);
     (Strip (node.poly,true)).process(loop,Loop::POLY);
+    (Strip (node.rect,false)).process(loop,Loop::RECT);
     (Strip (node.vertices,true)).process(loop,Loop::VERTICES);
     (Strip (node.edges,true)).process(loop,Loop::EDGES);
     (Strip (node.segments,true)).process(loop,Loop::SEGMENTS);
