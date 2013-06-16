@@ -86,10 +86,12 @@ bool Strip::peel()
       for (unsigned j=0; j<qvalue.size(); j++)
         { if ((qvalue)[j].type() == Value::NUMBER) { dbls.push_back((qvalue)[j].toDouble()); }
           if ((qvalue)[j].type() == Value::STRING) { strs.push_back((qvalue)[j].toString()); }
-          if ((qvalue)[j].type() == Value::VECTOR) { if ((qvalue)[j].getVec3(x,y,z)) { vcts.push_back(Eigen::Vector3d(x,y,z)); } } }
+          //if ((qvalue)[j].type() == Value::VECTOR) { if ((qvalue)[j].getVec3(x,y,z)) { vcts.push_back(Eigen::Vector3d(x,y,z)); } } }
+          if ((qvalue)[j].type() == Value::VECTOR) {  vcts.push_back((qvalue)[j].getVecOrDef( vcts.size()==0 ? Eigen::Vector3d::Zero() : vcts.back() ) ); } }
       abort = true; }
       else
-      { if ((pvalue)[pntr].getVec3(x,y,z)) { vcts.push_back(Eigen::Vector3d(x,y,z)); } } } }
+//      { if ((pvalue)[pntr].getVec3(x,y,z)) { vcts.push_back(Eigen::Vector3d(x,y,z)); } } } }
+      { vcts.push_back((pvalue)[pntr].getVecOrDef( vcts.size()==0 ? Eigen::Vector3d::Zero() : vcts.back() ) );  } } }
   return !ints.empty() || !dbls.empty() || !strs.empty() || !vcts.empty() ; }
 
 void Strip::print()

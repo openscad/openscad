@@ -280,6 +280,23 @@ bool Value::getVec3(double &x, double &y, double &z, double defaultval) const
   return (v[0].getDouble(x) && v[1].getDouble(y) && v[2].getDouble(z));
 }
 
+Eigen::Vector3d Value::getVecOrDef(const Eigen::Vector3d defval) const
+{
+  if (this->type() != VECTOR) return defval;
+
+  const VectorType &v = toVector();
+
+  Eigen::Vector3d result = defval;
+
+  double a;
+  if ((v.size()>=1) && (v[0].getDouble(a))) { result[0] = a; }
+  if ((v.size()>=2) && (v[1].getDouble(a))) { result[1] = a; }
+  if ((v.size()>=3) && (v[2].getDouble(a))) { result[2] = a; }
+
+  return result;
+
+}
+
 Value::RangeType Value::toRange() const
 {
   const RangeType *val = boost::get<RangeType>(&this->value);
