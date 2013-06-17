@@ -11,6 +11,9 @@
 # todo - make linux work
 #
 # todo - detect failure and stop
+#
+# todo - generalize to build release binaries as well
+#
 
 init_variables()
 {
@@ -200,6 +203,9 @@ update_win_www_download_links()
 	fi
 }
 
+# FIXME: We might be running this locally and not need an ssh agent.
+# Before checking $SSH_AUTH_SOCK, try 'ssh -T git@github.com' to verify that we
+# can access github over ssh
 check_ssh_agent()
 {
 	if [ $DRYRUN ]; then echo 'skipping ssh, dry run'; return; fi
