@@ -264,6 +264,10 @@ bool FileModule::handleDependencies()
 	// as it will have a relative path.
 
 	// Iterating manually since we want to modify the container while iterating
+<<<<<<< HEAD
+=======
+	std::vector<std::pair<std::string, FileModule*> > modified_modules;
+>>>>>>> origin/issue181
 	FileModule::ModuleContainer::iterator iter = this->usedlibs.begin();
 	while (iter != this->usedlibs.end()) {
 		FileModule::ModuleContainer::iterator curr = iter++;
@@ -292,6 +296,9 @@ bool FileModule::handleDependencies()
 				PRINTB_NOCACHE("WARNING: Failed to compile library '%s'.", filename);
 			}
 		}
+	}
+	BOOST_FOREACH(const FileModule::ModuleContainer::value_type &mod, modified_modules) {
+		this->usedlibs[mod.first] = mod.second;
 	}
 
 	this->is_handling_dependencies = false;

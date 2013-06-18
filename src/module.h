@@ -107,6 +107,7 @@ private:
 	};
 
 	bool include_modified(const IncludeFile &inc) const;
+
 	typedef boost::unordered_map<std::string, struct IncludeFile> IncludeContainer;
 	IncludeContainer includes;
 	bool is_handling_dependencies;

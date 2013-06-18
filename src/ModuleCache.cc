@@ -53,7 +53,6 @@ FileModule *ModuleCache::evaluate(const std::string &filename)
 	if (lib_mod) {
 		if (this->entries[filename].cache_id == cache_id) {
 			shouldCompile = false;
-
 			if (lib_mod->includesChanged()) {
 				lib_mod = NULL;
 				shouldCompile = true;
