@@ -264,10 +264,6 @@ bool FileModule::handleDependencies()
 	// as it will have a relative path.
 
 	// Iterating manually since we want to modify the container while iterating
-<<<<<<< HEAD
-=======
-	std::vector<std::pair<std::string, FileModule*> > modified_modules;
->>>>>>> origin/issue181
 	FileModule::ModuleContainer::iterator iter = this->usedlibs.begin();
 	while (iter != this->usedlibs.end()) {
 		FileModule::ModuleContainer::iterator curr = iter++;
