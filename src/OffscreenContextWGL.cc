@@ -108,15 +108,33 @@ bool create_wgl_dummy_context(OffscreenContext &ctx)
   wc.style = CS_OWNDC;
   wc.lpfnWndProc = WndProc;
   wc.hInstance = inst;
-  wc.lpszClassName = (LPCWSTR)"OpenSCAD";
-  RegisterClass( &wc );
+  wc.lpszClassName = L"OpenSCAD";
+  ATOM class_atom = RegisterClassW( &wc );
 
-  HWND window = CreateWindow( (LPCWSTR)"OpenSCAD", (LPCWSTR)"OpenSCAD",
-    WS_CAPTION | WS_POPUPWINDOW,  //| WS_VISIBLE,
-    0, 0, ctx.width, ctx.height, NULL, NULL, inst, NULL );
+  if ( class_atom == 0 ) {
+    cerr << "MS GDI - RegisterClass failed\n";
+    cerr << "last-error code: " << GetLastError() << "\n";
+    return false;
+  }
+
+  LPCTSTR lpClassName = L"OpenSCAD";
+  LPCTSTR lpWindowName = L"OpenSCAD";
+  DWORD dwStyle = WS_CAPTION | WS_POPUPWINDOW; // | WS_VISIBLE
+  int x = 0;
+  int y = 0;
+  int nWidth = ctx.width;
+  int nHeight = ctx.height;
+  HWND hWndParent = NULL;
+  HMENU hMenu = NULL;
+  HINSTANCE hInstance = inst;
+  LPVOID lpParam = NULL;
+
+  HWND window = CreateWindowW( lpClassName, lpWindowName, dwStyle, x, y,
+    nWidth, nHeight, hWndParent, hMenu, hInstance, lpParam );
 
   if ( window==NULL ) {
     cerr << "MS GDI - CreateWindow failed\n";
+    cerr << "last-error code: " << GetLastError() << "\n";
     return false;
   }
 
@@ -127,6 +145,7 @@ bool create_wgl_dummy_context(OffscreenContext &ctx)
   HDC dev_context = GetDC( window );
   if ( dev_context == NULL ) {
     cerr << "MS GDI - GetDC failed\n";
+    cerr << "last-error code: " << GetLastError() << "\n";
     return false;
   }
 
@@ -145,18 +164,21 @@ bool create_wgl_dummy_context(OffscreenContext &ctx)
   chosenformat = ChoosePixelFormat( dev_context, &pixformat );
   if (chosenformat==0) {
     cerr << "MS GDI - ChoosePixelFormat failed\n";
+    cerr << "last-error code: " << GetLastError() << "\n";
     return false;
   }
 
   bool spfok = SetPixelFormat( dev_context, chosenformat, &pixformat );
   if (!spfok) {
     cerr << "MS GDI - SetPixelFormat failed\n";
+    cerr << "last-error code: " << GetLastError() << "\n";
     return false;
   }
 
   HGLRC gl_render_context = wglCreateContext( dev_context );
   if ( gl_render_context == NULL ) {
       cerr << "MS WGL - wglCreateContext failed\n";
+    cerr << "last-error code: " << GetLastError() << "\n";
       ReleaseDC( ctx.window, ctx.dev_context );
       return false;
   }
@@ -164,6 +186,7 @@ bool create_wgl_dummy_context(OffscreenContext &ctx)
   bool mcok = wglMakeCurrent( dev_context, gl_render_context );
   if (!mcok) {
     cerr << "MS WGL - wglMakeCurrent failed\n";
+    cerr << "last-error code: " << GetLastError() << "\n";
     return false;
   }
 

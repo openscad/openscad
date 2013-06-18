@@ -53,6 +53,7 @@
 #ifdef Q_OS_MAC
 #include "CocoaUtils.h"
 #endif
+#include "PlatformUtils.h"
 
 #include <QMenu>
 #include <QTime>
@@ -104,6 +105,8 @@
 #define OPENCSG_VERSION_STRING "unknown, <1.3.2"
 #endif
 
+#include "boosty.h"
+
 extern QString examplesdir;
 
 // Global application state
@@ -119,7 +122,7 @@ static char helptitle[] =
 #endif
 	"\nhttp://www.openscad.org\n\n";
 static char copyrighttext[] =
-	"Copyright (C) 2009-2013 Marius Kintel <marius@kintel.net> and Clifford Wolf <clifford@clifford.at>\n"
+	"Copyright (C) 2009-2013 The OpenSCAD Developers\n"
 	"\n"
 	"This program is free software; you can redistribute it and/or modify "
 	"it under the terms of the GNU General Public License as published by "
@@ -227,6 +230,7 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this->fileActionSaveAs, SIGNAL(triggered()), this, SLOT(actionSaveAs()));
 	connect(this->fileActionReload, SIGNAL(triggered()), this, SLOT(actionReload()));
 	connect(this->fileActionQuit, SIGNAL(triggered()), this, SLOT(quit()));
+	connect(this->fileShowLibraryFolder, SIGNAL(triggered()), this, SLOT(actionShowLibraryFolder()));
 #ifndef __APPLE__
 	QList<QKeySequence> shortcuts = this->fileActionSave->shortcuts();
 	shortcuts.push_back(QKeySequence(Qt::Key_F2));
@@ -458,12 +462,11 @@ void MainWindow::showProgress()
 void MainWindow::report_func(const class AbstractNode*, void *vp, int mark)
 {
 	MainWindow *thisp = static_cast<MainWindow*>(vp);
-	int v = (int)((mark*100.0) / progress_report_count);
-	int percent = v < 100 ? v : 99; 
-	
-	if (percent > thisp->progresswidget->value()) {
+	int v = (int)((mark*1000.0) / progress_report_count);
+	int permille = v < 1000 ? v : 999; 
+	if (permille > thisp->progresswidget->value()) {
 		QMetaObject::invokeMethod(thisp->progresswidget, "setValue", Qt::QueuedConnection,
-															Q_ARG(int, percent));
+															Q_ARG(int, permille));
 		QApplication::processEvents();
 	}
 
@@ -489,12 +492,12 @@ void
 MainWindow::openFile(const QString &new_filename)
 {
 	QString actual_filename = new_filename;
+	QFileInfo fi(new_filename);
+	if (fi.suffix().toLower().contains(QRegExp("^(stl|off|dxf)$"))) {
+		actual_filename = QString();
+	}
 #ifdef ENABLE_MDI
 	if (!editor->toPlainText().isEmpty()) {
-		QFileInfo fi(new_filename);
-		if (fi.suffix().toLower().contains(QRegExp("^(stl|off|dxf)$"))) {
-			actual_filename = QString();
-		}
 		new MainWindow(actual_filename);
 		clearCurrentOutput();
 		return;
@@ -502,6 +505,7 @@ MainWindow::openFile(const QString &new_filename)
 #endif
 	setFileName(actual_filename);
 
+	fileChangedOnDisk(); // force cached autoReloadId to update
 	refreshDocument();
 	updateRecentFiles();
 	if (actual_filename.isEmpty()) {
@@ -651,7 +655,11 @@ bool MainWindow::compile(bool reload, bool procevents)
 		if (procevents) QApplication::processEvents();
 		
 		AbstractNode::resetIndexCounter();
-		this->root_inst = ModuleInstantiation("group");
+
+		// split these two lines - gcc 4.7 bug
+		ModuleInstantiation mi = ModuleInstantiation( "group" );
+		this->root_inst = mi; 
+
 		this->absolute_root_node = this->root_module->instantiate(&top_ctx, &this->root_inst, NULL);
 		
 		if (this->absolute_root_node) {
@@ -687,8 +695,7 @@ void MainWindow::compileCSG(bool procevents)
 {
 	assert(this->root_node);
 	PRINT("Compiling design (CSG Products generation)...");
-	if (procevents)
-		QApplication::processEvents();
+	if (procevents) QApplication::processEvents();
 
 	// Main CSG evaluation
 	QTime t;
@@ -706,16 +713,16 @@ void MainWindow::compileCSG(bool procevents)
 		PolySetEvaluator psevaluator(this->tree);
 #endif
 		CSGTermEvaluator csgrenderer(this->tree, &psevaluator);
+		if (procevents) QApplication::processEvents();
 		this->root_raw_term = csgrenderer.evaluateCSGTerm(*root_node, highlight_terms, background_terms);
 		if (!root_raw_term) {
 			PRINT("ERROR: CSG generation failed! (no top level object found)");
-			if (procevents)
-				QApplication::processEvents();
 		}
 		PolySetCache::instance()->print();
 #ifdef ENABLE_CGAL
 		CGALCache::instance()->print();
 #endif
+		if (procevents) QApplication::processEvents();
 	}
 	catch (const ProgressCancelException &e) {
 		PRINT("CSG generation cancelled.");
@@ -727,8 +734,7 @@ void MainWindow::compileCSG(bool procevents)
 
 	if (root_raw_term) {
 		PRINT("Compiling design (CSG Products normalization)...");
-		if (procevents)
-			QApplication::processEvents();
+		if (procevents) QApplication::processEvents();
 		
 		size_t normalizelimit = 2 * Preferences::inst()->getValue("advanced/openCSGLimit").toUInt();
 		CSGTermNormalizer normalizer(normalizelimit);
@@ -740,15 +746,13 @@ void MainWindow::compileCSG(bool procevents)
 		else {
 			this->root_chain = NULL;
 			PRINT("WARNING: CSG normalization resulted in an empty tree");
-			if (procevents)
-				QApplication::processEvents();
+			if (procevents) QApplication::processEvents();
 		}
 		
 		if (highlight_terms.size() > 0)
 		{
 			PRINTB("Compiling highlights (%d CSG Trees)...", highlight_terms.size());
-			if (procevents)
-				QApplication::processEvents();
+			if (procevents) QApplication::processEvents();
 			
 			highlights_chain = new CSGChain();
 			for (unsigned int i = 0; i < highlight_terms.size(); i++) {
@@ -760,8 +764,7 @@ void MainWindow::compileCSG(bool procevents)
 		if (background_terms.size() > 0)
 		{
 			PRINTB("Compiling background (%d CSG Trees)...", background_terms.size());
-			if (procevents)
-				QApplication::processEvents();
+			if (procevents) QApplication::processEvents();
 			
 			background_chain = new CSGChain();
 			for (unsigned int i = 0; i < background_terms.size(); i++) {
@@ -771,14 +774,14 @@ void MainWindow::compileCSG(bool procevents)
 		}
 
 		if (this->root_chain && 
-				(this->root_chain->polysets.size() > 
+				(this->root_chain->objects.size() > 
 				 Preferences::inst()->getValue("advanced/openCSGLimit").toUInt())) {
-			PRINTB("WARNING: Normalized tree has %d elements!", this->root_chain->polysets.size());
+			PRINTB("WARNING: Normalized tree has %d elements!", this->root_chain->objects.size());
 			PRINT("WARNING: OpenCSG rendering has been disabled.");
 		}
 		else {
 			PRINTB("Normalized CSG tree has %d elements", 
-						 (this->root_chain ? this->root_chain->polysets.size() : 0));
+						 (this->root_chain ? this->root_chain->objects.size() : 0));
 			this->opencsgRenderer = new OpenCSGRenderer(this->root_chain, 
 																									this->highlights_chain, 
 																									this->background_chain, 
@@ -790,8 +793,7 @@ void MainWindow::compileCSG(bool procevents)
 		PRINT("CSG generation finished.");
 		int s = t.elapsed() / 1000;
 		PRINTB("Total rendering time: %d hours, %d minutes, %d seconds", (s / (60*60)) % ((s / 60) % 60) % (s % 60));
-		if (procevents)
-			QApplication::processEvents();
+		if (procevents) QApplication::processEvents();
 	}
 }
 
@@ -913,6 +915,8 @@ void MainWindow::actionSave()
 		QFile file(this->fileName);
 		if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text)) {
 			PRINTB("Failed to open file for writing: %s (%s)", this->fileName.toLocal8Bit().constData() % file.errorString().toLocal8Bit().constData());
+			QMessageBox::warning(this, windowTitle(), tr("Failed to open file for writing:\n %1 (%2)")
+					.arg(this->fileName).arg(file.errorString()));
 		}
 		else {
 			QTextStream writer(&file);
@@ -951,9 +955,26 @@ void MainWindow::actionSaveAs()
 	}
 }
 
+void MainWindow::actionShowLibraryFolder()
+{
+	std::string path = PlatformUtils::libraryPath();
+	if (!fs::exists(path)) {
+		PRINTB("WARNING: Library path %s doesnt exist. Creating", path);
+		if (!PlatformUtils::createLibraryPath()) {
+			PRINTB("ERROR: Cannot create library path: %s",path);
+		}
+	}
+	QString url = QString::fromStdString( path );
+	//PRINTB("Opening file browser for %s", url.toStdString() );
+	QDesktopServices::openUrl(QUrl::fromLocalFile( url ));
+}
+
 void MainWindow::actionReload()
 {
-	if (checkEditorModified()) refreshDocument();
+	if (checkEditorModified()) {
+		fileChangedOnDisk(); // force cached autoReloadId to update
+		refreshDocument();
+	}
 }
 
 void MainWindow::hideEditor()
@@ -1007,31 +1028,15 @@ bool MainWindow::fileChangedOnDisk()
 	if (!this->fileName.isEmpty()) {
 		struct stat st;
 		memset(&st, 0, sizeof(struct stat));
-		stat(this->fileName.toLocal8Bit(), &st);
+		bool valid = (stat(this->fileName.toLocal8Bit(), &st) == 0);
+		// If file isn't there, just return and use current editor text
+		if (!valid) return false;
+
 		std::string newid = str(boost::format("%x.%x") % st.st_mtime % st.st_size);
 
 		if (newid != this->autoReloadId) {
 			this->autoReloadId = newid;
 			return true;
-		}
-	}
-	return false;
-}
-
-// FIXME: The following two methods are duplicated in ModuleCache.cc - refactor
-static bool is_modified(const std::string &filename, const time_t &mtime)
-{
-	struct stat st;
-	memset(&st, 0, sizeof(struct stat));
-	stat(filename.c_str(), &st);
-	return (st.st_mtime > mtime);
-}
-
-bool MainWindow::includesChanged()
-{
-	if (this->root_module) {
-		BOOST_FOREACH(const FileModule::IncludeContainer::value_type &item, this->root_module->includes) {
-			if (is_modified(item.first, item.second)) return true;
 		}
 	}
 	return false;
@@ -1048,11 +1053,22 @@ bool MainWindow::compileTopLevelDocument(bool reload)
 {
 	bool shouldcompiletoplevel = !reload;
 
-	if (includesChanged()) shouldcompiletoplevel = true;
-
-	if (reload && fileChangedOnDisk() && checkEditorModified()) {
+	if (this->root_module && this->root_module->includesChanged()) {
 		shouldcompiletoplevel = true;
-		refreshDocument();
+	}
+
+	if (reload) {	
+		// Refresh file if it has changed on disk
+	  if (fileChangedOnDisk() && checkEditorModified()) {
+			shouldcompiletoplevel = true;
+			refreshDocument();
+		}
+	  // If the file hasn't changed, we might still need to compile it
+	  // if we haven't yet compiled the current text.
+		else if (!editor->isContentModified()) {
+			QString current_doc = editor->toPlainText();
+			if (current_doc != last_compiled_doc) shouldcompiletoplevel = true;
+		}
 	}
 	
 	if (shouldcompiletoplevel) {
@@ -1105,7 +1121,6 @@ void MainWindow::autoReloadSet(bool on)
 	QSettings settings;
 	settings.setValue("design/autoReload",designActionAutoReload->isChecked());
 	if (on) {
-		autoReloadId = "";
 		autoReloadTimer->start(200);
 	} else {
 		autoReloadTimer->stop();
@@ -1746,7 +1761,7 @@ MainWindow::helpHomepage()
 void
 MainWindow::helpManual()
 {
-	QDesktopServices::openUrl(QUrl("http://en.wikibooks.org/wiki/OpenSCAD_User_Manual"));
+	QDesktopServices::openUrl(QUrl("http://www.openscad.org/documentation.html"));
 }
 
 #define STRINGIFY(x) #x

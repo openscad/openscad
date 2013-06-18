@@ -31,7 +31,7 @@ isEmpty(QT_VERSION) {
 include(version.pri)
 
 # for debugging link problems (use nmake -f Makefile.Release > log.txt)
-win32 {
+win* {
   # QMAKE_LFLAGS += -VERBOSE
 }
 debug: DEFINES += DEBUG
@@ -88,7 +88,7 @@ else {
   TARGET = openscad
 }
 
-win32 {
+win* {
   RC_FILE = openscad_win32.rc
 }
 
@@ -107,6 +107,7 @@ netbsd* {
    QMAKE_LFLAGS += -L/usr/X11R7/lib
    QMAKE_LFLAGS += -Wl,-R/usr/X11R7/lib
    QMAKE_LFLAGS += -Wl,-R/usr/pkg/lib
+   !clang: { QMAKE_CXXFLAGS += -std=c++0x }
    !isEmpty(OPENSCAD_LIBDIR) {
      QMAKE_CFLAGS = -I$$OPENSCAD_LIBDIR/include $$QMAKE_CFLAGS
      QMAKE_CXXFLAGS = -I$$OPENSCAD_LIBDIR/include $$QMAKE_CXXFLAGS
@@ -171,7 +172,7 @@ CONFIG(mingw-cross-env) {
   include(mingw-cross-env.pri)
 }
 
-win32 {
+win* {
   FLEXSOURCES = src/lexer.l
   BISONSOURCES = src/parser.y
 } else {
@@ -302,6 +303,7 @@ SOURCES += src/version_check.cc \
            src/parsersettings.cc \
            src/stl-utils.cc \
            src/boost-utils.cc \
+           src/PlatformUtils.cc \
            \
            src/nodedumper.cc \
            src/traverser.cc \
@@ -347,7 +349,7 @@ macx {
   SOURCES += src/imageutils-macosx.cc
   OBJECTIVE_SOURCES += src/OffscreenContextCGL.mm
 }
-win32* {
+win* {
   SOURCES += src/imageutils-lodepng.cc
   SOURCES += src/OffscreenContextWGL.cc
 }
@@ -384,7 +386,14 @@ macx {
              src/EventFilter.h \
              src/CocoaUtils.h
   SOURCES += src/AppleEvents.cc
-  OBJECTIVE_SOURCES += src/CocoaUtils.mm
+  OBJECTIVE_SOURCES += src/CocoaUtils.mm \
+                       src/PlatformUtils-mac.mm
+}
+unix:!macx {
+  SOURCES += src/PlatformUtils-posix.cc
+}
+win* {
+  SOURCES += src/PlatformUtils-win.cc
 }
 
 isEmpty(PREFIX):PREFIX = /usr/local

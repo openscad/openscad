@@ -28,6 +28,7 @@
 #include "polyset.h"
 #include "linalg.h"
 #include <sstream>
+#include <boost/foreach.hpp>
 
 /*!
 	\class CSGTerm
@@ -103,19 +104,19 @@ shared_ptr<CSGTerm> CSGTerm::createCSGTerm(type_e type, CSGTerm *left, CSGTerm *
 }
 
 CSGTerm::CSGTerm(const shared_ptr<PolySet> &polyset, const Transform3d &matrix, const Color4f &color, const std::string &label)
-	: type(TYPE_PRIMITIVE), polyset(polyset), label(label), m(matrix), color(color)
+	: type(TYPE_PRIMITIVE), polyset(polyset), label(label), flag(CSGTerm::FLAG_NONE), m(matrix), color(color)
 {
 	initBoundingBox();
 }
 
 CSGTerm::CSGTerm(type_e type, shared_ptr<CSGTerm> left, shared_ptr<CSGTerm> right)
-	: type(type), left(left), right(right), m(Transform3d::Identity())
+	: type(type), left(left), right(right), flag(CSGTerm::FLAG_NONE), m(Transform3d::Identity())
 {
 	initBoundingBox();
 }
 
 CSGTerm::CSGTerm(type_e type, CSGTerm *left, CSGTerm *right)
-	: type(type), left(left), right(right), m(Transform3d::Identity())
+	: type(type), left(left), right(right), flag(CSGTerm::FLAG_NONE), m(Transform3d::Identity())
 {
 	initBoundingBox();
 }
@@ -181,26 +182,15 @@ std::string CSGTerm::dump()
 	return dump.str();
 }
 
-CSGChain::CSGChain()
+void CSGChain::import(shared_ptr<CSGTerm> term, CSGTerm::type_e type, CSGTerm::Flag flag)
 {
-}
-
-void CSGChain::add(const shared_ptr<PolySet> &polyset, const Transform3d &m, const Color4f &color, CSGTerm::type_e type, std::string label)
-{
-	polysets.push_back(polyset);
-	matrices.push_back(m);
-	colors.push_back(color);
-	types.push_back(type);
-	labels.push_back(label);
-}
-
-void CSGChain::import(shared_ptr<CSGTerm> term, CSGTerm::type_e type)
-{
+	CSGTerm::Flag newflag = (CSGTerm::Flag)(term->flag | flag);
 	if (term->type == CSGTerm::TYPE_PRIMITIVE) {
-		add(term->polyset, term->m, term->color, type, term->label);
+		this->objects.push_back(CSGChainObject(term->polyset, term->m, term->color, type, term->label, newflag));
 	} else {
-		import(term->left, type);
-		import(term->right, term->type);
+		assert(term->left && term->right);
+		import(term->left, type, newflag);
+		import(term->right, term->type, newflag);
 	}
 }
 
@@ -208,21 +198,20 @@ std::string CSGChain::dump(bool full)
 {
 	std::stringstream dump;
 
-	for (size_t i = 0; i < types.size(); i++)
-	{
-		if (types[i] == CSGTerm::TYPE_UNION) {
-			if (i != 0) dump << "\n";
+	BOOST_FOREACH(const CSGChainObject &obj, this->objects) {
+		if (obj.type == CSGTerm::TYPE_UNION) {
+			if (&obj != &this->objects.front()) dump << "\n";
 			dump << "+";
 		}
-		else if (types[i] == CSGTerm::TYPE_DIFFERENCE)
+		else if (obj.type == CSGTerm::TYPE_DIFFERENCE)
 			dump << " -";
-		else if (types[i] == CSGTerm::TYPE_INTERSECTION)
+		else if (obj.type == CSGTerm::TYPE_INTERSECTION)
 			dump << " *";
-		dump << labels[i];
+		dump << obj.label;
 		if (full) {
-			dump << " polyset: \n" << polysets[i]->dump() << "\n";
-			dump << " matrix: \n" << matrices[i].matrix() << "\n";
-			dump << " color: \n" << colors[i] << "\n";
+			dump << " polyset: \n" << obj.polyset->dump() << "\n";
+			dump << " matrix: \n" << obj.matrix.matrix() << "\n";
+			dump << " color: \n" << obj.color << "\n";
 		}
 	}
 	dump << "\n";
@@ -232,11 +221,11 @@ std::string CSGChain::dump(bool full)
 BoundingBox CSGChain::getBoundingBox() const
 {
 	BoundingBox bbox;
-	for (size_t i=0;i<polysets.size();i++) {
-		if (types[i] != CSGTerm::TYPE_DIFFERENCE) {
-			BoundingBox psbox = polysets[i]->getBoundingBox();
+	BOOST_FOREACH(const CSGChainObject &obj, this->objects) {
+		if (obj.type != CSGTerm::TYPE_DIFFERENCE) {
+			BoundingBox psbox = obj.polyset->getBoundingBox();
 			if (!psbox.isNull()) {
-				bbox.extend(matrices[i] * psbox);
+				bbox.extend(obj.matrix * psbox);
 			}
 		}
 	}

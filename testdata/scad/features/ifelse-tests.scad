@@ -1,5 +1,11 @@
-if (true) cube(2, true);
-else cylinder(r=1,h=2);
+if (true) {
+  cube(2, true);
+  translate([-3,0,0]) cube(2, true);
+}
+else {
+  cylinder(r=1,h=2);
+  translate([-3,0,0]) cylinder(r=1,h=2);
+}
 
 translate([3,0,0])
   if (false) cylinder(r=1,h=2);

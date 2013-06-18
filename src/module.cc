@@ -32,6 +32,7 @@
 #include "expression.h"
 #include "function.h"
 #include "printutils.h"
+#include "parsersettings.h"
 
 #include <boost/filesystem.hpp>
 namespace fs = boost::filesystem;
@@ -46,6 +47,8 @@ AbstractModule::~AbstractModule()
 
 AbstractNode *AbstractModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const
 {
+	(void)ctx; // avoid unusued parameter warning
+
 	AbstractNode *node = new AbstractNode(inst);
 
 	node->children = inst->instantiateChildren(evalctx);
@@ -99,12 +102,31 @@ std::string ModuleInstantiation::dump(const std::string &indent) const
 	if (scope.numElements() == 0) {
 		dump << ");\n";
 	} else if (scope.numElements() == 1) {
-		dump << ")\n";
-		dump << scope.dump(indent + "\t");
+		dump << ") ";
+		dump << scope.dump("");
 	} else {
 		dump << ") {\n";
-		scope.dump(indent + "\t");
+		dump << scope.dump(indent + "\t");
 		dump << indent << "}\n";
+	}
+	return dump.str();
+}
+
+std::string IfElseModuleInstantiation::dump(const std::string &indent) const
+{
+	std::stringstream dump;
+	dump << ModuleInstantiation::dump(indent);
+	dump << indent;
+	if (else_scope.numElements() > 0) {
+		dump << indent << "else ";
+		if (else_scope.numElements() == 1) {
+			dump << else_scope.dump("");
+		}
+		else {
+			dump << "{\n";
+			dump << else_scope.dump(indent + "\t");
+			dump << indent << "}\n";
+		}
 	}
 	return dump.str();
 }
@@ -144,7 +166,7 @@ public:
 	~ModRecursionGuard() { 
 		inst.recursioncount--; 
 	}
-	bool recursion_detected() const { return (inst.recursioncount > 100); }
+	bool recursion_detected() const { return (inst.recursioncount > 1000); }
 private:
 	const ModuleInstantiation &inst;
 };
@@ -194,12 +216,36 @@ std::string Module::dump(const std::string &indent, const std::string &name) con
 	return dump.str();
 }
 
-void FileModule::registerInclude(const std::string &filename)
+void FileModule::registerInclude(const std::string &localpath,
+																 const std::string &fullpath)
 {
 	struct stat st;
 	memset(&st, 0, sizeof(struct stat));
-	stat(filename.c_str(), &st);
-	this->includes[filename] = st.st_mtime;
+	bool valid = stat(fullpath.c_str(), &st) == 0;
+	IncludeFile inc = {fullpath, valid, st.st_mtime};
+	this->includes[localpath] = inc;
+}
+
+bool FileModule::includesChanged() const
+{
+	BOOST_FOREACH(const FileModule::IncludeContainer::value_type &item, this->includes) {
+		if (include_modified(item.second)) return true;
+	}
+	return false;
+}
+
+bool FileModule::include_modified(const IncludeFile &inc) const
+{
+	struct stat st;
+	memset(&st, 0, sizeof(struct stat));
+
+	fs::path fullpath = find_valid_path(this->path, inc.filename);
+	bool valid = !fullpath.empty() ? (stat(boosty::stringy(fullpath).c_str(), &st) == 0) : false;
+	
+	if (valid && !inc.valid) return true; // Detect appearance of file but not removal
+	if (valid && st.st_mtime > inc.mtime) return true;
+	
+	return false;
 }
 
 /*!
@@ -212,21 +258,39 @@ bool FileModule::handleDependencies()
 	this->is_handling_dependencies = true;
 
 	bool changed = false;
+
+	// If a lib in usedlibs was previously missing, we need to relocate it
+	// by searching the applicable paths. We can identify a previously missing module
+	// as it will have a relative path.
+
 	// Iterating manually since we want to modify the container while iterating
 	FileModule::ModuleContainer::iterator iter = this->usedlibs.begin();
 	while (iter != this->usedlibs.end()) {
 		FileModule::ModuleContainer::iterator curr = iter++;
-		FileModule *oldmodule = curr->second;
-		curr->second = ModuleCache::instance()->evaluate(curr->first);
-		if (curr->second != oldmodule) {
+
+		bool wasmissing = false;
+		// Get an absolute filename for the module
+		std::string filename = *curr;
+		if (!boosty::is_absolute(filename)) {
+			wasmissing = true;
+			fs::path fullpath = find_valid_path(this->path, filename);
+			if (!fullpath.empty()) filename = boosty::stringy(fullpath);
+		}
+
+		FileModule *oldmodule = ModuleCache::instance()->lookup(filename);
+		FileModule *newmodule = ModuleCache::instance()->evaluate(filename);
+		// Detect appearance but not removal of files
+		if (newmodule && oldmodule != newmodule) {
 			changed = true;
 #ifdef DEBUG
-			PRINTB_NOCACHE("  %s: %p", curr->first % curr->second);
+			PRINTB_NOCACHE("  %s: %p -> %p", filename % oldmodule % newmodule);
 #endif
 		}
-		if (!curr->second) {
-			PRINTB_NOCACHE("WARNING: Failed to compile library '%s'.", curr->first);
-			this->usedlibs.erase(curr);
+		if (!newmodule) {
+			// Only print warning if we're not part of an automatic reload
+			if (!oldmodule && !wasmissing) {
+				PRINTB_NOCACHE("WARNING: Failed to compile library '%s'.", filename);
+			}
 		}
 	}
 

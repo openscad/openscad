@@ -1,6 +1,5 @@
 #include "CocoaUtils.h"
 #import <Foundation/Foundation.h>
-#include <stdio.h>
 
 void CocoaUtils::endApplication()
 {
@@ -9,7 +8,3 @@ void CocoaUtils::endApplication()
                   object:nil];
 }
 
-std::string CocoaUtils::documentsPath()
-{
-  return std::string([[NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) lastObject] UTF8String]);
-}

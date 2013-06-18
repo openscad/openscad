@@ -8,3 +8,4 @@ translate([6,-3,0]) circle(1, $fn=12);
 translate([0,-6,0]) circle(1, $fa=20, $fs=0.3);
 translate([3,-6,0]) circle(1, $fa=30, $fs=0.3);
 translate([6,-6,0]) circle(1, $fa=40, $fs=0.3);
+translate([3,-9,0]) circle(1, $fn=0.1);

@@ -333,6 +333,9 @@ endif()
 if(${CMAKE_SYSTEM_NAME} MATCHES "NetBSD")
   include_directories( /usr/pkg/include /usr/X11R7/include )
   set(FLEX_EXECUTABLE /usr/pkg/bin/flex)
+  if(NOT ${CMAKE_CXX_COMPILER} MATCHES ".*clang.*")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
+  endif()
 endif()
 
 find_package(FLEX REQUIRED)
@@ -501,8 +504,8 @@ set(OFFSCREEN_SOURCES
   ../src/system-gl.cc)
 
 add_library(tests-core STATIC ${CORE_SOURCES})
-target_link_libraries(tests-core ${OPENGL_LIBRARY})
-set(TESTS-CORE-LIBRARIES ${QT_LIBRARIES} ${OPENGL_LIBRARY} ${Boost_LIBRARIES})
+target_link_libraries(tests-core ${OPENGL_LIBRARIES})
+set(TESTS-CORE-LIBRARIES ${OPENGL_LIBRARIES} ${Boost_LIBRARIES})
 
 add_library(tests-common STATIC ${COMMON_SOURCES})
 target_link_libraries(tests-common tests-core)
@@ -529,6 +532,12 @@ target_link_libraries(echotest tests-nocgal ${TESTS-NOCGAL-LIBRARIES})
 #
 add_executable(dumptest dumptest.cc)
 target_link_libraries(dumptest tests-nocgal ${TESTS-NOCGAL-LIBRARIES})
+
+#
+# moduledumptest
+#
+add_executable(moduledumptest moduledumptest.cc)
+target_link_libraries(moduledumptest tests-nocgal ${TESTS-NOCGAL-LIBRARIES})
 
 #
 # modulecachetest
@@ -770,6 +779,7 @@ list(APPEND ECHO_FILES ${FUNCTION_FILES}
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/search-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/recursion-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/value-reassignment-tests.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/value-reassignment-tests2.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/variable-scope-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/lookup-tests.scad)
 
@@ -834,8 +844,6 @@ disable_tests(cgalpngtest_child-background
               openscad-cgalpng_child-background
               openscad-cgalpng_highlight-and-background-modifier
               openscad-cgalpng_testcolornames
-              throwntogethertest_child-background
-              throwntogethertest_highlight-and-background-modifier
               throwntogethertest_testcolornames)
 
 # Test config handling
@@ -922,6 +930,10 @@ file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/CTestCustom.cmake ${TMP})
 
 add_cmdline_test(echotest SUFFIX txt FILES ${ECHO_FILES})
 add_cmdline_test(dumptest SUFFIX txt FILES ${DUMPTEST_FILES})
+add_cmdline_test(moduledumptest SUFFIX txt FILES
+                 ${CMAKE_SOURCE_DIR}/../testdata/scad/minimal/allmodules.scad
+                 ${CMAKE_SOURCE_DIR}/../testdata/scad/minimal/allfunctions.scad
+                 ${CMAKE_SOURCE_DIR}/../testdata/scad/minimal/allexpressions.scad)
 add_cmdline_test(csgtexttest SUFFIX txt FILES ${MINIMAL_FILES})
 add_cmdline_test(csgtermtest SUFFIX txt FILES ${MINIMAL_FILES})
 add_cmdline_test(cgalpngtest SUFFIX png FILES ${CGALPNGTEST_FILES})

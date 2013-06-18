@@ -5,6 +5,10 @@
 #include <vector>
 #include <list>
 #include <boost/unordered_map.hpp>
+#include <boost/unordered_set.hpp>
+#include <time.h>
+#include <sys/stat.h>
+
 #include "value.h"
 #include "typedefs.h"
 #include "localscope.h"
@@ -16,7 +20,7 @@ public:
 		: tag_root(false), tag_highlight(false), tag_background(false), recursioncount(0), modname(name) { }
 	virtual ~ModuleInstantiation();
 
-	std::string dump(const std::string &indent) const;
+	virtual std::string dump(const std::string &indent) const;
 	class AbstractNode *evaluate(const class Context *ctx) const;
 	std::vector<AbstractNode*> instantiateChildren(const Context *evalctx) const;
 
@@ -48,6 +52,7 @@ public:
 	IfElseModuleInstantiation() : ModuleInstantiation("if") { }
 	virtual ~IfElseModuleInstantiation();
 	std::vector<AbstractNode*> instantiateElseChildren(const Context *evalctx) const;
+	virtual std::string dump(const std::string &indent) const;
 
 	LocalScope else_scope;
 };
@@ -84,16 +89,26 @@ public:
 
 	void setModulePath(const std::string &path) { this->path = path; }
 	const std::string &modulePath() const { return this->path; }
-	void registerInclude(const std::string &filename);
+	void registerInclude(const std::string &localpath, const std::string &fullpath);
+	bool includesChanged() const;
 	bool handleDependencies();
 	virtual AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx = NULL) const;
+	bool hasIncludes() const { return !this->includes.empty(); }
+	bool usesLibraries() const { return !this->usedlibs.empty(); }
+	bool isHandlingDependencies() const { return this->is_handling_dependencies; }
 
-	typedef boost::unordered_map<std::string, class FileModule*> ModuleContainer;
+	typedef boost::unordered_set<std::string> ModuleContainer;
 	ModuleContainer usedlibs;
-	typedef boost::unordered_map<std::string, time_t> IncludeContainer;
-	IncludeContainer includes;
-
 private:
+	struct IncludeFile {
+		std::string filename;
+		bool valid;
+		time_t mtime;
+	};
+
+	bool include_modified(const IncludeFile &inc) const;
+	typedef boost::unordered_map<std::string, struct IncludeFile> IncludeContainer;
+	IncludeContainer includes;
 	bool is_handling_dependencies;
 	std::string path;
 };

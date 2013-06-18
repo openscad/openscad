@@ -6,7 +6,7 @@ cgal {
   CGAL_DIR = $$(CGALDIR)
   !isEmpty(CGAL_DIR) {
     QMAKE_INCDIR += $$CGAL_DIR/include
-    win32: QMAKE_INCDIR += $$CGAL_DIR/auxiliary/gmp/include
+    win*: QMAKE_INCDIR += $$CGAL_DIR/auxiliary/gmp/include
     QMAKE_LIBDIR += $$CGAL_DIR/lib
     message("CGAL location: $$CGAL_DIR")
   }
@@ -15,7 +15,7 @@ cgal {
     LIBS += -lgmp -lmpfr -lCGAL
     QMAKE_CXXFLAGS += -frounding-math 
   } else {
-    win32 {
+    win* {
       *-g++* { 
         QMAKE_CXXFLAGS += -frounding-math 
       }

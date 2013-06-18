@@ -52,13 +52,13 @@ elif [[ $OSTYPE == "linux-gnu" ]]; then
 fi
 
 if [ "`echo $* | grep mingw32`" ]; then
-  OS=LINXWIN
+  OS=UNIX_CROSS_WIN
   ARCH=32
   echo Mingw-cross build using ARCH=32
 fi
 
 if [ "`echo $* | grep mingw64`" ]; then
-  OS=LINXWIN
+  OS=UNIX_CROSS_WIN
   ARCH=64
   echo Mingw-cross build using ARCH=64
 fi
@@ -90,7 +90,7 @@ fi
 echo "Checking pre-requisites..."
 
 case $OS in
-    LINXWIN)
+    UNIX_CROSS_WIN)
         MAKENSIS=
         if [ "`command -v makensis`" ]; then
             MAKENSIS=makensis
@@ -120,10 +120,9 @@ echo "Building openscad-$VERSION ($VERSIONDATE) $CONFIGURATION..."
 
 if [ ! $NUMCPU ]; then
   echo "note: you can 'export NUMCPU=x' for multi-core compiles (x=number)";
-  NUMCPU=2
-else
-  echo "NUMCPU: " $NUMCPU
+  NUMCPU=1
 fi
+echo "NUMCPU: " $NUMCPU
 
 CONFIG=deploy
 case $OS in
@@ -138,7 +137,7 @@ case $OS in
         ZIPARGS="a -tzip"
         TARGET=release
         ;;
-    LINXWIN) 
+    UNIX_CROSS_WIN) 
         . ./scripts/setenv-mingw-xbuild.sh $ARCH
         TARGET=release
         ZIP="zip"
@@ -148,7 +147,7 @@ esac
 
 
 case $OS in
-    LINXWIN)
+    UNIX_CROSS_WIN)
         cd $DEPLOYDIR && qmake VERSION=$VERSION OPENSCAD_COMMIT=$OPENSCAD_COMMIT CONFIG+=$CONFIG CONFIG+=mingw-cross-env CONFIG-=debug ../openscad.pro
         cd $OPENSCADDIR
     ;;
@@ -158,7 +157,7 @@ case $OS in
 esac
 
 case $OS in
-    LINXWIN)
+    UNIX_CROSS_WIN)
         cd $DEPLOYDIR
         make clean ## comment out for test-run
         cd $OPENSCADDIR
@@ -176,10 +175,17 @@ case $OS in
         #if the following files are missing their tried removal stops the build process on msys
         touch -t 200012121010 parser_yacc.h parser_yacc.cpp lexer_lex.cpp
         ;;
+    UNIX_CROSS_WIN)
+        # kludge to enable paralell make
+        touch -t 200012121010 $OPENSCADDIR/src/parser_yacc.h
+        touch -t 200012121010 $OPENSCADDIR/src/parser_yacc.cpp
+        touch -t 200012121010 $OPENSCADDIR/src/parser_yacc.hpp
+        touch -t 200012121010 $OPENSCADDIR/src/lexer_lex.cpp
+        ;;
 esac
 
 case $OS in
-    LINXWIN)
+    UNIX_CROSS_WIN)
         # make main openscad.exe
         cd $DEPLOYDIR
         make $TARGET -j$NUMCPU ## comment 4 test
@@ -214,12 +220,12 @@ case $OS in
         EXAMPLESDIR=OpenSCAD.app/Contents/Resources/examples
         LIBRARYDIR=OpenSCAD.app/Contents/Resources/libraries
     ;;
-    LINXWIN)
+    UNIX_CROSS_WIN)
         EXAMPLESDIR=$DEPLOYDIR/openscad-$VERSION/examples/
         LIBRARYDIR=$DEPLOYDIR/openscad-$VERSION/libraries/
         rm -rf $DEPLOYDIR/openscad-$VERSION
         mkdir $DEPLOYDIR/openscad-$VERSION
-		;;
+    ;;
     *)
         EXAMPLESDIR=openscad-$VERSION/examples/
         LIBRARYDIR=openscad-$VERSION/libraries/
@@ -267,7 +273,7 @@ case $OS in
         rm -rf openscad-$VERSION
         echo "Binary created: openscad-$VERSION.zip"
         ;;
-    LINXWIN)
+    UNIX_CROSS_WIN)
         BINFILE=$DEPLOYDIR/OpenSCAD-$VERSION-x86-$ARCH.zip
         INSTFILE=$DEPLOYDIR/OpenSCAD-$VERSION-x86-$ARCH-Installer.exe
 

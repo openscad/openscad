@@ -324,6 +324,7 @@ PolySet *PolySetCGALEvaluator::extrudeDxfData(const LinearExtrudeNode &node, Dxf
 {
 	PolySet *ps = new PolySet();
 	ps->convexity = node.convexity;
+	if (node.height <= 0) return ps;
 
 	double h1, h2;
 

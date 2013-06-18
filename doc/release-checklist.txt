@@ -1,6 +1,19 @@
 OpenSCAD Release Checklist
 --------------------------
 
+o Pre-release preparations
+  - Merge MCAD
+    o In MCAD clone:
+      $ git fetch upstream
+      $ git merge upstream/master
+      $ git push
+    o In OpenSCAD:
+      $ cd libraries/MCAD
+      $ git pull
+      $ cd ../..
+      $ git commit -m "Updated MCAD"
+      $ git push
+
 (See bottom of this file for how to build release binaries)
 
 o Set VERSION and VERSIONDATE environment variable
@@ -31,19 +44,24 @@ o git push --tags
 
 o Upload Source package
   $ ./scripts/googlecode_upload.py -s 'Source Code' -p openscad -l Featured,Type-Source openscad-$VERSION.src.tar.gz
+  $ scp openscad-$VERSION.src.tar.gz openscad@files.openscad.org:www
 
 o Remove VERSION environment variable
   $ unset VERSION
 
+o Write release email/blog entry
 o Update web page
-o Write email to mailing list
+  - news.html
+  - inc/src_release_links.js
 o Update external resources:
   - http://en.wikipedia.org/wiki/OpenSCAD
+o Write to mailing list
+o Tweet
 o Notify package managers
   - Ubuntu: https://launchpad.net/~chrysn
   - Fedora: Miro Hrončok <miro@hroncok.cz> or <mhroncok@redhat.com>
-  - MacPorts: 
-
+  - OpenSUSE: Pavol Rusnak <prusnak@opensuse.org>
+  - MacPorts: Frank Schima <macports2000@gmail.com>
 
 Build and Upload Release Binaries
 ---------------------------------
@@ -66,10 +84,6 @@ Linux:
     $ ./scripts/googlecode_upload.py -s 'Linux Binaries' -p openscad openscad-$VERSION.x86-ARCH.tar.gz -l Featured,OpSys-Linux,Type-Archive openscad-$VERSION.x86-ARCH.tar.gz
     o Update web page with download links
 
-Windows mingw cross-build: FIXME 32 vs. 64 bit
+Windows mingw cross-build:
 
-    $ ./scripts/publish-mingw-x.sh -> mingw32/Openscad-$VERSION.zip
-                                   -> mingw32/Openscad-$VERSION-Installer.exe
-    $ ./scripts/googlecode_upload.py -s 'Windows Binaries' -p openscad OpenSCAD-$VERSION.zip -l Featured,OpSys-Windows,Type-Archive OpenSCAD-$VERSION.zip
-    $ ./scripts/googlecode_upload.py -s 'Windows Installer' -p openscad OpenSCAD-$VERSION-Installer.exe -l Featured,OpSys-Windows,Type-Installer OpenSCAD-$VERSION-Installer.exe
-    o Update web page with download links
+FIXME: Adapt scripts/builder.sh to build release binaries
