@@ -1761,7 +1761,7 @@ MainWindow::helpHomepage()
 void
 MainWindow::helpManual()
 {
-	QDesktopServices::openUrl(QUrl("http://en.wikibooks.org/wiki/OpenSCAD_User_Manual"));
+	QDesktopServices::openUrl(QUrl("http://www.openscad.org/documentation.html"));
 }
 
 #define STRINGIFY(x) #x

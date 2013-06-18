@@ -116,7 +116,7 @@
      <x>0</x>
      <y>0</y>
      <width>681</width>
-     <height>28</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_File">
@@ -625,7 +625,7 @@
   </action>
   <action name="helpActionManual">
    <property name="text">
-    <string>OpenSCAD Manual</string>
+    <string>Documentation</string>
    </property>
   </action>
   <action name="fileActionClearRecent">
