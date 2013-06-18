@@ -170,7 +170,7 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this->cgalworker, SIGNAL(done(CGAL_Nef_polyhedron *)), 
 					this, SLOT(actionRenderCGALDone(CGAL_Nef_polyhedron *)));
 #endif
-
+	this->tempFile = NULL;
 	top_ctx.registerBuiltin();
 
 	this->openglbox = NULL;
@@ -445,6 +445,7 @@ MainWindow::~MainWindow()
 {
 	if (root_module) delete root_module;
 	if (root_node) delete root_node;
+	// if (tempFile) delete tempFile;
 #ifdef ENABLE_CGAL
 	if (this->root_N) delete this->root_N;
 	delete this->cgalRenderer;
@@ -619,6 +620,8 @@ void MainWindow::refreshDocument()
 */
 bool MainWindow::compile(bool reload, bool procevents)
 {
+	saveBackup();
+
 	if (!compileTopLevelDocument(reload)) return false;
 
   // Invalidate renderers before we kill the CSG tree
@@ -694,6 +697,7 @@ bool MainWindow::compile(bool reload, bool procevents)
 void MainWindow::compileCSG(bool procevents)
 {
 	assert(this->root_node);
+
 	PRINT("Compiling design (CSG Products generation)...");
 	if (procevents) QApplication::processEvents();
 
@@ -903,6 +907,57 @@ void MainWindow::actionOpenExample()
 	if (action) {
 		openFile(examplesdir + QDir::separator() + action->text());
 	}
+}
+
+void MainWindow::writeBackup(QFile * file)
+{
+	// see MainWindow::saveBackup()
+	file->resize(0);
+	QTextStream writer(file);
+	writer.setCodec("UTF-8");
+	writer << this->editor->toPlainText();
+
+	PRINTB("Saved backup file: %s", file->fileName().toLocal8Bit().constData());
+}
+
+void MainWindow::saveBackup()
+{
+	std::string path = PlatformUtils::backupPath();
+	if ((! fs::exists(path)) && (! PlatformUtils::createBackupPath())) {
+		PRINTB("WARNING: Cannot create backup path: %s", path);
+		return;
+	}
+
+	QString backupPath = QString::fromStdString(path);
+	if (! backupPath.endsWith("/")) backupPath.append("/");
+
+	if (this->fileName.isEmpty()) {
+		if (! this->tempFile) {
+			this->tempFile = new QTemporaryFile(backupPath.append("unsaved-backup-XXXXXXXX.scad"));
+		}
+
+		if ((! this->tempFile->isOpen()) && (! this->tempFile->open())) {
+			PRINT("WARNING: Failed to create backup file");
+			return;
+		}
+		return writeBackup(this->tempFile);
+	}
+
+	QFileInfo fileInfo = QFileInfo(this->fileName);
+
+	backupPath.append(fileInfo.baseName())
+			.append("-backup.")
+			.append(fileInfo.suffix());
+
+	QFile file(backupPath);
+
+	if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+		PRINTB("WARNING: Failed to open backup file for writing: %s (%s)", backupPath.toLocal8Bit().constData() % file.errorString().toLocal8Bit().constData());
+		return;
+	}
+
+	writeBackup(&file);
+	file.close();
 }
 
 void MainWindow::actionSave()
@@ -1826,6 +1881,7 @@ void MainWindow::closeEvent(QCloseEvent *event)
 		settings.setValue("window/position", pos());
 		settings_setValueList("window/splitter1sizes",splitter1->sizes());
 		settings_setValueList("window/splitter2sizes",splitter2->sizes());
+		if (tempFile) delete tempFile;
 		event->accept();
 	} else {
 		event->ignore();
@@ -1855,6 +1911,7 @@ void MainWindow::quit()
 	QCloseEvent ev;
 	QApplication::sendEvent(QApplication::instance(), &ev);
 	if (ev.isAccepted()) QApplication::instance()->quit();
+
   // FIXME: Cancel any CGAL calculations
 #ifdef Q_OS_MAC
 	CocoaUtils::endApplication();

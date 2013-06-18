@@ -2,6 +2,8 @@
 #define MAINWINDOW_H_
 
 #include <QMainWindow>
+#include <QFile>
+#include <QTemporaryFile>
 #include "ui_MainWindow.h"
 #include "openscad.h"
 #include "modcontext.h"
@@ -85,6 +87,8 @@ private:
 	static void consoleOutput(const std::string &msg, void *userdata);
 	void loadViewSettings();
 	void loadDesignSettings();
+	void saveBackup();
+	void writeBackup(QFile * file);
 
   class QMessageBox *openglbox;
 
@@ -169,7 +173,7 @@ public slots:
 
 private:
 	static void report_func(const class AbstractNode*, void *vp, int mark);
-
+	QTemporaryFile * tempFile;
 	class ProgressWidget *progresswidget;
 	class CGALWorker *cgalworker;
 	QMutex consolemutex;
@@ -193,3 +197,4 @@ private:
 };
 
 #endif
+
