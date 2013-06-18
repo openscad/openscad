@@ -8,6 +8,7 @@
 #
 # Usage: macosx-build-dependencies.sh [-6lcd]
 #  -6   Build only 64-bit binaries
+#  -c   Force use of LLVM compiler
 #  -l   Force use of LLVM compiler
 #  -c   Force use of clang compiler
 #  -d   Build for deployment (if not specified, e.g. Sparkle won't be built)
@@ -17,6 +18,7 @@
 #
 # FIXME:
 # o Verbose option
+# o Force rebuild vs. only rebuild changes
 #
 
 BASEDIR=$PWD/../libraries
@@ -392,7 +394,7 @@ elif $OPTION_GCC; then
 elif $OPTION_CLANG; then
   USING_CLANG=true
 elif (( $OSX_VERSION >= 7 )); then
-  USING_GCC=true
+  USING_CLANG=true
 fi
 
 if $USING_LLVM; then
