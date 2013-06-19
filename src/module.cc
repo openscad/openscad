@@ -293,9 +293,6 @@ bool FileModule::handleDependencies()
 			}
 		}
 	}
-	BOOST_FOREACH(const FileModule::ModuleContainer::value_type &mod, modified_modules) {
-		this->usedlibs[mod.first] = mod.second;
-	}
 
 	this->is_handling_dependencies = false;
 	return changed;
