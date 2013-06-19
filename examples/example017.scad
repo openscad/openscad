@@ -1,6 +1,6 @@
 
 // To render the DXF file from the command line:
-// openscad -x example017.dxf -D'mode="parts"' example017.scad
+// openscad -o example017.dxf -D'mode="parts"' example017.scad
 
 // mode = "parts";
 // mode = "exploded";

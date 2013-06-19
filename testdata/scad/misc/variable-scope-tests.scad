@@ -49,5 +49,16 @@ echo("undeclared variable can still be passed and used");
 module undeclared_var() {
   echo(d);
 }
-
 undeclared_var(d=6);
+
+echo("attempt to assign from a not-yet-defined variable which also exists globally");
+
+globalval = 1;
+// Test that b = a turns into b = 1, heeding the order of the assignments
+// See issue #399 for more discussion
+module global_lookup() {
+  b = globalval; // Should be assigned 1 since the local one isn't yet defined
+  globalval = 5; // Overrides the value for the local scope only
+  echo(globalval,b); // Should output 5, 1
+}
+global_lookup();

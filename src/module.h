@@ -5,6 +5,7 @@
 #include <vector>
 #include <list>
 #include <boost/unordered_map.hpp>
+#include <boost/unordered_set.hpp>
 #include <time.h>
 #include <sys/stat.h>
 
@@ -78,12 +79,6 @@ public:
 	LocalScope scope;
 };
 
-struct IncludeFile {
-	std::string filename;
-	bool valid;
-	time_t mtime;
-};
-
 // FIXME: A FileModule doesn't have definition arguments, so we shouldn't really
 // inherit from a Module
 class FileModule : public Module
@@ -95,15 +90,25 @@ public:
 	void setModulePath(const std::string &path) { this->path = path; }
 	const std::string &modulePath() const { return this->path; }
 	void registerInclude(const std::string &localpath, const std::string &fullpath);
+	bool includesChanged() const;
 	bool handleDependencies();
 	virtual AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx = NULL) const;
+	bool hasIncludes() const { return !this->includes.empty(); }
+	bool usesLibraries() const { return !this->usedlibs.empty(); }
+	bool isHandlingDependencies() const { return this->is_handling_dependencies; }
 
-	typedef boost::unordered_map<std::string, class FileModule*> ModuleContainer;
+	typedef boost::unordered_set<std::string> ModuleContainer;
 	ModuleContainer usedlibs;
+private:
+	struct IncludeFile {
+		std::string filename;
+		bool valid;
+		time_t mtime;
+	};
+
+	bool include_modified(const IncludeFile &inc) const;
 	typedef boost::unordered_map<std::string, struct IncludeFile> IncludeContainer;
 	IncludeContainer includes;
-	bool include_modified(struct IncludeFile inc);
-private:
 	bool is_handling_dependencies;
 	std::string path;
 };

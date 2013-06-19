@@ -17,6 +17,7 @@ CreateShortCut $SMPROGRAMS\OpenSCAD.lnk $INSTDIR\openscad.exe
 WriteUninstaller $INSTDIR\Uninstall.exe
 WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\OpenSCAD" "DisplayName" "OpenSCAD (remove only)"
 WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\OpenSCAD" "UninstallString" "$INSTDIR\Uninstall.exe"
+WriteRegStr HKCR ".scad" "PerceivedType" "text"
 SectionEnd
 Section "Uninstall"
 ${unregisterExtension} ".scad" "OpenSCAD_File"

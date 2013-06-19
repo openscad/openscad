@@ -22,3 +22,6 @@ translate([-15,20,0]) linear_extrude(height=20, scale=[4,5,6]) square(10);
 translate([-10,5,0]) linear_extrude(height=15, scale=-2) square(10, center=true);
 // scale given as undefined
 translate([-15,-15,0]) linear_extrude(height=10, scale=var_undef) square(10);
+
+// height is negative
+translate([0,-25,0]) linear_extrude(-1) square(10, center=true);

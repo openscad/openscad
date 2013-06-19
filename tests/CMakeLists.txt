@@ -333,6 +333,9 @@ endif()
 if(${CMAKE_SYSTEM_NAME} MATCHES "NetBSD")
   include_directories( /usr/pkg/include /usr/X11R7/include )
   set(FLEX_EXECUTABLE /usr/pkg/bin/flex)
+  if(NOT ${CMAKE_CXX_COMPILER} MATCHES ".*clang.*")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
+  endif()
 endif()
 
 find_package(FLEX REQUIRED)
@@ -776,6 +779,7 @@ list(APPEND ECHO_FILES ${FUNCTION_FILES}
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/search-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/recursion-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/value-reassignment-tests.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/value-reassignment-tests2.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/variable-scope-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/lookup-tests.scad)
 

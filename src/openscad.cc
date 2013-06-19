@@ -330,7 +330,6 @@ int main(int argc, char **argv)
 		// Top context - this context only holds builtins
 		ModuleContext top_ctx;
 		top_ctx.registerBuiltin();
-		PRINT("Root Context:");
 #if 0 && DEBUG
 		top_ctx.dump(NULL, NULL);
 #endif

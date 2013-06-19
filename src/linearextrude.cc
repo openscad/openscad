@@ -88,7 +88,8 @@ AbstractNode *LinearExtrudeModule::instantiate(const Context *ctx, const ModuleI
 	}
 
 	node->layername = layer.isUndefined() ? "" : layer.toString();
-	node->height = height.toDouble();
+	node->height = 100;
+	height.getDouble(node->height);
 	node->convexity = (int)convexity.toDouble();
 	origin.getVec2(node->origin_x, node->origin_y);
 	node->scale_x = node->scale_y = 1;
@@ -99,8 +100,7 @@ AbstractNode *LinearExtrudeModule::instantiate(const Context *ctx, const ModuleI
 	if (center.type() == Value::BOOL)
 		node->center = center.toBool();
 
-	if (node->height <= 0)
-		node->height = 100;
+	if (node->height <= 0) node->height = 0;
 
 	if (node->convexity <= 0)
 		node->convexity = 1;

@@ -14,3 +14,5 @@ ECHO: undef
 ECHO: 5
 ECHO: "undeclared variable can still be passed and used"
 ECHO: 6
+ECHO: "attempt to assign from a not-yet-defined variable which also exists globally"
+ECHO: 5, 1
