@@ -25,8 +25,8 @@ BASEDIR=$PWD/../libraries
 OPENSCADDIR=$PWD
 SRCDIR=$BASEDIR/src
 DEPLOYDIR=$BASEDIR/install
-MAC_OSX_VERSION_MIN=10.5
-OPTION_32BIT=true
+MAC_OSX_VERSION_MIN=10.6
+OPTION_32BIT=false
 OPTION_LLVM=false
 OPTION_CLANG=false
 OPTION_GCC=false
@@ -55,14 +55,15 @@ build_qt()
   fi
   tar xzf qt-everywhere-opensource-src-$version.tar.gz
   cd qt-everywhere-opensource-src-$version
-  if $OPTION_CLANG; then
+  if $USING_CLANG; then
     # FIX for clang
     sed -i "" -e "s/::TabletProximityRec/TabletProximityRec/g"  src/gui/kernel/qt_cocoa_helpers_mac_p.h
+    PLATFORM="-platform unsupported/macx-clang"
   fi
   if $OPTION_32BIT; then
     QT_32BIT="-arch x86"
   fi
-  ./configure -prefix $DEPLOYDIR -release $QT_32BIT -arch x86_64 -opensource -confirm-license -fast -no-qt3support -no-svg -no-phonon -no-audio-backend -no-multimedia -no-javascript-jit -no-script -no-scripttools -no-declarative -no-xmlpatterns -nomake demos -nomake examples -nomake docs -nomake translations -no-webkit
+  ./configure -prefix $DEPLOYDIR -release $QT_32BIT -arch x86_64 -opensource -confirm-license $PLATFORM -fast -no-qt3support -no-svg -no-phonon -no-audio-backend -no-multimedia -no-javascript-jit -no-script -no-scripttools -no-declarative -no-xmlpatterns -nomake demos -nomake examples -nomake docs -nomake translations -no-webkit
   make -j6 install
 }
 
@@ -213,10 +214,10 @@ build_boost()
   if $OPTION_32BIT; then
     BOOST_EXTRA_FLAGS="-arch i386"
   fi
-  if $OPTION_LLVM; then
+  if $USING_LLVM; then
     BOOST_TOOLSET="toolset=darwin-llvm"
     echo "using darwin : llvm : llvm-g++ ;" >> tools/build/v2/user-config.jam 
-  elif $OPTION_CLANG; then
+  elif $USING_CLANG; then
     BOOST_TOOLSET="toolset=clang"
     echo "using clang ;" >> tools/build/v2/user-config.jam 
   fi
@@ -379,7 +380,7 @@ OSX_VERSION=`sw_vers -productVersion | cut -d. -f2`
 if (( $OSX_VERSION >= 8 )); then
   echo "Detected Mountain Lion (10.8) or later"
 elif (( $OSX_VERSION >= 7 )); then
-  echo "Detected Lion (10.7) or later"
+  echo "Detected Lion (10.7)"
 else
   echo "Detected Snow Leopard (10.6) or earlier"
 fi
@@ -417,16 +418,11 @@ elif $USING_CLANG; then
   export QMAKESPEC=unsupported/macx-clang
 fi
 
-if (( $OSX_VERSION >= 8 )); then
-  echo "Setting build target to 10.6 or later"
-  MAC_OSX_VERSION_MIN=10.6
-else
-  echo "Setting build target to 10.5 or later"
-  MAC_OSX_VERSION_MIN=10.5
-fi
+echo "Building for $MAC_OSX_VERSION_MIN or later"
 
 if $OPTION_DEPLOY; then
   echo "Building deployment version of libraries"
+  OPTION_32BIT=true
 else
   OPTION_32BIT=false
 fi
