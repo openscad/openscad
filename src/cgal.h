@@ -39,8 +39,8 @@ using boost::uintmax_t;
 #include <CGAL/assertions_behaviour.h>
 #include <CGAL/exceptions.h>
 
-typedef CGAL::Gmpq NT;
-typedef CGAL::Extended_cartesian<NT> CGAL_Kernel2;
+typedef CGAL::Gmpq NT2;
+typedef CGAL::Extended_cartesian<NT2> CGAL_Kernel2;
 typedef CGAL::Nef_polyhedron_2<CGAL_Kernel2> CGAL_Nef_polyhedron2;
 typedef CGAL_Kernel2::Aff_transformation_2 CGAL_Aff_transformation2;
 
@@ -48,7 +48,9 @@ typedef CGAL::Exact_predicates_exact_constructions_kernel CGAL_ExactKernel2;
 typedef CGAL::Polygon_2<CGAL_ExactKernel2> CGAL_Poly2;
 typedef CGAL::Polygon_with_holes_2<CGAL_ExactKernel2> CGAL_Poly2h;
 
-typedef CGAL::Cartesian<NT> CGAL_Kernel3;
+ //typedef CGAL::Cartesian<NT> CGAL_Kernel3;
+typedef CGAL::Exact_predicates_exact_constructions_kernel CGAL_Kernel3;
+typedef CGAL::Exact_predicates_exact_constructions_kernel::FT NT3;
 typedef CGAL::Nef_polyhedron_3<CGAL_Kernel3> CGAL_Nef_polyhedron3;
 typedef CGAL_Nef_polyhedron3::Aff_transformation_3 CGAL_Aff_transformation;
 
@@ -63,7 +65,7 @@ typedef CGAL::Iso_cuboid_3<CGAL_Kernel3> CGAL_Iso_cuboid_3;
 // CGAL_Nef_polyhedron2::Explorer::Point which is different than
 // CGAL_Kernel2::Point. Hence the suffix 'e'
 typedef CGAL_Nef_polyhedron2::Explorer::Point CGAL_Point_2e;
-typedef CGAL::Iso_rectangle_2< CGAL::Simple_cartesian<NT> > CGAL_Iso_rectangle_2e;
+typedef CGAL::Iso_rectangle_2<CGAL::Simple_cartesian<NT2> > CGAL_Iso_rectangle_2e;
 
 
 #ifdef PREV_NDEBUG
