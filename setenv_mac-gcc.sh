@@ -1,7 +1,7 @@
 export OPENSCAD_LIBRARIES=$PWD/../libraries/install
 export DYLD_LIBRARY_PATH=$OPENSCAD_LIBRARIES/lib
 export DYLD_FRAMEWORK_PATH=$OPENSCAD_LIBRARIES/lib
-export QMAKESPEC=unsupported/macx-clang
+export QMAKESPEC=macx-g++
 
 # Our own Qt
 export PATH=$OPENSCAD_LIBRARIES/bin:$PATH
