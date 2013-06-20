@@ -11,6 +11,9 @@
 # todo - make linux work
 #
 # todo - detect failure and stop
+#
+# todo - generalize to build release binaries as well
+#
 
 init_variables()
 {
@@ -94,8 +97,11 @@ upload_win_generic()
 	if [ $DRYRUN ]; then
 		echo dry run, not uploading to googlecode
 		echo cmd - python ./scripts/googlecode_upload.py -s '"'$summary'"' $opts
+		echo dry run, not uploading to files.openscad.org
+		echo scp -v $filename openscad@files.openscad.org:www/
 	else
 		python ./scripts/googlecode_upload.py -s "$summary" $opts
+		scp -v $filename openscad@files.openscad.org:www/
 	fi
 }
 
@@ -173,6 +179,7 @@ update_win_www_download_links()
 	cd inc
 	echo `pwd`
 	BASEURL='https://openscad.googlecode.com/files/'
+	# BASEURL='http://files.openscad.org'
 	DATECODE=`date +"%Y.%m.%d"`
 
 	rm win_snapshot_links.js
@@ -200,6 +207,9 @@ update_win_www_download_links()
 	fi
 }
 
+# FIXME: We might be running this locally and not need an ssh agent.
+# Before checking $SSH_AUTH_SOCK, try 'ssh -T git@github.com' to verify that we
+# can access github over ssh
 check_ssh_agent()
 {
 	if [ $DRYRUN ]; then echo 'skipping ssh, dry run'; return; fi

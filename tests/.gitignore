@@ -21,5 +21,8 @@ out.png
 /throwntogethertest
 /cgalstlsanitytest
 /cgalcachetest
+/modulecachetest
+/moduledumptest
+/test_pretty_print
 /sysinfo.txt
 /CTestCustom.cmake

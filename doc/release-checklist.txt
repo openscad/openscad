@@ -44,6 +44,7 @@ o git push --tags
 
 o Upload Source package
   $ ./scripts/googlecode_upload.py -s 'Source Code' -p openscad -l Featured,Type-Source openscad-$VERSION.src.tar.gz
+  $ scp openscad-$VERSION.src.tar.gz openscad@files.openscad.org:www
 
 o Remove VERSION environment variable
   $ unset VERSION

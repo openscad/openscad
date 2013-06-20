@@ -67,7 +67,7 @@ if [[ $? != 0 ]]; then
   exit 1
 fi
 
-SIGNATURE=$(openssl dgst -sha1 -binary < OpenSCAD-$VERSION.dmg  | openssl dgst -dss1 -sign dsa_priv.pem | openssl enc -base64)
+SIGNATURE=$(openssl dgst -sha1 -binary < OpenSCAD-$VERSION.dmg  | openssl dgst -dss1 -sign $HOME/.ssh/openscad-appcast.pem | openssl enc -base64)
 
 if [[ $VERSION == $VERSIONDATE ]]; then
   APPCASTFILE=appcast-snapshots.xml
