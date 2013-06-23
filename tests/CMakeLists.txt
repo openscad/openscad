@@ -759,7 +759,6 @@ configure_file(${CMAKE_SOURCE_DIR}/../testdata/scad/templates/import_dxf-tests-t
                ${CMAKE_SOURCE_DIR}/../testdata/scad/features/import_dxf-tests.scad)
 
 # Find all scad files
-file(GLOB MINIMAL_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/minimal/*.scad)
 file(GLOB FEATURES_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/features/*.scad)
 file(GLOB BUGS_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/*.scad)
 file(GLOB SCAD_DXF_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/dxf/*.scad)
@@ -767,7 +766,6 @@ file(GLOB FUNCTION_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/functions/*.scad)
 file(GLOB EXAMPLE_FILES ${CMAKE_SOURCE_DIR}/../examples/*.scad)
 
 list(APPEND ECHO_FILES ${FUNCTION_FILES}
-            ${CMAKE_SOURCE_DIR}/../testdata/scad/minimal/echo.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/echo-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/escape-test.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/parser-tests.scad
@@ -783,12 +781,15 @@ list(APPEND ECHO_FILES ${FUNCTION_FILES}
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/variable-scope-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/lookup-tests.scad)
 
-list(APPEND DUMPTEST_FILES ${MINIMAL_FILES} ${FEATURES_FILES} ${EXAMPLE_FILES})
+list(APPEND DUMPTEST_FILES ${FEATURES_FILES} ${EXAMPLE_FILES})
 list(APPEND DUMPTEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/escape-test.scad
                            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/include-tests.scad
                            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/use-tests.scad
                            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/localfiles-test.scad
-                           ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/localfiles_dir/localfiles-compatibility-test.scad)
+                           ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/localfiles_dir/localfiles-compatibility-test.scad
+                           ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/allexpressions.scad
+                           ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/allfunctions.scad
+                           ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/allmodules.scad)
 
 list(APPEND CGALPNGTEST_FILES ${FEATURES_FILES} ${SCAD_DXF_FILES} ${EXAMPLE_FILES})
 list(APPEND CGALPNGTEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/include-tests.scad
@@ -931,11 +932,17 @@ file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/CTestCustom.cmake ${TMP})
 add_cmdline_test(echotest SUFFIX txt FILES ${ECHO_FILES})
 add_cmdline_test(dumptest SUFFIX txt FILES ${DUMPTEST_FILES})
 add_cmdline_test(moduledumptest SUFFIX txt FILES
-                 ${CMAKE_SOURCE_DIR}/../testdata/scad/minimal/allmodules.scad
-                 ${CMAKE_SOURCE_DIR}/../testdata/scad/minimal/allfunctions.scad
-                 ${CMAKE_SOURCE_DIR}/../testdata/scad/minimal/allexpressions.scad)
-add_cmdline_test(csgtexttest SUFFIX txt FILES ${MINIMAL_FILES})
-add_cmdline_test(csgtermtest SUFFIX txt FILES ${MINIMAL_FILES})
+                 ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/allmodules.scad
+                 ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/allfunctions.scad
+                 ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/allexpressions.scad)
+add_cmdline_test(csgtexttest SUFFIX txt FILES 
+                             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/allexpressions.scad
+                             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/allfunctions.scad
+                             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/allmodules.scad)
+add_cmdline_test(csgtermtest SUFFIX txt FILES
+                             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/allexpressions.scad
+                             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/allfunctions.scad
+                             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/allmodules.scad)
 add_cmdline_test(cgalpngtest SUFFIX png FILES ${CGALPNGTEST_FILES})
 add_cmdline_test(opencsgtest SUFFIX png FILES ${OPENCSGTEST_FILES})
 add_cmdline_test(throwntogethertest SUFFIX png FILES ${THROWNTOGETHERTEST_FILES})

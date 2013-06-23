@@ -1,2 +1,0 @@
-	minkowski(convexity = 0);
-
