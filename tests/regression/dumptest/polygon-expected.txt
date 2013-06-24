@@ -1,2 +1,0 @@
-	polygon(points = undef, paths = undef, convexity = 1);
-

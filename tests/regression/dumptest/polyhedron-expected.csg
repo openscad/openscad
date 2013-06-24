@@ -1,0 +1,3 @@
+group() {
+	polyhedron(points = undef, triangles = undef, convexity = 1);
+}

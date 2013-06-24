@@ -1,2 +1,0 @@
-	subdiv(level = 1, convexity = 0);
-
