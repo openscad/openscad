@@ -313,6 +313,7 @@ int main(int argc, char **argv)
 		const char *dxf_output_file = NULL;
 		const char *csg_output_file = NULL;
 		const char *png_output_file = NULL;
+		const char *ast_output_file = NULL;
 		bool null_output = false;
 
 		QString suffix = QFileInfo(output_file).suffix().toLower();
@@ -321,6 +322,7 @@ int main(int argc, char **argv)
 		else if (suffix == "dxf") dxf_output_file = output_file;
 		else if (suffix == "csg") csg_output_file = output_file;
 		else if (suffix == "png") png_output_file = output_file;
+		else if (suffix == "ast") ast_output_file = output_file;
 		else if (strcmp(output_file, "null") == 0) null_output = true;
 		else {
 			fprintf(stderr, "Unknown suffix for output file %s\n", output_file);
@@ -380,6 +382,18 @@ int main(int argc, char **argv)
 			else {
 				fs::current_path(fparent); // Force exported filenames to be relative to document path
 				fstream << tree.getString(*root_node) << "\n";
+				fstream.close();
+			}
+		}
+		else if (ast_output_file) {
+			fs::current_path(original_path);
+			std::ofstream fstream(ast_output_file);
+			if (!fstream.is_open()) {
+				PRINTB("Can't open file \"%s\" for export", ast_output_file);
+			}
+			else {
+				fs::current_path(fparent); // Force exported filenames to be relative to document path
+				fstream << root_module->dump("", "") << "\n";
 				fstream.close();
 			}
 		}

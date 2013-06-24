@@ -522,12 +522,6 @@ add_library(tests-offscreen STATIC ${OFFSCREEN_SOURCES})
 set(TESTS-NOCGAL-LIBRARIES ${TESTS-CORE-LIBRARIES})
 
 #
-# moduledumptest
-#
-add_executable(moduledumptest moduledumptest.cc)
-target_link_libraries(moduledumptest tests-nocgal ${TESTS-NOCGAL-LIBRARIES})
-
-#
 # modulecachetest
 #
 add_executable(modulecachetest modulecachetest.cc)
@@ -903,7 +897,7 @@ file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/CTestCustom.cmake ${TMP})
 
 add_cmdline_test(echotest SUFFIX txt FILES ${ECHO_FILES})
 add_cmdline_test(dumptest SUFFIX csg FILES ${DUMPTEST_FILES})
-add_cmdline_test(moduledumptest SUFFIX txt FILES
+add_cmdline_test(moduledumptest EXE ${GUI_BINPATH} ARGS -o SUFFIX ast FILES
                  ${CMAKE_SOURCE_DIR}/../testdata/scad/minimal/allmodules.scad
                  ${CMAKE_SOURCE_DIR}/../testdata/scad/minimal/allfunctions.scad
                  ${CMAKE_SOURCE_DIR}/../testdata/scad/minimal/allexpressions.scad)
