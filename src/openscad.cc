@@ -313,6 +313,7 @@ int main(int argc, char **argv)
 		const char *dxf_output_file = NULL;
 		const char *csg_output_file = NULL;
 		const char *png_output_file = NULL;
+		bool null_output = false;
 
 		QString suffix = QFileInfo(output_file).suffix().toLower();
 		if (suffix == "stl") stl_output_file = output_file;
@@ -320,6 +321,7 @@ int main(int argc, char **argv)
 		else if (suffix == "dxf") dxf_output_file = output_file;
 		else if (suffix == "csg") csg_output_file = output_file;
 		else if (suffix == "png") png_output_file = output_file;
+		else if (strcmp(output_file, "null") == 0) null_output = true;
 		else {
 			fprintf(stderr, "Unknown suffix for output file %s\n", output_file);
 			exit(1);
@@ -383,8 +385,8 @@ int main(int argc, char **argv)
 		}
 		else {
 #ifdef ENABLE_CGAL
-			if (png_output_file && !vm.count("render")) {
-				// OpenCSG png -> don't necessarily need CGALMesh evaluation
+			if ((null_output || png_output_file) && !vm.count("render")) {
+				// null output or OpenCSG png -> don't necessarily need CGALMesh evaluation
 			} else {
 				root_N = cgalevaluator.evaluateCGALMesh(*tree.root());
 			}

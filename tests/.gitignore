@@ -15,8 +15,6 @@ out.png
 /cgaltest
 /csgtermtest
 /csgtexttest
-/dumptest
-/echotest
 /opencsgtest
 /throwntogethertest
 /cgalstlsanitytest
