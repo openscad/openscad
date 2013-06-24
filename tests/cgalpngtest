@@ -1,3 +1,0 @@
-#!/bin/sh
-
-openscad $1 -o $2 --render

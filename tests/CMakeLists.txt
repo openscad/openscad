@@ -843,15 +843,7 @@ set_test_config(Heavy opencsgtest_minkowski3-tests
                       cgalpngtest_for-tests
                       cgalpngtest_for-nested-tests
                       cgalpngtest_intersection-tests
-                      cgalpngtest_text-search-test
-                      openscad-cgalpng_projection-tests
-                      openscad-cgalpng_rotate_extrude-tests
-                      openscad-cgalpng_surface-tests
-                      openscad-cgalpng_sphere-tests
-                      openscad-cgalpng_minkowski3-tests
-                      openscad-cgalpng_for-tests
-                      openscad-cgalpng_for-nested-tests
-                      openscad-cgalpng_intersection-tests)
+                      cgalpngtest_text-search-test)
 
 foreach(FILE ${EXAMPLE_FILES})
   get_test_fullname(cgalpngtest ${FILE} TEST_FULLNAME)
@@ -917,7 +909,7 @@ add_cmdline_test(moduledumptest SUFFIX txt FILES
                  ${CMAKE_SOURCE_DIR}/../testdata/scad/minimal/allexpressions.scad)
 add_cmdline_test(csgtexttest SUFFIX txt FILES ${MINIMAL_FILES})
 add_cmdline_test(csgtermtest SUFFIX txt FILES ${MINIMAL_FILES})
-add_cmdline_test(cgalpngtest SUFFIX png FILES ${CGALPNGTEST_FILES})
+add_cmdline_test(cgalpngtest EXE ${GUI_BINPATH} ARGS --render -o SUFFIX png FILES ${CGALPNGTEST_FILES})
 add_cmdline_test(opencsgtest SUFFIX png FILES ${OPENCSGTEST_FILES})
 add_cmdline_test(throwntogethertest SUFFIX png FILES ${THROWNTOGETHERTEST_FILES})
 # FIXME: We don't actually need to compare the output of cgalstlsanitytest
@@ -933,9 +925,6 @@ add_cmdline_test(openscad-nonascii EXE ${GUI_BINPATH} ARGS -o
 
 
 # Image output
-add_cmdline_test(openscad-cgalpng EXE ${GUI_BINPATH} ARGS --render -o 
-                 EXPECTEDDIR cgalpngtest SUFFIX png 
-                 FILES ${OPENSCAD-CGALPNG_FILES})
 add_cmdline_test(openscad-csgpng EXE ${GUI_BINPATH} ARGS -o 
                  EXPECTEDDIR opencsgtest SUFFIX png 
                  FILES ${OPENSCAD-CGALPNG_FILES})
