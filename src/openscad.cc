@@ -48,6 +48,9 @@
 #include "PolySetCGALEvaluator.h"
 #endif
 
+#include "csgterm.h"
+#include "CSGTermEvaluator.h"
+
 #include <QApplication>
 #include <QString>
 #include <QDir>
@@ -314,6 +317,7 @@ int main(int argc, char **argv)
 		const char *csg_output_file = NULL;
 		const char *png_output_file = NULL;
 		const char *ast_output_file = NULL;
+		const char *term_output_file = NULL;
 		bool null_output = false;
 
 		QString suffix = QFileInfo(output_file).suffix().toLower();
@@ -323,6 +327,7 @@ int main(int argc, char **argv)
 		else if (suffix == "csg") csg_output_file = output_file;
 		else if (suffix == "png") png_output_file = output_file;
 		else if (suffix == "ast") ast_output_file = output_file;
+		else if (suffix == "term") term_output_file = output_file;
 		else if (strcmp(output_file, "null") == 0) null_output = true;
 		else {
 			fprintf(stderr, "Unknown suffix for output file %s\n", output_file);
@@ -394,6 +399,27 @@ int main(int argc, char **argv)
 			else {
 				fs::current_path(fparent); // Force exported filenames to be relative to document path
 				fstream << root_module->dump("", "") << "\n";
+				fstream.close();
+			}
+		}
+		else if (term_output_file) {
+			std::vector<shared_ptr<CSGTerm> > highlight_terms;
+			std::vector<shared_ptr<CSGTerm> > background_terms;
+
+			CSGTermEvaluator csgrenderer(tree, &psevaluator);
+			shared_ptr<CSGTerm> root_raw_term = csgrenderer.evaluateCSGTerm(*root_node, highlight_terms, background_terms);
+
+			fs::current_path(original_path);
+			std::ofstream fstream(term_output_file);
+			if (!fstream.is_open()) {
+				PRINTB("Can't open file \"%s\" for export", term_output_file);
+			}
+			else {
+				if (!root_raw_term)
+					fstream << "No top-level CSG object\n";
+				else {
+					fstream << root_raw_term->dump() << "\n";
+				}
 				fstream.close();
 			}
 		}
