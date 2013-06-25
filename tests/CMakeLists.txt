@@ -902,7 +902,7 @@ add_cmdline_test(moduledumptest EXE ${GUI_BINPATH} ARGS -o SUFFIX ast FILES
                  ${CMAKE_SOURCE_DIR}/../testdata/scad/minimal/allfunctions.scad
                  ${CMAKE_SOURCE_DIR}/../testdata/scad/minimal/allexpressions.scad)
 add_cmdline_test(csgtexttest SUFFIX txt FILES ${MINIMAL_FILES})
-add_cmdline_test(csgtermtest SUFFIX txt FILES ${MINIMAL_FILES})
+add_cmdline_test(csgtermtest EXE ${GUI_BINPATH} ARGS -o SUFFIX term FILES ${MINIMAL_FILES})
 add_cmdline_test(cgalpngtest EXE ${GUI_BINPATH} ARGS --render -o SUFFIX png FILES ${CGALPNGTEST_FILES})
 add_cmdline_test(opencsgtest SUFFIX png FILES ${OPENCSGTEST_FILES})
 add_cmdline_test(throwntogethertest SUFFIX png FILES ${THROWNTOGETHERTEST_FILES})
