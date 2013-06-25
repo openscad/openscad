@@ -11,10 +11,7 @@ out.png
 /cmake_install.cmake
 /lexer.cpp
 /parser_yacc.c
-/cgaltest
-/csgtermtest
 /csgtexttest
-/opencsgtest
 /throwntogethertest
 /cgalstlsanitytest
 /cgalcachetest

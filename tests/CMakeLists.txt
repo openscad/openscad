@@ -534,19 +534,6 @@ add_executable(csgtexttest csgtexttest.cc CSGTextRenderer.cc CSGTextCache.cc)
 target_link_libraries(csgtexttest tests-nocgal ${TESTS-NOCGAL-LIBRARIES})
 
 #
-# csgtermtest
-#
-add_executable(csgtermtest csgtermtest.cc ../src/CSGTermEvaluator.cc)
-target_link_libraries(csgtermtest tests-nocgal ${TESTS-NOCGAL-LIBRARIES})
-
-#
-# cgaltest
-#
-add_executable(cgaltest cgaltest.cc)
-set_target_properties(cgaltest PROPERTIES COMPILE_FLAGS "-DENABLE_CGAL ${CGAL_CXX_FLAGS_INIT}")
-target_link_libraries(cgaltest tests-cgal ${TESTS-CGAL-LIBRARIES})
-
-#
 # cgalstlsanitytest
 #
 add_executable(cgalstlsanitytest cgalstlsanitytest.cc)
@@ -559,14 +546,6 @@ target_link_libraries(cgalstlsanitytest tests-cgal ${TESTS-CGAL-LIBRARIES})
 add_executable(cgalcachetest cgalcachetest.cc)
 set_target_properties(cgalcachetest PROPERTIES COMPILE_FLAGS "-DENABLE_CGAL ${CGAL_CXX_FLAGS_INIT}")
 target_link_libraries(cgalcachetest tests-cgal ${TESTS-CGAL-LIBRARIES} ${GLEW_LIBRARY} ${COCOA_LIBRARY})
-
-#
-# opencsgtest
-#
-
-add_executable(opencsgtest opencsgtest.cc csgtestcore.cc ../src/OpenCSGRenderer.cc ../src/ThrownTogetherRenderer.cc ../src/renderer.cc ../src/rendersettings.cc)
-set_target_properties(opencsgtest PROPERTIES COMPILE_FLAGS "-DENABLE_OPENCSG -DENABLE_CGAL ${CGAL_CXX_FLAGS_INIT}")
-target_link_libraries(opencsgtest tests-offscreen tests-cgal ${OPENCSG_LIBRARY} ${TESTS-CGAL-LIBRARIES} ${GLEW_LIBRARY} ${COCOA_LIBRARY})
 
 #
 # throwntogethertest
