@@ -904,7 +904,7 @@ add_cmdline_test(moduledumptest EXE ${GUI_BINPATH} ARGS -o SUFFIX ast FILES
 add_cmdline_test(csgtexttest SUFFIX txt FILES ${MINIMAL_FILES})
 add_cmdline_test(csgtermtest EXE ${GUI_BINPATH} ARGS -o SUFFIX term FILES ${MINIMAL_FILES})
 add_cmdline_test(cgalpngtest EXE ${GUI_BINPATH} ARGS --render -o SUFFIX png FILES ${CGALPNGTEST_FILES})
-add_cmdline_test(opencsgtest SUFFIX png FILES ${OPENCSGTEST_FILES})
+add_cmdline_test(opencsgtest EXE ${GUI_BINPATH} ARGS -o SUFFIX png FILES ${OPENCSGTEST_FILES})
 add_cmdline_test(throwntogethertest SUFFIX png FILES ${THROWNTOGETHERTEST_FILES})
 # FIXME: We don't actually need to compare the output of cgalstlsanitytest
 # with anything. It's self-contained and returns != 0 on error
@@ -919,10 +919,6 @@ add_cmdline_test(openscad-nonascii EXE ${GUI_BINPATH} ARGS -o
 
 
 # Image output
-add_cmdline_test(openscad-csgpng EXE ${GUI_BINPATH} ARGS -o 
-                 EXPECTEDDIR opencsgtest SUFFIX png 
-                 FILES ${OPENSCAD-CGALPNG_FILES})
-
 add_cmdline_test(openscad-imgsize EXE ${GUI_BINPATH}
                  ARGS --imgsize 100,100 -o 
                  SUFFIX png 
