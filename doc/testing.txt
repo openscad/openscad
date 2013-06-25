@@ -64,7 +64,47 @@ This is almost the same as adding a new regression test:
 4) run the test normally and verify that it passes:
   $ ctest -C Examples -R exampleNNN
 
+Migration away from dedicated regression tests:
+-----------------------------------------------
 
+As the main OpenSCAD binary gained the capability to output PNG renderings,
+the necessity for dedicated test binaries went away; for many test, OpenSCAD
+is now directly called, resulting in better test coverage and less code to
+maintain.
+
+So far, the following tests have been fully converted to use the main binary:
+
+* moduledumptest
+* csgtermtest
+* cgalpngtest
+* opencsgtest
+
+Two tests still need an intermediate script that mangles away timestamps and
+near-zero floating point numbers:
+
+* dumptest
+* echotest
+
+Some tests are yet to be converted:
+
+* csgtexttest -- verify whether this is not redundant with dumptest
+* throwntogethertest -- should be a .png output mode
+* cgalstlsanitytest -- could probably be replaced by a shell script grepping
+  for nan and possibly counting faces
+
+These look like tests, but are not actually in use:
+
+* modulecachetest
+* cgalcachetest
+
+In the course of migration, the possibilities of using the OPENSCAD_TESTING
+compile time flag go away; that flag used to strip timestamps out of files,
+to unify float output, and to tweak the file inclusion paths. With that flag
+unused, we get better coverage of the primary code paths, at the cost of
+having to do some normalization in the unit testing process (thus the dumptest
+and echo test scripts). Especially, having a nonstandard MCAD library in the
+user include path can now break things -- but so can having misbehaving
+programs in your PATH.
 
 Troubleshooting:
 ------------------------------
