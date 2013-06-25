@@ -1,4 +1,4 @@
-.TH OPENSCAD 1 "2013-03-xx"
+.TH OPENSCAD 1 "2013-06-xx"
 .\" Please adjust this date whenever revising the manpage.
 .SH NAME
 openscad \- script file based graphical CAD environment
@@ -19,9 +19,19 @@ the OpenSCAD user manual at http://en.wikibooks.org/wiki/OpenSCAD_User_Manual.
 
 .TP
 \fB-o\fP \fIoutputfile\fP
-Export the given file to \fIoutputfile\fP in STL, OFF, DXF, CSG, or PNG format,
+Export the given file to \fIoutputfile\fP in STL, OFF, DXF, or PNG format,
 depending on file extension of \fIoutputfile\fP (which has to be lower case).
 If this option is given, the GUI will not be started.
+
+Additional formats, which are mainly used for debugging and testing (but can
+also be used in automation), are AST (the input file as parsed and serialized
+again), CSG (an OpenSCAD language representation of the input file with
+calculations done and module calls applied), TERM (the constructive solid
+geometry expression passed to OpenCSG).  If \fIoutputfile\fP is \fBnull\fP, no
+output file will be written, but the file will still be evaluated and all
+\fBecho\fP commands will be written to the standard error output. (The
+rendering process will still take place if the \fB\-\-render\fP option is
+given.)
 .TP
 \fB\-d\fP \fIfile.deps\fP
 If the \fB-d\fP option is given, all files accessed while exporting are written
