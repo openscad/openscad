@@ -80,12 +80,11 @@ public:
   bool getVec3(double &x, double &y, double &z, double defaultval = 0.0) const;
   RangeType toRange() const;
 
+	operator bool() const { return this->toBool(); }
+
   Value &operator=(const Value &v);
-  Value operator!() const;
   bool operator==(const Value &v) const;
   bool operator!=(const Value &v) const;
-  bool operator&&(const Value &v) const;
-  bool operator||(const Value &v) const;
   bool operator<(const Value &v) const;
   bool operator<=(const Value &v) const;
   bool operator>=(const Value &v) const;
@@ -97,16 +96,6 @@ public:
   Value operator*(const Value &v) const;
   Value operator/(const Value &v) const;
   Value operator%(const Value &v) const;
-
-  /*
-    bool getnum(double &v) const;
-    bool getv2(double &x, double &y) const;
-    bool getv3(double &x, double &y, double &z, double defaultval = 0.0) const;
-
-    bool toBool() const;
-
-    void append(Value *val);
-  */
 
   friend std::ostream &operator<<(std::ostream &stream, const Value &value) {
     if (value.type() == Value::STRING) stream << QuotedString(value.toString());
