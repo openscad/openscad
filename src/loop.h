@@ -45,11 +45,16 @@ template <class T>  class Circular
     std::vector<T> vec;
   public :
     Circular();
-    void add(const T val);
+    void reserve(const unsigned size);
+    void add(const T & val);
     void del(const unsigned index);
     unsigned size() const;
     bool isEmpty() const;
-    T operator[](const int index) const;
+    void clear();
+    T const& first() const;
+    T const& last() const;
+    T & operator[](const int index);
+    T const& operator[](const int index) const;
 };
 
 class Lib
@@ -80,10 +85,11 @@ class Vertex
     Log * log;
     VertexType vtype;
     double pars[4];
-  public:
     Eigen::Vector3d loc;
-    double gPar(const unsigned i);
-    VertexType gVtype();
+  public:
+    Eigen::Vector3d gLoc() const;
+    double gPar(const unsigned i) const;
+    VertexType gVtype() const;
     Vertex(Log * Plog, const Eigen::Vector3d Ploc);
     void specify(const VertexType Pvtype, const std::vector<double> Ppars);
     void reset();
@@ -100,14 +106,17 @@ class Edge
     EdgeType etype;
     TransType ttype;
     double pars[6];
-  public:
-    Eigen::Matrix3d baseRotation(const double scale);
-    Eigen::Vector3d baseTranslation(const Eigen::Vector3d t);
     Vector3Dvector bzps;
     Eigen::Matrix3d base;
-    double gPar(const unsigned i);
-    EdgeType gEtype();
-    TransType gTtype();
+  public:
+    Eigen::Matrix3d baseRotation(const double scale) const;
+    Eigen::Vector3d baseTranslation(const Eigen::Vector3d t) const;
+    Vector3Dvector gBzps() const;
+    Eigen::Matrix3d gBase() const;
+    void sBase(const Eigen::Vector3d & x, const Eigen::Vector3d & y, const Eigen::Vector3d & z);
+    double gPar(const unsigned i) const;
+    EdgeType gEtype() const;
+    TransType gTtype() const;
     Edge(Log * Plog);
     void specify(const EdgeType Petype, const TransType Pttype, const std::vector<double> Ppars, const Vector3Dvector Pbzps);
     void reset();
@@ -130,16 +139,17 @@ class Segment
     double pars[6];
     double length;
     double outscale;
-  public:
     Vector3Dvector bzps;
-    double gPar(const unsigned i);
-    double gLength();
+  public:
+    Vector3Dvector gBzps() const;
+    double gPar(const unsigned i) const;
+    double gLength() const;
     void addToLength(const double len);
-    SegmentType gStype();
-    TransType gTtype();
-    bool gOuter();
-    bool gShow();
-    double gOutscale(const double maxr);
+    SegmentType gStype() const;
+    TransType gTtype() const;
+    bool gOuter() const;
+    bool gShow() const;
+    double gOutscale(const double maxr) const;
     Segment(Log * Plog);
     void specify(const SegmentType Pstype, const TransType Pttype, const std::vector<double> Ppars, const std::vector<std::string> strs, const Vector3Dvector Pbzps);
     void reset();
@@ -148,10 +158,15 @@ class Segment
     static TransType stringsHasTransType(const std::vector<std::string> strs, const TransType deftype = Segment::IDN); };
 
 class Step
-{ public :
+{ private :
+    bool valid;
     Eigen::Vector3d loc;
     unsigned partnr;
-    bool valid;
+  public :
+    Eigen::Vector3d gLoc() const;
+    unsigned gPartnr() const;
+    void invalidate();
+    bool isValid() const;
     Step(const Eigen::Vector3d loc, const unsigned partnr); };
 
 
@@ -170,24 +185,24 @@ class Plane
     Eigen::Vector3d sdir;
     double loc, length, scale, stretch, angle;
   public :
-    Eigen::Vector3d gCent();
-    Eigen::Vector3d gTang();
-    Eigen::Vector3d gNorm();
-    Eigen::Vector3d gBnrm();
-    Eigen::Vector3d gSdir();
-    double gScale();
-    double gLoc();
-    double gLength();
-    PlaneType gPtype();
-    CoverType gCtype();
+    Eigen::Vector3d gCent() const;
+    Eigen::Vector3d gTang() const;
+    Eigen::Vector3d gNorm() const;
+    Eigen::Vector3d gBnrm() const;
+    Eigen::Vector3d gSdir() const;
+    double gScale() const;
+    double gLoc() const;
+    double gLength() const;
+    PlaneType gPtype() const;
+    CoverType gCtype() const;
     void defCover(const bool leftShow, const bool rightShow);
     void sLengths(const double Plength, const double Ploc);
     void sNorm(const Eigen::Vector3d Pcent);
     void sModul(const double Pstretch, const double Pangle);
     unsigned gPart();
     Eigen::Vector3d displace(const Eigen::Vector2d p);
-    Plane(Log * Plog, const int Ppart, const Eigen::Vector3d Pcent, const Eigen::Vector3d Ptang, const PlaneType Ptype = DEF);
-    Plane(Log * Plog, const int Ppart, const Eigen::Vector3d Pcent, const Eigen::Vector3d Ptang, const double Pscale, const Eigen::Vector3d Psdir); };
+    Plane(Log * Plog, const unsigned Ppart, const Eigen::Vector3d Pcent, const Eigen::Vector3d Ptang, const PlaneType Ptype = DEF);
+    Plane(Log * Plog, const unsigned Ppart, const Eigen::Vector3d Pcent, const Eigen::Vector3d Ptang, const double Pscale, const Eigen::Vector3d Psdir); };
 
 class Loop
 { private:
@@ -203,37 +218,33 @@ class Loop
     unsigned vertexCnt;
     unsigned edgeCnt;
     unsigned segmentCnt;
-    std::vector<Step> steps;
-    std::vector<Vertex> vertices;
-    std::vector<Edge> edges;
-    std::vector<Plane> planes;
-    std::vector<Segment> segments;
+    Circular<Step> steps;
+    Circular<Vertex> vertices;
+    Circular<Edge> edges;
+    Circular<Plane> planes;
+    Circular<Segment> segments;
     Log logger;
     Log * log;
-    Eigen::Vector3d pv(const unsigned i);
-    Eigen::Vector3d cv(const unsigned i);
-    Eigen::Vector3d nv(const unsigned i);
-    Eigen::Vector3d pf(const unsigned i);
-    Eigen::Vector3d cf(const unsigned i);
-    Eigen::Vector3d nf(const unsigned i);
+    Eigen::Vector3d pv(const unsigned i) const;
+    Eigen::Vector3d cv(const unsigned i) const;
+    Eigen::Vector3d nv(const unsigned i) const;
+    Eigen::Vector3d pf(const unsigned i) const;
+    Eigen::Vector3d cf(const unsigned i) const;
+    Eigen::Vector3d nf(const unsigned i) const;
     long double polyVal(const unsigned prsCnt, const long double x, const Circular<double> & prs) const;
     long double polyDif(const unsigned prsCnt, const long double x, const Circular<double> & prs) const;
     void polyInner(const unsigned vcnt, const Circular<double> prs, Circular<double> & radii, Circular<double> & angles);
     void polyOuter(const unsigned vcnt, const Circular<double> prs, Circular<double> & radii, Circular<double> & angles);
     void polyCyclic(const unsigned vcnt, const Circular<double> prs, Circular<double> & radii, Circular<double> & angles);
-    double pp(const unsigned i, const unsigned j);
-    double cp(const unsigned i, const unsigned j);
-    double np(const unsigned i, const unsigned j);
+    double pp(const unsigned i, const unsigned j) const;
+    double cp(const unsigned i, const unsigned j) const;
+    double np(const unsigned i, const unsigned j) const;
     Eigen::Vector3d rotate(const double cosa, const Eigen::Vector3d axis, const Eigen::Vector3d vec);
     Eigen::Vector3d shift(const double amp, const Eigen::Vector3d base, const Eigen::Vector3d target);
     Eigen::Vector3d linearSearch(const double t, const Vector3Dvector vs);
     void linear(const unsigned n, const Eigen::Vector3d vs, const Eigen::Vector3d ve);
     Eigen::Vector3d bezierFunc(const double t, const Vector3Dvector vs);
     void bezier(const bool edge, const Vector3Dvector vs);
-    unsigned mod(const int i);
-    unsigned modf(const int i);
-    unsigned modg(const int i);
-    unsigned modh(const int i);
     void addStep(const Eigen::Vector3d step);
     void verify();
     bool filterPlanes(double maxr, const unsigned i);
@@ -261,7 +272,7 @@ class Loop
     enum PolyType {NONE,RIN,ROUT,SIDE};
     enum OptionType {UNKNOWN,POINTS,POLY,RECT,VERTICES,EDGES,SEGMENTS};
     Loop(const unsigned faces);
-    unsigned gPlaneCount();
+    unsigned gPlaneCount() const;
     void addPoint(const Eigen::Vector3d pnt);
     void addPoints(const CoorType ctype, const Vector3Dvector pnts);
     void addRect(const std::vector<std::string> strs, const Vector3Dvector pnts);

@@ -135,7 +135,7 @@ Highlighter::Highlighter(QTextDocument *parent)
 	tokentypes["math"] << "abs" << "sign" << "acos" << "asin" << "atan" << "atan2" << "sin" << "cos" << "floor" << "round" << "ceil" << "ln" << "log" << "lookup" << "min" << "max" << "pow" << "sqrt" << "exp" << "rands";
 	typeformats["math"].setForeground(Qt::green);
 	
-	tokentypes["keyword"] << "module" << "function" << "for" << "intersection_for" << "if" << "assign" << "echo"<< "search" << "str";
+	tokentypes["keyword"] << "module" << "function" << "for" << "intersection_for" << "if" << "assign" << "echo"<< "search" << "str" << "else";
 	typeformats["keyword"].setForeground(QColor("Green"));
 	typeformats["keyword"].setToolTip("Keyword");
 
