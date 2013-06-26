@@ -300,11 +300,6 @@ Value &Value::operator=(const Value &v)
   return *this;
 }
 
-Value Value::operator!() const
-{
-  return Value(!this->toBool());
-}
-
 class equals_visitor : public boost::static_visitor<bool>
 {
 public:
@@ -325,16 +320,6 @@ bool Value::operator==(const Value &v) const
 bool Value::operator!=(const Value &v) const
 {
   return !(*this == v);
-}
-
-bool Value::operator&&(const Value &v) const
-{
-  return this->toBool() && v.toBool();
-}
-
-bool Value::operator||(const Value &v) const
-{
-  return this->toBool() || v.toBool();
 }
 
 class less_visitor : public boost::static_visitor<bool>

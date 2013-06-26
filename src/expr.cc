@@ -105,8 +105,7 @@ Value Expression::evaluate(const Context *context) const
 	if (this->type == ">")
 		return this->children[0]->evaluate(context) > this->children[1]->evaluate(context);
 	if (this->type == "?:") {
-		Value v = this->children[0]->evaluate(context);
-		return this->children[v.toBool() ? 1 : 2]->evaluate(context);
+		return this->children[this->children[0]->evaluate(context) ? 1 : 2]->evaluate(context);
 	}
 	if (this->type == "[]") {
 		return this->children[0]->evaluate(context)[this->children[1]->evaluate(context)];
