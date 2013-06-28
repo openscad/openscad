@@ -13,7 +13,6 @@ out.png
 /parser_yacc.c
 /csgtexttest
 /throwntogethertest
-/cgalstlsanitytest
 /cgalcachetest
 /modulecachetest
 /test_pretty_print
