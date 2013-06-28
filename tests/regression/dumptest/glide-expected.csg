@@ -1,0 +1,3 @@
+group() {
+	glide(path = undef, convexity = 0);
+}

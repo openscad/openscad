@@ -182,12 +182,15 @@ public:
   }
 
   std::string operator()(const double &op1) const {
-#ifdef OPENSCAD_TESTING
-    // Quick and dirty hack to work around floating point rounding differences
-    // across platforms for testing purposes.
     if (op1 != op1) { // Fix for avoiding nan vs. -nan across platforms
       return "nan";
     }
+    if (op1 == 0) {
+      return "0"; // Don't return -0 (exactly -0 and 0 equal 0)
+    }
+#ifdef OPENSCAD_TESTING
+    // Quick and dirty hack to work around floating point rounding differences
+    // across platforms for testing purposes.
     std::stringstream tmp;
     tmp.precision(12);
     tmp.setf(std::ios_base::fixed);

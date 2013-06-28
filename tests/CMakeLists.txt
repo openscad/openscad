@@ -522,24 +522,6 @@ add_library(tests-offscreen STATIC ${OFFSCREEN_SOURCES})
 set(TESTS-NOCGAL-LIBRARIES ${TESTS-CORE-LIBRARIES})
 
 #
-# echotest
-#
-add_executable(echotest echotest.cc)
-target_link_libraries(echotest tests-nocgal ${TESTS-NOCGAL-LIBRARIES})
-
-#
-# dumptest
-#
-add_executable(dumptest dumptest.cc)
-target_link_libraries(dumptest tests-nocgal ${TESTS-NOCGAL-LIBRARIES})
-
-#
-# moduledumptest
-#
-add_executable(moduledumptest moduledumptest.cc)
-target_link_libraries(moduledumptest tests-nocgal ${TESTS-NOCGAL-LIBRARIES})
-
-#
 # modulecachetest
 #
 add_executable(modulecachetest modulecachetest.cc)
@@ -552,46 +534,11 @@ add_executable(csgtexttest csgtexttest.cc CSGTextRenderer.cc CSGTextCache.cc)
 target_link_libraries(csgtexttest tests-nocgal ${TESTS-NOCGAL-LIBRARIES})
 
 #
-# csgtermtest
-#
-add_executable(csgtermtest csgtermtest.cc ../src/CSGTermEvaluator.cc)
-target_link_libraries(csgtermtest tests-nocgal ${TESTS-NOCGAL-LIBRARIES})
-
-#
-# cgaltest
-#
-add_executable(cgaltest cgaltest.cc)
-set_target_properties(cgaltest PROPERTIES COMPILE_FLAGS "-DENABLE_CGAL ${CGAL_CXX_FLAGS_INIT}")
-target_link_libraries(cgaltest tests-cgal ${TESTS-CGAL-LIBRARIES})
-
-#
-# cgalstlsanitytest
-#
-add_executable(cgalstlsanitytest cgalstlsanitytest.cc)
-set_target_properties(cgalstlsanitytest PROPERTIES COMPILE_FLAGS "-DENABLE_CGAL ${CGAL_CXX_FLAGS_INIT}")
-target_link_libraries(cgalstlsanitytest tests-cgal ${TESTS-CGAL-LIBRARIES})
-
-#
-# cgalpngtest
-#
-add_executable(cgalpngtest cgalpngtest.cc ../src/CGALRenderer.cc ../src/renderer.cc ../src/rendersettings.cc)
-set_target_properties(cgalpngtest PROPERTIES COMPILE_FLAGS "-DENABLE_CGAL ${CGAL_CXX_FLAGS_INIT}")
-target_link_libraries(cgalpngtest tests-offscreen tests-cgal ${OPENCSG_LIBRARY} ${TESTS-CGAL-LIBRARIES} ${GLEW_LIBRARY} ${COCOA_LIBRARY})
-
-#
 # cgalcachetest
 #
 add_executable(cgalcachetest cgalcachetest.cc)
 set_target_properties(cgalcachetest PROPERTIES COMPILE_FLAGS "-DENABLE_CGAL ${CGAL_CXX_FLAGS_INIT}")
 target_link_libraries(cgalcachetest tests-cgal ${TESTS-CGAL-LIBRARIES} ${GLEW_LIBRARY} ${COCOA_LIBRARY})
-
-#
-# opencsgtest
-#
-
-add_executable(opencsgtest opencsgtest.cc csgtestcore.cc ../src/OpenCSGRenderer.cc ../src/ThrownTogetherRenderer.cc ../src/renderer.cc ../src/rendersettings.cc)
-set_target_properties(opencsgtest PROPERTIES COMPILE_FLAGS "-DENABLE_OPENCSG -DENABLE_CGAL ${CGAL_CXX_FLAGS_INIT}")
-target_link_libraries(opencsgtest tests-offscreen tests-cgal ${OPENCSG_LIBRARY} ${TESTS-CGAL-LIBRARIES} ${GLEW_LIBRARY} ${COCOA_LIBRARY})
 
 #
 # throwntogethertest
@@ -864,15 +811,7 @@ set_test_config(Heavy opencsgtest_minkowski3-tests
                       cgalpngtest_for-tests
                       cgalpngtest_for-nested-tests
                       cgalpngtest_intersection-tests
-                      cgalpngtest_text-search-test
-                      openscad-cgalpng_projection-tests
-                      openscad-cgalpng_rotate_extrude-tests
-                      openscad-cgalpng_surface-tests
-                      openscad-cgalpng_sphere-tests
-                      openscad-cgalpng_minkowski3-tests
-                      openscad-cgalpng_for-tests
-                      openscad-cgalpng_for-nested-tests
-                      openscad-cgalpng_intersection-tests)
+                      cgalpngtest_text-search-test)
 
 foreach(FILE ${EXAMPLE_FILES})
   get_test_fullname(cgalpngtest ${FILE} TEST_FULLNAME)
@@ -930,26 +869,26 @@ file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/CTestCustom.cmake ${TMP})
 
 # Add tests
 
-add_cmdline_test(echotest SUFFIX txt FILES ${ECHO_FILES})
-add_cmdline_test(dumptest SUFFIX txt FILES ${DUMPTEST_FILES})
-add_cmdline_test(moduledumptest SUFFIX txt FILES
+add_cmdline_test(echotest SUFFIX txt ARGS ${GUI_BINPATH} FILES ${ECHO_FILES})
+add_cmdline_test(dumptest SUFFIX csg ARGS ${GUI_BINPATH} FILES ${DUMPTEST_FILES})
+add_cmdline_test(moduledumptest EXE ${GUI_BINPATH} ARGS -o SUFFIX ast FILES
                  ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/allmodules.scad
                  ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/allfunctions.scad
                  ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/allexpressions.scad)
-add_cmdline_test(csgtexttest SUFFIX txt FILES 
+add_cmdline_test(csgtexttest SUFFIX txt FILES
                              ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/allexpressions.scad
                              ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/allfunctions.scad
                              ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/allmodules.scad)
-add_cmdline_test(csgtermtest SUFFIX txt FILES
+add_cmdline_test(csgtermtest EXE ${GUI_BINPATH} ARGS -o SUFFIX term FILES
                              ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/allexpressions.scad
                              ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/allfunctions.scad
                              ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/allmodules.scad)
-add_cmdline_test(cgalpngtest SUFFIX png FILES ${CGALPNGTEST_FILES})
-add_cmdline_test(opencsgtest SUFFIX png FILES ${OPENCSGTEST_FILES})
+add_cmdline_test(cgalpngtest EXE ${GUI_BINPATH} ARGS --render -o SUFFIX png FILES ${CGALPNGTEST_FILES})
+add_cmdline_test(opencsgtest EXE ${GUI_BINPATH} ARGS -o SUFFIX png FILES ${OPENCSGTEST_FILES})
 add_cmdline_test(throwntogethertest SUFFIX png FILES ${THROWNTOGETHERTEST_FILES})
 # FIXME: We don't actually need to compare the output of cgalstlsanitytest
 # with anything. It's self-contained and returns != 0 on error
-add_cmdline_test(cgalstlsanitytest SUFFIX txt FILES ${CGALSTLSANITYTEST_FILES})
+add_cmdline_test(cgalstlsanitytest SUFFIX txt ARGS ${GUI_BINPATH} FILES ${CGALSTLSANITYTEST_FILES})
 
 # Tests using the actual OpenSCAD binary
 
@@ -960,13 +899,6 @@ add_cmdline_test(openscad-nonascii EXE ${GUI_BINPATH} ARGS -o
 
 
 # Image output
-add_cmdline_test(openscad-cgalpng EXE ${GUI_BINPATH} ARGS --render -o 
-                 EXPECTEDDIR cgalpngtest SUFFIX png 
-                 FILES ${OPENSCAD-CGALPNG_FILES})
-add_cmdline_test(openscad-csgpng EXE ${GUI_BINPATH} ARGS -o 
-                 EXPECTEDDIR opencsgtest SUFFIX png 
-                 FILES ${OPENSCAD-CGALPNG_FILES})
-
 add_cmdline_test(openscad-imgsize EXE ${GUI_BINPATH}
                  ARGS --imgsize 100,100 -o 
                  SUFFIX png 
