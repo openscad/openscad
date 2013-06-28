@@ -876,8 +876,8 @@ file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/CTestCustom.cmake ${TMP})
 
 # Add tests
 
-add_cmdline_test(echotest SUFFIX txt FILES ${ECHO_FILES})
-add_cmdline_test(dumptest SUFFIX csg FILES ${DUMPTEST_FILES})
+add_cmdline_test(echotest SUFFIX txt ARGS ${GUI_BINPATH} FILES ${ECHO_FILES})
+add_cmdline_test(dumptest SUFFIX csg ARGS ${GUI_BINPATH} FILES ${DUMPTEST_FILES})
 add_cmdline_test(moduledumptest EXE ${GUI_BINPATH} ARGS -o SUFFIX ast FILES
                  ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/allmodules.scad
                  ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/allfunctions.scad
