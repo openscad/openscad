@@ -373,11 +373,11 @@ double Loop::pp(const unsigned i, const unsigned j) const { return vertices[i-1]
 double Loop::cp(const unsigned i, const unsigned j) const { return vertices[i].gPar(j); }
 double Loop::np(const unsigned i, const unsigned j) const { return vertices[i+1].gPar(j); }
 
-Loop::ResultType Loop::gResult() { return (Loop::ResultType) logger.result; }
-std::vector<std::string> Loop::gMessages() { return logger.messages; }
+Loop::ResultType Loop::gResult() const { return (Loop::ResultType) logger.result; }
+std::vector<std::string> Loop::gMessages() const { return logger.messages; }
 
 
-bool Loop::hasCovers() { return coverPresent; }
+bool Loop::hasCovers() const { return coverPresent; }
 
 void Loop::addStep(const Eigen::Vector3d step)
 { steps.add(Step(step,partCnt)); }
@@ -400,7 +400,7 @@ void Loop::verify()
       { log->addLog(Log::WARN,"Cannot draw a wave with such small parameters, ignoring vertex dressing  => increase parameter value(s).");
         edges[i].reset(); } } } }
 
-Eigen::Vector3d Loop::shift(const double amp, const Eigen::Vector3d base, const Eigen::Vector3d target)
+Eigen::Vector3d Loop::shift(const double amp, const Eigen::Vector3d base, const Eigen::Vector3d target) const
 { return base - amp*(base-target).normalized(); }
 
 void Loop::calcVertexDef(const unsigned i)
@@ -417,8 +417,8 @@ void Loop::calcVertexArc(const unsigned i)
   double pr = qr + sqrt(qr*qr+1);
   p = shift(cp(i,0),cv(i),pv(i));
   q = shift(cp(i,1),cv(i),nv(i));
-  r = p.cross(q);
   s = (p + q) / 2;
+  r = p.cross(q);
   A << (q-s),(cv(i)-s),r;
   for (unsigned j=0; j<=faces; j++)
   { double x = 2*((double) j / faces) - 1;
@@ -466,7 +466,7 @@ void Loop::calcBase()
       b = t.cross(n); }
     edges[i].sBase(t,n,b); } }
 
-Eigen::Vector3d Loop::rotate(const double cosa, const Eigen::Vector3d axis, const Eigen::Vector3d vec)
+Eigen::Vector3d Loop::rotate(const double cosa, const Eigen::Vector3d axis, const Eigen::Vector3d vec) const
 { Eigen::Vector3d result,bn;
   double sina = sqrt(1-cosa*cosa);
   if (axis.norm()>epsilon())
@@ -503,17 +503,20 @@ void Loop::calcEdgeDef(const unsigned i)
     q = shift(np(i,0),nv(i),cv(i));
     linear(1,p,q); } }
 
+void Loop::baseSet(const unsigned i, Eigen::Vector3d & p,  Eigen::Vector3d & q,  Eigen::Vector3d & s,  Eigen::Vector3d & b,  Eigen::Vector3d & t, Eigen::Matrix3d & A) const
+{ p = shift(cp(i,1),cv(i),nv(i));
+  q = shift(np(i,0),nv(i),cv(i));
+  s = (q + p) / 2;
+  b = (q - p) / 2;
+  t = edges[i].baseTranslation(s);
+  A = edges[i].baseRotation(b.norm()); }
+
 void Loop::calcEdgeLin(const unsigned i)
 { Eigen::Vector3d s,p,q,b,c,t;
   Eigen::Matrix3d A;
   Vector3Dvector vs;
   bool subdiv = (segments[2*i+1].gStype() != Segment::DEF);
-  p = shift(cp(i,1),cv(i),nv(i));
-  q = shift(np(i,0),nv(i),cv(i));
-  s = (q + p) / 2;
-  t = edges[i].baseTranslation(s);
-  b = (q - p) / 2;
-  A = edges[i].baseRotation(b.norm());
+  baseSet(i,p,q,s,b,t,A);
   c = p;
   for (unsigned j=0; j<edges[i].gBzps().size(); j++)
   { Eigen::Vector3d b = t+A*edges[i].gBzps()[j];
@@ -525,12 +528,7 @@ void Loop::calcEdgeBez(const unsigned i)
 { Eigen::Vector3d s,p,q,b,t;
   Eigen::Matrix3d A;
   Vector3Dvector vs;
-  p = shift(cp(i,1),cv(i),nv(i));
-  q = shift(np(i,0),nv(i),cv(i));
-  s = (q + p) / 2;
-  b = (q - p) / 2;
-  t = edges[i].baseTranslation(s);
-  A = edges[i].baseRotation(b.norm());
+  baseSet(i,p,q,s,b,t,A);
   vs.push_back(p);
   for (unsigned j=0; j<edges[i].gBzps().size(); j++)
   { Eigen::Vector3d b = edges[i].gBzps()[j];
@@ -548,15 +546,10 @@ void Loop::calcEdgeSin(const unsigned i)
   double slope = edges[i].gPar(3);
   double phase = edges[i].gPar(4);
   double height = edges[i].gPar(5);
-  p = shift(cp(i,1),cv(i),nv(i));
-  q = shift(np(i,0),nv(i),cv(i));
-  s = (q + p) / 2;
-  b = (q - p) / 2;
-  t = edges[i].baseTranslation(s);
-  A = edges[i].baseRotation(b.norm());
+  baseSet(i,p,q,s,b,t,A);
   bool useEnv = (slope>minr());
   bool xScaled = (edges[i].gTtype() == Edge::RTX) || (edges[i].gTtype() == Edge::RXY);
-  double length = xScaled ? 1 : (p-q).norm()/2;
+  double length = xScaled ? 1 : b.norm();
   double stretch = useEnv ? length : std::min(length,width);
   double period = 4 * width / tops;
   for (unsigned j=0; j<=faces; j++)
@@ -587,7 +580,7 @@ void Loop::construct(const bool Ppure2D)
 
 Eigen::Vector2d Loop::gStep(unsigned i) { return Eigen::Vector2d(steps[i].gLoc()[0],steps[i].gLoc()[1]);  }
 
-unsigned Loop::gStepSize() { return steps.size(); }
+unsigned Loop::gStepSize() const { return steps.size(); }
 
 void Loop::addPoint(const Eigen::Vector3d pnt)
 { if ( (vertices.isEmpty()) || (((pnt - vertices.first().gLoc()).norm() > minr()) && ((pnt - vertices.last().gLoc()).norm() > minr())) )
@@ -711,8 +704,6 @@ void Loop::addRect(const std::vector<std::string> strs, const Vector3Dvector pnt
   addPoint(Eigen::Vector3d(right,top,0));
   if (clock) { addPoint(Eigen::Vector3d(right,bottom,0)); } else { addPoint(Eigen::Vector3d(left,top,0)); } }
 
-/* TODO: We want 0 to be recognized as the last segment, this is automatically the case when we use circular
- * and change (index > 0) to (index >= 0) */
 void Loop::addVertex(const Vertex::VertexType vtype, const std::vector<int> pnts, const std::vector<double> pars)
 { if (pnts.size() == 0)
   { for (unsigned i=vertexCnt; i<pointCnt; i++)
@@ -908,7 +899,7 @@ void Loop::calcFrame()
     coverPresent = coverPresent || (planes[i].gCtype() != Plane::RING); } }
 
 /* TODO This is slow and may produce incorrect results for non monotonous functions */
-Eigen::Vector3d Loop::linearSearch(const double t, const Vector3Dvector vs)
+Eigen::Vector3d Loop::linearSearch(const double t, const Vector3Dvector vs) const
 { Eigen::Vector3d result(0,0,0);
   if (vs.size() > 0)
   { if (vs.size() == 1 )   { result = vs[0]; }
@@ -1010,9 +1001,9 @@ void Loop::extrude(const double Pmaxr)
       case Segment::BEZ  : calcSegmentLinBez(i,true);   break;
       case Segment::SIN  : calcSegmentSin(i);           break;  } } }
 
-bool Loop::planeIsBottom(const int plane)  { return planes[plane].gCtype() == Plane::BOTTOM; }
-bool Loop::planeIsTop(const int plane)     { return planes[plane].gCtype() == Plane::TOP; }
-bool Loop::hullIsVisible(const int plane)  { return (planes[plane].gCtype() == Plane::BOTTOM) || (planes[plane].gCtype() == Plane::RING); }
+bool Loop::planeIsBottom(const int plane) const { return planes[plane].gCtype() == Plane::BOTTOM; }
+bool Loop::planeIsTop(const int plane) const    { return planes[plane].gCtype() == Plane::TOP; }
+bool Loop::hullIsVisible(const int plane) const { return (planes[plane].gCtype() == Plane::BOTTOM) || (planes[plane].gCtype() == Plane::RING); }
 
 void Loop::extrudeTransform(const int plane, const Eigen::Vector2d & mask, double result[])
 { Eigen::Vector3d  r = planes[plane].displace(mask);

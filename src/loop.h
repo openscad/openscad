@@ -239,9 +239,10 @@ class Loop
     double pp(const unsigned i, const unsigned j) const;
     double cp(const unsigned i, const unsigned j) const;
     double np(const unsigned i, const unsigned j) const;
-    Eigen::Vector3d rotate(const double cosa, const Eigen::Vector3d axis, const Eigen::Vector3d vec);
-    Eigen::Vector3d shift(const double amp, const Eigen::Vector3d base, const Eigen::Vector3d target);
-    Eigen::Vector3d linearSearch(const double t, const Vector3Dvector vs);
+    void baseSet(const unsigned i, Eigen::Vector3d & p,  Eigen::Vector3d & q,  Eigen::Vector3d & s,  Eigen::Vector3d & b,  Eigen::Vector3d & t, Eigen::Matrix3d & A) const;
+    Eigen::Vector3d rotate(const double cosa, const Eigen::Vector3d axis, const Eigen::Vector3d vec) const;
+    Eigen::Vector3d shift(const double amp, const Eigen::Vector3d base, const Eigen::Vector3d target) const;
+    Eigen::Vector3d linearSearch(const double t, const Vector3Dvector vs) const;
     void linear(const unsigned n, const Eigen::Vector3d vs, const Eigen::Vector3d ve);
     Eigen::Vector3d bezierFunc(const double t, const Vector3Dvector vs);
     void bezier(const bool edge, const Vector3Dvector vs);
@@ -284,15 +285,15 @@ class Loop
     void construct(const bool Ppure2D);
     void extrude(const double maxr);
     Eigen::Vector2d gStep(unsigned i);
-    unsigned gStepSize();
+    unsigned gStepSize() const;
     void extrudeTransform(const int plane, const Eigen::Vector2d & mask, double result[]);
     void planeTransform(const int plane, const Eigen::Vector3d & mask, double result[]);
-    bool planeIsBottom(const int plane);
-    bool planeIsTop(const int plane);
-    bool hullIsVisible(const int plane);
-    bool hasCovers();
-    ResultType gResult();
-    std::vector<std::string> gMessages();
+    bool planeIsBottom(const int plane) const;
+    bool planeIsTop(const int plane) const;
+    bool hullIsVisible(const int plane) const;
+    bool hasCovers() const;
+    ResultType gResult() const;
+    std::vector<std::string> gMessages() const;
   public:
     static void print(const std::string s, const Eigen::Vector3d a, const int index = -1);
     static void print(const std::string s, const Eigen::Vector2d a, const int index = -1);
