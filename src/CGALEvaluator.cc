@@ -240,6 +240,118 @@ CGAL_Nef_polyhedron CGALEvaluator::applyResize(const CgaladvNode &node)
 	return N;
 }
 
+//RUUD: Start of hack ======================================================================
+struct bndbox
+{ double xmin,xmid,xmax;
+  double ymin,ymid,ymax;
+  double zmin,zmid,zmax; };
+
+bndbox  boundBox(const CGAL_Nef_polyhedron & N, const bool zero = false)
+{ bndbox result = {0,0,0,0,0,0,0,0,0};
+  if (!zero)
+  { CGAL_Iso_cuboid_3 ic3;
+    if ( N.dim == 2 )
+    { CGAL_Iso_rectangle_2e bbox = bounding_box( *N.p2 );
+      CGAL_Point_2e min2(bbox.min()), max2(bbox.max());
+      CGAL_Point_3 min3(min2.x(),min2.y(),0), max3(max2.x(),max2.y(),0);
+      ic3 = CGAL_Iso_cuboid_3( min3, max3 ); }
+    else { ic3 = bounding_box( *N.p3 ); }
+    result.xmin = CGAL::to_double(ic3.xmin());
+    result.xmax = CGAL::to_double(ic3.xmax());
+    result.ymin = CGAL::to_double(ic3.ymin());
+    result.ymax = CGAL::to_double(ic3.ymax());
+    result.zmin = CGAL::to_double(ic3.zmin());
+    result.zmax = CGAL::to_double(ic3.zmax());
+    result.xmid = (result.xmin + result.xmax)/2;
+    result.ymid = (result.ymin + result.ymax)/2;
+    result.zmid = (result.zmin + result.zmax)/2; }
+  return result; }
+
+CGAL_Nef_polyhedron CGALEvaluator::applyBox(const CgaladvNode &node)
+{ bool resizefault = false;
+  bool act = node.act.isUndefined() || node.act.toBool();
+  PolySet ps;
+  CGAL_Nef_polyhedron N;
+  N = applyToChildren(node, CGE_UNION);
+  if ( N.isNull() || N.isEmpty() || !act) return N;
+  bndbox bb = boundBox(N);
+
+  if ( (bb.xmax - bb.xmin) + 2*(node.add.toDouble() + node.xadd.toDouble()) > 1e-6 )
+  { bb.xmin -= node.add.toDouble() + node.xadd.toDouble();
+    bb.xmax += node.add.toDouble() + node.xadd.toDouble();  }
+  else { resizefault = true; }
+
+  if ( (bb.ymax - bb.ymin) + 2*(node.add.toDouble() + node.yadd.toDouble()) > 1e-6 )
+  { bb.ymin -= node.add.toDouble() + node.yadd.toDouble();
+    bb.ymax += node.add.toDouble() + node.yadd.toDouble();  }
+  else { resizefault = true; }
+
+  if (N.dim == 3)
+  { if ( (bb.zmax - bb.zmin) + 2*(node.add.toDouble() + node.zadd.toDouble()) > 1e-6 )
+    { bb.zmin -= node.add.toDouble() + node.zadd.toDouble();
+      bb.zmax += node.add.toDouble() + node.zadd.toDouble();  }
+    else { resizefault = true; } }
+
+  if (resizefault ) { PRINT("WARNING: Bounding box has negative dimensions, ignoring offending size modifications."); }
+
+  ps.append_poly(); ps.append_vertex(bb.xmin, bb.ymin, bb.zmax);  ps.append_vertex(bb.xmax, bb.ymin, bb.zmax);  ps.append_vertex(bb.xmax, bb.ymax, bb.zmax);  ps.append_vertex(bb.xmin, bb.ymax, bb.zmax);
+  ps.append_poly(); ps.append_vertex(bb.xmin, bb.ymax, bb.zmin);  ps.append_vertex(bb.xmax, bb.ymax, bb.zmin);  ps.append_vertex(bb.xmax, bb.ymin, bb.zmin);  ps.append_vertex(bb.xmin, bb.ymin, bb.zmin);
+  ps.append_poly(); ps.append_vertex(bb.xmin, bb.ymin, bb.zmin);  ps.append_vertex(bb.xmax, bb.ymin, bb.zmin);  ps.append_vertex(bb.xmax, bb.ymin, bb.zmax);  ps.append_vertex(bb.xmin, bb.ymin, bb.zmax);
+  ps.append_poly(); ps.append_vertex(bb.xmax, bb.ymin, bb.zmin);  ps.append_vertex(bb.xmax, bb.ymax, bb.zmin);  ps.append_vertex(bb.xmax, bb.ymax, bb.zmax);  ps.append_vertex(bb.xmax, bb.ymin, bb.zmax);
+  ps.append_poly(); ps.append_vertex(bb.xmax, bb.ymax, bb.zmin);  ps.append_vertex(bb.xmin, bb.ymax, bb.zmin);  ps.append_vertex(bb.xmin, bb.ymax, bb.zmax);  ps.append_vertex(bb.xmax, bb.ymax, bb.zmax);
+  ps.append_poly(); ps.append_vertex(bb.xmin, bb.ymax, bb.zmin);  ps.append_vertex(bb.xmin, bb.ymin, bb.zmin);  ps.append_vertex(bb.xmin, bb.ymin, bb.zmax);  ps.append_vertex(bb.xmin, bb.ymax, bb.zmax);
+
+  CGAL_Nef_polyhedron3 *N3 = NULL;
+  CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
+  try
+  { // FIXME: Are we leaking memory for the CGAL_Polyhedron object?
+    // Ruud: I do not think so, it seems managed by a shared pointer, but it is hard to follow the trail of CGAL_Nef_polyhedron3::reset. Where is that implementation??
+    CGAL_Polyhedron *P = createPolyhedronFromPolySet(ps);
+    if (P) { N3 = new CGAL_Nef_polyhedron3(*P); } }
+  catch (const CGAL::Assertion_exception &e)
+  { PRINTB("CGAL error in CGAL_Nef_polyhedron3(): %s", e.what()); }
+  CGAL::set_error_behaviour(old_behaviour);
+
+  return CGAL_Nef_polyhedron(N3);
+ }
+
+CGAL_Nef_polyhedron CGALEvaluator::applyPosition(const CgaladvNode &node)
+{ CGAL_Nef_polyhedron N,M;
+  bndbox Nbb, Mbb;
+  unsigned children = node.getChildren().size();
+  if (children == 0) return N;
+
+  double dx,dy,dz,tx,ty,tz;
+
+  N = this->visitedchildren[node.index()].front().second.copy();
+  M = this->visitedchildren[node.index()].back().second.copy();
+
+  if ( N.isNull() || N.isEmpty() ) return N;
+
+  Nbb = boundBox(N,false);
+  Mbb = boundBox(M,(children <= 1));
+
+  if (node.xmin.getDouble(dx))      { tx = Mbb.xmax + dx - Nbb.xmin; }
+  else if (node.xmid.getDouble(dx)) { tx = Mbb.xmid + dx - Nbb.xmid; }
+  else if (node.xmax.getDouble(dx)) { tx = Mbb.xmin + dx - Nbb.xmax; }
+  else                              { tx = 0; }
+  if (node.ymin.getDouble(dy))      { ty = Mbb.ymax + dy - Nbb.ymin; }
+  else if (node.ymid.getDouble(dy)) { ty = Mbb.ymid + dy - Nbb.ymid; }
+  else if (node.ymax.getDouble(dy)) { ty = Mbb.ymin + dy - Nbb.ymax; }
+  else                              { ty = 0; }
+  if (node.zmin.getDouble(dz))      { tz = Mbb.zmax + dz - Nbb.zmin; }
+  else if (node.zmid.getDouble(dz)) { tz = Mbb.zmid + dz - Nbb.zmid; }
+  else if (node.zmax.getDouble(dz)) { tz = Mbb.zmin + dz - Nbb.zmax; }
+  else                              { tz = 0; }
+
+  const CGAL_Nef_polyhedron &chN = this->visitedchildren[node.index()].front().second;
+  N = chN.copy();
+  Transform3d t(Eigen::Translation3d(tx,ty,tz));
+  N.transform(t);
+  if (node.keep.toBool() && (children>=2)) { process(N, M, CGE_UNION); }
+  return N; }
+
+//RUUD: End of hack ========================================================================
 
 
 /*
@@ -374,6 +486,13 @@ Response CGALEvaluator::visit(State &state, const CgaladvNode &node)
 			case RESIZE:
 				N = applyResize(node);
 				break;
+			//RUUD
+      case BOX:
+        N = applyBox(node);
+        break;
+      case POSITION:
+        N = applyPosition(node);
+        break;
 			}
 		}
 		else {

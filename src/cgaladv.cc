@@ -60,7 +60,17 @@ AbstractNode *CgaladvModule::instantiate(const Context *ctx, const ModuleInstant
 	if (type == RESIZE)
 		args += Assignment("newsize", NULL), Assignment("auto", NULL);
 
-	Context c(ctx);
+	//RUUD
+  if (type == BOX)
+    args += Assignment("add", NULL), Assignment("xadd", NULL), Assignment("yadd", NULL), Assignment("zadd", NULL), Assignment("act", NULL);
+
+  if (type == POSITION)
+    args += Assignment("keep", NULL),
+            Assignment("xmin", NULL), Assignment("xmid", NULL), Assignment("xmax", NULL),
+            Assignment("ymin", NULL), Assignment("ymid", NULL), Assignment("ymax", NULL),
+            Assignment("zmin", NULL), Assignment("zmid", NULL), Assignment("zmax", NULL);
+
+  Context c(ctx);
 	c.setVariables(args, evalctx);
 
 	Value convexity, path, subdiv_type, level;
@@ -102,6 +112,27 @@ AbstractNode *CgaladvModule::instantiate(const Context *ctx, const ModuleInstant
 		}
 	}
 
+	//RUUD
+  if (type == BOX)
+  { node->add = c.lookup_variable("add");
+    node->xadd = c.lookup_variable("xadd");
+    node->yadd = c.lookup_variable("yadd");
+    node->zadd = c.lookup_variable("zadd");
+    node->act  = c.lookup_variable("act"); }
+
+  if (type == POSITION)
+  { node->keep = c.lookup_variable("keep");
+    node->xmin = c.lookup_variable("xmin");
+    node->xmid = c.lookup_variable("xmid");
+    node->xmax = c.lookup_variable("xmax");
+    node->ymin = c.lookup_variable("ymin");
+    node->ymid = c.lookup_variable("ymid");
+    node->ymax = c.lookup_variable("ymax");
+    node->zmin = c.lookup_variable("zmin");
+    node->zmid = c.lookup_variable("zmid");
+    node->zmax = c.lookup_variable("zmax"); }
+
+
 	node->convexity = (int)convexity.toDouble();
 	node->path = path;
 	node->subdiv_type = subdiv_type.toString();
@@ -139,6 +170,13 @@ std::string CgaladvNode::name() const
 	case RESIZE:
 		return "resize";
 		break;
+  //RUUD
+  case BOX:
+    return "box";
+    break;
+  case POSITION:
+    return "position";
+    break;
 	default:
 		assert(false);
 	}
@@ -170,6 +208,15 @@ std::string CgaladvNode::toString() const
 		  << this->autosize[0] << "," << this->autosize[1] << "," << this->autosize[2] << "]"
 		  << ")";
 		break;
+  case BOX:
+    stream << "( xadd = " << this->xadd << ", yadd = " << this->yadd << ", zadd = " << this->zadd << ", add = " << this->add << ", act = " << (this->act.isUndefined() || this->act.toBool()) << ")";
+    break;
+  case POSITION:
+    stream << "( keep = " << this->keep.toBool()
+           << ", xmin = " << this->xmin << ", xmid = " << this->xmid << ", xmax = " << this->xmax
+           << ", ymin = " << this->ymin << ", ymid = " << this->ymid << ", ymax = " << this->ymax
+           << ", zmin = " << this->zmin << ", zmid = " << this->zmid << ", zmax = " << this->zmax << ")";
+    break;
 	default:
 		assert(false);
 	}
@@ -184,4 +231,7 @@ void register_builtin_cgaladv()
 	Builtins::init("subdiv", new CgaladvModule(SUBDIV));
 	Builtins::init("hull", new CgaladvModule(HULL));
 	Builtins::init("resize", new CgaladvModule(RESIZE));
+	//RUUD
+  Builtins::init("box", new CgaladvModule(BOX));
+  Builtins::init("position", new CgaladvModule(POSITION));
 }
