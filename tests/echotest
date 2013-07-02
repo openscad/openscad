@@ -2,8 +2,7 @@
 
 import re, sys, subprocess
 
-result = subprocess.check_output([sys.argv[2], sys.argv[1], '-o', 'null'], stderr=subprocess.STDOUT)
-
+result = subprocess.Popen([sys.argv[2], sys.argv[1], '-o', 'null'], stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()[1]
 result = re.sub(r'-?[0-9].[0-9]*e-[0-9]{2,}', '0', result)
 
 open(sys.argv[3], 'w').write(result)
