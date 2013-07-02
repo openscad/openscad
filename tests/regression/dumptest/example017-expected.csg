@@ -4,7 +4,7 @@ group() {
 	group() {
 		group() {
 			multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 74], [0, 0, 0, 1]]) {
-				linear_extrude(height = 6, center = false, convexity = 4, $fn = 0, $fa = 12, $fs = 2) {
+				linear_extrude(height = 6, center = false, convexity = 4, scale = [1, 1], $fn = 0, $fa = 12, $fs = 2) {
 					group() {
 						difference() {
 							circle($fn = 0, $fa = 12, $fs = 2, r = 47);
@@ -30,7 +30,7 @@ group() {
 					}
 				}
 			}
-			linear_extrude(height = 6, center = false, convexity = 4, $fn = 0, $fa = 12, $fs = 2) {
+			linear_extrude(height = 6, center = false, convexity = 4, scale = [1, 1], $fn = 0, $fa = 12, $fs = 2) {
 				group() {
 					difference() {
 						circle($fn = 0, $fa = 12, $fs = 2, r = 102);
@@ -59,8 +59,8 @@ group() {
 				group() {
 					multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 						multmatrix([[1, 0, 0, 0], [0, 1, 0, 102], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-							multmatrix([[2.22045e-16, 2.22045e-16, -1, 0], [-1, 0, -2.22045e-16, 0], [0, 1, 2.22045e-16, 0], [0, 0, 0, 1]]) {
-								linear_extrude(height = 6, center = true, convexity = 10, $fn = 0, $fa = 12, $fs = 2) {
+							multmatrix([[0, 0, -1, 0], [-1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 0, 1]]) {
+								linear_extrude(height = 6, center = true, convexity = 10, scale = [1, 1], $fn = 0, $fa = 12, $fs = 2) {
 									group() {
 										union() {
 											difference() {
@@ -102,8 +102,8 @@ group() {
 					}
 					multmatrix([[-0.5, -0.866025, 0, 0], [0.866025, -0.5, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 						multmatrix([[1, 0, 0, 0], [0, 1, 0, 102], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-							multmatrix([[2.22045e-16, 2.22045e-16, -1, 0], [-1, 0, -2.22045e-16, 0], [0, 1, 2.22045e-16, 0], [0, 0, 0, 1]]) {
-								linear_extrude(height = 6, center = true, convexity = 10, $fn = 0, $fa = 12, $fs = 2) {
+							multmatrix([[0, 0, -1, 0], [-1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 0, 1]]) {
+								linear_extrude(height = 6, center = true, convexity = 10, scale = [1, 1], $fn = 0, $fa = 12, $fs = 2) {
 									group() {
 										union() {
 											difference() {
@@ -145,8 +145,8 @@ group() {
 					}
 					multmatrix([[-0.5, 0.866025, 0, 0], [-0.866025, -0.5, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 						multmatrix([[1, 0, 0, 0], [0, 1, 0, 102], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-							multmatrix([[2.22045e-16, 2.22045e-16, -1, 0], [-1, 0, -2.22045e-16, 0], [0, 1, 2.22045e-16, 0], [0, 0, 0, 1]]) {
-								linear_extrude(height = 6, center = true, convexity = 10, $fn = 0, $fa = 12, $fs = 2) {
+							multmatrix([[0, 0, -1, 0], [-1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 0, 1]]) {
+								linear_extrude(height = 6, center = true, convexity = 10, scale = [1, 1], $fn = 0, $fa = 12, $fs = 2) {
 									group() {
 										union() {
 											difference() {

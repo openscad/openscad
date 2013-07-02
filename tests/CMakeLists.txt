@@ -756,27 +756,6 @@ list(APPEND CGALSTLSANITYTEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/no
 list(APPEND OPENSCAD-CGALPNG_FILES ${CGALPNGTEST_FILES})
 list(APPEND OPENSCAD-CSGPNG_FILES ${OPENCSGTEST_FILES})
 
-# Disable tests which are known to cause floating point comparison issues
-# Once we're capable of comparing these across platforms, we can put these back in
-disable_tests(dumptest_transform-tests
-              dumptest_render-tests
-              dumptest_difference-tests
-              dumptest_intersection-tests
-              dumptest_text-search-test
-              dumptest_example001
-              dumptest_example005
-              dumptest_example006
-              dumptest_example007
-              dumptest_example008
-              dumptest_example012
-              dumptest_example013
-              dumptest_example016
-              dumptest_example017
-              dumptest_example020
-              dumptest_example021
-              dumptest_example022
-              dumptest_example023)
-
 # FIXME: This test illustrates a weakness in child() combined with modifiers.
 # Reenable it when this is improved
 disable_tests(opencsgtest_child-background)
