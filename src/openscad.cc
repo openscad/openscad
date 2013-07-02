@@ -548,21 +548,22 @@ int main(int argc, char **argv)
 		f.setSamples(4);
 		QGLFormat::setDefaultFormat(f);
 #endif
+		vector<MainWindow*> windows;
+		windows.push_back(new MainWindow(qfilename));
 #ifdef ENABLE_MDI
-		new MainWindow(qfilename);
 		vector<string> inputFiles;
 		if (vm.count("input-file")) {
 			inputFiles = vm["input-file"].as<vector<string> >();
 			for (vector<string>::const_iterator infile = inputFiles.begin()+1; infile != inputFiles.end(); infile++) {
-				new MainWindow(QString::fromLocal8Bit(boosty::stringy(original_path / *infile).c_str()));
+				windows.push_back(new MainWindow(QString::fromLocal8Bit(boosty::stringy(original_path / *infile).c_str())));
 			}
 		}
-		app.connect(&app, SIGNAL(lastWindowClosed()), &app, SLOT(quit()));
-#else
-		MainWindow *m = new MainWindow(qfilename);
-		app.connect(m, SIGNAL(destroyed()), &app, SLOT(quit()));
 #endif
+		app.connect(&app, SIGNAL(lastWindowClosed()), &app, SLOT(quit()));
 		rc = app.exec();
+		for(unsigned int index = 0; index < windows.size(); ++index) {
+			delete windows.at(index);
+		}
 	}
 	else
 	{
