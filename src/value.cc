@@ -156,6 +156,14 @@ bool Value::toBool() const
   }
 }
 
+bool Value::getBool(bool &b) const
+{
+  if (this->type() != BOOL) return false;
+  b = toBool();
+  return true;
+}
+
+
 double Value::toDouble() const
 {
   double d = 0;

@@ -76,6 +76,7 @@ public:
   double toDouble() const;
   bool getDouble(double &v) const;
   bool toBool() const;
+  bool getBool(bool &b) const;
   std::string toString() const;
   const VectorType &toVector() const;
   bool getVec2(double &x, double &y) const;

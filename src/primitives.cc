@@ -102,7 +102,7 @@ public:
 		}
 	}
 
-	bool center;
+	int cx,cy,cz;
 	double x, y, z, h, r1, r2;
 	double fn, fs, fa;
 	primitive_type_e type;
@@ -112,11 +112,26 @@ public:
 	virtual PolySet *evaluate_polyset(class PolySetEvaluator *) const;
 };
 
+// Hack for alternative center definition. tx,ty,tz defines the value when true is given
+// as center boolean and fx,fy,fz likewise for false dx,dy,dz are the defaults when no value is given.
+void getCenter(int &cx, int &cy, int &cz, const Value & center, int tx, int ty, int tz, int fx, int fy, int fz, int dx, int dy, int dz)
+{ double x=dx;
+  double y=dy;
+  double z=dz;
+  bool oldCenter;
+  if (!center.getVec3(x,y,z))
+  { if (center.getBool(oldCenter))
+    { if (oldCenter) { x=tx; y=ty; z=tz; } else {  x=fx; y=fy; z=fz;  } } }
+  cx = round(x);
+  cy = round(y);
+  cz = round(z); }
+
+
 AbstractNode *PrimitiveModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const
 {
 	PrimitiveNode *node = new PrimitiveNode(inst, this->type);
 
-	node->center = false;
+	node->cx = node->cy = node->cz = 0;
 	node->x = node->y = node->z = node->h = node->r1 = node->r2 = 1;
 
 	AssignmentList args;
@@ -126,7 +141,7 @@ AbstractNode *PrimitiveModule::instantiate(const Context *ctx, const ModuleInsta
 		args += Assignment("size", NULL), Assignment("center", NULL);
 		break;
 	case SPHERE:
-		args += Assignment("r", NULL);
+		args += Assignment("r", NULL), Assignment("center", NULL);
 		break;
 	case CYLINDER:
 		args += Assignment("h", NULL), Assignment("r1", NULL), Assignment("r2", NULL), Assignment("center", NULL);
@@ -138,7 +153,7 @@ AbstractNode *PrimitiveModule::instantiate(const Context *ctx, const ModuleInsta
 		args += Assignment("size", NULL), Assignment("center", NULL);
 		break;
 	case CIRCLE:
-		args += Assignment("r", NULL);
+		args += Assignment("r", NULL), Assignment("center", NULL);
 		break;
 	case POLYGON:
 		args += Assignment("points", NULL), Assignment("paths", NULL), Assignment("convexity", NULL);
@@ -169,18 +184,16 @@ AbstractNode *PrimitiveModule::instantiate(const Context *ctx, const ModuleInsta
 
 	if (type == CUBE) {
 		Value size = c.lookup_variable("size");
-		Value center = c.lookup_variable("center");
+		getCenter(node->cx,node->cy,node->cz,c.lookup_variable("center"),0,0,0,1,1,1,1,1,1);
 		size.getDouble(node->x);
 		size.getDouble(node->y);
 		size.getDouble(node->z);
 		size.getVec3(node->x, node->y, node->z);
-		if (center.type() == Value::BOOL) {
-			node->center = center.toBool();
-		}
 	}
 
 	if (type == SPHERE) {
 		Value r = c.lookup_variable("r");
+    getCenter(node->cx,node->cy,node->cz,c.lookup_variable("center"),0,0,0,1,1,1,0,0,0);
 		if (r.type() == Value::NUMBER) {
 			node->r1 = r.toDouble();
 		}
@@ -192,7 +205,7 @@ AbstractNode *PrimitiveModule::instantiate(const Context *ctx, const ModuleInsta
 		r1 = c.lookup_variable("r1");
 		r2 = c.lookup_variable("r2");
 		r = c.lookup_variable("r", true); // silence warning since r has no default value
-		Value center = c.lookup_variable("center");
+    getCenter(node->cx,node->cy,node->cz,c.lookup_variable("center"),0,0,0,0,0,1,0,0,1);
 		if (h.type() == Value::NUMBER) {
 			node->h = h.toDouble();
 		}
@@ -206,9 +219,6 @@ AbstractNode *PrimitiveModule::instantiate(const Context *ctx, const ModuleInsta
 		if (r2.type() == Value::NUMBER) {
 			node->r2 = r2.toDouble();
 		}
-		if (center.type() == Value::BOOL) {
-			node->center = center.toBool();
-		}
 	}
 
 	if (type == POLYHEDRON) {
@@ -218,17 +228,15 @@ AbstractNode *PrimitiveModule::instantiate(const Context *ctx, const ModuleInsta
 
 	if (type == SQUARE) {
 		Value size = c.lookup_variable("size");
-		Value center = c.lookup_variable("center");
+    getCenter(node->cx,node->cy,node->cz,c.lookup_variable("center"),0,0,0,1,1,1,1,1,1);
 		size.getDouble(node->x);
 		size.getDouble(node->y);
 		size.getVec2(node->x, node->y);
-		if (center.type() == Value::BOOL) {
-			node->center = center.toBool();
-		}
 	}
 
 	if (type == CIRCLE) {
 		Value r = c.lookup_variable("r");
+    getCenter(node->cx,node->cy,node->cz,c.lookup_variable("center"),0,0,0,1,1,1,0,0,0);
 		if (r.type() == Value::NUMBER) {
 			node->r1 = r.toDouble();
 		}
@@ -284,21 +292,16 @@ PolySet *PrimitiveNode::evaluate_polyset(class PolySetEvaluator *) const
 	if (this->type == CUBE && this->x > 0 && this->y > 0 && this->z > 0)
 	{
 		double x1, x2, y1, y2, z1, z2;
-		if (this->center) {
-			x1 = -this->x/2;
-			x2 = +this->x/2;
-			y1 = -this->y/2;
-			y2 = +this->y/2;
-			z1 = -this->z/2;
-			z2 = +this->z/2;
-		} else {
-			x1 = y1 = z1 = 0;
-			x2 = this->x;
-			y2 = this->y;
-			z2 = this->z;
-		}
 
-		p->append_poly(); // top
+	  // center translation definitions:
+    x1 = (this->cx - 1) * this->x / 2 ;
+    x2 = (this->cx + 1) * this->x / 2 ;
+    y1 = (this->cy - 1) * this->y / 2 ;
+    y2 = (this->cy + 1) * this->y / 2 ;
+    z1 = (this->cz - 1) * this->z / 2 ;
+    z2 = (this->cz + 1) * this->z / 2 ;
+
+    p->append_poly(); // top
 		p->append_vertex(x1, y1, z2);
 		p->append_vertex(x2, y1, z2);
 		p->append_vertex(x2, y2, z2);
@@ -342,6 +345,11 @@ PolySet *PrimitiveNode::evaluate_polyset(class PolySetEvaluator *) const
 			double z;
 		};
 
+		// center translation definitions:
+    double dx = this->cx * this->r1;
+    double dy = this->cy * this->r1;
+    double dz = this->cz * this->r1;
+
 		int fragments = get_fragments_from_r(r1, fn, fs, fa);
 		int rings = (fragments+1)/2;
 // Uncomment the following three lines to enable experimental sphere tesselation
@@ -361,7 +369,7 @@ PolySet *PrimitiveNode::evaluate_polyset(class PolySetEvaluator *) const
 
 		p->append_poly();
 		for (int i = 0; i < fragments; i++)
-			p->append_vertex(ring[0].points[i].x, ring[0].points[i].y, ring[0].z);
+			p->append_vertex(ring[0].points[i].x+dx, ring[0].points[i].y+dy, ring[0].z+dz);
 
 		for (int i = 0; i < rings-1; i++) {
 			ring_s *r1 = &ring[i];
@@ -379,17 +387,17 @@ PolySet *PrimitiveNode::evaluate_polyset(class PolySetEvaluator *) const
 sphere_next_r1:
 					p->append_poly();
 					int r1j = (r1i+1) % fragments;
-					p->insert_vertex(r1->points[r1i].x, r1->points[r1i].y, r1->z);
-					p->insert_vertex(r1->points[r1j].x, r1->points[r1j].y, r1->z);
-					p->insert_vertex(r2->points[r2i % fragments].x, r2->points[r2i % fragments].y, r2->z);
+					p->insert_vertex(r1->points[r1i].x+dx, r1->points[r1i].y+dy, r1->z+dz);
+					p->insert_vertex(r1->points[r1j].x+dx, r1->points[r1j].y+dy, r1->z+dz);
+					p->insert_vertex((r2->points[r2i % fragments].x)+dx, (r2->points[r2i % fragments].y)+dy, r2->z+dz);
 					r1i++;
 				} else {
 sphere_next_r2:
 					p->append_poly();
 					int r2j = (r2i+1) % fragments;
-					p->append_vertex(r2->points[r2i].x, r2->points[r2i].y, r2->z);
-					p->append_vertex(r2->points[r2j].x, r2->points[r2j].y, r2->z);
-					p->append_vertex(r1->points[r1i % fragments].x, r1->points[r1i % fragments].y, r1->z);
+					p->append_vertex(r2->points[r2i].x+dx, r2->points[r2i].y+dy, r2->z+dz);
+					p->append_vertex(r2->points[r2j].x+dx, r2->points[r2j].y+dy, r2->z+dz);
+					p->append_vertex((r1->points[r1i % fragments].x)+dx, (r1->points[r1i % fragments].y)+dy, r1->z+dz);
 					r2i++;
 				}
 			}
@@ -397,7 +405,7 @@ sphere_next_r2:
 
 		p->append_poly();
 		for (int i = 0; i < fragments; i++)
-			p->insert_vertex(ring[rings-1].points[i].x, ring[rings-1].points[i].y, ring[rings-1].z);
+			p->insert_vertex(ring[rings-1].points[i].x+dx, ring[rings-1].points[i].y+dy, ring[rings-1].z+dz);
 
 		delete[] ring;
 	}
@@ -408,13 +416,13 @@ sphere_next_r2:
 		int fragments = get_fragments_from_r(fmax(this->r1, this->r2), this->fn, this->fs, this->fa);
 
 		double z1, z2;
-		if (this->center) {
-			z1 = -this->h/2;
-			z2 = +this->h/2;
-		} else {
-			z1 = 0;
-			z2 = this->h;
-		}
+
+    // center translation definitions:
+    double dx = this->cx * fmax(this->r1, this->r2);
+    double dy = this->cy * fmax(this->r1, this->r2);
+    z1 = (this->cz - 1) * this->h / 2 ;
+    z2 = (this->cz + 1) * this->h / 2 ;
+
 
 		point2d *circle1 = new point2d[fragments];
 		point2d *circle2 = new point2d[fragments];
@@ -426,22 +434,22 @@ sphere_next_r2:
 			int j = (i+1) % fragments;
 			if (r1 == r2) {
 				p->append_poly();
-				p->insert_vertex(circle1[i].x, circle1[i].y, z1);
-				p->insert_vertex(circle2[i].x, circle2[i].y, z2);
-				p->insert_vertex(circle2[j].x, circle2[j].y, z2);
-				p->insert_vertex(circle1[j].x, circle1[j].y, z1);
+				p->insert_vertex(circle1[i].x+dx, circle1[i].y+dy, z1);
+				p->insert_vertex(circle2[i].x+dx, circle2[i].y+dy, z2);
+				p->insert_vertex(circle2[j].x+dx, circle2[j].y+dy, z2);
+				p->insert_vertex(circle1[j].x+dx, circle1[j].y+dy, z1);
 			} else {
 				if (r1 > 0) {
 					p->append_poly();
-					p->insert_vertex(circle1[i].x, circle1[i].y, z1);
-					p->insert_vertex(circle2[i].x, circle2[i].y, z2);
-					p->insert_vertex(circle1[j].x, circle1[j].y, z1);
+					p->insert_vertex(circle1[i].x+dx, circle1[i].y+dy, z1);
+					p->insert_vertex(circle2[i].x+dx, circle2[i].y+dy, z2);
+					p->insert_vertex(circle1[j].x+dx, circle1[j].y+dy, z1);
 				}
 				if (r2 > 0) {
 					p->append_poly();
-					p->insert_vertex(circle2[i].x, circle2[i].y, z2);
-					p->insert_vertex(circle2[j].x, circle2[j].y, z2);
-					p->insert_vertex(circle1[j].x, circle1[j].y, z1);
+					p->insert_vertex(circle2[i].x+dx, circle2[i].y+dy, z2);
+					p->insert_vertex(circle2[j].x+dx, circle2[j].y+dy, z2);
+					p->insert_vertex(circle1[j].x+dx, circle1[j].y+dy, z1);
 				}
 			}
 		}
@@ -449,13 +457,13 @@ sphere_next_r2:
 		if (this->r1 > 0) {
 			p->append_poly();
 			for (int i=0; i<fragments; i++)
-				p->insert_vertex(circle1[i].x, circle1[i].y, z1);
+				p->insert_vertex(circle1[i].x+dx, circle1[i].y+dy, z1);
 		}
 
 		if (this->r2 > 0) {
 			p->append_poly();
 			for (int i=0; i<fragments; i++)
-				p->append_vertex(circle2[i].x, circle2[i].y, z2);
+				p->append_vertex(circle2[i].x+dx, circle2[i].y+dy, z2);
 		}
 
 		delete[] circle1;
@@ -482,16 +490,11 @@ sphere_next_r2:
 	if (this->type == SQUARE && x > 0 && y > 0)
 	{
 		double x1, x2, y1, y2;
-		if (this->center) {
-			x1 = -this->x/2;
-			x2 = +this->x/2;
-			y1 = -this->y/2;
-			y2 = +this->y/2;
-		} else {
-			x1 = y1 = 0;
-			x2 = this->x;
-			y2 = this->y;
-		}
+
+    x1 = (this->cx - 1) * this->x / 2 ;
+    x2 = (this->cx + 1) * this->x / 2 ;
+    y1 = (this->cy - 1) * this->y / 2 ;
+    y2 = (this->cy + 1) * this->y / 2 ;
 
 		p->is2d = true;
 		p->append_poly();
@@ -505,12 +508,16 @@ sphere_next_r2:
 	{
 		int fragments = get_fragments_from_r(this->r1, this->fn, this->fs, this->fa);
 
+		// center translation definitions:
+    double dx = this->cx * this->r1;
+    double dy = this->cy * this->r1;
+
 		p->is2d = true;
 		p->append_poly();
 
 		for (int i=0; i < fragments; i++) {
 			double phi = (M_PI*2*i) / fragments;
-			p->append_vertex(this->r1*cos(phi), this->r1*sin(phi));
+			p->append_vertex(this->r1*cos(phi)+dx, this->r1*sin(phi)+dy);
 		}
 	}
 
@@ -613,16 +620,18 @@ std::string PrimitiveNode::toString() const
 	switch (this->type) {
 	case CUBE:
 		stream << "(size = [" << this->x << ", " << this->y << ", " << this->z << "], "
-					 <<	"center = " << (center ? "true" : "false") << ")";
+           << "center = [" << this->cx << ", " << this->cy << ", " << this->cz << "])";
 		break;
 	case SPHERE:
 		stream << "($fn = " << this->fn << ", $fa = " << this->fa
-					 << ", $fs = " << this->fs << ", r = " << this->r1 << ")";
+					 << ", $fs = " << this->fs << ", r = " << this->r1
+           << "center = [" << this->cx << ", " << this->cy << ", " << this->cz << "])";
 			break;
 	case CYLINDER:
 		stream << "($fn = " << this->fn << ", $fa = " << this->fa
 					 << ", $fs = " << this->fs << ", h = " << this->h << ", r1 = " << this->r1
-					 << ", r2 = " << this->r2 << ", center = " << (center ? "true" : "false") << ")";
+					 << ", r2 = " << this->r2
+           << "center = [" << this->cx << ", " << this->cy << ", " << this->cz << "])";
 			break;
 	case POLYHEDRON:
 		stream << "(points = " << this->points
@@ -631,11 +640,12 @@ std::string PrimitiveNode::toString() const
 			break;
 	case SQUARE:
 		stream << "(size = [" << this->x << ", " << this->y << "], "
-					 << "center = " << (center ? "true" : "false") << ")";
+           << "center = [" << this->cx << ", " << this->cy << ", " << this->cz << "])";
 			break;
 	case CIRCLE:
 		stream << "($fn = " << this->fn << ", $fa = " << this->fa
-					 << ", $fs = " << this->fs << ", r = " << this->r1 << ")";
+					 << ", $fs = " << this->fs << ", r = " << this->r1
+           << "center = [" << this->cx << ", " << this->cy << ", " << this->cz << "])";
 		break;
 	case POLYGON:
 		stream << "(points = " << this->points << ", paths = " << this->paths << ", convexity = " << this->convexity << ")";
