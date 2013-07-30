@@ -138,6 +138,7 @@ void export_dxf(CGAL_Nef_polyhedron *root_N, std::ostream &output)
 {
 	setlocale(LC_NUMERIC, "C"); // Ensure radix is . (not ,) in output
 	// Some importers (e.g. Inkscape) needs a BLOCKS section to be present
+
 	output << "  0\n"
 				 <<	"SECTION\n"
 				 <<	"  2\n"
@@ -149,9 +150,12 @@ void export_dxf(CGAL_Nef_polyhedron *root_N, std::ostream &output)
 				 << "  2\n"
 				 << "ENTITIES\n";
 
+  double prev_x, prev_y;
 	DxfData *dd =root_N->convertToDxfData();
 	for (size_t i=0; i<dd->paths.size(); i++)
 	{
+    bool had_a_previous_polyline = false;
+    bool first_point = true;
 		for (size_t j=1; j<dd->paths[i].indices.size(); j++) {
 			const Vector2d &p1 = dd->points[dd->paths[i].indices[j-1]];
 			const Vector2d &p2 = dd->points[dd->paths[i].indices[j]];
@@ -159,37 +163,60 @@ void export_dxf(CGAL_Nef_polyhedron *root_N, std::ostream &output)
 			double y1 = p1[1];
 			double x2 = p2[0];
 			double y2 = p2[1];
-			output << "  0\n"
-						 << "LINE\n";
-			// Some importers (e.g. Inkscape) needs a layer to be specified
-			output << "  8\n"
-						 << "0\n"
-						 << " 10\n"
-						 << x1 << "\n"
-						 << " 11\n"
-						 << x2 << "\n"
-						 << " 20\n"
-						 << y1 << "\n"
-						 << " 21\n"
-						 << y2 << "\n";
+
+      if (first_point || x1!=prev_x || y1!=prev_y){
+        first_point = false;
+
+        if(had_a_previous_polyline){
+          //close the previous declaration
+      	  output << "  0\n"
+	  			   <<	"ENDSEC\n";
+        }
+
+        //start a new polyline declaration
+        output <<	"  0\n"
+               <<	"LWPOLYLINE\n"
+               <<	"  8\n"
+               <<	"0\n"
+               <<	"  70\n"
+               <<	"0\n";
+
+        //output the first 2 points:
+        output << "  10\n"
+               <<	x1 << "\n"
+               << " 20\n"
+               << y1 << "\n"
+               << " 30\n"
+               << "0.0\n"
+               << " 10\n"
+               << x2 << "\n"
+               << " 20\n"
+               << y2 << "\n"
+               << " 30\n"
+               << "0.0\n";
+
+        had_a_previous_polyline = true;
+
+      } else {
+
+        //output the next point
+        output << "  10\n"
+               <<	x2 << "\n"
+               << " 20\n"
+               << y2 << "\n"
+               << " 30\n"
+               << "0.0\n";
+      }
+
+      prev_x = x2;
+      prev_y = y2;
 		}
 	}
 
-	output << "  0\n"
-				 << "ENDSEC\n";
-
-	// Some importers (e.g. Inkscape) needs an OBJECTS section with a DICTIONARY entry
-	output << "  0\n"
-				 << "SECTION\n"
-				 << "  2\n"
-				 << "OBJECTS\n"
-				 << "  0\n"
-				 << "DICTIONARY\n"
-				 << "  0\n"
-				 << "ENDSEC\n";
-
-	output << "  0\n"
-				 <<"EOF\n";
+  output << "  0\n"
+         <<	"ENDSEC\n"
+         << "  0\n"
+         << "EOF\n";
 
 	delete dd;
 	setlocale(LC_NUMERIC, "");      // Set default locale
