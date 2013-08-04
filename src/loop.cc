@@ -662,7 +662,10 @@ void Loop::polyInner(const unsigned vcnt, const Circular<double> prs, Circular<d
     angles.add(atan2(y,x)-offset);  } }
 
 void Loop::addPoly(std::vector<int> ints , const PolyType ptype, const std::vector<double> pars, const std::vector<std::string> strs)
-{ if (!vertices.isEmpty() || (ints.size()==0) ||  (ints[0]<3) || ptype == NONE) { return; }
+{ if (!vertices.isEmpty())                { log->addLog(Log::FAIL,"I cannot draw the polygon in loop, there are already points defined.");  return; }
+  if ((ints.size()==0) || ptype == NONE)  { log->addLog(Log::FAIL,"I cannot draw the polygon in loop, it has an incomprehensible syntax."); return; }
+  if ((ints[0]<3))                        { log->addLog(Log::FAIL,"I cannot draw the polygon in loop, too few sides of this polygon.");     return; }
+  if ((pars.size()==0))                   { log->addLog(Log::FAIL,"I cannot draw the polygon in loop, there is no size specified.");      return; }
   const unsigned vcnt = (unsigned) ints[0];
   vertices.reserve(vcnt);
   const bool flat = Lib::has<std::string>(strs,"flat");
