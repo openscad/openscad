@@ -665,7 +665,7 @@ void Loop::addPoly(std::vector<int> ints , const PolyType ptype, const std::vect
 { if (!vertices.isEmpty())                { log->addLog(Log::FAIL,"I cannot draw the polygon in loop, there are already points defined.");  return; }
   if ((ints.size()==0) || ptype == NONE)  { log->addLog(Log::FAIL,"I cannot draw the polygon in loop, it has an incomprehensible syntax."); return; }
   if ((ints[0]<3))                        { log->addLog(Log::FAIL,"I cannot draw the polygon in loop, too few sides of this polygon.");     return; }
-  if ((pars.size()==0))                   { log->addLog(Log::FAIL,"I cannot draw the polygon in loop, there is no size specified.");      return; }
+  if ((pars.size()==0))                   { log->addLog(Log::FAIL,"I cannot draw the polygon in loop, there is no size specified.");        return; }
   const unsigned vcnt = (unsigned) ints[0];
   vertices.reserve(vcnt);
   const bool flat = Lib::has<std::string>(strs,"flat");
@@ -862,7 +862,7 @@ void Loop::calcFrame()
     ns = rotate(c,b,ns);
     planes[i].sNorm(ns); }
   unsigned st = 0;
-  while ( (st<gPlaneCount()) && (planes[st].gPart() == planes[st+1].gPart()) ) { st++; }
+  while ( (st<gPlaneCount()) && (planes[st].gPart() == planes[st+1].gPart()) && Lib::isOdd(planes[st].gPart()) ) { st++; }
   for (unsigned i=(st+1); i<(gPlaneCount()+st+1); i++)
   { double length = (planes[i+1].gCent() - planes[i].gCent()).norm();
     unsigned thisPartNr = planes[i].gPart();
