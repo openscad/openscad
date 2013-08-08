@@ -188,7 +188,7 @@ endif(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 
 # Turn off Eigen SIMD optimization
 if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-  if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "FreeBSD")
+  if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "^FreeBSD")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DEIGEN_DONT_ALIGN")
   endif()
 endif()
