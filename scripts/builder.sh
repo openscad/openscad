@@ -148,15 +148,24 @@ upload_win64()
 read_username_from_user()
 {
 	if [ $DRYRUN ]; then USERNAME=none;export USERNAME; return; fi
+	echo 'Google code upload is deprecated'
+	USERNAME=$USER
+	echo 'username is ' $USERNAME
+	return
+
 	echo 'Please enter your username for https://code.google.com/hosting/settings'
 	echo -n 'Username:'
 	read USERNAME
 	echo 'username is ' $USERNAME
+	return
 }
 
 read_password_from_user()
 {
 	if [ $DRYRUN ]; then return; fi
+	echo 'Google code upload is deprecated'
+	return
+
 	echo 'Please enter your password for https://code.google.com/hosting/settings'
 	echo -n 'Password:'
 	read -s PASSWORD1
@@ -180,7 +189,7 @@ update_win_www_download_links()
 	cd inc
 	echo `pwd`
 	# BASEURL='https://openscad.googlecode.com/files/'
-	BASEURL='http://files.openscad.org'
+	BASEURL='http://files.openscad.org/'
 	DATECODE=`date +"%Y.%m.%d"`
 
 	rm win_snapshot_links.js
