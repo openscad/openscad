@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <list>
+#include <stack>
 #include <boost/unordered_map.hpp>
 #include <boost/unordered_set.hpp>
 #include <time.h>
@@ -77,6 +78,8 @@ public:
 	AssignmentList definition_arguments;
 
 	LocalScope scope;
+private:
+	static std::stack<std::string> stack;
 };
 
 // FIXME: A FileModule doesn't have definition arguments, so we shouldn't really
