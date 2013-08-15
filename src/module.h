@@ -77,6 +77,8 @@ public:
 	AssignmentList definition_arguments;
 
 	LocalScope scope;
+private:
+	static std::string parent_module;
 };
 
 // FIXME: A FileModule doesn't have definition arguments, so we shouldn't really

@@ -153,6 +153,8 @@ std::vector<AbstractNode*> IfElseModuleInstantiation::instantiateElseChildren(co
 	return this->else_scope.instantiateChildren(evalctx);
 }
 
+std::string Module::parent_module;
+
 Module::~Module()
 {
 }
@@ -181,15 +183,21 @@ AbstractNode *Module::instantiate(const Context *ctx, const ModuleInstantiation 
 
 	ModuleContext c(ctx, evalctx);
 	c.initializeModule(*this);
+	c.set_variable("_current_module", inst->name());
+	if (!parent_module.empty())
+		c.set_variable("_parent_module", parent_module);
 	c.set_variable("$children", Value(double(inst->scope.children.size())));
 	// FIXME: Set document path to the path of the module
 #if 0 && DEBUG
 	c.dump(this, inst);
 #endif
 
+	std::string pm = parent_module;
+	parent_module = inst->name();
 	AbstractNode *node = new AbstractNode(inst);
 	std::vector<AbstractNode *> instantiatednodes = this->scope.instantiateChildren(&c);
 	node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
+	parent_module = pm;
 
 	return node;
 }
