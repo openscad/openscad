@@ -153,10 +153,10 @@ Value builtin_rands(const Context *, const EvalContext *evalctx)
 		deterministic = false;
 	}
 	else if (evalctx->numArgs() == 4 && 
-					 evalctx->getArgValue(0).type() == Value::NUMBER && 
-					 evalctx->getArgValue(1).type() == Value::NUMBER && 
-					 evalctx->getArgValue(2).type() == Value::NUMBER && 
-					 evalctx->getArgValue(3).type() == Value::NUMBER)
+			evalctx->getArgValue(0).type() == Value::NUMBER && 
+			evalctx->getArgValue(1).type() == Value::NUMBER && 
+			evalctx->getArgValue(2).type() == Value::NUMBER && 
+			evalctx->getArgValue(3).type() == Value::NUMBER)
 	{
 		deterministic_rng.seed( (unsigned int) evalctx->getArgValue(3).toDouble() );
 		deterministic = true;
@@ -165,19 +165,24 @@ Value builtin_rands(const Context *, const EvalContext *evalctx)
 	{
 		return Value();
 	}
-	
+
 	double min = std::min( evalctx->getArgValue(0).toDouble(), evalctx->getArgValue(1).toDouble() );
 	double max = std::max( evalctx->getArgValue(0).toDouble(), evalctx->getArgValue(1).toDouble() );
+	size_t numresults = std::max( 0, static_cast<int>( evalctx->getArgValue(2).toDouble() ) );
 	boost::uniform_real<> distributor( min, max );
 	Value::VectorType vec;
-	for (int i=0; i<evalctx->getArgValue(2).toDouble(); i++) {
-		if ( deterministic ) {
-			vec.push_back( Value( distributor( deterministic_rng ) ) );
-		} else {
-			vec.push_back( Value( distributor( lessdeterministic_rng ) ) );
+	if (min==max) { // workaround boost bug
+		for (size_t i=0; i < numresults; i++)
+			vec.push_back( Value( min ) );
+	} else {
+		for (size_t i=0; i < numresults; i++) {
+			if ( deterministic ) {
+				vec.push_back( Value( distributor( deterministic_rng ) ) );
+			} else {
+				vec.push_back( Value( distributor( lessdeterministic_rng ) ) );
+			}
 		}
 	}
-	
 	return Value(vec);
 }
 

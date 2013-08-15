@@ -96,11 +96,12 @@ upload_win_generic()
 	opts="$opts $filename"
 	if [ $DRYRUN ]; then
 		echo dry run, not uploading to googlecode
-		echo cmd - python ./scripts/googlecode_upload.py -s '"'$summary'"' $opts
+		echo google-code upload is disabled / deprecated
 		echo dry run, not uploading to files.openscad.org
 		echo scp -v $filename openscad@files.openscad.org:www/
 	else
-		python ./scripts/googlecode_upload.py -s "$summary" $opts
+		echo google-code upload is disabled / deprecated
+		# python ./scripts/googlecode_upload.py -s "$summary" $opts
 		scp -v $filename openscad@files.openscad.org:www/
 	fi
 }
@@ -147,15 +148,24 @@ upload_win64()
 read_username_from_user()
 {
 	if [ $DRYRUN ]; then USERNAME=none;export USERNAME; return; fi
+	echo 'Google code upload is deprecated'
+	USERNAME=$USER
+	echo 'username is ' $USERNAME
+	return
+
 	echo 'Please enter your username for https://code.google.com/hosting/settings'
 	echo -n 'Username:'
 	read USERNAME
 	echo 'username is ' $USERNAME
+	return
 }
 
 read_password_from_user()
 {
 	if [ $DRYRUN ]; then return; fi
+	echo 'Google code upload is deprecated'
+	return
+
 	echo 'Please enter your password for https://code.google.com/hosting/settings'
 	echo -n 'Password:'
 	read -s PASSWORD1
@@ -178,8 +188,8 @@ update_win_www_download_links()
 	cd openscad.github.com
 	cd inc
 	echo `pwd`
-	BASEURL='https://openscad.googlecode.com/files/'
-	# BASEURL='http://files.openscad.org'
+	# BASEURL='https://openscad.googlecode.com/files/'
+	BASEURL='http://files.openscad.org/'
 	DATECODE=`date +"%Y.%m.%d"`
 
 	rm win_snapshot_links.js
