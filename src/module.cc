@@ -45,7 +45,7 @@ AbstractModule::~AbstractModule()
 {
 }
 
-AbstractNode *AbstractModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const
+AbstractNode *AbstractModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx, const ModuleInstantiation *parent_inst) const
 {
 	(void)ctx; // avoid unusued parameter warning
 
@@ -131,7 +131,7 @@ std::string IfElseModuleInstantiation::dump(const std::string &indent) const
 	return dump.str();
 }
 
-AbstractNode *ModuleInstantiation::evaluate(const Context *ctx) const
+AbstractNode *ModuleInstantiation::evaluate(const Context *ctx, const ModuleInstantiation *parent_inst) const
 {
 	EvalContext c(ctx, this->arguments, &this->scope);
 
@@ -139,7 +139,7 @@ AbstractNode *ModuleInstantiation::evaluate(const Context *ctx) const
 	PRINT("New eval ctx:");
 	c.dump(NULL, this);
 #endif
-	AbstractNode *node = ctx->instantiate_module(*this, &c); // Passes c as evalctx
+	AbstractNode *node = ctx->instantiate_module(*this, &c, parent_inst); // Passes c as evalctx
 	return node;
 }
 
@@ -171,7 +171,7 @@ private:
 	const ModuleInstantiation &inst;
 };
 
-AbstractNode *Module::instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const
+AbstractNode *Module::instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx, const ModuleInstantiation *parent_inst) const
 {
 	ModRecursionGuard g(*inst);
 	if (g.recursion_detected()) { 
@@ -181,6 +181,9 @@ AbstractNode *Module::instantiate(const Context *ctx, const ModuleInstantiation 
 
 	ModuleContext c(ctx, evalctx);
 	c.initializeModule(*this);
+	c.set_variable("_current_module", inst->name());
+	if (parent_inst)
+		c.set_variable("_parent_module", parent_inst->name());
 	c.set_variable("$children", Value(double(inst->scope.children.size())));
 	// FIXME: Set document path to the path of the module
 #if 0 && DEBUG
@@ -188,7 +191,7 @@ AbstractNode *Module::instantiate(const Context *ctx, const ModuleInstantiation 
 #endif
 
 	AbstractNode *node = new AbstractNode(inst);
-	std::vector<AbstractNode *> instantiatednodes = this->scope.instantiateChildren(&c);
+	std::vector<AbstractNode *> instantiatednodes = this->scope.instantiateChildren(&c, NULL, inst);
 	node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
 
 	return node;
@@ -298,7 +301,7 @@ bool FileModule::handleDependencies()
 	return changed;
 }
 
-AbstractNode *FileModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const
+AbstractNode *FileModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx, const ModuleInstantiation *parent_inst) const
 {
 	assert(evalctx == NULL);
 	FileContext c(*this, ctx);

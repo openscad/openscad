@@ -44,7 +44,7 @@ std::string LocalScope::dump(const std::string &indent) const
 }
 
 // FIXME: Two parameters here is a hack. Rather have separate types of scopes, or check the type of the first parameter. Note const vs. non-const
-std::vector<AbstractNode*> LocalScope::instantiateChildren(const Context *evalctx, FileContext *filectx) const
+std::vector<AbstractNode*> LocalScope::instantiateChildren(const Context *evalctx, FileContext *filectx, const ModuleInstantiation *parent_inst) const
 {
 	Context *c = filectx;
 
@@ -64,7 +64,7 @@ std::vector<AbstractNode*> LocalScope::instantiateChildren(const Context *evalct
 
 	std::vector<AbstractNode*> childnodes;
 	BOOST_FOREACH (ModuleInstantiation *modinst, this->children) {
-		AbstractNode *node = modinst->evaluate(c);
+		AbstractNode *node = modinst->evaluate(c, parent_inst);
 		if (node) childnodes.push_back(node);
 	}
 

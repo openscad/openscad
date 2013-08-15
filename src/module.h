@@ -21,7 +21,7 @@ public:
 	virtual ~ModuleInstantiation();
 
 	virtual std::string dump(const std::string &indent) const;
-	class AbstractNode *evaluate(const class Context *ctx) const;
+	class AbstractNode *evaluate(const class Context *ctx, const class ModuleInstantiation* parent_inst = NULL) const;
 	std::vector<AbstractNode*> instantiateChildren(const Context *evalctx) const;
 
 	void setPath(const std::string &path) { this->modpath = path; }
@@ -61,7 +61,7 @@ class AbstractModule
 {
 public:
 	virtual ~AbstractModule();
-	virtual class AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, const class EvalContext *evalctx = NULL) const;
+	virtual class AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, const class EvalContext *evalctx = NULL, const class ModuleInstantiation *parent_inst = NULL) const;
 	virtual std::string dump(const std::string &indent, const std::string &name) const;
 };
 
@@ -71,7 +71,7 @@ public:
 	Module() { }
 	virtual ~Module();
 
-	virtual AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx = NULL) const;
+	virtual AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx = NULL, const class ModuleInstantiation* parent_inst = NULL) const;
 	virtual std::string dump(const std::string &indent, const std::string &name) const;
 
 	AssignmentList definition_arguments;
@@ -92,7 +92,7 @@ public:
 	void registerInclude(const std::string &localpath, const std::string &fullpath);
 	bool includesChanged() const;
 	bool handleDependencies();
-	virtual AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx = NULL) const;
+	virtual AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx = NULL, const ModuleInstantiation *parent_inst = NULL) const;
 	bool hasIncludes() const { return !this->includes.empty(); }
 	bool usesLibraries() const { return !this->usedlibs.empty(); }
 	bool isHandlingDependencies() const { return this->is_handling_dependencies; }
