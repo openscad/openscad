@@ -848,8 +848,8 @@ file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/CTestCustom.cmake ${TMP})
 
 # Add tests
 
-add_cmdline_test(echotest SUFFIX txt ARGS ${GUI_BINPATH} FILES ${ECHO_FILES})
-add_cmdline_test(dumptest SUFFIX csg ARGS ${GUI_BINPATH} FILES ${DUMPTEST_FILES})
+add_cmdline_test(echotest EXE ${CMAKE_SOURCE_DIR}/echotest SUFFIX txt ARGS ${GUI_BINPATH} FILES ${ECHO_FILES})
+add_cmdline_test(dumptest EXE ${CMAKE_SOURCE_DIR}/dumptest SUFFIX csg ARGS ${GUI_BINPATH} FILES ${DUMPTEST_FILES})
 add_cmdline_test(moduledumptest EXE ${GUI_BINPATH} ARGS -o SUFFIX ast FILES
                  ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/allmodules.scad
                  ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/allfunctions.scad
@@ -867,7 +867,7 @@ add_cmdline_test(opencsgtest EXE ${GUI_BINPATH} ARGS -o SUFFIX png FILES ${OPENC
 add_cmdline_test(throwntogethertest SUFFIX png FILES ${THROWNTOGETHERTEST_FILES})
 # FIXME: We don't actually need to compare the output of cgalstlsanitytest
 # with anything. It's self-contained and returns != 0 on error
-add_cmdline_test(cgalstlsanitytest SUFFIX txt ARGS ${GUI_BINPATH} FILES ${CGALSTLSANITYTEST_FILES})
+add_cmdline_test(cgalstlsanitytest EXE ${CMAKE_SOURCE_DIR}/cgalstlsanitytest SUFFIX txt ARGS ${GUI_BINPATH} FILES ${CGALSTLSANITYTEST_FILES})
 
 # Tests using the actual OpenSCAD binary
 
