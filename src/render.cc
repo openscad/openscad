@@ -38,10 +38,10 @@ class RenderModule : public AbstractModule
 {
 public:
 	RenderModule() { }
-	virtual AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const;
+	virtual AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx, const ModuleInstantiation *parent_inst = NULL) const;
 };
 
-AbstractNode *RenderModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const
+AbstractNode *RenderModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx, const ModuleInstantiation *parent_inst) const
 {
 	RenderNode *node = new RenderNode(inst);
 

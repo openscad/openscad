@@ -14,7 +14,7 @@ public:
 	virtual ~Context();
 
 	virtual Value evaluate_function(const std::string &name, const class EvalContext *evalctx) const;
-	virtual class AbstractNode *instantiate_module(const class ModuleInstantiation &inst, const EvalContext *evalctx) const;
+	virtual class AbstractNode *instantiate_module(const class ModuleInstantiation &inst, const EvalContext *evalctx, const class ModuleInstantiation *parent_inst = NULL) const;
 
 	void setVariables(const AssignmentList &args,
 										const class EvalContext *evalctx = NULL);

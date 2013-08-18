@@ -56,7 +56,7 @@ class PrimitiveModule : public AbstractModule
 public:
 	primitive_type_e type;
 	PrimitiveModule(primitive_type_e type) : type(type) { }
-	virtual AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const;
+	virtual AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx, const ModuleInstantiation *parent_inst = NULL) const;
 };
 
 class PrimitiveNode : public AbstractPolyNode
@@ -105,7 +105,7 @@ public:
 	virtual PolySet *evaluate_polyset(class PolySetEvaluator *) const;
 };
 
-AbstractNode *PrimitiveModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const
+AbstractNode *PrimitiveModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx, const ModuleInstantiation *parent_inst) const
 {
 	PrimitiveNode *node = new PrimitiveNode(inst, this->type);
 

@@ -121,12 +121,12 @@ Value ModuleContext::evaluate_function(const std::string &name, const EvalContex
 	return Context::evaluate_function(name, evalctx);
 }
 
-AbstractNode *ModuleContext::instantiate_module(const ModuleInstantiation &inst, const EvalContext *evalctx) const
+AbstractNode *ModuleContext::instantiate_module(const ModuleInstantiation &inst, const EvalContext *evalctx, const ModuleInstantiation *parent_inst) const
 {
 	const AbstractModule *foundm = this->findLocalModule(inst.name());
-	if (foundm) return foundm->instantiate(this, &inst, evalctx);
+	if (foundm) return foundm->instantiate(this, &inst, evalctx, parent_inst);
 
-	return Context::instantiate_module(inst, evalctx);
+	return Context::instantiate_module(inst, evalctx, parent_inst);
 }
 
 #ifdef DEBUG
@@ -191,10 +191,10 @@ Value FileContext::evaluate_function(const std::string &name, const EvalContext 
 	return ModuleContext::evaluate_function(name, evalctx);
 }
 
-AbstractNode *FileContext::instantiate_module(const ModuleInstantiation &inst, const EvalContext *evalctx) const
+AbstractNode *FileContext::instantiate_module(const ModuleInstantiation &inst, const EvalContext *evalctx, const ModuleInstantiation *parent_inst) const
 {
 	const AbstractModule *foundm = this->findLocalModule(inst.name());
-	if (foundm) return foundm->instantiate(this, &inst, evalctx);
+	if (foundm) return foundm->instantiate(this, &inst, evalctx, parent_inst);
 
 	BOOST_FOREACH(const FileModule::ModuleContainer::value_type &m, this->usedlibs) {
 		FileModule *usedmod = ModuleCache::instance()->lookup(m);

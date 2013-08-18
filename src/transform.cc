@@ -50,10 +50,10 @@ class TransformModule : public AbstractModule
 public:
 	transform_type_e type;
 	TransformModule(transform_type_e type) : type(type) { }
-	virtual AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const;
+	virtual AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx, const ModuleInstantiation *parent_inst = NULL) const;
 };
 
-AbstractNode *TransformModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const
+AbstractNode *TransformModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx, const ModuleInstantiation *parent_inst) const
 {
 	TransformNode *node = new TransformNode(inst);
 

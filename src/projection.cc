@@ -41,10 +41,10 @@ class ProjectionModule : public AbstractModule
 {
 public:
 	ProjectionModule() { }
-	virtual AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const;
+	virtual AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx, const ModuleInstantiation *parent_inst = NULL) const;
 };
 
-AbstractNode *ProjectionModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const
+AbstractNode *ProjectionModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx, const ModuleInstantiation *parent_inst) const
 {
 	ProjectionNode *node = new ProjectionNode(inst);
 

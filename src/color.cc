@@ -40,14 +40,14 @@ class ColorModule : public AbstractModule
 {
 public:
 	ColorModule() { }
-	virtual AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const;
+	virtual AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx, const ModuleInstantiation *parent_inst = NULL) const;
 
 private:
 	static boost::unordered_map<std::string, Color4f> colormap;
 };
 
 #include "colormap.h"
-AbstractNode *ColorModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const
+AbstractNode *ColorModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx, const ModuleInstantiation *parent_inst) const
 {
 	ColorNode *node = new ColorNode(inst);
 
