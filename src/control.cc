@@ -31,6 +31,7 @@
 #include "builtin.h"
 #include "printutils.h"
 #include <sstream>
+#include "mathc99.h"
 
 enum control_type_e {
 	CHILD,
