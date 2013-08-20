@@ -30,7 +30,7 @@
 #include "handle_dep.h"
 #include "printutils.h"
 #include "parsersettings.h"
-#include "parser_yacc.h"
+#include "parser_yacc.hpp"
 #include "module.h"
 #include <assert.h>
 #include <boost/foreach.hpp>
