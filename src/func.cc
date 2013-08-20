@@ -528,6 +528,29 @@ Value builtin_version_num(const Context *ctx, const EvalContext *evalctx)
 	return Value(y * 10000 + m * 100 + d);
 }
 
+Value builtin_parent_module(const Context *, const EvalContext *evalctx)
+{
+	int n;
+	double d;
+	int s = Module::stack_size();
+	if (evalctx->numArgs() == 0)
+		d=1; // parent module
+	else if (evalctx->numArgs() == 1 && evalctx->getArgValue(0).type() == Value::NUMBER)
+		evalctx->getArgValue(0).getDouble(d);
+	else
+			return Value();
+	n=trunc(d);
+	if (n < 0) {
+		PRINTB("WARNING: Negative parent module index (%d) not allowed", n);
+		return Value();
+	}
+	if (n >= s) {
+		PRINTB("WARNING: Parent module index (%d) greater than the number of modules on the stack", n);
+		return Value();
+	}
+	return Value(Module::stack_element(s - 1 - n));
+}
+
 void register_builtin_functions()
 {
 	Builtins::init("abs", new BuiltinFunction(&builtin_abs));
@@ -556,4 +579,5 @@ void register_builtin_functions()
 	Builtins::init("search", new BuiltinFunction(&builtin_search));
 	Builtins::init("version", new BuiltinFunction(&builtin_version));
 	Builtins::init("version_num", new BuiltinFunction(&builtin_version_num));
+	Builtins::init("parent_module", new BuiltinFunction(&builtin_parent_module));
 }
