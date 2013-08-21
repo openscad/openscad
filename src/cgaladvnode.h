@@ -11,7 +11,10 @@ enum cgaladv_type_e {
 	GLIDE,
 	SUBDIV,
 	HULL,
-	RESIZE
+	RESIZE,
+	//RUUD
+	BOX,
+	POSITION
 };
 
 class CgaladvNode : public AbstractNode
@@ -34,6 +37,11 @@ public:
 	Vector3d newsize;
 	Eigen::Matrix<bool,3,1> autosize;
 	cgaladv_type_e type;
+	//RUUD
+  Value keep,xmin,xmid,xmax,ymin,ymid,ymax,zmin,zmid,zmax;
+  Value xadd,yadd,zadd,add,act;
+
+
 };
 
 #endif

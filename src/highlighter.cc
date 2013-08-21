@@ -132,14 +132,14 @@ Highlighter::Highlighter(QTextDocument *parent)
 	tokentypes["operator"] << "=" << "!" << "&&" << "||" << "+" << "-" << "*" << "/" << "%" << "!" << "#" << ";";
 	typeformats["operator"].setForeground(Qt::blue);
 
-	tokentypes["math"] << "abs" << "sign" << "acos" << "asin" << "atan" << "atan2" << "sin" << "cos" << "floor" << "round" << "ceil" << "ln" << "log" << "lookup" << "min" << "max" << "pow" << "sqrt" << "exp" << "rands";
+	tokentypes["math"] << "abs" << "sign" << "acos" << "asin" << "atan" << "atan2" << "sin" << "cos" << "tan" << "floor" << "round" << "ceil" << "ln" << "log" << "lookup" << "min" << "max" << "pow" << "sqrt" << "exp" << "rands";
 	typeformats["math"].setForeground(Qt::green);
 	
-	tokentypes["keyword"] << "module" << "function" << "for" << "intersection_for" << "if" << "assign" << "echo"<< "search" << "str";
+	tokentypes["keyword"] << "module" << "function" << "for" << "intersection_for" << "if" << "assign" << "echo"<< "search" << "str" << "else";
 	typeformats["keyword"].setForeground(QColor("Green"));
 	typeformats["keyword"].setToolTip("Keyword");
 
-	tokentypes["transform"] << "scale" << "translate" << "rotate" << "multmatrix" << "color" << "projection" << "hull" << "resize" << "mirror" << "minkowski";
+	tokentypes["transform"] << "scale" << "translate" << "rotate" << "multmatrix" << "color" << "projection" << "hull" << "resize" << "mirror" << "minkowski" << "box" << "position";
 	typeformats["transform"].setForeground(QColor("Indigo"));
 
 	tokentypes["csgop"]	<< "union" << "intersection" << "difference" << "render";
@@ -148,7 +148,7 @@ Highlighter::Highlighter(QTextDocument *parent)
 	tokentypes["prim3d"] << "cube" << "cylinder" << "sphere" << "polyhedron";
 	typeformats["prim3d"].setForeground(QColor("DarkBlue"));
 
-	tokentypes["prim2d"] << "square" << "polygon" << "circle";
+	tokentypes["prim2d"] << "square" << "polygon" << "circle" << "loop";
 	typeformats["prim2d"].setForeground(QColor("MidnightBlue"));
 
 	tokentypes["import"] << "include" << "use" << "import_stl" << "import" << "import_dxf" << "dxf_dim" << "dxf_cross" << "surface";
@@ -157,7 +157,7 @@ Highlighter::Highlighter(QTextDocument *parent)
 	tokentypes["special"] << "$children" << "child" << "$fn" << "$fa" << "$fs" << "$t" << "$vpt" << "$vpr";
 	typeformats["special"].setForeground(Qt::darkGreen);
 
-	tokentypes["extrude"] << "linear_extrude" << "rotate_extrude";
+	tokentypes["extrude"] << "linear_extrude" << "rotate_extrude" << "loop_extrude";
 	typeformats["extrude"].setForeground(Qt::darkGreen);
 
 	tokentypes["bracket"] << "[" << "]" << "(" << ")";

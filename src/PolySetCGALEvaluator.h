@@ -2,6 +2,7 @@
 #define POLYSETCGALEVALUATOR_H_
 
 #include "PolySetEvaluator.h"
+#include "loop.h"
 
 /*!
 	This is a PolySet evaluator which uses the CGALEvaluator to support building
@@ -15,12 +16,14 @@ public:
 	virtual PolySet *evaluatePolySet(const ProjectionNode &node);
 	virtual PolySet *evaluatePolySet(const LinearExtrudeNode &node);
 	virtual PolySet *evaluatePolySet(const RotateExtrudeNode &node);
+	virtual PolySet *evaluatePolySet(const LoopExtrudeNode &node);
 	virtual PolySet *evaluatePolySet(const CgaladvNode &node);
 	virtual PolySet *evaluatePolySet(const RenderNode &node);
 	bool debug;
 protected:
 	PolySet *extrudeDxfData(const LinearExtrudeNode &node, class DxfData &dxf);
 	PolySet *rotateDxfData(const RotateExtrudeNode &node, class DxfData &dxf);
+	PolySet *loopDxfData(const LoopExtrudeNode &node, class DxfData &dxf);
 
 	CGALEvaluator &cgalevaluator;
 };

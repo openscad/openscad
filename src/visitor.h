@@ -28,6 +28,9 @@ public:
   virtual Response visit(class State &state, const class RotateExtrudeNode &node) {
 		return visit(state, (const class AbstractPolyNode &)node);
 	}
+  virtual Response visit(class State &state, const class LoopExtrudeNode &node) {
+    return visit(state, (const class AbstractPolyNode &)node);
+  }
   virtual Response visit(class State &state, const class ImportNode &node) {
 		return visit(state, (const class AbstractPolyNode &)node);
 	}

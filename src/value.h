@@ -3,6 +3,8 @@
 
 #include <vector>
 #include <string>
+#include <Eigen/Core>
+
 
 // Workaround for https://bugreports.qt-project.org/browse/QTBUG-22829
 #ifndef Q_MOC_RUN
@@ -74,10 +76,12 @@ public:
   double toDouble() const;
   bool getDouble(double &v) const;
   bool toBool() const;
+  bool getBool(bool &b) const;
   std::string toString() const;
   const VectorType &toVector() const;
   bool getVec2(double &x, double &y) const;
   bool getVec3(double &x, double &y, double &z, double defaultval = 0.0) const;
+  Eigen::Vector3d getVecOrDef(const Eigen::Vector3d defval) const;
   RangeType toRange() const;
 
 	operator bool() const { return this->toBool(); }
