@@ -212,7 +212,9 @@ PolySet *ImportNode::evaluate_polyset(class PolySetEvaluator *) const
 #ifdef BOOST_BIG_ENDIAN
 			uint32_byte_swap( facenum );
 #endif
-			if (file_size == 80 + 4 + 50*facenum) binary = true;
+			if (file_size ==  static_cast<std::streamoff>(80 + 4 + 50*facenum)) {
+				binary = true;
+			}
 		}
 		f.seekg(0);
 

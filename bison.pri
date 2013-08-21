@@ -3,7 +3,7 @@
   bison.input = BISONSOURCES
   bison.output = ${QMAKE_FILE_PATH}/${QMAKE_FILE_BASE}_yacc.cpp
   bison.commands = bison -d -p ${QMAKE_FILE_BASE} -o ${QMAKE_FILE_PATH}/${QMAKE_FILE_BASE}_yacc.cpp ${QMAKE_FILE_IN}
-  bison.commands += && if [ -e ${QMAKE_FILE_PATH}/${QMAKE_FILE_BASE}_yacc.hpp ]; then mv ${QMAKE_FILE_PATH}/${QMAKE_FILE_BASE}_yacc.hpp ${QMAKE_FILE_PATH}/${QMAKE_FILE_BASE}_yacc.h ; fi
+  bison.commands += && if [[ -e ${QMAKE_FILE_PATH}/${QMAKE_FILE_BASE}_yacc.hpp ]] ; then mv ${QMAKE_FILE_PATH}/${QMAKE_FILE_BASE}_yacc.hpp ${QMAKE_FILE_PATH}/${QMAKE_FILE_BASE}_yacc.h ; fi
   bison.CONFIG += target_predeps
   bison.variable_out = GENERATED_SOURCES
   silent:bison.commands = @echo Bison ${QMAKE_FILE_IN} && $$bison.commands
@@ -39,4 +39,7 @@ netbsd* {
   } else { # look in $PATH
     QMAKE_YACC = bison
   }
+}
+
+win32*msvc* {
 }

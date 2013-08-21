@@ -77,8 +77,8 @@ void OpenCSGRenderer::renderCSGChain(CSGChain *chain, GLint *shaderinfo,
 	std::vector<OpenCSG::Primitive*> primitives;
 	size_t j = 0;
 	for (size_t i = 0;; i++) {
-		const CSGChainObject &i_obj = chain->objects[i];
 		bool last = i == chain->objects.size();
+		const CSGChainObject &i_obj = last ? chain->objects[i-1] : chain->objects[i];
 		if (last || i_obj.type == CSGTerm::TYPE_UNION) {
 			if (j+1 != i) {
 				 OpenCSG::render(primitives);
