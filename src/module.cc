@@ -180,8 +180,9 @@ AbstractNode *Module::instantiate(const Context *ctx, const ModuleInstantiation 
 	}
 
 	ModuleContext c(ctx, evalctx);
-	c.initializeModule(*this);
+	// set $children first since we might have variables depending on it
 	c.set_variable("$children", Value(double(inst->scope.children.size())));
+	c.initializeModule(*this);
 	// FIXME: Set document path to the path of the module
 #if 0 && DEBUG
 	c.dump(this, inst);

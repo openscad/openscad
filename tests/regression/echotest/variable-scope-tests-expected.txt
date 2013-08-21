@@ -3,6 +3,15 @@ ECHO: 23, 5
 WARNING: Ignoring unknown variable 'a'.
 ECHO: undef
 ECHO: 23, 5
+ECHO: "$children scope"
+ECHO: "$children should be 1: ", 1
+ECHO: "$children should be 4: ", 4
+ECHO: "$children should be 1: ", 1
+ECHO: "child_module_1 child"
+ECHO: "child_module_2 child 0"
+ECHO: "child_module_2 child 1"
+ECHO: "copy $children"
+ECHO: "copy_children_module: ", 2, 2
 ECHO: "inner variables shadows parameter"
 ECHO: 5, 24
 ECHO: "user-defined special variables as parameter"

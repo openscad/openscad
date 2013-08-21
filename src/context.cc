@@ -38,6 +38,13 @@ namespace fs = boost::filesystem;
 
 std::vector<const Context*> Context::ctx_stack;
 
+// $children is not a config_variable. config_variables have dynamic scope, 
+// meaning they are passed down the call chain implicitly.
+// $children is simply misnamed and shouldn't have included the '$'.
+static bool is_config_variable(const std::string &name) {
+	return name[0] == '$' && name != "$children";
+}
+
 /*!
 	Initializes this context. Optionally initializes a context for an external library
 */
@@ -80,10 +87,8 @@ void Context::setVariables(const AssignmentList &args,
 
 void Context::set_variable(const std::string &name, const Value &value)
 {
-	if (name[0] == '$')
-		this->config_variables[name] = value;
-	else
-		this->variables[name] = value;
+	if (is_config_variable(name)) this->config_variables[name] = value;
+	else this->variables[name] = value;
 }
 
 void Context::set_constant(const std::string &name, const Value &value)
@@ -98,7 +103,7 @@ void Context::set_constant(const std::string &name, const Value &value)
 
 Value Context::lookup_variable(const std::string &name, bool silent) const
 {
-	if (name[0] == '$') {
+	if (is_config_variable(name)) {
 		for (int i = ctx_stack.size()-1; i >= 0; i--) {
 			const ValueMap &confvars = ctx_stack[i]->config_variables;
 			if (confvars.find(name) != confvars.end())

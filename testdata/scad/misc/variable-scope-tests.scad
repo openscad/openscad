@@ -11,6 +11,35 @@ module special_module2(b) {
 
 special_module(23, $fn=5);
 
+echo("$children scope");
+module child_module_2() {
+  echo("$children should be 4: ", $children);
+  for(i=[0:$children-1]) child(i);
+}
+
+module child_module_1() {
+  echo("$children should be 1: ", $children);
+  child_module_2() {
+    echo("$children should be 1: ", $children);
+    child(0);
+    echo("child_module_2 child 0");
+    echo("child_module_2 child 1");
+  }
+}
+
+child_module_1() echo("child_module_1 child");
+
+echo("copy $children");
+module copy_children_module() {
+  kids = $children;
+  echo("copy_children_module: ", kids, $children);
+}
+
+copy_children_module() {
+  cube();
+  sphere();
+}
+
 echo("inner variables shadows parameter");
 module inner_variables(a, b) {
   b = 24;
