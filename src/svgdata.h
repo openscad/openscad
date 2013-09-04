@@ -106,7 +106,7 @@ private:
 
 class SVGData{
 public:
-  SVGData(double fn, double fs, double fa, std::string filename);
+  SVGData(double fn, double fs, double fa, std::string filename, std::string layername);
   ~SVGData();
 
   class PolySet* convertToPolyset();
@@ -116,6 +116,7 @@ private:
   void start_path();
   void close_path();
   void add_point(float x, float y);
+  void add_arc_points(float xc, float yc, float rx, float ry, float start, float end);
 
   void parse_path_description(Glib::ustring d);
   std::vector<float> get_params(std::string str);
@@ -125,12 +126,13 @@ private:
   void render_cubic_curve_to(float x0, float y0, float x1, float y1, float x2, float y2, float x3, float y3);
   void render_elliptical_arc(float x0, float y0, float rx, float ry, float x_axis_rotation, int large_arc_flag, int sweep_flag, float x, float y);
 
+  float quadratic_curve_length(float x0, float y0, float x1, float y1, float x2, float y2);
+
   TransformMatrix parse_transform(std::string transform);
   void setCurrentTransformMatrix(TransformMatrix tm){
     ctm = tm;
   }
 
-  std::string filename;
   xmlpp::DomParser* parser;
   DxfData *dxfdata;
   PolySet *p;
@@ -138,6 +140,9 @@ private:
   float document_height;
   int first_point, last_point;
   double fn, fs, fa;
+  std::string filename;
+  std::string layername;
+  std::string layer;
   TransformMatrix ctm;
 };
 

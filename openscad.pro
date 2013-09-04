@@ -107,6 +107,7 @@ netbsd* {
    QMAKE_LFLAGS += -L/usr/X11R7/lib
    QMAKE_LFLAGS += -Wl,-R/usr/X11R7/lib
    QMAKE_LFLAGS += -Wl,-R/usr/pkg/lib
+   !clang: { QMAKE_CXXFLAGS += -std=c++0x }
    !isEmpty(OPENSCAD_LIBDIR) {
      QMAKE_CFLAGS = -I$$OPENSCAD_LIBDIR/include $$QMAKE_CFLAGS
      QMAKE_CXXFLAGS = -I$$OPENSCAD_LIBDIR/include $$QMAKE_CXXFLAGS

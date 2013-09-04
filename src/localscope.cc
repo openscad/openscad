@@ -55,9 +55,11 @@ std::vector<AbstractNode*> LocalScope::instantiateChildren(const Context *evalct
 		// c->functions_p = &this->functions;
 		// c->modules_p = &this->modules;
 
-		BOOST_FOREACH (const Assignment &ass, this->assignments) {
-			c->set_variable(ass.first, ass.second->evaluate(c));
-		}
+		// Uncommenting the following would allow assignments in local scopes,
+		// but would cause duplicate evaluation of module scopes
+		// BOOST_FOREACH (const Assignment &ass, this->assignments) {
+		// 	c->set_variable(ass.first, ass.second->evaluate(c));
+		// }
 	}
 
 	std::vector<AbstractNode*> childnodes;

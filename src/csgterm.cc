@@ -188,6 +188,7 @@ void CSGChain::import(shared_ptr<CSGTerm> term, CSGTerm::type_e type, CSGTerm::F
 	if (term->type == CSGTerm::TYPE_PRIMITIVE) {
 		this->objects.push_back(CSGChainObject(term->polyset, term->m, term->color, type, term->label, newflag));
 	} else {
+		assert(term->left && term->right);
 		import(term->left, type, newflag);
 		import(term->right, term->type, newflag);
 	}

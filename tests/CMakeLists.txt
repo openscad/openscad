@@ -14,15 +14,15 @@ include(CMakeParseArguments.cmake)
 IF (APPLE)
    EXECUTE_PROCESS(COMMAND sw_vers -productVersion OUTPUT_VARIABLE MACOSX_VERSION)
    IF (NOT ${MACOSX_VERSION} VERSION_LESS "10.8.0")
-     message("Detected Mountain Lion or later")
-     set(CMAKE_C_COMPILER "gcc")
-     set(CMAKE_CXX_COMPILER "g++")
+     message("Detected Mountain Lion (10.8) or later")
+     set(CMAKE_C_COMPILER "clang")
+     set(CMAKE_CXX_COMPILER "clang++")
    ELSEIF (NOT ${MACOSX_VERSION} VERSION_LESS "10.7.0")
-     message("Detected Lion or later")
-     set(CMAKE_C_COMPILER "gcc")
-     set(CMAKE_CXX_COMPILER "g++")
+     message("Detected Lion (10.7)")
+     set(CMAKE_C_COMPILER "clang")
+     set(CMAKE_CXX_COMPILER "clang++")
    ELSE()
-     message("Detected Snow Leopard or older")
+     message("Detected Snow Leopard (10.6) or older")
      if (USE_LLVM)
        message("Using LLVM compiler")
        set(CMAKE_C_COMPILER "llvm-gcc")
@@ -333,6 +333,9 @@ endif()
 if(${CMAKE_SYSTEM_NAME} MATCHES "NetBSD")
   include_directories( /usr/pkg/include /usr/X11R7/include )
   set(FLEX_EXECUTABLE /usr/pkg/bin/flex)
+  if(NOT ${CMAKE_CXX_COMPILER} MATCHES ".*clang.*")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
+  endif()
 endif()
 
 find_package(FLEX REQUIRED)
@@ -787,6 +790,7 @@ list(APPEND ECHO_FILES ${FUNCTION_FILES}
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/search-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/recursion-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/value-reassignment-tests.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/value-reassignment-tests2.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/variable-scope-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/lookup-tests.scad)
 

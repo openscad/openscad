@@ -35,19 +35,19 @@ fs::path search_libs(const fs::path &localpath)
 static bool check_valid(const fs::path &p, const std::vector<std::string> *openfilenames)
 {
 	if (p.empty()) {
-//		PRINTB("WARNING: File path is blank: %s",p);
+		//PRINTB("WARNING: File path is blank: %s",p);
 		return false;
 	}
 	if (!p.has_parent_path()) {
-//		PRINTB("WARNING: No parent path: %s",p);
+		//PRINTB("WARNING: No parent path: %s",p);
 		return false;
 	}
 	if (!fs::exists(p)) {
-//		PRINTB("WARNING: File not found: %s",p);
+		//PRINTB("WARNING: File not found: %s",p);
 		return false;
 	}
 	if (fs::is_directory(p)) {
-//		PRINTB("WARNING: %s invalid - points to a directory",p);
+		//PRINTB("WARNING: %s invalid - points to a directory",p);
 		return false;
 	}
 	std::string fullname = boosty::stringy(p);

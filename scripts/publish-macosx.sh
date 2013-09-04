@@ -67,7 +67,7 @@ if [[ $? != 0 ]]; then
   exit 1
 fi
 
-SIGNATURE=$(openssl dgst -sha1 -binary < OpenSCAD-$VERSION.dmg  | openssl dgst -dss1 -sign dsa_priv.pem | openssl enc -base64)
+SIGNATURE=$(openssl dgst -sha1 -binary < OpenSCAD-$VERSION.dmg  | openssl dgst -dss1 -sign $HOME/.ssh/openscad-appcast.pem | openssl enc -base64)
 
 if [[ $VERSION == $VERSIONDATE ]]; then
   APPCASTFILE=appcast-snapshots.xml
@@ -86,6 +86,11 @@ echo "Uploading..."
 LABELS=OpSys-OSX,Type-Executable
 if ! $SNAPSHOT; then LABELS=$LABELS,Featured; fi
 `dirname $0`/googlecode_upload.py -s 'Mac OS X Snapshot' -p openscad OpenSCAD-$VERSION.dmg -l $LABELS
+if [[ $? != 0 ]]; then
+  exit 1
+fi
+
+scp OpenSCAD-$VERSION.dmg openscad@files.openscad.org:www
 if [[ $? != 0 ]]; then
   exit 1
 fi

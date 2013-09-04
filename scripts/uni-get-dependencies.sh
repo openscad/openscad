@@ -7,8 +7,9 @@
 get_fedora_deps()
 {
  sudo yum install qt-devel bison flex eigen2-devel python-paramiko \
-  boost-devel mpfr-devel gmp-devel glew-devel CGAL-devel gcc pkgconfig \
-  git libXmu-devel curl imagemagick
+  boost-devel mpfr-devel gmp-devel glew-devel CGAL-devel gcc gcc-c++ pkgconfig \
+  opencsg-devel git libXmu-devel curl imagemagick ImageMagick make \
+  xorg-x11-server-Xvfb
 }
 
 get_qomo_deps()
@@ -34,7 +35,8 @@ get_freebsd_deps()
 get_netbsd_deps()
 {
  sudo pkgin install bison boost cmake git bash eigen flex gmake gmp mpfr \
-  qt4 glew cgal opencsg modular-xorg python27 py27-paramiko curl imagemagick
+  qt4 glew cgal opencsg modular-xorg python27 py27-paramiko curl \
+  imagemagick ImageMagick
 }
 
 get_opensuse_deps()
@@ -48,7 +50,7 @@ get_mageia_deps()
  sudo urpmi ctags
  sudo urpmi task-c-devel task-c++-devel libqt4-devel libgmp-devel \
   libmpfr-devel libboost-devel eigen3-devel libglew-devel bison flex \
-  cmake imagemagick python curl git
+  cmake imagemagick python curl git x11-server-xvfb
 }
 
 get_debian_deps()
@@ -73,6 +75,8 @@ if [ -e /etc/issue ]; then
  if [ "`grep -i ubuntu /etc/issue`" ]; then
   get_debian_deps
  elif [ "`grep -i debian /etc/issue`" ]; then
+  get_debian_deps
+ elif [ "`grep -i mint /etc/issue`" ]; then
   get_debian_deps
  elif [ "`grep -i suse /etc/issue`" ]; then
   get_opensuse_deps

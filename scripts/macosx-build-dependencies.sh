@@ -8,6 +8,7 @@
 #
 # Usage: macosx-build-dependencies.sh [-6lcd]
 #  -6   Build only 64-bit binaries
+#  -c   Force use of LLVM compiler
 #  -l   Force use of LLVM compiler
 #  -c   Force use of clang compiler
 #  -d   Build for deployment (if not specified, e.g. Sparkle won't be built)
@@ -17,14 +18,15 @@
 #
 # FIXME:
 # o Verbose option
+# o Force rebuild vs. only rebuild changes
 #
 
 BASEDIR=$PWD/../libraries
 OPENSCADDIR=$PWD
 SRCDIR=$BASEDIR/src
 DEPLOYDIR=$BASEDIR/install
-MAC_OSX_VERSION_MIN=10.5
-OPTION_32BIT=true
+MAC_OSX_VERSION_MIN=10.6
+OPTION_32BIT=false
 OPTION_LLVM=false
 OPTION_CLANG=false
 OPTION_GCC=false
@@ -53,14 +55,15 @@ build_qt()
   fi
   tar xzf qt-everywhere-opensource-src-$version.tar.gz
   cd qt-everywhere-opensource-src-$version
-  if $OPTION_CLANG; then
+  if $USING_CLANG; then
     # FIX for clang
     sed -i "" -e "s/::TabletProximityRec/TabletProximityRec/g"  src/gui/kernel/qt_cocoa_helpers_mac_p.h
+    PLATFORM="-platform unsupported/macx-clang"
   fi
   if $OPTION_32BIT; then
     QT_32BIT="-arch x86"
   fi
-  ./configure -prefix $DEPLOYDIR -release $QT_32BIT -arch x86_64 -opensource -confirm-license -fast -no-qt3support -no-svg -no-phonon -no-audio-backend -no-multimedia -no-javascript-jit -no-script -no-scripttools -no-declarative -no-xmlpatterns -nomake demos -nomake examples -nomake docs -nomake translations -no-webkit
+  ./configure -prefix $DEPLOYDIR -release $QT_32BIT -arch x86_64 -opensource -confirm-license $PLATFORM -fast -no-qt3support -no-svg -no-phonon -no-audio-backend -no-multimedia -no-javascript-jit -no-script -no-scripttools -no-declarative -no-xmlpatterns -nomake demos -nomake examples -nomake docs -nomake translations -no-webkit
   make -j6 install
 }
 
@@ -211,10 +214,10 @@ build_boost()
   if $OPTION_32BIT; then
     BOOST_EXTRA_FLAGS="-arch i386"
   fi
-  if $OPTION_LLVM; then
+  if $USING_LLVM; then
     BOOST_TOOLSET="toolset=darwin-llvm"
     echo "using darwin : llvm : llvm-g++ ;" >> tools/build/v2/user-config.jam 
-  elif $OPTION_CLANG; then
+  elif $USING_CLANG; then
     BOOST_TOOLSET="toolset=clang"
     echo "using clang ;" >> tools/build/v2/user-config.jam 
   fi
@@ -238,8 +241,9 @@ build_cgal()
   cd $BASEDIR/src
   rm -rf CGAL-$version
   if [ ! -f CGAL-$version.tar.gz ]; then
-    # 4.1
-    curl -O https://gforge.inria.fr/frs/download.php/31641/CGAL-$version.tar.gz
+    # 4.2
+    curl -O https://gforge.inria.fr/frs/download.php/32359/CGAL-$version.tar.gz
+    # 4.1 curl -O https://gforge.inria.fr/frs/download.php/31641/CGAL-$version.tar.gz
     # 4.1-beta1 curl -O https://gforge.inria.fr/frs/download.php/31348/CGAL-$version.tar.gz
     # 4.0.2 curl -O https://gforge.inria.fr/frs/download.php/31175/CGAL-$version.tar.gz
     # 4.0 curl -O https://gforge.inria.fr/frs/download.php/30387/CGAL-$version.tar.gz
@@ -306,7 +310,9 @@ build_eigen()
 
   EIGENDIR="none"
   if [ $version = "2.0.17" ]; then EIGENDIR=eigen-eigen-b23437e61a07; fi
-  if [ $version = "3.1.2" ]; then EIGENDIR=eigen-eigen-5097c01bcdc4; fi
+  if [ $version = "3.1.2" ]; then EIGENDIR=eigen-eigen-5097c01bcdc4;
+  elif [ $version = "3.1.3" ]; then EIGENDIR=eigen-eigen-2249f9c22fe8; fi
+
   if [ $EIGENDIR = "none" ]; then
     echo Unknown eigen version. Please edit script.
     exit 1
@@ -374,7 +380,7 @@ OSX_VERSION=`sw_vers -productVersion | cut -d. -f2`
 if (( $OSX_VERSION >= 8 )); then
   echo "Detected Mountain Lion (10.8) or later"
 elif (( $OSX_VERSION >= 7 )); then
-  echo "Detected Lion (10.7) or later"
+  echo "Detected Lion (10.7)"
 else
   echo "Detected Snow Leopard (10.6) or earlier"
 fi
@@ -389,7 +395,7 @@ elif $OPTION_GCC; then
 elif $OPTION_CLANG; then
   USING_CLANG=true
 elif (( $OSX_VERSION >= 7 )); then
-  USING_GCC=true
+  USING_CLANG=true
 fi
 
 if $USING_LLVM; then
@@ -412,16 +418,11 @@ elif $USING_CLANG; then
   export QMAKESPEC=unsupported/macx-clang
 fi
 
-if (( $OSX_VERSION >= 8 )); then
-  echo "Setting build target to 10.6 or later"
-  MAC_OSX_VERSION_MIN=10.6
-else
-  echo "Setting build target to 10.5 or later"
-  MAC_OSX_VERSION_MIN=10.5
-fi
+echo "Building for $MAC_OSX_VERSION_MIN or later"
 
 if $OPTION_DEPLOY; then
   echo "Building deployment version of libraries"
+  OPTION_32BIT=true
 else
   OPTION_32BIT=false
 fi
@@ -435,12 +436,13 @@ fi
 echo "Using basedir:" $BASEDIR
 mkdir -p $SRCDIR $DEPLOYDIR
 build_qt 4.8.4
-build_eigen 3.1.2
-build_gmp 5.1.1
+# NB! For eigen, also update the path in the function
+build_eigen 3.1.3
+build_gmp 5.1.2
 build_mpfr 3.1.2
 build_boost 1.53.0
 # NB! For CGAL, also update the actual download URL in the function
-build_cgal 4.1
+build_cgal 4.2
 build_glew 1.9.0
 build_opencsg 1.3.2
 if $OPTION_DEPLOY; then

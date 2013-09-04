@@ -290,11 +290,26 @@ build_cgal()
   ver3_7="curl --insecure -O https://gforge.inria.fr/frs/download.php/27641/CGAL-3.7.tar.gz"
   vernull="echo already downloaded..skipping"
   download_cmd=ver`echo $version | sed s/"\."/"_"/`
-  if [ -e CGAL-$version.tar.gz ]; then download_cmd=vernull; fi
-  if [ -e CGAL-$version.tar.bz2 ]; then download_cmd=vernull; fi
+
+  if [ -e CGAL-$version.tar.gz ]; then
+    download_cmd=vernull;
+  fi
+  if [ -e CGAL-$version.tar.bz2 ]; then
+    download_cmd=vernull;
+  fi
+
   `eval echo "$"$download_cmd`
-  if [ -e CGAL-$version.tar.gz ]; then tar xf CGAL-$version.tar.gz; fi
-  if [ -e CGAL-$version.tar.bz2 ]; then tar xf CGAL-$version.tar.bz2; fi
+
+  zipper=gzip
+  suffix=gz
+  if [ -e CGAL-$version.tar.bz2 ]; then
+    zipper=bzip2
+    suffix=bz2
+  fi
+
+  $zipper -f -d CGAL-$version.tar.$suffix;
+  tar xf CGAL-$version.tar
+
   cd CGAL-$version
 
   # older cmakes have buggy FindBoost that can result in

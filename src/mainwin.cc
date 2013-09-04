@@ -206,9 +206,15 @@ MainWindow::MainWindow(const QString &filename)
 
 	autoReloadTimer = new QTimer(this);
 	autoReloadTimer->setSingleShot(false);
+	autoReloadTimer->setInterval(200);
 	connect(autoReloadTimer, SIGNAL(timeout()), this, SLOT(checkAutoReload()));
 
-	connect(this->e_tval, SIGNAL(textChanged(QString)), this, SLOT(actionCompile()));
+	waitAfterReloadTimer = new QTimer(this);
+	waitAfterReloadTimer->setSingleShot(true);
+	waitAfterReloadTimer->setInterval(200);
+	connect(waitAfterReloadTimer, SIGNAL(timeout()), this, SLOT(waitAfterReload()));
+
+	connect(this->e_tval, SIGNAL(textChanged(QString)), this, SLOT(actionRenderCSG()));
 	connect(this->e_fps, SIGNAL(textChanged(QString)), this, SLOT(updatedFps()));
 
 	animate_panel->hide();
@@ -288,8 +294,8 @@ MainWindow::MainWindow(const QString &filename)
 
 	// Design menu
 	connect(this->designActionAutoReload, SIGNAL(toggled(bool)), this, SLOT(autoReloadSet(bool)));
-	connect(this->designActionReloadAndCompile, SIGNAL(triggered()), this, SLOT(actionReloadCompile()));
-	connect(this->designActionCompile, SIGNAL(triggered()), this, SLOT(actionCompile()));
+	connect(this->designActionReloadAndCompile, SIGNAL(triggered()), this, SLOT(actionReloadRenderCSG()));
+	connect(this->designActionCompile, SIGNAL(triggered()), this, SLOT(actionRenderCSG()));
 #ifdef ENABLE_CGAL
 	connect(this->designActionCompileAndRender, SIGNAL(triggered()), this, SLOT(actionRenderCGAL()));
 #else
@@ -580,7 +586,7 @@ void MainWindow::updateTVal()
 	double fps = this->e_fps->text().toDouble(&fps_ok);
 	if (fps_ok) {
 		if (fps <= 0) {
-			actionCompile();
+			actionRenderCSG();
 		} else {
 			double s = this->e_fsteps->text().toDouble();
 			double t = this->e_tval->text().toDouble() + 1/s;
@@ -612,14 +618,96 @@ void MainWindow::refreshDocument()
 }
 
 /*!
-	Parse and evaluate the design => this->root_node
-
-	Returns true if something was compiled, false if nothing was changed
-  and the root_node was left untouched.
+	compiles the design. Calls compileDone() if anything was compiled
 */
-bool MainWindow::compile(bool reload, bool procevents)
+void MainWindow::compile(bool reload, bool forcedone)
 {
-	if (!compileTopLevelDocument(reload)) return false;
+	bool shouldcompiletoplevel = false;
+	bool didcompile = false;
+
+	// Reload checks the timestamp of the toplevel file and refreshes if necessary,
+	if (reload) {
+		// Refresh files if it has changed on disk
+		if (fileChangedOnDisk() && checkEditorModified()) {
+			shouldcompiletoplevel = true;
+			refreshDocument();
+		}
+		// If the file hasn't changed, we might still need to compile it
+		// if we haven't yet compiled the current text.
+		else {
+			QString current_doc = editor->toPlainText();
+			if (current_doc != last_compiled_doc)	shouldcompiletoplevel = true;
+		}
+	}
+	else {
+		shouldcompiletoplevel = true;
+	}
+
+	if (!shouldcompiletoplevel && this->root_module && this->root_module->includesChanged()) {
+		shouldcompiletoplevel = true;
+	}
+
+	if (shouldcompiletoplevel) {
+		console->clear();
+		compileTopLevelDocument();
+		didcompile = true;
+	}
+
+	if (this->root_module) {
+		if (this->root_module->handleDependencies()) {
+			PRINTB("Module cache size: %d modules", ModuleCache::instance()->size());
+			didcompile = true;
+		}
+	}
+
+	// If we're auto-reloading, listen for a cascade of changes by starting a timer
+	// if something changed _and_ there are any external dependencies
+	if (reload && didcompile && this->root_module) {
+		if (this->root_module->hasIncludes() ||
+				this->root_module->usesLibraries()) {
+			this->waitAfterReloadTimer->start();
+			return;
+		}
+	}
+	compileDone(didcompile | forcedone);
+}
+
+void MainWindow::waitAfterReload()
+{
+	if (this->root_module->handleDependencies()) {
+		this->waitAfterReloadTimer->start();
+		return;
+	}
+	else {
+		compile(true, true); // In case file itself or top-level includes changed during dependency updates
+	}
+}
+
+void MainWindow::compileDone(bool didchange)
+{
+	const char *callslot;
+	if (didchange) {
+		instantiateRoot();
+		callslot = afterCompileSlot;
+	}
+	else {
+		callslot = "compileEnded";
+	}
+
+	this->procevents = false;
+	QMetaObject::invokeMethod(this, callslot);
+}
+
+void MainWindow::compileEnded()
+{
+	clearCurrentOutput();
+	GuiLocker::unlock();
+	if (designActionAutoReload->isChecked()) autoReloadTimer->start();
+}
+
+void MainWindow::instantiateRoot()
+{
+	// Go on and instantiate root_node, then call the continuation slot
 
   // Invalidate renderers before we kill the CSG tree
 	this->qglview->setRenderer(NULL);
@@ -652,10 +740,14 @@ bool MainWindow::compile(bool reload, bool procevents)
 	if (this->root_module) {
 		// Evaluate CSG tree
 		PRINT("Compiling design (CSG Tree generation)...");
-		if (procevents) QApplication::processEvents();
+		if (this->procevents) QApplication::processEvents();
 		
 		AbstractNode::resetIndexCounter();
-		this->root_inst = ModuleInstantiation("group");
+
+		// split these two lines - gcc 4.7 bug
+		ModuleInstantiation mi = ModuleInstantiation( "group" );
+		this->root_inst = mi; 
+
 		this->absolute_root_node = this->root_module->instantiate(&top_ctx, &this->root_inst, NULL);
 		
 		if (this->absolute_root_node) {
@@ -677,10 +769,8 @@ bool MainWindow::compile(bool reload, bool procevents)
 		} else {
 			PRINT("ERROR: Compilation failed!");
 		}
-		if (procevents) QApplication::processEvents();
+		if (this->procevents) QApplication::processEvents();
 	}
-
-	return true;
 }
 
 /*!
@@ -1039,77 +1129,42 @@ bool MainWindow::fileChangedOnDisk()
 }
 
 /*!
-	If reload is true, does a timestamp check on the document and tries to reload it.
-	Otherwise, just reparses the current document and any dependencies, updates the 
-	GUI accordingly and populates this->root_module.
-
 	Returns true if anything was compiled.
 */
-bool MainWindow::compileTopLevelDocument(bool reload)
+void MainWindow::compileTopLevelDocument()
 {
-	bool shouldcompiletoplevel = !reload;
-
-	if (this->root_module && this->root_module->includesChanged()) {
-		shouldcompiletoplevel = true;
-	}
-
-	if (reload) {	
-		// Refresh file if it has changed on disk
-	  if (fileChangedOnDisk() && checkEditorModified()) {
-			shouldcompiletoplevel = true;
-			refreshDocument();
-		}
-	  // If the file hasn't changed, we might still need to compile it
-	  // if we haven't yet compiled the current text.
-		else if (!editor->isContentModified()) {
-			QString current_doc = editor->toPlainText();
-			if (current_doc != last_compiled_doc) shouldcompiletoplevel = true;
-		}
-	}
+	updateTemporalVariables();
 	
-	if (shouldcompiletoplevel) {
-		console->clear();
-
-		updateTemporalVariables();
-		
-		this->last_compiled_doc = editor->toPlainText();
-		std::string fulltext = 
-			std::string(this->last_compiled_doc.toLocal8Bit().constData()) +
-			"\n" + commandline_commands;
-		
-		delete this->root_module;
-		this->root_module = NULL;
-		
-		this->root_module = parse(fulltext.c_str(),
-															this->fileName.isEmpty() ? 
-															"" : 
-															QFileInfo(this->fileName).absolutePath().toLocal8Bit(), 
-															false);
-
-		if (!animate_panel->isVisible()) {
-			highlighter->unhighlightLastError();
-			if (!this->root_module) {
-				QTextCursor cursor = editor->textCursor();
-				cursor.setPosition(parser_error_pos);
-				editor->setTextCursor(cursor);
-				highlighter->highlightError( parser_error_pos );
-			}
+	this->last_compiled_doc = editor->toPlainText();
+	std::string fulltext = 
+		std::string(this->last_compiled_doc.toLocal8Bit().constData()) +
+		"\n" + commandline_commands;
+	
+	delete this->root_module;
+	this->root_module = NULL;
+	
+	this->root_module = parse(fulltext.c_str(),
+														this->fileName.isEmpty() ? 
+														"" : 
+														QFileInfo(this->fileName).absolutePath().toLocal8Bit(), 
+														false);
+	
+	if (!animate_panel->isVisible()) {
+		highlighter->unhighlightLastError();
+		if (!this->root_module) {
+			QTextCursor cursor = editor->textCursor();
+			cursor.setPosition(parser_error_pos);
+			editor->setTextCursor(cursor);
+			highlighter->highlightError( parser_error_pos );
 		}
-
 	}
-
-	bool changed = shouldcompiletoplevel;
-	if (this->root_module) {
-		changed |= this->root_module->handleDependencies();
-		if (changed) PRINTB("Module cache size: %d modules", ModuleCache::instance()->size());
-	}
-
-	return changed;
 }
 
 void MainWindow::checkAutoReload()
 {
-	if (!this->fileName.isEmpty()) actionReloadCompile();
+	if (!this->fileName.isEmpty()) {
+		actionReloadRenderCSG();
+	}
 }
 
 void MainWindow::autoReloadSet(bool on)
@@ -1139,15 +1194,22 @@ bool MainWindow::checkEditorModified()
 	return true;
 }
 
-void MainWindow::actionReloadCompile()
+void MainWindow::actionReloadRenderCSG()
 {
 	if (GuiLocker::isLocked()) return;
-	GuiLocker lock;
+	GuiLocker::lock();
+	autoReloadTimer->stop();
 	setCurrentOutput();
 
 	// PRINT("Parsing design (AST generation)...");
 	// QApplication::processEvents();
-	if (!compile(true, true)) return;
+	this->afterCompileSlot = "csgReloadRender";
+	this->procevents = true;
+	compile(true);
+}
+
+void MainWindow::csgReloadRender()
+{
 	if (this->root_node) compileCSG(true);
 
 	// Go to non-CGAL view mode
@@ -1161,20 +1223,25 @@ void MainWindow::actionReloadCompile()
 		viewModeThrownTogether();
 #endif
 	}
-
-	clearCurrentOutput();
+	compileEnded();
 }
 
-void MainWindow::actionCompile()
+void MainWindow::actionRenderCSG()
 {
 	if (GuiLocker::isLocked()) return;
-	GuiLocker lock;
+	GuiLocker::lock();
+	autoReloadTimer->stop();
 	setCurrentOutput();
-	console->clear();
 
 	PRINT("Parsing design (AST generation)...");
 	QApplication::processEvents();
-	compile(false, !viewActionAnimate->isChecked());
+	this->afterCompileSlot = "csgRender";
+	this->procevents = !viewActionAnimate->isChecked();
+	compile(false);
+}
+
+void MainWindow::csgRender()
+{
 	if (this->root_node) compileCSG(!viewActionAnimate->isChecked());
 
 	// Go to non-CGAL view mode
@@ -1198,7 +1265,7 @@ void MainWindow::actionCompile()
 		img.save(filename, "PNG");
 	}
 	
-	clearCurrentOutput();
+	compileEnded();
 }
 
 #ifdef ENABLE_CGAL
@@ -1206,15 +1273,19 @@ void MainWindow::actionCompile()
 void MainWindow::actionRenderCGAL()
 {
 	if (GuiLocker::isLocked()) return;
-	GuiLocker lock;
-
+	GuiLocker::lock();
+	autoReloadTimer->stop();
 	setCurrentOutput();
-	console->clear();
 
 	PRINT("Parsing design (AST generation)...");
 	QApplication::processEvents();
-	compile(false, true);
+	this->afterCompileSlot = "cgalRender";
+	this->procevents = true;
+	compile(false);
+}
 
+void MainWindow::cgalRender()
+{
 	if (!this->root_module || !this->root_node) {
 		return;
 	}
@@ -1234,7 +1305,6 @@ void MainWindow::actionRenderCGAL()
 
 	progress_report_prep(this->root_node, report_func, this);
 
-	GuiLocker::lock(); // Will be unlocked in actionRenderCGALDone()
 	this->cgalworker->start(this->tree);
 }
 
@@ -1297,9 +1367,7 @@ void MainWindow::actionRenderCGALDone(CGAL_Nef_polyhedron *root_N)
 	this->statusBar()->removeWidget(this->progresswidget);
 	delete this->progresswidget;
 	this->progresswidget = NULL;
-	clearCurrentOutput();
-
-	GuiLocker::unlock();
+	compileEnded();
 }
 
 #endif /* ENABLE_CGAL */
@@ -1612,7 +1680,7 @@ void MainWindow::viewModeAnimate()
 {
 	if (viewActionAnimate->isChecked()) {
 		animate_panel->show();
-		actionCompile();
+		actionRenderCSG();
 		updatedFps();
 	} else {
 		animate_panel->hide();
@@ -1757,7 +1825,7 @@ MainWindow::helpHomepage()
 void
 MainWindow::helpManual()
 {
-	QDesktopServices::openUrl(QUrl("http://en.wikibooks.org/wiki/OpenSCAD_User_Manual"));
+	QDesktopServices::openUrl(QUrl("http://www.openscad.org/documentation.html"));
 }
 
 #define STRINGIFY(x) #x

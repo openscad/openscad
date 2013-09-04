@@ -202,30 +202,31 @@ CGAL_Nef_polyhedron CGALEvaluator::applyResize(const CgaladvNode &node)
 	if ( N.dim == 2 ) {
 		CGAL_Iso_rectangle_2e bbox = bounding_box( *N.p2 );
 		CGAL_Point_2e min2(bbox.min()), max2(bbox.max());
-		CGAL_Point_3 min3(min2.x(),min2.y(),0), max3(max2.x(),max2.y(),0);
+		CGAL_Point_3 min3(CGAL::to_double(min2.x()), CGAL::to_double(min2.y()), 0),
+			max3(CGAL::to_double(max2.x()), CGAL::to_double(max2.y()), 0);
 		bb = CGAL_Iso_cuboid_3( min3, max3 );
 	}
 	else {
 		bb = bounding_box( *N.p3 );
 	}
 
-	std::vector<NT> scale, bbox_size;
-	for (int i=0;i<3;i++) scale.push_back( NT(1) );
+	std::vector<NT3> scale, bbox_size;
+	for (int i=0;i<3;i++) scale.push_back( NT3(1) );
 	bbox_size.push_back( bb.xmax()-bb.xmin() );
 	bbox_size.push_back( bb.ymax()-bb.ymin() );
 	bbox_size.push_back( bb.zmax()-bb.zmin() );
 	for (int i=0;i<3;i++) {
 		if (node.newsize[i]) {
-			if (bbox_size[i]==NT(0)) {
+			if (bbox_size[i]==NT3(0)) {
 				PRINT("WARNING: Cannot resize in direction normal to flat object");
 				return N;
 			}
 			else {
-				scale[i] = NT(node.newsize[i]) / bbox_size[i];
+				scale[i] = NT3(node.newsize[i]) / bbox_size[i];
 			}
 		}
 	}
-	NT autoscale = std::max( scale[0], std::max( scale[1], scale[2] ));
+	NT3 autoscale = std::max( scale[0], std::max( scale[1], scale[2] ));
 	for (int i=0;i<3;i++) {
 		if (node.autosize[i]) scale[i] = autoscale;
 	}

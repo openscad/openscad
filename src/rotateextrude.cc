@@ -33,7 +33,6 @@
 #include "polyset.h"
 #include "visitor.h"
 #include "PolySetEvaluator.h"
-#include "openscad.h" // get_fragments_from_r()
 
 #include <sstream>
 #include <boost/assign/std/vector.hpp>

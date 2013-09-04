@@ -177,14 +177,17 @@
     <addaction name="designActionReloadAndCompile"/>
     <addaction name="designActionCompile"/>
     <addaction name="designActionCompileAndRender"/>
+    <addaction name="separator"/>
     <addaction name="designActionDisplayAST"/>
     <addaction name="designActionDisplayCSGTree"/>
     <addaction name="designActionDisplayCSGProducts"/>
+    <addaction name="separator"/>
     <addaction name="designActionExportSTL"/>
     <addaction name="designActionExportOFF"/>
     <addaction name="designActionExportDXF"/>
     <addaction name="designActionExportCSG"/>
     <addaction name="designActionExportImage"/>
+    <addaction name="separator"/>
     <addaction name="designActionFlushCaches"/>
    </widget>
    <widget class="QMenu" name="menu_View">
@@ -622,7 +625,7 @@
   </action>
   <action name="helpActionManual">
    <property name="text">
-    <string>OpenSCAD Manual</string>
+    <string>Documentation</string>
    </property>
   </action>
   <action name="fileActionClearRecent">

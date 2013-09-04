@@ -36,6 +36,8 @@
 #include "mathc99.h"
 #include <sstream>
 
+#include <stdint.h>
+
 #include <boost/filesystem.hpp>
 boost::unordered_map<std::string,Value> dxf_dim_cache;
 boost::unordered_map<std::string,Value> dxf_cross_cache;

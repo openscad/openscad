@@ -70,29 +70,29 @@ std::string svg_axes()
 	return out.str();
 }
 
-CGAL_Point_2e project_svg_3to2( CGAL_Point_3 p, CGAL_Iso_cuboid_3 bbox )
+CGAL_Nef_polyhedron2::Explorer::Point project_svg_3to2( CGAL_Point_3 p, CGAL_Iso_cuboid_3 bbox )
 {
-	NT screenw(svg_px_width);
-	NT screenh(svg_px_height);
-	NT screenxc = screenw / 2;
-	NT screenyc = screenh / 2;
-	NT bboxx = ( bbox.xmax() - bbox.xmin() );
-	NT bboxy = ( bbox.ymax() - bbox.ymin() );
-	NT bboxz = ( bbox.zmax() - bbox.zmin() );
-	NT largest_dim = CGAL::max( CGAL::max( bboxx, bboxy ), bboxz );
-	NT bboxxc = bboxx / 2 + bbox.xmin();
-	NT bboxyc = bboxy / 2 + bbox.ymin();
-	NT bboxzc = bboxz / 2 + bbox.zmin();
-	NT xinbox = ( p.x() - bboxxc ) / largest_dim;
-	NT yinbox = ( p.y() - bboxyc ) / largest_dim;
-	NT zinbox = ( p.z() - bboxzc ) / largest_dim;
+	CGAL_Kernel3::FT screenw(svg_px_width);
+	CGAL_Kernel3::FT screenh(svg_px_height);
+	CGAL_Kernel3::FT screenxc = screenw / 2;
+	CGAL_Kernel3::FT screenyc = screenh / 2;
+	CGAL_Kernel3::FT bboxx = ( bbox.xmax() - bbox.xmin() );
+	CGAL_Kernel3::FT bboxy = ( bbox.ymax() - bbox.ymin() );
+	CGAL_Kernel3::FT bboxz = ( bbox.zmax() - bbox.zmin() );
+	CGAL_Kernel3::FT largest_dim = CGAL::max( CGAL::max( bboxx, bboxy ), bboxz );
+	CGAL_Kernel3::FT bboxxc = bboxx / 2 + bbox.xmin();
+	CGAL_Kernel3::FT bboxyc = bboxy / 2 + bbox.ymin();
+	CGAL_Kernel3::FT bboxzc = bboxz / 2 + bbox.zmin();
+	CGAL_Kernel3::FT xinbox = ( p.x() - bboxxc ) / largest_dim;
+	CGAL_Kernel3::FT yinbox = ( p.y() - bboxyc ) / largest_dim;
+	CGAL_Kernel3::FT zinbox = ( p.z() - bboxzc ) / largest_dim;
 	// do simple fake paralell projection
-	NT tx = screenxc + xinbox * screenw / 1.618 + yinbox * screenh / 3.2;
-	NT ty = screenyc - zinbox * screenh / 1.618 - yinbox * screenh / 3.2;
-	return CGAL_Point_2e( tx, ty );
+	CGAL_Kernel3::FT tx = screenxc + xinbox * screenw / 1.618 + yinbox * screenh / 3.2;
+	CGAL_Kernel3::FT ty = screenyc - zinbox * screenh / 1.618 - yinbox * screenh / 3.2;
+	return CGAL_Point_2e(CGAL::to_double(tx), CGAL::to_double(ty));
 }
 
-CGAL_Point_2e project_svg_2to2( CGAL_Point_2e p, CGAL_Iso_rectangle_2e bbox )
+CGAL_Point_2e project_svg_2to2(const CGAL_Point_2e &p, const CGAL_Iso_rectangle_2e &bbox)
 {
 	double screenw = svg_px_width;
 	double screenh = svg_px_height;
@@ -122,7 +122,7 @@ std::string dump_cgal_nef_polyhedron2_face_svg(
   std::stringstream out;
 	CGAL_For_all(c1, c2) {
 		if ( explorer.is_standard( explorer.target(c1) ) ) {
-			CGAL_Point_2e source = explorer.point( explorer.source( c1 ) );
+CGAL_Nef_polyhedron2::Explorer::Point source = explorer.point( explorer.source( c1 ) );
 			CGAL_Point_2e target = explorer.point( explorer.target( c1 ) );
 			out << "    <!-- Halfedge. Mark: " << c1->mark() << " -->\n";
 			std::string he_mark = boost::lexical_cast<std::string>(c1->mark());

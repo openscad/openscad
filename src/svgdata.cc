@@ -35,7 +35,7 @@
 #include <fstream>
 #include <boost/regex.hpp>
 
-SVGData::SVGData(double fn, double fs, double fa, std::string filename) : filename(filename), fa(fa), fs(fs), fn(fn) {
+SVGData::SVGData(double fn, double fs, double fa, std::string filename, std::string layername) : fn(fn), fs(fs), fa(fa), filename(filename), layername(layername) {
 	handle_dep(filename); // Register ourselves as a dependency
 
   parser = NULL;
@@ -62,6 +62,9 @@ SVGData::~SVGData(){
 }
 
 void SVGData::add_point(float x, float y){
+  if (!(layername.empty() || layername == layer))
+   return;
+
   ctm.applyTransform(&x, &y);
   double px = (double) x;
   double py = (double) (document_height - y);
@@ -126,13 +129,41 @@ std::vector<float> SVGData::get_params(std::string str){
   return values;
 }
 
-void SVGData::render_rect(float x, float y, float width, float height, float /*rx*/, float /*ry*/){
-  //TODO: render rounded corners
+/*!
+	Returns the number of subdivision of a bezier curve, given its total length and the special variables $fn and $fs
+*/
+static int get_fragments_from_length(double length, double fn, double fs){
+	if (fn > 0.0)
+		return (int)fn;
+	return (int)ceil(fmax(length / fs, 5));
+}
+
+void SVGData::add_arc_points(float xc, float yc, float rx, float ry, float start, float end){
+  for (int i=0; i<=fn; i++){
+    float t = ((float) i) / fn;
+    float angle = start + (end-start)*t;
+    float x = xc + rx*cos(angle);
+    float y = yc + ry*sin(angle);
+    add_point(x, y);
+  }
+}
+
+#define PI 3.1415
+void SVGData::render_rect(float x, float y, float width, float height, float rx, float ry){
+//  std::cout << "x=" << x << " y=" << y << " rx=" << rx << " ry=" << ry << " width=" << width << " height=" << height << std::endl;
   start_path();
-  add_point(x,y);
-  add_point(x+width,y);
-  add_point(x+width, y+height);
-  add_point(x, y+height);
+  add_point(x+rx,y);
+  add_point(x+width-rx,y);
+  add_arc_points(x+width-rx, y+ry, rx, ry, 3*PI/2, 2*PI);
+  add_point(x+width, y+ry);
+  add_point(x+width, y+height-ry);
+  add_arc_points(x+width-rx, y+height-ry, rx, ry, 0, PI/2);
+  add_point(x+width-rx, y+height);
+  add_point(x+rx, y+height);
+  add_arc_points(x+rx, y+height-ry, rx, ry, PI/2, PI);
+  add_point(x, y+height-ry);
+  add_point(x, y+ry);
+  add_arc_points(x+rx, y+ry, rx, ry, PI, 3*PI/2);
   close_path();
 }
 
@@ -142,29 +173,78 @@ void SVGData::render_line_to(float x0, float y0, float x1, float y1){
   add_point(x1,y1);
 }
 
+float SVGData::quadratic_curve_length(float x0, float y0, float x1, float y1, float x2, float y2){
+  // based on math described at
+  // http://segfaultlabs.com/docs/quadratic-bezier-curve-length
+
+  float ax, ay, bx, by;
+  ax = x0 - 2*x1 + x2;
+  ay = y0 - 2*y1 + y2;
+  bx = 2*x1 - 2*x0;
+  by = 2*y1 - 2*y0;
+
+  float A,B,C;
+  A = 4*(ax*ax+ay*ay);
+  B = 4*(ax*bx + ay*by);
+  C = bx*bx + by*by;
+  float S = sqrt(A+B+C);
+  float A32 = A*sqrt(A);
+
+  return (1/(8.0*A32)) * (4*A32*S + 2*sqrt(A)*B*(S-sqrt(C)) + (4*C*A-B*B)*log(abs((2*sqrt(A)+B/sqrt(A)+2*S)/(B/sqrt(A) +2*sqrt(C)))));
+}
+
 void SVGData::render_quadratic_curve_to(float x0, float y0, float x1, float y1, float x2, float y2){
-  //TODO: This only deals with $fn. Add some logic to support $fa and $fs
-  for (int i=0; i<=fn; i++){
-    double t = i/fn;
-    add_point((1-t)*(1-t)*x0 + 2*(1-t)*x1*t + x2*t*t,
-              (1-t)*(1-t)*y0 + 2*(1-t)*y1*t + y2*t*t);
+  int segments = get_fragments_from_length(quadratic_curve_length(x0, y0, x1, y1, x2, y2), fn, fs);
+  for (double i=0; i<=segments; i++){
+    double t = i/segments;
+    add_point(pow(1-t,2)*x0 + 2*(1-t)*x1*t + x2*pow(t,2),
+              pow(1-t,2)*y0 + 2*(1-t)*y1*t + y2*pow(t,2));
   }
 }
 
 void SVGData::render_cubic_curve_to(float x0, float y0, float x1, float y1, float x2, float y2, float x3, float y3){
-  //TODO: This only deals with $fn. Add some logic to support $fa and $fs
-  for (int i=0; i<=fn; i++){
-    double t = i/fn;
-    add_point((1-t)*(1-t)*(1-t)*x0 + 3*(1-t)*(1-t)*x1*t + 3*(1-t)*x2*t*t + x3*t*t*t,
-              (1-t)*(1-t)*(1-t)*y0 + 3*(1-t)*(1-t)*y1*t + 3*(1-t)*y2*t*t + y3*t*t*t);
+
+  int segments = 5;
+  if (fn > 0.0)
+    segments = fn;
+
+  //TODO: This only deals with $fn. Add some logic to support $fs
+  //int segments = get_fragments_from_length(cubic_curve_length(x0, y0, x1, y1, x2, y2, x3, y3), fn, fs);
+
+  for (double i=0; i<=segments; i++){
+    double t = i/segments;
+    add_point(pow(1-t,3)*x0 + 3*pow(1-t,2)*x1*t + 3*(1-t)*x2*pow(t,2) + x3*pow(t,3),
+              pow(1-t,3)*y0 + 3*pow(1-t,2)*y1*t + 3*(1-t)*y2*pow(t,2) + y3*pow(t,3));
   }
 }
 
 void SVGData::render_elliptical_arc(float x0, float y0, float rx, float ry, float x_axis_rotation, int large_arc_flag, int sweep_flag, float x, float y){
+
+  // Conversion from endpoint to center parameterization
+  // http://www.w3.org/TR/SVG11/implnote.html#ArcImplementationNotes
+  float cx, cy, cx_, cy_, x0_, y0_, start_angle, end_angle;
+
+  x0_ = cos(x_axis_rotation)*(x0-x)/2 - sin(x_axis_rotation)*(y0-y)/2;
+  y0_ = -sin(x_axis_rotation)*(x0-x)/2 + cos(x_axis_rotation)*(y0-y)/2;
+
+  float k = sqrt((rx*rx*ry*ry - rx*rx*y0_*y0_ - ry*ry*x0_*x0_) / (rx*rx*y0_*y0_ + ry*ry*x0_*x0_));
+  cx_ = k * rx*y0_/ry;
+  cy_ = -k * ry*x0_/rx;
+
+  if (large_arc_flag==sweep_flag){
+    cx_ = -cx_;
+    cy_ = -cy_;
+  }
+
+  cx = cos(x_axis_rotation) * cx_ - sin(x_axis_rotation) * cy_ + (x0+x)/2;
+  cy = sin(x_axis_rotation) * cx_ + cos(x_axis_rotation) * cy_ + (y0+y)/2;
+
+  //TODO: calculate start_angle and end_angle
+
   //TODO: This only deals with $fn. Add some logic to support $fa and $fs
   for (int i=0; i<=fn; i++){
     double t = i/fn;
-    //TODO: implement-me!
+    //TODO: generate points for the elliptical curve by calling add_point(x, y)
   }
 }
 
@@ -494,16 +574,18 @@ void SVGData::traverse_subtree(TransformMatrix parent_matrix, const xmlpp::Node*
   Glib::ustring nodename = node->get_name();
 
   if(const xmlpp::Element* nodeElement = dynamic_cast<const xmlpp::Element*>(node)){
-    const xmlpp::Attribute* id = nodeElement->get_attribute("id");
+    const xmlpp::Attribute* inkscape_label = nodeElement->get_attribute("label");
+    const xmlpp::Attribute* inkscape_groupmode = nodeElement->get_attribute("groupmode");
     const xmlpp::Attribute* transform = nodeElement->get_attribute("transform");
 
     if (transform)
       tm = parent_matrix * parse_transform(transform->get_value());
 
     if (nodename == "g"){
-      std::cout << "found a group!" << std::endl;
-      if(id){
-        std::cout << "id=" << id->get_value() << std::endl;      
+      if (inkscape_label && inkscape_groupmode){
+        if (inkscape_groupmode->get_value() == "layer"){
+          layer = inkscape_label->get_value().c_str();
+        }
       }
     }
   }
@@ -552,16 +634,16 @@ void SVGData::traverse_subtree(TransformMatrix parent_matrix, const xmlpp::Node*
       }
 
       if(rx_attr && !ry_attr){
-        rx=ry=atof(x_attr->get_value().c_str());
+        rx=ry=atof(rx_attr->get_value().c_str());
       }
 
       if(!rx_attr && ry_attr){
-        rx=ry=atof(y_attr->get_value().c_str());
+        rx=ry=atof(ry_attr->get_value().c_str());
       }
 
       if(rx_attr && ry_attr){
-        rx=atof(x_attr->get_value().c_str());
-        ry=atof(y_attr->get_value().c_str());
+        rx=atof(rx_attr->get_value().c_str());
+        ry=atof(ry_attr->get_value().c_str());
       }
 
       if(width_attr && height_attr){
@@ -586,6 +668,8 @@ void SVGData::traverse_subtree(TransformMatrix parent_matrix, const xmlpp::Node*
   for (xmlpp::Node::NodeList::iterator it = children.begin(); it != children.end(); ++it){
     traverse_subtree(tm, *it);
   }
+
+  layer.empty();
 }
 
 PolySet* SVGData::convertToPolyset(){
