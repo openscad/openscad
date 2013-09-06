@@ -887,6 +887,8 @@ else(_boost_IN_CACHE)
     "$ENV{ProgramFiles}/boost/lib"
     "$ENV{ProgramFiles}/boost"
     /sw/local/lib
+    /opt/local/lib
+    /usr/local/lib
   )
   set(_boost_LIBRARY_SEARCH_DIRS ${_boost_LIBRARY_SEARCH_DIRS_ALWAYS})
   if( Boost_NO_SYSTEM_PATHS )
