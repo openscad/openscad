@@ -38,3 +38,46 @@ std::string PlatformUtils::libraryPath()
 	}
 	return boosty::stringy( path );
 }
+
+#include "version_check.h"
+#define STRINGIFY(x) #x
+#define TOSTRING(x) STRINGIFY(x)
+std::string PlatformUtils::info()
+{
+	std::stringstream s;
+
+#if defined(__GNUG__) && !defined(__clang__)
+	std::string compiler_info( "GCC " + std::string(TOSTRING(__VERSION__)) );
+#elif defined(_MSC_VER)
+	std::string compiler_info( "MSVC " + std::string(TOSTRING(_MSC_FULL_VER)) );
+#elif defined(__clang__)
+	std::string compiler_info( "Clang " + std::string(TOSTRING(__clang_version__)) );
+#else
+	std::string compiler_info( "unknown compiler" );
+#endif
+
+#if defined( __MINGW64__ )
+	std::string mingwstatus("MingW64");
+#elif defined( __MINGW32__ )
+	std::string mingwstatus("MingW32");
+#else
+	std::string mingwstatus("No");
+#endif
+
+#ifndef OPENCSG_VERSION_STRING
+#define OPENCSG_VERSION_STRING "unknown, <1.3.2"
+#endif
+
+	s << "OpenSCAD Version: " << TOSTRING(OPENSCAD_VERSION)
+          << "\nCompiler: " << compiler_info
+	  << "\nCompile date: " << __DATE__
+	  << "\nBoost version: " << BOOST_LIB_VERSION
+	  << "\nEigen version: " << EIGEN_WORLD_VERSION << "." << EIGEN_MAJOR_VERSION << "." << EIGEN_MINOR_VERSION
+	  << "\nCGAL version: " << TOSTRING(CGAL_VERSION)
+	  << "\nOpenCSG version: " << OPENCSG_VERSION_STRING
+	  << "\nQt version: " << qVersion()
+	  << "\nMingW build: " << mingwstatus;
+
+	return s.str();
+}
+

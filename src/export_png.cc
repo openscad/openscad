@@ -96,5 +96,42 @@ void export_png_with_opencsg(Tree &tree, Camera &cam, std::ostream &output)
 #endif
 }
 
+#include "ThrownTogetherRenderer.h"
+void export_png_with_throwntogether(Tree &tree, Camera &cam, std::ostream &output)
+{
+	CsgInfo csgInfo = CsgInfo();
+	if ( !csgInfo.compile_chains( tree ) ) {
+		fprintf(stderr,"Couldn't initialize OpenCSG chains\n");
+		return;
+	}
+
+	try {
+		csgInfo.glview = new OffscreenView( cam.pixel_width, cam.pixel_height );
+	} catch (int error) {
+		fprintf(stderr,"Can't create OpenGL OffscreenView. Code: %i.\n", error);
+		return;
+	}
+
+	ThrownTogetherRenderer thrownTogetherRenderer( csgInfo.root_chain,
+		csgInfo.highlights_chain, csgInfo.background_chain );
+
+	if (cam.type == Camera::NONE) {
+		cam.type = Camera::VECTOR;
+		double radius = 1.0;
+		if (csgInfo.root_chain) {
+			BoundingBox bbox = csgInfo.root_chain->getBoundingBox();
+			cam.center = (bbox.min() + bbox.max()) / 2;
+			radius = (bbox.max() - bbox.min()).norm() / 2;
+		}
+		Vector3d cameradir(1, 1, -0.5);
+		cam.eye = cam.center - radius*1.8*cameradir;
+	}
+
+	csgInfo.glview->setCamera( cam );
+	csgInfo.glview->setRenderer(&thrownTogetherRenderer);
+	csgInfo.glview->paintGL();
+	csgInfo.glview->save(output);
+}
+
 
 #endif // ENABLE_CGAL
