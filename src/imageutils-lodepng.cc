@@ -5,7 +5,6 @@
 #include <vector>
 #include <iterator>
 #include <algorithm>
-#include "rendersettings.h"
 
 bool write_png(std::ostream &output, unsigned char *pixels, int width, int height)
 {
