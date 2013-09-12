@@ -127,6 +127,10 @@ Camera get_camera( po::variables_map vm )
 		}
 	}
 
+	if (camera.type == Camera::GIMBAL) {
+		camera.gimbalDefaultTranslate();
+	}
+
 	if (vm.count("projection")) {
 		string proj = vm["projection"].as<string>();
 		if (proj=="o" || proj=="ortho" || proj=="orthogonal")

@@ -47,7 +47,8 @@ public:
 		projection = Camera::PERSPECTIVE;
 	}
 
-	void setup( std::vector<double> params ) {
+	void setup( std::vector<double> params )
+	{
 		if ( params.size() == 7 ) {
 			type = Camera::GIMBAL;
 			object_trans << params[0], params[1], params[2];
@@ -60,6 +61,16 @@ public:
 		} else {
 			assert( "Gimbal cam needs 7 numbers, Vector camera needs 6" );
 		}
+	}
+
+	void gimbalDefaultTranslate()
+	{	// match the GUI viewport numbers (historical reasons)
+		object_trans.x() *= -1;
+		object_trans.y() *= -1;
+		object_trans.z() *= -1;
+		object_rot.x() = fmodf(360 - object_rot.x() + 90, 360 );
+		object_rot.y() = fmodf(360 - object_rot.y(), 360);
+		object_rot.z() = fmodf(360 - object_rot.z(), 360);
 	}
 
 	// Vectorcam
