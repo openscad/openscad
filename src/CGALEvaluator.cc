@@ -216,7 +216,7 @@ CGAL_Nef_polyhedron CGALEvaluator::applyResize(const CgaladvNode &node)
 	bbox_size.push_back( bb.ymax()-bb.ymin() );
 	bbox_size.push_back( bb.zmax()-bb.zmin() );
 	int newsizemax_index = 0;
-	for (int i=0;i<3;i++) {
+	for (int i=0;i<N.dim;i++) {
 		if (node.newsize[i]) {
 			if (bbox_size[i]==NT3(0)) {
 				PRINT("WARNING: Resize in direction normal to flat object is not implemented");
@@ -230,7 +230,7 @@ CGAL_Nef_polyhedron CGALEvaluator::applyResize(const CgaladvNode &node)
 		}
 	}
 	NT3 autoscale = NT3( node.newsize[ newsizemax_index ] ) / bbox_size[ newsizemax_index ];
-	for (int i=0;i<3;i++) {
+	for (int i=0;i<N.dim;i++) {
 		if (node.autosize[i] && node.newsize[i]==0)
 			scale[i] = autoscale;
 	}
