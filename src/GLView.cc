@@ -460,7 +460,7 @@ void GLView::showAxes()
 
 void GLView::showCrosshairs()
 {
-	// FIXME: this might not work with Vector camera
+  // FIXME: this might not work with Vector camera
   // FIXME: Crosshairs and axes are lighted, this doesn't make sense and causes them
   // to change color based on view orientation.
   glLineWidth(3);

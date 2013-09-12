@@ -895,15 +895,15 @@ add_cmdline_test(openscad-camdist EXE ${GUI_BINPATH}
                  SUFFIX png
                  FILES ${CMAKE_SOURCE_DIR}/../examples/example001.scad)
 add_cmdline_test(openscad-camrot EXE ${GUI_BINPATH}
-                 ARGS --imgsize=500,500 --camera=0,0,0,10,22.5,45,300  examples/example001.scad -o
+                 ARGS --imgsize=500,500 --camera=0,0,0,440,337.5,315,300  examples/example001.scad -o
                  SUFFIX png
                  FILES ${CMAKE_SOURCE_DIR}/../examples/example001.scad)
 add_cmdline_test(openscad-camtrans EXE ${GUI_BINPATH}
-                 ARGS --imgsize=500,500 --camera=20,100,10,0,0,0,300  examples/example001.scad -o
+                 ARGS --imgsize=500,500 --camera=100,-20,-10,90,0,90,300  examples/example001.scad -o
                  SUFFIX png
                  FILES ${CMAKE_SOURCE_DIR}/../examples/example001.scad)
 add_cmdline_test(openscad-camortho EXE ${GUI_BINPATH}
-                 ARGS --imgsize=500,500 --camera=20,100,10,0,0,0,300  examples/example001.scad --projection=o -o
+                 ARGS --imgsize=500,500 --camera=100,-20,-10,90,0,90,300  examples/example001.scad --projection=o -o
                  SUFFIX png
                  FILES ${CMAKE_SOURCE_DIR}/../examples/example001.scad)
 add_cmdline_test(openscad-cameye EXE ${GUI_BINPATH}
