@@ -11,12 +11,9 @@ bool write_png(std::ostream &output, unsigned char *pixels, int width, int heigh
 {
 	std::vector<unsigned char> dataout;
 	lodepng::State state;
-	state.info_png.background_defined = true;
-	Color4f bg = RenderSettings::inst()->color(RenderSettings::BACKGROUND_COLOR);
-	state.info_png.background_r = bg(0);
-	state.info_png.background_g = bg(1);
-	state.info_png.background_b = bg(2);
-	state.info_png.color.colortype = LCT_RGBA;
+	state.encoder.auto_convert = LAC_NO;
+	// some png renderers have different interpretations of alpha, so don't use it
+	state.info_png.color.colortype = LCT_RGB;
 	state.info_png.color.bitdepth = 8;
 	unsigned err = lodepng::encode(dataout, pixels, width, height, state);
 	if ( err ) return false;
