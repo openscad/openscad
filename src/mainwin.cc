@@ -1830,8 +1830,8 @@ void MainWindow::helpLibrary()
 	info += QString( qglview->getRendererInfo().c_str() );
 	if (!this->openglbox) {
 		this->openglbox = new QMessageBox(QMessageBox::Information,
-						  "OpenGL Info", "OpenSCAD Detailed Library and Build Information",
-						  QMessageBox::Ok, this);
+                                                  "OpenGL Info", "OpenSCAD Detailed Library and Build Information",
+                                                  QMessageBox::Ok, this);
 	}
 	this->openglbox->setDetailedText( info );
 	this->openglbox->show();
