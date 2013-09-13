@@ -134,28 +134,6 @@ input:    /* empty */
         | statement input
         ;
 
-inner_input:
-          /* empty */
-        | statement inner_input
-        ;
-
-assignment:
-          TOK_ID '=' expr ';'
-            {
-                bool found = false;
-                foreach (Assignment& iter, scope_stack.top()->assignments) {
-                    if (iter.first == $1) {
-                        iter.second = $3;
-                        found = true;
-                        break;
-                    }
-                }
-                if (!found) {
-                    scope_stack.top()->assignments.push_back(Assignment($1, $3));
-                }
-            }
-        ;
-
 statement:
           ';'
         | '{' inner_input '}'
@@ -177,7 +155,7 @@ statement:
             {
                 scope_stack.pop();
             }
-        | TOK_FUNCTION TOK_ID '(' arguments_decl optional_commas ')' '=' expr ';'
+        | TOK_FUNCTION TOK_ID '(' arguments_decl optional_commas ')' '=' expr
             {
                 Function *func = new Function();
                 func->definition_arguments = *$4;
@@ -186,36 +164,28 @@ statement:
                 free($2);
                 delete $4;
             }
+          ';'
         ;
 
-if_statement:
-          TOK_IF '(' expr ')'
-            {
-                $<ifelse>$ = new IfElseModuleInstantiation();
-                $<ifelse>$->arguments.push_back(Assignment("", $3));
-                $<ifelse>$->setPath(parser_source_path);
-                scope_stack.push(&$<ifelse>$->scope);
-            }
-          child_statement
-            {
-                scope_stack.pop();
-                $$ = $<ifelse>5;
-            }
+inner_input:
+          /* empty */
+        | statement inner_input
         ;
 
-ifelse_statement:
-          if_statement
+assignment:
+          TOK_ID '=' expr ';'
             {
-                $$ = $1;
-            }
-        | if_statement TOK_ELSE
-            {
-                scope_stack.push(&$1->else_scope);
-            }
-          child_statement
-            {
-                scope_stack.pop();
-                $$ = $1;
+                bool found = false;
+                foreach (Assignment& iter, scope_stack.top()->assignments) {
+                    if (iter.first == $1) {
+                        iter.second = $3;
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found) {
+                    scope_stack.top()->assignments.push_back(Assignment($1, $3));
+                }
             }
         ;
 
@@ -256,6 +226,42 @@ module_instantiation:
             }
         ;
 
+ifelse_statement:
+          if_statement
+            {
+                $$ = $1;
+            }
+        | if_statement TOK_ELSE
+            {
+                scope_stack.push(&$1->else_scope);
+            }
+          child_statement
+            {
+                scope_stack.pop();
+                $$ = $1;
+            }
+        ;
+
+if_statement:
+          TOK_IF '(' expr ')'
+            {
+                $<ifelse>$ = new IfElseModuleInstantiation();
+                $<ifelse>$->arguments.push_back(Assignment("", $3));
+                $<ifelse>$->setPath(parser_source_path);
+                scope_stack.push(&$<ifelse>$->scope);
+            }
+          child_statement
+            {
+                scope_stack.pop();
+                $$ = $<ifelse>5;
+            }
+        ;
+
+child_statements:
+          /* empty */
+        | child_statements child_statement
+        ;
+
 child_statement:
           ';'
         | '{' child_statements '}'
@@ -270,11 +276,6 @@ child_statement:
  |
 assignment ;
 */
-
-child_statements:
-          /* empty */
-        | child_statements child_statement
-        ;
 
 single_module_instantiation:
           TOK_ID '(' arguments_call ')'
