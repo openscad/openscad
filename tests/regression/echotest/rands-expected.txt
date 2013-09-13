@@ -1,0 +1,3 @@
+WARNING: Ignoring unknown variable 'v'.
+ECHO: "i hope rands() did not crash"
+ECHO: [1, 1, 1, 1]

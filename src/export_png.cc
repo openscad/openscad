@@ -41,26 +41,25 @@ void export_png_with_cgal(CGAL_Nef_polyhedron *root_N, Camera &cam, std::ostream
 		cam.eye = cam.center - radius*2*cameradir;
 	}
 
-	//std::cerr << center << "\n";
-	//std::cerr << radius << "\n";
-
 	glview->setCamera( cam );
 	glview->setRenderer(&cgalRenderer);
 	glview->paintGL();
 	glview->save(output);
 }
 
+enum Previewer { OPENCSG, THROWN } previewer;
+
 #ifdef ENABLE_OPENCSG
 #include "OpenCSGRenderer.h"
 #include <opencsg.h>
 #endif
+#include "ThrownTogetherRenderer.h"
 
-void export_png_with_opencsg(Tree &tree, Camera &cam, std::ostream &output)
+void export_png_preview_common( Tree &tree, Camera &cam, std::ostream &output, Previewer previewer = OPENCSG )
 {
-#ifdef ENABLE_OPENCSG
-  CsgInfo csgInfo = CsgInfo();
-  if ( !csgInfo.compile_chains( tree ) ) {
-		fprintf(stderr,"Couldn't initialize OpenCSG chains\n");
+	CsgInfo csgInfo = CsgInfo();
+	if ( !csgInfo.compile_chains( tree ) ) {
+		fprintf(stderr,"Couldn't initialize CSG chains\n");
 		return;
 	}
 
@@ -71,7 +70,16 @@ void export_png_with_opencsg(Tree &tree, Camera &cam, std::ostream &output)
 		return;
 	}
 
-	OpenCSGRenderer opencsgRenderer(csgInfo.root_chain, csgInfo.highlights_chain, csgInfo.background_chain, csgInfo.glview->shaderinfo);
+	Renderer *renderer;
+	if ( previewer == OPENCSG ) {
+#ifdef ENABLE_OPENCSG
+		OpenCSGRenderer openCSGRenderer(csgInfo.root_chain, csgInfo.highlights_chain, csgInfo.background_chain, csgInfo.glview->shaderinfo);
+		renderer = &openCSGRenderer;
+#endif
+	} else {
+		ThrownTogetherRenderer thrownTogetherRenderer( csgInfo.root_chain, csgInfo.highlights_chain, csgInfo.background_chain );
+		renderer = &thrownTogetherRenderer;
+	}
 
 	if (cam.type == Camera::NONE) {
 		cam.type = Camera::VECTOR;
@@ -86,14 +94,27 @@ void export_png_with_opencsg(Tree &tree, Camera &cam, std::ostream &output)
 	}
 
 	csgInfo.glview->setCamera( cam );
-	csgInfo.glview->setRenderer(&opencsgRenderer);
-	OpenCSG::setContext(0);
-	OpenCSG::setOption(OpenCSG::OffscreenSetting, OpenCSG::FrameBufferObject);
+	csgInfo.glview->setRenderer( renderer );
+#ifdef ENABLE_OPENCSG
+	OpenCSG::setContext( 0 );
+	OpenCSG::setOption( OpenCSG::OffscreenSetting, OpenCSG::FrameBufferObject );
+#endif
 	csgInfo.glview->paintGL();
-	csgInfo.glview->save(output);
+	csgInfo.glview->save( output );
+}
+
+void export_png_with_opencsg(Tree &tree, Camera &cam, std::ostream &output)
+{
+#ifdef ENABLE_OPENCSG
+	export_png_preview_common( tree, cam, output, OPENCSG );
 #else
 	fprintf(stderr,"This openscad was built without OpenCSG support\n");
 #endif
+}
+
+void export_png_with_throwntogether(Tree &tree, Camera &cam, std::ostream &output)
+{
+	export_png_preview_common( tree, cam, output, THROWN );
 }
 
 

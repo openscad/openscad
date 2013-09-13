@@ -73,13 +73,13 @@ translate([10,90,10]) resize([0,0,7],auto=[true,true,false]) cube();
 }
 
 color("pink"){
-translate([0 , 0,-10]) resize([4,4,4]) resize([5000,100,1000]) cube();
-translate([10,0,-10]) resize([-5,0,0]) cube(); 
-translate([20,0,-10]) resize([-5,0,0],auto=3) cube(); 
-translate([30,0,-10]) resize(-5,0,0,auto=3) cube(); 
-translate([40,0,-10]) resize(5,0,0) cube(); 
-translate([50,0,-10]) resize([0.5,0,7]) cube([0.5,1,1000]);
-translate([60,0,-10]) resize([0,0,0.5]) cube([6,6,10000000000]);
+translate([10 , 0,-10]) resize([4,4,4]) resize([5000,100,1000]) cube();
+translate([20,0,-10]) resize([-5,0,0]) cube(); 
+translate([30,0,-10]) resize([-5,0,0],auto=3) cube(); 
+translate([40,0,-10]) resize(-5,0,0,auto=3) cube(); 
+translate([50,0,-10]) resize(5,0,0) cube(); 
+translate([60,0,-10]) resize([0.5,0,7]) cube([0.5,1,1000]);
+translate([70,0,-10]) resize([0,0,0.5]) cube([6,6,10000000000]);
 }
 
 color("lime"){ 

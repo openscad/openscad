@@ -48,9 +48,6 @@ variable's value is an expression, so if this mechanism is used to assign
 strings, care has to be taken that the shell does not consume quotation marks.
 More than one \fB-D\fP options can be given.
 .TP
-.B \-v, \-\-version
-Show version of program.
-.TP
 .B \-\-render
 If exporting an image, use a full CGAL render. (Default is an OpenCSG compile)
 .TP
@@ -72,6 +69,13 @@ If exporting an image, specify the pixel width and height
 .B \-\-projection=[o|p]
 If exporting an image, specify whether to use orthographic or perspective 
 projection
+.TP
+.B \-v, \-\-version
+Show version of program.
+.TP
+.B \-\-info
+Show which versions of libraries were used to compile the program, and which
+OpenGL details are discovered.
 .SH COMMAND LINE EXAMPLES
 .PP
 

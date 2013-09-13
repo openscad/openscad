@@ -8,7 +8,7 @@ namespace PlatformUtils {
 	std::string documentsPath();
 	std::string libraryPath();
 	bool createLibraryPath();
-
+	std::string info();
 }
 
 #endif
