@@ -1,6 +1,7 @@
 ; ---------------------
 ;       x64.nsh
 ; ---------------------
+; see mingw-file-association.nshmingw-file-association.nsh for license info
 ;
 ; A few simple macros to handle installations on x64 machines.
 ;

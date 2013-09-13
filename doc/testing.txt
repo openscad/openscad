@@ -3,8 +3,10 @@ Running regression tests:
 
 Prerequisites: cmake, python, ImageMagick 6.5.9.3 or newer
 
-First, get a working qmake GUI build. It is used by the tests.
-Next, get MCAD installed by using 'git submodule update --init'
+First, get a working qmake GUI build of the main openscad binary. It is 
+used by the tests. Next, get MCAD installed by using 
+
+  'git submodule update --init'
 
 A) Building test environment
 
@@ -67,18 +69,6 @@ This is almost the same as adding a new regression test:
 Migration away from dedicated regression tests:
 -----------------------------------------------
 
-As the main OpenSCAD binary gained the capability to output PNG renderings,
-the necessity for dedicated test binaries went away; for many test, OpenSCAD
-is now directly called, resulting in better test coverage and less code to
-maintain.
-
-So far, the following tests have been fully converted to use the main binary:
-
-* moduledumptest
-* csgtermtest
-* cgalpngtest
-* opencsgtest
-
 Two tests still need an intermediate script that mangles away timestamps and
 near-zero floating point numbers:
 
@@ -89,7 +79,6 @@ near-zero floating point numbers:
 Some tests are yet to be converted:
 
 * csgtexttest -- verify whether this is not redundant with dumptest
-* throwntogethertest -- should be a .png output mode
 
 These look like tests, but are not actually in use:
 
