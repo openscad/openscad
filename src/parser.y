@@ -44,28 +44,30 @@
 #include <boost/foreach.hpp>
 #include <boost/filesystem.hpp>
 
-  namespace fs = boost::filesystem;
+namespace fs = boost::filesystem;
+#define foreach BOOST_FOREACH
+
 #include "boosty.h"
 
-  int parser_error_pos = -1;
+int parser_error_pos = -1;
 
-  int parserlex(void);
-  void yyerror(char const *s);
+int parserlex(void);
+void yyerror(char const *s);
 
-  int lexerget_lineno(void);
-  int lexerlex_destroy(void);
-  int lexerlex(void);
+int lexerget_lineno(void);
+int lexerlex_destroy(void);
+int lexerlex(void);
 
-  std::stack<LocalScope *> scope_stack;
-  FileModule *rootmodule;
+std::stack<LocalScope *> scope_stack;
+FileModule *rootmodule;
 
-  extern void lexerdestroy();
-  extern FILE *lexerin;
-  extern const char *parser_input_buffer;
-  const char *parser_input_buffer;
-  std::string parser_source_path;
+extern void lexerdestroy();
+extern FILE *lexerin;
+extern const char *parser_input_buffer;
+const char *parser_input_buffer;
+std::string parser_source_path;
 
-  %}
+%}
 
 %union {
   char *text;
@@ -125,112 +127,143 @@
 
 %%
 
-input: 
-/* empty */ |
-TOK_USE { rootmodule->usedlibs.insert($1); } input |
-statement input ;
+input:    /* empty */
+        | TOK_USE
+            { rootmodule->usedlibs.insert($1); }
+          input
+        | statement input
+        ;
 
-inner_input: 
-/* empty */ |
-statement inner_input ;
+inner_input:
+          /* empty */
+        | statement inner_input
+        ;
 
 assignment:
-TOK_ID '=' expr ';' {
-  bool found = false;
-  for (AssignmentList::iterator iter = scope_stack.top()->assignments.begin(); 
-       iter != scope_stack.top()->assignments.end(); 
-       iter++) {
-    if (iter->first == $1) {
-      iter->second = $3;
-      found = true;
-      break;
-    }
-  }
-  if (!found) scope_stack.top()->assignments.push_back(Assignment($1, $3));
-} ;
+          TOK_ID '=' expr ';'
+            {
+                bool found = false;
+                foreach (Assignment& iter, scope_stack.top()->assignments) {
+                    if (iter.first == $1) {
+                        iter.second = $3;
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found) {
+                    scope_stack.top()->assignments.push_back(Assignment($1, $3));
+                }
+            }
+        ;
 
 statement:
-';' |
-'{' inner_input '}' |
-module_instantiation {
-  if ($1) scope_stack.top()->addChild($1);
-} |
-assignment |
-TOK_MODULE TOK_ID '(' arguments_decl optional_commas ')' {
-  Module *newmodule = new Module();
-  newmodule->definition_arguments = *$4;
-  scope_stack.top()->modules[$2] = newmodule;
-  scope_stack.push(&newmodule->scope);
-  free($2);
-  delete $4;
-} statement {
-  scope_stack.pop();
-  } |
-  TOK_FUNCTION TOK_ID '(' arguments_decl optional_commas ')' '=' expr {
-    Function *func = new Function();
-    func->definition_arguments = *$4;
-    func->expr = $8;
-    scope_stack.top()->functions[$2] = func;
-    free($2);
-    delete $4;
-  } ';' ;
+          ';'
+        | '{' inner_input '}'
+        | module_instantiation
+            {
+                if ($1) scope_stack.top()->addChild($1);
+            }
+        | assignment
+        | TOK_MODULE TOK_ID '(' arguments_decl optional_commas ')'
+            {
+                Module *newmodule = new Module();
+                newmodule->definition_arguments = *$4;
+                scope_stack.top()->modules[$2] = newmodule;
+                scope_stack.push(&newmodule->scope);
+                free($2);
+                delete $4;
+            }
+          statement
+            {
+                scope_stack.pop();
+            }
+        | TOK_FUNCTION TOK_ID '(' arguments_decl optional_commas ')' '=' expr ';'
+            {
+                Function *func = new Function();
+                func->definition_arguments = *$4;
+                func->expr = $8;
+                scope_stack.top()->functions[$2] = func;
+                free($2);
+                delete $4;
+            }
+        ;
 
 if_statement:
-TOK_IF '(' expr ')' {
-  $<ifelse>$ = new IfElseModuleInstantiation();
-  $<ifelse>$->arguments.push_back(Assignment("", $3));
-  $<ifelse>$->setPath(parser_source_path);
-  scope_stack.push(&$<ifelse>$->scope);
-} child_statement {
-  scope_stack.pop();
-  $$ = $<ifelse>5;
- } ;
+          TOK_IF '(' expr ')'
+            {
+                $<ifelse>$ = new IfElseModuleInstantiation();
+                $<ifelse>$->arguments.push_back(Assignment("", $3));
+                $<ifelse>$->setPath(parser_source_path);
+                scope_stack.push(&$<ifelse>$->scope);
+            }
+          child_statement
+            {
+                scope_stack.pop();
+                $$ = $<ifelse>5;
+            }
+        ;
 
 ifelse_statement:
-if_statement {
-  $$ = $1;
-} |
-if_statement TOK_ELSE {
-  scope_stack.push(&$1->else_scope);
-} child_statement {
-  scope_stack.pop();
-  $$ = $1;
- } ;
+          if_statement
+            {
+                $$ = $1;
+            }
+        | if_statement TOK_ELSE
+            {
+                scope_stack.push(&$1->else_scope);
+            }
+          child_statement
+            {
+                scope_stack.pop();
+                $$ = $1;
+            }
+        ;
 
 module_instantiation:
-'!' module_instantiation {
-  $$ = $2;
-  if ($$) $$->tag_root = true;
-} |
-'#' module_instantiation {
-  $$ = $2;
-  if ($$) $$->tag_highlight = true;
-} |
-'%' module_instantiation {
-  $$ = $2;
-  if ($$) $$->tag_background = true;
-} |
-'*' module_instantiation {
-  delete $2;
-  $$ = NULL;
-} |
-single_module_instantiation {
-  $<inst>$ = $1;
-  scope_stack.push(&$1->scope);
-} child_statement {
-  scope_stack.pop();
-  $$ = $<inst>2;
- } |
- ifelse_statement {
-   $$ = $1;
- } ;
+          '!' module_instantiation
+            {
+                $$ = $2;
+                if ($$) $$->tag_root = true;
+            }
+        | '#' module_instantiation
+            {
+                $$ = $2;
+                if ($$) $$->tag_highlight = true;
+            }
+        | '%' module_instantiation
+            {
+                $$ = $2;
+                if ($$) $$->tag_background = true;
+            }
+        | '*' module_instantiation
+            {
+                delete $2;
+                $$ = NULL;
+            }
+        | single_module_instantiation
+            {
+                $<inst>$ = $1;
+                scope_stack.push(&$1->scope);
+            }
+          child_statement
+            {
+                scope_stack.pop();
+                $$ = $<inst>2;
+            }
+        | ifelse_statement
+            {
+                $$ = $1;
+            }
+        ;
 
 child_statement:
-';' |
-'{' child_statements '}' |
-module_instantiation {
-  if ($1) scope_stack.top()->addChild($1);
-} ;
+          ';'
+        | '{' child_statements '}'
+        | module_instantiation
+            {
+                if ($1) scope_stack.top()->addChild($1);
+            }
+        ;
 
 /*
  FIXME: This allows for variable declaration in child blocks, not activated yet
@@ -239,197 +272,251 @@ assignment ;
 */
 
 child_statements:
-/* empty */ |
-child_statements child_statement ;
+          /* empty */
+        | child_statements child_statement
+        ;
 
 single_module_instantiation:
-TOK_ID '(' arguments_call ')' {
-  $$ = new ModuleInstantiation($1);
-  $$->arguments = *$3;
-  $$->setPath(parser_source_path);
-  free($1);
-  delete $3;
-}
+          TOK_ID '(' arguments_call ')'
+            {
+                $$ = new ModuleInstantiation($1);
+                $$->arguments = *$3;
+                $$->setPath(parser_source_path);
+                free($1);
+                delete $3;
+            }
+        ;
 
 expr:
-TOK_TRUE {
-  $$ = new Expression(Value(true));
-} |
-TOK_FALSE {
-  $$ = new Expression(Value(false));
-} |
-TOK_UNDEF {
-  $$ = new Expression(Value::undefined);
-} |
-TOK_ID {
-  $$ = new Expression();
-  $$->type = "L";
-  $$->var_name = $1;
-  free($1);
-} |
-expr '.' TOK_ID {
-  $$ = new Expression("N", $1);
-  $$->var_name = $3;
-  free($3);
-} |
-TOK_STRING {
-  $$ = new Expression(Value(std::string($1)));
-  free($1);
-} |
-TOK_NUMBER {
-  $$ = new Expression(Value($1));
-} |
-'[' expr ':' expr ']' {
-  Expression *e_one = new Expression(Value(1.0));
-  $$ = new Expression();
-  $$->type = "R";
-  $$->children.push_back($2);
-  $$->children.push_back(e_one);
-  $$->children.push_back($4);
-} |
-'[' expr ':' expr ':' expr ']' {
-  $$ = new Expression();
-  $$->type = "R";
-  $$->children.push_back($2);
-  $$->children.push_back($4);
-  $$->children.push_back($6);
-} |
-'[' optional_commas ']' {
-  $$ = new Expression(Value(Value::VectorType()));
-} |
-'[' vector_expr optional_commas ']' {
-  $$ = $2;
-} |
-expr '*' expr {
-  $$ = new Expression("*", $1, $3);
-} |
-expr '/' expr {
-  $$ = new Expression("/", $1, $3);
-} |
-expr '%' expr {
-  $$ = new Expression("%", $1, $3);
-} |
-expr '+' expr {
-  $$ = new Expression("+", $1, $3);
-} |
-expr '-' expr {
-  $$ = new Expression("-", $1, $3);
-} |
-expr '<' expr {
-  $$ = new Expression("<", $1, $3);
-} |
-expr LE expr {
-  $$ = new Expression("<=", $1, $3);
-} |
-expr EQ expr {
-  $$ = new Expression("==", $1, $3);
-} |
-expr NE expr {
-  $$ = new Expression("!=", $1, $3);
-} |
-expr GE expr {
-  $$ = new Expression(">=", $1, $3);
-} |
-expr '>' expr {
-  $$ = new Expression(">", $1, $3);
-} |
-expr AND expr {
-  $$ = new Expression("&&", $1, $3);
-} |
-expr OR expr {
-  $$ = new Expression("||", $1, $3);
-} |
-'+' expr {
-  $$ = $2;
-} |
-'-' expr {
-  $$ = new Expression("I", $2);
-} |
-'!' expr {
-  $$ = new Expression("!", $2);
-} |
-'(' expr ')' {
-  $$ = $2;
-} |
-expr '?' expr ':' expr {
-  $$ = new Expression();
-  $$->type = "?:";
-  $$->children.push_back($1);
-  $$->children.push_back($3);
-  $$->children.push_back($5);
-} |
-expr '[' expr ']' {
-  $$ = new Expression("[]", $1, $3);
-} |
-TOK_ID '(' arguments_call ')' {
-  $$ = new Expression();
-  $$->type = "F";
-  $$->call_funcname = $1;
-  $$->call_arguments = *$3;
-  free($1);
-  delete $3;
-} ;
+          TOK_TRUE
+            {
+                $$ = new Expression(Value(true));
+            }
+        | TOK_FALSE
+            {
+                $$ = new Expression(Value(false));
+            }
+        | TOK_UNDEF
+            {
+                $$ = new Expression(Value::undefined);
+            }
+        | TOK_ID
+            {
+                $$ = new Expression();
+                $$->type = "L";
+                $$->var_name = $1;
+                free($1);
+            }
+        | expr '.' TOK_ID
+            {
+                $$ = new Expression("N", $1);
+                $$->var_name = $3;
+                free($3);
+            }
+        | TOK_STRING
+            {
+                $$ = new Expression(Value(std::string($1)));
+                free($1);
+            }
+        | TOK_NUMBER
+            {
+                $$ = new Expression(Value($1));
+            }
+        | '[' expr ':' expr ']'
+            {
+                Expression *e_one = new Expression(Value(1.0));
+                $$ = new Expression();
+                $$->type = "R";
+                $$->children.push_back($2);
+                $$->children.push_back(e_one);
+                $$->children.push_back($4);
+            }
+        | '[' expr ':' expr ':' expr ']'
+            {
+                $$ = new Expression();
+                $$->type = "R";
+                $$->children.push_back($2);
+                $$->children.push_back($4);
+                $$->children.push_back($6);
+            }
+        | '[' optional_commas ']'
+            {
+                $$ = new Expression(Value(Value::VectorType()));
+            }
+        | '[' vector_expr optional_commas ']'
+            {
+                $$ = $2;
+            }
+        | expr '*' expr
+            {
+                $$ = new Expression("*", $1, $3);
+            }
+        | expr '/' expr
+            {
+                $$ = new Expression("/", $1, $3);
+            }
+        | expr '%' expr
+            {
+                $$ = new Expression("%", $1, $3);
+            }
+        | expr '+' expr
+            {
+                $$ = new Expression("+", $1, $3);
+            }
+        | expr '-' expr
+            {
+                $$ = new Expression("-", $1, $3);
+            }
+        | expr '<' expr
+            {
+                $$ = new Expression("<", $1, $3);
+            }
+        | expr LE expr
+            {
+                $$ = new Expression("<=", $1, $3);
+            }
+        | expr EQ expr
+            {
+                $$ = new Expression("==", $1, $3);
+            }
+        | expr NE expr
+            {
+                $$ = new Expression("!=", $1, $3);
+            }
+        | expr GE expr
+            {
+                $$ = new Expression(">=", $1, $3);
+            }
+        | expr '>' expr
+            {
+                $$ = new Expression(">", $1, $3);
+            }
+        | expr AND expr
+            {
+                $$ = new Expression("&&", $1, $3);
+            }
+        | expr OR expr
+            {
+                $$ = new Expression("||", $1, $3);
+            }
+        | '+' expr
+            {
+                $$ = $2;
+            }
+        | '-' expr
+            {
+                $$ = new Expression("I", $2);
+            }
+        | '!' expr
+            {
+                $$ = new Expression("!", $2);
+            }
+        | '(' expr ')'
+            {
+                $$ = $2;
+            }
+        | expr '?' expr ':' expr
+            {
+                $$ = new Expression();
+                $$->type = "?:";
+                $$->children.push_back($1);
+                $$->children.push_back($3);
+                $$->children.push_back($5);
+            }
+        | expr '[' expr ']'
+            {
+                $$ = new Expression("[]", $1, $3);
+            }
+        | TOK_ID '(' arguments_call ')'
+            {
+                $$ = new Expression();
+                $$->type = "F";
+                $$->call_funcname = $1;
+                $$->call_arguments = *$3;
+                free($1);
+                delete $3;
+            }
+        ;
 
 optional_commas:
-',' optional_commas | ;
+          ',' optional_commas
+        | /* empty */
+        ;
 
 vector_expr:
-expr {
-  $$ = new Expression("V", $1);
-} |
-vector_expr ',' optional_commas expr {
-  $$ = $1;
-  $$->children.push_back($4);
-} ;
+          expr
+            {
+                $$ = new Expression("V", $1);
+            }
+        | vector_expr ',' optional_commas expr
+            {
+                $$ = $1;
+                $$->children.push_back($4);
+            }
+        ;
 
 arguments_decl:
-/* empty */ {
-  $$ = new AssignmentList();
-} |
-argument_decl {
-  $$ = new AssignmentList();
-  $$->push_back(*$1);
-  delete $1;
-} |
-arguments_decl ',' optional_commas argument_decl {
-  $$ = $1;
-  $$->push_back(*$4);
-  delete $4;
-} ;
+          /* empty */
+            {
+                $$ = new AssignmentList();
+            }
+        | argument_decl
+            {
+                $$ = new AssignmentList();
+                $$->push_back(*$1);
+                delete $1;
+            }
+        | arguments_decl ',' optional_commas argument_decl
+            {
+                $$ = $1;
+                $$->push_back(*$4);
+                delete $4;
+            }
+        ;
 
 argument_decl:
-TOK_ID {
-  $$ = new Assignment($1, NULL);
-  free($1);
-} |
-TOK_ID '=' expr {
-  $$ = new Assignment($1, $3);
-  free($1);
-} ;
+          TOK_ID
+            {
+                $$ = new Assignment($1, NULL);
+                free($1);
+            }
+        | TOK_ID '=' expr
+            {
+                $$ = new Assignment($1, $3);
+                free($1);
+            }
+        ;
 
 arguments_call:
-/* empty */ {
-  $$ = new AssignmentList();
-} |
-argument_call {
-  $$ = new AssignmentList();
-  $$->push_back(*$1);
-  delete $1;
-} |
-arguments_call ',' optional_commas argument_call {
-  $$ = $1;
-  $$->push_back(*$4);
-  delete $4;
-} ;
+          /* empty */
+            {
+                $$ = new AssignmentList();
+            }
+        | argument_call
+            {
+                $$ = new AssignmentList();
+                $$->push_back(*$1);
+                delete $1;
+            }
+        | arguments_call ',' optional_commas argument_call
+            {
+                $$ = $1;
+                $$->push_back(*$4);
+                delete $4;
+            }
+        ;
 
 argument_call:
-expr {
-  $$ = new Assignment("", $1);
-} |
-TOK_ID '=' expr {
-  $$ = new Assignment($1, $3);
-  free($1);
-} ;
+          expr
+            {
+                $$ = new Assignment("", $1);
+            }
+        | TOK_ID '=' expr
+            {
+                $$ = new Assignment($1, $3);
+                free($1);
+            }
+        ;
 
 %%
 
