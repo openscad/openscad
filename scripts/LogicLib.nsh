@@ -1,4 +1,5 @@
 ; NSIS LOGIC LIBRARY - LogicLib.nsh
+; see mingw-file-association.nshmingw-file-association.nsh for license info
 ; Version 2.6 - 08/12/2007
 ; By dselkirk@hotmail.com
 ; and eccles@users.sf.net

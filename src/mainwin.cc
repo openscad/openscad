@@ -101,10 +101,6 @@
 
 #endif // ENABLE_CGAL
 
-#ifndef OPENCSG_VERSION_STRING
-#define OPENCSG_VERSION_STRING "unknown, <1.3.2"
-#endif
-
 #include "boosty.h"
 
 extern QString examplesdir;
@@ -1828,34 +1824,16 @@ MainWindow::helpManual()
 	QDesktopServices::openUrl(QUrl("http://www.openscad.org/documentation.html"));
 }
 
-#define STRINGIFY(x) #x
-#define TOSTRING(x) STRINGIFY(x)
 void MainWindow::helpLibrary()
 {
-	QString libinfo;
-	libinfo.sprintf("Boost version: %s\n"
-									"Eigen version: %d.%d.%d\n"
-									"CGAL version: %s\n"
-									"OpenCSG version: %s\n"
-									"Qt version: %s\n\n",
-									BOOST_LIB_VERSION,
-									EIGEN_WORLD_VERSION, EIGEN_MAJOR_VERSION, EIGEN_MINOR_VERSION,
-									TOSTRING(CGAL_VERSION),
-									OPENCSG_VERSION_STRING,
-									qVersion());
-
-#if defined( __MINGW64__ )
-	libinfo += QString("Compiled for MingW64\n\n");
-#elif defined( __MINGW32__ )
-	libinfo += QString("Compiled for MingW32\n\n");
-#endif
-
+	QString info( PlatformUtils::info().c_str() );
+	info += QString( qglview->getRendererInfo().c_str() );
 	if (!this->openglbox) {
-    this->openglbox = new QMessageBox(QMessageBox::Information, 
-                                      "OpenGL Info", "OpenSCAD Detailed Library Info                  ",
+		this->openglbox = new QMessageBox(QMessageBox::Information,
+                                      "OpenGL Info", "OpenSCAD Detailed Library and Build Information",
                                       QMessageBox::Ok, this);
 	}
-  this->openglbox->setDetailedText(libinfo + QString(qglview->getRendererInfo().c_str()));
+	this->openglbox->setDetailedText( info );
 	this->openglbox->show();
 }
 

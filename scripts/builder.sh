@@ -95,13 +95,9 @@ upload_win_generic()
 	opts="$opts -u $username"
 	opts="$opts $filename"
 	if [ $DRYRUN ]; then
-		echo dry run, not uploading to googlecode
-		echo google-code upload is disabled / deprecated
 		echo dry run, not uploading to files.openscad.org
 		echo scp -v $filename openscad@files.openscad.org:www/
 	else
-		echo google-code upload is disabled / deprecated
-		# python ./scripts/googlecode_upload.py -s "$summary" $opts
 		scp -v $filename openscad@files.openscad.org:www/
 	fi
 }
