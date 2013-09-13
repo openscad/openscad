@@ -88,7 +88,7 @@ static void help(const char *progname)
 	        "%*s[ --camera=translatex,y,z,rotx,y,z,dist | \\\n"
 	        "%*s  --camera=eyex,y,z,centerx,y,z ] \\\n"
 	        "%*s[ --imgsize=width,height ] [ --projection=(o)rtho|(p)ersp] \\\n"
-		"%*s[ --render | --preview[=throwntogether] ] \\\n"
+	        "%*s[ --render | --preview[=throwntogether] ] \\\n"
 	        "%*sfilename\n",
 					progname, tab, "", tab, "", tab, "", tab, "", tab, "", tab, "");
 	exit(1);
