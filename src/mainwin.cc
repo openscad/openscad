@@ -1826,14 +1826,12 @@ MainWindow::helpManual()
 
 void MainWindow::helpLibrary()
 {
-	std::string basicinfo = PlatformUtils::info();
-	QString info( basicinfo.c_str() );
-	info += QString(qglview->getRendererInfo().c_str());
-
+	QString info( PlatformUtils::info().c_str() );
+	info += QString( qglview->getRendererInfo().c_str() );
 	if (!this->openglbox) {
 		this->openglbox = new QMessageBox(QMessageBox::Information,
-		  "OpenGL Info", "OpenSCAD Detailed Library and Build Information",
-		  QMessageBox::Ok, this);
+						  "OpenGL Info", "OpenSCAD Detailed Library and Build Information",
+						  QMessageBox::Ok, this);
 	}
 	this->openglbox->setDetailedText( info );
 	this->openglbox->show();

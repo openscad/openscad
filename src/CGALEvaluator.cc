@@ -215,7 +215,6 @@ CGAL_Nef_polyhedron CGALEvaluator::applyResize(const CgaladvNode &node)
 	bbox_size.push_back( bb.xmax()-bb.xmin() );
 	bbox_size.push_back( bb.ymax()-bb.ymin() );
 	bbox_size.push_back( bb.zmax()-bb.zmin() );
-
 	int newsizemax_index = 0;
 	for (int i=0;i<N.dim;i++) {
 		if (node.newsize[i]) {
