@@ -884,7 +884,7 @@ add_cmdline_test(openscad-imgstretch2 EXE ${GUI_BINPATH}
                  SUFFIX png 
                  FILES ${CMAKE_SOURCE_DIR}/../examples/example001.scad)
 add_cmdline_test(openscad-camdist EXE ${GUI_BINPATH} 
-                 ARGS --imgsize=500,500 --camera=0,0,0,0,0,0,300  examples/example001.scad -o
+                 ARGS --imgsize=500,500 --camera=0,0,0,90,0,90,300  examples/example001.scad -o
                  SUFFIX png
                  FILES ${CMAKE_SOURCE_DIR}/../examples/example001.scad)
 add_cmdline_test(openscad-camrot EXE ${GUI_BINPATH}
