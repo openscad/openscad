@@ -70,16 +70,10 @@ void export_png_preview_common( Tree &tree, Camera &cam, std::ostream &output, P
 		return;
 	}
 
-	Renderer *renderer;
-	if ( previewer == OPENCSG ) {
 #ifdef ENABLE_OPENCSG
-		OpenCSGRenderer openCSGRenderer(csgInfo.root_chain, csgInfo.highlights_chain, csgInfo.background_chain, csgInfo.glview->shaderinfo);
-		renderer = &openCSGRenderer;
+	OpenCSGRenderer openCSGRenderer(csgInfo.root_chain, csgInfo.highlights_chain, csgInfo.background_chain, csgInfo.glview->shaderinfo);
 #endif
-	} else {
-		ThrownTogetherRenderer thrownTogetherRenderer( csgInfo.root_chain, csgInfo.highlights_chain, csgInfo.background_chain );
-		renderer = &thrownTogetherRenderer;
-	}
+	ThrownTogetherRenderer thrownTogetherRenderer( csgInfo.root_chain, csgInfo.highlights_chain, csgInfo.background_chain );
 
 	if (cam.type == Camera::NONE) {
 		cam.type = Camera::VECTOR;
@@ -94,7 +88,10 @@ void export_png_preview_common( Tree &tree, Camera &cam, std::ostream &output, P
 	}
 
 	csgInfo.glview->setCamera( cam );
-	csgInfo.glview->setRenderer( renderer );
+	if ( previewer == OPENCSG )
+		csgInfo.glview->setRenderer( &openCSGRenderer );
+	else
+		csgInfo.glview->setRenderer( &thrownTogetherRenderer );
 #ifdef ENABLE_OPENCSG
 	OpenCSG::setContext( 0 );
 	OpenCSG::setOption( OpenCSG::OffscreenSetting, OpenCSG::FrameBufferObject );
