@@ -155,6 +155,7 @@ CONFIG += cgal
 CONFIG += opencsg
 CONFIG += boost
 CONFIG += eigen
+CONFIG += libxml
 
 #Uncomment the following line to enable QCodeEdit
 #CONFIG += qcodeedit
@@ -209,6 +210,7 @@ HEADERS += src/typedefs.h \
            src/evalcontext.h \
            src/csgterm.h \
            src/csgtermnormalizer.h \
+           src/svgdata.h \
            src/dxfdata.h \
            src/dxfdim.h \
            src/dxftess.h \
@@ -293,6 +295,7 @@ SOURCES += src/version_check.cc \
            src/surface.cc \
            src/control.cc \
            src/render.cc \
+           src/svgdata.cc \
            src/dxfdata.cc \
            src/dxfdim.cc \
            src/linearextrude.cc \

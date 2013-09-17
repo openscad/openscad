@@ -378,6 +378,16 @@ if(${CMAKE_CXX_COMPILER} MATCHES ".*clang.*" AND NOT ${CGAL_CXX_FLAGS_INIT} STRE
 	string(REPLACE "--param=ssp-buffer-size=4" "" CGAL_CXX_FLAGS_INIT ${CGAL_CXX_FLAGS_INIT})
 endif()
 
+# libxml
+find_package(PkgConfig REQUIRED)
+pkg_search_module(LIBXML REQUIRED libxml++-2.6)
+if (NOT LIBXML_FOUND)
+  message(STATUS "LibXML++ not found")
+else()
+  message(STATUS "LibXML++ found in ${LIBXML_INCLUDEDIR}")
+  inclusion(LIBXML_DIR LIBXML_INCLUDE_DIRS)
+endif()
+
 # Imagemagick
 
 if (SKIP_IMAGEMAGICK)
@@ -440,6 +450,7 @@ set(CORE_SOURCES
   ../src/surface.cc 
   ../src/control.cc 
   ../src/render.cc 
+  ../src/svgdata.cc
   ../src/dxfdata.cc 
   ../src/dxfdim.cc 
   ../src/linearextrude.cc 
@@ -505,7 +516,7 @@ set(OFFSCREEN_SOURCES
 
 add_library(tests-core STATIC ${CORE_SOURCES})
 target_link_libraries(tests-core ${OPENGL_LIBRARIES})
-set(TESTS-CORE-LIBRARIES ${OPENGL_LIBRARIES} ${Boost_LIBRARIES})
+set(TESTS-CORE-LIBRARIES ${OPENGL_LIBRARIES} ${Boost_LIBRARIES} ${LIBXML_LDFLAGS})
 
 add_library(tests-common STATIC ${COMMON_SOURCES})
 target_link_libraries(tests-common tests-core)
