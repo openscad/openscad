@@ -47,7 +47,7 @@ std::string PlatformUtils::libraryPath()
 
 #if defined(__GNUG__)
 #define GCC_INT_VERSION (__GNUC__ * 10000 + __GNUC_MINOR__ * 100 )
-#if GCC_INT_VERSION > 40700 || defined(__clang__)
+#if GCC_INT_VERSION > 40600 || defined(__clang__)
 #include <cxxabi.h>
 #define __openscad_info_demangle__ 1
 #endif // GCC_INT_VERSION
