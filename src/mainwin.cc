@@ -632,7 +632,9 @@ void MainWindow::compile(bool reload, bool forcedone)
 		// if we haven't yet compiled the current text.
 		else {
 			QString current_doc = editor->toPlainText();
-			if (current_doc != last_compiled_doc)	shouldcompiletoplevel = true;
+			if (current_doc != last_compiled_doc && last_compiled_doc.size() == 0) {
+				shouldcompiletoplevel = true;
+			}
 		}
 	}
 	else {
