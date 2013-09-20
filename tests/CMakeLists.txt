@@ -494,9 +494,6 @@ set(COMMON_SOURCES
   ../src/traverser.cc 
   ../src/PolySetEvaluator.cc 
   ../src/PolySetCache.cc 
-  ../src/PlatformUtils.cc 
-  ../src/${PLATFORMUTILS_SOURCE}
-  ../src/PlatformUtils.cc 
   ../src/Tree.cc
   ../src/lodepng.cpp)
 
@@ -517,6 +514,8 @@ set(OFFSCREEN_SOURCES
   ../src/ThrownTogetherRenderer.cc
   ../src/renderer.cc
   ../src/render.cc
+  ../src/PlatformUtils.cc 
+  ../src/${PLATFORMUTILS_SOURCE}
   ../src/OpenCSGRenderer.cc)
 
 add_library(tests-core STATIC ${CORE_SOURCES})

@@ -130,5 +130,6 @@ void parser_init(const std::string &applicationpath)
 		if (is_directory(tmpdir = libdir / "libraries")) {
 			librarydir = boosty::stringy(tmpdir);
 		}
+
 	if (!librarydir.empty()) add_librarydir(librarydir);
 }

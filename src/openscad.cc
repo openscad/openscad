@@ -176,8 +176,9 @@ Camera get_camera( po::variables_map vm )
 	return camera;
 }
 
-int cmdline( const char* deps_output_file, const char* filename, Camera &camera, const char *output_file, fs::path original_path, Render::type renderer )
+int cmdline( const char* deps_output_file, const char* filename, Camera &camera, const char *output_file, fs::path original_path, Render::type renderer, char ** argv )
 {
+	parser_init(boosty::stringy(boost::filesystem::path( argv[0] ).parent_path()));
 	Tree tree;
 #ifdef ENABLE_CGAL
 	CGALEvaluator cgalevaluator(tree);
@@ -630,7 +631,7 @@ int main(int argc, char **argv)
 	if (output_file)
 	{
 		if (!filename) help(argv[0]);
-		rc = cmdline( deps_output_file, filename, camera, output_file, original_path, renderer );
+		rc = cmdline( deps_output_file, filename, camera, output_file, original_path, renderer, argv );
 	}
 	else if (QtUseGUI())
 	{
