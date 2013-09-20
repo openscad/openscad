@@ -27,7 +27,6 @@
 #include "PolySetCache.h"
 #include "ModuleCache.h"
 #include "MainWindow.h"
-#include "openscad.h" // examplesdir
 #include "parsersettings.h"
 #include "Preferences.h"
 #include "printutils.h"
@@ -103,8 +102,6 @@
 
 #include "boosty.h"
 
-extern QString examplesdir;
-
 // Global application state
 unsigned int GuiLocker::gui_locked = 0;
 
@@ -156,7 +153,7 @@ settings_valueList(const QString &key, const QList<int> &defaultList = QList<int
 
 }
 
-MainWindow::MainWindow(const QString &filename)
+MainWindow::MainWindow(const QString &filename, const QString &examplesdir)
 	: root_inst("group"), progresswidget(NULL)
 {
 	setupUi(this);
@@ -169,6 +166,7 @@ MainWindow::MainWindow(const QString &filename)
 
 	top_ctx.registerBuiltin();
 
+	this->qexamplesdir = examplesdir;
 	this->openglbox = NULL;
 	root_module = NULL;
 	absolute_root_node = NULL;
@@ -253,10 +251,9 @@ MainWindow::MainWindow(const QString &filename)
 	this->menuOpenRecent->addAction(this->fileActionClearRecent);
 	connect(this->fileActionClearRecent, SIGNAL(triggered()),
 					this, SLOT(clearRecentFiles()));
-
-	if (!examplesdir.isEmpty()) {
+	if (!qexamplesdir.isEmpty()) {
 		bool found_example = false;
-		QStringList examples = QDir(examplesdir).entryList(QStringList("*.scad"), 
+		QStringList examples = QDir(qexamplesdir).entryList(QStringList("*.scad"), 
 		QDir::Files | QDir::Readable, QDir::Name);
 		foreach (const QString &ex, examples) {
 			this->menuExamples->addAction(ex, this, SLOT(actionOpenExample()));
@@ -985,7 +982,7 @@ void MainWindow::actionOpenExample()
 {
 	QAction *action = qobject_cast<QAction *>(sender());
 	if (action) {
-		openFile(examplesdir + QDir::separator() + action->text());
+		openFile(qexamplesdir + QDir::separator() + action->text());
 	}
 }
 

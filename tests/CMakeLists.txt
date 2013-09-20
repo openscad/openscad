@@ -412,6 +412,25 @@ include_directories(../src)
 add_definitions(-DOPENSCAD_VERSION=test -DOPENSCAD_YEAR=2011 -DOPENSCAD_MONTH=10)
 add_definitions(-DOPENSCAD_TESTING)
 
+# Platform specific settings
+
+if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+	message(STATUS "Offscreen OpenGL Context - using Apple CGL")
+	set(OFFSCREEN_CTX_SOURCE "OffscreenContextCGL.mm" CACHE TYPE STRING)
+	set(OFFSCREEN_IMGUTILS_SOURCE "imageutils-macosx.cc" CACHE TYPE STRING)
+	set(PLATFORMUTILS_SOURCE "PlatformUtils-mac.mm" CACHE TYPE STRING)
+elseif(UNIX)
+	message(STATUS "Offscreen OpenGL Context - using Unix GLX")
+	set(OFFSCREEN_CTX_SOURCE "OffscreenContextGLX.cc" CACHE TYPE STRING)
+	set(OFFSCREEN_IMGUTILS_SOURCE "imageutils-lodepng.cc" CACHE TYPE STRING)
+	set(PLATFORMUTILS_SOURCE "PlatformUtils-posix.cc" CACHE TYPE STRING)
+elseif(WIN32)
+	message(STATUS "Offscreen OpenGL Context - using Microsoft WGL")
+	set(OFFSCREEN_CTX_SOURCE "OffscreenContextWGL.cc" CACHE TYPE STRING)
+	set(OFFSCREEN_IMGUTILS_SOURCE "imageutils-lodepng.cc" CACHE TYPE STRING)
+	set(PLATFORMUTILS_SOURCE "PlatformUtils-win.cc" CACHE TYPE STRING)
+endif()
+
 set(CORE_SOURCES
   tests-common.cc 
   ../src/parsersettings.cc
@@ -440,6 +459,7 @@ set(CORE_SOURCES
   ../src/surface.cc 
   ../src/control.cc 
   ../src/render.cc 
+  ../src/rendersettings.cc 
   ../src/dxfdata.cc 
   ../src/dxfdim.cc 
   ../src/linearextrude.cc 
@@ -455,11 +475,11 @@ set(NOCGAL_SOURCES
   ../src/builtin.cc 
   ../src/dxftess.cc 
   ../src/import.cc
-  ../src/export.cc) 
+  ../src/export.cc)
 
 set(CGAL_SOURCES
   ${NOCGAL_SOURCES}
-	  ../src/CSGTermEvaluator.cc 
+  ../src/CSGTermEvaluator.cc 
   ../src/CGAL_Nef_polyhedron.cc 
   ../src/cgalutils.cc 
   ../src/CGALEvaluator.cc
@@ -474,25 +494,15 @@ set(COMMON_SOURCES
   ../src/traverser.cc 
   ../src/PolySetEvaluator.cc 
   ../src/PolySetCache.cc 
+  ../src/PlatformUtils.cc 
+  ../src/${PLATFORMUTILS_SOURCE}
+  ../src/PlatformUtils.cc 
   ../src/Tree.cc
   ../src/lodepng.cpp)
 
 #
 # Offscreen OpenGL context source code
 #
-if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-	message(STATUS "Offscreen OpenGL Context - using Apple CGL")
-	set(OFFSCREEN_CTX_SOURCE "OffscreenContextCGL.mm" CACHE TYPE STRING)
-	set(OFFSCREEN_IMGUTILS_SOURCE "imageutils-macosx.cc" CACHE TYPE STRING)
-elseif(UNIX)
-	message(STATUS "Offscreen OpenGL Context - using Unix GLX")
-	set(OFFSCREEN_CTX_SOURCE "OffscreenContextGLX.cc" CACHE TYPE STRING)
-	set(OFFSCREEN_IMGUTILS_SOURCE "imageutils-lodepng.cc" CACHE TYPE STRING)
-elseif(WIN32)
-	message(STATUS "Offscreen OpenGL Context - using Microsoft WGL")
-	set(OFFSCREEN_CTX_SOURCE "OffscreenContextWGL.cc" CACHE TYPE STRING)
-	set(OFFSCREEN_IMGUTILS_SOURCE "imageutils-lodepng.cc" CACHE TYPE STRING)
-endif()
 
 set(OFFSCREEN_SOURCES
   ../src/GLView.cc
@@ -501,7 +511,13 @@ set(OFFSCREEN_SOURCES
   ../src/${OFFSCREEN_IMGUTILS_SOURCE}
   ../src/imageutils.cc
   ../src/fbo.cc
-  ../src/system-gl.cc)
+  ../src/system-gl.cc
+  ../src/export_png.cc
+  ../src/CGALRenderer.cc
+  ../src/ThrownTogetherRenderer.cc
+  ../src/renderer.cc
+  ../src/render.cc
+  ../src/OpenCSGRenderer.cc)
 
 add_library(tests-core STATIC ${CORE_SOURCES})
 target_link_libraries(tests-core ${OPENGL_LIBRARIES})
@@ -518,14 +534,14 @@ set(TESTS-CGAL-LIBRARIES ${CGAL_LIBRARY} ${CGAL_3RD_PARTY_LIBRARIES} ${GMP_LIBRA
 add_library(tests-nocgal STATIC ${NOCGAL_SOURCES})
 target_link_libraries(tests-nocgal tests-common)
 add_library(tests-offscreen STATIC ${OFFSCREEN_SOURCES})
-# set_target_properties(tests-offscreen PROPERTIES COMPILE_FLAGS "-DENABLE_OPENCSG -DENABLE_CGAL ${CGAL_CXX_FLAGS_INIT}")
+set_target_properties(tests-offscreen PROPERTIES COMPILE_FLAGS "-DENABLE_OPENCSG -DENABLE_CGAL ${CGAL_CXX_FLAGS_INIT}")
 set(TESTS-NOCGAL-LIBRARIES ${TESTS-CORE-LIBRARIES})
 
 #
 # modulecachetest
 #
 add_executable(modulecachetest modulecachetest.cc)
-target_link_libraries(modulecachetest tests-nocgal ${TESTS-NOCGAL-LIBRARIES})
+target_link_libraries(modulecachetest tests-nocgal ${TESTS-NOCGAL-LIBRARIES} ${Boost_LIBRARIES})
 
 #
 # csgtexttest
@@ -541,27 +557,40 @@ set_target_properties(cgalcachetest PROPERTIES COMPILE_FLAGS "-DENABLE_CGAL ${CG
 target_link_libraries(cgalcachetest tests-cgal ${TESTS-CGAL-LIBRARIES} ${GLEW_LIBRARY} ${COCOA_LIBRARY})
 
 #
+# openscad no-qt
+#
+add_executable(openscad ../src/openscad.cc)
+set_target_properties(openscad PROPERTIES COMPILE_FLAGS "-fno-strict-aliasing -DEIGEN_DONT_ALIGN -DENABLE_CGAL -DENABLE_OPENCSG ${CGAL_CXX_FLAGS_INIT}")
+target_link_libraries(openscad tests-offscreen tests-cgal tests-nocgal ${TESTS-CORE-LIBRARIES} ${TESTS-CGAL-LIBRARIES} ${GLEW_LIBRARY} ${Boost_LIBRARIES} ${OPENCSG_LIBRARY} ${COCOA_LIBRARY} )
+
+#
 # GUI binary tests
 #
-if(APPLE)
-  set(GUI_BINPATH "${CMAKE_CURRENT_SOURCE_DIR}/../OpenSCAD.app/Contents/MacOS/OpenSCAD")
-elseif (MINGW_CROSS_ENV_DIR) 
-  set(GUI_BINPATH "${CMAKE_CURRENT_SOURCE_DIR}/../mingw32/release/openscad.exe")
-elseif(WIN32)
-  set(GUI_BINPATH "${CMAKE_CURRENT_SOURCE_DIR}/../Release/openscad.exe")
-else()
-  set(GUI_BINPATH "${CMAKE_CURRENT_SOURCE_DIR}/../openscad")
-endif()
+#if(APPLE)
+#  set(OPENSCAD_BINPATH "${CMAKE_CURRENT_SOURCE_DIR}/../OpenSCAD.app/Contents/MacOS/OpenSCAD")
+#elseif (MINGW_CROSS_ENV_DIR) 
+#  set(OPENSCAD_BINPATH "${CMAKE_CURRENT_SOURCE_DIR}/../mingw32/release/openscad.exe")
+#elseif(WIN32)
+#  set(OPENSCAD_BINPATH "${CMAKE_CURRENT_SOURCE_DIR}/../Release/openscad.exe")
+#else()
+#  set(OPENSCAD_BINPATH "${CMAKE_CURRENT_SOURCE_DIR}/../openscad")
+#endif()
 
-if(EXISTS "${CMAKE_CURRENT_BINARY_DIR}/openscad")
-  set(GUI_BINPATH "${CMAKE_CURRENT_BINARY_DIR}/openscad")
-endif()
+#if(EXISTS "${CMAKE_CURRENT_BINARY_DIR}/openscad")
+#  set(OPENSCAD_BINPATH "${CMAKE_CURRENT_BINARY_DIR}/openscad")
+#endif()
 
-if(EXISTS "${GUI_BINPATH}")
-  message(STATUS "Found OpenSCAD GUI binary: ${GUI_BINPATH}")
+#if(EXISTS "${OPENSCAD_BINPATH}")
+#  message(STATUS "Found OpenSCAD binary: ${OPENSCAD_BINPATH}")
+#else()
+#  message(STATUS "Couldn't find the OpenSCAD binary: ${OPENSCAD_BINPATH}")
+#  message(FATAL_ERROR "Please build the OpenSCAD binary and place it here: ${OPENSCAD_BINPATH}" )
+#endif()
+
+if(WIN32)
+  set(OPENSCAD_BINPATH "${CMAKE_CURRENT_BINARY_DIR}/openscad.exe")
 else()
-  message(STATUS "Couldn't find the OpenSCAD GUI binary: ${GUI_BINPATH}")
-  message(FATAL_ERROR "Please build the OpenSCAD GUI binary and place it here: ${GUI_BINPATH}" )
+  set(OPENSCAD_BINPATH "${CMAKE_CURRENT_BINARY_DIR}/openscad")
 endif()
 
 #
@@ -828,7 +857,7 @@ string(REPLACE __cmake_current_source_dir__ ${CMAKE_CURRENT_SOURCE_DIR} TMP ${TM
 string(REPLACE __python__ ${PYTHON_EXECUTABLE} TMP ${TMP})
 string(REPLACE __header__ "Generated by cmake from ${CMAKE_CURRENT_SOURCE_DIR}/CTestCustom.template" TMP ${TMP})
 string(REPLACE __cmake_system_name__ ${CMAKE_SYSTEM_NAME} TMP ${TMP})
-string(REPLACE __gui_binpath__ ${GUI_BINPATH} TMP ${TMP})
+string(REPLACE __openscad_binpath__ ${OPENSCAD_BINPATH} TMP ${TMP})
 
 if (MINGW_CROSS_ENV_DIR)
   string(REPLACE __wine__ wine TMP ${TMP})
@@ -841,9 +870,9 @@ file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/CTestCustom.cmake ${TMP})
 
 # Add tests
 
-add_cmdline_test(echotest EXE ${CMAKE_SOURCE_DIR}/echotest SUFFIX txt ARGS ${GUI_BINPATH} FILES ${ECHO_FILES})
-add_cmdline_test(dumptest EXE ${CMAKE_SOURCE_DIR}/dumptest SUFFIX csg ARGS ${GUI_BINPATH} FILES ${DUMPTEST_FILES})
-add_cmdline_test(moduledumptest EXE ${GUI_BINPATH} ARGS -o SUFFIX ast FILES
+add_cmdline_test(echotest EXE ${CMAKE_SOURCE_DIR}/echotest SUFFIX txt ARGS ${OPENSCAD_BINPATH} FILES ${ECHO_FILES})
+add_cmdline_test(dumptest EXE ${CMAKE_SOURCE_DIR}/dumptest SUFFIX csg ARGS ${OPENSCAD_BINPATH} FILES ${DUMPTEST_FILES})
+add_cmdline_test(moduledumptest EXE ${OPENSCAD_BINPATH} ARGS -o SUFFIX ast FILES
                  ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/allmodules.scad
                  ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/allfunctions.scad
                  ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/allexpressions.scad)
@@ -851,67 +880,67 @@ add_cmdline_test(csgtexttest SUFFIX txt FILES
                              ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/allexpressions.scad
                              ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/allfunctions.scad
                              ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/allmodules.scad)
-add_cmdline_test(csgtermtest EXE ${GUI_BINPATH} ARGS -o SUFFIX term FILES
+add_cmdline_test(csgtermtest EXE ${OPENSCAD_BINPATH} ARGS -o SUFFIX term FILES
                              ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/allexpressions.scad
                              ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/allfunctions.scad
                              ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/allmodules.scad)
-add_cmdline_test(cgalpngtest EXE ${GUI_BINPATH} ARGS --render -o SUFFIX png FILES ${CGALPNGTEST_FILES})
-add_cmdline_test(opencsgtest EXE ${GUI_BINPATH} ARGS -o SUFFIX png FILES ${OPENCSGTEST_FILES})
-add_cmdline_test(throwntogethertest EXE ${GUI_BINPATH} ARGS --preview=throwntogether -o SUFFIX png FILES ${THROWNTOGETHERTEST_FILES})
+add_cmdline_test(cgalpngtest EXE ${OPENSCAD_BINPATH} ARGS --render -o SUFFIX png FILES ${CGALPNGTEST_FILES})
+add_cmdline_test(opencsgtest EXE ${OPENSCAD_BINPATH} ARGS -o SUFFIX png FILES ${OPENCSGTEST_FILES})
+add_cmdline_test(throwntogethertest EXE ${OPENSCAD_BINPATH} ARGS --preview=throwntogether -o SUFFIX png FILES ${THROWNTOGETHERTEST_FILES})
 # FIXME: We don't actually need to compare the output of cgalstlsanitytest
 # with anything. It's self-contained and returns != 0 on error
-add_cmdline_test(cgalstlsanitytest EXE ${CMAKE_SOURCE_DIR}/cgalstlsanitytest SUFFIX txt ARGS ${GUI_BINPATH} FILES ${CGALSTLSANITYTEST_FILES})
+add_cmdline_test(cgalstlsanitytest EXE ${CMAKE_SOURCE_DIR}/cgalstlsanitytest SUFFIX txt ARGS ${OPENSCAD_BINPATH} FILES ${CGALSTLSANITYTEST_FILES})
 
 # Tests using the actual OpenSCAD binary
 
 # non-ASCII filenames
-add_cmdline_test(openscad-nonascii EXE ${GUI_BINPATH} ARGS -o 
+add_cmdline_test(openscad-nonascii EXE ${OPENSCAD_BINPATH} ARGS -o 
                  SUFFIX csg 
                  FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/sfære.scad)
 
 
 # Image output
-add_cmdline_test(openscad-imgsize EXE ${GUI_BINPATH}
+add_cmdline_test(openscad-imgsize EXE ${OPENSCAD_BINPATH}
                  ARGS --imgsize 100,100 -o 
                  SUFFIX png 
                  FILES ${CMAKE_SOURCE_DIR}/../examples/example001.scad)
-add_cmdline_test(openscad-imgstretch EXE ${GUI_BINPATH}
+add_cmdline_test(openscad-imgstretch EXE ${OPENSCAD_BINPATH}
                  ARGS --imgsize 500,100 -o 
                  SUFFIX png 
                  FILES ${CMAKE_SOURCE_DIR}/../examples/example001.scad)
-add_cmdline_test(openscad-imgstretch2 EXE ${GUI_BINPATH}
+add_cmdline_test(openscad-imgstretch2 EXE ${OPENSCAD_BINPATH}
                  ARGS --imgsize 100,500 -o 
                  SUFFIX png 
                  FILES ${CMAKE_SOURCE_DIR}/../examples/example001.scad)
-add_cmdline_test(openscad-camdist EXE ${GUI_BINPATH} 
+add_cmdline_test(openscad-camdist EXE ${OPENSCAD_BINPATH} 
                  ARGS --imgsize=500,500 --camera=0,0,0,90,0,90,300  examples/example001.scad -o
                  SUFFIX png
                  FILES ${CMAKE_SOURCE_DIR}/../examples/example001.scad)
-add_cmdline_test(openscad-camrot EXE ${GUI_BINPATH}
+add_cmdline_test(openscad-camrot EXE ${OPENSCAD_BINPATH}
                  ARGS --imgsize=500,500 --camera=0,0,0,440,337.5,315,300  examples/example001.scad -o
                  SUFFIX png
                  FILES ${CMAKE_SOURCE_DIR}/../examples/example001.scad)
-add_cmdline_test(openscad-camtrans EXE ${GUI_BINPATH}
+add_cmdline_test(openscad-camtrans EXE ${OPENSCAD_BINPATH}
                  ARGS --imgsize=500,500 --camera=100,-20,-10,90,0,90,300  examples/example001.scad -o
                  SUFFIX png
                  FILES ${CMAKE_SOURCE_DIR}/../examples/example001.scad)
-add_cmdline_test(openscad-camortho EXE ${GUI_BINPATH}
+add_cmdline_test(openscad-camortho EXE ${OPENSCAD_BINPATH}
                  ARGS --imgsize=500,500 --camera=100,-20,-10,90,0,90,300  examples/example001.scad --projection=o -o
                  SUFFIX png
                  FILES ${CMAKE_SOURCE_DIR}/../examples/example001.scad)
-add_cmdline_test(openscad-cameye EXE ${GUI_BINPATH}
+add_cmdline_test(openscad-cameye EXE ${OPENSCAD_BINPATH}
                  ARGS --imgsize=500,500 --camera=60,40,30,0,0,0  examples/example001.scad -o
                  SUFFIX png
                  FILES ${CMAKE_SOURCE_DIR}/../examples/example001.scad)
-add_cmdline_test(openscad-cameye2 EXE ${GUI_BINPATH}
+add_cmdline_test(openscad-cameye2 EXE ${OPENSCAD_BINPATH}
                  ARGS --imgsize=500,500 --camera=160,140,130,0,0,0  examples/example001.scad -o
                  SUFFIX png
                  FILES ${CMAKE_SOURCE_DIR}/../examples/example001.scad)
-add_cmdline_test(openscad-cameyeortho EXE ${GUI_BINPATH}
+add_cmdline_test(openscad-cameyeortho EXE ${OPENSCAD_BINPATH}
                  ARGS --imgsize=500,500 --camera=160,140,130,0,0,0  examples/example001.scad --projection=o -o 
                  SUFFIX png
                  FILES ${CMAKE_SOURCE_DIR}/../examples/example001.scad)
-add_cmdline_test(openscad-camcenter EXE ${GUI_BINPATH}
+add_cmdline_test(openscad-camcenter EXE ${OPENSCAD_BINPATH}
                  ARGS --imgsize=500,500 --camera=60,40,30,20,10,30  -o
                  SUFFIX png
                  FILES ${CMAKE_SOURCE_DIR}/../examples/example001.scad)

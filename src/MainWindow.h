@@ -54,11 +54,12 @@ public:
 	std::vector<shared_ptr<CSGTerm> > background_terms;
 	CSGChain *background_chain;
 	QString last_compiled_doc;
+	QString qexamplesdir;
 
 	static const int maxRecentFiles = 10;
 	QAction *actionRecentFile[maxRecentFiles];
 
-	MainWindow(const QString &filename);
+	MainWindow(const QString &filename, const QString &examplesdir);
 	~MainWindow();
 
 protected:
