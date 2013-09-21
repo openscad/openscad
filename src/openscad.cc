@@ -83,15 +83,18 @@ using std::vector;
 using boost::lexical_cast;
 using boost::is_any_of;
 
-static void echotest_output_handler( const std::string &msg, void *userdata )
+class Echostream : public std::ofstream
 {
-	std::ofstream *outstream = static_cast<std::ofstream *>(userdata);
-	if (!outstream->is_open()) {
-		fprintf(stderr,"Error writing outstream\n" );
-		return;
+public:
+	Echostream( const char * filename ) : std::ofstream( filename )
+	{
+		set_output_handler( &Echostream::output, this );
 	}
-	*outstream << msg;
-}
+	static void output( const std::string &msg, void *userdata ) {
+		Echostream *thisp = static_cast<Echostream*>(userdata);
+		*thisp << msg << "\n";
+	}
+};
 
 static void help(const char *progname)
 {
@@ -186,7 +189,7 @@ Camera get_camera( po::variables_map vm )
 	return camera;
 }
 
-int cmdline( const char* deps_output_file, const char* filename, Camera &camera, const char *output_file, fs::path original_path, Render::type renderer, char ** argv )
+int cmdline( const char* deps_output_file, const char* filename, Camera &camera, const char *output_file, fs::path original_path, Render::type renderer, char ** argv, bool echo )
 {
 	parser_init(boosty::stringy(boost::filesystem::path( argv[0] ).parent_path()));
 	Tree tree;
@@ -201,7 +204,7 @@ int cmdline( const char* deps_output_file, const char* filename, Camera &camera,
 	const char *png_output_file = NULL;
 	const char *ast_output_file = NULL;
 	const char *term_output_file = NULL;
-	const char *echotest_output_file = NULL;
+	const char *echo_output_file = NULL;
 
 	std::string suffix = boosty::extension_str( output_file );
 	boost::algorithm::to_lower( suffix );
@@ -213,7 +216,7 @@ int cmdline( const char* deps_output_file, const char* filename, Camera &camera,
 	else if (suffix == ".png") png_output_file = output_file;
 	else if (suffix == ".ast") ast_output_file = output_file;
 	else if (suffix == ".term") term_output_file = output_file;
-	else if (suffix == ".echotest") echotest_output_file = output_file;
+	else if (suffix == ".echo") echo_output_file = output_file;
 	else {
 		fprintf(stderr, "Unknown suffix for output file %s\n", output_file);
 		return 1;
@@ -226,14 +229,8 @@ int cmdline( const char* deps_output_file, const char* filename, Camera &camera,
 	top_ctx.dump(NULL, NULL);
 #endif
 
-	if (echotest_output_file) {
-		std::ofstream fstream( echotest_output_file );
-		if (!fstream.is_open()) {
-			PRINTB("Can't open file \"%s\" for export", csg_output_file);
-		} else {
-			set_output_handler( echotest_output_handler, fstream );
-		}
-	}
+	Echostream *echostream;
+	if (echo_output_file) echostream = new Echostream( echo_output_file );
 
 	FileModule *root_module;
 	ModuleInstantiation root_inst("group");
@@ -272,6 +269,8 @@ int cmdline( const char* deps_output_file, const char* filename, Camera &camera,
 		root_node = absolute_root_node;
 
 	tree.setRoot(root_node);
+
+	if (echostream) echostream->close();
 
 	if (csg_output_file) {
 		fs::current_path(original_path);
@@ -320,8 +319,8 @@ int cmdline( const char* deps_output_file, const char* filename, Camera &camera,
 	}
 	else {
 #ifdef ENABLE_CGAL
-		if ((echotest_output_file || png_output_file) && !(renderer==Render::CGAL)) {
-			// echotest or OpenCSG png -> don't necessarily need CGALMesh evaluation
+		if ((echo_output_file || png_output_file) && !(renderer==Render::CGAL)) {
+			// echo or OpenCSG png -> don't necessarily need CGALMesh evaluation
 		} else {
 			root_N = cgalevaluator.evaluateCGALMesh(*tree.root());
 		}
