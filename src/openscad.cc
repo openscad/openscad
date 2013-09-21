@@ -83,6 +83,16 @@ using std::vector;
 using boost::lexical_cast;
 using boost::is_any_of;
 
+static void echotest_output_handler( const std::string &msg, void *userdata )
+{
+	std::ofstream *outstream = static_cast<std::ofstream *>(userdata);
+	if (!outstream->is_open()) {
+		fprintf(stderr,"Error writing outstream\n" );
+		return;
+	}
+	*outstream << msg;
+}
+
 static void help(const char *progname)
 {
 	int tab = int(strlen(progname))+8;
@@ -191,7 +201,7 @@ int cmdline( const char* deps_output_file, const char* filename, Camera &camera,
 	const char *png_output_file = NULL;
 	const char *ast_output_file = NULL;
 	const char *term_output_file = NULL;
-	bool null_output = false;
+	const char *echotest_output_file = NULL;
 
 	std::string suffix = boosty::extension_str( output_file );
 	boost::algorithm::to_lower( suffix );
@@ -203,7 +213,7 @@ int cmdline( const char* deps_output_file, const char* filename, Camera &camera,
 	else if (suffix == ".png") png_output_file = output_file;
 	else if (suffix == ".ast") ast_output_file = output_file;
 	else if (suffix == ".term") term_output_file = output_file;
-	else if (strcmp(output_file, "null") == 0) null_output = true;
+	else if (suffix == ".echotest") echotest_output_file = output_file;
 	else {
 		fprintf(stderr, "Unknown suffix for output file %s\n", output_file);
 		return 1;
@@ -215,6 +225,15 @@ int cmdline( const char* deps_output_file, const char* filename, Camera &camera,
 #if 0 && DEBUG
 	top_ctx.dump(NULL, NULL);
 #endif
+
+	if (echotest_output_file) {
+		std::ofstream fstream( echotest_output_file );
+		if (!fstream.is_open()) {
+			PRINTB("Can't open file \"%s\" for export", csg_output_file);
+		} else {
+			set_output_handler( echotest_output_handler, fstream );
+		}
+	}
 
 	FileModule *root_module;
 	ModuleInstantiation root_inst("group");
@@ -301,8 +320,8 @@ int cmdline( const char* deps_output_file, const char* filename, Camera &camera,
 	}
 	else {
 #ifdef ENABLE_CGAL
-		if ((null_output || png_output_file) && !(renderer==Render::CGAL)) {
-			// null output or OpenCSG png -> don't necessarily need CGALMesh evaluation
+		if ((echotest_output_file || png_output_file) && !(renderer==Render::CGAL)) {
+			// echotest or OpenCSG png -> don't necessarily need CGALMesh evaluation
 		} else {
 			root_N = cgalevaluator.evaluateCGALMesh(*tree.root());
 		}

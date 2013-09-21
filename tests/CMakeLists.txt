@@ -1,5 +1,7 @@
 # instructions - see ../doc/testing.txt
 
+set(DEBUG_OSCD 1) # print debug info during cmake
+
 cmake_minimum_required(VERSION 2.8)
 if("${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}.${CMAKE_PATCH_VERSION}" VERSION_GREATER 2.8.3)
   # Explicitly use new include policy to avoid globally shadowing included modules
@@ -115,12 +117,15 @@ endif()
 #
 
 function(inclusion user_set_path found_paths)
-  # If user_set_path indicates an env. variable was specifically
-  # set by the user, then found_paths become an include priority (prepend);
-  # otherwise found_paths are stuck on the end of the include flags (append).
+  # Set up compiler include paths with prepend/append rules. Input is 
+  # a path and a set of paths. If user_set_path matches anything in found_paths
+  # then we prepend the found_paths because we assume the user wants
+  # their set_paths to be a priority. 
 
-  # message(STATUS "inclusion ${user_set_path} ${found_paths}")
-  # message(STATUS "inclusion ${${user_set_path}} ${${found_paths}}")
+  if (DEBUG_OSCD)
+    message(STATUS "inclusion ${user_set_path} ${found_paths}")
+    message(STATUS "inclusion ${${user_set_path}} ${${found_paths}}")
+  endif()
   set( inclusion_match 0 )
   foreach( found_path ${${found_paths}} )
     if (${found_path} MATCHES ${${user_set_path}}.*)
@@ -129,10 +134,14 @@ function(inclusion user_set_path found_paths)
   endforeach()
   if (user_set_path AND inclusion_match)
     include_directories(BEFORE ${${found_paths}})
-    # message(STATUS "inclusion prepend ${${found_paths}} for ${user_set_path}")
+    if (DEBUG_OSCD)
+      message(STATUS "inclusion prepend ${${found_paths}} for ${user_set_path}")
+    endif()
   else()
     include_directories(AFTER ${${found_paths}})
-    # message(STATUS "inclusion append ${${found_paths}} for ${user_set_path}")
+    if (DEBUG_OSCD)
+      message(STATUS "inclusion append ${${found_paths}} for ${user_set_path}")
+    endif()
   endif()
   set( inclusion_match 0 )
 endfunction()
@@ -328,6 +337,13 @@ find_package(BISON REQUIRED)
 if(${CMAKE_SYSTEM_NAME} MATCHES "FreeBSD")
   # FreeBSD has an old flex in /usr/bin and a new flex in /usr/local/bin
   set(FLEX_EXECUTABLE /usr/local/bin/flex)
+endif()
+
+# prepend the dir where deps were built
+if (NOT $ENV{OPENSCAD_LIBRARIES} STREQUAL "")
+  set(OSCAD_DEPS "")
+  set(OSCAD_DEPS_PATHS $ENV{OPENSCAD_LIBRARIES}/include)
+  inclusion(OSCAD_DEPS OSCAD_DEPS_PATHS)
 endif()
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "NetBSD")
@@ -558,9 +574,9 @@ target_link_libraries(cgalcachetest tests-cgal ${TESTS-CGAL-LIBRARIES} ${GLEW_LI
 #
 # openscad no-qt
 #
-add_executable(openscad ../src/openscad.cc)
-set_target_properties(openscad PROPERTIES COMPILE_FLAGS "-fno-strict-aliasing -DEIGEN_DONT_ALIGN -DENABLE_CGAL -DENABLE_OPENCSG ${CGAL_CXX_FLAGS_INIT}")
-target_link_libraries(openscad tests-offscreen tests-cgal tests-nocgal ${TESTS-CORE-LIBRARIES} ${TESTS-CGAL-LIBRARIES} ${GLEW_LIBRARY} ${Boost_LIBRARIES} ${OPENCSG_LIBRARY} ${COCOA_LIBRARY} )
+add_executable(openscad_nogui ../src/openscad.cc)
+set_target_properties(openscad_nogui PROPERTIES COMPILE_FLAGS "-fno-strict-aliasing -DEIGEN_DONT_ALIGN -DENABLE_CGAL -DENABLE_OPENCSG ${CGAL_CXX_FLAGS_INIT}")
+target_link_libraries(openscad_nogui tests-offscreen tests-cgal tests-nocgal ${TESTS-CORE-LIBRARIES} ${TESTS-CGAL-LIBRARIES} ${GLEW_LIBRARY} ${Boost_LIBRARIES} ${OPENCSG_LIBRARY} ${COCOA_LIBRARY} )
 
 #
 # GUI binary tests
@@ -587,9 +603,9 @@ target_link_libraries(openscad tests-offscreen tests-cgal tests-nocgal ${TESTS-C
 #endif()
 
 if(WIN32)
-  set(OPENSCAD_BINPATH "${CMAKE_CURRENT_BINARY_DIR}/openscad.exe")
+  set(OPENSCAD_BINPATH "${CMAKE_CURRENT_BINARY_DIR}/openscad_nogui.exe")
 else()
-  set(OPENSCAD_BINPATH "${CMAKE_CURRENT_BINARY_DIR}/openscad")
+  set(OPENSCAD_BINPATH "${CMAKE_CURRENT_BINARY_DIR}/openscad_nogui")
 endif()
 
 #
@@ -869,8 +885,6 @@ file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/CTestCustom.cmake ${TMP})
 
 # Add tests
 
-add_cmdline_test(echotest EXE ${CMAKE_SOURCE_DIR}/echotest SUFFIX txt ARGS ${OPENSCAD_BINPATH} FILES ${ECHO_FILES})
-add_cmdline_test(dumptest EXE ${CMAKE_SOURCE_DIR}/dumptest SUFFIX csg ARGS ${OPENSCAD_BINPATH} FILES ${DUMPTEST_FILES})
 add_cmdline_test(moduledumptest EXE ${OPENSCAD_BINPATH} ARGS -o SUFFIX ast FILES
                  ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/allmodules.scad
                  ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/allfunctions.scad
@@ -883,6 +897,8 @@ add_cmdline_test(csgtermtest EXE ${OPENSCAD_BINPATH} ARGS -o SUFFIX term FILES
                              ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/allexpressions.scad
                              ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/allfunctions.scad
                              ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/allmodules.scad)
+add_cmdline_test(echotest EXE ${OPENSCAD_BINPATH} ARGS -o SUFFIX echotest FILES ${ECHO_FILES})
+add_cmdline_test(dumptest EXE ${OPENSCAD_BINPATH} ARGS -o dump SUFFIX csg FILES ${DUMPTEST_FILES})
 add_cmdline_test(cgalpngtest EXE ${OPENSCAD_BINPATH} ARGS --render -o SUFFIX png FILES ${CGALPNGTEST_FILES})
 add_cmdline_test(opencsgtest EXE ${OPENSCAD_BINPATH} ARGS -o SUFFIX png FILES ${OPENCSGTEST_FILES})
 add_cmdline_test(throwntogethertest EXE ${OPENSCAD_BINPATH} ARGS --preview=throwntogether -o SUFFIX png FILES ${THROWNTOGETHERTEST_FILES})

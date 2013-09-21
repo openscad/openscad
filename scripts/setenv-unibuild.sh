@@ -51,6 +51,9 @@ setenv_freebsd()
 setenv_netbsd()
 {
  setenv_common
+ echo --- netbsd build situation is complex. it comes with gcc4.5
+ echo --- which is incompatable with updated CGAL. 
+ echo --- you may need to hack with newer gcc to make it work
  QMAKESPEC=netbsd-g++
  QTDIR=/usr/pkg/qt4
  PATH=/usr/pkg/qt4/bin:$PATH
@@ -69,6 +72,19 @@ setenv_linux_clang()
  export CC=clang
  export CXX=clang++
  export QMAKESPEC=unsupported/linux-clang
+
+ echo CC has been modified: $CC
+ echo CXX has been modified: $CXX
+ echo QMAKESPEC has been modified: $QMAKESPEC
+}
+
+setenv_netbsd_clang()
+{
+ echo --------------------- this is not yet supported. netbsd 6 lacks
+ echo --------------------- certain things needed for clang support
+ export CC=clang
+ export CXX=clang++
+ export QMAKESPEC=./patches/mkspecs/netbsd-clang
 
  echo CC has been modified: $CC
  echo CXX has been modified: $CXX
@@ -127,6 +143,9 @@ elif [ "`uname | grep -i freebsd`" ]; then
  setenv_freebsd
 elif [ "`uname | grep -i netbsd`" ]; then
  setenv_netbsd
+ if [ "`echo $* | grep clang`" ]; then
+  setenv_netbsd_clang
+ fi
 else
  # guess
  setenv_common

@@ -282,6 +282,7 @@ build_cgal()
   echo "Building CGAL" $version "..."
   cd $BASEDIR/src
   rm -rf CGAL-$version
+  ver4_2="curl --insecure -O https://gforge.inria.fr/frs/download.php/32360/CGAL-4.2.tar.bz2"
   ver4_1="curl --insecure -O https://gforge.inria.fr/frs/download.php/31640/CGAL-4.1.tar.bz2"
   ver4_0_2="curl --insecure -O https://gforge.inria.fr/frs/download.php/31174/CGAL-4.0.2.tar.bz2"
   ver4_0="curl --insecure -O https://gforge.inria.fr/frs/download.php/30387/CGAL-4.0.tar.gz"
@@ -289,7 +290,7 @@ build_cgal()
   ver3_8="curl --insecure -O https://gforge.inria.fr/frs/download.php/28500/CGAL-3.8.tar.gz"
   ver3_7="curl --insecure -O https://gforge.inria.fr/frs/download.php/27641/CGAL-3.7.tar.gz"
   vernull="echo already downloaded..skipping"
-  download_cmd=ver`echo $version | sed s/"\."/"_"/`
+  download_cmd=ver`echo $version | sed s/"\."/"_"/ | sed s/"\."/"_"/`
 
   if [ -e CGAL-$version.tar.gz ]; then
     download_cmd=vernull;
@@ -298,6 +299,7 @@ build_cgal()
     download_cmd=vernull;
   fi
 
+  eval echo "$"$download_cmd
   `eval echo "$"$download_cmd`
 
   zipper=gzip
@@ -563,7 +565,7 @@ if [ $1 ]; then
     exit $?
   fi
   if [ $1 = "cgal" ]; then
-    build_cgal 4.1 use-sys-libs
+    build_cgal 4.0.2 use-sys-libs
     exit $?
   fi
   if [ $1 = "opencsg" ]; then
@@ -592,7 +594,7 @@ build_gmp 5.0.5
 build_mpfr 3.1.1
 build_boost 1.53.0
 # NB! For CGAL, also update the actual download URL in the function
-build_cgal 4.1
+build_cgal 4.0.2
 build_glew 1.9.0
 build_opencsg 1.3.2
 
