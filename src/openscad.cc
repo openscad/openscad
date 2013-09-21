@@ -86,13 +86,15 @@ using boost::is_any_of;
 class Echostream : public std::ofstream
 {
 public:
-	Echostream( const char * filename ) : std::ofstream( filename )
-	{
+	Echostream( const char * filename ) : std::ofstream( filename ) {
 		set_output_handler( &Echostream::output, this );
 	}
 	static void output( const std::string &msg, void *userdata ) {
 		Echostream *thisp = static_cast<Echostream*>(userdata);
 		*thisp << msg << "\n";
+	}
+	~Echostream() {
+		this->close();
 	}
 };
 
@@ -189,7 +191,7 @@ Camera get_camera( po::variables_map vm )
 	return camera;
 }
 
-int cmdline( const char* deps_output_file, const char* filename, Camera &camera, const char *output_file, fs::path original_path, Render::type renderer, char ** argv, bool echo )
+int cmdline( const char* deps_output_file, const char* filename, Camera &camera, const char *output_file, fs::path original_path, Render::type renderer, char ** argv )
 {
 	parser_init(boosty::stringy(boost::filesystem::path( argv[0] ).parent_path()));
 	Tree tree;
@@ -228,9 +230,9 @@ int cmdline( const char* deps_output_file, const char* filename, Camera &camera,
 #if 0 && DEBUG
 	top_ctx.dump(NULL, NULL);
 #endif
-
-	Echostream *echostream;
-	if (echo_output_file) echostream = new Echostream( echo_output_file );
+	shared_ptr<Echostream> echostream;
+	if (echo_output_file)
+		echostream.reset( new Echostream( echo_output_file ) );
 
 	FileModule *root_module;
 	ModuleInstantiation root_inst("group");
@@ -269,8 +271,6 @@ int cmdline( const char* deps_output_file, const char* filename, Camera &camera,
 		root_node = absolute_root_node;
 
 	tree.setRoot(root_node);
-
-	if (echostream) echostream->close();
 
 	if (csg_output_file) {
 		fs::current_path(original_path);
