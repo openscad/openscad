@@ -53,6 +53,16 @@ printUsage()
   echo
 }
 
+detect_glu()
+{
+  detect_glu_result=
+  if [ -e $DEPLOYDIR/include/GL/glu.h ]; then detect_glu_result=1; fi
+  if [ -e /usr/include/GL/glu.h ]; then detect_glu_result=1; fi
+  if [ -e /usr/local/include/GL/glu.h ]; then detect_glu_result=1; fi
+  if [ -e /usr/pkg/X11R7/include/GL/glu.h ]; then detect_glu_result=1; fi
+  return
+}
+
 build_glu()
 {
   version=$1
@@ -436,7 +446,8 @@ build_opencsg()
     cp src/Makefile src/Makefile.bak2
     cat src/Makefile.bak2 | sed s@^LIBS.*@LIBS\ =\ -L$BASEDIR/lib\ -L/usr/X11R6/lib\ -lGLU\ -lGL@ > src/Makefile
     tmp=$version
-    build_glu 9.0.0 # todo - autodetect the need for glu
+    detect_glu
+    if [ ! $detect_glu_result ]; then build_glu 9.0.0 ; fi
     version=$tmp
   fi
 
@@ -582,6 +593,8 @@ if [ $1 ]; then
   fi
 fi
 
+
+# todo - cgal 4.02 for gcc<4.7, gcc 4.2 for above
 
 #
 # Main build of libraries
