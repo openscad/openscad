@@ -1,6 +1,6 @@
 # instructions - see ../doc/testing.txt
 
-set(DEBUG_OSCD 1) # print debug info during cmake
+# set(DEBUG_OSCD 1) # print debug info during cmake
 
 cmake_minimum_required(VERSION 2.8)
 if("${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}.${CMAKE_PATCH_VERSION}" VERSION_GREATER 2.8.3)
@@ -40,7 +40,6 @@ set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}")
 
 # Build debug build as default
 if(NOT CMAKE_BUILD_TYPE)
-<<<<<<< HEAD
   #  set(CMAKE_BUILD_TYPE Release)
   if(CMAKE_COMPILER_IS_GNUCXX)
     execute_process(COMMAND ${CMAKE_C_COMPILER} -dumpversion OUTPUT_VARIABLE GCC_VERSION)
@@ -52,10 +51,6 @@ if(NOT CMAKE_BUILD_TYPE)
   else()
     set(CMAKE_BUILD_TYPE RelWithDebInfo)
   endif()
-=======
-  set(CMAKE_BUILD_TYPE RelWithDebInfo)
-#  set(CMAKE_BUILD_TYPE Release)
->>>>>>> 4ebd8136a83325e67be7a39c9349ec8812aa05c1
 endif()
 
 if(CMAKE_COMPILER_IS_GNUCXX)
