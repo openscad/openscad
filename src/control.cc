@@ -33,24 +33,36 @@
 #include <sstream>
 #include "mathc99.h"
 
-enum control_type_e {
-	CHILD,
-	ECHO,
-	ASSIGN,
-	FOR,
-	INT_FOR,
-	IF
-};
-
 class ControlModule : public AbstractModule
 {
-public:
-	control_type_e type;
-	ControlModule(control_type_e type) : type(type) { }
-	virtual AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const;
-};
+public: // types
+	enum Type {
+		CHILD,
+		CHILDREN,
+		ECHO,
+		ASSIGN,
+		FOR,
+		INT_FOR,
+		IF
+    };
+public: // methods
+	ControlModule(Type type)
+		: type(type)
+	{ }
 
-void for_eval(AbstractNode &node, const ModuleInstantiation &inst, size_t l, 
+	virtual AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const;
+
+	static void for_eval(AbstractNode &node, const ModuleInstantiation &inst, size_t l, 
+						 const Context *ctx, const EvalContext *evalctx);
+
+	static const EvalContext* getLastModuleCtx(const EvalContext *evalctx);
+
+private: // data
+	Type type;
+
+}; // class ControlModule
+
+void ControlModule::for_eval(AbstractNode &node, const ModuleInstantiation &inst, size_t l, 
 							const Context *ctx, const EvalContext *evalctx)
 {
 	if (evalctx->numArgs() > l) {
@@ -87,6 +99,26 @@ void for_eval(AbstractNode &node, const ModuleInstantiation &inst, size_t l,
 	}
 }
 
+const EvalContext* ControlModule::getLastModuleCtx(const EvalContext *evalctx)
+{
+	// Find the last custom module invocation, which will contain
+	// an eval context with the children of the module invokation
+	const Context *tmpc = evalctx;
+	while (tmpc->parent) {
+		const ModuleContext *modulectx = dynamic_cast<const ModuleContext*>(tmpc->parent);
+		if (modulectx) {
+			// This will trigger if trying to invoke child from the root of any file
+			// assert(filectx->evalctx);
+			if (modulectx->evalctx) {
+				return modulectx->evalctx;
+			}
+			return NULL;
+		}
+		tmpc = tmpc->parent;
+	}
+	return NULL;
+}
+
 AbstractNode *ControlModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const
 {
 	AbstractNode *node = NULL;
@@ -107,27 +139,35 @@ AbstractNode *ControlModule::instantiate(const Context *ctx, const ModuleInstant
 
 		// Find the last custom module invocation, which will contain
 		// an eval context with the children of the module invokation
-		const Context *tmpc = evalctx;
-		while (tmpc->parent) {
-			const ModuleContext *filectx = dynamic_cast<const ModuleContext*>(tmpc->parent);
-			if (filectx) {
-        // This will trigger if trying to invoke child from the root of any file
-        // assert(filectx->evalctx);
-
-				if (filectx->evalctx) {
-					if (n < (int)filectx->evalctx->numChildren()) {
-						node = filectx->evalctx->getChild(n)->evaluate(filectx->evalctx);
-					}
-					else {
-						// How to deal with negative objects in this case?
+		const EvalContext *modulectx = getLastModuleCtx(evalctx);
+		if (modulectx==NULL) {
+			return NULL;
+		}
+		// This will trigger if trying to invoke child from the root of any file
+        if (n < (int)modulectx->numChildren()) {
+			node = modulectx->getChild(n)->evaluate(modulectx);
+		}
+		else {
+			// How to deal with negative objects in this case?
             // (e.g. first child of difference is invalid)
-						PRINTB("WARNING: Child index (%d) out of bounds (%d children)", 
-									 n % filectx->evalctx->numChildren());
-					}
-				}
-				return node;
-			}
-			tmpc = tmpc->parent;
+			PRINTB("WARNING: Child index (%d) out of bounds (%d children)", 
+				   n % modulectx->numChildren());
+		}
+		return node;
+	}
+
+	if (type == CHILDREN)
+	{
+		const EvalContext *modulectx = getLastModuleCtx(evalctx);
+		if (modulectx==NULL) {
+			return NULL;
+		}
+		AbstractNode* node = new AbstractNode(inst);
+		// This will trigger if trying to invoke child from the root of any file
+		// assert(filectx->evalctx);
+		for (int n = 0; n < (int)modulectx->numChildren(); ++n) {
+			AbstractNode* childnode = modulectx->getChild(n)->evaluate(modulectx);
+			node->children.push_back(childnode);
 		}
 		return node;
 	}
@@ -183,10 +223,11 @@ AbstractNode *ControlModule::instantiate(const Context *ctx, const ModuleInstant
 
 void register_builtin_control()
 {
-	Builtins::init("child", new ControlModule(CHILD));
-	Builtins::init("echo", new ControlModule(ECHO));
-	Builtins::init("assign", new ControlModule(ASSIGN));
-	Builtins::init("for", new ControlModule(FOR));
-	Builtins::init("intersection_for", new ControlModule(INT_FOR));
-	Builtins::init("if", new ControlModule(IF));
+	Builtins::init("child", new ControlModule(ControlModule::CHILD));
+	Builtins::init("children", new ControlModule(ControlModule::CHILDREN));
+	Builtins::init("echo", new ControlModule(ControlModule::ECHO));
+	Builtins::init("assign", new ControlModule(ControlModule::ASSIGN));
+	Builtins::init("for", new ControlModule(ControlModule::FOR));
+	Builtins::init("intersection_for", new ControlModule(ControlModule::INT_FOR));
+	Builtins::init("if", new ControlModule(ControlModule::IF));
 }
