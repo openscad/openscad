@@ -32,7 +32,6 @@
 #include "value.h"
 #include "export.h"
 #include "builtin.h"
-#include "nodedumper.h"
 #include "printutils.h"
 #include "handle_dep.h"
 #include "parsersettings.h"
@@ -327,9 +326,6 @@ int main(int argc, char **argv)
 
 	parser_init(QApplication::instance()->applicationDirPath().toLocal8Bit().constData());
 
-	// Initialize global visitors
-	NodeCache nodecache;
-	NodeDumper dumper(nodecache);
 	Tree tree;
 #ifdef ENABLE_CGAL
 	CGALEvaluator cgalevaluator(tree);
