@@ -332,6 +332,8 @@ case $OS in
             -e '/lib(icu.*|stdc.*|audio|CGAL|GLEW|opencsg|png|gmp|gmpxx|mpfr)\.so/ { p; d; };' \
             -e 'd;' | xargs cp -vt openscad-$VERSION/lib/openscad/
         strip openscad-$VERSION/lib/openscad/*
+        mkdir -p openscad-$VERSION/share/appdata
+        cp openscad.appdata.xml openscad-$VERSION/share/appdata
         cp scripts/installer-linux.sh openscad-$VERSION/install.sh
         chmod 755 -R openscad-$VERSION/
         PACKAGEFILE=openscad-$VERSION.x86-$ARCH.tar.gz
