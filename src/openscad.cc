@@ -36,6 +36,7 @@
 #include "parsersettings.h"
 #include "rendersettings.h"
 #include "PlatformUtils.h"
+#include "nodedumper.h"
 
 #include <string>
 #include <vector>
