@@ -42,4 +42,7 @@ cp -rv examples/. "$prefix"/share/openscad/examples/
 echo "Copying libraries..."
 cp -rv libraries/. "$prefix"/share/openscad/libraries/
 
+echo "Copying support files..."
+cp -rv share/. "$prefix"/share/
+
 echo "Installation finished. Have a nice day."
