@@ -518,7 +518,7 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 }
 #else // OPENSCAD_QTGUI
 bool QtUseGUI() { return false; }
-int gui(const vector<string> &inputFiles, int argc, char ** argv)
+int gui(const vector<string> &inputFiles, const fs::path &original_path, int argc, char ** argv)
 {
 	fprintf(stderr,"Error: compiled without QT, but trying to run GUI\n");
 	return 1;
@@ -648,7 +648,7 @@ int main(int argc, char **argv)
 	}
 	else {
 		fprintf(stderr, "Requested GUI mode but can't open display!\n");
-		return 1;
+		help(argv[0]);
 	}
 
 	Builtins::instance(true);
