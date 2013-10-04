@@ -51,6 +51,9 @@ if( __cmake_system_name__ MATCHES "Linux|BSD")
   # in the build directory).
   set(ENV{DISPLAY} "${VFB_DISPLAY}")
 
+  # this line is for MCAD
+  set(ENV{OPENSCADPATH} "__cmake_current_source_dir__/../libraries")
+
   set(CTEST_CUSTOM_POST_TEST "__cmake_current_source_dir__/virtualfb.sh")
  endif()
 endif()
@@ -58,8 +61,8 @@ endif()
 
 # Part 1. Pretty Printing
 
-message("running '__gui_binpath__ --info' to generate sysinfo.txt")
-execute_process(COMMAND __wine__ __gui_binpath__ --info OUTPUT_FILE sysinfo.txt)
+message("running '__openscad_binpath__ --info' to generate sysinfo.txt")
+execute_process(COMMAND __wine__ __openscad_binpath__ --info OUTPUT_FILE sysinfo.txt)
 set(CTEST_CUSTOM_POST_TEST ${CTEST_CUSTOM_POST_TEST} "__cmake_current_binary_dir__/test_pretty_print")
 
 if ( ${debug_openscad_template} )

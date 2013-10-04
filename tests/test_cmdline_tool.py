@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 
 #
 # Regression test driver for cmd-line tools
