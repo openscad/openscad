@@ -55,7 +55,6 @@
 #include <sstream>
 
 #ifdef __APPLE__
-#include "EventFilter.h"
 #include "AppleEvents.h"
 #ifdef OPENSCAD_DEPLOY
   #include "SparkleAutoUpdater.h"
@@ -433,6 +432,9 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 
 #ifdef OPENSCAD_QTGUI
 #include "MainWindow.h"
+  #ifdef __APPLE__
+  #include "EventFilter.h"
+  #endif
 #include <QApplication>
 #include <QString>
 #include <QDir>

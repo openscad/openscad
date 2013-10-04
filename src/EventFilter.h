@@ -1,8 +1,6 @@
 #ifndef FILTER_H_
 #define FILTER_H_
 
-#ifdef OPENSCAD_QTGUI
-
 #include <QObject>
 #include <QFileOpenEvent>
 #include "MainWindow.h"
@@ -26,7 +24,5 @@ protected:
 		}
 	}
 };
-
-#endif // OPENSCAD_QTGUI
 
 #endif
