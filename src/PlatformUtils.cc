@@ -40,11 +40,12 @@ std::string PlatformUtils::libraryPath()
 }
 
 #include "version_check.h"
-#include "cgal.h"
-#include <boost/algorithm/string.hpp>
 #define STRINGIFY(x) #x
 #define TOSTRING(x) STRINGIFY(x)
 
+#ifdef ENABLE_CGAL
+#include "cgal.h"
+#include <boost/algorithm/string.hpp>
 #if defined(__GNUG__)
 #define GCC_INT_VERSION (__GNUC__ * 10000 + __GNUC_MINOR__ * 100 )
 #if GCC_INT_VERSION > 40600 || defined(__clang__)
@@ -52,6 +53,7 @@ std::string PlatformUtils::libraryPath()
 #define __openscad_info_demangle__ 1
 #endif // GCC_INT_VERSION
 #endif // GNUG
+#endif // ENABLE_CGAL
 
 std::string PlatformUtils::info()
 {
@@ -79,6 +81,13 @@ std::string PlatformUtils::info()
 #define OPENCSG_VERSION_STRING "unknown, <1.3.2"
 #endif
 
+#ifdef QT_VERSION
+	std::string qtVersion = qVersion();
+#else
+	std::string qtVersion = "Qt disabled";
+#endif
+
+#ifdef ENABLE_CGAL
 	std::string cgal_3d_kernel = typeid(CGAL_Kernel3).name();
 	std::string cgal_2d_kernel = typeid(CGAL_Kernel2).name();
 	std::string cgal_2d_kernelEx = typeid(CGAL_ExactKernel2).name();
@@ -87,20 +96,25 @@ std::string PlatformUtils::info()
 	cgal_3d_kernel = std::string( abi::__cxa_demangle( cgal_3d_kernel.c_str(), 0, 0, &status ) );
 	cgal_2d_kernel = std::string( abi::__cxa_demangle( cgal_2d_kernel.c_str(), 0, 0, &status ) );
 	cgal_2d_kernelEx = std::string( abi::__cxa_demangle( cgal_2d_kernelEx.c_str(), 0, 0, &status ) );
-#endif
+#endif // demangle
 	boost::replace_all( cgal_3d_kernel, "CGAL::", "" );
 	boost::replace_all( cgal_2d_kernel, "CGAL::", "" );
 	boost::replace_all( cgal_2d_kernelEx, "CGAL::", "" );
+#else // ENABLE_CGAL
+	std::string cgal_3d_kernel = "";
+	std::string cgal_2d_kernel = "";
+	std::string cgal_2d_kernelEx = "";
+#endif // ENABLE_CGAL
 
 	s << "OpenSCAD Version: " << TOSTRING(OPENSCAD_VERSION)
-          << "\nCompiler: " << compiler_info
-	  << "\nCompile date: " << __DATE__
+          << "\nCompiler, build date: " << compiler_info << ", " << __DATE__
 	  << "\nBoost version: " << BOOST_LIB_VERSION
 	  << "\nEigen version: " << EIGEN_WORLD_VERSION << "." << EIGEN_MAJOR_VERSION << "." << EIGEN_MINOR_VERSION
 	  << "\nCGAL version, kernels: " << TOSTRING(CGAL_VERSION) << ", " << cgal_3d_kernel << ", " << cgal_2d_kernel << ", " << cgal_2d_kernelEx
 	  << "\nOpenCSG version: " << OPENCSG_VERSION_STRING
-	  << "\nQt version: " << qVersion()
+	  << "\nQt version: " << qtVersion
 	  << "\nMingW build: " << mingwstatus
+	  << "\nOPENSCADPATH: " << getenv("OPENSCADPATH")
 	;
 	return s.str();
 }

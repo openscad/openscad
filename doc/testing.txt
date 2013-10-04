@@ -69,11 +69,9 @@ This is almost the same as adding a new regression test:
 Migration away from dedicated regression tests:
 -----------------------------------------------
 
-Two tests still need an intermediate script that mangles away timestamps and
+This test still needs an intermediate script that mangles away timestamps and
 near-zero floating point numbers:
 
-* dumptest
-* echotest
 * cgalstlsanitytest
 
 Some tests are yet to be converted:
@@ -84,15 +82,6 @@ These look like tests, but are not actually in use:
 
 * modulecachetest
 * cgalcachetest
-
-In the course of migration, the possibilities of using the OPENSCAD_TESTING
-compile time flag go away; that flag used to strip timestamps out of files,
-to unify float output, and to tweak the file inclusion paths. With that flag
-unused, we get better coverage of the primary code paths, at the cost of
-having to do some normalization in the unit testing process (thus the dumptest
-and echo test scripts). Especially, having a nonstandard MCAD library in the
-user include path can now break things -- but so can having misbehaving
-programs in your PATH.
 
 Troubleshooting:
 ------------------------------

@@ -54,6 +54,7 @@ public:
 	std::vector<shared_ptr<CSGTerm> > background_terms;
 	CSGChain *background_chain;
 	QString last_compiled_doc;
+	static QString qexamplesdir;
 
 	static const int maxRecentFiles = 10;
 	QAction *actionRecentFile[maxRecentFiles];
@@ -134,6 +135,7 @@ private slots:
 	void actionFlushCaches();
 
 public:
+	static void setExamplesDir(const QString &dir) { MainWindow::qexamplesdir = dir; }
 	void viewModeActionsUncheck();
 	void setCurrentOutput();
 	void clearCurrentOutput();
@@ -201,7 +203,7 @@ public:
 	static void unlock() { gui_locked--; }
 
 private:
-	static unsigned int gui_locked;
+ 	static unsigned int gui_locked;
 };
 
 #endif
