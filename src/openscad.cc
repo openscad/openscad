@@ -191,7 +191,7 @@ Camera get_camera( po::variables_map vm )
 	return camera;
 }
 
-int cmdline( const char* deps_output_file, const char* filename, Camera &camera, const char *output_file, fs::path original_path, Render::type renderer, char ** argv )
+int cmdline(const char *deps_output_file, const std::string &filename, Camera &camera, const char *output_file, const fs::path &original_path, Render::type renderer, char ** argv )
 {
 	parser_init(boosty::stringy(boost::filesystem::path( argv[0] ).parent_path()));
 	Tree tree;
@@ -240,11 +240,11 @@ int cmdline( const char* deps_output_file, const char* filename, Camera &camera,
 	AbstractNode *absolute_root_node;
 	CGAL_Nef_polyhedron root_N;
 
-	handle_dep(filename);
+	handle_dep(filename.c_str());
 
-	std::ifstream ifs(filename);
+	std::ifstream ifs(filename.c_str());
 	if (!ifs.is_open()) {
-		fprintf(stderr, "Can't open input file '%s'!\n", filename);
+		fprintf(stderr, "Can't open input file '%s'!\n", filename.c_str());
 		return 1;
 	}
 	std::string text((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
@@ -253,7 +253,7 @@ int cmdline( const char* deps_output_file, const char* filename, Camera &camera,
 	std::string parentpath = boosty::stringy(abspath.parent_path());
 	root_module = parse(text.c_str(), parentpath.c_str(), false);
 	if (!root_module) {
-		fprintf(stderr, "Can't parse file '%s'!\n", filename);
+		fprintf(stderr, "Can't parse file '%s'!\n", filename.c_str());
 		return 1;
 	}
 	root_module->handleDependencies();
@@ -452,7 +452,7 @@ bool QtUseGUI()
 	return useGUI;
 }
 
-int gui(const char * filename,int argc, char ** argv)
+int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, char ** argv)
 {
 	QApplication app(argc, argv, true); //useGUI);
 #ifdef Q_WS_MAC
@@ -483,6 +483,7 @@ int gui(const char * filename,int argc, char ** argv)
 				if (exdir.cd("examples")) {
 					qexamplesdir = exdir.path();
 				}
+	MainWindow::setExamplesDir(qexamplesdir);
 
 	parser_init(QApplication::instance()->applicationDirPath().toLocal8Bit().constData());
 
@@ -496,9 +497,6 @@ int gui(const char * filename,int argc, char ** argv)
 	if (updater->automaticallyChecksForUpdates()) updater->checkForUpdates();
 #endif
 
-	QString qfilename;
-	if (filename) qfilename = QString::fromLocal8Bit(boosty::stringy(boosty::absolute(filename)).c_str());
-
 #if 0 /*** disabled by clifford wolf: adds rendering artefacts with OpenCSG ***/
 	// turn on anti-aliasing
 	QGLFormat f;
@@ -506,25 +504,21 @@ int gui(const char * filename,int argc, char ** argv)
 	f.setSamples(4);
 	QGLFormat::setDefaultFormat(f);
 #endif
+	if (!inputFiles.size()) inputFiles.push_back("");
 #ifdef ENABLE_MDI
-	new MainWindow(qfilename,qexamplesdir);
-	vector<string> inputFiles;
-	if (vm.count("input-file")) {
-		inputFiles = vm["input-file"].as<vector<string> >();
-		for (vector<string>::const_iterator infile = inputFiles.begin()+1; infile != inputFiles.end(); infile++) {
-			new MainWindow(QString::fromLocal8Bit(boosty::stringy(original_path / *infile).c_str()));
-		}
+	BOOST_FOREACH(const string &infile, inputFiles) {
+		new MainWindow(QString::fromLocal8Bit(boosty::stringy(original_path / infile).c_str()));
 	}
 	app.connect(&app, SIGNAL(lastWindowClosed()), &app, SLOT(quit()));
 #else
-	MainWindow *m = new MainWindow(qfilename,qexamplesdir);
+	MainWindow *m = new MainWindow(QString::fromLocal8Bit(boosty::stringy(original_path / inputFiles[0]).c_str()));
 	app.connect(m, SIGNAL(destroyed()), &app, SLOT(quit()));
 #endif
 	return app.exec();
 }
 #else // OPENSCAD_QTGUI
 bool QtUseGUI() { return false; }
-int gui(const char * filename,int argc, char ** argv)
+int gui(const vector<string> &inputFiles, int argc, char ** argv)
 {
 	fprintf(stderr,"Error: compiled without QT, but trying to run GUI\n");
 	return 1;
@@ -627,13 +621,12 @@ int main(int argc, char **argv)
 			commandline_commands += ";\n";
 		}
 	}
-
-	if (vm.count("input-file")) {
-		filename = vm["input-file"].as< vector<string> >().begin()->c_str();
+	vector<string> inputFiles;
+	if (vm.count("input-file"))	{
+		inputFiles = vm["input-file"].as<vector<string> >();
 	}
-
 #ifndef ENABLE_MDI
-	if (vm.count("input-file") > 1) {
+	if (inputFiles.size() > 1) {
 		help(argv[0]);
 	}
 #endif
@@ -646,17 +639,14 @@ int main(int argc, char **argv)
 	NodeCache nodecache;
 	NodeDumper dumper(nodecache);
 
-	if (output_file)
-	{
-		if (!filename) help(argv[0]);
-		rc = cmdline( deps_output_file, filename, camera, output_file, original_path, renderer, argv );
+	if (output_file) {
+		if (!inputFiles.size()) help(argv[0]);
+		rc = cmdline(deps_output_file, inputFiles[0], camera, output_file, original_path, renderer, argv);
 	}
-	else if (QtUseGUI())
-	{
-		rc = gui(filename,argc,argv);
+	else if (QtUseGUI()) {
+		rc = gui(inputFiles, original_path, argc, argv);
 	}
-	else
-	{
+	else {
 		fprintf(stderr, "Requested GUI mode but can't open display!\n");
 		return 1;
 	}

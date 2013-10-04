@@ -104,6 +104,7 @@
 
 // Global application state
 unsigned int GuiLocker::gui_locked = 0;
+QString MainWindow::qexamplesdir;
 
 #define QUOTE(x__) # x__
 #define QUOTED(x__) QUOTE(x__)
@@ -153,7 +154,7 @@ settings_valueList(const QString &key, const QList<int> &defaultList = QList<int
 
 }
 
-MainWindow::MainWindow(const QString &filename, const QString &examplesdir)
+MainWindow::MainWindow(const QString &filename)
 	: root_inst("group"), progresswidget(NULL)
 {
 	setupUi(this);
@@ -166,7 +167,6 @@ MainWindow::MainWindow(const QString &filename, const QString &examplesdir)
 
 	top_ctx.registerBuiltin();
 
-	this->qexamplesdir = examplesdir;
 	this->openglbox = NULL;
 	root_module = NULL;
 	absolute_root_node = NULL;
