@@ -184,7 +184,8 @@ AbstractNode *ControlModule::instantiate(const Context* /*ctx*/, const ModuleIns
 		else {
 			// How to deal with negative objects in this case?
             // (e.g. first child of difference is invalid)
-			PRINTB("WARNING: Child index (%d) out of bounds (%d children)", n % modulectx->numChildren());
+			PRINTB("WARNING: Child index (%d) out of bounds (%d children)", 
+				   n % modulectx->numChildren());
 		}
 		return node;
 	}
