@@ -88,7 +88,7 @@ fs::path find_valid_path(const fs::path &sourcepath,
 	return fs::path();
 }
 
-void parser_init(const std::string &applicationpath)
+void parser_init(const std::string &applicationpath, bool isgui)
 {
   // Add paths from OPENSCADPATH before adding built-in paths
 	const char *openscadpaths = getenv("OPENSCADPATH");
@@ -116,8 +116,11 @@ void parser_init(const std::string &applicationpath)
 	fs::path libdir(applicationpath);
 	fs::path tmpdir;
 #ifdef __APPLE__
-	libdir /= "../Resources"; // Libraries can be bundled
-	if (!is_directory(libdir / "libraries")) libdir /= "../../..";
+	// Libraries can be bundled on Mac. If not, fall back to development layout
+	if (isgui) {
+		libdir /= "../Resources";
+		if (!is_directory(libdir / "libraries")) libdir /= "../../..";
+	}
 #elif !defined(WIN32)
 	if (is_directory(tmpdir = libdir / "../share/openscad/libraries")) {
 		librarydir = boosty::stringy(tmpdir);

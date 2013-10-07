@@ -190,9 +190,9 @@ Camera get_camera( po::variables_map vm )
 	return camera;
 }
 
-int cmdline(const char *deps_output_file, const std::string &filename, Camera &camera, const char *output_file, const fs::path &original_path, Render::type renderer, char ** argv )
+int cmdline(const std::string &application_path, const char *deps_output_file, const std::string &filename, Camera &camera, const char *output_file, const fs::path &original_path, Render::type renderer, char ** argv )
 {
-	parser_init(boosty::stringy(boost::filesystem::path( argv[0] ).parent_path()));
+	parser_init(application_path, false);
 	Tree tree;
 #ifdef ENABLE_CGAL
 	CGALEvaluator cgalevaluator(tree);
@@ -454,7 +454,7 @@ bool QtUseGUI()
 	return useGUI;
 }
 
-int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, char ** argv)
+int gui(const std::string &application_path, vector<string> &inputFiles, const fs::path &original_path, int argc, char ** argv)
 {
 	QApplication app(argc, argv, true); //useGUI);
 #ifdef Q_WS_MAC
@@ -465,7 +465,7 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 	QCoreApplication::setOrganizationDomain("openscad.org");
 	QCoreApplication::setApplicationName("OpenSCAD");
 	QCoreApplication::setApplicationVersion(TOSTRING(OPENSCAD_VERSION));
-
+	
 	QDir exdir(QApplication::instance()->applicationDirPath());
 	QString qexamplesdir;
 #ifdef Q_WS_MAC
@@ -486,8 +486,7 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 					qexamplesdir = exdir.path();
 				}
 	MainWindow::setExamplesDir(qexamplesdir);
-
-	parser_init(QApplication::instance()->applicationDirPath().toLocal8Bit().constData());
+  parser_init(application_path, true);
 
 #ifdef Q_WS_MAC
 	installAppleEventHandlers();
@@ -520,7 +519,7 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 }
 #else // OPENSCAD_QTGUI
 bool QtUseGUI() { return false; }
-int gui(const vector<string> &inputFiles, const fs::path &original_path, int argc, char ** argv)
+int gui(const std::string &application_path, const vector<string> &inputFiles, const fs::path &original_path, int argc, char ** argv)
 {
 	fprintf(stderr,"Error: compiled without QT, but trying to run GUI\n");
 	return 1;
@@ -641,12 +640,23 @@ int main(int argc, char **argv)
 	NodeCache nodecache;
 	NodeDumper dumper(nodecache);
 
-	if (output_file) {
+	bool cmdlinemode = false;
+	if (output_file) { // cmd-line mode
+		cmdlinemode = true;
 		if (!inputFiles.size()) help(argv[0]);
-		rc = cmdline(deps_output_file, inputFiles[0], camera, output_file, original_path, renderer, argv);
+	}
+	const std::string application_path = 
+#ifdef OPENSCAD_QTGUI
+		QApplication::instance()->applicationDirPath().toLocal8Bit().constData();
+#else
+		boosty::stringy(boosty::absolute(boost::filesystem::path(argv[0]).parent_path()));
+#endif
+
+	if (cmdlinemode) {
+		rc = cmdline(application_path, deps_output_file, inputFiles[0], camera, output_file, original_path, renderer, argv);
 	}
 	else if (QtUseGUI()) {
-		rc = gui(inputFiles, original_path, argc, argv);
+		rc = gui(application_path, inputFiles, original_path, argc, argv);
 	}
 	else {
 		fprintf(stderr, "Requested GUI mode but can't open display!\n");
