@@ -65,7 +65,6 @@ public:
   Value(const char v);
   Value(const VectorType &v);
   Value(const RangeType &v);
-  Value(double begin, double step, double end);
   ~Value() {}
 
   ValueType type() const;

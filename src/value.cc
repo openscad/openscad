@@ -117,11 +117,6 @@ Value::Value(const RangeType &v) : value(v)
   //  std::cout << "creating range\n";
 }
 
-Value::Value(double begin, double step, double end) : value(RangeType(begin, step, end))
-{
-  //  std::cout << "creating range from numbers\n";
-}
-
 Value::ValueType Value::type() const
 {
   return static_cast<ValueType>(this->value.which());
