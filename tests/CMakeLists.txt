@@ -437,6 +437,9 @@ include_directories(../src)
 add_definitions(-DOPENSCAD_VERSION=test -DOPENSCAD_YEAR=2011 -DOPENSCAD_MONTH=10)
 add_definitions(-DOPENSCAD_TESTING)
 
+# Search for MCAD in correct place
+set(CTEST_ENVIRONMENT "${CTEST_ENVIRONMENT};OPENSCADPATH=${CMAKE_CURRENT_SOURCE_DIR}/../libraries")
+
 # Platform specific settings
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
