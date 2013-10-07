@@ -119,7 +119,7 @@ const EvalContext* ControlModule::getLastModuleCtx(const EvalContext *evalctx)
 	return NULL;
 }
 
-AbstractNode *ControlModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const
+AbstractNode *ControlModule::instantiate(const Context* /*ctx*/, const ModuleInstantiation *inst, const EvalContext *evalctx) const
 {
 	AbstractNode *node = NULL;
 
@@ -150,8 +150,7 @@ AbstractNode *ControlModule::instantiate(const Context *ctx, const ModuleInstant
 		else {
 			// How to deal with negative objects in this case?
             // (e.g. first child of difference is invalid)
-			PRINTB("WARNING: Child index (%d) out of bounds (%d children)", 
-				   n % modulectx->numChildren());
+			PRINTB("WARNING: Child index (%d) out of bounds (%d children)", n % modulectx->numChildren());
 		}
 		return node;
 	}
@@ -162,14 +161,47 @@ AbstractNode *ControlModule::instantiate(const Context *ctx, const ModuleInstant
 		if (modulectx==NULL) {
 			return NULL;
 		}
-		AbstractNode* node = new AbstractNode(inst);
 		// This will trigger if trying to invoke child from the root of any file
 		// assert(filectx->evalctx);
-		for (int n = 0; n < (int)modulectx->numChildren(); ++n) {
-			AbstractNode* childnode = modulectx->getChild(n)->evaluate(modulectx);
-			node->children.push_back(childnode);
+		if (evalctx->numArgs()<=0) {
+			// no parameters => all children
+			AbstractNode* node = new AbstractNode(inst);
+			for (int n = 0; n < (int)modulectx->numChildren(); ++n) {
+				AbstractNode* childnode = modulectx->getChild(n)->evaluate(modulectx);
+				node->children.push_back(childnode);
+			}
+			return node;
 		}
-		return node;
+		else if (evalctx->numArgs()>0) {
+			// one (or more ignored) parameter
+			const Value& value = evalctx->getArgValue(0);
+			if (value.type() == Value::NUMBER) {
+				double v;
+				if (!value.getDouble(v)) {
+					PRINTB("WARNING: Bad parameter type (%s) for children, only accept: empty, number.", value.toString());
+					return NULL;
+				}
+				int n = trunc(v);
+				if (n < 0) {
+					PRINTB("WARNING: Negative children index (%d) not allowed", n);
+					return NULL; // Disallow negative child indices
+				}
+				if (n>=(int)modulectx->numChildren()) {
+					// How to deal with negative objects in this case?
+					// (e.g. first child of difference is invalid)
+					PRINTB("WARNING: Children index (%d) out of bounds (%d children)"
+							, n % modulectx->numChildren());
+				}
+				return modulectx->getChild(n)->evaluate(modulectx);
+			}
+			else {
+				// Invalid parameter
+				// (e.g. first child of difference is invalid)
+				PRINTB("WARNING: Bad parameter type (%s) for children, only accept: empty, number.", value.toString());
+				return NULL;
+			}
+		}
+		return NULL;
 	}
 
 	if (type == INT_FOR)
