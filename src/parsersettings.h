@@ -6,7 +6,7 @@
 
 extern int parser_error_pos;
 
-void parser_init(const std::string &applicationpath);
+void parser_init(const std::string &applicationpath, bool isgui);
 void add_librarydir(const std::string &libdir);
 fs::path search_libs(const fs::path &localpath);
 fs::path find_valid_path(const fs::path &sourcepath, 
