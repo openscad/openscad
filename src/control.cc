@@ -79,7 +79,7 @@ void ControlModule::for_eval(AbstractNode &node, const ModuleInstantiation &inst
 		if (it_values.type() == Value::RANGE) {
 			Value::RangeType range = it_values.toRange();
 			range.normalize();
-			if ((range.step > 0) && (range.begin-range.end)/range.step < 10000) {
+			if (range.nbsteps()<10000) {
 				for (double i = range.begin; i <= range.end; i += range.step) {
 					c.set_variable(it_name, Value(i));
 					for_eval(node, inst, l+1, &c, evalctx);
@@ -147,6 +147,7 @@ AbstractNode* ControlModule::getChild(const Value& value, const EvalContext* mod
 		// (e.g. first child of difference is invalid)
 		PRINTB("WARNING: Children index (%d) out of bounds (%d children)"
 			, n % modulectx->numChildren());
+		return NULL;
 	}
 	// OK
 	return modulectx->getChild(n)->evaluate(modulectx);
@@ -226,7 +227,7 @@ AbstractNode *ControlModule::instantiate(const Context* /*ctx*/, const ModuleIns
 				AbstractNode* node = new AbstractNode(inst);
 				Value::RangeType range = value.toRange();
 				range.normalize();
-				if ((range.step>0) && ((range.begin-range.end)/range.step>=10000)) {
+				if (range.nbsteps()>=10000) {
 					PRINTB("WARNING: Bad range parameter for children: too many elements (%d).", (int)((range.begin-range.end)/range.step));
 					return NULL;
 				}
