@@ -78,12 +78,8 @@ void ControlModule::for_eval(AbstractNode &node, const ModuleInstantiation &inst
 		Context c(ctx);
 		if (it_values.type() == Value::RANGE) {
 			Value::RangeType range = it_values.toRange();
-			if (range.end < range.begin) {
-				double t = range.begin;
-				range.begin = range.end;
-				range.end = t;
-			}
-			if (range.step > 0 && (range.begin-range.end)/range.step < 10000) {
+			range.normalize();
+			if ((range.step > 0) && (range.begin-range.end)/range.step < 10000) {
 				for (double i = range.begin; i <= range.end; i += range.step) {
 					c.set_variable(it_name, Value(i));
 					for_eval(node, inst, l+1, &c, evalctx);
@@ -132,12 +128,12 @@ AbstractNode* ControlModule::getChild(const Value& value, const EvalContext* mod
 	if (value.type()!=Value::NUMBER) {
 		// Invalid parameter
 		// (e.g. first child of difference is invalid)
-		PRINTB("WARNING: Bad parameter type (%s) for children, only accept: empty, number.", value.toString());
+		PRINTB("WARNING: Bad parameter type (%s) for children, only accept: empty, number, vector, range.", value.toString());
 		return NULL;
 	}
 	double v;
 	if (!value.getDouble(v)) {
-		PRINTB("WARNING: Bad parameter type (%s) for children, only accept: empty, number.", value.toString());
+		PRINTB("WARNING: Bad parameter type (%s) for children, only accept: empty, number, vector, range.", value.toString());
 		return NULL;
 	}
 		
@@ -205,6 +201,7 @@ AbstractNode *ControlModule::instantiate(const Context* /*ctx*/, const ModuleIns
 			AbstractNode* node = new AbstractNode(inst);
 			for (int n = 0; n < (int)modulectx->numChildren(); ++n) {
 				AbstractNode* childnode = modulectx->getChild(n)->evaluate(modulectx);
+				if (childnode==NULL) continue; // error
 				node->children.push_back(childnode);
 			}
 			return node;
@@ -215,7 +212,7 @@ AbstractNode *ControlModule::instantiate(const Context* /*ctx*/, const ModuleIns
 			if (value.type() == Value::NUMBER) {
 				return getChild(value,modulectx);
 			}
-			if (value.type() == Value::VECTOR) {
+			else if (value.type() == Value::VECTOR) {
 				AbstractNode* node = new AbstractNode(inst);
 				const Value::VectorType& vect = value.toVector();
 				foreach (const Value::VectorType::value_type& vectvalue, vect) {
@@ -225,10 +222,25 @@ AbstractNode *ControlModule::instantiate(const Context* /*ctx*/, const ModuleIns
 				}
 				return node;
 			}
+			else if (value.type() == Value::RANGE) {
+				AbstractNode* node = new AbstractNode(inst);
+				Value::RangeType range = value.toRange();
+				range.normalize();
+				if ((range.step>0) && ((range.begin-range.end)/range.step>=10000)) {
+					PRINTB("WARNING: Bad range parameter for children: too many elements (%d).", (int)((range.begin-range.end)/range.step));
+					return NULL;
+				}
+				for (double i = range.begin; i <= range.end; i += range.step) {
+					AbstractNode* childnode = getChild(Value(i),modulectx); // with error cases
+					if (childnode==NULL) continue; // error
+					node->children.push_back(childnode);
+				}
+				return node;
+			}
 			else {
 				// Invalid parameter
 				// (e.g. first child of difference is invalid)
-				PRINTB("WARNING: Bad parameter type (%s) for children, only accept: empty, number.", value.toString());
+				PRINTB("WARNING: Bad parameter type (%s) for children, only accept: empty, number, vector, range.", value.toString());
 				return NULL;
 			}
 		}
