@@ -937,31 +937,31 @@ add_cmdline_test(openscad-imgstretch2 EXE ${OPENSCAD_BINPATH}
                  SUFFIX png 
                  FILES ${CMAKE_SOURCE_DIR}/../examples/example001.scad)
 add_cmdline_test(openscad-camdist EXE ${OPENSCAD_BINPATH} 
-                 ARGS --imgsize=500,500 --camera=0,0,0,90,0,90,300  examples/example001.scad -o
+                 ARGS --imgsize=500,500 --camera=0,0,0,90,0,90,300 -o
                  SUFFIX png
                  FILES ${CMAKE_SOURCE_DIR}/../examples/example001.scad)
 add_cmdline_test(openscad-camrot EXE ${OPENSCAD_BINPATH}
-                 ARGS --imgsize=500,500 --camera=0,0,0,440,337.5,315,300  examples/example001.scad -o
+                 ARGS --imgsize=500,500 --camera=0,0,0,440,337.5,315,300 -o
                  SUFFIX png
                  FILES ${CMAKE_SOURCE_DIR}/../examples/example001.scad)
 add_cmdline_test(openscad-camtrans EXE ${OPENSCAD_BINPATH}
-                 ARGS --imgsize=500,500 --camera=100,-20,-10,90,0,90,300  examples/example001.scad -o
+                 ARGS --imgsize=500,500 --camera=100,-20,-10,90,0,90,300 -o
                  SUFFIX png
                  FILES ${CMAKE_SOURCE_DIR}/../examples/example001.scad)
 add_cmdline_test(openscad-camortho EXE ${OPENSCAD_BINPATH}
-                 ARGS --imgsize=500,500 --camera=100,-20,-10,90,0,90,300  examples/example001.scad --projection=o -o
+                 ARGS --imgsize=500,500 --camera=100,-20,-10,90,0,90,300 --projection=o -o
                  SUFFIX png
                  FILES ${CMAKE_SOURCE_DIR}/../examples/example001.scad)
 add_cmdline_test(openscad-cameye EXE ${OPENSCAD_BINPATH}
-                 ARGS --imgsize=500,500 --camera=60,40,30,0,0,0  examples/example001.scad -o
+                 ARGS --imgsize=500,500 --camera=60,40,30,0,0,0 -o
                  SUFFIX png
                  FILES ${CMAKE_SOURCE_DIR}/../examples/example001.scad)
 add_cmdline_test(openscad-cameye2 EXE ${OPENSCAD_BINPATH}
-                 ARGS --imgsize=500,500 --camera=160,140,130,0,0,0  examples/example001.scad -o
+                 ARGS --imgsize=500,500 --camera=160,140,130,0,0,0 -o
                  SUFFIX png
                  FILES ${CMAKE_SOURCE_DIR}/../examples/example001.scad)
 add_cmdline_test(openscad-cameyeortho EXE ${OPENSCAD_BINPATH}
-                 ARGS --imgsize=500,500 --camera=160,140,130,0,0,0  examples/example001.scad --projection=o -o 
+                 ARGS --imgsize=500,500 --camera=160,140,130,0,0,0 --projection=o -o 
                  SUFFIX png
                  FILES ${CMAKE_SOURCE_DIR}/../examples/example001.scad)
 add_cmdline_test(openscad-camcenter EXE ${OPENSCAD_BINPATH}
