@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <string>
+#include <algorithm>
 
 // Workaround for https://bugreports.qt-project.org/browse/QTBUG-22829
 #ifndef Q_MOC_RUN
@@ -38,6 +39,13 @@ public:
         this->step == other.step &&
         this->end == other.end;
     }
+
+    /// inverse begin/end if begin is upper than end
+    void normalize() {
+		if (end < begin) {
+			std::swap(begin,end);
+		}
+	}
 
     double begin;
     double step;
