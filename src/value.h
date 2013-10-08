@@ -3,6 +3,8 @@
 
 #include <vector>
 #include <string>
+#include <algorithm>
+#include <limits>
 
 // Workaround for https://bugreports.qt-project.org/browse/QTBUG-22829
 #ifndef Q_MOC_RUN
@@ -39,6 +41,20 @@ public:
         this->end == other.end;
     }
 
+    /// inverse begin/end if begin is upper than end
+    void normalize() {
+		if ((step>0) && (end < begin)) {
+			std::swap(begin,end);
+		}
+	}
+	/// return number of steps, max int value if step is null
+	int nbsteps() const {
+		if (step<=0) {
+			return std::numeric_limits<int>::max();
+		}
+		return (int)((begin-end)/step);
+	}
+
     double begin;
     double step;
     double end;
@@ -65,7 +81,6 @@ public:
   Value(const char v);
   Value(const VectorType &v);
   Value(const RangeType &v);
-  Value(double begin, double step, double end);
   ~Value() {}
 
   ValueType type() const;

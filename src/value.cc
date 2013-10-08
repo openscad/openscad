@@ -117,11 +117,6 @@ Value::Value(const RangeType &v) : value(v)
   //  std::cout << "creating range\n";
 }
 
-Value::Value(double begin, double step, double end) : value(RangeType(begin, step, end))
-{
-  //  std::cout << "creating range from numbers\n";
-}
-
 Value::ValueType Value::type() const
 {
   return static_cast<ValueType>(this->value.which());
@@ -590,7 +585,7 @@ public:
   Value operator()(const std::string &str, const double &idx) const {
     int i = int(idx);
     Value v;
-    if (i >= 0 && i < str.size()) {
+    if ((i >= 0) && (i < (int)str.size())) {
       v = Value(str[int(idx)]);
       //      std::cout << "bracket_visitor: " <<  v << "\n";
     }
@@ -599,7 +594,7 @@ public:
 
   Value operator()(const Value::VectorType &vec, const double &idx) const {
     int i = int(idx);
-    if (i >= 0 && i < vec.size()) return vec[int(idx)];
+    if ((i >= 0) && (i < (int)vec.size())) return vec[int(idx)];
     return Value::undefined;
   }
 
