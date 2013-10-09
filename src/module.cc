@@ -184,7 +184,6 @@ AbstractNode *Module::instantiate(const Context *ctx, const ModuleInstantiation 
 	ModuleContext c(ctx, evalctx);
 	// set $children first since we might have variables depending on it
 	c.set_variable("$children", Value(double(inst->scope.children.size())));
-	c.initializeModule(*this);
 	module_stack.push_back(inst->name());
 	c.set_variable("$parent_modules", Value(double(module_stack.size())));
 	c.initializeModule(*this);
