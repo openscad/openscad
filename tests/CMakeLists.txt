@@ -776,7 +776,8 @@ list(APPEND ECHO_FILES ${FUNCTION_FILES}
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/variable-scope-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/lookup-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/expression-shortcircuit-tests.scad
-            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/parent_module-tests.scad)
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/parent_module-tests.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/children-tests.scad)
 
 list(APPEND DUMPTEST_FILES ${FEATURES_FILES} ${EXAMPLE_FILES})
 list(APPEND DUMPTEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/escape-test.scad

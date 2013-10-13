@@ -119,7 +119,8 @@ Value Expression::evaluate(const Context *context) const
 		Value v2 = this->children[1]->evaluate(context);
 		Value v3 = this->children[2]->evaluate(context);
 		if (v1.type() == Value::NUMBER && v2.type() == Value::NUMBER && v3.type() == Value::NUMBER) {
-			return Value(v1.toDouble(), v2.toDouble(), v3.toDouble());
+			Value::RangeType range(v1.toDouble(), v2.toDouble(), v3.toDouble());
+			return Value(range);
 		}
 		return Value();
 	}

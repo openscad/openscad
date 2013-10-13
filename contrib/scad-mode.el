@@ -74,7 +74,7 @@
   :group 'scad-font-lock)
 
 (defcustom scad-modules
-  '("child" "echo" "assign" "for" "intersection_for" "if" "else"        ;;control.cc
+  '("child" "children" "echo" "assign" "for" "intersection_for" "if" "else"        ;;control.cc
     "cube" "sphere" "cylinder" "polyhedron" "square" "circle" "polygon" ;;primitives.cc
     "scale" "rotate" "translate" "mirror" "multmatrix"                  ;;transform.cc
     "union" "difference" "intersection"                                 ;;csgops.cc
