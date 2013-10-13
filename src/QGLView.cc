@@ -147,13 +147,18 @@ void QGLView::resizeGL(int w, int h)
 
 void QGLView::paintGL()
 {
-	GLView::gimbalCamPaintGL();
+  GLView::gimbalCamPaintGL();
 
   if (statusLabel) {
     QString msg;
+
+    Camera nc( cam );
+    nc.gimbalDefaultTranslate();
     msg.sprintf("Viewport: translate = [ %.2f %.2f %.2f ], rotate = [ %.2f %.2f %.2f ], distance = %.2f",
-      -cam.object_trans.x(), -cam.object_trans.y(), -cam.object_trans.z(),
-      fmodf(360 - cam.object_rot.x() + 90, 360), fmodf(360 - cam.object_rot.y(), 360), fmodf(360 - cam.object_rot.z(), 360), cam.viewer_distance);
+      nc.object_trans.x(), nc.object_trans.y(), nc.object_trans.z(),
+      nc.object_rot.x(), nc.object_rot.y(), nc.object_rot.z(),
+      nc.viewer_distance );
+
     statusLabel->setText(msg);
   }
 

@@ -153,10 +153,10 @@ Value builtin_rands(const Context *, const EvalContext *evalctx)
 		deterministic = false;
 	}
 	else if (evalctx->numArgs() == 4 && 
-					 evalctx->getArgValue(0).type() == Value::NUMBER && 
-					 evalctx->getArgValue(1).type() == Value::NUMBER && 
-					 evalctx->getArgValue(2).type() == Value::NUMBER && 
-					 evalctx->getArgValue(3).type() == Value::NUMBER)
+			evalctx->getArgValue(0).type() == Value::NUMBER && 
+			evalctx->getArgValue(1).type() == Value::NUMBER && 
+			evalctx->getArgValue(2).type() == Value::NUMBER && 
+			evalctx->getArgValue(3).type() == Value::NUMBER)
 	{
 		deterministic_rng.seed( (unsigned int) evalctx->getArgValue(3).toDouble() );
 		deterministic = true;
@@ -165,19 +165,24 @@ Value builtin_rands(const Context *, const EvalContext *evalctx)
 	{
 		return Value();
 	}
-	
+
 	double min = std::min( evalctx->getArgValue(0).toDouble(), evalctx->getArgValue(1).toDouble() );
 	double max = std::max( evalctx->getArgValue(0).toDouble(), evalctx->getArgValue(1).toDouble() );
+	size_t numresults = std::max( 0, static_cast<int>( evalctx->getArgValue(2).toDouble() ) );
 	boost::uniform_real<> distributor( min, max );
 	Value::VectorType vec;
-	for (int i=0; i<evalctx->getArgValue(2).toDouble(); i++) {
-		if ( deterministic ) {
-			vec.push_back( Value( distributor( deterministic_rng ) ) );
-		} else {
-			vec.push_back( Value( distributor( lessdeterministic_rng ) ) );
+	if (min==max) { // workaround boost bug
+		for (size_t i=0; i < numresults; i++)
+			vec.push_back( Value( min ) );
+	} else {
+		for (size_t i=0; i < numresults; i++) {
+			if ( deterministic ) {
+				vec.push_back( Value( distributor( deterministic_rng ) ) );
+			} else {
+				vec.push_back( Value( distributor( lessdeterministic_rng ) ) );
+			}
 		}
 	}
-	
 	return Value(vec);
 }
 
@@ -523,6 +528,29 @@ Value builtin_version_num(const Context *ctx, const EvalContext *evalctx)
 	return Value(y * 10000 + m * 100 + d);
 }
 
+Value builtin_parent_module(const Context *, const EvalContext *evalctx)
+{
+	int n;
+	double d;
+	int s = Module::stack_size();
+	if (evalctx->numArgs() == 0)
+		d=1; // parent module
+	else if (evalctx->numArgs() == 1 && evalctx->getArgValue(0).type() == Value::NUMBER)
+		evalctx->getArgValue(0).getDouble(d);
+	else
+			return Value();
+	n=trunc(d);
+	if (n < 0) {
+		PRINTB("WARNING: Negative parent module index (%d) not allowed", n);
+		return Value();
+	}
+	if (n >= s) {
+		PRINTB("WARNING: Parent module index (%d) greater than the number of modules on the stack", n);
+		return Value();
+	}
+	return Value(Module::stack_element(s - 1 - n));
+}
+
 void register_builtin_functions()
 {
 	Builtins::init("abs", new BuiltinFunction(&builtin_abs));
@@ -551,4 +579,5 @@ void register_builtin_functions()
 	Builtins::init("search", new BuiltinFunction(&builtin_search));
 	Builtins::init("version", new BuiltinFunction(&builtin_version));
 	Builtins::init("version_num", new BuiltinFunction(&builtin_version_num));
+	Builtins::init("parent_module", new BuiltinFunction(&builtin_parent_module));
 }

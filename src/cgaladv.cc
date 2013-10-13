@@ -98,7 +98,7 @@ AbstractNode *CgaladvModule::instantiate(const Context *ctx, const ModuleInstant
 			if ( va.size() >= 3 ) node->autosize[2] = va[2].toBool();
 		}
 		else if ( autosize.type() == Value::BOOL ) {
-			node->autosize << true, true, true;
+			node->autosize << autosize.toBool(),autosize.toBool(),autosize.toBool();
 		}
 	}
 

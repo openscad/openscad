@@ -1,0 +1,6 @@
+group() {
+	linear_extrude(height = 100, center = false, convexity = 1, $fn = 0, $fa = 12, $fs = 1) {
+		import(file = "null-polygons.dxf", layer = "", origin = [0, 0], scale = 1, convexity = 1, $fn = 0, $fa = 12, $fs = 1);
+	}
+	linear_extrude(file = "null-polygons.dxf", layer = "", origin = [0, 0], scale = 1, height = 100, center = false, convexity = 1, $fn = 0, $fa = 12, $fs = 1);
+}

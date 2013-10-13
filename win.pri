@@ -5,7 +5,8 @@ win32*msvc* {
   INCLUDEPATH += $$(MPIRDIR)
   INCLUDEPATH += $$(MPFRDIR)
 
-  DEFINES += _USE_MATH_DEFINES NOMINMAX _CRT_SECURE_NO_WARNINGS YY_NO_UNISTD_H
+  # don't know where the __WIN32__ is usually set
+  DEFINES += _USE_MATH_DEFINES NOMINMAX _CRT_SECURE_NO_WARNINGS YY_NO_UNISTD_H __WIN32__
 
   # disable MSVC warnings that are of very low importance
   # disable warning about too long decorated names
@@ -16,5 +17,9 @@ win32*msvc* {
   QMAKE_CXXFLAGS += -wd4100
   # lexer uses strdup() & other POSIX stuff
   QMAKE_CXXFLAGS += -D_CRT_NONSTDC_NO_DEPRECATE
+  # Treat WChar_t as a builtin type, allows Qt to call boost funcions
+  QMAKE_CXXFLAGS += /Zc:wchar_t
+  # increases the number of sections in .obj file
+  QMAKE_CXXFLAGS += /bigobj
 
 }

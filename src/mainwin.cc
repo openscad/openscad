@@ -27,7 +27,6 @@
 #include "PolySetCache.h"
 #include "ModuleCache.h"
 #include "MainWindow.h"
-#include "openscad.h" // examplesdir
 #include "parsersettings.h"
 #include "Preferences.h"
 #include "printutils.h"
@@ -101,16 +100,11 @@
 
 #endif // ENABLE_CGAL
 
-#ifndef OPENCSG_VERSION_STRING
-#define OPENCSG_VERSION_STRING "unknown, <1.3.2"
-#endif
-
 #include "boosty.h"
-
-extern QString examplesdir;
 
 // Global application state
 unsigned int GuiLocker::gui_locked = 0;
+QString MainWindow::qexamplesdir;
 
 #define QUOTE(x__) # x__
 #define QUOTED(x__) QUOTE(x__)
@@ -257,10 +251,9 @@ MainWindow::MainWindow(const QString &filename)
 	this->menuOpenRecent->addAction(this->fileActionClearRecent);
 	connect(this->fileActionClearRecent, SIGNAL(triggered()),
 					this, SLOT(clearRecentFiles()));
-
-	if (!examplesdir.isEmpty()) {
+	if (!qexamplesdir.isEmpty()) {
 		bool found_example = false;
-		QStringList examples = QDir(examplesdir).entryList(QStringList("*.scad"), 
+		QStringList examples = QDir(qexamplesdir).entryList(QStringList("*.scad"), 
 		QDir::Files | QDir::Readable, QDir::Name);
 		foreach (const QString &ex, examples) {
 			this->menuExamples->addAction(ex, this, SLOT(actionOpenExample()));
@@ -636,7 +629,9 @@ void MainWindow::compile(bool reload, bool forcedone)
 		// if we haven't yet compiled the current text.
 		else {
 			QString current_doc = editor->toPlainText();
-			if (current_doc != last_compiled_doc)	shouldcompiletoplevel = true;
+			if (current_doc != last_compiled_doc && last_compiled_doc.size() == 0) {
+				shouldcompiletoplevel = true;
+			}
 		}
 	}
 	else {
@@ -987,7 +982,7 @@ void MainWindow::actionOpenExample()
 {
 	QAction *action = qobject_cast<QAction *>(sender());
 	if (action) {
-		openFile(examplesdir + QDir::separator() + action->text());
+		openFile(qexamplesdir + QDir::separator() + action->text());
 	}
 }
 
@@ -1828,34 +1823,16 @@ MainWindow::helpManual()
 	QDesktopServices::openUrl(QUrl("http://www.openscad.org/documentation.html"));
 }
 
-#define STRINGIFY(x) #x
-#define TOSTRING(x) STRINGIFY(x)
 void MainWindow::helpLibrary()
 {
-	QString libinfo;
-	libinfo.sprintf("Boost version: %s\n"
-									"Eigen version: %d.%d.%d\n"
-									"CGAL version: %s\n"
-									"OpenCSG version: %s\n"
-									"Qt version: %s\n\n",
-									BOOST_LIB_VERSION,
-									EIGEN_WORLD_VERSION, EIGEN_MAJOR_VERSION, EIGEN_MINOR_VERSION,
-									TOSTRING(CGAL_VERSION),
-									OPENCSG_VERSION_STRING,
-									qVersion());
-
-#if defined( __MINGW64__ )
-	libinfo += QString("Compiled for MingW64\n\n");
-#elif defined( __MINGW32__ )
-	libinfo += QString("Compiled for MingW32\n\n");
-#endif
-
+	QString info( PlatformUtils::info().c_str() );
+	info += QString( qglview->getRendererInfo().c_str() );
 	if (!this->openglbox) {
-    this->openglbox = new QMessageBox(QMessageBox::Information, 
-                                      "OpenGL Info", "OpenSCAD Detailed Library Info                  ",
+		this->openglbox = new QMessageBox(QMessageBox::Information,
+                                      "OpenGL Info", "OpenSCAD Detailed Library and Build Information",
                                       QMessageBox::Ok, this);
 	}
-  this->openglbox->setDetailedText(libinfo + QString(qglview->getRendererInfo().c_str()));
+	this->openglbox->setDetailedText( info );
 	this->openglbox->show();
 }
 

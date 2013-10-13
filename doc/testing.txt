@@ -3,8 +3,10 @@ Running regression tests:
 
 Prerequisites: cmake, python, ImageMagick 6.5.9.3 or newer
 
-First, get a working qmake GUI build. It is used by the tests.
-Next, get MCAD installed by using 'git submodule update --init'
+First, get a working qmake GUI build of the main openscad binary. It is 
+used by the tests. Next, get MCAD installed by using 
+
+  'git submodule update --init'
 
 A) Building test environment
 
@@ -64,7 +66,22 @@ This is almost the same as adding a new regression test:
 4) run the test normally and verify that it passes:
   $ ctest -C Examples -R exampleNNN
 
+Migration away from dedicated regression tests:
+-----------------------------------------------
 
+This test still needs an intermediate script that mangles away timestamps and
+near-zero floating point numbers:
+
+* cgalstlsanitytest
+
+Some tests are yet to be converted:
+
+* csgtexttest -- verify whether this is not redundant with dumptest
+
+These look like tests, but are not actually in use:
+
+* modulecachetest
+* cgalcachetest
 
 Troubleshooting:
 ------------------------------

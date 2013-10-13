@@ -53,3 +53,11 @@ translate([32,16]) resize([0,0,15],auto=true) shape2();
 translate([32,32]) resize([0,0,15]) shape3();
 }
 
+color("blue"){
+translate([-16,-16]) resize([10,8],auto=[false,true]) 
+	scale([0.5,100,20]) shape();
+translate([0,-16]) resize([8,10,15],auto=true) 
+	scale([1000,0.5]) shape2();
+translate([16,-16]) resize([10,8,15]) 
+	scale([200,200]) shape3();
+}

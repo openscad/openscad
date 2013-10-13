@@ -74,13 +74,15 @@ FileModule *ModuleCache::evaluate(const std::string &filename)
 		}
 #endif
 
-		std::ifstream ifs(filename.c_str());
-		if (!ifs.is_open()) {
-			PRINTB("WARNING: Can't open library file '%s'\n", filename);
-			return NULL;
-		}
 		std::stringstream textbuf;
-		textbuf << ifs.rdbuf();
+		{
+			std::ifstream ifs(filename.c_str());
+			if (!ifs.is_open()) {
+				PRINTB("WARNING: Can't open library file '%s'\n", filename);
+				return NULL;
+			}
+			textbuf << ifs.rdbuf();
+		}
 		textbuf << "\n" << commandline_commands;
 
 		print_messages_push();

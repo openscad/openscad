@@ -1,0 +1,3 @@
+group() {
+	minkowski(convexity = 0);
+}

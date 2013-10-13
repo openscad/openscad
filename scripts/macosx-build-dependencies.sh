@@ -51,7 +51,7 @@ build_qt()
   cd $BASEDIR/src
   rm -rf qt-everywhere-opensource-src-$version
   if [ ! -f qt-everywhere-opensource-src-$version.tar.gz ]; then
-    curl -O http://releases.qt-project.org/qt4/source/qt-everywhere-opensource-src-$version.tar.gz
+     curl -O -L http://download.qt-project.org/official_releases/qt/4.8/4.8.5/qt-everywhere-opensource-src-4.8.5.tar.gz
   fi
   tar xzf qt-everywhere-opensource-src-$version.tar.gz
   cd qt-everywhere-opensource-src-$version
@@ -435,7 +435,7 @@ fi
 
 echo "Using basedir:" $BASEDIR
 mkdir -p $SRCDIR $DEPLOYDIR
-build_qt 4.8.4
+build_qt 4.8.5
 # NB! For eigen, also update the path in the function
 build_eigen 3.1.3
 build_gmp 5.1.2

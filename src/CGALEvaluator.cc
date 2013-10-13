@@ -215,20 +215,27 @@ CGAL_Nef_polyhedron CGALEvaluator::applyResize(const CgaladvNode &node)
 	bbox_size.push_back( bb.xmax()-bb.xmin() );
 	bbox_size.push_back( bb.ymax()-bb.ymin() );
 	bbox_size.push_back( bb.zmax()-bb.zmin() );
-	for (int i=0;i<3;i++) {
+	int newsizemax_index = 0;
+	for (int i=0;i<N.dim;i++) {
 		if (node.newsize[i]) {
 			if (bbox_size[i]==NT3(0)) {
-				PRINT("WARNING: Cannot resize in direction normal to flat object");
+				PRINT("WARNING: Resize in direction normal to flat object is not implemented");
 				return N;
 			}
 			else {
 				scale[i] = NT3(node.newsize[i]) / bbox_size[i];
 			}
+			if ( node.newsize[i] > node.newsize[newsizemax_index] )
+				newsizemax_index = i;
 		}
 	}
-	NT3 autoscale = std::max( scale[0], std::max( scale[1], scale[2] ));
-	for (int i=0;i<3;i++) {
-		if (node.autosize[i]) scale[i] = autoscale;
+
+	NT3 autoscale = NT3( 1 );
+	if ( node.newsize[ newsizemax_index ] != 0 )
+		autoscale = NT3( node.newsize[ newsizemax_index ] ) / bbox_size[ newsizemax_index ];
+	for (int i=0;i<N.dim;i++) {
+		if (node.autosize[i] && node.newsize[i]==0)
+			scale[i] = autoscale;
 	}
 
 	Eigen::Matrix4d t;

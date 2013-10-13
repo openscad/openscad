@@ -1,0 +1,18 @@
+group() {
+group() {
+	multmatrix([[0.809017, -0.587785, 0, 0], [0.587785, 0.809017, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+		union() {
+			multmatrix([[1, 0, 0, 1], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+				polygon(points = [[18.7661, -2.97225], [16.5303, -3.96857], [18.475, -4.43546]], paths = undef, convexity = 1);
+				polygon(points = [[18.7661, -2.97225], [16.7907, -2.65939], [16.5303, -3.96857]], paths = undef, convexity = 1);
+				polygon(points = [[19, 0], [17, 0], [16.7907, -2.65939]], paths = undef, convexity = 1);
+				polygon(points = [[19, 0], [16.7907, -2.65939], [18.7661, -2.97225]], paths = undef, convexity = 1);
+				polygon(points = [[19, 0], [17, 0], [16.7907, 2.65939]], paths = undef, convexity = 1);
+				polygon(points = [[19, 0], [16.7907, 2.65939], [18.7661, 2.97225]], paths = undef, convexity = 1);
+				polygon(points = [[18.7661, 2.97225], [16.7907, 2.65939], [16.5303, 3.96857]], paths = undef, convexity = 1);
+				polygon(points = [[18.7661, 2.97225], [16.5303, 3.96857], [18.475, 4.43546]], paths = undef, convexity = 1);
+			}
+			circle($fn = 0, $fa = 12, $fs = 1, r = 20);
+		}
+	}
+}}
