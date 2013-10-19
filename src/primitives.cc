@@ -513,8 +513,12 @@ sphere_next_r2:
 
 		if (this->paths.toVector().size() == 0)
 		{
+			if (dd.points.size() <= 2) { // Ignore malformed polygons
+				delete p;
+				return NULL;
+			}
 			dd.paths.push_back(DxfData::Path());
-			for (size_t i=0; i<this->points.toVector().size(); i++) {
+			for (size_t i=0; i<dd.points.size(); i++) {
 				assert(i < dd.points.size()); // FIXME: Not needed, but this used to be an 'if'
 				dd.paths.back().indices.push_back(i);
 			}
