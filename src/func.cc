@@ -523,6 +523,26 @@ Value builtin_version_num(const Context *ctx, const EvalContext *evalctx)
 	return Value(y * 10000 + m * 100 + d);
 }
 
+//Ruud: for function extension.
+//TODO: suppres the warning of unused variable!
+Value builtin_for(const Context *ctx, const EvalContext *evalctx)
+{ if (evalctx->numArgs() != 2) return Value();
+  if (evalctx->getArgValue(1).type() != Value::VECTOR ) return Value();
+  Value::VectorType result;
+  const std::string &it_name = evalctx->getArgName(0);
+  const Value &it_values = evalctx->getArgValue(0);
+  if (it_values.type() != Value::RANGE)  return Value();
+  Context locCtx(evalctx);
+  Value::RangeType range = it_values.toRange();
+  if (range.end < range.begin) { double t = range.begin; range.begin = range.end; range.end = t; }
+  if (range.step > 0 && (range.begin-range.end)/range.step < 10000)
+  { for (double i = range.begin; i <= range.end; i += range.step)
+    {  locCtx.set_variable(it_name, Value(i));
+       result.push_back(evalctx->getArgValue(1,&locCtx)); } }
+  return result;
+}
+
+
 void register_builtin_functions()
 {
 	Builtins::init("abs", new BuiltinFunction(&builtin_abs));
@@ -539,7 +559,11 @@ void register_builtin_functions()
 	Builtins::init("atan2", new BuiltinFunction(&builtin_atan2));
 	Builtins::init("round", new BuiltinFunction(&builtin_round));
 	Builtins::init("ceil", new BuiltinFunction(&builtin_ceil));
-	Builtins::init("floor", new BuiltinFunction(&builtin_floor));
+
+	//Ruud
+  Builtins::init("for", new BuiltinFunction(&builtin_for));
+
+  Builtins::init("floor", new BuiltinFunction(&builtin_floor));
 	Builtins::init("pow", new BuiltinFunction(&builtin_pow));
 	Builtins::init("sqrt", new BuiltinFunction(&builtin_sqrt));
 	Builtins::init("exp", new BuiltinFunction(&builtin_exp));

@@ -422,11 +422,56 @@ public:
     return Value(op1 + op2);
   }
 
+
+  Value operator()(const Value::VectorType &op1, const bool &op2) const
+  { Value::VectorType sum;
+    BOOST_FOREACH(const Value &vecval, op1) { sum.push_back(vecval); }
+    sum.push_back(op2);
+    return Value(sum); }
+
+  Value operator()(const Value::VectorType &op1, const double &op2) const
+  { Value::VectorType sum;
+    BOOST_FOREACH(const Value &vecval, op1) { sum.push_back(vecval); }
+    sum.push_back(op2);
+    return Value(sum); }
+
+  Value operator()(const Value::VectorType &op1, const std::string &op2) const
+  { Value::VectorType sum;
+    BOOST_FOREACH(const Value &vecval, op1) { sum.push_back(vecval); }
+    sum.push_back(op2);
+    return Value(sum); }
+
+  Value operator()(const bool &op1, const Value::VectorType &op2) const
+  { Value::VectorType sum;
+    sum.push_back(op1);
+    BOOST_FOREACH(const Value &vecval, op2) { sum.push_back(vecval); }
+    return Value(sum); }
+
+  Value operator()(const double &op1, const Value::VectorType &op2) const
+  { Value::VectorType sum;
+    sum.push_back(op1);
+    BOOST_FOREACH(const Value &vecval, op2) { sum.push_back(vecval); }
+    return Value(sum); }
+
+  Value operator()(const std::string &op1, const Value::VectorType &op2) const
+  { Value::VectorType sum;
+    sum.push_back(op1);
+    BOOST_FOREACH(const Value &vecval, op2) { sum.push_back(vecval); }
+    return Value(sum); }
+
   Value operator()(const Value::VectorType &op1, const Value::VectorType &op2) const {
     Value::VectorType sum;
-    for (size_t i = 0; i < op1.size() && i < op2.size(); i++) {
+    //RUUD
+    if ((op1.size()>0) && (op1[0].type() == Value::VECTOR) && ((op2.size()==0) || ((op2.size()>0) && (op2[0].type() != Value::VECTOR))))
+    { BOOST_FOREACH(const Value &vecval, op1) { sum.push_back(vecval); }
+      if ((op2.size()>0)) { sum.push_back(op2); } }
+    else if ((op2.size()>0) && (op2[0].type() == Value::VECTOR) && ((op1.size()==0) || ((op1.size()>0) && (op1[0].type() != Value::VECTOR))))
+    { if ((op1.size()>0)) { sum.push_back(op1); }
+      BOOST_FOREACH(const Value &vecval, op2) { sum.push_back(vecval); } }
+    else
+    { for (size_t i = 0; i < op1.size() && i < op2.size(); i++) {
       sum.push_back(op1[i] + op2[i]);
-    }
+    } }
     return Value(sum);
   }
 };
