@@ -559,10 +559,7 @@ void register_builtin_functions()
 	Builtins::init("atan2", new BuiltinFunction(&builtin_atan2));
 	Builtins::init("round", new BuiltinFunction(&builtin_round));
 	Builtins::init("ceil", new BuiltinFunction(&builtin_ceil));
-
-	//Ruud
   Builtins::init("for", new BuiltinFunction(&builtin_for));
-
   Builtins::init("floor", new BuiltinFunction(&builtin_floor));
 	Builtins::init("pow", new BuiltinFunction(&builtin_pow));
 	Builtins::init("sqrt", new BuiltinFunction(&builtin_sqrt));
