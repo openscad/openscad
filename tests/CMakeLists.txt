@@ -434,7 +434,32 @@ endif()
 # Internal includes
 include_directories(../src)
 
-add_definitions(-DOPENSCAD_VERSION=test -DOPENSCAD_YEAR=2011 -DOPENSCAD_MONTH=10)
+# Handle OpenSCAD version based on VERSION env. variable.
+# Use current timestamp if not specified (development builds)
+if ("$ENV{VERSION}" STREQUAL "")
+  # Timestamp is only available in cmake >= 2.8.11  
+  if("${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}.${CMAKE_PATCH_VERSION}" VERSION_GREATER 2.8.10)
+    string(TIMESTAMP VERSION "%Y.%m.%d")
+  else()
+    set(VERSION "2013.06")
+  endif()
+else()
+  set(VERSION $ENV{VERSION})
+endif()
+message(STATUS "OpenSCAD version: ${VERSION}")
+string(REGEX MATCHALL "^[0-9]+|[0-9]+|[0-9]+$" MYLIST "${VERSION}")
+list(GET MYLIST 0 OPENSCAD_YEAR)
+list(GET MYLIST 1 OPENSCAD_MONTH)
+list(LENGTH MYLIST VERSIONLEN)
+if (${VERSIONLEN} EQUAL 3)
+  list(GET MYLIST 2 OPENSCAD_DAY)
+endif()
+
+add_definitions(-DOPENSCAD_VERSION=${VERSION} -DOPENSCAD_YEAR=${OPENSCAD_YEAR} -DOPENSCAD_MONTH=${OPENSCAD_MONTH})
+if (DEFINED OPENSCAD_DAY)
+  add_definitions(-DOPENSCAD_DAY=${OPENSCAD_DAY})
+endif()
+
 add_definitions(-DOPENSCAD_TESTING)
 
 # Search for MCAD in correct place
