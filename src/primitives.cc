@@ -57,6 +57,8 @@ public:
 	primitive_type_e type;
 	PrimitiveModule(primitive_type_e type) : type(type) { }
 	virtual AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const;
+private:
+	Value lookup_radius(const Context &ctx, const std::string &radius_var, const std::string &diameter_var) const;
 };
 
 class PrimitiveNode : public AbstractPolyNode
@@ -104,6 +106,35 @@ public:
 	Value points, paths, triangles;
 	virtual PolySet *evaluate_polyset(class PolySetEvaluator *) const;
 };
+
+/**
+ * Return a radius value by looking up both a diameter and radius variable.
+ * The diameter has higher priority, so if found an additionally set radius
+ * value is ignored.
+ * 
+ * @param ctx data context with variable values.
+ * @param radius_var name of the variable to lookup for the radius value.
+ * @param diameter_var name of the variable to lookup for the diameter value.
+ * @return radius value of type Value::NUMBER or Value::UNDEFINED if both
+ *         variables are invalid or not set.
+ */
+Value PrimitiveModule::lookup_radius(const Context &ctx, const std::string &diameter_var, const std::string &radius_var) const
+{
+	const Value d = ctx.lookup_variable(diameter_var, true);
+	const Value r = ctx.lookup_variable(radius_var, true);
+	const bool r_defined = (r.type() == Value::NUMBER);
+	
+	if (d.type() == Value::NUMBER) {
+		if (r_defined) {
+			PRINTB("WARNING: Ignoring radius variable '%s' as diameter '%s' is defined too.", radius_var % diameter_var);
+		}
+		return Value(d.toDouble() / 2.0);
+	} else if (r_defined) {
+		return r;
+	} else {
+		return Value();
+	}
+}
 
 AbstractNode *PrimitiveModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const
 {
@@ -170,22 +201,21 @@ AbstractNode *PrimitiveModule::instantiate(const Context *ctx, const ModuleInsta
 	}
 
 	if (type == SPHERE) {
-		Value r = c.lookup_variable("r");
+		const Value r = lookup_radius(c, "d", "r");
 		if (r.type() == Value::NUMBER) {
 			node->r1 = r.toDouble();
 		}
 	}
 
 	if (type == CYLINDER) {
-		Value h = c.lookup_variable("h");
-		Value r, r1, r2;
-		r1 = c.lookup_variable("r1");
-		r2 = c.lookup_variable("r2");
-		r = c.lookup_variable("r", true); // silence warning since r has no default value
-		Value center = c.lookup_variable("center");
+		const Value h = c.lookup_variable("h");
 		if (h.type() == Value::NUMBER) {
 			node->h = h.toDouble();
 		}
+
+		const Value r = lookup_radius(c, "d", "r");
+		const Value r1 = lookup_radius(c, "d1", "r1");
+		const Value r2 = lookup_radius(c, "d2", "r2");
 		if (r.type() == Value::NUMBER) {
 			node->r1 = r.toDouble();
 			node->r2 = r.toDouble();
@@ -196,6 +226,8 @@ AbstractNode *PrimitiveModule::instantiate(const Context *ctx, const ModuleInsta
 		if (r2.type() == Value::NUMBER) {
 			node->r2 = r2.toDouble();
 		}
+		
+		const Value center = c.lookup_variable("center");
 		if (center.type() == Value::BOOL) {
 			node->center = center.toBool();
 		}
@@ -218,7 +250,7 @@ AbstractNode *PrimitiveModule::instantiate(const Context *ctx, const ModuleInsta
 	}
 
 	if (type == CIRCLE) {
-		Value r = c.lookup_variable("r");
+		const Value r = lookup_radius(c, "d", "r");
 		if (r.type() == Value::NUMBER) {
 			node->r1 = r.toDouble();
 		}
