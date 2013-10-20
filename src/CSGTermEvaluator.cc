@@ -213,11 +213,11 @@ Response CSGTermEvaluator::visit(State &state, const CgaladvNode &node)
 
 /*!
 	Adds ourself to out parent's list of traversed children.
-	Call this for _every_ node which affects output during the postfix traversal.
+	Call this for _every_ node which affects output during traversal.
+    Usually, this should be called from the postfix stage, but for some nodes, we defer traversal letting other components (e.g. CGAL) render the subgraph, and we'll then call this from prefix and prune further traversal.
 */
 void CSGTermEvaluator::addToParent(const State &state, const AbstractNode &node)
 {
-	assert(state.isPostfix());
 	this->visitedchildren.erase(node.index());
 	if (state.parent()) {
 		this->visitedchildren[state.parent()->index()].push_back(&node);
