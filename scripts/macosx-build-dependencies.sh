@@ -343,12 +343,13 @@ build_sparkle()
   # Let Sparkle use the default compiler
   unset CC
   unset CXX
-  version=$1
+  github=$1
+  version=$2
   echo "Building Sparkle" $version "..."
   cd $BASEDIR/src
   rm -rf Sparkle-$version
   if [ ! -f Sparkle-$version.zip ]; then
-      curl -o Sparkle-$version.zip https://nodeload.github.com/andymatuschak/Sparkle/zip/$version
+      curl -o Sparkle-$version.zip https://nodeload.github.com/$github/Sparkle/zip/$version
   fi
   unzip -q Sparkle-$version.zip
   cd Sparkle-$version
@@ -448,5 +449,6 @@ build_cgal 4.3
 build_glew 1.10.0
 build_opencsg 1.3.2
 if $OPTION_DEPLOY; then
-  build_sparkle 0ed83cf9f2eeb425d4fdd141c01a29d843970c20
+#  build_sparkle andymatuschak 0ed83cf9f2eeb425d4fdd141c01a29d843970c20
+  build_sparkle Cocoanetics 1e7dcb1a48b96d1a8c62100b5864bd50211cbae1
 fi
