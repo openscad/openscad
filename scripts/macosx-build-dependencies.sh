@@ -221,7 +221,7 @@ build_boost()
     BOOST_TOOLSET="toolset=clang"
     echo "using clang ;" >> tools/build/v2/user-config.jam 
   fi
-  ./b2 -d+2 $BOOST_TOOLSET cflags="-mmacosx-version-min=$MAC_OSX_VERSION_MIN -arch x86_64 $BOOST_EXTRA_FLAGS" linkflags="-mmacosx-version-min=$MAC_OSX_VERSION_MIN -arch x86_64 $BOOST_EXTRA_FLAGS" install
+  ./b2 -d+2 $BOOST_TOOLSET cflags="-mmacosx-version-min=$MAC_OSX_VERSION_MIN -arch x86_64 $BOOST_EXTRA_FLAGS" linkflags="-mmacosx-version-min=$MAC_OSX_VERSION_MIN -arch x86_64 $BOOST_EXTRA_FLAGS -headerpad_max_install_names" install
   install_name_tool -id $DEPLOYDIR/lib/libboost_thread.dylib $DEPLOYDIR/lib/libboost_thread.dylib 
   install_name_tool -change libboost_system.dylib $DEPLOYDIR/lib/libboost_system.dylib $DEPLOYDIR/lib/libboost_thread.dylib 
   install_name_tool -change libboost_chrono.dylib $DEPLOYDIR/lib/libboost_chrono.dylib $DEPLOYDIR/lib/libboost_thread.dylib 
@@ -241,8 +241,9 @@ build_cgal()
   cd $BASEDIR/src
   rm -rf CGAL-$version
   if [ ! -f CGAL-$version.tar.gz ]; then
-    # 4.2
-    curl -O https://gforge.inria.fr/frs/download.php/32359/CGAL-$version.tar.gz
+    # 4.3
+    curl -O https://gforge.inria.fr/frs/download.php/32994/CGAL-$version.tar.gz
+    # 4.2 curl -O https://gforge.inria.fr/frs/download.php/32359/CGAL-$version.tar.gz
     # 4.1 curl -O https://gforge.inria.fr/frs/download.php/31641/CGAL-$version.tar.gz
     # 4.1-beta1 curl -O https://gforge.inria.fr/frs/download.php/31348/CGAL-$version.tar.gz
     # 4.0.2 curl -O https://gforge.inria.fr/frs/download.php/31175/CGAL-$version.tar.gz
@@ -311,7 +312,8 @@ build_eigen()
   EIGENDIR="none"
   if [ $version = "2.0.17" ]; then EIGENDIR=eigen-eigen-b23437e61a07; fi
   if [ $version = "3.1.2" ]; then EIGENDIR=eigen-eigen-5097c01bcdc4;
-  elif [ $version = "3.1.3" ]; then EIGENDIR=eigen-eigen-2249f9c22fe8; fi
+  elif [ $version = "3.1.3" ]; then EIGENDIR=eigen-eigen-2249f9c22fe8;
+  elif [ $version = "3.1.4" ]; then EIGENDIR=eigen-eigen-36bf2ceaf8f5; fi
 
   if [ $EIGENDIR = "none" ]; then
     echo Unknown eigen version. Please edit script.
@@ -437,13 +439,13 @@ echo "Using basedir:" $BASEDIR
 mkdir -p $SRCDIR $DEPLOYDIR
 build_qt 4.8.5
 # NB! For eigen, also update the path in the function
-build_eigen 3.1.3
-build_gmp 5.1.2
+build_eigen 3.1.4
+build_gmp 5.1.3
 build_mpfr 3.1.2
-build_boost 1.53.0
+build_boost 1.54.0
 # NB! For CGAL, also update the actual download URL in the function
-build_cgal 4.2
-build_glew 1.9.0
+build_cgal 4.3
+build_glew 1.10.0
 build_opencsg 1.3.2
 if $OPTION_DEPLOY; then
   build_sparkle 0ed83cf9f2eeb425d4fdd141c01a29d843970c20
