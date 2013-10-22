@@ -21,7 +21,7 @@ update_www_download_links()
     filesize=$(human_filesize $filesize)
     webdir=../openscad.github.com
     incfile=inc/mac_snapshot_links.js
-    BASEURL='https://openscad.googlecode.com/files/'
+    BASEURL='http://files.openscad.org/'
     DATECODE=`date +"%Y.%m.%d"`
     
     if [ -f $webdir/$incfile ]; then
@@ -83,13 +83,6 @@ if [[ $VERSION == $VERSIONDATE ]]; then
 fi
 
 echo "Uploading..."
-LABELS=OpSys-OSX,Type-Executable
-if ! $SNAPSHOT; then LABELS=$LABELS,Featured; fi
-`dirname $0`/googlecode_upload.py -s 'Mac OS X Snapshot' -p openscad OpenSCAD-$VERSION.dmg -l $LABELS
-if [[ $? != 0 ]]; then
-  exit 1
-fi
-
 scp OpenSCAD-$VERSION.dmg openscad@files.openscad.org:www
 if [[ $? != 0 ]]; then
   exit 1
