@@ -516,11 +516,11 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 	if (!inputFiles.size()) inputFiles.push_back("");
 #ifdef ENABLE_MDI
 	BOOST_FOREACH(const string &infile, inputFiles) {
-		new MainWindow(QString::fromLocal8Bit(boosty::stringy(original_path / infile).c_str()));
+		new MainWindow(QString::fromLocal8Bit(infile.empty() ? infile.c_str() : boosty::stringy(original_path / infile).c_str()));
 	}
 	app.connect(&app, SIGNAL(lastWindowClosed()), &app, SLOT(quit()));
 #else
-	MainWindow *m = new MainWindow(QString::fromLocal8Bit(boosty::stringy(original_path / inputFiles[0]).c_str()));
+  MainWindow *m = new MainWindow(QString::fromLocal8Bit(inputFiles[0].empty() ? inputFiles[0].c_str() : boosty::stringy(original_path / inputFiles[0]).c_str()));
 	app.connect(m, SIGNAL(destroyed()), &app, SLOT(quit()));
 #endif
 	return app.exec();
