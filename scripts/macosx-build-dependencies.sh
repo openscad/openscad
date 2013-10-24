@@ -8,7 +8,6 @@
 #
 # Usage: macosx-build-dependencies.sh [-6lcd]
 #  -6   Build only 64-bit binaries
-#  -c   Force use of LLVM compiler
 #  -l   Force use of LLVM compiler
 #  -c   Force use of clang compiler
 #  -d   Build for deployment (if not specified, e.g. Sparkle won't be built)
@@ -392,7 +391,7 @@ USING_LLVM=false
 USING_GCC=false
 USING_CLANG=false
 if $OPTION_LLVM; then
-  USING_LLCM=true
+  USING_LLVM=true
 elif $OPTION_GCC; then
   USING_GCC=true
 elif $OPTION_CLANG; then
