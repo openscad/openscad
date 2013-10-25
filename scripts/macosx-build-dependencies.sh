@@ -8,7 +8,6 @@
 #
 # Usage: macosx-build-dependencies.sh [-6lcd]
 #  -6   Build only 64-bit binaries
-#  -c   Force use of LLVM compiler
 #  -l   Force use of LLVM compiler
 #  -c   Force use of clang compiler
 #  -d   Build for deployment (if not specified, e.g. Sparkle won't be built)
