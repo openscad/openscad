@@ -580,7 +580,7 @@ int main(int argc, char **argv)
 
 	po::variables_map vm;
 	try {
-		po::store(po::command_line_parser(argc, argv).options(all_options).positional(p).run(), vm);
+		po::store(po::command_line_parser(argc, argv).options(all_options).allow_unregistered().positional(p).run(), vm);
 	}
 	catch(const std::exception &e) { // Catches e.g. unknown options
 		fprintf(stderr, "%s\n", e.what());
