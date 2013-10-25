@@ -37,6 +37,7 @@
 #include "rendersettings.h"
 #include "PlatformUtils.h"
 #include "nodedumper.h"
+#include "CocoaUtils.h"
 
 #include <string>
 #include <vector>
@@ -99,15 +100,19 @@ public:
 
 static void help(const char *progname)
 {
-	int tab = int(strlen(progname))+8;
-	fprintf(stderr,"Usage: %s [ -o output_file [ -d deps_file ] ]\\\n"
-	        "%*s[ -m make_command ] [ -D var=val [..] ] \\\n"
-	        "%*s[ --camera=translatex,y,z,rotx,y,z,dist | \\\n"
-	        "%*s  --camera=eyex,y,z,centerx,y,z ] \\\n"
-	        "%*s[ --imgsize=width,height ] [ --projection=(o)rtho|(p)ersp] \\\n"
-	        "%*s[ --render | --preview[=throwntogether] ] \\\n"
-	        "%*sfilename\n",
-					progname, tab, "", tab, "", tab, "", tab, "", tab, "", tab, "");
+  int tablen = strlen(progname)+8;
+  char tabstr[tablen+1];
+  for (int i=0;i<tablen;i++) tabstr[i] = ' ';
+  tabstr[tablen] = '\0';
+
+	PRINTB("Usage: %1% [ -o output_file [ -d deps_file ] ]\\\n"
+         "%2%[ -m make_command ] [ -D var=val [..] ] \\\n"
+         "%2%[ --camera=translatex,y,z,rotx,y,z,dist | \\\n"
+         "%2%  --camera=eyex,y,z,centerx,y,z ] \\\n"
+         "%2%[ --imgsize=width,height ] [ --projection=(o)rtho|(p)ersp] \\\n"
+         "%2%[ --render | --preview[=throwntogether] ] \\\n"
+         "%2%filename\n",
+ 				 progname % (const char *)tabstr);
 	exit(1);
 }
 
@@ -115,7 +120,7 @@ static void help(const char *progname)
 #define TOSTRING(x) STRINGIFY(x)
 static void version()
 {
-	printf("OpenSCAD version %s\n", TOSTRING(OPENSCAD_VERSION));
+	PRINTB("OpenSCAD version %s\n", TOSTRING(OPENSCAD_VERSION));
 	exit(1);
 }
 
@@ -127,7 +132,7 @@ static void info()
 	try {
 		csgInfo.glview = new OffscreenView(512,512);
 	} catch (int error) {
-		fprintf(stderr,"Can't create OpenGL OffscreenView. Code: %i. Exiting.\n", error);
+		PRINTB("Can't create OpenGL OffscreenView. Code: %i. Exiting.\n", error);
 		exit(1);
 	}
 
@@ -149,8 +154,8 @@ Camera get_camera( po::variables_map vm )
 				cam_parameters.push_back(lexical_cast<double>(s));
 			camera.setup( cam_parameters );
 		} else {
-			fprintf(stderr,"Camera setup requires either 7 numbers for Gimbal Camera\n");
-			fprintf(stderr,"or 6 numbers for Vector Camera\n");
+			PRINT("Camera setup requires either 7 numbers for Gimbal Camera\n");
+			PRINT("or 6 numbers for Vector Camera\n");
 			exit(1);
 		}
 	}
@@ -166,7 +171,7 @@ Camera get_camera( po::variables_map vm )
 		else if (proj=="p" || proj=="perspective")
 			camera.projection = Camera::PERSPECTIVE;
 		else {
-			fprintf(stderr,"projection needs to be 'o' or 'p' for ortho or perspective\n");
+			PRINT("projection needs to be 'o' or 'p' for ortho or perspective\n");
 			exit(1);
 		}
 	}
@@ -177,7 +182,7 @@ Camera get_camera( po::variables_map vm )
 		vector<string> strs;
 		split(strs, vm["imgsize"].as<string>(), is_any_of(","));
 		if ( strs.size() != 2 ) {
-			fprintf(stderr,"Need 2 numbers for imgsize\n");
+			PRINT("Need 2 numbers for imgsize\n");
 			exit(1);
 		} else {
 			w = lexical_cast<int>( strs[0] );
@@ -225,7 +230,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 	else if (suffix == ".term") term_output_file = output_file;
 	else if (suffix == ".echo") echo_output_file = output_file;
 	else {
-		fprintf(stderr, "Unknown suffix for output file %s\n", output_file);
+		PRINTB("Unknown suffix for output file %s\n", output_file);
 		return 1;
 	}
 
@@ -249,7 +254,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 
 	std::ifstream ifs(filename.c_str());
 	if (!ifs.is_open()) {
-		fprintf(stderr, "Can't open input file '%s'!\n", filename.c_str());
+		PRINTB("Can't open input file '%s'!\n", filename.c_str());
 		return 1;
 	}
 	std::string text((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
@@ -258,7 +263,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 	std::string parentpath = boosty::stringy(abspath.parent_path());
 	root_module = parse(text.c_str(), parentpath.c_str(), false);
 	if (!root_module) {
-		fprintf(stderr, "Can't parse file '%s'!\n", filename.c_str());
+		PRINTB("Can't parse file '%s'!\n", filename.c_str());
 		return 1;
 	}
 	root_module->handleDependencies();
@@ -353,11 +358,11 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 
 		if (stl_output_file) {
 			if (root_N.dim != 3) {
-				fprintf(stderr, "Current top level object is not a 3D object.\n");
+				PRINT("Current top level object is not a 3D object.\n");
 				return 1;
 			}
 			if (!root_N.p3->is_simple()) {
-				fprintf(stderr, "Object isn't a valid 2-manifold! Modify your design.\n");
+				PRINT("Object isn't a valid 2-manifold! Modify your design.\n");
 				return 1;
 			}
 			std::ofstream fstream(stl_output_file);
@@ -372,11 +377,11 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 
 		if (off_output_file) {
 			if (root_N.dim != 3) {
-				fprintf(stderr, "Current top level object is not a 3D object.\n");
+				PRINT("Current top level object is not a 3D object.\n");
 				return 1;
 			}
 			if (!root_N.p3->is_simple()) {
-				fprintf(stderr, "Object isn't a valid 2-manifold! Modify your design.\n");
+				PRINT("Object isn't a valid 2-manifold! Modify your design.\n");
 				return 1;
 			}
 			std::ofstream fstream(off_output_file);
@@ -391,7 +396,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 
 		if (dxf_output_file) {
 			if (root_N.dim != 2) {
-				fprintf(stderr, "Current top level object is not a 2D object.\n");
+				PRINT("Current top level object is not a 2D object.\n");
 				return 1;
 			}
 			std::ofstream fstream(dxf_output_file);
@@ -421,7 +426,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 			}
 		}
 #else
-		fprintf(stderr, "OpenSCAD has been compiled without CGAL support!\n");
+		PRINT("OpenSCAD has been compiled without CGAL support!\n");
 		return 1;
 #endif
 	}
@@ -529,7 +534,7 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 bool QtUseGUI() { return false; }
 int gui(const vector<string> &inputFiles, const fs::path &original_path, int argc, char ** argv)
 {
-	fprintf(stderr,"Error: compiled without QT, but trying to run GUI\n");
+	PRINT("Error: compiled without QT, but trying to run GUI\n");
 	return 1;
 }
 #endif // OPENSCAD_QTGUI
@@ -537,7 +542,9 @@ int gui(const vector<string> &inputFiles, const fs::path &original_path, int arg
 int main(int argc, char **argv)
 {
 	int rc = 0;
-
+#ifdef Q_WS_MAC
+	set_output_handler(CocoaUtils::nslog, NULL);
+#endif
 #ifdef ENABLE_CGAL
 	// Causes CGAL errors to abort directly instead of throwing exceptions
 	// (which we don't catch). This gives us stack traces without rerunning in gdb.
@@ -583,7 +590,7 @@ int main(int argc, char **argv)
 		po::store(po::command_line_parser(argc, argv).options(all_options).allow_unregistered().positional(p).run(), vm);
 	}
 	catch(const std::exception &e) { // Catches e.g. unknown options
-		fprintf(stderr, "%s\n", e.what());
+		PRINTB("%s\n", e.what());
 		help(argv[0]);
 	}
 
@@ -604,12 +611,12 @@ int main(int argc, char **argv)
 		output_file = vm["o"].as<string>().c_str();
 	}
 	if (vm.count("s")) {
-		fprintf(stderr, "DEPRECATED: The -s option is deprecated. Use -o instead.\n");
+		PRINT("DEPRECATED: The -s option is deprecated. Use -o instead.\n");
 		if (output_file) help(argv[0]);
 		output_file = vm["s"].as<string>().c_str();
 	}
 	if (vm.count("x")) { 
-		fprintf(stderr, "DEPRECATED: The -x option is deprecated. Use -o instead.\n");
+		PRINT("DEPRECATED: The -x option is deprecated. Use -o instead.\n");
 		if (output_file) help(argv[0]);
 		output_file = vm["x"].as<string>().c_str();
 	}
@@ -661,7 +668,7 @@ int main(int argc, char **argv)
 		rc = gui(inputFiles, original_path, argc, argv);
 	}
 	else {
-		fprintf(stderr, "Requested GUI mode but can't open display!\n");
+		PRINT("Requested GUI mode but can't open display!\n");
 		help(argv[0]);
 	}
 

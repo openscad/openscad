@@ -8,3 +8,7 @@ void CocoaUtils::endApplication()
                   object:nil];
 }
 
+void CocoaUtils::nslog(const std::string &str, void *userdata)
+{       
+  NSLog([NSString stringWithUTF8String: str.c_str()]);
+}
