@@ -391,7 +391,7 @@ USING_LLVM=false
 USING_GCC=false
 USING_CLANG=false
 if $OPTION_LLVM; then
-  USING_LLCM=true
+  USING_LLVM=true
 elif $OPTION_GCC; then
   USING_GCC=true
 elif $OPTION_CLANG; then
