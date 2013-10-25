@@ -167,15 +167,20 @@ void QGLView::paintGL()
 
 void QGLView::keyPressEvent(QKeyEvent *event)
 {
-  if (event->key() == Qt::Key_Plus) {
+  switch (event->key()) {
+  case Qt::Key_Plus:  // On many keyboards, this requires to press Shift-equals
+  case Qt::Key_Equal: // ...so simplify this a bit.
     cam.viewer_distance *= 0.9;
     updateGL();
-    return;
-  }
-  if (event->key() == Qt::Key_Minus) {
+    break;
+  case Qt::Key_Minus:
     cam.viewer_distance /= 0.9;
     updateGL();
-    return;
+    break;
+  case Qt::Key_C:     // 'center'
+    cam.object_trans << 0, 0, 0;
+    updateGL();
+    break;
   }
 }
 
@@ -187,6 +192,7 @@ void QGLView::wheelEvent(QWheelEvent *event)
 
 void QGLView::mousePressEvent(QMouseEvent *event)
 {
+  setFocus();
   mouse_drag_active = true;
   last_mouse = event->globalPos();
 }
