@@ -3,12 +3,12 @@
   <channel>
     <title>OpenSCAD Development Snapshots</title>
     <link>http://openscad.org/appcast-snapshots.xml</link>
-    <language>en</language>      
+    <language>en</language>
     <item>
       <title>OpenSCAD @VERSION@</title>
       <pubDate>@VERSIONDATE@</pubDate>
       <sparkle:releaseNotesLink>https://raw.github.com/openscad/openscad/master/RELEASE_NOTES</sparkle:releaseNotesLink>
-      <enclosure url="https://openscad.googlecode.com/files/OpenSCAD-@VERSION@.dmg"
+      <enclosure url="http://files.googlecode.com/OpenSCAD-@VERSION@.dmg"
                  sparkle:version="@VERSIONDATE@"
                  sparkle:shortVersionString="@VERSION@"
                  sparkle:dsaSignature="@DSASIGNATURE@"
