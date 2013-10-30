@@ -450,6 +450,13 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 #include <QString>
 #include <QDir>
 
+// Only if "fileName" is not absolute, prepend the "absoluteBase".
+static QString assemblePath(const fs::path& absoluteBase,
+                            const string& fileName) {
+  return QDir(QString::fromStdString((const string&) absoluteBase))
+    .absoluteFilePath(QString::fromStdString(fileName));
+}
+
 bool QtUseGUI()
 {
 #ifdef Q_WS_X11
@@ -521,11 +528,11 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 	if (!inputFiles.size()) inputFiles.push_back("");
 #ifdef ENABLE_MDI
 	BOOST_FOREACH(const string &infile, inputFiles) {
-		new MainWindow(QString::fromLocal8Bit(infile.empty() ? infile.c_str() : boosty::stringy(original_path / infile).c_str()));
+               new MainWindow(assemblePath(original_path, infile));
 	}
 	app.connect(&app, SIGNAL(lastWindowClosed()), &app, SLOT(quit()));
 #else
-  MainWindow *m = new MainWindow(QString::fromLocal8Bit(inputFiles[0].empty() ? inputFiles[0].c_str() : boosty::stringy(original_path / inputFiles[0]).c_str()));
+	MainWindow *m = new MainWindow(assemblePath(original_path, inputFiles[0]));
 	app.connect(m, SIGNAL(destroyed()), &app, SLOT(quit()));
 #endif
 	return app.exec();
