@@ -11,7 +11,7 @@ if [[ $? != 0 ]]; then
   echo "Error configuring test suite"
   exit 1
 fi
-make -j4
+make -j2
 if [[ $? != 0 ]]; then
   echo "Error building test suite"
   exit 1
