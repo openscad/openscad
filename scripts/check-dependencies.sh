@@ -548,7 +548,7 @@ main()
     dep_minver=$find_min_version_result
     compare_version $dep_minver $dep_sysver
     dep_compare=$compare_version_result
-    pretty_print $depname $dep_minver $dep_sysver $dep_compare
+    pretty_print $depname "$dep_minver" "$dep_sysver" $dep_compare
   done
   check_old_local
   check_misc
