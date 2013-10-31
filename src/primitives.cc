@@ -64,10 +64,10 @@ private:
 	Value lookup_radius(const Context &ctx, const std::string &radius_var, const std::string &diameter_var) const;
 };
 
-class PrimitiveNode : public AbstractPolyNode
+class PrimitiveNode : public LeafNode
 {
 public:
-	PrimitiveNode(const ModuleInstantiation *mi, primitive_type_e type) : AbstractPolyNode(mi), type(type) { }
+	PrimitiveNode(const ModuleInstantiation *mi, primitive_type_e type) : LeafNode(mi), type(type) { }
   virtual Response accept(class State &state, Visitor &visitor) const {
 		return visitor.visit(state, *this);
 	}
@@ -107,7 +107,8 @@ public:
 	primitive_type_e type;
 	int convexity;
 	Value points, paths, faces;
-	virtual Geometry *evaluate_geometry(class PolySetEvaluator *) const;
+	virtual Geometry *evaluate_geometry(class PolySetEvaluator *) const { return createGeometry(); }
+	virtual Geometry *createGeometry() const;
 };
 
 /**
@@ -292,7 +293,7 @@ static void generate_circle(point2d *circle, double r, int fragments)
 	}
 }
 
-Geometry *PrimitiveNode::evaluate_geometry(class PolySetEvaluator *) const
+Geometry *PrimitiveNode::createGeometry() const
 {
 	Geometry *g = NULL;
 
@@ -502,166 +503,76 @@ sphere_next_r2:
 		}
 	}
 
-	if (this->type == SQUARE && x > 0 && y > 0)
+	if (this->type == SQUARE && this->x > 0 && this->y > 0)
 	{
-/*
 		Polygon2d *p = new Polygon2d();
 		g = p;
-		double x1, x2, y1, y2;
+		Vector2d v1(0, 0);
+		Vector2d v2(this->x, this->y);
 		if (this->center) {
-			x1 = -this->x/2;
-			x2 = +this->x/2;
-			y1 = -this->y/2;
-			y2 = +this->y/2;
-		} else {
-			x1 = y1 = 0;
-			x2 = this->x;
-			y2 = this->y;
+			v1 -= Vector2d(this->x/2, this->y/2);
+			v2 -= Vector2d(this->x/2, this->y/2);
 		}
 
 		Outline2d o(4);
-		o.push_back(Vector2d(x1, y1));
-		o.push_back(Vector2d(x2, y1));
-		o.push_back(Vector2d(x2, y2));
-		o.push_back(Vector2d(x1, y2));
-*/
-
-		PolySet *p = new PolySet();
-		g = p;
-		double x1, x2, y1, y2;
-		if (this->center) {
-			x1 = -this->x/2;
-			x2 = +this->x/2;
-			y1 = -this->y/2;
-			y2 = +this->y/2;
-		} else {
-			x1 = y1 = 0;
-			x2 = this->x;
-			y2 = this->y;
-		}
-
-		p->is2d = true;
-		p->append_poly();
-		p->append_vertex(x1, y1);
-		p->append_vertex(x2, y1);
-		p->append_vertex(x2, y2);
-		p->append_vertex(x1, y2);
+		o[0] = v1;
+		o[1] = Vector2d(v2[0], v1[1]);
+		o[2] = v2;
+		o[3] = Vector2d(v1[0], v2[1]);
+		p->addOutline(o);
 	}
 
-	if (this->type == CIRCLE)
+	if (this->type == CIRCLE && this->r1 > 0)
 	{
-		PolySet *p = new PolySet();
+		Polygon2d *p = new Polygon2d();
 		g = p;
 		int fragments = Calc::get_fragments_from_r(this->r1, this->fn, this->fs, this->fa);
 
-		p->is2d = true;
-		p->append_poly();
-
+		Outline2d o(fragments);
 		for (int i=0; i < fragments; i++) {
 			double phi = (M_PI*2*i) / fragments;
-			p->append_vertex(this->r1*cos(phi), this->r1*sin(phi));
+			o[i] = Vector2d(this->r1*cos(phi), this->r1*sin(phi));
 		}
+		p->addOutline(o);
 	}
 
 	if (this->type == POLYGON)
 	{
-		PolySet *p = new PolySet();
+		Polygon2d *p = new Polygon2d();
 		g = p;
-		DxfData dd;
 
-		for (size_t i=0; i<this->points.toVector().size(); i++) {
-			double x,y;
-			if (!this->points.toVector()[i].getVec2(x, y)) {
-				PRINTB("ERROR: Unable to convert point at index %d to a vec2 of numbers", i);
-				delete p;
-				return NULL;
-			}
-			dd.points.push_back(Vector2d(x, y));
-		}
-
-		if (this->paths.toVector().size() == 0)
-		{
-			if (dd.points.size() <= 2) { // Ignore malformed polygons
-				delete p;
-				return NULL;
-			}
-			dd.paths.push_back(DxfData::Path());
-			for (size_t i=0; i<dd.points.size(); i++) {
-				assert(i < dd.points.size()); // FIXME: Not needed, but this used to be an 'if'
-				dd.paths.back().indices.push_back(i);
-			}
-			if (dd.paths.back().indices.size() > 0) {
-				dd.paths.back().indices.push_back(dd.paths.back().indices.front());
-				dd.paths.back().is_closed = true;
-			}
-		}
-		else
-		{
-			for (size_t i=0; i<this->paths.toVector().size(); i++)
-			{
-				dd.paths.push_back(DxfData::Path());
-				for (size_t j=0; j<this->paths.toVector()[i].toVector().size(); j++) {
-					unsigned int idx = this->paths.toVector()[i].toVector()[j].toDouble();
-					if (idx < dd.points.size()) {
-						dd.paths.back().indices.push_back(idx);
-					}
-				}
-				if (dd.paths.back().indices.empty()) {
-					dd.paths.pop_back();
-				} else {
-					dd.paths.back().indices.push_back(dd.paths.back().indices.front());
-					dd.paths.back().is_closed = true;
-				}
-			}
-		}
-
-		p->is2d = true;
-		p->convexity = convexity;
-		dxf_tesselate(p, dd, 0, Vector2d(1,1), true, false, 0);
-		dxf_border_to_ps(p, dd);
-
-/*
-		Polygon2D *p = new Polygon2D();
-		g = p;
-		// Collect vertices
 		std::vector<Vector2d> vertices;
-		for (size_t i=0; i<this->points.toVector().size(); i++) {
-			double x,y;
-			if (!this->points.toVector()[i].getVec2(x, y)) {
-				PRINTB("ERROR: Unable to convert point at index %d to a vec2 of numbers", i);
+		double x,y;
+		const Value::VectorType &vec = this->points.toVector();
+		for (int i=0;i<vec.size();i++) {
+			const Value &val = vec[i];
+			if (!val.getVec2(x, y)) {
+				PRINTB("ERROR: Unable to convert point %s at index %d to a vec2 of numbers", 
+							 val.toString() % i);
 				delete p;
 				return NULL;
 			}
 			vertices.push_back(Vector2d(x, y));
 		}
 
-		Polygon2d polygon;
-
-		// If no indices, assume one single polygon
-		if (this->paths.toVector().size() == 0) {
-			assert(vertices.size() >= 3); // FIXME: Fail gracefully
-			Outline2d outline;
-			BOOST_FOREACH(const Vector2d &p, vertices) outline.push_back(p);
-			polygon.addOutline(outline);
+		if (this->paths.toVector().size() == 0 && vertices.size() > 2) {
+			p->addOutline(vertices);
 		}
 		else {
-			BOOST_FOREACH(const Value &val, this->paths.toVector()) {
-				Outline2d outline;
-				BOOST_FOREACH(const Value &idxval, val.toVector()) {
-					unsigned int idx = idxval.toDouble();
-					if (idx < vertices.size()) outline.push_back(vertices[idx]);
+			BOOST_FOREACH(const Value &polygon, this->paths.toVector()) {
+				Outline2d curroutline;
+				BOOST_FOREACH(const Value &index, polygon.toVector()) {
+					unsigned int idx = index.toDouble();
+					if (idx < vertices.size()) {
+						curroutline.push_back(vertices[idx]);
+					}
+					// FIXME: Warning on out of bounds?
 				}
-				polygon.addOutline(outline);
+				p->addOutline(curroutline);
 			}
 		}
 
-		ScadPolygon::tessellate(polygons);
-		ScadPolygon::createPolyset(*p, polygons);
-		p->is2d = true;
-		p->convexity = convexity;
-//		dxf_tesselate(p, dd, 0, true, false, 0);
-//		dxf_border_to_ps(p, dd);
-*/
+		// FIXME: p->convexity = convexity;
 	}
 
   // FIXME: IF the above failed, create an empty polyset as that's required later on

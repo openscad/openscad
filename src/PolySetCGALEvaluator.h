@@ -5,7 +5,7 @@
 
 /*!
 	This is a Geometry evaluator which uses the CGALEvaluator to support building
-	geometrys.
+	geometries.
 */
 class PolySetCGALEvaluator : public PolySetEvaluator
 {
@@ -21,6 +21,7 @@ public:
 protected:
 	Geometry *extrudeDxfData(const LinearExtrudeNode &node, class DxfData &dxf);
 	Geometry *rotateDxfData(const RotateExtrudeNode &node, class DxfData &dxf);
+	Geometry *extrudePolygon(const LinearExtrudeNode &node, const class Polygon2d &poly);
 
 	CGALEvaluator &cgalevaluator;
 };

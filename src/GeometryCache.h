@@ -13,8 +13,8 @@ public:
 	static GeometryCache *instance() { if (!inst) inst = new GeometryCache; return inst; }
 
 	bool contains(const std::string &id) const { return this->cache.contains(id); }
-	shared_ptr<class Geometry> get(const std::string &id) const { return this->cache[id]->ps; }
-	void insert(const std::string &id, const shared_ptr<Geometry> &ps);
+	shared_ptr<const class Geometry> get(const std::string &id) const { return this->cache[id]->geom; }
+	bool insert(const std::string &id, const shared_ptr<const Geometry> &geom);
 	size_t maxSize() const;
 	void setMaxSize(size_t limit);
 	void clear() { cache.clear(); }
@@ -24,9 +24,9 @@ private:
 	static GeometryCache *inst;
 
 	struct cache_entry {
-		shared_ptr<class Geometry> ps;
+		shared_ptr<const class Geometry> geom;
 		std::string msg;
-		cache_entry(const shared_ptr<Geometry> &ps);
+		cache_entry(const shared_ptr<const Geometry> &geom);
 		~cache_entry() { }
 	};
 

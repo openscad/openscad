@@ -155,6 +155,7 @@ CONFIG += opencsg
 CONFIG += boost
 CONFIG += eigen
 CONFIG += glib-2.0
+CONFIG += clipper
 
 #Uncomment the following line to enable QCodeEdit
 #CONFIG += qcodeedit
@@ -235,6 +236,7 @@ HEADERS += src/typedefs.h \
            src/handle_dep.h \
            src/Geometry.h \
            src/Polygon2d.h \
+           src/clipper-utils.h \
            src/polyset.h \
            src/printutils.h \
            src/fileutils.h \
@@ -249,6 +251,7 @@ HEADERS += src/typedefs.h \
            src/ModuleCache.h \
            src/GeometryCache.h \
            src/PolySetEvaluator.h \
+           src/GeometryEvaluator.h \
            src/CSGTermEvaluator.h \
            src/Tree.h \
            src/mathc99.h \
@@ -290,6 +293,7 @@ SOURCES += src/version_check.cc \
            src/csgtermnormalizer.cc \
            src/Geometry.cc \
            src/Polygon2d.cc \
+           src/clipper-utils.cc \
            src/polyset.cc \
            src/csgops.cc \
            src/transform.cc \
@@ -315,6 +319,7 @@ SOURCES += src/version_check.cc \
            src/nodedumper.cc \
            src/traverser.cc \
            src/PolySetEvaluator.cc \
+           src/GeometryEvaluator.cc \
            src/ModuleCache.cc \
            src/GeometryCache.cc \
            src/Tree.cc \
@@ -377,7 +382,8 @@ HEADERS += src/cgal.h \
            src/CGALRenderer.h \
            src/CGAL_Nef_polyhedron.h \
            src/CGAL_Nef3_workaround.h \
-           src/cgalworker.h
+           src/cgalworker.h \
+           src/Polygon2d-CGAL.h
 
 SOURCES += src/cgalutils.cc \
            src/CGALEvaluator.cc \
@@ -387,7 +393,8 @@ SOURCES += src/cgalutils.cc \
            src/CGAL_Nef_polyhedron.cc \
            src/CGAL_Nef_polyhedron_DxfData.cc \
            src/cgaladv_minkowski2.cc \
-           src/cgalworker.cc
+           src/cgalworker.cc \
+           src/Polygon2d-CGAL.cc
 }
 
 macx {

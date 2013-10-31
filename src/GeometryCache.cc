@@ -4,9 +4,16 @@
 
 GeometryCache *GeometryCache::inst = NULL;
 
-void GeometryCache::insert(const std::string &id, const shared_ptr<Geometry> &ps)
+bool GeometryCache::insert(const std::string &id, const shared_ptr<const Geometry> &geom)
 {
-	this->cache.insert(id, new cache_entry(ps), ps ? ps->memsize() : 0);
+	bool inserted = this->cache.insert(id, new cache_entry(geom), geom ? geom->memsize() : 0);
+#ifdef DEBUG
+	if (inserted) PRINTB("Geometry Cache insert: %s (%d bytes)", 
+											 id.substr(0, 40) % geom->memsize());
+	else PRINTB("Geometry Cache insert failed: %s (%d bytes)",
+							id.substr(0, 40) % geom->memsize());
+#endif
+	return inserted;
 }
 
 size_t GeometryCache::maxSize() const
@@ -21,11 +28,12 @@ void GeometryCache::setMaxSize(size_t limit)
 
 void GeometryCache::print()
 {
-	PRINTB("Geometrys in cache: %d", this->cache.size());
+	PRINTB("Geometries in cache: %d", this->cache.size());
 	PRINTB("Geometry cache size in bytes: %d", this->cache.totalCost());
 }
 
-GeometryCache::cache_entry::cache_entry(const shared_ptr<Geometry> &ps) : ps(ps)
+GeometryCache::cache_entry::cache_entry(const shared_ptr<const Geometry> &geom)
+	: geom(geom)
 {
 	if (print_messages_stack.size() > 0) this->msg = print_messages_stack.back();
 }

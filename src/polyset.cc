@@ -150,7 +150,7 @@ static void gl_draw_triangle(GLint *shaderinfo, const Vector3d &p0, const Vector
 	}
 }
 
-void PolySet::render_surface(csgmode_e csgmode, const Transform3d &m, GLint *shaderinfo) const
+void PolySet::render_surface(Renderer::csgmode_e csgmode, const Transform3d &m, GLint *shaderinfo) const
 {
 	bool mirrored = m.matrix().determinant() < 0;
 #ifdef ENABLE_OPENCSG
@@ -248,7 +248,7 @@ void PolySet::render_surface(csgmode_e csgmode, const Transform3d &m, GLint *sha
 	}
 }
 
-void PolySet::render_edges(csgmode_e csgmode) const
+void PolySet::render_edges(Renderer::csgmode_e csgmode) const
 {
 	glDisable(GL_LIGHTING);
 	if (this->is2d) {

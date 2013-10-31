@@ -17,7 +17,7 @@
   otherwise a new Geometry will be created from the node. If cache is
   true, the newly created Geometry will be cached.
  */
-shared_ptr<Geometry> PolySetEvaluator::getGeometry(const AbstractNode &node, bool cache)
+shared_ptr<const Geometry> PolySetEvaluator::getGeometry(const AbstractNode &node, bool cache)
 {
 	std::string cacheid = this->tree.getIdString(node);
 

@@ -2,6 +2,7 @@
 #include <QThread>
 
 #include "Tree.h"
+#include "GeometryEvaluator.h"
 #include "CGALEvaluator.h"
 #include "progress.h"
 #include "printutils.h"
@@ -29,8 +30,8 @@ void CGALWorker::work()
 {
 	CGAL_Nef_polyhedron *root_N = NULL;
 	try {
-		CGALEvaluator evaluator(*this->tree);
-		root_N = new CGAL_Nef_polyhedron(evaluator.evaluateCGALMesh(*this->tree->root()));
+		GeometryEvaluator evaluator(*this->tree);
+		root_N = new CGAL_Nef_polyhedron(evaluator.cgalevaluator->evaluateCGALMesh(*this->tree->root()));
 	}
 	catch (const ProgressCancelException &e) {
 		PRINT("Rendering cancelled.");

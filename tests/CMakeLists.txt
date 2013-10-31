@@ -418,6 +418,29 @@ find_package(GLIB2 2.2.0 REQUIRED)
 add_definitions(${GLIB2_DEFINITIONS})
 inclusion(GLIB2_DIR GLIB2_INCLUDE_DIRS)
 
+# Clipper
+if (NOT $ENV{CLIPPERDIR} STREQUAL "")
+  set(CLIPPER_DIR "$ENV{CLIPPERDIR}")
+elseif (NOT $ENV{OPENSCAD_LIBRARIES} STREQUAL "")
+  set(CLIPPER_DIR "$ENV{OPENSCAD_LIBRARIES}")
+endif()
+if (NOT CLIPPER_INCLUDE_DIR)
+  message(STATUS "CLIPPER_DIR: " ${CLIPPER_DIR})
+  find_path(CLIPPER_INCLUDE_DIR
+            polyclipping/clipper.hpp
+            HINTS ${CLIPPER_DIR}/include)
+  find_library(CLIPPER_LIBRARY
+               polyclipping
+               HINTS ${CLIPPER_DIR}/lib)
+  if (NOT CLIPPER_INCLUDE_DIR OR NOT CLIPPER_LIBRARY)
+    message(FATAL_ERROR "Clipper not found")
+  else()
+    message(STATUS "Clipper include found in " ${CLIPPER_INCLUDE_DIR})
+    message(STATUS "Clipper library found in " ${CLIPPER_LIBRARY})
+  endif()
+endif()
+inclusion(CLIPPER_DIR CLIPPER_INCLUDE_DIR)
+
 # Imagemagick
 
 if (SKIP_IMAGEMAGICK)
@@ -561,13 +584,16 @@ set(CGAL_SOURCES
   ../src/PolySetCGALEvaluator.cc
   ../src/CGAL_Nef_polyhedron_DxfData.cc
   ../src/cgaladv_minkowski2.cc
-  ../src/svg.cc)
+  ../src/Polygon2d-CGAL.cc
+  ../src/svg.cc
+  ../src/GeometryEvaluator.cc)
 
 set(COMMON_SOURCES
   ../src/nodedumper.cc 
   ../src/traverser.cc 
   ../src/PolySetEvaluator.cc 
   ../src/GeometryCache.cc 
+  ../src/clipper-utils.cc 
   ../src/Tree.cc
   ../src/lodepng.cpp)
 
@@ -627,14 +653,14 @@ target_link_libraries(csgtexttest tests-nocgal ${TESTS-NOCGAL-LIBRARIES})
 #
 add_executable(cgalcachetest cgalcachetest.cc)
 set_target_properties(cgalcachetest PROPERTIES COMPILE_FLAGS "-DENABLE_CGAL ${CGAL_CXX_FLAGS_INIT}")
-target_link_libraries(cgalcachetest tests-cgal ${TESTS-CGAL-LIBRARIES} ${GLEW_LIBRARY} ${COCOA_LIBRARY})
+target_link_libraries(cgalcachetest tests-cgal ${TESTS-CGAL-LIBRARIES} ${CLIPPER_LIBRARY} ${GLEW_LIBRARY} ${COCOA_LIBRARY})
 
 #
 # openscad no-qt
 #
 add_executable(openscad_nogui ../src/openscad.cc)
 set_target_properties(openscad_nogui PROPERTIES COMPILE_FLAGS "-fno-strict-aliasing -DEIGEN_DONT_ALIGN -DENABLE_CGAL -DENABLE_OPENCSG ${CGAL_CXX_FLAGS_INIT}")
-target_link_libraries(openscad_nogui tests-offscreen tests-cgal tests-nocgal ${TESTS-CORE-LIBRARIES} ${TESTS-CGAL-LIBRARIES} ${GLEW_LIBRARY} ${OPENCSG_LIBRARY} ${COCOA_LIBRARY} ${APP_SERVICES_LIBRARY})
+target_link_libraries(openscad_nogui tests-offscreen tests-cgal tests-nocgal ${TESTS-CORE-LIBRARIES} ${TESTS-CGAL-LIBRARIES} ${GLEW_LIBRARY} ${Boost_LIBRARIES} ${OPENCSG_LIBRARY} ${COCOA_LIBRARY} ${APP_SERVICES_LIBRARY})
 
 #
 # GUI binary tests

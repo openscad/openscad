@@ -3,7 +3,6 @@
 
 #include "visitor.h"
 #include "CGAL_Nef_polyhedron.h"
-#include "PolySetCGALEvaluator.h"
 
 #include <string>
 #include <map>
@@ -13,18 +12,19 @@ class CGALEvaluator : public Visitor
 {
 public:
 	enum CsgOp {CGE_UNION, CGE_INTERSECTION, CGE_DIFFERENCE, CGE_MINKOWSKI};
-	CGALEvaluator(const class Tree &tree) : tree(tree), psevaluator(*this) {}
+	CGALEvaluator(const class Tree &tree, class GeometryEvaluator &geomevaluator) :
+		tree(tree), geomevaluator(geomevaluator) {}
   virtual ~CGALEvaluator() {}
 
   virtual Response visit(State &state, const AbstractNode &node);
  	virtual Response visit(State &state, const AbstractIntersectionNode &node);
  	virtual Response visit(State &state, const CsgNode &node);
  	virtual Response visit(State &state, const TransformNode &node);
+	virtual Response visit(State &state, const LeafNode &node);
 	virtual Response visit(State &state, const AbstractPolyNode &node);
 	virtual Response visit(State &state, const CgaladvNode &node);
 
  	CGAL_Nef_polyhedron evaluateCGALMesh(const AbstractNode &node);
-	CGAL_Nef_polyhedron evaluateCGALMesh(const PolySet &polyset);
 
 	const Tree &getTree() const { return this->tree; }
 
@@ -45,7 +45,7 @@ private:
 public:
 	// FIXME: Do we need to make this visible? Used for cache management
  // Note: psevaluator constructor needs this->tree to be initialized first
-	PolySetCGALEvaluator psevaluator;
+	class GeometryEvaluator &geomevaluator;
 };
 
 #endif
