@@ -125,10 +125,8 @@ void CGAL_Nef_polyhedron::transform( const Transform3d &matrix )
 				ps.is2d = true;
 				dxf_tesselate(&ps, *dd, 0, Vector2d(1,1), true, false, 0);
 
-				Tree nulltree;
-				CGALEvaluator tmpeval(nulltree);
-				CGAL_Nef_polyhedron N = tmpeval.evaluateCGALMesh(ps);
-				if ( N.p2 ) this->p2.reset( new CGAL_Nef_polyhedron2( *N.p2 ) );
+				CGAL_Nef_polyhedron N = createNefPolyhedronFromGeometry(ps);
+				if (N.p2) this->p2.reset(new CGAL_Nef_polyhedron2(*N.p2));
 				delete dd;
 			}
 		}

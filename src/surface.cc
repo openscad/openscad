@@ -54,10 +54,10 @@ public:
 	virtual AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const;
 };
 
-class SurfaceNode : public AbstractPolyNode
+class SurfaceNode : public LeafNode
 {
 public:
-	SurfaceNode(const ModuleInstantiation *mi) : AbstractPolyNode(mi) { }
+	SurfaceNode(const ModuleInstantiation *mi) : LeafNode(mi) { }
   virtual Response accept(class State &state, Visitor &visitor) const {
 		return visitor.visit(state, *this);
 	}
@@ -67,7 +67,8 @@ public:
 	Filename filename;
 	bool center;
 	int convexity;
-	virtual Geometry *evaluate_geometry(class PolySetEvaluator *) const;
+	virtual Geometry *evaluate_geometry(class PolySetEvaluator *) const { return createGeometry(); }
+	virtual Geometry *createGeometry() const;
 };
 
 AbstractNode *SurfaceModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const
@@ -98,7 +99,7 @@ AbstractNode *SurfaceModule::instantiate(const Context *ctx, const ModuleInstant
 	return node;
 }
 
-Geometry *SurfaceNode::evaluate_geometry(class PolySetEvaluator *) const
+Geometry *SurfaceNode::createGeometry() const
 {
 	handle_dep(filename);
 	std::ifstream stream(filename.c_str());

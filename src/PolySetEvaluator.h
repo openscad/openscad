@@ -11,7 +11,7 @@ public:
 
 	const Tree &getTree() const { return this->tree; }
 
-	virtual shared_ptr<class Geometry> getGeometry(const class AbstractNode &, bool cache);
+	virtual shared_ptr<const class Geometry> getGeometry(const class AbstractNode &, bool cache);
 
 	virtual Geometry *evaluateGeometry(const class ProjectionNode &) { return NULL; }
 	virtual Geometry *evaluateGeometry(const class LinearExtrudeNode &) { return NULL; }

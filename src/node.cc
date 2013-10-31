@@ -62,6 +62,11 @@ Response AbstractPolyNode::accept(class State &state, Visitor &visitor) const
 	return visitor.visit(state, *this);
 }
 
+Response LeafNode::accept(class State &state, Visitor &visitor) const
+{
+	return visitor.visit(state, *this);
+}
+
 std::string AbstractNode::toString() const
 {
 	return this->name() + "()";

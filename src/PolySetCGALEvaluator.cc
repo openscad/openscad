@@ -3,7 +3,12 @@
 #include "cgalutils.h"
 #include <CGAL/convex_hull_3.h>
 
+#include "Polygon2d.h"
+#include "Polygon2d-CGAL.h"
 #include "polyset.h"
+#include <polyclipping/clipper.hpp>
+#include "clipper-utils.h"
+
 #include "CGALEvaluator.h"
 #include "projectionnode.h"
 #include "linearextrudenode.h"
@@ -287,38 +292,133 @@ static void add_slice(PolySet *ps, const DxfData &dxf, DxfData::Path &path,
 	}
 }
 
+static Polygon2d *evaluate2DTree(const AbstractNode &node)
+{
+	// FIXME:
+	// o visitor walking the tree
+	// o On supported node, evaluate directly
+	// o What about e.g projection?
+	// o Use CGALEvaluator instead and add a 2D evaluator function?
+
+
+	Outline2d o;
+	o.push_back(Vector2d(0,0));
+	o.push_back(Vector2d(1,0));
+	o.push_back(Vector2d(1,1));
+	o.push_back(Vector2d(0,1));
+	Polygon2d *p = new Polygon2d();
+	p->addOutline(o);
+	return p;
+}
+
 Geometry *PolySetCGALEvaluator::evaluateGeometry(const LinearExtrudeNode &node)
 {
 	DxfData *dxf;
+	Geometry *geom = NULL;
 
-	if (node.filename.empty())
-	{
+	if (node.filename.empty()) {
 		// Before extruding, union all (2D) children nodes
 		// to a single DxfData, then tesselate this into a Geometry
-		CGAL_Nef_polyhedron sum;
+		Polygon2d sum;
 		BOOST_FOREACH (AbstractNode * v, node.getChildren()) {
 			if (v->modinst->isBackground()) continue;
-			CGAL_Nef_polyhedron N = this->cgalevaluator.evaluateCGALMesh(*v);
-			if (!N.isNull()) {
-				if (N.dim != 2) {
-					PRINT("ERROR: linear_extrude() is not defined for 3D child objects!");
-				}
-				else {
-					if (sum.isNull()) sum = N.copy();
-					else sum += N;
+			Polygon2d *polygons = evaluate2DTree(*v);
+			// FIXME: If evaluate2DTree encounters a 3D object, we should print an error
+			if (polygons) {
+				BOOST_FOREACH(const Outline2d &o, polygons->outlines()) {
+					sum.addOutline(o);
 				}
 			}
+			else {
+//FIXME:				PRINT("ERROR: linear_extrude() is not defined for 3D child objects!");
+			}
 		}
+		ClipperLib::Clipper clipper;
+		clipper.AddPolygons(ClipperUtils::fromPolygon2d(sum), ClipperLib::ptSubject);
+		ClipperLib::Polygons result;
+		clipper.Execute(ClipperLib::ctUnion, result);
 
-		if (sum.isNull()) return NULL;
-		dxf = sum.convertToDxfData();;
+		if (result.size() == 0) return NULL;
+		Polygon2d *polygon = ClipperUtils::toPolygon2d(result);
+		geom = extrudePolygon(node, *polygon);
+		delete polygon;
 	} else {
 		dxf = new DxfData(node.fn, node.fs, node.fa, node.filename, node.layername, node.origin_x, node.origin_y, node.scale_x);
+		geom = extrudeDxfData(node, *dxf);
+		delete dxf;
 	}
 
-	Geometry *geom = extrudeDxfData(node, *dxf);
-	delete dxf;
 	return geom;
+}
+
+
+/*!
+
+	Input to extrude should be clean. This means non-intersecting etc.,
+	the input coming from a library like Clipper.
+
+	
+	
+*/
+Geometry *PolySetCGALEvaluator::extrudePolygon(const LinearExtrudeNode &node, 
+																							 const Polygon2d &poly)
+{
+	PolySet *ps = new PolySet();
+	ps->convexity = node.convexity;
+	if (node.height <= 0) return ps;
+
+	double h1, h2;
+
+	if (node.center) {
+		h1 = -node.height/2.0;
+		h2 = +node.height/2.0;
+	} else {
+		h1 = 0;
+		h2 = node.height;
+	}
+
+//	bool first_open_path = true;
+//	BOOST_FOREACH(const Outline2d &outline, poly.outlines) {
+
+/*
+	if (node.has_twist) {
+		dxf_tesselate(ps, dxf, 0, Vector2d(1,1), false, true, h1); // bottom
+		if (node.scale_x > 0 || node.scale_y > 0) {
+			dxf_tesselate(ps, dxf, node.twist, Vector2d(node.scale_x, node.scale_y), true, true, h2); // top
+		}
+		for (int j = 0; j < node.slices; j++) {
+			double t1 = node.twist*j / node.slices;
+			double t2 = node.twist*(j+1) / node.slices;
+			double g1 = h1 + (h2-h1)*j / node.slices;
+			double g2 = h1 + (h2-h1)*(j+1) / node.slices;
+			double s1x = 1 - (1-node.scale_x)*j / node.slices;
+			double s1y = 1 - (1-node.scale_y)*j / node.slices;
+			double s2x = 1 - (1-node.scale_x)*(j+1) / node.slices;
+			double s2y = 1 - (1-node.scale_y)*(j+1) / node.slices;
+			for (size_t i = 0; i < dxf.paths.size(); i++) {
+				if (!dxf.paths[i].is_closed) continue;
+				add_slice(ps, dxf, dxf.paths[i], t1, t2, g1, g2, s1x, s1y, s2x, s2y);
+			}
+		}
+	}
+	else
+  {
+*/
+		// FIXME: Tessellate outlines into 2D triangles
+	ps = poly.tessellate();
+
+		/*
+		dxf_tesselate(ps, dxf, 0, Vector2d(1,1), false, true, h1); //bottom
+		if (node.scale_x > 0 || node.scale_y > 0) {
+			dxf_tesselate(ps, dxf, 0, Vector2d(node.scale_x, node.scale_y), true, true, h2); // top
+		}
+		for (size_t i = 0; i < dxf.paths.size(); i++) {
+			if (!dxf.paths[i].is_closed) continue;
+			add_slice(ps, dxf, dxf.paths[i], 0, 0, h1, h2, 1, 1, node.scale_x, node.scale_y);
+		}
+	}
+		*/
+	return ps;
 }
 
 Geometry *PolySetCGALEvaluator::extrudeDxfData(const LinearExtrudeNode &node, DxfData &dxf)

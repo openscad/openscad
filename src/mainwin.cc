@@ -87,7 +87,7 @@
 
 #include "CGALCache.h"
 #include "CGALEvaluator.h"
-#include "PolySetCGALEvaluator.h"
+#include "GeometryEvaluator.h"
 #include "CGALRenderer.h"
 #include "CGAL_Nef_polyhedron.h"
 #include "cgal.h"
@@ -791,12 +791,11 @@ void MainWindow::compileCSG(bool procevents)
 	progress_report_prep(this->root_node, report_func, this);
 	try {
 #ifdef ENABLE_CGAL
-		CGALEvaluator cgalevaluator(this->tree);
-		PolySetCGALEvaluator psevaluator(cgalevaluator);
+		GeometryEvaluator geomevaluator(this->tree);
 #else
-		PolySetEvaluator psevaluator(this->tree);
+		// FIXME: Will we support this?
 #endif
-		CSGTermEvaluator csgrenderer(this->tree, &psevaluator);
+		CSGTermEvaluator csgrenderer(this->tree, &geomevaluator);
 		if (procevents) QApplication::processEvents();
 		this->root_raw_term = csgrenderer.evaluateCSGTerm(*root_node, highlight_terms, background_terms);
 		if (!root_raw_term) {

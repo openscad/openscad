@@ -4,7 +4,7 @@
 size_t Polygon2d::memsize() const
 {
 	size_t mem = 0;
-	BOOST_FOREACH(const Outline2d &o, this->outlines) {
+	BOOST_FOREACH(const Outline2d &o, this->outlines()) {
 		mem += o.size() * sizeof(Vector2d) + sizeof(Outline2d);
 	}
 	mem += sizeof(Polygon2d);
@@ -14,7 +14,7 @@ size_t Polygon2d::memsize() const
 BoundingBox Polygon2d::getBoundingBox() const
 {
 	BoundingBox bbox;
-	BOOST_FOREACH(const Outline2d &o, this->outlines) {
+	BOOST_FOREACH(const Outline2d &o, this->outlines()) {
 		BOOST_FOREACH(const Vector2d &v, o) {
 			bbox.extend(Vector3d(v[0], v[1], 0));
 		}
@@ -54,7 +54,11 @@ std::string Polygon2d::dump() const
 	return out.str();
 }
 
-// PolySet *Polygon2d::tessellate()
-// {
-// 	return NULL;
-// }
+void Polygon2d::transform(const Transform2d &mat)
+{
+	BOOST_FOREACH(Outline2d &outline, this->theoutlines) {
+		BOOST_FOREACH(Vector2d &v, outline) {
+			v = mat * v;
+		}
+	}
+}

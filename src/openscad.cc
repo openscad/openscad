@@ -209,8 +209,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 	parser_init(application_path, false);
 	Tree tree;
 #ifdef ENABLE_CGAL
-	CGALEvaluator cgalevaluator(tree);
-	PolySetCGALEvaluator psevaluator(cgalevaluator);
+	GeometryEvaluator geomevaluator(tree);
 #endif
 	const char *stl_output_file = NULL;
 	const char *off_output_file = NULL;
@@ -313,7 +312,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 		std::vector<shared_ptr<CSGTerm> > highlight_terms;
 		std::vector<shared_ptr<CSGTerm> > background_terms;
 
-		CSGTermEvaluator csgRenderer(tree, &psevaluator);
+		CSGTermEvaluator csgRenderer(tree, &geomevaluator);
 		shared_ptr<CSGTerm> root_raw_term = csgRenderer.evaluateCSGTerm(*root_node, highlight_terms, background_terms);
 
 		fs::current_path(original_path);
@@ -335,7 +334,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 		if ((echo_output_file || png_output_file) && !(renderer==Render::CGAL)) {
 			// echo or OpenCSG png -> don't necessarily need CGALMesh evaluation
 		} else {
-			root_N = cgalevaluator.evaluateCGALMesh(*tree.root());
+			root_N = geomevaluator.cgalevaluator->evaluateCGALMesh(*tree.root());
 		}
 
 		fs::current_path(original_path);

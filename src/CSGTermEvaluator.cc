@@ -9,7 +9,7 @@
 #include "rendernode.h"
 #include "cgaladvnode.h"
 #include "printutils.h"
-#include "PolySetEvaluator.h"
+#include "GeometryEvaluator.h"
 #include "polyset.h"
 
 #include <string>
@@ -86,16 +86,16 @@ Response CSGTermEvaluator::visit(State &state, const AbstractIntersectionNode &n
 	return ContinueTraversal;
 }
 
-static shared_ptr<CSGTerm> evaluate_csg_term_from_ps(const State &state, 
+static shared_ptr<CSGTerm> evaluate_csg_term_from_geometry(const State &state, 
 																					std::vector<shared_ptr<CSGTerm> > &highlights, 
 																					std::vector<shared_ptr<CSGTerm> > &background, 
-																					const shared_ptr<PolySet> &ps, 
+																					const shared_ptr<const Geometry> &geom,
 																					const ModuleInstantiation *modinst, 
 																					const AbstractNode &node)
 {
 	std::stringstream stream;
 	stream << node.name() << node.index();
-	shared_ptr<CSGTerm> t(new CSGTerm(ps, state.matrix(), state.color(), stream.str()));
+	shared_ptr<CSGTerm> t(new CSGTerm(geom, state.matrix(), state.color(), stream.str()));
 	if (modinst->isHighlight()) {
 		t->flag = CSGTerm::FLAG_HIGHLIGHT;
 		highlights.push_back(t);
@@ -111,15 +111,11 @@ Response CSGTermEvaluator::visit(State &state, const AbstractPolyNode &node)
 {
 	if (state.isPrefix()) {
 		shared_ptr<CSGTerm> t1;
-		if (this->psevaluator) {
-			shared_ptr<Geometry> geom = this->psevaluator->getGeometry(node, true);
+		if (this->geomevaluator) {
+			shared_ptr<const Geometry> geom = this->geomevaluator->evaluateGeometry(node);
 			if (geom) {
-				shared_ptr<PolySet> ps = dynamic_pointer_cast<PolySet>(geom);
-				if (!ps) {
-					// FIXME: Convert geom to polyset. Refacting may resume here
-				}
-				t1 = evaluate_csg_term_from_ps(state, this->highlights, this->background, 
-																			 ps, node.modinst, node);
+				t1 = evaluate_csg_term_from_geometry(state, this->highlights, this->background, 
+																						 geom, node.modinst, node);
 				node.progress_report();
 			}
 		}
@@ -181,15 +177,14 @@ Response CSGTermEvaluator::visit(State &state, const RenderNode &node)
 {
 	if (state.isPrefix()) {
 		shared_ptr<CSGTerm> t1;
-		shared_ptr<PolySet> ps;
-		if (this->psevaluator) {
-			shared_ptr<Geometry> geom = this->psevaluator->getGeometry(node, true);
-			ps = dynamic_pointer_cast<PolySet>(geom);
+		shared_ptr<const Geometry> geom;
+		if (this->geomevaluator) {
+			geom = this->geomevaluator->evaluateGeometry(node);
 			node.progress_report();
 		}
-		if (ps) {
-			t1 = evaluate_csg_term_from_ps(state, this->highlights, this->background, 
-																		 ps, node.modinst, node);
+		if (geom) {
+			t1 = evaluate_csg_term_from_geometry(state, this->highlights, this->background, 
+																					 geom, node.modinst, node);
 		}
 		this->stored_term[node.index()] = t1;
 		addToParent(state, node);
@@ -202,14 +197,13 @@ Response CSGTermEvaluator::visit(State &state, const CgaladvNode &node)
 	if (state.isPrefix()) {
 		shared_ptr<CSGTerm> t1;
     // FIXME: Calling evaluator directly since we're not a PolyNode. Generalize this.
-		shared_ptr<PolySet> ps;
-		if (this->psevaluator) {
-			shared_ptr<Geometry> geom = this->psevaluator->getGeometry(node, true);
-			ps = dynamic_pointer_cast<PolySet>(geom);
+		shared_ptr<const Geometry> geom;
+		if (this->geomevaluator) {
+			geom = this->geomevaluator->evaluateGeometry(node);
 		}
-		if (ps) {
-			t1 = evaluate_csg_term_from_ps(state, this->highlights, this->background, 
-																		 ps, node.modinst, node);
+		if (geom) {
+			t1 = evaluate_csg_term_from_geometry(state, this->highlights, this->background, 
+																					 geom, node.modinst, node);
 			node.progress_report();
 		}
 		this->stored_term[node.index()] = t1;

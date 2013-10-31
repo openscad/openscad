@@ -6,7 +6,7 @@
 #include "memory.h"
 #include "linalg.h"
 
-class PolySet;
+class Geometry;
 
 class CSGTerm
 {
@@ -28,14 +28,14 @@ public:
 	static shared_ptr<CSGTerm> createCSGTerm(type_e type, CSGTerm *left, CSGTerm *right);
 
 	type_e type;
-	shared_ptr<PolySet> polyset;
+	shared_ptr<const Geometry> geom;
 	std::string label;
 	shared_ptr<CSGTerm> left;
 	shared_ptr<CSGTerm> right;
 	BoundingBox bbox;
 	Flag flag;
 
-	CSGTerm(const shared_ptr<PolySet> &polyset, const Transform3d &matrix, const Color4f &color, const std::string &label);
+	CSGTerm(const shared_ptr<const Geometry> &geom, const Transform3d &matrix, const Color4f &color, const std::string &label);
 	~CSGTerm();
 
 	const BoundingBox &getBoundingBox() const { return this->bbox; }
@@ -56,15 +56,15 @@ private:
 class CSGChainObject
 {
 public:
-	CSGChainObject(shared_ptr<PolySet> polyset,
+	CSGChainObject(shared_ptr<const Geometry> geom,
 								 const Transform3d &matrix,
 								 const Color4f &color,
 								 CSGTerm::type_e type,
 								 const std::string &label,
 								 CSGTerm::Flag flag = CSGTerm::FLAG_NONE)
-		: polyset(polyset), matrix(matrix), color(color), type(type), label(label), flag(flag) {}
+		: geom(geom), matrix(matrix), color(color), type(type), label(label), flag(flag) {}
 
-	shared_ptr<PolySet> polyset;
+	shared_ptr<const Geometry> geom;
 	Transform3d matrix;
 	Color4f color;
 	CSGTerm::type_e type;
