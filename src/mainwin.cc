@@ -334,6 +334,7 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this->viewActionBack, SIGNAL(triggered()), this, SLOT(viewAngleBack()));
 	connect(this->viewActionDiagonal, SIGNAL(triggered()), this, SLOT(viewAngleDiagonal()));
 	connect(this->viewActionCenter, SIGNAL(triggered()), this, SLOT(viewCenter()));
+	connect(this->viewActionResetView, SIGNAL(triggered()), this, SLOT(viewResetView()));
 	connect(this->viewActionPerspective, SIGNAL(triggered()), this, SLOT(viewPerspective()));
 	connect(this->viewActionOrthogonal, SIGNAL(triggered()), this, SLOT(viewOrthogonal()));
 	connect(this->viewActionHide, SIGNAL(triggered()), this, SLOT(hideConsole()));
@@ -1769,6 +1770,12 @@ void MainWindow::viewOrthogonal()
 	viewActionPerspective->setChecked(false);
 	viewActionOrthogonal->setChecked(true);
 	this->qglview->setOrthoMode(true);
+	this->qglview->updateGL();
+}
+
+void MainWindow::viewResetView()
+{
+	this->qglview->resetView();
 	this->qglview->updateGL();
 }
 
