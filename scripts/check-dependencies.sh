@@ -86,21 +86,16 @@ mpfr_sysver()
 
 gmp_sysver()
 {
-  # on some systems you have VERSION in gmp-$arch.h not gmp.h. use gmp*.h
-  if [ -e $1/include/multiarch-x86_64-linux ]; then
-    subdir=include/multiarch-x86_64-linux
-  else
-    subdir=include
+  gmppaths="`find $1 -name 'gmp.h' -o -name 'gmp-*.h'`"
+  if [ ! "$gmppaths" ]; then
+    debug "gmp_sysver no gmp.h beneath $1"
+    return
   fi
-  if [ ! -e $1/$subdir ]; then return; fi
-  gmppaths=`ls $1/$subdir | grep ^gmp`
-  if [ ! "$gmppaths" ]; then return; fi
   for gmpfile in $gmppaths; do
-    gmppath=$1/$subdir/$gmpfile
-    if [ "`grep __GNU_MP_VERSION $gmppath`" ]; then
-      gmpmaj=`grep "define  *__GNU_MP_VERSION  *[0-9]*" $gmppath | awk '{print $3}'`
-      gmpmin=`grep "define  *__GNU_MP_VERSION_MINOR  *[0-9]*" $gmppath | awk '{print $3}'`
-      gmppat=`grep "define  *__GNU_MP_VERSION_PATCHLEVEL  *[0-9]*" $gmppath | awk '{print $3}'`
+    if [ "`grep __GNU_MP_VERSION $gmpfile`" ]; then
+      gmpmaj=`grep "define  *__GNU_MP_VERSION  *[0-9]*" $gmpfile | awk '{print $3}'`
+      gmpmin=`grep "define  *__GNU_MP_VERSION_MINOR  *[0-9]*" $gmpfile | awk '{print $3}'`
+      gmppat=`grep "define  *__GNU_MP_VERSION_PATCHLEVEL  *[0-9]*" $gmpfile | awk '{print $3}'`
     fi
   done
   gmp_sysver_result="$gmpmaj.$gmpmin.$gmppat"
