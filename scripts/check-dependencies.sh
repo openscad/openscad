@@ -261,32 +261,47 @@ pkg_config_search()
 
 get_minversion_from_readme()
 {
-  if [ -e README.md ]; then READFILE=README.md; fi
-  if [ -e ../README.md ]; then READFILE=../README.md; fi
-  if [ ! $READFILE ]; then
-    if [ "`command -v dirname`" ]; then
-      READFILE=`dirname $0`/../README.md
-    fi
-  fi
-  if [ ! $READFILE ]; then echo "cannot find README.md"; exit 1; fi
   debug get_minversion_from_readme $*
+
+  # Extract dependency name
   if [ ! $1 ]; then return; fi
   depname=$1
-  local grv_tmp=
+
   debug $depname
-  # example-->     * [CGAL (3.6 - 3.9)] (www.cgal.org)  becomes 3.6
-  # steps: eliminate *, find left (, find -, make 'x' into 0, delete junk
-  grv_tmp=`grep -i ".$depname.*([0-9]" $READFILE | sed s/"*"//`
-  debug $grv_tmp
-  grv_tmp=`echo $grv_tmp | awk -F"(" '{print $2}'`
-  debug $grv_tmp
-  grv_tmp=`echo $grv_tmp | awk -F"-" '{print $1}'`
-  debug $grv_tmp
-  grv_tmp=`echo $grv_tmp | sed s/"x"/"0"/g`
-  debug $grv_tmp
-  grv_tmp=`echo $grv_tmp | sed s/"[^0-9.]"//g`
-  debug $grv_tmp
-  get_minversion_from_readme_result=$grv_tmp
+  local grv_tmp=
+  for READFILE in README.md ../README.md "`dirname "$0"`/../README.md"
+  do
+    if [ ! -e "$READFILE" ]
+    then
+      debug "get_minversion_from_readme $READFILE not found"
+      continue
+    fi
+    debug "get_minversion_from_readme $READFILE found"
+    grep -qi ".$depname.*([0-9]" $READFILE || continue
+    grv_tmp="`grep -i ".$depname.*([0-9]" $READFILE | sed s/"*"//`"
+    debug $grv_tmp
+    grv_tmp="`echo $grv_tmp | awk -F"(" '{print $2}'`"
+    debug $grv_tmp
+    grv_tmp="`echo $grv_tmp | awk -F"-" '{print $1}'`"
+    debug $grv_tmp
+    grv_tmp="`echo $grv_tmp | sed s/"x"/"0"/g`"
+    debug $grv_tmp
+    grv_tmp="`echo $grv_tmp | sed s/"[^0-9.]"//g`"
+    debug $grv_tmp
+    if [ "z$grv_tmp" = "z" ]
+    then
+      debug "get_minversion_from_readme no result for $depname from $READFILE"
+      continue
+    fi
+    get_minversion_from_readme_result=$grv_tmp
+    return 0
+  done
+  if [ "z$grv_tmp" = "z" ]
+  then
+    debug "get_minversion_from_readme no result for $depname found anywhere"
+    get_minversion_from_readme_result=""
+    return 0
+  fi
 }
 
 find_min_version()
@@ -533,7 +548,7 @@ main()
     dep_minver=$find_min_version_result
     compare_version $dep_minver $dep_sysver
     dep_compare=$compare_version_result
-    pretty_print $depname $dep_minver $dep_sysver $dep_compare
+    pretty_print $depname "$dep_minver" "$dep_sysver" $dep_compare
   done
   check_old_local
   check_misc
