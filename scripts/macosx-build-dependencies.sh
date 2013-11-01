@@ -42,6 +42,25 @@ printUsage()
   echo "  -d   Build for deployment"
 }
 
+patch_qt_disable_core_wlan()
+{
+  version="$1"
+
+  patch -d "qt-everywhere-opensource-src-$version" -p1 <<END-OF-PATCH
+--- qt-everywhere-opensource-src-4.8.5/src/plugins/bearer/bearer.pro.orig	2013-11-01 19:04:29.000000000 +0100
++++ qt-everywhere-opensource-src-4.8.5/src/plugins/bearer/bearer.pro	2013-10-31 21:53:00.000000000 +0100
+@@ -12,7 +12,7 @@
+ #win32:SUBDIRS += nla
+ win32:SUBDIRS += generic
+ win32:!wince*:SUBDIRS += nativewifi
+-macx:contains(QT_CONFIG, corewlan):SUBDIRS += corewlan
++#macx:contains(QT_CONFIG, corewlan):SUBDIRS += corewlan
+ macx:SUBDIRS += generic
+ symbian:SUBDIRS += symbian
+ blackberry:SUBDIRS += blackberry
+END-OF-PATCH
+}
+
 # FIXME: Support gcc/llvm/clang flags. Use -platform <whatever> to make this work? kintel 20130117
 build_qt()
 {
@@ -71,7 +90,19 @@ build_qt()
   if $OPTION_32BIT; then
     QT_32BIT="-arch x86"
   fi
-  ./configure -prefix $DEPLOYDIR -release $QT_32BIT -arch x86_64 -opensource -confirm-license $PLATFORM -fast -no-qt3support -no-svg -no-phonon -no-audio-backend -no-multimedia -no-javascript-jit -no-script -no-scripttools -no-declarative -no-xmlpatterns -nomake demos -nomake examples -nomake docs -nomake translations -no-webkit
+  case "$OSX_VERSION" in
+    9)
+      # libtiff fails in the linker step with Mavericks / XCode 5.0.1
+      MACOSX_RELEASE_OPTIONS=-no-libtiff
+      # wlan support bails out with lots of compiler errors, disable it for the build
+      patch_qt_disable_core_wlan "$version"
+      ;;
+    *)
+      MACOSX_RELEASE_OPTIONS=
+      ;;
+  esac
+exit 1
+  ./configure -prefix $DEPLOYDIR -release $QT_32BIT -arch x86_64 -opensource -confirm-license $PLATFORM -fast -no-qt3support -no-svg -no-phonon -no-audio-backend -no-multimedia -no-javascript-jit -no-script -no-scripttools -no-declarative -no-xmlpatterns -nomake demos -nomake examples -nomake docs -nomake translations -no-webkit $MACOSX_RELEASE_OPTIONS
   make -j6 install
 }
 
