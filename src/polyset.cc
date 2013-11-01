@@ -312,3 +312,9 @@ size_t PolySet::memsize() const
 	mem += sizeof(PolySet);
 	return mem;
 }
+
+void PolySet::append(const PolySet &ps)
+{
+	this->polygons.insert(this->polygons.end(), ps.polygons.begin(), ps.polygons.end());
+}
+
