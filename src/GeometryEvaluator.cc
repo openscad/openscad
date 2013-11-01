@@ -6,6 +6,7 @@
 #include "module.h"
 #include "state.h"
 #include "transformnode.h"
+#include "linearextrudenode.h"
 #include "clipper-utils.h"
 #include "CGALEvaluator.h"
 #include "CGALCache.h"
@@ -62,6 +63,7 @@ shared_ptr<const Geometry> GeometryEvaluator::evaluateGeometry(const AbstractNod
 }
 
 /*!
+	
 */
 Geometry *GeometryEvaluator::applyToChildren(const AbstractNode &node, OpenSCADOperator op)
 {
@@ -97,6 +99,11 @@ Geometry *GeometryEvaluator::applyToChildren(const AbstractNode &node, OpenSCADO
 	clipper.Execute(ClipperLib::ctUnion, result);
 
 	if (result.size() == 0) return NULL;
+
+	// The returned result will have outlines ordered according to whether 
+	// they're positive or negative: Positive outlines counter-clockwise and 
+	// negative outlines clockwise.
+	// FIXME: We might want to introduce a flag in Polygon2d to signify this
 	return ClipperUtils::toPolygon2d(result);
 }
 
@@ -150,6 +157,8 @@ Response GeometryEvaluator::visit(State &state, const AbstractNode &node)
 */
 Response GeometryEvaluator::visit(State &state, const LeafNode &node)
 {
+	// FIXME: We should run the result of 2D geometry to Clipper to ensure
+	// correct winding order
 	if (state.isPrefix()) {
 		shared_ptr<const Geometry> geom;
 		if (!isCached(node)) geom.reset(node.createGeometry());
@@ -187,6 +196,128 @@ Response GeometryEvaluator::visit(State &state, const TransformNode &node)
 			geom = GeometryCache::instance()->get(this->tree.getIdString(node));
 		}
 		addToParent(state, node, geom);
+	}
+	return ContinueTraversal;
+}
+
+static Vector2d transform(const Vector2d &v, double rot, const Vector2d &scale)
+{
+	return Vector2d(scale[0] * (v[0] *  cos(rot*M_PI/180) + v[1] * sin(rot*M_PI/180)),
+									scale[1] * (v[0] * -sin(rot*M_PI/180) + v[1] * cos(rot*M_PI/180)));
+}
+
+static void transform_PolySet(PolySet &ps, 
+															double height, double rot, const Vector2d &scale)
+{
+	BOOST_FOREACH(PolySet::Polygon &p, ps.polygons) {
+		BOOST_FOREACH(Vector3d &v, p) {
+			v = Vector3d(scale[0] * (v[0] *  cos(rot*M_PI/180) + v[1] * sin(rot*M_PI/180)),
+									 scale[1] * (v[0] * -sin(rot*M_PI/180) + v[1] * cos(rot*M_PI/180)),
+									 height);
+		}
+	}
+}
+
+static void add_slice(PolySet *ps, const Polygon2d &poly, 
+											double rot1, double rot2, 
+											double h1, double h2, 
+											const Vector2d &scale1,
+											const Vector2d &scale2)
+{
+	// FIXME: If scale2 == 0 we need to handle tessellation separately
+	bool splitfirst = sin(rot2 - rot1) >= 0.0;
+	BOOST_FOREACH(const Outline2d &o, poly.outlines()) {
+		Vector2d prev1 = transform(o[0], rot1, scale1);
+		Vector2d prev2 = transform(o[0], rot2, scale2);
+		for (size_t i=1;i<=o.size();i++) {
+			Vector2d curr1 = transform(o[i % o.size()], rot1, scale1);
+			Vector2d curr2 = transform(o[i % o.size()], rot2, scale2);
+			ps->append_poly();
+			
+			if (splitfirst) {
+				ps->insert_vertex(prev1[0], prev1[1], h1);
+				ps->insert_vertex(curr1[0], curr1[1], h1);
+				ps->insert_vertex(curr2[0], curr2[1], h2);
+				if (scale2[0] > 0 || scale2[1] > 0) {
+					ps->append_poly();
+					ps->insert_vertex(curr2[0], curr2[1], h2);
+					ps->insert_vertex(prev1[0], prev1[1], h1);
+					ps->insert_vertex(prev2[0], prev2[1], h2);
+				}
+			}
+			else {
+				ps->insert_vertex(prev1[0], prev1[1], h1);
+				ps->insert_vertex(curr1[0], curr1[1], h1);
+				ps->insert_vertex(prev2[0], prev2[1], h2);
+				if (scale2[0] > 0 || scale2[1] > 0) {
+					ps->append_poly();
+					ps->insert_vertex(prev2[0], prev2[1], h2);
+					ps->insert_vertex(curr1[0], curr1[1], h1);
+					ps->insert_vertex(curr2[0], curr2[1], h2);
+				}
+			}
+            prev1 = curr1;
+			prev2 = curr2;
+		}
+	}
+}
+
+/*!
+	Input to extrude should be clean. This means non-intersecting, correct winding order
+	etc., the input coming from a library like Clipper.
+*/
+static Geometry *extrudePolygon(const LinearExtrudeNode &node, const Polygon2d &poly)
+{
+	PolySet *ps = new PolySet();
+	ps->convexity = node.convexity;
+	if (node.height <= 0) return ps;
+
+	double h1, h2;
+
+	if (node.center) {
+		h1 = -node.height/2.0;
+		h2 = +node.height/2.0;
+	} else {
+		h1 = 0;
+		h2 = node.height;
+	}
+
+	PolySet *ps_bottom = poly.tessellate(); // bottom
+	ps->append(*ps_bottom);
+	delete ps_bottom;
+	if (node.scale_x > 0 || node.scale_y > 0) {
+		PolySet *ps_top = poly.tessellate(); // top
+		transform_PolySet(*ps_top, h2, node.twist, Vector2d(node.scale_x, node.scale_y));
+		ps->append(*ps_top);
+		delete ps_top;
+	}
+    size_t slices = node.has_twist ? node.slices : 1;
+
+	for (int j = 0; j < slices; j++) {
+		double rot1 = node.twist*j / slices;
+		double rot2 = node.twist*(j+1) / slices;
+		double height1 = h1 + (h2-h1)*j / slices;
+		double height2 = h1 + (h2-h1)*(j+1) / slices;
+		Vector2d scale1(1 - (1-node.scale_x)*j / slices,
+										1 - (1-node.scale_y)*j / slices);
+		Vector2d scale2(1 - (1-node.scale_x)*(j+1) / slices,
+										1 - (1-node.scale_y)*(j+1) / slices);
+		add_slice(ps, poly, rot1, rot2, height1, height2, scale1, scale2);
+	}
+
+	return ps;
+}
+
+Response GeometryEvaluator::visit(State &state, const LinearExtrudeNode &node)
+{
+	if (state.isPrefix() && isCached(node)) return PruneTraversal;
+	if (state.isPostfix()) {
+		shared_ptr<const class Geometry> geom(applyToChildren(node, CGE_UNION));
+		shared_ptr<const Polygon2d> polygons = dynamic_pointer_cast<const Polygon2d>(geom);
+		assert(polygons);
+		Geometry *extruded = extrudePolygon(node, *polygons);
+		assert(extruded);
+		addToParent(state, node, shared_ptr<const class Geometry>(extruded));
 	}
 	return ContinueTraversal;
 }

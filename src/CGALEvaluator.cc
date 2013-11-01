@@ -350,26 +350,6 @@ Response CGALEvaluator::visit(State &state, const TransformNode &node)
 }
 
 /*!
-	Leaf nodes can create their own geometry, so let them do that
-*/
-Response CGALEvaluator::visit(State &state, const LeafNode &node)
-{
-	if (state.isPrefix()) {
-		CGAL_Nef_polyhedron N;
-		if (!isCached(node)) {
-			shared_ptr<const Geometry> geom(node.createGeometry());
-			if (geom) N = createNefPolyhedronFromGeometry(*geom);
-			node.progress_report();
-		}
-		else {
-			N = CGALCache::instance()->get(this->tree.getIdString(node));
-		}
-		addToParent(state, node, N);
-	}
-	return PruneTraversal;
-}
-
-/*!
 	Handles non-leaf PolyNodes; extrudes, projection
 */
 Response CGALEvaluator::visit(State &state, const AbstractPolyNode &node)

@@ -33,6 +33,8 @@ public:
 	void append_poly();
 	void append_vertex(double x, double y, double z = 0.0);
 	void insert_vertex(double x, double y, double z = 0.0);
+	void append(const PolySet &ps);
+
 	void render_surface(Renderer::csgmode_e csgmode, const Transform3d &m, GLint *shaderinfo = NULL) const;
 	void render_edges(Renderer::csgmode_e csgmode) const;
 };
