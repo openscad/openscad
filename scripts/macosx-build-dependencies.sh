@@ -312,7 +312,8 @@ build_eigen()
   if [ $version = "2.0.17" ]; then EIGENDIR=eigen-eigen-b23437e61a07; fi
   if [ $version = "3.1.2" ]; then EIGENDIR=eigen-eigen-5097c01bcdc4;
   elif [ $version = "3.1.3" ]; then EIGENDIR=eigen-eigen-2249f9c22fe8;
-  elif [ $version = "3.1.4" ]; then EIGENDIR=eigen-eigen-36bf2ceaf8f5; fi
+  elif [ $version = "3.1.4" ]; then EIGENDIR=eigen-eigen-36bf2ceaf8f5;
+  elif [ $version = "3.2.0" ]; then EIGENDIR=eigen-eigen-ffa86ffb5570; fi
 
   if [ $EIGENDIR = "none" ]; then
     echo Unknown eigen version. Please edit script.
@@ -439,7 +440,7 @@ echo "Using basedir:" $BASEDIR
 mkdir -p $SRCDIR $DEPLOYDIR
 build_qt 4.8.5
 # NB! For eigen, also update the path in the function
-build_eigen 3.1.4
+build_eigen 3.2.0
 build_gmp 5.1.3
 build_mpfr 3.1.2
 build_boost 1.54.0
