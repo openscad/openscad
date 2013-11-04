@@ -41,6 +41,7 @@ public:
 	}
 	std::string getRendererInfo() const;
 	bool save(const char *filename);
+        void resetView();
 
 public:
 	QLabel *statusLabel;

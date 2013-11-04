@@ -213,6 +213,8 @@
     <addaction name="viewActionDiagonal"/>
     <addaction name="viewActionCenter"/>
     <addaction name="separator"/>
+    <addaction name="viewActionResetView"/>
+    <addaction name="separator"/>
     <addaction name="viewActionPerspective"/>
     <addaction name="viewActionOrthogonal"/>
     <addaction name="separator"/>
@@ -695,6 +697,11 @@
   <action name="fileShowLibraryFolder">
    <property name="text">
     <string>Show Library Folder...</string>
+   </property>
+  </action>
+  <action name="viewActionResetView">
+   <property name="text">
+    <string>Reset View</string>
    </property>
   </action>
  </widget>
