@@ -130,13 +130,13 @@ Response CSGTermEvaluator::visit(State &state, const CsgNode &node)
 	if (state.isPostfix()) {
 		CsgOp op = CSGT_UNION;
 		switch (node.type) {
-		case CSG_TYPE_UNION:
+		case OPENSCAD_UNION:
 			op = CSGT_UNION;
 			break;
-		case CSG_TYPE_DIFFERENCE:
+		case OPENSCAD_DIFFERENCE:
 			op = CSGT_DIFFERENCE;
 			break;
-		case CSG_TYPE_INTERSECTION:
+		case OPENSCAD_INTERSECTION:
 			op = CSGT_INTERSECTION;
 			break;
 		default:

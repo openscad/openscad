@@ -7,10 +7,13 @@
 #include "state.h"
 #include "transformnode.h"
 #include "linearextrudenode.h"
+#include "rotateextrudenode.h"
+#include "csgnode.h"
 #include "clipper-utils.h"
 #include "CGALEvaluator.h"
 #include "CGALCache.h"
 #include "PolySet.h"
+#include "openscad.h" // get_fragments_from_r()
 
 #include <boost/foreach.hpp>
 
@@ -93,10 +96,26 @@ Geometry *GeometryEvaluator::applyToChildren(const AbstractNode &node, OpenSCADO
 		chnode->progress_report();
 	}
 
+	ClipperLib::ClipType clipType;
+	switch (op) {
+	case OPENSCAD_UNION:
+		clipType = ClipperLib::ctUnion;
+		break;
+	case OPENSCAD_INTERSECTION:
+		clipType = ClipperLib::ctIntersection;
+		break;
+	case OPENSCAD_DIFFERENCE:
+		clipType = ClipperLib::ctDifference;
+		break;
+	default:
+		PRINTB("Error: Unknown boolean operation %d", int(op));
+		return NULL;
+		break;
+	}
 	ClipperLib::Clipper clipper;
 	clipper.AddPolygons(ClipperUtils::fromPolygon2d(sum), ClipperLib::ptSubject);
 	ClipperLib::Polygons result;
-	clipper.Execute(ClipperLib::ctUnion, result);
+	clipper.Execute(clipType, result);
 
 	if (result.size() == 0) return NULL;
 
@@ -168,28 +187,49 @@ Response GeometryEvaluator::visit(State &state, const LeafNode &node)
 	return PruneTraversal;
 }
 
+Response GeometryEvaluator::visit(State &state, const CsgNode &node)
+{
+	if (state.isPrefix() && isCached(node)) return PruneTraversal;
+	if (state.isPostfix()) {
+		shared_ptr<const class Geometry> geom;
+		if (!isCached(node)) {
+			shared_ptr<const class Geometry> geom(applyToChildren(node, node.type));
+			shared_ptr<const Polygon2d> polygons = dynamic_pointer_cast<const Polygon2d>(geom);
+			assert(polygons);
+			addToParent(state, node, geom);
+		}
+		// FIXME: if 3d node, CGAL?
+	}
+	return ContinueTraversal;
+}
+
 Response GeometryEvaluator::visit(State &state, const TransformNode &node)
 {
 	if (state.isPrefix() && isCached(node)) return PruneTraversal;
 	if (state.isPostfix()) {
 		shared_ptr<const class Geometry> geom;
 		if (!isCached(node)) {
-			// First union all children
-			geom.reset(applyToChildren(node, CGE_UNION));
 			if (matrix_contains_infinity(node.matrix) || matrix_contains_nan(node.matrix)) {
 				// due to the way parse/eval works we can't currently distinguish between NaN and Inf
 				PRINT("Warning: Transformation matrix contains Not-a-Number and/or Infinity - removing object.");
-				geom.reset();
-			}
-			//FIXME: Handle 2D vs. 3D
-			shared_ptr<const Polygon2d> polygons = dynamic_pointer_cast<const Polygon2d>(geom);
-			if (polygons) {
-// FIXME: Convert from mat3 to mat2:			Transform2d mat2(node.matrix);
-				Transform2d mat2;
-//				polygons->transform(mat2);
 			}
 			else {
-				// FIXME: Handle 3D transfer
+				// First union all children
+				Geometry *geometry = applyToChildren(node, OPENSCAD_UNION);
+				Polygon2d *polygons = dynamic_cast<Polygon2d*>(geometry);
+				//FIXME: Handle 2D vs. 3D
+				if (polygons) {
+					Transform2d mat2;
+					mat2.matrix() << 
+						node.matrix(0,0), node.matrix(0,1), node.matrix(0,3),
+						node.matrix(1,0), node.matrix(1,1), node.matrix(1,3),
+						node.matrix(3,0), node.matrix(3,1), node.matrix(3,3);
+					polygons->transform(mat2);
+					geom.reset(polygons);
+				}
+				else {
+					// FIXME: Handle 3D transform
+				}
 			}
 		}
 		else {
@@ -200,20 +240,11 @@ Response GeometryEvaluator::visit(State &state, const TransformNode &node)
 	return ContinueTraversal;
 }
 
-static Vector2d transform(const Vector2d &v, double rot, const Vector2d &scale)
-{
-	return Vector2d(scale[0] * (v[0] *  cos(rot*M_PI/180) + v[1] * sin(rot*M_PI/180)),
-									scale[1] * (v[0] * -sin(rot*M_PI/180) + v[1] * cos(rot*M_PI/180)));
-}
-
-static void transform_PolySet(PolySet &ps, 
-															double height, double rot, const Vector2d &scale)
+static void translate_PolySet(PolySet &ps, const Vector3d &translation)
 {
 	BOOST_FOREACH(PolySet::Polygon &p, ps.polygons) {
 		BOOST_FOREACH(Vector3d &v, p) {
-			v = Vector3d(scale[0] * (v[0] *  cos(rot*M_PI/180) + v[1] * sin(rot*M_PI/180)),
-									 scale[1] * (v[0] * -sin(rot*M_PI/180) + v[1] * cos(rot*M_PI/180)),
-									 height);
+			v += translation;
 		}
 	}
 }
@@ -224,20 +255,23 @@ static void add_slice(PolySet *ps, const Polygon2d &poly,
 											const Vector2d &scale1,
 											const Vector2d &scale2)
 {
+	Eigen::Affine2d trans1(Eigen::Scaling(scale1) * Eigen::Rotation2D<double>(rot1*M_PI/180));
+	Eigen::Affine2d trans2(Eigen::Scaling(scale2) * Eigen::Rotation2D<double>(rot2*M_PI/180));
+	
 	// FIXME: If scale2 == 0 we need to handle tessellation separately
 	bool splitfirst = sin(rot2 - rot1) >= 0.0;
 	BOOST_FOREACH(const Outline2d &o, poly.outlines()) {
-		Vector2d prev1 = transform(o[0], rot1, scale1);
-		Vector2d prev2 = transform(o[0], rot2, scale2);
+		Vector2d prev1 = trans1 * o[0];
+		Vector2d prev2 = trans2 * o[0];
 		for (size_t i=1;i<=o.size();i++) {
-			Vector2d curr1 = transform(o[i % o.size()], rot1, scale1);
-			Vector2d curr2 = transform(o[i % o.size()], rot2, scale2);
+			Vector2d curr1 = trans1 * o[i % o.size()];
+			Vector2d curr2 = trans2 * o[i % o.size()];
 			ps->append_poly();
 			
 			if (splitfirst) {
 				ps->insert_vertex(prev1[0], prev1[1], h1);
-				ps->insert_vertex(curr1[0], curr1[1], h1);
 				ps->insert_vertex(curr2[0], curr2[1], h2);
+				ps->insert_vertex(curr1[0], curr1[1], h1);
 				if (scale2[0] > 0 || scale2[1] > 0) {
 					ps->append_poly();
 					ps->insert_vertex(curr2[0], curr2[1], h2);
@@ -247,16 +281,16 @@ static void add_slice(PolySet *ps, const Polygon2d &poly,
 			}
 			else {
 				ps->insert_vertex(prev1[0], prev1[1], h1);
-				ps->insert_vertex(curr1[0], curr1[1], h1);
 				ps->insert_vertex(prev2[0], prev2[1], h2);
+				ps->insert_vertex(curr1[0], curr1[1], h1);
 				if (scale2[0] > 0 || scale2[1] > 0) {
 					ps->append_poly();
 					ps->insert_vertex(prev2[0], prev2[1], h2);
-					ps->insert_vertex(curr1[0], curr1[1], h1);
 					ps->insert_vertex(curr2[0], curr2[1], h2);
+					ps->insert_vertex(curr1[0], curr1[1], h1);
 				}
 			}
-            prev1 = curr1;
+			prev1 = curr1;
 			prev2 = curr2;
 		}
 	}
@@ -286,8 +320,12 @@ static Geometry *extrudePolygon(const LinearExtrudeNode &node, const Polygon2d &
 	ps->append(*ps_bottom);
 	delete ps_bottom;
 	if (node.scale_x > 0 || node.scale_y > 0) {
-		PolySet *ps_top = poly.tessellate(); // top
-		transform_PolySet(*ps_top, h2, node.twist, Vector2d(node.scale_x, node.scale_y));
+		Polygon2d top_poly(poly);
+		Eigen::Affine2d trans(Eigen::Scaling(node.scale_x, node.scale_y) *
+													 Eigen::Rotation2D<double>(node.twist*M_PI/180));
+		top_poly.transform(trans); // top
+		PolySet *ps_top = top_poly.tessellate();
+		translate_PolySet(*ps_top, Vector3d(0,0,h2));
 		ps->append(*ps_top);
 		delete ps_top;
 	}
@@ -312,12 +350,73 @@ Response GeometryEvaluator::visit(State &state, const LinearExtrudeNode &node)
 {
 	if (state.isPrefix() && isCached(node)) return PruneTraversal;
 	if (state.isPostfix()) {
-		shared_ptr<const class Geometry> geom(applyToChildren(node, CGE_UNION));
+		shared_ptr<const class Geometry> geom(applyToChildren(node, OPENSCAD_UNION));
 		shared_ptr<const Polygon2d> polygons = dynamic_pointer_cast<const Polygon2d>(geom);
 		assert(polygons);
 		Geometry *extruded = extrudePolygon(node, *polygons);
 		assert(extruded);
 		addToParent(state, node, shared_ptr<const class Geometry>(extruded));
+	}
+	return ContinueTraversal;
+}
+
+static void fill_ring(std::vector<Vector3d> &ring, const Outline2d &o, double a)
+{
+	for (int i=0;i<o.size();i++) {
+		ring[i][0] = o[i][0] * sin(a);
+		ring[i][1] = o[i][0] * cos(a);
+		ring[i][2] = o[i][1];
+	}
+}
+
+/*!
+	Input to extrude should be clean. This means non-intersecting, correct winding order
+	etc., the input coming from a library like Clipper.
+*/
+static Geometry *rotatePolygon(const RotateExtrudeNode &node, const Polygon2d &poly)
+{
+	PolySet *ps = new PolySet();
+	ps->convexity = node.convexity;
+
+	BOOST_FOREACH(const Outline2d &o, poly.outlines()) {
+		double max_x = 0;
+		BOOST_FOREACH(const Vector2d &v, o) max_x = fmax(max_x, v[0]);
+		int fragments = get_fragments_from_r(max_x, node.fn, node.fs, node.fa);
+
+		std::vector<Vector3d> rings[2];
+		rings[0].reserve(o.size());
+		rings[1].reserve(o.size());
+
+		fill_ring(rings[0], o, -M_PI/2); // first ring
+		for (int j = 0; j <= fragments; j++) {
+			double a = ((j+1)*2*M_PI) / fragments - M_PI/2; // start on the X axis
+			fill_ring(rings[(j+1)%2], o, a);
+
+			for (size_t i=0;i<o.size();i++) {
+				ps->append_poly();
+				ps->insert_vertex(rings[j%2][i]);
+				ps->insert_vertex(rings[(j+1)%2][(i+1)%o.size()]);
+				ps->insert_vertex(rings[j%2][(i+1)%o.size()]);
+				ps->append_poly();
+				ps->insert_vertex(rings[j%2][i]);
+				ps->insert_vertex(rings[(j+1)%2][i]);
+				ps->insert_vertex(rings[(j+1)%2][(i+1)%o.size()]);
+			}
+		}
+	}
+	return ps;
+}
+
+Response GeometryEvaluator::visit(State &state, const RotateExtrudeNode &node)
+{
+	if (state.isPrefix() && isCached(node)) return PruneTraversal;
+	if (state.isPostfix()) {
+		shared_ptr<const class Geometry> geom(applyToChildren(node, OPENSCAD_UNION));
+		shared_ptr<const Polygon2d> polygons = dynamic_pointer_cast<const Polygon2d>(geom);
+		assert(polygons);
+		Geometry *rotated = rotatePolygon(node, *polygons);
+		assert(rotated);
+		addToParent(state, node, shared_ptr<const class Geometry>(rotated));
 	}
 	return ContinueTraversal;
 }
