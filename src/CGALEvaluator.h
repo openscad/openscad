@@ -2,6 +2,7 @@
 #define CGALEVALUATOR_H_
 
 #include "visitor.h"
+#include "enums.h"
 #include "CGAL_Nef_polyhedron.h"
 
 #include <string>
@@ -30,8 +31,8 @@ public:
 private:
   void addToParent(const State &state, const AbstractNode &node, const CGAL_Nef_polyhedron &N);
   bool isCached(const AbstractNode &node) const;
-	void process(CGAL_Nef_polyhedron &target, const CGAL_Nef_polyhedron &src, CGALEvaluator::CsgOp op);
-	CGAL_Nef_polyhedron applyToChildren(const AbstractNode &node, CGALEvaluator::CsgOp op);
+	void process(CGAL_Nef_polyhedron &target, const CGAL_Nef_polyhedron &src, OpenSCADOperator op);
+	CGAL_Nef_polyhedron applyToChildren(const AbstractNode &node, OpenSCADOperator op);
 	CGAL_Nef_polyhedron applyHull(const CgaladvNode &node);
 	CGAL_Nef_polyhedron applyResize(const CgaladvNode &node);
 

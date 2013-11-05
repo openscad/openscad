@@ -7,7 +7,6 @@
 
 typedef std::vector<Vector2d> Outline2d;
 
-
 class Polygon2d : public Geometry
 {
 public:

@@ -32,7 +32,9 @@ public:
 	bool empty() const { return polygons.size() == 0; }
 	void append_poly();
 	void append_vertex(double x, double y, double z = 0.0);
+	void append_vertex(Vector3d v);
 	void insert_vertex(double x, double y, double z = 0.0);
+	void insert_vertex(Vector3d v);
 	void append(const PolySet &ps);
 
 	void render_surface(Renderer::csgmode_e csgmode, const Transform3d &m, GLint *shaderinfo = NULL) const;

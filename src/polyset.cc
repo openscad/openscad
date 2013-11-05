@@ -88,14 +88,24 @@ void PolySet::append_poly()
 
 void PolySet::append_vertex(double x, double y, double z)
 {
-	grid.align(x, y, z);
-	polygons.back().push_back(Vector3d(x, y, z));
+	append_vertex(Vector3d(x, y, z));
+}
+
+void PolySet::append_vertex(Vector3d v)
+{
+	grid.align(v[0], v[1], v[2]);
+	polygons.back().push_back(v);
 }
 
 void PolySet::insert_vertex(double x, double y, double z)
 {
-	grid.align(x, y, z);
-	polygons.back().insert(polygons.back().begin(), Vector3d(x, y, z));
+	insert_vertex(Vector3d(x, y, z));
+}
+
+void PolySet::insert_vertex(Vector3d v)
+{
+	grid.align(v[0], v[1], v[2]);
+	polygons.back().insert(polygons.back().begin(), v);
 }
 
 static void gl_draw_triangle(GLint *shaderinfo, const Vector3d &p0, const Vector3d &p1, const Vector3d &p2, bool e0, bool e1, bool e2, double z, bool mirrored)

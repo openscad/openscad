@@ -59,36 +59,36 @@ bool CGALEvaluator::isCached(const AbstractNode &node) const
 	Modifies target by applying op to target and src:
 	target = target [op] src
  */
-void CGALEvaluator::process(CGAL_Nef_polyhedron &target, const CGAL_Nef_polyhedron &src, CGALEvaluator::CsgOp op)
+void CGALEvaluator::process(CGAL_Nef_polyhedron &target, const CGAL_Nef_polyhedron &src, OpenSCADOperator op)
 {
  	if (target.dim != 2 && target.dim != 3) {
  		assert(false && "Dimension of Nef polyhedron must be 2 or 3");
  	}
 	if (src.isEmpty()) return; // Empty polyhedron. This can happen for e.g. square([0,0])
-	if (target.isEmpty() && op != CGE_UNION) return; // empty op <something> => empty
+	if (target.isEmpty() && op != OPENSCAD_UNION) return; // empty op <something> => empty
 	if (target.dim != src.dim) return; // If someone tries to e.g. union 2d and 3d objects
 
 	CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
 	try {
 		switch (op) {
-		case CGE_UNION:
+		case OPENSCAD_UNION:
 			if (target.isEmpty()) target = src.copy();
 			else target += src;
 			break;
-		case CGE_INTERSECTION:
+		case OPENSCAD_INTERSECTION:
 			target *= src;
 			break;
-		case CGE_DIFFERENCE:
+		case OPENSCAD_DIFFERENCE:
 			target -= src;
 			break;
-		case CGE_MINKOWSKI:
+		case OPENSCAD_MINKOWSKI:
 			target.minkowski(src);
 			break;
 		}
 	}
 	catch (const CGAL::Failure_exception &e) {
 		// union && difference assert triggered by testdata/scad/bugs/rotate-diff-nonmanifold-crash.scad and testdata/scad/bugs/issue204.scad
-		std::string opstr = op == CGE_UNION ? "union" : op == CGE_INTERSECTION ? "intersection" : op == CGE_DIFFERENCE ? "difference" : op == CGE_MINKOWSKI ? "minkowski" : "UNKNOWN";
+		std::string opstr = op == OPENSCAD_UNION ? "union" : op == OPENSCAD_INTERSECTION ? "intersection" : op == OPENSCAD_DIFFERENCE ? "difference" : op == OPENSCAD_MINKOWSKI ? "minkowski" : "UNKNOWN";
 		PRINTB("CGAL error in CGAL_Nef_polyhedron's %s operator: %s", opstr % e.what());
 
 		// Errors can result in corrupt polyhedrons, so put back the old one
@@ -99,7 +99,7 @@ void CGALEvaluator::process(CGAL_Nef_polyhedron &target, const CGAL_Nef_polyhedr
 
 /*!
 */
-CGAL_Nef_polyhedron CGALEvaluator::applyToChildren(const AbstractNode &node, CGALEvaluator::CsgOp op)
+CGAL_Nef_polyhedron CGALEvaluator::applyToChildren(const AbstractNode &node, OpenSCADOperator op)
 {
 	CGAL_Nef_polyhedron N;
 	BOOST_FOREACH(const ChildItem &item, this->visitedchildren[node.index()]) {
@@ -201,7 +201,7 @@ CGAL_Nef_polyhedron CGALEvaluator::applyResize(const CgaladvNode &node)
 {
 	// Based on resize() in Giles Bathgate's RapCAD (but not exactly)
 	CGAL_Nef_polyhedron N;
-	N = applyToChildren(node, CGE_UNION);
+	N = applyToChildren(node, OPENSCAD_UNION);
 
 	if ( N.isNull() || N.isEmpty() ) return N;
 
@@ -277,7 +277,7 @@ Response CGALEvaluator::visit(State &state, const AbstractNode &node)
 	if (state.isPrefix() && isCached(node)) return PruneTraversal;
 	if (state.isPostfix()) {
 		CGAL_Nef_polyhedron N;
-		if (!isCached(node)) N = applyToChildren(node, CGE_UNION);
+		if (!isCached(node)) N = applyToChildren(node, OPENSCAD_UNION);
 		else N = CGALCache::instance()->get(this->tree.getIdString(node));
 		addToParent(state, node, N);
 	}
@@ -289,7 +289,7 @@ Response CGALEvaluator::visit(State &state, const AbstractIntersectionNode &node
 	if (state.isPrefix() && isCached(node)) return PruneTraversal;
 	if (state.isPostfix()) {
 		CGAL_Nef_polyhedron N;
-		if (!isCached(node)) N = applyToChildren(node, CGE_INTERSECTION);
+		if (!isCached(node)) N = applyToChildren(node, OPENSCAD_INTERSECTION);
 		else N = CGALCache::instance()->get(this->tree.getIdString(node));
 		addToParent(state, node, N);
 	}
@@ -302,21 +302,7 @@ Response CGALEvaluator::visit(State &state, const CsgNode &node)
 	if (state.isPostfix()) {
 		CGAL_Nef_polyhedron N;
 		if (!isCached(node)) {
-			CGALEvaluator::CsgOp op = CGE_UNION;
-			switch (node.type) {
-			case CSG_TYPE_UNION:
-				op = CGE_UNION;
-				break;
-			case CSG_TYPE_DIFFERENCE:
-				op = CGE_DIFFERENCE;
-				break;
-			case CSG_TYPE_INTERSECTION:
-				op = CGE_INTERSECTION;
-				break;
-			default:
-				assert(false);
-			}
-			N = applyToChildren(node, op);
+			N = applyToChildren(node, node.type);
 		}
 		else {
 			N = CGALCache::instance()->get(this->tree.getIdString(node));
@@ -333,7 +319,7 @@ Response CGALEvaluator::visit(State &state, const TransformNode &node)
 		CGAL_Nef_polyhedron N;
 		if (!isCached(node)) {
 			// First union all children
-			N = applyToChildren(node, CGE_UNION);
+			N = applyToChildren(node, OPENSCAD_UNION);
 			if ( matrix_contains_infinity( node.matrix ) || matrix_contains_nan( node.matrix ) ) {
 				// due to the way parse/eval works we can't currently distinguish between NaN and Inf
 				PRINT("Warning: Transformation matrix contains Not-a-Number and/or Infinity - removing object.");
@@ -377,10 +363,10 @@ Response CGALEvaluator::visit(State &state, const CgaladvNode &node)
 	if (state.isPostfix()) {
 		CGAL_Nef_polyhedron N;
 		if (!isCached(node)) {
-			CGALEvaluator::CsgOp op;
+			OpenSCADOperator op;
 			switch (node.type) {
 			case MINKOWSKI:
-				op = CGE_MINKOWSKI;
+				op = OPENSCAD_MINKOWSKI;
 				N = applyToChildren(node, op);
 				break;
 			case GLIDE:
