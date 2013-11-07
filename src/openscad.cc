@@ -532,7 +532,16 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 	}
 	app.connect(&app, SIGNAL(lastWindowClosed()), &app, SLOT(quit()));
 #else
-	MainWindow *m = new MainWindow(assemblePath(original_path, inputFiles[0]));
+	//If a file is provided (there is a push_back just above that
+	//creates an empty file if no param is provided)
+	//then we assemble a path.
+	//Else we send an empty file down (that is ignored in the code)
+	QString testedFileName = assemblePath(original_path, inputFiles[0]);
+	if( (inputFiles.size() == 1) && inputFiles[0].empty() )
+	{
+		testedFileName = "";
+	}
+	MainWindow *m = new MainWindow( testedFileName );
 	app.connect(m, SIGNAL(destroyed()), &app, SLOT(quit()));
 #endif
 	return app.exec();
@@ -561,7 +570,6 @@ int main(int argc, char **argv)
 
 	fs::path original_path = fs::current_path();
 
-	const char *filename = NULL;
 	const char *output_file = NULL;
 	const char *deps_output_file = NULL;
 
