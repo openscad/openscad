@@ -453,7 +453,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 // Only if "fileName" is not absolute, prepend the "absoluteBase".
 static QString assemblePath(const fs::path& absoluteBase,
                             const string& fileName) {
-  return QDir(QString::fromStdString((const string&) absoluteBase))
+  return fileName.empty() ? "" : QDir(QString::fromStdString((const string&) absoluteBase))
     .absoluteFilePath(QString::fromStdString(fileName));
 }
 
