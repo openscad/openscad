@@ -91,7 +91,7 @@ def compare_default(resultfilename):
     print >> sys.stderr, ' actual textfile: ', resultfilename
     if not compare_text(expectedfilename, resultfilename):
 	if resultfilename: 
-            execute_and_redirect("diff", [expectedfilename, resultfilename], sys.stderr)
+            execute_and_redirect("diff", ["-u", expectedfilename, resultfilename], sys.stderr)
         return False
     return True
 
