@@ -232,7 +232,7 @@ public:
   }
 
   std::string operator()(const Value::RangeType &v) const {
-    return (boost::format("[%1% : %2% : %3%]") % v.begin % v.step % v.end).str();
+    return (boost::format("[%1% : %2% : %3%]") % v.begin_val % v.step_val % v.end_val).str();
   }
 };
 
@@ -600,9 +600,9 @@ public:
 
   Value operator()(const Value::RangeType &range, const double &idx) const {
     switch(int(idx)) {
-    case 0: return Value(range.begin);
-    case 1: return Value(range.step);
-    case 2: return Value(range.end);
+    case 0: return Value(range.begin_val);
+    case 1: return Value(range.step_val);
+    case 2: return Value(range.end_val);
     }
     return Value::undefined;
   }
@@ -616,4 +616,98 @@ public:
 Value Value::operator[](const Value &v)
 {
   return boost::apply_visitor(bracket_visitor(), this->value, v.value);
+}
+
+void Value::RangeType::normalize() {
+  if ((step_val>0) && (end_val < begin_val)) {
+    std::swap(begin_val,end_val);
+    PRINT("DEPRECATED: Using ranges of the form [begin:end] with begin value greater than the end value is deprecated.");
+  }
+}
+
+unsigned long Value::RangeType::nbsteps() const {
+  if (begin_val == end_val) {
+    return 0;
+  }
+  
+  if (step_val == 0) { 
+    return std::numeric_limits<unsigned long>::max();
+  }
+
+  double steps;
+  if (step_val < 0) {
+    if (begin_val < end_val) {
+      return 0;
+    }
+    steps = (begin_val - end_val) / (-step_val);
+  } else {
+    if (begin_val > end_val) {
+      return 0;
+    }
+    steps = (end_val - begin_val) / step_val;
+  }
+  
+  return steps;
+}
+
+Value::RangeType::iterator::iterator(Value::RangeType &range, type_t type) : range(range), val(range.begin_val)
+{
+    this->type = type;
+    update_type();
+}
+
+void Value::RangeType::iterator::update_type()
+{
+    if (range.step_val == 0) {
+        type = RANGE_TYPE_END;
+    } else if (range.step_val < 0) {
+        if (val < range.end_val) {
+            type = RANGE_TYPE_END;
+        }
+    } else {
+        if (val > range.end_val) {
+            type = RANGE_TYPE_END;
+        }
+    }
+}
+
+Value::RangeType::iterator::reference Value::RangeType::iterator::operator*()
+{
+    return val;
+}
+
+Value::RangeType::iterator::pointer Value::RangeType::iterator::operator->()
+{
+    return &(operator*());
+}
+
+Value::RangeType::iterator::self_type Value::RangeType::iterator::operator++()
+{
+    if (type < 0) {
+        type = RANGE_TYPE_RUNNING;
+    }
+    val += range.step_val;
+    update_type();
+    return *this;
+}
+
+Value::RangeType::iterator::self_type Value::RangeType::iterator::operator++(int)
+{
+    self_type tmp(*this);
+    operator++();
+    return tmp;
+}
+
+bool Value::RangeType::iterator::operator==(const self_type &other) const
+{
+    if (type == RANGE_TYPE_RUNNING) {
+        return (type == other.type) && (val == other.val) && (range == other.range);
+    } else {
+        return (type == other.type) && (range == other.range);
+    }
+}
+
+bool Value::RangeType::iterator::operator!=(const self_type &other) const
+{
+    return !(*this == other);
 }

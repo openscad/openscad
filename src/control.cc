@@ -78,12 +78,14 @@ void ControlModule::for_eval(AbstractNode &node, const ModuleInstantiation &inst
 		Context c(ctx);
 		if (it_values.type() == Value::RANGE) {
 			Value::RangeType range = it_values.toRange();
-			range.normalize();
-			if (range.nbsteps()<10000) {
-				for (double i = range.begin; i <= range.end; i += range.step) {
-					c.set_variable(it_name, Value(i));
-					for_eval(node, inst, l+1, &c, evalctx);
-				}
+                        unsigned long steps = range.nbsteps();
+                        if (steps >= 10000) {
+                                PRINTB("WARNING: Bad range parameter in for statement: too many elements (%lu).", steps);
+                        } else {
+                            for (Value::RangeType::iterator it = range.begin();it != range.end();it++) {
+                                c.set_variable(it_name, Value(*it));
+                                for_eval(node, inst, l+1, &c, evalctx);
+                            }
 			}
 		}
 		else if (it_values.type() == Value::VECTOR) {
@@ -227,13 +229,13 @@ AbstractNode *ControlModule::instantiate(const Context* /*ctx*/, const ModuleIns
 			else if (value.type() == Value::RANGE) {
 				AbstractNode* node = new AbstractNode(inst);
 				Value::RangeType range = value.toRange();
-				range.normalize();
-				if (range.nbsteps()>=10000) {
-					PRINTB("WARNING: Bad range parameter for children: too many elements (%d).", (int)((range.begin-range.end)/range.step));
+                                unsigned long steps = range.nbsteps();
+				if (steps >= 10000) {
+					PRINTB("WARNING: Bad range parameter for children: too many elements (%lu).", steps);
 					return NULL;
 				}
-				for (double i = range.begin; i <= range.end; i += range.step) {
-					AbstractNode* childnode = getChild(Value(i),modulectx); // with error cases
+                                for (Value::RangeType::iterator it = range.begin();it != range.end();it++) {
+					AbstractNode* childnode = getChild(Value(*it),modulectx); // with error cases
 					if (childnode==NULL) continue; // error
 					node->children.push_back(childnode);
 				}
