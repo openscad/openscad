@@ -53,7 +53,7 @@ module test_children_range() {
 	children([0:4]); // all
 	children([1:2]); // child2, child3
 	children([0:2:4]); // child1, child3, child5
-	children([4:-1:0]); // out, out
+	children([0:-1:4]); // out, out
 	echo("Children range: end");
 }
 test_children_range() {
