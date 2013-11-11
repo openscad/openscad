@@ -199,7 +199,11 @@ std::string Expression::toString() const
 		stream << this->const_value;
 	}
 	else if (this->type == "R") {
-		stream << "[" << *this->children[0] << " : " << *this->children[1] << " : " << *this->children[2] << "]";
+		stream << "[" << *this->children[0] << " : " << *this->children[1];
+		if (this->children.size() > 2) {
+			stream << " : " << *this->children[2];
+		}
+		stream << "]";
 	}
 	else if (this->type == "V") {
 		stream << "[";
