@@ -22,10 +22,10 @@ for(r=[1:2:6]) translate([r*10-30,30,0]) difference() {cylinder(r=r, center=true
 for(r=[1.5:0.2:2.5]) translate([r*10-30,30,0]) cube([1, 4*r, 2], center=true);
 
 // Negative range, negative step
-for(r=[5:-1:1]) translate([r*10-60,40,0]) cylinder(r=r);
+for(r=[5:-1:1]) translate([r*10-30,50,0]) cylinder(r=r);
 
-// Negative range, positive step
-for(r=[5:1:1]) translate([r*10-30,40,0]) cylinder(r=r);
+// Negative range, positive step (using backward compatible auto swap of begin and end)
+for(r=[5:1]) translate([r*10-30,40,0]) cylinder(r=r);
 
 // Zero step
 

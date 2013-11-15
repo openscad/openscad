@@ -117,11 +117,18 @@ Value Expression::evaluate(const Context *context) const
 	if (this->type == "R") {
 		Value v1 = this->children[0]->evaluate(context);
 		Value v2 = this->children[1]->evaluate(context);
-		Value v3 = this->children[2]->evaluate(context);
-		if (v1.type() == Value::NUMBER && v2.type() == Value::NUMBER && v3.type() == Value::NUMBER) {
-			Value::RangeType range(v1.toDouble(), v2.toDouble(), v3.toDouble());
-			return Value(range);
-		}
+                if (this->children.size() == 2) {
+                        if (v1.type() == Value::NUMBER && v2.type() == Value::NUMBER) {
+                                Value::RangeType range(v1.toDouble(), v2.toDouble());
+                                return Value(range);
+                        }
+                } else {
+        		Value v3 = this->children[2]->evaluate(context);
+                        if (v1.type() == Value::NUMBER && v2.type() == Value::NUMBER && v3.type() == Value::NUMBER) {
+                                Value::RangeType range(v1.toDouble(), v2.toDouble(), v3.toDouble());
+                                return Value(range);
+                        }
+                }
 		return Value();
 	}
 	if (this->type == "V") {
@@ -192,7 +199,11 @@ std::string Expression::toString() const
 		stream << this->const_value;
 	}
 	else if (this->type == "R") {
-		stream << "[" << *this->children[0] << " : " << *this->children[1] << " : " << *this->children[2] << "]";
+		stream << "[" << *this->children[0] << " : " << *this->children[1];
+		if (this->children.size() > 2) {
+			stream << " : " << *this->children[2];
+		}
+		stream << "]";
 	}
 	else if (this->type == "V") {
 		stream << "[";

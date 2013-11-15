@@ -325,11 +325,9 @@ expr:
             }
         | '[' expr ':' expr ']'
             {
-                Expression *e_one = new Expression(Value(1.0));
                 $$ = new Expression();
                 $$->type = "R";
                 $$->children.push_back($2);
-                $$->children.push_back(e_one);
                 $$->children.push_back($4);
             }
         | '[' expr ':' expr ':' expr ']'

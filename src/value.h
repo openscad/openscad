@@ -31,33 +31,64 @@ std::ostream &operator<<(std::ostream &stream, const Filename &filename);
 class Value
 {
 public:
-  struct RangeType {
-    RangeType(double begin, double step, double end)
-      : begin(begin), step(step), end(end) {}
+  class RangeType {
+  private:
+    double begin_val;
+    double step_val;
+    double end_val;
+ 
+    /// inverse begin/end if begin is upper than end
+    void normalize();
 
-    bool operator==(const RangeType &other) const {
-      return this->begin == other.begin &&
-        this->step == other.step &&
-        this->end == other.end;
+  public:
+    typedef enum { RANGE_TYPE_BEGIN, RANGE_TYPE_RUNNING, RANGE_TYPE_END } type_t;
+    
+    class iterator {
+    public:
+        typedef iterator self_type;
+        typedef double value_type;
+        typedef double& reference;
+        typedef double* pointer;
+        typedef std::forward_iterator_tag iterator_category;
+        typedef double difference_type;
+        iterator(RangeType &range, type_t type);
+        self_type operator++();
+        self_type operator++(int junk);
+        reference operator*();
+        pointer operator->();
+        bool operator==(const self_type& other) const;
+        bool operator!=(const self_type& other) const;
+    private:
+      RangeType &range;
+      double val;
+      type_t type;
+      
+      void update_type();
+    };
+        
+    RangeType(double begin, double end)
+      : begin_val(begin), step_val(1.0), end_val(end)
+    {
+      normalize();
     }
 
-    /// inverse begin/end if begin is upper than end
-    void normalize() {
-		if ((step>0) && (end < begin)) {
-			std::swap(begin,end);
-		}
-	}
-	/// return number of steps, max int value if step is null
-	int nbsteps() const {
-		if (step<=0) {
-			return std::numeric_limits<int>::max();
-		}
-		return (int)((begin-end)/step);
-	}
+    RangeType(double begin, double step, double end)
+      : begin_val(begin), step_val(step), end_val(end) {}
 
-    double begin;
-    double step;
-    double end;
+    bool operator==(const RangeType &other) const {
+      return this->begin_val == other.begin_val &&
+        this->step_val == other.step_val &&
+        this->end_val == other.end_val;
+    }
+
+    iterator begin() { return iterator(*this, RANGE_TYPE_BEGIN); }
+    iterator end() { return iterator(*this, RANGE_TYPE_END); }
+
+    /// return number of steps, max uint32_ value if step is 0
+    uint32_t nbsteps() const;
+    
+    friend class tostring_visitor;
+    friend class bracket_visitor;
   };
 
   typedef std::vector<Value> VectorType;

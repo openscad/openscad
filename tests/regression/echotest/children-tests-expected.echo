@@ -31,5 +31,4 @@ ECHO: "child3"
 ECHO: "child1"
 ECHO: "child3"
 ECHO: "child5"
-WARNING: Bad range parameter for children: too many elements (-4).
 ECHO: "Children range: end"
