@@ -163,13 +163,18 @@ Response GeometryEvaluator::visit(State &state, const AbstractNode &node)
 {
 	if (state.isPrefix() && isCached(node)) return PruneTraversal;
 	if (state.isPostfix()) {
-		CGAL_Nef_polyhedron N = this->cgalevaluator->evaluateCGALMesh(node);
-		CGALCache::instance()->insert(this->tree.getIdString(node), N);
-
-		PolySet *ps = NULL;
-		if (!N.isNull()) ps = N.convertToPolyset();
-		shared_ptr<const Geometry> geom(ps);
-		GeometryCache::instance()->insert(this->tree.getIdString(node), geom);
+		shared_ptr<const Geometry> geom;
+		if (!isCached(node)) {
+			CGAL_Nef_polyhedron N = this->cgalevaluator->evaluateCGALMesh(node);
+			CGALCache::instance()->insert(this->tree.getIdString(node), N);
+			
+			PolySet *ps = NULL;
+			if (!N.isNull()) ps = N.convertToPolyset();
+			geom.reset(ps);
+		}
+		else {
+			geom = GeometryCache::instance()->get(this->tree.getIdString(node));
+		}
 		addToParent(state, node, geom);
 	}
 	return ContinueTraversal;
@@ -197,11 +202,15 @@ Response GeometryEvaluator::visit(State &state, const CsgNode &node)
 	if (state.isPostfix()) {
 		shared_ptr<const class Geometry> geom;
 		if (!isCached(node)) {
-			shared_ptr<const class Geometry> geom(applyToChildren2D(node, node.type));
-			shared_ptr<const Polygon2d> polygons = dynamic_pointer_cast<const Polygon2d>(geom);
+			const Geometry *geometry = applyToChildren2D(node, node.type);
+			const Polygon2d *polygons = dynamic_cast<const Polygon2d*>(geometry);
 			assert(polygons);
-			addToParent(state, node, geom);
+			geom.reset(geometry);
 		}
+		else {
+			geom = GeometryCache::instance()->get(this->tree.getIdString(node));
+		}
+		addToParent(state, node, geom);
 		// FIXME: if 3d node, CGAL?
 	}
 	return ContinueTraversal;
@@ -354,12 +363,18 @@ Response GeometryEvaluator::visit(State &state, const LinearExtrudeNode &node)
 {
 	if (state.isPrefix() && isCached(node)) return PruneTraversal;
 	if (state.isPostfix()) {
-		shared_ptr<const class Geometry> geom(applyToChildren2D(node, OPENSCAD_UNION));
-		if (geom) {
-			shared_ptr<const Polygon2d> polygons = dynamic_pointer_cast<const Polygon2d>(geom);
-			Geometry *extruded = extrudePolygon(node, *polygons);
-			assert(extruded);
-			geom.reset(extruded);
+		shared_ptr<const Geometry> geom;
+		if (!isCached(node)) {
+			const Geometry *geometry = applyToChildren2D(node, OPENSCAD_UNION);
+			if (geometry) {
+				const Polygon2d *polygons = dynamic_cast<const Polygon2d*>(geometry);
+				Geometry *extruded = extrudePolygon(node, *polygons);
+				assert(extruded);
+				geom.reset(extruded);
+			}
+		}
+		else {
+			geom = GeometryCache::instance()->get(this->tree.getIdString(node));
 		}
 		addToParent(state, node, geom);
 	}
@@ -417,12 +432,18 @@ Response GeometryEvaluator::visit(State &state, const RotateExtrudeNode &node)
 {
 	if (state.isPrefix() && isCached(node)) return PruneTraversal;
 	if (state.isPostfix()) {
-		shared_ptr<const class Geometry> geom(applyToChildren2D(node, OPENSCAD_UNION));
-		if (geom) {
-			shared_ptr<const Polygon2d> polygons = dynamic_pointer_cast<const Polygon2d>(geom);
-			Geometry *rotated = rotatePolygon(node, *polygons);
-			assert(rotated);
-			geom.reset(rotated);
+		shared_ptr<const Geometry> geom;
+		if (!isCached(node)) {
+			const Geometry *geometry = applyToChildren2D(node, OPENSCAD_UNION);
+			if (geometry) {
+				const Polygon2d *polygons = dynamic_cast<const Polygon2d*>(geometry);
+				Geometry *rotated = rotatePolygon(node, *polygons);
+				assert(rotated);
+				geom.reset(rotated);
+			}
+		}
+		else {
+			geom = GeometryCache::instance()->get(this->tree.getIdString(node));
 		}
 		addToParent(state, node, geom);
 	}
@@ -434,6 +455,7 @@ Response GeometryEvaluator::visit(State &state, const RotateExtrudeNode &node)
 */
 Response GeometryEvaluator::visit(State &state, const AbstractPolyNode &node)
 {
+	assert(false && "Implement");
 	if (state.isPrefix() && isCached(node)) return PruneTraversal;
 	if (state.isPrefix()) {
 		/* 
