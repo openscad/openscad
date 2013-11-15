@@ -9,9 +9,9 @@ bool GeometryCache::insert(const std::string &id, const shared_ptr<const Geometr
 	bool inserted = this->cache.insert(id, new cache_entry(geom), geom ? geom->memsize() : 0);
 #ifdef DEBUG
 	if (inserted) PRINTB("Geometry Cache insert: %s (%d bytes)", 
-											 id.substr(0, 40) % geom->memsize());
+                         id.substr(0, 40) % (geom ? geom->memsize() : 0));
 	else PRINTB("Geometry Cache insert failed: %s (%d bytes)",
-							id.substr(0, 40) % geom->memsize());
+                id.substr(0, 40) % (geom ? geom->memsize() : 0));
 #endif
 	return inserted;
 }
