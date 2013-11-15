@@ -145,7 +145,7 @@ Geometry *SurfaceNode::createGeometry() const
 		lines++;
 	}
 
-	p->convexity = convexity;
+	p->setConvexity(convexity);
 
 	double ox = center ? -(columns-1)/2.0 : 0;
 	double oy = center ? -(lines-1)/2.0 : 0;

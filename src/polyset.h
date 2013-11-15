@@ -18,7 +18,6 @@ public:
 	Grid3d<void*> grid;
 
 	bool is2d;
-	int convexity;
 
 	PolySet();
 	virtual ~PolySet();
@@ -27,7 +26,6 @@ public:
 	virtual BoundingBox getBoundingBox() const;
 	virtual std::string dump() const;
 	virtual unsigned int getDimension() const { return this->is2d ? 2 : 3; }
-	virtual unsigned int getConvexity() const {return this->convexity; }
 
 	bool empty() const { return polygons.size() == 0; }
 	void append_poly();

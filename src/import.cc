@@ -28,6 +28,7 @@
 
 #include "module.h"
 #include "polyset.h"
+#include "Polygon2d.h"
 #include "evalcontext.h"
 #include "builtin.h"
 #include "dxfdata.h"
@@ -184,7 +185,7 @@ void read_stl_facet( std::ifstream &f, stl_facet &facet )
 
 Geometry *ImportNode::createGeometry() const
 {
-	PolySet *p = NULL;
+	Geometry *g = NULL;
 
 	if (this->type == TYPE_STL)
 	{
@@ -193,10 +194,10 @@ Geometry *ImportNode::createGeometry() const
 		std::ifstream f(this->filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
 		if (!f.good()) {
 			PRINTB("WARNING: Can't open import file '%s'.", this->filename);
-			return p;
+			return NULL;
 		}
 
-		p = new PolySet();
+		PolySet *p = new PolySet();
 
 		boost::regex ex_sfe("solid|facet|endloop");
 		boost::regex ex_outer("outer loop");
@@ -270,6 +271,7 @@ Geometry *ImportNode::createGeometry() const
 				p->append_vertex(facet.data.x3, facet.data.y3, facet.data.z3);
 			}
 		}
+		g = p;
 	}
 
 	else if (this->type == TYPE_OFF)
@@ -295,19 +297,16 @@ Geometry *ImportNode::createGeometry() const
 
 	else if (this->type == TYPE_DXF)
 	{
-		p = new PolySet();
 		DxfData dd(this->fn, this->fs, this->fa, this->filename, this->layername, this->origin_x, this->origin_y, this->scale);
-		p->is2d = true;
-		dxf_tesselate(p, dd, 0, Vector2d(1,1), true, false, 0);
-		dxf_border_to_ps(p, dd);
+		g = dd.toPolygon2d();
 	}
 	else 
 	{
 		PRINTB("ERROR: Unsupported file format while trying to import file '%s'", this->filename);
 	}
 
-	if (p) p->convexity = this->convexity;
-	return p;
+	if (g) g->setConvexity(this->convexity);
+	return g;
 }
 
 std::string ImportNode::toString() const

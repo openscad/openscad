@@ -488,7 +488,7 @@ sphere_next_r2:
 	{
 		PolySet *p = new PolySet();
 		g = p;
-		p->convexity = this->convexity;
+		p->setConvexity(this->convexity);
 		for (size_t i=0; i<this->faces.toVector().size(); i++)
 		{
 			p->append_poly();
@@ -572,7 +572,7 @@ sphere_next_r2:
 			}
 		}
 
-		// FIXME: p->convexity = convexity;
+		p->setConvexity(convexity);
 	}
 
   // FIXME: IF the above failed, create an empty polyset as that's required later on

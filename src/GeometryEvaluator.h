@@ -30,7 +30,7 @@ public:
 
 private:
 	bool isCached(const AbstractNode &node) const;
-	Geometry *applyToChildren(const AbstractNode &node, OpenSCADOperator op);
+	Geometry *applyToChildren2D(const AbstractNode &node, OpenSCADOperator op);
 	void addToParent(const State &state, const AbstractNode &node, const shared_ptr<const Geometry> &geom);
 
   typedef std::pair<const AbstractNode *, shared_ptr<const Geometry> > ChildItem;
