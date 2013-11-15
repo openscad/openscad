@@ -3,6 +3,7 @@
 
 #include "visitor.h"
 #include "CSGTextCache.h"
+#include "enums.h"
 
 #include <map>
 #include <list>
@@ -24,11 +25,10 @@ public:
 	virtual Response visit(State &state, const AbstractPolyNode &node);
 
 private:
-	enum CsgOp {UNION, INTERSECTION, DIFFERENCE, MINKOWSKI};
   void addToParent(const State &state, const AbstractNode &node);
   bool isCached(const AbstractNode &node);
-	void process(string &target, const string &src, CSGTextRenderer::CsgOp op);
-	void applyToChildren(const AbstractNode &node, CSGTextRenderer::CsgOp op);
+	void process(string &target, const string &src, OpenSCADOperator op);
+	void applyToChildren(const AbstractNode &node, OpenSCADOperator op);
 
   string currindent;
   typedef list<const AbstractNode *> ChildList;
