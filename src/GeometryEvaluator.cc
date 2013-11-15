@@ -9,6 +9,7 @@
 #include "linearextrudenode.h"
 #include "rotateextrudenode.h"
 #include "csgnode.h"
+#include "cgaladvnode.h"
 #include "clipper-utils.h"
 #include "CGALEvaluator.h"
 #include "CGALCache.h"
@@ -157,28 +158,50 @@ void GeometryEvaluator::addToParent(const State &state,
 }
 
 /*!
-	Fallback: If we don't know how to handle a node, send it to CGAL
- */
+   Custom nodes are handled here => implicit union
+*/
 Response GeometryEvaluator::visit(State &state, const AbstractNode &node)
 {
 	if (state.isPrefix() && isCached(node)) return PruneTraversal;
 	if (state.isPostfix()) {
-		shared_ptr<const Geometry> geom;
+		shared_ptr<const class Geometry> geom;
 		if (!isCached(node)) {
-			CGAL_Nef_polyhedron N = this->cgalevaluator->evaluateCGALMesh(node);
-			CGALCache::instance()->insert(this->tree.getIdString(node), N);
-			
-			PolySet *ps = NULL;
-			if (!N.isNull()) ps = N.convertToPolyset();
-			geom.reset(ps);
+			const Geometry *geometry = applyToChildren2D(node, OPENSCAD_UNION);
+			const Polygon2d *polygons = dynamic_cast<const Polygon2d*>(geometry);
+			assert(polygons);
+			geom.reset(geometry);
 		}
 		else {
 			geom = GeometryCache::instance()->get(this->tree.getIdString(node));
 		}
 		addToParent(state, node, geom);
+		// FIXME: if 3d node, CGAL?
 	}
 	return ContinueTraversal;
 }
+
+/*
+ FIXME: Where do we handle nodes which should be sent to CGAL?
+ 
+ if (state.isPrefix() && isCached(node)) return PruneTraversal;
+ if (state.isPostfix()) {
+ shared_ptr<const Geometry> geom;
+ if (!isCached(node)) {
+ CGAL_Nef_polyhedron N = this->cgalevaluator->evaluateCGALMesh(node);
+ CGALCache::instance()->insert(this->tree.getIdString(node), N);
+ 
+ PolySet *ps = NULL;
+ if (!N.isNull()) ps = N.convertToPolyset();
+ geom.reset(ps);
+ }
+ else {
+ geom = GeometryCache::instance()->get(this->tree.getIdString(node));
+ }
+ addToParent(state, node, geom);
+ }
+ return ContinueTraversal;
+*/
+
 
 /*!
 	Leaf nodes can create their own geometry, so let them do that
@@ -472,6 +495,32 @@ Response GeometryEvaluator::visit(State &state, const AbstractPolyNode &node)
 		addToParent(state, node);
 		*/
  		return PruneTraversal;
+	}
+	return ContinueTraversal;
+}
+
+Response GeometryEvaluator::visit(State &state, const CgaladvNode &node)
+{
+	if (state.isPrefix() && isCached(node)) return PruneTraversal;
+	if (state.isPostfix()) {
+		shared_ptr<const Geometry> geom;
+		if (!isCached(node)) {
+			// if (node.type == RESIZE) {
+			// 	const Geometry *geometry = applyToChildren2D(node, OPENSCAD_UNION);
+			// 	// FIXME: find size and transform
+			// }
+			// else {
+				CGAL_Nef_polyhedron N = this->cgalevaluator->evaluateCGALMesh(node);
+				CGALCache::instance()->insert(this->tree.getIdString(node), N);
+				PolySet *ps = N.isNull() ? NULL : N.convertToPolyset();
+				geom.reset(ps);
+//			}
+			// FIXME: handle 3D
+		}
+		else {
+			geom = GeometryCache::instance()->get(this->tree.getIdString(node));
+		}
+		addToParent(state, node, geom);
 	}
 	return ContinueTraversal;
 }
