@@ -625,13 +625,13 @@ void Value::RangeType::normalize() {
   }
 }
 
-unsigned long Value::RangeType::nbsteps() const {
+uint32_t Value::RangeType::nbsteps() const {
   if (begin_val == end_val) {
     return 0;
   }
   
   if (step_val == 0) { 
-    return std::numeric_limits<unsigned long>::max();
+    return std::numeric_limits<uint32_t>::max();
   }
 
   double steps;

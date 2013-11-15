@@ -84,8 +84,8 @@ public:
     iterator begin() { return iterator(*this, RANGE_TYPE_BEGIN); }
     iterator end() { return iterator(*this, RANGE_TYPE_END); }
 
-    /// return number of steps, max int value if step is null
-    unsigned long nbsteps() const;
+    /// return number of steps, max uint32_ value if step is 0
+    uint32_t nbsteps() const;
     
     friend class tostring_visitor;
     friend class bracket_visitor;
