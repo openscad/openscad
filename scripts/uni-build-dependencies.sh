@@ -476,12 +476,6 @@ build_opencsg()
 build_eigen()
 {
   version=$1
-  if [ -e $DEPLOYDIR/include/eigen2 ]; then
-    if [ `echo $version | grep 2....` ]; then
-      echo "Eigen2 already installed. not building"
-      return
-    fi
-  fi
   if [ -e $DEPLOYDIR/include/eigen3 ]; then
     if [ `echo $version | grep 3....` ]; then
       echo "Eigen3 already installed. not building"
@@ -492,7 +486,6 @@ build_eigen()
   cd $BASEDIR/src
   rm -rf eigen-$version
   EIGENDIR="none"
-  if [ $version = "2.0.17" ]; then EIGENDIR=eigen-eigen-b23437e61a07; fi
   if [ $version = "3.1.1" ]; then EIGENDIR=eigen-eigen-43d9075b23ef; fi
   if [ $EIGENDIR = "none" ]; then
     echo Unknown eigen version. Please edit script.

@@ -309,7 +309,6 @@ build_eigen()
   rm -rf eigen-$version
 
   EIGENDIR="none"
-  if [ $version = "2.0.17" ]; then EIGENDIR=eigen-eigen-b23437e61a07; fi
   if [ $version = "3.1.2" ]; then EIGENDIR=eigen-eigen-5097c01bcdc4;
   elif [ $version = "3.1.3" ]; then EIGENDIR=eigen-eigen-2249f9c22fe8;
   elif [ $version = "3.1.4" ]; then EIGENDIR=eigen-eigen-36bf2ceaf8f5;

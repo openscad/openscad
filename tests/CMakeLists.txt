@@ -212,29 +212,20 @@ if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 endif()
 
 # Priority
-# 3. EIGENDIR if set (EIGEN2DIR for backwards compatability)
+# 3. EIGENDIR if set
 # 1. OPENSCAD_LIBRARIES eigen3
-# 2. OPENSCAD_LIBRARIES eigen2
 # 4. system's standard include paths for eigen3
-# 5. system's standard include paths for eigen2
 
-set(EIGEN2_DIR "$ENV{EIGEN2DIR}")
 set(EIGEN_DIR "$ENV{EIGENDIR}")
 set(OPENSCAD_LIBDIR "$ENV{OPENSCAD_LIBRARIES}")
 
 if (EIGEN_DIR)
-  set(EIGHINT ${EIGEN_DIR}/include/eigen3 ${EIGEN_DIR}/include/eigen2 ${EIGEN_DIR})
+  set(EIGHINT ${EIGEN_DIR}/include/eigen3 ${EIGEN_DIR})
   find_path(EIGEN_INCLUDE_DIR Eigen/Core HINTS ${EIGHINT})
-endif()
-if (EIGEN2_DIR)
-  find_path(EIGEN_INCLUDE_DIR Eigen/Core HINTS ${EIGEN2_DIR}/include/eigen2 ${EIGEN2_DIR})
 endif()
 
 if (NOT EIGEN_INCLUDE_DIR)
   find_path(EIGEN_INCLUDE_DIR Eigen/Core HINTS ${OPENSCAD_LIBDIR}/include/eigen3)
-endif()
-if (NOT EIGEN_INCLUDE_DIR)
-  find_path(EIGEN_INCLUDE_DIR Eigen/Core HINTS ${OPENSCAD_LIBDIR}/include/eigen2)
 endif()
 
 if (NOT EIGEN_INCLUDE_DIR)
@@ -246,18 +237,6 @@ if (NOT EIGEN_INCLUDE_DIR)
     find_path(EIGEN_INCLUDE_DIR Eigen/Core HINTS /opt/local/include/eigen3)
   else()
     find_path(EIGEN_INCLUDE_DIR Eigen/Core HINTS /usr/include/eigen3)
-  endif()
-endif()
-
-if (NOT EIGEN_INCLUDE_DIR)
-  if (${CMAKE_SYSTEM_NAME} MATCHES "FreeBSD")
-    find_path(EIGEN_INCLUDE_DIR Eigen/Core HINTS /usr/local/include/eigen2)
-  elseif (${CMAKE_SYSTEM_NAME} MATCHES "NetBSD")
-    find_path(EIGEN_INCLUDE_DIR Eigen/Core HINTS /usr/pkg/include/eigen2)
-  elseif (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-    find_path(EIGEN_INCLUDE_DIR Eigen/Core HINTS /opt/local/include/eigen2)
-  else()
-    find_path(EIGEN_INCLUDE_DIR Eigen/Core HINTS /usr/include/eigen2)
   endif()
 endif()
 

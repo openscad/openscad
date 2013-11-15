@@ -35,8 +35,8 @@ a time, to avoid confusion.
 
 
 #include <Eigen/Core>
-#if not EIGEN_VERSION_AT_LEAST( 2,0,13 )
-#error eigen2 library missing or version too old. See README.md. To force compile, run qmake CONFIG+=skip-version-check
+#if not EIGEN_VERSION_AT_LEAST( 3,0,0 )
+#error eigen library missing or version too old. See README.md. To force compile, run qmake CONFIG+=skip-version-check
 #else
 
 
@@ -104,7 +104,7 @@ a time, to avoid confusion.
 #endif // ENABLE_CGAL
 
 #endif // Boost
-#endif // Eigen2
+#endif // Eigen
 #endif // MPFR
 #endif // GMP
 
