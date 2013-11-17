@@ -55,7 +55,7 @@ patch_qt_disable_core_wlan()
 {
   version="$1"
 
-  patch -d "qt-everywhere-opensource-src-$version" -p1 <<END-OF-PATCH
+  patch -p1 <<END-OF-PATCH
 --- qt-everywhere-opensource-src-4.8.5/src/plugins/bearer/bearer.pro.orig	2013-11-01 19:04:29.000000000 +0100
 +++ qt-everywhere-opensource-src-4.8.5/src/plugins/bearer/bearer.pro	2013-10-31 21:53:00.000000000 +0100
 @@ -12,7 +12,7 @@
@@ -110,7 +110,6 @@ build_qt()
       MACOSX_RELEASE_OPTIONS=
       ;;
   esac
-exit 1
   ./configure -prefix $DEPLOYDIR -release $QT_32BIT -arch x86_64 -opensource -confirm-license $PLATFORM -fast -no-qt3support -no-svg -no-phonon -no-audio-backend -no-multimedia -no-javascript-jit -no-script -no-scripttools -no-declarative -no-xmlpatterns -nomake demos -nomake examples -nomake docs -nomake translations -no-webkit $MACOSX_RELEASE_OPTIONS
   make -j6 install
 }
@@ -631,7 +630,7 @@ build_ragel 6.8
 export PATH="$PATH:$DEPLOYDIR/bin"
 create_dummy_cmd "touch gtk-doc.make" "$DEPLOYDIR/bin/gtkdocize"
 create_dummy_cmd "exit 0" "$DEPLOYDIR/bin/pkg-config"
-build_harfbuzz 0.9.23 --with-coretext=auto
+build_harfbuzz 0.9.23 "--with-coretext=auto --with-glib=no"
 if $OPTION_DEPLOY; then
 #  build_sparkle andymatuschak 0ed83cf9f2eeb425d4fdd141c01a29d843970c20
   build_sparkle Cocoanetics 1e7dcb1a48b96d1a8c62100b5864bd50211cbae1
