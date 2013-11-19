@@ -66,7 +66,7 @@ build_ragel()
   fi
   tar xzf "ragel-$version.tar.gz"
   cd "ragel-$version"
-  sed -i "" -e "s/setiosflags(ios::right)/std::&/g" ragel/javacodegen.cpp
+  sed -e "s/setiosflags(ios::right)/std::&/g" ragel/javacodegen.cpp > ragel/javacodegen.cpp.new && mv ragel/javacodegen.cpp.new ragel/javacodegen.cpp
   ./configure --prefix="$DEPLOYDIR"
   make -j$NUMCPU
   make install
@@ -91,8 +91,8 @@ build_harfbuzz()
   tar xzf "harfbuzz-$version.tar.gz"
   cd "harfbuzz-$version"
   # disable doc directories as they make problems on Mac OS Build
-  sed -i "" -e "s/SUBDIRS = src util test docs/SUBDIRS = src util test/g" Makefile.am
-  sed -i "" -e "s/^docs.*$//" configure.ac
+  sed -e "s/SUBDIRS = src util test docs/SUBDIRS = src util test/g" Makefile.am > Makefile.am.bak && mv Makefile.am.bak Makefile.am
+  sed -e "s/^docs.*$//" configure.ac > configure.ac.bak && mv configure.ac.bak configure.ac
   ./autogen.sh --prefix="$DEPLOYDIR" --with-freetype=yes --with-gobject=no --with-cairo=no --with-icu=no $extra_config_flags
   make -j$NUMCPU
   make install
