@@ -26,6 +26,28 @@ build_freetype()
   make -j"$NUMCPU"
   make install
 }
+ 
+build_libxml2()
+{
+  version="$1"
+
+  if [ -e $DEPLOYDIR/include/libxml2 ]; then
+    echo "libxml2 already installed. not building"
+    return
+  fi
+
+  echo "Building libxml2 $version..."
+  cd "$BASEDIR"/src
+  rm -rf "libxml2-$version"
+  if [ ! -f "libxml2-$version.tar.gz" ]; then
+    curl --insecure -LO "ftp://xmlsoft.org/libxml2/libxml2-$version.tar.gz"
+  fi
+  tar xzf "libxml2-$version.tar.gz"
+  cd "libxml2-$version"
+  ./configure --prefix="$DEPLOYDIR" --without-docbook --without-ftp --without-html --without-http --without-legacy --without-python --without-sax1
+  make -j$NUMCPU
+  make install
+}
 
 build_fontconfig()
 {
@@ -44,7 +66,7 @@ build_fontconfig()
   fi
   tar xzf "fontconfig-$version.tar.gz"
   cd "fontconfig-$version"
-  ./configure --prefix="$DEPLOYDIR"
+  ./configure --prefix="$DEPLOYDIR" --enable-libxml2
   make -j$NUMCPU
   make install
 }

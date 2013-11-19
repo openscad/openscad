@@ -672,6 +672,7 @@ build_opencsg 1.3.2
 build_gettext 0.18.3.1
 build_glib2 2.38.2
 build_freetype 2.5.0.1
+build_libxml2 2.9.1
 build_fontconfig 2.11.0
 build_ragel 6.8
 build_harfbuzz 0.9.23 --with-glib=yes
