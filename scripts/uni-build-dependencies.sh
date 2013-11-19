@@ -53,6 +53,27 @@ printUsage()
   echo
 }
 
+check_env()
+{
+  SLEEP=0
+  if [ x != x"$CFLAGS" ]
+  then
+    echo "*** WARNING: You have CFLAGS set to '$CFLAGS'"
+    SLEEP=2
+  fi
+  if [ x != x"$CXXFLAGS" ]
+  then
+    echo "*** WARNING: You have CXXFLAGS set to '$CXXFLAGS'"
+    SLEEP=2
+  fi
+  if [ x != x"$LDFLAGS" ]
+  then
+    echo "*** WARNING: You have LDFLAGS set to '$LDFLAGS'"
+    SLEEP=2
+  fi
+  [ $SLEEP -gt 0 ] && sleep $SLEEP || true
+}
+
 detect_glu()
 {
   detect_glu_result=
@@ -566,6 +587,8 @@ else
     OPENSCAD_SCRIPTDIR=$PWD
   fi
 fi
+
+check_env
 
 . $OPENSCAD_SCRIPTDIR/setenv-unibuild.sh # '.' is equivalent to 'source'
 . $OPENSCAD_SCRIPTDIR/common-build-dependencies.sh
