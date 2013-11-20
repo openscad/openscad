@@ -834,12 +834,8 @@ disable_tests(cgalpngtest_child-background
 # Test config handling
 
 set_test_config(Heavy opencsgtest_minkowski3-tests
-                      opencsgtest_projection-tests
                       openscad-csgpng_minkowski3-tests
-                      openscad-csgpng_projection-tests
                       throwntogethertest_minkowski3-tests
-                      throwntogethertest_projection-tests
-                      cgalpngtest_projection-tests
                       cgalpngtest_rotate_extrude-tests
                       cgalpngtest_surface-tests
                       cgalpngtest_sphere-tests
