@@ -625,6 +625,7 @@ build_opencsg 1.3.2
 build_freetype 2.5.0.1 --without-png
 export FREETYPE_CFLAGS="-I$DEPLOYDIR/include -I$DEPLOYDIR/include/freetype2"
 export FREETYPE_LIBS="-L$DEPLOYDIR/lib -lfreetype"
+build_libxml2 2.9.1
 build_fontconfig 2.11.0
 build_ragel 6.8
 export PATH="$PATH:$DEPLOYDIR/bin"

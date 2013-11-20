@@ -44,7 +44,7 @@ build_libxml2()
   fi
   tar xzf "libxml2-$version.tar.gz"
   cd "libxml2-$version"
-  ./configure --prefix="$DEPLOYDIR" --without-docbook --without-ftp --without-html --without-http --without-legacy --without-python --without-sax1
+  ./configure --prefix="$DEPLOYDIR" --without-ftp --without-http --without-python
   make -j$NUMCPU
   make install
 }
@@ -66,7 +66,9 @@ build_fontconfig()
   fi
   tar xzf "fontconfig-$version.tar.gz"
   cd "fontconfig-$version"
+  export PKG_CONFIG_PATH="$DEPLOYDIR/lib/pkgconfig"
   ./configure --prefix="$DEPLOYDIR" --enable-libxml2
+  unset PKG_CONFIG_PATH
   make -j$NUMCPU
   make install
 }
