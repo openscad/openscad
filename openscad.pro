@@ -189,6 +189,7 @@ FORMS   += src/MainWindow.ui \
            src/Preferences.ui \
            src/OpenCSGWarningDialog.ui \
            src/AboutDialog.ui \
+           src/FontListDialog.ui \
            src/ProgressWidget.ui
 
 HEADERS += src/typedefs.h \
@@ -206,6 +207,7 @@ HEADERS += src/typedefs.h \
            src/Preferences.h \
            src/OpenCSGWarningDialog.h \
            src/AboutDialog.h \
+           src/FontListDialog.h \
            src/builtin.h \
            src/calc.h \
            src/context.h \
@@ -358,7 +360,8 @@ SOURCES += src/version_check.cc \
            src/lodepng.cpp \
            \
            src/openscad.cc \
-           src/mainwin.cc
+           src/mainwin.cc \
+	   src/FontListDialog.cc
 
 # ClipperLib
 SOURCES += src/polyclipping/clipper.cpp

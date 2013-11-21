@@ -34,6 +34,45 @@
 
 namespace fs = boost::filesystem;
 
+static bool FontInfoSortPredicate(const FontInfo& fi1, const FontInfo& fi2)
+{
+	return (fi1 < fi2);
+}
+
+FontInfo::FontInfo(std::string family, std::string style, std::string file) : family(family), style(style), file(file)
+{
+}
+
+FontInfo::~FontInfo()
+{
+}
+
+bool FontInfo::operator<(const FontInfo &rhs) const
+{
+	if (family < rhs.family) {
+		return true;
+	}
+	if (style < rhs.style) {
+		return true;
+	}
+	return file < rhs.file;
+}
+    
+std::string FontInfo::get_family() const
+{
+	return family;
+}
+
+std::string FontInfo::get_style() const
+{
+	return style;
+}
+
+std::string FontInfo::get_file() const
+{
+	return file;
+}
+
 FontCache * FontCache::self = NULL;
 
 FontCache::FontCache()
@@ -91,6 +130,36 @@ void FontCache::add_font_dir(std::string path) {
 	if (!FcConfigAppFontAddDir(config, reinterpret_cast<const FcChar8 *>(path.c_str()))) {
 		PRINTB("Can't register font directory '%s'", path);
 	}
+}
+
+FontInfoList * FontCache::list_fonts() {
+	FcObjectSet *object_set = FcObjectSetBuild (FC_FAMILY, FC_STYLE, FC_FILE, (char *)0);
+	FcPattern *pattern = FcPatternCreate();
+	init_pattern(pattern);
+	FcFontSet *font_set = FcFontList(config, pattern, object_set);
+        FcObjectSetDestroy(object_set);
+        FcPatternDestroy(pattern);
+
+	FontInfoList *list = new FontInfoList();
+	for (int a = 0;a < font_set->nfont;a++) {
+		FcValue file_value;
+		FcPatternGet(font_set->fonts[a], FC_FILE, 0, &file_value);
+		
+		FcValue family_value;
+		FcPatternGet(font_set->fonts[a], FC_FAMILY, 0, &family_value);
+		
+		FcValue style_value;
+		FcPatternGet(font_set->fonts[a], FC_STYLE, 0, &style_value);
+		
+		std::string family((const char *)family_value.u.s);
+		std::string style((const char *)style_value.u.s);
+		std::string file((const char *)file_value.u.s);
+		
+		list->push_back(FontInfo(family, style, file));
+	}
+	FcFontSetDestroy(font_set);
+	
+	return list;
 }
 
 bool FontCache::is_init_ok()
@@ -172,18 +241,23 @@ FT_Face FontCache::find_face_in_path_list(std::string font)
 	return NULL;
 }
 
-FT_Face FontCache::find_face_fontconfig(std::string font)
+void FontCache::init_pattern(FcPattern *pattern)
 {
-	FcResult result;
-	
-	FcPattern *pattern = FcNameParse((unsigned char *)font.c_str());
-	
 	FcValue true_value;
 	true_value.type = FcTypeBool;
 	true_value.u.b = true;
 	
 	FcPatternAdd(pattern, FC_OUTLINE, true_value, true);
 	FcPatternAdd(pattern, FC_SCALABLE, true_value, true);
+}
+
+FT_Face FontCache::find_face_fontconfig(std::string font)
+{
+	FcResult result;
+	
+	FcPattern *pattern = FcNameParse((unsigned char *)font.c_str());
+	init_pattern(pattern);
+	
 	FcDefaultSubstitute(pattern);
 	FcConfigSubstitute(config, pattern, FcMatchFont);
 	FcPattern *match = FcFontMatch(config, pattern, &result);

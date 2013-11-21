@@ -28,16 +28,36 @@
 
 #include <map>
 #include <string>
+#include <iostream>
 
 #include <time.h>
 
 #include <ft2build.h>
 #include FT_FREETYPE_H
 
+#include <vector>
+#include <string>
 #include <fontconfig/fontconfig.h>
 
 #include <hb.h>
 #include <hb-ft.h>
+
+class FontInfo {
+public:
+    FontInfo(std::string family, std::string style, std::string file);
+    virtual ~FontInfo();
+    
+    std::string get_family() const;
+    std::string get_style() const;
+    std::string get_file() const;
+    bool operator<(const FontInfo &rhs) const;
+private:
+    std::string family;
+    std::string style;
+    std::string file;
+};
+
+typedef std::vector<FontInfo> FontInfoList;
 
 class FontCache {
 public:
@@ -50,6 +70,7 @@ public:
     FT_Face get_font(std::string font);
     void register_font_file(std::string path);
     void clear();
+    FontInfoList * list_fonts();
     
     static FontCache * instance();
 private:
@@ -67,6 +88,7 @@ private:
     void dump_cache(std::string info);
     
     void add_font_dir(std::string path);
+    void init_pattern(FcPattern *pattern);
     
     FT_Face find_face(std::string font);
     FT_Face find_face_fontconfig(std::string font);
