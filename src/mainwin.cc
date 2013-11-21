@@ -1315,7 +1315,7 @@ void MainWindow::actionRenderCGALDone(CGAL_Nef_polyhedron *root_N)
 		CGALCache::instance()->print();
 #endif
 		if (!root_N->isNull()) {
-			if (root_N->dim == 2) {
+			if (root_N->getDimension() == 2) {
 				PRINT("   Top level object is a 2D object:");
 				PRINTB("   Empty:      %6s", (root_N->p2->is_empty() ? "yes" : "no"));
 				PRINTB("   Plane:      %6s", (root_N->p2->is_plane() ? "yes" : "no"));
@@ -1327,7 +1327,7 @@ void MainWindow::actionRenderCGALDone(CGAL_Nef_polyhedron *root_N)
 				PRINTB("   ConnComp:   %6d", root_N->p2->explorer().number_of_connected_components());
 			}
 			
-			if (root_N->dim == 3) {
+			if (root_N->getDimension() == 3) {
 				PRINT("   Top level object is a 3D object:");
 				PRINTB("   Simple:     %6s", (root_N->p3->is_simple() ? "yes" : "no"));
 				PRINTB("   Valid:      %6s", (root_N->p3->is_valid() ? "yes" : "no"));
@@ -1441,7 +1441,7 @@ void MainWindow::actionExportSTLorOFF(bool)
 		return;
 	}
 
-	if (this->root_N->dim != 3) {
+	if (this->root_N->getDimension() != 3) {
 		PRINT("Current top level object is not a 3D object.");
 		clearCurrentOutput();
 		return;
@@ -1501,7 +1501,7 @@ void MainWindow::actionExportDXF()
 		return;
 	}
 
-	if (this->root_N->dim != 2) {
+	if (this->root_N->getDimension() != 2) {
 		PRINT("Current top level object is not a 2D object.");
 		clearCurrentOutput();
 		return;

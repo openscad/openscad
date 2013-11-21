@@ -41,7 +41,7 @@ Geometry *PolySetCGALEvaluator::evaluateGeometry(const ProjectionNode &node)
 	BOOST_FOREACH (AbstractNode * v, node.getChildren()) {
 		if (v->modinst->isBackground()) continue;
 		CGAL_Nef_polyhedron N = this->cgalevaluator.evaluateCGALMesh(*v);
-		if (N.dim == 3) {
+		if (N.getDimension() == 3) {
 			if (sum.isNull()) sum = N.copy();
 			else sum += N;
 		}
@@ -500,7 +500,7 @@ Geometry *PolySetCGALEvaluator::evaluateGeometry(const RotateExtrudeNode &node)
 			if (v->modinst->isBackground()) continue;
 			CGAL_Nef_polyhedron N = this->cgalevaluator.evaluateCGALMesh(*v);
 			if (!N.isNull()) {
-				if (N.dim != 2) {
+				if (N.getDimension() != 2) {
 					PRINT("ERROR: rotate_extrude() is not defined for 3D child objects!");
 				}
 				else {
@@ -538,7 +538,7 @@ Geometry *PolySetCGALEvaluator::evaluateGeometry(const RenderNode &node)
 	CGAL_Nef_polyhedron N = this->cgalevaluator.evaluateCGALMesh(node);
 	PolySet *ps = NULL;
 	if (!N.isNull()) {
-		if (N.dim == 3 && !N.p3->is_simple()) {
+		if (N.getDimension() == 3 && !N.p3->is_simple()) {
 			PRINT("WARNING: Body of render() isn't valid 2-manifold!");
 		}
 		else {

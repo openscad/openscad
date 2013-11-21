@@ -12,17 +12,17 @@ const CGAL_Nef_polyhedron &CGALCache::get(const std::string &id) const
 {
 	const CGAL_Nef_polyhedron &N = *this->cache[id];
 #ifdef DEBUG
-	PRINTB("CGAL Cache hit: %s (%d bytes)", id.substr(0, 40) % N.weight());
+	PRINTB("CGAL Cache hit: %s (%d bytes)", id.substr(0, 40) % N.memsize());
 #endif
 	return N;
 }
 
 bool CGALCache::insert(const std::string &id, const CGAL_Nef_polyhedron &N)
 {
-	bool inserted = this->cache.insert(id, new CGAL_Nef_polyhedron(N), N.weight());
+	bool inserted = this->cache.insert(id, new CGAL_Nef_polyhedron(N), N.memsize());
 #ifdef DEBUG
-	if (inserted) PRINTB("CGAL Cache insert: %s (%d bytes)", id.substr(0, 40) % N.weight());
-	else PRINTB("CGAL Cache insert failed: %s (%d bytes)", id.substr(0, 40) % N.weight());
+	if (inserted) PRINTB("CGAL Cache insert: %s (%d bytes)", id.substr(0, 40) % N.memsize());
+	else PRINTB("CGAL Cache insert failed: %s (%d bytes)", id.substr(0, 40) % N.memsize());
 #endif
 	return inserted;
 }

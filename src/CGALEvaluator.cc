@@ -61,12 +61,12 @@ bool CGALEvaluator::isCached(const AbstractNode &node) const
  */
 void CGALEvaluator::process(CGAL_Nef_polyhedron &target, const CGAL_Nef_polyhedron &src, OpenSCADOperator op)
 {
- 	if (target.dim != 2 && target.dim != 3) {
+ 	if (target.getDimension() != 2 && target.getDimension() != 3) {
  		assert(false && "Dimension of Nef polyhedron must be 2 or 3");
  	}
 	if (src.isEmpty()) return; // Empty polyhedron. This can happen for e.g. square([0,0])
 	if (target.isEmpty() && op != OPENSCAD_UNION) return; // empty op <something> => empty
-	if (target.dim != src.dim) return; // If someone tries to e.g. union 2d and 3d objects
+	if (target.getDimension() != src.getDimension()) return; // If someone tries to e.g. union 2d and 3d objects
 
 	CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
 	try {
@@ -136,11 +136,11 @@ CGAL_Nef_polyhedron CGALEvaluator::applyHull(const CgaladvNode &node)
 		const CGAL_Nef_polyhedron &chN = item.second;
 		// FIXME: Don't use deep access to modinst members
 		if (chnode->modinst->isBackground()) continue;
-		if (chN.dim == 0) continue; // Ignore object with dimension 0 (e.g. echo)
+		if (chN.getDimension() == 0) continue; // Ignore object with dimension 0 (e.g. echo)
 		if (dim == 0) {
-			dim = chN.dim;
+			dim = chN.getDimension();
 		}
-		else if (dim != chN.dim) {
+		else if (dim != chN.getDimension()) {
 			PRINT("WARNING: hull() does not support mixing 2D and 3D objects.");
 			continue;
 		}
@@ -214,7 +214,7 @@ CGAL_Nef_polyhedron CGALEvaluator::applyResize(const CgaladvNode &node)
 
 	CGAL_Iso_cuboid_3 bb;
 
-	if ( N.dim == 2 ) {
+	if ( N.getDimension() == 2 ) {
 		CGAL_Iso_rectangle_2e bbox = bounding_box( *N.p2 );
 		CGAL_Point_2e min2(bbox.min()), max2(bbox.max());
 		CGAL_Point_3 min3(CGAL::to_double(min2.x()), CGAL::to_double(min2.y()), 0),
@@ -231,7 +231,7 @@ CGAL_Nef_polyhedron CGALEvaluator::applyResize(const CgaladvNode &node)
 	bbox_size.push_back( bb.ymax()-bb.ymin() );
 	bbox_size.push_back( bb.zmax()-bb.zmin() );
 	int newsizemax_index = 0;
-	for (int i=0;i<N.dim;i++) {
+	for (int i=0;i<N.getDimension();i++) {
 		if (node.newsize[i]) {
 			if (bbox_size[i]==NT3(0)) {
 				PRINT("WARNING: Resize in direction normal to flat object is not implemented");
@@ -248,7 +248,7 @@ CGAL_Nef_polyhedron CGALEvaluator::applyResize(const CgaladvNode &node)
 	NT3 autoscale = NT3( 1 );
 	if ( node.newsize[ newsizemax_index ] != 0 )
 		autoscale = NT3( node.newsize[ newsizemax_index ] ) / bbox_size[ newsizemax_index ];
-	for (int i=0;i<N.dim;i++) {
+	for (int i=0;i<N.getDimension();i++) {
 		if (node.autosize[i] && node.newsize[i]==0)
 			scale[i] = autoscale;
 	}
@@ -346,7 +346,11 @@ Response CGALEvaluator::visit(State &state, const AbstractPolyNode &node)
 		if (!isCached(node)) {
 			// Apply polyset operation
 			shared_ptr<const Geometry> geom = this->geomevaluator.evaluateGeometry(node);
-			if (geom) N = createNefPolyhedronFromGeometry(*geom);
+			if (geom) {
+				CGAL_Nef_polyhedron *Nptr = createNefPolyhedronFromGeometry(*geom);
+				N = *Nptr;
+				delete Nptr;
+			}
 			node.progress_report();
 		}
 		else {

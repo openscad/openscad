@@ -59,7 +59,7 @@ CGAL_Nef_polyhedron &CGAL_Nef_polyhedron::minkowski(const CGAL_Nef_polyhedron &o
 	return *this;
 }
 
-int CGAL_Nef_polyhedron::weight() const
+size_t CGAL_Nef_polyhedron::memsize() const
 {
 	if (this->isNull()) return 0;
 

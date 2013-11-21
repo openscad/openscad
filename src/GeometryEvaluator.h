@@ -26,12 +26,16 @@ public:
 	virtual Response visit(State &state, const TransformNode &node);
 	virtual Response visit(State &state, const CsgNode &node);
 	virtual Response visit(State &state, const CgaladvNode &node);
+	virtual Response visit(State &state, const RenderNode &node);
+	virtual Response visit(State &state, const ProjectionNode &node);
 
 	const Tree &getTree() const { return this->tree; }
 
 private:
 	bool isCached(const AbstractNode &node) const;
 	Geometry *applyToChildren2D(const AbstractNode &node, OpenSCADOperator op);
+	Geometry *applyToChildren3D(const AbstractNode &node, OpenSCADOperator op);
+	Geometry *applyToChildren(const AbstractNode &node, OpenSCADOperator op);
 	void addToParent(const State &state, const AbstractNode &node, const shared_ptr<const Geometry> &geom);
 
   typedef std::pair<const AbstractNode *, shared_ptr<const Geometry> > ChildItem;
