@@ -25,6 +25,7 @@
  */
 
 #include "dxfdata.h"
+#include "Polygon2d.h"
 #include "grid.h"
 #include "CGAL_Nef_polyhedron.h"
 #include "cgal.h"
@@ -39,48 +40,73 @@
 
 DxfData *CGAL_Nef_polyhedron::convertToDxfData() const
 {
+   assert(this->dim == 2);
+   DxfData *dxfdata = new DxfData();
+   Grid2d<int> grid(GRID_COARSE);
+
+   typedef CGAL_Nef_polyhedron2::Explorer Explorer;
+   typedef Explorer::Face_const_iterator fci_t;
+   typedef Explorer::Halfedge_around_face_const_circulator heafcc_t;
+   Explorer E = this->p2->explorer();
+
+   for (fci_t fit = E.faces_begin(), facesend = E.faces_end(); fit != facesend; ++fit)
+   {
+           heafcc_t fcirc(E.halfedge(fit)), fend(fcirc);
+           int first_point = -1, last_point = -1;
+           CGAL_For_all(fcirc, fend) {
+                   if (E.is_standard(E.target(fcirc))) {
+                           Explorer::Point ep = E.point(E.target(fcirc));
+                           double x = to_double(ep.x()), y = to_double(ep.y());
+                           int this_point = -1;
+                           if (grid.has(x, y)) {
+                                   this_point = grid.align(x, y);
+                           } else {
+                                   this_point = grid.align(x, y) = dxfdata->points.size();
+                                   dxfdata->points.push_back(Vector2d(x, y));
+                           }
+                           if (first_point < 0) {
+                                   dxfdata->paths.push_back(DxfData::Path());
+                                   first_point = this_point;
+                           }
+                           if (this_point != last_point) {
+                                   dxfdata->paths.back().indices.push_back(this_point);
+                                   last_point = this_point;
+                           }
+                   }
+           }
+           if (first_point >= 0) {
+                   dxfdata->paths.back().is_closed = 1;
+                   dxfdata->paths.back().indices.push_back(first_point);
+           }
+   }
+
+   dxfdata->fixup_path_direction();
+   return dxfdata;
+}
+
+Polygon2d *CGAL_Nef_polyhedron::convertToPolygon2d() const
+{
 	assert(this->dim == 2);
-	DxfData *dxfdata = new DxfData();
-	Grid2d<int> grid(GRID_COARSE);
+	Polygon2d *poly = new Polygon2d;
 
 	typedef CGAL_Nef_polyhedron2::Explorer Explorer;
 	typedef Explorer::Face_const_iterator fci_t;
 	typedef Explorer::Halfedge_around_face_const_circulator heafcc_t;
 	Explorer E = this->p2->explorer();
 
-	for (fci_t fit = E.faces_begin(), facesend = E.faces_end(); fit != facesend; ++fit)
-	{
+	for (fci_t fit = E.faces_begin(), facesend = E.faces_end(); fit != facesend; ++fit)	{
 		heafcc_t fcirc(E.halfedge(fit)), fend(fcirc);
-		int first_point = -1, last_point = -1;
+		Outline2d outline;
 		CGAL_For_all(fcirc, fend) {
 			if (E.is_standard(E.target(fcirc))) {
 				Explorer::Point ep = E.point(E.target(fcirc));
-				double x = to_double(ep.x()), y = to_double(ep.y());
-				int this_point = -1;
-				if (grid.has(x, y)) {
-					this_point = grid.align(x, y);
-				} else {
-					this_point = grid.align(x, y) = dxfdata->points.size();
-					dxfdata->points.push_back(Vector2d(x, y));
-				}
-				if (first_point < 0) {
-					dxfdata->paths.push_back(DxfData::Path());
-					first_point = this_point;
-				}
-				if (this_point != last_point) {
-					dxfdata->paths.back().indices.push_back(this_point);
-					last_point = this_point;
-				}
+				outline.push_back(Vector2d(to_double(ep.x()),
+																	 to_double(ep.y())));
 			}
 		}
-		if (first_point >= 0) {
-			dxfdata->paths.back().is_closed = 1;
-			dxfdata->paths.back().indices.push_back(first_point);
-		}
+        if (outline.size() > 0) poly->addOutline(outline);
 	}
-
-	dxfdata->fixup_path_direction();
-	return dxfdata;
+	return poly;
 }
 
 std::string CGAL_Nef_polyhedron::dump() const
@@ -125,7 +151,9 @@ void CGAL_Nef_polyhedron::transform( const Transform3d &matrix )
 				ps.is2d = true;
 				dxf_tesselate(&ps, *dd, 0, Vector2d(1,1), true, false, 0);
 
-				CGAL_Nef_polyhedron N = createNefPolyhedronFromGeometry(ps);
+				CGAL_Nef_polyhedron *Nptr = createNefPolyhedronFromGeometry(ps);
+				CGAL_Nef_polyhedron N = *Nptr;
+				delete Nptr;
 				if (N.p2) this->p2.reset(new CGAL_Nef_polyhedron2(*N.p2));
 				delete dd;
 			}

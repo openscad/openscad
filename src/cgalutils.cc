@@ -224,9 +224,9 @@ void ZRemover::visit( CGAL_Nef_polyhedron3::Halffacet_const_handle hfacet )
 	log << " <!-- ZRemover Halffacet visit end -->\n";
 }
 
-static CGAL_Nef_polyhedron createNefPolyhedronFromPolySet(const PolySet &ps)
+static CGAL_Nef_polyhedron *createNefPolyhedronFromPolySet(const PolySet &ps)
 {
-	if (ps.empty()) return CGAL_Nef_polyhedron(ps.is2d ? 2 : 3);
+	if (ps.empty()) return new CGAL_Nef_polyhedron(ps.is2d ? 2 : 3);
 
 	if (ps.is2d)
 	{
@@ -259,7 +259,7 @@ static CGAL_Nef_polyhedron createNefPolyhedronFromPolySet(const PolySet &ps)
 		}
 
 		CGAL_Nef_polyhedron2 N(pdata.begin(), pdata.end(), CGAL_Nef_polyhedron2::POLYGONS);
-		return CGAL_Nef_polyhedron(N);
+		return new CGAL_Nef_polyhedron(N);
 #endif
 #if 0
 		// This version of the code works fine but is pretty slow.
@@ -284,7 +284,7 @@ static CGAL_Nef_polyhedron createNefPolyhedronFromPolySet(const PolySet &ps)
 			N += CGAL_Nef_polyhedron2(plist.begin(), plist.end(), CGAL_Nef_polyhedron2::INCLUDED);
 		}
 
-		return CGAL_Nef_polyhedron(N);
+		return new CGAL_Nef_polyhedron(N);
 #endif
 #if 1
 		// This version of the code does essentially the same thing as the 2nd
@@ -440,7 +440,7 @@ static CGAL_Nef_polyhedron createNefPolyhedronFromPolySet(const PolySet &ps)
 
 		PolyReducer pr(ps);
 		pr.reduce();
-		return CGAL_Nef_polyhedron(pr.toNef());
+		return new CGAL_Nef_polyhedron(pr.toNef());
 #endif
 #if 0
 		// This is another experimental version. I should run faster than the above,
@@ -471,7 +471,7 @@ static CGAL_Nef_polyhedron createNefPolyhedronFromPolySet(const PolySet &ps)
 			N ^= CGAL_Nef_polyhedron2(plist.begin(), plist.end(), CGAL_Nef_polyhedron2::INCLUDED);
 		}
 
-		return CGAL_Nef_polyhedron(N);
+		return new CGAL_Nef_polyhedron(N);
 
 #endif
 	}
@@ -490,19 +490,18 @@ static CGAL_Nef_polyhedron createNefPolyhedronFromPolySet(const PolySet &ps)
 			PRINTB("CGAL error in CGAL_Nef_polyhedron3(): %s", e.what());
 		}
 		CGAL::set_error_behaviour(old_behaviour);
-		return CGAL_Nef_polyhedron(N);
+		return new CGAL_Nef_polyhedron(N);
 	}
-	return CGAL_Nef_polyhedron();
+	return NULL;
 }
 
-
-static CGAL_Nef_polyhedron createNefPolyhedronFromPolygon2d(const Polygon2d &polygon)
+static CGAL_Nef_polyhedron *createNefPolyhedronFromPolygon2d(const Polygon2d &polygon)
 {
 	shared_ptr<PolySet> ps(polygon.tessellate());
 	return createNefPolyhedronFromPolySet(*ps);
 }
 
-CGAL_Nef_polyhedron createNefPolyhedronFromGeometry(const Geometry &geom)
+CGAL_Nef_polyhedron *createNefPolyhedronFromGeometry(const Geometry &geom)
 {
 	const PolySet *ps = dynamic_cast<const PolySet*>(&geom);
 	if (ps) {
@@ -513,7 +512,7 @@ CGAL_Nef_polyhedron createNefPolyhedronFromGeometry(const Geometry &geom)
 		if (poly2d) return createNefPolyhedronFromPolygon2d(*poly2d);
 	}
 	assert(false && "CGALEvaluator::evaluateCGALMesh(): Unsupported geometry type");
-	return CGAL_Nef_polyhedron();
+	return NULL;
 }
 
 #endif /* ENABLE_CGAL */

@@ -47,7 +47,7 @@ CGALRenderer::CGALRenderer(const CGAL_Nef_polyhedron &root) : root(root)
 		this->polyhedron = NULL;
 		this->polyset = NULL;
 	}
-	else if (root.dim == 2) {
+	else if (root.getDimension() == 2) {
 		DxfData *dd = root.convertToDxfData();
 		this->polyhedron = NULL;
 		this->polyset = new PolySet();
@@ -55,7 +55,7 @@ CGALRenderer::CGALRenderer(const CGAL_Nef_polyhedron &root) : root(root)
 		dxf_tesselate(this->polyset, *dd, 0, Vector2d(1,1), true, false, 0);
 		delete dd;
 	}
-	else if (root.dim == 3) {
+	else if (root.getDimension() == 3) {
 		this->polyset = NULL;
 		this->polyhedron = new Polyhedron();
     // FIXME: Make independent of Preferences
@@ -82,7 +82,7 @@ CGALRenderer::~CGALRenderer()
 void CGALRenderer::draw(bool showfaces, bool showedges) const
 {
 	if (this->root.isNull()) return;
-	if (this->root.dim == 2) {
+	if (this->root.getDimension() == 2) {
 		// Draw 2D polygons
 		glDisable(GL_LIGHTING);
 // FIXME:		const QColor &col = Preferences::inst()->color(Preferences::CGAL_FACE_2D_COLOR);
@@ -135,7 +135,7 @@ void CGALRenderer::draw(bool showfaces, bool showedges) const
 		
 		glEnable(GL_DEPTH_TEST);
 	}
-	else if (this->root.dim == 3) {
+	else if (this->root.getDimension() == 3) {
 		if (showfaces) this->polyhedron->set_style(SNC_BOUNDARY);
 		else this->polyhedron->set_style(SNC_SKELETON);
 		
