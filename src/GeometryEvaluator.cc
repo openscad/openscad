@@ -23,6 +23,7 @@
 #include "printutils.h"
 #include "svg.h"
 
+#include <algorithm>
 #include <boost/foreach.hpp>
 
 GeometryEvaluator::GeometryEvaluator(const class Tree &tree):
@@ -476,6 +477,13 @@ static Geometry *extrudePolygon(const LinearExtrudeNode &node, const Polygon2d &
 	}
 
 	PolySet *ps_bottom = poly.tessellate(); // bottom
+	
+	// Flip vertex ordering for bottom polygon
+	BOOST_FOREACH(PolySet::Polygon &p, ps_bottom->polygons) {
+		std::reverse(p.begin(), p.end());
+	}
+	translate_PolySet(*ps_bottom, Vector3d(0,0,h1));
+
 	ps->append(*ps_bottom);
 	delete ps_bottom;
 	if (node.scale_x > 0 || node.scale_y > 0) {
