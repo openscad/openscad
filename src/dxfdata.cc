@@ -592,7 +592,7 @@ Polygon2d *DxfData::toPolygon2d() const
 		if (!path.is_closed) continue; // We don't support open paths for now
 		Outline2d outline;
 		for (size_t j = 1; j < path.indices.size(); j++) {
-			outline.push_back(Vector2d(this->points[path.indices[j]]));
+			outline.push_back(Vector2d(this->points[path.indices[path.indices.size()-j]]));
 		}
 		poly->addOutline(outline);
 	}
