@@ -22,6 +22,7 @@
 #include "openscad.h" // get_fragments_from_r()
 #include "printutils.h"
 #include "svg.h"
+#include "dxfdata.h"
 
 #include <algorithm>
 #include <boost/foreach.hpp>
@@ -526,12 +527,20 @@ Response GeometryEvaluator::visit(State &state, const LinearExtrudeNode &node)
 	if (state.isPostfix()) {
 		shared_ptr<const Geometry> geom;
 		if (!isCached(node)) {
-			const Geometry *geometry = applyToChildren2D(node, OPENSCAD_UNION);
+			const Geometry *geometry;
+			if (!node.filename.empty()) {
+				DxfData dxf(node.fn, node.fs, node.fa, node.filename, node.layername, node.origin_x, node.origin_y, node.scale_x);
+				geometry = dxf.toPolygon2d();
+			}
+			else {
+				geometry = applyToChildren2D(node, OPENSCAD_UNION);
+			}
 			if (geometry) {
 				const Polygon2d *polygons = dynamic_cast<const Polygon2d*>(geometry);
 				Geometry *extruded = extrudePolygon(node, *polygons);
 				assert(extruded);
 				geom.reset(extruded);
+				delete geometry;
 			}
 		}
 		else {
@@ -602,12 +611,20 @@ Response GeometryEvaluator::visit(State &state, const RotateExtrudeNode &node)
 	if (state.isPostfix()) {
 		shared_ptr<const Geometry> geom;
 		if (!isCached(node)) {
-			const Geometry *geometry = applyToChildren2D(node, OPENSCAD_UNION);
+			const Geometry *geometry;
+			if (!node.filename.empty()) {
+				DxfData dxf(node.fn, node.fs, node.fa, node.filename, node.layername, node.origin_x, node.origin_y, node.scale);
+				geometry = dxf.toPolygon2d();
+			}
+			else {
+				geometry = applyToChildren2D(node, OPENSCAD_UNION);
+			}
 			if (geometry) {
 				const Polygon2d *polygons = dynamic_cast<const Polygon2d*>(geometry);
 				Geometry *rotated = rotatePolygon(node, *polygons);
 				assert(rotated);
 				geom.reset(rotated);
+				delete geometry;
 			}
 		}
 		else {
