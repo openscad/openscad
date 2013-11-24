@@ -334,7 +334,7 @@ Geometry *PolySetCGALEvaluator::evaluateGeometry(const LinearExtrudeNode &node)
 			}
 		}
 		ClipperLib::Clipper clipper;
-		clipper.AddPolygons(ClipperUtils::fromPolygon2d(sum), ClipperLib::ptSubject);
+		clipper.AddPolygons(ClipperUtils::fromPolygon2d(sum, true), ClipperLib::ptSubject);
 		ClipperLib::Polygons result;
 		clipper.Execute(ClipperLib::ctUnion, result);
 
