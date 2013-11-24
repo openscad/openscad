@@ -135,7 +135,8 @@ Geometry *GeometryEvaluator::applyToChildren3D(const AbstractNode &node, OpenSCA
 */
 Geometry *GeometryEvaluator::applyToChildren2D(const AbstractNode &node, OpenSCADOperator op)
 {
-	Polygon2d sum;
+	ClipperLib::Clipper sumclipper;
+	bool first = true;
 	BOOST_FOREACH(const ChildItem &item, this->visitedchildren[node.index()]) {
 		const AbstractNode *chnode = item.first;
 		const shared_ptr<const Geometry> &chgeom = item.second;
@@ -154,9 +155,12 @@ Geometry *GeometryEvaluator::applyToChildren2D(const AbstractNode &node, OpenSCA
 			if (chgeom->getDimension() == 2) {
 				shared_ptr<const Polygon2d> polygons = dynamic_pointer_cast<const Polygon2d>(chgeom);
 				assert(polygons);
-				BOOST_FOREACH(const Outline2d &o, polygons->outlines()) {
-						sum.addOutline(o);
-				}
+				// The first Clipper operation will sanitize the polygon, ensuring 
+				// contours/holes have the correct winding order
+				ClipperLib::Polygons result = ClipperUtils::fromPolygon2d(*polygons, true);
+
+				// Add correctly winded polygons to the main clipper
+				sumclipper.AddPolygons(result, first ? ClipperLib::ptSubject : ClipperLib::ptClip);
 			}
 			else {
 				// FIXME: Wrong error message
@@ -164,6 +168,7 @@ Geometry *GeometryEvaluator::applyToChildren2D(const AbstractNode &node, OpenSCA
 			}
 		}
 		chnode->progress_report();
+		if (first) first = !first;
 	}
 
 	ClipperLib::ClipType clipType;
@@ -182,18 +187,17 @@ Geometry *GeometryEvaluator::applyToChildren2D(const AbstractNode &node, OpenSCA
 		return NULL;
 		break;
 	}
-	ClipperLib::Clipper clipper;
-	clipper.AddPolygons(ClipperUtils::fromPolygon2d(sum), ClipperLib::ptSubject);
-	ClipperLib::Polygons result;
-	clipper.Execute(clipType, result);
+	// Perform the main op
+	ClipperLib::Polygons sumresult;
+	sumclipper.Execute(clipType, sumresult, ClipperLib::pftEvenOdd, ClipperLib::pftEvenOdd);
 
-	if (result.size() == 0) return NULL;
+	if (sumresult.size() == 0) return NULL;
 
 	// The returned result will have outlines ordered according to whether 
 	// they're positive or negative: Positive outlines counter-clockwise and 
 	// negative outlines clockwise.
 	// FIXME: We might want to introduce a flag in Polygon2d to signify this
-	return ClipperUtils::toPolygon2d(result);
+	return ClipperUtils::toPolygon2d(sumresult);
 }
 
 /*!
@@ -279,7 +283,16 @@ Response GeometryEvaluator::visit(State &state, const LeafNode &node)
 	// correct winding order
 	if (state.isPrefix()) {
 		shared_ptr<const Geometry> geom;
-		if (!isCached(node)) geom.reset(node.createGeometry());
+		if (!isCached(node)) {
+			const Geometry *geometry = node.createGeometry();
+			const Polygon2d *polygons = dynamic_cast<const Polygon2d*>(geometry);
+			if (polygons) {
+				Polygon2d *p = ClipperUtils::toPolygon2d(ClipperUtils::fromPolygon2d(*polygons, true));
+				delete geometry;
+				geometry = p;
+			}
+			geom.reset(geometry);
+		}
 		else geom = GeometryCache::instance()->get(this->tree.getIdString(node));
 		addToParent(state, node, geom);
 	}

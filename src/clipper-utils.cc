@@ -3,7 +3,7 @@
 
 namespace ClipperUtils {
 
-	ClipperLib::Polygons fromPolygon2d(const Polygon2d &poly) {
+	ClipperLib::Polygons fromPolygon2d(const Polygon2d &poly, bool sanitize) {
 		ClipperLib::Polygons result;
 		BOOST_FOREACH(const Outline2d &outline, poly.outlines()) {
 			ClipperLib::Polygon p;
@@ -11,6 +11,12 @@ namespace ClipperUtils {
 				p.push_back(ClipperLib::IntPoint(v[0]*CLIPPER_SCALE, v[1]*CLIPPER_SCALE));
 			}
 			result.push_back(p);
+		}
+
+		if (sanitize) {
+			ClipperLib::Clipper clipper;
+			clipper.AddPolygons(result, ClipperLib::ptSubject);
+			clipper.Execute(ClipperLib::ctUnion, result, ClipperLib::pftEvenOdd);
 		}
 		return result;
 	}

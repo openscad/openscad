@@ -8,7 +8,7 @@ namespace ClipperUtils {
 
 	static const unsigned int CLIPPER_SCALE = 100000;
 
-	ClipperLib::Polygons fromPolygon2d(const class Polygon2d &poly);
+	ClipperLib::Polygons fromPolygon2d(const class Polygon2d &poly, bool sanitize);
 	Polygon2d *toPolygon2d(const ClipperLib::Polygons &poly);
 
 };
