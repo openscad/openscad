@@ -13,7 +13,6 @@
 #include "projectionnode.h"
 #include "CGAL_Nef_polyhedron.h"
 #include "cgalutils.h"
-#include <CGAL/convex_hull_3.h>
 #include "rendernode.h"
 #include "clipper-utils.h"
 #include "CGALEvaluator.h"
@@ -91,48 +90,6 @@ Geometry *GeometryEvaluator::applyToChildren(const AbstractNode &node, OpenSCADO
 	return NULL;
 }
 
-/*!
-	Modifies target by applying op to target and src:
-	target = target [op] src
- */
-static void process(CGAL_Nef_polyhedron &target, const CGAL_Nef_polyhedron &src, OpenSCADOperator op)
-{
- 	if (target.getDimension() != 2 && target.getDimension() != 3) {
- 		assert(false && "Dimension of Nef polyhedron must be 2 or 3");
- 	}
-	if (src.isEmpty()) return; // Empty polyhedron. This can happen for e.g. square([0,0])
-	if (target.isEmpty() && op != OPENSCAD_UNION) return; // empty op <something> => empty
-	if (target.getDimension() != src.getDimension()) return; // If someone tries to e.g. union 2d and 3d objects
-
-	CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
-	try {
-		switch (op) {
-		case OPENSCAD_UNION:
-			if (target.isEmpty()) target = src.copy();
-			else target += src;
-			break;
-		case OPENSCAD_INTERSECTION:
-			target *= src;
-			break;
-		case OPENSCAD_DIFFERENCE:
-			target -= src;
-			break;
-		case OPENSCAD_MINKOWSKI:
-			target.minkowski(src);
-			break;
-		}
-	}
-	catch (const CGAL::Failure_exception &e) {
-		// union && difference assert triggered by testdata/scad/bugs/rotate-diff-nonmanifold-crash.scad and testdata/scad/bugs/issue204.scad
-		std::string opstr = op == OPENSCAD_UNION ? "union" : op == OPENSCAD_INTERSECTION ? "intersection" : op == OPENSCAD_DIFFERENCE ? "difference" : op == OPENSCAD_MINKOWSKI ? "minkowski" : "UNKNOWN";
-		PRINTB("CGAL error in CGAL_Nef_polyhedron's %s operator: %s", opstr % e.what());
-
-		// Errors can result in corrupt polyhedrons, so put back the old one
-		target = src;
-	}
-	CGAL::set_error_behaviour(old_behaviour);
-}
-
 Geometry *GeometryEvaluator::applyToChildren3D(const AbstractNode &node, OpenSCADOperator op)
 {
 	CGAL_Nef_polyhedron *N = new CGAL_Nef_polyhedron;
@@ -160,7 +117,7 @@ Geometry *GeometryEvaluator::applyToChildren3D(const AbstractNode &node, OpenSCA
 			if (chgeom->getDimension() == 3) {
 				// Initialize N on first iteration with first expected geometric object
 				if (N->isNull() && !N->isEmpty()) *N = chN->copy();
-				else process(*N, *chN, op);
+				else CGAL_binary_operator(*N, *chN, op);
 			}
 			else {
 				// FIXME: Fix error message
@@ -643,127 +600,6 @@ Response GeometryEvaluator::visit(State &state, const AbstractPolyNode &node)
 	assert(false);
 }
 
-static CGAL_Nef_polyhedron project_node(const ProjectionNode &node, 
-																				const CGAL_Nef_polyhedron &N)
-{
-	CGAL_Nef_polyhedron &inputN = const_cast<CGAL_Nef_polyhedron&>(N);
-
-	logstream log(5);
-	CGAL_Nef_polyhedron nef_poly(2);
-	if (inputN.getDimension() != 3) return nef_poly;
-
-	CGAL_Nef_polyhedron newN;
-	if (node.cut_mode) {
-		CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
-		try {
-			CGAL_Nef_polyhedron3::Plane_3 xy_plane = CGAL_Nef_polyhedron3::Plane_3(0,0,1,0);
-			newN.p3.reset(new CGAL_Nef_polyhedron3(inputN.p3->intersection(xy_plane, CGAL_Nef_polyhedron3::PLANE_ONLY)));
-		}
-		catch (const CGAL::Failure_exception &e) {
-			PRINTB("CGAL error in projection node during plane intersection: %s", e.what());
-			try {
-				PRINT("Trying alternative intersection using very large thin box: ");
-				std::vector<CGAL_Point_3> pts;
-				// dont use z of 0. there are bugs in CGAL.
-				double inf = 1e8;
-				double eps = 0.001;
-				CGAL_Point_3 minpt( -inf, -inf, -eps );
-				CGAL_Point_3 maxpt(  inf,  inf,  eps );
-				CGAL_Iso_cuboid_3 bigcuboid( minpt, maxpt );
-				for ( int i=0;i<8;i++ ) pts.push_back( bigcuboid.vertex(i) );
-				CGAL_Polyhedron bigbox;
-				CGAL::convex_hull_3(pts.begin(), pts.end(), bigbox);
-				CGAL_Nef_polyhedron3 nef_bigbox( bigbox );
-				newN.p3.reset(new CGAL_Nef_polyhedron3(nef_bigbox.intersection(*inputN.p3)));
-			}
-			catch (const CGAL::Failure_exception &e) {
-				PRINTB("CGAL error in projection node during bigbox intersection: %s", e.what());
-			}
-		}
-				
-		if (!newN.p3 || newN.p3->is_empty()) {
-			CGAL::set_error_behaviour(old_behaviour);
-			PRINT("WARNING: projection() failed.");
-			return nef_poly;
-		}
-				
-		log << OpenSCAD::svg_header( 480, 100000 ) << "\n";
-		try {
-			ZRemover zremover;
-			CGAL_Nef_polyhedron3::Volume_const_iterator i;
-			CGAL_Nef_polyhedron3::Shell_entry_const_iterator j;
-			CGAL_Nef_polyhedron3::SFace_const_handle sface_handle;
-			for ( i = newN.p3->volumes_begin(); i != newN.p3->volumes_end(); ++i ) {
-				log << "<!-- volume. mark: " << i->mark() << " -->\n";
-				for ( j = i->shells_begin(); j != i->shells_end(); ++j ) {
-					log << "<!-- shell. mark: " << i->mark() << " -->\n";
-					sface_handle = CGAL_Nef_polyhedron3::SFace_const_handle( j );
-					newN.p3->visit_shell_objects( sface_handle , zremover );
-					log << "<!-- shell. end. -->\n";
-				}
-				log << "<!-- volume end. -->\n";
-			}
-			nef_poly.p2 = zremover.output_nefpoly2d;
-		}	catch (const CGAL::Failure_exception &e) {
-			PRINTB("CGAL error in projection node while flattening: %s", e.what());
-		}
-		log << "</svg>\n";
-				
-		CGAL::set_error_behaviour(old_behaviour);
-	}
-	// In projection mode all the triangles are projected manually into the XY plane
-	else {
-		PolySet *ps3 = inputN.convertToPolyset();
-		if (!ps3) return nef_poly;
-		for (size_t i = 0; i < ps3->polygons.size(); i++) {
-			int min_x_p = -1;
-			double min_x_val = 0;
-			for (size_t j = 0; j < ps3->polygons[i].size(); j++) {
-				double x = ps3->polygons[i][j][0];
-				if (min_x_p < 0 || x < min_x_val) {
-					min_x_p = j;
-					min_x_val = x;
-				}
-			}
-			int min_x_p1 = (min_x_p+1) % ps3->polygons[i].size();
-			int min_x_p2 = (min_x_p+ps3->polygons[i].size()-1) % ps3->polygons[i].size();
-			double ax = ps3->polygons[i][min_x_p1][0] - ps3->polygons[i][min_x_p][0];
-			double ay = ps3->polygons[i][min_x_p1][1] - ps3->polygons[i][min_x_p][1];
-			double at = atan2(ay, ax);
-			double bx = ps3->polygons[i][min_x_p2][0] - ps3->polygons[i][min_x_p][0];
-			double by = ps3->polygons[i][min_x_p2][1] - ps3->polygons[i][min_x_p][1];
-			double bt = atan2(by, bx);
-					
-			double eps = 0.000001;
-			if (fabs(at - bt) < eps || (fabs(ax) < eps && fabs(ay) < eps) ||
-					(fabs(bx) < eps && fabs(by) < eps)) {
-				// this triangle is degenerated in projection
-				continue;
-			}
-					
-			std::list<CGAL_Nef_polyhedron2::Point> plist;
-			for (size_t j = 0; j < ps3->polygons[i].size(); j++) {
-				double x = ps3->polygons[i][j][0];
-				double y = ps3->polygons[i][j][1];
-				CGAL_Nef_polyhedron2::Point p = CGAL_Nef_polyhedron2::Point(x, y);
-				if (at > bt)
-					plist.push_front(p);
-				else
-					plist.push_back(p);
-			}
-			// FIXME: Should the CGAL_Nef_polyhedron2 be cached?
-			if (nef_poly.isEmpty()) {
-				nef_poly.p2.reset(new CGAL_Nef_polyhedron2(plist.begin(), plist.end(), CGAL_Nef_polyhedron2::INCLUDED));
-			}
-			else {
-				(*nef_poly.p2) += CGAL_Nef_polyhedron2(plist.begin(), plist.end(), CGAL_Nef_polyhedron2::INCLUDED);
-			}
-		}
-		delete ps3;
-	}
-	return nef_poly;
-}
-
 /*!
 	input: List of 3D objects
 	output: Polygon2d
@@ -785,7 +621,7 @@ Response GeometryEvaluator::visit(State &state, const ProjectionNode &node)
 					Nptr = createNefPolyhedronFromGeometry(*geometry);
 				}
 				if (!Nptr->isNull()) {
-					CGAL_Nef_polyhedron nef_poly = project_node(node, *Nptr);
+					CGAL_Nef_polyhedron nef_poly = CGAL_project(*Nptr, node.cut_mode);
 					Polygon2d *poly = nef_poly.convertToPolygon2d();
 					assert(poly);
 					poly->setConvexity(node.convexity);
@@ -846,19 +682,24 @@ Response GeometryEvaluator::visit(State &state, const RenderNode &node)
 	if (state.isPostfix()) {
 		shared_ptr<const Geometry> geom;
 		if (!isCached(node)) {
-			// FIXME: Handle 2D nodes separately
-			CGAL_Nef_polyhedron N = this->cgalevaluator->evaluateCGALMesh(node);
-			PolySet *ps = NULL;
-			if (!N.isNull()) {
-				if (N.getDimension() == 3 && !N.p3->is_simple()) {
-					PRINT("WARNING: Body of render() isn't valid 2-manifold!");
+			const Geometry *geometry = applyToChildren(node, OPENSCAD_UNION);
+			const CGAL_Nef_polyhedron *N = dynamic_cast<const CGAL_Nef_polyhedron*>(geometry);
+			if (N) {
+				PolySet *ps = NULL;
+				if (!N->isNull()) {
+					if (N->getDimension() == 3 && !N->p3->is_simple()) {
+						PRINT("WARNING: Body of render() isn't valid 2-manifold!");
+					}
+					else {
+						ps = N->convertToPolyset();
+						if (ps) ps->setConvexity(node.convexity);
+					}
 				}
-				else {
-					ps = N.convertToPolyset();
-					if (ps) ps->setConvexity(node.convexity);
-				}
+				geom.reset(ps);
 			}
-			geom.reset(ps);
+			else {
+				geom.reset(geometry);
+			}
 		}
 		else {
 			geom = GeometryCache::instance()->get(this->tree.getIdString(node));

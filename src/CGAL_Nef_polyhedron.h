@@ -30,7 +30,7 @@ public:
 	CGAL_Nef_polyhedron &operator-=(const CGAL_Nef_polyhedron &other);
 	CGAL_Nef_polyhedron &minkowski(const CGAL_Nef_polyhedron &other);
 	CGAL_Nef_polyhedron copy() const;
-	class PolySet *convertToPolyset();
+	class PolySet *convertToPolyset() const;
 	class DxfData *convertToDxfData() const;
 	class Polygon2d *convertToPolygon2d() const;
 	void transform( const Transform3d &matrix );
