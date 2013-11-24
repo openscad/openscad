@@ -84,7 +84,7 @@ std::string PlatformUtils::info()
 #ifdef QT_VERSION
 	std::string qtVersion = qVersion();
 #else
-	std::string qtVersion = "Qt disabled";
+	std::string qtVersion = "Qt disabled - Commandline Test Version";
 #endif
 
 #ifdef ENABLE_CGAL
