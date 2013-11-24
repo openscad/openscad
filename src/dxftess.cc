@@ -32,6 +32,7 @@
 #include "dxftess-glu.cc"
 #endif
 
+#if 0 // Deprecated
 /*!
 	Converts all paths in the given DxfData to PolySet::borders polygons
 	without tesselating. Vertex ordering of the resulting polygons
@@ -55,3 +56,4 @@ void dxf_border_to_ps(PolySet *ps, const DxfData &dxf)
 		}
 	}
 }
+#endif

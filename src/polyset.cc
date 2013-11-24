@@ -47,6 +47,10 @@ PolySet::PolySet() : grid(GRID_FINE), is2d(false)
 {
 }
 
+PolySet::PolySet(const Polygon2d &origin) : grid(GRID_FINE), is2d(true), polygon(origin)
+{
+}
+
 PolySet::~PolySet()
 {
 }
@@ -58,7 +62,7 @@ std::string PolySet::dump() const
 	  << "\n dimensions:" << std::string( this->is2d ? "2" : "3" )
 	  << "\n convexity:" << this->convexity
 	  << "\n num polygons: " << polygons.size()
-	  << "\n num borders: " << borders.size()
+			<< "\n num outlines: " << polygon.outlines().size()
 	  << "\n polygons data:";
 	for (size_t i = 0; i < polygons.size(); i++) {
 		out << "\n  polygon begin:";
@@ -68,15 +72,8 @@ std::string PolySet::dump() const
 			out << "\n   vertex:" << v.transpose();
 		}
 	}
-	out << "\n borders data:";
-	for (size_t i = 0; i < borders.size(); i++) {
-		out << "\n  border polygon begin:";
-		const Polygon *poly = &borders[i];
-		for (size_t j = 0; j < poly->size(); j++) {
-			Vector3d v = poly->at(j);
-			out << "\n   vertex:" << v.transpose();
-		}
-	}
+	out << "\n outlines data:";
+	out << polygon.dump();
 	out << "\nPolySet end";
 	return out.str();
 }
@@ -173,8 +170,9 @@ void PolySet::render_surface(Renderer::csgmode_e csgmode, const Transform3d &m, 
 		// Render 2D objects 1mm thick, but differences slightly larger
 		double zbase = 1 + (csgmode & CSGMODE_DIFFERENCE_FLAG) * 0.1;
 		glBegin(GL_TRIANGLES);
-		for (double z = -zbase/2; z < zbase; z += zbase)
-		{
+
+		// Render top+bottom
+		for (double z = -zbase/2; z < zbase; z += zbase) {
 			for (size_t i = 0; i < polygons.size(); i++) {
 				const Polygon *poly = &polygons[i];
 				if (poly->size() == 3) {
@@ -213,18 +211,34 @@ void PolySet::render_surface(Renderer::csgmode_e csgmode, const Transform3d &m, 
 				}
 			}
 		}
-		const std::vector<Polygon> *borders_p = &borders;
-		if (borders_p->size() == 0)
-			borders_p = &polygons;
-		for (size_t i = 0; i < borders_p->size(); i++) {
-			const Polygon *poly = &borders_p->at(i);
-			for (size_t j = 1; j <= poly->size(); j++) {
-				Vector3d p1 = poly->at(j - 1), p2 = poly->at(j - 1);
-				Vector3d p3 = poly->at(j % poly->size()), p4 = poly->at(j % poly->size());
-				p1[2] -= zbase/2, p2[2] += zbase/2;
-				p3[2] -= zbase/2, p4[2] += zbase/2;
-				gl_draw_triangle(shaderinfo, p2, p1, p3, true, true, false, 0, mirrored);
-				gl_draw_triangle(shaderinfo, p2, p3, p4, false, true, true, 0, mirrored);
+
+		// Render sides
+		if (polygon.outlines().size() > 0) {
+			BOOST_FOREACH(const Outline2d &o, polygon.outlines()) {
+				for (size_t j = 1; j <= o.size(); j++) {
+					Vector3d p1(o[j-1][0], o[j-1][1], -zbase/2);
+					Vector3d p2(o[j-1][0], o[j-1][1], zbase/2);
+					Vector3d p3(o[j % o.size()][0], o[j % o.size()][1], -zbase/2);
+					Vector3d p4(o[j % o.size()][0], o[j % o.size()][1], zbase/2);
+					gl_draw_triangle(shaderinfo, p2, p1, p3, true, true, false, 0, mirrored);
+					gl_draw_triangle(shaderinfo, p2, p3, p4, false, true, true, 0, mirrored);
+				}
+			}
+		}
+		else {
+			// If we don't have borders, use the polygons as borders.
+			// FIXME: When is this used?
+			const std::vector<Polygon> *borders_p = &polygons;
+			for (size_t i = 0; i < borders_p->size(); i++) {
+				const Polygon *poly = &borders_p->at(i);
+				for (size_t j = 1; j <= poly->size(); j++) {
+					Vector3d p1 = poly->at(j - 1), p2 = poly->at(j - 1);
+					Vector3d p3 = poly->at(j % poly->size()), p4 = poly->at(j % poly->size());
+					p1[2] -= zbase/2, p2[2] += zbase/2;
+					p3[2] -= zbase/2, p4[2] += zbase/2;
+					gl_draw_triangle(shaderinfo, p2, p1, p3, true, true, false, 0, mirrored);
+					gl_draw_triangle(shaderinfo, p2, p3, p4, false, true, true, 0, mirrored);
+				}
 			}
 		}
 		glEnd();
@@ -258,31 +272,28 @@ void PolySet::render_surface(Renderer::csgmode_e csgmode, const Transform3d &m, 
 	}
 }
 
+// This is apparently used only in throwntogether mode
 void PolySet::render_edges(Renderer::csgmode_e csgmode) const
 {
 	glDisable(GL_LIGHTING);
 	if (this->is2d) {
 		// Render 2D objects 1mm thick, but differences slightly larger
 		double zbase = 1 + (csgmode & CSGMODE_DIFFERENCE_FLAG) * 0.1;
-		for (double z = -zbase/2; z < zbase; z += zbase)
-		{
-			for (size_t i = 0; i < borders.size(); i++) {
-				const Polygon *poly = &borders[i];
+
+		BOOST_FOREACH(const Outline2d &o, polygon.outlines()) {
+			// Render top+bottom outlines
+			for (double z = -zbase/2; z < zbase; z += zbase) {
 				glBegin(GL_LINE_LOOP);
-				for (size_t j = 0; j < poly->size(); j++) {
-					const Vector3d &p = poly->at(j);
-					glVertex3d(p[0], p[1], z);
+				BOOST_FOREACH(const Vector2d &v, o) {
+					glVertex3d(v[0], v[1], z);
 				}
 				glEnd();
 			}
-		}
-		for (size_t i = 0; i < borders.size(); i++) {
-			const Polygon *poly = &borders[i];
+			// Render sides
 			glBegin(GL_LINES);
-			for (size_t j = 0; j < poly->size(); j++) {
-				const Vector3d &p = poly->at(j);
-				glVertex3d(p[0], p[1], -zbase/2);
-				glVertex3d(p[0], p[1], +zbase/2);
+			BOOST_FOREACH(const Vector2d &v, o) {
+				glVertex3d(v[0], v[1], -zbase/2);
+				glVertex3d(v[0], v[1], +zbase/2);
 			}
 			glEnd();
 		}
@@ -317,7 +328,7 @@ size_t PolySet::memsize() const
 {
 	size_t mem = 0;
 	BOOST_FOREACH(const Polygon &p, this->polygons) mem += p.size() * sizeof(Vector3d);
-	BOOST_FOREACH(const Polygon &p, this->borders) mem += p.size() * sizeof(Vector3d);
+	mem += this->polygon.memsize() - sizeof(this->polygon);
 	mem += this->grid.db.size() * (3 * sizeof(int64_t) + sizeof(void*)) + sizeof(Grid3d<void*>);
 	mem += sizeof(PolySet);
 	return mem;

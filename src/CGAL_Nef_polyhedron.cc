@@ -87,11 +87,11 @@ PolySet *CGAL_Nef_polyhedron::convertToPolyset()
 	if (this->isNull()) return new PolySet();
 	PolySet *ps = NULL;
 	if (this->dim == 2) {
-		ps = new PolySet();
 		DxfData *dd = this->convertToDxfData();
-		ps->is2d = true;
+		Polygon2d *p2d = dd->toPolygon2d();
+		ps = new PolySet(*p2d);
+		delete p2d;
 		dxf_tesselate(ps, *dd, 0, Vector2d(1,1), true, false, 0);
-		dxf_border_to_ps(ps, *dd);
 		delete dd;
 	}
 	else if (this->dim == 3) {
