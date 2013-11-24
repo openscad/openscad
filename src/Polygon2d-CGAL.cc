@@ -105,7 +105,7 @@ mark_domains(CDT &cdt)
 */
 PolySet *Polygon2d::tessellate() const
 {
-	PolySet *polyset = new PolySet;
+	PolySet *polyset = new PolySet(*this);
 	polyset->is2d = true;
 
 	Polygon2DCGAL::CDT cdt; // Uses a constrained Delaunay triangulator.
@@ -138,4 +138,3 @@ PolySet *Polygon2d::tessellate() const
 	}
 	return polyset;
 }
-
