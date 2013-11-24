@@ -56,48 +56,6 @@ bool CGALEvaluator::isCached(const AbstractNode &node) const
 }
 
 /*!
-	Modifies target by applying op to target and src:
-	target = target [op] src
- */
-void CGALEvaluator::process(CGAL_Nef_polyhedron &target, const CGAL_Nef_polyhedron &src, OpenSCADOperator op)
-{
- 	if (target.getDimension() != 2 && target.getDimension() != 3) {
- 		assert(false && "Dimension of Nef polyhedron must be 2 or 3");
- 	}
-	if (src.isEmpty()) return; // Empty polyhedron. This can happen for e.g. square([0,0])
-	if (target.isEmpty() && op != OPENSCAD_UNION) return; // empty op <something> => empty
-	if (target.getDimension() != src.getDimension()) return; // If someone tries to e.g. union 2d and 3d objects
-
-	CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
-	try {
-		switch (op) {
-		case OPENSCAD_UNION:
-			if (target.isEmpty()) target = src.copy();
-			else target += src;
-			break;
-		case OPENSCAD_INTERSECTION:
-			target *= src;
-			break;
-		case OPENSCAD_DIFFERENCE:
-			target -= src;
-			break;
-		case OPENSCAD_MINKOWSKI:
-			target.minkowski(src);
-			break;
-		}
-	}
-	catch (const CGAL::Failure_exception &e) {
-		// union && difference assert triggered by testdata/scad/bugs/rotate-diff-nonmanifold-crash.scad and testdata/scad/bugs/issue204.scad
-		std::string opstr = op == OPENSCAD_UNION ? "union" : op == OPENSCAD_INTERSECTION ? "intersection" : op == OPENSCAD_DIFFERENCE ? "difference" : op == OPENSCAD_MINKOWSKI ? "minkowski" : "UNKNOWN";
-		PRINTB("CGAL error in CGAL_Nef_polyhedron's %s operator: %s", opstr % e.what());
-
-		// Errors can result in corrupt polyhedrons, so put back the old one
-		target = src;
-	}
-	CGAL::set_error_behaviour(old_behaviour);
-}
-
-/*!
 */
 CGAL_Nef_polyhedron CGALEvaluator::applyToChildren(const AbstractNode &node, OpenSCADOperator op)
 {
@@ -117,7 +75,7 @@ CGAL_Nef_polyhedron CGALEvaluator::applyToChildren(const AbstractNode &node, Ope
 		}
 		// Initialize N on first iteration with first expected geometric object
 		if (N.isNull() && !N.isEmpty()) N = chN.copy();
-		else process(N, chN, op);
+		else CGAL_binary_operator(N, chN, op);
 
 		chnode->progress_report();
 	}

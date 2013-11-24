@@ -77,12 +77,9 @@ size_t CGAL_Nef_polyhedron::memsize() const
 /*!
 	Creates a new PolySet and initializes it with the data from this polyhedron
 
-	This method is not const since convert_to_Polyhedron() wasn't const
-  in earlier versions of CGAL.
-
 	Note: Can return NULL if an error occurred
 */
-PolySet *CGAL_Nef_polyhedron::convertToPolyset()
+PolySet *CGAL_Nef_polyhedron::convertToPolyset() const
 {
 	if (this->isNull()) return new PolySet();
 	PolySet *ps = NULL;
@@ -101,7 +98,10 @@ PolySet *CGAL_Nef_polyhedron::convertToPolyset()
 		std::string errmsg("");
 		CGAL_Polyhedron P;
 		try {
-			err = nefworkaround::convert_to_Polyhedron<CGAL_Kernel3>( *(this->p3), P );
+      // Cast away constness: 
+			// convert_to_Polyhedron() wasn't const in earlier versions of CGAL.
+			CGAL_Nef_polyhedron3 *nonconst_nef3 = const_cast<CGAL_Nef_polyhedron3*>(this->p3.get());
+			err = nefworkaround::convert_to_Polyhedron<CGAL_Kernel3>( *(nonconst_nef3), P );
 			//this->p3->convert_to_Polyhedron(P);
 		}
 		catch (const CGAL::Failure_exception &e) {
