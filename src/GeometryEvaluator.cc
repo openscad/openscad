@@ -15,6 +15,7 @@
 #include "cgalutils.h"
 #include "rendernode.h"
 #include "clipper-utils.h"
+#include "polyset-utils.h"
 #include "CGALEvaluator.h"
 #include "CGALCache.h"
 #include "PolySet.h"
@@ -157,7 +158,10 @@ Geometry *GeometryEvaluator::applyToChildren2D(const AbstractNode &node, OpenSCA
 				assert(polygons);
 				// The first Clipper operation will sanitize the polygon, ensuring 
 				// contours/holes have the correct winding order
-				ClipperLib::Polygons result = ClipperUtils::fromPolygon2d(*polygons, true);
+				ClipperLib::Polygons result = ClipperUtils::fromPolygon2d(*polygons);
+				result = ClipperUtils::process(result, 
+																			 ClipperLib::ctUnion, 
+																			 ClipperLib::pftEvenOdd);
 
 				// Add correctly winded polygons to the main clipper
 				sumclipper.AddPolygons(result, first ? ClipperLib::ptSubject : ClipperLib::ptClip);
@@ -287,7 +291,11 @@ Response GeometryEvaluator::visit(State &state, const LeafNode &node)
 			const Geometry *geometry = node.createGeometry();
 			const Polygon2d *polygons = dynamic_cast<const Polygon2d*>(geometry);
 			if (polygons) {
-				Polygon2d *p = ClipperUtils::toPolygon2d(ClipperUtils::fromPolygon2d(*polygons, true));
+				ClipperLib::Polygons result = ClipperUtils::fromPolygon2d(*polygons);
+				result = ClipperUtils::process(result, 
+																			 ClipperLib::ctUnion, 
+																			 ClipperLib::pftEvenOdd);
+				Polygon2d *p = ClipperUtils::toPolygon2d(result);
 				delete geometry;
 				geometry = p;
 			}
@@ -626,20 +634,57 @@ Response GeometryEvaluator::visit(State &state, const ProjectionNode &node)
 	if (state.isPostfix()) {
 		shared_ptr<const class Geometry> geom;
 		if (!isCached(node)) {
-			const Geometry *geometry = applyToChildren3D(node, OPENSCAD_UNION);
-			if (geometry) {
-				const CGAL_Nef_polyhedron *Nptr = dynamic_cast<const CGAL_Nef_polyhedron*>(geometry);
-				if (!Nptr) {
-					// FIXME: delete this object
-					Nptr = createNefPolyhedronFromGeometry(*geometry);
+
+			if (!node.cut_mode) {
+				ClipperLib::Clipper sumclipper;
+				BOOST_FOREACH(const ChildItem &item, this->visitedchildren[node.index()]) {
+					const AbstractNode *chnode = item.first;
+					const shared_ptr<const Geometry> &chgeom = item.second;
+					// FIXME: Don't use deep access to modinst members
+					if (chnode->modinst->isBackground()) continue;
+
+					
+					// project chgeom -> polygon2d
+					shared_ptr<const PolySet> chPS = dynamic_pointer_cast<const PolySet>(chgeom);
+					if (!chPS) {
+						shared_ptr<const CGAL_Nef_polyhedron> chN = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(chgeom);
+						if (chN) {
+							chPS.reset(chN->convertToPolyset());
+						}
+					}
+					if (chPS) {
+						const Polygon2d *poly = PolysetUtils::project(*chPS);
+
+						ClipperLib::Polygons result = ClipperUtils::fromPolygon2d(*poly);
+						// Using NonZero ensures that we don't create holes from polygons sharing
+						// edges since we're unioning a mesh
+						result = ClipperUtils::process(result, 
+																					 ClipperLib::ctUnion, 
+																					 ClipperLib::pftNonZero);
+						// Add correctly winded polygons to the main clipper
+						sumclipper.AddPolygons(result, ClipperLib::ptSubject);
+					}
 				}
-				if (!Nptr->isNull()) {
-					CGAL_Nef_polyhedron nef_poly = CGAL_project(*Nptr, node.cut_mode);
-					Polygon2d *poly = nef_poly.convertToPolygon2d();
-					assert(poly);
-					poly->setConvexity(node.convexity);
-					geom.reset(poly);
-					delete geometry;
+				ClipperLib::Polygons sumresult;
+				sumclipper.Execute(ClipperLib::ctUnion, sumresult, ClipperLib::pftNonZero, ClipperLib::pftNonZero);
+				geom.reset(ClipperUtils::toPolygon2d(sumresult));
+			}
+			else {
+				const Geometry *geometry = applyToChildren3D(node, OPENSCAD_UNION);
+				if (geometry) {
+					const CGAL_Nef_polyhedron *Nptr = dynamic_cast<const CGAL_Nef_polyhedron*>(geometry);
+					if (!Nptr) {
+						// FIXME: delete this object
+						Nptr = createNefPolyhedronFromGeometry(*geometry);
+					}
+					if (!Nptr->isNull()) {
+						CGAL_Nef_polyhedron nef_poly = CGAL_project(*Nptr, node.cut_mode);
+						Polygon2d *poly = nef_poly.convertToPolygon2d();
+						assert(poly);
+						poly->setConvexity(node.convexity);
+						geom.reset(poly);
+						delete geometry;
+					}
 				}
 			}
 		}

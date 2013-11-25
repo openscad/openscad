@@ -4,6 +4,7 @@
 #include "polyset.h"
 #include "printutils.h"
 #include "Polygon2d.h"
+#include "polyset-utils.h"
 
 #include "cgal.h"
 #include <CGAL/convex_hull_3.h>
@@ -627,50 +628,16 @@ CGAL_Nef_polyhedron CGAL_project(const CGAL_Nef_polyhedron &N, bool cut)
 	else {
 		PolySet *ps3 = N.convertToPolyset();
 		if (!ps3) return nef_poly;
-		for (size_t i = 0; i < ps3->polygons.size(); i++) {
-			int min_x_p = -1;
-			double min_x_val = 0;
-			for (size_t j = 0; j < ps3->polygons[i].size(); j++) {
-				double x = ps3->polygons[i][j][0];
-				if (min_x_p < 0 || x < min_x_val) {
-					min_x_p = j;
-					min_x_val = x;
-				}
-			}
-			int min_x_p1 = (min_x_p+1) % ps3->polygons[i].size();
-			int min_x_p2 = (min_x_p+ps3->polygons[i].size()-1) % ps3->polygons[i].size();
-			double ax = ps3->polygons[i][min_x_p1][0] - ps3->polygons[i][min_x_p][0];
-			double ay = ps3->polygons[i][min_x_p1][1] - ps3->polygons[i][min_x_p][1];
-			double at = atan2(ay, ax);
-			double bx = ps3->polygons[i][min_x_p2][0] - ps3->polygons[i][min_x_p][0];
-			double by = ps3->polygons[i][min_x_p2][1] - ps3->polygons[i][min_x_p][1];
-			double bt = atan2(by, bx);
-					
-			double eps = 0.000001;
-			if (fabs(at - bt) < eps || (fabs(ax) < eps && fabs(ay) < eps) ||
-					(fabs(bx) < eps && fabs(by) < eps)) {
-				// this triangle is degenerated in projection
-				continue;
-			}
-					
-			std::list<CGAL_Nef_polyhedron2::Point> plist;
-			for (size_t j = 0; j < ps3->polygons[i].size(); j++) {
-				double x = ps3->polygons[i][j][0];
-				double y = ps3->polygons[i][j][1];
-				CGAL_Nef_polyhedron2::Point p = CGAL_Nef_polyhedron2::Point(x, y);
-				if (at > bt)
-					plist.push_front(p);
-				else
-					plist.push_back(p);
-			}
-			// FIXME: Should the CGAL_Nef_polyhedron2 be cached?
-			if (nef_poly.isEmpty()) {
+		const Polygon2d *poly = PolysetUtils::project(*ps3);
+
+		// FIXME: Convert back to Nef2 and delete poly?
+/*			if (nef_poly.isEmpty()) {
 				nef_poly.p2.reset(new CGAL_Nef_polyhedron2(plist.begin(), plist.end(), CGAL_Nef_polyhedron2::INCLUDED));
 			}
 			else {
 				(*nef_poly.p2) += CGAL_Nef_polyhedron2(plist.begin(), plist.end(), CGAL_Nef_polyhedron2::INCLUDED);
 			}
-		}
+*/
 		delete ps3;
 	}
 	return nef_poly;

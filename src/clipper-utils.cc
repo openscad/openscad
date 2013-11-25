@@ -3,7 +3,7 @@
 
 namespace ClipperUtils {
 
-	ClipperLib::Polygons fromPolygon2d(const Polygon2d &poly, bool sanitize) {
+	ClipperLib::Polygons fromPolygon2d(const Polygon2d &poly) {
 		ClipperLib::Polygons result;
 		BOOST_FOREACH(const Outline2d &outline, poly.outlines()) {
 			ClipperLib::Polygon p;
@@ -11,12 +11,6 @@ namespace ClipperUtils {
 				p.push_back(ClipperLib::IntPoint(v[0]*CLIPPER_SCALE, v[1]*CLIPPER_SCALE));
 			}
 			result.push_back(p);
-		}
-
-		if (sanitize) {
-			ClipperLib::Clipper clipper;
-			clipper.AddPolygons(result, ClipperLib::ptSubject);
-			clipper.Execute(ClipperLib::ctUnion, result, ClipperLib::pftEvenOdd);
 		}
 		return result;
 	}
@@ -31,6 +25,17 @@ namespace ClipperUtils {
 			}
 			result->addOutline(outline);
 		}
+		return result;
+	}
+
+	ClipperLib::Polygons process(const ClipperLib::Polygons &polygons, 
+															 ClipperLib::ClipType cliptype,
+															 ClipperLib::PolyFillType polytype)
+	{
+		ClipperLib::Polygons result;
+		ClipperLib::Clipper clipper;
+		clipper.AddPolygons(polygons, ClipperLib::ptSubject);
+		clipper.Execute(cliptype, result, polytype);
 		return result;
 	}
 
