@@ -237,6 +237,7 @@ HEADERS += src/typedefs.h \
            src/Geometry.h \
            src/Polygon2d.h \
            src/clipper-utils.h \
+           src/polyset-utils.h \
            src/polyset.h \
            src/printutils.h \
            src/fileutils.h \
@@ -294,6 +295,7 @@ SOURCES += src/version_check.cc \
            src/Geometry.cc \
            src/Polygon2d.cc \
            src/clipper-utils.cc \
+           src/polyset-utils.cc \
            src/polyset.cc \
            src/csgops.cc \
            src/transform.cc \
@@ -353,6 +355,10 @@ SOURCES += src/version_check.cc \
            \
            src/openscad.cc \
            src/mainwin.cc
+
+# ClipperLib
+SOURCES += src/polyclipping/clipper.cpp
+HEADERS += src/polyclipping/clipper.hpp
 
 unix:!macx {
   SOURCES += src/imageutils-lodepng.cc
