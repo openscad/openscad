@@ -2,6 +2,7 @@
 #include "traverser.h"
 #include "tree.h"
 #include "GeometryCache.h"
+#include "CGALCache.h"
 #include "Polygon2d.h"
 #include "module.h"
 #include "state.h"
@@ -110,8 +111,8 @@ Geometry *GeometryEvaluator::applyToChildren3D(const AbstractNode &node, OpenSCA
     // a node is a valid object. If we inserted as we created them, the 
     // cache could have been modified before we reach this point due to a large
     // sibling object. 
-		if (!isCached(*chnode)) {
-			GeometryCache::instance()->insert(this->tree.getIdString(*chnode), chN);
+		if (!CGALCache::instance()->contains(this->tree.getIdString(*chnode))) {
+			CGALCache::instance()->insert(this->tree.getIdString(*chnode), *chN);
 		}
 
 		if (chgeom) {
@@ -714,7 +715,6 @@ Response GeometryEvaluator::visit(State &state, const CgaladvNode &node)
 			// }
 			// else {
 				CGAL_Nef_polyhedron N = this->cgalevaluator->evaluateCGALMesh(node);
-				CGALCache::instance()->insert(this->tree.getIdString(node), N);
 				PolySet *ps = N.isNull() ? NULL : N.convertToPolyset();
 				geom.reset(ps);
 //			}
