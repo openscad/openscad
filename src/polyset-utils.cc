@@ -6,13 +6,13 @@
 
 namespace PolysetUtils {
 
+	// Project all polygons (also back-facing) into a Polygon2d instance.
+  // It's important to select all faces, since filtering by normal vector here
+	// will trigger floating point incertainties and cause problems later.
 	const Polygon2d *project(const PolySet &ps) {
 		Polygon2d *poly = new Polygon2d;
 
 		BOOST_FOREACH(const PolySet::Polygon &p, ps.polygons) {
-			// Filter away down-facing normal vectors
-			if ((p[1]-p[0]).cross(p[2]-p[0])[2] <=0) continue;
-			
 			Outline2d outline;
 			BOOST_FOREACH(const Vector3d &v, p) {
 				outline.push_back(Vector2d(v[0], v[1]));
