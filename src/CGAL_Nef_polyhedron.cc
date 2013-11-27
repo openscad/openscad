@@ -96,24 +96,22 @@ PolySet *CGAL_Nef_polyhedron::convertToPolyset()
 	}
 	else if (this->dim == 3) {
 		CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
+		bool err = true;
+		std::string errmsg("");
+		CGAL_Polyhedron P;
 		try {
-			CGAL_Polyhedron P;
-			bool err = nefworkaround::convert_to_Polyhedron<CGAL_Kernel3>( *(this->p3), P );
+			err = nefworkaround::convert_to_Polyhedron<CGAL_Kernel3>( *(this->p3), P );
 			//this->p3->convert_to_Polyhedron(P);
-			if (err) {
-				PRINT("ERROR: CGAL NefPolyhedron->Polyhedron conversion failed");
-			} else {
-				ps = createPolySetFromPolyhedron(P);
-			}
 		}
-		catch (const CGAL::Precondition_exception &e) {
-			PRINTB("CGAL Precondition error in CGAL_Nef_polyhedron::convertToPolyset(): %s", e.what());
+		catch (const CGAL::Failure_exception &e) {
+			err = true;
+			errmsg = std::string(e.what());
 		}
-		catch (const CGAL::Assertion_exception &e) {
-			PRINTB("CGAL Assertion error in CGAL_Nef_polyhedron::convertToPolyset(): %s", e.what());
-		}
-		catch (...) {
-			PRINT("CGAL unknown error in CGAL_Nef_polyhedron::convertToPolyset()");
+		if (err) {
+			PRINT("ERROR: CGAL NefPolyhedron->Polyhedron conversion failed.");
+			if (errmsg!="") PRINTB("ERROR: %s",errmsg);
+		} else {
+			ps = createPolySetFromPolyhedron(P);
 		}
 		CGAL::set_error_behaviour(old_behaviour);
 	}
