@@ -39,6 +39,7 @@ debug: DEFINES += DEBUG
 TEMPLATE = app
 
 INCLUDEPATH += src
+DEPENDPATH += src
 
 # Handle custom library location.
 # Used when manually installing 3rd party libraries
@@ -368,6 +369,7 @@ HEADERS += src/cgal.h \
            src/PolySetCGALEvaluator.h \
            src/CGALRenderer.h \
            src/CGAL_Nef_polyhedron.h \
+           src/CGAL_Nef3_workaround.h \
            src/cgalworker.h
 
 SOURCES += src/cgalutils.cc \
