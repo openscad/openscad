@@ -75,6 +75,7 @@
 #include <QSettings>
 #include <QProgressDialog>
 #include <QMutexLocker>
+#include <QScrollBar>
 
 #include <fstream>
 
@@ -605,7 +606,15 @@ void MainWindow::refreshDocument()
 			reader.setCodec("UTF-8");
 			QString text = reader.readAll();
 			PRINTB("Loaded design '%s'.", this->fileName.toLocal8Bit().constData());
+			int y = editor->verticalScrollBar()->sliderPosition();
+			// Save current cursor position
+			QTextCursor cursor = editor->textCursor();
+			int n = cursor.position();
 			editor->setPlainText(text);
+			// Restore cursor position
+			cursor.setPosition(n);
+			editor->setTextCursor(cursor);
+			editor->verticalScrollBar()->setSliderPosition(y);
 		}
 	}
 	setCurrentOutput();
