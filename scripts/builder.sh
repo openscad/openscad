@@ -1,11 +1,41 @@
 #!/usr/bin/env bash
 
 # build&upload script for linux & windows snapshot binaries
-# tested under linux
+#
+# Usage:
+#
+# Start with a clean directory. For example:
+#
+# mkdir builder
+# cd builder
+#
+# Then run this script, or optionally the 'build only' or 'upload only' version
+#
+# /some/path/openscad/builder.sh            # standard build & upload
+# /some/path/openscad/builder.sh buildonly  # only do build, dont upload
+# /some/path/openscad/builder.sh uploadonly # only upload, dont build
 
+# Notes:
+#
+# This script is designed to build a 'clean' version of openscad directly
+# from the openscad github master source code. It will then optionally
+# upload the build to the OpenSCAD official file repository, and modify
+# the OpenSCAD website with links to the most recently built files.
+#
+#
+# For the mingw- cross build for Windows(TM) this script does a massive
+# 'from nothing' build, including downloading and building an MXE cross
+# environment, and dependencies, into $HOME/openscad_deps. This can take
+# many many many hours and use several gigabytes of disk space.
+#
+# This script itself is designed to call other scripts that do the heavy
+# lifting. This script itself should be kept relatively simple.
+#
+
+#
 # requirements -
 # see http://mxe.cc for required tools (scons, perl, yasm, etc etc etc)
-
+#
 # todo - can we build 32 bit linux from within 64 bit linux?
 #
 # todo - make linux work
@@ -19,18 +49,24 @@ init_variables()
 {
 	STARTPATH=$PWD
 	export STARTPATH
+	DOBUILD=1
+	DOUPLOAD=1
+	DRYRUN=
 	if [ "`echo $* | grep uploadonly`" ]; then
-		UPLOADONLY=1
+		DOUPLOAD=1
+		DOBUILD=
 		DATECODE=`date +"%Y.%m.%d"`
-	else
-		UPLOADONLY=
+	fi
+	if [ "`echo $* | grep buildonly`" ]; then
+		DOUPLOAD=
+		DOBUILD=1
+		DATECODE=`date +"%Y.%m.%d"`
 	fi
 	if [ "`echo $* | grep dry`" ]; then
 		DRYRUN=1
-	else
-		DRYRUN=
 	fi
-	export UPLOADONLY
+	export DOBUILD
+	export DOUPLOAD
 	export DRYRUN
 	export DATECODE
 }
@@ -43,9 +79,15 @@ check_starting_path()
 	fi
 }
 
-get_source_code()
+get_openscad_source_code()
 {
 	git clone http://github.com/openscad/openscad.git
+	if [ "`echo $? | grep 0`" ]; then
+		echo clone of source code is ok
+	else
+		echo clone of openscad source code failed. exiting
+		exit 1
+	fi
 	cd openscad
 	git submodule update --init # MCAD
 	#git checkout branch ##debugging
@@ -80,7 +122,7 @@ build_lin32()
 	export DATECODE
 }
 
-upload_win_generic()
+upload_win_common()
 {
 	summary="$1"
 	username=$2
@@ -110,8 +152,8 @@ upload_win32()
 	BASEDIR=./mingw32/
 	WIN32_PACKAGEFILE1=OpenSCAD-$DATECODE-x86-32-Installer.exe
 	WIN32_PACKAGEFILE2=OpenSCAD-$DATECODE-x86-32.zip
-	upload_win_generic "$SUMMARY1" $USERNAME $BASEDIR/$WIN32_PACKAGEFILE1
-	upload_win_generic "$SUMMARY2" $USERNAME $BASEDIR/$WIN32_PACKAGEFILE2
+	upload_win_common "$SUMMARY1" $USERNAME $BASEDIR/$WIN32_PACKAGEFILE1
+	upload_win_common "$SUMMARY2" $USERNAME $BASEDIR/$WIN32_PACKAGEFILE2
 	export WIN32_PACKAGEFILE1
 	export WIN32_PACKAGEFILE2
 	WIN32_PACKAGEFILE1_SIZE=`ls -sh $BASEDIR/$WIN32_PACKAGEFILE1 | awk ' {print $1} ';`
@@ -129,8 +171,8 @@ upload_win64()
 	BASEDIR=./mingw64/
 	WIN64_PACKAGEFILE1=OpenSCAD-$DATECODE-x86-64-Installer.exe
 	WIN64_PACKAGEFILE2=OpenSCAD-$DATECODE-x86-64.zip
-	upload_win_generic "$SUMMARY1" $USERNAME $BASEDIR/$WIN64_PACKAGEFILE1
-	upload_win_generic "$SUMMARY2" $USERNAME $BASEDIR/$WIN64_PACKAGEFILE2
+	upload_win_common "$SUMMARY1" $USERNAME $BASEDIR/$WIN64_PACKAGEFILE1
+	upload_win_common "$SUMMARY2" $USERNAME $BASEDIR/$WIN64_PACKAGEFILE2
 	export WIN64_PACKAGEFILE1
 	export WIN64_PACKAGEFILE2
 	WIN64_PACKAGEFILE1_SIZE=`ls -sh $BASEDIR/$WIN64_PACKAGEFILE1 | awk ' {print $1} ';`
@@ -188,6 +230,7 @@ update_win_www_download_links()
 	BASEURL='http://files.openscad.org/'
 	DATECODE=`date +"%Y.%m.%d"`
 
+	mv win_snapshot_links.js win_snapshot_links.js.backup
 	rm win_snapshot_links.js
 	echo "fileinfo['WIN64_SNAPSHOT1_URL'] = '$BASEURL$WIN64_PACKAGEFILE1'" >> win_snapshot_links.js
 	echo "fileinfo['WIN64_SNAPSHOT2_URL'] = '$BASEURL$WIN64_PACKAGEFILE2'" >> win_snapshot_links.js
@@ -229,19 +272,20 @@ check_ssh_agent()
 }
 
 init_variables $*
-check_ssh_agent
+if [ $DOUPLOAD ]; then
+	check_ssh_agent
+fi
 check_starting_path
 read_username_from_user
 read_password_from_user
-get_source_code
-
-if [ ! $UPLOADONLY ]; then
+get_openscad_source_code
+if [ $DOBUILD ]; then
 	build_win32
 	build_win64
 fi
-upload_win32
-upload_win64
-update_win_www_download_links
-
-
+if [ $DOUPLOAD ]; then
+	upload_win32
+	upload_win64
+	update_win_www_download_links
+fi
 
