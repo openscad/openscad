@@ -161,14 +161,15 @@ CGAL_Nef_polyhedron CGALEvaluator::applyHull(const CgaladvNode &node)
 			else {
 				bool err = false;
 				std::string errmsg("");
-				try{
+				try {
 					err = nefworkaround::convert_to_Polyhedron<CGAL_Kernel3>( *(chN.p3), P );
 					//chN.p3->convert_to_Polyhedron(P);
-				catch (const CGAL::Failure_exception &e) {
+				} catch (const CGAL::Failure_exception &e) {
 					err = true;
+					errmsg = std::string(e.what());
 				}
 				if (err) {
-					PRINTB("ERROR: CGAL NefPolyhedron->Polyhedron conversion failed. %s", e.what());
+					PRINTB("ERROR: CGAL NefPolyhedron->Polyhedron conversion failed. %s", errmsg);
 				} else {
 					std::transform(P.vertices_begin(), P.vertices_end(), std::back_inserter(points3d), 
 										 boost::bind(static_cast<const CGAL_Polyhedron::Vertex::Point_3&(CGAL_Polyhedron::Vertex::*)() const>(&CGAL_Polyhedron::Vertex::point), _1));
