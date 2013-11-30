@@ -108,5 +108,13 @@ a time, to avoid confusion.
 #endif // MPFR
 #endif // GMP
 
+// see github issue #552
+#define GCC_VERSION (__GNUC__ * 10000 \
+                   + __GNUC_MINOR__ * 100 \
+                   + __GNUC_PATCHLEVEL__)
+#if GCC_VERSION == 40802
+#error OpenSCAD isn't compatible with gcc 4.8.2. Please try a different version
+#endif
+
 #endif // OPENSCAD_SKIP_VERSION_CHECK
 
