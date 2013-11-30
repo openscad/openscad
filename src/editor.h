@@ -2,6 +2,7 @@
 #include <QString>
 #include <QWidget>
 #include <QWheelEvent>
+#include <QScrollBar>
 
 #include <QTextEdit>
 class Editor : public QTextEdit
@@ -9,6 +10,7 @@ class Editor : public QTextEdit
 	Q_OBJECT
 public:
 	Editor(QWidget *parent) : QTextEdit(parent) { setAcceptRichText(false); }
+	void setPlainText(const QString &text);
 public slots:
 	void zoomIn();
 	void zoomOut();

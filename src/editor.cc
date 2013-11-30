@@ -108,3 +108,17 @@ void Editor::wheelEvent ( QWheelEvent * event )
 	}
 }
 
+void Editor::setPlainText(const QString &text)
+{
+	int y = verticalScrollBar()->sliderPosition();
+	// Save current cursor position
+	QTextCursor cursor = textCursor();
+	int n = cursor.position();
+	QTextEdit::setPlainText(text);
+	// Restore cursor position
+	if (n < text.length()) {
+		cursor.setPosition(n);
+		setTextCursor(cursor);
+		verticalScrollBar()->setSliderPosition(y);
+	}
+}
