@@ -504,6 +504,7 @@ MainWindow::openFile(const QString &new_filename)
 	}
 #endif
 	setFileName(actual_filename);
+	editor->setPlainText("");
 
 	fileChangedOnDisk(); // force cached autoReloadId to update
 	refreshDocument();
