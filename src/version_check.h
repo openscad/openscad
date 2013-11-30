@@ -113,7 +113,7 @@ a time, to avoid confusion.
                    + __GNUC_MINOR__ * 100 \
                    + __GNUC_PATCHLEVEL__)
 #if GCC_VERSION == 40802
-#error OpenSCAD isn't compatible with gcc 4.8.2. Please try a different version
+#error "OpenSCAD isnt compatible with gcc 4.8.2. Please try a different version"
 #endif
 
 #endif // OPENSCAD_SKIP_VERSION_CHECK
