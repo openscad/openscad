@@ -303,7 +303,7 @@ Response CGALEvaluator::visit(State &state, const AbstractPolyNode &node)
 		CGAL_Nef_polyhedron N;
 		if (!isCached(node)) {
 			// Apply polyset operation
-			shared_ptr<const Geometry> geom = this->geomevaluator.evaluateGeometry(node);
+			shared_ptr<const Geometry> geom = this->geomevaluator.evaluateGeometry(node, true);
 			if (geom) {
 				shared_ptr<const CGAL_Nef_polyhedron> Nptr = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom);
 				if (!Nptr) {

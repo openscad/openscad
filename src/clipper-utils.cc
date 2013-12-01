@@ -3,18 +3,22 @@
 
 namespace ClipperUtils {
 
+	ClipperLib::Polygon fromOutline2d(const Outline2d &outline) {
+		ClipperLib::Polygon p;
+		BOOST_FOREACH(const Vector2d &v, outline) {
+			p.push_back(ClipperLib::IntPoint(v[0]*CLIPPER_SCALE, v[1]*CLIPPER_SCALE));
+		}
+		// Make sure all polygons point up, since we project also 
+		// back-facing polygon in PolysetUtils::project()
+		if (!ClipperLib::Orientation(p)) std::reverse(p.begin(), p.end());
+		
+		return p;
+	}
+
 	ClipperLib::Polygons fromPolygon2d(const Polygon2d &poly) {
 		ClipperLib::Polygons result;
 		BOOST_FOREACH(const Outline2d &outline, poly.outlines()) {
-			ClipperLib::Polygon p;
-			BOOST_FOREACH(const Vector2d &v, outline) {
-				p.push_back(ClipperLib::IntPoint(v[0]*CLIPPER_SCALE, v[1]*CLIPPER_SCALE));
-			}
-			// Make sure all polygons point up, since we project also 
-			// back-facing polygon in PolysetUtils::project()
-			if (!ClipperLib::Orientation(p)) std::reverse(p.begin(), p.end());
-
-			result.push_back(p);
+			result.push_back(fromOutline2d(outline));
 		}
 		return result;
 	}
