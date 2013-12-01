@@ -54,7 +54,7 @@ shared_ptr<const Geometry> GeometryEvaluator::getGeometry(const AbstractNode &no
 		return GeometryCache::instance()->get(cacheid);
 	}
 
-	shared_ptr<const Geometry> geom(this->evaluateGeometry(node));
+	shared_ptr<const Geometry> geom(this->evaluateGeometry(node, true));
 
 	if (cache) GeometryCache::instance()->insert(cacheid, geom);
 	return geom;
@@ -66,11 +66,25 @@ bool GeometryEvaluator::isCached(const AbstractNode &node) const
 }
 
 // FIXME: This doesn't insert into cache. Fix this here or in client code
-shared_ptr<const Geometry> GeometryEvaluator::evaluateGeometry(const AbstractNode &node)
+/*!
+	Set allownef to false to force the result to _not_ be a Nef polyhedron
+*/
+shared_ptr<const Geometry> GeometryEvaluator::evaluateGeometry(const AbstractNode &node, 
+																															 bool allownef)
 {
 	if (!isCached(node)) {
 		Traverser trav(*this, node, Traverser::PRE_AND_POSTFIX);
 		trav.execute();
+
+		if (!allownef) {
+			shared_ptr<const CGAL_Nef_polyhedron> N = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(this->root);
+			if (N) {
+				if (N->getDimension() == 2) this->root.reset(N->convertToPolygon2d());
+				else if (N->getDimension() == 3) this->root.reset(N->convertToPolyset());
+				else this->root.reset();
+			}
+		}
+
 		return this->root;
 	}
 	return GeometryCache::instance()->get(this->tree.getIdString(node));
@@ -132,11 +146,74 @@ Geometry *GeometryEvaluator::applyToChildren3D(const AbstractNode &node, OpenSCA
 }
 
 
+Geometry *GeometryEvaluator::applyMinkowski2D(const AbstractNode &node)
+{
+	std::vector<shared_ptr<const Polygon2d> > children = collectChildren2D(node);
+	if (children.size() > 0) {
+		bool first = false;
+		ClipperLib::Polygons result = ClipperUtils::fromPolygon2d(*children[0]);
+		for (int i=1;i<children.size();i++) {
+			ClipperLib::Polygon &temp = result[0];
+			const shared_ptr<const Polygon2d> &chgeom = children[i];
+			ClipperLib::Polygon shape = ClipperUtils::fromOutline2d(chgeom->outlines()[0]);
+			ClipperLib::MinkowkiSum(temp, shape, result, true);
+		}
+
+		// The results may contain holes due to ClipperLib failing to maintain
+		// solidity of minkowski results:
+		// https://sourceforge.net/p/polyclipping/discussion/1148419/thread/8488d4e8/
+		ClipperLib::Clipper clipper;
+		BOOST_FOREACH(ClipperLib::Polygon &p, result) {
+			if (ClipperLib::Orientation(p)) std::reverse(p.begin(), p.end());
+			clipper.AddPath(p, ClipperLib::ptSubject, true);
+		}
+		clipper.Execute(ClipperLib::ctUnion, result, ClipperLib::pftNonZero, ClipperLib::pftNonZero);
+
+		return ClipperUtils::toPolygon2d(result);
+	}
+	return NULL;
+}
+
+std::vector<shared_ptr<const Polygon2d> > GeometryEvaluator::collectChildren2D(const AbstractNode &node)
+{
+	std::vector<shared_ptr<const Polygon2d> > children;
+	BOOST_FOREACH(const ChildItem &item, this->visitedchildren[node.index()]) {
+		const AbstractNode *chnode = item.first;
+		const shared_ptr<const Geometry> &chgeom = item.second;
+		// FIXME: Don't use deep access to modinst members
+		if (chnode->modinst->isBackground()) continue;
+
+		// NB! We insert into the cache here to ensure that all children of
+		// a node is a valid object. If we inserted as we created them, the 
+		// cache could have been modified before we reach this point due to a large
+		// sibling object. 
+		if (!isCached(*chnode)) {
+			GeometryCache::instance()->insert(this->tree.getIdString(*chnode), chgeom);
+		}
+		
+		if (chgeom) {
+			if (chgeom->getDimension() == 2) {
+				shared_ptr<const Polygon2d> polygons = dynamic_pointer_cast<const Polygon2d>(chgeom);
+				assert(polygons);
+				children.push_back(polygons);
+			}
+			else {
+				PRINT("ERROR: Only 2D children are supported by this operation!");
+			}
+		}
+	}
+	return children;
+}
+
 /*!
 	
 */
 Geometry *GeometryEvaluator::applyToChildren2D(const AbstractNode &node, OpenSCADOperator op)
 {
+	if (op == OPENSCAD_MINKOWSKI) {
+		return applyMinkowski2D(node);
+	}
+
 	ClipperLib::Clipper sumclipper;
 	bool first = true;
 	BOOST_FOREACH(const ChildItem &item, this->visitedchildren[node.index()]) {
@@ -156,6 +233,7 @@ Geometry *GeometryEvaluator::applyToChildren2D(const AbstractNode &node, OpenSCA
 		if (chgeom) {
 			if (chgeom->getDimension() == 2) {
 				shared_ptr<const Polygon2d> polygons = dynamic_pointer_cast<const Polygon2d>(chgeom);
+				// FIXME: This will trigger on e.g. linear_extrude of minkowski sums.
 				assert(polygons);
 				// The first Clipper operation will sanitize the polygon, ensuring 
 				// contours/holes have the correct winding order
@@ -738,14 +816,33 @@ Response GeometryEvaluator::visit(State &state, const CgaladvNode &node)
 	if (state.isPostfix()) {
 		shared_ptr<const Geometry> geom;
 		if (!isCached(node)) {
+			switch (node.type) {
+			case MINKOWSKI: {
+				const Geometry *geometry = applyToChildren(node, OPENSCAD_MINKOWSKI);
+				geom.reset(geometry);
+				break;
+			}
+			default:
+				assert(false && "not implemented");
+			}
+			// MINKOWSKI 
+			//   2D        children -> Polygon2d, apply Clipper minkowski
+			//   3D        children -> Nef, apply CGAL minkowski
+			// HULL      
+			//   2D        children -> Polygon2d (or really point clouds), apply 2D hull (CGAL)
+			//   3D        children -> PolySet (or really point clouds), apply 2D hull (CGAL)
+			// RESIZE     
+			//   2D        children -> Polygon2d -> union -> apply resize
+			//   3D        children -> PolySet -> union -> apply resize
+
 			// if (node.type == RESIZE) {
 			// 	const Geometry *geometry = applyToChildren2D(node, OPENSCAD_UNION);
 			// 	// FIXME: find size and transform
 			// }
 			// else {
-				CGAL_Nef_polyhedron N = this->cgalevaluator->evaluateCGALMesh(node);
-				PolySet *ps = N.isNull() ? NULL : N.convertToPolyset();
-				geom.reset(ps);
+				// CGAL_Nef_polyhedron N = this->cgalevaluator->evaluateCGALMesh(node);
+				// PolySet *ps = N.isNull() ? NULL : N.convertToPolyset();
+				// geom.reset(ps);
 //			}
 			// FIXME: handle 3D
 		}

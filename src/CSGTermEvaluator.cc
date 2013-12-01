@@ -112,7 +112,7 @@ Response CSGTermEvaluator::visit(State &state, const AbstractPolyNode &node)
 	if (state.isPrefix()) {
 		shared_ptr<CSGTerm> t1;
 		if (this->geomevaluator) {
-			shared_ptr<const Geometry> geom = this->geomevaluator->evaluateGeometry(node);
+			shared_ptr<const Geometry> geom = this->geomevaluator->evaluateGeometry(node, false);
 			if (geom) {
 				t1 = evaluate_csg_term_from_geometry(state, this->highlights, this->background, 
 																						 geom, node.modinst, node);
@@ -179,7 +179,7 @@ Response CSGTermEvaluator::visit(State &state, const RenderNode &node)
 		shared_ptr<CSGTerm> t1;
 		shared_ptr<const Geometry> geom;
 		if (this->geomevaluator) {
-			geom = this->geomevaluator->evaluateGeometry(node);
+			geom = this->geomevaluator->evaluateGeometry(node, false);
 			node.progress_report();
 		}
 		if (geom) {
@@ -199,7 +199,7 @@ Response CSGTermEvaluator::visit(State &state, const CgaladvNode &node)
     // FIXME: Calling evaluator directly since we're not a PolyNode. Generalize this.
 		shared_ptr<const Geometry> geom;
 		if (this->geomevaluator) {
-			geom = this->geomevaluator->evaluateGeometry(node);
+			geom = this->geomevaluator->evaluateGeometry(node, false);
 		}
 		if (geom) {
 			t1 = evaluate_csg_term_from_geometry(state, this->highlights, this->background, 

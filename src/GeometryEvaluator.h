@@ -7,6 +7,7 @@
 
 #include <utility>
 #include <list>
+#include <vector>
 #include <map>
 
 class GeometryEvaluator : public Visitor
@@ -16,7 +17,7 @@ public:
 	virtual ~GeometryEvaluator() {}
 
 	shared_ptr<const class Geometry> getGeometry(const AbstractNode &node, bool cache);
-	shared_ptr<const class Geometry> evaluateGeometry(const AbstractNode &node);
+	shared_ptr<const class Geometry> evaluateGeometry(const AbstractNode &node, bool allownef);
 
 	virtual Response visit(State &state, const AbstractNode &node);
 	virtual Response visit(State &state, const AbstractPolyNode &node);
@@ -33,6 +34,8 @@ public:
 
 private:
 	bool isCached(const AbstractNode &node) const;
+	std::vector<shared_ptr<const class Polygon2d> > collectChildren2D(const AbstractNode &node);
+	Geometry *applyMinkowski2D(const AbstractNode &node);
 	Geometry *applyToChildren2D(const AbstractNode &node, OpenSCADOperator op);
 	Geometry *applyToChildren3D(const AbstractNode &node, OpenSCADOperator op);
 	Geometry *applyToChildren(const AbstractNode &node, OpenSCADOperator op);
