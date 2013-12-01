@@ -794,12 +794,14 @@ list(APPEND DUMPTEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/escape-test
                            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/localfiles_dir/localfiles-compatibility-test.scad
                            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/allexpressions.scad
                            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/allfunctions.scad
+                           ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/stl-cgal-convert_to_Polyhedron-crash.scad
                            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/allmodules.scad)
 
 list(APPEND CGALPNGTEST_FILES ${FEATURES_FILES} ${SCAD_DXF_FILES} ${EXAMPLE_FILES})
 list(APPEND CGALPNGTEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/include-tests.scad
                            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/use-tests.scad
                            ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/transform-nan-inf-tests.scad
+                           ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/stl-cgal-convert_to_Polyhedron-crash.scad
                            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/localfiles-test.scad
                            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/localfiles_dir/localfiles-compatibility-test.scad)
 
@@ -821,6 +823,10 @@ disable_tests(openscad-csgpng_child-background)
 # FIXME: This single test takes over an hour to run on a 2.7 GHz P4
 disable_tests(opencsgtest_example006 cgalpngtest_example006)
 disable_tests(openscad-csgpng_example006 openscad-cgalpng_example006)
+
+# NefPolyhedron->Polyhedron conversion failures. No images for OpenCSG/Thrown
+disable_tests(opencsgtest_stl-cgal-convert_to_Polyhedron-crash)
+disable_tests(throwntogethertest_stl-cgal-convert_to_Polyhedron-crash)
 
 # These tests only makes sense in OpenCSG mode
 disable_tests(cgalpngtest_child-background
