@@ -887,7 +887,7 @@ Response GeometryEvaluator::visit(State &state, const ProjectionNode &node)
 				// This is key - without StrictlySimple, we tend to get self-intersecting results
 				sumclipper.StrictlySimple(true);
 				sumclipper.Execute(ClipperLib::ctUnion, sumresult, ClipperLib::pftNonZero, ClipperLib::pftNonZero);
-				geom.reset(ClipperUtils::toPolygon2d(sumresult));
+                if (sumresult.size() > 0) geom.reset(ClipperUtils::toPolygon2d(sumresult));
 			}
 			else {
 				const Geometry *geometry = applyToChildren3D(node, OPENSCAD_UNION);
