@@ -18,3 +18,4 @@ out.png
 /test_pretty_print
 /sysinfo.txt
 /CTestCustom.cmake
+/openscad_nogui
