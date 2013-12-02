@@ -28,10 +28,10 @@ void CGALWorker::start(const Tree &tree)
 
 void CGALWorker::work()
 {
-	CGAL_Nef_polyhedron *root_N = NULL;
+	shared_ptr<const CGAL_Nef_polyhedron> root_N;
 	try {
 		GeometryEvaluator evaluator(*this->tree);
-		root_N = new CGAL_Nef_polyhedron(evaluator.cgalevaluator->evaluateCGALMesh(*this->tree->root()));
+		root_N = evaluator.cgalevaluator->evaluateCGALMesh(*this->tree->root());
 	}
 	catch (const ProgressCancelException &e) {
 		PRINT("Rendering cancelled.");

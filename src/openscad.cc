@@ -47,7 +47,6 @@
 #ifdef ENABLE_CGAL
 #include "CGAL_Nef_polyhedron.h"
 #include "CGALEvaluator.h"
-#include "PolySetCGALEvaluator.h"
 #endif
 
 #include "csgterm.h"
@@ -250,7 +249,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 	ModuleInstantiation root_inst("group");
 	AbstractNode *root_node;
 	AbstractNode *absolute_root_node;
-	CGAL_Nef_polyhedron root_N;
+	shared_ptr<const CGAL_Nef_polyhedron> root_N;
 
 	handle_dep(filename.c_str());
 
@@ -359,11 +358,11 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 		}
 
 		if (stl_output_file) {
-			if (root_N.getDimension() != 3) {
+			if (root_N->getDimension() != 3) {
 				PRINT("Current top level object is not a 3D object.\n");
 				return 1;
 			}
-			if (!root_N.p3->is_simple()) {
+			if (!root_N->p3->is_simple()) {
 				PRINT("Object isn't a valid 2-manifold! Modify your design.\n");
 				return 1;
 			}
@@ -372,17 +371,17 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 				PRINTB("Can't open file \"%s\" for export", stl_output_file);
 			}
 			else {
-				export_stl(&root_N, fstream);
+				export_stl(root_N.get(), fstream);
 				fstream.close();
 			}
 		}
 
 		if (off_output_file) {
-			if (root_N.getDimension() != 3) {
+			if (root_N->getDimension() != 3) {
 				PRINT("Current top level object is not a 3D object.\n");
 				return 1;
 			}
-			if (!root_N.p3->is_simple()) {
+			if (!root_N->p3->is_simple()) {
 				PRINT("Object isn't a valid 2-manifold! Modify your design.\n");
 				return 1;
 			}
@@ -391,13 +390,13 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 				PRINTB("Can't open file \"%s\" for export", off_output_file);
 			}
 			else {
-				export_off(&root_N, fstream);
+				export_off(root_N.get(), fstream);
 				fstream.close();
 			}
 		}
 
 		if (dxf_output_file) {
-			if (root_N.getDimension() != 2) {
+			if (root_N->getDimension() != 2) {
 				PRINT("Current top level object is not a 2D object.\n");
 				return 1;
 			}
@@ -406,7 +405,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 				PRINTB("Can't open file \"%s\" for export", dxf_output_file);
 			}
 			else {
-				export_dxf(&root_N, fstream);
+				export_dxf(root_N.get(), fstream);
 				fstream.close();
 			}
 		}
@@ -418,7 +417,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 			}
 			else {
 				if (renderer==Render::CGAL) {
-					export_png_with_cgal(&root_N, camera, fstream);
+					export_png_with_cgal(root_N.get(), camera, fstream);
 				} else if (renderer==Render::THROWNTOGETHER) {
 					export_png_with_throwntogether(tree, camera, fstream);
 				} else {

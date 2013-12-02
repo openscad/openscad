@@ -11,7 +11,7 @@
 #include "CGAL_renderer.h"
 #include "cgal.h"
 
-void export_png_with_cgal(CGAL_Nef_polyhedron *root_N, Camera &cam, std::ostream &output)
+void export_png_with_cgal(const CGAL_Nef_polyhedron *root_N, Camera &cam, std::ostream &output)
 {
 	OffscreenView *glview;
 	try {
