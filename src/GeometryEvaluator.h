@@ -34,8 +34,12 @@ public:
 
 private:
 	bool isCached(const AbstractNode &node) const;
-	std::vector<shared_ptr<const class Polygon2d> > collectChildren2D(const AbstractNode &node);
+	void smartCache(const AbstractNode &node, const shared_ptr<const Geometry> &geom);
+	std::vector<const class Polygon2d *> collectChildren2D(const AbstractNode &node);
+	std::vector<const class Geometry *> collectChildren3D(const AbstractNode &node);
 	Geometry *applyMinkowski2D(const AbstractNode &node);
+	Geometry *applyHull2D(const AbstractNode &node);
+	Geometry *applyHull3D(const AbstractNode &node);
 	Geometry *applyToChildren2D(const AbstractNode &node, OpenSCADOperator op);
 	Geometry *applyToChildren3D(const AbstractNode &node, OpenSCADOperator op);
 	Geometry *applyToChildren(const AbstractNode &node, OpenSCADOperator op);

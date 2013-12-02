@@ -18,7 +18,6 @@
 #include "clipper-utils.h"
 #include "polyset-utils.h"
 #include "CGALEvaluator.h"
-#include "CGALCache.h"
 #include "PolySet.h"
 #include "openscad.h" // get_fragments_from_r()
 #include "printutils.h"
@@ -27,6 +26,9 @@
 
 #include <algorithm>
 #include <boost/foreach.hpp>
+
+#include <CGAL/convex_hull_2.h>
+#include <CGAL/convex_hull_3.h>
 
 GeometryEvaluator::GeometryEvaluator(const class Tree &tree):
 	tree(tree)
@@ -82,6 +84,7 @@ shared_ptr<const Geometry> GeometryEvaluator::evaluateGeometry(const AbstractNod
 				if (N->getDimension() == 2) this->root.reset(N->convertToPolygon2d());
 				else if (N->getDimension() == 3) this->root.reset(N->convertToPolyset());
 				else this->root.reset();
+				GeometryCache::instance()->insert(this->tree.getIdString(node), this->root);
 			}
 		}
 
@@ -108,6 +111,10 @@ Geometry *GeometryEvaluator::applyToChildren(const AbstractNode &node, OpenSCADO
 
 Geometry *GeometryEvaluator::applyToChildren3D(const AbstractNode &node, OpenSCADOperator op)
 {
+	if (op == OPENSCAD_HULL) {
+		return applyHull3D(node);
+	}
+
 	CGAL_Nef_polyhedron *N = new CGAL_Nef_polyhedron;
 	BOOST_FOREACH(const ChildItem &item, this->visitedchildren[node.index()]) {
 		const AbstractNode *chnode = item.first;
@@ -125,9 +132,7 @@ Geometry *GeometryEvaluator::applyToChildren3D(const AbstractNode &node, OpenSCA
     // a node is a valid object. If we inserted as we created them, the 
     // cache could have been modified before we reach this point due to a large
     // sibling object. 
-		if (!CGALCache::instance()->contains(this->tree.getIdString(*chnode))) {
-            CGALCache::instance()->insert(this->tree.getIdString(*chnode), chN ? *chN : CGAL_Nef_polyhedron());
-		}
+		smartCache(node, chN);
 
 		if (chgeom) {
 			if (chgeom->getDimension() == 3) {
@@ -146,15 +151,85 @@ Geometry *GeometryEvaluator::applyToChildren3D(const AbstractNode &node, OpenSCA
 }
 
 
+Geometry *GeometryEvaluator::applyHull2D(const AbstractNode &node)
+{
+	std::vector<const Polygon2d *> children = collectChildren2D(node);
+	Polygon2d *geometry = NULL;
+
+	// Collect point cloud
+	std::list<CGAL_Nef_polyhedron2::Point> points;
+	BOOST_FOREACH(const Polygon2d *p, children) {
+		BOOST_FOREACH(const Outline2d &o, p->outlines()) {
+			BOOST_FOREACH(const Vector2d &v, o) {
+				points.push_back(CGAL_Nef_polyhedron2::Point(v[0], v[1]));
+			}
+		}
+	}
+	if (points.size() > 0) {
+		// Apply hull
+		std::list<CGAL_Nef_polyhedron2::Point> result;
+		CGAL::convex_hull_2(points.begin(), points.end(), std::back_inserter(result));
+
+		// Construct Polygon2d
+		Outline2d outline;
+		BOOST_FOREACH(const CGAL_Nef_polyhedron2::Point &p, result) {
+			outline.push_back(Vector2d(CGAL::to_double(p[0]), CGAL::to_double(p[1])));
+		}
+		geometry = new Polygon2d();
+		geometry->addOutline(outline);
+	}
+	return geometry;
+}
+
+Geometry *GeometryEvaluator::applyHull3D(const AbstractNode &node)
+{
+	std::vector<const Geometry *> children = collectChildren3D(node);
+
+	// Collect point cloud
+	std::list<CGAL_Polyhedron::Vertex::Point_3> points;
+	CGAL_Polyhedron P;
+	BOOST_FOREACH(const Geometry *geometry, children) {
+		const CGAL_Nef_polyhedron *N = dynamic_cast<const CGAL_Nef_polyhedron *>(geometry);
+		if (N) {
+			if (!N->p3->is_simple()) {
+				PRINT("Hull() currently requires a valid 2-manifold. Please modify your design. See http://en.wikibooks.org/wiki/OpenSCAD_User_Manual/STL_Import_and_Export");
+			}
+			else {
+				N->p3->convert_to_Polyhedron(P);
+				std::transform(P.vertices_begin(), P.vertices_end(), std::back_inserter(points), 
+											 boost::bind(static_cast<const CGAL_Polyhedron::Vertex::Point_3&(CGAL_Polyhedron::Vertex::*)() const>(&CGAL_Polyhedron::Vertex::point), _1));
+			}
+		}
+		else {
+			const PolySet *ps = dynamic_cast<const PolySet *>(geometry);
+			BOOST_FOREACH(const PolySet::Polygon &p, ps->polygons) {
+				BOOST_FOREACH(const Vector3d &v, p) {
+					points.push_back(CGAL_Polyhedron::Vertex::Point_3(v[0], v[1], v[2]));
+				}
+			}
+		}
+	}
+	if (points.size() > 0) {
+		// Apply hull
+		CGAL_Polyhedron P;
+		if (points.size() > 3) {
+			CGAL::convex_hull_3(points.begin(), points.end(), P);
+		}
+
+		return new CGAL_Nef_polyhedron(new CGAL_Nef_polyhedron3(P));
+	}
+	return NULL;
+}
+
 Geometry *GeometryEvaluator::applyMinkowski2D(const AbstractNode &node)
 {
-	std::vector<shared_ptr<const Polygon2d> > children = collectChildren2D(node);
+	std::vector<const Polygon2d *> children = collectChildren2D(node);
 	if (children.size() > 0) {
 		bool first = false;
 		ClipperLib::Polygons result = ClipperUtils::fromPolygon2d(*children[0]);
 		for (int i=1;i<children.size();i++) {
 			ClipperLib::Polygon &temp = result[0];
-			const shared_ptr<const Polygon2d> &chgeom = children[i];
+			const Polygon2d *chgeom = children[i];
 			ClipperLib::Polygon shape = ClipperUtils::fromOutline2d(chgeom->outlines()[0]);
 			ClipperLib::MinkowkiSum(temp, shape, result, true);
 		}
@@ -174,9 +249,9 @@ Geometry *GeometryEvaluator::applyMinkowski2D(const AbstractNode &node)
 	return NULL;
 }
 
-std::vector<shared_ptr<const Polygon2d> > GeometryEvaluator::collectChildren2D(const AbstractNode &node)
+std::vector<const Polygon2d *> GeometryEvaluator::collectChildren2D(const AbstractNode &node)
 {
-	std::vector<shared_ptr<const Polygon2d> > children;
+	std::vector<const Polygon2d *> children;
 	BOOST_FOREACH(const ChildItem &item, this->visitedchildren[node.index()]) {
 		const AbstractNode *chnode = item.first;
 		const shared_ptr<const Geometry> &chgeom = item.second;
@@ -193,12 +268,59 @@ std::vector<shared_ptr<const Polygon2d> > GeometryEvaluator::collectChildren2D(c
 		
 		if (chgeom) {
 			if (chgeom->getDimension() == 2) {
-				shared_ptr<const Polygon2d> polygons = dynamic_pointer_cast<const Polygon2d>(chgeom);
+				const Polygon2d *polygons = dynamic_cast<const Polygon2d *>(chgeom.get());
 				assert(polygons);
 				children.push_back(polygons);
 			}
 			else {
 				PRINT("ERROR: Only 2D children are supported by this operation!");
+			}
+		}
+	}
+	return children;
+}
+
+void GeometryEvaluator::smartCache(const AbstractNode &node, 
+																	 const shared_ptr<const Geometry> &geom)
+{
+	// Since we can generate both Nef and non-Nef geometry, we need to insert it into
+	// the appropriate cache
+	const CGAL_Nef_polyhedron *N = dynamic_cast<const CGAL_Nef_polyhedron *>(geom.get());
+	if (N) {
+		if (!CGALCache::instance()->contains(this->tree.getIdString(node))) {
+			CGALCache::instance()->insert(this->tree.getIdString(node), *N);
+		}
+	}
+	else {
+		if (!isCached(node)) {
+			if (!GeometryCache::instance()->insert(this->tree.getIdString(node), geom)) {
+				PRINT("WARNING: GeometryEvaluator: Root node didn't fit into cache");
+			}
+		}
+	}
+}
+
+std::vector<const Geometry *> GeometryEvaluator::collectChildren3D(const AbstractNode &node)
+{
+	std::vector<const Geometry *> children;
+	BOOST_FOREACH(const ChildItem &item, this->visitedchildren[node.index()]) {
+		const AbstractNode *chnode = item.first;
+		const shared_ptr<const Geometry> &chgeom = item.second;
+		// FIXME: Don't use deep access to modinst members
+		if (chnode->modinst->isBackground()) continue;
+
+		// NB! We insert into the cache here to ensure that all children of
+		// a node is a valid object. If we inserted as we created them, the 
+		// cache could have been modified before we reach this point due to a large
+		// sibling object. 
+		smartCache(*chnode, chgeom);
+		
+		if (chgeom) {
+			if (chgeom->getDimension() == 3) {
+				children.push_back(chgeom.get());
+			}
+			else {
+				PRINT("ERROR: Only 3D children are supported by this operation!");
 			}
 		}
 	}
@@ -212,6 +334,9 @@ Geometry *GeometryEvaluator::applyToChildren2D(const AbstractNode &node, OpenSCA
 {
 	if (op == OPENSCAD_MINKOWSKI) {
 		return applyMinkowski2D(node);
+	}
+	else if (op == OPENSCAD_HULL) {
+		return applyHull2D(node);
 	}
 
 	ClipperLib::Clipper sumclipper;
@@ -302,11 +427,7 @@ void GeometryEvaluator::addToParent(const State &state,
 	}
 	else {
 		// Root node, insert into cache
-		if (!isCached(node)) {
-			if (!GeometryCache::instance()->insert(this->tree.getIdString(node), geom)) {
-				PRINT("WARNING: GeometryEvaluator: Root node didn't fit into cache");
-			}
-		}
+		smartCache(node, geom);
 		this->root = geom;
 	}
 }
@@ -819,6 +940,11 @@ Response GeometryEvaluator::visit(State &state, const CgaladvNode &node)
 			switch (node.type) {
 			case MINKOWSKI: {
 				const Geometry *geometry = applyToChildren(node, OPENSCAD_MINKOWSKI);
+				geom.reset(geometry);
+				break;
+			}
+			case HULL: {
+				const Geometry *geometry = applyToChildren(node, OPENSCAD_HULL);
 				geom.reset(geometry);
 				break;
 			}
