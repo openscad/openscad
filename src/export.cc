@@ -37,7 +37,7 @@
 	Saves the current 3D CGAL Nef polyhedron as STL to the given file.
 	The file must be open.
  */
-void export_stl(CGAL_Nef_polyhedron *root_N, std::ostream &output)
+void export_stl(const CGAL_Nef_polyhedron *root_N, std::ostream &output)
 {
 	CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
 	try {
@@ -125,7 +125,7 @@ void export_stl(CGAL_Nef_polyhedron *root_N, std::ostream &output)
 	CGAL::set_error_behaviour(old_behaviour);
 }
 
-void export_off(CGAL_Nef_polyhedron *root_N, std::ostream &output)
+void export_off(const CGAL_Nef_polyhedron *root_N, std::ostream &output)
 {
 	CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
 	try {
@@ -142,7 +142,7 @@ void export_off(CGAL_Nef_polyhedron *root_N, std::ostream &output)
 /*!
 	Saves the current 2D CGAL Nef polyhedron as DXF to the given absolute filename.
  */
-void export_dxf(CGAL_Nef_polyhedron *root_N, std::ostream &output)
+void export_dxf(const CGAL_Nef_polyhedron *root_N, std::ostream &output)
 {
 	setlocale(LC_NUMERIC, "C"); // Ensure radix is . (not ,) in output
 	// Some importers (e.g. Inkscape) needs a BLOCKS section to be present

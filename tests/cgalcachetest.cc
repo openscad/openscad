@@ -149,9 +149,9 @@ int main(int argc, char **argv)
 	print_messages_push();
 
 	std::cout << "First evaluation:\n";
-	CGAL_Nef_polyhedron N = geomevaluator.cgalevaluator->evaluateCGALMesh(*root_node);
+	shared_ptr<const CGAL_Nef_polyhedron> N = geomevaluator.cgalevaluator->evaluateCGALMesh(*root_node);
 	std::cout << "Second evaluation:\n";
-	CGAL_Nef_polyhedron N2 = geomevaluator.cgalevaluator->evaluateCGALMesh(*root_node);
+	shared_ptr<const CGAL_Nef_polyhedron> N2 = geomevaluator.cgalevaluator->evaluateCGALMesh(*root_node);
 	// FIXME:
 	// Evaluate again to make cache kick in
 	// Record printed output and compare it

@@ -4,6 +4,7 @@
 #include "visitor.h"
 #include "enums.h"
 #include "memory.h"
+#include "Geometry.h"
 
 #include <utility>
 #include <list>
@@ -16,8 +17,8 @@ public:
 	GeometryEvaluator(const class Tree &tree);
 	virtual ~GeometryEvaluator() {}
 
-	shared_ptr<const class Geometry> getGeometry(const AbstractNode &node, bool cache);
-	shared_ptr<const class Geometry> evaluateGeometry(const AbstractNode &node, bool allownef);
+	shared_ptr<const Geometry> getGeometry(const AbstractNode &node, bool cache);
+	shared_ptr<const Geometry> evaluateGeometry(const AbstractNode &node, bool allownef);
 
 	virtual Response visit(State &state, const AbstractNode &node);
 	virtual Response visit(State &state, const AbstractPolyNode &node);
@@ -36,18 +37,16 @@ private:
 	bool isCached(const AbstractNode &node) const;
 	void smartCache(const AbstractNode &node, const shared_ptr<const Geometry> &geom);
 	std::vector<const class Polygon2d *> collectChildren2D(const AbstractNode &node);
-	std::vector<const class Geometry *> collectChildren3D(const AbstractNode &node);
-	Geometry *applyMinkowski2D(const AbstractNode &node);
-	Geometry *applyHull2D(const AbstractNode &node);
+	Geometry::ChildList collectChildren3D(const AbstractNode &node);
+	Polygon2d *applyMinkowski2D(const AbstractNode &node);
+	Polygon2d *applyHull2D(const AbstractNode &node);
 	Geometry *applyHull3D(const AbstractNode &node);
-	Geometry *applyToChildren2D(const AbstractNode &node, OpenSCADOperator op);
+	Polygon2d *applyToChildren2D(const AbstractNode &node, OpenSCADOperator op);
 	Geometry *applyToChildren3D(const AbstractNode &node, OpenSCADOperator op);
 	Geometry *applyToChildren(const AbstractNode &node, OpenSCADOperator op);
 	void addToParent(const State &state, const AbstractNode &node, const shared_ptr<const Geometry> &geom);
 
-  typedef std::pair<const AbstractNode *, shared_ptr<const Geometry> > ChildItem;
-  typedef std::list<ChildItem> ChildList;
-	std::map<int, ChildList> visitedchildren;
+	std::map<int, Geometry::ChildList> visitedchildren;
 	const Tree &tree;
 	shared_ptr<const Geometry> root;
 

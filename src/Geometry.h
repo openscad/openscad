@@ -3,11 +3,17 @@
 
 #include <stddef.h>
 #include <string>
+#include <list>
+
 #include "linalg.h"
+#include "memory.h"
 
 class Geometry
 {
 public:
+  typedef std::pair<const class AbstractNode *, shared_ptr<const Geometry> > ChildItem;
+  typedef std::list<ChildItem> ChildList;
+
 	Geometry() : convexity(1) {}
 	virtual ~Geometry() {}
 
