@@ -162,7 +162,7 @@ void ModuleContext::dump(const AbstractModule *mod, const ModuleInstantiation *i
 #endif
 
 FileContext::FileContext(const class FileModule &module, const Context *parent)
-	: usedlibs(module.usedlibs), ModuleContext(parent)
+	: ModuleContext(parent), usedlibs(module.usedlibs)
 {
 	if (!module.modulePath().empty()) this->document_path = module.modulePath();
 }
