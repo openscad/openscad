@@ -1,6 +1,8 @@
 #include "PlatformUtils.h"
 #include "boosty.h"
 
+#include <glib.h>
+
 bool PlatformUtils::createLibraryPath()
 {
 	std::string path = PlatformUtils::libraryPath();
@@ -114,6 +116,7 @@ std::string PlatformUtils::info()
 	  << "\nOpenCSG version: " << OPENCSG_VERSION_STRING
 	  << "\nQt version: " << qtVersion
 	  << "\nMingW build: " << mingwstatus
+	  << "\nGLib version: "       << GLIB_MAJOR_VERSION << "." << GLIB_MINOR_VERSION << "." << GLIB_MICRO_VERSION
 	  << "\nOPENSCADPATH: " << getenv("OPENSCADPATH") << "\n"
 	;
 	return s.str();

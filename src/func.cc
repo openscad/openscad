@@ -45,6 +45,8 @@
 
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/uniform_real.hpp>
+/*Unicode support for string lengths and array accesses*/
+#include <glib.h>
 
 #ifdef __WIN32__
 #include <process.h>
@@ -306,7 +308,11 @@ Value builtin_length(const Context *, const EvalContext *evalctx)
 {
 	if (evalctx->numArgs() == 1) {
 		if (evalctx->getArgValue(0).type() == Value::VECTOR) return Value(int(evalctx->getArgValue(0).toVector().size()));
-		if (evalctx->getArgValue(0).type() == Value::STRING) return Value(int(evalctx->getArgValue(0).toString().size()));
+		if (evalctx->getArgValue(0).type() == Value::STRING) {
+			//Unicode glyph count for the length -- rather than the string (num. of bytes) length.
+			std::string text = evalctx->getArgValue(0).toString();
+			return Value(int( g_utf8_strlen( text.c_str(), text.size() ) ));
+		}
 	}
 	return Value();
 }
@@ -380,10 +386,17 @@ Value builtin_lookup(const Context *, const EvalContext *evalctx)
   num_returns_per_match : int;
   index_col_num : int;
 
+ The search string and searched strings can be unicode strings.
  Examples:
   Index values return as list:
     search("a","abcdabcd");
-        - returns [0,4]
+        - returns [0]
+    search("Л","Л");  //A unicode string
+        - returns [0]
+    search("🂡aЛ","a🂡Л🂡a🂡Л🂡a",0);
+        - returns [[1,3,5,7],[0,4,8],[2,6]]
+    search("a","abcdabcd",0); //Search up to all matches
+        - returns [[0,4]]
     search("a","abcdabcd",1);
         - returns [0]
     search("e","abcdabcd",1);
@@ -433,16 +446,25 @@ Value builtin_search(const Context *, const EvalContext *evalctx)
 		}
 	} else if (findThis.type() == Value::STRING) {
 		unsigned int searchTableSize;
-		if (searchTable.type() == Value::STRING) searchTableSize = searchTable.toString().size();
-		else searchTableSize = searchTable.toVector().size();
-		for (size_t i = 0; i < findThis.toString().size(); i++) {
+		//Unicode glyph count for the length
+		unsigned int findThisSize =  g_utf8_strlen( findThis.toString().c_str(), findThis.toString().size() );
+		if (searchTable.type() == Value::STRING) {
+			searchTableSize = g_utf8_strlen( searchTable.toString().c_str(), searchTable.toString().size() );
+		} else {
+		    searchTableSize = searchTable.toVector().size();
+		}
+		for (size_t i = 0; i < findThisSize; i++) {
 		  unsigned int matchCount = 0;
 			Value::VectorType resultvec;
 		  for (size_t j = 0; j < searchTableSize; j++) {
-		    if ((searchTable.type() == Value::VECTOR && 
-						 findThis.toString()[i] == searchTable.toVector()[j].toVector()[index_col_num].toString()[0]) ||
-						(searchTable.type() == Value::STRING && 
-						 findThis.toString()[i] == searchTable.toString()[j])) {
+		    gchar* ptr_ft = g_utf8_offset_to_pointer(findThis.toString().c_str(), i);
+		    gchar* ptr_st = NULL;
+		    if(searchTable.type() == Value::VECTOR) {
+		        ptr_st = g_utf8_offset_to_pointer(searchTable.toVector()[j].toVector()[index_col_num].toString().c_str(), 0);
+		    } else if(searchTable.type() == Value::STRING){
+		    	ptr_st = g_utf8_offset_to_pointer(searchTable.toString().c_str(), j);
+		    }
+		    if( (ptr_ft) && (ptr_st) && (g_utf8_get_char(ptr_ft) == g_utf8_get_char(ptr_st)) ) {
 		      Value resultValue((double(j)));
 		      matchCount++;
 		      if (num_returns_per_match == 1) {
@@ -454,7 +476,14 @@ Value builtin_search(const Context *, const EvalContext *evalctx)
 		      if (num_returns_per_match > 1 && matchCount >= num_returns_per_match) break;
 		    }
 		  }
-		  if (matchCount == 0) PRINTB("  WARNING: search term not found: \"%s\"", findThis.toString()[i]);
+		  if (matchCount == 0) {
+			  gchar* ptr_ft = g_utf8_offset_to_pointer(findThis.toString().c_str(), i);
+			  gchar utf8_of_cp[6] = ""; //A buffer for a single unicode character to be copied into
+			  if(ptr_ft) {
+			      g_utf8_strncpy( utf8_of_cp, ptr_ft, 1 );
+		      }
+			  PRINTB("  WARNING: search term not found: \"%s\"", utf8_of_cp );
+		  }
 		  if (num_returns_per_match == 0 || num_returns_per_match > 1) {
 				returnvec.push_back(Value(resultvec));
 			}
