@@ -376,23 +376,24 @@ if("${CGAL_MAJOR_VERSION}.${CGAL_MINOR_VERSION}" VERSION_LESS 3.6)
   message(FATAL_ERROR "CGAL >= 3.6 required")
 endif()
 inclusion(CGAL_DIR CGAL_INCLUDE_DIRS)
-
-#Get rid of bad libraries suggested for BOOST dependencies (they don't exist on some machines and cause build failures).
-#/usr/lib/libboost_thread.so;/usr/lib/libboost_system.so;
+#Remove bad BOOST libraries from CGAL 3rd party dependencies when they don't exist (such as on 64-bit Ubuntu 13.10).
+#Libs of concern are /usr/lib/libboost_thread.so;/usr/lib/libboost_system.so;
+#Confirmed bug in CGAL @ https://bugs.launchpad.net/ubuntu/+source/cgal/+bug/1242111
 string(FIND "${CGAL_3RD_PARTY_LIBRARIES}" "/usr/lib/libboost_system.so" FIND_POSITION  )
 if(NOT "-1" STREQUAL ${FIND_POSITION} )
-if(NOT EXISTS "/usr/lib/libboost_system.so")
-  MESSAGE( WARNING "CGAL_3RD_PARTY_LIBRARIES:Found erroneous /usr/lib/libboost_system.so -- stripping" )
-  string(REPLACE "/usr/lib/libboost_system.so" "" CGAL_3RD_PARTY_LIBRARIES ${CGAL_3RD_PARTY_LIBRARIES})
-endif()
+  if(NOT EXISTS "/usr/lib/libboost_system.so")
+    MESSAGE( STATUS "CGAL_3RD_PARTY_LIBRARIES:Removing non-existent /usr/lib/libboost_system.so" )
+    string(REPLACE "/usr/lib/libboost_system.so" "" CGAL_3RD_PARTY_LIBRARIES ${CGAL_3RD_PARTY_LIBRARIES})
+  endif()
 endif() 
 string(FIND "${CGAL_3RD_PARTY_LIBRARIES}" "/usr/lib/libboost_thread.so" FIND_POSITION  )
 if(NOT "-1" STREQUAL ${FIND_POSITION} )
-if(NOT EXISTS "/usr/lib/libboost_thread.so")
-  MESSAGE( WARNING "CGAL_3RD_PARTY_LIBRARIES:Found erroneous /usr/lib/libboost_thread.so -- stripping" )
-  string(REPLACE "/usr/lib/libboost_thread.so" "" CGAL_3RD_PARTY_LIBRARIES ${CGAL_3RD_PARTY_LIBRARIES})
-endif()
+  if(NOT EXISTS "/usr/lib/libboost_thread.so")
+    MESSAGE( STATUS "CGAL_3RD_PARTY_LIBRARIES:Removing non-existent /usr/lib/libboost_thread.so" )
+    string(REPLACE "/usr/lib/libboost_thread.so" "" CGAL_3RD_PARTY_LIBRARIES ${CGAL_3RD_PARTY_LIBRARIES})
+  endif()
 endif() 
+
 if(${CMAKE_CXX_COMPILER} MATCHES ".*clang.*" AND NOT ${CGAL_CXX_FLAGS_INIT} STREQUAL "" )
 	string(REPLACE "-frounding-math" "" CGAL_CXX_FLAGS_INIT ${CGAL_CXX_FLAGS_INIT})
 	string(REPLACE "--param=ssp-buffer-size=4" "" CGAL_CXX_FLAGS_INIT ${CGAL_CXX_FLAGS_INIT})
