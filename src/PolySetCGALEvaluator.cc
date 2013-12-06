@@ -458,9 +458,10 @@ PolySet *PolySetCGALEvaluator::rotateDxfData(const RotateExtrudeNode &node, DxfD
 		double max_x = 0;
 		for (size_t j = 0; j < dxf.paths[i].indices.size(); j++) {
 			double point_x = dxf.points[dxf.paths[i].indices[j]][0];
-			if(point_x < 0){
+			if (point_x < 0) {
 				PRINT("ERROR: all points for rotate_extrude() must have non-negative X coordinates");
-				PRINT((boost::format("[Point %d on path %d has X coordinate %f]") % j % i % point_x).str());
+				PRINTB("[Point %d on path %d has X coordinate %f]", j % i % point_x);
+				delete ps;
 				return NULL;
 			}
 			max_x = fmax(max_x, point_x);
