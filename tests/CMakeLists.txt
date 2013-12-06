@@ -1,6 +1,6 @@
 # instructions - see ../doc/testing.txt
 
-# set(DEBUG_OSCD 1) # print debug info during cmake
+#set(DEBUG_OSCD 1) # print debug info during cmake
 
 cmake_minimum_required(VERSION 2.8)
 if("${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}.${CMAKE_PATCH_VERSION}" VERSION_GREATER 2.8.3)
@@ -14,9 +14,16 @@ include(CMakeParseArguments.cmake)
 
 # Detect Lion and force gcc
 IF (APPLE)
+   # Somehow, since we build dependencies for 10.7, we need to also build executables
+   # for 10.7. This used to not be necessary, but since 10.9 it apparently is..
+   SET(CMAKE_OSX_DEPLOYMENT_TARGET 10.7)
    EXECUTE_PROCESS(COMMAND sw_vers -productVersion OUTPUT_VARIABLE MACOSX_VERSION)
-   IF (NOT ${MACOSX_VERSION} VERSION_LESS "10.8.0")
-     message("Detected Mountain Lion (10.8) or later")
+   IF (NOT ${MACOSX_VERSION} VERSION_LESS "10.9.0")
+     message("Detected Maverick (10.9) or later")
+     set(CMAKE_C_COMPILER "clang")
+     set(CMAKE_CXX_COMPILER "clang++")
+   ELSEIF (NOT ${MACOSX_VERSION} VERSION_LESS "10.8.0")
+     message("Detected Mountain Lion (10.8)")
      set(CMAKE_C_COMPILER "clang")
      set(CMAKE_CXX_COMPILER "clang++")
    ELSEIF (NOT ${MACOSX_VERSION} VERSION_LESS "10.7.0")
