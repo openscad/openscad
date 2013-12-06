@@ -282,6 +282,30 @@ build_glew()
   make GLEW_DEST=$DEPLOYDIR CC=$CC CFLAGS.EXTRA="-no-cpp-precomp -dynamic -fno-common -mmacosx-version-min=$MAC_OSX_VERSION_MIN $GLEW_EXTRA_FLAGS -arch x86_64" LDFLAGS.EXTRA="-mmacosx-version-min=$MAC_OSX_VERSION_MIN $GLEW_EXTRA_FLAGS -arch x86_64" STRIP= install
 }
 
+build_glib2()
+{
+  version="$1"
+  maj_min_version="${version%.*}" #Drop micro
+
+  if [ -e $DEPLOYDIR/lib/glib-2.0 ]; then
+    echo "glib2 already installed. not building"
+    return
+  fi
+
+   echo "Building glib2 $version..."
+  cd "$BASEDIR"/src
+  rm -rf "glib-$version"
+  if [ ! -f "glib-$version.tar.xz" ]; then
+    curl --insecure -LO "http://ftp.gnome.org/pub/gnome/sources/glib/$maj_min_version/glib-$version.tar.xz"
+  fi
+  tar xJf "glib-$version.tar.xz"
+  cd "glib-$version"
+
+  ./configure --prefix="$DEPLOYDIR"
+  make -j$NUMCPU
+  make install
+}
+
 build_opencsg()
 {
   version=$1
@@ -446,6 +470,7 @@ build_boost 1.54.0
 # NB! For CGAL, also update the actual download URL in the function
 build_cgal 4.3
 build_glew 1.10.0
+build_glib2 2.38.1
 build_opencsg 1.3.2
 if $OPTION_DEPLOY; then
 #  build_sparkle andymatuschak 0ed83cf9f2eeb425d4fdd141c01a29d843970c20
