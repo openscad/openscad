@@ -1,3 +1,6 @@
+ECHO: "text_1bytes_len = ", "1234", " len = ", 4
+ECHO: "text_2bytes_len = ", "ЛЛЛЛ", " len = ", 4
+ECHO: "text_4bytes_len = ", "🂡🂱🃁🃑", " len = ", 4
 ECHO: "[", 0, "] = ", "DEADBEEF", " of len=", 8, ":"
 ECHO: "    [", 0, "]=", "D"
 ECHO: "    [", 1, "]=", "E"
