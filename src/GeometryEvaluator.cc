@@ -740,7 +740,15 @@ static Geometry *rotatePolygon(const RotateExtrudeNode &node, const Polygon2d &p
 
 	BOOST_FOREACH(const Outline2d &o, poly.outlines()) {
 		double max_x = 0;
-		BOOST_FOREACH(const Vector2d &v, o) max_x = fmax(max_x, v[0]);
+		BOOST_FOREACH(const Vector2d &v, o) {
+			if (v[0] < 0) {
+				PRINT("ERROR: all points for rotate_extrude() must have non-negative X coordinates");
+				PRINTB("[Point %d on path %d has X coordinate %f]", j % i % point_x);
+				delete ps;
+				return NULL;
+			}
+			max_x = fmax(max_x, v[0]);
+		}
 		int fragments = get_fragments_from_r(max_x, node.fn, node.fs, node.fa);
 
 		std::vector<Vector3d> rings[2];
