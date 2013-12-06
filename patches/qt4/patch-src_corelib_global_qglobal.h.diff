@@ -1,0 +1,14 @@
+--- src/corelib/global/qglobal.h.orig	2013-06-07 07:16:52.000000000 +0200
++++ src/corelib/global/qglobal.h	2013-10-27 14:05:22.000000000 +0100
+@@ -327,7 +327,10 @@
+ #  if !defined(MAC_OS_X_VERSION_10_8)
+ #       define MAC_OS_X_VERSION_10_8 MAC_OS_X_VERSION_10_7 + 1
+ #  endif
+-#  if (MAC_OS_X_VERSION_MAX_ALLOWED > MAC_OS_X_VERSION_10_8)
++#  if !defined(MAC_OS_X_VERSION_10_9)
++#       define MAC_OS_X_VERSION_10_9 MAC_OS_X_VERSION_10_8 + 1
++#  endif
++#  if (MAC_OS_X_VERSION_MAX_ALLOWED > MAC_OS_X_VERSION_10_9)
+ #    warning "This version of Mac OS X is unsupported"
+ #  endif
+ #endif
