@@ -17,11 +17,9 @@
 # Design philosophy
 #
 # 1. parse the data (images, logs) into easy-to-use data structures
-# 2. wikifiy the data 
-# 3. save the wikified data to disk
-# 4. generate html, including base64 encoding of images
-# 5. save html file
-# 6. upload html to public site and share with others
+# 2. generate html, including base64 encoding of images
+# 3. save html file
+# 4. upload html to public site and share with others
 
 # todo
 #
