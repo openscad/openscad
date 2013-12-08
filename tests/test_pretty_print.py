@@ -304,10 +304,10 @@ class Templates(object):
 
     def add(self, template, var, *args, **kwargs):
         self.filled[var] = self.filled.get(var, '') + self.fill(template, *args, **kwargs)
-        return self.filled[var]
+        return self.get(var)
 
     def get(self, var):
-        return self.filled[var]
+        return self.filled.get(var, '')
 
 
 def to_html(project_name, startdate, tests, enddate, sysinfo, sysid, makefiles):
