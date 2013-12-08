@@ -441,7 +441,7 @@ def main():
     html = to_html(project_name, startdate, tests, enddate, sysinfo, sysid, makefiles)
     html_basename = sysid + '_report.html'
     html_filename = os.path.join(builddir, 'Testing', 'Temporary', html_basename)
-    debug('saving ' + html_filename + ' ' + str(len(htmldata)) + ' bytes')
+    debug('saving ' + html_filename + ' ' + str(len(html)) + ' bytes')
     trysave(html_filename, html)
 
     page_url = create_page()
