@@ -17,9 +17,11 @@
 # Design philosophy
 #
 # 1. parse the data (images, logs) into easy-to-use data structures
-# 2. generate html, including base64 encoding of images
-# 3. save html file
-# 4. upload html to public site and share with others
+# 2. wikifiy the data 
+# 3. save the wikified data to disk
+# 4. generate html, including base64 encoding of images
+# 5. save html file
+# 6. upload html to public site and share with others
 
 # todo
 #
@@ -34,12 +36,12 @@ import subprocess
 import time
 import platform
 try:
-    from urllib.request import urlopen
-    from urllib.parse import urlencode
-except ImportError:
-    from urllib2 import urlopen
-    from urllib import urlencode
-    
+    from urllib.request import urlopen, Request
+except:
+    from urllib2 import urlopen, Request
+import json
+import base64
+
 
 def tryread(filename):
     data = None
@@ -304,7 +306,7 @@ class Templates(object):
 
     def add(self, template, var, *args, **kwargs):
         self.filled[var] = self.filled.get(var, '') + self.fill(template, *args, **kwargs)
-        return self.get(var)
+        return self.filled[var]
 
     def get(self, var):
         return self.filled.get(var, '')
@@ -361,32 +363,46 @@ def to_html(project_name, startdate, tests, enddate, sysinfo, sysid, makefiles):
 
 # --- Web Upload ---
 
-def postify(data):
-    return urlencode(data).encode()
+API_URL = 'https://api.github.com/%s'
+# Username is personal access token, from https://github.com/settings/applications
+# This way, no password is needed
+USERNAME = 'b2af28787fb1efd9a5b3a3b4f1be8a3ac9b5b335'
+PASSWORD = ''
 
-def create_page():
-    data = {
-        'action': 'create',
-        'type': 'html'
-    }
+def make_auth(username, password):
+    auth = '%s:%s' % (USERNAME, PASSWORD)
+    return base64.b64encode(auth.encode())
+
+def post_gist(name, content):
+    gist = '''{
+      "description": "",
+      "public": true,
+      "files": {
+        "%s": {
+          "content": "%s"
+        }
+      }
+    }'''
+    gist = gist % (name, content)
+    
+    req = Request(API_URL % 'gists')
+    req.add_header('Authorization', b'Basic ' + make_auth(USERNAME, PASSWORD))
     try:
-        response = urlopen('http://www.dinkypage.com', data=postify(data))
+        result = urlopen(req, data=gist)
     except:
+        print 'Could not upload results'
         return None
-    return response.geturl()
+    return json.loads(result.read())
 
-def upload_html(page_url, title, html):
-    data = {
-        'mode': 'editor',
-        'title': title,
-        'html': html,
-        'ajax': '1'
-    }
-    try:
-        response = urlopen(page_url, data=postify(data))
-    except:
-        return False
-    return 'success' in response.read().decode()
+
+def get_raw_urls(result):
+    files = result.get('files', {})
+    for file in files:
+        yield files[file].get('raw_url').replace('gist.github.com', 'rawgithub.com')
+
+result = post_gist('aaabbb.html', '''<html><head></head><h3>I\'m asdf</h3></html>''')
+for url in get_raw_urls(result):
+    print(url)
 
 # --- End Web Upload ---
 
@@ -438,18 +454,20 @@ def main():
         print 'found', len(makefiles),'makefiles,',
         print 'found', len(tests),'test results'
 
+
     html = to_html(project_name, startdate, tests, enddate, sysinfo, sysid, makefiles)
     html_basename = sysid + '_report.html'
     html_filename = os.path.join(builddir, 'Testing', 'Temporary', html_basename)
     debug('saving ' + html_filename + ' ' + str(len(html)) + ' bytes')
     trysave(html_filename, html)
 
-    page_url = create_page()
-    if upload_html(page_url, title='OpenSCAD test results', html=html):
-        share_url = page_url.partition('?')[0]
-        print 'html report uploaded at', share_url
-    else:
+    result = post_gist(name=html_basename, content=html)
+    if result is None:
         print 'could not upload html report'
+        return
+    
+    for url in get_raw_urls(result):
+        print 'html report uploaded at', url
 
     debug('test_pretty_print complete')
 
