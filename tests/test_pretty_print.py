@@ -366,7 +366,7 @@ def to_html(project_name, startdate, tests, enddate, sysinfo, sysid, makefiles):
 API_URL = 'https://api.github.com/%s'
 # Username is personal access token, from https://github.com/settings/applications
 # This way, no password is needed
-USERNAME = 'b2af28787fb1efd9a5b3a3b4f1be8a3ac9b5b335'
+USERNAME = '' # add OpenScad user token
 PASSWORD = ''
 
 def make_auth(username, password):
@@ -400,9 +400,6 @@ def get_raw_urls(result):
     for file in files:
         yield files[file].get('raw_url').replace('gist.github.com', 'rawgithub.com')
 
-result = post_gist('aaabbb.html', '''<html><head></head><h3>I\'m asdf</h3></html>''')
-for url in get_raw_urls(result):
-    print(url)
 
 # --- End Web Upload ---
 
