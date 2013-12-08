@@ -33,6 +33,13 @@ import hashlib
 import subprocess
 import time
 import platform
+try:
+    from urllib.request import urlopen
+    from urllib.parse import urlencode
+except ImportError:
+    from urllib2 import urlopen
+    from urllib import urlencode
+    
 
 def tryread(filename):
     data = None
