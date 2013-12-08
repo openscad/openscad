@@ -395,6 +395,7 @@ def debug(x):
         print 'test_pretty_print: ' + x
 
 debug_test_pp = False
+include_passed = False
 builddir = os.getcwd()
 
 def main():
@@ -411,7 +412,6 @@ def main():
         debug_test_pp = True
     maxretry = 10
 
-    include_passed = False
     if '--include-passed' in sys.argv:
         include_passed = True
 
