@@ -1,7 +1,7 @@
 #!/bin/bash
 
 cd tests
-cmake -DOPENSCAD_UPLOAD_TESTS=yes . 
+cmake . 
 if [[ $? != 0 ]]; then
   echo "Error configuring test suite"
   exit 1
