@@ -1,6 +1,7 @@
 language: cpp
-compiler:
-  - gcc
+cache: apt
+compiler: gcc
+
 before_install:
  - echo 'yes' | sudo add-apt-repository ppa:chrysn/openscad
  - sudo apt-get update -qq
@@ -11,6 +12,6 @@ env: OPENSCAD_UPLOAD_TESTS=yes
 
 branches:
   only:
-    - travis
+    - master
 
 script: ./scripts/travis-ci.sh
