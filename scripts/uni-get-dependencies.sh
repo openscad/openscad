@@ -6,7 +6,7 @@
 
 get_fedora_deps()
 {
- sudo yum install qt-devel bison flex eigen2-devel python-paramiko \
+ sudo yum install qt-devel bison flex eigen3-devel python-paramiko \
   boost-devel mpfr-devel gmp-devel glew-devel CGAL-devel gcc gcc-c++ pkgconfig \
   opencsg-devel git libXmu-devel curl imagemagick ImageMagick make \
   xorg-x11-server-Xvfb
@@ -20,13 +20,13 @@ get_qomo_deps()
 get_altlinux_deps()
 {
  for i in boost-devel boost-filesystem-devel gcc4.5 gcc4.5-c++ boost-program_options-devel \
-  boost-thread-devel boost-system-devel boost-regex-devel eigen2 libmpfr libgmp libgmp_cxx-devel qt4-devel libcgal-devel git-core \
+  boost-thread-devel boost-system-devel boost-regex-devel eigen3 libmpfr libgmp libgmp_cxx-devel qt4-devel libcgal-devel git-core \
   libglew-devel flex bison curl imagemagick; do sudo apt-get install $i; done
 }
 
 get_freebsd_deps()
 {
- pkg_add -r bison boost-libs cmake git bash eigen2 flex gmake gmp mpfr \
+ pkg_add -r bison boost-libs cmake git bash eigen3 flex gmake gmp mpfr \
   xorg libGLU libXmu libXi xorg-vfbserver glew \
   qt4-corelib qt4-gui qt4-moc qt4-opengl qt4-qmake qt4-rcc qt4-uic \
   opencsg cgal curl imagemagick
@@ -41,7 +41,7 @@ get_netbsd_deps()
 
 get_opensuse_deps()
 {
- sudo zypper install libeigen2-devel mpfr-devel gmp-devel boost-devel \
+ sudo zypper install libeigen3-devel mpfr-devel gmp-devel boost-devel \
   libqt4-devel glew-devel cmake git bison flex cgal-devel opencsg-devel curl
 }
 
@@ -57,7 +57,7 @@ get_debian_deps()
 {
  for pkg in build-essential libqt4-dev libqt4-opengl-dev \
   libxmu-dev cmake bison flex git-core libboost-all-dev \
-  libXi-dev libmpfr-dev libboost-dev libglew-dev libeigen2-dev \
+  libXi-dev libmpfr-dev libboost-dev libglew-dev \
   libeigen3-dev libcgal-dev libopencsg-dev libgmp3-dev libgmp-dev \
   python-paramiko curl imagemagick; do
    sudo apt-get -y install $pkg;

@@ -4,4 +4,4 @@ Version=1.0
 Name=OpenSCAD
 Icon=openscad
 Exec=openscad %f
-Categories=Graphics;3DGraphics;Engineering;
+Categories=Graphics;3DGraphics;Engineering;Programming;

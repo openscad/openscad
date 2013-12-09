@@ -1,6 +1,6 @@
 # instructions - see ../doc/testing.txt
 
-# set(DEBUG_OSCD 1) # print debug info during cmake
+#set(DEBUG_OSCD 1) # print debug info during cmake
 
 cmake_minimum_required(VERSION 2.8)
 if("${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}.${CMAKE_PATCH_VERSION}" VERSION_GREATER 2.8.3)
@@ -15,8 +15,15 @@ include(CMakeParseArguments.cmake)
 # Detect Lion and force gcc
 IF (APPLE)
    EXECUTE_PROCESS(COMMAND sw_vers -productVersion OUTPUT_VARIABLE MACOSX_VERSION)
-   IF (NOT ${MACOSX_VERSION} VERSION_LESS "10.8.0")
-     message("Detected Mountain Lion (10.8) or later")
+   IF (NOT ${MACOSX_VERSION} VERSION_LESS "10.9.0")
+     message("Detected Maverick (10.9) or later")
+     set(CMAKE_C_COMPILER "clang")
+     set(CMAKE_CXX_COMPILER "clang++")
+     # Somehow, since we build dependencies for 10.7, we need to also build executables
+     # for 10.7. This used to not be necessary, but since 10.9 it apparently is..
+     SET(CMAKE_OSX_DEPLOYMENT_TARGET 10.7 CACHE STRING "Deployment target")
+   ELSEIF (NOT ${MACOSX_VERSION} VERSION_LESS "10.8.0")
+     message("Detected Mountain Lion (10.8)")
      set(CMAKE_C_COMPILER "clang")
      set(CMAKE_CXX_COMPILER "clang++")
    ELSEIF (NOT ${MACOSX_VERSION} VERSION_LESS "10.7.0")
@@ -212,29 +219,20 @@ if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 endif()
 
 # Priority
-# 3. EIGENDIR if set (EIGEN2DIR for backwards compatability)
+# 3. EIGENDIR if set
 # 1. OPENSCAD_LIBRARIES eigen3
-# 2. OPENSCAD_LIBRARIES eigen2
 # 4. system's standard include paths for eigen3
-# 5. system's standard include paths for eigen2
 
-set(EIGEN2_DIR "$ENV{EIGEN2DIR}")
 set(EIGEN_DIR "$ENV{EIGENDIR}")
 set(OPENSCAD_LIBDIR "$ENV{OPENSCAD_LIBRARIES}")
 
 if (EIGEN_DIR)
-  set(EIGHINT ${EIGEN_DIR}/include/eigen3 ${EIGEN_DIR}/include/eigen2 ${EIGEN_DIR})
+  set(EIGHINT ${EIGEN_DIR}/include/eigen3 ${EIGEN_DIR})
   find_path(EIGEN_INCLUDE_DIR Eigen/Core HINTS ${EIGHINT})
-endif()
-if (EIGEN2_DIR)
-  find_path(EIGEN_INCLUDE_DIR Eigen/Core HINTS ${EIGEN2_DIR}/include/eigen2 ${EIGEN2_DIR})
 endif()
 
 if (NOT EIGEN_INCLUDE_DIR)
   find_path(EIGEN_INCLUDE_DIR Eigen/Core HINTS ${OPENSCAD_LIBDIR}/include/eigen3)
-endif()
-if (NOT EIGEN_INCLUDE_DIR)
-  find_path(EIGEN_INCLUDE_DIR Eigen/Core HINTS ${OPENSCAD_LIBDIR}/include/eigen2)
 endif()
 
 if (NOT EIGEN_INCLUDE_DIR)
@@ -246,18 +244,6 @@ if (NOT EIGEN_INCLUDE_DIR)
     find_path(EIGEN_INCLUDE_DIR Eigen/Core HINTS /opt/local/include/eigen3)
   else()
     find_path(EIGEN_INCLUDE_DIR Eigen/Core HINTS /usr/include/eigen3)
-  endif()
-endif()
-
-if (NOT EIGEN_INCLUDE_DIR)
-  if (${CMAKE_SYSTEM_NAME} MATCHES "FreeBSD")
-    find_path(EIGEN_INCLUDE_DIR Eigen/Core HINTS /usr/local/include/eigen2)
-  elseif (${CMAKE_SYSTEM_NAME} MATCHES "NetBSD")
-    find_path(EIGEN_INCLUDE_DIR Eigen/Core HINTS /usr/pkg/include/eigen2)
-  elseif (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-    find_path(EIGEN_INCLUDE_DIR Eigen/Core HINTS /opt/local/include/eigen2)
-  else()
-    find_path(EIGEN_INCLUDE_DIR Eigen/Core HINTS /usr/include/eigen2)
   endif()
 endif()
 
@@ -450,9 +436,11 @@ message(STATUS "OpenSCAD version: ${VERSION}")
 string(REGEX MATCHALL "^[0-9]+|[0-9]+|[0-9]+$" MYLIST "${VERSION}")
 list(GET MYLIST 0 OPENSCAD_YEAR)
 list(GET MYLIST 1 OPENSCAD_MONTH)
+math(EXPR OPENSCAD_MONTH ${OPENSCAD_MONTH}) # get rid of leading zero
 list(LENGTH MYLIST VERSIONLEN)
 if (${VERSIONLEN} EQUAL 3)
   list(GET MYLIST 2 OPENSCAD_DAY)
+  math(EXPR OPENSCAD_DAY ${OPENSCAD_DAY}) # get rid of leading zero
 endif()
 
 add_definitions(-DOPENSCAD_VERSION=${VERSION} -DOPENSCAD_YEAR=${OPENSCAD_YEAR} -DOPENSCAD_MONTH=${OPENSCAD_MONTH})
@@ -802,7 +790,8 @@ list(APPEND ECHO_FILES ${FUNCTION_FILES}
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/lookup-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/expression-shortcircuit-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/parent_module-tests.scad
-            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/children-tests.scad)
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/children-tests.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/range-tests.scad)
 
 list(APPEND DUMPTEST_FILES ${FEATURES_FILES} ${EXAMPLE_FILES})
 list(APPEND DUMPTEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/escape-test.scad
@@ -812,12 +801,14 @@ list(APPEND DUMPTEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/escape-test
                            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/localfiles_dir/localfiles-compatibility-test.scad
                            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/allexpressions.scad
                            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/allfunctions.scad
+                           ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/stl-cgal-convert_to_Polyhedron-crash.scad
                            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/allmodules.scad)
 
 list(APPEND CGALPNGTEST_FILES ${FEATURES_FILES} ${SCAD_DXF_FILES} ${EXAMPLE_FILES})
 list(APPEND CGALPNGTEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/include-tests.scad
                            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/use-tests.scad
                            ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/transform-nan-inf-tests.scad
+                           ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/stl-cgal-convert_to_Polyhedron-crash.scad
                            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/localfiles-test.scad
                            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/localfiles_dir/localfiles-compatibility-test.scad)
 
@@ -840,6 +831,10 @@ disable_tests(openscad-csgpng_child-background)
 disable_tests(opencsgtest_example006 cgalpngtest_example006)
 disable_tests(openscad-csgpng_example006 openscad-cgalpng_example006)
 
+# NefPolyhedron->Polyhedron conversion failures. No images for OpenCSG/Thrown
+disable_tests(opencsgtest_stl-cgal-convert_to_Polyhedron-crash)
+disable_tests(throwntogethertest_stl-cgal-convert_to_Polyhedron-crash)
+
 # These tests only makes sense in OpenCSG mode
 disable_tests(cgalpngtest_child-background
               cgalpngtest_highlight-and-background-modifier
@@ -852,12 +847,8 @@ disable_tests(cgalpngtest_child-background
 # Test config handling
 
 set_test_config(Heavy opencsgtest_minkowski3-tests
-                      opencsgtest_projection-tests
                       openscad-csgpng_minkowski3-tests
-                      openscad-csgpng_projection-tests
                       throwntogethertest_minkowski3-tests
-                      throwntogethertest_projection-tests
-                      cgalpngtest_projection-tests
                       cgalpngtest_rotate_extrude-tests
                       cgalpngtest_surface-tests
                       cgalpngtest_sphere-tests

@@ -35,8 +35,8 @@ a time, to avoid confusion.
 
 
 #include <Eigen/Core>
-#if not EIGEN_VERSION_AT_LEAST( 2,0,13 )
-#error eigen2 library missing or version too old. See README.md. To force compile, run qmake CONFIG+=skip-version-check
+#if not EIGEN_VERSION_AT_LEAST( 3,0,0 )
+#error eigen library missing or version too old. See README.md. To force compile, run qmake CONFIG+=skip-version-check
 #else
 
 
@@ -104,9 +104,17 @@ a time, to avoid confusion.
 #endif // ENABLE_CGAL
 
 #endif // Boost
-#endif // Eigen2
+#endif // Eigen
 #endif // MPFR
 #endif // GMP
+
+// see github issue #552
+#define GCC_VERSION (__GNUC__ * 10000 \
+                   + __GNUC_MINOR__ * 100 \
+                   + __GNUC_PATCHLEVEL__)
+#if GCC_VERSION == 40802
+#error "OpenSCAD isnt compatible with gcc 4.8.2. Please try a different version"
+#endif
 
 #endif // OPENSCAD_SKIP_VERSION_CHECK
 

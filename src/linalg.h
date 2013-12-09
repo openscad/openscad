@@ -4,10 +4,13 @@
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 #include <Eigen/Dense>
+#include<Eigen/StdVector>
 
+EIGEN_DEFINE_STL_VECTOR_SPECIALIZATION(Eigen::Vector2d)
 using Eigen::Vector2d;
+EIGEN_DEFINE_STL_VECTOR_SPECIALIZATION(Eigen::Vector3d)
 using Eigen::Vector3d;
-using Eigen::Vector3f;
+
 typedef Eigen::AlignedBox<double, 3> BoundingBox;
 using Eigen::Matrix3f;
 using Eigen::Matrix3d;

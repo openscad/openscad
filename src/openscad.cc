@@ -453,7 +453,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 // Only if "fileName" is not absolute, prepend the "absoluteBase".
 static QString assemblePath(const fs::path& absoluteBase,
                             const string& fileName) {
-  return QDir(QString::fromStdString((const string&) absoluteBase))
+  return fileName.empty() ? "" : QDir(QString::fromStdString((const string&) absoluteBase))
     .absoluteFilePath(QString::fromStdString(fileName));
 }
 
@@ -474,6 +474,13 @@ bool QtUseGUI()
 
 int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, char ** argv)
 {
+#ifdef Q_OS_MACX
+    if (QSysInfo::MacintoshVersion > QSysInfo::MV_10_8) {
+			// fix Mac OS X 10.9 (mavericks) font issue
+			// https://bugreports.qt-project.org/browse/QTBUG-32789
+			QFont::insertSubstitution(".Lucida Grande UI", "Lucida Grande");
+    }
+#endif
 	QApplication app(argc, argv, true); //useGUI);
 #ifdef Q_WS_MAC
 	app.installEventFilter(new EventFilter(&app));

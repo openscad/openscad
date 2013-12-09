@@ -6,8 +6,13 @@
 # This script must be run from the OpenSCAD source root directory
 #
 # Usage:
-#        ./scripts/mingw-x-build-dependencies.sh       # 32 bit
-#        ./scripts/mingw-x-build-dependencies.sh 64    # 64 bit
+#        ./scripts/mingw-x-build-dependencies.sh              # 32 bit
+#        ./scripts/mingw-x-build-dependencies.sh 64           # 64 bit
+#
+# If you just want to download, and build later:
+#
+#        ./scripts/mingw-x-build-dependencies.sh download     # 32 bit download
+#        ./scripts/mingw-x-build-dependencies.sh 64 download  # 64 bit download
 #
 # Prerequisites:
 #
@@ -48,21 +53,25 @@ if [ ! -e $MXEDIR ]; then
 	mkdir -p $MXEDIR
 	cd $MXEDIR/..
 	echo "Downloading MXE into " $PWD
-	if [ "`echo $* | grep 64`" ]; then
-		git clone -b multi-rebase git://github.com/tonytheodore/mxe.git $MXEDIR
-	else
-		git clone git://github.com/mxe/mxe.git $MXEDIR
-	fi
+	git clone git://github.com/mxe/mxe.git $MXEDIR
 fi
 
 echo "entering" $MXEDIR
 cd $MXEDIR
 if [ "`echo $* | grep 64`" ]; then
-  MXE_TARGETS='x86_64-w64-mingw32'
+ MXE_TARGETS='x86_64-w64-mingw32'
+ if [ "`echo $* | grep download`" ]; then
+  PACKAGES='download-mpfr download-eigen download-opencsg download-cgal download-qt'
+ else
   PACKAGES='mpfr eigen opencsg cgal qt'
+ fi
 else
-  MXE_TARGETS=
+ MXE_TARGETS='i686-pc-mingw32' # fixme - does this work? test it.
+ if [ "`echo $* | grep download`" ]; then
+  PACKAGES='download-mpfr download-eigen download-opencsg download-cgal download-qt download-nsis'
+ else
   PACKAGES='mpfr eigen opencsg cgal qt nsis'
+ fi
 fi
 echo make $PACKAGES MXE_TARGETS=$MXE_TARGETS -j $NUMCPU JOBS=$NUMJOBS
 make $PACKAGES MXE_TARGETS=$MXE_TARGETS -j $NUMCPU JOBS=$NUMJOBS

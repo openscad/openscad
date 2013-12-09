@@ -86,21 +86,16 @@ mpfr_sysver()
 
 gmp_sysver()
 {
-  # on some systems you have VERSION in gmp-$arch.h not gmp.h. use gmp*.h
-  if [ -e $1/include/multiarch-x86_64-linux ]; then
-    subdir=include/multiarch-x86_64-linux
-  else
-    subdir=include
+  gmppaths="`find $1 -name 'gmp.h' -o -name 'gmp-*.h'`"
+  if [ ! "$gmppaths" ]; then
+    debug "gmp_sysver no gmp.h beneath $1"
+    return
   fi
-  if [ ! -e $1/$subdir ]; then return; fi
-  gmppaths=`ls $1/$subdir | grep ^gmp`
-  if [ ! "$gmppaths" ]; then return; fi
   for gmpfile in $gmppaths; do
-    gmppath=$1/$subdir/$gmpfile
-    if [ "`grep __GNU_MP_VERSION $gmppath`" ]; then
-      gmpmaj=`grep "define  *__GNU_MP_VERSION  *[0-9]*" $gmppath | awk '{print $3}'`
-      gmpmin=`grep "define  *__GNU_MP_VERSION_MINOR  *[0-9]*" $gmppath | awk '{print $3}'`
-      gmppat=`grep "define  *__GNU_MP_VERSION_PATCHLEVEL  *[0-9]*" $gmppath | awk '{print $3}'`
+    if [ "`grep __GNU_MP_VERSION $gmpfile`" ]; then
+      gmpmaj=`grep "define  *__GNU_MP_VERSION  *[0-9]*" $gmpfile | awk '{print $3}'`
+      gmpmin=`grep "define  *__GNU_MP_VERSION_MINOR  *[0-9]*" $gmpfile | awk '{print $3}'`
+      gmppat=`grep "define  *__GNU_MP_VERSION_PATCHLEVEL  *[0-9]*" $gmpfile | awk '{print $3}'`
     fi
   done
   gmp_sysver_result="$gmpmaj.$gmpmin.$gmppat"
@@ -261,32 +256,47 @@ pkg_config_search()
 
 get_minversion_from_readme()
 {
-  if [ -e README.md ]; then READFILE=README.md; fi
-  if [ -e ../README.md ]; then READFILE=../README.md; fi
-  if [ ! $READFILE ]; then
-    if [ "`command -v dirname`" ]; then
-      READFILE=`dirname $0`/../README.md
-    fi
-  fi
-  if [ ! $READFILE ]; then echo "cannot find README.md"; exit 1; fi
   debug get_minversion_from_readme $*
+
+  # Extract dependency name
   if [ ! $1 ]; then return; fi
   depname=$1
-  local grv_tmp=
+
   debug $depname
-  # example-->     * [CGAL (3.6 - 3.9)] (www.cgal.org)  becomes 3.6
-  # steps: eliminate *, find left (, find -, make 'x' into 0, delete junk
-  grv_tmp=`grep -i ".$depname.*([0-9]" $READFILE | sed s/"*"//`
-  debug $grv_tmp
-  grv_tmp=`echo $grv_tmp | awk -F"(" '{print $2}'`
-  debug $grv_tmp
-  grv_tmp=`echo $grv_tmp | awk -F"-" '{print $1}'`
-  debug $grv_tmp
-  grv_tmp=`echo $grv_tmp | sed s/"x"/"0"/g`
-  debug $grv_tmp
-  grv_tmp=`echo $grv_tmp | sed s/"[^0-9.]"//g`
-  debug $grv_tmp
-  get_minversion_from_readme_result=$grv_tmp
+  local grv_tmp=
+  for READFILE in README.md ../README.md "`dirname "$0"`/../README.md"
+  do
+    if [ ! -e "$READFILE" ]
+    then
+      debug "get_minversion_from_readme $READFILE not found"
+      continue
+    fi
+    debug "get_minversion_from_readme $READFILE found"
+    grep -qi ".$depname.*([0-9]" $READFILE || continue
+    grv_tmp="`grep -i ".$depname.*([0-9]" $READFILE | sed s/"*"//`"
+    debug $grv_tmp
+    grv_tmp="`echo $grv_tmp | awk -F"(" '{print $2}'`"
+    debug $grv_tmp
+    grv_tmp="`echo $grv_tmp | awk -F"-" '{print $1}'`"
+    debug $grv_tmp
+    grv_tmp="`echo $grv_tmp | sed s/"x"/"0"/g`"
+    debug $grv_tmp
+    grv_tmp="`echo $grv_tmp | sed s/"[^0-9.]"//g`"
+    debug $grv_tmp
+    if [ "z$grv_tmp" = "z" ]
+    then
+      debug "get_minversion_from_readme no result for $depname from $READFILE"
+      continue
+    fi
+    get_minversion_from_readme_result=$grv_tmp
+    return 0
+  done
+  if [ "z$grv_tmp" = "z" ]
+  then
+    debug "get_minversion_from_readme no result for $depname found anywhere"
+    get_minversion_from_readme_result=""
+    return 0
+  fi
 }
 
 find_min_version()
@@ -462,7 +472,7 @@ check_old_local()
 {
   warnon=
   if [ "`uname | grep -i linux`" ]; then
-    header_list="opencsg.h CGAL boost GL/glew.h gmp.h mpfr.h eigen2 eigen3"
+    header_list="opencsg.h CGAL boost GL/glew.h gmp.h mpfr.h eigen3"
     for i in $header_list; do
       if [ -e /usr/local/include/$i ]; then
         echo "Warning: you have a copy of "$i" under /usr/local/include"
@@ -533,7 +543,7 @@ main()
     dep_minver=$find_min_version_result
     compare_version $dep_minver $dep_sysver
     dep_compare=$compare_version_result
-    pretty_print $depname $dep_minver $dep_sysver $dep_compare
+    pretty_print $depname "$dep_minver" "$dep_sysver" $dep_compare
   done
   check_old_local
   check_misc
