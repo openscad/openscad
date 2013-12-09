@@ -426,6 +426,11 @@ def main():
     if not builddir:
         builddir = os.getcwd()
     debug('build dir set to ' +  builddir)
+
+    upload = False
+    if '--upload' in sys.argv:
+        upload = True
+        debug('will upload test report')
     
     # --- End Command Line Parsing ---
 
@@ -446,12 +451,13 @@ def main():
     debug('saving ' + html_filename + ' ' + str(len(html)) + ' bytes')
     trysave(html_filename, html)
 
-    page_url = create_page()
-    if upload_html(page_url, title='OpenSCAD test results', html=html):
-        share_url = page_url.partition('?')[0]
-        print 'html report uploaded at', share_url
-    else:
-        print 'could not upload html report'
+    if upload:
+        page_url = create_page()
+        if upload_html(page_url, title='OpenSCAD test results', html=html):
+            share_url = page_url.partition('?')[0]
+            print 'html report uploaded at', share_url
+        else:
+            print 'could not upload html report'
 
     debug('test_pretty_print complete')
 
