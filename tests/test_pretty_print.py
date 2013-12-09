@@ -36,12 +36,11 @@ import subprocess
 import time
 import platform
 try:
-    from urllib.request import urlopen, Request
+    from urllib.request import urlopen
+    from urllib.parse import urlencode
 except:
-    from urllib2 import urlopen, Request
-import json
-import base64
-
+    from urllib2 import urlopen
+    from urllib import urlencode
 
 def tryread(filename):
     data = None
@@ -363,43 +362,32 @@ def to_html(project_name, startdate, tests, enddate, sysinfo, sysid, makefiles):
 
 # --- Web Upload ---
 
-API_URL = 'https://api.github.com/%s'
-# Username is personal access token, from https://github.com/settings/applications
-# This way, no password is needed
-USERNAME = '' # add OpenScad user token
-PASSWORD = ''
+def postify(data):
+    return urlencode(data).encode()
 
-def make_auth(username, password):
-    auth = '%s:%s' % (USERNAME, PASSWORD)
-    return base64.b64encode(auth.encode())
-
-def post_gist(name, content):
-    gist = '''{
-      "description": "",
-      "public": true,
-      "files": {
-        "%s": {
-          "content": "%s"
-        }
-      }
-    }'''
-    gist = gist % (name, content)
-    
-    req = Request(API_URL % 'gists')
-    req.add_header('Authorization', b'Basic ' + make_auth(USERNAME, PASSWORD))
+def create_page():
+    data = {
+        'action': 'create',
+        'type': 'html'
+    }
     try:
-        result = urlopen(req, data=gist)
+        response = urlopen('http://www.dinkypage.com', data=postify(data))
     except:
-        print 'Could not upload results'
         return None
-    return json.loads(result.read())
+    return response.geturl()
 
-
-def get_raw_urls(result):
-    files = result.get('files', {})
-    for file in files:
-        yield files[file].get('raw_url').replace('gist.github.com', 'rawgithub.com')
-
+def upload_html(page_url, title, html):
+    data = {
+        'mode': 'editor',
+        'title': title,
+        'html': html,
+        'ajax': '1'
+    }
+    try:
+        response = urlopen(page_url, data=postify(data))
+    except:
+        return False
+    return 'success' in response.read().decode()
 
 # --- End Web Upload ---
 
@@ -458,13 +446,12 @@ def main():
     debug('saving ' + html_filename + ' ' + str(len(html)) + ' bytes')
     trysave(html_filename, html)
 
-    result = post_gist(name=html_basename, content=html)
-    if result is None:
+    page_url = create_page()
+    if upload_html(page_url, title='OpenSCAD test results', html=html):
+        share_url = page_url.partition('?')[0]
+        print 'html report uploaded at', share_url
+    else:
         print 'could not upload html report'
-        return
-    
-    for url in get_raw_urls(result):
-        print 'html report uploaded at', url
 
     debug('test_pretty_print complete')
 
