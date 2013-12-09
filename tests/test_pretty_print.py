@@ -431,6 +431,11 @@ def main():
     if '--upload' in sys.argv:
         upload = True
         debug('will upload test report')
+
+    # Workaround for old cmake's not being able to pass parameters
+    # to CTEST_CUSTOM_POST_TEST
+    if bool(os.getenv("OPENSCAD_UPLOAD_TESTS")):
+        upload = True
     
     # --- End Command Line Parsing ---
 
