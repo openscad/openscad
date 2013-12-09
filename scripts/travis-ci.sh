@@ -1,12 +1,7 @@
 #!/bin/bash
 
-qmake && make -j4
-if [[ $? != 0 ]]; then
-  echo "Error building OpenSCAD executable"
-  exit 1
-fi
 cd tests
-cmake . 
+cmake -DOPENSCAD_UPLOAD_TESTS=yes . 
 if [[ $? != 0 ]]; then
   echo "Error configuring test suite"
   exit 1
