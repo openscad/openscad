@@ -588,7 +588,7 @@ set(OFFSCREEN_SOURCES
   ../src/OpenCSGRenderer.cc)
 
 add_library(tests-core STATIC ${CORE_SOURCES})
-target_link_libraries(tests-core)
+target_link_libraries(tests-core ${OPENGL_LIBRARIES} ${GLIB2_LIBRARIES} )
 set(TESTS-CORE-LIBRARIES ${OPENGL_LIBRARIES} ${GLIB2_LIBRARIES} ${Boost_LIBRARIES} )
 
 add_library(tests-common STATIC ${COMMON_SOURCES})
