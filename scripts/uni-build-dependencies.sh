@@ -409,6 +409,48 @@ build_glew()
   GLEW_DEST=$DEPLOYDIR $MAKER install
 }
 
+build_gettext()
+{
+  version=$1
+  echo "Building gettext $version..."
+
+  cd "$BASEDIR"/src
+  rm -rf "gettext-$version"
+  if [ ! -f "glib-$version.tar.xz" ]; then
+    curl --insecure -LO "http://ftpmirror.gnu.org/gettext/gettext-$version.tar.gz"
+  fi
+  tar xzf "gettext-$version.tar.gz"
+  cd "gettext-$version"
+
+  ./configure --prefix="$DEPLOYDIR"
+  make -j4
+  make install
+}
+
+build_glib2()
+{
+  version="$1"
+  maj_min_version="${version%.*}" #Drop micro
+
+  if [ -e $DEPLOYDIR/lib/glib-2.0 ]; then
+echo "glib2 already installed. not building"
+    return
+fi
+
+echo "Building glib2 $version..."
+  cd "$BASEDIR"/src
+  rm -rf "glib-$version"
+  if [ ! -f "glib-$version.tar.xz" ]; then
+curl --insecure -LO "http://ftp.gnome.org/pub/gnome/sources/glib/$maj_min_version/glib-$version.tar.xz"
+  fi
+tar xJf "glib-$version.tar.xz"
+  cd "glib-$version"
+
+  ./configure --disable-gtk-doc --disable-man --prefix="$DEPLOYDIR" CFLAGS="-I$DEPLOYDIR/include" LDFLAGS="-L$DEPLOYDIR/lib"
+  make -j$NUMCPU
+  make install
+}
+
 build_opencsg()
 {
   if [ -e $DEPLOYDIR/lib/libopencsg.so ]; then
@@ -603,5 +645,7 @@ build_boost 1.53.0
 build_cgal 4.0.2
 build_glew 1.9.0
 build_opencsg 1.3.2
+build_gettext 0.18.3.1
+build_glib2 2.38.2
 
 echo "OpenSCAD dependencies built and installed to " $BASEDIR
