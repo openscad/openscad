@@ -1,6 +1,6 @@
 # instructions - see ../doc/testing.txt
 
-# set(DEBUG_OSCD 1) # print debug info during cmake
+#set(DEBUG_OSCD 1) # print debug info during cmake
 
 cmake_minimum_required(VERSION 2.8)
 if("${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}.${CMAKE_PATCH_VERSION}" VERSION_GREATER 2.8.3)
@@ -15,8 +15,15 @@ include(CMakeParseArguments.cmake)
 # Detect Lion and force gcc
 IF (APPLE)
    EXECUTE_PROCESS(COMMAND sw_vers -productVersion OUTPUT_VARIABLE MACOSX_VERSION)
-   IF (NOT ${MACOSX_VERSION} VERSION_LESS "10.8.0")
-     message("Detected Mountain Lion (10.8) or later")
+   IF (NOT ${MACOSX_VERSION} VERSION_LESS "10.9.0")
+     message("Detected Maverick (10.9) or later")
+     set(CMAKE_C_COMPILER "clang")
+     set(CMAKE_CXX_COMPILER "clang++")
+     # Somehow, since we build dependencies for 10.7, we need to also build executables
+     # for 10.7. This used to not be necessary, but since 10.9 it apparently is..
+     SET(CMAKE_OSX_DEPLOYMENT_TARGET 10.7 CACHE STRING "Deployment target")
+   ELSEIF (NOT ${MACOSX_VERSION} VERSION_LESS "10.8.0")
+     message("Detected Mountain Lion (10.8)")
      set(CMAKE_C_COMPILER "clang")
      set(CMAKE_CXX_COMPILER "clang++")
    ELSEIF (NOT ${MACOSX_VERSION} VERSION_LESS "10.7.0")
@@ -359,10 +366,10 @@ if (NOT $ENV{CGALDIR} STREQUAL "")
 elseif (NOT $ENV{OPENSCAD_LIBRARIES} STREQUAL "")
   if (EXISTS "$ENV{OPENSCAD_LIBRARIES}/lib/CGAL")
     set(CGAL_DIR "$ENV{OPENSCAD_LIBRARIES}/lib/CGAL")
-    set(CMAKE_MODULE_PATH "${CGAL_DIR}")
+    set(CMAKE_MODULE_PATH "${CGAL_DIR}" ${CMAKE_MODULE_PATH})
   elseif (EXISTS "$ENV{OPENSCAD_LIBRARIES}/include/CGAL")
     set(CGAL_DIR "$ENV{OPENSCAD_LIBRARIES}")
-    set(CMAKE_MODULE_PATH "${CGAL_DIR}")
+    set(CMAKE_MODULE_PATH "${CGAL_DIR}" ${CMAKE_MODULE_PATH})
   endif()
 endif()
 message(STATUS "CGAL_DIR: " ${CGAL_DIR})
@@ -406,16 +413,9 @@ if (NOT $ENV{OPENSCAD_LIBRARIES} STREQUAL "")
   set(ENV{PKG_CONFIG_LIBDIR} "$ENV{OPENSCAD_LIBRARIES}/lib/pkgconfig")
 endif()
 
-# Find libraries (system installed or dependency built) using pkg-config
-find_package(PkgConfig REQUIRED)
-
-#GLib-2
-pkg_search_module(GLIB2 REQUIRED glib-2.0>=2.2.0)
-#Can't use the CXXFlags directly as they are ;-separated
-string(REPLACE ";" " " GLIB2_CFLAGS "${GLIB2_CFLAGS}")
-message(STATUS "glib-2.0 found: ${GLIB2_VERSION}")
-
-add_definitions(${GLIB2_CFLAGS})
+find_package(GLIB2 2.2.0 REQUIRED)
+add_definitions(${GLIB2_DEFINITIONS})
+inclusion(GLIB2_DIR GLIB2_INCLUDE_DIRS)
 
 # Imagemagick
 
@@ -588,7 +588,7 @@ set(OFFSCREEN_SOURCES
   ../src/OpenCSGRenderer.cc)
 
 add_library(tests-core STATIC ${CORE_SOURCES})
-target_link_libraries(tests-core ${OPENGL_LIBRARIES} ${GLIB2_LIBRARIES} )
+target_link_libraries(tests-core)
 set(TESTS-CORE-LIBRARIES ${OPENGL_LIBRARIES} ${GLIB2_LIBRARIES} ${Boost_LIBRARIES} )
 
 add_library(tests-common STATIC ${COMMON_SOURCES})
@@ -609,7 +609,7 @@ set(TESTS-NOCGAL-LIBRARIES ${TESTS-CORE-LIBRARIES})
 # modulecachetest
 #
 add_executable(modulecachetest modulecachetest.cc)
-target_link_libraries(modulecachetest tests-nocgal ${TESTS-NOCGAL-LIBRARIES} ${Boost_LIBRARIES})
+target_link_libraries(modulecachetest tests-nocgal ${TESTS-NOCGAL-LIBRARIES})
 
 #
 # csgtexttest
@@ -629,7 +629,7 @@ target_link_libraries(cgalcachetest tests-cgal ${TESTS-CGAL-LIBRARIES} ${GLEW_LI
 #
 add_executable(openscad_nogui ../src/openscad.cc)
 set_target_properties(openscad_nogui PROPERTIES COMPILE_FLAGS "-fno-strict-aliasing -DEIGEN_DONT_ALIGN -DENABLE_CGAL -DENABLE_OPENCSG ${CGAL_CXX_FLAGS_INIT}")
-target_link_libraries(openscad_nogui tests-offscreen tests-cgal tests-nocgal ${TESTS-CORE-LIBRARIES} ${TESTS-CGAL-LIBRARIES} ${GLEW_LIBRARY} ${Boost_LIBRARIES} ${OPENCSG_LIBRARY} ${COCOA_LIBRARY} )
+target_link_libraries(openscad_nogui tests-offscreen tests-cgal tests-nocgal ${TESTS-CORE-LIBRARIES} ${TESTS-CGAL-LIBRARIES} ${GLEW_LIBRARY} ${OPENCSG_LIBRARY} ${COCOA_LIBRARY} )
 
 #
 # GUI binary tests

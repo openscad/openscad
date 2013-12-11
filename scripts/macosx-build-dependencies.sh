@@ -24,7 +24,7 @@ BASEDIR=$PWD/../libraries
 OPENSCADDIR=$PWD
 SRCDIR=$BASEDIR/src
 DEPLOYDIR=$BASEDIR/install
-MAC_OSX_VERSION_MIN=10.6
+MAC_OSX_VERSION_MIN=10.7
 OPTION_32BIT=false
 OPTION_LLVM=false
 OPTION_CLANG=false
@@ -54,6 +54,9 @@ build_qt()
   fi
   tar xzf qt-everywhere-opensource-src-$version.tar.gz
   cd qt-everywhere-opensource-src-$version
+  patch -p0 < $OPENSCADDIR/patches/qt4/patch-src_corelib_global_qglobal.h.diff
+  patch -p0 < $OPENSCADDIR/patches/qt4/patch-libtiff.diff
+  patch -p0 < $OPENSCADDIR/patches/qt4/patch-src_plugins_bearer_corewlan_qcorewlanengine.mm.diff
   if $USING_CLANG; then
     # FIX for clang
     sed -i "" -e "s/::TabletProximityRec/TabletProximityRec/g"  src/gui/kernel/qt_cocoa_helpers_mac_p.h
@@ -220,7 +223,7 @@ build_boost()
     BOOST_TOOLSET="toolset=clang"
     echo "using clang ;" >> tools/build/v2/user-config.jam 
   fi
-  ./b2 -d+2 $BOOST_TOOLSET cflags="-mmacosx-version-min=$MAC_OSX_VERSION_MIN -arch x86_64 $BOOST_EXTRA_FLAGS" linkflags="-mmacosx-version-min=$MAC_OSX_VERSION_MIN -arch x86_64 $BOOST_EXTRA_FLAGS -headerpad_max_install_names" install
+  ./b2 -j6 -d+2 $BOOST_TOOLSET cflags="-mmacosx-version-min=$MAC_OSX_VERSION_MIN -arch x86_64 $BOOST_EXTRA_FLAGS" linkflags="-mmacosx-version-min=$MAC_OSX_VERSION_MIN -arch x86_64 $BOOST_EXTRA_FLAGS -headerpad_max_install_names" install
   install_name_tool -id $DEPLOYDIR/lib/libboost_thread.dylib $DEPLOYDIR/lib/libboost_thread.dylib 
   install_name_tool -change libboost_system.dylib $DEPLOYDIR/lib/libboost_system.dylib $DEPLOYDIR/lib/libboost_thread.dylib 
   install_name_tool -change libboost_chrono.dylib $DEPLOYDIR/lib/libboost_chrono.dylib $DEPLOYDIR/lib/libboost_thread.dylib 
@@ -282,27 +285,40 @@ build_glew()
   make GLEW_DEST=$DEPLOYDIR CC=$CC CFLAGS.EXTRA="-no-cpp-precomp -dynamic -fno-common -mmacosx-version-min=$MAC_OSX_VERSION_MIN $GLEW_EXTRA_FLAGS -arch x86_64" LDFLAGS.EXTRA="-mmacosx-version-min=$MAC_OSX_VERSION_MIN $GLEW_EXTRA_FLAGS -arch x86_64" STRIP= install
 }
 
+build_gettext()
+{
+  version=$1
+  echo "Building gettext $version..."
+
+  cd "$BASEDIR"/src
+  rm -rf "gettext-$version"
+  if [ ! -f "glib-$version.tar.xz" ]; then
+    curl --insecure -LO "http://ftpmirror.gnu.org/gettext/gettext-$version.tar.gz"
+  fi
+  tar xzf "gettext-$version.tar.gz"
+  cd "gettext-$version"
+
+  ./configure --prefix="$DEPLOYDIR"
+  make -j4
+  make install
+}
+
 build_glib2()
 {
-  version="$1"
-  maj_min_version="${version%.*}" #Drop micro
+  version=$1
+  echo "Building glib2 $version..."
 
-  if [ -e $DEPLOYDIR/lib/glib-2.0 ]; then
-    echo "glib2 already installed. not building"
-    return
-  fi
-
-   echo "Building glib2 $version..."
   cd "$BASEDIR"/src
   rm -rf "glib-$version"
+  maj_min_version="${version%.*}" #Drop micro
   if [ ! -f "glib-$version.tar.xz" ]; then
     curl --insecure -LO "http://ftp.gnome.org/pub/gnome/sources/glib/$maj_min_version/glib-$version.tar.xz"
   fi
   tar xJf "glib-$version.tar.xz"
   cd "glib-$version"
 
-  ./configure --prefix="$DEPLOYDIR"
-  make -j$NUMCPU
+  ./configure --disable-gtk-doc --disable-man --prefix="$DEPLOYDIR" CFLAGS="-I$DEPLOYDIR/include" LDFLAGS="-L$DEPLOYDIR/lib"
+  make -j4
   make install
 }
 
@@ -470,7 +486,12 @@ build_boost 1.54.0
 # NB! For CGAL, also update the actual download URL in the function
 build_cgal 4.3
 build_glew 1.10.0
+<<<<<<< HEAD
+build_gettext 0.18.3.1
+build_glib2 2.38.2
+=======
 build_glib2 2.38.1
+>>>>>>> d7d5bea7363703c76b9787598304bfc838e893ee
 build_opencsg 1.3.2
 if $OPTION_DEPLOY; then
 #  build_sparkle andymatuschak 0ed83cf9f2eeb425d4fdd141c01a29d843970c20
