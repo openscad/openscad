@@ -83,6 +83,51 @@ build_gmp()
   fi
   tar xjf gmp-$version.tar.bz2
   cd gmp-$version
+  patch -p0 gmp-h.in << EOF
+--- gmp-5.1.3/gmp-h.in.old	2013-12-02 20:16:26.000000000 -0800
++++ gmp-5.1.3/gmp-h.in	2013-12-02 20:21:22.000000000 -0800
+@@ -27,13 +27,38 @@
+ #endif
+ 
+ 
+-/* Instantiated by configure. */
+ #if ! defined (__GMP_WITHIN_CONFIGURE)
++/* For benefit of fat builds on MacOSX, generate a .h file that can
++ * be used with a universal fat library
++ */
++#if defined(__x86_64__)
++#define __GMP_HAVE_HOST_CPU_FAMILY_power   0
++#define __GMP_HAVE_HOST_CPU_FAMILY_powerpc 0
++#define GMP_LIMB_BITS                      64
++#define GMP_NAIL_BITS                      0
++#elif defined(__i386__)
++#define __GMP_HAVE_HOST_CPU_FAMILY_power   0
++#define __GMP_HAVE_HOST_CPU_FAMILY_powerpc 0
++#define GMP_LIMB_BITS                      32
++#define GMP_NAIL_BITS                      0
++#elif defined(__powerpc64__)
++#define __GMP_HAVE_HOST_CPU_FAMILY_power   0
++#define __GMP_HAVE_HOST_CPU_FAMILY_powerpc 1
++#define GMP_LIMB_BITS                      64
++#define GMP_NAIL_BITS                      0
++#elif defined(__ppc__)
++#define __GMP_HAVE_HOST_CPU_FAMILY_power   0
++#define __GMP_HAVE_HOST_CPU_FAMILY_powerpc 1
++#define GMP_LIMB_BITS                      32
++#define GMP_NAIL_BITS                      0
++#else
++/* For other architectures, fall back on values computed by configure */
+ #define __GMP_HAVE_HOST_CPU_FAMILY_power   @HAVE_HOST_CPU_FAMILY_power@
+ #define __GMP_HAVE_HOST_CPU_FAMILY_powerpc @HAVE_HOST_CPU_FAMILY_powerpc@
+ #define GMP_LIMB_BITS                      @GMP_LIMB_BITS@
+ #define GMP_NAIL_BITS                      @GMP_NAIL_BITS@
+ #endif
++#endif
+ #define GMP_NUMB_BITS     (GMP_LIMB_BITS - GMP_NAIL_BITS)
+ #define GMP_NUMB_MASK     ((~ __GMP_CAST (mp_limb_t, 0)) >> GMP_NAIL_BITS)
+ #define GMP_NUMB_MAX      GMP_NUMB_MASK
+EOF
+
   if $OPTION_32BIT; then
     mkdir build-i386
     cd build-i386
@@ -119,42 +164,6 @@ build_gmp()
   mkdir -p include
   cp x86_64/include/gmp.h include/
   cp x86_64/include/gmpxx.h include/
-
-  patch -p0 include/gmp.h << EOF
---- gmp.h.orig	2011-11-08 01:03:41.000000000 +0100
-+++ gmp.h	2011-11-08 01:06:21.000000000 +0100
-@@ -26,12 +26,28 @@
- #endif
- 
- 
--/* Instantiated by configure. */
--#if ! defined (__GMP_WITHIN_CONFIGURE)
-+#if defined(__i386__)
-+#define __GMP_HAVE_HOST_CPU_FAMILY_power   0
-+#define __GMP_HAVE_HOST_CPU_FAMILY_powerpc 0
-+#define GMP_LIMB_BITS                      32
-+#define GMP_NAIL_BITS                      0
-+#elif defined(__x86_64__)
- #define __GMP_HAVE_HOST_CPU_FAMILY_power   0
- #define __GMP_HAVE_HOST_CPU_FAMILY_powerpc 0
- #define GMP_LIMB_BITS                      64
- #define GMP_NAIL_BITS                      0
-+#elif defined(__ppc__)
-+#define __GMP_HAVE_HOST_CPU_FAMILY_power   0
-+#define __GMP_HAVE_HOST_CPU_FAMILY_powerpc 1
-+#define GMP_LIMB_BITS                      32
-+#define GMP_NAIL_BITS                      0
-+#elif defined(__powerpc64__)
-+#define __GMP_HAVE_HOST_CPU_FAMILY_power   0
-+#define __GMP_HAVE_HOST_CPU_FAMILY_powerpc 1
-+#define GMP_LIMB_BITS                      64
-+#define GMP_NAIL_BITS                      0
-+#else
-+#error Unsupported architecture
- #endif
- #define GMP_NUMB_BITS     (GMP_LIMB_BITS - GMP_NAIL_BITS)
- #define GMP_NUMB_MASK     ((~ __GMP_CAST (mp_limb_t, 0)) >> GMP_NAIL_BITS)
-EOF
 }
 
 # As with gmplib, mpfr is built separately in 32-bit and 64-bit mode and then merged
