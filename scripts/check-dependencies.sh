@@ -74,7 +74,17 @@ glib2_sysver()
     glib2archtriplet=`dpkg-architecture -qDEB_HOST_MULTIARCH 2>/dev/null`
   fi
   glib2path=$1/lib/$glib2archtriplet/glib-2.0/include/glibconfig.h
-  if [ ! -e $glib2path ]; then return; fi
+  if [ ! -e $glib2path ]; then
+    #No glib found
+    #glib can be installed in /usr/lib/i386-linux-gnu/glib-2.0/ on arch i686-linux-gnu (sometimes?)
+    if [ $glib2archtriplet = "i686-linux-gnu" ]; then
+        glib2archtriplet=i386-linux-gnu
+        glib2path=$1/lib/$glib2archtriplet/glib-2.0/include/glibconfig.h
+        if [ ! -e $glib2path ]; then return; fi
+    else
+        return;
+    fi
+  fi
   glib2major=`grep "define  *GLIB_MAJOR_VERSION  *[0-9.]*" $glib2path | awk '{print $3}'`
   glib2minor=`grep "define  *GLIB_MINOR_VERSION  *[0-9.]*" $glib2path | awk '{print $3}'`
   glib2micro=`grep "define  *GLIB_MICRO_VERSION  *[0-9.]*" $glib2path | awk '{print $3}'`
