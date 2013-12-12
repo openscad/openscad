@@ -80,9 +80,7 @@ glib2_sysver()
     if [ $glib2archtriplet = "i686-linux-gnu" ]; then
         glib2archtriplet=i386-linux-gnu
         glib2path=$1/lib/$glib2archtriplet/glib-2.0/include/glibconfig.h
-        if [ ! -e $glib2path ]; then
-            return;
-        fi
+        if [ ! -e $glib2path ]; then return; fi
     else
         return;
     fi
