@@ -155,7 +155,6 @@ CONFIG += opencsg
 CONFIG += boost
 CONFIG += eigen
 CONFIG += glib-2.0
-CONFIG += clipper
 
 #Uncomment the following line to enable QCodeEdit
 #CONFIG += qcodeedit
