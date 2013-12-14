@@ -26,7 +26,6 @@ public:
 	void append_vertex(double x, double y, double z = 0.0);
 	void insert_vertex(double x, double y, double z = 0.0);
 	size_t memsize() const;
-	
 	BoundingBox getBoundingBox() const;
 
 #define CSGMODE_DIFFERENCE_FLAG 0x10

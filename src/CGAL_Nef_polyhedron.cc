@@ -97,11 +97,14 @@ PolySet *CGAL_Nef_polyhedron::convertToPolyset()
 	else if (this->dim == 3) {
 		CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
 		try {
+			ps = new PolySet();
 			CGAL_Polyhedron P;
 			this->p3->convert_to_Polyhedron(P);
-			ps = createPolySetFromPolyhedron(P);
+			bool err = createPolySetFromPolyhedron(P, ps);
+			if (err) delete ps;
 		}
 		catch (const CGAL::Precondition_exception &e) {
+			delete ps;
 			PRINTB("CGAL error in CGAL_Nef_polyhedron::convertToPolyset(): %s", e.what());
 		}
 		CGAL::set_error_behaviour(old_behaviour);

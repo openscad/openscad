@@ -668,16 +668,30 @@ CGAL_Nef_polyhedron CGALEvaluator::evaluateCGALMesh(const PolySet &ps)
 	else // not (this->is2d)
 	{
 		CGAL_Nef_polyhedron3 *N = NULL;
+		bool plane_error = false;
 		CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
 		try {
-			// FIXME: Are we leaking memory for the CGAL_Polyhedron object?
-			CGAL_Polyhedron *P = createPolyhedronFromPolySet(ps);
-			if (P) {
-				N = new CGAL_Nef_polyhedron3(*P);
-			}
+			CGAL_Polyhedron P;
+			createPolyhedronFromPolySet(ps,P);
+			N = new CGAL_Nef_polyhedron3(P);
 		}
 		catch (const CGAL::Assertion_exception &e) {
-			PRINTB("CGAL error in CGAL_Nef_polyhedron3(): %s", e.what());
+			if (std::string(e.what()).find("Plane_constructor")!=std::string::npos) {
+				PRINT("PolySet has nonplanar faces. Attempting alternate construction");
+				plane_error=true;
+			} else {
+				PRINTB("CGAL error in CGAL_Nef_polyhedron3(): %s", e.what());
+			}
+		}
+		if (plane_error) try {
+			PolySet ps2;
+			CGAL_Polyhedron P;
+			tessellate_faces( ps, ps2 );
+			createPolyhedronFromPolySet(ps2,P);
+			N = new CGAL_Nef_polyhedron3(P);
+		}
+		catch (const CGAL::Assertion_exception &e) {
+			PRINTB("Alternate construction failed. CGAL error in CGAL_Nef_polyhedron3(): %s", e.what());
 		}
 		CGAL::set_error_behaviour(old_behaviour);
 		return CGAL_Nef_polyhedron(N);
