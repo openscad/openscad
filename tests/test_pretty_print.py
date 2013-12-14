@@ -455,6 +455,7 @@ def main():
     html_filename = os.path.join(builddir, 'Testing', 'Temporary', html_basename)
     debug('saving ' + html_filename + ' ' + str(len(html)) + ' bytes')
     trysave(html_filename, html)
+    print "report saved:\n", html_filename.replace(os.getcwd()+os.path.sep,'')
 
     if upload:
         page_url = create_page()
