@@ -7,14 +7,13 @@
 # 3. system's standard include paths from pkg-config
 
 glib-2.0 {
-
 # read environment variables
 OPENSCAD_LIBRARIES_DIR = $$(OPENSCAD_LIBRARIES)
 GLIB2_DIR = $$(GLIB2DIR)
 
 !isEmpty(OPENSCAD_LIBRARIES_DIR) {
   isEmpty(GLIB2_INCLUDEPATH) {
-    GLIB2_INCLUDEPATH_1 = $$OPENSCAD_LIBRARIES_DIR/include/glib-2.0
+    GLIB2_INCLUDEPATH = $$OPENSCAD_LIBRARIES_DIR/include/glib-2.0
     GLIB2_INCLUDEPATH_2 = $$OPENSCAD_LIBRARIES_DIR/lib/glib-2.0/include
     GLIB2_LIBPATH = $$OPENSCAD_LIBRARIES_DIR/lib
   }
@@ -23,7 +22,7 @@ GLIB2_DIR = $$(GLIB2DIR)
 isEmpty(GLIB2_INCLUDEPATH) {
   GLIB2_CFLAGS = $$system("pkg-config --cflags glib-2.0")
 } else {
-  GLIB2_CFLAGS = -I$$GLIB2_INCLUDEPATH_1
+  GLIB2_CFLAGS = -I$$GLIB2_INCLUDEPATH
   GLIB2_CFLAGS += -I$$GLIB2_INCLUDEPATH_2
 }
 
@@ -35,4 +34,6 @@ isEmpty(GLIB2_LIBPATH) {
 
 QMAKE_CXXFLAGS += $$GLIB2_CFLAGS
 LIBS += $$GLIB2_LIBS
+
+message("glib: $$GLIB2_CFLAGS")
 }
