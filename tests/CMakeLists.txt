@@ -418,29 +418,6 @@ find_package(GLIB2 2.2.0 REQUIRED)
 add_definitions(${GLIB2_DEFINITIONS})
 inclusion(GLIB2_DIR GLIB2_INCLUDE_DIRS)
 
-# Clipper
-if (NOT $ENV{CLIPPERDIR} STREQUAL "")
-  set(CLIPPER_DIR "$ENV{CLIPPERDIR}")
-elseif (NOT $ENV{OPENSCAD_LIBRARIES} STREQUAL "")
-  set(CLIPPER_DIR "$ENV{OPENSCAD_LIBRARIES}")
-endif()
-if (NOT CLIPPER_INCLUDE_DIR)
-  message(STATUS "CLIPPER_DIR: " ${CLIPPER_DIR})
-  find_path(CLIPPER_INCLUDE_DIR
-            polyclipping/clipper.hpp
-            HINTS ${CLIPPER_DIR}/include)
-  find_library(CLIPPER_LIBRARY
-               polyclipping
-               HINTS ${CLIPPER_DIR}/lib)
-  if (NOT CLIPPER_INCLUDE_DIR OR NOT CLIPPER_LIBRARY)
-    message(FATAL_ERROR "Clipper not found")
-  else()
-    message(STATUS "Clipper include found in " ${CLIPPER_INCLUDE_DIR})
-    message(STATUS "Clipper library found in " ${CLIPPER_LIBRARY})
-  endif()
-endif()
-inclusion(CLIPPER_DIR CLIPPER_INCLUDE_DIR)
-
 # Imagemagick
 
 if (SKIP_IMAGEMAGICK)
