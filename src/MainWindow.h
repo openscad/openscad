@@ -41,7 +41,7 @@ public:
 	shared_ptr<CSGTerm> root_norm_term;          // Normalized CSG products
 	class CSGChain *root_chain;
 #ifdef ENABLE_CGAL
-	class CGAL_Nef_polyhedron *root_N;
+	shared_ptr<const class CGAL_Nef_polyhedron> root_N;
 	class CGALRenderer *cgalRenderer;
 #endif
 #ifdef ENABLE_OPENCSG
@@ -121,7 +121,7 @@ private slots:
 	void csgReloadRender();
 #ifdef ENABLE_CGAL
 	void actionRenderCGAL();
-	void actionRenderCGALDone(class CGAL_Nef_polyhedron *);
+	void actionRenderCGALDone(shared_ptr<const class CGAL_Nef_polyhedron>);
 	void cgalRender();
 #endif
 	void actionDisplayAST();

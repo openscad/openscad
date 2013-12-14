@@ -450,6 +450,9 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 #include <QApplication>
 #include <QString>
 #include <QDir>
+#include <QMetaType>
+
+Q_DECLARE_METATYPE(shared_ptr<const CGAL_Nef_polyhedron>);
 
 // Only if "fileName" is not absolute, prepend the "absoluteBase".
 static QString assemblePath(const fs::path& absoluteBase,
@@ -491,6 +494,9 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 	QCoreApplication::setOrganizationDomain("openscad.org");
 	QCoreApplication::setApplicationName("OpenSCAD");
 	QCoreApplication::setApplicationVersion(TOSTRING(OPENSCAD_VERSION));
+
+	// Other global settings
+	qRegisterMetaType<shared_ptr<const CGAL_Nef_polyhedron> >();
 	
 	const QString &app_path = app.applicationDirPath();
 

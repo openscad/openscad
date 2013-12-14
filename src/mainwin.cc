@@ -160,8 +160,8 @@ MainWindow::MainWindow(const QString &filename)
 
 #ifdef ENABLE_CGAL
 	this->cgalworker = new CGALWorker();
-	connect(this->cgalworker, SIGNAL(done(CGAL_Nef_polyhedron *)), 
-					this, SLOT(actionRenderCGALDone(CGAL_Nef_polyhedron *)));
+	connect(this->cgalworker, SIGNAL(done(shared_ptr<const CGAL_Nef_polyhedron>)), 
+					this, SLOT(actionRenderCGALDone(shared_ptr<const CGAL_Nef_polyhedron>)));
 #endif
 
 	top_ctx.registerBuiltin();
@@ -171,7 +171,6 @@ MainWindow::MainWindow(const QString &filename)
 	absolute_root_node = NULL;
 	this->root_chain = NULL;
 #ifdef ENABLE_CGAL
-	this->root_N = NULL;
 	this->cgalRenderer = NULL;
 #endif
 #ifdef ENABLE_OPENCSG
@@ -447,7 +446,7 @@ MainWindow::~MainWindow()
 	if (root_module) delete root_module;
 	if (root_node) delete root_node;
 #ifdef ENABLE_CGAL
-	if (this->root_N) delete this->root_N;
+	this->root_N.reset();
 	delete this->cgalRenderer;
 #endif
 #ifdef ENABLE_OPENCSG
@@ -1290,10 +1289,7 @@ void MainWindow::cgalRender()
 	this->qglview->setRenderer(NULL);
 	delete this->cgalRenderer;
 	this->cgalRenderer = NULL;
-	if (this->root_N) {
-		delete this->root_N;
-		this->root_N = NULL;
-	}
+	this->root_N.reset();
 
 	PRINT("Rendering Polygon Mesh using CGAL...");
 
@@ -1305,7 +1301,7 @@ void MainWindow::cgalRender()
 	this->cgalworker->start(this->tree);
 }
 
-void MainWindow::actionRenderCGALDone(CGAL_Nef_polyhedron *root_N)
+void MainWindow::actionRenderCGALDone(shared_ptr<const CGAL_Nef_polyhedron> root_N)
 {
 	progress_report_fin();
 
@@ -1469,8 +1465,8 @@ void MainWindow::actionExportSTLorOFF(bool)
 		PRINTB("Can't open file \"%s\" for export", stl_filename.toLocal8Bit().constData());
 	}
 	else {
-		if (stl_mode) export_stl(this->root_N, fstream);
-		else export_off(this->root_N, fstream);
+		if (stl_mode) export_stl(this->root_N.get(), fstream);
+		else export_off(this->root_N.get(), fstream);
 		fstream.close();
 
 		PRINTB("%s export finished.", (stl_mode ? "STL" : "OFF"));
@@ -1522,7 +1518,7 @@ void MainWindow::actionExportDXF()
 		PRINTB("Can't open file \"%s\" for export", dxf_filename.toLocal8Bit().constData());
 	}
 	else {
-		export_dxf(this->root_N, fstream);
+		export_dxf(this->root_N.get(), fstream);
 		fstream.close();
 		PRINT("DXF export finished.");
 	}
