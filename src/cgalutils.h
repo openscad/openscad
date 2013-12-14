@@ -3,7 +3,7 @@
 
 #include <cgal.h>
 bool createPolySetFromPolyhedron(const CGAL_Polyhedron &p, class PolySet &ps);
-bool createPolyhedronFromPolySet(const class PolySet &ps, class CGAL_Polyhedron &p);
+bool createPolyhedronFromPolySet(const class PolySet &ps, CGAL_Polyhedron &p);
 CGAL_Iso_cuboid_3 bounding_box( const CGAL_Nef_polyhedron3 &N );
 CGAL_Iso_rectangle_2e bounding_box( const CGAL_Nef_polyhedron2 &N );
 

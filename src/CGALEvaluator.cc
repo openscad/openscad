@@ -686,7 +686,7 @@ CGAL_Nef_polyhedron CGALEvaluator::evaluateCGALMesh(const PolySet &ps)
 		if (plane_error) try {
 			PolySet ps2;
 			CGAL_Polyhedron P;
-			tessellate_faces( ps, ps2 );
+			tessellate_3d_faces( ps, ps2 );
 			createPolyhedronFromPolySet(ps2,P);
 			N = new CGAL_Nef_polyhedron3(P);
 		}

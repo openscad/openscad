@@ -338,11 +338,12 @@ void dxf_tesselate(PolySet *ps, DxfData &dxf, double rot, Vector2d scale, bool u
 
 void triangulate_polygon( const PolySet::Polygon &pgon, std::vector<PolySet::Polygon> &triangles )
 {
+
 }
 
 /* given a 3d PolySet with 'near planar' faces, triangulate the faces
 so CGAL Nef Polyhedron will accept them. */
-void tessellate_3d_faces( PolySet &inps, PolySet &outps ) {
+void tessellate_3d_faces( const PolySet &inps, PolySet &outps ) {
         for (size_t i = 0; i < inps.polygons.size(); i++) {
                 const PolySet::Polygon *pgon = &inps.polygons[i];
                 for (size_t j = 0; j < pgon->size(); j++) {
