@@ -743,7 +743,7 @@ static Geometry *rotatePolygon(const RotateExtrudeNode &node, const Polygon2d &p
 		BOOST_FOREACH(const Vector2d &v, o) {
 			if (v[0] < 0) {
 				PRINT("ERROR: all points for rotate_extrude() must have non-negative X coordinates");
-				PRINTB("[Point %d on path %d has X coordinate %f]", j % i % point_x);
+				PRINTB("[Point (%f, %f)]", v[0] % v[1]);
 				delete ps;
 				return NULL;
 			}

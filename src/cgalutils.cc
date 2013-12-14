@@ -27,9 +27,23 @@ namespace CGALUtils {
 					PRINT("Hull() currently requires a valid 2-manifold. Please modify your design. See http://en.wikibooks.org/wiki/OpenSCAD_User_Manual/STL_Import_and_Export");
 				}
 				else {
-					N->p3->convert_to_Polyhedron(P);
-					std::transform(P.vertices_begin(), P.vertices_end(), std::back_inserter(points), 
-												 boost::bind(static_cast<const CGAL_Polyhedron::Vertex::Point_3&(CGAL_Polyhedron::Vertex::*)() const>(&CGAL_Polyhedron::Vertex::point), _1));
+					bool err = true;
+					std::string errmsg("");
+					try {
+						err = nefworkaround::convert_to_Polyhedron<CGAL_Kernel3>( *(N->p3), P );
+						// N->p3->convert_to_Polyhedron(P);
+					}
+					catch (const CGAL::Failure_exception &e) {
+						err = true;
+						errmsg = std::string(e.what());
+					}
+					if (err) {
+						PRINT("ERROR: CGAL NefPolyhedron->Polyhedron conversion failed.");
+						if (errmsg!="") PRINTB("ERROR: %s",errmsg);
+					} else {
+						std::transform(P.vertices_begin(), P.vertices_end(), std::back_inserter(points), 
+													 boost::bind(static_cast<const CGAL_Polyhedron::Vertex::Point_3&(CGAL_Polyhedron::Vertex::*)() const>(&CGAL_Polyhedron::Vertex::point), _1));
+					}
 				}
 			}
 			else {
