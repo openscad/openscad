@@ -672,8 +672,8 @@ CGAL_Nef_polyhedron CGALEvaluator::evaluateCGALMesh(const PolySet &ps)
 		CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
 		try {
 			CGAL_Polyhedron P;
-			createPolyhedronFromPolySet(ps,P);
-			N = new CGAL_Nef_polyhedron3(P);
+			bool err = createPolyhedronFromPolySet(ps,P);
+			if (!err) N = new CGAL_Nef_polyhedron3(P);
 		}
 		catch (const CGAL::Assertion_exception &e) {
 			if (std::string(e.what()).find("Plane_constructor")!=std::string::npos) {
@@ -689,8 +689,8 @@ CGAL_Nef_polyhedron CGALEvaluator::evaluateCGALMesh(const PolySet &ps)
 			PolySet ps2;
 			CGAL_Polyhedron P;
 			tessellate_3d_faces( ps, ps2 );
-			createPolyhedronFromPolySet(ps2,P);
-			N = new CGAL_Nef_polyhedron3(P);
+			bool err = createPolyhedronFromPolySet(ps2,P);
+			if (!err) N = new CGAL_Nef_polyhedron3(P);
 		}
 		catch (const CGAL::Assertion_exception &e) {
 			PRINTB("Alternate construction failed. CGAL error in CGAL_Nef_polyhedron3(): %s", e.what());
