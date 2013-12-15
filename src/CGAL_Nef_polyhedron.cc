@@ -100,7 +100,7 @@ PolySet *CGAL_Nef_polyhedron::convertToPolyset()
 			ps = new PolySet();
 			CGAL_Polyhedron P;
 			this->p3->convert_to_Polyhedron(P);
-			bool err = createPolySetFromPolyhedron(P, ps);
+			bool err = createPolySetFromPolyhedron(P, *ps);
 			if (err) delete ps;
 		}
 		catch (const CGAL::Precondition_exception &e) {

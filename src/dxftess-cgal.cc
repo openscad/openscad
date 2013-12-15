@@ -336,19 +336,122 @@ void dxf_tesselate(PolySet *ps, DxfData &dxf, double rot, Vector2d scale, bool u
 	}
 }
 
-void triangulate_polygon( const PolySet::Polygon &pgon, std::vector<PolySet::Polygon> &triangles )
-{
+typedef enum { XYPLANE, YZPLANE, XZPLANE, NONE } projection_t;
 
+Vector2d get_projected_point( Vector3d v, projection_t projection ) {
+	Vector2d v2(0,0);
+	if (projection==XYPLANE) { v2.x() = v.x(); v2.y() = v.y(); }
+	else if (projection==XZPLANE) { v2.x() = v.x(); v2.y() = v.z(); }
+	else if (projection==YZPLANE) { v2.x() = v.y(); v2.y() = v.z(); }
+	return v2;
 }
 
-/* given a 3d PolySet with 'near planar' faces, triangulate the faces
-so CGAL Nef Polyhedron will accept them. */
-void tessellate_3d_faces( const PolySet &inps, PolySet &outps ) {
-        for (size_t i = 0; i < inps.polygons.size(); i++) {
-                const PolySet::Polygon *pgon = &inps.polygons[i];
-                for (size_t j = 0; j < pgon->size(); j++) {
-                        Vector3d v = pgon->at(j);
+CGAL_Point_3 cgp( Vector3d v ) { return CGAL_Point_3( v.x(), v.y(), v.z() ); }
+/* near-planar polygons in 3d can be projected into 2d, but you have to
+be careful. if you project, say, 0,0,0 0,1,0 0,1,1 0,0,1 onto the XY plane
+you will not get a polygon, you will get a skinny line thing. */
+projection_t find_good_projection( PolySet::Polygon pgon ) {
+	// step 1 - find 3 non-collinear points in the input
+	if (pgon.size()<3) return NONE;
+	Vector3d v1,v2,v3;
+	v1 = v2 = v3 = pgon[0];
+	for (size_t i=0;i<pgon.size();i++) {
+		if (pgon[i]!=v1) { v2=pgon[i]; break; }
+	}
+	if (v1==v2) return NONE;
+	for (size_t i=0;i<pgon.size();i++) {
+		if (!CGAL::collinear( cgp(v1), cgp(v2), cgp(pgon[i]) )) {
+			v3=pgon[i]; break;
+		}
+	}
+	if (CGAL::collinear( cgp(v1), cgp(v2), cgp(v3) ) ) return NONE;
+	// step 2 - find which direction is best for projection. planes use
+	// the equation ax+by+cz+d = 0. a,b, and c determine the direction the
+	// plane is in. we want to find which projection of the 'normal vector'
+	// would make the smallest shadow if projected onto the given plane.
+	// 'quadrance' (distance squared) can tell this w/o using sqrt.
+	CGAL::Plane_3<CGAL_Kernel3> pl( cgp(v1), cgp(v2), cgp(v3) );
+	NT3 qxy = pl.a()*pl.a()+pl.b()*pl.b();
+        NT3 qyz = pl.b()*pl.b()+pl.c()*pl.c();
+        NT3 qxz = pl.c()*pl.c()+pl.a()*pl.a();
+	NT3 min = std::min(qxy,std::min(qyz,qxz));
+	if (min==qxy) return XYPLANE;
+        else if (min==qyz) return YZPLANE;
+        return XZPLANE;
+}
+
+void triangulate_polygon( const PolySet::Polygon &pgon, std::vector<PolySet::Polygon> &triangles, projection_t projection )
+{
+	CDT cdt;
+	std::vector<Vertex_handle> vhandles;
+	std::map<CDTPoint,Vector3d> vertmap;
+	CGAL::Orientation original_orientation;
+	std::vector<CDTPoint> orpgon;
+	for (size_t i = 0; i < pgon.size(); i++) {
+		Vector3d v3 = pgon.at(i);
+		Vector2d v2 = get_projected_point( v3, projection );
+		CDTPoint cdtpoint = CDTPoint(v2.x(),v2.y());
+		vertmap[ cdtpoint ] = v3;
+		Vertex_handle vh = cdt.insert( cdtpoint );
+		vhandles.push_back(vh);
+		orpgon.push_back( cdtpoint );
+	}
+	original_orientation = CGAL::orientation_2( orpgon.begin(),orpgon.end() );
+	for (size_t i = 0; i < vhandles.size(); i++ ) {
+		int vindex1 = (i+0);
+		int vindex2 = (i+1)%vhandles.size();
+		cdt.insert_constraint( vhandles[vindex1], vhandles[vindex2] );
+	}
+	std::list<CDTPoint> list_of_seeds;
+	CGAL::refine_Delaunay_mesh_2_without_edge_refinement(cdt,
+	  list_of_seeds.begin(), list_of_seeds.end(), DummyCriteria<CDT>());
+
+	CDT::Finite_faces_iterator fit;
+        for( fit=cdt.finite_faces_begin(); fit!=cdt.finite_faces_end(); fit++ )
+        {
+                if(fit->is_in_domain()) {
+			CDTPoint p1 = cdt.triangle( fit )[0];
+			CDTPoint p2 = cdt.triangle( fit )[1];
+			CDTPoint p3 = cdt.triangle( fit )[2];
+			Vector3d v1 = vertmap[p1];
+			Vector3d v2 = vertmap[p2];
+			Vector3d v3 = vertmap[p3];
+			PolySet::Polygon pgon;
+			if (CGAL::orientation(p1,p2,p3)==original_orientation) {
+				pgon.push_back(v1);
+				pgon.push_back(v2);
+				pgon.push_back(v3);
+			} else {
+				pgon.push_back(v3);
+				pgon.push_back(v2);
+				pgon.push_back(v1);
+			}
+			triangles.push_back( pgon );
                 }
         }
+}
+
+/* given a 3d PolySet with 'near planar' faces, triangulate the faces.
+See Issue 340... this is so CGAL Nef Polyhedron will accept them.
+This code assumes the input polyset has simple polygon faces with no holes. */
+void tessellate_3d_faces( const PolySet &inps, PolySet &outps ) {
+	PRINTB("tess 3d %i",inps.polygons.size());
+	PRINTB("%s < input ps",inps.dump());
+        for (size_t i = 0; i < inps.polygons.size(); i++) {
+                const PolySet::Polygon pgon = inps.polygons[i];
+		if (pgon.size()<3) continue;
+		std::vector<PolySet::Polygon> triangles;
+		projection_t projection = find_good_projection( pgon );
+		triangulate_polygon( pgon, triangles, projection );
+		for (size_t j=0;j<triangles.size();j++) {
+			PolySet::Polygon t = triangles[j];
+			outps.append_poly();
+			outps.append_vertex(t[0].x(),t[0].y(),t[0].z());
+			outps.append_vertex(t[1].x(),t[1].y(),t[1].z());
+			outps.append_vertex(t[2].x(),t[2].y(),t[2].z());
+		}
+        }
+	PRINTB("tess 3d done %i",outps.polygons.size());
+	PRINTB("%s < output ps",outps.dump());
 }
 
