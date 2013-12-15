@@ -5,11 +5,15 @@ Language Features:
 o Added diameter argument: circle(d), cylinder(d, d1, d2) and sphere(d)
 o Added parent_module() and $parent_modules
 o Added children() as a replacement for child()
+o FIXME: Unicode support
+o FIXME: Ranges with negative steps
 
 Program Features:
 o Added --info parameter to the cmd-line for system/library info
+o Added Reset View in GUI
 
 Bugfixes:
+o polyhedron() is now much more robust handling almost planar polygons
 o Automatic reloads of large designs are more robust
 o Boolean logic in if() statements are now correctly short-circuited
 o rands() with zero range caused an infinite loop
@@ -18,6 +22,8 @@ o The $children variable sometimes misbehaved due to dynamic scoping
 o The --camera cmd-line option behaved differently then the corresponding GUI function
 o PNG export now doesn't leak transparency settings into the target image
 o Improved performance of OpenCSG (F5) compilation in some cases
+o Some editor misbehaviors were fixed
+o Stability fixes of CGAL-related crashes
 
 Deprecations:
 o child() is no longer supported. Use children() instead.
@@ -26,6 +32,7 @@ Misc:
 o We now use CGAL's EPEC kernel
 o Additional output formats: .ast, .term, null (these are most useful for testing)
 o Test framework now shares more code with the GUI app
+o Test report can now be automatically uploaded to dinkypage.com
 o Better compatibility with BSD systems
 
 OpenSCAD 2013.06
