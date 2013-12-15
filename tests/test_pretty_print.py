@@ -328,6 +328,7 @@ def to_html(project_name, startdate, tests, enddate, sysinfo, sysid, makefiles):
                           test_name=test.fullname,
                           test_log=test.fulltestlog)
         elif test.type == 'png':
+            # FIXME: Handle missing test.actualfile or test.expectedfile
             actual_img = png_encode64(test.actualfile,
                                   data=vars(test).get('actualfile_data'))
             expected_img = png_encode64(test.expectedfile,
@@ -339,7 +340,7 @@ def to_html(project_name, startdate, tests, enddate, sysinfo, sysid, makefiles):
                           expected=expected_img)
         else:
             raise TypeError('Unknown test type %r' % test.type)
-    
+
     for mf in sorted(makefiles.keys()):
         mfname = mf.strip().lstrip(os.path.sep)
         text = open(os.path.join(builddir, mfname)).read()
