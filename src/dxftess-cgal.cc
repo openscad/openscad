@@ -341,7 +341,8 @@ void dxf_tesselate(PolySet *ps, DxfData &dxf, double rot, Vector2d scale, bool u
 
 We do this by projecting each polygon of the Polyset onto a 2-d plane,
 then running a tessellation algorithm on the projected polygon. Then we
-project the generated 2d triangles back up into 3d space.
+project each of the newly generated 2d 'tiles' (the polygons used for
+tessellation, typically triangles) back up into 3d space.
 
 (in reality as of writing, we dont need to do a back-projection from 2d->3d
 because the algorithm we are using doesn't create any new points, and we can
