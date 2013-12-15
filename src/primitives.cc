@@ -103,7 +103,7 @@ public:
 	double fn, fs, fa;
 	primitive_type_e type;
 	int convexity;
-	Value points, paths, triangles;
+	Value points, paths, faces;
 	virtual PolySet *evaluate_polyset(class PolySetEvaluator *) const;
 };
 
@@ -156,7 +156,7 @@ AbstractNode *PrimitiveModule::instantiate(const Context *ctx, const ModuleInsta
 		args += Assignment("h", NULL), Assignment("r1", NULL), Assignment("r2", NULL), Assignment("center", NULL);
 		break;
 	case POLYHEDRON:
-		args += Assignment("points", NULL), Assignment("triangles", NULL), Assignment("convexity", NULL);
+		args += Assignment("points", NULL), Assignment("triangles", NULL), Assignment("convexity", NULL), Assignment("faces", NULL);
 		break;
 	case SQUARE:
 		args += Assignment("size", NULL), Assignment("center", NULL);
@@ -235,7 +235,8 @@ AbstractNode *PrimitiveModule::instantiate(const Context *ctx, const ModuleInsta
 
 	if (type == POLYHEDRON) {
 		node->points = c.lookup_variable("points");
-		node->triangles = c.lookup_variable("triangles");
+		node->faces = c.lookup_variable("triangles");
+		node->faces = c.lookup_variable("faces");
 	}
 
 	if (type == SQUARE) {
@@ -480,11 +481,11 @@ sphere_next_r2:
 	if (this->type == POLYHEDRON)
 	{
 		p->convexity = this->convexity;
-		for (size_t i=0; i<this->triangles.toVector().size(); i++)
+		for (size_t i=0; i<this->faces.toVector().size(); i++)
 		{
 			p->append_poly();
-			for (size_t j=0; j<this->triangles.toVector()[i].toVector().size(); j++) {
-				size_t pt = this->triangles.toVector()[i].toVector()[j].toDouble();
+			for (size_t j=0; j<this->faces.toVector()[i].toVector().size(); j++) {
+				size_t pt = this->faces.toVector()[i].toVector()[j].toDouble();
 				if (pt < this->points.toVector().size()) {
 					double px, py, pz;
 					if (this->points.toVector()[pt].getVec3(px, py, pz))
@@ -610,7 +611,7 @@ std::string PrimitiveNode::toString() const
 			break;
 	case POLYHEDRON:
 		stream << "(points = " << this->points
-					 << ", triangles = " << this->triangles
+					 << ", faces = " << this->faces
 					 << ", convexity = " << this->convexity << ")";
 			break;
 	case SQUARE:
