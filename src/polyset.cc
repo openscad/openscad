@@ -43,11 +43,11 @@
 
  */
 
-PolySet::PolySet() : grid(GRID_FINE), is2d(false)
+PolySet::PolySet() : is2d(false)
 {
 }
 
-PolySet::PolySet(const Polygon2d &origin) : grid(GRID_FINE), is2d(true), polygon(origin)
+PolySet::PolySet(const Polygon2d &origin) : is2d(true), polygon(origin)
 {
 }
 
@@ -90,7 +90,6 @@ void PolySet::append_vertex(double x, double y, double z)
 
 void PolySet::append_vertex(Vector3d v)
 {
-	grid.align(v[0], v[1], v[2]);
 	polygons.back().push_back(v);
 }
 
@@ -101,7 +100,6 @@ void PolySet::insert_vertex(double x, double y, double z)
 
 void PolySet::insert_vertex(Vector3d v)
 {
-	grid.align(v[0], v[1], v[2]);
 	polygons.back().insert(polygons.back().begin(), v);
 }
 
@@ -329,7 +327,6 @@ size_t PolySet::memsize() const
 	size_t mem = 0;
 	BOOST_FOREACH(const Polygon &p, this->polygons) mem += p.size() * sizeof(Vector3d);
 	mem += this->polygon.memsize() - sizeof(this->polygon);
-	mem += this->grid.db.size() * (3 * sizeof(int64_t) + sizeof(void*)) + sizeof(Grid3d<void*>);
 	mem += sizeof(PolySet);
 	return mem;
 }
@@ -339,3 +336,11 @@ void PolySet::append(const PolySet &ps)
 	this->polygons.insert(this->polygons.end(), ps.polygons.begin(), ps.polygons.end());
 }
 
+void PolySet::transform(const Transform3d &mat)
+{
+	BOOST_FOREACH(Polygon &p, this->polygons) {
+		BOOST_FOREACH(Vector3d &v, p) {
+			v = mat * v;
+		}
+	}
+}

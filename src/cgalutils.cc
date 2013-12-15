@@ -5,6 +5,7 @@
 #include "printutils.h"
 #include "Polygon2d.h"
 #include "polyset-utils.h"
+#include "grid.h"
 
 #include "cgal.h"
 #include <CGAL/convex_hull_3.h>
@@ -101,7 +102,7 @@ namespace CGALUtils {
 		catch (const CGAL::Failure_exception &e) {
 			// union && difference assert triggered by testdata/scad/bugs/rotate-diff-nonmanifold-crash.scad and testdata/scad/bugs/issue204.scad
 			std::string opstr = op == OPENSCAD_UNION ? "union" : op == OPENSCAD_INTERSECTION ? "intersection" : op == OPENSCAD_DIFFERENCE ? "difference" : op == OPENSCAD_MINKOWSKI ? "minkowski" : "UNKNOWN";
-			PRINTB("CGAL error in CGAL_Nef_polyhedron's %s operator: %s", opstr % e.what());
+			PRINTB("CGAL error in CGALUtils::applyBinaryOperator %s: %s", opstr % e.what());
 
 			// Errors can result in corrupt polyhedrons, so put back the old one
 			target = src;
@@ -123,7 +124,7 @@ namespace CGALUtils {
 				newN.p3.reset(new CGAL_Nef_polyhedron3(N.p3->intersection(xy_plane, CGAL_Nef_polyhedron3::PLANE_ONLY)));
 			}
 			catch (const CGAL::Failure_exception &e) {
-				PRINTB("CGAL error in projection node during plane intersection: %s", e.what());
+				PRINTB("CGALUtils::project during plane intersection: %s", e.what());
 				try {
 					PRINT("Trying alternative intersection using very large thin box: ");
 					std::vector<CGAL_Point_3> pts;
@@ -140,7 +141,7 @@ namespace CGALUtils {
 					newN.p3.reset(new CGAL_Nef_polyhedron3(nef_bigbox.intersection(*N.p3)));
 				}
 				catch (const CGAL::Failure_exception &e) {
-					PRINTB("CGAL error in projection node during bigbox intersection: %s", e.what());
+					PRINTB("CGAL error in CGALUtils::project during bigbox intersection: %s", e.what());
 				}
 			}
 				
@@ -168,7 +169,7 @@ namespace CGALUtils {
 				}
 				nef_poly.p2 = zremover.output_nefpoly2d;
 			}	catch (const CGAL::Failure_exception &e) {
-				PRINTB("CGAL error in projection node while flattening: %s", e.what());
+				PRINTB("CGAL error in CGALUtils::project while flattening: %s", e.what());
 			}
 			log << "</svg>\n";
 				
@@ -243,73 +244,52 @@ public:
 	void operator()(CGAL_HDS& hds)
 	{
 		CGAL_Polybuilder B(hds, true);
+		typedef boost::tuple<double, double, double> BuilderVertex;
+		typedef std::map<BuilderVertex, size_t> BuilderMap;
+		BuilderMap vertices;
+		std::vector<size_t> indices(3);
 
-		std::vector<CGALPoint> vertices;
-		Grid3d<int> vertices_idx(GRID_FINE);
-
-		for (size_t i = 0; i < ps.polygons.size(); i++) {
-			const PolySet::Polygon *poly = &ps.polygons[i];
-			for (size_t j = 0; j < poly->size(); j++) {
-				const Vector3d &p = poly->at(j);
-				if (!vertices_idx.has(p[0], p[1], p[2])) {
-					vertices_idx.data(p[0], p[1], p[2]) = vertices.size();
-					vertices.push_back(CGALPoint(p[0], p[1], p[2]));
+		// Estimating same # of vertices as polygons (very rough)
+		B.begin_surface(ps.polygons.size(), ps.polygons.size());
+		int pidx = 0;
+		printf("polyhedron(triangles=[");
+		BOOST_FOREACH(const PolySet::Polygon &p, ps.polygons) {
+			if (pidx++ > 0) printf(",");
+			indices.clear();
+			BOOST_FOREACH(const Vector3d &v, p) {
+				size_t idx;
+				BuilderVertex bv = boost::make_tuple(v[0], v[1], v[2]);
+        if (vertices.count(bv) > 0) indices.push_back(vertices[bv]);
+				else {
+					indices.push_back(vertices.size());
+					vertices[bv] = vertices.size();
+					B.add_vertex(CGALPoint(v[0], v[1], v[2]));
 				}
 			}
-		}
-
-		B.begin_surface(vertices.size(), ps.polygons.size());
-#ifdef GEN_SURFACE_DEBUG
-		printf("=== CGAL Surface ===\n");
-#endif
-
-		for (size_t i = 0; i < vertices.size(); i++) {
-			const CGALPoint &p = vertices[i];
-			B.add_vertex(p);
-#ifdef GEN_SURFACE_DEBUG
-			printf("%d: %f %f %f\n", i, p.x().to_double(), p.y().to_double(), p.z().to_double());
-#endif
-		}
-
-		for (size_t i = 0; i < ps.polygons.size(); i++) {
-			const PolySet::Polygon *poly = &ps.polygons[i];
-			std::map<int,int> fc;
-			bool facet_is_degenerated = false;
-			for (size_t j = 0; j < poly->size(); j++) {
-				const Vector3d &p = poly->at(j);
-				int v = vertices_idx.data(p[0], p[1], p[2]);
-				if (fc[v]++ > 0)
-					facet_is_degenerated = true;
+			B.begin_facet();
+			printf("[");
+			int fidx = 0;
+			BOOST_FOREACH(size_t i, indices) {
+				B.add_vertex_to_facet(i);
+				if (fidx++ > 0) printf(",");
+				printf("%ld", i);
 			}
-			
-			if (!facet_is_degenerated)
-				B.begin_facet();
-#ifdef GEN_SURFACE_DEBUG
-			printf("F:");
-#endif
-			for (size_t j = 0; j < poly->size(); j++) {
-				const Vector3d &p = poly->at(j);
-#ifdef GEN_SURFACE_DEBUG
-				printf(" %d (%f,%f,%f)", vertices_idx.data(p[0], p[1], p[2]), p[0], p[1], p[2]);
-#endif
-				if (!facet_is_degenerated)
-					B.add_vertex_to_facet(vertices_idx.data(p[0], p[1], p[2]));
-			}
-#ifdef GEN_SURFACE_DEBUG
-			if (facet_is_degenerated)
-				printf(" (degenerated)");
-			printf("\n");
-#endif
-			if (!facet_is_degenerated)
-				B.end_facet();
+			printf("]");
+			B.end_facet();
 		}
-
-#ifdef GEN_SURFACE_DEBUG
-		printf("====================\n");
-#endif
 		B.end_surface();
+		printf("],\n");
 
-		#undef PointKey
+		printf("points=[");
+		int vidx = 0;
+		for (int vidx=0;vidx<vertices.size();vidx++) {
+			if (vidx > 0) printf(",");
+			const BuilderMap::const_iterator it = 
+				std::find_if(vertices.begin(), vertices.end(), 
+										 boost::bind(&BuilderMap::value_type::second, _1) == vidx);
+			printf("[%g,%g,%g]", it->first.get<0>(), it->first.get<1>(), it->first.get<2>());
+		}
+		printf("]);\n");
 	}
 };
 
@@ -322,7 +302,7 @@ bool createPolyhedronFromPolySet(const PolySet &ps, CGAL_Polyhedron &p)
 		p.delegate(builder);
 	}
 	catch (const CGAL::Assertion_exception &e) {
-		PRINTB("CGAL error in CGAL_Build_PolySet: %s", e.what());
+		PRINTB("CGAL error in CGALUtils::createPolyhedronFromPolySet: %s", e.what());
 		err = true;
 	}
 	CGAL::set_error_behaviour(old_behaviour);
@@ -672,7 +652,7 @@ static CGAL_Nef_polyhedron *createNefPolyhedronFromPolySet(const PolySet &ps)
 			}
 		}
 		catch (const CGAL::Assertion_exception &e) {
-			PRINTB("CGAL error in CGAL_Nef_polyhedron3(): %s", e.what());
+			PRINTB("CGAL error in CGALUtils::createNefPolyhedronFromPolySet(): %s", e.what());
 		}
 		CGAL::set_error_behaviour(old_behaviour);
 		return new CGAL_Nef_polyhedron(N);
