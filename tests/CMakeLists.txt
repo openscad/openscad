@@ -832,14 +832,12 @@ list(APPEND DUMPTEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/escape-test
                            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/allexpressions.scad
                            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/allfunctions.scad
                            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/allmodules.scad
-                           ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/nonplanar_polyhedron.scad
                            ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/stl-cgal-convert_to_Polyhedron-crash.scad)
 
 list(APPEND CGALPNGTEST_FILES ${FEATURES_FILES} ${SCAD_DXF_FILES} ${EXAMPLE_FILES})
 list(APPEND CGALPNGTEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/include-tests.scad
                            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/use-tests.scad
                            ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/transform-nan-inf-tests.scad
-                           ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/nonplanar_polyhedron.scad
                            ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/stl-cgal-convert_to_Polyhedron-crash.scad
                            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/localfiles-test.scad
                            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/localfiles_dir/localfiles-compatibility-test.scad)
