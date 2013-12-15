@@ -34,6 +34,4 @@ isEmpty(GLIB2_LIBPATH) {
 
 QMAKE_CXXFLAGS += $$GLIB2_CFLAGS
 LIBS += $$GLIB2_LIBS
-
-message("glib: $$GLIB2_CFLAGS")
 }
