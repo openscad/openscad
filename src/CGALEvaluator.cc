@@ -677,8 +677,10 @@ CGAL_Nef_polyhedron CGALEvaluator::evaluateCGALMesh(const PolySet &ps)
 		}
 		catch (const CGAL::Assertion_exception &e) {
 			if (std::string(e.what()).find("Plane_constructor")!=std::string::npos) {
-				PRINT("PolySet has nonplanar faces. Attempting alternate construction");
-				plane_error=true;
+				if (std::string(e.what()).find("has_on")!=std::string::npos) {
+					PRINT("PolySet has nonplanar faces. Attempting alternate construction");
+					plane_error=true;
+				}
 			} else {
 				PRINTB("CGAL error in CGAL_Nef_polyhedron3(): %s", e.what());
 			}
