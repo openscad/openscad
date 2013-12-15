@@ -66,6 +66,31 @@ cgal_sysver()
   cgal_sysver_result=`grep "define  *CGAL_VERSION  *[0-9.]*" $cgalpath | awk '{print $3}'`
 }
 
+glib2_sysver()
+{
+  #Get architecture triplet - e.g. x86_64-linux-gnu
+  glib2archtriplet=`gcc -dumpmachine 2>/dev/null`
+  if [ -z "$VAR" ]; then
+    glib2archtriplet=`dpkg-architecture -qDEB_HOST_MULTIARCH 2>/dev/null`
+  fi
+  glib2path=$1/lib/$glib2archtriplet/glib-2.0/include/glibconfig.h
+  if [ ! -e $glib2path ]; then
+    #No glib found
+    #glib can be installed in /usr/lib/i386-linux-gnu/glib-2.0/ on arch i686-linux-gnu (sometimes?)
+    if [ $glib2archtriplet = "i686-linux-gnu" ]; then
+        glib2archtriplet=i386-linux-gnu
+        glib2path=$1/lib/$glib2archtriplet/glib-2.0/include/glibconfig.h
+        if [ ! -e $glib2path ]; then return; fi
+    else
+        return;
+    fi
+  fi
+  glib2major=`grep "define  *GLIB_MAJOR_VERSION  *[0-9.]*" $glib2path | awk '{print $3}'`
+  glib2minor=`grep "define  *GLIB_MINOR_VERSION  *[0-9.]*" $glib2path | awk '{print $3}'`
+  glib2micro=`grep "define  *GLIB_MICRO_VERSION  *[0-9.]*" $glib2path | awk '{print $3}'`
+  glib2_sysver_result="${glib2major}.${glib2minor}.${glib2micro}"
+}
+
 boost_sysver()
 {
   boostpath=$1/include/boost/version.hpp
@@ -530,7 +555,7 @@ checkargs()
 
 main()
 {
-  deps="qt4 cgal gmp mpfr boost opencsg glew eigen gcc bison flex make"
+  deps="qt4 cgal gmp mpfr boost opencsg glew eigen glib2 gcc bison flex make"
   #deps="$deps curl git" # not technically necessary for build
   #deps="$deps python cmake imagemagick" # only needed for tests
   #deps="cgal"

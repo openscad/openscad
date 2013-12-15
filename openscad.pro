@@ -8,7 +8,7 @@
 #   OPENCSGDIR
 #   OPENSCAD_LIBRARIES
 #
-# Please see the 'Buildling' sections of the OpenSCAD user manual 
+# Please see the 'Building' sections of the OpenSCAD user manual 
 # for updated tips & workarounds.
 #
 # http://en.wikibooks.org/wiki/OpenSCAD_User_Manual
@@ -39,6 +39,7 @@ debug: DEFINES += DEBUG
 TEMPLATE = app
 
 INCLUDEPATH += src
+DEPENDPATH += src
 
 # Handle custom library location.
 # Used when manually installing 3rd party libraries
@@ -155,6 +156,7 @@ CONFIG += cgal
 CONFIG += opencsg
 CONFIG += boost
 CONFIG += eigen
+CONFIG += glib-2.0
 
 #Uncomment the following line to enable QCodeEdit
 #CONFIG += qcodeedit
@@ -368,6 +370,7 @@ HEADERS += src/cgal.h \
            src/PolySetCGALEvaluator.h \
            src/CGALRenderer.h \
            src/CGAL_Nef_polyhedron.h \
+           src/CGAL_Nef3_workaround.h \
            src/cgalworker.h
 
 SOURCES += src/cgalutils.cc \

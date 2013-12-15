@@ -1,0 +1,17 @@
+language: cpp
+cache: apt
+compiler: gcc
+
+before_install:
+ - echo 'yes' | sudo add-apt-repository ppa:chrysn/openscad
+ - sudo apt-get update -qq
+ - sudo apt-get install -qq build-essential libqt4-dev libqt4-opengl-dev libxmu-dev cmake bison flex git-core libboost-all-dev libXi-dev libmpfr-dev libboost-dev libglew-dev libeigen2-dev libeigen3-dev libcgal-dev libgmp3-dev libgmp-dev python-paramiko curl imagemagick
+ - sudo apt-get install -qq libopencsg-dev
+
+env: OPENSCAD_UPLOAD_TESTS=yes 
+
+branches:
+  only:
+    - master
+
+script: ./scripts/travis-ci.sh

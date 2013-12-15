@@ -36,6 +36,8 @@
 #include <boost/format.hpp>
 #include "boost-utils.h"
 #include "boosty.h"
+/*Unicode support for string lengths and array accesses*/
+#include <glib.h>
 
 std::ostream &operator<<(std::ostream &stream, const Filename &filename)
 {
@@ -579,14 +581,28 @@ Value Value::operator-() const
   }
 */
 
+/*
+ * bracket operation [] detecting multi-byte unicode.
+ * If the string is multi-byte unicode then the index will offset to the character (2 or 4 byte) and not to the byte.
+ * A 'normal' string with byte chars are a subset of unicode and still work.
+ */
 class bracket_visitor : public boost::static_visitor<Value>
 {
 public:
   Value operator()(const std::string &str, const double &idx) const {
     int i = int(idx);
     Value v;
+    //Check that the index is positive and less than the size in bytes
     if ((i >= 0) && (i < (int)str.size())) {
-      v = Value(str[int(idx)]);
+	  //Ensure character (not byte) index is inside the character/glyph array
+	  if( (unsigned) i < g_utf8_strlen( str.c_str(), str.size() ) )	{
+		  gchar utf8_of_cp[6] = ""; //A buffer for a single unicode character to be copied into
+		  gchar* ptr = g_utf8_offset_to_pointer(str.c_str(), i);
+		  if(ptr) {
+		    g_utf8_strncpy(utf8_of_cp, ptr, 1);
+		  }
+		  v = std::string(utf8_of_cp);
+	  }
       //      std::cout << "bracket_visitor: " <<  v << "\n";
     }
     return v;

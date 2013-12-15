@@ -1,3 +1,5 @@
+![Travis CI](https://api.travis-ci.org/openscad/openscad.png)
+
 # What is OpenSCAD?
 [![Flattr this git repo](http://api.flattr.com/button/flattr-badge-large.png)](https://flattr.com/submit/auto?user_id=openscad&url=http://openscad.org&title=OpenSCAD&language=&tags=github&category=software)
 
@@ -93,6 +95,7 @@ Follow the instructions for the platform you're compiling on below.
 * [OpenCSG (1.3.2)](http://www.opencsg.org/)
 * [GLEW (1.5.4 ->)](http://glew.sourceforge.net/)
 * [Eigen (3.0 - 3.2)](http://eigen.tuxfamily.org/)
+* [glib2 (2.2.0)](https://developer.gnome.org/glib/)
 * [GCC C++ Compiler (4.2 ->)](http://gcc.gnu.org/)
 * [Bison (2.4)](http://www.gnu.org/software/bison/)
 * [Flex (2.5.35)](http://flex.sourceforge.net/)

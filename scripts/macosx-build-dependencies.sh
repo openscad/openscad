@@ -24,7 +24,7 @@ BASEDIR=$PWD/../libraries
 OPENSCADDIR=$PWD
 SRCDIR=$BASEDIR/src
 DEPLOYDIR=$BASEDIR/install
-MAC_OSX_VERSION_MIN=10.6
+MAC_OSX_VERSION_MIN=10.7
 OPTION_32BIT=false
 OPTION_LLVM=false
 OPTION_CLANG=false
@@ -54,6 +54,9 @@ build_qt()
   fi
   tar xzf qt-everywhere-opensource-src-$version.tar.gz
   cd qt-everywhere-opensource-src-$version
+  patch -p0 < $OPENSCADDIR/patches/qt4/patch-src_corelib_global_qglobal.h.diff
+  patch -p0 < $OPENSCADDIR/patches/qt4/patch-libtiff.diff
+  patch -p0 < $OPENSCADDIR/patches/qt4/patch-src_plugins_bearer_corewlan_qcorewlanengine.mm.diff
   if $USING_CLANG; then
     # FIX for clang
     sed -i "" -e "s/::TabletProximityRec/TabletProximityRec/g"  src/gui/kernel/qt_cocoa_helpers_mac_p.h
@@ -80,6 +83,51 @@ build_gmp()
   fi
   tar xjf gmp-$version.tar.bz2
   cd gmp-$version
+  patch -p0 gmp-h.in << EOF
+--- gmp-5.1.3/gmp-h.in.old	2013-12-02 20:16:26.000000000 -0800
++++ gmp-5.1.3/gmp-h.in	2013-12-02 20:21:22.000000000 -0800
+@@ -27,13 +27,38 @@
+ #endif
+ 
+ 
+-/* Instantiated by configure. */
+ #if ! defined (__GMP_WITHIN_CONFIGURE)
++/* For benefit of fat builds on MacOSX, generate a .h file that can
++ * be used with a universal fat library
++ */
++#if defined(__x86_64__)
++#define __GMP_HAVE_HOST_CPU_FAMILY_power   0
++#define __GMP_HAVE_HOST_CPU_FAMILY_powerpc 0
++#define GMP_LIMB_BITS                      64
++#define GMP_NAIL_BITS                      0
++#elif defined(__i386__)
++#define __GMP_HAVE_HOST_CPU_FAMILY_power   0
++#define __GMP_HAVE_HOST_CPU_FAMILY_powerpc 0
++#define GMP_LIMB_BITS                      32
++#define GMP_NAIL_BITS                      0
++#elif defined(__powerpc64__)
++#define __GMP_HAVE_HOST_CPU_FAMILY_power   0
++#define __GMP_HAVE_HOST_CPU_FAMILY_powerpc 1
++#define GMP_LIMB_BITS                      64
++#define GMP_NAIL_BITS                      0
++#elif defined(__ppc__)
++#define __GMP_HAVE_HOST_CPU_FAMILY_power   0
++#define __GMP_HAVE_HOST_CPU_FAMILY_powerpc 1
++#define GMP_LIMB_BITS                      32
++#define GMP_NAIL_BITS                      0
++#else
++/* For other architectures, fall back on values computed by configure */
+ #define __GMP_HAVE_HOST_CPU_FAMILY_power   @HAVE_HOST_CPU_FAMILY_power@
+ #define __GMP_HAVE_HOST_CPU_FAMILY_powerpc @HAVE_HOST_CPU_FAMILY_powerpc@
+ #define GMP_LIMB_BITS                      @GMP_LIMB_BITS@
+ #define GMP_NAIL_BITS                      @GMP_NAIL_BITS@
+ #endif
++#endif
+ #define GMP_NUMB_BITS     (GMP_LIMB_BITS - GMP_NAIL_BITS)
+ #define GMP_NUMB_MASK     ((~ __GMP_CAST (mp_limb_t, 0)) >> GMP_NAIL_BITS)
+ #define GMP_NUMB_MAX      GMP_NUMB_MASK
+EOF
+
   if $OPTION_32BIT; then
     mkdir build-i386
     cd build-i386
@@ -116,42 +164,6 @@ build_gmp()
   mkdir -p include
   cp x86_64/include/gmp.h include/
   cp x86_64/include/gmpxx.h include/
-
-  patch -p0 include/gmp.h << EOF
---- gmp.h.orig	2011-11-08 01:03:41.000000000 +0100
-+++ gmp.h	2011-11-08 01:06:21.000000000 +0100
-@@ -26,12 +26,28 @@
- #endif
- 
- 
--/* Instantiated by configure. */
--#if ! defined (__GMP_WITHIN_CONFIGURE)
-+#if defined(__i386__)
-+#define __GMP_HAVE_HOST_CPU_FAMILY_power   0
-+#define __GMP_HAVE_HOST_CPU_FAMILY_powerpc 0
-+#define GMP_LIMB_BITS                      32
-+#define GMP_NAIL_BITS                      0
-+#elif defined(__x86_64__)
- #define __GMP_HAVE_HOST_CPU_FAMILY_power   0
- #define __GMP_HAVE_HOST_CPU_FAMILY_powerpc 0
- #define GMP_LIMB_BITS                      64
- #define GMP_NAIL_BITS                      0
-+#elif defined(__ppc__)
-+#define __GMP_HAVE_HOST_CPU_FAMILY_power   0
-+#define __GMP_HAVE_HOST_CPU_FAMILY_powerpc 1
-+#define GMP_LIMB_BITS                      32
-+#define GMP_NAIL_BITS                      0
-+#elif defined(__powerpc64__)
-+#define __GMP_HAVE_HOST_CPU_FAMILY_power   0
-+#define __GMP_HAVE_HOST_CPU_FAMILY_powerpc 1
-+#define GMP_LIMB_BITS                      64
-+#define GMP_NAIL_BITS                      0
-+#else
-+#error Unsupported architecture
- #endif
- #define GMP_NUMB_BITS     (GMP_LIMB_BITS - GMP_NAIL_BITS)
- #define GMP_NUMB_MASK     ((~ __GMP_CAST (mp_limb_t, 0)) >> GMP_NAIL_BITS)
-EOF
 }
 
 # As with gmplib, mpfr is built separately in 32-bit and 64-bit mode and then merged
@@ -220,7 +232,7 @@ build_boost()
     BOOST_TOOLSET="toolset=clang"
     echo "using clang ;" >> tools/build/v2/user-config.jam 
   fi
-  ./b2 -d+2 $BOOST_TOOLSET cflags="-mmacosx-version-min=$MAC_OSX_VERSION_MIN -arch x86_64 $BOOST_EXTRA_FLAGS" linkflags="-mmacosx-version-min=$MAC_OSX_VERSION_MIN -arch x86_64 $BOOST_EXTRA_FLAGS -headerpad_max_install_names" install
+  ./b2 -j6 -d+2 $BOOST_TOOLSET cflags="-mmacosx-version-min=$MAC_OSX_VERSION_MIN -arch x86_64 $BOOST_EXTRA_FLAGS" linkflags="-mmacosx-version-min=$MAC_OSX_VERSION_MIN -arch x86_64 $BOOST_EXTRA_FLAGS -headerpad_max_install_names" install
   install_name_tool -id $DEPLOYDIR/lib/libboost_thread.dylib $DEPLOYDIR/lib/libboost_thread.dylib 
   install_name_tool -change libboost_system.dylib $DEPLOYDIR/lib/libboost_system.dylib $DEPLOYDIR/lib/libboost_thread.dylib 
   install_name_tool -change libboost_chrono.dylib $DEPLOYDIR/lib/libboost_chrono.dylib $DEPLOYDIR/lib/libboost_thread.dylib 
@@ -280,6 +292,43 @@ build_glew()
     GLEW_EXTRA_FLAGS="-arch i386"
   fi
   make GLEW_DEST=$DEPLOYDIR CC=$CC CFLAGS.EXTRA="-no-cpp-precomp -dynamic -fno-common -mmacosx-version-min=$MAC_OSX_VERSION_MIN $GLEW_EXTRA_FLAGS -arch x86_64" LDFLAGS.EXTRA="-mmacosx-version-min=$MAC_OSX_VERSION_MIN $GLEW_EXTRA_FLAGS -arch x86_64" STRIP= install
+}
+
+build_gettext()
+{
+  version=$1
+  echo "Building gettext $version..."
+
+  cd "$BASEDIR"/src
+  rm -rf "gettext-$version"
+  if [ ! -f "glib-$version.tar.xz" ]; then
+    curl --insecure -LO "http://ftpmirror.gnu.org/gettext/gettext-$version.tar.gz"
+  fi
+  tar xzf "gettext-$version.tar.gz"
+  cd "gettext-$version"
+
+  ./configure --prefix="$DEPLOYDIR"
+  make -j4
+  make install
+}
+
+build_glib2()
+{
+  version=$1
+  echo "Building glib2 $version..."
+
+  cd "$BASEDIR"/src
+  rm -rf "glib-$version"
+  maj_min_version="${version%.*}" #Drop micro
+  if [ ! -f "glib-$version.tar.xz" ]; then
+    curl --insecure -LO "http://ftp.gnome.org/pub/gnome/sources/glib/$maj_min_version/glib-$version.tar.xz"
+  fi
+  tar xJf "glib-$version.tar.xz"
+  cd "glib-$version"
+
+  ./configure --disable-gtk-doc --disable-man --prefix="$DEPLOYDIR" CFLAGS="-I$DEPLOYDIR/include" LDFLAGS="-L$DEPLOYDIR/lib"
+  make -j4
+  make install
 }
 
 build_opencsg()
@@ -446,6 +495,12 @@ build_boost 1.54.0
 # NB! For CGAL, also update the actual download URL in the function
 build_cgal 4.3
 build_glew 1.10.0
+<<<<<<< HEAD
+build_gettext 0.18.3.1
+build_glib2 2.38.2
+=======
+build_glib2 2.38.1
+>>>>>>> d7d5bea7363703c76b9787598304bfc838e893ee
 build_opencsg 1.3.2
 if $OPTION_DEPLOY; then
 #  build_sparkle andymatuschak 0ed83cf9f2eeb425d4fdd141c01a29d843970c20

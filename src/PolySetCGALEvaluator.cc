@@ -455,12 +455,21 @@ PolySet *PolySetCGALEvaluator::rotateDxfData(const RotateExtrudeNode &node, DxfD
 
 	for (size_t i = 0; i < dxf.paths.size(); i++)
 	{
+		double min_x = 0;
 		double max_x = 0;
 		for (size_t j = 0; j < dxf.paths[i].indices.size(); j++) {
-			max_x = fmax(max_x, dxf.points[dxf.paths[i].indices[j]][0]);
+			double point_x = dxf.points[dxf.paths[i].indices[j]][0];
+			min_x = fmin(min_x, point_x);
+			max_x = fmax(max_x, point_x);
+
+			if ((max_x - min_x) > max_x && (max_x - min_x) > fabs(min_x)) {
+				PRINTB("ERROR: all points for rotate_extrude() must have the same X coordinate sign (range is %.2f -> %.2f)", min_x % max_x);
+				delete ps;
+				return NULL;
+			}
 		}
 
-		int fragments = get_fragments_from_r(max_x, node.fn, node.fs, node.fa);
+		int fragments = get_fragments_from_r(max_x-min_x, node.fn, node.fs, node.fa);
 
 		double ***points;
 		points = new double**[fragments];

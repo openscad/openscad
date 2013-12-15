@@ -1,0 +1,5 @@
+group() {
+	render(convexity = 1) {
+		import(file = "stl-cgal-convert_to_Polyhedron-crash.stl", layer = "", origin = [0, 0], scale = 1, convexity = 1, $fn = 0, $fa = 12, $fs = 2);
+	}
+}
