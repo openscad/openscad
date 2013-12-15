@@ -353,7 +353,7 @@ because the algorithm we are using doesn't create any new points, and we can
 just use a 'map' to associate 3d points with 2d points).
 
 The code assumes the input polygons are simple, non-intersecting, without
-holes, and without duplicate input points.
+holes, without duplicate input points, and with proper orientation.
 
 The purpose of this code is originally to fix github issue 349. Our CGAL
 kernel does not accept polygons for Nef_Polyhedron_3 if each of the
@@ -406,26 +406,29 @@ projection_t find_good_projection( PolySet::Polygon pgon ) {
 	// plane. 'quadrance' (distance squared) can tell this w/o using sqrt.
 	CGAL::Plane_3<CGAL_Kernel3> pl( cgp(v1), cgp(v2), cgp(v3) );
 	NT3 qxy = pl.a()*pl.a()+pl.b()*pl.b();
-        NT3 qyz = pl.b()*pl.b()+pl.c()*pl.c();
-        NT3 qxz = pl.c()*pl.c()+pl.a()*pl.a();
+	NT3 qyz = pl.b()*pl.b()+pl.c()*pl.c();
+	NT3 qxz = pl.c()*pl.c()+pl.a()*pl.a();
 	NT3 min = std::min(qxy,std::min(qyz,qxz));
 	if (min==qxy) return XYPLANE;
         else if (min==qyz) return YZPLANE;
         return XZPLANE;
 }
 
-/* triangulate the given polygon using CGAL's Constrained Delaunay 
-algorithm. project the polygon's points using the given projection 
-before performing the triangulation. this code assumes input polygon is 
-simple, no holes, no self-intersections, no duplicate points, and 
+/* triangulate the given polygon using CGAL's 2d Constrained Delaunay
+algorithm. Project the polygon's points into 2d using the given projection
+before performing the triangulation. This code assumes input polygon is
+simple, no holes, no self-intersections, no duplicate points, and is
 properly oriented. */
-void triangulate_polygon( const PolySet::Polygon &pgon, std::vector<PolySet::Polygon> &triangles, projection_t projection )
+bool triangulate_polygon( const PolySet::Polygon &pgon, std::vector<PolySet::Polygon> &triangles, projection_t projection )
 {
+	bool err = false;
+	CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
+	try {
 	CDT cdt;
 	std::vector<Vertex_handle> vhandles;
 	std::map<CDTPoint,Vector3d> vertmap;
 	CGAL::Orientation original_orientation;
-	std::vector<CDTPoint> orpgon;
+	std::vector<CDTPoint> orienpgon;
 	for (size_t i = 0; i < pgon.size(); i++) {
 		Vector3d v3 = pgon.at(i);
 		Vector2d v2 = get_projected_point( v3, projection );
@@ -433,9 +436,9 @@ void triangulate_polygon( const PolySet::Polygon &pgon, std::vector<PolySet::Pol
 		vertmap[ cdtpoint ] = v3;
 		Vertex_handle vh = cdt.insert( cdtpoint );
 		vhandles.push_back(vh);
-		orpgon.push_back( cdtpoint );
+		orienpgon.push_back( cdtpoint );
 	}
-	original_orientation = CGAL::orientation_2( orpgon.begin(),orpgon.end() );
+	original_orientation = CGAL::orientation_2( orienpgon.begin(),orienpgon.end() );
 	for (size_t i = 0; i < vhandles.size(); i++ ) {
 		int vindex1 = (i+0);
 		int vindex2 = (i+1)%vhandles.size();
@@ -468,21 +471,34 @@ void triangulate_polygon( const PolySet::Polygon &pgon, std::vector<PolySet::Pol
 			triangles.push_back( pgon );
                 }
         }
+	catch (const CGAL::Assertion_exception &e) {
+		PRINTB("CGAL error in dxftess triangulate_polygon: %s", e.what());
+		err = true;
+	}
+	CGAL::set_error_behaviour(old_behaviour);
+	return err;
 }
 
 /* Given a 3d PolySet with 'near planar' polygonal faces, Tessellate the
 faces. As of writing, our only tessellation method is Triangulation
 using CGAL's Constrained Delaunay algorithm. This code assumes the input
-polyset has simple polygon faces with no holes, no self intersections, and no
-duplicate points. */
+polyset has simple polygon faces with no holes, no self intersections, no
+duplicate points, and proper orientation. */
 void tessellate_3d_faces( const PolySet &inps, PolySet &outps ) {
         for (size_t i = 0; i < inps.polygons.size(); i++) {
                 const PolySet::Polygon pgon = inps.polygons[i];
-		if (pgon.size()<3) continue;
+		if (pgon.size()<3) {
+			PRINT("WARNING: PolySet has polygon with <3 points");
+			continue;
+		}
 		std::vector<PolySet::Polygon> triangles;
-		projection_t projection = find_good_projection( pgon );
-		triangulate_polygon( pgon, triangles, projection );
-		for (size_t j=0;j<triangles.size();j++) {
+		projection_t goodproj = find_good_projection( pgon );
+		if (goodproj==NONE) {
+			PRINT("WARNING: PolySet has degenerate polygon");
+			continue;
+		}
+		bool err = triangulate_polygon( pgon, triangles, goodproj );
+		if (!err) for (size_t j=0;j<triangles.size();j++) {
 			PolySet::Polygon t = triangles[j];
 			outps.append_poly();
 			outps.append_vertex(t[0].x(),t[0].y(),t[0].z());
