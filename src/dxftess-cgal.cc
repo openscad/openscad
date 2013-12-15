@@ -337,23 +337,32 @@ void dxf_tesselate(PolySet *ps, DxfData &dxf, double rot, Vector2d scale, bool u
 }
 
 
-/* Tessellation of 3d PolySet with near-planar polygons.
+/* Tessellation of 3d PolySet faces
 
-We do this by projecting each polygon of the Polyset onto a 2-d plane,
-then running a tessellation algorithm on the projected polygon. Then we
-project each of the newly generated 2d 'tiles' (the polygons used for
-tessellation, typically triangles) back up into 3d space.
+This code is for tessellating the faces of a 3d PolySet, assuming that
+the faces are near-planar polygons.
+
+We do the tessellation by projecting each polygon of the Polyset onto a
+2-d plane, then running a 2d tessellation algorithm on the projected 2d
+polygon. Then we project each of the newly generated 2d 'tiles' (the
+polygons used for tessellation, typically triangles) back up into 3d
+space.
 
 (in reality as of writing, we dont need to do a back-projection from 2d->3d
 because the algorithm we are using doesn't create any new points, and we can
-just use a 'map' to associate 3d points to 2d points).
+just use a 'map' to associate 3d points with 2d points).
 
 The code assumes the input polygons are simple, non-intersecting, without
 holes, and without duplicate input points.
 
-For more info, please see github #issue349. This code enables
-polyhedron() to use near-planar polygons rather than perfectly planar
-polygons. */
+The purpose of this code is originally to fix github issue 349. Our CGAL
+kernel does not accept polygons for Nef_Polyhedron_3 if each of the
+points is not exactly coplanar. "Near-planar" or "Almost planar" polygons
+often occur due to rounding issues on, for example, polyhedron() input.
+By tessellating the 3d polygon into individual smaller tiles that
+are perfectly coplanar (triangles, for example), we can get CGAL to accept
+the polyhedron() input.
+*/
 
 typedef enum { XYPLANE, YZPLANE, XZPLANE, NONE } projection_t;
 
