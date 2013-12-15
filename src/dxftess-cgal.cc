@@ -410,11 +410,11 @@ projection_t find_good_projection( PolySet::Polygon pgon ) {
 	NT3 qxz = pl.c()*pl.c()+pl.a()*pl.a();
 	NT3 min = std::min(qxy,std::min(qyz,qxz));
 	if (min==qxy) return XYPLANE;
-        else if (min==qyz) return YZPLANE;
-        return XZPLANE;
+	else if (min==qyz) return YZPLANE;
+	return XZPLANE;
 }
 
-/* triangulate the given polygon using CGAL's 2d Constrained Delaunay
+/* triangulate the given 3d polygon using CGAL's 2d Constrained Delaunay
 algorithm. Project the polygon's points into 2d using the given projection
 before performing the triangulation. This code assumes input polygon is
 simple, no holes, no self-intersections, no duplicate points, and is
@@ -449,9 +449,9 @@ bool triangulate_polygon( const PolySet::Polygon &pgon, std::vector<PolySet::Pol
 	  list_of_seeds.begin(), list_of_seeds.end(), DummyCriteria<CDT>());
 
 	CDT::Finite_faces_iterator fit;
-        for( fit=cdt.finite_faces_begin(); fit!=cdt.finite_faces_end(); fit++ )
-        {
-                if(fit->is_in_domain()) {
+	for( fit=cdt.finite_faces_begin(); fit!=cdt.finite_faces_end(); fit++ )
+	{
+		if(fit->is_in_domain()) {
 			CDTPoint p1 = cdt.triangle( fit )[0];
 			CDTPoint p2 = cdt.triangle( fit )[1];
 			CDTPoint p3 = cdt.triangle( fit )[2];
@@ -469,9 +469,9 @@ bool triangulate_polygon( const PolySet::Polygon &pgon, std::vector<PolySet::Pol
 				pgon.push_back(v1);
 			}
 			triangles.push_back( pgon );
-                }
-        }
-	catch (const CGAL::Assertion_exception &e) {
+		}
+	}
+	} catch (const CGAL::Assertion_exception &e) {
 		PRINTB("CGAL error in dxftess triangulate_polygon: %s", e.what());
 		err = true;
 	}
@@ -486,7 +486,7 @@ polyset has simple polygon faces with no holes, no self intersections, no
 duplicate points, and proper orientation. */
 void tessellate_3d_faces( const PolySet &inps, PolySet &outps ) {
         for (size_t i = 0; i < inps.polygons.size(); i++) {
-                const PolySet::Polygon pgon = inps.polygons[i];
+		const PolySet::Polygon pgon = inps.polygons[i];
 		if (pgon.size()<3) {
 			PRINT("WARNING: PolySet has polygon with <3 points");
 			continue;
