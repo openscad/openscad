@@ -418,7 +418,7 @@ projection_t find_good_projection( PolySet::Polygon pgon ) {
 algorithm. Project the polygon's points into 2d using the given projection
 before performing the triangulation. This code assumes input polygon is
 simple, no holes, no self-intersections, no duplicate points, and is
-properly oriented. */
+properly oriented. output is a sequence of 3d triangles. */
 bool triangulate_polygon( const PolySet::Polygon &pgon, std::vector<PolySet::Polygon> &triangles, projection_t projection )
 {
 	bool err = false;
@@ -491,12 +491,12 @@ void tessellate_3d_faces( const PolySet &inps, PolySet &outps ) {
 			PRINT("WARNING: PolySet has polygon with <3 points");
 			continue;
 		}
-		std::vector<PolySet::Polygon> triangles;
 		projection_t goodproj = find_good_projection( pgon );
 		if (goodproj==NONE) {
 			PRINT("WARNING: PolySet has degenerate polygon");
 			continue;
 		}
+		std::vector<PolySet::Polygon> triangles;
 		bool err = triangulate_polygon( pgon, triangles, goodproj );
 		if (!err) for (size_t j=0;j<triangles.size();j++) {
 			PolySet::Polygon t = triangles[j];
