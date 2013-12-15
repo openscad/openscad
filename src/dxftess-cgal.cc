@@ -466,8 +466,6 @@ using CGAL's Constrained Delaunay algorithm. This code assumes the input
 polyset has simple polygon faces with no holes, no self intersections, and no
 duplicate points. */
 void tessellate_3d_faces( const PolySet &inps, PolySet &outps ) {
-	PRINTB("tess 3d %i",inps.polygons.size());
-	PRINTB("%s < input ps",inps.dump());
         for (size_t i = 0; i < inps.polygons.size(); i++) {
                 const PolySet::Polygon pgon = inps.polygons[i];
 		if (pgon.size()<3) continue;
@@ -482,9 +480,7 @@ void tessellate_3d_faces( const PolySet &inps, PolySet &outps ) {
 			outps.append_vertex(t[2].x(),t[2].y(),t[2].z());
 		}
         }
-	PRINTB("tess 3d done %i",outps.polygons.size());
-	PRINTB("%s < output ps",outps.dump());
 }
 
-// End of the Tessellation of PolySet polygons
+// End of PolySet face tessellation code
 

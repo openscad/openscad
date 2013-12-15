@@ -235,8 +235,11 @@ AbstractNode *PrimitiveModule::instantiate(const Context *ctx, const ModuleInsta
 
 	if (type == POLYHEDRON) {
 		node->points = c.lookup_variable("points");
-		node->faces = c.lookup_variable("triangles");
 		node->faces = c.lookup_variable("faces");
+		if (node->faces.type() == Value::UNDEFINED) {
+			// backwards compatable
+			node->faces = c.lookup_variable("triangles");
+		}
 	}
 
 	if (type == SQUARE) {
