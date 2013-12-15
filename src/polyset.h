@@ -3,7 +3,6 @@
 
 #include "Geometry.h"
 #include "system-gl.h"
-#include "grid.h"
 #include "linalg.h"
 #include "renderer.h"
 #include "Polygon2d.h"
@@ -15,7 +14,6 @@ class PolySet : public Geometry
 public:
 	typedef std::vector<Vector3d> Polygon;
 	std::vector<Polygon> polygons;
-	Grid3d<void*> grid;
 
 	bool is2d;
 
@@ -38,6 +36,8 @@ public:
 
 	void render_surface(Renderer::csgmode_e csgmode, const Transform3d &m, GLint *shaderinfo = NULL) const;
 	void render_edges(Renderer::csgmode_e csgmode) const;
+
+	void transform(const Transform3d &mat);
 
 private:
   Polygon2d polygon;
