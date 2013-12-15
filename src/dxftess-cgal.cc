@@ -336,8 +336,28 @@ void dxf_tesselate(PolySet *ps, DxfData &dxf, double rot, Vector2d scale, bool u
 	}
 }
 
+
+/* Tessellation of 3d PolySet with near-planar polygons.
+
+We do this by projecting each polygon of the Polyset onto a 2-d plane,
+then running a tessellation algorithm on the projected polygon. Then we
+project the generated 2d triangles back up into 3d space.
+
+(in reality as of writing, we dont need to do a back-projection from 2d->3d
+because the algorithm we are using doesn't create any new points, and we can
+just use a 'map' to associate 3d points to 2d points).
+
+The code assumes the input polygons are simple, non-intersecting, without
+holes, and without duplicate input points.
+
+For more info, please see github #issue349. This code enables
+polyhedron() to use near-planar polygons rather than perfectly planar
+polygons. */
+
 typedef enum { XYPLANE, YZPLANE, XZPLANE, NONE } projection_t;
 
+// this is how we make 3d points appear as though they were 2d points to
+//the tessellation algorithm.
 Vector2d get_projected_point( Vector3d v, projection_t projection ) {
 	Vector2d v2(0,0);
 	if (projection==XYPLANE) { v2.x() = v.x(); v2.y() = v.y(); }
@@ -347,9 +367,13 @@ Vector2d get_projected_point( Vector3d v, projection_t projection ) {
 }
 
 CGAL_Point_3 cgp( Vector3d v ) { return CGAL_Point_3( v.x(), v.y(), v.z() ); }
-/* near-planar polygons in 3d can be projected into 2d, but you have to
-be careful. if you project, say, 0,0,0 0,1,0 0,1,1 0,0,1 onto the XY plane
-you will not get a polygon, you will get a skinny line thing. */
+
+/* Find a 'good' 2d projection for a given 3d polygon. the XY, YZ, or XZ 
+plane. This is needed because near-planar polygons in 3d can have 'bad' 
+projections into 2d. For example if the square 0,0,0 0,1,0 0,1,1 0,0,1 
+is projected onto the XY plane you will not get a polygon, you wil get 
+a skinny line thing. It's better to project that square onto the yz 
+plane.*/
 projection_t find_good_projection( PolySet::Polygon pgon ) {
 	// step 1 - find 3 non-collinear points in the input
 	if (pgon.size()<3) return NONE;
@@ -368,8 +392,8 @@ projection_t find_good_projection( PolySet::Polygon pgon ) {
 	// step 2 - find which direction is best for projection. planes use
 	// the equation ax+by+cz+d = 0. a,b, and c determine the direction the
 	// plane is in. we want to find which projection of the 'normal vector'
-	// would make the smallest shadow if projected onto the given plane.
-	// 'quadrance' (distance squared) can tell this w/o using sqrt.
+	// would make the smallest shadow if projected onto the XY, YZ, or XZ
+	// plane. 'quadrance' (distance squared) can tell this w/o using sqrt.
 	CGAL::Plane_3<CGAL_Kernel3> pl( cgp(v1), cgp(v2), cgp(v3) );
 	NT3 qxy = pl.a()*pl.a()+pl.b()*pl.b();
         NT3 qyz = pl.b()*pl.b()+pl.c()*pl.c();
@@ -380,6 +404,11 @@ projection_t find_good_projection( PolySet::Polygon pgon ) {
         return XZPLANE;
 }
 
+/* triangulate the given polygon using CGAL's Constrained Delaunay 
+algorithm. project the polygon's points using the given projection 
+before performing the triangulation. this code assumes input polygon is 
+simple, no holes, no self-intersections, no duplicate points, and 
+properly oriented. */
 void triangulate_polygon( const PolySet::Polygon &pgon, std::vector<PolySet::Polygon> &triangles, projection_t projection )
 {
 	CDT cdt;
@@ -431,9 +460,11 @@ void triangulate_polygon( const PolySet::Polygon &pgon, std::vector<PolySet::Pol
         }
 }
 
-/* given a 3d PolySet with 'near planar' faces, triangulate the faces.
-See Issue 340... this is so CGAL Nef Polyhedron will accept them.
-This code assumes the input polyset has simple polygon faces with no holes. */
+/* Given a 3d PolySet with 'near planar' polygonal faces, Tessellate the
+faces. As of writing, our only tessellation method is Triangulation
+using CGAL's Constrained Delaunay algorithm. This code assumes the input
+polyset has simple polygon faces with no holes, no self intersections, and no
+duplicate points. */
 void tessellate_3d_faces( const PolySet &inps, PolySet &outps ) {
 	PRINTB("tess 3d %i",inps.polygons.size());
 	PRINTB("%s < input ps",inps.dump());
@@ -454,4 +485,6 @@ void tessellate_3d_faces( const PolySet &inps, PolySet &outps ) {
 	PRINTB("tess 3d done %i",outps.polygons.size());
 	PRINTB("%s < output ps",outps.dump());
 }
+
+// End of the Tessellation of PolySet polygons
 
