@@ -560,6 +560,7 @@ set(CGAL_SOURCES
   ../src/CGAL_Nef_polyhedron_DxfData.cc
   ../src/cgaladv_minkowski2.cc
   ../src/Polygon2d-CGAL.cc
+  ../src/polyset-utils.cc 
   ../src/svg.cc
   ../src/GeometryEvaluator.cc)
 
@@ -569,7 +570,6 @@ set(COMMON_SOURCES
   ../src/GeometryCache.cc 
   ../src/clipper-utils.cc 
   ../src/polyclipping/clipper.cpp
-  ../src/polyset-utils.cc 
   ../src/Tree.cc
   ../src/lodepng.cpp)
 

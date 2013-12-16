@@ -286,9 +286,10 @@ Geometry *ImportNode::createGeometry() const
 			file >> poly;
 			file.close();
 			
-			p = new PolySet();
+			PolySet *p = new PolySet();
 			bool err = createPolySetFromPolyhedron(poly, *p);
 			if (err) delete p;
+			else g = p;
 		}
 #else
   PRINT("WARNING: OFF import requires CGAL.");
