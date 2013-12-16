@@ -27,6 +27,7 @@ o Stability fixes of CGAL-related crashes
 
 Deprecations:
 o child() is no longer supported. Use children() instead.
+o polyhedron(triangles=[...]): Use polyhedron(faces=[...]) instead.
 
 Misc:
 o We now use CGAL's EPEC kernel

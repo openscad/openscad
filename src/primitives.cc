@@ -239,6 +239,9 @@ AbstractNode *PrimitiveModule::instantiate(const Context *ctx, const ModuleInsta
 		if (node->faces.type() == Value::UNDEFINED) {
 			// backwards compatable
 			node->faces = c.lookup_variable("triangles");
+			if (node->faces.type() != Value::UNDEFINED) {
+				PRINT("DEPRECATED: polyhedron(triangles=[]) will be removed in future releases. Use polyhedron(faces=[]) instead.");
+			}
 		}
 	}
 
