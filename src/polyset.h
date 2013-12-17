@@ -38,6 +38,7 @@ public:
 	void render_edges(Renderer::csgmode_e csgmode) const;
 
 	void transform(const Transform3d &mat);
+	void resize(Vector3d newsize, const Eigen::Matrix<bool,3,1> &autosize);
 
 private:
   Polygon2d polygon;
