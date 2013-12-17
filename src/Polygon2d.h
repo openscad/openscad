@@ -22,6 +22,7 @@ public:
 	const Outlines2d &outlines() const { return theoutlines; }
 
 	void transform(const Transform2d &mat);
+	void resize(Vector2d newsize, const Eigen::Matrix<bool,2,1> &autosize);
 private:
 	Outlines2d theoutlines;
 };

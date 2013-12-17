@@ -62,3 +62,29 @@ void Polygon2d::transform(const Transform2d &mat)
 		}
 	}
 }
+
+void Polygon2d::resize(Vector2d newsize, const Eigen::Matrix<bool,2,1> &autosize)
+{
+	BoundingBox bbox = this->getBoundingBox();
+
+  // Find largest dimension
+	int maxdim = (newsize[1] && newsize[1] > newsize[0]) ? 1 : 0;
+
+	// Default scale (scale with 1 if the new size is 0)
+	Vector2d scale(newsize[0] > 0 ? newsize[0] / bbox.sizes()[0] : 1,
+								 newsize[1] > 0 ? newsize[1] / bbox.sizes()[1] : 1);
+
+  // Autoscale where applicable 
+	double autoscale = newsize[maxdim] > 0 ? newsize[maxdim] / bbox.sizes()[maxdim] : 1;
+	Vector2d newscale(!autosize[0] || (newsize[0] > 0) ? scale[0] : autoscale,
+										!autosize[1] || (newsize[1] > 0) ? scale[1] : autoscale);
+	
+	Transform2d t;
+	t.matrix() << 
+		newscale[0], 0, 0,
+		0, newscale[1], 0,
+		0, 0, 1;
+
+	this->transform(t);
+}
+

@@ -221,6 +221,52 @@ Geometry *GeometryEvaluator::applyHull3D(const AbstractNode &node)
 	return NULL;
 }
 
+void GeometryEvaluator::applyResize3D(CGAL_Nef_polyhedron &N, 
+																			const Vector3d &newsize,
+																			const Eigen::Matrix<bool,3,1> &autosize)
+{
+	// Based on resize() in Giles Bathgate's RapCAD (but not exactly)
+	if (N.isNull() || N.isEmpty()) return;
+
+	CGAL_Iso_cuboid_3 bb = bounding_box(*N.p3);
+
+	std::vector<NT3> scale, bbox_size;
+	for (int i=0;i<3;i++) {
+		scale.push_back(NT3(1));
+		bbox_size.push_back(bb.max_coord(i) - bb.min_coord(i));
+	}
+	int newsizemax_index = 0;
+	for (int i=0;i<N.getDimension();i++) {
+		if (newsize[i]) {
+			if (bbox_size[i] == NT3(0)) {
+				PRINT("WARNING: Resize in direction normal to flat object is not implemented");
+				return;
+			}
+			else {
+				scale[i] = NT3(newsize[i]) / bbox_size[i];
+			}
+			if (newsize[i] > newsize[newsizemax_index]) newsizemax_index = i;
+		}
+	}
+
+	NT3 autoscale = NT3(1);
+	if (newsize[newsizemax_index] != 0) {
+		autoscale = NT3(newsize[newsizemax_index]) / bbox_size[newsizemax_index];
+	}
+	for (int i=0;i<N.getDimension();i++) {
+		if (autosize[i] && newsize[i]==0) scale[i] = autoscale;
+	}
+
+	Eigen::Matrix4d t;
+	t << CGAL::to_double(scale[0]),           0,        0,        0,
+	     0,        CGAL::to_double(scale[1]),           0,        0,
+	     0,        0,        CGAL::to_double(scale[2]),           0,
+	     0,        0,        0,                                   1;
+
+	N.transform(Transform3d(t));
+	return;
+}
+
 Polygon2d *GeometryEvaluator::applyMinkowski2D(const AbstractNode &node)
 {
 	std::vector<const Polygon2d *> children = collectChildren2D(node);
@@ -846,6 +892,7 @@ Response GeometryEvaluator::visit(State &state, const RotateExtrudeNode &node)
 Response GeometryEvaluator::visit(State &state, const AbstractPolyNode &node)
 {
 	assert(false);
+	return AbortTraversal;
 }
 
 /*!
@@ -971,6 +1018,48 @@ Response GeometryEvaluator::visit(State &state, const CgaladvNode &node)
 				geom = applyToChildren(node, OPENSCAD_HULL).constptr();
 				break;
 			}
+			case RESIZE: {
+				ResultObject res = applyToChildren(node, OPENSCAD_UNION);
+				geom = res.constptr();
+
+				shared_ptr<const CGAL_Nef_polyhedron> N = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(res.constptr());
+				if (N) {
+					// If we got a const object, make a copy
+					shared_ptr<CGAL_Nef_polyhedron> newN;
+					if (res.isConst()) newN.reset(new CGAL_Nef_polyhedron(*N));
+					else newN = dynamic_pointer_cast<CGAL_Nef_polyhedron>(res.ptr());
+					applyResize3D(*newN, node.newsize, node.autosize);
+					geom = newN;
+				}
+				else {
+					shared_ptr<const Polygon2d> poly = dynamic_pointer_cast<const Polygon2d>(res.constptr());
+					if (poly) {
+						// If we got a const object, make a copy
+						shared_ptr<Polygon2d> newpoly;
+						if (res.isConst()) newpoly.reset(new Polygon2d(*poly));
+						else newpoly = dynamic_pointer_cast<Polygon2d>(res.ptr());
+
+						newpoly->resize(Vector2d(node.newsize[0], node.newsize[1]),
+														Eigen::Matrix<bool,2,1>(node.autosize[0], node.autosize[1]));
+					}
+					else {
+						shared_ptr<const PolySet> ps = dynamic_pointer_cast<const PolySet>(res.constptr());
+						if (ps) {
+							// If we got a const object, make a copy
+							shared_ptr<PolySet> newps;
+							if (res.isConst()) newps.reset(new PolySet(*ps));
+							else newps = dynamic_pointer_cast<PolySet>(res.ptr());
+
+							newps->resize(node.newsize, node.autosize);
+							geom = newps;
+						}
+						else {
+							assert(false);
+						}
+					}
+				}
+				break;
+			}
 			default:
 				assert(false && "not implemented");
 			}
@@ -983,17 +1072,6 @@ Response GeometryEvaluator::visit(State &state, const CgaladvNode &node)
 			// RESIZE     
 			//   2D        children -> Polygon2d -> union -> apply resize
 			//   3D        children -> PolySet -> union -> apply resize
-
-			// if (node.type == RESIZE) {
-			// 	const Geometry *geometry = applyToChildren2D(node, OPENSCAD_UNION);
-			// 	// FIXME: find size and transform
-			// }
-			// else {
-				// CGAL_Nef_polyhedron N = this->cgalevaluator->evaluateCGALMesh(node);
-				// PolySet *ps = N.isNull() ? NULL : N.convertToPolyset();
-				// geom.reset(ps);
-//			}
-			// FIXME: handle 3D
 		}
 		else {
 			geom = GeometryCache::instance()->get(this->tree.getIdString(node));

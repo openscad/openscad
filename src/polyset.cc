@@ -344,3 +344,31 @@ void PolySet::transform(const Transform3d &mat)
 		}
 	}
 }
+
+void PolySet::resize(Vector3d newsize, const Eigen::Matrix<bool,3,1> &autosize)
+{
+	BoundingBox bbox = this->getBoundingBox();
+
+  // Find largest dimension
+	int maxdim = 0;
+	for (int i=1;i<3;i++) if (newsize[i] > newsize[maxdim]) maxdim = i;
+
+	// Default scale (scale with 1 if the new size is 0)
+	Vector3d scale(1,1,1);
+	for (int i=0;i<3;i++) if (newsize[i] > 0) scale[i] = newsize[i] / bbox.sizes()[i];
+
+  // Autoscale where applicable 
+	double autoscale = scale[maxdim];
+	Vector3d newscale;
+	for (int i=0;i<3;i++) newscale[i] = !autosize[i] || (newsize[i] > 0) ? scale[i] : autoscale;
+	
+	Transform3d t;
+	t.matrix() << 
+    newscale[0], 0, 0, 0,
+    0, newscale[1], 0, 0,
+    0, 0, newscale[2], 0,
+    0, 0, 0, 1;
+
+	this->transform(t);
+}
+
