@@ -3,8 +3,8 @@
 
 namespace ClipperUtils {
 
-	ClipperLib::Polygon fromOutline2d(const Outline2d &outline) {
-		ClipperLib::Polygon p;
+	ClipperLib::Path fromOutline2d(const Outline2d &outline) {
+		ClipperLib::Path p;
 		BOOST_FOREACH(const Vector2d &v, outline) {
 			p.push_back(ClipperLib::IntPoint(v[0]*CLIPPER_SCALE, v[1]*CLIPPER_SCALE));
 		}
@@ -15,17 +15,17 @@ namespace ClipperUtils {
 		return p;
 	}
 
-	ClipperLib::Polygons fromPolygon2d(const Polygon2d &poly) {
-		ClipperLib::Polygons result;
+	ClipperLib::Paths fromPolygon2d(const Polygon2d &poly) {
+		ClipperLib::Paths result;
 		BOOST_FOREACH(const Outline2d &outline, poly.outlines()) {
 			result.push_back(fromOutline2d(outline));
 		}
 		return result;
 	}
 
-	Polygon2d *toPolygon2d(const ClipperLib::Polygons &poly) {
+	Polygon2d *toPolygon2d(const ClipperLib::Paths &poly) {
 		Polygon2d *result = new Polygon2d;
-		BOOST_FOREACH(const ClipperLib::Polygon &p, poly) {
+		BOOST_FOREACH(const ClipperLib::Path &p, poly) {
 			Outline2d outline;
 			const Vector2d *lastv = NULL;
 			BOOST_FOREACH(const ClipperLib::IntPoint &ip, p) {
@@ -40,13 +40,13 @@ namespace ClipperUtils {
 		return result;
 	}
 
-	ClipperLib::Polygons process(const ClipperLib::Polygons &polygons, 
+	ClipperLib::Paths process(const ClipperLib::Paths &polygons, 
 															 ClipperLib::ClipType cliptype,
 															 ClipperLib::PolyFillType polytype)
 	{
-		ClipperLib::Polygons result;
+		ClipperLib::Paths result;
 		ClipperLib::Clipper clipper;
-		clipper.AddPolygons(polygons, ClipperLib::ptSubject);
+		clipper.AddPaths(polygons, ClipperLib::ptSubject, true);
 		clipper.Execute(cliptype, result, polytype);
 		return result;
 	}
