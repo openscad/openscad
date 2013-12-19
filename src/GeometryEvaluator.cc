@@ -272,19 +272,19 @@ Polygon2d *GeometryEvaluator::applyMinkowski2D(const AbstractNode &node)
 	std::vector<const Polygon2d *> children = collectChildren2D(node);
 	if (children.size() > 0) {
 		bool first = false;
-		ClipperLib::Polygons result = ClipperUtils::fromPolygon2d(*children[0]);
+		ClipperLib::Paths result = ClipperUtils::fromPolygon2d(*children[0]);
 		for (int i=1;i<children.size();i++) {
-			ClipperLib::Polygon &temp = result[0];
+			ClipperLib::Path &temp = result[0];
 			const Polygon2d *chgeom = children[i];
-			ClipperLib::Polygon shape = ClipperUtils::fromOutline2d(chgeom->outlines()[0]);
-			ClipperLib::MinkowkiSum(temp, shape, result, true);
+			ClipperLib::Path shape = ClipperUtils::fromOutline2d(chgeom->outlines()[0]);
+			ClipperLib::MinkowskiSum(temp, shape, result, true);
 		}
 
 		// The results may contain holes due to ClipperLib failing to maintain
 		// solidity of minkowski results:
 		// https://sourceforge.net/p/polyclipping/discussion/1148419/thread/8488d4e8/
 		ClipperLib::Clipper clipper;
-		BOOST_FOREACH(ClipperLib::Polygon &p, result) {
+		BOOST_FOREACH(ClipperLib::Path &p, result) {
 			if (ClipperLib::Orientation(p)) std::reverse(p.begin(), p.end());
 			clipper.AddPath(p, ClipperLib::ptSubject, true);
 		}
@@ -408,13 +408,13 @@ Polygon2d *GeometryEvaluator::applyToChildren2D(const AbstractNode &node, OpenSC
 				assert(polygons);
 				// The first Clipper operation will sanitize the polygon, ensuring 
 				// contours/holes have the correct winding order
-				ClipperLib::Polygons result = ClipperUtils::fromPolygon2d(*polygons);
+				ClipperLib::Paths result = ClipperUtils::fromPolygon2d(*polygons);
 				result = ClipperUtils::process(result, 
 																			 ClipperLib::ctUnion, 
 																			 ClipperLib::pftEvenOdd);
 
 				// Add correctly winded polygons to the main clipper
-				sumclipper.AddPolygons(result, first ? ClipperLib::ptSubject : ClipperLib::ptClip);
+				sumclipper.AddPaths(result, first ? ClipperLib::ptSubject : ClipperLib::ptClip, true);
 			}
 			else {
 				// FIXME: Wrong error message
@@ -442,7 +442,7 @@ Polygon2d *GeometryEvaluator::applyToChildren2D(const AbstractNode &node, OpenSC
 		break;
 	}
 	// Perform the main op
-	ClipperLib::Polygons sumresult;
+	ClipperLib::Paths sumresult;
 	sumclipper.Execute(clipType, sumresult, ClipperLib::pftEvenOdd, ClipperLib::pftEvenOdd);
 
 	if (sumresult.size() == 0) return NULL;
@@ -536,7 +536,7 @@ Response GeometryEvaluator::visit(State &state, const LeafNode &node)
 			const Geometry *geometry = node.createGeometry();
 			const Polygon2d *polygons = dynamic_cast<const Polygon2d*>(geometry);
 			if (polygons) {
-				ClipperLib::Polygons result = ClipperUtils::fromPolygon2d(*polygons);
+				ClipperLib::Paths result = ClipperUtils::fromPolygon2d(*polygons);
 				result = ClipperUtils::process(result, 
 																			 ClipperLib::ctUnion, 
 																			 ClipperLib::pftEvenOdd);
@@ -956,17 +956,17 @@ Response GeometryEvaluator::visit(State &state, const ProjectionNode &node)
 #endif
 
 					if (poly) {
-						ClipperLib::Polygons result = ClipperUtils::fromPolygon2d(*poly);
+						ClipperLib::Paths result = ClipperUtils::fromPolygon2d(*poly);
 						// Using NonZero ensures that we don't create holes from polygons sharing
 						// edges since we're unioning a mesh
 						result = ClipperUtils::process(result, 
 																					 ClipperLib::ctUnion, 
 																					 ClipperLib::pftNonZero);
 						// Add correctly winded polygons to the main clipper
-						sumclipper.AddPolygons(result, ClipperLib::ptSubject);
+						sumclipper.AddPaths(result, ClipperLib::ptSubject, true);
 					}
 				}
-				ClipperLib::Polygons sumresult;
+				ClipperLib::Paths sumresult;
 				// This is key - without StrictlySimple, we tend to get self-intersecting results
 				sumclipper.StrictlySimple(true);
 				sumclipper.Execute(ClipperLib::ctUnion, sumresult, ClipperLib::pftNonZero, ClipperLib::pftNonZero);
