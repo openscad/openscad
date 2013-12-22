@@ -63,7 +63,9 @@ void exportFile(const class Geometry *root_geom, std::ostream &output, FileForma
 				assert(false && "Unsupported file format");
 			}
 		}
-		else {
+		else if (const Polygon2d *poly = dynamic_cast<const Polygon2d *>(root_geom)) {
+			export_dxf(*poly, output);
+		} else {
 			assert(false && "Not implemented");
 		}
 	}
@@ -263,6 +265,67 @@ void export_dxf(const CGAL_Nef_polyhedron *root_N, std::ostream &output)
 }
 
 #endif // ENABLE_CGAL
+
+/*!
+	Saves the current Polygon2d as DXF to the given absolute filename.
+ */
+void export_dxf(const Polygon2d &poly, std::ostream &output)
+{
+	setlocale(LC_NUMERIC, "C"); // Ensure radix is . (not ,) in output
+	// Some importers (e.g. Inkscape) needs a BLOCKS section to be present
+	output << "  0\n"
+				 <<	"SECTION\n"
+				 <<	"  2\n"
+				 <<	"BLOCKS\n"
+				 <<	"  0\n"
+				 << "ENDSEC\n"
+				 << "  0\n"
+				 << "SECTION\n"
+				 << "  2\n"
+				 << "ENTITIES\n";
+
+	BOOST_FOREACH(const Outline2d &o, poly.outlines()) {
+		for (int i=0;i<o.size();i++) {
+			const Vector2d &p1 = o[i];
+			const Vector2d &p2 = o[(i+1)%o.size()];
+			double x1 = p1[0];
+			double y1 = p1[1];
+			double x2 = p2[0];
+			double y2 = p2[1];
+			output << "  0\n"
+						 << "LINE\n";
+			// Some importers (e.g. Inkscape) needs a layer to be specified
+			output << "  8\n"
+						 << "0\n"
+						 << " 10\n"
+						 << x1 << "\n"
+						 << " 11\n"
+						 << x2 << "\n"
+						 << " 20\n"
+						 << y1 << "\n"
+						 << " 21\n"
+						 << y2 << "\n";
+		}
+	}
+
+	output << "  0\n"
+				 << "ENDSEC\n";
+
+	// Some importers (e.g. Inkscape) needs an OBJECTS section with a DICTIONARY entry
+	output << "  0\n"
+				 << "SECTION\n"
+				 << "  2\n"
+				 << "OBJECTS\n"
+				 << "  0\n"
+				 << "DICTIONARY\n"
+				 << "  0\n"
+				 << "ENDSEC\n";
+
+	output << "  0\n"
+				 <<"EOF\n";
+
+	setlocale(LC_NUMERIC, "");      // Set default locale
+}
 
 #ifdef DEBUG
 #include <boost/foreach.hpp>
