@@ -67,7 +67,6 @@ public:
 	Filename filename;
 	bool center;
 	int convexity;
-	virtual Geometry *evaluate_geometry(class PolySetEvaluator *) const { return createGeometry(); }
 	virtual Geometry *createGeometry() const;
 };
 

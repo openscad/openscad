@@ -10,8 +10,20 @@
 #include "CGALRenderer.h"
 #include "CGAL_renderer.h"
 #include "cgal.h"
+#include "cgalutils.h"
+#include "CGAL_Nef_polyhedron.h"
 
-void export_png_with_cgal(const CGAL_Nef_polyhedron *root_N, Camera &cam, std::ostream &output)
+void export_png(const Geometry *root_geom, Camera &cam, std::ostream &output)
+{
+	const CGAL_Nef_polyhedron *N = dynamic_cast<const CGAL_Nef_polyhedron *>(root_geom);
+	if (!N) {
+		// FIXME: Support rendering non-Nef directly
+		N = createNefPolyhedronFromGeometry(*root_geom);
+	}
+	export_png(N, cam, output);
+}
+
+void export_png(const CGAL_Nef_polyhedron *root_N, Camera &cam, std::ostream &output)
 {
 	OffscreenView *glview;
 	try {
@@ -20,7 +32,8 @@ void export_png_with_cgal(const CGAL_Nef_polyhedron *root_N, Camera &cam, std::o
 		fprintf(stderr,"Can't create OpenGL OffscreenView. Code: %i.\n", error);
 		return;
 	}
-	CGALRenderer cgalRenderer(*root_N);
+	shared_ptr<const CGAL_Nef_polyhedron> ptr(root_N);
+	CGALRenderer cgalRenderer(ptr);
 
 	BoundingBox bbox;
 	if (cgalRenderer.polyhedron) {

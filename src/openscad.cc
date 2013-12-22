@@ -46,7 +46,6 @@
 
 #ifdef ENABLE_CGAL
 #include "CGAL_Nef_polyhedron.h"
-#include "CGALEvaluator.h"
 #endif
 
 #include "csgterm.h"
@@ -249,7 +248,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 	ModuleInstantiation root_inst("group");
 	AbstractNode *root_node;
 	AbstractNode *absolute_root_node;
-	shared_ptr<const CGAL_Nef_polyhedron> root_N;
+	shared_ptr<const Geometry> root_geom;
 
 	handle_dep(filename.c_str());
 
@@ -333,7 +332,13 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 		if ((echo_output_file || png_output_file) && !(renderer==Render::CGAL)) {
 			// echo or OpenCSG png -> don't necessarily need CGALMesh evaluation
 		} else {
-			root_N = geomevaluator.cgalevaluator->evaluateCGALMesh(*tree.root());
+			root_geom = geomevaluator.evaluateGeometry(*tree.root(), true);
+			const CGAL_Nef_polyhedron *N = dynamic_cast<const CGAL_Nef_polyhedron*>(root_geom.get());
+			if (!root_geom || (N && N->isNull())) {
+				PRINT("Empty top-level object");
+				return 1;
+			}
+
 		}
 
 		fs::current_path(original_path);
@@ -358,12 +363,8 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 		}
 
 		if (stl_output_file) {
-			if (root_N->getDimension() != 3) {
+			if (root_geom->getDimension() != 3) {
 				PRINT("Current top level object is not a 3D object.\n");
-				return 1;
-			}
-			if (!root_N->p3->is_simple()) {
-				PRINT("Object isn't a valid 2-manifold! Modify your design.\n");
 				return 1;
 			}
 			std::ofstream fstream(stl_output_file);
@@ -371,18 +372,14 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 				PRINTB("Can't open file \"%s\" for export", stl_output_file);
 			}
 			else {
-				export_stl(root_N.get(), fstream);
+				exportFile(root_geom.get(), fstream, OPENSCAD_STL);
 				fstream.close();
 			}
 		}
 
 		if (off_output_file) {
-			if (root_N->getDimension() != 3) {
+			if (root_geom->getDimension() != 3) {
 				PRINT("Current top level object is not a 3D object.\n");
-				return 1;
-			}
-			if (!root_N->p3->is_simple()) {
-				PRINT("Object isn't a valid 2-manifold! Modify your design.\n");
 				return 1;
 			}
 			std::ofstream fstream(off_output_file);
@@ -390,13 +387,13 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 				PRINTB("Can't open file \"%s\" for export", off_output_file);
 			}
 			else {
-				export_off(root_N.get(), fstream);
+				exportFile(root_geom.get(), fstream, OPENSCAD_OFF);
 				fstream.close();
 			}
 		}
 
 		if (dxf_output_file) {
-			if (root_N->getDimension() != 2) {
+			if (root_geom->getDimension() != 2) {
 				PRINT("Current top level object is not a 2D object.\n");
 				return 1;
 			}
@@ -405,7 +402,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 				PRINTB("Can't open file \"%s\" for export", dxf_output_file);
 			}
 			else {
-				export_dxf(root_N.get(), fstream);
+				exportFile(root_geom.get(), fstream, OPENSCAD_DXF);
 				fstream.close();
 			}
 		}
@@ -417,12 +414,13 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 			}
 			else {
 				if (renderer==Render::CGAL) {
-					export_png_with_cgal(root_N.get(), camera, fstream);
+					export_png(root_geom.get(), camera, fstream);
 				} else if (renderer==Render::THROWNTOGETHER) {
 					export_png_with_throwntogether(tree, camera, fstream);
 				} else {
 					export_png_with_opencsg(tree, camera, fstream);
 				}
+				PRINTB("Camera eye: %f %f %f\n", camera.eye[0] % camera.eye[1] % camera.eye[2]);
 				fstream.close();
 			}
 		}
@@ -452,7 +450,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 #include <QDir>
 #include <QMetaType>
 
-Q_DECLARE_METATYPE(shared_ptr<const CGAL_Nef_polyhedron>);
+Q_DECLARE_METATYPE(shared_ptr<const Geometry>);
 
 // Only if "fileName" is not absolute, prepend the "absoluteBase".
 static QString assemblePath(const fs::path& absoluteBase,
@@ -496,7 +494,7 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 	QCoreApplication::setApplicationVersion(TOSTRING(OPENSCAD_VERSION));
 
 	// Other global settings
-	qRegisterMetaType<shared_ptr<const CGAL_Nef_polyhedron> >();
+	qRegisterMetaType<shared_ptr<const Geometry> >();
 	
 	const QString &app_path = app.applicationDirPath();
 

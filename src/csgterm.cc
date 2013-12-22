@@ -38,6 +38,11 @@
 	may or may not have a subtree which is already evaluated (e.g. using
 	the render() module).
 
+	Note: To distinguish between geometry evaluated to an empty volume
+	and non-geometric nodes (e.g. echo), a NULL CSGTerm is considered a
+	non-geometric node, while a CSGTerm with a NULL geometry is
+	considered empty geometry. This is important when e.g. establishing
+	positive vs. negative volumes using the difference operator.
  */
 
 /*!
@@ -128,6 +133,7 @@ CSGTerm::~CSGTerm()
 void CSGTerm::initBoundingBox()
 {
 	if (this->type == TYPE_PRIMITIVE) {
+    if (!this->geom) return;
 		this->bbox = this->m * this->geom->getBoundingBox();
 	}
 	else {
@@ -223,9 +229,11 @@ BoundingBox CSGChain::getBoundingBox() const
 	BoundingBox bbox;
 	BOOST_FOREACH(const CSGChainObject &obj, this->objects) {
 		if (obj.type != CSGTerm::TYPE_DIFFERENCE) {
-			BoundingBox psbox = obj.geom->getBoundingBox();
-			if (!psbox.isNull()) {
-				bbox.extend(obj.matrix * psbox);
+			if (obj.geom) {
+				BoundingBox psbox = obj.geom->getBoundingBox();
+				if (!psbox.isNull()) {
+					bbox.extend(obj.matrix * psbox);
+				}
 			}
 		}
 	}

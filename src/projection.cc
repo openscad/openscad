@@ -30,7 +30,6 @@
 #include "printutils.h"
 #include "builtin.h"
 #include "visitor.h"
-#include "PolySetEvaluator.h"
 #include "polyset.h"
 
 #include <assert.h>
@@ -67,22 +66,6 @@ AbstractNode *ProjectionModule::instantiate(const Context *ctx, const ModuleInst
 	node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
 
 	return node;
-}
-
-Geometry *ProjectionNode::evaluate_geometry(PolySetEvaluator *evaluator) const
-{
-	if (!evaluator) {
-		PRINTB("WARNING: No suitable PolySetEvaluator found for %s module!", this->name());
-		return NULL;
-	}
-
-	print_messages_push();
-
-	Geometry *ps = evaluator->evaluateGeometry(*this);
-
-	print_messages_pop();
-
-	return ps;
 }
 
 std::string ProjectionNode::toString() const

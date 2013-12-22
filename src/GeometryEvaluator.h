@@ -70,8 +70,6 @@ private:
 	shared_ptr<const Geometry> root;
 
 public:
-// FIXME: Deal with visibility
-	class CGALEvaluator *cgalevaluator;
 };
 
 

@@ -27,6 +27,7 @@ public:
 	virtual unsigned int getDimension() const { return this->is2d ? 2 : 3; }
 
 	bool empty() const { return polygons.size() == 0; }
+	size_t numPolygons() const { return polygons.size(); }
 	void append_poly();
 	void append_vertex(double x, double y, double z = 0.0);
 	void append_vertex(Vector3d v);

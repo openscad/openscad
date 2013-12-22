@@ -107,7 +107,6 @@ public:
 	primitive_type_e type;
 	int convexity;
 	Value points, paths, faces;
-	virtual Geometry *evaluate_geometry(class PolySetEvaluator *) const { return createGeometry(); }
 	virtual Geometry *createGeometry() const;
 };
 
@@ -293,6 +292,10 @@ static void generate_circle(point2d *circle, double r, int fragments)
 	}
 }
 
+/*!
+	Creates geometry for this node.
+	May return NULL if geometry creation failed.
+ */
 Geometry *PrimitiveNode::createGeometry() const
 {
 	Geometry *g = NULL;
@@ -575,8 +578,6 @@ sphere_next_r2:
 		p->setConvexity(convexity);
 	}
 
-  // FIXME: IF the above failed, create an empty polyset as that's required later on
-  if (!g) g = new PolySet();
 	return g;
 }
 
