@@ -26,7 +26,6 @@ public:
 	}
 	virtual std::string toString() const;
 	virtual std::string name() const;
-	Geometry *evaluate_geometry(class PolySetEvaluator *ps) const;
 
 	Value path;
 	std::string subdiv_type;

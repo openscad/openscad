@@ -28,7 +28,6 @@
 #include "module.h"
 #include "evalcontext.h"
 #include "builtin.h"
-#include "PolySetEvaluator.h"
 #include "polyset.h"
 #include <sstream>
 #include <assert.h>
@@ -115,11 +114,6 @@ AbstractNode *CgaladvModule::instantiate(const Context *ctx, const ModuleInstant
 	node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
 
 	return node;
-}
-
-Geometry *CgaladvNode::evaluate_geometry(PolySetEvaluator *ps) const
-{
-	return ps->evaluateGeometry(*this);
 }
 
 std::string CgaladvNode::name() const

@@ -33,7 +33,6 @@
 #include <boost/variant.hpp>
 #include "polyset.h"
 #include "dxftess.h"
-#include "CGALEvaluator.h"
 #include "Tree.h"
 
 #ifdef ENABLE_CGAL

@@ -16,7 +16,8 @@ public:
 	~CGAL_Nef_polyhedron() {}
 
 	virtual size_t memsize() const;
-	virtual BoundingBox getBoundingBox() const {}; // FIXME: Implement
+	// FIXME: Implement, but we probably want a high-resolution BBox..
+	virtual BoundingBox getBoundingBox() const { assert(false && "not implemented"); }
 	virtual std::string dump() const;
 	virtual unsigned int getDimension() const { return this->dim; }
 	

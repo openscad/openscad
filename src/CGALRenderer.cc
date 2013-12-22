@@ -41,21 +41,21 @@
 
 //#include "Preferences.h"
 
-CGALRenderer::CGALRenderer(const CGAL_Nef_polyhedron &root) : root(root)
+CGALRenderer::CGALRenderer(shared_ptr<const CGAL_Nef_polyhedron> root) : root(root)
 {
-	if (this->root.isNull()) {
+	if (this->root->isNull()) {
 		this->polyhedron = NULL;
 		this->polyset = NULL;
 	}
-	else if (root.getDimension() == 2) {
-		DxfData *dd = root.convertToDxfData();
+	else if (root->getDimension() == 2) {
+		DxfData *dd = root->convertToDxfData();
 		this->polyhedron = NULL;
 		this->polyset = new PolySet();
 		this->polyset->is2d = true;
 		dxf_tesselate(this->polyset, *dd, 0, Vector2d(1,1), true, false, 0);
 		delete dd;
 	}
-	else if (root.getDimension() == 3) {
+	else if (root->getDimension() == 3) {
 		this->polyset = NULL;
 		this->polyhedron = new Polyhedron();
     // FIXME: Make independent of Preferences
@@ -68,7 +68,7 @@ CGALRenderer::CGALRenderer(const CGAL_Nef_polyhedron &root) : root(root)
 		// 													 Preferences::inst()->color(Preferences::CGAL_FACE_FRONT_COLOR).green(),
 		// 													 Preferences::inst()->color(Preferences::CGAL_FACE_FRONT_COLOR).blue());
 		
-		CGAL::OGL::Nef3_Converter<CGAL_Nef_polyhedron3>::convert_to_OGLPolyhedron(*this->root.p3, this->polyhedron);
+		CGAL::OGL::Nef3_Converter<CGAL_Nef_polyhedron3>::convert_to_OGLPolyhedron(*this->root->p3, this->polyhedron);
 		this->polyhedron->init();
 	}
 }
@@ -81,8 +81,8 @@ CGALRenderer::~CGALRenderer()
 
 void CGALRenderer::draw(bool showfaces, bool showedges) const
 {
-	if (this->root.isNull()) return;
-	if (this->root.getDimension() == 2) {
+	if (this->root->isNull()) return;
+	if (this->root->getDimension() == 2) {
 		// Draw 2D polygons
 		glDisable(GL_LIGHTING);
 // FIXME:		const QColor &col = Preferences::inst()->color(Preferences::CGAL_FACE_2D_COLOR);
@@ -101,7 +101,7 @@ void CGALRenderer::draw(bool showfaces, bool showedges) const
 		typedef Explorer::Face_const_iterator fci_t;
 		typedef Explorer::Halfedge_around_face_const_circulator heafcc_t;
 		typedef Explorer::Point Point;
-		Explorer E = this->root.p2->explorer();
+		Explorer E = this->root->p2->explorer();
 		
 		// Draw 2D edges
 		glDisable(GL_DEPTH_TEST);
@@ -135,7 +135,7 @@ void CGALRenderer::draw(bool showfaces, bool showedges) const
 		
 		glEnable(GL_DEPTH_TEST);
 	}
-	else if (this->root.getDimension() == 3) {
+	else if (this->root->getDimension() == 3) {
 		if (showfaces) this->polyhedron->set_style(SNC_BOUNDARY);
 		else this->polyhedron->set_style(SNC_SKELETON);
 		

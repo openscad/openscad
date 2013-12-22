@@ -17,7 +17,6 @@
 #include "rendernode.h"
 #include "clipper-utils.h"
 #include "polyset-utils.h"
-#include "CGALEvaluator.h"
 #include "PolySet.h"
 #include "openscad.h" // get_fragments_from_r()
 #include "printutils.h"
@@ -32,7 +31,6 @@
 GeometryEvaluator::GeometryEvaluator(const class Tree &tree):
 	tree(tree)
 {
-	this->cgalevaluator = new CGALEvaluator(tree, *this);
 }
 
 /*!
@@ -80,6 +78,7 @@ shared_ptr<const Geometry> GeometryEvaluator::evaluateGeometry(const AbstractNod
 		if (!allownef) {
 			shared_ptr<const CGAL_Nef_polyhedron> N = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(this->root);
 			if (N) {
+				assert(N->getDimension() != 2); // FIXME: Remove 2D code
 				if (N->getDimension() == 2) this->root.reset(N->convertToPolygon2d());
 				else if (N->getDimension() == 3) this->root.reset(N->convertToPolyset());
 				else this->root.reset();
@@ -99,7 +98,8 @@ GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren(const Abstrac
 		if (item.second) {
 			if (!dim) dim = item.second->getDimension();
 			else if (dim != item.second->getDimension()) {
-				return ResultObject();
+				PRINT("WARNING: Mixing 2D and 3D objects is not supported.");
+				break;
 			}
 		}
 	}
@@ -128,17 +128,22 @@ GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren3D(const Abstr
 	CGAL_Nef_polyhedron *N = new CGAL_Nef_polyhedron;
 	BOOST_FOREACH(const Geometry::ChildItem &item, children) {
 		const shared_ptr<const Geometry> &chgeom = item.second;
-		shared_ptr<const CGAL_Nef_polyhedron> chN = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(chgeom);
-		if (!chN) {
-			const PolySet *chps = dynamic_cast<const PolySet*>(chgeom.get());
-			if (chps) chN.reset(createNefPolyhedronFromGeometry(*chps));
+		shared_ptr<const CGAL_Nef_polyhedron> chN;
+		if (!chgeom) {
+			chN.reset(new CGAL_Nef_polyhedron(3)); // Create null polyhedron
+		}
+		else {
+			chN = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(chgeom);
+			if (!chN) {
+				const PolySet *chps = dynamic_cast<const PolySet*>(chgeom.get());
+				if (chps) chN.reset(createNefPolyhedronFromGeometry(*chps));
+			}
 		}
 
-		if (chN) {
-			// Initialize N on first iteration with first expected geometric object
-			if (N->isNull() && !N->isEmpty()) *N = chN->copy();
-			else CGALUtils::applyBinaryOperator(*N, *chN, op);
-		}
+		// Initialize N on first iteration with first expected geometric object
+		if (N->isNull() && !N->isEmpty()) *N = chN->copy();
+		else CGALUtils::applyBinaryOperator(*N, *chN, op);
+
 		item.first->progress_report();
 	}
 
@@ -225,6 +230,7 @@ void GeometryEvaluator::applyResize3D(CGAL_Nef_polyhedron &N,
 																			const Vector3d &newsize,
 																			const Eigen::Matrix<bool,3,1> &autosize)
 {
+	assert(N.getDimension() != 2); // FIXME: Remove 2D code
 	// Based on resize() in Giles Bathgate's RapCAD (but not exactly)
 	if (N.isNull() || N.isEmpty()) return;
 
@@ -312,15 +318,13 @@ std::vector<const class Polygon2d *> GeometryEvaluator::collectChildren2D(const 
 			GeometryCache::instance()->insert(this->tree.getIdString(*chnode), chgeom);
 		}
 		
-		if (chgeom) {
-			if (chgeom->getDimension() == 2) {
+		if (chgeom && chgeom->getDimension() == 2) {
 				const Polygon2d *polygons = dynamic_cast<const Polygon2d *>(chgeom.get());
 				assert(polygons);
 				children.push_back(polygons);
-			}
-			else {
-				PRINT("ERROR: Only 2D children are supported by this operation!");
-			}
+		}
+		else {
+			PRINT("ERROR: Only 2D children are supported by this operation!");
 		}
 	}
 	return children;
@@ -361,13 +365,13 @@ Geometry::ChildList GeometryEvaluator::collectChildren3D(const AbstractNode &nod
 		// sibling object. 
 		smartCache(*chnode, chgeom);
 		
-		if (chgeom) {
-			if (chgeom->getDimension() == 3) {
+		if (chgeom && chgeom->getDimension() == 3) {
 				children.push_back(item);
-			}
-			else {
-				PRINT("ERROR: Only 3D children are supported by this operation!");
-			}
+		}
+		else {
+			PRINT("ERROR: Only 3D children are supported by this operation!");
+			shared_ptr<const Geometry> nullptr;
+			children.push_back(Geometry::ChildItem(item.first, nullptr));
 		}
 	}
 	return children;
@@ -594,43 +598,44 @@ Response GeometryEvaluator::visit(State &state, const TransformNode &node)
 			else {
 				// First union all children
 				ResultObject res = applyToChildren(node, OPENSCAD_UNION);
-				geom = res.constptr();
-				if (geom->getDimension() == 2) {
-					shared_ptr<const Polygon2d> polygons = dynamic_pointer_cast<const Polygon2d>(geom);
-					assert(polygons);
-					
-					// If we got a const object, make a copy
-					shared_ptr<Polygon2d> newpoly;
-					if (res.isConst()) newpoly.reset(new Polygon2d(*polygons));
-					else newpoly = dynamic_pointer_cast<Polygon2d>(res.ptr());
-					
-					Transform2d mat2;
-					mat2.matrix() << 
-						node.matrix(0,0), node.matrix(0,1), node.matrix(0,3),
-						node.matrix(1,0), node.matrix(1,1), node.matrix(1,3),
-						node.matrix(3,0), node.matrix(3,1), node.matrix(3,3);
-					newpoly->transform(mat2);
-					geom = newpoly;
-				}
-				else if (geom->getDimension() == 3) {
-					shared_ptr<const PolySet> ps = dynamic_pointer_cast<const PolySet>(geom);
-					if (ps) {
+				if ((geom = res.constptr())) {
+					if (geom->getDimension() == 2) {
+						shared_ptr<const Polygon2d> polygons = dynamic_pointer_cast<const Polygon2d>(geom);
+						assert(polygons);
+						
 						// If we got a const object, make a copy
-						shared_ptr<PolySet> newps;
-						if (res.isConst()) newps.reset(new PolySet(*ps));
-						else newps = dynamic_pointer_cast<PolySet>(res.ptr());
-						newps->transform(node.matrix);
-						geom = newps;
+						shared_ptr<Polygon2d> newpoly;
+						if (res.isConst()) newpoly.reset(new Polygon2d(*polygons));
+						else newpoly = dynamic_pointer_cast<Polygon2d>(res.ptr());
+						
+						Transform2d mat2;
+						mat2.matrix() << 
+							node.matrix(0,0), node.matrix(0,1), node.matrix(0,3),
+							node.matrix(1,0), node.matrix(1,1), node.matrix(1,3),
+							node.matrix(3,0), node.matrix(3,1), node.matrix(3,3);
+						newpoly->transform(mat2);
+						geom = newpoly;
 					}
-					else {
-						shared_ptr<const CGAL_Nef_polyhedron> N = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom);
-						assert(N);
-						// If we got a const object, make a copy
-						shared_ptr<CGAL_Nef_polyhedron> newN;
-						if (res.isConst()) newN.reset(new CGAL_Nef_polyhedron(*N));
-						else newN = dynamic_pointer_cast<CGAL_Nef_polyhedron>(res.ptr());
-						newN->transform(node.matrix);
-						geom = newN;
+					else if (geom->getDimension() == 3) {
+						shared_ptr<const PolySet> ps = dynamic_pointer_cast<const PolySet>(geom);
+						if (ps) {
+							// If we got a const object, make a copy
+							shared_ptr<PolySet> newps;
+							if (res.isConst()) newps.reset(new PolySet(*ps));
+							else newps = dynamic_pointer_cast<PolySet>(res.ptr());
+							newps->transform(node.matrix);
+							geom = newps;
+						}
+						else {
+							shared_ptr<const CGAL_Nef_polyhedron> N = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom);
+							assert(N);
+							// If we got a const object, make a copy
+							shared_ptr<CGAL_Nef_polyhedron> newN;
+							if (res.isConst()) newN.reset(new CGAL_Nef_polyhedron(*N));
+							else newN = dynamic_pointer_cast<CGAL_Nef_polyhedron>(res.ptr());
+							newN->transform(node.matrix);
+							geom = newN;
+						}
 					}
 				}
 			}
@@ -1096,6 +1101,7 @@ Response GeometryEvaluator::visit(State &state, const RenderNode &node)
 			geom = applyToChildren(node, OPENSCAD_UNION).constptr();
 			shared_ptr<const CGAL_Nef_polyhedron> N = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom);
 			if (N) {
+				assert(N->getDimension() != 2); // FIXME: Remove 2D code
 				PolySet *ps = NULL;
 				if (!N->isNull()) {
 					if (N->getDimension() == 3 && !N->p3->is_simple()) {

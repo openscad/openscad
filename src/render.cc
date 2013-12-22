@@ -28,7 +28,6 @@
 #include "module.h"
 #include "evalcontext.h"
 #include "builtin.h"
-#include "PolySetEvaluator.h"
 #include "polyset.h"
 
 #include <sstream>
@@ -60,11 +59,6 @@ AbstractNode *RenderModule::instantiate(const Context *ctx, const ModuleInstanti
 	node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
 
 	return node;
-}
-
-class Geometry *RenderNode::evaluate_geometry(PolySetEvaluator *ps) const
-{
-	return ps->evaluateGeometry(*this);
 }
 
 std::string RenderNode::toString() const

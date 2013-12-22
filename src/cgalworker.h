@@ -18,7 +18,7 @@ protected slots:
 	void work();
 
 signals:
-	void done(shared_ptr<const class CGAL_Nef_polyhedron>);
+	void done(shared_ptr<const class Geometry>);
 
 protected:
 

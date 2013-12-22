@@ -24,7 +24,6 @@ public:
 	double origin_x, origin_y, scale;
 	Filename filename;
 	std::string layername;
-	virtual Geometry *evaluate_geometry(class PolySetEvaluator *) const;
 };
 
 #endif

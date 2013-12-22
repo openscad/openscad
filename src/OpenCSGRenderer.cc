@@ -133,15 +133,17 @@ void OpenCSGRenderer::renderCSGChain(CSGChain *chain, GLint *shaderinfo,
 
 		if (last) break;
 
-		OpenCSGPrim *prim = new OpenCSGPrim(i_obj.type == CSGTerm::TYPE_DIFFERENCE ?
-							OpenCSG::Subtraction : OpenCSG::Intersection, i_obj.geom->getConvexity());
-
-		prim->geom = i_obj.geom;
-		prim->m = i_obj.matrix;
-		prim->csgmode = i_obj.type == CSGTerm::TYPE_DIFFERENCE ? CSGMODE_DIFFERENCE : CSGMODE_NORMAL;
-		if (highlight) prim->csgmode = csgmode_e(prim->csgmode + 20);
-		else if (background) prim->csgmode = csgmode_e(prim->csgmode + 10);
-		primitives.push_back(prim);
+		if (i_obj.geom) {
+			OpenCSGPrim *prim = new OpenCSGPrim(i_obj.type == CSGTerm::TYPE_DIFFERENCE ?
+																					OpenCSG::Subtraction : OpenCSG::Intersection, i_obj.geom->getConvexity());
+			
+			prim->geom = i_obj.geom;
+			prim->m = i_obj.matrix;
+			prim->csgmode = i_obj.type == CSGTerm::TYPE_DIFFERENCE ? CSGMODE_DIFFERENCE : CSGMODE_NORMAL;
+			if (highlight) prim->csgmode = csgmode_e(prim->csgmode + 20);
+			else if (background) prim->csgmode = csgmode_e(prim->csgmode + 10);
+			primitives.push_back(prim);
+		}
 	}
 	std::for_each(primitives.begin(), primitives.end(), del_fun<OpenCSG::Primitive>());
 }

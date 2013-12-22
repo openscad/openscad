@@ -38,7 +38,6 @@
 #include "CGAL_Nef_polyhedron.h"
 #include "GeometryEvaluator.h"
 #include "CGALEvaluator.h"
-#include "PolySetCGALEvaluator.h"
 #include "CGALCache.h"
 
 #ifndef _MSC_VER
@@ -149,9 +148,9 @@ int main(int argc, char **argv)
 	print_messages_push();
 
 	std::cout << "First evaluation:\n";
-	shared_ptr<const CGAL_Nef_polyhedron> N = geomevaluator.cgalevaluator->evaluateCGALMesh(*root_node);
+	shared_ptr<const Geometry> geom = geomevaluator.evaluateGeometry(*root_node, true);
 	std::cout << "Second evaluation:\n";
-	shared_ptr<const CGAL_Nef_polyhedron> N2 = geomevaluator.cgalevaluator->evaluateCGALMesh(*root_node);
+	shared_ptr<const Geometry> geom2 = geomevaluator.evaluateGeometry(*root_node, true);
 	// FIXME:
 	// Evaluate again to make cache kick in
 	// Record printed output and compare it

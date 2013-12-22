@@ -29,9 +29,62 @@
 #include "polyset.h"
 #include "dxfdata.h"
 
+#include <boost/foreach.hpp>
+
 #ifdef ENABLE_CGAL
 #include "CGAL_Nef_polyhedron.h"
 #include "cgal.h"
+
+void exportFile(const class Geometry *root_geom, std::ostream &output, FileFormat format)
+{
+	if (const CGAL_Nef_polyhedron *N = dynamic_cast<const CGAL_Nef_polyhedron *>(root_geom)) {
+
+		switch (format) {
+		case OPENSCAD_STL:
+			export_stl(N, output);
+			break;
+		case OPENSCAD_OFF:
+			export_off(N, output);
+			break;
+		case OPENSCAD_DXF:
+			export_dxf(N, output);
+			break;
+		default:
+			assert(false && "Unknown file format");
+		}
+	}
+	else {
+		if (const PolySet *ps = dynamic_cast<const PolySet *>(root_geom)) {
+			switch (format) {
+			case OPENSCAD_STL:
+				export_stl(ps, output);
+				break;
+			default:
+				assert(false && "Unsupported file format");
+			}
+		}
+		else {
+			assert(false && "Not implemented");
+		}
+	}
+}
+
+void export_stl(const PolySet *ps, std::ostream &output)
+{
+	setlocale(LC_NUMERIC, "C"); // Ensure radix is . (not ,) in output
+	output << "solid OpenSCAD_Model\n";
+	BOOST_FOREACH(const PolySet::Polygon &p, ps->polygons) {
+		output << "  facet normal 0 0 0\n";
+		output << "    outer loop\n";
+		BOOST_FOREACH(const Vector3d &v, p) {
+			output << "vertex" << v[0] << " " << v[1] << " " << v[2] << "\n";
+		}
+		output << "    endloop\n";
+		output << "  endfacet\n";
+	}
+	output << "endsolid OpenSCAD_Model\n";
+	setlocale(LC_NUMERIC, "");      // Set default locale
+}
 
 /*!
 	Saves the current 3D CGAL Nef polyhedron as STL to the given file.
@@ -39,6 +92,9 @@
  */
 void export_stl(const CGAL_Nef_polyhedron *root_N, std::ostream &output)
 {
+	if (!root_N->p3->is_simple()) {
+		PRINT("Object isn't a valid 2-manifold! Modify your design.\n");
+	}
 	CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
 	try {
 	CGAL_Polyhedron P;
@@ -127,6 +183,9 @@ void export_stl(const CGAL_Nef_polyhedron *root_N, std::ostream &output)
 
 void export_off(const CGAL_Nef_polyhedron *root_N, std::ostream &output)
 {
+	if (!root_N->p3->is_simple()) {
+		PRINT("Object isn't a valid 2-manifold! Modify your design.\n");
+	}
 	CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
 	try {
 		CGAL_Polyhedron P;

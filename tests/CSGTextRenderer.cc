@@ -43,6 +43,8 @@ CSGTextRenderer::process(string &target, const string &src, OpenSCADOperator op)
 	case OPENSCAD_MINKOWSKI:
 		target += "M" + src;
 		break;
+	default:
+		assert(false);
 	}
 }
 

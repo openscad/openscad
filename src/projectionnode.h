@@ -19,7 +19,6 @@ public:
 
 	int convexity;
 	bool cut_mode;
-	virtual class Geometry *evaluate_geometry(class PolySetEvaluator *evaluator) const;
 };
 
 #endif

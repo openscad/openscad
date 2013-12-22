@@ -3,7 +3,6 @@
 
 #include "Tree.h"
 #include "GeometryEvaluator.h"
-#include "CGALEvaluator.h"
 #include "progress.h"
 #include "printutils.h"
 
@@ -28,15 +27,15 @@ void CGALWorker::start(const Tree &tree)
 
 void CGALWorker::work()
 {
-	shared_ptr<const CGAL_Nef_polyhedron> root_N;
+	shared_ptr<const Geometry> root_geom;
 	try {
 		GeometryEvaluator evaluator(*this->tree);
-		root_N = evaluator.cgalevaluator->evaluateCGALMesh(*this->tree->root());
+		root_geom = evaluator.evaluateGeometry(*this->tree->root(), true);
 	}
 	catch (const ProgressCancelException &e) {
 		PRINT("Rendering cancelled.");
 	}
 
-	emit done(root_N);
+	emit done(root_geom);
 	thread->quit();
 }

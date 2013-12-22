@@ -6,12 +6,12 @@
 class CGALRenderer : public Renderer
 {
 public:
-	CGALRenderer(const class CGAL_Nef_polyhedron &root);
+	CGALRenderer(shared_ptr<const class CGAL_Nef_polyhedron> root);
 	~CGALRenderer();
 	void draw(bool showfaces, bool showedges) const;
 
 public:
-	const CGAL_Nef_polyhedron &root;
+	const shared_ptr<const CGAL_Nef_polyhedron> root;
 	class Polyhedron *polyhedron;
 	class PolySet *polyset;
 };

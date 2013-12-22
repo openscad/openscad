@@ -379,7 +379,6 @@ cgal {
 HEADERS += src/cgal.h \
            src/cgalfwd.h \
            src/cgalutils.h \
-           src/CGALEvaluator.h \
            src/CGALCache.h \
            src/CGALRenderer.h \
            src/CGAL_Nef_polyhedron.h \
@@ -388,7 +387,6 @@ HEADERS += src/cgal.h \
            src/Polygon2d-CGAL.h
 
 SOURCES += src/cgalutils.cc \
-           src/CGALEvaluator.cc \
            src/CGALCache.cc \
            src/CGALRenderer.cc \
            src/CGAL_Nef_polyhedron.cc \

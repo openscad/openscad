@@ -41,7 +41,7 @@ public:
 	shared_ptr<CSGTerm> root_norm_term;          // Normalized CSG products
 	class CSGChain *root_chain;
 #ifdef ENABLE_CGAL
-	shared_ptr<const class CGAL_Nef_polyhedron> root_N;
+	shared_ptr<const class Geometry> root_geom;
 	class CGALRenderer *cgalRenderer;
 #endif
 #ifdef ENABLE_OPENCSG
@@ -116,12 +116,12 @@ private slots:
 	void preferences();
 
 private slots:
-	void actionRenderCSG();
+	void actionRenderPreview();
 	void csgRender();
 	void csgReloadRender();
 #ifdef ENABLE_CGAL
-	void actionRenderCGAL();
-	void actionRenderCGALDone(shared_ptr<const class CGAL_Nef_polyhedron>);
+	void actionRender();
+	void actionRenderDone(shared_ptr<const class Geometry>);
 	void cgalRender();
 #endif
 	void actionDisplayAST();
@@ -142,13 +142,13 @@ public:
 	void clearCurrentOutput();
 
 public slots:
-	void actionReloadRenderCSG();
+	void actionReloadRenderPreview();
 #ifdef ENABLE_OPENCSG
-	void viewModeOpenCSG();
+	void viewModePreview();
 #endif
 #ifdef ENABLE_CGAL
-	void viewModeCGALSurface();
-	void viewModeCGALGrid();
+	void viewModeSurface();
+	void viewModeWireframe();
 #endif
 	void viewModeThrownTogether();
 	void viewModeShowEdges();

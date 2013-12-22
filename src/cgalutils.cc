@@ -692,7 +692,7 @@ CGAL_Nef_polyhedron *createNefPolyhedronFromGeometry(const Geometry &geom)
 		const Polygon2d *poly2d = dynamic_cast<const Polygon2d*>(&geom);
 		if (poly2d) return createNefPolyhedronFromPolygon2d(*poly2d);
 	}
-	assert(false && "CGALEvaluator::evaluateCGALMesh(): Unsupported geometry type");
+	assert(false && "createNefPolyhedronFromGeometry(): Unsupported geometry type");
 	return NULL;
 }
 

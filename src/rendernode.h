@@ -14,7 +14,6 @@ public:
 	}
 	virtual std::string toString() const;
 	virtual std::string name() const { return "render"; }
-	Geometry *evaluate_geometry(class PolySetEvaluator *ps) const;
 
 	int convexity;
 };
