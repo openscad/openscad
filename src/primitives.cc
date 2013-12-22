@@ -574,8 +574,14 @@ sphere_next_r2:
 				p->addOutline(curroutline);
 			}
 		}
-
-		p->setConvexity(convexity);
+        
+        if (p->outlines().size() == 0) {
+            delete p;
+            g = NULL;
+        }
+        else {
+            p->setConvexity(convexity);
+        }
 	}
 
 	return g;

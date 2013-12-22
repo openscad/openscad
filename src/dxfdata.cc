@@ -596,5 +596,9 @@ Polygon2d *DxfData::toPolygon2d() const
 		}
 		poly->addOutline(outline);
 	}
+	if (poly->outlines().size() == 0) {
+		delete poly;
+		poly = NULL;
+	}
 	return poly;
 }

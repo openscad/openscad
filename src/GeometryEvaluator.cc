@@ -447,7 +447,7 @@ Polygon2d *GeometryEvaluator::applyToChildren2D(const AbstractNode &node, OpenSC
 	}
 	// Perform the main op
 	ClipperLib::Paths sumresult;
-	sumclipper.Execute(clipType, sumresult, ClipperLib::pftEvenOdd, ClipperLib::pftEvenOdd);
+	sumclipper.Execute(clipType, sumresult, ClipperLib::pftNonZero, ClipperLib::pftNonZero);
 
 	if (sumresult.size() == 0) return NULL;
 
