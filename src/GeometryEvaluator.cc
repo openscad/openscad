@@ -836,8 +836,8 @@ static Geometry *rotatePolygon(const RotateExtrudeNode &node, const Polygon2d &p
 		rings[1].reserve(o.size());
 
 		fill_ring(rings[0], o, -M_PI/2); // first ring
-		for (int j = 0; j <= fragments; j++) {
-			double a = ((j+1)*2*M_PI) / fragments - M_PI/2; // start on the X axis
+		for (int j = 0; j < fragments; j++) {
+			double a = ((j+1)%fragments*2*M_PI) / fragments - M_PI/2; // start on the X axis
 			fill_ring(rings[(j+1)%2], o, a);
 
 			for (size_t i=0;i<o.size();i++) {
