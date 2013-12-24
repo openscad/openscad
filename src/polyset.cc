@@ -26,6 +26,7 @@
 
 #include "polyset.h"
 #include "linalg.h"
+#include "printutils.h"
 #include <Eigen/LU>
 #include <boost/foreach.hpp>
 
@@ -270,30 +271,47 @@ void PolySet::render_surface(Renderer::csgmode_e csgmode, const Transform3d &m, 
 	}
 }
 
-// This is apparently used only in throwntogether mode
+/*! This is used in throwntogether and CGAL mode
+
+	csgmode is set to CSGMODE_NONE in CGAL mode. In this mode a pure 2D rendering is performed.
+
+	For some reason, this is not used to render edges in Preview mode
+*/
 void PolySet::render_edges(Renderer::csgmode_e csgmode) const
 {
 	glDisable(GL_LIGHTING);
 	if (this->is2d) {
-		// Render 2D objects 1mm thick, but differences slightly larger
-		double zbase = 1 + (csgmode & CSGMODE_DIFFERENCE_FLAG) * 0.1;
-
-		BOOST_FOREACH(const Outline2d &o, polygon.outlines()) {
-			// Render top+bottom outlines
-			for (double z = -zbase/2; z < zbase; z += zbase) {
+		if (csgmode == Renderer::CSGMODE_NONE) {
+			// Render only outlines
+			BOOST_FOREACH(const Outline2d &o, polygon.outlines()) {
 				glBegin(GL_LINE_LOOP);
 				BOOST_FOREACH(const Vector2d &v, o) {
-					glVertex3d(v[0], v[1], z);
+					glVertex3d(v[0], v[1], -0.1);
 				}
 				glEnd();
 			}
-			// Render sides
-			glBegin(GL_LINES);
-			BOOST_FOREACH(const Vector2d &v, o) {
-				glVertex3d(v[0], v[1], -zbase/2);
-				glVertex3d(v[0], v[1], +zbase/2);
+		}
+		else {
+			// Render 2D objects 1mm thick, but differences slightly larger
+			double zbase = 1 + (csgmode & CSGMODE_DIFFERENCE_FLAG) * 0.1;
+
+			BOOST_FOREACH(const Outline2d &o, polygon.outlines()) {
+				// Render top+bottom outlines
+				for (double z = -zbase/2; z < zbase; z += zbase) {
+					glBegin(GL_LINE_LOOP);
+					BOOST_FOREACH(const Vector2d &v, o) {
+						glVertex3d(v[0], v[1], z);
+					}
+					glEnd();
+				}
+				// Render sides
+				glBegin(GL_LINES);
+				BOOST_FOREACH(const Vector2d &v, o) {
+					glVertex3d(v[0], v[1], -zbase/2);
+					glVertex3d(v[0], v[1], +zbase/2);
+				}
+				glEnd();
 			}
-			glEnd();
 		}
 	} else {
 		for (size_t i = 0; i < polygons.size(); i++) {

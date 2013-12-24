@@ -41,22 +41,16 @@
 
 //#include "Preferences.h"
 
-CGALRenderer::CGALRenderer(shared_ptr<const CGAL_Nef_polyhedron> root) : root(root)
+CGALRenderer::CGALRenderer(shared_ptr<const class Geometry> geom) : polyhedron(NULL)
 {
-	if (this->root->isNull()) {
-		this->polyhedron = NULL;
-		this->polyset = NULL;
+	if (shared_ptr<const PolySet> ps = dynamic_pointer_cast<const PolySet>(geom)) {
+		this->polyset = ps;
 	}
-	else if (root->getDimension() == 2) {
-		DxfData *dd = root->convertToDxfData();
-		this->polyhedron = NULL;
-		this->polyset = new PolySet();
-		this->polyset->is2d = true;
-		dxf_tesselate(this->polyset, *dd, 0, Vector2d(1,1), true, false, 0);
-		delete dd;
+	else if (shared_ptr<const Polygon2d> poly = dynamic_pointer_cast<const Polygon2d>(geom)) {
+		this->polyset.reset(poly->tessellate());
 	}
-	else if (root->getDimension() == 3) {
-		this->polyset = NULL;
+	else if (shared_ptr<const CGAL_Nef_polyhedron> new_N = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom)) {
+		assert(new_N->getDimension() == 3);
 		this->polyhedron = new Polyhedron();
     // FIXME: Make independent of Preferences
 		// this->polyhedron->setColor(Polyhedron::CGAL_NEF3_MARKED_FACET_COLOR,
@@ -68,74 +62,54 @@ CGALRenderer::CGALRenderer(shared_ptr<const CGAL_Nef_polyhedron> root) : root(ro
 		// 													 Preferences::inst()->color(Preferences::CGAL_FACE_FRONT_COLOR).green(),
 		// 													 Preferences::inst()->color(Preferences::CGAL_FACE_FRONT_COLOR).blue());
 		
-		CGAL::OGL::Nef3_Converter<CGAL_Nef_polyhedron3>::convert_to_OGLPolyhedron(*this->root->p3, this->polyhedron);
+		CGAL::OGL::Nef3_Converter<CGAL_Nef_polyhedron3>::convert_to_OGLPolyhedron(*new_N->p3, this->polyhedron);
 		this->polyhedron->init();
+	}
+	else {
+		assert(false);
 	}
 }
 
 CGALRenderer::~CGALRenderer()
 {
-	delete this->polyset;
 	delete this->polyhedron;
 }
 
 void CGALRenderer::draw(bool showfaces, bool showedges) const
 {
-	if (this->root->isNull()) return;
-	if (this->root->getDimension() == 2) {
-		// Draw 2D polygons
-		glDisable(GL_LIGHTING);
+	if (this->polyset) {
+		if (this->polyset->getDimension() == 2) {
+			// Draw 2D polygons
+			glDisable(GL_LIGHTING);
 // FIXME:		const QColor &col = Preferences::inst()->color(Preferences::CGAL_FACE_2D_COLOR);
-		glColor3f(0.0f, 0.75f, 0.60f);
-		
-		for (size_t i=0; i < this->polyset->polygons.size(); i++) {
-			glBegin(GL_POLYGON);
-			for (size_t j=0; j < this->polyset->polygons[i].size(); j++) {
-				const Vector3d &p = this->polyset->polygons[i][j];
-				glVertex3d(p[0], p[1], -0.1);
-			}
-			glEnd();
-		}
-		
-		typedef CGAL_Nef_polyhedron2::Explorer Explorer;
-		typedef Explorer::Face_const_iterator fci_t;
-		typedef Explorer::Halfedge_around_face_const_circulator heafcc_t;
-		typedef Explorer::Point Point;
-		Explorer E = this->root->p2->explorer();
-		
-		// Draw 2D edges
-		glDisable(GL_DEPTH_TEST);
-		glDisable(GL_LIGHTING);
-		glLineWidth(2);
-// FIXME:		const QColor &col2 = Preferences::inst()->color(Preferences::CGAL_EDGE_2D_COLOR);
-		glColor3f(1.0f, 0.0f, 0.0f);
-		
-		// Extract the boundary, including inner boundaries of the polygons
-		for (fci_t fit = E.faces_begin(), facesend = E.faces_end(); fit != facesend; ++fit) {
-			bool fset = false;
-			double fx = 0.0, fy = 0.0;
-			heafcc_t fcirc(E.halfedge(fit)), fend(fcirc);
-			CGAL_For_all(fcirc, fend) {
-				if(E.is_standard(E.target(fcirc))) {
-					Point p = E.point(E.target(fcirc));
-					double x = to_double(p.x()), y = to_double(p.y());
-					if (!fset) {
-						glBegin(GL_LINE_STRIP);
-						fx = x, fy = y;
-						fset = true;
-					}
-					glVertex3d(x, y, -0.1);
+			glColor3f(0.0f, 0.75f, 0.60f);
+
+			for (size_t i=0; i < this->polyset->polygons.size(); i++) {
+				glBegin(GL_POLYGON);
+				for (size_t j=0; j < this->polyset->polygons[i].size(); j++) {
+					const Vector3d &p = this->polyset->polygons[i][j];
+					glVertex3d(p[0], p[1], -0.1);
 				}
-			}
-			if (fset) {
-				glVertex3d(fx, fy, -0.1);
 				glEnd();
 			}
-		}
 		
-		glEnable(GL_DEPTH_TEST);
+			// Draw 2D edges
+			glDisable(GL_DEPTH_TEST);
+
+			glLineWidth(2);
+// FIXME:		const QColor &col2 = Preferences::inst()->color(Preferences::CGAL_EDGE_2D_COLOR);
+			glColor3f(1.0f, 0.0f, 0.0f);
+			this->polyset->render_edges(CSGMODE_NONE);
+			glEnable(GL_DEPTH_TEST);
+		}
+		else {
+			// Draw 3D polygons
+			const Color4f c(-1,-1,-1,-1);	
+			setColor(COLORMODE_MATERIAL, c.data(), NULL);
+			this->polyset->render_surface(CSGMODE_NORMAL, Transform3d::Identity(), NULL);
+		}
 	}
-	else if (this->root->getDimension() == 3) {
+	else if (this->polyhedron) {
 		if (showfaces) this->polyhedron->set_style(SNC_BOUNDARY);
 		else this->polyhedron->set_style(SNC_SKELETON);
 		

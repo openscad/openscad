@@ -15,16 +15,6 @@
 
 void export_png(const Geometry *root_geom, Camera &cam, std::ostream &output)
 {
-	const CGAL_Nef_polyhedron *N = dynamic_cast<const CGAL_Nef_polyhedron *>(root_geom);
-	if (!N) {
-		// FIXME: Support rendering non-Nef directly
-		N = createNefPolyhedronFromGeometry(*root_geom);
-	}
-	export_png(N, cam, output);
-}
-
-void export_png(const CGAL_Nef_polyhedron *root_N, Camera &cam, std::ostream &output)
-{
 	OffscreenView *glview;
 	try {
 		glview = new OffscreenView( cam.pixel_width, cam.pixel_height );
@@ -32,7 +22,7 @@ void export_png(const CGAL_Nef_polyhedron *root_N, Camera &cam, std::ostream &ou
 		fprintf(stderr,"Can't create OpenGL OffscreenView. Code: %i.\n", error);
 		return;
 	}
-	shared_ptr<const CGAL_Nef_polyhedron> ptr(root_N);
+	shared_ptr<const Geometry> ptr(root_geom);
 	CGALRenderer cgalRenderer(ptr);
 
 	BoundingBox bbox;

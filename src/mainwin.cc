@@ -1354,19 +1354,10 @@ void MainWindow::actionRenderDone(shared_ptr<const Geometry> root_geom)
 		PRINT("Rendering finished.");
 
 		this->root_geom = root_geom;
-		if (this->root_geom) {
-			// FIXME: Support rendering PolySets and Polygon2d roots
-
-			shared_ptr<const CGAL_Nef_polyhedron> new_N = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(this->root_geom);
-			if (!new_N) {
-				new_N.reset(createNefPolyhedronFromGeometry(*this->root_geom));
-			}
-
-			this->cgalRenderer = new CGALRenderer(new_N);
-			// Go to CGAL view mode
-			if (viewActionWireframe->isChecked()) viewModeWireframe();
-			else viewModeSurface();
-		}
+		this->cgalRenderer = new CGALRenderer(root_geom);
+		// Go to CGAL view mode
+		if (viewActionWireframe->isChecked()) viewModeWireframe();
+		else viewModeSurface();
 	}
 	else {
 		PRINT("WARNING: No top level geometry to render");
