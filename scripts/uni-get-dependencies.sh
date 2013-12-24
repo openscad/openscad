@@ -61,7 +61,7 @@ get_debian_deps()
   libXi-dev libmpfr-dev libboost-dev libglew-dev \
   libeigen3-dev libcgal-dev libopencsg-dev libgmp3-dev libgmp-dev \
   python-paramiko curl imagemagick libfontconfig-dev libfreetype6-dev \
-  libharfbuzz-dev libglib2.0-dev; do
+  libharfbuzz-dev gtk-doc-tools libglib2.0-dev; do
    sudo apt-get -y install $pkg;
  done
 }
