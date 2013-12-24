@@ -9,14 +9,13 @@
 namespace CGALUtils {
 	bool applyHull(const Geometry::ChildList &children, CGAL_Polyhedron &P);
 	void applyBinaryOperator(CGAL_Nef_polyhedron &target, const CGAL_Nef_polyhedron &src, OpenSCADOperator op);
-	CGAL_Nef_polyhedron project(const CGAL_Nef_polyhedron &N, bool cut);
+	Polygon2d *project(const CGAL_Nef_polyhedron &N, bool cut);
+	CGAL_Iso_cuboid_3 boundingBox(const CGAL_Nef_polyhedron3 &N);
 };
 
 CGAL_Nef_polyhedron *createNefPolyhedronFromGeometry(const class Geometry &geom);
 bool createPolySetFromPolyhedron(const CGAL_Polyhedron &p, PolySet &ps);
 bool createPolyhedronFromPolySet(const PolySet &ps, CGAL_Polyhedron &p);
-CGAL_Iso_cuboid_3 bounding_box( const CGAL_Nef_polyhedron3 &N );
-CGAL_Iso_rectangle_2e bounding_box( const CGAL_Nef_polyhedron2 &N );
 
 #include "svg.h"
 #include "printutils.h"

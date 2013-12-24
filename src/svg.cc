@@ -1,6 +1,6 @@
 #ifdef ENABLE_CGAL
-#include "cgalutils.h"
 #include "svg.h"
+#include "cgalutils.h"
 #include <boost/algorithm/string.hpp>
 #include <boost/lexical_cast.hpp>
 #include <map>
@@ -139,6 +139,21 @@ std::string dump_cgal_nef_polyhedron2_face_svg(
 	return out.str();
 }
 
+static CGAL_Iso_rectangle_2e bounding_box(const CGAL_Nef_polyhedron2 &N)
+{
+	CGAL_Iso_rectangle_2e result(0,0,0,0);
+	CGAL_Nef_polyhedron2::Explorer explorer = N.explorer();
+	CGAL_Nef_polyhedron2::Explorer::Vertex_const_iterator vi;
+	std::vector<CGAL_Point_2e> points;
+	// can be optimized by rewriting bounding_box to accept vertices
+	for ( vi = explorer.vertices_begin(); vi != explorer.vertices_end(); ++vi )
+		if ( explorer.is_standard( vi ) )
+			points.push_back( explorer.point( vi ) );
+	if (points.size())
+		result = CGAL::bounding_box( points.begin(), points.end() );
+	return result;
+}
+
 std::string dump_svg( const CGAL_Nef_polyhedron2 &N )
 {
 	std::stringstream out;
@@ -183,7 +198,7 @@ public:
 	CGAL_Iso_cuboid_3 bbox;
 	NefPoly3_dumper_svg(const CGAL_Nef_polyhedron3& N)
 	{
-		bbox = bounding_box( N );
+		bbox = CGALUtils::boundingBox(N);
 	}
 	void visit(CGAL_Nef_polyhedron3::Vertex_const_handle ) {}
 	void visit(CGAL_Nef_polyhedron3::Halfedge_const_handle ) {}

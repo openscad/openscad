@@ -52,7 +52,7 @@ namespace PolysetUtils {
 	// Project all polygons (also back-facing) into a Polygon2d instance.
   // It's important to select all faces, since filtering by normal vector here
 	// will trigger floating point incertainties and cause problems later.
-	const Polygon2d *project(const PolySet &ps) {
+	Polygon2d *project(const PolySet &ps) {
 		Polygon2d *poly = new Polygon2d;
 
 		BOOST_FOREACH(const PolySet::Polygon &p, ps.polygons) {

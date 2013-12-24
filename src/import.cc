@@ -32,7 +32,6 @@
 #include "evalcontext.h"
 #include "builtin.h"
 #include "dxfdata.h"
-#include "dxftess.h"
 #include "printutils.h"
 #include "fileutils.h"
 #include "handle_dep.h" // handle_dep()

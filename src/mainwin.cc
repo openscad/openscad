@@ -1316,18 +1316,6 @@ void MainWindow::actionRenderDone(shared_ptr<const Geometry> root_geom)
 			
 		if (const CGAL_Nef_polyhedron *N = dynamic_cast<const CGAL_Nef_polyhedron *>(root_geom.get())) {
 			if (!N->isNull()) {
-				if (N->getDimension() == 2) {
-					PRINT("   Top level object is a 2D object:");
-					PRINTB("   Empty:      %6s", (N->p2->is_empty() ? "yes" : "no"));
-					PRINTB("   Plane:      %6s", (N->p2->is_plane() ? "yes" : "no"));
-					PRINTB("   Vertices:   %6d", N->p2->explorer().number_of_vertices());
-					PRINTB("   Halfedges:  %6d", N->p2->explorer().number_of_halfedges());
-					PRINTB("   Edges:      %6d", N->p2->explorer().number_of_edges());
-					PRINTB("   Faces:      %6d", N->p2->explorer().number_of_faces());
-					PRINTB("   FaceCycles: %6d", N->p2->explorer().number_of_face_cycles());
-					PRINTB("   ConnComp:   %6d", N->p2->explorer().number_of_connected_components());
-				}
-				
 				if (N->getDimension() == 3) {
 					PRINT("   Top level object is a 3D object:");
 					PRINTB("   Simple:     %6s", (N->p3->is_simple() ? "yes" : "no"));
