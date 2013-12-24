@@ -122,6 +122,7 @@ std::string CGAL_Nef_polyhedron::dump() const
 void CGAL_Nef_polyhedron::transform( const Transform3d &matrix )
 {
 	if (!this->isNull()) {
+		assert(this->dim == 3);
 		if (this->dim == 2) {
 			// Unfortunately CGAL provides no transform method for CGAL_Nef_polyhedron2
 			// objects. So we convert in to our internal 2d data format, transform it,

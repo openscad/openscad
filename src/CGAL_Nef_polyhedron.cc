@@ -8,6 +8,7 @@
 
 CGAL_Nef_polyhedron::CGAL_Nef_polyhedron(CGAL_Nef_polyhedron2 *p)
 {
+	assert(false);
 	if (p) {
 		dim = 2;
 		p2.reset(p);
@@ -84,6 +85,7 @@ PolySet *CGAL_Nef_polyhedron::convertToPolyset() const
 	if (this->isNull()) return new PolySet();
 	PolySet *ps = NULL;
 	if (this->dim == 2) {
+		assert(false);
 		DxfData *dd = this->convertToDxfData();
 		Polygon2d *p2d = dd->toPolygon2d();
 		ps = new PolySet(*p2d);
