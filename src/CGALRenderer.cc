@@ -35,7 +35,6 @@
 
 #include "CGALRenderer.h"
 #include "CGAL_renderer.h"
-#include "dxftess.h"
 #include "CGAL_Nef_polyhedron.h"
 #include "cgal.h"
 

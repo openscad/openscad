@@ -3,20 +3,6 @@
 #include "cgalutils.h"
 #include "printutils.h"
 #include "polyset.h"
-#include "dxfdata.h"
-#include "dxftess.h"
-
-CGAL_Nef_polyhedron::CGAL_Nef_polyhedron(CGAL_Nef_polyhedron2 *p)
-{
-	assert(false);
-	if (p) {
-		dim = 2;
-		p2.reset(p);
-	}
-	else {
-		dim = 0;
-	}
-}
 
 CGAL_Nef_polyhedron::CGAL_Nef_polyhedron(CGAL_Nef_polyhedron3 *p)
 {
@@ -32,22 +18,19 @@ CGAL_Nef_polyhedron::CGAL_Nef_polyhedron(CGAL_Nef_polyhedron3 *p)
 
 CGAL_Nef_polyhedron& CGAL_Nef_polyhedron::operator+=(const CGAL_Nef_polyhedron &other)
 {
-	if (this->dim == 2) (*this->p2) += (*other.p2);
-	else if (this->dim == 3) (*this->p3) += (*other.p3);
+	if (this->dim == 3) (*this->p3) += (*other.p3);
 	return *this;
 }
 
 CGAL_Nef_polyhedron& CGAL_Nef_polyhedron::operator*=(const CGAL_Nef_polyhedron &other)
 {
-	if (this->dim == 2) (*this->p2) *= (*other.p2);
-	else if (this->dim == 3) (*this->p3) *= (*other.p3);
+	if (this->dim == 3) (*this->p3) *= (*other.p3);
 	return *this;
 }
 
 CGAL_Nef_polyhedron& CGAL_Nef_polyhedron::operator-=(const CGAL_Nef_polyhedron &other)
 {
-	if (this->dim == 2) (*this->p2) -= (*other.p2);
-	else if (this->dim == 3) (*this->p3) -= (*other.p3);
+	if (this->dim == 3) (*this->p3) -= (*other.p3);
 	return *this;
 }
 
@@ -55,8 +38,7 @@ extern CGAL_Nef_polyhedron2 minkowski2(const CGAL_Nef_polyhedron2 &a, const CGAL
 
 CGAL_Nef_polyhedron &CGAL_Nef_polyhedron::minkowski(const CGAL_Nef_polyhedron &other)
 {
-	if (this->dim == 2) (*this->p2) = minkowski2(*this->p2, *other.p2);
-	else if (this->dim == 3) (*this->p3) = CGAL::minkowski_sum_3(*this->p3, *other.p3);
+	if (this->dim == 3) (*this->p3) = CGAL::minkowski_sum_3(*this->p3, *other.p3);
 	return *this;
 }
 
@@ -65,12 +47,6 @@ size_t CGAL_Nef_polyhedron::memsize() const
 	if (this->isNull()) return 0;
 
 	size_t memsize = sizeof(CGAL_Nef_polyhedron);
-	if (this->dim == 2) {
-		memsize += sizeof(CGAL_Nef_polyhedron2) +
-			this->p2->explorer().number_of_vertices() * sizeof(CGAL_Nef_polyhedron2::Explorer::Vertex) +
-			this->p2->explorer().number_of_halfedges() * sizeof(CGAL_Nef_polyhedron2::Explorer::Halfedge) +
-			this->p2->explorer().number_of_edges() * sizeof(CGAL_Nef_polyhedron2::Explorer::Face);
-	}
 	if (this->dim == 3) memsize += this->p3->bytes();
 	return memsize;
 }
@@ -84,16 +60,7 @@ PolySet *CGAL_Nef_polyhedron::convertToPolyset() const
 {
 	if (this->isNull()) return new PolySet();
 	PolySet *ps = NULL;
-	if (this->dim == 2) {
-		assert(false);
-		DxfData *dd = this->convertToDxfData();
-		Polygon2d *p2d = dd->toPolygon2d();
-		ps = new PolySet(*p2d);
-		delete p2d;
-		dxf_tesselate(ps, *dd, 0, Vector2d(1,1), true, false, 0);
-		delete dd;
-	}
-	else if (this->dim == 3) {
+	if (this->dim == 3) {
 		CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
 		ps = new PolySet();
 		bool err = true;
@@ -127,7 +94,6 @@ PolySet *CGAL_Nef_polyhedron::convertToPolyset() const
 CGAL_Nef_polyhedron CGAL_Nef_polyhedron::copy() const
 {
 	CGAL_Nef_polyhedron copy = *this;
-	if (copy.p2) copy.p2.reset(new CGAL_Nef_polyhedron2(*copy.p2));
-	else if (copy.p3) copy.p3.reset(new CGAL_Nef_polyhedron3(*copy.p3));
+	if (copy.p3) copy.p3.reset(new CGAL_Nef_polyhedron3(*copy.p3));
 	return copy;
 }

@@ -47,7 +47,7 @@ void exportFile(const class Geometry *root_geom, std::ostream &output, FileForma
 			export_off(N, output);
 			break;
 		case OPENSCAD_DXF:
-			export_dxf(N, output);
+			assert(false && "Export Nef polyhedron as DXF not supported");
 			break;
 		default:
 			assert(false && "Unknown file format");
@@ -198,70 +198,6 @@ void export_off(const CGAL_Nef_polyhedron *root_N, std::ostream &output)
 		PRINTB("CGAL error in CGAL_Nef_polyhedron3::convert_to_Polyhedron(): %s", e.what());
 	}
 	CGAL::set_error_behaviour(old_behaviour);
-}
-
-/*!
-	Saves the current 2D CGAL Nef polyhedron as DXF to the given absolute filename.
- */
-void export_dxf(const CGAL_Nef_polyhedron *root_N, std::ostream &output)
-{
-	setlocale(LC_NUMERIC, "C"); // Ensure radix is . (not ,) in output
-	// Some importers (e.g. Inkscape) needs a BLOCKS section to be present
-	output << "  0\n"
-				 <<	"SECTION\n"
-				 <<	"  2\n"
-				 <<	"BLOCKS\n"
-				 <<	"  0\n"
-				 << "ENDSEC\n"
-				 << "  0\n"
-				 << "SECTION\n"
-				 << "  2\n"
-				 << "ENTITIES\n";
-
-	DxfData *dd =root_N->convertToDxfData();
-	for (size_t i=0; i<dd->paths.size(); i++)
-	{
-		for (size_t j=1; j<dd->paths[i].indices.size(); j++) {
-			const Vector2d &p1 = dd->points[dd->paths[i].indices[j-1]];
-			const Vector2d &p2 = dd->points[dd->paths[i].indices[j]];
-			double x1 = p1[0];
-			double y1 = p1[1];
-			double x2 = p2[0];
-			double y2 = p2[1];
-			output << "  0\n"
-						 << "LINE\n";
-			// Some importers (e.g. Inkscape) needs a layer to be specified
-			output << "  8\n"
-						 << "0\n"
-						 << " 10\n"
-						 << x1 << "\n"
-						 << " 11\n"
-						 << x2 << "\n"
-						 << " 20\n"
-						 << y1 << "\n"
-						 << " 21\n"
-						 << y2 << "\n";
-		}
-	}
-
-	output << "  0\n"
-				 << "ENDSEC\n";
-
-	// Some importers (e.g. Inkscape) needs an OBJECTS section with a DICTIONARY entry
-	output << "  0\n"
-				 << "SECTION\n"
-				 << "  2\n"
-				 << "OBJECTS\n"
-				 << "  0\n"
-				 << "DICTIONARY\n"
-				 << "  0\n"
-				 << "ENDSEC\n";
-
-	output << "  0\n"
-				 <<"EOF\n";
-
-	delete dd;
-	setlocale(LC_NUMERIC, "");      // Set default locale
 }
 
 #endif // ENABLE_CGAL

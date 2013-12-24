@@ -78,9 +78,7 @@ shared_ptr<const Geometry> GeometryEvaluator::evaluateGeometry(const AbstractNod
 		if (!allownef) {
 			shared_ptr<const CGAL_Nef_polyhedron> N = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(this->root);
 			if (N) {
-				assert(N->getDimension() != 2); // FIXME: Remove 2D code
-				if (N->getDimension() == 2) this->root.reset(N->convertToPolygon2d());
-				else if (N->getDimension() == 3) this->root.reset(N->convertToPolyset());
+				if (N->getDimension() == 3) this->root.reset(N->convertToPolyset());
 				else this->root.reset();
 				GeometryCache::instance()->insert(this->tree.getIdString(node), this->root);
 			}
@@ -146,41 +144,6 @@ GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren3D(const Abstr
 
 		item.first->progress_report();
 	}
-
-/*
-	CGAL_Nef_polyhedron *N = new CGAL_Nef_polyhedron;
-	BOOST_FOREACH(const Geometry::ChildItem &item, this->visitedchildren[node.index()]) {
-		const AbstractNode *chnode = item.first;
-		const shared_ptr<const Geometry> &chgeom = item.second;
-		// FIXME: Don't use deep access to modinst members
-		if (chnode->modinst->isBackground()) continue;
-		
-		shared_ptr<const CGAL_Nef_polyhedron> chN = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(chgeom);
-		if (!chN) {
-			shared_ptr<const PolySet> chP = dynamic_pointer_cast<const PolySet>(chgeom);
-			if (chP) chN.reset(createNefPolyhedronFromGeometry(*chP));
-		}
-
-    // NB! We insert into the cache here to ensure that all children of
-    // a node is a valid object. If we inserted as we created them, the 
-    // cache could have been modified before we reach this point due to a large
-    // sibling object. 
-		smartCache(node, chN);
-
-		if (chgeom) {
-			if (chgeom->getDimension() == 3) {
-				// Initialize N on first iteration with first expected geometric object
-				if (N->isNull() && !N->isEmpty()) *N = chN->copy();
-				else CGALUtils::applyBinaryOperator(*N, *chN, op);
-			}
-			else {
-				// FIXME: Fix error message
-				PRINT("ERROR: this operation is not defined for 2D child objects!");
-			}
-		}
-		chnode->progress_report();
-	}
-*/
 	return ResultObject(N);
 }
 
@@ -230,11 +193,10 @@ void GeometryEvaluator::applyResize3D(CGAL_Nef_polyhedron &N,
 																			const Vector3d &newsize,
 																			const Eigen::Matrix<bool,3,1> &autosize)
 {
-	assert(N.getDimension() != 2); // FIXME: Remove 2D code
 	// Based on resize() in Giles Bathgate's RapCAD (but not exactly)
 	if (N.isNull() || N.isEmpty()) return;
 
-	CGAL_Iso_cuboid_3 bb = bounding_box(*N.p3);
+	CGAL_Iso_cuboid_3 bb = CGALUtils::boundingBox(*N.p3);
 
 	std::vector<NT3> scale, bbox_size;
 	for (int i=0;i<3;i++) {
@@ -985,8 +947,7 @@ Response GeometryEvaluator::visit(State &state, const ProjectionNode &node)
 						Nptr.reset(createNefPolyhedronFromGeometry(*newgeom));
 					}
 					if (!Nptr->isNull()) {
-						CGAL_Nef_polyhedron nef_poly = CGALUtils::project(*Nptr, node.cut_mode);
-						Polygon2d *poly = nef_poly.convertToPolygon2d();
+						Polygon2d *poly = CGALUtils::project(*Nptr, node.cut_mode);
 						assert(poly);
 						poly->setConvexity(node.convexity);
 						geom.reset(poly);

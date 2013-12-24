@@ -29,8 +29,6 @@
 #include "polyset.h"
 #include "evalcontext.h"
 #include "Polygon2d.h"
-#include "dxfdata.h"
-#include "dxftess.h"
 #include "builtin.h"
 #include "printutils.h"
 #include "visitor.h"

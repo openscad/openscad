@@ -37,7 +37,6 @@
 #include "Tree.h"
 #include "CGAL_Nef_polyhedron.h"
 #include "GeometryEvaluator.h"
-#include "CGALEvaluator.h"
 #include "CGALCache.h"
 
 #ifndef _MSC_VER

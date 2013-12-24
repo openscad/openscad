@@ -546,7 +546,6 @@ set(CORE_SOURCES
 
 set(NOCGAL_SOURCES
   ../src/builtin.cc 
-  ../src/dxftess.cc 
   ../src/import.cc
   ../src/export.cc)
 

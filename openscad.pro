@@ -212,7 +212,6 @@ HEADERS += src/typedefs.h \
            src/csgtermnormalizer.h \
            src/dxfdata.h \
            src/dxfdim.h \
-           src/dxftess.h \
            src/export.h \
            src/expression.h \
            src/function.h \
@@ -339,9 +338,6 @@ SOURCES += src/version_check.cc \
            src/import.cc \
            src/renderer.cc \
            src/ThrownTogetherRenderer.cc \
-           src/dxftess.cc \
-           src/dxftess-glu.cc \
-           src/dxftess-cgal.cc \
            src/CSGTermEvaluator.cc \
            src/svg.cc \
            src/OffscreenView.cc \
