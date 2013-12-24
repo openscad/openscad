@@ -10,7 +10,7 @@
  </description>
  <screenshots>
   <screenshot type="default" width="800" height="437">http://www.openscad.org/images/appdata-screenshot-1.png</screenshot>
-  <screenshot type="default" width="800" height="465">http://www.openscad.org/images/appdata-screenshot-2.png</screenshot>
+  <screenshot width="800" height="465">http://www.openscad.org/images/appdata-screenshot-2.png</screenshot>
  </screenshots>
  <url type="homepage">http://www.openscad.org/</url>
 </application>
