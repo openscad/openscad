@@ -447,7 +447,9 @@ message(STATUS "freetype2 found: ${FREETYPE_VERSION}")
 pkg_search_module(HARFBUZZ REQUIRED harfbuzz>=0.9.19)
 message(STATUS "harfbuzz found: ${HARFBUZZ_VERSION}")
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${FONTCONFIG_CFLAGS} ${FREETYPE_CFLAGS} ${HARFBUZZ_CFLAGS}")
+add_definitions(${FONTCONFIG_CFLAGS})
+add_definitions(${FREETYPE_CFLAGS})
+add_definitions(${HARFBUZZ_CFLAGS})
 
 # Imagemagick
 

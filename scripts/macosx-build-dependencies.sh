@@ -629,7 +629,6 @@ build_fontconfig 2.11.0
 build_ragel 6.8
 export PATH="$PATH:$DEPLOYDIR/bin"
 create_dummy_cmd "touch gtk-doc.make" "$DEPLOYDIR/bin/gtkdocize"
-create_dummy_cmd "exit 0" "$DEPLOYDIR/bin/pkg-config"
 build_harfbuzz 0.9.23 "--with-coretext=auto --with-glib=no"
 if $OPTION_DEPLOY; then
 #  build_sparkle andymatuschak 0ed83cf9f2eeb425d4fdd141c01a29d843970c20
