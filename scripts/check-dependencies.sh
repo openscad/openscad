@@ -91,6 +91,36 @@ glib2_sysver()
   glib2_sysver_result="${glib2major}.${glib2minor}.${glib2micro}"
 }
 
+fontconfig_sysver()
+{
+  fcpath=$1/include/fontconfig/fontconfig.h
+  if [ ! -e $fcpath ]; then return; fi
+  fcmajor=`grep "define  *FC_MAJOR  *[0-9.]*" $fcpath | awk '{print $3}'`
+  fcminor=`grep "define  *FC_MINOR  *[0-9.]*" $fcpath | awk '{print $3}'`
+  fcrevison=`grep "define  *FC_REVISION  *[0-9.]*" $fcpath | awk '{print $3}'`
+  fontconfig_sysver="${fcmajor}.${fcminor}.${fcrevision}"
+}
+
+freetype2_sysver()
+{
+  freetype2path=$1/include/freetype2/freetype/freetype.h
+  if [ ! -e $freetype2path ]; then return; fi
+  ftmajor=`grep "define  *FREETYPE_MAJOR  *[0-9.]*" $freetype2path | awk '{print $3}'`
+  ftminor=`grep "define  *FREETYPE_MINOR  *[0-9.]*" $freetype2path | awk '{print $3}'`
+  ftpatch=`grep "define  *FREETYPE_PATCH  *[0-9.]*" $freetype2path | awk '{print $3}'`
+  freetype2_sysver_result="${ftmajor}.${ftminor}.${ftpatch}"
+}
+
+harfbuzz_sysver()
+{
+  harfbuzzpath=$1/include/harfbuzz/hb-version.h
+  if [ ! -e $harfbuzzpath ]; then return; fi
+  hbmajor=`grep "define  *HB_VERSION_MAJOR  *[0-9.]*" $harfbuzzpath | awk '{print $3}'`
+  hbminor=`grep "define  *HB_VERSION_MINOR  *[0-9.]*" $harfbuzzpath | awk '{print $3}'`
+  hbmicro=`grep "define  *HB_VERSION_MICRO  *[0-9.]*" $harfbuzzpath | awk '{print $3}'`
+  harfbuzz_sysver_result="${hbmajor}.${hbminor}.${hbmicro}"
+}
+
 boost_sysver()
 {
   boostpath=$1/include/boost/version.hpp
@@ -555,7 +585,7 @@ checkargs()
 
 main()
 {
-  deps="qt4 cgal gmp mpfr boost opencsg glew eigen glib2 gcc bison flex make"
+  deps="qt4 cgal gmp mpfr boost opencsg glew eigen glib2 fontconfig freetype2 harfbuzz gcc bison flex make"
   #deps="$deps curl git" # not technically necessary for build
   #deps="$deps python cmake imagemagick" # only needed for tests
   #deps="cgal"

@@ -515,6 +515,90 @@ build_opencsg()
   cd $BASEDIR
 }
 
+build_fontconfig()
+{
+  version=$1
+  if [ -e $DEPLOYDIR/include/fontconfig ]; then
+    echo "fontconfig already installed. not building"
+    return
+  fi
+
+  echo "Building fontconfig $version..."
+  cd "$BASEDIR"/src
+  rm -rf "fontconfig-$version"
+  if [ ! -f "fontconfig-$version.tar.gz" ]; then
+    curl --insecure -LO "http://www.freedesktop.org/software/fontconfig/release/fontconfig-$version.tar.gz"
+  fi
+  tar xzf "fontconfig-$version.tar.gz"
+  cd "fontconfig-$version"
+  ./configure --prefix="$DEPLOYDIR"
+  make -j$NUMCPU
+  make install
+}
+
+build_freetype()
+{
+  version=$1
+  if [ -e $DEPLOYDIR/include/freetype2 ]; then
+    echo "freetype already installed. not building"
+    return
+  fi
+
+  echo "Building freetype $version..."
+  cd "$BASEDIR"/src
+  rm -rf "freetype-$version"
+  if [ ! -f "freetype-$version.tar.gz" ]; then
+    curl --insecure -LO "http://download.savannah.gnu.org/releases/freetype/freetype-$version.tar.gz"
+  fi
+  tar xzf "freetype-$version.tar.gz"
+  cd "freetype-$version"
+  ./configure --prefix="$DEPLOYDIR"
+  make -j$NUMCPU
+  make install
+}
+
+build_ragel()
+{
+  version=$1
+  if [ -f $DEPLOYDIR/bin/ragel ]; then
+    echo "ragel already installed. not building"
+    return
+  fi
+
+  echo "Building ragel $version..."
+  cd "$BASEDIR"/src
+  rm -rf "ragel-$version"
+  if [ ! -f "ragel-$version.tar.gz" ]; then
+    curl --insecure -LO "http://www.complang.org/ragel/ragel-$version.tar.gz"
+  fi
+  tar xzf "ragel-$version.tar.gz"
+  cd "ragel-$version"
+  ./configure --prefix="$DEPLOYDIR"
+  make -j$NUMCPU
+  make install
+}
+
+build_harfbuzz()
+{
+  version=$1
+  if [ -e $DEPLOYDIR/include/harfbuzz ]; then
+    echo "harfbuzz already installed. not building"
+    return
+  fi
+
+  echo "Building harfbuzz $version..."
+  cd "$BASEDIR"/src
+  rm -rf "harfbuzz-$version"
+  if [ ! -f "harfbuzz-$version.tar.gz" ]; then
+    curl --insecure -LO "http://cgit.freedesktop.org/harfbuzz/snapshot/harfbuzz-$version.tar.gz"
+  fi
+  tar xzf "harfbuzz-$version.tar.gz"
+  cd "harfbuzz-$version"
+  ./autogen.sh --prefix="$DEPLOYDIR" --with-glib=yes --with-freetype=yes --with-gobject=no --with-cairo=no --with-icu=no
+  make -j$NUMCPU
+  make install
+}
+
 build_eigen()
 {
   version=$1
@@ -647,5 +731,9 @@ build_glew 1.9.0
 build_opencsg 1.3.2
 build_gettext 0.18.3.1
 build_glib2 2.38.2
+build_fontconfig 2.11.0
+build_freetype 2.5.0.1
+build_ragel 6.8
+build_harfbuzz 0.9.23
 
 echo "OpenSCAD dependencies built and installed to " $BASEDIR
