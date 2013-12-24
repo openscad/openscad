@@ -416,9 +416,17 @@ applications.path = $$PREFIX/share/applications
 applications.files = icons/openscad.desktop
 INSTALLS += applications
 
+appdata.path = $$PREFIX/share/appdata
+appdata.files = openscad.appdata.xml
+INSTALLS += appdata
+
 icons.path = $$PREFIX/share/pixmaps
 icons.files = icons/openscad.png
 INSTALLS += icons
+
+man.path = $$PREFIX/share/man/man1
+man.files = doc/openscad.1
+INSTALLS += man
 
 CONFIG(winconsole) {
   include(winconsole.pri)
