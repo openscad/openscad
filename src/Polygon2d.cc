@@ -25,32 +25,13 @@ BoundingBox Polygon2d::getBoundingBox() const
 std::string Polygon2d::dump() const
 {
 	std::stringstream out;
-	out << "Polygon2d:";
-//FIXME: Implement
-/*
-	  << "\n convexity:" << this->convexity
-	  << "\n num polygons: " << polygons.size()
-	  << "\n num borders: " << borders.size()
-	  << "\n polygons data:";
-	for (size_t i = 0; i < polygons.size(); i++) {
-		out << "\n  polygon begin:";
-		const Polygon *poly = &polygons[i];
-		for (size_t j = 0; j < poly->size(); j++) {
-			Vector3d v = poly->at(j);
-			out << "\n   vertex:" << v.transpose();
+	BOOST_FOREACH(const Outline2d &o, this->theoutlines) {
+		out << "contour:\n";
+		BOOST_FOREACH(const Vector2d &v, o) {
+			out << "  " << v.transpose();
 		}
+		out << "\n";
 	}
-	out << "\n borders data:";
-	for (size_t i = 0; i < borders.size(); i++) {
-		out << "\n  border polygon begin:";
-		const Polygon *poly = &borders[i];
-		for (size_t j = 0; j < poly->size(); j++) {
-			Vector3d v = poly->at(j);
-			out << "\n   vertex:" << v.transpose();
-		}
-	}
-	out << "\nPolySet end";
-*/
 	return out.str();
 }
 

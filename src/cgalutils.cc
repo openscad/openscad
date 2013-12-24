@@ -280,7 +280,7 @@ public:
 		// Estimating same # of vertices as polygons (very rough)
 		B.begin_surface(ps.polygons.size(), ps.polygons.size());
 		int pidx = 0;
-		printf("polyhedron(triangles=[");
+		printf("polyhedron(faces=[");
 		BOOST_FOREACH(const PolySet::Polygon &p, ps.polygons) {
 			if (pidx++ > 0) printf(",");
 			indices.clear();
@@ -297,7 +297,7 @@ public:
 			B.begin_facet();
 			printf("[");
 			int fidx = 0;
-			BOOST_FOREACH(size_t i, indices) {
+			BOOST_REVERSE_FOREACH(size_t i, indices) {
 				B.add_vertex_to_facet(i);
 				if (fidx++ > 0) printf(",");
 				printf("%ld", i);
