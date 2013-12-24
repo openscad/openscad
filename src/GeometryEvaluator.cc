@@ -375,9 +375,7 @@ Polygon2d *GeometryEvaluator::applyToChildren2D(const AbstractNode &node, OpenSC
 				// The first Clipper operation will sanitize the polygon, ensuring 
 				// contours/holes have the correct winding order
 				ClipperLib::Paths result = ClipperUtils::fromPolygon2d(*polygons);
-				result = ClipperUtils::process(result, 
-																			 ClipperLib::ctUnion, 
-																			 ClipperLib::pftEvenOdd);
+				result = ClipperUtils::sanitize(result);
 
 				// Add correctly winded polygons to the main clipper
 				sumclipper.AddPaths(result, first ? ClipperLib::ptSubject : ClipperLib::ptClip, true);
@@ -739,7 +737,9 @@ Response GeometryEvaluator::visit(State &state, const LinearExtrudeNode &node)
 			const Geometry *geometry;
 			if (!node.filename.empty()) {
 				DxfData dxf(node.fn, node.fs, node.fa, node.filename, node.layername, node.origin_x, node.origin_y, node.scale_x);
-				geometry = dxf.toPolygon2d();
+
+				Polygon2d *p2d = dxf.toPolygon2d();
+				geometry = ClipperUtils::sanitize(*p2d);
 			}
 			else {
 				geometry = applyToChildren2D(node, OPENSCAD_UNION);
@@ -833,7 +833,8 @@ Response GeometryEvaluator::visit(State &state, const RotateExtrudeNode &node)
 			const Geometry *geometry;
 			if (!node.filename.empty()) {
 				DxfData dxf(node.fn, node.fs, node.fa, node.filename, node.layername, node.origin_x, node.origin_y, node.scale);
-				geometry = dxf.toPolygon2d();
+				Polygon2d *p2d = dxf.toPolygon2d();
+				geometry = ClipperUtils::sanitize(*p2d);
 			}
 			else {
 				geometry = applyToChildren2D(node, OPENSCAD_UNION);
@@ -1082,4 +1083,9 @@ Response GeometryEvaluator::visit(State &state, const RenderNode &node)
 		addToParent(state, node, geom);
 	}
 	return ContinueTraversal;
+}
+
+Response GeometryEvaluator::visit(State &state, const AbstractIntersectionNode &node)
+{
+	assert(false);
 }

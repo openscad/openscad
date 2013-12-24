@@ -23,6 +23,16 @@ namespace ClipperUtils {
 		return result;
 	}
 
+	Polygon2d *sanitize(const Polygon2d &poly) {
+		return toPolygon2d(sanitize(ClipperUtils::fromPolygon2d(poly)));
+	}
+
+	ClipperLib::Paths sanitize(const ClipperLib::Paths &paths) {
+		return ClipperUtils::process(paths, 
+																 ClipperLib::ctUnion, 
+																 ClipperLib::pftEvenOdd);
+	}
+
 	Polygon2d *toPolygon2d(const ClipperLib::Paths &poly) {
 		Polygon2d *result = new Polygon2d;
 		BOOST_FOREACH(const ClipperLib::Path &p, poly) {
