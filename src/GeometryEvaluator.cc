@@ -1087,5 +1087,16 @@ Response GeometryEvaluator::visit(State &state, const RenderNode &node)
 
 Response GeometryEvaluator::visit(State &state, const AbstractIntersectionNode &node)
 {
-	assert(false);
+	if (state.isPrefix() && isCached(node)) return PruneTraversal;
+	if (state.isPostfix()) {
+		shared_ptr<const class Geometry> geom;
+		if (!isCached(node)) {
+			geom = applyToChildren(node, OPENSCAD_INTERSECTION).constptr();
+		}
+		else {
+			geom = GeometryCache::instance()->get(this->tree.getIdString(node));
+		}
+		addToParent(state, node, geom);
+	}
+	return ContinueTraversal;
 }
