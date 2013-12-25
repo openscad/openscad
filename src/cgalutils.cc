@@ -294,16 +294,24 @@ public:
 					B.add_vertex(CGALPoint(v[0], v[1], v[2]));
 				}
 			}
-			B.begin_facet();
-			printf("[");
-			int fidx = 0;
+			std::map<size_t,int> fc;
+			bool facet_is_degenerate = false;
 			BOOST_REVERSE_FOREACH(size_t i, indices) {
-				B.add_vertex_to_facet(i);
-				if (fidx++ > 0) printf(",");
-				printf("%ld", i);
+				if (fc[i]++ > 0) facet_is_degenerate = true;
 			}
-			printf("]");
-			B.end_facet();
+			if (!facet_is_degenerate) {
+				B.begin_facet();
+				printf("[");
+				int fidx = 0;
+				std::map<int,int> fc;
+				BOOST_REVERSE_FOREACH(size_t i, indices) {
+					B.add_vertex_to_facet(i);
+					if (fidx++ > 0) printf(",");
+					printf("%ld", i);
+				}
+				printf("]");
+				B.end_facet();
+			}
 		}
 		B.end_surface();
 		printf("],\n");
