@@ -79,7 +79,7 @@ void export_stl(const PolySet *ps, std::ostream &output)
 		output << "  facet normal 0 0 0\n";
 		output << "    outer loop\n";
 		BOOST_FOREACH(const Vector3d &v, p) {
-			output << "vertex" << v[0] << " " << v[1] << " " << v[2] << "\n";
+			output << "vertex " << v[0] << " " << v[1] << " " << v[2] << "\n";
 		}
 		output << "    endloop\n";
 		output << "  endfacet\n";
