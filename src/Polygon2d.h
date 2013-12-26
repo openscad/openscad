@@ -10,6 +10,7 @@ typedef std::vector<Vector2d> Outline2d;
 class Polygon2d : public Geometry
 {
 public:
+	Polygon2d() : sanitized(false) {}
 	virtual size_t memsize() const;
 	virtual BoundingBox getBoundingBox() const;
 	virtual std::string dump() const;
@@ -23,8 +24,12 @@ public:
 
 	void transform(const Transform2d &mat);
 	void resize(Vector2d newsize, const Eigen::Matrix<bool,2,1> &autosize);
+
+	bool isSanitized() const { return this->sanitized; }
+	void setSanitized(bool s) { this->sanitized = s; }
 private:
 	Outlines2d theoutlines;
+	bool sanitized;
 };
 
 #endif
