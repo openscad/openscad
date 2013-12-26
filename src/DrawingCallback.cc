@@ -28,9 +28,7 @@
 #include <iostream>
 #include <algorithm>
 
-#include "dxfdata.h"
-#include "dxftess.h"
-#include "polyset.h"
+#include "Polygon2d.h"
 #include "DrawingCallback.h"
 
 DrawingCallback::DrawingCallback(unsigned long fn) : fn(fn),
@@ -44,24 +42,25 @@ DrawingCallback::~DrawingCallback()
 
 void DrawingCallback::start_glyph()
 {
-	data = new DxfData();
+	this->polygon = new Polygon2d();
 }
 
 void DrawingCallback::finish_glyph()
 {
-	PolySet *p = new PolySet();
-	p->is2d = true;
-	dxf_tesselate(p, *data, 0, Vector2d(1,1), true, false, 0);
-	dxf_border_to_ps(p, *data);
-	result.push_back(p);
-	
-	delete data;
-	data = NULL;
+	if (this->outline.vertices.size() > 0) {
+		this->polygon->addOutline(this->outline);
+        this->outline.vertices.clear();
+	}
+	if (this->polygon->outlines().size() == 0) {
+		delete this->polygon;
+		this->polygon = NULL;
+	}
+	if (this->polygon) this->polygons.push_back(this->polygon);
 }
 
-std::vector<PolySet *> DrawingCallback::get_result()
+std::vector<const Geometry *> DrawingCallback::get_result()
 {
-	return result;
+	return this->polygons;
 }
 
 void DrawingCallback::set_glyph_offset(double offset_x, double offset_y)
@@ -76,15 +75,15 @@ void DrawingCallback::add_glyph_advance(double advance_x, double advance_y)
 
 void DrawingCallback::add_vertex(Vector2d v)
 {
-	double x = offset[0] + advance[0];
-	double y = offset[1] + advance[1];
-	data->paths.back().indices.push_back(data->addPoint(x + v[0], y + v[1]));
+	this->outline.vertices.push_back(v + offset + advance);
 }
 
 void DrawingCallback::move_to(Vector2d to)
 {
-	data->paths.push_back(DxfData::Path());
-	data->paths.back().is_closed = true;
+	if (this->outline.vertices.size() > 0) {
+		this->polygon->addOutline(this->outline);
+		this->outline.vertices.clear();
+	}
 	add_vertex(to);
 	pen = to;
 }

@@ -29,9 +29,7 @@
 #include <vector>
 #include <math.h>
 #include <Eigen/Core>
-
-#include "dxfdata.h"
-#include "polyset.h"
+#include "Polygon2d.h"
 
 class DrawingCallback {
 public:
@@ -42,7 +40,7 @@ public:
     void finish_glyph();
     void set_glyph_offset(double offset_x, double offset_y);
     void add_glyph_advance(double advance_x, double advance_y);
-    std::vector<PolySet *> get_result();
+	std::vector<const Geometry *> get_result();
 
     void move_to(Vector2d to);
     void line_to(Vector2d to);
@@ -54,8 +52,9 @@ private:
     Vector2d offset;
     Vector2d advance;
 
-    DxfData *data;
-    std::vector<PolySet *> result;
+	Outline2d outline;
+	class Polygon2d *polygon;
+	std::vector<const class Geometry *> polygons;
     
     void add_vertex(Vector2d v);
     

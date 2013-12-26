@@ -29,9 +29,10 @@
 #include "evalcontext.h"
 #include "printutils.h"
 #include "builtin.h"
-#include "PolySetEvaluator.h"
 
 #include "textnode.h"
+#include "FreetypeRenderer.h"
+#include "Polygon2d.h"
 
 #include <boost/assign/std/vector.hpp>
 using namespace boost::assign; // bring 'operator+=()' into scope
@@ -76,20 +77,10 @@ AbstractNode *TextModule::instantiate(const Context *ctx, const ModuleInstantiat
 	return node;
 }
 
-class PolySet *TextNode::evaluate_polyset(PolySetEvaluator *evaluator) const
+std::vector<const Geometry *> TextNode::createGeometryList() const
 {
-	if (!evaluator) {
-		PRINTB("WARNING: No suitable PolySetEvaluator found for %s module!", this->name());
-		return NULL;
-	}
-
-	print_messages_push();
-
-	PolySet *ps = evaluator->evaluatePolySet(*this);
-
-	print_messages_pop();
-
-	return ps;
+	FreetypeRenderer renderer;
+	return renderer.render(this->get_params());
 }
 
 FreetypeRenderer::Params TextNode::get_params() const
