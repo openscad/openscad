@@ -471,7 +471,7 @@ bool triangulate_polygon( const PolySet::Polygon &pgon, std::vector<PolySet::Pol
 			triangles.push_back( pgon );
 		}
 	}
-	} catch (const CGAL::Assertion_exception &e) {
+	} catch (const CGAL::Failure_exception &e) {
 		PRINTB("CGAL error in dxftess triangulate_polygon: %s", e.what());
 		err = true;
 	}
