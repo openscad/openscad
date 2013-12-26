@@ -334,11 +334,6 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 		} else {
 			root_geom = geomevaluator.evaluateGeometry(*tree.root(), true);
 			const CGAL_Nef_polyhedron *N = dynamic_cast<const CGAL_Nef_polyhedron*>(root_geom.get());
-			if (!root_geom || (N && N->isNull())) {
-				PRINT("Empty top-level object");
-				return 1;
-			}
-
 		}
 
 		fs::current_path(original_path);
