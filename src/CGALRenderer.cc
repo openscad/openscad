@@ -64,9 +64,6 @@ CGALRenderer::CGALRenderer(shared_ptr<const class Geometry> geom) : polyhedron(N
 		CGAL::OGL::Nef3_Converter<CGAL_Nef_polyhedron3>::convert_to_OGLPolyhedron(*new_N->p3, this->polyhedron);
 		this->polyhedron->init();
 	}
-	else {
-		assert(false);
-	}
 }
 
 CGALRenderer::~CGALRenderer()
