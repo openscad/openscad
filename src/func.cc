@@ -343,6 +343,24 @@ Value builtin_str(const Context *, const EvalContext *evalctx)
 	return Value(stream.str());
 }
 
+Value builtin_concat(const Context *, const EvalContext *evalctx)
+{
+	Value::VectorType result;
+
+	for (size_t i = 0; i < evalctx->numArgs(); i++) {
+		const Value v = evalctx->getArgValue(i);
+		if (v.type() == Value::VECTOR) {
+			Value::VectorType vec = v.toVector();
+			for (Value::VectorType::const_iterator it = vec.begin(); it != vec.end(); it++) {
+				result.push_back(*it);
+			}
+		} else {
+			result.push_back(v);
+		}
+	}
+	return Value(result);
+}
+
 Value builtin_lookup(const Context *, const EvalContext *evalctx)
 {
 	double p, low_p, low_v, high_p, high_v;
@@ -604,6 +622,7 @@ void register_builtin_functions()
 	Builtins::init("log", new BuiltinFunction(&builtin_log));
 	Builtins::init("ln", new BuiltinFunction(&builtin_ln));
 	Builtins::init("str", new BuiltinFunction(&builtin_str));
+	Builtins::init("concat", new BuiltinFunction(&builtin_concat));
 	Builtins::init("lookup", new BuiltinFunction(&builtin_lookup));
 	Builtins::init("search", new BuiltinFunction(&builtin_search));
 	Builtins::init("version", new BuiltinFunction(&builtin_version));
