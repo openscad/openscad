@@ -443,7 +443,7 @@ void GeometryEvaluator::addToParent(const State &state,
 }
 
 /*!
-   Custom nodes are handled here => implicit union
+   Custom nodes, as well as RenderNode are handled here => implicit union
 */
 Response GeometryEvaluator::visit(State &state, const AbstractNode &node)
 {
@@ -1039,43 +1039,6 @@ Response GeometryEvaluator::visit(State &state, const CgaladvNode &node)
 			// RESIZE     
 			//   2D        children -> Polygon2d -> union -> apply resize
 			//   3D        children -> PolySet -> union -> apply resize
-		}
-		else {
-			geom = GeometryCache::instance()->get(this->tree.getIdString(node));
-		}
-		addToParent(state, node, geom);
-	}
-	return ContinueTraversal;
-}
-
-/*!
-	input: List of 2D or 3D objects (not mixed)
-	output: PolySet (FIXME: implement Polygon2d?)
-	operation:
-	  o Render to PolySet (using CGAL or Clipper)
- */			
-Response GeometryEvaluator::visit(State &state, const RenderNode &node)
-{
-	if (state.isPrefix() && isCached(node)) return PruneTraversal;
-	if (state.isPostfix()) {
-		shared_ptr<const Geometry> geom;
-		if (!isCached(node)) {
-			geom = applyToChildren(node, OPENSCAD_UNION).constptr();
-			shared_ptr<const CGAL_Nef_polyhedron> N = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom);
-			if (N) {
-				assert(N->getDimension() != 2); // FIXME: Remove 2D code
-				PolySet *ps = NULL;
-				if (!N->isNull()) {
-					if (N->getDimension() == 3 && !N->p3->is_simple()) {
-						PRINT("WARNING: Body of render() isn't valid 2-manifold!");
-					}
-					else {
-						ps = N->convertToPolyset();
-						if (ps) ps->setConvexity(node.convexity);
-					}
-				}
-				geom.reset(ps);
-			}
 		}
 		else {
 			geom = GeometryCache::instance()->get(this->tree.getIdString(node));
