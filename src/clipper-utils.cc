@@ -3,14 +3,14 @@
 
 namespace ClipperUtils {
 
-	ClipperLib::Path fromOutline2d(const Outline2d &outline) {
+	ClipperLib::Path fromOutline2d(const Outline2d &outline, bool keep_orientation) {
 		ClipperLib::Path p;
 		BOOST_FOREACH(const Vector2d &v, outline) {
 			p.push_back(ClipperLib::IntPoint(v[0]*CLIPPER_SCALE, v[1]*CLIPPER_SCALE));
 		}
 		// Make sure all polygons point up, since we project also 
 		// back-facing polygon in PolysetUtils::project()
-		if (!ClipperLib::Orientation(p)) std::reverse(p.begin(), p.end());
+		if (!keep_orientation && !ClipperLib::Orientation(p)) std::reverse(p.begin(), p.end());
 		
 		return p;
 	}
@@ -18,7 +18,7 @@ namespace ClipperUtils {
 	ClipperLib::Paths fromPolygon2d(const Polygon2d &poly) {
 		ClipperLib::Paths result;
 		BOOST_FOREACH(const Outline2d &outline, poly.outlines()) {
-			result.push_back(fromOutline2d(outline));
+			result.push_back(fromOutline2d(outline, poly.isSanitized() ? true : false));
 		}
 		return result;
 	}
@@ -47,6 +47,7 @@ namespace ClipperUtils {
 			}
 			result->addOutline(outline);
 		}
+		result->setSanitized(true);
 		return result;
 	}
 
@@ -61,4 +62,24 @@ namespace ClipperUtils {
 		return result;
 	}
 
+	Polygon2d *apply(std::vector<const Polygon2d*> polygons, 
+									 ClipperLib::ClipType clipType)
+	{
+		ClipperLib::Clipper clipper;
+		bool first = true;
+		BOOST_FOREACH(const Polygon2d *polygon, polygons) {
+			ClipperLib::Paths paths = fromPolygon2d(*polygon);
+			if (!polygon->isSanitized()) paths = sanitize(paths);
+			clipper.AddPaths(paths, first ? ClipperLib::ptSubject : ClipperLib::ptClip, true);
+			if (first) first = false;
+		}
+		ClipperLib::Paths sumresult;
+		clipper.Execute(clipType, sumresult, ClipperLib::pftNonZero, ClipperLib::pftNonZero);
+		if (sumresult.size() == 0) return NULL;
+		// The returned result will have outlines ordered according to whether 
+		// they're positive or negative: Positive outlines counter-clockwise and 
+		// negative outlines clockwise.
+		return ClipperUtils::toPolygon2d(sumresult);
+	}
 };
+

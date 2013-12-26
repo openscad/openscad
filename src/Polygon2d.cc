@@ -1,6 +1,18 @@
 #include "Polygon2d.h"
 #include <boost/foreach.hpp>
 
+/*!
+	Class for holding 2D geometry.
+	
+	This class will hold 2D geometry consisting of a number of closed
+	contours. A polygon can contain holes and islands, as well as
+	intersecting contours.
+
+	We can store sanitized vs. unsanitized polygons. Sanitized polygons
+	will have opposite winding order for holes and is guaranteed to not
+	have intersecting geometry. Sanitization is typically done by ClipperUtils.
+*/
+
 size_t Polygon2d::memsize() const
 {
 	size_t mem = 0;

@@ -1,6 +1,6 @@
 #include "GeometryEvaluator.h"
 #include "traverser.h"
-#include "tree.h"
+#include "Tree.h"
 #include "GeometryCache.h"
 #include "CGALCache.h"
 #include "Polygon2d.h"
@@ -244,7 +244,7 @@ Polygon2d *GeometryEvaluator::applyMinkowski2D(const AbstractNode &node)
 		for (int i=1;i<children.size();i++) {
 			ClipperLib::Path &temp = result[0];
 			const Polygon2d *chgeom = children[i];
-			ClipperLib::Path shape = ClipperUtils::fromOutline2d(chgeom->outlines()[0]);
+			ClipperLib::Path shape = ClipperUtils::fromOutline2d(chgeom->outlines()[0], false);
 			ClipperLib::MinkowskiSum(temp, shape, result, true);
 		}
 
@@ -286,7 +286,7 @@ std::vector<const class Polygon2d *> GeometryEvaluator::collectChildren2D(const 
 				children.push_back(polygons);
 		}
 		else {
-			PRINT("ERROR: Only 2D children are supported by this operation!");
+			PRINT("WARNING: Ignoring 3D child object for 2D operation");
 		}
 	}
 	return children;
@@ -351,43 +351,7 @@ Polygon2d *GeometryEvaluator::applyToChildren2D(const AbstractNode &node, OpenSC
 		return applyHull2D(node);
 	}
 
-	ClipperLib::Clipper sumclipper;
-	bool first = true;
-	BOOST_FOREACH(const Geometry::ChildItem &item, this->visitedchildren[node.index()]) {
-		const AbstractNode *chnode = item.first;
-		const shared_ptr<const Geometry> &chgeom = item.second;
-		// FIXME: Don't use deep access to modinst members
-		if (chnode->modinst->isBackground()) continue;
-		
-		// NB! We insert into the cache here to ensure that all children of
-		// a node is a valid object. If we inserted as we created them, the 
-		// cache could have been modified before we reach this point due to a large
-		// sibling object. 
-		if (!isCached(*chnode)) {
-			GeometryCache::instance()->insert(this->tree.getIdString(*chnode), chgeom);
-		}
-		
-		if (chgeom) {
-			if (chgeom->getDimension() == 2) {
-				shared_ptr<const Polygon2d> polygons = dynamic_pointer_cast<const Polygon2d>(chgeom);
-				// FIXME: This will trigger on e.g. linear_extrude of minkowski sums.
-				assert(polygons);
-				// The first Clipper operation will sanitize the polygon, ensuring 
-				// contours/holes have the correct winding order
-				ClipperLib::Paths result = ClipperUtils::fromPolygon2d(*polygons);
-				result = ClipperUtils::sanitize(result);
-
-				// Add correctly winded polygons to the main clipper
-				sumclipper.AddPaths(result, first ? ClipperLib::ptSubject : ClipperLib::ptClip, true);
-			}
-			else {
-				// FIXME: Wrong error message
-				PRINT("ERROR: linear_extrude() is not defined for 3D child objects!");
-			}
-		}
-		chnode->progress_report();
-		if (first) first = !first;
-	}
+	std::vector<const Polygon2d *> children = collectChildren2D(node);
 
 	ClipperLib::ClipType clipType;
 	switch (op) {
@@ -405,17 +369,8 @@ Polygon2d *GeometryEvaluator::applyToChildren2D(const AbstractNode &node, OpenSC
 		return NULL;
 		break;
 	}
-	// Perform the main op
-	ClipperLib::Paths sumresult;
-	sumclipper.Execute(clipType, sumresult, ClipperLib::pftNonZero, ClipperLib::pftNonZero);
 
-	if (sumresult.size() == 0) return NULL;
-
-	// The returned result will have outlines ordered according to whether 
-	// they're positive or negative: Positive outlines counter-clockwise and 
-	// negative outlines clockwise.
-	// FIXME: We might want to introduce a flag in Polygon2d to signify this
-	return ClipperUtils::toPolygon2d(sumresult);
+	return ClipperUtils::apply(children, clipType);
 }
 
 /*!
@@ -492,23 +447,18 @@ Response GeometryEvaluator::visit(State &state, const AbstractNode &node)
 */
 Response GeometryEvaluator::visit(State &state, const LeafNode &node)
 {
-	// FIXME: We should run the result of 2D geometry to Clipper to ensure
-	// correct winding order
 	if (state.isPrefix()) {
 		shared_ptr<const Geometry> geom;
 		if (!isCached(node)) {
 			const Geometry *geometry = node.createGeometry();
-			const Polygon2d *polygons = dynamic_cast<const Polygon2d*>(geometry);
-			if (polygons) {
-				ClipperLib::Paths result = ClipperUtils::fromPolygon2d(*polygons);
-				result = ClipperUtils::process(result, 
-																			 ClipperLib::ctUnion, 
-																			 ClipperLib::pftEvenOdd);
-				Polygon2d *p = ClipperUtils::toPolygon2d(result);
-				delete geometry;
-				geometry = p;
+			if (const Polygon2d *polygon = dynamic_cast<const Polygon2d*>(geometry)) {
+				if (!polygon->isSanitized()) {
+					Polygon2d *p = ClipperUtils::sanitize(*polygon);
+					delete geometry;
+					geometry = p;
+				}
 			}
-			geom.reset(geometry);
+            geom.reset(geometry);
 		}
 		else geom = GeometryCache::instance()->get(this->tree.getIdString(node));
 		addToParent(state, node, geom);
