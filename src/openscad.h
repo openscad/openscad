@@ -28,7 +28,6 @@
 #define OPENSCAD_H
 
 extern class FileModule *parse(const char *text, const char *path, int debug);
-extern int get_fragments_from_r(double r, double fn, double fs, double fa);
 
 #include <string>
 extern std::string commandline_commands;
