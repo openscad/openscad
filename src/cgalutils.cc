@@ -126,11 +126,11 @@ namespace CGALUtils {
 			CGAL_For_all(fcirc, fend) {
 				if (E.is_standard(E.target(fcirc))) {
 					Explorer::Point ep = E.point(E.target(fcirc));
-					outline.push_back(Vector2d(to_double(ep.x()),
+					outline.vertices.push_back(Vector2d(to_double(ep.x()),
 																		 to_double(ep.y())));
 				}
 			}
-			if (outline.size() > 0) poly->addOutline(outline);
+			if (outline.vertices.size() > 0) poly->addOutline(outline);
 		}
 		return poly;
 	}

@@ -63,6 +63,7 @@ PolySet *CGAL_Nef_polyhedron::convertToPolyset() const
 	if (this->dim == 3) {
 		CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
 		ps = new PolySet();
+		ps->setConvexity(this->convexity);
 		bool err = true;
 		std::string errmsg("");
 		CGAL_Polyhedron P;

@@ -515,12 +515,14 @@ sphere_next_r2:
 			v2 -= Vector2d(this->x/2, this->y/2);
 		}
 
-		Outline2d o(4);
-		o[0] = v1;
-		o[1] = Vector2d(v2[0], v1[1]);
-		o[2] = v2;
-		o[3] = Vector2d(v1[0], v2[1]);
+		Outline2d o;
+		o.vertices.resize(4);
+		o.vertices[0] = v1;
+		o.vertices[1] = Vector2d(v2[0], v1[1]);
+		o.vertices[2] = v2;
+		o.vertices[3] = Vector2d(v1[0], v2[1]);
 		p->addOutline(o);
+		p->setSanitized(true);
 	}
 
 	if (this->type == CIRCLE && this->r1 > 0)
@@ -529,12 +531,14 @@ sphere_next_r2:
 		g = p;
 		int fragments = Calc::get_fragments_from_r(this->r1, this->fn, this->fs, this->fa);
 
-		Outline2d o(fragments);
+		Outline2d o;
+		o.vertices.resize(fragments);
 		for (int i=0; i < fragments; i++) {
 			double phi = (M_PI*2*i) / fragments;
-			o[i] = Vector2d(this->r1*cos(phi), this->r1*sin(phi));
+			o.vertices[i] = Vector2d(this->r1*cos(phi), this->r1*sin(phi));
 		}
 		p->addOutline(o);
+		p->setSanitized(true);
 	}
 
 	if (this->type == POLYGON)
@@ -542,7 +546,7 @@ sphere_next_r2:
 		Polygon2d *p = new Polygon2d();
 		g = p;
 
-		std::vector<Vector2d> vertices;
+		Outline2d outline;
 		double x,y;
 		const Value::VectorType &vec = this->points.toVector();
 		for (int i=0;i<vec.size();i++) {
@@ -553,19 +557,19 @@ sphere_next_r2:
 				delete p;
 				return NULL;
 			}
-			vertices.push_back(Vector2d(x, y));
+			outline.vertices.push_back(Vector2d(x, y));
 		}
 
-		if (this->paths.toVector().size() == 0 && vertices.size() > 2) {
-			p->addOutline(vertices);
+		if (this->paths.toVector().size() == 0 && outline.vertices.size() > 2) {
+			p->addOutline(outline);
 		}
 		else {
 			BOOST_FOREACH(const Value &polygon, this->paths.toVector()) {
 				Outline2d curroutline;
 				BOOST_FOREACH(const Value &index, polygon.toVector()) {
 					unsigned int idx = index.toDouble();
-					if (idx < vertices.size()) {
-						curroutline.push_back(vertices[idx]);
+					if (idx < outline.vertices.size()) {
+						curroutline.vertices.push_back(outline.vertices[idx]);
 					}
 					// FIXME: Warning on out of bounds?
 				}

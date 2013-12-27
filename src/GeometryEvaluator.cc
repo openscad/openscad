@@ -157,7 +157,7 @@ Polygon2d *GeometryEvaluator::applyHull2D(const AbstractNode &node)
 	std::list<CGAL_Nef_polyhedron2::Point> points;
 	BOOST_FOREACH(const Polygon2d *p, children) {
 		BOOST_FOREACH(const Outline2d &o, p->outlines()) {
-			BOOST_FOREACH(const Vector2d &v, o) {
+			BOOST_FOREACH(const Vector2d &v, o.vertices) {
 				points.push_back(CGAL_Nef_polyhedron2::Point(v[0], v[1]));
 			}
 		}
@@ -170,7 +170,7 @@ Polygon2d *GeometryEvaluator::applyHull2D(const AbstractNode &node)
 		// Construct Polygon2d
 		Outline2d outline;
 		BOOST_FOREACH(const CGAL_Nef_polyhedron2::Point &p, result) {
-			outline.push_back(Vector2d(CGAL::to_double(p[0]), CGAL::to_double(p[1])));
+			outline.vertices.push_back(Vector2d(CGAL::to_double(p[0]), CGAL::to_double(p[1])));
 		}
 		geometry = new Polygon2d();
 		geometry->addOutline(outline);
@@ -251,14 +251,14 @@ Polygon2d *GeometryEvaluator::applyMinkowski2D(const AbstractNode &node)
 		// The results may contain holes due to ClipperLib failing to maintain
 		// solidity of minkowski results:
 		// https://sourceforge.net/p/polyclipping/discussion/1148419/thread/8488d4e8/
-		ClipperLib::Clipper clipper;
+		ClipperLib::Paths paths;
 		BOOST_FOREACH(ClipperLib::Path &p, result) {
 			if (ClipperLib::Orientation(p)) std::reverse(p.begin(), p.end());
-			clipper.AddPath(p, ClipperLib::ptSubject, true);
+			paths.push_back(p);
 		}
-		clipper.Execute(ClipperLib::ctUnion, result, ClipperLib::pftNonZero, ClipperLib::pftNonZero);
-
-		return ClipperUtils::toPolygon2d(result);
+		std::vector<ClipperLib::Paths> pathsvector;
+		pathsvector.push_back(paths);
+		return ClipperUtils::apply(pathsvector, ClipperLib::ctUnion);
 	}
 	return NULL;
 }
@@ -416,28 +416,42 @@ Response GeometryEvaluator::visit(State &state, const AbstractNode &node)
 	return ContinueTraversal;
 }
 
-/*
- FIXME: Where do we handle nodes which should be sent to CGAL?
- 
- if (state.isPrefix() && isCached(node)) return PruneTraversal;
- if (state.isPostfix()) {
- shared_ptr<const Geometry> geom;
- if (!isCached(node)) {
- CGAL_Nef_polyhedron N = this->cgalevaluator->evaluateCGALMesh(node);
- CGALCache::instance()->insert(this->tree.getIdString(node), N);
- 
- PolySet *ps = NULL;
- if (!N.isNull()) ps = N.convertToPolyset();
- geom.reset(ps);
- }
- else {
- geom = GeometryCache::instance()->get(this->tree.getIdString(node));
- }
- addToParent(state, node, geom);
- }
- return ContinueTraversal;
+/*!
+   RenderNodes just pass on convexity
 */
+Response GeometryEvaluator::visit(State &state, const RenderNode &node)
+{
+	if (state.isPrefix() && isCached(node)) return PruneTraversal;
+	if (state.isPostfix()) {
+		shared_ptr<const class Geometry> geom;
+		if (!isCached(node)) {
+			ResultObject res = applyToChildren(node, OPENSCAD_UNION);
 
+			geom = res.constptr();
+			if (shared_ptr<const PolySet> ps = dynamic_pointer_cast<const PolySet>(geom)) {
+				// If we got a const object, make a copy
+				shared_ptr<PolySet> newps;
+				if (res.isConst()) newps.reset(new PolySet(*ps));
+				else newps = dynamic_pointer_cast<PolySet>(res.ptr());
+				newps->setConvexity(node.convexity);
+				geom = newps;
+			}
+			else if (shared_ptr<const CGAL_Nef_polyhedron> N = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom)) {
+				// If we got a const object, make a copy
+				shared_ptr<CGAL_Nef_polyhedron> newN;
+				if (res.isConst()) newN.reset(new CGAL_Nef_polyhedron(*N));
+				else newN = dynamic_pointer_cast<CGAL_Nef_polyhedron>(res.ptr());
+				newN->setConvexity(node.convexity);
+				geom = newN;
+			}
+		}
+		else {
+			geom = GeometryCache::instance()->get(this->tree.getIdString(node));
+		}
+		addToParent(state, node, geom);
+	}
+	return ContinueTraversal;
+}
 
 /*!
 	Leaf nodes can create their own geometry, so let them do that
@@ -579,14 +593,15 @@ static void add_slice(PolySet *ps, const Polygon2d &poly,
 	// FIXME: If scale2 == 0 we need to handle tessellation separately
 	bool splitfirst = sin(rot1 - rot2) >= 0.0;
 	BOOST_FOREACH(const Outline2d &o, poly.outlines()) {
-		Vector2d prev1 = trans1 * o[0];
-		Vector2d prev2 = trans2 * o[0];
-		for (size_t i=1;i<=o.size();i++) {
-			Vector2d curr1 = trans1 * o[i % o.size()];
-			Vector2d curr2 = trans2 * o[i % o.size()];
+		Vector2d prev1 = trans1 * o.vertices[0];
+		Vector2d prev2 = trans2 * o.vertices[0];
+		for (size_t i=1;i<=o.vertices.size();i++) {
+			Vector2d curr1 = trans1 * o.vertices[i % o.vertices.size()];
+			Vector2d curr2 = trans2 * o.vertices[i % o.vertices.size()];
 			ps->append_poly();
 			
-			if (splitfirst) {
+			// Make sure to split negative outlines correctly
+			if (splitfirst xor !o.positive) {
 				ps->insert_vertex(prev1[0], prev1[1], h1);
 				ps->insert_vertex(curr2[0], curr2[1], h2);
 				ps->insert_vertex(curr1[0], curr1[1], h1);
@@ -617,6 +632,13 @@ static void add_slice(PolySet *ps, const Polygon2d &poly,
 /*!
 	Input to extrude should be clean. This means non-intersecting, correct winding order
 	etc., the input coming from a library like Clipper.
+
+	We need to split quads in the same way (for e.g. thin shells). To do
+	this, we need to know which contours are negative vs. positive:
+	o Flag per contour (when sanitized)?
+	o Hierarchy of contours?
+
+	FIXME: This is probably also important for rotate_extrude()
 */
 static Geometry *extrudePolygon(const LinearExtrudeNode &node, const Polygon2d &poly)
 {
@@ -712,10 +734,10 @@ Response GeometryEvaluator::visit(State &state, const LinearExtrudeNode &node)
 
 static void fill_ring(std::vector<Vector3d> &ring, const Outline2d &o, double a)
 {
-	for (int i=0;i<o.size();i++) {
-		ring[i][0] = o[i][0] * sin(a);
-		ring[i][1] = o[i][0] * cos(a);
-		ring[i][2] = o[i][1];
+	for (int i=0;i<o.vertices.size();i++) {
+		ring[i][0] = o.vertices[i][0] * sin(a);
+		ring[i][1] = o.vertices[i][0] * cos(a);
+		ring[i][2] = o.vertices[i][1];
 	}
 }
 
@@ -731,7 +753,7 @@ static Geometry *rotatePolygon(const RotateExtrudeNode &node, const Polygon2d &p
 	BOOST_FOREACH(const Outline2d &o, poly.outlines()) {
 		double min_x = 0;
 		double max_x = 0;
-		BOOST_FOREACH(const Vector2d &v, o) {
+		BOOST_FOREACH(const Vector2d &v, o.vertices) {
 			min_x = fmin(min_x, v[0]);
 			max_x = fmax(max_x, v[0]);
 
@@ -744,23 +766,23 @@ static Geometry *rotatePolygon(const RotateExtrudeNode &node, const Polygon2d &p
 		int fragments = get_fragments_from_r(max_x - min_x, node.fn, node.fs, node.fa);
 
 		std::vector<Vector3d> rings[2];
-		rings[0].reserve(o.size());
-		rings[1].reserve(o.size());
+		rings[0].resize(o.vertices.size());
+		rings[1].resize(o.vertices.size());
 
 		fill_ring(rings[0], o, -M_PI/2); // first ring
 		for (int j = 0; j < fragments; j++) {
 			double a = ((j+1)%fragments*2*M_PI) / fragments - M_PI/2; // start on the X axis
 			fill_ring(rings[(j+1)%2], o, a);
 
-			for (size_t i=0;i<o.size();i++) {
+			for (size_t i=0;i<o.vertices.size();i++) {
 				ps->append_poly();
 				ps->insert_vertex(rings[j%2][i]);
-				ps->insert_vertex(rings[(j+1)%2][(i+1)%o.size()]);
-				ps->insert_vertex(rings[j%2][(i+1)%o.size()]);
+				ps->insert_vertex(rings[(j+1)%2][(i+1)%o.vertices.size()]);
+				ps->insert_vertex(rings[j%2][(i+1)%o.vertices.size()]);
 				ps->append_poly();
 				ps->insert_vertex(rings[j%2][i]);
 				ps->insert_vertex(rings[(j+1)%2][i]);
-				ps->insert_vertex(rings[(j+1)%2][(i+1)%o.size()]);
+				ps->insert_vertex(rings[(j+1)%2][(i+1)%o.vertices.size()]);
 			}
 		}
 	}
@@ -884,11 +906,11 @@ Response GeometryEvaluator::visit(State &state, const ProjectionNode &node)
 						sumclipper.AddPaths(result, ClipperLib::ptSubject, true);
 					}
 				}
-				ClipperLib::Paths sumresult;
+				ClipperLib::PolyTree sumresult;
 				// This is key - without StrictlySimple, we tend to get self-intersecting results
 				sumclipper.StrictlySimple(true);
 				sumclipper.Execute(ClipperLib::ctUnion, sumresult, ClipperLib::pftNonZero, ClipperLib::pftNonZero);
-                if (sumresult.size() > 0) geom.reset(ClipperUtils::toPolygon2d(sumresult));
+				if (sumresult.Total() > 0) geom.reset(ClipperUtils::toPolygon2d(sumresult));
 			}
 			else {
 				shared_ptr<const Geometry> newgeom = applyToChildren3D(node, OPENSCAD_UNION).constptr();
