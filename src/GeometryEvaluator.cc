@@ -17,7 +17,7 @@
 #include "rendernode.h"
 #include "clipper-utils.h"
 #include "polyset-utils.h"
-#include "PolySet.h"
+#include "polyset.h"
 #include "calc.h"
 #include "printutils.h"
 #include "svg.h"
