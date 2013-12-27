@@ -630,15 +630,8 @@ static void add_slice(PolySet *ps, const Polygon2d &poly,
 }
 
 /*!
-	Input to extrude should be clean. This means non-intersecting, correct winding order
+	Input to extrude should be sanitized. This means non-intersecting, correct winding order
 	etc., the input coming from a library like Clipper.
-
-	We need to split quads in the same way (for e.g. thin shells). To do
-	this, we need to know which contours are negative vs. positive:
-	o Flag per contour (when sanitized)?
-	o Hierarchy of contours?
-
-	FIXME: This is probably also important for rotate_extrude()
 */
 static Geometry *extrudePolygon(const LinearExtrudeNode &node, const Polygon2d &poly)
 {
