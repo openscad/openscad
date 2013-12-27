@@ -30,6 +30,7 @@ public:
 	virtual Response visit(State &state, const CsgNode &node);
 	virtual Response visit(State &state, const CgaladvNode &node);
 	virtual Response visit(State &state, const ProjectionNode &node);
+	virtual Response visit(State &state, const RenderNode &node);
 
 	const Tree &getTree() const { return this->tree; }
 

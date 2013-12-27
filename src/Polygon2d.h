@@ -5,7 +5,11 @@
 #include "linalg.h"
 #include <vector>
 
-typedef std::vector<Vector2d> Outline2d;
+struct Outline2d {
+	Outline2d() : positive(true) {}
+	std::vector<Vector2d> vertices;
+	bool positive;
+};
 
 class Polygon2d : public Geometry
 {

@@ -58,7 +58,7 @@ namespace PolysetUtils {
 		BOOST_FOREACH(const PolySet::Polygon &p, ps.polygons) {
 			Outline2d outline;
 			BOOST_FOREACH(const Vector3d &v, p) {
-				outline.push_back(Vector2d(v[0], v[1]));
+				outline.vertices.push_back(Vector2d(v[0], v[1]));
 			}
 			poly->addOutline(outline);
 		}

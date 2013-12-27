@@ -214,11 +214,11 @@ void PolySet::render_surface(Renderer::csgmode_e csgmode, const Transform3d &m, 
 		// Render sides
 		if (polygon.outlines().size() > 0) {
 			BOOST_FOREACH(const Outline2d &o, polygon.outlines()) {
-				for (size_t j = 1; j <= o.size(); j++) {
-					Vector3d p1(o[j-1][0], o[j-1][1], -zbase/2);
-					Vector3d p2(o[j-1][0], o[j-1][1], zbase/2);
-					Vector3d p3(o[j % o.size()][0], o[j % o.size()][1], -zbase/2);
-					Vector3d p4(o[j % o.size()][0], o[j % o.size()][1], zbase/2);
+				for (size_t j = 1; j <= o.vertices.size(); j++) {
+					Vector3d p1(o.vertices[j-1][0], o.vertices[j-1][1], -zbase/2);
+					Vector3d p2(o.vertices[j-1][0], o.vertices[j-1][1], zbase/2);
+					Vector3d p3(o.vertices[j % o.vertices.size()][0], o.vertices[j % o.vertices.size()][1], -zbase/2);
+					Vector3d p4(o.vertices[j % o.vertices.size()][0], o.vertices[j % o.vertices.size()][1], zbase/2);
 					gl_draw_triangle(shaderinfo, p2, p1, p3, true, true, false, 0, mirrored);
 					gl_draw_triangle(shaderinfo, p2, p3, p4, false, true, true, 0, mirrored);
 				}
@@ -285,7 +285,7 @@ void PolySet::render_edges(Renderer::csgmode_e csgmode) const
 			// Render only outlines
 			BOOST_FOREACH(const Outline2d &o, polygon.outlines()) {
 				glBegin(GL_LINE_LOOP);
-				BOOST_FOREACH(const Vector2d &v, o) {
+				BOOST_FOREACH(const Vector2d &v, o.vertices) {
 					glVertex3d(v[0], v[1], -0.1);
 				}
 				glEnd();
@@ -299,14 +299,14 @@ void PolySet::render_edges(Renderer::csgmode_e csgmode) const
 				// Render top+bottom outlines
 				for (double z = -zbase/2; z < zbase; z += zbase) {
 					glBegin(GL_LINE_LOOP);
-					BOOST_FOREACH(const Vector2d &v, o) {
+					BOOST_FOREACH(const Vector2d &v, o.vertices) {
 						glVertex3d(v[0], v[1], z);
 					}
 					glEnd();
 				}
 				// Render sides
 				glBegin(GL_LINES);
-				BOOST_FOREACH(const Vector2d &v, o) {
+				BOOST_FOREACH(const Vector2d &v, o.vertices) {
 					glVertex3d(v[0], v[1], -zbase/2);
 					glVertex3d(v[0], v[1], +zbase/2);
 				}

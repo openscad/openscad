@@ -113,8 +113,8 @@ PolySet *Polygon2d::tessellate() const
 	// Adds all vertices, and add all contours as constraints.
 	BOOST_FOREACH(const Outline2d &outline, this->outlines()) {
 		// Start with last point
-		Polygon2DCGAL::CDT::Vertex_handle prev = cdt.insert(Polygon2DCGAL::Point(outline[outline.size()-1][0], outline[outline.size()-1][1]));
-		BOOST_FOREACH(const Vector2d &v, outline) {
+		Polygon2DCGAL::CDT::Vertex_handle prev = cdt.insert(Polygon2DCGAL::Point(outline.vertices[outline.vertices.size()-1][0], outline.vertices[outline.vertices.size()-1][1]));
+		BOOST_FOREACH(const Vector2d &v, outline.vertices) {
 			Polygon2DCGAL::CDT::Vertex_handle curr = cdt.insert(Polygon2DCGAL::Point(v[0], v[1]));
 			if (prev != curr) { // Ignore duplicate vertices
 				cdt.insert_constraint(prev, curr);

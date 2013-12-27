@@ -221,9 +221,9 @@ void export_dxf(const Polygon2d &poly, std::ostream &output)
 				 << "ENTITIES\n";
 
 	BOOST_FOREACH(const Outline2d &o, poly.outlines()) {
-		for (int i=0;i<o.size();i++) {
-			const Vector2d &p1 = o[i];
-			const Vector2d &p2 = o[(i+1)%o.size()];
+		for (int i=0;i<o.vertices.size();i++) {
+			const Vector2d &p1 = o.vertices[i];
+			const Vector2d &p2 = o.vertices[(i+1)%o.vertices.size()];
 			double x1 = p1[0];
 			double y1 = p1[1];
 			double x2 = p2[0];
