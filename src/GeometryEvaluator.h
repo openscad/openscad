@@ -17,7 +17,6 @@ public:
 	GeometryEvaluator(const class Tree &tree);
 	virtual ~GeometryEvaluator() {}
 
-	shared_ptr<const Geometry> getGeometry(const AbstractNode &node, bool cache);
 	shared_ptr<const Geometry> evaluateGeometry(const AbstractNode &node, bool allownef);
 
 	virtual Response visit(State &state, const AbstractNode &node);
