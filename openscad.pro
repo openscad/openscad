@@ -206,6 +206,7 @@ HEADERS += src/typedefs.h \
            src/OpenCSGWarningDialog.h \
            src/AboutDialog.h \
            src/builtin.h \
+           src/calc.h \
            src/context.h \
            src/modcontext.h \
            src/evalcontext.h \
@@ -324,6 +325,7 @@ SOURCES += src/version_check.cc \
            src/AutoUpdater.cc \
            \
            src/builtin.cc \
+           src/calc.cc \
            src/export.cc \
            src/export_png.cc \
            src/import.cc \
