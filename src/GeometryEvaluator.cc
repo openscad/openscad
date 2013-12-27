@@ -18,7 +18,7 @@
 #include "clipper-utils.h"
 #include "polyset-utils.h"
 #include "PolySet.h"
-#include "openscad.h" // get_fragments_from_r()
+#include "calc.h"
 #include "printutils.h"
 #include "svg.h"
 #include "dxfdata.h"
@@ -31,32 +31,6 @@
 GeometryEvaluator::GeometryEvaluator(const class Tree &tree):
 	tree(tree)
 {
-}
-
-/*!
-  Factory method returning a Geometry from the given node. If the
-  node is already cached, the cached Geometry will be returned
-  otherwise a new Geometry will be created from the node. If cache is
-  true, the newly created Geometry will be cached.
-
-	FIXME: This looks redundant
- */
-shared_ptr<const Geometry> GeometryEvaluator::getGeometry(const AbstractNode &node, bool cache)
-{
-	std::string cacheid = this->tree.getIdString(node);
-
-	if (GeometryCache::instance()->contains(cacheid)) {
-#ifdef DEBUG
-    // For cache debugging
-		PRINTB("GeometryCache hit: %s", cacheid.substr(0, 40));
-#endif
-		return GeometryCache::instance()->get(cacheid);
-	}
-
-	shared_ptr<const Geometry> geom(this->evaluateGeometry(node, true));
-
-	if (cache) GeometryCache::instance()->insert(cacheid, geom);
-	return geom;
 }
 
 bool GeometryEvaluator::isCached(const AbstractNode &node) const
@@ -756,7 +730,7 @@ static Geometry *rotatePolygon(const RotateExtrudeNode &node, const Polygon2d &p
 				return NULL;
 			}
 		}
-		int fragments = get_fragments_from_r(max_x - min_x, node.fn, node.fs, node.fa);
+		int fragments = Calc::get_fragments_from_r(max_x - min_x, node.fn, node.fs, node.fa);
 
 		std::vector<Vector3d> rings[2];
 		rings[0].resize(o.vertices.size());
@@ -931,7 +905,7 @@ Response GeometryEvaluator::visit(State &state, const ProjectionNode &node)
 
 /*!
 	input: List of 2D or 3D objects (not mixed)
-	output: PolySet (FIXME: implement Polygon2d)
+	output: any Geometry
 	operation:
 	  o Perform cgal operation
  */			
@@ -995,15 +969,6 @@ Response GeometryEvaluator::visit(State &state, const CgaladvNode &node)
 			default:
 				assert(false && "not implemented");
 			}
-			// MINKOWSKI 
-			//   2D        children -> Polygon2d, apply Clipper minkowski
-			//   3D        children -> Nef, apply CGAL minkowski
-			// HULL      
-			//   2D        children -> Polygon2d (or really point clouds), apply 2D hull (CGAL)
-			//   3D        children -> PolySet (or really point clouds), apply 2D hull (CGAL)
-			// RESIZE     
-			//   2D        children -> Polygon2d -> union -> apply resize
-			//   3D        children -> PolySet -> union -> apply resize
 		}
 		else {
 			geom = GeometryCache::instance()->get(this->tree.getIdString(node));
