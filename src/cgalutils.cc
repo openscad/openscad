@@ -10,6 +10,7 @@
 #include "cgal.h"
 #include <CGAL/convex_hull_3.h>
 #include "svg.h"
+#include "Reindexer.h"
 
 #include <map>
 #include <boost/foreach.hpp>
@@ -261,10 +262,18 @@ bool createPolySetFromPolyhedron(const CGAL_Polyhedron &p, PolySet &ps)
 
 #undef GEN_SURFACE_DEBUG
 
+namespace Eigen {
+	size_t hash_value(Vector3d const &v) {
+		size_t seed = 0;
+		for (int i=0;i<3;i++) boost::hash_combine(seed, v[i]);
+		return seed;
+	}
+}
+
 class CGAL_Build_PolySet : public CGAL::Modifier_base<CGAL_HDS>
 {
 public:
-	typedef CGAL_HDS::Vertex::Point CGALPoint;
+	typedef CGAL_Polybuilder::Point_3 CGALPoint;
 
 	const PolySet &ps;
 	CGAL_Build_PolySet(const PolySet &ps) : ps(ps) { }
@@ -273,8 +282,7 @@ public:
 	{
 		CGAL_Polybuilder B(hds, true);
 		typedef boost::tuple<double, double, double> BuilderVertex;
-		typedef std::map<BuilderVertex, size_t> BuilderMap;
-		BuilderMap vertices;
+		Reindexer<Vector3d> vertices;
 		std::vector<size_t> indices(3);
 
 		// Estimating same # of vertices as polygons (very rough)
@@ -285,14 +293,11 @@ public:
 			if (pidx++ > 0) printf(",");
 			indices.clear();
 			BOOST_FOREACH(const Vector3d &v, p) {
-				size_t idx;
-				BuilderVertex bv = boost::make_tuple(v[0], v[1], v[2]);
-        if (vertices.count(bv) > 0) indices.push_back(vertices[bv]);
-				else {
-					indices.push_back(vertices.size());
-					vertices[bv] = vertices.size();
-					B.add_vertex(CGALPoint(v[0], v[1], v[2]));
-				}
+				size_t s = vertices.size();
+				size_t idx = vertices.lookup(v);
+				// If we added a vertex, also add it to the CGAL builder
+				if (idx == s) B.add_vertex(CGALPoint(v[0], v[1], v[2]));
+				indices.push_back(idx);
 			}
 			std::map<size_t,int> fc;
 			bool facet_is_degenerate = false;
@@ -317,13 +322,10 @@ public:
 		printf("],\n");
 
 		printf("points=[");
-		int vidx = 0;
 		for (int vidx=0;vidx<vertices.size();vidx++) {
 			if (vidx > 0) printf(",");
-			const BuilderMap::const_iterator it = 
-				std::find_if(vertices.begin(), vertices.end(), 
-										 boost::bind(&BuilderMap::value_type::second, _1) == vidx);
-			printf("[%g,%g,%g]", it->first.get<0>(), it->first.get<1>(), it->first.get<2>());
+			const Vector3d &v = vertices.getArray()[vidx];
+			printf("[%g,%g,%g]", v[0], v[1], v[2]);
 		}
 		printf("]);\n");
 	}
