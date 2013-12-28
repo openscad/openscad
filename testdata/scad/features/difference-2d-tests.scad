@@ -21,3 +21,9 @@ translate([0,12]) difference() {
   square(10, center=true);
   circle(r=4);
 }
+
+// Subtract 3D from 2D
+translate([24,0]) difference() {
+  square(10, center=true);
+  sphere(r=4);
+}
