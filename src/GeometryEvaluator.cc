@@ -306,8 +306,8 @@ Geometry::ChildList GeometryEvaluator::collectChildren3D(const AbstractNode &nod
 		}
 		else {
 			PRINT("ERROR: Only 3D children are supported by this operation!");
-			shared_ptr<const Geometry> nullptr;
-			children.push_back(Geometry::ChildItem(item.first, nullptr));
+			shared_ptr<const Geometry> nullp;
+			children.push_back(Geometry::ChildItem(item.first, nullp));
 		}
 	}
 	return children;
