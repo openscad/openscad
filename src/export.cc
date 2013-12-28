@@ -27,6 +27,7 @@
 #include "export.h"
 #include "printutils.h"
 #include "polyset.h"
+#include "polyset-utils.h"
 #include "dxfdata.h"
 
 #include <boost/foreach.hpp>
@@ -73,9 +74,12 @@ void exportFile(const class Geometry *root_geom, std::ostream &output, FileForma
 
 void export_stl(const PolySet *ps, std::ostream &output)
 {
+	PolySet triangulated;
+	PolysetUtils::tessellate_faces(*ps, triangulated);
+
 	setlocale(LC_NUMERIC, "C"); // Ensure radix is . (not ,) in output
 	output << "solid OpenSCAD_Model\n";
-	BOOST_FOREACH(const PolySet::Polygon &p, ps->polygons) {
+	BOOST_FOREACH(const PolySet::Polygon &p, triangulated.polygons) {
 		output << "  facet normal 0 0 0\n";
 		output << "    outer loop\n";
 		BOOST_FOREACH(const Vector3d &v, p) {
@@ -262,21 +266,3 @@ void export_dxf(const Polygon2d &poly, std::ostream &output)
 
 	setlocale(LC_NUMERIC, "");      // Set default locale
 }
-
-#ifdef DEBUG
-#include <boost/foreach.hpp>
-void export_stl(const PolySet &ps, std::ostream &output)
-{
-	output << "solid OpenSCAD_PolySet\n";
-	BOOST_FOREACH(const PolySet::Polygon &p, ps.polygons) {
-		output << "facet\n";
-		output << "outer loop\n";
-		BOOST_FOREACH(const Vector3d &v, p) {
-			output << "vertex " << v[0] << " " << v[1] << " " << v[2] << "\n";
-		}
-		output << "endloop\n";
-		output << "endfacet\n";
-	}
-	output << "endsolid OpenSCAD_PolySet\n";
-}
-#endif
