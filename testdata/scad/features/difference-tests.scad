@@ -34,3 +34,10 @@ translate([24,12,0]) difference() {
   cube([0,10,10], center=true);
   # cylinder(r=4, h=20, center=true);
 }
+
+// Non-geometry (echo) statement as first child should be ignored
+translate([0,-12,0]) difference() {
+  echo("difference-tests");
+  cube([10,10,10], center=true);
+  cylinder(r=4, h=20, center=true);
+}
