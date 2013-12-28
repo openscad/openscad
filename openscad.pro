@@ -375,6 +375,7 @@ cgal {
 HEADERS += src/cgal.h \
            src/cgalfwd.h \
            src/cgalutils.h \
+           src/Reindexer.h \
            src/CGALCache.h \
            src/CGALRenderer.h \
            src/CGAL_Nef_polyhedron.h \
