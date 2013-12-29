@@ -182,21 +182,25 @@ void read_stl_facet( std::ifstream &f, stl_facet &facet )
 #endif
 }
 
+/*!
+	Will return an empty geometry if the import failed, but not NULL
+*/
 Geometry *ImportNode::createGeometry() const
 {
 	Geometry *g = NULL;
 
-	if (this->type == TYPE_STL)
-	{
+	switch (this->type) {
+	case TYPE_STL: {
+		PolySet *p = new PolySet(3);
+		g = p;
+
 		handle_dep((std::string)this->filename);
 		// Open file and position at the end
 		std::ifstream f(this->filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
 		if (!f.good()) {
 			PRINTB("WARNING: Can't open import file '%s'.", this->filename);
-			return NULL;
+			return g;
 		}
-
-		PolySet *p = new PolySet();
 
 		boost::regex ex_sfe("solid|facet|endloop");
 		boost::regex ex_outer("outer loop");
@@ -270,11 +274,11 @@ Geometry *ImportNode::createGeometry() const
 				p->append_vertex(facet.data.x3, facet.data.y3, facet.data.z3);
 			}
 		}
-		g = p;
 	}
-
-	else if (this->type == TYPE_OFF)
-	{
+		break;
+	case TYPE_OFF: {
+		PolySet *p = new PolySet(3);
+		g = p;
 #ifdef ENABLE_CGAL
 		CGAL_Polyhedron poly;
 		std::ifstream file(this->filename.c_str(), std::ios::in | std::ios::binary);
@@ -285,24 +289,21 @@ Geometry *ImportNode::createGeometry() const
 			file >> poly;
 			file.close();
 			
-			PolySet *p = new PolySet();
 			bool err = createPolySetFromPolyhedron(poly, *p);
-			if (err) delete p;
-			else g = p;
 		}
 #else
   PRINT("WARNING: OFF import requires CGAL.");
 #endif
 	}
-
-	else if (this->type == TYPE_DXF)
-	{
+		break;
+	case TYPE_DXF: {
 		DxfData dd(this->fn, this->fs, this->fa, this->filename, this->layername, this->origin_x, this->origin_y, this->scale);
 		g = dd.toPolygon2d();
 	}
-	else 
-	{
+		break;
+	default:
 		PRINTB("ERROR: Unsupported file format while trying to import file '%s'", this->filename);
+		g = new PolySet(0);
 	}
 
 	if (g) g->setConvexity(this->convexity);

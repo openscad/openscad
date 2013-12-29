@@ -97,7 +97,7 @@ GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren3D(const Abstr
 	// Only one child -> this is a noop
 	if (children.size() == 1) return ResultObject(children.front().second);
 
-	CGAL_Nef_polyhedron *N = new CGAL_Nef_polyhedron;
+	CGAL_Nef_polyhedron *N = NULL;
 	BOOST_FOREACH(const Geometry::ChildItem &item, children) {
 		const shared_ptr<const Geometry> &chgeom = item.second;
 		shared_ptr<const CGAL_Nef_polyhedron> chN;
@@ -112,9 +112,9 @@ GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren3D(const Abstr
 			}
 		}
 
+		if (N) CGALUtils::applyBinaryOperator(*N, *chN, op);
 		// Initialize N on first iteration with first expected geometric object
-		if (N->isNull() && !N->isEmpty()) *N = chN->copy();
-		else CGALUtils::applyBinaryOperator(*N, *chN, op);
+		else if (chN) N = chN->copy();
 
 		item.first->progress_report();
 	}
@@ -168,7 +168,7 @@ void GeometryEvaluator::applyResize3D(CGAL_Nef_polyhedron &N,
 																			const Eigen::Matrix<bool,3,1> &autosize)
 {
 	// Based on resize() in Giles Bathgate's RapCAD (but not exactly)
-	if (N.isNull() || N.isEmpty()) return;
+	if (N.isEmpty()) return;
 
 	CGAL_Iso_cuboid_3 bb = CGALUtils::boundingBox(*N.p3);
 
@@ -237,6 +237,10 @@ Polygon2d *GeometryEvaluator::applyMinkowski2D(const AbstractNode &node)
 	return NULL;
 }
 
+/*!
+	Returns a list of Polygon2d children of the given node.
+	May return empty Polygon2d object, but not NULL objects
+*/
 std::vector<const class Polygon2d *> GeometryEvaluator::collectChildren2D(const AbstractNode &node)
 {
 	std::vector<const Polygon2d *> children;
@@ -254,13 +258,15 @@ std::vector<const class Polygon2d *> GeometryEvaluator::collectChildren2D(const 
 			GeometryCache::instance()->insert(this->tree.getIdString(*chnode), chgeom);
 		}
 		
-		if (chgeom && chgeom->getDimension() == 2) {
+		if (chgeom) {
+			if (chgeom->getDimension() == 2) {
 				const Polygon2d *polygons = dynamic_cast<const Polygon2d *>(chgeom.get());
 				assert(polygons);
 				children.push_back(polygons);
-		}
-		else {
-			PRINT("WARNING: Ignoring 3D child object for 2D operation");
+			}
+			else {
+				PRINT("WARNING: Ignoring 3D child object for 2D operation");
+			}
 		}
 	}
 	return children;
@@ -286,6 +292,10 @@ void GeometryEvaluator::smartCache(const AbstractNode &node,
 	}
 }
 
+/*!
+	Returns a list of 3D Geometry children of the given node.
+	May return empty geometries, but not NULL objects
+*/
 Geometry::ChildList GeometryEvaluator::collectChildren3D(const AbstractNode &node)
 {
 	Geometry::ChildList children;
@@ -301,13 +311,13 @@ Geometry::ChildList GeometryEvaluator::collectChildren3D(const AbstractNode &nod
 		// sibling object. 
 		smartCache(*chnode, chgeom);
 		
-		if (chgeom && chgeom->getDimension() == 3) {
+		if (chgeom) {
+			if (chgeom->isEmpty() || chgeom->getDimension() == 3) {
 				children.push_back(item);
-		}
-		else {
-			PRINT("ERROR: Only 3D children are supported by this operation!");
-			shared_ptr<const Geometry> nullp;
-			children.push_back(Geometry::ChildItem(item.first, nullp));
+			}
+			else {
+				PRINT("WARNING: Ignoring 2D child object for 3D operation");
+			}
 		}
 	}
 	return children;
@@ -609,7 +619,7 @@ static void add_slice(PolySet *ps, const Polygon2d &poly,
 */
 static Geometry *extrudePolygon(const LinearExtrudeNode &node, const Polygon2d &poly)
 {
-	PolySet *ps = new PolySet();
+	PolySet *ps = new PolySet(3);
 	ps->setConvexity(node.convexity);
 	if (node.height <= 0) return ps;
 
@@ -714,7 +724,7 @@ static void fill_ring(std::vector<Vector3d> &ring, const Outline2d &o, double a)
 */
 static Geometry *rotatePolygon(const RotateExtrudeNode &node, const Polygon2d &poly)
 {
-	PolySet *ps = new PolySet();
+	PolySet *ps = new PolySet(3);
 	ps->setConvexity(node.convexity);
 
 	BOOST_FOREACH(const Outline2d &o, poly.outlines()) {
@@ -886,7 +896,7 @@ Response GeometryEvaluator::visit(State &state, const ProjectionNode &node)
 					if (!Nptr) {
 						Nptr.reset(createNefPolyhedronFromGeometry(*newgeom));
 					}
-					if (!Nptr->isNull()) {
+					if (!Nptr->isEmpty()) {
 						Polygon2d *poly = CGALUtils::project(*Nptr, node.cut_mode);
 						assert(poly);
 						poly->setConvexity(node.convexity);

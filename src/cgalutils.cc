@@ -85,7 +85,7 @@ namespace CGALUtils {
 		try {
 			switch (op) {
 			case OPENSCAD_UNION:
-				if (target.isEmpty()) target = src.copy();
+				if (target.isEmpty()) target = *src.copy();
 				else target += src;
 				break;
 			case OPENSCAD_INTERSECTION:
@@ -402,7 +402,7 @@ void ZRemover::visit( CGAL_Nef_polyhedron3::Halffacet_const_handle hfacet )
 static CGAL_Nef_polyhedron *createNefPolyhedronFromPolySet(const PolySet &ps)
 {
 	assert(ps.getDimension() == 3);
-	if (ps.empty()) return new CGAL_Nef_polyhedron(3);
+	if (ps.isEmpty()) return new CGAL_Nef_polyhedron(3);
 
 	CGAL_Nef_polyhedron3 *N = NULL;
 	bool plane_error = false;
@@ -423,7 +423,7 @@ static CGAL_Nef_polyhedron *createNefPolyhedronFromPolySet(const PolySet &ps)
 		}
 	}
 	if (plane_error) try {
-			PolySet ps2;
+			PolySet ps2(3);
 			CGAL_Polyhedron P;
 			PolysetUtils::tessellate_faces(ps, ps2);
 			bool err = createPolyhedronFromPolySet(ps2,P);

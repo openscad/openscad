@@ -109,8 +109,9 @@ shared_ptr<CSGTerm> CSGTerm::createCSGTerm(type_e type, CSGTerm *left, CSGTerm *
 }
 
 CSGTerm::CSGTerm(const shared_ptr<const Geometry> &geom, const Transform3d &matrix, const Color4f &color, const std::string &label)
-	: type(TYPE_PRIMITIVE), geom(geom), label(label), flag(CSGTerm::FLAG_NONE), m(matrix), color(color)
+	: type(TYPE_PRIMITIVE), label(label), flag(CSGTerm::FLAG_NONE), m(matrix), color(color)
 {
+	if (geom && !geom->isEmpty()) this->geom = geom;
 	initBoundingBox();
 }
 

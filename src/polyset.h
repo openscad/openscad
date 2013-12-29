@@ -15,18 +15,16 @@ public:
 	typedef std::vector<Vector3d> Polygon;
 	std::vector<Polygon> polygons;
 
-	bool is2d;
-
-	PolySet();
+	PolySet(unsigned int dim);
 	PolySet(const Polygon2d &origin);
 	virtual ~PolySet();
 
 	virtual size_t memsize() const;
 	virtual BoundingBox getBoundingBox() const;
 	virtual std::string dump() const;
-	virtual unsigned int getDimension() const { return this->is2d ? 2 : 3; }
+	virtual unsigned int getDimension() const { return this->dim; }
+	virtual bool isEmpty() const { return polygons.size() == 0; }
 
-	bool empty() const { return polygons.size() == 0; }
 	size_t numPolygons() const { return polygons.size(); }
 	void append_poly();
 	void append_vertex(double x, double y, double z = 0.0);
@@ -43,6 +41,7 @@ public:
 
 private:
   Polygon2d polygon;
+	unsigned int dim;
 };
 
 #endif

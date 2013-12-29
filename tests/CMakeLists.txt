@@ -556,7 +556,6 @@ set(CGAL_SOURCES
   ../src/cgalutils.cc 
   ../src/CGALCache.cc
   ../src/CGAL_Nef_polyhedron_DxfData.cc
-  ../src/cgaladv_minkowski2.cc
   ../src/Polygon2d-CGAL.cc
   ../src/polyset-utils.cc 
   ../src/svg.cc
