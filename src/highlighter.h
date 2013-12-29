@@ -10,11 +10,12 @@ class Highlighter : public QSyntaxHighlighter
 public:
 	enum state_e {NORMAL=-1,QUOTE,COMMENT};
 	QHash<QString, QTextCharFormat> tokenFormats;
-	QTextCharFormat errorFormat, commentFormat, quoteFormat, numberFormat;
+	QTextCharFormat errorFormat;
 	Highlighter(QTextDocument *parent);
 	void highlightBlock(const QString &text);
 	void highlightError(int error_pos);
 	void unhighlightLastError();
+	void assignFormatsToTokens(const QString &);
 private:
 	QTextBlock lastErrorBlock;
 	int errorPos;
