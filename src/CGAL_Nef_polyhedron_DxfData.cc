@@ -38,28 +38,23 @@
 
 std::string CGAL_Nef_polyhedron::dump() const
 {
-	if (this->dim==3)
-		return OpenSCAD::dump_svg( *this->p3 );
-	else
-		return std::string("Nef Polyhedron with dimension != 2 or 3");
+	return OpenSCAD::dump_svg( *this->p3 );
 }
 
 
 void CGAL_Nef_polyhedron::transform( const Transform3d &matrix )
 {
 	if (!this->isEmpty()) {
-		if (this->dim == 3) {
-			if (matrix.matrix().determinant() == 0) {
-				PRINT("Warning: Scaling a 3D object with 0 - removing object");
-				this->reset();
-			}
-			else {
-				CGAL_Aff_transformation t(
-					matrix(0,0), matrix(0,1), matrix(0,2), matrix(0,3),
-					matrix(1,0), matrix(1,1), matrix(1,2), matrix(1,3),
-					matrix(2,0), matrix(2,1), matrix(2,2), matrix(2,3), matrix(3,3));
-				this->p3->transform(t);
-			}
+		if (matrix.matrix().determinant() == 0) {
+			PRINT("Warning: Scaling a 3D object with 0 - removing object");
+			this->reset();
+		}
+		else {
+			CGAL_Aff_transformation t(
+				matrix(0,0), matrix(0,1), matrix(0,2), matrix(0,3),
+				matrix(1,0), matrix(1,1), matrix(1,2), matrix(1,3),
+				matrix(2,0), matrix(2,1), matrix(2,2), matrix(2,3), matrix(3,3));
+			this->p3->transform(t);
 		}
 	}
 }

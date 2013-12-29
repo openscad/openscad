@@ -103,7 +103,7 @@ GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren3D(const Abstr
 		const shared_ptr<const Geometry> &chgeom = item.second;
 		shared_ptr<const CGAL_Nef_polyhedron> chN;
 		if (!chgeom) {
-			chN.reset(new CGAL_Nef_polyhedron(3)); // Create null polyhedron
+			chN.reset(new CGAL_Nef_polyhedron); // Create null polyhedron
 		}
 		else {
 			chN = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(chgeom);
