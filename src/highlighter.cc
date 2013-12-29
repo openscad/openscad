@@ -131,7 +131,7 @@ void format_colors_for_light_background(QMap<QString,QTextCharFormat> &formats)
 {
 	//PRINT("format for light");
 	formats["operator"].setForeground(Qt::blue);
-	formats["math"].setForeground(Qt::green);
+	formats["math"].setForeground(QColor("Green"));
 	formats["keyword"].setForeground(QColor("Green"));
 	formats["keyword"].setToolTip("Keyword");
 	formats["transform"].setForeground(QColor("Indigo"));
