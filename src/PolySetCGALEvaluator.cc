@@ -480,7 +480,7 @@ PolySet *PolySetCGALEvaluator::rotateDxfData(const RotateExtrudeNode &node, DxfD
 		}
 
 		for (int j = 0; j < fragments; j++) {
-			double a = (j*2*M_PI) / fragments - M_PI/2; // start on the X axis
+			double a = (j*2*M_PI) / (fragments-1) - M_PI/2; // start on the X axis
 			for (size_t k = 0; k < dxf.paths[i].indices.size(); k++) {
 				points[j][k][0] = dxf.points[dxf.paths[i].indices[k]][0] * sin(a);
 			 	points[j][k][1] = dxf.points[dxf.paths[i].indices[k]][0] * cos(a);
