@@ -59,6 +59,7 @@ Preferences::Preferences(QWidget *parent) : QMainWindow(parent)
 	QString found_family(QFontInfo(font).family());
 	this->defaultmap["editor/fontfamily"] = found_family;
  	this->defaultmap["editor/fontsize"] = 12;
+	this->defaultmap["editor/syntaxhighlight"] = "For Light Background";
 
 	uint savedsize = getValue("editor/fontsize").toUInt();
 	QFontDatabase db;
@@ -85,7 +86,6 @@ Preferences::Preferences(QWidget *parent) : QMainWindow(parent)
 #endif
 	this->defaultmap["advanced/openCSGLimit"] = RenderSettings::inst()->openCSGTermLimit;
 	this->defaultmap["advanced/forceGoldfeather"] = false;
-
 
 	// Toolbar
 	QActionGroup *group = new QActionGroup(this);
@@ -191,6 +191,13 @@ void Preferences::on_fontSize_editTextChanged(const QString &size)
 	QSettings settings;
 	settings.setValue("editor/fontsize", intsize);
 	emit fontChanged(getValue("editor/fontfamily").toString(), intsize);
+}
+
+void Preferences::on_syntaxHighlight_currentIndexChanged(const QString &s)
+{
+	QSettings settings;
+	settings.setValue("editor/syntaxhighlight", s);
+	emit syntaxHighlightChanged(s);
 }
 
 void unimplemented_msg()
@@ -329,6 +336,10 @@ void Preferences::updateGUI()
 	else {
 		this->fontSize->setEditText(fontsize);
 	}
+
+	QString shighlight = getValue("editor/syntaxhighlight").toString();
+	int shidx = this->syntaxHighlight->findText(shighlight);
+	if (shidx >= 0) this->syntaxHighlight->setCurrentIndex(shidx);
 
 	if (AutoUpdater *updater = AutoUpdater::updater()) {
 		this->updateCheckBox->setChecked(updater->automaticallyChecksForUpdates());
