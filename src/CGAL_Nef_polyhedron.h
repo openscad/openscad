@@ -19,17 +19,15 @@ public:
 	virtual BoundingBox getBoundingBox() const { assert(false && "not implemented"); }
 	virtual std::string dump() const;
 	virtual unsigned int getDimension() const { return this->dim; }
-	
   // Empty means it is a geometric node which has zero area/volume
-	bool isEmpty() const { return (dim > 0 && !p3); }
-  // Null means the node doesn't contain any geometry (for whatever reason)
-	bool isNull() const { return !p3; }
+	virtual bool isEmpty() const { return !p3; }
+
 	void reset() { dim=0; p3.reset(); }
 	CGAL_Nef_polyhedron &operator+=(const CGAL_Nef_polyhedron &other);
 	CGAL_Nef_polyhedron &operator*=(const CGAL_Nef_polyhedron &other);
 	CGAL_Nef_polyhedron &operator-=(const CGAL_Nef_polyhedron &other);
 	CGAL_Nef_polyhedron &minkowski(const CGAL_Nef_polyhedron &other);
-	CGAL_Nef_polyhedron copy() const;
+	CGAL_Nef_polyhedron *copy() const;
 	class PolySet *convertToPolyset() const;
 	void transform( const Transform3d &matrix );
 	shared_ptr<CGAL_Nef_polyhedron3> p3;

@@ -74,7 +74,7 @@ void exportFile(const class Geometry *root_geom, std::ostream &output, FileForma
 
 void export_stl(const PolySet *ps, std::ostream &output)
 {
-	PolySet triangulated;
+	PolySet triangulated(3);
 	PolysetUtils::tessellate_faces(*ps, triangulated);
 
 	setlocale(LC_NUMERIC, "C"); // Ensure radix is . (not ,) in output

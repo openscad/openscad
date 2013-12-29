@@ -34,8 +34,6 @@ CGAL_Nef_polyhedron& CGAL_Nef_polyhedron::operator-=(const CGAL_Nef_polyhedron &
 	return *this;
 }
 
-extern CGAL_Nef_polyhedron2 minkowski2(const CGAL_Nef_polyhedron2 &a, const CGAL_Nef_polyhedron2 &b);
-
 CGAL_Nef_polyhedron &CGAL_Nef_polyhedron::minkowski(const CGAL_Nef_polyhedron &other)
 {
 	if (this->dim == 3) (*this->p3) = CGAL::minkowski_sum_3(*this->p3, *other.p3);
@@ -44,7 +42,7 @@ CGAL_Nef_polyhedron &CGAL_Nef_polyhedron::minkowski(const CGAL_Nef_polyhedron &o
 
 size_t CGAL_Nef_polyhedron::memsize() const
 {
-	if (this->isNull()) return 0;
+	if (this->isEmpty()) return 0;
 
 	size_t memsize = sizeof(CGAL_Nef_polyhedron);
 	if (this->dim == 3) memsize += this->p3->bytes();
@@ -58,11 +56,11 @@ size_t CGAL_Nef_polyhedron::memsize() const
 */
 PolySet *CGAL_Nef_polyhedron::convertToPolyset() const
 {
-	if (this->isNull()) return new PolySet();
+	if (this->isEmpty()) return new PolySet(this->dim);
 	PolySet *ps = NULL;
 	if (this->dim == 3) {
 		CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
-		ps = new PolySet();
+		ps = new PolySet(3);
 		ps->setConvexity(this->convexity);
 		bool err = true;
 		std::string errmsg("");
@@ -92,9 +90,9 @@ PolySet *CGAL_Nef_polyhedron::convertToPolyset() const
 /*!
 	Deep copy
 */
-CGAL_Nef_polyhedron CGAL_Nef_polyhedron::copy() const
+CGAL_Nef_polyhedron *CGAL_Nef_polyhedron::copy() const
 {
-	CGAL_Nef_polyhedron copy = *this;
-	if (copy.p3) copy.p3.reset(new CGAL_Nef_polyhedron3(*copy.p3));
+	CGAL_Nef_polyhedron *copy = new CGAL_Nef_polyhedron(*this);
+	if (copy->p3) copy->p3.reset(new CGAL_Nef_polyhedron3(*copy->p3));
 	return copy;
 }

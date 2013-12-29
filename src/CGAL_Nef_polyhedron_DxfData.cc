@@ -47,7 +47,7 @@ std::string CGAL_Nef_polyhedron::dump() const
 
 void CGAL_Nef_polyhedron::transform( const Transform3d &matrix )
 {
-	if (!this->isNull()) {
+	if (!this->isEmpty()) {
 		if (this->dim == 3) {
 			if (matrix.matrix().determinant() == 0) {
 				PRINT("Warning: Scaling a 3D object with 0 - removing object");

@@ -108,7 +108,7 @@ Geometry *SurfaceNode::createGeometry() const
 		return NULL;
 	}
 
-	PolySet *p = new PolySet();
+	PolySet *p = new PolySet(3);
 	int lines = 0, columns = 0;
 	boost::unordered_map<std::pair<int,int>,double> data;
 	double min_val = 0;

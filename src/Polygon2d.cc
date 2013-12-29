@@ -47,6 +47,11 @@ std::string Polygon2d::dump() const
 	return out.str();
 }
 
+bool Polygon2d::isEmpty() const
+{
+	return this->theoutlines.empty();
+}
+
 void Polygon2d::transform(const Transform2d &mat)
 {
 	BOOST_FOREACH(Outline2d &o, this->theoutlines) {

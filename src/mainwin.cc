@@ -1315,7 +1315,7 @@ void MainWindow::actionRenderDone(shared_ptr<const Geometry> root_geom)
 		PRINTB("Total rendering time: %d hours, %d minutes, %d seconds", (s / (60*60)) % ((s / 60) % 60) % (s % 60));
 			
 		if (const CGAL_Nef_polyhedron *N = dynamic_cast<const CGAL_Nef_polyhedron *>(root_geom.get())) {
-			if (!N->isNull()) {
+			if (!N->isEmpty()) {
 				if (N->getDimension() == 3) {
 					PRINT("   Top level object is a 3D object:");
 					PRINTB("   Simple:     %6s", (N->p3->is_simple() ? "yes" : "no"));

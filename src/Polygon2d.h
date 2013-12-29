@@ -19,6 +19,7 @@ public:
 	virtual BoundingBox getBoundingBox() const;
 	virtual std::string dump() const;
 	virtual unsigned int getDimension() const { return 2; }
+	virtual bool isEmpty() const;
 
 	void addOutline(const Outline2d &outline) { this->theoutlines.push_back(outline); }
 	class PolySet *tessellate() const;
