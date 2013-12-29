@@ -13,10 +13,10 @@
 #include "dxfdata.h"
 #include "dxftess.h"
 #include "module.h"
+#include "calc.h"
 
 #include "svg.h"
 #include "printutils.h"
-#include "openscad.h" // get_fragments_from_r()
 #include <boost/foreach.hpp>
 #include <vector>
 
@@ -469,7 +469,7 @@ PolySet *PolySetCGALEvaluator::rotateDxfData(const RotateExtrudeNode &node, DxfD
 			}
 		}
 
-		int fragments = get_fragments_from_r(max_x-min_x, node.fn, node.fs, node.fa);
+		int fragments = Calc::get_fragments_from_r(max_x-min_x, node.fn, node.fs, node.fa);
 
 		double ***points;
 		points = new double**[fragments];

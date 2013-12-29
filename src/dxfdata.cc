@@ -28,7 +28,7 @@
 #include "grid.h"
 #include "printutils.h"
 #include "handle_dep.h"
-#include "openscad.h" // get_fragments_from_r()
+#include "calc.h"
 
 #include <fstream>
 #include "mathc99.h"
@@ -189,7 +189,7 @@ DxfData::DxfData(double fn, double fs, double fa,
 				}
 			}
 			else if (mode == "CIRCLE") {
-				int n = get_fragments_from_r(radius, fn, fs, fa);
+				int n = Calc::get_fragments_from_r(radius, fn, fs, fa);
 				Vector2d center(xverts[0], yverts[0]);
 				for (int i = 0; i < n; i++) {
 					double a1 = (2*M_PI*i)/n;
@@ -200,7 +200,7 @@ DxfData::DxfData(double fn, double fs, double fa,
 			}
 			else if (mode == "ARC") {
 				Vector2d center(xverts[0], yverts[0]);
-				int n = get_fragments_from_r(radius, fn, fs, fa);
+				int n = Calc::get_fragments_from_r(radius, fn, fs, fa);
 				while (arc_start_angle > arc_stop_angle)
 					arc_stop_angle += 360.0;
 				n = (int)ceil(n * (arc_stop_angle-arc_start_angle) / 360);
@@ -237,7 +237,7 @@ DxfData::DxfData(double fn, double fs, double fa,
 				// the ratio stored in 'radius; due to the parser code not checking entity type
 				double r_minor = r_major * radius;
 				double sweep_angle = ellipse_stop_angle-ellipse_start_angle;
-				int n = get_fragments_from_r(r_major, fn, fs, fa);
+				int n = Calc::get_fragments_from_r(r_major, fn, fs, fa);
 				n = (int)ceil(n * sweep_angle / (2 * M_PI));
 //				Vector2d p1;
 				Vector2d p1; p1 << 0,0;

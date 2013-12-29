@@ -206,6 +206,7 @@ HEADERS += src/typedefs.h \
            src/OpenCSGWarningDialog.h \
            src/AboutDialog.h \
            src/builtin.h \
+           src/calc.h \
            src/context.h \
            src/modcontext.h \
            src/evalcontext.h \
@@ -324,6 +325,7 @@ SOURCES += src/version_check.cc \
            src/AutoUpdater.cc \
            \
            src/builtin.cc \
+           src/calc.cc \
            src/export.cc \
            src/export_png.cc \
            src/import.cc \
@@ -416,9 +418,17 @@ applications.path = $$PREFIX/share/applications
 applications.files = icons/openscad.desktop
 INSTALLS += applications
 
+appdata.path = $$PREFIX/share/appdata
+appdata.files = openscad.appdata.xml
+INSTALLS += appdata
+
 icons.path = $$PREFIX/share/pixmaps
 icons.files = icons/openscad.png
 INSTALLS += icons
+
+man.path = $$PREFIX/share/man/man1
+man.files = doc/openscad.1
+INSTALLS += man
 
 CONFIG(winconsole) {
   include(winconsole.pri)

@@ -34,6 +34,7 @@
 #include "printutils.h"
 #include "visitor.h"
 #include "context.h"
+#include "calc.h"
 #include <sstream>
 #include <assert.h>
 #include <boost/assign/std/vector.hpp>
@@ -275,17 +276,6 @@ AbstractNode *PrimitiveModule::instantiate(const Context *ctx, const ModuleInsta
 	return node;
 }
 
-/*!
-	Returns the number of subdivision of a whole circle, given radius and
-	the three special variables $fn, $fs and $fa
-*/
-int get_fragments_from_r(double r, double fn, double fs, double fa)
-{
-	if (r < GRID_FINE) return 3;
-	if (fn > 0.0) return (int)(fn >= 3 ? fn : 3);
-	return (int)ceil(fmax(fmin(360.0 / fa, r*2*M_PI / fs), 5));
-}
-
 struct point2d {
 	double x, y;
 };
@@ -364,7 +354,7 @@ PolySet *PrimitiveNode::evaluate_polyset(class PolySetEvaluator *) const
 			double z;
 		};
 
-		int fragments = get_fragments_from_r(r1, fn, fs, fa);
+		int fragments = Calc::get_fragments_from_r(r1, fn, fs, fa);
 		int rings = (fragments+1)/2;
 // Uncomment the following three lines to enable experimental sphere tesselation
 //		if (rings % 2 == 0) rings++; // To ensure that the middle ring is at phi == 0 degrees
@@ -427,7 +417,7 @@ sphere_next_r2:
 	if (this->type == CYLINDER && 
 			this->h > 0 && this->r1 >=0 && this->r2 >= 0 && (this->r1 > 0 || this->r2 > 0))
 	{
-		int fragments = get_fragments_from_r(fmax(this->r1, this->r2), this->fn, this->fs, this->fa);
+		int fragments = Calc::get_fragments_from_r(fmax(this->r1, this->r2), this->fn, this->fs, this->fa);
 
 		double z1, z2;
 		if (this->center) {
@@ -525,7 +515,7 @@ sphere_next_r2:
 
 	if (this->type == CIRCLE)
 	{
-		int fragments = get_fragments_from_r(this->r1, this->fn, this->fs, this->fa);
+		int fragments = Calc::get_fragments_from_r(this->r1, this->fn, this->fs, this->fa);
 
 		p->is2d = true;
 		p->append_poly();

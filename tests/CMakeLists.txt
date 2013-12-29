@@ -507,6 +507,7 @@ set(CORE_SOURCES
   ../src/linalg.cc
   ../src/handle_dep.cc 
   ../src/value.cc 
+  ../src/calc.cc 
   ../src/expr.cc 
   ../src/func.cc 
   ../src/localscope.cc 

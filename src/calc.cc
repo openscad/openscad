@@ -24,17 +24,17 @@
  *
  */
 
-#ifndef OPENSCAD_H
-#define OPENSCAD_H
+#include "calc.h"
+#include "grid.h"
 
-extern class FileModule *parse(const char *text, const char *path, int debug);
-
-#include <string>
-extern std::string commandline_commands;
-
-// The CWD when application started. We shouldn't change CWD, but until we stop
-// doing this, use currentdir to get the original CWD.
-extern std::string currentdir;
-
-#endif
+/*!
+	Returns the number of subdivision of a whole circle, given radius and
+	the three special variables $fn, $fs and $fa
+*/
+int Calc::get_fragments_from_r(double r, double fn, double fs, double fa)
+{
+	if (r < GRID_FINE) return 3;
+	if (fn > 0.0) return (int)(fn >= 3 ? fn : 3);
+	return (int)ceil(fmax(fmin(360.0 / fa, r*2*M_PI / fs), 5));
+}
 

@@ -21,8 +21,13 @@ group() {
 		}
 	}
 	multmatrix([[1, 0, 0, 0], [0, 1, 0, 20], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-		linear_extrude(height = 20, center = false, convexity = 1, twist = 45, slices = 2, scale = [1, 1], $fn = 0, $fa = 12, $fs = 2) {
-			square(size = [10, 10], center = false);
+		linear_extrude(height = 20, center = false, convexity = 1, twist = 30, slices = 2, scale = [1, 1], $fn = 0, $fa = 12, $fs = 2) {
+			difference() {
+				square(size = [10, 10], center = false);
+				multmatrix([[1, 0, 0, 1], [0, 1, 0, 1], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+					square(size = [8, 8], center = false);
+				}
+			}
 		}
 	}
 	multmatrix([[1, 0, 0, 19], [0, 1, 0, 20], [0, 0, 1, 0], [0, 0, 0, 1]]) {
