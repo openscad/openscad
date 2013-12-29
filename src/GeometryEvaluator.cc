@@ -27,6 +27,7 @@
 #include <boost/foreach.hpp>
 
 #include <CGAL/convex_hull_2.h>
+#include <CGAL/Point_2.h>
 
 GeometryEvaluator::GeometryEvaluator(const class Tree &tree):
 	tree(tree)
@@ -127,24 +128,25 @@ Polygon2d *GeometryEvaluator::applyHull2D(const AbstractNode &node)
 	std::vector<const Polygon2d *> children = collectChildren2D(node);
 	Polygon2d *geometry = NULL;
 
+	typedef CGAL::Point_2<CGAL::Cartesian<double> > CGALPoint2;
 	// Collect point cloud
-	std::list<CGAL_Nef_polyhedron2::Point> points;
+	std::list<CGALPoint2> points;
 	BOOST_FOREACH(const Polygon2d *p, children) {
 		BOOST_FOREACH(const Outline2d &o, p->outlines()) {
 			BOOST_FOREACH(const Vector2d &v, o.vertices) {
-				points.push_back(CGAL_Nef_polyhedron2::Point(v[0], v[1]));
+				points.push_back(CGALPoint2(v[0], v[1]));
 			}
 		}
 	}
 	if (points.size() > 0) {
 		// Apply hull
-		std::list<CGAL_Nef_polyhedron2::Point> result;
+		std::list<CGALPoint2> result;
 		CGAL::convex_hull_2(points.begin(), points.end(), std::back_inserter(result));
 
 		// Construct Polygon2d
 		Outline2d outline;
-		BOOST_FOREACH(const CGAL_Nef_polyhedron2::Point &p, result) {
-			outline.vertices.push_back(Vector2d(CGAL::to_double(p[0]), CGAL::to_double(p[1])));
+		BOOST_FOREACH(const CGALPoint2 &p, result) {
+			outline.vertices.push_back(Vector2d(p[0], p[1]));
 		}
 		geometry = new Polygon2d();
 		geometry->addOutline(outline);
