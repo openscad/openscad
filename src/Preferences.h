@@ -24,6 +24,7 @@ public slots:
 	void on_colorSchemeChooser_itemSelectionChanged();
 	void on_fontChooser_activated(const QString &);
 	void on_fontSize_editTextChanged(const QString &);
+	void on_syntaxHighlight_currentIndexChanged(const QString &);
 	void on_openCSGWarningBox_toggled(bool);
 	void on_enableOpenCSGBox_toggled(bool);
 	void on_cgalCacheSizeEdit_textChanged(const QString &);
@@ -38,6 +39,7 @@ signals:
 	void requestRedraw() const;
 	void fontChanged(const QString &family, uint size) const;
 	void openCSGSettingsChanged() const;
+	void syntaxHighlightChanged(const QString &s);
 
 private:
 	Preferences(QWidget *parent = NULL);

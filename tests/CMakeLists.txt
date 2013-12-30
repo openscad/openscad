@@ -797,7 +797,6 @@ configure_file(${CMAKE_SOURCE_DIR}/../testdata/scad/templates/import_dxf-tests-t
 
 # Find all scad files
 file(GLOB FEATURES_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/features/*.scad)
-file(GLOB BUGS_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/*.scad)
 file(GLOB SCAD_DXF_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/dxf/*.scad)
 file(GLOB FUNCTION_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/functions/*.scad)
 file(GLOB EXAMPLE_FILES ${CMAKE_SOURCE_DIR}/../examples/*.scad)
@@ -888,6 +887,20 @@ set_test_config(Heavy opencsgtest_minkowski3-tests
                       cgalpngtest_for-nested-tests
                       cgalpngtest_intersection-tests
                       cgalpngtest_text-search-test)
+
+# Bugs
+
+list(APPEND BUGS_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue541.scad)
+list(APPEND OPENCSGTEST_FILES ${BUGS_FILES})
+list(APPEND CGALPNGTEST_FILES ${BUGS_FILES})
+foreach(FILE ${BUGS_FILES})
+  get_test_fullname(opencsgtest ${FILE} TEST_FULLNAME)
+  set_test_config(Bugs ${TEST_FULLNAME})
+  get_test_fullname(cgalpngtest ${FILE} TEST_FULLNAME)
+  set_test_config(Bugs ${TEST_FULLNAME})
+endforeach()
+
+# Examples
 
 foreach(FILE ${EXAMPLE_FILES})
   get_test_fullname(cgalpngtest ${FILE} TEST_FULLNAME)

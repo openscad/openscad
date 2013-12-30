@@ -121,55 +121,72 @@
 */
 
 #include "highlighter.h"
+#include "Preferences.h"
 #include <QTextDocument>
 #include <QTextCursor>
 #include <QColor>
-//#include <iostream>
+//#include "printutils.h"
 
-Highlighter::Highlighter(QTextDocument *parent)
-		: QSyntaxHighlighter(parent)
+void format_colors_for_light_background(QMap<QString,QTextCharFormat> &formats)
 {
-	tokentypes["operator"] << "=" << "!" << "&&" << "||" << "+" << "-" << "*" << "/" << "%" << "!" << "#" << ";";
-	typeformats["operator"].setForeground(Qt::blue);
+	//PRINT("format for light");
+	formats["operator"].setForeground(Qt::blue);
+	formats["math"].setForeground(QColor("Green"));
+	formats["keyword"].setForeground(QColor("Green"));
+	formats["keyword"].setToolTip("Keyword");
+	formats["transform"].setForeground(QColor("Indigo"));
+	formats["csgop"].setForeground(QColor("DarkGreen"));
+	formats["prim3d"].setForeground(QColor("DarkBlue"));
+	formats["prim2d"].setForeground(QColor("MidnightBlue"));
+	formats["import"].setForeground(Qt::darkYellow);
+	formats["special"].setForeground(Qt::darkGreen);
+	formats["extrude"].setForeground(Qt::darkGreen);
+	formats["bracket"].setForeground(QColor("Green"));
+	formats["curlies"].setForeground(QColor(32,32,20));
+	formats["bool"].setForeground(QColor("DarkRed"));
 
-	tokentypes["math"] << "abs" << "sign" << "acos" << "asin" << "atan" << "atan2" << "sin" << "cos" << "floor" << "round" << "ceil" << "ln" << "log" << "lookup" << "min" << "max" << "pow" << "sqrt" << "exp" << "rands";
-	typeformats["math"].setForeground(Qt::green);
-	
-	tokentypes["keyword"] << "module" << "function" << "for" << "intersection_for" << "if" << "assign" << "echo"<< "search" << "str";
-	typeformats["keyword"].setForeground(QColor("Green"));
-	typeformats["keyword"].setToolTip("Keyword");
+	formats["_$quote"].setForeground(Qt::darkMagenta);
+	formats["_$comment"].setForeground(Qt::darkCyan);
+	formats["_$number"].setForeground(QColor("DarkRed"));
+}
 
-	tokentypes["transform"] << "scale" << "translate" << "rotate" << "multmatrix" << "color" << "projection" << "hull" << "resize" << "mirror" << "minkowski";
-	typeformats["transform"].setForeground(QColor("Indigo"));
+void format_colors_for_dark_background(QMap<QString,QTextCharFormat> &formats)
+{
+	//PRINT("format for dark");
+	formats["operator"].setForeground(Qt::blue);
+	formats["math"].setForeground(Qt::green);
+	formats["keyword"].setForeground(QColor("LightGreen"));
+	formats["keyword"].setToolTip("Keyword");
+	formats["transform"].setForeground(QColor("Indigo"));
+	formats["csgop"].setForeground(QColor("LightGreen"));
+	formats["prim3d"].setForeground(QColor("LightBlue"));
+	formats["prim2d"].setForeground(QColor("LightBlue"));
+	formats["import"].setForeground(QColor("LightYellow"));
+	formats["special"].setForeground(QColor("LightGreen"));
+	formats["extrude"].setForeground(QColor("LightGreen"));
+	formats["bracket"].setForeground(QColor("Green"));
+	formats["curlies"].setForeground(QColor(132,132,120));
+	formats["bool"].setForeground(QColor("LightRed"));
 
-	tokentypes["csgop"]	<< "union" << "intersection" << "difference" << "render";
-	typeformats["csgop"].setForeground(QColor("DarkGreen"));
+	formats["_$quote"].setForeground(Qt::magenta);
+	formats["_$comment"].setForeground(Qt::cyan);
+	formats["_$number"].setForeground(Qt::red);
+}
 
-	tokentypes["prim3d"] << "cube" << "cylinder" << "sphere" << "polyhedron";
-	typeformats["prim3d"].setForeground(QColor("DarkBlue"));
+void Highlighter::assignFormatsToTokens(const QString &s)
+{
+	//PRINTB("assign fmts %s",s.toStdString());
+	if (s=="For Light Background") {
+		format_colors_for_light_background(this->typeformats);
+	} else if (s=="For Dark Background") {
+		format_colors_for_dark_background(this->typeformats);
+	} else return;
 
-	tokentypes["prim2d"] << "square" << "polygon" << "circle";
-	typeformats["prim2d"].setForeground(QColor("MidnightBlue"));
+	// Put each token into single QHash, and map it to it's appropriate
+	// qtextchar format (color, bold, etc). For example, '(' is type 
+	// 'bracket' so it should get the 'bracket' format from 
+	// typeformats[] which is, maybe, Green.
 
-	tokentypes["import"] << "include" << "use" << "import_stl" << "import" << "import_dxf" << "dxf_dim" << "dxf_cross" << "surface";
-	typeformats["import"].setForeground(Qt::darkYellow);
-
-	tokentypes["special"] << "$children" << "child" << "children" << "$fn" << "$fa" << "$fs" << "$t" << "$vpt" << "$vpr";
-	typeformats["special"].setForeground(Qt::darkGreen);
-
-	tokentypes["extrude"] << "linear_extrude" << "rotate_extrude";
-	typeformats["extrude"].setForeground(Qt::darkGreen);
-
-	tokentypes["bracket"] << "[" << "]" << "(" << ")";
-	typeformats["bracket"].setForeground(QColor("Green"));
-
-	tokentypes["curlies"] << "{" << "}";
-	typeformats["curlies"].setForeground(QColor(32,32,20));
-
-	tokentypes["bool"] << "true" << "false";
-	typeformats["bool"].setForeground(QColor("DarkRed"));
-
-	// Put each token into single QHash, mapped to it's format
 	QList<QString>::iterator ki;
 	QList<QString> toktypes = tokentypes.keys();
 	for ( ki=toktypes.begin(); ki!=toktypes.end(); ++ki ) {
@@ -177,16 +194,37 @@ Highlighter::Highlighter(QTextDocument *parent)
 		QStringList::iterator it;
 		for ( it = tokentypes[toktype].begin(); it < tokentypes[toktype].end(); ++it) {
 			QString token = *it;
-			//std::cout << token.toStdString() << "\n";
+			//PRINTB("set format for %s: type %s", token.toStdString()%toktype.toStdString() );;
 			tokenFormats[ token ] = typeformats [ toktype ];
 		}
 	}
+}
 
-	quoteFormat.setForeground(Qt::darkMagenta);
-	commentFormat.setForeground(Qt::darkCyan);
+Highlighter::Highlighter(QTextDocument *parent)
+		: QSyntaxHighlighter(parent)
+{
+	tokentypes["operator"] << "=" << "!" << "&&" << "||" << "+" << "-" << "*" << "/" << "%" << "!" << "#" << ";";
+	tokentypes["math"] << "abs" << "sign" << "acos" << "asin" << "atan" << "atan2" << "sin" << "cos" << "floor" << "round" << "ceil" << "ln" << "log" << "lookup" << "min" << "max" << "pow" << "sqrt" << "exp" << "rands";
+	tokentypes["keyword"] << "module" << "function" << "for" << "intersection_for" << "if" << "assign" << "echo"<< "search" << "str";
+	tokentypes["transform"] << "scale" << "translate" << "rotate" << "multmatrix" << "color" << "projection" << "hull" << "resize" << "mirror" << "minkowski";
+	tokentypes["csgop"]	<< "union" << "intersection" << "difference" << "render";
+	tokentypes["prim3d"] << "cube" << "cylinder" << "sphere" << "polyhedron";
+	tokentypes["prim2d"] << "square" << "polygon" << "circle";
+	tokentypes["import"] << "include" << "use" << "import_stl" << "import" << "import_dxf" << "dxf_dim" << "dxf_cross" << "surface";
+	tokentypes["special"] << "$children" << "child" << "children" << "$fn" << "$fa" << "$fs" << "$t" << "$vpt" << "$vpr";
+	tokentypes["extrude"] << "linear_extrude" << "rotate_extrude";
+	tokentypes["bracket"] << "[" << "]" << "(" << ")";
+	tokentypes["curlies"] << "{" << "}";
+	tokentypes["bool"] << "true" << "false";
+
+	tokentypes["_$comment"] << "_$comment"; // bit of a kludge here
+	tokentypes["_$quote"] << "_$quote";
+	tokentypes["_$number"] << "_$number";
+
+	QString syntaxhighlight = Preferences::inst()->getValue("editor/syntaxhighlight").toString();
+	this->assignFormatsToTokens(syntaxhighlight);
+
 	errorFormat.setBackground(Qt::red);
-	numberFormat.setForeground(QColor("DarkRed"));
-
 	errorState = false;
 	errorPos = -1;
 	lastErrorBlock = parent->begin();
@@ -198,10 +236,10 @@ void Highlighter::highlightError(int error_pos)
 	errorPos = error_pos;
 
 	QTextBlock err_block = document()->findBlock( errorPos );
-	//std::cout << "error pos: "  << error_pos << " doc len: " << document()->characterCount() << "\n";
+	//PRINTB( "error pos: %i doc len: %i ", error_pos % document()->characterCount() );
 
 	while (err_block.text().remove(QRegExp("\\s+")).size()==0) {
-		//std::cout << "special case - errors at end of file w whitespace\n";
+		//PRINT("special case - errors at end of file w whitespace";
 		err_block = err_block.previous();
 		errorPos = err_block.position()+err_block.length() - 2;
 	}
@@ -211,7 +249,7 @@ void Highlighter::highlightError(int error_pos)
 
 	int block_last_pos = err_block.position() + err_block.length() - 1;
 	if ( errorPos == block_last_pos ) {
-		//std::cout << "special case - errors at ends of certain blocks\n";
+		//PRINT( "special case - errors at ends of certain blocks");
 		errorPos--;
 	}
 	err_block = document()->findBlock(errorPos);
@@ -254,6 +292,18 @@ void Highlighter::highlightBlock(const QString &text)
 	//  << ", err:" << errorPos << "," << errorState
 	//  << ", text:'" << text.toStdString() << "'\n";
 
+	// If desired, skip all highlighting .. except for error highlighting.
+	if (Preferences::inst()->getValue("editor/syntaxhighlight").toString()==QString("Off")) {
+		if (errorState)
+			setFormat( errorPos - block_first_pos, 1, errorFormat);
+		return;
+	}
+
+	// bit of a kludge (for historical convenience)
+	QTextCharFormat &quoteFormat = tokenFormats["_$quote"];
+	QTextCharFormat &commentFormat = tokenFormats["_$comment"];
+	QTextCharFormat &numberFormat = tokenFormats["_$number"];
+
 	// Split the block into chunks (tokens), based on whitespace,
 	// and then highlight each token as appropriate
 	QString newtext = text;
@@ -265,7 +315,7 @@ void Highlighter::highlightBlock(const QString &text)
 	for ( sh = splitHelpers.begin(); sh!=splitHelpers.end(); ++sh ) {
 		newtext = newtext.replace( *sh, " " + *sh + " ");
 	}
-	//std::cout << "\nnewtext: " << newtext.toStdString() << "\n";
+	//PRINTB("\nnewtext: %s", newtext.toStdString() );
 	QStringList tokens = newtext.split(QRegExp("\\s"));
 	int tokindex = 0; // tokindex helps w duplicate tokens in a single block
 	bool numtest;
@@ -273,14 +323,16 @@ void Highlighter::highlightBlock(const QString &text)
 		if ( tokenFormats.contains( *token ) ) {
 			tokindex = text.indexOf( *token, tokindex );
 			setFormat( tokindex, token->size(), tokenFormats[ *token ]);
-			//std::cout  << "found tok '" << (*token).toStdString() << "' at " << tokindex << "\n";
+			std::string tokprint = (*token).toStdString();
+			//PRINTB("found tok '%s' at %i", tokprint % tokindex );
 			tokindex += token->size();
 		} else {
 			(*token).toDouble( &numtest );
 			if ( numtest ) {
 				tokindex = text.indexOf( *token, tokindex );
 				setFormat( tokindex, token->size(), numberFormat );
-				//std::cout  << "found num '" << (*token).toStdString() << "' at " << tokindex << "\n";
+				std::string tokprint = (*token).toStdString();
+				//PRINTB("found num '%s' at %i", tokprint % tokindex );
 				tokindex += token->size();
 			}
 		}

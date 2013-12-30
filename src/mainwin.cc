@@ -369,6 +369,8 @@ MainWindow::MainWindow(const QString &filename)
 					this, SLOT(setFont(const QString&,uint)));
 	connect(Preferences::inst(), SIGNAL(openCSGSettingsChanged()),
 					this, SLOT(openCSGSettingsChanged()));
+	connect(Preferences::inst(), SIGNAL(syntaxHighlightChanged(const QString&)), 
+					this, SLOT(setSyntaxHighlight(const QString&)));
 	Preferences::inst()->apply();
 
 	// make sure it looks nice..
@@ -1897,6 +1899,12 @@ void MainWindow::setFont(const QString &family, uint size)
 	if (size > 0)	font.setPointSize(size);
 	font.setStyleHint(QFont::TypeWriter);
 	editor->setFont(font);
+}
+
+void MainWindow::setSyntaxHighlight(const QString &s)
+{
+	this->highlighter->assignFormatsToTokens( s );
+	this->highlighter->rehighlight(); // slow on large files
 }
 
 void MainWindow::quit()

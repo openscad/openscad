@@ -27,7 +27,7 @@
     <item>
      <widget class="QStackedWidget" name="stackedWidget">
       <property name="currentIndex">
-       <number>2</number>
+       <number>1</number>
       </property>
       <widget class="QWidget" name="page3DView">
        <layout class="QVBoxLayout" name="verticalLayout_4">
@@ -136,7 +136,7 @@
            <widget class="QFontComboBox" name="fontChooser">
             <property name="currentFont">
              <font>
-              <family>Monaco</family>
+              <family>DejaVu Sans</family>
               <pointsize>12</pointsize>
              </font>
             </property>
@@ -161,6 +161,61 @@
              </size>
             </property>
            </spacer>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_5">
+          <property name="bottomMargin">
+           <number>0</number>
+          </property>
+          <item>
+           <widget class="QLabel" name="label_9">
+            <property name="font">
+             <font>
+              <weight>75</weight>
+              <bold>true</bold>
+             </font>
+            </property>
+            <property name="text">
+             <string>Color syntax highlighting</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <spacer name="horizontalSpacer_3">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeType">
+             <enum>QSizePolicy::Maximum</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>30</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item>
+           <widget class="QComboBox" name="syntaxHighlight">
+            <item>
+             <property name="text">
+              <string>For Light Background</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>For Dark Background</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Off</string>
+             </property>
+            </item>
+           </widget>
           </item>
          </layout>
         </item>
