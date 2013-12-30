@@ -8,4 +8,4 @@ Line       : 636
 Explanation: 
 Refer to the bug-reporting instructions at http://www.cgal.org/bug_report.html
 */
-render() import("issue78b.stl");
+render() import("issue578b.stl");
