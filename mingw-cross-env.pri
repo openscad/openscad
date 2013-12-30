@@ -12,8 +12,8 @@ CONFIG(mingw-cross-env) {
   LIBS += mingw-cross-env/lib/libmpfr.a 
   LIBS += mingw-cross-env/lib/libgmp.a 
   LIBS += mingw-cross-env/lib/libCGAL.a
-  LIBS += mingw-cross-env/lib/libglib.a
   LIBS += mingw-cross-env/lib/libintl.a
+  LIBS += mingw-cross-env/lib/libiconv.a
   QMAKE_CXXFLAGS += -fpermissive
   WINSTACKSIZE = 8388608 # 8MB # github issue 116
   QMAKE_CXXFLAGS += -Wl,--stack,$$WINSTACKSIZE
