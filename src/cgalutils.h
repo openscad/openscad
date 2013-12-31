@@ -15,6 +15,7 @@ namespace CGALUtils {
 
 CGAL_Nef_polyhedron *createNefPolyhedronFromGeometry(const class Geometry &geom);
 bool createPolySetFromPolyhedron(const CGAL_Polyhedron &p, PolySet &ps);
+bool createPolySetFromNefPolyhedron3(const CGAL_Nef_polyhedron3 &N, PolySet &ps);
 bool createPolyhedronFromPolySet(const PolySet &ps, CGAL_Polyhedron &p);
 
 #include "svg.h"
