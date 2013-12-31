@@ -219,16 +219,19 @@ case $OS in
     MACOSX)
         EXAMPLESDIR=OpenSCAD.app/Contents/Resources/examples
         LIBRARYDIR=OpenSCAD.app/Contents/Resources/libraries
+        FONTDIR=OpenSCAD.app/Contents/Resources/fonts
     ;;
     UNIX_CROSS_WIN)
         EXAMPLESDIR=$DEPLOYDIR/openscad-$VERSION/examples/
         LIBRARYDIR=$DEPLOYDIR/openscad-$VERSION/libraries/
+        FONTDIR=$DEPLOYDIR/openscad-$VERSION/fonts/
         rm -rf $DEPLOYDIR/openscad-$VERSION
         mkdir $DEPLOYDIR/openscad-$VERSION
     ;;
     *)
         EXAMPLESDIR=openscad-$VERSION/examples/
         LIBRARYDIR=openscad-$VERSION/libraries/
+        FONTDIR=openscad-$VERSION/fonts/
         rm -rf openscad-$VERSION
         mkdir openscad-$VERSION
     ;;
@@ -239,6 +242,11 @@ if [ -n $EXAMPLESDIR ]; then
   mkdir -p $EXAMPLESDIR
   cp examples/* $EXAMPLESDIR
   chmod -R 644 $EXAMPLESDIR/*
+fi
+if [ -n $FONTDIR ]; then
+  echo $FONTDIR
+  mkdir -p $FONTDIR
+  cp -dr fonts/* $FONTDIR
 fi
 if [ -n $LIBRARYDIR ]; then
   echo $LIBRARYDIR
