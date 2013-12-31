@@ -99,6 +99,12 @@ build_win32()
 	. ./scripts/setenv-mingw-xbuild.sh
 	./scripts/mingw-x-build-dependencies.sh
 	./scripts/release-common.sh mingw32
+	if [ "`echo $? | grep 0`" ]; then
+		echo build of win32 stage over
+	else
+		echo build of win32 failed. exiting
+		exit 1
+	fi
 	DATECODE=`date +"%Y.%m.%d"`
 	export DATECODE
 }
@@ -109,6 +115,12 @@ build_win64()
 	. ./scripts/setenv-mingw-xbuild.sh 64
 	./scripts/mingw-x-build-dependencies.sh 64
 	./scripts/release-common.sh mingw64
+	if [ "`echo $? | grep 0`" ]; then
+		echo build of win64 stage over
+	else
+		echo build of win64 failed. exiting
+		exit 1
+	fi
 	DATECODE=`date +"%Y.%m.%d"`
 	export DATECODE
 }
