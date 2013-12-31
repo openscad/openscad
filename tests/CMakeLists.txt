@@ -888,7 +888,8 @@ list(APPEND BUGS_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue541.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue578.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue578b.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue582.scad
-                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue584.scad)
+                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue584.scad
+                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue585.scad)
 
 list(APPEND OPENCSGTEST_FILES ${BUGS_FILES})
 list(APPEND CGALPNGTEST_FILES ${BUGS_FILES})
