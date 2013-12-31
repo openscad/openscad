@@ -35,6 +35,7 @@
 #ifdef ENABLE_CGAL
 #include "CGAL_Nef_polyhedron.h"
 #include "cgal.h"
+#include "cgalutils.h"
 
 void exportFile(const class Geometry *root_geom, std::ostream &output, FileFormat format)
 {
@@ -58,7 +59,7 @@ void exportFile(const class Geometry *root_geom, std::ostream &output, FileForma
 		if (const PolySet *ps = dynamic_cast<const PolySet *>(root_geom)) {
 			switch (format) {
 			case OPENSCAD_STL:
-				export_stl(ps, output);
+				export_stl(*ps, output);
 				break;
 			default:
 				assert(false && "Unsupported file format");
@@ -72,16 +73,17 @@ void exportFile(const class Geometry *root_geom, std::ostream &output, FileForma
 	}
 }
 
-void export_stl(const PolySet *ps, std::ostream &output)
+void export_stl(const PolySet &ps, std::ostream &output)
 {
 	PolySet triangulated(3);
-	PolysetUtils::tessellate_faces(*ps, triangulated);
+	PolysetUtils::tessellate_faces(ps, triangulated);
 
 	setlocale(LC_NUMERIC, "C"); // Ensure radix is . (not ,) in output
 	output << "solid OpenSCAD_Model\n";
 	BOOST_FOREACH(const PolySet::Polygon &p, triangulated.polygons) {
 		output << "  facet normal 0 0 0\n";
 		output << "    outer loop\n";
+		assert(p.size() == 3); // STL only allows triangles
 		BOOST_FOREACH(const Vector3d &v, p) {
 			output << "vertex " << v[0] << " " << v[1] << " " << v[2] << "\n";
 		}
@@ -93,24 +95,11 @@ void export_stl(const PolySet *ps, std::ostream &output)
 }
 
 /*!
-	Saves the current 3D CGAL Nef polyhedron as STL to the given file.
+	Saves the given CGAL Polyhedon2 as STL to the given file.
 	The file must be open.
  */
-void export_stl(const CGAL_Nef_polyhedron *root_N, std::ostream &output)
+static void export_stl(const CGAL_Polyhedron &P, std::ostream &output)
 {
-	if (!root_N->p3->is_simple()) {
-		PRINT("Object isn't a valid 2-manifold! Modify your design.\n");
-	}
-	CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
-	try {
-	CGAL_Polyhedron P;
-	//root_N->p3->convert_to_Polyhedron(P);
-	bool err = nefworkaround::convert_to_Polyhedron<CGAL_Kernel3>( *(root_N->p3), P );
-	if (err) {
-	        PRINT("ERROR: CGAL NefPolyhedron->Polyhedron conversion failed");
-		return;
-	}
-
 	typedef CGAL_Polyhedron::Vertex                                 Vertex;
 	typedef CGAL_Polyhedron::Vertex_const_iterator                  VCI;
 	typedef CGAL_Polyhedron::Facet_const_iterator                   FCI;
@@ -176,15 +165,47 @@ void export_stl(const CGAL_Nef_polyhedron *root_N, std::ostream &output)
 
 	output << "endsolid OpenSCAD_Model\n";
 	setlocale(LC_NUMERIC, "");      // Set default locale
+}
 
+/*!
+	Saves the current 3D CGAL Nef polyhedron as STL to the given file.
+	The file must be open.
+ */
+void export_stl(const CGAL_Nef_polyhedron *root_N, std::ostream &output)
+{
+	if (!root_N->p3->is_simple()) {
+		PRINT("Object isn't a valid 2-manifold! Modify your design.\n");
 	}
-	catch (const CGAL::Assertion_exception &e) {
-		PRINTB("CGAL error in CGAL_Nef_polyhedron3::convert_to_Polyhedron(): %s", e.what());
+
+	bool usePolySet = false;
+	if (usePolySet) {
+		PolySet ps(3);
+		bool err = createPolySetFromNefPolyhedron3(*(root_N->p3), ps);
+		if (err) { PRINT("ERROR: Nef->PolySet failed"); }
+		else {
+			export_stl(ps, output);
+		}
 	}
-	catch (...) {
-		PRINT("CGAL unknown error in CGAL_Nef_polyhedron3::convert_to_Polyhedron()");
+	else {
+		CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
+		try {
+			CGAL_Polyhedron P;
+			//root_N->p3->convert_to_Polyhedron(P);
+			bool err = nefworkaround::convert_to_Polyhedron<CGAL_Kernel3>( *(root_N->p3), P );
+			if (err) {
+				PRINT("ERROR: CGAL NefPolyhedron->Polyhedron conversion failed");
+				return;
+			}
+			export_stl(P, output);
+		}
+		catch (const CGAL::Assertion_exception &e) {
+			PRINTB("CGAL error in CGAL_Nef_polyhedron3::convert_to_Polyhedron(): %s", e.what());
+		}
+		catch (...) {
+			PRINT("CGAL unknown error in CGAL_Nef_polyhedron3::convert_to_Polyhedron()");
+		}
+		CGAL::set_error_behaviour(old_behaviour);
 	}
-	CGAL::set_error_behaviour(old_behaviour);
 }
 
 void export_off(const CGAL_Nef_polyhedron *root_N, std::ostream &output)
