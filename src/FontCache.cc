@@ -26,11 +26,13 @@
 
 #include <iostream>
 
+#include <boost/foreach.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/algorithm/string.hpp>
 
-#include "boosty.h"
 #include "FontCache.h"
+#include "parsersettings.h"
+extern std::vector<std::string> librarypath;
 
 namespace fs = boost::filesystem;
 
@@ -83,6 +85,14 @@ FontCache::FontCache()
 	if(!config) {
 		PRINT("Can't initialize fontconfig library, text() objects will not be rendered");
 		return;
+	}
+
+	BOOST_FOREACH(const std::string &dir, librarypath) {
+		fs::path fontpath = fs::path(dir) / "../fonts";
+		if (fs::exists(fontpath) && fs::is_directory(fontpath)) {
+			fs::path path = boosty::canonical(fontpath);
+			add_font_dir(path.string());
+		}
 	}
 
 	add_font_dir("/System/Library/Fonts");
