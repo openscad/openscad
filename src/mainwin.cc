@@ -1438,7 +1438,7 @@ void MainWindow::actionExportSTLorOFF(bool)
 	}
 
 	const CGAL_Nef_polyhedron *N = dynamic_cast<const CGAL_Nef_polyhedron *>(this->root_geom.get());
-	if (N && N->p3->is_simple()) {
+	if (N && !N->p3->is_simple()) {
 		PRINT("Object isn't a valid 2-manifold! Modify your design. See http://en.wikibooks.org/wiki/OpenSCAD_User_Manual/STL_Import_and_Export");
 		clearCurrentOutput();
 		return;
