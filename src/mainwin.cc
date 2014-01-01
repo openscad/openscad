@@ -156,7 +156,7 @@ settings_valueList(const QString &key, const QList<int> &defaultList = QList<int
 }
 
 MainWindow::MainWindow(const QString &filename)
-	: root_inst("group"), progresswidget(NULL)
+	: root_inst("group"), progresswidget(NULL), font_list_dialog(NULL)
 {
 	setupUi(this);
 
