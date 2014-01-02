@@ -104,6 +104,10 @@ const AbstractModule *ModuleContext::findLocalModule(const std::string &name) co
 {
 	if (this->modules_p && this->modules_p->find(name) != this->modules_p->end()) {
 		AbstractModule *m = this->modules_p->find(name)->second;
+		if (!m->is_enabled()) {
+			PRINTB("WARNING: Experimental builtin module '%s' is not enabled.", name);
+			return NULL;
+		}
 		std::string replacement = Builtins::instance()->isDeprecated(name);
 		if (!replacement.empty()) {
 			PRINTB("DEPRECATED: The %s() module will be removed in future releases. Use %s() instead.", name % replacement);
