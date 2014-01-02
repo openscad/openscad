@@ -33,6 +33,7 @@
 #include "builtin.h"
 #include "printutils.h"
 #include "handle_dep.h"
+#include "feature.h"
 #include "parsersettings.h"
 #include "rendersettings.h"
 #include "PlatformUtils.h"
@@ -587,7 +588,8 @@ int main(int argc, char **argv)
 		("x,x", po::value<string>(), "dxf-file")
 		("d,d", po::value<string>(), "deps-file")
 		("m,m", po::value<string>(), "makefile")
-		("D,D", po::value<vector<string> >(), "var=val");
+		("D,D", po::value<vector<string> >(), "var=val")
+		("enable-feature", po::value<vector<string> >(), "enable experimental features");
 
 	po::options_description hidden("Hidden options");
 	hidden.add_options()
@@ -649,6 +651,11 @@ int main(int argc, char **argv)
 		BOOST_FOREACH(const string &cmd, vm["D"].as<vector<string> >()) {
 			commandline_commands += cmd;
 			commandline_commands += ";\n";
+		}
+	}
+	if (vm.count("enable-feature")) {
+		BOOST_FOREACH(const string &feature, vm["enable-feature"].as<vector<string> >()) {
+			Feature::enable_feature(feature);
 		}
 	}
 	vector<string> inputFiles;

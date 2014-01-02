@@ -221,6 +221,7 @@ HEADERS += src/typedefs.h \
            src/highlighter.h \
            src/localscope.h \
            src/module.h \
+           src/feature.h \
            src/node.h \
            src/csgnode.h \
            src/linearextrudenode.h \
@@ -279,6 +280,7 @@ SOURCES += src/version_check.cc \
            src/func.cc \
            src/localscope.cc \
            src/module.cc \
+           src/feature.cc \
            src/node.cc \
            src/context.cc \
            src/modcontext.cc \
