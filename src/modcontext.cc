@@ -95,7 +95,12 @@ void ModuleContext::registerBuiltin()
 const AbstractFunction *ModuleContext::findLocalFunction(const std::string &name) const
 {
 	if (this->functions_p && this->functions_p->find(name) != this->functions_p->end()) {
-		return this->functions_p->find(name)->second;
+		AbstractFunction *f = this->functions_p->find(name)->second;
+		if (!f->is_enabled()) {
+			PRINTB("WARNING: Experimental builtin function '%s' is not enabled.", name);
+			return NULL;
+		}
+		return f;
 	}
 	return NULL;
 }
