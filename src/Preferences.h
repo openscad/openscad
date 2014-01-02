@@ -44,9 +44,12 @@ private:
 	void keyPressEvent(QKeyEvent *e);
 	void updateGUI();
 	void removeDefaultSettings();
+        void setupFeaturesPage();
+        void addPrefPage(QActionGroup *group, QAction *action, QWidget *widget);
 
 	QSettings::SettingsMap defaultmap;
 	QHash<QString, std::map<RenderSettings::RenderColor, Color4f> > colorschemes;
+        QHash<const QAction *, QWidget *> prefPages;
 
 	static Preferences *instance;
 };

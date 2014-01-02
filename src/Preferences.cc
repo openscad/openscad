@@ -35,6 +35,7 @@
 #include "AutoUpdater.h"
 #ifdef ENABLE_CGAL
 #include "CGALCache.h"
+#include "feature.h"
 #endif
 
 Preferences *Preferences::instance = NULL;
@@ -86,13 +87,13 @@ Preferences::Preferences(QWidget *parent) : QMainWindow(parent)
 	this->defaultmap["advanced/openCSGLimit"] = RenderSettings::inst()->openCSGTermLimit;
 	this->defaultmap["advanced/forceGoldfeather"] = false;
 
-
 	// Toolbar
 	QActionGroup *group = new QActionGroup(this);
-	group->addAction(prefsAction3DView);
-	group->addAction(prefsActionEditor);
-	group->addAction(prefsActionUpdate);
-	group->addAction(prefsActionAdvanced);
+	addPrefPage(group, prefsAction3DView, page3DView);
+	addPrefPage(group, prefsActionEditor, pageEditor);
+	addPrefPage(group, prefsActionUpdate, pageUpdate);
+	addPrefPage(group, prefsActionFeatures, pageFeatures);
+	addPrefPage(group, prefsActionAdvanced, pageAdvanced);
 	connect(group, SIGNAL(triggered(QAction*)), this, SLOT(actionTriggered(QAction*)));
 
 	prefsAction3DView->setChecked(true);
@@ -140,6 +141,7 @@ Preferences::Preferences(QWidget *parent) : QMainWindow(parent)
 	this->polysetCacheSizeEdit->setValidator(validator);
 	this->opencsgLimitEdit->setValidator(validator);
 
+	setupFeaturesPage();
 	updateGUI();
 
 	RenderSettings::inst()->setColors(this->colorschemes[getValue("3dview/colorscheme").toString()]);
@@ -151,20 +153,41 @@ Preferences::~Preferences()
 }
 
 void
+Preferences::addPrefPage(QActionGroup *group, QAction *action, QWidget *widget)
+{
+	group->addAction(action);
+	prefPages[action] = widget;
+}
+void
 Preferences::actionTriggered(QAction *action)
 {
-	if (action == this->prefsAction3DView) {
-		this->stackedWidget->setCurrentWidget(this->page3DView);
+	this->stackedWidget->setCurrentWidget(prefPages[action]);
+}
+
+void
+Preferences::setupFeaturesPage()
+{
+	int row = 0;
+	for (Feature::const_iterator it = Feature::begin();it != Feature::end();it++) {
+		gridLayoutExperimentalFeatures->addItem(new QSpacerItem(1, 8, QSizePolicy::Expanding, QSizePolicy::Fixed), row, 1, 1, 1, Qt::AlignCenter);
+		row++;
+		const Feature *feature = (*it);
+		QCheckBox *cb = new QCheckBox(feature->get_name().c_str(), pageFeatures);
+		QFont bold_font(cb->font());
+		bold_font.setBold(true);
+		cb->setFont(bold_font);
+		gridLayoutExperimentalFeatures->addWidget(cb, row, 0, 1, 2, Qt::AlignLeading);
+		row++;
+		QLabel *l = new QLabel(feature->get_description().c_str(), pageFeatures);
+		l->setTextFormat(Qt::RichText);
+		gridLayoutExperimentalFeatures->addWidget(l, row, 1, 1, 1, Qt::AlignLeading);
+		row++;
 	}
-	else if (action == this->prefsActionEditor) {
-		this->stackedWidget->setCurrentWidget(this->pageEditor);
-	}
-	else if (action == this->prefsActionUpdate) {
-		this->stackedWidget->setCurrentWidget(this->pageUpdate);
-	}
-	else if (action == this->prefsActionAdvanced) {
-		this->stackedWidget->setCurrentWidget(this->pageAdvanced);
-	}
+	// Force fixed indentation, the checkboxes use column span of 2 so 
+	// first row is not constrained in size by the visible controls. The
+	// fixed size space essentially gives the first row the width of the
+	// spacer item itself.
+	gridLayoutExperimentalFeatures->addItem(new QSpacerItem(20, 0, QSizePolicy::Fixed, QSizePolicy::Fixed), 1, 0, 1, 1, Qt::AlignLeading);
 }
 
 void Preferences::on_colorSchemeChooser_itemSelectionChanged()
