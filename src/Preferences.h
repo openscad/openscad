@@ -21,6 +21,7 @@ public:
 
 public slots:
 	void actionTriggered(class QAction *);
+        void featuresCheckBoxToggled(bool);
 	void on_colorSchemeChooser_itemSelectionChanged();
 	void on_fontChooser_activated(const QString &);
 	void on_fontSize_editTextChanged(const QString &);
@@ -52,6 +53,7 @@ private:
         QHash<const QAction *, QWidget *> prefPages;
 
 	static Preferences *instance;
+        static const char *featurePropertyName;
 };
 
 #endif

@@ -40,6 +40,9 @@
 
 Preferences *Preferences::instance = NULL;
 
+const char * Preferences::featurePropertyName = "FeatureProperty";
+Q_DECLARE_METATYPE(Feature *);
+
 Preferences::Preferences(QWidget *parent) : QMainWindow(parent)
 {
 	setupUi(this);
@@ -152,32 +155,101 @@ Preferences::~Preferences()
 	removeDefaultSettings();
 }
 
+/**
+ * Add a page for the preferences GUI. This handles both the action grouping
+ * and the registration of the widget for each action to have a generalized
+ * callback to switch pages.
+ * 
+ * @param group The action group for all page actions. This one will have the
+ *              callback attached after creating all actions/pages.
+ * @param action The action specific for the added page.
+ * @param widget The widget that should be shown when the action is triggered.
+ *               This must be a child page of the stackedWidget.
+ */
 void
 Preferences::addPrefPage(QActionGroup *group, QAction *action, QWidget *widget)
 {
 	group->addAction(action);
 	prefPages[action] = widget;
 }
+
+/**
+ * Callback to switch pages in the preferences GUI.
+ * 
+ * @param action The action triggered by the user.
+ */
 void
 Preferences::actionTriggered(QAction *action)
 {
 	this->stackedWidget->setCurrentWidget(prefPages[action]);
 }
 
+/**
+ * Callback for the dynamically created checkboxes on the features
+ * page. The specific Feature object is associated as property with
+ * the callback.
+ * 
+ * @param state the state of the checkbox.
+ */
+void Preferences::featuresCheckBoxToggled(bool state)
+{
+	const QObject *sender = QObject::sender();
+	if (sender == NULL) {
+		return;
+	}
+	QVariant v = sender->property(featurePropertyName);
+	if (!v.isValid()) {
+		return;
+	}
+	Feature *feature = v.value<Feature *>();
+	feature->enable(state);
+	QSettings settings;
+	settings.setValue(feature->get_name().c_str(), state);
+}
+
+/**
+ * Setup feature GUI and synchronize the Qt settings with the feature values.
+ * 
+ * In case a feature was enabled on the commandline this will have precedence
+ * and cause the checkbox in the settings GUI to be not editable.
+ * Otherwise the value from the Qt settings is pushed into the feature state
+ * and the checkbox is initialized accordingly.
+ */
 void
 Preferences::setupFeaturesPage()
 {
 	int row = 0;
-	for (Feature::const_iterator it = Feature::begin();it != Feature::end();it++) {
+	for (Feature::iterator it = Feature::begin();it != Feature::end();it++) {
+		Feature * feature = (*it);
+		// setup default with the current value coming from commandline
+		this->defaultmap[feature->get_name().c_str()] = false;
+		
+		// spacer item between the features, just for some optical separation
 		gridLayoutExperimentalFeatures->addItem(new QSpacerItem(1, 8, QSizePolicy::Expanding, QSizePolicy::Fixed), row, 1, 1, 1, Qt::AlignCenter);
 		row++;
-		const Feature *feature = (*it);
-		QCheckBox *cb = new QCheckBox(feature->get_name().c_str(), pageFeatures);
+
+		std::string text(feature->get_name());
+		QCheckBox *cb = new QCheckBox(text.c_str(), pageFeatures);
 		QFont bold_font(cb->font());
 		bold_font.setBold(true);
 		cb->setFont(bold_font);
+		if (feature->is_enabled()) {
+			// if enabled from command line, that has priority
+			cb->setChecked(true);
+			cb->setEnabled(false);
+			std::string text_cl = text + " (enabled on commandline)";
+			cb->setText(text_cl.c_str());
+		} else {
+			// synchronize Qt settings with the feature settings
+			bool value = getValue(feature->get_name().c_str()).toBool();
+			feature->enable(value);
+			cb->setChecked(value);
+		}
+		cb->setProperty(featurePropertyName, QVariant::fromValue<Feature *>(feature));
+		connect(cb, SIGNAL(toggled(bool)), this, SLOT(featuresCheckBoxToggled(bool)));		
 		gridLayoutExperimentalFeatures->addWidget(cb, row, 0, 1, 2, Qt::AlignLeading);
 		row++;
+		
 		QLabel *l = new QLabel(feature->get_description().c_str(), pageFeatures);
 		l->setTextFormat(Qt::RichText);
 		gridLayoutExperimentalFeatures->addWidget(l, row, 1, 1, 1, Qt::AlignLeading);
@@ -332,7 +404,6 @@ QVariant Preferences::getValue(const QString &key) const
 
 void Preferences::updateGUI()
 {
-	QSettings settings;
 	QList<QListWidgetItem *> found = 
 		this->colorSchemeChooser->findItems(getValue("3dview/colorscheme").toString(),
 																				Qt::MatchExactly);
