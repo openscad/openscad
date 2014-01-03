@@ -495,12 +495,8 @@ build_boost 1.54.0
 # NB! For CGAL, also update the actual download URL in the function
 build_cgal 4.3
 build_glew 1.10.0
-<<<<<<< HEAD
 build_gettext 0.18.3.1
 build_glib2 2.38.2
-=======
-build_glib2 2.38.1
->>>>>>> d7d5bea7363703c76b9787598304bfc838e893ee
 build_opencsg 1.3.2
 if $OPTION_DEPLOY; then
 #  build_sparkle andymatuschak 0ed83cf9f2eeb425d4fdd141c01a29d843970c20
