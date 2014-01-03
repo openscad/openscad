@@ -112,6 +112,7 @@ static void help(const char *progname)
          "%2%  --camera=eyex,y,z,centerx,y,z ] \\\n"
          "%2%[ --imgsize=width,height ] [ --projection=(o)rtho|(p)ersp] \\\n"
          "%2%[ --render | --preview[=throwntogether] ] \\\n"
+         "%2%[ --enable=<feature> \\\n"
          "%2%filename\n",
  				 progname % (const char *)tabstr);
 	exit(1);
@@ -589,7 +590,7 @@ int main(int argc, char **argv)
 		("d,d", po::value<string>(), "deps-file")
 		("m,m", po::value<string>(), "makefile")
 		("D,D", po::value<vector<string> >(), "var=val")
-		("enable-feature", po::value<vector<string> >(), "enable experimental features");
+		("enable", po::value<vector<string> >(), "enable experimental features");
 
 	po::options_description hidden("Hidden options");
 	hidden.add_options()
@@ -653,8 +654,8 @@ int main(int argc, char **argv)
 			commandline_commands += ";\n";
 		}
 	}
-	if (vm.count("enable-feature")) {
-		BOOST_FOREACH(const string &feature, vm["enable-feature"].as<vector<string> >()) {
+	if (vm.count("enable")) {
+		BOOST_FOREACH(const string &feature, vm["enable"].as<vector<string> >()) {
 			Feature::enable_feature(feature);
 		}
 	}

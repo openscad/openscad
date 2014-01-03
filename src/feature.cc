@@ -18,11 +18,12 @@ Feature::list_t Feature::feature_list;
  * argument to enable the option and for saving the option value in GUI
  * context.
  */
-const Feature Feature::ExperimentalConcatFunction("experimental/concat-function", "Enable the <code>concat()</code> function.");
+const Feature Feature::ExperimentalConcatFunction("concat", "Enable the <code>concat()</code> function.");
 
-Feature::Feature(const std::string name, const std::string description) : enabled_cmdline(false), enabled_options(false), name(name), description(description)
+Feature::Feature(const std::string &name, const std::string &description)
+	: enabled(false), name(name), description(description)
 {
-        feature_map[name] = this;
+	feature_map[name] = this;
 	feature_list.push_back(this);
 }
 
@@ -30,54 +31,33 @@ Feature::~Feature()
 {
 }
 
-const std::string& Feature::get_name() const
+const std::string &Feature::get_name() const
 {
-        return name;
+	return name;
 }
     
-const std::string& Feature::get_description() const
+const std::string &Feature::get_description() const
 {
-        return description;
+	return description;
 }
     
-void Feature::set_enable_cmdline()
-{
-	enabled_cmdline = true;
-}
-
-void Feature::set_enable_options(bool status)
-{
-	enabled_options = status;
-}
-
 bool Feature::is_enabled() const
 {
-	if (enabled_cmdline) {
-	    return true;
-	}
-	return enabled_options;
+	return enabled;
 }
 
 void Feature::enable(bool status)
 {
-	set_enable_options(status);
+	enabled = status;
 }
     
-void Feature::enable_feature(std::string feature_name)
+void Feature::enable_feature(const std::string &feature_name, bool status)
 {
 	map_t::iterator it = feature_map.find(feature_name);
 	if (it != feature_map.end()) {
-		(*it).second->set_enable_cmdline();
+		it->second->enable(status);
 	} else {
 		PRINTB("WARNING: Ignoring request to enable unknown feature '%s'.", feature_name);
-	}
-}
-
-void Feature::enable_feature(std::string feature_name, bool status)
-{
-	map_t::iterator it = feature_map.find(feature_name);
-	if (it != feature_map.end()) {
-		(*it).second->set_enable_options(status);
 	}
 }
 
@@ -94,6 +74,6 @@ Feature::iterator Feature::end()
 void Feature::dump_features()
 {
 	for (map_t::iterator it = feature_map.begin(); it != feature_map.end(); it++) {
-		std::cout << "Feature('" << (*it).first << "') = " << ((*it).second->is_enabled() ? "enabled" : "disabled") << std::endl;
+		std::cout << "Feature('" << it->first << "') = " << (it->second->is_enabled() ? "enabled" : "disabled") << std::endl;
 	}
 }

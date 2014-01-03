@@ -516,6 +516,7 @@ set(CORE_SOURCES
   ../src/context.cc 
   ../src/modcontext.cc 
   ../src/evalcontext.cc 
+  ../src/feature.cc
   ../src/csgterm.cc 
   ../src/csgtermnormalizer.cc 
   ../src/polyset.cc 
@@ -973,6 +974,11 @@ add_cmdline_test(throwntogethertest EXE ${OPENSCAD_BINPATH} ARGS --preview=throw
 # FIXME: We don't actually need to compare the output of cgalstlsanitytest
 # with anything. It's self-contained and returns != 0 on error
 add_cmdline_test(cgalstlsanitytest EXE ${CMAKE_SOURCE_DIR}/cgalstlsanitytest SUFFIX txt ARGS ${OPENSCAD_BINPATH} FILES ${CGALSTLSANITYTEST_FILES})
+
+# Add experimental tests
+
+add_cmdline_test(echotest EXE ${OPENSCAD_BINPATH} ARGS --enable=concat -o SUFFIX echo FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/experimental/concat-tests.scad)
+
 
 # Tests using the actual OpenSCAD binary
 
