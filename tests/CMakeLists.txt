@@ -885,6 +885,7 @@ set_test_config(Heavy opencsgtest_minkowski3-tests
 # Bugs
 
 list(APPEND BUGS_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue495.scad
+                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue495b.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue541.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue578.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue578b.scad
