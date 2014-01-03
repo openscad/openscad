@@ -108,11 +108,12 @@ static void help(const char *progname)
 
 	PRINTB("Usage: %1% [ -o output_file [ -d deps_file ] ]\\\n"
          "%2%[ -m make_command ] [ -D var=val [..] ] \\\n"
+         "%2%[ --version ] [ --info ] \\\n"
          "%2%[ --camera=translatex,y,z,rotx,y,z,dist | \\\n"
          "%2%  --camera=eyex,y,z,centerx,y,z ] \\\n"
          "%2%[ --imgsize=width,height ] [ --projection=(o)rtho|(p)ersp] \\\n"
          "%2%[ --render | --preview[=throwntogether] ] \\\n"
-         "%2%[ --enable=<feature> \\\n"
+         "%2%[ --enable=<feature> ] \\\n"
          "%2%filename\n",
  				 progname % (const char *)tabstr);
 	exit(1);
