@@ -65,7 +65,6 @@ get_debian_deps()
  done
 }
 
-
 unknown()
 {
  echo "Unknown system type. Please install the dependency packages listed"
@@ -76,6 +75,8 @@ if [ -e /etc/issue ]; then
  if [ "`grep -i ubuntu /etc/issue`" ]; then
   get_debian_deps
  elif [ "`grep -i debian /etc/issue`" ]; then
+  get_debian_deps
+ elif [ "`grep -i raspbian /etc/issue`" ]; then
   get_debian_deps
  elif [ "`grep -i mint /etc/issue`" ]; then
   get_debian_deps
