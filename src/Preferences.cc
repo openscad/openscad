@@ -33,11 +33,15 @@
 #include <QStatusBar>
 #include "PolySetCache.h"
 #include "AutoUpdater.h"
+#include "feature.h"
 #ifdef ENABLE_CGAL
 #include "CGALCache.h"
 #endif
 
 Preferences *Preferences::instance = NULL;
+
+const char * Preferences::featurePropertyName = "FeatureProperty";
+Q_DECLARE_METATYPE(Feature *);
 
 Preferences::Preferences(QWidget *parent) : QMainWindow(parent)
 {
@@ -89,10 +93,11 @@ Preferences::Preferences(QWidget *parent) : QMainWindow(parent)
 
 	// Toolbar
 	QActionGroup *group = new QActionGroup(this);
-	group->addAction(prefsAction3DView);
-	group->addAction(prefsActionEditor);
-	group->addAction(prefsActionUpdate);
-	group->addAction(prefsActionAdvanced);
+	addPrefPage(group, prefsAction3DView, page3DView);
+	addPrefPage(group, prefsActionEditor, pageEditor);
+	addPrefPage(group, prefsActionUpdate, pageUpdate);
+	addPrefPage(group, prefsActionFeatures, pageFeatures);
+	addPrefPage(group, prefsActionAdvanced, pageAdvanced);
 	connect(group, SIGNAL(triggered(QAction*)), this, SLOT(actionTriggered(QAction*)));
 
 	prefsAction3DView->setChecked(true);
@@ -140,6 +145,7 @@ Preferences::Preferences(QWidget *parent) : QMainWindow(parent)
 	this->polysetCacheSizeEdit->setValidator(validator);
 	this->opencsgLimitEdit->setValidator(validator);
 
+	setupFeaturesPage();
 	updateGUI();
 
 	RenderSettings::inst()->setColors(this->colorschemes[getValue("3dview/colorscheme").toString()]);
@@ -150,21 +156,103 @@ Preferences::~Preferences()
 	removeDefaultSettings();
 }
 
+/**
+ * Add a page for the preferences GUI. This handles both the action grouping
+ * and the registration of the widget for each action to have a generalized
+ * callback to switch pages.
+ * 
+ * @param group The action group for all page actions. This one will have the
+ *              callback attached after creating all actions/pages.
+ * @param action The action specific for the added page.
+ * @param widget The widget that should be shown when the action is triggered.
+ *               This must be a child page of the stackedWidget.
+ */
+void
+Preferences::addPrefPage(QActionGroup *group, QAction *action, QWidget *widget)
+{
+	group->addAction(action);
+	prefPages[action] = widget;
+}
+
+/**
+ * Callback to switch pages in the preferences GUI.
+ * 
+ * @param action The action triggered by the user.
+ */
 void
 Preferences::actionTriggered(QAction *action)
 {
-	if (action == this->prefsAction3DView) {
-		this->stackedWidget->setCurrentWidget(this->page3DView);
+	this->stackedWidget->setCurrentWidget(prefPages[action]);
+}
+
+/**
+ * Callback for the dynamically created checkboxes on the features
+ * page. The specific Feature object is associated as property with
+ * the callback.
+ * 
+ * @param state the state of the checkbox.
+ */
+void Preferences::featuresCheckBoxToggled(bool state)
+{
+	const QObject *sender = QObject::sender();
+	if (sender == NULL) {
+		return;
 	}
-	else if (action == this->prefsActionEditor) {
-		this->stackedWidget->setCurrentWidget(this->pageEditor);
+	QVariant v = sender->property(featurePropertyName);
+	if (!v.isValid()) {
+		return;
 	}
-	else if (action == this->prefsActionUpdate) {
-		this->stackedWidget->setCurrentWidget(this->pageUpdate);
+	Feature *feature = v.value<Feature *>();
+	feature->enable(state);
+	QSettings settings;
+	settings.setValue(QString("feature/%1").arg(QString::fromStdString(feature->get_name())), state);
+}
+
+/**
+ * Setup feature GUI and synchronize the Qt settings with the feature values.
+ * 
+ * In case a feature was enabled on the commandline this will have precedence
+ * and cause the checkbox in the settings GUI to be not editable.
+ * Otherwise the value from the Qt settings is pushed into the feature state
+ * and the checkbox is initialized accordingly.
+ */
+void
+Preferences::setupFeaturesPage()
+{
+	int row = 0;
+	for (Feature::iterator it = Feature::begin();it != Feature::end();it++) {
+		Feature *feature = *it;
+		
+		QString featurekey = QString("feature/%1").arg(QString::fromStdString(feature->get_name()));
+		this->defaultmap[featurekey] = false;
+
+		// spacer item between the features, just for some optical separation
+		gridLayoutExperimentalFeatures->addItem(new QSpacerItem(1, 8, QSizePolicy::Expanding, QSizePolicy::Fixed), row, 1, 1, 1, Qt::AlignCenter);
+		row++;
+
+		QCheckBox *cb = new QCheckBox(QString::fromStdString(feature->get_name()), pageFeatures);
+		QFont bold_font(cb->font());
+		bold_font.setBold(true);
+		cb->setFont(bold_font);
+		// synchronize Qt settings with the feature settings
+		bool value = getValue(featurekey).toBool();
+		feature->enable(value);
+		cb->setChecked(value);
+		cb->setProperty(featurePropertyName, QVariant::fromValue<Feature *>(feature));
+		connect(cb, SIGNAL(toggled(bool)), this, SLOT(featuresCheckBoxToggled(bool)));		
+		gridLayoutExperimentalFeatures->addWidget(cb, row, 0, 1, 2, Qt::AlignLeading);
+		row++;
+		
+		QLabel *l = new QLabel(QString::fromStdString(feature->get_description()), pageFeatures);
+		l->setTextFormat(Qt::RichText);
+		gridLayoutExperimentalFeatures->addWidget(l, row, 1, 1, 1, Qt::AlignLeading);
+		row++;
 	}
-	else if (action == this->prefsActionAdvanced) {
-		this->stackedWidget->setCurrentWidget(this->pageAdvanced);
-	}
+	// Force fixed indentation, the checkboxes use column span of 2 so 
+	// first row is not constrained in size by the visible controls. The
+	// fixed size space essentially gives the first row the width of the
+	// spacer item itself.
+	gridLayoutExperimentalFeatures->addItem(new QSpacerItem(20, 0, QSizePolicy::Fixed, QSizePolicy::Fixed), 1, 0, 1, 1, Qt::AlignLeading);
 }
 
 void Preferences::on_colorSchemeChooser_itemSelectionChanged()
@@ -316,7 +404,6 @@ QVariant Preferences::getValue(const QString &key) const
 
 void Preferences::updateGUI()
 {
-	QSettings settings;
 	QList<QListWidgetItem *> found = 
 		this->colorSchemeChooser->findItems(getValue("3dview/colorscheme").toString(),
 																				Qt::MatchExactly);

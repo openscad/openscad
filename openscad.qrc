@@ -1,5 +1,6 @@
 <RCC>
   <qresource prefix="/">
+    <file>icons/prefsFeatures.png</file>
     <file>icons/stopbutton.png</file>
     <file>icons/prefsAdvanced.png</file>
     <file>icons/prefs3DView.png</file>

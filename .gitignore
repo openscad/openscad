@@ -12,4 +12,6 @@ parser_yacc.h
 /tmp
 /OpenSCAD.app
 */#*#
+/nbproject
 /openscad
+/tests/openscad_nogui
