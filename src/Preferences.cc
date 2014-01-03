@@ -211,10 +211,9 @@ void Preferences::featuresCheckBoxToggled(bool state)
 /**
  * Setup feature GUI and synchronize the Qt settings with the feature values.
  * 
- * In case a feature was enabled on the commandline this will have precedence
- * and cause the checkbox in the settings GUI to be not editable.
- * Otherwise the value from the Qt settings is pushed into the feature state
- * and the checkbox is initialized accordingly.
+ * When running in GUI mode, the feature setting that might have been set
+ * from commandline is ignored. This always uses the value coming from the
+ * QSettings.
  */
 void
 Preferences::setupFeaturesPage()
