@@ -21,7 +21,7 @@ public:
 
 public slots:
 	void actionTriggered(class QAction *);
-        void featuresCheckBoxToggled(bool);
+	void featuresCheckBoxToggled(bool);
 	void on_colorSchemeChooser_itemSelectionChanged();
 	void on_fontChooser_activated(const QString &);
 	void on_fontSize_editTextChanged(const QString &);
@@ -45,15 +45,15 @@ private:
 	void keyPressEvent(QKeyEvent *e);
 	void updateGUI();
 	void removeDefaultSettings();
-        void setupFeaturesPage();
-        void addPrefPage(QActionGroup *group, QAction *action, QWidget *widget);
+	void setupFeaturesPage();
+	void addPrefPage(QActionGroup *group, QAction *action, QWidget *widget);
 
 	QSettings::SettingsMap defaultmap;
 	QHash<QString, std::map<RenderSettings::RenderColor, Color4f> > colorschemes;
-        QHash<const QAction *, QWidget *> prefPages;
+	QHash<const QAction *, QWidget *> prefPages;
 
 	static Preferences *instance;
-        static const char *featurePropertyName;
+	static const char *featurePropertyName;
 };
 
 #endif

@@ -33,9 +33,9 @@
 #include <QStatusBar>
 #include "PolySetCache.h"
 #include "AutoUpdater.h"
+#include "feature.h"
 #ifdef ENABLE_CGAL
 #include "CGALCache.h"
-#include "feature.h"
 #endif
 
 Preferences *Preferences::instance = NULL;
@@ -204,7 +204,7 @@ void Preferences::featuresCheckBoxToggled(bool state)
 	Feature *feature = v.value<Feature *>();
 	feature->enable(state);
 	QSettings settings;
-	settings.setValue(feature->get_name().c_str(), state);
+	settings.setValue(QString("feature/%1").arg(QString::fromStdString(feature->get_name())), state);
 }
 
 /**
@@ -220,37 +220,29 @@ Preferences::setupFeaturesPage()
 {
 	int row = 0;
 	for (Feature::iterator it = Feature::begin();it != Feature::end();it++) {
-		Feature * feature = (*it);
-		// setup default with the current value coming from commandline
-		this->defaultmap[feature->get_name().c_str()] = false;
+		Feature *feature = *it;
 		
+		QString featurekey = QString("feature/%1").arg(QString::fromStdString(feature->get_name()));
+		this->defaultmap[featurekey] = false;
+
 		// spacer item between the features, just for some optical separation
 		gridLayoutExperimentalFeatures->addItem(new QSpacerItem(1, 8, QSizePolicy::Expanding, QSizePolicy::Fixed), row, 1, 1, 1, Qt::AlignCenter);
 		row++;
 
-		std::string text(feature->get_name());
-		QCheckBox *cb = new QCheckBox(text.c_str(), pageFeatures);
+		QCheckBox *cb = new QCheckBox(QString::fromStdString(feature->get_name()), pageFeatures);
 		QFont bold_font(cb->font());
 		bold_font.setBold(true);
 		cb->setFont(bold_font);
-		if (feature->is_enabled()) {
-			// if enabled from command line, that has priority
-			cb->setChecked(true);
-			cb->setEnabled(false);
-			std::string text_cl = text + " (enabled on commandline)";
-			cb->setText(text_cl.c_str());
-		} else {
-			// synchronize Qt settings with the feature settings
-			bool value = getValue(feature->get_name().c_str()).toBool();
-			feature->enable(value);
-			cb->setChecked(value);
-		}
+		// synchronize Qt settings with the feature settings
+		bool value = getValue(featurekey).toBool();
+		feature->enable(value);
+		cb->setChecked(value);
 		cb->setProperty(featurePropertyName, QVariant::fromValue<Feature *>(feature));
 		connect(cb, SIGNAL(toggled(bool)), this, SLOT(featuresCheckBoxToggled(bool)));		
 		gridLayoutExperimentalFeatures->addWidget(cb, row, 0, 1, 2, Qt::AlignLeading);
 		row++;
 		
-		QLabel *l = new QLabel(feature->get_description().c_str(), pageFeatures);
+		QLabel *l = new QLabel(QString::fromStdString(feature->get_description()), pageFeatures);
 		l->setTextFormat(Qt::RichText);
 		gridLayoutExperimentalFeatures->addWidget(l, row, 1, 1, 1, Qt::AlignLeading);
 		row++;
