@@ -61,10 +61,8 @@ deploy {
   message("Building deployment version")
   DEFINES += OPENSCAD_DEPLOY
   macx {
-    CONFIG += x86 x86_64
-    LIBS += -framework Sparkle
-    HEADERS += src/SparkleAutoUpdater.h
-    OBJECTIVE_SOURCES += src/SparkleAutoUpdater.mm
+    CONFIG += x86_64
+    CONFIG += sparkle
   }
 }
 
@@ -75,7 +73,7 @@ macx {
   APP_RESOURCES.path = Contents/Resources
   APP_RESOURCES.files = OpenSCAD.sdef dsa_pub.pem icons/SCAD.icns
   QMAKE_BUNDLE_DATA += APP_RESOURCES
-  LIBS += -framework Cocoa
+  LIBS += -framework Cocoa -framework ApplicationServices
 
   # FIXME: Somehow, setting the deployment target to a lower version causes a
   # seldom crash in debug mode (e.g. the minkowski2-test):
