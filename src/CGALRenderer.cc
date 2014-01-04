@@ -50,19 +50,21 @@ CGALRenderer::CGALRenderer(shared_ptr<const class Geometry> geom) : polyhedron(N
 	}
 	else if (shared_ptr<const CGAL_Nef_polyhedron> new_N = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom)) {
 		assert(new_N->getDimension() == 3);
-		this->polyhedron = new Polyhedron();
-    // FIXME: Make independent of Preferences
-		// this->polyhedron->setColor(Polyhedron::CGAL_NEF3_MARKED_FACET_COLOR,
-		// 													 Preferences::inst()->color(Preferences::CGAL_FACE_BACK_COLOR).red(),
-		// 													 Preferences::inst()->color(Preferences::CGAL_FACE_BACK_COLOR).green(),
-		// 													 Preferences::inst()->color(Preferences::CGAL_FACE_BACK_COLOR).blue());
-		// this->polyhedron->setColor(Polyhedron::CGAL_NEF3_UNMARKED_FACET_COLOR,
-		// 													 Preferences::inst()->color(Preferences::CGAL_FACE_FRONT_COLOR).red(),
-		// 													 Preferences::inst()->color(Preferences::CGAL_FACE_FRONT_COLOR).green(),
-		// 													 Preferences::inst()->color(Preferences::CGAL_FACE_FRONT_COLOR).blue());
-		
-		CGAL::OGL::Nef3_Converter<CGAL_Nef_polyhedron3>::convert_to_OGLPolyhedron(*new_N->p3, this->polyhedron);
-		this->polyhedron->init();
+		if (!new_N->isEmpty()) {
+			this->polyhedron = new Polyhedron();
+			// FIXME: Make independent of Preferences
+			// this->polyhedron->setColor(Polyhedron::CGAL_NEF3_MARKED_FACET_COLOR,
+			// 													 Preferences::inst()->color(Preferences::CGAL_FACE_BACK_COLOR).red(),
+			// 													 Preferences::inst()->color(Preferences::CGAL_FACE_BACK_COLOR).green(),
+			// 													 Preferences::inst()->color(Preferences::CGAL_FACE_BACK_COLOR).blue());
+			// this->polyhedron->setColor(Polyhedron::CGAL_NEF3_UNMARKED_FACET_COLOR,
+			// 													 Preferences::inst()->color(Preferences::CGAL_FACE_FRONT_COLOR).red(),
+			// 													 Preferences::inst()->color(Preferences::CGAL_FACE_FRONT_COLOR).green(),
+			// 													 Preferences::inst()->color(Preferences::CGAL_FACE_FRONT_COLOR).blue());
+			
+			CGAL::OGL::Nef3_Converter<CGAL_Nef_polyhedron3>::convert_to_OGLPolyhedron(*new_N->p3, this->polyhedron);
+			this->polyhedron->init();
+		}
 	}
 }
 
