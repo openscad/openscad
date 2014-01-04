@@ -708,7 +708,7 @@ CGAL_Nef_polyhedron CGALEvaluator::evaluateCGALMesh(const PolySet &ps)
 			PRINTB("Alternate construction failed. CGAL error in CGAL_Nef_polyhedron3(): %s", e.what());
 		}
 		CGAL::set_error_behaviour(old_behaviour);
-		return CGAL_Nef_polyhedron(N);
+		if (N) return CGAL_Nef_polyhedron(N);
 	}
-	return CGAL_Nef_polyhedron();
+	return CGAL_Nef_polyhedron(ps.is2d?2:3);
 }
