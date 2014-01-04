@@ -39,7 +39,6 @@ bool GeometryEvaluator::isCached(const AbstractNode &node) const
 	return GeometryCache::instance()->contains(this->tree.getIdString(node));
 }
 
-// FIXME: This doesn't insert into cache. Fix this here or in client code
 /*!
 	Set allownef to false to force the result to _not_ be a Nef polyhedron
 */
@@ -47,18 +46,26 @@ shared_ptr<const Geometry> GeometryEvaluator::evaluateGeometry(const AbstractNod
 																															 bool allownef)
 {
 	if (!isCached(node)) {
-		Traverser trav(*this, node, Traverser::PRE_AND_POSTFIX);
-		trav.execute();
-
-		if (!allownef) {
-			shared_ptr<const CGAL_Nef_polyhedron> N = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(this->root);
-			if (N) {
-				if (N->getDimension() == 3) this->root.reset(N->convertToPolyset());
-				else this->root.reset();
-				GeometryCache::instance()->insert(this->tree.getIdString(node), this->root);
-			}
+		shared_ptr<const CGAL_Nef_polyhedron> N;
+		if (CGALCache::instance()->contains(this->tree.getIdString(node))) {
+			N = CGALCache::instance()->get(this->tree.getIdString(node));
 		}
 
+		// If not found in any caches, we need to evaluate the geometry
+		if (N) {
+			this->root = N;
+		}
+		else {
+			Traverser trav(*this, node, Traverser::PRE_AND_POSTFIX);
+			trav.execute();
+
+			if (!allownef) {
+				if (shared_ptr<const CGAL_Nef_polyhedron> N = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(this->root)) {
+					this->root.reset(N->convertToPolyset());
+					smartCache(node, this->root);
+				}
+			}
+		}
 		return this->root;
 	}
 	return GeometryCache::instance()->get(this->tree.getIdString(node));
@@ -256,9 +263,7 @@ std::vector<const class Polygon2d *> GeometryEvaluator::collectChildren2D(const 
 		// a node is a valid object. If we inserted as we created them, the 
 		// cache could have been modified before we reach this point due to a large
 		// sibling object. 
-		if (!isCached(*chnode)) {
-			GeometryCache::instance()->insert(this->tree.getIdString(*chnode), chgeom);
-		}
+		smartCache(*chnode, chgeom);
 		
 		if (chgeom) {
 			if (chgeom->getDimension() == 2) {
@@ -274,11 +279,14 @@ std::vector<const class Polygon2d *> GeometryEvaluator::collectChildren2D(const 
 	return children;
 }
 
+/*!
+	Since we can generate both Nef and non-Nef geometry, we need to insert it into
+	the appropriate cache.
+	This method inserts the geometry into the appropriate cache if it's not already cached.
+*/
 void GeometryEvaluator::smartCache(const AbstractNode &node, 
 																	 const shared_ptr<const Geometry> &geom)
 {
-	// Since we can generate both Nef and non-Nef geometry, we need to insert it into
-	// the appropriate cache
 	shared_ptr<const CGAL_Nef_polyhedron> N = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom);
 	if (N) {
 		if (!CGALCache::instance()->contains(this->tree.getIdString(node))) {
