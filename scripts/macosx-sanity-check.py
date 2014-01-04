@@ -62,7 +62,12 @@ def find_dependencies(file):
         return None
     deps = output.split('\n')
     for dep in deps:
-#        print dep
+        #print dep
+        # Fail if anything is linked with libc++, as that's not backwards compatible
+        # with Mac OS X 10.6
+        if re.search("libc\+\+", dep):
+            print "Error: clang's libc++ is used by " + file
+            return None
         dep = re.sub(".*:$", "", dep) # Take away header line
         dep = re.sub("^\t", "", dep) # Remove initial tabs
         dep = re.sub(" \(.*\)$", "", dep) # Remove trailing parentheses
@@ -74,9 +79,10 @@ def validate_lib(lib):
     p  = subprocess.Popen(["otool", "-l", lib], stdout=subprocess.PIPE)
     output = p.communicate()[0]
     if p.returncode != 0: return False
-    if re.search("LC_DYLD_INFO_ONLY", output):
-        print "Error: Requires Snow Leopard: " + lib
-        return False
+# We don't support Snow Leopard anymore
+#    if re.search("LC_DYLD_INFO_ONLY", output):
+#        print "Error: Requires Snow Leopard: " + lib
+#        return False
 
     p  = subprocess.Popen(["lipo", lib, "-verify_arch", "x86_64"], stdout=subprocess.PIPE)
     output = p.communicate()[0]
@@ -84,11 +90,12 @@ def validate_lib(lib):
         print "Error: x86_64 architecture not supported: " + lib
         return False
 
-    p  = subprocess.Popen(["lipo", lib, "-verify_arch", "i386"], stdout=subprocess.PIPE)
-    output = p.communicate()[0]
-    if p.returncode != 0: 
-        print "Error: i386 architecture not supported: " + lib
-        return False
+# We don't support 32-bit binaries anymore
+#    p  = subprocess.Popen(["lipo", lib, "-verify_arch", "i386"], stdout=subprocess.PIPE)
+#    output = p.communicate()[0]
+#    if p.returncode != 0: 
+#        print "Error: i386 architecture not supported: " + lib
+#        return False
     return True
 
 if __name__ == '__main__':
