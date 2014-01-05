@@ -204,15 +204,16 @@ inclusion(BOOST_ROOT Boost_INCLUDE_DIRS)
 add_definitions(-DBOOST_FILESYSTEM_VERSION=3) # Use V3 for boost 1.44-1.45
 
 # Mac OS X
-if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+if(APPLE)
   FIND_LIBRARY(COCOA_LIBRARY Cocoa REQUIRED)
-endif(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+  FIND_LIBRARY(APP_SERVICES_LIBRARY ApplicationServices)
+endif()
 
 
 # Eigen
 
 # Turn off Eigen SIMD optimization
-if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+if(NOT APPLE)
   if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "^FreeBSD")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DEIGEN_DONT_ALIGN")
   endif()
@@ -240,7 +241,7 @@ if (NOT EIGEN_INCLUDE_DIR)
     find_path(EIGEN_INCLUDE_DIR Eigen/Core HINTS /usr/local/include/eigen3)
   elseif (${CMAKE_SYSTEM_NAME} MATCHES "NetBSD")
     find_path(EIGEN_INCLUDE_DIR Eigen/Core HINTS /usr/pkg/include/eigen3)
-  elseif (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+  elseif (APPLE)
     find_path(EIGEN_INCLUDE_DIR Eigen/Core HINTS /opt/local/include/eigen3)
   else()
     find_path(EIGEN_INCLUDE_DIR Eigen/Core HINTS /usr/include/eigen3)
@@ -483,7 +484,7 @@ set(CTEST_ENVIRONMENT "${CTEST_ENVIRONMENT};OPENSCADPATH=${CMAKE_CURRENT_SOURCE_
 
 # Platform specific settings
 
-if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+if(APPLE)
 	message(STATUS "Offscreen OpenGL Context - using Apple CGL")
 	set(OFFSCREEN_CTX_SOURCE "OffscreenContextCGL.mm" CACHE TYPE STRING)
 	set(OFFSCREEN_IMGUTILS_SOURCE "imageutils-macosx.cc" CACHE TYPE STRING)
@@ -633,7 +634,7 @@ target_link_libraries(cgalcachetest tests-cgal ${TESTS-CGAL-LIBRARIES} ${CLIPPER
 #
 add_executable(openscad_nogui ../src/openscad.cc)
 set_target_properties(openscad_nogui PROPERTIES COMPILE_FLAGS "-fno-strict-aliasing -DEIGEN_DONT_ALIGN -DENABLE_CGAL -DENABLE_OPENCSG ${CGAL_CXX_FLAGS_INIT}")
-target_link_libraries(openscad_nogui tests-offscreen tests-cgal tests-nocgal ${TESTS-CORE-LIBRARIES} ${TESTS-CGAL-LIBRARIES} ${CLIPPER_LIBRARY} ${GLEW_LIBRARY} ${Boost_LIBRARIES} ${OPENCSG_LIBRARY} ${COCOA_LIBRARY} )
+target_link_libraries(openscad_nogui tests-offscreen tests-cgal tests-nocgal ${TESTS-CORE-LIBRARIES} ${TESTS-CGAL-LIBRARIES} ${CLIPPER_LIBRARY} ${GLEW_LIBRARY} ${Boost_LIBRARIES} ${OPENCSG_LIBRARY} ${COCOA_LIBRARY} ${APP_SERVICES_LIBRARY})
 
 #
 # GUI binary tests
