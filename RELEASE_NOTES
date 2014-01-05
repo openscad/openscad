@@ -7,10 +7,13 @@ o Added parent_module() and $parent_modules
 o Added children() as a replacement for child()
 o FIXME: Unicode support
 o FIXME: Ranges with negative steps
+o FIXME: Experimental concat()
 
 Program Features:
 o Added --info parameter to the cmd-line for system/library info
+o Added --enable parameter to enable experimental features
 o Added Reset View in GUI
+o Added Feature tab in Preferences 
 
 Bugfixes:
 o polyhedron() is now much more robust handling almost planar polygons
