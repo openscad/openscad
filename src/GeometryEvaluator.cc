@@ -54,16 +54,16 @@ shared_ptr<const Geometry> GeometryEvaluator::evaluateGeometry(const AbstractNod
 		// If not found in any caches, we need to evaluate the geometry
 		if (N) {
 			this->root = N;
-		}
-		else {
+		}	
+    else {
 			Traverser trav(*this, node, Traverser::PRE_AND_POSTFIX);
 			trav.execute();
+		}
 
-			if (!allownef) {
-				if (shared_ptr<const CGAL_Nef_polyhedron> N = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(this->root)) {
-					this->root.reset(N->convertToPolyset());
-					smartCache(node, this->root);
-				}
+		if (!allownef) {
+			if (shared_ptr<const CGAL_Nef_polyhedron> N = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(this->root)) {
+				this->root.reset(N->convertToPolyset());
+				smartCache(node, this->root);
 			}
 		}
 		return this->root;
