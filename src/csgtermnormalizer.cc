@@ -32,6 +32,22 @@ shared_ptr<CSGTerm> CSGTermNormalizer::normalize(const shared_ptr<CSGTerm> &root
 	return temp;
 }
 
+/*!
+	After aborting, a subtree might have become invalidated (NULL child term)
+	since terms can be instantiated multiple times.
+	This will search for NULL children an recursively repair the corresponding
+	subtree.
+ */
+shared_ptr<CSGTerm> CSGTermNormalizer::cleanup_term(shared_ptr<CSGTerm> &t)
+{
+	if (t->type != CSGTerm::TYPE_PRIMITIVE) {
+		if (t->left) t->left = cleanup_term(t->left);
+		if (t->right) t->right = cleanup_term(t->right);
+		return collapse_null_terms(t);
+	}
+	else return t;
+}
+
 shared_ptr<CSGTerm> CSGTermNormalizer::normalizePass(shared_ptr<CSGTerm> term)
 {
 	// This function implements the CSG normalization
@@ -62,7 +78,13 @@ shared_ptr<CSGTerm> CSGTermNormalizer::normalizePass(shared_ptr<CSGTerm> term)
 	if (!this->aborted) term->right = normalizePass(term->right);
 
 	// FIXME: Do we need to take into account any transformation of item here?
-	return collapse_null_terms(term);
+	shared_ptr<CSGTerm> t = collapse_null_terms(term);
+
+	if (this->aborted) {
+		if (t) t = cleanup_term(t);
+	}
+
+	return t;
 }
 
 shared_ptr<CSGTerm> CSGTermNormalizer::collapse_null_terms(const shared_ptr<CSGTerm> &term)
