@@ -776,9 +776,13 @@ public:
 		// Estimating same # of vertices as polygons (very rough)
 		B.begin_surface(ps.polygons.size(), ps.polygons.size());
 		int pidx = 0;
+#ifdef DEBUG
 		printf("polyhedron(faces=[");
+#endif
 		BOOST_FOREACH(const PolySet::Polygon &p, ps.polygons) {
+#ifdef DEBUG
 			if (pidx++ > 0) printf(",");
+#endif
 			indices.clear();
 			BOOST_FOREACH(const Vector3d &v, p) {
 				size_t s = vertices.size();
@@ -794,19 +798,26 @@ public:
 			}
 			if (!facet_is_degenerate) {
 				B.begin_facet();
+#ifdef DEBUG
 				printf("[");
+#endif
 				int fidx = 0;
 				std::map<int,int> fc;
 				BOOST_REVERSE_FOREACH(size_t i, indices) {
 					B.add_vertex_to_facet(i);
+#ifdef DEBUG
 					if (fidx++ > 0) printf(",");
 					printf("%ld", i);
+#endif
 				}
+#ifdef DEBUG
 				printf("]");
+#endif
 				B.end_facet();
 			}
 		}
 		B.end_surface();
+#ifdef DEBUG
 		printf("],\n");
 
 		printf("points=[");
@@ -816,6 +827,7 @@ public:
 			printf("[%g,%g,%g]", v[0], v[1], v[2]);
 		}
 		printf("]);\n");
+#endif
 	}
 };
 
