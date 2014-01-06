@@ -8,7 +8,7 @@ objects/ui_ProgressWidget.h
 objects/ui_MainWindow.h
 objects/ui_Preferences.h
 
-# C++
+# C++ files
 src/AppleEvents.cc
 src/builtin.cc
 src/cgaladv.cc

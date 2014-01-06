@@ -54,7 +54,7 @@ updatemo()
  done
 }
 
-if [ $1 = updatemo ]; then
+if [ "x$1" = xupdatemo ]; then
  updatemo
 else
  updatepot && updatepo && updatemo
