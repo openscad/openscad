@@ -3,12 +3,18 @@ hull();
 // No children
 hull() { }
 
-hull() {
-  cylinder(r=10, h=1);
-  translate([0,0,10]) cube([5,5,5], center=true);
-}
+// Hull of hull (forces internal cache to be initialized; this has caused a crash earlier)
+translate([25,0,0]) hull() hull3test();
 
-translate([25,0,0]) hull() {
+module hull3test() {
+  hull() {
+    cylinder(r=10, h=1);
+    translate([0,0,10]) cube([5,5,5], center=true);
+  }
+}
+hull3test();
+
+translate([50,0,0]) hull() {
   translate([0,0,10]) cylinder(r=3);
   difference() {
     cylinder(r=10, h=4, center=true);
