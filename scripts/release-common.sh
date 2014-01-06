@@ -246,7 +246,7 @@ fi
 if [ -n $FONTDIR ]; then
   echo $FONTDIR
   mkdir -p $FONTDIR
-  cp -dr fonts/* $FONTDIR
+  cp -a fonts/* $FONTDIR
 fi
 if [ -n $LIBRARYDIR ]; then
   echo $LIBRARYDIR
