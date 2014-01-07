@@ -20,8 +20,16 @@ fs::path get_resource_dir(const std::string &resource_folder)
 	if (!fs::is_directory(applicationdir)) {
 		return fs::path();
 	}
+
+	fs::path basepath(applicationdir);
+#ifdef __APPLE__
+        fs::path bundlepath = basepath.parent_path().parent_path();
+        if (bundlepath.filename().string() == "OpenSCAD.app") {
+		basepath = bundlepath / "Contents" / "Resources";
+	}
+#endif
 	
-	fs::path resource_dir = fs::path(applicationdir) / resource_folder;
+	fs::path resource_dir = basepath / resource_folder;
 	if (!fs::is_directory(resource_dir)) {
 		return fs::path();
 	}
