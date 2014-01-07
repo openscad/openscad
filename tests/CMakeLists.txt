@@ -627,7 +627,7 @@ target_link_libraries(csgtexttest tests-nocgal ${TESTS-NOCGAL-LIBRARIES})
 #
 add_executable(cgalcachetest cgalcachetest.cc)
 set_target_properties(cgalcachetest PROPERTIES COMPILE_FLAGS "-DENABLE_CGAL ${CGAL_CXX_FLAGS_INIT}")
-target_link_libraries(cgalcachetest tests-cgal ${TESTS-CGAL-LIBRARIES} ${CLIPPER_LIBRARY} ${GLEW_LIBRARY} ${COCOA_LIBRARY})
+target_link_libraries(cgalcachetest tests-cgal ${TESTS-CGAL-LIBRARIES} ${GLEW_LIBRARY} ${COCOA_LIBRARY})
 
 #
 # openscad no-qt
