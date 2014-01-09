@@ -14,6 +14,7 @@ parser_yacc.h
 /OpenSCAD.app
 */#*#
 /po/*/*/*.mo
+/po/POTFILES
 /nbproject
 /openscad
 /tests/openscad_nogui
