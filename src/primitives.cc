@@ -102,10 +102,14 @@ public:
 	bool center;
 	double x, y, z, h, r1, r2;
 	double fn, fs, fa;
+	double rm;  // $rm = radius mode
 	primitive_type_e type;
 	int convexity;
 	Value points, paths, faces;
 	virtual PolySet *evaluate_polyset(class PolySetEvaluator *) const;
+
+	double vertex_radius_from_inner_radius(double inner_radius);
+	double vertex_radius_from_midpoint_radius(double inner_radius);
 };
 
 /**
@@ -136,6 +140,37 @@ Value PrimitiveModule::lookup_radius(const Context &ctx, const std::string &diam
 		return Value();
 	}
 }
+
+// Translate given radius to vertex radius such that the given radius
+// is tangent to the segments of the generated polygon. (Thus the
+// given radius is the radius of a circle inside the generated
+// polygon.)
+double PrimitiveNode::vertex_radius_from_inner_radius(double inner_radius) {
+	int fragments = Calc::get_fragments_from_r(fmax(r1, r2), fn, fs, fa);
+	if (fn <= 0.0) {
+		// set this for later
+		fn = fragments;
+	}
+	double vertex_radius = inner_radius / cos(M_PI / fragments);
+	return vertex_radius;
+}
+
+// Somewhat awkwardly named "midpoint radius" specifies that the
+// polygon segments cross the given radius at 1/4 and 3/4 of the arc
+// they span. I'd call this "average" radius but I don't think it's a
+// true average in that the area between the arc curve and the segment
+// wouldn't come out to quite the same above and below the segment.
+double PrimitiveNode::vertex_radius_from_midpoint_radius(double midpoint_radius) {
+	int fragments = Calc::get_fragments_from_r(fmax(r1, r2), fn, fs, fa);
+	if (fn <= 0.0) {
+		// set this for later
+		fn = fragments;
+	}
+	double vertex_radius = midpoint_radius * cos(M_PI / (2.0 * fragments)) / cos(M_PI / fragments);
+	return vertex_radius;
+}
+
+
 
 AbstractNode *PrimitiveModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const
 {
@@ -178,6 +213,7 @@ AbstractNode *PrimitiveModule::instantiate(const Context *ctx, const ModuleInsta
 	node->fn = c.lookup_variable("$fn").toDouble();
 	node->fs = c.lookup_variable("$fs").toDouble();
 	node->fa = c.lookup_variable("$fa").toDouble();
+	node->rm = c.lookup_variable("$rm").toDouble();
 
 	if (node->fs < F_MINIMUM) {
 		PRINTB("WARNING: $fs too small - clamping to %f", F_MINIMUM);
@@ -206,6 +242,7 @@ AbstractNode *PrimitiveModule::instantiate(const Context *ctx, const ModuleInsta
 		if (r.type() == Value::NUMBER) {
 			node->r1 = r.toDouble();
 		}
+		// TODO: how do we triangulate a sphere? Figure out the meaning of INNER_RADIUS, MIDPOINT_RADIUS
 	}
 
 	if (type == CYLINDER) {
@@ -227,6 +264,15 @@ AbstractNode *PrimitiveModule::instantiate(const Context *ctx, const ModuleInsta
 		if (r2.type() == Value::NUMBER) {
 			node->r2 = r2.toDouble();
 		}
+
+		if (node->rm == INNER_RADIUS) {
+			node->r1 = node->vertex_radius_from_inner_radius(node->r1);
+			node->r2 = node->vertex_radius_from_inner_radius(node->r2);
+		} else if (node->rm == MIDPOINT_RADIUS) {
+			node->r1 = node->vertex_radius_from_midpoint_radius(node->r1);
+			node->r2 = node->vertex_radius_from_midpoint_radius(node->r2);
+		}
+		// else leave the radius defining the vertexes of the circle
 		
 		const Value center = c.lookup_variable("center");
 		if (center.type() == Value::BOOL) {
@@ -262,6 +308,12 @@ AbstractNode *PrimitiveModule::instantiate(const Context *ctx, const ModuleInsta
 		if (r.type() == Value::NUMBER) {
 			node->r1 = r.toDouble();
 		}
+		if (node->rm == INNER_RADIUS) {
+			node->r1 = node->vertex_radius_from_inner_radius(node->r1);
+		} else if (node->rm == MIDPOINT_RADIUS) {
+			node->r1 = node->vertex_radius_from_midpoint_radius(node->r1);
+		}
+		// else leave the radius defining the vertexes of the circle
 	}
 
 	if (type == POLYGON) {

@@ -90,6 +90,11 @@ void ModuleContext::registerBuiltin()
 	}
 
 	this->set_constant("PI",Value(M_PI));
+
+	// $rm= radius mode constants
+	this->set_constant("OUTER_RADIUS", Value(OUTER_RADIUS)); // default
+	this->set_constant("INNER_RADIUS", Value(INNER_RADIUS));
+	this->set_constant("MIDPOINT_RADIUS", Value(MIDPOINT_RADIUS));
 }
 
 const AbstractFunction *ModuleContext::findLocalFunction(const std::string &name) const
