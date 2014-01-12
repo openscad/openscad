@@ -1,0 +1,43 @@
+group() {
+	color([1, 0, 0, 1]) {
+		cylinder($fn = 30, $fa = 12, $fs = 2, h = 1, r1 = 10.0551, r2 = 10.0551, center = false);
+	}
+	multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 1], [0, 0, 0, 1]]) {
+		color([0, 1, 0, 1]) {
+			cylinder($fn = 30, $fa = 12, $fs = 2, h = 1, r1 = 10.0413, r2 = 10.0413, center = false);
+		}
+	}
+	multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 2], [0, 0, 0, 1]]) {
+		color([0, 0, 1, 1]) {
+			cylinder($fn = 0, $fa = 12, $fs = 2, h = 1, r1 = 10, r2 = 10, center = false);
+		}
+	}
+	multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 3], [0, 0, 0, 1]]) {
+		union() {
+			color([1, 1, 0, 1]) {
+				difference() {
+					cylinder($fn = 0, $fa = 12, $fs = 2, h = 1, r1 = 8, r2 = 8, center = false);
+					cylinder($fn = 30, $fa = 12, $fs = 2, h = 1.1, r1 = 6.03305, r2 = 6.03305, center = false);
+				}
+			}
+			color([0, 1, 1, 1]) {
+				cylinder($fn = 13, $fa = 12, $fs = 2, h = 1, r1 = 6, r2 = 6, center = false);
+			}
+		}
+	}
+	multmatrix([[1, 0, 0, 20], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+		color([1, 0, 0, 1]) {
+			circle($fn = 10, $fa = 12, $fs = 2, r = 8.4117);
+		}
+	}
+	multmatrix([[1, 0, 0, 20], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+		color([0, 1, 0, 1]) {
+			circle($fn = 10, $fa = 12, $fs = 2, r = 8.30814);
+		}
+	}
+	multmatrix([[1, 0, 0, 20], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+		color([0, 0, 1, 1]) {
+			circle($fn = 10, $fa = 12, $fs = 2, r = 8);
+		}
+	}
+}

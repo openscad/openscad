@@ -13,3 +13,8 @@ translate([0,0,3]) union() {
 	// A cyan cylinder with a default radius where the verticies neatly touch the INNER_RADIUS hole cut above. Deliberately coarse to show difference.
 	color([0,1,1]) cylinder(r=6, $fn=13);
 }
+
+// coarse facets show the difference more
+translate([20,0,0]) color([1,0,0]) circle(r=8, $rm=INNER_RADIUS, $fn=10);
+translate([20,0,0]) color([0,1,0]) circle(r=8, $rm=MIDPOINT_RADIUS, $fn=10);
+translate([20,0,0]) color([0,0,1]) circle(r=8, $rm=OUTER_RADIUS, $fn=10);
