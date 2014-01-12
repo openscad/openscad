@@ -218,30 +218,65 @@ void GeometryEvaluator::applyResize3D(CGAL_Nef_polyhedron &N,
 	return;
 }
 
+// Helper functions for GeometryEvaluator::applyMinkowski2D()
+namespace {
+	void transform_path(ClipperLib::Path & path, ClipperLib::IntPoint delta) {
+		BOOST_FOREACH(ClipperLib::IntPoint & point, path) {
+			point.X += delta.X;
+			point.Y += delta.Y;
+		}
+	}
+
+	void transform_paths(ClipperLib::Paths & paths, ClipperLib::IntPoint delta) {
+		BOOST_FOREACH(ClipperLib::Path & path, paths) {
+			transform_path(path, delta);
+		}
+	}
+
+	// Add the polygon a translated to an arbitrary point of each separate component of b
+	void fill_minkowski_insides(ClipperLib::Paths const& a,
+								ClipperLib::Paths const& b,
+								std::vector<ClipperLib::Paths> & target) {
+		// (or easier: one arbitrary point on each positive contour)
+		BOOST_FOREACH (ClipperLib::Path const& b_path, b) {
+			if (!b_path.empty() && ClipperLib::Orientation(b_path) == 1) {
+				target.push_back(a);
+				transform_paths(target.back(), b_path[0] /* arbitrary */);
+			}
+		}
+	}
+}
+
 Polygon2d *GeometryEvaluator::applyMinkowski2D(const AbstractNode &node)
 {
 	std::vector<const Polygon2d *> children = collectChildren2D(node);
-	if (children.size() > 0) {
-		bool first = false;
-		ClipperLib::Paths result = ClipperUtils::fromPolygon2d(*children[0]);
-		for (int i=1;i<children.size();i++) {
-			ClipperLib::Path &temp = result[0];
-			const Polygon2d *chgeom = children[i];
-			ClipperLib::Path shape = ClipperUtils::fromOutline2d(chgeom->outlines()[0], false);
-			ClipperLib::MinkowskiSum(temp, shape, result, true);
-		}
+	if (!children.empty()) {
+		ClipperLib::Paths lhs = ClipperUtils::fromPolygon2d(*children[0]);
 
-		// The results may contain holes due to ClipperLib failing to maintain
-		// solidity of minkowski results:
-		// https://sourceforge.net/p/polyclipping/discussion/1148419/thread/8488d4e8/
-		ClipperLib::Paths paths;
-		BOOST_FOREACH(ClipperLib::Path &p, result) {
-			if (ClipperLib::Orientation(p)) std::reverse(p.begin(), p.end());
-			paths.push_back(p);
+		for (size_t i=1; i<children.size(); i++) {
+			ClipperLib::Paths rhs = ClipperUtils::fromPolygon2d(*children[i]);
+
+			std::vector<ClipperLib::Paths> minkowski_terms;
+
+			// First, convolve each outline of lhs with the outlines of rhs
+			BOOST_FOREACH(ClipperLib::Path const& rhs_path, rhs) {
+				BOOST_FOREACH(ClipperLib::Path const& lhs_path, lhs) {
+					ClipperLib::Paths result;
+					ClipperLib::MinkowskiSum(lhs_path, rhs_path, result, true);
+					minkowski_terms.push_back(result);
+				}
+			}
+
+			// Then, fill the central parts
+			fill_minkowski_insides(lhs, rhs, minkowski_terms);
+			fill_minkowski_insides(rhs, lhs, minkowski_terms);
+
+			// Finally, merge the Minkowski terms
+			Polygon2d *p = ClipperUtils::apply(minkowski_terms, ClipperLib::ctUnion);
+			lhs = ClipperUtils::fromPolygon2d(*p);
+			delete p;
 		}
-		std::vector<ClipperLib::Paths> pathsvector;
-		pathsvector.push_back(paths);
-		return ClipperUtils::apply(pathsvector, ClipperLib::ctUnion);
+		return ClipperUtils::toPolygon2d(ClipperUtils::sanitize(lhs));
 	}
 	return NULL;
 }
