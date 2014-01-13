@@ -253,10 +253,10 @@ Polygon2d *GeometryEvaluator::applyMinkowski2D(const AbstractNode &node)
 	if (!children.empty()) {
 		ClipperLib::Paths lhs = ClipperUtils::fromPolygon2d(*children[0]);
 
+		std::vector<ClipperLib::Paths> minkowski_terms;
 		for (size_t i=1; i<children.size(); i++) {
 			ClipperLib::Paths rhs = ClipperUtils::fromPolygon2d(*children[i]);
 
-			std::vector<ClipperLib::Paths> minkowski_terms;
 
 			// First, convolve each outline of lhs with the outlines of rhs
 			BOOST_FOREACH(ClipperLib::Path const& rhs_path, rhs) {
@@ -270,13 +270,10 @@ Polygon2d *GeometryEvaluator::applyMinkowski2D(const AbstractNode &node)
 			// Then, fill the central parts
 			fill_minkowski_insides(lhs, rhs, minkowski_terms);
 			fill_minkowski_insides(rhs, lhs, minkowski_terms);
-
-			// Finally, merge the Minkowski terms
-			Polygon2d *p = ClipperUtils::apply(minkowski_terms, ClipperLib::ctUnion);
-			lhs = ClipperUtils::fromPolygon2d(*p);
-			delete p;
 		}
-		return ClipperUtils::toPolygon2d(ClipperUtils::sanitize(lhs));
+
+		// Finally, merge the Minkowski terms
+		return ClipperUtils::apply(minkowski_terms, ClipperLib::ctUnion);
 	}
 	return NULL;
 }
