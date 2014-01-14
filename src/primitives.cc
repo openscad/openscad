@@ -40,6 +40,7 @@
 #include <assert.h>
 #include <boost/assign/std/vector.hpp>
 using namespace boost::assign; // bring 'operator+=()' into scope
+using boost::math::isinf;
 
 #define F_MINIMUM 0.01
 
