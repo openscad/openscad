@@ -35,6 +35,7 @@
 #include "visitor.h"
 #include "context.h"
 #include "calc.h"
+#include "mathc99.h"
 #include <sstream>
 #include <assert.h>
 #include <boost/assign/std/vector.hpp>
@@ -293,8 +294,9 @@ PolySet *PrimitiveNode::evaluate_polyset(class PolySetEvaluator *) const
 {
 	PolySet *p = new PolySet();
 
-	if (this->type == CUBE && this->x > 0 && this->y > 0 && this->z > 0)
-	{
+	if (this->type == CUBE && 
+			this->x > 0 && this->y > 0 && this->z > 0 &&
+			!isinf(this->x) > 0 && !isinf(this->y) > 0 && !isinf(this->z) > 0) {
 		double x1, x2, y1, y2, z1, z2;
 		if (this->center) {
 			x1 = -this->x/2;
@@ -347,7 +349,7 @@ PolySet *PrimitiveNode::evaluate_polyset(class PolySetEvaluator *) const
 		p->append_vertex(x1, y2, z2);
 	}
 
-	if (this->type == SPHERE && this->r1 > 0)
+	if (this->type == SPHERE && this->r1 > 0 && !isinf(this->r1))
 	{
 		struct ring_s {
 			point2d *points;
@@ -415,8 +417,9 @@ sphere_next_r2:
 	}
 
 	if (this->type == CYLINDER && 
-			this->h > 0 && this->r1 >=0 && this->r2 >= 0 && (this->r1 > 0 || this->r2 > 0))
-	{
+			this->h > 0 && !isinf(this->h) &&
+			this->r1 >=0 && this->r2 >= 0 && (this->r1 + this->r2) > 0 &&
+			!isinf(this->r1) && !isinf(this->r2)) {
 		int fragments = Calc::get_fragments_from_r(fmax(this->r1, this->r2), this->fn, this->fs, this->fa);
 
 		double z1, z2;
@@ -480,12 +483,18 @@ sphere_next_r2:
 		for (size_t i=0; i<this->faces.toVector().size(); i++)
 		{
 			p->append_poly();
-			for (size_t j=0; j<this->faces.toVector()[i].toVector().size(); j++) {
-				size_t pt = this->faces.toVector()[i].toVector()[j].toDouble();
+			const Value::VectorType &vec = this->faces.toVector()[i].toVector();
+			for (size_t j=0; j<vec.size(); j++) {
+				size_t pt = vec[j].toDouble();
 				if (pt < this->points.toVector().size()) {
 					double px, py, pz;
-					if (this->points.toVector()[pt].getVec3(px, py, pz))
-						p->insert_vertex(px, py, pz);
+					if (!this->points.toVector()[pt].getVec3(px, py, pz) ||
+							isinf(px) || isinf(py) || isinf(pz)) {
+						PRINTB("ERROR: Unable to convert point at index %d to a vec3 of numbers", j);
+						delete p;
+						return NULL;
+					}
+					p->insert_vertex(px, py, pz);
 				}
 			}
 		}
@@ -532,7 +541,8 @@ sphere_next_r2:
 
 		for (size_t i=0; i<this->points.toVector().size(); i++) {
 			double x,y;
-			if (!this->points.toVector()[i].getVec2(x, y)) {
+			if (!this->points.toVector()[i].getVec2(x, y) ||
+					isinf(x) || isinf(y)) {
 				PRINTB("ERROR: Unable to convert point at index %d to a vec2 of numbers", i);
 				delete p;
 				return NULL;

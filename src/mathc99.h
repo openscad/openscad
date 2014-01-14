@@ -13,6 +13,8 @@ float fmax(float a, float b);
 #else
 
 #include <math.h>
+#include <cmath>
+using std::isinf;
 
 #endif
 
