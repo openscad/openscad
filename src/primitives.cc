@@ -433,8 +433,9 @@ Geometry *PrimitiveNode::createGeometry() const
 	case CYLINDER: {
 		PolySet *p = new PolySet(3);
 		g = p;
-		if (this->h > 0 && this->r1 >=0 && this->r2 >= 0 && (this->r1 > 0 || this->r2 > 0) &&
-			!isinf(this->r1) && !isinf(this->r2)) {
+		if (this->h > 0 && !isinf(this->h) &&
+				this->r1 >=0 && this->r2 >= 0 && (this->r1 > 0 || this->r2 > 0) &&
+				!isinf(this->r1) && !isinf(this->r2)) {
 			int fragments = Calc::get_fragments_from_r(fmax(this->r1, this->r2), this->fn, this->fs, this->fa);
 
 			double z1, z2;
