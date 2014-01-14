@@ -108,7 +108,7 @@ static shared_ptr<CSGTerm> evaluate_csg_term_from_ps(const State &state,
 
 Response CSGTermEvaluator::visit(State &state, const AbstractPolyNode &node)
 {
-	if (state.isPrefix()) {
+	if (state.isPostfix()) {
 		shared_ptr<CSGTerm> t1;
 		if (this->psevaluator) {
 			shared_ptr<PolySet> ps = this->psevaluator->getPolySet(node, true);
@@ -121,7 +121,7 @@ Response CSGTermEvaluator::visit(State &state, const AbstractPolyNode &node)
 		this->stored_term[node.index()] = t1;
 		addToParent(state, node);
 	}
-	return PruneTraversal;
+	return ContinueTraversal;
 }
 
 Response CSGTermEvaluator::visit(State &state, const CsgNode &node)
@@ -174,7 +174,7 @@ Response CSGTermEvaluator::visit(State &state, const ColorNode &node)
 // FIXME: If we've got CGAL support, render this node as a CGAL union into a PolySet
 Response CSGTermEvaluator::visit(State &state, const RenderNode &node)
 {
-	if (state.isPrefix()) {
+	if (state.isPostfix()) {
 		shared_ptr<CSGTerm> t1;
 		shared_ptr<PolySet> ps;
 		if (this->psevaluator) {
@@ -188,12 +188,12 @@ Response CSGTermEvaluator::visit(State &state, const RenderNode &node)
 		this->stored_term[node.index()] = t1;
 		addToParent(state, node);
 	}
-	return PruneTraversal;
+	return ContinueTraversal;
 }
 
 Response CSGTermEvaluator::visit(State &state, const CgaladvNode &node)
 {
-	if (state.isPrefix()) {
+	if (state.isPostfix()) {
 		shared_ptr<CSGTerm> t1;
     // FIXME: Calling evaluator directly since we're not a PolyNode. Generalize this.
 		shared_ptr<PolySet> ps;
@@ -208,7 +208,7 @@ Response CSGTermEvaluator::visit(State &state, const CgaladvNode &node)
 		this->stored_term[node.index()] = t1;
 		addToParent(state, node);
 	}
-	return PruneTraversal;
+	return ContinueTraversal;
 }
 
 /*!
