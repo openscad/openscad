@@ -852,13 +852,9 @@ list(APPEND THROWNTOGETHERTEST_FILES ${OPENCSGTEST_FILES})
 
 list(APPEND CGALSTLSANITYTEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/normal-nan.scad)
 
-list(APPEND OPENSCAD-CGALPNG_FILES ${CGALPNGTEST_FILES})
-list(APPEND OPENSCAD-CSGPNG_FILES ${OPENCSGTEST_FILES})
-
 # FIXME: This test illustrates a weakness in child() combined with modifiers.
 # Reenable it when this is improved
 disable_tests(opencsgtest_child-background)
-disable_tests(openscad-csgpng_child-background)
 
 # FIXME: This single test takes over an hour to run on a 2.7 GHz P4
 disable_tests(opencsgtest_example006 cgalpngtest_example006)
@@ -875,17 +871,11 @@ disable_tests(cgalpngtest_child-background
 
 # Test config handling
 
-set_test_config(Heavy opencsgtest_minkowski3-tests
-                      openscad-csgpng_minkowski3-tests
-                      throwntogethertest_minkowski3-tests
-                      cgalpngtest_rotate_extrude-tests
-                      cgalpngtest_surface-tests
+# Heavy tests are tests taking more than 10 seconds on a development computer
+set_test_config(Heavy cgalpngtest_rotate_extrude-tests
                       cgalpngtest_sphere-tests
-                      cgalpngtest_minkowski3-tests
-                      cgalpngtest_for-tests
                       cgalpngtest_for-nested-tests
-                      cgalpngtest_intersection-tests
-                      cgalpngtest_text-search-test)
+                      cgalpngtest_resize-tests)
 
 # Bugs
 
