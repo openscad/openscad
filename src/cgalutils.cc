@@ -79,7 +79,7 @@ namespace CGALUtils {
 		}
 		if (src.isEmpty()) {
 			// Intersecting something with nothing results in nothing
-			if (op == CGE_INTERSECTION) target = src;
+			if (op == OPENSCAD_INTERSECTION) target = src;
 			// else keep target unmodified
 			return;
 		}
