@@ -77,6 +77,12 @@ namespace CGALUtils {
 		if (target.getDimension() != 2 && target.getDimension() != 3) {
 			assert(false && "Dimension of Nef polyhedron must be 2 or 3");
 		}
+		if (src.isEmpty()) {
+			// Intersecting something with nothing results in nothing
+			if (op == CGE_INTERSECTION) target = src;
+			// else keep target unmodified
+			return;
+		}
 		if (src.isEmpty()) return; // Empty polyhedron. This can happen for e.g. square([0,0])
 		if (target.isEmpty() && op != OPENSCAD_UNION) return; // empty op <something> => empty
 		if (target.getDimension() != src.getDimension()) return; // If someone tries to e.g. union 2d and 3d objects
