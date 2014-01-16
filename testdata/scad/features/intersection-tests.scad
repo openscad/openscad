@@ -39,3 +39,22 @@ translate([-12,12,0]) intersection() {
   cube([10,10,10], center=true);
   translate([0,-9.99,-9.99]) cube([10,10,10], center=true);
 }
+
+// Intersecting something with nothing
+translate([0,-12,0]) intersection() {
+  cylinder(r=4, h=5, center=true);
+  cube(0);
+}
+
+// Intersecting 2D with 3D
+translate([12,-12,0]) intersection() {
+  cube([5,5,5], center=true);
+  circle(r=2);
+}
+
+// Non-geometry (echo) statement as first child should be ignored
+translate([24,-12,0]) intersection() {
+  echo("difference-tests");
+  cube([5,5,5], center=true);
+  cylinder(r=2, h=20, center=true);
+}

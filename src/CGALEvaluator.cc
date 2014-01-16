@@ -61,6 +61,11 @@ void CGALEvaluator::process(CGAL_Nef_polyhedron &target, const CGAL_Nef_polyhedr
  	if (target.dim != 2 && target.dim != 3) {
  		assert(false && "Dimension of Nef polyhedron must be 2 or 3");
  	}
+    // Intersecting something with nothing results in nothing
+	if (src.isEmpty() && op == CGE_INTERSECTION) {
+        target = src;
+        return;
+    }
 	if (src.isEmpty()) return; // Empty polyhedron. This can happen for e.g. square([0,0])
 	if (target.isEmpty() && op != CGE_UNION) return; // empty op <something> => empty
 	if (target.dim != src.dim) return; // If someone tries to e.g. union 2d and 3d objects
