@@ -29,4 +29,9 @@ group() {
 			}
 		}
 	}
+	multmatrix([[1, 0, 0, 0], [0, 1, 0, -20], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+		minkowski(convexity = 0) {
+			square(size = [10, 10], center = false);
+		}
+	}
 }

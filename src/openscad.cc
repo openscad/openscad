@@ -568,7 +568,6 @@ int main(int argc, char **argv)
 
 	fs::path original_path = fs::current_path();
 
-	const char *filename = NULL;
 	const char *output_file = NULL;
 	const char *deps_output_file = NULL;
 

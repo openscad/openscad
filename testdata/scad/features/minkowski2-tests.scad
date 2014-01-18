@@ -29,3 +29,6 @@ module roundedBox2dHole() {
 translate([-20,5,0]) roundedBox2dHole();
 translate([0,0,0]) roundedBox2dCut();
 translate([25,0,0]) roundedBox2dSimple();
+
+// One child
+translate([0,-20,0]) minkowski() { square(10); }
