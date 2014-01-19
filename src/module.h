@@ -70,6 +70,8 @@ public:
         virtual bool is_enabled() const { return (feature == NULL) || feature->is_enabled(); };
 	virtual class AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, const class EvalContext *evalctx = NULL) const;
 	virtual std::string dump(const std::string &indent, const std::string &name) const;
+        virtual double lookup_double_variable_with_default(Context &c, std::string variable, double def) const;
+        virtual std::string lookup_string_variable_with_default(Context &c, std::string variable, std::string def) const;
 };
 
 class Module : public AbstractModule
@@ -102,6 +104,7 @@ public:
 
 	void setModulePath(const std::string &path) { this->path = path; }
 	const std::string &modulePath() const { return this->path; }
+        void registerUse(const std::string path);
 	void registerInclude(const std::string &localpath, const std::string &fullpath);
 	bool includesChanged() const;
 	bool handleDependencies();

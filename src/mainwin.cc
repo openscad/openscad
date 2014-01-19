@@ -100,6 +100,7 @@
 #endif // ENABLE_CGAL
 
 #include "boosty.h"
+#include "FontCache.h"
 
 // Global application state
 unsigned int GuiLocker::gui_locked = 0;
@@ -1699,6 +1700,7 @@ void MainWindow::actionFlushCaches()
 	dxf_dim_cache.clear();
 	dxf_cross_cache.clear();
 	ModuleCache::instance()->clear();
+	FontCache::instance()->clear();
 }
 
 void MainWindow::viewModeActionsUncheck()

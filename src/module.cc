@@ -37,6 +37,7 @@
 #include <boost/filesystem.hpp>
 namespace fs = boost::filesystem;
 #include "boosty.h"
+#include "FontCache.h"
 #include <boost/foreach.hpp>
 #include <sstream>
 #include <sys/stat.h>
@@ -54,6 +55,18 @@ AbstractNode *AbstractModule::instantiate(const Context *ctx, const ModuleInstan
 	node->children = inst->instantiateChildren(evalctx);
 
 	return node;
+}
+
+double AbstractModule::lookup_double_variable_with_default(Context &c, std::string variable, double def) const
+{
+	const Value v = c.lookup_variable(variable, true);
+	return (v.type() == Value::NUMBER) ? v.toDouble() : def;
+}
+
+std::string AbstractModule::lookup_string_variable_with_default(Context &c, std::string variable, std::string def) const
+{
+	const Value v = c.lookup_variable(variable, true);
+	return (v.type() == Value::STRING) ? v.toString() : def;
 }
 
 std::string AbstractModule::dump(const std::string &indent, const std::string &name) const
@@ -220,6 +233,21 @@ std::string Module::dump(const std::string &indent, const std::string &name) con
 		dump << indent << "}\n";
 	}
 	return dump.str();
+}
+
+void FileModule::registerUse(const std::string path) {
+	std::string extraw = boosty::extension_str(fs::path(path));
+	std::string ext = boost::algorithm::to_lower_copy(extraw);
+	
+	if ((ext == ".otf") || (ext == ".ttf")) {
+		if (fs::is_regular(path)) {
+			FontCache::instance()->register_font_file(path);
+		} else {
+			PRINTB("ERROR: Can't read font with path '%s'", path);
+		}
+	} else {
+		usedlibs.insert(path);
+	}
 }
 
 void FileModule::registerInclude(const std::string &localpath,
