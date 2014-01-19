@@ -3,20 +3,20 @@ Running regression tests:
 
 Prerequisites: cmake, python, ImageMagick 6.5.9.3 or newer
 
-First, get a working qmake GUI build of the main openscad binary. It is 
-used by the tests. Next, get MCAD installed by using 
+A) First, get MCAD installed by switching to the openscad root and running
 
   'git submodule update --init'
 
-A) Building test environment
+B) Create the openscad test programs by using 'cmake' for the 'tests' 
+directory. This will build several programs, including a version of 
+openscad itself without the GUI, called 'openscad_nogui'.
 
 Linux, Mac:
 $ cd tests
 $ cmake .
 $ make
 
-Windows + MSVC:
-
+Windows + MSVC (not supported, may not work):
 From the QT command prompt:
 
 > cd tests
@@ -25,11 +25,10 @@ From the QT command prompt:
 > cmake .
 > nmake -f Makefile
 
-Cross compiling Linux->Win32:
+Cross compiling Linux->Win32 (not supported, may not work):
+Please see openscad/tests/CMingw-cross-env.cmake for cross-test instructions.
 
-Please see openscad/tests/CMingw-cross-env.cmake for instructions.
-
-B) Running tests
+C) Running tests
 
 $ ctest               Runs tests enabled by default
 $ ctest -R <regex>    Runs only matching tests, e.g. ctest -R dxf
@@ -65,23 +64,6 @@ This is almost the same as adding a new regression test:
 3) manually verify that the output is correct (tests/regression/<testapp>/exampleNNN.<suffix>)
 4) run the test normally and verify that it passes:
   $ ctest -C Examples -R exampleNNN
-
-Migration away from dedicated regression tests:
------------------------------------------------
-
-This test still needs an intermediate script that mangles away timestamps and
-near-zero floating point numbers:
-
-* cgalstlsanitytest
-
-Some tests are yet to be converted:
-
-* csgtexttest -- verify whether this is not redundant with dumptest
-
-These look like tests, but are not actually in use:
-
-* modulecachetest
-* cgalcachetest
 
 Troubleshooting:
 ------------------------------
@@ -122,7 +104,7 @@ Some versions of Xvfb may fail, however.
 2. Location of logs
  
 Logs of test runs are found in tests/build/Testing/Temporary
-A pretty-printed index.html is in a subdir of tests/build/Testing/Temporary
+A pretty-printed html file is in a subdir of tests/build/Testing/Temporary
 Expected results are found in tests/regression/*
 Actual results are found in tests/build/testname-output/*
 
@@ -150,8 +132,29 @@ Is a boost/libstdc++ bug. Fix like so:
 
 6. Other issues
 
-The OpenSCAD User Manual has a section on buildling. Please check there 
+The OpenSCAD User Manual has a section on building. Please check there 
 for updates:
 
 http://en.wikibooks.org/wiki/OpenSCAD_User_Manual
+
+Migration away from dedicated regression tests:
+-----------------------------------------------
+
+In 2013 the test infrastructre was heavily modified to fit into Debian 
+better. Notes leftover from this process are as follows: (FIXME-are these 
+notes current?)
+
+This test still needs an intermediate script that mangles away timestamps and
+near-zero floating point numbers:
+
+* cgalstlsanitytest
+
+Some tests are yet to be converted:
+
+* csgtexttest -- verify whether this is not redundant with dumptest
+
+These look like tests, but are not actually in use:
+
+* modulecachetest
+* cgalcachetest
 
