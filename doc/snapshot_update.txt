@@ -1,0 +1,40 @@
+Snapshot builds, also called developmental builds, can be 
+semi-automatically built and uploaded, and the openscad.org website 
+updated with the new links, by a single script, 'scripts/snapshot.sh'.
+
+Prerequisites:
+
+- Your .ssh keys have to be set up on the openscad.org website and on 
+the file host for openscad
+
+- You need a linux machine with several gigabytes of free space in $HOME
+
+Usage:
+
+Create a clean directory, and cd into it.
+
+  rm -rf ./build
+  mkdir build
+  cd build
+
+Now run the snapshot script from within the clean directory:
+  
+  ../../somewhere/openscad/scripts/snapshot.sh
+
+This will set off the snapshot builder process, which is basically as follows:
+
+  check for MXE cross-build environment and dependencies. if needed, 
+  download and build them in $HOME/openscad_deps (this takes several hours)
+
+  cross-build the Windows(TM) snapshots, for 32 bit and 64 bit
+
+  upload the binaries to the openscad file host
+
+  download the openscad.github.com website
+
+  change the html/javascript on the website to reflect the new binaries
+
+  commit and push the changes.
+
+For detailed usage, please see the beginning of the snapshot.sh file.
+
