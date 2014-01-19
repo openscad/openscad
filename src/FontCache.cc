@@ -286,7 +286,7 @@ FT_Face FontCache::find_face_in_path(std::string path, std::string font)
 		fs::directory_entry entry = (*it);
 		if (fs::is_regular(entry.path())) {
 			FT_Face face;
-			error = FT_New_Face(library, entry.path().c_str(), 0, &face);
+			error = FT_New_Face(library, entry.path().string().c_str(), 0, &face);
 			if (error) {
 				continue;
 			}
