@@ -27,15 +27,40 @@
 # 'from nothing' build, including downloading and building an MXE cross
 # environment, and dependencies, into $HOME/openscad_deps. This can take
 # many many many hours and use several gigabytes of disk space.
+# If built once, the MXE dependencies should not have to be built again.
+# However if dependencies change in version, or by additional libraries
+# being added to openscad over time, it may be necessary to wipe and rebuild
+# the MXE paths, by doing an 'rm -rf' on $HOME/openscad_deps
 #
 # This script itself is designed to call other scripts that do the heavy
-# lifting. This script itself should be kept relatively simple.
+# lifting. These include the 'release-' scripts and 'build dependency' scripts
 #
 
 #
 # requirements -
-# see http://mxe.cc for required tools (scons, perl, yasm, etc etc etc)
 #
+# This script is only tested on linux using 'bash' shell. It probably
+# wont work on BSD or Mac without heavy modification.
+#
+# It is advisable to apt-get purge all existing mingw tools on your machine
+# Using pre-built mingw packages is not supported and not tested
+#
+# Alternatively, you may wish to create a Virtual Machine with the sole
+# purpose of running this script.
+#
+#
+# The MXE cross-environment itself requires several tools, including
+# scons, perl, yasm, etc. See http://mxe.cc for more details.
+#
+#
+# Note on Security- The machine you run this script from should be
+# secure, ideally without multiple users, without remote-access
+# capability, and ideally without any continuous internet access that
+# would invite or allow intrusion. Compromise in the machine risks
+# compromises in the OpenSCAD binaries.
+#
+#
+# #
 # todo - can we build 32 bit linux from within 64 bit linux?
 #
 # todo - make linux work
