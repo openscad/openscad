@@ -218,62 +218,12 @@ void GeometryEvaluator::applyResize3D(CGAL_Nef_polyhedron &N,
 	return;
 }
 
-// Helper functions for GeometryEvaluator::applyMinkowski2D()
-namespace {
-	void transform_path(ClipperLib::Path & path, ClipperLib::IntPoint delta) {
-		BOOST_FOREACH(ClipperLib::IntPoint & point, path) {
-			point.X += delta.X;
-			point.Y += delta.Y;
-		}
-	}
-
-	void transform_paths(ClipperLib::Paths & paths, ClipperLib::IntPoint delta) {
-		BOOST_FOREACH(ClipperLib::Path & path, paths) {
-			transform_path(path, delta);
-		}
-	}
-
-	// Add the polygon a translated to an arbitrary point of each separate component of b
-	void fill_minkowski_insides(ClipperLib::Paths const& a,
-								ClipperLib::Paths const& b,
-								std::vector<ClipperLib::Paths> & target) {
-		// (or easier: one arbitrary point on each positive contour)
-		BOOST_FOREACH (ClipperLib::Path const& b_path, b) {
-			if (!b_path.empty() && ClipperLib::Orientation(b_path) == 1) {
-				target.push_back(a);
-				transform_paths(target.back(), b_path[0] /* arbitrary */);
-			}
-		}
-	}
-}
 
 Polygon2d *GeometryEvaluator::applyMinkowski2D(const AbstractNode &node)
 {
 	std::vector<const Polygon2d *> children = collectChildren2D(node);
 	if (!children.empty()) {
-		ClipperLib::Paths lhs = ClipperUtils::fromPolygon2d(*children[0]);
-
-		std::vector<ClipperLib::Paths> minkowski_terms;
-		for (size_t i=1; i<children.size(); i++) {
-			ClipperLib::Paths rhs = ClipperUtils::fromPolygon2d(*children[i]);
-
-
-			// First, convolve each outline of lhs with the outlines of rhs
-			BOOST_FOREACH(ClipperLib::Path const& rhs_path, rhs) {
-				BOOST_FOREACH(ClipperLib::Path const& lhs_path, lhs) {
-					ClipperLib::Paths result;
-					ClipperLib::MinkowskiSum(lhs_path, rhs_path, result, true);
-					minkowski_terms.push_back(result);
-				}
-			}
-
-			// Then, fill the central parts
-			fill_minkowski_insides(lhs, rhs, minkowski_terms);
-			fill_minkowski_insides(rhs, lhs, minkowski_terms);
-		}
-
-		// Finally, merge the Minkowski terms
-		return ClipperUtils::apply(minkowski_terms, ClipperLib::ctUnion);
+		return ClipperUtils::applyMinkowski(children);
 	}
 	return NULL;
 }

@@ -16,6 +16,7 @@ namespace ClipperUtils {
 	ClipperLib::Paths process(const ClipperLib::Paths &polygons, 
 														ClipperLib::ClipType, ClipperLib::PolyFillType);
 
+	Polygon2d *applyMinkowski(const std::vector<const Polygon2d*> &polygons);
 	Polygon2d *apply(const std::vector<const Polygon2d*> &polygons, ClipperLib::ClipType);
 	Polygon2d *apply(const std::vector<ClipperLib::Paths> &pathsvector, ClipperLib::ClipType);
 
