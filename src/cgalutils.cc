@@ -260,16 +260,18 @@ bool createPolySetFromPolyhedron(const CGAL_Polyhedron &p, PolySet &ps)
 	return err;
 }
 
-/////// Tessellation begin
-
-typedef CGAL::Plane_3<CGAL_Kernel3> CGAL_Plane_3;
-
+/////// Nef face Tessellation begin
 
 /*
 
-This is our custom tessellator of Nef Polyhedron faces. The problem with 
-Nef faces is that sometimes the 'default' tessellator of Nef Polyhedron 
-doesnt work. This is particularly true with situations where the polygon 
+This is our custom tessellator of Nef Polyhedron faces. The basic 
+strategy is to project the 3d-points of each face down to 2d, run a 
+triangulation algorithm on the 2d polygon, then 'deproject' the 2d 
+triangles back to 3d.
+
+This is actually exactly how CGAL's own Nef code works.... but the 
+problem is in the details. CGAL's standard Nef converter often fails to 
+work. This is particularly true with situations where the face polygon 
 face is not, actually, 'simple', according to CGAL itself. This can 
 occur on a bad quality STL import but also for other reasons. The 
 resulting Nef face will appear to the average human eye as an ordinary, 
@@ -322,12 +324,10 @@ much slower in many cases.
 
 typedef CGAL_Kernel3 Kernel;
 typedef typename CGAL::Triangulation_vertex_base_2<Kernel> Vb;
-//typedef typename CGAL::Constrained_triangulation_face_base_2<Kernel> Fb;
 typedef CGAL::Delaunay_mesh_face_base_2<Kernel> Fb;
 typedef typename CGAL::Triangulation_data_structure_2<Vb,Fb> TDS;
 typedef CGAL::Exact_intersections_tag ITAG;
 typedef typename CGAL::Constrained_Delaunay_triangulation_2<Kernel,TDS,ITAG> CDT;
-//typedef typename CGAL::Constrained_Delaunay_triangulation_2<Kernel,TDS> CDT;
 
 typedef CDT::Vertex_handle Vertex_handle;
 typedef CDT::Point CDTPoint;
@@ -337,6 +337,7 @@ typedef CGAL::Line_3<Kernel> CGAL_Line_3;
 typedef CGAL::Point_2<Kernel> CGAL_Point_2;
 typedef CGAL::Vector_2<Kernel> CGAL_Vector_2;
 typedef CGAL::Segment_2<Kernel> CGAL_Segment_2;
+typedef CGAL::Plane_3<CGAL_Kernel3> CGAL_Plane_3;
 typedef std::vector<CGAL_Point_3> CGAL_Polygon_3;
 typedef CGAL::Direction_2<Kernel> CGAL_Direction_2;
 typedef CGAL::Direction_3<Kernel> CGAL_Direction_3;
@@ -374,25 +375,28 @@ if you look at that same triangle from the 'bottom' side, the points
 will appear to be 'clockwise', so the 'down' side is the 'inside', and is the 
 opposite of the 'normal' side.
 
-How do we keep track of all that when doing a triangulation? We could
-check each triangle as it was generated, and fix it's orientation before
-we feed it back to our output list. That is done by, for example, checking
-the orientation of the input polygon and then forcing the triangle to 
-match that orientation during output. This is what CGAL's Nef Polyhedron
-does, you can read it inside /usr/include/CGAL/Nef_polyhedron_3.h.
+How do we keep track of all that when doing a triangulation? We could 
+check each triangle as it was generated, and fix it's orientation before 
+we feed it back to our 3d triangle output list. That is done by, for 
+example, checking the orientation of the input polygon and then forcing 
+the triangle to match that orientation during output. This is what 
+CGAL's Nef Polyhedron does, you can read it inside 
+/usr/include/CGAL/Nef_polyhedron_3.h.
 
-Or.... we could actually add an additional 'projection' to the incoming 
-polygon points so that our triangulation algorithm is guaranteed to 
-create triangles with the proper orientation in the first place. How? 
-First, we assume that the triangulation algorithm will always produce 
-'counterclockwise' triangles in our plain old x-y plane.
+Or.... we could actually add an additional 'flip projection' to the 
+incoming polygon points so that our triangulation algorithm is 
+guaranteed to create triangles with the proper orientation in the first 
+place. How? First, we assume that the triangulation algorithm will 
+always produce 'counterclockwise' triangles in our plain old x-y plane.
 
 The method is based on the following curious fact: That is, if you take 
 the points of a polygon, and flip the x,y coordinate of each point, 
 making y:=x and x:=y, then you essentially get a 'mirror image' of the 
 original polygon... but the orientation will be flipped. Given a 
 clockwise polygon, the 'flip' will result in a 'counterclockwise' 
-polygon mirror-image and vice versa. 
+polygon mirror-image and vice versa. If we can 'flip' our input points
+during 3d->2d projection, we can take care of the orientation before
+we even do the triangulation.
 
 Now, there is a second curious fact that helps us here. In 3d, we are 
 using the plane equation of ax+by+cz+d=0, where a,b,c determine its 
@@ -415,35 +419,45 @@ can essentially consider that a plane has an 'orientation' based on it's
 equation, by looking at the signs of a,b,c relative to some other 
 quantity.
 
-This means that you can 'flip' the projection of the input polygon 
-points so that the projection will match the orientation of the input 
-plane, thus guaranteeing that the output triangles will be oriented in 
-the same direction as the input polygon was. In other words, even though 
+So, using all these facts, we can do a 3d->2d projection, then flip x,y 
+if needed in 2d to fix orientation issues. In other words, even though 
 we technically 'lose information' when we project from 3d->2d, we can 
 actually keep the concept of 'orientation' through the whole 
-triangulation process, and not have to recalculate the proper 
-orientation during output.
+triangulation process by flipping x and y, and not have to recalculate 
+the proper orientation during output.
 
-For example take two side-squares of a cube and the plane equations 
-formed by feeding the points in counterclockwise, as if looking in from 
-outside the cube:
+Example:
 
- 0,0,0 0,1,0 0,1,1 0,0,1     <-1:0:0:0>
- 1,0,0 1,1,0 1,1,1 1,0,1      <1:0:0:1>
+Take the top and bottom squares of a cube and the plane equations formed 
+by feeding the points in counterclockwise, as if looking in from outside 
+the cube:
 
-They are both projected onto the YZ plane. They look the same:
-  0,0 1,0 1,1 0,1
-  0,0 1,0 1,1 0,1
+            Points                    Plane eqn' from first three points
+                                      ax+by+cz+d=0 <a:b:c:d>
+ Bottom: 0,0,0 0,1,0 1,1,0 1,0,0      <0:0:-1:0>
+ Top:    0,0,1 1,0,1 1,1,1 0,1,1      <0:0:1:-1>
 
-But the second square plane has opposite orientation, so we flip the x 
-and y for each point:
-  0,0 1,0 1,1 0,1
-  0,0 0,1 1,1 1,0
+Note the viewed 'from above', the top is CCW and the bottom is CW, but
+'from below', the top is CW while the bottom is CCW.
+
+Now they are both projected onto the XY plane in 2d by stripping off 'z'.
+ Bottom: 0,0 0,1 1,1 1,0
+ Top:    0,0 1,0 1,1 0,1
+
+But the top square has opposite orientation, which we can tell from
+the 'c' coefficient of the plane equation, so we flip x,y:
+ Bottom: 0,0 0,1 1,1 1,0
+ Top:    0,0 0,1 1,1 1,0
+
+Note that both squares now have the same orientation, 'clockwise' from
+the standard view of the x-y plane.
 
 Only now do we feed these two 2-d squares to the tessellation algorithm. 
-The result is 4 triangles. When de-projected back to 3d, they will have 
-the appropriate winding that will match that of the original 3d faces.
-And the first two triangles will have opposite orientation from the last two.
+The result is 4 triangles. They will all be oriented counterclockwise. 
+However when we 'deproject' to 3d, we first 'flip' the x,y of the Top 
+triangle back to what they were originally... resulting in the proper 
+orientation, in other words, that the 3d triangles have the correct 'normals'.
+
 */
 
 typedef enum { XYPLANE, YZPLANE, XZPLANE, NONE } plane_t;
@@ -555,6 +569,11 @@ bool inside(CGAL_Point_2 &p1,std::vector<CGAL_Point_2> &pgon, winding_rule_t win
 	return false;
 }
 
+/* the plane represents the plane on which a polygon exists in 3d space. 
+we need to find the best way to project this plane into 2d so that the 
+polygon wont appear like a flat line.... and also we want to know 
+whether to do our 'flip x,y' trick in 2d so that the orientation (aka 
+'normals') will be correct after projection back to 3d */
 projection_t find_good_projection( CGAL_Plane_3 &plane )
 {
 	projection_t goodproj;
@@ -692,7 +711,7 @@ bool tessellate_3d_face_with_holes( std::vector<CGAL_Polygon_3> &polygons, std::
 	PRINTB("built %i triangles\n",triangles.size());
 	return err;
 }
-/////// Tessellation end
+/////// Nef Face Tessellation end
 
 /*
 	Create a PolySet from a Nef Polyhedron 3. return false on success, 
