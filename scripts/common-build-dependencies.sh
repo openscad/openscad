@@ -73,6 +73,77 @@ build_fontconfig()
   make install
 }
 
+build_libffi()
+{
+  version="$1"
+
+  if [ -e "$DEPLOYDIR/lib/libffi.a" ]; then
+    echo "libffi already installed. not building"
+    return
+  fi
+
+  echo "Building libffi $version..."
+  cd "$BASEDIR"/src
+  rm -rf "libffi-$version"
+  if [ ! -f "libffi-$version.tar.gz" ]; then
+    curl --insecure -LO "ftp://sourceware.org/pub/libffi/libffi-$version.tar.gz"
+  fi
+  tar xzf "libffi-$version.tar.gz"
+  cd "libffi-$version"
+  ./configure --prefix="$DEPLOYDIR"
+  make -j$NUMCPU
+  make install
+}
+
+build_gettext()
+{
+  version="$1"
+
+  if [ -f "$DEPLOYDIR"/lib/libintl.a ]; then
+    echo "gettext already installed. not building"
+    return
+  fi
+
+  echo "Building gettext $version..."
+  cd "$BASEDIR"/src
+  rm -rf "gettext-$version"
+  if [ ! -f "gettext-$version.tar.xz" ]; then
+    curl --insecure -LO "http://ftpmirror.gnu.org/gettext/gettext-$version.tar.gz"
+  fi
+  tar xzf "gettext-$version.tar.gz"
+  cd "gettext-$version"
+
+  ./configure --prefix="$DEPLOYDIR"
+  make -j$NUMCPU
+  make install
+}
+
+build_glib2()
+{
+  version="$1"
+  if [ -f "$DEPLOYDIR/include/glib-2.0/glib.h" ]; then
+    echo "glib2 already installed. not building"
+    return
+  fi
+
+  echo "Building glib2 $version..."
+
+  cd "$BASEDIR"/src
+  rm -rf "glib-$version"
+  maj_min_version="${version%.*}" #Drop micro
+  if [ ! -f "glib-$version.tar.xz" ]; then
+    curl --insecure -LO "http://ftp.gnome.org/pub/gnome/sources/glib/$maj_min_version/glib-$version.tar.xz"
+  fi
+  tar xJf "glib-$version.tar.xz"
+  cd "glib-$version"
+
+  export PKG_CONFIG_PATH="$DEPLOYDIR/lib/pkgconfig"
+  ./configure --disable-gtk-doc --disable-man --prefix="$DEPLOYDIR" CFLAGS="-I$DEPLOYDIR/include" LDFLAGS="-L$DEPLOYDIR/lib"
+  unset PKG_CONFIG_PATH
+  make -j$NUMCPU
+  make install
+}
+
 build_ragel()
 {
   version=$1
