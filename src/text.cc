@@ -39,7 +39,7 @@ using namespace boost::assign; // bring 'operator+=()' into scope
 class TextModule : public AbstractModule
 {
 public:
-	TextModule() { }
+	TextModule() : AbstractModule(Feature::ExperimentalTextModule) { }
 	virtual AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const;
 };
 
