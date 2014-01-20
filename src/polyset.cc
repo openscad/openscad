@@ -140,6 +140,12 @@ void PolySet::transform(const Transform3d &mat)
 	}
 }
 
+void PolySet::translate(const Vector3d &t)
+{
+	BOOST_FOREACH(Polygon &p, this->polygons)
+		BOOST_FOREACH(Vector3d &v, p) v += t;
+}
+
 void PolySet::resize(Vector3d newsize, const Eigen::Matrix<bool,3,1> &autosize)
 {
 	BoundingBox bbox = this->getBoundingBox();
