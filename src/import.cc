@@ -195,6 +195,50 @@ void center_polyset( PolySet &p )
 	p.translate( t );
 }
 
+/* create PolySet from GeomView's OFF format. return true on error,
+false on success. This is an alternative back-up to CGAL's OFF loader.
+CGAL's loader doesn't work on some OFF files, like those from the
+Antiprism program that have single-vertex color faces.
+Faces with <3 points, and colors, are completely ignored.
+On error, the PolySet may be left in a partially-built state. */
+bool createPolySetFromOFF( std::istream &in, PolySet &ps )
+{
+	bool err = false;
+	if (!in.good()) return true;
+	std::vector<Vector3d> vertlist;
+	std::string line;
+	size_t numvertices, numfaces, numfaceverts, vertindex;
+	double x,y,z;
+	if (!std::getline(in, line)) return true;
+	if (line.find("OFF")==std::string::npos) return true;
+	if (!std::getline(in, line)) return true;
+	if (!(std::istringstream(line) >> numvertices >> numfaces)) return true;
+	if (numvertices==0 || numfaces==0) return true;
+ 	for (size_t i=0;i<numvertices;i++) {
+		if (!(std::getline(in,line))) return true;
+		if (!(std::istringstream(line) >> x >> y >> z)) return true;
+		vertlist.push_back( Vector3d(x,y,z) );
+	}
+	for (size_t i=0;i<numfaces;i++) {
+		if (!std::getline(in,line)) return true;
+		std::istringstream ss(line);
+		if (!(ss >> numfaceverts)) return true;
+		// face with single vertex might be a weird color thing. skip.
+		if (numfaceverts<3) continue;
+		ps.append_poly();
+		for (size_t j=0;j<numfaceverts;j++) {
+			if (!(ss >> vertindex)) return true;
+			Vector3d v = vertlist[vertindex%vertlist.size()];
+			ps.append_vertex( v.x(), v.y(), v.z() );
+		}
+	}
+	if (OpenSCAD::debug!="0")
+		PRINTDB("off polyset import\n %s \noff import end",ps.dump());
+	if (ps.polygons.size()==0) return true;
+	return err;
+}
+
+
 /*!
 	Will return an empty geometry if the import failed, but not NULL
 */
@@ -295,24 +339,38 @@ Geometry *ImportNode::createGeometry() const
 	}
 		break;
 	case TYPE_OFF: {
+		bool err = false;
+		bool try_direct_build = false;
 		PolySet *p = new PolySet(3);
 		g = p;
 #ifdef ENABLE_CGAL
-		CGAL_Polyhedron poly;
 		std::ifstream file(this->filename.c_str(), std::ios::in | std::ios::binary);
-		if (!file.good()) {
-			PRINTB("WARNING: Can't open import file '%s'.", this->filename);
-		}
-		else {
+		if (file.good()) {
+			CGAL_Polyhedron poly;
 			file >> poly;
 			file.close();
-			
-			bool err = createPolySetFromPolyhedron(poly, *p);
-			if (!err && this->center) center_polyset(*p);
+			if (poly.size_of_vertices()==0) {
+				try_direct_build = true;
+				PRINTB("WARNING: CGAL read of %s failed. Attempting direct import.", filename);
+			} else {
+				err = createPolySetFromPolyhedron(poly, *p);
+				if (err) { delete p; p = new PolySet(3); }
+			}
 		}
-#else
-  PRINT("WARNING: OFF import requires CGAL.");
-#endif
+		else {
+			PRINTB("WARNING: Can't open import file '%s'.", this->filename);
+		}
+#else // ENABLE_CGAL
+		try_direct_build = true;
+#endif // ENABLE_CGAL
+		if (try_direct_build) {
+			std::ifstream file(this->filename.c_str(), std::ios::in | std::ios::binary);
+			if (file.good()) err = createPolySetFromOFF( file, *p );
+			else PRINTB("WARNING: Can't open import file '%s'.", this->filename);
+			file.close();
+			if (err) { delete p; p = new PolySet(3); }
+		}
+		if (!err && this->center) center_polyset(*p);
 	}
 		break;
 	case TYPE_DXF: {
