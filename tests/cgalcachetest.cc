@@ -116,7 +116,7 @@ int main(int argc, char **argv)
 
 	currentdir = boosty::stringy(fs::current_path());
 
-	parser_init(boosty::stringy(fs::path(argv[0]).branch_path()), false);
+	parser_init(boosty::stringy(fs::path(argv[0]).branch_path()));
 	add_librarydir(boosty::stringy(fs::path(argv[0]).branch_path() / "../libraries"));
 
 	ModuleContext top_ctx;

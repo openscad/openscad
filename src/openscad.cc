@@ -204,7 +204,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 #else
 	const std::string application_path = boosty::stringy(boosty::absolute(boost::filesystem::path(argv[0]).parent_path()));
 #endif
-	parser_init(application_path, false);
+	parser_init(application_path);
 	Tree tree;
 #ifdef ENABLE_CGAL
 	GeometryEvaluator geomevaluator(tree);
@@ -513,7 +513,7 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 					qexamplesdir = exdir.path();
 				}
 	MainWindow::setExamplesDir(qexamplesdir);
-  parser_init(app_path.toLocal8Bit().constData(), true);
+  parser_init(app_path.toLocal8Bit().constData());
 
 #ifdef Q_WS_MAC
 	installAppleEventHandlers();
@@ -568,7 +568,6 @@ int main(int argc, char **argv)
 
 	fs::path original_path = fs::current_path();
 
-	const char *filename = NULL;
 	const char *output_file = NULL;
 	const char *deps_output_file = NULL;
 

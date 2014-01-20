@@ -88,7 +88,7 @@ fs::path find_valid_path(const fs::path &sourcepath,
 	return fs::path();
 }
 
-void parser_init(const std::string &applicationpath, bool isgui)
+void parser_init(const std::string &applicationpath)
 {
   // Add paths from OPENSCADPATH before adding built-in paths
 	const char *openscadpaths = getenv("OPENSCADPATH");
@@ -117,7 +117,8 @@ void parser_init(const std::string &applicationpath, bool isgui)
 	fs::path tmpdir;
 #ifdef __APPLE__
 	// Libraries can be bundled on Mac. If not, fall back to development layout
-	if (isgui) {
+	bool isbundle = is_directory(libdir / ".." / "Resources");
+	if (isbundle) {
 		libdir /= "../Resources";
 		if (!is_directory(libdir / "libraries")) libdir /= "../../..";
 	}

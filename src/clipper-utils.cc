@@ -96,5 +96,54 @@ namespace ClipperUtils {
 		}
 		return apply(pathsvector, clipType);
 	}
-};
 
+	// Add the polygon a translated to an arbitrary point of each separate component of b.
+  // Ideally, we would translate to the midpoint of component b, but the point can
+	// be chosen arbitrarily since the translated object would always stay inside
+	// the minkowski sum. 
+	static void fill_minkowski_insides(const ClipperLib::Paths &a,
+																		 const ClipperLib::Paths &b,
+																		 ClipperLib::Paths &target) {
+		BOOST_FOREACH(const ClipperLib::Path &b_path, b) {
+			// We only need to add for positive components of b
+			if (!b_path.empty() && ClipperLib::Orientation(b_path) == 1) {
+				const ClipperLib::IntPoint &delta = b_path[0]; // arbitrary point
+				BOOST_FOREACH(const ClipperLib::Path &path, a) {
+					target.push_back(path);
+					BOOST_FOREACH(ClipperLib::IntPoint &point, target.back()) {
+						point.X += delta.X;
+						point.Y += delta.Y;
+					}
+				}
+			}
+		}
+	}
+
+	Polygon2d *applyMinkowski(const std::vector<const Polygon2d*> &polygons)
+	{
+		ClipperLib::Paths lhs = ClipperUtils::fromPolygon2d(*polygons[0]);
+		for (size_t i=1; i<polygons.size(); i++) {
+			ClipperLib::Paths minkowski_terms;
+			ClipperLib::Paths rhs = ClipperUtils::fromPolygon2d(*polygons[i]);
+			// First, convolve each outline of lhs with the outlines of rhs
+			BOOST_FOREACH(ClipperLib::Path const& rhs_path, rhs) {
+				BOOST_FOREACH(ClipperLib::Path const& lhs_path, lhs) {
+					ClipperLib::Paths result;
+					ClipperLib::MinkowskiSum(lhs_path, rhs_path, result, true);
+					minkowski_terms.insert(minkowski_terms.end(), result.begin(), result.end());
+				}
+			}
+			
+			// Then, fill the central parts
+			fill_minkowski_insides(lhs, rhs, minkowski_terms);
+			fill_minkowski_insides(rhs, lhs, minkowski_terms);
+			lhs = minkowski_terms;
+		}
+		
+		// Finally, merge the Minkowski terms
+		std::vector<ClipperLib::Paths> pathsvec;
+		pathsvec.push_back(lhs);
+		return ClipperUtils::apply(pathsvec, ClipperLib::ctUnion);
+	}
+
+};

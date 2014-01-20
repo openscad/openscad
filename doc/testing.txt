@@ -3,11 +3,14 @@ Running regression tests:
 
 Prerequisites: cmake, python, ImageMagick 6.5.9.3 or newer
 
-A) First, get MCAD installed by switching to the openscad root and running
+A) First, try getting the main GUI to build. Even if you don't have qt, you
+should follow the README.md instructions for getting the dependency libraries.
+
+B) Next, get MCAD installed by switching to the openscad root and running
 
   'git submodule update --init'
 
-B) Create the openscad test programs by using 'cmake' for the 'tests' 
+C) Create the openscad test programs by using 'cmake' for the 'tests' 
 directory. This will build several programs, including a version of 
 openscad itself without the GUI, called 'openscad_nogui'.
 
@@ -28,7 +31,7 @@ From the QT command prompt:
 Cross compiling Linux->Win32 (not supported, may not work):
 Please see openscad/tests/CMingw-cross-env.cmake for cross-test instructions.
 
-C) Running tests
+D) Running tests
 
 $ ctest               Runs tests enabled by default
 $ ctest -R <regex>    Runs only matching tests, e.g. ctest -R dxf
@@ -37,10 +40,11 @@ $ ctest -C <configs>  Adds extended tests belonging to configs.
                       Default  - Run default tests
                       Heavy    - Run more time consuming tests (> ~10 seconds)
                       Examples - test all examples
+                      Bugs     - test known bugs (tests will fail)
                       All      - test everything
 
-Adding a new regression test:
-------------------------------
+Adding a new test:
+------------------
 
 1) create a test file at an appropriate location under testdata/
 2) if the test is non-obvious, create a human readable description as comments in the test (or in another file in the same directory in case the file isn't human readable)

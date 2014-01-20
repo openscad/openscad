@@ -14,6 +14,7 @@
 */
 BoundingBox operator*(const Transform3d &m, const BoundingBox &box)
 {
+	if (box.isEmpty()) return box;
 	BoundingBox newbox;
 	Vector3d boxvec[2] = { box.min(), box.max() };
 	for (int k=0;k<2;k++) {

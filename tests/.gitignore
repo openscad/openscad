@@ -2,8 +2,7 @@
 /*.a
 /*-output
 /*.scad
-out.txt
-out.png
+out.*
 /CMakeFiles
 /CMakeCache.txt
 /CTestTestfile.cmake

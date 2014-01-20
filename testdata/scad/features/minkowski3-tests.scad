@@ -29,6 +29,9 @@ translate([-20,30,0]) roundedBox3dHole();
 translate([0,25,0]) roundedBox3dCut();
 translate([25,25,0]) roundedBox3dSimple();
 
+// One child
+translate([0,0,0]) minkowski() { cube([10,10,5]); }
+
 // Empty
 minkowski();
 // No children

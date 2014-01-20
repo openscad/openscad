@@ -41,7 +41,7 @@ void EvalContext::dump(const AbstractModule *mod, const ModuleInstantiation *ins
 	PRINTB("  document path: %s", this->document_path);
 
 	PRINT("  eval args:");
-	for (int i=0;i<this->eval_arguments.size();i++) {
+	for (size_t i=0;i<this->eval_arguments.size();i++) {
 		PRINTB("    %s = %s", this->eval_arguments[i].first % this->eval_arguments[i].second);
 	}
 	if (this->scope && this->scope->children.size() > 0) {

@@ -18,4 +18,10 @@ group() {
 			}
 		}
 	}
+	multmatrix([[1, 0, 0, 25], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+		minkowski(convexity = 0) {
+			%cube(size = [10, 10, 10], center = true);
+			cube(size = [5, 5, 5], center = true);
+		}
+	}
 }

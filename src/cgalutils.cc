@@ -77,6 +77,12 @@ namespace CGALUtils {
 		if (target.getDimension() != 2 && target.getDimension() != 3) {
 			assert(false && "Dimension of Nef polyhedron must be 2 or 3");
 		}
+		if (src.isEmpty()) {
+			// Intersecting something with nothing results in nothing
+			if (op == OPENSCAD_INTERSECTION) target = src;
+			// else keep target unmodified
+			return;
+		}
 		if (src.isEmpty()) return; // Empty polyhedron. This can happen for e.g. square([0,0])
 		if (target.isEmpty() && op != OPENSCAD_UNION) return; // empty op <something> => empty
 		if (target.getDimension() != src.getDimension()) return; // If someone tries to e.g. union 2d and 3d objects
@@ -138,7 +144,6 @@ namespace CGALUtils {
 
 	Polygon2d *project(const CGAL_Nef_polyhedron &N, bool cut)
 	{
-		logstream log(5);
 		Polygon2d *poly = NULL;
 		if (N.getDimension() != 3) return poly;
 
@@ -177,27 +182,27 @@ namespace CGALUtils {
 				return poly;
 			}
 				
-			log << OpenSCAD::svg_header( 480, 100000 ) << "\n";
+			PRINTDB("%s",OpenSCAD::svg_header( 480, 100000 ));
 			try {
 				ZRemover zremover;
 				CGAL_Nef_polyhedron3::Volume_const_iterator i;
 				CGAL_Nef_polyhedron3::Shell_entry_const_iterator j;
 				CGAL_Nef_polyhedron3::SFace_const_handle sface_handle;
 				for ( i = newN.p3->volumes_begin(); i != newN.p3->volumes_end(); ++i ) {
-					log << "<!-- volume. mark: " << i->mark() << " -->\n";
+					PRINTDB("<!-- volume. mark: %i -->", i->mark());
 					for ( j = i->shells_begin(); j != i->shells_end(); ++j ) {
-						log << "<!-- shell. mark: " << i->mark() << " -->\n";
+						PRINTDB("<!-- shell. (vol mark: %i) -->",i->mark());
 						sface_handle = CGAL_Nef_polyhedron3::SFace_const_handle( j );
 						newN.p3->visit_shell_objects( sface_handle , zremover );
-						log << "<!-- shell. end. -->\n";
+						PRINTD("<!-- shell. end. -->");
 					}
-					log << "<!-- volume end. -->\n";
+					PRINTD("<!-- volume end. -->");
 				}
 				poly = convertToPolygon2d(*zremover.output_nefpoly2d);
 			}	catch (const CGAL::Failure_exception &e) {
 				PRINTB("CGAL error in CGALUtils::project while flattening: %s", e.what());
 			}
-			log << "</svg>\n";
+			PRINTD("</svg>");
 				
 			CGAL::set_error_behaviour(old_behaviour);
 		}

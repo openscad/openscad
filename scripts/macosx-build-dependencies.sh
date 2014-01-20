@@ -294,6 +294,28 @@ build_glew()
   make GLEW_DEST=$DEPLOYDIR CC=$CC CFLAGS.EXTRA="-no-cpp-precomp -dynamic -fno-common -mmacosx-version-min=$MAC_OSX_VERSION_MIN $GLEW_EXTRA_FLAGS -arch x86_64" LDFLAGS.EXTRA="-mmacosx-version-min=$MAC_OSX_VERSION_MIN $GLEW_EXTRA_FLAGS -arch x86_64" STRIP= install
 }
 
+build_libffi()
+{
+  version="$1"
+
+  if [ -e "$DEPLOYDIR/lib/libffi.a" ]; then
+    echo "libffi already installed. not building"
+    return
+  fi
+
+  echo "Building libffi $version..."
+  cd "$BASEDIR"/src
+  rm -rf "libffi-$version"
+  if [ ! -f "libffi-$version.tar.gz" ]; then
+    curl --insecure -LO "ftp://sourceware.org/pub/libffi/libffi-$version.tar.gz"
+  fi
+  tar xzf "libffi-$version.tar.gz"
+  cd "libffi-$version"
+  ./configure --prefix="$DEPLOYDIR"
+  make -j4
+  make install
+}
+
 build_gettext()
 {
   version=$1
@@ -326,7 +348,9 @@ build_glib2()
   tar xJf "glib-$version.tar.xz"
   cd "glib-$version"
 
+  export PKG_CONFIG_LIBDIR="$DEPLOYDIR/lib/pkgconfig"
   ./configure --disable-gtk-doc --disable-man --prefix="$DEPLOYDIR" CFLAGS="-I$DEPLOYDIR/include" LDFLAGS="-L$DEPLOYDIR/lib"
+  unset PKG_CONFIG_LIBDIR
   make -j4
   make install
 }
@@ -496,6 +520,7 @@ build_boost 1.54.0
 build_cgal 4.3
 build_glew 1.10.0
 build_gettext 0.18.3.1
+build_libffi 3.0.13
 build_glib2 2.38.2
 build_opencsg 1.3.2
 if $OPTION_DEPLOY; then
