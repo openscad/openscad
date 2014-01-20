@@ -11,7 +11,6 @@
 #
 # The result is a single html report file with images data-uri encoded
 # into the file. It can be uploaded as a single static file to a web server
-# or the 'test_upload.py' script can be used. 
 
 
 # Design philosophy
@@ -42,15 +41,25 @@ except:
     from urllib2 import urlopen
     from urllib import urlencode
 
+_debug_testpp = False
+
+def debug(*args):
+    global _debug_testpp
+    if _debug_testpp:
+        print 'test_pretty_print:',
+        for a in args: print a,
+        print
+
 def tryread(filename):
+
     data = None
     try:
         f = open(filename,'rb')
         data = f.read()
         f.close()
     except Exception as e:
-        print 'couldn\'t open ',filename
-        print type(e), e
+        debug('couldn\'t open filename:[',filename,']')
+        debug(type(e), e)
     return data
 
 def trysave(filename, data):
@@ -392,16 +401,11 @@ def upload_html(page_url, title, html):
 
 # --- End Web Upload ---
 
-def debug(x):
-    if debug_test_pp:
-        print 'test_pretty_print: ' + x
-
-debug_test_pp = False
 include_passed = False
 builddir = os.getcwd()
 
 def main():
-    global builddir, debug_test_pp
+    global builddir
     global maxretry, dry, include_passed
     project_name = 'OpenSCAD'
     
@@ -411,7 +415,7 @@ def main():
     # --- Command Line Parsing ---
     
     if '--debug' in ' '.join(sys.argv):
-        debug_test_pp = True
+        _debug = True
     maxretry = 10
 
     if '--include-passed' in sys.argv:
@@ -445,11 +449,9 @@ def main():
     logfilename = findlogfile(builddir)
     testlog = tryread(logfilename)
     startdate, tests, enddate = parselog(testlog)
-    if debug_test_pp:
-        print 'found sysinfo.txt,',
-        print 'found', len(makefiles),'makefiles,',
-        print 'found', len(tests),'test results'
-
+    debug('found sysinfo.txt,')
+    debug('found', len(makefiles),'makefiles,')
+    debug('found', len(tests),'test results')
 
     html = to_html(project_name, startdate, tests, enddate, sysinfo, sysid, makefiles)
     html_basename = sysid + '_report.html'

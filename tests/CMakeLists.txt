@@ -891,30 +891,40 @@ disable_tests(
   # examples 7,8,12,15 are not 3d.
   export3d_stl_test_example007
   export3d_off_test_example007
+  export3d_obj_test_example007
   export3d_stl_test_example008
   export3d_off_test_example008
+  export3d_obj_test_example008
   export3d_stl_test_example012
   export3d_off_test_example012
+  export3d_obj_test_example012
   export3d_stl_test_example015
   export3d_off_test_example015
+  export3d_obj_test_example015
   # example 006 takes too long
   export3d_stl_test_example006
   export3d_off_test_example006
+  export3d_obj_test_example006
   # example 13 - nef3->polyhedron fails with "!!!!" (facet normal=0,0,0)
   export3d_stl_test_example013
   export3d_off_test_example013
+  export3d_obj_test_example013
   # example 17 - cannot export non-manifold object
   export3d_stl_test_example017
   export3d_off_test_example017
+  export3d_obj_test_example017
   # example 18 - polyhedron builder fails
   export3d_stl_test_example018
   export3d_off_test_example018
+  export3d_obj_test_example018
   # example 22 - nef3->polyhedron fails with "!!!!" (facet normal=0,0,0)
   export3d_stl_test_example022
   export3d_off_test_example022
+  export3d_obj_test_example022
   # example 24 - polyhedron builder fails
   export3d_stl_test_example024
   export3d_off_test_example024
+  export3d_obj_test_example024
 )
 
 # FIXME: This test illustrates a weakness in child() combined with modifiers.
@@ -1059,6 +1069,7 @@ add_cmdline_test(cgalstlsanitytest EXE ${CMAKE_SOURCE_DIR}/cgalstlsanitytest SUF
 # so the generated PNG wont match unless we get rid of that coloring.
 add_cmdline_test(export3d_stl_test EXE ${OPENSCAD_BINPATH} ARGS --render -o SUFFIX png FILES ${EXPORT3D_TEST_FILES})
 add_cmdline_test(export3d_off_test EXE ${OPENSCAD_BINPATH} ARGS --render -o SUFFIX png FILES ${EXPORT3D_TEST_FILES})
+add_cmdline_test(export3d_obj_test EXE ${OPENSCAD_BINPATH} ARGS --render -o SUFFIX png FILES ${EXPORT3D_TEST_FILES})
 
 # Add experimental tests
 
