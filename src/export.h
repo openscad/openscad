@@ -10,6 +10,7 @@
 enum FileFormat {
 	OPENSCAD_STL,
 	OPENSCAD_OFF,
+	OPENSCAD_OBJ,
 	OPENSCAD_DXF
 };
 
@@ -19,6 +20,7 @@ void export_png(const class Geometry *root_geom, Camera &c, std::ostream &output
 void export_stl(const class CGAL_Nef_polyhedron *root_N, std::ostream &output);
 void export_stl(const class PolySet &ps, std::ostream &output);
 void export_off(const CGAL_Nef_polyhedron *root_N, std::ostream &output);
+void export_obj(const CGAL_Nef_polyhedron *root_N, std::ostream &output);
 void export_dxf(const class Polygon2d &poly, std::ostream &output);
 void export_png(const CGAL_Nef_polyhedron *root_N, Camera &c, std::ostream &output);
 void export_png_with_opencsg(Tree &tree, Camera &c, std::ostream &output);

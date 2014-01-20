@@ -36,6 +36,7 @@
 #include "CGAL_Nef_polyhedron.h"
 #include "cgal.h"
 #include "cgalutils.h"
+#include <CGAL/IO/print_wavefront.h> // OBJ
 
 void exportFile(const class Geometry *root_geom, std::ostream &output, FileFormat format)
 {
@@ -47,6 +48,9 @@ void exportFile(const class Geometry *root_geom, std::ostream &output, FileForma
 			break;
 		case OPENSCAD_OFF:
 			export_off(N, output);
+			break;
+		case OPENSCAD_OBJ:
+			export_obj(N, output);
 			break;
 		case OPENSCAD_DXF:
 			assert(false && "Export Nef polyhedron as DXF not supported");
@@ -218,6 +222,23 @@ void export_off(const CGAL_Nef_polyhedron *root_N, std::ostream &output)
 		CGAL_Polyhedron P;
 		root_N->p3->convert_to_Polyhedron(P);
 		output << P;
+	}
+	catch (const CGAL::Assertion_exception &e) {
+		PRINTB("CGAL error in CGAL_Nef_polyhedron3::convert_to_Polyhedron(): %s", e.what());
+	}
+	CGAL::set_error_behaviour(old_behaviour);
+}
+
+void export_obj(const CGAL_Nef_polyhedron *root_N, std::ostream &output)
+{
+	if (!root_N->p3->is_simple()) {
+		PRINT("Object isn't a valid 2-manifold! Modify your design.\n");
+	}
+	CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
+	try {
+		CGAL_Polyhedron P;
+		root_N->p3->convert_to_Polyhedron(P);
+		print_polyhedron_wavefront( output, P );
 	}
 	catch (const CGAL::Assertion_exception &e) {
 		PRINTB("CGAL error in CGAL_Nef_polyhedron3::convert_to_Polyhedron(): %s", e.what());

@@ -8,6 +8,7 @@
 #include "module.h"
 #include "Tree.h"
 #include "memory.h"
+#include "export.h"
 #include <vector>
 #include <QMutex>
 
@@ -127,9 +128,10 @@ private slots:
 	void actionDisplayAST();
 	void actionDisplayCSGTree();
 	void actionDisplayCSGProducts();
-	void actionExportSTLorOFF(bool stl_mode);
+	void actionExport3d(FileFormat fmt);
 	void actionExportSTL();
 	void actionExportOFF();
+	void actionExportOBJ();
 	void actionExportDXF();
 	void actionExportCSG();
 	void actionExportImage();

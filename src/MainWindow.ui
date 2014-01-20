@@ -184,6 +184,7 @@
     <addaction name="separator"/>
     <addaction name="designActionExportSTL"/>
     <addaction name="designActionExportOFF"/>
+    <addaction name="designActionExportOBJ"/>
     <addaction name="designActionExportDXF"/>
     <addaction name="designActionExportCSG"/>
     <addaction name="designActionExportImage"/>
@@ -442,6 +443,11 @@
   <action name="designActionExportOFF">
    <property name="text">
     <string>Export as &amp;OFF...</string>
+   </property>
+  </action>
+  <action name="designActionExportOBJ">
+   <property name="text">
+    <string>Export as OB&amp;J...</string>
    </property>
   </action>
   <action name="viewActionPreview">

@@ -297,6 +297,7 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this->designActionDisplayCSGProducts, SIGNAL(triggered()), this, SLOT(actionDisplayCSGProducts()));
 	connect(this->designActionExportSTL, SIGNAL(triggered()), this, SLOT(actionExportSTL()));
 	connect(this->designActionExportOFF, SIGNAL(triggered()), this, SLOT(actionExportOFF()));
+	connect(this->designActionExportOBJ, SIGNAL(triggered()), this, SLOT(actionExportOBJ()));
 	connect(this->designActionExportDXF, SIGNAL(triggered()), this, SLOT(actionExportDXF()));
 	connect(this->designActionExportCSG, SIGNAL(triggered()), this, SLOT(actionExportCSG()));
 	connect(this->designActionExportImage, SIGNAL(triggered()), this, SLOT(actionExportImage()));
@@ -1414,11 +1415,7 @@ void MainWindow::actionDisplayCSGProducts()
 	clearCurrentOutput();
 }
 
-#ifdef ENABLE_CGAL
-void MainWindow::actionExportSTLorOFF(bool stl_mode)
-#else
-void MainWindow::actionExportSTLorOFF(bool)
-#endif
+void MainWindow::actionExport3d(FileFormat fmt)
 {
 	if (GuiLocker::isLocked()) return;
 	GuiLocker lock;
@@ -1444,13 +1441,25 @@ void MainWindow::actionExportSTLorOFF(bool)
 		return;
 	}
 
-	QString suffix = stl_mode ? ".stl" : ".off";
-	QString stl_filename = QFileDialog::getSaveFileName(this,
-			stl_mode ? "Export STL File" : "Export OFF File", 
+	QString suffix, title, filter;
+	if (fmt==OPENSCAD_STL) {
+		suffix = ".stl";
+		title = "Export STL File";
+		filter = "STL Files (*.stl)";
+	} else if (fmt==OPENSCAD_OFF) {
+		suffix = ".off";
+		title = "Export OFF File";
+		filter = "OFF Files (*.off)";
+	} else if (fmt==OPENSCAD_OBJ) {
+		suffix = ".obj";
+		title = "Export OBJ File";
+		filter = "OBJ Files (*.obj)";
+	}
+	QString stl_filename = QFileDialog::getSaveFileName(this, title,
 			this->fileName.isEmpty() ? "Untitled"+suffix : QFileInfo(this->fileName).baseName()+suffix,
-			stl_mode ? "STL Files (*.stl)" : "OFF Files (*.off)");
+			filter );
 	if (stl_filename.isEmpty()) {
-		PRINTB("No filename specified. %s export aborted.", (stl_mode ? "STL" : "OFF"));
+		PRINTB("No filename specified. %s export aborted.", suffix.toStdString());
 		clearCurrentOutput();
 		return;
 	}
@@ -1460,11 +1469,10 @@ void MainWindow::actionExportSTLorOFF(bool)
 		PRINTB("Can't open file \"%s\" for export", stl_filename.toLocal8Bit().constData());
 	}
 	else {
-		if (stl_mode) exportFile(this->root_geom.get(), fstream, OPENSCAD_STL);
-		else exportFile(this->root_geom.get(), fstream, OPENSCAD_OFF);
+		exportFile(this->root_geom.get(), fstream, fmt);
 		fstream.close();
 
-		PRINTB("%s export finished.", (stl_mode ? "STL" : "OFF"));
+		PRINTB("%s export finished.", suffix.toStdString());
 	}
 
 	clearCurrentOutput();
@@ -1473,12 +1481,17 @@ void MainWindow::actionExportSTLorOFF(bool)
 
 void MainWindow::actionExportSTL()
 {
-	actionExportSTLorOFF(true);
+	actionExport3d(OPENSCAD_STL);
 }
 
 void MainWindow::actionExportOFF()
 {
-	actionExportSTLorOFF(false);
+	actionExport3d(OPENSCAD_OFF);
+}
+
+void MainWindow::actionExportOBJ()
+{
+	actionExport3d(OPENSCAD_OBJ);
 }
 
 void MainWindow::actionExportDXF()

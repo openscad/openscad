@@ -211,6 +211,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 #endif
 	const char *stl_output_file = NULL;
 	const char *off_output_file = NULL;
+	const char *obj_output_file = NULL;
 	const char *dxf_output_file = NULL;
 	const char *csg_output_file = NULL;
 	const char *png_output_file = NULL;
@@ -223,6 +224,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 
 	if (suffix == ".stl") stl_output_file = output_file;
 	else if (suffix == ".off") off_output_file = output_file;
+	else if (suffix == ".obj") obj_output_file = output_file;
 	else if (suffix == ".dxf") dxf_output_file = output_file;
 	else if (suffix == ".csg") csg_output_file = output_file;
 	else if (suffix == ".png") png_output_file = output_file;
@@ -343,6 +345,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 			std::string geom_out;
 			if ( stl_output_file ) geom_out = std::string(stl_output_file);
 			else if ( off_output_file ) geom_out = std::string(off_output_file);
+			else if ( obj_output_file ) geom_out = std::string(obj_output_file);
 			else if ( dxf_output_file ) geom_out = std::string(dxf_output_file);
 			else if ( png_output_file ) geom_out = std::string(png_output_file);
 			else {
@@ -383,6 +386,21 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 			}
 			else {
 				exportFile(root_geom.get(), fstream, OPENSCAD_OFF);
+				fstream.close();
+			}
+		}
+
+		if (obj_output_file) {
+			if (root_geom->getDimension() != 3) {
+				PRINT("Current top level object is not a 3D object.\n");
+				return 1;
+			}
+			std::ofstream fstream(obj_output_file);
+			if (!fstream.is_open()) {
+				PRINTB("Can't open file \"%s\" for export", obj_output_file);
+			}
+			else {
+				exportFile(root_geom.get(), fstream, OPENSCAD_OBJ);
 				fstream.close();
 			}
 		}
