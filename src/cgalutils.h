@@ -13,6 +13,7 @@ namespace CGALUtils {
 	CGAL_Iso_cuboid_3 boundingBox(const CGAL_Nef_polyhedron3 &N);
 };
 
+CGAL_Nef_polyhedron *createNefPolyhedronFromPolySet(const PolySet &ps);
 CGAL_Nef_polyhedron *createNefPolyhedronFromGeometry(const class Geometry &geom);
 bool createPolySetFromPolyhedron(const CGAL_Polyhedron &p, PolySet &ps);
 bool createPolySetFromNefPolyhedron3(const CGAL_Nef_polyhedron3 &N, PolySet &ps);

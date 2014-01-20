@@ -60,6 +60,7 @@ void PRINTDEBUG(const std::string &filename, const std::string &msg)
 	if (OpenSCAD::debug=="") return;
 	std::string fname(filename);
 	std::string lowdebug( OpenSCAD::debug );
+	boost::replace_all( fname, "../", "" );
 	boost::replace_all( fname, "src/", "" );
 	std::string shortfname(fname);
 	boost::replace_all( shortfname, ".cc", "");

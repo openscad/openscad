@@ -199,8 +199,8 @@ namespace PolysetUtils {
 					triangles.push_back( pgon );
 				}
 			}
-		} catch (const CGAL::Assertion_exception &e) {
-			PRINTB("CGAL error in dxftess triangulate_polygon: %s", e.what());
+		} catch (const CGAL::Failure_exception &e) {
+			PRINTB("CGAL error while triangulating polygon: %s", e.what());
 			err = true;
 		}
 		CGAL::set_error_behaviour(old_behaviour);
