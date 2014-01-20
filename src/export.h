@@ -24,7 +24,7 @@ void export_png(const CGAL_Nef_polyhedron *root_N, Camera &c, std::ostream &outp
 void export_png_with_opencsg(Tree &tree, Camera &c, std::ostream &output);
 void export_png_with_throwntogether(Tree &tree, Camera &c, std::ostream &output);
 
-#endif
+#endif // ENABLE_CGAL
 
 #ifdef DEBUG
 void export_stl(const class PolySet &ps, std::ostream &output);

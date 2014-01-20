@@ -134,7 +134,18 @@ Is a boost/libstdc++ bug. Fix like so:
 
   $ export LC_MESSAGES=
 
-6. Other issues
+6. I want to build without OpenGL
+
+ There is an unsupported way to do this, by defining NULLGL to Cmake:
+
+  mkdir nullglbin
+  cd nullglbin && cmake .. -DNULLGL=1 && make
+ 
+ The resulting openscad_nogui binary will fail most tests, but may be
+ useful for debugging and outputting 3d-formats like STL on systems without GL.
+ This option may break in the future and require tweaking to get working again.
+
+7. Other issues
 
 The OpenSCAD User Manual has a section on building. Please check there 
 for updates:

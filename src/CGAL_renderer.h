@@ -27,6 +27,8 @@
 #ifndef CGAL_RENDERER_H
 #define CGAL_RENDERER_H
 
+#ifndef NULLGL
+
 #include "OGL_helper.h"
 #undef CGAL_NEF3_MARKED_VERTEX_COLOR
 #undef CGAL_NEF3_MARKED_EDGE_COLOR
@@ -100,5 +102,25 @@ private:
 	CGAL::Color colors[NUM_COLORS];
 
 }; // Polyhedron
+
+
+
+
+#else // NULLGL
+
+#include <CGAL/Bbox_3.h>
+
+class Polyhedron
+{
+public:
+	Polyhedron() {}
+	void draw(bool showedges) const {}
+	CGAL::Bbox_3 bbox() const { return CGAL::Bbox_3(-1,-1,-1,1,1,1); }
+};
+
+#endif // NULLGL
+
+
+
 
 #endif // CGAL_RENDERER_H
