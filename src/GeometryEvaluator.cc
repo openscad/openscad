@@ -208,13 +208,12 @@ void GeometryEvaluator::applyResize3D(CGAL_Nef_polyhedron &N,
 		if (autosize[i] && newsize[i]==0) scale[i] = autoscale;
 	}
 
-	Eigen::Matrix4d t;
-	t << CGAL::to_double(scale[0]),           0,        0,        0,
-	     0,        CGAL::to_double(scale[1]),           0,        0,
-	     0,        0,        CGAL::to_double(scale[2]),           0,
-	     0,        0,        0,                                   1;
+	CGAL_Nef_polyhedron3::Aff_transformation_3 aff(
+	  scale[0],           0,        0,
+	         0,    scale[1],        0,
+	         0,           0, scale[2],	1 );
 
-	N.transform(Transform3d(t));
+	N.transform( aff );
 	return;
 }
 

@@ -42,19 +42,36 @@ std::string CGAL_Nef_polyhedron::dump() const
 }
 
 
-void CGAL_Nef_polyhedron::transform( const Transform3d &matrix )
+void CGAL_Nef_polyhedron::transform( const CGAL_Nef_polyhedron3::Aff_transformation_3 &t )
 {
 	if (!this->isEmpty()) {
-		if (matrix.matrix().determinant() == 0) {
+		if (CGAL::sign_of_determinant<NT3>(
+			t.cartesian(0,0),t.cartesian(0,1),t.cartesian(0,2),
+			t.cartesian(1,0),t.cartesian(1,1),t.cartesian(1,2),
+			t.cartesian(2,0),t.cartesian(2,1),t.cartesian(2,2)
+		         )==0) {
 			PRINT("Warning: Scaling a 3D object with 0 - removing object");
 			this->reset();
 		}
 		else {
-			CGAL_Aff_transformation t(
-				matrix(0,0), matrix(0,1), matrix(0,2), matrix(0,3),
-				matrix(1,0), matrix(1,1), matrix(1,2), matrix(1,3),
-				matrix(2,0), matrix(2,1), matrix(2,2), matrix(2,3), matrix(3,3));
 			this->p3->transform(t);
+		}
+	}
+}
+
+void CGAL_Nef_polyhedron::transform( const Transform3d &t )
+{
+	if (!this->isEmpty()) {
+		if (t.matrix().determinant()==0) {
+			PRINT("Warning: Scaling a 3D object with 0 - removing object");
+			this->reset();
+		}
+		else {
+			CGAL_Nef_polyhedron3::Aff_transformation_3 aff(
+				t(0,0),t(0,1),t(0,2),t(0,3),
+				t(1,0),t(1,1),t(1,2),t(1,3),
+				t(2,0),t(2,1),t(2,2),t(2,3),t(3,3) );
+			this->p3->transform(aff);
 		}
 	}
 }

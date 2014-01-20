@@ -28,7 +28,8 @@ public:
 	CGAL_Nef_polyhedron &minkowski(const CGAL_Nef_polyhedron &other);
 	CGAL_Nef_polyhedron *copy() const;
 	class PolySet *convertToPolyset() const;
-	void transform( const Transform3d &matrix );
+	void transform( const CGAL_Nef_polyhedron3::Aff_transformation_3 &t );
+	void transform( const Transform3d &t );
 	shared_ptr<CGAL_Nef_polyhedron3> p3;
 };
 
