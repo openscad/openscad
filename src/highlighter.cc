@@ -129,11 +129,10 @@
 
 void format_colors_for_light_background(QMap<QString,QTextCharFormat> &formats)
 {
-	//PRINT("format for light");
+	//PRINTD("format for light");
 	formats["operator"].setForeground(Qt::blue);
 	formats["math"].setForeground(QColor("Green"));
 	formats["keyword"].setForeground(QColor("Green"));
-	formats["keyword"].setToolTip("Keyword");
 	formats["transform"].setForeground(QColor("Indigo"));
 	formats["csgop"].setForeground(QColor("DarkGreen"));
 	formats["prim3d"].setForeground(QColor("DarkBlue"));
@@ -152,11 +151,10 @@ void format_colors_for_light_background(QMap<QString,QTextCharFormat> &formats)
 
 void format_colors_for_dark_background(QMap<QString,QTextCharFormat> &formats)
 {
-	//PRINT("format for dark");
+	//PRINTD("format for dark");
 	formats["operator"].setForeground(Qt::blue);
 	formats["math"].setForeground(Qt::green);
 	formats["keyword"].setForeground(QColor("LightGreen"));
-	formats["keyword"].setToolTip("Keyword");
 	formats["transform"].setForeground(QColor("Indigo"));
 	formats["csgop"].setForeground(QColor("LightGreen"));
 	formats["prim3d"].setForeground(QColor("LightBlue"));
@@ -175,7 +173,7 @@ void format_colors_for_dark_background(QMap<QString,QTextCharFormat> &formats)
 
 void Highlighter::assignFormatsToTokens(const QString &s)
 {
-	//PRINTB("assign fmts %s",s.toStdString());
+	//PRINTDB("assign fmts %s",s.toStdString());
 	if (s=="For Light Background") {
 		format_colors_for_light_background(this->typeformats);
 	} else if (s=="For Dark Background") {
@@ -194,7 +192,7 @@ void Highlighter::assignFormatsToTokens(const QString &s)
 		QStringList::iterator it;
 		for ( it = tokentypes[toktype].begin(); it < tokentypes[toktype].end(); ++it) {
 			QString token = *it;
-			//PRINTB("set format for %s: type %s", token.toStdString()%toktype.toStdString() );;
+			//PRINTDB("set format for %s: type %s", token.toStdString()%toktype.toStdString() );;
 			tokenFormats[ token ] = typeformats [ toktype ];
 		}
 	}

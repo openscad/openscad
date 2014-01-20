@@ -3,14 +3,17 @@
 #include <QWidget>
 #include <QWheelEvent>
 #include <QScrollBar>
+#include <QToolTip>
 
 #include <QTextEdit>
 class Editor : public QTextEdit
 {
 	Q_OBJECT
 public:
-	Editor(QWidget *parent) : QTextEdit(parent) { setAcceptRichText(false); }
+	Editor(QWidget *parent);
 	void setPlainText(const QString &text);
+	bool event(QEvent *event);
+        QHash<QString, QString> toolTips;
 public slots:
 	void zoomIn();
 	void zoomOut();
