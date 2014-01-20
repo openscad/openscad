@@ -609,7 +609,7 @@ int main(int argc, char **argv)
 		help(argv[0]);
 	}
 
-	OpenSCAD::debug = "0";
+	OpenSCAD::debug = "";
 	if (vm.count("debug")) OpenSCAD::debug = vm["debug"].as<string>();
 	if (vm.count("help")) help(argv[0]);
 	if (vm.count("version")) version();

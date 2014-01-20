@@ -493,7 +493,7 @@ MainWindow::openFile(const QString &new_filename)
 {
 	QString actual_filename = new_filename;
 	QFileInfo fi(new_filename);
-	if (fi.suffix().toLower().contains(QRegExp("^(stl|off|dxf)$"))) {
+	if (fi.suffix().toLower().contains(QRegExp("^(stl|off|dxf|obj)$"))) {
 		actual_filename = QString();
 	}
 #ifdef ENABLE_MDI
