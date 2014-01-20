@@ -873,10 +873,10 @@ bool createPolyhedronFromPolySet(const PolySet &ps, CGAL_Polyhedron &p)
 
 void ZRemover::visit( CGAL_Nef_polyhedron3::Halffacet_const_handle hfacet )
 {
-	log << " <!-- ZRemover Halffacet visit. Mark: " << hfacet->mark() << " -->\n";
+	PRINTDB(" <!-- ZRemover Halffacet visit. Mark: %i -->",hfacet->mark());
 	if ( hfacet->plane().orthogonal_direction() != this->up ) {
-		log << "  <!-- ZRemover down-facing half-facet. skipping -->\n";
-		log << " <!-- ZRemover Halffacet visit end-->\n";
+		PRINTD("  <!-- ZRemover down-facing half-facet. skipping -->");
+		PRINTD(" <!-- ZRemover Halffacet visit end-->");
 		return;
 	}
 
@@ -886,7 +886,7 @@ void ZRemover::visit( CGAL_Nef_polyhedron3::Halffacet_const_handle hfacet )
 	int contour_counter = 0;
 	CGAL_forall_facet_cycles_of( fci, hfacet ) {
 		if ( fci.is_shalfedge() ) {
-			log << " <!-- ZRemover Halffacet cycle begin -->\n";
+			PRINTD(" <!-- ZRemover Halffacet cycle begin -->");
 			CGAL_Nef_polyhedron3::SHalfedge_around_facet_const_circulator c1(fci), cend(c1);
 			std::vector<CGAL_Nef_polyhedron2::Explorer::Point> contour;
 			CGAL_For_all( c1, cend ) {
@@ -897,30 +897,27 @@ void ZRemover::visit( CGAL_Nef_polyhedron3::Halffacet_const_handle hfacet )
 			}
 			if (contour.size()==0) continue;
 
-			log << " <!-- is_simple_2:" << CGAL::is_simple_2( contour.begin(), contour.end() ) << " --> \n";
-
 			tmpnef2d.reset( new CGAL_Nef_polyhedron2( contour.begin(), contour.end(), boundary ) );
 
 			if ( contour_counter == 0 ) {
-				log << " <!-- contour is a body. make union(). " << contour.size() << " points. -->\n" ;
+				PRINTDB(" <!-- contour is a body/outside-border. make union(). %i points -->",contour.size());
 				*(output_nefpoly2d) += *(tmpnef2d);
 			} else {
-				log << " <!-- contour is a hole. make intersection(). " << contour.size() << " points. -->\n";
+				PRINTDB(" <!-- contour is a hole. make intersection(). %i points -->",contour.size());
 				*(output_nefpoly2d) *= *(tmpnef2d);
 			}
 
-			/*log << "\n<!-- ======== output tmp nef: ==== -->\n"
-				<< OpenSCAD::dump_svg( *tmpnef2d ) << "\n"
-				<< "\n<!-- ======== output accumulator: ==== -->\n"
-				<< OpenSCAD::dump_svg( *output_nefpoly2d ) << "\n";*/
+			/*PRINTDB( "==tmp\n%s ==accum\n %s",
+			  OpenSCAD::dump_svg( *tmpnef2d ) %
+			  OpenSCAD::dump_svg( *output_nefpoly2d )*/
 
 			contour_counter++;
 		} else {
-			log << " <!-- ZRemover trivial facet cycle skipped -->\n";
+			PRINTD(" <!-- ZRemover trivial facet cycle skipped -->");
 		}
-		log << " <!-- ZRemover Halffacet cycle end -->\n";
+		PRINTD(" <!-- ZRemover Halffacet cycle end -->");
 	}
-	log << " <!-- ZRemover Halffacet visit end -->\n";
+	PRINTD(" <!-- ZRemover Halffacet visit end -->");
 }
 
 static CGAL_Nef_polyhedron *createNefPolyhedronFromPolySet(const PolySet &ps)
