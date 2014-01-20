@@ -27,7 +27,8 @@ import shutil
 import platform
 import string
 
-_debug_tcct = True
+#_debug_tcct = True
+_debug_tcct = False
 
 def debug(*args):
     global _debug_tcct
@@ -41,7 +42,7 @@ def initialize_environment():
     return True
 
 def init_expected_filename():
-    global expecteddir, expectedfilename
+    global expecteddir, expectedfilename # fixme - globals are hard to use
 
     expected_testname = options.testname
 
@@ -55,7 +56,7 @@ def init_expected_filename():
     expectedfilename = os.path.normpath(expectedfilename)
 
 def init_actual_filename():
-    global actualdir, actualfilename
+    global actualdir, actualfilename # fixme - globals are hard to use
 
     cmdname = os.path.split(options.cmd)[1]
     actualdir = os.path.join(os.getcwd(), options.testname + "-output")
@@ -221,17 +222,19 @@ def usage():
 # modify the 'actualfilename' so that the first test run will generate a 
 # 3d file, like .stl
 def export3d_filename( actualfilename, options ):
+    debug('export3d test. modifying actualfilename to generate 3d output')
     debug('options cmd',options.cmd)
     debug('options testname',options.testname)
-    debug('export3d test. modifying filenames')
-    debug('actual, before: ',actualfilename)
+    debug('actualfilename, before: ',actualfilename)
 
-    if options.testname[10:13]=='stl':
+    if options.testname[9:12]=='stl':
         actualfilename = actualfilename[0:-4] + '.stl'
-    elif options.testname[10:13]=='off':
+    elif options.testname[9:12]=='off':
         actualfilename = actualfilename[0:-4] + '.off'
+    elif options.testname[9:12]=='obj':
+        actualfilename = actualfilename[0:-4] + '.obj'
 
-    debug('actual, after: ',actualfilename)
+    debug('actualfilename, after: ',actualfilename)
 
     return actualfilename
 
@@ -239,24 +242,23 @@ def export3d_filename( actualfilename, options ):
 # to import that 3d file, and then generate a PNG image for comparison.
 def create_png_for_export3d( actualfilename, options ):
     scadcode = 'import("'+actualfilename+'");'
-    scadfilename = actualfilename+'.scad'
+    scadfilename = actualfilename+'.import.scad'
     f = open(scadfilename,'wb')
     f.write(scadcode)
     f.close()
         
-    debug('export/import test.')
+    debug('export3d test. importing generated 3d file and creating png image')
     #expectedfilename = expectedfilename[0:-4] + '.png'
     actualfilename = actualfilename[0:-4] + '.png'
-    debug('fname:'+expectedfilename)
-    debug('opts',options.cmd)
+    debug('expectedfilename:'+expectedfilename)
+    debug('actualfilename:'+actualfilename)
+    debug('opts:',options.cmd)
 
     verification = verify_test(options.testname, options.cmd)
     if not verification: exit(1)
 
     newargs = [ scadfilename ] + args[2:]
-
-    resultfile = run_test(options.testname, options.cmd, newargs)
-    return resultfile
+    return actualfilename, newargs
 
 if __name__ == '__main__':
     # Handle command-line arguments
@@ -330,7 +332,8 @@ if __name__ == '__main__':
     if not resultfile: exit(1)
 
     if options.testname[0:8]=='export3d' and not options.generate:
-        resultfile = create_png_for_export3d( actualfilename, options )
+        actualfilename,newargs = create_png_for_export3d( actualfilename, options )
+        resultfile = run_test(options.testname, options.cmd, newargs)
         if not resultfile: exit(1)
 
     if not compare_with_expected(resultfile): exit(1)
