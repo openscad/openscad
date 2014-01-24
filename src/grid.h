@@ -50,6 +50,7 @@ public:
 		x = ix * res, y = iy * res;
 		return db[std::make_pair(ix, iy)];
 	}
+
 	bool has(double x, double y) const {
 		int64_t ix = (int64_t)round(x / res);
 		int64_t iy = (int64_t)round(y / res);
@@ -62,6 +63,7 @@ public:
 		}
 		return false;
 	}
+
 	bool eq(double x1, double y1, double x2, double y2) {
 		align(x1, y1);
 		align(x2, y2);
@@ -87,6 +89,7 @@ public:
 	Grid3d(double resolution) {
 		res = resolution;
 	}
+
 	T &align(double &x, double &y, double &z) {
 		int64_t ix = (int64_t)round(x / res);
 		int64_t iy = (int64_t)round(y / res);
@@ -110,8 +113,9 @@ public:
 			}
 		}
 		x = ix * res, y = iy * res, z = iz * res;
-			return db[std::make_pair(std::make_pair(ix, iy), iz)];
+		return db[std::make_pair(std::make_pair(ix, iy), iz)];
 	}
+
 	bool has(double x, double y, double z) {
 		int64_t ix = (int64_t)round(x / res);
 		int64_t iy = (int64_t)round(y / res);
@@ -125,8 +129,8 @@ public:
 				return true;
 		}
 		return false;
-		
 	}
+
 	bool eq(double x1, double y1, double z1, double x2, double y2, double z2) {
 		align(x1, y1, z1);
 		align(x2, y2, z2);
@@ -134,9 +138,11 @@ public:
 			return true;
 		return false;
 	}
+
 	T &data(double x, double y, double z) {
 		return align(x, y, z);
 	}
+
 	T &operator()(double x, double y, double z) {
 		return align(x, y, z);
 	}

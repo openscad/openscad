@@ -772,6 +772,96 @@ public:
 	const PolySet &ps;
 	CGAL_Build_PolySet(const PolySet &ps) : ps(ps) { }
 
+/*
+	Using Grid here is important for performance reasons. See following model.
+	If we don't grid the geometry before converting to a Nef Polyhedron, the quads
+	in the cylinders to tessellated into triangles since floating point
+	incertainty causes the faces to not be 100% planar. The incertainty is exaggerated
+	by the transform. This wasn't a problem earlier since we used Nef for everything,
+	but optimizations since then has made us keep it in floating point space longer.
+
+  minkowski() {
+    cube([200, 50, 7], center = true);
+    rotate([90,0,0]) cylinder($fn = 8, h = 1, r = 8.36, center = true);
+    rotate([0,90,0]) cylinder($fn = 8, h = 1, r = 8.36, center = true);
+  }
+ */
+#if 1 // Use Grid
+	void operator()(CGAL_HDS& hds) {
+		CGAL_Polybuilder B(hds, true);
+		
+		std::vector<CGALPoint> vertices;
+		Grid3d<int> grid(GRID_FINE);
+		std::vector<size_t> indices(3);
+		
+		BOOST_FOREACH(const PolySet::Polygon &p, ps.polygons) {
+			BOOST_REVERSE_FOREACH(Vector3d v, p) {
+				if (!grid.has(v[0], v[1], v[2])) {
+					// align v to the grid; the CGALPoint will receive the aligned vertex
+					grid.align(v[0], v[1], v[2]) = vertices.size();
+					vertices.push_back(CGALPoint(v[0], v[1], v[2]));
+				}
+			}
+		}
+
+#ifdef DEBUG
+		printf("polyhedron(faces=[");
+		int pidx = 0;
+#endif
+		B.begin_surface(vertices.size(), ps.polygons.size());
+		BOOST_FOREACH(const CGALPoint &p, vertices) {
+			B.add_vertex(p);
+		}
+		BOOST_FOREACH(const PolySet::Polygon &p, ps.polygons) {
+#ifdef DEBUG
+			if (pidx++ > 0) printf(",");
+#endif
+			indices.clear();
+			BOOST_FOREACH(const Vector3d &v, p) {
+				indices.push_back(grid.data(v[0], v[1], v[2]));
+			}
+
+			// We perform this test since there is a bug in CGAL's
+			// Polyhedron_incremental_builder_3::test_facet() which
+			// fails to detect duplicate indices
+			bool err = false;
+			for (std::size_t i = 0; i < indices.size(); ++i) {
+        // check if vertex indices[i] is already in the sequence [0..i-1]
+        for (std::size_t k = 0; k < i && !err; ++k) {
+					if (indices[k] == indices[i]) {
+						err = true;
+						break;
+					}
+				}
+			}
+			if (!err && B.test_facet(indices.begin(), indices.end())) {
+				B.add_facet(indices.begin(), indices.end());
+			}
+#ifdef DEBUG
+				printf("[");
+				int fidx = 0;
+				BOOST_FOREACH(size_t i, indices) {
+					if (fidx++ > 0) printf(",");
+					printf("%ld", i);
+				}
+				printf("]");
+#endif
+		}
+		B.end_surface();
+#ifdef DEBUG
+		printf("],\n");
+#endif
+#ifdef DEBUG
+		printf("points=[");
+		for (int i=0;i<vertices.size();i++) {
+			if (i > 0) printf(",");
+			const CGALPoint &p = vertices[i];
+			printf("[%g,%g,%g]", CGAL::to_double(p.x()), CGAL::to_double(p.y()), CGAL::to_double(p.z()));
+		}
+		printf("]);\n");
+#endif
+	}
+#else // Don't use Grid
 	void operator()(CGAL_HDS& hds)
 	{
 		CGAL_Polybuilder B(hds, true);
@@ -790,36 +880,37 @@ public:
 			if (pidx++ > 0) printf(",");
 #endif
 			indices.clear();
-			BOOST_FOREACH(const Vector3d &v, p) {
+			BOOST_REVERSE_FOREACH(const Vector3d &v, p) {
 				size_t s = vertices.size();
 				size_t idx = vertices.lookup(v);
 				// If we added a vertex, also add it to the CGAL builder
 				if (idx == s) B.add_vertex(CGALPoint(v[0], v[1], v[2]));
 				indices.push_back(idx);
 			}
-			std::map<size_t,int> fc;
-			bool facet_is_degenerate = false;
-			BOOST_REVERSE_FOREACH(size_t i, indices) {
-				if (fc[i]++ > 0) facet_is_degenerate = true;
+			// We perform this test since there is a bug in CGAL's
+			// Polyhedron_incremental_builder_3::test_facet() which
+			// fails to detect duplicate indices
+			bool err = false;
+			for (std::size_t i = 0; i < indices.size(); ++i) {
+        // check if vertex indices[i] is already in the sequence [0..i-1]
+        for (std::size_t k = 0; k < i && !err; ++k) {
+					if (indices[k] == indices[i]) {
+						err = true;
+						break;
+					}
+				}
 			}
-			if (!facet_is_degenerate) {
-				B.begin_facet();
+			if (!err && B.test_facet(indices.begin(), indices.end())) {
+				B.add_facet(indices.begin(), indices.end());
 #ifdef DEBUG
 				printf("[");
-#endif
 				int fidx = 0;
-				std::map<int,int> fc;
-				BOOST_REVERSE_FOREACH(size_t i, indices) {
-					B.add_vertex_to_facet(i);
-#ifdef DEBUG
+				BOOST_FOREACH(size_t i, indices) {
 					if (fidx++ > 0) printf(",");
 					printf("%ld", i);
-#endif
 				}
-#ifdef DEBUG
 				printf("]");
 #endif
-				B.end_facet();
 			}
 		}
 		B.end_surface();
@@ -835,6 +926,7 @@ public:
 		printf("]);\n");
 #endif
 	}
+#endif
 };
 
 bool createPolyhedronFromPolySet(const PolySet &ps, CGAL_Polyhedron &p)
@@ -916,6 +1008,11 @@ static CGAL_Nef_polyhedron *createNefPolyhedronFromPolySet(const PolySet &ps)
 	try {
 		CGAL_Polyhedron P;
 		bool err = createPolyhedronFromPolySet(ps, P);
+		// if (!err) {
+		// 	PRINTB("Polyhedron is closed: %d", P.is_closed());
+		// 	PRINTB("Polyhedron is valid: %d", P.is_valid(true, 0));
+		// }
+
 		if (!err) N = new CGAL_Nef_polyhedron3(P);
 	}
 	catch (const CGAL::Assertion_exception &e) {
