@@ -39,3 +39,39 @@ for(r=[1:true:5]) translate([r*10-60,50,0]) cylinder(r=r);
 
 // Vector
 for(r=[1,2,5]) translate([r*10-30,0,0]) cylinder(r=r);
+
+nan = 0/0;
+inf = 1/0;
+ninf = -1/0;
+
+echo(nan);
+echo(inf);
+echo(ninf);
+
+// validate step values
+for(i=[0:nan:0]) { echo("NAN", i); }
+for(i=[0:inf:0]) { echo("INF", i); }
+for(i=[0:ninf:0]) { echo("-INF", i); }
+
+for(i=[0:nan:1]) { echo("NAN", i); }
+for(i=[0:inf:1]) { echo("INF", i); }
+for(i=[0:ninf:1]) { echo("-INF", i); }
+
+for(i=[1:nan:0]) { echo("NAN", i); }
+for(i=[1:inf:0]) { echo("INF", i); }
+for(i=[1:ninf:0]) { echo("-INF", i); }
+
+// validate begin / end values
+for(i = [0:inf]) {}
+for(i = [0:ninf]) {}
+for(i = [inf:0]) {}
+for(i = [ninf:0]) {}
+
+for(i = [0:2:inf]) {}
+for(i = [0:2:ninf]) {}
+for(i = [inf:2:0]) {}
+for(i = [ninf:2:0]) {}
+for(i = [inf:2:inf]) {}
+for(i = [ninf:2:ninf]) {}
+for(i = [inf:2:ninf]) {}
+for(i = [ninf:2:inf]) {}
