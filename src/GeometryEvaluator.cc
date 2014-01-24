@@ -713,6 +713,20 @@ static void fill_ring(std::vector<Vector3d> &ring, const Outline2d &o, double a)
 /*!
 	Input to extrude should be clean. This means non-intersecting, correct winding order
 	etc., the input coming from a library like Clipper.
+
+	FIXME: We should handle some common corner cases better:
+  o 2D polygon having an edge being on the Y axis:
+	  In this case, we don't need to generate geometry involving this edge as it
+		will be an internal edge.
+  o 2D polygon having a vertex touching the Y axis:
+    This is more complex as the resulting geometry will (may?) be nonmanifold.
+		In any case, the previous case is a specialization of this, so the following
+		should be handled for both cases:
+		Since the ring associated with this vertex will have a radius of zero, it will
+		collapse to one vertex. Any quad using this ring will be collapsed to a triangle.
+
+	Currently, we generate a lot of zero-area triangles
+
 */
 static Geometry *rotatePolygon(const RotateExtrudeNode &node, const Polygon2d &poly)
 {
