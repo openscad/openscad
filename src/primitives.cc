@@ -246,6 +246,7 @@ AbstractNode *PrimitiveModule::instantiate(const Context *ctx, const ModuleInsta
 				PRINT("DEPRECATED: polyhedron(triangles=[]) will be removed in future releases. Use polyhedron(faces=[]) instead.");
 			}
 		}
+		break;
 	}
 	case SQUARE: {
 		Value size = c.lookup_variable("size");
