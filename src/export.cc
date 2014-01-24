@@ -61,6 +61,9 @@ void exportFile(const class Geometry *root_geom, std::ostream &output, FileForma
 			case OPENSCAD_STL:
 				export_stl(*ps, output);
 				break;
+			case OPENSCAD_OFF:
+				export_off(*ps, output);
+				break;
 			default:
 				assert(false && "Unsupported file format");
 			}
@@ -206,6 +209,14 @@ void export_stl(const CGAL_Nef_polyhedron *root_N, std::ostream &output)
 		}
 		CGAL::set_error_behaviour(old_behaviour);
 	}
+}
+
+void export_off(const class PolySet &ps, std::ostream &output)
+{
+	// FIXME: Implement this without creating a Nef polyhedron
+	CGAL_Nef_polyhedron *N = createNefPolyhedronFromGeometry(ps);
+	export_off(N, output);
+	delete N;
 }
 
 void export_off(const CGAL_Nef_polyhedron *root_N, std::ostream &output)
