@@ -804,7 +804,7 @@ public:
 			}
 		}
 
-#ifdef DEBUG
+#ifdef GEN_SURFACE_DEBUG
 		printf("polyhedron(faces=[");
 		int pidx = 0;
 #endif
@@ -813,7 +813,7 @@ public:
 			B.add_vertex(p);
 		}
 		BOOST_FOREACH(const PolySet::Polygon &p, ps.polygons) {
-#ifdef DEBUG
+#ifdef GEN_SURFACE_DEBUG
 			if (pidx++ > 0) printf(",");
 #endif
 			indices.clear();
@@ -837,7 +837,7 @@ public:
 			if (!err && B.test_facet(indices.begin(), indices.end())) {
 				B.add_facet(indices.begin(), indices.end());
 			}
-#ifdef DEBUG
+#ifdef GEN_SURFACE_DEBUG
 				printf("[");
 				int fidx = 0;
 				BOOST_FOREACH(size_t i, indices) {
@@ -848,10 +848,10 @@ public:
 #endif
 		}
 		B.end_surface();
-#ifdef DEBUG
+#ifdef GEN_SURFACE_DEBUG
 		printf("],\n");
 #endif
-#ifdef DEBUG
+#ifdef GEN_SURFACE_DEBUG
 		printf("points=[");
 		for (int i=0;i<vertices.size();i++) {
 			if (i > 0) printf(",");
@@ -872,11 +872,11 @@ public:
 		// Estimating same # of vertices as polygons (very rough)
 		B.begin_surface(ps.polygons.size(), ps.polygons.size());
 		int pidx = 0;
-#ifdef DEBUG
+#ifdef GEN_SURFACE_DEBUG
 		printf("polyhedron(faces=[");
 #endif
 		BOOST_FOREACH(const PolySet::Polygon &p, ps.polygons) {
-#ifdef DEBUG
+#ifdef GEN_SURFACE_DEBUG
 			if (pidx++ > 0) printf(",");
 #endif
 			indices.clear();
@@ -902,7 +902,7 @@ public:
 			}
 			if (!err && B.test_facet(indices.begin(), indices.end())) {
 				B.add_facet(indices.begin(), indices.end());
-#ifdef DEBUG
+#ifdef GEN_SURFACE_DEBUG
 				printf("[");
 				int fidx = 0;
 				BOOST_FOREACH(size_t i, indices) {
@@ -914,7 +914,7 @@ public:
 			}
 		}
 		B.end_surface();
-#ifdef DEBUG
+#ifdef GEN_SURFACE_DEBUG
 		printf("],\n");
 
 		printf("points=[");
