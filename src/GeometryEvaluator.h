@@ -52,8 +52,9 @@ private:
 		shared_ptr<const Geometry> const_pointer;
 	};
 
-	bool isCached(const AbstractNode &node) const;
-	void smartCache(const AbstractNode &node, const shared_ptr<const Geometry> &geom);
+	void smartCacheInsert(const AbstractNode &node, const shared_ptr<const Geometry> &geom);
+	shared_ptr<const Geometry> smartCacheGet(const AbstractNode &node, bool preferNef = false);
+	bool isSmartCached(const AbstractNode &node);
 	std::vector<const class Polygon2d *> collectChildren2D(const AbstractNode &node);
 	Geometry::ChildList collectChildren3D(const AbstractNode &node);
 	Polygon2d *applyMinkowski2D(const AbstractNode &node);

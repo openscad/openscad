@@ -34,18 +34,13 @@ GeometryEvaluator::GeometryEvaluator(const class Tree &tree):
 {
 }
 
-bool GeometryEvaluator::isCached(const AbstractNode &node) const
-{
-	return GeometryCache::instance()->contains(this->tree.getIdString(node));
-}
-
 /*!
 	Set allownef to false to force the result to _not_ be a Nef polyhedron
 */
 shared_ptr<const Geometry> GeometryEvaluator::evaluateGeometry(const AbstractNode &node, 
 																															 bool allownef)
 {
-	if (!isCached(node)) {
+	if (!GeometryCache::instance()->contains(this->tree.getIdString(node))) {
 		shared_ptr<const CGAL_Nef_polyhedron> N;
 		if (CGALCache::instance()->contains(this->tree.getIdString(node))) {
 			N = CGALCache::instance()->get(this->tree.getIdString(node));
@@ -63,7 +58,7 @@ shared_ptr<const Geometry> GeometryEvaluator::evaluateGeometry(const AbstractNod
 		if (!allownef) {
 			if (shared_ptr<const CGAL_Nef_polyhedron> N = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(this->root)) {
 				this->root.reset(N->convertToPolyset());
-				smartCache(node, this->root);
+				smartCacheInsert(node, this->root);
 			}
 		}
 		return this->root;
@@ -245,7 +240,7 @@ std::vector<const class Polygon2d *> GeometryEvaluator::collectChildren2D(const 
 		// a node is a valid object. If we inserted as we created them, the 
 		// cache could have been modified before we reach this point due to a large
 		// sibling object. 
-		smartCache(*chnode, chgeom);
+		smartCacheInsert(*chnode, chgeom);
 		
 		if (chgeom) {
 			if (chgeom->getDimension() == 2) {
@@ -266,22 +261,40 @@ std::vector<const class Polygon2d *> GeometryEvaluator::collectChildren2D(const 
 	the appropriate cache.
 	This method inserts the geometry into the appropriate cache if it's not already cached.
 */
-void GeometryEvaluator::smartCache(const AbstractNode &node, 
-																	 const shared_ptr<const Geometry> &geom)
+void GeometryEvaluator::smartCacheInsert(const AbstractNode &node, 
+																				 const shared_ptr<const Geometry> &geom)
 {
+	const std::string &key = this->tree.getIdString(node);
+
 	shared_ptr<const CGAL_Nef_polyhedron> N = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom);
 	if (N) {
-		if (!CGALCache::instance()->contains(this->tree.getIdString(node))) {
-			CGALCache::instance()->insert(this->tree.getIdString(node), N);
-		}
+		if (!CGALCache::instance()->contains(key)) CGALCache::instance()->insert(key, N);
 	}
 	else {
-		if (!isCached(node)) {
-			if (!GeometryCache::instance()->insert(this->tree.getIdString(node), geom)) {
-				PRINT("WARNING: GeometryEvaluator: Root node didn't fit into cache");
+		if (!GeometryCache::instance()->contains(key)) {
+			if (!GeometryCache::instance()->insert(key, geom)) {
+				PRINT("WARNING: GeometryEvaluator: Node didn't fit into cache");
 			}
 		}
 	}
+}
+
+bool GeometryEvaluator::isSmartCached(const AbstractNode &node)
+{
+	const std::string &key = this->tree.getIdString(node);
+	return (GeometryCache::instance()->contains(key) ||
+					CGALCache::instance()->contains(key));
+}
+
+shared_ptr<const Geometry> GeometryEvaluator::smartCacheGet(const AbstractNode &node, bool preferNef)
+{
+	const std::string &key = this->tree.getIdString(node);
+	shared_ptr<const Geometry> geom;
+	bool hasgeom = GeometryCache::instance()->contains(key);
+	bool hascgal = CGALCache::instance()->contains(key);
+	if (hascgal && (preferNef || !hasgeom)) geom = CGALCache::instance()->get(key);
+	else if (hasgeom) geom = GeometryCache::instance()->get(key);
+	return geom;
 }
 
 /*!
@@ -301,7 +314,7 @@ Geometry::ChildList GeometryEvaluator::collectChildren3D(const AbstractNode &nod
 		// a node is a valid object. If we inserted as we created them, the 
 		// cache could have been modified before we reach this point due to a large
 		// sibling object. 
-		smartCache(*chnode, chgeom);
+		smartCacheInsert(*chnode, chgeom);
 		
 		if (chgeom) {
 			if (chgeom->isEmpty() || chgeom->getDimension() == 3) {
@@ -368,24 +381,24 @@ void GeometryEvaluator::addToParent(const State &state,
 	}
 	else {
 		// Root node, insert into cache
-		smartCache(node, geom);
+		smartCacheInsert(node, geom);
 		this->root = geom;
 	}
 }
 
 /*!
-   Custom nodes, as well as RenderNode are handled here => implicit union
+   Custom nodes are handled here => implicit union
 */
 Response GeometryEvaluator::visit(State &state, const AbstractNode &node)
 {
-	if (state.isPrefix() && isCached(node)) return PruneTraversal;
+	if (state.isPrefix() && isSmartCached(node)) return PruneTraversal;
 	if (state.isPostfix()) {
 		shared_ptr<const class Geometry> geom;
-		if (!isCached(node)) {
+		if (!isSmartCached(node)) {
 			geom = applyToChildren(node, OPENSCAD_UNION).constptr();
 		}
 		else {
-			geom = GeometryCache::instance()->get(this->tree.getIdString(node));
+			geom = smartCacheGet(node);
 		}
 		addToParent(state, node, geom);
 	}
@@ -397,10 +410,10 @@ Response GeometryEvaluator::visit(State &state, const AbstractNode &node)
 */
 Response GeometryEvaluator::visit(State &state, const RenderNode &node)
 {
-	if (state.isPrefix() && isCached(node)) return PruneTraversal;
+	if (state.isPrefix() && isSmartCached(node)) return PruneTraversal;
 	if (state.isPostfix()) {
 		shared_ptr<const class Geometry> geom;
-		if (!isCached(node)) {
+		if (!isSmartCached(node)) {
 			ResultObject res = applyToChildren(node, OPENSCAD_UNION);
 
 			geom = res.constptr();
@@ -422,7 +435,7 @@ Response GeometryEvaluator::visit(State &state, const RenderNode &node)
 			}
 		}
 		else {
-			geom = GeometryCache::instance()->get(this->tree.getIdString(node));
+			geom = smartCacheGet(node);
 		}
 		addToParent(state, node, geom);
 	}
@@ -439,7 +452,7 @@ Response GeometryEvaluator::visit(State &state, const LeafNode &node)
 {
 	if (state.isPrefix()) {
 		shared_ptr<const Geometry> geom;
-		if (!isCached(node)) {
+		if (!isSmartCached(node)) {
 			const Geometry *geometry = node.createGeometry();
 			if (const Polygon2d *polygon = dynamic_cast<const Polygon2d*>(geometry)) {
 				if (!polygon->isSanitized()) {
@@ -450,7 +463,7 @@ Response GeometryEvaluator::visit(State &state, const LeafNode &node)
 			}
             geom.reset(geometry);
 		}
-		else geom = GeometryCache::instance()->get(this->tree.getIdString(node));
+		else geom = smartCacheGet(node);
 		addToParent(state, node, geom);
 	}
 	return PruneTraversal;
@@ -464,14 +477,14 @@ Response GeometryEvaluator::visit(State &state, const LeafNode &node)
  */			
 Response GeometryEvaluator::visit(State &state, const CsgNode &node)
 {
-	if (state.isPrefix() && isCached(node)) return PruneTraversal;
+	if (state.isPrefix() && isSmartCached(node)) return PruneTraversal;
 	if (state.isPostfix()) {
 		shared_ptr<const Geometry> geom;
-		if (!isCached(node)) {
+		if (!isSmartCached(node)) {
 			geom = applyToChildren(node, node.type).constptr();
 		}
 		else {
-			geom = GeometryCache::instance()->get(this->tree.getIdString(node));
+			geom = smartCacheGet(node);
 		}
 		addToParent(state, node, geom);
 	}
@@ -487,10 +500,10 @@ Response GeometryEvaluator::visit(State &state, const CsgNode &node)
  */			
 Response GeometryEvaluator::visit(State &state, const TransformNode &node)
 {
-	if (state.isPrefix() && isCached(node)) return PruneTraversal;
+	if (state.isPrefix() && isSmartCached(node)) return PruneTraversal;
 	if (state.isPostfix()) {
 		shared_ptr<const class Geometry> geom;
-		if (!isCached(node)) {
+		if (!isSmartCached(node)) {
 			if (matrix_contains_infinity(node.matrix) || matrix_contains_nan(node.matrix)) {
 				// due to the way parse/eval works we can't currently distinguish between NaN and Inf
 				PRINT("Warning: Transformation matrix contains Not-a-Number and/or Infinity - removing object.");
@@ -541,7 +554,7 @@ Response GeometryEvaluator::visit(State &state, const TransformNode &node)
 			}
 		}
 		else {
-			geom = GeometryCache::instance()->get(this->tree.getIdString(node));
+			geom = smartCacheGet(node);
 		}
 		addToParent(state, node, geom);
 	}
@@ -671,10 +684,10 @@ static Geometry *extrudePolygon(const LinearExtrudeNode &node, const Polygon2d &
  */			
 Response GeometryEvaluator::visit(State &state, const LinearExtrudeNode &node)
 {
-	if (state.isPrefix() && isCached(node)) return PruneTraversal;
+	if (state.isPrefix() && isSmartCached(node)) return PruneTraversal;
 	if (state.isPostfix()) {
 		shared_ptr<const Geometry> geom;
-		if (!isCached(node)) {
+		if (!isSmartCached(node)) {
 			const Geometry *geometry = NULL;
 			if (!node.filename.empty()) {
 				DxfData dxf(node.fn, node.fs, node.fa, node.filename, node.layername, node.origin_x, node.origin_y, node.scale_x);
@@ -694,7 +707,7 @@ Response GeometryEvaluator::visit(State &state, const LinearExtrudeNode &node)
 			}
 		}
 		else {
-			geom = GeometryCache::instance()->get(this->tree.getIdString(node));
+			geom = smartCacheGet(node);
 		}
 		addToParent(state, node, geom);
 	}
@@ -781,10 +794,10 @@ static Geometry *rotatePolygon(const RotateExtrudeNode &node, const Polygon2d &p
  */			
 Response GeometryEvaluator::visit(State &state, const RotateExtrudeNode &node)
 {
-	if (state.isPrefix() && isCached(node)) return PruneTraversal;
+	if (state.isPrefix() && isSmartCached(node)) return PruneTraversal;
 	if (state.isPostfix()) {
 		shared_ptr<const Geometry> geom;
-		if (!isCached(node)) {
+		if (!isSmartCached(node)) {
 			const Geometry *geometry = NULL;
 			if (!node.filename.empty()) {
 				DxfData dxf(node.fn, node.fs, node.fa, node.filename, node.layername, node.origin_x, node.origin_y, node.scale);
@@ -802,7 +815,7 @@ Response GeometryEvaluator::visit(State &state, const RotateExtrudeNode &node)
 			}
 		}
 		else {
-			geom = GeometryCache::instance()->get(this->tree.getIdString(node));
+			geom = smartCacheGet(node);
 		}
 		addToParent(state, node, geom);
 	}
@@ -827,10 +840,10 @@ Response GeometryEvaluator::visit(State &state, const AbstractPolyNode &node)
  */			
 Response GeometryEvaluator::visit(State &state, const ProjectionNode &node)
 {
-	if (state.isPrefix() && isCached(node)) return PruneTraversal;
+	if (state.isPrefix() && isSmartCached(node)) return PruneTraversal;
 	if (state.isPostfix()) {
 		shared_ptr<const class Geometry> geom;
-		if (!isCached(node)) {
+		if (!isSmartCached(node)) {
 
 			if (!node.cut_mode) {
 				ClipperLib::Clipper sumclipper;
@@ -912,7 +925,7 @@ Response GeometryEvaluator::visit(State &state, const ProjectionNode &node)
 			}
 		}
 		else {
-			geom = GeometryCache::instance()->get(this->tree.getIdString(node));
+			geom = smartCacheGet(node);
 		}
 		addToParent(state, node, geom);
 	}
@@ -927,10 +940,10 @@ Response GeometryEvaluator::visit(State &state, const ProjectionNode &node)
  */			
 Response GeometryEvaluator::visit(State &state, const CgaladvNode &node)
 {
-	if (state.isPrefix() && isCached(node)) return PruneTraversal;
+	if (state.isPrefix() && isSmartCached(node)) return PruneTraversal;
 	if (state.isPostfix()) {
 		shared_ptr<const Geometry> geom;
-		if (!isCached(node)) {
+		if (!isSmartCached(node)) {
 			switch (node.type) {
 			case MINKOWSKI: {
 				geom = applyToChildren(node, OPENSCAD_MINKOWSKI).constptr();
@@ -987,7 +1000,7 @@ Response GeometryEvaluator::visit(State &state, const CgaladvNode &node)
 			}
 		}
 		else {
-			geom = GeometryCache::instance()->get(this->tree.getIdString(node));
+			geom = smartCacheGet(node);
 		}
 		addToParent(state, node, geom);
 	}
@@ -996,14 +1009,14 @@ Response GeometryEvaluator::visit(State &state, const CgaladvNode &node)
 
 Response GeometryEvaluator::visit(State &state, const AbstractIntersectionNode &node)
 {
-	if (state.isPrefix() && isCached(node)) return PruneTraversal;
+	if (state.isPrefix() && isSmartCached(node)) return PruneTraversal;
 	if (state.isPostfix()) {
 		shared_ptr<const class Geometry> geom;
-		if (!isCached(node)) {
+		if (!isSmartCached(node)) {
 			geom = applyToChildren(node, OPENSCAD_INTERSECTION).constptr();
 		}
 		else {
-			geom = GeometryCache::instance()->get(this->tree.getIdString(node));
+			geom = smartCacheGet(node);
 		}
 		addToParent(state, node, geom);
 	}
