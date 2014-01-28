@@ -367,26 +367,7 @@ Polygon2d *GeometryEvaluator::applyToChildren2D(const AbstractNode &node, OpenSC
 		break;
 	}
 
-	if (clipType == ClipperLib::ctIntersection && !children.empty()) {
-		// intersection operations must be split into a sequence of binary operations
-
-		std::vector<const Polygon2d *> operands(2);
-		operands[0] = children[0];
-
-		for (int i = 1; i < children.size(); i++) {
-			operands[1] = children[i];
-			Polygon2d * result = ClipperUtils::apply(operands, clipType);
-			if (operands[0] != children[0]) delete operands[0];
-			operands[0] = result;
-		}
-
-		assert(children.size() >= 2);
-		// We know that this is ok
-		return const_cast<Polygon2d *>(operands[0]);
-	}
-	else {
-		return ClipperUtils::apply(children, clipType);
-	}
+	return ClipperUtils::apply(children, clipType);
 }
 
 /*!

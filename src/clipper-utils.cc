@@ -34,7 +34,13 @@ namespace ClipperUtils {
 		clipper.Execute(ClipperLib::ctUnion, result, ClipperLib::pftEvenOdd);
 		return result;
 	}
-
+	
+ /*!
+	 We want to use a PolyTree to convert to Polygon2d, since only PolyTrees
+	 have an explicit notion of holes.
+	 We could use a Paths structure, but we'd have to check the orientation of each
+	 path before adding it to the Polygon2d.
+ */
 	Polygon2d *toPolygon2d(const ClipperLib::PolyTree &poly) {
 		Polygon2d *result = new Polygon2d;
 		const ClipperLib::PolyNode *node = poly.GetFirst();
@@ -71,6 +77,23 @@ namespace ClipperUtils {
 									 ClipperLib::ClipType clipType)
 	{
 		ClipperLib::Clipper clipper;
+
+		if (clipType == ClipperLib::ctIntersection && pathsvector.size() > 2) {
+			// intersection operations must be split into a sequence of binary operations
+			ClipperLib::Paths source = pathsvector[0];
+			ClipperLib::PolyTree result;
+			for (int i = 1; i < pathsvector.size(); i++) {
+				clipper.AddPaths(source, ClipperLib::ptSubject, true);
+				clipper.AddPaths(pathsvector[i], ClipperLib::ptClip, true);
+				clipper.Execute(clipType, result, ClipperLib::pftNonZero, ClipperLib::pftNonZero);
+				if (i != pathsvector.size()-1) {
+                    ClipperLib::PolyTreeToPaths(result, source);
+                    clipper.Clear();
+                }
+			}
+			return ClipperUtils::toPolygon2d(result);
+		}
+
 		bool first = true;
 		BOOST_FOREACH(const ClipperLib::Paths &paths, pathsvector) {
 			clipper.AddPaths(paths, first ? ClipperLib::ptSubject : ClipperLib::ptClip, true);
