@@ -178,12 +178,13 @@ DxfData::DxfData(double fn, double fs, double fa,
 				ADD_LINE(xverts.at(0), yverts.at(0), xverts.at(1), yverts.at(1));
 			}
 			else if (mode == "LWPOLYLINE") {
-				assert(xverts.size() == yverts.size());
-				// polyline flag is stored in 'dimtype'
-				int numverts = xverts.size();
+				// assert(xverts.size() == yverts.size());
+				// Get maximum to enforce managed exception if xverts.size() != yverts.size()
+				int numverts = std::max(xverts.size(), yverts.size());
 				for (int i=1;i<numverts;i++) {
-					ADD_LINE(xverts[i-1], yverts[i-1], xverts[i%numverts], yverts[i%numverts]);
+					ADD_LINE(xverts.at(i-1), yverts.at(i-1), xverts.at(i%numverts), yverts.at(i%numverts));
 				}
+				// polyline flag is stored in 'dimtype'
 				if (dimtype & 0x01) { // closed polyline
 					ADD_LINE(xverts.at(numverts-1), yverts.at(numverts-1), xverts.at(0), yverts.at(0));
 				}
