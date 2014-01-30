@@ -27,6 +27,15 @@ import shutil
 import platform
 import string
 
+_debug_tcct = True
+
+def debug(*args):
+    global _debug_tcct
+    if _debug_tcct:
+	print 'test_cmdline_tool:',
+	for a in args: print a,
+	print
+
 def initialize_environment():
     if not options.generate: options.generate = bool(os.getenv("TEST_GENERATE"))
     return True
@@ -160,11 +169,12 @@ def run_test(testname, cmd, args):
             cmdline = ['wine']+[cmd] + args + [outputname]
         else:
             cmdline = [cmd] + args + [outputname]
-        print cmdline
+        
+        print 'cmdline:',cmdline
         proc = subprocess.Popen(cmdline, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         errtext = proc.communicate()[1]
         if errtext != None and len(errtext) > 0:
-            print >> sys.stderr, "Error output: " + errtext
+            print >> sys.stderr, "stderr output: " + errtext
         outfile.close()
         if proc.returncode != 0:
             print >> sys.stderr, "Error: %s failed with return code %d" % (cmdname, proc.returncode)
@@ -194,10 +204,66 @@ def usage():
     print >> sys.stderr, "  -c, --convexec=<name>    Path to ImageMagick 'convert' executable"
     print >> sys.stderr, "  -x, --mingw-cross-env    Mingw-cross-env cross compilation"
 
+#
+# export3d mesh tests
+#
+# every export3d test is named 'export3d_xxx_testname' where xxx is a 
+# format, like stl, off,&c. This script will parse the testname and then 
+# run openscad to generate an 3d output file. This script will then 
+# create a new .scad code file containing only a single 'import()' 
+# command on the generated 3d file. It will then re-run openscad on that 
+# newly generated 'import()' scad file and output a png image. Then the 
+# script will treat the generated PNG just like an ordinary test, 
+# looking for an 'expected' image and fuzz-comparing it to the actual 
+# generated image. During TEST_GENERATE, all of this is skipped, only a 
+# PNG is generated
+
+# modify the 'actualfilename' so that the first test run will generate a 
+# 3d file, like .stl
+def export3d_filename( actualfilename, options ):
+    debug('options cmd',options.cmd)
+    debug('options testname',options.testname)
+    debug('export3d test. modifying filenames')
+    debug('actual, before: ',actualfilename)
+
+    if options.testname[10:13]=='stl':
+        actualfilename = actualfilename[0:-4] + '.stl'
+    elif options.testname[10:13]=='off':
+        actualfilename = actualfilename[0:-4] + '.off'
+
+    debug('actual, after: ',actualfilename)
+
+    return actualfilename
+
+# using the previously generated 3d file, create a new .scad file
+# to import that 3d file, and then generate a PNG image for comparison.
+def create_png_for_export3d( actualfilename, options ):
+    scadcode = 'import("'+actualfilename+'");'
+    scadfilename = actualfilename+'.scad'
+    f = open(scadfilename,'wb')
+    f.write(scadcode)
+    f.close()
+        
+    debug('export/import test.')
+    #expectedfilename = expectedfilename[0:-4] + '.png'
+    actualfilename = actualfilename[0:-4] + '.png'
+    debug('fname:'+expectedfilename)
+    debug('opts',options.cmd)
+
+    verification = verify_test(options.testname, options.cmd)
+    if not verification: exit(1)
+
+    newargs = [ scadfilename ] + args[2:]
+
+    resultfile = run_test(options.testname, options.cmd, newargs)
+    return resultfile
+
 if __name__ == '__main__':
     # Handle command-line arguments
     try:
+        debug('args:'+str(sys.argv))
         opts, args = getopt.getopt(sys.argv[1:], "gs:e:c:t:f:m:x", ["generate", "convexec=", "suffix=", "expected_dir=", "test=", "file=", "comparator=", "mingw-cross-env"])
+        debug('getopt args:'+str(sys.argv))
     except getopt.GetoptError, err:
         usage()
         sys.exit(2)
@@ -253,8 +319,18 @@ if __name__ == '__main__':
 
     # Verify test environment
     verification = verify_test(options.testname, options.cmd)
+    if not verification: exit(1)
+
+    debug(options.testname)
+
+    if options.testname[0:8]=='export3d' and not options.generate:
+	actualfilename = export3d_filename( actualfilename, options )
 
     resultfile = run_test(options.testname, options.cmd, args[1:])
     if not resultfile: exit(1)
-    
-    if not verification or not compare_with_expected(resultfile): exit(1)
+
+    if options.testname[0:8]=='export3d' and not options.generate:
+        resultfile = create_png_for_export3d( actualfilename, options )
+        if not resultfile: exit(1)
+
+    if not compare_with_expected(resultfile): exit(1)
