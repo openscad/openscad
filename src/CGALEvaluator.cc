@@ -474,11 +474,11 @@ CGAL_Nef_polyhedron CGALEvaluator::evaluateCGALMesh(const PolySet &ps)
 		CGAL_Nef_polyhedron2 N;
 		Grid2d<CGAL_Nef_polyhedron2::Point> grid(GRID_COARSE);
 
-		for (int i = 0; i < ps.polygons.size(); i++) {
+		for (unsigned int i = 0; i < ps.polygons.size(); i++) {
 			std::list<CGAL_Nef_polyhedron2::Point> plist;
-			for (int j = 0; j < ps.polygons[i].size(); j++) {
-				double x = ps.polygons[i][j].x;
-				double y = ps.polygons[i][j].y;
+			for (unsigned int j = 0; j < ps.polygons[i].size(); j++) {
+				double x = ps.polygons[i][j].x();
+				double y = ps.polygons[i][j].y();
 				CGAL_Nef_polyhedron2::Point p;
 				if (grid.has(x, y)) {
 					p = grid.data(x, y);
@@ -491,7 +491,7 @@ CGAL_Nef_polyhedron CGALEvaluator::evaluateCGALMesh(const PolySet &ps)
 			N += CGAL_Nef_polyhedron2(plist.begin(), plist.end(), CGAL_Nef_polyhedron2::INCLUDED);
 		}
 
-		return CGAL_Nef_polyhedron(N);
+		return CGAL_Nef_polyhedron(&N);
 #endif
 #if 1
 		// This version of the code does essentially the same thing as the 2nd
