@@ -64,6 +64,7 @@ Preferences::Preferences(QWidget *parent) : QMainWindow(parent)
 	this->defaultmap["editor/fontfamily"] = found_family;
  	this->defaultmap["editor/fontsize"] = 12;
 	this->defaultmap["editor/syntaxhighlight"] = "For Light Background";
+	this->defaultmap["editor/showtooltips"] = true;
 
 	uint savedsize = getValue("editor/fontsize").toUInt();
 	QFontDatabase db;
@@ -287,6 +288,12 @@ void Preferences::on_syntaxHighlight_currentIndexChanged(const QString &s)
 	emit syntaxHighlightChanged(s);
 }
 
+void Preferences::on_toolTipsCheckBox_toggled(bool state)
+{
+	QSettings settings;
+	settings.setValue("editor/showtooltips", state);
+}
+
 void unimplemented_msg()
 {
   QMessageBox mbox;
@@ -426,6 +433,8 @@ void Preferences::updateGUI()
 	QString shighlight = getValue("editor/syntaxhighlight").toString();
 	int shidx = this->syntaxHighlight->findText(shighlight);
 	if (shidx >= 0) this->syntaxHighlight->setCurrentIndex(shidx);
+
+	this->toolTipsCheckBox->setChecked(getValue("editor/showtooltips").toBool());
 
 	if (AutoUpdater *updater = AutoUpdater::updater()) {
 		this->updateCheckBox->setChecked(updater->automaticallyChecksForUpdates());
