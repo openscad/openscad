@@ -27,6 +27,7 @@ public:
 	std::string layername;
 	int convexity;
 	double fn, fs, fa;
+	bool center;
 	double origin_x, origin_y, scale;
 	virtual Geometry *evaluate_geometry(class PolySetEvaluator *) const { return createGeometry(); }
 	virtual Geometry *createGeometry() const;
