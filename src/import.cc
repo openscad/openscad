@@ -136,6 +136,10 @@ AbstractNode *ImportModule::instantiate(const Context *ctx, const ModuleInstanti
 	if (node->scale <= 0)
 		node->scale = 1;
 
+	node->center = false;
+	Value center = c.lookup_variable("center", true);
+	if (center.type()==Value::BOOL) node->center = center.toBool();
+
 	return node;
 }
 
@@ -182,6 +186,15 @@ void read_stl_facet( std::ifstream &f, stl_facet &facet )
 #endif
 }
 
+// translate the polyset so it's center is at 0,0,0
+void center_polyset( PolySet &p )
+{
+	BoundingBox bb = p.getBoundingBox();
+	Vector3d t = -bb.min();
+	t -= (bb.max()-bb.min()) / 2;
+	p.translate( t );
+}
+
 /*!
 	Will return an empty geometry if the import failed, but not NULL
 */
@@ -209,6 +222,10 @@ Geometry *ImportNode::createGeometry() const
 
 		bool binary = false;
 		std::streampos file_size = f.tellg();
+		if (file_size==0) {
+			PRINTB("WARNING: Import file '%s' has size of 0.", this->filename);
+			return g;
+		}
 		f.seekg(80);
 		if (!f.eof()) {
 			uint32_t facenum = 0;
@@ -274,6 +291,7 @@ Geometry *ImportNode::createGeometry() const
 				p->append_vertex(facet.data.x3, facet.data.y3, facet.data.z3);
 			}
 		}
+		if (this->center) center_polyset(*p);
 	}
 		break;
 	case TYPE_OFF: {
@@ -290,6 +308,7 @@ Geometry *ImportNode::createGeometry() const
 			file.close();
 			
 			bool err = createPolySetFromPolyhedron(poly, *p);
+			if (!err && this->center) center_polyset(*p);
 		}
 #else
   PRINT("WARNING: OFF import requires CGAL.");
