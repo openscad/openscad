@@ -91,9 +91,11 @@ void export_png_preview_common( Tree &tree, Camera &cam, std::ostream &output, P
 	}
 
 	csgInfo.glview->setCamera( cam );
+#ifdef ENABLE_OPENCSG
 	if ( previewer == OPENCSG )
 		csgInfo.glview->setRenderer( &openCSGRenderer );
 	else
+#endif
 		csgInfo.glview->setRenderer( &thrownTogetherRenderer );
 #ifdef ENABLE_OPENCSG
 	OpenCSG::setContext( 0 );
