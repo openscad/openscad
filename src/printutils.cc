@@ -5,6 +5,7 @@
 std::list<std::string> print_messages_stack;
 OutputHandlerFunc *outputhandler = NULL;
 void *outputhandler_data = NULL;
+std::string OpenSCAD::debug("");
 
 void set_output_handler(OutputHandlerFunc *newhandler, void *userdata)
 {
