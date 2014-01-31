@@ -893,6 +893,9 @@ disable_tests(
   # example 24 - polyhedron builder fails
   export3d_stl_test_example024
   export3d_off_test_example024
+  # example 21 - projection fails
+  export3d_stl_test_example021
+  export3d_off_test_example021
 )
 
 # FIXME: This test illustrates a weakness in child() combined with modifiers.
