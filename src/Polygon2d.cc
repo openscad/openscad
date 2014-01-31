@@ -1,4 +1,5 @@
 #include "Polygon2d.h"
+#include "printutils.h"
 #include <boost/foreach.hpp>
 
 /*!
@@ -54,6 +55,11 @@ bool Polygon2d::isEmpty() const
 
 void Polygon2d::transform(const Transform2d &mat)
 {
+	if (mat.matrix().determinant() == 0) {
+		PRINT("Warning: Scaling a 2D object with 0 - removing object");
+		this->theoutlines.clear();
+		return;
+	}
 	BOOST_FOREACH(Outline2d &o, this->theoutlines) {
 		BOOST_FOREACH(Vector2d &v, o.vertices) {
 			v = mat * v;

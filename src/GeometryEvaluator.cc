@@ -342,6 +342,14 @@ Polygon2d *GeometryEvaluator::applyToChildren2D(const AbstractNode &node, OpenSC
 
 	std::vector<const Polygon2d *> children = collectChildren2D(node);
 
+	if (children.empty()) {
+		return NULL;
+	}
+
+	if (children.size() == 1) {
+		return new Polygon2d(*children[0]); // Copy
+	}
+
 	ClipperLib::ClipType clipType;
 	switch (op) {
 	case OPENSCAD_UNION:
