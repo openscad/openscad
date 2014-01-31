@@ -51,6 +51,27 @@ void PRINT_NOCACHE(const std::string &msg)
 	}
 }
 
+void PRINTDEBUG(const std::string &filename, const std::string &msg)
+{
+	// see printutils.h for usage instructions
+	if (OpenSCAD::debug=="") return;
+	std::string fname(filename);
+	std::string lowdebug( OpenSCAD::debug );
+	boost::replace_all( fname, "src/", "" );
+	std::string shortfname(fname);
+	boost::replace_all( shortfname, ".cc", "");
+	boost::replace_all( shortfname, ".h", "");
+	boost::replace_all( shortfname, ".hpp", "");
+	std::string lowshortfname( shortfname );
+	boost::algorithm::to_lower( lowshortfname );
+	boost::algorithm::to_lower( lowdebug );
+	if (OpenSCAD::debug=="all") {
+		PRINT_NOCACHE( shortfname+": "+ msg );
+	} else if (lowshortfname.find(lowdebug) != std::string::npos) {
+		PRINT_NOCACHE( shortfname+": "+ msg );
+	}
+}
+
 std::string two_digit_exp_format( std::string doublestr )
 {
 #ifdef _WIN32
