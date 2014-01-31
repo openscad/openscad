@@ -581,6 +581,7 @@ int main(int argc, char **argv)
 		("camera", po::value<string>(), "parameters for camera when exporting png")
 	        ("imgsize", po::value<string>(), "=width,height for exporting png")
 		("projection", po::value<string>(), "(o)rtho or (p)erspective when exporting png")
+                ("debug", po::value<string>(), "special debug info")
 		("o,o", po::value<string>(), "out-file")
 		("s,s", po::value<string>(), "stl-file")
 		("x,x", po::value<string>(), "dxf-file")
@@ -608,6 +609,8 @@ int main(int argc, char **argv)
 		help(argv[0]);
 	}
 
+	OpenSCAD::debug = "";
+	if (vm.count("debug")) OpenSCAD::debug = vm["debug"].as<string>();
 	if (vm.count("help")) help(argv[0]);
 	if (vm.count("version")) version();
 	if (vm.count("info")) info();
