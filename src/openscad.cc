@@ -518,6 +518,7 @@ Q_IMPORT_PLUGIN(qtaccessiblewidgets)
 #include <QDir>
 #include <QFileInfo>
 #include <QMetaType>
+#include <QTextCodec>
 
 Q_DECLARE_METATYPE(shared_ptr<const Geometry>);
 
@@ -567,6 +568,8 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 	QCoreApplication::setApplicationVersion(TOSTRING(OPENSCAD_VERSION));
 #if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
 	QGuiApplication::setApplicationDisplayName("OpenSCAD");
+#else
+	QTextCodec::setCodecForCStrings(QTextCodec::codecForName("UTF-8"));
 #endif
 	
 	// Other global settings
