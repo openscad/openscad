@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OpenSCAD 2014.01.05\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-01-09 18:17+0100\n"
-"PO-Revision-Date: 2014-01-09 19:37+0100\n"
+"POT-Creation-Date: 2014-10-19 00:48+0200\n"
+"PO-Revision-Date: 2014-10-19 00:48+0100\n"
 "Last-Translator: Torsten Paul <Torsten.Paul@gmx.de>\n"
 "Language-Team: German\n"
 "Language: de\n"
@@ -22,465 +22,604 @@ msgstr ""
 msgid "About OpenSCAD"
 msgstr "Über OpenSCAD"
 
-#: objects/ui_MainWindow.h:470
-msgid "MainWindow"
-msgstr "MainWindow"
+#: objects/ui_FontListDialog.h:102
+msgid "OpenSCAD Font List"
+msgstr "OpenSCAD Font Liste"
 
-#: objects/ui_MainWindow.h:471
+#: objects/ui_FontListDialog.h:103 objects/ui_LibraryInfoDialog.h:77
+msgid "&OK"
+msgstr "OK"
+
+#: objects/ui_FontListDialog.h:105
+msgid "Paste font selector to Editor Window"
+msgstr "Font Auswahl in Editor kopieren"
+
+#: objects/ui_FontListDialog.h:107
+msgid "Copy to Clipboard"
+msgstr "Kopieren"
+
+#: objects/ui_FontListDialog.h:108
+msgid "Filter:"
+msgstr "Filter:"
+
+#: objects/ui_FontListDialog.h:109
+msgid ""
+"<html><head/><body><p>This list shows the fonts currently registered with "
+"OpenSCAD.</p><p>Example:</p><pre style=\" margin-top:12px; margin-"
+"bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-"
+"indent:0px;\"><span style=\" font-family:'Courier New,courier';\">  text(t = "
+"&quot;OpenSCAD&quot;, font = &quot;DejaVu Sans&quot;);</span></pre><pre "
+"style=\" margin-top:0px; margin-bottom:12px; margin-left:0px; margin-"
+"right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-"
+"family:'Courier New,courier';\">  text(t = &quot;OpenSCAD&quot;, font = "
+"&quot;Liberation Sans:style=Italic&quot;);</span></pre></body></html>"
+msgstr ""
+"<html><head/><body><p>This list shows the fonts currently registered with "
+"OpenSCAD.</p><p>Example:</p><pre style=\" margin-top:12px; margin-"
+"bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-"
+"indent:0px;\"><span style=\" font-family:'Courier New,courier';\">  text(t = "
+"&quot;OpenSCAD&quot;, font = &quot;DejaVu Sans&quot;);</span></pre><pre "
+"style=\" margin-top:0px; margin-bottom:12px; margin-left:0px; margin-"
+"right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-"
+"family:'Courier New,courier';\">  text(t = &quot;OpenSCAD&quot;, font = "
+"&quot;Liberation Sans:style=Italic&quot;);</span></pre></body></html>"
+
+#: objects/ui_LibraryInfoDialog.h:75
+msgid "Lib & Build Info"
+msgstr "Lib & Build Info"
+
+#: objects/ui_LibraryInfoDialog.h:76
+msgid "OpenSCAD Detailed Library and Build Information"
+msgstr "OpenSCAD Detailed Library and Build Information"
+
+#: objects/ui_MainWindow.h:732
 msgid "&New"
 msgstr "&Neu"
 
-#: objects/ui_MainWindow.h:472
+#: objects/ui_MainWindow.h:733
 msgid "Ctrl+N"
 msgstr "Ctrl+N"
 
-#: objects/ui_MainWindow.h:473
+#: objects/ui_MainWindow.h:734
 msgid "&Open..."
 msgstr "Ö&ffnen"
 
-#: objects/ui_MainWindow.h:474
+#: objects/ui_MainWindow.h:735
 msgid "Ctrl+O"
 msgstr "Ctrl+O"
 
-#: objects/ui_MainWindow.h:475
+#: objects/ui_MainWindow.h:736
 msgid "&Save"
 msgstr "&Speichern"
 
-#: objects/ui_MainWindow.h:476
+#: objects/ui_MainWindow.h:737
 msgid "Ctrl+S"
 msgstr "Ctrl+S"
 
-#: objects/ui_MainWindow.h:477
+#: objects/ui_MainWindow.h:738
 msgid "Save &As..."
 msgstr "Speichern &Unter..."
 
-#: objects/ui_MainWindow.h:478
+#: objects/ui_MainWindow.h:739
 msgid "Ctrl+Shift+S"
 msgstr "Ctrl+Shift+S"
 
-#: objects/ui_MainWindow.h:479
+#: objects/ui_MainWindow.h:740
 msgid "&Reload"
 msgstr "Neu &laden"
 
-#: objects/ui_MainWindow.h:480
+#: objects/ui_MainWindow.h:741
 msgid "Ctrl+R"
 msgstr "Ctrl+R"
 
-#: objects/ui_MainWindow.h:481
+#: objects/ui_MainWindow.h:742
 msgid "&Quit"
 msgstr "&Beenden"
 
-#: objects/ui_MainWindow.h:482
+#: objects/ui_MainWindow.h:743
 msgid "Ctrl+Q"
 msgstr "Ctrl+Q"
 
-#: objects/ui_MainWindow.h:483
+#: objects/ui_MainWindow.h:744
 msgid "&Undo"
 msgstr "&Rückgängig"
 
-#: objects/ui_MainWindow.h:484
+#: objects/ui_MainWindow.h:745
 msgid "Ctrl+Z"
 msgstr "Ctrl+Z"
 
-#: objects/ui_MainWindow.h:485
+#: objects/ui_MainWindow.h:746
 msgid "&Redo"
 msgstr "&Wiederholen"
 
-#: objects/ui_MainWindow.h:486
+#: objects/ui_MainWindow.h:747
 msgid "Ctrl+Shift+Z"
 msgstr "Ctrl+Shift+Z"
 
-#: objects/ui_MainWindow.h:487
+#: objects/ui_MainWindow.h:748
 msgid "Cu&t"
 msgstr "Ausschneiden"
 
-#: objects/ui_MainWindow.h:488
+#: objects/ui_MainWindow.h:749
 msgid "Ctrl+X"
 msgstr "Ctrl+X"
 
-#: objects/ui_MainWindow.h:489
+#: objects/ui_MainWindow.h:750
 msgid "&Copy"
 msgstr "Kopieren"
 
-#: objects/ui_MainWindow.h:490
+#: objects/ui_MainWindow.h:751
 msgid "Ctrl+C"
 msgstr "Ctrl+C"
 
-#: objects/ui_MainWindow.h:491
+#: objects/ui_MainWindow.h:752
 msgid "&Paste"
 msgstr "Einfügen"
 
-#: objects/ui_MainWindow.h:492
+#: objects/ui_MainWindow.h:753
 msgid "Ctrl+V"
 msgstr "Ctrl+V"
 
-#: objects/ui_MainWindow.h:493
+#: objects/ui_MainWindow.h:754
 msgid "&Indent"
 msgstr "Einzug erhöhen"
 
-#: objects/ui_MainWindow.h:494
+#: objects/ui_MainWindow.h:755
 msgid "Ctrl+I"
 msgstr "Ctrl+I"
 
-#: objects/ui_MainWindow.h:495
+#: objects/ui_MainWindow.h:756
 msgid "U&nindent"
 msgstr "Einzug vermindern"
 
-#: objects/ui_MainWindow.h:496
+#: objects/ui_MainWindow.h:757
 msgid "Ctrl+Shift+I"
 msgstr "Ctrl+Shift+I"
 
-#: objects/ui_MainWindow.h:497
+#: objects/ui_MainWindow.h:758
 msgid "C&omment"
 msgstr "K&ommentieren"
 
-#: objects/ui_MainWindow.h:498
+#: objects/ui_MainWindow.h:759
 msgid "Ctrl+D"
 msgstr "Ctrl+D"
 
-#: objects/ui_MainWindow.h:499
+#: objects/ui_MainWindow.h:760
 msgid "Unco&mment"
 msgstr "Kommentar entfernen"
 
-#: objects/ui_MainWindow.h:500
+#: objects/ui_MainWindow.h:761
 msgid "Ctrl+Shift+D"
 msgstr "Ctrl+Shift+D"
 
-#: objects/ui_MainWindow.h:501
+#: objects/ui_MainWindow.h:762
 msgid "Paste viewport translation"
 msgstr "Aktuelle Verschiebung einfügen"
 
-#: objects/ui_MainWindow.h:502
+#: objects/ui_MainWindow.h:763
 msgid "Ctrl+T"
 msgstr "Ctrl+T"
 
-#: objects/ui_MainWindow.h:503
+#: objects/ui_MainWindow.h:764
 msgid "Paste viewport rotation"
 msgstr "Aktuelle Rotation einfügen"
 
-#: objects/ui_MainWindow.h:504
+#: objects/ui_MainWindow.h:765 objects/ui_MainWindow.h:844
 msgid "Zoom In"
 msgstr "Vergrößern"
 
-#: objects/ui_MainWindow.h:505
+#: objects/ui_MainWindow.h:766
 msgid "Ctrl++"
 msgstr "Ctrl++"
 
-#: objects/ui_MainWindow.h:506
+#: objects/ui_MainWindow.h:767 objects/ui_MainWindow.h:846
 msgid "Zoom Out"
 msgstr "Verkleinern"
 
-#: objects/ui_MainWindow.h:507
+#: objects/ui_MainWindow.h:768
 msgid "Ctrl+-"
 msgstr "Ctrl+-"
 
-#: objects/ui_MainWindow.h:508
+#: objects/ui_MainWindow.h:769
 msgid "Hide editor"
 msgstr "Editor verstecken"
 
-#: objects/ui_MainWindow.h:509
-msgid "&Reload and Compile"
+#: objects/ui_MainWindow.h:770
+msgid "&Reload and Preview"
 msgstr "Neu laden und übersetzen"
 
-#: objects/ui_MainWindow.h:510
+#: objects/ui_MainWindow.h:771
 msgid "F4"
 msgstr "F4"
 
-#: objects/ui_MainWindow.h:511
-msgid "&Compile"
-msgstr "Übersetzen"
+#: objects/ui_MainWindow.h:772
+msgid "&Preview"
+msgstr "Vorschau"
 
-#: objects/ui_MainWindow.h:512
+#: objects/ui_MainWindow.h:773
 msgid "F5"
 msgstr "F5"
 
-#: objects/ui_MainWindow.h:513
-msgid "Compile and &Render (CGAL)"
-msgstr "Übersetzen und Rendern (CGAL)"
+#: objects/ui_MainWindow.h:774
+msgid "&Render"
+msgstr "Rendern"
 
-#: objects/ui_MainWindow.h:514
+#: objects/ui_MainWindow.h:775
 msgid "F6"
 msgstr "F6"
 
-#: objects/ui_MainWindow.h:515
+#: objects/ui_MainWindow.h:776
+msgid "Check Validity"
+msgstr "Design überprüfen"
+
+#: objects/ui_MainWindow.h:777
 msgid "Display &AST..."
 msgstr "&AST Baum anzeigen..."
 
-#: objects/ui_MainWindow.h:516
+#: objects/ui_MainWindow.h:778
 msgid "Display CSG &Tree..."
 msgstr "CSG Baum anzeigen..."
 
-#: objects/ui_MainWindow.h:517
+#: objects/ui_MainWindow.h:779
 msgid "Display CSG &Products..."
 msgstr "CSG Gleichungen anzeigen..."
 
-#: objects/ui_MainWindow.h:518
+#: objects/ui_MainWindow.h:780
 msgid "Export as &STL..."
 msgstr "&STL exportieren..."
 
-#: objects/ui_MainWindow.h:519
+#: objects/ui_MainWindow.h:781
 msgid "Export as &OFF..."
 msgstr "&OFF exportieren..."
 
-#: objects/ui_MainWindow.h:520 objects/ui_Preferences.h:548
-msgid "OpenCSG"
-msgstr "OpenCSG"
+#: objects/ui_MainWindow.h:782
+msgid "Preview"
+msgstr "Vorschau"
 
-#: objects/ui_MainWindow.h:521
+#: objects/ui_MainWindow.h:783
 msgid "F9"
 msgstr "F9"
 
-#: objects/ui_MainWindow.h:522
-msgid "CGAL Surfaces"
-msgstr "CGAL Flächen anzeigen"
+#: objects/ui_MainWindow.h:784
+msgid "Surfaces"
+msgstr "Flächen anzeigen"
 
-#: objects/ui_MainWindow.h:523
+#: objects/ui_MainWindow.h:785
 msgid "F10"
 msgstr "F10"
 
-#: objects/ui_MainWindow.h:524
-msgid "CGAL Grid Only"
-msgstr "CGAL Gitter anzeigen"
+#: objects/ui_MainWindow.h:786
+msgid "Wireframe"
+msgstr "Gittermodell"
 
-#: objects/ui_MainWindow.h:525
+#: objects/ui_MainWindow.h:787
 msgid "F11"
 msgstr "F11"
 
-#: objects/ui_MainWindow.h:526
+#: objects/ui_MainWindow.h:788
 msgid "Thrown Together"
 msgstr "Kombinierte Anzeige"
 
-#: objects/ui_MainWindow.h:527
+#: objects/ui_MainWindow.h:789
 msgid "F12"
 msgstr "F12"
 
-#: objects/ui_MainWindow.h:528
+#: objects/ui_MainWindow.h:790
 msgid "Show Edges"
 msgstr "Kanten anzeigen"
 
-#: objects/ui_MainWindow.h:529
+#: objects/ui_MainWindow.h:791
 msgid "Ctrl+1"
 msgstr "Ctrl+1"
 
-#: objects/ui_MainWindow.h:530
+#: objects/ui_MainWindow.h:792
 msgid "Show Axes"
 msgstr "Koordinatenachsen anzeigen"
 
-#: objects/ui_MainWindow.h:531
+#: objects/ui_MainWindow.h:793
 msgid "Ctrl+2"
 msgstr "Ctrl+2"
 
-#: objects/ui_MainWindow.h:532
+#: objects/ui_MainWindow.h:794
 msgid "Show Crosshairs"
 msgstr "Diagonalen anzeigen"
 
-#: objects/ui_MainWindow.h:533
+#: objects/ui_MainWindow.h:795
 msgid "Ctrl+3"
 msgstr "Ctrl+3"
 
-#: objects/ui_MainWindow.h:534
+#: objects/ui_MainWindow.h:796
 msgid "Animate"
 msgstr "Animation"
 
-#: objects/ui_MainWindow.h:535
+#: objects/ui_MainWindow.h:797
 msgid "Top"
 msgstr "Oben"
 
-#: objects/ui_MainWindow.h:536
+#: objects/ui_MainWindow.h:798
 msgid "Ctrl+4"
 msgstr "Ctrl+4"
 
-#: objects/ui_MainWindow.h:537
+#: objects/ui_MainWindow.h:799
 msgid "Bottom"
 msgstr "Unten"
 
-#: objects/ui_MainWindow.h:538
+#: objects/ui_MainWindow.h:800
 msgid "Ctrl+5"
 msgstr "Ctrl+5"
 
-#: objects/ui_MainWindow.h:539
+#: objects/ui_MainWindow.h:801
 msgid "Left"
 msgstr "Links"
 
-#: objects/ui_MainWindow.h:540
+#: objects/ui_MainWindow.h:802
 msgid "Ctrl+6"
 msgstr "Ctrl+6"
 
-#: objects/ui_MainWindow.h:541
+#: objects/ui_MainWindow.h:803
 msgid "Right"
 msgstr "Rechts"
 
-#: objects/ui_MainWindow.h:542
+#: objects/ui_MainWindow.h:804
 msgid "Ctrl+7"
 msgstr "Ctrl+7"
 
-#: objects/ui_MainWindow.h:543
+#: objects/ui_MainWindow.h:805
 msgid "Front"
 msgstr "Vorn"
 
-#: objects/ui_MainWindow.h:544
+#: objects/ui_MainWindow.h:806
 msgid "Ctrl+8"
 msgstr "Ctrl+8"
 
-#: objects/ui_MainWindow.h:545
+#: objects/ui_MainWindow.h:807
 msgid "Back"
 msgstr "Hinten"
 
-#: objects/ui_MainWindow.h:546
+#: objects/ui_MainWindow.h:808
 msgid "Ctrl+9"
 msgstr "Ctrl+9"
 
-#: objects/ui_MainWindow.h:547
+#: objects/ui_MainWindow.h:809
 msgid "Diagonal"
 msgstr "Diagonal"
 
-#: objects/ui_MainWindow.h:548
+#: objects/ui_MainWindow.h:810
 msgid "Ctrl+0"
 msgstr "Ctrl+0"
 
-#: objects/ui_MainWindow.h:549
+#: objects/ui_MainWindow.h:811
 msgid "Center"
 msgstr "Zentriert"
 
-#: objects/ui_MainWindow.h:550
-msgid "Ctrl+P"
-msgstr "Ctrl+P"
-
-#: objects/ui_MainWindow.h:551
+#: objects/ui_MainWindow.h:812
 msgid "Perspective"
 msgstr "Perspektivisch"
 
-#: objects/ui_MainWindow.h:552
+#: objects/ui_MainWindow.h:813
 msgid "Orthogonal"
 msgstr "Orthogonal"
 
-#: objects/ui_MainWindow.h:553
+#: objects/ui_MainWindow.h:814
 msgid "Hide console"
 msgstr "Konsole verstecken"
 
-#: objects/ui_MainWindow.h:554
+#: objects/ui_MainWindow.h:815
 msgid "About"
 msgstr "Über OpenSCAD"
 
-#: objects/ui_MainWindow.h:555
+#: objects/ui_MainWindow.h:816
 msgid "Documentation"
 msgstr "Dokumentation"
 
-#: objects/ui_MainWindow.h:556
+#: objects/ui_MainWindow.h:817
 msgid "Clear Recent"
 msgstr "Clear Recent"
 
-#: objects/ui_MainWindow.h:557
+#: objects/ui_MainWindow.h:818
 msgid "Export as DXF..."
 msgstr "DXF exportieren..."
 
-#: objects/ui_MainWindow.h:558 objects/ui_OpenCSGWarningDialog.h:94
+#: objects/ui_MainWindow.h:819 objects/ui_OpenCSGWarningDialog.h:94
 msgid "Close"
 msgstr "Schließen"
 
-#: objects/ui_MainWindow.h:559
+#: objects/ui_MainWindow.h:820
 msgid "Ctrl+W"
 msgstr "Ctrl+W"
 
-#: objects/ui_MainWindow.h:560 objects/ui_Preferences.h:514
+#: objects/ui_MainWindow.h:821 objects/ui_Preferences.h:609
 msgid "Preferences"
 msgstr "Einstellungen"
 
-#: objects/ui_MainWindow.h:561
+#: objects/ui_MainWindow.h:822
+msgid "Find..."
+msgstr "Suchen..."
+
+#: objects/ui_MainWindow.h:823
+msgid "Ctrl+F"
+msgstr "Ctrl+F"
+
+#: objects/ui_MainWindow.h:824
+msgid "Find and Replace..."
+msgstr "Suchen und Ersetzen..."
+
+#: objects/ui_MainWindow.h:825
+msgid "Ctrl+Alt+F"
+msgstr "Ctrl+Alt+F"
+
+#: objects/ui_MainWindow.h:826
+msgid "Find Next"
+msgstr "Weiter suchen"
+
+#: objects/ui_MainWindow.h:827
+msgid "Ctrl+G"
+msgstr "Ctrl+G"
+
+#: objects/ui_MainWindow.h:828
+msgid "Find Previous"
+msgstr "Rückwärts suchen"
+
+#: objects/ui_MainWindow.h:829
+msgid "Ctrl+Shift+G"
+msgstr "Ctrl+Shift+G"
+
+#: objects/ui_MainWindow.h:830
+msgid "Use Selection for Find"
+msgstr "Auswahl suchen"
+
+#: objects/ui_MainWindow.h:831
+msgid "Ctrl+E"
+msgstr "Ctrl+E"
+
+#: objects/ui_MainWindow.h:832
 msgid "Flush Caches"
 msgstr "Cache leeren"
 
-#: objects/ui_MainWindow.h:562
+#: objects/ui_MainWindow.h:833
 msgid "OpenSCAD Homepage"
 msgstr "OpenSCAD Homepage"
 
-#: objects/ui_MainWindow.h:563
-msgid "Automatic Reload and Compile"
+#: objects/ui_MainWindow.h:834
+msgid "Automatic Reload and Preview"
 msgstr "Automatisch neu Laden und Übersetzen"
 
-#: objects/ui_MainWindow.h:564
+#: objects/ui_MainWindow.h:835
 msgid "Export as Image..."
 msgstr "Image exportieren..."
 
-#: objects/ui_MainWindow.h:565
+#: objects/ui_MainWindow.h:836
 msgid "Export as CSG..."
 msgstr "CSG exportieren..."
 
-#: objects/ui_MainWindow.h:566
+#: objects/ui_MainWindow.h:837
 msgid "Library info"
 msgstr "System Informationen"
 
-#: objects/ui_MainWindow.h:567
+#: objects/ui_MainWindow.h:838
 msgid "Check for Update.."
 msgstr "Neue Version suchen..."
 
-#: objects/ui_MainWindow.h:568
+#: objects/ui_MainWindow.h:839
 msgid "Show Library Folder..."
 msgstr "Bibliotheken anzeigen..."
 
-#: objects/ui_MainWindow.h:569
+#: objects/ui_MainWindow.h:840
 msgid "Reset View"
 msgstr "Ansicht zurücksetzen"
 
-#: objects/ui_MainWindow.h:571 objects/ui_Preferences.h:517
-msgid "Editor"
-msgstr "Editor"
+#: objects/ui_MainWindow.h:841
+msgid "Font List"
+msgstr "Font Liste"
 
-#: objects/ui_MainWindow.h:574
-msgid "Editor for SCAD code"
-msgstr "Editor for SCAD code"
+#: objects/ui_MainWindow.h:842
+msgid "Export as SVG..."
+msgstr "SVG exportieren..."
 
-#: objects/ui_MainWindow.h:577
-msgid "Console"
-msgstr "Console"
+#: objects/ui_MainWindow.h:843
+msgid "Export as AMF..."
+msgstr "AMF exportieren..."
 
-#: objects/ui_MainWindow.h:580
-msgid "Console messages"
-msgstr "Console messages"
+#: objects/ui_MainWindow.h:845
+msgid "Ctrl+]"
+msgstr "Ctrl+]"
 
-#: objects/ui_MainWindow.h:582
+#: objects/ui_MainWindow.h:847
+msgid "Ctrl+["
+msgstr "Ctrl+["
+
+#: objects/ui_MainWindow.h:848
+msgid "View All"
+msgstr "Alles anzeigen"
+
+#: objects/ui_MainWindow.h:849
+msgid "Convert Tabs to Spaces"
+msgstr "Tabs in Leerzeichen konvertieren"
+
+#: objects/ui_MainWindow.h:850
+msgid "Hide toolbars"
+msgstr "Symbolleisten verstecken"
+
+#: objects/ui_MainWindow.h:851
 msgid "Time:"
 msgstr "Zeit:"
 
-#: objects/ui_MainWindow.h:583
+#: objects/ui_MainWindow.h:852
 msgid "FPS:"
 msgstr "FPS:"
 
-#: objects/ui_MainWindow.h:584
+#: objects/ui_MainWindow.h:853
 msgid "Steps:"
 msgstr "Schritte:"
 
-#: objects/ui_MainWindow.h:585
+#: objects/ui_MainWindow.h:854
 msgid "Dump Pictures"
 msgstr "Bilder ausgeben"
 
-#: objects/ui_MainWindow.h:586
+#: objects/ui_MainWindow.h:855
 msgid "&File"
 msgstr "&Datei"
 
-#: objects/ui_MainWindow.h:587
-msgid "Open Recent"
+#: objects/ui_MainWindow.h:856
+msgid "Recent Files"
 msgstr "Zuletzt benutze Dateien"
 
-#: objects/ui_MainWindow.h:588
+#: objects/ui_MainWindow.h:857 objects/ui_launchingscreen.h:282
+#: objects/ui_launchingscreen.h:284
 msgid "Examples"
 msgstr "Beispiele"
 
-#: objects/ui_MainWindow.h:589
+#: objects/ui_MainWindow.h:858
+msgid "Export"
+msgstr "Exportieren"
+
+#: objects/ui_MainWindow.h:859
 msgid "&Edit"
 msgstr "&Bearbeiten"
 
-#: objects/ui_MainWindow.h:590
+#: objects/ui_MainWindow.h:860
 msgid "&Design"
 msgstr "&Design"
 
-#: objects/ui_MainWindow.h:591
+#: objects/ui_MainWindow.h:861
 msgid "&View"
 msgstr "&Ansicht"
 
-#: objects/ui_MainWindow.h:592
+#: objects/ui_MainWindow.h:862
 msgid "&Help"
 msgstr "&Hilfe"
+
+#: objects/ui_MainWindow.h:865
+msgid "Find"
+msgstr "Suchen"
+
+#: objects/ui_MainWindow.h:866 objects/ui_MainWindow.h:873
+msgid "Replace"
+msgstr "Ersetzen"
+
+#: objects/ui_MainWindow.h:868
+msgid "Search string"
+msgstr "Suchtext"
+
+#: objects/ui_MainWindow.h:869
+msgid "<"
+msgstr "<"
+
+#: objects/ui_MainWindow.h:870
+msgid ">"
+msgstr ">"
+
+#: objects/ui_MainWindow.h:871
+msgid "Done"
+msgstr "Fertig"
+
+#: objects/ui_MainWindow.h:872
+msgid "Replacement string"
+msgstr "Ersetzen mit"
+
+#: objects/ui_MainWindow.h:874
+msgid "All"
+msgstr "Alles"
 
 #: objects/ui_OpenCSGWarningDialog.h:86
 msgid "OpenGL Warning"
@@ -518,111 +657,179 @@ msgstr "Enable OpenCSG"
 msgid "Show this message again"
 msgstr "Show this message again"
 
-#: objects/ui_Preferences.h:515
+#: objects/ui_Preferences.h:610
 msgid "3D View"
 msgstr "3D Ansicht"
 
-#: objects/ui_Preferences.h:516
+#: objects/ui_Preferences.h:611 src/UIUtils.cc:85
 msgid "Advanced"
 msgstr "Erweitert"
 
-#: objects/ui_Preferences.h:518
+#: objects/ui_Preferences.h:612 src/mainwin.cc:2292
+msgid "Editor"
+msgstr "Editor"
+
+#: objects/ui_Preferences.h:613
 msgid "Update"
 msgstr "Aktualisieren"
 
-#: objects/ui_Preferences.h:519 objects/ui_Preferences.h:547
+#: objects/ui_Preferences.h:614 objects/ui_Preferences.h:661
 msgid "Features"
 msgstr "Funktionen"
 
-#: objects/ui_Preferences.h:521
+#: objects/ui_Preferences.h:616
 msgid "Enable/Disable experimental features"
 msgstr "Enable/Disable experimental features"
 
-#: objects/ui_Preferences.h:523
+#: objects/ui_Preferences.h:618
 msgid "Color scheme:"
 msgstr "Farbschema:"
 
-#: objects/ui_Preferences.h:528
+#: objects/ui_Preferences.h:623
 msgid "Cornfield"
 msgstr "Cornfield"
 
-#: objects/ui_Preferences.h:530
+#: objects/ui_Preferences.h:625
 msgid "Metallic"
 msgstr "Metallic"
 
-#: objects/ui_Preferences.h:532
+#: objects/ui_Preferences.h:627
 msgid "Sunset"
 msgstr "Sunset"
 
-#: objects/ui_Preferences.h:535
+#: objects/ui_Preferences.h:629
+msgid "Starnight"
+msgstr "Starnight"
+
+#: objects/ui_Preferences.h:631
+msgid "BeforeDawn"
+msgstr "BeforeDawn"
+
+#: objects/ui_Preferences.h:633
+msgid "Nature"
+msgstr "Nature"
+
+#: objects/ui_Preferences.h:635
+msgid "DeepOcean"
+msgstr "DeepOcean"
+
+#: objects/ui_Preferences.h:638
+msgid "Editor Type"
+msgstr "Editor"
+
+#: objects/ui_Preferences.h:641
+msgid "Simple Editor"
+msgstr "Einfacher Editor"
+
+#: objects/ui_Preferences.h:642
+msgid "QScintilla Editor"
+msgstr "QScintilla Editor"
+
+#: objects/ui_Preferences.h:644
+msgid "(requires restart)"
+msgstr "(Neustart erforderlich)"
+
+#: objects/ui_Preferences.h:645
 msgid "Font"
 msgstr "Font"
 
-#: objects/ui_Preferences.h:536
+#: objects/ui_Preferences.h:646
 msgid "Color syntax highlighting"
 msgstr "Color syntax highlighting"
 
-#: objects/ui_Preferences.h:539
+#: objects/ui_Preferences.h:649
 msgid "For Light Background"
 msgstr "Für hellen Hintergrund"
 
-#: objects/ui_Preferences.h:540
+#: objects/ui_Preferences.h:650
 msgid "For Dark Background"
 msgstr "Für dunklen Hintergrund"
 
-#: objects/ui_Preferences.h:541
+#: objects/ui_Preferences.h:651
+msgid "Monokai"
+msgstr "Monokai"
+
+#: objects/ui_Preferences.h:652
+msgid "Solarized"
+msgstr "Solarized"
+
+#: objects/ui_Preferences.h:653
 msgid "Off"
 msgstr "Aus"
 
-#: objects/ui_Preferences.h:543
+#: objects/ui_Preferences.h:655
+msgid "Use Ctrl/Cmd-Mouse-wheel to zoom text"
+msgstr "Ctrl/Cmd+Mausrad zum Vergrößern des Textes benutzen"
+
+#: objects/ui_Preferences.h:657
 msgid "Automatically check for updates"
 msgstr "Automatisch nach Aktualisierungen suchen"
 
-#: objects/ui_Preferences.h:544
+#: objects/ui_Preferences.h:658
 msgid "Include development snapshots"
 msgstr "Entwickler-Versionen einschließen"
 
-#: objects/ui_Preferences.h:545
+#: objects/ui_Preferences.h:659
 msgid "Check Now"
 msgstr "Jetzt suchen"
 
-#: objects/ui_Preferences.h:546
+#: objects/ui_Preferences.h:660
 msgid "Last checked: "
 msgstr "Zuletzt gesucht: "
 
-#: objects/ui_Preferences.h:549
+#: objects/ui_Preferences.h:662
+msgid "OpenCSG"
+msgstr "OpenCSG"
+
+#: objects/ui_Preferences.h:663
 msgid "Show capability warning"
 msgstr "Kompatibilitätswarnung anzeigen"
 
-#: objects/ui_Preferences.h:550
+#: objects/ui_Preferences.h:664
 msgid "Enable for OpenGL 1.x"
 msgstr "Aktivieren bei OpenGL 1.x"
 
-#: objects/ui_Preferences.h:551
+#: objects/ui_Preferences.h:665
 msgid "Turn off rendering at "
 msgstr "Rendern abbrechen ab "
 
-#: objects/ui_Preferences.h:552
+#: objects/ui_Preferences.h:666
 msgid "elements"
 msgstr "Elementen"
 
-#: objects/ui_Preferences.h:553
+#: objects/ui_Preferences.h:667
 msgid "Force Goldfeather"
 msgstr "Goldfeather Algorithmus erzwingen"
 
-#: objects/ui_Preferences.h:554
+#: objects/ui_Preferences.h:668
 msgid "CGAL Cache size"
 msgstr "CGAL Cache Größe"
 
-#: objects/ui_Preferences.h:555 objects/ui_Preferences.h:557
+#: objects/ui_Preferences.h:669 objects/ui_Preferences.h:671
 msgid "bytes"
 msgstr "Byte"
 
-#: objects/ui_Preferences.h:556
+#: objects/ui_Preferences.h:670
 msgid "PolySet Cache size"
 msgstr "PolySet Cache Größe"
 
-#: objects/ui_Preferences.h:558
+#: objects/ui_Preferences.h:672
+msgid "Allow to open multiple documents"
+msgstr "Öffnen von mehreren Dokumenten erlauben"
+
+#: objects/ui_Preferences.h:673
+msgid "Enable undocking of Editor and Console"
+msgstr "Separate Editor und Konsole Fenster erlauben"
+
+#: objects/ui_Preferences.h:674
+msgid "Show Welcome Screen"
+msgstr "Startbildschirm anzeigen"
+
+#: objects/ui_Preferences.h:675
+msgid "Enable user interface localization (requires restart of OpenSCAD)"
+msgstr "Lokalisierung der GUI einschalten (benötigt Neustart von OpenSCAD)"
+
+#: objects/ui_Preferences.h:676
 msgid "toolBar"
 msgstr "toolBar"
 
@@ -634,1384 +841,67 @@ msgstr "Form"
 msgid "%v / %m"
 msgstr "%v / %m"
 
-#: src/AboutDialog.h:16
+#: objects/ui_launchingscreen.h:276
+msgid "Welcome to OpenSCAD"
+msgstr "Willkommen zu OpenSCAD"
+
+#: objects/ui_launchingscreen.h:277
+msgid "New"
+msgstr "Neu"
+
+#: objects/ui_launchingscreen.h:278
+msgid "Open"
+msgstr "Öffnen"
+
+#: objects/ui_launchingscreen.h:279
+msgid "Help"
+msgstr "Hilfe"
+
+#: objects/ui_launchingscreen.h:280
+msgid "Recents"
+msgstr "Zuletzt benutze Dateien"
+
+#: objects/ui_launchingscreen.h:281
+msgid "Open Recent"
+msgstr "Öffnen"
+
+#: objects/ui_launchingscreen.h:285
+msgid "Open Example"
+msgstr "Beispiel öffnen"
+
+#: objects/ui_launchingscreen.h:287
+msgid ""
+"<html><head/><body>\n"
+"<p style=\"font-family: 'Open Sans', 'Droid Sans', 'sans-serif'; font-"
+"weight: bold; padding-bottom: 0; margin-bottom: 0; font-size: 22pt;\"><span "
+"style=\"color: green;\">Open</span>SCAD</p>\n"
+"<p style=\"font-family: 'Open Sans', 'Droid Sans', 'sans-serif'; font-"
+"weight: normal; font-size: 14pt; padding-top: 0; margin-top: 0; margin-left: "
+"2em;\">The Programmers Solid 3D CAD Modeller</p>\n"
+"</body></html>\n"
+"\n"
+"\n"
+msgstr ""
+"<html><head/><body>\n"
+"<p style=\"font-family: 'Open Sans', 'Droid Sans', 'sans-serif'; font-"
+"weight: bold; padding-bottom: 0; margin-bottom: 0; font-size: 22pt;\"><span "
+"style=\"color: green;\">Open</span>SCAD</p>\n"
+"<p style=\"font-family: 'Open Sans', 'Droid Sans', 'sans-serif'; font-"
+"weight: normal; font-size: 14pt; padding-top: 0; margin-top: 0; margin-left: "
+"2em;\">The Programmers Solid 3D CAD Modeller</p>\n"
+"</body></html>\n"
+"\n"
+"\n"
+
+#: objects/ui_launchingscreen.h:294
+msgid "Don't show again"
+msgstr "Dialog nicht wieder anzeigen"
+
+#: src/AboutDialog.h:15
 msgid "About OpenSCAD "
 msgstr "Über OpenSCAD"
 
-#: src/cache.h:181
-msgid "Trimming cache: %1% (%2% bytes)"
-msgstr "Trimming cache: %1% (%2% bytes)"
-
-#: src/CGAL_Nef3_workaround.h:255
-msgid "ERROR: CGAL NefPolyhedron Triangulation failed"
-msgstr "ERROR: CGAL NefPolyhedron Triangulation failed"
-
-#: src/CsgInfo.h:48
-msgid "Error: CSG generation failed! (no top level object found)"
-msgstr "Error: CSG generation failed! (no top level object found)"
-
-#: src/CsgInfo.h:53 src/mainwin.cc:821
-msgid "Compiling design (CSG Products normalization)..."
-msgstr "Compiling design (CSG Products normalization)..."
-
-#: src/CsgInfo.h:60 src/mainwin.cc:868
-#, c-format
-msgid "Normalized CSG tree has %d elements"
-msgstr "Normalized CSG tree has %d elements"
-
-#: src/CsgInfo.h:64 src/mainwin.cc:833
-msgid "WARNING: CSG normalization resulted in an empty tree"
-msgstr "WARNING: CSG normalization resulted in an empty tree"
-
-#: src/CsgInfo.h:69
-#, c-format
-msgid "Compiling highlights (%i CSG Trees)..."
-msgstr "Compiling highlights (%i CSG Trees)..."
-
-#: src/CsgInfo.h:79
-#, c-format
-msgid "Compiling background (%i CSG Trees)..."
-msgstr "Compiling background (%i CSG Trees)..."
-
-#: src/cgaladv_minkowski2.cc:43
-msgid " vertices:"
-msgstr " vertices:"
-
-#: src/cgaladv_minkowski2.cc:55
-msgid "{ Outer boundary = "
-msgstr "{ Outer boundary = "
-
-#: src/cgaladv_minkowski2.cc:58
-msgid "{ Unbounded polygon."
-msgstr "{ Unbounded polygon."
-
-#: src/cgaladv_minkowski2.cc:63
-msgid " holes:"
-msgstr " holes:"
-
-#: src/cgaladv_minkowski2.cc:65
-msgid "    Hole #"
-msgstr "    Hole #"
-
-#: src/cgaladv_minkowski2.cc:90
-msgid ""
-"WARNING: minkowski() and hull() is not implemented for 2d objects with holes!"
-msgstr ""
-"WARNING: minkowski() and hull() is not implemented for 2d objects with holes!"
-
-#: src/cgaladv_minkowski2.cc:123
-msgid "WARNING: minkowski() could not get any points from object 1!"
-msgstr "WARNING: minkowski() could not get any points from object 1!"
-
-#: src/cgaladv_minkowski2.cc:126
-msgid "WARNING: minkowski() could not get any points from object 2!"
-msgstr "WARNING: minkowski() could not get any points from object 2!"
-
-#: src/CGALCache.cc:15
-#, c-format
-msgid "CGAL Cache hit: %s (%d bytes)"
-msgstr "CGAL Cache hit: %s (%d bytes)"
-
-#: src/CGALCache.cc:24
-#, c-format
-msgid "CGAL Cache insert: %s (%d bytes)"
-msgstr "CGAL Cache insert: %s (%d bytes)"
-
-#: src/CGALCache.cc:25
-#, c-format
-msgid "CGAL Cache insert failed: %s (%d bytes)"
-msgstr "CGAL Cache insert failed: %s (%d bytes)"
-
-#: src/CGALCache.cc:47
-#, c-format
-msgid "CGAL Polyhedrons in cache: %d"
-msgstr "CGAL Polyhedrons im Cache: %d"
-
-#: src/CGALCache.cc:48
-#, c-format
-msgid "CGAL cache size in bytes: %d"
-msgstr "CGAL Cache Größe in Bytes: %d"
-
-#: src/CGALEvaluator.cc:89
-#, c-format
-msgid "CGAL error in CGAL_Nef_polyhedron's %s operator: %s"
-msgstr "CGAL error in CGAL_Nef_polyhedron's %s operator: %s"
-
-#: src/CGALEvaluator.cc:141
-msgid "WARNING: hull() does not support mixing 2D and 3D objects."
-msgstr "WARNING: hull() does not support mixing 2D and 3D objects."
-
-#: src/CGALEvaluator.cc:159
-msgid ""
-"Hull() currently requires a valid 2-manifold. Please modify your design. See "
-"http://en.wikibooks.org/wiki/OpenSCAD_User_Manual/STL_Import_and_Export"
-msgstr ""
-"Hull() currently requires a valid 2-manifold. Please modify your design. See "
-"http://en.wikibooks.org/wiki/OpenSCAD_User_Manual/STL_Import_and_Export"
-
-#: src/CGALEvaluator.cc:172
-#, c-format
-msgid "ERROR: CGAL NefPolyhedron->Polyhedron conversion failed. %s"
-msgstr "ERROR: CGAL NefPolyhedron->Polyhedron conversion failed. %s"
-
-#: src/CGALEvaluator.cc:207
-msgid "WARNING: Cannot resize to sizes less than 0."
-msgstr "WARNING: Cannot resize to sizes less than 0."
-
-#: src/CGALEvaluator.cc:234
-msgid "WARNING: Resize in direction normal to flat object is not implemented"
-msgstr "WARNING: Resize in direction normal to flat object is not implemented"
-
-#: src/CGALEvaluator.cc:336
-msgid ""
-"Warning: Transformation matrix contains Not-a-Number and/or Infinity - "
-"removing object."
-msgstr ""
-"Warning: Transformation matrix contains Not-a-Number and/or Infinity - "
-"removing object."
-
-#: src/CGALEvaluator.cc:384
-msgid "WARNING: glide() is not implemented yet!"
-msgstr "WARNING: glide() is not implemented yet!"
-
-#: src/CGALEvaluator.cc:388
-msgid "WARNING: subdiv() is not implemented yet!"
-msgstr "WARNING: subdiv() is not implemented yet!"
-
-#: src/CGALEvaluator.cc:422
-msgid "WARNING: CGAL Evaluator: Root node didn't fit into cache"
-msgstr "WARNING: CGAL Evaluator: Root node didn't fit into cache"
-
-#: src/CGALEvaluator.cc:693
-msgid "PolySet has nonplanar faces. Attempting alternate construction"
-msgstr "PolySet has nonplanar faces. Attempting alternate construction"
-
-#: src/CGALEvaluator.cc:697
-#, c-format
-msgid "CGAL error in CGAL_Nef_polyhedron3(): %s"
-msgstr "CGAL error in CGAL_Nef_polyhedron3(): %s"
-
-#: src/CGALEvaluator.cc:708
-#, c-format
-msgid "Alternate construction failed. CGAL error in CGAL_Nef_polyhedron3(): %s"
-msgstr ""
-"Alternate construction failed. CGAL error in CGAL_Nef_polyhedron3(): %s"
-
-#: src/CGAL_Nef_polyhedron.cc:113
-msgid "ERROR: CGAL NefPolyhedron->Polyhedron conversion failed."
-msgstr "ERROR: CGAL NefPolyhedron->Polyhedron conversion failed."
-
-#: src/CGAL_Nef_polyhedron.cc:114 src/PlatformUtils.cc:19
-#, c-format
-msgid "ERROR: %s"
-msgstr "ERROR: %s"
-
-#: src/CGAL_Nef_polyhedron_DxfData.cc:107
-msgid "Warning: Scaling a 2D object with 0 - removing object"
-msgstr "Warning: Scaling a 2D object with 0 - removing object"
-
-#: src/CGAL_Nef_polyhedron_DxfData.cc:137
-msgid "Warning: Scaling a 3D object with 0 - removing object"
-msgstr "Warning: Scaling a 3D object with 0 - removing object"
-
-#: src/cgalutils.cc:138
-#, c-format
-msgid "CGAL error in CGAL_Build_PolySet: %s"
-msgstr "CGAL error in CGAL_Build_PolySet: %s"
-
-#: src/cgalworker.cc:36
-msgid "Rendering cancelled."
-msgstr "Rendering cancelled."
-
-#: src/color.cc:69
-#, c-format
-msgid ""
-"WARNING: color() expects numbers between 0.0 and 1.0. Value of %.1f is too "
-"large."
-msgstr ""
-"WARNING: color() expects numbers between 0.0 and 1.0. Value of %.1f is too "
-"large."
-
-#: src/color.cc:81
-#, c-format
-msgid "WARNING: Color name \"%s\" unknown. Please see"
-msgstr "WARNING: Color name \"%s\" unknown. Please see"
-
-#: src/color.cc:82
-msgid "WARNING: http://en.wikipedia.org/wiki/Web_colors"
-msgstr "WARNING: http://en.wikipedia.org/wiki/Web_colors"
-
-#: src/context.cc:97
-#, c-format
-msgid "WARNING: Attempt to modify constant '%s'."
-msgstr "WARNING: Attempt to modify constant '%s'."
-
-#: src/context.cc:121
-#, c-format
-msgid "WARNING: Ignoring unknown variable '%s'."
-msgstr "WARNING: Ignoring unknown variable '%s'."
-
-#: src/context.cc:128
-#, c-format
-msgid "WARNING: Ignoring unknown function '%s'."
-msgstr "WARNING: Ignoring unknown function '%s'."
-
-#: src/context.cc:135
-#, c-format
-msgid "WARNING: Ignoring unknown module '%s'."
-msgstr "WARNING: Ignoring unknown module '%s'."
-
-#: src/context.cc:156
-#, c-format
-msgid "ModuleContext %p (%p) for %s inst (%p)"
-msgstr "ModuleContext %p (%p) for %s inst (%p)"
-
-#: src/context.cc:158 src/evalcontext.cc:40
-#, c-format
-msgid "Context: %p (%p)"
-msgstr "Context: %p (%p)"
-
-#: src/context.cc:159 src/evalcontext.cc:41 src/modcontext.cc:148
-#, c-format
-msgid "  document path: %s"
-msgstr "  document path: %s"
-
-#: src/context.cc:163 src/evalcontext.cc:57 src/modcontext.cc:152
-msgid "  module args:"
-msgstr "  module args:"
-
-#: src/context.cc:170 src/modcontext.cc:159
-msgid "  vars:"
-msgstr "  vars:"
-
-#: src/control.cc:83
-#, c-format
-msgid "WARNING: Bad range parameter in for statement: too many elements (%lu)."
-msgstr ""
-"WARNING: Bad range parameter in for statement: too many elements (%lu)."
-
-#: src/control.cc:133 src/control.cc:138 src/control.cc:247
-#, c-format
-msgid ""
-"WARNING: Bad parameter type (%s) for children, only accept: empty, number, "
-"vector, range."
-msgstr ""
-"WARNING: Bad parameter type (%s) for children, only accept: empty, number, "
-"vector, range."
-
-#: src/control.cc:144
-#, c-format
-msgid "WARNING: Negative children index (%d) not allowed"
-msgstr "WARNING: Negative children index (%d) not allowed"
-
-#: src/control.cc:150
-#, c-format
-msgid "WARNING: Children index (%d) out of bounds (%d children)"
-msgstr "WARNING: Children index (%d) out of bounds (%d children)"
-
-#: src/control.cc:170
-#, c-format
-msgid "WARNING: Negative child index (%d) not allowed"
-msgstr "WARNING: Negative child index (%d) not allowed"
-
-#: src/control.cc:189
-#, c-format
-msgid "WARNING: Child index (%d) out of bounds (%d children)"
-msgstr "WARNING: Child index (%d) out of bounds (%d children)"
-
-#: src/control.cc:234
-#, c-format
-msgid "WARNING: Bad range parameter for children: too many elements (%lu)."
-msgstr "WARNING: Bad range parameter for children: too many elements (%lu)."
-
-#: src/csgtermnormalizer.cc:21 src/csgtermnormalizer.cc:69
-#, c-format
-msgid ""
-"WARNING: Normalized tree is growing past %d elements. Aborting "
-"normalization.\n"
-msgstr ""
-"WARNING: Normalized tree is growing past %d elements. Aborting "
-"normalization.\n"
-
-#: src/dxfdata.cc:83
-#, c-format
-msgid "WARNING: Can't open DXF file '%s'."
-msgstr "WARNING: Can't open DXF file '%s'."
-
-#: src/dxfdata.cc:147
-#, c-format
-msgid "WARNING: Illegal ID '%s' in `%s'"
-msgstr "WARNING: Illegal ID '%s' in `%s'"
-
-#: src/dxfdata.cc:386
-#, c-format
-msgid "WARNING: Illegal value %s in '%s'"
-msgstr "WARNING: Illegal value %s in '%s'"
-
-#: src/dxfdata.cc:392
-#, c-format
-msgid "WARNING: Unsupported DXF Entity '%s' (%x) in %s."
-msgstr "WARNING: Unsupported DXF Entity '%s' (%x) in %s."
-
-#: src/dxfdata.cc:395
-#, c-format
-msgid "WARNING: Unsupported DXF Entity '%s' (%x) in layer '%s' of %s."
-msgstr "WARNING: Unsupported DXF Entity '%s' (%x) in layer '%s' of %s."
-
-#: src/dxfdim.cc:131
-#, c-format
-msgid "WARNING: Dimension '%s' in '%s', layer '%s' has unsupported type!"
-msgstr "WARNING: Dimension '%s' in '%s', layer '%s' has unsupported type!"
-
-#: src/dxfdim.cc:136
-#, c-format
-msgid "WARNING: Can't find dimension '%s' in '%s', layer '%s'!"
-msgstr "WARNING: Can't find dimension '%s' in '%s', layer '%s'!"
-
-#: src/dxfdim.cc:211
-#, c-format
-msgid "WARNING: Can't find cross in '%s', layer '%s'!"
-msgstr "WARNING: Can't find cross in '%s', layer '%s'!"
-
-#: src/dxftess-cgal.cc:170
-msgid ""
-"WARNING: Duplicate vertices and/or intersecting lines found during DXF "
-"Tessellation."
-msgstr ""
-"WARNING: Duplicate vertices and/or intersecting lines found during DXF "
-"Tessellation."
-
-#: src/dxftess-cgal.cc:171
-msgid ""
-"WARNING: Modify the polygon to be a Simple Polygon. Render is incomplete."
-msgstr ""
-"WARNING: Modify the polygon to be a Simple Polygon. Render is incomplete."
-
-#: src/dxftess-cgal.cc:176
-#, c-format
-msgid "CGAL error in dxf_tesselate(): %s"
-msgstr "CGAL error in dxf_tesselate(): %s"
-
-#: src/dxftess-cgal.cc:475
-#, c-format
-msgid "CGAL error in dxftess triangulate_polygon: %s"
-msgstr "CGAL error in dxftess triangulate_polygon: %s"
-
-#: src/dxftess-cgal.cc:491
-msgid "WARNING: PolySet has polygon with <3 points"
-msgstr "WARNING: PolySet has polygon with <3 points"
-
-#: src/dxftess-cgal.cc:496
-msgid "WARNING: PolySet has degenerate polygon"
-msgstr "WARNING: PolySet has degenerate polygon"
-
-#: src/dxftess-glu.cc:108 src/dxftess-glu.cc:109
-#, c-format
-msgid "GLU tesselation error %s"
-msgstr "GLU tesselation error %s"
-
-#: src/evalcontext.cc:38
-#, c-format
-msgid "EvalContext %p (%p) for %s inst (%p)"
-msgstr "EvalContext %p (%p) for %s inst (%p)"
-
-#: src/evalcontext.cc:43
-msgid "  eval args:"
-msgstr "  eval args:"
-
-#: src/evalcontext.cc:48
-msgid "    children:"
-msgstr "    children:"
-
-#: src/export.cc:48
-msgid "ERROR: CGAL NefPolyhedron->Polyhedron conversion failed"
-msgstr "ERROR: CGAL NefPolyhedron->Polyhedron conversion failed"
-
-#: src/export.cc:120 src/export.cc:137
-#, c-format
-msgid "CGAL error in CGAL_Nef_polyhedron3::convert_to_Polyhedron(): %s"
-msgstr "CGAL error in CGAL_Nef_polyhedron3::convert_to_Polyhedron(): %s"
-
-#: src/export.cc:123
-msgid "CGAL unknown error in CGAL_Nef_polyhedron3::convert_to_Polyhedron()"
-msgstr "CGAL unknown error in CGAL_Nef_polyhedron3::convert_to_Polyhedron()"
-
-#: src/feature.cc:21
-msgid "Enable the <code>concat()</code> function."
-msgstr "Funktion <code>concat()</code> aktivieren."
-
-#: src/feature.cc:60
-#, c-format
-msgid "WARNING: Ignoring request to enable unknown feature '%s'."
-msgstr "WARNING: Ignoring request to enable unknown feature '%s'."
-
-#: src/fileutils.cc:25
-#, c-format
-msgid ""
-"WARNING: Imported file (%s) found in document root instead of relative to "
-"the importing module. This behavior is deprecated"
-msgstr ""
-"WARNING: Imported file (%s) found in document root instead of relative to "
-"the importing module. This behavior is deprecated"
-
-#: src/func.cc:503 src/func.cc:536
-#, c-format
-msgid "  WARNING: search term not found: \"%s\""
-msgstr "  WARNING: search term not found: \"%s\""
-
-#: src/func.cc:533
-#, c-format
-msgid "  WARNING: search term not found: %s"
-msgstr "  WARNING: search term not found: %s"
-
-#: src/func.cc:545
-#, c-format
-msgid "  WARNING: search: none performed on input %s"
-msgstr "  WARNING: search: none performed on input %s"
-
-#: src/func.cc:591
-#, c-format
-msgid "WARNING: Negative parent module index (%d) not allowed"
-msgstr "WARNING: Negative parent module index (%d) not allowed"
-
-#: src/func.cc:595
-#, c-format
-msgid ""
-"WARNING: Parent module index (%d) greater than the number of modules on the "
-"stack"
-msgstr ""
-"WARNING: Parent module index (%d) greater than the number of modules on the "
-"stack"
-
-#: src/handle_dep.cc:36
-#, c-format
-msgid "Can't open dependencies file `%s' for writing!\n"
-msgstr "Can't open dependencies file `%s' for writing!\n"
-
-#: src/import.cc:98
-msgid "DEPRECATED: filename= is deprecated. Please use file="
-msgstr "DEPRECATED: filename= is deprecated. Please use file="
-
-#: src/import.cc:122
-msgid "DEPRECATED: layername= is deprecated. Please use layer="
-msgstr "DEPRECATED: layername= is deprecated. Please use layer="
-
-#: src/import.cc:195 src/import.cc:281
-#, c-format
-msgid "WARNING: Can't open import file '%s'."
-msgstr "WARNING: Can't open import file '%s'."
-
-#: src/import.cc:247
-#, c-format
-msgid "WARNING: Can't parse vertex line '%s'."
-msgstr "WARNING: Can't parse vertex line '%s'."
-
-#: src/import.cc:292
-msgid "WARNING: OFF import requires CGAL."
-msgstr "WARNING: OFF import requires CGAL."
-
-#: src/import.cc:306
-#, c-format
-msgid "ERROR: Unsupported file format while trying to import file '%s'"
-msgstr "ERROR: Unsupported file format while trying to import file '%s'"
-
-#: src/linearextrude.cc:77
-msgid ""
-"DEPRECATED: Support for reading files in linear_extrude will be removed in "
-"future releases. Use a child import() instead."
-msgstr ""
-"DEPRECATED: Support for reading files in linear_extrude will be removed in "
-"future releases. Use a child import() instead."
-
-#: src/linearextrude.cc:133 src/projection.cc:74 src/rotateextrude.cc:98
-#, c-format
-msgid "WARNING: No suitable PolySetEvaluator found for %s module!"
-msgstr "WARNING: No suitable PolySetEvaluator found for %s module!"
-
-#: src/mainwin.cc:119
-msgid ""
-"Copyright (C) 2009-2013 The OpenSCAD Developers\n"
-"\n"
-"This program is free software; you can redistribute it and/or modify it "
-"under the terms of the GNU General Public License as published by the Free "
-"Software Foundation; either version 2 of the License, or (at your option) "
-"any later version."
-msgstr ""
-"Copyright (C) 2009-2013 The OpenSCAD Developers\n"
-"\n"
-"This program is free software; you can redistribute it and/or modify it "
-"under the terms of the GNU General Public License as published by the Free "
-"Software Foundation; either version 2 of the License, or (at your option) "
-"any later version."
-
-#: src/mainwin.cc:525
-msgid "OpenSCAD - New Document[*]"
-msgstr "OpenSCAD - Neue Datei[*]"
-
-#: src/mainwin.cc:529
-msgid "OpenSCAD - "
-msgstr "OpenSCAD - "
-
-#: src/mainwin.cc:529
-msgid "[*]"
-msgstr "[*]"
-
-#: src/mainwin.cc:603
-#, c-format
-msgid "Failed to open file %s: %s"
-msgstr "Failed to open file %s: %s"
-
-#: src/mainwin.cc:610
-#, c-format
-msgid "Loaded design '%s'."
-msgstr "Loaded design '%s'."
-
-#: src/mainwin.cc:657
-#, c-format
-msgid "Module cache size: %d modules"
-msgstr "Module cache size: %d modules"
-
-#: src/mainwin.cc:741
-msgid "Compiling design (CSG Tree generation)..."
-msgstr "Compiling design (CSG Tree generation)..."
-
-#: src/mainwin.cc:767
-msgid "ERROR: Compilation failed! (no top level object found)"
-msgstr "ERROR: Compilation failed! (no top level object found)"
-
-#: src/mainwin.cc:769
-msgid "ERROR: Compilation failed!"
-msgstr "ERROR: Compilation failed!"
-
-#: src/mainwin.cc:782
-msgid "Compiling design (CSG Products generation)..."
-msgstr "Compiling design (CSG Products generation)..."
-
-#: src/mainwin.cc:804
-msgid "ERROR: CSG generation failed! (no top level object found)"
-msgstr "ERROR: CSG generation failed! (no top level object found)"
-
-#: src/mainwin.cc:813
-msgid "CSG generation cancelled."
-msgstr "CSG generation cancelled."
-
-#: src/mainwin.cc:839
-#, c-format
-msgid "Compiling highlights (%d CSG Trees)..."
-msgstr "Compiling highlights (%d CSG Trees)..."
-
-#: src/mainwin.cc:851
-#, c-format
-msgid "Compiling background (%d CSG Trees)..."
-msgstr "Compiling background (%d CSG Trees)..."
-
-#: src/mainwin.cc:864
-#, c-format
-msgid "WARNING: Normalized tree has %d elements!"
-msgstr "WARNING: Normalized tree has %d elements!"
-
-#: src/mainwin.cc:865
-msgid "WARNING: OpenCSG rendering has been disabled."
-msgstr "WARNING: OpenCSG rendering has been disabled."
-
-#: src/mainwin.cc:878
-msgid "CSG generation finished."
-msgstr "CSG generation finished."
-
-#: src/mainwin.cc:880 src/mainwin.cc:1346
-#, c-format
-msgid "Total rendering time: %d hours, %d minutes, %d seconds"
-msgstr "Total rendering time: %d hours, %d minutes, %d seconds"
-
-#: src/mainwin.cc:907
-msgid "Open File"
-msgstr "Open File"
-
-#: src/mainwin.cc:908
-msgid "OpenSCAD Designs (*.scad *.csg)"
-msgstr "OpenSCAD Designs (*.scad *.csg)"
-
-#: src/mainwin.cc:1002
-#, c-format
-msgid "Failed to open file for writing: %s (%s)"
-msgstr "Failed to open file for writing: %s (%s)"
-
-#: src/mainwin.cc:1003
-msgid ""
-"Failed to open file for writing:\n"
-" %1 (%2)"
-msgstr ""
-"Failed to open file for writing:\n"
-" %1 (%2)"
-
-#: src/mainwin.cc:1010
-#, c-format
-msgid "Saved design '%s'."
-msgstr "Saved design '%s'."
-
-#: src/mainwin.cc:1020
-msgid "Save File"
-msgstr "Save File"
-
-#: src/mainwin.cc:1021
-msgid "Untitled.scad"
-msgstr "Untitled.scad"
-
-#: src/mainwin.cc:1022
-msgid "OpenSCAD Designs (*.scad)"
-msgstr "OpenSCAD Designs (*.scad)"
-
-#: src/mainwin.cc:1032
-msgid ""
-"%1 already exists.\n"
-"Do you want to replace it?"
-msgstr ""
-"%1 existiert bereits.\n"
-"Mochten Sie die Datei ersetzen?"
-
-#: src/mainwin.cc:1047
-#, c-format
-msgid "WARNING: Library path %s doesn't exist. Creating"
-msgstr "WARNING: Library path %s doesn't exist. Creating"
-
-#: src/mainwin.cc:1049
-#, c-format
-msgid "ERROR: Cannot create library path: %s"
-msgstr "ERROR: Cannot create library path: %s"
-
-#: src/mainwin.cc:1184 src/mainwin.cc:1857
-msgid "Application"
-msgstr "Application"
-
-#: src/mainwin.cc:1185
-msgid ""
-"The document has been modified.\n"
-"Do you really want to reload the file?"
-msgstr ""
-"The document has been modified.\n"
-"Do you really want to reload the file?"
-
-#: src/mainwin.cc:1235 src/mainwin.cc:1279
-msgid "Parsing design (AST generation)..."
-msgstr "Parsing design (AST generation)..."
-
-#: src/mainwin.cc:1263
-#, c-format
-msgid "frame%05d.png"
-msgstr "frame%05d.png"
-
-#: src/mainwin.cc:1300
-msgid "Rendering Polygon Mesh using CGAL..."
-msgstr "Rendering Polygon Mesh using CGAL..."
-
-#: src/mainwin.cc:1321
-msgid "   Top level object is a 2D object:"
-msgstr "   Top level object is a 2D object:"
-
-#: src/mainwin.cc:1322
-#, c-format
-msgid "   Empty:      %6s"
-msgstr "   Empty:      %6s"
-
-#: src/mainwin.cc:1322 src/mainwin.cc:1323 src/mainwin.cc:1334
-#: src/mainwin.cc:1335
-msgid "yes"
-msgstr "yes"
-
-#: src/mainwin.cc:1322 src/mainwin.cc:1323 src/mainwin.cc:1334
-#: src/mainwin.cc:1335
-msgid "no"
-msgstr "no"
-
-#: src/mainwin.cc:1323
-#, c-format
-msgid "   Plane:      %6s"
-msgstr "   Plane:      %6s"
-
-#: src/mainwin.cc:1324 src/mainwin.cc:1336
-#, c-format
-msgid "   Vertices:   %6d"
-msgstr "   Vertices:   %6d"
-
-#: src/mainwin.cc:1325 src/mainwin.cc:1337
-#, c-format
-msgid "   Halfedges:  %6d"
-msgstr "   Halfedges:  %6d"
-
-#: src/mainwin.cc:1326 src/mainwin.cc:1338
-#, c-format
-msgid "   Edges:      %6d"
-msgstr "   Edges:      %6d"
-
-#: src/mainwin.cc:1327
-#, c-format
-msgid "   Faces:      %6d"
-msgstr "   Faces:      %6d"
-
-#: src/mainwin.cc:1328
-#, c-format
-msgid "   FaceCycles: %6d"
-msgstr "   FaceCycles: %6d"
-
-#: src/mainwin.cc:1329
-#, c-format
-msgid "   ConnComp:   %6d"
-msgstr "   ConnComp:   %6d"
-
-#: src/mainwin.cc:1333
-msgid "   Top level object is a 3D object:"
-msgstr "   Top level object is a 3D object:"
-
-#: src/mainwin.cc:1334
-#, c-format
-msgid "   Simple:     %6s"
-msgstr "   Simple:     %6s"
-
-#: src/mainwin.cc:1335
-#, c-format
-msgid "   Valid:      %6s"
-msgstr "   Valid:      %6s"
-
-#: src/mainwin.cc:1339
-#, c-format
-msgid "   Halffacets: %6d"
-msgstr "   Halffacets: %6d"
-
-#: src/mainwin.cc:1340
-#, c-format
-msgid "   Facets:     %6d"
-msgstr "   Facets:     %6d"
-
-#: src/mainwin.cc:1341
-#, c-format
-msgid "   Volumes:    %6d"
-msgstr "   Volumes:    %6d"
-
-#: src/mainwin.cc:1359
-msgid "Rendering finished."
-msgstr "Rendering finished."
-
-#: src/mainwin.cc:1362
-msgid "WARNING: No top level geometry to render"
-msgstr "WARNING: No top level geometry to render"
-
-#: src/mainwin.cc:1380
-msgid "AST Dump"
-msgstr "AST Dump"
-
-#: src/mainwin.cc:1385
-msgid "No AST to dump. Please try compiling first..."
-msgstr "No AST to dump. Please try compiling first..."
-
-#: src/mainwin.cc:1398
-msgid "CSG Tree Dump"
-msgstr "CSG Tree Dump"
-
-#: src/mainwin.cc:1403
-msgid "No CSG to dump. Please try compiling first..."
-msgstr "No CSG to dump. Please try compiling first..."
-
-#: src/mainwin.cc:1416
-msgid "CSG Products Dump"
-msgstr "CSG Products Dump"
-
-#: src/mainwin.cc:1418
-msgid ""
-"\n"
-"CSG before normalization:\n"
-"%1\n"
-"\n"
-"\n"
-"CSG after normalization:\n"
-"%2\n"
-"\n"
-"\n"
-"CSG rendering chain:\n"
-"%3\n"
-"\n"
-"\n"
-"Highlights CSG rendering chain:\n"
-"%4\n"
-"\n"
-"\n"
-"Background CSG rendering chain:\n"
-"%5\n"
-msgstr ""
-"\n"
-"CSG before normalization:\n"
-"%1\n"
-"\n"
-"\n"
-"CSG after normalization:\n"
-"%2\n"
-"\n"
-"\n"
-"CSG rendering chain:\n"
-"%3\n"
-"\n"
-"\n"
-"Highlights CSG rendering chain:\n"
-"%4\n"
-"\n"
-"\n"
-"Background CSG rendering chain:\n"
-"%5\n"
-
-#: src/mainwin.cc:1441 src/mainwin.cc:1501
-msgid "Nothing to export! Try building first (press F6)."
-msgstr "Nothing to export! Try building first (press F6)."
-
-#: src/mainwin.cc:1447
-msgid "Current top level object is not a 3D object."
-msgstr "Current top level object is not a 3D object."
-
-#: src/mainwin.cc:1453
-msgid ""
-"Object isn't a valid 2-manifold! Modify your design. See http://en.wikibooks."
-"org/wiki/OpenSCAD_User_Manual/STL_Import_and_Export"
-msgstr ""
-"Object isn't a valid 2-manifold! Modify your design. See http://en.wikibooks."
-"org/wiki/OpenSCAD_User_Manual/STL_Import_and_Export"
-
-#: src/mainwin.cc:1460
-msgid "Export STL File"
-msgstr "Export STL File"
-
-#: src/mainwin.cc:1460
-msgid "Export OFF File"
-msgstr "Export OFF File"
-
-#: src/mainwin.cc:1462
-msgid "STL Files (*.stl)"
-msgstr "STL Files (*.stl)"
-
-#: src/mainwin.cc:1462
-msgid "OFF Files (*.off)"
-msgstr "OFF Files (*.off)"
-
-#: src/mainwin.cc:1464
-#, c-format
-msgid "No filename specified. %s export aborted."
-msgstr "No filename specified. %s export aborted."
-
-#: src/mainwin.cc:1471 src/mainwin.cc:1524 src/mainwin.cc:1557
-#: src/openscad.cc:316 src/openscad.cc:328 src/openscad.cc:346
-#: src/openscad.cc:397 src/openscad.cc:416 src/openscad.cc:431
-#: src/openscad.cc:442
-#, c-format
-msgid "Can't open file \"%s\" for export"
-msgstr "Can't open file \"%s\" for export"
-
-#: src/mainwin.cc:1478
-#, c-format
-msgid "%s export finished."
-msgstr "%s export finished."
-
-#: src/mainwin.cc:1507
-msgid "Current top level object is not a 2D object."
-msgstr "Current top level object is not a 2D object."
-
-#: src/mainwin.cc:1513
-msgid "Export DXF File"
-msgstr "Export DXF File"
-
-#: src/mainwin.cc:1514
-msgid "Untitled.dxf"
-msgstr "Untitled.dxf"
-
-#: src/mainwin.cc:1515
-msgid "DXF Files (*.dxf)"
-msgstr "DXF Files (*.dxf)"
-
-#: src/mainwin.cc:1517
-msgid "No filename specified. DXF export aborted."
-msgstr "No filename specified. DXF export aborted."
-
-#: src/mainwin.cc:1529
-msgid "DXF export finished."
-msgstr "DXF export finished."
-
-#: src/mainwin.cc:1541
-msgid "Nothing to export. Please try compiling first..."
-msgstr "Nothing to export. Please try compiling first..."
-
-#: src/mainwin.cc:1546
-msgid "Export CSG File"
-msgstr "Export CSG File"
-
-#: src/mainwin.cc:1547
-msgid "Untitled.csg"
-msgstr "Untitled.csg"
-
-#: src/mainwin.cc:1548
-msgid "CSG Files (*.csg)"
-msgstr "CSG Files (*.csg)"
-
-#: src/mainwin.cc:1550
-msgid "No filename specified. CSG export aborted."
-msgstr "No filename specified. CSG export aborted."
-
-#: src/mainwin.cc:1562
-msgid "CSG export finished."
-msgstr "CSG export finished."
-
-#: src/mainwin.cc:1573
-msgid "Export Image"
-msgstr "Bild exportieren"
-
-#: src/mainwin.cc:1573
-msgid "PNG Files (*.png)"
-msgstr "PNG Files (*.png)"
-
-#: src/mainwin.cc:1575
-msgid "No filename specified. Image export aborted."
-msgstr "No filename specified. Image export aborted."
-
-#: src/mainwin.cc:1827
-msgid "http://openscad.org/"
-msgstr "http://openscad.org/"
-
-#: src/mainwin.cc:1833
-msgid "http://www.openscad.org/documentation.html"
-msgstr "http://www.openscad.org/documentation.html"
-
-#: src/mainwin.cc:1842
-msgid "OpenGL Info"
-msgstr "OpenGL Info"
-
-#: src/mainwin.cc:1842
-msgid "OpenSCAD Detailed Library and Build Information"
-msgstr "OpenSCAD Detailed Library and Build Information"
-
-#: src/mainwin.cc:1858
-msgid ""
-"The document has been modified.\n"
-"Do you want to save your changes?"
-msgstr ""
-"The document has been modified.\n"
-"Do you want to save your changes?"
-
-#: src/modcontext.cc:100
-#, c-format
-msgid "WARNING: Experimental builtin function '%s' is not enabled."
-msgstr "WARNING: Experimental builtin function '%s' is not enabled."
-
-#: src/modcontext.cc:113
-#, c-format
-msgid "WARNING: Experimental builtin module '%s' is not enabled."
-msgstr "WARNING: Experimental builtin module '%s' is not enabled."
-
-#: src/modcontext.cc:118
-#, c-format
-msgid ""
-"DEPRECATED: The %s() module will be removed in future releases. Use %s() "
-"instead."
-msgstr ""
-"DEPRECATED: The %s() module will be removed in future releases. Use %s() "
-"instead."
-
-#: src/modcontext.cc:145
-#, c-format
-msgid "ModuleContext %p (%p) for %s inst (%p) "
-msgstr "ModuleContext %p (%p) for %s inst (%p) "
-
-#: src/modcontext.cc:147
-#, c-format
-msgid "ModuleContext: %p (%p)"
-msgstr "ModuleContext: %p (%p)"
-
-#: src/ModuleCache.cc:70
-#, c-format
-msgid "Recompiling cached library: %s (%s)"
-msgstr "Recompiling cached library: %s (%s)"
-
-#: src/ModuleCache.cc:73
-#, c-format
-msgid "Compiling library '%s'."
-msgstr "Compiling library '%s'."
-
-#: src/ModuleCache.cc:81
-#, c-format
-msgid "WARNING: Can't open library file '%s'\n"
-msgstr "WARNING: Can't open library file '%s'\n"
-
-#: src/ModuleCache.cc:99
-#, c-format
-msgid "  compiled module: %p"
-msgstr "  compiled module: %p"
-
-#: src/module.cc:180
-#, c-format
-msgid "ERROR: Recursion detected calling module '%s'"
-msgstr "ERROR: Recursion detected calling module '%s'"
-
-#: src/module.cc:298
-#, c-format
-msgid "WARNING: Failed to compile library '%s'."
-msgstr "WARNING: Failed to compile library '%s'."
-
-#: src/openscad.cc:109
-msgid ""
-"Usage: %1% [ -o output_file [ -d deps_file ] ]\\\n"
-"%2%[ -m make_command ] [ -D var=val [..] ] \\\n"
-"%2%[ --version ] [ --info ] \\\n"
-"%2%[ --camera=translatex,y,z,rotx,y,z,dist | \\\n"
-"%2%  --camera=eyex,y,z,centerx,y,z ] \\\n"
-"%2%[ --imgsize=width,height ] [ --projection=(o)rtho|(p)ersp] \\\n"
-"%2%[ --render | --preview[=throwntogether] ] \\\n"
-"%2%[ --enable=<feature> ] \\\n"
-"%2%filename\n"
-msgstr ""
-"Usage: %1% [ -o output_file [ -d deps_file ] ]\\\n"
-"%2%[ -m make_command ] [ -D var=val [..] ] \\\n"
-"%2%[ --version ] [ --info ] \\\n"
-"%2%[ --camera=translatex,y,z,rotx,y,z,dist | \\\n"
-"%2%  --camera=eyex,y,z,centerx,y,z ] \\\n"
-"%2%[ --imgsize=width,height ] [ --projection=(o)rtho|(p)ersp] \\\n"
-"%2%[ --render | --preview[=throwntogether] ] \\\n"
-"%2%[ --enable=<feature> ] \\\n"
-"%2%filename\n"
-
-#: src/openscad.cc:126
-#, c-format
-msgid "OpenSCAD version %s\n"
-msgstr "OpenSCAD version %s\n"
-
-#: src/openscad.cc:138
-#, c-format
-msgid "Can't create OpenGL OffscreenView. Code: %i. Exiting.\n"
-msgstr "Can't create OpenGL OffscreenView. Code: %i. Exiting.\n"
-
-#: src/openscad.cc:182
-msgid "Camera setup requires either 7 numbers for Gimbal Camera\n"
-msgstr "Camera setup requires either 7 numbers for Gimbal Camera\n"
-
-#: src/openscad.cc:183
-msgid "or 6 numbers for Vector Camera\n"
-msgstr "or 6 numbers for Vector Camera\n"
-
-#: src/openscad.cc:199
-msgid "projection needs to be 'o' or 'p' for ortho or perspective\n"
-msgstr "projection needs to be 'o' or 'p' for ortho or perspective\n"
-
-#: src/openscad.cc:210
-msgid "Need 2 numbers for imgsize\n"
-msgstr "Need 2 numbers for imgsize\n"
-
-#: src/openscad.cc:260
-#, c-format
-msgid "Unknown suffix for output file %s\n"
-msgstr "Unknown suffix for output file %s\n"
-
-#: src/openscad.cc:284
-#, c-format
-msgid "Can't open input file '%s'!\n"
-msgstr "Can't open input file '%s'!\n"
-
-#: src/openscad.cc:293
-#, c-format
-msgid "Can't parse file '%s'!\n"
-msgstr "Can't parse file '%s'!\n"
-
-#: src/openscad.cc:375
-#, c-format
-msgid "Output file:%s\n"
-msgstr "Output file:%s\n"
-
-#: src/openscad.cc:376
-msgid "Sorry, don't know how to write deps for that file type. Exiting\n"
-msgstr "Sorry, don't know how to write deps for that file type. Exiting\n"
-
-#: src/openscad.cc:381
-msgid "error writing deps"
-msgstr "error writing deps"
-
-#: src/openscad.cc:388 src/openscad.cc:407
-msgid "Current top level object is not a 3D object.\n"
-msgstr "Current top level object is not a 3D object.\n"
-
-#: src/openscad.cc:392 src/openscad.cc:411
-msgid "Object isn't a valid 2-manifold! Modify your design.\n"
-msgstr "Object isn't a valid 2-manifold! Modify your design.\n"
-
-#: src/openscad.cc:426
-msgid "Current top level object is not a 2D object.\n"
-msgstr "Current top level object is not a 2D object.\n"
-
-#: src/openscad.cc:591
-msgid "Allowed options"
-msgstr "Allowed options"
-
-#: src/openscad.cc:593
-msgid "help message"
-msgstr "help message"
-
-#: src/openscad.cc:594
-msgid "print the version"
-msgstr "print the version"
-
-#: src/openscad.cc:595
-msgid "print information about the building process"
-msgstr "print information about the building process"
-
-#: src/openscad.cc:596
-msgid "if exporting a png image, do a full CGAL render"
-msgstr "if exporting a png image, do a full CGAL render"
-
-#: src/openscad.cc:597
-msgid ""
-"if exporting a png image, do an OpenCSG(default) or ThrownTogether preview"
-msgstr ""
-"if exporting a png image, do an OpenCSG(default) or ThrownTogether preview"
-
-#: src/openscad.cc:598
-msgid "parameters for camera when exporting png"
-msgstr "parameters for camera when exporting png"
-
-#: src/openscad.cc:599
-msgid "=width,height for exporting png"
-msgstr "=width,height for exporting png"
-
-#: src/openscad.cc:600
-msgid "(o)rtho or (p)erspective when exporting png"
-msgstr "(o)rtho or (p)erspective when exporting png"
-
-#: src/openscad.cc:601
-msgid "out-file"
-msgstr "out-file"
-
-#: src/openscad.cc:602
-msgid "stl-file"
-msgstr "stl-file"
-
-#: src/openscad.cc:603
-msgid "dxf-file"
-msgstr "dxf-file"
-
-#: src/openscad.cc:604
-msgid "deps-file"
-msgstr "deps-file"
-
-#: src/openscad.cc:605
-msgid "makefile"
-msgstr "makefile"
-
-#: src/openscad.cc:606
-msgid "var=val"
-msgstr "var=val"
-
-#: src/openscad.cc:607
-msgid "enable experimental features"
-msgstr "enable experimental features"
-
-#: src/openscad.cc:609
-msgid "Hidden options"
-msgstr "Hidden options"
-
-#: src/openscad.cc:611
-msgid "input file"
-msgstr "input file"
-
-#: src/openscad.cc:645
-msgid "DEPRECATED: The -s option is deprecated. Use -o instead.\n"
-msgstr "DEPRECATED: The -s option is deprecated. Use -o instead.\n"
-
-#: src/openscad.cc:650
-msgid "DEPRECATED: The -x option is deprecated. Use -o instead.\n"
-msgstr "DEPRECATED: The -x option is deprecated. Use -o instead.\n"
-
-#: src/openscad.cc:707
-msgid "Requested GUI mode but can't open display!\n"
-msgstr "Requested GUI mode but can't open display!\n"
-
-#: src/PlatformUtils.cc:16
-#, c-format
-msgid "ERROR: Cannot create %s"
-msgstr "ERROR: Cannot create %s"
-
-#: src/PolySetCache.cc:24
-#, c-format
-msgid "PolySets in cache: %d"
-msgstr "PolySets in cache: %d"
-
-#: src/PolySetCache.cc:25
-#, c-format
-msgid "PolySet cache size in bytes: %d"
-msgstr "PolySet cache size in bytes: %d"
-
-#: src/polyset.cc:55
-msgid "PolySet:"
-msgstr "PolySet:"
-
-#: src/polyset.cc:56
-msgid ""
-"\n"
-" dimensions:"
-msgstr ""
-"\n"
-" dimensions:"
-
-#: src/polyset.cc:57
-msgid ""
-"\n"
-" convexity:"
-msgstr ""
-"\n"
-" convexity:"
-
-#: src/polyset.cc:58
-msgid ""
-"\n"
-" num polygons: "
-msgstr ""
-"\n"
-" num polygons: "
-
-#: src/polyset.cc:59
-msgid ""
-"\n"
-" num borders: "
-msgstr ""
-"\n"
-" num borders: "
-
-#: src/polyset.cc:60
-msgid ""
-"\n"
-" polygons data:"
-msgstr ""
-"\n"
-" polygons data:"
-
-#: src/polyset.cc:62
-msgid ""
-"\n"
-"  polygon begin:"
-msgstr ""
-"\n"
-"  polygon begin:"
-
-#: src/polyset.cc:66 src/polyset.cc:75
-msgid ""
-"\n"
-"   vertex:"
-msgstr ""
-"\n"
-"   vertex:"
-
-#: src/polyset.cc:69
-msgid ""
-"\n"
-" borders data:"
-msgstr ""
-"\n"
-" borders data:"
-
-#: src/polyset.cc:71
-msgid ""
-"\n"
-"  border polygon begin:"
-msgstr ""
-"\n"
-"  border polygon begin:"
-
-#: src/polyset.cc:78
-msgid ""
-"\n"
-"PolySet end"
-msgstr ""
-"\n"
-"PolySet end"
-
-#: src/PolySetCGALEvaluator.cc:46
-msgid ""
-"WARNING: Body of projection(cut = false) isn't valid 2-manifold! Modify your "
-"design.."
-msgstr ""
-"WARNING: Body of projection(cut = false) isn't valid 2-manifold! Modify your "
-"design.."
-
-#: src/PolySetCGALEvaluator.cc:63
-#, c-format
-msgid "CGAL error in projection node during plane intersection: %s"
-msgstr "CGAL error in projection node during plane intersection: %s"
-
-#: src/PolySetCGALEvaluator.cc:65
-msgid "Trying alternative intersection using very large thin box: "
-msgstr "Trying alternative intersection using very large thin box: "
-
-#: src/PolySetCGALEvaluator.cc:80
-#, c-format
-msgid "CGAL error in projection node during bigbox intersection: %s"
-msgstr "CGAL error in projection node during bigbox intersection: %s"
-
-#: src/PolySetCGALEvaluator.cc:87
-msgid "WARNING: projection() failed."
-msgstr "WARNING: projection() failed."
-
-#: src/PolySetCGALEvaluator.cc:109
-#, c-format
-msgid "CGAL error in projection node while flattening: %s"
-msgstr "CGAL error in projection node while flattening: %s"
-
-#: src/PolySetCGALEvaluator.cc:303
-msgid "ERROR: linear_extrude() is not defined for 3D child objects!"
-msgstr "ERROR: linear_extrude() is not defined for 3D child objects!"
-
-#: src/PolySetCGALEvaluator.cc:343
-#, c-format
-msgid ""
-"WARNING: Open paths in dxf_linear_extrude(file = \"%s\", layer = \"%s\"):"
-msgstr ""
-"WARNING: Open paths in dxf_linear_extrude(file = \"%s\", layer = \"%s\"):"
-
-#: src/PolySetCGALEvaluator.cc:403
-msgid "ERROR: rotate_extrude() is not defined for 3D child objects!"
-msgstr "ERROR: rotate_extrude() is not defined for 3D child objects!"
-
-#: src/PolySetCGALEvaluator.cc:441
-msgid "WARNING: Body of render() isn't valid 2-manifold!"
-msgstr "WARNING: Body of render() isn't valid 2-manifold!"
-
-#: src/PolySetCGALEvaluator.cc:466
-#, c-format
-msgid ""
-"ERROR: all points for rotate_extrude() must have the same X coordinate sign "
-"(range is %.2f -> %.2f)"
-msgstr ""
-"ERROR: all points for rotate_extrude() must have the same X coordinate sign "
-"(range is %.2f -> %.2f)"
-
-#: src/primitives.cc:130
-#, c-format
-msgid "WARNING: Ignoring radius variable '%s' as diameter '%s' is defined too."
-msgstr ""
-"WARNING: Ignoring radius variable '%s' as diameter '%s' is defined too."
-
-#: src/primitives.cc:183
-#, c-format
-msgid "WARNING: $fs too small - clamping to %f"
-msgstr "WARNING: $fs too small - clamping to %f"
-
-#: src/primitives.cc:187
-#, c-format
-msgid "WARNING: $fa too small - clamping to %f"
-msgstr "WARNING: $fa too small - clamping to %f"
-
-#: src/primitives.cc:244
-msgid ""
-"DEPRECATED: polyhedron(triangles=[]) will be removed in future releases. Use "
-"polyhedron(faces=[]) instead."
-msgstr ""
-"DEPRECATED: polyhedron(triangles=[]) will be removed in future releases. Use "
-"polyhedron(faces=[]) instead."
-
-#: src/primitives.cc:536
-#, c-format
-msgid "ERROR: Unable to convert point at index %d to a vec2 of numbers"
-msgstr "ERROR: Unable to convert point at index %d to a vec2 of numbers"
-
-#: src/QGLView.cc:105
+#: src/QGLView.cc:114
 msgid ""
 "\n"
 "Using QGLWidget\n"
@@ -2021,7 +911,7 @@ msgstr ""
 "Using QGLWidget\n"
 "\n"
 
-#: src/QGLView.cc:122
+#: src/QGLView.cc:131
 msgid ""
 "Warning: You may experience OpenCSG rendering errors.\n"
 "\n"
@@ -2029,7 +919,7 @@ msgstr ""
 "Warning: You may experience OpenCSG rendering errors.\n"
 "\n"
 
-#: src/QGLView.cc:125
+#: src/QGLView.cc:134
 msgid ""
 "Warning: Missing OpenGL capabilities for OpenCSG - OpenCSG has been "
 "disabled.\n"
@@ -2039,7 +929,7 @@ msgstr ""
 "disabled.\n"
 "\n"
 
-#: src/QGLView.cc:128
+#: src/QGLView.cc:137
 msgid ""
 "It is highly recommended to use OpenSCAD on a system with OpenGL 2.0 or "
 "later.\n"
@@ -2049,7 +939,7 @@ msgstr ""
 "later.\n"
 "Your renderer information is as follows:\n"
 
-#: src/QGLView.cc:132
+#: src/QGLView.cc:141
 #, c-format
 msgid ""
 "GLEW version %s\n"
@@ -2060,7 +950,7 @@ msgstr ""
 "%s (%s)\n"
 "OpenGL version %s\n"
 
-#: src/QGLView.cc:163
+#: src/QGLView.cc:171
 #, c-format
 msgid ""
 "Viewport: translate = [ %.2f %.2f %.2f ], rotate = [ %.2f %.2f %.2f ], "
@@ -2069,31 +959,1194 @@ msgstr ""
 "Ansicht: Verschiebung = [ %.2f %.2f %.2f ], Rotation = [ %.2f %.2f %.2f ], "
 "Abstand = %.2f"
 
-#: src/rotateextrude.cc:72
+#: src/UIUtils.cc:85
+msgid "Basics"
+msgstr "Grundlagen"
+
+#: src/UIUtils.cc:85
+msgid "Shapes"
+msgstr "Formen"
+
+#: src/UIUtils.cc:85
+msgid "Extrusion"
+msgstr "Extrusion"
+
+#: src/mainwin.cc:728 src/mainwin.cc:1269
+msgid "Untitled.scad"
+msgstr "Untitled.scad"
+
+#: src/mainwin.cc:1268
+msgid "Save File"
+msgstr "Save File"
+
+#: src/mainwin.cc:1270
+msgid "OpenSCAD Designs (*.scad)"
+msgstr "OpenSCAD Designs (*.scad)"
+
+#: src/mainwin.cc:1280
 msgid ""
-"DEPRECATED: Support for reading files in rotate_extrude will be removed in "
-"future releases. Use a child import() instead."
+"%1 already exists.\n"
+"Do you want to replace it?"
 msgstr ""
-"DEPRECATED: Support for reading files in rotate_extrude will be removed in "
-"future releases. Use a child import() instead."
+"%1 existiert bereits.\n"
+"Mochten Sie die Datei ersetzen?"
 
-#: src/surface.cc:107
-#, c-format
-msgid "WARNING: Can't open DAT file '%s'."
-msgstr "WARNING: Can't open DAT file '%s'."
+#: src/mainwin.cc:1608
+msgid "Application"
+msgstr "Application"
 
-#: src/surface.cc:139
-#, c-format
-msgid "WARNING: Illegal value in '%s': %s"
-msgstr "WARNING: Illegal value in '%s': %s"
-
-#: src/value.cc:640
+#: src/mainwin.cc:1609
 msgid ""
-"DEPRECATED: Using ranges of the form [begin:end] with begin value greater "
-"than the end value is deprecated."
+"The document has been modified.\n"
+"Do you really want to reload the file?"
 msgstr ""
-"DEPRECATED: Using ranges of the form [begin:end] with begin value greater "
-"than the end value is deprecated."
+"The document has been modified.\n"
+"Do you really want to reload the file?"
+
+#: src/mainwin.cc:1907 src/mainwin.cc:1964
+#, fuzzy
+msgid "Export %1 File"
+msgstr "Export STL File"
+
+#: src/mainwin.cc:1908 src/mainwin.cc:1968
+#, fuzzy
+msgid "%1 Files (*%2)"
+msgstr "STL Files (*.stl)"
+
+#: src/mainwin.cc:1909
+#, fuzzy
+msgid "Untitled"
+msgstr "Untitled.dxf"
+
+#: src/mainwin.cc:1966
+#, fuzzy
+msgid "Untitled%1"
+msgstr "Untitled.dxf"
+
+#: src/mainwin.cc:2017
+msgid "Export CSG File"
+msgstr "Export CSG File"
+
+#: src/mainwin.cc:2018
+msgid "Untitled.csg"
+msgstr "Untitled.csg"
+
+#: src/mainwin.cc:2019
+msgid "CSG Files (*.csg)"
+msgstr "CSG Files (*.csg)"
+
+#: src/mainwin.cc:2045
+#, fuzzy
+msgid "Export Image"
+msgstr "Image exportieren..."
+
+#: src/mainwin.cc:2045
+msgid "PNG Files (*.png)"
+msgstr "PNG Files (*.png)"
+
+#: src/mainwin.cc:2297
+msgid "Console"
+msgstr "Konsole"
+
+#: src/mainwin.cc:2420
+#, fuzzy
+msgid "The document has been modified."
+msgstr ""
+"The document has been modified.\n"
+"Do you want to save your changes?"
+
+#: src/mainwin.cc:2421
+#, fuzzy
+msgid "Do you want to save your changes?"
+msgstr ""
+"The document has been modified.\n"
+"Do you want to save your changes?"
+
+#~ msgid "MainWindow"
+#~ msgstr "MainWindow"
+
+#~ msgid "Ctrl+P"
+#~ msgstr "Ctrl+P"
+
+#~ msgid "Editor for SCAD code"
+#~ msgstr "Editor for SCAD code"
+
+#~ msgid "Console messages"
+#~ msgstr "Console messages"
+
+#~ msgid "Trimming cache: %1% (%2% bytes)"
+#~ msgstr "Trimming cache: %1% (%2% bytes)"
+
+#~ msgid "WARNING: CGAL NefPolyhedron Triangulation failed: %s"
+#~ msgstr "WARNING: CGAL NefPolyhedron Triangulation failed: %s"
+
+#~ msgid "Error: CSG generation failed! (no top level object found)"
+#~ msgstr "Error: CSG generation failed! (no top level object found)"
+
+#~ msgid "Compiling design (CSG Products normalization)..."
+#~ msgstr "Compiling design (CSG Products normalization)..."
+
+#~ msgid "Normalized CSG tree has %d elements"
+#~ msgstr "Normalized CSG tree has %d elements"
+
+#~ msgid "WARNING: CSG normalization resulted in an empty tree"
+#~ msgstr "WARNING: CSG normalization resulted in an empty tree"
+
+#~ msgid "Compiling highlights (%i CSG Trees)..."
+#~ msgstr "Compiling highlights (%i CSG Trees)..."
+
+#~ msgid "Compiling background (%i CSG Trees)..."
+#~ msgstr "Compiling background (%i CSG Trees)..."
+
+#~ msgid "CGAL Cache hit: %s (%d bytes)"
+#~ msgstr "CGAL Cache hit: %s (%d bytes)"
+
+#~ msgid "CGAL Cache insert: %s (%d bytes)"
+#~ msgstr "CGAL Cache insert: %s (%d bytes)"
+
+#~ msgid "CGAL Cache insert failed: %s (%d bytes)"
+#~ msgstr "CGAL Cache insert failed: %s (%d bytes)"
+
+#~ msgid "CGAL Polyhedrons in cache: %d"
+#~ msgstr "CGAL Polyhedrons im Cache: %d"
+
+#~ msgid "CGAL cache size in bytes: %d"
+#~ msgstr "CGAL Cache Größe in Bytes: %d"
+
+#~ msgid "ERROR: CGAL NefPolyhedron->Polyhedron conversion failed."
+#~ msgstr "ERROR: CGAL NefPolyhedron->Polyhedron conversion failed."
+
+#~ msgid "ERROR: %s"
+#~ msgstr "ERROR: %s"
+
+#~ msgid "Warning: Scaling a 3D object with 0 - removing object"
+#~ msgstr "Warning: Scaling a 3D object with 0 - removing object"
+
+#~ msgid ""
+#~ "Hull() currently requires a valid 2-manifold. Please modify your design. "
+#~ "See http://en.wikibooks.org/wiki/OpenSCAD_User_Manual/"
+#~ "STL_Import_and_Export"
+#~ msgstr ""
+#~ "Hull() currently requires a valid 2-manifold. Please modify your design. "
+#~ "See http://en.wikibooks.org/wiki/OpenSCAD_User_Manual/"
+#~ "STL_Import_and_Export"
+
+#~ msgid "ERROR: Unsupported CGAL operator: %d"
+#~ msgstr "ERROR: Unsupported CGAL operator: %d"
+
+#~ msgid "CGAL error in CGALUtils::applyBinaryOperator %s: %s"
+#~ msgstr "CGAL error in CGALUtils::applyBinaryOperator %s: %s"
+
+#~ msgid "CGALUtils::project during plane intersection: %s"
+#~ msgstr "CGALUtils::project during plane intersection: %s"
+
+#~ msgid "Trying alternative intersection using very large thin box: "
+#~ msgstr "Trying alternative intersection using very large thin box: "
+
+#~ msgid "CGAL error in CGALUtils::project during bigbox intersection: %s"
+#~ msgstr "CGAL error in CGALUtils::project during bigbox intersection: %s"
+
+#~ msgid "WARNING: projection() failed."
+#~ msgstr "WARNING: projection() failed."
+
+#~ msgid "CGAL error in CGALUtils::project while flattening: %s"
+#~ msgstr "CGAL error in CGALUtils::project while flattening: %s"
+
+#~ msgid "ERROR: deproject failure"
+#~ msgstr "ERROR: deproject failure"
+
+#~ msgid "ERROR: failed to find projection"
+#~ msgstr "ERROR: failed to find projection"
+
+#~ msgid "input polygon has 3 points. shortcut tessellation."
+#~ msgstr "input polygon has 3 points. shortcut tessellation."
+
+#~ msgid "finding good projection"
+#~ msgstr "finding good projection"
+
+#~ msgid "plane %s"
+#~ msgstr "plane %s"
+
+#~ msgid "proj: %i %i"
+#~ msgstr "proj: %i %i"
+
+#~ msgid "Inserting points and edges into Constrained Delaunay Triangulation"
+#~ msgstr "Inserting points and edges into Constrained Delaunay Triangulation"
+
+#~ msgid "WARNING: Constraint insertion failure %s"
+#~ msgstr "WARNING: Constraint insertion failure %s"
+
+#~ msgid "seeding %i holes"
+#~ msgstr "seeding %i holes"
+
+#~ msgid "seed %f,%f"
+#~ msgstr "seed %f,%f"
+
+#~ msgid "seeding done"
+#~ msgstr "seeding done"
+
+#~ msgid "meshing"
+#~ msgstr "meshing"
+
+#~ msgid "meshing done"
+#~ msgstr "meshing done"
+
+#~ msgid "WARNING: 2d->3d deprojection failure"
+#~ msgstr "WARNING: 2d->3d deprojection failure"
+
+#~ msgid "built %i triangles\n"
+#~ msgstr "built %i triangles\n"
+
+#~ msgid "WARNING: triangle doesn't have 3 points. skipping"
+#~ msgstr "WARNING: triangle doesn't have 3 points. skipping"
+
+#~ msgid "CGAL error in CGALUtils::createPolyhedronFromPolySet: %s"
+#~ msgstr "CGAL error in CGALUtils::createPolyhedronFromPolySet: %s"
+
+#~ msgid "PolySet has nonplanar faces. Attempting alternate construction"
+#~ msgstr "PolySet has nonplanar faces. Attempting alternate construction"
+
+#~ msgid "CGAL error in CGAL_Nef_polyhedron3(): %s"
+#~ msgstr "CGAL error in CGAL_Nef_polyhedron3(): %s"
+
+#~ msgid ""
+#~ "Alternate construction failed. CGAL error in CGAL_Nef_polyhedron3(): %s"
+#~ msgstr ""
+#~ "Alternate construction failed. CGAL error in CGAL_Nef_polyhedron3(): %s"
+
+#~ msgid "Rendering cancelled."
+#~ msgstr "Rendering cancelled."
+
+#~ msgid ""
+#~ "WARNING: color() expects numbers between 0.0 and 1.0. Value of %.1f is "
+#~ "too large."
+#~ msgstr ""
+#~ "WARNING: color() expects numbers between 0.0 and 1.0. Value of %.1f is "
+#~ "too large."
+
+#~ msgid "WARNING: Color name \"%s\" unknown. Please see"
+#~ msgstr "WARNING: Color name \"%s\" unknown. Please see"
+
+#~ msgid "WARNING: http://en.wikipedia.org/wiki/Web_colors"
+#~ msgstr "WARNING: http://en.wikipedia.org/wiki/Web_colors"
+
+#~ msgid "WARNING: Attempt to modify constant '%s'."
+#~ msgstr "WARNING: Attempt to modify constant '%s'."
+
+#~ msgid "WARNING: Ignoring unknown variable '%s'."
+#~ msgstr "WARNING: Ignoring unknown variable '%s'."
+
+#~ msgid "WARNING: Ignoring unknown function '%s'."
+#~ msgstr "WARNING: Ignoring unknown function '%s'."
+
+#~ msgid "WARNING: Ignoring unknown module '%s'."
+#~ msgstr "WARNING: Ignoring unknown module '%s'."
+
+#~ msgid "ModuleContext %p (%p) for %s inst (%p)"
+#~ msgstr "ModuleContext %p (%p) for %s inst (%p)"
+
+#~ msgid "Context: %p (%p)"
+#~ msgstr "Context: %p (%p)"
+
+#~ msgid "  document path: %s"
+#~ msgstr "  document path: %s"
+
+#~ msgid "  module args:"
+#~ msgstr "  module args:"
+
+#~ msgid "  vars:"
+#~ msgstr "  vars:"
+
+#~ msgid ""
+#~ "WARNING: Bad range parameter in for statement: too many elements (%lu)."
+#~ msgstr ""
+#~ "WARNING: Bad range parameter in for statement: too many elements (%lu)."
+
+#~ msgid ""
+#~ "WARNING: Bad parameter type (%s) for children, only accept: empty, "
+#~ "number, vector, range."
+#~ msgstr ""
+#~ "WARNING: Bad parameter type (%s) for children, only accept: empty, "
+#~ "number, vector, range."
+
+#~ msgid "WARNING: Negative children index (%d) not allowed"
+#~ msgstr "WARNING: Negative children index (%d) not allowed"
+
+#~ msgid "WARNING: Children index (%d) out of bounds (%d children)"
+#~ msgstr "WARNING: Children index (%d) out of bounds (%d children)"
+
+#~ msgid "WARNING: Negative child index (%d) not allowed"
+#~ msgstr "WARNING: Negative child index (%d) not allowed"
+
+#~ msgid "WARNING: Child index (%d) out of bounds (%d children)"
+#~ msgstr "WARNING: Child index (%d) out of bounds (%d children)"
+
+#~ msgid "WARNING: Bad range parameter for children: too many elements (%lu)."
+#~ msgstr "WARNING: Bad range parameter for children: too many elements (%lu)."
+
+#~ msgid ""
+#~ "WARNING: Normalized tree is growing past %d elements. Aborting "
+#~ "normalization.\n"
+#~ msgstr ""
+#~ "WARNING: Normalized tree is growing past %d elements. Aborting "
+#~ "normalization.\n"
+
+#~ msgid "WARNING: Can't open DXF file '%s'."
+#~ msgstr "WARNING: Can't open DXF file '%s'."
+
+#~ msgid "WARNING: Illegal ID '%s' in `%s'"
+#~ msgstr "WARNING: Illegal ID '%s' in `%s'"
+
+#~ msgid "WARNING: Illegal value %s in '%s'"
+#~ msgstr "WARNING: Illegal value %s in '%s'"
+
+#~ msgid "WARNING: Unsupported DXF Entity '%s' (%x) in %s."
+#~ msgstr "WARNING: Unsupported DXF Entity '%s' (%x) in %s."
+
+#~ msgid "WARNING: Unsupported DXF Entity '%s' (%x) in layer '%s' of %s."
+#~ msgstr "WARNING: Unsupported DXF Entity '%s' (%x) in layer '%s' of %s."
+
+#~ msgid "WARNING: Dimension '%s' in '%s', layer '%s' has unsupported type!"
+#~ msgstr "WARNING: Dimension '%s' in '%s', layer '%s' has unsupported type!"
+
+#~ msgid "WARNING: Can't find dimension '%s' in '%s', layer '%s'!"
+#~ msgstr "WARNING: Can't find dimension '%s' in '%s', layer '%s'!"
+
+#~ msgid "WARNING: Can't find cross in '%s', layer '%s'!"
+#~ msgstr "WARNING: Can't find cross in '%s', layer '%s'!"
+
+#~ msgid "EvalContext %p (%p) for %s inst (%p)"
+#~ msgstr "EvalContext %p (%p) for %s inst (%p)"
+
+#~ msgid "  eval args:"
+#~ msgstr "  eval args:"
+
+#~ msgid "    children:"
+#~ msgstr "    children:"
+
+#~ msgid "Object isn't a valid 2-manifold! Modify your design.\n"
+#~ msgstr "Object isn't a valid 2-manifold! Modify your design.\n"
+
+#~ msgid "ERROR: Nef->PolySet failed"
+#~ msgstr "ERROR: Nef->PolySet failed"
+
+#~ msgid "ERROR: CGAL NefPolyhedron->Polyhedron conversion failed"
+#~ msgstr "ERROR: CGAL NefPolyhedron->Polyhedron conversion failed"
+
+#~ msgid "CGAL error in CGAL_Nef_polyhedron3::convert_to_Polyhedron(): %s"
+#~ msgstr "CGAL error in CGAL_Nef_polyhedron3::convert_to_Polyhedron(): %s"
+
+#~ msgid "CGAL unknown error in CGAL_Nef_polyhedron3::convert_to_Polyhedron()"
+#~ msgstr "CGAL unknown error in CGAL_Nef_polyhedron3::convert_to_Polyhedron()"
+
+#~ msgid "ERROR: Recursion detected calling function '%s'"
+#~ msgstr "ERROR: Recursion detected calling function '%s'"
+
+#~ msgid "Enable the <code>concat()</code> function."
+#~ msgstr "Funktion <code>concat()</code> aktivieren."
+
+#~ msgid "WARNING: Ignoring request to enable unknown feature '%s'."
+#~ msgstr "WARNING: Ignoring request to enable unknown feature '%s'."
+
+#~ msgid ""
+#~ "WARNING: Imported file (%s) found in document root instead of relative to "
+#~ "the importing module. This behavior is deprecated"
+#~ msgstr ""
+#~ "WARNING: Imported file (%s) found in document root instead of relative to "
+#~ "the importing module. This behavior is deprecated"
+
+#~ msgid "  WARNING: search term not found: \"%s\""
+#~ msgstr "  WARNING: search term not found: \"%s\""
+
+#~ msgid "  WARNING: search term not found: %s"
+#~ msgstr "  WARNING: search term not found: %s"
+
+#~ msgid "  WARNING: search: none performed on input %s"
+#~ msgstr "  WARNING: search: none performed on input %s"
+
+#~ msgid "WARNING: Negative parent module index (%d) not allowed"
+#~ msgstr "WARNING: Negative parent module index (%d) not allowed"
+
+#~ msgid ""
+#~ "WARNING: Parent module index (%d) greater than the number of modules on "
+#~ "the stack"
+#~ msgstr ""
+#~ "WARNING: Parent module index (%d) greater than the number of modules on "
+#~ "the stack"
+
+#~ msgid "Geometry Cache hit: %s (%d bytes)"
+#~ msgstr "Geometry Cache hit: %s (%d bytes)"
+
+#~ msgid "Geometry Cache insert: %s (%d bytes)"
+#~ msgstr "Geometry Cache insert: %s (%d bytes)"
+
+#~ msgid "Geometry Cache insert failed: %s (%d bytes)"
+#~ msgstr "Geometry Cache insert failed: %s (%d bytes)"
+
+#~ msgid "Geometries in cache: %d"
+#~ msgstr "Geometries in cache: %d"
+
+#~ msgid "Geometry cache size in bytes: %d"
+#~ msgstr "Geometry cache size in bytes: %d"
+
+#~ msgid "WARNING: Mixing 2D and 3D objects is not supported."
+#~ msgstr "WARNING: Mixing 2D and 3D objects is not supported."
+
+#~ msgid ""
+#~ "WARNING: Resize in direction normal to flat object is not implemented"
+#~ msgstr ""
+#~ "WARNING: Resize in direction normal to flat object is not implemented"
+
+#~ msgid "WARNING: Ignoring 3D child object for 2D operation"
+#~ msgstr "WARNING: Ignoring 3D child object for 2D operation"
+
+#~ msgid "WARNING: GeometryEvaluator: Node didn't fit into cache"
+#~ msgstr "WARNING: GeometryEvaluator: Node didn't fit into cache"
+
+#~ msgid "WARNING: Ignoring 2D child object for 3D operation"
+#~ msgstr "WARNING: Ignoring 2D child object for 3D operation"
+
+#~ msgid "Error: Unknown boolean operation %d"
+#~ msgstr "Error: Unknown boolean operation %d"
+
+#~ msgid ""
+#~ "Warning: Transformation matrix contains Not-a-Number and/or Infinity - "
+#~ "removing object."
+#~ msgstr ""
+#~ "Warning: Transformation matrix contains Not-a-Number and/or Infinity - "
+#~ "removing object."
+
+#~ msgid ""
+#~ "ERROR: all points for rotate_extrude() must have the same X coordinate "
+#~ "sign (range is %.2f -> %.2f)"
+#~ msgstr ""
+#~ "ERROR: all points for rotate_extrude() must have the same X coordinate "
+#~ "sign (range is %.2f -> %.2f)"
+
+#~ msgid "Can't open dependencies file `%s' for writing!\n"
+#~ msgstr "Can't open dependencies file `%s' for writing!\n"
+
+#~ msgid "DEPRECATED: filename= is deprecated. Please use file="
+#~ msgstr "DEPRECATED: filename= is deprecated. Please use file="
+
+#~ msgid "DEPRECATED: layername= is deprecated. Please use layer="
+#~ msgstr "DEPRECATED: layername= is deprecated. Please use layer="
+
+#~ msgid "WARNING: Can't open import file '%s'."
+#~ msgstr "WARNING: Can't open import file '%s'."
+
+#~ msgid "WARNING: Can't parse vertex line '%s'."
+#~ msgstr "WARNING: Can't parse vertex line '%s'."
+
+#~ msgid "WARNING: OFF import requires CGAL."
+#~ msgstr "WARNING: OFF import requires CGAL."
+
+#~ msgid "ERROR: Unsupported file format while trying to import file '%s'"
+#~ msgstr "ERROR: Unsupported file format while trying to import file '%s'"
+
+#~ msgid ""
+#~ "DEPRECATED: Support for reading files in linear_extrude will be removed "
+#~ "in future releases. Use a child import() instead."
+#~ msgstr ""
+#~ "DEPRECATED: Support for reading files in linear_extrude will be removed "
+#~ "in future releases. Use a child import() instead."
+
+#~ msgid ""
+#~ "Copyright (C) 2009-2013 The OpenSCAD Developers\n"
+#~ "\n"
+#~ "This program is free software; you can redistribute it and/or modify it "
+#~ "under the terms of the GNU General Public License as published by the "
+#~ "Free Software Foundation; either version 2 of the License, or (at your "
+#~ "option) any later version."
+#~ msgstr ""
+#~ "Copyright (C) 2009-2013 The OpenSCAD Developers\n"
+#~ "\n"
+#~ "This program is free software; you can redistribute it and/or modify it "
+#~ "under the terms of the GNU General Public License as published by the "
+#~ "Free Software Foundation; either version 2 of the License, or (at your "
+#~ "option) any later version."
+
+#~ msgid "OpenSCAD - New Document[*]"
+#~ msgstr "OpenSCAD - Neue Datei[*]"
+
+#~ msgid "[*]"
+#~ msgstr "[*]"
+
+#~ msgid "Failed to open file %s: %s"
+#~ msgstr "Failed to open file %s: %s"
+
+#~ msgid "Loaded design '%s'."
+#~ msgstr "Loaded design '%s'."
+
+#~ msgid "Module cache size: %d modules"
+#~ msgstr "Module cache size: %d modules"
+
+#~ msgid "Compiling design (CSG Tree generation)..."
+#~ msgstr "Compiling design (CSG Tree generation)..."
+
+#~ msgid "ERROR: Compilation failed! (no top level object found)"
+#~ msgstr "ERROR: Compilation failed! (no top level object found)"
+
+#~ msgid "ERROR: Compilation failed!"
+#~ msgstr "ERROR: Compilation failed!"
+
+#~ msgid "Compiling design (CSG Products generation)..."
+#~ msgstr "Compiling design (CSG Products generation)..."
+
+#~ msgid "ERROR: CSG generation failed! (no top level object found)"
+#~ msgstr "ERROR: CSG generation failed! (no top level object found)"
+
+#~ msgid "CSG generation cancelled."
+#~ msgstr "CSG generation cancelled."
+
+#~ msgid "Compiling highlights (%d CSG Trees)..."
+#~ msgstr "Compiling highlights (%d CSG Trees)..."
+
+#~ msgid "Compiling background (%d CSG Trees)..."
+#~ msgstr "Compiling background (%d CSG Trees)..."
+
+#~ msgid "WARNING: Normalized tree has %d elements!"
+#~ msgstr "WARNING: Normalized tree has %d elements!"
+
+#~ msgid "WARNING: OpenCSG rendering has been disabled."
+#~ msgstr "WARNING: OpenCSG rendering has been disabled."
+
+#~ msgid "CSG generation finished."
+#~ msgstr "CSG generation finished."
+
+#~ msgid "Total rendering time: %d hours, %d minutes, %d seconds"
+#~ msgstr "Total rendering time: %d hours, %d minutes, %d seconds"
+
+#~ msgid "Open File"
+#~ msgstr "Open File"
+
+#~ msgid "OpenSCAD Designs (*.scad *.csg)"
+#~ msgstr "OpenSCAD Designs (*.scad *.csg)"
+
+#~ msgid "Failed to open file for writing: %s (%s)"
+#~ msgstr "Failed to open file for writing: %s (%s)"
+
+#~ msgid ""
+#~ "Failed to open file for writing:\n"
+#~ " %1 (%2)"
+#~ msgstr ""
+#~ "Failed to open file for writing:\n"
+#~ " %1 (%2)"
+
+#~ msgid "Saved design '%s'."
+#~ msgstr "Saved design '%s'."
+
+#~ msgid "WARNING: Library path %s doesn't exist. Creating"
+#~ msgstr "WARNING: Library path %s doesn't exist. Creating"
+
+#~ msgid "ERROR: Cannot create library path: %s"
+#~ msgstr "ERROR: Cannot create library path: %s"
+
+#~ msgid "Parsing design (AST generation)..."
+#~ msgstr "Parsing design (AST generation)..."
+
+#~ msgid "frame%05d.png"
+#~ msgstr "frame%05d.png"
+
+#~ msgid "Rendering Polygon Mesh using CGAL..."
+#~ msgstr "Rendering Polygon Mesh using CGAL..."
+
+#~ msgid "   Top level object is a 3D object:"
+#~ msgstr "   Top level object is a 3D object:"
+
+#~ msgid "   Simple:     %6s"
+#~ msgstr "   Simple:     %6s"
+
+#~ msgid "yes"
+#~ msgstr "yes"
+
+#~ msgid "no"
+#~ msgstr "no"
+
+#~ msgid "   Valid:      %6s"
+#~ msgstr "   Valid:      %6s"
+
+#~ msgid "   Vertices:   %6d"
+#~ msgstr "   Vertices:   %6d"
+
+#~ msgid "   Halfedges:  %6d"
+#~ msgstr "   Halfedges:  %6d"
+
+#~ msgid "   Edges:      %6d"
+#~ msgstr "   Edges:      %6d"
+
+#~ msgid "   Halffacets: %6d"
+#~ msgstr "   Halffacets: %6d"
+
+#~ msgid "   Facets:     %6d"
+#~ msgstr "   Facets:     %6d"
+
+#~ msgid "   Volumes:    %6d"
+#~ msgstr "   Volumes:    %6d"
+
+#~ msgid "   Top level object is a 2D object:"
+#~ msgstr "   Top level object is a 2D object:"
+
+#~ msgid "   Contours:     %6d"
+#~ msgstr "   Contours:     %6d"
+
+#~ msgid "Unknown geometry type"
+#~ msgstr "Unknown geometry type"
+
+#~ msgid "Rendering finished."
+#~ msgstr "Rendering finished."
+
+#~ msgid "WARNING: No top level geometry to render"
+#~ msgstr "WARNING: No top level geometry to render"
+
+#~ msgid "AST Dump"
+#~ msgstr "AST Dump"
+
+#~ msgid "No AST to dump. Please try compiling first..."
+#~ msgstr "No AST to dump. Please try compiling first..."
+
+#~ msgid "CSG Tree Dump"
+#~ msgstr "CSG Tree Dump"
+
+#~ msgid "No CSG to dump. Please try compiling first..."
+#~ msgstr "No CSG to dump. Please try compiling first..."
+
+#~ msgid "CSG Products Dump"
+#~ msgstr "CSG Products Dump"
+
+#~ msgid ""
+#~ "\n"
+#~ "CSG before normalization:\n"
+#~ "%1\n"
+#~ "\n"
+#~ "\n"
+#~ "CSG after normalization:\n"
+#~ "%2\n"
+#~ "\n"
+#~ "\n"
+#~ "CSG rendering chain:\n"
+#~ "%3\n"
+#~ "\n"
+#~ "\n"
+#~ "Highlights CSG rendering chain:\n"
+#~ "%4\n"
+#~ "\n"
+#~ "\n"
+#~ "Background CSG rendering chain:\n"
+#~ "%5\n"
+#~ msgstr ""
+#~ "\n"
+#~ "CSG before normalization:\n"
+#~ "%1\n"
+#~ "\n"
+#~ "\n"
+#~ "CSG after normalization:\n"
+#~ "%2\n"
+#~ "\n"
+#~ "\n"
+#~ "CSG rendering chain:\n"
+#~ "%3\n"
+#~ "\n"
+#~ "\n"
+#~ "Highlights CSG rendering chain:\n"
+#~ "%4\n"
+#~ "\n"
+#~ "\n"
+#~ "Background CSG rendering chain:\n"
+#~ "%5\n"
+
+#~ msgid "Nothing to export! Try building first (press F6)."
+#~ msgstr "Nothing to export! Try building first (press F6)."
+
+#~ msgid "Current top level object is not a 3D object."
+#~ msgstr "Current top level object is not a 3D object."
+
+#~ msgid ""
+#~ "Object isn't a valid 2-manifold! Modify your design. See http://en."
+#~ "wikibooks.org/wiki/OpenSCAD_User_Manual/STL_Import_and_Export"
+#~ msgstr ""
+#~ "Object isn't a valid 2-manifold! Modify your design. See http://en."
+#~ "wikibooks.org/wiki/OpenSCAD_User_Manual/STL_Import_and_Export"
+
+#~ msgid "Export OFF File"
+#~ msgstr "Export OFF File"
+
+#~ msgid "OFF Files (*.off)"
+#~ msgstr "OFF Files (*.off)"
+
+#~ msgid "No filename specified. %s export aborted."
+#~ msgstr "No filename specified. %s export aborted."
+
+#~ msgid "Can't open file \"%s\" for export"
+#~ msgstr "Can't open file \"%s\" for export"
+
+#~ msgid "%s export finished."
+#~ msgstr "%s export finished."
+
+#~ msgid "Current top level object is not a 2D object."
+#~ msgstr "Current top level object is not a 2D object."
+
+#~ msgid "Export DXF File"
+#~ msgstr "Export DXF File"
+
+#~ msgid "DXF Files (*.dxf)"
+#~ msgstr "DXF Files (*.dxf)"
+
+#~ msgid "No filename specified. DXF export aborted."
+#~ msgstr "No filename specified. DXF export aborted."
+
+#~ msgid "DXF export finished."
+#~ msgstr "DXF export finished."
+
+#~ msgid "Nothing to export. Please try compiling first..."
+#~ msgstr "Nothing to export. Please try compiling first..."
+
+#~ msgid "No filename specified. CSG export aborted."
+#~ msgstr "No filename specified. CSG export aborted."
+
+#~ msgid "CSG export finished."
+#~ msgstr "CSG export finished."
+
+#~ msgid "No filename specified. Image export aborted."
+#~ msgstr "No filename specified. Image export aborted."
+
+#~ msgid "http://openscad.org/"
+#~ msgstr "http://openscad.org/"
+
+#~ msgid "http://www.openscad.org/documentation.html"
+#~ msgstr "http://www.openscad.org/documentation.html"
+
+#~ msgid "OpenGL Info"
+#~ msgstr "OpenGL Info"
+
+#~ msgid "WARNING: Experimental builtin function '%s' is not enabled."
+#~ msgstr "WARNING: Experimental builtin function '%s' is not enabled."
+
+#~ msgid "WARNING: Experimental builtin module '%s' is not enabled."
+#~ msgstr "WARNING: Experimental builtin module '%s' is not enabled."
+
+#~ msgid ""
+#~ "DEPRECATED: The %s() module will be removed in future releases. Use %s() "
+#~ "instead."
+#~ msgstr ""
+#~ "DEPRECATED: The %s() module will be removed in future releases. Use %s() "
+#~ "instead."
+
+#~ msgid "ModuleContext %p (%p) for %s inst (%p) "
+#~ msgstr "ModuleContext %p (%p) for %s inst (%p) "
+
+#~ msgid "ModuleContext: %p (%p)"
+#~ msgstr "ModuleContext: %p (%p)"
+
+#~ msgid "New lib Context for %s func:"
+#~ msgstr "New lib Context for %s func:"
+
+#~ msgid "New file Context:"
+#~ msgstr "New file Context:"
+
+#~ msgid "Recompiling cached library: %s (%s)"
+#~ msgstr "Recompiling cached library: %s (%s)"
+
+#~ msgid "Compiling library '%s'."
+#~ msgstr "Compiling library '%s'."
+
+#~ msgid "WARNING: Can't open library file '%s'\n"
+#~ msgstr "WARNING: Can't open library file '%s'\n"
+
+#~ msgid "  compiled module: %p"
+#~ msgstr "  compiled module: %p"
+
+#~ msgid "New eval ctx:"
+#~ msgstr "New eval ctx:"
+
+#~ msgid "ERROR: Recursion detected calling module '%s'"
+#~ msgstr "ERROR: Recursion detected calling module '%s'"
+
+#~ msgid "WARNING: Failed to compile library '%s'."
+#~ msgstr "WARNING: Failed to compile library '%s'."
+
+#~ msgid "OpenSCAD recommended OpenGL version is 2.0."
+#~ msgstr "Die empfohlene OpenGL version für OpenSCAD ist 2.0."
+
+#~ msgid ""
+#~ "Usage: %1% [ -o output_file [ -d deps_file ] ]\\\n"
+#~ "%2%[ -m make_command ] [ -D var=val [..] ] \\\n"
+#~ "%2%[ --version ] [ --info ] \\\n"
+#~ "%2%[ --camera=translatex,y,z,rotx,y,z,dist | \\\n"
+#~ "%2%  --camera=eyex,y,z,centerx,y,z ] \\\n"
+#~ "%2%[ --imgsize=width,height ] [ --projection=(o)rtho|(p)ersp] \\\n"
+#~ "%2%[ --render | --preview[=throwntogether] ] \\\n"
+#~ "%2%[ --enable=<feature> ] \\\n"
+#~ "%2%filename\n"
+#~ msgstr ""
+#~ "Usage: %1% [ -o output_file [ -d deps_file ] ]\\\n"
+#~ "%2%[ -m make_command ] [ -D var=val [..] ] \\\n"
+#~ "%2%[ --version ] [ --info ] \\\n"
+#~ "%2%[ --camera=translatex,y,z,rotx,y,z,dist | \\\n"
+#~ "%2%  --camera=eyex,y,z,centerx,y,z ] \\\n"
+#~ "%2%[ --imgsize=width,height ] [ --projection=(o)rtho|(p)ersp] \\\n"
+#~ "%2%[ --render | --preview[=throwntogether] ] \\\n"
+#~ "%2%[ --enable=<feature> ] \\\n"
+#~ "%2%filename\n"
+
+#~ msgid "OpenSCAD version %s\n"
+#~ msgstr "OpenSCAD version %s\n"
+
+#~ msgid "Can't create OpenGL OffscreenView. Code: %i. Exiting.\n"
+#~ msgstr "Can't create OpenGL OffscreenView. Code: %i. Exiting.\n"
+
+#~ msgid "Camera setup requires either 7 numbers for Gimbal Camera\n"
+#~ msgstr "Camera setup requires either 7 numbers for Gimbal Camera\n"
+
+#~ msgid "or 6 numbers for Vector Camera\n"
+#~ msgstr "or 6 numbers for Vector Camera\n"
+
+#~ msgid "projection needs to be 'o' or 'p' for ortho or perspective\n"
+#~ msgstr "projection needs to be 'o' or 'p' for ortho or perspective\n"
+
+#~ msgid "Need 2 numbers for imgsize\n"
+#~ msgstr "Need 2 numbers for imgsize\n"
+
+#~ msgid "Unknown suffix for output file %s\n"
+#~ msgstr "Unknown suffix for output file %s\n"
+
+#~ msgid "Can't open input file '%s'!\n"
+#~ msgstr "Can't open input file '%s'!\n"
+
+#~ msgid "Can't parse file '%s'!\n"
+#~ msgstr "Can't parse file '%s'!\n"
+
+#~ msgid "Output file:%s\n"
+#~ msgstr "Output file:%s\n"
+
+#~ msgid "Sorry, don't know how to write deps for that file type. Exiting\n"
+#~ msgstr "Sorry, don't know how to write deps for that file type. Exiting\n"
+
+#~ msgid "error writing deps"
+#~ msgstr "error writing deps"
+
+#~ msgid "Current top level object is not a 3D object.\n"
+#~ msgstr "Current top level object is not a 3D object.\n"
+
+#~ msgid "Current top level object is not a 2D object.\n"
+#~ msgstr "Current top level object is not a 2D object.\n"
+
+#~ msgid "Allowed options"
+#~ msgstr "Allowed options"
+
+#~ msgid "help message"
+#~ msgstr "help message"
+
+#~ msgid "print the version"
+#~ msgstr "print the version"
+
+#~ msgid "print information about the building process"
+#~ msgstr "print information about the building process"
+
+#~ msgid "if exporting a png image, do a full CGAL render"
+#~ msgstr "if exporting a png image, do a full CGAL render"
+
+#~ msgid ""
+#~ "if exporting a png image, do an OpenCSG(default) or ThrownTogether preview"
+#~ msgstr ""
+#~ "if exporting a png image, do an OpenCSG(default) or ThrownTogether preview"
+
+#~ msgid "parameters for camera when exporting png"
+#~ msgstr "parameters for camera when exporting png"
+
+#~ msgid "=width,height for exporting png"
+#~ msgstr "=width,height for exporting png"
+
+#~ msgid "(o)rtho or (p)erspective when exporting png"
+#~ msgstr "(o)rtho or (p)erspective when exporting png"
+
+#~ msgid "out-file"
+#~ msgstr "out-file"
+
+#~ msgid "stl-file"
+#~ msgstr "stl-file"
+
+#~ msgid "dxf-file"
+#~ msgstr "dxf-file"
+
+#~ msgid "deps-file"
+#~ msgstr "deps-file"
+
+#~ msgid "makefile"
+#~ msgstr "makefile"
+
+#~ msgid "var=val"
+#~ msgstr "var=val"
+
+#~ msgid "enable experimental features"
+#~ msgstr "enable experimental features"
+
+#~ msgid "Hidden options"
+#~ msgstr "Hidden options"
+
+#~ msgid "input file"
+#~ msgstr "input file"
+
+#~ msgid "DEPRECATED: The -s option is deprecated. Use -o instead.\n"
+#~ msgstr "DEPRECATED: The -s option is deprecated. Use -o instead.\n"
+
+#~ msgid "DEPRECATED: The -x option is deprecated. Use -o instead.\n"
+#~ msgstr "DEPRECATED: The -x option is deprecated. Use -o instead.\n"
+
+#~ msgid "Requested GUI mode but can't open display!\n"
+#~ msgstr "Requested GUI mode but can't open display!\n"
+
+#~ msgid "ERROR: Cannot create %s"
+#~ msgstr "ERROR: Cannot create %s"
+
+#~ msgid "PolySet:"
+#~ msgstr "PolySet:"
+
+#~ msgid ""
+#~ "\n"
+#~ " dimensions:"
+#~ msgstr ""
+#~ "\n"
+#~ " dimensions:"
+
+#~ msgid ""
+#~ "\n"
+#~ " convexity:"
+#~ msgstr ""
+#~ "\n"
+#~ " convexity:"
+
+#~ msgid ""
+#~ "\n"
+#~ " num polygons: "
+#~ msgstr ""
+#~ "\n"
+#~ " num polygons: "
+
+#~ msgid ""
+#~ "\n"
+#~ " num outlines: "
+#~ msgstr ""
+#~ "\n"
+#~ " num outlines: "
+
+#~ msgid ""
+#~ "\n"
+#~ " polygons data:"
+#~ msgstr ""
+#~ "\n"
+#~ " polygons data:"
+
+#~ msgid ""
+#~ "\n"
+#~ "  polygon begin:"
+#~ msgstr ""
+#~ "\n"
+#~ "  polygon begin:"
+
+#~ msgid ""
+#~ "\n"
+#~ "   vertex:"
+#~ msgstr ""
+#~ "\n"
+#~ "   vertex:"
+
+#~ msgid ""
+#~ "\n"
+#~ " outlines data:"
+#~ msgstr ""
+#~ "\n"
+#~ " outlines data:"
+
+#~ msgid ""
+#~ "\n"
+#~ "PolySet end"
+#~ msgstr ""
+#~ "\n"
+#~ "PolySet end"
+
+#~ msgid ""
+#~ "WARNING: Ignoring radius variable '%s' as diameter '%s' is defined too."
+#~ msgstr ""
+#~ "WARNING: Ignoring radius variable '%s' as diameter '%s' is defined too."
+
+#~ msgid "WARNING: $fs too small - clamping to %f"
+#~ msgstr "WARNING: $fs too small - clamping to %f"
+
+#~ msgid "WARNING: $fa too small - clamping to %f"
+#~ msgstr "WARNING: $fa too small - clamping to %f"
+
+#~ msgid ""
+#~ "DEPRECATED: polyhedron(triangles=[]) will be removed in future releases. "
+#~ "Use polyhedron(faces=[]) instead."
+#~ msgstr ""
+#~ "DEPRECATED: polyhedron(triangles=[]) will be removed in future releases. "
+#~ "Use polyhedron(faces=[]) instead."
+
+#~ msgid "ERROR: Unable to convert point at index %d to a vec3 of numbers"
+#~ msgstr "ERROR: Unable to convert point at index %d to a vec3 of numbers"
+
+#~ msgid "ERROR: Unable to convert point %s at index %d to a vec2 of numbers"
+#~ msgstr "ERROR: Unable to convert point %s at index %d to a vec2 of numbers"
+
+#~ msgid ""
+#~ "DEPRECATED: Support for reading files in rotate_extrude will be removed "
+#~ "in future releases. Use a child import() instead."
+#~ msgstr ""
+#~ "DEPRECATED: Support for reading files in rotate_extrude will be removed "
+#~ "in future releases. Use a child import() instead."
+
+#~ msgid "WARNING: Can't open DAT file '%s'."
+#~ msgstr "WARNING: Can't open DAT file '%s'."
+
+#~ msgid "WARNING: Illegal value in '%s': %s"
+#~ msgstr "WARNING: Illegal value in '%s': %s"
+
+#~ msgid ""
+#~ "DEPRECATED: Using ranges of the form [begin:end] with begin value greater "
+#~ "than the end value is deprecated."
+#~ msgstr ""
+#~ "DEPRECATED: Using ranges of the form [begin:end] with begin value greater "
+#~ "than the end value is deprecated."
+
+#~ msgid "&Compile"
+#~ msgstr "Übersetzen"
+
+#~ msgid "Compile and &Render (CGAL)"
+#~ msgstr "Übersetzen und Rendern (CGAL)"
+
+#~ msgid "CGAL Grid Only"
+#~ msgstr "CGAL Gitter anzeigen"
+
+#~ msgid " vertices:"
+#~ msgstr " vertices:"
+
+#~ msgid "{ Outer boundary = "
+#~ msgstr "{ Outer boundary = "
+
+#~ msgid "{ Unbounded polygon."
+#~ msgstr "{ Unbounded polygon."
+
+#~ msgid " holes:"
+#~ msgstr " holes:"
+
+#~ msgid "    Hole #"
+#~ msgstr "    Hole #"
+
+#~ msgid ""
+#~ "WARNING: minkowski() and hull() is not implemented for 2d objects with "
+#~ "holes!"
+#~ msgstr ""
+#~ "WARNING: minkowski() and hull() is not implemented for 2d objects with "
+#~ "holes!"
+
+#~ msgid "WARNING: minkowski() could not get any points from object 1!"
+#~ msgstr "WARNING: minkowski() could not get any points from object 1!"
+
+#~ msgid "WARNING: minkowski() could not get any points from object 2!"
+#~ msgstr "WARNING: minkowski() could not get any points from object 2!"
+
+#~ msgid "CGAL error in CGAL_Nef_polyhedron's %s operator: %s"
+#~ msgstr "CGAL error in CGAL_Nef_polyhedron's %s operator: %s"
+
+#~ msgid "ERROR: CGAL NefPolyhedron->Polyhedron conversion failed. %s"
+#~ msgstr "ERROR: CGAL NefPolyhedron->Polyhedron conversion failed. %s"
+
+#~ msgid "WARNING: Cannot resize to sizes less than 0."
+#~ msgstr "WARNING: Cannot resize to sizes less than 0."
+
+#~ msgid "WARNING: glide() is not implemented yet!"
+#~ msgstr "WARNING: glide() is not implemented yet!"
+
+#~ msgid "WARNING: subdiv() is not implemented yet!"
+#~ msgstr "WARNING: subdiv() is not implemented yet!"
+
+#~ msgid "Warning: Scaling a 2D object with 0 - removing object"
+#~ msgstr "Warning: Scaling a 2D object with 0 - removing object"
+
+#~ msgid ""
+#~ "WARNING: Duplicate vertices and/or intersecting lines found during DXF "
+#~ "Tessellation."
+#~ msgstr ""
+#~ "WARNING: Duplicate vertices and/or intersecting lines found during DXF "
+#~ "Tessellation."
+
+#~ msgid ""
+#~ "WARNING: Modify the polygon to be a Simple Polygon. Render is incomplete."
+#~ msgstr ""
+#~ "WARNING: Modify the polygon to be a Simple Polygon. Render is incomplete."
+
+#~ msgid "CGAL error in dxf_tesselate(): %s"
+#~ msgstr "CGAL error in dxf_tesselate(): %s"
+
+#~ msgid "CGAL error in dxftess triangulate_polygon: %s"
+#~ msgstr "CGAL error in dxftess triangulate_polygon: %s"
+
+#~ msgid "WARNING: PolySet has polygon with <3 points"
+#~ msgstr "WARNING: PolySet has polygon with <3 points"
+
+#~ msgid "WARNING: PolySet has degenerate polygon"
+#~ msgstr "WARNING: PolySet has degenerate polygon"
+
+#~ msgid "GLU tesselation error %s"
+#~ msgstr "GLU tesselation error %s"
+
+#~ msgid "WARNING: No suitable PolySetEvaluator found for %s module!"
+#~ msgstr "WARNING: No suitable PolySetEvaluator found for %s module!"
+
+#~ msgid "   Empty:      %6s"
+#~ msgstr "   Empty:      %6s"
+
+#~ msgid "   Plane:      %6s"
+#~ msgstr "   Plane:      %6s"
+
+#~ msgid "   Faces:      %6d"
+#~ msgstr "   Faces:      %6d"
+
+#~ msgid "   FaceCycles: %6d"
+#~ msgstr "   FaceCycles: %6d"
+
+#~ msgid ""
+#~ "\n"
+#~ " num borders: "
+#~ msgstr ""
+#~ "\n"
+#~ " num borders: "
+
+#~ msgid ""
+#~ "\n"
+#~ " borders data:"
+#~ msgstr ""
+#~ "\n"
+#~ " borders data:"
+
+#~ msgid ""
+#~ "\n"
+#~ "  border polygon begin:"
+#~ msgstr ""
+#~ "\n"
+#~ "  border polygon begin:"
+
+#~ msgid ""
+#~ "WARNING: Body of projection(cut = false) isn't valid 2-manifold! Modify "
+#~ "your design.."
+#~ msgstr ""
+#~ "WARNING: Body of projection(cut = false) isn't valid 2-manifold! Modify "
+#~ "your design.."
+
+#~ msgid "ERROR: linear_extrude() is not defined for 3D child objects!"
+#~ msgstr "ERROR: linear_extrude() is not defined for 3D child objects!"
+
+#~ msgid ""
+#~ "WARNING: Open paths in dxf_linear_extrude(file = \"%s\", layer = \"%s\"):"
+#~ msgstr ""
+#~ "WARNING: Open paths in dxf_linear_extrude(file = \"%s\", layer = \"%s\"):"
+
+#~ msgid "ERROR: rotate_extrude() is not defined for 3D child objects!"
+#~ msgstr "ERROR: rotate_extrude() is not defined for 3D child objects!"
+
+#~ msgid "WARNING: Body of render() isn't valid 2-manifold!"
+#~ msgstr "WARNING: Body of render() isn't valid 2-manifold!"
 
 #~ msgid "GLEW Error: %s\n"
 #~ msgstr "GLEW Error: %s\n"
