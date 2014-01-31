@@ -971,15 +971,15 @@ void ZRemover::visit( CGAL_Nef_polyhedron3::Halffacet_const_handle hfacet )
 			if (contour.size()==0) continue;
 
 			if (OpenSCAD::debug!="")
-				PRINTD(" <!-- is_simple_2: %i -->", CGAL::is_simple_2( contour.begin(), contour.end() ) );
+				PRINTDB(" <!-- is_simple_2: %i -->", CGAL::is_simple_2( contour.begin(), contour.end() ) );
 
 			tmpnef2d.reset( new CGAL_Nef_polyhedron2( contour.begin(), contour.end(), boundary ) );
 
 			if ( contour_counter == 0 ) {
-				PRINTD(" <!-- contour is a body. make union(). %i  points -->", contour.size() );
+				PRINTDB(" <!-- contour is a body. make union(). %i  points -->", contour.size() );
 				*(output_nefpoly2d) += *(tmpnef2d);
 			} else {
-				PRINTD(" <!-- contour is a hole. make intersection(). %i  points -->", contour.size() );
+				PRINTDB(" <!-- contour is a hole. make intersection(). %i  points -->", contour.size() );
 				*(output_nefpoly2d) *= *(tmpnef2d);
 			}
 
