@@ -1,6 +1,7 @@
 #include "printutils.h"
 #include <sstream>
 #include <stdio.h>
+#include <boost/algorithm/string.hpp>
 
 std::list<std::string> print_messages_stack;
 OutputHandlerFunc *outputhandler = NULL;
