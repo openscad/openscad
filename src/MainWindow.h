@@ -117,6 +117,15 @@ private slots:
 
 private slots:
 	void actionRenderCSG();
+	void find();
+	void findNext();
+	void findPrev();
+	void useSelectionForFind();
+protected:
+	void findOperation(QTextDocument::FindFlags options = 0);
+	virtual bool eventFilter(QObject* obj, QEvent *event);
+
+private slots:
 	void csgRender();
 	void csgReloadRender();
 #ifdef ENABLE_CGAL

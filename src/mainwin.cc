@@ -212,6 +212,7 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this->e_fps, SIGNAL(textChanged(QString)), this, SLOT(updatedFps()));
 
 	animate_panel->hide();
+	find_panel->hide();
 
 	// Application menu
 #ifdef DEBUG
@@ -284,6 +285,11 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this->editActionZoomOut, SIGNAL(triggered()), editor, SLOT(zoomOut()));
 	connect(this->editActionHide, SIGNAL(triggered()), this, SLOT(hideEditor()));
 	connect(this->editActionPreferences, SIGNAL(triggered()), this, SLOT(preferences()));
+	// Edit->Find
+	connect(this->editActionFind, SIGNAL(triggered()), this, SLOT(find()));
+	connect(this->editActionFindNext, SIGNAL(triggered()), this, SLOT(findNext()));
+	connect(this->editActionFindPrevious, SIGNAL(triggered()), this, SLOT(findPrev()));
+	connect(this->editActionUseSelectionForFind, SIGNAL(triggered()), this, SLOT(useSelectionForFind()));
 
 	// Design menu
 	connect(this->designActionAutoReload, SIGNAL(toggled(bool)), this, SLOT(autoReloadSet(bool)));
@@ -372,6 +378,13 @@ MainWindow::MainWindow(const QString &filename)
 	connect(Preferences::inst(), SIGNAL(syntaxHighlightChanged(const QString&)), 
 					this, SLOT(setSyntaxHighlight(const QString&)));
 	Preferences::inst()->apply();
+
+	connect(this->findInputField, SIGNAL(returnPressed()), this, SLOT(findNext()));
+	find_panel->installEventFilter(this);
+
+	connect(this->prevButton, SIGNAL(clicked()), this, SLOT(findPrev()));
+	connect(this->nextButton, SIGNAL(clicked()), this, SLOT(findNext()));
+	connect(this->hideFindButton, SIGNAL(clicked()), find_panel, SLOT(hide()));
 
 	// make sure it looks nice..
 	QSettings settings;
@@ -1089,6 +1102,60 @@ void MainWindow::pasteViewportRotation()
 	txt.sprintf("[ %.2f, %.2f, %.2f ]",
 		fmodf(360 - qglview->cam.object_rot.x() + 90, 360), fmodf(360 - qglview->cam.object_rot.y(), 360), fmodf(360 - qglview->cam.object_rot.z(), 360));
 	cursor.insertText(txt);
+}
+
+void MainWindow::find()
+{
+	find_panel->show();
+	findInputField->setFocus();
+	findInputField->selectAll();
+}
+
+void MainWindow::findOperation(QTextDocument::FindFlags options) {
+	bool success = editor->find(findInputField->text(), options);
+	if (!success) { // Implement wrap-around search behavior
+		QTextCursor old_cursor = editor->textCursor();
+		QTextCursor tmp_cursor = old_cursor;
+		tmp_cursor.movePosition((options & QTextDocument::FindBackward) ? QTextCursor::End : QTextCursor::Start);
+		editor->setTextCursor(tmp_cursor);
+		bool success = editor->find(findInputField->text(), options);
+		if (!success) {
+			editor->setTextCursor(old_cursor);
+		}
+	}
+}
+
+void MainWindow::findNext()
+{
+	findOperation();
+}
+
+void MainWindow::findPrev()
+{
+	findOperation(QTextDocument::FindBackward);
+}
+
+void MainWindow::useSelectionForFind()
+{
+	findInputField->setText(editor->textCursor().selectedText());
+}
+
+bool MainWindow::eventFilter(QObject* obj, QEvent *event)
+{
+    if (obj == find_panel)
+    {
+        if (event->type() == QEvent::KeyPress)
+        {
+            QKeyEvent* keyEvent = static_cast<QKeyEvent*>(event);
+            if (keyEvent->key() == Qt::Key_Escape)
+            {
+				find_panel->hide();
+				return true;
+            }
+        }
+        return false;
+    }
+    return QMainWindow::eventFilter(obj, event);
 }
 
 void MainWindow::updateTemporalVariables()
