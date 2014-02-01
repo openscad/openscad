@@ -175,22 +175,23 @@ DxfData::DxfData(double fn, double fs, double fa,
 				in_blocks_section = iddata == "BLOCKS";
 			}
 			else if (mode == "LINE") {
-				ADD_LINE(xverts[0], yverts[0], xverts[1], yverts[1]);
+				ADD_LINE(xverts.at(0), yverts.at(0), xverts.at(1), yverts.at(1));
 			}
 			else if (mode == "LWPOLYLINE") {
-				assert(xverts.size() == yverts.size());
-				// polyline flag is stored in 'dimtype'
-				int numverts = xverts.size();
+				// assert(xverts.size() == yverts.size());
+				// Get maximum to enforce managed exception if xverts.size() != yverts.size()
+				int numverts = std::max(xverts.size(), yverts.size());
 				for (int i=1;i<numverts;i++) {
-					ADD_LINE(xverts[i-1], yverts[i-1], xverts[i%numverts], yverts[i%numverts]);
+					ADD_LINE(xverts.at(i-1), yverts.at(i-1), xverts.at(i%numverts), yverts.at(i%numverts));
 				}
+				// polyline flag is stored in 'dimtype'
 				if (dimtype & 0x01) { // closed polyline
-					ADD_LINE(xverts[numverts-1], yverts[numverts-1], xverts[0], yverts[0]);
+					ADD_LINE(xverts.at(numverts-1), yverts.at(numverts-1), xverts.at(0), yverts.at(0));
 				}
 			}
 			else if (mode == "CIRCLE") {
 				int n = Calc::get_fragments_from_r(radius, fn, fs, fa);
-				Vector2d center(xverts[0], yverts[0]);
+				Vector2d center(xverts.at(0), yverts.at(0));
 				for (int i = 0; i < n; i++) {
 					double a1 = (2*M_PI*i)/n;
 					double a2 = (2*M_PI*(i+1))/n;
@@ -199,7 +200,7 @@ DxfData::DxfData(double fn, double fs, double fa,
 				}
 			}
 			else if (mode == "ARC") {
-				Vector2d center(xverts[0], yverts[0]);
+				Vector2d center(xverts.at(0), yverts.at(0));
 				int n = Calc::get_fragments_from_r(radius, fn, fs, fa);
 				while (arc_start_angle > arc_stop_angle)
 					arc_stop_angle += 360.0;
@@ -217,9 +218,9 @@ DxfData::DxfData(double fn, double fs, double fa,
 				// Commented code is meant as documentation of vector math
 				while (ellipse_start_angle > ellipse_stop_angle) ellipse_stop_angle += 2 * M_PI;
 //				Vector2d center(xverts[0], yverts[0]);
-				Vector2d center(xverts[0], yverts[0]);
+				Vector2d center(xverts.at(0), yverts.at(0));
 //				Vector2d ce(xverts[1], yverts[1]);
-				Vector2d ce(xverts[1], yverts[1]);
+				Vector2d ce(xverts.at(1), yverts.at(1));
 //				double r_major = ce.length();
 				double r_major = sqrt(ce[0]*ce[0] + ce[1]*ce[1]);
 //				double rot_angle = ce.angle();
@@ -270,10 +271,10 @@ DxfData::DxfData(double fn, double fs, double fa,
 					double ly1 = this->points[blockdata[iddata][i].idx[0]][1] * ellipse_stop_angle;
 					double lx2 = this->points[blockdata[iddata][i].idx[1]][0] * ellipse_start_angle;
 					double ly2 = this->points[blockdata[iddata][i].idx[1]][1] * ellipse_stop_angle;
-					double px1 = (cos(a)*lx1 - sin(a)*ly1) * scale + xverts[0];
-					double py1 = (sin(a)*lx1 + cos(a)*ly1) * scale + yverts[0];
-					double px2 = (cos(a)*lx2 - sin(a)*ly2) * scale + xverts[0];
-					double py2 = (sin(a)*lx2 + cos(a)*ly2) * scale + yverts[0];
+					double px1 = (cos(a)*lx1 - sin(a)*ly1) * scale + xverts.at(0);
+					double py1 = (sin(a)*lx1 + cos(a)*ly1) * scale + yverts.at(0);
+					double px2 = (cos(a)*lx2 - sin(a)*ly2) * scale + xverts.at(0);
+					double py2 = (sin(a)*lx2 + cos(a)*ly2) * scale + yverts.at(0);
 					ADD_LINE(px1, py1, px2, py2);
 				}
 			}
@@ -384,6 +385,9 @@ DxfData::DxfData(double fn, double fs, double fa,
     }
     catch (boost::bad_lexical_cast &blc) {
 	  	PRINTB("WARNING: Illegal value %s in '%s'", data % filename);
+  	}
+    catch (const std::out_of_range& oor) {
+	  	PRINTB("WARNING: not enough input values for %s in '%s'", data % filename);
   	}
 	}
 
