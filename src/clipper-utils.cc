@@ -42,20 +42,26 @@ namespace ClipperUtils {
 	 path before adding it to the Polygon2d.
  */
 	Polygon2d *toPolygon2d(const ClipperLib::PolyTree &poly) {
+		const double CLEANING_DISTANCE = 0.001 * CLIPPER_SCALE;
+
 		Polygon2d *result = new Polygon2d;
 		const ClipperLib::PolyNode *node = poly.GetFirst();
 		while (node) {
 			Outline2d outline;
 			outline.positive = !node->IsHole();
-			const Vector2d *lastv = NULL;
-			BOOST_FOREACH(const ClipperLib::IntPoint &ip, node->Contour) {
-				Vector2d v(1.0*ip.X/CLIPPER_SCALE, 1.0*ip.Y/CLIPPER_SCALE);
-				// Ignore too close vertices. This is to be nice to subsequent processes.
-				if (lastv && (v-*lastv).squaredNorm() < 0.001) continue;
-				outline.vertices.push_back(v);
-				lastv = &outline.vertices.back();
+
+			ClipperLib::Path cleaned_path;
+			ClipperLib::CleanPolygon(node->Contour, cleaned_path, CLEANING_DISTANCE);
+
+			// CleanPolygon can in some cases reduce the polygon down to no vertices
+			if (cleaned_path.size() >= 3)  {
+				BOOST_FOREACH(const ClipperLib::IntPoint &ip, cleaned_path) {
+					Vector2d v(1.0*ip.X/CLIPPER_SCALE, 1.0*ip.Y/CLIPPER_SCALE);
+					outline.vertices.push_back(v);
+				}
+				result->addOutline(outline);
 			}
-			result->addOutline(outline);
+
 			node = node->GetNext();
 		}
 		result->setSanitized(true);
