@@ -111,7 +111,11 @@ static void help(const char *progname)
          "%2%  --camera=eyex,y,z,centerx,y,z ] \\\n"
          "%2%[ --imgsize=width,height ] [ --projection=(o)rtho|(p)ersp] \\\n"
          "%2%[ --render | --preview[=throwntogether] ] \\\n"
-         "%2%[ --enable=<feature> ] \\\n"
+         "%2%[ --enable=<feature> ]"
+#ifdef DEBUG
+				 " [ --debug=module ]"
+#endif
+				 " \\\n"
          "%2%filename\n",
  				 progname % (const char *)tabstr);
 	exit(1);
@@ -583,9 +587,9 @@ int main(int argc, char **argv)
 		("render", "if exporting a png image, do a full CGAL render")
 		("preview", po::value<string>(), "if exporting a png image, do an OpenCSG(default) or ThrownTogether preview")
 		("camera", po::value<string>(), "parameters for camera when exporting png")
-	        ("imgsize", po::value<string>(), "=width,height for exporting png")
+		("imgsize", po::value<string>(), "=width,height for exporting png")
 		("projection", po::value<string>(), "(o)rtho or (p)erspective when exporting png")
-                ("debug", po::value<string>(), "special debug info")
+		("debug", po::value<string>(), "special debug info")
 		("o,o", po::value<string>(), "out-file")
 		("s,s", po::value<string>(), "stl-file")
 		("x,x", po::value<string>(), "dxf-file")
