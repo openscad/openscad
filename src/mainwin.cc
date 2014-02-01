@@ -901,8 +901,15 @@ void MainWindow::actionNew()
 
 void MainWindow::actionOpen()
 {
-	QString new_filename = QFileDialog::getOpenFileName(this, "Open File", "",
-																											"OpenSCAD Designs (*.scad *.csg)");
+	QSettings settings;
+	QString last_dirname = settings.value("editor/lastdirname").toString();
+	QString new_filename = QFileDialog::getOpenFileName(this, "Open File",
+	  last_dirname, "OpenSCAD Designs (*.scad *.csg)");
+	if (new_filename!="") {
+		QDir last_dir = QFileInfo( new_filename ).dir();
+		last_dirname = last_dir.path();
+		settings.setValue("editor/lastdirname", last_dirname);
+	}
 #ifdef ENABLE_MDI
 	if (!new_filename.isEmpty()) {
 		new MainWindow(new_filename);
