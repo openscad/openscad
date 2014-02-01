@@ -116,6 +116,19 @@ private slots:
 	void preferences();
 
 private slots:
+	void selectFindType(int);
+	void find();
+	void findAndReplace();
+	void findNext();
+	void findPrev();
+	void useSelectionForFind();
+	void replace();
+	void replaceAll();
+protected:
+	bool findOperation(QTextDocument::FindFlags options = 0);
+	virtual bool eventFilter(QObject* obj, QEvent *event);
+
+private slots:
 	void actionRenderPreview();
 	void csgRender();
 	void csgReloadRender();
