@@ -381,7 +381,7 @@ MainWindow::MainWindow(const QString &filename)
 	Preferences::inst()->apply();
 
 	connect(this->findTypeComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(selectFindType(int)));
-	connect(this->findInputField, SIGNAL(returnPressed()), this, SLOT(findNext()));
+	connect(this->findInputField, SIGNAL(returnPressed()), this->nextButton, SLOT(animateClick()));
 	find_panel->installEventFilter(this);
 
 	connect(this->prevButton, SIGNAL(clicked()), this, SLOT(findPrev()));
@@ -389,7 +389,7 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this->hideFindButton, SIGNAL(clicked()), find_panel, SLOT(hide()));
 	connect(this->replaceButton, SIGNAL(clicked()), this, SLOT(replace()));
 	connect(this->replaceAllButton, SIGNAL(clicked()), this, SLOT(replaceAll()));
-	connect(this->replaceInputField, SIGNAL(returnPressed()), this, SLOT(replace()));
+	connect(this->replaceInputField, SIGNAL(returnPressed()), this->replaceButton, SLOT(animateClick()));
 
 	// make sure it looks nice..
 	QSettings settings;
