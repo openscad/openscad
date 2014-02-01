@@ -34,6 +34,12 @@
       </property>
       <widget class="QWidget" name="editorlayoutwidget">
        <layout class="QVBoxLayout" name="verticalLayout_2">
+        <property name="spacing">
+         <number>0</number>
+        </property>
+        <property name="topMargin">
+         <number>2</number>
+        </property>
         <item>
          <widget class="QFrame" name="find_panel">
           <property name="enabled">
