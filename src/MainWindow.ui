@@ -60,7 +60,7 @@
           <property name="lineWidth">
            <number>0</number>
           </property>
-          <layout class="QHBoxLayout" name="horizontalLayout">
+          <layout class="QGridLayout" name="horizontalLayout">
            <property name="leftMargin">
             <number>5</number>
            </property>
@@ -73,35 +73,70 @@
            <property name="bottomMargin">
             <number>0</number>
            </property>
-           <item>
-            <widget class="QLabel" name="label">
+           <property name="verticalSpacing">
+            <number>0</number>
+           </property>
+           <item row="1" column="3" colspan="2">
+            <widget class="QPushButton" name="replaceButton">
              <property name="text">
-              <string>Find</string>
+              <string>Replace</string>
              </property>
             </widget>
            </item>
-           <item>
-            <widget class="QLineEdit" name="findInputField"/>
+           <item row="1" column="5">
+            <widget class="QPushButton" name="replaceAllButton">
+             <property name="text">
+              <string>All</string>
+             </property>
+            </widget>
            </item>
-           <item>
+           <item row="0" column="2">
+            <widget class="QLineEdit" name="findInputField">
+             <property name="placeholderText">
+              <string>Search string</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="2">
+            <widget class="QLineEdit" name="replaceInputField">
+             <property name="placeholderText">
+              <string>Replacement string</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="3">
             <widget class="QPushButton" name="prevButton">
              <property name="text">
               <string>&lt;</string>
              </property>
             </widget>
            </item>
-           <item>
+           <item row="0" column="4">
             <widget class="QPushButton" name="nextButton">
              <property name="text">
               <string>&gt;</string>
              </property>
             </widget>
            </item>
-           <item>
+           <item row="0" column="5">
             <widget class="QPushButton" name="hideFindButton">
              <property name="text">
               <string>Done</string>
              </property>
+            </widget>
+           </item>
+           <item row="0" column="1">
+            <widget class="QComboBox" name="findTypeComboBox">
+             <item>
+              <property name="text">
+               <string>Find</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>Replace</string>
+              </property>
+             </item>
             </widget>
            </item>
           </layout>
@@ -263,6 +298,7 @@
     <addaction name="editActionPasteVPR"/>
     <addaction name="separator"/>
     <addaction name="editActionFind"/>
+    <addaction name="editActionFindAndReplace"/>
     <addaction name="editActionFindNext"/>
     <addaction name="editActionFindPrevious"/>
     <addaction name="editActionUseSelectionForFind"/>
@@ -761,6 +797,14 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+F</string>
+   </property>
+  </action>
+  <action name="editActionFindAndReplace">
+   <property name="text">
+    <string>Find and Replace...</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Alt+F</string>
    </property>
   </action>
   <action name="editActionFindNext">
