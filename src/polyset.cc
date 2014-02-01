@@ -104,6 +104,71 @@ void PolySet::insert_vertex(Vector3d v)
 	polygons.back().insert(polygons.back().begin(), v);
 }
 
+BoundingBox PolySet::getBoundingBox() const
+{
+	BoundingBox bbox;
+	for (size_t i = 0; i < polygons.size(); i++) {
+		const Polygon &poly = polygons[i];
+		for (size_t j = 0; j < poly.size(); j++) {
+			const Vector3d &p = poly[j];
+			bbox.extend(p);
+		}
+	}
+	return bbox;
+}
+
+size_t PolySet::memsize() const
+{
+	size_t mem = 0;
+	BOOST_FOREACH(const Polygon &p, this->polygons) mem += p.size() * sizeof(Vector3d);
+	mem += this->polygon.memsize() - sizeof(this->polygon);
+	mem += sizeof(PolySet);
+	return mem;
+}
+
+void PolySet::append(const PolySet &ps)
+{
+	this->polygons.insert(this->polygons.end(), ps.polygons.begin(), ps.polygons.end());
+}
+
+void PolySet::transform(const Transform3d &mat)
+{
+	BOOST_FOREACH(Polygon &p, this->polygons) {
+		BOOST_FOREACH(Vector3d &v, p) {
+			v = mat * v;
+		}
+	}
+}
+
+void PolySet::resize(Vector3d newsize, const Eigen::Matrix<bool,3,1> &autosize)
+{
+	BoundingBox bbox = this->getBoundingBox();
+
+  // Find largest dimension
+	int maxdim = 0;
+	for (int i=1;i<3;i++) if (newsize[i] > newsize[maxdim]) maxdim = i;
+
+	// Default scale (scale with 1 if the new size is 0)
+	Vector3d scale(1,1,1);
+	for (int i=0;i<3;i++) if (newsize[i] > 0) scale[i] = newsize[i] / bbox.sizes()[i];
+
+  // Autoscale where applicable 
+	double autoscale = scale[maxdim];
+	Vector3d newscale;
+	for (int i=0;i<3;i++) newscale[i] = !autosize[i] || (newsize[i] > 0) ? scale[i] : autoscale;
+	
+	Transform3d t;
+	t.matrix() << 
+    newscale[0], 0, 0, 0,
+    0, newscale[1], 0, 0,
+    0, 0, newscale[2], 0,
+    0, 0, 0, 1;
+
+	this->transform(t);
+}
+
+// all GL functions grouped together here
+#ifndef NULLGL
 static void gl_draw_triangle(GLint *shaderinfo, const Vector3d &p0, const Vector3d &p1, const Vector3d &p2, bool e0, bool e1, bool e2, double z, bool mirrored)
 {
 	double ax = p1[0] - p0[0], bx = p1[0] - p2[0];
@@ -333,66 +398,8 @@ void PolySet::render_edges(Renderer::csgmode_e csgmode) const
 	glEnable(GL_LIGHTING);
 }
 
-BoundingBox PolySet::getBoundingBox() const
-{
-	BoundingBox bbox;
-	for (size_t i = 0; i < polygons.size(); i++) {
-		const Polygon &poly = polygons[i];
-		for (size_t j = 0; j < poly.size(); j++) {
-			const Vector3d &p = poly[j];
-			bbox.extend(p);
-		}
-	}
-	return bbox;
-}
-
-size_t PolySet::memsize() const
-{
-	size_t mem = 0;
-	BOOST_FOREACH(const Polygon &p, this->polygons) mem += p.size() * sizeof(Vector3d);
-	mem += this->polygon.memsize() - sizeof(this->polygon);
-	mem += sizeof(PolySet);
-	return mem;
-}
-
-void PolySet::append(const PolySet &ps)
-{
-	this->polygons.insert(this->polygons.end(), ps.polygons.begin(), ps.polygons.end());
-}
-
-void PolySet::transform(const Transform3d &mat)
-{
-	BOOST_FOREACH(Polygon &p, this->polygons) {
-		BOOST_FOREACH(Vector3d &v, p) {
-			v = mat * v;
-		}
-	}
-}
-
-void PolySet::resize(Vector3d newsize, const Eigen::Matrix<bool,3,1> &autosize)
-{
-	BoundingBox bbox = this->getBoundingBox();
-
-  // Find largest dimension
-	int maxdim = 0;
-	for (int i=1;i<3;i++) if (newsize[i] > newsize[maxdim]) maxdim = i;
-
-	// Default scale (scale with 1 if the new size is 0)
-	Vector3d scale(1,1,1);
-	for (int i=0;i<3;i++) if (newsize[i] > 0) scale[i] = newsize[i] / bbox.sizes()[i];
-
-  // Autoscale where applicable 
-	double autoscale = scale[maxdim];
-	Vector3d newscale;
-	for (int i=0;i<3;i++) newscale[i] = !autosize[i] || (newsize[i] > 0) ? scale[i] : autoscale;
-	
-	Transform3d t;
-	t.matrix() << 
-    newscale[0], 0, 0, 0,
-    0, newscale[1], 0, 0,
-    0, 0, newscale[2], 0,
-    0, 0, 0, 1;
-
-	this->transform(t);
-}
-
+#else //NULLGL
+static void gl_draw_triangle(GLint *shaderinfo, const Vector3d &p0, const Vector3d &p1, const Vector3d &p2, bool e0, bool e1, bool e2, double z, bool mirrored) {}
+void PolySet::render_surface(Renderer::csgmode_e csgmode, const Transform3d &m, GLint *shaderinfo) const {}
+void PolySet::render_edges(Renderer::csgmode_e csgmode) const {}
+#endif //NULLGL
