@@ -342,6 +342,14 @@ Polygon2d *GeometryEvaluator::applyToChildren2D(const AbstractNode &node, OpenSC
 
 	std::vector<const Polygon2d *> children = collectChildren2D(node);
 
+	if (children.empty()) {
+		return NULL;
+	}
+
+	if (children.size() == 1) {
+		return new Polygon2d(*children[0]); // Copy
+	}
+
 	ClipperLib::ClipType clipType;
 	switch (op) {
 	case OPENSCAD_UNION:
@@ -428,7 +436,7 @@ Response GeometryEvaluator::visit(State &state, const RenderNode &node)
 			else if (shared_ptr<const CGAL_Nef_polyhedron> N = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom)) {
 				// If we got a const object, make a copy
 				shared_ptr<CGAL_Nef_polyhedron> newN;
-				if (res.isConst()) newN.reset(new CGAL_Nef_polyhedron(*N));
+				if (res.isConst()) newN.reset(N->copy());
 				else newN = dynamic_pointer_cast<CGAL_Nef_polyhedron>(res.ptr());
 				newN->setConvexity(node.convexity);
 				geom = newN;
@@ -544,7 +552,7 @@ Response GeometryEvaluator::visit(State &state, const TransformNode &node)
 							assert(N);
 							// If we got a const object, make a copy
 							shared_ptr<CGAL_Nef_polyhedron> newN;
-							if (res.isConst()) newN.reset(new CGAL_Nef_polyhedron(*N));
+							if (res.isConst()) newN.reset(N->copy());
 							else newN = dynamic_pointer_cast<CGAL_Nef_polyhedron>(res.ptr());
 							newN->transform(node.matrix);
 							geom = newN;
@@ -961,7 +969,7 @@ Response GeometryEvaluator::visit(State &state, const CgaladvNode &node)
 				if (N) {
 					// If we got a const object, make a copy
 					shared_ptr<CGAL_Nef_polyhedron> newN;
-					if (res.isConst()) newN.reset(new CGAL_Nef_polyhedron(*N));
+					if (res.isConst()) newN.reset(N->copy());
 					else newN = dynamic_pointer_cast<CGAL_Nef_polyhedron>(res.ptr());
 					applyResize3D(*newN, node.newsize, node.autosize);
 					geom = newN;
