@@ -153,20 +153,20 @@ void format_colors_for_light_background(QMap<QString,QTextCharFormat> &formats)
 void format_colors_for_dark_background(QMap<QString,QTextCharFormat> &formats)
 {
 	//PRINT("format for dark");
-	formats["operator"].setForeground(Qt::blue);
+	formats["operator"].setForeground(QColor("SkyBlue"));
 	formats["math"].setForeground(Qt::green);
 	formats["keyword"].setForeground(QColor("LightGreen"));
 	formats["keyword"].setToolTip("Keyword");
-	formats["transform"].setForeground(QColor("Indigo"));
+	formats["transform"].setForeground(QColor("Thistle"));
 	formats["csgop"].setForeground(QColor("LightGreen"));
 	formats["prim3d"].setForeground(QColor("LightBlue"));
 	formats["prim2d"].setForeground(QColor("LightBlue"));
 	formats["import"].setForeground(QColor("LightYellow"));
 	formats["special"].setForeground(QColor("LightGreen"));
-	formats["extrude"].setForeground(QColor("LightGreen"));
-	formats["bracket"].setForeground(QColor("Green"));
-	formats["curlies"].setForeground(QColor(132,132,120));
-	formats["bool"].setForeground(QColor("LightRed"));
+	formats["extrude"].setForeground(QColor("PaleGreen"));
+	formats["bracket"].setForeground(QColor("LimeGreen"));
+	formats["curlies"].setForeground(QColor("Lavender"));
+	formats["bool"].setForeground(QColor("Red"));
 
 	formats["_$quote"].setForeground(Qt::magenta);
 	formats["_$comment"].setForeground(Qt::cyan);
