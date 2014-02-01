@@ -120,6 +120,53 @@ namespace ClipperUtils {
 		return apply(pathsvector, clipType);
 	}
 
+
+	// This is a copy-paste from ClipperLib with the modification that the union operation is not performed
+	// The reason is numeric robustness. With the insides missing, the intersection points created by the union operation may
+	// (due to rounding) be located at slightly different locations than the original geometry and this
+	// can give rise to cracks
+	static void minkowski_outline(const ClipperLib::Path& poly, const ClipperLib::Path& path,
+								  ClipperLib::Paths& quads, bool isSum, bool isClosed)
+	{
+		int delta = (isClosed ? 1 : 0);
+		size_t polyCnt = poly.size();
+		size_t pathCnt = path.size();
+		ClipperLib::Paths pp;
+		pp.reserve(pathCnt);
+		if (isSum)
+			for (size_t i = 0; i < pathCnt; ++i)
+			{
+				ClipperLib::Path p;
+				p.reserve(polyCnt);
+				for (size_t j = 0; j < poly.size(); ++j)
+					p.push_back(ClipperLib::IntPoint(path[i].X + poly[j].X, path[i].Y + poly[j].Y));
+				pp.push_back(p);
+			}
+		else
+			for (size_t i = 0; i < pathCnt; ++i)
+			{
+				ClipperLib::Path p;
+				p.reserve(polyCnt);
+				for (size_t j = 0; j < poly.size(); ++j)
+					p.push_back(ClipperLib::IntPoint(path[i].X - poly[j].X, path[i].Y - poly[j].Y));
+				pp.push_back(p);
+			}
+
+		quads.reserve((pathCnt + delta) * (polyCnt + 1));
+		for (size_t i = 0; i < pathCnt - 1 + delta; ++i)
+			for (size_t j = 0; j < polyCnt; ++j)
+			{
+				ClipperLib::Path quad;
+				quad.reserve(4);
+				quad.push_back(pp[i % pathCnt][j % polyCnt]);
+				quad.push_back(pp[(i + 1) % pathCnt][j % polyCnt]);
+				quad.push_back(pp[(i + 1) % pathCnt][(j + 1) % polyCnt]);
+				quad.push_back(pp[i % pathCnt][(j + 1) % polyCnt]);
+				if (!Orientation(quad)) ClipperLib::ReversePath(quad);
+				quads.push_back(quad);
+			}
+	}
+	
 	// Add the polygon a translated to an arbitrary point of each separate component of b.
   // Ideally, we would translate to the midpoint of component b, but the point can
 	// be chosen arbitrarily since the translated object would always stay inside
@@ -144,15 +191,20 @@ namespace ClipperUtils {
 
 	Polygon2d *applyMinkowski(const std::vector<const Polygon2d*> &polygons)
 	{
+		if (polygons.size() == 1) return new Polygon2d(*polygons[0]); // Just copy
+
+		ClipperLib::Clipper c;
 		ClipperLib::Paths lhs = ClipperUtils::fromPolygon2d(*polygons[0]);
+
 		for (size_t i=1; i<polygons.size(); i++) {
 			ClipperLib::Paths minkowski_terms;
 			ClipperLib::Paths rhs = ClipperUtils::fromPolygon2d(*polygons[i]);
+
 			// First, convolve each outline of lhs with the outlines of rhs
 			BOOST_FOREACH(ClipperLib::Path const& rhs_path, rhs) {
 				BOOST_FOREACH(ClipperLib::Path const& lhs_path, lhs) {
 					ClipperLib::Paths result;
-					ClipperLib::MinkowskiSum(lhs_path, rhs_path, result, true);
+					minkowski_outline(lhs_path, rhs_path, result, true, true);
 					minkowski_terms.insert(minkowski_terms.end(), result.begin(), result.end());
 				}
 			}
@@ -160,13 +212,20 @@ namespace ClipperUtils {
 			// Then, fill the central parts
 			fill_minkowski_insides(lhs, rhs, minkowski_terms);
 			fill_minkowski_insides(rhs, lhs, minkowski_terms);
-			lhs = minkowski_terms;
+
+			// This union operation must be performed at each interation since the minkowski_terms
+			// now contain lots of small quads
+			c.Clear();
+			c.AddPaths(minkowski_terms, ClipperLib::ptSubject, true);
+
+			if (i != polygons.size() - 1)
+				c.Execute(ClipperLib::ctUnion, lhs, ClipperLib::pftNonZero, ClipperLib::pftNonZero);
 		}
-		
-		// Finally, merge the Minkowski terms
-		std::vector<ClipperLib::Paths> pathsvec;
-		pathsvec.push_back(lhs);
-		return ClipperUtils::apply(pathsvec, ClipperLib::ctUnion);
+
+		ClipperLib::PolyTree polytree;
+		c.Execute(ClipperLib::ctUnion, polytree, ClipperLib::pftNonZero, ClipperLib::pftNonZero);
+
+		return toPolygon2d(polytree);
 	}
 
 };
