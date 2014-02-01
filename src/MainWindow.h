@@ -117,12 +117,16 @@ private slots:
 
 private slots:
 	void actionRenderCSG();
+	void selectFindType(int);
 	void find();
+	void findAndReplace();
 	void findNext();
 	void findPrev();
 	void useSelectionForFind();
+	void replace();
+	void replaceAll();
 protected:
-	void findOperation(QTextDocument::FindFlags options = 0);
+	bool findOperation(QTextDocument::FindFlags options = 0);
 	virtual bool eventFilter(QObject* obj, QEvent *event);
 
 private slots:

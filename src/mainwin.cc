@@ -287,6 +287,7 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this->editActionPreferences, SIGNAL(triggered()), this, SLOT(preferences()));
 	// Edit->Find
 	connect(this->editActionFind, SIGNAL(triggered()), this, SLOT(find()));
+	connect(this->editActionFindAndReplace, SIGNAL(triggered()), this, SLOT(findAndReplace()));
 	connect(this->editActionFindNext, SIGNAL(triggered()), this, SLOT(findNext()));
 	connect(this->editActionFindPrevious, SIGNAL(triggered()), this, SLOT(findPrev()));
 	connect(this->editActionUseSelectionForFind, SIGNAL(triggered()), this, SLOT(useSelectionForFind()));
@@ -379,12 +380,16 @@ MainWindow::MainWindow(const QString &filename)
 					this, SLOT(setSyntaxHighlight(const QString&)));
 	Preferences::inst()->apply();
 
+	connect(this->findTypeComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(selectFindType(int)));
 	connect(this->findInputField, SIGNAL(returnPressed()), this, SLOT(findNext()));
 	find_panel->installEventFilter(this);
 
 	connect(this->prevButton, SIGNAL(clicked()), this, SLOT(findPrev()));
 	connect(this->nextButton, SIGNAL(clicked()), this, SLOT(findNext()));
 	connect(this->hideFindButton, SIGNAL(clicked()), find_panel, SLOT(hide()));
+	connect(this->replaceButton, SIGNAL(clicked()), this, SLOT(replace()));
+	connect(this->replaceAllButton, SIGNAL(clicked()), this, SLOT(replaceAll()));
+	connect(this->replaceInputField, SIGNAL(returnPressed()), this, SLOT(replace()));
 
 	// make sure it looks nice..
 	QSettings settings;
@@ -1106,12 +1111,32 @@ void MainWindow::pasteViewportRotation()
 
 void MainWindow::find()
 {
+	findTypeComboBox->setCurrentIndex(0);
+	replaceInputField->hide();
+	replaceButton->hide();
+	replaceAllButton->hide();
 	find_panel->show();
 	findInputField->setFocus();
 	findInputField->selectAll();
 }
 
-void MainWindow::findOperation(QTextDocument::FindFlags options) {
+void MainWindow::findAndReplace()
+{
+	findTypeComboBox->setCurrentIndex(1);
+	replaceInputField->show();
+	replaceButton->show();
+	replaceAllButton->show();
+	find_panel->show();
+	findInputField->setFocus();
+	findInputField->selectAll();
+}
+
+void MainWindow::selectFindType(int type) {
+	if (type == 0) find();
+	if (type == 1) findAndReplace();
+}
+
+bool MainWindow::findOperation(QTextDocument::FindFlags options) {
 	bool success = editor->find(findInputField->text(), options);
 	if (!success) { // Implement wrap-around search behavior
 		QTextCursor old_cursor = editor->textCursor();
@@ -1122,6 +1147,23 @@ void MainWindow::findOperation(QTextDocument::FindFlags options) {
 		if (!success) {
 			editor->setTextCursor(old_cursor);
 		}
+		return success;
+	}
+	return true;
+}
+
+void MainWindow::replace() {
+	QTextCursor cursor = editor->textCursor();
+	QString selectedText = cursor.selectedText();
+	if (selectedText == findInputField->text()) {
+		cursor.insertText(replaceInputField->text());
+	}
+	findNext();
+}
+
+void MainWindow::replaceAll() {
+	while (findOperation()) {
+		editor->textCursor().insertText(replaceInputField->text());
 	}
 }
 
