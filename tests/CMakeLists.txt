@@ -874,6 +874,51 @@ list(APPEND THROWNTOGETHERTEST_FILES ${OPENCSGTEST_FILES})
 
 list(APPEND CGALSTLSANITYTEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/normal-nan.scad)
 
+#
+# 3d Export tests
+#
+# These tests export a 3d format like STL, OFF, etc, re-import it, and 
+# then render a PNG, comparing it to expected PNG output. This tests our 
+# exporter, as well as our importer. The name of the tests have a pattern:
+# 'export3d_' + format + '_testname'. For example export3d_stl_test_example001
+#
+# The test are currently a small set of objects. As the export/import 
+# code improves we can add other tests here.
+list(APPEND EXPORT3D_TEST_FILES ${EXAMPLE_FILES})
+list(APPEND EXPORT3D_TEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/features/polyhedron-nonplanar-tests.scad )
+disable_tests(
+  # examples 7,8,12,15 are not 3d.
+  export3d_stl_test_example007
+  export3d_off_test_example007
+  export3d_stl_test_example008
+  export3d_off_test_example008
+  export3d_stl_test_example012
+  export3d_off_test_example012
+  export3d_stl_test_example015
+  export3d_off_test_example015
+  # example 006 takes too long
+  export3d_stl_test_example006
+  export3d_off_test_example006
+  # example 13 - nef3->polyhedron fails with "!!!!" (facet normal=0,0,0)
+  export3d_stl_test_example013
+  export3d_off_test_example013
+  # example 17 - cannot export non-manifold object
+  export3d_stl_test_example017
+  export3d_off_test_example017
+  # example 18 - polyhedron builder fails
+  export3d_stl_test_example018
+  export3d_off_test_example018
+  # example 22 - nef3->polyhedron fails with "!!!!" (facet normal=0,0,0)
+  export3d_stl_test_example022
+  export3d_off_test_example022
+  # example 24 - polyhedron builder fails
+  export3d_stl_test_example024
+  export3d_off_test_example024
+  # example 21 - projection fails
+  export3d_stl_test_example021
+  export3d_off_test_example021
+)
+
 # FIXME: This test illustrates a weakness in child() combined with modifiers.
 # Reenable it when this is improved
 disable_tests(opencsgtest_child-background)
@@ -1008,6 +1053,14 @@ add_cmdline_test(throwntogethertest EXE ${OPENSCAD_BINPATH} ARGS --preview=throw
 # FIXME: We don't actually need to compare the output of cgalstlsanitytest
 # with anything. It's self-contained and returns != 0 on error
 add_cmdline_test(cgalstlsanitytest EXE ${CMAKE_SOURCE_DIR}/cgalstlsanitytest SUFFIX txt ARGS ${OPENSCAD_BINPATH} FILES ${CGALSTLSANITYTEST_FILES})
+
+# Export3d tests - for stl/off & other 3d formats. See above for more info.
+# The python script will detect the 'export' in the testname and then read
+# the format (stl,off) from the testname as well. We have to add --render here
+# because OpenCSG "marked face" (green) coloring is lost when exporting to STL,
+# so the generated PNG wont match unless we get rid of that coloring.
+add_cmdline_test(export3d_stl_test EXE ${OPENSCAD_BINPATH} ARGS --render -o SUFFIX png FILES ${EXPORT3D_TEST_FILES})
+add_cmdline_test(export3d_off_test EXE ${OPENSCAD_BINPATH} ARGS --render -o SUFFIX png FILES ${EXPORT3D_TEST_FILES})
 
 # Add experimental tests
 
