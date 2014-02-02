@@ -32,6 +32,7 @@
 #include "export.h"
 #include "builtin.h"
 #include "printutils.h"
+#include "fileutils.h"
 #include "handle_dep.h"
 #include "feature.h"
 #include "parsersettings.h"
@@ -74,6 +75,7 @@
 
 namespace po = boost::program_options;
 namespace fs = boost::filesystem;
+namespace pu = PlatformUtils;
 namespace Render { enum type { CGAL, OPENCSG, THROWNTOGETHER }; };
 std::string commandline_commands;
 std::string currentdir;
@@ -99,7 +101,7 @@ public:
 
 static void help(const char *progname)
 {
-  int tablen = strlen(progname)+8;
+  int tablen = 4;
   char tabstr[tablen+1];
   for (int i=0;i<tablen;i++) tabstr[i] = ' ';
   tabstr[tablen] = '\0';
@@ -117,11 +119,11 @@ static void help(const char *progname)
 	exit(1);
 }
 
-#define STRINGIFY(x) #x
-#define TOSTRING(x) STRINGIFY(x)
+#define stringIFY(x) #x
+#define TOstring(x) stringIFY(x)
 static void version()
 {
-	PRINTB("OpenSCAD version %s\n", TOSTRING(OPENSCAD_VERSION));
+	PRINTB("OpenSCAD version %s\n", TOstring(OPENSCAD_VERSION));
 	exit(1);
 }
 
@@ -203,6 +205,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 	const std::string application_path = QApplication::instance()->applicationDirPath().toLocal8Bit().constData();
 #else
 	const std::string application_path = boosty::stringy(boosty::absolute(boost::filesystem::path(argv[0]).parent_path()));
+	(void)argc;
 #endif
 	parser_init(application_path);
 	Tree tree;
@@ -252,12 +255,15 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 
 	handle_dep(filename.c_str());
 
-	std::ifstream ifs(filename.c_str());
+	pu::ifstream ifs(filename.c_str());
+	//std::ifstream ifs(filename.c_str());
 	if (!ifs.is_open()) {
 		PRINTB("Can't open input file '%s'!\n", filename.c_str());
 		return 1;
 	}
-	std::string text((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
+
+	std::string text = getfile( ifs );
+	//std::string text((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
 	text += "\n" + commandline_commands;
 	fs::path abspath = boosty::absolute(filename);
 	std::string parentpath = boosty::stringy(abspath.parent_path());
@@ -334,6 +340,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 		} else {
 			root_geom = geomevaluator.evaluateGeometry(*tree.root(), true);
 			const CGAL_Nef_polyhedron *N = dynamic_cast<const CGAL_Nef_polyhedron*>(root_geom.get());
+			(void)N;
 		}
 
 		fs::current_path(original_path);
@@ -486,7 +493,7 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 	QCoreApplication::setOrganizationName("OpenSCAD");
 	QCoreApplication::setOrganizationDomain("openscad.org");
 	QCoreApplication::setApplicationName("OpenSCAD");
-	QCoreApplication::setApplicationVersion(TOSTRING(OPENSCAD_VERSION));
+	QCoreApplication::setApplicationVersion(TOstring(OPENSCAD_VERSION));
 
 	// Other global settings
 	qRegisterMetaType<shared_ptr<const Geometry> >();
@@ -553,15 +560,25 @@ int gui(const vector<string> &inputFiles, const fs::path &original_path, int arg
 }
 #endif // OPENSCAD_QTGUI
 
-#if defined( __MINGW32__ ) || defined( __MINGW64__ ) || defined ( _MSC_VER )
-#define po::value po::wvalue
-int wmain( int argc, wchar_t **argv )
-{
-}
-#else
 int main( int argc, char **argv )
 {
-#endif
+// In Win(TM) all cmdline opts & filenames are UTF16. We convert to UTF8
+// for all internal OpenSCAD work... but sometimes convert back to UTF16
+// when needed (for reading/writing files, etc)
+#if defined( __MINGW32__ ) || defined( __MINGW64__ ) || defined( _MSCVER )
+	int wargc;
+        wchar_t * wcmdline = GetCommandLineW();
+	wchar_t ** wargv = CommandLineToArgvW( wcmdline, &wargc );
+	std::vector<std::string> utf8args;
+	std::vector<char *> utf8arg_ptrs;
+	for (int i=0;i<wargc;i++) {
+		std::wstring warg(wargv[i]);
+		std::string tmp = pu::utf16_to_utf8( warg );
+		utf8args.push_back( tmp );
+		//utf8arg_ptrs.push_back( utf8args[i].c_str() );
+		argv[i] = const_cast<char *>(utf8args[i].c_str());
+	}
+#endif // mingw / msvc
 
 	int rc = 0;
 #ifdef Q_WS_MAC

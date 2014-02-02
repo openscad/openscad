@@ -33,3 +33,20 @@ std::string lookup_file(const std::string &filename,
 	}
 	return resultfile;
 }
+
+
+// retrieve all data from file stream into result string
+std::string getfile( PlatformUtils::ifstream &ifs )
+{
+	int bufsize = 1024*4;
+	std::string text;
+	char tmp[bufsize];
+	while (!ifs.eof()) {
+		size_t result = ifs.read(tmp,bufsize);
+		tmp[result]='\0';
+		text += std::string(tmp);
+	}
+	return text;
+}
+
+

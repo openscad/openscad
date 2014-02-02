@@ -121,4 +121,3 @@ std::string PlatformUtils::info()
 	;
 	return s.str();
 }
-

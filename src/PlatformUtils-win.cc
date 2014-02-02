@@ -7,7 +7,7 @@
 #include <shlobj.h>
 
 // convert from windows api w_char strings (usually utf16) to utf8 std::string
-std::string winapi_wstr_to_utf8( std::wstring wstr )
+std::string winapi_wstring_to_utf8( const std::wstring wstr )
 {
 	UINT CodePage = CP_UTF8;
 	DWORD dwFlags = 0;
@@ -38,6 +38,35 @@ std::string winapi_wstr_to_utf8( std::wstring wstr )
 	return utf8_str;
 }
 
+// convert from utf8 std::string to windows api w_char strings (usually utf16)
+std::wstring utf8_to_winapi_wstring( const std::string &utf8str )
+{
+	UINT CodePage = CP_UTF8;
+	DWORD dwFlags = 0;
+	LPCSTR lpMultiByteStr = &utf8str[0];
+	int cbMultiByte = utf8str.size();
+	LPWSTR lpWideCharStr = NULL;
+	int cchWideChar = 0;
+
+	int numchars = MultiByteToWideChar( CodePage, dwFlags, lpMultiByteStr,
+	  cbMultiByte, lpWideCharStr, cchWideChar );
+
+	PRINTB("utf8 to utf16 conversion: numchars %i",numchars);
+
+	std::wstring wstr(numchars,0);
+	lpWideCharStr = &wstr[0];
+	cchWideChar = numchars;
+
+	int result = MultiByteToWideChar( CodePage, dwFlags, lpMultiByteStr,
+	  cbMultiByte, lpWideCharStr, cchWideChar );
+
+	if (result != numchars) {
+		PRINT("ERROR: error converting utf8 to w_char string");
+		PRINTB("ERROR: error code %i",GetLastError());
+	}
+
+	return wstr;
+}
 
 // retrieve the path to 'My Documents' for the current user under windows
 // In XP this is 'c:\documents and settings\username\my documents'
@@ -60,7 +89,7 @@ std::string PlatformUtils::documentsPath()
 	if (result == S_OK) {
 		path = std::wstring( path.c_str() ); // stip extra NULLs
 		//std::wcerr << "wchar path:" << "\n";
-		retval = winapi_wstr_to_utf8( path );
+		retval = winapi_wstring_to_utf8( path );
 		//PRINTB("Path found: %s",retval);
 	} else {
 		PRINT("ERROR: Could not find My Documents location");
@@ -68,3 +97,11 @@ std::string PlatformUtils::documentsPath()
 	}
 	return retval;
 }
+
+std::string PlatformUtils::utf16_to_utf8( const std::wstring &w ) {
+	return winapi_wstring_to_utf8( w );
+};
+
+std::wstring PlatformUtils::utf8_to_utf16( const std::string &utf8 ) {
+	return utf8_to_winapi_wstring( utf8 );
+};

@@ -17,3 +17,4 @@ del_fun_t<T> del_fun()
 }
 
 #endif
+

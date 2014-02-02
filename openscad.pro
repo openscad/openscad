@@ -169,6 +169,7 @@ include(common.pri)
 
 # mingw has to come after other items so OBJECT_DIRS will work properly
 CONFIG(mingw-cross-env) {
+  HEADERS += patches/mingstream
   include(mingw-cross-env.pri)
 }
 
