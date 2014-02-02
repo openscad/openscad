@@ -1,4 +1,4 @@
-![Travis CI](https://api.travis-ci.org/openscad/openscad.png)
+[![Travis CI](https://api.travis-ci.org/openscad/openscad.png)](https://travis-ci.org/openscad/openscad)
 
 # What is OpenSCAD?
 [![Flattr this git repo](http://api.flattr.com/button/flattr-badge-large.png)](https://flattr.com/submit/auto?user_id=openscad&url=http://openscad.org&title=OpenSCAD&language=&tags=github&category=software)
@@ -146,7 +146,7 @@ the dependency packages listed above using your system's package
 manager. A convenience script is provided that can help with this 
 process on some systems:
 
-    ./scripts/uni-get-dependencies.sh
+    sudo ./scripts/uni-get-dependencies.sh
 
 After installing dependencies, check their versions. You can run this 
 script to help you:
