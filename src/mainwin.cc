@@ -1166,9 +1166,14 @@ void MainWindow::replace() {
 }
 
 void MainWindow::replaceAll() {
-	while (findOperation()) {
+	QTextCursor old_cursor = editor->textCursor();
+	QTextCursor tmp_cursor = old_cursor;
+	tmp_cursor.movePosition(QTextCursor::Start);
+	editor->setTextCursor(tmp_cursor);
+	while (editor->find(findInputField->text())) {
 		editor->textCursor().insertText(replaceInputField->text());
 	}
+	editor->setTextCursor(old_cursor);
 }
 
 void MainWindow::findNext()
