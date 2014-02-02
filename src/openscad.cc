@@ -553,8 +553,16 @@ int gui(const vector<string> &inputFiles, const fs::path &original_path, int arg
 }
 #endif // OPENSCAD_QTGUI
 
-int main(int argc, char **argv)
+#if defined( __MINGW32__ ) || defined( __MINGW64__ ) || defined ( _MSC_VER )
+#define po::value po::wvalue
+int wmain( int argc, wchar_t **argv )
 {
+}
+#else
+int main( int argc, char **argv )
+{
+#endif
+
 	int rc = 0;
 #ifdef Q_WS_MAC
 	set_output_handler(CocoaUtils::nslog, NULL);
