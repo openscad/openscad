@@ -301,6 +301,7 @@ MainWindow::MainWindow(const QString &filename)
 #else
 	this->designActionCompileAndRender->setVisible(false);
 #endif
+	connect(this->designCheckValidity, SIGNAL(triggered()), this, SLOT(actionCheckValidity()));
 	connect(this->designActionDisplayAST, SIGNAL(triggered()), this, SLOT(actionDisplayAST()));
 	connect(this->designActionDisplayCSGTree, SIGNAL(triggered()), this, SLOT(actionDisplayCSGTree()));
 	connect(this->designActionDisplayCSGProducts, SIGNAL(triggered()), this, SLOT(actionDisplayCSGProducts()));
@@ -1446,7 +1447,6 @@ void MainWindow::actionRenderCGALDone(CGAL_Nef_polyhedron *root_N)
 			if (root_N->dim == 3) {
 				PRINT("   Top level object is a 3D object:");
 				PRINTB("   Simple:     %6s", (root_N->p3->is_simple() ? "yes" : "no"));
-				PRINTB("   Valid:      %6s", (root_N->p3->is_valid() ? "yes" : "no"));
 				PRINTB("   Vertices:   %6d", root_N->p3->number_of_vertices());
 				PRINTB("   Halfedges:  %6d", root_N->p3->number_of_halfedges());
 				PRINTB("   Edges:      %6d", root_N->p3->number_of_edges());
@@ -1538,6 +1538,33 @@ void MainWindow::actionDisplayCSGProducts()
 	e->show();
 	e->resize(600, 400);
 	clearCurrentOutput();
+}
+
+void MainWindow::actionCheckValidity() {
+	if (GuiLocker::isLocked()) return;
+	GuiLocker lock;
+#ifdef ENABLE_CGAL
+	setCurrentOutput();
+
+	if (!this->root_geom) {
+		PRINT("Nothing to validate! Try building first (press F6).");
+		clearCurrentOutput();
+		return;
+	}
+
+	if (this->root_geom->getDimension() != 3) {
+		PRINT("Current top level object is not a 3D object.");
+		clearCurrentOutput();
+		return;
+	}
+
+	bool valid = false;
+	if (const CGAL_Nef_polyhedron *N = dynamic_cast<const CGAL_Nef_polyhedron *>(this->root_geom.get()))
+		valid = N->p3->is_valid();
+
+	PRINTB("   Valid:      %6s", (valid ? "yes" : "no"));
+	clearCurrentOutput();
+#endif /* ENABLE_CGAL */
 }
 
 #ifdef ENABLE_CGAL

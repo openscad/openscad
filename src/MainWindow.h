@@ -137,6 +137,7 @@ private slots:
 	void actionRenderCGALDone(class CGAL_Nef_polyhedron *);
 	void cgalRender();
 #endif
+	void actionCheckValidity();
 	void actionDisplayAST();
 	void actionDisplayCSGTree();
 	void actionDisplayCSGProducts();
