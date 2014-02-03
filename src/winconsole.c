@@ -64,15 +64,13 @@ int main( int argc, char * argv[] )
 		if (quote) cmd[n++] = '"';
 		while (*s) { // copy & check
 			if ('"' == *s) cmd[n++] = *s; // duplicate it
-			if (n >= MAXCMDLEN-sizeof(redirect_str)) goto term;
 			cmd[n++] = *s++;
+			if (n >= MAXCMDLEN-sizeof(redirect_str)) {
+				fprintf(stderr, "Command line length exceeds limit of %d\n", MAXCMDLEN);
+				return 1;
+			}
 		}
 		if (quote) cmd[n++] = '"';
-	}
-term:
-	if (n >= MAXCMDLEN-sizeof(redirect_str)) {
-		fprintf(stderr, "Command line length exceeds limit of %d\n", MAXCMDLEN);
-		return 1;
 	}
 	memcpy(&cmd[n], redirect_str, sizeof(redirect_str)); // including \0
 
