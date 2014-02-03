@@ -137,6 +137,7 @@ private slots:
 	void actionRenderDone(shared_ptr<const class Geometry>);
 	void cgalRender();
 #endif
+	void actionCheckValidity();
 	void actionDisplayAST();
 	void actionDisplayCSGTree();
 	void actionDisplayCSGProducts();
