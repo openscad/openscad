@@ -9,6 +9,8 @@ boost {
     win*: QMAKE_LIBDIR += -L$$BOOST_DIR/lib
   }
 
+  # See https://svn.boost.org/trac/boost/ticket/6219
+  macx: DEFINES += __ASSERT_MACROS_DEFINE_VERSIONS_WITHOUT_UNDERSCORES=0
   CONFIG(mingw-cross-env) {
     DEFINES += BOOST_STATIC
     DEFINES += BOOST_THREAD_USE_LIB
