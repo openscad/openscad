@@ -20,33 +20,15 @@ namespace CGALUtils {
 	bool applyHull(const Geometry::ChildList &children, CGAL_Polyhedron &result)
 	{
 		// Collect point cloud
-		std::list<CGAL_Polyhedron::Vertex::Point_3> points;
+		std::vector<CGAL_Polyhedron::Vertex::Point_3> points;
 		CGAL_Polyhedron P;
+
 		BOOST_FOREACH(const Geometry::ChildItem &item, children) {
 			const shared_ptr<const Geometry> &chgeom = item.second;
 			const CGAL_Nef_polyhedron *N = dynamic_cast<const CGAL_Nef_polyhedron *>(chgeom.get());
 			if (N) {
-				if (!N->p3->is_simple()) {
-					PRINT("Hull() currently requires a valid 2-manifold. Please modify your design. See http://en.wikibooks.org/wiki/OpenSCAD_User_Manual/STL_Import_and_Export");
-				}
-				else {
-					bool err = true;
-					std::string errmsg("");
-					try {
-						err = nefworkaround::convert_to_Polyhedron<CGAL_Kernel3>( *(N->p3), P );
-						// N->p3->convert_to_Polyhedron(P);
-					}
-					catch (const CGAL::Failure_exception &e) {
-						err = true;
-						errmsg = std::string(e.what());
-					}
-					if (err) {
-						PRINT("ERROR: CGAL NefPolyhedron->Polyhedron conversion failed.");
-						if (errmsg!="") PRINTB("ERROR: %s",errmsg);
-					} else {
-						std::transform(P.vertices_begin(), P.vertices_end(), std::back_inserter(points), 
-													 boost::bind(static_cast<const CGAL_Polyhedron::Vertex::Point_3&(CGAL_Polyhedron::Vertex::*)() const>(&CGAL_Polyhedron::Vertex::point), _1));
-					}
+				for (CGAL_Nef_polyhedron3::Vertex_const_iterator i = N->p3->vertices_begin(); i != N->p3->vertices_end(); ++i) {
+					points.push_back(i->point());
 				}
 			}
 			else {
@@ -58,14 +40,29 @@ namespace CGALUtils {
 				}
 			}
 		}
-		if (points.size() > 0) {
-			// Apply hull
-			if (points.size() > 3) {
-				CGAL::convex_hull_3(points.begin(), points.end(), result);
-				return true;
+
+		if (points.size() <= 3) return false;
+
+		// Remove all duplicated points (speeds up the convex_hull computation significantly)
+		std::vector<CGAL_Polyhedron::Vertex::Point_3> unique_points;
+		Grid3d<int> grid(GRID_FINE);
+
+		BOOST_FOREACH(CGAL_Polyhedron::Vertex::Point_3 const& p, points) {
+			double x = to_double(p.x()), y = to_double(p.y()), z = to_double(p.z());
+			int& v = grid.align(x,y,z);
+			if (v == 0) {
+				unique_points.push_back(CGAL_Polyhedron::Vertex::Point_3(x,y,z));
+				v = 1;
 			}
 		}
-		return false;
+
+		// Apply hull
+		if (points.size() >= 4) {
+			CGAL::convex_hull_3(unique_points.begin(), unique_points.end(), result);
+			return true;
+		} else {
+			return false;
+		}
 	}
 	
 /*!
