@@ -111,6 +111,7 @@ static void help(const char *progname)
          "%2%  --camera=eyex,y,z,centerx,y,z ] \\\n"
          "%2%[ --imgsize=width,height ] [ --projection=(o)rtho|(p)ersp] \\\n"
          "%2%[ --render | --preview[=throwntogether] ] \\\n"
+         "%2%[ --csglimit=num ] \\\n"
          "%2%[ --enable=<feature> ]"
 #ifdef DEBUG
 				 " [ --debug=module ]"
@@ -586,6 +587,7 @@ int main(int argc, char **argv)
 		("info", "print information about the building process")
 		("render", "if exporting a png image, do a full CGAL render")
 		("preview", po::value<string>(), "if exporting a png image, do an OpenCSG(default) or ThrownTogether preview")
+		("csglimit", po::value<unsigned int>(), "if exporting a png image, stop rendering at the given number of CSG elements")
 		("camera", po::value<string>(), "parameters for camera when exporting png")
 		("imgsize", po::value<string>(), "=width,height for exporting png")
 		("projection", po::value<string>(), "(o)rtho or (p)erspective when exporting png")
@@ -629,6 +631,10 @@ int main(int argc, char **argv)
 	if (vm.count("preview"))
 		if (vm["preview"].as<string>() == "throwntogether")
 			renderer = Render::THROWNTOGETHER;
+
+	if (vm.count("csglimit")) {
+		RenderSettings::inst()->openCSGTermLimit = vm["csglimit"].as<unsigned int>();
+	}
 
 	if (vm.count("o")) {
 		// FIXME: Allow for multiple output files?

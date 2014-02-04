@@ -146,7 +146,7 @@ the dependency packages listed above using your system's package
 manager. A convenience script is provided that can help with this 
 process on some systems:
 
-    ./scripts/uni-get-dependencies.sh
+    sudo ./scripts/uni-get-dependencies.sh
 
 After installing dependencies, check their versions. You can run this 
 script to help you:

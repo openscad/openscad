@@ -161,7 +161,7 @@ AbstractNode *PrimitiveModule::instantiate(const Context *ctx, const ModuleInsta
 		args += Assignment("h", NULL), Assignment("r1", NULL), Assignment("r2", NULL), Assignment("center", NULL);
 		break;
 	case POLYHEDRON:
-		args += Assignment("points", NULL), Assignment("triangles", NULL), Assignment("convexity", NULL), Assignment("faces", NULL);
+		args += Assignment("points", NULL), Assignment("faces", NULL), Assignment("convexity", NULL);
 		break;
 	case SQUARE:
 		args += Assignment("size", NULL), Assignment("center", NULL);
