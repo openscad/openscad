@@ -65,8 +65,8 @@ export MACOSX_DEPLOYMENT_TARGET=$MAC_OSX_VERSION_MIN
 # Don't use bottles, as they might be built with the wrong deployment target
 export HOMEBREW_BUILD_FROM_SOURCE=1
 
-for formula in qt eigen boost cgal glew glib opencsg; do
-  brew install openscad/tap/$formula
+for formula in qt eigen boost cgal glew glib opencsg freetype libxml2 fontconfig harfbuzz; do
+  brew install --verbose openscad/tap/$formula --macosx-deployment-target=$MAC_OSX_VERSION_MIN
 done
 if $OPTION_DEPLOY; then
   brew install --HEAD openscad/tap/sparkle
