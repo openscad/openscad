@@ -316,6 +316,7 @@
     <addaction name="designActionPreview"/>
     <addaction name="designActionRender"/>
     <addaction name="separator"/>
+	<addaction name="designCheckValidity"/>
     <addaction name="designActionDisplayAST"/>
     <addaction name="designActionDisplayCSGTree"/>
     <addaction name="designActionDisplayCSGProducts"/>
@@ -556,6 +557,11 @@
    <property name="shortcut">
     <string>F6</string>
    </property>
+  </action>
+  <action name="designCheckValidity">
+    <property name="text">
+      <string>Check Validity</string>
+    </property>
   </action>
   <action name="designActionDisplayAST">
    <property name="text">
