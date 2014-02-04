@@ -17,4 +17,10 @@ rotate([45, 0, -45]) {
 
 	translate([0, -40, 0])
 		text(t = t3, font="PT Serif:style=Regular", size=20, language="ru");
+
+	translate([0, -80, 0])
+		text("positional", 30, "PT Serif:style=Regular");
+
+	translate([0, -100, 0])
+		text("parameters", 12, "Amiri:style=Bold");
 }
