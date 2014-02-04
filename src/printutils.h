@@ -17,10 +17,10 @@ void print_messages_push();
 void print_messages_pop();
 
 void PRINT(const std::string &msg);
-#define PRINTB(_fmt, _arg) do { PRINT(str(boost::format(_fmt) % _arg)); } while (0)
+#define PRINTB(_fmt, _arg) do { PRINT(boost::str(boost::format(_fmt) % _arg)); } while (0)
 
 void PRINT_NOCACHE(const std::string &msg);
-#define PRINTB_NOCACHE(_fmt, _arg) do { PRINT_NOCACHE(str(boost::format(_fmt) % _arg)); } while (0)
+#define PRINTB_NOCACHE(_fmt, _arg) do { PRINT_NOCACHE(boost::str(boost::format(_fmt) % _arg)); } while (0)
 
 
 void PRINT_CONTEXT(const class Context *ctx, const class Module *mod, const class ModuleInstantiation *inst);

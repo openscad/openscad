@@ -256,14 +256,17 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 	handle_dep(filename.c_str());
 
 	pu::ifstream ifs(filename.c_str());
-	//std::ifstream ifs(filename.c_str());
 	if (!ifs.is_open()) {
 		PRINTB("Can't open input file '%s'!\n", filename.c_str());
 		return 1;
 	}
 
-	std::string text = getfile( ifs );
-	//std::string text((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
+
+#if defined( __MINGW_FSTREAM__ )
+	std::string text = ifs.mingw_getfile();
+#else
+	std::string text((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
+#endif // MINGW_FSTREAM
 	text += "\n" + commandline_commands;
 	fs::path abspath = boosty::absolute(filename);
 	std::string parentpath = boosty::stringy(abspath.parent_path());
@@ -369,7 +372,8 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 				PRINT("Current top level object is not a 3D object.\n");
 				return 1;
 			}
-			std::ofstream fstream(stl_output_file);
+			//std::ofstream fstream(stl_output_file);
+			pu::ofstream fstream(stl_output_file);
 			if (!fstream.is_open()) {
 				PRINTB("Can't open file \"%s\" for export", stl_output_file);
 			}
@@ -565,20 +569,19 @@ int main( int argc, char **argv )
 // In Win(TM) all cmdline opts & filenames are UTF16. We convert to UTF8
 // for all internal OpenSCAD work... but sometimes convert back to UTF16
 // when needed (for reading/writing files, etc)
-#if defined( __MINGW32__ ) || defined( __MINGW64__ ) || defined( _MSCVER )
+#ifdef __MINGW_FSTREAM__
 	int wargc;
         wchar_t * wcmdline = GetCommandLineW();
 	wchar_t ** wargv = CommandLineToArgvW( wcmdline, &wargc );
 	std::vector<std::string> utf8args;
 	std::vector<char *> utf8arg_ptrs;
 	for (int i=0;i<wargc;i++) {
-		std::wstring warg(wargv[i]);
-		std::string tmp = pu::utf16_to_utf8( warg );
+		std::string tmp = pu::utf16_to_utf8( std::wstring(wargv[i]) );
 		utf8args.push_back( tmp );
 		//utf8arg_ptrs.push_back( utf8args[i].c_str() );
 		argv[i] = const_cast<char *>(utf8args[i].c_str());
 	}
-#endif // mingw / msvc
+#endif // MINGW_FSTREAM
 
 	int rc = 0;
 #ifdef Q_WS_MAC

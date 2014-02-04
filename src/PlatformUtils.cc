@@ -1,6 +1,6 @@
 #include "PlatformUtils.h"
 #include "boosty.h"
-
+#include "printutils.h"
 #include <glib.h>
 
 bool PlatformUtils::createLibraryPath()

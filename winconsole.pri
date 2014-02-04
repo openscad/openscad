@@ -22,6 +22,7 @@ CONFIG(winconsole) {
   SOURCES = src/winconsole.c
   CONFIG += console # sets IMAGE_SUBSYSTEM_WINDOWS_CUI in binary
   LIBS -= $$LIBS
+  LIBS += mingw-cross-env/lib/libshlwapi.a
   RC_FILE -= $$RC_FILE
   QMAKE_POST_LINK = cd $(DESTDIR) && mv openscad_winconsole.exe openscad.com
 }

@@ -83,6 +83,7 @@ string get_os_info()
 string offscreen_context_getinfo(OffscreenContext *ctx)
 {
   // should probably get some info from WGL context here?
+  (void)ctx;
   stringstream out;
   out << "GL context creator: WGL\n"
       << "PNG generator: lodepng\n"
