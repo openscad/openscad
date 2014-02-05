@@ -217,7 +217,7 @@ void QGLView::mouseMoveEvent(QMouseEvent *event)
   double dy = (this_mouse.y()-last_mouse.y()) * 0.7;
   if (mouse_drag_active) {
     if (event->buttons() & Qt::LeftButton
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
         && !(event->modifiers() & Qt::MetaModifier)
 #endif
       ) {

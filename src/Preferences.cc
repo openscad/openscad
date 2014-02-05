@@ -50,11 +50,11 @@ Preferences::Preferences(QWidget *parent) : QMainWindow(parent)
 	// Editor pane
 	// Setup default font (Try to use a nice monospace font)
 	QString fontfamily;
-#ifdef Q_WS_X11
+#ifdef Q_OS_X11
 	fontfamily = "Mono";
-#elif defined (Q_WS_WIN)
+#elif defined (Q_OS_WIN)
 	fontfamily = "Console";
-#elif defined (Q_WS_MAC)
+#elif defined (Q_OS_MAC)
 	fontfamily = "Monaco";
 #endif
 	QFont font;
@@ -367,7 +367,7 @@ void Preferences::on_forceGoldfeatherBox_toggled(bool state)
 
 void Preferences::keyPressEvent(QKeyEvent *e)
 {
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
 	if (e->modifiers() == Qt::ControlModifier && e->key() == Qt::Key_Period) {
 		close();
 	} else
