@@ -465,7 +465,7 @@ static QString assemblePath(const fs::path& absoluteBaseDir,
 
 bool QtUseGUI()
 {
-#ifdef Q_WS_X11
+#ifdef Q_OS_X11
 	// see <http://qt.nokia.com/doc/4.5/qapplication.html#QApplication-2>:
 	// On X11, the window system is initialized if GUIenabled is true. If GUIenabled
 	// is false, the application does not connect to the X server. On Windows and
@@ -488,7 +488,7 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
     }
 #endif
 	QApplication app(argc, argv, true); //useGUI);
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
 	app.installEventFilter(new EventFilter(&app));
 #endif
 	// set up groups for QSettings
@@ -504,7 +504,7 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 
 	QDir exdir(app_path);
 	QString qexamplesdir;
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
 	exdir.cd("../Resources"); // Examples can be bundled
 	if (!exdir.exists("examples")) exdir.cd("../../..");
 #elif defined(Q_OS_UNIX)
@@ -524,11 +524,11 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 	MainWindow::setExamplesDir(qexamplesdir);
   parser_init(app_path.toLocal8Bit().constData());
 
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
 	installAppleEventHandlers();
 #endif
 
-#if defined(OPENSCAD_DEPLOY) && defined(Q_WS_MAC)
+#if defined(OPENSCAD_DEPLOY) && defined(Q_OS_MAC)
 	AutoUpdater *updater = new SparkleAutoUpdater;
 	AutoUpdater::setUpdater(updater);
 	if (updater->automaticallyChecksForUpdates()) updater->checkForUpdates();
@@ -565,7 +565,7 @@ int gui(const vector<string> &inputFiles, const fs::path &original_path, int arg
 int main(int argc, char **argv)
 {
 	int rc = 0;
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
 	set_output_handler(CocoaUtils::nslog, NULL);
 #endif
 #ifdef ENABLE_CGAL
