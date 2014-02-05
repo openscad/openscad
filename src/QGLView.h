@@ -40,6 +40,7 @@ public:
 		else this->cam.projection = Camera::PERSPECTIVE;
 	}
 	std::string getRendererInfo() const;
+	float getDPI() { return this->devicePixelRatio(); }
 	bool save(const char *filename);
         void resetView();
 
