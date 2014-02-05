@@ -101,6 +101,10 @@ GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren3D(const Abstr
 	if (children.size() == 1) return ResultObject(children.front().second);
 
 	CGAL_Nef_polyhedron *N = NULL;
+
+	// Speeds up n-ary union operations significantly
+	CGAL::Nef_nary_union_3<CGAL_Nef_polyhedron3> nary_union;
+
 	BOOST_FOREACH(const Geometry::ChildItem &item, children) {
 		const shared_ptr<const Geometry> &chgeom = item.second;
 		shared_ptr<const CGAL_Nef_polyhedron> chN;
@@ -115,13 +119,21 @@ GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren3D(const Abstr
 			}
 		}
 
-		if (N) CGALUtils::applyBinaryOperator(*N, *chN, op);
-		// Initialize N on first iteration with first expected geometric object
-		else if (chN) N = chN->copy();
+		if (op == OPENSCAD_UNION) {
+			nary_union.add_polyhedron(*chN->p3);
+		} else {
+			if (N) CGALUtils::applyBinaryOperator(*N, *chN, op);
+			// Initialize N on first iteration with first expected geometric object
+			else if (chN) N = chN->copy();
+		}
 
 		item.first->progress_report();
 	}
-	return ResultObject(N);
+
+	if (op == OPENSCAD_UNION)
+		return ResultObject(new CGAL_Nef_polyhedron(new CGAL_Nef_polyhedron3(nary_union.get_union())));
+	else
+		return ResultObject(N);
 }
 
 
