@@ -28,6 +28,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+// want to use system definitions instead like #include <system.h>
+#ifndef WIFEXITED
+#define WIFEXITED(S) (((S) & 0xff) == 0)
+#endif
+#ifndef WEXITSTATUS
+#define WEXITSTATUS(S) (((S) >> 8) & 0xff)
+#endif
+
 #define MAXCMDLEN 64000
 #define BUFFSIZE 42
 
@@ -36,49 +45,64 @@ int main( int argc, char * argv[] )
 	FILE *cmd_stdout;
 	char cmd[MAXCMDLEN];
 	char buffer[BUFFSIZE];
-	char *fgets_result;
-	int eof = 0;
 	int pclose_result;
 	int i;
 	int result = 0;
+	unsigned n; // total number of characters in cmd
+	static const char exe_str[] = "openscad.exe";
+	static const char redirect_str[] = " 2>&1"; // capture stderr and stdout
 
-	strcat( cmd, "\0" );
-	strcat( cmd, "openscad.exe" );
+	memcpy(cmd, exe_str, (n = sizeof(exe_str)-1)); // without \0
 	for ( i = 1 ; i < argc ; ++i ) {
-		strcat( cmd, " " );
-		strcat( cmd, argv[i] );
+		register char *s;
+		/*bool*/ int quote;
+
+		cmd[n++] = ' ';
+		// MS Windows special characters need quotation
+		// See issues #440, #441 & #479
+		quote = NULL != strpbrk((s = argv[i]), " \"&'<>^|\t");
+		if (quote) cmd[n++] = '"';
+		while (*s) { // copy & check
+			if ('"' == *s) cmd[n++] = *s; // duplicate it
+			cmd[n++] = *s++;
+			if (n >= MAXCMDLEN-sizeof(redirect_str)) {
+				fprintf(stderr, "Command line length exceeds limit of %d\n", MAXCMDLEN);
+				return 1;
+			}
+		}
+		if (quote) cmd[n++] = '"';
 	}
-	strcat( cmd, " ");
-	strcat( cmd, " 2>&1"); // capture stderr and stdout
+	memcpy(&cmd[n], redirect_str, sizeof(redirect_str)); // including \0
 
 	cmd_stdout = _popen( cmd, "rt" );
 	if ( cmd_stdout == NULL ) {
-		printf( "Error opening _popen for command: %s", cmd );
-		perror( "Error message:" );
+		fprintf(stderr, "Error opening _popen for command: %s", cmd );
+		perror( "Error message" );
 		return 1;
 	}
 
-	while ( !eof )
-	{
-		fgets_result = fgets( buffer, BUFFSIZE, cmd_stdout );
-		if ( fgets_result == NULL ) {
+	for(;;) {
+		if (NULL == fgets(buffer, BUFFSIZE, cmd_stdout)) {
 			if ( ferror( cmd_stdout ) ) {
-				printf("Error reading from stdout of %s\n", cmd);
+				fprintf(stderr, "Error reading from stdout of %s\n", cmd);
 				result = 1;
 			}
 			if ( feof( cmd_stdout ) ) {
-				eof = 1;
+				break;
 			}
 		} else {
-			fprintf( stdout, "%s", buffer );
+			fputs(buffer, stdout);
 		}
 	}
 
 	pclose_result = _pclose( cmd_stdout );
-	if ( pclose_result < 0 ) {
-		perror("Error while closing stdout for command:");
+	// perror() applicable with return value of -1 only!
+	// Avoid stupid "Error: No Error" message
+	if (pclose_result == -1) {
+		perror("Error while closing stdout for command");
 		result = 1;
+	} else if (!result) {
+		result = WIFEXITED(pclose_result) ? WEXITSTATUS(pclose_result) : 1;
 	}
-
 	return result;
 }
