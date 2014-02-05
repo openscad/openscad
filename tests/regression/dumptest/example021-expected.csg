@@ -17,7 +17,7 @@ group() {
 					}
 				}
 			}
-			%group() {
+%			group() {
 				difference() {
 					sphere($fn = 0, $fa = 30, $fs = 2, r = 25);
 					cylinder($fn = 0, $fa = 30, $fs = 2, h = 62.5, r1 = 12.5, r2 = 6.25, center = true);
@@ -251,7 +251,7 @@ group() {
 					}
 				}
 			}
-			%group() {
+%			group() {
 				difference() {
 					sphere($fn = 0, $fa = 30, $fs = 2, r = 25);
 					cylinder($fn = 0, $fa = 30, $fs = 2, h = 62.5, r1 = 12.5, r2 = 6.25, center = true);
