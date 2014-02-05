@@ -49,6 +49,17 @@
 #  include <opencsg.h>
 #endif
 
+#ifdef __APPLE__
+#include <objc/message.h>
+
+// Qt 4.8.4 doesn't have retina support for QGLWidget, so we need to peek at
+// its internals to make that work.  This will likely break when updating to
+// a newer Qt version, but that version will hopefully have built-in support
+// for retina OpenGL.
+extern OSWindowRef qt_mac_window_for(const QWidget*); //qwidget_mac.mm
+extern OSViewRef qt_mac_nativeview_for(const QWidget *); //qwidget_mac.mm
+#endif
+
 QGLView::QGLView(QWidget *parent) : QGLWidget(parent)
 {
   init();
@@ -146,6 +157,25 @@ void QGLView::display_opencsg_warning_dialog()
 
 void QGLView::resizeGL(int w, int h)
 {
+#ifdef __APPLE__
+  OSViewRef view = qt_mac_nativeview_for(this);
+  if (view) {
+    // Since this isn't an Objective-C file, manually call the runtime functions:
+    if (objc_msgSend((id)view, sel_registerName("respondsToSelector:"), sel_registerName("setWantsBestResolutionOpenGLSurface:"))) {
+      objc_msgSend((id)view, sel_registerName("setWantsBestResolutionOpenGLSurface:"), 1);
+    }
+  
+    OSWindowRef window = qt_mac_window_for(this);
+    if (window && objc_msgSend((id)window, sel_registerName("respondsToSelector:"), sel_registerName("backingScaleFactor"))) {
+#if __LP64__
+      scale_factor = ((double (*)(id, SEL))(void *)objc_msgSend)((id)window, sel_registerName("backingScaleFactor"));
+#else
+      scale_factor = objc_msgSend_fpret((id)window, sel_registerName("backingScaleFactor"));
+#endif
+    }
+  }
+#endif
+
   GLView::resizeGL(w,h);
   GLView::setupGimbalCamPerspective();
 }
@@ -292,9 +322,54 @@ void QGLView::mouseReleaseEvent(QMouseEvent*)
   releaseMouse();
 }
 
+static void convertFromGLImage(QImage &img, int w, int h, bool alpha_format, bool include_alpha)
+{
+  assert (QSysInfo::ByteOrder != QSysInfo::BigEndian);
+  // OpenGL gives ABGR (i.e. RGBA backwards); Qt wants ARGB
+  for (int y = 0; y < h; y++) {
+    uint *q = (uint*)img.scanLine(y);
+    for (int x=0; x < w; ++x) {
+      const uint pixel = *q;
+      if (alpha_format && include_alpha) {
+        *q = ((pixel << 16) & 0xff0000) | ((pixel >> 16) & 0xff)
+             | (pixel & 0xff00ff00);
+      } else {
+        *q = 0xff000000 | ((pixel << 16) & 0xff0000)
+             | ((pixel >> 16) & 0xff) | (pixel & 0x00ff00);
+      }
+
+      q++;
+    }
+  }
+  img = img.mirrored();
+}
+
+QImage qt_gl_read_framebuffer(const QSize &size, bool alpha_format, bool include_alpha)
+{
+  QImage img(size, (alpha_format && include_alpha) ? QImage::Format_ARGB32_Premultiplied
+                                                   : QImage::Format_RGB32);
+  int w = size.width();
+  int h = size.height();
+  glReadPixels(0, 0, w, h, GL_RGBA, GL_UNSIGNED_BYTE, img.bits());
+  convertFromGLImage(img, w, h, alpha_format, include_alpha);
+  return img;
+}
+
+
+
 bool QGLView::save(const char *filename)
 {
-  QImage img = grabFrameBuffer();
+  // grabFrameBuffer() doesn't work right with a scale factor != 1, so don't
+  // use it.
+
+  makeCurrent();
+  QImage img;
+  int w = width() * scale_factor;
+  int h = height() * scale_factor;
+  if (format().rgba()) {
+    img = qt_gl_read_framebuffer(QSize(w, h), format().alpha(), /*withAlpha=*/false);
+  }
+
   return img.save(filename, "PNG");
 }
 
