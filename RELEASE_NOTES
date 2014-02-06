@@ -1,22 +1,23 @@
-OpenSCAD YYYY.MM
+OpenSCAD 2014.0X
 ================
 
 Language Features:
 o Added diameter argument: circle(d), cylinder(d, d1, d2) and sphere(d)
 o Added parent_module() and $parent_modules
 o Added children() as a replacement for child()
-o FIXME: Unicode support
-o FIXME: Ranges with negative steps
-o FIXME: Experimental concat()
+o Unicode strings (using UTF-8) are now correctly handled
+o Ranges can have a negative step value
+o Added experimental concat() function for concatenating vectors
 
 Program Features:
-o Added --info parameter to the cmd-line for system/library info
-o Added --enable parameter to enable experimental features
-o Added --csglimit parameter to change CSG rendering limit
-o Added Reset View in GUI
-o Added Feature tab in Preferences 
+o Cmd-line: --info parameter prints system/library info
+o Cmd-line: --enable parameter to enable experimental features
+o Cmd-line: --csglimit parameter to change CSG rendering limit
+o GUI: Added Reset View
+o GUI: Added Search&Replace in editor
+o GUI: Syntax highlighting now has a dark background theme
 
-Bugfixes:
+Bugfixes/improvements:
 o polyhedron() is now much more robust handling almost planar polygons
 o Automatic reloads of large designs are more robust
 o Boolean logic in if() statements are now correctly short-circuited
@@ -25,20 +26,24 @@ o resize(, auto=true) didn't work when shrinking objects
 o The $children variable sometimes misbehaved due to dynamic scoping
 o The --camera cmd-line option behaved differently then the corresponding GUI function
 o PNG export now doesn't leak transparency settings into the target image
-o Improved performance of OpenCSG (F5) compilation in some cases
+o Improved performance of 3D hull() operations
 o Some editor misbehaviors were fixed
 o Stability fixes of CGAL-related crashes
+o Windows cmd-line can now handle spaces in filenames
+o Default CSG rendering limit is now 100K elements
+o Fixed a crash reading DXF files using comma as decimal separator
+o Fixed a crash running the cmd-line without a HOME env. variable
+o Intersecting something with nothing now correctly results in an empty object
 
 Deprecations:
 o child() is no longer supported. Use children() instead.
 o polyhedron(triangles=[...]): Use polyhedron(faces=[...]) instead.
 
 Misc:
-o We now use CGAL's EPEC kernel
-o Additional output formats: .ast, .term, null (these are most useful for testing)
 o Test framework now shares more code with the GUI app
 o Test report can now be automatically uploaded to dinkypage.com
 o Better compatibility with BSD systems
+o Qt5 support
 
 OpenSCAD 2013.06
 ================
