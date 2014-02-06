@@ -1546,22 +1546,19 @@ void MainWindow::actionCheckValidity() {
 #ifdef ENABLE_CGAL
 	setCurrentOutput();
 
-	if (!this->root_geom) {
+	if (!this->root_N) {
 		PRINT("Nothing to validate! Try building first (press F6).");
 		clearCurrentOutput();
 		return;
 	}
 
-	if (this->root_geom->getDimension() != 3) {
+	if (this->root_N->dim != 3) {
 		PRINT("Current top level object is not a 3D object.");
 		clearCurrentOutput();
 		return;
 	}
 
-	bool valid = false;
-	if (const CGAL_Nef_polyhedron *N = dynamic_cast<const CGAL_Nef_polyhedron *>(this->root_geom.get()))
-		valid = N->p3->is_valid();
-
+	bool valid = this->root_N->p3->is_valid();
 	PRINTB("   Valid:      %6s", (valid ? "yes" : "no"));
 	clearCurrentOutput();
 #endif /* ENABLE_CGAL */
