@@ -190,6 +190,27 @@ namespace CGALUtils {
 		CGAL::set_error_behaviour(old_behaviour);
 	}
 
+	static void add_outline_to_poly(CGAL_Nef_polyhedron2::Explorer &explorer,
+									CGAL_Nef_polyhedron2::Explorer::Halfedge_around_face_const_circulator circ,
+									CGAL_Nef_polyhedron2::Explorer::Halfedge_around_face_const_circulator end,
+									bool positive,
+									Polygon2d *poly) {
+		Outline2d outline;
+
+		CGAL_For_all(circ, end) {
+			if (explorer.is_standard(explorer.target(circ))) {
+				CGAL_Nef_polyhedron2::Explorer::Point ep = explorer.point(explorer.target(circ));
+				outline.vertices.push_back(Vector2d(to_double(ep.x()),
+													to_double(ep.y())));
+			}
+		}
+
+		if (!outline.vertices.empty()) {
+			outline.positive = positive;
+			poly->addOutline(outline);
+		}
+	}
+
 	static Polygon2d *convertToPolygon2d(const CGAL_Nef_polyhedron2 &p2)
 	{
 		Polygon2d *poly = new Polygon2d;
@@ -198,19 +219,23 @@ namespace CGALUtils {
 		typedef Explorer::Face_const_iterator fci_t;
 		typedef Explorer::Halfedge_around_face_const_circulator heafcc_t;
 		Explorer E = p2.explorer();
-		
+
 		for (fci_t fit = E.faces_begin(), facesend = E.faces_end(); fit != facesend; ++fit)	{
-			heafcc_t fcirc(E.halfedge(fit)), fend(fcirc);
-			Outline2d outline;
-			CGAL_For_all(fcirc, fend) {
-				if (E.is_standard(E.target(fcirc))) {
-					Explorer::Point ep = E.point(E.target(fcirc));
-					outline.vertices.push_back(Vector2d(to_double(ep.x()),
-																		 to_double(ep.y())));
-				}
+			if (!fit->mark()) continue;
+
+			heafcc_t fcirc(E.face_cycle(fit)), fend(fcirc);
+
+			add_outline_to_poly(E, fcirc, fend, true, poly);
+
+			for (CGAL_Nef_polyhedron2::Explorer::Hole_const_iterator j = E.holes_begin(fit);
+				 j != E.holes_end(fit); ++j) {
+				CGAL_Nef_polyhedron2::Explorer::Halfedge_around_face_const_circulator hcirc(j), hend(hcirc);
+
+				add_outline_to_poly(E, hcirc, hend, false, poly);
 			}
-			if (outline.vertices.size() > 0) poly->addOutline(outline);
 		}
+
+		poly->setSanitized(true);
 		return poly;
 	}
 
