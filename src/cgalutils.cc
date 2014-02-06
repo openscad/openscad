@@ -69,6 +69,78 @@ namespace CGALUtils {
 	}
 	
 /*!
+	Applies op to all children and stores the result in dest.
+	The child list should be guaranteed to contain non-NULL 3D or empty Geometry objects
+*/
+	void applyOperator(const Geometry::ChildList &children, CGAL_Nef_polyhedron &dest, OpenSCADOperator op)
+	{
+		// Speeds up n-ary union operations significantly
+		CGAL::Nef_nary_union_3<CGAL_Nef_polyhedron3> nary_union;
+		CGAL_Nef_polyhedron *N = NULL;
+
+		BOOST_FOREACH(const Geometry::ChildItem &item, children) {
+			const shared_ptr<const Geometry> &chgeom = item.second;
+			shared_ptr<const CGAL_Nef_polyhedron> chN = 
+				dynamic_pointer_cast<const CGAL_Nef_polyhedron>(chgeom);
+			if (!chN) {
+				const PolySet *chps = dynamic_cast<const PolySet*>(chgeom.get());
+				if (chps) chN.reset(createNefPolyhedronFromGeometry(*chps));
+			}
+
+			if (op == OPENSCAD_UNION) {
+				if (!chN->isEmpty()) nary_union.add_polyhedron(*chN->p3);
+				continue;
+			}
+			// Initialize N with first expected geometric object
+			if (!N) {
+				N = chN->copy();;
+				continue;
+			}
+
+			// Intersecting something with nothing results in nothing
+			if (chN->isEmpty()) {
+				if (op == OPENSCAD_INTERSECTION) *N = *chN;
+				continue;
+			}
+            
+            // empty op <something> => empty
+            if (N->isEmpty()) continue;
+
+			CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
+			try {
+				switch (op) {
+				case OPENSCAD_INTERSECTION:
+					*N *= *chN;
+					break;
+				case OPENSCAD_DIFFERENCE:
+					*N -= *chN;
+					break;
+				case OPENSCAD_MINKOWSKI:
+					N->minkowski(*chN);
+					break;
+				default:
+					PRINTB("ERROR: Unsupported CGAL operator: %d", op);
+				}
+			}
+			catch (const CGAL::Failure_exception &e) {
+				// union && difference assert triggered by testdata/scad/bugs/rotate-diff-nonmanifold-crash.scad and testdata/scad/bugs/issue204.scad
+				std::string opstr = op == OPENSCAD_INTERSECTION ? "intersection" : op == OPENSCAD_DIFFERENCE ? "difference" : op == OPENSCAD_MINKOWSKI ? "minkowski" : "UNKNOWN";
+				PRINTB("CGAL error in CGALUtils::applyBinaryOperator %s: %s", opstr % e.what());
+				
+				// Errors can result in corrupt polyhedrons, so put back the old one
+				*N = *chN;
+			}
+			CGAL::set_error_behaviour(old_behaviour);
+		}
+
+		if (op == OPENSCAD_UNION) {
+			// FIXME: Catch exceptions
+			N = new CGAL_Nef_polyhedron(new CGAL_Nef_polyhedron3(nary_union.get_union()));
+		}
+		dest = *N;
+	}
+
+/*!
 	Modifies target by applying op to target and src:
 	target = target [op] src
 */
