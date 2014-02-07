@@ -7,7 +7,7 @@
 #include <shlobj.h>
 
 // convert from windows api w_char strings (usually utf16) to utf8 std::string
-std::string winapi_wstring_to_utf8( const std::wstring wstr )
+std::string winapi_wstring_to_utf8( const std::wstring &wstr )
 {
 	UINT CodePage = CP_UTF8;
 	DWORD dwFlags = 0;
@@ -98,10 +98,33 @@ std::string PlatformUtils::documentsPath()
 	return retval;
 }
 
-std::string PlatformUtils::utf16_to_utf8( const std::wstring &w ) {
-	return winapi_wstring_to_utf8( w );
-};
+// alter argv so it points to utf8-encoded versions of command line arguments.
+// 'storage' provides a place to store the newly encoded argument strings.
+// argc is ignored for windows(TM). see doc/windows_issues.txt for more info
+void resetArgvToUtf8( int argc, char ** &argv, std::vector<std::string> &storage )
+{
+	int wargc;
+        wchar_t * wcmdline = GetCommandLineW();
+        wchar_t ** wargv = CommandLineToArgvW( wcmdline, &wargc );
+	if (wargc>argc) {
+		printf("utf8 commandline conversion failure. wargc>argc");
+		wargc = argc;
+	}
+        for (int i=0;i<wargc;i++) {
+		std::wstring wstr( wargv[i] );
+		std::string utf8str = winapi_wstring_to_utf8( wstr );
+                storage.push_back( utf8str );
+                argv[i] = const_cast<char *>(storage[i].c_str());
+        }
+}
 
-std::wstring PlatformUtils::utf8_to_utf16( const std::string &utf8 ) {
-	return utf8_to_winapi_wstring( utf8 );
-};
+// allow fopen() to work with unicode filenames on windows(TM)
+FILE *fopen( const char *path, const char *mode )
+{
+	std::wstring winpath;
+	std::wstring winmode;
+	winpath = utf8_to_winapi_wstring( std::string( path ) );
+	winmode = utf8_to_winapi_wstring( std::string( mode ) );
+	return _wfopen( winpath.c_str() , winmode.c_str() );
+}
+

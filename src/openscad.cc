@@ -75,7 +75,6 @@
 
 namespace po = boost::program_options;
 namespace fs = boost::filesystem;
-namespace pu = PlatformUtils;
 namespace Render { enum type { CGAL, OPENCSG, THROWNTOGETHER }; };
 std::string commandline_commands;
 std::string currentdir;
@@ -84,10 +83,10 @@ using std::vector;
 using boost::lexical_cast;
 using boost::is_any_of;
 
-class Echostream : public std::ofstream
+class Echostream : public PlatformUtils::ofstream
 {
 public:
-	Echostream( const char * filename ) : std::ofstream( filename ) {
+	Echostream( const char * filename ) : PlatformUtils::ofstream( filename ) {
 		set_output_handler( &Echostream::output, this );
 	}
 	static void output( const std::string &msg, void *userdata ) {
@@ -255,18 +254,13 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 
 	handle_dep(filename.c_str());
 
-	pu::ifstream ifs(filename.c_str());
+	PlatformUtils::ifstream ifs(filename.c_str());
 	if (!ifs.is_open()) {
 		PRINTB("Can't open input file '%s'!\n", filename.c_str());
 		return 1;
 	}
 
-
-#if defined( __MINGW_FSTREAM__ )
-	std::string text = ifs.mingw_getfile();
-#else
 	std::string text((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
-#endif // MINGW_FSTREAM
 	text += "\n" + commandline_commands;
 	fs::path abspath = boosty::absolute(filename);
 	std::string parentpath = boosty::stringy(abspath.parent_path());
@@ -293,7 +287,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 
 	if (csg_output_file) {
 		fs::current_path(original_path);
-		std::ofstream fstream(csg_output_file);
+		PlatformUtils::ofstream fstream(csg_output_file);
 		if (!fstream.is_open()) {
 			PRINTB("Can't open file \"%s\" for export", csg_output_file);
 		}
@@ -305,7 +299,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 	}
 	else if (ast_output_file) {
 		fs::current_path(original_path);
-		std::ofstream fstream(ast_output_file);
+		PlatformUtils::ofstream fstream(ast_output_file);
 		if (!fstream.is_open()) {
 			PRINTB("Can't open file \"%s\" for export", ast_output_file);
 		}
@@ -323,7 +317,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 		shared_ptr<CSGTerm> root_raw_term = csgRenderer.evaluateCSGTerm(*root_node, highlight_terms, background_terms);
 
 		fs::current_path(original_path);
-		std::ofstream fstream(term_output_file);
+		PlatformUtils::ofstream fstream(term_output_file);
 		if (!fstream.is_open()) {
 			PRINTB("Can't open file \"%s\" for export", term_output_file);
 		}
@@ -372,8 +366,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 				PRINT("Current top level object is not a 3D object.\n");
 				return 1;
 			}
-			//std::ofstream fstream(stl_output_file);
-			pu::ofstream fstream(stl_output_file);
+			PlatformUtils::ofstream fstream(stl_output_file);
 			if (!fstream.is_open()) {
 				PRINTB("Can't open file \"%s\" for export", stl_output_file);
 			}
@@ -388,7 +381,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 				PRINT("Current top level object is not a 3D object.\n");
 				return 1;
 			}
-			std::ofstream fstream(off_output_file);
+			PlatformUtils::ofstream fstream(off_output_file);
 			if (!fstream.is_open()) {
 				PRINTB("Can't open file \"%s\" for export", off_output_file);
 			}
@@ -403,7 +396,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 				PRINT("Current top level object is not a 2D object.\n");
 				return 1;
 			}
-			std::ofstream fstream(dxf_output_file);
+			PlatformUtils::ofstream fstream(dxf_output_file);
 			if (!fstream.is_open()) {
 				PRINTB("Can't open file \"%s\" for export", dxf_output_file);
 			}
@@ -414,7 +407,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 		}
 
 		if (png_output_file) {
-			std::ofstream fstream(png_output_file,std::ios::out|std::ios::binary);
+			PlatformUtils::ofstream fstream(png_output_file);
 			if (!fstream.is_open()) {
 				PRINTB("Can't open file \"%s\" for export", png_output_file);
 			}
@@ -566,22 +559,8 @@ int gui(const vector<string> &inputFiles, const fs::path &original_path, int arg
 
 int main( int argc, char **argv )
 {
-// In Win(TM) all cmdline opts & filenames are UTF16. We convert to UTF8
-// for all internal OpenSCAD work... but sometimes convert back to UTF16
-// when needed (for reading/writing files, etc)
-#ifdef __MINGW_FSTREAM__
-	int wargc;
-        wchar_t * wcmdline = GetCommandLineW();
-	wchar_t ** wargv = CommandLineToArgvW( wcmdline, &wargc );
-	std::vector<std::string> utf8args;
-	std::vector<char *> utf8arg_ptrs;
-	for (int i=0;i<wargc;i++) {
-		std::string tmp = pu::utf16_to_utf8( std::wstring(wargv[i]) );
-		utf8args.push_back( tmp );
-		//utf8arg_ptrs.push_back( utf8args[i].c_str() );
-		argv[i] = const_cast<char *>(utf8args[i].c_str());
-	}
-#endif // MINGW_FSTREAM
+	std::vector<std::string> argstorage;
+	PlatformUtils::resetArgvToUtf8( argc, argv, argstorage );
 
 	int rc = 0;
 #ifdef Q_WS_MAC

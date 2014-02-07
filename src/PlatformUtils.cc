@@ -41,6 +41,21 @@ std::string PlatformUtils::libraryPath()
 	return boosty::stringy( path );
 }
 
+#ifndef __PLATFORM_WIN__
+void resetArgvToUtf8( int argc, char ** &argv )
+{
+	// do nothing
+	(void) argc;
+	(void) argv;
+	return;
+}
+
+FILE *fopen( const char *path, const char *mode )
+{
+	return fopen( path, mode );
+}
+#endif
+
 #include "version_check.h"
 #define STRINGIFY(x) #x
 #define TOSTRING(x) STRINGIFY(x)
@@ -121,3 +136,4 @@ std::string PlatformUtils::info()
 	;
 	return s.str();
 }
+

@@ -1,6 +1,5 @@
 #include "fileutils.h"
 #include "printutils.h"
-
 #include <boost/filesystem.hpp>
 namespace fs = boost::filesystem;
 #include "boosty.h"
@@ -33,4 +32,3 @@ std::string lookup_file(const std::string &filename,
 	}
 	return resultfile;
 }
-

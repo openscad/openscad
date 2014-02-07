@@ -35,6 +35,7 @@
 #include "printutils.h"
 #include "fileutils.h"
 #include "handle_dep.h" // handle_dep()
+#include "PlatformUtils.h"
 
 #ifdef ENABLE_CGAL
 #include "cgalutils.h"
@@ -171,7 +172,7 @@ void uint32_byte_swap( uint32_t &x )
 #endif
 }
 
-void read_stl_facet( std::ifstream &f, stl_facet &facet )
+void read_stl_facet( std::istream &f, stl_facet &facet )
 {
 	f.read( (char*)facet.data8, STL_FACET_NUMBYTES );
 #ifdef BOOST_BIG_ENDIAN
@@ -196,8 +197,9 @@ Geometry *ImportNode::createGeometry() const
 
 		handle_dep((std::string)this->filename);
 		// Open file and position at the end
-		std::ifstream f(this->filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
-		if (!f.good()) {
+		PlatformUtils::ifstream f(this->filename.c_str());
+		f.seekg( std::streamoff(0), std::ios::end );
+		if (!f.is_open()) {
 			PRINTB("WARNING: Can't open import file '%s'.", this->filename);
 			return g;
 		}

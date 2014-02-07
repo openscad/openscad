@@ -3,30 +3,39 @@
 
 #include <string>
 #include <fstream>
+#include <vector>
 
 namespace PlatformUtils {
 	std::string documentsPath();
 	std::string libraryPath();
 	bool createLibraryPath();
 	std::string info();
+	void resetArgvToUtf8( int argc, char ** &argv, std::vector<std::string> &storage);
+	FILE *fopen( const char *path, const char *mode );
 }
 
-#if defined( __MINGW32__ ) || defined( __MINGW64__ )
-#define __MINGW_FSTREAM__
-namespace PlatformUtils {
-	std::string utf16_to_utf8( const std::wstring &w );
-	std::wstring utf8_to_utf16( const std::string &s );
-}
+
+#if defined (__MINGW32__) || defined (__MINGW64__)
+#define __PLATFORM_MINGW__
+#endif
+#if defined (__PLATFORM_MINGW__) || defined (_MSC_VER)
+#define __PLATFORM_WIN__
+#endif
+
+
+// MingW ifstream/ofstream -> see ../doc/windows_issues.txt
+#ifdef __PLATFORM_MINGW__
 #include "../patches/mingstream"
 namespace PlatformUtils {
-	typedef imingstream ifstream;
 	typedef omingstream ofstream;
+	typedef imingstream ifstream;
 }
-#else //mingw
+#else
 namespace PlatformUtils {
-	typedef std::ifstream ifstream;
 	typedef std::ofstream ofstream;
+	typedef std::ifstream ifstream;
 }
-#endif //mingw
+#endif // Mingw ifstream/ofstream
+
 
 #endif // PLATFORMUTILS_H_

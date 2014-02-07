@@ -9,6 +9,11 @@
  The .com version is a 'wrapper' for the .exe version. If you call
  'openscad' with no extension from a script or shell, the .com version
  is prioritized by the OS and feeds the GUI stdout to the console.
+ We keep it in 'pure c' to minimize binary size on the cross-compile.
+
+ Note the .com file is not a 'real' .com file. It is just an .exe
+ that has been renamed to a .com during the Windows(TM) OpenSCAD package build.
+
  See Also:
 
  http://stackoverflow.com/questions/493536/can-one-executable-be-both-a-console-and-gui-app
@@ -22,8 +27,23 @@
  ImageMagick's utilities, like convert.cc
  http://www.i18nguy.com/unicode/c-unicode.html
 
- TODO:
- Convert to plain C to save binary file size.
+A few other notes:
+
+We throw out argc/argv and pull the commandline using special Win(TM) functions.
+We then strip out the 'openscad' program name, but leave the rest of the
+commandline in tact in a tail. Then we call 'openscad.exe' with the tail
+attached to it.
+
+lstrcatW is vulnerable to stack smashing attacks, but we use a buffer longer
+than the longest possible Windows(TM) command line to prevent an overflow.
+
+stderr is not used. This is a difference here from Unix(TM)/Mac(TM)...
+here we put everything to stdout. It makes the code a great, great deal
+simpler.
+
+TODO:
+
+Fix printing of unicode on console.
 */
 
 #include <stdio.h>
@@ -47,34 +67,16 @@ int main( int argc, char * argv[] )
 	lstrcatW(wcmd,L"\0");
 	lstrcatW(wcmd,L"openscad.exe ");
 	if (wargc>1) {
-		marker = StrStrW(wcmdline, wargv[1]);
+		marker = StrStrW(wcmdline, wargv[1]); // string search
 		if (marker!=NULL) {
 			lstrcatW(wcmd, marker);
 		} else {
 			wprintf(L"Error can't find 2nd arg %s\n",wargv[1]);
 			wprintf(L"...in cmdline %s",wcmdline);
-			return 0;
+			return 1;
 		}
 	}
-	//(void) wargv;
-	//(void) wargc;
-	//int usequotes = 0;
-	//int i,j;
-/*	lstrcatW( wcmd, L"\0" );
-	lstrcatW( wcmd, L"openscad.exe" );
-	for ( i = 1 ; i < wargc ; ++i ) {
-		lstrcatW( wcmd, L" " );
-		for ( j = 0 ; wargv[i][j]!=L'\0'; j++ ) {
-			if (wargv[i][j]==L' ') usequotes = 1 ;
-		}
-		if (usequotes) lstrcatW( wcmd, L"\"" );
-		lstrcatW( wcmd, wargv[i] );
-		if (usequotes) lstrcatW( wcmd, L"\"" );
-		usequotes = 0;
-	}
-	lstrcatW( wcmd, L" ");
-	lstrcatW( wcmd, L" 2>&1"); // capture stderr and stdout
-	*/
+	lstrcatW( wcmd, L" 2>&1"); // 2>&1 --> capture stderr and stdout
 
 	FILE *cmd_stdout;
 	wchar_t buffer[BUFFSIZE];
@@ -88,7 +90,7 @@ int main( int argc, char * argv[] )
 	//cmd_stdout = _wpopen( wcmd, L"rb" );
 	if ( cmd_stdout == NULL ) {
 		wprintf( L"Error opening _wpopen for command: %s\n", wcmd );
-		//_wperror( L"Error message:" );
+		_wperror( L"Error message:" );
 		return 1;
 	}
 
@@ -99,6 +101,7 @@ int main( int argc, char * argv[] )
 			if ( ferror( cmd_stdout ) ) {
 				wprintf(L"Error reading from stdout of %s\n", wcmd);
 				result = 1;
+				eof = 1;
 			}
 			if ( feof( cmd_stdout ) ) {
 				eof = 1;
@@ -110,7 +113,7 @@ int main( int argc, char * argv[] )
 
 	pclose_result = _pclose( cmd_stdout );
 	if ( pclose_result < 0 ) {
-		_wperror(L"Error while closing stdout for command.");
+		_wperror(L"Error while closing stdout:");
 		result = 1;
 	}
 

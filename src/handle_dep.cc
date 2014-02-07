@@ -8,6 +8,8 @@
 #include <boost/filesystem.hpp>
 namespace fs = boost::filesystem;
 #include "boosty.h"
+#include "printutils.h"
+#include "PlatformUtils.h"
 
 boost::unordered_set<std::string> dependencies;
 const char *make_command = NULL;
@@ -24,13 +26,34 @@ void handle_dep(const std::string &filename)
 	if (!fs::exists(filepath) && make_command) {
 		std::stringstream buf;
 		buf << make_command << " '" << boost::regex_replace(filename, boost::regex("'"), "'\\''") << "'";
-		system(buf.str().c_str()); // FIXME: Handle error
+		int status = system(buf.str().c_str());
+		//PRINTDB("handle_dep system() status: %i",status);
+		if (status==-1) {
+			PRINTB("ERROR: handle_dep failed for %s",filename);
+			PRINTB("ERROR: make_command was: %s",make_command);
+		} // FIXME - handle error better
 	}
 }
 
+/* write dependencies for the given filename (stored in a global 
+variable) to the given output file. return false on failure, true on 
+success. */
 bool write_deps(const std::string &filename, const std::string &output_file)
 {
-	FILE *fp = fopen(filename.c_str(), "wt");
+	// TESTME - does it work on Windows to write non-binary file mode?
+	// TESTME - does it work on Mac/Unix to write binary file mode?
+	PlatformUtils::ofstream ofs( filename.c_str() );
+	if (!ofs.good()) {
+		fprintf(stderr, "Can't open dependencies file `%s' for writing!\n", filename.c_str());
+		return false;
+	}
+	ofs << output_file;
+	BOOST_FOREACH(const std::string &str, dependencies) {
+		ofs << " \\\n\t" << str;
+	}
+	ofs << "\n";
+	ofs.close();
+/*	FILE *fp = fopen(filename.c_str(), "wt");
 	if (!fp) {
 		fprintf(stderr, "Can't open dependencies file `%s' for writing!\n", filename.c_str());
 		return false;
@@ -42,5 +65,6 @@ bool write_deps(const std::string &filename, const std::string &output_file)
 	}
 	fprintf(fp, "\n");
 	fclose(fp);
+*/
 	return true;
 }
