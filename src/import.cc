@@ -283,7 +283,7 @@ Geometry *ImportNode::createGeometry() const
 		g = p;
 #ifdef ENABLE_CGAL
 		CGAL_Polyhedron poly;
-		std::ifstream file(this->filename.c_str(), std::ios::in | std::ios::binary);
+		PlatformUtils::ifstream file(this->filename.c_str());
 		if (!file.good()) {
 			PRINTB("WARNING: Can't open import file '%s'.", this->filename);
 		}

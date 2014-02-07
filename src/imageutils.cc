@@ -2,6 +2,7 @@
 #include <assert.h>
 #include <string.h>
 #include <fstream>
+#include "PlatformUtils.h"
 
 void flip_image(const unsigned char *src, unsigned char *dst, size_t pixelsize, size_t width, size_t height)
 {
@@ -14,7 +15,7 @@ void flip_image(const unsigned char *src, unsigned char *dst, size_t pixelsize, 
 
 bool write_png(const char *filename, unsigned char *pixels, int width, int height) {
   assert( filename && pixels );
-  std::ofstream fstream( filename, std::ios::binary );
+  PlatformUtils::ofstream fstream( filename );
   if (fstream.is_open()) {
     write_png( fstream, pixels, width, height );
     fstream.close();

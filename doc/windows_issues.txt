@@ -3,11 +3,12 @@ programmers and users.
 
 Summary:
 
-  -Windows filenames & cmdline args are UTF16, which causes problems
+  -Windows filenames & cmdline args are UTF16, in conflict with assumptions
+   about Mac(TM) and Unix(TM) which generally assume everything is UTF8.
   -All file i/o must go through PlatformUtils:: wrappers
-  -std::fstream is limited in capability by our wrappers
+  -std::ifstream & std::ofstream are limited in capability by our wrappers
   -openscad.com is the command line wrapper for openscad.exe, the gui
-  
+
 00. Encoding of Unicode
 
 As you may know, Unicode can be encoded in many different ways.
@@ -16,6 +17,9 @@ one or more 8-bit bytes. Windows(TM) uses UTF16 (or UCS16 for very old
 versions). This means that the Windows Command Line Options and the 
 Windows Filesystem will present UTF16 encoded data to the program, as 
 well as requiring UTF16 data from the program when performing certain tasks. 
+Therefore, some code that works on Unix/Mac won't operate as expected 
+on Windows.
+
 Unix/Mac typically use 'char' as the basic data type, and assume it is
 an 8bit unsigned integer. Windows typically uses wchar_t instead, and
 it's API functions are written with wchar_t in mind. 

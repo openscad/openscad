@@ -25,7 +25,6 @@
  */
 
 #include "value.h"
-#include "printutils.h"
 #include <stdio.h>
 #include <math.h>
 #include <assert.h>
@@ -36,6 +35,7 @@
 #include <boost/format.hpp>
 #include "boost-utils.h"
 #include "boosty.h"
+#include "PlatformUtils.h"
 /*Unicode support for string lengths and array accesses*/
 #include <glib.h>
 
@@ -190,24 +190,7 @@ public:
       return "0"; // Don't return -0 (exactly -0 and 0 equal 0)
     }
 #ifdef OPENSCAD_TESTING
-    // Quick and dirty hack to work around floating point rounding differences
-    // across platforms for testing purposes.
-    std::stringstream tmp;
-    tmp.precision(12);
-    tmp.setf(std::ios_base::fixed);
-    tmp << op1;
-    std::string tmpstr = tmp.str();
-    size_t endpos = tmpstr.find_last_not_of('0');
-    if (endpos >= 0 && tmpstr[endpos] == '.') endpos--;
-    tmpstr = tmpstr.substr(0, endpos+1);
-    size_t dotpos = tmpstr.find('.');
-    if (dotpos != std::string::npos) {
-      if (tmpstr.size() - dotpos > 12) tmpstr.erase(dotpos + 12);
-      while (tmpstr[tmpstr.size()-1] == '0') tmpstr.erase(tmpstr.size()-1);
-    }
-    if ( tmpstr.compare("-0") == 0 ) tmpstr = "0";
-    tmpstr = two_digit_exp_format( tmpstr );
-    return tmpstr;
+    return PlatformUtils::formatDouble( op1 );
 #else
     // attempt to emulate Qt's QString.sprintf("%g"); from old OpenSCAD.
     // see https://github.com/openscad/openscad/issues/158

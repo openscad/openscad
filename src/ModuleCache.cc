@@ -2,6 +2,7 @@
 #include "module.h"
 #include "printutils.h"
 #include "openscad.h"
+#include "PlatformUtils.h"
 
 #include "boosty.h"
 #include <boost/format.hpp>
@@ -76,7 +77,7 @@ FileModule *ModuleCache::evaluate(const std::string &filename)
 
 		std::stringstream textbuf;
 		{
-			std::ifstream ifs(filename.c_str());
+			PlatformUtils::ifstream ifs(filename.c_str());
 			if (!ifs.is_open()) {
 				PRINTB("WARNING: Can't open library file '%s'\n", filename);
 				return NULL;

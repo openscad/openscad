@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <ostream>
+#include "PlatformUtils.h"
 
 void bind_offscreen_context(OffscreenContext *ctx)
 {
@@ -14,7 +15,7 @@ void bind_offscreen_context(OffscreenContext *ctx)
  */
 bool save_framebuffer(OffscreenContext *ctx, const char *filename)
 {
-	std::ofstream fstream(filename,std::ios::out|std::ios::binary);
+	PlatformUtils::ofstream fstream(filename);
 	if (!fstream.is_open()) {
 		std::cerr << "Can't open file " << filename << " for writing";
 		return false;

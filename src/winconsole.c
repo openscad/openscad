@@ -65,13 +65,24 @@ int main( int argc, char * argv[] )
 	wchar_t ** wargv = CommandLineToArgvW( wcmdline, &wargc );
 	wchar_t wcmd[MAXCMDLEN*4];
 	lstrcatW(wcmd,L"\0");
-	lstrcatW(wcmd,L"openscad.exe ");
+	lstrcatW(wcmd,L"openscad.exe");
 	if (wargc>1) {
-		marker = StrStrW(wcmdline, wargv[1]); // string search
+		// string search for position of first argument
+		marker = StrStrW(wcmdline, wargv[1]);
 		if (marker!=NULL) {
+			// find 'space' before first argument. i.e.
+			// for openscad.exe ""C:\program files\blah" find the
+			// index to the space between .exe and "
+			while ((*marker)!=L' ') {
+				marker--;
+				if (marker==wcmdline) {
+					wprintf(L"Error: can't find ' ' (space) before first (argv[1]) argument. %s\n",wcmdline);
+					return 1;
+				}
+			}
 			lstrcatW(wcmd, marker);
 		} else {
-			wprintf(L"Error can't find 2nd arg %s\n",wargv[1]);
+			wprintf(L"Error: can't find 2nd arg %s\n",wargv[1]);
 			wprintf(L"...in cmdline %s",wcmdline);
 			return 1;
 		}

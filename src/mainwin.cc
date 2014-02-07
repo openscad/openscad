@@ -1455,7 +1455,7 @@ void MainWindow::actionExportSTLorOFF(bool)
 		return;
 	}
 
-	std::ofstream fstream(stl_filename.toUtf8());
+	PlatformUtils::ofstream fstream(stl_filename.toUtf8());
 	if (!fstream.is_open()) {
 		PRINTB("Can't open file \"%s\" for export", stl_filename.toLocal8Bit().constData());
 	}
@@ -1508,7 +1508,7 @@ void MainWindow::actionExportDXF()
 		return;
 	}
 
-	std::ofstream fstream(dxf_filename.toUtf8());
+	PlatformUtils::ofstream fstream(dxf_filename.toUtf8());
 	if (!fstream.is_open()) {
 		PRINTB("Can't open file \"%s\" for export", dxf_filename.toLocal8Bit().constData());
 	}
@@ -1541,7 +1541,7 @@ void MainWindow::actionExportCSG()
 		return;
 	}
 
-	std::ofstream fstream(csg_filename.toUtf8());
+	PlatformUtils::ofstream fstream(csg_filename.toUtf8());
 	if (!fstream.is_open()) {
 		PRINTB("Can't open file \"%s\" for export", csg_filename.toLocal8Bit().constData());
 	}

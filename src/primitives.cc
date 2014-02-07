@@ -618,17 +618,17 @@ std::string PrimitiveNode::toString() const
 
 	switch (this->type) {
 	case CUBE:
-		stream << "(size = [" << this->x << ", " << this->y << ", " << this->z << "], "
+		stream << "(size = [" << Value(this->x) << ", " << Value(this->y) << ", " << Value(this->z) << "], "
 					 <<	"center = " << (center ? "true" : "false") << ")";
 		break;
 	case SPHERE:
 		stream << "($fn = " << this->fn << ", $fa = " << this->fa
-					 << ", $fs = " << this->fs << ", r = " << this->r1 << ")";
+					 << ", $fs = " << this->fs << ", r = " << Value(this->r1) << ")";
 			break;
 	case CYLINDER:
 		stream << "($fn = " << this->fn << ", $fa = " << this->fa
-					 << ", $fs = " << this->fs << ", h = " << this->h << ", r1 = " << this->r1
-					 << ", r2 = " << this->r2 << ", center = " << (center ? "true" : "false") << ")";
+					 << ", $fs = " << this->fs << ", h = " << Value(this->h) << ", r1 = " << Value(this->r1)
+					 << ", r2 = " << Value(this->r2) << ", center = " << (center ? "true" : "false") << ")";
 			break;
 	case POLYHEDRON:
 		stream << "(points = " << this->points
@@ -636,12 +636,12 @@ std::string PrimitiveNode::toString() const
 					 << ", convexity = " << this->convexity << ")";
 			break;
 	case SQUARE:
-		stream << "(size = [" << this->x << ", " << this->y << "], "
+		stream << "(size = [" << Value(this->x) << ", " << Value(this->y) << "], "
 					 << "center = " << (center ? "true" : "false") << ")";
 			break;
 	case CIRCLE:
 		stream << "($fn = " << this->fn << ", $fa = " << this->fa
-					 << ", $fs = " << this->fs << ", r = " << this->r1 << ")";
+					 << ", $fs = " << this->fs << ", r = " << Value(this->r1) << ")";
 		break;
 	case POLYGON:
 		stream << "(points = " << this->points << ", paths = " << this->paths << ", convexity = " << this->convexity << ")";

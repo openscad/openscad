@@ -44,6 +44,7 @@
 #include "value.h"
 #include "boost-utils.h"
 #include "boosty.h"
+#include "PlatformUtils.h"
 #include "Polygon2d.h"
 
 /*! \class DxfData
@@ -79,7 +80,7 @@ DxfData::DxfData(double fn, double fs, double fa,
 {
 	handle_dep(filename); // Register ourselves as a dependency
 
-	std::ifstream stream(filename.c_str());
+	PlatformUtils::ifstream stream(filename.c_str());
 	if (!stream.good()) {
 		PRINTB("WARNING: Can't open DXF file '%s'.", filename);
 		return;

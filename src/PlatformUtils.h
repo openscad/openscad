@@ -12,6 +12,7 @@ namespace PlatformUtils {
 	std::string info();
 	void resetArgvToUtf8( int argc, char ** &argv, std::vector<std::string> &argstorage);
 	FILE *fopen( const char *utf8path, const char *mode );
+	std::string formatDouble( const double &x );
 }
 
 

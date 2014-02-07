@@ -33,6 +33,7 @@
 #include "fileutils.h"
 #include "handle_dep.h" // handle_dep()
 #include "visitor.h"
+#include "PlatformUtils.h"
 
 #include <sstream>
 #include <fstream>
@@ -101,7 +102,7 @@ AbstractNode *SurfaceModule::instantiate(const Context *ctx, const ModuleInstant
 Geometry *SurfaceNode::createGeometry() const
 {
 	handle_dep(filename);
-	std::ifstream stream(filename.c_str());
+	PlatformUtils::ifstream stream(filename.c_str());
 
 	if (!stream.good()) {
 		PRINTB("WARNING: Can't open DAT file '%s'.", filename);
