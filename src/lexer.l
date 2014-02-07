@@ -38,6 +38,7 @@
 #include <boost/filesystem.hpp>
 namespace fs = boost::filesystem;
 #include "boosty.h"
+#include "PlatformUtils.h"
 
 //isatty for visual c++ and mingw-cross-env
 #if defined __WIN32__ && ! defined _MSC_VER
@@ -217,7 +218,7 @@ void includefile()
 
   handle_dep(fullname);
 
-  yyin = fopen(fullname.c_str(), "r");
+  yyin = PlatformUtils::fopen(fullname.c_str(), "r");
   if (!yyin) {
     PRINTB("WARNING: Can't open include file '%s'.", boosty::stringy(localpath));
     path_stack.pop_back();

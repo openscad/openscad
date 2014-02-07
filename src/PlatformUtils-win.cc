@@ -21,7 +21,7 @@ std::string winapi_wstring_to_utf8( const std::wstring &wstr )
 	int numbytes = WideCharToMultiByte( CodePage, dwFlags, lpWideCharStr,
 	  cchWideChar, lpMultiByteStr, cbMultiByte, lpDefaultChar, lpUsedDefaultChar );
 
-	//PRINTB("utf16 to utf8 conversion: numbytes %i",numbytes);
+	//PRINTDB("utf16 to utf8 conversion: numbytes %i",numbytes);
 
 	std::string utf8_str(numbytes,0);
 	lpMultiByteStr = &utf8_str[0];
@@ -51,7 +51,7 @@ std::wstring utf8_to_winapi_wstring( const std::string &utf8str )
 	int numchars = MultiByteToWideChar( CodePage, dwFlags, lpMultiByteStr,
 	  cbMultiByte, lpWideCharStr, cchWideChar );
 
-	PRINTB("utf8 to utf16 conversion: numchars %i",numchars);
+	//PRINTDB("utf8 to utf16 conversion: numchars %i",numchars);
 
 	std::wstring wstr(numchars,0);
 	lpWideCharStr = &wstr[0];
@@ -90,7 +90,7 @@ std::string PlatformUtils::documentsPath()
 		path = std::wstring( path.c_str() ); // stip extra NULLs
 		//std::wcerr << "wchar path:" << "\n";
 		retval = winapi_wstring_to_utf8( path );
-		//PRINTB("Path found: %s",retval);
+		//PRINTDB("Path found: %s",retval);
 	} else {
 		PRINT("ERROR: Could not find My Documents location");
 		retval = "";
@@ -98,10 +98,10 @@ std::string PlatformUtils::documentsPath()
 	return retval;
 }
 
-// alter argv so it points to utf8-encoded versions of command line arguments.
-// 'storage' provides a place to store the newly encoded argument strings.
-// argc is ignored for windows(TM). see doc/windows_issues.txt for more info
-void resetArgvToUtf8( int argc, char ** &argv, std::vector<std::string> &storage )
+/* alter argv so it points to utf8-encoded versions of command line arguments.
+   'storage' provides a place to store the newly encoded argument strings.
+   argc is ignored for windows(TM). see doc/windows_issues.txt for more info */
+void PlatformUtils::resetArgvToUtf8( int argc, char ** &argv, std::vector<std::string> &storage )
 {
 	int wargc;
         wchar_t * wcmdline = GetCommandLineW();
@@ -118,12 +118,13 @@ void resetArgvToUtf8( int argc, char ** &argv, std::vector<std::string> &storage
         }
 }
 
-// allow fopen() to work with unicode filenames on windows(TM)
-FILE *fopen( const char *path, const char *mode )
+/* allow fopen() to work with unicode filenames on windows(TM)
+by transcoding to UTF16 and then using _wfopen() */
+FILE *PlatformUtils::fopen( const char *utf8path, const char *mode )
 {
 	std::wstring winpath;
 	std::wstring winmode;
-	winpath = utf8_to_winapi_wstring( std::string( path ) );
+	winpath = utf8_to_winapi_wstring( std::string( utf8path ) );
 	winmode = utf8_to_winapi_wstring( std::string( mode ) );
 	return _wfopen( winpath.c_str() , winmode.c_str() );
 }

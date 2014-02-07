@@ -10,8 +10,8 @@ namespace PlatformUtils {
 	std::string libraryPath();
 	bool createLibraryPath();
 	std::string info();
-	void resetArgvToUtf8( int argc, char ** &argv, std::vector<std::string> &storage);
-	FILE *fopen( const char *path, const char *mode );
+	void resetArgvToUtf8( int argc, char ** &argv, std::vector<std::string> &argstorage);
+	FILE *fopen( const char *utf8path, const char *mode );
 }
 
 
@@ -23,7 +23,7 @@ namespace PlatformUtils {
 #endif
 
 
-// MingW ifstream/ofstream -> see ../doc/windows_issues.txt
+// MingW ifstream/ofstream: see ../doc/windows_issues.txt & ../patches/minsgream
 #ifdef __PLATFORM_MINGW__
 #include "../patches/mingstream"
 namespace PlatformUtils {

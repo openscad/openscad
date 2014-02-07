@@ -16,6 +16,7 @@
 
  See Also:
 
+ ../doc/windows_issues.txt
  http://stackoverflow.com/questions/493536/can-one-executable-be-both-a-console-and-gui-app
  http://blogs.msdn.com/b/oldnewthing/archive/2009/01/01/9259142.aspx
  http://blogs.msdn.com/b/junfeng/archive/2004/02/06/68531.aspx
@@ -29,16 +30,16 @@
 
 A few other notes:
 
-We throw out argc/argv and pull the commandline using special Win(TM) functions.
-We then strip out the 'openscad' program name, but leave the rest of the
-commandline in tact in a tail. Then we call 'openscad.exe' with the tail
-attached to it.
+We throw out argc/argv and pull the w_char commandline using special
+Win(TM) functions. We then strip out the 'openscad' program name, but
+leave the rest of the commandline in tact in a tail. Then we call
+'openscad.exe' with the tail attached to it.
 
 lstrcatW is vulnerable to stack smashing attacks, but we use a buffer longer
 than the longest possible Windows(TM) command line to prevent an overflow.
 
 stderr is not used. This is a difference here from Unix(TM)/Mac(TM)...
-here we put everything to stdout. It makes the code a great, great deal
+here we put everything to stdout using "2>&1". It makes the code a great deal
 simpler.
 
 TODO:
@@ -63,7 +64,6 @@ int main( int argc, char * argv[] )
 	wchar_t * wcmdline = GetCommandLineW();
 	wchar_t ** wargv = CommandLineToArgvW( wcmdline, &wargc );
 	wchar_t wcmd[MAXCMDLEN*4];
-
 	lstrcatW(wcmd,L"\0");
 	lstrcatW(wcmd,L"openscad.exe ");
 	if (wargc>1) {

@@ -42,17 +42,18 @@ std::string PlatformUtils::libraryPath()
 }
 
 #ifndef __PLATFORM_WIN__
-void resetArgvToUtf8( int argc, char ** &argv )
+void PlatformUtils::resetArgvToUtf8( int argc, char ** &argv, std::vector<std::string> &argstorage )
 {
 	// do nothing
 	(void) argc;
 	(void) argv;
+	(void) argstorage;
 	return;
 }
 
-FILE *fopen( const char *path, const char *mode )
+FILE *PlatformUtils::fopen( const char *utf8path, const char *mode )
 {
-	return fopen( path, mode );
+	return std::fopen( utf8path, mode );
 }
 #endif
 

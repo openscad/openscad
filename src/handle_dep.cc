@@ -42,7 +42,7 @@ bool write_deps(const std::string &filename, const std::string &output_file)
 {
 	// TESTME - does it work on Windows to write non-binary file mode?
 	// TESTME - does it work on Mac/Unix to write binary file mode?
-	PlatformUtils::ofstream ofs( filename.c_str() );
+/*	PlatformUtils::ofstream ofs( filename.c_str() );
 	if (!ofs.good()) {
 		fprintf(stderr, "Can't open dependencies file `%s' for writing!\n", filename.c_str());
 		return false;
@@ -52,8 +52,8 @@ bool write_deps(const std::string &filename, const std::string &output_file)
 		ofs << " \\\n\t" << str;
 	}
 	ofs << "\n";
-	ofs.close();
-/*	FILE *fp = fopen(filename.c_str(), "wt");
+	ofs.close();*/
+	FILE *fp = fopen(filename.c_str(), "wt");
 	if (!fp) {
 		fprintf(stderr, "Can't open dependencies file `%s' for writing!\n", filename.c_str());
 		return false;
@@ -65,6 +65,5 @@ bool write_deps(const std::string &filename, const std::string &output_file)
 	}
 	fprintf(fp, "\n");
 	fclose(fp);
-*/
 	return true;
 }
