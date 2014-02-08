@@ -11,8 +11,15 @@ typedef __int64 int64_t;
 #include <boost/unordered_map.hpp>
 #include <utility>
 
-const double GRID_COARSE = 0.001;
-const double GRID_FINE   = 0.000001;
+//const double GRID_COARSE = 0.001;
+//const double GRID_FINE   = 0.000001;
+/* Using decimals that are exactly convertible to binary floating point 
+(and then converted exactly to a GMPQ Rational that uses a small amount 
+of bytes aka "limbs" in CGAL's engine) provides at least a 5% speedup 
+for ctest -R CGAL. We choose 1/1024 and 1/(1024*1024) In python: print 
+'%.64f' % float(fractions.Fraction(1,1024)) */
+const double GRID_COARSE = 0.0009765625;
+const double GRID_FINE   = 0.00000095367431640625;
 
 template <typename T>
 class Grid2d

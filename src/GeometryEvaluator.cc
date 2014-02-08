@@ -90,37 +90,24 @@ GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren(const Abstrac
 */
 GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren3D(const AbstractNode &node, OpenSCADOperator op)
 {
-	if (op == OPENSCAD_HULL) {
-		return ResultObject(applyHull3D(node));
-	}
-
 	Geometry::ChildList children = collectChildren3D(node);
-
 	if (children.size() == 0) return ResultObject();
+
+	if (op == OPENSCAD_HULL) {
+		CGAL_Polyhedron P;
+		if (CGALUtils::applyHull(children, P)) {
+			return ResultObject(new CGAL_Nef_polyhedron(new CGAL_Nef_polyhedron3(P)));
+		}
+		else {
+			return ResultObject();
+		}
+	}
+	
 	// Only one child -> this is a noop
 	if (children.size() == 1) return ResultObject(children.front().second);
 
-	CGAL_Nef_polyhedron *N = NULL;
-	BOOST_FOREACH(const Geometry::ChildItem &item, children) {
-		const shared_ptr<const Geometry> &chgeom = item.second;
-		shared_ptr<const CGAL_Nef_polyhedron> chN;
-		if (!chgeom) {
-			chN.reset(new CGAL_Nef_polyhedron); // Create null polyhedron
-		}
-		else {
-			chN = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(chgeom);
-			if (!chN) {
-				const PolySet *chps = dynamic_cast<const PolySet*>(chgeom.get());
-				if (chps) chN.reset(createNefPolyhedronFromGeometry(*chps));
-			}
-		}
-
-		if (N) CGALUtils::applyBinaryOperator(*N, *chN, op);
-		// Initialize N on first iteration with first expected geometric object
-		else if (chN) N = chN->copy();
-
-		item.first->progress_report();
-	}
+	CGAL_Nef_polyhedron *N = new CGAL_Nef_polyhedron;
+	CGALUtils::applyOperator(children, *N, op);
 	return ResultObject(N);
 }
 
@@ -436,7 +423,7 @@ Response GeometryEvaluator::visit(State &state, const RenderNode &node)
 			else if (shared_ptr<const CGAL_Nef_polyhedron> N = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom)) {
 				// If we got a const object, make a copy
 				shared_ptr<CGAL_Nef_polyhedron> newN;
-				if (res.isConst()) newN.reset(new CGAL_Nef_polyhedron(*N));
+				if (res.isConst()) newN.reset(N->copy());
 				else newN = dynamic_pointer_cast<CGAL_Nef_polyhedron>(res.ptr());
 				newN->setConvexity(node.convexity);
 				geom = newN;
@@ -552,7 +539,7 @@ Response GeometryEvaluator::visit(State &state, const TransformNode &node)
 							assert(N);
 							// If we got a const object, make a copy
 							shared_ptr<CGAL_Nef_polyhedron> newN;
-							if (res.isConst()) newN.reset(new CGAL_Nef_polyhedron(*N));
+							if (res.isConst()) newN.reset(N->copy());
 							else newN = dynamic_pointer_cast<CGAL_Nef_polyhedron>(res.ptr());
 							newN->transform(node.matrix);
 							geom = newN;
@@ -969,7 +956,7 @@ Response GeometryEvaluator::visit(State &state, const CgaladvNode &node)
 				if (N) {
 					// If we got a const object, make a copy
 					shared_ptr<CGAL_Nef_polyhedron> newN;
-					if (res.isConst()) newN.reset(new CGAL_Nef_polyhedron(*N));
+					if (res.isConst()) newN.reset(N->copy());
 					else newN = dynamic_pointer_cast<CGAL_Nef_polyhedron>(res.ptr());
 					applyResize3D(*newN, node.newsize, node.autosize);
 					geom = newN;

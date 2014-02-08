@@ -7,6 +7,7 @@ This class is inherited by:
 
 *QGLview - for Qt GUI
 *OffscreenView - for offscreen rendering, in tests and from command-line
+(This class is also overridden by NULLGL.cc for special experiments)
 
 The view assumes either a Gimbal Camera (rotation,translation,distance)
 or Vector Camera (eye,center/target) is being used. See Camera.h. The
@@ -54,6 +55,7 @@ public:
 
 	virtual bool save(const char *filename) = 0;
 	virtual std::string getRendererInfo() const = 0;
+	virtual float getDPI() { return 1.0f; }
 
 	Renderer *renderer;
 	Camera cam;

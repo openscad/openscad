@@ -210,6 +210,7 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this->e_fps, SIGNAL(textChanged(QString)), this, SLOT(updatedFps()));
 
 	animate_panel->hide();
+	find_panel->hide();
 
 	// Application menu
 #ifdef DEBUG
@@ -282,6 +283,12 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this->editActionZoomOut, SIGNAL(triggered()), editor, SLOT(zoomOut()));
 	connect(this->editActionHide, SIGNAL(triggered()), this, SLOT(hideEditor()));
 	connect(this->editActionPreferences, SIGNAL(triggered()), this, SLOT(preferences()));
+	// Edit->Find
+	connect(this->editActionFind, SIGNAL(triggered()), this, SLOT(find()));
+	connect(this->editActionFindAndReplace, SIGNAL(triggered()), this, SLOT(findAndReplace()));
+	connect(this->editActionFindNext, SIGNAL(triggered()), this, SLOT(findNext()));
+	connect(this->editActionFindPrevious, SIGNAL(triggered()), this, SLOT(findPrev()));
+	connect(this->editActionUseSelectionForFind, SIGNAL(triggered()), this, SLOT(useSelectionForFind()));
 
 	// Design menu
 	connect(this->designActionAutoReload, SIGNAL(toggled(bool)), this, SLOT(autoReloadSet(bool)));
@@ -292,6 +299,7 @@ MainWindow::MainWindow(const QString &filename)
 #else
 	this->designActionRender->setVisible(false);
 #endif
+	connect(this->designCheckValidity, SIGNAL(triggered()), this, SLOT(actionCheckValidity()));
 	connect(this->designActionDisplayAST, SIGNAL(triggered()), this, SLOT(actionDisplayAST()));
 	connect(this->designActionDisplayCSGTree, SIGNAL(triggered()), this, SLOT(actionDisplayCSGTree()));
 	connect(this->designActionDisplayCSGProducts, SIGNAL(triggered()), this, SLOT(actionDisplayCSGProducts()));
@@ -370,6 +378,17 @@ MainWindow::MainWindow(const QString &filename)
 	connect(Preferences::inst(), SIGNAL(syntaxHighlightChanged(const QString&)), 
 					this, SLOT(setSyntaxHighlight(const QString&)));
 	Preferences::inst()->apply();
+
+	connect(this->findTypeComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(selectFindType(int)));
+	connect(this->findInputField, SIGNAL(returnPressed()), this->nextButton, SLOT(animateClick()));
+	find_panel->installEventFilter(this);
+
+	connect(this->prevButton, SIGNAL(clicked()), this, SLOT(findPrev()));
+	connect(this->nextButton, SIGNAL(clicked()), this, SLOT(findNext()));
+	connect(this->hideFindButton, SIGNAL(clicked()), find_panel, SLOT(hide()));
+	connect(this->replaceButton, SIGNAL(clicked()), this, SLOT(replace()));
+	connect(this->replaceAllButton, SIGNAL(clicked()), this, SLOT(replaceAll()));
+	connect(this->replaceInputField, SIGNAL(returnPressed()), this->replaceButton, SLOT(animateClick()));
 
 	// make sure it looks nice..
 	QSettings settings;
@@ -901,8 +920,15 @@ void MainWindow::actionNew()
 
 void MainWindow::actionOpen()
 {
-	QString new_filename = QFileDialog::getOpenFileName(this, "Open File", "",
-																											"OpenSCAD Designs (*.scad *.csg)");
+	QSettings settings;
+	QString last_dirname = settings.value("lastOpenDirName").toString();
+	QString new_filename = QFileDialog::getOpenFileName(this, "Open File",
+	  last_dirname, "OpenSCAD Designs (*.scad *.csg)");
+	if (new_filename!="") {
+		QDir last_dir = QFileInfo( new_filename ).dir();
+		last_dirname = last_dir.path();
+		settings.setValue("lastOpenDirName", last_dirname);
+	}
 #ifdef ENABLE_MDI
 	if (!new_filename.isEmpty()) {
 		new MainWindow(new_filename);
@@ -1086,6 +1112,102 @@ void MainWindow::pasteViewportRotation()
 	txt.sprintf("[ %.2f, %.2f, %.2f ]",
 		fmodf(360 - qglview->cam.object_rot.x() + 90, 360), fmodf(360 - qglview->cam.object_rot.y(), 360), fmodf(360 - qglview->cam.object_rot.z(), 360));
 	cursor.insertText(txt);
+}
+
+void MainWindow::find()
+{
+	findTypeComboBox->setCurrentIndex(0);
+	replaceInputField->hide();
+	replaceButton->hide();
+	replaceAllButton->hide();
+	find_panel->show();
+	findInputField->setFocus();
+	findInputField->selectAll();
+}
+
+void MainWindow::findAndReplace()
+{
+	findTypeComboBox->setCurrentIndex(1);
+	replaceInputField->show();
+	replaceButton->show();
+	replaceAllButton->show();
+	find_panel->show();
+	findInputField->setFocus();
+	findInputField->selectAll();
+}
+
+void MainWindow::selectFindType(int type) {
+	if (type == 0) find();
+	if (type == 1) findAndReplace();
+}
+
+bool MainWindow::findOperation(QTextDocument::FindFlags options) {
+	bool success = editor->find(findInputField->text(), options);
+	if (!success) { // Implement wrap-around search behavior
+		QTextCursor old_cursor = editor->textCursor();
+		QTextCursor tmp_cursor = old_cursor;
+		tmp_cursor.movePosition((options & QTextDocument::FindBackward) ? QTextCursor::End : QTextCursor::Start);
+		editor->setTextCursor(tmp_cursor);
+		bool success = editor->find(findInputField->text(), options);
+		if (!success) {
+			editor->setTextCursor(old_cursor);
+		}
+		return success;
+	}
+	return true;
+}
+
+void MainWindow::replace() {
+	QTextCursor cursor = editor->textCursor();
+	QString selectedText = cursor.selectedText();
+	if (selectedText == findInputField->text()) {
+		cursor.insertText(replaceInputField->text());
+	}
+	findNext();
+}
+
+void MainWindow::replaceAll() {
+	QTextCursor old_cursor = editor->textCursor();
+	QTextCursor tmp_cursor = old_cursor;
+	tmp_cursor.movePosition(QTextCursor::Start);
+	editor->setTextCursor(tmp_cursor);
+	while (editor->find(findInputField->text())) {
+		editor->textCursor().insertText(replaceInputField->text());
+	}
+	editor->setTextCursor(old_cursor);
+}
+
+void MainWindow::findNext()
+{
+	findOperation();
+}
+
+void MainWindow::findPrev()
+{
+	findOperation(QTextDocument::FindBackward);
+}
+
+void MainWindow::useSelectionForFind()
+{
+	findInputField->setText(editor->textCursor().selectedText());
+}
+
+bool MainWindow::eventFilter(QObject* obj, QEvent *event)
+{
+    if (obj == find_panel)
+    {
+        if (event->type() == QEvent::KeyPress)
+        {
+            QKeyEvent* keyEvent = static_cast<QKeyEvent*>(event);
+            if (keyEvent->key() == Qt::Key_Escape)
+            {
+				find_panel->hide();
+				return true;
+            }
+        }
+        return false;
+    }
+    return QMainWindow::eventFilter(obj, event);
 }
 
 void MainWindow::updateTemporalVariables()
@@ -1319,7 +1441,6 @@ void MainWindow::actionRenderDone(shared_ptr<const Geometry> root_geom)
 				if (N->getDimension() == 3) {
 					PRINT("   Top level object is a 3D object:");
 					PRINTB("   Simple:     %6s", (N->p3->is_simple() ? "yes" : "no"));
-					PRINTB("   Valid:      %6s", (N->p3->is_valid() ? "yes" : "no"));
 					PRINTB("   Vertices:   %6d", N->p3->number_of_vertices());
 					PRINTB("   Halfedges:  %6d", N->p3->number_of_halfedges());
 					PRINTB("   Edges:      %6d", N->p3->number_of_edges());
@@ -1412,6 +1533,33 @@ void MainWindow::actionDisplayCSGProducts()
 	e->show();
 	e->resize(600, 400);
 	clearCurrentOutput();
+}
+
+void MainWindow::actionCheckValidity() {
+	if (GuiLocker::isLocked()) return;
+	GuiLocker lock;
+#ifdef ENABLE_CGAL
+	setCurrentOutput();
+
+	if (!this->root_geom) {
+		PRINT("Nothing to validate! Try building first (press F6).");
+		clearCurrentOutput();
+		return;
+	}
+
+	if (this->root_geom->getDimension() != 3) {
+		PRINT("Current top level object is not a 3D object.");
+		clearCurrentOutput();
+		return;
+	}
+
+	bool valid = false;
+	if (const CGAL_Nef_polyhedron *N = dynamic_cast<const CGAL_Nef_polyhedron *>(this->root_geom.get()))
+		valid = N->p3->is_valid();
+
+	PRINTB("   Valid:      %6s", (valid ? "yes" : "no"));
+	clearCurrentOutput();
+#endif /* ENABLE_CGAL */
 }
 
 #ifdef ENABLE_CGAL

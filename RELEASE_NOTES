@@ -12,6 +12,7 @@ o FIXME: Experimental concat()
 Program Features:
 o Added --info parameter to the cmd-line for system/library info
 o Added --enable parameter to enable experimental features
+o Added --csglimit parameter to change CSG rendering limit
 o Added Reset View in GUI
 o Added Feature tab in Preferences 
 

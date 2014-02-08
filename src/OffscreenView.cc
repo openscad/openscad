@@ -1,4 +1,3 @@
-#include <GL/glew.h>
 #include "OffscreenView.h"
 #include "system-gl.h"
 #include <math.h>

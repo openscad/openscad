@@ -40,6 +40,9 @@ public:
 		else this->cam.projection = Camera::PERSPECTIVE;
 	}
 	std::string getRendererInfo() const;
+#if QT_VERSION >= 0x050000
+	float getDPI() { return this->devicePixelRatio(); }
+#endif
 	bool save(const char *filename);
         void resetView();
 

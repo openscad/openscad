@@ -15,7 +15,16 @@
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout_2">
-    <property name="margin">
+    <property name="leftMargin">
+     <number>0</number>
+    </property>
+    <property name="topMargin">
+     <number>0</number>
+    </property>
+    <property name="rightMargin">
+     <number>0</number>
+    </property>
+    <property name="bottomMargin">
      <number>0</number>
     </property>
     <item>
@@ -23,13 +32,127 @@
       <property name="orientation">
        <enum>Qt::Horizontal</enum>
       </property>
-      <widget class="Editor" name="editor" native="true">
-       <property name="font">
-        <font>
-         <family>Monaco</family>
-         <pointsize>8</pointsize>
-        </font>
-       </property>
+      <widget class="QWidget" name="editorlayoutwidget">
+       <layout class="QVBoxLayout" name="verticalLayout_2">
+        <property name="spacing">
+         <number>0</number>
+        </property>
+        <property name="topMargin">
+         <number>2</number>
+        </property>
+        <item>
+         <widget class="QFrame" name="find_panel">
+          <property name="enabled">
+           <bool>true</bool>
+          </property>
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="frameShape">
+           <enum>QFrame::NoFrame</enum>
+          </property>
+          <property name="frameShadow">
+           <enum>QFrame::Raised</enum>
+          </property>
+          <property name="lineWidth">
+           <number>0</number>
+          </property>
+          <layout class="QGridLayout" name="horizontalLayout">
+           <property name="leftMargin">
+            <number>5</number>
+           </property>
+           <property name="topMargin">
+            <number>0</number>
+           </property>
+           <property name="rightMargin">
+            <number>5</number>
+           </property>
+           <property name="bottomMargin">
+            <number>0</number>
+           </property>
+           <property name="verticalSpacing">
+            <number>0</number>
+           </property>
+           <item row="1" column="3" colspan="2">
+            <widget class="QPushButton" name="replaceButton">
+             <property name="text">
+              <string>Replace</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="5">
+            <widget class="QPushButton" name="replaceAllButton">
+             <property name="text">
+              <string>All</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="2">
+            <widget class="QLineEdit" name="findInputField">
+             <property name="placeholderText">
+              <string>Search string</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="2">
+            <widget class="QLineEdit" name="replaceInputField">
+             <property name="placeholderText">
+              <string>Replacement string</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="3">
+            <widget class="QPushButton" name="prevButton">
+             <property name="text">
+              <string>&lt;</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="4">
+            <widget class="QPushButton" name="nextButton">
+             <property name="text">
+              <string>&gt;</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="5">
+            <widget class="QPushButton" name="hideFindButton">
+             <property name="text">
+              <string>Done</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="1">
+            <widget class="QComboBox" name="findTypeComboBox">
+             <item>
+              <property name="text">
+               <string>Find</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>Replace</string>
+              </property>
+             </item>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item>
+         <widget class="Editor" name="editor" native="true">
+          <property name="font">
+           <font>
+            <family>Monaco</family>
+            <pointsize>8</pointsize>
+           </font>
+          </property>
+         </widget>
+        </item>
+       </layout>
       </widget>
       <widget class="QWidget" name="layoutWidget">
        <layout class="QVBoxLayout" name="verticalLayout">
@@ -61,7 +184,16 @@
            <number>0</number>
           </property>
           <layout class="QHBoxLayout" name="horizontalLayout">
-           <property name="margin">
+           <property name="leftMargin">
+            <number>0</number>
+           </property>
+           <property name="topMargin">
+            <number>0</number>
+           </property>
+           <property name="rightMargin">
+            <number>0</number>
+           </property>
+           <property name="bottomMargin">
             <number>0</number>
            </property>
            <item>
@@ -165,6 +297,12 @@
     <addaction name="editActionPasteVPT"/>
     <addaction name="editActionPasteVPR"/>
     <addaction name="separator"/>
+    <addaction name="editActionFind"/>
+    <addaction name="editActionFindAndReplace"/>
+    <addaction name="editActionFindNext"/>
+    <addaction name="editActionFindPrevious"/>
+    <addaction name="editActionUseSelectionForFind"/>
+    <addaction name="separator"/>
     <addaction name="editActionZoomIn"/>
     <addaction name="editActionZoomOut"/>
     <addaction name="editActionPreferences"/>
@@ -178,6 +316,7 @@
     <addaction name="designActionPreview"/>
     <addaction name="designActionRender"/>
     <addaction name="separator"/>
+	<addaction name="designCheckValidity"/>
     <addaction name="designActionDisplayAST"/>
     <addaction name="designActionDisplayCSGTree"/>
     <addaction name="designActionDisplayCSGProducts"/>
@@ -419,6 +558,11 @@
     <string>F6</string>
    </property>
   </action>
+  <action name="designCheckValidity">
+    <property name="text">
+      <string>Check Validity</string>
+    </property>
+  </action>
   <action name="designActionDisplayAST">
    <property name="text">
     <string>Display &amp;AST...</string>
@@ -651,6 +795,46 @@
   <action name="editActionPreferences">
    <property name="text">
     <string>Preferences</string>
+   </property>
+  </action>
+  <action name="editActionFind">
+   <property name="text">
+    <string>Find...</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+F</string>
+   </property>
+  </action>
+  <action name="editActionFindAndReplace">
+   <property name="text">
+    <string>Find and Replace...</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Alt+F</string>
+   </property>
+  </action>
+  <action name="editActionFindNext">
+   <property name="text">
+    <string>Find Next</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+G</string>
+   </property>
+  </action>
+  <action name="editActionFindPrevious">
+   <property name="text">
+    <string>Find Previous</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+G</string>
+   </property>
+  </action>
+  <action name="editActionUseSelectionForFind">
+   <property name="text">
+    <string>Use Selection for Find</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+E</string>
    </property>
   </action>
   <action name="designActionFlushCaches">

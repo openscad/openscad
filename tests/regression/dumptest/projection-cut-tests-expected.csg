@@ -30,4 +30,15 @@ group() {
 			}
 		}
 	}
+	multmatrix([[1, 0, 0, -15], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+		minkowski(convexity = 0) {
+			projection(cut = true, convexity = 0) {
+				difference() {
+					cube(size = [10, 10, 10], center = true);
+					cube(size = [5, 5, 20], center = true);
+				}
+			}
+			square(size = [1, 1], center = false);
+		}
+	}
 }

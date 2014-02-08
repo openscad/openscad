@@ -73,6 +73,17 @@ if(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/../libraries/MCAD/__init__.py)
   message(FATAL_ERROR "MCAD not found. You can install from the OpenSCAD root as follows: \n  git submodule update --init")
 endif()
 
+# NULLGL - Allow us to buidl without OpenGL(TM). run 'cmake .. -DNULLGL=1'
+# Most tests will fail, but it can be used for testing/experiments
+
+if(NULLGL)
+  set(ENABLE_OPENCSG_FLAG "") # OpenCSG is entirely an OpenGL software
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DNULLGL")
+  set(SKIP_IMAGEMAGICK "1") # we dont generate png, so nothing to compare
+else()
+  set(ENABLE_OPENCSG_FLAG "-DENABLE_OPENCSG")
+endif()
+
 #
 # Windows
 #
@@ -255,6 +266,10 @@ else()
   inclusion(EIGEN_DIR EIGEN_INCLUDE_DIR)
 endif()
 
+###### NULLGL wraps all OpenGL(TM) items (GL, Glew, OpenCSG)
+###### Several pages of code fall under this 'if( NOT NULLGL )'
+if (NOT NULLGL)
+
 # OpenGL
 find_package(OpenGL REQUIRED)
 if (NOT OPENGL_GLU_FOUND)
@@ -326,6 +341,8 @@ message(STATUS "GLEW include: " ${GLEW_INCLUDE_DIR})
 message(STATUS "GLEW library: " ${GLEW_LIBRARY})
 
 inclusion(GLEW_DIR GLEW_INCLUDE_DIR)
+
+endif() ########## NULLGL ENDIF
 
 # Flex/Bison
 find_package(BISON REQUIRED)
@@ -431,19 +448,19 @@ else()
   else()
     message(FATAL_ERROR "Couldn't find imagemagick 'convert' program")
   endif()
-endif()
 
-if ( "${ImageMagick_VERSION_STRING}" VERSION_LESS "6.5.9.4" )
-  message(STATUS "ImageMagick version less than 6.5.9.4, cannot use -morphology comparison")
-  message(STATUS "ImageMagick Using older image comparison method")
-  set(COMPARATOR "old")
-endif()
+  if ( "${ImageMagick_VERSION_STRING}" VERSION_LESS "6.5.9.4" )
+    message(STATUS "ImageMagick version less than 6.5.9.4, cannot use -morphology comparison")
+    message(STATUS "ImageMagick Using older image comparison method")
+    set(COMPARATOR "old")
+  endif()
 
-execute_process(COMMAND ${ImageMagick_convert_EXECUTABLE} --version OUTPUT_VARIABLE IM_OUT )
-if ( ${IM_OUT} MATCHES "OpenMP" )
-  # http://www.daniloaz.com/en/617/systems/high-cpu-load-when-converting-images-with-imagemagick
-  message(STATUS "ImageMagick: OpenMP bug workaround - setting MAGICK_THREAD_LIMIT=1")
-  set(CTEST_ENVIRONMENT "${CTEST_ENVIRONMENT};MAGICK_THREAD_LIMIT=1")
+  execute_process(COMMAND ${ImageMagick_convert_EXECUTABLE} --version OUTPUT_VARIABLE IM_OUT )
+  if ( ${IM_OUT} MATCHES "OpenMP" )
+    # http://www.daniloaz.com/en/617/systems/high-cpu-load-when-converting-images-with-imagemagick
+    message(STATUS "ImageMagick: OpenMP bug workaround - setting MAGICK_THREAD_LIMIT=1")
+    set(CTEST_ENVIRONMENT "${CTEST_ENVIRONMENT};MAGICK_THREAD_LIMIT=1")
+  endif()
 endif()
 
 # Internal includes
@@ -594,6 +611,21 @@ set(OFFSCREEN_SOURCES
   ../src/${PLATFORMUTILS_SOURCE}
   ../src/OpenCSGRenderer.cc)
 
+if(NULLGL)
+  message(STATUS "NULLGL is set. Overriding previous OpenGL(TM) settings")
+  set(OFFSCREEN_SOURCES
+    ../src/NULLGL.cc # contains several 'nullified' versions of above .cc files
+    ../src/OffscreenView.cc
+    ../src/OffscreenContextNULL.cc
+    ../src/export_png.cc
+    ../src/${OFFSCREEN_IMGUTILS_SOURCE}
+    ../src/imageutils.cc
+    ../src/renderer.cc
+    ../src/render.cc
+    ../src/PlatformUtils.cc 
+    ../src/${PLATFORMUTILS_SOURCE} )
+endif()
+
 add_library(tests-core STATIC ${CORE_SOURCES})
 target_link_libraries(tests-core ${OPENGL_LIBRARIES} ${GLIB2_LIBRARIES} )
 set(TESTS-CORE-LIBRARIES ${OPENGL_LIBRARIES} ${GLIB2_LIBRARIES} ${Boost_LIBRARIES} )
@@ -606,11 +638,24 @@ set_target_properties(tests-cgal PROPERTIES COMPILE_FLAGS "-DENABLE_CGAL ${CGAL_
 target_link_libraries(tests-cgal tests-common)
 set(TESTS-CGAL-LIBRARIES ${CGAL_LIBRARY} ${CGAL_3RD_PARTY_LIBRARIES} ${GMP_LIBRARIES} ${MPFR_LIBRARIES} ${TESTS-CORE-LIBRARIES})
 
-add_library(tests-nocgal STATIC ${NOCGAL_SOURCES})
-target_link_libraries(tests-nocgal tests-common)
+#
+# Create non-CGAL tests
+#
+if (NOT NULLGL)
+  add_library(tests-nocgal STATIC ${NOCGAL_SOURCES})
+  target_link_libraries(tests-nocgal tests-common)
+  set(TESTS-NOCGAL-LIBRARIES ${TESTS-CORE-LIBRARIES})
+else()
+  message(STATUS "NULLGL: cannot use GL/GLU tessellator. see dxftess.cc")
+  message(STATUS "NULLGL: non-CGAL tests will use CGAL's tessellator")
+  add_library(tests-nocgal STATIC ${CGAL_SOURCES})
+  set_target_properties(tests-nocgal PROPERTIES COMPILE_FLAGS "-DENABLE_CGAL ${CGAL_CXX_FLAGS_INIT}")
+  target_link_libraries(tests-nocgal tests-common)
+  set(TESTS-NOCGAL-LIBRARIES ${TESTS-CGAL-LIBRARIES})
+endif()
+
 add_library(tests-offscreen STATIC ${OFFSCREEN_SOURCES})
-set_target_properties(tests-offscreen PROPERTIES COMPILE_FLAGS "-DENABLE_OPENCSG -DENABLE_CGAL ${CGAL_CXX_FLAGS_INIT}")
-set(TESTS-NOCGAL-LIBRARIES ${TESTS-CORE-LIBRARIES})
+set_target_properties(tests-offscreen PROPERTIES COMPILE_FLAGS "${ENABLE_OPENCSG_FLAG} -DENABLE_CGAL ${CGAL_CXX_FLAGS_INIT}")
 
 #
 # modulecachetest
@@ -635,32 +680,8 @@ target_link_libraries(cgalcachetest tests-cgal ${TESTS-CGAL-LIBRARIES} ${CLIPPER
 # openscad no-qt
 #
 add_executable(openscad_nogui ../src/openscad.cc)
-set_target_properties(openscad_nogui PROPERTIES COMPILE_FLAGS "-fno-strict-aliasing -DEIGEN_DONT_ALIGN -DENABLE_CGAL -DENABLE_OPENCSG ${CGAL_CXX_FLAGS_INIT}")
+set_target_properties(openscad_nogui PROPERTIES COMPILE_FLAGS "-fno-strict-aliasing -DEIGEN_DONT_ALIGN -DENABLE_CGAL ${ENABLE_OPENCSG_FLAG} ${CGAL_CXX_FLAGS_INIT}")
 target_link_libraries(openscad_nogui tests-offscreen tests-cgal tests-nocgal ${TESTS-CORE-LIBRARIES} ${TESTS-CGAL-LIBRARIES} ${GLEW_LIBRARY} ${Boost_LIBRARIES} ${OPENCSG_LIBRARY} ${COCOA_LIBRARY} ${APP_SERVICES_LIBRARY})
-
-#
-# GUI binary tests
-#
-#if(APPLE)
-#  set(OPENSCAD_BINPATH "${CMAKE_CURRENT_SOURCE_DIR}/../OpenSCAD.app/Contents/MacOS/OpenSCAD")
-#elseif (MINGW_CROSS_ENV_DIR) 
-#  set(OPENSCAD_BINPATH "${CMAKE_CURRENT_SOURCE_DIR}/../mingw32/release/openscad.exe")
-#elseif(WIN32)
-#  set(OPENSCAD_BINPATH "${CMAKE_CURRENT_SOURCE_DIR}/../Release/openscad.exe")
-#else()
-#  set(OPENSCAD_BINPATH "${CMAKE_CURRENT_SOURCE_DIR}/../openscad")
-#endif()
-
-#if(EXISTS "${CMAKE_CURRENT_BINARY_DIR}/openscad")
-#  set(OPENSCAD_BINPATH "${CMAKE_CURRENT_BINARY_DIR}/openscad")
-#endif()
-
-#if(EXISTS "${OPENSCAD_BINPATH}")
-#  message(STATUS "Found OpenSCAD binary: ${OPENSCAD_BINPATH}")
-#else()
-#  message(STATUS "Couldn't find the OpenSCAD binary: ${OPENSCAD_BINPATH}")
-#  message(FATAL_ERROR "Please build the OpenSCAD binary and place it here: ${OPENSCAD_BINPATH}" )
-#endif()
 
 if(WIN32)
   set(OPENSCAD_BINPATH "${CMAKE_CURRENT_BINARY_DIR}/openscad_nogui.exe")
@@ -891,7 +912,8 @@ list(APPEND BUGS_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue495.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue584.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue585.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue591.scad
-                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue593.scad)
+                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue593.scad
+                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue612.scad)
 
 list(APPEND OPENCSGTEST_FILES ${BUGS_FILES})
 list(APPEND CGALPNGTEST_FILES ${BUGS_FILES})

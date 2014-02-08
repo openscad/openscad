@@ -112,7 +112,12 @@ static void help(const char *progname)
          "%2%  --camera=eyex,y,z,centerx,y,z ] \\\n"
          "%2%[ --imgsize=width,height ] [ --projection=(o)rtho|(p)ersp] \\\n"
          "%2%[ --render | --preview[=throwntogether] ] \\\n"
-         "%2%[ --enable=<feature> ] \\\n"
+         "%2%[ --csglimit=num ] \\\n"
+         "%2%[ --enable=<feature> ]"
+#ifdef DEBUG
+				 " [ --debug=module ]"
+#endif
+				 " \\\n"
          "%2%filename\n",
  				 progname % (const char *)tabstr);
 	exit(1);
@@ -313,7 +318,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 		std::vector<shared_ptr<CSGTerm> > highlight_terms;
 		std::vector<shared_ptr<CSGTerm> > background_terms;
 
-		CSGTermEvaluator csgRenderer(tree, &geomevaluator);
+		CSGTermEvaluator csgRenderer(tree);
 		shared_ptr<CSGTerm> root_raw_term = csgRenderer.evaluateCSGTerm(*root_node, highlight_terms, background_terms);
 
 		fs::current_path(original_path);
@@ -447,20 +452,24 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 #include <QApplication>
 #include <QString>
 #include <QDir>
+#include <QFileInfo>
 #include <QMetaType>
 
 Q_DECLARE_METATYPE(shared_ptr<const Geometry>);
 
 // Only if "fileName" is not absolute, prepend the "absoluteBase".
-static QString assemblePath(const fs::path& absoluteBase,
+static QString assemblePath(const fs::path& absoluteBaseDir,
                             const string& fileName) {
-  return fileName.empty() ? "" : QDir(QString::fromStdString((const string&) absoluteBase))
-    .absoluteFilePath(QString::fromStdString(fileName));
+  if (fileName.empty()) return "";
+  QString qsDir( boosty::stringy( absoluteBaseDir ).c_str() );
+  QString qsFile( fileName.c_str() );
+  QFileInfo info( qsDir, qsFile ); // if qsfile is absolute, dir is ignored.
+  return info.absoluteFilePath();
 }
 
 bool QtUseGUI()
 {
-#ifdef Q_WS_X11
+#ifdef Q_OS_X11
 	// see <http://qt.nokia.com/doc/4.5/qapplication.html#QApplication-2>:
 	// On X11, the window system is initialized if GUIenabled is true. If GUIenabled
 	// is false, the application does not connect to the X server. On Windows and
@@ -483,7 +492,7 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
     }
 #endif
 	QApplication app(argc, argv, true); //useGUI);
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
 	app.installEventFilter(new EventFilter(&app));
 #endif
 	// set up groups for QSettings
@@ -499,7 +508,7 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 
 	QDir exdir(app_path);
 	QString qexamplesdir;
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
 	exdir.cd("../Resources"); // Examples can be bundled
 	if (!exdir.exists("examples")) exdir.cd("../../..");
 #elif defined(Q_OS_UNIX)
@@ -519,11 +528,11 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 	MainWindow::setExamplesDir(qexamplesdir);
   parser_init(app_path.toLocal8Bit().constData());
 
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
 	installAppleEventHandlers();
 #endif
 
-#if defined(OPENSCAD_DEPLOY) && defined(Q_WS_MAC)
+#if defined(OPENSCAD_DEPLOY) && defined(Q_OS_MAC)
 	AutoUpdater *updater = new SparkleAutoUpdater;
 	AutoUpdater::setUpdater(updater);
 	if (updater->automaticallyChecksForUpdates()) updater->checkForUpdates();
@@ -563,7 +572,7 @@ int main( int argc, char **argv )
 	PlatformUtils::resetArgvToUtf8( argc, argv, argstorage );
 
 	int rc = 0;
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
 	set_output_handler(CocoaUtils::nslog, NULL);
 #endif
 #ifdef ENABLE_CGAL
@@ -585,9 +594,11 @@ int main( int argc, char **argv )
 		("info", "print information about the building process")
 		("render", "if exporting a png image, do a full CGAL render")
 		("preview", po::value<string>(), "if exporting a png image, do an OpenCSG(default) or ThrownTogether preview")
+		("csglimit", po::value<unsigned int>(), "if exporting a png image, stop rendering at the given number of CSG elements")
 		("camera", po::value<string>(), "parameters for camera when exporting png")
-	        ("imgsize", po::value<string>(), "=width,height for exporting png")
+		("imgsize", po::value<string>(), "=width,height for exporting png")
 		("projection", po::value<string>(), "(o)rtho or (p)erspective when exporting png")
+		("debug", po::value<string>(), "special debug info")
 		("o,o", po::value<string>(), "out-file")
 		("s,s", po::value<string>(), "stl-file")
 		("x,x", po::value<string>(), "dxf-file")
@@ -615,6 +626,8 @@ int main( int argc, char **argv )
 		help(argv[0]);
 	}
 
+	OpenSCAD::debug = "";
+	if (vm.count("debug")) OpenSCAD::debug = vm["debug"].as<string>();
 	if (vm.count("help")) help(argv[0]);
 	if (vm.count("version")) version();
 	if (vm.count("info")) info();
@@ -625,6 +638,10 @@ int main( int argc, char **argv )
 	if (vm.count("preview"))
 		if (vm["preview"].as<string>() == "throwntogether")
 			renderer = Render::THROWNTOGETHER;
+
+	if (vm.count("csglimit")) {
+		RenderSettings::inst()->openCSGTermLimit = vm["csglimit"].as<unsigned int>();
+	}
 
 	if (vm.count("o")) {
 		// FIXME: Allow for multiple output files?
