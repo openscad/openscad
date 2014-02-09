@@ -124,3 +124,14 @@ o rm cascade*.scad
 o Verify that no rerendering was triggered (the 4 objects are still there)
 o ./cascade2.sh
 o Verify that everything reloads at once without flickering
+
+Test 15: Correct handling of compile errors in auto-reloaded modules
+--------
+o Turn on Automatic Reload and Compile
+o Open mainusingerror.scad
+o Verify that you get:
+  - Compiling library '.../error.scad'.
+  - Parser error in line 3: syntax error
+  - WARNING: Failed to compile library '.../error.scad'.
+  - Main file should keep compiling
+o Verify that the above doesn't repeat
