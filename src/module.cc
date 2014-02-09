@@ -264,41 +264,51 @@ bool FileModule::handleDependencies()
 	this->is_handling_dependencies = true;
 
 	bool changed = false;
+	std::vector<std::string> updates;
 
 	// If a lib in usedlibs was previously missing, we need to relocate it
 	// by searching the applicable paths. We can identify a previously missing module
 	// as it will have a relative path.
-
-	// Iterating manually since we want to modify the container while iterating
-	FileModule::ModuleContainer::iterator iter = this->usedlibs.begin();
-	while (iter != this->usedlibs.end()) {
-		FileModule::ModuleContainer::iterator curr = iter++;
+	BOOST_FOREACH(std::string filename, this->usedlibs) {
 
 		bool wasmissing = false;
+		bool found = true;
+
 		// Get an absolute filename for the module
-		std::string filename = *curr;
 		if (!boosty::is_absolute(filename)) {
 			wasmissing = true;
 			fs::path fullpath = find_valid_path(this->path, filename);
-			if (!fullpath.empty()) filename = boosty::stringy(fullpath);
+			if (!fullpath.empty()) {
+				filename = boosty::stringy(fullpath);
+				updates.push_back(filename);
+				this->usedlibs.erase(filename);
+			}
+			else {
+				found = false;
+			}
 		}
 
-		FileModule *oldmodule = ModuleCache::instance()->lookup(filename);
-		FileModule *newmodule = ModuleCache::instance()->evaluate(filename);
-		// Detect appearance but not removal of files
-		if (newmodule && oldmodule != newmodule) {
-			changed = true;
+		if (found) {
+			bool wascached = ModuleCache::instance()->isCached(filename);
+			FileModule *oldmodule = ModuleCache::instance()->lookup(filename);
+			FileModule *newmodule = ModuleCache::instance()->evaluate(filename);
+			// Detect appearance but not removal of files, and keep old module
+			// on compile errors (FIXME: Is this correct behavior?)
+			if (newmodule && oldmodule != newmodule) {
+				changed = true;
 #ifdef DEBUG
-			PRINTB_NOCACHE("  %s: %p -> %p", filename % oldmodule % newmodule);
+				PRINTB_NOCACHE("  %s: %p -> %p", filename % oldmodule % newmodule);
 #endif
-		}
-		if (!newmodule) {
+			}
 			// Only print warning if we're not part of an automatic reload
-			if (!oldmodule && !wasmissing) {
+			if (!newmodule && !wascached && !wasmissing) {
 				PRINTB_NOCACHE("WARNING: Failed to compile library '%s'.", filename);
 			}
 		}
 	}
+
+	// Relative filenames which were located is reinserted as absolute filenames
+	BOOST_FOREACH(const std::string &filename, updates) this->usedlibs.insert(filename);
 
 	this->is_handling_dependencies = false;
 	return changed;
