@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>681</width>
+    <width>846</width>
     <height>647</height>
    </rect>
   </property>
@@ -15,16 +15,7 @@
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout_2">
-    <property name="leftMargin">
-     <number>0</number>
-    </property>
-    <property name="topMargin">
-     <number>0</number>
-    </property>
-    <property name="rightMargin">
-     <number>0</number>
-    </property>
-    <property name="bottomMargin">
+    <property name="margin">
      <number>0</number>
     </property>
     <item>
@@ -33,7 +24,7 @@
        <enum>Qt::Horizontal</enum>
       </property>
       <widget class="QWidget" name="editorlayoutwidget">
-       <layout class="QVBoxLayout" name="verticalLayout_2">
+       <layout class="QVBoxLayout" name="verticalLayoutEditor">
         <property name="spacing">
          <number>0</number>
         </property>
@@ -60,7 +51,7 @@
           <property name="lineWidth">
            <number>0</number>
           </property>
-          <layout class="QGridLayout" name="horizontalLayout">
+          <layout class="QGridLayout" name="gridLayoutReplace">
            <property name="leftMargin">
             <number>5</number>
            </property>
@@ -183,17 +174,8 @@
           <property name="lineWidth">
            <number>0</number>
           </property>
-          <layout class="QHBoxLayout" name="horizontalLayout">
-           <property name="leftMargin">
-            <number>0</number>
-           </property>
-           <property name="topMargin">
-            <number>0</number>
-           </property>
-           <property name="rightMargin">
-            <number>0</number>
-           </property>
-           <property name="bottomMargin">
+          <layout class="QHBoxLayout" name="horizontalLayoutAnimate">
+           <property name="margin">
             <number>0</number>
            </property>
            <item>
@@ -247,8 +229,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>681</width>
-     <height>22</height>
+     <width>846</width>
+     <height>34</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_File">
@@ -265,16 +247,31 @@
       <string>Examples</string>
      </property>
     </widget>
+    <widget class="QMenu" name="menuExport">
+     <property name="title">
+      <string>Export</string>
+     </property>
+     <addaction name="designActionExportSTL"/>
+     <addaction name="designActionExportOFF"/>
+     <addaction name="designActionExportDXF"/>
+     <addaction name="designActionExportCSG"/>
+     <addaction name="separator"/>
+     <addaction name="designActionExportImage"/>
+    </widget>
     <addaction name="fileActionNew"/>
     <addaction name="fileActionOpen"/>
     <addaction name="menuOpenRecent"/>
     <addaction name="menuExamples"/>
-    <addaction name="fileShowLibraryFolder"/>
-    <addaction name="separator"/>
+    <addaction name="fileActionReload"/>
     <addaction name="fileActionClose"/>
+    <addaction name="separator"/>
     <addaction name="fileActionSave"/>
     <addaction name="fileActionSaveAs"/>
-    <addaction name="fileActionReload"/>
+    <addaction name="separator"/>
+    <addaction name="menuExport"/>
+    <addaction name="separator"/>
+    <addaction name="fileShowLibraryFolder"/>
+    <addaction name="separator"/>
     <addaction name="fileActionQuit"/>
    </widget>
    <widget class="QMenu" name="menu_Edit">
@@ -316,16 +313,10 @@
     <addaction name="designActionCompile"/>
     <addaction name="designActionCompileAndRender"/>
     <addaction name="separator"/>
-	<addaction name="designCheckValidity"/>
+    <addaction name="designCheckValidity"/>
     <addaction name="designActionDisplayAST"/>
     <addaction name="designActionDisplayCSGTree"/>
     <addaction name="designActionDisplayCSGProducts"/>
-    <addaction name="separator"/>
-    <addaction name="designActionExportSTL"/>
-    <addaction name="designActionExportOFF"/>
-    <addaction name="designActionExportDXF"/>
-    <addaction name="designActionExportCSG"/>
-    <addaction name="designActionExportImage"/>
     <addaction name="separator"/>
     <addaction name="designActionFlushCaches"/>
    </widget>
@@ -559,9 +550,9 @@
    </property>
   </action>
   <action name="designCheckValidity">
-    <property name="text">
-      <string>Check Validity</string>
-    </property>
+   <property name="text">
+    <string>Check Validity</string>
+   </property>
   </action>
   <action name="designActionDisplayAST">
    <property name="text">
