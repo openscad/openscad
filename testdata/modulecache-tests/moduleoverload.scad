@@ -1,7 +1,7 @@
 use <mymodule-lib.scad>
 
 module mymodule() {
-  sphere();
+  sphere(5);
 }
 
 mymodule();
