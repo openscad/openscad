@@ -22,12 +22,16 @@
 ModuleCache *ModuleCache::inst = NULL;
 
 /*!
-	Reevaluate the given file and recompile if necessary.
-	Returns NULL on any error (e.g. compile error or file not found)
-
+	Reevaluate the given file and all it's dependencies and recompile anything
+	needing reevaluation.
 	The given filename must be absolute.
+
+	Sets the module reference to the new modile, or NULL on any error (e.g. compile
+	error or file not found)
+
+	Returns true if anything was compiled (module or dependencies) and false otherwise.
 */
-FileModule *ModuleCache::evaluate(const std::string &filename)
+bool ModuleCache::evaluate(const std::string &filename, FileModule *&module)
 {
 	FileModule *lib_mod = NULL;
 	bool found = false;
@@ -115,9 +119,10 @@ FileModule *ModuleCache::evaluate(const std::string &filename)
 		print_messages_pop();
 	}
 	
-	if (lib_mod) lib_mod->handleDependencies();
+	module = lib_mod;
+	bool depschanged = lib_mod ? lib_mod->handleDependencies() : false;
 
-	return lib_mod;
+	return shouldCompile || depschanged;
 }
 
 void ModuleCache::clear()

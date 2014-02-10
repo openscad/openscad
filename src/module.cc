@@ -263,8 +263,8 @@ bool FileModule::handleDependencies()
 	if (this->is_handling_dependencies) return false;
 	this->is_handling_dependencies = true;
 
-	bool changed = false;
-	std::vector<std::string> updates;
+	bool somethingchanged = false;
+	std::vector<std::pair<std::string,std::string> > updates;
 
 	// If a lib in usedlibs was previously missing, we need to relocate it
 	// by searching the applicable paths. We can identify a previously missing module
@@ -279,9 +279,8 @@ bool FileModule::handleDependencies()
 			wasmissing = true;
 			fs::path fullpath = find_valid_path(this->path, filename);
 			if (!fullpath.empty()) {
+				updates.push_back(std::make_pair(filename, boosty::stringy(fullpath)));
 				filename = boosty::stringy(fullpath);
-				updates.push_back(filename);
-				this->usedlibs.erase(filename);
 			}
 			else {
 				found = false;
@@ -291,15 +290,16 @@ bool FileModule::handleDependencies()
 		if (found) {
 			bool wascached = ModuleCache::instance()->isCached(filename);
 			FileModule *oldmodule = ModuleCache::instance()->lookup(filename);
-			FileModule *newmodule = ModuleCache::instance()->evaluate(filename);
+			FileModule *newmodule;
+			bool changed = ModuleCache::instance()->evaluate(filename, newmodule);
 			// Detect appearance but not removal of files, and keep old module
 			// on compile errors (FIXME: Is this correct behavior?)
-			if (newmodule && oldmodule != newmodule) {
-				changed = true;
+			if (changed) {
 #ifdef DEBUG
 				PRINTB_NOCACHE("  %s: %p -> %p", filename % oldmodule % newmodule);
 #endif
 			}
+			somethingchanged |= changed;
 			// Only print warning if we're not part of an automatic reload
 			if (!newmodule && !wascached && !wasmissing) {
 				PRINTB_NOCACHE("WARNING: Failed to compile library '%s'.", filename);
@@ -308,10 +308,13 @@ bool FileModule::handleDependencies()
 	}
 
 	// Relative filenames which were located is reinserted as absolute filenames
-	BOOST_FOREACH(const std::string &filename, updates) this->usedlibs.insert(filename);
-
+	typedef std::pair<std::string,std::string> stringpair;
+	BOOST_FOREACH(const stringpair &files, updates) {
+		this->usedlibs.erase(files.first);
+		this->usedlibs.insert(files.second);
+	}
 	this->is_handling_dependencies = false;
-	return changed;
+	return somethingchanged;
 }
 
 AbstractNode *FileModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const
