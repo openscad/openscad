@@ -45,7 +45,9 @@ namespace fs = boost::filesystem;
 #include "unistd.h"
 #endif
 #if defined __PLATFORM_WIN__
+#ifndef __MINGW64__
 extern "C" int __cdecl _isatty(int _FileHandle);
+#endif
 #define isatty _isatty
 #endif
 

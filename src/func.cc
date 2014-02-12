@@ -45,12 +45,12 @@
 
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/uniform_real.hpp>
+#include "PlatformUtils.h"
 /*Unicode support for string lengths and array accesses*/
 #include <glib.h>
-#include "PlatformUtils.h"
 
 boost::mt19937 deterministic_rng;
-boost::mt19937 lessdeterministic_rng( std::time(0) + getpid() );
+boost::mt19937 lessdeterministic_rng( std::time(0) + PlatformUtils::getpid() );
 
 AbstractFunction::~AbstractFunction()
 {

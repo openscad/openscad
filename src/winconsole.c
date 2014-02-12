@@ -97,8 +97,8 @@ int main( int argc, char * argv[] )
 	int result = 0;
 
 	wprintf(L"openscad.com: running %s\n", wcmd);
-	//cmd_stdout = _wpopen( wcmd, L"rt" );
-	cmd_stdout = _wpopen( wcmd, L"rb" );
+	cmd_stdout = _wpopen( wcmd, L"rt" );
+	//cmd_stdout = _wpopen( wcmd, L"rb" );
 	if ( cmd_stdout == NULL ) {
 		wprintf( L"Error opening _wpopen for command: %s\n", wcmd );
 		_wperror( L"Error message:" );
