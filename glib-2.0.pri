@@ -13,9 +13,22 @@ GLIB2_DIR = $$(GLIB2DIR)
 
 !isEmpty(OPENSCAD_LIBRARIES_DIR) {
   isEmpty(GLIB2_INCLUDEPATH) {
-    GLIB2_INCLUDEPATH = $$OPENSCAD_LIBRARIES_DIR/include/glib-2.0
-    GLIB2_INCLUDEPATH_2 = $$OPENSCAD_LIBRARIES_DIR/lib/glib-2.0/include
-    GLIB2_LIBPATH = $$OPENSCAD_LIBRARIES_DIR/lib
+    !isEmpty(GLIB2_DIR) {
+      GLIB2_INCLUDEPATH = $$GLIB2_DIR/include/glib-2.0
+      GLIB2_INCLUDEPATH_2 = $$GLIB2_DIR/lib/glib-2.0/include
+      GLIB2_LIBPATH = $$GLIB2_DIR/lib
+    } else {
+      GLIB2_INCLUDEPATH = $$OPENSCAD_LIBRARIES_DIR/include/glib-2.0
+      GLIB2_INCLUDEPATH_2 = $$OPENSCAD_LIBRARIES_DIR/lib/glib-2.0/include
+      GLIB2_LIBPATH = $$OPENSCAD_LIBRARIES_DIR/lib
+    }
+  }
+}
+
+!exists($$GLIB2_INCLUDEPATH/glib.h) {
+  !exists($$GLIB2_INCLUDEPATH_2/glib.h) {
+    GLIB2_INCLUDEPATH =
+    GLIB2_LIBPATH =
   }
 }
 

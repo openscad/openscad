@@ -1024,6 +1024,9 @@ add_cmdline_test(openscad-nonascii EXE ${OPENSCAD_BINPATH} ARGS -o
                  SUFFIX csg 
                  FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/sfære.scad)
 
+add_cmdline_test(openscad-space-name EXE ${OPENSCAD_BINPATH} ARGS -o 
+                 SUFFIX csg 
+                 FILES "${CMAKE_SOURCE_DIR}/../testdata/scad/misc/my file.scad")
 
 # Image output
 add_cmdline_test(openscad-imgsize EXE ${OPENSCAD_BINPATH}

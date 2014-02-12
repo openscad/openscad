@@ -4,6 +4,11 @@
 #include <glib.h>
 #include <sstream>
 
+// types/stat/unistd: stat()
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+
 /* Quick and dirty hack to work around floating point rounding differences
  across platforms for testing purposes. */
 std::string PlatformUtils::formatDouble( const double &op1 )
@@ -77,6 +82,11 @@ void PlatformUtils::resetArgvToUtf8( int argc, char ** &argv, std::vector<std::s
 FILE *PlatformUtils::fopen( const char *utf8path, const char *mode )
 {
 	return std::fopen( utf8path, mode );
+}
+
+int PlatformUtils::stat( const char *utf8path, void *buf )
+{
+	return stat( utf8path, (PlatformUtils::struct_stat *)buf );
 }
 #endif
 

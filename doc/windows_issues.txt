@@ -1,12 +1,14 @@
 This README covers a few caveats regarding OpenSCAD for Windows(TM) for
 programmers and users.
 
-Summary:
+Summary: As of writing, early 2014:
 
-  -Windows filenames & cmdline args are UTF16, in conflict with assumptions
-   about Mac(TM) and Unix(TM) which generally assume everything is UTF8.
-  -All file i/o must go through PlatformUtils:: wrappers
+  -Windows filenames & cmdline args are ~UTF16, Linux/Mac are UTF8.
+  -There is no open source ifstream/ofstream fopen() that works with both.
+  -Therefore all file i/o must go through PlatformUtils:: wrappers
   -std::ifstream & std::ofstream are limited in capability by our wrappers
+  -Windows stdout/stdin differs in behavior between GUI programs and cmdline
+  -Windows console has issues outputting unicode of any encoding.
   -openscad.com is the command line wrapper for openscad.exe, the gui
 
 00. Encoding of Unicode
@@ -98,4 +100,10 @@ before any processing is done on them. Therefore. All file writing should
 be in 'binary mode' on Windows and we write sequences of 8-bit bytes,
 encoded in UTF8.
 
+5. Boost and portability
 
+Theoretically, Boost provides portable wrapper to some Windows and 
+Unix/Mac file code, including fstream. In reality, since Boost is built 
+on top of the libstdc++ that one is using, a version of Boost built 
+under the current MingW cross-build will not be able to deal with UTF16
+filenames.

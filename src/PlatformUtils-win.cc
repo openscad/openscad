@@ -118,8 +118,8 @@ void PlatformUtils::resetArgvToUtf8( int argc, char ** &argv, std::vector<std::s
         }
 }
 
-/* allow fopen() to work with unicode filenames on windows(TM)
-by transcoding to UTF16 and then using _wfopen() */
+/* allow fopen() to work with unicode filenames on windows(TM) by
+transcoding to UTF16 and then using _wfopen(). See also: ifstream/ofstream */
 FILE *PlatformUtils::fopen( const char *utf8path, const char *mode )
 {
 	std::wstring winpath;
@@ -128,4 +128,16 @@ FILE *PlatformUtils::fopen( const char *utf8path, const char *mode )
 	winmode = utf8_to_winapi_wstring( std::string( mode ) );
 	return _wfopen( winpath.c_str() , winmode.c_str() );
 }
+
+/* allow stat() to work with unicode filenames on windows(TM) by
+transcoding to UTF16 and then using _wstat(). Note we also have to
+use a wrapped version of struct stat in PlatformUtils.h */
+int PlatformUtils::stat( const char *utf8path, void *buf )
+{
+	std::wstring winpath;
+	winpath = utf8_to_winapi_wstring( std::string( utf8path ) );
+	return _wstat( winpath.c_str(), (PlatformUtils::struct_stat *)buf );
+}
+
+
 

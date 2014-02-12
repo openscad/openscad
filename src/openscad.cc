@@ -206,7 +206,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 {
 #ifdef OPENSCAD_QTGUI
 	QCoreApplication app(argc, argv);
-	const std::string application_path = QApplication::instance()->applicationDirPath().toLocal8Bit().constData();
+	const std::string application_path = QApplication::instance()->applicationDirPath().toUtf8().constData();
 #else
 	const std::string application_path = boosty::stringy(boosty::absolute(boost::filesystem::path(argv[0]).parent_path()));
 	(void)argc;
@@ -461,8 +461,8 @@ Q_DECLARE_METATYPE(shared_ptr<const Geometry>);
 static QString assemblePath(const fs::path& absoluteBaseDir,
                             const string& fileName) {
   if (fileName.empty()) return "";
-  QString qsDir( boosty::stringy( absoluteBaseDir ).c_str() );
-  QString qsFile( fileName.c_str() );
+  QString qsDir = QString::fromUtf8( boosty::stringy( absoluteBaseDir ).c_str() );
+  QString qsFile = QString::fromUtf8( fileName.c_str() );
   QFileInfo info( qsDir, qsFile ); // if qsfile is absolute, dir is ignored.
   return info.absoluteFilePath();
 }
@@ -526,7 +526,7 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 					qexamplesdir = exdir.path();
 				}
 	MainWindow::setExamplesDir(qexamplesdir);
-  parser_init(app_path.toLocal8Bit().constData());
+	parser_init(app_path.toUtf8().constData());
 
 #ifdef Q_OS_MAC
 	installAppleEventHandlers();
