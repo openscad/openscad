@@ -1,6 +1,7 @@
 #include "PlatformUtils.h"
 #include "printutils.h"
 #include <windows.h>
+#include <process.h>
 #ifndef _WIN32_IE
 #define _WIN32_IE 0x0501 // SHGFP_TYPE_CURRENT
 #endif
@@ -139,5 +140,7 @@ int PlatformUtils::stat( const char *utf8path, void *buf )
 	return _wstat( winpath.c_str(), (PlatformUtils::struct_stat *)buf );
 }
 
-
-
+int PlatformUtils::getpid()
+{
+        int process_id = _getpid();
+}

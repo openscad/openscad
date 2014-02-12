@@ -47,18 +47,10 @@
 #include <boost/random/uniform_real.hpp>
 /*Unicode support for string lengths and array accesses*/
 #include <glib.h>
-
-#ifdef __WIN32__
-#include <process.h>
-int process_id = _getpid();
-#else
-#include <sys/types.h>
-#include <unistd.h>
-int process_id = getpid();
-#endif
+#include "PlatformUtils.h"
 
 boost::mt19937 deterministic_rng;
-boost::mt19937 lessdeterministic_rng( std::time(0) + process_id );
+boost::mt19937 lessdeterministic_rng( std::time(0) + getpid() );
 
 AbstractFunction::~AbstractFunction()
 {

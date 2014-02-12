@@ -14,6 +14,7 @@ namespace PlatformUtils {
 	FILE *fopen( const char *utf8path, const char *mode );
 	std::string formatDouble( const double &x );
 	int stat(const char *utf8path, void *buf);
+	int getpid();
 };
 
 #if defined (__MINGW32__) || defined (__MINGW64__)

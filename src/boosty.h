@@ -98,7 +98,7 @@ inline fs::path canonical( fs::path p )
 
 inline fs::path canonical( fs::path p, fs::path p2 )
 {
-#if defined (__WIN32__) || defined(__APPLE__)
+#if defined (__PLATFORM_WIN__) || defined(__APPLE__)
 #error you should be using a newer version of boost on win/mac
 #endif
 	// based on the code in boost

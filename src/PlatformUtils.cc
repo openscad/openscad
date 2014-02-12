@@ -4,7 +4,7 @@
 #include <glib.h>
 #include <sstream>
 
-// types/stat/unistd: stat()
+// types/stat/unistd: stat(), getpid()
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -87,6 +87,11 @@ FILE *PlatformUtils::fopen( const char *utf8path, const char *mode )
 int PlatformUtils::stat( const char *utf8path, void *buf )
 {
 	return stat( utf8path, (PlatformUtils::struct_stat *)buf );
+}
+
+int PlatformUtils::getpid()
+{
+	int process_id = getpid();
 }
 #endif
 
