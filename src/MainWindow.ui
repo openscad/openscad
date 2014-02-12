@@ -33,7 +33,7 @@
        <enum>Qt::Horizontal</enum>
       </property>
       <widget class="QWidget" name="editorlayoutwidget">
-       <layout class="QVBoxLayout" name="verticalLayout_2">
+       <layout class="QVBoxLayout" name="verticalLayout_editor">
         <property name="spacing">
          <number>0</number>
         </property>
@@ -60,7 +60,7 @@
           <property name="lineWidth">
            <number>0</number>
           </property>
-          <layout class="QGridLayout" name="horizontalLayout">
+          <layout class="QGridLayout" name="horizontalLayout_find">
            <property name="leftMargin">
             <number>5</number>
            </property>
