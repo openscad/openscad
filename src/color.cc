@@ -35,18 +35,18 @@
 #include <boost/assign/std/vector.hpp>
 #include <boost/assign/list_of.hpp>
 using namespace boost::assign; // bring 'operator+=()' into scope
+#include "colormap.h"
 
 class ColorModule : public AbstractModule
 {
 public:
-	ColorModule() { }
+	ColorModule() : colormap(OSColors::webmap) { }
 	virtual AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const;
 
 private:
-	static boost::unordered_map<std::string, Color4f> colormap;
+	boost::unordered_map<std::string, Color4f> &colormap;
 };
 
-#include "colormap.h"
 AbstractNode *ColorModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const
 {
 	ColorNode *node = new ColorNode(inst);

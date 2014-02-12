@@ -27,6 +27,7 @@ Some actions (showCrossHairs) only work properly on Gimbal Camera.
 #include <iostream>
 #include "renderer.h"
 #include "Camera.h"
+#include "colormap.h"
 
 class GLView
 {
@@ -52,10 +53,14 @@ public:
 	void showAxes();
 	void showSmallaxes();
 
+	void setColorScheme( OSColors::colorscheme &cs );
+        void setColorScheme( std::string cs );
+
 	virtual bool save(const char *filename) = 0;
 	virtual std::string getRendererInfo() const = 0;
 
 	Renderer *renderer;
+	OSColors::colorscheme colorscheme;
 	Camera cam;
 	double far_far_away;
 	size_t width;

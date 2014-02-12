@@ -20,6 +20,7 @@ projection, Perspective and Orthogonal.
 #include <vector>
 #include <Eigen/Geometry>
 #include "rendersettings.h"
+#include "colormap.h"
 
 class Camera
 {
@@ -45,6 +46,7 @@ public:
 		pixel_width = RenderSettings::inst()->img_width;
 		pixel_height = RenderSettings::inst()->img_height;
 		projection = Camera::PERSPECTIVE;
+		colorscheme = RenderSettings::inst()->getColors();
 	}
 
 	void setup( std::vector<double> params )
@@ -72,6 +74,8 @@ public:
 		object_rot.y() = fmodf(360 - object_rot.y(), 360);
 		object_rot.z() = fmodf(360 - object_rot.z(), 360);
 	}
+
+	OSColors::colorscheme colorscheme;
 
 	// Vectorcam
 	Eigen::Vector3d eye;

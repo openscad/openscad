@@ -65,6 +65,16 @@
                 <string>Sunset</string>
                </property>
               </item>
+              <item>
+               <property name="text">
+                <string>Sea</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Severny</string>
+               </property>
+              </item>
              </widget>
             </item>
            </layout>
@@ -170,7 +180,7 @@
            <number>0</number>
           </property>
           <item>
-           <widget class="QLabel" name="label_9">
+           <widget class="QLabel" name="label_syntax_h">
             <property name="font">
              <font>
               <weight>75</weight>

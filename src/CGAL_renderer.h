@@ -27,14 +27,10 @@
 #ifndef CGAL_RENDERER_H
 #define CGAL_RENDERER_H
 
+#include "colormap.h"
+#include "rendersettings.h"
 #include "OGL_helper.h"
-#undef CGAL_NEF3_MARKED_VERTEX_COLOR
-#undef CGAL_NEF3_MARKED_EDGE_COLOR
-#undef CGAL_NEF3_MARKED_FACET_COLOR
-
-#undef CGAL_NEF3_UNMARKED_VERTEX_COLOR
-#undef CGAL_NEF3_UNMARKED_EDGE_COLOR
-#undef CGAL_NEF3_UNMARKED_FACET_COLOR
+#include "printutils.h"
 
 using CGAL::OGL::SNC_BOUNDARY;
 using CGAL::OGL::SNC_SKELETON;
@@ -54,12 +50,15 @@ public:
 	};
 
 	Polyhedron() {
+		// Set default colors.
 		setColor(CGAL_NEF3_MARKED_VERTEX_COLOR,0xb7,0xe8,0x5c);
-		setColor(CGAL_NEF3_MARKED_EDGE_COLOR,0xab,0xd8,0x56);
-		setColor(CGAL_NEF3_MARKED_FACET_COLOR,0x9d,0xcb,0x51);
 		setColor(CGAL_NEF3_UNMARKED_VERTEX_COLOR,0xff,0xf6,0x7c);
-		setColor(CGAL_NEF3_UNMARKED_EDGE_COLOR,0xff,0xec,0x5e);
-		setColor(CGAL_NEF3_UNMARKED_FACET_COLOR,0xf9,0xd7,0x2c);
+		//setColor(CGAL_NEF3_MARKED_EDGE_COLOR,0xab,0xd8,0x56);
+		//setColor(CGAL_NEF3_UNMARKED_EDGE_COLOR,0xff,0xec,0x5e);
+		// Face and Edge colors are taken from default colorscheme
+		OSColors::colorscheme cs = RenderSettings::inst()->defaultColorScheme();
+		setColorScheme( cs );
+		PRINT("Cgalrender polyhedron constr");
 	}
 
 	void draw(bool showedges) const {
@@ -91,11 +90,27 @@ public:
 		return c;
 	}
 
+	void setColor(Polyhedron::RenderColor color_index, const Color4f &c) {
+		this->colors[color_index] = CGAL::Color(c[0]*255,c[1]*255,c[2]*255);
+	}
+
 	void setColor(Polyhedron::RenderColor color_index,
 				  unsigned char r, unsigned char g, unsigned char b) {
-		assert(color_index < Polyhedron::NUM_COLORS);
 		this->colors[color_index] = CGAL::Color(r,g,b);
 	}
+
+	// set this->colors based on the given colorscheme. vertex colors
+	// are not set here as colorscheme doesnt yet hold vertex colors.
+	void setColorScheme( const OSColors::colorscheme &cs ) {
+		PRINT("cgal renderer polyhedron setcolsch");
+		//setColor(CGAL_NEF3_MARKED_VERTEX_COLOR,cs.at(...));
+		//setColor(CGAL_NEF3_UNMARKED_VERTEX_COLOR,cs.at(...));
+		setColor(CGAL_NEF3_MARKED_FACET_COLOR,cs.at(OSColors::RenderColors::CGAL_FACE_BACK_COLOR));
+		setColor(CGAL_NEF3_MARKED_EDGE_COLOR,cs.at(OSColors::RenderColors::CGAL_EDGE_FRONT_COLOR));
+		setColor(CGAL_NEF3_UNMARKED_FACET_COLOR,cs.at(OSColors::RenderColors::CGAL_FACE_FRONT_COLOR));
+                setColor(CGAL_NEF3_UNMARKED_EDGE_COLOR,cs.at(OSColors::RenderColors::CGAL_EDGE_BACK_COLOR));
+	}
+
 private:
 	CGAL::Color colors[NUM_COLORS];
 

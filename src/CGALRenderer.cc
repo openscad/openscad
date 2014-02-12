@@ -32,6 +32,7 @@
 // dxfdata.h must come first for Eigen SIMD alignment issues
 #include "dxfdata.h"
 #include "polyset.h"
+#include "printutils.h"
 
 #include "CGALRenderer.h"
 #include "CGAL_renderer.h"
@@ -68,9 +69,19 @@ CGALRenderer::CGALRenderer(shared_ptr<const class Geometry> geom) : polyhedron(N
 	}
 }
 
+void CGALRenderer::setColorScheme( const OSColors::colorscheme &cs )
+{
+	PRINT("Cgalrenderer scholor");
+	Renderer::setColorScheme( cs );
+	if (this->polyhedron)
+		this->polyhedron->setColorScheme(cs);
+	PRINT("Cgalrenderer scholor done");
+}
+
 CGALRenderer::~CGALRenderer()
 {
 	delete this->polyhedron;
+	this->polyhedron = NULL;
 }
 
 void CGALRenderer::draw(bool showfaces, bool showedges) const

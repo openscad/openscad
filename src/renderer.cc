@@ -3,47 +3,35 @@
 #include "Geometry.h"
 #include "polyset.h"
 #include "Polygon2d.h"
+#include "colormap.h"
+#include "printutils.h"
 
 bool Renderer::getColor(Renderer::ColorMode colormode, Color4f &col) const
 {
-	switch (colormode) {
-	case COLORMODE_NONE:
-		return false;
-		break;
-	case COLORMODE_MATERIAL:
-		col = RenderSettings::inst()->color(RenderSettings::OPENCSG_FACE_FRONT_COLOR);
-		break;
-	case COLORMODE_CUTOUT:
-		col = RenderSettings::inst()->color(RenderSettings::OPENCSG_FACE_BACK_COLOR);
-		break;
-	case COLORMODE_HIGHLIGHT:
-		col.setRgb(255, 81, 81, 128);
-		break;
-	case COLORMODE_BACKGROUND:
-    col.setRgb(180, 180, 180, 128);
-		break;
-	case COLORMODE_MATERIAL_EDGES:
-		col.setRgb(255, 236, 94);
-		break;
-	case COLORMODE_CUTOUT_EDGES:
-		col.setRgb(171, 216, 86);
-		break;
-	case COLORMODE_HIGHLIGHT_EDGES:
-		col.setRgb(255, 171, 86, 128);
-		break;
-	case COLORMODE_BACKGROUND_EDGES:
-		col.setRgb(150, 150, 150, 128);
-		break;
-	default:
-		return false;
-		break;
-	}
+	if (colormap.count(colormode)>0)
+		col = colormap.at(colormode);
 	return true;
+}
+
+Renderer::Renderer()
+{
+	// Setup default colors
+	colormap[COLORMODE_NONE] = Color4f(-1,-1,-1,-1);
+	colormap[COLORMODE_HIGHLIGHT] = Color4f(255, 81, 81, 128);
+	colormap[COLORMODE_BACKGROUND] = Color4f(180, 180, 180, 128);
+	colormap[COLORMODE_HIGHLIGHT_EDGES] = Color4f(255, 171, 86, 128);
+	colormap[COLORMODE_BACKGROUND_EDGES] = Color4f(150, 150, 150, 128);
+	// MATERIAL and CUTOUT colors are set by the default colorscheme
+	// (colorschemes do not currently hold Highlight/Background colors)
+	OSColors::colorscheme cs = RenderSettings::inst()->defaultColorScheme();
+	setColorScheme( cs );
+        PRINT("render constr");
 }
 
 void Renderer::setColor(const float color[4], GLint *shaderinfo) const
 {
-	Color4f col = RenderSettings::inst()->color(RenderSettings::OPENCSG_FACE_FRONT_COLOR);
+	Color4f col;
+	getColor(COLORMODE_MATERIAL,col);
 	float c[4] = {color[0], color[1], color[2], color[3]};
 	if (c[0] < 0) c[0] = col[0];
 	if (c[1] < 0) c[1] = col[1];
@@ -82,6 +70,19 @@ void Renderer::setColor(ColorMode colormode, GLint *shaderinfo) const
 {	
 	float c[4] = {-1,-1,-1,-1};
 	setColor(colormode, c, shaderinfo);
+}
+
+/* fill this->colormap with matching entries from the colorscheme. note 
+this does not change Highlight or Background colors as they are not 
+represented in the colorscheme (yet). Also edgecolors are currently the 
+same for CGAL & OpenCSG */
+void Renderer::setColorScheme( const OSColors::colorscheme &cs ) {
+        PRINT("renderer setcolsch");
+	colormap[COLORMODE_MATERIAL] = cs.at(OSColors::RenderColors::OPENCSG_FACE_FRONT_COLOR);
+	colormap[COLORMODE_CUTOUT] = cs.at(OSColors::RenderColors::OPENCSG_FACE_BACK_COLOR);
+	colormap[COLORMODE_MATERIAL_EDGES] = cs.at(OSColors::RenderColors::CGAL_EDGE_FRONT_COLOR);
+	colormap[COLORMODE_CUTOUT_EDGES] = cs.at(OSColors::RenderColors::CGAL_EDGE_BACK_COLOR);
+	colormap[COLORMODE_EMPTY_SPACE] = cs.at(OSColors::RenderColors::BACKGROUND_COLOR);
 }
 
 void Renderer::render_surface(shared_ptr<const Geometry> geom, csgmode_e csgmode, const Transform3d &m, GLint *shaderinfo)

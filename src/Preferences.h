@@ -4,9 +4,7 @@
 #include <QMainWindow>
 #include <QSettings>
 #include "ui_Preferences.h"
-#include "rendersettings.h"
-#include "linalg.h"
-#include <map>
+#include "colormap.h"
 
 class Preferences : public QMainWindow, public Ui::Preferences
 {
@@ -39,6 +37,7 @@ public slots:
 signals:
 	void requestRedraw() const;
 	void fontChanged(const QString &family, uint size) const;
+	void colorSchemeChanged(const QString &scheme) const;
 	void openCSGSettingsChanged() const;
 	void syntaxHighlightChanged(const QString &s);
 
@@ -51,7 +50,7 @@ private:
 	void addPrefPage(QActionGroup *group, QAction *action, QWidget *widget);
 
 	QSettings::SettingsMap defaultmap;
-	QHash<QString, std::map<RenderSettings::RenderColor, Color4f> > colorschemes;
+	QHash<QString, OSColors::colorscheme > colorschemes;
 	QHash<const QAction *, QWidget *> prefPages;
 
 	static Preferences *instance;

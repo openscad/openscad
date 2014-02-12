@@ -17,6 +17,8 @@
 //
 // Author(s)     : Peter Hachenberger <hachenberger@mpi-sb.mpg.de>
 
+// Modified for OpenSCAD
+
 #ifndef CGAL_NEF_OPENGL_HELPER_H
 #define CGAL_NEF_OPENGL_HELPER_H
 
@@ -26,14 +28,15 @@
 #include "system-gl.h"
 #include <cstdlib>
 
-#define CGAL_NEF3_MARKED_VERTEX_COLOR 183,232,92
+// Overridden in CGAL_renderer
+/*#define CGAL_NEF3_MARKED_VERTEX_COLOR 183,232,92
 #define CGAL_NEF3_MARKED_EDGE_COLOR 171,216,86
 #define CGAL_NEF3_MARKED_FACET_COLOR  157,203,81
 
 #define CGAL_NEF3_UNMARKED_VERTEX_COLOR 255,246,124
 #define CGAL_NEF3_UNMARKED_EDGE_COLOR 255,236,94
 #define CGAL_NEF3_UNMARKED_FACET_COLOR 249,215,44
-
+*/
 #ifdef _WIN32
 #define CGAL_GLU_TESS_CALLBACK CALLBACK
 #else
@@ -359,16 +362,20 @@ namespace OGL {
 
     virtual CGAL::Color getVertexColor(Vertex_iterator v) const
     {
-	CGAL::Color cf(CGAL_NEF3_MARKED_VERTEX_COLOR),
-	  ct(CGAL_NEF3_UNMARKED_VERTEX_COLOR); // more blue-ish
-	CGAL::Color c = v->mark() ? ct : cf;
+	(void)v;
+//	CGAL::Color cf(CGAL_NEF3_MARKED_VERTEX_COLOR),
+//	  ct(CGAL_NEF3_UNMARKED_VERTEX_COLOR); // more blue-ish
+//	CGAL::Color c = v->mark() ? ct : cf;
+	// Overridden in CGAL_renderer
+	CGAL::Color c(0,0,200);
 	return c;
     }
 
     void draw(Vertex_iterator v) const { 
       //      CGAL_NEF_TRACEN("drawing vertex "<<*v);
       CGAL::Color c = getVertexColor(v);
-      glPointSize(10);
+      //glPointSize(10);
+      glPointSize(1);
       glColor3ub(c.red(), c.green(), c.blue());
       glBegin(GL_POINTS);
       glVertex3d(v->x(),v->y(),v->z());
@@ -381,9 +388,12 @@ namespace OGL {
 
     virtual CGAL::Color getEdgeColor(Edge_iterator e) const
     {
-	CGAL::Color cf(CGAL_NEF3_MARKED_EDGE_COLOR),
-	  ct(CGAL_NEF3_UNMARKED_EDGE_COLOR); // more blue-ish
-	CGAL::Color c = e->mark() ? ct : cf;
+	(void)e;
+//	CGAL::Color cf(CGAL_NEF3_MARKED_EDGE_COLOR),
+//	  ct(CGAL_NEF3_UNMARKED_EDGE_COLOR); // more blue-ish
+//	CGAL::Color c = e->mark() ? ct : cf;
+	// Overridden in CGAL_renderer
+	CGAL::Color c(200,0,0);
 	return c;
     }
 
@@ -391,7 +401,8 @@ namespace OGL {
       //      CGAL_NEF_TRACEN("drawing edge "<<*e);
       Double_point p = e->source(), q = e->target();
       CGAL::Color c = getEdgeColor(e);
-      glLineWidth(5);
+      //glLineWidth(5);
+      glLineWidth(1);
       glColor3ub(c.red(),c.green(),c.blue());
       glBegin(GL_LINE_STRIP);
       glVertex3d(p.x(), p.y(), p.z());
@@ -401,9 +412,12 @@ namespace OGL {
 
     virtual CGAL::Color getFacetColor(Halffacet_iterator f) const
     {
-	CGAL::Color cf(CGAL_NEF3_MARKED_FACET_COLOR),
-	  ct(CGAL_NEF3_UNMARKED_FACET_COLOR); // more blue-ish
-	CGAL::Color c = (f->mark() ? ct : cf);
+	(void)f;
+//	CGAL::Color cf(CGAL_NEF3_MARKED_FACET_COLOR),
+//	  ct(CGAL_NEF3_UNMARKED_FACET_COLOR); // more blue-ish
+//	CGAL::Color c = (f->mark() ? ct : cf);
+	// Overridden in CGAL_renderer
+	CGAL::Color c(0,200,0);
 	return c;
     }
 

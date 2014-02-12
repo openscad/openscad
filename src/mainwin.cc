@@ -369,7 +369,12 @@ MainWindow::MainWindow(const QString &filename)
 					this, SLOT(openCSGSettingsChanged()));
 	connect(Preferences::inst(), SIGNAL(syntaxHighlightChanged(const QString&)), 
 					this, SLOT(setSyntaxHighlight(const QString&)));
+	connect(Preferences::inst(), SIGNAL(colorSchemeChanged(const QString&)), 
+					this, SLOT(setColorScheme(const QString&)));
 	Preferences::inst()->apply();
+
+	QString cs = Preferences::inst()->getValue("3dview/colorscheme").toString();
+	this->qglview->setColorScheme( cs.toStdString() );
 
 	// make sure it looks nice..
 	QSettings settings;
@@ -996,7 +1001,7 @@ void MainWindow::actionSave()
 		setCurrentOutput();
 		QFile file(this->fileName);
 		if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text)) {
-			PRINTB("Failed to open file for writing: %s (%s)", this->fileName.toLocal8Bit().constData() % file.errorString().toLocal8Bit().constData());
+			PRINTB("Failed to open file for writing: %s (%s)", this->fileName.totoLocal8Bit().constData() % file.errorString().totoLocal8Bit().constData());
 			QMessageBox::warning(this, windowTitle(), tr("Failed to open file for writing:\n %1 (%2)")
 					.arg(this->fileName).arg(file.errorString()));
 		}
@@ -1455,7 +1460,7 @@ void MainWindow::actionExportSTLorOFF(bool)
 		return;
 	}
 
-	std::ofstream fstream(stl_filename.toUtf8());
+	std::ofstream fstream(stl_filename.toLocal8Bit());
 	if (!fstream.is_open()) {
 		PRINTB("Can't open file \"%s\" for export", stl_filename.toLocal8Bit().constData());
 	}
@@ -1508,7 +1513,7 @@ void MainWindow::actionExportDXF()
 		return;
 	}
 
-	std::ofstream fstream(dxf_filename.toUtf8());
+	std::ofstream fstream(dxf_filename.toLocal8Bit());
 	if (!fstream.is_open()) {
 		PRINTB("Can't open file \"%s\" for export", dxf_filename.toLocal8Bit().constData());
 	}
@@ -1541,7 +1546,7 @@ void MainWindow::actionExportCSG()
 		return;
 	}
 
-	std::ofstream fstream(csg_filename.toUtf8());
+	std::ofstream fstream(csg_filename.toLocal8Bit());
 	if (!fstream.is_open()) {
 		PRINTB("Can't open file \"%s\" for export", csg_filename.toLocal8Bit().constData());
 	}
@@ -1878,6 +1883,12 @@ MainWindow::preferences()
 	Preferences::inst()->show();
 	Preferences::inst()->activateWindow();
 	Preferences::inst()->raise();
+}
+
+void MainWindow::setColorScheme(const QString &scheme)
+{
+	this->qglview->setColorScheme( scheme.toStdString() );
+	this->qglview->updateGL();
 }
 
 void MainWindow::setFont(const QString &family, uint size)

@@ -194,6 +194,7 @@ HEADERS += src/typedefs.h \
            src/parsersettings.h \
            src/renderer.h \
            src/rendersettings.h \
+           src/colormap.h \
            src/ThrownTogetherRenderer.h \
            src/CGAL_renderer.h \
            src/OGL_helper.h \

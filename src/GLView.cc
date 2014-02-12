@@ -1,6 +1,7 @@
 #include "GLView.h"
 
 #include "stdio.h"
+#include "colormap.h"
 #include "rendersettings.h"
 #include "mathc99.h"
 
@@ -36,6 +37,22 @@ GLView::GLView()
 void GLView::setRenderer(Renderer* r)
 {
   renderer = r;
+}
+
+// currently... this must be called after setRenderer
+void GLView::setColorScheme( OSColors::colorscheme &cs )
+{
+  this->colorscheme = cs;
+  if (this->renderer)
+    this->renderer->setColorScheme( cs );
+}
+
+void GLView::setColorScheme( std::string cs )
+{
+  if (OSColors::schemes.count(cs)>0)
+    setColorScheme( OSColors::schemes[cs] );
+  else
+    PRINTB("WARNING: GLView: unknown colorscheme %s",cs );
 }
 
 void GLView::resizeGL(int w, int h)
@@ -289,7 +306,11 @@ void GLView::vectorCamPaintGL()
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
 
-  glClearColor(1.0f, 1.0f, 0.92f, 1.0f);
+  Color4f bgcol = RenderSettings::inst()->defaultColorScheme()[OSColors::RenderColors::BACKGROUND_COLOR];
+  if (this->renderer)
+    renderer->getColor( Renderer::COLORMODE_EMPTY_SPACE, bgcol );
+  glClearColor(bgcol[0], bgcol[1], bgcol[2], 1.0);
+  //glClearColor(1.0f, 1.0f, 0.92f, 1.0f);
 
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
@@ -328,7 +349,9 @@ void GLView::gimbalCamPaintGL()
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
 
-  Color4f bgcol = RenderSettings::inst()->color(RenderSettings::BACKGROUND_COLOR);
+  Color4f bgcol = RenderSettings::inst()->defaultColorScheme()[OSColors::RenderColors::BACKGROUND_COLOR];
+  if (this->renderer)
+    renderer->getColor( Renderer::COLORMODE_EMPTY_SPACE, bgcol );
   glClearColor(bgcol[0], bgcol[1], bgcol[2], 1.0);
 
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
@@ -464,7 +487,7 @@ void GLView::showCrosshairs()
   // FIXME: Crosshairs and axes are lighted, this doesn't make sense and causes them
   // to change color based on view orientation.
   glLineWidth(3);
-  Color4f col = RenderSettings::inst()->color(RenderSettings::CROSSHAIR_COLOR);
+  Color4f col = RenderSettings::inst()->color(OSColors::RenderColors::CROSSHAIR_COLOR);
   glColor3f(col[0], col[1], col[2]);
   glBegin(GL_LINES);
   for (double xf = -1; xf <= +1; xf += 2)

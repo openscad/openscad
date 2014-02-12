@@ -193,6 +193,19 @@ Camera get_camera( po::variables_map vm )
 	camera.pixel_width = w;
 	camera.pixel_height = h;
 
+	if (vm.count("colorscheme")) {
+		std::string colorscheme = vm["colorscheme"].as<string>();
+		if (OSColors::schemes.count(colorscheme)>0) {
+			camera.colorscheme = OSColors::schemes[colorscheme];
+		} else {
+			PRINT("Unknown color scheme. Valid schemes:");
+			std::map<std::string, OSColors::colorscheme>::iterator i;
+			for(i=OSColors::schemes.begin();i!=OSColors::schemes.end();i++)
+				PRINTB("%s",i->first);
+			exit(1);
+		}
+	}
+
 	return camera;
 }
 
@@ -581,6 +594,7 @@ int main(int argc, char **argv)
 		("camera", po::value<string>(), "parameters for camera when exporting png")
 	        ("imgsize", po::value<string>(), "=width,height for exporting png")
 		("projection", po::value<string>(), "(o)rtho or (p)erspective when exporting png")
+	        ("colorscheme", po::value<string>(), "colorscheme")
 		("o,o", po::value<string>(), "out-file")
 		("s,s", po::value<string>(), "stl-file")
 		("x,x", po::value<string>(), "dxf-file")
