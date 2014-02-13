@@ -1402,6 +1402,7 @@ void MainWindow::actionRenderCGAL()
 void MainWindow::cgalRender()
 {
 	if (!this->root_module || !this->root_node) {
+        compileEnded();
 		return;
 	}
 
