@@ -88,6 +88,8 @@ private:
 	static void consoleOutput(const std::string &msg, void *userdata);
 	void loadViewSettings();
 	void loadDesignSettings();
+	void saveBackup();
+	void writeBackup(class QFile *file);
 
   class QMessageBox *openglbox;
 
@@ -199,7 +201,8 @@ private:
 
 	char const * afterCompileSlot;
 	bool procevents;
-	
+	class QTemporaryFile *tempFile;
+
 	class ProgressWidget *progresswidget;
 	class CGALWorker *cgalworker;
 	QMutex consolemutex;

@@ -41,6 +41,40 @@ std::string PlatformUtils::libraryPath()
 	return boosty::stringy( path );
 }
 
+
+std::string PlatformUtils::backupPath()
+{
+	fs::path path;
+	try {
+		std::string pathstr = PlatformUtils::documentsPath();
+		if (pathstr=="") return "";
+		path = boosty::canonical(fs::path( pathstr ));
+		if (path.empty()) return "";
+		path /= "OpenSCAD";
+		path /= "backups";
+	} catch (const fs::filesystem_error& ex) {
+		PRINTB("ERROR: %s",ex.what());
+	}
+	return boosty::stringy( path );
+}
+
+bool PlatformUtils::createBackupPath()
+{
+	std::string path = PlatformUtils::backupPath();
+	bool OK = false;
+	try {
+		if (!fs::exists(fs::path(path))) {
+			OK = fs::create_directories( path );
+		}
+		if (!OK) {
+			PRINTB("ERROR: Cannot create %s", path );
+		}
+	} catch (const fs::filesystem_error& ex) {
+		PRINTB("ERROR: %s",ex.what());
+	}
+	return OK;
+}
+
 #include "version_check.h"
 #define STRINGIFY(x) #x
 #define TOSTRING(x) STRINGIFY(x)
@@ -121,4 +155,3 @@ std::string PlatformUtils::info()
 	;
 	return s.str();
 }
-

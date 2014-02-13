@@ -75,6 +75,7 @@
 #include <QSettings>
 #include <QProgressDialog>
 #include <QMutexLocker>
+#include <QTemporaryFile>
 
 #include <fstream>
 
@@ -155,7 +156,7 @@ settings_valueList(const QString &key, const QList<int> &defaultList = QList<int
 }
 
 MainWindow::MainWindow(const QString &filename)
-	: root_inst("group"), progresswidget(NULL)
+	: root_inst("group"), tempFile(NULL), progresswidget(NULL)
 {
 	setupUi(this);
 
@@ -668,6 +669,7 @@ void MainWindow::compile(bool reload, bool forcedone)
 
 	if (shouldcompiletoplevel) {
 		console->clear();
+		saveBackup();
 		compileTopLevelDocument();
 		didcompile = true;
 	}
@@ -1008,6 +1010,57 @@ void MainWindow::actionOpenExample()
 	if (action) {
 		openFile(qexamplesdir + QDir::separator() + action->text());
 	}
+}
+
+void MainWindow::writeBackup(QFile *file)
+{
+	// see MainWindow::saveBackup()
+	file->resize(0);
+	QTextStream writer(file);
+	writer.setCodec("UTF-8");
+	writer << this->editor->toPlainText();
+	
+	PRINTB("Saved backup file: %s", file->fileName().toLocal8Bit().constData());
+}
+
+void MainWindow::saveBackup()
+{
+	std::string path = PlatformUtils::backupPath();
+	if ((!fs::exists(path)) && (!PlatformUtils::createBackupPath())) {
+		PRINTB("WARNING: Cannot create backup path: %s", path);
+		return;
+	}
+
+	QString backupPath = QString::fromStdString(path);
+	if (!backupPath.endsWith("/")) backupPath.append("/");
+
+	if (this->fileName.isEmpty()) {
+		if (!this->tempFile) {
+			this->tempFile = new QTemporaryFile(backupPath.append("unsaved-backup-XXXXXXXX.scad"));
+		}
+
+		if ((!this->tempFile->isOpen()) && (! this->tempFile->open())) {
+			PRINT("WARNING: Failed to create backup file");
+			return;
+		}
+		return writeBackup(this->tempFile);
+	}
+
+	QFileInfo fileInfo = QFileInfo(this->fileName);
+
+	backupPath.append(fileInfo.baseName())
+			.append("-backup.")
+			.append(fileInfo.suffix());
+
+	QFile file(backupPath);
+
+	if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+		PRINTB("WARNING: Failed to open backup file for writing: %s (%s)", backupPath.toLocal8Bit().constData() % file.errorString().toLocal8Bit().constData());
+		return;
+	}
+
+	writeBackup(&file);
+	file.close();
 }
 
 void MainWindow::actionSave()
@@ -2017,6 +2070,10 @@ void MainWindow::closeEvent(QCloseEvent *event)
 		settings.setValue("window/position", pos());
 		settings_setValueList("window/splitter1sizes",splitter1->sizes());
 		settings_setValueList("window/splitter2sizes",splitter2->sizes());
+		if (this->tempFile) {
+			delete this->tempFile;
+			this->tempFile = NULL;
+		}
 		event->accept();
 	} else {
 		event->ignore();
