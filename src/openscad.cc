@@ -343,6 +343,10 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 			root_geom = geomevaluator.evaluateGeometry(*tree.root(), true);
 			const CGAL_Nef_polyhedron *N = dynamic_cast<const CGAL_Nef_polyhedron*>(root_geom.get());
 			(void)N;
+			if (!root_geom) {
+				PRINT("Geometry Evaluation returned null. Cannot create output. Exiting.");
+				return 1;
+			}
 		}
 
 		fs::current_path(original_path);
