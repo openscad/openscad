@@ -91,7 +91,7 @@ int PlatformUtils::stat( const char *utf8path, void *buf )
 
 int PlatformUtils::getpid()
 {
-	int process_id = getpid();
+	return ::getpid();
 }
 #endif
 
