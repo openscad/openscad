@@ -417,8 +417,8 @@
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>803</width>
-               <height>311</height>
+               <width>98</width>
+               <height>36</height>
               </rect>
              </property>
              <layout class="QVBoxLayout" name="verticalLayout_10">
@@ -576,6 +576,12 @@
    </property>
    <property name="allowedAreas">
     <set>Qt::TopToolBarArea</set>
+   </property>
+   <property name="iconSize">
+    <size>
+     <width>32</width>
+     <height>32</height>
+    </size>
    </property>
    <property name="toolButtonStyle">
     <enum>Qt::ToolButtonTextUnderIcon</enum>
