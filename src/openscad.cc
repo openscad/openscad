@@ -188,14 +188,10 @@ Camera get_camera( po::variables_map vm )
 	return camera;
 }
 
-int cmdline(const char *deps_output_file, const std::string &filename, Camera &camera, const char *output_file, const fs::path &original_path, Render::type renderer, int argc, char ** argv )
+int cmdline(const char *deps_output_file, const std::string &filename, Camera &camera, const char *output_file, const fs::path &original_path, Render::type renderer, std::string application_name)
 {
-#ifdef OPENSCAD_QTGUI
-	QCoreApplication app(argc, argv);
-	const std::string application_path = QApplication::instance()->applicationDirPath().toLocal8Bit().constData();
-#else
-	const std::string application_path = boosty::stringy(boosty::absolute(boost::filesystem::path(argv[0]).parent_path()));
-#endif
+	const std::string application_path = boosty::stringy(boosty::absolute(boost::filesystem::path(application_name).parent_path()));
+
 	parser_init(application_path);
 	Tree tree;
 #ifdef ENABLE_CGAL
@@ -702,7 +698,7 @@ int main(int argc, char **argv)
 	}
 
 	if (cmdlinemode) {
-		rc = cmdline(deps_output_file, inputFiles[0], camera, output_file, original_path, renderer, argc, argv);
+		rc = cmdline(deps_output_file, inputFiles[0], camera, output_file, original_path, renderer, argv[0]);
 	}
 	else if (QtUseGUI()) {
 		rc = gui(inputFiles, original_path, argc, argv);
