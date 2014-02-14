@@ -3,24 +3,37 @@ programmers and users.
 
 Summary: As of writing, early 2014:
 
+  -Build is done as a cross-build from linux using http://mxe.cc
+  -Encoding of data in a file is a separate issue from encoding of it's filename
   -Windows filenames & cmdline args are ~UTF16, Linux/Mac are UTF8.
-  -There is no open source ifstream/ofstream fopen() that works with both.
+  -There is no open source ifstream/ofstream that works with UTF16 filenames
+  -GNU FSF ifstream/ofstream did not c++ template their filenames
   -Therefore all file i/o must go through PlatformUtils:: wrappers
   -std::ifstream & std::ofstream are limited in capability by our wrappers
   -Windows stdout/stdin differs in behavior between GUI programs and cmdline
   -Windows console has issues outputting unicode of any encoding.
   -openscad.com is the command line wrapper for openscad.exe, the gui
 
+Unicode
+=======
+
+000. Non-Unicode encodings
+
+Systems using encodings that are not based on unicode are not suported. 
+For example running on an old Windows machine that, for some reason, is 
+using KOI8 or SJIS instead of Unicode, is not supported currently and 
+will have unknown results.
+
 00. Encoding of Unicode
 
-As you may know, Unicode can be encoded in many different ways.
+As you may know, Unicode can be encoded in many different ways. 
 Unix(TM)/Mac(TM) use UTF8, which makes each character into a sequence of 
 one or more 8-bit bytes. Windows(TM) uses UTF16 (or UCS16 for very old 
 versions). This means that the Windows Command Line Options and the 
-Windows Filesystem will present UTF16 encoded data to the program, as 
-well as requiring UTF16 data from the program when performing certain tasks. 
-Therefore, some code that works on Unix/Mac won't operate as expected 
-on Windows.
+Windows Filesystem will present UTF16 encoded filenames and commandline 
+arguments to the program, as well as requiring UTF16 filenames the 
+program when performing certain tasks on those files. Therefore, some 
+code that works on Unix/Mac won't operate as expected on Windows.
 
 Unix/Mac typically use 'char' as the basic data type, and assume it is
 an 8bit unsigned integer. Windows typically uses wchar_t instead, and
@@ -32,16 +45,25 @@ are many ways to deal with this, and numerous websites discuss the
 various alternative approaches. The following document attempts to 
 describe how OpenSCAD deals with the issues.
 
-0. Program Startup, Command Line arguments, and Unicode
+0. Program Startup, main(), Command Line arguments, and Unicode
 
 Windows has multiple different 'entry points' for historical reasons, 
-some of which are Windows specific and some of which are designed to 
-deal with unicode on Windows console programs, etc etc. There is 
-WinMain, wmain, tchar or wchar_t wargv, etc. We do not do any of that. 
-Instead, we use a normal, ordinary main() function. PlatformUtils has a 
-function to grab Windows' UTF16 arguments using GetCommandLineW(), 
-ignoring the non-unicode char*argv, and then convert the arguments from 
-UTF16 to UTF8.
+some of which are Windows compiler specific and some of which are 
+designed to deal with unicode on Windows console programs, etc etc. 
+There is WinMain, wmain, tchar, etc, some of which use special args like 
+wchar_t wargv, etc. MingW-64 also contains a '-municode' flag and other 
+fetaures to work with these concepts. None of this is necessary. 
+
+We just use ordinary int main(int argc,char*argv), ignore argc and argv 
+(which will be invalid for unicode args) then call GetCommandLineW(), 
+which fetches the 'real' UTF16 command line from the Operating System. 
+Then... we convert the command line to UTF8, and re-write argv so it 
+points to UTF8 encoded strings, and then proceed as normal.
+
+Note that QT (our GUI toolkit) also reads from GetCommandLineW(), 
+ignoring argc and argv, which can be helpful information in 
+circumstances in which one may wish to start the GUI-mode openscad with 
+command line arguments for some reason.
 
 1. Command line and stdin/stdout
 
@@ -61,10 +83,10 @@ Windows(TM) command line / console.
 
 2. Command Line character display / rendering (glyphs)
 
-The windows(TM) 'dos box' console is not typically able to display Unicode 
-characters properly. To actually do that, one needs to set up the Font 
-and Code Page used by the console program itself, and then rewrite output
-functions.
+The windows(TM) 'dos box' or 'cmd.exe' console is not typically able to 
+display Unicode characters properly. To actually do that, one needs to 
+set up the Font and Code Page used by the console program itself, and 
+then rewrite output functions.
 
 Currently OpenSCAD cannot properly output Unicode strings to the Windows 
 console, even though it is properly processing unicode filenames 
@@ -104,6 +126,49 @@ encoded in UTF8.
 
 Theoretically, Boost provides portable wrapper to some Windows and 
 Unix/Mac file code, including fstream. In reality, since Boost is built 
-on top of the libstdc++ that one is using, a version of Boost built 
-under the current MingW cross-build will not be able to deal with UTF16
-filenames.
+on top of the libstdc++ that one is using, and under MingW/MXE the 
+GNU FSF libstdc++ is being used, and it doesn't have a UTF16 filename
+support, boost doesn't either.
+
+
+Builds
+======
+
+1. MSVC
+
+As of writing, (early 2014), MSVC has not been tested as a compiler
+in several years is not known to work. The difficult part is compiling
+the numerous dependency libraries, including libgmp and libmpfr, for
+which MSVC is not supported as a compiler. Additionally, the glib 
+dependency has never been used under MSVC with OpenSCAD. Extensive
+work would be required to fix the build. 
+
+2. Cross build
+
+The cross build, as detailed in README.md, is done from Linux and should
+be relatively straightforward, if slow, on an ordinary Linux system like
+Debian or Redhat. It can even be built from inside Windows if one downloads
+a Virtual Machine of linux and builds inside of the VM. 
+
+The entire cross-build depends on the http://mxe.cc system, not on the 
+packaged cross-build tools that come with standard linux distributions. 
+
+3. MingW64 vs MingW32
+
+MingW64 is not simply a 64 bit port of MingW32. It contains many 
+improvements over MingW32 and works a little bit differently. Also, 
+MingW64 can actually build both 64 bit and 32 bit binaries. Both
+are available from the mxe.cc system.
+
+As of writing (early 2014), OpenSCAD's build scripts use MingW32 for
+the 32 bit builds and MingW64 for the 64-bit builds. As time goes on,
+it may be possible to move to an entirely MingW64 system that builds both
+types of binaries.
+
+4. Test suite cross build
+
+The test suite cannot currently run under windows, as of writing (Early 2014). 
+However it can be run under the Wine environment under linux.
+
+See tests/CMingw-cross-env.cmake and doc/testing.txt
+
