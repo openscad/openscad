@@ -90,8 +90,8 @@ using std::vector;
 using boost::lexical_cast;
 using boost::is_any_of;
 
-std::string commandline_commands;
-std::string currentdir;
+string commandline_commands;
+string currentdir;
 
 class Echostream : public std::ofstream
 {
@@ -99,7 +99,7 @@ public:
 	Echostream( const char * filename ) : std::ofstream( filename ) {
 		set_output_handler( &Echostream::output, this );
 	}
-	static void output( const std::string &msg, void *userdata ) {
+	static void output( const string &msg, void *userdata ) {
 		Echostream *thisp = static_cast<Echostream*>(userdata);
 		*thisp << msg << "\n";
 	}
@@ -217,7 +217,7 @@ static bool assert_root_2d(CGAL_Nef_polyhedron &nef) {
 	return true;
 };
 
-int cmdline(const char *deps_output_file, const std::string &filename, Camera &camera, const char *output_file, const fs::path &original_path, Render::type renderer, std::string application_name)
+int cmdline(const char *deps_output_file, const string &filename, Camera &camera, const char *output_file, const fs::path &original_path, Render::type renderer, string application_name)
 {
 	CGAL_Nef_polyhedron root_N;
 	Tree tree;
@@ -267,8 +267,8 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 			return 0; }},
 		{"term", [&] {
 			// TODO: check wether CWD is correct at this point
-			std::vector<shared_ptr<CSGTerm> > highlight_terms;
-			std::vector<shared_ptr<CSGTerm> > background_terms;
+			vector<shared_ptr<CSGTerm> > highlight_terms;
+			vector<shared_ptr<CSGTerm> > background_terms;
 
 			PolySetCGALEvaluator psevaluator(*cgalevaluator);
 			CSGTermEvaluator csgRenderer(tree, &psevaluator);
@@ -293,7 +293,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 	};
 
 	// Select the action by the output file suffix; fail on unknown suffix
-	std::string suffix = boosty::extension_str( output_file );
+	string suffix = boosty::extension_str( output_file );
 	boost::algorithm::to_lower( suffix );
 	suffix = suffix.substr(1); // remove leading dot
 	if (!actions.count(suffix)) {
@@ -309,7 +309,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 
 
 	// Init parser, top_con
-	const std::string application_path = boosty::stringy(boosty::absolute(boost::filesystem::path(application_name).parent_path()));
+	const string application_path = boosty::stringy(boosty::absolute(boost::filesystem::path(application_name).parent_path()));
 	parser_init(application_path);
 #ifdef ENABLE_CGAL
 	cgalevaluator.reset(new CGALEvaluator(tree));
@@ -329,7 +329,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 	AbstractNode *absolute_root_node;
 
 	// Open the root source document. Either from file or stdin.
-	std::string text, parentpath;
+	string text, parentpath;
 	if (filename != "-") {
 	  handle_dep(filename);
 
@@ -338,11 +338,11 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 	    PRINTB("Can't open input file '%s'!\n", filename.c_str());
 	    return 1;
 	  }
-	  text = std::string((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
+	  text = string((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
 	  fs::path abspath = boosty::absolute(filename);
 	  parentpath = boosty::stringy(abspath.parent_path());
 	}else{
-	  text = std::string((std::istreambuf_iterator<char>(std::cin)), std::istreambuf_iterator<char>());
+	  text = string((std::istreambuf_iterator<char>(std::cin)), std::istreambuf_iterator<char>());
 	  parentpath = boosty::stringy(original_path);
 	}
 	text += "\n" + commandline_commands;
