@@ -62,6 +62,7 @@ public:
 	}
 
 	void draw(bool showedges) const {
+		PRINT("cgal hedron draw");
 		if(this->style == SNC_BOUNDARY) {
 			glCallList(this->object_list_+2);
 			if(showedges) {
@@ -105,10 +106,10 @@ public:
 		PRINT("cgal renderer polyhedron setcolsch");
 		//setColor(CGAL_NEF3_MARKED_VERTEX_COLOR,cs.at(...));
 		//setColor(CGAL_NEF3_UNMARKED_VERTEX_COLOR,cs.at(...));
-		setColor(CGAL_NEF3_MARKED_FACET_COLOR,cs.at(OSColors::RenderColors::CGAL_FACE_BACK_COLOR));
-		setColor(CGAL_NEF3_MARKED_EDGE_COLOR,cs.at(OSColors::RenderColors::CGAL_EDGE_FRONT_COLOR));
-		setColor(CGAL_NEF3_UNMARKED_FACET_COLOR,cs.at(OSColors::RenderColors::CGAL_FACE_FRONT_COLOR));
-                setColor(CGAL_NEF3_UNMARKED_EDGE_COLOR,cs.at(OSColors::RenderColors::CGAL_EDGE_BACK_COLOR));
+		setColor(CGAL_NEF3_MARKED_FACET_COLOR,OSColors::getValue(cs,OSColors::RenderColors::CGAL_FACE_BACK_COLOR));
+		setColor(CGAL_NEF3_MARKED_EDGE_COLOR,OSColors::getValue(cs,OSColors::RenderColors::CGAL_EDGE_FRONT_COLOR));
+		setColor(CGAL_NEF3_UNMARKED_FACET_COLOR,OSColors::getValue(cs,OSColors::RenderColors::CGAL_FACE_FRONT_COLOR));
+                setColor(CGAL_NEF3_UNMARKED_EDGE_COLOR,OSColors::getValue(cs,OSColors::RenderColors::CGAL_EDGE_BACK_COLOR));
 	}
 
 private:

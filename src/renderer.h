@@ -42,6 +42,7 @@ public:
 	};
 
 	std::map<ColorMode,Color4f> colormap;
+	OSColors::colorscheme *colorscheme;
 
 	virtual bool getColor(ColorMode colormode, Color4f &col) const;
 	virtual void setColor(const float color[4], GLint *shaderinfo = NULL) const;

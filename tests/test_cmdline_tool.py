@@ -212,11 +212,11 @@ def usage():
 # run openscad to generate an 3d output file. This script will then 
 # create a new .scad code file containing only a single 'import()' 
 # command on the generated 3d file. It will then re-run openscad on that 
-# newly generated 'import()' scad file and output a png image. Then the 
-# script will treat the generated PNG just like an ordinary test, 
-# looking for an 'expected' image and fuzz-comparing it to the actual 
-# generated image. During TEST_GENERATE, all of this is skipped, only a 
-# PNG is generated
+# newly generated 'import()' scad file and output a png image with 
+# Monotone colorscheme. Then the script will treat the generated PNG 
+# just like an ordinary test, looking for an 'expected' image and 
+# fuzz-comparing it to the actual generated image. During TEST_GENERATE, 
+# all of this is skipped, only a PNG is generated
 
 # modify the 'actualfilename' so that the first test run will generate a 
 # 3d file, like .stl

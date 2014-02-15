@@ -55,6 +55,7 @@ public:
 
 	void setColorScheme( OSColors::colorscheme &cs );
         void setColorScheme( std::string cs );
+	void updateColorScheme();
 
 	virtual bool save(const char *filename) = 0;
 	virtual std::string getRendererInfo() const = 0;

@@ -49,7 +49,8 @@ def tryread(filename):
         data = f.read()
         f.close()
     except Exception as e:
-        print 'couldn\'t open ',filename
+	if (filename==''): print 'couldnt open file with empty filename'
+        else: print 'couldn\'t open ',filename
         print type(e), e
     return data
 

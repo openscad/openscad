@@ -1607,6 +1607,7 @@ void MainWindow::viewModePreview()
 		viewModeActionsUncheck();
 		viewActionPreview->setChecked(true);
 		this->qglview->setRenderer(this->opencsgRenderer ? (Renderer *)this->opencsgRenderer : (Renderer *)this->thrownTogetherRenderer);
+		this->qglview->updateColorScheme();
 		this->qglview->updateGL();
 	} else {
 		viewModeThrownTogether();
@@ -1623,6 +1624,7 @@ void MainWindow::viewModeSurface()
 	viewActionSurfaces->setChecked(true);
 	this->qglview->setShowFaces(true);
 	this->qglview->setRenderer(this->cgalRenderer);
+	this->qglview->updateColorScheme();
 	this->qglview->updateGL();
 }
 
@@ -1632,6 +1634,7 @@ void MainWindow::viewModeWireframe()
 	viewActionWireframe->setChecked(true);
 	this->qglview->setShowFaces(false);
 	this->qglview->setRenderer(this->cgalRenderer);
+	this->qglview->updateColorScheme();
 	this->qglview->updateGL();
 }
 
@@ -1642,6 +1645,7 @@ void MainWindow::viewModeThrownTogether()
 	viewModeActionsUncheck();
 	viewActionThrownTogether->setChecked(true);
 	this->qglview->setRenderer(this->thrownTogetherRenderer);
+	this->qglview->updateColorScheme();
 	this->qglview->updateGL();
 }
 

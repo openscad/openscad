@@ -506,6 +506,7 @@ set(CORE_SOURCES
   ../src/parsersettings.cc
   ../src/mathc99.cc
   ../src/linalg.cc
+  ../src/colormap.cc
   ../src/handle_dep.cc 
   ../src/value.cc 
   ../src/calc.cc 
@@ -1033,13 +1034,15 @@ add_cmdline_test(throwntogethertest EXE ${OPENSCAD_BINPATH} ARGS --preview=throw
 # with anything. It's self-contained and returns != 0 on error
 add_cmdline_test(cgalstlsanitytest EXE ${CMAKE_SOURCE_DIR}/cgalstlsanitytest SUFFIX txt ARGS ${OPENSCAD_BINPATH} FILES ${CGALSTLSANITYTEST_FILES})
 
-# Export3d tests - for stl/off & other 3d formats. See above for more info.
-# The python script will detect the 'export' in the testname and then read
-# the format (stl,off) from the testname as well. We have to add --render here
-# because OpenCSG "marked face" (green) coloring is lost when exporting to STL,
-# so the generated PNG wont match unless we get rid of that coloring.
-add_cmdline_test(export3d_stl_test EXE ${OPENSCAD_BINPATH} ARGS --render -o SUFFIX png FILES ${EXPORT3D_TEST_FILES})
-add_cmdline_test(export3d_off_test EXE ${OPENSCAD_BINPATH} ARGS --render -o SUFFIX png FILES ${EXPORT3D_TEST_FILES})
+# Export3d tests - for stl/off & other 3d formats. See above for more 
+# info. The python script will detect the 'export' in the testname and 
+# then read the format (stl,off) from the testname as well. We have to 
+# use Montone colorscheme and --render because OpenCSG "marked face" 
+# (green) coloring, and background/special coloring, is lost when 
+# exporting to STL, so the generated PNG wont match unless we get rid of 
+# that coloring.
+add_cmdline_test(export3d_stl_test EXE ${OPENSCAD_BINPATH} ARGS --render --colorscheme=Monotone -o SUFFIX png FILES ${EXPORT3D_TEST_FILES})
+add_cmdline_test(export3d_off_test EXE ${OPENSCAD_BINPATH} ARGS --render --colorscheme=Monotone -o SUFFIX png FILES ${EXPORT3D_TEST_FILES})
 
 # Add experimental tests
 
@@ -1099,6 +1102,27 @@ add_cmdline_test(openscad-camcenter EXE ${OPENSCAD_BINPATH}
                  ARGS --imgsize=500,500 --camera=60,40,30,20,10,30  -o
                  SUFFIX png
                  FILES ${CMAKE_SOURCE_DIR}/../examples/example001.scad)
+
+add_cmdline_test(openscad-colorscheme-cornfield EXE ${OPENSCAD_BINPATH}
+                 ARGS --colorscheme=Cornfield -o 
+                 SUFFIX png 
+                 FILES ${CMAKE_SOURCE_DIR}/../examples/example002.scad)
+add_cmdline_test(openscad-colorscheme-metallic EXE ${OPENSCAD_BINPATH}
+                 ARGS --colorscheme=Metallic -o 
+                 SUFFIX png 
+                 FILES ${CMAKE_SOURCE_DIR}/../examples/example002.scad)
+add_cmdline_test(openscad-colorscheme-sunset EXE ${OPENSCAD_BINPATH}
+                 ARGS --colorscheme=Sunset -o 
+                 SUFFIX png 
+                 FILES ${CMAKE_SOURCE_DIR}/../examples/example002.scad)
+add_cmdline_test(openscad-colorscheme-severny EXE ${OPENSCAD_BINPATH}
+                 ARGS --colorscheme=Severny -o 
+                 SUFFIX png 
+                 FILES ${CMAKE_SOURCE_DIR}/../examples/example002.scad)
+add_cmdline_test(openscad-colorscheme-monotone EXE ${OPENSCAD_BINPATH}
+                 ARGS --colorscheme=Monotone -o 
+                 SUFFIX png 
+                 FILES ${CMAKE_SOURCE_DIR}/../examples/example002.scad)
 
 
 

@@ -39,12 +39,20 @@ void GLView::setRenderer(Renderer* r)
   renderer = r;
 }
 
-// currently... this must be called after setRenderer
+/* update the color schemes of the Renderer attached to this GLView
+to match the colorscheme of this GLView.*/
+void GLView::updateColorScheme()
+{
+  if (this->renderer)
+    this->renderer->setColorScheme( this->colorscheme );
+}
+
+/* change this GLView's colorscheme to the one given, and update the
+Renderer attached to this GLView as well. */
 void GLView::setColorScheme( OSColors::colorscheme &cs )
 {
   this->colorscheme = cs;
-  if (this->renderer)
-    this->renderer->setColorScheme( cs );
+  this->updateColorScheme();
 }
 
 void GLView::setColorScheme( std::string cs )
@@ -306,9 +314,7 @@ void GLView::vectorCamPaintGL()
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
 
-  Color4f bgcol = RenderSettings::inst()->defaultColorScheme()[OSColors::RenderColors::BACKGROUND_COLOR];
-  if (this->renderer)
-    renderer->getColor( Renderer::COLORMODE_EMPTY_SPACE, bgcol );
+  Color4f bgcol = OSColors::getValue( this->colorscheme, OSColors::RenderColors::BACKGROUND_COLOR );
   glClearColor(bgcol[0], bgcol[1], bgcol[2], 1.0);
   //glClearColor(1.0f, 1.0f, 0.92f, 1.0f);
 
@@ -349,9 +355,7 @@ void GLView::gimbalCamPaintGL()
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
 
-  Color4f bgcol = RenderSettings::inst()->defaultColorScheme()[OSColors::RenderColors::BACKGROUND_COLOR];
-  if (this->renderer)
-    renderer->getColor( Renderer::COLORMODE_EMPTY_SPACE, bgcol );
+  Color4f bgcol = OSColors::getValue( this->colorscheme, OSColors::RenderColors::BACKGROUND_COLOR );
   glClearColor(bgcol[0], bgcol[1], bgcol[2], 1.0);
 
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);

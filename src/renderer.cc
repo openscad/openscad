@@ -15,14 +15,17 @@ bool Renderer::getColor(Renderer::ColorMode colormode, Color4f &col) const
 
 Renderer::Renderer()
 {
+	this->colorscheme = NULL;
 	// Setup default colors
+	// MATERIAL and CUTOUT colors are set by the colorscheme
+	// (colorschemes do not currently hold Highlight/Background colors)
+
 	colormap[COLORMODE_NONE] = Color4f(-1,-1,-1,-1);
 	colormap[COLORMODE_HIGHLIGHT] = Color4f(255, 81, 81, 128);
 	colormap[COLORMODE_BACKGROUND] = Color4f(180, 180, 180, 128);
 	colormap[COLORMODE_HIGHLIGHT_EDGES] = Color4f(255, 171, 86, 128);
 	colormap[COLORMODE_BACKGROUND_EDGES] = Color4f(150, 150, 150, 128);
-	// MATERIAL and CUTOUT colors are set by the default colorscheme
-	// (colorschemes do not currently hold Highlight/Background colors)
+
 	OSColors::colorscheme cs = RenderSettings::inst()->defaultColorScheme();
 	setColorScheme( cs );
         PRINT("render constr");
@@ -78,11 +81,12 @@ represented in the colorscheme (yet). Also edgecolors are currently the
 same for CGAL & OpenCSG */
 void Renderer::setColorScheme( const OSColors::colorscheme &cs ) {
         PRINT("renderer setcolsch");
-	colormap[COLORMODE_MATERIAL] = cs.at(OSColors::RenderColors::OPENCSG_FACE_FRONT_COLOR);
-	colormap[COLORMODE_CUTOUT] = cs.at(OSColors::RenderColors::OPENCSG_FACE_BACK_COLOR);
-	colormap[COLORMODE_MATERIAL_EDGES] = cs.at(OSColors::RenderColors::CGAL_EDGE_FRONT_COLOR);
-	colormap[COLORMODE_CUTOUT_EDGES] = cs.at(OSColors::RenderColors::CGAL_EDGE_BACK_COLOR);
-	colormap[COLORMODE_EMPTY_SPACE] = cs.at(OSColors::RenderColors::BACKGROUND_COLOR);
+	colormap[COLORMODE_MATERIAL] = OSColors::getValue(cs,OSColors::RenderColors::OPENCSG_FACE_FRONT_COLOR);
+	colormap[COLORMODE_CUTOUT] = OSColors::getValue(cs,OSColors::RenderColors::OPENCSG_FACE_BACK_COLOR);
+	colormap[COLORMODE_MATERIAL_EDGES] = OSColors::getValue(cs,OSColors::RenderColors::CGAL_EDGE_FRONT_COLOR);
+	colormap[COLORMODE_CUTOUT_EDGES] = OSColors::getValue(cs,OSColors::RenderColors::CGAL_EDGE_BACK_COLOR);
+	colormap[COLORMODE_EMPTY_SPACE] = OSColors::getValue(cs,OSColors::RenderColors::BACKGROUND_COLOR);
+	this->colorscheme = const_cast<OSColors::colorscheme*>(&cs);
 }
 
 void Renderer::render_surface(shared_ptr<const Geometry> geom, csgmode_e csgmode, const Transform3d &m, GLint *shaderinfo)

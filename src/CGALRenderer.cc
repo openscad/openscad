@@ -43,6 +43,9 @@
 
 CGALRenderer::CGALRenderer(shared_ptr<const class Geometry> geom) : polyhedron(NULL)
 {
+	this->polyset.reset();
+	this->polyhedron = NULL;
+
 	if (shared_ptr<const PolySet> ps = dynamic_pointer_cast<const PolySet>(geom)) {
 		this->polyset = ps;
 	}
@@ -52,29 +55,37 @@ CGALRenderer::CGALRenderer(shared_ptr<const class Geometry> geom) : polyhedron(N
 	else if (shared_ptr<const CGAL_Nef_polyhedron> new_N = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom)) {
 		assert(new_N->getDimension() == 3);
 		if (!new_N->isEmpty()) {
-			this->polyhedron = new Polyhedron();
-			// FIXME: Make independent of Preferences
-			// this->polyhedron->setColor(Polyhedron::CGAL_NEF3_MARKED_FACET_COLOR,
-			// 													 Preferences::inst()->color(Preferences::CGAL_FACE_BACK_COLOR).red(),
-			// 													 Preferences::inst()->color(Preferences::CGAL_FACE_BACK_COLOR).green(),
-			// 													 Preferences::inst()->color(Preferences::CGAL_FACE_BACK_COLOR).blue());
-			// this->polyhedron->setColor(Polyhedron::CGAL_NEF3_UNMARKED_FACET_COLOR,
-			// 													 Preferences::inst()->color(Preferences::CGAL_FACE_FRONT_COLOR).red(),
-			// 													 Preferences::inst()->color(Preferences::CGAL_FACE_FRONT_COLOR).green(),
-			// 													 Preferences::inst()->color(Preferences::CGAL_FACE_FRONT_COLOR).blue());
-			
-			CGAL::OGL::Nef3_Converter<CGAL_Nef_polyhedron3>::convert_to_OGLPolyhedron(*new_N->p3, this->polyhedron);
-			this->polyhedron->init();
+			this->nef3 = new_N->p3;
+			this->rebuildPolyhedron();
 		}
 	}
+}
+
+void CGALRenderer::rebuildPolyhedron()
+{
+	PRINT("cgr rebuild poly");
+	if (this->polyset) this->polyset.reset();
+	delete this->polyhedron;
+	this->polyhedron = NULL;
+	if (!this->nef3) {
+		PRINT("rebuild failed, nef is NULL");
+		return;
+	}
+	this->polyhedron = new Polyhedron();
+	if (this->colorscheme)
+		this->polyhedron->setColorScheme( *this->colorscheme );
+	CGAL::OGL::Nef3_Converter<CGAL_Nef_polyhedron3>::convert_to_OGLPolyhedron(*this->nef3, this->polyhedron);
+	// CGAL_NEF3_MARKED_FACET_COLOR <- CGAL_FACE_BACK_COLOR
+	// CGAL_NEF3_UNMARKED_FACET_COLOR <- CGAL_FACE_FRONT_COLOR
+	this->polyhedron->init();
+	PRINT("cgr rebuild end");
 }
 
 void CGALRenderer::setColorScheme( const OSColors::colorscheme &cs )
 {
 	PRINT("Cgalrenderer scholor");
 	Renderer::setColorScheme( cs );
-	if (this->polyhedron)
-		this->polyhedron->setColorScheme(cs);
+	this->rebuildPolyhedron();
 	PRINT("Cgalrenderer scholor done");
 }
 
@@ -86,6 +97,7 @@ CGALRenderer::~CGALRenderer()
 
 void CGALRenderer::draw(bool showfaces, bool showedges) const
 {
+	PRINT("cgalrenderer draw");
 	if (this->polyset) {
 		if (this->polyset->getDimension() == 2) {
 			// Draw 2D polygons
@@ -112,6 +124,7 @@ void CGALRenderer::draw(bool showfaces, bool showedges) const
 			glEnable(GL_DEPTH_TEST);
 		}
 		else {
+			PRINT("cgalrenderer polyset draw");
 			// Draw 3D polygons
 			const Color4f c(-1,-1,-1,-1);	
 			setColor(COLORMODE_MATERIAL, c.data(), NULL);
@@ -119,6 +132,7 @@ void CGALRenderer::draw(bool showfaces, bool showedges) const
 		}
 	}
 	else if (this->polyhedron) {
+		PRINT("cgalrenderer polyhedron draw");
 		if (showfaces) this->polyhedron->set_style(SNC_BOUNDARY);
 		else this->polyhedron->set_style(SNC_SKELETON);
 		

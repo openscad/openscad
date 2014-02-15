@@ -338,6 +338,7 @@ SOURCES += src/version_check.cc \
            src/export_png.cc \
            src/import.cc \
            src/renderer.cc \
+           src/colormap.cc \
            src/ThrownTogetherRenderer.cc \
            src/CSGTermEvaluator.cc \
            src/svg.cc \
