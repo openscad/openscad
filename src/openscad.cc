@@ -68,9 +68,10 @@
 
 #include "Camera.h"
 #include <boost/algorithm/string.hpp>
-#include <boost/program_options.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/foreach.hpp>
+#include <boost/optional.hpp>
+#include <boost/program_options.hpp>
 #include "boosty.h"
 
 #ifdef _MSC_VER
@@ -89,6 +90,7 @@ using std::unique_ptr;
 using std::vector;
 using boost::lexical_cast;
 using boost::is_any_of;
+using boost::optional;
 
 string commandline_commands;
 string currentdir;
@@ -217,7 +219,7 @@ static bool assert_root_2d(CGAL_Nef_polyhedron &nef) {
 	return true;
 };
 
-int cmdline(const char *deps_output_file, const string &filename, Camera &camera, const string output_file, const fs::path &original_path, Render::type renderer, string application_name)
+int cmdline(optional<string> deps_output_file, const string &filename, Camera &camera, const string output_file, const fs::path &original_path, Render::type renderer, string application_name)
 {
 	CGAL_Nef_polyhedron root_N;
 	Tree tree;
@@ -369,7 +371,7 @@ int cmdline(const char *deps_output_file, const string &filename, Camera &camera
 			PRINT("Sorry, don't know how to write deps for that file type. Exiting\n");
 			return 1;
 		}
-		if (!write_deps(deps_output_file, output_file)) {
+		if (!write_deps(*deps_output_file, output_file)) {
 			PRINT("error writing deps");
 			return 1;
 		}
@@ -534,7 +536,6 @@ int gui(const vector<string> &inputFiles, const fs::path &original_path, int arg
 
 int main(int argc, char **argv)
 {
-	int rc = 0;
 #ifdef Q_OS_MAC
 	set_output_handler(CocoaUtils::nslog, NULL);
 #endif
@@ -547,8 +548,7 @@ int main(int argc, char **argv)
 
 	fs::path original_path = fs::current_path();
 
-	const char *output_file = NULL;
-	const char *deps_output_file = NULL;
+	optional<string> output_file, deps_output_file;
 
 	po::options_description opt_actions("Actions (pick one, or none to start the gui)");
 	opt_actions.add_options()
@@ -615,39 +615,33 @@ int main(int argc, char **argv)
 		RenderSettings::inst()->openCSGTermLimit = vm["csglimit"].as<unsigned int>();
 	}
 
-	if (vm.count("o")) {
-		// FIXME: Allow for multiple output files?
-		if (output_file) help();
-		output_file = vm["o"].as<string>().c_str();
-	}
-	if (vm.count("s")) {
-		PRINT("DEPRECATED: The -s option is deprecated. Use -o instead.\n");
-		if (output_file) help();
-		output_file = vm["s"].as<string>().c_str();
-	}
-	if (vm.count("x")) { 
-		PRINT("DEPRECATED: The -x option is deprecated. Use -o instead.\n");
-		if (output_file) help();
-		output_file = vm["x"].as<string>().c_str();
-	}
-	if (vm.count("d")) {
-		deps_output_file = vm["d"].as<string>().c_str();
-	}
-	if (vm.count("m")) {
-		make_command = vm["m"].as<string>().c_str();
-	}
+	// lambda to return an optional<string> from an optional option
+	auto optstr = [&](string option_name) {
+		if (vm.count(option_name)) {
+			return optional<string>(vm[option_name].as<string>());
+		}else{
+			return optional<string>();
+		}
+	};
 
-	if (vm.count("D")) {
-		BOOST_FOREACH(const string &cmd, vm["D"].as<vector<string> >()) {
-			commandline_commands += cmd;
-			commandline_commands += ";\n";
-		}
+	for (auto &option_name : vector<string>{"o", "s", "x"}) {
+		if (!vm.count(option_name)) continue;
+		// FIXME: Allow for multiple output files?
+		if (output_file)
+			help();
+		if (option_name != "o")
+			PRINTB("DEPRECATED: The -% option is deprecated. Use -o instead.\n", option_name);
+
+		output_file = optstr(option_name);
 	}
-	if (vm.count("enable")) {
-		BOOST_FOREACH(const string &feature, vm["enable"].as<vector<string> >()) {
+	make_command = optstr("m");
+	if (vm.count("D"))
+		for (auto &cmd : vm["D"].as<vector<string>>())
+			commandline_commands += cmd + ";\n";
+	if (vm.count("D"))
+		for (auto &feature : vm["enable"].as<vector<string>>())
 			Feature::enable_feature(feature);
-		}
-	}
+
 	vector<string> inputFiles;
 	if (vm.count("input-file"))	{
 		inputFiles = vm["input-file"].as<vector<string> >();
@@ -666,19 +660,13 @@ int main(int argc, char **argv)
 	NodeCache nodecache;
 	NodeDumper dumper(nodecache);
 
-	bool cmdlinemode = false;
+	int rc;
 	if (output_file) { // cmd-line mode
-		cmdlinemode = true;
 		if (!inputFiles.size()) help();
-	}
-
-	if (cmdlinemode) {
-		rc = cmdline(deps_output_file, inputFiles[0], camera, output_file, original_path, renderer, argv[0]);
-	}
-	else if (QtUseGUI()) {
+		rc = cmdline(optstr("d"), inputFiles[0], camera, *output_file, original_path, renderer, argv[0]);
+	} else if (QtUseGUI()) {
 		rc = gui(inputFiles, original_path, argc, argv);
-	}
-	else {
+	} else {
 		PRINT("Requested GUI mode but can't open display!\n");
 		help();
 	}
@@ -687,4 +675,3 @@ int main(int argc, char **argv)
 
 	return rc;
 }
-
