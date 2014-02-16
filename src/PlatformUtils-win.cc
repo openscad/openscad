@@ -6,6 +6,11 @@
 #endif
 #include <shlobj.h>
 
+std::string PlatformUtils::pathSeparatorChar()
+{
+	return ";";
+}
+
 // convert from windows api w_char strings (usually utf16) to utf8 std::string
 std::string winapi_wstr_to_utf8( std::wstring wstr )
 {
