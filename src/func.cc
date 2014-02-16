@@ -598,6 +598,23 @@ Value builtin_parent_module(const Context *, const EvalContext *evalctx)
 	return Value(Module::stack_element(s - 1 - n));
 }
 
+Value builtin_norm(const Context *, const EvalContext *evalctx)
+{
+	if (evalctx->numArgs() == 1 && evalctx->getArgValue(0).type() == Value::VECTOR) {
+		double sum = 0;
+		Value::VectorType v = evalctx->getArgValue(0).toVector();
+		for (size_t i = 0; i < v.size(); i++)
+			if (v[i].type() == Value::NUMBER)
+				sum += pow(v[i].toDouble(),2);
+			else {
+				PRINT("  WARNING: Incorrect arguments to norm()");
+				return Value();
+			}
+		return Value(sqrt(sum));
+	}
+	return Value();
+}
+
 void register_builtin_functions()
 {
 	Builtins::init("abs", new BuiltinFunction(&builtin_abs));
@@ -627,5 +644,6 @@ void register_builtin_functions()
 	Builtins::init("search", new BuiltinFunction(&builtin_search));
 	Builtins::init("version", new BuiltinFunction(&builtin_version));
 	Builtins::init("version_num", new BuiltinFunction(&builtin_version_num));
+	Builtins::init("norm", new BuiltinFunction(&builtin_norm));
 	Builtins::init("parent_module", new BuiltinFunction(&builtin_parent_module));
 }
