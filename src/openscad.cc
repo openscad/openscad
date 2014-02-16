@@ -631,13 +631,9 @@ int main(int argc, char **argv)
 		output_file = vm["x"].as<string>().c_str();
 	}
 	if (vm.count("d")) {
-		if (deps_output_file)
-			help();
 		deps_output_file = vm["d"].as<string>().c_str();
 	}
 	if (vm.count("m")) {
-		if (make_command)
-			help();
 		make_command = vm["m"].as<string>().c_str();
 	}
 
