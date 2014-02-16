@@ -219,7 +219,11 @@ static bool assert_root_2d(CGAL_Nef_polyhedron &nef) {
 	return true;
 };
 
-int cmdline(optional<string> deps_output_file, const string &filename, Camera &camera, const string output_file, const fs::path &original_path, Render::type renderer, string application_name)
+int cmdline(optional<string> action, optional<string> output_file,
+	    optional<string> deps_output_file,
+	    const string &filename,
+	    Camera &camera, Render::type renderer,
+	    const fs::path &original_path, string application_name)
 {
 	CGAL_Nef_polyhedron root_N;
 	Tree tree;
@@ -290,19 +294,26 @@ int cmdline(optional<string> deps_output_file, const string &filename, Camera &c
 			return 0; }}
 	};
 
-	// Select the action by the output file suffix; fail on unknown suffix
-	string suffix = boosty::extension_str( output_file );
-	boost::algorithm::to_lower( suffix );
-	suffix = suffix.substr(1); // remove leading dot
-	if (!actions.count(suffix)) {
-		PRINTB("Unknown suffix for output file %s\n", output_file);
-		return 1;
+	// Set action and output filename; both are optional
+	if (!action && (!output_file || (*output_file == "-")))
+	  action = "stl";
+	if (!action) {
+	  // Guess action from filename suffix
+	  action = boosty::extension_str(*output_file);
+	  boost::algorithm::to_lower(*action);
+	  action = action->substr(1); // remove leading dot
+	  if (!actions.count(*action)) {
+	    PRINTB("Unknown suffix for output file %s\n", output_file);
+	    return 1;
+	  }
 	}
+	if (!output_file)
+	  output_file = filename + "." + *action;
 
 	// Open the output file early if it is an echo stream
 	unique_ptr<Echostream> echostream;
-	string temp_output_file = output_file + "~";
-	if (suffix == "echo")
+	string temp_output_file = *output_file + "~";
+	if (*action == "echo")
 		echostream.reset(new Echostream(temp_output_file.c_str()));
 
 	// Init parser, top_con
@@ -366,20 +377,20 @@ int cmdline(optional<string> deps_output_file, const string &filename, Camera &c
 
 	// Write dependencies if required
 	if (deps_output_file) {
-		if (!set<string>{"stl", "off", "dxf", "png"}.count(suffix)) {
-			PRINTB("Output file: %s\n", output_file);
+		if (!set<string>{"stl", "off", "dxf", "png"}.count(*action)) {
+			PRINTB("Output file: %s\n", *output_file);
 			PRINT("Sorry, don't know how to write deps for that file type. Exiting\n");
 			return 1;
 		}
-		if (!write_deps(*deps_output_file, output_file)) {
+		if (!write_deps(*deps_output_file, *output_file)) {
 			PRINT("error writing deps");
 			return 1;
 		}
 	}
 
 	// Open output file late to catch errors before writing anything to disk
-	if (suffix != "echo") {
-		fstream.open(temp_output_file, (suffix == "png") ? std::ios::binary : std::ios::out);
+	if (*action != "echo") {
+		fstream.open(temp_output_file, (*action == "png") ? std::ios::binary : std::ios::out);
 		if (!fstream.is_open()) {
 			PRINTB("Can't open file \"%s\" for export", temp_output_file);
 			return 1;
@@ -387,13 +398,13 @@ int cmdline(optional<string> deps_output_file, const string &filename, Camera &c
 	}
 
 	// Call the intended action
-	auto ret = actions[suffix]();
+	auto ret = actions[*action]();
 
 	// Commit the file if succesfull, delete it otherwise.
 	if (!ret) {
 		// Success
-		if (rename(temp_output_file.c_str(), output_file.c_str())) {
-			PRINTB("Can't rename \"%s\" to \"%s\"", temp_output_file % output_file);
+		if (rename(temp_output_file.c_str(), output_file->c_str())) {
+			PRINTB("Can't rename \"%s\" to \"%s\"", temp_output_file % *output_file);
 			return 1;
 		}
 	}else{
@@ -552,13 +563,14 @@ int main(int argc, char **argv)
 
 	po::options_description opt_actions("Actions (pick one, or none to start the gui)");
 	opt_actions.add_options()
-	  ("o,o", po::value<string>(), "output file; file extensions determines action:\n"
+	  ("o,o", po::value<string>(), "output file; \"-\" writes to standart output; file extensions determines action unless specified by -a:\n"
 	                               "  .stl .off .dxf .csg - export geometry\n"
 	                               "  .png - render image\n"
 	                               "  .ast - export abstract syntax tree"
 	                               // TODO ".term"
                                        // TODO ".echo"
 	   )
+	  ("action,a", po::value<string>(), "overide action implied by -o")
 	  ("help,h", "print this help message")
 	  ("info", "print information about the building process")
 	  ("version,v", "print the version");
@@ -663,7 +675,7 @@ int main(int argc, char **argv)
 	int rc;
 	if (output_file) { // cmd-line mode
 		if (!inputFiles.size()) help();
-		rc = cmdline(optstr("d"), inputFiles[0], camera, *output_file, original_path, renderer, argv[0]);
+		rc = cmdline(optstr("action"), output_file, optstr("d"), inputFiles[0], camera, renderer, original_path, argv[0]);
 	} else if (QtUseGUI()) {
 		rc = gui(inputFiles, original_path, argc, argv);
 	} else {
