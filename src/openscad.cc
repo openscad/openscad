@@ -217,7 +217,7 @@ static bool assert_root_2d(CGAL_Nef_polyhedron &nef) {
 	return true;
 };
 
-int cmdline(const char *deps_output_file, const string &filename, Camera &camera, const char *output_file, const fs::path &original_path, Render::type renderer, string application_name)
+int cmdline(const char *deps_output_file, const string &filename, Camera &camera, const string output_file, const fs::path &original_path, Render::type renderer, string application_name)
 {
 	CGAL_Nef_polyhedron root_N;
 	Tree tree;
@@ -239,13 +239,11 @@ int cmdline(const char *deps_output_file, const string &filename, Camera &camera
 			root_N = cgalevaluator->evaluateCGALMesh(*tree.root());
 			if (!assert_root_3d_simple(root_N)) return 1;
 			export_off(&root_N, fstream);
-			fstream.close();
 			return 0; }},
 		{"dxf", [&] {
 			root_N = cgalevaluator->evaluateCGALMesh(*tree.root());
 			if (!assert_root_2d(root_N)) return 1;
 			export_dxf(&root_N, fstream);
-			fstream.close();
 			return 0; }},
 		{"png", [&] {
 			switch (renderer) {
@@ -267,11 +265,9 @@ int cmdline(const char *deps_output_file, const string &filename, Camera &camera
 			return 0; }},
 		{"term", [&] {
 			// TODO: check wether CWD is correct at this point
-			vector<shared_ptr<CSGTerm> > highlight_terms;
-			vector<shared_ptr<CSGTerm> > background_terms;
-
 			PolySetCGALEvaluator psevaluator(*cgalevaluator);
 			CSGTermEvaluator csgRenderer(tree, &psevaluator);
+			vector<shared_ptr<CSGTerm> > highlight_terms, background_terms;
 			shared_ptr<CSGTerm> root_raw_term = csgRenderer.evaluateCSGTerm(*root_node, highlight_terms, background_terms);
 
 			if (!root_raw_term) {
@@ -301,12 +297,11 @@ int cmdline(const char *deps_output_file, const string &filename, Camera &camera
 		return 1;
 	}
 
-	// Open the output file
-	fstream.open(output_file, (suffix == "png") ? std::ios::binary : std::ios::out);
-	if (!fstream.is_open()) {
-	  PRINTB("Can't open file \"%s\" for export", output_file);
-	}
-
+	// Open the output file early if it is an echo stream
+	unique_ptr<Echostream> echostream;
+	string temp_output_file = output_file + "~";
+	if (suffix == "echo")
+		echostream.reset(new Echostream(temp_output_file.c_str()));
 
 	// Init parser, top_con
 	const string application_path = boosty::stringy(boosty::absolute(boost::filesystem::path(application_name).parent_path()));
@@ -321,9 +316,6 @@ int cmdline(const char *deps_output_file, const string &filename, Camera &camera
 #if 0 && DEBUG
 	top_ctx.dump(NULL, NULL);
 #endif
-	unique_ptr<Echostream> echostream;
-	if (suffix == "echo")
-		echostream.reset( new Echostream( output_file ) );
 
 	ModuleInstantiation root_inst("group");
 	AbstractNode *absolute_root_node;
@@ -383,8 +375,33 @@ int cmdline(const char *deps_output_file, const string &filename, Camera &camera
 		}
 	}
 
+	// Open output file late to catch errors before writing anything to disk
+	if (suffix != "echo") {
+		fstream.open(temp_output_file, (suffix == "png") ? std::ios::binary : std::ios::out);
+		if (!fstream.is_open()) {
+			PRINTB("Can't open file \"%s\" for export", temp_output_file);
+			return 1;
+		}
+	}
+
 	// Call the intended action
 	auto ret = actions[suffix]();
+
+	// Commit the file if succesfull, delete it otherwise.
+	if (!ret) {
+		// Success
+		if (rename(temp_output_file.c_str(), output_file.c_str())) {
+			PRINTB("Can't rename \"%s\" to \"%s\"", temp_output_file % output_file);
+			return 1;
+		}
+	}else{
+		// Failure
+		if (remove(temp_output_file.c_str())) {
+			PRINTB("Can't remove \"%s\"", temp_output_file);
+			return 1;
+		}
+		fstream.close();
+	}
 
 	// Clean up
 	delete root_node;
