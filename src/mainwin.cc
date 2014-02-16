@@ -2115,23 +2115,21 @@ void MainWindow::quit()
 #endif
 }
 
-void MainWindow::consoleOutput(const std::string &msg, void *userdata)
+void MainWindow::consoleOutput(const std::string &msg)
 {
 	// Invoke the append function in the main thread in case the output
-  // originates in a worker thread.
-	MainWindow *thisp = static_cast<MainWindow*>(userdata);
-	QMetaObject::invokeMethod(thisp->console, "append", Qt::QueuedConnection,
-														Q_ARG(QString, QString::fromLocal8Bit(msg.c_str())));
+	// originates in a worker thread.
+	QMetaObject::invokeMethod(console, "append", Qt::QueuedConnection, Q_ARG(QString, QString::fromLocal8Bit(msg.c_str())));
 }
 
 void MainWindow::setCurrentOutput()
 {
-	set_output_handler(&MainWindow::consoleOutput, this);
+	set_output_handler([&](std::string msg) { this->consoleOutput(msg); });
 }
 
 void MainWindow::clearCurrentOutput()
 {
-	set_output_handler(NULL, NULL);
+	set_output_handler(default_outputhandler);
 }
 
 void MainWindow::openCSGSettingsChanged()

@@ -95,21 +95,6 @@ using boost::optional;
 string commandline_commands;
 string currentdir;
 
-class Echostream : public std::ofstream
-{
-public:
-	Echostream( const char * filename ) : std::ofstream( filename ) {
-		set_output_handler( &Echostream::output, this );
-	}
-	static void output( const string &msg, void *userdata ) {
-		Echostream *thisp = static_cast<Echostream*>(userdata);
-		*thisp << msg << "\n";
-	}
-	~Echostream() {
-		this->close();
-	}
-};
-
 static void help(const char *progname, vector<po::options_description> options)
 {
   std::ostringstream ss;
@@ -231,7 +216,7 @@ int cmdline(optional<string> action, optional<string> output_file,
 	fs::path fparent;
 	FileModule *root_module;
 	AbstractNode *root_node;
-	std::ofstream fstream;
+	std::ostream *output_stream;
 
 	// list of actions to be performed, indexed by filename suffix
 	map<string, function<int(void)>> actions{
@@ -239,29 +224,29 @@ int cmdline(optional<string> action, optional<string> output_file,
 		{"stl", [&] {
 			root_N = cgalevaluator->evaluateCGALMesh(*tree.root());
 			if (!assert_root_3d_simple(root_N)) return 1;
-			export_stl(&root_N, fstream);
+			export_stl(&root_N, *output_stream);
 			return 0; }},
 		{"off", [&] {
 			root_N = cgalevaluator->evaluateCGALMesh(*tree.root());
 			if (!assert_root_3d_simple(root_N)) return 1;
-			export_off(&root_N, fstream);
+			export_off(&root_N, *output_stream);
 			return 0; }},
 		{"dxf", [&] {
 			root_N = cgalevaluator->evaluateCGALMesh(*tree.root());
 			if (!assert_root_2d(root_N)) return 1;
-			export_dxf(&root_N, fstream);
+			export_dxf(&root_N, *output_stream);
 			return 0; }},
 		{"png", [&] {
 			switch (renderer) {
 			case Render::CGAL:
 				root_N = cgalevaluator->evaluateCGALMesh(*tree.root());
-				export_png_with_cgal(&root_N, camera, fstream);
+				export_png_with_cgal(&root_N, camera, *output_stream);
 				break;
 			case Render::THROWNTOGETHER:
-				export_png_with_throwntogether(tree, camera, fstream);
+				export_png_with_throwntogether(tree, camera, *output_stream);
 				break;
 			case Render::OPENCSG:
-				export_png_with_opencsg(tree, camera, fstream);
+				export_png_with_opencsg(tree, camera, *output_stream);
 				break;
 			}
 			return 0; }},
@@ -277,20 +262,20 @@ int cmdline(optional<string> action, optional<string> output_file,
 			shared_ptr<CSGTerm> root_raw_term = csgRenderer.evaluateCSGTerm(*root_node, highlight_terms, background_terms);
 
 			if (!root_raw_term) {
-				fstream << "No top-level CSG object\n";
+				*output_stream << "No top-level CSG object\n";
 			} else {
-				fstream << root_raw_term->dump() << "\n";
+				*output_stream << root_raw_term->dump() << "\n";
 			}
 			return 0; }},
 #endif
 		{"csg", [&] {
 			fs::current_path(fparent); // Force exported filenames to be relative to document path
-			fstream << tree.getString(*root_node) << "\n";
+			*output_stream << tree.getString(*root_node) << "\n";
 			return 0; }},
 
 		{"ast", [&] {
 			fs::current_path(fparent); // Force exported filenames to be relative to document path
-			fstream << root_module->dump("", "") << "\n";
+			*output_stream << root_module->dump("", "") << "\n";
 			return 0; }}
 	};
 
@@ -310,11 +295,25 @@ int cmdline(optional<string> action, optional<string> output_file,
 	if (!output_file)
 	  output_file = filename + "." + *action;
 
-	// Open the output file early if it is an echo stream
-	unique_ptr<Echostream> echostream;
-	string temp_output_file = *output_file + "~";
+	// Open output stream. If it refers to a file, use a temporary
+	// file first. Filename "-" refers to standard output
+	std::ofstream output_file_stream;
+	optional<string> temp_output_file;
+	if (*output_file == "-") {
+		output_stream = &(std::cout);
+	} else {
+		temp_output_file = *output_file + "~";
+		output_file_stream.open(*temp_output_file, (*action == "png") ? std::ios::binary : std::ios::out);
+		if (!output_file_stream.is_open()) {
+			PRINTB("Can't open file \"%s\" for export", *temp_output_file);
+			return 1;
+		}
+		output_stream = &output_file_stream;
+	}
+
+	// Open an echo stream early
 	if (*action == "echo")
-		echostream.reset(new Echostream(temp_output_file.c_str()));
+		set_output_handler([&](string msg) { *output_stream << msg << "\n"; });
 
 	// Init parser, top_con
 	const string application_path = boosty::stringy(boosty::absolute(boost::filesystem::path(application_name).parent_path()));
@@ -367,13 +366,11 @@ int cmdline(optional<string> action, optional<string> output_file,
 	AbstractNode::resetIndexCounter();
 	absolute_root_node = root_module->instantiate(&top_ctx, &root_inst, NULL);
 
-
 	// Do we have an explicit root node (! modifier)?
 	if (!(root_node = find_root_tag(absolute_root_node)))
 		root_node = absolute_root_node;
 
 	tree.setRoot(root_node);
-
 
 	// Write dependencies if required
 	if (deps_output_file) {
@@ -388,37 +385,28 @@ int cmdline(optional<string> action, optional<string> output_file,
 		}
 	}
 
-	// Open output file late to catch errors before writing anything to disk
-	if (*action != "echo") {
-		fstream.open(temp_output_file, (*action == "png") ? std::ios::binary : std::ios::out);
-		if (!fstream.is_open()) {
-			PRINTB("Can't open file \"%s\" for export", temp_output_file);
-			return 1;
-		}
-	}
-
 	// Call the intended action
 	auto ret = actions[*action]();
 
 	// Commit the file if succesfull, delete it otherwise.
-	if (!ret) {
-		// Success
-		if (rename(temp_output_file.c_str(), output_file->c_str())) {
-			PRINTB("Can't rename \"%s\" to \"%s\"", temp_output_file % *output_file);
-			return 1;
+	if (temp_output_file) {
+		if (!ret) {
+			// Success
+			if (rename(temp_output_file->c_str(), output_file->c_str())) {
+				PRINTB("Can't rename \"%s\" to \"%s\"", *temp_output_file % *output_file);
+				return 1;
+			}
+		}else{
+			// Failure
+			if (remove(temp_output_file->c_str())) {
+				PRINTB("Can't remove \"%s\"", *temp_output_file);
+				return 1;
+			}
 		}
-	}else{
-		// Failure
-		if (remove(temp_output_file.c_str())) {
-			PRINTB("Can't remove \"%s\"", temp_output_file);
-			return 1;
-		}
-		fstream.close();
 	}
 
 	// Clean up
 	delete root_node;
-	fstream.close();
 	return ret;
 }
 
@@ -548,7 +536,7 @@ int gui(const vector<string> &inputFiles, const fs::path &original_path, int arg
 int main(int argc, char **argv)
 {
 #ifdef Q_OS_MAC
-	set_output_handler(CocoaUtils::nslog, NULL);
+	set_output_handler(CocoaUtils::nslog);
 #endif
 #ifdef ENABLE_CGAL
 	// Causes CGAL errors to abort directly instead of throwing exceptions
@@ -561,7 +549,7 @@ int main(int argc, char **argv)
 
 	optional<string> output_file, deps_output_file;
 
-	po::options_description opt_actions("Actions (pick one, or none to start the gui)");
+	po::options_description opt_actions("Actions (pick none to start the gui)");
 	opt_actions.add_options()
 	  ("o,o", po::value<string>(), "output file; \"-\" writes to standart output; file extensions determines action unless specified by -a:\n"
 	                               "  .stl .off .dxf .csg - export geometry\n"
@@ -673,7 +661,7 @@ int main(int argc, char **argv)
 	NodeDumper dumper(nodecache);
 
 	int rc;
-	if (output_file) { // cmd-line mode
+	if (output_file || optstr("action")) { // cmd-line mode
 		if (!inputFiles.size()) help();
 		rc = cmdline(optstr("action"), output_file, optstr("d"), inputFiles[0], camera, renderer, original_path, argv[0]);
 	} else if (QtUseGUI()) {

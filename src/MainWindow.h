@@ -85,7 +85,7 @@ private:
 	bool maybeSave();
 	bool checkEditorModified();
 	QString dumpCSGTree(AbstractNode *root);
-	static void consoleOutput(const std::string &msg, void *userdata);
+	void consoleOutput(const std::string &msg);
 	void loadViewSettings();
 	void loadDesignSettings();
 	void saveBackup();
