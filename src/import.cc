@@ -226,7 +226,6 @@ PolySet *ImportNode::evaluate_polyset(class PolySetEvaluator *) const
 			std::string line;
 			std::getline(f, line);
 			while (!f.eof()) {
-				
 				std::getline(f, line);
 				boost::trim(line);
 				if (boost::regex_search(line, ex_sfe)) {
@@ -257,7 +256,7 @@ PolySet *ImportNode::evaluate_polyset(class PolySetEvaluator *) const
 				}
 			}
 		}
-		else
+		else if (binary && !f.eof())
 		{
 			f.ignore(80-5+4);
 			while (1) {
@@ -283,10 +282,12 @@ PolySet *ImportNode::evaluate_polyset(class PolySetEvaluator *) const
 		else {
 			file >> poly;
 			file.close();
-			
 			p = new PolySet();
 			bool err = createPolySetFromPolyhedron(poly, *p);
-			if (err) delete p;
+			if (err) {
+				delete p;
+				p = NULL;
+			}
 		}
 #else
   PRINT("WARNING: OFF import requires CGAL.");
@@ -301,9 +302,15 @@ PolySet *ImportNode::evaluate_polyset(class PolySetEvaluator *) const
 		dxf_tesselate(p, dd, 0, Vector2d(1,1), true, false, 0);
 		dxf_border_to_ps(p, dd);
 	}
-	else 
+	else
 	{
 		PRINTB("ERROR: Unsupported file format while trying to import file '%s'", this->filename);
+	}
+
+
+	if (p && p->empty()) {
+		delete p;
+		p = NULL;
 	}
 
 	if (p) p->convexity = this->convexity;
