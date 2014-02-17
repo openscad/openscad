@@ -281,19 +281,20 @@ int cmdline(optional<string> action, optional<string> output_file,
 
 	// Set action and output filename; both are optional
 	if (!action && (!output_file || (*output_file == "-")))
-	  action = "stl";
+		action = "stl";
 	if (!action) {
-	  // Guess action from filename suffix
-	  action = boosty::extension_str(*output_file);
-	  boost::algorithm::to_lower(*action);
-	  action = action->substr(1); // remove leading dot
-	  if (!actions.count(*action)) {
-	    PRINTB("Unknown suffix for output file %s\n", output_file);
-	    return 1;
-	  }
+		// Guess action from filename suffix
+		action = boosty::extension_str(*output_file);
+		boost::algorithm::to_lower(*action);
+		if (action->length() > 0)
+			action = action->substr(1); // remove leading dot
+		if (!actions.count(*action)) {
+			PRINTB("Unknown suffix for output file %s\n", *output_file);
+			return 1;
+		}
 	}
 	if (!output_file)
-	  output_file = filename + "." + *action;
+		output_file = filename + "." + *action;
 
 	// Open output stream. If it refers to a file, use a temporary
 	// file first. Filename "-" refers to standard output
