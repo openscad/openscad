@@ -206,6 +206,9 @@ private:
 	class ProgressWidget *progresswidget;
 	class CGALWorker *cgalworker;
 	QMutex consolemutex;
+signals:
+	void highlightError(int);
+	void unhighlightLastError();
 };
 
 class GuiLocker

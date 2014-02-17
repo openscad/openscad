@@ -85,8 +85,14 @@ get_openscad_source_code()
 	if [ "`echo $? | grep 0`" ]; then
 		echo clone of source code is ok
 	else
-		echo clone of openscad source code failed. exiting
-		exit 1
+		if [ $DOUPLOAD ]; then
+			if [ ! $DOBUILD ]; then
+				echo upload only - skipping openscad git clone
+			fi
+		else
+			echo clone of openscad source code failed. exiting
+			exit 1
+		fi
 	fi
 	cd openscad
 	git submodule update --init # MCAD
