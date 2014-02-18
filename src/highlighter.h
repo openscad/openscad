@@ -2,6 +2,7 @@
 #define HIGHLIGHTER_H_
 
 #include <QSyntaxHighlighter>
+#include <QTextDocument>
 #include <QTextFormat>
 #include <QTextEdit>
 #include <QHash>
