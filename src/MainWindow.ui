@@ -23,13 +23,13 @@
       <property name="orientation">
        <enum>Qt::Horizontal</enum>
       </property>
-      <widget class="QWidget" name="editorlayoutwidget">
-       <layout class="QVBoxLayout" name="verticalLayoutEditor">
-        <property name="spacing">
+      <widget class="QWidget" name="editorPane" native="true">
+       <property name="enabled">
+        <bool>true</bool>
+       </property>
+       <layout class="QVBoxLayout" name="verticalLayout_3">
+        <property name="margin">
          <number>0</number>
-        </property>
-        <property name="topMargin">
-         <number>2</number>
         </property>
         <item>
          <widget class="QFrame" name="find_panel">
@@ -51,72 +51,8 @@
           <property name="lineWidth">
            <number>0</number>
           </property>
-          <layout class="QGridLayout" name="gridLayoutReplace">
-           <property name="leftMargin">
-            <number>5</number>
-           </property>
-           <property name="topMargin">
-            <number>0</number>
-           </property>
-           <property name="rightMargin">
-            <number>5</number>
-           </property>
-           <property name="bottomMargin">
-            <number>0</number>
-           </property>
-           <property name="verticalSpacing">
-            <number>0</number>
-           </property>
-           <item row="1" column="3" colspan="2">
-            <widget class="QPushButton" name="replaceButton">
-             <property name="text">
-              <string>Replace</string>
-             </property>
-            </widget>
-           </item>
-           <item row="1" column="5">
-            <widget class="QPushButton" name="replaceAllButton">
-             <property name="text">
-              <string>All</string>
-             </property>
-            </widget>
-           </item>
-           <item row="0" column="2">
-            <widget class="QLineEdit" name="findInputField">
-             <property name="placeholderText">
-              <string>Search string</string>
-             </property>
-            </widget>
-           </item>
-           <item row="1" column="2">
-            <widget class="QLineEdit" name="replaceInputField">
-             <property name="placeholderText">
-              <string>Replacement string</string>
-             </property>
-            </widget>
-           </item>
-           <item row="0" column="3">
-            <widget class="QPushButton" name="prevButton">
-             <property name="text">
-              <string>&lt;</string>
-             </property>
-            </widget>
-           </item>
-           <item row="0" column="4">
-            <widget class="QPushButton" name="nextButton">
-             <property name="text">
-              <string>&gt;</string>
-             </property>
-            </widget>
-           </item>
-           <item row="0" column="5">
-            <widget class="QPushButton" name="hideFindButton">
-             <property name="text">
-              <string>Done</string>
-             </property>
-            </widget>
-           </item>
-           <item row="0" column="1">
+          <layout class="QGridLayout" name="gridLayout">
+           <item row="0" column="0">
             <widget class="QComboBox" name="findTypeComboBox">
              <item>
               <property name="text">
@@ -128,6 +64,55 @@
                <string>Replace</string>
               </property>
              </item>
+            </widget>
+           </item>
+           <item row="0" column="1">
+            <widget class="QLineEdit" name="findInputField">
+             <property name="placeholderText">
+              <string>Search string</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="2">
+            <widget class="QPushButton" name="prevButton">
+             <property name="text">
+              <string>&lt;</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="3">
+            <widget class="QPushButton" name="nextButton">
+             <property name="text">
+              <string>&gt;</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="4">
+            <widget class="QPushButton" name="hideFindButton">
+             <property name="text">
+              <string>Done</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="1">
+            <widget class="QLineEdit" name="replaceInputField">
+             <property name="placeholderText">
+              <string>Replacement string</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="2" colspan="2">
+            <widget class="QPushButton" name="replaceButton">
+             <property name="text">
+              <string>Replace</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="4">
+            <widget class="QPushButton" name="replaceAllButton">
+             <property name="text">
+              <string>All</string>
+             </property>
             </widget>
            </item>
           </layout>
@@ -230,7 +215,7 @@
      <x>0</x>
      <y>0</y>
      <width>846</width>
-     <height>34</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_File">

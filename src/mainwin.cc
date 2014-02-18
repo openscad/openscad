@@ -1150,10 +1150,10 @@ void MainWindow::hideEditor()
 {
 	QSettings settings;
 	if (editActionHide->isChecked()) {
-		editor->hide();
+		editorPane->hide();
 		settings.setValue("view/hideEditor",true);
 	} else {
-		editor->show();
+		editorPane->show();
 		settings.setValue("view/hideEditor",false);
 	}
 }
