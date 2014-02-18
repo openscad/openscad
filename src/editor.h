@@ -3,14 +3,15 @@
 #include <QWidget>
 #include <QWheelEvent>
 #include <QScrollBar>
-
 #include <QTextEdit>
+#include "highlighter.h"
+
 class Editor : public QTextEdit
 {
 	Q_OBJECT
 public:
-	Editor(QWidget *parent) : QTextEdit(parent) { setAcceptRichText(false); }
-	void setPlainText(const QString &text);
+	Editor(QWidget *parent);
+	~Editor();
 public slots:
 	void zoomIn();
 	void zoomOut();
@@ -21,6 +22,11 @@ public slots:
 	void unindentSelection();
 	void commentSelection();
 	void uncommentSelection();
+	void setPlainText(const QString &text);
+	void highlightError(int error_pos);
+	void unhighlightLastError();
+
 private:
 	void wheelEvent ( QWheelEvent * event );
+	Highlighter *highlighter;
 };
