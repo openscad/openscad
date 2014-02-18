@@ -1010,7 +1010,16 @@ add_cmdline_test(openscad-nonascii EXE ${OPENSCAD_BINPATH} ARGS -o
                  FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/sfære.scad)
 
 
-# Image output
+# Variable override (-D arg)
+
+# Override simple variable
+add_cmdline_test(openscad-override EXE ${OPENSCAD_BINPATH}
+                 ARGS -D a=3$<SEMICOLON> -o
+                 SUFFIX echo
+                 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/override.scad)
+
+
+# Image output parameters
 add_cmdline_test(openscad-imgsize EXE ${OPENSCAD_BINPATH}
                  ARGS --imgsize 100,100 -o 
                  SUFFIX png 
