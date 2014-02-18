@@ -40,24 +40,16 @@ int main( int argc, char * argv[] )
 	int eof = 0;
 	int pclose_result;
 	int i;
-	const char * argchar;
 	int result = 0;
-	int quotify_arg = 0;
 
 	strcat( cmd, "\0" );
 	strcat( cmd, "openscad.exe" );
 	for ( i = 1 ; i < argc ; ++i ) {
-		quotify_arg = 0;
-		for ( argchar = argv[i]; *argchar!=0; argchar++ ) {
-			if ((char)(*argchar)==' ') quotify_arg = 1;
-		}
 		strcat( cmd, " " );
-		if (quotify_arg) strcat( cmd, "\"");
 		strcat( cmd, argv[i] );
-		if (quotify_arg) strcat( cmd, "\"");
 	}
+	strcat( cmd, " ");
 	strcat( cmd, " 2>&1"); // capture stderr and stdout
-	printf("openscad.com: running command: %s\n", cmd );
 
 	cmd_stdout = _popen( cmd, "rt" );
 	if ( cmd_stdout == NULL ) {
