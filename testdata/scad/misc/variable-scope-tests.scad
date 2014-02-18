@@ -14,14 +14,14 @@ special_module(23, $fn=5);
 echo("$children scope");
 module child_module_2() {
   echo("$children should be 4: ", $children);
-  for(i=[0:$children-1]) child(i);
+  for(i=[0:$children-1]) children(i);
 }
 
 module child_module_1() {
   echo("$children should be 1: ", $children);
   child_module_2() {
     echo("$children should be 1: ", $children);
-    child(0);
+    children(0);
     echo("child_module_2 child 0");
     echo("child_module_2 child 1");
   }
