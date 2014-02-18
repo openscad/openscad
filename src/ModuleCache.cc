@@ -50,7 +50,7 @@ bool ModuleCache::evaluate(const std::string &filename, FileModule *&module)
 	bool valid = (stat(filename.c_str(), &st) == 0);
 
 	// If file isn't there, just return and let the cache retain the old module
-	if (!valid) return NULL;
+	if (!valid) return false;
 
 	// If the file is present, we'll always cache some result
 	std::string cache_id = str(boost::format("%x.%x") % st.st_mtime % st.st_size);
@@ -96,7 +96,7 @@ bool ModuleCache::evaluate(const std::string &filename, FileModule *&module)
 			std::ifstream ifs(filename.c_str());
 			if (!ifs.is_open()) {
 				PRINTB("WARNING: Can't open library file '%s'\n", filename);
-				return NULL;
+				return false;
 			}
 			textbuf << ifs.rdbuf();
 		}
