@@ -670,7 +670,7 @@ void MainWindow::compile(bool reload, bool forcedone)
 
 	if (shouldcompiletoplevel) {
 		console->clear();
-		saveBackup();
+		if (editor->isContentModified()) saveBackup();
 		compileTopLevelDocument();
 		didcompile = true;
 	}
@@ -1288,6 +1288,10 @@ void MainWindow::updateTemporalVariables()
 	top_ctx.set_variable("$vpr", Value(vpr));
 }
 
+/*!
+	Returns true if the current document is a file on disk and that file has new content.
+	Returns false if a file on disk has disappeared or if we haven't yet saved.
+*/
 bool MainWindow::fileChangedOnDisk()
 {
 	if (!this->fileName.isEmpty()) {
