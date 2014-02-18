@@ -1,6 +1,11 @@
 #include "PlatformUtils.h"
 #include "boosty.h"
 
+std::string PlatformUtils::pathSeparatorChar()
+{
+	return ":";
+}
+
 std::string PlatformUtils::documentsPath()
 {
 	const char *home = getenv("HOME");

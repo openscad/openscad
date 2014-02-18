@@ -453,16 +453,12 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 #include <QApplication>
 #include <QString>
 #include <QDir>
-#include <QFileInfo>
 
 // Only if "fileName" is not absolute, prepend the "absoluteBase".
-static QString assemblePath(const fs::path& absoluteBaseDir,
+static QString assemblePath(const fs::path& absoluteBase,
                             const string& fileName) {
-  if (fileName.empty()) return "";
-  QString qsDir( boosty::stringy( absoluteBaseDir ).c_str() );
-  QString qsFile( fileName.c_str() );
-  QFileInfo info( qsDir, qsFile ); // if qsfile is absolute, dir is ignored.
-  return info.absoluteFilePath();
+  return fileName.empty() ? "" : QDir(QString::fromStdString((const string&) absoluteBase))
+    .absoluteFilePath(QString::fromStdString(fileName));
 }
 
 bool QtUseGUI()
