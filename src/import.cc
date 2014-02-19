@@ -206,7 +206,7 @@ PolySet *ImportNode::evaluate_polyset(class PolySetEvaluator *) const
 		bool binary = false;
 		std::streampos file_size = f.tellg();
 		f.seekg(80);
-		if (!f.eof()) {
+		if (f.good() && !f.eof()) {
 			uint32_t facenum = 0;
 			f.read((char *)&facenum, sizeof(uint32_t));
 #ifdef BOOST_BIG_ENDIAN
@@ -220,7 +220,7 @@ PolySet *ImportNode::evaluate_polyset(class PolySetEvaluator *) const
 
 		char data[5];
 		f.read(data, 5);
-		if (!binary && !f.eof() && !memcmp(data, "solid", 5)) {
+		if (!binary && !f.eof() && f.good() && !memcmp(data, "solid", 5)) {
 			int i = 0;
 			double vdata[3][3];
 			std::string line;
@@ -256,7 +256,7 @@ PolySet *ImportNode::evaluate_polyset(class PolySetEvaluator *) const
 				}
 			}
 		}
-		else if (binary && !f.eof())
+		else if (binary && !f.eof() && f.good())
 		{
 			f.ignore(80-5+4);
 			while (1) {
@@ -308,10 +308,7 @@ PolySet *ImportNode::evaluate_polyset(class PolySetEvaluator *) const
 	}
 
 
-	if (p && p->empty()) {
-		delete p;
-		p = NULL;
-	}
+	if (!p) p = new PolySet();
 
 	if (p) p->convexity = this->convexity;
 	return p;

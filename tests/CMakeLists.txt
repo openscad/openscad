@@ -1013,12 +1013,14 @@ add_cmdline_test(openscad-nonascii EXE ${OPENSCAD_BINPATH} ARGS -o
 
 # Variable override (-D arg)
 
+# FIXME - this breaks on older cmake that is very common 'in the wild' on linux
 # Override simple variable
+if("${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}.${CMAKE_PATCH_VERSION}" VERSION_GREATER 2.8.10)
 add_cmdline_test(openscad-override EXE ${OPENSCAD_BINPATH}
                  ARGS -D a=3$<SEMICOLON> -o
                  SUFFIX echo
                  FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/override.scad)
-
+endif()
 
 # Image output parameters
 add_cmdline_test(openscad-imgsize EXE ${OPENSCAD_BINPATH}
