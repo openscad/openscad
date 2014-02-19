@@ -189,7 +189,8 @@ MainWindow::MainWindow(const QString &filename)
 	fps = 0;
 	fsteps = 1;
 
-	highlighter = new Highlighter(editor->document());
+	connect(this, SIGNAL(highlightError(int)), editor, SLOT(highlightError(int)));
+	connect(this, SIGNAL(unhighlightLastError()), editor, SLOT(unhighlightLastError()));
 	editor->setTabStopWidth(30);
 	editor->setLineWrapping(true); // Not designable
 
@@ -669,7 +670,7 @@ void MainWindow::compile(bool reload, bool forcedone)
 
 	if (shouldcompiletoplevel) {
 		console->clear();
-		saveBackup();
+		if (editor->isContentModified()) saveBackup();
 		compileTopLevelDocument();
 		didcompile = true;
 	}
@@ -690,6 +691,16 @@ void MainWindow::compile(bool reload, bool forcedone)
 			return;
 		}
 	}
+
+	if (!reload && didcompile) {
+		if (!animate_panel->isVisible()) {
+			emit unhighlightLastError();
+			if (!this->root_module) {
+				emit highlightError( parser_error_pos );
+			}
+		}
+	}
+
 	compileDone(didcompile | forcedone);
 }
 
@@ -1139,10 +1150,10 @@ void MainWindow::hideEditor()
 {
 	QSettings settings;
 	if (editActionHide->isChecked()) {
-		editor->hide();
+		editorPane->hide();
 		settings.setValue("view/hideEditor",true);
 	} else {
-		editor->show();
+		editorPane->show();
 		settings.setValue("view/hideEditor",false);
 	}
 }
@@ -1277,6 +1288,10 @@ void MainWindow::updateTemporalVariables()
 	top_ctx.set_variable("$vpr", Value(vpr));
 }
 
+/*!
+	Returns true if the current document is a file on disk and that file has new content.
+	Returns false if a file on disk has disappeared or if we haven't yet saved.
+*/
 bool MainWindow::fileChangedOnDisk()
 {
 	if (!this->fileName.isEmpty()) {
@@ -1317,15 +1332,6 @@ void MainWindow::compileTopLevelDocument()
 														QFileInfo(this->fileName).absolutePath().toLocal8Bit(), 
 														false);
 	
-	if (!animate_panel->isVisible()) {
-		highlighter->unhighlightLastError();
-		if (!this->root_module) {
-			QTextCursor cursor = editor->textCursor();
-			cursor.setPosition(parser_error_pos);
-			editor->setTextCursor(cursor);
-			highlighter->highlightError( parser_error_pos );
-		}
-	}
 }
 
 void MainWindow::checkAutoReload()
