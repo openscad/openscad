@@ -307,9 +307,6 @@ PolySet *ImportNode::evaluate_polyset(class PolySetEvaluator *) const
 		PRINTB("ERROR: Unsupported file format while trying to import file '%s'", this->filename);
 	}
 
-
-	if (!p) p = new PolySet();
-
 	if (p) p->convexity = this->convexity;
 	return p;
 }
