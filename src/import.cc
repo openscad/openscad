@@ -206,7 +206,7 @@ PolySet *ImportNode::evaluate_polyset(class PolySetEvaluator *) const
 		bool binary = false;
 		std::streampos file_size = f.tellg();
 		f.seekg(80);
-		if (!f.eof()) {
+		if (f.good() && !f.eof()) {
 			uint32_t facenum = 0;
 			f.read((char *)&facenum, sizeof(uint32_t));
 #ifdef BOOST_BIG_ENDIAN
@@ -220,13 +220,12 @@ PolySet *ImportNode::evaluate_polyset(class PolySetEvaluator *) const
 
 		char data[5];
 		f.read(data, 5);
-		if (!binary && !f.eof() && !memcmp(data, "solid", 5)) {
+		if (!binary && !f.eof() && f.good() && !memcmp(data, "solid", 5)) {
 			int i = 0;
 			double vdata[3][3];
 			std::string line;
 			std::getline(f, line);
 			while (!f.eof()) {
-				
 				std::getline(f, line);
 				boost::trim(line);
 				if (boost::regex_search(line, ex_sfe)) {
@@ -257,7 +256,7 @@ PolySet *ImportNode::evaluate_polyset(class PolySetEvaluator *) const
 				}
 			}
 		}
-		else
+		else if (binary && !f.eof() && f.good())
 		{
 			f.ignore(80-5+4);
 			while (1) {
@@ -283,10 +282,12 @@ PolySet *ImportNode::evaluate_polyset(class PolySetEvaluator *) const
 		else {
 			file >> poly;
 			file.close();
-			
 			p = new PolySet();
 			bool err = createPolySetFromPolyhedron(poly, *p);
-			if (err) delete p;
+			if (err) {
+				delete p;
+				p = NULL;
+			}
 		}
 #else
   PRINT("WARNING: OFF import requires CGAL.");
@@ -301,7 +302,7 @@ PolySet *ImportNode::evaluate_polyset(class PolySetEvaluator *) const
 		dxf_tesselate(p, dd, 0, Vector2d(1,1), true, false, 0);
 		dxf_border_to_ps(p, dd);
 	}
-	else 
+	else
 	{
 		PRINTB("ERROR: Unsupported file format while trying to import file '%s'", this->filename);
 	}

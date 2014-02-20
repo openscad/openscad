@@ -824,7 +824,8 @@ list(APPEND ECHO_FILES ${FUNCTION_FILES}
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/expression-shortcircuit-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/parent_module-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/children-tests.scad
-            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/range-tests.scad)
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/range-tests.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/empty-stl.scad)
 
 list(APPEND DUMPTEST_FILES ${FEATURES_FILES} ${EXAMPLE_FILES})
 list(APPEND DUMPTEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/escape-test.scad
@@ -1012,12 +1013,14 @@ add_cmdline_test(openscad-nonascii EXE ${OPENSCAD_BINPATH} ARGS -o
 
 # Variable override (-D arg)
 
+# FIXME - this breaks on older cmake that is very common 'in the wild' on linux
 # Override simple variable
+if("${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}.${CMAKE_PATCH_VERSION}" VERSION_GREATER 2.8.10)
 add_cmdline_test(openscad-override EXE ${OPENSCAD_BINPATH}
                  ARGS -D a=3$<SEMICOLON> -o
                  SUFFIX echo
                  FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/override.scad)
-
+endif()
 
 # Image output parameters
 add_cmdline_test(openscad-imgsize EXE ${OPENSCAD_BINPATH}
