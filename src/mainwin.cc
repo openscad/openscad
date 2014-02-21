@@ -103,6 +103,9 @@
 
 #include "boosty.h"
 
+// Keeps track of open window
+QSet<MainWindow*> *MainWindow::windows = NULL;
+
 // Global application state
 unsigned int GuiLocker::gui_locked = 0;
 QString MainWindow::qexamplesdir;
@@ -159,6 +162,10 @@ MainWindow::MainWindow(const QString &filename)
 	: root_inst("group"), tempFile(NULL), progresswidget(NULL)
 {
 	setupUi(this);
+	this->setAttribute(Qt::WA_DeleteOnClose);
+
+	if (!MainWindow::windows) MainWindow::windows = new QSet<MainWindow*>;
+	MainWindow::windows->insert(this);
 
 #ifdef ENABLE_CGAL
 	this->cgalworker = new CGALWorker();
@@ -475,6 +482,7 @@ MainWindow::~MainWindow()
 #ifdef ENABLE_OPENCSG
 	delete this->opencsgRenderer;
 #endif
+	MainWindow::windows->remove(this);
 }
 
 void MainWindow::showProgress()

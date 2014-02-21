@@ -541,12 +541,17 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 	BOOST_FOREACH(const string &infile, inputFiles) {
                new MainWindow(assemblePath(original_path, infile));
 	}
-	app.connect(&app, SIGNAL(lastWindowClosed()), &app, SLOT(quit()));
 #else
 	MainWindow *m = new MainWindow(assemblePath(original_path, inputFiles[0]));
-	app.connect(m, SIGNAL(destroyed()), &app, SLOT(quit()));
 #endif
-	return app.exec();
+	app.connect(&app, SIGNAL(lastWindowClosed()), &app, SLOT(quit()));
+	int rc = app.exec();
+	if (MainWindow::windows) {
+		foreach (MainWindow *mainw, *MainWindow::windows) {
+			delete mainw;
+		}
+	}
+	return rc;
 }
 #else // OPENSCAD_QTGUI
 bool QtUseGUI() { return false; }

@@ -10,6 +10,7 @@
 #include "memory.h"
 #include <vector>
 #include <QMutex>
+#include <QSet>
 
 class MainWindow : public QMainWindow, public Ui::MainWindow
 {
@@ -152,6 +153,7 @@ private slots:
 	void actionFlushCaches();
 
 public:
+	static QSet<MainWindow*> *windows;
 	static void setExamplesDir(const QString &dir) { MainWindow::qexamplesdir = dir; }
 	void viewModeActionsUncheck();
 	void setCurrentOutput();
@@ -198,7 +200,7 @@ public slots:
 
 private:
 	static void report_func(const class AbstractNode*, void *vp, int mark);
-
+	
 	char const * afterCompileSlot;
 	bool procevents;
 	class QTemporaryFile *tempFile;
