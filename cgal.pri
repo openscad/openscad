@@ -11,8 +11,6 @@ cgal {
     message("CGAL location: $$CGAL_DIR")
   }
 
-  QMAKE_CXXFLAGS += -std=c++11
-
   CONFIG(mingw-cross-env) {
     LIBS += -lgmp -lmpfr -lCGAL
     QMAKE_CXXFLAGS += -frounding-math 
