@@ -67,7 +67,7 @@ deploy {
   }
 }
 
-MAKE_CXXFLAGS += -std=c++0x
+QMAKE_CXXFLAGS += -std=c++0x
 
 macx {
   TARGET = OpenSCAD
