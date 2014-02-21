@@ -1045,33 +1045,21 @@ void MainWindow::saveBackup()
 	QString backupPath = QString::fromStdString(path);
 	if (!backupPath.endsWith("/")) backupPath.append("/");
 
-	if (this->fileName.isEmpty()) {
-		if (!this->tempFile) {
-			this->tempFile = new QTemporaryFile(backupPath.append("unsaved-backup-XXXXXXXX.scad"));
-		}
-
-		if ((!this->tempFile->isOpen()) && (! this->tempFile->open())) {
-			PRINT("WARNING: Failed to create backup file");
-			return;
-		}
-		return writeBackup(this->tempFile);
+	QString basename = "unsaved";
+	if (!this->fileName.isEmpty()) {
+		QFileInfo fileInfo = QFileInfo(this->fileName);
+		basename = fileInfo.baseName();
 	}
 
-	QFileInfo fileInfo = QFileInfo(this->fileName);
+	if (!this->tempFile) {
+		this->tempFile = new QTemporaryFile(backupPath.append(basename + "-backup-XXXXXXXX.scad"));
+	}
 
-	backupPath.append(fileInfo.baseName())
-			.append("-backup.")
-			.append(fileInfo.suffix());
-
-	QFile file(backupPath);
-
-	if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
-		PRINTB("WARNING: Failed to open backup file for writing: %s (%s)", backupPath.toLocal8Bit().constData() % file.errorString().toLocal8Bit().constData());
+	if ((!this->tempFile->isOpen()) && (! this->tempFile->open())) {
+		PRINT("WARNING: Failed to create backup file");
 		return;
 	}
-
-	writeBackup(&file);
-	file.close();
+	return writeBackup(this->tempFile);
 }
 
 void MainWindow::actionSave()
