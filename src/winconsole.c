@@ -37,7 +37,7 @@
 #define WEXITSTATUS(S) (((S) >> 8) & 0xff)
 #endif
 
-#define MAXCMDLEN 64000
+#define MAXCMDLEN /*64000*/ 32768 /* MS Windows limit */
 #define BUFFSIZE 42
 
 int main( int argc, char * argv[] )
@@ -63,7 +63,10 @@ int main( int argc, char * argv[] )
 		quote = NULL != strpbrk((s = argv[i]), " \"&'<>^|\t");
 		if (quote) cmd[n++] = '"';
 		while (*s) { // copy & check
-			if ('"' == *s) cmd[n++] = *s; // duplicate it
+			// The following test is compomise between brevity, clarity and performance.
+			// It could be boiled down to: if ('"' == s[strspn(s,"\\")])
+			// or expanded to avoid repetitive passes of strspn() over same data.
+			if ('"' == *s || ('\\' == *s && '"' == s[strspn(s,"\\")])) cmd[n++] = '\\';
 			cmd[n++] = *s++;
 			if (n >= MAXCMDLEN-sizeof(redirect_str)) {
 				fprintf(stderr, "Command line length exceeds limit of %d\n", MAXCMDLEN);
