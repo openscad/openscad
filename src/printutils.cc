@@ -3,13 +3,13 @@
 #include <stdio.h>
 
 std::list<std::string> print_messages_stack;
-OutputHandlerFunc *outputhandler = NULL;
-void *outputhandler_data = NULL;
+std::function<void(std::string)> default_outputhandler = [](std::string msg) {
+	fprintf(stderr, "%s\n", msg.c_str());
+};
+std::function<void(std::string)> outputhandler = default_outputhandler;
 
-void set_output_handler(OutputHandlerFunc *newhandler, void *userdata)
-{
+void set_output_handler(std::function<void(std::string)> newhandler) {
 	outputhandler = newhandler;
-	outputhandler_data = userdata;
 }
 
 void print_messages_push()
@@ -44,11 +44,7 @@ void PRINT(const std::string &msg)
 void PRINT_NOCACHE(const std::string &msg)
 {
 	if (msg.empty()) return;
-	if (!outputhandler) {
-		fprintf(stderr, "%s\n", msg.c_str());
-	} else {
-		outputhandler(msg, outputhandler_data);
-	}
+	outputhandler(msg);
 }
 
 std::string two_digit_exp_format( std::string doublestr )

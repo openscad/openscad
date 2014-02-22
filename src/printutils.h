@@ -1,16 +1,15 @@
 #ifndef PRINTUTILS_H_
 #define PRINTUTILS_H_
 
-#include <string>
-#include <list>
+#include <functional>
 #include <iostream>
+#include <list>
+#include <string>
 #include <boost/format.hpp>
 
-typedef void (OutputHandlerFunc)(const std::string &msg, void *userdata);
-extern OutputHandlerFunc *outputhandler;
-extern void *outputhandler_data;
+extern std::function<void(std::string)> outputhandler, default_outputhandler;
 
-void set_output_handler(OutputHandlerFunc *newhandler, void *userdata);
+void set_output_handler(std::function<void(std::string)>);
 
 extern std::list<std::string> print_messages_stack;
 void print_messages_push();

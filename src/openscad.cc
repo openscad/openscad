@@ -40,9 +40,12 @@
 #include "nodedumper.h"
 #include "CocoaUtils.h"
 
+#include <fstream>
+#include <map>
+#include <memory>
+#include <set>
 #include <string>
 #include <vector>
-#include <fstream>
 
 #ifdef ENABLE_CGAL
 #include "CGAL_Nef_polyhedron.h"
@@ -65,9 +68,10 @@
 
 #include "Camera.h"
 #include <boost/algorithm/string.hpp>
-#include <boost/program_options.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/foreach.hpp>
+#include <boost/optional.hpp>
+#include <boost/program_options.hpp>
 #include "boosty.h"
 
 #ifdef _MSC_VER
@@ -77,47 +81,28 @@
 namespace po = boost::program_options;
 namespace fs = boost::filesystem;
 namespace Render { enum type { CGAL, OPENCSG, THROWNTOGETHER }; };
-std::string commandline_commands;
-std::string currentdir;
+
+using std::function;
+using std::map;
+using std::set;
 using std::string;
+using std::unique_ptr;
 using std::vector;
 using boost::lexical_cast;
 using boost::is_any_of;
+using boost::optional;
 
-class Echostream : public std::ofstream
+string commandline_commands;
+string currentdir;
+
+static void help(const char *progname, vector<po::options_description> options)
 {
-public:
-	Echostream( const char * filename ) : std::ofstream( filename ) {
-		set_output_handler( &Echostream::output, this );
-	}
-	static void output( const std::string &msg, void *userdata ) {
-		Echostream *thisp = static_cast<Echostream*>(userdata);
-		*thisp << msg << "\n";
-	}
-	~Echostream() {
-		this->close();
-	}
-};
-
-static void help(const char *progname)
-{
-  int tablen = strlen(progname)+8;
-  char tabstr[tablen+1];
-  for (int i=0;i<tablen;i++) tabstr[i] = ' ';
-  tabstr[tablen] = '\0';
-
-	PRINTB("Usage: %1% [ -o output_file [ -d deps_file ] ]\\\n"
-         "%2%[ -m make_command ] [ -D var=val [..] ] \\\n"
-         "%2%[ --version ] [ --info ] \\\n"
-         "%2%[ --camera=translatex,y,z,rotx,y,z,dist | \\\n"
-         "%2%  --camera=eyex,y,z,centerx,y,z ] \\\n"
-         "%2%[ --imgsize=width,height ] [ --projection=(o)rtho|(p)ersp] \\\n"
-         "%2%[ --render | --preview[=throwntogether] ] \\\n"
-         "%2%[ --csglimit=num ] \\\n"
-         "%2%[ --enable=<feature> ] \\\n"
-         "%2%filename\n",
- 				 progname % (const char *)tabstr);
-	exit(1);
+  std::ostringstream ss;
+  ss << "Usage: " << progname << " [options] [action]\n";
+  for (auto &opt : options)
+    ss << "\n" << opt ;
+  PRINT(ss.str());
+  exit(1);
 }
 
 #define STRINGIFY(x) #x
@@ -199,44 +184,144 @@ Camera get_camera( po::variables_map vm )
 	return camera;
 }
 
-int cmdline(const char *deps_output_file, const std::string &filename, Camera &camera, const char *output_file, const fs::path &original_path, Render::type renderer, int argc, char ** argv )
-{
-#ifdef OPENSCAD_QTGUI
-	QCoreApplication app(argc, argv);
-	const std::string application_path = QApplication::instance()->applicationDirPath().toLocal8Bit().constData();
-#else
-	const std::string application_path = boosty::stringy(boosty::absolute(boost::filesystem::path(argv[0]).parent_path()));
-#endif
-	parser_init(application_path);
-	Tree tree;
-#ifdef ENABLE_CGAL
-	CGALEvaluator cgalevaluator(tree);
-	PolySetCGALEvaluator psevaluator(cgalevaluator);
-#endif
-	const char *stl_output_file = NULL;
-	const char *off_output_file = NULL;
-	const char *dxf_output_file = NULL;
-	const char *csg_output_file = NULL;
-	const char *png_output_file = NULL;
-	const char *ast_output_file = NULL;
-	const char *term_output_file = NULL;
-	const char *echo_output_file = NULL;
-
-	std::string suffix = boosty::extension_str( output_file );
-	boost::algorithm::to_lower( suffix );
-
-	if (suffix == ".stl") stl_output_file = output_file;
-	else if (suffix == ".off") off_output_file = output_file;
-	else if (suffix == ".dxf") dxf_output_file = output_file;
-	else if (suffix == ".csg") csg_output_file = output_file;
-	else if (suffix == ".png") png_output_file = output_file;
-	else if (suffix == ".ast") ast_output_file = output_file;
-	else if (suffix == ".term") term_output_file = output_file;
-	else if (suffix == ".echo") echo_output_file = output_file;
-	else {
-		PRINTB("Unknown suffix for output file %s\n", output_file);
-		return 1;
+static bool assert_root_3d_simple(CGAL_Nef_polyhedron &nef) {
+	if (nef.dim != 3) {
+		PRINT("Current top level object is not a 3D object.\n");
+		return false;
 	}
+	if (!nef.p3->is_simple()) {
+		PRINT("Object isn't a valid 2-manifold! Modify your design.\n");
+		return false;
+	}
+	return true;
+}
+
+static bool assert_root_2d(CGAL_Nef_polyhedron &nef) {
+	if (nef.dim != 2) {
+		PRINT("Current top level object is not a 2D object.\n");
+		return false;
+	}
+	return true;
+};
+
+int cmdline(optional<string> action, optional<string> output_file,
+	    optional<string> deps_output_file,
+	    const string &filename,
+	    Camera &camera, Render::type renderer,
+	    const fs::path &original_path, string application_name)
+{
+	CGAL_Nef_polyhedron root_N;
+	Tree tree;
+	unique_ptr<CGALEvaluator> cgalevaluator;
+	fs::path fparent;
+	FileModule *root_module;
+	AbstractNode *root_node;
+	std::ostream *output_stream;
+
+	// list of actions to be performed, indexed by filename suffix
+	map<string, function<int(void)>> actions{
+#ifdef ENABLE_CGAL
+		{"stl", [&] {
+			root_N = cgalevaluator->evaluateCGALMesh(*tree.root());
+			if (!assert_root_3d_simple(root_N)) return 1;
+			export_stl(&root_N, *output_stream);
+			return 0; }},
+		{"off", [&] {
+			root_N = cgalevaluator->evaluateCGALMesh(*tree.root());
+			if (!assert_root_3d_simple(root_N)) return 1;
+			export_off(&root_N, *output_stream);
+			return 0; }},
+		{"dxf", [&] {
+			root_N = cgalevaluator->evaluateCGALMesh(*tree.root());
+			if (!assert_root_2d(root_N)) return 1;
+			export_dxf(&root_N, *output_stream);
+			return 0; }},
+		{"png", [&] {
+			switch (renderer) {
+			case Render::CGAL:
+				root_N = cgalevaluator->evaluateCGALMesh(*tree.root());
+				export_png_with_cgal(&root_N, camera, *output_stream);
+				break;
+			case Render::THROWNTOGETHER:
+				export_png_with_throwntogether(tree, camera, *output_stream);
+				break;
+			case Render::OPENCSG:
+				export_png_with_opencsg(tree, camera, *output_stream);
+				break;
+			}
+			return 0; }},
+		{"echo", [&] {
+			if (renderer == Render::CGAL)
+				root_N = cgalevaluator->evaluateCGALMesh(*tree.root());
+			return 0; }},
+		{"term", [&] {
+			// TODO: check wether CWD is correct at this point
+			PolySetCGALEvaluator psevaluator(*cgalevaluator);
+			CSGTermEvaluator csgRenderer(tree, &psevaluator);
+			vector<shared_ptr<CSGTerm> > highlight_terms, background_terms;
+			shared_ptr<CSGTerm> root_raw_term = csgRenderer.evaluateCSGTerm(*root_node, highlight_terms, background_terms);
+
+			if (!root_raw_term) {
+				*output_stream << "No top-level CSG object\n";
+			} else {
+				*output_stream << root_raw_term->dump() << "\n";
+			}
+			return 0; }},
+#endif
+		{"csg", [&] {
+			fs::current_path(fparent); // Force exported filenames to be relative to document path
+			*output_stream << tree.getString(*root_node) << "\n";
+			return 0; }},
+
+		{"ast", [&] {
+			fs::current_path(fparent); // Force exported filenames to be relative to document path
+			*output_stream << root_module->dump("", "") << "\n";
+			return 0; }}
+	};
+
+	// Set action and output filename; both are optional
+	if (!action && (!output_file || (*output_file == "-")))
+		action = "stl";
+	if (!action) {
+		// Guess action from filename suffix
+		action = boosty::extension_str(*output_file);
+		boost::algorithm::to_lower(*action);
+		if (action->length() > 0)
+			action = action->substr(1); // remove leading dot
+		if (!actions.count(*action)) {
+			PRINTB("Unknown suffix for output file %s\n", *output_file);
+			return 1;
+		}
+	}
+	if (!output_file)
+		output_file = filename + "." + *action;
+
+	// Open output stream. If it refers to a file, use a temporary
+	// file first. Filename "-" refers to standard output
+	std::ofstream output_file_stream;
+	optional<string> temp_output_file;
+	if (*output_file == "-") {
+		output_stream = &(std::cout);
+	} else {
+		temp_output_file = *output_file + "~";
+		output_file_stream.open(*temp_output_file, (*action == "png") ? std::ios::binary : std::ios::out);
+		if (!output_file_stream.is_open()) {
+			PRINTB("Can't open file \"%s\" for export", *temp_output_file);
+			return 1;
+		}
+		output_stream = &output_file_stream;
+	}
+
+	// Open an echo stream early
+	if (*action == "echo")
+		set_output_handler([&](string msg) { *output_stream << msg << "\n"; });
+
+	// Init parser, top_con
+	const string application_path = boosty::stringy(boosty::absolute(boost::filesystem::path(application_name).parent_path()));
+	parser_init(application_path);
+#ifdef ENABLE_CGAL
+	cgalevaluator.reset(new CGALEvaluator(tree));
+#endif
 
 	// Top context - this context only holds builtins
 	ModuleContext top_ctx;
@@ -244,27 +329,29 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 #if 0 && DEBUG
 	top_ctx.dump(NULL, NULL);
 #endif
-	shared_ptr<Echostream> echostream;
-	if (echo_output_file)
-		echostream.reset( new Echostream( echo_output_file ) );
 
-	FileModule *root_module;
 	ModuleInstantiation root_inst("group");
-	AbstractNode *root_node;
 	AbstractNode *absolute_root_node;
-	CGAL_Nef_polyhedron root_N;
 
-	handle_dep(filename.c_str());
+	// Open the root source document. Either from file or stdin.
+	string text, parentpath;
+	if (filename != "-") {
+	  handle_dep(filename);
 
-	std::ifstream ifs(filename.c_str());
-	if (!ifs.is_open()) {
-		PRINTB("Can't open input file '%s'!\n", filename.c_str());
-		return 1;
+	  std::ifstream ifs(filename.c_str());
+	  if (!ifs.is_open()) {
+	    PRINTB("Can't open input file '%s'!\n", filename.c_str());
+	    return 1;
+	  }
+	  text = string((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
+	  fs::path abspath = boosty::absolute(filename);
+	  parentpath = boosty::stringy(abspath.parent_path());
+	}else{
+	  text = string((std::istreambuf_iterator<char>(std::cin)), std::istreambuf_iterator<char>());
+	  parentpath = boosty::stringy(original_path);
 	}
-	std::string text((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
 	text += "\n" + commandline_commands;
-	fs::path abspath = boosty::absolute(filename);
-	std::string parentpath = boosty::stringy(abspath.parent_path());
+
 	root_module = parse(text.c_str(), parentpath.c_str(), false);
 	if (!root_module) {
 		PRINTB("Can't parse file '%s'!\n", filename.c_str());
@@ -273,7 +360,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 	root_module->handleDependencies();
 
 	fs::path fpath = boosty::absolute(fs::path(filename));
-	fs::path fparent = fpath.parent_path();
+	fparent = fpath.parent_path();
 	fs::current_path(fparent);
 	top_ctx.setDocumentPath(fparent.string());
 
@@ -286,156 +373,42 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 
 	tree.setRoot(root_node);
 
-	if (csg_output_file) {
-		fs::current_path(original_path);
-		std::ofstream fstream(csg_output_file);
-		if (!fstream.is_open()) {
-			PRINTB("Can't open file \"%s\" for export", csg_output_file);
+	// Write dependencies if required
+	if (deps_output_file) {
+		if (!set<string>{"stl", "off", "dxf", "png"}.count(*action)) {
+			PRINTB("Output file: %s\n", *output_file);
+			PRINT("Sorry, don't know how to write deps for that file type. Exiting\n");
+			return 1;
 		}
-		else {
-			fs::current_path(fparent); // Force exported filenames to be relative to document path
-			fstream << tree.getString(*root_node) << "\n";
-			fstream.close();
-		}
-	}
-	else if (ast_output_file) {
-		fs::current_path(original_path);
-		std::ofstream fstream(ast_output_file);
-		if (!fstream.is_open()) {
-			PRINTB("Can't open file \"%s\" for export", ast_output_file);
-		}
-		else {
-			fs::current_path(fparent); // Force exported filenames to be relative to document path
-			fstream << root_module->dump("", "") << "\n";
-			fstream.close();
+		if (!write_deps(*deps_output_file, *output_file)) {
+			PRINT("error writing deps");
+			return 1;
 		}
 	}
-	else if (term_output_file) {
-		std::vector<shared_ptr<CSGTerm> > highlight_terms;
-		std::vector<shared_ptr<CSGTerm> > background_terms;
 
-		CSGTermEvaluator csgRenderer(tree, &psevaluator);
-		shared_ptr<CSGTerm> root_raw_term = csgRenderer.evaluateCSGTerm(*root_node, highlight_terms, background_terms);
+	// Call the intended action
+	auto ret = actions[*action]();
 
-		fs::current_path(original_path);
-		std::ofstream fstream(term_output_file);
-		if (!fstream.is_open()) {
-			PRINTB("Can't open file \"%s\" for export", term_output_file);
-		}
-		else {
-			if (!root_raw_term)
-				fstream << "No top-level CSG object\n";
-			else {
-				fstream << root_raw_term->dump() << "\n";
+	// Commit the file if succesfull, delete it otherwise.
+	if (temp_output_file) {
+		if (!ret) {
+			// Success
+			if (rename(temp_output_file->c_str(), output_file->c_str())) {
+				PRINTB("Can't rename \"%s\" to \"%s\"", *temp_output_file % *output_file);
+				return 1;
 			}
-			fstream.close();
+		}else{
+			// Failure
+			if (remove(temp_output_file->c_str())) {
+				PRINTB("Can't remove \"%s\"", *temp_output_file);
+				return 1;
+			}
 		}
 	}
-	else {
-#ifdef ENABLE_CGAL
-		if ((echo_output_file || png_output_file) && !(renderer==Render::CGAL)) {
-			// echo or OpenCSG png -> don't necessarily need CGALMesh evaluation
-		} else {
-			root_N = cgalevaluator.evaluateCGALMesh(*tree.root());
-		}
 
-		fs::current_path(original_path);
-
-		if (deps_output_file) {
-			std::string deps_out( deps_output_file );
-			std::string geom_out;
-			if ( stl_output_file ) geom_out = std::string(stl_output_file);
-			else if ( off_output_file ) geom_out = std::string(off_output_file);
-			else if ( dxf_output_file ) geom_out = std::string(dxf_output_file);
-			else if ( png_output_file ) geom_out = std::string(png_output_file);
-			else {
-				PRINTB("Output file:%s\n",output_file);
-				PRINT("Sorry, don't know how to write deps for that file type. Exiting\n");
-				return 1;
-			}
-			int result = write_deps( deps_out, geom_out );
-			if ( !result ) {
-				PRINT("error writing deps");
-				return 1;
-			}
-		}
-
-		if (stl_output_file) {
-			if (root_N.dim != 3) {
-				PRINT("Current top level object is not a 3D object.\n");
-				return 1;
-			}
-			if (!root_N.p3->is_simple()) {
-				PRINT("Object isn't a valid 2-manifold! Modify your design.\n");
-				return 1;
-			}
-			std::ofstream fstream(stl_output_file);
-			if (!fstream.is_open()) {
-				PRINTB("Can't open file \"%s\" for export", stl_output_file);
-			}
-			else {
-				export_stl(&root_N, fstream);
-				fstream.close();
-			}
-		}
-
-		if (off_output_file) {
-			if (root_N.dim != 3) {
-				PRINT("Current top level object is not a 3D object.\n");
-				return 1;
-			}
-			if (!root_N.p3->is_simple()) {
-				PRINT("Object isn't a valid 2-manifold! Modify your design.\n");
-				return 1;
-			}
-			std::ofstream fstream(off_output_file);
-			if (!fstream.is_open()) {
-				PRINTB("Can't open file \"%s\" for export", off_output_file);
-			}
-			else {
-				export_off(&root_N, fstream);
-				fstream.close();
-			}
-		}
-
-		if (dxf_output_file) {
-			if (root_N.dim != 2) {
-				PRINT("Current top level object is not a 2D object.\n");
-				return 1;
-			}
-			std::ofstream fstream(dxf_output_file);
-			if (!fstream.is_open()) {
-				PRINTB("Can't open file \"%s\" for export", dxf_output_file);
-			}
-			else {
-				export_dxf(&root_N, fstream);
-				fstream.close();
-			}
-		}
-
-		if (png_output_file) {
-			std::ofstream fstream(png_output_file,std::ios::out|std::ios::binary);
-			if (!fstream.is_open()) {
-				PRINTB("Can't open file \"%s\" for export", png_output_file);
-			}
-			else {
-				if (renderer==Render::CGAL) {
-					export_png_with_cgal(&root_N, camera, fstream);
-				} else if (renderer==Render::THROWNTOGETHER) {
-					export_png_with_throwntogether(tree, camera, fstream);
-				} else {
-					export_png_with_opencsg(tree, camera, fstream);
-				}
-				fstream.close();
-			}
-		}
-#else
-		PRINT("OpenSCAD has been compiled without CGAL support!\n");
-		return 1;
-#endif
-	}
+	// Clean up
 	delete root_node;
-	return 0;
+	return ret;
 }
 
 #ifdef OPENSCAD_TESTING
@@ -564,9 +537,8 @@ int gui(const vector<string> &inputFiles, const fs::path &original_path, int arg
 
 int main(int argc, char **argv)
 {
-	int rc = 0;
 #ifdef Q_OS_MAC
-	set_output_handler(CocoaUtils::nslog, NULL);
+	set_output_handler(CocoaUtils::nslog);
 #endif
 #ifdef ENABLE_CGAL
 	// Causes CGAL errors to abort directly instead of throwing exceptions
@@ -577,48 +549,60 @@ int main(int argc, char **argv)
 
 	fs::path original_path = fs::current_path();
 
-	const char *output_file = NULL;
-	const char *deps_output_file = NULL;
+	optional<string> output_file, deps_output_file;
 
-	po::options_description desc("Allowed options");
-	desc.add_options()
-		("help,h", "help message")
-		("version,v", "print the version")
-		("info", "print information about the building process")
-		("render", "if exporting a png image, do a full CGAL render")
-		("preview", po::value<string>(), "if exporting a png image, do an OpenCSG(default) or ThrownTogether preview")
-		("csglimit", po::value<unsigned int>(), "if exporting a png image, stop rendering at the given number of CSG elements")
-		("camera", po::value<string>(), "parameters for camera when exporting png")
-	        ("imgsize", po::value<string>(), "=width,height for exporting png")
-		("projection", po::value<string>(), "(o)rtho or (p)erspective when exporting png")
-		("o,o", po::value<string>(), "out-file")
-		("s,s", po::value<string>(), "stl-file")
-		("x,x", po::value<string>(), "dxf-file")
-		("d,d", po::value<string>(), "deps-file")
-		("m,m", po::value<string>(), "makefile")
-		("D,D", po::value<vector<string> >(), "var=val")
-		("enable", po::value<vector<string> >(), "enable experimental features");
+	po::options_description opt_actions("Actions (pick none to start the gui)");
+	opt_actions.add_options()
+	  ("o,o", po::value<string>(), "output file; \"-\" writes to standart output; file extensions determines action unless specified by -a:\n"
+	                               "  .stl .off .dxf .csg - export geometry\n"
+	                               "  .png - render image\n"
+	                               "  .ast - export abstract syntax tree"
+	                               // TODO ".term"
+                                       // TODO ".echo"
+	   )
+	  ("action,a", po::value<string>(), "overide action implied by -o")
+	  ("help,h", "print this help message")
+	  ("info", "print information about the building process")
+	  ("version,v", "print the version");
 
-	po::options_description hidden("Hidden options");
-	hidden.add_options()
-		("input-file", po::value< vector<string> >(), "input file");
+	po::options_description opt_options("Options");
+	opt_options.add_options()
+	  ("render", "if exporting a png image, do a full CGAL render")
+	  ("preview", po::value<string>(), "if exporting a png image, do an OpenCSG(default) or ThrownTogether preview")
+	  ("csglimit", po::value<unsigned int>(), "if exporting a png image, stop rendering at the given number of CSG elements")
+	  ("camera", po::value<string>(), "parameters for camera when exporting png; one of:\ntranslatex,y,z,rotx,y,z,dist\neyex,y,z,centerx,y,z")
+	  ("imgsize", po::value<string>(), "width,height for exporting png")
+	  ("projection", po::value<string>(), "(o)rtho or (p)erspective when exporting png")
+	  ("m,m", po::value<string>(), "make command")
+	  ("d,d", po::value<string>(), "filename to write the dependencies to (in conjunction with -m)")
+	  ("D,D", po::value<vector<string> >(), "var=val to override variables")
+	  ("enable", po::value<vector<string> >(), "enable experimental features; can be used several times to enable more than one feature");
 
-	po::positional_options_description p;
-	p.add("input-file", -1);
+	po::options_description opt_hidden("Hidden options");
+	opt_hidden.add_options()
+	  ("input-file", po::value< vector<string> >(), "input file")
+	  ("s,s", po::value<string>(), "stl-file")
+	  ("x,x", po::value<string>(), "dxf-file");
+
+	po::positional_options_description opt_positional;
+	opt_positional.add("input-file", -1);
 
 	po::options_description all_options;
-	all_options.add(desc).add(hidden);
+	for (auto &opt : {opt_actions, opt_options, opt_hidden})
+	  all_options.add(opt);
+
+	auto help = [&]{ ::help(argv[0], {opt_actions, opt_options}); };
 
 	po::variables_map vm;
 	try {
-		po::store(po::command_line_parser(argc, argv).options(all_options).allow_unregistered().positional(p).run(), vm);
+		po::store(po::command_line_parser(argc, argv).options(all_options).allow_unregistered().positional(opt_positional).run(), vm);
 	}
 	catch(const std::exception &e) { // Catches e.g. unknown options
 		PRINTB("%s\n", e.what());
-		help(argv[0]);
+		help();
 	}
 
-	if (vm.count("help")) help(argv[0]);
+	if (vm.count("help")) help();
 	if (vm.count("version")) version();
 	if (vm.count("info")) info();
 
@@ -633,50 +617,40 @@ int main(int argc, char **argv)
 		RenderSettings::inst()->openCSGTermLimit = vm["csglimit"].as<unsigned int>();
 	}
 
-	if (vm.count("o")) {
-		// FIXME: Allow for multiple output files?
-		if (output_file) help(argv[0]);
-		output_file = vm["o"].as<string>().c_str();
-	}
-	if (vm.count("s")) {
-		PRINT("DEPRECATED: The -s option is deprecated. Use -o instead.\n");
-		if (output_file) help(argv[0]);
-		output_file = vm["s"].as<string>().c_str();
-	}
-	if (vm.count("x")) { 
-		PRINT("DEPRECATED: The -x option is deprecated. Use -o instead.\n");
-		if (output_file) help(argv[0]);
-		output_file = vm["x"].as<string>().c_str();
-	}
-	if (vm.count("d")) {
-		if (deps_output_file)
-			help(argv[0]);
-		deps_output_file = vm["d"].as<string>().c_str();
-	}
-	if (vm.count("m")) {
-		if (make_command)
-			help(argv[0]);
-		make_command = vm["m"].as<string>().c_str();
-	}
+	// lambda to return an optional<string> from an optional option
+	auto optstr = [&](string option_name) {
+		if (vm.count(option_name)) {
+			return optional<string>(vm[option_name].as<string>());
+		}else{
+			return optional<string>();
+		}
+	};
 
-	if (vm.count("D")) {
-		BOOST_FOREACH(const string &cmd, vm["D"].as<vector<string> >()) {
-			commandline_commands += cmd;
-			commandline_commands += ";\n";
-		}
+	for (auto &option_name : vector<string>{"o", "s", "x"}) {
+		if (!vm.count(option_name)) continue;
+		// FIXME: Allow for multiple output files?
+		if (output_file)
+			help();
+		if (option_name != "o")
+			PRINTB("DEPRECATED: The -% option is deprecated. Use -o instead.\n", option_name);
+
+		output_file = optstr(option_name);
 	}
-	if (vm.count("enable")) {
-		BOOST_FOREACH(const string &feature, vm["enable"].as<vector<string> >()) {
+	make_command = optstr("m");
+	if (vm.count("D"))
+		for (auto &cmd : vm["D"].as<vector<string>>())
+			commandline_commands += cmd + ";\n";
+	if (vm.count("D"))
+		for (auto &feature : vm["enable"].as<vector<string>>())
 			Feature::enable_feature(feature);
-		}
-	}
+
 	vector<string> inputFiles;
 	if (vm.count("input-file"))	{
 		inputFiles = vm["input-file"].as<vector<string> >();
 	}
 #ifndef ENABLE_MDI
 	if (inputFiles.size() > 1) {
-		help(argv[0]);
+		help();
 	}
 #endif
 
@@ -688,25 +662,18 @@ int main(int argc, char **argv)
 	NodeCache nodecache;
 	NodeDumper dumper(nodecache);
 
-	bool cmdlinemode = false;
-	if (output_file) { // cmd-line mode
-		cmdlinemode = true;
-		if (!inputFiles.size()) help(argv[0]);
-	}
-
-	if (cmdlinemode) {
-		rc = cmdline(deps_output_file, inputFiles[0], camera, output_file, original_path, renderer, argc, argv);
-	}
-	else if (QtUseGUI()) {
+	int rc;
+	if (output_file || optstr("action")) { // cmd-line mode
+		if (!inputFiles.size()) help();
+		rc = cmdline(optstr("action"), output_file, optstr("d"), inputFiles[0], camera, renderer, original_path, argv[0]);
+	} else if (QtUseGUI()) {
 		rc = gui(inputFiles, original_path, argc, argv);
-	}
-	else {
+	} else {
 		PRINT("Requested GUI mode but can't open display!\n");
-		help(argv[0]);
+		help();
 	}
 
 	Builtins::instance(true);
 
 	return rc;
 }
-
