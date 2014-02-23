@@ -160,6 +160,11 @@ CONFIG += glib-2.0
 #Uncomment the following line to enable QCodeEdit
 #CONFIG += qcodeedit
 
+# Make experimental features available
+experimental {
+  DEFINES += ENABLE_EXPERIMENTAL
+}
+
 mdi {
   DEFINES += ENABLE_MDI
 }

@@ -114,7 +114,9 @@ static void help(const char *progname)
          "%2%[ --imgsize=width,height ] [ --projection=(o)rtho|(p)ersp] \\\n"
          "%2%[ --render | --preview[=throwntogether] ] \\\n"
          "%2%[ --csglimit=num ] \\\n"
+#ifdef ENABLE_EXPERIMENTAL
          "%2%[ --enable=<feature> ] \\\n"
+#endif
          "%2%filename\n",
  				 progname % (const char *)tabstr);
 	exit(1);
@@ -597,7 +599,10 @@ int main(int argc, char **argv)
 		("d,d", po::value<string>(), "deps-file")
 		("m,m", po::value<string>(), "makefile")
 		("D,D", po::value<vector<string> >(), "var=val")
-		("enable", po::value<vector<string> >(), "enable experimental features");
+#ifdef ENABLE_EXPERIMENTAL
+		("enable", po::value<vector<string> >(), "enable experimental features")
+#endif
+		;
 
 	po::options_description hidden("Hidden options");
 	hidden.add_options()
@@ -665,11 +670,13 @@ int main(int argc, char **argv)
 			commandline_commands += ";\n";
 		}
 	}
+#ifdef ENABLE_EXPERIMENTAL
 	if (vm.count("enable")) {
 		BOOST_FOREACH(const string &feature, vm["enable"].as<vector<string> >()) {
 			Feature::enable_feature(feature);
 		}
 	}
+#endif
 	vector<string> inputFiles;
 	if (vm.count("input-file"))	{
 		inputFiles = vm["input-file"].as<vector<string> >();
