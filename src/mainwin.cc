@@ -75,6 +75,7 @@
 #include <QSettings>
 #include <QProgressDialog>
 #include <QMutexLocker>
+#include <QTemporaryFile>
 
 #include <fstream>
 
@@ -100,6 +101,9 @@
 #endif // ENABLE_CGAL
 
 #include "boosty.h"
+
+// Keeps track of open window
+QSet<MainWindow*> *MainWindow::windows = NULL;
 
 // Global application state
 unsigned int GuiLocker::gui_locked = 0;
@@ -154,9 +158,13 @@ settings_valueList(const QString &key, const QList<int> &defaultList = QList<int
 }
 
 MainWindow::MainWindow(const QString &filename)
-	: root_inst("group"), progresswidget(NULL)
+	: root_inst("group"), tempFile(NULL), progresswidget(NULL)
 {
 	setupUi(this);
+	this->setAttribute(Qt::WA_DeleteOnClose);
+
+	if (!MainWindow::windows) MainWindow::windows = new QSet<MainWindow*>;
+	MainWindow::windows->insert(this);
 
 #ifdef ENABLE_CGAL
 	this->cgalworker = new CGALWorker();
@@ -186,7 +194,8 @@ MainWindow::MainWindow(const QString &filename)
 	fps = 0;
 	fsteps = 1;
 
-	highlighter = new Highlighter(editor->document());
+	connect(this, SIGNAL(highlightError(int)), editor, SLOT(highlightError(int)));
+	connect(this, SIGNAL(unhighlightLastError()), editor, SLOT(unhighlightLastError()));
 	editor->setTabStopWidth(30);
 	editor->setLineWrapping(true); // Not designable
 
@@ -471,6 +480,7 @@ MainWindow::~MainWindow()
 #ifdef ENABLE_OPENCSG
 	delete this->opencsgRenderer;
 #endif
+	MainWindow::windows->remove(this);
 }
 
 void MainWindow::showProgress()
@@ -524,6 +534,7 @@ MainWindow::openFile(const QString &new_filename)
 #endif
 	setFileName(actual_filename);
 	editor->setPlainText("");
+	this->last_compiled_doc = "";
 
 	fileChangedOnDisk(); // force cached autoReloadId to update
 	refreshDocument();
@@ -665,6 +676,7 @@ void MainWindow::compile(bool reload, bool forcedone)
 
 	if (shouldcompiletoplevel) {
 		console->clear();
+		if (editor->isContentModified()) saveBackup();
 		compileTopLevelDocument();
 		didcompile = true;
 	}
@@ -685,6 +697,16 @@ void MainWindow::compile(bool reload, bool forcedone)
 			return;
 		}
 	}
+
+	if (!reload && didcompile) {
+		if (!animate_panel->isVisible()) {
+			emit unhighlightLastError();
+			if (!this->root_module) {
+				emit highlightError( parser_error_pos );
+			}
+		}
+	}
+
 	compileDone(didcompile | forcedone);
 }
 
@@ -1013,6 +1035,45 @@ void MainWindow::actionOpenExample()
 	}
 }
 
+void MainWindow::writeBackup(QFile *file)
+{
+	// see MainWindow::saveBackup()
+	file->resize(0);
+	QTextStream writer(file);
+	writer.setCodec("UTF-8");
+	writer << this->editor->toPlainText();
+	
+	PRINTB("Saved backup file: %s", file->fileName().toLocal8Bit().constData());
+}
+
+void MainWindow::saveBackup()
+{
+	std::string path = PlatformUtils::backupPath();
+	if ((!fs::exists(path)) && (!PlatformUtils::createBackupPath())) {
+		PRINTB("WARNING: Cannot create backup path: %s", path);
+		return;
+	}
+
+	QString backupPath = QString::fromStdString(path);
+	if (!backupPath.endsWith("/")) backupPath.append("/");
+
+	QString basename = "unsaved";
+	if (!this->fileName.isEmpty()) {
+		QFileInfo fileInfo = QFileInfo(this->fileName);
+		basename = fileInfo.baseName();
+	}
+
+	if (!this->tempFile) {
+		this->tempFile = new QTemporaryFile(backupPath.append(basename + "-backup-XXXXXXXX.scad"));
+	}
+
+	if ((!this->tempFile->isOpen()) && (! this->tempFile->open())) {
+		PRINT("WARNING: Failed to create backup file");
+		return;
+	}
+	return writeBackup(this->tempFile);
+}
+
 void MainWindow::actionSave()
 {
 	if (this->fileName.isEmpty()) {
@@ -1089,10 +1150,10 @@ void MainWindow::hideEditor()
 {
 	QSettings settings;
 	if (editActionHide->isChecked()) {
-		editor->hide();
+		editorPane->hide();
 		settings.setValue("view/hideEditor",true);
 	} else {
-		editor->show();
+		editorPane->show();
 		settings.setValue("view/hideEditor",false);
 	}
 }
@@ -1227,6 +1288,10 @@ void MainWindow::updateTemporalVariables()
 	top_ctx.set_variable("$vpr", Value(vpr));
 }
 
+/*!
+	Returns true if the current document is a file on disk and that file has new content.
+	Returns false if a file on disk has disappeared or if we haven't yet saved.
+*/
 bool MainWindow::fileChangedOnDisk()
 {
 	if (!this->fileName.isEmpty()) {
@@ -1267,15 +1332,6 @@ void MainWindow::compileTopLevelDocument()
 														QFileInfo(this->fileName).absolutePath().toLocal8Bit(), 
 														false);
 	
-	if (!animate_panel->isVisible()) {
-		highlighter->unhighlightLastError();
-		if (!this->root_module) {
-			QTextCursor cursor = editor->textCursor();
-			cursor.setPosition(parser_error_pos);
-			editor->setTextCursor(cursor);
-			highlighter->highlightError( parser_error_pos );
-		}
-	}
 }
 
 void MainWindow::checkAutoReload()
@@ -1405,6 +1461,7 @@ void MainWindow::actionRender()
 void MainWindow::cgalRender()
 {
 	if (!this->root_module || !this->root_node) {
+        compileEnded();
 		return;
 	}
 
@@ -2014,6 +2071,10 @@ void MainWindow::closeEvent(QCloseEvent *event)
 		settings.setValue("window/position", pos());
 		settings_setValueList("window/splitter1sizes",splitter1->sizes());
 		settings_setValueList("window/splitter2sizes",splitter2->sizes());
+		if (this->tempFile) {
+			delete this->tempFile;
+			this->tempFile = NULL;
+		}
 		event->accept();
 	} else {
 		event->ignore();

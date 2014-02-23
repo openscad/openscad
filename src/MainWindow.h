@@ -10,6 +10,7 @@
 #include "memory.h"
 #include <vector>
 #include <QMutex>
+#include <QSet>
 
 class MainWindow : public QMainWindow, public Ui::MainWindow
 {
@@ -88,6 +89,8 @@ private:
 	static void consoleOutput(const std::string &msg, void *userdata);
 	void loadViewSettings();
 	void loadDesignSettings();
+	void saveBackup();
+	void writeBackup(class QFile *file);
 
   class QMessageBox *openglbox;
 
@@ -150,6 +153,7 @@ private slots:
 	void actionFlushCaches();
 
 public:
+	static QSet<MainWindow*> *windows;
 	static void setExamplesDir(const QString &dir) { MainWindow::qexamplesdir = dir; }
 	void viewModeActionsUncheck();
 	void setCurrentOutput();
@@ -196,13 +200,17 @@ public slots:
 
 private:
 	static void report_func(const class AbstractNode*, void *vp, int mark);
-
+	
 	char const * afterCompileSlot;
 	bool procevents;
-	
+	class QTemporaryFile *tempFile;
+
 	class ProgressWidget *progresswidget;
 	class CGALWorker *cgalworker;
 	QMutex consolemutex;
+signals:
+	void highlightError(int);
+	void unhighlightLastError();
 };
 
 class GuiLocker

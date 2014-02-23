@@ -210,7 +210,7 @@ Geometry *ImportNode::createGeometry() const
 		bool binary = false;
 		std::streampos file_size = f.tellg();
 		f.seekg(80);
-		if (!f.eof()) {
+		if (f.good() && !f.eof()) {
 			uint32_t facenum = 0;
 			f.read((char *)&facenum, sizeof(uint32_t));
 #ifdef BOOST_BIG_ENDIAN
@@ -224,13 +224,12 @@ Geometry *ImportNode::createGeometry() const
 
 		char data[5];
 		f.read(data, 5);
-		if (!binary && !f.eof() && !memcmp(data, "solid", 5)) {
+		if (!binary && !f.eof() && f.good() && !memcmp(data, "solid", 5)) {
 			int i = 0;
 			double vdata[3][3];
 			std::string line;
 			std::getline(f, line);
 			while (!f.eof()) {
-				
 				std::getline(f, line);
 				boost::trim(line);
 				if (boost::regex_search(line, ex_sfe)) {
@@ -261,7 +260,7 @@ Geometry *ImportNode::createGeometry() const
 				}
 			}
 		}
-		else
+		else if (binary && !f.eof() && f.good())
 		{
 			f.ignore(80-5+4);
 			while (1) {
@@ -288,7 +287,6 @@ Geometry *ImportNode::createGeometry() const
 		else {
 			file >> poly;
 			file.close();
-			
 			bool err = createPolySetFromPolyhedron(poly, *p);
 		}
 #else

@@ -559,6 +559,8 @@ set(CORE_SOURCES
   ../src/fileutils.cc 
   ../src/progress.cc 
   ../src/boost-utils.cc 
+  ../src/PlatformUtils.cc 
+  ../src/${PLATFORMUTILS_SOURCE}
   ${FLEX_OpenSCADlexer_OUTPUTS}
   ${BISON_OpenSCADparser_OUTPUTS})
 
@@ -605,8 +607,6 @@ set(OFFSCREEN_SOURCES
   ../src/ThrownTogetherRenderer.cc
   ../src/renderer.cc
   ../src/render.cc
-  ../src/PlatformUtils.cc 
-  ../src/${PLATFORMUTILS_SOURCE}
   ../src/OpenCSGRenderer.cc)
 
 if(NULLGL)
@@ -626,7 +626,7 @@ endif()
 
 add_library(tests-core STATIC ${CORE_SOURCES})
 target_link_libraries(tests-core ${OPENGL_LIBRARIES} ${GLIB2_LIBRARIES} )
-set(TESTS-CORE-LIBRARIES ${OPENGL_LIBRARIES} ${GLIB2_LIBRARIES} ${Boost_LIBRARIES} )
+set(TESTS-CORE-LIBRARIES ${OPENGL_LIBRARIES} ${GLIB2_LIBRARIES} ${Boost_LIBRARIES} ${COCOA_LIBRARY})
 
 add_library(tests-common STATIC ${COMMON_SOURCES})
 target_link_libraries(tests-common tests-core)
@@ -672,7 +672,7 @@ target_link_libraries(csgtexttest tests-nocgal ${TESTS-NOCGAL-LIBRARIES})
 #
 add_executable(cgalcachetest cgalcachetest.cc)
 set_target_properties(cgalcachetest PROPERTIES COMPILE_FLAGS "-DENABLE_CGAL ${CGAL_CXX_FLAGS_INIT}")
-target_link_libraries(cgalcachetest tests-cgal ${TESTS-CGAL-LIBRARIES} ${CLIPPER_LIBRARY} ${GLEW_LIBRARY} ${COCOA_LIBRARY})
+target_link_libraries(cgalcachetest tests-cgal ${TESTS-CGAL-LIBRARIES} ${GLEW_LIBRARY})
 
 #
 # openscad no-qt
@@ -847,7 +847,8 @@ list(APPEND ECHO_FILES ${FUNCTION_FILES}
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/expression-shortcircuit-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/parent_module-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/children-tests.scad
-            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/range-tests.scad)
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/range-tests.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/empty-stl.scad)
 
 list(APPEND DUMPTEST_FILES ${FEATURES_FILES} ${EXAMPLE_FILES})
 list(APPEND DUMPTEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/escape-test.scad
@@ -911,7 +912,9 @@ list(APPEND BUGS_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue495.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue585.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue591.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue593.scad
-                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue612.scad)
+                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue612.scad
+                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue112.scad
+                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue666.scad)
 
 list(APPEND OPENCSGTEST_FILES ${BUGS_FILES})
 list(APPEND CGALPNGTEST_FILES ${BUGS_FILES})
@@ -1023,7 +1026,18 @@ add_cmdline_test(openscad-nonascii EXE ${OPENSCAD_BINPATH} ARGS -o
                  FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/sfære.scad)
 
 
-# Image output
+# Variable override (-D arg)
+
+# FIXME - this breaks on older cmake that is very common 'in the wild' on linux
+# Override simple variable
+if("${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}.${CMAKE_PATCH_VERSION}" VERSION_GREATER 2.8.10)
+add_cmdline_test(openscad-override EXE ${OPENSCAD_BINPATH}
+                 ARGS -D a=3$<SEMICOLON> -o
+                 SUFFIX echo
+                 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/override.scad)
+endif()
+
+# Image output parameters
 add_cmdline_test(openscad-imgsize EXE ${OPENSCAD_BINPATH}
                  ARGS --imgsize 100,100 -o 
                  SUFFIX png 

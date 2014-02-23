@@ -1,0 +1,27 @@
+ECHO: [-3, 6, -3]
+ECHO: [17, -10, 8]
+ECHO: [15, 15, 15]
+WARNING: Invalid value (NaN) in parameter vector for cross()
+ECHO: undef
+WARNING: Invalid value (INF) in parameter vector for cross()
+ECHO: undef
+WARNING: Invalid value (INF) in parameter vector for cross()
+ECHO: undef
+WARNING: Invalid number of parameters for cross()
+ECHO: undef
+WARNING: Invalid type of parameters for cross()
+ECHO: undef
+WARNING: Invalid type of parameters for cross()
+ECHO: undef
+WARNING: Invalid number of parameters for cross()
+ECHO: undef
+WARNING: Invalid vector size of parameter for cross()
+ECHO: undef
+WARNING: Invalid vector size of parameter for cross()
+ECHO: undef
+WARNING: Invalid value in parameter vector for cross()
+ECHO: undef
+WARNING: Invalid value in parameter vector for cross()
+ECHO: undef
+WARNING: Invalid value in parameter vector for cross()
+ECHO: undef
