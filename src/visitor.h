@@ -52,6 +52,9 @@ public:
   virtual Response visit(class State &state, const class ColorNode &node) {
 		return visit(state, (const class AbstractNode &)node);
 	}
+  virtual Response visit(class State &state, const class OffsetNode &node) {
+		return visit(state, (const class AbstractNode &)node);
+	}
 	// Add visit() methods for new visitable subtypes of AbstractNode here
 };
 
