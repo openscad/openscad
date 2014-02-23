@@ -22,6 +22,7 @@ update_www_download_links()
     local $*
     filesize=$(human_filesize $filesize)
     webdir=../openscad.github.com
+    # FIXME: release vs. snapshot
     incfile=inc/mac_snapshot_links.js
     BASEURL='http://files.openscad.org/'
     DATECODE=`date +"%Y.%m.%d"`
