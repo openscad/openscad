@@ -1,4 +1,4 @@
-OpenSCAD 2014.0X
+OpenSCAD 2014.Q1
 ================
 
 Language Features:
@@ -7,17 +7,20 @@ o Added parent_module() and $parent_modules
 o Added children() as a replacement for child()
 o Unicode strings (using UTF-8) are now correctly handled
 o Ranges can have a negative step value
-o Added experimental concat() function for concatenating vectors
+o Added norm() and cross() functions
 
 Program Features:
 o Cmd-line: --info parameter prints system/library info
-o Cmd-line: --enable parameter to enable experimental features
 o Cmd-line: --csglimit parameter to change CSG rendering limit
+o Cmd-line: Better handling of cmd-line arguments under Windows
 o GUI: Added Reset View
 o GUI: Added Search&Replace in editor
 o GUI: Syntax highlighting now has a dark background theme
+o GUI: We now create a backup file before rendering to allow for recovery if OpenSCAD crashes/freezes
 
 Bugfixes/improvements:
+o Reading empty STL files sometimes caused a crash
+o OPENSCADPATH now uses semicolon as path separator under Windows
 o polyhedron() is now much more robust handling almost planar polygons
 o Automatic reloads of large designs are more robust
 o Boolean logic in if() statements are now correctly short-circuited
