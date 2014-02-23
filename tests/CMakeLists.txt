@@ -547,6 +547,7 @@ set(CORE_SOURCES
   ../src/rendersettings.cc 
   ../src/dxfdata.cc 
   ../src/dxfdim.cc 
+  ../src/offset.cc 
   ../src/linearextrude.cc 
   ../src/rotateextrude.cc 
   ../src/printutils.cc 

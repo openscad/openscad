@@ -81,10 +81,14 @@ AbstractNode *OffsetModule::instantiate(const Context *ctx, const ModuleInstanti
 		} else if (std::string("miter") == jt) {
 			node->join_type = ClipperLib::jtMiter;
 		} else {
-			PRINTB("Unknown join_type for offset(): '%1'", jt);
+			PRINTB("WARNING: Unknown join_type for offset(): '%s'", jt);
+		}
+		
+		if ((node->join_type != ClipperLib::jtMiter) && !miter_limit.isUndefined()) {
+			PRINTB("WARNING: miter_limit is ignored in offset() for join_type: '%s'", jt);
 		}
 	}
-
+	
 	std::vector<AbstractNode *> instantiatednodes = inst->instantiateChildren(evalctx);
 	node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
 
