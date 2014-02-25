@@ -100,7 +100,8 @@ case $OS in
         elif [ "`command -v i686-pc-mingw32-makensis`" ]; then
             MAKENSIS=i686-pc-mingw32-makensis
         else
-            echo "makensis not found. please install nsis"
+            echo "makensis not found. please install nsis on your system."
+            echo "(for example, on debian linux, try apt-get install nsis)"
             exit 1
         fi
         echo NSIS makensis found: $MAKENSIS
