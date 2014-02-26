@@ -70,6 +70,9 @@
 #include <boost/foreach.hpp>
 #include "boosty.h"
 
+#include <QtPlugin>
+Q_IMPORT_PLUGIN(qtaccessiblewidgets)
+
 #ifdef _MSC_VER
 #define snprintf _snprintf
 #endif

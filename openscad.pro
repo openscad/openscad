@@ -41,6 +41,8 @@ TEMPLATE = app
 INCLUDEPATH += src
 DEPENDPATH += src
 
+QTPLUGIN += qtaccessiblewidgets
+
 # Handle custom library location.
 # Used when manually installing 3rd party libraries
 OPENSCAD_LIBDIR = $$(OPENSCAD_LIBRARIES)
