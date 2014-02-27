@@ -73,6 +73,7 @@ static void displayLastError(char *msg) {
 }
 
 typedef struct {
+	/*volatile*/ int status;
 	HANDLE hRead, hOutput;
 	STARTUPINFOW startupInfo;
 	PROCESS_INFORMATION processInfo;
@@ -82,12 +83,13 @@ static DWORD WINAPI watchdog(LPVOID arg) {
 #define info ((WATCH_INFO*)arg)
 	DWORD bc;
 	char buffer[1024];
-	for(;;) {
+	for (info->status=0;;) {
 		if (!ReadFile(info->hRead,buffer,sizeof(buffer),&bc,NULL)) {
 			displayLastError("Failed to read pipe\n");
-			return 1;
-		}
-		(void)WriteFile(info->hOutput, buffer, bc, NULL, NULL);
+			/* return 1; */ info->status = 1;
+		} else if (bc) {
+		    (void)WriteFile(info->hOutput, buffer, bc, NULL, NULL);
+		} else break; // closed pipe
 	}
 	return 0;
 #undef info
@@ -136,7 +138,7 @@ int main( /* int argc, char *argv[] */ )
 	sa.lpSecurityDescriptor = NULL;
 	sa.bInheritHandle = FALSE;
 	if (!CreatePipe(&info.hRead, &hWrite, &sa, 1024)) {
-		displayLastError("Cannot make pipe\n");
+		displayLastError("CreatePipe(): ");
 		return 1;
 	}
 	// make inheritable write handles
@@ -149,7 +151,7 @@ int main( /* int argc, char *argv[] */ )
 		&info.startupInfo.hStdOutput, 0L, TRUE, DUPLICATE_SAME_ACCESS)
 #endif
 	)) {
-		displayLastError("Cannot duplicate handle\n");
+		displayLastError("DuplicateHandle(): ");
 		return 1;
 	}
 	// The following redirection MUST BE CONDITIONAL if stdout used to write file
@@ -168,20 +170,25 @@ int main( /* int argc, char *argv[] */ )
 		displayError(NULL, errcode);
 		return 1;
 	}
+	// Create thread to work around ReadFile() blocking
+	info.status = 0;
 	if (!CreateThread(NULL, 0, watchdog, &info, 0, NULL)) {
-		displayLastError("Cannot create thread\n");
+		displayLastError("CreateThread(): ");
 		result = 1;
 	}
 	// WaitForSingleObject() returns zero on success
 	if (WaitForSingleObject(info.processInfo.hProcess, INFINITE)) {
-		displayLastError("Cannot wait for completion\n");
+		displayLastError("WaitForSingleObject(): ");
 		result = 1;
 	}
 	if (!GetExitCodeProcess(info.processInfo.hProcess, &status)) {
-		displayLastError("Cannot get exit status\n");
+		displayLastError("GetExitCodeProcess(): ");
 		result = 1;
 	}
-	if (!result) result = status;
+	if (!result) {
+		if (info.status) result = info.status;
+		else result = status; // return value of openscad.exe
+	}
 
 	// All currently open streams and handles will be
 	// closed automatically upon the process termination.
