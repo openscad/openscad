@@ -446,8 +446,11 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 #define OPENSCAD_QTGUI 1
 #endif
 
-
 #ifdef OPENSCAD_QTGUI
+#include <QtPlugin>
+#if defined(__MINGW64__) || defined(__MINGW32__) || defined(_MSCVER)
+Q_IMPORT_PLUGIN(qtaccessiblewidgets)
+#endif
 #include "MainWindow.h"
   #ifdef __APPLE__
   #include "EventFilter.h"
