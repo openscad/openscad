@@ -335,6 +335,8 @@
     <addaction name="separator"/>
     <addaction name="editActionHide"/>
     <addaction name="viewActionHide"/>
+    <addaction name="viewActionFocusEditor"/>
+    <addaction name="viewActionFocusConsole"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
@@ -510,6 +512,17 @@
     <string>Hide editor</string>
    </property>
   </action>
+  <action name="viewActionFocusEditor">
+   <property name="text">
+    <string>Switch focus to editor</string>
+   </property>
+  </action>
+  <action name="viewActionFocusConsole">
+   <property name="text">
+    <string>Switch focus to console</string>
+   </property>
+  </action>
+
   <action name="designActionReloadAndCompile">
    <property name="text">
     <string>&amp;Reload and Compile</string>

@@ -70,9 +70,6 @@
 #include <boost/foreach.hpp>
 #include "boosty.h"
 
-#include <QtPlugin>
-Q_IMPORT_PLUGIN(qtaccessiblewidgets)
-
 #ifdef _MSC_VER
 #define snprintf _snprintf
 #endif
@@ -449,8 +446,9 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 #define OPENSCAD_QTGUI 1
 #endif
 
-
 #ifdef OPENSCAD_QTGUI
+#include <QtPlugin>
+Q_IMPORT_PLUGIN(qtaccessiblewidgets)
 #include "MainWindow.h"
   #ifdef __APPLE__
   #include "EventFilter.h"
