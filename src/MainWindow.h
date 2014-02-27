@@ -71,7 +71,6 @@ private slots:
 	void updateTVal();
 	void setFileName(const QString &filename);
 	void setFont(const QString &family, uint size);
-	void setSyntaxHighlight(const QString &s);
 	void showProgress();
 	void openCSGSettingsChanged();
 
