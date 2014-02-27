@@ -20,7 +20,6 @@ public:
 	static void requestOpenFile(const QString &filename);
 
 	QString fileName;
-	class Highlighter *highlighter;
 
 	class Preferences *prefs;
 
