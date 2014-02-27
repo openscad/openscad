@@ -463,8 +463,8 @@ Q_IMPORT_PLUGIN(qtaccessiblewidgets)
 static QString assemblePath(const fs::path& absoluteBaseDir,
                             const string& fileName) {
   if (fileName.empty()) return "";
-  QString qsDir = QString::fromUtf8( boosty::stringy( absoluteBaseDir ).c_str() );
-  QString qsFile = QString::fromUtf8( fileName.c_str() );
+  QString qsDir = QString::fromLocal8Bit( boosty::stringy( absoluteBaseDir ).c_str() );
+  QString qsFile = QString::fromLocal8Bit( fileName.c_str() );
   // if qsfile is absolute, dir is ignored. (see documentation of QFileInfo)
   QFileInfo info( qsDir, qsFile );
   return info.absoluteFilePath();
