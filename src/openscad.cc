@@ -201,6 +201,13 @@ Camera get_camera( po::variables_map vm )
 	return camera;
 }
 
+#ifdef OPENSCAD_TESTING
+#undef OPENSCAD_QTGUI
+#else
+#define OPENSCAD_QTGUI 1
+#include <QApplication>
+#endif
+
 int cmdline(const char *deps_output_file, const std::string &filename, Camera &camera, const char *output_file, const fs::path &original_path, Render::type renderer, int argc, char ** argv )
 {
 #ifdef OPENSCAD_QTGUI
@@ -440,12 +447,6 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 	return 0;
 }
 
-#ifdef OPENSCAD_TESTING
-#undef OPENSCAD_QTGUI
-#else
-#define OPENSCAD_QTGUI 1
-#endif
-
 #ifdef OPENSCAD_QTGUI
 #include <QtPlugin>
 #if defined(__MINGW64__) || defined(__MINGW32__) || defined(_MSCVER)
@@ -455,7 +456,6 @@ Q_IMPORT_PLUGIN(qtaccessiblewidgets)
   #ifdef __APPLE__
   #include "EventFilter.h"
   #endif
-#include <QApplication>
 #include <QString>
 #include <QDir>
 
