@@ -551,7 +551,7 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
                new MainWindow(assemblePath(original_path, infile));
 	}
 #else
-	MainWindow *m = new MainWindow(assemblePath(original_path, inputFiles[0]));
+	new MainWindow(assemblePath(original_path, inputFiles[0]));
 #endif
 	app.connect(&app, SIGNAL(lastWindowClosed()), &app, SLOT(quit()));
 	int rc = app.exec();
