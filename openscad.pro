@@ -13,6 +13,10 @@
 #
 # http://en.wikibooks.org/wiki/OpenSCAD_User_Manual
 
+!experimental {
+  message("If you're building a development binary, consider adding CONFIG+=experimental")
+}
+
 isEmpty(QT_VERSION) {
   error("Please use qmake for Qt 4 (probably qmake-qt4)")
 }
