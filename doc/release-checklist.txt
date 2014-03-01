@@ -64,6 +64,7 @@ o Notify package managers
   - Fedora: Miro Hrončok <miro@hroncok.cz> or <mhroncok@redhat.com>
   - OpenSUSE: Pavol Rusnak <prusnak@opensuse.org>
   - MacPorts: Frank Schima <macports2000@gmail.com>
+  - Arch Linux: Kyle Keen <keenerd@gmail.com>
 
 Build and Upload Release Binaries
 ---------------------------------
