@@ -315,6 +315,7 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this->designActionExportSTL, SIGNAL(triggered()), this, SLOT(actionExportSTL()));
 	connect(this->designActionExportOFF, SIGNAL(triggered()), this, SLOT(actionExportOFF()));
 	connect(this->designActionExportDXF, SIGNAL(triggered()), this, SLOT(actionExportDXF()));
+	connect(this->designActionExportSVG, SIGNAL(triggered()), this, SLOT(actionExportSVG()));
 	connect(this->designActionExportCSG, SIGNAL(triggered()), this, SLOT(actionExportCSG()));
 	connect(this->designActionExportImage, SIGNAL(triggered()), this, SLOT(actionExportImage()));
 	connect(this->designActionFlushCaches, SIGNAL(triggered()), this, SLOT(actionFlushCaches()));
@@ -1686,30 +1687,41 @@ void MainWindow::actionExportOFF()
 	actionExportSTLorOFF(false);
 }
 
-void MainWindow::actionExportDXF()
-{
-#ifdef ENABLE_CGAL
+QString MainWindow::get2dExportFilename(QString format, QString extension) {
 	setCurrentOutput();
 
 	if (!this->root_geom) {
 		PRINT("Nothing to export! Try building first (press F6).");
 		clearCurrentOutput();
-		return;
+		return QString();
 	}
 
 	if (this->root_geom->getDimension() != 2) {
 		PRINT("Current top level object is not a 2D object.");
 		clearCurrentOutput();
-		return;
+		return QString();
 	}
 
-	QString dxf_filename = QFileDialog::getSaveFileName(this,
-			"Export DXF File", 
-			this->fileName.isEmpty() ? "Untitled.dxf" : QFileInfo(this->fileName).baseName()+".dxf",
-			"DXF Files (*.dxf)");
-	if (dxf_filename.isEmpty()) {
+	QString caption = QString("Export %1 File").arg(format);
+	QString suggestion = this->fileName.isEmpty()
+		? QString("Untitled%1").arg(extension)
+		: QFileInfo(this->fileName).baseName() + extension;
+	QString filter = QString("%1 Files (*%2)").arg(format, extension);
+	QString exportFilename = QFileDialog::getSaveFileName(this, caption, suggestion, filter);
+	if (exportFilename.isEmpty()) {
 		PRINT("No filename specified. DXF export aborted.");
 		clearCurrentOutput();
+		return QString();
+	}
+	
+	return exportFilename;
+}
+
+void MainWindow::actionExportDXF()
+{
+#ifdef ENABLE_CGAL
+	QString dxf_filename = get2dExportFilename("DXF", ".dxf");
+	if (dxf_filename.isEmpty()) {
 		return;
 	}
 
@@ -1725,6 +1737,26 @@ void MainWindow::actionExportDXF()
 
 	clearCurrentOutput();
 #endif /* ENABLE_CGAL */
+}
+
+void MainWindow::actionExportSVG()
+{
+	QString svg_filename = get2dExportFilename("SVG", ".svg");
+	if (svg_filename.isEmpty()) {
+		return;
+	}
+
+	std::ofstream fstream(svg_filename.toUtf8());
+	if (!fstream.is_open()) {
+		PRINTB("Can't open file \"%s\" for export", svg_filename.toLocal8Bit().constData());
+	}
+	else {
+		exportFile(this->root_geom.get(), fstream, OPENSCAD_SVG);
+		fstream.close();
+		PRINT("SVG export finished.");
+	}
+
+	clearCurrentOutput();
 }
 
 void MainWindow::actionExportCSG()
