@@ -42,15 +42,13 @@ avoid running cmd.exe (so save some resources).
 TODO:
 
 Fix printing of unicode on console.
-Make stdout redirection conditional (depending on argv[] contents).
 */
 
 #include <windows.h>
 #include <process.h>
 #include <io.h>
 #include <fcntl.h>
-#include <stdio.h>
-#include <stdlib.h>
+/*#include <stdio.h>*/
 #include <string.h>
 
 // manage MS Windows error codes
@@ -95,18 +93,22 @@ static DWORD WINAPI watchdog(LPVOID arg) {
 #undef info
 }
 
-#define MAXCMDLEN 32768 /* MS Windows limit */
-#define IS_WHITESPACE(c) (' ' == (c) || '\t' == (c))
+#define EXE_NAME "openscad.exe"
+#define ___WIDECHARTEXT(s) L##s
+#define W(x) ___WIDECHARTEXT(x)
 
-int main( /* int argc, char *argv[] */ )
-{
+#define IS_WHITESPACE(c) (' ' == (c) || '\t' == (c))
+#define MAXCMDLEN 32768 /* MS Windows limit */
+
+int main(int argc, char *argv[]) {
 	HANDLE hWrite, curr_proc;
 	SECURITY_ATTRIBUTES sa;
 	WATCH_INFO info;
 	wchar_t cmd[MAXCMDLEN];
 	DWORD status;
 	int result = 0;
-	/*bool*/ int quote;
+	register int i;
+	/*bool*/ int quote, preserve_stdout;
 	register wchar_t *cmdline = GetCommandLineW();
 	// Look for the end of executable
 	// There is no need to check for escaped double quotes here
@@ -114,9 +116,10 @@ int main( /* int argc, char *argv[] */ )
 	for (quote=0; *cmdline && (quote || !IS_WHITESPACE(*cmdline)); ++cmdline) {
 		if ('"' == *cmdline) quote ^= 1;
 	}
-	while (IS_WHITESPACE(*cmdline)) ++cmdline;
-
-	(void)wcscpy(cmd, L"openscad.exe "); // note trailing space
+	if (IS_WHITESPACE(*cmdline)) {
+		while (IS_WHITESPACE(*(cmdline+1))) ++cmdline;
+	}
+	(void)wcscpy(cmd, W(EXE_NAME));
 	if (wcslen(cmd) + wcslen(cmdline) >= MAXCMDLEN) {
 		// fprintf(stderr, "Command line length exceeds limit of %d\n", MAXCMDLEN);
 		// avoid fprintf() to decrease executable size
@@ -125,14 +128,21 @@ int main( /* int argc, char *argv[] */ )
 	}
 	(void)wcscat(cmd, cmdline);
 
-	ZeroMemory(&info.startupInfo, sizeof(info.startupInfo));
+	// look for '-o -' combination
+	for (preserve_stdout=FALSE, i=/*sic!*/2; i<argc && !preserve_stdout; ++i) {
+		register char *s = argv[i];
+		if ('-' == s[0] && '\0' == s[1]) // it is "-"
+			if (!strcmp("-o", argv[i-1]))
+				preserve_stdout = TRUE;
+	}
+
+	ZeroMemory(&info, sizeof(info));
+
 	info.startupInfo.cb = sizeof(info.startupInfo);
 	info.startupInfo.dwFlags = STARTF_USESTDHANDLES;
 	info.startupInfo.hStdInput = GetStdHandle(STD_INPUT_HANDLE);
-	// info.startupInfo.hStdOutput = GetStdHandle(STD_OUTPUT_HANDLE);
-
-	// The following MUST BE CONDITIONAL if stdout used to write file
-	info.hOutput = GetStdHandle(STD_OUTPUT_HANDLE);
+	info.startupInfo.hStdOutput = GetStdHandle(STD_OUTPUT_HANDLE);
+	info.hOutput = GetStdHandle(STD_ERROR_HANDLE);
 
 	sa.nLength = sizeof(sa);
 	sa.lpSecurityDescriptor = NULL;
@@ -141,38 +151,37 @@ int main( /* int argc, char *argv[] */ )
 		displayLastError("CreatePipe(): ");
 		return 1;
 	}
-	// make inheritable write handles
+	// make inheritable write handle(s)
 	curr_proc = GetCurrentProcess();
-	if (!(DuplicateHandle(curr_proc, hWrite, curr_proc,
-		&info.startupInfo.hStdError, 0L, TRUE, DUPLICATE_SAME_ACCESS)
-#if 0 // Should I really duplicate handle or plain copy suffice
-	// The following redirection MUST BE CONDITIONAL if stdout used to write file
-	   && DuplicateHandle(curr_proc, hWrite, curr_proc,
-		&info.startupInfo.hStdOutput, 0L, TRUE, DUPLICATE_SAME_ACCESS)
-#endif
-	)) {
+	if (!DuplicateHandle(curr_proc, hWrite, curr_proc,
+		&info.startupInfo.hStdError, 0L, TRUE, DUPLICATE_SAME_ACCESS)) {
 		displayLastError("DuplicateHandle(): ");
 		return 1;
 	}
-	// The following redirection MUST BE CONDITIONAL if stdout used to write file
-	info.startupInfo.hStdOutput = info.startupInfo.hStdError;
-
+	if (!preserve_stdout) {
+		info.hOutput = info.startupInfo.hStdOutput;
+#if 0 // Should I really duplicate handle or plain copy suffice?
+		if (!DuplicateHandle(curr_proc, hWrite, curr_proc,
+			&info.startupInfo.hStdOutput, 0L, TRUE, DUPLICATE_SAME_ACCESS)) {
+			displayLastError("DuplicateHandle(): ");
+			return 1;
+		}
+#else
+		info.startupInfo.hStdOutput = info.startupInfo.hStdError;
+#endif
+	}
 	(void)CloseHandle(hWrite);
 	if (!CreateProcessW(NULL, cmd, NULL, NULL, TRUE,
 		CREATE_UNICODE_ENVIRONMENT, NULL, NULL,
 		&info.startupInfo, &info.processInfo)) {
-		DWORD errcode = GetLastError();
 		// fwprintf(stderr, L"Cannot run: %s\n", cmd);
 		// avoid fwprintf() to decrease executable size
-		fputws(L"Cannot run: ", stderr);
-		fputws(cmd, stderr);
-		fputws(L"\n", stderr);
-		displayError(NULL, errcode);
+		// fputws(L"Cannot run: ", stderr); fputws(cmd, stderr); fputws(L"\n", stderr);
+		displayLastError("Cannot run " EXE_NAME "\n");
 		return 1;
 	}
 	// Create thread to work around ReadFile() blocking
-	info.status = 0;
-	if (!CreateThread(NULL, 0, watchdog, &info, 0, NULL)) {
+	if (!CreateThread(NULL, 32768, watchdog, &info, 0, NULL)) {
 		displayLastError("CreateThread(): ");
 		result = 1;
 	}
