@@ -1313,6 +1313,7 @@ bool MainWindow::fileChangedOnDisk()
 void MainWindow::compileTopLevelDocument()
 {
 	updateTemporalVariables();
+	resetPrintedDeprecations();
 	
 	this->last_compiled_doc = editor->toPlainText();
 	std::string fulltext = 

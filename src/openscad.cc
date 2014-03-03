@@ -651,12 +651,12 @@ int main(int argc, char **argv)
 		output_file = vm["o"].as<string>().c_str();
 	}
 	if (vm.count("s")) {
-		PRINT("DEPRECATED: The -s option is deprecated. Use -o instead.\n");
+		printDeprecation("DEPRECATED: The -s option is deprecated. Use -o instead.\n");
 		if (output_file) help(argv[0]);
 		output_file = vm["s"].as<string>().c_str();
 	}
 	if (vm.count("x")) { 
-		PRINT("DEPRECATED: The -x option is deprecated. Use -o instead.\n");
+		printDeprecation("DEPRECATED: The -x option is deprecated. Use -o instead.\n");
 		if (output_file) help(argv[0]);
 		output_file = vm["x"].as<string>().c_str();
 	}

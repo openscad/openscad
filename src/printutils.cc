@@ -69,3 +69,20 @@ std::string two_digit_exp_format( double x )
 	s << x;
 	return two_digit_exp_format( s.str() );
 }
+
+#include <set>
+
+std::set<std::string> printedDeprecations;
+
+void printDeprecation(const std::string &str)
+{
+	if (printedDeprecations.find(str) == printedDeprecations.end()) {
+		PRINT(str);
+		printedDeprecations.insert(str);
+	}
+}
+
+void resetPrintedDeprecations()
+{
+	printedDeprecations.clear();
+}
