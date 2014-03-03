@@ -641,7 +641,7 @@ Value Value::operator[](const Value &v)
 void Value::RangeType::normalize() {
   if ((step_val>0) && (end_val < begin_val)) {
     std::swap(begin_val,end_val);
-    PRINT("DEPRECATED: Using ranges of the form [begin:end] with begin value greater than the end value is deprecated.");
+    printDeprecation("DEPRECATED: Using ranges of the form [begin:end] with begin value greater than the end value is deprecated.");
   }
 }
 

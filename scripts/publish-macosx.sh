@@ -46,8 +46,7 @@ if test -z "$VERSIONDATE"; then
 fi
 if test -z "$VERSION"; then
   VERSION=$VERSIONDATE
-  COMMIT=-c
-  SNAPSHOT=true
+  SNAPSHOT=snapshot
 fi
 
 # Turn off ccache, just for safety
@@ -59,7 +58,7 @@ export OPENSCAD_LIBRARIES=$PWD/../libraries/homebrew
 # Make sure that the correct Qt tools are used
 export PATH=$OPENSCAD_LIBRARIES/bin:$PATH
 
-`dirname $0`/release-common.sh -v $VERSION $COMMIT
+`dirname $0`/release-common.sh -v $VERSION $SNAPSHOT
 if [[ $? != 0 ]]; then
   exit 1
 fi

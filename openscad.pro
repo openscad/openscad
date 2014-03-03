@@ -13,6 +13,10 @@
 #
 # http://en.wikibooks.org/wiki/OpenSCAD_User_Manual
 
+!experimental {
+  message("If you're building a development binary, consider adding CONFIG+=experimental")
+}
+
 isEmpty(QT_VERSION) {
   error("Please use qmake for Qt 4 (probably qmake-qt4)")
 }
@@ -90,6 +94,7 @@ else {
 
 win* {
   RC_FILE = openscad_win32.rc
+  QTPLUGIN += qtaccessiblewidgets
 }
 
 CONFIG += qt
@@ -159,6 +164,11 @@ CONFIG += glib-2.0
 
 #Uncomment the following line to enable QCodeEdit
 #CONFIG += qcodeedit
+
+# Make experimental features available
+experimental {
+  DEFINES += ENABLE_EXPERIMENTAL
+}
 
 mdi {
   DEFINES += ENABLE_MDI

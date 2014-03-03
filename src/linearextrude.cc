@@ -74,7 +74,7 @@ AbstractNode *LinearExtrudeModule::instantiate(const Context *ctx, const ModuleI
 	Value slices = c.lookup_variable("slices", true);
 
 	if (!file.isUndefined() && file.type() == Value::STRING) {
-		PRINT("DEPRECATED: Support for reading files in linear_extrude will be removed in future releases. Use a child import() instead.");
+		printDeprecation("DEPRECATED: Support for reading files in linear_extrude will be removed in future releases. Use a child import() instead.");
 		node->filename = lookup_file(file.toString(), inst->path(), c.documentPath());
 	}
 

@@ -25,7 +25,7 @@ public slots:
 	void setPlainText(const QString &text);
 	void highlightError(int error_pos);
 	void unhighlightLastError();
-
+	void setHighlightScheme(const QString &name);
 private:
 	void wheelEvent ( QWheelEvent * event );
 	Highlighter *highlighter;
