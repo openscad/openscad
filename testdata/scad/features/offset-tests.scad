@@ -23,8 +23,8 @@ offset(delta = 1, join_type = "miter") shape2(1, 2);
 offset(delta = -1, join_type = "miter", miter_limit = 10) shape2(2, 2);
 offset(delta = 1, join_type = "miter", miter_limit = 10) shape2(3, 2);
 
-offset(delta = -1, join_type = "square", miter_limit = 10) shape2(2, -1);
-offset(delta = 1, join_type = "square", miter_limit = 10) shape2(3, -1);
+offset(delta = -1, join_type = "bevel") shape2(2, -1);
+offset(delta = 1, join_type = "bevel") shape2(3, -1);
 
 offset(delta = -5, join_type = "round") shape1(-1, 1);
 shape1(0, 1);

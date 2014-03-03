@@ -74,7 +74,7 @@ AbstractNode *OffsetModule::instantiate(const Context *ctx, const ModuleInstanti
 	Value join_type = c.lookup_variable("join_type", true);
 	if (join_type.type() == Value::STRING) {
 		std::string jt = join_type.toString();
-		if (std::string("square") == jt) {
+		if (std::string("bevel") == jt) {
 			node->join_type = ClipperLib::jtSquare;
 		} else if (std::string("round") == jt) {
 			node->join_type = ClipperLib::jtRound;
@@ -103,7 +103,7 @@ std::string OffsetNode::toString() const
 		<< "(delta = " << std::dec << this->delta
 		<< ", join_type = "
 			<< (this->join_type == ClipperLib::jtSquare
-				? "square"
+				? "bevel"
 				: this->join_type == ClipperLib::jtRound
 					? "round"
 					: "miter")
