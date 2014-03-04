@@ -16,11 +16,21 @@ Builtins *Builtins::instance(bool erase)
 
 void Builtins::init(const char *name, class AbstractModule *module)
 {
+#ifndef ENABLE_EXPERIMENTAL
+	if (module->is_experimental()) {
+		return;
+	}
+#endif
 	Builtins::instance()->globalscope.modules[name] = module;
 }
 
 void Builtins::init(const char *name, class AbstractFunction *function)
 {
+#ifndef ENABLE_EXPERIMENTAL
+	if (function->is_experimental()) {
+		return;
+	}
+#endif
 	Builtins::instance()->globalscope.functions[name] = function;
 }
 
