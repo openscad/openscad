@@ -42,7 +42,7 @@
 using namespace boost::assign; // bring 'operator+=()' into scope
 
 #include <boost/math/special_functions/fpclassify.hpp>
-using boost::math::isinf;
+#define isinf boost::math::isinf
 
 #define F_MINIMUM 0.01
 

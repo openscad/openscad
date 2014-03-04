@@ -646,11 +646,11 @@ Value builtin_cross(const Context *, const EvalContext *evalctx)
 		}
 		double d0 = v0[a].toDouble();
 		double d1 = v1[a].toDouble();
-		if (isnan(d0) || isnan(d1)) {
+		if (boost::math::isnan(d0) || boost::math::isnan(d1)) {
 			PRINT("WARNING: Invalid value (NaN) in parameter vector for cross()");
 			return Value();
 		}
-		if (isinf(d0) || isinf(d1)) {
+		if (boost::math::isinf(d0) || boost::math::isinf(d1)) {
 			PRINT("WARNING: Invalid value (INF) in parameter vector for cross()");
 			return Value();
 		}

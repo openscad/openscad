@@ -40,8 +40,6 @@
 #include <glib.h>
 
 #include <boost/math/special_functions/fpclassify.hpp>
-using boost::math::isnan;
-using boost::math::isinf;
 
 std::ostream &operator<<(std::ostream &stream, const Filename &filename)
 {
@@ -646,11 +644,11 @@ void Value::RangeType::normalize() {
 }
 
 uint32_t Value::RangeType::nbsteps() const {
-  if (isnan(step_val) || isinf(begin_val) || (isinf(end_val))) {
+  if (boost::math::isnan(step_val) || boost::math::isinf(begin_val) || (boost::math::isinf(end_val))) {
     return std::numeric_limits<uint32_t>::max();
   }
 
-  if ((begin_val == end_val) || isinf(step_val)) {
+  if ((begin_val == end_val) || boost::math::isinf(step_val)) {
     return 0;
   }
   
