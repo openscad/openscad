@@ -29,6 +29,7 @@ o Set VERSION and VERSIONDATE environment variable
   scripts/publish-macosx.sh
   scripts/publish-mingw-x.sh
 
+o Update manpage: doc/openscad.1
 o Update releases/$VERSION.md
 o scripts/makereleasenotes.sh
 
