@@ -15,6 +15,10 @@ void set_output_handler(OutputHandlerFunc *newhandler, void *userdata);
 extern std::list<std::string> print_messages_stack;
 void print_messages_push();
 void print_messages_pop();
+void printDeprecation(const std::string &str);
+void resetPrintedDeprecations();
+
+#define PRINT_DEPRECATION(_fmt, _arg) do { printDeprecation(str(boost::format(_fmt) % _arg)); } while (0)
 
 void PRINT(const std::string &msg);
 #define PRINTB(_fmt, _arg) do { PRINT(str(boost::format(_fmt) % _arg)); } while (0)
@@ -48,6 +52,5 @@ public:
 		return *this;
 	}
 };
-
 
 #endif

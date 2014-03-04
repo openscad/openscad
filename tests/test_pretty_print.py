@@ -36,9 +36,11 @@ import subprocess
 import time
 import platform
 try:
+    from urllib.error import URLError
     from urllib.request import urlopen
     from urllib.parse import urlencode
 except:
+    from urllib2 import URLError
     from urllib2 import urlopen
     from urllib import urlencode
 
@@ -386,7 +388,8 @@ def upload_html(page_url, title, html):
     }
     try:
         response = urlopen(page_url, data=postify(data))
-    except:
+    except URLError, e:
+        print 'Upload error: ' + str(e)
         return False
     return 'success' in response.read().decode()
 

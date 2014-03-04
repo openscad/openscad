@@ -96,7 +96,11 @@ Preferences::Preferences(QWidget *parent) : QMainWindow(parent)
 	addPrefPage(group, prefsAction3DView, page3DView);
 	addPrefPage(group, prefsActionEditor, pageEditor);
 	addPrefPage(group, prefsActionUpdate, pageUpdate);
+#ifdef ENABLE_EXPERIMENTAL
 	addPrefPage(group, prefsActionFeatures, pageFeatures);
+#else
+	this->toolBar->removeAction(prefsActionFeatures);
+#endif
 	addPrefPage(group, prefsActionAdvanced, pageAdvanced);
 	connect(group, SIGNAL(triggered(QAction*)), this, SLOT(actionTriggered(QAction*)));
 

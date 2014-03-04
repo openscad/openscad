@@ -10,16 +10,13 @@
 # Usage: release-common.sh [-v <versionstring>] [-c] [-mingw[32|64]]
 #  -v       Version string (e.g. -v 2010.01)
 #  -d       Version date (e.g. -d 2010.01.23)
-#  -c       Build with commit info
 #  -mingw32 Cross-compile for win32 using MXE
-#  -mingw64 Cross-compile for win64 using Tony Theodore's MXE fork
+#  -mingw64 Cross-compile for win64 using MXE
+#  -snapshot Build a snapshot binary (make e.g. experimental features available, build with commit info)
 #
 # If no version string or version date is given, todays date will be used (YYYY-MM-DD)
-# If only verion date is given, it will be used also as version string.
+# If only version date is given, it will be used also as version string.
 # If no make target is given, release will be used on Windows, none one Mac OS X
-#
-# The commit info will extracted from git and be passed to qmake as OPENSCAD_COMMIT
-# to identify a build in the about box.
 #
 # The mingw cross compile depends on the MXE cross-build tools. Please
 # see the README.md file on how to install these dependencies.
@@ -36,6 +33,8 @@ if [ ! -f $OPENSCADDIR/openscad.pro ]; then
   echo "Must be run from the OpenSCAD source root directory"
   exit 1
 fi
+
+CONFIG=deploy
 
 if [[ "$OSTYPE" =~ "darwin" ]]; then
   OS=MACOSX
@@ -63,6 +62,11 @@ if [ "`echo $* | grep mingw64`" ]; then
   echo Mingw-cross build using ARCH=64
 fi
 
+if [ "`echo $* | grep snapshot`" ]; then
+  CONFIG="$CONFIG experimental"
+  OPENSCAD_COMMIT=`git log -1 --pretty=format:"%h"`
+fi
+
 if [ $OS ]; then
   echo "Detected OS: $OS"
 else
@@ -75,7 +79,6 @@ do
   case $c in
     v) VERSION=$OPTARG;;
     d) VERSIONDATE=$OPTARG;;
-    c) OPENSCAD_COMMIT=`git log -1 --pretty=format:"%h"`
   esac
 done
 
@@ -97,7 +100,8 @@ case $OS in
         elif [ "`command -v i686-pc-mingw32-makensis`" ]; then
             MAKENSIS=i686-pc-mingw32-makensis
         else
-            echo "makensis not found. please install nsis"
+            echo "makensis not found. please install nsis on your system."
+            echo "(for example, on debian linux, try apt-get install nsis)"
             exit 1
         fi
         echo NSIS makensis found: $MAKENSIS
@@ -116,7 +120,7 @@ if [ -d .git ]; then
   git submodule update
 fi
 
-echo "Building openscad-$VERSION ($VERSIONDATE) $CONFIGURATION..."
+echo "Building openscad-$VERSION ($VERSIONDATE) $CONFIG..."
 
 if [ ! $NUMCPU ]; then
   echo "note: you can 'export NUMCPU=x' for multi-core compiles (x=number)";
@@ -124,7 +128,6 @@ if [ ! $NUMCPU ]; then
 fi
 echo "NUMCPU: " $NUMCPU
 
-CONFIG=deploy
 case $OS in
     LINUX|MACOSX) 
         TARGET=
@@ -148,11 +151,11 @@ esac
 
 case $OS in
     UNIX_CROSS_WIN)
-        cd $DEPLOYDIR && qmake VERSION=$VERSION OPENSCAD_COMMIT=$OPENSCAD_COMMIT CONFIG+=$CONFIG CONFIG+=mingw-cross-env CONFIG-=debug ../openscad.pro
+        cd $DEPLOYDIR && qmake VERSION=$VERSION OPENSCAD_COMMIT=$OPENSCAD_COMMIT CONFIG+="$CONFIG" CONFIG+=mingw-cross-env CONFIG-=debug ../openscad.pro
         cd $OPENSCADDIR
     ;;
     *)
-        qmake VERSION=$VERSION OPENSCAD_COMMIT=$OPENSCAD_COMMIT CONFIG+=$CONFIG CONFIG-=debug openscad.pro
+        qmake VERSION=$VERSION OPENSCAD_COMMIT=$OPENSCAD_COMMIT CONFIG+="$CONFIG" CONFIG-=debug openscad.pro
     ;;
 esac
 

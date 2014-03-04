@@ -29,7 +29,9 @@ o Set VERSION and VERSIONDATE environment variable
   scripts/publish-macosx.sh
   scripts/publish-mingw-x.sh
 
-o Update RELEASE_NOTES
+o Update releases/$VERSION.md
+o scripts/makereleasenotes.sh
+
 o Update copyright year in AboutDialog.html and mainwin.cc
 
 o Tag release
@@ -41,9 +43,9 @@ o build source package
 o Sanity check; build a binary or two and manually run some tests
 
 o git push --tags
+o ./scripts/github-release.sh $VERSION
 
 o Upload Source package
-  $ ./scripts/googlecode_upload.py -s 'Source Code' -p openscad -l Featured,Type-Source openscad-$VERSION.src.tar.gz
   $ scp openscad-$VERSION.src.tar.gz openscad@files.openscad.org:www
 
 o Remove VERSION environment variable
@@ -62,6 +64,7 @@ o Notify package managers
   - Fedora: Miro Hrončok <miro@hroncok.cz> or <mhroncok@redhat.com>
   - OpenSUSE: Pavol Rusnak <prusnak@opensuse.org>
   - MacPorts: Frank Schima <macports2000@gmail.com>
+  - Arch Linux: Kyle Keen <keenerd@gmail.com>
 
 Build and Upload Release Binaries
 ---------------------------------

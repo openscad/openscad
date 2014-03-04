@@ -52,6 +52,12 @@ init_variables()
 	DOBUILD=1
 	DOUPLOAD=1
 	DRYRUN=
+	DOSNAPSHOT=1
+	if [ "`echo $* | grep release`" ]; then
+		echo "this script cannot yet build releases, only snapshots"
+		DOSNAPSHOT=0
+		exit 1
+	fi
 	if [ "`echo $* | grep uploadonly`" ]; then
 		DOUPLOAD=1
 		DOBUILD=
@@ -69,6 +75,7 @@ init_variables()
 	export DOUPLOAD
 	export DRYRUN
 	export DATECODE
+	export DOSNAPSHOT
 }
 
 check_starting_path()
@@ -104,7 +111,12 @@ build_win32()
 	. ./scripts/setenv-mingw-xbuild.sh clean
 	. ./scripts/setenv-mingw-xbuild.sh
 	./scripts/mingw-x-build-dependencies.sh
-	./scripts/release-common.sh mingw32
+	if [ $DOSNAPSHOT ] ; then
+		./scripts/release-common.sh snapshot mingw32
+	else
+		echo "this script cant yet build releases, only snapshots"
+		exit 1
+	fi
 	if [ "`echo $? | grep 0`" ]; then
 		echo build of win32 stage over
 	else
@@ -120,7 +132,12 @@ build_win64()
 	. ./scripts/setenv-mingw-xbuild.sh clean
 	. ./scripts/setenv-mingw-xbuild.sh 64
 	./scripts/mingw-x-build-dependencies.sh 64
-	./scripts/release-common.sh mingw64
+	if [ $DOSNAPSHOT ] ; then
+		./scripts/release-common.sh snapshot mingw64
+	else
+		echo "this script cant yet build releases, only snapshots"
+		exit 1
+	fi
 	if [ "`echo $? | grep 0`" ]; then
 		echo build of win64 stage over
 	else
@@ -135,7 +152,12 @@ build_lin32()
 {
 	. ./scripts/setenv-unibuild.sh
 	./scripts/uni-build-dependencies.sh
-	./scripts/release-common.sh
+	if [ $DOSNAPSHOT ] ; then
+		./scripts/release-common.sh snapshot
+	else
+		echo "this script cant yet build releases, only snapshots"
+		exit 1
+	fi
 	DATECODE=`date +"%Y.%m.%d"`
 	export DATECODE
 }

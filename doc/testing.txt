@@ -39,6 +39,16 @@ $ ctest -C <configs>  Adds extended tests belonging to configs.
                       Bugs     - test known bugs (tests will fail)
                       All      - test everything
 
+
+C) Automatically upload test results (experimental)
+
+It's possible to automatically upload tests results to an external
+server. This is good for CI, as well as being able to easily report
+bugs.
+
+To enable this feature, add '-DOPENSCAD_UPLOAD_TESTS=1' to the cmake cmd-line, e.g.:
+cmake -DOPENSCAD_UPLOAD_TESTS=1 .
+
 Adding a new test:
 ------------------
 
