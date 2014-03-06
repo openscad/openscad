@@ -10,7 +10,7 @@ before_install:
 
 branches:
   only:
-    - travis
+    - master
 
 before_script:
  - echo -e "Host files.openscad.org\n\tStrictHostKeyChecking no\n" >> ~/.ssh/config
