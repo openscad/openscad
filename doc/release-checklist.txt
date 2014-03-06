@@ -11,7 +11,7 @@ o Pre-release preparations
       $ cd libraries/MCAD
       $ git pull
       $ cd ../..
-      $ git commit -m "Updated MCAD"
+      $ git commit -m "Updated MCAD" libraries/MCAD
       $ git push
 
 (See bottom of this file for how to build release binaries)

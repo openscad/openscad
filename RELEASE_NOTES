@@ -1,5 +1,5 @@
 
-# OpenSCAD 2014.Q1
+# OpenSCAD 2014.03
 
 **Language Features:**
 * Added diameter argument: circle(d), cylinder(d, d1, d2) and sphere(d)
@@ -17,6 +17,7 @@
 * GUI: Added Search&Replace in editor
 * GUI: Syntax highlighting now has a dark background theme
 * GUI: We now create a backup file before rendering to allow for recovery if OpenSCAD crashes/freezes
+* GUI: Accessibility features enabled (e.g. screenreading)
 
 **Bugfixes/improvements:**
 * Reading empty STL files sometimes caused a crash
