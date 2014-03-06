@@ -15,6 +15,7 @@ branches:
     - travis
 
 before_script:
+ - echo -e "Host files.openscad.org\n\tStrictHostKeyChecking no\n" >> ~/.ssh/config
  - echo -n $openscad_rsa_{00..30} >> ~/.ssh/openscad_rsa_base64
  - base64 --decode --ignore-garbage ~/.ssh/openscad_rsa_base64 > ~/.ssh/id_rsa
  - chmod 600 ~/.ssh/id_rsa
