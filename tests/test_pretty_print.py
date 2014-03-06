@@ -461,7 +461,8 @@ def main():
     trysave(html_filename, html)
     print "report saved:\n", html_filename.replace(os.getcwd()+os.path.sep,'')
 
-    if upload:
+    failed_tests = [test for test in tests if not test.passed]
+    if upload and failed_tests:
         build = os.getenv("TRAVIS_BUILD_NUMBER")
         if build: filename = 'travis-' + build + '_report.html'
         else: filename = html_basename
