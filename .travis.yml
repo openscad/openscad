@@ -12,7 +12,7 @@ env: OPENSCAD_UPLOAD_TESTS=yes
 
 branches:
   only:
-    - master
+    - travis
 
 before_script:
  - echo -n $openscad_rsa_{00..30} >> ~/.ssh/openscad_rsa_base64
