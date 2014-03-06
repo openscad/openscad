@@ -462,12 +462,21 @@ def main():
     print "report saved:\n", html_filename.replace(os.getcwd()+os.path.sep,'')
 
     if upload:
-        page_url = create_page()
-        if upload_html(page_url, title='OpenSCAD test results', html=html):
-            share_url = page_url.partition('?')[0]
-            print 'html report uploaded at', share_url
-        else:
-            print 'could not upload html report'
+        build = os.getenv("TRAVIS_BUILD_NUMBER")
+        if build: filename = 'travis-' + build + '_report.html'
+        else: filename = html_basename
+        os.system('scp "%s" "%s:%s"' %
+                  (html_filename, 'openscad@files.openscad.org', 'www/tests/' + filename) )
+        share_url = 'http://files.openscad.org/tests/' + filename;
+        print 'html report uploaded:'
+        print share_url
+
+#        page_url = create_page()
+#        if upload_html(page_url, title='OpenSCAD test results', html=html):
+#            share_url = page_url.partition('?')[0]
+#            print 'html report uploaded at', share_url
+#        else:
+#            print 'could not upload html report'
 
     debug('test_pretty_print complete')
 
