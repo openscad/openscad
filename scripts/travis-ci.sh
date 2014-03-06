@@ -11,7 +11,7 @@ if [[ $? != 0 ]]; then
   echo "Error building test suite"
   exit 1
 fi
-ctest -j8 -R circle
+ctest -j8
 if [[ $? != 0 ]]; then
   echo "Test failure"
   exit 1
