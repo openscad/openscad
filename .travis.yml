@@ -8,8 +8,6 @@ before_install:
  - sudo apt-get install -qq build-essential libqt4-dev libqt4-opengl-dev libxmu-dev cmake bison flex git-core libboost-all-dev libXi-dev libmpfr-dev libboost-dev libglew-dev libeigen2-dev libeigen3-dev libcgal-dev libgmp3-dev libgmp-dev python-paramiko curl imagemagick
  - sudo apt-get install -qq libopencsg-dev
 
-env: OPENSCAD_UPLOAD_TESTS=yes 
-
 branches:
   only:
     - travis
@@ -25,6 +23,7 @@ script: ./scripts/travis-ci.sh
 
 env:
  global:
+ - OPENSCAD_UPLOAD_TESTS=yes 
  - secure: "mBWdnkXe8BL1SqYRBnOOpXn60xtHGfpeVOh+HrK8xZPflLyJLdgAz3jsrgPaaMibfuygOEfn86jm8dFZPDJSeGh+gGbcjbtOywvYtr0d/KJPk2ccCavlGEBsTSdfWVBMH2hqZ+OXrSn4amx12fmcF/rnpRZu0jHxRWrL4SbouXM="
  - secure: "gYPUvQekTxYW4bNIDvL6MFdPihd0HFGIq2saEbcOVyGYuZTdyBIzoh3tLIdG6jJNLWb/Nn2iWEsbsSsSIVk9UowW2qmuKVmzOyezKiu7wO2bdk08zeNtZLdFU4f8NsPz/ODXGQBCbjrBr8csnczQ9DKcxQeG2Lr9z1PjpJE43zY="
  - secure: "N4tu1zJPq4tDrfArXawiQZ/oAb3jZ1xEonxH2WWMnUXj6CGMSrRbkUD7h7Yx5WcIgxkDE87Q+mMgKDNDhDQuK4RiTngwokXKSCHYn0odo10o1SWiNE42czLpbCTWJeM/5m+nyPhE1Hn8StTwiwqiA2YkBUICh/z+s6cmqV5JaEU="
