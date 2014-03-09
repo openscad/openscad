@@ -129,11 +129,12 @@ int main(int argc, char *argv[]) {
 	(void)wcscat(cmd, cmdline);
 
 	// look for '-o -' combination
-	for (preserve_stdout=FALSE, i=/*sic!*/2; i<argc && !preserve_stdout; ++i) {
+	for (preserve_stdout=FALSE, i=/*sic!*/2; i<argc; ++i) {
 		register char *s = argv[i];
 		if ('-' == s[0] && '\0' == s[1]) // it is "-"
-			if (!strcmp("-o", argv[i-1]))
-				preserve_stdout = TRUE;
+			if (!strcmp("-o", argv[i-1])) {
+				preserve_stdout = TRUE; break;
+			}
 	}
 
 	ZeroMemory(&info, sizeof(info));
