@@ -142,5 +142,5 @@ Test 16: Dependency tracking of underlying dependencies
 o Turn on Automatic Reload and Compile
 o Open mainsubsub.scad
 o Verify that you see a red cylinder
-o edit subdit/subsub.scad: Change color
+o edit subdir/subsub.scad: Change color
 o Verify that color changes
