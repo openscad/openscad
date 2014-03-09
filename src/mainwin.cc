@@ -162,7 +162,9 @@ MainWindow::MainWindow(const QString &filename)
 	: root_inst("group"), tempFile(NULL), progresswidget(NULL)
 {
 	setupUi(this);
-	this->setAttribute(Qt::WA_DeleteOnClose);
+  // FIXME: We cannot do this since Context maintains a global stack which gets pushed/popped when
+  // mainwindows are created. To fix, we probably need a separate stack per window. kintel 20140309
+//	this->setAttribute(Qt::WA_DeleteOnClose);
 
 	if (!MainWindow::windows) MainWindow::windows = new QSet<MainWindow*>;
 	MainWindow::windows->insert(this);
