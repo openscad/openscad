@@ -8,6 +8,7 @@ Module cache size: 1 modules
 Test1: Basic cache
 ------
 
+o Turn off Design->Automatic Reload and Compile
 o Open use.scad
 o Compile twice (F5) - check that module reference is the same
 
