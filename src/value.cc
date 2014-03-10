@@ -643,9 +643,9 @@ void Value::RangeType::normalize() {
   }
 }
 
-uint32_t Value::RangeType::nbsteps() const {
+boost::uint32_t Value::RangeType::nbsteps() const {
   if (boost::math::isnan(step_val) || boost::math::isinf(begin_val) || (boost::math::isinf(end_val))) {
-    return std::numeric_limits<uint32_t>::max();
+    return std::numeric_limits<boost::uint32_t>::max();
   }
 
   if ((begin_val == end_val) || boost::math::isinf(step_val)) {
@@ -653,7 +653,7 @@ uint32_t Value::RangeType::nbsteps() const {
   }
   
   if (step_val == 0) { 
-    return std::numeric_limits<uint32_t>::max();
+    return std::numeric_limits<boost::uint32_t>::max();
   }
 
   double steps;
