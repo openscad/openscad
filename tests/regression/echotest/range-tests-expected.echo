@@ -22,7 +22,6 @@ ECHO: "[a05] ", -2
 ECHO: "[a05] ", -1
 ECHO: "[a05] ", 0
 ECHO: "[a06] ----- [0:-3]"
-DEPRECATED: Using ranges of the form [begin:end] with begin value greater than the end value is deprecated.
 ECHO: "[a06] ", -3
 ECHO: "[a06] ", -2
 ECHO: "[a06] ", -1
@@ -34,7 +33,6 @@ ECHO: "[a07] ", 0
 ECHO: "[a07] ", 1
 ECHO: "[a07] ", 2
 ECHO: "[a08] ----- [2:-2]"
-DEPRECATED: Using ranges of the form [begin:end] with begin value greater than the end value is deprecated.
 ECHO: "[a08] ", -2
 ECHO: "[a08] ", -1
 ECHO: "[a08] ", 0

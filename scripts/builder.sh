@@ -88,7 +88,7 @@ check_starting_path()
 
 get_openscad_source_code()
 {
-	git clone http://github.com/openscad/openscad.git
+	git clone https://github.com/openscad/openscad.git
 	if [ "`echo $? | grep 0`" ]; then
 		echo clone of source code is ok
 	else

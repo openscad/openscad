@@ -1,4 +1,4 @@
-.TH OPENSCAD 1 "2013-06-xx"
+.TH OPENSCAD 1 "2014.03"
 .\" Please adjust this date whenever revising the manpage.
 .SH NAME
 openscad \- script file based graphical CAD environment
@@ -19,9 +19,9 @@ the OpenSCAD user manual at http://en.wikibooks.org/wiki/OpenSCAD_User_Manual.
 
 .TP
 \fB-o\fP \fIoutputfile\fP
-Export the given file to \fIoutputfile\fP in STL, OFF, DXF, or PNG format,
-depending on file extension of \fIoutputfile\fP (which has to be lower case).
-If this option is given, the GUI will not be started.
+Export the given file to \fIoutputfile\fP in STL, OFF, DXF, or PNG
+format, depending on file extension of \fIoutputfile\fP. If this
+option is given, the GUI will not be started.
 
 Additional formats, which are mainly used for debugging and testing (but can
 also be used in automation), are AST (the input file as parsed and serialized
@@ -46,12 +46,18 @@ read it again.
 This option can be used to assign constant values to OpenSCAD variables. The
 variable's value is an expression, so if this mechanism is used to assign
 strings, care has to be taken that the shell does not consume quotation marks.
-More than one \fB-D\fP options can be given.
+More than one \fB-D\fP option can be given.
 .TP
 .B \-\-render
 If exporting an image, use a full CGAL render. (Default is an OpenCSG compile)
 .TP
-.B \-\-camera=rotx,roty,rotz,transx,transy,transz,distance
+.B \-\-preview[=throwntogether]
+If exporting an image, use an OpenCSG previce (optionally in throwntogether mode for quicker rendering).
+.TP
+.B \-\-csglimit=limit
+If exporting an image as an OpenCSG preview, stop rendering after encountering \fIlimit\fP elements to avoid runaway resource usage.
+.TP
+.B \-\-camera=transx,transy,transz,rotx,roty,rotz,distance
 If exporting an image, use a Gimbal camera with the given parameters. 
 Rot is rotation around the x, y, and z axis, trans is the distance to 
 move the object in the x, y, and z directions, and distance is the 
@@ -66,7 +72,7 @@ not currently supported.
 .B \-\-imgsize=width,height
 If exporting an image, specify the pixel width and height 
 .TP
-.B \-\-projection=[o|p]
+.B \-\-projection=[o|ortho|p|perspective]
 If exporting an image, specify whether to use orthographic or perspective 
 projection
 .TP
