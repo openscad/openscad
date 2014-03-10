@@ -114,7 +114,9 @@ static void help(const char *progname)
          "%2%[ --imgsize=width,height ] [ --projection=(o)rtho|(p)ersp] \\\n"
          "%2%[ --render | --preview[=throwntogether] ] \\\n"
          "%2%[ --csglimit=num ] \\\n"
+#ifdef ENABLE_EXPERIMENTAL
          "%2%[ --enable=<feature> ] \\\n"
+#endif
          "%2%filename\n",
  				 progname % (const char *)tabstr);
 	exit(1);
@@ -198,6 +200,13 @@ Camera get_camera( po::variables_map vm )
 
 	return camera;
 }
+
+#ifdef OPENSCAD_TESTING
+#undef OPENSCAD_QTGUI
+#else
+#define OPENSCAD_QTGUI 1
+#include <QApplication>
+#endif
 
 int cmdline(const char *deps_output_file, const std::string &filename, Camera &camera, const char *output_file, const fs::path &original_path, Render::type renderer, int argc, char ** argv )
 {
@@ -438,27 +447,27 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 	return 0;
 }
 
-#ifdef OPENSCAD_TESTING
-#undef OPENSCAD_QTGUI
-#else
-#define OPENSCAD_QTGUI 1
-#endif
-
-
 #ifdef OPENSCAD_QTGUI
+#include <QtPlugin>
+#if defined(__MINGW64__) || defined(__MINGW32__) || defined(_MSCVER)
+Q_IMPORT_PLUGIN(qtaccessiblewidgets)
+#endif
 #include "MainWindow.h"
   #ifdef __APPLE__
   #include "EventFilter.h"
   #endif
-#include <QApplication>
 #include <QString>
 #include <QDir>
 
 // Only if "fileName" is not absolute, prepend the "absoluteBase".
-static QString assemblePath(const fs::path& absoluteBase,
+static QString assemblePath(const fs::path& absoluteBaseDir,
                             const string& fileName) {
-  return fileName.empty() ? "" : QDir(QString::fromStdString((const string&) absoluteBase))
-    .absoluteFilePath(QString::fromStdString(fileName));
+  if (fileName.empty()) return "";
+  QString qsDir = QString::fromLocal8Bit( boosty::stringy( absoluteBaseDir ).c_str() );
+  QString qsFile = QString::fromLocal8Bit( fileName.c_str() );
+  // if qsfile is absolute, dir is ignored. (see documentation of QFileInfo)
+  QFileInfo info( qsDir, qsFile );
+  return info.absoluteFilePath();
 }
 
 bool QtUseGUI()
@@ -542,7 +551,7 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
                new MainWindow(assemblePath(original_path, infile));
 	}
 #else
-	MainWindow *m = new MainWindow(assemblePath(original_path, inputFiles[0]));
+	new MainWindow(assemblePath(original_path, inputFiles[0]));
 #endif
 	app.connect(&app, SIGNAL(lastWindowClosed()), &app, SLOT(quit()));
 	int rc = app.exec();
@@ -599,7 +608,10 @@ int main(int argc, char **argv)
 		("d,d", po::value<string>(), "deps-file")
 		("m,m", po::value<string>(), "makefile")
 		("D,D", po::value<vector<string> >(), "var=val")
-		("enable", po::value<vector<string> >(), "enable experimental features");
+#ifdef ENABLE_EXPERIMENTAL
+		("enable", po::value<vector<string> >(), "enable experimental features")
+#endif
+		;
 
 	po::options_description hidden("Hidden options");
 	hidden.add_options()
@@ -641,12 +653,12 @@ int main(int argc, char **argv)
 		output_file = vm["o"].as<string>().c_str();
 	}
 	if (vm.count("s")) {
-		PRINT("DEPRECATED: The -s option is deprecated. Use -o instead.\n");
+		printDeprecation("DEPRECATED: The -s option is deprecated. Use -o instead.\n");
 		if (output_file) help(argv[0]);
 		output_file = vm["s"].as<string>().c_str();
 	}
 	if (vm.count("x")) { 
-		PRINT("DEPRECATED: The -x option is deprecated. Use -o instead.\n");
+		printDeprecation("DEPRECATED: The -x option is deprecated. Use -o instead.\n");
 		if (output_file) help(argv[0]);
 		output_file = vm["x"].as<string>().c_str();
 	}
@@ -667,11 +679,13 @@ int main(int argc, char **argv)
 			commandline_commands += ";\n";
 		}
 	}
+#ifdef ENABLE_EXPERIMENTAL
 	if (vm.count("enable")) {
 		BOOST_FOREACH(const string &feature, vm["enable"].as<vector<string> >()) {
 			Feature::enable_feature(feature);
 		}
 	}
+#endif
 	vector<string> inputFiles;
 	if (vm.count("input-file"))	{
 		inputFiles = vm["input-file"].as<vector<string> >();

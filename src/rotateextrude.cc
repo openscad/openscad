@@ -69,7 +69,7 @@ AbstractNode *RotateExtrudeModule::instantiate(const Context *ctx, const ModuleI
 	Value scale = c.lookup_variable("scale", true);
 
 	if (!file.isUndefined()) {
-		PRINT("DEPRECATED: Support for reading files in rotate_extrude will be removed in future releases. Use a child import() instead.");
+		printDeprecation("DEPRECATED: Support for reading files in rotate_extrude will be removed in future releases. Use a child import() instead.");
 		node->filename = lookup_file(file.toString(), inst->path(), c.documentPath());
 	}
 

@@ -118,6 +118,20 @@
      into a blank document.
     expected result: don't crash esp. on mac
 
+12. action: start openscad, open example 001. open edit/prefs/editor/
+     syntax-highlighter, 'for light background'. make your OS use a light
+     (white) background for the openscad text editor.
+    expected result: text is clearly visible, colors have good contrast
+
+13. repeat test 12, but with 'for dark background' and dark background
+    expected result: text is clearly visible, colors have good contrast
+
+14. repeat test 12, but turn the syntax highlighter off.
+    expected result: text is clearly visible, single color has good contrast
+
+14. repeat test 13, but turn the syntax highlighter off.
+    expected result: text is clearly visible, single color has good contrast
+
 */
 
 #include "highlighter.h"

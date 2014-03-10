@@ -42,7 +42,7 @@
 using namespace boost::assign; // bring 'operator+=()' into scope
 
 #include <boost/math/special_functions/fpclassify.hpp>
-using boost::math::isinf;
+#define isinf boost::math::isinf
 
 #define F_MINIMUM 0.01
 
@@ -245,7 +245,7 @@ AbstractNode *PrimitiveModule::instantiate(const Context *ctx, const ModuleInsta
 			// backwards compatable
 			node->faces = c.lookup_variable("triangles");
 			if (node->faces.type() != Value::UNDEFINED) {
-				PRINT("DEPRECATED: polyhedron(triangles=[]) will be removed in future releases. Use polyhedron(faces=[]) instead.");
+				printDeprecation("DEPRECATED: polyhedron(triangles=[]) will be removed in future releases. Use polyhedron(faces=[]) instead.");
 			}
 		}
 	}

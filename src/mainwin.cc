@@ -120,7 +120,7 @@ static char helptitle[] =
 #endif
 	"\nhttp://www.openscad.org\n\n";
 static char copyrighttext[] =
-	"Copyright (C) 2009-2013 The OpenSCAD Developers\n"
+	"Copyright (C) 2009-2014 The OpenSCAD Developers\n"
 	"\n"
 	"This program is free software; you can redistribute it and/or modify "
 	"it under the terms of the GNU General Public License as published by "
@@ -387,7 +387,7 @@ MainWindow::MainWindow(const QString &filename)
 	connect(Preferences::inst(), SIGNAL(openCSGSettingsChanged()),
 					this, SLOT(openCSGSettingsChanged()));
 	connect(Preferences::inst(), SIGNAL(syntaxHighlightChanged(const QString&)), 
-					this, SLOT(setSyntaxHighlight(const QString&)));
+					editor, SLOT(setHighlightScheme(const QString&)));
 	Preferences::inst()->apply();
 
 	connect(this->findTypeComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(selectFindType(int)));
@@ -1313,6 +1313,7 @@ bool MainWindow::fileChangedOnDisk()
 void MainWindow::compileTopLevelDocument()
 {
 	updateTemporalVariables();
+	resetPrintedDeprecations();
 	
 	this->last_compiled_doc = editor->toPlainText();
 	std::string fulltext = 
@@ -2098,12 +2099,6 @@ void MainWindow::setFont(const QString &family, uint size)
 	if (size > 0)	font.setPointSize(size);
 	font.setStyleHint(QFont::TypeWriter);
 	editor->setFont(font);
-}
-
-void MainWindow::setSyntaxHighlight(const QString &s)
-{
-	this->highlighter->assignFormatsToTokens( s );
-	this->highlighter->rehighlight(); // slow on large files
 }
 
 void MainWindow::quit()

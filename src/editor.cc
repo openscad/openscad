@@ -142,6 +142,12 @@ void Editor::unhighlightLastError()
 	highlighter->unhighlightLastError();
 }
 
+void Editor::setHighlightScheme(const QString &name)
+{
+	highlighter->assignFormatsToTokens( name );
+	highlighter->rehighlight(); // slow on large files
+}
+
 Editor::~Editor()
 {
 	delete highlighter;
