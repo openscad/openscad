@@ -18,3 +18,6 @@ std::string PlatformUtils::documentsPath()
 		return "";
 	}
 }
+
+void PlatformUtils::ensureStdIO(void) {}
+

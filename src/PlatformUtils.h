@@ -20,6 +20,11 @@ namespace PlatformUtils {
          * @return the path separator
          */
         std::string pathSeparatorChar();
+
+	/* Provide stdout/stderr if not available.
+	 * Currently limited for MS Windows GUI application console only.
+	 */
+	void ensureStdIO(void);
 }
 
 #endif
