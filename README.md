@@ -170,14 +170,6 @@ Then run the script to compile all the prerequisite libraries above:
 
     ./scripts/uni-build-dependencies.sh
 
-This may take an hour or more, depending on your network and system. It 
-is recommended to have at least 1 gigabyte of free disk space. As a 
-special timesaver if you are only missing CGAL and OpenCSG, you can do 
-this instead:
-
-    ./scripts/uni-build-dependencies.sh opencsg
-    ./scripts/uni-build-dependencies.sh cgal
-
 Note that huge dependencies like gcc or qt are not included here, only 
 the smaller ones (boost, CGAL, opencsg, etc). After the build, again 
 check dependencies.
