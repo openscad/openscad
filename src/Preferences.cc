@@ -65,7 +65,7 @@ Preferences::Preferences(QWidget *parent) : QMainWindow(parent)
  	this->defaultmap["editor/fontsize"] = 12;
 	this->defaultmap["editor/syntaxhighlight"] = "For Light Background";
 
-#elif defined (Q_OS_MAC)
+#if defined (Q_OS_MAC)
 	this->defaultmap["editor/ctrlmousewheelzoom"] = false;
 #else
 	this->defaultmap["editor/ctrlmousewheelzoom"] = true;

@@ -105,7 +105,7 @@ void Editor::zoomOut()
 void Editor::wheelEvent ( QWheelEvent * event )
 {
 	QSettings settings;
-	if (!settings.getValue("editor/ctrlmousewheelzoom").toBool()) {
+	if (!Preferences::inst()->getValue("editor/ctrlmousewheelzoom").toBool()) {
 		return;
 		// see numerous bug reports on mailing list
 	}
