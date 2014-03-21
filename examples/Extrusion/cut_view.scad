@@ -6,13 +6,13 @@ module cutout()
 			rotate(90, [1, 0, 0])
 			translate([0, 0, -50])
 				linear_extrude(height = 100, convexity = 1)
-					import(file = "example007.dxf", layer = "cutout1");
+					import(file = "cut_view.dxf", layer = "cutout1");
 			
 			rotate(90, [0, 0, 1])
 			rotate(90, [1, 0, 0])
 			translate([0, 0, -50])
 				linear_extrude(height = 100, convexity = 2)
-					import(file = "example007.dxf", layer = "cutout2");
+					import(file = "cut_view.dxf", layer = "cutout2");
 		}
 }
 
@@ -23,7 +23,7 @@ module clip()
                 // layer contains an open polyline, which is not yet supported
                 // by the import() module.
 		rotate_extrude(
-			file = "example007.dxf",
+			file = "cut_view.dxf",
 			layer="dorn",
 			convexity = 3);
 		for (r = [0, 90])

@@ -1,5 +1,5 @@
 
-// example016.stl is derived from Mblock.stl
+// chopped_blocks.stl is derived from Mblock.stl
 // (c) 2009 Will Langford licensed under
 // the Creative Commons - GNU GPL license.
 // http://www.thingiverse.com/thing:753
@@ -21,7 +21,7 @@ module blk2() {
 
 module chop() {
 	translate([ -14, 0, 0 ])
-		import(file = "example016.stl", convexity = 12);
+		import(file = "chopped_blocks.stl", convexity = 12);
 }
 
 difference() {

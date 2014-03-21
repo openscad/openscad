@@ -1,5 +1,5 @@
 
-module example001()
+module difference_sphere()
 {
 	function r_from_dia(d) = d / 2;
 
@@ -22,5 +22,5 @@ module example001()
 	cy_h = r_from_dia(size * 2.5);
 }
 
-example001();
+difference_sphere();
 

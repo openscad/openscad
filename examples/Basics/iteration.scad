@@ -1,5 +1,5 @@
 
-module example006()
+module example_iteration()
 {
 	module edgeprofile()
 	{
@@ -40,5 +40,5 @@ module example006()
 	}
 }
 
-example006();
+example_iteration();
 
