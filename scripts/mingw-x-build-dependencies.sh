@@ -59,14 +59,14 @@ fi
 echo "entering" $MXEDIR
 cd $MXEDIR
 if [ "`echo $* | grep 64`" ]; then
- MXE_TARGETS='x86_64-w64-mingw32.static'
+ MXE_TARGETS='x86_64-w64-mingw32'
  if [ "`echo $* | grep download`" ]; then
   PACKAGES='download-mpfr download-eigen download-opencsg download-cgal download-qt download-glib'
  else
   PACKAGES='mpfr eigen opencsg cgal qt glib'
  fi
 else
- MXE_TARGETS='i686-pc-mingw32.static'
+ MXE_TARGETS='i686-pc-mingw32'
  if [ "`echo $* | grep download`" ]; then
   PACKAGES='download-mpfr download-eigen download-opencsg download-cgal download-qt download-nsis download-glib'
  else
