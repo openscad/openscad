@@ -58,6 +58,8 @@ fi
 
 echo "entering" $MXEDIR
 cd $MXEDIR
+echo 'checkout stable branch'
+git checkout stable
 if [ "`echo $* | grep 64`" ]; then
  MXE_TARGETS='x86_64-w64-mingw32'
  if [ "`echo $* | grep download`" ]; then
