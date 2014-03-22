@@ -32,11 +32,13 @@
 # If your system lacks qt4, build like this:
 #
 #   ./scripts/uni-build-dependencies.sh qt4
-#   . ./scripts/setenv-unibuild.sh
+#   . ./scripts/setenv-unibuild.sh #(Rerun to re-detect qt4)
 #
-# If your system lacks glu, try to build like this:
+# If your system lacks glu, gettext, or glib2, you can build them as well:
 #
 #   ./scripts/uni-build-dependencies.sh glu
+#   ./scripts/uni-build-dependencies.sh glib2
+#   ./scripts/uni-build-dependencies.sh gettext
 #
 # If you want to try Clang compiler (experimental, only works on linux):
 #
@@ -433,17 +435,17 @@ build_glib2()
   maj_min_version="${version%.*}" #Drop micro
 
   if [ -e $DEPLOYDIR/lib/glib-2.0 ]; then
-echo "glib2 already installed. not building"
+    echo "glib2 already installed. not building"
     return
-fi
+  fi
 
-echo "Building glib2 $version..."
+  echo "Building glib2 $version..."
   cd "$BASEDIR"/src
   rm -rf "glib-$version"
   if [ ! -f "glib-$version.tar.xz" ]; then
-curl --insecure -LO "http://ftp.gnome.org/pub/gnome/sources/glib/$maj_min_version/glib-$version.tar.xz"
+    curl --insecure -LO "http://ftp.gnome.org/pub/gnome/sources/glib/$maj_min_version/glib-$version.tar.xz"
   fi
-tar xJf "glib-$version.tar.xz"
+  tar xJf "glib-$version.tar.xz"
   cd "glib-$version"
 
   ./configure --disable-gtk-doc --disable-man --prefix="$DEPLOYDIR" CFLAGS="-I$DEPLOYDIR/include" LDFLAGS="-L$DEPLOYDIR/lib"
@@ -628,6 +630,16 @@ if [ $1 ]; then
     build_glu 9.0.0
     exit $?
   fi
+  if [ $1 = "gettext" ]; then
+    # such a huge build, put here by itself
+    build_gettext 0.18.3.1
+    exit $?
+  fi
+  if [ $1 = "glib2" ]; then
+    # such a huge build, put here by itself
+    build_glib2 2.38.2
+    exit $?
+  fi
 fi
 
 
@@ -636,7 +648,11 @@ fi
 #
 # Main build of libraries
 # edit version numbers here as needed.
+# This is only for libraries most systems won't have new enough versions of.
+# For big things like Qt4, see the notes at the head of this file on
+# building individual dependencies.
 #
+
 build_eigen 3.1.1
 build_gmp 5.0.5
 build_mpfr 3.1.1
@@ -645,7 +661,5 @@ build_boost 1.53.0
 build_cgal 4.0.2
 build_glew 1.9.0
 build_opencsg 1.3.2
-build_gettext 0.18.3.1
-build_glib2 2.38.2
 
 echo "OpenSCAD dependencies built and installed to " $BASEDIR
