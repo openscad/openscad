@@ -186,6 +186,7 @@ assignment:
                 if (!found) {
                     scope_stack.top()->assignments.push_back(Assignment($1, $3));
                 }
+                free($1);
             }
         ;
 
