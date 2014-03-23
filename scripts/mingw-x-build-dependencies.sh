@@ -65,14 +65,14 @@ if [ "`echo $* | grep 64`" ]; then
  if [ "`echo $* | grep download`" ]; then
   PACKAGES='download-mpfr download-eigen download-opencsg download-cgal download-qt download-glib'
  else
-  PACKAGES='mpfr eigen opencsg cgal qt glib'
+  PACKAGES='qt mpfr eigen opencsg cgal glib'
  fi
 else
  MXE_TARGETS='i686-pc-mingw32'
  if [ "`echo $* | grep download`" ]; then
   PACKAGES='download-mpfr download-eigen download-opencsg download-cgal download-qt download-nsis download-glib'
  else
-  PACKAGES='mpfr eigen opencsg cgal qt nsis glib'
+  PACKAGES='qt mpfr eigen opencsg cgal nsis glib'
  fi
 fi
 echo make $PACKAGES MXE_TARGETS=$MXE_TARGETS -j $NUMCPU JOBS=$NUMJOBS
