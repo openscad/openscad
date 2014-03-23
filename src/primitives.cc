@@ -416,6 +416,9 @@ sphere_next_r2:
 		for (int i = 0; i < fragments; i++)
 			p->insert_vertex(ring[rings-1].points[i].x, ring[rings-1].points[i].y, ring[rings-1].z);
 
+		for (int i = 0; i < rings; i++) {
+			delete ring[i].points;
+		}
 		delete[] ring;
 	}
 
