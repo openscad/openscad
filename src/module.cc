@@ -65,7 +65,6 @@ std::string AbstractModule::dump(const std::string &indent, const std::string &n
 
 ModuleInstantiation::~ModuleInstantiation()
 {
-	BOOST_FOREACH(const Assignment &arg, this->arguments) delete arg.second;
 }
 
 IfElseModuleInstantiation::~IfElseModuleInstantiation()
