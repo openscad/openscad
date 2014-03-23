@@ -49,16 +49,16 @@ AbstractNode *CgaladvModule::instantiate(const Context *ctx, const ModuleInstant
 	AssignmentList args;
 
 	if (type == MINKOWSKI)
-		args += Assignment("convexity", NULL);
+		args += Assignment("convexity");
 
 	if (type == GLIDE)
-		args += Assignment("path", NULL), Assignment("convexity", NULL);
+		args += Assignment("path"), Assignment("convexity");
 
 	if (type == SUBDIV)
-		args += Assignment("type", NULL), Assignment("level", NULL), Assignment("convexity", NULL);
+		args += Assignment("type"), Assignment("level"), Assignment("convexity");
 
 	if (type == RESIZE)
-		args += Assignment("newsize", NULL), Assignment("auto", NULL);
+		args += Assignment("newsize"), Assignment("auto");
 
 	Context c(ctx);
 	c.setVariables(args, evalctx);

@@ -178,13 +178,13 @@ assignment:
                 bool found = false;
                 foreach (Assignment& iter, scope_stack.top()->assignments) {
                     if (iter.first == $1) {
-                        iter.second = $3;
+                        iter.second = boost::shared_ptr<Expression>($3);
                         found = true;
                         break;
                     }
                 }
                 if (!found) {
-                    scope_stack.top()->assignments.push_back(Assignment($1, $3));
+                    scope_stack.top()->assignments.push_back(Assignment($1, boost::shared_ptr<Expression>($3)));
                 }
                 free($1);
             }
@@ -247,7 +247,7 @@ if_statement:
           TOK_IF '(' expr ')'
             {
                 $<ifelse>$ = new IfElseModuleInstantiation();
-                $<ifelse>$->arguments.push_back(Assignment("", $3));
+                $<ifelse>$->arguments.push_back(Assignment("", boost::shared_ptr<Expression>($3)));
                 $<ifelse>$->setPath(parser_source_path);
                 scope_stack.push(&$<ifelse>$->scope);
             }
@@ -477,12 +477,12 @@ arguments_decl:
 argument_decl:
           TOK_ID
             {
-                $$ = new Assignment($1, NULL);
+                $$ = new Assignment($1);
                 free($1);
             }
         | TOK_ID '=' expr
             {
-                $$ = new Assignment($1, $3);
+                $$ = new Assignment($1, boost::shared_ptr<Expression>($3));
                 free($1);
             }
         ;
@@ -509,11 +509,11 @@ arguments_call:
 argument_call:
           expr
             {
-                $$ = new Assignment("", $1);
+                $$ = new Assignment("", boost::shared_ptr<Expression>($1));
             }
         | TOK_ID '=' expr
             {
-                $$ = new Assignment($1, $3);
+                $$ = new Assignment($1, boost::shared_ptr<Expression>($3));
                 free($1);
             }
         ;

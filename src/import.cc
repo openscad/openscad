@@ -67,8 +67,8 @@ public:
 AbstractNode *ImportModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const
 {
 	AssignmentList args;
-	args += Assignment("file", NULL), Assignment("layer", NULL), Assignment("convexity", NULL), Assignment("origin", NULL), Assignment("scale", NULL);
-	args += Assignment("filename",NULL), Assignment("layername", NULL);
+	args += Assignment("file"), Assignment("layer"), Assignment("convexity"), Assignment("origin"), Assignment("scale");
+	args += Assignment("filename"), Assignment("layername");
 
   // FIXME: This is broken. Tag as deprecated and fix
 	// Map old argnames to new argnames for compatibility

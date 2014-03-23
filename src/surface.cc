@@ -77,7 +77,7 @@ AbstractNode *SurfaceModule::instantiate(const Context *ctx, const ModuleInstant
 	node->convexity = 1;
 
 	AssignmentList args;
-	args += Assignment("file", NULL), Assignment("center", NULL), Assignment("convexity", NULL);
+	args += Assignment("file"), Assignment("center"), Assignment("convexity");
 
 	Context c(ctx);
 	c.setVariables(args, evalctx);
