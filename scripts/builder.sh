@@ -302,12 +302,17 @@ update_win_www_download_links()
 check_ssh_agent()
 {
 	if [ $DRYRUN ]; then echo 'skipping ssh, dry run'; return; fi
+	if [ $SSH_AUTH_SKIP ]; then
+		return
+	fi
 	if [ ! $SSH_AUTH_SOCK ]; then
 		echo 'please start an ssh-agent for github.com/openscad/openscad.github.com uploads'
 		echo 'for example:'
 		echo
 		echo ' ssh-agent > .tmp && source .tmp && ssh-add'
 		echo
+		echo 'to force a run anyway, set SSH_AUTH_SKIP environment variable to 1'
+		exit 1
 	fi
 }
 
