@@ -10,7 +10,7 @@
 class CGAL_Nef_polyhedron : public Geometry
 {
 public:
-	CGAL_Nef_polyhedron(CGAL_Nef_polyhedron3 *p = NULL);
+	CGAL_Nef_polyhedron(CGAL_Nef_polyhedron3 *p=NULL);
 	~CGAL_Nef_polyhedron() {}
 
 	virtual size_t memsize() const;

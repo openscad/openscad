@@ -531,7 +531,7 @@ build_gettext()
 
 build_pkgconfig()
 {
-  if [ ! "`command -v pkg-config`" ]; then
+  if [ "`command -v pkg-config`" ]; then
     echo "pkg-config already installed. not building"
     return
   fi
