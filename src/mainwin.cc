@@ -477,6 +477,7 @@ MainWindow::~MainWindow()
 {
 	if (root_module) delete root_module;
 	if (root_node) delete root_node;
+	if (root_chain) delete root_chain;
 #ifdef ENABLE_CGAL
 	if (this->root_N) delete this->root_N;
 	delete this->cgalRenderer;
@@ -484,6 +485,7 @@ MainWindow::~MainWindow()
 #ifdef ENABLE_OPENCSG
 	delete this->opencsgRenderer;
 #endif
+	delete this->thrownTogetherRenderer;
 	MainWindow::windows->remove(this);
 }
 
