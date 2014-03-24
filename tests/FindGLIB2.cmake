@@ -6,6 +6,8 @@ message(STATUS "running openscad/tests/FindGLIB2.cmake")
 # Otherwise, we need to use the system's pkg-config to find system's glib2
 if (NOT $ENV{OPENSCAD_LIBRARIES} STREQUAL "")
   if (EXISTS "$ENV{OPENSCAD_LIBRARIES}/include/glib.h")
+    message(STATUS "found glib.h under OPENSCAD_LIBRARIES.")
+    message(STATUS "redirecting pkg-config to look under OPENSCAD_LIBRARIES")
     set(SAVED_PKG_CONFIG_PATH "${PKG_CONFIG_PATH}")
     set(SAVED_PKG_CONFIG_LIBDIR "${PKG_CONFIG_LIBDIR}")
     set(ENV{PKG_CONFIG_PATH} "$ENV{OPENSCAD_LIBRARIES}/lib/pkgconfig")
