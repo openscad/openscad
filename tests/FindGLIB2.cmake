@@ -12,6 +12,8 @@ if (NOT $ENV{OPENSCAD_LIBRARIES} STREQUAL "")
     set(SAVED_PKG_CONFIG_LIBDIR "${PKG_CONFIG_LIBDIR}")
     set(ENV{PKG_CONFIG_PATH} "$ENV{OPENSCAD_LIBRARIES}/lib/pkgconfig")
     set(ENV{PKG_CONFIG_LIBDIR} "$ENV{OPENSCAD_LIBRARIES}/lib/pkgconfig")
+  else()
+    message(STATUS "attempting to find system glib2")
   endif()
 endif()
 
