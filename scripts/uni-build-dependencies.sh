@@ -656,7 +656,7 @@ if [ ! "`command -v cmake`" ]; then
   build_cmake 2.8.8
 fi
 # see README for needed version (this should match 1<minimum)
-if [ "`cmake --version | grep 'version 2.[1-8][^0-9][1-4]'`" ]; then
+if [ "`cmake --version | grep 'version 2.[1-8][^0-9][1-4] '`" ]; then
   build_cmake 2.8.8
 fi
 
