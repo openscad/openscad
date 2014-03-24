@@ -54,7 +54,7 @@ AbstractNode *LinearExtrudeModule::instantiate(const Context *ctx, const ModuleI
 	LinearExtrudeNode *node = new LinearExtrudeNode(inst);
 
 	AssignmentList args;
-	args += Assignment("file", NULL), Assignment("layer", NULL), Assignment("height", NULL), Assignment("origin", NULL), Assignment("scale", NULL), Assignment("center", NULL), Assignment("twist", NULL), Assignment("slices", NULL);
+	args += Assignment("file"), Assignment("layer"), Assignment("height"), Assignment("origin"), Assignment("scale"), Assignment("center"), Assignment("twist"), Assignment("slices");
 
 	Context c(ctx);
 	c.setVariables(args, evalctx);

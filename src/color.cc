@@ -56,7 +56,7 @@ AbstractNode *ColorModule::instantiate(const Context *ctx, const ModuleInstantia
 
 	AssignmentList args;
 
-	args += Assignment("c", NULL), Assignment("alpha", NULL);
+	args += Assignment("c"), Assignment("alpha");
 
 	Context c(ctx);
 	c.setVariables(args, evalctx);

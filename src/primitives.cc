@@ -152,25 +152,25 @@ AbstractNode *PrimitiveModule::instantiate(const Context *ctx, const ModuleInsta
 
 	switch (this->type) {
 	case CUBE:
-		args += Assignment("size", NULL), Assignment("center", NULL);
+		args += Assignment("size"), Assignment("center");
 		break;
 	case SPHERE:
-		args += Assignment("r", NULL);
+		args += Assignment("r");
 		break;
 	case CYLINDER:
-		args += Assignment("h", NULL), Assignment("r1", NULL), Assignment("r2", NULL), Assignment("center", NULL);
+		args += Assignment("h"), Assignment("r1"), Assignment("r2"), Assignment("center");
 		break;
 	case POLYHEDRON:
-		args += Assignment("points", NULL), Assignment("faces", NULL), Assignment("convexity", NULL);
+		args += Assignment("points"), Assignment("faces"), Assignment("convexity");
 		break;
 	case SQUARE:
-		args += Assignment("size", NULL), Assignment("center", NULL);
+		args += Assignment("size"), Assignment("center");
 		break;
 	case CIRCLE:
-		args += Assignment("r", NULL);
+		args += Assignment("r");
 		break;
 	case POLYGON:
-		args += Assignment("points", NULL), Assignment("paths", NULL), Assignment("convexity", NULL);
+		args += Assignment("points"), Assignment("paths"), Assignment("convexity");
 		break;
 	default:
 		assert(false && "PrimitiveModule::instantiate(): Unknown node type");
@@ -416,6 +416,9 @@ sphere_next_r2:
 		for (int i = 0; i < fragments; i++)
 			p->insert_vertex(ring[rings-1].points[i].x, ring[rings-1].points[i].y, ring[rings-1].z);
 
+		for (int i = 0; i < rings; i++) {
+			delete[] ring[i].points;
+		}
 		delete[] ring;
 	}
 
