@@ -47,6 +47,8 @@
 
 init_variables()
 {
+	BRANCH_TO_BUILD=unstable
+	#BRANCH_TO_BUILD=unstable
 	STARTPATH=$PWD
 	export STARTPATH
 	DOBUILD=1
@@ -71,6 +73,7 @@ init_variables()
 	if [ "`echo $* | grep dry`" ]; then
 		DRYRUN=1
 	fi
+	export BRANCH_TO_BUILD
 	export DOBUILD
 	export DOUPLOAD
 	export DRYRUN
@@ -96,13 +99,40 @@ check_nsis()
 		echo the makensis command was not found.
 		echo please install nsis for your system. for example
 		echo on debian, sudo apt-get install nsis
+		exit 1
+	else
+		echo makensis found.
 	fi
 }
 
 get_openscad_source_code()
 {
+	if [ -d openscad ]; then
+		cd openscad
+		if [ ! $? ]; then
+			echo cd to 'openscad' directory failed
+			exit 1
+		fi
+		git checkout $BRANCH_TO_BUILD
+		if [ ! $? ]; then
+			echo git checkout $BRANCH_TO_BUILD failed
+			exit 1
+		fi
+		git fetch -a
+		if [ ! $? ]; then
+			echo git fetch -a openscad source code failed
+			exit 1
+		fi
+		git pull origin $BRANCH_TO_BUILD
+		if [ ! $? ]; then
+			echo git pull origin $BRANCH_TO_BUILD failed
+			exit 1
+		fi
+		git submodule update # MCAD
+		return
+	fi
 	git clone http://github.com/openscad/openscad.git
-	if [ "`echo $? | grep 0`" ]; then
+	if [ $? ]; then
 		echo clone of source code is ok
 	else
 		if [ $DOUPLOAD ]; then
@@ -115,8 +145,12 @@ get_openscad_source_code()
 		fi
 	fi
 	cd openscad
+	git checkout $BRANCH_TO_BUILD
+	if [ ! $? ]; then
+		echo git checkout $BRANCH_TO_BUILD failed
+		exit 1
+	fi
 	git submodule update --init # MCAD
-	#git checkout branch ##debugging
 }
 
 build_win32()
