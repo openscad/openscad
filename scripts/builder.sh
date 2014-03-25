@@ -86,6 +86,19 @@ check_starting_path()
 	fi
 }
 
+check_nsis()
+{
+	# 64 bit mingw-cross build MXE cannot build nsis.... for now, we can
+	# just ask the user to install their system's nsis package.
+	# (it might be possible to d/l & build nsis here, or use pre-existing
+	#  32-bit-mxe nsis)
+	if [ ! "`command -v makensis`" ]; then
+		echo the makensis command was not found.
+		echo please install nsis for your system. for example
+		echo on debian, sudo apt-get install nsis
+	fi
+}
+
 get_openscad_source_code()
 {
 	git clone http://github.com/openscad/openscad.git
@@ -321,6 +334,7 @@ if [ $DOUPLOAD ]; then
 	check_ssh_agent
 fi
 check_starting_path
+check_nsis
 read_username_from_user
 read_password_from_user
 get_openscad_source_code
