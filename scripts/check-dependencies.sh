@@ -37,12 +37,8 @@ debug()
 eigen_sysver()
 {
   debug eigen
-  eigpath=
-  eig3path=$1/include/eigen3/Eigen/src/Core/util/Macros.h
-  eig2path=$1/include/eigen2/Eigen/src/Core/util/Macros.h
-  if [ -e $eig3path ]; then eigpath=$eig3path; fi
-  if [ -e $eig2path ]; then eigpath=$eig2path; fi
-  debug $eig2path
+  eigpath=$1/include/eigen3/Eigen/src/Core/util/Macros.h
+  debug $eigpath
   if [ ! $eigpath ]; then return; fi
   eswrld=`grep "define  *EIGEN_WORLD_VERSION  *[0-9]*" $eigpath | awk '{print $3}'`
   esmaj=`grep "define  *EIGEN_MAJOR_VERSION  *[0-9]*" $eigpath | awk '{print $3}'`
