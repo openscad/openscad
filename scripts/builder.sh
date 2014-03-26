@@ -55,6 +55,11 @@ init_variables()
 	DOUPLOAD=1
 	DRYRUN=
 	DOSNAPSHOT=1
+	DOLOOP=0
+	if [ "`echo $* | grep loop`" ]; then
+		echo "loop mode activated! woopee!"
+		DOLOOP=1
+	fi
 	if [ "`echo $* | grep release`" ]; then
 		echo "this script cannot yet build releases, only snapshots"
 		DOSNAPSHOT=0
@@ -79,6 +84,7 @@ init_variables()
 	export DRYRUN
 	export DATECODE
 	export DOSNAPSHOT
+	export DOLOOP
 }
 
 check_starting_path()
@@ -363,22 +369,35 @@ check_ssh_agent()
 	fi
 }
 
-init_variables $*
-if [ $DOUPLOAD ]; then
-	check_ssh_agent
-fi
-check_starting_path
-check_nsis
-read_username_from_user
-read_password_from_user
-get_openscad_source_code
-if [ $DOBUILD ]; then
-	build_win32
-	build_win64
-fi
-if [ $DOUPLOAD ]; then
-	upload_win32
-	upload_win64
-	update_win_www_download_links
-fi
+main()
+{
+	init_variables $*
+	if [ $DOUPLOAD ]; then
+		check_ssh_agent
+	fi
+	check_starting_path
+	check_nsis
+	read_username_from_user
+	read_password_from_user
+	get_openscad_source_code
+	if [ $DOBUILD ]; then
+		build_win32
+		build_win64
+	fi
+	if [ $DOUPLOAD ]; then
+		upload_win32
+		upload_win64
+		update_win_www_download_links
+	fi
+}
 
+
+if [ $DOLOOP ]; then
+	while [ 1 ]; do
+		main
+		sleep 86400
+		# rtcwake -m mem -s 86400
+	done
+else
+	main
+fi
