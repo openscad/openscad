@@ -48,16 +48,18 @@
 init_variables()
 {
 	BRANCH_TO_BUILD=unstable
-	#BRANCH_TO_BUILD=unstable
+	#BRANCH_TO_BUILD=master
 	STARTPATH=$PWD
 	export STARTPATH
 	DOBUILD=1
 	DOUPLOAD=1
 	DRYRUN=
 	DOSNAPSHOT=1
-	DOLOOP=0
+	DOLOOP=
 	if [ "`echo $* | grep loop`" ]; then
+		echo "----------------------------"
 		echo "loop mode activated! woopee!"
+		echo "----------------------------"
 		DOLOOP=1
 	fi
 	if [ "`echo $* | grep release`" ]; then
@@ -394,10 +396,12 @@ main()
 
 if [ $DOLOOP ]; then
 	while [ 1 ]; do
-		main
+		main $*
 		sleep 86400
-		# rtcwake -m mem -s 86400
+		#if [ "`uname | grep -i linux`" ]; then
+		#	rtcwake -m mem -s 86400
+		#fi
 	done
 else
-	main
+	main $*
 fi
