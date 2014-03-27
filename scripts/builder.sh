@@ -64,7 +64,7 @@ init_variables()
 	fi
 	if [ "`echo $* | grep release`" ]; then
 		echo "this script cannot yet build releases, only snapshots"
-		DOSNAPSHOT=0
+		DOSNAPSHOT=
 		exit 1
 	fi
 	if [ "`echo $* | grep uploadonly`" ]; then
@@ -231,11 +231,15 @@ upload_win_common()
 	opts="$opts -p openscad"
 	opts="$opts -u $username"
 	opts="$opts $filename"
+	remotepath=www/
+	if [ $DOSNAPSHOT ]; then
+		remotepath=www/snapshots/
+	fi
 	if [ $DRYRUN ]; then
 		echo dry run, not uploading to files.openscad.org
-		echo scp -v $filename openscad@files.openscad.org:www/
+		echo scp -v $filename openscad@files.openscad.org:$remotepath
 	else
-		scp -v $filename openscad@files.openscad.org:www/
+		scp -v $filename openscad@files.openscad.org:$remotepath
 	fi
 }
 
@@ -323,6 +327,9 @@ update_win_www_download_links()
 	echo `pwd`
 	# BASEURL='https://openscad.googlecode.com/files/'
 	BASEURL='http://files.openscad.org/'
+	if [ $DOSNAPSHOT ]; then
+		BASEURL='http://files.openscad.org/snapshots/'
+	fi
 	DATECODE=`date +"%Y.%m.%d"`
 
 	mv win_snapshot_links.js win_snapshot_links.js.backup
