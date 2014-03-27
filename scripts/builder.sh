@@ -51,11 +51,15 @@ init_variables()
 	#BRANCH_TO_BUILD=master
 	STARTPATH=$PWD
 	export STARTPATH
+	# kilob per second for scp upload
+	RATELIMIT=20
 	DOBUILD=1
 	DOUPLOAD=1
 	DRYRUN=
 	DOSNAPSHOT=1
 	DOLOOP=
+	#solar day
+	LOOPSLEEP=86400
 	if [ "`echo $* | grep loop`" ]; then
 		echo "----------------------------"
 		echo "loop mode activated! woopee!"
@@ -87,6 +91,8 @@ init_variables()
 	export DATECODE
 	export DOSNAPSHOT
 	export DOLOOP
+	export LOOPSLEEP
+	export RATELIMIT
 }
 
 check_starting_path()
@@ -159,6 +165,7 @@ get_openscad_source_code()
 		exit 1
 	fi
 	git submodule update --init # MCAD
+#solar day
 }
 
 build_win32()
@@ -237,9 +244,9 @@ upload_win_common()
 	fi
 	if [ $DRYRUN ]; then
 		echo dry run, not uploading to files.openscad.org
-		echo scp -v $filename openscad@files.openscad.org:$remotepath
+		echo scp -v -l $RATELIMIT $filename openscad@files.openscad.org:www/
 	else
-		scp -v $filename openscad@files.openscad.org:$remotepath
+		scp -v -l $RATELIMIT $filename openscad@files.openscad.org:www/
 	fi
 }
 
@@ -380,7 +387,6 @@ check_ssh_agent()
 
 main()
 {
-	init_variables $*
 	if [ $DOUPLOAD ]; then
 		check_ssh_agent
 	fi
@@ -401,10 +407,14 @@ main()
 }
 
 
+init_variables $*
 if [ $DOLOOP ]; then
 	while [ 1 ]; do
 		main $*
-		sleep 86400
+		echo ---------------------------------------------------
+		echo main loop finished. repeating in $LOOPSLEEP seconds
+		echo ---------------------------------------------------
+		sleep $LOOPSLEEP
 		#if [ "`uname | grep -i linux`" ]; then
 		#	rtcwake -m mem -s 86400
 		#fi
