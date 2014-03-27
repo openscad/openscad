@@ -51,6 +51,8 @@ init_variables()
 	#BRANCH_TO_BUILD=master
 	STARTPATH=$PWD
 	export STARTPATH
+	# kilob per second for scp upload
+	RATELIMIT=20
 	DOBUILD=1
 	DOUPLOAD=1
 	DRYRUN=
@@ -90,6 +92,7 @@ init_variables()
 	export DOSNAPSHOT
 	export DOLOOP
 	export LOOPSLEEP
+	export RATELIMIT
 }
 
 check_starting_path()
@@ -237,9 +240,9 @@ upload_win_common()
 	opts="$opts $filename"
 	if [ $DRYRUN ]; then
 		echo dry run, not uploading to files.openscad.org
-		echo scp -v $filename openscad@files.openscad.org:www/
+		echo scp -v -l $RATELIMIT $filename openscad@files.openscad.org:www/
 	else
-		scp -v $filename openscad@files.openscad.org:www/
+		scp -v -l $RATELIMIT $filename openscad@files.openscad.org:www/
 	fi
 }
 
