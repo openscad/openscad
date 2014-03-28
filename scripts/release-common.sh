@@ -1,25 +1,29 @@
 #!/bin/bash
 #
 # This script creates a binary release of OpenSCAD. This should work
-# under Mac OS X, Linux 32, Linux 64, and Linux->Win32 MXE cross-build.
+# under Mac OS X, Linux 32bit, Linux 64bit, and Linux->Win32 MXE cross-build.
 # Windows under msys has not been tested recently.
 #
 # The script will create a file called openscad-<versionstring>.<extension> in
-# the current directory (or under ./mingw32)
+# the current directory (or under ./mingw32 or ./mingw64)
 #
-# Usage: release-common.sh [-v <versionstring>] [-c] [-mingw[32|64]]
+# Usage: release-common.sh [-v <versionstring>] [-c] [-mingw[32|64]] [-tests]
 #  -v       Version string (e.g. -v 2010.01)
 #  -d       Version date (e.g. -d 2010.01.23)
 #  -mingw32 Cross-compile for win32 using MXE
 #  -mingw64 Cross-compile for win64 using MXE
 #  -snapshot Build a snapshot binary (make e.g. experimental features available, build with commit info)
+#  -tests   Build package containing the regression tests
 #
 # If no version string or version date is given, todays date will be used (YYYY-MM-DD)
 # If only version date is given, it will be used also as version string.
 # If no make target is given, release will be used on Windows, none one Mac OS X
 #
 # The mingw cross compile depends on the MXE cross-build tools. Please
-# see the README.md file on how to install these dependencies.
+# see the README.md file on how to install these dependencies. To debug
+# the mingw-cross build process, set env var FAKEMAKE=1 to fake-make the
+# .exe files
+#
 
 printUsage()
 {
@@ -67,6 +71,11 @@ if [ "`echo $* | grep snapshot`" ]; then
   OPENSCAD_COMMIT=`git log -1 --pretty=format:"%h"`
 fi
 
+BUILD_TESTS=
+if [ "`echo $* | grep tests`" ]; then
+  BUILD_TESTS=1
+fi
+
 if [ $OS ]; then
   echo "Detected OS: $OS"
 else
@@ -89,6 +98,8 @@ if test -z "$VERSION"; then
     VERSION=$VERSIONDATE
 fi
 
+export VERSIONDATE
+export VERSION
 
 echo "Checking pre-requisites..."
 
@@ -98,6 +109,13 @@ case $OS in
         if [ "`command -v makensis`" ]; then
             MAKENSIS=makensis
         elif [ "`command -v i686-pc-mingw32-makensis`" ]; then
+            # we cant find systems nsis so look for the MXE's version.
+            # MXE has its own makensis, but its only available under
+            # 32-bit MXE. note that the cross-version in theory works
+            # the same as the linux version so we can use them, in
+            # theory, interchangeably. its not really a 'cross' nsis
+            # todo - when doing 64 bit mingw build, see if we can call
+            # 32bit nsis here.
             MAKENSIS=i686-pc-mingw32-makensis
         else
             echo "makensis not found. please install nsis on your system."
@@ -191,7 +209,11 @@ case $OS in
     UNIX_CROSS_WIN)
         # make main openscad.exe
         cd $DEPLOYDIR
-        make $TARGET -j$NUMCPU ## comment 4 test
+	if [ $FAKEMAKE ]; then
+		echo "notexe. debugging build process" > $TARGET/openscad.exe
+	else
+	        make $TARGET -j$NUMCPU
+	fi
         if [ ! -e $TARGET/openscad.exe ]; then
             echo "cant find $TARGET/openscad.exe. build failed. stopping."
             exit
@@ -203,7 +225,6 @@ case $OS in
             echo "cant find $TARGET/openscad.com. build failed. stopping."
             exit
         fi
-
         cd $OPENSCADDIR
     ;;
     *)
@@ -216,6 +237,39 @@ if [[ $? != 0 ]]; then
   exit 1
 fi
 
+
+echo "Building test suite..."
+
+if [ $BUILD_TESTS ]; then
+  case $OS in
+    UNIX_CROSS_WIN)
+	TESTBUILD_MACHINE=x86_64-w64-mingw32
+        if [[ $ARCH == 32 ]]; then
+		TESTBUILD_MACHINE=i686-pc-mingw32
+	fi
+	cd tests
+	mkdir build-mingw$ARCH
+	cd build-mingw$ARCH
+	cmake .. -DCMAKE_TOOLCHAIN_FILE=../CMingw-cross-env.cmake \
+          -DMINGW_CROSS_ENV_DIR=$MXEDIR \
+          -DMACHINE=$TESTBUILD_MACHINE
+	if [ $FAKEMAKE = "tests" ]; then
+		echo "notexe. debugging build process" > openscad_nogui.exe
+	else
+		make -j$NUMCPU
+	fi
+	if [ ! -e openscad_nogui.exe ]; then
+		echo 'test cross-build failed'
+		exit 1
+	fi
+        cd $OPENSCADDIR
+    ;;
+    *)
+	echo 'test suite build not implemented for osx/linux'
+    ;;
+  esac
+fi # BUILD_TESTS
+
 echo "Creating directory structure..."
 
 case $OS in
@@ -224,6 +278,7 @@ case $OS in
         LIBRARYDIR=OpenSCAD.app/Contents/Resources/libraries
     ;;
     UNIX_CROSS_WIN)
+        cd $OPENSCADDIR
         EXAMPLESDIR=$DEPLOYDIR/openscad-$VERSION/examples/
         LIBRARYDIR=$DEPLOYDIR/openscad-$VERSION/libraries/
         rm -rf $DEPLOYDIR/openscad-$VERSION
@@ -277,12 +332,13 @@ case $OS in
         echo "Binary created: openscad-$VERSION.zip"
         ;;
     UNIX_CROSS_WIN)
+        cd $OPENSCADDIR
+        cd $DEPLOYDIR
         BINFILE=$DEPLOYDIR/OpenSCAD-$VERSION-x86-$ARCH.zip
         INSTFILE=$DEPLOYDIR/OpenSCAD-$VERSION-x86-$ARCH-Installer.exe
 
         #package
         echo "Creating binary zip package"
-        cd $DEPLOYDIR
         cp $TARGET/openscad.exe openscad-$VERSION
         cp $TARGET/openscad.com openscad-$VERSION
         rm -f OpenSCAD-$VERSION.x86-$ARCH.zip
@@ -346,3 +402,74 @@ case $OS in
         echo
         ;;
 esac
+
+
+
+echo "Creating regression tests package..."
+
+if [ $BUILD_TESTS ]; then
+  case $OS in
+    MACOSX)
+        echo 'building regression test package on OSX not implemented'
+    ;;
+    WIN)
+        echo 'building regression test package on Win not implemented'
+        ;;
+    UNIX_CROSS_WIN)
+        INSTFILE=OpenSCAD-Tests-$VERSION-x86-$ARCH-Installer.exe
+
+        echo "Copying files..."
+        cd $OPENSCADDIR
+        cd ..
+        if [ -e ./OpenSCAD-Tests-$VERSION ]; then
+          rm -rf ./OpenSCAD-Tests-$VERSION
+        fi
+	mkdir OpenSCAD-Tests-$VERSION
+	# this copies a lot of unnecessary stuff but that's OK.
+	# as above, we use tar as a somewhat portable way to do 'exclude'
+	# while copying.
+	rm -f ostests.tar
+	tar pcvf ostests.tar --exclude=.git* --exclude=*/mingw64/* --exclude=*/mingw32/* openscad --exclude=*.cc.obj --exclude=*.a
+        cd OpenSCAD-Tests-$VERSION
+        tar pxf ../ostests.tar
+        cd ..
+        rm -f ostests.tar
+
+	echo "Copying mingw_x_testfile.py for ease of calling"
+        cd OpenSCAD-Tests-$VERSION/openscad/tests
+        cp -v ./mingw_x_testfile.py ./build-mingw$ARCH/mingw_x_testfile.py
+	cd ../../..
+
+	echo "Creating mingw_cross_info.py file"
+        cd OpenSCAD-Tests-$VERSION/openscad/tests
+	rm -f ./mingw_cross_info.py
+	echo "# created automatically by release-common.sh " >> mingw_cross_info.py
+	echo "linux_basedir='"$OPENSCADDIR"'" >> mingw_cross_info.py
+	echo "linux_builddir='"$OPENSCADDIR"/tests/binx_"$TESTBUILD_MACHINE"'" >> mingw_cross_info.py
+	echo "bindir='binx_"$TESTBUILD_MACHINE"'" >> mingw_cross_info.py
+	# fixme .. parse CTestTestfiles to find linux+convert python strings
+	# or have CMake itself dump them during it's cross build cmake call
+	echo "linux_python='"`which python`"'" >> mingw_cross_info.py
+	echo "linux_convert='"`which convert`"'" >> mingw_cross_info.py
+	echo "win_installdir='OpenSCAD_Tests_"$VERSIONDATE"'" >> mingw_cross_info.py
+        cp -v mingw_cross_info.py ./build-mingw$ARCH/mingw_cross_info.py
+	cd ../../..
+
+        ZIPFILE=OpenSCAD-Tests-$VERSION-x86-$ARCH.zip
+        echo "Creating binary zip package for Tests:" $ZIPFILE
+        rm -f ./$ZIPFILE
+        "$ZIP" $ZIPARGS $ZIPFILE OpenSCAD-Tests-$VERSION
+
+        if [ -e $ZIPFILE ]; then
+            echo "ZIP package created:" `pwd`/$ZIPFILE
+        else
+            echo "Build of Regression Tests package failed. Cannot find" `pwd`/$ZIPFILE
+            exit 1
+        fi
+        cd $OPENSCADDIR
+        ;;
+    LINUX)
+        echo 'building regression test package on linux not implemented'
+        ;;
+  esac
+fi # BUILD_TESTS
