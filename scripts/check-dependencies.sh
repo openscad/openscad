@@ -77,7 +77,7 @@ glib2_sysver()
   if [ ! -e $glib2path ]; then
     #No glib found
     #glib can be installed in /usr/lib/i386-linux-gnu/glib-2.0/ on arch i686-linux-gnu (sometimes?)
-    if [ $glib2archtriplet = "i686-linux-gnu" ]; then
+    if [ "$glib2archtriplet" = "i686-linux-gnu" ]; then
         glib2archtriplet=i386-linux-gnu
         glib2path=$1/lib/$glib2archtriplet/glib-2.0/include/glibconfig.h
         if [ ! -e $glib2path ]; then return; fi
