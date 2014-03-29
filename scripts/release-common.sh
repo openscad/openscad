@@ -146,6 +146,8 @@ if [ ! $NUMCPU ]; then
 fi
 echo "NUMCPU: " $NUMCPU
 
+
+
 case $OS in
     LINUX|MACOSX) 
         TARGET=
@@ -244,13 +246,18 @@ if [ $BUILD_TESTS ]; then
   case $OS in
     UNIX_CROSS_WIN)
 	TESTBUILD_MACHINE=x86_64-w64-mingw32
+        # dont use build-machine trilpe in TESTBINDIR because the 'mingw32'
+        # will confuse people who are on 64 bit machines
+        TESTBINDIR=build-mingw$ARCH
+	export TESTBUILD_MACHINE
+	export TESTBINDIR
         if [[ $ARCH == 32 ]]; then
 		TESTBUILD_MACHINE=i686-pc-mingw32
 	fi
-	cd tests
-	mkdir build-mingw$ARCH
-	cd build-mingw$ARCH
-	cmake .. -DCMAKE_TOOLCHAIN_FILE=../CMingw-cross-env.cmake \
+        cd $OPENSCADDIR
+	mkdir $TESTBINDIR
+	cd $TESTBINDIR
+	cmake ../tests/ -DCMAKE_TOOLCHAIN_FILE=../tests/CMingw-cross-env.cmake \
           -DMINGW_CROSS_ENV_DIR=$MXEDIR \
           -DMACHINE=$TESTBUILD_MACHINE
 	if [ $FAKEMAKE = "tests" ]; then
@@ -416,45 +423,73 @@ if [ $BUILD_TESTS ]; then
         echo 'building regression test package on Win not implemented'
         ;;
     UNIX_CROSS_WIN)
-        INSTFILE=OpenSCAD-Tests-$VERSION-x86-$ARCH-Installer.exe
+        # Build a .zip file containing all the files we need to run a
+        # ctest on Windows(TM). For the sake of simplicity, we do not
+        # create an installer for the tests.
 
         echo "Copying files..."
         cd $OPENSCADDIR
-        cd ..
+        # This copies a lot of unnecessary stuff but that's OK.
+        # as above, we use tar as a somewhat portable way to do 'exclude'
+        # while copying.
+        rm -f ./ostests.tar
+       	for subdir in tests testdata libraries examples $TESTBINDIR; do
+          tar prvf ./ostests.tar --exclude=.git* --exclude=*/mingw64/* --exclude=*/mingw32/* --exclude=*.cc.obj --exclude=*.a $subdir
+        done
+
         if [ -e ./OpenSCAD-Tests-$VERSION ]; then
           rm -rf ./OpenSCAD-Tests-$VERSION
         fi
-	mkdir OpenSCAD-Tests-$VERSION
-	# this copies a lot of unnecessary stuff but that's OK.
-	# as above, we use tar as a somewhat portable way to do 'exclude'
-	# while copying.
-	rm -f ostests.tar
-	tar pcvf ostests.tar --exclude=.git* --exclude=*/mingw64/* --exclude=*/mingw32/* openscad --exclude=*.cc.obj --exclude=*.a
+        mkdir OpenSCAD-Tests-$VERSION
         cd OpenSCAD-Tests-$VERSION
         tar pxf ../ostests.tar
         cd ..
         rm -f ostests.tar
 
-	echo "Copying mingw_x_testfile.py for ease of calling"
-        cd OpenSCAD-Tests-$VERSION/openscad/tests
-        cp -v ./mingw_x_testfile.py ./build-mingw$ARCH/mingw_x_testfile.py
-	cd ../../..
+        # Now we have the basic files copied into our tree that will become
+        # our .zip file. We also want to move some files around for easier
+        # access for the user:
+        cd $OPENSCADDIR
+        cd ./OpenSCAD-Tests-$VERSION
+        echo "Copying files for ease of use when running from cmdline"
+        cp -v ./tests/OpenSCAD_Test_Console.py .
+        cp -v ./tests/mingw_convert_ctest.py ./$TESTBINDIR
 
-	echo "Creating mingw_cross_info.py file"
-        cd OpenSCAD-Tests-$VERSION/openscad/tests
-	rm -f ./mingw_cross_info.py
-	echo "# created automatically by release-common.sh " >> mingw_cross_info.py
-	echo "linux_basedir='"$OPENSCADDIR"'" >> mingw_cross_info.py
-	echo "linux_builddir='"$OPENSCADDIR"/tests/binx_"$TESTBUILD_MACHINE"'" >> mingw_cross_info.py
-	echo "bindir='binx_"$TESTBUILD_MACHINE"'" >> mingw_cross_info.py
-	# fixme .. parse CTestTestfiles to find linux+convert python strings
-	# or have CMake itself dump them during it's cross build cmake call
-	echo "linux_python='"`which python`"'" >> mingw_cross_info.py
-	echo "linux_convert='"`which convert`"'" >> mingw_cross_info.py
-	echo "win_installdir='OpenSCAD_Tests_"$VERSIONDATE"'" >> mingw_cross_info.py
-        cp -v mingw_cross_info.py ./build-mingw$ARCH/mingw_cross_info.py
-	cd ../../..
+        echo "Creating mingw_cross_info.py file"
+        cd $OPENSCADDIR
+        cd OpenSCAD-Tests-$VERSION
+        cd $TESTBINDIR
+        if [ -e ./mingw_cross_info.py ]; then
+          rm -f ./mingw_cross_info.py
+        fi
+        echo "# created automatically by release-common.sh from within linux " >> mingw_cross_info.py
+        echo "linux_abs_basedir='"$OPENSCADDIR"'" >> mingw_cross_info.py
+        echo "linux_abs_builddir='"$OPENSCADDIR/$TESTBINDIR"'" >> mingw_cross_info.py
+        echo "bindir='"$TESTBINDIR"'" >> mingw_cross_info.py
+        # fixme .. parse CTestTestfiles to find linux+convert python strings
+        # or have CMake itself dump them during it's cross build cmake call
+        echo "linux_python='"`which python`"'" >> mingw_cross_info.py
+        echo "linux_convert='"`which convert`"'" >> mingw_cross_info.py
+        echo "win_installdir='OpenSCAD_Tests_"$VERSIONDATE"'" >> mingw_cross_info.py
 
+        # Test binaries can be hundreds of megabytes due to debugging info.
+        # By default, we strip that. In most cases we wont need it if
+        # the files are too big it will drive away potential users.
+        echo "stripping .exe binaries"
+        cd $OPENSCADDIR
+        cd OpenSCAD-Tests-$VERSION
+        cd $TESTBINDIR
+        if [ "`command -v $TESTBUILD_MACHINE'-strip' `" ]; then
+            for exefile in *exe; do
+                ls -sh $exefile
+                echo $TESTBUILD_MACHINE'-strip' $exefile
+                $TESTBUILD_MACHINE'-strip' $exefile
+                ls -sh $exefile
+            done
+        fi
+
+        # Build the actual .zip archive based on the file tree we've built above
+        cd $OPENSCADDIR
         ZIPFILE=OpenSCAD-Tests-$VERSION-x86-$ARCH.zip
         echo "Creating binary zip package for Tests:" $ZIPFILE
         rm -f ./$ZIPFILE
