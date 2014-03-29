@@ -51,8 +51,10 @@ def tryread(filename):
         data = f.read()
         f.close()
     except Exception as e:
-        print 'couldn\'t open ',filename
-        print type(e), e
+        debug( "couldn't open file: [" + filename + "]" )
+        debug( str(type(e))+str(e) )
+        if filename==None:
+            pass
     return data
 
 def trysave(filename, data):
