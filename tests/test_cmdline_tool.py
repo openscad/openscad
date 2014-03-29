@@ -191,7 +191,7 @@ def usage():
 if __name__ == '__main__':
     # Handle command-line arguments
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "gs:e:c:t:f:m:x", ["generate", "convexec=", "suffix=", "expected_dir=", "test=", "file=", "comparator="])
+        opts, args = getopt.getopt(sys.argv[1:], "gs:e:c:t:f:m", ["generate", "convexec=", "suffix=", "expected_dir=", "test=", "file=", "comparator="])
     except getopt.GetoptError, err:
         usage()
         sys.exit(2)
@@ -229,7 +229,10 @@ if __name__ == '__main__':
     if len(args) == 2:
         basename = os.path.splitext(args[1])[0]
         path, options.filename = os.path.split(basename)
+        print >> sys.stderr, basename
+        print >> sys.stderr, path, options.filename
 
+    print >> sys.stderr, options.filename
     if not hasattr(options, "filename"):
         print >> sys.stderr, "Filename cannot be deducted from arguments. Specify test filename using the -f option"
         sys.exit(2)

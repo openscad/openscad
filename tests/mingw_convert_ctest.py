@@ -31,7 +31,7 @@
 # Note that under 'cmake', Windows(TM) paths use / instead of \ as a 
 # folder separator.
 
-# mingw_cross_info.py is created during the the scripts/release-common.sh build
+# mingw_cross_info.py is created by scripts/release-common.sh during build 
 # of the regression test package. it contains info regarding paths in
 # CTestTestfiles.cmake that we need to modify
 import mingw_cross_info
@@ -90,6 +90,27 @@ winexamples=winbase+'/tests/../examples'
 if '--debug' in string.join(sys.argv): _debug=True
 if '--undo' in string.join(sys.argv): _undo=True
 
+if _debug:
+	print thisfile_abspath
+	print 'linbase',linbase
+	print 'winbase',winbase
+	print 'linbuild',linbuild
+	print 'winbuild',winbuild
+	print 'lintct',lintct
+	print 'wintct',wintct
+	print 'linpy',linpy
+	print 'winpy',winpy
+	print 'linosng',linosng
+	print 'winosng',winosng
+	print 'linconv',linconv
+	print 'winconv',winconv
+	print 'linoslib',linoslib
+	print 'winoslib',winoslib
+	print 'lintestdata',lintestdata
+	print 'wintestdata',wintestdata
+	print 'linexamples',linexamples
+	print 'winexamples',winexamples
+	
 def processfile(infilename):
 	backup_filename = infilename+'.backup'
 	if _undo:
@@ -125,7 +146,7 @@ def processfile(infilename):
 		line=line.replace('\\','/')
 
 		# Fixme - how do we escape spaces in cmake?
-		line=line.replace('Program Files','Progra~1')
+		#line=line.replace('Program Files','Progra~1')
 	
 		debug('output:',line)
 

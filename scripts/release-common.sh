@@ -469,7 +469,10 @@ if [ $BUILD_TESTS ]; then
         # fixme .. parse CTestTestfiles to find linux+convert python strings
         # or have CMake itself dump them during it's cross build cmake call
         echo "linux_python='"`which python`"'" >> mingw_cross_info.py
-        echo "linux_convert='"`which convert`"'" >> mingw_cross_info.py
+        # note- this has to match the CMakeLists.txt line that sets the
+        # convert executable... and CMingw-cross-env.cmake's skip-imagemagick
+        # setting. what a kludge!
+        echo "linux_convert='/bin/echo'" >> mingw_cross_info.py
         echo "win_installdir='OpenSCAD_Tests_"$VERSIONDATE"'" >> mingw_cross_info.py
 
         # Test binaries can be hundreds of megabytes due to debugging info.

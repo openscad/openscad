@@ -433,9 +433,8 @@ inclusion(GLIB2_DIR GLIB2_INCLUDE_DIRS)
 # Imagemagick
 
 if (SKIP_IMAGEMAGICK)
-  if (NOT MINGW_CROSS_ENV_DIR)
-    set(ImageMagick_convert_EXECUTABLE "echo")
-  endif()
+  # cross-building depends on this
+  set(ImageMagick_convert_EXECUTABLE "/bin/echo")
 else()
   find_package(ImageMagick COMPONENTS convert)
   if (ImageMagick_convert_FOUND)
