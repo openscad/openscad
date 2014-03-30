@@ -430,6 +430,9 @@ Geometry *PrimitiveNode::createGeometry() const
 												 ring[rings-1].points[i].y, 
 												 ring[rings-1].z);
 
+			for (int i = 0; i < rings; i++) {
+				delete[] ring[i].points;
+			}
 			delete[] ring;
 		}
 	}
@@ -568,7 +571,7 @@ Geometry *PrimitiveNode::createGeometry() const
 			Outline2d outline;
 			double x,y;
 			const Value::VectorType &vec = this->points.toVector();
-			for (int i=0;i<vec.size();i++) {
+			for (unsigned int i=0;i<vec.size();i++) {
 				const Value &val = vec[i];
 				if (!val.getVec2(x, y) ||
 						isinf(x) || isinf(y)) {
