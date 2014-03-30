@@ -52,7 +52,7 @@ AbstractNode *RotateExtrudeModule::instantiate(const Context *ctx, const ModuleI
 	RotateExtrudeNode *node = new RotateExtrudeNode(inst);
 
 	AssignmentList args;
-	args += Assignment("file", NULL), Assignment("layer", NULL), Assignment("origin", NULL), Assignment("scale", NULL);
+	args += Assignment("file"), Assignment("layer"), Assignment("origin"), Assignment("scale");
 
 	Context c(ctx);
 	c.setVariables(args, evalctx);
