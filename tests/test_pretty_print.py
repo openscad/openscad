@@ -359,10 +359,11 @@ def to_html(project_name, startdate, tests, enddate, sysinfo, sysid, makefiles):
     image_tests = templates.get('image_tests')
     makefiles_str = templates.get('makefiles')
 
-    if image_test_count==0:
-        image_tests = 'all passed'
-    if text_test_count==0:
-        text_tests = 'all passed'
+    if not include_passed:
+        if image_test_count==0:
+            image_tests = 'all given tests passed'
+        if text_test_count==0:
+            text_tests = 'all given tests passed'
 
     return templates.fill('html_template', style=Templates.style,
                           sysid=sysid, sysinfo=sysinfo,
