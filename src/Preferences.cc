@@ -65,6 +65,12 @@ Preferences::Preferences(QWidget *parent) : QMainWindow(parent)
  	this->defaultmap["editor/fontsize"] = 12;
 	this->defaultmap["editor/syntaxhighlight"] = "For Light Background";
 
+#if defined (Q_OS_MAC)
+	this->defaultmap["editor/ctrlmousewheelzoom"] = false;
+#else
+	this->defaultmap["editor/ctrlmousewheelzoom"] = true;
+#endif
+
 	uint savedsize = getValue("editor/fontsize").toUInt();
 	QFontDatabase db;
 	foreach(uint size, db.standardSizes()) {
@@ -95,8 +101,16 @@ Preferences::Preferences(QWidget *parent) : QMainWindow(parent)
 	QActionGroup *group = new QActionGroup(this);
 	addPrefPage(group, prefsAction3DView, page3DView);
 	addPrefPage(group, prefsActionEditor, pageEditor);
+#if defined(OPENSCAD_DEPLOY) && defined(Q_OS_MAC)
 	addPrefPage(group, prefsActionUpdate, pageUpdate);
+#else
+	this->toolBar->removeAction(prefsActionUpdate);
+#endif
+#ifdef ENABLE_EXPERIMENTAL
 	addPrefPage(group, prefsActionFeatures, pageFeatures);
+#else
+	this->toolBar->removeAction(prefsActionFeatures);
+#endif
 	addPrefPage(group, prefsActionAdvanced, pageAdvanced);
 	connect(group, SIGNAL(triggered(QAction*)), this, SLOT(actionTriggered(QAction*)));
 
@@ -365,6 +379,12 @@ void Preferences::on_forceGoldfeatherBox_toggled(bool state)
 	emit openCSGSettingsChanged();
 }
 
+void Preferences::on_mouseWheelZoomBox_toggled(bool state)
+{
+	QSettings settings;
+	settings.setValue("editor/ctrlmousewheelzoom", state);
+}
+
 void Preferences::keyPressEvent(QKeyEvent *e)
 {
 #ifdef Q_OS_MAC
@@ -426,6 +446,8 @@ void Preferences::updateGUI()
 	QString shighlight = getValue("editor/syntaxhighlight").toString();
 	int shidx = this->syntaxHighlight->findText(shighlight);
 	if (shidx >= 0) this->syntaxHighlight->setCurrentIndex(shidx);
+
+	this->mouseWheelZoomBox->setChecked(getValue("editor/ctrlmousewheelzoom").toBool());
 
 	if (AutoUpdater *updater = AutoUpdater::updater()) {
 		this->updateCheckBox->setChecked(updater->automaticallyChecksForUpdates());

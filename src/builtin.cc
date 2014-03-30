@@ -16,11 +16,21 @@ Builtins *Builtins::instance(bool erase)
 
 void Builtins::init(const char *name, class AbstractModule *module)
 {
+#ifndef ENABLE_EXPERIMENTAL
+	if (module->is_experimental()) {
+		return;
+	}
+#endif
 	Builtins::instance()->globalscope.modules[name] = module;
 }
 
 void Builtins::init(const char *name, class AbstractFunction *function)
 {
+#ifndef ENABLE_EXPERIMENTAL
+	if (function->is_experimental()) {
+		return;
+	}
+#endif
 	Builtins::instance()->globalscope.functions[name] = function;
 }
 
@@ -80,18 +90,18 @@ std::string Builtins::isDeprecated(const std::string &name)
 
 Builtins::Builtins()
 {
-	this->globalscope.assignments.push_back(Assignment("$fn", new Expression(Value(0.0))));
-	this->globalscope.assignments.push_back(Assignment("$fs", new Expression(Value(2.0))));
-	this->globalscope.assignments.push_back(Assignment("$fa", new Expression(Value(12.0))));
-	this->globalscope.assignments.push_back(Assignment("$t", new Expression(Value(0.0))));
+	this->globalscope.assignments.push_back(Assignment("$fn", boost::shared_ptr<Expression>(new Expression(Value(0.0)))));
+	this->globalscope.assignments.push_back(Assignment("$fs", boost::shared_ptr<Expression>(new Expression(Value(2.0)))));
+	this->globalscope.assignments.push_back(Assignment("$fa", boost::shared_ptr<Expression>(new Expression(Value(12.0)))));
+	this->globalscope.assignments.push_back(Assignment("$t", boost::shared_ptr<Expression>(new Expression(Value(0.0)))));
 
 	Value::VectorType zero3;
 	zero3.push_back(Value(0.0));
 	zero3.push_back(Value(0.0));
 	zero3.push_back(Value(0.0));
 	Value zero3val(zero3);
-	this->globalscope.assignments.push_back(Assignment("$vpt", new Expression(zero3val)));
-	this->globalscope.assignments.push_back(Assignment("$vpr", new Expression(zero3val)));
+	this->globalscope.assignments.push_back(Assignment("$vpt", boost::shared_ptr<Expression>(new Expression(zero3val))));
+	this->globalscope.assignments.push_back(Assignment("$vpr", boost::shared_ptr<Expression>(new Expression(zero3val))));
 }
 
 Builtins::~Builtins()

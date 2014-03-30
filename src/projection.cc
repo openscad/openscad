@@ -49,7 +49,7 @@ AbstractNode *ProjectionModule::instantiate(const Context *ctx, const ModuleInst
 	ProjectionNode *node = new ProjectionNode(inst);
 
 	AssignmentList args;
-	args += Assignment("cut", NULL);
+	args += Assignment("cut");
 
 	Context c(ctx);
 	c.setVariables(args, evalctx);

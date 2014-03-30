@@ -13,6 +13,7 @@ public:
 	Context(const Context *parent = NULL);
 	virtual ~Context();
 
+	const Context *getParent() const { return this->parent; }
 	virtual Value evaluate_function(const std::string &name, const class EvalContext *evalctx) const;
 	virtual class AbstractNode *instantiate_module(const class ModuleInstantiation &inst, const EvalContext *evalctx) const;
 
@@ -29,11 +30,11 @@ public:
 	std::string getAbsolutePath(const std::string &filename) const;
 
 public:
-	const Context *parent;
-
-	static std::vector<const Context*> ctx_stack;
 
 protected:
+	const Context *parent;
+	static std::vector<const Context*> ctx_stack;
+
 	typedef boost::unordered_map<std::string, Value> ValueMap;
 	ValueMap constants;
 	ValueMap variables;

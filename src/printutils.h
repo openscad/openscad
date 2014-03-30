@@ -16,6 +16,10 @@ void set_output_handler(OutputHandlerFunc *newhandler, void *userdata);
 extern std::list<std::string> print_messages_stack;
 void print_messages_push();
 void print_messages_pop();
+void printDeprecation(const std::string &str);
+void resetPrintedDeprecations();
+
+#define PRINT_DEPRECATION(_fmt, _arg) do { printDeprecation(str(boost::format(_fmt) % _arg)); } while (0)
 
 /* PRINT statements come out in same window as ECHO.
  usage: PRINTB("Var1: %s Var2: %i", var1 % var2 ); */
@@ -48,5 +52,25 @@ void PRINTDEBUG(const std::string &filename,const std::string &msg);
 std::string two_digit_exp_format( std::string doublestr );
 std::string two_digit_exp_format( double x );
 
+// extremely simple logging, eventually replace with something like boost.log
+// usage: logstream out(5); openscad_loglevel=6; out << "hi";
+static int openscad_loglevel = 0;
+class logstream
+{
+public:
+	std::ostream *out;
+	int loglevel;
+	logstream( int level = 0 ) {
+		loglevel = level;
+		out = &(std::cout);
+	}
+	template <typename T> logstream & operator<<( T const &t ) {
+		if (out && loglevel <= openscad_loglevel) {
+			(*out) << t ;
+			out->flush();
+		}
+		return *this;
+	}
+};
 
 #endif

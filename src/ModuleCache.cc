@@ -23,11 +23,11 @@ ModuleCache *ModuleCache::inst = NULL;
 
 /*!
 	Reevaluate the given file and all it's dependencies and recompile anything
-	needing reevaluation.
+	needing reevaluation. Updates the cache if necessary.
 	The given filename must be absolute.
 
-	Sets the module reference to the new modile, or NULL on any error (e.g. compile
-	error or file not found)
+	Sets the module reference to the new module, or NULL on any error (e.g. compile
+	error or file not found).
 
 	Returns true if anything was compiled (module or dependencies) and false otherwise.
 */
@@ -42,7 +42,7 @@ bool ModuleCache::evaluate(const std::string &filename, FileModule *&module)
   
 	// Don't try to recursively evaluate - if the file changes
 	// during evaluation, that would be really bad.
-	if (lib_mod && lib_mod->isHandlingDependencies()) return lib_mod;
+	if (lib_mod && lib_mod->isHandlingDependencies()) return false;
 
 	// Create cache ID
 	struct stat st;

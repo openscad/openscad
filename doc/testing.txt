@@ -1,25 +1,57 @@
 Running regression tests:
 -------------------------
 
-Prerequisites: cmake, python, ImageMagick 6.5.9.3 or newer
+First, install the prerequisite helper programs on your system:
 
+<<<<<<< HEAD
+     cmake, python, ImageMagick 6.5.9.3 or newer, diff
+
+There are binary installer packages of these tools available for Mac, 
+Win, Linux, BSD, and other systems. (except maybe diff for Win)
+
+Next, get a working qmake GUI build of the main openscad binary working. 
+For Windows(TM) it is easiest to get a cross-build working. See 
+README.md for how to do this. Lastly, install MCAD under 
+openscad/libraries.
+=======
 First, install MCAD.
 
 $ cd openscad
 $ git submodule update --init
+>>>>>>> 0d9b20dc143b2acca68496d2ce5e4fd02798289e
 
 A) Building test environment
 
 Linux, Mac:
-$ cd tests
-$ cmake .
-$ make
 
+<<<<<<< HEAD
+    $ cd tests
+    $ cmake .
+    $ make
+
+Windows(TM):
+
+The Windows tests are cross-compiled from within linux, like so:
+
+    $ source ./scripts/setenv-mingw-xbuild.sh 64    # (32 for 32-bit system)
+    $ ./scripts/release-common.sh mingw64 tests     # (mingw32 for 32-bit)
+
+Once the package is built, install it into Windows as you would any 
+other program. Then start up a command prompt, and run this:
+
+    cd c:\Program Files\OpenSCAD_Tests\openscad\tests\bin
+    c:\python27\python.exe mingw_x_testfile.py
+=======
 Windows + MSVC: 
 
 The MSVC build hasn't been tested in years. See the README for pointers.
 First, gett the main GUI to build. Then, to build the tests:
+>>>>>>> 0d9b20dc143b2acca68496d2ce5e4fd02798289e
 
+This will modify paths in CTestTestfile.cmake for your Win system.
+
+Windows + MSVC:
+(This hasn't been tested since circa 2012)
 From the QT command prompt:
 
 > cd tests
@@ -28,11 +60,14 @@ From the QT command prompt:
 > cmake .
 > nmake -f Makefile
 
+<<<<<<< HEAD
+=======
 Cross compiling Linux->Win32 and testing under Wine:
 
 Experimental. Please see openscad/tests/CMingw-cross-env.cmake for instructions
 on attempting to get it to work.
 
+>>>>>>> 0d9b20dc143b2acca68496d2ce5e4fd02798289e
 B) Running tests
 
 $ ctest               Runs tests enabled by default
@@ -44,6 +79,16 @@ $ ctest -C <configs>  Adds extended tests belonging to configs.
                       Examples - test all examples
                       Bugs     - test known bugs (tests will fail)
                       All      - test everything
+
+
+C) Automatically upload test results (experimental)
+
+It's possible to automatically upload tests results to an external
+server. This is good for CI, as well as being able to easily report
+bugs.
+
+To enable this feature, add '-DOPENSCAD_UPLOAD_TESTS=1' to the cmake cmd-line, e.g.:
+cmake -DOPENSCAD_UPLOAD_TESTS=1 .
 
 Adding a new test:
 ------------------
@@ -120,7 +165,7 @@ Imagemagick may have crashed while comparing the expected images to the
 test-run generated (actual) images. You can try using the alternate 
 ImageMagick comparison method by by erasing CMakeCache, and re-running 
 cmake with -DCOMPARATOR=ncc. This will enable the Normalized Cross 
-Comparison method.
+Comparison method which is less accurate but won't usually crash.
 
 4. Testing images fails with 'morphology not found" for ImageMagick in the log
 
@@ -132,10 +177,13 @@ cmake. The comparison will be of lowered reliability.
 "terminate called after throwing an instance of 'std::runtime_error'
   what():  locale::facet::_S_create_c_locale name not valid" 
 
-Is a boost/libstdc++ bug. Fix like so:
+Is a boost/libstdc++ bug. Fix like so before running:
 
   $ export LC_MESSAGES=
 
+<<<<<<< HEAD
+6. Proprietary GL driver issues
+=======
 6. I want to build without OpenGL
 
  There is an unsupported way to do this, by defining NULLGL to Cmake:
@@ -148,12 +196,25 @@ Is a boost/libstdc++ bug. Fix like so:
  This option may break in the future and require tweaking to get working again.
 
 7. Other issues
+>>>>>>> 0d9b20dc143b2acca68496d2ce5e4fd02798289e
 
-The OpenSCAD User Manual has a section on buildling. Please check there 
-for updates:
+There are sporadic reports of problems running on remote machines with
+proprietary GL drivers. Try doing a web search for your exact error
+message to see solutions others have found.
+
+7. Other issues
+
+The OpenSCAD User Manual Wiki has a section on buildling. Please check 
+there for possible updates and workarounds:
 
 http://en.wikibooks.org/wiki/OpenSCAD_User_Manual
 
+<<<<<<< HEAD
+Please report build errors (after double checking the instructions) in 
+the github issue tracker
+
+http://github.com/openscad/openscad/issues
+=======
 
 
 Migration away from dedicated regression tests:
@@ -174,4 +235,5 @@ These look like tests, but are not actually in use:
 
 * modulecachetest
 * cgalcachetest
+>>>>>>> 0d9b20dc143b2acca68496d2ce5e4fd02798289e
 

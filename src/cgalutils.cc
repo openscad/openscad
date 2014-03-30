@@ -420,13 +420,14 @@ much slower in many cases.
 #include <CGAL/Delaunay_mesh_face_base_2.h>
 
 typedef CGAL_Kernel3 Kernel;
-typedef typename CGAL::Triangulation_vertex_base_2<Kernel> Vb;
-//typedef typename CGAL::Constrained_triangulation_face_base_2<Kernel> Fb;
+//typedef CGAL::Triangulation_vertex_base_2<Kernel> Vb;
+typedef CGAL::Triangulation_vertex_base_2<Kernel> Vb;
+//typedef CGAL::Constrained_triangulation_face_base_2<Kernel> Fb;
 typedef CGAL::Delaunay_mesh_face_base_2<Kernel> Fb;
-typedef typename CGAL::Triangulation_data_structure_2<Vb,Fb> TDS;
+typedef CGAL::Triangulation_data_structure_2<Vb,Fb> TDS;
 typedef CGAL::Exact_intersections_tag ITAG;
-typedef typename CGAL::Constrained_Delaunay_triangulation_2<Kernel,TDS,ITAG> CDT;
-//typedef typename CGAL::Constrained_Delaunay_triangulation_2<Kernel,TDS> CDT;
+typedef CGAL::Constrained_Delaunay_triangulation_2<Kernel,TDS,ITAG> CDT;
+//typedef CGAL::Constrained_Delaunay_triangulation_2<Kernel,TDS> CDT;
 
 typedef CDT::Vertex_handle Vertex_handle;
 typedef CDT::Point CDTPoint;

@@ -47,11 +47,30 @@
 
 init_variables()
 {
+	BRANCH_TO_BUILD=unstable
+	#BRANCH_TO_BUILD=master
 	STARTPATH=$PWD
 	export STARTPATH
+	# kilob per second for scp upload
+	RATELIMIT=20
 	DOBUILD=1
 	DOUPLOAD=1
 	DRYRUN=
+	DOSNAPSHOT=1
+	DOLOOP=
+	#solar day
+	LOOPSLEEP=86400
+	if [ "`echo $* | grep loop`" ]; then
+		echo "----------------------------"
+		echo "loop mode activated! woopee!"
+		echo "----------------------------"
+		DOLOOP=1
+	fi
+	if [ "`echo $* | grep release`" ]; then
+		echo "this script cannot yet build releases, only snapshots"
+		DOSNAPSHOT=
+		exit 1
+	fi
 	if [ "`echo $* | grep uploadonly`" ]; then
 		DOUPLOAD=1
 		DOBUILD=
@@ -65,10 +84,15 @@ init_variables()
 	if [ "`echo $* | grep dry`" ]; then
 		DRYRUN=1
 	fi
+	export BRANCH_TO_BUILD
 	export DOBUILD
 	export DOUPLOAD
 	export DRYRUN
 	export DATECODE
+	export DOSNAPSHOT
+	export DOLOOP
+	export LOOPSLEEP
+	export RATELIMIT
 }
 
 check_starting_path()
@@ -79,10 +103,50 @@ check_starting_path()
 	fi
 }
 
+check_nsis()
+{
+	# 64 bit mingw-cross build MXE cannot build nsis.... for now, we can
+	# just ask the user to install their system's nsis package.
+	# (it might be possible to d/l & build nsis here, or use pre-existing
+	#  32-bit-mxe nsis)
+	if [ ! "`command -v makensis`" ]; then
+		echo the makensis command was not found.
+		echo please install nsis for your system. for example
+		echo on debian, sudo apt-get install nsis
+		exit 1
+	else
+		echo makensis found.
+	fi
+}
+
 get_openscad_source_code()
 {
+	if [ -d openscad ]; then
+		cd openscad
+		if [ ! $? ]; then
+			echo cd to 'openscad' directory failed
+			exit 1
+		fi
+		git checkout $BRANCH_TO_BUILD
+		if [ ! $? ]; then
+			echo git checkout $BRANCH_TO_BUILD failed
+			exit 1
+		fi
+		git fetch -a
+		if [ ! $? ]; then
+			echo git fetch -a openscad source code failed
+			exit 1
+		fi
+		git pull origin $BRANCH_TO_BUILD
+		if [ ! $? ]; then
+			echo git pull origin $BRANCH_TO_BUILD failed
+			exit 1
+		fi
+		git submodule update # MCAD
+		return
+	fi
 	git clone http://github.com/openscad/openscad.git
-	if [ "`echo $? | grep 0`" ]; then
+	if [ $? ]; then
 		echo clone of source code is ok
 	else
 		if [ $DOUPLOAD ]; then
@@ -95,8 +159,13 @@ get_openscad_source_code()
 		fi
 	fi
 	cd openscad
+	git checkout $BRANCH_TO_BUILD
+	if [ ! $? ]; then
+		echo git checkout $BRANCH_TO_BUILD failed
+		exit 1
+	fi
 	git submodule update --init # MCAD
-	#git checkout branch ##debugging
+#solar day
 }
 
 build_win32()
@@ -104,7 +173,12 @@ build_win32()
 	. ./scripts/setenv-mingw-xbuild.sh clean
 	. ./scripts/setenv-mingw-xbuild.sh
 	./scripts/mingw-x-build-dependencies.sh
-	./scripts/release-common.sh mingw32
+	if [ $DOSNAPSHOT ] ; then
+		./scripts/release-common.sh snapshot mingw32
+	else
+		echo "this script cant yet build releases, only snapshots"
+		exit 1
+	fi
 	if [ "`echo $? | grep 0`" ]; then
 		echo build of win32 stage over
 	else
@@ -120,7 +194,12 @@ build_win64()
 	. ./scripts/setenv-mingw-xbuild.sh clean
 	. ./scripts/setenv-mingw-xbuild.sh 64
 	./scripts/mingw-x-build-dependencies.sh 64
-	./scripts/release-common.sh mingw64
+	if [ $DOSNAPSHOT ] ; then
+		./scripts/release-common.sh snapshot mingw64
+	else
+		echo "this script cant yet build releases, only snapshots"
+		exit 1
+	fi
 	if [ "`echo $? | grep 0`" ]; then
 		echo build of win64 stage over
 	else
@@ -135,7 +214,12 @@ build_lin32()
 {
 	. ./scripts/setenv-unibuild.sh
 	./scripts/uni-build-dependencies.sh
-	./scripts/release-common.sh
+	if [ $DOSNAPSHOT ] ; then
+		./scripts/release-common.sh snapshot
+	else
+		echo "this script cant yet build releases, only snapshots"
+		exit 1
+	fi
 	DATECODE=`date +"%Y.%m.%d"`
 	export DATECODE
 }
@@ -154,11 +238,15 @@ upload_win_common()
 	opts="$opts -p openscad"
 	opts="$opts -u $username"
 	opts="$opts $filename"
+	remotepath=www/
+	if [ $DOSNAPSHOT ]; then
+		remotepath=www/snapshots/
+	fi
 	if [ $DRYRUN ]; then
 		echo dry run, not uploading to files.openscad.org
-		echo scp -v $filename openscad@files.openscad.org:www/
+		echo scp -v -l $RATELIMIT $filename openscad@files.openscad.org:www/
 	else
-		scp -v $filename openscad@files.openscad.org:www/
+		scp -v -l $RATELIMIT $filename openscad@files.openscad.org:www/
 	fi
 }
 
@@ -246,6 +334,9 @@ update_win_www_download_links()
 	echo `pwd`
 	# BASEURL='https://openscad.googlecode.com/files/'
 	BASEURL='http://files.openscad.org/'
+	if [ $DOSNAPSHOT ]; then
+		BASEURL='http://files.openscad.org/snapshots/'
+	fi
 	DATECODE=`date +"%Y.%m.%d"`
 
 	mv win_snapshot_links.js win_snapshot_links.js.backup
@@ -280,30 +371,54 @@ update_win_www_download_links()
 check_ssh_agent()
 {
 	if [ $DRYRUN ]; then echo 'skipping ssh, dry run'; return; fi
+	if [ $SSH_AUTH_SKIP ]; then
+		return
+	fi
 	if [ ! $SSH_AUTH_SOCK ]; then
 		echo 'please start an ssh-agent for github.com/openscad/openscad.github.com uploads'
 		echo 'for example:'
 		echo
 		echo ' ssh-agent > .tmp && source .tmp && ssh-add'
 		echo
+		echo 'to force a run anyway, set SSH_AUTH_SKIP environment variable to 1'
+		exit 1
 	fi
 }
 
-init_variables $*
-if [ $DOUPLOAD ]; then
-	check_ssh_agent
-fi
-check_starting_path
-read_username_from_user
-read_password_from_user
-get_openscad_source_code
-if [ $DOBUILD ]; then
-	build_win32
-	build_win64
-fi
-if [ $DOUPLOAD ]; then
-	upload_win32
-	upload_win64
-	update_win_www_download_links
-fi
+main()
+{
+	if [ $DOUPLOAD ]; then
+		check_ssh_agent
+	fi
+	check_starting_path
+	check_nsis
+	read_username_from_user
+	read_password_from_user
+	get_openscad_source_code
+	if [ $DOBUILD ]; then
+		build_win32
+		build_win64
+	fi
+	if [ $DOUPLOAD ]; then
+		upload_win32
+		upload_win64
+		update_win_www_download_links
+	fi
+}
 
+
+init_variables $*
+if [ $DOLOOP ]; then
+	while [ 1 ]; do
+		main $*
+		echo ---------------------------------------------------
+		echo main loop finished. repeating in $LOOPSLEEP seconds
+		echo ---------------------------------------------------
+		sleep $LOOPSLEEP
+		#if [ "`uname | grep -i linux`" ]; then
+		#	rtcwake -m mem -s 86400
+		#fi
+	done
+else
+	main $*
+fi

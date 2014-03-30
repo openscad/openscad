@@ -33,6 +33,7 @@
 #include "fileutils.h"
 #include "handle_dep.h" // handle_dep()
 #include "visitor.h"
+#include "lodepng.h"
 
 #include <sstream>
 #include <fstream>
@@ -54,6 +55,8 @@ public:
 	virtual AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const;
 };
 
+typedef boost::unordered_map<std::pair<int,int>,double> img_data_t;
+
 class SurfaceNode : public LeafNode
 {
 public:
@@ -66,18 +69,26 @@ public:
 
 	Filename filename;
 	bool center;
+	bool invert;
 	int convexity;
+	
 	virtual Geometry *createGeometry() const;
+private:
+	void convert_image(img_data_t &data, std::vector<unsigned char> &img, unsigned int width, unsigned int height) const;
+	bool is_png(std::vector<unsigned char> &img) const;
+	img_data_t read_dat(std::string filename) const;
+	img_data_t read_png_or_dat(std::string filename) const;
 };
 
 AbstractNode *SurfaceModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const
 {
 	SurfaceNode *node = new SurfaceNode(inst);
 	node->center = false;
+	node->invert = false;
 	node->convexity = 1;
 
 	AssignmentList args;
-	args += Assignment("file", NULL), Assignment("center", NULL), Assignment("convexity", NULL);
+	args += Assignment("file"), Assignment("center"), Assignment("convexity");
 
 	Context c(ctx);
 	c.setVariables(args, evalctx);
@@ -95,22 +106,95 @@ AbstractNode *SurfaceModule::instantiate(const Context *ctx, const ModuleInstant
 		node->convexity = (int)convexity.toDouble();
 	}
 
+	Value invert = c.lookup_variable("invert", true);
+	if (invert.type() == Value::BOOL) {
+		node->invert = invert.toBool();
+	}
+
 	return node;
 }
 
-Geometry *SurfaceNode::createGeometry() const
+void SurfaceNode::convert_image(img_data_t &data, std::vector<unsigned char> &img, unsigned int width, unsigned int height) const
 {
-	handle_dep(filename);
+	double z_min = 100000;
+	double z_max = 0;
+	for (unsigned long idx = 0;idx < img.size();idx += 4) {
+		// sRGB luminance, see http://en.wikipedia.org/wiki/Grayscale
+		double z = 0.2126 * img[idx] + 0.7152 * img[idx + 1] + 0.0722 * img[idx + 2];
+		if (z < z_min) {
+			z_min = z;
+		}
+		if (z > z_max) {
+			z_max = z;
+		}
+	}
+
+	double h = 100;
+	double scale = h / (z_max - z_min);
+	for (unsigned int y = 0;y < height;y++) {
+		for (unsigned int x = 0;x < width;x++) {
+			long idx = 4 * (y * width + x);
+			double pixel = 0.2126 * img[idx] + 0.7152 * img[idx + 1] + 0.0722 * img[idx + 2];
+			double z = scale * (pixel - z_min);
+			if (invert) {
+				z = h - z;
+			}
+			data[std::make_pair(height - y, x)] = z;
+			
+		}
+	}
+}
+
+bool SurfaceNode::is_png(std::vector<unsigned char> &png) const
+{
+	return (png.size() >= 8)
+		&& (png[0] == 0x89)
+		&& (png[1] == 0x50)
+		&& (png[2] == 0x4e)
+		&& (png[3] == 0x47)
+		&& (png[4] == 0x0d)
+		&& (png[5] == 0x0a)
+		&& (png[6] == 0x1a)
+		&& (png[7] == 0x0a);
+}
+
+img_data_t SurfaceNode::read_png_or_dat(std::string filename) const
+{
+	img_data_t data;
+	std::vector<unsigned char> png;
+	
+	lodepng::load_file(png, filename);
+	
+	if (!is_png(png)) {
+		png.clear();
+		return read_dat(filename);
+	}
+	
+	unsigned int width, height;
+	std::vector<unsigned char> img;
+	unsigned error = lodepng::decode(img, width, height, png);
+	if (error) {
+		PRINTB("ERROR: Can't read PNG image '%s'", filename);
+		data.clear();
+		return data;
+	}
+	
+	convert_image(data, img, width, height);
+	
+	return data;
+}
+
+img_data_t SurfaceNode::read_dat(std::string filename) const
+{
+	img_data_t data;
 	std::ifstream stream(filename.c_str());
 
 	if (!stream.good()) {
 		PRINTB("WARNING: Can't open DAT file '%s'.", filename);
-		return NULL;
+		return data;
 	}
 
-	PolySet *p = new PolySet(3);
 	int lines = 0, columns = 0;
-	boost::unordered_map<std::pair<int,int>,double> data;
 	double min_val = 0;
 
 	typedef boost::tokenizer<boost::char_separator<char> > tokenizer;
@@ -140,11 +224,27 @@ Geometry *SurfaceNode::createGeometry() const
 			}
 			break;
   	}
-
 		lines++;
 	}
+	
+	return data;
+}
 
+Geometry *SurfaceNode::createGeometry() const
+{
+	img_data_t data = read_png_or_dat(filename);
+
+	PolySet *p = new PolySet(3);
 	p->setConvexity(convexity);
+	
+	int lines = 0;
+	int columns = 0;
+	double min_val = std::numeric_limits<double>::max();
+	for (img_data_t::iterator it = data.begin();it != data.end();it++) {
+		lines = std::max(lines, (*it).first.first + 1);
+		columns = std::max(columns, (*it).first.second + 1);
+		min_val = std::min((*it).second - 1, min_val);
+	}
 
 	double ox = center ? -(columns-1)/2.0 : 0;
 	double oy = center ? -(lines-1)/2.0 : 0;
@@ -227,8 +327,9 @@ std::string SurfaceNode::toString() const
 	std::stringstream stream;
 	fs::path path((std::string)this->filename);
 
-	stream << this->name() << "(file = " << this->filename << ", "
-		"center = " << (this->center ? "true" : "false")
+	stream << this->name() << "(file = " << this->filename
+		<< ", center = " << (this->center ? "true" : "false")
+		<< ", invert = " << (this->invert ? "true" : "false")
 #ifndef OPENSCAD_TESTING
 		// timestamp is needed for caching, but disturbs the test framework
 				 << ", " "timestamp = " << (fs::exists(path) ? fs::last_write_time(path) : 0)

@@ -62,7 +62,7 @@ endif()
 # Part 1. Pretty Printing
 
 message("running '__openscad_binpath__ --info' to generate sysinfo.txt")
-execute_process(COMMAND __wine__ __openscad_binpath__ --info OUTPUT_FILE sysinfo.txt)
+execute_process(COMMAND __openscad_binpath__ --info OUTPUT_FILE sysinfo.txt)
 
 if("${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}.${CMAKE_PATCH_VERSION}" VERSION_LESS 2.8.12)
   set(CTEST_CUSTOM_POST_TEST ${CTEST_CUSTOM_POST_TEST} "__cmake_current_binary_dir__/test_pretty_print")

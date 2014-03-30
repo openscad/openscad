@@ -51,8 +51,10 @@ def tryread(filename):
         data = f.read()
         f.close()
     except Exception as e:
-        print 'couldn\'t open ',filename
-        print type(e), e
+        debug( "couldn't open file: [" + filename + "]" )
+        debug( str(type(e))+str(e) )
+        if filename==None:
+            pass
     return data
 
 def trysave(filename, data):
@@ -461,13 +463,23 @@ def main():
     trysave(html_filename, html)
     print "report saved:\n", html_filename.replace(os.getcwd()+os.path.sep,'')
 
-    if upload:
-        page_url = create_page()
-        if upload_html(page_url, title='OpenSCAD test results', html=html):
-            share_url = page_url.partition('?')[0]
-            print 'html report uploaded at', share_url
-        else:
-            print 'could not upload html report'
+    failed_tests = [test for test in tests if not test.passed]
+    if upload and failed_tests:
+        build = os.getenv("TRAVIS_BUILD_NUMBER")
+        if build: filename = 'travis-' + build + '_report.html'
+        else: filename = html_basename
+        os.system('scp "%s" "%s:%s"' %
+                  (html_filename, 'openscad@files.openscad.org', 'www/tests/' + filename) )
+        share_url = 'http://files.openscad.org/tests/' + filename;
+        print 'html report uploaded:'
+        print share_url
+
+#        page_url = create_page()
+#        if upload_html(page_url, title='OpenSCAD test results', html=html):
+#            share_url = page_url.partition('?')[0]
+#            print 'html report uploaded at', share_url
+#        else:
+#            print 'could not upload html report'
 
     debug('test_pretty_print complete')
 

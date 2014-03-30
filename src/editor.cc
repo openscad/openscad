@@ -104,6 +104,11 @@ void Editor::zoomOut()
 
 void Editor::wheelEvent ( QWheelEvent * event )
 {
+	QSettings settings;
+	if (!Preferences::inst()->getValue("editor/ctrlmousewheelzoom").toBool()) {
+		return;
+		// see numerous bug reports on mailing list
+	}
 	if (event->modifiers() == Qt::ControlModifier) {
 		if (event->delta() > 0 )
 			zoomIn();
@@ -140,6 +145,12 @@ void Editor::highlightError(int error_pos)
 void Editor::unhighlightLastError()
 {
 	highlighter->unhighlightLastError();
+}
+
+void Editor::setHighlightScheme(const QString &name)
+{
+	highlighter->assignFormatsToTokens( name );
+	highlighter->rehighlight(); // slow on large files
 }
 
 Editor::~Editor()

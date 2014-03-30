@@ -13,6 +13,10 @@
 #
 # http://en.wikibooks.org/wiki/OpenSCAD_User_Manual
 
+!experimental {
+  message("If you're building a development binary, consider adding CONFIG+=experimental")
+}
+
 isEmpty(QT_VERSION) {
   error("Please use qmake for Qt 4 (probably qmake-qt4)")
 }
@@ -75,14 +79,6 @@ macx {
   APP_RESOURCES.files = OpenSCAD.sdef dsa_pub.pem icons/SCAD.icns
   QMAKE_BUNDLE_DATA += APP_RESOURCES
   LIBS += -framework Cocoa -framework ApplicationServices
-
-  # FIXME: Somehow, setting the deployment target to a lower version causes a
-  # seldom crash in debug mode (e.g. the minkowski2-test):
-  # frame #4: 0x00007fff8b7d5be5 libc++.1.dylib`std::runtime_error::~runtime_error() + 55
-  # frame #5: 0x0000000100150df5 OpenSCAD`CGAL::Uncertain_conversion_exception::~Uncertain_conversion_exception(this=0x0000000105044488) + 21 at Uncertain.h:78
-  # The reason for the crash appears to be linking with libgcc_s, 
-  # but it's unclear what's really going on
-  QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.6
 }
 else {
   TARGET = openscad
@@ -90,6 +86,7 @@ else {
 
 win* {
   RC_FILE = openscad_win32.rc
+  QTPLUGIN += qtaccessiblewidgets
 }
 
 CONFIG += qt
@@ -159,6 +156,11 @@ CONFIG += glib-2.0
 
 #Uncomment the following line to enable QCodeEdit
 #CONFIG += qcodeedit
+
+# Make experimental features available
+experimental {
+  DEFINES += ENABLE_EXPERIMENTAL
+}
 
 mdi {
   DEFINES += ENABLE_MDI

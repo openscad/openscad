@@ -52,7 +52,7 @@ AbstractNode *RotateExtrudeModule::instantiate(const Context *ctx, const ModuleI
 	RotateExtrudeNode *node = new RotateExtrudeNode(inst);
 
 	AssignmentList args;
-	args += Assignment("file", NULL), Assignment("layer", NULL), Assignment("origin", NULL), Assignment("scale", NULL);
+	args += Assignment("file"), Assignment("layer"), Assignment("origin"), Assignment("scale");
 
 	Context c(ctx);
 	c.setVariables(args, evalctx);
@@ -68,7 +68,7 @@ AbstractNode *RotateExtrudeModule::instantiate(const Context *ctx, const ModuleI
 	Value scale = c.lookup_variable("scale", true);
 
 	if (!file.isUndefined()) {
-		PRINT("DEPRECATED: Support for reading files in rotate_extrude will be removed in future releases. Use a child import() instead.");
+		printDeprecation("DEPRECATED: Support for reading files in rotate_extrude will be removed in future releases. Use a child import() instead.");
 		node->filename = lookup_file(file.toString(), inst->path(), c.documentPath());
 	}
 
