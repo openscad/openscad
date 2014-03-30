@@ -69,7 +69,16 @@ void exportFile(const class Geometry *root_geom, std::ostream &output, FileForma
 			}
 		}
 		else if (const Polygon2d *poly = dynamic_cast<const Polygon2d *>(root_geom)) {
-			export_dxf(*poly, output);
+			switch (format) {
+			case OPENSCAD_SVG:
+				export_svg(*poly, output);
+				break;
+			case OPENSCAD_DXF:
+				export_dxf(*poly, output);
+				break;
+			default:
+				assert(false && "Unsupported file format");
+			}
 		} else {
 			assert(false && "Not implemented");
 		}
@@ -257,7 +266,7 @@ void export_dxf(const Polygon2d &poly, std::ostream &output)
 				 << "ENTITIES\n";
 
 	BOOST_FOREACH(const Outline2d &o, poly.outlines()) {
-		for (int i=0;i<o.vertices.size();i++) {
+		for (unsigned int i=0;i<o.vertices.size();i++) {
 			const Vector2d &p1 = o.vertices[i];
 			const Vector2d &p2 = o.vertices[(i+1)%o.vertices.size()];
 			double x1 = p1[0];
@@ -295,6 +304,46 @@ void export_dxf(const Polygon2d &poly, std::ostream &output)
 
 	output << "  0\n"
 				 <<"EOF\n";
+
+	setlocale(LC_NUMERIC, "");      // Set default locale
+}
+
+void export_svg(const Polygon2d &poly, std::ostream &output)
+{
+	setlocale(LC_NUMERIC, "C"); // Ensure radix is . (not ,) in output
+	
+	BoundingBox bbox = poly.getBoundingBox();
+	int minx = floor(bbox.min().x());
+	int miny = floor(-bbox.max().y());
+	int maxx = ceil(bbox.max().x());
+	int maxy = ceil(-bbox.min().y());
+	
+	output
+		<< "<?xml version=\"1.0\" standalone=\"no\"?>\n"
+		<< "<!DOCTYPE svg PUBLIC \"-//W3C//DTD SVG 1.1//EN\" \"http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd\">\n"
+		<< "<svg width=\"" << (maxx - minx) << "\" height=\"" << (maxy - miny) << "\" viewBox=\"" << (minx - 1) << " " << (miny - 1) << " " << (maxx - minx + 2) << " " << (maxy - miny + 2) << "\" xmlns=\"http://www.w3.org/2000/svg\" version=\"1.1\">\n"
+		<< "<title>OpenSCAD Model</title>\n";
+
+	output << "<path d=\"\n";
+	BOOST_FOREACH(const Outline2d &o, poly.outlines()) {
+		if (o.vertices.empty()) {
+			continue;
+		}
+		
+		const Eigen::Vector2d& p0 = o.vertices[0];
+		output << "M " << p0.x() << "," << -p0.y();
+		for (unsigned int idx = 1;idx < o.vertices.size();idx++) {
+			const Eigen::Vector2d& p = o.vertices[idx];
+			output << " L " << p.x() << "," << -p.y();
+			if ((idx % 6) == 5) {
+				output << "\n";
+			}
+		}
+		output << " z\n";
+	}
+	output << "\" stroke=\"black\" fill=\"lightgray\" stroke-width=\"0.5\"/>";
+
+	output << "</svg>\n";	
 
 	setlocale(LC_NUMERIC, "");      // Set default locale
 }
