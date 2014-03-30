@@ -89,10 +89,6 @@ Follow the instructions for the platform you're compiling on below.
 * [Qt4 (4.4 - 4.8)](http://www.qt.nokia.com/)
 * [CGAL (3.6 - 4.1)](http://www.cgal.org/)
  * [GMP (5.x)](http://www.gmplib.org/)
-<<<<<<< HEAD
-=======
- * [cmake (2.8.5, required by CGAL and the test framework)](http://www.cmake.org/)
->>>>>>> 0d9b20dc143b2acca68496d2ce5e4fd02798289e
  * [MPFR (3.x)](http://www.mpfr.org/)
 * [cmake (2.8, required by CGAL and the test framework)](http://www.cmake.org/)
 * [boost (1.35 - 1.55)](http://www.boost.org/)

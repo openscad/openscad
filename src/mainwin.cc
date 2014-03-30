@@ -119,7 +119,7 @@ static char helptitle[] =
 #endif
 	"\nhttp://www.openscad.org\n\n";
 static char copyrighttext[] =
-	"Copyright (C) 2009-2013 The OpenSCAD Developers\n"
+	"Copyright (C) 2009-2014 The OpenSCAD Developers\n"
 	"\n"
 	"This program is free software; you can redistribute it and/or modify "
 	"it under the terms of the GNU General Public License as published by "
@@ -161,7 +161,9 @@ MainWindow::MainWindow(const QString &filename)
 	: root_inst("group"), tempFile(NULL), progresswidget(NULL)
 {
 	setupUi(this);
-	this->setAttribute(Qt::WA_DeleteOnClose);
+  // FIXME: We cannot do this since Context maintains a global stack which gets pushed/popped when
+  // mainwindows are created. To fix, we probably need a separate stack per window. kintel 20140309
+//	this->setAttribute(Qt::WA_DeleteOnClose);
 
 	if (!MainWindow::windows) MainWindow::windows = new QSet<MainWindow*>;
 	MainWindow::windows->insert(this);
@@ -473,6 +475,7 @@ MainWindow::~MainWindow()
 {
 	if (root_module) delete root_module;
 	if (root_node) delete root_node;
+	if (root_chain) delete root_chain;
 #ifdef ENABLE_CGAL
 	this->root_geom.reset();
 	delete this->cgalRenderer;
@@ -480,6 +483,7 @@ MainWindow::~MainWindow()
 #ifdef ENABLE_OPENCSG
 	delete this->opencsgRenderer;
 #endif
+	delete this->thrownTogetherRenderer;
 	MainWindow::windows->remove(this);
 }
 

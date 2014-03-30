@@ -104,6 +104,11 @@ void Editor::zoomOut()
 
 void Editor::wheelEvent ( QWheelEvent * event )
 {
+	QSettings settings;
+	if (!Preferences::inst()->getValue("editor/ctrlmousewheelzoom").toBool()) {
+		return;
+		// see numerous bug reports on mailing list
+	}
 	if (event->modifiers() == Qt::ControlModifier) {
 		if (event->delta() > 0 )
 			zoomIn();
