@@ -234,4 +234,11 @@ namespace ClipperUtils {
 		return toPolygon2d(polytree);
 	}
 
+	Polygon2d *applyOffset(const Polygon2d& poly, double offset, ClipperLib::JoinType joinType, double miter_limit, double arc_tolerance) {
+		ClipperLib::ClipperOffset co(miter_limit, arc_tolerance * CLIPPER_SCALE);
+		co.AddPaths(fromPolygon2d(poly), joinType, ClipperLib::etClosedPolygon);
+		ClipperLib::PolyTree result;
+		co.Execute(result, offset * CLIPPER_SCALE);
+		return toPolygon2d(result);
+	}
 };
