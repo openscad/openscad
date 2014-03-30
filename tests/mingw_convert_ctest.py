@@ -3,6 +3,8 @@
 #
 # Mingw_x_testfile - convert paths in CTestTestfile.cmake so they work 
 # under Windows(TM). 
+#
+# public domain, by Don Bright <hugh.m.bright@gmail.com>
 
 # Usage:
 # 
@@ -37,8 +39,7 @@
 import mingw_cross_info
 
 import sys,os,string
-#_debug=False
-_debug=True
+_debug=False
 _undo=False
 def debug(*args):
 	global _debug
@@ -91,7 +92,7 @@ winexamples=winbase+'/tests/../examples'
 if '--debug' in string.join(sys.argv): _debug=True
 if '--undo' in string.join(sys.argv): _undo=True
 
-if _debug:
+if True:
 	print thisfile_abspath
 	print 'linbase',linbase
 	print 'winbase',winbase
@@ -133,7 +134,7 @@ def processfile(infilename):
 	debug('outputname',outfilename)
 
 	for line in lines:
-		#debug('input:',line)
+		debug('input:',line)
 		
 		line=line.replace(linbuild,winbuild)
 		line=line.replace(lintct,wintct)
@@ -150,7 +151,7 @@ def processfile(infilename):
 		# Fixme - how do we escape spaces in cmake?
 		#line=line.replace('Program Files','Progra~1')
 	
-		#debug('output:',line)
+		debug('output:',line)
 
 		fout.write(line)
 
