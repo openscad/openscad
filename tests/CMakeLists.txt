@@ -554,6 +554,7 @@ set(CORE_SOURCES
   ../src/progress.cc 
   ../src/boost-utils.cc 
   ../src/PlatformUtils.cc 
+  ../src/lodepng.cpp
   ../src/${PLATFORMUTILS_SOURCE}
   ${FLEX_OpenSCADlexer_OUTPUTS}
   ${BISON_OpenSCADparser_OUTPUTS})
@@ -581,8 +582,7 @@ set(COMMON_SOURCES
   ../src/GeometryCache.cc 
   ../src/clipper-utils.cc 
   ../src/polyclipping/clipper.cpp
-  ../src/Tree.cc
-  ../src/lodepng.cpp)
+  ../src/Tree.cc)
 
 #
 # Offscreen OpenGL context source code

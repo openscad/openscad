@@ -1,6 +1,6 @@
 group() {
-	surface(file = "surface-simple.dat", center = true);
+	surface(file = "surface-simple.dat", center = true, invert = false);
 	multmatrix([[1, 0, 0, 2], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-		surface(file = "surface-simple2.dat", center = true);
+		surface(file = "surface-simple2.dat", center = true, invert = false);
 	}
 }
