@@ -1,3 +1,10 @@
+# Openscad Test Console
+#
+# Script to make it easier to pull up a command-line console or
+# running Ctest under Windows(TM)
+#
+# public domain, by Don Bright <hugh.m.bright@gmail.com>
+
 import os,sys
 
 thisfile_abspath=os.path.abspath(__file__)
@@ -21,9 +28,13 @@ print 'searching for ctest.exe'
 ctestpath=''
 for basedir in 'C:/Program Files','C:/Program Files (x86)':
         if os.path.isdir(basedir):
-		for root,dirs,files in os.walk(basedir):
-			if 'ctest.exe' in files:
-				ctestpath=os.path.join(root,'ctest.exe')
+		pflist = os.listdir(basedir)
+		for subdir in pflist:
+			if 'cmake' in subdir.lower():
+				for root,dirs,files in os.walk(subdir):
+					if 'ctest.exe' in files:
+						ctestpath=os.path.join(root,'ctest.exe')
+
 if not os.path.isfile(ctestpath):
         print 'error, cant find ctest.exe'
 else:
@@ -33,20 +44,12 @@ else:
 
 #cmd = 'start "OpenSCAD Test console" /wait /d c:\\temp cmd.exe'
 #cmd = 'start /d "'+starting_dir+'" cmd.exe "OpenSCAD Test Console"'
-cmd = 'start /d "'+starting_dir+'" "cmd.exe /k mingwcon.bat"'
+cmd = 'start /d "'+starting_dir+'" cmd.exe "/k mingwcon.bat"'
 print 'opening console: running ',cmd
 os.system( cmd )
 
 # figure out how to run convert script
 # dont use mingw64 in linbuild path?
-
-# run a batch file with greeting
-
-# auto find 'ctest' binary and add to path?
-# auto find 'python' binary and add to path?
-
-# info on running ctest
-# and link to doc/testing.txt and ctest website
-# 
 # figure out better windows prompt, can it be set?
+
 

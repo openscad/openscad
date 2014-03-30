@@ -89,7 +89,7 @@ def read_gitinfo():
         out = 'Git branch: ' + branch + ' from origin ' + origin + '\n'
         out += 'Git upstream: ' + upstream + '\n'
     except:
-        out = 'Problem running git'
+        out = 'Git branch: Unknown (could not run git)\n'
     return out
 
 def read_sysinfo(filename):
