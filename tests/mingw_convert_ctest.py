@@ -37,7 +37,8 @@
 import mingw_cross_info
 
 import sys,os,string
-_debug=False
+#_debug=False
+_debug=True
 _undo=False
 def debug(*args):
 	global _debug
@@ -132,8 +133,9 @@ def processfile(infilename):
 	debug('outputname',outfilename)
 
 	for line in lines:
-		debug('input:',line)
-
+		#debug('input:',line)
+		
+		line=line.replace(linbuild,winbuild)
 		line=line.replace(lintct,wintct)
 		line=line.replace(linpy,winpy)
 		line=line.replace(linosng,winosng)
@@ -148,7 +150,7 @@ def processfile(infilename):
 		# Fixme - how do we escape spaces in cmake?
 		#line=line.replace('Program Files','Progra~1')
 	
-		debug('output:',line)
+		#debug('output:',line)
 
 		fout.write(line)
 
@@ -159,6 +161,10 @@ def processfile(infilename):
 	open(infilename,'wb').write(open(outfilename,'rb').read())
 	print 'new version of',infilename,'written'
 
-processfile('CTestTestfile.cmake')
-processfile('CTestCustom.cmake')
+def run():
+	processfile('CTestTestfile.cmake')
+	processfile('CTestCustom.cmake')
+
+if __name__=='__main__':
+	run()
 

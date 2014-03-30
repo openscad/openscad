@@ -13,7 +13,7 @@
 #  -mingw32 Cross-compile for win32 using MXE
 #  -mingw64 Cross-compile for win64 using MXE
 #  -snapshot Build a snapshot binary (make e.g. experimental features available, build with commit info)
-#  -tests   Build package containing the regression tests
+#  -tests   Build additional package containing the regression tests
 #
 # If no version string or version date is given, todays date will be used (YYYY-MM-DD)
 # If only version date is given, it will be used also as version string.
@@ -100,6 +100,10 @@ fi
 
 export VERSIONDATE
 export VERSION
+
+if [ $FAKEMAKE ]; then
+  echo 'fake make on:' $FAKEMAKE
+fi
 
 echo "Checking pre-requisites..."
 
@@ -207,15 +211,17 @@ case $OS in
         ;;
 esac
 
+echo "Building GUI binary..."
+
 case $OS in
     UNIX_CROSS_WIN)
         # make main openscad.exe
         cd $DEPLOYDIR
-	if [ $FAKEMAKE ]; then
-		echo "notexe. debugging build process" > $TARGET/openscad.exe
-	else
-	        make $TARGET -j$NUMCPU
-	fi
+        if [ $FAKEMAKE ]; then
+            echo "notexe. debugging build process" > $TARGET/openscad.exe
+        else
+	          make $TARGET -j$NUMCPU
+        fi
         if [ ! -e $TARGET/openscad.exe ]; then
             echo "cant find $TARGET/openscad.exe. build failed. stopping."
             exit
@@ -228,6 +234,13 @@ case $OS in
             exit
         fi
         cd $OPENSCADDIR
+    ;;
+    LINUX)
+        if [ $FAKEMAKE ]; then
+            echo "notexe. debugging build process" > $TARGET/openscad
+        else
+	          make $TARGET -j$NUMCPU
+        fi
     ;;
     *)
         make -j$NUMCPU $TARGET
@@ -245,34 +258,35 @@ echo "Building test suite..."
 if [ $BUILD_TESTS ]; then
   case $OS in
     UNIX_CROSS_WIN)
-	TESTBUILD_MACHINE=x86_64-w64-mingw32
+        TESTBUILD_MACHINE=x86_64-w64-mingw32
         # dont use build-machine trilpe in TESTBINDIR because the 'mingw32'
         # will confuse people who are on 64 bit machines
-        TESTBINDIR=build-mingw$ARCH
-	export TESTBUILD_MACHINE
-	export TESTBINDIR
+        TESTBINDIR=tests-build
+        export TESTBUILD_MACHINE
+        export TESTBINDIR
         if [[ $ARCH == 32 ]]; then
-		TESTBUILD_MACHINE=i686-pc-mingw32
-	fi
-        cd $OPENSCADDIR
-	mkdir $TESTBINDIR
-	cd $TESTBINDIR
-	cmake ../tests/ -DCMAKE_TOOLCHAIN_FILE=../tests/CMingw-cross-env.cmake \
+            TESTBUILD_MACHINE=i686-pc-mingw32
+        fi
+        cd $DEPLOYDIR
+        mkdir $TESTBINDIR
+        cd $TESTBINDIR
+        cmake $OPENSCADDIR/tests/ \
+          -DCMAKE_TOOLCHAIN_FILE=../tests/CMingw-cross-env.cmake \
           -DMINGW_CROSS_ENV_DIR=$MXEDIR \
           -DMACHINE=$TESTBUILD_MACHINE
-	if [ $FAKEMAKE = "tests" ]; then
-		echo "notexe. debugging build process" > openscad_nogui.exe
-	else
-		make -j$NUMCPU
-	fi
-	if [ ! -e openscad_nogui.exe ]; then
-		echo 'test cross-build failed'
-		exit 1
-	fi
+        if [ $FAKEMAKE = "tests" ]; then
+            echo "notexe. debugging build process" > openscad_nogui.exe
+        else
+            make -j$NUMCPU
+        fi
+        if [ ! -e openscad_nogui.exe ]; then
+            echo 'test cross-build failed'
+            exit 1
+        fi
         cd $OPENSCADDIR
     ;;
     *)
-	echo 'test suite build not implemented for osx/linux'
+        echo 'test suite build not implemented for osx/linux'
     ;;
   esac
 fi # BUILD_TESTS
@@ -300,22 +314,22 @@ case $OS in
 esac
 
 if [ -n $EXAMPLESDIR ]; then
-  echo $EXAMPLESDIR
-  mkdir -p $EXAMPLESDIR
-  cp examples/* $EXAMPLESDIR
-  chmod -R 644 $EXAMPLESDIR/*
+    echo $EXAMPLESDIR
+    mkdir -p $EXAMPLESDIR
+    cp examples/* $EXAMPLESDIR
+    chmod -R 644 $EXAMPLESDIR/*
 fi
 if [ -n $LIBRARYDIR ]; then
-  echo $LIBRARYDIR
-  mkdir -p $LIBRARYDIR
-  # exclude the .git stuff from MCAD which is a git submodule.
-  # tar is a relatively portable way to do exclusion, without the
-  # risks of rm
-  rm -f libraries.tar
-  tar cf libraries.tar --exclude=.git* libraries
-  cd $LIBRARYDIR/.. && tar xf $OPENSCADDIR/libraries.tar && cd $OPENSCADDIR
-  rm -f libraries.tar
-  chmod -R u=rwx,go=r,+X $LIBRARYDIR/*
+    echo $LIBRARYDIR
+    mkdir -p $LIBRARYDIR
+    # exclude the .git stuff from MCAD which is a git submodule.
+    # tar is a relatively portable way to do exclusion, without the
+    # risks of rm
+    rm -f libraries.tar
+    tar cf libraries.tar --exclude=.git* libraries
+    cd $LIBRARYDIR/.. && tar xf $OPENSCADDIR/libraries.tar && cd $OPENSCADDIR
+    rm -f libraries.tar
+    chmod -R u=rwx,go=r,+X $LIBRARYDIR/*
 fi
 
 echo "Creating archive.."
@@ -412,9 +426,9 @@ esac
 
 
 
-echo "Creating regression tests package..."
 
 if [ $BUILD_TESTS ]; then
+  echo "Creating regression tests package..."
   case $OS in
     MACOSX)
         echo 'building regression test package on OSX not implemented'
@@ -433,38 +447,41 @@ if [ $BUILD_TESTS ]; then
         # as above, we use tar as a somewhat portable way to do 'exclude'
         # while copying.
         rm -f ./ostests.tar
-       	for subdir in tests testdata libraries examples $TESTBINDIR; do
+       	for subdir in tests testdata libraries examples; do
           tar prvf ./ostests.tar --exclude=.git* --exclude=*/mingw64/* --exclude=*/mingw32/* --exclude=*.cc.obj --exclude=*.a $subdir
         done
+        cd $DEPLOYDIR
+        tar prvf $OPENSCADDIR/ostests.tar --exclude=.git* --exclude=*/mingw* --exclude=*.cc.obj --exclude=*.a $TESTBINDIR
 
+        cd $DEPLOYDIR
         if [ -e ./OpenSCAD-Tests-$VERSION ]; then
           rm -rf ./OpenSCAD-Tests-$VERSION
         fi
         mkdir OpenSCAD-Tests-$VERSION
         cd OpenSCAD-Tests-$VERSION
-        tar pxf ../ostests.tar
-        cd ..
-        rm -f ostests.tar
+        tar pxf $OPENSCADDIR/ostests.tar
+        rm -f $OPENSCADDIR/ostests.tar
 
         # Now we have the basic files copied into our tree that will become
         # our .zip file. We also want to move some files around for easier
         # access for the user:
-        cd $OPENSCADDIR
+        cd $DEPLOYDIR
         cd ./OpenSCAD-Tests-$VERSION
         echo "Copying files for ease of use when running from cmdline"
         cp -v ./tests/OpenSCAD_Test_Console.py .
         cp -v ./tests/mingw_convert_ctest.py ./$TESTBINDIR
+	cp -v ./tests/mingwcon.bat ./$TESTBINDIR
 
         echo "Creating mingw_cross_info.py file"
-        cd $OPENSCADDIR
-        cd OpenSCAD-Tests-$VERSION
+        cd $DEPLOYDIR
+        cd ./OpenSCAD-Tests-$VERSION
         cd $TESTBINDIR
         if [ -e ./mingw_cross_info.py ]; then
           rm -f ./mingw_cross_info.py
         fi
         echo "# created automatically by release-common.sh from within linux " >> mingw_cross_info.py
         echo "linux_abs_basedir='"$OPENSCADDIR"'" >> mingw_cross_info.py
-        echo "linux_abs_builddir='"$OPENSCADDIR/$TESTBINDIR"'" >> mingw_cross_info.py
+        echo "linux_abs_builddir='"$DEPLOYDIR/$TESTBINDIR"'" >> mingw_cross_info.py
         echo "bindir='"$TESTBINDIR"'" >> mingw_cross_info.py
         # fixme .. parse CTestTestfiles to find linux+convert python strings
         # or have CMake itself dump them during it's cross build cmake call
@@ -479,8 +496,8 @@ if [ $BUILD_TESTS ]; then
         # By default, we strip that. In most cases we wont need it if
         # the files are too big it will drive away potential users.
         echo "stripping .exe binaries"
-        cd $OPENSCADDIR
-        cd OpenSCAD-Tests-$VERSION
+        cd $DEPLOYDIR
+        cd ./OpenSCAD-Tests-$VERSION
         cd $TESTBINDIR
         if [ "`command -v $TESTBUILD_MACHINE'-strip' `" ]; then
             for exefile in *exe; do
@@ -492,7 +509,7 @@ if [ $BUILD_TESTS ]; then
         fi
 
         # Build the actual .zip archive based on the file tree we've built above
-        cd $OPENSCADDIR
+        cd $DEPLOYDIR
         ZIPFILE=OpenSCAD-Tests-$VERSION-x86-$ARCH.zip
         echo "Creating binary zip package for Tests:" $ZIPFILE
         rm -f ./$ZIPFILE
@@ -510,4 +527,7 @@ if [ $BUILD_TESTS ]; then
         echo 'building regression test package on linux not implemented'
         ;;
   esac
+else
+  echo "Not building regression tests package"
 fi # BUILD_TESTS
+
