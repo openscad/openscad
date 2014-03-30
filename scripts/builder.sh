@@ -175,6 +175,7 @@ build_win32()
 	./scripts/mingw-x-build-dependencies.sh
 	if [ $DOSNAPSHOT ] ; then
 		./scripts/release-common.sh snapshot mingw32
+		./scripts/release-common.sh mingw32 tests
 	else
 		echo "this script cant yet build releases, only snapshots"
 		exit 1
@@ -196,6 +197,7 @@ build_win64()
 	./scripts/mingw-x-build-dependencies.sh 64
 	if [ $DOSNAPSHOT ] ; then
 		./scripts/release-common.sh snapshot mingw64
+		./scripts/release-common.sh mingw64 tests
 	else
 		echo "this script cant yet build releases, only snapshots"
 		exit 1
@@ -254,39 +256,53 @@ upload_win32()
 {
 	SUMMARY1="Windows x86-32 Snapshot Installer"
 	SUMMARY2="Windows x86-32 Snapshot Zipfile"
+	SUMMARY3="Windows x86-32 Snapshot Tests"
 	DATECODE=`date +"%Y.%m.%d"`
 	BASEDIR=./mingw32/
 	WIN32_PACKAGEFILE1=OpenSCAD-$DATECODE-x86-32-Installer.exe
 	WIN32_PACKAGEFILE2=OpenSCAD-$DATECODE-x86-32.zip
+	WIN32_PACKAGEFILE3=OpenSCAD-Tests-$DATECODE-x86-32.zip
 	upload_win_common "$SUMMARY1" $USERNAME $BASEDIR/$WIN32_PACKAGEFILE1
 	upload_win_common "$SUMMARY2" $USERNAME $BASEDIR/$WIN32_PACKAGEFILE2
+	upload_win_common "$SUMMARY3" $USERNAME $BASEDIR/$WIN32_PACKAGEFILE3
 	export WIN32_PACKAGEFILE1
 	export WIN32_PACKAGEFILE2
+	export WIN32_PACKAGEFILE3
 	WIN32_PACKAGEFILE1_SIZE=`ls -sh $BASEDIR/$WIN32_PACKAGEFILE1 | awk ' {print $1} ';`
 	WIN32_PACKAGEFILE2_SIZE=`ls -sh $BASEDIR/$WIN32_PACKAGEFILE2 | awk ' {print $1} ';`
+	WIN32_PACKAGEFILE3_SIZE=`ls -sh $BASEDIR/$WIN32_PACKAGEFILE3 | awk ' {print $1} ';`
 	WIN32_PACKAGEFILE1_SIZE=`echo "$WIN32_PACKAGEFILE1_SIZE""B"`
 	WIN32_PACKAGEFILE2_SIZE=`echo "$WIN32_PACKAGEFILE2_SIZE""B"`
+	WIN32_PACKAGEFILE3_SIZE=`echo "$WIN32_PACKAGEFILE3_SIZE""B"`
 	export WIN32_PACKAGEFILE1_SIZE
 	export WIN32_PACKAGEFILE2_SIZE
+	export WIN32_PACKAGEFILE3_SIZE
 }
 
 upload_win64()
 {
 	SUMMARY1="Windows x86-64 Snapshot Zipfile"
 	SUMMARY2="Windows x86-64 Snapshot Installer"
+	SUMMARY3="Windows x86-64 Snapshot Tests"
 	BASEDIR=./mingw64/
 	WIN64_PACKAGEFILE1=OpenSCAD-$DATECODE-x86-64-Installer.exe
 	WIN64_PACKAGEFILE2=OpenSCAD-$DATECODE-x86-64.zip
+	WIN64_PACKAGEFILE3=OpenSCAD-Tests-$DATECODE-x86-64.zip
 	upload_win_common "$SUMMARY1" $USERNAME $BASEDIR/$WIN64_PACKAGEFILE1
 	upload_win_common "$SUMMARY2" $USERNAME $BASEDIR/$WIN64_PACKAGEFILE2
+	upload_win_common "$SUMMARY3" $USERNAME $BASEDIR/$WIN64_PACKAGEFILE3
 	export WIN64_PACKAGEFILE1
 	export WIN64_PACKAGEFILE2
+	export WIN64_PACKAGEFILE3
 	WIN64_PACKAGEFILE1_SIZE=`ls -sh $BASEDIR/$WIN64_PACKAGEFILE1 | awk ' {print $1} ';`
 	WIN64_PACKAGEFILE2_SIZE=`ls -sh $BASEDIR/$WIN64_PACKAGEFILE2 | awk ' {print $1} ';`
+	WIN64_PACKAGEFILE3_SIZE=`ls -sh $BASEDIR/$WIN64_PACKAGEFILE3 | awk ' {print $1} ';`
 	WIN64_PACKAGEFILE1_SIZE=`echo "$WIN64_PACKAGEFILE1_SIZE""B"`
 	WIN64_PACKAGEFILE2_SIZE=`echo "$WIN64_PACKAGEFILE2_SIZE""B"`
+	WIN64_PACKAGEFILE3_SIZE=`echo "$WIN64_PACKAGEFILE3_SIZE""B"`
 	export WIN64_PACKAGEFILE1_SIZE
 	export WIN64_PACKAGEFILE2_SIZE
+	export WIN64_PACKAGEFILE3_SIZE
 }
 
 read_username_from_user()
@@ -343,17 +359,23 @@ update_win_www_download_links()
 	rm win_snapshot_links.js
 	echo "fileinfo['WIN64_SNAPSHOT1_URL'] = '$BASEURL$WIN64_PACKAGEFILE1'" >> win_snapshot_links.js
 	echo "fileinfo['WIN64_SNAPSHOT2_URL'] = '$BASEURL$WIN64_PACKAGEFILE2'" >> win_snapshot_links.js
+	echo "fileinfo['WIN64_SNAPSHOT3_URL'] = '$BASEURL$WIN64_PACKAGEFILE3'" >> win_snapshot_links.js
 	echo "fileinfo['WIN64_SNAPSHOT1_NAME'] = 'OpenSCAD $DATECODE'" >> win_snapshot_links.js
 	echo "fileinfo['WIN64_SNAPSHOT2_NAME'] = 'OpenSCAD $DATECODE'" >> win_snapshot_links.js
+	echo "fileinfo['WIN64_SNAPSHOT3_NAME'] = 'OpenSCAD $DATECODE'" >> win_snapshot_links.js
 	echo "fileinfo['WIN64_SNAPSHOT1_SIZE'] = '$WIN64_PACKAGEFILE1_SIZE'" >> win_snapshot_links.js
 	echo "fileinfo['WIN64_SNAPSHOT2_SIZE'] = '$WIN64_PACKAGEFILE2_SIZE'" >> win_snapshot_links.js
+	echo "fileinfo['WIN64_SNAPSHOT3_SIZE'] = '$WIN64_PACKAGEFILE3_SIZE'" >> win_snapshot_links.js
 
 	echo "fileinfo['WIN32_SNAPSHOT1_URL'] = '$BASEURL$WIN32_PACKAGEFILE1'" >> win_snapshot_links.js
 	echo "fileinfo['WIN32_SNAPSHOT2_URL'] = '$BASEURL$WIN32_PACKAGEFILE2'" >> win_snapshot_links.js
+	echo "fileinfo['WIN32_SNAPSHOT3_URL'] = '$BASEURL$WIN32_PACKAGEFILE3'" >> win_snapshot_links.js
 	echo "fileinfo['WIN32_SNAPSHOT1_NAME'] = 'OpenSCAD $DATECODE'" >> win_snapshot_links.js
 	echo "fileinfo['WIN32_SNAPSHOT2_NAME'] = 'OpenSCAD $DATECODE'" >> win_snapshot_links.js
+	echo "fileinfo['WIN32_SNAPSHOT3_NAME'] = 'OpenSCAD $DATECODE'" >> win_snapshot_links.js
 	echo "fileinfo['WIN32_SNAPSHOT1_SIZE'] = '$WIN32_PACKAGEFILE1_SIZE'" >> win_snapshot_links.js
 	echo "fileinfo['WIN32_SNAPSHOT2_SIZE'] = '$WIN32_PACKAGEFILE2_SIZE'" >> win_snapshot_links.js
+	echo "fileinfo['WIN32_SNAPSHOT3_SIZE'] = '$WIN32_PACKAGEFILE3_SIZE'" >> win_snapshot_links.js
 	echo 'modified win_snapshot_links.js'
 
 	PAGER=cat git diff
