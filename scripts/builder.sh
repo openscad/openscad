@@ -344,6 +344,7 @@ read_password_from_user()
 update_win_www_download_links()
 {
 	cd $STARTPATH
+	rm -rf ./openscad.github.com
 	git clone git@github.com:openscad/openscad.github.com.git
 	cd openscad.github.com
 	cd inc
