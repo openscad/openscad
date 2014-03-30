@@ -325,13 +325,18 @@ def to_html(project_name, startdate, tests, enddate, sysinfo, sysid, makefiles):
 
     percent = '%.0f' % (100.0 * len(passed_tests) / len(tests)) if tests else 'n/a'
 
+    image_test_count = 0
+    text_test_count = 0
+
     templates = Templates()
     for test in report_tests:
         if test.type in ('txt', 'ast', 'csg', 'term', 'echo'):
+            text_test_count += 1
             templates.add('text_template', 'text_tests',
                           test_name=test.fullname,
                           test_log=test.fulltestlog)
         elif test.type == 'png':
+            image_test_count += 1
             # FIXME: Handle missing test.actualfile or test.expectedfile
             actual_img = png_encode64(test.actualfile,
                                   data=vars(test).get('actualfile_data'))
@@ -353,6 +358,11 @@ def to_html(project_name, startdate, tests, enddate, sysinfo, sysid, makefiles):
     text_tests = templates.get('text_tests')
     image_tests = templates.get('image_tests')
     makefiles_str = templates.get('makefiles')
+
+    if image_test_count==0:
+        image_tests = 'all passed'
+    if text_test_count==0:
+        text_tests = 'all passed'
 
     return templates.fill('html_template', style=Templates.style,
                           sysid=sysid, sysinfo=sysinfo,
