@@ -239,6 +239,7 @@
      <addaction name="designActionExportSTL"/>
      <addaction name="designActionExportOFF"/>
      <addaction name="designActionExportDXF"/>
+     <addaction name="designActionExportSVG"/>
      <addaction name="designActionExportCSG"/>
      <addaction name="separator"/>
      <addaction name="designActionExportImage"/>
@@ -862,6 +863,11 @@
   <action name="viewActionResetView">
    <property name="text">
     <string>Reset View</string>
+   </property>
+  </action>
+  <action name="designActionExportSVG">
+   <property name="text">
+    <string>Export as SVG...</string>
    </property>
   </action>
  </widget>
