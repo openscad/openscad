@@ -424,12 +424,7 @@ if(${CMAKE_CXX_COMPILER} MATCHES ".*clang.*" AND NOT ${CGAL_CXX_FLAGS_INIT} STRE
 	string(REPLACE "--param=ssp-buffer-size=4" "" CGAL_CXX_FLAGS_INIT ${CGAL_CXX_FLAGS_INIT})
 endif()
 
-if (NOT $ENV{OPENSCAD_LIBRARIES} STREQUAL "")
-  # Force pkg-config to look _only_ in the local library folder
-  # in case OPENSCAD_LIBRARIES is set.
-  set(ENV{PKG_CONFIG_PATH} "$ENV{OPENSCAD_LIBRARIES}/lib/pkgconfig")
-  set(ENV{PKG_CONFIG_LIBDIR} "$ENV{OPENSCAD_LIBRARIES}/lib/pkgconfig")
-endif()
+# GLib2
 
 find_package(GLIB2 2.2.0 REQUIRED)
 add_definitions(${GLIB2_DEFINITIONS})
@@ -438,9 +433,8 @@ inclusion(GLIB2_DIR GLIB2_INCLUDE_DIRS)
 # Imagemagick
 
 if (SKIP_IMAGEMAGICK)
-  if (NOT MINGW_CROSS_ENV_DIR)
-    set(ImageMagick_convert_EXECUTABLE "echo")
-  endif()
+  # cross-building depends on this
+  set(ImageMagick_convert_EXECUTABLE "/bin/echo")
 else()
   find_package(ImageMagick COMPONENTS convert)
   if (ImageMagick_convert_FOUND)
@@ -789,16 +783,12 @@ function(add_cmdline_test TESTCMD_BASENAME)
       set(CONFARG CONFIGURATIONS)
       set(CONFVAL ${FOUNDCONFIGS})
 
-      if (MINGW_CROSS_ENV_DIR)
-        set( MINGW_CROSS_ARG "--mingw-cross-env" )
-      endif()
-
       # The python script cannot extract the testname when given extra parameters
       if (TESTCMD_ARGS)
         set(FILENAME_OPTION -f ${FILE_BASENAME})
       endif()
 
-      add_test(NAME ${TEST_FULLNAME} ${CONFARG} ${CONFVAL} COMMAND ${PYTHON_EXECUTABLE} ${tests_SOURCE_DIR}/test_cmdline_tool.py ${MINGW_CROSS_ARG} --comparator=${COMPARATOR} -c ${ImageMagick_convert_EXECUTABLE} -s ${TESTCMD_SUFFIX} ${EXTRA_OPTIONS} ${TESTNAME_OPTION} ${FILENAME_OPTION} ${TESTCMD_EXE} "${SCADFILE}" ${TESTCMD_ARGS})
+      add_test(NAME ${TEST_FULLNAME} ${CONFARG} ${CONFVAL} COMMAND ${PYTHON_EXECUTABLE} ${tests_SOURCE_DIR}/test_cmdline_tool.py --comparator=${COMPARATOR} -c ${ImageMagick_convert_EXECUTABLE} -s ${TESTCMD_SUFFIX} ${EXTRA_OPTIONS} ${TESTNAME_OPTION} ${FILENAME_OPTION} ${TESTCMD_EXE} "${SCADFILE}" ${TESTCMD_ARGS})
       set_property(TEST ${TEST_FULLNAME} PROPERTY ENVIRONMENT "${CTEST_ENVIRONMENT}")
     endif()
   endforeach()
@@ -960,10 +950,10 @@ file(TO_NATIVE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/test_pretty_print.py PYSRC)
 set_target_properties(test_pretty_print PROPERTIES COMPILE_FLAGS
   "-DPYBIN=${PYTHON_EXECUTABLE} -DPYSRC=${PYSRC} -DBUILDDIR=--builddir=${CMAKE_CURRENT_BINARY_DIR}"
 )
-if (MINGW_CROSS_ENV_DIR)
-  file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/test_pretty_print "wine test_pretty_print.exe")
-  execute_process(COMMAND chmod ugo+x ${CMAKE_CURRENT_BINARY_DIR}/test_pretty_print)
-endif()
+#if (MINGW_CROSS_ENV_DIR)
+#  file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/test_pretty_print "test_pretty_print.exe")
+#  execute_process(COMMAND chmod ugo+x ${CMAKE_CURRENT_BINARY_DIR}/test_pretty_print)
+#endif()
 
 file(READ ${CMAKE_CURRENT_SOURCE_DIR}/CTestCustom.template TMP)
 string(REPLACE __cmake_current_binary_dir__ ${CMAKE_CURRENT_BINARY_DIR} TMP ${TMP})
@@ -974,18 +964,11 @@ string(REPLACE __cmake_system_name__ ${CMAKE_SYSTEM_NAME} TMP ${TMP})
 string(REPLACE __openscad_binpath__ ${OPENSCAD_BINPATH} TMP ${TMP})
 
 set(OPENSCAD_UPLOAD_TESTS $ENV{OPENSCAD_UPLOAD_TESTS})
+set(UPLOADARG "")
 if (OPENSCAD_UPLOAD_TESTS)
   set(UPLOADARG "--upload")
 endif()
-if (UPLOADARG)
-  string(REPLACE __openscad_upload_tests__ ${UPLOADARG} TMP ${TMP})
-endif()
-
-if (MINGW_CROSS_ENV_DIR)
-  string(REPLACE __wine__ wine TMP ${TMP})
-else()
-  string(REPLACE __wine__ " " TMP ${TMP})
-endif()
+string(REPLACE __openscad_upload_tests__ "${UPLOADARG}" TMP ${TMP})
 
 message(STATUS "creating CTestCustom.cmake")
 file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/CTestCustom.cmake ${TMP})

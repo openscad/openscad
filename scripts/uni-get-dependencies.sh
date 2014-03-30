@@ -6,7 +6,7 @@
 
 get_fedora_deps()
 {
- yum install qt-devel bison flex eigen3-devel python-paramiko \
+ yum install qt-devel bison flex eigen3-devel \
   boost-devel mpfr-devel gmp-devel glew-devel CGAL-devel gcc gcc-c++ pkgconfig \
   opencsg-devel git libXmu-devel curl imagemagick ImageMagick glib2-devel make \
   xorg-x11-server-Xvfb
@@ -35,7 +35,7 @@ get_freebsd_deps()
 get_netbsd_deps()
 {
  pkgin install bison boost cmake git bash eigen flex gmake gmp mpfr \
-  qt4 glew cgal opencsg modular-xorg python27 py27-paramiko curl \
+  qt4 glew cgal opencsg modular-xorg python27 curl \
   imagemagick ImageMagick glib2-devel
 }
 
@@ -60,7 +60,7 @@ get_debian_deps()
   libxmu-dev cmake bison flex git-core libboost-all-dev \
   libXi-dev libmpfr-dev libboost-dev libglew-dev \
   libeigen3-dev libcgal-dev libopencsg-dev libgmp3-dev libgmp-dev \
-  python-paramiko curl imagemagick libglib2.0-dev; do
+  curl imagemagick libglib2.0-dev; do
    apt-get -y install $pkg;
  done
 }
