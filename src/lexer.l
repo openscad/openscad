@@ -149,7 +149,12 @@ use[ \t\r\n>]*"<"	{ BEGIN(cond_use); }
 
 {D}+{E}? | 
 {D}*\.{D}+{E}? |
-{D}+\.{D}*{E}?          { parserlval.number = boost::lexical_cast<double>(yytext); return TOK_NUMBER; }
+{D}+\.{D}*{E}?          {
+                            try {
+                                parserlval.number = boost::lexical_cast<double>(yytext);
+                                return TOK_NUMBER;
+                            } catch (boost::bad_lexical_cast) {}
+                        }
 "$"?[a-zA-Z0-9_]+       { parserlval.text = strdup(yytext); return TOK_ID; }
 
 \"			{ BEGIN(cond_string); stringcontents.clear(); }

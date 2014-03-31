@@ -2154,6 +2154,7 @@ void MainWindow::consoleOutput(const std::string &msg, void *userdata)
 	MainWindow *thisp = static_cast<MainWindow*>(userdata);
 	QMetaObject::invokeMethod(thisp->console, "append", Qt::QueuedConnection,
 														Q_ARG(QString, QString::fromLocal8Bit(msg.c_str())));
+	if (thisp->procevents) QApplication::processEvents();
 }
 
 void MainWindow::setCurrentOutput()

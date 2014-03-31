@@ -6,6 +6,7 @@
 #include "Polygon2d.h"
 #include "module.h"
 #include "state.h"
+#include "offsetnode.h"
 #include "transformnode.h"
 #include "linearextrudenode.h"
 #include "rotateextrudenode.h"
@@ -391,6 +392,33 @@ Response GeometryEvaluator::visit(State &state, const AbstractNode &node)
 		shared_ptr<const class Geometry> geom;
 		if (!isSmartCached(node)) {
 			geom = applyToChildren(node, OPENSCAD_UNION).constptr();
+		}
+		else {
+			geom = smartCacheGet(node);
+		}
+		addToParent(state, node, geom);
+	}
+	return ContinueTraversal;
+}
+
+Response GeometryEvaluator::visit(State &state, const OffsetNode &node)
+{
+	if (state.isPrefix() && isSmartCached(node)) return PruneTraversal;
+	if (state.isPostfix()) {
+		shared_ptr<const Geometry> geom;
+		if (!isSmartCached(node)) {
+			const Geometry *geometry = applyToChildren2D(node, OPENSCAD_UNION);
+			if (geometry) {
+				const Polygon2d *polygon = dynamic_cast<const Polygon2d*>(geometry);
+				// ClipperLib documentation: The formula for the number of steps in a full
+				// circular arc is ... Pi / acos(1 - arc_tolerance / abs(delta))
+				double n = Calc::get_fragments_from_r(10, node.fn, node.fs, node.fa);
+				double arc_tolerance = abs(node.delta) * (1 - cos(M_PI / n));				
+				const Polygon2d *result = ClipperUtils::applyOffset(*polygon, node.delta, node.join_type, node.miter_limit, arc_tolerance);
+				assert(result);
+				geom.reset(result);
+				delete geometry;
+			}
 		}
 		else {
 			geom = smartCacheGet(node);
