@@ -51,8 +51,8 @@ init_variables()
 	#BRANCH_TO_BUILD=master
 	STARTPATH=$PWD
 	export STARTPATH
-	# kilob per second for scp upload
-	RATELIMIT=20
+	# kilobit (not kilobyte!) per second for scp upload
+	RATELIMIT=420
 	DOBUILD=1
 	DOUPLOAD=1
 	DRYRUN=
@@ -174,8 +174,7 @@ build_win32()
 	. ./scripts/setenv-mingw-xbuild.sh
 	./scripts/mingw-x-build-dependencies.sh
 	if [ $DOSNAPSHOT ] ; then
-		./scripts/release-common.sh snapshot mingw32
-		./scripts/release-common.sh mingw32 tests
+		./scripts/release-common.sh snapshot mingw32 tests
 	else
 		echo "this script cant yet build releases, only snapshots"
 		exit 1
@@ -196,8 +195,7 @@ build_win64()
 	. ./scripts/setenv-mingw-xbuild.sh 64
 	./scripts/mingw-x-build-dependencies.sh 64
 	if [ $DOSNAPSHOT ] ; then
-		./scripts/release-common.sh snapshot mingw64
-		./scripts/release-common.sh mingw64 tests
+		./scripts/release-common.sh snapshot mingw64 tests
 	else
 		echo "this script cant yet build releases, only snapshots"
 		exit 1
@@ -246,9 +244,9 @@ upload_win_common()
 	fi
 	if [ $DRYRUN ]; then
 		echo dry run, not uploading to files.openscad.org
-		echo scp -v -l $RATELIMIT $filename openscad@files.openscad.org:www/
+		echo scp -v -l $RATELIMIT $filename openscad@files.openscad.org:$remotepath
 	else
-		scp -v -l $RATELIMIT $filename openscad@files.openscad.org:www/
+		scp -v -l $RATELIMIT $filename openscad@files.openscad.org:$remotepath
 	fi
 }
 
@@ -344,6 +342,7 @@ read_password_from_user()
 update_win_www_download_links()
 {
 	cd $STARTPATH
+	rm -rf ./openscad.github.com
 	git clone git@github.com:openscad/openscad.github.com.git
 	cd openscad.github.com
 	cd inc

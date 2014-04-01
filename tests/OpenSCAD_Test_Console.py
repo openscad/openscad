@@ -45,7 +45,7 @@ else:
 #cmd = 'start "OpenSCAD Test console" /wait /d c:\\temp cmd.exe'
 #cmd = 'start /d "'+starting_dir+'" cmd.exe "OpenSCAD Test Console"'
 conbat=os.path.join(build_dir,'mingwcon.bat')
-cmd = 'start /d "'+starting_dir+'" "cmd.exe /k '+conbat+'"'
+cmd = 'start /d "'+starting_dir+'" cmd.exe "/k" "'+conbat+'"'
 print 'opening console: running ',cmd
 os.system( cmd )
 
