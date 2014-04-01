@@ -24,7 +24,7 @@ update_www_download_links()
     webdir=../openscad.github.com
     # FIXME: release vs. snapshot
     incfile=inc/mac_snapshot_links.js
-    BASEURL='http://files.openscad.org/'
+    BASEURL='http://files.openscad.org/snapshots'
     DATECODE=`date +"%Y.%m.%d"`
     
     if [ -f $webdir/$incfile ]; then
@@ -93,7 +93,7 @@ if [[ $VERSION == $VERSIONDATE ]]; then
 fi
 
 echo "Uploading..."
-scp OpenSCAD-$VERSION.dmg openscad@files.openscad.org:www
+scp OpenSCAD-$VERSION.dmg openscad@files.openscad.org:www/snapshots
 if [[ $? != 0 ]]; then
   exit 1
 fi
