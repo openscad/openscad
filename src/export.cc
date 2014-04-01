@@ -31,11 +31,21 @@
 #include "dxfdata.h"
 
 #include <boost/foreach.hpp>
+#include <boost/algorithm/string.hpp>
+
+#define QUOTE(x__) # x__
+#define QUOTED(x__) QUOTE(x__)
 
 #ifdef ENABLE_CGAL
 #include "CGAL_Nef_polyhedron.h"
 #include "cgal.h"
 #include "cgalutils.h"
+
+struct triangle {
+    std::string vs1;
+    std::string vs2;
+    std::string vs3;
+};
 
 void exportFile(const class Geometry *root_geom, std::ostream &output, FileFormat format)
 {
@@ -47,6 +57,9 @@ void exportFile(const class Geometry *root_geom, std::ostream &output, FileForma
 			break;
 		case OPENSCAD_OFF:
 			export_off(N, output);
+			break;
+		case OPENSCAD_AMF:
+			export_amf(N, output);
 			break;
 		case OPENSCAD_DXF:
 			assert(false && "Export Nef polyhedron as DXF not supported");
@@ -63,6 +76,9 @@ void exportFile(const class Geometry *root_geom, std::ostream &output, FileForma
 				break;
 			case OPENSCAD_OFF:
 				export_off(*ps, output);
+				break;
+			case OPENSCAD_AMF:
+				export_amf(*ps, output);
 				break;
 			default:
 				assert(false && "Unsupported file format");
@@ -346,4 +362,127 @@ void export_svg(const Polygon2d &poly, std::ostream &output)
 	output << "</svg>\n";	
 
 	setlocale(LC_NUMERIC, "");      // Set default locale
+}
+
+void export_amf(const class PolySet &ps, std::ostream &output)
+{
+	// FIXME: Implement this without creating a Nef polyhedron
+	CGAL_Nef_polyhedron *N = createNefPolyhedronFromGeometry(ps);
+	export_amf(N, output);
+	delete N;
+}
+
+/*!
+    Saves the current 3D CGAL Nef polyhedron as AMF to the given file.
+    The file must be open.
+ */
+void export_amf(const CGAL_Nef_polyhedron *root_N, std::ostream &output)
+{
+	CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
+	try {
+		CGAL_Polyhedron P;
+		root_N->p3->convert_to_Polyhedron(P);
+
+		typedef CGAL_Polyhedron::Vertex Vertex;
+		typedef CGAL_Polyhedron::Vertex_const_iterator VCI;
+		typedef CGAL_Polyhedron::Facet_const_iterator FCI;
+		typedef CGAL_Polyhedron::Halfedge_around_facet_const_circulator HFCC;
+
+		setlocale(LC_NUMERIC, "C"); // Ensure radix is . (not ,) in output
+
+		std::vector<std::string> vertices;
+		std::vector<triangle> triangles;
+
+		for (FCI fi = P.facets_begin(); fi != P.facets_end(); ++fi) {
+			HFCC hc = fi->facet_begin();
+			HFCC hc_end = hc;
+			Vertex v1, v2, v3;
+			v1 = *VCI((hc++)->vertex());
+			v3 = *VCI((hc++)->vertex());
+			do {
+				v2 = v3;
+				v3 = *VCI((hc++)->vertex());
+				double x1 = CGAL::to_double(v1.point().x());
+				double y1 = CGAL::to_double(v1.point().y());
+				double z1 = CGAL::to_double(v1.point().z());
+				double x2 = CGAL::to_double(v2.point().x());
+				double y2 = CGAL::to_double(v2.point().y());
+				double z2 = CGAL::to_double(v2.point().z());
+				double x3 = CGAL::to_double(v3.point().x());
+				double y3 = CGAL::to_double(v3.point().y());
+				double z3 = CGAL::to_double(v3.point().z());
+				std::stringstream stream;
+				stream << x1 << " " << y1 << " " << z1;
+				std::string vs1 = stream.str();
+				stream.str("");
+				stream << x2 << " " << y2 << " " << z2;
+				std::string vs2 = stream.str();
+				stream.str("");
+				stream << x3 << " " << y3 << " " << z3;
+				std::string vs3 = stream.str();
+				if (std::find(vertices.begin(), vertices.end(), vs1) == vertices.end())
+					vertices.push_back(vs1);
+				if (std::find(vertices.begin(), vertices.end(), vs2) == vertices.end())
+					vertices.push_back(vs2);
+				if (std::find(vertices.begin(), vertices.end(), vs3) == vertices.end())
+					vertices.push_back(vs3);
+
+				if (vs1 != vs2 && vs1 != vs3 && vs2 != vs3) {
+					// The above condition ensures that there are 3 distinct vertices, but
+					// they may be collinear. If they are, the unit normal is meaningless
+					// so the default value of "1 0 0" can be used. If the vertices are not
+					// collinear then the unit normal must be calculated from the
+					// components.
+					triangle tri = {vs1, vs2, vs3};
+					triangles.push_back(tri);
+				}
+			} while (hc != hc_end);
+		}
+
+		output << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n"
+			<< "<amf unit=\"millimeter\">\r\n"
+			<< " <metadata type=\"producer\">OpenSCAD " << QUOTED(OPENSCAD_VERSION)
+#ifdef OPENSCAD_COMMIT
+			<< " (git " << QUOTED(OPENSCAD_COMMIT) << ")"
+#endif
+			<< "</metadata>\r\n"
+			<< " <object id=\"0\">\r\n"
+			<< "  <mesh>\r\n";
+		output << "   <vertices>\r\n";
+		for (size_t i = 0; i < vertices.size(); i++) {
+			std::string s = vertices[i];
+			output << "    <vertex><coordinates>\r\n";
+			char* chrs = new char[s.length() + 1];
+			strcpy(chrs, s.c_str());
+			std::string coords = strtok(chrs, " ");
+			output << "     <x>" << coords << "</x>\r\n";
+			coords = strtok(NULL, " ");
+			output << "     <y>" << coords << "</y>\r\n";
+			coords = strtok(NULL, " ");
+			output << "     <z>" << coords << "</z>\r\n";
+			output << "    </coordinates></vertex>\r\n";
+		}
+		output << "   </vertices>\r\n";
+		output << "   <volume>\r\n";
+		for (size_t i = 0; i < triangles.size(); i++) {
+			triangle t = triangles[i];
+			output << "    <triangle>\r\n";
+			size_t index;
+			index = std::distance(vertices.begin(), std::find(vertices.begin(), vertices.end(), t.vs1));
+			output << "     <v1>" << index << "</v1>\r\n";
+			index = std::distance(vertices.begin(), std::find(vertices.begin(), vertices.end(), t.vs2));
+			output << "     <v2>" << index << "</v2>\r\n";
+			index = std::distance(vertices.begin(), std::find(vertices.begin(), vertices.end(), t.vs3));
+			output << "     <v3>" << index << "</v3>\r\n";
+			output << "    </triangle>\r\n";
+		}
+		output << "   </volume>\r\n";
+		output << "  </mesh>\r\n"
+			<< " </object>\r\n"
+			<< "</amf>\r\n";
+	} catch (CGAL::Assertion_exception e) {
+		PRINTB("CGAL error in CGAL_Nef_polyhedron3::convert_to_Polyhedron(): %s", e.what());
+	}
+	CGAL::set_error_behaviour(old_behaviour);
+	setlocale(LC_NUMERIC, ""); // Set default locale
 }

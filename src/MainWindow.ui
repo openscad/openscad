@@ -238,6 +238,7 @@
      </property>
      <addaction name="designActionExportSTL"/>
      <addaction name="designActionExportOFF"/>
+     <addaction name="designActionExportAMF"/>
      <addaction name="designActionExportDXF"/>
      <addaction name="designActionExportSVG"/>
      <addaction name="designActionExportCSG"/>
@@ -868,6 +869,11 @@
   <action name="designActionExportSVG">
    <property name="text">
     <string>Export as SVG...</string>
+   </property>
+  </action>
+  <action name="designActionExportAMF">
+   <property name="text">
+    <string>Export as AMF...</string>
    </property>
   </action>
  </widget>

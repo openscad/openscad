@@ -316,6 +316,7 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this->designActionDisplayCSGProducts, SIGNAL(triggered()), this, SLOT(actionDisplayCSGProducts()));
 	connect(this->designActionExportSTL, SIGNAL(triggered()), this, SLOT(actionExportSTL()));
 	connect(this->designActionExportOFF, SIGNAL(triggered()), this, SLOT(actionExportOFF()));
+	connect(this->designActionExportAMF, SIGNAL(triggered()), this, SLOT(actionExportAMF()));
 	connect(this->designActionExportDXF, SIGNAL(triggered()), this, SLOT(actionExportDXF()));
 	connect(this->designActionExportSVG, SIGNAL(triggered()), this, SLOT(actionExportSVG()));
 	connect(this->designActionExportCSG, SIGNAL(triggered()), this, SLOT(actionExportCSG()));
@@ -1626,9 +1627,9 @@ void MainWindow::actionCheckValidity() {
 }
 
 #ifdef ENABLE_CGAL
-void MainWindow::actionExportSTLorOFF(bool stl_mode)
+void MainWindow::actionExport(export_type_e export_type, const char *type_name, const char *suffix)
 #else
-void MainWindow::actionExportSTLorOFF(bool)
+void MainWindow::actionExport(export_type_e, QString, QString)
 #endif
 {
 	if (GuiLocker::isLocked()) return;
@@ -1655,27 +1656,38 @@ void MainWindow::actionExportSTLorOFF(bool)
 		return;
 	}
 
-	QString suffix = stl_mode ? ".stl" : ".off";
-	QString stl_filename = QFileDialog::getSaveFileName(this,
-			stl_mode ? "Export STL File" : "Export OFF File", 
-			this->fileName.isEmpty() ? "Untitled"+suffix : QFileInfo(this->fileName).baseName()+suffix,
-			stl_mode ? "STL Files (*.stl)" : "OFF Files (*.off)");
-	if (stl_filename.isEmpty()) {
-		PRINTB("No filename specified. %s export aborted.", (stl_mode ? "STL" : "OFF"));
+	QString title = QString("Export %1 File").arg(type_name);
+	QString filter = QString("%1 Files (*%2)").arg(type_name, suffix);
+	QString filename = this->fileName.isEmpty() ? QString("Untitled") + suffix : QFileInfo(this->fileName).baseName() + suffix;
+	QString export_filename = QFileDialog::getSaveFileName(this, title, filename, filter);
+	if (export_filename.isEmpty()) {
+		PRINTB("No filename specified. %s export aborted.", type_name);
 		clearCurrentOutput();
 		return;
 	}
 
-	std::ofstream fstream(stl_filename.toUtf8());
+	std::ofstream fstream(export_filename.toUtf8());
 	if (!fstream.is_open()) {
-		PRINTB("Can't open file \"%s\" for export", stl_filename.toLocal8Bit().constData());
+		PRINTB("Can't open file \"%s\" for export", export_filename.toLocal8Bit().constData());
 	}
 	else {
-		if (stl_mode) exportFile(this->root_geom.get(), fstream, OPENSCAD_STL);
-		else exportFile(this->root_geom.get(), fstream, OPENSCAD_OFF);
+		switch (export_type) {
+		case EXPORT_TYPE_STL:
+			exportFile(this->root_geom.get(), fstream, OPENSCAD_STL);
+			break;
+		case EXPORT_TYPE_OFF:
+			exportFile(this->root_geom.get(), fstream, OPENSCAD_OFF);
+			break;
+		case EXPORT_TYPE_AMF:
+			exportFile(this->root_geom.get(), fstream, OPENSCAD_AMF);
+			break;
+		default:
+			assert(false && "Unknown export type");
+			break;
+		}
 		fstream.close();
 
-		PRINTB("%s export finished.", (stl_mode ? "STL" : "OFF"));
+		PRINTB("%s export finished.", type_name);
 	}
 
 	clearCurrentOutput();
@@ -1684,12 +1696,17 @@ void MainWindow::actionExportSTLorOFF(bool)
 
 void MainWindow::actionExportSTL()
 {
-	actionExportSTLorOFF(true);
+	actionExport(EXPORT_TYPE_STL, "STL", ".stl");
 }
 
 void MainWindow::actionExportOFF()
 {
-	actionExportSTLorOFF(false);
+	actionExport(EXPORT_TYPE_OFF, "OFF", ".off");
+}
+
+void MainWindow::actionExportAMF()
+{
+	actionExport(EXPORT_TYPE_AMF, "AMF", ".amf");
 }
 
 QString MainWindow::get2dExportFilename(QString format, QString extension) {
