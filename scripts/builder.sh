@@ -174,8 +174,7 @@ build_win32()
 	. ./scripts/setenv-mingw-xbuild.sh
 	./scripts/mingw-x-build-dependencies.sh
 	if [ $DOSNAPSHOT ] ; then
-		./scripts/release-common.sh snapshot mingw32
-		./scripts/release-common.sh mingw32 tests
+		./scripts/release-common.sh snapshot mingw32 tests
 	else
 		echo "this script cant yet build releases, only snapshots"
 		exit 1
@@ -196,8 +195,7 @@ build_win64()
 	. ./scripts/setenv-mingw-xbuild.sh 64
 	./scripts/mingw-x-build-dependencies.sh 64
 	if [ $DOSNAPSHOT ] ; then
-		./scripts/release-common.sh snapshot mingw64
-		./scripts/release-common.sh mingw64 tests
+		./scripts/release-common.sh snapshot mingw64 tests
 	else
 		echo "this script cant yet build releases, only snapshots"
 		exit 1
