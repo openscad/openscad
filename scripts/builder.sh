@@ -51,8 +51,8 @@ init_variables()
 	#BRANCH_TO_BUILD=master
 	STARTPATH=$PWD
 	export STARTPATH
-	# kilob per second for scp upload
-	RATELIMIT=20
+	# kilobit (not kilobyte!) per second for scp upload
+	RATELIMIT=420
 	DOBUILD=1
 	DOUPLOAD=1
 	DRYRUN=
