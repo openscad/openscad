@@ -349,8 +349,8 @@
    </widget>
    <addaction name="menu_File"/>
    <addaction name="menu_Edit"/>
-   <addaction name="menu_View"/>
    <addaction name="menu_Design"/>
+   <addaction name="menu_View"/>
    <addaction name="menuHelp"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
