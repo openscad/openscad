@@ -25,6 +25,22 @@
 # .exe files
 #
 
+# convert end-of-line in given file from unix \n to dos/windows(TM) \r\n
+# see https://kb.iu.edu/data/acux.html
+lf2crlf()
+{
+	fname=$1
+	if [ "`command -v unix2dos`" ]; then
+		unix2dos $fname
+		return
+	fi
+	if [ "`command -v awk`"]; then
+		awk 'sub("$", "\r")' $fname > $fname".temp"
+		mv $fname".temp" $fname
+	fi
+	echo 'warning- cant change eol to cr eol'
+}
+
 printUsage()
 {
   echo "Usage: $0 -v <versionstring> -d <versiondate> -c -mingw32
@@ -493,9 +509,15 @@ if [ $BUILD_TESTS ]; then
         echo "linux_convert='/bin/echo'" >> mingw_cross_info.py
         echo "win_installdir='OpenSCAD_Tests_"$VERSIONDATE"'" >> mingw_cross_info.py
 
+	echo 'Converting linefeed to carriage-return+linefeed'
+	for textfile in `find . | grep txt$`; do lf2crlf $textfile; done
+	for textfile in `find . | grep py$`; do lf2crlf $textfile; done
+	for textfile in `find . | grep cmake$`; do lf2crlf $textfile; done
+	for textfile in `find . | grep bat$`; do lf2crlf $textfile; done
+
         # Test binaries can be hundreds of megabytes due to debugging info.
-        # By default, we strip that. In most cases we wont need it if
-        # the files are too big it will drive away potential users.
+        # By default, we strip that. In most cases we wont need it and it
+        # causes too many problems to have >100MB files.
         echo "stripping .exe binaries"
         cd $DEPLOYDIR
         cd ./OpenSCAD-Tests-$VERSION
