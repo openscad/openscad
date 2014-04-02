@@ -429,6 +429,10 @@ applications.path = $$PREFIX/share/applications
 applications.files = icons/openscad.desktop
 INSTALLS += applications
 
+mimexml.path = $$PREFIX/share/mime/packages
+mimexml.files = icons/openscad.xml
+INSTALLS += mimexml
+
 appdata.path = $$PREFIX/share/appdata
 appdata.files = openscad.appdata.xml
 INSTALLS += appdata
