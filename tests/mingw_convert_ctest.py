@@ -139,6 +139,9 @@ def processfile(infilename):
 
 	for line in lines:
 		debug('input:',line)
+
+		# special for CTestCustom.template + ctest bugs w arguments
+		line=line.replace('--builddir='+linbuild,'')
 		
 		line=line.replace(linbuild,winbuild)
 		line=line.replace(lintct,wintct)
