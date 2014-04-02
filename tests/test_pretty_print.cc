@@ -1,8 +1,12 @@
-/* Workaround for CTEST_CUSTOM_POST_TEST not allowing arguments
+/* Workaround for CTEST_CUSTOM_POST_TEST not allowing arguments in some
+ versions of cmake/ctest.
+
  compile with
  -DPYBIN=/usr/bin/python
  -DPYSRC=/home/janedoe/openscad/tests/test_pretty_print.py
  -DBUILDDIR=--builddir=/home/janedoe/openscad/tests/bin"
+
+not usable for cross-build situations.
 */
 
 #include <cstddef>
