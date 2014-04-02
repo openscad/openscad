@@ -1,4 +1,3 @@
-
 #
 # Regression test driver for cmd-line tools
 #
