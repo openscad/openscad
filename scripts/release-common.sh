@@ -119,6 +119,8 @@ export VERSION
 
 if [ $FAKEMAKE ]; then
   echo 'fake make on:' $FAKEMAKE
+else
+  FAKEMAKE=
 fi
 
 echo "Checking pre-requisites..."
@@ -236,7 +238,7 @@ case $OS in
         if [ $FAKEMAKE ]; then
             echo "notexe. debugging build process" > $TARGET/openscad.exe
         else
-	          make $TARGET -j$NUMCPU
+            make $TARGET -j$NUMCPU
         fi
         if [ ! -e $TARGET/openscad.exe ]; then
             echo "cant find $TARGET/openscad.exe. build failed. stopping."
@@ -255,7 +257,7 @@ case $OS in
         if [ $FAKEMAKE ]; then
             echo "notexe. debugging build process" > $TARGET/openscad
         else
-	          make $TARGET -j$NUMCPU
+            make $TARGET -j$NUMCPU
         fi
     ;;
     *)
@@ -290,7 +292,7 @@ if [ $BUILD_TESTS ]; then
           -DCMAKE_TOOLCHAIN_FILE=../tests/CMingw-cross-env.cmake \
           -DMINGW_CROSS_ENV_DIR=$MXEDIR \
           -DMACHINE=$TESTBUILD_MACHINE
-        if [ $FAKEMAKE = "tests" ]; then
+        if [ $FAKEMAKE ]; then
             echo "notexe. debugging build process" > openscad_nogui.exe
         else
             make -j$NUMCPU

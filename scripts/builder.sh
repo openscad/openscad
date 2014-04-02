@@ -123,30 +123,31 @@ get_openscad_source_code()
 {
 	if [ -d openscad ]; then
 		cd openscad
-		if [ ! $? ]; then
+		if [ $? -ne 0 ]; then
 			echo cd to 'openscad' directory failed
 			exit 1
 		fi
 		git checkout $BRANCH_TO_BUILD
-		if [ ! $? ]; then
+		if [ $? -ne 0 ]; then
 			echo git checkout $BRANCH_TO_BUILD failed
 			exit 1
 		fi
 		git fetch -a
-		if [ ! $? ]; then
+		if [ $? -ne 0 ]; then
 			echo git fetch -a openscad source code failed
 			exit 1
 		fi
 		git pull origin $BRANCH_TO_BUILD
-		if [ ! $? ]; then
+		if [ $? -ne 0 ]; then
 			echo git pull origin $BRANCH_TO_BUILD failed
 			exit 1
 		fi
 		git submodule update # MCAD
 		return
+	else
+		git clone http://github.com/openscad/openscad.git
 	fi
-	git clone http://github.com/openscad/openscad.git
-	if [ $? ]; then
+	if [ $? -eq 0 ]; then
 		echo clone of source code is ok
 	else
 		if [ $DOUPLOAD ]; then
@@ -160,12 +161,11 @@ get_openscad_source_code()
 	fi
 	cd openscad
 	git checkout $BRANCH_TO_BUILD
-	if [ ! $? ]; then
+	if [ $? -ne 0 ]; then
 		echo git checkout $BRANCH_TO_BUILD failed
 		exit 1
 	fi
 	git submodule update --init # MCAD
-#solar day
 }
 
 build_win32()
@@ -179,7 +179,7 @@ build_win32()
 		echo "this script cant yet build releases, only snapshots"
 		exit 1
 	fi
-	if [ "`echo $? | grep 0`" ]; then
+	if [ $? -eq 0 ]; then
 		echo build of win32 stage over
 	else
 		echo build of win32 failed. exiting
@@ -200,7 +200,7 @@ build_win64()
 		echo "this script cant yet build releases, only snapshots"
 		exit 1
 	fi
-	if [ "`echo $? | grep 0`" ]; then
+	if [ $? -eq 0 ]; then
 		echo build of win64 stage over
 	else
 		echo build of win64 failed. exiting
@@ -233,6 +233,7 @@ upload_win_common()
 		echo 'file "'$filename'" found'
 	else
 		echo 'file "'$filename'" not found'
+		exit 1
 	fi
 	opts=
 	opts="$opts -p openscad"
@@ -361,7 +362,7 @@ update_win_www_download_links()
 	echo "fileinfo['WIN64_SNAPSHOT3_URL'] = '$BASEURL$WIN64_PACKAGEFILE3'" >> win_snapshot_links.js
 	echo "fileinfo['WIN64_SNAPSHOT1_NAME'] = 'OpenSCAD $DATECODE'" >> win_snapshot_links.js
 	echo "fileinfo['WIN64_SNAPSHOT2_NAME'] = 'OpenSCAD $DATECODE'" >> win_snapshot_links.js
-	echo "fileinfo['WIN64_SNAPSHOT3_NAME'] = 'OpenSCAD $DATECODE'" >> win_snapshot_links.js
+	echo "fileinfo['WIN64_SNAPSHOT3_NAME'] = 'OpenSCAD Tests $DATECODE'" >> win_snapshot_links.js
 	echo "fileinfo['WIN64_SNAPSHOT1_SIZE'] = '$WIN64_PACKAGEFILE1_SIZE'" >> win_snapshot_links.js
 	echo "fileinfo['WIN64_SNAPSHOT2_SIZE'] = '$WIN64_PACKAGEFILE2_SIZE'" >> win_snapshot_links.js
 	echo "fileinfo['WIN64_SNAPSHOT3_SIZE'] = '$WIN64_PACKAGEFILE3_SIZE'" >> win_snapshot_links.js
@@ -371,7 +372,7 @@ update_win_www_download_links()
 	echo "fileinfo['WIN32_SNAPSHOT3_URL'] = '$BASEURL$WIN32_PACKAGEFILE3'" >> win_snapshot_links.js
 	echo "fileinfo['WIN32_SNAPSHOT1_NAME'] = 'OpenSCAD $DATECODE'" >> win_snapshot_links.js
 	echo "fileinfo['WIN32_SNAPSHOT2_NAME'] = 'OpenSCAD $DATECODE'" >> win_snapshot_links.js
-	echo "fileinfo['WIN32_SNAPSHOT3_NAME'] = 'OpenSCAD $DATECODE'" >> win_snapshot_links.js
+	echo "fileinfo['WIN32_SNAPSHOT3_NAME'] = 'OpenSCAD Tests $DATECODE'" >> win_snapshot_links.js
 	echo "fileinfo['WIN32_SNAPSHOT1_SIZE'] = '$WIN32_PACKAGEFILE1_SIZE'" >> win_snapshot_links.js
 	echo "fileinfo['WIN32_SNAPSHOT2_SIZE'] = '$WIN32_PACKAGEFILE2_SIZE'" >> win_snapshot_links.js
 	echo "fileinfo['WIN32_SNAPSHOT3_SIZE'] = '$WIN32_PACKAGEFILE3_SIZE'" >> win_snapshot_links.js
