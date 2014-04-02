@@ -11,11 +11,14 @@ not usable for cross-build situations.
 
 #include <cstddef>
 #include <unistd.h>
+#include <stdio.h>
 
 #define PREQUOTE(x) #x
 #define QUOTE(x) PREQUOTE(x)
 int main( int argc, char * argv[] )
 {
+	printf("test_pretty_print CTEST_CUSTOM_POST_TEST bug workaround\n");
+	printf("attempting to run: %s %s %s\n",QUOTE(PYBIN),QUOTE(PYSRC),QUOTE(BUILDDIR));
 	char *newargs[4];
 	newargs[0] = const_cast<char *>(QUOTE( PYBIN ));
 	newargs[1] = const_cast<char *>(QUOTE( PYSRC ));

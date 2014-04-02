@@ -70,14 +70,18 @@ linconv=mingw_cross_info.linux_convert #'/usr/bin/convert'
 list64=[]
 list32=[]
 imbase=''
+winconv=''
 for basedir in 'C:/Program Files','C:/Program Files (x86)':
 	if os.path.isdir(basedir):
 		pflist=os.listdir(basedir)
 		for subdir in pflist:
 			if 'ImageMagick' in subdir:
 				imbase = basedir+'/'+subdir
-winconv=imbase+'/convert.exe'
-if not os.path.isfile(winconv):
+				winconv = imbase+'/convert.exe'
+				if os.path.isfile(winconv):
+					break
+	if winconv != '': break
+if winconv=='':
 	print 'error, cant find convert.exe'
 
 linoslib='OPENSCADPATH='+linbase+'/tests/../libraries'
