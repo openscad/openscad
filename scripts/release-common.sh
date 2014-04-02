@@ -469,6 +469,7 @@ if [ $BUILD_TESTS ]; then
         cd ./OpenSCAD-Tests-$VERSION
         echo "Copying files for ease of use when running from cmdline"
         cp -v ./tests/OpenSCAD_Test_Console.py .
+        cp -v ./tests/WinReadme.txt .
         cp -v ./tests/mingw_convert_ctest.py ./$TESTBINDIR
 	cp -v ./tests/mingwcon.bat ./$TESTBINDIR
 
