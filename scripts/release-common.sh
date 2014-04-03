@@ -34,7 +34,8 @@ lf2crlf()
 		unix2dos $fname
 		return
 	fi
-	if [ "`command -v awk`"]; then
+	if [ "`command -v awk`" ]; then
+		echo using awk to convert end of line markers in $fname
 		awk 'sub("$", "\r")' $fname > $fname".temp"
 		mv $fname".temp" $fname
 	fi
