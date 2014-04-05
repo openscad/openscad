@@ -227,7 +227,7 @@
       <string>Open Recent</string>
      </property>
     </widget>
-    <widget class="QMenu" name="menuExamples">
+    <widget class="QMenu" name="fileActionExamples">
      <property name="title">
       <string>Examples</string>
      </property>
@@ -248,7 +248,7 @@
     <addaction name="fileActionNew"/>
     <addaction name="fileActionOpen"/>
     <addaction name="menuOpenRecent"/>
-    <addaction name="menuExamples"/>
+    <addaction name="fileActionExamples"/>
     <addaction name="fileActionReload"/>
     <addaction name="fileActionClose"/>
     <addaction name="separator"/>
@@ -371,6 +371,11 @@
     <string>Ctrl+O</string>
    </property>
   </action>
+   <action name="fileActionExamples">
+    <property name="text">
+    <string>&amp;Examples</string>
+   </property>
+   </action>
   <action name="fileActionSave">
    <property name="text">
     <string>&amp;Save</string>

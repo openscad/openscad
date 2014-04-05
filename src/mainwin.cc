@@ -236,6 +236,7 @@ MainWindow::MainWindow(const QString &filename)
 	// File menu
 	connect(this->fileActionNew, SIGNAL(triggered()), this, SLOT(actionNew()));
 	connect(this->fileActionOpen, SIGNAL(triggered()), this, SLOT(actionOpen()));
+	connect(this->fileActionExamples, SIGNAL(triggered()), this, SLOT(actionOpenExample()));
 	connect(this->fileActionSave, SIGNAL(triggered()), this, SLOT(actionSave()));
 	connect(this->fileActionSaveAs, SIGNAL(triggered()), this, SLOT(actionSaveAs()));
 	connect(this->fileActionReload, SIGNAL(triggered()), this, SLOT(actionReload()));
@@ -261,22 +262,6 @@ MainWindow::MainWindow(const QString &filename)
 	this->menuOpenRecent->addAction(this->fileActionClearRecent);
 	connect(this->fileActionClearRecent, SIGNAL(triggered()),
 					this, SLOT(clearRecentFiles()));
-	if (!qexamplesdir.isEmpty()) {
-		bool found_example = false;
-		QStringList examples = QDir(qexamplesdir).entryList(QStringList("*.scad"), 
-		QDir::Files | QDir::Readable, QDir::Name);
-		foreach (const QString &ex, examples) {
-			this->menuExamples->addAction(ex, this, SLOT(actionOpenExample()));
-			found_example = true;
-		}
-		if (!found_example) {
-			delete this->menuExamples;
-			this->menuExamples = NULL;
-		}
-	} else {
-		delete this->menuExamples;
-		this->menuExamples = NULL;
-	}
 
 	// Edit menu
 	connect(this->editActionUndo, SIGNAL(triggered()), editor, SLOT(undo()));
@@ -1035,10 +1020,24 @@ void MainWindow::updateRecentFileActions()
 
 void MainWindow::actionOpenExample()
 {
-	QAction *action = qobject_cast<QAction *>(sender());
-	if (action) {
-		openFile(qexamplesdir + QDir::separator() + action->text());
-	}
+	 QString new_filename = QFileDialog::getOpenFileName(this, "Open File", qexamplesdir,
+
+                                                                         "OpenSCAD Designs (*.scad *.csg)");
+#ifdef ENABLE_MDI
+        if (!new_filename.isEmpty()) {
+                new MainWindow(new_filename);
+        }
+#else
+        if (!new_filename.isEmpty()) {
+                if (!maybeSave())
+                        return;
+
+                setCurrentOutput();
+                openFile(new_filename);
+                clearCurrentOutput();
+        }
+#endif
+
 }
 
 void MainWindow::writeBackup(QFile *file)
