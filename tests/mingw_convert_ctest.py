@@ -165,11 +165,11 @@ def processfile(infilename):
 		line=line.replace(linexamples,winexamples)
 
 		line=line.replace(linbase,winbase)
-		line=line.replace('\\','/')
 
-		# Fixme - how do we escape spaces in cmake?
-		#line=line.replace('Program Files','Progra~1')
-	
+		line=line.replace('\\"','__ESCAPE_WIN_QUOTE_MECHANISM__')
+		line=line.replace('\\','/')
+		line=line.replace('__ESCAPE_WIN_QUOTE_MECHANISM__','\\"')
+
 		debug('output:',line)
 
 		fout.write(line)
