@@ -1,5 +1,5 @@
 
-module example003()
+module example_union()
 {
 	difference() {
 		union() {
@@ -16,5 +16,5 @@ module example003()
 	}
 }
 
-example003();
+example_union();
 

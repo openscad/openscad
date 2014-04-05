@@ -1,5 +1,5 @@
 
-module example004()
+module difference_cube()
 {
 	difference() {
 		cube(30, center = true);
@@ -7,5 +7,5 @@ module example004()
 	}
 }
 
-example004();
+difference_cube();
 
