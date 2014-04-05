@@ -1,5 +1,5 @@
 
-module example002()
+module example_intersection()
 {
 	intersection() {
 		difference() {
@@ -19,5 +19,5 @@ module example002()
 	}
 }
 
-example002();
+example_intersection();
 

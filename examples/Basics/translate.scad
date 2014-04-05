@@ -1,5 +1,5 @@
 
-module example005()
+module example_translate()
 {
 	translate([0, 0, -120]) {
 		difference() {
@@ -17,4 +17,4 @@ module example005()
 	}
 }
 
-example005();
+example_translate();
