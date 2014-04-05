@@ -36,8 +36,6 @@
 namespace fs = boost::filesystem;
 #include "boosty.h"
 
-std::vector<const Context*> Context::ctx_stack;
-
 // $children is not a config_variable. config_variables have dynamic scope, 
 // meaning they are passed down the call chain implicitly.
 // $children is simply misnamed and shouldn't have included the '$'.
@@ -46,18 +44,48 @@ static bool is_config_variable(const std::string &name) {
 }
 
 /*!
-	Initializes this context. Optionally initializes a context for an external library
+	Initializes this context. Optionally initializes a context for an 
+	external library.
+
+	Note for root/top Contexts (where parent=NULL): You must 
+	immediately call setStackAndPush() after construction for the 
+	Context to work properly.
 */
 Context::Context(const Context *parent)
 	: parent(parent)
 {
-	ctx_stack.push_back(this);
-	if (parent) document_path = parent->document_path;
+	this->ctx_stack = NULL;
+	if (parent) {
+		document_path = parent->document_path;
+		if (!parent->ctx_stack) {
+			PRINT("ERROR: parent context stack was null!");
+		} else {
+			this->setStackAndPush( parent->ctx_stack );
+		}
+	}
+}
+
+void Context::setStackAndPush( Context::Stack *stack )
+{
+	if (this->ctx_stack) {
+		PRINT("ERROR: Context stack not null! Cannot overwrite.");
+		return;
+	}
+	if (!stack) {
+		PRINT("ERROR: Cannot set Context Stack to null!");
+		return;
+	}
+	this->ctx_stack = stack;
+	this->ctx_stack->push_back(this);
 }
 
 Context::~Context()
 {
-	ctx_stack.pop_back();
+	if (!this->ctx_stack) {
+		PRINT("ERROR: Context stack was null!");
+		return;
+	}
+	this->ctx_stack->pop_back();
 }
 
 /*!
@@ -103,9 +131,13 @@ void Context::set_constant(const std::string &name, const Value &value)
 
 Value Context::lookup_variable(const std::string &name, bool silent) const
 {
+	if (!this->ctx_stack) {
+		PRINT("ERROR: Context had null stack in lookup_variable()!!");
+		return Value();
+	}
 	if (is_config_variable(name)) {
-		for (int i = ctx_stack.size()-1; i >= 0; i--) {
-			const ValueMap &confvars = ctx_stack[i]->config_variables;
+		for (int i = this->ctx_stack->size()-1; i >= 0; i--) {
+			const ValueMap &confvars = ctx_stack->at(i)->config_variables;
 			if (confvars.find(name) != confvars.end())
 				return confvars.find(name)->second;
 		}
@@ -150,33 +182,35 @@ std::string Context::getAbsolutePath(const std::string &filename) const
 }
 
 #ifdef DEBUG
-void Context::dump(const AbstractModule *mod, const ModuleInstantiation *inst)
+std::string Context::dump(const AbstractModule *mod, const ModuleInstantiation *inst)
 {
-	if (inst) 
-		PRINTB("ModuleContext %p (%p) for %s inst (%p)", this % this->parent % inst->name() % inst);
-	else 
-		PRINTB("Context: %p (%p)", this % this->parent);
-	PRINTB("  document path: %s", this->document_path);
+	std::stringstream s;
+	if (inst)
+		s << boost::format("ModuleContext %p (%p) for %s inst (%p)") % this % this->parent % inst->name() % inst;
+	else
+		s << boost::format("Context: %p (%p)") % this % this->parent;
+	s << boost::format("  document path: %s") % this->document_path;
 	if (mod) {
 		const Module *m = dynamic_cast<const Module*>(mod);
 		if (m) {
-			PRINT("  module args:");
+			s << "  module args:";
 			BOOST_FOREACH(const Assignment &arg, m->definition_arguments) {
-				PRINTB("    %s = %s", arg.first % variables[arg.first]);
+				s << boost::format("    %s = %s") % arg.first % variables[arg.first];
 			}
 		}
 	}
 	typedef std::pair<std::string, Value> ValueMapType;
-	PRINT("  vars:");
-  BOOST_FOREACH(const ValueMapType &v, constants) {
-	  PRINTB("    %s = %s", v.first % v.second);
-	}		
-  BOOST_FOREACH(const ValueMapType &v, variables) {
-	  PRINTB("    %s = %s", v.first % v.second);
-	}		
-  BOOST_FOREACH(const ValueMapType &v, config_variables) {
-	  PRINTB("    %s = %s", v.first % v.second);
-	}		
-
+	s << "  vars:";
+	BOOST_FOREACH(const ValueMapType &v, constants) {
+		s << boost::format("    %s = %s") % v.first % v.second;
+	}
+	BOOST_FOREACH(const ValueMapType &v, variables) {
+		s << boost::format("    %s = %s") % v.first % v.second;
+	}
+	BOOST_FOREACH(const ValueMapType &v, config_variables) {
+		s << boost::format("    %s = %s") % v.first % v.second;
+	}
+	return s.str();
 }
 #endif
+

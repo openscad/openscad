@@ -254,9 +254,11 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 
 	// Top context - this context only holds builtins
 	ModuleContext top_ctx;
+	Context::Stack top_ctx_stack;
+	top_ctx.setStackAndPush( &top_ctx_stack );
 	top_ctx.registerBuiltin();
-#if 0 && DEBUG
-	top_ctx.dump(NULL, NULL);
+#ifdef DEBUG
+	PRINTDB("Top ModuleContext:\n%s",top_ctx.dump(NULL, NULL));
 #endif
 	shared_ptr<Echostream> echostream;
 	if (echo_output_file)
@@ -672,7 +674,10 @@ int main(int argc, char **argv)
 	}
 
 	OpenSCAD::debug = "";
-	if (vm.count("debug")) OpenSCAD::debug = vm["debug"].as<string>();
+	if (vm.count("debug")) {
+		OpenSCAD::debug = vm["debug"].as<string>();
+		PRINTB("Debug on. --debug=%s",OpenSCAD::debug);
+	}
 	if (vm.count("help")) help(argv[0]);
 	if (vm.count("version")) version();
 	if (vm.count("info")) info();

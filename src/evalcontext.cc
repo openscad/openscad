@@ -32,33 +32,35 @@ ModuleInstantiation *EvalContext::getChild(size_t i) const
 }
 
 #ifdef DEBUG
-void EvalContext::dump(const AbstractModule *mod, const ModuleInstantiation *inst)
+std::string EvalContext::dump(const AbstractModule *mod, const ModuleInstantiation *inst)
 {
-	if (inst) 
-		PRINTB("EvalContext %p (%p) for %s inst (%p)", this % this->parent % inst->name() % inst);
-	else 
-		PRINTB("Context: %p (%p)", this % this->parent);
-	PRINTB("  document path: %s", this->document_path);
+	std::stringstream s;
+	if (inst)
+		s << boost::format("EvalContext %p (%p) for %s inst (%p)") % this % this->parent % inst->name() % inst;
+	else
+		s << boost::format("Context: %p (%p)") % this % this->parent;
+	s << boost::format("  document path: %s") % this->document_path;
 
-	PRINT("  eval args:");
+	s << boost::format("  eval args:");
 	for (size_t i=0;i<this->eval_arguments.size();i++) {
-		PRINTB("    %s = %s", this->eval_arguments[i].first % this->eval_arguments[i].second);
+		s << boost::format("    %s = %s") % this->eval_arguments[i].first % this->eval_arguments[i].second;
 	}
 	if (this->scope && this->scope->children.size() > 0) {
-		PRINT("    children:");
+		s << boost::format("    children:");
 		BOOST_FOREACH(const ModuleInstantiation *ch, this->scope->children) {
-			PRINTB("      %s", ch->name());
+			s << boost::format("      %s") % ch->name();
 		}
 	}
-		
 	if (mod) {
 		const Module *m = dynamic_cast<const Module*>(mod);
 		if (m) {
-			PRINT("  module args:");
+			s << boost::format("  module args:");
 			BOOST_FOREACH(const Assignment &arg, m->definition_arguments) {
-				PRINTB("    %s = %s", arg.first % variables[arg.first]);
+				s << boost::format("    %s = %s") % arg.first % variables[arg.first];
 			}
 		}
 	}
+	return s.str();
 }
 #endif
+
