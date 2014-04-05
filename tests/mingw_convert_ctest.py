@@ -4,7 +4,8 @@
 # Mingw_x_testfile - convert paths in CTestTestfile.cmake so they work 
 # under Windows(TM). 
 #
-# public domain, by Don Bright <hugh.m.bright@gmail.com>
+
+
 
 # Usage:
 # 
@@ -37,8 +38,8 @@
 # of the regression test package. it contains info regarding paths in
 # CTestTestfiles.cmake that we need to modify
 import mingw_cross_info
-
 import sys,os,string
+from _winreg import *
 _debug=False
 _undo=False
 def debug(*args):
@@ -60,6 +61,7 @@ lintct=linbase+'/tests/test_cmdline_tool.py'
 wintct=winbase+'/tests/test_cmdline_tool.py'
 
 linpy=mingw_cross_info.linux_python #'/usr/bin/python'
+# FIXME - find python
 winpy='c:/python27/python.exe'
 
 linosng=linbuild+'/openscad_nogui.exe'
@@ -71,6 +73,16 @@ list64=[]
 list32=[]
 imbase=''
 winconv=''
+try:
+	registry = ConnectRegistry(None,HKEY_LOCAL_MACHINE)
+	regkey = OpenKey(registry, r"SOFTWARE\ImageMagick\Current")
+	imbinpath = QueryValueEx(regkey, 'BinPath')[0]
+except Exception as e:
+	print "Can't find imagemagick using registry...",
+	print str(type(e))+str(e)
+	pass
+
+print 'Searching for ImageMagick in Program folders'
 for basedir in 'C:/Program Files','C:/Program Files (x86)':
 	if os.path.isdir(basedir):
 		pflist=os.listdir(basedir)
