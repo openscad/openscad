@@ -89,6 +89,7 @@ private:
 	void loadDesignSettings();
 	void saveBackup();
 	void writeBackup(class QFile *file);
+	void show_examples();
 
   class QMessageBox *openglbox;
 

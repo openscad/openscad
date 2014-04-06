@@ -265,28 +265,9 @@ MainWindow::MainWindow(const QString &filename)
 					this, SLOT(clearRecentFiles()));
 	//Examples
 	if (!qexamplesdir.isEmpty()) {
-                bool found_example = false;
-		QStringList categories;
-		categories << "Basics" << "Shapes" << "Extrusion" << "Advanced";
+       
+		show_examples();
 	
-		foreach (const QString &cat, categories){
-			QStringList examples = QDir(qexamplesdir + QDir::separator() + cat).entryList(QStringList("*.scad"),
-			QDir::Files | QDir::Readable, QDir::Name);
-			QMenu *menu = this->menuExamples->addMenu(cat);
-			
-			foreach(const QString &ex, examples) {
-				QAction *openAct = new QAction(ex, this);
-				connect(openAct, SIGNAL(triggered()), this, SLOT(actionOpenExample()));
-				menu->addAction(openAct);
-				QVariant categoryName = cat;
-				openAct->setData(categoryName);
-				found_example = true;
-			}
-		}
-		if (!found_example) {
-                        delete this->menuExamples;
-                        this->menuExamples = NULL;
-                }
         } else {
                 delete this->menuExamples;
                 this->menuExamples = NULL;
@@ -1037,6 +1018,33 @@ void MainWindow::updateRecentFileActions()
 	// If we had to prune the list, then save the cleaned list
 	if (originalNumRecentFiles != numRecentFiles)
 		settings.setValue("recentFileList", files);
+}
+
+void MainWindow::show_examples()
+{
+		bool found_example = false;
+		QStringList categories;
+                categories << "Basics" << "Shapes" << "Extrusion" << "Advanced";
+        
+                foreach (const QString &cat, categories){
+                        QStringList examples = QDir(qexamplesdir + QDir::separator() + cat).entryList(QStringList("*.scad"),
+                        QDir::Files | QDir::Readable, QDir::Name);
+                        QMenu *menu = this->menuExamples->addMenu(cat);
+                        
+                        foreach(const QString &ex, examples) {
+                                QAction *openAct = new QAction(ex, this);
+                                connect(openAct, SIGNAL(triggered()), this, SLOT(actionOpenExample()));
+                                menu->addAction(openAct);
+                                QVariant categoryName = cat;
+                                openAct->setData(categoryName);
+                                found_example = true;
+			}
+		}
+		 if (!found_example) {
+                        delete this->menuExamples;
+                        this->menuExamples = NULL;
+                }
+
 }
 
 void MainWindow::actionOpenExample()
