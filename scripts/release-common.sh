@@ -38,6 +38,7 @@ lf2crlf()
 		echo using awk to convert end of line markers in $fname
 		awk 'sub("$", "\r")' $fname > $fname".temp"
 		mv $fname".temp" $fname
+		return
 	fi
 	echo 'warning- cant change eol to cr eol'
 }
