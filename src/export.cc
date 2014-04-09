@@ -247,7 +247,8 @@ void export_off(const class PolySet &ps, std::ostream &output)
 void export_off(const CGAL_Nef_polyhedron *root_N, std::ostream &output)
 {
 	if (!root_N->p3->is_simple()) {
-		PRINT("Object isn't a valid 2-manifold! Modify your design.\n");
+		PRINT("Object isn't a valid 2-manifold! Modify your design.");
+		return;
 	}
 	CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
 	try {
@@ -275,6 +276,10 @@ void export_amf(const class PolySet &ps, std::ostream &output)
  */
 void export_amf(const CGAL_Nef_polyhedron *root_N, std::ostream &output)
 {
+	if (!root_N->p3->is_simple()) {
+		PRINT("Object isn't a valid 2-manifold! Modify your design.");
+		return;
+	}
 	CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
 	try {
 		CGAL_Polyhedron P;
