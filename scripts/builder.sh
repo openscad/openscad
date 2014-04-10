@@ -411,6 +411,7 @@ check_ssh_agent()
 
 main()
 {
+	init_variables $*
 	if [ $DOUPLOAD ]; then
 		check_ssh_agent
 	fi
