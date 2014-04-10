@@ -54,38 +54,22 @@ static bool is_config_variable(const std::string &name) {
 Context::Context(const Context *parent)
 	: parent(parent)
 {
-	this->ctx_stack = NULL;
 	if (parent) {
-		document_path = parent->document_path;
-		if (!parent->ctx_stack) {
-			PRINT("ERROR: parent context stack was null!");
-		} else {
-			this->setStackAndPush( parent->ctx_stack );
-		}
+		assert(parent->ctx_stack && "Parent context stack was null!");
+		this->ctx_stack = parent->ctx_stack;
+		this->document_path = parent->document_path;
 	}
-}
+	else {
+		this->ctx_stack = new Stack;
+	}
 
-void Context::setStackAndPush( Context::Stack *stack )
-{
-	if (this->ctx_stack) {
-		PRINT("ERROR: Context stack not null! Cannot overwrite.");
-		return;
-	}
-	if (!stack) {
-		PRINT("ERROR: Cannot set Context Stack to null!");
-		return;
-	}
-	this->ctx_stack = stack;
 	this->ctx_stack->push_back(this);
 }
 
 Context::~Context()
 {
-	if (!this->ctx_stack) {
-		PRINT("ERROR: Context stack was null!");
-		return;
-	}
 	this->ctx_stack->pop_back();
+	if (!parent) delete this->ctx_stack;
 }
 
 /*!

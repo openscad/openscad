@@ -254,8 +254,6 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 
 	// Top context - this context only holds builtins
 	ModuleContext top_ctx;
-	Context::Stack top_ctx_stack;
-	top_ctx.setStackAndPush( &top_ctx_stack );
 	top_ctx.registerBuiltin();
 #ifdef DEBUG
 	PRINTDB("Top ModuleContext:\n%s",top_ctx.dump(NULL, NULL));

@@ -173,7 +173,6 @@ MainWindow::MainWindow(const QString &filename)
 					this, SLOT(actionRenderDone(shared_ptr<const Geometry>)));
 #endif
 
-	top_ctx.setStackAndPush( &(this->top_ctx_stack) );
 	top_ctx.registerBuiltin();
 
 	this->openglbox = NULL;

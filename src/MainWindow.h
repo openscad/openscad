@@ -37,7 +37,6 @@ public:
 	std::string autoReloadId;
 	QTimer *waitAfterReloadTimer;
 
-	Context::Stack top_ctx_stack;
 	ModuleContext top_ctx;
 	FileModule *root_module;      // Result of parsing
 	ModuleInstantiation root_inst;    // Top level instance

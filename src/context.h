@@ -15,7 +15,6 @@ public:
 	virtual ~Context();
 
 	const Context *getParent() const { return this->parent; }
-	void setStackAndPush( Context::Stack *stack = NULL );
 	virtual Value evaluate_function(const std::string &name, const class EvalContext *evalctx) const;
 	virtual class AbstractNode *instantiate_module(const class ModuleInstantiation &inst, const EvalContext *evalctx) const;
 
