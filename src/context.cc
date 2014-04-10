@@ -45,11 +45,8 @@ static bool is_config_variable(const std::string &name) {
 
 /*!
 	Initializes this context. Optionally initializes a context for an 
-	external library.
-
-	Note for root/top Contexts (where parent=NULL): You must 
-	immediately call setStackAndPush() after construction for the 
-	Context to work properly.
+	external library. Note that if parent is null, a new stack will be
+	created, and all children will share the root parent's stack.
 */
 Context::Context(const Context *parent)
 	: parent(parent)
@@ -68,6 +65,7 @@ Context::Context(const Context *parent)
 
 Context::~Context()
 {
+	assert(this->ctx_stack && "Context stack was null at destruction!");
 	this->ctx_stack->pop_back();
 	if (!parent) delete this->ctx_stack;
 }
