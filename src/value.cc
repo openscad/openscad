@@ -321,37 +321,27 @@ bool Value::operator!=(const Value &v) const
   return !(*this == v);
 }
 
-class less_visitor : public boost::static_visitor<bool>
-{
-public:
-  template <typename T, typename U> bool operator()(const T &, const U &) const {
-    return false;
-  }
+#define DEFINE_VISITOR(name,op)\
+class name : public boost::static_visitor<bool> \
+{ \
+public:\
+  template <typename T, typename U> bool operator()(const T &, const U &) const {\
+    return false;\
+  }\
+\
+  bool operator()(const double &op1, const double &op2) const {\
+    return op1 op op2;\
+  }\
+\
+  bool operator()(const std::string &op1, const std::string &op2) const {\
+    return op1 op op2;\
+  }\
+}
 
-  bool operator()(const double &op1, const double &op2) const {
-    return op1 < op2;
-  }
-
-  bool operator()(const std::string &op1, const std::string &op2) const {
-    return op1 < op2;
-  }
-};
-
-class greater_visitor : public boost::static_visitor<bool>
-{
-public:
-  template <typename T, typename U> bool operator()(const T &, const U &) const {
-    return false;
-  }
-
-  bool operator()(const double &op1, const double &op2) const {
-    return op1 > op2;
-  }
-
-  bool operator()(const std::string &op1, const std::string &op2) const {
-    return op1 > op2;
-  }
-};
+DEFINE_VISITOR(less_visitor, <);
+DEFINE_VISITOR(greater_visitor, >);
+DEFINE_VISITOR(lessequal_visitor, <=);
+DEFINE_VISITOR(greaterequal_visitor, >=);
 
 bool Value::operator<(const Value &v) const
 {
@@ -360,7 +350,7 @@ bool Value::operator<(const Value &v) const
 
 bool Value::operator>=(const Value &v) const
 {
-  return !(*this < v);
+  return boost::apply_visitor(greaterequal_visitor(), this->value, v.value);
 }
 
 bool Value::operator>(const Value &v) const
@@ -370,7 +360,7 @@ bool Value::operator>(const Value &v) const
 
 bool Value::operator<=(const Value &v) const
 {
-  return !(*this > v);
+  return boost::apply_visitor(lessequal_visitor(), this->value, v.value);
 }
 
 class plus_visitor : public boost::static_visitor<Value>

@@ -50,7 +50,6 @@ init_variables()
 	BRANCH_TO_BUILD=unstable
 	#BRANCH_TO_BUILD=master
 	STARTPATH=$PWD
-	export STARTPATH
 	# kilobit (not kilobyte!) per second for scp upload
 	RATELIMIT=420
 	DOBUILD=1
@@ -84,6 +83,7 @@ init_variables()
 	if [ "`echo $* | grep dry`" ]; then
 		DRYRUN=1
 	fi
+	export STARTPATH
 	export BRANCH_TO_BUILD
 	export DOBUILD
 	export DOUPLOAD
@@ -97,6 +97,7 @@ init_variables()
 
 check_starting_path()
 {
+	cd $STARTPATH
 	if [ -e openscad.pro ]; then
 		echo 'please start from a clean directory outside of openscad'
 		exit
@@ -385,6 +386,7 @@ update_win_www_download_links()
 	else
 		echo dry run, not updating www links
 	fi
+	cd $STARTPATH
 }
 
 # FIXME: We might be running this locally and not need an ssh agent.
@@ -409,6 +411,7 @@ check_ssh_agent()
 
 main()
 {
+	init_variables $*
 	if [ $DOUPLOAD ]; then
 		check_ssh_agent
 	fi
