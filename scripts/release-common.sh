@@ -497,21 +497,6 @@ if [ $BUILD_TESTS ]; then
         cd $DEPLOYDIR
         cd ./OpenSCAD-Tests-$VERSION
         cd $TESTBINDIR
-        if [ -e ./mingw_cross_info.py ]; then
-          rm -f ./mingw_cross_info.py
-        fi
-        echo "# created automatically by release-common.sh from within linux " >> mingw_cross_info.py
-        echo "linux_abs_basedir='"$OPENSCADDIR"'" >> mingw_cross_info.py
-        echo "linux_abs_builddir='"$DEPLOYDIR/$TESTBINDIR"'" >> mingw_cross_info.py
-        echo "bindir='"$TESTBINDIR"'" >> mingw_cross_info.py
-        # fixme .. parse CTestTestfiles to find linux+convert python strings
-        # or have CMake itself dump them during it's cross build cmake call
-        echo "linux_python='"`which python`"'" >> mingw_cross_info.py
-        # note- this has to match the CMakeLists.txt line that sets the
-        # convert executable... and CMingw-cross-env.cmake's skip-imagemagick
-        # setting. what a kludge!
-        echo "linux_convert='/bin/echo'" >> mingw_cross_info.py
-        echo "win_installdir='OpenSCAD_Tests_"$VERSIONDATE"'" >> mingw_cross_info.py
 
 	echo 'Converting linefeed to carriage-return+linefeed'
 	for textfile in `find . | grep txt$`; do lf2crlf $textfile; done
