@@ -30,12 +30,8 @@
 lf2crlf()
 {
 	fname=$1
-	if [ "`command -v unix2dos`" ]; then
-		unix2dos $fname
-		return
-	fi
 	if [ "`command -v awk`" ]; then
-		echo using awk to convert end of line markers in $fname
+		# echo using awk to convert end of line markers in $fname
 		awk 'sub("$", "\r")' $fname > $fname".temp"
 		mv $fname".temp" $fname
 		return
@@ -278,23 +274,24 @@ echo "Building test suite..."
 if [ $BUILD_TESTS ]; then
   case $OS in
     UNIX_CROSS_WIN)
+        # Note - we avoid relative paths in here.
         TESTBUILD_MACHINE=x86_64-w64-mingw32
-        # dont use build-machine trilpe in TESTBINDIR because the 'mingw32'
-        # will confuse people who are on 64 bit machines
-        TESTBINDIR=tests-build
-        export TESTBUILD_MACHINE
-        export TESTBINDIR
         if [[ $ARCH == 32 ]]; then
             TESTBUILD_MACHINE=i686-pc-mingw32
         fi
-        cd $DEPLOYDIR
+        export TESTBUILD_MACHINE
+        # dont use build-machine triple in TESTBINDIR because the 'mingw32'
+        # at the end of the name will confuse people who are on 64 bit machines
+        TESTBINDIR=$DEPLOYDIR"test"
+        export TESTBINDIR
+
         mkdir $TESTBINDIR
         cd $TESTBINDIR
         cmake $OPENSCADDIR/tests/ \
-          -DCMAKE_TOOLCHAIN_FILE=../tests/CMingw-cross-env.cmake \
+          -DCMAKE_TOOLCHAIN_FILE=$OPENSCADDIR/tests/CMingw-cross-env.cmake \
           -DMINGW_CROSS_ENV_DIR=$MXEDIR \
           -DMACHINE=$TESTBUILD_MACHINE
-        if [ $FAKEMAKE ]; then
+        if [ $FAKEMAKETESTS ]; then
             echo "notexe. debugging build process" > openscad_nogui.exe
         else
             make -j$NUMCPU
@@ -310,6 +307,7 @@ if [ $BUILD_TESTS ]; then
     ;;
   esac
 fi # BUILD_TESTS
+
 
 echo "Creating directory structure..."
 
@@ -352,7 +350,7 @@ if [ -n $LIBRARYDIR ]; then
     chmod -R u=rwx,go=r,+X $LIBRARYDIR/*
 fi
 
-echo "Creating archive.."
+echo "Creating GUI archive.."
 
 case $OS in
     MACOSX)
@@ -451,10 +449,10 @@ if [ $BUILD_TESTS ]; then
   echo "Creating regression tests package..."
   case $OS in
     MACOSX)
-        echo 'building regression test package on OSX not implemented'
+        echo 'regression test package on OSX not implemented'
     ;;
     WIN)
-        echo 'building regression test package on Win not implemented'
+        echo 'regression test package under Win not implemented'
         ;;
     UNIX_CROSS_WIN)
         # Build a .zip file containing all the files we need to run a
@@ -464,14 +462,16 @@ if [ $BUILD_TESTS ]; then
         echo "Copying files..."
         cd $OPENSCADDIR
         # This copies a lot of unnecessary stuff but that's OK.
-        # as above, we use tar as a somewhat portable way to do 'exclude'
-        # while copying.
+        # as above, we use tar as a somewhat portable alternative to 
+        # 'cp', as we can easily do 'exclude'.
         rm -f ./ostests.tar
-       	for subdir in tests testdata libraries examples doc; do
-          tar prvf ./ostests.tar --exclude=.git* --exclude=*/mingw64/* --exclude=*/mingw32/* --exclude=*.cc.obj --exclude=*.a $subdir
+        TARCMD='tar prf ./ostests.tar --exclude=.git* --exclude=*/mingw64/* --exclude=*/mingw32/* --exclude=*.cc.obj --exclude=*.a'
+       	for subdir in testdata libraries examples doc $TESTBINDIR; do
+          echo $TARCMD $subdir
+          $TARCMD $subdir
         done
+        $TARCMD --exclude=*.exe --exclude=CMakeFiles/* tests
         cd $DEPLOYDIR
-        tar prvf $OPENSCADDIR/ostests.tar --exclude=.git* --exclude=*/mingw* --exclude=*.cc.obj --exclude=*.a $TESTBINDIR
 
         cd $DEPLOYDIR
         if [ -e ./OpenSCAD-Tests-$VERSION ]; then
@@ -488,12 +488,10 @@ if [ $BUILD_TESTS ]; then
         cd $DEPLOYDIR
         cd ./OpenSCAD-Tests-$VERSION
         echo "Copying files for ease of use when running from cmdline"
-        cp -v ./tests/OpenSCAD_Test_Console.py .
+        cp -v ./tests/CTest_Cross_Console.py OpenSCAD_Test_Console.py
         cp -v ./tests/WinReadme.txt .
-        cp -v ./tests/mingw_convert_ctest.py ./$TESTBINDIR
 	cp -v ./tests/mingwcon.bat ./$TESTBINDIR
 
-        echo "Creating mingw_cross_info.py file"
         cd $DEPLOYDIR
         cd ./OpenSCAD-Tests-$VERSION
         cd $TESTBINDIR
