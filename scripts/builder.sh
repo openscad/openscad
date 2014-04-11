@@ -59,6 +59,7 @@ init_variables()
 	DOLOOP=
 	#solar day
 	LOOPSLEEP=86400
+	DATECODE=`date +"%Y.%m.%d"`
 	if [ "`echo $* | grep loop`" ]; then
 		echo "----------------------------"
 		echo "loop mode activated! woopee!"
@@ -73,12 +74,10 @@ init_variables()
 	if [ "`echo $* | grep uploadonly`" ]; then
 		DOUPLOAD=1
 		DOBUILD=
-		DATECODE=`date +"%Y.%m.%d"`
 	fi
 	if [ "`echo $* | grep buildonly`" ]; then
 		DOUPLOAD=
 		DOBUILD=1
-		DATECODE=`date +"%Y.%m.%d"`
 	fi
 	if [ "`echo $* | grep dry`" ]; then
 		DRYRUN=1
@@ -93,6 +92,7 @@ init_variables()
 	export DOLOOP
 	export LOOPSLEEP
 	export RATELIMIT
+	export DATECODE
 }
 
 check_starting_path()
@@ -186,8 +186,6 @@ build_win32()
 		echo build of win32 failed. exiting
 		exit 1
 	fi
-	DATECODE=`date +"%Y.%m.%d"`
-	export DATECODE
 }
 
 build_win64()
@@ -207,8 +205,6 @@ build_win64()
 		echo build of win64 failed. exiting
 		exit 1
 	fi
-	DATECODE=`date +"%Y.%m.%d"`
-	export DATECODE
 }
 
 build_lin32()
@@ -221,8 +217,6 @@ build_lin32()
 		echo "this script cant yet build releases, only snapshots"
 		exit 1
 	fi
-	DATECODE=`date +"%Y.%m.%d"`
-	export DATECODE
 }
 
 upload_win_common()
@@ -257,7 +251,6 @@ upload_win32()
 	SUMMARY1="Windows x86-32 Snapshot Installer"
 	SUMMARY2="Windows x86-32 Snapshot Zipfile"
 	SUMMARY3="Windows x86-32 Snapshot Tests"
-	DATECODE=`date +"%Y.%m.%d"`
 	BASEDIR=./mingw32/
 	WIN32_PACKAGEFILE1=OpenSCAD-$DATECODE-x86-32-Installer.exe
 	WIN32_PACKAGEFILE2=OpenSCAD-$DATECODE-x86-32.zip
@@ -354,7 +347,6 @@ update_win_www_download_links()
 	if [ $DOSNAPSHOT ]; then
 		BASEURL='http://files.openscad.org/snapshots/'
 	fi
-	DATECODE=`date +"%Y.%m.%d"`
 
 	mv win_snapshot_links.js win_snapshot_links.js.backup
 	rm win_snapshot_links.js
@@ -432,9 +424,9 @@ main()
 }
 
 
-init_variables $*
 if [ $DOLOOP ]; then
 	while [ 1 ]; do
+		init_variables $*
 		main $*
 		echo ---------------------------------------------------
 		echo main loop finished. repeating in $LOOPSLEEP seconds
