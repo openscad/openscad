@@ -79,14 +79,12 @@
 
 import os,sys,string,time
 
-_undo=False
-_debug=False
 debugfile=None
 def debug(*args):
-	global _debug, debugfile
+	global debugfile
 	if debugfile==None:
 		debugfile=open('debuglog.txt','w')
-	if _debug:
+	if '--debug' in string.join(sys.argv):
 		s = ''
 		for arg in args: s += str(arg) + ' '
 		debugfile.write(s+'\n')
@@ -96,47 +94,50 @@ def debug(*args):
 def debug2(*args):
 	if '--debug2' in string.join(sys.argv): debug(args)
 
-def debug_startup():
-	print 'debugging is on. startup environment:'
-	print 'sys.executable:',sys.executable
-	print 'sys.version:',sys.version.replace('\n',' ')
-	print 'sys.argv:',sys.argv
-	print 'sys.path:',sys.path
-	print 'sys.platform:',sys.platform
-	print 'sys.meta_path:',sys.meta_path
-	print 'abs os.curdir:',os.path.abspath(os.curdir)
-	print 'sys.getdefaultencoding:',sys.getdefaultencoding()
-	print 'sys.getfilesystemencoding:',sys.getfilesystemencoding()
+def startup():
+	debug('debugging is on. startup environment:')
+	debug('sys.executable:',sys.executable)
+	debug('sys.version:',sys.version.replace('\n',' '))
+	debug('sys.argv:',sys.argv)
+	debug('sys.path:',sys.path)
+	debug('sys.platform:',sys.platform)
+	debug('sys.meta_path:',sys.meta_path)
+	debug('abs os.curdir:',os.path.abspath(os.curdir))
+	debug('sys.getdefaultencoding:',sys.getdefaultencoding())
+	debug('sys.getfilesystemencoding:',sys.getfilesystemencoding())
 	if os.environ.has_key('PYTHONPATH'):
-		print 'PYTHONPATH:',os.environ['PYTHONPATH']
+		debug('PYTHONPATH:',os.environ['PYTHONPATH'])
 	else:
-		print 'PYTHONPATH: '
+		debug('PYTHONPATH: ')
+	sys.path = [os.path.join(os.path.abspath(os.curdir),'testbin')]+sys.path
+	debug('sys.path after',sys.path)
+
 	
 class CTestPaths:
-        def __init__(self,name):
+	def __init__(self,name):
 		self.name=name
 		self.abs_cmake_srcdir=self.abs_cmake_bindir='unset'
 		self.bindir=self.openscad_exec=self.python_exec='unset'
 		self.convert_exec=self.ctest_exec='unset'
-        def dump(self):
-                s=''
+	def dump(self):
+		s=''
 		s+='CTestPaths dump:\nname:'+self.name+'\n'
-                s+='abs_cmake_srcdir:'+self.abs_cmake_srcdir+'\n'
-                s+='abs_cmake_bindir:'+self.abs_cmake_bindir+'\n'
-                s+='bindir:'+self.bindir+'\n'
-                s+='openscad_exec:'+self.openscad_exec+'\n'
-                s+='python_exec:'+self.python_exec+'\n'
-                s+='convert_exec:'+self.convert_exec+'\n'
-                s+='ctest_exec:'+self.ctest_exec+'\n'
-                return s
+		s+='abs_cmake_srcdir:'+self.abs_cmake_srcdir+'\n'
+		s+='abs_cmake_bindir:'+self.abs_cmake_bindir+'\n'
+		s+='bindir:'+self.bindir+'\n'
+		s+='openscad_exec:'+self.openscad_exec+'\n'
+		s+='python_exec:'+self.python_exec+'\n'
+		s+='convert_exec:'+self.convert_exec+'\n'
+		s+='ctest_exec:'+self.ctest_exec+'\n'
+		return s
 	def normalize(self):
-                self.abs_cmake_srcdir=os.path.realpath(self.abs_cmake_srcdir)
-                self.abs_cmake_bindir=os.path.realpath(self.abs_cmake_bindir)
-                self.bindir=os.path.realpath(self.bindir)
-                self.openscad_exec=os.path.realpath(self.openscad_exec)
-                self.python_exec=os.path.realpath(self.python_exec)
-                self.convert_exec=os.path.realpath(self.convert_exec)
-                self.ctest_exec=os.path.realpath(self.ctest_exec)
+		self.abs_cmake_srcdir=os.path.realpath(self.abs_cmake_srcdir)
+		self.abs_cmake_bindir=os.path.realpath(self.abs_cmake_bindir)
+		self.bindir=os.path.realpath(self.bindir)
+		self.openscad_exec=os.path.realpath(self.openscad_exec)
+		self.python_exec=os.path.realpath(self.python_exec)
+		self.convert_exec=os.path.realpath(self.convert_exec)
+		self.ctest_exec=os.path.realpath(self.ctest_exec)
 		
 def findfail(progname):
 	print 'cant find '+progname+'. exiting in ',
@@ -156,24 +157,27 @@ def windows__find_im_in_registry():
 	except Exception as e:
 		print "Can't find imagemagick using registry...",
 		print str(type(e))+str(e)
-	return imbinpath
+	convert_exec = os.path.join(imbinpath,'convert.exe')
+	if os.path.isfile(convert_exec): return convert_exec
+	return None
 
 def windows__find_im_in_pfiles():
 	print 'Searching for ImageMagick convert.exe in Program folders'
-	winconv = None
+	convert_exec = None
 	tmp = None
 	for basedir in 'C:/Program Files','C:/Program Files (x86)':
 		if os.path.isdir(basedir):
 			pflist=os.listdir(basedir)
 			for subdir in pflist:
+				debug2(subdir)
 				if 'ImageMagick' in subdir:
 					imbase = basedir+'/'+subdir
 					tmp = imbase+'/convert.exe'
 					if os.path.isfile(tmp):
-						winconv = tmp
+						convert_exec = tmp
 						break
-		if winconv != '': break
-	return winconv	
+		if convert_exec != '': break
+	return convert_exec
 
 def windows__find_ctest_in_pfiles():
 	print 'Searching for ImageMagick convert.exe in Program folders'
@@ -219,7 +223,7 @@ def process_ctestfile(infilename,buildpaths,testpaths):
 	bp=buildpaths
 	tp=testpaths
 	backup_filename = infilename+'.backup'
-	if _undo:
+	if '--undo' in string.join(sys.argv):
 		open(infilename,'wb').write(open(backup_filename,'rb').read())
 		print 'restored ',infilename,'from backup'
 		return
@@ -239,7 +243,7 @@ def process_ctestfile(infilename,buildpaths,testpaths):
 
 	for line in lines:
 		debug2('input:',line)
-
+		line=line.decode('utf-8')
 		# special for CTestCustom.template + ctest bugs w arguments
 		line=line.replace('--builddir='+tp.abs_cmake_bindir,'')
 		
@@ -256,7 +260,7 @@ def process_ctestfile(infilename,buildpaths,testpaths):
 		line=line.replace('__ESCAPE_WIN_QUOTE_MECHANISM__','\\"')
 
 		debug2('output:',line)
-
+		line=line.encode('utf-8')
 		fout.write(line)
 
 	debug2( 'backed up ',infilename, 'to', backup_filename )
@@ -264,7 +268,7 @@ def process_ctestfile(infilename,buildpaths,testpaths):
 	fin.close()
 	fout.close()
 	open(infilename,'wb').write(open(outfilename,'rb').read())
-	print infilename,'modified (old version saved to:',backup_filename,')'
+	print infilename,'modified \n(old version saved to:',backup_filename,')'
 
 def windows__open_console(bindir):
 	starting_dir=bindir
@@ -291,14 +295,10 @@ def open_console(testpaths):
 		windows__open_console(testpaths.abs_cmake_bindir)
 
 
-if '--debug' in string.join(sys.argv):
-	debug_startup()
-	_debug=True
-if '--undo' in string.join(sys.argv): _undo=True
+#sys.argv+=['--debug']
+startup()
 buildpaths = CTestPaths('buildpaths')
 testpaths = CTestPaths('testpaths')
-sys.path = [os.path.join(os.path.abspath(os.curdir),'testbin')]+sys.path
-debug('sys.path after',sys.path)
 import ctest_cross_info
 ctest_cross_info.set_buildpaths( buildpaths )
 if 'win' in sys.platform:

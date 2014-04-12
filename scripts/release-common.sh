@@ -33,7 +33,7 @@ lf2crlf()
 	fname=$1
 	if [ "`command -v awk`" ]; then
 		# echo using awk to convert end of line markers in $fname
-		awk 'sub("$", "\r")' $fname > $fname".temp"
+		awk 'sub("\n$", "\r\n")' $fname > $fname".temp"
 		mv $fname".temp" $fname
 		return
 	fi
@@ -469,7 +469,7 @@ if [ $BUILD_TESTS ]; then
         # 'cp', as we can easily do 'exclude'.
         TARFILE=$OPENSCADDIR/ostests.tar
         rm -f $TARFILE
-        TARXCLUDE='--exclude=.git* --exclude=*.a --exclude=CMakeCache*'
+        TARXCLUDE='--exclude=.git* --exclude=*.a --exclude=*.obj --exclude=CMakeCache*'
         TARCMD='tar prf '$TARFILE' '$TARXCLUDE
        	for subdir in testdata libraries examples doc; do
           #echo $TARCMD $subdir
@@ -502,7 +502,6 @@ if [ $BUILD_TESTS ]; then
 
         cd $DEPLOYDIR
         cd ./OpenSCAD-Tests-$VERSION
-        cd $TESTBINABSDIR
 
 	echo 'Converting linefeed to carriage-return+linefeed'
 	for textfile in `find . | grep txt$`; do lf2crlf $textfile; done
