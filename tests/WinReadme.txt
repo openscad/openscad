@@ -9,7 +9,7 @@ systems installed on your machine:
    CMake         http://www.cmake.org
    ImageMagick   http://www.imagemagick.org
 
-To run the test suite, first click on the "OpenSCAD_Test_Console.py" file to
+To run the test suite, first click on the "CTest_Cross_Console.py" file to
 run it. It should open a cmd.exe console in the tests-build folder. Type
 
    ctest
@@ -20,8 +20,6 @@ opened with a web browser, and shared with others as part of the
 debugging and testing process.
 
 Thanks for helping test OpenSCAD. 
-
-See doc/testing.txt in the OpenSCAD source code for more details.
 
 Known bugs:
 

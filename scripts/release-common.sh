@@ -20,10 +20,11 @@
 # If no make target is given, release will be used on Windows, none one Mac OS X
 #
 # The mingw cross compile depends on the MXE cross-build tools. Please
-# see the README.md file on how to install these dependencies. To debug
-# the mingw-cross build process, set env var FAKEMAKE=1 to fake-make the
-# .exe files
+# see the README.md file on how to install these dependencies.
 #
+# Setting the environment variables FAKEMAKE=1 and FAKEMAKETESTS=1 will
+# quickly build 'fake' .exe files which can help while debugging this script.
+
 
 # convert end-of-line in given file from unix \n to dos/windows(TM) \r\n
 # see https://kb.iu.edu/data/acux.html
@@ -282,11 +283,13 @@ if [ $BUILD_TESTS ]; then
         export TESTBUILD_MACHINE
         # dont use build-machine triple in TESTBINDIR because the 'mingw32'
         # at the end of the name will confuse people who are on 64 bit machines
-        TESTBINDIR=$DEPLOYDIR"test"
+        TESTBINDIR=testbin
+        TESTBINABSDIR=$DEPLOYDIR/$TESTBINDIR
         export TESTBINDIR
+        export TESTBINABSDIR
 
-        mkdir $TESTBINDIR
-        cd $TESTBINDIR
+        mkdir $TESTBINABSDIR
+        cd $TESTBINABSDIR
         cmake $OPENSCADDIR/tests/ \
           -DCMAKE_TOOLCHAIN_FILE=$OPENSCADDIR/tests/CMingw-cross-env.cmake \
           -DMINGW_CROSS_ENV_DIR=$MXEDIR \
@@ -464,14 +467,19 @@ if [ $BUILD_TESTS ]; then
         # This copies a lot of unnecessary stuff but that's OK.
         # as above, we use tar as a somewhat portable alternative to 
         # 'cp', as we can easily do 'exclude'.
-        rm -f ./ostests.tar
-        TARCMD='tar prf ./ostests.tar --exclude=.git* --exclude=*/mingw64/* --exclude=*/mingw32/* --exclude=*.cc.obj --exclude=*.a'
-       	for subdir in testdata libraries examples doc $TESTBINDIR; do
-          echo $TARCMD $subdir
+        TARFILE=$OPENSCADDIR/ostests.tar
+        rm -f $TARFILE
+        TARXCLUDE='--exclude=.git* --exclude=CMakeFiles/* --exclude=*.a --exclude=CMakeCache*'
+        TARCMD='tar prf '$TARFILE' '$TARXCLUDE
+       	for subdir in testdata libraries examples doc; do
+          #echo $TARCMD $subdir
           $TARCMD $subdir
         done
-        $TARCMD --exclude=*.exe --exclude=CMakeFiles/* tests
-        cd $DEPLOYDIR
+        #echo $TARCMD tests
+        $TARCMD tests
+        cd $TESTBINABSDIR/..
+        #echo $TARCMD $TESTBINDIR
+        $TARCMD $TESTBINDIR
 
         cd $DEPLOYDIR
         if [ -e ./OpenSCAD-Tests-$VERSION ]; then
@@ -480,21 +488,21 @@ if [ $BUILD_TESTS ]; then
         mkdir OpenSCAD-Tests-$VERSION
         cd OpenSCAD-Tests-$VERSION
         tar pxf $OPENSCADDIR/ostests.tar
-        rm -f $OPENSCADDIR/ostests.tar
+        #rm -f $OPENSCADDIR/ostests.tar
 
         # Now we have the basic files copied into our tree that will become
         # our .zip file. We also want to move some files around for easier
         # access for the user:
         cd $DEPLOYDIR
         cd ./OpenSCAD-Tests-$VERSION
-        echo "Copying files for ease of use when running from cmdline"
-        cp -v ./tests/CTest_Cross_Console.py OpenSCAD_Test_Console.py
+        #echo "Copying files for ease of use when running from cmdline"
+        cp -v ./tests/CTest_Cross_Console.py .
         cp -v ./tests/WinReadme.txt .
-	cp -v ./tests/mingwcon.bat ./$TESTBINDIR
+	cp -v ./tests/mingwcon.bat ./$TESTBINDIR/
 
         cd $DEPLOYDIR
         cd ./OpenSCAD-Tests-$VERSION
-        cd $TESTBINDIR
+        cd $TESTBINABSDIR
 
 	echo 'Converting linefeed to carriage-return+linefeed'
 	for textfile in `find . | grep txt$`; do lf2crlf $textfile; done
@@ -508,13 +516,13 @@ if [ $BUILD_TESTS ]; then
         echo "stripping .exe binaries"
         cd $DEPLOYDIR
         cd ./OpenSCAD-Tests-$VERSION
-        cd $TESTBINDIR
+        cd $TESTBINABSDIR
         if [ "`command -v $TESTBUILD_MACHINE'-strip' `" ]; then
             for exefile in *exe; do
-                ls -sh $exefile
-                echo $TESTBUILD_MACHINE'-strip' $exefile
+                BEFORESIZE=`ls -s $exefile`
                 $TESTBUILD_MACHINE'-strip' $exefile
-                ls -sh $exefile
+                AFTERSIZE=`ls -s $exefile`
+                echo $TESTBUILD_MACHINE'-strip' $BEFORESIZE '->' $AFTERSIZE
             done
         fi
 

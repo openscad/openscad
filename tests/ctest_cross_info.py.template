@@ -1,7 +1,7 @@
 # ctest_cross_info.py.template --> should be modified during CMake run
 # By CMingw-cross-env.cmake or CMakeLists.txt
 # __header__
-def set_cross_info_buildpaths(paths):
+def set_buildpaths(paths):
 	paths.abs_cmake_srcdir='__cmake_current_source_dir__'
 	paths.abs_cmake_bindir='__cmake_current_binary_dir__'
 	paths.bindir='__cmake_current_binary_dir__'

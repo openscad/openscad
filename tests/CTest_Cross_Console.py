@@ -129,7 +129,15 @@ class CTestPaths:
                 s+='convert_exec:'+self.convert_exec+'\n'
                 s+='ctest_exec:'+self.ctest_exec+'\n'
                 return s
-
+	def normalize(self):
+                self.abs_cmake_srcdir=os.path.realpath(self.abs_cmake_srcdir)
+                self.abs_cmake_bindir=os.path.realpath(self.abs_cmake_bindir)
+                self.bindir=os.path.realpath(self.bindir)
+                self.openscad_exec=os.path.realpath(self.openscad_exec)
+                self.python_exec=os.path.realpath(self.python_exec)
+                self.convert_exec=os.path.realpath(self.convert_exec)
+                self.ctest_exec=os.path.realpath(self.ctest_exec)
+		
 def findfail(progname):
 	print 'cant find '+progname+'. exiting in ',
 	for i in range(0,7):
@@ -183,10 +191,13 @@ def windows__find_ctest_in_pfiles():
 
 def windows__fillpaths(paths):
 	thisfile_abspath=os.path.abspath(__file__)
-	paths.abs_cmake_srcdir = os.path.dirname(os.path.dirname(thisfile_abspath))
-	paths.abs_cmake_bindir = base+'/'+buildpaths.bindir
+	thisfile_absdir=os.path.dirname(thisfile_abspath)
+	paths.abs_cmake_srcdir = os.path.join(thisfile_absdir,'tests')
+	paths.abs_cmake_bindir = os.path.join(thisfile_absdir,'testbin')
 	paths.bindir = ''
-	paths.tct = base+'/tests/test_cmdline_tool.py'
+	paths.tct = os.path.join(thisfile_abspath,'tests')
+	paths.tct = os.path.join(paths.tct,'test_cmdline_tool.py')
+	debug(paths.dump())
 	paths.convert_exec=windows__find_im_in_registry()
 	if paths.convert_exec==None:
 		paths.convert_exec=windows__find_im_in_pfiles()
@@ -195,13 +206,14 @@ def windows__fillpaths(paths):
 	paths.python_exec=sys.executable
 	if paths.python_exec=='' or paths.python_exec==None:
 		findfail('python2')
-	paths.openscad_exec=build_bindir+'/'+openscad_nogui.exe
+	paths.openscad_exec=os.path.join(paths.abs_cmake_bindir,'openscad_nogui.exe')
 	if not os.path.isfile(paths.openscad_exec):
-		findfail('openscad_nogui.exe')
+		findfail(paths.openscad_exec)
 	paths.ctest_exec=windows__find_ctest_in_pfiles()
 	if paths.ctest_exec==None:
 		findfail('ctest.exe')
-
+	paths.normalize()
+	
 def process_ctestfile(infilename,buildpaths,testpaths):
 	if not os.path.exists(infilename): findfail(infilename)
 	bp=buildpaths
@@ -219,7 +231,7 @@ def process_ctestfile(infilename,buildpaths,testpaths):
 	lines=fin.readlines()
 	fout=open(outfilename,'wb')
 	fout.write('#'+os.linesep)
-	fout.write('# modified by mingw_x_testfile.py'+os.linesep)
+	fout.write('# modified by '+__file__+os.linesep)
 	fout.write('#'+os.linesep)
 
 	debug2('inputname',infilename)
@@ -255,6 +267,7 @@ def process_ctestfile(infilename,buildpaths,testpaths):
 	print infilename,'modified (old version saved to:',backup_filename,')'
 
 def windows__open_console(bindir):
+	starting_dir=bindir
 	#cmd = 'start "OpenSCAD Test console" /wait /d c:\\temp cmd.exe'
 	#cmd = 'start /d "'+starting_dir+'" cmd.exe "OpenSCAD Test Console"'
 	conbat=os.path.join(bindir,'mingwcon.bat')
@@ -267,15 +280,16 @@ def windows__open_console(bindir):
 	# dont use mingw64 in linbuild path?
 	# figure out better windows prompt, can it be set?
 
-def open_console(paths):
+def open_console(testpaths):
 	print 'opening console'
-	ctestdir = os.path.dirname( paths.ctest_exec )
+	ctestdir = os.path.dirname( testpaths.ctest_exec )
 	print 'ctest dir:',ctestdir
 	if ctestdir != '' or ctestdir==None:
 		print 'adding ctest dir to PATH'
 		os.environ['PATH'] = ctestdir + os.pathsep + os.environ['PATH'] 
 	if 'win' in sys.platform:
-		windows__open_console()
+		windows__open_console(testpaths.abs_cmake_bindir)
+
 
 if '--debug' in string.join(sys.argv):
 	debug_startup()
@@ -283,12 +297,16 @@ if '--debug' in string.join(sys.argv):
 if '--undo' in string.join(sys.argv): _undo=True
 buildpaths = CTestPaths('buildpaths')
 testpaths = CTestPaths('testpaths')
+sys.path = [os.path.join(os.path.abspath(os.curdir),'testbin')]+sys.path
+debug('sys.path after',sys.path)
 import ctest_cross_info
-ctest_cross_info.set_cross_info_buildpaths( buildpaths )
-debug(buildpaths.dump()+'\n'+testpaths.dump()+'\n')
+ctest_cross_info.set_buildpaths( buildpaths )
 if 'win' in sys.platform:
 	from _winreg import *
 	windows__fillpaths( testpaths )
-process_ctestfile('CTestTestfile.cmake',buildpaths,testpaths)
-process_ctestfile('CTestCustom.cmake',buildpaths,testpaths)
+debug(buildpaths.dump()+'\n'+testpaths.dump()+'\n')
+ctestfile1=os.path.join(testpaths.abs_cmake_bindir,'CTestTestfile.cmake')
+ctestfile2=os.path.join(testpaths.abs_cmake_bindir,'CTestCustom.cmake')
+process_ctestfile(ctestfile1,buildpaths,testpaths)
+process_ctestfile(ctestfile2,buildpaths,testpaths)
 open_console( testpaths )
