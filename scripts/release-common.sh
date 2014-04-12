@@ -33,7 +33,7 @@ lf2crlf()
 	fname=$1
 	if [ "`command -v awk`" ]; then
 		# echo using awk to convert end of line markers in $fname
-		awk 'sub("\n$", "\r\n")' $fname > $fname".temp"
+		awk 'sub("$", "\r")' $fname > $fname".temp"
 		mv $fname".temp" $fname
 		return
 	fi
@@ -513,8 +513,6 @@ if [ $BUILD_TESTS ]; then
         # By default, we strip that. In most cases we wont need it and it
         # causes too many problems to have >100MB files.
         echo "stripping .exe binaries"
-        cd $DEPLOYDIR
-        cd ./OpenSCAD-Tests-$VERSION
         cd $TESTBINABSDIR
         if [ "`command -v $TESTBUILD_MACHINE'-strip' `" ]; then
             for exefile in *exe; do
@@ -523,6 +521,8 @@ if [ $BUILD_TESTS ]; then
                 AFTERSIZE=`ls -s $exefile`
                 echo $TESTBUILD_MACHINE'-strip' $BEFORESIZE '->' $AFTERSIZE
             done
+        else
+            echo $TESTBUILD_MACHINE'-strip' not found
         fi
 
         # Build the actual .zip archive based on the file tree we've built above

@@ -109,6 +109,7 @@ def startup():
 		debug('PYTHONPATH:',os.environ['PYTHONPATH'])
 	else:
 		debug('PYTHONPATH: ')
+	# sys.path modification allows 'import ctest_cross_info' to work properly
 	sys.path = [os.path.join(os.path.abspath(os.curdir),'testbin')]+sys.path
 	debug('sys.path after',sys.path)
 
@@ -148,6 +149,7 @@ def findfail(progname):
 	sys.exit()
 
 def windows__find_im_in_registry():
+	debug('searching for imagemagick convert.exe using registry')
 	imbinpath = None
 	try:
 		registry = ConnectRegistry(None,HKEY_LOCAL_MACHINE)
@@ -155,8 +157,8 @@ def windows__find_im_in_registry():
 		tmp = QueryValueEx(regkey,'BinPath')[0]
 		imbinpath = tmp
 	except Exception as e:
-		print "Can't find imagemagick using registry...",
-		print str(type(e))+str(e)
+		debug( "Can't find imagemagick using registry...")
+		debug(str(type(e))+str(e))
 	convert_exec = os.path.join(imbinpath,'convert.exe')
 	if os.path.isfile(convert_exec): return convert_exec
 	return None
@@ -180,7 +182,7 @@ def windows__find_im_in_pfiles():
 	return convert_exec
 
 def windows__find_ctest_in_pfiles():
-	print 'Searching for ImageMagick convert.exe in Program folders'
+	print 'Searching for ctest.exe in Program folders'
 	ctestpath = None
 	for basedir in 'C:/Program Files','C:/Program Files (x86)':
 		if os.path.isdir(basedir):
@@ -295,7 +297,7 @@ def open_console(testpaths):
 		windows__open_console(testpaths.abs_cmake_bindir)
 
 
-#sys.argv+=['--debug']
+#sys.argv+=['--debug2']
 startup()
 buildpaths = CTestPaths('buildpaths')
 testpaths = CTestPaths('testpaths')
@@ -305,8 +307,8 @@ if 'win' in sys.platform:
 	from _winreg import *
 	windows__fillpaths( testpaths )
 debug(buildpaths.dump()+'\n'+testpaths.dump()+'\n')
-ctestfile1=os.path.join(testpaths.abs_cmake_bindir,'CTestTestfile.cmake')
-ctestfile2=os.path.join(testpaths.abs_cmake_bindir,'CTestCustom.cmake')
+ctestfile1 = os.path.join(testpaths.abs_cmake_bindir,'CTestTestfile.cmake')
+ctestfile2 = os.path.join(testpaths.abs_cmake_bindir,'CTestCustom.cmake')
 process_ctestfile(ctestfile1,buildpaths,testpaths)
 process_ctestfile(ctestfile2,buildpaths,testpaths)
 open_console( testpaths )
