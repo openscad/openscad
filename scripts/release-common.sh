@@ -469,7 +469,7 @@ if [ $BUILD_TESTS ]; then
         # 'cp', as we can easily do 'exclude'.
         TARFILE=$OPENSCADDIR/ostests.tar
         rm -f $TARFILE
-        TARXCLUDE='--exclude=.git* --exclude=CMakeFiles/* --exclude=*.a --exclude=CMakeCache*'
+        TARXCLUDE='--exclude=.git* --exclude=*.a --exclude=CMakeCache*'
         TARCMD='tar prf '$TARFILE' '$TARXCLUDE
        	for subdir in testdata libraries examples doc; do
           #echo $TARCMD $subdir
