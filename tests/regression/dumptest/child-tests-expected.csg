@@ -5,10 +5,10 @@ group() {
 				sphere($fn = 16, $fa = 12, $fs = 2, r = 1);
 			}
 			multmatrix([[1, 0, 0, 2.5], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-				cylinder($fn = 16, $fa = 12, $fs = 2, h = 2, r1 = 1, r2 = 1, center = true);
+				cylinder($fn = 16, $fa = 12, $fs = 2, h = 2, r1 = 1, r2 = 1, center = [1, 1, 1]);
 			}
 			multmatrix([[1, 0, 0, 5], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-				cube(size = [2, 2, 2], center = true);
+				cube(size = [2, 2, 2], center = [1, 1, 1]);
 			}
 		}
 	}
@@ -32,7 +32,7 @@ group() {
 	}
 	multmatrix([[1, 0, 0, 2.5], [0, 1, 0, 3], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 		group() {
-			cylinder($fn = 16, $fa = 12, $fs = 2, h = 2, r1 = 1, r2 = 1, center = true);
+			cylinder($fn = 16, $fa = 12, $fs = 2, h = 2, r1 = 1, r2 = 1, center = [1, 1, 1]);
 		}
 	}
 	multmatrix([[1, 0, 0, 5], [0, 1, 0, 3], [0, 0, 1, 0], [0, 0, 0, 1]]) {
@@ -45,7 +45,7 @@ group() {
 					sphere($fn = 16, $fa = 12, $fs = 2, r = 1);
 				}
 				multmatrix([[1, 0, 0, 2.5], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-					cube(size = [1, 1, 1], center = true);
+					cube(size = [1, 1, 1], center = [1, 1, 1]);
 				}
 			}
 		}

@@ -282,6 +282,33 @@ bool Value::getVec3(double &x, double &y, double &z, double defaultval) const
   return (v[0].getDouble(x) && v[1].getDouble(y) && v[2].getDouble(z));
 }
 
+bool Value::getVec3(bool &x, bool &y, bool &z, bool defaultval) const
+{
+
+  if (this->type() == BOOL) {
+    x = y = z = toBool();
+    return true;
+  } else if (this->type() == VECTOR) {
+    const VectorType &v = toVector();
+
+    if (v.size() == 2) {
+      x = v[0].toBool();
+      y = v[1].toBool();
+      z = defaultval;
+      return true;
+    } else if (v.size() == 3) {
+      x = v[0].toBool();
+      y = v[1].toBool();
+      z = v[2].toBool();
+      return true;
+    } else {
+      return false;
+    }
+  } else {
+    return false;
+  }
+}
+
 Value::RangeType Value::toRange() const
 {
   const RangeType *val = boost::get<RangeType>(&this->value);

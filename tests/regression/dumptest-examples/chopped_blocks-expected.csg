@@ -2,7 +2,7 @@ group() {
 	group();
 	difference() {
 		group() {
-			cube(size = [65, 28, 28], center = true);
+			cube(size = [65, 28, 28], center = [1, 1, 1]);
 		}
 		group() {
 			multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
@@ -11,9 +11,9 @@ group() {
 						group() {
 							difference() {
 								multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 7.5], [0, 0, 0, 1]]) {
-									cube(size = [60, 28, 14], center = true);
+									cube(size = [60, 28, 14], center = [1, 1, 1]);
 								}
-								cube(size = [8, 32, 32], center = true);
+								cube(size = [8, 32, 32], center = [1, 1, 1]);
 							}
 						}
 						group() {
@@ -30,9 +30,9 @@ group() {
 						group() {
 							difference() {
 								multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 7.5], [0, 0, 0, 1]]) {
-									cube(size = [60, 28, 14], center = true);
+									cube(size = [60, 28, 14], center = [1, 1, 1]);
 								}
-								cube(size = [8, 32, 32], center = true);
+								cube(size = [8, 32, 32], center = [1, 1, 1]);
 							}
 						}
 						group() {
@@ -49,9 +49,9 @@ group() {
 						group() {
 							difference() {
 								multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 7.5], [0, 0, 0, 1]]) {
-									cube(size = [60, 28, 14], center = true);
+									cube(size = [60, 28, 14], center = [1, 1, 1]);
 								}
-								cube(size = [8, 32, 32], center = true);
+								cube(size = [8, 32, 32], center = [1, 1, 1]);
 							}
 						}
 						group() {
@@ -68,9 +68,9 @@ group() {
 						group() {
 							difference() {
 								multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 7.5], [0, 0, 0, 1]]) {
-									cube(size = [60, 28, 14], center = true);
+									cube(size = [60, 28, 14], center = [1, 1, 1]);
 								}
-								cube(size = [8, 32, 32], center = true);
+								cube(size = [8, 32, 32], center = [1, 1, 1]);
 							}
 						}
 						group() {

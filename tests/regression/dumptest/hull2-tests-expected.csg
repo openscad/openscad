@@ -24,12 +24,12 @@ group() {
 		group() {
 			hull() {
 				multmatrix([[1, 0, 0, 15], [0, 1, 0, 10], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-					square(size = [2, 2], center = false);
+					square(size = [2, 2], center = [0, 0, 0]);
 				}
 				multmatrix([[1, 0, 0, 15], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-					square(size = [2, 2], center = false);
+					square(size = [2, 2], center = [0, 0, 0]);
 				}
-				square(size = [2, 2], center = false);
+				square(size = [2, 2], center = [0, 0, 0]);
 			}
 		}
 	}
@@ -59,7 +59,7 @@ group() {
 	}
 	group() {
 		hull() {
-			square(size = [0, 0], center = false);
+			square(size = [0, 0], center = [0, 0, 0]);
 			circle($fn = 0, $fa = 12, $fs = 2, r = 0);
 		}
 	}

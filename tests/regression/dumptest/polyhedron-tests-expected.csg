@@ -26,7 +26,7 @@ group() {
 				}
 			}
 			multmatrix([[1, 0, 0, 3], [0, 1, 0, 0], [0, 0, 1, 2], [0, 0, 0, 1]]) {
-				cube(size = [8, 3, 3], center = true);
+				cube(size = [8, 3, 3], center = [1, 1, 1]);
 			}
 		}
 	}

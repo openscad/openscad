@@ -1,24 +1,24 @@
 group() {
-	square(size = [1, 1], center = false);
+	square(size = [1, 1], center = [0, 0, 0]);
 	multmatrix([[1, 0, 0, 2], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-		square(size = [1, 1], center = true);
+		square(size = [1, 1], center = [1, 1, 1]);
 	}
 	multmatrix([[1, 0, 0, 4], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-		square(size = [1, 1], center = true);
+		square(size = [1, 1], center = [1, 1, 1]);
 	}
 	multmatrix([[1, 0, 0, 6], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-		square(size = [0, 0], center = true);
+		square(size = [0, 0], center = [1, 1, 1]);
 	}
 	multmatrix([[1, 0, 0, 0], [0, 1, 0, 2], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-		square(size = [1, 0], center = true);
+		square(size = [1, 0], center = [1, 1, 1]);
 	}
 	multmatrix([[1, 0, 0, 2], [0, 1, 0, 2], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-		square(size = [0, 1], center = true);
+		square(size = [0, 1], center = [1, 1, 1]);
 	}
 	multmatrix([[1, 0, 0, 4], [0, 1, 0, 2], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-		square(size = [1, 2], center = true);
+		square(size = [1, 2], center = [1, 1, 1]);
 	}
 	multmatrix([[1, 0, 0, 6], [0, 1, 0, 2], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-		square(size = [2, 1], center = true);
+		square(size = [2, 1], center = [1, 1, 1]);
 	}
 }

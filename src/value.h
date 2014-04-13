@@ -124,6 +124,7 @@ public:
   const VectorType &toVector() const;
   bool getVec2(double &x, double &y) const;
   bool getVec3(double &x, double &y, double &z, double defaultval = 0.0) const;
+  bool getVec3(bool &x, bool &y, bool &z, bool defaultval = false) const;
   RangeType toRange() const;
 
 	operator bool() const { return this->toBool(); }

@@ -12,17 +12,17 @@ group() {
 							group() {
 								multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 									multmatrix([[1, 0, 0, 0], [0, 1, 0, 36], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-										square(size = [6, 10], center = true);
+										square(size = [6, 10], center = [1, 1, 1]);
 									}
 								}
 								multmatrix([[-0.5, -0.86602540378, 0, 0], [0.86602540378, -0.5, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 									multmatrix([[1, 0, 0, 0], [0, 1, 0, 36], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-										square(size = [6, 10], center = true);
+										square(size = [6, 10], center = [1, 1, 1]);
 									}
 								}
 								multmatrix([[-0.5, 0.86602540378, 0, 0], [-0.86602540378, -0.5, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 									multmatrix([[1, 0, 0, 0], [0, 1, 0, 36], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-										square(size = [6, 10], center = true);
+										square(size = [6, 10], center = [1, 1, 1]);
 									}
 								}
 							}
@@ -38,17 +38,17 @@ group() {
 						group() {
 							multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 								multmatrix([[1, 0, 0, 0], [0, 1, 0, 88.5], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-									square(size = [6, 15], center = true);
+									square(size = [6, 15], center = [1, 1, 1]);
 								}
 							}
 							multmatrix([[-0.5, -0.86602540378, 0, 0], [0.86602540378, -0.5, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 								multmatrix([[1, 0, 0, 0], [0, 1, 0, 88.5], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-									square(size = [6, 15], center = true);
+									square(size = [6, 15], center = [1, 1, 1]);
 								}
 							}
 							multmatrix([[-0.5, 0.86602540378, 0, 0], [-0.86602540378, -0.5, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 								multmatrix([[1, 0, 0, 0], [0, 1, 0, 88.5], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-									square(size = [6, 15], center = true);
+									square(size = [6, 15], center = [1, 1, 1]);
 								}
 							}
 						}
@@ -74,7 +74,7 @@ group() {
 												}
 											}
 											multmatrix([[1, 0, 0, 77], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-												square(size = [9, 12], center = false);
+												square(size = [9, 12], center = [0, 0, 0]);
 											}
 											multmatrix([[1, 0, 0, 86], [0, 1, 0, 6], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 												circle($fn = 0, $fa = 12, $fs = 2, r = 6);
@@ -83,7 +83,7 @@ group() {
 												intersection() {
 													circle($fn = 0, $fa = 12, $fs = 2, r = 6);
 													multmatrix([[1, 0, 0, -12], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-														square(size = [12, 12], center = false);
+														square(size = [12, 12], center = [0, 0, 0]);
 													}
 												}
 											}
@@ -91,7 +91,7 @@ group() {
 												intersection() {
 													circle($fn = 0, $fa = 12, $fs = 2, r = 6);
 													multmatrix([[1, 0, 0, -12], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-														square(size = [12, 12], center = false);
+														square(size = [12, 12], center = [0, 0, 0]);
 													}
 												}
 											}
@@ -117,7 +117,7 @@ group() {
 												}
 											}
 											multmatrix([[1, 0, 0, 77], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-												square(size = [9, 12], center = false);
+												square(size = [9, 12], center = [0, 0, 0]);
 											}
 											multmatrix([[1, 0, 0, 86], [0, 1, 0, 6], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 												circle($fn = 0, $fa = 12, $fs = 2, r = 6);
@@ -126,7 +126,7 @@ group() {
 												intersection() {
 													circle($fn = 0, $fa = 12, $fs = 2, r = 6);
 													multmatrix([[1, 0, 0, -12], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-														square(size = [12, 12], center = false);
+														square(size = [12, 12], center = [0, 0, 0]);
 													}
 												}
 											}
@@ -134,7 +134,7 @@ group() {
 												intersection() {
 													circle($fn = 0, $fa = 12, $fs = 2, r = 6);
 													multmatrix([[1, 0, 0, -12], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-														square(size = [12, 12], center = false);
+														square(size = [12, 12], center = [0, 0, 0]);
 													}
 												}
 											}
@@ -160,7 +160,7 @@ group() {
 												}
 											}
 											multmatrix([[1, 0, 0, 77], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-												square(size = [9, 12], center = false);
+												square(size = [9, 12], center = [0, 0, 0]);
 											}
 											multmatrix([[1, 0, 0, 86], [0, 1, 0, 6], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 												circle($fn = 0, $fa = 12, $fs = 2, r = 6);
@@ -169,7 +169,7 @@ group() {
 												intersection() {
 													circle($fn = 0, $fa = 12, $fs = 2, r = 6);
 													multmatrix([[1, 0, 0, -12], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-														square(size = [12, 12], center = false);
+														square(size = [12, 12], center = [0, 0, 0]);
 													}
 												}
 											}
@@ -177,7 +177,7 @@ group() {
 												intersection() {
 													circle($fn = 0, $fa = 12, $fs = 2, r = 6);
 													multmatrix([[1, 0, 0, -12], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-														square(size = [12, 12], center = false);
+														square(size = [12, 12], center = [0, 0, 0]);
 													}
 												}
 											}
@@ -192,10 +192,10 @@ group() {
 %			multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 12], [0, 0, 0, 1]]) {
 				group() {
 					rotate_extrude(convexity = 2, $fn = 0, $fa = 12, $fs = 2) {
-						square(size = [25, 68], center = false);
+						square(size = [25, 68], center = [0, 0, 0]);
 						multmatrix([[1, 0, 0, 0], [0, 1, 0, 68], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 							intersection() {
-								square(size = [25, 25], center = false);
+								square(size = [25, 25], center = [0, 0, 0]);
 								multmatrix([[1, 0, 0, 0], [0, 0.7, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 									circle($fn = 0, $fa = 12, $fs = 2, r = 25);
 								}
@@ -204,7 +204,7 @@ group() {
 						multmatrix([[1, 0, 0, 0], [0, 1, 0, 93], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 							intersection() {
 								multmatrix([[1, 0, 0, 0], [0, 1, 0, -12.5], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-									square(size = [12.5, 25], center = false);
+									square(size = [12.5, 25], center = [0, 0, 0]);
 								}
 								circle($fn = 0, $fa = 12, $fs = 2, r = 12.5);
 							}

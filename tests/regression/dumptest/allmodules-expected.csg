@@ -23,11 +23,11 @@ group() {
 	import(file = "", layer = "", origin = [0, 0], scale = 1, convexity = 1, $fn = 0, $fa = 12, $fs = 2);
 	import(file = "", layer = "", origin = [0, 0], scale = 1, convexity = 1, $fn = 0, $fa = 12, $fs = 2);
 	group();
-	cube(size = [1, 1, 1], center = false);
+	cube(size = [1, 1, 1], center = [0, 0, 0]);
 	sphere($fn = 0, $fa = 12, $fs = 2, r = 1);
-	cylinder($fn = 0, $fa = 12, $fs = 2, h = 1, r1 = 1, r2 = 1, center = false);
+	cylinder($fn = 0, $fa = 12, $fs = 2, h = 1, r1 = 1, r2 = 1, center = [0, 0, 0]);
 	polyhedron(points = undef, faces = undef, convexity = 1);
-	square(size = [1, 1], center = false);
+	square(size = [1, 1], center = [0, 0, 0]);
 	circle($fn = 0, $fa = 12, $fs = 2, r = 1);
 	polygon(points = undef, paths = undef, convexity = 1);
 	projection(cut = false, convexity = 0);

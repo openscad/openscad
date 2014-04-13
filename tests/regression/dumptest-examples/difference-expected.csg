@@ -56,7 +56,7 @@ group() {
 	multmatrix([[1, 0, 0, 30], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 		group() {
 			difference() {
-				cylinder($fn = 6, $fa = 12, $fs = 2, h = 20, r1 = 30, r2 = 30, center = false);
+				cylinder($fn = 6, $fa = 12, $fs = 2, h = 20, r1 = 30, r2 = 30, center = [0, 0, 0]);
 				multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, -10], [0, 0, 0, 1]]) {
 					group() {
 						linear_extrude(height = 40, center = false, convexity = 3, twist = 164.571, slices = 13, scale = [1, 1], $fn = 0, $fa = 12, $fs = 2) {

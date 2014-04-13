@@ -103,7 +103,7 @@ public:
 		}
 	}
 
-	bool center;
+	bool center_x, center_y, center_z;
 	double x, y, z, h, r1, r2;
 	double fn, fs, fa;
 	primitive_type_e type;
@@ -145,7 +145,7 @@ AbstractNode *PrimitiveModule::instantiate(const Context *ctx, const ModuleInsta
 {
 	PrimitiveNode *node = new PrimitiveNode(inst, this->type);
 
-	node->center = false;
+    node->center_x = node->center_y = node->center_z = false;
 	node->x = node->y = node->z = node->h = node->r1 = node->r2 = 1;
 
 	AssignmentList args;
@@ -196,13 +196,12 @@ AbstractNode *PrimitiveModule::instantiate(const Context *ctx, const ModuleInsta
 	case CUBE: {
 		Value size = c.lookup_variable("size");
 		Value center = c.lookup_variable("center");
+
 		size.getDouble(node->x);
 		size.getDouble(node->y);
 		size.getDouble(node->z);
 		size.getVec3(node->x, node->y, node->z);
-		if (center.type() == Value::BOOL) {
-			node->center = center.toBool();
-		}
+        center.getVec3(node->center_x, node->center_y, node->center_z);
 		break;
 	}
 	case SPHERE: {
@@ -233,9 +232,7 @@ AbstractNode *PrimitiveModule::instantiate(const Context *ctx, const ModuleInsta
 		}
 		
 		const Value center = c.lookup_variable("center");
-		if (center.type() == Value::BOOL) {
-			node->center = center.toBool();
-		}
+        center.getVec3(node->center_x, node->center_y, node->center_z);
 		break;
 	}
 	case POLYHEDRON: {
@@ -256,9 +253,7 @@ AbstractNode *PrimitiveModule::instantiate(const Context *ctx, const ModuleInsta
 		size.getDouble(node->x);
 		size.getDouble(node->y);
 		size.getVec2(node->x, node->y);
-		if (center.type() == Value::BOOL) {
-			node->center = center.toBool();
-		}
+        center.getVec3(node->center_x, node->center_y, node->center_z);
 		break;
 	}
 	case CIRCLE: {
@@ -309,20 +304,31 @@ Geometry *PrimitiveNode::createGeometry() const
 		g = p;
 		if (this->x > 0 && this->y > 0 && this->z > 0 &&
 			!isinf(this->x) > 0 && !isinf(this->y) > 0 && !isinf(this->z) > 0) {
-			double x1, x2, y1, y2, z1, z2;
-			if (this->center) {
-				x1 = -this->x/2;
-				x2 = +this->x/2;
-				y1 = -this->y/2;
-				y2 = +this->y/2;
-				z1 = -this->z/2;
-				z2 = +this->z/2;
-			} else {
-				x1 = y1 = z1 = 0;
-				x2 = this->x;
-				y2 = this->y;
-				z2 = this->z;
-			}
+            double x1, x2, y1, y2, z1, z2;
+
+            if (this->center_x) {
+                x1 = -this->x/2;
+                x2 = +this->x/2;
+            } else {
+                x1 = 0;
+                x2 = this->x;
+            }
+
+            if (this->center_y) {
+                y1 = -this->y/2;
+                y2 = +this->y/2;
+            } else {
+                y1 = 0;
+                y2 = this->y;
+            }
+
+            if (this->center_z) {
+                z1 = -this->z/2;
+                z2 = +this->z/2;
+            } else {
+                z1 = 0;
+                z2 = this->z;
+            }
 
 			p->append_poly(); // top
 			p->append_vertex(x1, y1, z2);
@@ -445,13 +451,13 @@ Geometry *PrimitiveNode::createGeometry() const
 				!isinf(this->r1) && !isinf(this->r2)) {
 			int fragments = Calc::get_fragments_from_r(fmax(this->r1, this->r2), this->fn, this->fs, this->fa);
 
-			double z1, z2;
-			if (this->center) {
-				z1 = -this->h/2;
-				z2 = +this->h/2;
-			} else {
-				z1 = 0;
-				z2 = this->h;
+            double z1, z2;
+            if (this->center_z) {
+                z1 = -this->h/2;
+                z2 = +this->h/2;
+            } else {
+                z1 = 0;
+                z2 = this->h;
 			}
 
 			point2d *circle1 = new point2d[fragments];
@@ -529,12 +535,24 @@ Geometry *PrimitiveNode::createGeometry() const
 		Polygon2d *p = new Polygon2d();
 		g = p;
 		if (this->x > 0 && this->y > 0) {
-			Vector2d v1(0, 0);
-			Vector2d v2(this->x, this->y);
-			if (this->center) {
-				v1 -= Vector2d(this->x/2, this->y/2);
-				v2 -= Vector2d(this->x/2, this->y/2);
-			}
+            double x1, x2, y1, y2;
+            if (this->center_x) {
+                x1 = -this->x/2;
+                x2 = +this->x/2;
+            } else {
+                x1 = 0;
+                x2 = this->x;
+            }
+
+            if (this->center_y) {
+                y1 = -this->y/2;
+                y2 = +this->y/2;
+            } else {
+                y1 = 0;
+                y2 = this->y;
+            }
+			Vector2d v1(x1, y1);
+			Vector2d v2(x2, y2);
 
 			Outline2d o;
 			o.vertices.resize(4);
@@ -622,7 +640,7 @@ std::string PrimitiveNode::toString() const
 	switch (this->type) {
 	case CUBE:
 		stream << "(size = [" << this->x << ", " << this->y << ", " << this->z << "], "
-					 <<	"center = " << (center ? "true" : "false") << ")";
+                     << "center = [" << this->center_x << ", " << this->center_y << ", " << this->center_z << "])";
 		break;
 	case SPHERE:
 		stream << "($fn = " << this->fn << ", $fa = " << this->fa
@@ -631,7 +649,8 @@ std::string PrimitiveNode::toString() const
 	case CYLINDER:
 		stream << "($fn = " << this->fn << ", $fa = " << this->fa
 					 << ", $fs = " << this->fs << ", h = " << this->h << ", r1 = " << this->r1
-					 << ", r2 = " << this->r2 << ", center = " << (center ? "true" : "false") << ")";
+					 << ", r2 = " << this->r2 << ", "
+                     << "center = [" << this->center_x << ", " << this->center_y << ", " << this->center_z << "])";
 			break;
 	case POLYHEDRON:
 		stream << "(points = " << this->points
@@ -640,7 +659,7 @@ std::string PrimitiveNode::toString() const
 			break;
 	case SQUARE:
 		stream << "(size = [" << this->x << ", " << this->y << "], "
-					 << "center = " << (center ? "true" : "false") << ")";
+                     << "center = [" << this->center_x << ", " << this->center_y << ", " << this->center_z << "])";
 			break;
 	case CIRCLE:
 		stream << "($fn = " << this->fn << ", $fa = " << this->fa

@@ -6,16 +6,16 @@ group() {
 				intersection() {
 					union() {
 						difference() {
-							square(size = [100, 100], center = true);
-							square(size = [50, 50], center = true);
+							square(size = [100, 100], center = [1, 1, 1]);
+							square(size = [50, 50], center = [1, 1, 1]);
 						}
 						multmatrix([[1, 0, 0, 50], [0, 1, 0, 50], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-							square(size = [15, 15], center = true);
+							square(size = [15, 15], center = [1, 1, 1]);
 						}
 					}
 					multmatrix([[0.70710678118, -0.70710678118, 0, 0], [0.70710678118, 0.70710678118, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 						multmatrix([[1, 0, 0, 0], [0, 1, 0, -15], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-							square(size = [100, 30], center = false);
+							square(size = [100, 30], center = [0, 0, 0]);
 						}
 					}
 				}
