@@ -10,6 +10,7 @@
 class Context
 {
 public:
+	typedef std::vector<const Context*> Stack;
 	Context(const Context *parent = NULL);
 	virtual ~Context();
 
@@ -33,7 +34,7 @@ public:
 
 protected:
 	const Context *parent;
-	static std::vector<const Context*> ctx_stack;
+	Stack *ctx_stack;
 
 	typedef boost::unordered_map<std::string, Value> ValueMap;
 	ValueMap constants;
@@ -42,9 +43,9 @@ protected:
 
 	std::string document_path; // FIXME: This is a remnant only needed by dxfdim
 
-#ifdef DEBUG
 public:
-	virtual void dump(const class AbstractModule *mod, const ModuleInstantiation *inst);
+#ifdef DEBUG
+	virtual std::string dump(const class AbstractModule *mod, const ModuleInstantiation *inst);
 #endif
 };
 
