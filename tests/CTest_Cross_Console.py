@@ -245,7 +245,60 @@ def windows__fillpaths(paths):
 	if paths.ctest_exec==None:
 		findfail(u'ctest.exe')
 	paths.normalize()
-	
+
+def get_template_scad_list(basedir):
+	newscads=[]
+	for r,ds,fs in os.walk('testdata'):
+		if 'templates' in r:
+			for f in fs:
+				debug('testdata tempalte file:',f)
+				fnew=f.replace('-template','')
+				newscads += [fnew]
+	print 'newscads',newscads
+	scadlist=[]
+	for scadname in newscads:
+		for r,ds,fs in os.walk('testdata'):
+			if scadname in fs:
+				debug('testdata template new:',scadname)
+				scadlist += [ os.path.join(r,scadname) ]
+	debug('scadlist result',scadlist)
+	return scadlist
+
+def process_scadfile(infilename,buildpaths,testpaths):
+	infilename=unicode(infilename)
+	if not os.path.exists(infilename): findfail(infilename)
+	bp=buildpaths
+	tp=testpaths
+	backup_filename = infilename+u'.backup'
+	outfilename = infilename.replace(u'.scad',u'.new.scad')
+	fin=open(infilename,u'rb')
+	lines=fin.readlines()
+	fout=open(outfilename,u'wb')
+	fout.write(u'//'+os.linesep)
+	fout.write(u'// modified by '+__file__+os.linesep)
+	fout.write(u'//'+os.linesep)
+
+	debug2(u'inputname',infilename)
+	debug2(u'outputname',outfilename)
+
+	for line in lines:
+		debug2(u'input:',line)
+		line=line.decode(u'utf-8')
+		if bp.abs_cmake_srcdir in line:
+			line=line.replace(bp.abs_cmake_srcdir,tp.abs_cmake_srcdir)
+			if 'win' in sys.platform:
+				line=line.replace('/','\\')
+		debug2(u'output:',line)
+		line=line.encode(u'utf-8')
+		fout.write(line)
+
+	debug2( u'backed up ',infilename, u'to', backup_filename )
+	debug2( u'processed ',infilename, u'to', outfilename )
+	fin.close()
+	fout.close()
+	open(infilename,u'wb').write(open(outfilename,u'rb').read())
+	uprint(infilename,u'modified \n(old version saved to:',backup_filename,u')')
+
 def process_ctestfile(infilename,buildpaths,testpaths):
 	infilename=unicode(infilename)
 	if not os.path.exists(infilename): findfail(infilename)
@@ -345,8 +398,13 @@ if u'win' in sys.platform:
 	from _winreg import *
 	windows__fillpaths( testpaths )
 debug(buildpaths.dump()+u'\n'+testpaths.dump()+u'\n')
+
 ctestfile1 = os.path.join(testpaths.abs_cmake_bindir,u'CTestTestfile.cmake')
 ctestfile2 = os.path.join(testpaths.abs_cmake_bindir,u'CTestCustom.cmake')
 process_ctestfile(ctestfile1,buildpaths,testpaths)
 process_ctestfile(ctestfile2,buildpaths,testpaths)
+scads = get_template_scad_list(os.path.join(testpaths.abs_cmake_srcdir,u'testdata'))
+for scadfile in scads:
+	process_scadfile(scadfile,buildpaths,testpaths)
+
 open_console( testpaths )
