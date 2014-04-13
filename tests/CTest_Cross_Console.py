@@ -273,9 +273,17 @@ def process_scadfile(infilename,buildpaths,testpaths):
 	outfilename = infilename.replace(u'.scad',u'.new.scad')
 	fin=open(infilename,u'rb')
 	lines=fin.readlines()
+
+	for line in lines:
+		if '// modified by '+__file__ in line:
+			uprint('already modified',infilename)
+			fin.close()
+			fout.close()
+			return
+
 	fout=open(outfilename,u'wb')
 	fout.write(u'//'+os.linesep)
-	fout.write(u'// modified by '+__file__+os.linesep)
+	fout.write(u'// modified by '+unicode(__file__+os.linesep))
 	fout.write(u'//'+os.linesep)
 
 	debug2(u'inputname',infilename)
@@ -315,9 +323,17 @@ def process_ctestfile(infilename,buildpaths,testpaths):
 	outfilename = infilename.replace(u'.cmake',u'.new.cmake')
 	fin=open(infilename,u'rb')
 	lines=fin.readlines()
+
+	for line in lines:
+		if '# modified by '+__file__ in line:
+			uprint('already modified',infilename)
+			fin.close()
+			fout.close()
+			return
+
 	fout=open(outfilename,u'wb')
 	fout.write(u'#'+os.linesep)
-	fout.write(u'# modified by '+__file__+os.linesep)
+	fout.write(u'# modified by '+unicode(__file__+os.linesep))
 	fout.write(u'#'+os.linesep)
 
 	debug2(u'inputname',infilename)

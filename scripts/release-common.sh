@@ -472,13 +472,16 @@ if [ $BUILD_TESTS ]; then
         TARXCLUDE='--exclude=.git* --exclude=*.a --exclude=*.obj --exclude=CMakeCache*'
         TARCMD='tar prf '$TARFILE' '$TARXCLUDE
        	for subdir in testdata libraries examples doc; do
+          echo $subdir
           #echo $TARCMD $subdir
           $TARCMD $subdir
         done
         #echo $TARCMD tests
+        echo tests
         $TARCMD tests
         cd $TESTBINABSDIR/..
         #echo $TARCMD $TESTBINDIR
+        echo $TESTBINDIR
         $TARCMD $TESTBINDIR
 
         cd $DEPLOYDIR

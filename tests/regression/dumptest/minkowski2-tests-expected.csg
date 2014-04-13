@@ -47,13 +47,13 @@ group() {
 				group() {
 					render(convexity = 1) {
 						difference() {
-							square(size = [1e+06, 1e+06], center = true);
+							square(size = [1000000, 1000000], center = true);
 							minkowski(convexity = 0) {
 								circle($fn = 0, $fa = 12, $fs = 2, r = 0.3);
 								group() {
 									render(convexity = 1) {
 										difference() {
-											square(size = [1e+06, 1e+06], center = true);
+											square(size = [1000000, 1000000], center = true);
 											minkowski(convexity = 0) {
 												circle($fn = 0, $fa = 12, $fs = 2, r = 0.4);
 												circle($fn = 0, $fa = 12, $fs = 2, r = 4);
@@ -74,13 +74,13 @@ group() {
 				group() {
 					render(convexity = 1) {
 						difference() {
-							square(size = [1e+06, 1e+06], center = true);
+							square(size = [1000000, 1000000], center = true);
 							minkowski(convexity = 0) {
 								circle($fn = 0, $fa = 12, $fs = 2, r = 0.3);
 								group() {
 									render(convexity = 1) {
 										difference() {
-											square(size = [1e+06, 1e+06], center = true);
+											square(size = [1000000, 1000000], center = true);
 											minkowski(convexity = 0) {
 												difference() {
 													circle($fn = 0, $fa = 12, $fs = 2, r = 0.4);

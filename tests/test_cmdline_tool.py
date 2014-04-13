@@ -90,12 +90,15 @@ def compare_default(resultfilename):
     print >> sys.stderr, 'diff text compare: '
     print >> sys.stderr, ' expected textfile: ', expectedfilename
     print >> sys.stderr, ' actual textfile: ', resultfilename
+    sys.stderr.flush()
     if not compare_text(expectedfilename, resultfilename):
-	if resultfilename:
-            fromlines = open(expectedfilename,'U').readlines()
-            tolines = open(resultfilename,'U').readlines()
-            difftxt = difflib.context_diff(fromlines,tolines)
-            print >> sys.stderr, difftxt
+        if resultfilename:
+            fromlines = open(expectedfilename,'r').readlines()
+            tolines = open(resultfilename,'r').readlines()
+            difftxt = difflib.unified_diff(fromlines,tolines)
+            for line in difftxt:
+                print >> sys.stderr, line,
+                sys.stderr.flush()
             #execute_and_redirect("diff", [expectedfilename, resultfilename], sys.stderr)
         return False
     return True
@@ -159,7 +162,7 @@ def run_test(testname, cmd, args):
 
     try:
         cmdline = [cmd] + args + [outputname]
-        print cmdline
+        print >> sys.stderr, 'Test cmdline:', cmdline
         proc = subprocess.Popen(cmdline, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         errtext = proc.communicate()[1]
         if errtext != None and len(errtext) > 0:
