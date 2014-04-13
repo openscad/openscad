@@ -25,6 +25,7 @@ import getopt
 import shutil
 import platform
 import string
+import difflib
 
 def initialize_environment():
     if not options.generate: options.generate = bool(os.getenv("TEST_GENERATE"))
@@ -90,8 +91,12 @@ def compare_default(resultfilename):
     print >> sys.stderr, ' expected textfile: ', expectedfilename
     print >> sys.stderr, ' actual textfile: ', resultfilename
     if not compare_text(expectedfilename, resultfilename):
-	if resultfilename: 
-            execute_and_redirect("diff", [expectedfilename, resultfilename], sys.stderr)
+	if resultfilename:
+            fromlines = open(expectedfilename,'U').readlines()
+            tolines = open(resultfilename,'U').readlines()
+            difftxt = difflib.context_diff(fromlines,tolines)
+            print >> sys.stderr, difftxt
+            #execute_and_redirect("diff", [expectedfilename, resultfilename], sys.stderr)
         return False
     return True
 

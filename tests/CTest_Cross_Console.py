@@ -287,7 +287,7 @@ def process_scadfile(infilename,buildpaths,testpaths):
 		if bp.abs_cmake_srcdir in line:
 			line=line.replace(bp.abs_cmake_srcdir,tp.abs_cmake_srcdir)
 			if 'win' in sys.platform:
-				line=line.replace('/','\\')
+				line=line.replace('\\','/')
 		debug2(u'output:',line)
 		line=line.encode(u'utf-8')
 		fout.write(line)
@@ -337,9 +337,10 @@ def process_ctestfile(infilename,buildpaths,testpaths):
 		line=line.replace(bp.convert_exec,tp.convert_exec)
 		line=line.replace(bp.ctest_exec,tp.ctest_exec)
 
-		line=line.replace(u'\\"',u'__ESCAPE_WIN_QUOTE_MECHANISM__')
-		line=line.replace(u'\\',u'/')
-		line=line.replace(u'__ESCAPE_WIN_QUOTE_MECHANISM__',u'\\"')
+		if 'win' in sys.platform:
+			line=line.replace(u'\\"',u'__ESCAPE_WIN_QUOTE_MECHANISM__')
+			line=line.replace(u'\\',u'/')
+			line=line.replace(u'__ESCAPE_WIN_QUOTE_MECHANISM__',u'\\"')
 
 		debug2(u'output:',line)
 		line=line.encode(u'utf-8') # Ctest, in theory, uses utf-8

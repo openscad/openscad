@@ -442,8 +442,8 @@ def main():
     builddir = ezsearch('--builddir=(.*?) ', ' '.join(sys.argv) + ' ')
     if not builddir or not os.path.exists(builddir):
         builddir = os.getcwd()
-        print 'warning: couldnt find --builddir, trying to use current dir:',
-        print builddir
+        debug('warning: couldnt find --builddir, trying to use current dir:')
+        debug(builddir)
     debug('build dir set to ' +  builddir)
 
     upload = False
