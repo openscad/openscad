@@ -5,7 +5,7 @@ OpenSCAD runs as expected from release to release, and from platform to
 platform. To use this test suite you must also have the following 
 systems installed on your machine:
 
-   Python 2      http://www.python.org
+   Python 2      http://www.python.org  (Note: Python 3 will not work)
    CMake         http://www.cmake.org
    ImageMagick   http://www.imagemagick.org
 
@@ -23,12 +23,20 @@ Thanks for helping test OpenSCAD.
 
 Known bugs:
 
--These scripts will not find ImageMagick or CMake if they are not 
-installed on the C: drive under Program Files*. As a workaround, you can 
-edit the OpenSCAD_Test_Console.py file and the .py files in the 
-tests-build directory.
+-CMake 2.8.x for Windows does not properly operate from folders with 
+Unicode in the pathname. The workaround is to move the Tests to a folder 
+that has no Unicode in any of the parent folder names, such as creating 
+a folder called 'c:\temp'.
 
--'Diff' text-tests may not run properly on Windows(TM). 
+-The script will only find ImageMagick and Cmake if they are 
+installed under standard locations (C:\Program Files) or if their 
+executables are in the PATH environment variable. As a workaround, you 
+can edit the OpenSCAD_Test_Console.py file to set their location.
 
--Detection of ctest, python, and imagemagick doesnt always work properly
+-Text-tests that produce different output than expected will throw a 
+failure to find the 'diff' command under windows.
 
+See Also:
+
+    ./doc/testing.txt
+    http://github.com/openscad/openscad/issues
