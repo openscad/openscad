@@ -605,6 +605,23 @@ ValuePtr builtin_chr(const Context *, const EvalContext *evalctx)
 	return ValuePtr(stream.str());
 }
 
+ValuePtr builtin_fecho(const Context *, const EvalContext *evalctx)
+{
+	std::stringstream msg;
+	
+	msg << "FECHO: ";
+	for (size_t i = 0; i < evalctx->numArgs(); i++) {
+		if(i>0)
+			msg << ", ";
+		if(!evalctx->getArgName(i).empty())
+			msg << evalctx->getArgName(i) << " = ";
+		msg << evalctx -> getArgValue(i);
+	}
+	PRINTB("%s",msg.str());
+
+	return ValuePtr(0);
+}
+
 ValuePtr builtin_concat(const Context *, const EvalContext *evalctx)
 {
 	Value::VectorType result;
@@ -1009,6 +1026,7 @@ void register_builtin_functions()
 	Builtins::init("str", new BuiltinFunction(&builtin_str));
 	Builtins::init("chr", new BuiltinFunction(&builtin_chr));
 	Builtins::init("concat", new BuiltinFunction(&builtin_concat));
+	Builtins::init("fecho", new BuiltinFunction(&builtin_fecho));
 	Builtins::init("lookup", new BuiltinFunction(&builtin_lookup));
 	Builtins::init("search", new BuiltinFunction(&builtin_search));
 	Builtins::init("version", new BuiltinFunction(&builtin_version));

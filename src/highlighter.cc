@@ -218,7 +218,7 @@ Highlighter::Highlighter(QTextDocument *parent)
 		: QSyntaxHighlighter(parent)
 {
 	tokentypes["operator"] << "=" << "!" << "&&" << "||" << "+" << "-" << "*" << "/" << "%" << "!" << "#" << ";";
-	tokentypes["math"] << "abs" << "sign" << "acos" << "asin" << "atan" << "atan2" << "sin" << "cos" << "floor" << "round" << "ceil" << "ln" << "log" << "lookup" << "min" << "max" << "pow" << "sqrt" << "exp" << "rands";
+	tokentypes["math"] << "abs" << "sign" << "acos" << "asin" << "atan" << "atan2" << "sin" << "cos" << "floor" << "round" << "ceil" << "ln" << "log" << "lookup" << "min" << "max" << "pow" << "sqrt" << "exp" << "rands" << "fecho";
 	tokentypes["keyword"] << "module" << "function" << "for" << "intersection_for" << "if" << "assign" << "echo"<< "search" << "str" << "let";
 	tokentypes["transform"] << "scale" << "translate" << "rotate" << "multmatrix" << "color" << "projection" << "hull" << "resize" << "mirror" << "minkowski";
 	tokentypes["csgop"]	<< "union" << "intersection" << "difference" << "render";
