@@ -347,6 +347,23 @@ Value builtin_str(const Context *, const EvalContext *evalctx)
 	return Value(stream.str());
 }
 
+Value builtin_fecho(const Context *, const EvalContext *evalctx)
+{
+	Value::VectorType result;
+	std::stringstream msg;
+	
+	msg << "FECHO: ";
+	for (size_t i = 0; i < evalctx->numArgs(); i++) {
+		if(i>0)
+			msg << ", ";
+		if(!evalctx->getArgName(i).empty())
+			msg << evalctx->getArgName(i) << " = ";
+		msg << evalctx -> getArgValue(i);
+	}
+	PRINTB("%s",msg.str());
+
+	return Value(0);
+}
 Value builtin_concat(const Context *, const EvalContext *evalctx)
 {
 	Value::VectorType result;
@@ -691,6 +708,7 @@ void register_builtin_functions()
 	Builtins::init("log", new BuiltinFunction(&builtin_log));
 	Builtins::init("ln", new BuiltinFunction(&builtin_ln));
 	Builtins::init("str", new BuiltinFunction(&builtin_str));
+	Builtins::init("fecho", new BuiltinFunction(&builtin_fecho));
 	Builtins::init("concat", new BuiltinFunction(&builtin_concat, Feature::ExperimentalConcatFunction));
 	Builtins::init("lookup", new BuiltinFunction(&builtin_lookup));
 	Builtins::init("search", new BuiltinFunction(&builtin_search));
