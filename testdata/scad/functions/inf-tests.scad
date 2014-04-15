@@ -7,7 +7,46 @@ echo(      "asin(1/0)",asin(1/0));
 echo(      "acos(1/0)",acos(1/0));
 echo(      "atan(1/0)",atan(1/0));
 echo(     "atan(-1/0)",atan(-1/0));
-echo("atan2(1/0,-1/0)",atan2(1/0, -1/0));
+
+// atan2 has some interesting portability issues
+// http://pubs.opengroup.org/onlinepubs/009695399/functions/atan2.html
+// http://www.cplusplus.com/reference/cmath/atan2/
+// http://msdn.microsoft.com/en-us/library/system.math.atan2.aspx
+echo("atan2(  0,   0)",atan2(  0,    0));
+echo("atan2( -0,   0)",atan2( -0,    0));
+echo("atan2(  0,  -0)",atan2(  0,   -0));
+echo("atan2(  0,   1)",atan2(  0,    1));
+echo("atan2(  0,  -1)",atan2(  0,   -1));
+echo("atan2(  1,   0)",atan2(  1,    0));
+echo("atan2( -1,   0)",atan2( -1,    0));
+echo("atan2( -0,   1)",atan2( -0,    1));
+echo("atan2( -0,  -1)",atan2( -0,   -1));
+echo("atan2(  1,  -0)",atan2(  1,   -0));
+echo("atan2( -1,  -0)",atan2( -1,   -0));
+
+echo("atan2( 1/0, 1/0)",atan2( 1/0, 1/0));
+echo("atan2( 1/0,-1/0)",atan2( 1/0,-1/0));
+echo("atan2(-1/0, 1/0)",atan2(-1/0, 1/0));
+echo("atan2(-1/0,-1/0)",atan2(-1/0,-1/0));
+
+echo("atan2( 1/0, 1  )",atan2( 1/0, 1  ));
+echo("atan2( 1/0,-1  )",atan2( 1/0,-1  ));
+echo("atan2(-1/0, 1  )",atan2(-1/0, 1  ));
+echo("atan2(-1/0,-1  )",atan2(-1/0,-1  ));
+echo("atan2( 1/0, 0  )",atan2( 1/0, 0  ));
+echo("atan2( 1/0,-0  )",atan2( 1/0,-0  ));
+echo("atan2(-1/0, 0  )",atan2(-1/0, 0  ));
+echo("atan2(-1/0,-0  )",atan2(-1/0,-0  ));
+
+echo("atan2( 1  , 1/0)",atan2( 1  , 1/0));
+echo("atan2( 1  ,-1/0)",atan2( 1  ,-1/0));
+echo("atan2(-1  , 1/0)",atan2(-1  , 1/0));
+echo("atan2(-1  ,-1/0)",atan2(-1  ,-1/0));
+echo("atan2(   0, 1/0)",atan2(   0, 1/0));
+echo("atan2(   0,-1/0)",atan2(   0,-1/0));
+echo("atan2(  -0, 1/0)",atan2(  -0, 1/0));
+echo("atan2(  -0,-1/0)",atan2(  -0,-1/0));
+
 echo(      "ceil(1/0)",ceil(1/0));
 echo(     "floor(1/0)",floor(1/0));
 echo(     "exp(2,1/0)",exp(2, 1/0));
