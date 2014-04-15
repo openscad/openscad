@@ -39,8 +39,7 @@ Expression::Expression() : recursioncount(0)
 {
 }
 
-Expression::Expression(const std::string &type, 
-											 Expression *left, Expression *right)
+Expression::Expression(const std::string &type, Expression *left, Expression *right)
 	: type(type), recursioncount(0)
 {
 	this->children.push_back(left);
@@ -62,113 +61,132 @@ Expression::~Expression()
 	std::for_each(this->children.begin(), this->children.end(), del_fun<Expression>());
 }
 
-class FuncRecursionGuard
+Value Expression::sub_evaluate_range(const Context *context) const
 {
-public:
-	FuncRecursionGuard(const Expression &e) : expr(e) { 
-		expr.recursioncount++; 
+	Value v1 = this->children[0]->evaluate(context);
+	if (v1.type() == Value::NUMBER) {
+		Value v2 = this->children[1]->evaluate(context);
+		if (v2.type() == Value::NUMBER) {
+			if (this->children.size() == 2) {
+				Value::RangeType range(v1.toDouble(), v2.toDouble());
+				return Value(range);
+			} else {
+				Value v3 = this->children[2]->evaluate(context);
+				if (v3.type() == Value::NUMBER) {
+					Value::RangeType range(v1.toDouble(), v2.toDouble(), v3.toDouble());
+					return Value(range);
+				}
+			}
+		}
 	}
-	~FuncRecursionGuard() { expr.recursioncount--; }
-	bool recursion_detected() const { return (expr.recursioncount > 1000); }
-private:
-	const Expression &expr;
-};
+	return Value();
+}
+
+Value Expression::sub_evaluate_member(const Context *context) const
+{
+	Value v = this->children[0]->evaluate(context);
+
+	if (v.type() == Value::VECTOR) {
+		if (this->var_name == "x") return v[0];
+		if (this->var_name == "y") return v[1];
+		if (this->var_name == "z") return v[2];
+	} else if (v.type() == Value::RANGE) {
+		if (this->var_name == "begin") return Value(v[0]);
+		if (this->var_name == "step") return Value(v[1]);
+		if (this->var_name == "end") return Value(v[2]);
+	}
+	return Value();
+}
+
+Value Expression::sub_evaluate_vector(const Context *context) const
+{
+	Value::VectorType vec;
+	BOOST_FOREACH(const Expression *e, this->children) {
+		vec.push_back(e->evaluate(context));
+	}
+	return Value(vec);
+}
+
+Value Expression::sub_evaluate_function(const Context *context) const
+{
+	if (this->recursioncount >= 1000) {
+		PRINTB("ERROR: Recursion detected calling function '%s'", this->call_funcname);
+		throw function_recursion_detected();
+	}
+	this->recursioncount += 1;
+	EvalContext c(context, this->call_arguments);
+	Value result = context->evaluate_function(this->call_funcname, &c);
+	this->recursioncount -= 1;
+	return result;
+}
+
+#define TYPE2INT(c,c1) ((int)(c) | ((int)(c1)<<8))
+
+static inline int type2int(register const char *typestr)
+{
+	// the following asserts basic ASCII only so sign extension does not matter
+	// utilize the fact that type strings may have two characters at most
+#ifdef DEBUG
+	register int c1, result = *typestr;
+	if (result && 0 != (c1 = typestr[1])) {
+		// take the third character for error checking only
+		result |= (c1 << 8) | ((int)typestr[2] << 16);
+	}
+	return result;
+#else
+	return TYPE2INT(typestr[0], typestr[1]);
+#endif
+}
 
 Value Expression::evaluate(const Context *context) const
 {
-	if (this->type == "!")
+	switch (type2int(this->type.c_str())) {
+	case '!':
 		return ! this->children[0]->evaluate(context);
-	if (this->type == "&&")
+	case TYPE2INT('&','&'):
 		return this->children[0]->evaluate(context) && this->children[1]->evaluate(context);
-	if (this->type == "||")
+	case TYPE2INT('|','|'):
 		return this->children[0]->evaluate(context) || this->children[1]->evaluate(context);
-	if (this->type == "*")
+	case '*':
 		return this->children[0]->evaluate(context) * this->children[1]->evaluate(context);
-	if (this->type == "/")
+	case '/':
 		return this->children[0]->evaluate(context) / this->children[1]->evaluate(context);
-	if (this->type == "%")
+	case '%':
 		return this->children[0]->evaluate(context) % this->children[1]->evaluate(context);
-	if (this->type == "+")
+	case '+':
 		return this->children[0]->evaluate(context) + this->children[1]->evaluate(context);
-	if (this->type == "-")
+	case '-':
 		return this->children[0]->evaluate(context) - this->children[1]->evaluate(context);
-	if (this->type == "<")
+	case '<':
 		return this->children[0]->evaluate(context) < this->children[1]->evaluate(context);
-	if (this->type == "<=")
+	case TYPE2INT('<','='):
 		return this->children[0]->evaluate(context) <= this->children[1]->evaluate(context);
-	if (this->type == "==")
+	case TYPE2INT('=','='):
 		return this->children[0]->evaluate(context) == this->children[1]->evaluate(context);
-	if (this->type == "!=")
+	case TYPE2INT('!','='):
 		return this->children[0]->evaluate(context) != this->children[1]->evaluate(context);
-	if (this->type == ">=")
+	case TYPE2INT('>','='):
 		return this->children[0]->evaluate(context) >= this->children[1]->evaluate(context);
-	if (this->type == ">")
+	case '>':
 		return this->children[0]->evaluate(context) > this->children[1]->evaluate(context);
-	if (this->type == "?:") {
+	case TYPE2INT('?',':'):
 		return this->children[this->children[0]->evaluate(context) ? 1 : 2]->evaluate(context);
-	}
-	if (this->type == "[]") {
+	case TYPE2INT('[',']'):
 		return this->children[0]->evaluate(context)[this->children[1]->evaluate(context)];
-	}
-	if (this->type == "I")
+	case 'I':
 		return -this->children[0]->evaluate(context);
-	if (this->type == "C")
+	case 'C':
 		return this->const_value;
-	if (this->type == "R") {
-		Value v1 = this->children[0]->evaluate(context);
-		Value v2 = this->children[1]->evaluate(context);
-                if (this->children.size() == 2) {
-                        if (v1.type() == Value::NUMBER && v2.type() == Value::NUMBER) {
-                                Value::RangeType range(v1.toDouble(), v2.toDouble());
-                                return Value(range);
-                        }
-                } else {
-        		Value v3 = this->children[2]->evaluate(context);
-                        if (v1.type() == Value::NUMBER && v2.type() == Value::NUMBER && v3.type() == Value::NUMBER) {
-                                Value::RangeType range(v1.toDouble(), v2.toDouble(), v3.toDouble());
-                                return Value(range);
-                        }
-                }
-		return Value();
-	}
-	if (this->type == "V") {
-		Value::VectorType vec;
-		BOOST_FOREACH(const Expression *e, this->children) {
-			vec.push_back(e->evaluate(context));
-		}
-		return Value(vec);
-	}
-	if (this->type == "L")
+	case 'R':
+		return sub_evaluate_range(context);
+	case 'V':
+		return sub_evaluate_vector(context);
+	case 'L':
 		return context->lookup_variable(this->var_name);
-	if (this->type == "N")
-	{
-		Value v = this->children[0]->evaluate(context);
-
-		if (v.type() == Value::VECTOR && this->var_name == "x")
-			return v[0];
-		if (v.type() == Value::VECTOR && this->var_name == "y")
-			return v[1];
-		if (v.type() == Value::VECTOR && this->var_name == "z")
-			return v[2];
-
-		if (v.type() == Value::RANGE && this->var_name == "begin")
-			return Value(v[0]);
-		if (v.type() == Value::RANGE && this->var_name == "step")
-			return Value(v[1]);
-		if (v.type() == Value::RANGE && this->var_name == "end")
-			return Value(v[2]);
-
-		return Value();
-	}
-	if (this->type == "F") {
-		FuncRecursionGuard g(*this);
-		if (g.recursion_detected()) { 
-			PRINTB("ERROR: Recursion detected calling function '%s'", this->call_funcname);
-			return Value();
-		}
-
-		EvalContext c(context, this->call_arguments);
-		return context->evaluate_function(this->call_funcname, &c);
+	case 'N':
+		return sub_evaluate_member(context);
+	case 'F':
+		return sub_evaluate_function(context);
 	}
 	abort();
 }
