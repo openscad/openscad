@@ -278,7 +278,6 @@ def process_scadfile(infilename,buildpaths,testpaths):
 		if '// modified by '+__file__ in line:
 			uprint('already modified',infilename)
 			fin.close()
-			fout.close()
 			return
 
 	fout=open(outfilename,u'wb')
@@ -328,7 +327,6 @@ def process_ctestfile(infilename,buildpaths,testpaths):
 		if '# modified by '+__file__ in line:
 			uprint('already modified',infilename)
 			fin.close()
-			fout.close()
 			return
 
 	fout=open(outfilename,u'wb')

@@ -15,10 +15,13 @@ echo(     "atan(-1/0)",atan(-1/0));
 echo("atan2(  0,   0)",atan2(  0,    0));
 echo("atan2( -0,   0)",atan2( -0,    0));
 echo("atan2(  0,  -0)",atan2(  0,   -0));
+echo("atan2( -0,  -0)",atan2( -0,   -0));
+
 echo("atan2(  0,   1)",atan2(  0,    1));
 echo("atan2(  0,  -1)",atan2(  0,   -1));
 echo("atan2(  1,   0)",atan2(  1,    0));
 echo("atan2( -1,   0)",atan2( -1,    0));
+
 echo("atan2( -0,   1)",atan2( -0,    1));
 echo("atan2( -0,  -1)",atan2( -0,   -1));
 echo("atan2(  1,  -0)",atan2(  1,   -0));
