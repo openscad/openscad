@@ -196,9 +196,11 @@ Value builtin_min(const Context *, const EvalContext *evalctx)
 {
 	if (evalctx->numArgs() >= 1 && evalctx->getArgValue(0).type() == Value::NUMBER) {
 		double val = evalctx->getArgValue(0).toDouble();
-		for (size_t i = 1; i < evalctx->numArgs(); i++)
-			if (evalctx->getArgValue(1).type() == Value::NUMBER)
-				val = fmin(val, evalctx->getArgValue(i).toDouble());
+		for (size_t i = 1; i < evalctx->numArgs(); i++) {
+			Value v = evalctx->getArgValue(i);
+			if (v.type() == Value::NUMBER)
+				val = fmin(val, v.toDouble());
+		}
 		return Value(val);
 	}
 	return Value();
@@ -208,9 +210,11 @@ Value builtin_max(const Context *, const EvalContext *evalctx)
 {
 	if (evalctx->numArgs() >= 1 && evalctx->getArgValue(0).type() == Value::NUMBER) {
 		double val = evalctx->getArgValue(0).toDouble();
-		for (size_t i = 1; i < evalctx->numArgs(); i++)
-			if (evalctx->getArgValue(1).type() == Value::NUMBER)
-				val = fmax(val, evalctx->getArgValue(i).toDouble());
+		for (size_t i = 1; i < evalctx->numArgs(); i++) {
+			Value v = evalctx->getArgValue(i);
+			if (v.type() == Value::NUMBER)
+				val = fmax(val, v.toDouble());
+		}
 		return Value(val);
 	}
 	return Value();
