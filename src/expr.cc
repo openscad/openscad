@@ -170,6 +170,16 @@ Value Expression::evaluate(const Context *context) const
 		EvalContext c(context, this->call_arguments);
 		return context->evaluate_function(this->call_funcname, &c);
 	}
+	if (this->type == "l") { // let expression
+		EvalContext let_context(context, this->call_arguments);
+
+		Context c(context);
+		for (int i = 0; i < let_context.numArgs(); i++) {
+			// NOTE: iteratively evaluated list of arguments
+			c.set_variable(let_context.getArgName(i), let_context.getArgValue(i, &c));
+		}
+		return this->children[0]->evaluate(&c);
+	}
 	abort();
 }
 
@@ -228,6 +238,17 @@ std::string Expression::toString() const
 			stream << *arg.second;
 		}
 		stream << ")";
+	}
+	else if (this->type == "l") {
+		stream << "let(";
+		for (size_t i=0; i < this->call_arguments.size(); i++) {
+			const Assignment &arg = this->call_arguments[i];
+			if (i > 0) stream << ", ";
+			if (!arg.first.empty()) stream << arg.first  << " = ";
+			stream << *arg.second;
+		}
+		stream << ") ";
+		stream << *this->children[0];
 	}
 	else {
 		assert(false && "Illegal expression type");
