@@ -120,7 +120,7 @@ def startup():
 		debug(u'PYTHONPATH: ')
 	# sys.path modification allows 'import ctest_cross_info' to work properly
 	sys.path = [os.path.join(os.path.abspath(os.curdir),u'testbin')]+sys.path
-	debug(u'sys.path after',sys.path)
+	debug(u'sys.path after modification: ',sys.path)
 
 	
 class CTestPaths:
@@ -172,7 +172,7 @@ def windows__find_im_in_registry():
 	if os.path.isfile(convert_exec): return convert_exec
 	return None
 
-def windows__find_in_PATH(progname):
+def windows__find_prog_in_PATH(progname):
 	if not os.environ.has_key['PATH']: return None
 	for path in os.environ['PATH'].split(os.pathsep):
 		if os.path.isfile(os.path.join(path,progname)):
@@ -229,19 +229,19 @@ def windows__fillpaths(paths):
 	if paths.convert_exec==None:
 		paths.convert_exec=windows__find_im_in_pfiles()
 	if paths.convert_exec==None:
-		paths.convert_exec=windows__find_in_PATH(u'convert.exe')
+		paths.convert_exec=windows__find_prog_in_PATH(u'convert.exe')
 	if paths.convert_exec==None:
 		findfail(u'imagemagick convert')
 
 	paths.openscad_exec=os.path.join(paths.abs_cmake_bindir,u'openscad_nogui.exe')
 	if not os.path.isfile(paths.openscad_exec):
-		paths.openscad_exec=windows__find_in_PATH(u'openscad_nogui.exe')
+		paths.openscad_exec=windows__find_prog_in_PATH(u'openscad_nogui.exe')
 		if paths.openscad_exec==None:
 			findfail(paths.openscad_exec)
 
 	paths.ctest_exec=windows__find_ctest_in_pfiles()
 	if paths.ctest_exec==None:
-		paths.ctest_exec=windows__find_in_PATH(u'ctest.exe')
+		paths.ctest_exec=windows__find_prog_in_PATH(u'ctest.exe')
 	if paths.ctest_exec==None:
 		findfail(u'ctest.exe')
 	paths.normalize()
