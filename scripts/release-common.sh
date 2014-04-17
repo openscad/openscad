@@ -472,17 +472,21 @@ if [ $BUILD_TESTS ]; then
         TARXCLUDE='--exclude=.git* --exclude=*.a --exclude=*.obj --exclude=tests/bin* --exclude=CMakeCache*'
         TARCMD='tar prf '$TARFILE' '$TARXCLUDE
        	for subdir in testdata libraries examples doc; do
-          echo -n $subdir
+          echo -n $subdir' '
           #echo $TARCMD $subdir
           $TARCMD $subdir
+          if [ $? -ne 0 ]; then echo tar error && exit 1; fi
         done
         #echo $TARCMD tests
-        echo -n tests
+        echo -n tests' '
         $TARCMD tests
+        if [ $? -ne 0 ]; then echo tar error && exit 1; fi
         cd $TESTBINABSDIR/..
         #echo $TARCMD $TESTBINDIR
-        echo -n $TESTBINDIR
+        echo -n $TESTBINDIR' '
         $TARCMD $TESTBINDIR
+        if [ $? -ne 0 ]; then echo tar error && exit 1; fi
+        echo
 
         cd $DEPLOYDIR
         if [ -e ./OpenSCAD-Tests-$VERSION ]; then
