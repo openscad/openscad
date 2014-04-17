@@ -126,7 +126,7 @@ static inline int type2int(register const char *typestr)
 {
 	// the following asserts basic ASCII only so sign extension does not matter
 	// utilize the fact that type strings may have two characters at most
-#ifdef DEBUG
+#if 0 // defined(DEBUG) // may need this code for future development
 	register int c1, result = *typestr;
 	if (result && 0 != (c1 = typestr[1])) {
 		// take the third character for error checking only
