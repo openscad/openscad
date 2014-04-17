@@ -462,26 +462,26 @@ if [ $BUILD_TESTS ]; then
         # ctest on Windows(TM). For the sake of simplicity, we do not
         # create an installer for the tests.
 
-        echo "Copying files..."
+        echo "Copying folders..."
         cd $OPENSCADDIR
         # This copies a lot of unnecessary stuff but that's OK.
         # as above, we use tar as a somewhat portable alternative to 
         # 'cp', as we can easily do 'exclude'.
         TARFILE=$OPENSCADDIR/ostests.tar
         rm -f $TARFILE
-        TARXCLUDE='--exclude=.git* --exclude=*.a --exclude=*.obj --exclude=CMakeCache*'
+        TARXCLUDE='--exclude=.git* --exclude=*.a --exclude=*.obj --exclude=tests/bin* --exclude=CMakeCache*'
         TARCMD='tar prf '$TARFILE' '$TARXCLUDE
        	for subdir in testdata libraries examples doc; do
-          echo $subdir
+          echo -n $subdir
           #echo $TARCMD $subdir
           $TARCMD $subdir
         done
         #echo $TARCMD tests
-        echo tests
+        echo -n tests
         $TARCMD tests
         cd $TESTBINABSDIR/..
         #echo $TARCMD $TESTBINDIR
-        echo $TESTBINDIR
+        echo -n $TESTBINDIR
         $TARCMD $TESTBINDIR
 
         cd $DEPLOYDIR
