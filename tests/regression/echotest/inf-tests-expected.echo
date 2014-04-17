@@ -1,23 +1,290 @@
-ECHO: "1/0", inf
-ECHO: "-1/0", -inf
-ECHO: "sin(1/0)", nan
-ECHO: "cos(1/0)", nan
-ECHO: "tan(1/0)", nan
-ECHO: "asin(1/0)", nan
-ECHO: "acos(1/0)", nan
-ECHO: "atan(1/0)", 90
-ECHO: "atan(-1/0)", -90
-ECHO: "atan2(1/0,-1/0)", 135
-ECHO: "ceil(1/0)", inf
-ECHO: "floor(1/0)", inf
-ECHO: "exp(2,1/0)", undef
-ECHO: "ln(1/0)", inf
-ECHO: "log(1/0)", inf
-ECHO: "max(-1/0,1/0)", inf
-ECHO: "min(-1/0,1/0)", -inf
-ECHO: "pow(2,1/0)", inf
-ECHO: "round(1/0)", inf
-ECHO: "sign(1/0)", 1
-ECHO: "sign(-1/0)", -1
-ECHO: "sqrt(1/0)", inf
-ECHO: "sqrt(-1/0)", nan
+ECHO: "0", 0
+ECHO: "-0", 0
+ECHO: " 0/ 0", nan
+ECHO: "-0/ 0", nan
+ECHO: " 0/-0", nan
+ECHO: "-0/-0", nan
+ECHO: " 1/ 0", inf
+ECHO: "-1/ 0", -inf
+ECHO: " 1/-0", -inf
+ECHO: "-1/-0", inf
+ECHO: " 0/ 1", 0
+ECHO: "-0/ 1", 0
+ECHO: " 0/-1", 0
+ECHO: "-0/-1", 0
+ECHO: "sin( 0/ 0)", nan
+ECHO: "sin(-0/ 0)", nan
+ECHO: "sin( 0/-0)", nan
+ECHO: "sin(-0/-0)", nan
+ECHO: "sin( 1/ 0)", nan
+ECHO: "sin(-1/ 0)", nan
+ECHO: "sin( 1/-0)", nan
+ECHO: "sin(-1/-0)", nan
+ECHO: "sin( 0/ 1)", 0
+ECHO: "sin(-0/ 1)", 0
+ECHO: "sin( 0/-1)", 0
+ECHO: "sin(-0/-1)", 0
+ECHO: "cos( 0/ 0)", nan
+ECHO: "cos(-0/ 0)", nan
+ECHO: "cos( 0/-0)", nan
+ECHO: "cos(-0/-0)", nan
+ECHO: "cos( 1/ 0)", nan
+ECHO: "cos(-1/ 0)", nan
+ECHO: "cos( 1/-0)", nan
+ECHO: "cos(-1/-0)", nan
+ECHO: "cos( 0/ 1)", 1
+ECHO: "cos(-0/ 1)", 1
+ECHO: "cos( 0/-1)", 1
+ECHO: "cos(-0/-1)", 1
+ECHO: "tan( 0/ 0)", nan
+ECHO: "tan(-0/ 0)", nan
+ECHO: "tan( 0/-0)", nan
+ECHO: "tan(-0/-0)", nan
+ECHO: "tan( 1/ 0)", nan
+ECHO: "tan(-1/ 0)", nan
+ECHO: "tan( 1/-0)", nan
+ECHO: "tan(-1/-0)", nan
+ECHO: "tan( 0/ 1)", 0
+ECHO: "tan(-0/ 1)", 0
+ECHO: "tan( 0/-1)", 0
+ECHO: "tan(-0/-1)", 0
+ECHO: "asin( 0/ 0)", nan
+ECHO: "asin(-0/ 0)", nan
+ECHO: "asin( 0/-0)", nan
+ECHO: "asin(-0/-0)", nan
+ECHO: "asin( 1/ 0)", nan
+ECHO: "asin(-1/ 0)", nan
+ECHO: "asin( 1/-0)", nan
+ECHO: "asin(-1/-0)", nan
+ECHO: "asin( 0/ 1)", 0
+ECHO: "asin(-0/ 1)", 0
+ECHO: "asin( 0/-1)", 0
+ECHO: "asin(-0/-1)", 0
+ECHO: "acos( 0/ 0)", nan
+ECHO: "acos(-0/ 0)", nan
+ECHO: "acos( 0/-0)", nan
+ECHO: "acos(-0/-0)", nan
+ECHO: "acos( 1/ 0)", nan
+ECHO: "acos(-1/ 0)", nan
+ECHO: "acos( 1/-0)", nan
+ECHO: "acos(-1/-0)", nan
+ECHO: "acos( 0/ 1)", 90
+ECHO: "acos(-0/ 1)", 90
+ECHO: "acos( 0/-1)", 90
+ECHO: "acos(-0/-1)", 90
+ECHO: "atan( 0/ 0)", nan
+ECHO: "atan(-0/ 0)", nan
+ECHO: "atan( 0/-0)", nan
+ECHO: "atan(-0/-0)", nan
+ECHO: "atan( 1/ 0)", 90
+ECHO: "atan(-1/ 0)", -90
+ECHO: "atan( 1/-0)", -90
+ECHO: "atan(-1/-0)", 90
+ECHO: "atan( 0/ 1)", 0
+ECHO: "atan(-0/ 1)", 0
+ECHO: "atan( 0/-1)", 0
+ECHO: "atan(-0/-1)", 0
+ECHO: "atan2(  0,   0)", 0
+ECHO: "atan2( -0,   0)", 0
+ECHO: "atan2(  0,  -0)", 180
+ECHO: "atan2( -0,  -0)", -180
+ECHO: "atan2(  0,   1)", 0
+ECHO: "atan2(  0,  -1)", 180
+ECHO: "atan2(  1,   0)", 90
+ECHO: "atan2( -1,   0)", -90
+ECHO: "atan2( -0,   1)", 0
+ECHO: "atan2( -0,  -1)", -180
+ECHO: "atan2(  1,  -0)", 90
+ECHO: "atan2( -1,  -0)", -90
+ECHO: "atan2( 1/0, 1/0)", 45
+ECHO: "atan2( 1/0,-1/0)", 135
+ECHO: "atan2(-1/0, 1/0)", -45
+ECHO: "atan2(-1/0,-1/0)", -135
+ECHO: "atan2( 1/0, 1  )", 90
+ECHO: "atan2( 1/0,-1  )", 90
+ECHO: "atan2(-1/0, 1  )", -90
+ECHO: "atan2(-1/0,-1  )", -90
+ECHO: "atan2( 1/0, 0  )", 90
+ECHO: "atan2( 1/0,-0  )", 90
+ECHO: "atan2(-1/0, 0  )", -90
+ECHO: "atan2(-1/0,-0  )", -90
+ECHO: "atan2( 1  , 1/0)", 0
+ECHO: "atan2( 1  ,-1/0)", 180
+ECHO: "atan2(-1  , 1/0)", 0
+ECHO: "atan2(-1  ,-1/0)", -180
+ECHO: "atan2(   0, 1/0)", 0
+ECHO: "atan2(   0,-1/0)", 180
+ECHO: "atan2(  -0, 1/0)", 0
+ECHO: "atan2(  -0,-1/0)", -180
+ECHO: "ceil( 0/ 0)", nan
+ECHO: "ceil(-0/ 0)", nan
+ECHO: "ceil( 0/-0)", nan
+ECHO: "ceil(-0/-0)", nan
+ECHO: "ceil( 1/ 0)", inf
+ECHO: "ceil(-1/ 0)", -inf
+ECHO: "ceil( 1/-0)", -inf
+ECHO: "ceil(-1/-0)", inf
+ECHO: "ceil( 0/ 1)", 0
+ECHO: "ceil(-0/ 1)", 0
+ECHO: "ceil( 0/-1)", 0
+ECHO: "ceil(-0/-1)", 0
+ECHO: "floor( 0/ 0)", nan
+ECHO: "floor(-0/ 0)", nan
+ECHO: "floor( 0/-0)", nan
+ECHO: "floor(-0/-0)", nan
+ECHO: "floor( 1/ 0)", inf
+ECHO: "floor(-1/ 0)", -inf
+ECHO: "floor( 1/-0)", -inf
+ECHO: "floor(-1/-0)", inf
+ECHO: "floor( 0/ 1)", 0
+ECHO: "floor(-0/ 1)", 0
+ECHO: "floor( 0/-1)", 0
+ECHO: "floor(-0/-1)", 0
+ECHO: "ln( 0/ 0)", nan
+ECHO: "ln(-0/ 0)", nan
+ECHO: "ln( 0/-0)", nan
+ECHO: "ln(-0/-0)", nan
+ECHO: "ln( 1/ 0)", inf
+ECHO: "ln(-1/ 0)", nan
+ECHO: "ln( 1/-0)", nan
+ECHO: "ln(-1/-0)", inf
+ECHO: "ln( 0/ 1)", -inf
+ECHO: "ln(-0/ 1)", -inf
+ECHO: "ln( 0/-1)", -inf
+ECHO: "ln(-0/-1)", -inf
+ECHO: "log( 0/ 0)", nan
+ECHO: "log(-0/ 0)", nan
+ECHO: "log( 0/-0)", nan
+ECHO: "log(-0/-0)", nan
+ECHO: "log( 1/ 0)", inf
+ECHO: "log(-1/ 0)", nan
+ECHO: "log( 1/-0)", nan
+ECHO: "log(-1/-0)", inf
+ECHO: "log( 0/ 1)", -inf
+ECHO: "log(-0/ 1)", -inf
+ECHO: "log( 0/-1)", -inf
+ECHO: "log(-0/-1)", -inf
+ECHO: "round( 0/ 0)", nan
+ECHO: "round(-0/ 0)", nan
+ECHO: "round( 0/-0)", nan
+ECHO: "round(-0/-0)", nan
+ECHO: "round( 1/ 0)", inf
+ECHO: "round(-1/ 0)", -inf
+ECHO: "round( 1/-0)", -inf
+ECHO: "round(-1/-0)", inf
+ECHO: "round( 0/ 1)", 0
+ECHO: "round(-0/ 1)", 0
+ECHO: "round( 0/-1)", 0
+ECHO: "round(-0/-1)", 0
+ECHO: "sign( 0/ 0)", 0
+ECHO: "sign(-0/ 0)", 0
+ECHO: "sign( 0/-0)", 0
+ECHO: "sign(-0/-0)", 0
+ECHO: "sign( 1/ 0)", 1
+ECHO: "sign(-1/ 0)", -1
+ECHO: "sign( 1/-0)", -1
+ECHO: "sign(-1/-0)", 1
+ECHO: "sign( 0/ 1)", 0
+ECHO: "sign(-0/ 1)", 0
+ECHO: "sign( 0/-1)", 0
+ECHO: "sign(-0/-1)", 0
+ECHO: "sqrt( 0/ 0)", nan
+ECHO: "sqrt(-0/ 0)", nan
+ECHO: "sqrt( 0/-0)", nan
+ECHO: "sqrt(-0/-0)", nan
+ECHO: "sqrt( 1/ 0)", inf
+ECHO: "sqrt(-1/ 0)", nan
+ECHO: "sqrt( 1/-0)", nan
+ECHO: "sqrt(-1/-0)", inf
+ECHO: "sqrt( 0/ 1)", 0
+ECHO: "sqrt(-0/ 1)", 0
+ECHO: "sqrt( 0/-1)", 0
+ECHO: "sqrt(-0/-1)", 0
+ECHO: "pow(2, 0/ 0)", nan
+ECHO: "pow(2,-0/ 0)", nan
+ECHO: "pow(2, 0/-0)", nan
+ECHO: "pow(2,-0/-0)", nan
+ECHO: "pow(2, 1/ 0)", inf
+ECHO: "pow(2,-1/ 0)", 0
+ECHO: "pow(2, 1/-0)", 0
+ECHO: "pow(2,-1/-0)", inf
+ECHO: "pow(2, 0/ 1)", 1
+ECHO: "pow(2,-0/ 1)", 1
+ECHO: "pow(2, 0/-1)", 1
+ECHO: "pow(2,-0/-1)", 1
+ECHO: "exp(2, 0/ 0)", undef
+ECHO: "exp(2,-0/ 0)", undef
+ECHO: "exp(2, 0/-0)", undef
+ECHO: "exp(2,-0/-0)", undef
+ECHO: "exp(2, 1/ 0)", undef
+ECHO: "exp(2,-1/ 0)", undef
+ECHO: "exp(2, 1/-0)", undef
+ECHO: "exp(2,-1/-0)", undef
+ECHO: "exp(2, 0/ 1)", undef
+ECHO: "exp(2,-0/ 1)", undef
+ECHO: "exp(2, 0/-1)", undef
+ECHO: "exp(2,-0/-1)", undef
+ECHO: "max(  0,   0)", 0
+ECHO: "max( -0,   0)", 0
+ECHO: "max(  0,  -0)", 0
+ECHO: "max( -0,  -0)", 0
+ECHO: "max(  0,   1)", 1
+ECHO: "max(  0,  -1)", 0
+ECHO: "max(  1,   0)", 1
+ECHO: "max( -1,   0)", 0
+ECHO: "max( -0,   1)", 1
+ECHO: "max( -0,  -1)", 0
+ECHO: "max(  1,  -0)", 1
+ECHO: "max( -1,  -0)", 0
+ECHO: "max( 1/0, 1/0)", inf
+ECHO: "max( 1/0,-1/0)", inf
+ECHO: "max(-1/0, 1/0)", inf
+ECHO: "max(-1/0,-1/0)", -inf
+ECHO: "max( 1/0, 1  )", inf
+ECHO: "max( 1/0,-1  )", inf
+ECHO: "max(-1/0, 1  )", 1
+ECHO: "max(-1/0,-1  )", -1
+ECHO: "max( 1/0, 0  )", inf
+ECHO: "max( 1/0,-0  )", inf
+ECHO: "max(-1/0, 0  )", 0
+ECHO: "max(-1/0,-0  )", 0
+ECHO: "max( 1  , 1/0)", inf
+ECHO: "max( 1  ,-1/0)", 1
+ECHO: "max(-1  , 1/0)", inf
+ECHO: "max(-1  ,-1/0)", -1
+ECHO: "max(   0, 1/0)", inf
+ECHO: "max(   0,-1/0)", 0
+ECHO: "max(  -0, 1/0)", inf
+ECHO: "max(  -0,-1/0)", 0
+ECHO: "min(  0,   0)", 0
+ECHO: "min( -0,   0)", 0
+ECHO: "min(  0,  -0)", 0
+ECHO: "min( -0,  -0)", 0
+ECHO: "min(  0,   1)", 0
+ECHO: "min(  0,  -1)", -1
+ECHO: "min(  1,   0)", 0
+ECHO: "min( -1,   0)", -1
+ECHO: "min( -0,   1)", 0
+ECHO: "min( -0,  -1)", -1
+ECHO: "min(  1,  -0)", 0
+ECHO: "min( -1,  -0)", -1
+ECHO: "min( 1/0, 1/0)", inf
+ECHO: "min( 1/0,-1/0)", -inf
+ECHO: "min(-1/0, 1/0)", -inf
+ECHO: "min(-1/0,-1/0)", -inf
+ECHO: "min( 1/0, 1  )", 1
+ECHO: "min( 1/0,-1  )", -1
+ECHO: "min(-1/0, 1  )", -inf
+ECHO: "min(-1/0,-1  )", -inf
+ECHO: "min( 1/0, 0  )", 0
+ECHO: "min( 1/0,-0  )", 0
+ECHO: "min(-1/0, 0  )", -inf
+ECHO: "min(-1/0,-0  )", -inf
+ECHO: "min( 1  , 1/0)", 1
+ECHO: "min( 1  ,-1/0)", -inf
+ECHO: "min(-1  , 1/0)", -1
+ECHO: "min(-1  ,-1/0)", -inf
+ECHO: "min(   0, 1/0)", 0
+ECHO: "min(   0,-1/0)", -inf
+ECHO: "min(  -0, 1/0)", 0
+ECHO: "min(  -0,-1/0)", -inf
