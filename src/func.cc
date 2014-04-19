@@ -35,6 +35,7 @@
 #include "stl-utils.h"
 #include "printutils.h"
 #include <boost/foreach.hpp>
+#include "PlatformUtils.h"
 
 #include <boost/math/special_functions/fpclassify.hpp>
 using boost::math::isnan;
@@ -260,11 +261,15 @@ Value builtin_atan(const Context *, const EvalContext *evalctx)
 
 Value builtin_atan2(const Context *, const EvalContext *evalctx)
 {
-	if (evalctx->numArgs() == 2 && evalctx->getArgValue(0).type() == Value::NUMBER && evalctx->getArgValue(1).type() == Value::NUMBER) {
-		PRINTDB("atan2 %f %f",
-			evalctx->getArgValue(0).toDouble() %
-			evalctx->getArgValue(0).toDouble() );
-		return Value(rad2deg(atan2(evalctx->getArgValue(0).toDouble(), evalctx->getArgValue(1).toDouble())));
+	if (evalctx->numArgs() == 2) {
+		Value y = evalctx->getArgValue(0);
+		Value x = evalctx->getArgValue(1);
+		if (y.type()==Value::NUMBER && x.type()==Value::NUMBER) {
+			double yfp = y.toDouble();
+			double xfp = x.toDouble();
+			return Value(rad2deg(PlatformUtils::atan2(yfp,xfp)));
+			//return Value(rad2deg(atan2(yfp,xfp)));
+		}
 	}
 	return Value();
 }

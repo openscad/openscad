@@ -239,6 +239,10 @@ case $OS in
         else
             make $TARGET -j$NUMCPU
         fi
+	if [ $? -ne 0 ]; then
+            echo "error during make. exiting"
+            exit
+        fi
         if [ ! -e $TARGET/openscad.exe ]; then
             echo "cant find $TARGET/openscad.exe. build failed. stopping."
             exit
@@ -246,6 +250,10 @@ case $OS in
         # make console pipe-able openscad.com - see winconsole.pri for info
         qmake CONFIG+=winconsole ../openscad.pro
         make
+	if [ $? -ne 0 ]; then
+            echo "error during make. exiting"
+            exit
+        fi
         if [ ! -e $TARGET/openscad.com ]; then
             echo "cant find $TARGET/openscad.com. build failed. stopping."
             exit
@@ -298,6 +306,10 @@ if [ $BUILD_TESTS ]; then
             echo "notexe. debugging build process" > openscad_nogui.exe
         else
             make -j$NUMCPU
+        fi
+	if [ $? -ne 0 ]; then
+            echo "error during make. exiting"
+            exit
         fi
         if [ ! -e openscad_nogui.exe ]; then
             echo 'test cross-build failed'

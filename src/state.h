@@ -3,6 +3,7 @@
 
 #include <cstring>
 #include "linalg.h"
+#include <sstream>
 
 class State
 {
@@ -27,7 +28,16 @@ public:
   const AbstractNode *parent() const { return this->parentnode; }
 	const Transform3d &matrix() const { return this->matrix_; }
 	const Color4f &color() const { return this->color_; }
-
+  std::string dump() {
+    std::stringstream s;
+    s << "State: isPrefix: " << isPrefix();
+    s << " isPostfix: " << isPostfix();
+    s << " numChildren: " << numChildren();
+    s << "\nparent: " << parent();
+    s << " color: " << color().transpose();
+    s << " transform3d matrix:\n" << matrix().affine();
+    return s.str();
+  }
 private:
   const AbstractNode * parentnode;
   bool isprefix;

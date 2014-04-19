@@ -32,6 +32,7 @@
 #ifdef ENABLE_OPENCSG
 #  include <opencsg.h>
 #endif
+#include "printutils.h"
 
 class OpenCSGPrim : public OpenCSG::Primitive
 {
@@ -42,6 +43,7 @@ public:
 	Transform3d m;
 	Renderer::csgmode_e csgmode;
 	virtual void render() {
+		PRINTDB("%s",m.affine());
 		glPushMatrix();
 		glMultMatrixd(m.data());
 		Renderer::render_surface(geom, csgmode, m);

@@ -2,6 +2,7 @@
 #define THROWNTOGETHERRENDERER_H_
 
 #include "renderer.h"
+#include "printutils.h"
 
 class ThrownTogetherRenderer : public Renderer
 {

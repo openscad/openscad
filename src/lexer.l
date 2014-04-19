@@ -44,9 +44,11 @@ namespace fs = boost::filesystem;
 #include "unistd.h"
 #endif
 #if defined __WIN32__ || defined _MSC_VER
+#if !defined(__MINGW64__)
 extern "C" int __cdecl _isatty(int _FileHandle);
 #define isatty _isatty
-#endif
+#endif // MINGW64
+#endif // WIN32 || _MSC_VER
 
 std::string stringcontents;
 int lexerget_lineno(void);

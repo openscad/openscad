@@ -1,4 +1,7 @@
 #include "PlatformUtils.h"
+#include "math.h"
+#include <boost/math/special_functions/fpclassify.hpp>
+
 #include "printutils.h"
 #include <windows.h>
 #ifndef _WIN32_IE
@@ -9,6 +12,30 @@
 std::string PlatformUtils::pathSeparatorChar()
 {
 	return ";";
+}
+
+double PlatformUtils::atan2( double y, double x )
+{
+#if defined(__MINGW32__) && !defined(__MINGW64__)
+	// MINGW32 atan2 on Win7x64 returns 'nan', but should not.
+	// We use the Open Group standard for atan2
+	double result = 0;
+	if ( boost::math::isinf)(y) ) {
+		if ( boost::math::isfinite)(x) ) {
+			result = M_PI*2.0/4.0;
+		} else if (x<0) { // x = -infinity
+			result = M_PI*3.0/4.0
+		} else if (x>0) { // x = +infinity
+			result = M_PI*1.0/4.0
+		} else {
+			PRINT("ERROR: x==infinity, x not <0, and x not >0");
+			return 0;
+		}
+		if ( y < 0 ) result *= -1;
+		return result;
+	}
+#endif
+	return std::atan2(y,x);
 }
 
 // convert from windows api w_char strings (usually utf16) to utf8 std::string

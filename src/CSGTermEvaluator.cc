@@ -148,6 +148,8 @@ Response CSGTermEvaluator::visit(State &state, const CsgNode &node)
 
 Response CSGTermEvaluator::visit(State &state, const TransformNode &node)
 {
+	PRINTDB("Visit-Node: %s",node.toString());
+	PRINTDB("Visit-%s",state.dump());
 	if (state.isPrefix()) {
 		state.setMatrix(state.matrix() * node.matrix);
 	}

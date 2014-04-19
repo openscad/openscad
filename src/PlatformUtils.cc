@@ -2,6 +2,7 @@
 
 #include "PlatformUtils.h"
 #include "boosty.h"
+#include <cmath> // atan2
 
 extern std::vector<std::string> librarypath;
 
@@ -76,6 +77,13 @@ bool PlatformUtils::createBackupPath()
 	}
 	return OK;
 }
+
+#if !defined(__MINGW32__) && !defined(__MINGW64__) && !defined(_MSC_VER)
+double PlatformUtils::atan2(double y,double x)
+{
+	return std::atan2(y,x);
+}
+#endif
 
 #include "version_check.h"
 #define STRINGIFY(x) #x

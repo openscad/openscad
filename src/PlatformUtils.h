@@ -11,7 +11,7 @@ namespace PlatformUtils {
 	std::string backupPath();
 	bool createBackupPath();
 	std::string info();
-        
+
         /**
          * Single character separating path specifications in a list
          * (e.g. OPENSCADPATH). On Windows that's ';' and on most other
@@ -20,6 +20,16 @@ namespace PlatformUtils {
          * @return the path separator
          */
         std::string pathSeparatorChar();
+
+        /**
+         * quadrant-conscious arc-tangent. the platform differences come into
+         * play when dealing with Not-a-Number (NaN) and Infinity (inf) inputs.
+         * See Wikipedia, and compare Linux/Open Group atan2 vs MSVC atan2.
+         * We use Linux/Open Group version & test inf input in Regression Tests
+         *
+         * @return the arctangent, in binary floating-point Radians
+         */
+	double atan2(double y, double x);
 }
 
 #endif
