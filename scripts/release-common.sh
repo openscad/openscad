@@ -473,8 +473,12 @@ if [ $BUILD_TESTS ]; then
         # Build a .zip file containing all the files we need to run a
         # ctest on Windows(TM). For the sake of simplicity, we do not
         # create an installer for the tests.
+        #
+        # $PACKDIR is the folder where we build-up the file tree that will
+        # appear when the user opens the .zip package on a Windows(TM) machine
+        PACKDIR=OpenSCAD-Tests-$VERSION-x86-$ARCH
 
-        echo "Copying folders..."
+        echo -n "Copying folders: "
         cd $OPENSCADDIR
         # This copies a lot of unnecessary stuff but that's OK.
         # as above, we use tar as a somewhat portable alternative to 
@@ -501,11 +505,11 @@ if [ $BUILD_TESTS ]; then
         echo
 
         cd $DEPLOYDIR
-        if [ -e ./OpenSCAD-Tests-$VERSION ]; then
-          rm -rf ./OpenSCAD-Tests-$VERSION
+        if [ -e ./$PACKDIR ]; then
+          rm -rf ./$PACKDIR
         fi
-        mkdir OpenSCAD-Tests-$VERSION
-        cd OpenSCAD-Tests-$VERSION
+        mkdir ./$PACKDIR
+        cd ./$PACKDIR
         tar pxf $OPENSCADDIR/ostests.tar
         #rm -f $OPENSCADDIR/ostests.tar
 
@@ -513,20 +517,23 @@ if [ $BUILD_TESTS ]; then
         # our .zip file. We also want to move some files around for easier
         # access for the user:
         cd $DEPLOYDIR
-        cd ./OpenSCAD-Tests-$VERSION
+        cd ./$PACKDIR
         #echo "Copying files for ease of use when running from cmdline"
         cp -v ./tests/CTest_Cross_Console.py .
         cp -v ./tests/WinReadme.txt .
 	cp -v ./tests/mingwcon.bat ./$TESTBINDIR/
 
         cd $DEPLOYDIR
-        cd ./OpenSCAD-Tests-$VERSION
+        cd ./$PACKDIR
 
-	echo 'Converting linefeed to carriage-return+linefeed'
-	for textfile in `find . | grep txt$`; do lf2crlf $textfile; done
-	for textfile in `find . | grep py$`; do lf2crlf $textfile; done
-	for textfile in `find . | grep cmake$`; do lf2crlf $textfile; done
-	for textfile in `find . | grep bat$`; do lf2crlf $textfile; done
+        echo -n 'Converting linefeed to carriage-return+linefeed '
+        for extension in txt py cmake bat; do
+            echo -n '*.'$extension' '
+            for textfile in `find . | grep $extension'$'`; do
+                lf2crlf $textfile
+            done
+        done
+        echo
 
         # Test binaries can be hundreds of megabytes due to debugging info.
         # By default, we strip that. In most cases we wont need it and it
@@ -546,10 +553,10 @@ if [ $BUILD_TESTS ]; then
 
         # Build the actual .zip archive based on the file tree we've built above
         cd $DEPLOYDIR
-        ZIPFILE=OpenSCAD-Tests-$VERSION-x86-$ARCH.zip
+        ZIPFILE=$PACKDIR'.zip'
         echo "Creating binary zip package for Tests:" $ZIPFILE
         rm -f ./$ZIPFILE
-        "$ZIP" $ZIPARGS $ZIPFILE OpenSCAD-Tests-$VERSION
+        "$ZIP" $ZIPARGS $ZIPFILE $PACKDIR
 
         if [ -e $ZIPFILE ]; then
             echo "ZIP package created:" `pwd`/$ZIPFILE

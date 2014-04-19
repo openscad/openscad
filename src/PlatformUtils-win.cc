@@ -20,13 +20,13 @@ double PlatformUtils::atan2( double y, double x )
 	// MINGW32 atan2 on Win7x64 returns 'nan', but should not.
 	// We use the Open Group standard for atan2
 	double result = 0;
-	if ( boost::math::isinf)(y) ) {
-		if ( boost::math::isfinite)(x) ) {
+	if ( (boost::math::isinf)(y) ) {
+		if ( (boost::math::isfinite)(x) ) {
 			result = M_PI*2.0/4.0;
 		} else if (x<0) { // x = -infinity
-			result = M_PI*3.0/4.0
+			result = M_PI*3.0/4.0;
 		} else if (x>0) { // x = +infinity
-			result = M_PI*1.0/4.0
+			result = M_PI*1.0/4.0;
 		} else {
 			PRINT("ERROR: x==infinity, x not <0, and x not >0");
 			return 0;
