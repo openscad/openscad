@@ -1,0 +1,12 @@
+group() {
+	sphere($fn = 0, $fa = 12, $fs = 2, r = 1);
+	multmatrix([[nan, nan, nan, 0], [nan, nan, nan, 0], [nan, nan, nan, 0], [0, 0, 0, 1]]) {
+		cube(size = [1, 1, 1], center = false);
+	}
+	multmatrix([[1, 0, 0, 4], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+		sphere($fn = 0, $fa = 12, $fs = 2, r = 1);
+		multmatrix([[nan, nan, nan, 0], [nan, nan, nan, 0], [nan, nan, nan, 0], [0, 0, 0, 1]]) {
+			cube(size = [1, 1, 1], center = false);
+		}
+	}
+}
