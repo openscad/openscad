@@ -272,7 +272,6 @@ Value builtin_atan2(const Context *, const EvalContext *evalctx)
 			double yfp = y.toDouble();
 			double xfp = x.toDouble();
 			return Value(rad2deg(PlatformUtils::atan2(yfp,xfp)));
-			//return Value(rad2deg(atan2(yfp,xfp)));
 		}
 	}
 	return Value();

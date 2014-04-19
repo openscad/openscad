@@ -223,7 +223,6 @@ static void gl_draw_triangle(GLint *shaderinfo, const Vector3d &p0, const Vector
 
 void PolySet::render_surface(Renderer::csgmode_e csgmode, const Transform3d &m, GLint *shaderinfo) const
 {
-	PRINTDB("render_surface:\n%s",m.affine());
 	if (matrix_contains_infinity(m)||matrix_contains_nan(m)) {
 		PRINT("WARNING: Transformation matrix contains Not-a-Number and/or Infinity - cannot draw surface");
 		return;

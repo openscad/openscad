@@ -68,7 +68,6 @@ void ThrownTogetherRenderer::renderCSGChain(CSGChain *chain, bool highlight,
 		if (geomVisitMark[std::make_pair(obj.geom.get(), &obj.matrix)]++ > 0)
 			continue;
 		const Transform3d &m = obj.matrix;
-		PRINTDB("%s",m.affine());
 		const Color4f &c = obj.color;
 		glPushMatrix();
 		glMultMatrixd(m.data());

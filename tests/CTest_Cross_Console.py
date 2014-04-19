@@ -368,28 +368,23 @@ def process_ctestfile(infilename,buildpaths,testpaths):
 	open(infilename,u'wb').write(open(outfilename,u'rb').read())
 	uprint(infilename,u'modified \n(old version saved to:',backup_filename,u')')
 
-def windows__open_console(bindir):
-	starting_dir=unicode(bindir)
-	#cmd = u'start "OpenSCAD Test console" /wait /d c:\\temp cmd.exe'
-	#cmd = u'start /d "'+starting_dir+u'" cmd.exe "OpenSCAD Test Console"'
-	conbat=os.path.join(bindir,u'mingwcon.bat')
-	# dont use full path.. windows(TM) unicode filenames will not work
-	# properly inside os.system(). the workaround is to use os.chdir()
-	# (which does work OK with windows(TM) unicode filenames)
-	# and then open the batch file with its ascii name, not its full path.
-	#cmd = u'start /d "'+starting_dir+u'" cmd.exe "/k" "'+conbat+u'"'
-	debug('changing directory to',starting_dir)
+def windows__open_console(cmake_bindir):
+	# open a cmd.exe console in the given directory. also run a
+	# short 'batch file' that will display a short help message
+	#
+	# dont use full path for os.system() call. windows(TM) unicode 
+	# filenames will not work properly inside os.system(). the 
+	# workaround is to use os.chdir() (which does work OK with 
+	# windows(TM) unicode filenames) and then open the .batch file 
+	# with its ascii name, not its full path. 
+	starting_dir=unicode(cmake_bindir)
+	debug(u'changing directory to',starting_dir)
 	os.chdir(starting_dir)
-	conbat=u'mingwcon.bat'
-	if not os.path.isfile(conbat): findfail(conbat)
-	cmd = u'start cmd.exe "/k" "'+conbat+u'"'
+	batchfile=u'mingwcon.bat'
+	if not os.path.isfile(batchfile): findfail(batchfile)
+	cmd = u'start cmd.exe "/k" "'+batchfile+u'"'
 	uprint(u'opening console: running ',cmd)
-	uprint(os.path.isdir(starting_dir))
 	os.system( cmd.encode('mbcs') )
-
-	# figure out how to run convert script
-	# dont use mingw64 in linbuild path?
-	# figure out better windows prompt, can it be set?
 
 def open_console(testpaths):
 	uprint( u'opening console' )
@@ -408,8 +403,6 @@ startup()
 buildpaths = CTestPaths(u'buildpaths')
 testpaths = CTestPaths(u'testpaths')
 execfile(os.path.join(u'testbin',u'ctest_cross_info.py'))
-#import ctest_cross_info
-#ctest_cross_info.set_buildpaths( buildpaths )
 set_buildpaths( buildpaths )
 if u'win' in sys.platform:
 	from _winreg import *

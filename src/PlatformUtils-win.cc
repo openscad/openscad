@@ -17,8 +17,12 @@ std::string PlatformUtils::pathSeparatorChar()
 double PlatformUtils::atan2( double y, double x )
 {
 #if defined(__MINGW32__) && !defined(__MINGW64__)
-	// MINGW32 atan2 on Win7x64 returns 'nan', but should not.
-	// We use the Open Group standard for atan2
+	// MINGW32 atan2 on Win7x64 returns 'nan' when inputs are 'infinity'
+	// but this conflicts with Mingw64 behavior as well as the Open Group
+	// standard for infinity inputs which is used on *nix machines.
+	// Here we make MINGW32 conform to Open Group standard for atan2 and
+	// rely on our regression tests ('inf') to catch portability issues.
+	// Note - Untested under MSVC! (as of 2014 Apr)
 	double result = 0;
 	if ( (boost::math::isinf)(y) ) {
 		if ( (boost::math::isfinite)(x) ) {
