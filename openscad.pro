@@ -191,6 +191,15 @@ FORMS   += src/MainWindow.ui \
            src/AboutDialog.ui \
            src/ProgressWidget.ui
 
+lessThan(QT_MAJOR_VERSION, 5) {
+  lessThan(QT_MINOR_VERSION, 7) {
+    message("System has QT < 4.7, disabling setplaceholderText in MainWindow")
+    system("sed s/placeholderText/Text/g src/MainWindow.ui > src/MainWindowOldQT.ui")
+    FORMS -= src/MainWindow.ui
+    FORMS += src/MainWindowOldQT.ui
+  }
+} 
+
 HEADERS += src/typedefs.h \
            src/version_check.h \
            src/ProgressWidget.h \

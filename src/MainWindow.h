@@ -2,7 +2,14 @@
 #define MAINWINDOW_H_
 
 #include <QMainWindow>
+
+#include <QtCore/qglobal.h>
+#if QT_VERSION < 0x040700
+#include "ui_MainWindowOldQT.h"
+#else
 #include "ui_MainWindow.h"
+#endif
+
 #include "openscad.h"
 #include "modcontext.h"
 #include "module.h"

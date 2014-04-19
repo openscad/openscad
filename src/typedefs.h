@@ -5,14 +5,14 @@
 #include <vector>
 #include <boost/shared_ptr.hpp>
 
-class Assignment : public std::pair<std::string, boost::shared_ptr<class Expression> >
+typedef boost::shared_ptr<class Expression> ExpressionSP;
+class Assignment : public std::pair<std::string, ExpressionSP >
 {
 public:
-    Assignment(std::string name) : pair(name, boost::shared_ptr<class Expression>()) {}
-    Assignment(std::string name, boost::shared_ptr<class Expression> expr) : pair(name, expr) {}
+    Assignment(std::string name) : std::pair<std::string, ExpressionSP>(name, ExpressionSP()) {}
+    Assignment(std::string name, boost::shared_ptr<class Expression> expr) : std::pair<std::string, ExpressionSP>(name, expr) {}
 };
 
 typedef std::vector<Assignment> AssignmentList;
 typedef std::vector<class ModuleInstantiation*> ModuleInstantiationList;
-
 #endif
