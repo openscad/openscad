@@ -697,13 +697,22 @@ if [ ! "`command -v bison`" ]; then
   build_bison 2.6.1
 fi
 
+cmake_warn()
+{
+  echo "cmake build finished."
+  echo "if OK, logout and log back in, then restart the build"
+  exit
+}
+
 # NB! For cmake, also update the actual download URL in the function
 if [ ! "`command -v cmake`" ]; then
   build_cmake 2.8.8
+  cmake_warn
 fi
 # see README for needed version (this should match 1<minimum)
-if [ "`cmake --version | grep 'version 2.[1-8][^0-9][1-4] '`" ]; then
+if [ "`cmake --version | grep 'version 2\.[1-8]\.[0-4]'`" ]; then
   build_cmake 2.8.8
+  cmake_warn
 fi
 
 # Singly build certain tools or libraries
