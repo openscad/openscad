@@ -190,7 +190,7 @@ build_gmp()
   rm -rf gmp-$version
   if [ ! -f gmp-$version.tar.bz2 ]; then
     #curl --insecure -O ftp://ftp.gmplib.org/pub/gmp-$version/gmp-$version.tar.bz2
-    curl --insecure -O http://ftpmirror.gnu.org/gmp/gmp-$version.tar.bz2
+    curl --location --insecure -O http://ftpmirror.gnu.org/gmp/gmp-$version.tar.bz2
   fi
   tar xjf gmp-$version.tar.bz2
   cd gmp-$version
@@ -213,7 +213,7 @@ build_mpfr()
   rm -rf mpfr-$version
   if [ ! -f mpfr-$version.tar.bz2 ]; then
     #curl --insecure -O http://www.mpfr.org/mpfr-$version/mpfr-$version.tar.bz2
-    curl --insecure -O http://ftpmirror.gnu.org/mpfr/mpfr-$version.tar.bz2
+    curl --location --insecure -O http://ftpmirror.gnu.org/mpfr/mpfr-$version.tar.bz2
   fi
   tar xjf mpfr-$version.tar.bz2
   cd mpfr-$version

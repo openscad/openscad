@@ -19,20 +19,29 @@ setenv_common()
  fi
  DEPLOYDIR=$BASEDIR
 
+ PATH=$BASEDIR/bin:$PATH
+ LD_LIBRARY_PATH=$DEPLOYDIR/lib:$DEPLOYDIR/lib64
+ LD_RUN_PATH=$DEPLOYDIR/lib:$DEPLOYDIR/lib64
+ OPENSCAD_LIBRARIES=$DEPLOYDIR
+ GLEWDIR=$DEPLOYDIR
+ PKG_CONFIG_PATH=$PKG_CONFIG_PATH:$BASEDIR/lib/pkgconfig
+
  export BASEDIR
- export PATH=$BASEDIR/bin:$PATH
- export LD_LIBRARY_PATH=$DEPLOYDIR/lib:$DEPLOYDIR/lib64
- export LD_RUN_PATH=$DEPLOYDIR/lib:$DEPLOYDIR/lib64
- export OPENSCAD_LIBRARIES=$DEPLOYDIR
- export GLEWDIR=$DEPLOYDIR
+ export PATH
+ export LD_LIBRARY_PATH
+ export LD_RUN_PATH
+ export OPENSCAD_LIBRARIES
+ export GLEWDIR
+ export PKG_CONFIG_PATH
 
  echo BASEDIR: $BASEDIR
  echo DEPLOYDIR: $DEPLOYDIR
  echo PATH modified
  echo LD_LIBRARY_PATH modified
  echo LD_RUN_PATH modified
- echo OPENSCAD_LIBRARIES modified
+ echo OPENSCAD_LIBRARIES modified: $OPENSCAD_LIBRARIES
  echo GLEWDIR modified
+ echo PKG_CONFIG_PATH modified: $PKG_CONFIG_PATH
 
  if [ "`uname -m | grep sparc64`" ]; then
    echo detected sparc64. forcing 32 bit with export ABI=32
