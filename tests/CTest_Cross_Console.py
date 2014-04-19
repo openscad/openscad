@@ -37,7 +37,8 @@
 # Usage
 #
 # python CTest_Cross_Console.py                # basic run
-# python CTest_Cross_Console.py --debug        # provide extra debug info
+# python CTest_Cross_Console.py --debug        # provide debug info
+# python CTest_Cross_Console.py --debug2       # provide much more debug info
 # python CTest_Cross_Console.py --undo         # undo changes to CTestTestfile
 
 
@@ -61,8 +62,7 @@
 # variables & current directory chosen so that simply typing 'ctest'
 # will successfully run the test script. 
 #
-# Note - On Windows(TM) there are problems with unicode filenames unless
-# you use u as a prefix to the filename strings.
+# Note - On Windows(TM) there are problems with unicode filenames
 
 # Note - This script is designed to work with the OpenSCAD project 
 # tests and their cross-compilation environment. It will not 
@@ -99,7 +99,8 @@ def debug2(*args):
 def uprint(*args):
 	s=''
 	for arg in args: s += unicode(arg) + u' '
-	print s.encode('utf-8')
+	if '--debug' in string.join(sys.argv): debug(s.encode('utf-8'))
+	else: print s.encode('utf-8')
 	sys.stdout.flush()
 
 def startup():
@@ -401,7 +402,8 @@ def open_console(testpaths):
 		windows__open_console(testpaths.abs_cmake_bindir)
 
 
-#sys.argv+=[u'--debug2']
+sys.argv+=[u'--debug']
+# sys.argv+=[u'--debug2']
 startup()
 buildpaths = CTestPaths(u'buildpaths')
 testpaths = CTestPaths(u'testpaths')
