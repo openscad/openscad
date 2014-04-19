@@ -33,9 +33,6 @@ installed under standard locations (C:\Program Files) or if their
 executables are in the PATH environment variable. As a workaround, you 
 can edit the OpenSCAD_Test_Console.py file to set their location.
 
--Text-tests that produce different output than expected will throw a 
-failure to find the 'diff' command under windows.
-
 See Also:
 
     ./doc/testing.txt
