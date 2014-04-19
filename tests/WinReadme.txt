@@ -21,7 +21,7 @@ debugging and testing process.
 
 Thanks for helping test OpenSCAD. 
 
-Known bugs:
+Troubleshooting:
 
 -CMake 2.8.x for Windows does not properly operate from folders with 
 Unicode in the pathname. The workaround is to move the Tests to a folder 
@@ -32,6 +32,12 @@ a folder called 'c:\temp'.
 installed under standard locations (C:\Program Files) or if their 
 executables are in the PATH environment variable. As a workaround, you 
 can edit the OpenSCAD_Test_Console.py file to set their location.
+
+-The main OpenSCAD Tests .zip file must be extracted before running the 
+tests. It will not work if the .zip file is only double-clicked, a full 
+extraction must be performed. Instructions on extracting .zip files can 
+be found with a web-search. Third-party tools like '7-zip' 
+(http://7-zip.org) can make extraction much easier.
 
 See Also:
 
