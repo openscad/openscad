@@ -107,7 +107,7 @@ mpfr_sysver()
 
 gmp_sysver()
 {
-  gmppaths="`find $1 -name 'gmp.h' -o -name 'gmp-*.h'`"
+  gmppaths="`find $1/include -name 'gmp.h' -o -name 'gmp-*.h'`"
   if [ ! "$gmppaths" ]; then
     debug "gmp_sysver no gmp.h beneath $1"
     return
