@@ -177,6 +177,19 @@ FileContext::FileContext(const class FileModule &module, const Context *parent)
 	if (!module.modulePath().empty()) this->document_path = module.modulePath();
 }
 
+Value FileContext::sub_evaluate_function(const std::string &name, const EvalContext *evalctx,
+	FileModule *usedmod) const
+{
+	FileContext ctx(*usedmod, this->parent);
+	ctx.initializeModule(*usedmod);
+	// FIXME: Set document path
+#ifdef DEBUG
+	PRINTDB("New lib Context for %s func:", name);
+	PRINTDB("%s",ctx.dump(NULL, NULL));
+#endif
+	return usedmod->scope.functions[name]->evaluate(&ctx, evalctx);
+}
+
 Value FileContext::evaluate_function(const std::string &name, const EvalContext *evalctx) const
 {
 	const AbstractFunction *foundf = findLocalFunction(name);
@@ -185,19 +198,9 @@ Value FileContext::evaluate_function(const std::string &name, const EvalContext 
 	BOOST_FOREACH(const FileModule::ModuleContainer::value_type &m, this->usedlibs) {
 		// usedmod is NULL if the library wasn't be compiled (error or file-not-found)
 		FileModule *usedmod = ModuleCache::instance()->lookup(m);
-		if (usedmod &&
-				usedmod->scope.functions.find(name) != usedmod->scope.functions.end()) {
-			FileContext ctx(*usedmod, this->parent);
-			ctx.initializeModule(*usedmod);
-			// FIXME: Set document path
-#ifdef DEBUG
-			PRINTDB("New lib Context for %s func:", name);
-			PRINTDB("%s",ctx.dump(NULL, NULL));
-#endif
-			return usedmod->scope.functions[name]->evaluate(&ctx, evalctx);
-		}
+		if (usedmod && usedmod->scope.functions.find(name) != usedmod->scope.functions.end())
+			return sub_evaluate_function(name, evalctx, usedmod);
 	}
-
 	return ModuleContext::evaluate_function(name, evalctx);
 }
 
