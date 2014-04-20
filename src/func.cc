@@ -31,6 +31,7 @@
 #include <sstream>
 #include <ctime>
 #include "mathc99.h"
+#include <limits>
 #include <algorithm>
 #include "stl-utils.h"
 #include "printutils.h"
@@ -250,12 +251,47 @@ quit:
 	return Value();
 }
 
+// this limit assumes 26+26=52 bits mantissa
+// comment/undefine it to disable domain check
+#define TRIG_HUGE_VAL ((1L<<26)*360.0*(1L<<26))
+
 Value builtin_sin(const Context *, const EvalContext *evalctx)
 {
 	if (evalctx->numArgs() == 1) {
 		const Value &v = evalctx->getArgValue(0);
-		if (v.type() == Value::NUMBER)
-			return Value(sin(deg2rad(v.toDouble())));
+		if (v.type() == Value::NUMBER) {
+			register double x = v.toDouble();
+			// use positive tests because of possible Inf/NaN
+			if (x < 360.0 && x >= 0.0) {
+				// Ok for now
+			} else
+#ifdef TRIG_HUGE_VAL
+			if (x < TRIG_HUGE_VAL && x > -TRIG_HUGE_VAL)
+#endif
+			{
+				register double revolutions = floor(x/360.0);
+				x -= 360.0*revolutions;
+			}
+#ifdef TRIG_HUGE_VAL
+			else {
+				// total loss of computational accuracy
+				// the result would be meaningless
+				return Value(std::numeric_limits<double>::quiet_NaN());
+			}
+#endif
+			bool oppose = x >= 180.0;
+			if (oppose) x -= 180.0;
+			if (x > 90.0) x = 180.0 - x;
+			if (x < 45.0) {
+				if (x == 30.0) x = 0.5;
+				else x = sin(deg2rad(x));
+			} else if (x == 45.0)
+				x = M_SQRT1_2;
+			else // Inf/Nan would fall here
+				x = cos(deg2rad(90.0-x));
+
+			return Value(oppose ? -x : x);
+		}
 	}
 	return Value();
 }
@@ -264,8 +300,42 @@ Value builtin_cos(const Context *, const EvalContext *evalctx)
 {
 	if (evalctx->numArgs() == 1) {
 		const Value &v = evalctx->getArgValue(0);
-		if (v.type() == Value::NUMBER)
-			return Value(cos(deg2rad(v.toDouble())));
+		if (v.type() == Value::NUMBER) {
+			register double x = v.toDouble();
+			// use positive tests because of possible Inf/NaN
+			if (x < 360.0 && x >= 0.0) {
+				// Ok for now
+			} else
+#ifdef TRIG_HUGE_VAL
+			if (x < TRIG_HUGE_VAL && x > -TRIG_HUGE_VAL)
+#endif
+			{
+				register double revolutions = floor(x/360.0);
+				x -= 360.0*revolutions;
+			}
+#ifdef TRIG_HUGE_VAL
+			else {
+				// total loss of computational accuracy
+				// the result would be meaningless
+				return Value(std::numeric_limits<double>::quiet_NaN());
+			}
+#endif
+			bool oppose = x >= 180.0;
+			if (oppose) x -= 180.0;
+			if (x > 90.0) {
+				x = 180.0 - x;
+				oppose = !oppose;
+			}
+			if (x > 45.0) {
+				if (x == 60.0) x = 0.5;
+				else x = sin(deg2rad(90.0-x));
+			} else if (x == 45.0)
+				x = M_SQRT1_2;
+			else // Inf/Nan would fall here
+				x = cos(deg2rad(x));
+
+			return Value(oppose ? -x : x);
+		}
 	}
 	return Value();
 }
