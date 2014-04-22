@@ -181,7 +181,7 @@ public slots:
 	void viewCenter();
 	void viewPerspective();
 	void viewOrthogonal();
-        void viewResetView();
+	void viewResetView();
 	void hideConsole();
 	void animateUpdateDocChanged();
 	void animateUpdate();
@@ -198,14 +198,14 @@ public slots:
 
 private:
 	static void report_func(const class AbstractNode*, void *vp, int mark);
-	
+
 	char const * afterCompileSlot;
 	bool procevents;
 	class QTemporaryFile *tempFile;
-
 	class ProgressWidget *progresswidget;
 	class CGALWorker *cgalworker;
 	QMutex consolemutex;
+
 signals:
 	void highlightError(int);
 	void unhighlightLastError();
