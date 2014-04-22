@@ -125,8 +125,10 @@ if(WIN32 AND MSVC)
   # you have to pass -DCMAKE_VERBOSE_MAKEFILE=ON to cmake when you run it. 
 endif()
 
-if(WIN32 AND CMAKE_COMPILER_IS_GNUCXX)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fpermissive -frounding-math")
+if(CMAKE_COMPILER_IS_GNUCXX)
+  if (WIN32 OR ${CMAKE_SYSTEM_NAME} MATCHES "NetBSD")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fpermissive -frounding-math")
+  endif()
 endif()
 
 # Clang compiler
@@ -402,6 +404,7 @@ if("${CGAL_MAJOR_VERSION}.${CGAL_MINOR_VERSION}" VERSION_LESS 3.6)
   message(FATAL_ERROR "CGAL >= 3.6 required")
 endif()
 inclusion(CGAL_DIR CGAL_INCLUDE_DIRS)
+
 #Remove bad BOOST libraries from CGAL 3rd party dependencies when they don't exist (such as on 64-bit Ubuntu 13.10).
 #Libs of concern are /usr/lib/libboost_thread.so;/usr/lib/libboost_system.so;
 #Confirmed bug in CGAL @ https://bugs.launchpad.net/ubuntu/+source/cgal/+bug/1242111
@@ -419,6 +422,20 @@ if(NOT "-1" STREQUAL ${FIND_POSITION} )
     string(REPLACE "/usr/lib/libboost_thread.so" "" CGAL_3RD_PARTY_LIBRARIES ${CGAL_3RD_PARTY_LIBRARIES})
   endif()
 endif() 
+
+if (${CMAKE_SYSTEM_NAME} MATCHES "NetBSD")
+  foreach(CGAL3RDPLIB ${CGAL_3RD_PARTY_LIBRARIES})
+    if(NOT EXISTS "${CGAL3RDPLIB}")
+      MESSAGE( STATUS " Removing non-existent ${CGAL3RDPLIB}" )
+      string(REPLACE "${CGAL3RDPLIB}" "" CGAL_3RD_PARTY_LIBRARIES ${CGAL_3RD_PARTY_LIBRARIES})
+    endif()
+  endforeach()
+endif()
+
+MESSAGE(STATUS "CGAL 3RD PARTY LIBS:")
+foreach(CGAL3RDPLIB ${CGAL_3RD_PARTY_LIBRARIES})
+  MESSAGE(STATUS " ${CGAL3RDPLIB}" )
+endforeach()
 
 if(${CMAKE_CXX_COMPILER} MATCHES ".*clang.*" AND NOT ${CGAL_CXX_FLAGS_INIT} STREQUAL "" )
 	string(REPLACE "-frounding-math" "" CGAL_CXX_FLAGS_INIT ${CGAL_CXX_FLAGS_INIT})
