@@ -195,6 +195,8 @@ MainWindow::MainWindow(const QString &filename)
 	fps = 0;
 	fsteps = 1;
 
+  editActionZoomIn->setShortcuts(QList<QKeySequence>() << editActionZoomIn->shortcuts() << QKeySequence("CTRL+="));
+
 	connect(this, SIGNAL(highlightError(int)), editor, SLOT(highlightError(int)));
 	connect(this, SIGNAL(unhighlightLastError()), editor, SLOT(unhighlightLastError()));
 	editor->setTabStopWidth(30);
@@ -262,7 +264,7 @@ MainWindow::MainWindow(const QString &filename)
 					this, SLOT(clearRecentFiles()));
 	if (!qexamplesdir.isEmpty()) {
 		bool found_example = false;
-		QStringList examples = QDir(qexamplesdir).entryList(QStringList("*.scad"), 
+		QStringList examples = QDir(qexamplesdir).entryList(QStringList("*.scad"),
 		QDir::Files | QDir::Readable, QDir::Name);
 		foreach (const QString &ex, examples) {
 			this->menuExamples->addAction(ex, this, SLOT(actionOpenExample()));
@@ -356,6 +358,8 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this->viewActionPerspective, SIGNAL(triggered()), this, SLOT(viewPerspective()));
 	connect(this->viewActionOrthogonal, SIGNAL(triggered()), this, SLOT(viewOrthogonal()));
 	connect(this->viewActionHide, SIGNAL(triggered()), this, SLOT(hideConsole()));
+  connect(this->viewActionZoomIn, SIGNAL(triggered()), qglview, SLOT(ZoomIn()));
+  connect(this->viewActionZoomOut, SIGNAL(triggered()), qglview, SLOT(ZoomOut()));
 
 	// Help menu
 	connect(this->helpActionAbout, SIGNAL(triggered()), this, SLOT(helpAbout()));
@@ -383,11 +387,11 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this->qglview, SIGNAL(doAnimateUpdate()), this, SLOT(animateUpdate()));
 
 	connect(Preferences::inst(), SIGNAL(requestRedraw()), this->qglview, SLOT(updateGL()));
-	connect(Preferences::inst(), SIGNAL(fontChanged(const QString&,uint)), 
+	connect(Preferences::inst(), SIGNAL(fontChanged(const QString&,uint)),
 					this, SLOT(setFont(const QString&,uint)));
 	connect(Preferences::inst(), SIGNAL(openCSGSettingsChanged()),
 					this, SLOT(openCSGSettingsChanged()));
-	connect(Preferences::inst(), SIGNAL(syntaxHighlightChanged(const QString&)), 
+	connect(Preferences::inst(), SIGNAL(syntaxHighlightChanged(const QString&)),
 					editor, SLOT(setHighlightScheme(const QString&)));
 	Preferences::inst()->apply();
 
@@ -497,7 +501,7 @@ void MainWindow::report_func(const class AbstractNode*, void *vp, int mark)
 {
 	MainWindow *thisp = static_cast<MainWindow*>(vp);
 	int v = (int)((mark*1000.0) / progress_report_count);
-	int permille = v < 1000 ? v : 999; 
+	int permille = v < 1000 ? v : 999;
 	if (permille > thisp->progresswidget->value()) {
 		QMetaObject::invokeMethod(thisp->progresswidget, "setValue", Qt::QueuedConnection,
 															Q_ARG(int, permille));
@@ -569,7 +573,7 @@ MainWindow::setFileName(const QString &filename)
 		} else {
 			this->fileName = fileinfo.fileName();
 		}
-		
+
 		this->top_ctx.setDocumentPath(fileinfo.dir().absolutePath().toLocal8Bit().constData());
 		QDir::setCurrent(fileinfo.dir().absolutePath());
 	}
@@ -633,7 +637,7 @@ void MainWindow::refreshDocument()
 	if (!this->fileName.isEmpty()) {
 		QFile file(this->fileName);
 		if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-			PRINTB("Failed to open file %s: %s", 
+			PRINTB("Failed to open file %s: %s",
 						 this->fileName.toLocal8Bit().constData() % file.errorString().toLocal8Bit().constData());
 		}
 		else {
@@ -784,15 +788,15 @@ void MainWindow::instantiateRoot()
 		// Evaluate CSG tree
 		PRINT("Compiling design (CSG Tree generation)...");
 		if (this->procevents) QApplication::processEvents();
-		
+
 		AbstractNode::resetIndexCounter();
 
 		// split these two lines - gcc 4.7 bug
 		ModuleInstantiation mi = ModuleInstantiation( "group" );
-		this->root_inst = mi; 
+		this->root_inst = mi;
 
 		this->absolute_root_node = this->root_module->instantiate(&top_ctx, &this->root_inst, NULL);
-		
+
 		if (this->absolute_root_node) {
 			// Do we have an explicit root node (! modifier)?
 			if (!(this->root_node = find_root_tag(this->absolute_root_node))) {
@@ -863,7 +867,7 @@ void MainWindow::compileCSG(bool procevents)
 	if (root_raw_term) {
 		PRINT("Compiling design (CSG Products normalization)...");
 		if (procevents) QApplication::processEvents();
-		
+
 		size_t normalizelimit = 2 * Preferences::inst()->getValue("advanced/openCSGLimit").toUInt();
 		CSGTermNormalizer normalizer(normalizelimit);
 		this->root_norm_term = normalizer.normalize(this->root_raw_term);
@@ -876,24 +880,24 @@ void MainWindow::compileCSG(bool procevents)
 			PRINT("WARNING: CSG normalization resulted in an empty tree");
 			if (procevents) QApplication::processEvents();
 		}
-		
+
 		if (highlight_terms.size() > 0)
 		{
 			PRINTB("Compiling highlights (%d CSG Trees)...", highlight_terms.size());
 			if (procevents) QApplication::processEvents();
-			
+
 			highlights_chain = new CSGChain();
 			for (unsigned int i = 0; i < highlight_terms.size(); i++) {
 				highlight_terms[i] = normalizer.normalize(highlight_terms[i]);
 				highlights_chain->import(highlight_terms[i]);
 			}
 		}
-		
+
 		if (background_terms.size() > 0)
 		{
 			PRINTB("Compiling background (%d CSG Trees)...", background_terms.size());
 			if (procevents) QApplication::processEvents();
-			
+
 			background_chain = new CSGChain();
 			for (unsigned int i = 0; i < background_terms.size(); i++) {
 				background_terms[i] = normalizer.normalize(background_terms[i]);
@@ -901,22 +905,22 @@ void MainWindow::compileCSG(bool procevents)
 			}
 		}
 
-		if (this->root_chain && 
-				(this->root_chain->objects.size() > 
+		if (this->root_chain &&
+				(this->root_chain->objects.size() >
 				 Preferences::inst()->getValue("advanced/openCSGLimit").toUInt())) {
 			PRINTB("WARNING: Normalized tree has %d elements!", this->root_chain->objects.size());
 			PRINT("WARNING: OpenCSG rendering has been disabled.");
 		}
 		else {
-			PRINTB("Normalized CSG tree has %d elements", 
+			PRINTB("Normalized CSG tree has %d elements",
 						 (this->root_chain ? this->root_chain->objects.size() : 0));
-			this->opencsgRenderer = new OpenCSGRenderer(this->root_chain, 
-																									this->highlights_chain, 
-																									this->background_chain, 
+			this->opencsgRenderer = new OpenCSGRenderer(this->root_chain,
+																									this->highlights_chain,
+																									this->background_chain,
 																									this->qglview->shaderinfo);
 		}
-		this->thrownTogetherRenderer = new ThrownTogetherRenderer(this->root_chain, 
-																															this->highlights_chain, 
+		this->thrownTogetherRenderer = new ThrownTogetherRenderer(this->root_chain,
+																															this->highlights_chain,
 																															this->background_chain);
 		PRINT("CSG generation finished.");
 		int s = t.elapsed() / 1000;
@@ -964,7 +968,7 @@ void MainWindow::actionOpen()
 	if (!new_filename.isEmpty()) {
 		if (!maybeSave())
 			return;
-		
+
 		setCurrentOutput();
 		openFile(new_filename);
 		clearCurrentOutput();
@@ -1047,7 +1051,7 @@ void MainWindow::writeBackup(QFile *file)
 	QTextStream writer(file);
 	writer.setCodec("UTF-8");
 	writer << this->editor->toPlainText();
-	
+
 	PRINTB("Saved backup file: %s", file->fileName().toLocal8Bit().constData());
 }
 
@@ -1279,13 +1283,13 @@ bool MainWindow::eventFilter(QObject* obj, QEvent *event)
 void MainWindow::updateTemporalVariables()
 {
 	this->top_ctx.set_variable("$t", Value(this->e_tval->text().toDouble()));
-	
+
 	Value::VectorType vpt;
 	vpt.push_back(Value(-qglview->cam.object_trans.x()));
 	vpt.push_back(Value(-qglview->cam.object_trans.y()));
 	vpt.push_back(Value(-qglview->cam.object_trans.z()));
 	this->top_ctx.set_variable("$vpt", Value(vpt));
-	
+
 	Value::VectorType vpr;
 	vpr.push_back(Value(fmodf(360 - qglview->cam.object_rot.x() + 90, 360)));
 	vpr.push_back(Value(fmodf(360 - qglview->cam.object_rot.y(), 360)));
@@ -1323,21 +1327,21 @@ void MainWindow::compileTopLevelDocument()
 {
 	updateTemporalVariables();
 	resetPrintedDeprecations();
-	
+
 	this->last_compiled_doc = editor->toPlainText();
-	std::string fulltext = 
+	std::string fulltext =
 		std::string(this->last_compiled_doc.toLocal8Bit().constData()) +
 		"\n" + commandline_commands;
-	
+
 	delete this->root_module;
 	this->root_module = NULL;
-	
+
 	this->root_module = parse(fulltext.c_str(),
-														this->fileName.isEmpty() ? 
-														"" : 
-														QFileInfo(this->fileName).absolutePath().toLocal8Bit(), 
+														this->fileName.isEmpty() ?
+														"" :
+														QFileInfo(this->fileName).absolutePath().toLocal8Bit(),
 														false);
-	
+
 }
 
 void MainWindow::checkAutoReload()
@@ -1444,7 +1448,7 @@ void MainWindow::csgRender()
 		filename.sprintf("frame%05d.png", int(round(s*t)));
 		img.save(filename, "PNG");
 	}
-	
+
 	compileEnded();
 }
 
@@ -1588,10 +1592,10 @@ void MainWindow::actionDisplayCSGProducts()
 	e->setWindowTitle("CSG Products Dump");
 	e->setReadOnly(true);
 	e->setPlainText(QString("\nCSG before normalization:\n%1\n\n\nCSG after normalization:\n%2\n\n\nCSG rendering chain:\n%3\n\n\nHighlights CSG rendering chain:\n%4\n\n\nBackground CSG rendering chain:\n%5\n")
-									.arg(root_raw_term ? QString::fromLocal8Bit(root_raw_term->dump().c_str()) : "N/A", 
-											 root_norm_term ? QString::fromLocal8Bit(root_norm_term->dump().c_str()) : "N/A", 
-											 this->root_chain ? QString::fromLocal8Bit(this->root_chain->dump().c_str()) : "N/A", 
-											 highlights_chain ? QString::fromLocal8Bit(highlights_chain->dump().c_str()) : "N/A", 
+									.arg(root_raw_term ? QString::fromLocal8Bit(root_raw_term->dump().c_str()) : "N/A",
+											 root_norm_term ? QString::fromLocal8Bit(root_norm_term->dump().c_str()) : "N/A",
+											 this->root_chain ? QString::fromLocal8Bit(this->root_chain->dump().c_str()) : "N/A",
+											 highlights_chain ? QString::fromLocal8Bit(highlights_chain->dump().c_str()) : "N/A",
 											 background_chain ? QString::fromLocal8Bit(background_chain->dump().c_str()) : "N/A"));
 	e->show();
 	e->resize(600, 400);
@@ -1790,7 +1794,7 @@ void MainWindow::actionExportCSG()
 		return;
 	}
 
-	QString csg_filename = QFileDialog::getSaveFileName(this, "Export CSG File", 
+	QString csg_filename = QFileDialog::getSaveFileName(this, "Export CSG File",
 																											this->fileName.isEmpty() ? "Untitled.csg" : QFileInfo(this->fileName).baseName()+".csg",
 																											"CSG Files (*.csg)");
 	if (csg_filename.isEmpty()) {
