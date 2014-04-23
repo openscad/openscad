@@ -34,9 +34,9 @@ get_freebsd_deps()
 
 get_netbsd_deps()
 {
- pkgin install bison boost cmake git bash eigen flex gmake gmp mpfr \
-  qt4 glew cgal opencsg modular-xorg python27 curl \
-  imagemagick ImageMagick glib2-devel gettext
+ pkgin install bison boost cmake git bash eigen3 flex gmake gmp mpfr \
+  qt4 glew cgal opencsg python27 curl \
+  ImageMagick glib2 gettext
 }
 
 get_opensuse_deps()

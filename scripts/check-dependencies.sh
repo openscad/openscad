@@ -67,7 +67,9 @@ glib2_sysver()
   #Get architecture triplet - e.g. x86_64-linux-gnu
   glib2archtriplet=`gcc -dumpmachine 2>/dev/null`
   if [ -z "$VAR" ]; then
-    glib2archtriplet=`dpkg-architecture -qDEB_HOST_MULTIARCH 2>/dev/null`
+    if [ "`command -v dpkg-architectures`" ]; then
+      glib2archtriplet=`dpkg-architecture -qDEB_HOST_MULTIARCH 2>/dev/null`
+    fi
   fi
   glib2path=$1/lib/$glib2archtriplet/glib-2.0/include/glibconfig.h
   if [ ! -e $glib2path ]; then
@@ -76,10 +78,13 @@ glib2_sysver()
     if [ "$glib2archtriplet" = "i686-linux-gnu" ]; then
         glib2archtriplet=i386-linux-gnu
         glib2path=$1/lib/$glib2archtriplet/glib-2.0/include/glibconfig.h
-        if [ ! -e $glib2path ]; then return; fi
-    else
-        return;
     fi
+  fi
+  if [ ! -e $glib2path ]; then
+    glib2path=$1/lib/glib-2.0/include/glibconfig.h
+  fi
+  if [ ! -e $glib2path ]; then
+    return
   fi
   glib2major=`grep "define  *GLIB_MAJOR_VERSION  *[0-9.]*" $glib2path | awk '{print $3}'`
   glib2minor=`grep "define  *GLIB_MINOR_VERSION  *[0-9.]*" $glib2path | awk '{print $3}'`

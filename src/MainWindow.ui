@@ -126,6 +126,9 @@
             <pointsize>8</pointsize>
            </font>
           </property>
+          <property name="focusPolicy">
+           <enum>Qt::WheelFocus</enum>
+          </property>
          </widget>
         </item>
        </layout>
@@ -139,6 +142,9 @@
           </property>
           <widget class="QGLView" name="qglview" native="true"/>
           <widget class="QTextEdit" name="console">
+           <property name="focusPolicy">
+            <enum>Qt::ClickFocus</enum>
+           </property>
            <property name="readOnly">
             <bool>true</bool>
            </property>
@@ -329,6 +335,9 @@
     <addaction name="viewActionBack"/>
     <addaction name="viewActionDiagonal"/>
     <addaction name="viewActionCenter"/>
+    <addaction name="separator"/>
+    <addaction name="viewActionZoomIn"/>
+    <addaction name="viewActionZoomOut"/>
     <addaction name="separator"/>
     <addaction name="viewActionResetView"/>
     <addaction name="separator"/>
@@ -874,6 +883,22 @@
   <action name="designActionExportAMF">
    <property name="text">
     <string>Export as AMF...</string>
+   </property>
+  </action>
+  <action name="viewActionZoomIn">
+   <property name="text">
+    <string>Zoom In</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+]</string>
+   </property>
+  </action>
+  <action name="viewActionZoomOut">
+   <property name="text">
+    <string>Zoom Out</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+[</string>
    </property>
   </action>
  </widget>
