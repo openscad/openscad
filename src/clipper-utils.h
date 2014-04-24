@@ -6,7 +6,7 @@
 
 namespace ClipperUtils {
 
-	static const unsigned int CLIPPER_SCALE = 100000;
+	static const unsigned int CLIPPER_SCALE = 2 << 17;
 
 	ClipperLib::Path fromOutline2d(const Outline2d &poly, bool keep_orientation);
 	ClipperLib::Paths fromPolygon2d(const Polygon2d &poly);
