@@ -95,6 +95,7 @@ Preferences::Preferences(QWidget *parent) : QMainWindow(parent)
 	this->defaultmap["advanced/cgalCacheSize"] = uint(CGALCache::instance()->maxSize());
 #endif
 	this->defaultmap["advanced/openCSGLimit"] = RenderSettings::inst()->openCSGTermLimit;
+	this->defaultmap["advanced/recursionLimit"] = 1000;
 	this->defaultmap["advanced/forceGoldfeather"] = false;
 
 	// Toolbar
@@ -157,6 +158,7 @@ Preferences::Preferences(QWidget *parent) : QMainWindow(parent)
 	this->cgalCacheSizeEdit->setValidator(validator);
 #endif
 	this->polysetCacheSizeEdit->setValidator(validator);
+	this->recursionLimitEdit->setValidator(validator);
 	this->opencsgLimitEdit->setValidator(validator);
 
 	setupFeaturesPage();
@@ -365,6 +367,13 @@ void Preferences::on_polysetCacheSizeEdit_textChanged(const QString &text)
 	GeometryCache::instance()->setMaxSize(text.toULong());
 }
 
+void Preferences::on_recursionLimitEdit_textChanged(const QString &text)
+{
+	QSettings settings;
+	settings.setValue("advanced/recursionLimit", text);
+	// FIXME: Use this value somewhere
+}
+
 void Preferences::on_opencsgLimitEdit_textChanged(const QString &text)
 {
 	QSettings settings;
@@ -459,6 +468,7 @@ void Preferences::updateGUI()
 	this->enableOpenCSGBox->setChecked(getValue("advanced/enable_opencsg_opengl1x").toBool());
 	this->cgalCacheSizeEdit->setText(getValue("advanced/cgalCacheSize").toString());
 	this->polysetCacheSizeEdit->setText(getValue("advanced/polysetCacheSize").toString());
+	this->recursionLimitEdit->setText(getValue("advanced/recursionLimit").toString());
 	this->opencsgLimitEdit->setText(getValue("advanced/openCSGLimit").toString());
 	this->forceGoldfeatherBox->setChecked(getValue("advanced/forceGoldfeather").toBool());
 }
