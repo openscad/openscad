@@ -1,5 +1,4 @@
 #!/bin/sh
-
 # NB! To build a release build, the VERSION and VERSIONDATE environment variables needs to be set.
 # See doc/release-checklist.txt
 
@@ -61,7 +60,7 @@ PATH=${PATH//\/opt\/local\/libexec\/ccache:}
 export MACOSX_DEPLOYMENT_TARGET=10.6
 
 # This is the same location as DEPLOYDIR in macosx-build-dependencies.sh
-export OPENSCAD_LIBRARIES=$PWD/../libraries/homebrew
+export OPENSCAD_LIBRARIES=$PWD/../libraries/install
 
 # Make sure that the correct Qt tools are used
 export PATH=$OPENSCAD_LIBRARIES/bin:$PATH
