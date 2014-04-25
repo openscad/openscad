@@ -40,6 +40,7 @@ namespace fs = boost::filesystem;
 #include <boost/foreach.hpp>
 #include <sstream>
 #include <sys/stat.h>
+#include "Preferences.h"
 
 AbstractModule::~AbstractModule()
 {
@@ -167,7 +168,7 @@ public:
 	~ModRecursionGuard() { 
 		inst.recursioncount--; 
 	}
-	bool recursion_detected() const { return (inst.recursioncount > 1000); }
+	bool recursion_detected() const { return (inst.recursioncount > Preferences::inst()->getValue("advanced/recursionLimit").toUInt()); }
 private:
 	const ModuleInstantiation &inst;
 };

@@ -34,6 +34,7 @@
 #include "printutils.h"
 #include <boost/bind.hpp>
 #include <boost/foreach.hpp>
+#include "Preferences.h"
 
 Expression::Expression() : recursioncount(0)
 {
@@ -69,7 +70,7 @@ public:
 		expr.recursioncount++; 
 	}
 	~FuncRecursionGuard() { expr.recursioncount--; }
-	bool recursion_detected() const { return (expr.recursioncount > 1000); }
+	bool recursion_detected() const { return (expr.recursioncount > Preferences::inst()->getValue("advanced/recursionLimit").toUInt()); }
 private:
 	const Expression &expr;
 };
