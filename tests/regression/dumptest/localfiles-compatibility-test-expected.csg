@@ -11,7 +11,7 @@ group() {
 		}
 		multmatrix([[1, 0, 0, 250], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 			multmatrix([[200, 0, 0, 0], [0, 200, 0, 0], [0, 0, 50, 0], [0, 0, 0, 1]]) {
-				surface(file = "localfile.dat", center = false);
+				surface(file = "localfile.dat", center = false, invert = false);
 			}
 		}
 		multmatrix([[1, 0, 0, 0], [0, 1, 0, -200], [0, 0, 1, 0], [0, 0, 0, 1]]) {

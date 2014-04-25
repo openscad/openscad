@@ -28,10 +28,10 @@
 
 #include "module.h"
 #include "polyset.h"
+#include "Polygon2d.h"
 #include "evalcontext.h"
 #include "builtin.h"
 #include "dxfdata.h"
-#include "dxftess.h"
 #include "printutils.h"
 #include "fileutils.h"
 #include "handle_dep.h" // handle_dep()
@@ -67,8 +67,8 @@ public:
 AbstractNode *ImportModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const
 {
 	AssignmentList args;
-	args += Assignment("file", NULL), Assignment("layer", NULL), Assignment("convexity", NULL), Assignment("origin", NULL), Assignment("scale", NULL);
-	args += Assignment("filename",NULL), Assignment("layername", NULL);
+	args += Assignment("file"), Assignment("layer"), Assignment("convexity"), Assignment("origin"), Assignment("scale");
+	args += Assignment("filename"), Assignment("layername");
 
   // FIXME: This is broken. Tag as deprecated and fix
 	// Map old argnames to new argnames for compatibility
@@ -182,21 +182,25 @@ void read_stl_facet( std::ifstream &f, stl_facet &facet )
 #endif
 }
 
-PolySet *ImportNode::evaluate_polyset(class PolySetEvaluator *) const
+/*!
+	Will return an empty geometry if the import failed, but not NULL
+*/
+Geometry *ImportNode::createGeometry() const
 {
-	PolySet *p = NULL;
+	Geometry *g = NULL;
 
-	if (this->type == TYPE_STL)
-	{
+	switch (this->type) {
+	case TYPE_STL: {
+		PolySet *p = new PolySet(3);
+		g = p;
+
 		handle_dep((std::string)this->filename);
 		// Open file and position at the end
 		std::ifstream f(this->filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
 		if (!f.good()) {
 			PRINTB("WARNING: Can't open import file '%s'.", this->filename);
-			return p;
+			return g;
 		}
-
-		p = new PolySet();
 
 		boost::regex ex_sfe("solid|facet|endloop");
 		boost::regex ex_outer("outer loop");
@@ -270,9 +274,10 @@ PolySet *ImportNode::evaluate_polyset(class PolySetEvaluator *) const
 			}
 		}
 	}
-
-	else if (this->type == TYPE_OFF)
-	{
+		break;
+	case TYPE_OFF: {
+		PolySet *p = new PolySet(3);
+		g = p;
 #ifdef ENABLE_CGAL
 		CGAL_Polyhedron poly;
 		std::ifstream file(this->filename.c_str(), std::ios::in | std::ios::binary);
@@ -282,33 +287,25 @@ PolySet *ImportNode::evaluate_polyset(class PolySetEvaluator *) const
 		else {
 			file >> poly;
 			file.close();
-			p = new PolySet();
 			bool err = createPolySetFromPolyhedron(poly, *p);
-			if (err) {
-				delete p;
-				p = NULL;
-			}
 		}
 #else
   PRINT("WARNING: OFF import requires CGAL.");
 #endif
 	}
-
-	else if (this->type == TYPE_DXF)
-	{
-		p = new PolySet();
+		break;
+	case TYPE_DXF: {
 		DxfData dd(this->fn, this->fs, this->fa, this->filename, this->layername, this->origin_x, this->origin_y, this->scale);
-		p->is2d = true;
-		dxf_tesselate(p, dd, 0, Vector2d(1,1), true, false, 0);
-		dxf_border_to_ps(p, dd);
+		g = dd.toPolygon2d();
 	}
-	else
-	{
+		break;
+	default:
 		PRINTB("ERROR: Unsupported file format while trying to import file '%s'", this->filename);
+		g = new PolySet(0);
 	}
 
-	if (p) p->convexity = this->convexity;
-	return p;
+	if (g) g->setConvexity(this->convexity);
+	return g;
 }
 
 std::string ImportNode::toString() const

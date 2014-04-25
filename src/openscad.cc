@@ -46,8 +46,6 @@
 
 #ifdef ENABLE_CGAL
 #include "CGAL_Nef_polyhedron.h"
-#include "CGALEvaluator.h"
-#include "PolySetCGALEvaluator.h"
 #endif
 
 #include "csgterm.h"
@@ -113,9 +111,13 @@ static void help(const char *progname)
          "%2%  --camera=eyex,y,z,centerx,y,z ] \\\n"
          "%2%[ --imgsize=width,height ] [ --projection=(o)rtho|(p)ersp] \\\n"
          "%2%[ --render | --preview[=throwntogether] ] \\\n"
-         "%2%[ --csglimit=num ] \\\n"
+         "%2%[ --csglimit=num ]"
 #ifdef ENABLE_EXPERIMENTAL
-         "%2%[ --enable=<feature> ] \\\n"
+         " [ --enable=<feature> ]"
+#endif
+         "\\\n"
+#ifdef DEBUG
+				 "%2%[ --debug=module ] \\\n"
 #endif
          "%2%filename\n",
  				 progname % (const char *)tabstr);
@@ -219,12 +221,13 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 	parser_init(application_path);
 	Tree tree;
 #ifdef ENABLE_CGAL
-	CGALEvaluator cgalevaluator(tree);
-	PolySetCGALEvaluator psevaluator(cgalevaluator);
+	GeometryEvaluator geomevaluator(tree);
 #endif
 	const char *stl_output_file = NULL;
 	const char *off_output_file = NULL;
+	const char *amf_output_file = NULL;
 	const char *dxf_output_file = NULL;
+	const char *svg_output_file = NULL;
 	const char *csg_output_file = NULL;
 	const char *png_output_file = NULL;
 	const char *ast_output_file = NULL;
@@ -236,7 +239,9 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 
 	if (suffix == ".stl") stl_output_file = output_file;
 	else if (suffix == ".off") off_output_file = output_file;
+	else if (suffix == ".amf") amf_output_file = output_file;
 	else if (suffix == ".dxf") dxf_output_file = output_file;
+	else if (suffix == ".svg") svg_output_file = output_file;
 	else if (suffix == ".csg") csg_output_file = output_file;
 	else if (suffix == ".png") png_output_file = output_file;
 	else if (suffix == ".ast") ast_output_file = output_file;
@@ -250,8 +255,8 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 	// Top context - this context only holds builtins
 	ModuleContext top_ctx;
 	top_ctx.registerBuiltin();
-#if 0 && DEBUG
-	top_ctx.dump(NULL, NULL);
+#ifdef DEBUG
+	PRINTDB("Top ModuleContext:\n%s",top_ctx.dump(NULL, NULL));
 #endif
 	shared_ptr<Echostream> echostream;
 	if (echo_output_file)
@@ -261,7 +266,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 	ModuleInstantiation root_inst("group");
 	AbstractNode *root_node;
 	AbstractNode *absolute_root_node;
-	CGAL_Nef_polyhedron root_N;
+	shared_ptr<const Geometry> root_geom;
 
 	handle_dep(filename.c_str());
 
@@ -323,7 +328,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 		std::vector<shared_ptr<CSGTerm> > highlight_terms;
 		std::vector<shared_ptr<CSGTerm> > background_terms;
 
-		CSGTermEvaluator csgRenderer(tree, &psevaluator);
+		CSGTermEvaluator csgRenderer(tree);
 		shared_ptr<CSGTerm> root_raw_term = csgRenderer.evaluateCSGTerm(*root_node, highlight_terms, background_terms);
 
 		fs::current_path(original_path);
@@ -345,7 +350,8 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 		if ((echo_output_file || png_output_file) && !(renderer==Render::CGAL)) {
 			// echo or OpenCSG png -> don't necessarily need CGALMesh evaluation
 		} else {
-			root_N = cgalevaluator.evaluateCGALMesh(*tree.root());
+			root_geom = geomevaluator.evaluateGeometry(*tree.root(), true);
+			const CGAL_Nef_polyhedron *N = dynamic_cast<const CGAL_Nef_polyhedron*>(root_geom.get());
 		}
 
 		fs::current_path(original_path);
@@ -355,7 +361,9 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 			std::string geom_out;
 			if ( stl_output_file ) geom_out = std::string(stl_output_file);
 			else if ( off_output_file ) geom_out = std::string(off_output_file);
+			else if ( amf_output_file ) geom_out = std::string(amf_output_file);
 			else if ( dxf_output_file ) geom_out = std::string(dxf_output_file);
+			else if ( svg_output_file ) geom_out = std::string(svg_output_file);
 			else if ( png_output_file ) geom_out = std::string(png_output_file);
 			else {
 				PRINTB("Output file:%s\n",output_file);
@@ -370,12 +378,8 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 		}
 
 		if (stl_output_file) {
-			if (root_N.dim != 3) {
+			if (root_geom->getDimension() != 3) {
 				PRINT("Current top level object is not a 3D object.\n");
-				return 1;
-			}
-			if (!root_N.p3->is_simple()) {
-				PRINT("Object isn't a valid 2-manifold! Modify your design.\n");
 				return 1;
 			}
 			std::ofstream fstream(stl_output_file);
@@ -383,18 +387,14 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 				PRINTB("Can't open file \"%s\" for export", stl_output_file);
 			}
 			else {
-				export_stl(&root_N, fstream);
+				exportFile(root_geom.get(), fstream, OPENSCAD_STL);
 				fstream.close();
 			}
 		}
 
 		if (off_output_file) {
-			if (root_N.dim != 3) {
+			if (root_geom->getDimension() != 3) {
 				PRINT("Current top level object is not a 3D object.\n");
-				return 1;
-			}
-			if (!root_N.p3->is_simple()) {
-				PRINT("Object isn't a valid 2-manifold! Modify your design.\n");
 				return 1;
 			}
 			std::ofstream fstream(off_output_file);
@@ -402,13 +402,28 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 				PRINTB("Can't open file \"%s\" for export", off_output_file);
 			}
 			else {
-				export_off(&root_N, fstream);
+				exportFile(root_geom.get(), fstream, OPENSCAD_OFF);
+				fstream.close();
+			}
+		}
+
+		if (amf_output_file) {
+			if (root_geom->getDimension() != 3) {
+				PRINT("Current top level object is not a 3D object.\n");
+				return 1;
+			}
+			std::ofstream fstream(amf_output_file);
+			if (!fstream.is_open()) {
+				PRINTB("Can't open file \"%s\" for export", amf_output_file);
+			}
+			else {
+				exportFile(root_geom.get(), fstream, OPENSCAD_AMF);
 				fstream.close();
 			}
 		}
 
 		if (dxf_output_file) {
-			if (root_N.dim != 2) {
+			if (root_geom->getDimension() != 2) {
 				PRINT("Current top level object is not a 2D object.\n");
 				return 1;
 			}
@@ -417,7 +432,22 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 				PRINTB("Can't open file \"%s\" for export", dxf_output_file);
 			}
 			else {
-				export_dxf(&root_N, fstream);
+				exportFile(root_geom.get(), fstream, OPENSCAD_DXF);
+				fstream.close();
+			}
+		}
+		
+		if (svg_output_file) {
+			if (root_geom->getDimension() != 2) {
+				PRINT("Current top level object is not a 2D object.\n");
+				return 1;
+			}
+			std::ofstream fstream(svg_output_file);
+			if (!fstream.is_open()) {
+				PRINTB("Can't open file \"%s\" for export", svg_output_file);
+			}
+			else {
+				exportFile(root_geom.get(), fstream, OPENSCAD_SVG);
 				fstream.close();
 			}
 		}
@@ -429,12 +459,13 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 			}
 			else {
 				if (renderer==Render::CGAL) {
-					export_png_with_cgal(&root_N, camera, fstream);
+					export_png(root_geom.get(), camera, fstream);
 				} else if (renderer==Render::THROWNTOGETHER) {
 					export_png_with_throwntogether(tree, camera, fstream);
 				} else {
 					export_png_with_opencsg(tree, camera, fstream);
 				}
+				PRINTB("Camera eye: %f %f %f\n", camera.eye[0] % camera.eye[1] % camera.eye[2]);
 				fstream.close();
 			}
 		}
@@ -450,14 +481,20 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 #ifdef OPENSCAD_QTGUI
 #include <QtPlugin>
 #if defined(__MINGW64__) || defined(__MINGW32__) || defined(_MSCVER)
+#if QT_VERSION < 0x050000
 Q_IMPORT_PLUGIN(qtaccessiblewidgets)
-#endif
+#endif // QT_VERSION
+#endif // MINGW64/MINGW32/MSCVER
 #include "MainWindow.h"
   #ifdef __APPLE__
   #include "EventFilter.h"
   #endif
 #include <QString>
 #include <QDir>
+#include <QFileInfo>
+#include <QMetaType>
+
+Q_DECLARE_METATYPE(shared_ptr<const Geometry>);
 
 // Only if "fileName" is not absolute, prepend the "absoluteBase".
 static QString assemblePath(const fs::path& absoluteBaseDir,
@@ -503,6 +540,9 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 	QCoreApplication::setOrganizationDomain("openscad.org");
 	QCoreApplication::setApplicationName("OpenSCAD");
 	QCoreApplication::setApplicationVersion(TOSTRING(OPENSCAD_VERSION));
+
+	// Other global settings
+	qRegisterMetaType<shared_ptr<const Geometry> >();
 	
 	const QString &app_path = app.applicationDirPath();
 
@@ -598,8 +638,9 @@ int main(int argc, char **argv)
 		("preview", po::value<string>(), "if exporting a png image, do an OpenCSG(default) or ThrownTogether preview")
 		("csglimit", po::value<unsigned int>(), "if exporting a png image, stop rendering at the given number of CSG elements")
 		("camera", po::value<string>(), "parameters for camera when exporting png")
-	        ("imgsize", po::value<string>(), "=width,height for exporting png")
+		("imgsize", po::value<string>(), "=width,height for exporting png")
 		("projection", po::value<string>(), "(o)rtho or (p)erspective when exporting png")
+		("debug", po::value<string>(), "special debug info")
 		("o,o", po::value<string>(), "out-file")
 		("s,s", po::value<string>(), "stl-file")
 		("x,x", po::value<string>(), "dxf-file")
@@ -630,6 +671,11 @@ int main(int argc, char **argv)
 		help(argv[0]);
 	}
 
+	OpenSCAD::debug = "";
+	if (vm.count("debug")) {
+		OpenSCAD::debug = vm["debug"].as<string>();
+		PRINTB("Debug on. --debug=%s",OpenSCAD::debug);
+	}
 	if (vm.count("help")) help(argv[0]);
 	if (vm.count("version")) version();
 	if (vm.count("info")) info();

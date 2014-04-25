@@ -244,7 +244,9 @@
      </property>
      <addaction name="designActionExportSTL"/>
      <addaction name="designActionExportOFF"/>
+     <addaction name="designActionExportAMF"/>
      <addaction name="designActionExportDXF"/>
+     <addaction name="designActionExportSVG"/>
      <addaction name="designActionExportCSG"/>
      <addaction name="separator"/>
      <addaction name="designActionExportImage"/>
@@ -300,9 +302,9 @@
      <string>&amp;Design</string>
     </property>
     <addaction name="designActionAutoReload"/>
-    <addaction name="designActionReloadAndCompile"/>
-    <addaction name="designActionCompile"/>
-    <addaction name="designActionCompileAndRender"/>
+    <addaction name="designActionReloadAndPreview"/>
+    <addaction name="designActionPreview"/>
+    <addaction name="designActionRender"/>
     <addaction name="separator"/>
     <addaction name="designCheckValidity"/>
     <addaction name="designActionDisplayAST"/>
@@ -315,9 +317,9 @@
     <property name="title">
      <string>&amp;View</string>
     </property>
-    <addaction name="viewActionOpenCSG"/>
-    <addaction name="viewActionCGALSurfaces"/>
-    <addaction name="viewActionCGALGrid"/>
+    <addaction name="viewActionPreview"/>
+    <addaction name="viewActionSurfaces"/>
+    <addaction name="viewActionWireframe"/>
     <addaction name="viewActionThrownTogether"/>
     <addaction name="separator"/>
     <addaction name="viewActionShowEdges"/>
@@ -519,25 +521,25 @@
     <string>Hide editor</string>
    </property>
   </action>
-  <action name="designActionReloadAndCompile">
+  <action name="designActionReloadAndPreview">
    <property name="text">
-    <string>&amp;Reload and Compile</string>
+    <string>&amp;Reload and Preview</string>
    </property>
    <property name="shortcut">
     <string>F4</string>
    </property>
   </action>
-  <action name="designActionCompile">
+  <action name="designActionPreview">
    <property name="text">
-    <string>&amp;Compile</string>
+    <string>&amp;Preview</string>
    </property>
    <property name="shortcut">
     <string>F5</string>
    </property>
   </action>
-  <action name="designActionCompileAndRender">
+  <action name="designActionRender">
    <property name="text">
-    <string>Compile and &amp;Render (CGAL)</string>
+    <string>&amp;Render</string>
    </property>
    <property name="shortcut">
     <string>F6</string>
@@ -573,34 +575,34 @@
     <string>Export as &amp;OFF...</string>
    </property>
   </action>
-  <action name="viewActionOpenCSG">
+  <action name="viewActionPreview">
    <property name="checkable">
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>OpenCSG</string>
+    <string>Preview</string>
    </property>
    <property name="shortcut">
     <string>F9</string>
    </property>
   </action>
-  <action name="viewActionCGALSurfaces">
+  <action name="viewActionSurfaces">
    <property name="checkable">
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>CGAL Surfaces</string>
+    <string>Surfaces</string>
    </property>
    <property name="shortcut">
     <string>F10</string>
    </property>
   </action>
-  <action name="viewActionCGALGrid">
+  <action name="viewActionWireframe">
    <property name="checkable">
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>CGAL Grid Only</string>
+    <string>Wireframe</string>
    </property>
    <property name="shortcut">
     <string>F11</string>
@@ -837,7 +839,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Automatic Reload and Compile</string>
+    <string>Automatic Reload and Preview</string>
    </property>
   </action>
   <action name="designActionExportImage">
@@ -871,6 +873,16 @@
   <action name="viewActionResetView">
    <property name="text">
     <string>Reset View</string>
+   </property>
+  </action>
+  <action name="designActionExportSVG">
+   <property name="text">
+    <string>Export as SVG...</string>
+   </property>
+  </action>
+  <action name="designActionExportAMF">
+   <property name="text">
+    <string>Export as AMF...</string>
    </property>
   </action>
   <action name="viewActionZoomIn">

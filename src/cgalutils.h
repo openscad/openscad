@@ -3,10 +3,21 @@
 
 #include <cgal.h>
 #include "polyset.h"
+#include "CGAL_Nef_polyhedron.h"
+#include "enums.h"
+
+namespace CGALUtils {
+	bool applyHull(const Geometry::ChildList &children, CGAL_Polyhedron &P);
+	void applyOperator(const Geometry::ChildList &children, CGAL_Nef_polyhedron &dest, OpenSCADOperator op);
+	void applyBinaryOperator(CGAL_Nef_polyhedron &target, const CGAL_Nef_polyhedron &src, OpenSCADOperator op);
+	Polygon2d *project(const CGAL_Nef_polyhedron &N, bool cut);
+	CGAL_Iso_cuboid_3 boundingBox(const CGAL_Nef_polyhedron3 &N);
+};
+
+CGAL_Nef_polyhedron *createNefPolyhedronFromGeometry(const class Geometry &geom);
 bool createPolySetFromPolyhedron(const CGAL_Polyhedron &p, PolySet &ps);
+bool createPolySetFromNefPolyhedron3(const CGAL_Nef_polyhedron3 &N, PolySet &ps);
 bool createPolyhedronFromPolySet(const PolySet &ps, CGAL_Polyhedron &p);
-CGAL_Iso_cuboid_3 bounding_box( const CGAL_Nef_polyhedron3 &N );
-CGAL_Iso_rectangle_2e bounding_box( const CGAL_Nef_polyhedron2 &N );
 
 #include "svg.h"
 #include "printutils.h"
@@ -41,7 +52,6 @@ OGL_helper.h
 
 class ZRemover {
 public:
-	logstream log;
 	CGAL_Nef_polyhedron2::Boundary boundary;
 	boost::shared_ptr<CGAL_Nef_polyhedron2> tmpnef2d;
 	boost::shared_ptr<CGAL_Nef_polyhedron2> output_nefpoly2d;
@@ -51,7 +61,6 @@ public:
 		output_nefpoly2d.reset( new CGAL_Nef_polyhedron2() );
 		boundary = CGAL_Nef_polyhedron2::INCLUDED;
 		up = CGAL::Direction_3<CGAL_Kernel3>(0,0,1);
-		log = logstream(5);
 	}
 	void visit( CGAL_Nef_polyhedron3::Vertex_const_handle ) {}
 	void visit( CGAL_Nef_polyhedron3::Halfedge_const_handle ) {}

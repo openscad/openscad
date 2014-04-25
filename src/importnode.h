@@ -12,10 +12,10 @@ enum import_type_e {
 	TYPE_DXF
 };
 
-class ImportNode : public AbstractPolyNode
+class ImportNode : public LeafNode
 {
 public:
-	ImportNode(const ModuleInstantiation *mi, import_type_e type) : AbstractPolyNode(mi), type(type) { }
+	ImportNode(const ModuleInstantiation *mi, import_type_e type) : LeafNode(mi), type(type) { }
   virtual Response accept(class State &state, Visitor &visitor) const {
 		return visitor.visit(state, *this);
 	}
@@ -28,7 +28,8 @@ public:
 	int convexity;
 	double fn, fs, fa;
 	double origin_x, origin_y, scale;
-	virtual PolySet *evaluate_polyset(class PolySetEvaluator *) const;
+	virtual Geometry *evaluate_geometry(class PolySetEvaluator *) const { return createGeometry(); }
+	virtual Geometry *createGeometry() const;
 };
 
 #endif

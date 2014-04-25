@@ -2,6 +2,7 @@
 #define CGALCACHE_H_
 
 #include "cache.h"
+#include "memory.h"
 
 /*!
 */
@@ -13,8 +14,8 @@ public:
 	static CGALCache *instance() { if (!inst) inst = new CGALCache; return inst; }
 
 	bool contains(const std::string &id) const { return this->cache.contains(id); }
-	const class CGAL_Nef_polyhedron &get(const std::string &id) const;
-	bool insert(const std::string &id, const CGAL_Nef_polyhedron &N);
+	shared_ptr<const class CGAL_Nef_polyhedron> get(const std::string &id) const;
+	bool insert(const std::string &id, const shared_ptr<const CGAL_Nef_polyhedron> &N);
 	size_t maxSize() const;
 	void setMaxSize(size_t limit);
 	void clear();
@@ -23,7 +24,14 @@ public:
 private:
 	static CGALCache *inst;
 
-	Cache<std::string, CGAL_Nef_polyhedron> cache;
+	struct cache_entry {
+		shared_ptr<const CGAL_Nef_polyhedron> N;
+		std::string msg;
+		cache_entry(const shared_ptr<const CGAL_Nef_polyhedron> &N);
+		~cache_entry() { }
+	};
+
+	Cache<std::string, cache_entry> cache;
 };
 
 #endif

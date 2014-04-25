@@ -109,8 +109,8 @@ const EvalContext* ControlModule::getLastModuleCtx(const EvalContext *evalctx)
 	// Find the last custom module invocation, which will contain
 	// an eval context with the children of the module invokation
 	const Context *tmpc = evalctx;
-	while (tmpc->parent) {
-		const ModuleContext *modulectx = dynamic_cast<const ModuleContext*>(tmpc->parent);
+	while (tmpc->getParent()) {
+		const ModuleContext *modulectx = dynamic_cast<const ModuleContext*>(tmpc->getParent());
 		if (modulectx) {
 			// This will trigger if trying to invoke child from the root of any file
 			// assert(filectx->evalctx);
@@ -119,7 +119,7 @@ const EvalContext* ControlModule::getLastModuleCtx(const EvalContext *evalctx)
 			}
 			return NULL;
 		}
-		tmpc = tmpc->parent;
+		tmpc = tmpc->getParent();
 	}
 	return NULL;
 }

@@ -10,7 +10,11 @@
 # cmake itself is run. Typically these are signified by two underscores (__)
 # before and after the word in smallcase. 
 
-# Part 0. X11 and Virtual Framebuffer, for headless Linux/BSD systems. 
+# Part 0. Finding MCAD
+
+set(ENV{OPENSCADPATH} "__cmake_current_source_dir__/../libraries")
+
+# Part 1. X11 and Virtual Framebuffer, for headless Linux/BSD systems. 
 # This is not used by Windows or Mac because they have alternate means 
 # of accessing OpenGL.
 
@@ -51,23 +55,19 @@ if( __cmake_system_name__ MATCHES "Linux|BSD")
   # in the build directory).
   set(ENV{DISPLAY} "${VFB_DISPLAY}")
 
-  # this line is for MCAD
-  set(ENV{OPENSCADPATH} "__cmake_current_source_dir__/../libraries")
-
   set(CTEST_CUSTOM_POST_TEST "__cmake_current_source_dir__/virtualfb.sh")
  endif()
 endif()
 
-
-# Part 1. Pretty Printing
+# Part 2. Pretty Printing
 
 message("running '__openscad_binpath__ --info' to generate sysinfo.txt")
-execute_process(COMMAND __wine__ __openscad_binpath__ --info OUTPUT_FILE sysinfo.txt)
+execute_process(COMMAND __openscad_binpath__ --info OUTPUT_FILE sysinfo.txt)
 
 if("${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}.${CMAKE_PATCH_VERSION}" VERSION_LESS 2.8.12)
   set(CTEST_CUSTOM_POST_TEST ${CTEST_CUSTOM_POST_TEST} "__cmake_current_binary_dir__/test_pretty_print")
 else()
-  set(CTEST_CUSTOM_POST_TEST ${CTEST_CUSTOM_POST_TEST} "__python__ __cmake_current_source_dir__/test_pretty_print.py --builddir=__cmake_current_binary_dir__ __openscad_upload_tests__")
+  set(CTEST_CUSTOM_POST_TEST ${CTEST_CUSTOM_POST_TEST} "__python__ \"__cmake_current_source_dir__/test_pretty_print.py\" --builddir=__cmake_current_binary_dir__ __openscad_upload_tests__")
 endif()
 
 if ( ${debug_openscad_template} )

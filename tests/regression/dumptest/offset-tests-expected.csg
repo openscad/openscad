@@ -1,0 +1,133 @@
+group() {
+	offset(delta = -1, join_type = miter, miter_limit = 2, $fn = 0, $fa = 12, $fs = 2) {
+		group() {
+			multmatrix([[1, 0, 0, -50], [0, 1, 0, 100], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+				polygon(points = [[-15, 80], [15, 80], [0, -15], [-8, 60], [8, 60], [0, 5]], paths = [[0, 1, 2], [3, 4, 5]], convexity = 1);
+			}
+		}
+	}
+	group() {
+		multmatrix([[1, 0, 0, 0], [0, 1, 0, 100], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+			polygon(points = [[-15, 80], [15, 80], [0, -15], [-8, 60], [8, 60], [0, 5]], paths = [[0, 1, 2], [3, 4, 5]], convexity = 1);
+		}
+	}
+	offset(delta = 1, join_type = miter, miter_limit = 2, $fn = 0, $fa = 12, $fs = 2) {
+		group() {
+			multmatrix([[1, 0, 0, 50], [0, 1, 0, 100], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+				polygon(points = [[-15, 80], [15, 80], [0, -15], [-8, 60], [8, 60], [0, 5]], paths = [[0, 1, 2], [3, 4, 5]], convexity = 1);
+			}
+		}
+	}
+	offset(delta = -1, join_type = miter, miter_limit = 10, $fn = 0, $fa = 12, $fs = 2) {
+		group() {
+			multmatrix([[1, 0, 0, 100], [0, 1, 0, 100], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+				polygon(points = [[-15, 80], [15, 80], [0, -15], [-8, 60], [8, 60], [0, 5]], paths = [[0, 1, 2], [3, 4, 5]], convexity = 1);
+			}
+		}
+	}
+	offset(delta = 1, join_type = miter, miter_limit = 10, $fn = 0, $fa = 12, $fs = 2) {
+		group() {
+			multmatrix([[1, 0, 0, 150], [0, 1, 0, 100], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+				polygon(points = [[-15, 80], [15, 80], [0, -15], [-8, 60], [8, 60], [0, 5]], paths = [[0, 1, 2], [3, 4, 5]], convexity = 1);
+			}
+		}
+	}
+	offset(delta = -1, join_type = bevel, miter_limit = 2, $fn = 0, $fa = 12, $fs = 2) {
+		group() {
+			multmatrix([[1, 0, 0, 100], [0, 1, 0, -50], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+				polygon(points = [[-15, 80], [15, 80], [0, -15], [-8, 60], [8, 60], [0, 5]], paths = [[0, 1, 2], [3, 4, 5]], convexity = 1);
+			}
+		}
+	}
+	offset(delta = 1, join_type = bevel, miter_limit = 2, $fn = 0, $fa = 12, $fs = 2) {
+		group() {
+			multmatrix([[1, 0, 0, 150], [0, 1, 0, -50], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+				polygon(points = [[-15, 80], [15, 80], [0, -15], [-8, 60], [8, 60], [0, 5]], paths = [[0, 1, 2], [3, 4, 5]], convexity = 1);
+			}
+		}
+	}
+	offset(delta = -5, join_type = round, miter_limit = 2, $fn = 0, $fa = 12, $fs = 2) {
+		group() {
+			multmatrix([[1, 0, 0, -50], [0, 1, 0, 50], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+				difference() {
+					square(size = [30, 30], center = true);
+					square(size = [8, 8], center = true);
+				}
+			}
+		}
+	}
+	group() {
+		multmatrix([[1, 0, 0, 0], [0, 1, 0, 50], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+			difference() {
+				square(size = [30, 30], center = true);
+				square(size = [8, 8], center = true);
+			}
+		}
+	}
+	offset(delta = 5, join_type = round, miter_limit = 2, $fn = 0, $fa = 12, $fs = 2) {
+		group() {
+			multmatrix([[1, 0, 0, 50], [0, 1, 0, 50], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+				difference() {
+					square(size = [30, 30], center = true);
+					square(size = [8, 8], center = true);
+				}
+			}
+		}
+	}
+	offset(delta = -4, join_type = miter, miter_limit = 2, $fn = 0, $fa = 12, $fs = 2) {
+		group() {
+			multmatrix([[1, 0, 0, -50], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+				difference() {
+					square(size = [30, 30], center = true);
+					square(size = [8, 8], center = true);
+				}
+			}
+		}
+	}
+	group() {
+		multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+			difference() {
+				square(size = [30, 30], center = true);
+				square(size = [8, 8], center = true);
+			}
+		}
+	}
+	offset(delta = 4, join_type = miter, miter_limit = 2, $fn = 0, $fa = 12, $fs = 2) {
+		group() {
+			multmatrix([[1, 0, 0, 50], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+				difference() {
+					square(size = [30, 30], center = true);
+					square(size = [8, 8], center = true);
+				}
+			}
+		}
+	}
+	offset(delta = -5, join_type = miter, miter_limit = 2, $fn = 0, $fa = 12, $fs = 2) {
+		group() {
+			multmatrix([[1, 0, 0, -50], [0, 1, 0, -50], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+				difference() {
+					square(size = [30, 30], center = true);
+					square(size = [8, 8], center = true);
+				}
+			}
+		}
+	}
+	group() {
+		multmatrix([[1, 0, 0, 0], [0, 1, 0, -50], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+			difference() {
+				square(size = [30, 30], center = true);
+				square(size = [8, 8], center = true);
+			}
+		}
+	}
+	offset(delta = 5, join_type = miter, miter_limit = 2, $fn = 0, $fa = 12, $fs = 2) {
+		group() {
+			multmatrix([[1, 0, 0, 50], [0, 1, 0, -50], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+				difference() {
+					square(size = [30, 30], center = true);
+					square(size = [8, 8], center = true);
+				}
+			}
+		}
+	}
+}

@@ -31,8 +31,8 @@
 #include "printutils.h"
 #include "fileutils.h"
 #include "builtin.h"
-#include "PolySetEvaluator.h"
 #include "calc.h"
+#include "polyset.h"
 #include "mathc99.h" 
 
 #include <sstream>
@@ -54,7 +54,7 @@ AbstractNode *LinearExtrudeModule::instantiate(const Context *ctx, const ModuleI
 	LinearExtrudeNode *node = new LinearExtrudeNode(inst);
 
 	AssignmentList args;
-	args += Assignment("file", NULL), Assignment("layer", NULL), Assignment("height", NULL), Assignment("origin", NULL), Assignment("scale", NULL), Assignment("center", NULL), Assignment("twist", NULL), Assignment("slices", NULL);
+	args += Assignment("file"), Assignment("layer"), Assignment("height"), Assignment("origin"), Assignment("scale"), Assignment("center"), Assignment("twist"), Assignment("slices");
 
 	Context c(ctx);
 	c.setVariables(args, evalctx);
@@ -125,22 +125,6 @@ AbstractNode *LinearExtrudeModule::instantiate(const Context *ctx, const ModuleI
 	}
 
 	return node;
-}
-
-class PolySet *LinearExtrudeNode::evaluate_polyset(PolySetEvaluator *evaluator) const
-{
-	if (!evaluator) {
-		PRINTB("WARNING: No suitable PolySetEvaluator found for %s module!", this->name());
-		return NULL;
-	}
-
-	print_messages_push();
-
-	PolySet *ps = evaluator->evaluatePolySet(*this);
-
-	print_messages_pop();
-
-	return ps;
 }
 
 std::string LinearExtrudeNode::toString() const

@@ -27,7 +27,6 @@ public:
 	bool center, has_twist;
 	Filename filename;
 	std::string layername;
-	virtual PolySet *evaluate_polyset(class PolySetEvaluator *) const;
 };
 
 #endif

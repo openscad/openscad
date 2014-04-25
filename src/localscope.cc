@@ -14,7 +14,6 @@ LocalScope::LocalScope()
 LocalScope::~LocalScope()
 {
 	BOOST_FOREACH (ModuleInstantiation *v, children) delete v;
-	BOOST_FOREACH (const Assignment &v, assignments) delete v.second;
 	BOOST_FOREACH (FunctionContainer::value_type &f, functions) delete f.second;
 	BOOST_FOREACH (AbstractModuleContainer::value_type &m, modules) delete m.second;
 }

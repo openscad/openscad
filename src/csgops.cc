@@ -36,8 +36,8 @@
 class CsgModule : public AbstractModule
 {
 public:
-	csg_type_e type;
-	CsgModule(csg_type_e type) : type(type) { }
+	OpenSCADOperator type;
+	CsgModule(OpenSCADOperator type) : type(type) { }
 	virtual AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const;
 };
 
@@ -57,13 +57,13 @@ std::string CsgNode::toString() const
 std::string CsgNode::name() const
 {
 	switch (this->type) {
-	case CSG_TYPE_UNION:
+	case OPENSCAD_UNION:
 		return "union";
 		break;
-	case CSG_TYPE_DIFFERENCE:
+	case OPENSCAD_DIFFERENCE:
 		return "difference";
 		break;
-	case CSG_TYPE_INTERSECTION:
+	case OPENSCAD_INTERSECTION:
 		return "intersection";
 		break;
 	default:
@@ -74,8 +74,8 @@ std::string CsgNode::name() const
 
 void register_builtin_csgops()
 {
-	Builtins::init("union", new CsgModule(CSG_TYPE_UNION));
-	Builtins::init("difference", new CsgModule(CSG_TYPE_DIFFERENCE));
-	Builtins::init("intersection", new CsgModule(CSG_TYPE_INTERSECTION));
+	Builtins::init("union", new CsgModule(OPENSCAD_UNION));
+	Builtins::init("difference", new CsgModule(OPENSCAD_DIFFERENCE));
+	Builtins::init("intersection", new CsgModule(OPENSCAD_INTERSECTION));
 }
 

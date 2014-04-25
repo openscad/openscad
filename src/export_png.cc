@@ -10,8 +10,10 @@
 #include "CGALRenderer.h"
 #include "CGAL_renderer.h"
 #include "cgal.h"
+#include "cgalutils.h"
+#include "CGAL_Nef_polyhedron.h"
 
-void export_png_with_cgal(CGAL_Nef_polyhedron *root_N, Camera &cam, std::ostream &output)
+void export_png(const Geometry *root_geom, Camera &cam, std::ostream &output)
 {
 	OffscreenView *glview;
 	try {
@@ -20,7 +22,8 @@ void export_png_with_cgal(CGAL_Nef_polyhedron *root_N, Camera &cam, std::ostream
 		fprintf(stderr,"Can't create OpenGL OffscreenView. Code: %i.\n", error);
 		return;
 	}
-	CGALRenderer cgalRenderer(*root_N);
+	shared_ptr<const Geometry> ptr(root_geom);
+	CGALRenderer cgalRenderer(ptr);
 
 	BoundingBox bbox;
 	if (cgalRenderer.polyhedron) {
@@ -88,9 +91,11 @@ void export_png_preview_common( Tree &tree, Camera &cam, std::ostream &output, P
 	}
 
 	csgInfo.glview->setCamera( cam );
+#ifdef ENABLE_OPENCSG
 	if ( previewer == OPENCSG )
 		csgInfo.glview->setRenderer( &openCSGRenderer );
 	else
+#endif
 		csgInfo.glview->setRenderer( &thrownTogetherRenderer );
 #ifdef ENABLE_OPENCSG
 	OpenCSG::setContext( 0 );

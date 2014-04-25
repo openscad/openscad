@@ -32,7 +32,6 @@
 #include "builtin.h"
 #include "polyset.h"
 #include "visitor.h"
-#include "PolySetEvaluator.h"
 
 #include <sstream>
 #include <boost/assign/std/vector.hpp>
@@ -53,7 +52,7 @@ AbstractNode *RotateExtrudeModule::instantiate(const Context *ctx, const ModuleI
 	RotateExtrudeNode *node = new RotateExtrudeNode(inst);
 
 	AssignmentList args;
-	args += Assignment("file", NULL), Assignment("layer", NULL), Assignment("origin", NULL), Assignment("scale", NULL);
+	args += Assignment("file"), Assignment("layer"), Assignment("origin"), Assignment("scale");
 
 	Context c(ctx);
 	c.setVariables(args, evalctx);
@@ -90,22 +89,6 @@ AbstractNode *RotateExtrudeModule::instantiate(const Context *ctx, const ModuleI
 	}
 
 	return node;
-}
-
-PolySet *RotateExtrudeNode::evaluate_polyset(PolySetEvaluator *evaluator) const
-{
-	if (!evaluator) {
-		PRINTB("WARNING: No suitable PolySetEvaluator found for %s module!", this->name());
-		return NULL;
-	}
-
-	print_messages_push();
-
-	PolySet *ps = evaluator->evaluatePolySet(*this);
-	
-	print_messages_pop();
-
-	return ps;
 }
 
 std::string RotateExtrudeNode::toString() const

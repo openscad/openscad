@@ -35,10 +35,10 @@ public:
 	    overloaded to provide specialization for e.g. CSG nodes, primitive nodes etc.
 	    Used for human-readable output. */
 	virtual std::string name() const;
-  /*! Should return a PolySet of the given geometry. Returns NULL if smth. goes wrong.
-	 This is only called by PolySetEvaluator, to make sure polysets are inserted into 
-	 the cache*/
-	virtual class PolySet *evaluate_polyset(class PolySetEvaluator *) const { return NULL; }
+  /*! Should return a Geometry instance describing the node. Returns NULL if smth.
+		goes wrong. This is only called by PolySetEvaluator, to make sure polysets 
+		are inserted into the cache*/
+	virtual class Geometry *evaluate_geometry(class PolySetEvaluator *) const { return NULL; }
 
 	const std::vector<AbstractNode*> &getChildren() const { 
 		return this->children;
@@ -81,6 +81,15 @@ public:
 		RENDER_CGAL,
 		RENDER_OPENCSG
 	};
+};
+
+class LeafNode : public AbstractPolyNode
+{
+public:
+	LeafNode(const ModuleInstantiation *mi) : AbstractPolyNode(mi) { };
+	virtual ~LeafNode() { };
+  virtual Response accept(class State &state, class Visitor &visitor) const;
+	virtual Geometry *createGeometry() const = 0;
 };
 
 std::ostream &operator<<(std::ostream &stream, const AbstractNode &node);

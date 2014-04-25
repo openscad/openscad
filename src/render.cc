@@ -28,7 +28,7 @@
 #include "module.h"
 #include "evalcontext.h"
 #include "builtin.h"
-#include "PolySetEvaluator.h"
+#include "polyset.h"
 
 #include <sstream>
 #include <boost/assign/std/vector.hpp>
@@ -46,7 +46,7 @@ AbstractNode *RenderModule::instantiate(const Context *ctx, const ModuleInstanti
 	RenderNode *node = new RenderNode(inst);
 
 	AssignmentList args;
-	args += Assignment("convexity", NULL);
+	args += Assignment("convexity");
 
 	Context c(ctx);
 	c.setVariables(args, evalctx);
@@ -59,11 +59,6 @@ AbstractNode *RenderModule::instantiate(const Context *ctx, const ModuleInstanti
 	node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
 
 	return node;
-}
-
-class PolySet *RenderNode::evaluate_polyset(PolySetEvaluator *ps) const
-{
-	return ps->evaluatePolySet(*this);
 }
 
 std::string RenderNode::toString() const

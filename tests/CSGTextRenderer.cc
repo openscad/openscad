@@ -24,29 +24,31 @@ bool CSGTextRenderer::isCached(const AbstractNode &node)
 	target = target [op] src
  */
 void
-CSGTextRenderer::process(string &target, const string &src, CSGTextRenderer::CsgOp op)
+CSGTextRenderer::process(string &target, const string &src, OpenSCADOperator op)
 {
 // 	if (target.dim != 2 && target.dim != 3) {
 // 		assert(false && "Dimension of Nef polyhedron must be 2 or 3");
 // 	}
 
 	switch (op) {
-	case UNION:
+	case OPENSCAD_UNION:
 		target += "+" + src;
 		break;
-	case INTERSECTION:
+	case OPENSCAD_INTERSECTION:
 		target += "*" + src;
 		break;
-	case DIFFERENCE:
+	case OPENSCAD_DIFFERENCE:
 		target += "-" + src;
 		break;
-	case MINKOWSKI:
+	case OPENSCAD_MINKOWSKI:
 		target += "M" + src;
 		break;
+	default:
+		assert(false);
 	}
 }
 
-void CSGTextRenderer::applyToChildren(const AbstractNode &node, CSGTextRenderer::CsgOp op)
+void CSGTextRenderer::applyToChildren(const AbstractNode &node, OpenSCADOperator op)
 {
 	std::stringstream stream;
 	stream << node.name() << node.index();
@@ -86,7 +88,7 @@ Response CSGTextRenderer::visit(State &state, const AbstractNode &node)
 {
 	if (state.isPrefix() && isCached(node)) return PruneTraversal;
 	if (state.isPostfix()) {
-		if (!isCached(node)) applyToChildren(node, UNION);
+		if (!isCached(node)) applyToChildren(node, OPENSCAD_UNION);
 		addToParent(state, node);
 	}
 	return ContinueTraversal;
@@ -96,7 +98,7 @@ Response CSGTextRenderer::visit(State &state, const AbstractIntersectionNode &no
 {
 	if (state.isPrefix() && isCached(node)) return PruneTraversal;
 	if (state.isPostfix()) {
-		if (!isCached(node)) applyToChildren(node, INTERSECTION);
+		if (!isCached(node)) applyToChildren(node, OPENSCAD_INTERSECTION);
 		addToParent(state, node);
 	}
 	return ContinueTraversal;
@@ -107,19 +109,7 @@ Response CSGTextRenderer::visit(State &state, const CsgNode &node)
 	if (state.isPrefix() && isCached(node)) return PruneTraversal;
 	if (state.isPostfix()) {
 		if (!isCached(node)) {
-			CsgOp op;
-			switch (node.type) {
-			case CSG_TYPE_UNION:
-				op = UNION;
-				break;
-			case CSG_TYPE_DIFFERENCE:
-				op = DIFFERENCE;
-				break;
-			case CSG_TYPE_INTERSECTION:
-				op = INTERSECTION;
-				break;
-			}
-			applyToChildren(node, op);
+			applyToChildren(node, node.type);
 		}
 		addToParent(state, node);
 	}
@@ -132,7 +122,7 @@ Response CSGTextRenderer::visit(State &state, const TransformNode &node)
 	if (state.isPostfix()) {
 		if (!isCached(node)) {
 			// First union all children
-			applyToChildren(node, UNION);
+			applyToChildren(node, OPENSCAD_UNION);
 			// FIXME: Then apply transform
 		}
 		addToParent(state, node);

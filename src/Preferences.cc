@@ -31,7 +31,7 @@
 #include <QKeyEvent>
 #include <QSettings>
 #include <QStatusBar>
-#include "PolySetCache.h"
+#include "GeometryCache.h"
 #include "AutoUpdater.h"
 #include "feature.h"
 #ifdef ENABLE_CGAL
@@ -65,6 +65,12 @@ Preferences::Preferences(QWidget *parent) : QMainWindow(parent)
  	this->defaultmap["editor/fontsize"] = 12;
 	this->defaultmap["editor/syntaxhighlight"] = "For Light Background";
 
+#if defined (Q_OS_MAC)
+	this->defaultmap["editor/ctrlmousewheelzoom"] = false;
+#else
+	this->defaultmap["editor/ctrlmousewheelzoom"] = true;
+#endif
+
 	uint savedsize = getValue("editor/fontsize").toUInt();
 	QFontDatabase db;
 	foreach(uint size, db.standardSizes()) {
@@ -84,7 +90,7 @@ Preferences::Preferences(QWidget *parent) : QMainWindow(parent)
 	this->defaultmap["3dview/colorscheme"] = this->colorSchemeChooser->currentItem()->text();
 	this->defaultmap["advanced/opencsg_show_warning"] = true;
 	this->defaultmap["advanced/enable_opencsg_opengl1x"] = true;
-	this->defaultmap["advanced/polysetCacheSize"] = uint(PolySetCache::instance()->maxSize());
+	this->defaultmap["advanced/polysetCacheSize"] = uint(GeometryCache::instance()->maxSize());
 #ifdef ENABLE_CGAL
 	this->defaultmap["advanced/cgalCacheSize"] = uint(CGALCache::instance()->maxSize());
 #endif
@@ -356,7 +362,7 @@ void Preferences::on_polysetCacheSizeEdit_textChanged(const QString &text)
 {
 	QSettings settings;
 	settings.setValue("advanced/polysetCacheSize", text);
-	PolySetCache::instance()->setMaxSize(text.toULong());
+	GeometryCache::instance()->setMaxSize(text.toULong());
 }
 
 void Preferences::on_opencsgLimitEdit_textChanged(const QString &text)
@@ -371,6 +377,12 @@ void Preferences::on_forceGoldfeatherBox_toggled(bool state)
 	QSettings settings;
 	settings.setValue("advanced/forceGoldfeather", state);
 	emit openCSGSettingsChanged();
+}
+
+void Preferences::on_mouseWheelZoomBox_toggled(bool state)
+{
+	QSettings settings;
+	settings.setValue("editor/ctrlmousewheelzoom", state);
 }
 
 void Preferences::keyPressEvent(QKeyEvent *e)
@@ -434,6 +446,8 @@ void Preferences::updateGUI()
 	QString shighlight = getValue("editor/syntaxhighlight").toString();
 	int shidx = this->syntaxHighlight->findText(shighlight);
 	if (shidx >= 0) this->syntaxHighlight->setCurrentIndex(shidx);
+
+	this->mouseWheelZoomBox->setChecked(getValue("editor/ctrlmousewheelzoom").toBool());
 
 	if (AutoUpdater *updater = AutoUpdater::updater()) {
 		this->updateCheckBox->setChecked(updater->automaticallyChecksForUpdates());

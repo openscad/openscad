@@ -170,9 +170,9 @@ Then run the script to compile all the prerequisite libraries above:
 
     ./scripts/uni-build-dependencies.sh
 
-Note that huge dependencies like gcc or qt are not included here, only 
-the smaller ones (boost, CGAL, opencsg, etc). After the build, again 
-check dependencies.
+Note that huge dependencies like gcc, qt, or glib2 are not included 
+here, only the smaller ones (boost, CGAL, opencsg, etc). After the 
+build, again check dependencies.
 
     ./scripts/check-dependencies.sh
 

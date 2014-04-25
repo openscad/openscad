@@ -4,7 +4,7 @@
 #include "OffscreenView.h"
 #include "csgterm.h"
 #include "Tree.h"
-#include "CGALEvaluator.h"
+#include "GeometryEvaluator.h"
 #include "CSGTermEvaluator.h"
 #include "csgtermnormalizer.h"
 #include "rendersettings.h"
@@ -40,8 +40,8 @@ public:
 	bool compile_chains( const Tree &tree )
 	{
 		const AbstractNode *root_node = tree.root();
-		CGALEvaluator cgalevaluator(tree);
-		CSGTermEvaluator evaluator(tree, &cgalevaluator.psevaluator);
+		GeometryEvaluator geomevaluator(tree);
+		CSGTermEvaluator evaluator(tree, &geomevaluator);
 		boost::shared_ptr<CSGTerm> root_raw_term = evaluator.evaluateCSGTerm( *root_node, this->highlight_terms, this->background_terms );
 
 		if (!root_raw_term) {
