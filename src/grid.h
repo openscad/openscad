@@ -11,8 +11,15 @@ typedef __int64 int64_t;
 #include <boost/unordered_map.hpp>
 #include <utility>
 
-const double GRID_COARSE = 0.001;
-const double GRID_FINE   = 0.000001;
+//const double GRID_COARSE = 0.001;
+//const double GRID_FINE   = 0.000001;
+/* Using decimals that are exactly convertible to binary floating point 
+(and then converted exactly to a GMPQ Rational that uses a small amount 
+of bytes aka "limbs" in CGAL's engine) provides at least a 5% speedup 
+for ctest -R CGAL. We choose 1/1024 and 1/(1024*1024) In python: print 
+'%.64f' % float(fractions.Fraction(1,1024)) */
+const double GRID_COARSE = 0.0009765625;
+const double GRID_FINE   = 0.00000095367431640625;
 
 template <typename T>
 class Grid2d
@@ -50,6 +57,7 @@ public:
 		x = ix * res, y = iy * res;
 		return db[std::make_pair(ix, iy)];
 	}
+
 	bool has(double x, double y) const {
 		int64_t ix = (int64_t)round(x / res);
 		int64_t iy = (int64_t)round(y / res);
@@ -62,6 +70,7 @@ public:
 		}
 		return false;
 	}
+
 	bool eq(double x1, double y1, double x2, double y2) {
 		align(x1, y1);
 		align(x2, y2);
@@ -87,6 +96,7 @@ public:
 	Grid3d(double resolution) {
 		res = resolution;
 	}
+
 	T &align(double &x, double &y, double &z) {
 		int64_t ix = (int64_t)round(x / res);
 		int64_t iy = (int64_t)round(y / res);
@@ -110,8 +120,9 @@ public:
 			}
 		}
 		x = ix * res, y = iy * res, z = iz * res;
-			return db[std::make_pair(std::make_pair(ix, iy), iz)];
+		return db[std::make_pair(std::make_pair(ix, iy), iz)];
 	}
+
 	bool has(double x, double y, double z) {
 		int64_t ix = (int64_t)round(x / res);
 		int64_t iy = (int64_t)round(y / res);
@@ -125,8 +136,8 @@ public:
 				return true;
 		}
 		return false;
-		
 	}
+
 	bool eq(double x1, double y1, double z1, double x2, double y2, double z2) {
 		align(x1, y1, z1);
 		align(x2, y2, z2);
@@ -134,9 +145,11 @@ public:
 			return true;
 		return false;
 	}
+
 	T &data(double x, double y, double z) {
 		return align(x, y, z);
 	}
+
 	T &operator()(double x, double y, double z) {
 		return align(x, y, z);
 	}

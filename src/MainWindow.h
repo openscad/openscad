@@ -12,6 +12,13 @@
 #include <QMutex>
 #include <QSet>
 
+enum export_type_e {
+	EXPORT_TYPE_UNKNOWN,
+	EXPORT_TYPE_STL,
+	EXPORT_TYPE_AMF,
+	EXPORT_TYPE_OFF
+};
+
 class MainWindow : public QMainWindow, public Ui::MainWindow
 {
 	Q_OBJECT
@@ -41,7 +48,7 @@ public:
 	shared_ptr<CSGTerm> root_norm_term;          // Normalized CSG products
 	class CSGChain *root_chain;
 #ifdef ENABLE_CGAL
-	class CGAL_Nef_polyhedron *root_N;
+	shared_ptr<const class Geometry> root_geom;
 	class CGALRenderer *cgalRenderer;
 #endif
 #ifdef ENABLE_OPENCSG
@@ -89,6 +96,7 @@ private:
 	void loadDesignSettings();
 	void saveBackup();
 	void writeBackup(class QFile *file);
+        QString get2dExportFilename(QString format, QString extension);
 
   class QMessageBox *openglbox;
 
@@ -117,7 +125,6 @@ private slots:
 	void preferences();
 
 private slots:
-	void actionRenderCSG();
 	void selectFindType(int);
 	void find();
 	void findAndReplace();
@@ -131,21 +138,24 @@ protected:
 	virtual bool eventFilter(QObject* obj, QEvent *event);
 
 private slots:
+	void actionRenderPreview();
 	void csgRender();
 	void csgReloadRender();
 #ifdef ENABLE_CGAL
-	void actionRenderCGAL();
-	void actionRenderCGALDone(class CGAL_Nef_polyhedron *);
+	void actionRender();
+	void actionRenderDone(shared_ptr<const class Geometry>);
 	void cgalRender();
 #endif
 	void actionCheckValidity();
 	void actionDisplayAST();
 	void actionDisplayCSGTree();
 	void actionDisplayCSGProducts();
-	void actionExportSTLorOFF(bool stl_mode);
+	void actionExport(export_type_e, const char *, const char *);
 	void actionExportSTL();
 	void actionExportOFF();
+	void actionExportAMF();
 	void actionExportDXF();
+	void actionExportSVG();
 	void actionExportCSG();
 	void actionExportImage();
 	void actionFlushCaches();
@@ -158,13 +168,13 @@ public:
 	void clearCurrentOutput();
 
 public slots:
-	void actionReloadRenderCSG();
+	void actionReloadRenderPreview();
 #ifdef ENABLE_OPENCSG
-	void viewModeOpenCSG();
+	void viewModePreview();
 #endif
 #ifdef ENABLE_CGAL
-	void viewModeCGALSurface();
-	void viewModeCGALGrid();
+	void viewModeSurface();
+	void viewModeWireframe();
 #endif
 	void viewModeThrownTogether();
 	void viewModeShowEdges();
@@ -181,7 +191,7 @@ public slots:
 	void viewCenter();
 	void viewPerspective();
 	void viewOrthogonal();
-        void viewResetView();
+	void viewResetView();
 	void hideConsole();
 	void animateUpdateDocChanged();
 	void animateUpdate();
@@ -198,14 +208,14 @@ public slots:
 
 private:
 	static void report_func(const class AbstractNode*, void *vp, int mark);
-	
+
 	char const * afterCompileSlot;
 	bool procevents;
 	class QTemporaryFile *tempFile;
-
 	class ProgressWidget *progresswidget;
 	class CGALWorker *cgalworker;
 	QMutex consolemutex;
+
 signals:
 	void highlightError(int);
 	void unhighlightLastError();

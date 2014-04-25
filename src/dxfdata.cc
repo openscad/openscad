@@ -44,6 +44,7 @@
 #include "value.h"
 #include "boost-utils.h"
 #include "boosty.h"
+#include "Polygon2d.h"
 
 /*! \class DxfData
 
@@ -585,4 +586,25 @@ std::string DxfData::dump() const
 	}
 	out << "\nDxfData end";
 	return out.str();
+}
+
+Polygon2d *DxfData::toPolygon2d() const
+{
+	Polygon2d *poly = new Polygon2d();
+	for (size_t i = 0; i < this->paths.size(); i++) {
+		const DxfData::Path &path = this->paths[i];
+		Outline2d outline;
+		size_t endidx = path.indices.size();
+		// We don't support open paths; closing them to be compatible with existing behavior
+		if (!path.is_closed) endidx++;
+		for (size_t j = 1; j < endidx; j++) {
+			outline.vertices.push_back(Vector2d(this->points[path.indices[path.indices.size()-j]]));
+		}
+		poly->addOutline(outline);
+	}
+	if (poly->outlines().size() == 0) {
+		delete poly;
+		poly = NULL;
+	}
+	return poly;
 }

@@ -7,6 +7,7 @@
 #     source ./scripts/setenv-mingw-xbuild.sh         # 32 bit build
 #     source ./scripts/setenv-mingw-xbuild.sh 64      # 64 bit build
 #     source ./scripts/setenv-mingw-xbuild.sh clean   # Clean up exported variables
+#     source ./scripts/setenv-mingw-xbuild.sh qt5     # use qt5 (experimental)
 #
 # Prerequisites:
 #
@@ -40,6 +41,15 @@ if [ ! $MXEDIR ]; then
 	fi
 fi
 
+if [ ! $MXEQTSUBDIR ]; then
+	if [ "`echo $* | grep qt5 `" ]; then
+		MXEQTSUBDIR=qt5
+	else
+		# qt4 is just 'qt', see http://mxe.cc
+		MXEQTSUBDIR=qt
+	fi
+fi
+
 if [ ! -e $DEPLOYDIR ]; then
   mkdir -p $DEPLOYDIR
 fi
@@ -56,7 +66,7 @@ if [ ! $MINGWX_SAVED_ORIGINAL_PATH ]; then
 fi
 
 PATH=$MXEDIR/usr/bin:$PATH
-PATH=$MXETARGETDIR/qt/bin:$PATH
+PATH=$MXETARGETDIR/$MXEQTSUBDIR/bin:$PATH
 
 OPENSCAD_LIBRARIES=$MXETARGETDIR
 
@@ -68,6 +78,7 @@ if [ "`echo $* | grep clean`" ]; then
   DEPLOYDIR=
   PATH=$MINGWX_SAVED_ORIGINAL_PATH
   MINGWX_SAVED_ORIGINAL_PATH=
+  MXEQTSUBDIR=
 else
   echo 'linking' $MXETARGETDIR
   echo '     to' $DEPLOYDIR/mingw-cross-env
@@ -82,16 +93,18 @@ export MXETARGETDIR
 export DEPLOYDIR
 export PATH
 export MINGWX_SAVED_ORIGINAL_PATH
+export MXEQTSUBDIR
 
 echo OPENSCAD_LIBRARIES: $OPENSCAD_LIBRARIES
 echo BASEDIR: $BASEDIR
 echo MXEDIR: $MXEDIR
 echo MXETARGETDIR: $MXETARGETDIR
 echo DEPLOYDIR: $DEPLOYDIR
+echo MXEQTSUBDIR: $MXEQTSUBDIR
 if [ "`echo $* | grep clean`" ]; then
   echo PATH restored to pre-setenv-mingw-x state
 else
   echo PATH modified: $MXEDIR/usr/bin
-  echo PATH modified: $MXETARGETDIR/qt/bin
+  echo PATH modified: $MXETARGETDIR/$MXEQTSUBDIR/bin
 fi
 

@@ -2,6 +2,7 @@
 #define CGALWORKER_H_
 
 #include <QObject>
+#include "memory.h"
 
 class CGALWorker : public QObject
 {
@@ -17,7 +18,7 @@ protected slots:
 	void work();
 
 signals:
-	void done(class CGAL_Nef_polyhedron *);
+	void done(shared_ptr<const class Geometry>);
 
 protected:
 

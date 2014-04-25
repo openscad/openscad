@@ -1,10 +1,12 @@
 #include "printutils.h"
 #include <sstream>
 #include <stdio.h>
+#include <boost/algorithm/string.hpp>
 
 std::list<std::string> print_messages_stack;
 OutputHandlerFunc *outputhandler = NULL;
 void *outputhandler_data = NULL;
+std::string OpenSCAD::debug("");
 
 void set_output_handler(OutputHandlerFunc *newhandler, void *userdata)
 {
@@ -48,6 +50,27 @@ void PRINT_NOCACHE(const std::string &msg)
 		fprintf(stderr, "%s\n", msg.c_str());
 	} else {
 		outputhandler(msg, outputhandler_data);
+	}
+}
+
+void PRINTDEBUG(const std::string &filename, const std::string &msg)
+{
+	// see printutils.h for usage instructions
+	if (OpenSCAD::debug=="") return;
+	std::string fname(filename);
+	std::string lowdebug( OpenSCAD::debug );
+	boost::replace_all( fname, "src/", "" );
+	std::string shortfname(fname);
+	boost::replace_all( shortfname, ".cc", "");
+	boost::replace_all( shortfname, ".h", "");
+	boost::replace_all( shortfname, ".hpp", "");
+	std::string lowshortfname( shortfname );
+	boost::algorithm::to_lower( lowshortfname );
+	boost::algorithm::to_lower( lowdebug );
+	if (OpenSCAD::debug=="all") {
+		PRINT_NOCACHE( shortfname+": "+ msg );
+	} else if (lowshortfname.find(lowdebug) != std::string::npos) {
+		PRINT_NOCACHE( shortfname+": "+ msg );
 	}
 }
 

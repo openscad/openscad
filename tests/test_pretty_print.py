@@ -51,8 +51,10 @@ def tryread(filename):
         data = f.read()
         f.close()
     except Exception as e:
-        print 'couldn\'t open ',filename
-        print type(e), e
+        debug( "couldn't open file: [" + filename + "]" )
+        debug( str(type(e))+str(e) )
+        if filename==None:
+            pass
     return data
 
 def trysave(filename, data):
@@ -87,7 +89,7 @@ def read_gitinfo():
         out = 'Git branch: ' + branch + ' from origin ' + origin + '\n'
         out += 'Git upstream: ' + upstream + '\n'
     except:
-        out = 'Problem running git'
+        out = 'Git branch: Unknown (could not run git)\n'
     return out
 
 def read_sysinfo(filename):
@@ -277,7 +279,7 @@ class Templates(object):
     </table>
 
     <pre>
-    {test_log}
+{test_log}
     </pre>
     '''
 
@@ -285,7 +287,7 @@ class Templates(object):
     <span class="text-name">{test_name}</span>
 
     <pre>
-    {test_log}
+{test_log}
     </pre>
     '''
 
@@ -323,13 +325,18 @@ def to_html(project_name, startdate, tests, enddate, sysinfo, sysid, makefiles):
 
     percent = '%.0f' % (100.0 * len(passed_tests) / len(tests)) if tests else 'n/a'
 
+    image_test_count = 0
+    text_test_count = 0
+
     templates = Templates()
     for test in report_tests:
         if test.type in ('txt', 'ast', 'csg', 'term', 'echo'):
+            text_test_count += 1
             templates.add('text_template', 'text_tests',
                           test_name=test.fullname,
                           test_log=test.fulltestlog)
         elif test.type == 'png':
+            image_test_count += 1
             # FIXME: Handle missing test.actualfile or test.expectedfile
             actual_img = png_encode64(test.actualfile,
                                   data=vars(test).get('actualfile_data'))
@@ -351,6 +358,12 @@ def to_html(project_name, startdate, tests, enddate, sysinfo, sysid, makefiles):
     text_tests = templates.get('text_tests')
     image_tests = templates.get('image_tests')
     makefiles_str = templates.get('makefiles')
+
+    if not include_passed:
+        if image_test_count==0:
+            image_tests = 'all given tests passed'
+        if text_test_count==0:
+            text_tests = 'all given tests passed'
 
     return templates.fill('html_template', style=Templates.style,
                           sysid=sysid, sysinfo=sysinfo,
@@ -427,8 +440,10 @@ def main():
 
     suffix = ezsearch('--suffix=(.*?) ', ' '.join(sys.argv) + ' ')
     builddir = ezsearch('--builddir=(.*?) ', ' '.join(sys.argv) + ' ')
-    if not builddir:
+    if not builddir or not os.path.exists(builddir):
         builddir = os.getcwd()
+        print 'warning: couldnt find --builddir, trying to use current dir:',
+        print builddir
     debug('build dir set to ' +  builddir)
 
     upload = False
@@ -461,13 +476,23 @@ def main():
     trysave(html_filename, html)
     print "report saved:\n", html_filename.replace(os.getcwd()+os.path.sep,'')
 
-    if upload:
-        page_url = create_page()
-        if upload_html(page_url, title='OpenSCAD test results', html=html):
-            share_url = page_url.partition('?')[0]
-            print 'html report uploaded at', share_url
-        else:
-            print 'could not upload html report'
+    failed_tests = [test for test in tests if not test.passed]
+    if upload and failed_tests:
+        build = os.getenv("TRAVIS_BUILD_NUMBER")
+        if build: filename = 'travis-' + build + '_report.html'
+        else: filename = html_basename
+        os.system('scp "%s" "%s:%s"' %
+                  (html_filename, 'openscad@files.openscad.org', 'www/tests/' + filename) )
+        share_url = 'http://files.openscad.org/tests/' + filename;
+        print 'html report uploaded:'
+        print share_url
+
+#        page_url = create_page()
+#        if upload_html(page_url, title='OpenSCAD test results', html=html):
+#            share_url = page_url.partition('?')[0]
+#            print 'html report uploaded at', share_url
+#        else:
+#            print 'could not upload html report'
 
     debug('test_pretty_print complete')
 

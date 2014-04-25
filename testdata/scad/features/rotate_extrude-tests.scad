@@ -11,7 +11,7 @@ rotate_extrude() translate([20,0,0]) circle(r=10);
 // Sweep of polygon with hole
 translate([50,-20,0]) {
   difference() { 
-    rotate_extrude() translate([20,0,0]) difference() {
+    rotate_extrude(convexity=4) translate([20,0,0]) difference() {
       circle(r=10); circle(r=8);
     }
     translate([-50,0,0]) cube([100,100,100], center=true);
@@ -22,8 +22,8 @@ translate([50,-20,0]) {
 translate([50,50,0]) {
   difference() { 
     difference() {
-      rotate_extrude() translate([20,0,0]) circle(r=10);
-      rotate_extrude() translate([20,0,0]) circle(r=8);
+      rotate_extrude(convexity=2) translate([20,0,0]) circle(r=10);
+      rotate_extrude(convexity=2) translate([20,0,0]) circle(r=8);
     }
     translate([-50,0,0]) cube([100,100,100], center=true);
   }

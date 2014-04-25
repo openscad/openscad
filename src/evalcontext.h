@@ -25,7 +25,7 @@ public:
 	ModuleInstantiation *getChild(size_t i) const;
 
 #ifdef DEBUG
-	virtual void dump(const class AbstractModule *mod, const ModuleInstantiation *inst);
+	virtual std::string dump(const class AbstractModule *mod, const ModuleInstantiation *inst);
 #endif
 
 private:

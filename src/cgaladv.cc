@@ -28,7 +28,7 @@
 #include "module.h"
 #include "evalcontext.h"
 #include "builtin.h"
-#include "PolySetEvaluator.h"
+#include "polyset.h"
 #include <sstream>
 #include <assert.h>
 #include <boost/assign/std/vector.hpp>
@@ -49,16 +49,16 @@ AbstractNode *CgaladvModule::instantiate(const Context *ctx, const ModuleInstant
 	AssignmentList args;
 
 	if (type == MINKOWSKI)
-		args += Assignment("convexity", NULL);
+		args += Assignment("convexity");
 
 	if (type == GLIDE)
-		args += Assignment("path", NULL), Assignment("convexity", NULL);
+		args += Assignment("path"), Assignment("convexity");
 
 	if (type == SUBDIV)
-		args += Assignment("type", NULL), Assignment("level", NULL), Assignment("convexity", NULL);
+		args += Assignment("type"), Assignment("level"), Assignment("convexity");
 
 	if (type == RESIZE)
-		args += Assignment("newsize", NULL), Assignment("auto", NULL);
+		args += Assignment("newsize"), Assignment("auto");
 
 	Context c(ctx);
 	c.setVariables(args, evalctx);
@@ -114,11 +114,6 @@ AbstractNode *CgaladvModule::instantiate(const Context *ctx, const ModuleInstant
 	node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
 
 	return node;
-}
-
-PolySet *CgaladvNode::evaluate_polyset(PolySetEvaluator *ps) const
-{
-	return ps->evaluatePolySet(*this);
 }
 
 std::string CgaladvNode::name() const

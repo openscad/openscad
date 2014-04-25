@@ -36,8 +36,7 @@
 #include "builtin.h"
 #include "Tree.h"
 #include "CGAL_Nef_polyhedron.h"
-#include "CGALEvaluator.h"
-#include "PolySetCGALEvaluator.h"
+#include "GeometryEvaluator.h"
 #include "CGALCache.h"
 
 #ifndef _MSC_VER
@@ -58,15 +57,6 @@ std::string commandline_commands;
 std::string currentdir;
 
 using std::string;
-
-void cgalTree(Tree &tree)
-{
-	assert(tree.root());
-
-	CGALEvaluator evaluator(tree);
-	Traverser evaluate(evaluator, *tree.root(), Traverser::PRE_AND_POSTFIX);
-	evaluate.execute();
-}
 
 po::variables_map parse_options(int argc, char *argv[])
 {
@@ -152,15 +142,14 @@ int main(int argc, char **argv)
 
 	Tree tree(root_node);
 
-	CGALEvaluator cgalevaluator(tree);
- 	PolySetCGALEvaluator psevaluator(cgalevaluator);
+	GeometryEvaluator geomevaluator(tree);
 
 	print_messages_push();
 
 	std::cout << "First evaluation:\n";
-	CGAL_Nef_polyhedron N = cgalevaluator.evaluateCGALMesh(*root_node);
+	shared_ptr<const Geometry> geom = geomevaluator.evaluateGeometry(*root_node, true);
 	std::cout << "Second evaluation:\n";
-	CGAL_Nef_polyhedron N2 = cgalevaluator.evaluateCGALMesh(*root_node);
+	shared_ptr<const Geometry> geom2 = geomevaluator.evaluateGeometry(*root_node, true);
 	// FIXME:
 	// Evaluate again to make cache kick in
 	// Record printed output and compare it

@@ -37,13 +37,9 @@ debug()
 eigen_sysver()
 {
   debug eigen
-  eigpath=
-  eig3path=$1/include/eigen3/Eigen/src/Core/util/Macros.h
-  eig2path=$1/include/eigen2/Eigen/src/Core/util/Macros.h
-  if [ -e $eig3path ]; then eigpath=$eig3path; fi
-  if [ -e $eig2path ]; then eigpath=$eig2path; fi
-  debug $eig2path
-  if [ ! $eigpath ]; then return; fi
+  eigpath=$1/include/eigen3/Eigen/src/Core/util/Macros.h
+  debug $eigpath
+  if [ ! -e $eigpath ]; then return; fi
   eswrld=`grep "define  *EIGEN_WORLD_VERSION  *[0-9]*" $eigpath | awk '{print $3}'`
   esmaj=`grep "define  *EIGEN_MAJOR_VERSION  *[0-9]*" $eigpath | awk '{print $3}'`
   esmin=`grep "define  *EIGEN_MINOR_VERSION  *[0-9]*" $eigpath | awk '{print $3}'`
@@ -71,19 +67,24 @@ glib2_sysver()
   #Get architecture triplet - e.g. x86_64-linux-gnu
   glib2archtriplet=`gcc -dumpmachine 2>/dev/null`
   if [ -z "$VAR" ]; then
-    glib2archtriplet=`dpkg-architecture -qDEB_HOST_MULTIARCH 2>/dev/null`
+    if [ "`command -v dpkg-architectures`" ]; then
+      glib2archtriplet=`dpkg-architecture -qDEB_HOST_MULTIARCH 2>/dev/null`
+    fi
   fi
   glib2path=$1/lib/$glib2archtriplet/glib-2.0/include/glibconfig.h
   if [ ! -e $glib2path ]; then
     #No glib found
     #glib can be installed in /usr/lib/i386-linux-gnu/glib-2.0/ on arch i686-linux-gnu (sometimes?)
-    if [ $glib2archtriplet = "i686-linux-gnu" ]; then
+    if [ "$glib2archtriplet" = "i686-linux-gnu" ]; then
         glib2archtriplet=i386-linux-gnu
         glib2path=$1/lib/$glib2archtriplet/glib-2.0/include/glibconfig.h
-        if [ ! -e $glib2path ]; then return; fi
-    else
-        return;
     fi
+  fi
+  if [ ! -e $glib2path ]; then
+    glib2path=$1/lib/glib-2.0/include/glibconfig.h
+  fi
+  if [ ! -e $glib2path ]; then
+    return
   fi
   glib2major=`grep "define  *GLIB_MAJOR_VERSION  *[0-9.]*" $glib2path | awk '{print $3}'`
   glib2minor=`grep "define  *GLIB_MINOR_VERSION  *[0-9.]*" $glib2path | awk '{print $3}'`

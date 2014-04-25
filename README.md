@@ -89,9 +89,9 @@ Follow the instructions for the platform you're compiling on below.
 * [Qt4 (4.4 - 4.8)](http://www.qt.nokia.com/)
 * [CGAL (3.6 - 4.1)](http://www.cgal.org/)
  * [GMP (5.x)](http://www.gmplib.org/)
- * [cmake (2.8, required by CGAL and the test framework)](http://www.cmake.org/)
  * [MPFR (3.x)](http://www.mpfr.org/)
- * [boost (1.35 - 1.53)](http://www.boost.org/)
+* [cmake (2.8, required by CGAL and the test framework)](http://www.cmake.org/)
+* [boost (1.35 - 1.55)](http://www.boost.org/)
 * [OpenCSG (1.3.2)](http://www.opencsg.org/)
 * [GLEW (1.5.4 ->)](http://glew.sourceforge.net/)
 * [Eigen (3.0 - 3.2)](http://eigen.tuxfamily.org/)
@@ -170,17 +170,9 @@ Then run the script to compile all the prerequisite libraries above:
 
     ./scripts/uni-build-dependencies.sh
 
-This may take an hour or more, depending on your network and system. It 
-is recommended to have at least 1 gigabyte of free disk space. As a 
-special timesaver if you are only missing CGAL and OpenCSG, you can do 
-this instead:
-
-    ./scripts/uni-build-dependencies.sh opencsg
-    ./scripts/uni-build-dependencies.sh cgal
-
-Note that huge dependencies like gcc or qt are not included here, only 
-the smaller ones (boost, CGAL, opencsg, etc). After the build, again 
-check dependencies.
+Note that huge dependencies like gcc, qt, or glib2 are not included 
+here, only the smaller ones (boost, CGAL, opencsg, etc). After the 
+build, again check dependencies.
 
     ./scripts/check-dependencies.sh
 

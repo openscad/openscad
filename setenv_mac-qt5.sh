@@ -1,4 +1,4 @@
-export OPENSCAD_LIBRARIES=$PWD/../libraries/homebrew
+export OPENSCAD_LIBRARIES=$PWD/../libraries/install
 export DYLD_LIBRARY_PATH=$OPENSCAD_LIBRARIES/lib
 export DYLD_FRAMEWORK_PATH=$OPENSCAD_LIBRARIES/lib
 

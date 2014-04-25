@@ -38,13 +38,13 @@ class OpenCSGPrim : public OpenCSG::Primitive
 public:
 	OpenCSGPrim(OpenCSG::Operation operation, unsigned int convexity) :
 			OpenCSG::Primitive(operation, convexity) { }
-	shared_ptr<PolySet> ps;
+	shared_ptr<const Geometry> geom;
 	Transform3d m;
-	PolySet::csgmode_e csgmode;
+	Renderer::csgmode_e csgmode;
 	virtual void render() {
 		glPushMatrix();
 		glMultMatrixd(m.data());
-		ps->render_surface(csgmode, m);
+		Renderer::render_surface(geom, csgmode, m);
 		glPopMatrix();
 	}
 };
@@ -90,7 +90,7 @@ void OpenCSGRenderer::renderCSGChain(CSGChain *chain, GLint *shaderinfo,
 				const Color4f &c = j_obj.color;
 				glPushMatrix();
 				glMultMatrixd(j_obj.matrix.data());
-				PolySet::csgmode_e csgmode = j_obj.type == CSGTerm::TYPE_DIFFERENCE ? PolySet::CSGMODE_DIFFERENCE : PolySet::CSGMODE_NORMAL;
+				csgmode_e csgmode = j_obj.type == CSGTerm::TYPE_DIFFERENCE ? CSGMODE_DIFFERENCE : CSGMODE_NORMAL;
 				ColorMode colormode = COLORMODE_NONE;
 				if (background) {
 					if (j_obj.flag & CSGTerm::FLAG_HIGHLIGHT) {
@@ -99,11 +99,11 @@ void OpenCSGRenderer::renderCSGChain(CSGChain *chain, GLint *shaderinfo,
 					else {
 						colormode = COLORMODE_BACKGROUND;
 					}
-					csgmode = PolySet::csgmode_e(csgmode + 10);
+					csgmode = csgmode_e(csgmode + 10);
 				} else if (j_obj.type == CSGTerm::TYPE_DIFFERENCE) {
 					if (j_obj.flag & CSGTerm::FLAG_HIGHLIGHT) {
 						colormode = COLORMODE_HIGHLIGHT;
-						csgmode = PolySet::csgmode_e(csgmode + 20);
+						csgmode = csgmode_e(csgmode + 20);
 					}
 					else {
 						colormode = COLORMODE_CUTOUT;
@@ -111,7 +111,7 @@ void OpenCSGRenderer::renderCSGChain(CSGChain *chain, GLint *shaderinfo,
 				} else {
 					if (j_obj.flag & CSGTerm::FLAG_HIGHLIGHT) {
 						colormode = COLORMODE_HIGHLIGHT;
-						csgmode = PolySet::csgmode_e(csgmode + 20);
+						csgmode = csgmode_e(csgmode + 20);
 					 }
 					else {
 						colormode = COLORMODE_MATERIAL;
@@ -120,7 +120,7 @@ void OpenCSGRenderer::renderCSGChain(CSGChain *chain, GLint *shaderinfo,
 
 				setColor(colormode, c.data(), shaderinfo);
 
-				j_obj.polyset->render_surface(csgmode, j_obj.matrix, shaderinfo);
+				render_surface(j_obj.geom, csgmode, j_obj.matrix, shaderinfo);
 				glPopMatrix();
 			}
 			if (shaderinfo) glUseProgram(0);
@@ -133,14 +133,17 @@ void OpenCSGRenderer::renderCSGChain(CSGChain *chain, GLint *shaderinfo,
 
 		if (last) break;
 
-		OpenCSGPrim *prim = new OpenCSGPrim(i_obj.type == CSGTerm::TYPE_DIFFERENCE ?
-				OpenCSG::Subtraction : OpenCSG::Intersection, i_obj.polyset->convexity);
-		prim->ps = i_obj.polyset;
-		prim->m = i_obj.matrix;
-		prim->csgmode = i_obj.type == CSGTerm::TYPE_DIFFERENCE ? PolySet::CSGMODE_DIFFERENCE : PolySet::CSGMODE_NORMAL;
-		if (highlight) prim->csgmode = PolySet::csgmode_e(prim->csgmode + 20);
-		else if (background) prim->csgmode = PolySet::csgmode_e(prim->csgmode + 10);
-		primitives.push_back(prim);
+		if (i_obj.geom) {
+			OpenCSGPrim *prim = new OpenCSGPrim(i_obj.type == CSGTerm::TYPE_DIFFERENCE ?
+																					OpenCSG::Subtraction : OpenCSG::Intersection, i_obj.geom->getConvexity());
+			
+			prim->geom = i_obj.geom;
+			prim->m = i_obj.matrix;
+			prim->csgmode = i_obj.type == CSGTerm::TYPE_DIFFERENCE ? CSGMODE_DIFFERENCE : CSGMODE_NORMAL;
+			if (highlight) prim->csgmode = csgmode_e(prim->csgmode + 20);
+			else if (background) prim->csgmode = csgmode_e(prim->csgmode + 10);
+			primitives.push_back(prim);
+		}
 	}
 	std::for_each(primitives.begin(), primitives.end(), del_fun<OpenCSG::Primitive>());
 }

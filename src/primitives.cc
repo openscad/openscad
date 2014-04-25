@@ -28,8 +28,7 @@
 #include "node.h"
 #include "polyset.h"
 #include "evalcontext.h"
-#include "dxfdata.h"
-#include "dxftess.h"
+#include "Polygon2d.h"
 #include "builtin.h"
 #include "printutils.h"
 #include "visitor.h"
@@ -38,11 +37,12 @@
 #include "mathc99.h"
 #include <sstream>
 #include <assert.h>
+#include <boost/foreach.hpp>
 #include <boost/assign/std/vector.hpp>
 using namespace boost::assign; // bring 'operator+=()' into scope
 
 #include <boost/math/special_functions/fpclassify.hpp>
-using boost::math::isinf;
+#define isinf boost::math::isinf
 
 #define F_MINIMUM 0.01
 
@@ -66,10 +66,10 @@ private:
 	Value lookup_radius(const Context &ctx, const std::string &radius_var, const std::string &diameter_var) const;
 };
 
-class PrimitiveNode : public AbstractPolyNode
+class PrimitiveNode : public LeafNode
 {
 public:
-	PrimitiveNode(const ModuleInstantiation *mi, primitive_type_e type) : AbstractPolyNode(mi), type(type) { }
+	PrimitiveNode(const ModuleInstantiation *mi, primitive_type_e type) : LeafNode(mi), type(type) { }
   virtual Response accept(class State &state, Visitor &visitor) const {
 		return visitor.visit(state, *this);
 	}
@@ -109,7 +109,7 @@ public:
 	primitive_type_e type;
 	int convexity;
 	Value points, paths, faces;
-	virtual PolySet *evaluate_polyset(class PolySetEvaluator *) const;
+	virtual Geometry *createGeometry() const;
 };
 
 /**
@@ -152,25 +152,25 @@ AbstractNode *PrimitiveModule::instantiate(const Context *ctx, const ModuleInsta
 
 	switch (this->type) {
 	case CUBE:
-		args += Assignment("size", NULL), Assignment("center", NULL);
+		args += Assignment("size"), Assignment("center");
 		break;
 	case SPHERE:
-		args += Assignment("r", NULL);
+		args += Assignment("r");
 		break;
 	case CYLINDER:
-		args += Assignment("h", NULL), Assignment("r1", NULL), Assignment("r2", NULL), Assignment("center", NULL);
+		args += Assignment("h"), Assignment("r1"), Assignment("r2"), Assignment("center");
 		break;
 	case POLYHEDRON:
-		args += Assignment("points", NULL), Assignment("faces", NULL), Assignment("convexity", NULL);
+		args += Assignment("points"), Assignment("faces"), Assignment("convexity");
 		break;
 	case SQUARE:
-		args += Assignment("size", NULL), Assignment("center", NULL);
+		args += Assignment("size"), Assignment("center");
 		break;
 	case CIRCLE:
-		args += Assignment("r", NULL);
+		args += Assignment("r");
 		break;
 	case POLYGON:
-		args += Assignment("points", NULL), Assignment("paths", NULL), Assignment("convexity", NULL);
+		args += Assignment("points"), Assignment("paths"), Assignment("convexity");
 		break;
 	default:
 		assert(false && "PrimitiveModule::instantiate(): Unknown node type");
@@ -192,8 +192,8 @@ AbstractNode *PrimitiveModule::instantiate(const Context *ctx, const ModuleInsta
 		node->fa = F_MINIMUM;
 	}
 
-
-	if (type == CUBE) {
+	switch (this->type)  {
+	case CUBE: {
 		Value size = c.lookup_variable("size");
 		Value center = c.lookup_variable("center");
 		size.getDouble(node->x);
@@ -203,16 +203,16 @@ AbstractNode *PrimitiveModule::instantiate(const Context *ctx, const ModuleInsta
 		if (center.type() == Value::BOOL) {
 			node->center = center.toBool();
 		}
+		break;
 	}
-
-	if (type == SPHERE) {
+	case SPHERE: {
 		const Value r = lookup_radius(c, "d", "r");
 		if (r.type() == Value::NUMBER) {
 			node->r1 = r.toDouble();
 		}
+		break;
 	}
-
-	if (type == CYLINDER) {
+	case CYLINDER: {
 		const Value h = c.lookup_variable("h");
 		if (h.type() == Value::NUMBER) {
 			node->h = h.toDouble();
@@ -236,21 +236,21 @@ AbstractNode *PrimitiveModule::instantiate(const Context *ctx, const ModuleInsta
 		if (center.type() == Value::BOOL) {
 			node->center = center.toBool();
 		}
+		break;
 	}
-
-	if (type == POLYHEDRON) {
+	case POLYHEDRON: {
 		node->points = c.lookup_variable("points");
 		node->faces = c.lookup_variable("faces");
 		if (node->faces.type() == Value::UNDEFINED) {
-			// backwards compatable
+			// backwards compatible
 			node->faces = c.lookup_variable("triangles");
 			if (node->faces.type() != Value::UNDEFINED) {
 				printDeprecation("DEPRECATED: polyhedron(triangles=[]) will be removed in future releases. Use polyhedron(faces=[]) instead.");
 			}
 		}
+		break;
 	}
-
-	if (type == SQUARE) {
+	case SQUARE: {
 		Value size = c.lookup_variable("size");
 		Value center = c.lookup_variable("center");
 		size.getDouble(node->x);
@@ -259,18 +259,20 @@ AbstractNode *PrimitiveModule::instantiate(const Context *ctx, const ModuleInsta
 		if (center.type() == Value::BOOL) {
 			node->center = center.toBool();
 		}
+		break;
 	}
-
-	if (type == CIRCLE) {
+	case CIRCLE: {
 		const Value r = lookup_radius(c, "d", "r");
 		if (r.type() == Value::NUMBER) {
 			node->r1 = r.toDouble();
 		}
+		break;
 	}
-
-	if (type == POLYGON) {
+	case POLYGON: {
 		node->points = c.lookup_variable("points");
 		node->paths = c.lookup_variable("paths");
+		break;
+	}
 	}
 
 	node->convexity = c.lookup_variable("convexity", true).toDouble();
@@ -293,196 +295,216 @@ static void generate_circle(point2d *circle, double r, int fragments)
 	}
 }
 
-PolySet *PrimitiveNode::evaluate_polyset(class PolySetEvaluator *) const
+/*!
+	Creates geometry for this node.
+	May return an empty Geometry creation failed, but will not return NULL.
+*/
+Geometry *PrimitiveNode::createGeometry() const
 {
-	PolySet *p = new PolySet();
+	Geometry *g = NULL;
 
-	if (this->type == CUBE && 
-			this->x > 0 && this->y > 0 && this->z > 0 &&
+	switch (this->type) {
+	case CUBE: {
+		PolySet *p = new PolySet(3);
+		g = p;
+		if (this->x > 0 && this->y > 0 && this->z > 0 &&
 			!isinf(this->x) > 0 && !isinf(this->y) > 0 && !isinf(this->z) > 0) {
-		double x1, x2, y1, y2, z1, z2;
-		if (this->center) {
-			x1 = -this->x/2;
-			x2 = +this->x/2;
-			y1 = -this->y/2;
-			y2 = +this->y/2;
-			z1 = -this->z/2;
-			z2 = +this->z/2;
-		} else {
-			x1 = y1 = z1 = 0;
-			x2 = this->x;
-			y2 = this->y;
-			z2 = this->z;
+			double x1, x2, y1, y2, z1, z2;
+			if (this->center) {
+				x1 = -this->x/2;
+				x2 = +this->x/2;
+				y1 = -this->y/2;
+				y2 = +this->y/2;
+				z1 = -this->z/2;
+				z2 = +this->z/2;
+			} else {
+				x1 = y1 = z1 = 0;
+				x2 = this->x;
+				y2 = this->y;
+				z2 = this->z;
+			}
+
+			p->append_poly(); // top
+			p->append_vertex(x1, y1, z2);
+			p->append_vertex(x2, y1, z2);
+			p->append_vertex(x2, y2, z2);
+			p->append_vertex(x1, y2, z2);
+
+			p->append_poly(); // bottom
+			p->append_vertex(x1, y2, z1);
+			p->append_vertex(x2, y2, z1);
+			p->append_vertex(x2, y1, z1);
+			p->append_vertex(x1, y1, z1);
+
+			p->append_poly(); // side1
+			p->append_vertex(x1, y1, z1);
+			p->append_vertex(x2, y1, z1);
+			p->append_vertex(x2, y1, z2);
+			p->append_vertex(x1, y1, z2);
+
+			p->append_poly(); // side2
+			p->append_vertex(x2, y1, z1);
+			p->append_vertex(x2, y2, z1);
+			p->append_vertex(x2, y2, z2);
+			p->append_vertex(x2, y1, z2);
+
+			p->append_poly(); // side3
+			p->append_vertex(x2, y2, z1);
+			p->append_vertex(x1, y2, z1);
+			p->append_vertex(x1, y2, z2);
+			p->append_vertex(x2, y2, z2);
+
+			p->append_poly(); // side4
+			p->append_vertex(x1, y2, z1);
+			p->append_vertex(x1, y1, z1);
+			p->append_vertex(x1, y1, z2);
+			p->append_vertex(x1, y2, z2);
 		}
-
-		p->append_poly(); // top
-		p->append_vertex(x1, y1, z2);
-		p->append_vertex(x2, y1, z2);
-		p->append_vertex(x2, y2, z2);
-		p->append_vertex(x1, y2, z2);
-
-		p->append_poly(); // bottom
-		p->append_vertex(x1, y2, z1);
-		p->append_vertex(x2, y2, z1);
-		p->append_vertex(x2, y1, z1);
-		p->append_vertex(x1, y1, z1);
-
-		p->append_poly(); // side1
-		p->append_vertex(x1, y1, z1);
-		p->append_vertex(x2, y1, z1);
-		p->append_vertex(x2, y1, z2);
-		p->append_vertex(x1, y1, z2);
-
-		p->append_poly(); // side2
-		p->append_vertex(x2, y1, z1);
-		p->append_vertex(x2, y2, z1);
-		p->append_vertex(x2, y2, z2);
-		p->append_vertex(x2, y1, z2);
-
-		p->append_poly(); // side3
-		p->append_vertex(x2, y2, z1);
-		p->append_vertex(x1, y2, z1);
-		p->append_vertex(x1, y2, z2);
-		p->append_vertex(x2, y2, z2);
-
-		p->append_poly(); // side4
-		p->append_vertex(x1, y2, z1);
-		p->append_vertex(x1, y1, z1);
-		p->append_vertex(x1, y1, z2);
-		p->append_vertex(x1, y2, z2);
 	}
+		break;
+	case SPHERE: {
+		PolySet *p = new PolySet(3);
+		g = p;
+		if (this->r1 > 0 && !isinf(this->r1)) {
+			struct ring_s {
+				point2d *points;
+				double z;
+			};
 
-	if (this->type == SPHERE && this->r1 > 0 && !isinf(this->r1))
-	{
-		struct ring_s {
-			point2d *points;
-			double z;
-		};
-
-		int fragments = Calc::get_fragments_from_r(r1, fn, fs, fa);
-		int rings = (fragments+1)/2;
+			int fragments = Calc::get_fragments_from_r(r1, fn, fs, fa);
+			int rings = (fragments+1)/2;
 // Uncomment the following three lines to enable experimental sphere tesselation
 //		if (rings % 2 == 0) rings++; // To ensure that the middle ring is at phi == 0 degrees
 
-		ring_s *ring = new ring_s[rings];
+			ring_s *ring = new ring_s[rings];
 
 //		double offset = 0.5 * ((fragments / 2) % 2);
-		for (int i = 0; i < rings; i++) {
+			for (int i = 0; i < rings; i++) {
 //			double phi = (M_PI * (i + offset)) / (fragments/2);
-			double phi = (M_PI * (i + 0.5)) / rings;
-			double r = r1 * sin(phi);
-			ring[i].z = r1 * cos(phi);
-			ring[i].points = new point2d[fragments];
-			generate_circle(ring[i].points, r, fragments);
-		}
+				double phi = (M_PI * (i + 0.5)) / rings;
+				double r = r1 * sin(phi);
+				ring[i].z = r1 * cos(phi);
+				ring[i].points = new point2d[fragments];
+				generate_circle(ring[i].points, r, fragments);
+			}
 
-		p->append_poly();
-		for (int i = 0; i < fragments; i++)
-			p->append_vertex(ring[0].points[i].x, ring[0].points[i].y, ring[0].z);
+			p->append_poly();
+			for (int i = 0; i < fragments; i++)
+				p->append_vertex(ring[0].points[i].x, ring[0].points[i].y, ring[0].z);
 
-		for (int i = 0; i < rings-1; i++) {
-			ring_s *r1 = &ring[i];
-			ring_s *r2 = &ring[i+1];
-			int r1i = 0, r2i = 0;
-			while (r1i < fragments || r2i < fragments)
-			{
-				if (r1i >= fragments)
-					goto sphere_next_r2;
-				if (r2i >= fragments)
-					goto sphere_next_r1;
-				if ((double)r1i / fragments <
-						(double)r2i / fragments)
+			for (int i = 0; i < rings-1; i++) {
+				ring_s *r1 = &ring[i];
+				ring_s *r2 = &ring[i+1];
+				int r1i = 0, r2i = 0;
+				while (r1i < fragments || r2i < fragments)
 				{
-sphere_next_r1:
-					p->append_poly();
-					int r1j = (r1i+1) % fragments;
-					p->insert_vertex(r1->points[r1i].x, r1->points[r1i].y, r1->z);
-					p->insert_vertex(r1->points[r1j].x, r1->points[r1j].y, r1->z);
-					p->insert_vertex(r2->points[r2i % fragments].x, r2->points[r2i % fragments].y, r2->z);
-					r1i++;
-				} else {
-sphere_next_r2:
-					p->append_poly();
-					int r2j = (r2i+1) % fragments;
-					p->append_vertex(r2->points[r2i].x, r2->points[r2i].y, r2->z);
-					p->append_vertex(r2->points[r2j].x, r2->points[r2j].y, r2->z);
-					p->append_vertex(r1->points[r1i % fragments].x, r1->points[r1i % fragments].y, r1->z);
-					r2i++;
+					if (r1i >= fragments)
+						goto sphere_next_r2;
+					if (r2i >= fragments)
+						goto sphere_next_r1;
+					if ((double)r1i / fragments <
+							(double)r2i / fragments)
+					{
+					sphere_next_r1:
+						p->append_poly();
+						int r1j = (r1i+1) % fragments;
+						p->insert_vertex(r1->points[r1i].x, r1->points[r1i].y, r1->z);
+						p->insert_vertex(r1->points[r1j].x, r1->points[r1j].y, r1->z);
+						p->insert_vertex(r2->points[r2i % fragments].x, r2->points[r2i % fragments].y, r2->z);
+						r1i++;
+					} else {
+					sphere_next_r2:
+						p->append_poly();
+						int r2j = (r2i+1) % fragments;
+						p->append_vertex(r2->points[r2i].x, r2->points[r2i].y, r2->z);
+						p->append_vertex(r2->points[r2j].x, r2->points[r2j].y, r2->z);
+						p->append_vertex(r1->points[r1i % fragments].x, r1->points[r1i % fragments].y, r1->z);
+						r2i++;
+					}
 				}
 			}
+
+			p->append_poly();
+			for (int i = 0; i < fragments; i++)
+				p->insert_vertex(ring[rings-1].points[i].x, 
+												 ring[rings-1].points[i].y, 
+												 ring[rings-1].z);
+
+			for (int i = 0; i < rings; i++) {
+				delete[] ring[i].points;
+			}
+			delete[] ring;
 		}
-
-		p->append_poly();
-		for (int i = 0; i < fragments; i++)
-			p->insert_vertex(ring[rings-1].points[i].x, ring[rings-1].points[i].y, ring[rings-1].z);
-
-		delete[] ring;
 	}
+		break;
+	case CYLINDER: {
+		PolySet *p = new PolySet(3);
+		g = p;
+		if (this->h > 0 && !isinf(this->h) &&
+				this->r1 >=0 && this->r2 >= 0 && (this->r1 > 0 || this->r2 > 0) &&
+				!isinf(this->r1) && !isinf(this->r2)) {
+			int fragments = Calc::get_fragments_from_r(fmax(this->r1, this->r2), this->fn, this->fs, this->fa);
 
-	if (this->type == CYLINDER && 
-			this->h > 0 && !isinf(this->h) &&
-			this->r1 >=0 && this->r2 >= 0 && (this->r1 + this->r2) > 0 &&
-			!isinf(this->r1) && !isinf(this->r2)) {
-		int fragments = Calc::get_fragments_from_r(fmax(this->r1, this->r2), this->fn, this->fs, this->fa);
-
-		double z1, z2;
-		if (this->center) {
-			z1 = -this->h/2;
-			z2 = +this->h/2;
-		} else {
-			z1 = 0;
-			z2 = this->h;
-		}
-
-		point2d *circle1 = new point2d[fragments];
-		point2d *circle2 = new point2d[fragments];
-
-		generate_circle(circle1, r1, fragments);
-		generate_circle(circle2, r2, fragments);
-		
-		for (int i=0; i<fragments; i++) {
-			int j = (i+1) % fragments;
-			if (r1 == r2) {
-				p->append_poly();
-				p->insert_vertex(circle1[i].x, circle1[i].y, z1);
-				p->insert_vertex(circle2[i].x, circle2[i].y, z2);
-				p->insert_vertex(circle2[j].x, circle2[j].y, z2);
-				p->insert_vertex(circle1[j].x, circle1[j].y, z1);
+			double z1, z2;
+			if (this->center) {
+				z1 = -this->h/2;
+				z2 = +this->h/2;
 			} else {
-				if (r1 > 0) {
+				z1 = 0;
+				z2 = this->h;
+			}
+
+			point2d *circle1 = new point2d[fragments];
+			point2d *circle2 = new point2d[fragments];
+
+			generate_circle(circle1, r1, fragments);
+			generate_circle(circle2, r2, fragments);
+		
+			for (int i=0; i<fragments; i++) {
+				int j = (i+1) % fragments;
+				if (r1 == r2) {
 					p->append_poly();
 					p->insert_vertex(circle1[i].x, circle1[i].y, z1);
 					p->insert_vertex(circle2[i].x, circle2[i].y, z2);
-					p->insert_vertex(circle1[j].x, circle1[j].y, z1);
-				}
-				if (r2 > 0) {
-					p->append_poly();
-					p->insert_vertex(circle2[i].x, circle2[i].y, z2);
 					p->insert_vertex(circle2[j].x, circle2[j].y, z2);
 					p->insert_vertex(circle1[j].x, circle1[j].y, z1);
+				} else {
+					if (r1 > 0) {
+						p->append_poly();
+						p->insert_vertex(circle1[i].x, circle1[i].y, z1);
+						p->insert_vertex(circle2[i].x, circle2[i].y, z2);
+						p->insert_vertex(circle1[j].x, circle1[j].y, z1);
+					}
+					if (r2 > 0) {
+						p->append_poly();
+						p->insert_vertex(circle2[i].x, circle2[i].y, z2);
+						p->insert_vertex(circle2[j].x, circle2[j].y, z2);
+						p->insert_vertex(circle1[j].x, circle1[j].y, z1);
+					}
 				}
 			}
-		}
 
-		if (this->r1 > 0) {
-			p->append_poly();
-			for (int i=0; i<fragments; i++)
-				p->insert_vertex(circle1[i].x, circle1[i].y, z1);
-		}
+			if (this->r1 > 0) {
+				p->append_poly();
+				for (int i=0; i<fragments; i++)
+					p->insert_vertex(circle1[i].x, circle1[i].y, z1);
+			}
 
-		if (this->r2 > 0) {
-			p->append_poly();
-			for (int i=0; i<fragments; i++)
-				p->append_vertex(circle2[i].x, circle2[i].y, z2);
-		}
+			if (this->r2 > 0) {
+				p->append_poly();
+				for (int i=0; i<fragments; i++)
+					p->append_vertex(circle2[i].x, circle2[i].y, z2);
+			}
 
-		delete[] circle1;
-		delete[] circle2;
+			delete[] circle1;
+			delete[] circle2;
+		}
 	}
-
-	if (this->type == POLYHEDRON)
-	{
-		p->convexity = this->convexity;
+		break;
+	case POLYHEDRON: {
+		PolySet *p = new PolySet(3);
+		g = p;
+		p->setConvexity(this->convexity);
 		for (size_t i=0; i<this->faces.toVector().size(); i++)
 		{
 			p->append_poly();
@@ -502,100 +524,93 @@ sphere_next_r2:
 			}
 		}
 	}
+		break;
+	case SQUARE: {
+		Polygon2d *p = new Polygon2d();
+		g = p;
+		if (this->x > 0 && this->y > 0) {
+			Vector2d v1(0, 0);
+			Vector2d v2(this->x, this->y);
+			if (this->center) {
+				v1 -= Vector2d(this->x/2, this->y/2);
+				v2 -= Vector2d(this->x/2, this->y/2);
+			}
 
-	if (this->type == SQUARE && x > 0 && y > 0)
-	{
-		double x1, x2, y1, y2;
-		if (this->center) {
-			x1 = -this->x/2;
-			x2 = +this->x/2;
-			y1 = -this->y/2;
-			y2 = +this->y/2;
-		} else {
-			x1 = y1 = 0;
-			x2 = this->x;
-			y2 = this->y;
-		}
-
-		p->is2d = true;
-		p->append_poly();
-		p->append_vertex(x1, y1);
-		p->append_vertex(x2, y1);
-		p->append_vertex(x2, y2);
-		p->append_vertex(x1, y2);
-	}
-
-	if (this->type == CIRCLE)
-	{
-		int fragments = Calc::get_fragments_from_r(this->r1, this->fn, this->fs, this->fa);
-
-		p->is2d = true;
-		p->append_poly();
-
-		for (int i=0; i < fragments; i++) {
-			double phi = (M_PI*2*i) / fragments;
-			p->append_vertex(this->r1*cos(phi), this->r1*sin(phi));
+			Outline2d o;
+			o.vertices.resize(4);
+			o.vertices[0] = v1;
+			o.vertices[1] = Vector2d(v2[0], v1[1]);
+			o.vertices[2] = v2;
+			o.vertices[3] = Vector2d(v1[0], v2[1]);
+			p->addOutline(o);
+			p->setSanitized(true);
 		}
 	}
+		break;
+	case CIRCLE: {
+		Polygon2d *p = new Polygon2d();
+		g = p;
+		if (this->r1 > 0)	{
+			int fragments = Calc::get_fragments_from_r(this->r1, this->fn, this->fs, this->fa);
 
-	if (this->type == POLYGON)
-	{
-		DxfData dd;
+			Outline2d o;
+			o.vertices.resize(fragments);
+			for (int i=0; i < fragments; i++) {
+				double phi = (M_PI*2*i) / fragments;
+				o.vertices[i] = Vector2d(this->r1*cos(phi), this->r1*sin(phi));
+			}
+			p->addOutline(o);
+			p->setSanitized(true);
+		}
+	}
+		break;
+	case POLYGON:	{
+			Polygon2d *p = new Polygon2d();
+			g = p;
 
-		for (size_t i=0; i<this->points.toVector().size(); i++) {
+			Outline2d outline;
 			double x,y;
-			if (!this->points.toVector()[i].getVec2(x, y) ||
-					isinf(x) || isinf(y)) {
-				PRINTB("ERROR: Unable to convert point at index %d to a vec2 of numbers", i);
-				delete p;
-				return NULL;
+			const Value::VectorType &vec = this->points.toVector();
+			for (unsigned int i=0;i<vec.size();i++) {
+				const Value &val = vec[i];
+				if (!val.getVec2(x, y) ||
+						isinf(x) || isinf(y)) {
+					PRINTB("ERROR: Unable to convert point %s at index %d to a vec2 of numbers", 
+								 val.toString() % i);
+					delete p;
+					return NULL;
+				}
+				outline.vertices.push_back(Vector2d(x, y));
 			}
-			dd.points.push_back(Vector2d(x, y));
-		}
 
-		if (this->paths.toVector().size() == 0)
-		{
-			if (dd.points.size() <= 2) { // Ignore malformed polygons
-				delete p;
-				return NULL;
+			if (this->paths.toVector().size() == 0 && outline.vertices.size() > 2) {
+				p->addOutline(outline);
 			}
-			dd.paths.push_back(DxfData::Path());
-			for (size_t i=0; i<dd.points.size(); i++) {
-				assert(i < dd.points.size()); // FIXME: Not needed, but this used to be an 'if'
-				dd.paths.back().indices.push_back(i);
-			}
-			if (dd.paths.back().indices.size() > 0) {
-				dd.paths.back().indices.push_back(dd.paths.back().indices.front());
-				dd.paths.back().is_closed = true;
-			}
-		}
-		else
-		{
-			for (size_t i=0; i<this->paths.toVector().size(); i++)
-			{
-				dd.paths.push_back(DxfData::Path());
-				for (size_t j=0; j<this->paths.toVector()[i].toVector().size(); j++) {
-					unsigned int idx = this->paths.toVector()[i].toVector()[j].toDouble();
-					if (idx < dd.points.size()) {
-						dd.paths.back().indices.push_back(idx);
+			else {
+				BOOST_FOREACH(const Value &polygon, this->paths.toVector()) {
+					Outline2d curroutline;
+					BOOST_FOREACH(const Value &index, polygon.toVector()) {
+						unsigned int idx = index.toDouble();
+						if (idx < outline.vertices.size()) {
+							curroutline.vertices.push_back(outline.vertices[idx]);
+						}
+						// FIXME: Warning on out of bounds?
 					}
-				}
-				if (dd.paths.back().indices.empty()) {
-					dd.paths.pop_back();
-				} else {
-					dd.paths.back().indices.push_back(dd.paths.back().indices.front());
-					dd.paths.back().is_closed = true;
+					p->addOutline(curroutline);
 				}
 			}
-		}
-
-		p->is2d = true;
-		p->convexity = convexity;
-		dxf_tesselate(p, dd, 0, Vector2d(1,1), true, false, 0);
-		dxf_border_to_ps(p, dd);
+        
+			if (p->outlines().size() == 0) {
+				delete p;
+				g = NULL;
+			}
+			else {
+				p->setConvexity(convexity);
+			}
+	}
 	}
 
-	return p;
+	return g;
 }
 
 std::string PrimitiveNode::toString() const

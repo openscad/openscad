@@ -83,7 +83,6 @@ std::string AbstractFunction::dump(const std::string &indent, const std::string 
 
 Function::~Function()
 {
-	BOOST_FOREACH(const Assignment &arg, this->definition_arguments) delete arg.second;
 	delete expr;
 }
 
@@ -197,9 +196,11 @@ Value builtin_min(const Context *, const EvalContext *evalctx)
 {
 	if (evalctx->numArgs() >= 1 && evalctx->getArgValue(0).type() == Value::NUMBER) {
 		double val = evalctx->getArgValue(0).toDouble();
-		for (size_t i = 1; i < evalctx->numArgs(); i++)
-			if (evalctx->getArgValue(1).type() == Value::NUMBER)
-				val = fmin(val, evalctx->getArgValue(i).toDouble());
+		for (size_t i = 1; i < evalctx->numArgs(); i++) {
+			Value v = evalctx->getArgValue(i);
+			if (v.type() == Value::NUMBER)
+				val = fmin(val, v.toDouble());
+		}
 		return Value(val);
 	}
 	return Value();
@@ -209,9 +210,11 @@ Value builtin_max(const Context *, const EvalContext *evalctx)
 {
 	if (evalctx->numArgs() >= 1 && evalctx->getArgValue(0).type() == Value::NUMBER) {
 		double val = evalctx->getArgValue(0).toDouble();
-		for (size_t i = 1; i < evalctx->numArgs(); i++)
-			if (evalctx->getArgValue(1).type() == Value::NUMBER)
-				val = fmax(val, evalctx->getArgValue(i).toDouble());
+		for (size_t i = 1; i < evalctx->numArgs(); i++) {
+			Value v = evalctx->getArgValue(i);
+			if (v.type() == Value::NUMBER)
+				val = fmax(val, v.toDouble());
+		}
 		return Value(val);
 	}
 	return Value();
@@ -646,11 +649,11 @@ Value builtin_cross(const Context *, const EvalContext *evalctx)
 		}
 		double d0 = v0[a].toDouble();
 		double d1 = v1[a].toDouble();
-		if (isnan(d0) || isnan(d1)) {
+		if (boost::math::isnan(d0) || boost::math::isnan(d1)) {
 			PRINT("WARNING: Invalid value (NaN) in parameter vector for cross()");
 			return Value();
 		}
-		if (isinf(d0) || isinf(d1)) {
+		if (boost::math::isinf(d0) || boost::math::isinf(d1)) {
 			PRINT("WARNING: Invalid value (INF) in parameter vector for cross()");
 			return Value();
 		}

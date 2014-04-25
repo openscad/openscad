@@ -17,7 +17,8 @@ public:
         AbstractFunction() : feature(NULL) {}
         AbstractFunction(const Feature& feature) : feature(&feature) {}
 	virtual ~AbstractFunction();
-        virtual bool is_enabled() const { return (feature == NULL) || feature->is_enabled(); };
+        virtual bool is_experimental() const { return feature != NULL; }
+        virtual bool is_enabled() const { return (feature == NULL) || feature->is_enabled(); }
 	virtual Value evaluate(const class Context *ctx, const class EvalContext *evalctx) const;
 	virtual std::string dump(const std::string &indent, const std::string &name) const;
 };

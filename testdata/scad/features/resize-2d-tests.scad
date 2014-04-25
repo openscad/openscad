@@ -42,8 +42,8 @@ translate([0,16]) resize([15,15,0]) shape2();
 translate([0,32]) resize([15,15]) shape3();
 
 color("green"){
-translate([16,0]) resize([15,0],auto=true) shape();
-translate([16,16]) resize([0,15],auto=true) shape2();
+translate([16,0]) resize([15,0],auto=false) scale([1,3]) shape();
+translate([16,16]) resize([0,15],auto=true) scale() shape2();
 translate([16,32]) resize([0,15],auto=[true,false]) shape3();
 }
 

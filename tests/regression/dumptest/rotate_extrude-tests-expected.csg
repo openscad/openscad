@@ -11,7 +11,7 @@ group() {
 	}
 	multmatrix([[1, 0, 0, 50], [0, 1, 0, -20], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 		difference() {
-			rotate_extrude(convexity = 1, $fn = 0, $fa = 12, $fs = 2) {
+			rotate_extrude(convexity = 4, $fn = 0, $fa = 12, $fs = 2) {
 				multmatrix([[1, 0, 0, 20], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 					difference() {
 						circle($fn = 0, $fa = 12, $fs = 2, r = 10);
@@ -27,12 +27,12 @@ group() {
 	multmatrix([[1, 0, 0, 50], [0, 1, 0, 50], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 		difference() {
 			difference() {
-				rotate_extrude(convexity = 1, $fn = 0, $fa = 12, $fs = 2) {
+				rotate_extrude(convexity = 2, $fn = 0, $fa = 12, $fs = 2) {
 					multmatrix([[1, 0, 0, 20], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 						circle($fn = 0, $fa = 12, $fs = 2, r = 10);
 					}
 				}
-				rotate_extrude(convexity = 1, $fn = 0, $fa = 12, $fs = 2) {
+				rotate_extrude(convexity = 2, $fn = 0, $fa = 12, $fs = 2) {
 					multmatrix([[1, 0, 0, 20], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 						circle($fn = 0, $fa = 12, $fs = 2, r = 8);
 					}

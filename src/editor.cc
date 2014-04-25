@@ -4,6 +4,9 @@
 Editor::Editor(QWidget *parent) : QTextEdit(parent)
 {
 	setAcceptRichText(false);
+	// This needed to avoid QTextEdit accepting filename drops as we want
+	// to handle these ourselves in MainWindow
+	setAcceptDrops(false);
 	this->highlighter = new Highlighter(this->document());
 }
 
@@ -104,7 +107,9 @@ void Editor::zoomOut()
 
 void Editor::wheelEvent ( QWheelEvent * event )
 {
-	if (event->modifiers() == Qt::ControlModifier) {
+	QSettings settings;
+	bool wheelzoom_enabled = Preferences::inst()->getValue("editor/ctrlmousewheelzoom").toBool();
+	if ((event->modifiers() == Qt::ControlModifier) && wheelzoom_enabled ) {
 		if (event->delta() > 0 )
 			zoomIn();
 		else if (event->delta() < 0 )

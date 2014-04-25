@@ -26,7 +26,6 @@ public:
 	}
 	virtual std::string toString() const;
 	virtual std::string name() const;
-	PolySet *evaluate_polyset(class PolySetEvaluator *ps) const;
 
 	Value path;
 	std::string subdiv_type;

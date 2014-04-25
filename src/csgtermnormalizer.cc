@@ -2,6 +2,18 @@
 #include "csgterm.h"
 #include "printutils.h"
 
+// Helper function to debug normalization bugs
+#if 0
+static bool validate_tree(const shared_ptr<CSGTerm> &term)
+{
+	if (term->type == CSGTerm::TYPE_PRIMITIVE) return true;
+    if (!term->left || !term->right) return false;
+    if (!validate_tree(term->left)) return false;
+    if (!validate_tree(term->right)) return false;
+    return true;
+}
+#endif
+
 /*!
 	NB! for e.g. empty intersections, this can normalize a tree to nothing and return NULL.
 */
@@ -25,6 +37,7 @@ shared_ptr<CSGTerm> CSGTermNormalizer::normalize(const shared_ptr<CSGTerm> &root
 				tmproot = newroot;
 				newroot = collapse_null_terms(tmproot);
 			}
+			newroot = cleanup_term(newroot);
 			return newroot;
 		}
 	}

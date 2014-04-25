@@ -40,8 +40,6 @@
 #include <glib.h>
 
 #include <boost/math/special_functions/fpclassify.hpp>
-using boost::math::isnan;
-using boost::math::isinf;
 
 std::ostream &operator<<(std::ostream &stream, const Filename &filename)
 {
@@ -323,37 +321,27 @@ bool Value::operator!=(const Value &v) const
   return !(*this == v);
 }
 
-class less_visitor : public boost::static_visitor<bool>
-{
-public:
-  template <typename T, typename U> bool operator()(const T &, const U &) const {
-    return false;
-  }
+#define DEFINE_VISITOR(name,op)\
+class name : public boost::static_visitor<bool> \
+{ \
+public:\
+  template <typename T, typename U> bool operator()(const T &, const U &) const {\
+    return false;\
+  }\
+\
+  bool operator()(const double &op1, const double &op2) const {\
+    return op1 op op2;\
+  }\
+\
+  bool operator()(const std::string &op1, const std::string &op2) const {\
+    return op1 op op2;\
+  }\
+}
 
-  bool operator()(const double &op1, const double &op2) const {
-    return op1 < op2;
-  }
-
-  bool operator()(const std::string &op1, const std::string &op2) const {
-    return op1 < op2;
-  }
-};
-
-class greater_visitor : public boost::static_visitor<bool>
-{
-public:
-  template <typename T, typename U> bool operator()(const T &, const U &) const {
-    return false;
-  }
-
-  bool operator()(const double &op1, const double &op2) const {
-    return op1 > op2;
-  }
-
-  bool operator()(const std::string &op1, const std::string &op2) const {
-    return op1 > op2;
-  }
-};
+DEFINE_VISITOR(less_visitor, <);
+DEFINE_VISITOR(greater_visitor, >);
+DEFINE_VISITOR(lessequal_visitor, <=);
+DEFINE_VISITOR(greaterequal_visitor, >=);
 
 bool Value::operator<(const Value &v) const
 {
@@ -362,7 +350,7 @@ bool Value::operator<(const Value &v) const
 
 bool Value::operator>=(const Value &v) const
 {
-  return !(*this < v);
+  return boost::apply_visitor(greaterequal_visitor(), this->value, v.value);
 }
 
 bool Value::operator>(const Value &v) const
@@ -372,7 +360,7 @@ bool Value::operator>(const Value &v) const
 
 bool Value::operator<=(const Value &v) const
 {
-  return !(*this > v);
+  return boost::apply_visitor(lessequal_visitor(), this->value, v.value);
 }
 
 class plus_visitor : public boost::static_visitor<Value>
@@ -645,17 +633,17 @@ void Value::RangeType::normalize() {
   }
 }
 
-uint32_t Value::RangeType::nbsteps() const {
-  if (isnan(step_val) || isinf(begin_val) || (isinf(end_val))) {
-    return std::numeric_limits<uint32_t>::max();
+boost::uint32_t Value::RangeType::nbsteps() const {
+  if (boost::math::isnan(step_val) || boost::math::isinf(begin_val) || (boost::math::isinf(end_val))) {
+    return std::numeric_limits<boost::uint32_t>::max();
   }
 
-  if ((begin_val == end_val) || isinf(step_val)) {
+  if ((begin_val == end_val) || boost::math::isinf(step_val)) {
     return 0;
   }
   
   if (step_val == 0) { 
-    return std::numeric_limits<uint32_t>::max();
+    return std::numeric_limits<boost::uint32_t>::max();
   }
 
   double steps;

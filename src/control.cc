@@ -78,7 +78,7 @@ void ControlModule::for_eval(AbstractNode &node, const ModuleInstantiation &inst
 		Context c(ctx);
 		if (it_values.type() == Value::RANGE) {
 			Value::RangeType range = it_values.toRange();
-                        uint32_t steps = range.nbsteps();
+                        boost::uint32_t steps = range.nbsteps();
                         if (steps >= 10000) {
                                 PRINTB("WARNING: Bad range parameter in for statement: too many elements (%lu).", steps);
                         } else {
@@ -109,8 +109,8 @@ const EvalContext* ControlModule::getLastModuleCtx(const EvalContext *evalctx)
 	// Find the last custom module invocation, which will contain
 	// an eval context with the children of the module invokation
 	const Context *tmpc = evalctx;
-	while (tmpc->parent) {
-		const ModuleContext *modulectx = dynamic_cast<const ModuleContext*>(tmpc->parent);
+	while (tmpc->getParent()) {
+		const ModuleContext *modulectx = dynamic_cast<const ModuleContext*>(tmpc->getParent());
 		if (modulectx) {
 			// This will trigger if trying to invoke child from the root of any file
 			// assert(filectx->evalctx);
@@ -119,7 +119,7 @@ const EvalContext* ControlModule::getLastModuleCtx(const EvalContext *evalctx)
 			}
 			return NULL;
 		}
-		tmpc = tmpc->parent;
+		tmpc = tmpc->getParent();
 	}
 	return NULL;
 }
@@ -230,7 +230,7 @@ AbstractNode *ControlModule::instantiate(const Context* /*ctx*/, const ModuleIns
 			else if (value.type() == Value::RANGE) {
 				AbstractNode* node = new AbstractNode(inst);
 				Value::RangeType range = value.toRange();
-                                uint32_t steps = range.nbsteps();
+                                boost::uint32_t steps = range.nbsteps();
 				if (steps >= 10000) {
 					PRINTB("WARNING: Bad range parameter for children: too many elements (%lu).", steps);
 					return NULL;

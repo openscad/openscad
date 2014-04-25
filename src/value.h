@@ -86,7 +86,7 @@ public:
     iterator end() { return iterator(*this, RANGE_TYPE_END); }
 
     /// return number of steps, max uint32_t value if step is 0
-    uint32_t nbsteps() const;
+    boost::uint32_t nbsteps() const;
     
     friend class tostring_visitor;
     friend class bracket_visitor;
