@@ -4,6 +4,9 @@
 Editor::Editor(QWidget *parent) : QTextEdit(parent)
 {
 	setAcceptRichText(false);
+	// This needed to avoid QTextEdit accepting filename drops as we want
+	// to handle these ourselves in MainWindow
+	setAcceptDrops(false);
 	this->highlighter = new Highlighter(this->document());
 }
 
