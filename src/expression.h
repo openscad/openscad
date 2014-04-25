@@ -38,6 +38,8 @@ public:
 	~Expression();
 
 	Value evaluate(const class Context *context) const;
+	Value evaluate_list_comprehension(const Context *context) const;
+
 	std::string toString() const;
 
 	mutable int recursioncount;
