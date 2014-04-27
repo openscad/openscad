@@ -86,7 +86,7 @@ libraries from aptitude. If you're using Mac, or an older Linux/BSD, there
 are build scripts that download and compile the libraries from source. 
 Follow the instructions for the platform you're compiling on below.
 
-* [Qt4 (4.4 - 5.0)](http://www.qt.nokia.com/)
+* [Qt4 (4.4 - 5.2)](http://www.qt.nokia.com/)
 * [CGAL (3.6 - 4.1)](http://www.cgal.org/)
  * [GMP (5.x)](http://www.gmplib.org/)
  * [MPFR (3.x)](http://www.mpfr.org/)
