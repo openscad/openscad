@@ -1,2 +1,2 @@
 ERROR: Recursion detected calling function 'crash'
-ECHO: undef
+ERROR: Function recursion caught while instantiating module 'echo'

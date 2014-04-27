@@ -52,6 +52,9 @@ public:
 
 private:
 	const FileModule::ModuleContainer &usedlibs;
+
+	// This sub_* method is needed to minimize stack usage only.
+	Value sub_evaluate_function(const std::string &name, const EvalContext *evalctx, FileModule *usedmod) const;
 };
 
 #endif
