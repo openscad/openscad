@@ -480,13 +480,161 @@ build_sparkle()
   install_name_tool -id $DEPLOYDIR/lib/Sparkle.framework/Versions/A/Sparkle $DEPLOYDIR/lib/Sparkle.framework/Sparkle
 }
 
+build_freetype()
+{
+  version="$1"
+  extra_config_flags="$2"
+
+  echo "Building freetype $version..."
+  cd "$BASEDIR"/src
+  rm -rf "freetype-$version"
+  if [ ! -f "freetype-$version.tar.gz" ]; then
+    curl --insecure -LO "http://download.savannah.gnu.org/releases/freetype/freetype-$version.tar.gz"
+  fi
+  tar xzf "freetype-$version.tar.gz"
+  cd "freetype-$version"
+  ./configure --prefix="$DEPLOYDIR" CFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN LDFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN $extra_config_flags
+  make -j"$NUMCPU"
+  make install
+}
+ 
+build_libxml2()
+{
+  version="$1"
+
+  echo "Building libxml2 $version..."
+  cd "$BASEDIR"/src
+  rm -rf "libxml2-$version"
+  if [ ! -f "libxml2-$version.tar.gz" ]; then
+    curl --insecure -LO "ftp://xmlsoft.org/libxml2/libxml2-$version.tar.gz"
+  fi
+  tar xzf "libxml2-$version.tar.gz"
+  cd "libxml2-$version"
+  ./configure --prefix="$DEPLOYDIR" --without-ftp --without-http --without-python CFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN LDFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN
+  make -j$NUMCPU
+  make install
+}
+
+build_fontconfig()
+{
+  version=$1
+
+  echo "Building fontconfig $version..."
+  cd "$BASEDIR"/src
+  rm -rf "fontconfig-$version"
+  if [ ! -f "fontconfig-$version.tar.gz" ]; then
+    curl --insecure -LO "http://www.freedesktop.org/software/fontconfig/release/fontconfig-$version.tar.gz"
+  fi
+  tar xzf "fontconfig-$version.tar.gz"
+  cd "fontconfig-$version"
+  export PKG_CONFIG_PATH="$DEPLOYDIR/lib/pkgconfig"
+  ./configure --prefix="$DEPLOYDIR" --enable-libxml2 CFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN LDFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN
+  unset PKG_CONFIG_PATH
+  make -j$NUMCPU
+  make install
+}
+
+build_libffi()
+{
+  version="$1"
+
+  echo "Building libffi $version..."
+  cd "$BASEDIR"/src
+  rm -rf "libffi-$version"
+  if [ ! -f "libffi-$version.tar.gz" ]; then
+    curl --insecure -LO "ftp://sourceware.org/pub/libffi/libffi-$version.tar.gz"
+  fi
+  tar xzf "libffi-$version.tar.gz"
+  cd "libffi-$version"
+  ./configure --prefix="$DEPLOYDIR"
+  make -j$NUMCPU
+  make install
+}
+
+build_gettext()
+{
+  version="$1"
+
+  echo "Building gettext $version..."
+  cd "$BASEDIR"/src
+  rm -rf "gettext-$version"
+  if [ ! -f "gettext-$version.tar.xz" ]; then
+    curl --insecure -LO "http://ftpmirror.gnu.org/gettext/gettext-$version.tar.gz"
+  fi
+  tar xzf "gettext-$version.tar.gz"
+  cd "gettext-$version"
+
+  ./configure --prefix="$DEPLOYDIR" CFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN LDFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN
+  make -j$NUMCPU
+  make install
+}
+
+build_glib2()
+{
+  version="$1"
+
+  echo "Building glib2 $version..."
+
+  cd "$BASEDIR"/src
+  rm -rf "glib-$version"
+  maj_min_version="${version%.*}" #Drop micro
+  if [ ! -f "glib-$version.tar.xz" ]; then
+    curl --insecure -LO "http://ftp.gnome.org/pub/gnome/sources/glib/$maj_min_version/glib-$version.tar.xz"
+  fi
+  tar xJf "glib-$version.tar.xz"
+  cd "glib-$version"
+
+  export PKG_CONFIG_PATH="$DEPLOYDIR/lib/pkgconfig"
+  ./configure --disable-gtk-doc --disable-man --prefix="$DEPLOYDIR" CFLAGS="-I$DEPLOYDIR/include -mmacosx-version-min=$MAC_OSX_VERSION_MIN" LDFLAGS="-L$DEPLOYDIR/lib -mmacosx-version-min=$MAC_OSX_VERSION_MIN"
+  unset PKG_CONFIG_PATH
+  make -j$NUMCPU
+  make install
+}
+
+build_ragel()
+{
+  version=$1
+
+  echo "Building ragel $version..."
+  cd "$BASEDIR"/src
+  rm -rf "ragel-$version"
+  if [ ! -f "ragel-$version.tar.gz" ]; then
+    curl --insecure -LO "http://www.complang.org/ragel/ragel-$version.tar.gz"
+  fi
+  tar xzf "ragel-$version.tar.gz"
+  cd "ragel-$version"
+  sed -e "s/setiosflags(ios::right)/std::&/g" ragel/javacodegen.cpp > ragel/javacodegen.cpp.new && mv ragel/javacodegen.cpp.new ragel/javacodegen.cpp
+  ./configure --prefix="$DEPLOYDIR"
+  make -j$NUMCPU
+  make install
+}
+
+build_harfbuzz()
+{
+  version=$1
+  extra_config_flags="$2"
+
+  echo "Building harfbuzz $version..."
+  cd "$BASEDIR"/src
+  rm -rf "harfbuzz-$version"
+  if [ ! -f "harfbuzz-$version.tar.gz" ]; then
+    curl --insecure -LO "http://cgit.freedesktop.org/harfbuzz/snapshot/harfbuzz-$version.tar.gz"
+  fi
+  tar xzf "harfbuzz-$version.tar.gz"
+  cd "harfbuzz-$version"
+  # disable doc directories as they make problems on Mac OS Build
+  sed -e "s/SUBDIRS = src util test docs/SUBDIRS = src util test/g" Makefile.am > Makefile.am.bak && mv Makefile.am.bak Makefile.am
+  sed -e "s/^docs.*$//" configure.ac > configure.ac.bak && mv configure.ac.bak configure.ac
+  ./autogen.sh --prefix="$DEPLOYDIR" --with-freetype=yes --with-gobject=no --with-cairo=no --with-icu=no CFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN LDFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN $extra_config_flags
+  make -j$NUMCPU
+  make install
+}
+
 if [ ! -f $OPENSCADDIR/openscad.pro ]; then
   echo "Must be run from the OpenSCAD source root directory"
   exit 0
 fi
 OPENSCAD_SCRIPTDIR=$PWD/scripts
-
-. $OPENSCAD_SCRIPTDIR/common-build-dependencies.sh
 
 while getopts '6lcd' c
 do
@@ -542,8 +690,7 @@ fi
 echo "Building for $MAC_OSX_VERSION_MIN or later"
 
 if [ ! $NUMCPU ]; then
-  echo "Note: The NUMCPU environment variable can be set for parallel builds"
-  NUMCPU=1
+  NUMCPU=$(sysctl -n hw.ncpu)
 fi
 
 if $OPTION_DEPLOY; then
@@ -574,15 +721,15 @@ build_gettext 0.18.3.1
 build_libffi 3.0.13
 build_glib2 2.38.2
 build_opencsg 1.3.2
-build_freetype 2.5.0.1 --without-png
+build_harfbuzz 0.9.27 "--with-coretext=auto --with-glib=no"
+build_freetype 2.5.3 --without-png
 export FREETYPE_CFLAGS="-I$DEPLOYDIR/include -I$DEPLOYDIR/include/freetype2"
 export FREETYPE_LIBS="-L$DEPLOYDIR/lib -lfreetype"
 build_libxml2 2.9.1
-build_fontconfig 2.11.0
+build_fontconfig 2.11.1
 build_ragel 6.8
 export PATH="$PATH:$DEPLOYDIR/bin"
 create_dummy_cmd "touch gtk-doc.make" "$DEPLOYDIR/bin/gtkdocize"
-build_harfbuzz 0.9.23 "--with-coretext=auto --with-glib=no"
 if $OPTION_DEPLOY; then
 #  build_sparkle andymatuschak 0ed83cf9f2eeb425d4fdd141c01a29d843970c20
   build_sparkle Cocoanetics 1e7dcb1a48b96d1a8c62100b5864bd50211cbae1
