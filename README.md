@@ -124,9 +124,8 @@ Prerequisites:
 Then after you've cloned this git repository, run the script that sets up the
 environment variables.
 
-    source setenv_mac-gcc.sh
+    source setenv_mac-qt5.sh
 
-(or setenv_mac-clang.sh if you want to use the clang compiler instead of gcc).
 Then run the script to compile all the prerequisite libraries above:
 
     ./scripts/macosx-build-dependencies.sh
