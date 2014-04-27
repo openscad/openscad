@@ -32,6 +32,7 @@ public slots:
 	void on_polysetCacheSizeEdit_textChanged(const QString &);
 	void on_opencsgLimitEdit_textChanged(const QString &);
 	void on_forceGoldfeatherBox_toggled(bool);
+	void on_mouseWheelZoomBox_toggled(bool);
 	void on_updateCheckBox_toggled(bool);
 	void on_snapshotCheckBox_toggled(bool);
 	void on_checkNowButton_clicked();

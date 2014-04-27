@@ -36,6 +36,10 @@
 #include "printutils.h"
 #include <boost/foreach.hpp>
 
+#include <boost/math/special_functions/fpclassify.hpp>
+using boost::math::isnan;
+using boost::math::isinf;
+
 /*
  Random numbers
 
@@ -79,7 +83,6 @@ std::string AbstractFunction::dump(const std::string &indent, const std::string 
 
 Function::~Function()
 {
-	BOOST_FOREACH(const Assignment &arg, this->definition_arguments) delete arg.second;
 	delete expr;
 }
 
@@ -193,9 +196,11 @@ Value builtin_min(const Context *, const EvalContext *evalctx)
 {
 	if (evalctx->numArgs() >= 1 && evalctx->getArgValue(0).type() == Value::NUMBER) {
 		double val = evalctx->getArgValue(0).toDouble();
-		for (size_t i = 1; i < evalctx->numArgs(); i++)
-			if (evalctx->getArgValue(1).type() == Value::NUMBER)
-				val = fmin(val, evalctx->getArgValue(i).toDouble());
+		for (size_t i = 1; i < evalctx->numArgs(); i++) {
+			Value v = evalctx->getArgValue(i);
+			if (v.type() == Value::NUMBER)
+				val = fmin(val, v.toDouble());
+		}
 		return Value(val);
 	}
 	return Value();
@@ -205,9 +210,11 @@ Value builtin_max(const Context *, const EvalContext *evalctx)
 {
 	if (evalctx->numArgs() >= 1 && evalctx->getArgValue(0).type() == Value::NUMBER) {
 		double val = evalctx->getArgValue(0).toDouble();
-		for (size_t i = 1; i < evalctx->numArgs(); i++)
-			if (evalctx->getArgValue(1).type() == Value::NUMBER)
-				val = fmax(val, evalctx->getArgValue(i).toDouble());
+		for (size_t i = 1; i < evalctx->numArgs(); i++) {
+			Value v = evalctx->getArgValue(i);
+			if (v.type() == Value::NUMBER)
+				val = fmax(val, v.toDouble());
+		}
 		return Value(val);
 	}
 	return Value();
@@ -598,6 +605,71 @@ Value builtin_parent_module(const Context *, const EvalContext *evalctx)
 	return Value(Module::stack_element(s - 1 - n));
 }
 
+Value builtin_norm(const Context *, const EvalContext *evalctx)
+{
+	if (evalctx->numArgs() == 1 && evalctx->getArgValue(0).type() == Value::VECTOR) {
+		double sum = 0;
+		Value::VectorType v = evalctx->getArgValue(0).toVector();
+		for (size_t i = 0; i < v.size(); i++)
+			if (v[i].type() == Value::NUMBER)
+				sum += pow(v[i].toDouble(),2);
+			else {
+				PRINT("  WARNING: Incorrect arguments to norm()");
+				return Value();
+			}
+		return Value(sqrt(sum));
+	}
+	return Value();
+}
+
+Value builtin_cross(const Context *, const EvalContext *evalctx)
+{
+	if (evalctx->numArgs() != 2) {
+		PRINT("WARNING: Invalid number of parameters for cross()");
+		return Value();
+	}
+	
+	Value arg0 = evalctx->getArgValue(0);
+	Value arg1 = evalctx->getArgValue(1);
+	if ((arg0.type() != Value::VECTOR) || (arg1.type() != Value::VECTOR)) {
+		PRINT("WARNING: Invalid type of parameters for cross()");
+		return Value();
+	}
+	
+	Value::VectorType v0 = arg0.toVector();
+	Value::VectorType v1 = arg1.toVector();
+	if ((v0.size() != 3) || (v1.size() != 3)) {
+		PRINT("WARNING: Invalid vector size of parameter for cross()");
+		return Value();
+	}
+	for (unsigned int a = 0;a < 3;a++) {
+		if ((v0[a].type() != Value::NUMBER) || (v1[a].type() != Value::NUMBER)) {
+			PRINT("WARNING: Invalid value in parameter vector for cross()");
+			return Value();
+		}
+		double d0 = v0[a].toDouble();
+		double d1 = v1[a].toDouble();
+		if (boost::math::isnan(d0) || boost::math::isnan(d1)) {
+			PRINT("WARNING: Invalid value (NaN) in parameter vector for cross()");
+			return Value();
+		}
+		if (boost::math::isinf(d0) || boost::math::isinf(d1)) {
+			PRINT("WARNING: Invalid value (INF) in parameter vector for cross()");
+			return Value();
+		}
+	}
+	
+	double x = v0[1].toDouble() * v1[2].toDouble() - v0[2].toDouble() * v1[1].toDouble();
+	double y = v0[2].toDouble() * v1[0].toDouble() - v0[0].toDouble() * v1[2].toDouble();
+	double z = v0[0].toDouble() * v1[1].toDouble() - v0[1].toDouble() * v1[0].toDouble();
+	
+	Value::VectorType result;
+	result.push_back(Value(x));
+	result.push_back(Value(y));
+	result.push_back(Value(z));
+	return Value(result);
+}
+
 void register_builtin_functions()
 {
 	Builtins::init("abs", new BuiltinFunction(&builtin_abs));
@@ -627,5 +699,7 @@ void register_builtin_functions()
 	Builtins::init("search", new BuiltinFunction(&builtin_search));
 	Builtins::init("version", new BuiltinFunction(&builtin_version));
 	Builtins::init("version_num", new BuiltinFunction(&builtin_version_num));
+	Builtins::init("norm", new BuiltinFunction(&builtin_norm));
+	Builtins::init("cross", new BuiltinFunction(&builtin_cross));
 	Builtins::init("parent_module", new BuiltinFunction(&builtin_parent_module));
 }

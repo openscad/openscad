@@ -6,6 +6,7 @@
 #include "Polygon2d.h"
 #include "module.h"
 #include "state.h"
+#include "offsetnode.h"
 #include "transformnode.h"
 #include "linearextrudenode.h"
 #include "rotateextrudenode.h"
@@ -92,37 +93,24 @@ GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren(const Abstrac
 */
 GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren3D(const AbstractNode &node, OpenSCADOperator op)
 {
-	if (op == OPENSCAD_HULL) {
-		return ResultObject(applyHull3D(node));
-	}
-
 	Geometry::ChildList children = collectChildren3D(node);
-
 	if (children.size() == 0) return ResultObject();
+
+	if (op == OPENSCAD_HULL) {
+		CGAL_Polyhedron P;
+		if (CGALUtils::applyHull(children, P)) {
+			return ResultObject(new CGAL_Nef_polyhedron(new CGAL_Nef_polyhedron3(P)));
+		}
+		else {
+			return ResultObject();
+		}
+	}
+	
 	// Only one child -> this is a noop
 	if (children.size() == 1) return ResultObject(children.front().second);
 
-	CGAL_Nef_polyhedron *N = NULL;
-	BOOST_FOREACH(const Geometry::ChildItem &item, children) {
-		const shared_ptr<const Geometry> &chgeom = item.second;
-		shared_ptr<const CGAL_Nef_polyhedron> chN;
-		if (!chgeom) {
-			chN.reset(new CGAL_Nef_polyhedron); // Create null polyhedron
-		}
-		else {
-			chN = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(chgeom);
-			if (!chN) {
-				const PolySet *chps = dynamic_cast<const PolySet*>(chgeom.get());
-				if (chps) chN.reset(createNefPolyhedronFromGeometry(*chps));
-			}
-		}
-
-		if (N) CGALUtils::applyBinaryOperator(*N, *chN, op);
-		// Initialize N on first iteration with first expected geometric object
-		else if (chN) N = chN->copy();
-
-		item.first->progress_report();
-	}
+	CGAL_Nef_polyhedron *N = new CGAL_Nef_polyhedron;
+	CGALUtils::applyOperator(children, *N, op);
 	return ResultObject(N);
 }
 
@@ -406,6 +394,33 @@ Response GeometryEvaluator::visit(State &state, const AbstractNode &node)
 		shared_ptr<const class Geometry> geom;
 		if (!isSmartCached(node)) {
 			geom = applyToChildren(node, OPENSCAD_UNION).constptr();
+		}
+		else {
+			geom = smartCacheGet(node);
+		}
+		addToParent(state, node, geom);
+	}
+	return ContinueTraversal;
+}
+
+Response GeometryEvaluator::visit(State &state, const OffsetNode &node)
+{
+	if (state.isPrefix() && isSmartCached(node)) return PruneTraversal;
+	if (state.isPostfix()) {
+		shared_ptr<const Geometry> geom;
+		if (!isSmartCached(node)) {
+			const Geometry *geometry = applyToChildren2D(node, OPENSCAD_UNION);
+			if (geometry) {
+				const Polygon2d *polygon = dynamic_cast<const Polygon2d*>(geometry);
+				// ClipperLib documentation: The formula for the number of steps in a full
+				// circular arc is ... Pi / acos(1 - arc_tolerance / abs(delta))
+				double n = Calc::get_fragments_from_r(10, node.fn, node.fs, node.fa);
+				double arc_tolerance = abs(node.delta) * (1 - cos(M_PI / n));				
+				const Polygon2d *result = ClipperUtils::applyOffset(*polygon, node.delta, node.join_type, node.miter_limit, arc_tolerance);
+				assert(result);
+				geom.reset(result);
+				delete geometry;
+			}
 		}
 		else {
 			geom = smartCacheGet(node);

@@ -55,6 +55,7 @@ public:
 
 	virtual bool save(const char *filename) = 0;
 	virtual std::string getRendererInfo() const = 0;
+	virtual float getDPI() { return 1.0f; }
 
 	Renderer *renderer;
 	Camera cam;

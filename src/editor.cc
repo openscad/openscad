@@ -1,6 +1,15 @@
 #include "editor.h"
 #include "Preferences.h"
 
+Editor::Editor(QWidget *parent) : QTextEdit(parent)
+{
+	setAcceptRichText(false);
+	// This needed to avoid QTextEdit accepting filename drops as we want
+	// to handle these ourselves in MainWindow
+	setAcceptDrops(false);
+	this->highlighter = new Highlighter(this->document());
+}
+
 void Editor::indentSelection()
 {
 	QTextCursor cursor = textCursor();
@@ -98,7 +107,9 @@ void Editor::zoomOut()
 
 void Editor::wheelEvent ( QWheelEvent * event )
 {
-	if (event->modifiers() == Qt::ControlModifier) {
+	QSettings settings;
+	bool wheelzoom_enabled = Preferences::inst()->getValue("editor/ctrlmousewheelzoom").toBool();
+	if ((event->modifiers() == Qt::ControlModifier) && wheelzoom_enabled ) {
 		if (event->delta() > 0 )
 			zoomIn();
 		else if (event->delta() < 0 )
@@ -121,4 +132,28 @@ void Editor::setPlainText(const QString &text)
 		setTextCursor(cursor);
 		verticalScrollBar()->setSliderPosition(y);
 	}
+}
+
+void Editor::highlightError(int error_pos)
+{
+	highlighter->highlightError( error_pos );
+        QTextCursor cursor = this->textCursor();
+        cursor.setPosition( error_pos );
+        this->setTextCursor( cursor );
+}
+
+void Editor::unhighlightLastError()
+{
+	highlighter->unhighlightLastError();
+}
+
+void Editor::setHighlightScheme(const QString &name)
+{
+	highlighter->assignFormatsToTokens( name );
+	highlighter->rehighlight(); // slow on large files
+}
+
+Editor::~Editor()
+{
+	delete highlighter;
 }

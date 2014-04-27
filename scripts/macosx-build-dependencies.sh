@@ -30,7 +30,6 @@ OPTION_LLVM=false
 OPTION_CLANG=false
 OPTION_GCC=false
 OPTION_DEPLOY=false
-export QMAKESPEC=macx-g++
 
 printUsage()
 {
@@ -111,6 +110,21 @@ build_qt()
       ;;
   esac
   ./configure -prefix $DEPLOYDIR -release $QT_32BIT -arch x86_64 -opensource -confirm-license $PLATFORM -fast -no-qt3support -no-svg -no-phonon -no-audio-backend -no-multimedia -no-javascript-jit -no-script -no-scripttools -no-declarative -no-xmlpatterns -nomake demos -nomake examples -nomake docs -nomake translations -no-webkit $MACOSX_RELEASE_OPTIONS
+  make -j6 install
+}
+
+build_qt5()
+{
+  version=$1
+  echo "Building Qt" $version "..."
+  cd $BASEDIR/src
+  rm -rf qt-everywhere-opensource-src-$version
+  if [ ! -f qt-everywhere-opensource-src-$version.tar.gz ]; then
+     curl -O -L http://download.qt-project.org/official_releases/qt/5.2/$version/single/qt-everywhere-opensource-src-$version.tar.gz
+  fi
+  tar xzf qt-everywhere-opensource-src-$version.tar.gz
+  cd qt-everywhere-opensource-src-$version
+  ./configure -prefix $DEPLOYDIR -release -opensource -confirm-license -nomake examples -nomake tests -no-xcb -no-c++11
   make -j6 install
 }
 
@@ -523,7 +537,6 @@ elif $USING_CLANG; then
   echo "Using clang compiler"
   export CC=clang
   export CXX=clang++
-  export QMAKESPEC=unsupported/macx-clang
 fi
 
 echo "Building for $MAC_OSX_VERSION_MIN or later"
@@ -548,7 +561,7 @@ fi
 
 echo "Using basedir:" $BASEDIR
 mkdir -p $SRCDIR $DEPLOYDIR
-build_qt 4.8.5
+build_qt5 5.2.1
 # NB! For eigen, also update the path in the function
 build_eigen 3.2.0
 build_gmp 5.1.3

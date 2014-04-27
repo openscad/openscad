@@ -34,7 +34,7 @@ public:
 	const class EvalContext *evalctx;
 
 #ifdef DEBUG
-	virtual void dump(const class AbstractModule *mod, const ModuleInstantiation *inst);
+	virtual std::string dump(const class AbstractModule *mod, const ModuleInstantiation *inst);
 #endif
 private:
 // Experimental code. See issue #399

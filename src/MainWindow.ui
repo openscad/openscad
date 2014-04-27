@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>681</width>
+    <width>846</width>
     <height>647</height>
    </rect>
   </property>
@@ -15,16 +15,7 @@
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout_2">
-    <property name="leftMargin">
-     <number>0</number>
-    </property>
-    <property name="topMargin">
-     <number>0</number>
-    </property>
-    <property name="rightMargin">
-     <number>0</number>
-    </property>
-    <property name="bottomMargin">
+    <property name="margin">
      <number>0</number>
     </property>
     <item>
@@ -32,13 +23,13 @@
       <property name="orientation">
        <enum>Qt::Horizontal</enum>
       </property>
-      <widget class="QWidget" name="editorlayoutwidget">
-       <layout class="QVBoxLayout" name="verticalLayout_2">
-        <property name="spacing">
+      <widget class="QWidget" name="editorPane" native="true">
+       <property name="enabled">
+        <bool>true</bool>
+       </property>
+       <layout class="QVBoxLayout" name="verticalLayout_3">
+        <property name="margin">
          <number>0</number>
-        </property>
-        <property name="topMargin">
-         <number>2</number>
         </property>
         <item>
          <widget class="QFrame" name="find_panel">
@@ -60,72 +51,8 @@
           <property name="lineWidth">
            <number>0</number>
           </property>
-          <layout class="QGridLayout" name="horizontalLayout">
-           <property name="leftMargin">
-            <number>5</number>
-           </property>
-           <property name="topMargin">
-            <number>0</number>
-           </property>
-           <property name="rightMargin">
-            <number>5</number>
-           </property>
-           <property name="bottomMargin">
-            <number>0</number>
-           </property>
-           <property name="verticalSpacing">
-            <number>0</number>
-           </property>
-           <item row="1" column="3" colspan="2">
-            <widget class="QPushButton" name="replaceButton">
-             <property name="text">
-              <string>Replace</string>
-             </property>
-            </widget>
-           </item>
-           <item row="1" column="5">
-            <widget class="QPushButton" name="replaceAllButton">
-             <property name="text">
-              <string>All</string>
-             </property>
-            </widget>
-           </item>
-           <item row="0" column="2">
-            <widget class="QLineEdit" name="findInputField">
-             <property name="placeholderText">
-              <string>Search string</string>
-             </property>
-            </widget>
-           </item>
-           <item row="1" column="2">
-            <widget class="QLineEdit" name="replaceInputField">
-             <property name="placeholderText">
-              <string>Replacement string</string>
-             </property>
-            </widget>
-           </item>
-           <item row="0" column="3">
-            <widget class="QPushButton" name="prevButton">
-             <property name="text">
-              <string>&lt;</string>
-             </property>
-            </widget>
-           </item>
-           <item row="0" column="4">
-            <widget class="QPushButton" name="nextButton">
-             <property name="text">
-              <string>&gt;</string>
-             </property>
-            </widget>
-           </item>
-           <item row="0" column="5">
-            <widget class="QPushButton" name="hideFindButton">
-             <property name="text">
-              <string>Done</string>
-             </property>
-            </widget>
-           </item>
-           <item row="0" column="1">
+          <layout class="QGridLayout" name="gridLayout">
+           <item row="0" column="0">
             <widget class="QComboBox" name="findTypeComboBox">
              <item>
               <property name="text">
@@ -139,6 +66,55 @@
              </item>
             </widget>
            </item>
+           <item row="0" column="1">
+            <widget class="QLineEdit" name="findInputField">
+             <property name="placeholderText">
+              <string>Search string</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="2">
+            <widget class="QPushButton" name="prevButton">
+             <property name="text">
+              <string>&lt;</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="3">
+            <widget class="QPushButton" name="nextButton">
+             <property name="text">
+              <string>&gt;</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="4">
+            <widget class="QPushButton" name="hideFindButton">
+             <property name="text">
+              <string>Done</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="1">
+            <widget class="QLineEdit" name="replaceInputField">
+             <property name="placeholderText">
+              <string>Replacement string</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="2" colspan="2">
+            <widget class="QPushButton" name="replaceButton">
+             <property name="text">
+              <string>Replace</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="4">
+            <widget class="QPushButton" name="replaceAllButton">
+             <property name="text">
+              <string>All</string>
+             </property>
+            </widget>
+           </item>
           </layout>
          </widget>
         </item>
@@ -149,6 +125,9 @@
             <family>Monaco</family>
             <pointsize>8</pointsize>
            </font>
+          </property>
+          <property name="focusPolicy">
+           <enum>Qt::WheelFocus</enum>
           </property>
          </widget>
         </item>
@@ -163,6 +142,9 @@
           </property>
           <widget class="QGLView" name="qglview" native="true"/>
           <widget class="QTextEdit" name="console">
+           <property name="focusPolicy">
+            <enum>Qt::ClickFocus</enum>
+           </property>
            <property name="readOnly">
             <bool>true</bool>
            </property>
@@ -183,17 +165,8 @@
           <property name="lineWidth">
            <number>0</number>
           </property>
-          <layout class="QHBoxLayout" name="horizontalLayout">
-           <property name="leftMargin">
-            <number>0</number>
-           </property>
-           <property name="topMargin">
-            <number>0</number>
-           </property>
-           <property name="rightMargin">
-            <number>0</number>
-           </property>
-           <property name="bottomMargin">
+          <layout class="QHBoxLayout" name="horizontalLayoutAnimate">
+           <property name="margin">
             <number>0</number>
            </property>
            <item>
@@ -247,7 +220,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>681</width>
+     <width>846</width>
      <height>22</height>
     </rect>
    </property>
@@ -265,16 +238,33 @@
       <string>Examples</string>
      </property>
     </widget>
+    <widget class="QMenu" name="menuExport">
+     <property name="title">
+      <string>Export</string>
+     </property>
+     <addaction name="designActionExportSTL"/>
+     <addaction name="designActionExportOFF"/>
+     <addaction name="designActionExportAMF"/>
+     <addaction name="designActionExportDXF"/>
+     <addaction name="designActionExportSVG"/>
+     <addaction name="designActionExportCSG"/>
+     <addaction name="separator"/>
+     <addaction name="designActionExportImage"/>
+    </widget>
     <addaction name="fileActionNew"/>
     <addaction name="fileActionOpen"/>
     <addaction name="menuOpenRecent"/>
     <addaction name="menuExamples"/>
-    <addaction name="fileShowLibraryFolder"/>
-    <addaction name="separator"/>
+    <addaction name="fileActionReload"/>
     <addaction name="fileActionClose"/>
+    <addaction name="separator"/>
     <addaction name="fileActionSave"/>
     <addaction name="fileActionSaveAs"/>
-    <addaction name="fileActionReload"/>
+    <addaction name="separator"/>
+    <addaction name="menuExport"/>
+    <addaction name="separator"/>
+    <addaction name="fileShowLibraryFolder"/>
+    <addaction name="separator"/>
     <addaction name="fileActionQuit"/>
    </widget>
    <widget class="QMenu" name="menu_Edit">
@@ -316,15 +306,10 @@
     <addaction name="designActionPreview"/>
     <addaction name="designActionRender"/>
     <addaction name="separator"/>
+    <addaction name="designCheckValidity"/>
     <addaction name="designActionDisplayAST"/>
     <addaction name="designActionDisplayCSGTree"/>
     <addaction name="designActionDisplayCSGProducts"/>
-    <addaction name="separator"/>
-    <addaction name="designActionExportSTL"/>
-    <addaction name="designActionExportOFF"/>
-    <addaction name="designActionExportDXF"/>
-    <addaction name="designActionExportCSG"/>
-    <addaction name="designActionExportImage"/>
     <addaction name="separator"/>
     <addaction name="designActionFlushCaches"/>
    </widget>
@@ -351,6 +336,9 @@
     <addaction name="viewActionDiagonal"/>
     <addaction name="viewActionCenter"/>
     <addaction name="separator"/>
+    <addaction name="viewActionZoomIn"/>
+    <addaction name="viewActionZoomOut"/>
+    <addaction name="separator"/>
     <addaction name="viewActionResetView"/>
     <addaction name="separator"/>
     <addaction name="viewActionPerspective"/>
@@ -372,8 +360,8 @@
    </widget>
    <addaction name="menu_File"/>
    <addaction name="menu_Edit"/>
-   <addaction name="menu_View"/>
    <addaction name="menu_Design"/>
+   <addaction name="menu_View"/>
    <addaction name="menuHelp"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
@@ -556,6 +544,11 @@
    </property>
    <property name="shortcut">
     <string>F6</string>
+   </property>
+  </action>
+  <action name="designCheckValidity">
+   <property name="text">
+    <string>Check Validity</string>
    </property>
   </action>
   <action name="designActionDisplayAST">
@@ -886,6 +879,32 @@
   <action name="helpActionFontInfo">
    <property name="text">
     <string>Font List</string>
+   </property>
+  </action>
+  <action name="designActionExportSVG">
+   <property name="text">
+    <string>Export as SVG...</string>
+   </property>
+  </action>
+  <action name="designActionExportAMF">
+   <property name="text">
+    <string>Export as AMF...</string>
+   </property>
+  </action>
+  <action name="viewActionZoomIn">
+   <property name="text">
+    <string>Zoom In</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+]</string>
+   </property>
+  </action>
+  <action name="viewActionZoomOut">
+   <property name="text">
+    <string>Zoom Out</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+[</string>
    </property>
   </action>
  </widget>

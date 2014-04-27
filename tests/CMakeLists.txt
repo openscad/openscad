@@ -59,6 +59,7 @@ if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE RelWithDebInfo)
   endif()
 endif()
+message(STATUS "CMAKE_BUILD_TYPE: ${CMAKE_BUILD_TYPE}")
 
 if(CMAKE_COMPILER_IS_GNUCXX)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-strict-aliasing")
@@ -124,8 +125,10 @@ if(WIN32 AND MSVC)
   # you have to pass -DCMAKE_VERBOSE_MAKEFILE=ON to cmake when you run it. 
 endif()
 
-if(WIN32 AND CMAKE_COMPILER_IS_GNUCXX)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fpermissive -frounding-math")
+if(CMAKE_COMPILER_IS_GNUCXX)
+  if (WIN32 OR ${CMAKE_SYSTEM_NAME} MATCHES "NetBSD")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fpermissive -frounding-math")
+  endif()
 endif()
 
 # Clang compiler
@@ -248,7 +251,7 @@ if (NOT EIGEN_INCLUDE_DIR)
 endif()
 
 if (NOT EIGEN_INCLUDE_DIR)
-  if (${CMAKE_SYSTEM_NAME} MATCHES "FreeBSD")
+  if (${CMAKE_SYSTEM_NAME} MATCHES "^FreeBSD")
     find_path(EIGEN_INCLUDE_DIR Eigen/Core HINTS /usr/local/include/eigen3)
   elseif (${CMAKE_SYSTEM_NAME} MATCHES "NetBSD")
     find_path(EIGEN_INCLUDE_DIR Eigen/Core HINTS /usr/pkg/include/eigen3)
@@ -347,7 +350,7 @@ endif() ########## NULLGL ENDIF
 # Flex/Bison
 find_package(BISON REQUIRED)
 
-if(${CMAKE_SYSTEM_NAME} MATCHES "FreeBSD")
+if(${CMAKE_SYSTEM_NAME} MATCHES "^FreeBSD")
   # FreeBSD has an old flex in /usr/bin and a new flex in /usr/local/bin
   set(FLEX_EXECUTABLE /usr/local/bin/flex)
 endif()
@@ -406,6 +409,7 @@ if("${CGAL_MAJOR_VERSION}.${CGAL_MINOR_VERSION}" VERSION_LESS 3.6)
   message(FATAL_ERROR "CGAL >= 3.6 required")
 endif()
 inclusion(CGAL_DIR CGAL_INCLUDE_DIRS)
+
 #Remove bad BOOST libraries from CGAL 3rd party dependencies when they don't exist (such as on 64-bit Ubuntu 13.10).
 #Libs of concern are /usr/lib/libboost_thread.so;/usr/lib/libboost_system.so;
 #Confirmed bug in CGAL @ https://bugs.launchpad.net/ubuntu/+source/cgal/+bug/1242111
@@ -424,17 +428,26 @@ if(NOT "-1" STREQUAL ${FIND_POSITION} )
   endif()
 endif() 
 
+if (${CMAKE_SYSTEM_NAME} MATCHES "NetBSD")
+  foreach(CGAL3RDPLIB ${CGAL_3RD_PARTY_LIBRARIES})
+    if(NOT EXISTS "${CGAL3RDPLIB}")
+      MESSAGE( STATUS " Removing non-existent ${CGAL3RDPLIB}" )
+      string(REPLACE "${CGAL3RDPLIB}" "" CGAL_3RD_PARTY_LIBRARIES ${CGAL_3RD_PARTY_LIBRARIES})
+    endif()
+  endforeach()
+endif()
+
+MESSAGE(STATUS "CGAL 3RD PARTY LIBS:")
+foreach(CGAL3RDPLIB ${CGAL_3RD_PARTY_LIBRARIES})
+  MESSAGE(STATUS " ${CGAL3RDPLIB}" )
+endforeach()
+
 if(${CMAKE_CXX_COMPILER} MATCHES ".*clang.*" AND NOT ${CGAL_CXX_FLAGS_INIT} STREQUAL "" )
 	string(REPLACE "-frounding-math" "" CGAL_CXX_FLAGS_INIT ${CGAL_CXX_FLAGS_INIT})
 	string(REPLACE "--param=ssp-buffer-size=4" "" CGAL_CXX_FLAGS_INIT ${CGAL_CXX_FLAGS_INIT})
 endif()
 
-if (NOT $ENV{OPENSCAD_LIBRARIES} STREQUAL "")
-  # Force pkg-config to look _only_ in the local library folder
-  # in case OPENSCAD_LIBRARIES is set.
-  set(ENV{PKG_CONFIG_PATH} "$ENV{OPENSCAD_LIBRARIES}/lib/pkgconfig")
-  set(ENV{PKG_CONFIG_LIBDIR} "$ENV{OPENSCAD_LIBRARIES}/lib/pkgconfig")
-endif()
+# GLib2
 
 find_package(GLIB2 2.2.0 REQUIRED)
 add_definitions(${GLIB2_DEFINITIONS})
@@ -459,9 +472,8 @@ add_definitions(${HARFBUZZ_CFLAGS})
 # Imagemagick
 
 if (SKIP_IMAGEMAGICK)
-  if (NOT MINGW_CROSS_ENV_DIR)
-    set(ImageMagick_convert_EXECUTABLE "echo")
-  endif()
+  # cross-building depends on this
+  set(ImageMagick_convert_EXECUTABLE "/bin/echo")
 else()
   find_package(ImageMagick COMPONENTS convert)
   if (ImageMagick_convert_FOUND)
@@ -515,7 +527,7 @@ if (DEFINED OPENSCAD_DAY)
   add_definitions(-DOPENSCAD_DAY=${OPENSCAD_DAY})
 endif()
 
-add_definitions(-DOPENSCAD_TESTING)
+add_definitions(-DOPENSCAD_TESTING -DENABLE_EXPERIMENTAL)
 
 # Search for MCAD in correct place
 set(CTEST_ENVIRONMENT "${CTEST_ENVIRONMENT};OPENSCADPATH=${CMAKE_CURRENT_SOURCE_DIR}/../libraries")
@@ -574,6 +586,7 @@ set(CORE_SOURCES
   ../src/rendersettings.cc 
   ../src/dxfdata.cc 
   ../src/dxfdim.cc 
+  ../src/offset.cc 
   ../src/linearextrude.cc 
   ../src/rotateextrude.cc 
   ../src/text.cc 
@@ -584,6 +597,9 @@ set(CORE_SOURCES
   ../src/FontCache.cc
   ../src/DrawingCallback.cc
   ../src/FreetypeRenderer.cc
+  ../src/PlatformUtils.cc 
+  ../src/lodepng.cpp
+  ../src/${PLATFORMUTILS_SOURCE}
   ${FLEX_OpenSCADlexer_OUTPUTS}
   ${BISON_OpenSCADparser_OUTPUTS})
 
@@ -610,8 +626,7 @@ set(COMMON_SOURCES
   ../src/GeometryCache.cc 
   ../src/clipper-utils.cc 
   ../src/polyclipping/clipper.cpp
-  ../src/Tree.cc
-  ../src/lodepng.cpp)
+  ../src/Tree.cc)
 
 #
 # Offscreen OpenGL context source code
@@ -630,8 +645,6 @@ set(OFFSCREEN_SOURCES
   ../src/ThrownTogetherRenderer.cc
   ../src/renderer.cc
   ../src/render.cc
-  ../src/PlatformUtils.cc 
-  ../src/${PLATFORMUTILS_SOURCE}
   ../src/OpenCSGRenderer.cc)
 
 if(NULLGL)
@@ -651,7 +664,7 @@ endif()
 
 add_library(tests-core STATIC ${CORE_SOURCES})
 target_link_libraries(tests-core ${OPENGL_LIBRARIES} ${GLIB2_LIBRARIES} )
-set(TESTS-CORE-LIBRARIES ${OPENGL_LIBRARIES} ${GLIB2_LIBRARIES} ${Boost_LIBRARIES} )
+set(TESTS-CORE-LIBRARIES ${OPENGL_LIBRARIES} ${GLIB2_LIBRARIES} ${Boost_LIBRARIES} ${COCOA_LIBRARY})
 
 add_library(tests-common STATIC ${COMMON_SOURCES})
 target_link_libraries(tests-common tests-core)
@@ -838,16 +851,12 @@ function(add_cmdline_test TESTCMD_BASENAME)
       set(CONFARG CONFIGURATIONS)
       set(CONFVAL ${FOUNDCONFIGS})
 
-      if (MINGW_CROSS_ENV_DIR)
-        set( MINGW_CROSS_ARG "--mingw-cross-env" )
-      endif()
-
       # The python script cannot extract the testname when given extra parameters
       if (TESTCMD_ARGS)
         set(FILENAME_OPTION -f ${FILE_BASENAME})
       endif()
 
-      add_test(NAME ${TEST_FULLNAME} ${CONFARG} ${CONFVAL} COMMAND ${PYTHON_EXECUTABLE} ${tests_SOURCE_DIR}/test_cmdline_tool.py ${MINGW_CROSS_ARG} --comparator=${COMPARATOR} -c ${ImageMagick_convert_EXECUTABLE} -s ${TESTCMD_SUFFIX} ${EXTRA_OPTIONS} ${TESTNAME_OPTION} ${FILENAME_OPTION} ${TESTCMD_EXE} "${SCADFILE}" ${TESTCMD_ARGS})
+      add_test(NAME ${TEST_FULLNAME} ${CONFARG} ${CONFVAL} COMMAND ${PYTHON_EXECUTABLE} ${tests_SOURCE_DIR}/test_cmdline_tool.py --comparator=${COMPARATOR} -c ${ImageMagick_convert_EXECUTABLE} -s ${TESTCMD_SUFFIX} ${EXTRA_OPTIONS} ${TESTNAME_OPTION} ${FILENAME_OPTION} ${TESTCMD_EXE} "${SCADFILE}" ${TESTCMD_ARGS})
       set_property(TEST ${TEST_FULLNAME} PROPERTY ENVIRONMENT "${CTEST_ENVIRONMENT}")
     endif()
   endforeach()
@@ -896,7 +905,8 @@ list(APPEND ECHO_FILES ${FUNCTION_FILES}
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/expression-shortcircuit-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/parent_module-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/children-tests.scad
-            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/range-tests.scad)
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/range-tests.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/empty-stl.scad)
 
 list(APPEND DUMPTEST_FILES ${FEATURES_FILES} ${EXAMPLE_FILES})
 list(APPEND DUMPTEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/escape-test.scad
@@ -971,7 +981,9 @@ list(APPEND BUGS_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue495.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue585.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue591.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue593.scad
-                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue612.scad)
+                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue612.scad
+                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue112.scad
+                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue666.scad)
 
 list(APPEND OPENCSGTEST_FILES ${BUGS_FILES})
 list(APPEND CGALPNGTEST_FILES ${BUGS_FILES})
@@ -1017,10 +1029,10 @@ file(TO_NATIVE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/test_pretty_print.py PYSRC)
 set_target_properties(test_pretty_print PROPERTIES COMPILE_FLAGS
   "-DPYBIN=${PYTHON_EXECUTABLE} -DPYSRC=${PYSRC} -DBUILDDIR=--builddir=${CMAKE_CURRENT_BINARY_DIR}"
 )
-if (MINGW_CROSS_ENV_DIR)
-  file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/test_pretty_print "wine test_pretty_print.exe")
-  execute_process(COMMAND chmod ugo+x ${CMAKE_CURRENT_BINARY_DIR}/test_pretty_print)
-endif()
+#if (MINGW_CROSS_ENV_DIR)
+#  file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/test_pretty_print "test_pretty_print.exe")
+#  execute_process(COMMAND chmod ugo+x ${CMAKE_CURRENT_BINARY_DIR}/test_pretty_print)
+#endif()
 
 file(READ ${CMAKE_CURRENT_SOURCE_DIR}/CTestCustom.template TMP)
 string(REPLACE __cmake_current_binary_dir__ ${CMAKE_CURRENT_BINARY_DIR} TMP ${TMP})
@@ -1031,18 +1043,11 @@ string(REPLACE __cmake_system_name__ ${CMAKE_SYSTEM_NAME} TMP ${TMP})
 string(REPLACE __openscad_binpath__ ${OPENSCAD_BINPATH} TMP ${TMP})
 
 set(OPENSCAD_UPLOAD_TESTS $ENV{OPENSCAD_UPLOAD_TESTS})
+set(UPLOADARG "")
 if (OPENSCAD_UPLOAD_TESTS)
   set(UPLOADARG "--upload")
 endif()
-if (UPLOADARG)
-  string(REPLACE __openscad_upload_tests__ ${UPLOADARG} TMP ${TMP})
-endif()
-
-if (MINGW_CROSS_ENV_DIR)
-  string(REPLACE __wine__ wine TMP ${TMP})
-else()
-  string(REPLACE __wine__ " " TMP ${TMP})
-endif()
+string(REPLACE __openscad_upload_tests__ "${UPLOADARG}" TMP ${TMP})
 
 message(STATUS "creating CTestCustom.cmake")
 file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/CTestCustom.cmake ${TMP})
@@ -1093,7 +1098,18 @@ add_cmdline_test(openscad-nonascii EXE ${OPENSCAD_BINPATH} ARGS -o
                  FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/sfære.scad)
 
 
-# Image output
+# Variable override (-D arg)
+
+# FIXME - this breaks on older cmake that is very common 'in the wild' on linux
+# Override simple variable
+if("${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}.${CMAKE_PATCH_VERSION}" VERSION_GREATER 2.8.10)
+add_cmdline_test(openscad-override EXE ${OPENSCAD_BINPATH}
+                 ARGS -D a=3$<SEMICOLON> -o
+                 SUFFIX echo
+                 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/override.scad)
+endif()
+
+# Image output parameters
 add_cmdline_test(openscad-imgsize EXE ${OPENSCAD_BINPATH}
                  ARGS --imgsize 100,100 -o 
                  SUFFIX png 

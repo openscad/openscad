@@ -54,7 +54,7 @@ AbstractNode *LinearExtrudeModule::instantiate(const Context *ctx, const ModuleI
 	LinearExtrudeNode *node = new LinearExtrudeNode(inst);
 
 	AssignmentList args;
-	args += Assignment("file", NULL), Assignment("layer", NULL), Assignment("height", NULL), Assignment("origin", NULL), Assignment("scale", NULL), Assignment("center", NULL), Assignment("twist", NULL), Assignment("slices", NULL);
+	args += Assignment("file"), Assignment("layer"), Assignment("height"), Assignment("origin"), Assignment("scale"), Assignment("center"), Assignment("twist"), Assignment("slices");
 
 	Context c(ctx);
 	c.setVariables(args, evalctx);
@@ -74,7 +74,7 @@ AbstractNode *LinearExtrudeModule::instantiate(const Context *ctx, const ModuleI
 	Value slices = c.lookup_variable("slices", true);
 
 	if (!file.isUndefined() && file.type() == Value::STRING) {
-		PRINT("DEPRECATED: Support for reading files in linear_extrude will be removed in future releases. Use a child import() instead.");
+		printDeprecation("DEPRECATED: Support for reading files in linear_extrude will be removed in future releases. Use a child import() instead.");
 		node->filename = lookup_file(file.toString(), inst->path(), c.documentPath());
 	}
 

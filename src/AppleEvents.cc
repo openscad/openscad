@@ -24,7 +24,7 @@ void installAppleEventHandlers()
 {
 	// Reload handler
   OSErr err = AEInstallEventHandler('SCAD', 'relo', NewAEEventHandlerUPP(eventHandler), 0, true);
-  require_noerr(err, CantInstallAppleEventHandler);
+  __Require_noErr(err, CantInstallAppleEventHandler);
 	return;
 
 CantInstallAppleEventHandler:

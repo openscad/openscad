@@ -67,8 +67,8 @@ public:
 AbstractNode *ImportModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const
 {
 	AssignmentList args;
-	args += Assignment("file", NULL), Assignment("layer", NULL), Assignment("convexity", NULL), Assignment("origin", NULL), Assignment("scale", NULL);
-	args += Assignment("filename",NULL), Assignment("layername", NULL);
+	args += Assignment("file"), Assignment("layer"), Assignment("convexity"), Assignment("origin"), Assignment("scale");
+	args += Assignment("filename"), Assignment("layername");
 
   // FIXME: This is broken. Tag as deprecated and fix
 	// Map old argnames to new argnames for compatibility
@@ -95,7 +95,7 @@ AbstractNode *ImportModule::instantiate(const Context *ctx, const ModuleInstanti
 	if (v.isUndefined()) {
 		v = c.lookup_variable("filename");
 		if (!v.isUndefined()) {
-			PRINT("DEPRECATED: filename= is deprecated. Please use file=");
+			printDeprecation("DEPRECATED: filename= is deprecated. Please use file=");
 		}
 	}
 	std::string filename = lookup_file(v.isUndefined() ? "" : v.toString(), inst->path(), ctx->documentPath());
@@ -119,7 +119,7 @@ AbstractNode *ImportModule::instantiate(const Context *ctx, const ModuleInstanti
 	if (layerval.isUndefined()) {
 		layerval = c.lookup_variable("layername");
 		if (!layerval.isUndefined()) {
-			PRINT("DEPRECATED: layername= is deprecated. Please use layer=");
+			printDeprecation("DEPRECATED: layername= is deprecated. Please use layer=");
 		}
 	}
 	node->layername = layerval.isUndefined() ? ""  : layerval.toString();
@@ -210,7 +210,7 @@ Geometry *ImportNode::createGeometry() const
 		bool binary = false;
 		std::streampos file_size = f.tellg();
 		f.seekg(80);
-		if (!f.eof()) {
+		if (f.good() && !f.eof()) {
 			uint32_t facenum = 0;
 			f.read((char *)&facenum, sizeof(uint32_t));
 #ifdef BOOST_BIG_ENDIAN
@@ -224,13 +224,12 @@ Geometry *ImportNode::createGeometry() const
 
 		char data[5];
 		f.read(data, 5);
-		if (!binary && !f.eof() && !memcmp(data, "solid", 5)) {
+		if (!binary && !f.eof() && f.good() && !memcmp(data, "solid", 5)) {
 			int i = 0;
 			double vdata[3][3];
 			std::string line;
 			std::getline(f, line);
 			while (!f.eof()) {
-				
 				std::getline(f, line);
 				boost::trim(line);
 				if (boost::regex_search(line, ex_sfe)) {
@@ -261,7 +260,7 @@ Geometry *ImportNode::createGeometry() const
 				}
 			}
 		}
-		else
+		else if (binary && !f.eof() && f.good())
 		{
 			f.ignore(80-5+4);
 			while (1) {
@@ -288,7 +287,6 @@ Geometry *ImportNode::createGeometry() const
 		else {
 			file >> poly;
 			file.close();
-			
 			bool err = createPolySetFromPolyhedron(poly, *p);
 		}
 #else

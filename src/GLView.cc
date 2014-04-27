@@ -363,6 +363,7 @@ void GLView::showSmallaxes()
 {
   // Fixme - this doesnt work in Vector Camera mode
 
+	float dpi = this->getDPI();
   // Small axis cross in the lower left corner
   glDepthFunc(GL_ALWAYS);
 
@@ -374,14 +375,14 @@ void GLView::showSmallaxes()
   glRotated(cam.object_rot.y(), 0.0, 1.0, 0.0);
   glRotated(cam.object_rot.z(), 0.0, 0.0, 1.0);
 
-  glLineWidth(1);
+  glLineWidth(dpi);
   glBegin(GL_LINES);
   glColor3d(1.0, 0.0, 0.0);
-  glVertex3d(0, 0, 0); glVertex3d(10, 0, 0);
+  glVertex3d(0, 0, 0); glVertex3d(10*dpi, 0, 0);
   glColor3d(0.0, 1.0, 0.0);
-  glVertex3d(0, 0, 0); glVertex3d(0, 10, 0);
+  glVertex3d(0, 0, 0); glVertex3d(0, 10*dpi, 0);
   glColor3d(0.0, 0.0, 1.0);
-  glVertex3d(0, 0, 0); glVertex3d(0, 0, 10);
+  glVertex3d(0, 0, 0); glVertex3d(0, 0, 10*dpi);
   glEnd();
 
   GLdouble mat_model[16];
@@ -394,15 +395,15 @@ void GLView::showSmallaxes()
   glGetIntegerv(GL_VIEWPORT, viewport);
 
   GLdouble xlabel_x, xlabel_y, xlabel_z;
-  gluProject(12, 0, 0, mat_model, mat_proj, viewport, &xlabel_x, &xlabel_y, &xlabel_z);
+  gluProject(12*dpi, 0, 0, mat_model, mat_proj, viewport, &xlabel_x, &xlabel_y, &xlabel_z);
   xlabel_x = round(xlabel_x); xlabel_y = round(xlabel_y);
 
   GLdouble ylabel_x, ylabel_y, ylabel_z;
-  gluProject(0, 12, 0, mat_model, mat_proj, viewport, &ylabel_x, &ylabel_y, &ylabel_z);
+  gluProject(0, 12*dpi, 0, mat_model, mat_proj, viewport, &ylabel_x, &ylabel_y, &ylabel_z);
   ylabel_x = round(ylabel_x); ylabel_y = round(ylabel_y);
 
   GLdouble zlabel_x, zlabel_y, zlabel_z;
-  gluProject(0, 0, 12, mat_model, mat_proj, viewport, &zlabel_x, &zlabel_y, &zlabel_z);
+  gluProject(0, 0, 12*dpi, mat_model, mat_proj, viewport, &zlabel_x, &zlabel_y, &zlabel_z);
   zlabel_x = round(zlabel_x); zlabel_y = round(zlabel_y);
 
   glMatrixMode(GL_PROJECTION);
@@ -419,18 +420,19 @@ void GLView::showSmallaxes()
   //    r=g=b=0;
   //    bgcol.getRgb(&r, &g, &b);
   //    glColor3f((255.0f-r)/255.0f, (255.0f-g)/255.0f, (255.0f-b)/255.0f);
+	float d = 3*dpi;
   glColor3f(0.0f, 0.0f, 0.0f);
   glBegin(GL_LINES);
   // X Label
-  glVertex3d(xlabel_x-3, xlabel_y-3, 0); glVertex3d(xlabel_x+3, xlabel_y+3, 0);
-  glVertex3d(xlabel_x-3, xlabel_y+3, 0); glVertex3d(xlabel_x+3, xlabel_y-3, 0);
+  glVertex3d(xlabel_x-d, xlabel_y-d, 0); glVertex3d(xlabel_x+d, xlabel_y+d, 0);
+  glVertex3d(xlabel_x-d, xlabel_y+d, 0); glVertex3d(xlabel_x+d, xlabel_y-d, 0);
   // Y Label
-  glVertex3d(ylabel_x-3, ylabel_y-3, 0); glVertex3d(ylabel_x+3, ylabel_y+3, 0);
-  glVertex3d(ylabel_x-3, ylabel_y+3, 0); glVertex3d(ylabel_x, ylabel_y, 0);
+  glVertex3d(ylabel_x-d, ylabel_y-d, 0); glVertex3d(ylabel_x+d, ylabel_y+d, 0);
+  glVertex3d(ylabel_x-d, ylabel_y+d, 0); glVertex3d(ylabel_x, ylabel_y, 0);
   // Z Label
-  glVertex3d(zlabel_x-3, zlabel_y-3, 0); glVertex3d(zlabel_x+3, zlabel_y-3, 0);
-  glVertex3d(zlabel_x-3, zlabel_y+3, 0); glVertex3d(zlabel_x+3, zlabel_y+3, 0);
-  glVertex3d(zlabel_x-3, zlabel_y-3, 0); glVertex3d(zlabel_x+3, zlabel_y+3, 0);
+  glVertex3d(zlabel_x-d, zlabel_y-d, 0); glVertex3d(zlabel_x+d, zlabel_y-d, 0);
+  glVertex3d(zlabel_x-d, zlabel_y+d, 0); glVertex3d(zlabel_x+d, zlabel_y+d, 0);
+  glVertex3d(zlabel_x-d, zlabel_y-d, 0); glVertex3d(zlabel_x+d, zlabel_y+d, 0);
   // FIXME - depends on gimbal camera 'viewer distance'.. how to fix this
   //         for VectorCamera?
   glEnd();
@@ -445,10 +447,11 @@ void GLView::showAxes()
   // FIXME: doesn't work under Vector Camera
   // Large gray axis cross inline with the model
   // FIXME: This is always gray - adjust color to keep contrast with background
-  glLineWidth(1);
+	float dpi = this->getDPI();
+  glLineWidth(1*dpi);
   glColor3d(0.5, 0.5, 0.5);
   glBegin(GL_LINES);
-  double l = cam.viewer_distance/10;
+  double l = cam.viewer_distance*dpi/10;
   glVertex3d(-l, 0, 0);
   glVertex3d(+l, 0, 0);
   glVertex3d(0, -l, 0);

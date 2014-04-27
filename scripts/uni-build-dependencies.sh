@@ -32,11 +32,13 @@
 # If your system lacks qt4, build like this:
 #
 #   ./scripts/uni-build-dependencies.sh qt4
-#   . ./scripts/setenv-unibuild.sh
+#   . ./scripts/setenv-unibuild.sh #(Rerun to re-detect qt4)
 #
-# If your system lacks glu, try to build like this:
+# If your system lacks glu, gettext, or glib2, you can build them as well:
 #
 #   ./scripts/uni-build-dependencies.sh glu
+#   ./scripts/uni-build-dependencies.sh glib2
+#   ./scripts/uni-build-dependencies.sh gettext
 #
 # If you want to try Clang compiler (experimental, only works on linux):
 #
@@ -528,6 +530,101 @@ build_eigen()
 }
 
 
+# glib2 and dependencies
+
+build_gettext()
+{
+  version=$1
+  echo "Building gettext $version..."
+
+  cd "$BASEDIR"/src
+  rm -rf "gettext-$version"
+  if [ ! -f "glib-$version.tar.gz" ]; then
+    curl --insecure -LO "http://ftpmirror.gnu.org/gettext/gettext-$version.tar.gz"
+  fi
+  tar xzf "gettext-$version.tar.gz"
+  cd "gettext-$version"
+
+  ./configure --prefix="$DEPLOYDIR"
+  make -j$NUMCPU
+  make install
+}
+
+build_pkgconfig()
+{
+  if [ "`command -v pkg-config`" ]; then
+    echo "pkg-config already installed. not building"
+    return
+  fi
+  version=$1
+  echo "Building pkg-config $version..."
+
+  cd "$BASEDIR"/src
+  rm -rf "pkg-config-$version"
+  if [ ! -f "pkg-config-$version.tar.gz" ]; then
+    curl --insecure -LO "http://pkgconfig.freedesktop.org/releases/pkg-config-$version.tar.gz"
+  fi
+  tar xzf "pkg-config-$version.tar.gz"
+  cd "pkg-config-$version"
+
+  ./configure --prefix="$DEPLOYDIR" --with-internal-glib
+  make -j$NUMCPU
+  make install
+}
+
+build_libffi()
+{
+  if [ -e $DEPLOYDIR/include/ffi.h ]; then
+    echo "libffi already installed. not building"
+    return
+  fi
+  version=$1
+  echo "Building libffi $version..."
+
+  cd "$BASEDIR"/src
+  rm -rf "libffi-$version"
+  if [ ! -f "libffi-$version.tar.gz" ]; then
+    curl --insecure -LO "ftp://sourceware.org/pub/libffi/libffi-$version.tar.gz"
+    curl --insecure -LO "http://www.linuxfromscratch.org/patches/blfs/svn/libffi-$version-includedir-1.patch"
+  fi
+  tar xzf "libffi-$version.tar.gz"
+  cd "libffi-$version"
+  if [ ! "`command -v patch`" ]; then
+    echo cannot proceed, need 'patch' program
+    exit 1
+  fi
+  patch -Np1 -i ../libffi-3.0.13-includedir-1.patch
+  ./configure --prefix="$DEPLOYDIR"
+  make -j$NUMCPU
+  make install
+}
+
+build_glib2()
+{
+  version="$1"
+  maj_min_version="${version%.*}" #Drop micro
+
+  if [ -e $DEPLOYDIR/lib/glib-2.0 ]; then
+    echo "glib2 already installed. not building"
+    return
+  fi
+
+  echo "Building glib2 $version..."
+  cd "$BASEDIR"/src
+  rm -rf "glib-$version"
+  if [ ! -f "glib-$version.tar.xz" ]; then
+    curl --insecure -LO "http://ftp.gnome.org/pub/gnome/sources/glib/$maj_min_version/glib-$version.tar.xz"
+  fi
+  tar xJf "glib-$version.tar.xz"
+  cd "glib-$version"
+
+  ./configure --disable-gtk-doc --disable-man --prefix="$DEPLOYDIR" CFLAGS="-I$DEPLOYDIR/include" LDFLAGS="-L$DEPLOYDIR/lib"
+  make -j$NUMCPU
+  make install
+}
+
+## end of glib2 stuff
+
 # this section allows 'out of tree' builds, as long as the system has
 # the 'dirname' command installed
 
@@ -582,7 +679,8 @@ fi
 if [ ! "`command -v cmake`" ]; then
   build_cmake 2.8.8
 fi
-if [ "`cmake --version | grep 'version 2.[1-6][^0-9]'`" ]; then
+# see README for needed version (this should match 1<minimum)
+if [ "`cmake --version | grep 'version 2.[1-8][^0-9][1-4] '`" ]; then
   build_cmake 2.8.8
 fi
 
@@ -610,6 +708,19 @@ if [ $1 ]; then
     build_glu 9.0.0
     exit $?
   fi
+  if [ $1 = "gettext" ]; then
+    # such a huge build, put here by itself
+    build_gettext 0.18.3.1
+    exit $?
+  fi
+  if [ $1 = "glib2" ]; then
+    # such a huge build, put here by itself
+    build_pkgconfig 0.28
+    build_libffi 3.0.13
+    #build_gettext 0.18.3.1
+    build_glib2 2.38.2
+    exit $?
+  fi
 fi
 
 
@@ -618,7 +729,11 @@ fi
 #
 # Main build of libraries
 # edit version numbers here as needed.
+# This is only for libraries most systems won't have new enough versions of.
+# For big things like Qt4, see the notes at the head of this file on
+# building individual dependencies.
 #
+
 build_eigen 3.1.1
 build_gmp 5.0.5
 build_mpfr 3.1.1

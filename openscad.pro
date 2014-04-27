@@ -13,6 +13,10 @@
 #
 # http://en.wikibooks.org/wiki/OpenSCAD_User_Manual
 
+!experimental {
+  message("If you're building a development binary, consider adding CONFIG+=experimental")
+}
+
 isEmpty(QT_VERSION) {
   error("Please use qmake for Qt 4 (probably qmake-qt4)")
 }
@@ -45,6 +49,7 @@ DEPENDPATH += src
 # Used when manually installing 3rd party libraries
 OPENSCAD_LIBDIR = $$(OPENSCAD_LIBRARIES)
 !isEmpty(OPENSCAD_LIBDIR) {
+  INCLUDEPATH += $$OPENSCAD_LIBDIR/include
   QMAKE_INCDIR_QT = $$OPENSCAD_LIBDIR/include $$QMAKE_INCDIR_QT 
   QMAKE_LIBDIR = $$OPENSCAD_LIBDIR/lib $$QMAKE_LIBDIR
 }
@@ -74,14 +79,6 @@ macx {
   APP_RESOURCES.files = OpenSCAD.sdef dsa_pub.pem icons/SCAD.icns
   QMAKE_BUNDLE_DATA += APP_RESOURCES
   LIBS += -framework Cocoa -framework ApplicationServices
-
-  # FIXME: Somehow, setting the deployment target to a lower version causes a
-  # seldom crash in debug mode (e.g. the minkowski2-test):
-  # frame #4: 0x00007fff8b7d5be5 libc++.1.dylib`std::runtime_error::~runtime_error() + 55
-  # frame #5: 0x0000000100150df5 OpenSCAD`CGAL::Uncertain_conversion_exception::~Uncertain_conversion_exception(this=0x0000000105044488) + 21 at Uncertain.h:78
-  # The reason for the crash appears to be linking with libgcc_s, 
-  # but it's unclear what's really going on
-  QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.6
 }
 else {
   TARGET = openscad
@@ -89,6 +86,7 @@ else {
 
 win* {
   RC_FILE = openscad_win32.rc
+  QTPLUGIN += qtaccessiblewidgets
 }
 
 CONFIG += qt
@@ -129,6 +127,7 @@ netbsd* {
 # See Dec 2011 OpenSCAD mailing list, re: CGAL/GCC bugs.
 *g++* {
   QMAKE_CXXFLAGS *= -fno-strict-aliasing
+  QMAKE_CXXFLAGS_WARN_ON += -Wno-unused-local-typedefs # ignored before 4.8
 }
 
 *clang* {
@@ -161,6 +160,11 @@ CONFIG += fontconfig
 
 #Uncomment the following line to enable QCodeEdit
 #CONFIG += qcodeedit
+
+# Make experimental features available
+experimental {
+  DEFINES += ENABLE_EXPERIMENTAL
+}
 
 mdi {
   DEFINES += ENABLE_MDI
@@ -227,6 +231,7 @@ HEADERS += src/typedefs.h \
            src/feature.h \
            src/node.h \
            src/csgnode.h \
+           src/offsetnode.h \
            src/linearextrudenode.h \
            src/rotateextrudenode.h \
            src/projectionnode.h \
@@ -315,6 +320,7 @@ SOURCES += src/version_check.cc \
            src/text.cc \
            src/dxfdata.cc \
            src/dxfdim.cc \
+           src/offset.cc \
            src/linearextrude.cc \
            src/rotateextrude.cc \
            src/printutils.cc \
@@ -437,6 +443,10 @@ INSTALLS += libraries
 applications.path = $$PREFIX/share/applications
 applications.files = icons/openscad.desktop
 INSTALLS += applications
+
+mimexml.path = $$PREFIX/share/mime/packages
+mimexml.files = icons/openscad.xml
+INSTALLS += mimexml
 
 appdata.path = $$PREFIX/share/appdata
 appdata.files = openscad.appdata.xml

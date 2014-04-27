@@ -10,6 +10,14 @@
 #include "memory.h"
 #include <vector>
 #include <QMutex>
+#include <QSet>
+
+enum export_type_e {
+	EXPORT_TYPE_UNKNOWN,
+	EXPORT_TYPE_STL,
+	EXPORT_TYPE_AMF,
+	EXPORT_TYPE_OFF
+};
 
 class MainWindow : public QMainWindow, public Ui::MainWindow
 {
@@ -19,7 +27,6 @@ public:
 	static void requestOpenFile(const QString &filename);
 
 	QString fileName;
-	class Highlighter *highlighter;
 
 	class Preferences *prefs;
 
@@ -70,7 +77,6 @@ private slots:
 	void updateTVal();
 	void setFileName(const QString &filename);
 	void setFont(const QString &family, uint size);
-	void setSyntaxHighlight(const QString &s);
 	void showProgress();
 	void openCSGSettingsChanged();
 
@@ -88,6 +94,9 @@ private:
 	static void consoleOutput(const std::string &msg, void *userdata);
 	void loadViewSettings();
 	void loadDesignSettings();
+	void saveBackup();
+	void writeBackup(class QFile *file);
+        QString get2dExportFilename(QString format, QString extension);
 
   class QMessageBox *openglbox;
   class FontListDialog *font_list_dialog;
@@ -138,18 +147,22 @@ private slots:
 	void actionRenderDone(shared_ptr<const class Geometry>);
 	void cgalRender();
 #endif
+	void actionCheckValidity();
 	void actionDisplayAST();
 	void actionDisplayCSGTree();
 	void actionDisplayCSGProducts();
-	void actionExportSTLorOFF(bool stl_mode);
+	void actionExport(export_type_e, const char *, const char *);
 	void actionExportSTL();
 	void actionExportOFF();
+	void actionExportAMF();
 	void actionExportDXF();
+	void actionExportSVG();
 	void actionExportCSG();
 	void actionExportImage();
 	void actionFlushCaches();
 
 public:
+	static QSet<MainWindow*> *windows;
 	static void setExamplesDir(const QString &dir) { MainWindow::qexamplesdir = dir; }
 	void viewModeActionsUncheck();
 	void setCurrentOutput();
@@ -179,7 +192,7 @@ public slots:
 	void viewCenter();
 	void viewPerspective();
 	void viewOrthogonal();
-        void viewResetView();
+	void viewResetView();
 	void hideConsole();
 	void animateUpdateDocChanged();
 	void animateUpdate();
@@ -200,10 +213,14 @@ private:
 
 	char const * afterCompileSlot;
 	bool procevents;
-	
+	class QTemporaryFile *tempFile;
 	class ProgressWidget *progresswidget;
 	class CGALWorker *cgalworker;
 	QMutex consolemutex;
+
+signals:
+	void highlightError(int);
+	void unhighlightLastError();
 };
 
 class GuiLocker

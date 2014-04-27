@@ -2,7 +2,7 @@
 module step(len, mod)
 {
 	for (i = [0:$children-1])
-		translate([ len*(i - ($children-1)/2), 0, 0 ]) child((i+mod) % $children);
+		translate([ len*(i - ($children-1)/2), 0, 0 ]) children((i+mod) % $children);
 }
 
 for (i = [1:4])

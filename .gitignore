@@ -22,3 +22,5 @@ testdata/scad/features/import_dxf-tests.scad
 testdata/scad/features/import_stl-tests.scad
 testdata/scad/misc/include-tests.scad
 testdata/scad/misc/use-tests.scad
+/mingw32
+/mingw64
