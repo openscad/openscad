@@ -110,45 +110,12 @@ setenv_netbsd_clang()
 
 clean_note()
 {
- if [ $QT5_SETUP ]; then
-  QMAKEBIN=qmake
- elif [ "`command -v qmake-qt4`" ]; then
+ if [ "`command -v qmake-qt4`" ]; then
   QMAKEBIN=qmake-qt4
  else
   QMAKEBIN=qmake
  fi
  echo "Please re-run" $QMAKEBIN "and run 'make clean' if necessary"
-}
-
-setenv_qt5()
-{
- QT5_SETUP=true
- if [ ! $QTDIR ]; then
-  QTDIR=/opt/qt5
-  echo Please set QTDIR before running this qt5 script. Assuming $QTDIR
- fi
- PATH=$QTDIR/bin:$PATH
- LD_LIBRARY_PATH=$QTDIR/lib:$LD_LIBRARY_PATH
- LD_RUN_PATH=$QTDIR/lib:$LD_RUN_PATH
- if [ "`echo $CC | grep clang`" ]; then
-  if [ "`uname | grep -i linux`" ]; then
-   QMAKESPEC=linux-clang
-   echo QMAKESPEC has been modified: $QMAKESPEC
-  fi
- fi
-
- export QTDIR
- export PATH
- export LD_LIBRARY_PATH
- export LD_RUN_PATH
- export QMAKESPEC
-
- echo QTDIR is set to: $QTDIR
- echo PATH has been modified with $QTDIR/bin
- echo LD_LIBRARY_PATH has been modified with $QTDIR/lib
- echo LD_RUN_PATH has been modified with $QTDIR/lib
-
- export QT5_SETUP
 }
 
 if [ "`uname | grep -i 'linux\|debian'`" ]; then
@@ -170,10 +137,6 @@ else
  # guess
  setenv_common
  echo unknown system. guessed env variables. see 'setenv-unibuild.sh'
-fi
-
-if [ "`echo $* | grep qt5`" ]; then
- setenv_qt5
 fi
 
 if [ -e $DEPLOYDIR/include/Qt ]; then
