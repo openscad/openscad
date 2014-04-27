@@ -49,7 +49,7 @@ AbstractNode *TextModule::instantiate(const Context *ctx, const ModuleInstantiat
 	TextNode *node = new TextNode(inst);
 
 	AssignmentList args;
-	args += Assignment("t", NULL), Assignment("size", NULL), Assignment("font", NULL);
+	args += Assignment("t"), Assignment("size"), Assignment("font");
 
 	Context c(ctx);
 	c.setVariables(args, evalctx);
