@@ -175,6 +175,9 @@ echo "NUMCPU: " $NUMCPU
 case $OS in
     LINUX|MACOSX) 
         TARGET=
+        # for QT4 set QT_SELECT=4
+        QT_SELECT=5
+        export QT_SELECT
         ;;
     WIN) 
         export QTDIR=/c/devmingw/qt2009.03
