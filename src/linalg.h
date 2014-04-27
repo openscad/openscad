@@ -15,13 +15,8 @@ typedef Eigen::AlignedBox<double, 3> BoundingBox;
 using Eigen::Matrix3f;
 using Eigen::Matrix3d;
 using Eigen::Matrix4d;
-#if EIGEN_WORLD_VERSION >= 3
 #define Transform3d Eigen::Affine3d
 #define Transform2d Eigen::Affine2d
-#else
-using Eigen::Transform3d;
-using Eigen::Transform2d;
-#endif
 
 bool matrix_contains_infinity( const Transform3d &m );
 bool matrix_contains_nan( const Transform3d &m );
