@@ -1,5 +1,4 @@
-#ifndef GLVIEW_H_
-#define GLVIEW_H_
+#pragma once
 
 /* GLView: A basic OpenGL rectangle for rendering images.
 
@@ -79,5 +78,3 @@ public:
 	int opencsg_id;
 #endif
 };
-
-#endif

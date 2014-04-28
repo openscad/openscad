@@ -1,5 +1,4 @@
-#ifndef PLATFORMUTILS_H_
-#define PLATFORMUTILS_H_
+#pragma once
 
 #include <string>
 
@@ -21,5 +20,3 @@ namespace PlatformUtils {
          */
         std::string pathSeparatorChar();
 }
-
-#endif

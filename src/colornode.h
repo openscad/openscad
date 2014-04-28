@@ -1,5 +1,4 @@
-#ifndef COLORNODE_H_
-#define COLORNODE_H_
+#pragma once
 
 #include "node.h"
 #include "visitor.h"
@@ -17,5 +16,3 @@ public:
 
 	Color4f color;
 };
-
-#endif

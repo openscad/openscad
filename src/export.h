@@ -1,5 +1,4 @@
-#ifndef EXPORT_H_
-#define EXPORT_H_
+#pragma once
 
 #include <iostream>
 #include "Tree.h"
@@ -34,6 +33,4 @@ void export_png_with_throwntogether(Tree &tree, Camera &c, std::ostream &output)
 
 #ifdef DEBUG
 void export_stl(const class PolySet &ps, std::ostream &output);
-#endif
-
 #endif

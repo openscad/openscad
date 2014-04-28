@@ -1,5 +1,4 @@
-#ifndef GRID_H_
-#define GRID_H_
+#pragma once
 
 #include "mathc99.h"
 #ifdef WIN32
@@ -154,5 +153,3 @@ public:
 		return align(x, y, z);
 	}
 };
-
-#endif

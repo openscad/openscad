@@ -1,5 +1,4 @@
-#ifndef NODEDUMPER_H_
-#define NODEDUMPER_H_
+#pragma once
 
 #include <string>
 #include <map>
@@ -32,5 +31,3 @@ private:
   typedef std::list<const AbstractNode *> ChildList;
 	std::map<int, ChildList> visitedchildren;
 };
-
-#endif

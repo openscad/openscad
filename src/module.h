@@ -1,5 +1,4 @@
-#ifndef MODULE_H_
-#define MODULE_H_
+#pragma once
 
 #include <string>
 #include <vector>
@@ -127,5 +126,3 @@ private:
 	bool is_handling_dependencies;
 	std::string path;
 };
-
-#endif

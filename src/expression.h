@@ -1,5 +1,4 @@
-#ifndef EXPRESSION_H_
-#define EXPRESSION_H_
+#pragma once
 
 #include <string>
 #include <vector>
@@ -45,5 +44,3 @@ public:
 };
 
 std::ostream &operator<<(std::ostream &stream, const Expression &expr);
-
-#endif

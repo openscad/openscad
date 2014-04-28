@@ -1,5 +1,4 @@
-#ifndef COCOAUTILS_H_
-#define COCOAUTILS_H_
+#pragma once
 
 #include <string>
 
@@ -9,5 +8,3 @@ public:
 	static void endApplication();
   static void nslog(const std::string &str, void *userdata);
 };
-
-#endif

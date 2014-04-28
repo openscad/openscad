@@ -1,5 +1,4 @@
-#ifndef GEOMETRYEVALUATOR_H_
-#define GEOMETRYEVALUATOR_H_
+#pragma once
 
 #include "visitor.h"
 #include "enums.h"
@@ -73,6 +72,3 @@ private:
 
 public:
 };
-
-
-#endif

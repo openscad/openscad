@@ -1,5 +1,4 @@
-#ifndef LINALG_H_
-#define LINALG_H_
+#pragma once
 
 #include <Eigen/Core>
 #include <Eigen/Geometry>
@@ -39,5 +38,3 @@ public:
 
 	bool isValid() const { return this->minCoeff() >= 0.0f; }
 };
-
-#endif

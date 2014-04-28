@@ -1,5 +1,4 @@
-#ifndef FBO_H_
-#define FBO_H_
+#pragma once
 
 #include "system-gl.h"
 #include <stddef.h> // size_t
@@ -21,5 +20,3 @@ GLuint fbo_bind(fbo_t *fbo);
 void fbo_unbind(fbo_t *fbo);
 
 bool REPORTGLERROR(const char * task);
-
-#endif

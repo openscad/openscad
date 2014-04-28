@@ -1,5 +1,4 @@
-#ifndef PREFERENCES_H_
-#define PREFERENCES_H_
+#pragma once
 
 #include <QMainWindow>
 #include <QSettings>
@@ -58,5 +57,3 @@ private:
 	static Preferences *instance;
 	static const char *featurePropertyName;
 };
-
-#endif
