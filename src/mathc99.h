@@ -1,5 +1,4 @@
-#ifndef MATHC99_H_
-#define MATHC99_H_
+#pragma once
 
 #ifdef WIN32
 
@@ -13,7 +12,5 @@ float fmax(float a, float b);
 #else
 
 #include <math.h>
-
-#endif
 
 #endif

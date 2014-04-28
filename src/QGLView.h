@@ -1,5 +1,4 @@
-#ifndef QGLVIEW_H_
-#define QGLVIEW_H_
+#pragma once
 
 #include "system-gl.h"
 #include <QGLWidget>
@@ -79,5 +78,3 @@ private slots:
 signals:
 	void doAnimateUpdate();
 };
-
-#endif

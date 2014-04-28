@@ -1,5 +1,4 @@
-#ifndef RENDERSETTINGS_H_
-#define RENDERSETTINGS_H_
+#pragma once
 
 #include <map>
 #include "linalg.h"
@@ -33,5 +32,3 @@ private:
 
 	std::map<RenderColor, Color4f> colors;
 };
-
-#endif

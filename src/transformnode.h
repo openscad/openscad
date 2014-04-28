@@ -1,5 +1,4 @@
-#ifndef TRANSFORMNODE_H_
-#define TRANSFORMNODE_H_
+#pragma once
 
 #include "node.h"
 #include "visitor.h"
@@ -17,5 +16,3 @@ public:
 
 	Transform3d matrix;
 };
-
-#endif

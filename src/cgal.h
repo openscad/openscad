@@ -1,5 +1,4 @@
-#ifndef CGAL_H_
-#define CGAL_H_
+#pragma once
 
 #ifdef ENABLE_CGAL
 
@@ -75,5 +74,3 @@ typedef CGAL::Iso_rectangle_2<CGAL::Simple_cartesian<NT2> > CGAL_Iso_rectangle_2
 #endif
 
 #endif /* ENABLE_CGAL */
-
-#endif

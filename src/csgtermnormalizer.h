@@ -1,5 +1,4 @@
-#ifndef CSGTERMNORMALIZER_H_
-#define CSGTERMNORMALIZER_H_
+#pragma once
 
 #include "memory.h"
 
@@ -23,5 +22,3 @@ private:
 	size_t nodecount;
 	shared_ptr<class CSGTerm> rootnode;
 };
-
-#endif

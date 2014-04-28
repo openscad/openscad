@@ -1,5 +1,4 @@
-#ifndef CSGTERMEVALUATOR_H_
-#define CSGTERMEVALUATOR_H_
+#pragma once
 
 #include <map>
 #include <list>
@@ -46,5 +45,3 @@ public:
 	const Tree &tree;
 	class GeometryEvaluator *geomevaluator;
 };
-
-#endif

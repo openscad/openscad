@@ -1,5 +1,4 @@
-#ifndef CGALUTILS_H_
-#define CGALUTILS_H_
+#pragma once
 
 #include <cgal.h>
 #include "polyset.h"
@@ -69,6 +68,3 @@ public:
 	void visit( CGAL_Nef_polyhedron3::SFace_const_handle ) {}
 	void visit( CGAL_Nef_polyhedron3::Halffacet_const_handle hfacet );
 };
-
-
-#endif

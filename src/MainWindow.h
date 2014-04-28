@@ -1,5 +1,4 @@
-#ifndef MAINWINDOW_H_
-#define MAINWINDOW_H_
+#pragma once
 
 #include <QMainWindow>
 #include "ui_MainWindow.h"
@@ -237,5 +236,3 @@ public:
 private:
  	static unsigned int gui_locked;
 };
-
-#endif

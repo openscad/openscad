@@ -1,5 +1,4 @@
-#ifndef FILECONTEXT_H_
-#define FILECONTEXT_H_
+#pragma once
 
 #include "context.h"
 #include "module.h"
@@ -53,5 +52,3 @@ public:
 private:
 	const FileModule::ModuleContainer &usedlibs;
 };
-
-#endif

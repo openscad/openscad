@@ -42,8 +42,7 @@
 **
 ****************************************************************************/
 
-#ifndef CACHE_H
-#define CACHE_H
+#pragma once
 
 #include <boost/unordered_map.hpp>
 #include <boost/format.hpp>
@@ -183,6 +182,3 @@ void Cache<Key,T>::trim(int m)
 		unlink(*u);
 	}
 }
-
-#endif
-

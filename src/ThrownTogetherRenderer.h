@@ -1,5 +1,4 @@
-#ifndef THROWNTOGETHERRENDERER_H_
-#define THROWNTOGETHERRENDERER_H_
+#pragma once
 
 #include "renderer.h"
 
@@ -17,5 +16,3 @@ private:
 	CSGChain *highlights_chain;
 	CSGChain *background_chain;
 };
-
-#endif
