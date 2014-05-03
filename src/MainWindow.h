@@ -96,6 +96,7 @@ private:
 	void saveBackup();
 	void writeBackup(class QFile *file);
         QString get2dExportFilename(QString format, QString extension);
+	void show_examples();
 
   class QMessageBox *openglbox;
 
