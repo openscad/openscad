@@ -19,7 +19,7 @@ module shape()
 		rotate(-45) scale([ 0.7, 1.3 ]) circle(5);
 	}
 	
-	import(file = "example009.dxf", layer = "body",
+	import(file = "flat_body.dxf", layer = "body",
 			convexity = 6, scale=2);
 }
 
