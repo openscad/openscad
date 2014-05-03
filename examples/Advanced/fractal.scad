@@ -7,6 +7,8 @@ D=100;
 // Fractal depth (number of iterations)
 n=3;
 
+echo(version=version());
+
 module menger() {
   difference() {
     cube(D, center=true);

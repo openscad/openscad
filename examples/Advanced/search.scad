@@ -2,6 +2,8 @@
 
 use <MCAD/fonts.scad>
 
+echo(version=version());
+
 thisFont=8bit_polyfont();
 x_shift=thisFont[0][0];
 y_shift=thisFont[0][1];

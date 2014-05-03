@@ -1,3 +1,5 @@
+echo(version=version());
+
 // size is a vector [w, h, d]
 module roundedBox(size, radius, sidesonly)
 {

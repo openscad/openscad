@@ -1,3 +1,4 @@
+echo(version=version());
 
 bodywidth = dxf_dim(file = "fan_view.dxf", name = "bodywidth");
 fanwidth = dxf_dim(file = "fan_view.dxf", name = "fanwidth");

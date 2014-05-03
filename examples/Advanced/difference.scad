@@ -1,3 +1,4 @@
+echo(version=version());
 
 module screw(type = 2, r1 = 15, r2 = 20, n = 7, h = 100, t = 8)
 {

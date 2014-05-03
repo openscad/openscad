@@ -1,3 +1,5 @@
+echo(version=version());
+
 polyhedron(
 	points = [
 		[10, 0, 0],

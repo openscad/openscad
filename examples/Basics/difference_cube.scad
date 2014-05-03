@@ -1,3 +1,4 @@
+echo(version=version());
 
 module difference_cube()
 {

@@ -1,3 +1,4 @@
+echo(version=version());
 
 intersection_for(i = [
 			[0, 0, 0],

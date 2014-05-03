@@ -1,7 +1,8 @@
-
 // example012.stl is Mblock.stl, (c) 2009 Will Langford
 // licensed under the Creative Commons - GNU GPL license.
 // http://www.thingiverse.com/thing:753
+
+echo(version=version());
 
 difference()
 {

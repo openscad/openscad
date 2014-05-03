@@ -1,4 +1,3 @@
-
 // To render the DXF file from the command line:
 // openscad -o tripod.dxf -D'mode="parts"' example017.scad
 
@@ -13,6 +12,8 @@ boltlen = 15;
 midhole = 10;
 inner1_to_inner2 = 50;
 total_height = 80;
+
+echo(version=version());
 
 module shape_tripod()
 {

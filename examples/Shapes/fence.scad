@@ -1,3 +1,4 @@
+echo(version=version());
 
 function get_cylinder_h(p) = lookup(p, [
 		[ -200, 5 ],

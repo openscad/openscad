@@ -1,7 +1,8 @@
-
 // surface.dat generated using octave:
 //   d = (sin(1:0.2:10)' * cos(1:0.2:10)) * 10;
 //   save("surface.dat", "d");
+
+echo(version=version());
 
 intersection()
 {

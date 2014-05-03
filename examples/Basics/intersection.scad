@@ -1,3 +1,4 @@
+echo(version=version());
 
 module example_intersection()
 {

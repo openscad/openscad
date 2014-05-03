@@ -1,4 +1,3 @@
-
 // chopped_blocks.stl is derived from Mblock.stl
 // (c) 2009 Will Langford licensed under
 // the Creative Commons - GNU GPL license.
@@ -6,6 +5,8 @@
 //
 // Jonas Pfeil converted the file to binary
 // STL and duplicated its content.
+
+echo(version=version());
 
 module blk1() {
 	cube([ 65, 28, 28 ], center = true);

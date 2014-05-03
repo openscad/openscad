@@ -6,6 +6,8 @@ $fn = 40;
 
 foot_height = 20;
 
+echo(version=version());
+
 module outline(wall = 1) {
 	difference() {
 		offset(wall / 2) children();
