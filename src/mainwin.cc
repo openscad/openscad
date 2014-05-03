@@ -559,19 +559,31 @@ MainWindow::setFileName(const QString &filename)
 	if (filename.isEmpty()) {
 		this->fileName.clear();
 		this->top_ctx.setDocumentPath(currentdir);
+#if QT_VERSION >= QT_VERSION_CHECK(4, 4, 0)
+		setWindowTitle("");
+		setWindowFilePath("untitled.scad");
+#else
 		setWindowTitle("OpenSCAD - New Document[*]");
+#endif
 	}
 	else {
 		QFileInfo fileinfo(filename);
-		setWindowTitle("OpenSCAD - " + fileinfo.fileName() + "[*]");
 
 		// Check that the canonical file path exists - only update recent files
 		// if it does. Should prevent empty list items on initial open etc.
 		QString infoFileName = fileinfo.absoluteFilePath();
+
 		if (!infoFileName.isEmpty()) {
 			this->fileName = infoFileName;
+#if QT_VERSION >= QT_VERSION_CHECK(4, 4, 0)
+			setWindowTitle("");
+			this->setWindowFilePath(infoFileName);
+#else
+			setWindowTitle("OpenSCAD - " + fileinfo.fileName() + "[*]");
+#endif
 		} else {
 			this->fileName = fileinfo.fileName();
+			setWindowTitle("OpenSCAD - " + fileinfo.fileName() + "[*]");
 		}
 
 		this->top_ctx.setDocumentPath(fileinfo.dir().absolutePath().toLocal8Bit().constData());
