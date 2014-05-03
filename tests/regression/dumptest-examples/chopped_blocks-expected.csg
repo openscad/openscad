@@ -1,4 +1,5 @@
 group() {
+	group();
 	difference() {
 		group() {
 			cube(size = [65, 28, 28], center = true);
@@ -17,7 +18,7 @@ group() {
 						}
 						group() {
 							multmatrix([[1, 0, 0, -14], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-								import(file = "example016.stl", layer = "", origin = [0, 0], scale = 1, convexity = 12, $fn = 0, $fa = 12, $fs = 2);
+								import(file = "chopped_blocks.stl", layer = "", origin = [0, 0], scale = 1, convexity = 12, $fn = 0, $fa = 12, $fs = 2);
 							}
 						}
 					}
@@ -36,7 +37,7 @@ group() {
 						}
 						group() {
 							multmatrix([[1, 0, 0, -14], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-								import(file = "example016.stl", layer = "", origin = [0, 0], scale = 1, convexity = 12, $fn = 0, $fa = 12, $fs = 2);
+								import(file = "chopped_blocks.stl", layer = "", origin = [0, 0], scale = 1, convexity = 12, $fn = 0, $fa = 12, $fs = 2);
 							}
 						}
 					}
@@ -55,7 +56,7 @@ group() {
 						}
 						group() {
 							multmatrix([[1, 0, 0, -14], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-								import(file = "example016.stl", layer = "", origin = [0, 0], scale = 1, convexity = 12, $fn = 0, $fa = 12, $fs = 2);
+								import(file = "chopped_blocks.stl", layer = "", origin = [0, 0], scale = 1, convexity = 12, $fn = 0, $fa = 12, $fs = 2);
 							}
 						}
 					}
@@ -74,7 +75,7 @@ group() {
 						}
 						group() {
 							multmatrix([[1, 0, 0, -14], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-								import(file = "example016.stl", layer = "", origin = [0, 0], scale = 1, convexity = 12, $fn = 0, $fa = 12, $fs = 2);
+								import(file = "chopped_blocks.stl", layer = "", origin = [0, 0], scale = 1, convexity = 12, $fn = 0, $fa = 12, $fs = 2);
 							}
 						}
 					}

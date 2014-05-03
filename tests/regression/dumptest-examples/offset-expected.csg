@@ -1,4 +1,5 @@
 group() {
+	group();
 	linear_extrude(height = 20, center = false, convexity = 1, scale = [0.5, 0.5], $fn = 40, $fa = 12, $fs = 2) {
 		offset(delta = 10, join_type = round, miter_limit = 2, $fn = 40, $fa = 12, $fs = 2) {
 			square(size = [50, 50], center = true);
