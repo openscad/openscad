@@ -2105,13 +2105,24 @@ MainWindow::maybeSave()
 {
 	if (editor->isContentModified()) {
 		QMessageBox::StandardButton ret;
-		ret = QMessageBox::warning(this, "Application",
-				"The document has been modified.\n"
-				"Do you want to save your changes?",
-				QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
+		QMessageBox box(this);
+		box.setText("The document has been modified.");
+		box.setInformativeText("Do you want to save your changes?");
+		box.setStandardButtons(QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
+		box.setDefaultButton(QMessageBox::Save);
+		box.setIcon(QMessageBox::Warning);
+		box.setWindowModality(Qt::ApplicationModal);
+#ifdef Q_OS_MAC
+		// Cmd-D is the standard shortcut for this button on Mac
+		box.button(QMessageBox::Discard)->setShortcut(QKeySequence("Ctrl+D"));
+		box.button(QMessageBox::Discard)->setShortcutEnabled(true);
+#endif
+		ret = (QMessageBox::StandardButton) box.exec();
+
 		if (ret == QMessageBox::Save) {
 			actionSave();
-			return true; // FIXME: Should return false on error
+			// Returns false on failed save
+			return !editor->isContentModified();
 		}
 		else if (ret == QMessageBox::Cancel) {
 			return false;
