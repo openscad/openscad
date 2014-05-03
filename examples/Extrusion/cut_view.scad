@@ -22,10 +22,8 @@ module clip()
 		// NB! We have to use the deprecated module here since the "dorn"
                 // layer contains an open polyline, which is not yet supported
                 // by the import() module.
-		rotate_extrude(
-			file = "cut_view.dxf",
-			layer="dorn",
-			convexity = 3);
+		rotate_extrude(convexity = 3)
+			import(file = "cut_view.dxf", layer="dorn");
 		for (r = [0, 90])
 			rotate(r, [0, 0, 1])
 				cutout();
