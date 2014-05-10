@@ -600,6 +600,8 @@ Value builtin_lookup(const Context *, const EvalContext *evalctx)
         - returns [[0,4],[1,5],[2,6],[8]]
 
 */
+#pragma clang diagnostic ignored "-Wlogical-op-parentheses"
+
 Value builtin_search(const Context *, const EvalContext *evalctx)
 {
 	if (evalctx->numArgs() < 2) return Value();
@@ -613,14 +615,19 @@ Value builtin_search(const Context *, const EvalContext *evalctx)
 
 	if (findThis.type() == Value::NUMBER) {
 		unsigned int matchCount = 0;
-		Value::VectorType resultvec;
+
 		for (size_t j = 0; j < searchTable.toVector().size(); j++) {
-		  if (searchTable.toVector()[j].toVector()[index_col_num].type() == Value::NUMBER && 
-					findThis.toDouble() == searchTable.toVector()[j].toVector()[index_col_num].toDouble()) {
-		    returnvec.push_back(Value(double(j)));
-		    matchCount++;
-		    if (num_returns_per_match != 0 && matchCount >= num_returns_per_match) break;
-		  }
+			const Value& search_element = searchTable.toVector()[j];
+
+			if (index_col_num == 0 && findThis == search_element
+				||
+				index_col_num  < search_element.toVector().size() &&
+				findThis      == search_element.toVector()[index_col_num])
+			{
+				returnvec.push_back(Value(double(j)));
+				matchCount++;
+				if (num_returns_per_match != 0 && matchCount >= num_returns_per_match) break;
+			}
 		}
 	} else if (findThis.type() == Value::STRING) {
 		unsigned int searchTableSize;
@@ -670,13 +677,18 @@ Value builtin_search(const Context *, const EvalContext *evalctx)
 		for (size_t i = 0; i < findThis.toVector().size(); i++) {
 		  unsigned int matchCount = 0;
 			Value::VectorType resultvec;
-		  for (size_t j = 0; j < searchTable.toVector().size(); j++) {
-		    if ((findThis.toVector()[i].type() == Value::NUMBER && 
-						 searchTable.toVector()[j].toVector()[index_col_num].type() == Value::NUMBER &&
-						 findThis.toVector()[i].toDouble() == searchTable.toVector()[j].toVector()[index_col_num].toDouble()) ||
-						(findThis.toVector()[i].type() == Value::STRING && 
-						 searchTable.toVector()[j].toVector()[index_col_num].type() == Value::STRING && 
-						 findThis.toVector()[i].toString() == searchTable.toVector()[j].toVector()[index_col_num].toString())) {
+
+			Value const& find_value = findThis.toVector()[i];
+
+			for (size_t j = 0; j < searchTable.toVector().size(); j++) {
+
+				Value const& search_element = searchTable.toVector()[j];
+
+				if (index_col_num == 0 && find_value == search_element
+					||
+					index_col_num  < search_element.toVector().size() &&
+					find_value    == search_element.toVector()[index_col_num])
+				{
 					Value resultValue((double(j)));
 		      matchCount++;
 		      if (num_returns_per_match == 1) {
