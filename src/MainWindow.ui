@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>936</width>
-    <height>693</height>
+    <height>586</height>
    </rect>
   </property>
   <widget class="QWidget" name="centralwidget">
@@ -20,6 +20,12 @@
     </property>
     <item>
      <widget class="QWidget" name="mainWidget" native="true">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
       <property name="styleSheet">
        <string notr="true"/>
       </property>
@@ -29,6 +35,12 @@
        </property>
        <item>
         <widget class="QGLView" name="qglview" native="true">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
          <property name="minimumSize">
           <size>
            <width>200</width>
@@ -96,6 +108,8 @@
         </widget>
        </item>
       </layout>
+      <zorder>animate_panel</zorder>
+      <zorder>qglview</zorder>
      </widget>
     </item>
    </layout>
