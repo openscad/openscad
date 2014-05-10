@@ -645,7 +645,8 @@ void MainWindow::refreshDocument()
 			reader.setCodec("UTF-8");
 			QString text = reader.readAll();
 			PRINTB("Loaded design '%s'.", this->fileName.toLocal8Bit().constData());
-			editor->setPlainText(text);
+			if (editor->toPlainText() != text)
+				editor->setPlainText(text);
 		}
 	}
 	setCurrentOutput();
