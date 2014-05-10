@@ -210,6 +210,15 @@ Value builtin_min(const Context *, const EvalContext *evalctx)
 	size_t n = evalctx->numArgs();
 	if (n >= 1) {
 		const Value &v0 = evalctx->getArgValue(0);
+
+		if (n == 1 && v0.type() == Value::VECTOR && !v0.toVector().empty()) {
+			Value min = v0.toVector()[0];
+			for (int i = 1; i < v0.toVector().size(); i++) {
+				if (v0.toVector()[i] < min)
+					min = v0.toVector()[i];
+			}
+			return min;
+		}
 		if (v0.type() == Value::NUMBER) {
 			double val = v0.toDouble();
 			for (size_t i = 1; i < n; ++i) {
@@ -234,6 +243,15 @@ Value builtin_max(const Context *, const EvalContext *evalctx)
 	size_t n = evalctx->numArgs();
 	if (n >= 1) {
 		const Value &v0 = evalctx->getArgValue(0);
+
+		if (n == 1 && v0.type() == Value::VECTOR && !v0.toVector().empty()) {
+			Value max = v0.toVector()[0];
+			for (int i = 1; i < v0.toVector().size(); i++) {
+				if (v0.toVector()[i] > max)
+					max = v0.toVector()[i];
+			}
+			return max;
+		}
 		if (v0.type() == Value::NUMBER) {
 			double val = v0.toDouble();
 			for (size_t i = 1; i < n; ++i) {
