@@ -426,10 +426,27 @@ MainWindow::MainWindow(const QString &filename)
 
 	// make sure it looks nice..
 	QSettings settings;
-	restoreState(settings.value("window/state", QByteArray()).toByteArray());
+	QByteArray windowState = settings.value("window/state", QByteArray()).toByteArray();
+	restoreState(windowState);
 	resize(settings.value("window/size", QSize(800, 600)).toSize());
 	move(settings.value("window/position", QPoint(0, 0)).toPoint());
 
+	if (windowState.size() == 0) {
+		/*
+		 * This triggers only in case the configuration file has no
+		 * window state information (or no configuration file at all).
+		 * When this happens, the editor would default to a very ugly
+		 * width due to the dock widget layout. This overwrites the
+		 * value reported via sizeHint() to a width a bit smaller than
+		 * half the main window size (either the one loaded from the
+		 * configuration or the default value of 800).
+		 * The height is only a dummy value which will be essentially
+		 * ignored by the layouting as the editor is set to expand to
+		 * fill the available space.
+		 */
+		editor->setInitialSizeHint(QSize((5 * this->width() / 11), 100));
+	}
+	
 	connect(this->editorDock, SIGNAL(topLevelChanged(bool)), this, SLOT(editorTopLevelChanged(bool)));
 	connect(this->consoleDock, SIGNAL(topLevelChanged(bool)), this, SLOT(consoleTopLevelChanged(bool)));
 	
