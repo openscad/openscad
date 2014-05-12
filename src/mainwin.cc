@@ -518,6 +518,18 @@ void MainWindow::report_func(const class AbstractNode*, void *vp, int mark)
 #ifdef ENABLE_MDI
 void MainWindow::requestOpenFile(const QString &filename)
 {
+	// if we have an empty open window, use that one
+	QSetIterator<MainWindow *> i(*MainWindow::windows);
+	while (i.hasNext()) {
+		MainWindow *w = i.next();
+
+		if (w->editor->toPlainText().isEmpty()) {
+			w->openFile(filename);
+			return;
+		}
+	}
+
+	// otherwise, create a new one
 	new MainWindow(filename);
 }
 #else
@@ -975,7 +987,7 @@ void MainWindow::actionOpen()
 	}
 #ifdef ENABLE_MDI
 	if (!new_filename.isEmpty()) {
-		new MainWindow(new_filename);
+		openFile(new_filename);
 	}
 #else
 	if (!new_filename.isEmpty()) {
@@ -994,7 +1006,7 @@ void MainWindow::actionOpenRecent()
 	QAction *action = qobject_cast<QAction *>(sender());
 
 #ifdef ENABLE_MDI
-	new MainWindow(action->data().toString());
+	openFile(action->data().toString());
 #else
 	if (!maybeSave())
 		return;
