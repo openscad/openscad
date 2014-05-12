@@ -621,6 +621,8 @@ MainWindow::setFileName(const QString &filename)
 		QDir::setCurrent(fileinfo.dir().absolutePath());
 		this->top_ctx.setDocumentPath(fileinfo.dir().absolutePath().toLocal8Bit().constData());
 	}
+	editorTopLevelChanged(editorDock->isFloating());
+	consoleTopLevelChanged(consoleDock->isFloating());
 }
 
 void MainWindow::updateRecentFiles()
