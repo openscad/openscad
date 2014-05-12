@@ -210,6 +210,17 @@ Camera get_camera( po::variables_map vm )
 #include <QApplication>
 #endif
 
+static bool checkAndExport(shared_ptr<const Geometry> root_geom, unsigned nd,
+	enum FileFormat format, const char *filename)
+{
+	if (root_geom->getDimension() != nd) {
+		PRINTB("Current top level object is not a %dD object.", nd);
+		return false;
+	}
+	exportFileByName(root_geom.get(), format, filename, filename);
+	return true;
+}
+
 int cmdline(const char *deps_output_file, const std::string &filename, Camera &camera, const char *output_file, const fs::path &original_path, Render::type renderer, int argc, char ** argv )
 {
 #ifdef OPENSCAD_QTGUI
@@ -378,78 +389,28 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 		}
 
 		if (stl_output_file) {
-			if (root_geom->getDimension() != 3) {
-				PRINT("Current top level object is not a 3D object.\n");
+			if (!checkAndExport(root_geom, 3, OPENSCAD_STL, stl_output_file))
 				return 1;
-			}
-			std::ofstream fstream(stl_output_file);
-			if (!fstream.is_open()) {
-				PRINTB("Can't open file \"%s\" for export", stl_output_file);
-			}
-			else {
-				exportFile(root_geom.get(), fstream, OPENSCAD_STL);
-				fstream.close();
-			}
 		}
 
 		if (off_output_file) {
-			if (root_geom->getDimension() != 3) {
-				PRINT("Current top level object is not a 3D object.\n");
+			if (!checkAndExport(root_geom, 3, OPENSCAD_OFF, off_output_file))
 				return 1;
-			}
-			std::ofstream fstream(off_output_file);
-			if (!fstream.is_open()) {
-				PRINTB("Can't open file \"%s\" for export", off_output_file);
-			}
-			else {
-				exportFile(root_geom.get(), fstream, OPENSCAD_OFF);
-				fstream.close();
-			}
 		}
 
 		if (amf_output_file) {
-			if (root_geom->getDimension() != 3) {
-				PRINT("Current top level object is not a 3D object.\n");
+			if (!checkAndExport(root_geom, 3, OPENSCAD_AMF, amf_output_file))
 				return 1;
-			}
-			std::ofstream fstream(amf_output_file);
-			if (!fstream.is_open()) {
-				PRINTB("Can't open file \"%s\" for export", amf_output_file);
-			}
-			else {
-				exportFile(root_geom.get(), fstream, OPENSCAD_AMF);
-				fstream.close();
-			}
 		}
 
 		if (dxf_output_file) {
-			if (root_geom->getDimension() != 2) {
-				PRINT("Current top level object is not a 2D object.\n");
+			if (!checkAndExport(root_geom, 2, OPENSCAD_DXF, dxf_output_file))
 				return 1;
-			}
-			std::ofstream fstream(dxf_output_file);
-			if (!fstream.is_open()) {
-				PRINTB("Can't open file \"%s\" for export", dxf_output_file);
-			}
-			else {
-				exportFile(root_geom.get(), fstream, OPENSCAD_DXF);
-				fstream.close();
-			}
 		}
 		
 		if (svg_output_file) {
-			if (root_geom->getDimension() != 2) {
-				PRINT("Current top level object is not a 2D object.\n");
+			if (!checkAndExport(root_geom, 2, OPENSCAD_SVG, svg_output_file))
 				return 1;
-			}
-			std::ofstream fstream(svg_output_file);
-			if (!fstream.is_open()) {
-				PRINTB("Can't open file \"%s\" for export", svg_output_file);
-			}
-			else {
-				exportFile(root_geom.get(), fstream, OPENSCAD_SVG);
-				fstream.close();
-			}
 		}
 
 		if (png_output_file) {
