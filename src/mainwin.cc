@@ -1694,29 +1694,18 @@ void MainWindow::actionExport(export_type_e, QString, QString)
 		return;
 	}
 
-	std::ofstream fstream(export_filename.toUtf8());
-	if (!fstream.is_open()) {
-		PRINTB("Can't open file \"%s\" for export", export_filename.toLocal8Bit().constData());
+	enum FileFormat format = (enum FileFormat)-1;
+	switch (export_type) {
+	case EXPORT_TYPE_STL: format = OPENSCAD_STL; break;
+	case EXPORT_TYPE_OFF: format = OPENSCAD_OFF; break;
+	case EXPORT_TYPE_AMF: format = OPENSCAD_AMF; break;
+	default:
+		assert(false && "Unknown export type");
+		break;
 	}
-	else {
-		switch (export_type) {
-		case EXPORT_TYPE_STL:
-			exportFile(this->root_geom.get(), fstream, OPENSCAD_STL);
-			break;
-		case EXPORT_TYPE_OFF:
-			exportFile(this->root_geom.get(), fstream, OPENSCAD_OFF);
-			break;
-		case EXPORT_TYPE_AMF:
-			exportFile(this->root_geom.get(), fstream, OPENSCAD_AMF);
-			break;
-		default:
-			assert(false && "Unknown export type");
-			break;
-		}
-		fstream.close();
-
-		PRINTB("%s export finished.", type_name);
-	}
+	exportFileByName(this->root_geom.get(), format, export_filename.toUtf8(),
+		export_filename.toLocal8Bit().constData());
+	PRINTB("%s export finished.", type_name);
 
 	clearCurrentOutput();
 #endif /* ENABLE_CGAL */
@@ -1774,16 +1763,9 @@ void MainWindow::actionExportDXF()
 	if (dxf_filename.isEmpty()) {
 		return;
 	}
-
-	std::ofstream fstream(dxf_filename.toUtf8());
-	if (!fstream.is_open()) {
-		PRINTB("Can't open file \"%s\" for export", dxf_filename.toLocal8Bit().constData());
-	}
-	else {
-		exportFile(this->root_geom.get(), fstream, OPENSCAD_DXF);
-		fstream.close();
-		PRINT("DXF export finished.");
-	}
+	exportFileByName(this->root_geom.get(), OPENSCAD_DXF, dxf_filename.toUtf8(),
+		dxf_filename.toLocal8Bit().constData());
+	PRINT("DXF export finished.");
 
 	clearCurrentOutput();
 #endif /* ENABLE_CGAL */
@@ -1795,16 +1777,9 @@ void MainWindow::actionExportSVG()
 	if (svg_filename.isEmpty()) {
 		return;
 	}
-
-	std::ofstream fstream(svg_filename.toUtf8());
-	if (!fstream.is_open()) {
-		PRINTB("Can't open file \"%s\" for export", svg_filename.toLocal8Bit().constData());
-	}
-	else {
-		exportFile(this->root_geom.get(), fstream, OPENSCAD_SVG);
-		fstream.close();
-		PRINT("SVG export finished.");
-	}
+	exportFileByName(this->root_geom.get(), OPENSCAD_SVG, svg_filename.toUtf8(),
+		svg_filename.toLocal8Bit().constData());
+	PRINT("SVG export finished.");
 
 	clearCurrentOutput();
 }
