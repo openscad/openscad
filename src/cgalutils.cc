@@ -73,6 +73,7 @@ namespace CGALUtils {
 	{
 		// Speeds up n-ary union operations significantly
 		CGAL::Nef_nary_union_3<CGAL_Nef_polyhedron3> nary_union;
+		int nary_union_num_inserted = 0;
 		CGAL_Nef_polyhedron *N = NULL;
 
 		BOOST_FOREACH(const Geometry::ChildItem &item, children) {
@@ -85,7 +86,10 @@ namespace CGALUtils {
 			}
 
 			if (op == OPENSCAD_UNION) {
-				if (!chN->isEmpty()) nary_union.add_polyhedron(*chN->p3);
+				if (!chN->isEmpty()) {
+					nary_union.add_polyhedron(*chN->p3);
+					nary_union_num_inserted++;
+				}
 				continue;
 			}
 			// Initialize N with first expected geometric object
@@ -130,11 +134,19 @@ namespace CGALUtils {
 			CGAL::set_error_behaviour(old_behaviour);
 		}
 
-		if (op == OPENSCAD_UNION) {
-			// FIXME: Catch exceptions
-			N = new CGAL_Nef_polyhedron(new CGAL_Nef_polyhedron3(nary_union.get_union()));
+		if (op == OPENSCAD_UNION && nary_union_num_inserted > 0) {
+			CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
+			try {
+
+				N = new CGAL_Nef_polyhedron(new CGAL_Nef_polyhedron3(nary_union.get_union()));
+
+			} catch (const CGAL::Failure_exception &e) {
+				std::string opstr = "union";
+				PRINTB("CGAL error in CGALUtils::applyBinaryOperator %s: %s", opstr % e.what());
+			}
+			CGAL::set_error_behaviour(old_behaviour);
 		}
-		dest = *N;
+		if (N) dest = *N;
 	}
 
 /*!
