@@ -96,6 +96,8 @@ Preferences::Preferences(QWidget *parent) : QMainWindow(parent)
 #endif
 	this->defaultmap["advanced/openCSGLimit"] = RenderSettings::inst()->openCSGTermLimit;
 	this->defaultmap["advanced/forceGoldfeather"] = false;
+	this->defaultmap["advanced/mdi"] = true;
+	this->defaultmap["advanced/undockableWindows"] = false;
 
 	// Toolbar
 	QActionGroup *group = new QActionGroup(this);
@@ -336,6 +338,22 @@ void Preferences::on_checkNowButton_clicked()
 }
 
 void
+Preferences::on_mdiCheckBox_toggled(bool state)
+{
+	QSettings settings;
+	settings.setValue("advanced/mdi", state);
+	emit updateMdiMode(state);
+}
+
+void
+Preferences::on_undockCheckBox_toggled(bool state)
+{
+	QSettings settings;
+	settings.setValue("advanced/undockableWindows", state);
+	emit updateUndockMode(state);
+}
+
+void
 Preferences::on_openCSGWarningBox_toggled(bool state)
 {
 	QSettings settings;
@@ -461,6 +479,8 @@ void Preferences::updateGUI()
 	this->polysetCacheSizeEdit->setText(getValue("advanced/polysetCacheSize").toString());
 	this->opencsgLimitEdit->setText(getValue("advanced/openCSGLimit").toString());
 	this->forceGoldfeatherBox->setChecked(getValue("advanced/forceGoldfeather").toBool());
+	this->mdiCheckBox->setChecked(getValue("advanced/mdi").toBool());
+	this->undockCheckBox->setChecked(getValue("advanced/undockableWindows").toBool());
 }
 
 void Preferences::apply() const

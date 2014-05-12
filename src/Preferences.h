@@ -34,10 +34,14 @@ public slots:
 	void on_mouseWheelZoomBox_toggled(bool);
 	void on_updateCheckBox_toggled(bool);
 	void on_snapshotCheckBox_toggled(bool);
+	void on_mdiCheckBox_toggled(bool);
+	void on_undockCheckBox_toggled(bool);
 	void on_checkNowButton_clicked();
 
 signals:
 	void requestRedraw() const;
+	void updateMdiMode(bool mdi) const;
+	void updateUndockMode(bool mdi) const;
 	void fontChanged(const QString &family, uint size) const;
 	void openCSGSettingsChanged() const;
 	void syntaxHighlightChanged(const QString &s);
