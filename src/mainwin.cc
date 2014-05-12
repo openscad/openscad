@@ -262,22 +262,17 @@ MainWindow::MainWindow(const QString &filename)
 	this->menuOpenRecent->addAction(this->fileActionClearRecent);
 	connect(this->fileActionClearRecent, SIGNAL(triggered()),
 					this, SLOT(clearRecentFiles()));
+	//Examples
 	if (!qexamplesdir.isEmpty()) {
-		bool found_example = false;
-		QStringList examples = QDir(qexamplesdir).entryList(QStringList("*.scad"),
-		QDir::Files | QDir::Readable, QDir::Name);
-		foreach (const QString &ex, examples) {
-			this->menuExamples->addAction(ex, this, SLOT(actionOpenExample()));
-			found_example = true;
-		}
-		if (!found_example) {
-			delete this->menuExamples;
-			this->menuExamples = NULL;
-		}
-	} else {
-		delete this->menuExamples;
-		this->menuExamples = NULL;
-	}
+       
+		show_examples();
+	
+        } else {
+                delete this->menuExamples;
+                this->menuExamples = NULL;
+
+	  }
+
 
 	// Edit menu
 	connect(this->editActionUndo, SIGNAL(triggered()), editor, SLOT(undo()));
@@ -1049,11 +1044,40 @@ void MainWindow::updateRecentFileActions()
 		settings.setValue("recentFileList", files);
 }
 
+void MainWindow::show_examples()
+{
+		bool found_example = false;
+		QStringList categories;
+                categories << "Basics" << "Shapes" << "Extrusion" << "Advanced";
+        
+                foreach (const QString &cat, categories){
+                        QStringList examples = QDir(qexamplesdir + QDir::separator() + cat).entryList(QStringList("*.scad"),
+                        QDir::Files | QDir::Readable, QDir::Name);
+                        QMenu *menu = this->menuExamples->addMenu(cat);
+                        
+                        foreach(const QString &ex, examples) {
+                                QAction *openAct = new QAction(ex, this);
+                                connect(openAct, SIGNAL(triggered()), this, SLOT(actionOpenExample()));
+                                menu->addAction(openAct);
+                                QVariant categoryName = cat;
+                                openAct->setData(categoryName);
+                                found_example = true;
+			}
+		}
+		 if (!found_example) {
+                        delete this->menuExamples;
+                        this->menuExamples = NULL;
+                }
+
+}
+
 void MainWindow::actionOpenExample()
 {
 	QAction *action = qobject_cast<QAction *>(sender());
 	if (action) {
-		openFile(qexamplesdir + QDir::separator() + action->text());
+		QVariant cat = action->data();
+		QString catname = cat.toString();
+		openFile(qexamplesdir + QDir::separator() + catname + QDir::separator() + action->text());
 	}
 }
 
