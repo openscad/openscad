@@ -522,6 +522,7 @@ Geometry *PrimitiveNode::createGeometry() const
 					p->insert_vertex(px, py, pz);
 				}
 			}
+			p->finish_poly();
 		}
 	}
 		break;

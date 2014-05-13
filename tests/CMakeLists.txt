@@ -552,7 +552,6 @@ set(CORE_SOURCES
   ../src/csgtermnormalizer.cc 
   ../src/Geometry.cc 
   ../src/Polygon2d.cc 
-  ../src/polyset.cc 
   ../src/csgops.cc 
   ../src/transform.cc 
   ../src/color.cc 
@@ -579,6 +578,7 @@ set(CORE_SOURCES
   ${BISON_OpenSCADparser_OUTPUTS})
 
 set(NOCGAL_SOURCES
+  ../src/polyset.cc
   ../src/builtin.cc 
   ../src/import.cc
   ../src/export.cc)
