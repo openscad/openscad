@@ -349,7 +349,7 @@ void GLView::gimbalCamPaintGL()
   glColor3d(1.0, 0.0, 0.0);
 
   if (this->renderer) {
-#if defined(ENABLE_MDI) && defined(ENABLE_OPENCSG)
+#if defined(ENABLE_OPENCSG)
     // FIXME: This belongs in the OpenCSG renderer, but it doesn't know about this ID yet
     OpenCSG::setContext(this->opencsg_id);
 #endif

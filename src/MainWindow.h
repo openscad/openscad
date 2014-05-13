@@ -64,6 +64,7 @@ public:
 
 	static const int maxRecentFiles = 10;
 	QAction *actionRecentFile[maxRecentFiles];
+        QMap<QString, QString> knownFileExtensions;
 
 	MainWindow(const QString &filename);
 	~MainWindow();
@@ -74,6 +75,8 @@ protected:
 private slots:
 	void updatedFps();
 	void updateTVal();
+        void updateMdiMode(bool mdi);
+        void updateUndockMode(bool undockMode);
 	void setFileName(const QString &filename);
 	void setFont(const QString &family, uint size);
 	void showProgress();
@@ -81,6 +84,7 @@ private slots:
 
 private:
 	void openFile(const QString &filename);
+        void handleFileDrop(const QString &filename);
 	void refreshDocument();
 	void updateTemporalVariables();
 	bool fileChangedOnDisk();
@@ -95,8 +99,9 @@ private:
 	void loadDesignSettings();
 	void saveBackup();
 	void writeBackup(class QFile *file);
-        QString get2dExportFilename(QString format, QString extension);
+	QString get2dExportFilename(QString format, QString extension);
 	void show_examples();
+	void setDockWidgetTitle(QDockWidget *dockWidget, QString prefix, bool topLevel);
 
   class QMessageBox *openglbox;
 
@@ -169,6 +174,10 @@ public:
 
 public slots:
 	void actionReloadRenderPreview();
+        void on_editorDock_visibilityChanged(bool);
+        void on_consoleDock_visibilityChanged(bool);
+        void editorTopLevelChanged(bool);
+        void consoleTopLevelChanged(bool);
 #ifdef ENABLE_OPENCSG
 	void viewModePreview();
 #endif
@@ -208,6 +217,8 @@ public slots:
 
 private:
 	static void report_func(const class AbstractNode*, void *vp, int mark);
+        static bool mdiMode;
+        static bool undockMode;
 
 	char const * afterCompileSlot;
 	bool procevents;

@@ -153,6 +153,20 @@ void Editor::setHighlightScheme(const QString &name)
 	highlighter->rehighlight(); // slow on large files
 }
 
+QSize Editor::sizeHint() const
+{
+	if (initialSizeHint.width() <= 0) {
+		return QTextEdit::sizeHint();
+	} else {
+		return initialSizeHint;
+	}
+}
+
+void Editor::setInitialSizeHint(const QSize &size)
+{
+	initialSizeHint = size;
+}
+
 Editor::~Editor()
 {
 	delete highlighter;
