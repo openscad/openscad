@@ -1,8 +1,8 @@
 group() {
 	minkowski(convexity = 0) {
 		difference() {
-			square(size = [20, 20], center = true);
-			square(size = [10, 10], center = true);
+			square(size = [20, 20], center = [1, 1, 1]);
+			square(size = [10, 10], center = [1, 1, 1]);
 		}
 		circle($fn = 16, $fa = 12, $fs = 2, r = 1);
 	}
@@ -10,8 +10,8 @@ group() {
 		minkowski(convexity = 0) {
 			circle($fn = 16, $fa = 12, $fs = 2, r = 1);
 			difference() {
-				square(size = [20, 20], center = true);
-				square(size = [10, 10], center = true);
+				square(size = [20, 20], center = [1, 1, 1]);
+				square(size = [10, 10], center = [1, 1, 1]);
 			}
 		}
 	}
@@ -19,10 +19,10 @@ group() {
 		minkowski(convexity = 0) {
 			union() {
 				difference() {
-					square(size = [20, 20], center = true);
-					square(size = [10, 10], center = true);
+					square(size = [20, 20], center = [1, 1, 1]);
+					square(size = [10, 10], center = [1, 1, 1]);
 				}
-				square(size = [2, 2], center = true);
+				square(size = [2, 2], center = [1, 1, 1]);
 			}
 			circle($fn = 16, $fa = 12, $fs = 2, r = 1);
 		}
@@ -30,8 +30,8 @@ group() {
 	multmatrix([[1, 0, 0, 25], [0, 1, 0, 25], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 		minkowski(convexity = 0) {
 			difference() {
-				square(size = [18, 18], center = true);
-				square(size = [12, 12], center = true);
+				square(size = [18, 18], center = [1, 1, 1]);
+				square(size = [12, 12], center = [1, 1, 1]);
 			}
 			difference() {
 				circle($fn = 16, $fa = 12, $fs = 2, r = 2);

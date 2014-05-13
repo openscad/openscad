@@ -15,9 +15,9 @@ group() {
 	}
 	group() {
 		hull() {
-			cylinder($fn = 0, $fa = 12, $fs = 2, h = 1, r1 = 10, r2 = 10, center = false);
+			cylinder($fn = 0, $fa = 12, $fs = 2, h = 1, r1 = 10, r2 = 10, center = [0, 0, 0]);
 			multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 10], [0, 0, 0, 1]]) {
-				cube(size = [5, 5, 5], center = true);
+				cube(size = [5, 5, 5], center = [1, 1, 1]);
 			}
 		}
 	}

@@ -2,7 +2,7 @@ group() {
 	group();
 	linear_extrude(height = 20, center = false, convexity = 1, scale = [0.5, 0.5], $fn = 40, $fa = 12, $fs = 2) {
 		offset(delta = 10, join_type = "round", $fn = 40, $fa = 12, $fs = 2) {
-			square(size = [50, 50], center = true);
+			square(size = [50, 50], center = [1, 1, 1]);
 		}
 	}
 	multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 20], [0, 0, 0, 1]]) {
@@ -23,7 +23,7 @@ group() {
 			}
 		}
 	}
-%	cylinder($fn = 40, $fa = 12, $fs = 2, h = 100, r1 = 14, r2 = 14, center = false);
+%	cylinder($fn = 40, $fa = 12, $fs = 2, h = 100, r1 = 14, r2 = 14, center = [0, 0, 0]);
 %	multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 100], [0, 0, 0, 1]]) {
 		sphere($fn = 40, $fa = 12, $fs = 2, r = 30);
 	}
