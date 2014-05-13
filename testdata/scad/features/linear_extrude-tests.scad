@@ -19,6 +19,8 @@ translate([19,20,0]) linear_extrude(height=20, twist=45, slices=10) square([10,1
 
 translate([0,-15,0]) linear_extrude(5) square([10,10]);
 
+translate([0,-35,0]) linear_extrude(5, center=[false, true, true]) square([10,10]);
+
 // scale given as a scalar
 translate([-25,-10,0]) linear_extrude(height=10, scale=2) square(5, center=true);
 // scale given as a 3-dim vector

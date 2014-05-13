@@ -677,7 +677,7 @@ static Geometry *extrudePolygon(const LinearExtrudeNode &node, const Polygon2d &
 
 	double h1, h2;
 
-	if (node.center) {
+	if (node.center_z) {
 		h1 = -node.height/2.0;
 		h2 = +node.height/2.0;
 	} else {

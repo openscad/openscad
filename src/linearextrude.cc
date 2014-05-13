@@ -97,8 +97,10 @@ AbstractNode *LinearExtrudeModule::instantiate(const Context *ctx, const ModuleI
 	scale.getDouble(node->scale_y);
 	scale.getVec2(node->scale_x, node->scale_y);
 
-	if (center.type() == Value::BOOL)
-		node->center = center.toBool();
+    {
+      bool dummy_x, dummy_y;
+      center.getVec3(dummy_x, dummy_y, node->center_z);
+    }
 
 	if (node->height <= 0) node->height = 0;
 
@@ -148,7 +150,7 @@ std::string LinearExtrudeNode::toString() const
 	}
 	stream <<
 		"height = " << std::dec << this->height << ", "
-		"center = " << (this->center?"true":"false") << ", "
+		"center = " << (this->center_z?"true":"false") << ", "
 		"convexity = " << this->convexity;
 	
 	if (this->has_twist) {
