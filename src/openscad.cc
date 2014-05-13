@@ -501,7 +501,10 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 	QCoreApplication::setOrganizationDomain("openscad.org");
 	QCoreApplication::setApplicationName("OpenSCAD");
 	QCoreApplication::setApplicationVersion(TOSTRING(OPENSCAD_VERSION));
-
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
+	QGuiApplication::setApplicationDisplayName("OpenSCAD");
+#endif
+	
 	// Other global settings
 	qRegisterMetaType<shared_ptr<const Geometry> >();
 	
