@@ -84,6 +84,7 @@ std::string parser_source_path;
 %token TOK_FUNCTION
 %token TOK_IF
 %token TOK_ELSE
+%token TOK_LET
 
 %token <text> TOK_ID
 %token <text> TOK_STRING
@@ -95,6 +96,8 @@ std::string parser_source_path;
 %token TOK_UNDEF
 
 %token LE GE EQ NE AND OR
+
+%right LET
 
 %right '?' ':'
 
@@ -323,6 +326,14 @@ expr:
         | TOK_NUMBER
             {
                 $$ = new Expression(Value($1));
+            }
+        | TOK_LET '(' arguments_call ')' expr %prec LET
+            {
+                $$ = new Expression();
+                $$->type = "l";
+                $$->call_arguments = *$3;
+                delete $3;
+                $$->children.push_back($5);
             }
         | '[' expr ':' expr ']'
             {
