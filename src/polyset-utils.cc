@@ -271,6 +271,21 @@ namespace PolysetUtils {
 
 	}
 
+	bool is_simple(Polygon3d const& p) {
+		if (p.size() <= 3) return true;
+
+		PointList poly(p);
+
+		switch (poly.projection) {
+			case YZPLANE: return CGAL::is_simple_2(poly.points.begin(), poly.points.end(),
+												   CGAL::Projection_traits_yz_3<K>());
+			case XZPLANE: return CGAL::is_simple_2(poly.points.begin(), poly.points.end(),
+												   CGAL::Projection_traits_xz_3<K>());
+			case XYPLANE: return CGAL::is_simple_2(poly.points.begin(), poly.points.end(),
+												   CGAL::Projection_traits_xy_3<K>());
+			case NONE:    return false;
+		}
+	}
 
 	bool is_convex(Polygon3d const& p) {
 		if (p.size() <= 3) return true;

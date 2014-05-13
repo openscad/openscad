@@ -90,7 +90,9 @@ void PolySet::finish_poly() {
 	// check if the last polygon is convex – if so, decompose
 	if (polygons.back().size() <= 3) return; // triangles are always convex
 
-	if (!PolysetUtils::is_convex(polygons.back())) {
+	// is_simple is a precondition for is_convex
+	if (PolysetUtils::is_simple(polygons.back()) &&
+		!PolysetUtils::is_convex(polygons.back())) {
 		std::vector<Polygon> triangles;
 		if (!PolysetUtils::triangulate_polygon(polygons.back(), triangles)) {
 			polygons.pop_back();
