@@ -139,6 +139,89 @@ static inline int type2int(register const char *typestr)
 #endif
 }
 
+// unnamed namespace
+namespace {
+	Value::VectorType flatten(Value::VectorType const& vec) {
+		int n = 0;
+		for (int i = 0; i < vec.size(); i++) {
+			assert(vec[i].type() == Value::VECTOR);
+			n += vec[i].toVector().size();
+		}
+		Value::VectorType ret; ret.reserve(n);
+		for (int i = 0; i < vec.size(); i++) {
+			std::copy(vec[i].toVector().begin(),vec[i].toVector().end(),std::back_inserter(ret));
+		}
+		return ret;
+	}
+
+	void evaluate_sequential_assignment(const AssignmentList & assignment_list, Context *context) {
+		EvalContext let_context(context, assignment_list);
+
+		for (int i = 0; i < let_context.numArgs(); i++) {
+			// NOTE: iteratively evaluated list of arguments
+			context->set_variable(let_context.getArgName(i), let_context.getArgValue(i, context));
+		}
+	}
+}
+
+Value Expression::evaluate_list_comprehension(const Context *context) const
+{
+	Value::VectorType vec;
+
+	if (this->call_funcname == "if") {
+		if (this->children[0]->evaluate(context)) {
+			vec.push_back(this->children[1]->evaluate(context));
+		}
+		return vec;
+	} else if (this->call_funcname == "for") {
+		EvalContext for_context(context, this->call_arguments);
+
+		Context assign_context(context);
+
+		// comprehension for statements are by the parser reduced to only contain one single element
+		const std::string &it_name = for_context.getArgName(0);
+		const Value &it_values = for_context.getArgValue(0, &assign_context);
+
+		Context c(context);
+
+		if (it_values.type() == Value::RANGE) {
+			Value::RangeType range = it_values.toRange();
+			boost::uint32_t steps = range.nbsteps();
+			if (steps >= 1000000) {
+				PRINTB("WARNING: Bad range parameter in for statement: too many elements (%lu).", steps);
+			} else {
+				for (Value::RangeType::iterator it = range.begin();it != range.end();it++) {
+					c.set_variable(it_name, Value(*it));
+					vec.push_back(this->children[0]->evaluate(&c));
+				}
+			}
+		}
+		else if (it_values.type() == Value::VECTOR) {
+			for (size_t i = 0; i < it_values.toVector().size(); i++) {
+				c.set_variable(it_name, it_values.toVector()[i]);
+				vec.push_back(this->children[0]->evaluate(&c));
+			}
+		}
+		else if (it_values.type() != Value::UNDEFINED) {
+			c.set_variable(it_name, it_values);
+			vec.push_back(this->children[0]->evaluate(&c));
+		}
+		if (this->children[0]->type == "c") {
+			return flatten(vec);
+		} else {
+			return vec;
+		}
+	} else if (this->call_funcname == "let") {
+		Context c(context);
+		evaluate_sequential_assignment(this->call_arguments, &c);
+
+		return this->children[0]->evaluate(&c);
+	} else {
+		abort();
+	}
+}
+
+
 Value Expression::evaluate(const Context *context) const
 {
 	switch (type2int(this->type.c_str())) {
@@ -189,7 +272,33 @@ Value Expression::evaluate(const Context *context) const
 	case 'F':
 		return sub_evaluate_function(context);
 	}
+	if (this->type == "l") { // let expression
+		Context c(context);
+		evaluate_sequential_assignment(this->call_arguments, &c);
+
+		return this->children[0]->evaluate(&c);
+	}
+	if (this->type == "i") { // list comprehension expression
+		return this->children[0]->evaluate(context);
+	}
+	if (this->type == "c") {
+		return evaluate_list_comprehension(context);
+	}
 	abort();
+}
+
+namespace /* anonymous*/ {
+
+	std::ostream &operator << (std::ostream &o, AssignmentList const& l) {
+		for (size_t i=0; i < l.size(); i++) {
+			const Assignment &arg = l[i];
+			if (i > 0) o << ", ";
+			if (!arg.first.empty()) o << arg.first  << " = ";
+			o << *arg.second;
+		}
+		return o;
+	}
+
 }
 
 std::string Expression::toString() const
@@ -239,14 +348,32 @@ std::string Expression::toString() const
 		stream << *this->children[0] << "." << this->var_name;
 	}
 	else if (this->type == "F") {
-		stream << this->call_funcname << "(";
-		for (size_t i=0; i < this->call_arguments.size(); i++) {
-			const Assignment &arg = this->call_arguments[i];
-			if (i > 0) stream << ", ";
-			if (!arg.first.empty()) stream << arg.first  << " = ";
-			stream << *arg.second;
-		}
-		stream << ")";
+		stream << this->call_funcname << "(" << this->call_arguments << ")";
+	}
+	else if (this->type == "l") {
+		stream << "let(" << this->call_arguments << ") " << *this->children[0];
+	}
+	else if (this->type == "i") { // list comprehension expression
+		Expression const* c = this->children[0];
+
+		stream << "[";
+
+		do {
+			if (c->call_funcname == "for") {
+				stream << "for(" << c->call_arguments << ") ";
+				c = c->children[0];
+			} else if (c->call_funcname == "if") {
+				stream << "if(" << c->children[0] << ") ";
+				c = c->children[1];
+			} else if (c->call_funcname == "let") {
+				stream << "let(" << c->call_arguments << ") ";
+				c = c->children[0];
+			} else {
+				assert(false && "Illegal list comprehension element");
+			}
+		} while (c->type == "c");
+
+		stream << *c << "]";
 	}
 	else {
 		assert(false && "Illegal expression type");
