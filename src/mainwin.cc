@@ -211,6 +211,7 @@ MainWindow::MainWindow(const QString &filename)
 	knownFileExtensions["dat"] = surfaceStatement;
 	knownFileExtensions["png"] = surfaceStatement;
 	knownFileExtensions["scad"] = "";
+	knownFileExtensions["csg"] = "";
 	
 	editActionZoomIn->setShortcuts(QList<QKeySequence>() << editActionZoomIn->shortcuts() << QKeySequence("CTRL+="));
 
