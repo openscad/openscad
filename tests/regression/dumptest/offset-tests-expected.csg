@@ -104,7 +104,7 @@ group() {
 	}
 	offset(delta = -5, join_type = miter, miter_limit = 2, $fn = 0, $fa = 12, $fs = 2) {
 		group() {
-			multmatrix([[1, 0, 0, -50], [0, 1, 0, -50], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+			multmatrix([[1, 0, 0, 100], [0, 1, 0, 50], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 				difference() {
 					square(size = [30, 30], center = true);
 					square(size = [8, 8], center = true);
@@ -127,6 +127,13 @@ group() {
 					square(size = [30, 30], center = true);
 					square(size = [8, 8], center = true);
 				}
+			}
+		}
+	}
+	multmatrix([[1, 0, 0, -50], [0, 1, 0, -50], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+		multmatrix([[25, 0, 0, 0], [0, 25, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+			offset(delta = 0.9, join_type = round, miter_limit = 2, $fn = 0, $fa = 12, $fs = 2) {
+				square(size = [0.1, 0.1], center = false);
 			}
 		}
 	}
