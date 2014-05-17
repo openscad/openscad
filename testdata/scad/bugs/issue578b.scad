@@ -7,5 +7,7 @@ File       : ../libraries/install/include/CGAL/Constrained_triangulation_2.h
 Line       : 636
 Explanation: 
 Refer to the bug-reporting instructions at http://www.cgal.org/bug_report.html
+
+This was fixed in CGAL-4.4, keep this test for future reference
 */
 render() import("issue578b.stl");
