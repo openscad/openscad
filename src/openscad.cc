@@ -362,6 +362,10 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 			// echo or OpenCSG png -> don't necessarily need CGALMesh evaluation
 		} else {
 			root_geom = geomevaluator.evaluateGeometry(*tree.root(), true);
+			if (!root_geom) {
+				PRINT("No top-level object found.");
+				return 1;
+			}
 			const CGAL_Nef_polyhedron *N = dynamic_cast<const CGAL_Nef_polyhedron*>(root_geom.get());
 		}
 
