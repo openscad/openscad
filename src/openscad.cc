@@ -580,6 +580,8 @@ int main(int argc, char **argv)
 	int rc = 0;
 #ifdef Q_OS_MAC
 	set_output_handler(CocoaUtils::nslog, NULL);
+#else
+	PlatformUtils::ensureStdIO();
 #endif
 #ifdef ENABLE_CGAL
 	// Causes CGAL errors to abort directly instead of throwing exceptions
