@@ -413,7 +413,7 @@ Response GeometryEvaluator::visit(State &state, const OffsetNode &node)
 				// ClipperLib documentation: The formula for the number of steps in a full
 				// circular arc is ... Pi / acos(1 - arc_tolerance / abs(delta))
 				double n = Calc::get_fragments_from_r(10, node.fn, node.fs, node.fa);
-				double arc_tolerance = abs(node.delta) * (1 - cos(M_PI / n));				
+				double arc_tolerance = std::abs(node.delta) * (1 - cos(M_PI / n));
 				const Polygon2d *result = ClipperUtils::applyOffset(*polygon, node.delta, node.join_type, node.miter_limit, arc_tolerance);
 				assert(result);
 				geom.reset(result);
