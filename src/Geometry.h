@@ -30,4 +30,29 @@ protected:
 	int convexity;
 };
 
+class GeometryList : public Geometry
+{
+public:
+  typedef std::list<shared_ptr<const Geometry> > Geometries;
+	Geometries children;
+
+	GeometryList();
+	GeometryList(const Geometry::ChildList &chlist);
+	GeometryList(const GeometryList::Geometries &chlist);
+	virtual ~GeometryList();
+
+	virtual size_t memsize() const;
+	virtual BoundingBox getBoundingBox() const;
+	virtual std::string dump() const;
+	virtual unsigned int getDimension() const;
+	virtual bool isEmpty() const;
+
+	const Geometries &getChildren() const { 
+		return this->children;
+	}
+
+	shared_ptr<GeometryList> flatten() const;
+
+};
+
 #endif

@@ -221,7 +221,6 @@ std::vector<const class Polygon2d *> GeometryEvaluator::collectChildren2D(const 
 	BOOST_FOREACH(const Geometry::ChildItem &item, this->visitedchildren[node.index()]) {
 		const AbstractNode *chnode = item.first;
 		const shared_ptr<const Geometry> &chgeom = item.second;
-		// FIXME: Don't use deep access to modinst members
 		if (chnode->modinst->isBackground()) continue;
 
 		// NB! We insert into the cache here to ensure that all children of
@@ -295,7 +294,6 @@ Geometry::ChildList GeometryEvaluator::collectChildren3D(const AbstractNode &nod
 	BOOST_FOREACH(const Geometry::ChildItem &item, this->visitedchildren[node.index()]) {
 		const AbstractNode *chnode = item.first;
 		const shared_ptr<const Geometry> &chgeom = item.second;
-		// FIXME: Don't use deep access to modinst members
 		if (chnode->modinst->isBackground()) continue;
 
 		// NB! We insert into the cache here to ensure that all children of
@@ -359,7 +357,7 @@ Polygon2d *GeometryEvaluator::applyToChildren2D(const AbstractNode &node, OpenSC
 }
 
 /*!
-	Adds ourself to out parent's list of traversed children.
+	Adds ourself to our parent's list of traversed children.
 	Call this for _every_ node which affects output during traversal.
 	Usually, this should be called from the postfix stage, but for some nodes, 
 	we defer traversal letting other components (e.g. CGAL) render the subgraph, 
@@ -392,6 +390,82 @@ Response GeometryEvaluator::visit(State &state, const AbstractNode &node)
 		shared_ptr<const class Geometry> geom;
 		if (!isSmartCached(node)) {
 			geom = applyToChildren(node, OPENSCAD_UNION).constptr();
+		}
+		else {
+			geom = smartCacheGet(node);
+		}
+		addToParent(state, node, geom);
+	}
+	return ContinueTraversal;
+}
+
+/*!
+	Pass children to parent without touching them. Used by e.g. for loops
+*/
+Response GeometryEvaluator::visit(State &state, const ListNode &node)
+{
+	if (state.isPrefix() && isSmartCached(node)) return PruneTraversal;
+	if (state.isPostfix()) {
+		BOOST_FOREACH(const Geometry::ChildItem &item, this->visitedchildren[node.index()]) {
+			const AbstractNode *chnode = item.first;
+			const shared_ptr<const Geometry> &chgeom = item.second;
+			addToParent(state, *chnode, chgeom);
+		}
+	}
+	return ContinueTraversal;
+}
+
+/*!
+*/
+Response GeometryEvaluator::visit(State &state, const GroupNode &node)
+{
+	if (state.isPrefix() && isSmartCached(node)) return PruneTraversal;
+	if (state.isPostfix()) {
+		shared_ptr<const class Geometry> geom;
+		if (!isSmartCached(node)) {
+			// FIXME: 2D children
+			Geometry::ChildList children = collectChildren3D(node);
+			if (children.size() == 1) geom = children.front().second;
+			else if (children.size() > 1) geom.reset(new GeometryList(children));
+		}
+		else {
+			geom = smartCacheGet(node);
+		}
+		addToParent(state, node, geom);
+	}
+	return ContinueTraversal;
+}
+
+/*!
+  Root nodes are handled specially; they will flatten any child group
+  nodes to avoid doing an implicit top-level union.
+
+	NB! This is likely a temporary measure until a better implementation of 
+	group nodes is in place.
+*/
+Response GeometryEvaluator::visit(State &state, const RootNode &node)
+{
+	if (state.isPrefix() && isSmartCached(node)) return PruneTraversal;
+	if (state.isPostfix()) {
+		shared_ptr<const class Geometry> geom;
+		if (!isSmartCached(node)) {
+
+			GeometryList::Geometries geometries;
+			BOOST_FOREACH(const Geometry::ChildItem &item, this->visitedchildren[node.index()]) {
+				const AbstractNode *chnode = item.first;
+				const shared_ptr<const Geometry> &chgeom = item.second;
+				if (chnode->modinst->isBackground()) continue;
+				// NB! We insert into the cache here to ensure that all children of
+				// a node is a valid object. If we inserted as we created them, the 
+				// cache could have been modified before we reach this point due to a large
+				// sibling object. 
+				smartCacheInsert(*chnode, chgeom);
+				// Only use valid geometries
+				// FIXME: Enforce 2D vs. 3D here?
+				if (chgeom && !chgeom->isEmpty()) geometries.push_back(chgeom);
+			}
+			if (geometries.size() == 1) geom = geometries.front();
+			else if (geometries.size() > 1) geom.reset(new GeometryList(geometries));
 		}
 		else {
 			geom = smartCacheGet(node);
@@ -846,7 +920,7 @@ Response GeometryEvaluator::visit(State &state, const RotateExtrudeNode &node)
 }
 
 /*!
-	Handles non-leaf PolyNodes; projection
+	Not in use
 */
 Response GeometryEvaluator::visit(State &state, const AbstractPolyNode &node)
 {
@@ -873,7 +947,6 @@ Response GeometryEvaluator::visit(State &state, const ProjectionNode &node)
 				BOOST_FOREACH(const Geometry::ChildItem &item, this->visitedchildren[node.index()]) {
 					const AbstractNode *chnode = item.first;
 					const shared_ptr<const Geometry> &chgeom = item.second;
-					// FIXME: Don't use deep access to modinst members
 					if (chnode->modinst->isBackground()) continue;
 
 					const Polygon2d *poly = NULL;

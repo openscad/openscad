@@ -26,7 +26,7 @@
 
 #include <boost/foreach.hpp>
 #include "module.h"
-#include "node.h"
+#include "csgnode.h"
 #include "evalcontext.h"
 #include "modcontext.h"
 #include "builtin.h"
@@ -203,7 +203,7 @@ AbstractNode *ControlModule::instantiate(const Context* /*ctx*/, const ModuleIns
 		// assert(filectx->evalctx);
 		if (evalctx->numArgs()<=0) {
 			// no parameters => all children
-			AbstractNode* node = new AbstractNode(inst);
+			AbstractNode* node = new CsgNode(inst, OPENSCAD_UNION);
 			for (int n = 0; n < (int)modulectx->numChildren(); ++n) {
 				AbstractNode* childnode = modulectx->getChild(n)->evaluate(modulectx);
 				if (childnode==NULL) continue; // error
@@ -218,7 +218,7 @@ AbstractNode *ControlModule::instantiate(const Context* /*ctx*/, const ModuleIns
 				return getChild(value,modulectx);
 			}
 			else if (value.type() == Value::VECTOR) {
-				AbstractNode* node = new AbstractNode(inst);
+				AbstractNode* node = new CsgNode(inst, OPENSCAD_UNION);
 				const Value::VectorType& vect = value.toVector();
 				foreach (const Value::VectorType::value_type& vectvalue, vect) {
 					AbstractNode* childnode = getChild(vectvalue,modulectx);
@@ -228,7 +228,7 @@ AbstractNode *ControlModule::instantiate(const Context* /*ctx*/, const ModuleIns
 				return node;
 			}
 			else if (value.type() == Value::RANGE) {
-				AbstractNode* node = new AbstractNode(inst);
+				AbstractNode* node = new CsgNode(inst, OPENSCAD_UNION);
 				Value::RangeType range = value.toRange();
                                 boost::uint32_t steps = range.nbsteps();
 				if (steps >= 10000) {
@@ -252,10 +252,9 @@ AbstractNode *ControlModule::instantiate(const Context* /*ctx*/, const ModuleIns
 		return NULL;
 	}
 
-	if (type == INT_FOR)
-		node = new AbstractIntersectionNode(inst);
-	else
-		node = new AbstractNode(inst);
+	if (type == FOR) node = new ListNode(inst);
+	else if (type == INT_FOR) node = new AbstractIntersectionNode(inst);
+	else node = new CsgNode(inst, OPENSCAD_UNION);
 
 	if (type == ECHO)
 	{

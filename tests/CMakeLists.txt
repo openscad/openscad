@@ -581,7 +581,12 @@ set(CORE_SOURCES
 set(NOCGAL_SOURCES
   ../src/builtin.cc 
   ../src/import.cc
-  ../src/export.cc)
+  ../src/export.cc
+  ../src/export_stl.cc
+  ../src/export_off.cc
+  ../src/export_amf.cc
+  ../src/export_dxf.cc
+  ../src/export_svg.cc)
 
 set(CGAL_SOURCES
   ${NOCGAL_SOURCES}

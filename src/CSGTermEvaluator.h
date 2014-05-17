@@ -18,6 +18,7 @@ public:
   virtual Response visit(State &state, const class AbstractNode &node);
  	virtual Response visit(State &state, const class AbstractIntersectionNode &node);
  	virtual Response visit(State &state, const class AbstractPolyNode &node);
+ 	virtual Response visit(State &state, const class ListNode &node);
  	virtual Response visit(State &state, const class CsgNode &node);
  	virtual Response visit(State &state, const class TransformNode &node);
 	virtual Response visit(State &state, const class ColorNode &node);

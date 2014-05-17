@@ -99,7 +99,7 @@ public:
 			break;
 		default:
 			assert(false && "PrimitiveNode::name(): Unknown primitive type");
-			return AbstractPolyNode::name();
+			return "unknown";
 		}
 	}
 

@@ -25,16 +25,7 @@ void export_png(const Geometry *root_geom, Camera &cam, std::ostream &output)
 	shared_ptr<const Geometry> ptr(root_geom);
 	CGALRenderer cgalRenderer(ptr);
 
-	BoundingBox bbox;
-	if (cgalRenderer.polyhedron) {
-		CGAL::Bbox_3 cgalbbox = cgalRenderer.polyhedron->bbox();
-		bbox = BoundingBox(
-		  Vector3d(cgalbbox.xmin(), cgalbbox.ymin(), cgalbbox.zmin()),
-		  Vector3d(cgalbbox.xmax(), cgalbbox.ymax(), cgalbbox.zmax())  );
-	}
-	else if (cgalRenderer.polyset) {
-		bbox = cgalRenderer.polyset->getBoundingBox();
-	}
+	BoundingBox bbox = cgalRenderer.getBoundingBox();
 
 	if (cam.type == Camera::NONE) {
 		cam.type = Camera::VECTOR;

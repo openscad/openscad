@@ -1,4 +1,2 @@
-group() {
-	surface(file = "", center = false, invert = false);
-	surface(file = "surface.dat", center = true, invert = false);
-}
+surface(file = "", center = false, invert = false);
+surface(file = "surface.dat", center = true, invert = false);

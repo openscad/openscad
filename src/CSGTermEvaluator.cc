@@ -86,6 +86,16 @@ Response CSGTermEvaluator::visit(State &state, const AbstractIntersectionNode &n
 	return ContinueTraversal;
 }
 
+Response CSGTermEvaluator::visit(State &state, const class ListNode &node)
+{
+	if (state.isPostfix()) {
+		BOOST_FOREACH(const AbstractNode *chnode, this->visitedchildren[node.index()]) {
+			addToParent(state, *chnode);
+		}
+	}
+	return ContinueTraversal;
+}
+
 static shared_ptr<CSGTerm> evaluate_csg_term_from_geometry(const State &state, 
 																					std::vector<shared_ptr<CSGTerm> > &highlights, 
 																					std::vector<shared_ptr<CSGTerm> > &background, 

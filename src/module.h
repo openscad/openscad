@@ -68,7 +68,7 @@ public:
 	virtual ~AbstractModule();
         virtual bool is_experimental() const { return feature != NULL; }
         virtual bool is_enabled() const { return (feature == NULL) || feature->is_enabled(); }
-	virtual class AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, const class EvalContext *evalctx = NULL) const;
+	virtual class AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, const class EvalContext *evalctx = NULL) const = 0;
 	virtual std::string dump(const std::string &indent, const std::string &name) const;
 };
 

@@ -26,9 +26,10 @@
 
 #include "module.h"
 #include "ModuleCache.h"
-#include "node.h"
+#include "csgnode.h"
 #include "modcontext.h"
 #include "evalcontext.h"
+#include "builtin.h"
 #include "expression.h"
 #include "function.h"
 #include "printutils.h"
@@ -45,6 +46,7 @@ AbstractModule::~AbstractModule()
 {
 }
 
+/*
 AbstractNode *AbstractModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const
 {
 	(void)ctx; // avoid unusued parameter warning
@@ -55,6 +57,7 @@ AbstractNode *AbstractModule::instantiate(const Context *ctx, const ModuleInstan
 
 	return node;
 }
+*/
 
 std::string AbstractModule::dump(const std::string &indent, const std::string &name) const
 {
@@ -191,7 +194,7 @@ AbstractNode *Module::instantiate(const Context *ctx, const ModuleInstantiation 
 	c.dump(this, inst);
 #endif
 
-	AbstractNode *node = new AbstractNode(inst);
+	AbstractNode *node = new CsgNode(inst, OPENSCAD_UNION);
 	std::vector<AbstractNode *> instantiatednodes = this->scope.instantiateChildren(&c);
 	node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
 	module_stack.pop_back();
@@ -326,9 +329,14 @@ AbstractNode *FileModule::instantiate(const Context *ctx, const ModuleInstantiat
 	c.dump(this, inst);
 #endif
 
-	AbstractNode *node = new AbstractNode(inst);
+	RootNode *node = new RootNode(inst);
 	std::vector<AbstractNode *> instantiatednodes = this->scope.instantiateChildren(ctx, &c);
 	node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
 
 	return node;
+}
+
+void register_builtin_group()
+{
+	Builtins::init("group", new Module());
 }
