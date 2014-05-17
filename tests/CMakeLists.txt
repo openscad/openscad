@@ -905,7 +905,8 @@ set_test_config(Heavy cgalpngtest_rotate_extrude-tests
                       cgalpngtest_for-nested-tests
                       cgalpngtest_resize-tests
                       cgalpngtest_fractal
-                      cgalpngtest_iteration)
+                      cgalpngtest_iteration
+                      cgalpngtest_linear_extrude-scale-zero-tests)
 
 # Bugs
 
