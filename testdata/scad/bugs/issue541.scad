@@ -4,6 +4,6 @@ lookup_halfedge(): input error: facet 81 shares a halfedge from vertex 61 to ver
 
 ERROR: CGAL NefPolyhedron->Polyhedron conversion failed.
 
-This was fixed in CGAL-4.4, keep this test for future reference
+This has been fixed, but keep this test for future reference
 */
 render() import("issue541.stl");
