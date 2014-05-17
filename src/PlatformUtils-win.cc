@@ -1,5 +1,8 @@
 #include "PlatformUtils.h"
 #include "printutils.h"
+#ifndef _WIN32_WINNT
+#define _WIN32_WINNT 0x0501
+#endif
 #include <windows.h>
 #ifndef _WIN32_IE
 #define _WIN32_IE 0x0501 // SHGFP_TYPE_CURRENT
@@ -36,8 +39,9 @@ std::string winapi_wstr_to_utf8( std::wstring wstr )
 	  cchWideChar, lpMultiByteStr, cbMultiByte, lpDefaultChar, lpUsedDefaultChar );
 
 	if (result != numbytes) {
+		DWORD errcode = GetLastError();
 		PRINT("ERROR: error converting w_char str to utf8 string");
-		PRINTB("ERROR: error code %i",GetLastError());
+		PRINTB("ERROR: error code %i",errcode);
 	}
 
 	return utf8_str;
@@ -73,3 +77,31 @@ std::string PlatformUtils::documentsPath()
 	}
 	return retval;
 }
+
+#include <io.h>
+#include <stdio.h>
+#include <fstream>
+
+// attach to parent console if standard IO handles not available
+// It may be good idea to redirect the output to file(s) here in some future.
+void PlatformUtils::ensureStdIO(void)
+{
+	// Preserve existing handles whenever available.
+	// HANDLE hRead = (HANDLE)_get_osfhandle(_fileno(stdin));
+	HANDLE hWrite = (HANDLE)_get_osfhandle(_fileno(stdout));
+	HANDLE hError = (HANDLE)_get_osfhandle(_fileno(stderr));
+
+	if (/* INVALID_HANDLE_VALUE != hRead && */ INVALID_HANDLE_VALUE != hWrite && INVALID_HANDLE_VALUE != hError)
+		return;
+
+	// I see nothing to do about error(s) here.
+	if (!AttachConsole(ATTACH_PARENT_PROCESS)) return;
+
+	// Let CRT machinery performs proper setup.
+	// if (INVALID_HANDLE_VALUE == hRead) (void)_wfreopen(L"CONIN$",  L"rt", stdin);
+	if (INVALID_HANDLE_VALUE == hWrite) (void)_wfreopen(L"CONOUT$",  L"wt", stdout);
+	if (INVALID_HANDLE_VALUE == hError) (void)_wfreopen(L"CONOUT$",  L"wt", stderr);
+
+	std::ios_base::sync_with_stdio();
+}
+
