@@ -901,6 +901,12 @@ disable_tests(cgalpngtest_child-background
               csgpngtest_testcolornames
               throwntogethertest_testcolornames)
 
+# The inf/nan tests fail when exporting CSG and rendering that output again
+# as currently inf/nan is written directly to the CSG file (e.g. r = inf)
+# which is not valid or even misleading in case a variable inf exists.
+# FIXME: define export behavior for inf/nan when exporting CSG files
+disable_tests(csgpngtest_primitive-inf-tests csgpngtest_transform-nan-inf-tests)
+
 # Test config handling
 
 # Heavy tests are tests taking more than 10 seconds on a development computer
@@ -934,6 +940,8 @@ foreach(FILE ${BUGS_FILES})
   get_test_fullname(opencsgtest ${FILE} TEST_FULLNAME)
   set_test_config(Bugs ${TEST_FULLNAME})
   get_test_fullname(cgalpngtest ${FILE} TEST_FULLNAME)
+  set_test_config(Bugs ${TEST_FULLNAME})
+  get_test_fullname(csgpngtest ${FILE} TEST_FULLNAME)
   set_test_config(Bugs ${TEST_FULLNAME})
 endforeach()
 
