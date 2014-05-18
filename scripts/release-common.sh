@@ -339,8 +339,11 @@ esac
 if [ -n $EXAMPLESDIR ]; then
     echo $EXAMPLESDIR
     mkdir -p $EXAMPLESDIR
-    cp examples/* $EXAMPLESDIR
-    chmod -R 644 $EXAMPLESDIR/*
+    rm -f examples.tar
+    tar cf examples.tar examples
+    cd $EXAMPLESDIR/.. && tar xf $OPENSCADDIR/examples.tar && cd $OPENSCADDIR
+    rm -f examples.tar
+    chmod -R 644 $EXAMPLESDIR/*/*
 fi
 if [ -n $LIBRARYDIR ]; then
     echo $LIBRARYDIR
