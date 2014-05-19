@@ -74,7 +74,7 @@ if(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/../libraries/MCAD/__init__.py)
   message(FATAL_ERROR "MCAD not found. You can install from the OpenSCAD root as follows: \n  git submodule update --init")
 endif()
 
-# NULLGL - Allow us to buidl without OpenGL(TM). run 'cmake .. -DNULLGL=1'
+# NULLGL - Allow us to build without OpenGL(TM). run 'cmake .. -DNULLGL=1'
 # Most tests will fail, but it can be used for testing/experiments
 
 if(NULLGL)
@@ -901,6 +901,13 @@ disable_tests(cgalpngtest_child-background
               openscad-cgalpng_highlight-and-background-modifier
               openscad-cgalpng_testcolornames
               throwntogethertest_testcolornames)
+
+# These tests return error code 1.
+# FIXME: We should have a way of running these and verify the return code
+disable_tests(cgalpngtest_primitive-inf-tests
+              cgalpngtest_nothing-decimal-comma-separated
+              cgalpngtest_import-empty-tests
+              cgalpngtest_empty-shape-tests)
 
 # Test config handling
 
