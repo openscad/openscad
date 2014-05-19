@@ -893,9 +893,6 @@ disable_tests(opencsgtest_child-background)
 disable_tests(cgalpngtest_child-background
               cgalpngtest_highlight-and-background-modifier
               cgalpngtest_testcolornames
-              openscad-cgalpng_child-background
-              openscad-cgalpng_highlight-and-background-modifier
-              openscad-cgalpng_testcolornames
               csgpngtest_child-background
               csgpngtest_highlight-and-background-modifier
               csgpngtest_testcolornames
@@ -911,14 +908,18 @@ disable_tests(csgpngtest_primitive-inf-tests csgpngtest_transform-nan-inf-tests)
 
 # Heavy tests are tests taking more than 10 seconds on a development computer
 set_test_config(Heavy cgalpngtest_rotate_extrude-tests
-                      cgalpngtest_sphere-tests
+                      csgpngtest_rotate_extrude-tests
                       cgalpngtest_for-nested-tests
+                      csgpngtest_for-nested-tests
                       cgalpngtest_resize-tests
                       cgalpngtest_fractal
                       csgpngtest_fractal
                       cgalpngtest_iteration
                       csgpngtest_iteration
-                      cgalpngtest_linear_extrude-scale-zero-tests)
+                      cgalpngtest_linear_extrude-scale-zero-tests
+                      csgpngtest_linear_extrude-scale-zero-tests
+                      cgalpngtest_sphere-tests
+                      csgpngtest_resize-tests)
 
 # Bugs
 
@@ -954,9 +955,7 @@ foreach(FILE ${EXAMPLE_FILES})
   set_test_config(Examples ${TEST_FULLNAME})
   get_test_fullname(throwntogethertest ${FILE} TEST_FULLNAME)
   set_test_config(Examples ${TEST_FULLNAME})
-  get_test_fullname(openscad-cgalpng ${FILE} TEST_FULLNAME)
-  set_test_config(Examples ${TEST_FULLNAME})
-  get_test_fullname(openscad-csgpng ${FILE} TEST_FULLNAME)
+  get_test_fullname(csgpngtest ${FILE} TEST_FULLNAME)
   set_test_config(Examples ${TEST_FULLNAME})
 endforeach()
 
