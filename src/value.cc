@@ -282,6 +282,12 @@ bool Value::getVec3(double &x, double &y, double &z, double defaultval) const
   return (v[0].getDouble(x) && v[1].getDouble(y) && v[2].getDouble(z));
 }
 
+bool Value::getVec2(bool &x, bool &y, bool defaultval) const
+{
+  bool dummy_z;
+  return getVec3(x, y, dummy_z, defaultval);
+}
+
 bool Value::getVec3(bool &x, bool &y, bool &z, bool defaultval) const
 {
 

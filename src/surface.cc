@@ -68,7 +68,7 @@ public:
 	virtual std::string name() const { return "surface"; }
 
 	Filename filename;
-	bool center;
+	bool center_x, center_y;
 	bool invert;
 	int convexity;
 	
@@ -83,7 +83,7 @@ private:
 AbstractNode *SurfaceModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const
 {
 	SurfaceNode *node = new SurfaceNode(inst);
-	node->center = false;
+	node->center_x = node->center_y = false;
 	node->invert = false;
 	node->convexity = 1;
 
@@ -97,9 +97,7 @@ AbstractNode *SurfaceModule::instantiate(const Context *ctx, const ModuleInstant
 	node->filename = lookup_file(fileval.isUndefined() ? "" : fileval.toString(), inst->path(), c.documentPath());
 
 	Value center = c.lookup_variable("center", true);
-	if (center.type() == Value::BOOL) {
-		node->center = center.toBool();
-	}
+    center.getVec2(node->center_x, node->center_y);
 
 	Value convexity = c.lookup_variable("convexity", true);
 	if (convexity.type() == Value::NUMBER) {
@@ -246,8 +244,8 @@ Geometry *SurfaceNode::createGeometry() const
 		min_val = std::min((*it).second - 1, min_val);
 	}
 
-	double ox = center ? -(columns-1)/2.0 : 0;
-	double oy = center ? -(lines-1)/2.0 : 0;
+	double ox = center_x ? -(columns-1)/2.0 : 0;
+	double oy = center_y ? -(lines-1)/2.0 : 0;
 
 	for (int i = 1; i < lines; i++)
 	for (int j = 1; j < columns; j++)
@@ -328,7 +326,7 @@ std::string SurfaceNode::toString() const
 	fs::path path((std::string)this->filename);
 
 	stream << this->name() << "(file = " << this->filename
-		<< ", center = " << (this->center ? "true" : "false")
+        << ", center = [" << this->center_x << ", " << this->center_y << "]"
 		<< ", invert = " << (this->invert ? "true" : "false")
 #ifndef OPENSCAD_TESTING
 		// timestamp is needed for caching, but disturbs the test framework
