@@ -94,7 +94,7 @@ namespace CGALUtils {
 			}
 			// Initialize N with first expected geometric object
 			if (!N) {
-				N = chN->copy();;
+				N = chN->copy();
 				continue;
 			}
 
@@ -1106,8 +1106,8 @@ void ZRemover::visit( CGAL_Nef_polyhedron3::Halffacet_const_handle hfacet )
 
 static CGAL_Nef_polyhedron *createNefPolyhedronFromPolySet(const PolySet &ps)
 {
-	assert(ps.getDimension() == 3);
 	if (ps.isEmpty()) return new CGAL_Nef_polyhedron();
+	assert(ps.getDimension() == 3);
 
 	CGAL_Nef_polyhedron3 *N = NULL;
 	bool plane_error = false;
