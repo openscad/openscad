@@ -1042,7 +1042,9 @@ list(APPEND LAZYUNION_DUMP_FILES
 
 list(APPEND LAZYUNION_FILES ${LAZYUNION_DUMP_FILES}
             ${CMAKE_SOURCE_DIR}/../testdata/scad/experimental/lazyunion-intersection-for.scad
-            ${CMAKE_SOURCE_DIR}/../testdata/scad/experimental/lazyunion-hull-for.scad)
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/experimental/lazyunion-difference-for.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/experimental/lazyunion-hull-for.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/experimental/lazyunion-minkowski-for.scad)
                                  
 add_cmdline_test(lazyunion-dump EXE ${OPENSCAD_BINPATH} ARGS --enable=lazy-union -o SUFFIX csg FILES ${LAZYUNION_DUMP_FILES})
 add_cmdline_test(lazyunion-opencsg EXE ${OPENSCAD_BINPATH} ARGS --enable=lazy-union -o SUFFIX png FILES ${LAZYUNION_FILES})
