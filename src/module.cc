@@ -194,7 +194,7 @@ AbstractNode *Module::instantiate(const Context *ctx, const ModuleInstantiation 
 	c.dump(this, inst);
 #endif
 
-	AbstractNode *node = new CsgNode(inst, OPENSCAD_UNION);
+	AbstractNode *node = new GroupNode(inst);
 	std::vector<AbstractNode *> instantiatednodes = this->scope.instantiateChildren(&c);
 	node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
 	module_stack.pop_back();

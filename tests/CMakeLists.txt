@@ -1025,10 +1025,21 @@ add_cmdline_test(throwntogethertest EXE ${OPENSCAD_BINPATH} ARGS --preview=throw
 # with anything. It's self-contained and returns != 0 on error
 add_cmdline_test(cgalstlsanitytest EXE ${CMAKE_SOURCE_DIR}/cgalstlsanitytest SUFFIX txt ARGS ${OPENSCAD_BINPATH} FILES ${CGALSTLSANITYTEST_FILES})
 
-# Add experimental tests
 
+#
+# Add experimental tests
+#
+
+# concat
 add_cmdline_test(echotest EXE ${OPENSCAD_BINPATH} ARGS --enable=concat -o SUFFIX echo FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/experimental/concat-tests.scad)
 
+# lazy-union
+list(APPEND LAZYUNION_DUMP_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/experimental/lazyunion-toplevel-objects.scad
+                                 ${CMAKE_SOURCE_DIR}/../testdata/scad/experimental/lazyunion-toplevel-for.scad
+                                 ${CMAKE_SOURCE_DIR}/../testdata/scad/experimental/lazyunion-nested-for.scad
+                                 ${CMAKE_SOURCE_DIR}/../testdata/scad/experimental/lazyunion-children.scad)
+                                 
+add_cmdline_test(lazyunion-dump EXE ${OPENSCAD_BINPATH} ARGS --enable=lazy-union -o SUFFIX csg FILES ${LAZYUNION_DUMP_FILES})
 
 # Tests using the actual OpenSCAD binary
 

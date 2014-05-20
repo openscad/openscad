@@ -1,0 +1,3 @@
+cube(size = [1, 1, 1], center = false);
+sphere($fn = 0, $fa = 12, $fs = 2, r = 1);
+cylinder($fn = 0, $fa = 12, $fs = 2, h = 1, r1 = 1, r2 = 1, center = false);

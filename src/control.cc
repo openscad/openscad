@@ -203,7 +203,10 @@ AbstractNode *ControlModule::instantiate(const Context* /*ctx*/, const ModuleIns
 		// assert(filectx->evalctx);
 		if (evalctx->numArgs()<=0) {
 			// no parameters => all children
-			AbstractNode* node = new CsgNode(inst, OPENSCAD_UNION);
+			AbstractNode* node;
+			if (Feature::ExperimentalLazyUnion.is_enabled()) node = new ListNode(inst);
+			else node = new GroupNode(inst);
+
 			for (int n = 0; n < (int)modulectx->numChildren(); ++n) {
 				AbstractNode* childnode = modulectx->getChild(n)->evaluate(modulectx);
 				if (childnode==NULL) continue; // error
