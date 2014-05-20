@@ -1034,12 +1034,18 @@ add_cmdline_test(cgalstlsanitytest EXE ${CMAKE_SOURCE_DIR}/cgalstlsanitytest SUF
 add_cmdline_test(echotest EXE ${OPENSCAD_BINPATH} ARGS --enable=concat -o SUFFIX echo FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/experimental/concat-tests.scad)
 
 # lazy-union
-list(APPEND LAZYUNION_DUMP_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/experimental/lazyunion-toplevel-objects.scad
-                                 ${CMAKE_SOURCE_DIR}/../testdata/scad/experimental/lazyunion-toplevel-for.scad
-                                 ${CMAKE_SOURCE_DIR}/../testdata/scad/experimental/lazyunion-nested-for.scad
-                                 ${CMAKE_SOURCE_DIR}/../testdata/scad/experimental/lazyunion-children.scad)
+list(APPEND LAZYUNION_DUMP_FILES
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/experimental/lazyunion-toplevel-objects.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/experimental/lazyunion-toplevel-for.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/experimental/lazyunion-nested-for.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/experimental/lazyunion-children.scad)
+
+list(APPEND LAZYUNION_FILES ${LAZYUNION_DUMP_FILES}
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/experimental/lazyunion-intersection-for.scad)
                                  
 add_cmdline_test(lazyunion-dump EXE ${OPENSCAD_BINPATH} ARGS --enable=lazy-union -o SUFFIX csg FILES ${LAZYUNION_DUMP_FILES})
+add_cmdline_test(lazyunion-opencsg EXE ${OPENSCAD_BINPATH} ARGS --enable=lazy-union -o SUFFIX png FILES ${LAZYUNION_FILES})
+add_cmdline_test(lazyunion-cgalpng EXE ${OPENSCAD_BINPATH} ARGS --enable=lazy-union --render -o SUFFIX png FILES ${LAZYUNION_FILES})
 
 # Tests using the actual OpenSCAD binary
 
