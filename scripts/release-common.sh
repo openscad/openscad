@@ -175,6 +175,9 @@ echo "NUMCPU: " $NUMCPU
 case $OS in
     LINUX|MACOSX) 
         TARGET=
+        # for QT4 set QT_SELECT=4
+        QT_SELECT=5
+        export QT_SELECT
         ;;
     WIN) 
         export QTDIR=/c/devmingw/qt2009.03
@@ -339,8 +342,11 @@ esac
 if [ -n $EXAMPLESDIR ]; then
     echo $EXAMPLESDIR
     mkdir -p $EXAMPLESDIR
-    cp examples/* $EXAMPLESDIR
-    chmod -R 644 $EXAMPLESDIR/*
+    rm -f examples.tar
+    tar cf examples.tar examples
+    cd $EXAMPLESDIR/.. && tar xf $OPENSCADDIR/examples.tar && cd $OPENSCADDIR
+    rm -f examples.tar
+    chmod -R 644 $EXAMPLESDIR/*/*
 fi
 if [ -n $FONTDIR ]; then
   echo $FONTDIR

@@ -708,7 +708,7 @@ fi
 
 echo "Using basedir:" $BASEDIR
 mkdir -p $SRCDIR $DEPLOYDIR
-build_qt5 5.2.1
+build_qt5 5.2.0 # Wait until 5.2.2 due to https://github.com/openscad/openscad/issues/252
 # NB! For eigen, also update the path in the function
 build_eigen 3.2.0
 build_gmp 5.1.3

@@ -2,8 +2,7 @@
  * Copyright (C) 2008 Remko Troncon. BSD license
  * Copyright (C) 2013 Marius Kintel. BSD license
  */
-#ifndef SPARKLEAUTOUPDATER_H
-#define SPARKLEAUTOUPDATER_H
+#pragma once
 
 #include <QString>
 
@@ -28,5 +27,3 @@ private:
 	class Private;
 	Private *d;
 };
-
-#endif

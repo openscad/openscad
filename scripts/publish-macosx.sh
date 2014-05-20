@@ -28,7 +28,7 @@ update_www_download_links()
     
     if [ -f $webdir/$incfile ]; then
         cd $webdir
-        echo "fileinfo['MAC_SNAPSHOT_URL'] = '$BASEURL$packagefile'" > $incfile
+        echo "fileinfo['MAC_SNAPSHOT_URL'] = '$BASEURL/$packagefile'" > $incfile
         echo "fileinfo['MAC_SNAPSHOT_NAME'] = 'OpenSCAD $version'" >> $incfile
         echo "fileinfo['MAC_SNAPSHOT_SIZE'] = '$filesize'" >> $incfile
         echo 'modified mac_snapshot_links.js'

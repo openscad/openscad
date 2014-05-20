@@ -1,5 +1,4 @@
-#ifndef LINEAREXTRUDENODE_H_
-#define LINEAREXTRUDENODE_H_
+#pragma once
 
 #include "node.h"
 #include "visitor.h"
@@ -28,5 +27,3 @@ public:
 	Filename filename;
 	std::string layername;
 };
-
-#endif

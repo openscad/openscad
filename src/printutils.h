@@ -1,5 +1,4 @@
-#ifndef PRINTUTILS_H_
-#define PRINTUTILS_H_
+#pragma once
 
 #include <string>
 #include <list>
@@ -72,5 +71,3 @@ public:
 		return *this;
 	}
 };
-
-#endif

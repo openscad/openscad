@@ -1,5 +1,4 @@
-#ifndef FEATURE_H_
-#define FEATURE_H_
+#pragma once
 
 #include <stdio.h>
 #include <iostream>
@@ -41,5 +40,3 @@ private:
 	Feature(const std::string &name, const std::string &description);
 	virtual ~Feature();
 };
-
-#endif

@@ -1,5 +1,4 @@
-#ifndef RENDERNODE_H_
-#define RENDERNODE_H_
+#pragma once
 
 #include "node.h"
 #include "visitor.h"
@@ -17,5 +16,3 @@ public:
 
 	int convexity;
 };
-
-#endif

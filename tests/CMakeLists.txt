@@ -882,7 +882,7 @@ configure_file(${CMAKE_SOURCE_DIR}/../testdata/scad/templates/import_dxf-tests-t
 file(GLOB FEATURES_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/features/*.scad)
 file(GLOB SCAD_DXF_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/dxf/*.scad)
 file(GLOB FUNCTION_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/functions/*.scad)
-file(GLOB EXAMPLE_FILES ${CMAKE_SOURCE_DIR}/../examples/*.scad)
+file(GLOB EXAMPLE_FILES ${CMAKE_SOURCE_DIR}/../examples/*/*.scad)
 
 list(APPEND ECHO_FILES ${FUNCTION_FILES}
             ${CMAKE_SOURCE_DIR}/../testdata/scad/features/for-tests.scad
@@ -908,7 +908,7 @@ list(APPEND ECHO_FILES ${FUNCTION_FILES}
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/range-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/empty-stl.scad)
 
-list(APPEND DUMPTEST_FILES ${FEATURES_FILES} ${EXAMPLE_FILES})
+list(APPEND DUMPTEST_FILES ${FEATURES_FILES})
 list(APPEND DUMPTEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/escape-test.scad
                            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/include-tests.scad
                            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/use-tests.scad
@@ -937,10 +937,6 @@ list(APPEND CGALSTLSANITYTEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/no
 # Reenable it when this is improved
 disable_tests(opencsgtest_child-background)
 
-# FIXME: This single test takes over an hour to run on a 2.7 GHz P4
-disable_tests(opencsgtest_example006 cgalpngtest_example006)
-disable_tests(openscad-csgpng_example006 openscad-cgalpng_example006)
-
 # These tests only makes sense in OpenCSG mode
 disable_tests(cgalpngtest_child-background
               cgalpngtest_highlight-and-background-modifier
@@ -957,7 +953,6 @@ set_test_config(Heavy cgalpngtest_rotate_extrude-tests
                       cgalpngtest_sphere-tests
                       cgalpngtest_for-nested-tests
                       cgalpngtest_resize-tests
-                      cgalpngtest_intersection-tests
                       cgalpngtest_text-search-test
 		      cgalpngtest_text-font-direction-tests
 		      cgalpngtest_text-font-tests
@@ -967,7 +962,10 @@ set_test_config(Heavy cgalpngtest_rotate_extrude-tests
 		      opencsgtest_text-font-alignment-tests
 		      throwntogethertest_text-font-direction-tests
 		      throwntogethertest_text-font-tests
-		      throwntogethertest_text-font-alignment-tests)
+		      throwntogethertest_text-font-alignment-tests
+                      cgalpngtest_fractal
+                      cgalpngtest_iteration
+                      cgalpngtest_linear_extrude-scale-zero-tests)
 
 # Bugs
 
@@ -976,11 +974,9 @@ list(APPEND BUGS_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue495.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue541.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue578.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue578b.scad
-                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue582.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue584.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue585.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue591.scad
-                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue593.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue612.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue112.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue666.scad)
@@ -1068,6 +1064,7 @@ add_cmdline_test(csgtermtest EXE ${OPENSCAD_BINPATH} ARGS -o SUFFIX term FILES
                              ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/allmodules.scad)
 add_cmdline_test(echotest EXE ${OPENSCAD_BINPATH} ARGS -o SUFFIX echo FILES ${ECHO_FILES})
 add_cmdline_test(dumptest EXE ${OPENSCAD_BINPATH} ARGS -o SUFFIX csg FILES ${DUMPTEST_FILES})
+add_cmdline_test(dumptest-examples EXE ${OPENSCAD_BINPATH} ARGS -o SUFFIX csg FILES ${EXAMPLE_FILES})
 add_cmdline_test(cgalpngtest EXE ${OPENSCAD_BINPATH} ARGS --render -o SUFFIX png FILES ${CGALPNGTEST_FILES})
 add_cmdline_test(opencsgtest EXE ${OPENSCAD_BINPATH} ARGS -o SUFFIX png FILES ${OPENCSGTEST_FILES})
 add_cmdline_test(throwntogethertest EXE ${OPENSCAD_BINPATH} ARGS --preview=throwntogether -o SUFFIX png FILES ${THROWNTOGETHERTEST_FILES})
@@ -1113,47 +1110,47 @@ endif()
 add_cmdline_test(openscad-imgsize EXE ${OPENSCAD_BINPATH}
                  ARGS --imgsize 100,100 -o 
                  SUFFIX png 
-                 FILES ${CMAKE_SOURCE_DIR}/../examples/example001.scad)
+		 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/features/camera-tests.scad)
 add_cmdline_test(openscad-imgstretch EXE ${OPENSCAD_BINPATH}
                  ARGS --imgsize 500,100 -o 
                  SUFFIX png 
-                 FILES ${CMAKE_SOURCE_DIR}/../examples/example001.scad)
+		 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/features/camera-tests.scad)
 add_cmdline_test(openscad-imgstretch2 EXE ${OPENSCAD_BINPATH}
                  ARGS --imgsize 100,500 -o 
                  SUFFIX png 
-                 FILES ${CMAKE_SOURCE_DIR}/../examples/example001.scad)
+		 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/features/camera-tests.scad)
 add_cmdline_test(openscad-camdist EXE ${OPENSCAD_BINPATH} 
                  ARGS --imgsize=500,500 --camera=0,0,0,90,0,90,300 -o
                  SUFFIX png
-                 FILES ${CMAKE_SOURCE_DIR}/../examples/example001.scad)
+		 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/features/camera-tests.scad)
 add_cmdline_test(openscad-camrot EXE ${OPENSCAD_BINPATH}
                  ARGS --imgsize=500,500 --camera=0,0,0,440,337.5,315,300 -o
                  SUFFIX png
-                 FILES ${CMAKE_SOURCE_DIR}/../examples/example001.scad)
+		 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/features/camera-tests.scad)
 add_cmdline_test(openscad-camtrans EXE ${OPENSCAD_BINPATH}
                  ARGS --imgsize=500,500 --camera=100,-20,-10,90,0,90,300 -o
                  SUFFIX png
-                 FILES ${CMAKE_SOURCE_DIR}/../examples/example001.scad)
+		 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/features/camera-tests.scad)
 add_cmdline_test(openscad-camortho EXE ${OPENSCAD_BINPATH}
                  ARGS --imgsize=500,500 --camera=100,-20,-10,90,0,90,300 --projection=o -o
                  SUFFIX png
-                 FILES ${CMAKE_SOURCE_DIR}/../examples/example001.scad)
+		 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/features/camera-tests.scad)
 add_cmdline_test(openscad-cameye EXE ${OPENSCAD_BINPATH}
                  ARGS --imgsize=500,500 --camera=60,40,30,0,0,0 -o
                  SUFFIX png
-                 FILES ${CMAKE_SOURCE_DIR}/../examples/example001.scad)
+		 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/features/camera-tests.scad)
 add_cmdline_test(openscad-cameye2 EXE ${OPENSCAD_BINPATH}
                  ARGS --imgsize=500,500 --camera=160,140,130,0,0,0 -o
                  SUFFIX png
-                 FILES ${CMAKE_SOURCE_DIR}/../examples/example001.scad)
+		 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/features/camera-tests.scad)
 add_cmdline_test(openscad-cameyeortho EXE ${OPENSCAD_BINPATH}
                  ARGS --imgsize=500,500 --camera=160,140,130,0,0,0 --projection=o -o 
                  SUFFIX png
-                 FILES ${CMAKE_SOURCE_DIR}/../examples/example001.scad)
+		 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/features/camera-tests.scad)
 add_cmdline_test(openscad-camcenter EXE ${OPENSCAD_BINPATH}
                  ARGS --imgsize=500,500 --camera=60,40,30,20,10,30  -o
                  SUFFIX png
-                 FILES ${CMAKE_SOURCE_DIR}/../examples/example001.scad)
+		 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/features/camera-tests.scad)
 
 
 

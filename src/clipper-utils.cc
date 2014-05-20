@@ -88,7 +88,7 @@ namespace ClipperUtils {
 			// intersection operations must be split into a sequence of binary operations
 			ClipperLib::Paths source = pathsvector[0];
 			ClipperLib::PolyTree result;
-			for (int i = 1; i < pathsvector.size(); i++) {
+			for (unsigned int i = 1; i < pathsvector.size(); i++) {
 				clipper.AddPaths(source, ClipperLib::ptSubject, true);
 				clipper.AddPaths(pathsvector[i], ClipperLib::ptClip, true);
 				clipper.Execute(clipType, result, ClipperLib::pftNonZero, ClipperLib::pftNonZero);

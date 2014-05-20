@@ -1,5 +1,4 @@
-#ifndef VISITOR_H_
-#define VISITOR_H_
+#pragma once
 
 #include "traverser.h"
 
@@ -60,5 +59,3 @@ public:
 	}
 	// Add visit() methods for new visitable subtypes of AbstractNode here
 };
-
-#endif

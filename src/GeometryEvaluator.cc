@@ -167,12 +167,12 @@ void GeometryEvaluator::applyResize3D(CGAL_Nef_polyhedron &N,
 	CGAL_Iso_cuboid_3 bb = CGALUtils::boundingBox(*N.p3);
 
 	std::vector<NT3> scale, bbox_size;
-	for (int i=0;i<3;i++) {
+	for (unsigned int i=0;i<3;i++) {
 		scale.push_back(NT3(1));
 		bbox_size.push_back(bb.max_coord(i) - bb.min_coord(i));
 	}
 	int newsizemax_index = 0;
-	for (int i=0;i<N.getDimension();i++) {
+	for (unsigned int i=0;i<N.getDimension();i++) {
 		if (newsize[i]) {
 			if (bbox_size[i] == NT3(0)) {
 				PRINT("WARNING: Resize in direction normal to flat object is not implemented");
@@ -189,7 +189,7 @@ void GeometryEvaluator::applyResize3D(CGAL_Nef_polyhedron &N,
 	if (newsize[newsizemax_index] != 0) {
 		autoscale = NT3(newsize[newsizemax_index]) / bbox_size[newsizemax_index];
 	}
-	for (int i=0;i<N.getDimension();i++) {
+	for (unsigned int i=0;i<N.getDimension();i++) {
 		if (autosize[i] && newsize[i]==0) scale[i] = autoscale;
 	}
 
@@ -415,7 +415,7 @@ Response GeometryEvaluator::visit(State &state, const OffsetNode &node)
 				// ClipperLib documentation: The formula for the number of steps in a full
 				// circular arc is ... Pi / acos(1 - arc_tolerance / abs(delta))
 				double n = Calc::get_fragments_from_r(10, node.fn, node.fs, node.fa);
-				double arc_tolerance = abs(node.delta) * (1 - cos(M_PI / n));				
+				double arc_tolerance = std::abs(node.delta) * (1 - cos(M_PI / n));
 				const Polygon2d *result = ClipperUtils::applyOffset(*polygon, node.delta, node.join_type, node.miter_limit, arc_tolerance);
 				assert(result);
 				geom.reset(result);
@@ -706,7 +706,7 @@ static Geometry *extrudePolygon(const LinearExtrudeNode &node, const Polygon2d &
 	}
     size_t slices = node.has_twist ? node.slices : 1;
 
-	for (int j = 0; j < slices; j++) {
+	for (unsigned int j = 0; j < slices; j++) {
 		double rot1 = node.twist*j / slices;
 		double rot2 = node.twist*(j+1) / slices;
 		double height1 = h1 + (h2-h1)*j / slices;
@@ -762,7 +762,7 @@ Response GeometryEvaluator::visit(State &state, const LinearExtrudeNode &node)
 
 static void fill_ring(std::vector<Vector3d> &ring, const Outline2d &o, double a)
 {
-	for (int i=0;i<o.vertices.size();i++) {
+	for (unsigned int i=0;i<o.vertices.size();i++) {
 		ring[i][0] = o.vertices[i][0] * sin(a);
 		ring[i][1] = o.vertices[i][0] * cos(a);
 		ring[i][2] = o.vertices[i][1];

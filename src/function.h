@@ -1,5 +1,4 @@
-#ifndef FUNCTION_H_
-#define FUNCTION_H_
+#pragma once
 
 #include "value.h"
 #include "typedefs.h"
@@ -50,5 +49,3 @@ public:
 	virtual Value evaluate(const Context *ctx, const EvalContext *evalctx) const;
 	virtual std::string dump(const std::string &indent, const std::string &name) const;
 };
-
-#endif

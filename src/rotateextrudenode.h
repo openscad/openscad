@@ -1,5 +1,4 @@
-#ifndef ROTATEEXTRUDENODE_H_
-#define ROTATEEXTRUDENODE_H_
+#pragma once
 
 #include "node.h"
 #include "visitor.h"
@@ -25,5 +24,3 @@ public:
 	Filename filename;
 	std::string layername;
 };
-
-#endif

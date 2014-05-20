@@ -1,5 +1,4 @@
-#ifndef CONTEXT_H_
-#define CONTEXT_H_
+#pragma once
 
 #include <string>
 #include <vector>
@@ -48,5 +47,3 @@ public:
 	virtual std::string dump(const class AbstractModule *mod, const ModuleInstantiation *inst);
 #endif
 };
-
-#endif

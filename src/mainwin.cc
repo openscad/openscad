@@ -77,6 +77,7 @@
 #include <QProgressDialog>
 #include <QMutexLocker>
 #include <QTemporaryFile>
+#include <QDockWidget>
 
 #include <fstream>
 
@@ -159,10 +160,17 @@ settings_valueList(const QString &key, const QList<int> &defaultList = QList<int
 
 }
 
+bool MainWindow::mdiMode = false;
+bool MainWindow::undockMode = false;
+
 MainWindow::MainWindow(const QString &filename)
 	: root_inst("group"), tempFile(NULL), progresswidget(NULL), font_list_dialog(NULL)
 {
 	setupUi(this);
+	setCorner(Qt::TopLeftCorner, Qt::LeftDockWidgetArea);
+	setCorner(Qt::TopRightCorner, Qt::RightDockWidgetArea);
+	setCorner(Qt::BottomLeftCorner, Qt::LeftDockWidgetArea);
+	setCorner(Qt::BottomRightCorner, Qt::RightDockWidgetArea);
 
 	this->setAttribute(Qt::WA_DeleteOnClose);
 
@@ -197,7 +205,17 @@ MainWindow::MainWindow(const QString &filename)
 	fps = 0;
 	fsteps = 1;
 
-  editActionZoomIn->setShortcuts(QList<QKeySequence>() << editActionZoomIn->shortcuts() << QKeySequence("CTRL+="));
+	const QString importStatement = "import(\"%1\");\n";
+	const QString surfaceStatement = "surface(\"%1\");\n";
+	knownFileExtensions["stl"] = importStatement;
+	knownFileExtensions["off"] = importStatement;
+	knownFileExtensions["dxf"] = importStatement;
+	knownFileExtensions["dat"] = surfaceStatement;
+	knownFileExtensions["png"] = surfaceStatement;
+	knownFileExtensions["scad"] = "";
+	knownFileExtensions["csg"] = "";
+	
+	editActionZoomIn->setShortcuts(QList<QKeySequence>() << editActionZoomIn->shortcuts() << QKeySequence("CTRL+="));
 
 	connect(this, SIGNAL(highlightError(int)), editor, SLOT(highlightError(int)));
 	connect(this, SIGNAL(unhighlightLastError()), editor, SLOT(unhighlightLastError()));
@@ -264,22 +282,17 @@ MainWindow::MainWindow(const QString &filename)
 	this->menuOpenRecent->addAction(this->fileActionClearRecent);
 	connect(this->fileActionClearRecent, SIGNAL(triggered()),
 					this, SLOT(clearRecentFiles()));
+	//Examples
 	if (!qexamplesdir.isEmpty()) {
-		bool found_example = false;
-		QStringList examples = QDir(qexamplesdir).entryList(QStringList("*.scad"),
-		QDir::Files | QDir::Readable, QDir::Name);
-		foreach (const QString &ex, examples) {
-			this->menuExamples->addAction(ex, this, SLOT(actionOpenExample()));
-			found_example = true;
-		}
-		if (!found_example) {
-			delete this->menuExamples;
-			this->menuExamples = NULL;
-		}
-	} else {
-		delete this->menuExamples;
-		this->menuExamples = NULL;
-	}
+       
+		show_examples();
+	
+        } else {
+                delete this->menuExamples;
+                this->menuExamples = NULL;
+
+	  }
+
 
 	// Edit menu
 	connect(this->editActionUndo, SIGNAL(triggered()), editor, SLOT(undo()));
@@ -360,8 +373,8 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this->viewActionPerspective, SIGNAL(triggered()), this, SLOT(viewPerspective()));
 	connect(this->viewActionOrthogonal, SIGNAL(triggered()), this, SLOT(viewOrthogonal()));
 	connect(this->viewActionHide, SIGNAL(triggered()), this, SLOT(hideConsole()));
-  connect(this->viewActionZoomIn, SIGNAL(triggered()), qglview, SLOT(ZoomIn()));
-  connect(this->viewActionZoomOut, SIGNAL(triggered()), qglview, SLOT(ZoomOut()));
+	connect(this->viewActionZoomIn, SIGNAL(triggered()), qglview, SLOT(ZoomIn()));
+	connect(this->viewActionZoomOut, SIGNAL(triggered()), qglview, SLOT(ZoomOut()));
 
 	// Help menu
 	connect(this->helpActionAbout, SIGNAL(triggered()), this, SLOT(helpAbout()));
@@ -369,7 +382,6 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this->helpActionManual, SIGNAL(triggered()), this, SLOT(helpManual()));
 	connect(this->helpActionLibraryInfo, SIGNAL(triggered()), this, SLOT(helpLibrary()));
 	connect(this->helpActionFontInfo, SIGNAL(triggered()), this, SLOT(helpFontInfo()));
-
 
 	setCurrentOutput();
 
@@ -390,7 +402,9 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this->qglview, SIGNAL(doAnimateUpdate()), this, SLOT(animateUpdate()));
 
 	connect(Preferences::inst(), SIGNAL(requestRedraw()), this->qglview, SLOT(updateGL()));
-	connect(Preferences::inst(), SIGNAL(fontChanged(const QString&,uint)),
+	connect(Preferences::inst(), SIGNAL(updateMdiMode(bool)), this, SLOT(updateMdiMode(bool)));
+	connect(Preferences::inst(), SIGNAL(updateUndockMode(bool)), this, SLOT(updateUndockMode(bool)));
+	connect(Preferences::inst(), SIGNAL(fontChanged(const QString&,uint)), 
 					this, SLOT(setFont(const QString&,uint)));
 	connect(Preferences::inst(), SIGNAL(openCSGSettingsChanged()),
 					this, SLOT(openCSGSettingsChanged()));
@@ -411,13 +425,30 @@ MainWindow::MainWindow(const QString &filename)
 
 	// make sure it looks nice..
 	QSettings settings;
+	QByteArray windowState = settings.value("window/state", QByteArray()).toByteArray();
+	restoreState(windowState);
 	resize(settings.value("window/size", QSize(800, 600)).toSize());
 	move(settings.value("window/position", QPoint(0, 0)).toPoint());
-	QList<int> s1sizes = settings_valueList("window/splitter1sizes",QList<int>()<<400<<400);
-	QList<int> s2sizes = settings_valueList("window/splitter2sizes",QList<int>()<<400<<200);
-	splitter1->setSizes(s1sizes);
-	splitter2->setSizes(s2sizes);
 
+	if (windowState.size() == 0) {
+		/*
+		 * This triggers only in case the configuration file has no
+		 * window state information (or no configuration file at all).
+		 * When this happens, the editor would default to a very ugly
+		 * width due to the dock widget layout. This overwrites the
+		 * value reported via sizeHint() to a width a bit smaller than
+		 * half the main window size (either the one loaded from the
+		 * configuration or the default value of 800).
+		 * The height is only a dummy value which will be essentially
+		 * ignored by the layouting as the editor is set to expand to
+		 * fill the available space.
+		 */
+		editor->setInitialSizeHint(QSize((5 * this->width() / 11), 100));
+	}
+	
+	connect(this->editorDock, SIGNAL(topLevelChanged(bool)), this, SLOT(editorTopLevelChanged(bool)));
+	connect(this->consoleDock, SIGNAL(topLevelChanged(bool)), this, SLOT(consoleTopLevelChanged(bool)));
+	
 	// display this window and check for OpenGL 2.0 (OpenCSG) support
 	viewModeThrownTogether();
 	show();
@@ -462,6 +493,8 @@ MainWindow::loadViewSettings(){
 		editActionHide->setChecked(true);
 		hideEditor();
 	}
+	updateMdiMode(settings.value("advanced/mdi").toBool());
+	updateUndockMode(settings.value("advanced/undockableWindows").toBool());
 }
 
 void
@@ -477,6 +510,23 @@ MainWindow::loadDesignSettings()
 	uint cgalCacheSize = Preferences::inst()->getValue("advanced/cgalCacheSize").toUInt();
 	CGALCache::instance()->setMaxSize(cgalCacheSize);
 #endif
+}
+
+void MainWindow::updateMdiMode(bool mdi)
+{
+	MainWindow::mdiMode = mdi;
+}
+
+void MainWindow::updateUndockMode(bool undockMode)
+{
+	MainWindow::undockMode = undockMode;
+	if (undockMode) {
+		editorDock->setFeatures(editorDock->features() | QDockWidget::DockWidgetFloatable);
+		consoleDock->setFeatures(consoleDock->features() | QDockWidget::DockWidgetFloatable);
+	} else {
+		editorDock->setFeatures(editorDock->features() & ~QDockWidget::DockWidgetFloatable);
+		consoleDock->setFeatures(consoleDock->features() & ~QDockWidget::DockWidgetFloatable);
+	}
 }
 
 MainWindow::~MainWindow()
@@ -518,42 +568,57 @@ void MainWindow::report_func(const class AbstractNode*, void *vp, int mark)
 /*!
 	Requests to open a file from an external event, e.g. by double-clicking a filename.
  */
-#ifdef ENABLE_MDI
 void MainWindow::requestOpenFile(const QString &filename)
 {
+	// if we have an empty open window, use that one
+	QSetIterator<MainWindow *> i(*MainWindow::windows);
+	while (i.hasNext()) {
+		MainWindow *w = i.next();
+
+		if (w->editor->toPlainText().isEmpty()) {
+			w->openFile(filename);
+			return;
+		}
+	}
+
+	// otherwise, create a new one
 	new MainWindow(filename);
 }
-#else
-void MainWindow::requestOpenFile(const QString &)
-{
-}
-#endif
 
+/*!
+ 	Open the given file. In MDI mode a new window is created if the current
+ 	one is not empty. Otherwise the current window content is overwritten.
+ 	Any check whether to replace the content have to be made before.
+ */
 void
 MainWindow::openFile(const QString &new_filename)
 {
-	QString actual_filename = new_filename;
-	QFileInfo fi(new_filename);
-	if (fi.suffix().toLower().contains(QRegExp("^(stl|off|dxf)$"))) {
-		actual_filename = QString();
+	if (MainWindow::mdiMode) {
+		if (!editor->toPlainText().isEmpty()) {
+			new MainWindow(new_filename);
+			return;
+		}
 	}
-#ifdef ENABLE_MDI
-	if (!editor->toPlainText().isEmpty()) {
-		new MainWindow(actual_filename);
-		clearCurrentOutput();
-		return;
-	}
-#endif
-	setFileName(actual_filename);
+
+	setCurrentOutput();
 	editor->setPlainText("");
 	this->last_compiled_doc = "";
 
+	const QFileInfo fileInfo(new_filename);
+	const QString suffix = fileInfo.suffix().toLower();
+	const bool knownFileType = knownFileExtensions.contains(suffix);
+	const QString cmd = knownFileExtensions[suffix];
+	if (knownFileType && cmd.isEmpty()) {
+		setFileName(new_filename);
+		updateRecentFiles();		
+	} else {
+		setFileName("");
+		editor->setPlainText(cmd.arg(new_filename));
+	}
+
 	fileChangedOnDisk(); // force cached autoReloadId to update
 	refreshDocument();
-	updateRecentFiles();
-	if (actual_filename.isEmpty()) {
-		this->editor->setPlainText(QString("import(\"%1\");\n").arg(new_filename));
-	}
+	clearCurrentOutput();
 }
 
 void
@@ -561,26 +626,19 @@ MainWindow::setFileName(const QString &filename)
 {
 	if (filename.isEmpty()) {
 		this->fileName.clear();
+		setWindowFilePath("untitled.scad");
+		
 		this->top_ctx.setDocumentPath(currentdir);
-		setWindowTitle("OpenSCAD - New Document[*]");
-	}
-	else {
+	} else {
 		QFileInfo fileinfo(filename);
-		setWindowTitle("OpenSCAD - " + fileinfo.fileName() + "[*]");
+		this->fileName = fileinfo.exists() ? fileinfo.absoluteFilePath() : fileinfo.fileName();
+		setWindowFilePath(this->fileName);
 
-		// Check that the canonical file path exists - only update recent files
-		// if it does. Should prevent empty list items on initial open etc.
-		QString infoFileName = fileinfo.absoluteFilePath();
-		if (!infoFileName.isEmpty()) {
-			this->fileName = infoFileName;
-		} else {
-			this->fileName = fileinfo.fileName();
-		}
-
-		this->top_ctx.setDocumentPath(fileinfo.dir().absolutePath().toLocal8Bit().constData());
 		QDir::setCurrent(fileinfo.dir().absolutePath());
+		this->top_ctx.setDocumentPath(fileinfo.dir().absolutePath().toLocal8Bit().constData());
 	}
-
+	editorTopLevelChanged(editorDock->isFloating());
+	consoleTopLevelChanged(consoleDock->isFloating());
 }
 
 void MainWindow::updateRecentFiles()
@@ -648,7 +706,8 @@ void MainWindow::refreshDocument()
 			reader.setCodec("UTF-8");
 			QString text = reader.readAll();
 			PRINTB("Loaded design '%s'.", this->fileName.toLocal8Bit().constData());
-			editor->setPlainText(text);
+			if (editor->toPlainText() != text)
+				editor->setPlainText(text);
 		}
 	}
 	setCurrentOutput();
@@ -941,15 +1000,15 @@ void MainWindow::actionUpdateCheck()
 
 void MainWindow::actionNew()
 {
-#ifdef ENABLE_MDI
-	new MainWindow(QString());
-#else
-	if (!maybeSave())
-		return;
+	if (MainWindow::mdiMode) {
+		new MainWindow(QString());
+	} else {
+		if (!maybeSave())
+			return;
 
-	setFileName("");
-	editor->setPlainText("");
-#endif
+		setFileName("");
+		editor->setPlainText("");
+	}
 }
 
 void MainWindow::actionOpen()
@@ -957,42 +1016,30 @@ void MainWindow::actionOpen()
 	QSettings settings;
 	QString last_dirname = settings.value("lastOpenDirName").toString();
 	QString new_filename = QFileDialog::getOpenFileName(this, "Open File",
-	  last_dirname, "OpenSCAD Designs (*.scad *.csg)");
-	if (new_filename!="") {
-		QDir last_dir = QFileInfo( new_filename ).dir();
-		last_dirname = last_dir.path();
-		settings.setValue("lastOpenDirName", last_dirname);
-	}
-#ifdef ENABLE_MDI
-	if (!new_filename.isEmpty()) {
-		new MainWindow(new_filename);
-	}
-#else
-	if (!new_filename.isEmpty()) {
-		if (!maybeSave())
-			return;
+		last_dirname, "OpenSCAD Designs (*.scad *.csg)");
 
-		setCurrentOutput();
-		openFile(new_filename);
-		clearCurrentOutput();
+	if (new_filename.isEmpty()) {
+		return;
 	}
-#endif
+	
+	QDir last_dir = QFileInfo(new_filename).dir();
+	last_dirname = last_dir.path();
+	settings.setValue("lastOpenDirName", last_dirname);
+	if (!MainWindow::mdiMode && !maybeSave()) {
+		return;
+	}
+
+	openFile(new_filename);
 }
 
 void MainWindow::actionOpenRecent()
 {
-	QAction *action = qobject_cast<QAction *>(sender());
-
-#ifdef ENABLE_MDI
-	new MainWindow(action->data().toString());
-#else
-	if (!maybeSave())
+	if (!MainWindow::mdiMode && !maybeSave()) {
 		return;
-
-	if (action) {
-		openFile(action->data().toString());
 	}
-#endif
+
+	QAction *action = qobject_cast<QAction *>(sender());
+	openFile(action->data().toString());
 }
 
 void MainWindow::clearRecentFiles()
@@ -1039,11 +1086,44 @@ void MainWindow::updateRecentFileActions()
 		settings.setValue("recentFileList", files);
 }
 
+void MainWindow::show_examples()
+{
+		bool found_example = false;
+		QStringList categories;
+                categories << "Basics" << "Shapes" << "Extrusion" << "Advanced";
+        
+                foreach (const QString &cat, categories){
+                        QStringList examples = QDir(qexamplesdir + QDir::separator() + cat).entryList(QStringList("*.scad"),
+                        QDir::Files | QDir::Readable, QDir::Name);
+                        QMenu *menu = this->menuExamples->addMenu(cat);
+                        
+                        foreach(const QString &ex, examples) {
+                                QAction *openAct = new QAction(ex, this);
+                                connect(openAct, SIGNAL(triggered()), this, SLOT(actionOpenExample()));
+                                menu->addAction(openAct);
+                                QVariant categoryName = cat;
+                                openAct->setData(categoryName);
+                                found_example = true;
+			}
+		}
+		 if (!found_example) {
+                        delete this->menuExamples;
+                        this->menuExamples = NULL;
+                }
+
+}
+
 void MainWindow::actionOpenExample()
 {
+	if (!MainWindow::mdiMode && !maybeSave()) {
+		return;
+	}
+
 	QAction *action = qobject_cast<QAction *>(sender());
 	if (action) {
-		openFile(qexamplesdir + QDir::separator() + action->text());
+		QVariant cat = action->data();
+		QString catname = cat.toString();
+		openFile(qexamplesdir + QDir::separator() + catname + QDir::separator() + action->text());
 	}
 }
 
@@ -1155,18 +1235,6 @@ void MainWindow::actionReload()
 	if (checkEditorModified()) {
 		fileChangedOnDisk(); // force cached autoReloadId to update
 		refreshDocument();
-	}
-}
-
-void MainWindow::hideEditor()
-{
-	QSettings settings;
-	if (editActionHide->isChecked()) {
-		editorPane->hide();
-		settings.setValue("view/hideEditor",true);
-	} else {
-		editorPane->show();
-		settings.setValue("view/hideEditor",false);
 	}
 }
 
@@ -1672,29 +1740,18 @@ void MainWindow::actionExport(export_type_e, QString, QString)
 		return;
 	}
 
-	std::ofstream fstream(export_filename.toUtf8());
-	if (!fstream.is_open()) {
-		PRINTB("Can't open file \"%s\" for export", export_filename.toLocal8Bit().constData());
+	enum FileFormat format = (enum FileFormat)-1;
+	switch (export_type) {
+	case EXPORT_TYPE_STL: format = OPENSCAD_STL; break;
+	case EXPORT_TYPE_OFF: format = OPENSCAD_OFF; break;
+	case EXPORT_TYPE_AMF: format = OPENSCAD_AMF; break;
+	default:
+		assert(false && "Unknown export type");
+		break;
 	}
-	else {
-		switch (export_type) {
-		case EXPORT_TYPE_STL:
-			exportFile(this->root_geom.get(), fstream, OPENSCAD_STL);
-			break;
-		case EXPORT_TYPE_OFF:
-			exportFile(this->root_geom.get(), fstream, OPENSCAD_OFF);
-			break;
-		case EXPORT_TYPE_AMF:
-			exportFile(this->root_geom.get(), fstream, OPENSCAD_AMF);
-			break;
-		default:
-			assert(false && "Unknown export type");
-			break;
-		}
-		fstream.close();
-
-		PRINTB("%s export finished.", type_name);
-	}
+	exportFileByName(this->root_geom.get(), format, export_filename.toUtf8(),
+		export_filename.toLocal8Bit().constData());
+	PRINTB("%s export finished.", type_name);
 
 	clearCurrentOutput();
 #endif /* ENABLE_CGAL */
@@ -1752,16 +1809,9 @@ void MainWindow::actionExportDXF()
 	if (dxf_filename.isEmpty()) {
 		return;
 	}
-
-	std::ofstream fstream(dxf_filename.toUtf8());
-	if (!fstream.is_open()) {
-		PRINTB("Can't open file \"%s\" for export", dxf_filename.toLocal8Bit().constData());
-	}
-	else {
-		exportFile(this->root_geom.get(), fstream, OPENSCAD_DXF);
-		fstream.close();
-		PRINT("DXF export finished.");
-	}
+	exportFileByName(this->root_geom.get(), OPENSCAD_DXF, dxf_filename.toUtf8(),
+		dxf_filename.toLocal8Bit().constData());
+	PRINT("DXF export finished.");
 
 	clearCurrentOutput();
 #endif /* ENABLE_CGAL */
@@ -1773,16 +1823,9 @@ void MainWindow::actionExportSVG()
 	if (svg_filename.isEmpty()) {
 		return;
 	}
-
-	std::ofstream fstream(svg_filename.toUtf8());
-	if (!fstream.is_open()) {
-		PRINTB("Can't open file \"%s\" for export", svg_filename.toLocal8Bit().constData());
-	}
-	else {
-		exportFile(this->root_geom.get(), fstream, OPENSCAD_SVG);
-		fstream.close();
-		PRINT("SVG export finished.");
-	}
+	exportFileByName(this->root_geom.get(), OPENSCAD_SVG, svg_filename.toUtf8(),
+		svg_filename.toLocal8Bit().constData());
+	PRINT("SVG export finished.");
 
 	clearCurrentOutput();
 }
@@ -2037,15 +2080,57 @@ void MainWindow::viewResetView()
 	this->qglview->updateGL();
 }
 
-void MainWindow::hideConsole()
+void MainWindow::on_editorDock_visibilityChanged(bool visible)
 {
 	QSettings settings;
-	if (viewActionHide->isChecked()) {
-		console->hide();
-		settings.setValue("view/hideConsole",true);
+	settings.setValue("view/hideEditor", !visible);
+	editActionHide->setChecked(!visible);
+	editorTopLevelChanged(editorDock->isFloating());
+}
+
+void MainWindow::on_consoleDock_visibilityChanged(bool visible)
+{
+	QSettings settings;
+	settings.setValue("view/hideConsole", !visible);
+	viewActionHide->setChecked(!visible);
+	consoleTopLevelChanged(consoleDock->isFloating());
+}
+
+void MainWindow::editorTopLevelChanged(bool topLevel)
+{
+	setDockWidgetTitle(editorDock, QString("Editor"), topLevel);
+}
+
+void MainWindow::consoleTopLevelChanged(bool topLevel)
+{
+	setDockWidgetTitle(consoleDock, QString("Console"), topLevel);
+}
+
+void MainWindow::setDockWidgetTitle(QDockWidget *dockWidget, QString prefix, bool topLevel)
+{
+	QString title(prefix);
+	if (topLevel) {
+		const QFileInfo fileInfo(windowFilePath());
+		title += " (" + fileInfo.fileName() + ")";
+	}
+	dockWidget->setWindowTitle(title);
+}
+
+void MainWindow::hideEditor()
+{
+	if (editActionHide->isChecked()) {
+		editorDock->close();
 	} else {
-		console->show();
-		settings.setValue("view/hideConsole",false);
+		editorDock->show();
+	}
+}
+
+void MainWindow::hideConsole()
+{
+	if (viewActionHide->isChecked()) {
+		consoleDock->hide();
+	} else {
+		consoleDock->show();
 	}
 }
 
@@ -2062,9 +2147,25 @@ void MainWindow::dropEvent(QDropEvent *event)
 	for (int i = 0; i < urls.size(); i++) {
 		if (urls[i].scheme() != "file")
 			continue;
-		openFile(urls[i].toLocalFile());
+		
+		handleFileDrop(urls[i].toLocalFile());
 	}
 	clearCurrentOutput();
+}
+
+void MainWindow::handleFileDrop(const QString &filename)
+{
+	const QFileInfo fileInfo(filename);
+	const QString suffix = fileInfo.suffix().toLower();
+	const QString cmd = knownFileExtensions[suffix];
+	if (cmd.isEmpty()) {
+		if (!MainWindow::mdiMode && !maybeSave()) {
+			return;
+		}
+		openFile(filename);
+	} else {
+		editor->insertPlainText(cmd.arg(filename));
+	}
 }
 
 void
@@ -2119,13 +2220,24 @@ MainWindow::maybeSave()
 {
 	if (editor->isContentModified()) {
 		QMessageBox::StandardButton ret;
-		ret = QMessageBox::warning(this, "Application",
-				"The document has been modified.\n"
-				"Do you want to save your changes?",
-				QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
+		QMessageBox box(this);
+		box.setText("The document has been modified.");
+		box.setInformativeText("Do you want to save your changes?");
+		box.setStandardButtons(QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
+		box.setDefaultButton(QMessageBox::Save);
+		box.setIcon(QMessageBox::Warning);
+		box.setWindowModality(Qt::ApplicationModal);
+#ifdef Q_OS_MAC
+		// Cmd-D is the standard shortcut for this button on Mac
+		box.button(QMessageBox::Discard)->setShortcut(QKeySequence("Ctrl+D"));
+		box.button(QMessageBox::Discard)->setShortcutEnabled(true);
+#endif
+		ret = (QMessageBox::StandardButton) box.exec();
+
 		if (ret == QMessageBox::Save) {
 			actionSave();
-			return true; // FIXME: Should return false on error
+			// Returns false on failed save
+			return !editor->isContentModified();
 		}
 		else if (ret == QMessageBox::Cancel) {
 			return false;
@@ -2140,8 +2252,7 @@ void MainWindow::closeEvent(QCloseEvent *event)
 		QSettings settings;
 		settings.setValue("window/size", size());
 		settings.setValue("window/position", pos());
-		settings_setValueList("window/splitter1sizes",splitter1->sizes());
-		settings_setValueList("window/splitter2sizes",splitter2->sizes());
+		settings.setValue("window/state", saveState());
 		if (this->tempFile) {
 			delete this->tempFile;
 			this->tempFile = NULL;
