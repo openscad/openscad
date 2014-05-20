@@ -252,7 +252,10 @@ AbstractNode *ControlModule::instantiate(const Context* /*ctx*/, const ModuleIns
 		return NULL;
 	}
 
-	if (type == FOR) node = new ListNode(inst);
+	if (type == FOR) {
+		if (Feature::ExperimentalLazyUnion.is_enabled()) node = new ListNode(inst);
+		else node = new GroupNode(inst);
+	}
 	else if (type == INT_FOR) node = new AbstractIntersectionNode(inst);
 	else node = new CsgNode(inst, OPENSCAD_UNION);
 

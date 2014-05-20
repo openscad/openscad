@@ -19,6 +19,7 @@ Feature::list_t Feature::feature_list;
  * context.
  */
 const Feature Feature::ExperimentalConcatFunction("concat", "Enable the <code>concat()</code> function.");
+const Feature Feature::ExperimentalLazyUnion("lazy-union", "Enable lazy unions.");
 
 Feature::Feature(const std::string &name, const std::string &description)
 	: enabled(false), name(name), description(description)

@@ -419,21 +419,7 @@ Response GeometryEvaluator::visit(State &state, const ListNode &node)
 */
 Response GeometryEvaluator::visit(State &state, const GroupNode &node)
 {
-	if (state.isPrefix() && isSmartCached(node)) return PruneTraversal;
-	if (state.isPostfix()) {
-		shared_ptr<const class Geometry> geom;
-		if (!isSmartCached(node)) {
-			// FIXME: 2D children
-			Geometry::ChildList children = collectChildren3D(node);
-			if (children.size() == 1) geom = children.front().second;
-			else if (children.size() > 1) geom.reset(new GeometryList(children));
-		}
-		else {
-			geom = smartCacheGet(node);
-		}
-		addToParent(state, node, geom);
-	}
-	return ContinueTraversal;
+	return visit(state, (const AbstractNode &)node);
 }
 
 /*!
@@ -445,6 +431,11 @@ Response GeometryEvaluator::visit(State &state, const GroupNode &node)
 */
 Response GeometryEvaluator::visit(State &state, const RootNode &node)
 {
+	// If we didn't enable lazy unions, just union the top-level objects
+	if (!Feature::ExperimentalLazyUnion.is_enabled()) {
+	 	return visit(state, (const GroupNode &)node);
+	}
+	
 	if (state.isPrefix() && isSmartCached(node)) return PruneTraversal;
 	if (state.isPostfix()) {
 		shared_ptr<const class Geometry> geom;
