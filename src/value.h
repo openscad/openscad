@@ -1,5 +1,4 @@
-#ifndef VALUE_H_
-#define VALUE_H_
+#pragma once
 
 #include <vector>
 #include <string>
@@ -159,5 +158,3 @@ private:
 
   Variant value;
 };
-
-#endif

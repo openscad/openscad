@@ -24,11 +24,9 @@
  *
  */
 
-#ifndef CGAL_RENDERER_H
-#define CGAL_RENDERER_H
+#pragma once
 
 #ifndef NULLGL
-
 #include "OGL_helper.h"
 #undef CGAL_NEF3_MARKED_VERTEX_COLOR
 #undef CGAL_NEF3_MARKED_EDGE_COLOR
@@ -119,8 +117,3 @@ public:
 };
 
 #endif // NULLGL
-
-
-
-
-#endif // CGAL_RENDERER_H

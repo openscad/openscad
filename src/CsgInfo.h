@@ -1,5 +1,4 @@
-#ifndef __CSGINFO_H__
-#define __CSGINFO_H__
+#pragma once
 
 #include "OffscreenView.h"
 #include "csgterm.h"
@@ -87,6 +86,3 @@ public:
 		return true;
 	}
 };
-
-#endif
-

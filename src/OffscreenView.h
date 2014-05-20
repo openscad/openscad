@@ -1,5 +1,4 @@
-#ifndef OFFSCREENVIEW_H_
-#define OFFSCREENVIEW_H_
+#pragma once
 
 #include "OffscreenContext.h"
 #include <Eigen/Core>
@@ -27,5 +26,3 @@ public:
 	void display_opencsg_warning();
 #endif
 };
-
-#endif

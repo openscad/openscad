@@ -1,5 +1,4 @@
-#ifndef STATE_H_
-#define STATE_H_
+#pragma once
 
 #include <cstring>
 #include "linalg.h"
@@ -38,5 +37,3 @@ private:
 	Transform3d matrix_;
 	Color4f color_;
 };
-
-#endif

@@ -1,5 +1,4 @@
-#ifndef TYPEDEFS_H_
-#define TYPEDEFS_H_
+#pragma once
 
 #include <string>
 #include <vector>
@@ -14,5 +13,3 @@ public:
 
 typedef std::vector<Assignment> AssignmentList;
 typedef std::vector<class ModuleInstantiation*> ModuleInstantiationList;
-
-#endif

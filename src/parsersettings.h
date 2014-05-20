@@ -1,5 +1,4 @@
-#ifndef PARSERSETTINGS_H_
-#define PARSERSETTINGS_H_
+#pragma once
 
 #include <string>
 #include "boosty.h"
@@ -10,7 +9,5 @@ void parser_init(const std::string &applicationpath);
 void add_librarydir(const std::string &libdir);
 fs::path search_libs(const fs::path &localpath);
 fs::path find_valid_path(const fs::path &sourcepath, 
-												 const fs::path &localpath, 
-												 const std::vector<std::string> *openfilenames = NULL);
-
-#endif
+                         const fs::path &localpath, 
+                         const std::vector<std::string> *openfilenames = NULL);

@@ -1,5 +1,4 @@
-#ifndef CSGTERM_H_
-#define CSGTERM_H_
+#pragma once
 
 #include <string>
 #include <vector>
@@ -85,5 +84,3 @@ public:
 
 	BoundingBox getBoundingBox() const;
 };
-
-#endif

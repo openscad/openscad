@@ -1,5 +1,4 @@
 #!/bin/sh
-
 # NB! To build a release build, the VERSION and VERSIONDATE environment variables needs to be set.
 # See doc/release-checklist.txt
 
@@ -29,7 +28,7 @@ update_www_download_links()
     
     if [ -f $webdir/$incfile ]; then
         cd $webdir
-        echo "fileinfo['MAC_SNAPSHOT_URL'] = '$BASEURL$packagefile'" > $incfile
+        echo "fileinfo['MAC_SNAPSHOT_URL'] = '$BASEURL/$packagefile'" > $incfile
         echo "fileinfo['MAC_SNAPSHOT_NAME'] = 'OpenSCAD $version'" >> $incfile
         echo "fileinfo['MAC_SNAPSHOT_SIZE'] = '$filesize'" >> $incfile
         echo 'modified mac_snapshot_links.js'
@@ -61,7 +60,7 @@ PATH=${PATH//\/opt\/local\/libexec\/ccache:}
 export MACOSX_DEPLOYMENT_TARGET=10.6
 
 # This is the same location as DEPLOYDIR in macosx-build-dependencies.sh
-export OPENSCAD_LIBRARIES=$PWD/../libraries/homebrew
+export OPENSCAD_LIBRARIES=$PWD/../libraries/install
 
 # Make sure that the correct Qt tools are used
 export PATH=$OPENSCAD_LIBRARIES/bin:$PATH

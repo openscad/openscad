@@ -382,6 +382,11 @@ set_source_files_properties(${CMAKE_CURRENT_BINARY_DIR}/parser_yacc.c PROPERTIES
 
 # CGAL
 
+# Disable rounding math check to allow usage of Valgrind
+# This is needed as Valgrind currently does not correctly
+# handle rounding modes used by CGAL.
+# set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DCGAL_DISABLE_ROUNDING_MATH_CHECK=ON")
+
 if (NOT $ENV{CGALDIR} STREQUAL "")
   set(CGAL_DIR "$ENV{CGALDIR}")
 elseif (NOT $ENV{OPENSCAD_LIBRARIES} STREQUAL "")
@@ -447,6 +452,22 @@ endif()
 find_package(GLIB2 2.2.0 REQUIRED)
 add_definitions(${GLIB2_DEFINITIONS})
 inclusion(GLIB2_DIR GLIB2_INCLUDE_DIRS)
+
+# find libraries using pkg-config
+find_package(PkgConfig REQUIRED)
+
+pkg_search_module(FONTCONFIG REQUIRED fontconfig>=2.11.0)
+message(STATUS "fontconfig found: ${FONTCONFIG_VERSION}")
+
+pkg_search_module(FREETYPE REQUIRED freetype2>=2.4.9)
+message(STATUS "freetype2 found: ${FREETYPE_VERSION}")
+
+pkg_search_module(HARFBUZZ REQUIRED harfbuzz>=0.9.19)
+message(STATUS "harfbuzz found: ${HARFBUZZ_VERSION}")
+
+add_definitions(${FONTCONFIG_CFLAGS})
+add_definitions(${FREETYPE_CFLAGS})
+add_definitions(${HARFBUZZ_CFLAGS})
 
 # Imagemagick
 
@@ -568,10 +589,14 @@ set(CORE_SOURCES
   ../src/offset.cc 
   ../src/linearextrude.cc 
   ../src/rotateextrude.cc 
+  ../src/text.cc 
   ../src/printutils.cc 
   ../src/fileutils.cc 
   ../src/progress.cc 
   ../src/boost-utils.cc 
+  ../src/FontCache.cc
+  ../src/DrawingCallback.cc
+  ../src/FreetypeRenderer.cc
   ../src/PlatformUtils.cc 
   ../src/lodepng.cpp
   ../src/${PLATFORMUTILS_SOURCE}
@@ -672,27 +697,51 @@ set_target_properties(tests-offscreen PROPERTIES COMPILE_FLAGS "${ENABLE_OPENCSG
 # modulecachetest
 #
 add_executable(modulecachetest modulecachetest.cc)
-target_link_libraries(modulecachetest tests-nocgal ${TESTS-NOCGAL-LIBRARIES})
+target_link_libraries(modulecachetest tests-nocgal ${TESTS-NOCGAL-LIBRARIES} ${Boost_LIBRARIES} ${FONTCONFIG_LDFLAGS} ${FREETYPE_LDFLAGS} ${HARFBUZZ_LDFLAGS})
 
 #
 # csgtexttest
 #
 add_executable(csgtexttest csgtexttest.cc CSGTextRenderer.cc CSGTextCache.cc)
-target_link_libraries(csgtexttest tests-nocgal ${TESTS-NOCGAL-LIBRARIES})
+target_link_libraries(csgtexttest tests-nocgal ${TESTS-NOCGAL-LIBRARIES} ${FONTCONFIG_LDFLAGS} ${FREETYPE_LDFLAGS} ${HARFBUZZ_LDFLAGS})
 
 #
 # cgalcachetest
 #
 add_executable(cgalcachetest cgalcachetest.cc)
 set_target_properties(cgalcachetest PROPERTIES COMPILE_FLAGS "-DENABLE_CGAL ${CGAL_CXX_FLAGS_INIT}")
-target_link_libraries(cgalcachetest tests-cgal ${TESTS-CGAL-LIBRARIES} ${GLEW_LIBRARY})
+target_link_libraries(cgalcachetest tests-cgal ${TESTS-CGAL-LIBRARIES} ${GLEW_LIBRARY} ${COCOA_LIBRARY} ${FONTCONFIG_LDFLAGS} ${FREETYPE_LDFLAGS} ${HARFBUZZ_LDFLAGS})
 
 #
 # openscad no-qt
 #
 add_executable(openscad_nogui ../src/openscad.cc)
-set_target_properties(openscad_nogui PROPERTIES COMPILE_FLAGS "-fno-strict-aliasing -DEIGEN_DONT_ALIGN -DENABLE_CGAL ${ENABLE_OPENCSG_FLAG} ${CGAL_CXX_FLAGS_INIT}")
-target_link_libraries(openscad_nogui tests-offscreen tests-cgal tests-nocgal ${TESTS-CORE-LIBRARIES} ${TESTS-CGAL-LIBRARIES} ${GLEW_LIBRARY} ${Boost_LIBRARIES} ${OPENCSG_LIBRARY} ${COCOA_LIBRARY} ${APP_SERVICES_LIBRARY})
+set_target_properties(openscad_nogui PROPERTIES COMPILE_FLAGS "-fno-strict-aliasing -DEIGEN_DONT_ALIGN -DENABLE_CGAL -DENABLE_OPENCSG ${CGAL_CXX_FLAGS_INIT}")
+target_link_libraries(openscad_nogui tests-offscreen tests-cgal tests-nocgal ${TESTS-CORE-LIBRARIES} ${TESTS-CGAL-LIBRARIES} ${GLEW_LIBRARY} ${Boost_LIBRARIES}  ${OPENCSG_LIBRARY} ${COCOA_LIBRARY} ${APP_SERVICES_LIBRARY} ${FONTCONFIG_LDFLAGS} ${FREETYPE_LDFLAGS} ${HARFBUZZ_LDFLAGS})
+
+#
+# GUI binary tests
+#
+#if(APPLE)
+#  set(OPENSCAD_BINPATH "${CMAKE_CURRENT_SOURCE_DIR}/../OpenSCAD.app/Contents/MacOS/OpenSCAD")
+#elseif (MINGW_CROSS_ENV_DIR) 
+#  set(OPENSCAD_BINPATH "${CMAKE_CURRENT_SOURCE_DIR}/../mingw32/release/openscad.exe")
+#elseif(WIN32)
+#  set(OPENSCAD_BINPATH "${CMAKE_CURRENT_SOURCE_DIR}/../Release/openscad.exe")
+#else()
+#  set(OPENSCAD_BINPATH "${CMAKE_CURRENT_SOURCE_DIR}/../openscad")
+#endif()
+
+#if(EXISTS "${CMAKE_CURRENT_BINARY_DIR}/openscad")
+#  set(OPENSCAD_BINPATH "${CMAKE_CURRENT_BINARY_DIR}/openscad")
+#endif()
+
+#if(EXISTS "${OPENSCAD_BINPATH}")
+#  message(STATUS "Found OpenSCAD binary: ${OPENSCAD_BINPATH}")
+#else()
+#  message(STATUS "Couldn't find the OpenSCAD binary: ${OPENSCAD_BINPATH}")
+#  message(FATAL_ERROR "Please build the OpenSCAD binary and place it here: ${OPENSCAD_BINPATH}" )
+#endif()
 
 if(WIN32)
   set(OPENSCAD_BINPATH "${CMAKE_CURRENT_BINARY_DIR}/openscad_nogui.exe")
@@ -833,7 +882,7 @@ configure_file(${CMAKE_SOURCE_DIR}/../testdata/scad/templates/import_dxf-tests-t
 file(GLOB FEATURES_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/features/*.scad)
 file(GLOB SCAD_DXF_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/dxf/*.scad)
 file(GLOB FUNCTION_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/functions/*.scad)
-file(GLOB EXAMPLE_FILES ${CMAKE_SOURCE_DIR}/../examples/*.scad)
+file(GLOB EXAMPLE_FILES ${CMAKE_SOURCE_DIR}/../examples/*/*.scad)
 
 list(APPEND ECHO_FILES ${FUNCTION_FILES}
             ${CMAKE_SOURCE_DIR}/../testdata/scad/features/for-tests.scad
@@ -859,7 +908,7 @@ list(APPEND ECHO_FILES ${FUNCTION_FILES}
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/range-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/empty-stl.scad)
 
-list(APPEND DUMPTEST_FILES ${FEATURES_FILES} ${EXAMPLE_FILES})
+list(APPEND DUMPTEST_FILES ${FEATURES_FILES})
 list(APPEND DUMPTEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/escape-test.scad
                            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/include-tests.scad
                            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/use-tests.scad
@@ -888,10 +937,6 @@ list(APPEND CGALSTLSANITYTEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/no
 # Reenable it when this is improved
 disable_tests(opencsgtest_child-background)
 
-# FIXME: This single test takes over an hour to run on a 2.7 GHz P4
-disable_tests(opencsgtest_example006 cgalpngtest_example006)
-disable_tests(openscad-csgpng_example006 openscad-cgalpng_example006)
-
 # These tests only makes sense in OpenCSG mode
 disable_tests(cgalpngtest_child-background
               cgalpngtest_highlight-and-background-modifier
@@ -907,7 +952,20 @@ disable_tests(cgalpngtest_child-background
 set_test_config(Heavy cgalpngtest_rotate_extrude-tests
                       cgalpngtest_sphere-tests
                       cgalpngtest_for-nested-tests
-                      cgalpngtest_resize-tests)
+                      cgalpngtest_resize-tests
+                      cgalpngtest_text-search-test
+		      cgalpngtest_text-font-direction-tests
+		      cgalpngtest_text-font-tests
+		      cgalpngtest_text-font-alignment-tests
+		      opencsgtest_text-font-direction-tests
+		      opencsgtest_text-font-tests
+		      opencsgtest_text-font-alignment-tests
+		      throwntogethertest_text-font-direction-tests
+		      throwntogethertest_text-font-tests
+		      throwntogethertest_text-font-alignment-tests
+                      cgalpngtest_fractal
+                      cgalpngtest_iteration
+                      cgalpngtest_linear_extrude-scale-zero-tests)
 
 # Bugs
 
@@ -916,11 +974,9 @@ list(APPEND BUGS_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue495.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue541.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue578.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue578b.scad
-                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue582.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue584.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue585.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue591.scad
-                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue593.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue612.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue112.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue666.scad)
@@ -1008,6 +1064,7 @@ add_cmdline_test(csgtermtest EXE ${OPENSCAD_BINPATH} ARGS -o SUFFIX term FILES
                              ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/allmodules.scad)
 add_cmdline_test(echotest EXE ${OPENSCAD_BINPATH} ARGS -o SUFFIX echo FILES ${ECHO_FILES})
 add_cmdline_test(dumptest EXE ${OPENSCAD_BINPATH} ARGS -o SUFFIX csg FILES ${DUMPTEST_FILES})
+add_cmdline_test(dumptest-examples EXE ${OPENSCAD_BINPATH} ARGS -o SUFFIX csg FILES ${EXAMPLE_FILES})
 add_cmdline_test(cgalpngtest EXE ${OPENSCAD_BINPATH} ARGS --render -o SUFFIX png FILES ${CGALPNGTEST_FILES})
 add_cmdline_test(opencsgtest EXE ${OPENSCAD_BINPATH} ARGS -o SUFFIX png FILES ${OPENCSGTEST_FILES})
 add_cmdline_test(throwntogethertest EXE ${OPENSCAD_BINPATH} ARGS --preview=throwntogether -o SUFFIX png FILES ${THROWNTOGETHERTEST_FILES})
@@ -1019,6 +1076,16 @@ add_cmdline_test(cgalstlsanitytest EXE ${CMAKE_SOURCE_DIR}/cgalstlsanitytest SUF
 
 add_cmdline_test(echotest EXE ${OPENSCAD_BINPATH} ARGS --enable=concat -o SUFFIX echo FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/experimental/concat-tests.scad)
 
+list(APPEND EXPERIMENTAL_TEXT_FILES 
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/experimental/text-font-alignment-tests.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/experimental/text-font-direction-tests.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/experimental/text-font-simple-tests.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/experimental/text-font-tests.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/experimental/text-search-test.scad)
+
+add_cmdline_test(cgalpngtest EXE ${OPENSCAD_BINPATH} ARGS --render --enable=text -o SUFFIX png FILES ${EXPERIMENTAL_TEXT_FILES})
+add_cmdline_test(opencsgtest EXE ${OPENSCAD_BINPATH} ARGS --enable=text -o SUFFIX png FILES ${EXPERIMENTAL_TEXT_FILES})
+add_cmdline_test(throwntogethertest EXE ${OPENSCAD_BINPATH} ARGS --preview=throwntogether --enable=text -o SUFFIX png FILES ${EXPERIMENTAL_TEXT_FILES})
 
 # Tests using the actual OpenSCAD binary
 
@@ -1043,47 +1110,47 @@ endif()
 add_cmdline_test(openscad-imgsize EXE ${OPENSCAD_BINPATH}
                  ARGS --imgsize 100,100 -o 
                  SUFFIX png 
-                 FILES ${CMAKE_SOURCE_DIR}/../examples/example001.scad)
+		 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/features/camera-tests.scad)
 add_cmdline_test(openscad-imgstretch EXE ${OPENSCAD_BINPATH}
                  ARGS --imgsize 500,100 -o 
                  SUFFIX png 
-                 FILES ${CMAKE_SOURCE_DIR}/../examples/example001.scad)
+		 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/features/camera-tests.scad)
 add_cmdline_test(openscad-imgstretch2 EXE ${OPENSCAD_BINPATH}
                  ARGS --imgsize 100,500 -o 
                  SUFFIX png 
-                 FILES ${CMAKE_SOURCE_DIR}/../examples/example001.scad)
+		 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/features/camera-tests.scad)
 add_cmdline_test(openscad-camdist EXE ${OPENSCAD_BINPATH} 
                  ARGS --imgsize=500,500 --camera=0,0,0,90,0,90,300 -o
                  SUFFIX png
-                 FILES ${CMAKE_SOURCE_DIR}/../examples/example001.scad)
+		 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/features/camera-tests.scad)
 add_cmdline_test(openscad-camrot EXE ${OPENSCAD_BINPATH}
                  ARGS --imgsize=500,500 --camera=0,0,0,440,337.5,315,300 -o
                  SUFFIX png
-                 FILES ${CMAKE_SOURCE_DIR}/../examples/example001.scad)
+		 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/features/camera-tests.scad)
 add_cmdline_test(openscad-camtrans EXE ${OPENSCAD_BINPATH}
                  ARGS --imgsize=500,500 --camera=100,-20,-10,90,0,90,300 -o
                  SUFFIX png
-                 FILES ${CMAKE_SOURCE_DIR}/../examples/example001.scad)
+		 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/features/camera-tests.scad)
 add_cmdline_test(openscad-camortho EXE ${OPENSCAD_BINPATH}
                  ARGS --imgsize=500,500 --camera=100,-20,-10,90,0,90,300 --projection=o -o
                  SUFFIX png
-                 FILES ${CMAKE_SOURCE_DIR}/../examples/example001.scad)
+		 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/features/camera-tests.scad)
 add_cmdline_test(openscad-cameye EXE ${OPENSCAD_BINPATH}
                  ARGS --imgsize=500,500 --camera=60,40,30,0,0,0 -o
                  SUFFIX png
-                 FILES ${CMAKE_SOURCE_DIR}/../examples/example001.scad)
+		 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/features/camera-tests.scad)
 add_cmdline_test(openscad-cameye2 EXE ${OPENSCAD_BINPATH}
                  ARGS --imgsize=500,500 --camera=160,140,130,0,0,0 -o
                  SUFFIX png
-                 FILES ${CMAKE_SOURCE_DIR}/../examples/example001.scad)
+		 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/features/camera-tests.scad)
 add_cmdline_test(openscad-cameyeortho EXE ${OPENSCAD_BINPATH}
                  ARGS --imgsize=500,500 --camera=160,140,130,0,0,0 --projection=o -o 
                  SUFFIX png
-                 FILES ${CMAKE_SOURCE_DIR}/../examples/example001.scad)
+		 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/features/camera-tests.scad)
 add_cmdline_test(openscad-camcenter EXE ${OPENSCAD_BINPATH}
                  ARGS --imgsize=500,500 --camera=60,40,30,20,10,30  -o
                  SUFFIX png
-                 FILES ${CMAKE_SOURCE_DIR}/../examples/example001.scad)
+		 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/features/camera-tests.scad)
 
 
 

@@ -19,8 +19,8 @@ GLIB2_DIR = $$(GLIB2DIR)
   }
 }
 
-!exists($GLIB2_INCLUDEPATH/glib.h) {
-  !exists($GLIB2_INCLUDEPATH_2/glib.h) {
+!exists($$GLIB2_INCLUDEPATH/glib.h) {
+  !exists($$GLIB2_INCLUDEPATH_2/glib.h) {
     GLIB2_INCLUDEPATH =
     GLIB2_INCLUDEPATH_2 =
     GLIB2_LIBPATH =

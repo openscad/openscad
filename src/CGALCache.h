@@ -1,5 +1,4 @@
-#ifndef CGALCACHE_H_
-#define CGALCACHE_H_
+#pragma once
 
 #include "cache.h"
 #include "memory.h"
@@ -33,5 +32,3 @@ private:
 
 	Cache<std::string, cache_entry> cache;
 };
-
-#endif

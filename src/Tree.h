@@ -1,5 +1,4 @@
-#ifndef TREE_H_
-#define TREE_H_
+#pragma once
 
 #include "nodecache.h"
 
@@ -26,5 +25,3 @@ private:
   mutable NodeCache nodecache;
   mutable NodeCache nodeidcache;
 };
-
-#endif

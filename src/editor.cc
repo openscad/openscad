@@ -4,6 +4,9 @@
 Editor::Editor(QWidget *parent) : QTextEdit(parent)
 {
 	setAcceptRichText(false);
+	// This needed to avoid QTextEdit accepting filename drops as we want
+	// to handle these ourselves in MainWindow
+	setAcceptDrops(false);
 	this->highlighter = new Highlighter(this->document());
 }
 
@@ -148,6 +151,20 @@ void Editor::setHighlightScheme(const QString &name)
 {
 	highlighter->assignFormatsToTokens( name );
 	highlighter->rehighlight(); // slow on large files
+}
+
+QSize Editor::sizeHint() const
+{
+	if (initialSizeHint.width() <= 0) {
+		return QTextEdit::sizeHint();
+	} else {
+		return initialSizeHint;
+	}
+}
+
+void Editor::setInitialSizeHint(const QSize &size)
+{
+	initialSizeHint = size;
 }
 
 Editor::~Editor()

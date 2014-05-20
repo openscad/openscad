@@ -55,8 +55,7 @@ distributed, this file may become obsolete and can be deleted from OpenSCAD
 */
 
 
-#ifndef _CGAL_NEF3_WORKAROUND_H
-#define _CGAL_NEF3_WORKAROUND_H
+#pragma once
 
 #include <CGAL/Polyhedron_incremental_builder_3.h>
 #include <CGAL/Polyhedron_3.h>
@@ -345,9 +344,3 @@ bool convert_to_Polyhedron( const CGAL::Nef_polyhedron_3<Kernel> &N, CGAL::Polyh
 
 
 } //namespace nefworkaround
-
-
-
-
-#endif
-

@@ -1,5 +1,4 @@
-#ifndef POLYSET_H_
-#define POLYSET_H_
+#pragma once
 
 #include "Geometry.h"
 #include "system-gl.h"
@@ -43,5 +42,3 @@ private:
   Polygon2d polygon;
 	unsigned int dim;
 };
-
-#endif

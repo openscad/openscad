@@ -12,6 +12,8 @@ class Editor : public QTextEdit
 public:
 	Editor(QWidget *parent);
 	~Editor();
+        QSize sizeHint() const;
+        void setInitialSizeHint(const QSize &size);
 public slots:
 	void zoomIn();
 	void zoomOut();
@@ -29,4 +31,5 @@ public slots:
 private:
 	void wheelEvent ( QWheelEvent * event );
 	Highlighter *highlighter;
+        QSize initialSizeHint;
 };

@@ -1,5 +1,4 @@
-#ifndef CGALRENDERER_H_
-#define CGALRENDERER_H_
+#pragma once
 
 #include "renderer.h"
 
@@ -14,5 +13,3 @@ public:
 	class Polyhedron *polyhedron;
 	shared_ptr<const class PolySet> polyset;
 };
-
-#endif

@@ -1,5 +1,4 @@
-#ifndef PROGRESS_H_
-#define PROGRESS_H_
+#pragma once
 
 // Reset to 0 in _prep() and increased for each Node instance in progress_prepare()
 extern int progress_report_count;
@@ -12,5 +11,3 @@ void progress_report_fin();
 void progress_update(const AbstractNode *node, int mark);
 
 class ProgressCancelException { };
-
-#endif

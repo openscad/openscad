@@ -1,5 +1,4 @@
-#ifndef OPENCSGRENDERER_H_
-#define OPENCSGRENDERER_H_
+#pragma once
 
 #include "renderer.h"
 #include "system-gl.h"
@@ -19,5 +18,3 @@ private:
 	CSGChain *background_chain;
 	GLint *shaderinfo;
 };
-
-#endif

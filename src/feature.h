@@ -1,5 +1,4 @@
-#ifndef FEATURE_H_
-#define FEATURE_H_
+#pragma once
 
 #include <stdio.h>
 #include <iostream>
@@ -14,6 +13,7 @@ public:
 	typedef list_t::iterator iterator;
 
 	static const Feature ExperimentalConcatFunction;
+	static const Feature ExperimentalTextModule;
     
 	const std::string& get_name() const;
 	const std::string& get_description() const;
@@ -40,5 +40,3 @@ private:
 	Feature(const std::string &name, const std::string &description);
 	virtual ~Feature();
 };
-
-#endif

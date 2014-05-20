@@ -1,5 +1,4 @@
-#ifndef EVALCONTEXT_H_
-#define EVALCONTEXT_H_
+#pragma once
 
 #include "context.h"
 
@@ -33,5 +32,3 @@ private:
 	std::vector<std::pair<std::string, Value> > eval_values;
 	const LocalScope *const scope;
 };
-
-#endif

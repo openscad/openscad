@@ -25,6 +25,16 @@ echo(str("Return up to 2 matches for string search; alternate columns (\"aebe\")
 // s5= search("abe",sTable4,2,1,3); // bounds checking needs fixing.
 // echo(str("Return up to 2 matches for string search; alternate columns: ",s4));
 
+// Value searches
+vTable1=[1,2,3];
+v1 = search(3, vTable1);
+echo(str("Default value search (3): ", v1));
+vTable1=[1,2,3];
+v2 = search(4, vTable1);
+echo(str("Value not found (4): ", v2));
+vTable2=[[0,1],[1,2],[2,3]];
+v3 = search([[1,2]], vTable2);
+echo(str("Value vector ([1,2]): ", v3));
 
 // number searches
 nTable1=[ [1,"a"],[3,"b"],[2,"c"],[4,"d"],[1,"a"],[7,"b"],[2,"c"],[8,"d"],[9,"e"],[10,"a"],[1,"a"] ];

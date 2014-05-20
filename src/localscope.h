@@ -1,5 +1,4 @@
-#ifndef LOCALSCOPE_H_
-#define LOCALSCOPE_H_
+#pragma once
 
 #include "typedefs.h"
 #include <boost/unordered_map.hpp>
@@ -16,11 +15,9 @@ public:
 	void addChild(ModuleInstantiation *ch);
 
 	AssignmentList assignments;
-  ModuleInstantiationList children;
+	ModuleInstantiationList children;
 	typedef boost::unordered_map<std::string, class AbstractFunction*> FunctionContainer;
 	FunctionContainer functions;
 	typedef boost::unordered_map<std::string, class AbstractModule*> AbstractModuleContainer;
 	AbstractModuleContainer	modules;
 };
-
-#endif

@@ -1,5 +1,4 @@
-#ifndef BUILTIN_H_
-#define BUILTIN_H_
+#pragma once
 
 #include <string>
 #include <boost/unordered_map.hpp>
@@ -28,5 +27,3 @@ private:
 
 	boost::unordered_map<std::string, std::string> deprecations;
 };
-
-#endif

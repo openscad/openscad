@@ -1,5 +1,4 @@
-#ifndef HIGHLIGHTER_H_
-#define HIGHLIGHTER_H_
+#pragma once
 
 #include <QSyntaxHighlighter>
 #include <QTextDocument>
@@ -28,5 +27,3 @@ private:
 	QMap<QString,QTextCharFormat> typeformats;
 	int lastDocumentPos();
 };
-
-#endif

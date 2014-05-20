@@ -1,0 +1,10 @@
+group() {
+	group() {
+		multmatrix([[0, 1, 0, 0], [0, 0, 1, 0], [1, 0, 0, 0], [0, 0, 0, 1]]) {
+			cube(size = [1, 5, 1], center = true);
+		}
+		multmatrix([[-1, 0, 0, 0], [0, -1, 0, 0], [0, 0, -1, 0], [0, 0, 0, 1]]) {
+			cube(size = [1, 5, 1], center = true);
+		}
+	}
+}

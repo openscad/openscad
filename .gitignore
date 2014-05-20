@@ -15,6 +15,8 @@ parser_yacc.h
 */#*#
 /nbproject
 /openscad
+/mingw32
+/mingw64
 /tests/openscad_nogui
 testdata/scad/features/import_dxf-tests.scad
 testdata/scad/features/import_stl-tests.scad

@@ -154,6 +154,9 @@ CONFIG += opencsg
 CONFIG += boost
 CONFIG += eigen
 CONFIG += glib-2.0
+CONFIG += harfbuzz
+CONFIG += freetype
+CONFIG += fontconfig
 
 #Uncomment the following line to enable QCodeEdit
 #CONFIG += qcodeedit
@@ -190,6 +193,7 @@ FORMS   += src/MainWindow.ui \
            src/Preferences.ui \
            src/OpenCSGWarningDialog.ui \
            src/AboutDialog.ui \
+           src/FontListDialog.ui \
            src/ProgressWidget.ui
 
 HEADERS += src/typedefs.h \
@@ -207,6 +211,7 @@ HEADERS += src/typedefs.h \
            src/Preferences.h \
            src/OpenCSGWarningDialog.h \
            src/AboutDialog.h \
+           src/FontListDialog.h \
            src/builtin.h \
            src/calc.h \
            src/context.h \
@@ -235,6 +240,7 @@ HEADERS += src/typedefs.h \
            src/transformnode.h \
            src/colornode.h \
            src/rendernode.h \
+           src/textnode.h \
            src/openscad.h \
            src/handle_dep.h \
            src/Geometry.h \
@@ -257,6 +263,9 @@ HEADERS += src/typedefs.h \
            src/GeometryEvaluator.h \
            src/CSGTermEvaluator.h \
            src/Tree.h \
+	   src/DrawingCallback.h \
+	   src/FreetypeRenderer.h \
+	   src/FontCache.h \
            src/mathc99.h \
            src/memory.h \
            src/linalg.h \
@@ -308,6 +317,7 @@ SOURCES += src/version_check.cc \
            src/surface.cc \
            src/control.cc \
            src/render.cc \
+           src/text.cc \
            src/dxfdata.cc \
            src/dxfdim.cc \
            src/offset.cc \
@@ -327,6 +337,9 @@ SOURCES += src/version_check.cc \
            src/ModuleCache.cc \
            src/GeometryCache.cc \
            src/Tree.cc \
+	   src/DrawingCallback.cc \
+	   src/FreetypeRenderer.cc \
+	   src/FontCache.cc \
            \
            src/rendersettings.cc \
            src/highlighter.cc \
@@ -353,7 +366,8 @@ SOURCES += src/version_check.cc \
            src/lodepng.cpp \
            \
            src/openscad.cc \
-           src/mainwin.cc
+           src/mainwin.cc \
+	   src/FontListDialog.cc
 
 # ClipperLib
 SOURCES += src/polyclipping/clipper.cpp

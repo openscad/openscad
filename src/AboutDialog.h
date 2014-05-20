@@ -1,5 +1,4 @@
-#ifndef ABOUTDIALOG_H_
-#define ABOUTDIALOG_H_
+#pragma once
 
 #include "ui_AboutDialog.h"
 
@@ -21,5 +20,3 @@ public:
 		this->aboutText->setHtml(tmp);
 	}
 };
-
-#endif
