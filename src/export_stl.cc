@@ -119,16 +119,16 @@ static void append_stl(const CGAL_Polyhedron &P, std::ostream &output)
 	Saves the current 3D CGAL Nef polyhedron as STL to the given file.
 	The file must be open.
  */
-static void append_stl(const CGAL_Nef_polyhedron *root_N, std::ostream &output)
+static void append_stl(const CGAL_Nef_polyhedron &root_N, std::ostream &output)
 {
-	if (!root_N->p3->is_simple()) {
+	if (!root_N.p3->is_simple()) {
 		PRINT("Object isn't a valid 2-manifold! Modify your design.\n");
 	}
 
 	bool usePolySet = false;
 	if (usePolySet) {
 		PolySet ps(3);
-		bool err = createPolySetFromNefPolyhedron3(*(root_N->p3), ps);
+		bool err = createPolySetFromNefPolyhedron3(*(root_N.p3), ps);
 		if (err) { PRINT("ERROR: Nef->PolySet failed"); }
 		else {
 			append_stl(ps, output);
@@ -138,8 +138,8 @@ static void append_stl(const CGAL_Nef_polyhedron *root_N, std::ostream &output)
 		CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
 		try {
 			CGAL_Polyhedron P;
-			//root_N->p3->convert_to_Polyhedron(P);
-			bool err = nefworkaround::convert_to_Polyhedron<CGAL_Kernel3>( *(root_N->p3), P );
+			//root_N.p3->convert_to_Polyhedron(P);
+			bool err = nefworkaround::convert_to_Polyhedron<CGAL_Kernel3>( *(root_N.p3), P );
 			if (err) {
 				PRINT("ERROR: CGAL NefPolyhedron->Polyhedron conversion failed");
 				return;
@@ -156,27 +156,27 @@ static void append_stl(const CGAL_Nef_polyhedron *root_N, std::ostream &output)
 	}
 }
 
-void append_stl(const Geometry *geom, std::ostream &output)
+void append_stl(const shared_ptr<const Geometry> &geom, std::ostream &output)
 {
-	if (const GeometryList *geomlist = dynamic_cast<const GeometryList *>(geom)) {
+	if (const GeometryList *geomlist = dynamic_cast<const GeometryList *>(geom.get())) {
 		BOOST_FOREACH(const shared_ptr<const Geometry> &geom, geomlist->getChildren()) {
-			append_stl(geom.get(), output);
+			append_stl(geom, output);
 		}
 	}
-	else if (const CGAL_Nef_polyhedron *N = dynamic_cast<const CGAL_Nef_polyhedron *>(geom)) {
-		append_stl(N, output);
+	else if (const CGAL_Nef_polyhedron *N = dynamic_cast<const CGAL_Nef_polyhedron *>(geom.get())) {
+		append_stl(*N, output);
 	}
-	else if (const PolySet *ps = dynamic_cast<const PolySet *>(geom)) {
+	else if (const PolySet *ps = dynamic_cast<const PolySet *>(geom.get())) {
 		append_stl(*ps, output);
 	}
-	else if (const Polygon2d *poly = dynamic_cast<const Polygon2d *>(geom)) {
+	else if (const Polygon2d *poly = dynamic_cast<const Polygon2d *>(geom.get())) {
 		assert(false && "Unsupported file format");
 	} else {
 		assert(false && "Not implemented");
 	}
 }
 
-void export_stl(const Geometry *geom, std::ostream &output)
+void export_stl(const shared_ptr<const Geometry> &geom, std::ostream &output)
 {
 	setlocale(LC_NUMERIC, "C"); // Ensure radix is . (not ,) in output
 	output << "solid OpenSCAD_Model\n";

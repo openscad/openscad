@@ -92,19 +92,19 @@ void export_dxf(const Polygon2d &poly, std::ostream &output)
 	setlocale(LC_NUMERIC, "");      // Set default locale
 }
 
-void export_dxf(const Geometry *geom, std::ostream &output)
+void export_dxf(const shared_ptr<const Geometry> &geom, std::ostream &output)
 {
-	if (const GeometryList *geomlist = dynamic_cast<const GeometryList *>(geom)) {
+	if (const GeometryList *geomlist = dynamic_cast<const GeometryList *>(geom.get())) {
 		assert(false && "Not implemented");
 		BOOST_FOREACH(const shared_ptr<const Geometry> &geom, geomlist->getChildren()) {
-			export_dxf(geom.get(), output);
+			export_dxf(geom, output);
 		}
 	}
-	else if (const PolySet *ps = dynamic_cast<const PolySet *>(geom)) {
+	else if (const PolySet *ps = dynamic_cast<const PolySet *>(geom.get())) {
 		assert(false && "Unsupported file format");
 	}
-	else if (const Polygon2d *poly = dynamic_cast<const Polygon2d *>(geom)) {
-		export_dxf(poly, output);
+	else if (const Polygon2d *poly = dynamic_cast<const Polygon2d *>(geom.get())) {
+		export_dxf(*poly, output);
 	} else {
 		assert(false && "Export as DXF for this geometry type is not supported");
 	}

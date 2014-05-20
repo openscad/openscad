@@ -91,19 +91,19 @@ void export_svg(const Polygon2d &poly, std::ostream &output)
 	setlocale(LC_NUMERIC, "");      // Set default locale
 }
 
-void export_svg(const Geometry *geom, std::ostream &output)
+void export_svg(const shared_ptr<const Geometry> &geom, std::ostream &output)
 {
-	if (const GeometryList *geomlist = dynamic_cast<const GeometryList *>(geom)) {
+	if (const GeometryList *geomlist = dynamic_cast<const GeometryList *>(geom.get())) {
 		assert(false && "Not implemented");
 		BOOST_FOREACH(const shared_ptr<const Geometry> &geom, geomlist->getChildren()) {
-			export_svg(geom.get(), output);
+			export_svg(geom, output);
 		}
 	}
-	else if (const PolySet *ps = dynamic_cast<const PolySet *>(geom)) {
+	else if (const PolySet *ps = dynamic_cast<const PolySet *>(geom.get())) {
 		assert(false && "Unsupported file format");
 	}
-	else if (const Polygon2d *poly = dynamic_cast<const Polygon2d *>(geom)) {
-		export_svg(poly, output);
+	else if (const Polygon2d *poly = dynamic_cast<const Polygon2d *>(geom.get())) {
+		export_svg(*poly, output);
 	} else {
 		assert(false && "Export as SVG for this geometry type is not supported");
 	}

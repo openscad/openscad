@@ -13,7 +13,7 @@
 #include "cgalutils.h"
 #include "CGAL_Nef_polyhedron.h"
 
-void export_png(const Geometry *root_geom, Camera &cam, std::ostream &output)
+void export_png(const shared_ptr<const Geometry> &root_geom, Camera &cam, std::ostream &output)
 {
 	OffscreenView *glview;
 	try {
@@ -22,8 +22,7 @@ void export_png(const Geometry *root_geom, Camera &cam, std::ostream &output)
 		fprintf(stderr,"Can't create OpenGL OffscreenView. Code: %i.\n", error);
 		return;
 	}
-	shared_ptr<const Geometry> ptr(root_geom);
-	CGALRenderer cgalRenderer(ptr);
+	CGALRenderer cgalRenderer(root_geom);
 
 	BoundingBox bbox = cgalRenderer.getBoundingBox();
 

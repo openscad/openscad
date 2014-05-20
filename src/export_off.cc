@@ -36,24 +36,16 @@
 #include "cgal.h"
 #include "cgalutils.h"
 
-static void export_off(const class PolySet &ps, std::ostream &output)
+static void export_off(const CGAL_Nef_polyhedron &root_N, std::ostream &output)
 {
-	// FIXME: Implement this without creating a Nef polyhedron
-	CGAL_Nef_polyhedron *N = createNefPolyhedronFromGeometry(ps);
-	export_off(N, output);
-	delete N;
-}
-
-static void export_off(const CGAL_Nef_polyhedron *root_N, std::ostream &output)
-{
-	if (!root_N->p3->is_simple()) {
+	if (!root_N.p3->is_simple()) {
 		PRINT("Object isn't a valid 2-manifold! Modify your design.");
 		return;
 	}
 	CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
 	try {
 		CGAL_Polyhedron P;
-		root_N->p3->convert_to_Polyhedron(P);
+		root_N.p3->convert_to_Polyhedron(P);
 		output << P;
 	}
 	catch (const CGAL::Assertion_exception &e) {
@@ -62,21 +54,29 @@ static void export_off(const CGAL_Nef_polyhedron *root_N, std::ostream &output)
 	CGAL::set_error_behaviour(old_behaviour);
 }
 
-void export_off(const Geometry *geom, std::ostream &output)
+static void export_off(const class PolySet &ps, std::ostream &output)
 {
-	if (const GeometryList *geomlist = dynamic_cast<const GeometryList *>(geom)) {
+	// FIXME: Implement this without creating a Nef polyhedron
+	CGAL_Nef_polyhedron *N = createNefPolyhedronFromGeometry(ps);
+	export_off(*N, output);
+	delete N;
+}
+
+void export_off(const shared_ptr<const Geometry> &geom, std::ostream &output)
+{
+	if (const GeometryList *geomlist = dynamic_cast<const GeometryList *>(geom.get())) {
 		assert(false && "Not implemented");
 		BOOST_FOREACH(const shared_ptr<const Geometry> &geom, geomlist->getChildren()) {
-			export_off(geom.get(), output);
+			export_off(geom, output);
 		}
 	}
-	else if (const CGAL_Nef_polyhedron *N = dynamic_cast<const CGAL_Nef_polyhedron *>(geom)) {
-		export_off(N, output);
+	else if (const CGAL_Nef_polyhedron *N = dynamic_cast<const CGAL_Nef_polyhedron *>(geom.get())) {
+		export_off(*N, output);
 	}
-	else if (const PolySet *ps = dynamic_cast<const PolySet *>(geom)) {
+	else if (const PolySet *ps = dynamic_cast<const PolySet *>(geom.get())) {
 		export_off(*ps, output);
 	}
-	else if (const Polygon2d *poly = dynamic_cast<const Polygon2d *>(geom)) {
+	else if (const Polygon2d *poly = dynamic_cast<const Polygon2d *>(geom.get())) {
 		assert(false && "Unsupported file format");
 	} else {
 		assert(false && "Not implemented");

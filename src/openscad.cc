@@ -217,7 +217,7 @@ static bool checkAndExport(shared_ptr<const Geometry> root_geom, unsigned nd,
 		PRINTB("Current top level object is not a %dD object.", nd);
 		return false;
 	}
-	exportFileByName(root_geom.get(), format, filename, filename);
+	exportFileByName(root_geom, format, filename, filename);
 	return true;
 }
 
@@ -424,7 +424,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 			}
 			else {
 				if (renderer==Render::CGAL) {
-					export_png(root_geom.get(), camera, fstream);
+					export_png(root_geom, camera, fstream);
 				} else if (renderer==Render::THROWNTOGETHER) {
 					export_png_with_throwntogether(tree, camera, fstream);
 				} else {

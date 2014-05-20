@@ -30,7 +30,7 @@
 
 #include <fstream>
 
-void exportFile(const class Geometry *root_geom, std::ostream &output, FileFormat format)
+void exportFile(const shared_ptr<const Geometry> &root_geom, std::ostream &output, FileFormat format)
 {
 	switch (format) {
 	case OPENSCAD_STL:
@@ -53,7 +53,7 @@ void exportFile(const class Geometry *root_geom, std::ostream &output, FileForma
 	}
 }
 
-void exportFileByName(const class Geometry *root_geom, FileFormat format,
+void exportFileByName(const shared_ptr<const Geometry> &root_geom, FileFormat format,
 	const char *name2open, const char *name2display)
 {
 	std::ofstream fstream(name2open);
