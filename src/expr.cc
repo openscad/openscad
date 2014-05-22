@@ -157,9 +157,15 @@ namespace {
 	void evaluate_sequential_assignment(const AssignmentList & assignment_list, Context *context) {
 		EvalContext let_context(context, assignment_list);
 
+		const bool allow_reassignment = false;
+
 		for (int i = 0; i < let_context.numArgs(); i++) {
-			// NOTE: iteratively evaluated list of arguments
-			context->set_variable(let_context.getArgName(i), let_context.getArgValue(i, context));
+			if (!allow_reassignment && context->has_local_variable(let_context.getArgName(i))) {
+				PRINTB("WARNING: Ignoring duplicate variable assignment %s = %s", let_context.getArgName(i) % let_context.getArgValue(i, context).toString());
+			} else {
+				// NOTE: iteratively evaluated list of arguments
+				context->set_variable(let_context.getArgName(i), let_context.getArgValue(i, context));
+			}
 		}
 	}
 }
