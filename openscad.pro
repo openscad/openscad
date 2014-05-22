@@ -190,7 +190,8 @@ FORMS   += src/MainWindow.ui \
            src/Preferences.ui \
            src/OpenCSGWarningDialog.ui \
            src/AboutDialog.ui \
-           src/ProgressWidget.ui
+           src/ProgressWidget.ui \
+    src/renderwindow.ui
 
 HEADERS += src/typedefs.h \
            src/version_check.h \
@@ -275,7 +276,8 @@ HEADERS += src/typedefs.h \
            src/system-gl.h \
            src/CsgInfo.h \
            \
-           src/AutoUpdater.h
+           src/AutoUpdater.h \
+    src/renderwindow.h
 
 SOURCES += src/version_check.cc \
            src/ProgressWidget.cc \
@@ -353,7 +355,8 @@ SOURCES += src/version_check.cc \
            src/lodepng.cpp \
            \
            src/openscad.cc \
-           src/mainwin.cc
+           src/mainwin.cc \
+    src/renderwindow.cpp
 
 # ClipperLib
 SOURCES += src/polyclipping/clipper.cpp

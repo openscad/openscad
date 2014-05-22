@@ -7,6 +7,7 @@
 #include "module.h"
 #include "Tree.h"
 #include "memory.h"
+#include "renderwindow.h"
 #include <vector>
 #include <QMutex>
 #include <QSet>
@@ -104,6 +105,7 @@ private:
 	void setDockWidgetTitle(QDockWidget *dockWidget, QString prefix, bool topLevel);
 
   class QMessageBox *openglbox;
+        renderWindow *ren;
 
 private slots:
 	void actionUpdateCheck();
@@ -122,6 +124,7 @@ private slots:
 	void instantiateRoot();
 	void compileDone(bool didchange);
 	void compileEnded();
+    void receiveWidget(QGLWidget *widget);
 
 private slots:
 	void pasteViewportTranslation();
@@ -164,6 +167,7 @@ private slots:
 	void actionExportCSG();
 	void actionExportImage();
 	void actionFlushCaches();
+    void newDetachWindow();
 
 public:
 	static QSet<MainWindow*> *windows;
@@ -222,6 +226,7 @@ private:
 
 	char const * afterCompileSlot;
 	bool procevents;
+    bool widgetAtHome;
 	class QTemporaryFile *tempFile;
 	class ProgressWidget *progresswidget;
 	class CGALWorker *cgalworker;
@@ -230,6 +235,7 @@ private:
 signals:
 	void highlightError(int);
 	void unhighlightLastError();
+    void passWidget(QGLWidget *widget);
 };
 
 class GuiLocker
