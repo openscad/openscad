@@ -38,7 +38,6 @@ public:
 	~Expression();
 
 	Value evaluate(const class Context *context) const;
-	Value evaluate_list_comprehension(const Context *context) const;
 
 	std::string toString() const;
 
@@ -50,6 +49,8 @@ private:
 	Value sub_evaluate_member(const class Context *context) const;
 	Value sub_evaluate_range(const class Context *context) const;
 	Value sub_evaluate_vector(const class Context *context) const;
+	Value sub_evaluate_let_expression(const class Context *context) const;
+	Value sub_evaluate_list_comprehension(const class Context *context) const;
 };
 
 std::ostream &operator<<(std::ostream &stream, const Expression &expr);
