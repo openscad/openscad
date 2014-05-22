@@ -97,15 +97,13 @@ GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren3D(const Abstr
 	if (children.size() == 0) return ResultObject();
 
 	if (op == OPENSCAD_HULL) {
-		CGAL_Polyhedron P;
-		if (CGALUtils::applyHull(children, P)) {
-			PolySet *ps = new PolySet(3);
+		PolySet *ps = new PolySet(3);
 
-			if (!createPolySetFromPolyhedron(P, *ps)) {
-				return ResultObject(ps);
-			}
-			delete ps;
+		if (CGALUtils::applyHull(children, *ps)) {
+			return ps;
 		}
+
+		delete ps;
 		return ResultObject();
 	}
 	
@@ -153,10 +151,11 @@ Geometry *GeometryEvaluator::applyHull3D(const AbstractNode &node)
 {
 	Geometry::ChildList children = collectChildren3D(node);
 
-	CGAL_Polyhedron P;
-	if (CGALUtils::applyHull(children, P)) {
-		return new CGAL_Nef_polyhedron(new CGAL_Nef_polyhedron3(P));
+	PolySet *P = new PolySet(3);
+	if (CGALUtils::applyHull(children, *P)) {
+		return P;
 	}
+	delete P;
 	return NULL;
 }
 
