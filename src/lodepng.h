@@ -23,8 +23,7 @@ freely, subject to the following restrictions:
     distribution.
 */
 
-#ifndef LODEPNG_H
-#define LODEPNG_H
+#pragma once
 
 #include <string.h> /*for size_t*/
 
@@ -877,8 +876,6 @@ TODO:
 [ ] make option to choose if the raw image with non multiple of 8 bits per scanline should have padding bits or not
 [ ] let the C++ wrapper catch exceptions coming from the standard library and return LodePNG error codes
 */
-
-#endif /*LODEPNG_H inclusion guard*/
 
 /*
 LodePNG Documentation

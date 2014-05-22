@@ -1,3 +1,3 @@
 module mymodule() {
-  cylinder(center=true);
+  cylinder(r=5, center=true);
 }

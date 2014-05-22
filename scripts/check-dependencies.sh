@@ -37,13 +37,9 @@ debug()
 eigen_sysver()
 {
   debug eigen
-  eigpath=
-  eig3path=$1/include/eigen3/Eigen/src/Core/util/Macros.h
-  eig2path=$1/include/eigen2/Eigen/src/Core/util/Macros.h
-  if [ -e $eig3path ]; then eigpath=$eig3path; fi
-  if [ -e $eig2path ]; then eigpath=$eig2path; fi
-  debug $eig2path
-  if [ ! $eigpath ]; then return; fi
+  eigpath=$1/include/eigen3/Eigen/src/Core/util/Macros.h
+  debug $eigpath
+  if [ ! -e $eigpath ]; then return; fi
   eswrld=`grep "define  *EIGEN_WORLD_VERSION  *[0-9]*" $eigpath | awk '{print $3}'`
   esmaj=`grep "define  *EIGEN_MAJOR_VERSION  *[0-9]*" $eigpath | awk '{print $3}'`
   esmin=`grep "define  *EIGEN_MINOR_VERSION  *[0-9]*" $eigpath | awk '{print $3}'`
@@ -71,24 +67,59 @@ glib2_sysver()
   #Get architecture triplet - e.g. x86_64-linux-gnu
   glib2archtriplet=`gcc -dumpmachine 2>/dev/null`
   if [ -z "$VAR" ]; then
-    glib2archtriplet=`dpkg-architecture -qDEB_HOST_MULTIARCH 2>/dev/null`
+    if [ "`command -v dpkg-architectures`" ]; then
+      glib2archtriplet=`dpkg-architecture -qDEB_HOST_MULTIARCH 2>/dev/null`
+    fi
   fi
   glib2path=$1/lib/$glib2archtriplet/glib-2.0/include/glibconfig.h
   if [ ! -e $glib2path ]; then
     #No glib found
     #glib can be installed in /usr/lib/i386-linux-gnu/glib-2.0/ on arch i686-linux-gnu (sometimes?)
-    if [ $glib2archtriplet = "i686-linux-gnu" ]; then
+    if [ "$glib2archtriplet" = "i686-linux-gnu" ]; then
         glib2archtriplet=i386-linux-gnu
         glib2path=$1/lib/$glib2archtriplet/glib-2.0/include/glibconfig.h
-        if [ ! -e $glib2path ]; then return; fi
-    else
-        return;
     fi
+  fi
+  if [ ! -e $glib2path ]; then
+    glib2path=$1/lib/glib-2.0/include/glibconfig.h
+  fi
+  if [ ! -e $glib2path ]; then
+    return
   fi
   glib2major=`grep "define  *GLIB_MAJOR_VERSION  *[0-9.]*" $glib2path | awk '{print $3}'`
   glib2minor=`grep "define  *GLIB_MINOR_VERSION  *[0-9.]*" $glib2path | awk '{print $3}'`
   glib2micro=`grep "define  *GLIB_MICRO_VERSION  *[0-9.]*" $glib2path | awk '{print $3}'`
   glib2_sysver_result="${glib2major}.${glib2minor}.${glib2micro}"
+}
+
+fontconfig_sysver()
+{
+  fcpath=$1/include/fontconfig/fontconfig.h
+  if [ ! -e $fcpath ]; then return; fi
+  fcmajor=`grep "define  *FC_MAJOR  *[0-9.]*" $fcpath | awk '{print $3}'`
+  fcminor=`grep "define  *FC_MINOR  *[0-9.]*" $fcpath | awk '{print $3}'`
+  fcrevison=`grep "define  *FC_REVISION  *[0-9.]*" $fcpath | awk '{print $3}'`
+  fontconfig_sysver="${fcmajor}.${fcminor}.${fcrevision}"
+}
+
+freetype2_sysver()
+{
+  freetype2path=$1/include/freetype2/freetype/freetype.h
+  if [ ! -e $freetype2path ]; then return; fi
+  ftmajor=`grep "define  *FREETYPE_MAJOR  *[0-9.]*" $freetype2path | awk '{print $3}'`
+  ftminor=`grep "define  *FREETYPE_MINOR  *[0-9.]*" $freetype2path | awk '{print $3}'`
+  ftpatch=`grep "define  *FREETYPE_PATCH  *[0-9.]*" $freetype2path | awk '{print $3}'`
+  freetype2_sysver_result="${ftmajor}.${ftminor}.${ftpatch}"
+}
+
+harfbuzz_sysver()
+{
+  harfbuzzpath=$1/include/harfbuzz/hb-version.h
+  if [ ! -e $harfbuzzpath ]; then return; fi
+  hbmajor=`grep "define  *HB_VERSION_MAJOR  *[0-9.]*" $harfbuzzpath | awk '{print $3}'`
+  hbminor=`grep "define  *HB_VERSION_MINOR  *[0-9.]*" $harfbuzzpath | awk '{print $3}'`
+  hbmicro=`grep "define  *HB_VERSION_MICRO  *[0-9.]*" $harfbuzzpath | awk '{print $3}'`
+  harfbuzz_sysver_result="${hbmajor}.${hbminor}.${hbmicro}"
 }
 
 boost_sysver()
@@ -555,7 +586,7 @@ checkargs()
 
 main()
 {
-  deps="qt4 cgal gmp mpfr boost opencsg glew eigen glib2 gcc bison flex make"
+  deps="qt4 cgal gmp mpfr boost opencsg glew eigen glib2 fontconfig freetype2 harfbuzz gcc bison flex make"
   #deps="$deps curl git" # not technically necessary for build
   #deps="$deps python cmake imagemagick" # only needed for tests
   #deps="cgal"

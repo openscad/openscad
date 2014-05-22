@@ -226,8 +226,6 @@ o Visitation refactoring
 DOCUMENTATION
 -------------
 o Auto-generate API documentation instead of, in addition to or combined with, the wikibooks docs.
-o Write checklists for typical extension work (add new module, add new function)
-  -> syntax highlighter, test files, examples, documentation (external editor modes)
 o Clarify include/use better in the wikibook docs (e.g. that use'd modules have to be self-contained)
 
 TESTING

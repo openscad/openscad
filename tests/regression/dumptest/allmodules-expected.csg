@@ -32,7 +32,7 @@ group() {
 	polygon(points = undef, paths = undef, convexity = 1);
 	projection(cut = false, convexity = 0);
 	render(convexity = 1);
-	surface(file = "", center = false);
+	surface(file = "", center = false, invert = false);
 	multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]);
 	multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]);
 	multmatrix([[-1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]);

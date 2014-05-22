@@ -17,7 +17,7 @@ group() {
 	multmatrix([[1, 0, 0, 12], [0, 1, 0, 12], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 		difference() {
 			square(size = [0, 10], center = true);
-			circle($fn = 0, $fa = 12, $fs = 2, r = 4);
+#			circle($fn = 0, $fa = 12, $fs = 2, r = 4);
 		}
 	}
 	multmatrix([[1, 0, 0, 0], [0, 1, 0, 12], [0, 0, 1, 0], [0, 0, 0, 1]]) {

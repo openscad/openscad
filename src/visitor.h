@@ -1,5 +1,4 @@
-#ifndef VISITOR_H_
-#define VISITOR_H_
+#pragma once
 
 #include "traverser.h"
 
@@ -37,6 +36,9 @@ public:
   virtual Response visit(class State &state, const class PrimitiveNode &node) {
 		return visit(state, (const class LeafNode &)node);
 	}
+  virtual Response visit(class State &state, const class TextNode &node) {
+		return visit(state, (const class AbstractPolyNode &)node);
+	}
   virtual Response visit(class State &state, const class ProjectionNode &node) {
 		return visit(state, (const class AbstractPolyNode &)node);
 	}
@@ -52,7 +54,8 @@ public:
   virtual Response visit(class State &state, const class ColorNode &node) {
 		return visit(state, (const class AbstractNode &)node);
 	}
+  virtual Response visit(class State &state, const class OffsetNode &node) {
+		return visit(state, (const class AbstractPolyNode &)node);
+	}
 	// Add visit() methods for new visitable subtypes of AbstractNode here
 };
-
-#endif

@@ -6,12 +6,14 @@
 #include "Polygon2d.h"
 #include "module.h"
 #include "state.h"
+#include "offsetnode.h"
 #include "transformnode.h"
 #include "linearextrudenode.h"
 #include "rotateextrudenode.h"
 #include "csgnode.h"
 #include "cgaladvnode.h"
 #include "projectionnode.h"
+#include "textnode.h"
 #include "CGAL_Nef_polyhedron.h"
 #include "cgalutils.h"
 #include "rendernode.h"
@@ -21,6 +23,7 @@
 #include "calc.h"
 #include "printutils.h"
 #include "svg.h"
+#include "calc.h"
 #include "dxfdata.h"
 
 #include <algorithm>
@@ -90,37 +93,25 @@ GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren(const Abstrac
 */
 GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren3D(const AbstractNode &node, OpenSCADOperator op)
 {
-	if (op == OPENSCAD_HULL) {
-		return ResultObject(applyHull3D(node));
-	}
-
 	Geometry::ChildList children = collectChildren3D(node);
-
 	if (children.size() == 0) return ResultObject();
+
+	if (op == OPENSCAD_HULL) {
+		PolySet *ps = new PolySet(3);
+
+		if (CGALUtils::applyHull(children, *ps)) {
+			return ps;
+		}
+
+		delete ps;
+		return ResultObject();
+	}
+	
 	// Only one child -> this is a noop
 	if (children.size() == 1) return ResultObject(children.front().second);
 
-	CGAL_Nef_polyhedron *N = NULL;
-	BOOST_FOREACH(const Geometry::ChildItem &item, children) {
-		const shared_ptr<const Geometry> &chgeom = item.second;
-		shared_ptr<const CGAL_Nef_polyhedron> chN;
-		if (!chgeom) {
-			chN.reset(new CGAL_Nef_polyhedron); // Create null polyhedron
-		}
-		else {
-			chN = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(chgeom);
-			if (!chN) {
-				const PolySet *chps = dynamic_cast<const PolySet*>(chgeom.get());
-				if (chps) chN.reset(createNefPolyhedronFromGeometry(*chps));
-			}
-		}
-
-		if (N) CGALUtils::applyBinaryOperator(*N, *chN, op);
-		// Initialize N on first iteration with first expected geometric object
-		else if (chN) N = chN->copy();
-
-		item.first->progress_report();
-	}
+	CGAL_Nef_polyhedron *N = new CGAL_Nef_polyhedron;
+	CGALUtils::applyOperator(children, *N, op);
 	return ResultObject(N);
 }
 
@@ -160,10 +151,11 @@ Geometry *GeometryEvaluator::applyHull3D(const AbstractNode &node)
 {
 	Geometry::ChildList children = collectChildren3D(node);
 
-	CGAL_Polyhedron P;
-	if (CGALUtils::applyHull(children, P)) {
-		return new CGAL_Nef_polyhedron(new CGAL_Nef_polyhedron3(P));
+	PolySet *P = new PolySet(3);
+	if (CGALUtils::applyHull(children, *P)) {
+		return P;
 	}
+	delete P;
 	return NULL;
 }
 
@@ -177,12 +169,12 @@ void GeometryEvaluator::applyResize3D(CGAL_Nef_polyhedron &N,
 	CGAL_Iso_cuboid_3 bb = CGALUtils::boundingBox(*N.p3);
 
 	std::vector<NT3> scale, bbox_size;
-	for (int i=0;i<3;i++) {
+	for (unsigned int i=0;i<3;i++) {
 		scale.push_back(NT3(1));
 		bbox_size.push_back(bb.max_coord(i) - bb.min_coord(i));
 	}
 	int newsizemax_index = 0;
-	for (int i=0;i<N.getDimension();i++) {
+	for (unsigned int i=0;i<N.getDimension();i++) {
 		if (newsize[i]) {
 			if (bbox_size[i] == NT3(0)) {
 				PRINT("WARNING: Resize in direction normal to flat object is not implemented");
@@ -199,7 +191,7 @@ void GeometryEvaluator::applyResize3D(CGAL_Nef_polyhedron &N,
 	if (newsize[newsizemax_index] != 0) {
 		autoscale = NT3(newsize[newsizemax_index]) / bbox_size[newsizemax_index];
 	}
-	for (int i=0;i<N.getDimension();i++) {
+	for (unsigned int i=0;i<N.getDimension();i++) {
 		if (autosize[i] && newsize[i]==0) scale[i] = autoscale;
 	}
 
@@ -342,6 +334,14 @@ Polygon2d *GeometryEvaluator::applyToChildren2D(const AbstractNode &node, OpenSC
 
 	std::vector<const Polygon2d *> children = collectChildren2D(node);
 
+	if (children.empty()) {
+		return NULL;
+	}
+
+	if (children.size() == 1) {
+		return new Polygon2d(*children[0]); // Copy
+	}
+
 	ClipperLib::ClipType clipType;
 	switch (op) {
 	case OPENSCAD_UNION:
@@ -405,6 +405,33 @@ Response GeometryEvaluator::visit(State &state, const AbstractNode &node)
 	return ContinueTraversal;
 }
 
+Response GeometryEvaluator::visit(State &state, const OffsetNode &node)
+{
+	if (state.isPrefix() && isSmartCached(node)) return PruneTraversal;
+	if (state.isPostfix()) {
+		shared_ptr<const Geometry> geom;
+		if (!isSmartCached(node)) {
+			const Geometry *geometry = applyToChildren2D(node, OPENSCAD_UNION);
+			if (geometry) {
+				const Polygon2d *polygon = dynamic_cast<const Polygon2d*>(geometry);
+				// ClipperLib documentation: The formula for the number of steps in a full
+				// circular arc is ... Pi / acos(1 - arc_tolerance / abs(delta))
+				double n = Calc::get_fragments_from_r(10, node.fn, node.fs, node.fa);
+				double arc_tolerance = std::abs(node.delta) * (1 - cos(M_PI / n));
+				const Polygon2d *result = ClipperUtils::applyOffset(*polygon, node.delta, node.join_type, node.miter_limit, arc_tolerance);
+				assert(result);
+				geom.reset(result);
+				delete geometry;
+			}
+		}
+		else {
+			geom = smartCacheGet(node);
+		}
+		addToParent(state, node, geom);
+	}
+	return ContinueTraversal;
+}
+
 /*!
    RenderNodes just pass on convexity
 */
@@ -428,7 +455,7 @@ Response GeometryEvaluator::visit(State &state, const RenderNode &node)
 			else if (shared_ptr<const CGAL_Nef_polyhedron> N = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom)) {
 				// If we got a const object, make a copy
 				shared_ptr<CGAL_Nef_polyhedron> newN;
-				if (res.isConst()) newN.reset(new CGAL_Nef_polyhedron(*N));
+				if (res.isConst()) newN.reset(N->copy());
 				else newN = dynamic_pointer_cast<CGAL_Nef_polyhedron>(res.ptr());
 				newN->setConvexity(node.convexity);
 				geom = newN;
@@ -468,6 +495,27 @@ Response GeometryEvaluator::visit(State &state, const LeafNode &node)
 	}
 	return PruneTraversal;
 }
+
+Response GeometryEvaluator::visit(State &state, const TextNode &node)
+{
+	if (state.isPrefix()) {
+		shared_ptr<const Geometry> geom;
+		if (!isSmartCached(node)) {
+			std::vector<const Geometry *> geometrylist = node.createGeometryList();
+			std::vector<const Polygon2d *> polygonlist;
+			BOOST_FOREACH(const Geometry *geometry, geometrylist) {
+				const Polygon2d *polygon = dynamic_cast<const Polygon2d*>(geometry);
+				assert(polygon);
+				polygonlist.push_back(polygon);
+			}
+			geom.reset(ClipperUtils::apply(polygonlist, ClipperLib::ctUnion));
+		}
+		else geom = GeometryCache::instance()->get(this->tree.getIdString(node));
+		addToParent(state, node, geom);
+	}
+	return PruneTraversal;
+}
+
 
 /*!
 	input: List of 2D or 3D objects (not mixed)
@@ -544,7 +592,7 @@ Response GeometryEvaluator::visit(State &state, const TransformNode &node)
 							assert(N);
 							// If we got a const object, make a copy
 							shared_ptr<CGAL_Nef_polyhedron> newN;
-							if (res.isConst()) newN.reset(new CGAL_Nef_polyhedron(*N));
+							if (res.isConst()) newN.reset(N->copy());
 							else newN = dynamic_pointer_cast<CGAL_Nef_polyhedron>(res.ptr());
 							newN->transform(node.matrix);
 							geom = newN;
@@ -660,7 +708,7 @@ static Geometry *extrudePolygon(const LinearExtrudeNode &node, const Polygon2d &
 	}
     size_t slices = node.has_twist ? node.slices : 1;
 
-	for (int j = 0; j < slices; j++) {
+	for (unsigned int j = 0; j < slices; j++) {
 		double rot1 = node.twist*j / slices;
 		double rot2 = node.twist*(j+1) / slices;
 		double height1 = h1 + (h2-h1)*j / slices;
@@ -716,7 +764,7 @@ Response GeometryEvaluator::visit(State &state, const LinearExtrudeNode &node)
 
 static void fill_ring(std::vector<Vector3d> &ring, const Outline2d &o, double a)
 {
-	for (int i=0;i<o.vertices.size();i++) {
+	for (unsigned int i=0;i<o.vertices.size();i++) {
 		ring[i][0] = o.vertices[i][0] * sin(a);
 		ring[i][1] = o.vertices[i][0] * cos(a);
 		ring[i][2] = o.vertices[i][1];
@@ -961,7 +1009,7 @@ Response GeometryEvaluator::visit(State &state, const CgaladvNode &node)
 				if (N) {
 					// If we got a const object, make a copy
 					shared_ptr<CGAL_Nef_polyhedron> newN;
-					if (res.isConst()) newN.reset(new CGAL_Nef_polyhedron(*N));
+					if (res.isConst()) newN.reset(N->copy());
 					else newN = dynamic_pointer_cast<CGAL_Nef_polyhedron>(res.ptr());
 					applyResize3D(*newN, node.newsize, node.autosize);
 					geom = newN;

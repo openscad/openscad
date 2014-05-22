@@ -1,5 +1,4 @@
-#ifndef NODE_H_
-#define NODE_H_
+#pragma once
 
 #include <vector>
 #include <string>
@@ -94,5 +93,3 @@ public:
 
 std::ostream &operator<<(std::ostream &stream, const AbstractNode &node);
 AbstractNode *find_root_tag(AbstractNode *n);
-
-#endif

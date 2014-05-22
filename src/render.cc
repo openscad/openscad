@@ -46,7 +46,7 @@ AbstractNode *RenderModule::instantiate(const Context *ctx, const ModuleInstanti
 	RenderNode *node = new RenderNode(inst);
 
 	AssignmentList args;
-	args += Assignment("convexity", NULL);
+	args += Assignment("convexity");
 
 	Context c(ctx);
 	c.setVariables(args, evalctx);

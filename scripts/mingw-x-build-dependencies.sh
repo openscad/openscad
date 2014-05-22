@@ -58,19 +58,21 @@ fi
 
 echo "entering" $MXEDIR
 cd $MXEDIR
+echo 'checkout stable branch'
+git checkout stable
 if [ "`echo $* | grep 64`" ]; then
  MXE_TARGETS='x86_64-w64-mingw32'
  if [ "`echo $* | grep download`" ]; then
-  PACKAGES='download-mpfr download-eigen download-opencsg download-cgal download-qt download-glib'
+  PACKAGES='download-mpfr download-eigen download-opencsg download-cgal download-qt download-qt5 download-glib download-freetype download-fontconfig download-harfbuzz'
  else
-  PACKAGES='mpfr eigen opencsg cgal qt glib'
+  PACKAGES='qt qt5 mpfr eigen opencsg cgal glib freetype fontconfig harfbuzz'
  fi
 else
- MXE_TARGETS='i686-pc-mingw32' # fixme - does this work? test it.
+ MXE_TARGETS='i686-pc-mingw32'
  if [ "`echo $* | grep download`" ]; then
-  PACKAGES='download-mpfr download-eigen download-opencsg download-cgal download-qt download-nsis download-glib'
+  PACKAGES='download-mpfr download-eigen download-opencsg download-cgal download-qt download-qt5 download-nsis download-glib download-freetype download-fontconfig download-harfbuzz'
  else
-  PACKAGES='mpfr eigen opencsg cgal qt nsis glib'
+  PACKAGES='qt qt5 mpfr eigen opencsg cgal nsis glib freetype fontconfig harfbuzz'
  fi
 fi
 echo make $PACKAGES MXE_TARGETS=$MXE_TARGETS -j $NUMCPU JOBS=$NUMJOBS

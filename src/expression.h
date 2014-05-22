@@ -1,5 +1,4 @@
-#ifndef EXPRESSION_H_
-#define EXPRESSION_H_
+#pragma once
 
 #include <string>
 #include <vector>
@@ -41,9 +40,14 @@ public:
 	Value evaluate(const class Context *context) const;
 	std::string toString() const;
 
+private:
 	mutable int recursioncount;
+
+	// The following sub_* methods are needed to minimize stack usage only.
+	Value sub_evaluate_function(const class Context *context) const;
+	Value sub_evaluate_member(const class Context *context) const;
+	Value sub_evaluate_range(const class Context *context) const;
+	Value sub_evaluate_vector(const class Context *context) const;
 };
 
 std::ostream &operator<<(std::ostream &stream, const Expression &expr);
-
-#endif

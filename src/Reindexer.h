@@ -1,5 +1,4 @@
-#ifndef REINDEXER_H_
-#define REINDEXER_H_
+#pragma once
 
 #include <boost/unordered_map.hpp>
 #include <boost/functional.hpp>
@@ -62,5 +61,3 @@ private:
   boost::unordered_map<T, int> map;
   std::vector<T> vec;
 };
-
-#endif

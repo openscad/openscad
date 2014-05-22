@@ -12,6 +12,11 @@ CONFIG(mingw-cross-env) {
   LIBS += mingw-cross-env/lib/libmpfr.a 
   LIBS += mingw-cross-env/lib/libgmp.a 
   LIBS += mingw-cross-env/lib/libCGAL.a
+  LIBS += mingw-cross-env/lib/libfontconfig.a
+  LIBS += mingw-cross-env/lib/libfreetype.a
+  LIBS += mingw-cross-env/lib/libharfbuzz.a
+  LIBS += mingw-cross-env/lib/libbz2.a
+  LIBS += mingw-cross-env/lib/libexpat.a
   LIBS += mingw-cross-env/lib/libintl.a
   LIBS += mingw-cross-env/lib/libiconv.a
   QMAKE_CXXFLAGS += -fpermissive

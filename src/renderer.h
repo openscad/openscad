@@ -1,5 +1,4 @@
-#ifndef RENDERER_H_
-#define RENDERER_H_
+#pragma once
 
 #include "system-gl.h"
 #include "linalg.h"
@@ -53,6 +52,3 @@ public:
 	static void render_surface(shared_ptr<const class Geometry> geom, csgmode_e csgmode, const Transform3d &m, GLint *shaderinfo = NULL);
 	static void render_edges(shared_ptr<const Geometry> geom, csgmode_e csgmode);
 };
-
-#endif // RENDERER_H
-

@@ -1,5 +1,4 @@
-#ifndef FILTER_H_
-#define FILTER_H_
+#pragma once
 
 #include <QObject>
 #include <QFileOpenEvent>
@@ -24,5 +23,3 @@ protected:
 		}
 	}
 };
-
-#endif

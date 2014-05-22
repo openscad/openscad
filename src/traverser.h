@@ -1,5 +1,4 @@
-#ifndef TRAVERSER_H_
-#define TRAVERSER_H_
+#pragma once
 
 enum Response {ContinueTraversal, AbortTraversal, PruneTraversal};
 
@@ -22,5 +21,3 @@ private:
   const AbstractNode &root;
   TraversalType traversaltype;
 };
-
-#endif

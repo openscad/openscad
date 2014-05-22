@@ -1,5 +1,4 @@
-#ifndef CGALRENDERER_H_
-#define CGALRENDERER_H_
+#pragma once
 
 #include "renderer.h"
 #include "CGAL_Nef_polyhedron.h"
@@ -17,5 +16,3 @@ public:
 	shared_ptr<const CGAL_Nef_polyhedron3> nef3;
 	shared_ptr<const class PolySet> polyset;
 };
-
-#endif

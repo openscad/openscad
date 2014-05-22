@@ -1,5 +1,4 @@
-#ifndef OPENCSGWARNINGDIALOG_H_
-#define OPENCSGWARNINGDIALOG_H_
+#pragma once
 
 #include "ui_OpenCSGWarningDialog.h"
 
@@ -12,5 +11,3 @@ public:
 public slots:
 	void setText(const QString &text);
 };
-
-#endif

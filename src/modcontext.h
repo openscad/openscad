@@ -1,5 +1,4 @@
-#ifndef FILECONTEXT_H_
-#define FILECONTEXT_H_
+#pragma once
 
 #include "context.h"
 #include "module.h"
@@ -34,7 +33,7 @@ public:
 	const class EvalContext *evalctx;
 
 #ifdef DEBUG
-	virtual void dump(const class AbstractModule *mod, const ModuleInstantiation *inst);
+	virtual std::string dump(const class AbstractModule *mod, const ModuleInstantiation *inst);
 #endif
 private:
 // Experimental code. See issue #399
@@ -52,6 +51,7 @@ public:
 
 private:
 	const FileModule::ModuleContainer &usedlibs;
-};
 
-#endif
+	// This sub_* method is needed to minimize stack usage only.
+	Value sub_evaluate_function(const std::string &name, const EvalContext *evalctx, FileModule *usedmod) const;
+};

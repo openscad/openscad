@@ -2,8 +2,7 @@
 // Clifford Wolf 2012. Released under the GPL 2, or later, as described in
 // the file named 'COPYING' in OpenSCAD's project root.
 
-#ifndef boosty_h_
-#define boosty_h_
+#pragma once
 
 /*
  boosty is a wrapper around boost so that OpenSCAD can work with old
@@ -140,5 +139,3 @@ inline fs::path canonical( fs::path p )
 
 
 } // namespace
-
-#endif

@@ -1,5 +1,4 @@
-#ifndef CGALWORKER_H_
-#define CGALWORKER_H_
+#pragma once
 
 #include <QObject>
 #include "memory.h"
@@ -25,5 +24,3 @@ protected:
 	class QThread *thread;
 	const class Tree *tree;
 };
-
-#endif

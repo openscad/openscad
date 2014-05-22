@@ -37,6 +37,7 @@
 #include <boost/filesystem.hpp>
 namespace fs = boost::filesystem;
 #include "boosty.h"
+#include "FontCache.h"
 #include <boost/foreach.hpp>
 #include <sstream>
 #include <sys/stat.h>
@@ -56,6 +57,18 @@ AbstractNode *AbstractModule::instantiate(const Context *ctx, const ModuleInstan
 	return node;
 }
 
+double AbstractModule::lookup_double_variable_with_default(Context &c, std::string variable, double def) const
+{
+	const Value v = c.lookup_variable(variable, true);
+	return (v.type() == Value::NUMBER) ? v.toDouble() : def;
+}
+
+std::string AbstractModule::lookup_string_variable_with_default(Context &c, std::string variable, std::string def) const
+{
+	const Value v = c.lookup_variable(variable, true);
+	return (v.type() == Value::STRING) ? v.toString() : def;
+}
+
 std::string AbstractModule::dump(const std::string &indent, const std::string &name) const
 {
 	std::stringstream dump;
@@ -65,7 +78,6 @@ std::string AbstractModule::dump(const std::string &indent, const std::string &n
 
 ModuleInstantiation::~ModuleInstantiation()
 {
-	BOOST_FOREACH(const Assignment &arg, this->arguments) delete arg.second;
 }
 
 IfElseModuleInstantiation::~IfElseModuleInstantiation()
@@ -222,6 +234,21 @@ std::string Module::dump(const std::string &indent, const std::string &name) con
 	return dump.str();
 }
 
+void FileModule::registerUse(const std::string path) {
+	std::string extraw = boosty::extension_str(fs::path(path));
+	std::string ext = boost::algorithm::to_lower_copy(extraw);
+	
+	if ((ext == ".otf") || (ext == ".ttf")) {
+		if (fs::is_regular(path)) {
+			FontCache::instance()->register_font_file(path);
+		} else {
+			PRINTB("ERROR: Can't read font with path '%s'", path);
+		}
+	} else {
+		usedlibs.insert(path);
+	}
+}
+
 void FileModule::registerInclude(const std::string &localpath,
 																 const std::string &fullpath)
 {
@@ -263,45 +290,58 @@ bool FileModule::handleDependencies()
 	if (this->is_handling_dependencies) return false;
 	this->is_handling_dependencies = true;
 
-	bool changed = false;
+	bool somethingchanged = false;
+	std::vector<std::pair<std::string,std::string> > updates;
 
 	// If a lib in usedlibs was previously missing, we need to relocate it
 	// by searching the applicable paths. We can identify a previously missing module
 	// as it will have a relative path.
-
-	// Iterating manually since we want to modify the container while iterating
-	FileModule::ModuleContainer::iterator iter = this->usedlibs.begin();
-	while (iter != this->usedlibs.end()) {
-		FileModule::ModuleContainer::iterator curr = iter++;
+	BOOST_FOREACH(std::string filename, this->usedlibs) {
 
 		bool wasmissing = false;
+		bool found = true;
+
 		// Get an absolute filename for the module
-		std::string filename = *curr;
 		if (!boosty::is_absolute(filename)) {
 			wasmissing = true;
 			fs::path fullpath = find_valid_path(this->path, filename);
-			if (!fullpath.empty()) filename = boosty::stringy(fullpath);
+			if (!fullpath.empty()) {
+				updates.push_back(std::make_pair(filename, boosty::stringy(fullpath)));
+				filename = boosty::stringy(fullpath);
+			}
+			else {
+				found = false;
+			}
 		}
 
-		FileModule *oldmodule = ModuleCache::instance()->lookup(filename);
-		FileModule *newmodule = ModuleCache::instance()->evaluate(filename);
-		// Detect appearance but not removal of files
-		if (newmodule && oldmodule != newmodule) {
-			changed = true;
+		if (found) {
+			bool wascached = ModuleCache::instance()->isCached(filename);
+			FileModule *oldmodule = ModuleCache::instance()->lookup(filename);
+			FileModule *newmodule;
+			bool changed = ModuleCache::instance()->evaluate(filename, newmodule);
+			// Detect appearance but not removal of files, and keep old module
+			// on compile errors (FIXME: Is this correct behavior?)
+			if (changed) {
 #ifdef DEBUG
-			PRINTB_NOCACHE("  %s: %p -> %p", filename % oldmodule % newmodule);
+				PRINTB_NOCACHE("  %s: %p -> %p", filename % oldmodule % newmodule);
 #endif
-		}
-		if (!newmodule) {
+			}
+			somethingchanged |= changed;
 			// Only print warning if we're not part of an automatic reload
-			if (!oldmodule && !wasmissing) {
+			if (!newmodule && !wascached && !wasmissing) {
 				PRINTB_NOCACHE("WARNING: Failed to compile library '%s'.", filename);
 			}
 		}
 	}
 
+	// Relative filenames which were located is reinserted as absolute filenames
+	typedef std::pair<std::string,std::string> stringpair;
+	BOOST_FOREACH(const stringpair &files, updates) {
+		this->usedlibs.erase(files.first);
+		this->usedlibs.insert(files.second);
+	}
 	this->is_handling_dependencies = false;
-	return changed;
+	return somethingchanged;
 }
 
 AbstractNode *FileModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const

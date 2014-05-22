@@ -1,5 +1,4 @@
-#ifndef OPENSCAD_CAMERA_H_
-#define OPENSCAD_CAMERA_H_
+#pragma once
 
 /*
 
@@ -90,6 +89,3 @@ public:
 	unsigned int pixel_width;
 	unsigned int pixel_height;
 };
-
-
-#endif

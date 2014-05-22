@@ -1,5 +1,4 @@
 DEPRECATED: Using ranges of the form [begin:end] with begin value greater than the end value is deprecated.
-DEPRECATED: Using ranges of the form [begin:end] with begin value greater than the end value is deprecated.
 WARNING: Bad range parameter in for statement: too many elements (4294967295).
 ECHO: nan
 ECHO: inf
@@ -12,9 +11,7 @@ ECHO: "INF", 0
 WARNING: Bad range parameter in for statement: too many elements (4294967295).
 ECHO: "-INF", 1
 WARNING: Bad range parameter in for statement: too many elements (4294967295).
-DEPRECATED: Using ranges of the form [begin:end] with begin value greater than the end value is deprecated.
 WARNING: Bad range parameter in for statement: too many elements (4294967295).
-DEPRECATED: Using ranges of the form [begin:end] with begin value greater than the end value is deprecated.
 WARNING: Bad range parameter in for statement: too many elements (4294967295).
 WARNING: Bad range parameter in for statement: too many elements (4294967295).
 WARNING: Bad range parameter in for statement: too many elements (4294967295).

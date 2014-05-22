@@ -1,7 +1,8 @@
 #!/bin/sh
-
 # NB! To build a release build, the VERSION and VERSIONDATE environment variables needs to be set.
 # See doc/release-checklist.txt
+
+export NUMCPU=$(sysctl -n hw.ncpu)
 
 human_filesize()
 {
@@ -20,13 +21,14 @@ update_www_download_links()
     local $*
     filesize=$(human_filesize $filesize)
     webdir=../openscad.github.com
+    # FIXME: release vs. snapshot
     incfile=inc/mac_snapshot_links.js
-    BASEURL='http://files.openscad.org/'
+    BASEURL='http://files.openscad.org/snapshots'
     DATECODE=`date +"%Y.%m.%d"`
     
     if [ -f $webdir/$incfile ]; then
         cd $webdir
-        echo "fileinfo['MAC_SNAPSHOT_URL'] = '$BASEURL$packagefile'" > $incfile
+        echo "fileinfo['MAC_SNAPSHOT_URL'] = '$BASEURL/$packagefile'" > $incfile
         echo "fileinfo['MAC_SNAPSHOT_NAME'] = 'OpenSCAD $version'" >> $incfile
         echo "fileinfo['MAC_SNAPSHOT_SIZE'] = '$filesize'" >> $incfile
         echo 'modified mac_snapshot_links.js'
@@ -43,12 +45,19 @@ if test -z "$VERSIONDATE"; then
 fi
 if test -z "$VERSION"; then
   VERSION=$VERSIONDATE
-  COMMIT=-c
-  SNAPSHOT=true
+  SNAPSHOT=snapshot
 fi
 
 # Turn off ccache, just for safety
 PATH=${PATH//\/opt\/local\/libexec\/ccache:}
+
+# FIXME: Somehow, setting the deployment target to a lower version causes a
+# seldom crash in debug mode (e.g. the minkowski2-test):
+# frame #4: 0x00007fff8b7d5be5 libc++.1.dylib`std::runtime_error::~runtime_error() + 55
+# frame #5: 0x0000000100150df5 OpenSCAD`CGAL::Uncertain_conversion_exception::~Uncertain_conversion_exception(this=0x0000000105044488) + 21 at Uncertain.h:78
+# The reason for the crash appears to be linking with libgcc_s, 
+# but it's unclear what's really going on
+export MACOSX_DEPLOYMENT_TARGET=10.6
 
 # This is the same location as DEPLOYDIR in macosx-build-dependencies.sh
 export OPENSCAD_LIBRARIES=$PWD/../libraries/install
@@ -56,7 +65,7 @@ export OPENSCAD_LIBRARIES=$PWD/../libraries/install
 # Make sure that the correct Qt tools are used
 export PATH=$OPENSCAD_LIBRARIES/bin:$PATH
 
-`dirname $0`/release-common.sh -v $VERSION $COMMIT
+`dirname $0`/release-common.sh -v $VERSION $SNAPSHOT
 if [[ $? != 0 ]]; then
   exit 1
 fi
@@ -83,7 +92,7 @@ if [[ $VERSION == $VERSIONDATE ]]; then
 fi
 
 echo "Uploading..."
-scp OpenSCAD-$VERSION.dmg openscad@files.openscad.org:www
+scp OpenSCAD-$VERSION.dmg openscad@files.openscad.org:www/snapshots
 if [[ $? != 0 ]]; then
   exit 1
 fi

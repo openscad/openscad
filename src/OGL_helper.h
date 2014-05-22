@@ -19,8 +19,7 @@
 
 // Modified for OpenSCAD
 
-#ifndef CGAL_NEF_OPENGL_HELPER_H
-#define CGAL_NEF_OPENGL_HELPER_H
+#pragma once
 
 #include <CGAL/Nef_S2/OGL_base_object.h>
 #include <CGAL/Simple_cartesian.h>
@@ -716,4 +715,3 @@ namespace OGL {
 } // namespace OGL
 
 } //namespace CGAL
-#endif // CGAL_NEF_OPENGL_HELPER_H

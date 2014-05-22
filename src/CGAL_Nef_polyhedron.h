@@ -1,5 +1,4 @@
-#ifndef CGAL_NEF_POLYHEDRON_H_
-#define CGAL_NEF_POLYHEDRON_H_
+#pragma once
 
 #include "Geometry.h"
 #include "cgal.h"
@@ -31,5 +30,3 @@ public:
 	void transform( const Transform3d &matrix );
 	shared_ptr<CGAL_Nef_polyhedron3> p3;
 };
-
-#endif

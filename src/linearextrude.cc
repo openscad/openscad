@@ -54,7 +54,7 @@ AbstractNode *LinearExtrudeModule::instantiate(const Context *ctx, const ModuleI
 	LinearExtrudeNode *node = new LinearExtrudeNode(inst);
 
 	AssignmentList args;
-	args += Assignment("file", NULL), Assignment("layer", NULL), Assignment("height", NULL), Assignment("origin", NULL), Assignment("scale", NULL), Assignment("center", NULL), Assignment("twist", NULL), Assignment("slices", NULL);
+	args += Assignment("file"), Assignment("layer"), Assignment("height"), Assignment("origin"), Assignment("scale"), Assignment("center"), Assignment("twist"), Assignment("slices");
 
 	Context c(ctx);
 	c.setVariables(args, evalctx);
@@ -74,7 +74,7 @@ AbstractNode *LinearExtrudeModule::instantiate(const Context *ctx, const ModuleI
 	Value slices = c.lookup_variable("slices", true);
 
 	if (!file.isUndefined() && file.type() == Value::STRING) {
-		PRINT("DEPRECATED: Support for reading files in linear_extrude will be removed in future releases. Use a child import() instead.");
+		printDeprecation("DEPRECATED: Support for reading files in linear_extrude will be removed in future releases. Use a child import() instead.");
 		node->filename = lookup_file(file.toString(), inst->path(), c.documentPath());
 	}
 
@@ -110,13 +110,15 @@ AbstractNode *LinearExtrudeModule::instantiate(const Context *ctx, const ModuleI
 
 	if (twist.type() == Value::NUMBER) {
 		node->twist = twist.toDouble();
-		if (slices.type() == Value::NUMBER) {
-			node->slices = (int)slices.toDouble();
-		} else {
-			node->slices = (int)fmax(2, fabs(Calc::get_fragments_from_r(node->height,
-					node->fn, node->fs, node->fa) * node->twist / 360));
+		if (node->twist != 0.0) {
+			if (slices.type() == Value::NUMBER) {
+				node->slices = (int)slices.toDouble();
+			} else {
+				node->slices = (int)fmax(2, fabs(Calc::get_fragments_from_r(node->height,
+																																		node->fn, node->fs, node->fa) * node->twist / 360));
+			}
+			node->has_twist = true;
 		}
-		node->has_twist = true;
 	}
 
 	if (node->filename.empty()) {
