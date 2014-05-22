@@ -99,11 +99,14 @@ GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren3D(const Abstr
 	if (op == OPENSCAD_HULL) {
 		CGAL_Polyhedron P;
 		if (CGALUtils::applyHull(children, P)) {
-			return ResultObject(new CGAL_Nef_polyhedron(new CGAL_Nef_polyhedron3(P)));
+			PolySet *ps = new PolySet(3);
+
+			if (!createPolySetFromPolyhedron(P, *ps)) {
+				return ResultObject(ps);
+			}
+			delete ps;
 		}
-		else {
-			return ResultObject();
-		}
+		return ResultObject();
 	}
 	
 	// Only one child -> this is a noop
