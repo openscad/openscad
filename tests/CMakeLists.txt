@@ -455,15 +455,29 @@ inclusion(GLIB2_DIR GLIB2_INCLUDE_DIRS)
 
 # find libraries using pkg-config
 find_package(PkgConfig REQUIRED)
+include(PkgConfigTools.cmake)
+save_pkg_config_env()
 
-pkg_search_module(FONTCONFIG REQUIRED fontconfig>=2.11.0)
-message(STATUS "fontconfig found: ${FONTCONFIG_VERSION}")
+if (DEFINED ENV{OPENSCAD_LIBRARIES})
+  set(ENV{PKG_CONFIG_PATH} "$ENV{OPENSCAD_LIBRARIES}/lib/pkgconfig")
+endif()
 
-pkg_search_module(FREETYPE REQUIRED freetype2>=2.4.9)
-message(STATUS "freetype2 found: ${FREETYPE_VERSION}")
+pkg_check_modules(FONTCONFIG REQUIRED fontconfig>=2.11.0)
+if (FONTCONFIG_VERSION)
+  message(STATUS "fontconfig ${FONTCONFIG_VERSION} found: ${FONTCONFIG_INCLUDE_DIRS}")
+endif()
 
-pkg_search_module(HARFBUZZ REQUIRED harfbuzz>=0.9.19)
-message(STATUS "harfbuzz found: ${HARFBUZZ_VERSION}")
+pkg_check_modules(FREETYPE REQUIRED freetype2>=2.4.9)
+if (FREETYPE_VERSION)
+  message(STATUS "freetype2 ${FREETYPE_VERSION} found: ${FREETYPE_INCLUDE_DIRS}")
+endif()
+
+pkg_check_modules(HARFBUZZ REQUIRED harfbuzz>=0.9.19)
+if (HARFBUZZ_VERSION)
+  message(STATUS "harfbuzz ${HARFBUZZ_VERSION} found: ${HARFBUZZ_INCLUDE_DIRS}")
+endif()
+
+restore_pkg_config_env()
 
 add_definitions(${FONTCONFIG_CFLAGS})
 add_definitions(${FREETYPE_CFLAGS})
@@ -814,11 +828,12 @@ endfunction()
 # This functions adds cmd-line tests given files.
 #
 # Usage add_cmdline_test(testbasename [EXE <executable>] [ARGS <args to exe>]
+#                        [SCRIPT <script>]
 #                        [EXPECTEDDIR <shared dir>] SUFFIX <suffix> FILES <test files>)
 #
 find_package(PythonInterp)
 function(add_cmdline_test TESTCMD_BASENAME)
-  cmake_parse_arguments(TESTCMD "" "EXE;SUFFIX;EXPECTEDDIR" "FILES;ARGS" ${ARGN})
+  cmake_parse_arguments(TESTCMD "" "EXE;SCRIPT;SUFFIX;EXPECTEDDIR" "FILES;ARGS" ${ARGN})
 
   # If sharing results with another test, pass on this to the python script
   if (TESTCMD_EXPECTEDDIR)
@@ -857,7 +872,7 @@ function(add_cmdline_test TESTCMD_BASENAME)
         set(FILENAME_OPTION -f ${FILE_BASENAME})
       endif()
 
-      add_test(NAME ${TEST_FULLNAME} ${CONFARG} ${CONFVAL} COMMAND ${PYTHON_EXECUTABLE} ${tests_SOURCE_DIR}/test_cmdline_tool.py --comparator=${COMPARATOR} -c ${ImageMagick_convert_EXECUTABLE} -s ${TESTCMD_SUFFIX} ${EXTRA_OPTIONS} ${TESTNAME_OPTION} ${FILENAME_OPTION} ${TESTCMD_EXE} "${SCADFILE}" ${TESTCMD_ARGS})
+      add_test(NAME ${TEST_FULLNAME} ${CONFARG} ${CONFVAL} COMMAND ${PYTHON_EXECUTABLE} ${tests_SOURCE_DIR}/test_cmdline_tool.py --comparator=${COMPARATOR} -c ${ImageMagick_convert_EXECUTABLE} -s ${TESTCMD_SUFFIX} ${EXTRA_OPTIONS} ${TESTNAME_OPTION} ${FILENAME_OPTION} ${TESTCMD_EXE} ${TESTCMD_SCRIPT} "${SCADFILE}" ${TESTCMD_ARGS})
       set_property(TEST ${TEST_FULLNAME} PROPERTY ENVIRONMENT "${CTEST_ENVIRONMENT}")
     endif()
   endforeach()
@@ -987,17 +1002,24 @@ disable_tests(opencsgtest_child-background)
 disable_tests(cgalpngtest_child-background
               cgalpngtest_highlight-and-background-modifier
               cgalpngtest_testcolornames
-              openscad-cgalpng_child-background
-              openscad-cgalpng_highlight-and-background-modifier
-              openscad-cgalpng_testcolornames
+              csgpngtest_child-background
+              csgpngtest_highlight-and-background-modifier
+              csgpngtest_testcolornames
               throwntogethertest_testcolornames)
+
+# The inf/nan tests fail when exporting CSG and rendering that output again
+# as currently inf/nan is written directly to the CSG file (e.g. r = inf)
+# which is not valid or even misleading in case a variable inf exists.
+# FIXME: define export behavior for inf/nan when exporting CSG files
+disable_tests(csgpngtest_primitive-inf-tests csgpngtest_transform-nan-inf-tests)
 
 # Test config handling
 
 # Heavy tests are tests taking more than 10 seconds on a development computer
 set_test_config(Heavy cgalpngtest_rotate_extrude-tests
-                      cgalpngtest_sphere-tests
+                      csgpngtest_rotate_extrude-tests
                       cgalpngtest_for-nested-tests
+                      csgpngtest_for-nested-tests
                       cgalpngtest_resize-tests
                       cgalpngtest_text-search-test
 		      cgalpngtest_text-font-direction-tests
@@ -1010,8 +1032,13 @@ set_test_config(Heavy cgalpngtest_rotate_extrude-tests
 		      throwntogethertest_text-font-tests
 		      throwntogethertest_text-font-alignment-tests
                       cgalpngtest_fractal
+                      csgpngtest_fractal
                       cgalpngtest_iteration
-                      cgalpngtest_linear_extrude-scale-zero-tests)
+                      csgpngtest_iteration
+                      cgalpngtest_linear_extrude-scale-zero-tests
+                      csgpngtest_linear_extrude-scale-zero-tests
+                      cgalpngtest_sphere-tests
+                      csgpngtest_resize-tests)
 
 # Bugs
 
@@ -1035,6 +1062,8 @@ foreach(FILE ${BUGS_FILES})
   set_test_config(Bugs ${TEST_FULLNAME})
   get_test_fullname(cgalpngtest ${FILE} TEST_FULLNAME)
   set_test_config(Bugs ${TEST_FULLNAME})
+  get_test_fullname(csgpngtest ${FILE} TEST_FULLNAME)
+  set_test_config(Bugs ${TEST_FULLNAME})
 endforeach()
 
 # Examples
@@ -1046,9 +1075,7 @@ foreach(FILE ${EXAMPLE_FILES})
   set_test_config(Examples ${TEST_FULLNAME})
   get_test_fullname(throwntogethertest ${FILE} TEST_FULLNAME)
   set_test_config(Examples ${TEST_FULLNAME})
-  get_test_fullname(openscad-cgalpng ${FILE} TEST_FULLNAME)
-  set_test_config(Examples ${TEST_FULLNAME})
-  get_test_fullname(openscad-csgpng ${FILE} TEST_FULLNAME)
+  get_test_fullname(csgpngtest ${FILE} TEST_FULLNAME)
   set_test_config(Examples ${TEST_FULLNAME})
 endforeach()
 
@@ -1114,6 +1141,7 @@ add_cmdline_test(dumptest EXE ${OPENSCAD_BINPATH} ARGS -o SUFFIX csg FILES ${DUM
 add_cmdline_test(dumptest-examples EXE ${OPENSCAD_BINPATH} ARGS -o SUFFIX csg FILES ${EXAMPLE_FILES})
 add_cmdline_test(cgalpngtest EXE ${OPENSCAD_BINPATH} ARGS --render -o SUFFIX png FILES ${CGALPNGTEST_FILES})
 add_cmdline_test(opencsgtest EXE ${OPENSCAD_BINPATH} ARGS -o SUFFIX png FILES ${OPENCSGTEST_FILES})
+add_cmdline_test(csgpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT csg-import-test.py ARGS ${OPENSCAD_BINPATH} EXPECTEDDIR cgalpngtest SUFFIX png FILES ${CGALPNGTEST_FILES})
 add_cmdline_test(throwntogethertest EXE ${OPENSCAD_BINPATH} ARGS --preview=throwntogether -o SUFFIX png FILES ${THROWNTOGETHERTEST_FILES})
 # FIXME: We don't actually need to compare the output of cgalstlsanitytest
 # with anything. It's self-contained and returns != 0 on error
