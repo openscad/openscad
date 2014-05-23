@@ -60,8 +60,9 @@ get_debian_deps()
   libxmu-dev cmake bison flex git-core libboost-all-dev \
   libXi-dev libmpfr-dev libboost-dev libglew-dev \
   libeigen3-dev libcgal-dev libopencsg-dev libgmp3-dev libgmp-dev \
-  curl imagemagick libglib2.0-dev gettext; do
-   apt-get -y install $pkg;
+  imagemagick libfontconfig-dev libfreetype6-dev \
+  libharfbuzz-dev gtk-doc-tools libglib2.0-dev gettext; do
+   sudo apt-get -y install $pkg;
  done
 }
 

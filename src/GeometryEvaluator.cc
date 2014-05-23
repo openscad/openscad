@@ -13,6 +13,7 @@
 #include "csgnode.h"
 #include "cgaladvnode.h"
 #include "projectionnode.h"
+#include "textnode.h"
 #include "CGAL_Nef_polyhedron.h"
 #include "cgalutils.h"
 #include "rendernode.h"
@@ -22,6 +23,7 @@
 #include "calc.h"
 #include "printutils.h"
 #include "svg.h"
+#include "calc.h"
 #include "dxfdata.h"
 
 #include <algorithm>
@@ -95,13 +97,14 @@ GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren3D(const Abstr
 	if (children.size() == 0) return ResultObject();
 
 	if (op == OPENSCAD_HULL) {
-		CGAL_Polyhedron P;
-		if (CGALUtils::applyHull(children, P)) {
-			return ResultObject(new CGAL_Nef_polyhedron(new CGAL_Nef_polyhedron3(P)));
+		PolySet *ps = new PolySet(3);
+
+		if (CGALUtils::applyHull(children, *ps)) {
+			return ps;
 		}
-		else {
-			return ResultObject();
-		}
+
+		delete ps;
+		return ResultObject();
 	}
 	
 	// Only one child -> this is a noop
@@ -148,10 +151,11 @@ Geometry *GeometryEvaluator::applyHull3D(const AbstractNode &node)
 {
 	Geometry::ChildList children = collectChildren3D(node);
 
-	CGAL_Polyhedron P;
-	if (CGALUtils::applyHull(children, P)) {
-		return new CGAL_Nef_polyhedron(new CGAL_Nef_polyhedron3(P));
+	PolySet *P = new PolySet(3);
+	if (CGALUtils::applyHull(children, *P)) {
+		return P;
 	}
+	delete P;
 	return NULL;
 }
 
@@ -491,6 +495,27 @@ Response GeometryEvaluator::visit(State &state, const LeafNode &node)
 	}
 	return PruneTraversal;
 }
+
+Response GeometryEvaluator::visit(State &state, const TextNode &node)
+{
+	if (state.isPrefix()) {
+		shared_ptr<const Geometry> geom;
+		if (!isSmartCached(node)) {
+			std::vector<const Geometry *> geometrylist = node.createGeometryList();
+			std::vector<const Polygon2d *> polygonlist;
+			BOOST_FOREACH(const Geometry *geometry, geometrylist) {
+				const Polygon2d *polygon = dynamic_cast<const Polygon2d*>(geometry);
+				assert(polygon);
+				polygonlist.push_back(polygon);
+			}
+			geom.reset(ClipperUtils::apply(polygonlist, ClipperLib::ctUnion));
+		}
+		else geom = GeometryCache::instance()->get(this->tree.getIdString(node));
+		addToParent(state, node, geom);
+	}
+	return PruneTraversal;
+}
+
 
 /*!
 	input: List of 2D or 3D objects (not mixed)

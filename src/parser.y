@@ -129,7 +129,7 @@ std::string parser_source_path;
 
 input:    /* empty */
         | TOK_USE
-            { rootmodule->usedlibs.insert($1); }
+            { rootmodule->registerUse(std::string($1)); }
           input
         | statement input
         ;

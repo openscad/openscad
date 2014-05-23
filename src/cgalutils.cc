@@ -9,6 +9,7 @@
 
 #include "cgal.h"
 #include <CGAL/convex_hull_3.h>
+#include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
 #include "svg.h"
 #include "Reindexer.h"
 
@@ -17,25 +18,26 @@
 
 namespace CGALUtils {
 
-	bool applyHull(const Geometry::ChildList &children, CGAL_Polyhedron &result)
+	bool applyHull(const Geometry::ChildList &children, PolySet &result)
 	{
+		typedef CGAL::Exact_predicates_inexact_constructions_kernel K;
 		// Collect point cloud
-		std::vector<CGAL_Polyhedron::Vertex::Point_3> points;
-		CGAL_Polyhedron P;
+		std::set<K::Point_3> points;
 
 		BOOST_FOREACH(const Geometry::ChildItem &item, children) {
 			const shared_ptr<const Geometry> &chgeom = item.second;
 			const CGAL_Nef_polyhedron *N = dynamic_cast<const CGAL_Nef_polyhedron *>(chgeom.get());
 			if (N) {
 				for (CGAL_Nef_polyhedron3::Vertex_const_iterator i = N->p3->vertices_begin(); i != N->p3->vertices_end(); ++i) {
-					points.push_back(i->point());
+					points.insert(K::Point_3(to_double(i->point()[0]),to_double(i->point()[1]),to_double(i->point()[2])));
 				}
-			}
-			else {
+			} else {
 				const PolySet *ps = dynamic_cast<const PolySet *>(chgeom.get());
-				BOOST_FOREACH(const PolySet::Polygon &p, ps->polygons) {
-					BOOST_FOREACH(const Vector3d &v, p) {
-						points.push_back(CGAL_Polyhedron::Vertex::Point_3(v[0], v[1], v[2]));
+				if (ps) {
+					BOOST_FOREACH(const PolySet::Polygon &p, ps->polygons) {
+						BOOST_FOREACH(const Vector3d &v, p) {
+							points.insert(K::Point_3(v[0], v[1], v[2]));
+						}
 					}
 				}
 			}
@@ -43,23 +45,13 @@ namespace CGALUtils {
 
 		if (points.size() <= 3) return false;
 
-		// Remove all duplicated points (speeds up the convex_hull computation significantly)
-		std::vector<CGAL_Polyhedron::Vertex::Point_3> unique_points;
-		Grid3d<int> grid(GRID_FINE);
-
-		BOOST_FOREACH(CGAL_Polyhedron::Vertex::Point_3 const& p, points) {
-			double x = to_double(p.x()), y = to_double(p.y()), z = to_double(p.z());
-			int& v = grid.align(x,y,z);
-			if (v == 0) {
-				unique_points.push_back(CGAL_Polyhedron::Vertex::Point_3(x,y,z));
-				v = 1;
-			}
-		}
-
 		// Apply hull
 		if (points.size() >= 4) {
-			CGAL::convex_hull_3(unique_points.begin(), unique_points.end(), result);
-			return true;
+			CGAL::Polyhedron_3<K> r;
+			CGAL::convex_hull_3(points.begin(), points.end(), r);
+			if (!createPolySetFromPolyhedron(r, result))
+				return true;
+			return false;
 		} else {
 			return false;
 		}
@@ -87,14 +79,23 @@ namespace CGALUtils {
 
 			if (op == OPENSCAD_UNION) {
 				if (!chN->isEmpty()) {
-					nary_union.add_polyhedron(*chN->p3);
-					nary_union_num_inserted++;
+					// nary_union.add_polyhedron() can issue assertion errors:
+					// https://github.com/openscad/openscad/issues/802
+					CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
+					try {
+						nary_union.add_polyhedron(*chN->p3);
+						nary_union_num_inserted++;
+					}
+					catch (const CGAL::Failure_exception &e) {
+						PRINTB("CGAL error in CGALUtils::applyBinaryOperator union: %s", e.what());
+					}
+					CGAL::set_error_behaviour(old_behaviour);
 				}
 				continue;
 			}
 			// Initialize N with first expected geometric object
 			if (!N) {
-				N = chN->copy();;
+				N = chN->copy();
 				continue;
 			}
 
@@ -336,40 +337,33 @@ namespace CGALUtils {
 
 };
 
-bool createPolySetFromPolyhedron(const CGAL_Polyhedron &p, PolySet &ps)
+template <typename Polyhedron>
+bool createPolySetFromPolyhedron(const Polyhedron &p, PolySet &ps)
 {
 	bool err = false;
-	typedef CGAL_Polyhedron::Vertex                                 Vertex;
-	typedef CGAL_Polyhedron::Vertex_const_iterator                  VCI;
-	typedef CGAL_Polyhedron::Facet_const_iterator                   FCI;
-	typedef CGAL_Polyhedron::Halfedge_around_facet_const_circulator HFCC;
+	typedef typename Polyhedron::Vertex                                 Vertex;
+	typedef typename Polyhedron::Vertex_const_iterator                  VCI;
+	typedef typename Polyhedron::Facet_const_iterator                   FCI;
+	typedef typename Polyhedron::Halfedge_around_facet_const_circulator HFCC;
 		
 	for (FCI fi = p.facets_begin(); fi != p.facets_end(); ++fi) {
 		HFCC hc = fi->facet_begin();
 		HFCC hc_end = hc;
-		Vertex v1, v2, v3;
-		v1 = *VCI((hc++)->vertex());
-		v3 = *VCI((hc++)->vertex());
+		ps.append_poly();
 		do {
-			v2 = v3;
-			v3 = *VCI((hc++)->vertex());
-			double x1 = CGAL::to_double(v1.point().x());
-			double y1 = CGAL::to_double(v1.point().y());
-			double z1 = CGAL::to_double(v1.point().z());
-			double x2 = CGAL::to_double(v2.point().x());
-			double y2 = CGAL::to_double(v2.point().y());
-			double z2 = CGAL::to_double(v2.point().z());
-			double x3 = CGAL::to_double(v3.point().x());
-			double y3 = CGAL::to_double(v3.point().y());
-			double z3 = CGAL::to_double(v3.point().z());
-			ps.append_poly();
-			ps.append_vertex(x1, y1, z1);
-			ps.append_vertex(x2, y2, z2);
-			ps.append_vertex(x3, y3, z3);
+			Vertex const& v = *((hc++)->vertex());
+			double x = CGAL::to_double(v.point().x());
+			double y = CGAL::to_double(v.point().y());
+			double z = CGAL::to_double(v.point().z());
+			ps.append_vertex(x, y, z);
 		} while (hc != hc_end);
 	}
 	return err;
 }
+
+template bool createPolySetFromPolyhedron(const CGAL_Polyhedron &p, PolySet &ps);
+template bool createPolySetFromPolyhedron(const CGAL::Polyhedron_3<CGAL::Epick> &p, PolySet &ps);
+
 
 /////// Tessellation begin
 
@@ -1106,8 +1100,8 @@ void ZRemover::visit( CGAL_Nef_polyhedron3::Halffacet_const_handle hfacet )
 
 static CGAL_Nef_polyhedron *createNefPolyhedronFromPolySet(const PolySet &ps)
 {
-	assert(ps.getDimension() == 3);
 	if (ps.isEmpty()) return new CGAL_Nef_polyhedron();
+	assert(ps.getDimension() == 3);
 
 	CGAL_Nef_polyhedron3 *N = NULL;
 	bool plane_error = false;

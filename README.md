@@ -96,6 +96,9 @@ Follow the instructions for the platform you're compiling on below.
 * [GLEW (1.5.4 ->)](http://glew.sourceforge.net/)
 * [Eigen (3.0 - 3.2)](http://eigen.tuxfamily.org/)
 * [glib2 (2.2.0)](https://developer.gnome.org/glib/)
+* [fontconfig (2.10)](http://fontconfig.org/)
+* [freetype2 (2.4)](http://freetype.org/)
+* [harfbuzz (0.9.19)](http://harfbuzz.org/)
 * [GCC C++ Compiler (4.2 ->)](http://gcc.gnu.org/)
 * [Bison (2.4)](http://www.gnu.org/software/bison/)
 * [Flex (2.5.35)](http://flex.sourceforge.net/)
@@ -118,8 +121,12 @@ To pull the MCAD library (http://reprap.org/wiki/MCAD), do the following:
 
 Prerequisites:
 * XCode, including XCode command-line tools (install from XCode Preferences).
-* [CMake](http://cmake.org) and [pkg-config](http://www.freedesktop.org/wiki/Software/pkg-config/),
-   both can be installed manually or through MacPorts/homebrew.
+
+Prerequisites that can be installed through MacPorts/homebrew:
+* [CMake](http://cmake.org/)
+* [automake](http://www.gnu.org/software/automake/)
+* [pkg-config](http://www.freedesktop.org/wiki/Software/pkg-config/)
+* [libtool](https://www.gnu.org/software/libtool/)
 
 Then after you've cloned this git repository, run the script that sets up the
 environment variables.
