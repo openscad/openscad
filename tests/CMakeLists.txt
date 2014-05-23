@@ -455,15 +455,29 @@ inclusion(GLIB2_DIR GLIB2_INCLUDE_DIRS)
 
 # find libraries using pkg-config
 find_package(PkgConfig REQUIRED)
+include(PkgConfigTools.cmake)
+save_pkg_config_env()
 
-pkg_search_module(FONTCONFIG REQUIRED fontconfig>=2.11.0)
-message(STATUS "fontconfig found: ${FONTCONFIG_VERSION}")
+if (DEFINED ENV{OPENSCAD_LIBRARIES})
+  set(ENV{PKG_CONFIG_PATH} "$ENV{OPENSCAD_LIBRARIES}/lib/pkgconfig")
+endif()
 
-pkg_search_module(FREETYPE REQUIRED freetype2>=2.4.9)
-message(STATUS "freetype2 found: ${FREETYPE_VERSION}")
+pkg_check_modules(FONTCONFIG REQUIRED fontconfig>=2.11.0)
+if (FONTCONFIG_VERSION)
+  message(STATUS "fontconfig ${FONTCONFIG_VERSION} found: ${FONTCONFIG_INCLUDE_DIRS}")
+endif()
 
-pkg_search_module(HARFBUZZ REQUIRED harfbuzz>=0.9.19)
-message(STATUS "harfbuzz found: ${HARFBUZZ_VERSION}")
+pkg_check_modules(FREETYPE REQUIRED freetype2>=2.4.9)
+if (FREETYPE_VERSION)
+  message(STATUS "freetype2 ${FREETYPE_VERSION} found: ${FREETYPE_INCLUDE_DIRS}")
+endif()
+
+pkg_check_modules(HARFBUZZ REQUIRED harfbuzz>=0.9.19)
+if (HARFBUZZ_VERSION)
+  message(STATUS "harfbuzz ${HARFBUZZ_VERSION} found: ${HARFBUZZ_INCLUDE_DIRS}")
+endif()
+
+restore_pkg_config_env()
 
 add_definitions(${FONTCONFIG_CFLAGS})
 add_definitions(${FREETYPE_CFLAGS})
