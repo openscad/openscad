@@ -23,8 +23,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  */
-#ifndef FONTCACHE_H
-#define	FONTCACHE_H
+#pragma once
 
 #include <map>
 #include <string>
@@ -95,6 +94,4 @@ private:
     FT_Face find_face_in_path_list(std::string font);
     FT_Face find_face_in_path(std::string path, std::string font);
 };
-
-#endif	/* FONTCACHE_H */
 
