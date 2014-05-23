@@ -362,6 +362,10 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 			// echo or OpenCSG png -> don't necessarily need CGALMesh evaluation
 		} else {
 			root_geom = geomevaluator.evaluateGeometry(*tree.root(), true);
+			if (!root_geom) {
+				PRINT("No top-level object found.");
+				return 1;
+			}
 			const CGAL_Nef_polyhedron *N = dynamic_cast<const CGAL_Nef_polyhedron*>(root_geom.get());
 		}
 
@@ -578,8 +582,9 @@ int gui(const vector<string> &inputFiles, const fs::path &original_path, int arg
 int main(int argc, char **argv)
 {
 	int rc = 0;
+	bool isGuiLaunched = getenv("GUI_LAUNCHED") != 0;
 #ifdef Q_OS_MAC
-	set_output_handler(CocoaUtils::nslog, NULL);
+	if (isGuiLaunched) set_output_handler(CocoaUtils::nslog, NULL);
 #endif
 #ifdef ENABLE_CGAL
 	// Causes CGAL errors to abort directly instead of throwing exceptions

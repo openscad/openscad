@@ -157,14 +157,28 @@ namespace {
 	void evaluate_sequential_assignment(const AssignmentList & assignment_list, Context *context) {
 		EvalContext let_context(context, assignment_list);
 
+		const bool allow_reassignment = false;
+
 		for (int i = 0; i < let_context.numArgs(); i++) {
-			// NOTE: iteratively evaluated list of arguments
-			context->set_variable(let_context.getArgName(i), let_context.getArgValue(i, context));
+			if (!allow_reassignment && context->has_local_variable(let_context.getArgName(i))) {
+				PRINTB("WARNING: Ignoring duplicate variable assignment %s = %s", let_context.getArgName(i) % let_context.getArgValue(i, context).toString());
+			} else {
+				// NOTE: iteratively evaluated list of arguments
+				context->set_variable(let_context.getArgName(i), let_context.getArgValue(i, context));
+			}
 		}
 	}
 }
 
-Value Expression::evaluate_list_comprehension(const Context *context) const
+Value Expression::sub_evaluate_let_expression(const Context *context) const
+{
+	Context c(context);
+	evaluate_sequential_assignment(this->call_arguments, &c);
+
+	return this->children[0]->evaluate(&c);
+}
+
+Value Expression::sub_evaluate_list_comprehension(const Context *context) const
 {
 	Value::VectorType vec;
 
@@ -271,18 +285,12 @@ Value Expression::evaluate(const Context *context) const
 		return sub_evaluate_member(context);
 	case 'F':
 		return sub_evaluate_function(context);
-	}
-	if (this->type == "l") { // let expression
-		Context c(context);
-		evaluate_sequential_assignment(this->call_arguments, &c);
-
-		return this->children[0]->evaluate(&c);
-	}
-	if (this->type == "i") { // list comprehension expression
+	case 'l':
+		return sub_evaluate_let_expression(context);
+	case 'i':  // list comprehension expression
 		return this->children[0]->evaluate(context);
-	}
-	if (this->type == "c") {
-		return evaluate_list_comprehension(context);
+	case 'c':
+		return sub_evaluate_list_comprehension(context);
 	}
 	abort();
 }

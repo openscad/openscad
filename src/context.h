@@ -24,6 +24,7 @@ public:
 	void set_constant(const std::string &name, const Value &value);
 
 	Value lookup_variable(const std::string &name, bool silent = false) const;
+	bool has_local_variable(const std::string &name) const;
 
 	void setDocumentPath(const std::string &path) { this->document_path = path; }
 	const std::string &documentPath() const { return this->document_path; }

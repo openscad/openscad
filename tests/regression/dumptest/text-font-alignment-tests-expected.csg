@@ -1,0 +1,69 @@
+group() {
+	group() {
+		multmatrix([[1, 0, 0, 10], [0, 1, 0, 10], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+			color([1, 0, 0, 1]) {
+				square(size = [135, 0.5], center = false);
+			}
+			color([0, 0, 1, 1]) {
+				square(size = [0.5, 20], center = false);
+			}
+			($fn = 7, text = 'OpenSCAD', size = 20, spacing = 1, font = 'PT Serif:style=Regular', direction = 'ltr', language = 'en', script = 'latin', halign = 'left', valign = 'top');
+		}
+		multmatrix([[1, 0, 0, 10], [0, 1, 0, 40], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+			color([1, 0, 0, 1]) {
+				square(size = [135, 0.5], center = false);
+			}
+			color([0, 0, 1, 1]) {
+				square(size = [0.5, 20], center = false);
+			}
+			($fn = 7, text = 'OpenSCAD', size = 20, spacing = 1, font = 'PT Serif:style=Regular', direction = 'ltr', language = 'en', script = 'latin', halign = 'left', valign = 'center');
+		}
+		multmatrix([[1, 0, 0, 10], [0, 1, 0, 70], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+			color([1, 0, 0, 1]) {
+				square(size = [135, 0.5], center = false);
+			}
+			color([0, 0, 1, 1]) {
+				square(size = [0.5, 20], center = false);
+			}
+			($fn = 7, text = 'OpenSCAD', size = 20, spacing = 1, font = 'PT Serif:style=Regular', direction = 'ltr', language = 'en', script = 'latin', halign = 'left', valign = 'baseline');
+		}
+		multmatrix([[1, 0, 0, 10], [0, 1, 0, 100], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+			color([1, 0, 0, 1]) {
+				square(size = [135, 0.5], center = false);
+			}
+			color([0, 0, 1, 1]) {
+				square(size = [0.5, 20], center = false);
+			}
+			($fn = 7, text = 'OpenSCAD', size = 20, spacing = 1, font = 'PT Serif:style=Regular', direction = 'ltr', language = 'en', script = 'latin', halign = 'left', valign = 'bottom');
+		}
+	}
+	group() {
+		multmatrix([[1, 0, 0, 182.3], [0, 1, 0, 10], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+			color([1, 0, 0, 1]) {
+				square(size = [135, 0.5], center = false);
+			}
+			color([0, 0, 1, 1]) {
+				square(size = [0.5, 20], center = false);
+			}
+			($fn = 7, text = 'OpenSCAD', size = 20, spacing = 1, font = 'PT Serif:style=Regular', direction = 'ltr', language = 'en', script = 'latin', halign = 'left', valign = 'baseline');
+		}
+		multmatrix([[1, 0, 0, 249.2], [0, 1, 0, 40], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+			color([1, 0, 0, 1]) {
+				square(size = [135, 0.5], center = false);
+			}
+			color([0, 0, 1, 1]) {
+				square(size = [0.5, 20], center = false);
+			}
+			($fn = 7, text = 'OpenSCAD', size = 20, spacing = 1, font = 'PT Serif:style=Regular', direction = 'ltr', language = 'en', script = 'latin', halign = 'center', valign = 'baseline');
+		}
+		multmatrix([[1, 0, 0, 316.1], [0, 1, 0, 70], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+			color([1, 0, 0, 1]) {
+				square(size = [135, 0.5], center = false);
+			}
+			color([0, 0, 1, 1]) {
+				square(size = [0.5, 20], center = false);
+			}
+			($fn = 7, text = 'OpenSCAD', size = 20, spacing = 1, font = 'PT Serif:style=Regular', direction = 'ltr', language = 'en', script = 'latin', halign = 'right', valign = 'baseline');
+		}
+	}
+}

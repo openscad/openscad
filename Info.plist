@@ -18,6 +18,11 @@
 	<string>@SHORT_VERSION@</string>
 	<key>CFBundleShortVersionString</key>
 	<string>@SHORT_VERSION@</string>
+	<key>LSEnvironment</key>
+	<dict>
+	  <key>GUI_LAUNCHED</key>
+	  <string></string>
+	</dict>
 	<key>CFBundleDocumentTypes</key>
 	<array>
 		<dict>

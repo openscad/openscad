@@ -39,6 +39,7 @@
 #include "progress.h"
 #include "dxfdim.h"
 #include "AboutDialog.h"
+#include "FontListDialog.h"
 #ifdef ENABLE_OPENCSG
 #include "CSGTermEvaluator.h"
 #include "OpenCSGRenderer.h"
@@ -102,6 +103,7 @@
 #endif // ENABLE_CGAL
 
 #include "boosty.h"
+#include "FontCache.h"
 
 // Keeps track of open window
 QSet<MainWindow*> *MainWindow::windows = NULL;
@@ -162,7 +164,7 @@ bool MainWindow::mdiMode = false;
 bool MainWindow::undockMode = false;
 
 MainWindow::MainWindow(const QString &filename)
-	: root_inst("group"), tempFile(NULL), progresswidget(NULL)
+	: root_inst("group"), tempFile(NULL), progresswidget(NULL), font_list_dialog(NULL)
 {
 	setupUi(this);
 	setCorner(Qt::TopLeftCorner, Qt::LeftDockWidgetArea);
@@ -211,6 +213,7 @@ MainWindow::MainWindow(const QString &filename)
 	knownFileExtensions["dat"] = surfaceStatement;
 	knownFileExtensions["png"] = surfaceStatement;
 	knownFileExtensions["scad"] = "";
+	knownFileExtensions["csg"] = "";
 	
 	editActionZoomIn->setShortcuts(QList<QKeySequence>() << editActionZoomIn->shortcuts() << QKeySequence("CTRL+="));
 
@@ -378,6 +381,7 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this->helpActionHomepage, SIGNAL(triggered()), this, SLOT(helpHomepage()));
 	connect(this->helpActionManual, SIGNAL(triggered()), this, SLOT(helpManual()));
 	connect(this->helpActionLibraryInfo, SIGNAL(triggered()), this, SLOT(helpLibrary()));
+	connect(this->helpActionFontInfo, SIGNAL(triggered()), this, SLOT(helpFontInfo()));
 
 	setCurrentOutput();
 
@@ -1882,6 +1886,7 @@ void MainWindow::actionFlushCaches()
 	dxf_dim_cache.clear();
 	dxf_cross_cache.clear();
 	ModuleCache::instance()->clear();
+	FontCache::instance()->clear();
 }
 
 void MainWindow::viewModeActionsUncheck()
@@ -2195,6 +2200,16 @@ void MainWindow::helpLibrary()
 	}
 	this->openglbox->setDetailedText( info );
 	this->openglbox->show();
+}
+
+void MainWindow::helpFontInfo()
+{
+	if (!this->font_list_dialog) {
+		FontListDialog *dialog = new FontListDialog();
+		this->font_list_dialog = dialog;
+	}
+	this->font_list_dialog->update_font_list();
+	this->font_list_dialog->show();
 }
 
 /*!

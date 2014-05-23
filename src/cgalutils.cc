@@ -87,14 +87,23 @@ namespace CGALUtils {
 
 			if (op == OPENSCAD_UNION) {
 				if (!chN->isEmpty()) {
-					nary_union.add_polyhedron(*chN->p3);
-					nary_union_num_inserted++;
+					// nary_union.add_polyhedron() can issue assertion errors:
+					// https://github.com/openscad/openscad/issues/802
+					CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
+					try {
+						nary_union.add_polyhedron(*chN->p3);
+						nary_union_num_inserted++;
+					}
+					catch (const CGAL::Failure_exception &e) {
+						PRINTB("CGAL error in CGALUtils::applyBinaryOperator union: %s", e.what());
+					}
+					CGAL::set_error_behaviour(old_behaviour);
 				}
 				continue;
 			}
 			// Initialize N with first expected geometric object
 			if (!N) {
-				N = chN->copy();;
+				N = chN->copy();
 				continue;
 			}
 
@@ -1106,8 +1115,8 @@ void ZRemover::visit( CGAL_Nef_polyhedron3::Halffacet_const_handle hfacet )
 
 static CGAL_Nef_polyhedron *createNefPolyhedronFromPolySet(const PolySet &ps)
 {
-	assert(ps.getDimension() == 3);
 	if (ps.isEmpty()) return new CGAL_Nef_polyhedron();
+	assert(ps.getDimension() == 3);
 
 	CGAL_Nef_polyhedron3 *N = NULL;
 	bool plane_error = false;
