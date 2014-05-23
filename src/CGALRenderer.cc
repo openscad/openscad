@@ -72,8 +72,9 @@ void CGALRenderer::rebuildPolyhedron()
 		return;
 	}
 	this->polyhedron = new Polyhedron();
-	if (this->colorscheme)
-		this->polyhedron->setColorScheme( *this->colorscheme );
+	if (this->colorscheme) {
+		this->polyhedron->setColorScheme(*this->colorscheme);
+	}
 	CGAL::OGL::Nef3_Converter<CGAL_Nef_polyhedron3>::convert_to_OGLPolyhedron(*this->nef3, this->polyhedron);
 	// CGAL_NEF3_MARKED_FACET_COLOR <- CGAL_FACE_BACK_COLOR
 	// CGAL_NEF3_UNMARKED_FACET_COLOR <- CGAL_FACE_FRONT_COLOR
@@ -81,10 +82,10 @@ void CGALRenderer::rebuildPolyhedron()
 	PRINT("cgr rebuild end");
 }
 
-void CGALRenderer::setColorScheme( const OSColors::colorscheme &cs )
+void CGALRenderer::setColorScheme(const OSColors::colorscheme &cs)
 {
 	PRINT("Cgalrenderer scholor");
-	Renderer::setColorScheme( cs );
+	Renderer::setColorScheme(cs);
 	this->rebuildPolyhedron();
 	PRINT("Cgalrenderer scholor done");
 }

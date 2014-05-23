@@ -12,7 +12,7 @@ public:
 	void setColors(const OSColors::colorscheme &colors);
 	OSColors::colorscheme &getColors();
 	OSColors::colorscheme &defaultColorScheme();
-	Color4f color(OSColors::RenderColors::RenderColor idx);
+	Color4f color(OSColors::RenderColor idx);
 
 	unsigned int openCSGTermLimit, img_width, img_height;
 	double far_gl_clip_limit;

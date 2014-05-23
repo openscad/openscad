@@ -202,13 +202,14 @@ Camera get_camera( po::variables_map vm )
 
 	if (vm.count("colorscheme")) {
 		std::string colorscheme = vm["colorscheme"].as<string>();
-		if (OSColors::schemes.count(colorscheme)>0) {
-			camera.colorscheme = OSColors::schemes[colorscheme];
+		if (OSColors::colorschemes.count(colorscheme)>0) {
+			camera.colorscheme = OSColors::colorschemes[colorscheme];
 		} else {
 			PRINT("Unknown color scheme. Valid schemes:");
-			std::map<std::string, OSColors::colorscheme>::iterator i;
-			for(i=OSColors::schemes.begin();i!=OSColors::schemes.end();i++)
+			boost::unordered_map<std::string, OSColors::colorscheme>::iterator i;
+			for (i=OSColors::colorschemes.begin();i!=OSColors::colorschemes.end();i++) {
 				PRINTB("%s",i->first);
+			}
 			exit(1);
 		}
 	}
