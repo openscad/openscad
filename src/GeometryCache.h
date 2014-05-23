@@ -1,5 +1,4 @@
-#ifndef GEOMETRYCACHE_H_
-#define GEOMETRYCACHE_H_
+#pragma once
 
 #include "cache.h"
 #include "memory.h"
@@ -32,5 +31,3 @@ private:
 
 	Cache<std::string, cache_entry> cache;
 };
-
-#endif

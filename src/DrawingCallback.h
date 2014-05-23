@@ -23,8 +23,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  */
-#ifndef DRAWINGCALLBACK_H
-#define	DRAWINGCALLBACK_H
+#pragma once
 
 #include <vector>
 #include <math.h>
@@ -62,6 +61,3 @@ private:
 	return pow(1.0 - t, exp);
     }
 };
-
-#endif	/* DRAWINGCALLBACK_H */
-

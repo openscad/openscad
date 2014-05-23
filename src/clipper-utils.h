@@ -1,5 +1,4 @@
-#ifndef CLIPPER_UTILS_H_
-#define CLIPPER_UTILS_H_
+#pragma once
 
 #include "polyclipping/clipper.hpp"
 #include "Polygon2d.h"
@@ -20,5 +19,3 @@ namespace ClipperUtils {
 	Polygon2d *apply(const std::vector<const Polygon2d*> &polygons, ClipperLib::ClipType);
 	Polygon2d *apply(const std::vector<ClipperLib::Paths> &pathsvector, ClipperLib::ClipType);
 };
-
-#endif

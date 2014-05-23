@@ -23,8 +23,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  */
-#ifndef FREETYPERENDERER_H
-#define	FREETYPERENDERER_H
+#pragma once
 
 #include <string>
 #include <vector>
@@ -136,6 +135,3 @@ private:
     static int outline_conic_to_func(const FT_Vector *c1, const FT_Vector *to, void *user);
     static int outline_cubic_to_func(const FT_Vector *c1, const FT_Vector *c2, const FT_Vector *to, void *user);
 };
-
-#endif	/* FREETYPERENDERER_H */
-
