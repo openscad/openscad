@@ -41,11 +41,8 @@
 
 //#include "Preferences.h"
 
-CGALRenderer::CGALRenderer(shared_ptr<const class Geometry> geom) : polyhedron(NULL)
+CGALRenderer::CGALRenderer(shared_ptr<const class Geometry> geom)
 {
-	this->polyset.reset();
-	this->polyhedron = NULL;
-
 	if (shared_ptr<const PolySet> ps = dynamic_pointer_cast<const PolySet>(geom)) {
 		this->polyset = ps;
 	}
@@ -55,30 +52,27 @@ CGALRenderer::CGALRenderer(shared_ptr<const class Geometry> geom) : polyhedron(N
 	else if (shared_ptr<const CGAL_Nef_polyhedron> new_N = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom)) {
 		assert(new_N->getDimension() == 3);
 		if (!new_N->isEmpty()) {
-			this->nef3 = new_N->p3;
+			this->N = new_N;
 			this->rebuildPolyhedron();
 		}
 	}
 }
 
+CGALRenderer::~CGALRenderer()
+{
+}
+
 void CGALRenderer::rebuildPolyhedron()
 {
 	PRINT("cgr rebuild poly");
-	if (this->polyset) this->polyset.reset();
-	delete this->polyhedron;
-	this->polyhedron = NULL;
-	if (!this->nef3) {
-		PRINT("rebuild failed, nef is NULL");
-		return;
+	if (this->N) {
+		this->polyhedron.reset(new Polyhedron());
+		if (this->colorscheme) this->polyhedron->setColorScheme(*this->colorscheme);
+		CGAL::OGL::Nef3_Converter<CGAL_Nef_polyhedron3>::convert_to_OGLPolyhedron(*this->N->p3, this->polyhedron.get());
+		// CGAL_NEF3_MARKED_FACET_COLOR <- CGAL_FACE_BACK_COLOR
+		// CGAL_NEF3_UNMARKED_FACET_COLOR <- CGAL_FACE_FRONT_COLOR
+		this->polyhedron->init();
 	}
-	this->polyhedron = new Polyhedron();
-	if (this->colorscheme) {
-		this->polyhedron->setColorScheme(*this->colorscheme);
-	}
-	CGAL::OGL::Nef3_Converter<CGAL_Nef_polyhedron3>::convert_to_OGLPolyhedron(*this->nef3, this->polyhedron);
-	// CGAL_NEF3_MARKED_FACET_COLOR <- CGAL_FACE_BACK_COLOR
-	// CGAL_NEF3_UNMARKED_FACET_COLOR <- CGAL_FACE_FRONT_COLOR
-	this->polyhedron->init();
 	PRINT("cgr rebuild end");
 }
 
@@ -90,17 +84,12 @@ void CGALRenderer::setColorScheme(const OSColors::colorscheme &cs)
 	PRINT("Cgalrenderer scholor done");
 }
 
-CGALRenderer::~CGALRenderer()
-{
-	delete this->polyhedron;
-	this->polyhedron = NULL;
-}
-
 void CGALRenderer::draw(bool showfaces, bool showedges) const
 {
 	PRINT("cgalrenderer draw");
 	if (this->polyset) {
 		if (this->polyset->getDimension() == 2) {
+			PRINT("cgalrenderer draw 2D");
 			// Draw 2D polygons
 			glDisable(GL_LIGHTING);
 // FIXME:		const QColor &col = Preferences::inst()->color(Preferences::CGAL_FACE_2D_COLOR);

@@ -13,7 +13,7 @@ public:
 
 	void rebuildPolyhedron();
 public:
-	class Polyhedron *polyhedron;
-	shared_ptr<const CGAL_Nef_polyhedron3> nef3;
+	shared_ptr<class Polyhedron> polyhedron;
+	shared_ptr<const CGAL_Nef_polyhedron> N;
 	shared_ptr<const class PolySet> polyset;
 };
