@@ -35,6 +35,20 @@
 #include <fstream>
 #include <boost/regex.hpp>
 
+double locale_independent_atof (const char *nptr)
+{
+	double res;
+	locale_t new_locale, prev_locale;
+
+	new_locale = newlocale (LC_NUMERIC_MASK, "C", NULL);
+	prev_locale = uselocale (new_locale);
+	res = atof (nptr);
+	uselocale (prev_locale);
+	freelocale (new_locale);
+
+	return res;
+}
+
 SVGData::SVGData(double fn, double fs, double fa, std::string filename, std::string layername) : fn(fn), fs(fs), fa(fa), filename(filename), layername(layername) {
 	handle_dep(filename); // Register ourselves as a dependency
 
@@ -115,11 +129,13 @@ std::vector<float> SVGData::get_params(std::string str){
   float value;
 
   while(boost::regex_search(start, end, result, regexPattern)){
-    value = atof(((std::string) result[1]).c_str());
+    value = locale_independent_atof(((std::string) result[1]).c_str());
+
+
     values.push_back(value);
 //    std::cout << "value1=" << value << std::endl;
 
-    value = atof(((std::string) result[4]).c_str());
+    value = locale_independent_atof(((std::string) result[4]).c_str());
     values.push_back(value);
 //    std::cout << "value2=" << value << std::endl;
 
@@ -301,7 +317,7 @@ void SVGData::parse_path_description(Glib::ustring description){
             render_line_to(x, y, params[idx], params[idx+1]);
           x = params[idx];
           y = params[idx+1];
-          std::cout << "M: x=" << x << " y=" << y << std::endl;
+          //std::cout << "M: x=" << x << " y=" << y << std::endl;
           idx+=2;
         }
         break;
@@ -372,6 +388,8 @@ void SVGData::parse_path_description(Glib::ustring description){
           render_cubic_curve_to(x, y, x+params[idx], y+params[idx+1], x+params[idx+2], y+params[idx+3], x+params[idx+4], y+params[idx+5]);
           x += params[idx+4];
           y += params[idx+5];
+					//std::cout << "c: params[]= " << params[idx+0]+0.1 << " " << params[idx+1] << " " << params[idx+2] << " " << params[idx+3] << " " << params[idx+4] << " " << params[idx+5] << std::endl;
+
           //std::cout << "c: x=" << x << " y=" << y << std::endl;
           idx+=6;
         }
@@ -506,12 +524,12 @@ TransformMatrix SVGData::parse_transform(std::string transform){
     continue_parsing = false;
 
     if (boost::regex_search(start, end, result, matrix_regex)){
-      float a = atof(((std::string) result[1]).c_str());
-      float b = atof(((std::string) result[4]).c_str());
-      float c = atof(((std::string) result[7]).c_str());
-      float d = atof(((std::string) result[10]).c_str());
-      float e = atof(((std::string) result[13]).c_str());
-      float f = atof(((std::string) result[16]).c_str());
+      float a = locale_independent_atof(((std::string) result[1]).c_str());
+      float b = locale_independent_atof(((std::string) result[4]).c_str());
+      float c = locale_independent_atof(((std::string) result[7]).c_str());
+      float d = locale_independent_atof(((std::string) result[10]).c_str());
+      float e = locale_independent_atof(((std::string) result[13]).c_str());
+      float f = locale_independent_atof(((std::string) result[16]).c_str());
       TransformMatrix transform_matrix(a, b, c, d, e, f);
       //std::cout << "found a matrix transform!" << std::endl;
       tm = tm * transform_matrix;
@@ -520,8 +538,8 @@ TransformMatrix SVGData::parse_transform(std::string transform){
     }
 
     if (boost::regex_search(start, end, result, translate_regex)){
-      float tx = atof(((std::string) result[1]).c_str());
-      float ty = atof(((std::string) result[4]).c_str());
+      float tx = locale_independent_atof(((std::string) result[1]).c_str());
+      float ty = locale_independent_atof(((std::string) result[4]).c_str());
       //std::cout << "found a translate transform!" << std::endl;
       tm.translate(tx, ty);
       start = result[0].second;
@@ -529,8 +547,8 @@ TransformMatrix SVGData::parse_transform(std::string transform){
     }
 
     if (boost::regex_search(start, end, result, scale_regex)){
-      float sx = atof(((std::string) result[1]).c_str());
-      float sy = atof(((std::string) result[4]).c_str());
+      float sx = locale_independent_atof(((std::string) result[1]).c_str());
+      float sy = locale_independent_atof(((std::string) result[4]).c_str());
       //std::cout << "found a scale transform!" << std::endl;
       tm.scale(sx, sy);
       start = result[0].second;
@@ -538,9 +556,9 @@ TransformMatrix SVGData::parse_transform(std::string transform){
     }
 
     if (boost::regex_search(start, end, result, rotate_regex)){
-      float angle = atof(((std::string) result[1]).c_str());
-      float cx = atof(((std::string) result[5]).c_str());
-      float cy = atof(((std::string) result[8]).c_str());
+      float angle = locale_independent_atof(((std::string) result[1]).c_str());
+      float cx = locale_independent_atof(((std::string) result[5]).c_str());
+      float cy = locale_independent_atof(((std::string) result[8]).c_str());
       //std::cout << "found a rotate transform!" << std::endl;
       tm.rotate(angle, cx, cy);
       start = result[0].second;
@@ -548,7 +566,7 @@ TransformMatrix SVGData::parse_transform(std::string transform){
     }
 
     if (boost::regex_search(start, end, result, skewX_regex)){
-      float angle = atof(((std::string) result[1]).c_str());
+      float angle = locale_independent_atof(((std::string) result[1]).c_str());
       //std::cout << "found a skewX transform!" << std::endl;
       tm.skewX(angle);
       start = result[0].second;
@@ -556,7 +574,7 @@ TransformMatrix SVGData::parse_transform(std::string transform){
     }
 
     if (boost::regex_search(start, end, result, skewY_regex)){
-      float angle = atof(((std::string) result[1]).c_str());
+      float angle = locale_independent_atof(((std::string) result[1]).c_str());
       //std::cout << "found a skewY transform!" << std::endl;
       tm.skewY(angle);
       start = result[0].second;
@@ -596,7 +614,7 @@ void SVGData::traverse_subtree(TransformMatrix parent_matrix, const xmlpp::Node*
     if(const xmlpp::Element* nodeElement = dynamic_cast<const xmlpp::Element*>(node)){
       const xmlpp::Attribute* height = nodeElement->get_attribute("height");
       if(height){
-        document_height = atof(height->get_value().c_str());
+        document_height = locale_independent_atof(height->get_value().c_str());
       }
     }
   }
@@ -626,29 +644,29 @@ void SVGData::traverse_subtree(TransformMatrix parent_matrix, const xmlpp::Node*
 
       float x, y, width, height, rx, ry;
 
-      x = x_attr ? atof(x_attr->get_value().c_str()) : 0;
-      y = y_attr ? atof(y_attr->get_value().c_str()) : 0;
+      x = x_attr ? locale_independent_atof(x_attr->get_value().c_str()) : 0;
+      y = y_attr ? locale_independent_atof(y_attr->get_value().c_str()) : 0;
 
       if(!rx_attr && !ry_attr){
         rx=0; ry=0;
       }
 
       if(rx_attr && !ry_attr){
-        rx=ry=atof(rx_attr->get_value().c_str());
+        rx=ry=locale_independent_atof(rx_attr->get_value().c_str());
       }
 
       if(!rx_attr && ry_attr){
-        rx=ry=atof(ry_attr->get_value().c_str());
+        rx=ry=locale_independent_atof(ry_attr->get_value().c_str());
       }
 
       if(rx_attr && ry_attr){
-        rx=atof(rx_attr->get_value().c_str());
-        ry=atof(ry_attr->get_value().c_str());
+        rx=locale_independent_atof(rx_attr->get_value().c_str());
+        ry=locale_independent_atof(ry_attr->get_value().c_str());
       }
 
       if(width_attr && height_attr){
-        width = atof(width_attr->get_value().c_str());
-        height = atof(height_attr->get_value().c_str());
+        width = locale_independent_atof(width_attr->get_value().c_str());
+        height = locale_independent_atof(height_attr->get_value().c_str());
 
         if (rx > width/2)
           rx = width/2;
