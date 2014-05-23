@@ -40,7 +40,7 @@
 
 //#include "Preferences.h"
 
-CGALRenderer::CGALRenderer(shared_ptr<const class Geometry> geom) : polyhedron(NULL)
+CGALRenderer::CGALRenderer(shared_ptr<const class Geometry> geom)
 {
 	if (shared_ptr<const PolySet> ps = dynamic_pointer_cast<const PolySet>(geom)) {
 		this->polyset = ps;
@@ -51,7 +51,7 @@ CGALRenderer::CGALRenderer(shared_ptr<const class Geometry> geom) : polyhedron(N
 	else if (shared_ptr<const CGAL_Nef_polyhedron> new_N = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom)) {
 		assert(new_N->getDimension() == 3);
 		if (!new_N->isEmpty()) {
-			this->polyhedron = new Polyhedron();
+			this->polyhedron.reset(new Polyhedron());
 			// FIXME: Make independent of Preferences
 			// this->polyhedron->setColor(Polyhedron::CGAL_NEF3_MARKED_FACET_COLOR,
 			// 													 Preferences::inst()->color(Preferences::CGAL_FACE_BACK_COLOR).red(),
@@ -62,7 +62,7 @@ CGALRenderer::CGALRenderer(shared_ptr<const class Geometry> geom) : polyhedron(N
 			// 													 Preferences::inst()->color(Preferences::CGAL_FACE_FRONT_COLOR).green(),
 			// 													 Preferences::inst()->color(Preferences::CGAL_FACE_FRONT_COLOR).blue());
 			
-			CGAL::OGL::Nef3_Converter<CGAL_Nef_polyhedron3>::convert_to_OGLPolyhedron(*new_N->p3, this->polyhedron);
+			CGAL::OGL::Nef3_Converter<CGAL_Nef_polyhedron3>::convert_to_OGLPolyhedron(*new_N->p3, this->polyhedron.get());
 			this->polyhedron->init();
 		}
 	}
@@ -70,7 +70,6 @@ CGALRenderer::CGALRenderer(shared_ptr<const class Geometry> geom) : polyhedron(N
 
 CGALRenderer::~CGALRenderer()
 {
-	delete this->polyhedron;
 }
 
 void CGALRenderer::draw(bool showfaces, bool showedges) const
