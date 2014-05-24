@@ -31,6 +31,41 @@
 	<true/>
 	<key>BBLMIsCaseSensitive</key>
 	<true/>
+	<key>BBLMPredefinedNameList</key>
+	<array>
+		<!--	Special constants	 -->
+		<string>true</string>
+		<string>false</string>
+		<string>undef</string>
+		<string>PI</string>
+
+		<!--	Parameters	 -->
+		<string>auto</string>
+		<string>center</string>
+		<string>invert</string>
+		<string>size</string>
+		<string>points</string>
+		<string>faces</string>
+		<string>convexity</string>
+		<string>file</string>		
+		<string>layer</string>		
+		<string>origin</string>		
+
+		<!--	Modifier Characters	 -->
+		<string>%</string>
+		<string>#</string>	<!--	Not highlighted?	 -->
+		<string>!</string>
+		<string>*</string>
+		
+		<!--	Special Variables	 -->
+		<string>$fa</string>
+		<string>$fs</string>
+		<string>$fn</string>
+		<string>$t</string>
+		<string>$vpr</string>
+		<string>$vpt</string>
+	</array>
+
 	<key>BBLMKeywordList</key>
 	<array>
 		<!--	
@@ -106,12 +141,6 @@
 		<string>intersection</string>
 		<string>linear_extrude</string>
 
-		<!--	Modifier Characters	 -->
-		<string>%</string>
-		<string>#</string>	<!--	Not highlighted?	 -->
-		<string>!</string>
-		<string>*</string>
-		
 		<!--	Modules	 -->
 		<string>module</string>
 		<string>children</string>
@@ -124,20 +153,7 @@
 		<string>dxf_cross</string>
 
 		<!--	Other Language Features	 -->
-		<!--	Special constants	 -->
-		<string>true</string>
-		<string>false</string>
-		<string>undef</string>
-		<string>PI</string>
 		
-		<!--	Special Variables	 -->
-		<string>$fa</string>
-		<string>$fs</string>
-		<string>$fn</string>
-		<string>$t</string>
-		<string>$vpr</string>
-		<string>$vpt</string>
-
 		<!--	Echo Statements	 -->
 		<string>echo</string>
 		
@@ -159,17 +175,6 @@
 		<string>parent_module</string>
 		<string>$parent_modules</string>
 		
-		<!--	Parameters	 -->
-		<string>auto</string>
-		<string>center</string>
-		<string>invert</string>
-		<string>size</string>
-		<string>points</string>
-		<string>faces</string>
-		<string>convexity</string>
-		<string>file</string>		
-		<string>layer</string>		
-		<string>origin</string>		
 	</array>
 	<key>BBLMLanguageCode</key>
 	<string>Oscd</string>
