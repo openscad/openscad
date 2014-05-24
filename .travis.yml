@@ -4,10 +4,10 @@ compiler: gcc
 
 before_install:
  - echo 'yes' | sudo add-apt-repository ppa:chrysn/openscad
- - echo 'yes' | sudo add-apt-repository ppa:mapnik/nightly-trunk
  - sudo apt-get update -qq
  - sudo apt-get install -qq build-essential libqt4-dev libqt4-opengl-dev libxmu-dev cmake bison flex git-core libboost-all-dev libXi-dev libmpfr-dev libboost-dev libglew-dev libeigen3-dev libcgal-dev libgmp3-dev libgmp-dev curl imagemagick
  - sudo apt-get install -qq libopencsg-dev
+ - echo 'yes' | sudo add-apt-repository ppa:mapnik/nightly-trunk
  - sudo apt-get install -qq libharfbuzz-dev
 
 branches:
