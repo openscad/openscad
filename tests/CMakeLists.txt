@@ -462,7 +462,7 @@ if (DEFINED ENV{OPENSCAD_LIBRARIES})
   set(ENV{PKG_CONFIG_PATH} "$ENV{OPENSCAD_LIBRARIES}/lib/pkgconfig")
 endif()
 
-pkg_check_modules(FONTCONFIG REQUIRED fontconfig>=2.11.0)
+pkg_check_modules(FONTCONFIG REQUIRED fontconfig>=2.8.0)
 if (FONTCONFIG_VERSION)
   message(STATUS "fontconfig ${FONTCONFIG_VERSION} found: ${FONTCONFIG_INCLUDE_DIRS}")
 endif()
