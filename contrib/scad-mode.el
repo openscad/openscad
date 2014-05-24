@@ -3,10 +3,10 @@
 ;; Author:     Len Trigg
 ;; Maintainer: Len Trigg <lenbok@gmail.com>
 ;; Created:    March 2010
-;; Modified:   06 July 2012
+;; Modified:   24 May 2014
 ;; Keywords:   languages
 ;; URL:        https://raw.github.com/openscad/openscad/master/contrib/scad-mode.el
-;; Version:    90.0
+;; Version:    91.0
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -143,6 +143,7 @@
 (defvar scad-font-lock-keywords
   `(
     ("\\(module\\|function\\)[ \t]+\\(\\sw+\\)" (1 'font-lock-keyword-face nil) (2 'font-lock-function-name-face nil t))
+    ("\\(use\\|include\\)[ \t]*<\\([^>]+\\)>" (1 'font-lock-preprocessor-face nil) (2 'font-lock-type-face nil t))
     ("<\\(\\sw+\\)>" (1 'font-lock-builtin-face nil))
     ("$\\(\\sw+\\)" (1 'font-lock-builtin-face nil))
     (,scad-keywords-regexp . font-lock-keyword-face)
@@ -171,6 +172,17 @@
   (set (make-local-variable 'block-comment-end) "*/")
   
   )
+
+
+;; From: http://stackoverflow.com/questions/14520073/add-words-for-dynamic-expansion-to-emacs-mode
+(defun scad-prime-dabbrev ()
+  "Makes a hidden scad-mode buffer containing all the scad keywords, so dabbrev expansion just works."
+  (unless (get-buffer " *scad words*")
+    (with-current-buffer (get-buffer-create " *scad words*")
+      (scad-mode)
+      (insert "module function use include")  ; Explicitly add these -- they're not in the below vars
+      (insert (mapconcat 'identity (append scad-keywords scad-functions scad-modules) " ")))))
+(add-hook 'scad-mode-hook 'scad-prime-dabbrev)
 
 
 ;;; Indentation, based on http://www.emacswiki.org/emacs/download/actionscript-mode-haas-7.0.el
