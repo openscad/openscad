@@ -179,8 +179,7 @@
   "Indent current line of SCAD code."
   (interactive)
   (let ((savep (> (current-column) (current-indentation)))
-        (indent (condition-case nil (max (scad-calculate-indentation) 0)
-                  (error 0))))
+        (indent (max (scad-calculate-indentation) 0)))
     (if savep
         (save-excursion (indent-line-to indent))
       (indent-line-to indent))))
@@ -224,9 +223,9 @@
            ;; Don't count if in string or comment.
            ((scad-face-at-point (- (point) 1)))
            ((looking-back "\\s)")
-            (incf close-count))
+            (setq close-count (+ close-count 1)))
            ((looking-back "\\s(")
-            (incf open-count))
+            (setq open-count (+ open-count 1)))
            )))
       (- open-count close-count))))
 
