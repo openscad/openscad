@@ -86,7 +86,7 @@ public:
         double size, spacing, fn;
 	std::string text, font, direction, language, script, halign, valign;
         
-        friend FreetypeRenderer;
+        friend class FreetypeRenderer;
     };
     
     FreetypeRenderer();
