@@ -29,6 +29,9 @@ public:
 	// Lookup Variable: L
 	// Lookup member per name: N
 	// Function call: F
+	// Let expression: l
+  // List comprehension expression: i
+  // List comprehension: c
   std::string type;
 
 	Expression();
