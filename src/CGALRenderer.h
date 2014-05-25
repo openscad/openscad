@@ -10,6 +10,6 @@ public:
 	void draw(bool showfaces, bool showedges) const;
 
 public:
-	class Polyhedron *polyhedron;
+	shared_ptr<class Polyhedron> polyhedron;
 	shared_ptr<const class PolySet> polyset;
 };

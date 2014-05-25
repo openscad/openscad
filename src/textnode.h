@@ -1,5 +1,4 @@
-#ifndef TEXTNODE_H_
-#define TEXTNODE_H_
+#pragma once
 
 #include "node.h"
 #include "visitor.h"
@@ -26,7 +25,5 @@ public:
 	virtual FreetypeRenderer::Params get_params() const;
 private:
 	FreetypeRenderer::Params params;
-	friend TextModule;
+	friend class TextModule;
 };
-
-#endif

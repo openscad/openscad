@@ -1,5 +1,4 @@
-#ifndef POLYGON2D_H_
-#define POLYGON2D_H_
+#pragma once
 
 #include "Geometry.h"
 #include "linalg.h"
@@ -36,5 +35,3 @@ private:
 	Outlines2d theoutlines;
 	bool sanitized;
 };
-
-#endif
