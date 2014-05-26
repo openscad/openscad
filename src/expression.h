@@ -29,6 +29,9 @@ public:
 	// Lookup Variable: L
 	// Lookup member per name: N
 	// Function call: F
+	// Let expression: l
+  // List comprehension expression: i
+  // List comprehension: c
   std::string type;
 
 	Expression();
@@ -38,6 +41,7 @@ public:
 	~Expression();
 
 	Value evaluate(const class Context *context) const;
+
 	std::string toString() const;
 
 private:
@@ -48,6 +52,8 @@ private:
 	Value sub_evaluate_member(const class Context *context) const;
 	Value sub_evaluate_range(const class Context *context) const;
 	Value sub_evaluate_vector(const class Context *context) const;
+	Value sub_evaluate_let_expression(const class Context *context) const;
+	Value sub_evaluate_list_comprehension(const class Context *context) const;
 };
 
 std::ostream &operator<<(std::ostream &stream, const Expression &expr);

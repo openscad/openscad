@@ -1,5 +1,4 @@
-#ifndef FONTLISTDIALOG_H_
-#define FONTLISTDIALOG_H_
+#pragma once
 
 #include <QStandardItemModel>
 
@@ -19,5 +18,3 @@ public:
 private:
         QStandardItemModel *model;
 };
-
-#endif

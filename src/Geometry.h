@@ -1,5 +1,4 @@
-#ifndef GEOMETRY_H_
-#define GEOMETRY_H_
+#pragma once
 
 #include <stddef.h>
 #include <string>
@@ -54,5 +53,3 @@ public:
 	shared_ptr<GeometryList> flatten() const;
 
 };
-
-#endif

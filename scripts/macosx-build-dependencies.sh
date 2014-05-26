@@ -721,8 +721,8 @@ build_gettext 0.18.3.1
 build_libffi 3.0.13
 build_glib2 2.38.2
 build_opencsg 1.3.2
-build_harfbuzz 0.9.27 "--with-coretext=auto --with-glib=no"
 build_freetype 2.5.3 --without-png
+build_harfbuzz 0.9.27 "--with-coretext=auto --with-glib=no"
 export FREETYPE_CFLAGS="-I$DEPLOYDIR/include -I$DEPLOYDIR/include/freetype2"
 export FREETYPE_LIBS="-L$DEPLOYDIR/lib -lfreetype"
 build_libxml2 2.9.1

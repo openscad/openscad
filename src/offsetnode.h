@@ -1,5 +1,4 @@
-#ifndef OFFSETNODE_H_
-#define OFFSETNODE_H_
+#pragma once
 
 #include "node.h"
 #include "visitor.h"
@@ -19,5 +18,3 @@ public:
 	double fn, fs, fa, delta, miter_limit;
         ClipperLib::JoinType join_type;
 };
-
-#endif
