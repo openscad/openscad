@@ -6,6 +6,7 @@
 #include "Polygon2d.h"
 #include "polyset-utils.h"
 #include "grid.h"
+#include "node.h"
 
 #include "cgal.h"
 #include <CGAL/convex_hull_3.h>
@@ -133,6 +134,7 @@ namespace CGALUtils {
 				*N = *chN;
 			}
 			CGAL::set_error_behaviour(old_behaviour);
+			item.first->progress_report();
 		}
 
 		if (op == OPENSCAD_UNION && nary_union_num_inserted > 0) {
