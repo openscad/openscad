@@ -142,6 +142,8 @@ use[ \t\r\n>]*"<"	{ BEGIN(cond_use); }
 "function"	return TOK_FUNCTION;
 "if"		return TOK_IF;
 "else"		return TOK_ELSE;
+"let"		return TOK_LET;
+"for"		return TOK_FOR;
 
 "true"		return TOK_TRUE;
 "false"		return TOK_FALSE;
