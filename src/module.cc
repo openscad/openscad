@@ -47,18 +47,16 @@ AbstractModule::~AbstractModule()
 {
 }
 
-/*
-AbstractNode *AbstractModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const
+AbstractNode *GroupModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const
 {
 	(void)ctx; // avoid unusued parameter warning
 
-	AbstractNode *node = new AbstractNode(inst);
+	AbstractNode *node = new GroupNode(inst);
 
 	node->children = inst->instantiateChildren(evalctx);
 
 	return node;
 }
-*/
 
 double AbstractModule::lookup_double_variable_with_default(Context &c, std::string variable, double def) const
 {
@@ -366,5 +364,5 @@ AbstractNode *FileModule::instantiate(const Context *ctx, const ModuleInstantiat
 
 void register_builtin_group()
 {
-	Builtins::init("group", new Module());
+	Builtins::init("group", new GroupModule());
 }

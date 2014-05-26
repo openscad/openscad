@@ -74,6 +74,14 @@ public:
         virtual std::string lookup_string_variable_with_default(Context &c, std::string variable, std::string def) const;
 };
 
+class GroupModule : public AbstractModule
+{
+public:
+	GroupModule() { }
+	virtual ~GroupModule() { }
+	virtual class AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, const class EvalContext *evalctx = NULL) const;
+};
+
 class Module : public AbstractModule
 {
 public:
