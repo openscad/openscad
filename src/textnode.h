@@ -25,5 +25,5 @@ public:
 	virtual FreetypeRenderer::Params get_params() const;
 private:
 	FreetypeRenderer::Params params;
-	friend TextModule;
+	friend class TextModule;
 };

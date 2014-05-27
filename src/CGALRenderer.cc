@@ -60,6 +60,7 @@ CGALRenderer::CGALRenderer(shared_ptr<const class Geometry> geom)
 
 CGALRenderer::~CGALRenderer()
 {
+<<<<<<< HEAD
 }
 
 void CGALRenderer::rebuildPolyhedron()
@@ -82,6 +83,8 @@ void CGALRenderer::setColorScheme(const OSColors::colorscheme &cs)
 	Renderer::setColorScheme(cs);
 	this->rebuildPolyhedron();
 	PRINT("Cgalrenderer scholor done");
+=======
+>>>>>>> ce24e2e29b3e2ef4bf01b766b27f13b9d227b6c5
 }
 
 void CGALRenderer::draw(bool showfaces, bool showedges) const

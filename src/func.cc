@@ -213,7 +213,7 @@ Value builtin_min(const Context *, const EvalContext *evalctx)
 
 		if (n == 1 && v0.type() == Value::VECTOR && !v0.toVector().empty()) {
 			Value min = v0.toVector()[0];
-			for (int i = 1; i < v0.toVector().size(); i++) {
+			for (size_t i = 1; i < v0.toVector().size(); i++) {
 				if (v0.toVector()[i] < min)
 					min = v0.toVector()[i];
 			}
@@ -246,7 +246,7 @@ Value builtin_max(const Context *, const EvalContext *evalctx)
 
 		if (n == 1 && v0.type() == Value::VECTOR && !v0.toVector().empty()) {
 			Value max = v0.toVector()[0];
-			for (int i = 1; i < v0.toVector().size(); i++) {
+			for (size_t i = 1; i < v0.toVector().size(); i++) {
 				if (v0.toVector()[i] > max)
 					max = v0.toVector()[i];
 			}
@@ -620,6 +620,85 @@ Value builtin_lookup(const Context *, const EvalContext *evalctx)
 */
 #pragma clang diagnostic ignored "-Wlogical-op-parentheses"
 
+
+static Value::VectorType search(const std::string &find, const std::string &table,
+																unsigned int num_returns_per_match, unsigned int index_col_num)
+{
+	Value::VectorType returnvec;
+	//Unicode glyph count for the length
+	size_t findThisSize = g_utf8_strlen(find.c_str(), find.size());
+	size_t searchTableSize = g_utf8_strlen(table.c_str(), table.size());
+	for (size_t i = 0; i < findThisSize; i++) {
+		unsigned int matchCount = 0;
+		Value::VectorType resultvec;
+		for (size_t j = 0; j < searchTableSize; j++) {
+			const gchar *ptr_ft = g_utf8_offset_to_pointer(find.c_str(), i);
+			const gchar *ptr_st = g_utf8_offset_to_pointer(table.c_str(), j);
+			if (ptr_ft && ptr_st && (g_utf8_get_char(ptr_ft) == g_utf8_get_char(ptr_st)) ) {
+				matchCount++;
+				if (num_returns_per_match == 1) {
+					returnvec.push_back(Value(double(j)));
+					break;
+				} else {
+					resultvec.push_back(Value(double(j)));
+				}
+				if (num_returns_per_match > 1 && matchCount >= num_returns_per_match) {
+					break;
+				}
+			}
+		}
+		if (matchCount == 0) {
+			gchar *ptr_ft = g_utf8_offset_to_pointer(find.c_str(), i);
+			gchar utf8_of_cp[6] = ""; //A buffer for a single unicode character to be copied into
+			if (ptr_ft) g_utf8_strncpy(utf8_of_cp, ptr_ft, 1);
+			PRINTB("  WARNING: search term not found: \"%s\"", utf8_of_cp);
+		}
+		if (num_returns_per_match == 0 || num_returns_per_match > 1) {
+			returnvec.push_back(Value(resultvec));
+		}
+	}
+	return returnvec;
+}
+
+static Value::VectorType search(const std::string &find, const Value::VectorType &table,
+																unsigned int num_returns_per_match, unsigned int index_col_num)
+{
+	Value::VectorType returnvec;
+	//Unicode glyph count for the length
+	unsigned int findThisSize =  g_utf8_strlen(find.c_str(), find.size());
+	unsigned int searchTableSize = table.size();
+	for (size_t i = 0; i < findThisSize; i++) {
+		unsigned int matchCount = 0;
+		Value::VectorType resultvec;
+		for (size_t j = 0; j < searchTableSize; j++) {
+			const gchar *ptr_ft = g_utf8_offset_to_pointer(find.c_str(), i);
+			const gchar *ptr_st = g_utf8_offset_to_pointer(table[j].toVector()[index_col_num].toString().c_str(), 0);
+			if (ptr_ft && ptr_st && (g_utf8_get_char(ptr_ft) == g_utf8_get_char(ptr_st)) ) {
+				matchCount++;
+				if (num_returns_per_match == 1) {
+					returnvec.push_back(Value(double(j)));
+					break;
+				} else {
+					resultvec.push_back(Value(double(j)));
+				}
+				if (num_returns_per_match > 1 && matchCount >= num_returns_per_match) {
+					break;
+				}
+			}
+		}
+		if (matchCount == 0) {
+			const gchar *ptr_ft = g_utf8_offset_to_pointer(find.c_str(), i);
+			gchar utf8_of_cp[6] = ""; //A buffer for a single unicode character to be copied into
+			if (ptr_ft) g_utf8_strncpy(utf8_of_cp, ptr_ft, 1);
+			PRINTB("  WARNING: search term not found: \"%s\"", utf8_of_cp);
+		}
+		if (num_returns_per_match == 0 || num_returns_per_match > 1) {
+			returnvec.push_back(Value(resultvec));
+		}
+	}
+	return returnvec;
+}
+
 Value builtin_search(const Context *, const EvalContext *evalctx)
 {
 	if (evalctx->numArgs() < 2) return Value();
@@ -637,59 +716,20 @@ Value builtin_search(const Context *, const EvalContext *evalctx)
 		for (size_t j = 0; j < searchTable.toVector().size(); j++) {
 			const Value& search_element = searchTable.toVector()[j];
 
-			if (index_col_num == 0 && findThis == search_element
-				||
-				index_col_num  < search_element.toVector().size() &&
-				findThis      == search_element.toVector()[index_col_num])
-			{
+			if (index_col_num == 0 && findThis == search_element ||
+					index_col_num  < search_element.toVector().size() &&
+					findThis      == search_element.toVector()[index_col_num]) {
 				returnvec.push_back(Value(double(j)));
 				matchCount++;
 				if (num_returns_per_match != 0 && matchCount >= num_returns_per_match) break;
 			}
 		}
 	} else if (findThis.type() == Value::STRING) {
-		unsigned int searchTableSize;
-		//Unicode glyph count for the length
-		unsigned int findThisSize =  g_utf8_strlen( findThis.toString().c_str(), findThis.toString().size() );
 		if (searchTable.type() == Value::STRING) {
-			searchTableSize = g_utf8_strlen( searchTable.toString().c_str(), searchTable.toString().size() );
-		} else {
-		    searchTableSize = searchTable.toVector().size();
+			returnvec = search(findThis.toString(), searchTable.toString(), num_returns_per_match, index_col_num);
 		}
-		for (size_t i = 0; i < findThisSize; i++) {
-		  unsigned int matchCount = 0;
-			Value::VectorType resultvec;
-		  for (size_t j = 0; j < searchTableSize; j++) {
-		    gchar* ptr_ft = g_utf8_offset_to_pointer(findThis.toString().c_str(), i);
-		    gchar* ptr_st = NULL;
-		    if(searchTable.type() == Value::VECTOR) {
-		        ptr_st = g_utf8_offset_to_pointer(searchTable.toVector()[j].toVector()[index_col_num].toString().c_str(), 0);
-		    } else if(searchTable.type() == Value::STRING){
-		    	ptr_st = g_utf8_offset_to_pointer(searchTable.toString().c_str(), j);
-		    }
-		    if( (ptr_ft) && (ptr_st) && (g_utf8_get_char(ptr_ft) == g_utf8_get_char(ptr_st)) ) {
-		      Value resultValue((double(j)));
-		      matchCount++;
-		      if (num_returns_per_match == 1) {
-						returnvec.push_back(resultValue);
-						break;
-		      } else {
-						resultvec.push_back(resultValue);
-		      }
-		      if (num_returns_per_match > 1 && matchCount >= num_returns_per_match) break;
-		    }
-		  }
-		  if (matchCount == 0) {
-			  gchar* ptr_ft = g_utf8_offset_to_pointer(findThis.toString().c_str(), i);
-			  gchar utf8_of_cp[6] = ""; //A buffer for a single unicode character to be copied into
-			  if(ptr_ft) {
-			      g_utf8_strncpy( utf8_of_cp, ptr_ft, 1 );
-		      }
-			  PRINTB("  WARNING: search term not found: \"%s\"", utf8_of_cp );
-		  }
-		  if (num_returns_per_match == 0 || num_returns_per_match > 1) {
-				returnvec.push_back(Value(resultvec));
-			}
+		else {
+			returnvec = search(findThis.toString(), searchTable.toVector(), num_returns_per_match, index_col_num);
 		}
 	} else if (findThis.type() == Value::VECTOR) {
 		for (size_t i = 0; i < findThis.toVector().size(); i++) {

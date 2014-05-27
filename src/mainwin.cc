@@ -164,7 +164,7 @@ bool MainWindow::mdiMode = false;
 bool MainWindow::undockMode = false;
 
 MainWindow::MainWindow(const QString &filename)
-	: root_inst("group"), tempFile(NULL), progresswidget(NULL), font_list_dialog(NULL)
+	: root_inst("group"), font_list_dialog(NULL), tempFile(NULL), progresswidget(NULL)
 {
 	setupUi(this);
 	setCorner(Qt::TopLeftCorner, Qt::LeftDockWidgetArea);
