@@ -13,9 +13,8 @@ bool Renderer::getColor(Renderer::ColorMode colormode, Color4f &col) const
 	return true;
 }
 
-Renderer::Renderer()
+Renderer::Renderer() : colorscheme(NULL)
 {
-	this->colorscheme = NULL;
 	// Setup default colors
 	// MATERIAL and CUTOUT colors are set by the colorscheme
 	// (colorschemes do not currently hold Highlight/Background colors)
@@ -26,9 +25,9 @@ Renderer::Renderer()
 	colormap[COLORMODE_HIGHLIGHT_EDGES] = Color4f(255, 171, 86, 128);
 	colormap[COLORMODE_BACKGROUND_EDGES] = Color4f(150, 150, 150, 128);
 
-	OSColors::colorscheme cs = RenderSettings::inst()->defaultColorScheme();
-	setColorScheme( cs );
-        PRINT("render constr");
+	const OSColors::colorscheme &cs = RenderSettings::inst()->defaultColorScheme();
+	setColorScheme(cs);
+	PRINT("render constr");
 }
 
 void Renderer::setColor(const float color[4], GLint *shaderinfo) const
@@ -79,13 +78,13 @@ void Renderer::setColor(ColorMode colormode, GLint *shaderinfo) const
 this does not change Highlight or Background colors as they are not 
 represented in the colorscheme (yet). Also edgecolors are currently the 
 same for CGAL & OpenCSG */
-void Renderer::setColorScheme( const OSColors::colorscheme &cs ) {
-        PRINT("renderer setcolsch");
-	colormap[COLORMODE_MATERIAL] = OSColors::getValue(cs,OSColors::RenderColors::OPENCSG_FACE_FRONT_COLOR);
-	colormap[COLORMODE_CUTOUT] = OSColors::getValue(cs,OSColors::RenderColors::OPENCSG_FACE_BACK_COLOR);
-	colormap[COLORMODE_MATERIAL_EDGES] = OSColors::getValue(cs,OSColors::RenderColors::CGAL_EDGE_FRONT_COLOR);
-	colormap[COLORMODE_CUTOUT_EDGES] = OSColors::getValue(cs,OSColors::RenderColors::CGAL_EDGE_BACK_COLOR);
-	colormap[COLORMODE_EMPTY_SPACE] = OSColors::getValue(cs,OSColors::RenderColors::BACKGROUND_COLOR);
+void Renderer::setColorScheme(const OSColors::colorscheme &cs) {
+	PRINT("renderer setcolsch");
+	colormap[COLORMODE_MATERIAL] = OSColors::getValue(cs,OSColors::OPENCSG_FACE_FRONT_COLOR);
+	colormap[COLORMODE_CUTOUT] = OSColors::getValue(cs,OSColors::OPENCSG_FACE_BACK_COLOR);
+	colormap[COLORMODE_MATERIAL_EDGES] = OSColors::getValue(cs,OSColors::CGAL_EDGE_FRONT_COLOR);
+	colormap[COLORMODE_CUTOUT_EDGES] = OSColors::getValue(cs,OSColors::CGAL_EDGE_BACK_COLOR);
+	colormap[COLORMODE_EMPTY_SPACE] = OSColors::getValue(cs,OSColors::BACKGROUND_COLOR);
 	this->colorscheme = const_cast<OSColors::colorscheme*>(&cs);
 }
 

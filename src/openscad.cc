@@ -202,13 +202,14 @@ Camera get_camera( po::variables_map vm )
 
 	if (vm.count("colorscheme")) {
 		std::string colorscheme = vm["colorscheme"].as<string>();
-		if (OSColors::schemes.count(colorscheme)>0) {
-			camera.colorscheme = OSColors::schemes[colorscheme];
+		if (OSColors::colorschemes.count(colorscheme)>0) {
+			camera.colorscheme = OSColors::colorschemes[colorscheme];
 		} else {
 			PRINT("Unknown color scheme. Valid schemes:");
-			std::map<std::string, OSColors::colorscheme>::iterator i;
-			for(i=OSColors::schemes.begin();i!=OSColors::schemes.end();i++)
+			boost::unordered_map<std::string, OSColors::colorscheme>::iterator i;
+			for (i=OSColors::colorschemes.begin();i!=OSColors::colorschemes.end();i++) {
 				PRINTB("%s",i->first);
+			}
 			exit(1);
 		}
 	}
@@ -622,7 +623,7 @@ int main(int argc, char **argv)
 		("camera", po::value<string>(), "parameters for camera when exporting png")
 		("imgsize", po::value<string>(), "=width,height for exporting png")
 		("projection", po::value<string>(), "(o)rtho or (p)erspective when exporting png")
-	        ("colorscheme", po::value<string>(), "colorscheme")
+		("colorscheme", po::value<string>(), "colorscheme")
 		("debug", po::value<string>(), "special debug info")
 		("o,o", po::value<string>(), "out-file")
 		("s,s", po::value<string>(), "stl-file")

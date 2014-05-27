@@ -1,5 +1,4 @@
-#ifndef __colormap_h__
-#define __colormap_h__
+#pragma once
 
 #include <map>
 #include <string>
@@ -11,10 +10,9 @@ using namespace boost::assign; // bring 'operator+=()' into scope
 
 namespace OSColors {
 
-extern boost::unordered_map<std::string, Color4f> webmap;
+extern boost::unordered_map<std::string, Color4f> webcolors;
 
-namespace RenderColors {
- enum RenderColor {
+enum RenderColor {
   BACKGROUND_COLOR,
   OPENCSG_FACE_FRONT_COLOR,
   OPENCSG_FACE_BACK_COLOR,
@@ -25,10 +23,9 @@ namespace RenderColors {
   CGAL_EDGE_BACK_COLOR,
   CGAL_EDGE_2D_COLOR,
   CROSSHAIR_COLOR
- }; // enum
-}; // namespace OSColors::RenderColors
+};
 
-typedef std::map<RenderColors::RenderColor,Color4f> colorscheme;
+typedef std::map<RenderColor, Color4f> colorscheme;
 
 extern colorscheme cornfield;
 extern colorscheme metallic;
@@ -36,12 +33,10 @@ extern colorscheme sunset;
 extern colorscheme sea;
 extern colorscheme severny;
 extern colorscheme monotone;
-extern std::map< std::string, colorscheme > schemes;
-extern colorscheme defaultColorScheme;
+extern boost::unordered_map<std::string, OSColors::colorscheme> colorschemes;
+extern const colorscheme &defaultColorScheme;
 
-Color4f getValue( const colorscheme &cs, const RenderColors::RenderColor rc );
+Color4f getValue(const colorscheme &cs, const RenderColor rc);
 
 }; // namespace OSColors
-
-#endif // __colormap_h__
 

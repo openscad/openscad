@@ -27,6 +27,7 @@
 #pragma once
 
 #ifndef NULLGL
+
 #include "colormap.h"
 #include "rendersettings.h"
 #include "OGL_helper.h"
@@ -102,14 +103,14 @@ public:
 
 	// set this->colors based on the given colorscheme. vertex colors
 	// are not set here as colorscheme doesnt yet hold vertex colors.
-	void setColorScheme( const OSColors::colorscheme &cs ) {
+	void setColorScheme(const OSColors::colorscheme &cs) {
 		PRINT("cgal renderer polyhedron setcolsch");
 		//setColor(CGAL_NEF3_MARKED_VERTEX_COLOR,cs.at(...));
 		//setColor(CGAL_NEF3_UNMARKED_VERTEX_COLOR,cs.at(...));
-		setColor(CGAL_NEF3_MARKED_FACET_COLOR,OSColors::getValue(cs,OSColors::RenderColors::CGAL_FACE_BACK_COLOR));
-		setColor(CGAL_NEF3_MARKED_EDGE_COLOR,OSColors::getValue(cs,OSColors::RenderColors::CGAL_EDGE_FRONT_COLOR));
-		setColor(CGAL_NEF3_UNMARKED_FACET_COLOR,OSColors::getValue(cs,OSColors::RenderColors::CGAL_FACE_FRONT_COLOR));
-                setColor(CGAL_NEF3_UNMARKED_EDGE_COLOR,OSColors::getValue(cs,OSColors::RenderColors::CGAL_EDGE_BACK_COLOR));
+		setColor(CGAL_NEF3_MARKED_FACET_COLOR, OSColors::getValue(cs,OSColors::CGAL_FACE_BACK_COLOR));
+		setColor(CGAL_NEF3_MARKED_EDGE_COLOR, OSColors::getValue(cs,OSColors::CGAL_EDGE_FRONT_COLOR));
+		setColor(CGAL_NEF3_UNMARKED_FACET_COLOR, OSColors::getValue(cs,OSColors::CGAL_FACE_FRONT_COLOR));
+		setColor(CGAL_NEF3_UNMARKED_EDGE_COLOR, OSColors::getValue(cs,OSColors::CGAL_EDGE_BACK_COLOR));
 	}
 
 private:

@@ -1755,7 +1755,7 @@ void MainWindow::actionExport(export_type_e, QString, QString)
 		break;
 	}
 	exportFileByName(this->root_geom.get(), format, export_filename.toUtf8(),
-		export_filename.toLocal8Bit().constData());
+									 export_filename.toLocal8Bit().constData());
 	PRINTB("%s export finished.", type_name);
 
 	clearCurrentOutput();
@@ -1815,7 +1815,7 @@ void MainWindow::actionExportDXF()
 		return;
 	}
 	exportFileByName(this->root_geom.get(), OPENSCAD_DXF, dxf_filename.toUtf8(),
-		dxf_filename.toLocal8Bit().constData());
+									 dxf_filename.toLocal8Bit().constData());
 	PRINT("DXF export finished.");
 
 	clearCurrentOutput();

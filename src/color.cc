@@ -40,7 +40,7 @@ using namespace boost::assign; // bring 'operator+=()' into scope
 class ColorModule : public AbstractModule
 {
 public:
-	ColorModule() : colormap(OSColors::webmap) { }
+	ColorModule() : colormap(OSColors::webcolors) { }
 	virtual AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const;
 
 private:

@@ -1,5 +1,8 @@
 message(STATUS "running openscad/tests/FindGLIB2.cmake ...")
 
+include(PkgConfigTools.cmake)
+save_pkg_config_env()
+
 # GLIB2 requires pkg-config to build. 
 # If we are did an OPENSCAD_LIBRARIES dependency build of glib2, we need to 
 # tell pkg-config to look under OPENSCAD_LIBRARIES dir.
@@ -8,8 +11,6 @@ if (NOT $ENV{OPENSCAD_LIBRARIES} STREQUAL "")
   if (EXISTS "$ENV{OPENSCAD_LIBRARIES}/include/glib-2.0/glib.h")
     message(STATUS "found glib.h under OPENSCAD_LIBRARIES.")
     message(STATUS "redirecting pkg-config to look under OPENSCAD_LIBRARIES")
-    set(SAVED_PKG_CONFIG_PATH "$ENV{PKG_CONFIG_PATH}")
-    set(SAVED_PKG_CONFIG_LIBDIR "$ENV{PKG_CONFIG_LIBDIR}")
     set(ENV{PKG_CONFIG_PATH} "$ENV{OPENSCAD_LIBRARIES}/lib/pkgconfig")
     set(ENV{PKG_CONFIG_LIBDIR} "$ENV{OPENSCAD_LIBRARIES}/lib/pkgconfig")
   else()
@@ -55,11 +56,4 @@ foreach(glib2libdir ${GLIB2_LIBRARIES})
   message(STATUS "  " ${glib2libdir})
 endforeach()
 
-if (NOT $ENV{OPENSCAD_LIBRARIES} STREQUAL "")
-  if (EXISTS "$ENV{OPENSCAD_LIBRARIES}/include/glib-2.0/glib.h")
-    message(STATUS "resetting pkgconfig as it was")
-  else()
-    set(ENV{PKG_CONFIG_PATH} "${SAVED_PKG_CONFIG_PATH}")
-    set(ENV{PKG_CONFIG_LIBDIR} "${SAVED_PKG_CONFIG_LIBDIR}")
-  endif()
-endif()
+restore_pkg_config_env()

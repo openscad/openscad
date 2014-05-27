@@ -1,7 +1,6 @@
 #include "colormap.h"
 
-boost::unordered_map<std::string, Color4f> 
-OSColors::webmap = map_list_of
+boost::unordered_map<std::string, Color4f> OSColors::webcolors = map_list_of
     ("aliceblue", Color4f(240, 248, 255))
     ("antiquewhite", Color4f(250, 235, 215))
     ("aqua", Color4f(0, 255, 255))
@@ -151,98 +150,94 @@ OSColors::webmap = map_list_of
     ("yellow", Color4f(255, 255, 0))
     ("yellowgreen", Color4f(154, 205, 50));
 
-#define RC RenderColors
-
 OSColors::colorscheme OSColors::cornfield = map_list_of
-  (RC::BACKGROUND_COLOR,Color4f(0xff, 0xff, 0xe5))
-  (RC::OPENCSG_FACE_FRONT_COLOR,Color4f(0xf9, 0xd7, 0x2c))
-  (RC::OPENCSG_FACE_BACK_COLOR,Color4f(0x9d, 0xcb, 0x51))
-  (RC::CGAL_FACE_FRONT_COLOR,Color4f(0xf9, 0xd7, 0x2c))
-  (RC::CGAL_FACE_BACK_COLOR,Color4f(0x9d, 0xcb, 0x51))
-  (RC::CGAL_FACE_2D_COLOR,Color4f(0x00, 0xbf, 0x99))
-  (RC::CGAL_EDGE_FRONT_COLOR,Color4f(0xff,0xec,0x5e))
-  (RC::CGAL_EDGE_BACK_COLOR,Color4f(0xab,0xd8,0x56))
-  (RC::CGAL_EDGE_2D_COLOR,Color4f(0xff, 0x00, 0x00))
-  (RC::CROSSHAIR_COLOR,Color4f(0x80, 0x00, 0x00));
+  (BACKGROUND_COLOR,         Color4f(0xff, 0xff, 0xe5))
+  (OPENCSG_FACE_FRONT_COLOR, Color4f(0xf9, 0xd7, 0x2c))
+  (OPENCSG_FACE_BACK_COLOR,  Color4f(0x9d, 0xcb, 0x51))
+  (CGAL_FACE_FRONT_COLOR,    Color4f(0xf9, 0xd7, 0x2c))
+  (CGAL_FACE_BACK_COLOR,     Color4f(0x9d, 0xcb, 0x51))
+  (CGAL_FACE_2D_COLOR,       Color4f(0x00, 0xbf, 0x99))
+  (CGAL_EDGE_FRONT_COLOR,    Color4f(0xff, 0xec, 0x5e))
+  (CGAL_EDGE_BACK_COLOR,     Color4f(0xab, 0xd8, 0x56))
+  (CGAL_EDGE_2D_COLOR,       Color4f(0xff, 0x00, 0x00))
+  (CROSSHAIR_COLOR,          Color4f(0x80, 0x00, 0x00));
 
 OSColors::colorscheme OSColors::metallic = map_list_of
-  (RC::BACKGROUND_COLOR,Color4f(0xaa, 0xaa, 0xff))
-  (RC::OPENCSG_FACE_FRONT_COLOR,Color4f(0xdd, 0xdd, 0xff))
-  (RC::OPENCSG_FACE_BACK_COLOR,Color4f(0xdd, 0x22, 0xdd))
-  (RC::CGAL_FACE_FRONT_COLOR,Color4f(0xdd, 0xdd, 0xff))
-  (RC::CGAL_FACE_BACK_COLOR,Color4f(0xdd, 0x22, 0xdd))
-  (RC::CGAL_FACE_2D_COLOR,Color4f(0x00, 0xbf, 0x99))
-  (RC::CGAL_EDGE_FRONT_COLOR,Color4f(0xff, 0x00, 0x00))
-  (RC::CGAL_EDGE_BACK_COLOR,Color4f(0xff, 0x00, 0x00))
-  (RC::CGAL_EDGE_2D_COLOR,Color4f(0xff, 0x00, 0x00))
-  (RC::CROSSHAIR_COLOR,Color4f(0x80, 0x00, 0x00));
+  (BACKGROUND_COLOR,         Color4f(0xaa, 0xaa, 0xff))
+  (OPENCSG_FACE_FRONT_COLOR, Color4f(0xdd, 0xdd, 0xff))
+  (OPENCSG_FACE_BACK_COLOR,  Color4f(0xdd, 0x22, 0xdd))
+  (CGAL_FACE_FRONT_COLOR,    Color4f(0xdd, 0xdd, 0xff))
+  (CGAL_FACE_BACK_COLOR,     Color4f(0xdd, 0x22, 0xdd))
+  (CGAL_FACE_2D_COLOR,       Color4f(0x00, 0xbf, 0x99))
+  (CGAL_EDGE_FRONT_COLOR,    Color4f(0xff, 0x00, 0x00))
+  (CGAL_EDGE_BACK_COLOR,     Color4f(0xff, 0x00, 0x00))
+  (CGAL_EDGE_2D_COLOR,       Color4f(0xff, 0x00, 0x00))
+  (CROSSHAIR_COLOR,          Color4f(0x80, 0x00, 0x00));
 
 OSColors::colorscheme OSColors::sunset = map_list_of
-  (RC::BACKGROUND_COLOR,Color4f(0xaa, 0x44, 0x44))
-  (RC::OPENCSG_FACE_FRONT_COLOR,Color4f(0xff, 0xaa, 0xaa))
-  (RC::OPENCSG_FACE_BACK_COLOR,Color4f(0x88, 0x22, 0x33))
-  (RC::CGAL_FACE_FRONT_COLOR,Color4f(0xff, 0xaa, 0xaa))
-  (RC::CGAL_FACE_BACK_COLOR,Color4f(0x88, 0x22, 0x33))
-  (RC::CGAL_FACE_2D_COLOR,Color4f(0x00, 0xbf, 0x99))
-  (RC::CGAL_EDGE_FRONT_COLOR,Color4f(0xff, 0x00, 0x00))
-  (RC::CGAL_EDGE_BACK_COLOR,Color4f(0xff, 0x00, 0x00))
-  (RC::CGAL_EDGE_2D_COLOR,Color4f(0xff, 0x00, 0x00))
-  (RC::CROSSHAIR_COLOR,Color4f(0x80, 0x00, 0x00));
+  (BACKGROUND_COLOR,         Color4f(0xaa, 0x44, 0x44))
+  (OPENCSG_FACE_FRONT_COLOR, Color4f(0xff, 0xaa, 0xaa))
+  (OPENCSG_FACE_BACK_COLOR,  Color4f(0x88, 0x22, 0x33))
+  (CGAL_FACE_FRONT_COLOR,    Color4f(0xff, 0xaa, 0xaa))
+  (CGAL_FACE_BACK_COLOR,     Color4f(0x88, 0x22, 0x33))
+  (CGAL_FACE_2D_COLOR,       Color4f(0x00, 0xbf, 0x99))
+  (CGAL_EDGE_FRONT_COLOR,    Color4f(0xff, 0x00, 0x00))
+  (CGAL_EDGE_BACK_COLOR,     Color4f(0xff, 0x00, 0x00))
+  (CGAL_EDGE_2D_COLOR,       Color4f(0xff, 0x00, 0x00))
+  (CROSSHAIR_COLOR,          Color4f(0x80, 0x00, 0x00));
 
 OSColors::colorscheme OSColors::sea = map_list_of
-  (RC::BACKGROUND_COLOR,webmap["lightskyblue"])
-  (RC::OPENCSG_FACE_FRONT_COLOR,webmap["lightsteelblue"])
-  (RC::OPENCSG_FACE_BACK_COLOR,webmap["steelblue"])
-  (RC::CGAL_FACE_FRONT_COLOR,webmap["lightsteelblue"])
-  (RC::CGAL_FACE_BACK_COLOR,webmap["steelblue"])
-  (RC::CGAL_FACE_2D_COLOR,webmap["seagreen"])
-  (RC::CGAL_EDGE_FRONT_COLOR,Color4f(0x00, 0x00, 0xff))
-  (RC::CGAL_EDGE_BACK_COLOR,Color4f(0x00, 0x00, 0xff))
-  (RC::CGAL_EDGE_2D_COLOR,webmap["mediumseagreen"])
-  (RC::CROSSHAIR_COLOR,Color4f(0x00, 0x00, 0x00));
+  (BACKGROUND_COLOR,         webcolors["lightskyblue"])
+  (OPENCSG_FACE_FRONT_COLOR, webcolors["lightsteelblue"])
+  (OPENCSG_FACE_BACK_COLOR,  webcolors["steelblue"])
+  (CGAL_FACE_FRONT_COLOR,    webcolors["lightsteelblue"])
+  (CGAL_FACE_BACK_COLOR,     webcolors["steelblue"])
+  (CGAL_FACE_2D_COLOR,       webcolors["seagreen"])
+  (CGAL_EDGE_FRONT_COLOR,    Color4f(0x00, 0x00, 0xff))
+  (CGAL_EDGE_BACK_COLOR,     Color4f(0x00, 0x00, 0xff))
+  (CGAL_EDGE_2D_COLOR,       webcolors["mediumseagreen"])
+  (CROSSHAIR_COLOR,          Color4f(0x00, 0x00, 0x00));
 
 OSColors::colorscheme OSColors::severny = map_list_of
-  (RC::BACKGROUND_COLOR,webmap["black"])
-  (RC::OPENCSG_FACE_FRONT_COLOR,webmap["lightyellow"])
-  (RC::OPENCSG_FACE_BACK_COLOR,webmap["cyan"])
-  (RC::CGAL_FACE_FRONT_COLOR,webmap["lightyellow"])
-  (RC::CGAL_FACE_BACK_COLOR,webmap["cyan"])
-  (RC::CGAL_FACE_2D_COLOR,webmap["mediumpurple"])
-  (RC::CGAL_EDGE_FRONT_COLOR,Color4f(0x00, 0x00, 0xff))
-  (RC::CGAL_EDGE_BACK_COLOR,Color4f(0x00, 0x00, 0xff))
-  (RC::CGAL_EDGE_2D_COLOR,webmap["magenta"])
-  (RC::CROSSHAIR_COLOR,Color4f(0xf0, 0xf0, 0xf0));
+  (BACKGROUND_COLOR,         webcolors["black"])
+  (OPENCSG_FACE_FRONT_COLOR, webcolors["lightyellow"])
+  (OPENCSG_FACE_BACK_COLOR,  webcolors["cyan"])
+  (CGAL_FACE_FRONT_COLOR,    webcolors["lightyellow"])
+  (CGAL_FACE_BACK_COLOR,     webcolors["cyan"])
+  (CGAL_FACE_2D_COLOR,       webcolors["mediumpurple"])
+  (CGAL_EDGE_FRONT_COLOR,    Color4f(0x00, 0x00, 0xff))
+  (CGAL_EDGE_BACK_COLOR,     Color4f(0x00, 0x00, 0xff))
+  (CGAL_EDGE_2D_COLOR,       webcolors["magenta"])
+  (CROSSHAIR_COLOR,          Color4f(0xf0, 0xf0, 0xf0));
 
 // Monotone - no difference between 'back face' and 'front face'
 OSColors::colorscheme OSColors::monotone = map_list_of
-  (RC::BACKGROUND_COLOR,Color4f(0xff, 0xff, 0xe5))
-  (RC::OPENCSG_FACE_FRONT_COLOR,Color4f(0xf9, 0xd7, 0x2c))
-  (RC::OPENCSG_FACE_BACK_COLOR,Color4f(0xf9, 0xd7, 0x2c))
-  (RC::CGAL_FACE_FRONT_COLOR,Color4f(0xf9, 0xd7, 0x2c))
-  (RC::CGAL_FACE_BACK_COLOR,Color4f(0xf9, 0xd7, 0x2c))
-  (RC::CGAL_FACE_2D_COLOR,Color4f(0x00, 0xbf, 0x99))
-  (RC::CGAL_EDGE_FRONT_COLOR,Color4f(0xff, 0x00, 0x00))
-  (RC::CGAL_EDGE_BACK_COLOR,Color4f(0xff, 0x00, 0x00))
-  (RC::CGAL_EDGE_2D_COLOR,Color4f(0xff, 0x00, 0x00))
-  (RC::CROSSHAIR_COLOR,Color4f(0x80, 0x00, 0x00));
+  (BACKGROUND_COLOR,         Color4f(0xff, 0xff, 0xe5))
+  (OPENCSG_FACE_FRONT_COLOR, Color4f(0xf9, 0xd7, 0x2c))
+  (OPENCSG_FACE_BACK_COLOR,  Color4f(0xf9, 0xd7, 0x2c))
+  (CGAL_FACE_FRONT_COLOR,    Color4f(0xf9, 0xd7, 0x2c))
+  (CGAL_FACE_BACK_COLOR,     Color4f(0xf9, 0xd7, 0x2c))
+  (CGAL_FACE_2D_COLOR,       Color4f(0x00, 0xbf, 0x99))
+  (CGAL_EDGE_FRONT_COLOR,    Color4f(0xff, 0x00, 0x00))
+  (CGAL_EDGE_BACK_COLOR,     Color4f(0xff, 0x00, 0x00))
+  (CGAL_EDGE_2D_COLOR,       Color4f(0xff, 0x00, 0x00))
+  (CROSSHAIR_COLOR,          Color4f(0x80, 0x00, 0x00));
 
-#undef RC
+boost::unordered_map<std::string, OSColors::colorscheme> OSColors::colorschemes = map_list_of
+  ("Cornfield", OSColors::cornfield)
+  ("Metallic", OSColors::metallic)
+  ("Sunset", OSColors::sunset)
+  ("Sea", OSColors::sea)
+  ("Severny", OSColors::severny)
+  ("Monotone", OSColors::monotone); // Hidden, not in GUI
 
-std::map< std::string, OSColors::colorscheme > OSColors::schemes = map_list_of
-  ("Cornfield",cornfield)
-  ("Metallic",metallic)
-  ("Sunset",sunset)
-  ("Sea",sea)
-  ("Severny",severny)
-  ("Monotone",monotone); // Hidden, not in GUI
+const OSColors::colorscheme &OSColors::defaultColorScheme = OSColors::cornfield;
 
-OSColors::colorscheme OSColors::defaultColorScheme = OSColors::cornfield;
-
-Color4f OSColors::getValue( const OSColors::colorscheme &cs, const OSColors::RenderColors::RenderColor rc )
+Color4f OSColors::getValue(const OSColors::colorscheme &cs, const OSColors::RenderColor rc)
 {
 	if (cs.count(rc)) return cs.at(rc);
-	else if (OSColors::defaultColorScheme.count(rc)) return defaultColorScheme.at(rc);
-	else return Color4f(0,0,0,0.5);
+	if (OSColors::defaultColorScheme.count(rc)) return defaultColorScheme.at(rc);
+	return Color4f(0, 0, 0, 127);
 }
 
 /*static void printcolorscheme( colorscheme &cs )
@@ -251,4 +246,3 @@ Color4f OSColors::getValue( const OSColors::colorscheme &cs, const OSColors::Ren
                 PRINTB("%i %s",j->first % j->second.transpose());
 }
 */
-

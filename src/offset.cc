@@ -99,16 +99,18 @@ std::string OffsetNode::toString() const
 {
 	std::stringstream stream;
 
-	stream << this->name()
+	stream  << this->name()
 		<< "(delta = " << std::dec << this->delta
-		<< ", join_type = "
+		<< ", join_type = \""
 			<< (this->join_type == ClipperLib::jtSquare
 				? "bevel"
 				: this->join_type == ClipperLib::jtRound
 					? "round"
-					: "miter")
-		<< ", miter_limit = " << this->miter_limit
-		<< ", $fn = " << this->fn
+					: "miter") << "\"";
+	if (this->join_type == ClipperLib::jtMiter) {
+		stream << ", miter_limit = " << this->miter_limit;
+	}
+	stream  << ", $fn = " << this->fn
 		<< ", $fa = " << this->fa
 		<< ", $fs = " << this->fs << ")";
 	

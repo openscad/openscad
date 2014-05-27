@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>823</width>
-    <height>440</height>
+    <width>551</width>
+    <height>347</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -27,7 +27,7 @@
     <item>
      <widget class="QStackedWidget" name="stackedWidget">
       <property name="currentIndex">
-       <number>4</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="page3DView">
        <layout class="QVBoxLayout" name="verticalLayout_4">
@@ -44,6 +44,12 @@
             </item>
             <item>
              <widget class="QListWidget" name="colorSchemeChooser">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Expanding" vsizetype="MinimumExpanding">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
               <property name="alternatingRowColors">
                <bool>false</bool>
               </property>
@@ -99,6 +105,9 @@
           <property name="orientation">
            <enum>Qt::Vertical</enum>
           </property>
+          <property name="sizeType">
+           <enum>QSizePolicy::Expanding</enum>
+          </property>
           <property name="sizeHint" stdset="0">
            <size>
             <width>20</width>
@@ -146,7 +155,7 @@
            <widget class="QFontComboBox" name="fontChooser">
             <property name="currentFont">
              <font>
-              <family>DejaVu Sans</family>
+              <family>Helvetica</family>
               <pointsize>12</pointsize>
              </font>
             </property>
@@ -473,8 +482,8 @@
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>803</width>
-               <height>325</height>
+               <width>98</width>
+               <height>36</height>
               </rect>
              </property>
              <layout class="QVBoxLayout" name="verticalLayout_10">

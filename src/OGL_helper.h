@@ -18,6 +18,7 @@
 // Author(s)     : Peter Hachenberger <hachenberger@mpi-sb.mpg.de>
 
 // Modified for OpenSCAD
+
 #pragma once
 
 #include <CGAL/Nef_S2/OGL_base_object.h>
