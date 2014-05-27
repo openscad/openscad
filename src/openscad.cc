@@ -111,7 +111,14 @@ static void help(const char *progname)
          "%2%  --camera=eyex,y,z,centerx,y,z ] \\\n"
          "%2%[ --imgsize=width,height ] [ --projection=(o)rtho|(p)ersp] \\\n"
          "%2%[ --render | --preview[=throwntogether] ] \\\n"
-         "%2%[ --enable=<feature> ] \\\n"
+         "%2%[ --csglimit=num ]"
+#ifdef ENABLE_EXPERIMENTAL
+         " [ --enable=<feature> ]"
+#endif
+         "\\\n"
+#ifdef DEBUG
+				 "%2%[ --debug=module ] \\\n"
+#endif
          "%2%filename\n",
  				 progname % (const char *)tabstr);
 	exit(1);
@@ -209,6 +216,24 @@ Camera get_camera( po::variables_map vm )
 	return camera;
 }
 
+#ifdef OPENSCAD_TESTING
+#undef OPENSCAD_QTGUI
+#else
+#define OPENSCAD_QTGUI 1
+#include <QApplication>
+#endif
+
+static bool checkAndExport(shared_ptr<const Geometry> root_geom, unsigned nd,
+	enum FileFormat format, const char *filename)
+{
+	if (root_geom->getDimension() != nd) {
+		PRINTB("Current top level object is not a %dD object.", nd);
+		return false;
+	}
+	exportFileByName(root_geom.get(), format, filename, filename);
+	return true;
+}
+
 int cmdline(const char *deps_output_file, const std::string &filename, Camera &camera, const char *output_file, const fs::path &original_path, Render::type renderer, int argc, char ** argv )
 {
 #ifdef OPENSCAD_QTGUI
@@ -224,7 +249,9 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 #endif
 	const char *stl_output_file = NULL;
 	const char *off_output_file = NULL;
+	const char *amf_output_file = NULL;
 	const char *dxf_output_file = NULL;
+	const char *svg_output_file = NULL;
 	const char *csg_output_file = NULL;
 	const char *png_output_file = NULL;
 	const char *ast_output_file = NULL;
@@ -236,7 +263,9 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 
 	if (suffix == ".stl") stl_output_file = output_file;
 	else if (suffix == ".off") off_output_file = output_file;
+	else if (suffix == ".amf") amf_output_file = output_file;
 	else if (suffix == ".dxf") dxf_output_file = output_file;
+	else if (suffix == ".svg") svg_output_file = output_file;
 	else if (suffix == ".csg") csg_output_file = output_file;
 	else if (suffix == ".png") png_output_file = output_file;
 	else if (suffix == ".ast") ast_output_file = output_file;
@@ -250,8 +279,8 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 	// Top context - this context only holds builtins
 	ModuleContext top_ctx;
 	top_ctx.registerBuiltin();
-#if 0 && DEBUG
-	top_ctx.dump(NULL, NULL);
+#ifdef DEBUG
+	PRINTDB("Top ModuleContext:\n%s",top_ctx.dump(NULL, NULL));
 #endif
 	shared_ptr<Echostream> echostream;
 	if (echo_output_file)
@@ -323,7 +352,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 		std::vector<shared_ptr<CSGTerm> > highlight_terms;
 		std::vector<shared_ptr<CSGTerm> > background_terms;
 
-		CSGTermEvaluator csgRenderer(tree, &geomevaluator);
+		CSGTermEvaluator csgRenderer(tree);
 		shared_ptr<CSGTerm> root_raw_term = csgRenderer.evaluateCSGTerm(*root_node, highlight_terms, background_terms);
 
 		fs::current_path(original_path);
@@ -346,6 +375,10 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 			// echo or OpenCSG png -> don't necessarily need CGALMesh evaluation
 		} else {
 			root_geom = geomevaluator.evaluateGeometry(*tree.root(), true);
+			if (!root_geom) {
+				PRINT("No top-level object found.");
+				return 1;
+			}
 			const CGAL_Nef_polyhedron *N = dynamic_cast<const CGAL_Nef_polyhedron*>(root_geom.get());
 		}
 
@@ -356,7 +389,9 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 			std::string geom_out;
 			if ( stl_output_file ) geom_out = std::string(stl_output_file);
 			else if ( off_output_file ) geom_out = std::string(off_output_file);
+			else if ( amf_output_file ) geom_out = std::string(amf_output_file);
 			else if ( dxf_output_file ) geom_out = std::string(dxf_output_file);
+			else if ( svg_output_file ) geom_out = std::string(svg_output_file);
 			else if ( png_output_file ) geom_out = std::string(png_output_file);
 			else {
 				PRINTB("Output file:%s\n",output_file);
@@ -371,48 +406,28 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 		}
 
 		if (stl_output_file) {
-			if (root_geom->getDimension() != 3) {
-				PRINT("Current top level object is not a 3D object.\n");
+			if (!checkAndExport(root_geom, 3, OPENSCAD_STL, stl_output_file))
 				return 1;
-			}
-			std::ofstream fstream(stl_output_file);
-			if (!fstream.is_open()) {
-				PRINTB("Can't open file \"%s\" for export", stl_output_file);
-			}
-			else {
-				exportFile(root_geom.get(), fstream, OPENSCAD_STL);
-				fstream.close();
-			}
 		}
 
 		if (off_output_file) {
-			if (root_geom->getDimension() != 3) {
-				PRINT("Current top level object is not a 3D object.\n");
+			if (!checkAndExport(root_geom, 3, OPENSCAD_OFF, off_output_file))
 				return 1;
-			}
-			std::ofstream fstream(off_output_file);
-			if (!fstream.is_open()) {
-				PRINTB("Can't open file \"%s\" for export", off_output_file);
-			}
-			else {
-				exportFile(root_geom.get(), fstream, OPENSCAD_OFF);
-				fstream.close();
-			}
+		}
+
+		if (amf_output_file) {
+			if (!checkAndExport(root_geom, 3, OPENSCAD_AMF, amf_output_file))
+				return 1;
 		}
 
 		if (dxf_output_file) {
-			if (root_geom->getDimension() != 2) {
-				PRINT("Current top level object is not a 2D object.\n");
+			if (!checkAndExport(root_geom, 2, OPENSCAD_DXF, dxf_output_file))
 				return 1;
-			}
-			std::ofstream fstream(dxf_output_file);
-			if (!fstream.is_open()) {
-				PRINTB("Can't open file \"%s\" for export", dxf_output_file);
-			}
-			else {
-				exportFile(root_geom.get(), fstream, OPENSCAD_DXF);
-				fstream.close();
-			}
+		}
+		
+		if (svg_output_file) {
+			if (!checkAndExport(root_geom, 2, OPENSCAD_SVG, svg_output_file))
+				return 1;
 		}
 
 		if (png_output_file) {
@@ -441,35 +456,38 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 	return 0;
 }
 
-#ifdef OPENSCAD_TESTING
-#undef OPENSCAD_QTGUI
-#else
-#define OPENSCAD_QTGUI 1
-#endif
-
-
 #ifdef OPENSCAD_QTGUI
+#include <QtPlugin>
+#if defined(__MINGW64__) || defined(__MINGW32__) || defined(_MSCVER)
+#if QT_VERSION < 0x050000
+Q_IMPORT_PLUGIN(qtaccessiblewidgets)
+#endif // QT_VERSION
+#endif // MINGW64/MINGW32/MSCVER
 #include "MainWindow.h"
   #ifdef __APPLE__
   #include "EventFilter.h"
   #endif
-#include <QApplication>
 #include <QString>
 #include <QDir>
+#include <QFileInfo>
 #include <QMetaType>
 
 Q_DECLARE_METATYPE(shared_ptr<const Geometry>);
 
 // Only if "fileName" is not absolute, prepend the "absoluteBase".
-static QString assemblePath(const fs::path& absoluteBase,
+static QString assemblePath(const fs::path& absoluteBaseDir,
                             const string& fileName) {
-  return fileName.empty() ? "" : QDir(QString::fromStdString((const string&) absoluteBase))
-    .absoluteFilePath(QString::fromStdString(fileName));
+  if (fileName.empty()) return "";
+  QString qsDir = QString::fromLocal8Bit( boosty::stringy( absoluteBaseDir ).c_str() );
+  QString qsFile = QString::fromLocal8Bit( fileName.c_str() );
+  // if qsfile is absolute, dir is ignored. (see documentation of QFileInfo)
+  QFileInfo info( qsDir, qsFile );
+  return info.absoluteFilePath();
 }
 
 bool QtUseGUI()
 {
-#ifdef Q_WS_X11
+#ifdef Q_OS_X11
 	// see <http://qt.nokia.com/doc/4.5/qapplication.html#QApplication-2>:
 	// On X11, the window system is initialized if GUIenabled is true. If GUIenabled
 	// is false, the application does not connect to the X server. On Windows and
@@ -492,7 +510,7 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
     }
 #endif
 	QApplication app(argc, argv, true); //useGUI);
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
 	app.installEventFilter(new EventFilter(&app));
 #endif
 	// set up groups for QSettings
@@ -500,7 +518,10 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 	QCoreApplication::setOrganizationDomain("openscad.org");
 	QCoreApplication::setApplicationName("OpenSCAD");
 	QCoreApplication::setApplicationVersion(TOSTRING(OPENSCAD_VERSION));
-
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
+	QGuiApplication::setApplicationDisplayName("OpenSCAD");
+#endif
+	
 	// Other global settings
 	qRegisterMetaType<shared_ptr<const Geometry> >();
 	
@@ -508,7 +529,7 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 
 	QDir exdir(app_path);
 	QString qexamplesdir;
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
 	exdir.cd("../Resources"); // Examples can be bundled
 	if (!exdir.exists("examples")) exdir.cd("../../..");
 #elif defined(Q_OS_UNIX)
@@ -528,11 +549,11 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 	MainWindow::setExamplesDir(qexamplesdir);
   parser_init(app_path.toLocal8Bit().constData());
 
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
 	installAppleEventHandlers();
 #endif
 
-#if defined(OPENSCAD_DEPLOY) && defined(Q_WS_MAC)
+#if defined(OPENSCAD_DEPLOY) && defined(Q_OS_MAC)
 	AutoUpdater *updater = new SparkleAutoUpdater;
 	AutoUpdater::setUpdater(updater);
 	if (updater->automaticallyChecksForUpdates()) updater->checkForUpdates();
@@ -550,12 +571,17 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 	BOOST_FOREACH(const string &infile, inputFiles) {
                new MainWindow(assemblePath(original_path, infile));
 	}
-	app.connect(&app, SIGNAL(lastWindowClosed()), &app, SLOT(quit()));
 #else
-	MainWindow *m = new MainWindow(assemblePath(original_path, inputFiles[0]));
-	app.connect(m, SIGNAL(destroyed()), &app, SLOT(quit()));
+	new MainWindow(assemblePath(original_path, inputFiles[0]));
 #endif
-	return app.exec();
+	app.connect(&app, SIGNAL(lastWindowClosed()), &app, SLOT(quit()));
+	int rc = app.exec();
+	if (MainWindow::windows) {
+		foreach (MainWindow *mainw, *MainWindow::windows) {
+			delete mainw;
+		}
+	}
+	return rc;
 }
 #else // OPENSCAD_QTGUI
 bool QtUseGUI() { return false; }
@@ -569,8 +595,9 @@ int gui(const vector<string> &inputFiles, const fs::path &original_path, int arg
 int main(int argc, char **argv)
 {
 	int rc = 0;
-#ifdef Q_WS_MAC
-	set_output_handler(CocoaUtils::nslog, NULL);
+	bool isGuiLaunched = getenv("GUI_LAUNCHED") != 0;
+#ifdef Q_OS_MAC
+	if (isGuiLaunched) set_output_handler(CocoaUtils::nslog, NULL);
 #endif
 #ifdef ENABLE_CGAL
 	// Causes CGAL errors to abort directly instead of throwing exceptions
@@ -591,17 +618,22 @@ int main(int argc, char **argv)
 		("info", "print information about the building process")
 		("render", "if exporting a png image, do a full CGAL render")
 		("preview", po::value<string>(), "if exporting a png image, do an OpenCSG(default) or ThrownTogether preview")
+		("csglimit", po::value<unsigned int>(), "if exporting a png image, stop rendering at the given number of CSG elements")
 		("camera", po::value<string>(), "parameters for camera when exporting png")
-	        ("imgsize", po::value<string>(), "=width,height for exporting png")
+		("imgsize", po::value<string>(), "=width,height for exporting png")
 		("projection", po::value<string>(), "(o)rtho or (p)erspective when exporting png")
 	        ("colorscheme", po::value<string>(), "colorscheme")
+		("debug", po::value<string>(), "special debug info")
 		("o,o", po::value<string>(), "out-file")
 		("s,s", po::value<string>(), "stl-file")
 		("x,x", po::value<string>(), "dxf-file")
 		("d,d", po::value<string>(), "deps-file")
 		("m,m", po::value<string>(), "makefile")
 		("D,D", po::value<vector<string> >(), "var=val")
-		("enable", po::value<vector<string> >(), "enable experimental features");
+#ifdef ENABLE_EXPERIMENTAL
+		("enable", po::value<vector<string> >(), "enable experimental features")
+#endif
+		;
 
 	po::options_description hidden("Hidden options");
 	hidden.add_options()
@@ -622,6 +654,11 @@ int main(int argc, char **argv)
 		help(argv[0]);
 	}
 
+	OpenSCAD::debug = "";
+	if (vm.count("debug")) {
+		OpenSCAD::debug = vm["debug"].as<string>();
+		PRINTB("Debug on. --debug=%s",OpenSCAD::debug);
+	}
 	if (vm.count("help")) help(argv[0]);
 	if (vm.count("version")) version();
 	if (vm.count("info")) info();
@@ -633,18 +670,22 @@ int main(int argc, char **argv)
 		if (vm["preview"].as<string>() == "throwntogether")
 			renderer = Render::THROWNTOGETHER;
 
+	if (vm.count("csglimit")) {
+		RenderSettings::inst()->openCSGTermLimit = vm["csglimit"].as<unsigned int>();
+	}
+
 	if (vm.count("o")) {
 		// FIXME: Allow for multiple output files?
 		if (output_file) help(argv[0]);
 		output_file = vm["o"].as<string>().c_str();
 	}
 	if (vm.count("s")) {
-		PRINT("DEPRECATED: The -s option is deprecated. Use -o instead.\n");
+		printDeprecation("DEPRECATED: The -s option is deprecated. Use -o instead.\n");
 		if (output_file) help(argv[0]);
 		output_file = vm["s"].as<string>().c_str();
 	}
 	if (vm.count("x")) { 
-		PRINT("DEPRECATED: The -x option is deprecated. Use -o instead.\n");
+		printDeprecation("DEPRECATED: The -x option is deprecated. Use -o instead.\n");
 		if (output_file) help(argv[0]);
 		output_file = vm["x"].as<string>().c_str();
 	}
@@ -665,11 +706,13 @@ int main(int argc, char **argv)
 			commandline_commands += ";\n";
 		}
 	}
+#ifdef ENABLE_EXPERIMENTAL
 	if (vm.count("enable")) {
 		BOOST_FOREACH(const string &feature, vm["enable"].as<vector<string> >()) {
 			Feature::enable_feature(feature);
 		}
 	}
+#endif
 	vector<string> inputFiles;
 	if (vm.count("input-file"))	{
 		inputFiles = vm["input-file"].as<vector<string> >();

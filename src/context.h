@@ -1,5 +1,4 @@
-#ifndef CONTEXT_H_
-#define CONTEXT_H_
+#pragma once
 
 #include <string>
 #include <vector>
@@ -10,9 +9,11 @@
 class Context
 {
 public:
+	typedef std::vector<const Context*> Stack;
 	Context(const Context *parent = NULL);
 	virtual ~Context();
 
+	const Context *getParent() const { return this->parent; }
 	virtual Value evaluate_function(const std::string &name, const class EvalContext *evalctx) const;
 	virtual class AbstractNode *instantiate_module(const class ModuleInstantiation &inst, const EvalContext *evalctx) const;
 
@@ -29,11 +30,11 @@ public:
 	std::string getAbsolutePath(const std::string &filename) const;
 
 public:
-	const Context *parent;
-
-	static std::vector<const Context*> ctx_stack;
 
 protected:
+	const Context *parent;
+	Stack *ctx_stack;
+
 	typedef boost::unordered_map<std::string, Value> ValueMap;
 	ValueMap constants;
 	ValueMap variables;
@@ -41,10 +42,8 @@ protected:
 
 	std::string document_path; // FIXME: This is a remnant only needed by dxfdim
 
-#ifdef DEBUG
 public:
-	virtual void dump(const class AbstractModule *mod, const ModuleInstantiation *inst);
+#ifdef DEBUG
+	virtual std::string dump(const class AbstractModule *mod, const ModuleInstantiation *inst);
 #endif
 };
-
-#endif

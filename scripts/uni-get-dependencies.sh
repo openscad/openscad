@@ -1,15 +1,15 @@
 # auto-install dependency packages using the systems package manager.
 # after running this, run ./script/check-dependencies.sh. see README.md
 #
-# this assumes you have sudo installed or are running as root.
+# this assumes you have sudo installed and running, or are running as root.
 #
 
 get_fedora_deps()
 {
- sudo yum install qt-devel bison flex eigen3-devel python-paramiko \
+ yum install qt-devel bison flex eigen3-devel \
   boost-devel mpfr-devel gmp-devel glew-devel CGAL-devel gcc gcc-c++ pkgconfig \
   opencsg-devel git libXmu-devel curl imagemagick ImageMagick glib2-devel make \
-  xorg-x11-server-Xvfb
+  xorg-x11-server-Xvfb gettext
 }
 
 get_qomo_deps()
@@ -21,7 +21,7 @@ get_altlinux_deps()
 {
  for i in boost-devel boost-filesystem-devel gcc4.5 gcc4.5-c++ boost-program_options-devel \
   boost-thread-devel boost-system-devel boost-regex-devel eigen3 libmpfr libgmp libgmp_cxx-devel qt4-devel libcgal-devel git-core \
-  libglew-devel flex bison curl imagemagick glib2-devel; do sudo apt-get install $i; done
+  libglew-devel flex bison curl imagemagick gettext glib2-devel; do apt-get install $i; done
 }
 
 get_freebsd_deps()
@@ -29,29 +29,29 @@ get_freebsd_deps()
  pkg_add -r bison boost-libs cmake git bash eigen3 flex gmake gmp mpfr \
   xorg libGLU libXmu libXi xorg-vfbserver glew \
   qt4-corelib qt4-gui qt4-moc qt4-opengl qt4-qmake qt4-rcc qt4-uic \
-  opencsg cgal curl imagemagick glib2-devel
+  opencsg cgal curl imagemagick glib2-devel gettext
 }
 
 get_netbsd_deps()
 {
- sudo pkgin install bison boost cmake git bash eigen flex gmake gmp mpfr \
-  qt4 glew cgal opencsg modular-xorg python27 py27-paramiko curl \
-  imagemagick ImageMagick glib2-devel
+ pkgin install bison boost cmake git bash eigen3 flex gmake gmp mpfr \
+  qt4 glew cgal opencsg python27 curl \
+  ImageMagick glib2 gettext
 }
 
 get_opensuse_deps()
 {
- sudo zypper install libeigen3-devel mpfr-devel gmp-devel boost-devel \
+ zypper install libeigen3-devel mpfr-devel gmp-devel boost-devel \
   libqt4-devel glew-devel cmake git bison flex cgal-devel opencsg-devel curl \
-  glib2-devel
+  glib2-devel gettext
 }
 
 get_mageia_deps()
 {
- sudo urpmi ctags
- sudo urpmi task-c-devel task-c++-devel libqt4-devel libgmp-devel \
+ urpmi ctags
+ urpmi task-c-devel task-c++-devel libqt4-devel libgmp-devel \
   libmpfr-devel libboost-devel eigen3-devel libglew-devel bison flex \
-  cmake imagemagick glib2-devel python curl git x11-server-xvfb
+  cmake imagemagick glib2-devel python curl git x11-server-xvfb gettext
 }
 
 get_debian_deps()
@@ -60,7 +60,8 @@ get_debian_deps()
   libxmu-dev cmake bison flex git-core libboost-all-dev \
   libXi-dev libmpfr-dev libboost-dev libglew-dev \
   libeigen3-dev libcgal-dev libopencsg-dev libgmp3-dev libgmp-dev \
-  python-paramiko curl imagemagick libglib2.0-dev; do
+  imagemagick libfontconfig-dev libfreetype6-dev \
+  libharfbuzz-dev gtk-doc-tools libglib2.0-dev gettext; do
    sudo apt-get -y install $pkg;
  done
 }

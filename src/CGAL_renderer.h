@@ -24,9 +24,9 @@
  *
  */
 
-#ifndef CGAL_RENDERER_H
-#define CGAL_RENDERER_H
+#pragma once
 
+#ifndef NULLGL
 #include "colormap.h"
 #include "rendersettings.h"
 #include "OGL_helper.h"
@@ -117,4 +117,19 @@ private:
 
 }; // Polyhedron
 
-#endif // CGAL_RENDERER_H
+
+
+
+#else // NULLGL
+
+#include <CGAL/Bbox_3.h>
+
+class Polyhedron
+{
+public:
+	Polyhedron() {}
+	void draw(bool showedges) const {}
+	CGAL::Bbox_3 bbox() const { return CGAL::Bbox_3(-1,-1,-1,1,1,1); }
+};
+
+#endif // NULLGL

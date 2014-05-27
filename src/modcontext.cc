@@ -115,7 +115,7 @@ const AbstractModule *ModuleContext::findLocalModule(const std::string &name) co
 		}
 		std::string replacement = Builtins::instance()->isDeprecated(name);
 		if (!replacement.empty()) {
-			PRINTB("DEPRECATED: The %s() module will be removed in future releases. Use %s() instead.", name % replacement);
+			PRINT_DEPRECATION("DEPRECATED: The %s() module will be removed in future releases. Use %s() instead.", name % replacement);
 		}
 		return m;
 	}
@@ -139,34 +139,35 @@ AbstractNode *ModuleContext::instantiate_module(const ModuleInstantiation &inst,
 }
 
 #ifdef DEBUG
-void ModuleContext::dump(const AbstractModule *mod, const ModuleInstantiation *inst)
+std::string ModuleContext::dump(const AbstractModule *mod, const ModuleInstantiation *inst)
 {
-	if (inst) 
-		PRINTB("ModuleContext %p (%p) for %s inst (%p) ", this % this->parent % inst->name() % inst);
-	else 
-		PRINTB("ModuleContext: %p (%p)", this % this->parent);
-	PRINTB("  document path: %s", this->document_path);
+	std::stringstream s;
+	if (inst)
+		s << boost::format("ModuleContext %p (%p) for %s inst (%p) ") % this % this->parent % inst->name() % inst;
+	else
+		s << boost::format("ModuleContext: %p (%p)") % this % this->parent;
+	s << boost::format("  document path: %s") % this->document_path;
 	if (mod) {
 		const Module *m = dynamic_cast<const Module*>(mod);
 		if (m) {
-			PRINT("  module args:");
+			s << "  module args:";
 			BOOST_FOREACH(const Assignment &arg, m->definition_arguments) {
-				PRINTB("    %s = %s", arg.first % variables[arg.first]);
+				s << boost::format("    %s = %s") % arg.first % variables[arg.first];
 			}
 		}
 	}
 	typedef std::pair<std::string, Value> ValueMapType;
-	PRINT("  vars:");
-  BOOST_FOREACH(const ValueMapType &v, constants) {
-	  PRINTB("    %s = %s", v.first % v.second);
-	}		
-  BOOST_FOREACH(const ValueMapType &v, variables) {
-	  PRINTB("    %s = %s", v.first % v.second);
-	}		
-  BOOST_FOREACH(const ValueMapType &v, config_variables) {
-	  PRINTB("    %s = %s", v.first % v.second);
-	}		
-
+	s << "  vars:";
+	BOOST_FOREACH(const ValueMapType &v, constants) {
+		s << boost::format("    %s = %s") % v.first % v.second;
+	}
+	BOOST_FOREACH(const ValueMapType &v, variables) {
+		s << boost::format("    %s = %s") % v.first % v.second;
+	}
+	BOOST_FOREACH(const ValueMapType &v, config_variables) {
+		s << boost::format("    %s = %s") % v.first % v.second;
+	}
+	return s.str();
 }
 #endif
 
@@ -176,25 +177,31 @@ FileContext::FileContext(const class FileModule &module, const Context *parent)
 	if (!module.modulePath().empty()) this->document_path = module.modulePath();
 }
 
+Value FileContext::sub_evaluate_function(const std::string &name, const EvalContext *evalctx,
+
+	FileModule *usedmod) const
+
+{
+	FileContext ctx(*usedmod, this->parent);
+	ctx.initializeModule(*usedmod);
+	// FIXME: Set document path
+#ifdef DEBUG
+	PRINTDB("New lib Context for %s func:", name);
+	PRINTDB("%s",ctx.dump(NULL, NULL));
+#endif
+	return usedmod->scope.functions[name]->evaluate(&ctx, evalctx);
+}
+
 Value FileContext::evaluate_function(const std::string &name, const EvalContext *evalctx) const
 {
 	const AbstractFunction *foundf = findLocalFunction(name);
 	if (foundf) return foundf->evaluate(this, evalctx);
-	
+
 	BOOST_FOREACH(const FileModule::ModuleContainer::value_type &m, this->usedlibs) {
 		// usedmod is NULL if the library wasn't be compiled (error or file-not-found)
 		FileModule *usedmod = ModuleCache::instance()->lookup(m);
-		if (usedmod && 
-				usedmod->scope.functions.find(name) != usedmod->scope.functions.end()) {
-			FileContext ctx(*usedmod, this->parent);
-			ctx.initializeModule(*usedmod);
-			// FIXME: Set document path
-#if 0 && DEBUG
-			PRINTB("New lib Context for %s func:", name);
-			ctx.dump(NULL, NULL);
-#endif
-			return usedmod->scope.functions[name]->evaluate(&ctx, evalctx);
-		}
+		if (usedmod && usedmod->scope.functions.find(name) != usedmod->scope.functions.end())
+			return sub_evaluate_function(name, evalctx, usedmod);
 	}
 
 	return ModuleContext::evaluate_function(name, evalctx);
@@ -208,14 +215,14 @@ AbstractNode *FileContext::instantiate_module(const ModuleInstantiation &inst, c
 	BOOST_FOREACH(const FileModule::ModuleContainer::value_type &m, this->usedlibs) {
 		FileModule *usedmod = ModuleCache::instance()->lookup(m);
 		// usedmod is NULL if the library wasn't be compiled (error or file-not-found)
-		if (usedmod && 
+		if (usedmod &&
 				usedmod->scope.modules.find(inst.name()) != usedmod->scope.modules.end()) {
 			FileContext ctx(*usedmod, this->parent);
 			ctx.initializeModule(*usedmod);
 			// FIXME: Set document path
-#if 0 && DEBUG
-			PRINT("New file Context:");
-			ctx.dump(NULL, &inst);
+#ifdef DEBUG
+			PRINTD("New file Context:");
+			PRINTDB("%s",ctx.dump(NULL, &inst));
 #endif
 			return usedmod->scope.modules[inst.name()]->instantiate(&ctx, &inst, evalctx);
 		}

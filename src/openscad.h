@@ -24,8 +24,7 @@
  *
  */
 
-#ifndef OPENSCAD_H
-#define OPENSCAD_H
+#pragma once
 
 extern class FileModule *parse(const char *text, const char *path, int debug);
 
@@ -35,6 +34,3 @@ extern std::string commandline_commands;
 // The CWD when application started. We shouldn't change CWD, but until we stop
 // doing this, use currentdir to get the original CWD.
 extern std::string currentdir;
-
-#endif
-

@@ -63,19 +63,19 @@ AbstractNode *TransformModule::instantiate(const Context *ctx, const ModuleInsta
 
 	switch (this->type) {
 	case SCALE:
-		args += Assignment("v", NULL);
+		args += Assignment("v");
 		break;
 	case ROTATE:
-		args += Assignment("a", NULL), Assignment("v", NULL);
+		args += Assignment("a"), Assignment("v");
 		break;
 	case MIRROR:
-		args += Assignment("v", NULL);
+		args += Assignment("v");
 		break;
 	case TRANSLATE:
-		args += Assignment("v", NULL);
+		args += Assignment("v");
 		break;
 	case MULTMATRIX:
-		args += Assignment("m", NULL);
+		args += Assignment("m");
 		break;
 	default:
 		assert(false);

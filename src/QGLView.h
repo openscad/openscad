@@ -1,5 +1,4 @@
-#ifndef QGLVIEW_H_
-#define QGLVIEW_H_
+#pragma once
 
 #include "system-gl.h"
 #include <QGLWidget>
@@ -40,8 +39,15 @@ public:
 		else this->cam.projection = Camera::PERSPECTIVE;
 	}
 	std::string getRendererInfo() const;
+#if QT_VERSION >= 0x050001
+	float getDPI() { return this->devicePixelRatio(); }
+#endif
 	bool save(const char *filename);
-        void resetView();
+	void resetView();
+
+public slots:
+	void ZoomIn(void);
+	void ZoomOut(void);
 
 public:
 	QLabel *statusLabel;
@@ -52,7 +58,6 @@ private:
 	bool mouse_drag_active;
 	QPoint last_mouse;
 
-	void keyPressEvent(QKeyEvent *event);
 	void wheelEvent(QWheelEvent *event);
 	void mousePressEvent(QMouseEvent *event);
 	void mouseMoveEvent(QMouseEvent *event);
@@ -73,5 +78,3 @@ private slots:
 signals:
 	void doAnimateUpdate();
 };
-
-#endif

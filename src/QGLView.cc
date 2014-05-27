@@ -170,25 +170,6 @@ void QGLView::paintGL()
   if (running_under_wine) swapBuffers();
 }
 
-void QGLView::keyPressEvent(QKeyEvent *event)
-{
-  switch (event->key()) {
-  case Qt::Key_Plus:  // On many keyboards, this requires to press Shift-equals
-  case Qt::Key_Equal: // ...so simplify this a bit.
-    cam.viewer_distance *= 0.9;
-    updateGL();
-    break;
-  case Qt::Key_Minus:
-    cam.viewer_distance /= 0.9;
-    updateGL();
-    break;
-  case Qt::Key_C:     // 'center'
-    cam.object_trans << 0, 0, 0;
-    updateGL();
-    break;
-  }
-}
-
 void QGLView::wheelEvent(QWheelEvent *event)
 {
   cam.viewer_distance *= pow(0.9, event->delta() / 120.0);
@@ -197,7 +178,6 @@ void QGLView::wheelEvent(QWheelEvent *event)
 
 void QGLView::mousePressEvent(QMouseEvent *event)
 {
-  setFocus();
   mouse_drag_active = true;
   last_mouse = event->globalPos();
 }
@@ -217,7 +197,7 @@ void QGLView::mouseMoveEvent(QMouseEvent *event)
   double dy = (this_mouse.y()-last_mouse.y()) * 0.7;
   if (mouse_drag_active) {
     if (event->buttons() & Qt::LeftButton
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
         && !(event->modifiers() & Qt::MetaModifier)
 #endif
       ) {
@@ -298,3 +278,14 @@ bool QGLView::save(const char *filename)
   return img.save(filename, "PNG");
 }
 
+void QGLView::ZoomIn(void)
+{
+  cam.viewer_distance *= 0.9;
+  updateGL();
+}
+
+void QGLView::ZoomOut(void)
+{
+  cam.viewer_distance /= 0.9;
+  updateGL();
+}

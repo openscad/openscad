@@ -1,5 +1,4 @@
-#ifndef CGALADVNODE_H_
-#define CGALADVNODE_H_
+#pragma once
 
 #include "node.h"
 #include "visitor.h"
@@ -21,7 +20,7 @@ public:
 		convexity = 1;
 	}
 	virtual ~CgaladvNode() { }
-  virtual Response accept(class State &state, Visitor &visitor) const {
+        virtual Response accept(class State &state, Visitor &visitor) const {
 		return visitor.visit(state, *this);
 	}
 	virtual std::string toString() const;
@@ -34,5 +33,3 @@ public:
 	Eigen::Matrix<bool,3,1> autosize;
 	cgaladv_type_e type;
 };
-
-#endif

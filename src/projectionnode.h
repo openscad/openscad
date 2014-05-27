@@ -1,5 +1,4 @@
-#ifndef PROJECTIONNODE_H_
-#define PROJECTIONNODE_H_
+#pragma once
 
 #include "node.h"
 #include "visitor.h"
@@ -20,5 +19,3 @@ public:
 	int convexity;
 	bool cut_mode;
 };
-
-#endif

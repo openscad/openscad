@@ -1,5 +1,6 @@
 #include "nodedumper.h"
 #include "state.h"
+#include "module.h"
 
 #include <string>
 #include <sstream>
@@ -47,6 +48,8 @@ std::string NodeDumper::dumpChildren(const AbstractNode &node)
 				 iter != this->visitedchildren[node.index()].end();
 				 iter++) {
 			assert(isCached(**iter));
+			if ((*iter)->modinst->isBackground()) dump << "%";
+			if ((*iter)->modinst->isHighlight()) dump << "#";
 			dump << this->cache[**iter] << "\n";
 		}
 		

@@ -1,5 +1,4 @@
-#ifndef AUTOUPDATER_H_
-#define AUTOUPDATER_H_
+#pragma once
 
 #include <QString>
 
@@ -21,5 +20,3 @@ public:
 protected:
 	static AutoUpdater *updater_instance;
 };
-
-#endif

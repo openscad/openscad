@@ -13,3 +13,15 @@ translate([0,-10,0]) projection(cut=true) {
       translate([2.1,2.1]) difference() { cube(5,center=true); cube(4,center=true); }
   }
 }
+
+// Verify hole winding order
+translate([-15,0,0])
+minkowski() {
+	projection(cut=true) difference() {
+		cube(10,center=true);
+		cube([5,5,20],center=true);
+	}
+	square(1);
+}
+
+

@@ -1,5 +1,4 @@
-#ifndef IMPORTNODE_H_
-#define IMPORTNODE_H_
+#pragma once
 
 #include "node.h"
 #include "visitor.h"
@@ -31,5 +30,3 @@ public:
 	virtual Geometry *evaluate_geometry(class PolySetEvaluator *) const { return createGeometry(); }
 	virtual Geometry *createGeometry() const;
 };
-
-#endif

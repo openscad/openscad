@@ -1,5 +1,4 @@
-#ifndef MAINWINDOW_H_
-#define MAINWINDOW_H_
+#pragma once
 
 #include <QMainWindow>
 #include "ui_MainWindow.h"
@@ -10,6 +9,14 @@
 #include "memory.h"
 #include <vector>
 #include <QMutex>
+#include <QSet>
+
+enum export_type_e {
+	EXPORT_TYPE_UNKNOWN,
+	EXPORT_TYPE_STL,
+	EXPORT_TYPE_AMF,
+	EXPORT_TYPE_OFF
+};
 
 class MainWindow : public QMainWindow, public Ui::MainWindow
 {
@@ -19,7 +26,6 @@ public:
 	static void requestOpenFile(const QString &filename);
 
 	QString fileName;
-	class Highlighter *highlighter;
 
 	class Preferences *prefs;
 
@@ -58,6 +64,7 @@ public:
 
 	static const int maxRecentFiles = 10;
 	QAction *actionRecentFile[maxRecentFiles];
+        QMap<QString, QString> knownFileExtensions;
 
 	MainWindow(const QString &filename);
 	~MainWindow();
@@ -68,6 +75,8 @@ protected:
 private slots:
 	void updatedFps();
 	void updateTVal();
+        void updateMdiMode(bool mdi);
+        void updateUndockMode(bool undockMode);
 	void setFileName(const QString &filename);
 	void setFont(const QString &family, uint size);
 	void setColorScheme(const QString &cs);
@@ -77,6 +86,7 @@ private slots:
 
 private:
 	void openFile(const QString &filename);
+        void handleFileDrop(const QString &filename);
 	void refreshDocument();
 	void updateTemporalVariables();
 	bool fileChangedOnDisk();
@@ -89,8 +99,14 @@ private:
 	static void consoleOutput(const std::string &msg, void *userdata);
 	void loadViewSettings();
 	void loadDesignSettings();
+	void saveBackup();
+	void writeBackup(class QFile *file);
+	QString get2dExportFilename(QString format, QString extension);
+	void show_examples();
+	void setDockWidgetTitle(QDockWidget *dockWidget, QString prefix, bool topLevel);
 
   class QMessageBox *openglbox;
+  class FontListDialog *font_list_dialog;
 
 private slots:
 	void actionUpdateCheck();
@@ -117,6 +133,19 @@ private slots:
 	void preferences();
 
 private slots:
+	void selectFindType(int);
+	void find();
+	void findAndReplace();
+	void findNext();
+	void findPrev();
+	void useSelectionForFind();
+	void replace();
+	void replaceAll();
+protected:
+	bool findOperation(QTextDocument::FindFlags options = 0);
+	virtual bool eventFilter(QObject* obj, QEvent *event);
+
+private slots:
 	void actionRenderPreview();
 	void csgRender();
 	void csgReloadRender();
@@ -125,18 +154,22 @@ private slots:
 	void actionRenderDone(shared_ptr<const class Geometry>);
 	void cgalRender();
 #endif
+	void actionCheckValidity();
 	void actionDisplayAST();
 	void actionDisplayCSGTree();
 	void actionDisplayCSGProducts();
-	void actionExportSTLorOFF(bool stl_mode);
+	void actionExport(export_type_e, const char *, const char *);
 	void actionExportSTL();
 	void actionExportOFF();
+	void actionExportAMF();
 	void actionExportDXF();
+	void actionExportSVG();
 	void actionExportCSG();
 	void actionExportImage();
 	void actionFlushCaches();
 
 public:
+	static QSet<MainWindow*> *windows;
 	static void setExamplesDir(const QString &dir) { MainWindow::qexamplesdir = dir; }
 	void viewModeActionsUncheck();
 	void setCurrentOutput();
@@ -144,6 +177,10 @@ public:
 
 public slots:
 	void actionReloadRenderPreview();
+        void on_editorDock_visibilityChanged(bool);
+        void on_consoleDock_visibilityChanged(bool);
+        void editorTopLevelChanged(bool);
+        void consoleTopLevelChanged(bool);
 #ifdef ENABLE_OPENCSG
 	void viewModePreview();
 #endif
@@ -166,7 +203,7 @@ public slots:
 	void viewCenter();
 	void viewPerspective();
 	void viewOrthogonal();
-        void viewResetView();
+	void viewResetView();
 	void hideConsole();
 	void animateUpdateDocChanged();
 	void animateUpdate();
@@ -176,6 +213,7 @@ public slots:
 	void helpHomepage();
 	void helpManual();
 	void helpLibrary();
+	void helpFontInfo();
 	void quit();
 	void checkAutoReload();
 	void waitAfterReload();
@@ -183,13 +221,19 @@ public slots:
 
 private:
 	static void report_func(const class AbstractNode*, void *vp, int mark);
+        static bool mdiMode;
+        static bool undockMode;
 
 	char const * afterCompileSlot;
 	bool procevents;
-	
+	class QTemporaryFile *tempFile;
 	class ProgressWidget *progresswidget;
 	class CGALWorker *cgalworker;
 	QMutex consolemutex;
+
+signals:
+	void highlightError(int);
+	void unhighlightLastError();
 };
 
 class GuiLocker
@@ -208,5 +252,3 @@ public:
 private:
  	static unsigned int gui_locked;
 };
-
-#endif

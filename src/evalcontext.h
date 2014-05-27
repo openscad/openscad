@@ -1,5 +1,4 @@
-#ifndef EVALCONTEXT_H_
-#define EVALCONTEXT_H_
+#pragma once
 
 #include "context.h"
 
@@ -25,7 +24,7 @@ public:
 	ModuleInstantiation *getChild(size_t i) const;
 
 #ifdef DEBUG
-	virtual void dump(const class AbstractModule *mod, const ModuleInstantiation *inst);
+	virtual std::string dump(const class AbstractModule *mod, const ModuleInstantiation *inst);
 #endif
 
 private:
@@ -33,5 +32,3 @@ private:
 	std::vector<std::pair<std::string, Value> > eval_values;
 	const LocalScope *const scope;
 };
-
-#endif

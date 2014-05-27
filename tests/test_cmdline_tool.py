@@ -1,4 +1,3 @@
-
 #
 # Regression test driver for cmd-line tools
 #
@@ -102,7 +101,7 @@ def compare_default(resultfilename):
     print >> sys.stderr, ' actual textfile: ', resultfilename
     if not compare_text(expectedfilename, resultfilename):
 	if resultfilename: 
-            execute_and_redirect("diff", [expectedfilename, resultfilename], sys.stderr)
+            execute_and_redirect("diff", ["-u", expectedfilename, resultfilename], sys.stderr)
         return False
     return True
 
@@ -164,14 +163,8 @@ def run_test(testname, cmd, args):
     outfile = open(outputname, "wb")
 
     try:
-        if os.path.isfile(cmd+'.exe') and options.mingw_cross_env:
-            cmdline = ['wine']+[cmd+'.exe'] + args + [outputname]
-        elif cmd[-4:].lower() == '.exe' and options.mingw_cross_env:
-            cmdline = ['wine']+[cmd] + args + [outputname]
-        else:
-            cmdline = [cmd] + args + [outputname]
-        
-        print 'cmdline:',cmdline
+        cmdline = [cmd] + args + [outputname]
+        print cmdline
         proc = subprocess.Popen(cmdline, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         errtext = proc.communicate()[1]
         if errtext != None and len(errtext) > 0:
@@ -203,7 +196,6 @@ def usage():
     print >> sys.stderr, "  -t, --test=<name>        Specify test name instead of deducting it from the argument (defaults to basename <exe>)"
     print >> sys.stderr, "  -f, --file=<name>        Specify test file instead of deducting it from the argument (default to basename <first arg>)"
     print >> sys.stderr, "  -c, --convexec=<name>    Path to ImageMagick 'convert' executable"
-    print >> sys.stderr, "  -x, --mingw-cross-env    Mingw-cross-env cross compilation"
 
 #
 # export3d mesh tests
@@ -264,7 +256,7 @@ if __name__ == '__main__':
     # Handle command-line arguments
     try:
         debug('args:'+str(sys.argv))
-        opts, args = getopt.getopt(sys.argv[1:], "gs:e:c:t:f:m:x", ["generate", "convexec=", "suffix=", "expected_dir=", "test=", "file=", "comparator=", "mingw-cross-env"])
+        opts, args = getopt.getopt(sys.argv[1:], "gs:e:c:t:f:m", ["generate", "convexec=", "suffix=", "expected_dir=", "test=", "file=", "comparator="])
         debug('getopt args:'+str(sys.argv))
     except getopt.GetoptError, err:
         usage()
@@ -292,8 +284,6 @@ if __name__ == '__main__':
             options.convert_exec = os.path.normpath( a )
         elif o in ("-m", "--comparator"):
             options.comparator = a
-        elif o in ("-x", "--mingw-cross-env"):
-            options.mingw_cross_env = True
 
     # <cmdline-tool> and <argument>
     if len(args) < 2:
@@ -305,7 +295,10 @@ if __name__ == '__main__':
     if len(args) == 2:
         basename = os.path.splitext(args[1])[0]
         path, options.filename = os.path.split(basename)
+        print >> sys.stderr, basename
+        print >> sys.stderr, path, options.filename
 
+    print >> sys.stderr, options.filename
     if not hasattr(options, "filename"):
         print >> sys.stderr, "Filename cannot be deducted from arguments. Specify test filename using the -f option"
         sys.exit(2)

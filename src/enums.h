@@ -1,5 +1,4 @@
-#ifndef ENUMS_H_
-#define ENUMS_H_
+#pragma once
 
 enum OpenSCADOperator {
 	OPENSCAD_UNION, 
@@ -9,5 +8,3 @@ enum OpenSCADOperator {
 	OPENSCAD_HULL,
 	OPENSCAD_RESIZE
 };
-
-#endif

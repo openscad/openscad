@@ -31,10 +31,15 @@
 #include <sstream>
 #include <ctime>
 #include "mathc99.h"
+#include <limits>
 #include <algorithm>
 #include "stl-utils.h"
 #include "printutils.h"
 #include <boost/foreach.hpp>
+
+#include <boost/math/special_functions/fpclassify.hpp>
+using boost::math::isnan;
+using boost::math::isinf;
 
 /*
  Random numbers
@@ -79,15 +84,15 @@ std::string AbstractFunction::dump(const std::string &indent, const std::string 
 
 Function::~Function()
 {
-	BOOST_FOREACH(const Assignment &arg, this->definition_arguments) delete arg.second;
 	delete expr;
 }
 
 Value Function::evaluate(const Context *ctx, const EvalContext *evalctx) const
 {
+	if (!expr) return Value();
 	Context c(ctx);
 	c.setVariables(definition_arguments, evalctx);
-	return expr ? expr->evaluate(&c) : Value();
+	return expr->evaluate(&c);
 }
 
 std::string Function::dump(const std::string &indent, const std::string &name) const
@@ -132,185 +137,345 @@ static inline double rad2deg(double x)
 
 Value builtin_abs(const Context *, const EvalContext *evalctx)
 {
-	if (evalctx->numArgs() == 1 && evalctx->getArgValue(0).type() == Value::NUMBER)
-		return Value(fabs(evalctx->getArgValue(0).toDouble()));
+	if (evalctx->numArgs() == 1) {
+		const Value &v = evalctx->getArgValue(0);
+		if (v.type() == Value::NUMBER)
+			return Value(fabs(v.toDouble()));
+	}
 	return Value();
 }
 
 Value builtin_sign(const Context *, const EvalContext *evalctx)
 {
-	if (evalctx->numArgs() == 1 && evalctx->getArgValue(0).type() == Value::NUMBER)
-		return Value((evalctx->getArgValue(0).toDouble()<0) ? -1.0 : ((evalctx->getArgValue(0).toDouble()>0) ? 1.0 : 0.0));
+	if (evalctx->numArgs() == 1) {
+		const Value &v = evalctx->getArgValue(0);
+		if (v.type() == Value::NUMBER) {
+			register double x = v.toDouble();
+			return Value((x<0) ? -1.0 : ((x>0) ? 1.0 : 0.0));
+		}
+	}
 	return Value();
 }
 
 Value builtin_rands(const Context *, const EvalContext *evalctx)
 {
-	bool deterministic = false;
-	if (evalctx->numArgs() == 3 &&
-			evalctx->getArgValue(0).type() == Value::NUMBER && 
-			evalctx->getArgValue(1).type() == Value::NUMBER && 
-			evalctx->getArgValue(2).type() == Value::NUMBER)
-	{
-		deterministic = false;
-	}
-	else if (evalctx->numArgs() == 4 && 
-			evalctx->getArgValue(0).type() == Value::NUMBER && 
-			evalctx->getArgValue(1).type() == Value::NUMBER && 
-			evalctx->getArgValue(2).type() == Value::NUMBER && 
-			evalctx->getArgValue(3).type() == Value::NUMBER)
-	{
-		deterministic_rng.seed( (unsigned int) evalctx->getArgValue(3).toDouble() );
-		deterministic = true;
-	}
-	else
-	{
-		return Value();
-	}
+	size_t n = evalctx->numArgs();
+	if (n == 3 || n == 4) {
+		const Value &v0 = evalctx->getArgValue(0);
+		if (v0.type() != Value::NUMBER) goto quit;
+		double min = v0.toDouble();
 
-	double min = std::min( evalctx->getArgValue(0).toDouble(), evalctx->getArgValue(1).toDouble() );
-	double max = std::max( evalctx->getArgValue(0).toDouble(), evalctx->getArgValue(1).toDouble() );
-	size_t numresults = std::max( 0, static_cast<int>( evalctx->getArgValue(2).toDouble() ) );
-	boost::uniform_real<> distributor( min, max );
-	Value::VectorType vec;
-	if (min==max) { // workaround boost bug
-		for (size_t i=0; i < numresults; i++)
-			vec.push_back( Value( min ) );
-	} else {
-		for (size_t i=0; i < numresults; i++) {
-			if ( deterministic ) {
-				vec.push_back( Value( distributor( deterministic_rng ) ) );
-			} else {
-				vec.push_back( Value( distributor( lessdeterministic_rng ) ) );
+		const Value &v1 = evalctx->getArgValue(1);
+		if (v1.type() != Value::NUMBER) goto quit;
+		double max = v1.toDouble();
+		if (max < min) {
+			register double tmp = min; min = max; max = tmp;
+		}
+		const Value &v2 = evalctx->getArgValue(2);
+		if (v2.type() != Value::NUMBER) goto quit;
+		size_t numresults = std::max( 0, static_cast<int>( v2.toDouble() ) );
+
+		bool deterministic = false;
+		if (n > 3) {
+			const Value &v3 = evalctx->getArgValue(3);
+			if (v3.type() != Value::NUMBER) goto quit;
+			deterministic_rng.seed( (unsigned int) v3.toDouble() );
+			deterministic = true;
+		}
+		boost::uniform_real<> distributor( min, max );
+		Value::VectorType vec;
+		if (min==max) { // workaround boost bug
+			for (size_t i=0; i < numresults; i++)
+				vec.push_back( Value( min ) );
+		} else {
+			for (size_t i=0; i < numresults; i++) {
+				if ( deterministic ) {
+					vec.push_back( Value( distributor( deterministic_rng ) ) );
+				} else {
+					vec.push_back( Value( distributor( lessdeterministic_rng ) ) );
+				}
 			}
 		}
+		return Value(vec);
 	}
-	return Value(vec);
+quit:
+	return Value();
 }
 
 
 Value builtin_min(const Context *, const EvalContext *evalctx)
 {
-	if (evalctx->numArgs() >= 1 && evalctx->getArgValue(0).type() == Value::NUMBER) {
-		double val = evalctx->getArgValue(0).toDouble();
-		for (size_t i = 1; i < evalctx->numArgs(); i++)
-			if (evalctx->getArgValue(1).type() == Value::NUMBER)
-				val = fmin(val, evalctx->getArgValue(i).toDouble());
-		return Value(val);
+	// preserve special handling of the first argument
+	// as a template for vector processing
+	size_t n = evalctx->numArgs();
+	if (n >= 1) {
+		const Value &v0 = evalctx->getArgValue(0);
+
+		if (n == 1 && v0.type() == Value::VECTOR && !v0.toVector().empty()) {
+			Value min = v0.toVector()[0];
+			for (int i = 1; i < v0.toVector().size(); i++) {
+				if (v0.toVector()[i] < min)
+					min = v0.toVector()[i];
+			}
+			return min;
+		}
+		if (v0.type() == Value::NUMBER) {
+			double val = v0.toDouble();
+			for (size_t i = 1; i < n; ++i) {
+				const Value &v = evalctx->getArgValue(i);
+				// 4/20/14 semantic change per discussion:
+				// break on any non-number
+				if (v.type() != Value::NUMBER) goto quit;
+				register double x = v.toDouble();
+				if (x < val) val = x;
+			}
+			return Value(val);
+		}
 	}
+quit:
 	return Value();
 }
 
 Value builtin_max(const Context *, const EvalContext *evalctx)
 {
-	if (evalctx->numArgs() >= 1 && evalctx->getArgValue(0).type() == Value::NUMBER) {
-		double val = evalctx->getArgValue(0).toDouble();
-		for (size_t i = 1; i < evalctx->numArgs(); i++)
-			if (evalctx->getArgValue(1).type() == Value::NUMBER)
-				val = fmax(val, evalctx->getArgValue(i).toDouble());
-		return Value(val);
+	// preserve special handling of the first argument
+	// as a template for vector processing
+	size_t n = evalctx->numArgs();
+	if (n >= 1) {
+		const Value &v0 = evalctx->getArgValue(0);
+
+		if (n == 1 && v0.type() == Value::VECTOR && !v0.toVector().empty()) {
+			Value max = v0.toVector()[0];
+			for (int i = 1; i < v0.toVector().size(); i++) {
+				if (v0.toVector()[i] > max)
+					max = v0.toVector()[i];
+			}
+			return max;
+		}
+		if (v0.type() == Value::NUMBER) {
+			double val = v0.toDouble();
+			for (size_t i = 1; i < n; ++i) {
+				const Value &v = evalctx->getArgValue(i);
+				// 4/20/14 semantic change per discussion:
+				// break on any non-number
+				if (v.type() != Value::NUMBER) goto quit;
+				register double x = v.toDouble();
+				if (x > val) val = x;
+			}
+			return Value(val);
+		}
 	}
+quit:
 	return Value();
 }
 
+// this limit assumes 26+26=52 bits mantissa
+// comment/undefine it to disable domain check
+#define TRIG_HUGE_VAL ((1L<<26)*360.0*(1L<<26))
+
 Value builtin_sin(const Context *, const EvalContext *evalctx)
 {
-	if (evalctx->numArgs() == 1 && evalctx->getArgValue(0).type() == Value::NUMBER)
-		return Value(sin(deg2rad(evalctx->getArgValue(0).toDouble())));
+	if (evalctx->numArgs() == 1) {
+		const Value &v = evalctx->getArgValue(0);
+		if (v.type() == Value::NUMBER) {
+			register double x = v.toDouble();
+			// use positive tests because of possible Inf/NaN
+			if (x < 360.0 && x >= 0.0) {
+				// Ok for now
+			} else
+#ifdef TRIG_HUGE_VAL
+			if (x < TRIG_HUGE_VAL && x > -TRIG_HUGE_VAL)
+#endif
+			{
+				register double revolutions = floor(x/360.0);
+				x -= 360.0*revolutions;
+			}
+#ifdef TRIG_HUGE_VAL
+			else {
+				// total loss of computational accuracy
+				// the result would be meaningless
+				return Value(std::numeric_limits<double>::quiet_NaN());
+			}
+#endif
+			bool oppose = x >= 180.0;
+			if (oppose) x -= 180.0;
+			if (x > 90.0) x = 180.0 - x;
+			if (x < 45.0) {
+				if (x == 30.0) x = 0.5;
+				else x = sin(deg2rad(x));
+			} else if (x == 45.0)
+				x = M_SQRT1_2;
+			else // Inf/Nan would fall here
+				x = cos(deg2rad(90.0-x));
+
+			return Value(oppose ? -x : x);
+		}
+	}
 	return Value();
 }
 
 Value builtin_cos(const Context *, const EvalContext *evalctx)
 {
-	if (evalctx->numArgs() == 1 && evalctx->getArgValue(0).type() == Value::NUMBER)
-		return Value(cos(deg2rad(evalctx->getArgValue(0).toDouble())));
+	if (evalctx->numArgs() == 1) {
+		const Value &v = evalctx->getArgValue(0);
+		if (v.type() == Value::NUMBER) {
+			register double x = v.toDouble();
+			// use positive tests because of possible Inf/NaN
+			if (x < 360.0 && x >= 0.0) {
+				// Ok for now
+			} else
+#ifdef TRIG_HUGE_VAL
+			if (x < TRIG_HUGE_VAL && x > -TRIG_HUGE_VAL)
+#endif
+			{
+				register double revolutions = floor(x/360.0);
+				x -= 360.0*revolutions;
+			}
+#ifdef TRIG_HUGE_VAL
+			else {
+				// total loss of computational accuracy
+				// the result would be meaningless
+				return Value(std::numeric_limits<double>::quiet_NaN());
+			}
+#endif
+			bool oppose = x >= 180.0;
+			if (oppose) x -= 180.0;
+			if (x > 90.0) {
+				x = 180.0 - x;
+				oppose = !oppose;
+			}
+			if (x > 45.0) {
+				if (x == 60.0) x = 0.5;
+				else x = sin(deg2rad(90.0-x));
+			} else if (x == 45.0)
+				x = M_SQRT1_2;
+			else // Inf/Nan would fall here
+				x = cos(deg2rad(x));
+
+			return Value(oppose ? -x : x);
+		}
+	}
 	return Value();
 }
 
 Value builtin_asin(const Context *, const EvalContext *evalctx)
 {
-	if (evalctx->numArgs() == 1 && evalctx->getArgValue(0).type() == Value::NUMBER)
-		return Value(rad2deg(asin(evalctx->getArgValue(0).toDouble())));
+	if (evalctx->numArgs() == 1) {
+		const Value &v = evalctx->getArgValue(0);
+		if (v.type() == Value::NUMBER)
+			return Value(rad2deg(asin(v.toDouble())));
+	}
 	return Value();
 }
 
 Value builtin_acos(const Context *, const EvalContext *evalctx)
 {
-	if (evalctx->numArgs() == 1 && evalctx->getArgValue(0).type() == Value::NUMBER)
-		return Value(rad2deg(acos(evalctx->getArgValue(0).toDouble())));
+	if (evalctx->numArgs() == 1) {
+		const Value &v = evalctx->getArgValue(0);
+		if (v.type() == Value::NUMBER)
+			return Value(rad2deg(acos(v.toDouble())));
+	}
 	return Value();
 }
 
 Value builtin_tan(const Context *, const EvalContext *evalctx)
 {
-	if (evalctx->numArgs() == 1 && evalctx->getArgValue(0).type() == Value::NUMBER)
-		return Value(tan(deg2rad(evalctx->getArgValue(0).toDouble())));
+	if (evalctx->numArgs() == 1) {
+		const Value &v = evalctx->getArgValue(0);
+		if (v.type() == Value::NUMBER)
+			return Value(tan(deg2rad(v.toDouble())));
+	}
 	return Value();
 }
 
 Value builtin_atan(const Context *, const EvalContext *evalctx)
 {
-	if (evalctx->numArgs() == 1 && evalctx->getArgValue(0).type() == Value::NUMBER)
-		return Value(rad2deg(atan(evalctx->getArgValue(0).toDouble())));
+	if (evalctx->numArgs() == 1) {
+		const Value &v = evalctx->getArgValue(0);
+		if (v.type() == Value::NUMBER)
+			return Value(rad2deg(atan(v.toDouble())));
+	}
 	return Value();
 }
 
 Value builtin_atan2(const Context *, const EvalContext *evalctx)
 {
-	if (evalctx->numArgs() == 2 && evalctx->getArgValue(0).type() == Value::NUMBER && evalctx->getArgValue(1).type() == Value::NUMBER)
-		return Value(rad2deg(atan2(evalctx->getArgValue(0).toDouble(), evalctx->getArgValue(1).toDouble())));
+	if (evalctx->numArgs() == 2) {
+		Value v0 = evalctx->getArgValue(0), v1 = evalctx->getArgValue(1);
+		if (v0.type() == Value::NUMBER && v1.type() == Value::NUMBER)
+			return Value(rad2deg(atan2(v0.toDouble(), v1.toDouble())));
+	}
 	return Value();
 }
 
 Value builtin_pow(const Context *, const EvalContext *evalctx)
 {
-	if (evalctx->numArgs() == 2 && evalctx->getArgValue(0).type() == Value::NUMBER && evalctx->getArgValue(1).type() == Value::NUMBER)
-		return Value(pow(evalctx->getArgValue(0).toDouble(), evalctx->getArgValue(1).toDouble()));
+	if (evalctx->numArgs() == 2) {
+		Value v0 = evalctx->getArgValue(0), v1 = evalctx->getArgValue(1);
+		if (v0.type() == Value::NUMBER && v1.type() == Value::NUMBER)
+			return Value(pow(v0.toDouble(), v1.toDouble()));
+	}
 	return Value();
 }
 
 Value builtin_round(const Context *, const EvalContext *evalctx)
 {
-	if (evalctx->numArgs() == 1 && evalctx->getArgValue(0).type() == Value::NUMBER)
-		return Value(round(evalctx->getArgValue(0).toDouble()));
+	if (evalctx->numArgs() == 1) {
+		const Value &v = evalctx->getArgValue(0);
+		if (v.type() == Value::NUMBER)
+			return Value(round(v.toDouble()));
+	}
 	return Value();
 }
 
 Value builtin_ceil(const Context *, const EvalContext *evalctx)
 {
-	if (evalctx->numArgs() == 1 && evalctx->getArgValue(0).type() == Value::NUMBER)
-		return Value(ceil(evalctx->getArgValue(0).toDouble()));
+	if (evalctx->numArgs() == 1) {
+		const Value &v = evalctx->getArgValue(0);
+		if (v.type() == Value::NUMBER)
+			return Value(ceil(v.toDouble()));
+	}
 	return Value();
 }
 
 Value builtin_floor(const Context *, const EvalContext *evalctx)
 {
-	if (evalctx->numArgs() == 1 && evalctx->getArgValue(0).type() == Value::NUMBER)
-		return Value(floor(evalctx->getArgValue(0).toDouble()));
+	if (evalctx->numArgs() == 1) {
+		const Value &v = evalctx->getArgValue(0);
+		if (v.type() == Value::NUMBER)
+			return Value(floor(v.toDouble()));
+	}
 	return Value();
 }
 
 Value builtin_sqrt(const Context *, const EvalContext *evalctx)
 {
-	if (evalctx->numArgs() == 1 && evalctx->getArgValue(0).type() == Value::NUMBER)
-		return Value(sqrt(evalctx->getArgValue(0).toDouble()));
+	if (evalctx->numArgs() == 1) {
+		const Value &v = evalctx->getArgValue(0);
+		if (v.type() == Value::NUMBER)
+			return Value(sqrt(v.toDouble()));
+	}
 	return Value();
 }
 
 Value builtin_exp(const Context *, const EvalContext *evalctx)
 {
-	if (evalctx->numArgs() == 1 && evalctx->getArgValue(0).type() == Value::NUMBER)
-		return Value(exp(evalctx->getArgValue(0).toDouble()));
+	if (evalctx->numArgs() == 1) {
+		const Value &v = evalctx->getArgValue(0);
+		if (v.type() == Value::NUMBER)
+			return Value(exp(v.toDouble()));
+	}
 	return Value();
 }
 
 Value builtin_length(const Context *, const EvalContext *evalctx)
 {
 	if (evalctx->numArgs() == 1) {
-		if (evalctx->getArgValue(0).type() == Value::VECTOR) return Value(int(evalctx->getArgValue(0).toVector().size()));
-		if (evalctx->getArgValue(0).type() == Value::STRING) {
+		const Value &v = evalctx->getArgValue(0);
+		if (v.type() == Value::VECTOR) return Value(int(v.toVector().size()));
+		if (v.type() == Value::STRING) {
 			//Unicode glyph count for the length -- rather than the string (num. of bytes) length.
-			std::string text = evalctx->getArgValue(0).toString();
+			std::string text = v.toString();
 			return Value(int( g_utf8_strlen( text.c_str(), text.size() ) ));
 		}
 	}
@@ -319,17 +484,30 @@ Value builtin_length(const Context *, const EvalContext *evalctx)
 
 Value builtin_log(const Context *, const EvalContext *evalctx)
 {
-	if (evalctx->numArgs() == 2 && evalctx->getArgValue(0).type() == Value::NUMBER && evalctx->getArgValue(1).type() == Value::NUMBER)
-		return Value(log(evalctx->getArgValue(1).toDouble()) / log(evalctx->getArgValue(0).toDouble()));
-	if (evalctx->numArgs() == 1 && evalctx->getArgValue(0).type() == Value::NUMBER)
-		return Value(log(evalctx->getArgValue(0).toDouble()) / log(10.0));
+	size_t n = evalctx->numArgs();
+	if (n == 1 || n == 2) {
+		const Value &v0 = evalctx->getArgValue(0);
+		if (v0.type() == Value::NUMBER) {
+			double x = 10.0, y = v0.toDouble();
+			if (n > 1) {
+				const Value &v1 = evalctx->getArgValue(1);
+				if (v1.type() != Value::NUMBER) goto quit;
+				x = y; y = v1.toDouble();
+			}
+			return Value(log(y) / log(x));
+		}
+	}
+quit:
 	return Value();
 }
 
 Value builtin_ln(const Context *, const EvalContext *evalctx)
 {
-	if (evalctx->numArgs() == 1 && evalctx->getArgValue(0).type() == Value::NUMBER)
-		return Value(log(evalctx->getArgValue(0).toDouble()));
+	if (evalctx->numArgs() == 1) {
+		const Value &v = evalctx->getArgValue(0);
+		if (v.type() == Value::NUMBER)
+			return Value(log(v.toDouble()));
+	}
 	return Value();
 }
 
@@ -440,6 +618,8 @@ Value builtin_lookup(const Context *, const EvalContext *evalctx)
         - returns [[0,4],[1,5],[2,6],[8]]
 
 */
+#pragma clang diagnostic ignored "-Wlogical-op-parentheses"
+
 Value builtin_search(const Context *, const EvalContext *evalctx)
 {
 	if (evalctx->numArgs() < 2) return Value();
@@ -453,14 +633,19 @@ Value builtin_search(const Context *, const EvalContext *evalctx)
 
 	if (findThis.type() == Value::NUMBER) {
 		unsigned int matchCount = 0;
-		Value::VectorType resultvec;
+
 		for (size_t j = 0; j < searchTable.toVector().size(); j++) {
-		  if (searchTable.toVector()[j].toVector()[index_col_num].type() == Value::NUMBER && 
-					findThis.toDouble() == searchTable.toVector()[j].toVector()[index_col_num].toDouble()) {
-		    returnvec.push_back(Value(double(j)));
-		    matchCount++;
-		    if (num_returns_per_match != 0 && matchCount >= num_returns_per_match) break;
-		  }
+			const Value& search_element = searchTable.toVector()[j];
+
+			if (index_col_num == 0 && findThis == search_element
+				||
+				index_col_num  < search_element.toVector().size() &&
+				findThis      == search_element.toVector()[index_col_num])
+			{
+				returnvec.push_back(Value(double(j)));
+				matchCount++;
+				if (num_returns_per_match != 0 && matchCount >= num_returns_per_match) break;
+			}
 		}
 	} else if (findThis.type() == Value::STRING) {
 		unsigned int searchTableSize;
@@ -510,13 +695,18 @@ Value builtin_search(const Context *, const EvalContext *evalctx)
 		for (size_t i = 0; i < findThis.toVector().size(); i++) {
 		  unsigned int matchCount = 0;
 			Value::VectorType resultvec;
-		  for (size_t j = 0; j < searchTable.toVector().size(); j++) {
-		    if ((findThis.toVector()[i].type() == Value::NUMBER && 
-						 searchTable.toVector()[j].toVector()[index_col_num].type() == Value::NUMBER &&
-						 findThis.toVector()[i].toDouble() == searchTable.toVector()[j].toVector()[index_col_num].toDouble()) ||
-						(findThis.toVector()[i].type() == Value::STRING && 
-						 searchTable.toVector()[j].toVector()[index_col_num].type() == Value::STRING && 
-						 findThis.toVector()[i].toString() == searchTable.toVector()[j].toVector()[index_col_num].toString())) {
+
+			Value const& find_value = findThis.toVector()[i];
+
+			for (size_t j = 0; j < searchTable.toVector().size(); j++) {
+
+				Value const& search_element = searchTable.toVector()[j];
+
+				if (index_col_num == 0 && find_value == search_element
+					||
+					index_col_num  < search_element.toVector().size() &&
+					find_value    == search_element.toVector()[index_col_num])
+				{
 					Value resultValue((double(j)));
 		      matchCount++;
 		      if (num_returns_per_match == 1) {
@@ -582,9 +772,11 @@ Value builtin_parent_module(const Context *, const EvalContext *evalctx)
 	int s = Module::stack_size();
 	if (evalctx->numArgs() == 0)
 		d=1; // parent module
-	else if (evalctx->numArgs() == 1 && evalctx->getArgValue(0).type() == Value::NUMBER)
-		evalctx->getArgValue(0).getDouble(d);
-	else
+	else if (evalctx->numArgs() == 1) {
+		const Value &v = evalctx->getArgValue(0);
+		if (v.type() != Value::NUMBER) return Value();
+		v.getDouble(d);
+	} else
 			return Value();
 	n=trunc(d);
 	if (n < 0) {
@@ -596,6 +788,77 @@ Value builtin_parent_module(const Context *, const EvalContext *evalctx)
 		return Value();
 	}
 	return Value(Module::stack_element(s - 1 - n));
+}
+
+Value builtin_norm(const Context *, const EvalContext *evalctx)
+{
+	if (evalctx->numArgs() == 1) {
+		const Value &val = evalctx->getArgValue(0);
+		if (val.type() == Value::VECTOR) {
+			double sum = 0;
+			Value::VectorType v = val.toVector();
+			size_t n = v.size();
+			for (size_t i = 0; i < n; i++)
+				if (v[i].type() == Value::NUMBER) {
+					// sum += pow(v[i].toDouble(),2);
+					register double x = v[i].toDouble();
+					sum += x*x;
+				} else {
+					PRINT("  WARNING: Incorrect arguments to norm()");
+					return Value();
+				}
+			return Value(sqrt(sum));
+		}
+	}
+	return Value();
+}
+
+Value builtin_cross(const Context *, const EvalContext *evalctx)
+{
+	if (evalctx->numArgs() != 2) {
+		PRINT("WARNING: Invalid number of parameters for cross()");
+		return Value();
+	}
+	
+	Value arg0 = evalctx->getArgValue(0);
+	Value arg1 = evalctx->getArgValue(1);
+	if ((arg0.type() != Value::VECTOR) || (arg1.type() != Value::VECTOR)) {
+		PRINT("WARNING: Invalid type of parameters for cross()");
+		return Value();
+	}
+	
+	Value::VectorType v0 = arg0.toVector();
+	Value::VectorType v1 = arg1.toVector();
+	if ((v0.size() != 3) || (v1.size() != 3)) {
+		PRINT("WARNING: Invalid vector size of parameter for cross()");
+		return Value();
+	}
+	for (unsigned int a = 0;a < 3;a++) {
+		if ((v0[a].type() != Value::NUMBER) || (v1[a].type() != Value::NUMBER)) {
+			PRINT("WARNING: Invalid value in parameter vector for cross()");
+			return Value();
+		}
+		double d0 = v0[a].toDouble();
+		double d1 = v1[a].toDouble();
+		if (boost::math::isnan(d0) || boost::math::isnan(d1)) {
+			PRINT("WARNING: Invalid value (NaN) in parameter vector for cross()");
+			return Value();
+		}
+		if (boost::math::isinf(d0) || boost::math::isinf(d1)) {
+			PRINT("WARNING: Invalid value (INF) in parameter vector for cross()");
+			return Value();
+		}
+	}
+	
+	double x = v0[1].toDouble() * v1[2].toDouble() - v0[2].toDouble() * v1[1].toDouble();
+	double y = v0[2].toDouble() * v1[0].toDouble() - v0[0].toDouble() * v1[2].toDouble();
+	double z = v0[0].toDouble() * v1[1].toDouble() - v0[1].toDouble() * v1[0].toDouble();
+	
+	Value::VectorType result;
+	result.push_back(Value(x));
+	result.push_back(Value(y));
+	result.push_back(Value(z));
+	return Value(result);
 }
 
 void register_builtin_functions()
@@ -627,5 +890,7 @@ void register_builtin_functions()
 	Builtins::init("search", new BuiltinFunction(&builtin_search));
 	Builtins::init("version", new BuiltinFunction(&builtin_version));
 	Builtins::init("version_num", new BuiltinFunction(&builtin_version_num));
+	Builtins::init("norm", new BuiltinFunction(&builtin_norm));
+	Builtins::init("cross", new BuiltinFunction(&builtin_cross));
 	Builtins::init("parent_module", new BuiltinFunction(&builtin_parent_module));
 }

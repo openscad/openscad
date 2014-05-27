@@ -1,7 +1,9 @@
+#include <glib.h>
+
 #include "PlatformUtils.h"
 #include "boosty.h"
 
-#include <glib.h>
+extern std::vector<std::string> librarypath;
 
 bool PlatformUtils::createLibraryPath()
 {
@@ -39,6 +41,40 @@ std::string PlatformUtils::libraryPath()
 		PRINTB("ERROR: %s",ex.what());
 	}
 	return boosty::stringy( path );
+}
+
+
+std::string PlatformUtils::backupPath()
+{
+	fs::path path;
+	try {
+		std::string pathstr = PlatformUtils::documentsPath();
+		if (pathstr=="") return "";
+		path = boosty::canonical(fs::path( pathstr ));
+		if (path.empty()) return "";
+		path /= "OpenSCAD";
+		path /= "backups";
+	} catch (const fs::filesystem_error& ex) {
+		PRINTB("ERROR: %s",ex.what());
+	}
+	return boosty::stringy( path );
+}
+
+bool PlatformUtils::createBackupPath()
+{
+	std::string path = PlatformUtils::backupPath();
+	bool OK = false;
+	try {
+		if (!fs::exists(fs::path(path))) {
+			OK = fs::create_directories( path );
+		}
+		if (!OK) {
+			PRINTB("ERROR: Cannot create %s", path );
+		}
+	} catch (const fs::filesystem_error& ex) {
+		PRINTB("ERROR: %s",ex.what());
+	}
+	return OK;
 }
 
 #include "version_check.h"
@@ -108,6 +144,8 @@ std::string PlatformUtils::info()
 	std::string cgal_2d_kernelEx = "";
 #endif // ENABLE_CGAL
 
+	const char *env_path = getenv("OPENSCADPATH");
+	
 	s << "OpenSCAD Version: " << TOSTRING(OPENSCAD_VERSION)
           << "\nCompiler, build date: " << compiler_info << ", " << __DATE__
 	  << "\nBoost version: " << BOOST_LIB_VERSION
@@ -117,8 +155,12 @@ std::string PlatformUtils::info()
 	  << "\nQt version: " << qtVersion
 	  << "\nMingW build: " << mingwstatus
 	  << "\nGLib version: "       << GLIB_MAJOR_VERSION << "." << GLIB_MINOR_VERSION << "." << GLIB_MICRO_VERSION
-	  << "\nOPENSCADPATH: " << getenv("OPENSCADPATH") << "\n"
-	;
+	  << "\nOPENSCADPATH: " << (env_path == NULL ? "<not set>" : env_path)
+	  << "\nOpenSCAD library path:\n";
+
+	for (std::vector<std::string>::iterator it = librarypath.begin();it != librarypath.end();it++) {
+		s << "  " << *it << "\n";
+	}
+	
 	return s.str();
 }
-

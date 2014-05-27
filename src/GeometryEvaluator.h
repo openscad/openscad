@@ -1,5 +1,4 @@
-#ifndef GEOMETRYEVALUATOR_H_
-#define GEOMETRYEVALUATOR_H_
+#pragma once
 
 #include "visitor.h"
 #include "enums.h"
@@ -30,6 +29,8 @@ public:
 	virtual Response visit(State &state, const CgaladvNode &node);
 	virtual Response visit(State &state, const ProjectionNode &node);
 	virtual Response visit(State &state, const RenderNode &node);
+	virtual Response visit(State &state, const TextNode &node);
+	virtual Response visit(State &state, const OffsetNode &node);
 
 	const Tree &getTree() const { return this->tree; }
 
@@ -72,6 +73,3 @@ private:
 
 public:
 };
-
-
-#endif

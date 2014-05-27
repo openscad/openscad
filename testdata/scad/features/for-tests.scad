@@ -2,6 +2,9 @@
 for();
 // No children
 for(i=2) { }
+// Modifier and no children
+%for(i=2) { }
+#for(i=2) { }
 
 // Null
 translate([-10,0,0]) for() cylinder(r=4);

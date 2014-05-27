@@ -20,7 +20,6 @@ OPENSCADDIR=$PWD
 BASEDIR=$OPENSCADDIR/../libraries
 DEPLOYDIR=$BASEDIR/homebrew
 MAC_OSX_VERSION_MIN=10.7
-export QMAKESPEC=unsupported/macx-clang
 
 OPTION_DEPLOY=false
 
@@ -65,7 +64,7 @@ export MACOSX_DEPLOYMENT_TARGET=$MAC_OSX_VERSION_MIN
 # Don't use bottles, as they might be built with the wrong deployment target
 export HOMEBREW_BUILD_FROM_SOURCE=1
 
-for formula in qt eigen boost cgal glew glib opencsg; do
+for formula in qt5 eigen boost cgal glew glib opencsg freetype libxml2 fontconfig harfbuzz; do
   brew install openscad/tap/$formula
 done
 if $OPTION_DEPLOY; then

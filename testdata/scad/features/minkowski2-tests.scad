@@ -15,7 +15,6 @@ module roundedBox2dCut() {
     }
 }
 
-// Not quite correct, result does not contain a hole, since the impl currently returns the outer boundary of the polygon_with_holes.
 module roundedBox2dHole() {
     minkowski() {
         difference() {
@@ -38,4 +37,28 @@ translate([-20,-20,0]) minkowski() {
     square(10);
     square(2, center=true);
     circle(1);
+}
+
+module invert() render() difference() { square(1e6,center=true); child(); }
+module erode(d=.3) invert() minkowski() { circle(d); invert() child(); }
+
+// This particular combination created a hairline crack inside the resulting polygon
+translate([-5,-45]) scale(4) erode() minkowski() {
+	circle(r=.4);
+	circle(r=4);
+}
+
+// This is an even harder example
+translate([30,-30]) scale(4) erode() minkowski() {
+	difference() {
+		circle(r=.4);
+		circle(r=.399);
+	}
+	circle(r=4);
+}
+
+// Minkowski with an empty polygon should yield an empty result
+translate([30,-45]) minkowski() {
+	circle(r=1);
+	circle(r=0);
 }
