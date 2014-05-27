@@ -255,13 +255,9 @@ def create_png_for_export3d( actualfilename, options ):
 if __name__ == '__main__':
     # Handle command-line arguments
     try:
-<<<<<<< HEAD
         debug('args:'+str(sys.argv))
         opts, args = getopt.getopt(sys.argv[1:], "gs:e:c:t:f:m", ["generate", "convexec=", "suffix=", "expected_dir=", "test=", "file=", "comparator="])
         debug('getopt args:'+str(sys.argv))
-=======
-        opts, args = getopt.getopt(sys.argv[1:], "gs:e:c:t:f:m", ["generate", "convexec=", "suffix=", "expected_dir=", "test=", "file=", "comparator="])
->>>>>>> 9618125403010d65a574501882cc9af1a524febd
     except getopt.GetoptError, err:
         usage()
         sys.exit(2)
