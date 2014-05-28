@@ -1001,6 +1001,9 @@ disable_tests(cgalpngtest_child-background
               csgpngtest_child-background
               csgpngtest_highlight-and-background-modifier
               csgpngtest_testcolornames
+              expoimpo3dpngtest_child-background
+              expoimpo3dpngtest_highlight-and-background-modifier
+              expoimpo3dpngtest_testcolornames
               throwntogethertest_testcolornames)
 
 # The inf/nan tests fail when exporting CSG and rendering that output again
@@ -1060,6 +1063,8 @@ foreach(FILE ${BUGS_FILES})
   set_test_config(Bugs ${TEST_FULLNAME})
   get_test_fullname(csgpngtest ${FILE} TEST_FULLNAME)
   set_test_config(Bugs ${TEST_FULLNAME})
+  get_test_fullname(expoimpo3dpngtest ${FILE} TEST_FULLNAME)
+  set_test_config(Bugs ${TEST_FULLNAME})
 endforeach()
 
 # Examples
@@ -1072,6 +1077,8 @@ foreach(FILE ${EXAMPLE_FILES})
   get_test_fullname(throwntogethertest ${FILE} TEST_FULLNAME)
   set_test_config(Examples ${TEST_FULLNAME})
   get_test_fullname(csgpngtest ${FILE} TEST_FULLNAME)
+  set_test_config(Examples ${TEST_FULLNAME})
+  get_test_fullname(expoimpo3dpngtest ${FILE} TEST_FULLNAME)
   set_test_config(Examples ${TEST_FULLNAME})
 endforeach()
 
@@ -1138,6 +1145,7 @@ add_cmdline_test(dumptest-examples EXE ${OPENSCAD_BINPATH} ARGS -o SUFFIX csg FI
 add_cmdline_test(cgalpngtest EXE ${OPENSCAD_BINPATH} ARGS --render -o SUFFIX png FILES ${CGALPNGTEST_FILES})
 add_cmdline_test(opencsgtest EXE ${OPENSCAD_BINPATH} ARGS -o SUFFIX png FILES ${OPENCSGTEST_FILES})
 add_cmdline_test(csgpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT csg-import-test.py ARGS ${OPENSCAD_BINPATH} EXPECTEDDIR cgalpngtest SUFFIX png FILES ${CGALPNGTEST_FILES})
+add_cmdline_test(expoimpo3dpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT test_3d_export.py ARGS ${OPENSCAD_BINPATH} EXPECTEDDIR cgalpngtest SUFFIX png FILES ${CGALPNGTEST_FILES})
 add_cmdline_test(throwntogethertest EXE ${OPENSCAD_BINPATH} ARGS --preview=throwntogether -o SUFFIX png FILES ${THROWNTOGETHERTEST_FILES})
 # FIXME: We don't actually need to compare the output of cgalstlsanitytest
 # with anything. It's self-contained and returns != 0 on error

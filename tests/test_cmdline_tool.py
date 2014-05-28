@@ -197,61 +197,6 @@ def usage():
     print >> sys.stderr, "  -f, --file=<name>        Specify test file instead of deducting it from the argument (default to basename <first arg>)"
     print >> sys.stderr, "  -c, --convexec=<name>    Path to ImageMagick 'convert' executable"
 
-#
-# export3d mesh tests
-#
-# every export3d test is named 'export3d_xxx_testname' where xxx is a 
-# format, like stl, off,&c. This script will parse the testname and then 
-# run openscad to generate an 3d output file. This script will then 
-# create a new .scad code file containing only a single 'import()' 
-# command on the generated 3d file. It will then re-run openscad on that 
-# newly generated 'import()' scad file and output a png image with 
-# Monotone colorscheme. Then the script will treat the generated PNG 
-# just like an ordinary test, looking for an 'expected' image and 
-# fuzz-comparing it to the actual generated image. During TEST_GENERATE, 
-# all of this is skipped, only a PNG is generated
-
-# modify the 'actualfilename' so that the first test run will generate a 
-# 3d file, like .stl
-def export3d_filename( actualfilename, options ):
-    debug('export3d test. modifying actualfilename to generate 3d output')
-    debug('options cmd',options.cmd)
-    debug('options testname',options.testname)
-    debug('actualfilename, before: ',actualfilename)
-
-    if options.testname[9:12]=='stl':
-        actualfilename = actualfilename[0:-4] + '.stl'
-    elif options.testname[9:12]=='off':
-        actualfilename = actualfilename[0:-4] + '.off'
-    elif options.testname[9:12]=='obj':
-        actualfilename = actualfilename[0:-4] + '.obj'
-
-    debug('actualfilename, after: ',actualfilename)
-
-    return actualfilename
-
-# using the previously generated 3d file, create a new .scad file
-# to import that 3d file, and then generate a PNG image for comparison.
-def create_png_for_export3d( actualfilename, options ):
-    scadcode = 'import("'+actualfilename+'");'
-    scadfilename = actualfilename+'.import.scad'
-    f = open(scadfilename,'wb')
-    f.write(scadcode)
-    f.close()
-        
-    debug('export3d test. importing generated 3d file and creating png image')
-    #expectedfilename = expectedfilename[0:-4] + '.png'
-    actualfilename = actualfilename[0:-4] + '.png'
-    debug('expectedfilename:'+expectedfilename)
-    debug('actualfilename:'+actualfilename)
-    debug('opts:',options.cmd)
-
-    verification = verify_test(options.testname, options.cmd)
-    if not verification: exit(1)
-
-    newargs = [ scadfilename ] + args[2:]
-    return actualfilename, newargs
-
 if __name__ == '__main__':
     # Handle command-line arguments
     try:
@@ -318,15 +263,6 @@ if __name__ == '__main__':
 
     debug(options.testname)
 
-    if options.testname[0:8]=='export3d' and not options.generate:
-	actualfilename = export3d_filename( actualfilename, options )
-
     resultfile = run_test(options.testname, options.cmd, args[1:])
     if not resultfile: exit(1)
-
-    if options.testname[0:8]=='export3d' and not options.generate:
-        actualfilename,newargs = create_png_for_export3d( actualfilename, options )
-        resultfile = run_test(options.testname, options.cmd, newargs)
-        if not resultfile: exit(1)
-
     if not compare_with_expected(resultfile): exit(1)
