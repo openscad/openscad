@@ -118,13 +118,14 @@ build_qt5()
   version=$1
   echo "Building Qt" $version "..."
   cd $BASEDIR/src
+  v=(${version//./ }) # Split into array
   rm -rf qt-everywhere-opensource-src-$version
   if [ ! -f qt-everywhere-opensource-src-$version.tar.gz ]; then
-     curl -O -L http://download.qt-project.org/official_releases/qt/5.2/$version/single/qt-everywhere-opensource-src-$version.tar.gz
+     curl -O -L http://download.qt-project.org/official_releases/qt/${v[0]}.${v[1]}/$version/single/qt-everywhere-opensource-src-$version.tar.gz
   fi
   tar xzf qt-everywhere-opensource-src-$version.tar.gz
   cd qt-everywhere-opensource-src-$version
-  ./configure -prefix $DEPLOYDIR -release -opensource -confirm-license -nomake examples -nomake tests -no-xcb -no-c++11
+  ./configure -prefix $DEPLOYDIR -release -opensource -confirm-license -nomake examples -nomake tests -no-xcb -no-c++11 -no-glib
   make -j6 install
 }
 
@@ -335,8 +336,9 @@ build_cgal()
   cd $BASEDIR/src
   rm -rf CGAL-$version
   if [ ! -f CGAL-$version.tar.gz ]; then
-    # 4.3
-    curl -O https://gforge.inria.fr/frs/download.php/32994/CGAL-$version.tar.gz
+    # 4.4
+    curl -O https://gforge.inria.fr/frs/download.php/file/33525/CGAL-$version.tar.gz
+    # 4.3 curl -O https://gforge.inria.fr/frs/download.php/32994/CGAL-$version.tar.gz
     # 4.2 curl -O https://gforge.inria.fr/frs/download.php/32359/CGAL-$version.tar.gz
     # 4.1 curl -O https://gforge.inria.fr/frs/download.php/31641/CGAL-$version.tar.gz
     # 4.1-beta1 curl -O https://gforge.inria.fr/frs/download.php/31348/CGAL-$version.tar.gz
@@ -708,14 +710,14 @@ fi
 
 echo "Using basedir:" $BASEDIR
 mkdir -p $SRCDIR $DEPLOYDIR
-build_qt5 5.2.0 # Wait until 5.2.2 due to https://github.com/openscad/openscad/issues/252
+build_qt5 5.3.0
 # NB! For eigen, also update the path in the function
 build_eigen 3.2.0
 build_gmp 5.1.3
 build_mpfr 3.1.2
 build_boost 1.54.0
 # NB! For CGAL, also update the actual download URL in the function
-build_cgal 4.3
+build_cgal 4.4
 build_glew 1.10.0
 build_gettext 0.18.3.1
 build_libffi 3.0.13
