@@ -118,13 +118,14 @@ build_qt5()
   version=$1
   echo "Building Qt" $version "..."
   cd $BASEDIR/src
+  v=(${version//./ }) # Split into array
   rm -rf qt-everywhere-opensource-src-$version
   if [ ! -f qt-everywhere-opensource-src-$version.tar.gz ]; then
-     curl -O -L http://download.qt-project.org/official_releases/qt/5.2/$version/single/qt-everywhere-opensource-src-$version.tar.gz
+     curl -O -L http://download.qt-project.org/official_releases/qt/${v[0]}.${v[1]}/$version/single/qt-everywhere-opensource-src-$version.tar.gz
   fi
   tar xzf qt-everywhere-opensource-src-$version.tar.gz
   cd qt-everywhere-opensource-src-$version
-  ./configure -prefix $DEPLOYDIR -release -opensource -confirm-license -nomake examples -nomake tests -no-xcb -no-c++11
+  ./configure -prefix $DEPLOYDIR -release -opensource -confirm-license -nomake examples -nomake tests -no-xcb -no-c++11 -no-glib
   make -j6 install
 }
 
@@ -335,8 +336,9 @@ build_cgal()
   cd $BASEDIR/src
   rm -rf CGAL-$version
   if [ ! -f CGAL-$version.tar.gz ]; then
-    # 4.3
-    curl -O https://gforge.inria.fr/frs/download.php/32994/CGAL-$version.tar.gz
+    # 4.4
+    curl -O https://gforge.inria.fr/frs/download.php/file/33525/CGAL-$version.tar.gz
+    # 4.3 curl -O https://gforge.inria.fr/frs/download.php/32994/CGAL-$version.tar.gz
     # 4.2 curl -O https://gforge.inria.fr/frs/download.php/32359/CGAL-$version.tar.gz
     # 4.1 curl -O https://gforge.inria.fr/frs/download.php/31641/CGAL-$version.tar.gz
     # 4.1-beta1 curl -O https://gforge.inria.fr/frs/download.php/31348/CGAL-$version.tar.gz
@@ -493,7 +495,7 @@ build_freetype()
   fi
   tar xzf "freetype-$version.tar.gz"
   cd "freetype-$version"
-  ./configure --prefix="$DEPLOYDIR" CFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN LDFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN $extra_config_flags
+  PKG_CONFIG_LIBDIR="$DEPLOYDOR/lib/pkgconfig" ./configure --prefix="$DEPLOYDIR" CFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN LDFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN $extra_config_flags
   make -j"$NUMCPU"
   make install
 }
@@ -625,7 +627,7 @@ build_harfbuzz()
   # disable doc directories as they make problems on Mac OS Build
   sed -e "s/SUBDIRS = src util test docs/SUBDIRS = src util test/g" Makefile.am > Makefile.am.bak && mv Makefile.am.bak Makefile.am
   sed -e "s/^docs.*$//" configure.ac > configure.ac.bak && mv configure.ac.bak configure.ac
-  ./autogen.sh --prefix="$DEPLOYDIR" --with-freetype=yes --with-gobject=no --with-cairo=no --with-icu=no CFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN LDFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN $extra_config_flags
+  PKG_CONFIG_LIBDIR="$DEPLOYDIR/lib/pkgconfig" ./autogen.sh --prefix="$DEPLOYDIR" --with-freetype=yes --with-gobject=no --with-cairo=no --with-icu=no CFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN LDFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN $extra_config_flags
   make -j$NUMCPU
   make install
 }
@@ -708,21 +710,21 @@ fi
 
 echo "Using basedir:" $BASEDIR
 mkdir -p $SRCDIR $DEPLOYDIR
-build_qt5 5.2.0 # Wait until 5.2.2 due to https://github.com/openscad/openscad/issues/252
+build_qt5 5.3.0
 # NB! For eigen, also update the path in the function
 build_eigen 3.2.0
 build_gmp 5.1.3
 build_mpfr 3.1.2
 build_boost 1.54.0
 # NB! For CGAL, also update the actual download URL in the function
-build_cgal 4.3
+build_cgal 4.4
 build_glew 1.10.0
-build_gettext 0.18.3.1
-build_libffi 3.0.13
-build_glib2 2.38.2
+build_gettext 0.18.3.2
+build_libffi 3.1
+build_glib2 2.40.0
 build_opencsg 1.3.2
 build_freetype 2.5.3 --without-png
-build_harfbuzz 0.9.27 "--with-coretext=auto --with-glib=no"
+build_harfbuzz 0.9.28 "--with-coretext=auto --with-glib=no"
 export FREETYPE_CFLAGS="-I$DEPLOYDIR/include -I$DEPLOYDIR/include/freetype2"
 export FREETYPE_LIBS="-L$DEPLOYDIR/lib -lfreetype"
 build_libxml2 2.9.1

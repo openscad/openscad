@@ -42,6 +42,8 @@ static inline Vector2d get_scaled_vector(const FT_Vector *ft_vector, double scal
     return Vector2d(ft_vector->x / scale, ft_vector->y / scale);
 }
 
+const double FreetypeRenderer::scale = 1000;
+
 FreetypeRenderer::FreetypeRenderer()
 {
 	funcs.move_to = outline_move_to_func;
