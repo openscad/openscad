@@ -203,9 +203,9 @@ def png_encode64(fname, width=250, data=None):
     data_uri = data.encode('base64').replace('\n', '')
     tag = '''<img src="data:image/png;base64,%s" width="%s" %s/>'''
     if data == '':
-        alt = 'alt="error: no image generated" '
+        alt = 'alt="error: no image generated. filename:'+ fname + '" '
     else:
-        alt = 'alt="openscad_test_image" '
+        alt = 'alt="openscad_test_image:' + fname + '" '
     tag %= (data_uri, width, alt)
     return tag
 

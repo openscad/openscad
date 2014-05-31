@@ -123,6 +123,11 @@ def compare_png(resultfilename):
 
     print >> sys.stderr, 'ImageMagick image comparison: '
     print >> sys.stderr, str(args)
+
+    # these two lines are parsed by the test_pretty_print.py
+    print >> sys.stderr, ' actual image: ' + resultfilename + '\n'
+    print >> sys.stderr, ' expected image: ' + expectedfilename + '\n'
+
     if not resultfilename:
         print >> sys.stderr, "Error: Error during test image generation"
         return False
