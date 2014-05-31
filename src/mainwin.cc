@@ -1815,7 +1815,7 @@ void MainWindow::actionExportDXF()
 		return;
 	}
 	exportFileByName(this->root_geom.get(), OPENSCAD_DXF, dxf_filename.toUtf8(),
-		 dxf_filename.toLocal8Bit().constData());
+		dxf_filename.toLocal8Bit().constData());
 	PRINT("DXF export finished.");
 
 	clearCurrentOutput();
