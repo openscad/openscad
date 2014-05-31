@@ -116,8 +116,8 @@ std::string PlatformUtils::info()
 	std::string mingwstatus("No");
 #endif
 
-#ifndef OPENCSG_VERSION_STRING
-#define OPENCSG_VERSION_STRING "unknown, <1.3.2"
+#ifndef OPENCSG_VERSION
+#define OPENCSG_VERSION "unknown, <1.3.2"
 #endif
 
 #ifdef QT_VERSION
@@ -152,7 +152,7 @@ std::string PlatformUtils::info()
 	  << "\nBoost version: " << BOOST_LIB_VERSION
 	  << "\nEigen version: " << EIGEN_WORLD_VERSION << "." << EIGEN_MAJOR_VERSION << "." << EIGEN_MINOR_VERSION
 	  << "\nCGAL version, kernels: " << TOSTRING(CGAL_VERSION) << ", " << cgal_3d_kernel << ", " << cgal_2d_kernel << ", " << cgal_2d_kernelEx
-	  << "\nOpenCSG version: " << OPENCSG_VERSION_STRING
+	  << "\nOpenCSG version: " << TOSTRING(OPENCSG_VERSION)
 	  << "\nQt version: " << qtVersion
 	  << "\nMingW build: " << mingwstatus
 	  << "\nGLib version: "       << GLIB_MAJOR_VERSION << "." << GLIB_MINOR_VERSION << "." << GLIB_MICRO_VERSION
