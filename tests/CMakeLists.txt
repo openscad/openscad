@@ -1214,23 +1214,23 @@ add_cmdline_test(openscad-camcenter EXE ${OPENSCAD_BINPATH}
 add_cmdline_test(openscad-colorscheme-cornfield EXE ${OPENSCAD_BINPATH}
                  ARGS --colorscheme=Cornfield -o 
                  SUFFIX png 
-                 FILES ${CMAKE_SOURCE_DIR}/../examples/example002.scad)
+                 FILES ${CMAKE_SOURCE_DIR}/../examples/Basics/difference_cube.scad)
 add_cmdline_test(openscad-colorscheme-metallic EXE ${OPENSCAD_BINPATH}
                  ARGS --colorscheme=Metallic -o 
                  SUFFIX png 
-                 FILES ${CMAKE_SOURCE_DIR}/../examples/example002.scad)
+                 FILES ${CMAKE_SOURCE_DIR}/../examples/Basics/difference_cube.scad)
 add_cmdline_test(openscad-colorscheme-sunset EXE ${OPENSCAD_BINPATH}
                  ARGS --colorscheme=Sunset -o 
                  SUFFIX png 
-                 FILES ${CMAKE_SOURCE_DIR}/../examples/example002.scad)
-add_cmdline_test(openscad-colorscheme-severny EXE ${OPENSCAD_BINPATH}
-                 ARGS --colorscheme=Severny -o 
+                 FILES ${CMAKE_SOURCE_DIR}/../examples/Basics/difference_cube.scad)
+add_cmdline_test(openscad-colorscheme-starnight EXE ${OPENSCAD_BINPATH}
+                 ARGS --colorscheme=Starnight -o 
                  SUFFIX png 
-                 FILES ${CMAKE_SOURCE_DIR}/../examples/example002.scad)
+                 FILES ${CMAKE_SOURCE_DIR}/../examples/Basics/difference_cube.scad)
 add_cmdline_test(openscad-colorscheme-monotone EXE ${OPENSCAD_BINPATH}
                  ARGS --colorscheme=Monotone -o 
                  SUFFIX png 
-                 FILES ${CMAKE_SOURCE_DIR}/../examples/example002.scad)
+                 FILES ${CMAKE_SOURCE_DIR}/../examples/Basics/difference_cube.scad)
 
 
 
