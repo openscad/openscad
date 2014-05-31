@@ -27,7 +27,7 @@
     <item>
      <widget class="QStackedWidget" name="stackedWidget">
       <property name="currentIndex">
-       <number>0</number>
+       <number>4</number>
       </property>
       <widget class="QWidget" name="page3DView">
        <layout class="QVBoxLayout" name="verticalLayout_4">
@@ -150,7 +150,7 @@
            <widget class="QFontComboBox" name="fontChooser">
             <property name="currentFont">
              <font>
-              <family>Helvetica</family>
+              <family>DejaVu Sans</family>
               <pointsize>12</pointsize>
              </font>
             </property>
@@ -477,8 +477,8 @@
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>98</width>
-               <height>36</height>
+               <width>803</width>
+               <height>325</height>
               </rect>
              </property>
              <layout class="QVBoxLayout" name="verticalLayout_10">
