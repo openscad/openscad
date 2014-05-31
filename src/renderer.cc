@@ -18,7 +18,7 @@ Renderer::Renderer() : colorscheme(NULL)
 	// Setup default colors
 	// The main colors, MATERIAL and CUTOUT, come from this object's
 	// colorscheme. Colorschemes don't currently hold information
-	// for Highlight/Background colors, nor for Material/Cutout edges,
+	// for Highlight/Background colors
 	// but it wouldn't be too hard to make them do so.
 
 	colormap[COLORMODE_NONE] = Color4f(-1,-1,-1,-1);
