@@ -949,8 +949,9 @@ list(APPEND CGALSTLSANITYTEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/no
 list(APPEND EXPORT3D_TEST_FILES ${EXAMPLE_FILES})
 list(APPEND EXPORT3D_TEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/features/polyhedron-nonplanar-tests.scad )
 disable_tests(
-  # not 3d
+  # flat_body is not 3d so dont do 3d-tests on it
   stlpngtest_flat_body
+  offpngtest_flat_body
 )
 
 # FIXME: This test illustrates a weakness in child() combined with modifiers.
