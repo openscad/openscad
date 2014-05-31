@@ -171,7 +171,7 @@ def run_test(testname, cmd, args):
     try:
         cmdline = [cmd] + args + [outputname]
         print 'cmdline:',cmdline
-	sys.stdout.flush()
+        sys.stdout.flush()
         proc = subprocess.Popen(cmdline, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 	comresult = proc.communicate()
         stdouttext, errtext = comresult[0],comresult[1]
