@@ -400,8 +400,8 @@ namespace OGL {
       //      CGAL_NEF_TRACEN("drawing edge "<<*e);
       Double_point p = e->source(), q = e->target();
       CGAL::Color c = getEdgeColor(e);
-      //glLineWidth(5);
-      glLineWidth(1);
+      glLineWidth(5);
+      //glLineWidth(1);
       glColor3ub(c.red(),c.green(),c.blue());
       glBegin(GL_LINE_STRIP);
       glVertex3d(p.x(), p.y(), p.z());
