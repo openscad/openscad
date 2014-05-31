@@ -23,7 +23,7 @@ RenderSettings::RenderSettings()
 
 OSColors::colorscheme &RenderSettings::defaultColorScheme()
 {
-	return OSColors::colorschemes["Cornfield"];
+	return OSColors::defaultColorScheme;
 }
 
 Color4f RenderSettings::color(OSColors::RenderColor idx)
