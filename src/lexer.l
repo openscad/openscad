@@ -172,7 +172,12 @@ use[ \t\r\n>]*"<"	{ BEGIN(cond_use); }
 			return TOK_STRING; }
 }
 
-[\n\r\t ]
+%{/*
+ C2A0 is no-break space. We support it since Qt's QTextEdit automatically converts these to
+ spaces and we want to be able to process the same files on the cmd-line as in the editor.
+*/%}
+
+[\n\r\t ]|\xc2\xa0
 \/\/[^\n]*\n?
 "/*" BEGIN(cond_comment);
 <cond_comment>"*/" BEGIN(INITIAL);
