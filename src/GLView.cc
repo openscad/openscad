@@ -59,10 +59,10 @@ void GLView::setColorScheme( std::string cs )
 {
   if (OSColors::colorschemes.count(cs) > 0) {
     setColorScheme(OSColors::colorschemes[cs]);
-	}
-	else {
+  }
+  else {
     PRINTB("WARNING: GLView: unknown colorscheme %s", cs);
-	}
+  }
 }
 
 void GLView::resizeGL(int w, int h)
