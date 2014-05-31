@@ -121,13 +121,11 @@ def compare_png(resultfilename):
       options.convert_exec = 'compare'
       compare_method = 'NCC'
 
-    msg = 'ImageMagick image comparison: '  + options.convert_exec + ' '+ ' '.join(args[2:])
-    msg += '\n expected image: ' + expectedfilename + '\n'
-    print >> sys.stderr, msg
+    print >> sys.stderr, 'ImageMagick image comparison: '
+    print >> sys.stderr, str(args)
     if not resultfilename:
         print >> sys.stderr, "Error: Error during test image generation"
         return False
-    print >> sys.stderr, ' actual image: ', resultfilename
 
     (retval, output) = execute_and_redirect(options.convert_exec, args, subprocess.PIPE)
     print "Imagemagick return", retval, "output:", output
@@ -165,10 +163,14 @@ def run_test(testname, cmd, args):
     try:
         cmdline = [cmd] + args + [outputname]
         print 'cmdline:',cmdline
+	sys.stdout.flush()
         proc = subprocess.Popen(cmdline, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        errtext = proc.communicate()[1]
+	comresult = proc.communicate()
+        stdouttext, errtext = comresult[0],comresult[1]
         if errtext != None and len(errtext) > 0:
             print >> sys.stderr, "stderr output: " + errtext
+        if stdouttext != None and len(stdouttext) > 0:
+            print >> sys.stderr, "stdout output: " + stdouttext
         outfile.close()
         if proc.returncode != 0:
             print >> sys.stderr, "Error: %s failed with return code %d" % (cmdname, proc.returncode)

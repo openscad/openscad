@@ -945,16 +945,6 @@ list(APPEND THROWNTOGETHERTEST_FILES ${OPENCSGTEST_FILES})
 
 list(APPEND CGALSTLSANITYTEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/normal-nan.scad)
 
-#
-# 3d Export tests
-#
-# These tests export a 3d format like STL, OFF, etc, re-import it, and 
-# then render a PNG, comparing it to expected PNG output. This tests our 
-# exporter, as well as our importer. The name of the tests have a pattern:
-# 'export3d_' + format + '_testname'. For example export3d_stl_test_example001
-#
-# The test are currently a small set of objects. As the export/import 
-# code improves we can add other tests here.
 list(APPEND EXPORT3D_TEST_FILES ${EXAMPLE_FILES})
 list(APPEND EXPORT3D_TEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/features/polyhedron-nonplanar-tests.scad )
 disable_tests(
@@ -1001,9 +991,6 @@ disable_tests(cgalpngtest_child-background
               csgpngtest_child-background
               csgpngtest_highlight-and-background-modifier
               csgpngtest_testcolornames
-              expoimpo3dpngtest_child-background
-              expoimpo3dpngtest_highlight-and-background-modifier
-              expoimpo3dpngtest_testcolornames
               throwntogethertest_testcolornames)
 
 # The inf/nan tests fail when exporting CSG and rendering that output again
@@ -1144,22 +1131,15 @@ add_cmdline_test(dumptest EXE ${OPENSCAD_BINPATH} ARGS -o SUFFIX csg FILES ${DUM
 add_cmdline_test(dumptest-examples EXE ${OPENSCAD_BINPATH} ARGS -o SUFFIX csg FILES ${EXAMPLE_FILES})
 add_cmdline_test(cgalpngtest EXE ${OPENSCAD_BINPATH} ARGS --render -o SUFFIX png FILES ${CGALPNGTEST_FILES})
 add_cmdline_test(opencsgtest EXE ${OPENSCAD_BINPATH} ARGS -o SUFFIX png FILES ${OPENCSGTEST_FILES})
-add_cmdline_test(csgpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT csg-import-test.py ARGS ${OPENSCAD_BINPATH} EXPECTEDDIR cgalpngtest SUFFIX png FILES ${CGALPNGTEST_FILES})
-add_cmdline_test(expoimpo3dpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT test_3d_export.py ARGS ${OPENSCAD_BINPATH} EXPECTEDDIR cgalpngtest SUFFIX png FILES ${CGALPNGTEST_FILES})
+add_cmdline_test(csgpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOURCE_DIR}/csg-import-test.py ARGS ${OPENSCAD_BINPATH} EXPECTEDDIR cgalpngtest SUFFIX png FILES ${CGALPNGTEST_FILES})
 add_cmdline_test(throwntogethertest EXE ${OPENSCAD_BINPATH} ARGS --preview=throwntogether -o SUFFIX png FILES ${THROWNTOGETHERTEST_FILES})
 # FIXME: We don't actually need to compare the output of cgalstlsanitytest
 # with anything. It's self-contained and returns != 0 on error
 add_cmdline_test(cgalstlsanitytest EXE ${CMAKE_SOURCE_DIR}/cgalstlsanitytest SUFFIX txt ARGS ${OPENSCAD_BINPATH} FILES ${CGALSTLSANITYTEST_FILES})
 
-# Export3d tests - for stl/off & other 3d formats. See above for more 
-# info. The python script will detect the 'export' in the testname and 
-# then read the format (stl,off) from the testname as well. We have to 
-# use Montone colorscheme and --render because OpenCSG "marked face" 
-# (green) coloring, and background/special coloring, is lost when 
-# exporting to STL, so the generated PNG wont match unless we get rid of 
-# that coloring.
-add_cmdline_test(export3d_stl_test EXE ${OPENSCAD_BINPATH} ARGS --render --colorscheme=Monotone -o SUFFIX png FILES ${EXPORT3D_TEST_FILES})
-add_cmdline_test(export3d_off_test EXE ${OPENSCAD_BINPATH} ARGS --render --colorscheme=Monotone -o SUFFIX png FILES ${EXPORT3D_TEST_FILES})
+# Export/Import 3d png tests.
+add_cmdline_test(stlpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOURCE_DIR}/test_3d_export.py ARGS ${OPENSCAD_BINPATH} STL EXPECTEDDIR cgalpngtest SUFFIX png FILES ${EXPORT3D_TEST_FILES})
+add_cmdline_test(offpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOURCE_DIR}/test_3d_export.py ARGS ${OPENSCAD_BINPATH} OFF EXPECTEDDIR cgalpngtest SUFFIX png FILES ${EXPORT3D_TEST_FILES})
 
 # Add experimental tests
 
