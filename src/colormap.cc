@@ -141,7 +141,7 @@ boost::unordered_map<std::string, Color4f> OSColors::webcolors = map_list_of
     ("teal", Color4f(0, 128, 128))
     ("thistle", Color4f(216, 191, 216))
     ("tomato", Color4f(255, 99, 71))
-  	("transparent", Color4f(0, 0, 0, 0))
+    ("transparent", Color4f(0, 0, 0, 0))
     ("turquoise", Color4f(64, 224, 208))
     ("violet", Color4f(238, 130, 238))
     ("wheat", Color4f(245, 222, 179))
