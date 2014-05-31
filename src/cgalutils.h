@@ -11,6 +11,7 @@ namespace CGALUtils {
 	void applyBinaryOperator(CGAL_Nef_polyhedron &target, const CGAL_Nef_polyhedron &src, OpenSCADOperator op);
 	Polygon2d *project(const CGAL_Nef_polyhedron &N, bool cut);
 	CGAL_Iso_cuboid_3 boundingBox(const CGAL_Nef_polyhedron3 &N);
+	bool is_approximately_convex(const PolySet &ps);
 };
 
 CGAL_Nef_polyhedron *createNefPolyhedronFromGeometry(const class Geometry &geom);

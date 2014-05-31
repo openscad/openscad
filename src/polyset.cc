@@ -44,11 +44,11 @@
 
  */
 
-PolySet::PolySet(unsigned int dim) : dim(dim)
+PolySet::PolySet(unsigned int dim, boost::tribool convex) : dim(dim), convex(convex)
 {
 }
 
-PolySet::PolySet(const Polygon2d &origin) : polygon(origin), dim(2)
+PolySet::PolySet(const Polygon2d &origin) : polygon(origin), dim(2), convex(unknown)
 {
 }
 
@@ -138,6 +138,22 @@ void PolySet::transform(const Transform3d &mat)
 			v = mat * v;
 		}
 	}
+}
+
+namespace CGALUtils {
+	extern bool is_approximately_convex(const PolySet &ps);
+}
+
+bool PolySet::is_convex() const {
+	if (convex)  return true;
+	if (!convex) return false;
+
+#ifdef ENABLE_CGAL
+	convex = CGALUtils::is_approximately_convex(*this);
+	return convex;
+#else
+	return false;
+#endif
 }
 
 void PolySet::resize(Vector3d newsize, const Eigen::Matrix<bool,3,1> &autosize)

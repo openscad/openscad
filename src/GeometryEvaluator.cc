@@ -97,7 +97,7 @@ GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren3D(const Abstr
 	if (children.size() == 0) return ResultObject();
 
 	if (op == OPENSCAD_HULL) {
-		PolySet *ps = new PolySet(3);
+		PolySet *ps = new PolySet(3, true);
 
 		if (CGALUtils::applyHull(children, *ps)) {
 			return ps;
