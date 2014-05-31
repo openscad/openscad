@@ -133,7 +133,7 @@ group() {
 	multmatrix([[1, 0, 0, -50], [0, 1, 0, -50], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 		multmatrix([[25, 0, 0, 0], [0, 25, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 			offset(delta = 0.9, join_type = "round", $fn = 0, $fa = 12, $fs = 2) {
-				square(size = [0.1, 0.1], center = false);
+				square(size = [0.1, 0.1], center = [0, 0, 0]);
 			}
 		}
 	}
