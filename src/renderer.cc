@@ -26,8 +26,8 @@ Renderer::Renderer() : colorscheme(NULL)
 	// CUTOUT is set by this object's colorscheme
 	colormap[COLORMODE_HIGHLIGHT] = Color4f(255, 81, 81, 128);
 	colormap[COLORMODE_BACKGROUND] = Color4f(180, 180, 180, 128);
-	colormap[COLORMODE_MATERIAL_EDGES] = Color4f(255, 236, 94, 255);
-	colormap[COLORMODE_CUTOUT_EDGES] = Color4f(171, 216, 86, 255);
+	// MATERIAL_EDGES is set by this object's colorscheme
+	// CUTOUT_EDGES is set by this object's colorscheme
 	colormap[COLORMODE_HIGHLIGHT_EDGES] = Color4f(255, 171, 86, 128);
 	colormap[COLORMODE_BACKGROUND_EDGES] = Color4f(150, 150, 150, 128);
 
