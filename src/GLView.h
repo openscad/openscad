@@ -54,7 +54,7 @@ public:
 	void showSmallaxes();
 
 	void setColorScheme( OSColors::colorscheme &cs );
-        void setColorScheme( std::string cs );
+	void setColorScheme( std::string cs );
 	void updateColorScheme();
 
 	virtual bool save(const char *filename) = 0;

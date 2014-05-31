@@ -373,8 +373,8 @@ namespace OGL {
     void draw(Vertex_iterator v) const { 
       //      CGAL_NEF_TRACEN("drawing vertex "<<*v);
       CGAL::Color c = getVertexColor(v);
-      //glPointSize(10);
-      glPointSize(1);
+      glPointSize(10);
+      //glPointSize(1);
       glColor3ub(c.red(), c.green(), c.blue());
       glBegin(GL_POINTS);
       glVertex3d(v->x(),v->y(),v->z());
