@@ -33,7 +33,7 @@ extern colorscheme sunset;
 extern colorscheme starnight;
 extern colorscheme monotone;
 extern boost::unordered_map<std::string, OSColors::colorscheme> colorschemes;
-extern const colorscheme &defaultColorScheme;
+extern colorscheme &defaultColorScheme;
 
 Color4f getValue(const colorscheme &cs, const RenderColor rc);
 

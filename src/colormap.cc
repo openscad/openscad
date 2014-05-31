@@ -218,7 +218,7 @@ boost::unordered_map<std::string, OSColors::colorscheme> OSColors::colorschemes 
   ("Starnight", OSColors::starnight)
   ("Monotone", OSColors::monotone); // Hidden, not in GUI
 
-const OSColors::colorscheme &OSColors::defaultColorScheme = OSColors::cornfield;
+OSColors::colorscheme &OSColors::defaultColorScheme = OSColors::cornfield;
 
 Color4f OSColors::getValue(const OSColors::colorscheme &cs, const OSColors::RenderColor rc)
 {
