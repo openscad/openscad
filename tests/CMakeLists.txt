@@ -1000,6 +1000,20 @@ set_test_config(Heavy cgalpngtest_rotate_extrude-tests
                       csgpngtest_linear_extrude-scale-zero-tests
                       cgalpngtest_sphere-tests
                       csgpngtest_resize-tests
+                      stlpngtest_fence
+                      stlpngtest_surface
+                      stlpngtest_demo_cut
+                      stlpngtest_search
+                      stlpngtest_rounded_box
+                      stlpngtest_difference
+                      stlpngtest_translation
+                      offpngtest_fence
+                      offpngtest_surface
+                      offpngtest_demo_cut
+                      offpngtest_search
+                      offpngtest_rounded_box
+                      offpngtest_difference
+                      offpngtest_translation
 )
 
 # Bugs
