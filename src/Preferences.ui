@@ -73,12 +73,7 @@
               </item>
               <item>
                <property name="text">
-                <string>Sea</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>Severny</string>
+                <string>Starnight</string>
                </property>
               </item>
              </widget>

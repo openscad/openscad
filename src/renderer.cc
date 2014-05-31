@@ -27,7 +27,7 @@ Renderer::Renderer() : colorscheme(NULL)
 
 	const OSColors::colorscheme &cs = RenderSettings::inst()->defaultColorScheme();
 	setColorScheme(cs);
-	PRINT("render constr");
+	PRINTD("render constr");
 }
 
 void Renderer::setColor(const float color[4], GLint *shaderinfo) const
@@ -79,7 +79,7 @@ this does not change Highlight or Background colors as they are not
 represented in the colorscheme (yet). Also edgecolors are currently the 
 same for CGAL & OpenCSG */
 void Renderer::setColorScheme(const OSColors::colorscheme &cs) {
-	PRINT("renderer setcolsch");
+	PRINTD("renderer setcolsch");
 	colormap[COLORMODE_MATERIAL] = OSColors::getValue(cs,OSColors::OPENCSG_FACE_FRONT_COLOR);
 	colormap[COLORMODE_CUTOUT] = OSColors::getValue(cs,OSColors::OPENCSG_FACE_BACK_COLOR);
 	colormap[COLORMODE_MATERIAL_EDGES] = OSColors::getValue(cs,OSColors::CGAL_EDGE_FRONT_COLOR);

@@ -33,7 +33,6 @@ Color4f RenderSettings::color(OSColors::RenderColor idx)
 
 void RenderSettings::setColors(const OSColors::colorscheme &colors)
 {
-	PRINT("RS: setcolors");
 	this->colors = colors;
 }
 

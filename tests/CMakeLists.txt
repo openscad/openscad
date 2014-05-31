@@ -948,36 +948,8 @@ list(APPEND CGALSTLSANITYTEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/no
 list(APPEND EXPORT3D_TEST_FILES ${EXAMPLE_FILES})
 list(APPEND EXPORT3D_TEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/features/polyhedron-nonplanar-tests.scad )
 disable_tests(
-  # examples 7,8,12,15 are not 3d.
-  export3d_stl_test_example007
-  export3d_off_test_example007
-  export3d_stl_test_example008
-  export3d_off_test_example008
-  export3d_stl_test_example012
-  export3d_off_test_example012
-  export3d_stl_test_example015
-  export3d_off_test_example015
-  # example 006 takes too long
-  export3d_stl_test_example006
-  export3d_off_test_example006
-  # example 13 - nef3->polyhedron fails with "!!!!" (facet normal=0,0,0)
-  export3d_stl_test_example013
-  export3d_off_test_example013
-  # example 17 - cannot export non-manifold object
-  export3d_stl_test_example017
-  export3d_off_test_example017
-  # example 18 - polyhedron builder fails
-  export3d_stl_test_example018
-  export3d_off_test_example018
-  # example 22 - nef3->polyhedron fails with "!!!!" (facet normal=0,0,0)
-  export3d_stl_test_example022
-  export3d_off_test_example022
-  # example 24 - polyhedron builder fails
-  export3d_stl_test_example024
-  export3d_off_test_example024
-  # example 21 - projection fails
-  export3d_stl_test_example021
-  export3d_off_test_example021
+  # not 3d
+  stlpngtest_flat_body
 )
 
 # FIXME: This test illustrates a weakness in child() combined with modifiers.
@@ -1019,12 +991,15 @@ set_test_config(Heavy cgalpngtest_rotate_extrude-tests
 		      throwntogethertest_text-font-alignment-tests
                       cgalpngtest_fractal
                       csgpngtest_fractal
+                      stlpngtest_fractal
                       cgalpngtest_iteration
                       csgpngtest_iteration
+                      stlpngtest_iteration
                       cgalpngtest_linear_extrude-scale-zero-tests
                       csgpngtest_linear_extrude-scale-zero-tests
                       cgalpngtest_sphere-tests
-                      csgpngtest_resize-tests)
+                      csgpngtest_resize-tests
+)
 
 # Bugs
 

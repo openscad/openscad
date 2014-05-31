@@ -59,11 +59,11 @@ public:
 		// Face and Edge colors are taken from default colorscheme
 		OSColors::colorscheme cs = RenderSettings::inst()->defaultColorScheme();
 		setColorScheme( cs );
-		PRINT("Cgalrender polyhedron constr");
+		PRINTD("Cgalrender polyhedron constr");
 	}
 
 	void draw(bool showedges) const {
-		PRINT("cgal hedron draw");
+		PRINTD("cgal hedron draw");
 		if(this->style == SNC_BOUNDARY) {
 			glCallList(this->object_list_+2);
 			if(showedges) {
@@ -104,7 +104,7 @@ public:
 	// set this->colors based on the given colorscheme. vertex colors
 	// are not set here as colorscheme doesnt yet hold vertex colors.
 	void setColorScheme(const OSColors::colorscheme &cs) {
-		PRINT("cgal renderer polyhedron setcolsch");
+		PRINTD("cgal renderer polyhedron setcolsch");
 		//setColor(CGAL_NEF3_MARKED_VERTEX_COLOR,cs.at(...));
 		//setColor(CGAL_NEF3_UNMARKED_VERTEX_COLOR,cs.at(...));
 		setColor(CGAL_NEF3_MARKED_FACET_COLOR, OSColors::getValue(cs,OSColors::CGAL_FACE_BACK_COLOR));
