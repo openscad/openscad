@@ -16,12 +16,18 @@ bool Renderer::getColor(Renderer::ColorMode colormode, Color4f &col) const
 Renderer::Renderer() : colorscheme(NULL)
 {
 	// Setup default colors
-	// MATERIAL and CUTOUT colors are set by the colorscheme
-	// (colorschemes do not currently hold Highlight/Background colors)
+	// The main colors, MATERIAL and CUTOUT, come from this object's
+	// colorscheme. Colorschemes don't currently hold information
+	// for Highlight/Background colors, nor for Material/Cutout edges,
+	// but it wouldn't be too hard to make them do so.
 
 	colormap[COLORMODE_NONE] = Color4f(-1,-1,-1,-1);
+	// MATERIAL is set by this object's colorscheme
+	// CUTOUT is set by this object's colorscheme
 	colormap[COLORMODE_HIGHLIGHT] = Color4f(255, 81, 81, 128);
 	colormap[COLORMODE_BACKGROUND] = Color4f(180, 180, 180, 128);
+	colormap[COLORMODE_MATERIAL_EDGES] = Color4f(255, 236, 94, 255);
+	colormap[COLORMODE_CUTOUT_EDGES] = Color4f(171, 216, 86, 255);
 	colormap[COLORMODE_HIGHLIGHT_EDGES] = Color4f(255, 171, 86, 128);
 	colormap[COLORMODE_BACKGROUND_EDGES] = Color4f(150, 150, 150, 128);
 
