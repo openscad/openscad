@@ -46,7 +46,7 @@ void export_png(const Geometry *root_geom, Camera &cam, std::ostream &output)
 
 	glview->setCamera( cam );
 	glview->setRenderer( &cgalRenderer );
-	glview->setColorScheme( cam.colorscheme );
+	glview->setColorScheme( *cam.colorscheme );
 	glview->paintGL();
 	glview->save(output);
 }
@@ -102,7 +102,7 @@ void export_png_preview_common( Tree &tree, Camera &cam, std::ostream &output, P
 	OpenCSG::setContext( 0 );
 	OpenCSG::setOption( OpenCSG::OffscreenSetting, OpenCSG::FrameBufferObject );
 #endif
-	csgInfo.glview->setColorScheme( cam.colorscheme );
+	csgInfo.glview->setColorScheme( *cam.colorscheme );
 	csgInfo.glview->paintGL();
 	csgInfo.glview->save( output );
 }

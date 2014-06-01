@@ -4,6 +4,7 @@
 #include "colormap.h"
 #include "rendersettings.h"
 #include "mathc99.h"
+#include "printutils.h"
 
 #ifdef _WIN32
 #include <GL/wglew.h>
@@ -15,7 +16,7 @@
 #include <opencsg.h>
 #endif
 
-GLView::GLView()
+GLView::GLView() : colorscheme(NULL)
 {
   showedges = false;
   showfaces = true;
@@ -43,23 +44,23 @@ void GLView::setRenderer(Renderer* r)
 to match the colorscheme of this GLView.*/
 void GLView::updateColorScheme()
 {
-  if (this->renderer)
-    this->renderer->setColorScheme( this->colorscheme );
+  if (this->renderer) this->renderer->setColorScheme(*this->colorscheme);
 }
 
 /* change this GLView's colorscheme to the one given, and update the
 Renderer attached to this GLView as well. */
-void GLView::setColorScheme( OSColors::colorscheme &cs )
+void GLView::setColorScheme(const OSColors::colorscheme &cs)
 {
-  this->colorscheme = cs;
+  this->colorscheme = &cs;
   this->updateColorScheme();
 }
 
-void GLView::setColorScheme( std::string cs )
+void GLView::setColorScheme(const std::string &cs)
 {
-  if (OSColors::colorschemes.count(cs) > 0) {
-    setColorScheme(OSColors::colorschemes[cs]);
-  }
+	const OSColors::colorscheme *colorscheme =  OSColors::colorScheme(cs);
+	if (colorscheme) {
+		setColorScheme(*colorscheme);
+	}
   else {
     PRINTB("WARNING: GLView: unknown colorscheme %s", cs);
   }
@@ -316,7 +317,7 @@ void GLView::vectorCamPaintGL()
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
 
-  Color4f bgcol = OSColors::getValue( this->colorscheme, OSColors::BACKGROUND_COLOR );
+  Color4f bgcol = OSColors::getValue(*this->colorscheme, OSColors::BACKGROUND_COLOR );
   glClearColor(bgcol[0], bgcol[1], bgcol[2], 1.0);
   //glClearColor(1.0f, 1.0f, 0.92f, 1.0f);
 
@@ -357,7 +358,7 @@ void GLView::gimbalCamPaintGL()
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
 
-  Color4f bgcol = OSColors::getValue( this->colorscheme, OSColors::BACKGROUND_COLOR );
+  Color4f bgcol = OSColors::getValue(*this->colorscheme, OSColors::BACKGROUND_COLOR );
   glClearColor(bgcol[0], bgcol[1], bgcol[2], 1.0);
 
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
@@ -496,7 +497,7 @@ void GLView::showCrosshairs()
   // FIXME: Crosshairs and axes are lighted, this doesn't make sense and causes them
   // to change color based on view orientation.
   glLineWidth(3);
-  Color4f col = RenderSettings::inst()->color(OSColors::CROSSHAIR_COLOR);
+  Color4f col = OSColors::getValue(*this->colorscheme, OSColors::CROSSHAIR_COLOR);
   glColor3f(col[0], col[1], col[2]);
   glBegin(GL_LINES);
   for (double xf = -1; xf <= +1; xf += 2)

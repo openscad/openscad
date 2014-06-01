@@ -150,6 +150,9 @@ static void info()
 	exit(0);
 }
 
+extern void printcolorscheme(const OSColors::colorscheme &cs);
+extern void printcolorschemes();
+
 Camera get_camera( po::variables_map vm )
 {
 	Camera camera;
@@ -203,13 +206,12 @@ Camera get_camera( po::variables_map vm )
 
 	if (vm.count("colorscheme")) {
 		std::string colorscheme = vm["colorscheme"].as<string>();
-		if (OSColors::colorschemes.count(colorscheme)>0) {
-			camera.colorscheme = OSColors::colorschemes[colorscheme];
+		if (const OSColors::colorscheme *scheme = OSColors::colorScheme(colorscheme)) {
+			camera.colorscheme = scheme;
 		} else {
 			PRINT("Unknown color scheme. Valid schemes:");
-			boost::unordered_map<std::string, OSColors::colorscheme>::iterator i;
-			for (i=OSColors::colorschemes.begin();i!=OSColors::colorschemes.end();i++) {
-				PRINTB("%s",i->first);
+			BOOST_FOREACH (const std::string &name, OSColors::colorSchemes()) {
+				PRINT(name);
 			}
 			exit(1);
 		}
@@ -607,6 +609,7 @@ int main(int argc, char **argv)
 	CGAL::set_error_behaviour(CGAL::ABORT);
 #endif
 	Builtins::instance()->initialize();
+	OSColors::init();	
 
 	fs::path original_path = fs::current_path();
 

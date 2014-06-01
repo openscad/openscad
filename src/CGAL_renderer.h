@@ -57,8 +57,7 @@ public:
 		//setColor(CGAL_NEF3_MARKED_EDGE_COLOR,0xab,0xd8,0x56);
 		//setColor(CGAL_NEF3_UNMARKED_EDGE_COLOR,0xff,0xec,0x5e);
 		// Face and Edge colors are taken from default colorscheme
-		OSColors::colorscheme cs = RenderSettings::inst()->defaultColorScheme();
-		setColorScheme( cs );
+		setColorScheme(OSColors::defaultColorScheme());
 		PRINTD("Cgalrender polyhedron constr");
 	}
 

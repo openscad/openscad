@@ -1,6 +1,18 @@
 #include "colormap.h"
+#include <boost/assign/list_of.hpp>
+#include "printutils.h"
+using namespace boost::assign; // bring map_list_of() into scope
 
-boost::unordered_map<std::string, Color4f> OSColors::webcolors = map_list_of
+boost::unordered_map<std::string, Color4f> webcolors;
+OSColors::colorscheme cornfield;
+OSColors::colorscheme metallic;
+OSColors::colorscheme sunset;
+OSColors::colorscheme starnight;
+OSColors::colorscheme monotone;
+boost::unordered_map<std::string, OSColors::colorscheme> colorschemes;
+
+void OSColors::init() {
+webcolors = map_list_of
     ("aliceblue", Color4f(240, 248, 255))
     ("antiquewhite", Color4f(250, 235, 215))
     ("aqua", Color4f(0, 255, 255))
@@ -150,7 +162,7 @@ boost::unordered_map<std::string, Color4f> OSColors::webcolors = map_list_of
     ("yellow", Color4f(255, 255, 0))
     ("yellowgreen", Color4f(154, 205, 50));
 
-OSColors::colorscheme OSColors::cornfield = map_list_of
+cornfield = map_list_of
   (BACKGROUND_COLOR,         Color4f(0xff, 0xff, 0xe5))
   (OPENCSG_FACE_FRONT_COLOR, Color4f(0xf9, 0xd7, 0x2c))
   (OPENCSG_FACE_BACK_COLOR,  Color4f(0x9d, 0xcb, 0x51))
@@ -162,7 +174,7 @@ OSColors::colorscheme OSColors::cornfield = map_list_of
   (CGAL_EDGE_2D_COLOR,       Color4f(0xff, 0x00, 0x00))
   (CROSSHAIR_COLOR,          Color4f(0x80, 0x00, 0x00));
 
-OSColors::colorscheme OSColors::metallic = map_list_of
+metallic = map_list_of
   (BACKGROUND_COLOR,         Color4f(0xaa, 0xaa, 0xff))
   (OPENCSG_FACE_FRONT_COLOR, Color4f(0xdd, 0xdd, 0xff))
   (OPENCSG_FACE_BACK_COLOR,  Color4f(0xdd, 0x22, 0xdd))
@@ -174,7 +186,7 @@ OSColors::colorscheme OSColors::metallic = map_list_of
   (CGAL_EDGE_2D_COLOR,       Color4f(0xff, 0x00, 0x00))
   (CROSSHAIR_COLOR,          Color4f(0x80, 0x00, 0x00));
 
-OSColors::colorscheme OSColors::sunset = map_list_of
+sunset = map_list_of
   (BACKGROUND_COLOR,         Color4f(0xaa, 0x44, 0x44))
   (OPENCSG_FACE_FRONT_COLOR, Color4f(0xff, 0xaa, 0xaa))
   (OPENCSG_FACE_BACK_COLOR,  Color4f(0x88, 0x22, 0x33))
@@ -186,7 +198,7 @@ OSColors::colorscheme OSColors::sunset = map_list_of
   (CGAL_EDGE_2D_COLOR,       Color4f(0xff, 0x00, 0x00))
   (CROSSHAIR_COLOR,          Color4f(0x80, 0x00, 0x00));
 
-OSColors::colorscheme OSColors::starnight = map_list_of
+starnight = map_list_of
   (BACKGROUND_COLOR,         webcolors["black"])
   (OPENCSG_FACE_FRONT_COLOR, webcolors["lightyellow"])
   (OPENCSG_FACE_BACK_COLOR,  webcolors["cyan"])
@@ -199,7 +211,7 @@ OSColors::colorscheme OSColors::starnight = map_list_of
   (CROSSHAIR_COLOR,          Color4f(0xf0, 0xf0, 0xf0));
 
 // Monotone - no difference between 'back face' and 'front face'
-OSColors::colorscheme OSColors::monotone = map_list_of
+monotone = map_list_of
   (BACKGROUND_COLOR,         Color4f(0xff, 0xff, 0xe5))
   (OPENCSG_FACE_FRONT_COLOR, Color4f(0xf9, 0xd7, 0x2c))
   (OPENCSG_FACE_BACK_COLOR,  Color4f(0xf9, 0xd7, 0x2c))
@@ -211,25 +223,59 @@ OSColors::colorscheme OSColors::monotone = map_list_of
   (CGAL_EDGE_2D_COLOR,       Color4f(0xff, 0x00, 0x00))
   (CROSSHAIR_COLOR,          Color4f(0x80, 0x00, 0x00));
 
-boost::unordered_map<std::string, OSColors::colorscheme> OSColors::colorschemes = map_list_of
-  ("Cornfield", OSColors::cornfield)
-  ("Metallic", OSColors::metallic)
-  ("Sunset", OSColors::sunset)
-  ("Starnight", OSColors::starnight)
-  ("Monotone", OSColors::monotone); // Hidden, not in GUI
+colorschemes = map_list_of
+  ("Cornfield", cornfield)
+  ("Metallic", metallic)
+  ("Sunset", sunset)
+  ("Starnight", starnight)
+  ("Monotone", monotone); // Hidden, not in GUI
+}
 
-OSColors::colorscheme &OSColors::defaultColorScheme = OSColors::cornfield;
+const OSColors::colorscheme &OSColors::defaultColorScheme()
+{
+	return cornfield;
+}
+
+const boost::unordered_map<std::string, Color4f> &OSColors::webColors()
+{
+	return webcolors;
+}
+
+const OSColors::colorscheme *OSColors::colorScheme(const std::string &name)
+{
+	if (colorschemes.find(name) != colorschemes.end()) return &colorschemes.at(name);
+	return NULL;
+}
+
+std::list<std::string> OSColors::colorSchemes()
+{
+	std::list<std::string> names;
+	for (boost::unordered_map<std::string, OSColors::colorscheme>::const_iterator iter=colorschemes.begin(); iter!=colorschemes.end(); iter++) {
+		names.push_back(iter->first);
+	}
+	return names;
+}
 
 Color4f OSColors::getValue(const OSColors::colorscheme &cs, const OSColors::RenderColor rc)
 {
 	if (cs.count(rc)) return cs.at(rc);
-	if (OSColors::defaultColorScheme.count(rc)) return defaultColorScheme.at(rc);
+	if (OSColors::defaultColorScheme().count(rc)) return defaultColorScheme().at(rc);
 	return Color4f(0, 0, 0, 127);
 }
 
-/*static void printcolorscheme( colorscheme &cs )
+/*
+void printcolorscheme(const OSColors::colorscheme &cs)
 {
-        for(colorscheme::iterator j=cs.begin();j!=cs.end();j++)
-                PRINTB("%i %s",j->first % j->second.transpose());
+	for (OSColors::colorscheme::const_iterator j=cs.begin();j!=cs.end();j++)
+		PRINTB("%i %s",j->first % j->second.transpose());
+}
+
+void printcolorschemes()
+{
+	for (boost::unordered_map<std::string, OSColors::colorscheme>::const_iterator i=colorschemes.begin();i!=colorschemes.end();i++) {
+		PRINTB("-- %s --", i->first);
+		for (OSColors::colorscheme::const_iterator j=i->second.begin();j!=i->second.end();j++)
+			PRINTB("%i %s",j->first % j->second.transpose());
+	}
 }
 */
