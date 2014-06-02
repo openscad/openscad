@@ -532,23 +532,29 @@ build_eigen()
 
 # glib2 and dependencies
 
-build_gettext()
-{
-  version=$1
-  echo "Building gettext $version..."
-
-  cd "$BASEDIR"/src
-  rm -rf "gettext-$version"
-  if [ ! -f "glib-$version.tar.gz" ]; then
-    curl --insecure -LO "http://ftpmirror.gnu.org/gettext/gettext-$version.tar.gz"
-  fi
-  tar xzf "gettext-$version.tar.gz"
-  cd "gettext-$version"
-
-  ./configure --prefix="$DEPLOYDIR"
-  make -j$NUMCPU
-  make install
-}
+#build_gettext()
+#{
+#  version=$1
+#  ls -l $DEPLOYDIR/include/gettext-po.h
+#  if [ -e $DEPLOYDIR/include/gettext-po.h ]; then
+#    echo "gettext already installed. not building"
+#    return
+#  fi
+#
+#  echo "Building gettext $version..."
+#
+#  cd "$BASEDIR"/src
+#  rm -rf "gettext-$version"
+#  if [ ! -f "glib-$version.tar.gz" ]; then
+#    curl --insecure -LO "http://ftpmirror.gnu.org/gettext/gettext-$version.tar.gz"
+#  fi
+#  tar xzf "gettext-$version.tar.gz"
+#  cd "gettext-$version"
+#
+#  ./configure --prefix="$DEPLOYDIR"
+#  make -j$NUMCPU
+#  make install
+#}
 
 build_pkgconfig()
 {
@@ -743,7 +749,10 @@ build_cgal 4.0.2
 build_glew 1.9.0
 build_opencsg 1.3.2
 build_gettext 0.18.3.1
+exit 1
 build_glib2 2.38.2
+
+# the following are only needed for text()
 build_freetype 2.5.0.1
 build_libxml2 2.9.1
 build_fontconfig 2.11.0
