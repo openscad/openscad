@@ -110,7 +110,7 @@ build_gettext()
   echo "Building gettext $version..."
   cd "$BASEDIR"/src
   rm -rf "gettext-$version"
-  if [ ! -f "gettext-$version.tar.xz" ]; then
+  if [ ! -f "gettext-$version.tar.gz" ]; then
     curl --insecure -LO "http://ftpmirror.gnu.org/gettext/gettext-$version.tar.gz"
   fi
   tar xzf "gettext-$version.tar.gz"
