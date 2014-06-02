@@ -54,7 +54,6 @@ private:
 	void addPrefPage(QActionGroup *group, QAction *action, QWidget *widget);
 
 	QSettings::SettingsMap defaultmap;
-	QHash<QString, OSColors::colorscheme > colorschemes;
 	QHash<const QAction *, QWidget *> prefPages;
 
 	static Preferences *instance;

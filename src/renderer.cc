@@ -31,8 +31,7 @@ Renderer::Renderer() : colorscheme(NULL)
 	colormap[COLORMODE_HIGHLIGHT_EDGES] = Color4f(255, 171, 86, 128);
 	colormap[COLORMODE_BACKGROUND_EDGES] = Color4f(150, 150, 150, 128);
 
-	const OSColors::colorscheme &cs = RenderSettings::inst()->defaultColorScheme();
-	setColorScheme(cs);
+	setColorScheme(OSColors::defaultColorScheme());
 	PRINTD("render constr");
 }
 
@@ -91,7 +90,7 @@ void Renderer::setColorScheme(const OSColors::colorscheme &cs) {
 	colormap[COLORMODE_MATERIAL_EDGES] = OSColors::getValue(cs,OSColors::CGAL_EDGE_FRONT_COLOR);
 	colormap[COLORMODE_CUTOUT_EDGES] = OSColors::getValue(cs,OSColors::CGAL_EDGE_BACK_COLOR);
 	colormap[COLORMODE_EMPTY_SPACE] = OSColors::getValue(cs,OSColors::BACKGROUND_COLOR);
-	this->colorscheme = const_cast<OSColors::colorscheme*>(&cs);
+	this->colorscheme = &cs;
 }
 
 void Renderer::render_surface(shared_ptr<const Geometry> geom, csgmode_e csgmode, const Transform3d &m, GLint *shaderinfo)

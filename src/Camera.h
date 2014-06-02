@@ -45,7 +45,7 @@ public:
 		pixel_width = RenderSettings::inst()->img_width;
 		pixel_height = RenderSettings::inst()->img_height;
 		projection = Camera::PERSPECTIVE;
-		colorscheme = RenderSettings::inst()->getColors();
+		colorscheme = &OSColors::defaultColorScheme();
 	}
 
 	void setup( std::vector<double> params )
@@ -74,7 +74,7 @@ public:
 		object_rot.z() = fmodf(360 - object_rot.z(), 360);
 	}
 
-	OSColors::colorscheme colorscheme;
+	const OSColors::colorscheme *colorscheme;
 
 	// Vectorcam
 	Eigen::Vector3d eye;
