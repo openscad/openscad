@@ -84,7 +84,7 @@ namespace CGALUtils {
 		assert(children.size() >= 2);
 		Geometry::ChildList::const_iterator it = children.begin();
 		t_tot.start();
-		Geometry const* operands[2] = {it->second.get(), nullptr};
+		Geometry const* operands[2] = {it->second.get(), NULL};
 		try {
 			while (++it != children.end()) {
 				operands[1] = it->second.get();
@@ -233,7 +233,7 @@ namespace CGALUtils {
 					}
 				}
 
-				if (it != std::next(children.begin()))
+				if (it != boost::next(children.begin()))
 					delete operands[0];
 
 				if (result_parts.size() == 1) {
