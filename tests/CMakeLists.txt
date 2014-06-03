@@ -998,6 +998,7 @@ set_test_config(Heavy cgalpngtest_rotate_extrude-tests
                       cgalpngtest_iteration
                       csgpngtest_iteration
                       stlpngtest_iteration
+                      offpngtest_iteration
                       cgalpngtest_linear_extrude-scale-zero-tests
                       csgpngtest_linear_extrude-scale-zero-tests
                       cgalpngtest_sphere-tests
