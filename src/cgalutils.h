@@ -12,6 +12,7 @@ namespace CGALUtils {
 	Polygon2d *project(const CGAL_Nef_polyhedron &N, bool cut);
 	CGAL_Iso_cuboid_3 boundingBox(const CGAL_Nef_polyhedron3 &N);
 	bool is_approximately_convex(const PolySet &ps);
+	Geometry const* applyMinkowski(const Geometry::ChildList &children);
 };
 
 CGAL_Nef_polyhedron *createNefPolyhedronFromGeometry(const class Geometry &geom);

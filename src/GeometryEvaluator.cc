@@ -110,6 +110,8 @@ GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren3D(const Abstr
 	// Only one child -> this is a noop
 	if (children.size() == 1) return ResultObject(children.front().second);
 
+	if (op == OPENSCAD_MINKOWSKI) return ResultObject(CGALUtils::applyMinkowski(children));
+
 	CGAL_Nef_polyhedron *N = new CGAL_Nef_polyhedron;
 	CGALUtils::applyOperator(children, *N, op);
 	return ResultObject(N);
