@@ -29,7 +29,7 @@ public:
 	Camera() {
 		type = Camera::NONE;
 		projection = Camera::PERSPECTIVE;
-		colorscheme = NULL;
+		colorscheme = &OSColors::defaultColorScheme();
 	}
 	Camera( enum CameraType e )
 	{
