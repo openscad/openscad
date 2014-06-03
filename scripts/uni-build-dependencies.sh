@@ -754,7 +754,6 @@ build_glib2 2.38.2
 
 # the following are only needed for text()
 build_freetype 2.5.0.1
-exit 1
 build_libxml2 2.9.1
 build_fontconfig 2.11.0
 build_ragel 6.8

@@ -102,7 +102,7 @@ build_gettext()
 {
   version="$1"
 
-  if [ -f "$DEPLOYDIR"/lib/libintl.a ]; then
+  if [ -f "$DEPLOYDIR"/lib/libgettextpo.a ]; then
     echo "gettext already installed. not building"
     return
   fi
