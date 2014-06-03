@@ -29,6 +29,7 @@ public:
 	Camera() {
 		type = Camera::NONE;
 		projection = Camera::PERSPECTIVE;
+		colorscheme = NULL;
 	}
 	Camera( enum CameraType e )
 	{

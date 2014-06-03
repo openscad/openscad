@@ -994,6 +994,7 @@ set_test_config(Heavy cgalpngtest_rotate_extrude-tests
                       cgalpngtest_fractal
                       csgpngtest_fractal
                       stlpngtest_fractal
+                      offpngtest_fractal
                       cgalpngtest_iteration
                       csgpngtest_iteration
                       stlpngtest_iteration
