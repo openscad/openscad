@@ -116,7 +116,7 @@ build_gettext()
   tar xzf "gettext-$version.tar.gz"
   cd "gettext-$version"
 
-  ./configure --prefix="$DEPLOYDIR" --disable-java
+  ./configure --prefix="$DEPLOYDIR" --disable-java --disable-native-java
   make -j$NUMCPU
   make install
 }

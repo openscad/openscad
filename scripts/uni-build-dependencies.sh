@@ -605,29 +605,29 @@ build_libffi()
   make install
 }
 
-build_glib2()
-{
-  version="$1"
-  maj_min_version="${version%.*}" #Drop micro
+#build_glib2()
+#{
+#  version="$1"
+#  maj_min_version="${version%.*}" #Drop micro#
+#
+#  if [ -e $DEPLOYDIR/lib/glib-2.0 ]; then
+#    echo "glib2 already installed. not building"
+#    return
+#  fi
+#
+# echo "Building glib2 $version..."
+#  cd "$BASEDIR"/src
+#  rm -rf "glib-$version"
+#  if [ ! -f "glib-$version.tar.xz" ]; then
+#    curl --insecure -LO "http://ftp.gnome.org/pub/gnome/sources/glib/$maj_min_version/glib-$version.tar.xz"
+#  fi
+#  tar xJf "glib-$version.tar.xz"
+#  cd "glib-$version"
 
-  if [ -e $DEPLOYDIR/lib/glib-2.0 ]; then
-    echo "glib2 already installed. not building"
-    return
-  fi
-
-  echo "Building glib2 $version..."
-  cd "$BASEDIR"/src
-  rm -rf "glib-$version"
-  if [ ! -f "glib-$version.tar.xz" ]; then
-    curl --insecure -LO "http://ftp.gnome.org/pub/gnome/sources/glib/$maj_min_version/glib-$version.tar.xz"
-  fi
-  tar xJf "glib-$version.tar.xz"
-  cd "glib-$version"
-
-  ./configure --disable-gtk-doc --disable-man --prefix="$DEPLOYDIR" CFLAGS="-I$DEPLOYDIR/include" LDFLAGS="-L$DEPLOYDIR/lib"
-  make -j$NUMCPU
-  make install
-}
+#  ./configure --disable-gtk-doc --disable-man --prefix="$DEPLOYDIR" CFLAGS="-I$DEPLOYDIR/include" LDFLAGS="-L$DEPLOYDIR/lib"
+#  make -j$NUMCPU
+#  make install
+#}
 
 ## end of glib2 stuff
 
@@ -738,7 +738,8 @@ fi
 # This is only for libraries most systems won't have new enough versions of.
 # For big things like Qt4, see the notes at the head of this file on
 # building individual dependencies.
-#
+# 
+# Some of these are defined in scripts/common-build-dependencies.sh
 
 build_eigen 3.1.1
 build_gmp 5.0.5
@@ -749,11 +750,11 @@ build_cgal 4.0.2
 build_glew 1.9.0
 build_opencsg 1.3.2
 build_gettext 0.18.3.1
-exit 1
 build_glib2 2.38.2
 
 # the following are only needed for text()
 build_freetype 2.5.0.1
+exit 1
 build_libxml2 2.9.1
 build_fontconfig 2.11.0
 build_ragel 6.8
