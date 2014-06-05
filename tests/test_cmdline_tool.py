@@ -91,7 +91,7 @@ def compare_default(resultfilename):
     print >> sys.stderr, ' actual textfile: ', resultfilename
     if not compare_text(expectedfilename, resultfilename):
 	if resultfilename: 
-            execute_and_redirect("diff", [expectedfilename, resultfilename], sys.stderr)
+            execute_and_redirect("diff", ["-u", expectedfilename, resultfilename], sys.stderr)
         return False
     return True
 
@@ -143,10 +143,18 @@ def run_test(testname, cmd, args):
     cmdname = os.path.split(options.cmd)[1]
 
     if options.generate: 
-        if not os.path.exists(expecteddir): os.makedirs(expecteddir)
+        if not os.path.exists(expecteddir):
+            try:
+                os.makedirs(expecteddir)
+            except OSError as e:
+                if e.errno != 17: raise e # catch File Exists to allow parallel runs
         outputname = expectedfilename
     else:
-        if not os.path.exists(actualdir): os.makedirs(actualdir)
+        if not os.path.exists(actualdir):
+            try:
+                os.makedirs(actualdir)
+            except OSError as e:
+                if e.errno != 17: raise e  # catch File Exists to allow parallel runs
         outputname = actualfilename
     outputname = os.path.normpath(outputname)
 

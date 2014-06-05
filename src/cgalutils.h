@@ -1,5 +1,4 @@
-#ifndef CGALUTILS_H_
-#define CGALUTILS_H_
+#pragma once
 
 #include <cgal.h>
 #include "polyset.h"
@@ -7,7 +6,7 @@
 #include "enums.h"
 
 namespace CGALUtils {
-	bool applyHull(const Geometry::ChildList &children, CGAL_Polyhedron &P);
+	bool applyHull(const Geometry::ChildList &children, PolySet &P);
 	void applyOperator(const Geometry::ChildList &children, CGAL_Nef_polyhedron &dest, OpenSCADOperator op);
 	void applyBinaryOperator(CGAL_Nef_polyhedron &target, const CGAL_Nef_polyhedron &src, OpenSCADOperator op);
 	Polygon2d *project(const CGAL_Nef_polyhedron &N, bool cut);
@@ -15,7 +14,7 @@ namespace CGALUtils {
 };
 
 CGAL_Nef_polyhedron *createNefPolyhedronFromGeometry(const class Geometry &geom);
-bool createPolySetFromPolyhedron(const CGAL_Polyhedron &p, PolySet &ps);
+template <typename Polyhedron> bool createPolySetFromPolyhedron(const Polyhedron &p, PolySet &ps);
 bool createPolySetFromNefPolyhedron3(const CGAL_Nef_polyhedron3 &N, PolySet &ps);
 bool createPolyhedronFromPolySet(const PolySet &ps, CGAL_Polyhedron &p);
 
@@ -69,6 +68,3 @@ public:
 	void visit( CGAL_Nef_polyhedron3::SFace_const_handle ) {}
 	void visit( CGAL_Nef_polyhedron3::Halffacet_const_handle hfacet );
 };
-
-
-#endif

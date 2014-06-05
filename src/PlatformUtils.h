@@ -1,5 +1,4 @@
-#ifndef PLATFORMUTILS_H_
-#define PLATFORMUTILS_H_
+#pragma once
 
 #include <string>
 
@@ -20,6 +19,9 @@ namespace PlatformUtils {
          * @return the path separator
          */
         std::string pathSeparatorChar();
-}
 
-#endif
+	/* Provide stdout/stderr if not available.
+	 * Currently limited to MS Windows GUI application console only.
+	 */
+	void ensureStdIO(void);
+}

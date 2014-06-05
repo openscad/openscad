@@ -1,8 +1,6 @@
-#ifndef SYSTEMGL_H_
-#define SYSTEMGL_H_
+#pragma once
 
 #ifndef NULLGL
-
 #include <GL/glew.h>
 
 #ifdef __APPLE__
@@ -26,5 +24,3 @@ inline void glColor4fv( float *c ) {}
 std::string glew_dump();
 std::string glew_extensions_dump();
 bool report_glerror(const char * function);
-
-#endif // SYSTEMGL_H_

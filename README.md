@@ -86,7 +86,7 @@ libraries from aptitude. If you're using Mac, or an older Linux/BSD, there
 are build scripts that download and compile the libraries from source. 
 Follow the instructions for the platform you're compiling on below.
 
-* [Qt4 (4.4 - 4.8)](http://www.qt.nokia.com/)
+* [Qt4 (4.4 - 5.2)](http://www.qt.nokia.com/)
 * [CGAL (3.6 - 4.1)](http://www.cgal.org/)
  * [GMP (5.x)](http://www.gmplib.org/)
  * [MPFR (3.x)](http://www.mpfr.org/)
@@ -96,6 +96,9 @@ Follow the instructions for the platform you're compiling on below.
 * [GLEW (1.5.4 ->)](http://glew.sourceforge.net/)
 * [Eigen (3.0 - 3.2)](http://eigen.tuxfamily.org/)
 * [glib2 (2.2.0)](https://developer.gnome.org/glib/)
+* [fontconfig (2.10)](http://fontconfig.org/)
+* [freetype2 (2.4)](http://freetype.org/)
+* [harfbuzz (0.9.19)](http://harfbuzz.org/)
 * [GCC C++ Compiler (4.2 ->)](http://gcc.gnu.org/)
 * [Bison (2.4)](http://www.gnu.org/software/bison/)
 * [Flex (2.5.35)](http://flex.sourceforge.net/)
@@ -118,15 +121,18 @@ To pull the MCAD library (http://reprap.org/wiki/MCAD), do the following:
 
 Prerequisites:
 * XCode, including XCode command-line tools (install from XCode Preferences).
-* [CMake](http://cmake.org) and [pkg-config](http://www.freedesktop.org/wiki/Software/pkg-config/),
-   both can be installed manually or through MacPorts/homebrew.
+
+Prerequisites that can be installed through MacPorts/homebrew:
+* [CMake](http://cmake.org/)
+* [automake](http://www.gnu.org/software/automake/)
+* [pkg-config](http://www.freedesktop.org/wiki/Software/pkg-config/)
+* [libtool](https://www.gnu.org/software/libtool/)
 
 Then after you've cloned this git repository, run the script that sets up the
 environment variables.
 
-    source setenv_mac-gcc.sh
+    source setenv_mac-qt5.sh
 
-(or setenv_mac-clang.sh if you want to use the clang compiler instead of gcc).
 Then run the script to compile all the prerequisite libraries above:
 
     ./scripts/macosx-build-dependencies.sh

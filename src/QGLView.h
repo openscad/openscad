@@ -1,5 +1,4 @@
-#ifndef QGLVIEW_H_
-#define QGLVIEW_H_
+#pragma once
 
 #include "system-gl.h"
 #include <QGLWidget>
@@ -40,7 +39,7 @@ public:
 		else this->cam.projection = Camera::PERSPECTIVE;
 	}
 	std::string getRendererInfo() const;
-#if QT_VERSION >= 0x050001
+#if QT_VERSION >= 0x050100
 	float getDPI() { return this->devicePixelRatio(); }
 #endif
 	bool save(const char *filename);
@@ -79,5 +78,3 @@ private slots:
 signals:
 	void doAnimateUpdate();
 };
-
-#endif

@@ -210,6 +210,17 @@ Camera get_camera( po::variables_map vm )
 #include <QApplication>
 #endif
 
+static bool checkAndExport(shared_ptr<const Geometry> root_geom, unsigned nd,
+	enum FileFormat format, const char *filename)
+{
+	if (root_geom->getDimension() != nd) {
+		PRINTB("Current top level object is not a %dD object.", nd);
+		return false;
+	}
+	exportFileByName(root_geom.get(), format, filename, filename);
+	return true;
+}
+
 int cmdline(const char *deps_output_file, const std::string &filename, Camera &camera, const char *output_file, const fs::path &original_path, Render::type renderer, int argc, char ** argv )
 {
 #ifdef OPENSCAD_QTGUI
@@ -351,6 +362,10 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 			// echo or OpenCSG png -> don't necessarily need CGALMesh evaluation
 		} else {
 			root_geom = geomevaluator.evaluateGeometry(*tree.root(), true);
+			if (!root_geom) {
+				PRINT("No top-level object found.");
+				return 1;
+			}
 			const CGAL_Nef_polyhedron *N = dynamic_cast<const CGAL_Nef_polyhedron*>(root_geom.get());
 		}
 
@@ -378,78 +393,28 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 		}
 
 		if (stl_output_file) {
-			if (root_geom->getDimension() != 3) {
-				PRINT("Current top level object is not a 3D object.\n");
+			if (!checkAndExport(root_geom, 3, OPENSCAD_STL, stl_output_file))
 				return 1;
-			}
-			std::ofstream fstream(stl_output_file);
-			if (!fstream.is_open()) {
-				PRINTB("Can't open file \"%s\" for export", stl_output_file);
-			}
-			else {
-				exportFile(root_geom.get(), fstream, OPENSCAD_STL);
-				fstream.close();
-			}
 		}
 
 		if (off_output_file) {
-			if (root_geom->getDimension() != 3) {
-				PRINT("Current top level object is not a 3D object.\n");
+			if (!checkAndExport(root_geom, 3, OPENSCAD_OFF, off_output_file))
 				return 1;
-			}
-			std::ofstream fstream(off_output_file);
-			if (!fstream.is_open()) {
-				PRINTB("Can't open file \"%s\" for export", off_output_file);
-			}
-			else {
-				exportFile(root_geom.get(), fstream, OPENSCAD_OFF);
-				fstream.close();
-			}
 		}
 
 		if (amf_output_file) {
-			if (root_geom->getDimension() != 3) {
-				PRINT("Current top level object is not a 3D object.\n");
+			if (!checkAndExport(root_geom, 3, OPENSCAD_AMF, amf_output_file))
 				return 1;
-			}
-			std::ofstream fstream(amf_output_file);
-			if (!fstream.is_open()) {
-				PRINTB("Can't open file \"%s\" for export", amf_output_file);
-			}
-			else {
-				exportFile(root_geom.get(), fstream, OPENSCAD_AMF);
-				fstream.close();
-			}
 		}
 
 		if (dxf_output_file) {
-			if (root_geom->getDimension() != 2) {
-				PRINT("Current top level object is not a 2D object.\n");
+			if (!checkAndExport(root_geom, 2, OPENSCAD_DXF, dxf_output_file))
 				return 1;
-			}
-			std::ofstream fstream(dxf_output_file);
-			if (!fstream.is_open()) {
-				PRINTB("Can't open file \"%s\" for export", dxf_output_file);
-			}
-			else {
-				exportFile(root_geom.get(), fstream, OPENSCAD_DXF);
-				fstream.close();
-			}
 		}
 		
 		if (svg_output_file) {
-			if (root_geom->getDimension() != 2) {
-				PRINT("Current top level object is not a 2D object.\n");
+			if (!checkAndExport(root_geom, 2, OPENSCAD_SVG, svg_output_file))
 				return 1;
-			}
-			std::ofstream fstream(svg_output_file);
-			if (!fstream.is_open()) {
-				PRINTB("Can't open file \"%s\" for export", svg_output_file);
-			}
-			else {
-				exportFile(root_geom.get(), fstream, OPENSCAD_SVG);
-				fstream.close();
-			}
 		}
 
 		if (png_output_file) {
@@ -540,7 +505,10 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 	QCoreApplication::setOrganizationDomain("openscad.org");
 	QCoreApplication::setApplicationName("OpenSCAD");
 	QCoreApplication::setApplicationVersion(TOSTRING(OPENSCAD_VERSION));
-
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
+	QGuiApplication::setApplicationDisplayName("OpenSCAD");
+#endif
+	
 	// Other global settings
 	qRegisterMetaType<shared_ptr<const Geometry> >();
 	
@@ -614,8 +582,11 @@ int gui(const vector<string> &inputFiles, const fs::path &original_path, int arg
 int main(int argc, char **argv)
 {
 	int rc = 0;
+	bool isGuiLaunched = getenv("GUI_LAUNCHED") != 0;
 #ifdef Q_OS_MAC
-	set_output_handler(CocoaUtils::nslog, NULL);
+	if (isGuiLaunched) set_output_handler(CocoaUtils::nslog, NULL);
+#else
+	PlatformUtils::ensureStdIO();
 #endif
 #ifdef ENABLE_CGAL
 	// Causes CGAL errors to abort directly instead of throwing exceptions

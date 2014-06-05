@@ -1,6 +1,3 @@
-#ifndef APPLEEVENTS_H_
-#define APPLEEVENTS_H_
+#pragma once
 
 void installAppleEventHandlers();
-
-#endif

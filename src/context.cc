@@ -136,6 +136,15 @@ Value Context::lookup_variable(const std::string &name, bool silent) const
 	return Value();
 }
 
+bool Context::has_local_variable(const std::string &name) const
+{
+	if (is_config_variable(name))
+		return config_variables.find(name) != config_variables.end();
+	if (!parent && constants.find(name) != constants.end())
+		return true;
+	return variables.find(name) != variables.end();
+}
+
 Value Context::evaluate_function(const std::string &name, const EvalContext *evalctx) const
 {
 	if (this->parent) return this->parent->evaluate_function(name, evalctx);

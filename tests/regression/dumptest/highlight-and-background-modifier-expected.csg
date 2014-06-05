@@ -1,12 +1,12 @@
 group() {
 	difference() {
 		sphere($fn = 0, $fa = 12, $fs = 2, r = 10);
-%		cylinder($fn = 0, $fa = 12, $fs = 2, h = 30, r1 = 6, r2 = 6, center = true);
-%		group() {
+%#		cylinder($fn = 0, $fa = 12, $fs = 2, h = 30, r1 = 6, r2 = 6, center = true);
+%#		group() {
 			cube(size = [25, 6, 3], center = true);
 		}
 	}
-%	multmatrix([[1, 0, 0, 0], [0, 1, 0, -9], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+%#	multmatrix([[1, 0, 0, 0], [0, 1, 0, -9], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 		difference() {
 			color([0, 0.501961, 0, 1]) {
 				cube(size = [10, 4, 10], center = true);
@@ -26,7 +26,7 @@ group() {
 				cube(size = [25, 6, 3], center = true);
 			}
 		}
-		multmatrix([[1, 0, 0, 0], [0, 1, 0, -9], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+#		multmatrix([[1, 0, 0, 0], [0, 1, 0, -9], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 			difference() {
 				color([0, 0.501961, 0, 1]) {
 					cube(size = [10, 4, 10], center = true);
@@ -39,7 +39,7 @@ group() {
 			}
 		}
 	}
-	multmatrix([[1, 0, 0, 26], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+#	multmatrix([[1, 0, 0, 26], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 		difference() {
 			sphere($fn = 0, $fa = 12, $fs = 2, r = 10);
 			cylinder($fn = 0, $fa = 12, $fs = 2, h = 30, r1 = 6, r2 = 6, center = true);

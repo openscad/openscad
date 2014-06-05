@@ -41,10 +41,44 @@ printUsage()
   echo "  -d   Build for deployment"
 }
 
+create_dummy_cmd()
+{
+  cmd="$1"
+  file="$2"
+
+  echo "$cmd" > "$file"
+  chmod 755 "$file"
+}
+
+patch_qt_disable_core_wlan()
+{
+  version="$1"
+
+  patch -p1 <<END-OF-PATCH
+--- qt-everywhere-opensource-src-4.8.5/src/plugins/bearer/bearer.pro.orig	2013-11-01 19:04:29.000000000 +0100
++++ qt-everywhere-opensource-src-4.8.5/src/plugins/bearer/bearer.pro	2013-10-31 21:53:00.000000000 +0100
+@@ -12,7 +12,7 @@
+ #win32:SUBDIRS += nla
+ win32:SUBDIRS += generic
+ win32:!wince*:SUBDIRS += nativewifi
+-macx:contains(QT_CONFIG, corewlan):SUBDIRS += corewlan
++#macx:contains(QT_CONFIG, corewlan):SUBDIRS += corewlan
+ macx:SUBDIRS += generic
+ symbian:SUBDIRS += symbian
+ blackberry:SUBDIRS += blackberry
+END-OF-PATCH
+}
+
 # FIXME: Support gcc/llvm/clang flags. Use -platform <whatever> to make this work? kintel 20130117
 build_qt()
 {
   version=$1
+
+  if [ -d $DEPLOYDIR/lib/QtCore.framework ]; then
+    echo "qt already installed. not building"
+    return
+  fi
+
   echo "Building Qt" $version "..."
   cd $BASEDIR/src
   rm -rf qt-everywhere-opensource-src-$version
@@ -64,7 +98,18 @@ build_qt()
   if $OPTION_32BIT; then
     QT_32BIT="-arch x86"
   fi
-  ./configure -prefix $DEPLOYDIR -release $QT_32BIT -arch x86_64 -opensource -confirm-license $PLATFORM -fast -no-qt3support -no-svg -no-phonon -no-audio-backend -no-multimedia -no-javascript-jit -no-script -no-scripttools -no-declarative -no-xmlpatterns -nomake demos -nomake examples -nomake docs -nomake translations -no-webkit
+  case "$OSX_VERSION" in
+    9)
+      # libtiff fails in the linker step with Mavericks / XCode 5.0.1
+      MACOSX_RELEASE_OPTIONS=-no-libtiff
+      # wlan support bails out with lots of compiler errors, disable it for the build
+      patch_qt_disable_core_wlan "$version"
+      ;;
+    *)
+      MACOSX_RELEASE_OPTIONS=
+      ;;
+  esac
+  ./configure -prefix $DEPLOYDIR -release $QT_32BIT -arch x86_64 -opensource -confirm-license $PLATFORM -fast -no-qt3support -no-svg -no-phonon -no-audio-backend -no-multimedia -no-javascript-jit -no-script -no-scripttools -no-declarative -no-xmlpatterns -nomake demos -nomake examples -nomake docs -nomake translations -no-webkit $MACOSX_RELEASE_OPTIONS
   make -j6 install
 }
 
@@ -73,13 +118,14 @@ build_qt5()
   version=$1
   echo "Building Qt" $version "..."
   cd $BASEDIR/src
+  v=(${version//./ }) # Split into array
   rm -rf qt-everywhere-opensource-src-$version
   if [ ! -f qt-everywhere-opensource-src-$version.tar.gz ]; then
-     curl -O -L http://download.qt-project.org/official_releases/qt/5.2/$version/single/qt-everywhere-opensource-src-$version.tar.gz
+     curl -O -L http://download.qt-project.org/official_releases/qt/${v[0]}.${v[1]}/$version/single/qt-everywhere-opensource-src-$version.tar.gz
   fi
   tar xzf qt-everywhere-opensource-src-$version.tar.gz
   cd qt-everywhere-opensource-src-$version
-  ./configure -prefix $DEPLOYDIR -release -opensource -confirm-license -nomake examples -nomake tests -no-xcb -no-c++11
+  ./configure -prefix $DEPLOYDIR -release -opensource -confirm-license -nomake examples -nomake tests -no-xcb -no-c++11 -no-glib
   make -j6 install
 }
 
@@ -89,6 +135,12 @@ build_qt5()
 build_gmp()
 {
   version=$1
+
+  if [ -f $DEPLOYDIR/lib/libgmp.dylib ]; then
+    echo "gmp already installed. not building"
+    return
+  fi
+
   echo "Building gmp" $version "..."
   cd $BASEDIR/src
   rm -rf gmp-$version
@@ -185,6 +237,12 @@ EOF
 build_mpfr()
 {
   version=$1
+
+  if [ -f $DEPLOYDIR/include/mpfr.h ]; then
+    echo "mpfr already installed. not building"
+    return
+  fi
+
   echo "Building mpfr" $version "..."
   cd $BASEDIR/src
   rm -rf mpfr-$version
@@ -225,6 +283,12 @@ build_mpfr()
 build_boost()
 {
   version=$1
+
+  if [ -f $DEPLOYDIR/lib/libboost_system.dylib ]; then
+    echo "boost already installed. not building"
+    return
+  fi
+
   bversion=`echo $version | tr "." "_"`
   echo "Building boost" $version "..."
   cd $BASEDIR/src
@@ -262,12 +326,19 @@ build_boost()
 build_cgal()
 {
   version=$1
+
+  if [ -f $DEPLOYDIR/lib/libCGAL.dylib ]; then
+    echo "cgal already installed. not building"
+    return
+  fi
+
   echo "Building CGAL" $version "..."
   cd $BASEDIR/src
   rm -rf CGAL-$version
   if [ ! -f CGAL-$version.tar.gz ]; then
-    # 4.3
-    curl -O https://gforge.inria.fr/frs/download.php/32994/CGAL-$version.tar.gz
+    # 4.4
+    curl -O https://gforge.inria.fr/frs/download.php/file/33525/CGAL-$version.tar.gz
+    # 4.3 curl -O https://gforge.inria.fr/frs/download.php/32994/CGAL-$version.tar.gz
     # 4.2 curl -O https://gforge.inria.fr/frs/download.php/32359/CGAL-$version.tar.gz
     # 4.1 curl -O https://gforge.inria.fr/frs/download.php/31641/CGAL-$version.tar.gz
     # 4.1-beta1 curl -O https://gforge.inria.fr/frs/download.php/31348/CGAL-$version.tar.gz
@@ -293,6 +364,12 @@ build_cgal()
 build_glew()
 {
   version=$1
+
+  if [ -f $DEPLOYDIR/lib/libGLEW.dylib ]; then
+    echo "glew already installed. not building"
+    return
+  fi
+
   echo "Building GLEW" $version "..."
   cd $BASEDIR/src
   rm -rf glew-$version
@@ -308,70 +385,15 @@ build_glew()
   make GLEW_DEST=$DEPLOYDIR CC=$CC CFLAGS.EXTRA="-no-cpp-precomp -dynamic -fno-common -mmacosx-version-min=$MAC_OSX_VERSION_MIN $GLEW_EXTRA_FLAGS -arch x86_64" LDFLAGS.EXTRA="-mmacosx-version-min=$MAC_OSX_VERSION_MIN $GLEW_EXTRA_FLAGS -arch x86_64" STRIP= install
 }
 
-build_libffi()
-{
-  version="$1"
-
-  if [ -e "$DEPLOYDIR/lib/libffi.a" ]; then
-    echo "libffi already installed. not building"
-    return
-  fi
-
-  echo "Building libffi $version..."
-  cd "$BASEDIR"/src
-  rm -rf "libffi-$version"
-  if [ ! -f "libffi-$version.tar.gz" ]; then
-    curl --insecure -LO "ftp://sourceware.org/pub/libffi/libffi-$version.tar.gz"
-  fi
-  tar xzf "libffi-$version.tar.gz"
-  cd "libffi-$version"
-  ./configure --prefix="$DEPLOYDIR"
-  make -j4
-  make install
-}
-
-build_gettext()
-{
-  version=$1
-  echo "Building gettext $version..."
-
-  cd "$BASEDIR"/src
-  rm -rf "gettext-$version"
-  if [ ! -f "glib-$version.tar.xz" ]; then
-    curl --insecure -LO "http://ftpmirror.gnu.org/gettext/gettext-$version.tar.gz"
-  fi
-  tar xzf "gettext-$version.tar.gz"
-  cd "gettext-$version"
-
-  ./configure --prefix="$DEPLOYDIR"
-  make -j4
-  make install
-}
-
-build_glib2()
-{
-  version=$1
-  echo "Building glib2 $version..."
-
-  cd "$BASEDIR"/src
-  rm -rf "glib-$version"
-  maj_min_version="${version%.*}" #Drop micro
-  if [ ! -f "glib-$version.tar.xz" ]; then
-    curl --insecure -LO "http://ftp.gnome.org/pub/gnome/sources/glib/$maj_min_version/glib-$version.tar.xz"
-  fi
-  tar xJf "glib-$version.tar.xz"
-  cd "glib-$version"
-
-  export PKG_CONFIG_LIBDIR="$DEPLOYDIR/lib/pkgconfig"
-  ./configure --disable-gtk-doc --disable-man --prefix="$DEPLOYDIR" CFLAGS="-I$DEPLOYDIR/include" LDFLAGS="-L$DEPLOYDIR/lib"
-  unset PKG_CONFIG_LIBDIR
-  make -j4
-  make install
-}
-
 build_opencsg()
 {
   version=$1
+
+  if [ -f $DEPLOYDIR/lib/libopencsg.dylib ]; then
+    echo "opencsg already installed. not building"
+    return
+  fi
+
   echo "Building OpenCSG" $version "..."
   cd $BASEDIR/src
   rm -rf OpenCSG-$version
@@ -391,6 +413,16 @@ build_opencsg()
 build_eigen()
 {
   version=$1
+
+  if [ -d $DEPLOYDIR/include/eigen2 ]; then
+    echo "eigen2 already installed. not building"
+    return
+  fi
+  if [ -d $DEPLOYDIR/include/eigen3 ]; then
+    echo "eigen3 already installed. not building"
+    return
+  fi
+
   echo "Building eigen" $version "..."
   cd $BASEDIR/src
   rm -rf eigen-$version
@@ -450,10 +482,161 @@ build_sparkle()
   install_name_tool -id $DEPLOYDIR/lib/Sparkle.framework/Versions/A/Sparkle $DEPLOYDIR/lib/Sparkle.framework/Sparkle
 }
 
+build_freetype()
+{
+  version="$1"
+  extra_config_flags="$2"
+
+  echo "Building freetype $version..."
+  cd "$BASEDIR"/src
+  rm -rf "freetype-$version"
+  if [ ! -f "freetype-$version.tar.gz" ]; then
+    curl --insecure -LO "http://download.savannah.gnu.org/releases/freetype/freetype-$version.tar.gz"
+  fi
+  tar xzf "freetype-$version.tar.gz"
+  cd "freetype-$version"
+  PKG_CONFIG_LIBDIR="$DEPLOYDOR/lib/pkgconfig" ./configure --prefix="$DEPLOYDIR" CFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN LDFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN $extra_config_flags
+  make -j"$NUMCPU"
+  make install
+}
+ 
+build_libxml2()
+{
+  version="$1"
+
+  echo "Building libxml2 $version..."
+  cd "$BASEDIR"/src
+  rm -rf "libxml2-$version"
+  if [ ! -f "libxml2-$version.tar.gz" ]; then
+    curl --insecure -LO "ftp://xmlsoft.org/libxml2/libxml2-$version.tar.gz"
+  fi
+  tar xzf "libxml2-$version.tar.gz"
+  cd "libxml2-$version"
+  ./configure --prefix="$DEPLOYDIR" --without-ftp --without-http --without-python CFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN LDFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN
+  make -j$NUMCPU
+  make install
+}
+
+build_fontconfig()
+{
+  version=$1
+
+  echo "Building fontconfig $version..."
+  cd "$BASEDIR"/src
+  rm -rf "fontconfig-$version"
+  if [ ! -f "fontconfig-$version.tar.gz" ]; then
+    curl --insecure -LO "http://www.freedesktop.org/software/fontconfig/release/fontconfig-$version.tar.gz"
+  fi
+  tar xzf "fontconfig-$version.tar.gz"
+  cd "fontconfig-$version"
+  export PKG_CONFIG_PATH="$DEPLOYDIR/lib/pkgconfig"
+  ./configure --prefix="$DEPLOYDIR" --enable-libxml2 CFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN LDFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN
+  unset PKG_CONFIG_PATH
+  make -j$NUMCPU
+  make install
+}
+
+build_libffi()
+{
+  version="$1"
+
+  echo "Building libffi $version..."
+  cd "$BASEDIR"/src
+  rm -rf "libffi-$version"
+  if [ ! -f "libffi-$version.tar.gz" ]; then
+    curl --insecure -LO "ftp://sourceware.org/pub/libffi/libffi-$version.tar.gz"
+  fi
+  tar xzf "libffi-$version.tar.gz"
+  cd "libffi-$version"
+  ./configure --prefix="$DEPLOYDIR"
+  make -j$NUMCPU
+  make install
+}
+
+build_gettext()
+{
+  version="$1"
+
+  echo "Building gettext $version..."
+  cd "$BASEDIR"/src
+  rm -rf "gettext-$version"
+  if [ ! -f "gettext-$version.tar.xz" ]; then
+    curl --insecure -LO "http://ftpmirror.gnu.org/gettext/gettext-$version.tar.gz"
+  fi
+  tar xzf "gettext-$version.tar.gz"
+  cd "gettext-$version"
+
+  ./configure --prefix="$DEPLOYDIR" CFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN LDFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN
+  make -j$NUMCPU
+  make install
+}
+
+build_glib2()
+{
+  version="$1"
+
+  echo "Building glib2 $version..."
+
+  cd "$BASEDIR"/src
+  rm -rf "glib-$version"
+  maj_min_version="${version%.*}" #Drop micro
+  if [ ! -f "glib-$version.tar.xz" ]; then
+    curl --insecure -LO "http://ftp.gnome.org/pub/gnome/sources/glib/$maj_min_version/glib-$version.tar.xz"
+  fi
+  tar xJf "glib-$version.tar.xz"
+  cd "glib-$version"
+
+  export PKG_CONFIG_PATH="$DEPLOYDIR/lib/pkgconfig"
+  ./configure --disable-gtk-doc --disable-man --prefix="$DEPLOYDIR" CFLAGS="-I$DEPLOYDIR/include -mmacosx-version-min=$MAC_OSX_VERSION_MIN" LDFLAGS="-L$DEPLOYDIR/lib -mmacosx-version-min=$MAC_OSX_VERSION_MIN"
+  unset PKG_CONFIG_PATH
+  make -j$NUMCPU
+  make install
+}
+
+build_ragel()
+{
+  version=$1
+
+  echo "Building ragel $version..."
+  cd "$BASEDIR"/src
+  rm -rf "ragel-$version"
+  if [ ! -f "ragel-$version.tar.gz" ]; then
+    curl --insecure -LO "http://www.complang.org/ragel/ragel-$version.tar.gz"
+  fi
+  tar xzf "ragel-$version.tar.gz"
+  cd "ragel-$version"
+  sed -e "s/setiosflags(ios::right)/std::&/g" ragel/javacodegen.cpp > ragel/javacodegen.cpp.new && mv ragel/javacodegen.cpp.new ragel/javacodegen.cpp
+  ./configure --prefix="$DEPLOYDIR"
+  make -j$NUMCPU
+  make install
+}
+
+build_harfbuzz()
+{
+  version=$1
+  extra_config_flags="$2"
+
+  echo "Building harfbuzz $version..."
+  cd "$BASEDIR"/src
+  rm -rf "harfbuzz-$version"
+  if [ ! -f "harfbuzz-$version.tar.gz" ]; then
+    curl --insecure -LO "http://cgit.freedesktop.org/harfbuzz/snapshot/harfbuzz-$version.tar.gz"
+  fi
+  tar xzf "harfbuzz-$version.tar.gz"
+  cd "harfbuzz-$version"
+  # disable doc directories as they make problems on Mac OS Build
+  sed -e "s/SUBDIRS = src util test docs/SUBDIRS = src util test/g" Makefile.am > Makefile.am.bak && mv Makefile.am.bak Makefile.am
+  sed -e "s/^docs.*$//" configure.ac > configure.ac.bak && mv configure.ac.bak configure.ac
+  PKG_CONFIG_LIBDIR="$DEPLOYDIR/lib/pkgconfig" ./autogen.sh --prefix="$DEPLOYDIR" --with-freetype=yes --with-gobject=no --with-cairo=no --with-icu=no CFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN LDFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN $extra_config_flags
+  make -j$NUMCPU
+  make install
+}
+
 if [ ! -f $OPENSCADDIR/openscad.pro ]; then
   echo "Must be run from the OpenSCAD source root directory"
   exit 0
 fi
+OPENSCAD_SCRIPTDIR=$PWD/scripts
 
 while getopts '6lcd' c
 do
@@ -508,6 +691,10 @@ fi
 
 echo "Building for $MAC_OSX_VERSION_MIN or later"
 
+if [ ! $NUMCPU ]; then
+  NUMCPU=$(sysctl -n hw.ncpu)
+fi
+
 if $OPTION_DEPLOY; then
   echo "Building deployment version of libraries"
   OPTION_32BIT=true
@@ -523,19 +710,28 @@ fi
 
 echo "Using basedir:" $BASEDIR
 mkdir -p $SRCDIR $DEPLOYDIR
-build_qt5 5.2.1
+build_qt5 5.3.0
 # NB! For eigen, also update the path in the function
 build_eigen 3.2.0
 build_gmp 5.1.3
 build_mpfr 3.1.2
 build_boost 1.54.0
 # NB! For CGAL, also update the actual download URL in the function
-build_cgal 4.3
+build_cgal 4.4
 build_glew 1.10.0
-build_gettext 0.18.3.1
-build_libffi 3.0.13
-build_glib2 2.38.2
+build_gettext 0.18.3.2
+build_libffi 3.1
+build_glib2 2.40.0
 build_opencsg 1.3.2
+build_freetype 2.5.3 --without-png
+build_harfbuzz 0.9.28 "--with-coretext=auto --with-glib=no"
+export FREETYPE_CFLAGS="-I$DEPLOYDIR/include -I$DEPLOYDIR/include/freetype2"
+export FREETYPE_LIBS="-L$DEPLOYDIR/lib -lfreetype"
+build_libxml2 2.9.1
+build_fontconfig 2.11.1
+build_ragel 6.8
+export PATH="$PATH:$DEPLOYDIR/bin"
+create_dummy_cmd "touch gtk-doc.make" "$DEPLOYDIR/bin/gtkdocize"
 if $OPTION_DEPLOY; then
 #  build_sparkle andymatuschak 0ed83cf9f2eeb425d4fdd141c01a29d843970c20
   build_sparkle Cocoanetics 1e7dcb1a48b96d1a8c62100b5864bd50211cbae1

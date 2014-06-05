@@ -39,8 +39,7 @@ Expression::Expression() : recursioncount(0)
 {
 }
 
-Expression::Expression(const std::string &type, 
-											 Expression *left, Expression *right)
+Expression::Expression(const std::string &type, Expression *left, Expression *right)
 	: type(type), recursioncount(0)
 {
 	this->children.push_back(left);
@@ -62,115 +61,252 @@ Expression::~Expression()
 	std::for_each(this->children.begin(), this->children.end(), del_fun<Expression>());
 }
 
-class FuncRecursionGuard
+Value Expression::sub_evaluate_range(const Context *context) const
 {
-public:
-	FuncRecursionGuard(const Expression &e) : expr(e) { 
-		expr.recursioncount++; 
+	Value v1 = this->children[0]->evaluate(context);
+	if (v1.type() == Value::NUMBER) {
+		Value v2 = this->children[1]->evaluate(context);
+		if (v2.type() == Value::NUMBER) {
+			if (this->children.size() == 2) {
+				Value::RangeType range(v1.toDouble(), v2.toDouble());
+				return Value(range);
+			} else {
+				Value v3 = this->children[2]->evaluate(context);
+				if (v3.type() == Value::NUMBER) {
+					Value::RangeType range(v1.toDouble(), v2.toDouble(), v3.toDouble());
+					return Value(range);
+				}
+			}
+		}
 	}
-	~FuncRecursionGuard() { expr.recursioncount--; }
-	bool recursion_detected() const { return (expr.recursioncount > 1000); }
-private:
-	const Expression &expr;
-};
+	return Value();
+}
+
+Value Expression::sub_evaluate_member(const Context *context) const
+{
+	Value v = this->children[0]->evaluate(context);
+
+	if (v.type() == Value::VECTOR) {
+		if (this->var_name == "x") return v[0];
+		if (this->var_name == "y") return v[1];
+		if (this->var_name == "z") return v[2];
+	} else if (v.type() == Value::RANGE) {
+		if (this->var_name == "begin") return Value(v[0]);
+		if (this->var_name == "step") return Value(v[1]);
+		if (this->var_name == "end") return Value(v[2]);
+	}
+	return Value();
+}
+
+Value Expression::sub_evaluate_vector(const Context *context) const
+{
+	Value::VectorType vec;
+	BOOST_FOREACH(const Expression *e, this->children) {
+		vec.push_back(e->evaluate(context));
+	}
+	return Value(vec);
+}
+
+Value Expression::sub_evaluate_function(const Context *context) const
+{
+	if (this->recursioncount >= 1000) {
+		PRINTB("ERROR: Recursion detected calling function '%s'", this->call_funcname);
+		// TO DO: throw function_recursion_detected();
+		return Value();
+	}
+	this->recursioncount += 1;
+	EvalContext c(context, this->call_arguments);
+	const Value &result = context->evaluate_function(this->call_funcname, &c);
+	this->recursioncount -= 1;
+	return result;
+}
+
+#define TYPE2INT(c,c1) ((int)(c) | ((int)(c1)<<8))
+
+static inline int type2int(register const char *typestr)
+{
+	// the following asserts basic ASCII only so sign extension does not matter
+	// utilize the fact that type strings must have one or two non-null characters
+#if 0 // defined(DEBUG) // may need this code as template for future development
+	register int c1, result = *typestr;
+	if (result && 0 != (c1 = typestr[1])) {
+		// take the third character for error checking only
+		result |= (c1 << 8) | ((int)typestr[2] << 16);
+	}
+	return result;
+#else
+	return TYPE2INT(typestr[0], typestr[1]);
+#endif
+}
+
+// unnamed namespace
+namespace {
+	Value::VectorType flatten(Value::VectorType const& vec) {
+		int n = 0;
+		for (int i = 0; i < vec.size(); i++) {
+			assert(vec[i].type() == Value::VECTOR);
+			n += vec[i].toVector().size();
+		}
+		Value::VectorType ret; ret.reserve(n);
+		for (int i = 0; i < vec.size(); i++) {
+			std::copy(vec[i].toVector().begin(),vec[i].toVector().end(),std::back_inserter(ret));
+		}
+		return ret;
+	}
+
+	void evaluate_sequential_assignment(const AssignmentList & assignment_list, Context *context) {
+		EvalContext let_context(context, assignment_list);
+
+		const bool allow_reassignment = false;
+
+		for (int i = 0; i < let_context.numArgs(); i++) {
+			if (!allow_reassignment && context->has_local_variable(let_context.getArgName(i))) {
+				PRINTB("WARNING: Ignoring duplicate variable assignment %s = %s", let_context.getArgName(i) % let_context.getArgValue(i, context).toString());
+			} else {
+				// NOTE: iteratively evaluated list of arguments
+				context->set_variable(let_context.getArgName(i), let_context.getArgValue(i, context));
+			}
+		}
+	}
+}
+
+Value Expression::sub_evaluate_let_expression(const Context *context) const
+{
+	Context c(context);
+	evaluate_sequential_assignment(this->call_arguments, &c);
+
+	return this->children[0]->evaluate(&c);
+}
+
+Value Expression::sub_evaluate_list_comprehension(const Context *context) const
+{
+	Value::VectorType vec;
+
+	if (this->call_funcname == "if") {
+		if (this->children[0]->evaluate(context)) {
+			vec.push_back(this->children[1]->evaluate(context));
+		}
+		return vec;
+	} else if (this->call_funcname == "for") {
+		EvalContext for_context(context, this->call_arguments);
+
+		Context assign_context(context);
+
+		// comprehension for statements are by the parser reduced to only contain one single element
+		const std::string &it_name = for_context.getArgName(0);
+		const Value &it_values = for_context.getArgValue(0, &assign_context);
+
+		Context c(context);
+
+		if (it_values.type() == Value::RANGE) {
+			Value::RangeType range = it_values.toRange();
+			boost::uint32_t steps = range.nbsteps();
+			if (steps >= 1000000) {
+				PRINTB("WARNING: Bad range parameter in for statement: too many elements (%lu).", steps);
+			} else {
+				for (Value::RangeType::iterator it = range.begin();it != range.end();it++) {
+					c.set_variable(it_name, Value(*it));
+					vec.push_back(this->children[0]->evaluate(&c));
+				}
+			}
+		}
+		else if (it_values.type() == Value::VECTOR) {
+			for (size_t i = 0; i < it_values.toVector().size(); i++) {
+				c.set_variable(it_name, it_values.toVector()[i]);
+				vec.push_back(this->children[0]->evaluate(&c));
+			}
+		}
+		else if (it_values.type() != Value::UNDEFINED) {
+			c.set_variable(it_name, it_values);
+			vec.push_back(this->children[0]->evaluate(&c));
+		}
+		if (this->children[0]->type == "c") {
+			return flatten(vec);
+		} else {
+			return vec;
+		}
+	} else if (this->call_funcname == "let") {
+		Context c(context);
+		evaluate_sequential_assignment(this->call_arguments, &c);
+
+		return this->children[0]->evaluate(&c);
+	} else {
+		abort();
+	}
+}
+
 
 Value Expression::evaluate(const Context *context) const
 {
-	if (this->type == "!")
+	switch (type2int(this->type.c_str())) {
+	case '!':
 		return ! this->children[0]->evaluate(context);
-	if (this->type == "&&")
+	case TYPE2INT('&','&'):
 		return this->children[0]->evaluate(context) && this->children[1]->evaluate(context);
-	if (this->type == "||")
+	case TYPE2INT('|','|'):
 		return this->children[0]->evaluate(context) || this->children[1]->evaluate(context);
-	if (this->type == "*")
+	case '*':
 		return this->children[0]->evaluate(context) * this->children[1]->evaluate(context);
-	if (this->type == "/")
+	case '/':
 		return this->children[0]->evaluate(context) / this->children[1]->evaluate(context);
-	if (this->type == "%")
+	case '%':
 		return this->children[0]->evaluate(context) % this->children[1]->evaluate(context);
-	if (this->type == "+")
+	case '+':
 		return this->children[0]->evaluate(context) + this->children[1]->evaluate(context);
-	if (this->type == "-")
+	case '-':
 		return this->children[0]->evaluate(context) - this->children[1]->evaluate(context);
-	if (this->type == "<")
+	case '<':
 		return this->children[0]->evaluate(context) < this->children[1]->evaluate(context);
-	if (this->type == "<=")
+	case TYPE2INT('<','='):
 		return this->children[0]->evaluate(context) <= this->children[1]->evaluate(context);
-	if (this->type == "==")
+	case TYPE2INT('=','='):
 		return this->children[0]->evaluate(context) == this->children[1]->evaluate(context);
-	if (this->type == "!=")
+	case TYPE2INT('!','='):
 		return this->children[0]->evaluate(context) != this->children[1]->evaluate(context);
-	if (this->type == ">=")
+	case TYPE2INT('>','='):
 		return this->children[0]->evaluate(context) >= this->children[1]->evaluate(context);
-	if (this->type == ">")
+	case '>':
 		return this->children[0]->evaluate(context) > this->children[1]->evaluate(context);
-	if (this->type == "?:") {
+	case TYPE2INT('?',':'):
 		return this->children[this->children[0]->evaluate(context) ? 1 : 2]->evaluate(context);
-	}
-	if (this->type == "[]") {
+	case TYPE2INT('[',']'):
 		return this->children[0]->evaluate(context)[this->children[1]->evaluate(context)];
-	}
-	if (this->type == "I")
+	case 'I':
 		return -this->children[0]->evaluate(context);
-	if (this->type == "C")
+	case 'C':
 		return this->const_value;
-	if (this->type == "R") {
-		Value v1 = this->children[0]->evaluate(context);
-		Value v2 = this->children[1]->evaluate(context);
-                if (this->children.size() == 2) {
-                        if (v1.type() == Value::NUMBER && v2.type() == Value::NUMBER) {
-                                Value::RangeType range(v1.toDouble(), v2.toDouble());
-                                return Value(range);
-                        }
-                } else {
-        		Value v3 = this->children[2]->evaluate(context);
-                        if (v1.type() == Value::NUMBER && v2.type() == Value::NUMBER && v3.type() == Value::NUMBER) {
-                                Value::RangeType range(v1.toDouble(), v2.toDouble(), v3.toDouble());
-                                return Value(range);
-                        }
-                }
-		return Value();
-	}
-	if (this->type == "V") {
-		Value::VectorType vec;
-		BOOST_FOREACH(const Expression *e, this->children) {
-			vec.push_back(e->evaluate(context));
-		}
-		return Value(vec);
-	}
-	if (this->type == "L")
+	case 'R':
+		return sub_evaluate_range(context);
+	case 'V':
+		return sub_evaluate_vector(context);
+	case 'L':
 		return context->lookup_variable(this->var_name);
-	if (this->type == "N")
-	{
-		Value v = this->children[0]->evaluate(context);
-
-		if (v.type() == Value::VECTOR && this->var_name == "x")
-			return v[0];
-		if (v.type() == Value::VECTOR && this->var_name == "y")
-			return v[1];
-		if (v.type() == Value::VECTOR && this->var_name == "z")
-			return v[2];
-
-		if (v.type() == Value::RANGE && this->var_name == "begin")
-			return Value(v[0]);
-		if (v.type() == Value::RANGE && this->var_name == "step")
-			return Value(v[1]);
-		if (v.type() == Value::RANGE && this->var_name == "end")
-			return Value(v[2]);
-
-		return Value();
-	}
-	if (this->type == "F") {
-		FuncRecursionGuard g(*this);
-		if (g.recursion_detected()) { 
-			PRINTB("ERROR: Recursion detected calling function '%s'", this->call_funcname);
-			return Value();
-		}
-
-		EvalContext c(context, this->call_arguments);
-		return context->evaluate_function(this->call_funcname, &c);
+	case 'N':
+		return sub_evaluate_member(context);
+	case 'F':
+		return sub_evaluate_function(context);
+	case 'l':
+		return sub_evaluate_let_expression(context);
+	case 'i':  // list comprehension expression
+		return this->children[0]->evaluate(context);
+	case 'c':
+		return sub_evaluate_list_comprehension(context);
 	}
 	abort();
+}
+
+namespace /* anonymous*/ {
+
+	std::ostream &operator << (std::ostream &o, AssignmentList const& l) {
+		for (size_t i=0; i < l.size(); i++) {
+			const Assignment &arg = l[i];
+			if (i > 0) o << ", ";
+			if (!arg.first.empty()) o << arg.first  << " = ";
+			o << *arg.second;
+		}
+		return o;
+	}
+
 }
 
 std::string Expression::toString() const
@@ -220,14 +356,32 @@ std::string Expression::toString() const
 		stream << *this->children[0] << "." << this->var_name;
 	}
 	else if (this->type == "F") {
-		stream << this->call_funcname << "(";
-		for (size_t i=0; i < this->call_arguments.size(); i++) {
-			const Assignment &arg = this->call_arguments[i];
-			if (i > 0) stream << ", ";
-			if (!arg.first.empty()) stream << arg.first  << " = ";
-			stream << *arg.second;
-		}
-		stream << ")";
+		stream << this->call_funcname << "(" << this->call_arguments << ")";
+	}
+	else if (this->type == "l") {
+		stream << "let(" << this->call_arguments << ") " << *this->children[0];
+	}
+	else if (this->type == "i") { // list comprehension expression
+		Expression const* c = this->children[0];
+
+		stream << "[";
+
+		do {
+			if (c->call_funcname == "for") {
+				stream << "for(" << c->call_arguments << ") ";
+				c = c->children[0];
+			} else if (c->call_funcname == "if") {
+				stream << "if(" << c->children[0] << ") ";
+				c = c->children[1];
+			} else if (c->call_funcname == "let") {
+				stream << "let(" << c->call_arguments << ") ";
+				c = c->children[0];
+			} else {
+				assert(false && "Illegal list comprehension element");
+			}
+		} while (c->type == "c");
+
+		stream << *c << "]";
 	}
 	else {
 		assert(false && "Illegal expression type");

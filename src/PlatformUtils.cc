@@ -2,6 +2,7 @@
 
 #include "PlatformUtils.h"
 #include "boosty.h"
+#include <Eigen/Core>
 
 extern std::vector<std::string> librarypath;
 

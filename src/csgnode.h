@@ -1,5 +1,4 @@
-#ifndef CSGNODE_H_
-#define CSGNODE_H_
+#pragma once
 
 #include "node.h"
 #include "visitor.h"
@@ -16,5 +15,3 @@ public:
 	virtual std::string toString() const;
 	virtual std::string name() const;
 };
-
-#endif

@@ -40,10 +40,10 @@ group() {
 			group() {
 				multmatrix([[0, 0, 1, 0], [0, 1, 0, 0], [-1, 0, 0, 0], [0, 0, 0, 1]]) {
 					union() {
-						linear_extrude(height = 1.5, center = true, convexity = 1, twist = 0, slices = 2, scale = [1, 1], $fn = 0, $fa = 12, $fs = 2) {
+						linear_extrude(height = 1.5, center = true, convexity = 1, scale = [1, 1], $fn = 0, $fa = 12, $fs = 2) {
 							circle($fn = 30, $fa = 12, $fs = 2, r = 0.3);
 						}
-						linear_extrude(height = 1.5, center = true, convexity = 1, twist = 0, slices = 2, scale = [1, 1], $fn = 0, $fa = 12, $fs = 2) {
+						linear_extrude(height = 1.5, center = true, convexity = 1, scale = [1, 1], $fn = 0, $fa = 12, $fs = 2) {
 							projection(cut = false, convexity = 0) {
 								multmatrix([[0, 0, -1, 0], [0, 1, 0, 0], [1, 0, 0, 0], [0, 0, 0, 1]]) {
 									multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0.31819805153], [0, 0, 0, 1]]) {

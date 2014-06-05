@@ -82,9 +82,9 @@ AbstractNode *LinearExtrudeModule::instantiate(const Context *ctx, const ModuleI
 	// then assume it should be the height.
 	if (c.lookup_variable("height").isUndefined() &&
 			evalctx->numArgs() > 0 &&
-			evalctx->getArgName(0) == "" &&
-			evalctx->getArgValue(0).type() == Value::NUMBER) {
-		height = evalctx->getArgValue(0);
+			evalctx->getArgName(0) == "") {
+		const Value &val = evalctx->getArgValue(0);
+		if (val.type() == Value::NUMBER) height = val;
 	}
 
 	node->layername = layer.isUndefined() ? "" : layer.toString();
@@ -110,13 +110,15 @@ AbstractNode *LinearExtrudeModule::instantiate(const Context *ctx, const ModuleI
 
 	if (twist.type() == Value::NUMBER) {
 		node->twist = twist.toDouble();
-		if (slices.type() == Value::NUMBER) {
-			node->slices = (int)slices.toDouble();
-		} else {
-			node->slices = (int)fmax(2, fabs(Calc::get_fragments_from_r(node->height,
-					node->fn, node->fs, node->fa) * node->twist / 360));
+		if (node->twist != 0.0) {
+			if (slices.type() == Value::NUMBER) {
+				node->slices = (int)slices.toDouble();
+			} else {
+				node->slices = (int)fmax(2, fabs(Calc::get_fragments_from_r(node->height,
+																																		node->fn, node->fs, node->fa) * node->twist / 360));
+			}
+			node->has_twist = true;
 		}
-		node->has_twist = true;
 	}
 
 	if (node->filename.empty()) {

@@ -84,6 +84,8 @@ std::string parser_source_path;
 %token TOK_FUNCTION
 %token TOK_IF
 %token TOK_ELSE
+%token TOK_FOR
+%token TOK_LET
 
 %token <text> TOK_ID
 %token <text> TOK_STRING
@@ -95,6 +97,8 @@ std::string parser_source_path;
 %token TOK_UNDEF
 
 %token LE GE EQ NE AND OR
+
+%right LET
 
 %right '?' ':'
 
@@ -111,6 +115,8 @@ std::string parser_source_path;
 
 %type <expr> expr
 %type <expr> vector_expr
+%type <expr> list_comprehension_elements
+%type <expr> list_comprehension_elements_or_expr
 
 %type <inst> module_instantiation
 %type <ifelse> if_statement
@@ -122,6 +128,7 @@ std::string parser_source_path;
 
 %type <arg> argument_call
 %type <arg> argument_decl
+%type <text> module_id
 
 %debug
 
@@ -129,7 +136,7 @@ std::string parser_source_path;
 
 input:    /* empty */
         | TOK_USE
-            { rootmodule->usedlibs.insert($1); }
+            { rootmodule->registerUse(std::string($1)); }
           input
         | statement input
         ;
@@ -278,8 +285,15 @@ child_statement:
 assignment ;
 */
 
+
+// "for" is a valid module identifier
+module_id:
+          TOK_ID  { $$ = $1; }
+        | TOK_FOR { $$ = strdup("for"); }
+        ;
+
 single_module_instantiation:
-          TOK_ID '(' arguments_call ')'
+          module_id '(' arguments_call ')'
             {
                 $$ = new ModuleInstantiation($1);
                 $$->arguments = *$3;
@@ -324,6 +338,14 @@ expr:
             {
                 $$ = new Expression(Value($1));
             }
+        | TOK_LET '(' arguments_call ')' expr %prec LET
+            {
+                $$ = new Expression();
+                $$->type = "l";
+                $$->call_arguments = *$3;
+                delete $3;
+                $$->children.push_back($5);
+            }
         | '[' expr ':' expr ']'
             {
                 $$ = new Expression();
@@ -338,6 +360,12 @@ expr:
                 $$->children.push_back($2);
                 $$->children.push_back($4);
                 $$->children.push_back($6);
+            }
+        | '[' list_comprehension_elements ']'
+            {
+                $$ = new Expression();
+                $$->type = "i";
+                $$->children.push_back($2);
             }
         | '[' optional_commas ']'
             {
@@ -436,6 +464,41 @@ expr:
                 free($1);
                 delete $3;
             }
+        ;
+
+list_comprehension_elements:
+          /* The last set element may not be a "let" (as that would instead
+             be parsed as an expression) */
+          TOK_LET '(' arguments_call ')' list_comprehension_elements
+            {
+                $$ = new Expression("c", $5);
+                $$->call_funcname = "let";
+                $$->call_arguments = *$3;
+                delete $3;
+            }
+        | TOK_FOR '(' arguments_call ')' list_comprehension_elements_or_expr
+            {
+                $$ = $5;
+
+                /* transform for(i=...,j=...) -> for(i=...) for(j=...) */
+                for (int i = $3->size()-1; i >= 0; i--) {
+                    Expression *e = new Expression("c", $$);
+                    e->call_funcname = "for";
+                    e->call_arguments.push_back((*$3)[i]);
+                    $$ = e;
+                }
+                delete $3;
+            }
+        | TOK_IF '(' expr ')' list_comprehension_elements_or_expr
+            {
+                $$ = new Expression("c", $3, $5);
+                $$->call_funcname = "if";
+            }
+        ;
+
+list_comprehension_elements_or_expr:
+          list_comprehension_elements
+        | expr
         ;
 
 optional_commas:

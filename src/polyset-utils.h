@@ -1,5 +1,4 @@
-#ifndef POLYSET_UTILS_H_
-#define POLYSET_UTILS_H_
+#pragma once
 
 class Polygon2d;
 class PolySet;
@@ -10,5 +9,3 @@ namespace PolysetUtils {
 	void tessellate_faces(const PolySet &inps, PolySet &outps);
 
 };
-
-#endif

@@ -1,6 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
+<!-- 
+	(cc) Michael Thomson <openscad.org@m-thomson.net>
+	
+	OpenSCAD syntax highlights in BBEdit/TextWrangler by Michael Thomson 
+	is licensed under a Creative Commons Attribution 4.0 International License.
+		http://creativecommons.org/licenses/by/4.0/
+	
+	Master copy in OpenSCAD Distribution:
+		https://github.com/openscad/openscad/tree/master/contrib
+	
+	Also Published on Thingiverse:
+		http://www.thingiverse.com/thing:15244/
+		
+	Based on OpenSCAD 2014.03, documented here:
+		http://en.wikibooks.org/wiki/OpenSCAD_User_Manual/The_OpenSCAD_Language
+
+	Version History		
+		2011-12-31	Initial version
+		2014-05-24	Updated for OpenSCAD 2014.03
+-->
+
 <dict>
 	<key>BBEditDocumentType</key>
 	<string>CodelessLanguageModule</string>
@@ -10,52 +31,150 @@
 	<true/>
 	<key>BBLMIsCaseSensitive</key>
 	<true/>
+	<key>BBLMPredefinedNameList</key>
+	<array>
+		<!--	Special constants	 -->
+		<string>true</string>
+		<string>false</string>
+		<string>undef</string>
+		<string>PI</string>
+
+		<!--	Parameters	 -->
+		<string>auto</string>
+		<string>center</string>
+		<string>invert</string>
+		<string>size</string>
+		<string>points</string>
+		<string>faces</string>
+		<string>convexity</string>
+		<string>file</string>		
+		<string>layer</string>		
+		<string>origin</string>		
+
+		<!--	Modifier Characters	 -->
+		<string>%</string>
+		<string>#</string>	<!--	Not highlighted?	 -->
+		<string>!</string>
+		<string>*</string>
+		
+		<!--	Special Variables	 -->
+		<string>$fa</string>
+		<string>$fs</string>
+		<string>$fn</string>
+		<string>$t</string>
+		<string>$vpr</string>
+		<string>$vpt</string>
+	</array>
+
 	<key>BBLMKeywordList</key>
 	<array>
-		<string>!</string>
-		<string>#</string>
-		<string>$fa</string>
-		<string>$fn</string>
-		<string>$fs</string>
-		<string>$t</string>
-		<string>%</string>
-		<string>*</string>
-		<string>assign</string>
-		<string>center</string>
-		<string>circle</string>
-		<string>color</string>
-		<string>cube</string>
-		<string>cylinder</string>
-		<string>difference</string>
-		<string>echo</string>
-		<string>for</string>
-		<string>function</string>
-		<string>hull</string>
-		<string>if</string>
-		<string>import_dxf</string>
-		<string>import_stl</string>
-		<string>include</string>
-		<string>intersection</string>
-		<string>intersection_for</string>
-		<string>linear_extrude</string>
-		<string>minkowski</string>
-		<string>mirror</string>
-		<string>module</string>
-		<string>multmatrix</string>
-		<string>polygon</string>
-		<string>polyhedron</string>
-		<string>projection</string>
-		<string>render</string>
-		<string>rotate</string>
-		<string>rotate_extrude</string>
-		<string>scale</string>
-		<string>sphere</string>
+		<!--	
+			Based on OpenSCAD 2014.3, documented here:
+			http://en.wikibooks.org/wiki/OpenSCAD_User_Manual/The_OpenSCAD_Language
+		 -->
+		<!--	2D Primitives	 -->
 		<string>square</string>
+		<string>circle</string>
+		<string>polygon</string>
+
+		<!--	Primitive Solids	 -->
+		<string>cube</string>
+		<string>sphere</string>
+		<string>cylinder</string>
+		<string>polyhedron</string>
+
+		<!--	Conditional and Iterator Functions	  -->
+		<string>for</string>
+		<string>intersection_for</string>
+		<string>if</string>
+		<string>else</string>
+		<string>assign</string>
+
+		<!--	Mathematical Operators	 -->
+		<string>?</string>		<!--	Not highlighted?	 -->
+
+		<!--	Trigonometric Functions	 -->
+		<string>cos</string>
+		<string>sin</string>
+		<string>tan</string>
+		<string>acos</string>
+		<string>asin</string>
+		<string>atan</string>
+		<string>atan2</string>
+
+		<!--	Other Mathematical Functions	 -->
+		<string>abs</string>
+		<string>ceil</string>
+		<string>cross</string>
+		<string>exp</string>
+		<string>floor</string>
+		<string>ln</string>
+		<string>len</string>
+		<string>log</string>
+		<string>lookup</string>
+		<string>max</string>
+		<string>min</string>
+		<string>norm</string>
+		<string>pow</string>
+		<string>rands</string>
+		<string>round</string>
+		<string>sign</string>
+		<string>sqrt</string>
+
+		<!--	String Functions	 -->
 		<string>str</string>
-		<string>surface</string>
+
+		<!--	Transformations	 -->
+		<string>scale</string>
+		<string>rotate</string>
 		<string>translate</string>
+		<string>resize</string>
+		<string>mirror</string>
+		<string>multmatrix</string>
+		<string>color</string>
+		<string>minkowski</string>
+		<string>hull</string>
+
+		<!--	CSG Modelling	 -->
 		<string>union</string>
+		<string>difference</string>
+		<string>intersection</string>
+		<string>linear_extrude</string>
+
+		<!--	Modules	 -->
+		<string>module</string>
+		<string>children</string>
+		<string>function</string>
+		
+		<!--	Importing Geometry	 -->
+		<string>import</string>
+		<string>include</string>
 		<string>use</string>
+		<string>dxf_cross</string>
+
+		<!--	Other Language Features	 -->
+		
+		<!--	Echo Statements	 -->
+		<string>echo</string>
+		
+		<!--	Render	 -->
+		<string>render</string>
+
+		<!--	Offset	 -->
+		<string>offset</string>		
+
+		<!--	Surface	 -->
+		<string>surface</string>
+		
+		<!--	Search	 -->
+		<string>search</string>
+
+		<!--	OpenSCAD Version	 -->
+		<string>version</string>
+		<string>version_num</string>
+		<string>parent_module</string>
+		<string>$parent_modules</string>
+		
 	</array>
 	<key>BBLMLanguageCode</key>
 	<string>Oscd</string>

@@ -1,5 +1,4 @@
-#ifndef SVG_H_
-#define SVG_H_
+#pragma once
 
 #include "cgal.h"
 #include <boost/algorithm/string.hpp>
@@ -23,6 +22,3 @@ std::string dump_svg( const CGAL_Nef_polyhedron2 &N );
 std::string dump_svg( const CGAL_Nef_polyhedron3 &N );
 
 } // namespace
-
-#endif
-

@@ -1,5 +1,4 @@
-#ifndef NODECACHE_H_
-#define NODECACHE_H_
+#pragma once
 
 #include <vector>
 #include <string>
@@ -48,5 +47,3 @@ private:
   std::vector<std::string> cache;
 	std::string nullvalue;
 };
-
-#endif
