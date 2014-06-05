@@ -10,3 +10,6 @@ std::string PlatformUtils::documentsPath()
 {
   return std::string([[NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) lastObject] UTF8String]);
 }
+
+void PlatformUtils::ensureStdIO(void) {}
+
