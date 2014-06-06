@@ -47,8 +47,8 @@
 
 init_variables()
 {
-	BRANCH_TO_BUILD=unstable
-	#BRANCH_TO_BUILD=master
+	#BRANCH_TO_BUILD=unstable
+	BRANCH_TO_BUILD=master
 	STARTPATH=$PWD
 	# kilobit (not kilobyte!) per second for scp upload
 	RATELIMIT=420

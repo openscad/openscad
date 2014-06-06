@@ -602,6 +602,8 @@ int main(int argc, char **argv)
 	bool isGuiLaunched = getenv("GUI_LAUNCHED") != 0;
 #ifdef Q_OS_MAC
 	if (isGuiLaunched) set_output_handler(CocoaUtils::nslog, NULL);
+#else
+	PlatformUtils::ensureStdIO();
 #endif
 #ifdef ENABLE_CGAL
 	// Causes CGAL errors to abort directly instead of throwing exceptions
