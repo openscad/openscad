@@ -504,7 +504,12 @@ add_definitions(${HARFBUZZ_CFLAGS})
 # Image comparison - expected test image vs actual generated image
 
 if (DIFFPNG)
+  # How to set cflags to optimize the executable?
+  set(IMAGE_COMPARE_EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/diffpng)
+  set(COMPARATOR "diffpng")
+  add_executable(diffpng diffpng.cpp ../src/lodepng.cpp)
   set(SKIP_IMAGEMAGICK 1)
+  message(STATUS "using diffpng for image comparison")
 endif()
 
 if (SKIP_IMAGEMAGICK)
