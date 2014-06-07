@@ -7,6 +7,8 @@
 #include "module.h"
 #include "Tree.h"
 #include "memory.h"
+#include "legacyeditor.h"
+#include "editor.h"
 #include <vector>
 #include <QMutex>
 #include <QSet>
@@ -102,6 +104,9 @@ private:
 	QString get2dExportFilename(QString format, QString extension);
 	void show_examples();
 	void setDockWidgetTitle(QDockWidget *dockWidget, QString prefix, bool topLevel);
+
+	LegacyEditor *legacy;
+	Editor *editor;
 
   class QMessageBox *openglbox;
   class FontListDialog *font_list_dialog;
