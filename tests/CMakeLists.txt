@@ -501,26 +501,37 @@ add_definitions(${FONTCONFIG_CFLAGS})
 add_definitions(${FREETYPE_CFLAGS})
 add_definitions(${HARFBUZZ_CFLAGS})
 
-# Imagemagick
+# Image comparison - expected test image vs actual generated image
+
+if (DIFFPNG)
+  # How to set cflags to optimize the executable?
+  set(IMAGE_COMPARE_EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/diffpng)
+  set(COMPARATOR "diffpng")
+  add_executable(diffpng diffpng.cpp ../src/lodepng.cpp)
+  set(SKIP_IMAGEMAGICK 1)
+  message(STATUS "using diffpng for image comparison")
+endif()
 
 if (SKIP_IMAGEMAGICK)
-  # cross-building depends on this
-  set(ImageMagick_convert_EXECUTABLE "/bin/echo")
+  if (NOT DIFFPNG)
+    # cross-building depends on this
+    set(IMAGE_COMPARE_EXECUTABLE "/bin/echo")
+  endif()
 else()
   find_package(ImageMagick COMPONENTS convert)
   if (ImageMagick_convert_FOUND)
     message(STATUS "ImageMagick convert executable found: " ${ImageMagick_convert_EXECUTABLE})
+    set(IMAGE_COMPARE_EXECUTABLE ${ImageMagick_convert_EXECUTABLE})
   else()
     message(FATAL_ERROR "Couldn't find imagemagick 'convert' program")
   endif()
-
   if ( "${ImageMagick_VERSION_STRING}" VERSION_LESS "6.5.9.4" )
     message(STATUS "ImageMagick version less than 6.5.9.4, cannot use -morphology comparison")
     message(STATUS "ImageMagick Using older image comparison method")
     set(COMPARATOR "old")
   endif()
 
-  execute_process(COMMAND ${ImageMagick_convert_EXECUTABLE} --version OUTPUT_VARIABLE IM_OUT )
+  execute_process(COMMAND ${IMAGE_COMPARE_EXECUTABLE} --version OUTPUT_VARIABLE IM_OUT )
   if ( ${IM_OUT} MATCHES "OpenMP" )
     # http://www.daniloaz.com/en/617/systems/high-cpu-load-when-converting-images-with-imagemagick
     message(STATUS "ImageMagick: OpenMP bug workaround - setting MAGICK_THREAD_LIMIT=1")
@@ -904,7 +915,7 @@ function(add_cmdline_test TESTCMD_BASENAME)
         set(FILENAME_OPTION -f ${FILE_BASENAME})
       endif()
 
-      add_test(NAME ${TEST_FULLNAME} ${CONFARG} ${CONFVAL} COMMAND ${PYTHON_EXECUTABLE} ${tests_SOURCE_DIR}/test_cmdline_tool.py --comparator=${COMPARATOR} -c ${ImageMagick_convert_EXECUTABLE} -s ${TESTCMD_SUFFIX} ${EXTRA_OPTIONS} ${TESTNAME_OPTION} ${FILENAME_OPTION} ${TESTCMD_EXE} ${TESTCMD_SCRIPT} "${SCADFILE}" ${CAMERA_OPTION} ${TESTCMD_ARGS} )
+      add_test(NAME ${TEST_FULLNAME} ${CONFARG} ${CONFVAL} COMMAND ${PYTHON_EXECUTABLE} ${tests_SOURCE_DIR}/test_cmdline_tool.py --comparator=${COMPARATOR} -c ${IMAGE_COMPARE_EXECUTABLE} -s ${TESTCMD_SUFFIX} ${EXTRA_OPTIONS} ${TESTNAME_OPTION} ${FILENAME_OPTION} ${TESTCMD_EXE} ${TESTCMD_SCRIPT} "${SCADFILE}" ${CAMERA_OPTION} ${TESTCMD_ARGS})
       set_property(TEST ${TEST_FULLNAME} PROPERTY ENVIRONMENT "${CTEST_ENVIRONMENT}")
     endif()
   endforeach()

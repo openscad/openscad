@@ -195,7 +195,7 @@ def load_makefiles(builddir):
     return result
 
 
-def png_encode64(fname, width=250, data=None):
+def png_encode64(fname, width=512, data=None):
     # en.wikipedia.org/wiki/Data_URI_scheme
     data = data or tryread(fname) or ''
     data_uri = data.encode('base64').replace('\n', '')

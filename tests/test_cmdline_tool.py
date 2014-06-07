@@ -108,19 +108,28 @@ def compare_png(resultfilename):
     if options.comparator == 'ncc':
       # for systems where imagemagick crashes when using the above comparators
       args = [expectedfilename, resultfilename, "-alpha", "Off", "-compose", "difference", "-metric", "NCC", "tmp.png"]
-      options.convert_exec = 'compare'
+      options.comparison_exec = 'compare'
       compare_method = 'NCC'
 
-    msg = 'ImageMagick image comparison: '  + options.convert_exec + ' '+ ' '.join(args[2:])
-    msg += '\n expected image: ' + expectedfilename + '\n'
-    print >> sys.stderr, msg
+    if options.comparator == 'diffpng':
+      # use Hector Yee algorithm, dont use imagemagick
+      args = [expectedfilename, resultfilename, "--output", "diff"+resultfilename]
+      compare_method = 'diffpng'
+
+    print >> sys.stderr, 'Image comparison cmdline: '
+    print >> sys.stderr, str(args)
+
+    # these two lines are parsed by the test_pretty_print.py
+    print >> sys.stderr, ' actual image: ' + resultfilename + '\n'
+    print >> sys.stderr, ' expected image: ' + expectedfilename + '\n'
+
     if not resultfilename:
         print >> sys.stderr, "Error: Error during test image generation"
         return False
     print >> sys.stderr, ' actual image: ', resultfilename
 
-    (retval, output) = execute_and_redirect(options.convert_exec, args, subprocess.PIPE)
-    print "Imagemagick return", retval, "output:", output
+    (retval, output) = execute_and_redirect(options.comparison_exec, args, subprocess.PIPE)
+    print "Image comparison return:", retval, "output:", output
     if retval == 0:
 	if compare_method=='pixel':
             pixelerr = int(float(output.strip()))
@@ -131,6 +140,9 @@ def compare_png(resultfilename):
             ncc_err = float(output.strip())
             if ncc_err > thresh or ncc_err==0.0: return True
             else: print >> sys.stderr, ncc_err, ' Images differ: NCC comparison < ', thresh
+        elif compare_method=='diffpng':
+            if 'PASS:' in output: return True
+            if 'FAIL:' in output: return False
     return False
 
 def compare_with_expected(resultfilename):
@@ -221,8 +233,8 @@ if __name__ == '__main__':
             options.testname = a
         elif o in ("-f", "--file"):
             options.filename = a
-        elif o in ("-c", "--convexec"): 
-            options.convert_exec = os.path.normpath( a )
+        elif o in ("-c", "--compare-exec"): 
+            options.comparison_exec = os.path.normpath( a )
         elif o in ("-m", "--comparator"):
             options.comparator = a
 
