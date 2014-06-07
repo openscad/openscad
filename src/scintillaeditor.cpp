@@ -2,6 +2,8 @@
 
 ScintillaEditor::ScintillaEditor(QWidget *parent) : Editor(parent)
 {
-	qsci = new QsciScintilla;
+	layout = new QVBoxLayout(this);
+	qsci = new QsciScintilla(this);;
+	layout->addWidget(qsci);
 	qsci->setMarginLineNumbers(10,true);
 }

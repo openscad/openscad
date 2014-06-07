@@ -167,11 +167,12 @@ MainWindow::MainWindow(const QString &filename)
 	: root_inst("group"), font_list_dialog(NULL), tempFile(NULL), progresswidget(NULL)
 {
 	setupUi(this);
-	legacy = new LegacyEditor(editorDockContents);
-        editor = legacy;
+//	legacy = new LegacyEditor(editorDockContents);
+//        editor = legacy;
 
 	scintilla = new ScintillaEditor(editorDockContents);
-	//editor = scintilla;
+	editor = scintilla;
+	editorDockContents->layout()->addWidget(editor);
 	editor->setMinimumSize(editorDockContents->sizeHint());
 
 	setCorner(Qt::TopLeftCorner, Qt::LeftDockWidgetArea);

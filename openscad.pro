@@ -84,6 +84,8 @@ else {
   TARGET = openscad
 }
 
+LIBS += -lqscintilla2
+
 win* {
   RC_FILE = openscad_win32.rc
   QTPLUGIN += qtaccessiblewidgets

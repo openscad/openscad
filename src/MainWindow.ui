@@ -120,7 +120,7 @@
      <x>0</x>
      <y>0</y>
      <width>936</width>
-     <height>34</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_File">
@@ -358,25 +358,6 @@
          </widget>
         </item>
        </layout>
-      </widget>
-     </item>
-     <item>
-      <widget class="Editor" name="editor" native="true">
-       <property name="minimumSize">
-        <size>
-         <width>100</width>
-         <height>100</height>
-        </size>
-       </property>
-       <property name="font">
-        <font>
-         <family>Monaco</family>
-         <pointsize>8</pointsize>
-        </font>
-       </property>
-       <property name="focusPolicy">
-        <enum>Qt::WheelFocus</enum>
-       </property>
       </widget>
      </item>
     </layout>
@@ -968,11 +949,6 @@
    <extends>QWidget</extends>
    <header>QGLView.h</header>
    <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>Editor</class>
-   <extends>QWidget</extends>
-   <header>editor.h</header>
   </customwidget>
  </customwidgets>
  <resources>
