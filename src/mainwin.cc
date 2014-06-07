@@ -38,6 +38,8 @@
 #include "builtin.h"
 #include "progress.h"
 #include "dxfdim.h"
+#include "legacyeditor.h"
+#include "scintillaeditor.h"
 #include "AboutDialog.h"
 #include "FontListDialog.h"
 #ifdef ENABLE_OPENCSG
@@ -85,6 +87,7 @@
 #include <boost/version.hpp>
 #include <boost/foreach.hpp>
 #include <sys/stat.h>
+#include <qt4/QtGui/qwidget.h>
 
 #ifdef ENABLE_CGAL
 
@@ -167,12 +170,13 @@ MainWindow::MainWindow(const QString &filename)
 	: root_inst("group"), font_list_dialog(NULL), tempFile(NULL), progresswidget(NULL)
 {
 	setupUi(this);
-//	legacy = new LegacyEditor(editorDockContents);
-  //    editor = legacy;
 
-	scintilla = new ScintillaEditor(editorDockContents);
-	editor = scintilla;
-	verticalLayout_4->addWidget(editor);
+#ifdef USE_SCINTILLA_EDITOR
+	editor = new ScintillaEditor(editorDockContents);
+#else
+	editor = new LegacyEditor(editorDockContents);
+#endif
+	editorDockContents->layout()->addWidget(editor);
 
 	setCorner(Qt::TopLeftCorner, Qt::LeftDockWidgetArea);
 	setCorner(Qt::TopRightCorner, Qt::RightDockWidgetArea);
