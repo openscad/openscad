@@ -23,6 +23,7 @@ GLView::GLView() : colorscheme(NULL)
   showaxes = false;
   showcrosshairs = false;
   renderer = NULL;
+  colorscheme = NULL;
   cam = Camera();
   far_far_away = RenderSettings::inst()->far_gl_clip_limit;
 #ifdef ENABLE_OPENCSG
@@ -44,7 +45,8 @@ void GLView::setRenderer(Renderer* r)
 to match the colorscheme of this GLView.*/
 void GLView::updateColorScheme()
 {
-  if (this->renderer) this->renderer->setColorScheme(*this->colorscheme);
+  if (this->renderer && this->colorscheme)
+    this->renderer->setColorScheme(*this->colorscheme);
 }
 
 /* change this GLView's colorscheme to the one given, and update the
@@ -57,10 +59,10 @@ void GLView::setColorScheme(const OSColors::colorscheme &cs)
 
 void GLView::setColorScheme(const std::string &cs)
 {
-	const OSColors::colorscheme *colorscheme =  OSColors::colorScheme(cs);
-	if (colorscheme) {
-		setColorScheme(*colorscheme);
-	}
+  const OSColors::colorscheme *colorscheme =  OSColors::colorScheme(cs);
+  if (colorscheme) {
+    setColorScheme(*colorscheme);
+  }
   else {
     PRINTB("WARNING: GLView: unknown colorscheme %s", cs);
   }
@@ -317,7 +319,10 @@ void GLView::vectorCamPaintGL()
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
 
-  Color4f bgcol = OSColors::getValue(*this->colorscheme, OSColors::BACKGROUND_COLOR );
+  Color4f bgcol = OSColors::getValue(OSColors::defaultColorScheme(), OSColors::BACKGROUND_COLOR );
+  if (this->colorscheme)
+    bgcol = OSColors::getValue(*this->colorscheme, OSColors::BACKGROUND_COLOR );
+
   glClearColor(bgcol[0], bgcol[1], bgcol[2], 1.0);
   //glClearColor(1.0f, 1.0f, 0.92f, 1.0f);
 
