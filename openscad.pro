@@ -71,8 +71,6 @@ deploy {
   }
 }
 
-QMAKE_CXXFLAGS += -std=c++0x
-
 macx {
   TARGET = OpenSCAD
   ICON = icons/OpenSCAD.icns
@@ -81,9 +79,28 @@ macx {
   APP_RESOURCES.files = OpenSCAD.sdef dsa_pub.pem icons/SCAD.icns
   QMAKE_BUNDLE_DATA += APP_RESOURCES
   LIBS += -framework Cocoa -framework ApplicationServices
+
+  system(grep -q __112basic_string $$QMAKE_LIBDIR/libboost_thread*) {
+    message("Boost using libc++ detected - building with C++11")
+    CONFIG += c++11
+  }
+
+  c++11 {
+    QMAKE_CXXFLAGS += -stdlib=libc++
+    QMAKE_LFLAGS += -stdlib=libc++
+    QMAKE_OBJECTIVE_CFLAGS += -stdlib=libc++
+    # C++11 on Mac requires 10.7+
+    QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.7
+  }
 }
 else {
   TARGET = openscad
+  CONFIG += c++11
+}
+
+
+c++11 {
+  QMAKE_CXXFLAGS += -std=c++11
 }
 
 win* {
