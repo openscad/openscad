@@ -1,5 +1,6 @@
 #include <iostream>
-#include <QTextCursor>
+#include <QString>
+#include <QChar>
 #include "scintillaeditor.h"
 
 ScintillaEditor::ScintillaEditor(QWidget *parent) : EditorInterface(parent)
@@ -11,19 +12,32 @@ ScintillaEditor::ScintillaEditor(QWidget *parent) : EditorInterface(parent)
 }
 void ScintillaEditor::indentSelection()
 {
-	int line,index;
-	int currentLine = qsci->positionFromLineIndex(line,index); 	
-	std::cout << "--------------------------------------"<<line<<"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!";	
-	qsci->setIndentation(currentLine, 5); 
+	if(qsci->hasSelectedText())
+	{
+		QString txt = qsci->selectedText();
+		txt.replace(QString(QChar(8233)), QString(QChar(8233)) + QString("\t"));
+        	if (txt.endsWith(QString(QChar(8233)) + QString("\t")))
+                	txt.chop(1);
+        	txt = QString("\t") + txt;
+		qsci->replaceSelectedText(txt);
+	}
 }
 void ScintillaEditor::unindentSelection()
-{ }
+{
+	 
+}
 void ScintillaEditor::commentSelection() 
 {}
 void ScintillaEditor::uncommentSelection()
 {}
 void ScintillaEditor::setPlainText(const QString &text)
-{ }
+{
+	qsci->setText(text); 
+}
+QString ScintillaEditor::toPlainText()
+{
+	return qsci->text();
+}
 void ScintillaEditor::highlightError(int error_pos) 
 {}
 void ScintillaEditor::unhighlightLastError() 
@@ -31,7 +45,9 @@ void ScintillaEditor::unhighlightLastError()
 void ScintillaEditor::setHighlightScheme(const QString &name)
 { }
 void ScintillaEditor::insertPlainText(const QString &text)
-{ }
+{
+	qsci->setText(text); 
+}
 
 void ScintillaEditor::undo()
 {

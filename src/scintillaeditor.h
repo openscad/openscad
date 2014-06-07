@@ -18,8 +18,8 @@ public:
         virtual void setInitialSizeHint(const QSize &size) { }
 	virtual void wheelEvent ( QWheelEvent * event ) { }
         virtual void setTabStopWidth(int width) { }
-        virtual QString toPlainText() { QString s; return s;}
-        virtual QTextCursor textCursor() { QTextCursor c; return c;}
+*/      QString toPlainText();
+/*        virtual QTextCursor textCursor() { QTextCursor c; return c;}
         virtual void setTextCursor (const QTextCursor &cursor) { }
         virtual QTextDocument *document(){QTextDocument *t = new QTextDocument; return t;}
         virtual bool find(const QString & exp, QTextDocument::FindFlags options = 0){ return options;}
