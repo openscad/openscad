@@ -166,10 +166,14 @@ bool MainWindow::undockMode = false;
 MainWindow::MainWindow(const QString &filename)
 	: root_inst("group"), font_list_dialog(NULL), tempFile(NULL), progresswidget(NULL)
 {
+	setupUi(this);
 	legacy = new LegacyEditor(editorDockContents);
         editor = legacy;
 
-	setupUi(this);
+	scintilla = new ScintillaEditor(editorDockContents);
+	//editor = scintilla;
+	editor->setMinimumSize(editorDockContents->sizeHint());
+
 	setCorner(Qt::TopLeftCorner, Qt::LeftDockWidgetArea);
 	setCorner(Qt::TopRightCorner, Qt::RightDockWidgetArea);
 	setCorner(Qt::BottomLeftCorner, Qt::LeftDockWidgetArea);
