@@ -8,12 +8,12 @@
 #include <QTextEdit>
 #include "highlighter.h"
 
-class Editor : public QWidget
+class EditorInterface : public QWidget
 {
 	Q_OBJECT
 public:
-	Editor(QWidget *parent);
-	~Editor();
+	EditorInterface(QWidget *parent);
+	~EditorInterface();
         virtual QSize sizeHint(){ QSize size; return size;}
         virtual void setInitialSizeHint(const QSize &size) { }
 	virtual void wheelEvent ( QWheelEvent * event ) { }

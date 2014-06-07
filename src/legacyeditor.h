@@ -10,7 +10,7 @@
 #include "highlighter.h"
 #include "editor.h"
 
-class LegacyEditor : public Editor
+class LegacyEditor : public EditorInterface
 {
 	Q_OBJECT
 public:

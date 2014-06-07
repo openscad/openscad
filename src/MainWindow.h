@@ -108,7 +108,7 @@ private:
 
 	LegacyEditor *legacy;
 	ScintillaEditor *scintilla;
-	Editor *editor;
+	EditorInterface *editor;
 
   class QMessageBox *openglbox;
   class FontListDialog *font_list_dialog;

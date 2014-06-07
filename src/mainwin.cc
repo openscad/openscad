@@ -168,12 +168,11 @@ MainWindow::MainWindow(const QString &filename)
 {
 	setupUi(this);
 //	legacy = new LegacyEditor(editorDockContents);
-//        editor = legacy;
+  //    editor = legacy;
 
 	scintilla = new ScintillaEditor(editorDockContents);
 	editor = scintilla;
-	editorDockContents->layout()->addWidget(editor);
-	editor->setMinimumSize(editorDockContents->sizeHint());
+	verticalLayout_4->addWidget(editor);
 
 	setCorner(Qt::TopLeftCorner, Qt::LeftDockWidgetArea);
 	setCorner(Qt::TopRightCorner, Qt::RightDockWidgetArea);

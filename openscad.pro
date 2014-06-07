@@ -92,6 +92,7 @@ win* {
 }
 
 CONFIG += qt
+CONFIG += qscintilla2
 QT += opengl
 
 # see http://fedoraproject.org/wiki/UnderstandingDSOLinkChange
