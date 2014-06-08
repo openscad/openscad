@@ -47,7 +47,7 @@ DEPENDPATH += src
 
 # Handle custom library location.
 # Used when manually installing 3rd party libraries
-OPENSCAD_LIBDIR = $$(OPENSCAD_LIBRARIES)
+isEmpty(OPENSCAD_LIBDIR) OPENSCAD_LIBDIR = $$(OPENSCAD_LIBRARIES)
 !isEmpty(OPENSCAD_LIBDIR) {
   INCLUDEPATH += $$OPENSCAD_LIBDIR/include
   QMAKE_INCDIR_QT = $$OPENSCAD_LIBDIR/include $$QMAKE_INCDIR_QT 
@@ -55,10 +55,38 @@ OPENSCAD_LIBDIR = $$(OPENSCAD_LIBRARIES)
 }
 else {
   macx {
-    # Default to MacPorts on Mac OS X
-    QMAKE_INCDIR = /opt/local/include
-    QMAKE_LIBDIR = /opt/local/lib
+
+	exists(/opt/local):exists(/usr/local/Cellar) {
+		error("It seems you might have libraries in both /opt/local and /usr/local. Please specify which one to use with qmake OPENSCAD_LIBDIR=<prefix>");
+	} else {
+		exists(/opt/local) {
+			#Default to MacPorts on Mac OS X
+			message("Automatically searching for libraries in /opt/local. To override, use qmake OPENSCAD_LIBDIR=<prefix>");
+			QMAKE_INCDIR = /opt/local/include
+			QMAKE_LIBDIR = /opt/local/lib
+		} else:exists(/usr/local/Cellar) {
+			message("Automatically searching for libraries in /usr/local. To override, use qmake OPENSCAD_LIBDIR=<prefix>");
+			QMAKE_INCDIR = /usr/local/include
+			QMAKE_LIBDIR = /usr/local/lib
+		}
+	}
   }
+}
+
+macx {
+	dirs = $${BOOSTDIR} $${QMAKE_LIBDIR}
+	for(dir, dirs) {
+		system(grep -q __112basic_string $${dir}/libboost_thread* >& /dev/null) {
+			message("Detected libc++-linked boost in $${dir}");
+			# In that case, we will also need to link against libc++
+			QMAKE_CXXFLAGS += -stdlib=libc++
+			QMAKE_LFLAGS += -stdlib=libc++
+			QMAKE_OBJECTIVE_CFLAGS += -stdlib=libc++
+
+			# And libc++ requires 10.7
+			QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.7
+		}
+	}
 }
 
 # add CONFIG+=deploy to the qmake command-line to make a deployment build
