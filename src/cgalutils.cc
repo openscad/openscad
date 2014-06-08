@@ -17,6 +17,7 @@
 #include "Reindexer.h"
 
 #include <map>
+#include <queue>
 #include <boost/foreach.hpp>
 #include <boost/unordered_set.hpp>
 
@@ -79,7 +80,8 @@ namespace CGALUtils {
 		}
 		// Also make sure that there is only one shell:
 		boost::unordered_set<typename Polyhedron::Facet_const_handle, typename CGAL::Handle_hash_function> visited;
-		visited.reserve(p.size_of_facets());
+		// c++11
+		// visited.reserve(p.size_of_facets());
 
 		std::queue<typename Polyhedron::Facet_const_handle> to_explore;
 		to_explore.push(p.facets_begin()); // One arbitrary facet
