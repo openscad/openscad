@@ -12,11 +12,13 @@
 #include <CGAL/convex_hull_3.h>
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
 #include <CGAL/normal_vector_newell_3.h>
+#include <CGAL/Handle_hash_function.h>
 #include "svg.h"
 #include "Reindexer.h"
 
 #include <map>
 #include <boost/foreach.hpp>
+#include <boost/unordered_set.hpp>
 
 namespace /* anonymous */ {
 	template<typename Result, typename V>
@@ -75,7 +77,30 @@ namespace CGALUtils {
 				return false;
 			}
 		}
-		return true;
+		// Also make sure that there is only one shell:
+		boost::unordered_set<typename Polyhedron::Facet_const_handle, typename CGAL::Handle_hash_function> visited;
+		visited.reserve(p.size_of_facets());
+
+		std::queue<typename Polyhedron::Facet_const_handle> to_explore;
+		to_explore.push(p.facets_begin()); // One arbitrary facet
+		visited.insert(to_explore.front());
+
+		while (!to_explore.empty()) {
+			typename Polyhedron::Facet_const_handle f = to_explore.front();
+			to_explore.pop();
+			typename Polyhedron::Facet::Halfedge_around_facet_const_circulator he, end;
+			end = he = f->facet_begin();
+			CGAL_For_all(he,end) {
+				typename Polyhedron::Facet_const_handle o = he->opposite()->facet();
+
+				if (!visited.count(o)) {
+					visited.insert(o);
+					to_explore.push(o);
+				}
+			}
+		}
+
+		return visited.size() == p.size_of_facets();
 	}
 
 	Geometry const * applyMinkowski(const Geometry::ChildList &children)
