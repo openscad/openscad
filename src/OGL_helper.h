@@ -28,10 +28,16 @@
 #define CGAL_NEF3_MARKED_VERTEX_COLOR 183,232,92
 #define CGAL_NEF3_MARKED_EDGE_COLOR 171,216,86
 #define CGAL_NEF3_MARKED_FACET_COLOR  157,203,81
+#define CGAL_NEF3_MARKED_BACK_FACET_COLOR  157,103,181
 
 #define CGAL_NEF3_UNMARKED_VERTEX_COLOR 255,246,124
 #define CGAL_NEF3_UNMARKED_EDGE_COLOR 255,236,94
 #define CGAL_NEF3_UNMARKED_FACET_COLOR 249,215,44
+#define CGAL_NEF3_UNMARKED_BACK_FACET_COLOR 249,115,144
+
+
+const bool cull_backfaces = false;
+const bool color_backfaces = false;
 
 #ifdef _WIN32
 #define CGAL_GLU_TESS_CALLBACK CALLBACK
@@ -398,15 +404,18 @@ namespace OGL {
       glEnd();
     }
 
-    virtual CGAL::Color getFacetColor(Halffacet_iterator f) const
+    virtual CGAL::Color getFacetColor(Halffacet_iterator f, bool is_back_facing) const
     {
-	CGAL::Color cf(CGAL_NEF3_MARKED_FACET_COLOR),
-	  ct(CGAL_NEF3_UNMARKED_FACET_COLOR); // more blue-ish
-	CGAL::Color c = (f->mark() ? ct : cf);
-	return c;
+
+      if (is_back_facing) return !f->mark()
+          ? CGAL::Color(CGAL_NEF3_MARKED_BACK_FACET_COLOR)
+          : CGAL::Color(CGAL_NEF3_UNMARKED_BACK_FACET_COLOR);
+      else return !f->mark()
+          ? CGAL::Color(CGAL_NEF3_MARKED_FACET_COLOR)
+          : CGAL::Color(CGAL_NEF3_UNMARKED_FACET_COLOR);
     }
 
-    void draw(Halffacet_iterator f) const { 
+    void draw(Halffacet_iterator f, bool is_back_facing) const {
       //      CGAL_NEF_TRACEN("drawing facet "<<(f->debug(),""));
       GLUtesselator* tess_ = gluNewTess();
       gluTessCallback(tess_, GLenum(GLU_TESS_VERTEX_DATA),
@@ -423,7 +432,7 @@ namespace OGL {
 		      GLU_TESS_WINDING_POSITIVE);
 
       DFacet::Coord_const_iterator cit;
-      CGAL::Color c = getFacetColor(f);
+      CGAL::Color c = getFacetColor(f,is_back_facing);
       glColor3ub(c.red(),c.green(),c.blue());
       gluTessBeginPolygon(tess_,f->normal());
       //      CGAL_NEF_TRACEN(" ");
@@ -495,10 +504,22 @@ namespace OGL {
       glEndList();     
 
       glNewList(object_list_+2, GL_COMPILE);
-      Halffacet_iterator f;
-      for(f=halffacets_.begin();f!=halffacets_.end();++f)
-	draw(f);
-      glEndList();
+
+      if (cull_backfaces || color_backfaces) {
+        glEnable(GL_CULL_FACE);
+        glCullFace(GL_BACK);
+	  }
+      for (int i = 0; i < (color_backfaces ? 2 : 1); i++) {
+        Halffacet_iterator f;
+        for(f=halffacets_.begin();f!=halffacets_.end();++f)
+          draw(f, i);
+		if (color_backfaces) glCullFace(GL_FRONT);
+	  }
+	  if (cull_backfaces || color_backfaces) {
+        glCullFace(GL_BACK);
+        glDisable(GL_CULL_FACE);
+	  }
+	  glEndList();
 
       glNewList(object_list_+3, GL_COMPILE); // axes:
       construct_axes();
@@ -617,8 +638,18 @@ namespace OGL {
       P.push_back(double_segment(seg), e->mark()); 
     }
     
+    static bool same_orientation(Plane_3 p1, Plane_3 p2) {
+      if(p1.a() != 0)
+        return CGAL::sign(p1.a()) == CGAL::sign(p2.a());
+      if(p1.b() != 0)
+        return CGAL::sign(p1.b()) == CGAL::sign(p2.b());
+      return CGAL::sign(p1.c()) == CGAL::sign(p2.c());
+    }
+
     static void draw(Halffacet_const_handle f, const Nef_polyhedron& ,
 		     CGAL::OGL::Polyhedron& P) { 
+
+      if (f->incident_volume()->mark()) return; // Skip halffaces facing solid volume
       OGL::DFacet g;
       Halffacet_cycle_const_iterator fc; // all facet cycles:
       CGAL_forall_facet_cycles_of(fc,f)
@@ -693,7 +724,7 @@ namespace OGL {
       Halfedge_const_iterator e;
       CGAL_forall_edges(e,*N.sncp()) draw(e,N,*P);
       Halffacet_const_iterator f;
-      CGAL_forall_facets(f,*N.sncp()) draw(f,N,*P);
+      CGAL_forall_halffacets(f,*N.sncp()) draw(f,N,*P);
     }
     
   }; // Nef3_Converter
