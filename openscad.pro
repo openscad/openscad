@@ -72,6 +72,8 @@ else {
   }
 }
 
+CONFIG += c++11
+
 # add CONFIG+=deploy to the qmake command-line to make a deployment build
 deploy {
   message("Building deployment version")
@@ -99,6 +101,8 @@ macx {
     }
   }
 
+  c++11: CONFIG += libc++
+
   libc++ {
     QMAKE_CXXFLAGS += -stdlib=libc++
     QMAKE_LFLAGS += -stdlib=libc++
@@ -109,7 +113,6 @@ macx {
 }
 else {
   TARGET = openscad
-  CONFIG += c++11
 }
 
 
