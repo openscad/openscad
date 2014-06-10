@@ -273,87 +273,93 @@ quit:
 // comment/undefine it to disable domain check
 #define TRIG_HUGE_VAL ((1L<<26)*360.0*(1L<<26))
 
+double sin_degrees(register double x)
+{
+	// use positive tests because of possible Inf/NaN
+	if (x < 360.0 && x >= 0.0) {
+		// Ok for now
+	} else
+#ifdef TRIG_HUGE_VAL
+	if (x < TRIG_HUGE_VAL && x > -TRIG_HUGE_VAL)
+#endif
+	{
+		register double revolutions = floor(x/360.0);
+		x -= 360.0*revolutions;
+	}
+#ifdef TRIG_HUGE_VAL
+	else {
+		// total loss of computational accuracy
+		// the result would be meaningless
+		return std::numeric_limits<double>::quiet_NaN();
+	}
+#endif
+	register bool oppose = x >= 180.0;
+	if (oppose) x -= 180.0;
+	if (x > 90.0) x = 180.0 - x;
+	if (x < 45.0) {
+		if (x == 30.0) x = 0.5;
+		else x = sin(deg2rad(x));
+	} else if (x == 45.0)
+		x = M_SQRT1_2;
+	else // Inf/Nan would fall here
+		x = cos(deg2rad(90.0-x));
+
+	return oppose ? -x : x;
+}
+
 Value builtin_sin(const Context *, const EvalContext *evalctx)
 {
 	if (evalctx->numArgs() == 1) {
 		const Value &v = evalctx->getArgValue(0);
-		if (v.type() == Value::NUMBER) {
-			register double x = v.toDouble();
-			// use positive tests because of possible Inf/NaN
-			if (x < 360.0 && x >= 0.0) {
-				// Ok for now
-			} else
-#ifdef TRIG_HUGE_VAL
-			if (x < TRIG_HUGE_VAL && x > -TRIG_HUGE_VAL)
-#endif
-			{
-				register double revolutions = floor(x/360.0);
-				x -= 360.0*revolutions;
-			}
-#ifdef TRIG_HUGE_VAL
-			else {
-				// total loss of computational accuracy
-				// the result would be meaningless
-				return Value(std::numeric_limits<double>::quiet_NaN());
-			}
-#endif
-			bool oppose = x >= 180.0;
-			if (oppose) x -= 180.0;
-			if (x > 90.0) x = 180.0 - x;
-			if (x < 45.0) {
-				if (x == 30.0) x = 0.5;
-				else x = sin(deg2rad(x));
-			} else if (x == 45.0)
-				x = M_SQRT1_2;
-			else // Inf/Nan would fall here
-				x = cos(deg2rad(90.0-x));
-
-			return Value(oppose ? -x : x);
-		}
+		if (v.type() == Value::NUMBER)
+			return Value(sin_degrees(v.toDouble()));
 	}
 	return Value();
+}
+
+double cos_degrees(register double x)
+{
+	// use positive tests because of possible Inf/NaN
+	if (x < 360.0 && x >= 0.0) {
+		// Ok for now
+	} else
+#ifdef TRIG_HUGE_VAL
+	if (x < TRIG_HUGE_VAL && x > -TRIG_HUGE_VAL)
+#endif
+	{
+		register double revolutions = floor(x/360.0);
+		x -= 360.0*revolutions;
+	}
+#ifdef TRIG_HUGE_VAL
+	else {
+		// total loss of computational accuracy
+		// the result would be meaningless
+		return std::numeric_limits<double>::quiet_NaN();
+	}
+#endif
+	register bool oppose = x >= 180.0;
+	if (oppose) x -= 180.0;
+	if (x > 90.0) {
+		x = 180.0 - x;
+		oppose = !oppose;
+	}
+	if (x > 45.0) {
+		if (x == 60.0) x = 0.5;
+		else x = sin(deg2rad(90.0-x));
+	} else if (x == 45.0)
+		x = M_SQRT1_2;
+	else // Inf/Nan would fall here
+		x = cos(deg2rad(x));
+
+	return oppose ? -x : x;
 }
 
 Value builtin_cos(const Context *, const EvalContext *evalctx)
 {
 	if (evalctx->numArgs() == 1) {
 		const Value &v = evalctx->getArgValue(0);
-		if (v.type() == Value::NUMBER) {
-			register double x = v.toDouble();
-			// use positive tests because of possible Inf/NaN
-			if (x < 360.0 && x >= 0.0) {
-				// Ok for now
-			} else
-#ifdef TRIG_HUGE_VAL
-			if (x < TRIG_HUGE_VAL && x > -TRIG_HUGE_VAL)
-#endif
-			{
-				register double revolutions = floor(x/360.0);
-				x -= 360.0*revolutions;
-			}
-#ifdef TRIG_HUGE_VAL
-			else {
-				// total loss of computational accuracy
-				// the result would be meaningless
-				return Value(std::numeric_limits<double>::quiet_NaN());
-			}
-#endif
-			bool oppose = x >= 180.0;
-			if (oppose) x -= 180.0;
-			if (x > 90.0) {
-				x = 180.0 - x;
-				oppose = !oppose;
-			}
-			if (x > 45.0) {
-				if (x == 60.0) x = 0.5;
-				else x = sin(deg2rad(90.0-x));
-			} else if (x == 45.0)
-				x = M_SQRT1_2;
-			else // Inf/Nan would fall here
-				x = cos(deg2rad(x));
-
-			return Value(oppose ? -x : x);
-		}
+		if (v.type() == Value::NUMBER)
+			return Value(cos_degrees(v.toDouble()));
 	}
 	return Value();
 }
@@ -543,14 +549,17 @@ Value builtin_lookup(const Context *, const EvalContext *evalctx)
 {
 	double p, low_p, low_v, high_p, high_v;
 	if (evalctx->numArgs() < 2 ||                     // Needs two args
-			!evalctx->getArgValue(0).getDouble(p) ||                  // First must be a number
-			evalctx->getArgValue(1).toVector()[0].toVector().size() < 2) // Second must be a vector of vectors
+	    !evalctx->getArgValue(0).getDouble(p)) // First must be a number
 		return Value();
-	if (!evalctx->getArgValue(1).toVector()[0].getVec2(low_p, low_v) || !evalctx->getArgValue(1).toVector()[0].getVec2(high_p, high_v))
+
+	const Value::VectorType vec = evalctx->getArgValue(1).toVector();
+	if (vec[0].toVector().size() < 2) // Second must be a vector of vectors
 		return Value();
-	for (size_t i = 1; i < evalctx->getArgValue(1).toVector().size(); i++) {
+	if (!vec[0].getVec2(low_p, low_v) || !vec[0].getVec2(high_p, high_v))
+		return Value();
+	for (size_t i = 1; i < vec.size(); i++) {
 		double this_p, this_v;
-		if (evalctx->getArgValue(1).toVector()[i].getVec2(this_p, this_v)) {
+		if (vec[i].getVec2(this_p, this_v)) {
 			if (this_p <= p && (this_p > low_p || low_p > p)) {
 				low_p = this_p;
 				low_v = this_v;
@@ -618,8 +627,6 @@ Value builtin_lookup(const Context *, const EvalContext *evalctx)
         - returns [[0,4],[1,5],[2,6],[8]]
 
 */
-#pragma clang diagnostic ignored "-Wlogical-op-parentheses"
-
 
 static Value::VectorType search(const std::string &find, const std::string &table,
 																unsigned int num_returns_per_match, unsigned int index_col_num)
@@ -631,8 +638,8 @@ static Value::VectorType search(const std::string &find, const std::string &tabl
 	for (size_t i = 0; i < findThisSize; i++) {
 		unsigned int matchCount = 0;
 		Value::VectorType resultvec;
+		const gchar *ptr_ft = g_utf8_offset_to_pointer(find.c_str(), i);
 		for (size_t j = 0; j < searchTableSize; j++) {
-			const gchar *ptr_ft = g_utf8_offset_to_pointer(find.c_str(), i);
 			const gchar *ptr_st = g_utf8_offset_to_pointer(table.c_str(), j);
 			if (ptr_ft && ptr_st && (g_utf8_get_char(ptr_ft) == g_utf8_get_char(ptr_st)) ) {
 				matchCount++;
@@ -648,7 +655,6 @@ static Value::VectorType search(const std::string &find, const std::string &tabl
 			}
 		}
 		if (matchCount == 0) {
-			gchar *ptr_ft = g_utf8_offset_to_pointer(find.c_str(), i);
 			gchar utf8_of_cp[6] = ""; //A buffer for a single unicode character to be copied into
 			if (ptr_ft) g_utf8_strncpy(utf8_of_cp, ptr_ft, 1);
 			PRINTB("  WARNING: search term not found: \"%s\"", utf8_of_cp);
@@ -670,8 +676,8 @@ static Value::VectorType search(const std::string &find, const Value::VectorType
 	for (size_t i = 0; i < findThisSize; i++) {
 		unsigned int matchCount = 0;
 		Value::VectorType resultvec;
+		const gchar *ptr_ft = g_utf8_offset_to_pointer(find.c_str(), i);
 		for (size_t j = 0; j < searchTableSize; j++) {
-			const gchar *ptr_ft = g_utf8_offset_to_pointer(find.c_str(), i);
 			const gchar *ptr_st = g_utf8_offset_to_pointer(table[j].toVector()[index_col_num].toString().c_str(), 0);
 			if (ptr_ft && ptr_st && (g_utf8_get_char(ptr_ft) == g_utf8_get_char(ptr_st)) ) {
 				matchCount++;
@@ -687,7 +693,6 @@ static Value::VectorType search(const std::string &find, const Value::VectorType
 			}
 		}
 		if (matchCount == 0) {
-			const gchar *ptr_ft = g_utf8_offset_to_pointer(find.c_str(), i);
 			gchar utf8_of_cp[6] = ""; //A buffer for a single unicode character to be copied into
 			if (ptr_ft) g_utf8_strncpy(utf8_of_cp, ptr_ft, 1);
 			PRINTB("  WARNING: search term not found: \"%s\"", utf8_of_cp);
@@ -716,9 +721,9 @@ Value builtin_search(const Context *, const EvalContext *evalctx)
 		for (size_t j = 0; j < searchTable.toVector().size(); j++) {
 			const Value& search_element = searchTable.toVector()[j];
 
-			if (index_col_num == 0 && findThis == search_element ||
-					index_col_num  < search_element.toVector().size() &&
-					findThis      == search_element.toVector()[index_col_num]) {
+			if ((index_col_num == 0 && findThis == search_element) ||
+					(index_col_num < search_element.toVector().size() &&
+					findThis      == search_element.toVector()[index_col_num])) {
 				returnvec.push_back(Value(double(j)));
 				matchCount++;
 				if (num_returns_per_match != 0 && matchCount >= num_returns_per_match) break;
@@ -742,11 +747,9 @@ Value builtin_search(const Context *, const EvalContext *evalctx)
 
 				Value const& search_element = searchTable.toVector()[j];
 
-				if (index_col_num == 0 && find_value == search_element
-					||
-					index_col_num  < search_element.toVector().size() &&
-					find_value    == search_element.toVector()[index_col_num])
-				{
+				if ((index_col_num == 0 && find_value == search_element) ||
+					(index_col_num < search_element.toVector().size() &&
+					find_value    == search_element.toVector()[index_col_num])) {
 					Value resultValue((double(j)));
 		      matchCount++;
 		      if (num_returns_per_match == 1) {

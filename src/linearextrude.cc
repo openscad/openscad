@@ -82,9 +82,9 @@ AbstractNode *LinearExtrudeModule::instantiate(const Context *ctx, const ModuleI
 	// then assume it should be the height.
 	if (c.lookup_variable("height").isUndefined() &&
 			evalctx->numArgs() > 0 &&
-			evalctx->getArgName(0) == "" &&
-			evalctx->getArgValue(0).type() == Value::NUMBER) {
-		height = evalctx->getArgValue(0);
+			evalctx->getArgName(0) == "") {
+		const Value &val = evalctx->getArgValue(0);
+		if (val.type() == Value::NUMBER) height = val;
 	}
 
 	node->layername = layer.isUndefined() ? "" : layer.toString();
