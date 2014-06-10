@@ -97,7 +97,7 @@ GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren3D(const Abstr
 	if (children.size() == 0) return ResultObject();
 
 	if (op == OPENSCAD_HULL) {
-		PolySet *ps = new PolySet(3);
+		PolySet *ps = new PolySet(3, true);
 
 		if (CGALUtils::applyHull(children, *ps)) {
 			return ps;
@@ -109,6 +109,8 @@ GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren3D(const Abstr
 	
 	// Only one child -> this is a noop
 	if (children.size() == 1) return ResultObject(children.front().second);
+
+	if (op == OPENSCAD_MINKOWSKI) return ResultObject(CGALUtils::applyMinkowski(children));
 
 	CGAL_Nef_polyhedron *N = new CGAL_Nef_polyhedron;
 	CGALUtils::applyOperator(children, *N, op);

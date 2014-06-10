@@ -958,6 +958,9 @@ disable_tests(cgalpngtest_child-background
               csgpngtest_testcolornames
               throwntogethertest_testcolornames)
 
+# This test won't render anything meaningful in throwntogether mode
+disable_tests(throwntogethertest_minkowski3-erosion)
+
 # The inf/nan tests fail when exporting CSG and rendering that output again
 # as currently inf/nan is written directly to the CSG file (e.g. r = inf)
 # which is not valid or even misleading in case a variable inf exists.
