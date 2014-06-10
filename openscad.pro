@@ -47,7 +47,7 @@ DEPENDPATH += src
 
 # Handle custom library location.
 # Used when manually installing 3rd party libraries
-OPENSCAD_LIBDIR = $$(OPENSCAD_LIBRARIES)
+isEmpty(OPENSCAD_LIBDIR) OPENSCAD_LIBDIR = $$(OPENSCAD_LIBRARIES)
 !isEmpty(OPENSCAD_LIBDIR) {
   INCLUDEPATH += $$OPENSCAD_LIBDIR/include
   QMAKE_INCDIR_QT = $$OPENSCAD_LIBDIR/include $$QMAKE_INCDIR_QT 
@@ -55,9 +55,20 @@ OPENSCAD_LIBDIR = $$(OPENSCAD_LIBRARIES)
 }
 else {
   macx {
-    # Default to MacPorts on Mac OS X
-    QMAKE_INCDIR = /opt/local/include
-    QMAKE_LIBDIR = /opt/local/lib
+    exists(/opt/local):exists(/usr/local/Cellar) {
+      error("It seems you might have libraries in both /opt/local and /usr/local. Please specify which one to use with qmake OPENSCAD_LIBDIR=<prefix>")
+    } else {
+      exists(/opt/local) {
+        #Default to MacPorts on Mac OS X
+        message("Automatically searching for libraries in /opt/local. To override, use qmake OPENSCAD_LIBDIR=<prefix>")
+        QMAKE_INCDIR = /opt/local/include
+        QMAKE_LIBDIR = /opt/local/lib
+      } else:exists(/usr/local/Cellar) {
+        message("Automatically searching for libraries in /usr/local. To override, use qmake OPENSCAD_LIBDIR=<prefix>")
+        QMAKE_INCDIR = /usr/local/include
+        QMAKE_LIBDIR = /usr/local/lib
+      }
+    }
   }
 }
 
@@ -79,6 +90,22 @@ macx {
   APP_RESOURCES.files = OpenSCAD.sdef dsa_pub.pem icons/SCAD.icns
   QMAKE_BUNDLE_DATA += APP_RESOURCES
   LIBS += -framework Cocoa -framework ApplicationServices
+
+  dirs = $${BOOSTDIR} $${QMAKE_LIBDIR}
+  for(dir, dirs) {
+    system(grep -q __112basic_string $${dir}/libboost_thread* >& /dev/null) {
+      message("Detected libc++-linked boost in $${dir}")
+      CONFIG += libc++
+    }
+  }
+
+  libc++ {
+    QMAKE_CXXFLAGS += -stdlib=libc++
+    QMAKE_LFLAGS += -stdlib=libc++
+    QMAKE_OBJECTIVE_CFLAGS += -stdlib=libc++
+    # C++11 on Mac requires 10.7+
+    QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.7
+  }
 }
 else {
   TARGET = openscad
