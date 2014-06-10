@@ -1200,6 +1200,10 @@ add_cmdline_test(throwntogethertest EXE ${OPENSCAD_BINPATH} ARGS --preview=throw
 # with anything. It's self-contained and returns != 0 on error
 add_cmdline_test(cgalstlsanitytest EXE ${CMAKE_SOURCE_DIR}/cgalstlsanitytest SUFFIX txt ARGS ${OPENSCAD_BINPATH} FILES ${CGALSTLSANITYTEST_FILES})
 
+# Export/Import 3d png tests.
+add_cmdline_test(stlpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOURCE_DIR}/test_3d_export.py ARGS ${OPENSCAD_BINPATH} --colorscheme=Monotone STL EXPECTEDDIR cgalpngtest SUFFIX png FILES ${EXPORT3D_TEST_FILES})
+add_cmdline_test(offpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOURCE_DIR}/test_3d_export.py ARGS ${OPENSCAD_BINPATH} --colorscheme=Montone OFF EXPECTEDDIR cgalpngtest SUFFIX png FILES ${EXPORT3D_TEST_FILES})
+
 # Add experimental tests
 
 list(APPEND EXPERIMENTAL_TEXT_FILES 
