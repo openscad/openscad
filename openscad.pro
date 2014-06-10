@@ -95,11 +95,11 @@ macx {
   for(dir, dirs) {
     system(grep -q __112basic_string $${dir}/libboost_thread* >& /dev/null) {
       message("Detected libc++-linked boost in $${dir}")
-      CONFIG += c++11
+      CONFIG += libc++
     }
   }
 
-  c++11 {
+  libc++ {
     QMAKE_CXXFLAGS += -stdlib=libc++
     QMAKE_LFLAGS += -stdlib=libc++
     QMAKE_OBJECTIVE_CFLAGS += -stdlib=libc++
