@@ -162,7 +162,7 @@ void LegacyEditor::setHighlightScheme(const QString &name)
 QSize LegacyEditor::sizeHint() const
 {
 	if (initialSizeHint.width() <= 0) {
-		return /*QTextEdit::*/textedit->sizeHint();
+		return textedit->sizeHint();
 	} else {
 		return initialSizeHint;
 	}

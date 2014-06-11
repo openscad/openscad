@@ -48,7 +48,6 @@ public slots:
 	void paste();
 private:
 	Highlighter *highlighter;
-	//LegacyEditor *legacy;
 	QSize initialSizeHint;
 	QVBoxLayout *legacyeditorLayout;
 };

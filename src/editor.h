@@ -44,6 +44,7 @@ public slots:
         virtual void cut(){ }
         virtual void copy(){ }
         virtual void paste(){ }
+	virtual void onTextChanged() { }
 private:
         Highlighter *highlighter;
 	QSize initialSizeHint;

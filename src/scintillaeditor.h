@@ -6,7 +6,7 @@
 #include <QVBoxLayout>
 #include <Qsci/qsciscintilla.h>
 #include <QVBoxLayout>
-
+#include "highlighter.h"
 #include "editor.h"
 
 class ScintillaEditor : public EditorInterface
@@ -14,22 +14,14 @@ class ScintillaEditor : public EditorInterface
 public:
     ScintillaEditor(QWidget *parent);
     QsciScintilla *qsci;
-/*	virtual QSize sizeHint(){ QSize size; return size;}
-        virtual void setInitialSizeHint(const QSize &size) { }
-	virtual void wheelEvent ( QWheelEvent * event ) { }
-        virtual void setTabStopWidth(int width) { }
-*/      QString toPlainText();
-/*        virtual QTextCursor textCursor() { QTextCursor c; return c;}
-        virtual void setTextCursor (const QTextCursor &cursor) { }
-        virtual QTextDocument *document(){QTextDocument *t = new QTextDocument; return t;}
-        virtual bool find(const QString & exp, QTextDocument::FindFlags options = 0){ return options;}
-*/
+        QString toPlainText();
+	void initFont();
+	void initMargin();
+	void initLexer();
+
 public slots:
 	 void zoomIn();
-         void zoomOut();
-  //      virtual void setLineWrapping(bool on) { }
-  //      virtual void setContentModified(bool y){ }
-  //      virtual bool isContentModified(){ return true; } 
+         void zoomOut(); 
          void indentSelection();
          void unindentSelection();
          void commentSelection();
@@ -44,10 +36,9 @@ public slots:
          void cut();
          void copy();
          void paste();
+	 void onTextChanged();
 private:
-    //    Highlighter *highlighter;
- //	QSize initialSizeHint;
-   QVBoxLayout *scintillaLayout;
+         QVBoxLayout *scintillaLayout;
 };
 
 #endif // SCINTILLAEDITOR_H
