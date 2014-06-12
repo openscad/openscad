@@ -130,7 +130,7 @@ void LegacyEditor::setPlainText(const QString &text)
 	// Save current cursor position
 	QTextCursor cursor = textCursor();
 	int n = cursor.position();
-	/*QTextEdit::*/textedit->setPlainText(text);
+	textedit->setPlainText(text);
 	// Restore cursor position
 	if (n < text.length()) {
 		cursor.setPosition(n);

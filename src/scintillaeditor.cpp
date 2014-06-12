@@ -3,6 +3,7 @@
 #include <QChar>
 #include <Qsci/qscilexercpp.h>
 #include "scintillaeditor.h"
+#include "parsersettings.h"
 
 ScintillaEditor::ScintillaEditor(QWidget *parent) : EditorInterface(parent)
 {
@@ -11,15 +12,19 @@ ScintillaEditor::ScintillaEditor(QWidget *parent) : EditorInterface(parent)
 	scintillaLayout->addWidget(qsci);
 	qsci->setBraceMatching (QsciScintilla::SloppyBraceMatch);
 	qsci->setWrapMode(QsciScintilla::WrapWord);
+	qsci->setWrapVisualFlags(QsciScintilla::WrapFlagByText, QsciScintilla::WrapFlagByText, 0);
+	qsci->setAutoIndent(true);
 	initFont();
         initMargin();
         initLexer();
 
-
 }
 void ScintillaEditor::indentSelection()
 {
-
+	int line, index;
+	qsci->getCursorPosition(&line, &index);
+	qsci->indent(line);
+	
 }
 void ScintillaEditor::unindentSelection()
 {
@@ -43,11 +48,19 @@ QString ScintillaEditor::toPlainText()
 }
 void ScintillaEditor::highlightError(int error_pos) 
 {
-
+	int line, index;
+	qsci->lineIndexFromPosition(error_pos, &line, &index);
+	qsci->fillIndicatorRange(line, index, line, index+1, 1);
+	qsci->indicatorDefine(QsciScintilla::RoundBoxIndicator, 1);
+	qsci->setIndicatorForegroundColor(QColor(255,0,0,100));
 }
 void ScintillaEditor::unhighlightLastError() 
 {
-
+//presently not working :(
+	int line, index;
+	 qsci->lineIndexFromPosition(parser_error_pos, &line, &index);
+	qsci->clearIndicatorRange(line, index, line, index+1, 1);
+	qsci->indicatorDefine(QsciScintilla::RoundBoxIndicator, 1);
 }
 void ScintillaEditor::setHighlightScheme(const QString &name)
 {
