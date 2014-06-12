@@ -17,6 +17,7 @@ IF (APPLE)
    EXECUTE_PROCESS(COMMAND sw_vers -productVersion OUTPUT_VARIABLE MACOSX_VERSION)
    IF (NOT ${MACOSX_VERSION} VERSION_LESS "10.9.0")
      message("Detected Maverick (10.9) or later")
+     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
      set(CMAKE_C_COMPILER "clang")
      set(CMAKE_CXX_COMPILER "clang++")
      # Somehow, since we build dependencies for 10.7, we need to also build executables
@@ -977,6 +978,9 @@ disable_tests(cgalpngtest_child-background
               csgpngtest_highlight-and-background-modifier
               csgpngtest_testcolornames
               throwntogethertest_testcolornames)
+
+# This test won't render anything meaningful in throwntogether mode
+disable_tests(throwntogethertest_minkowski3-erosion)
 
 # The inf/nan tests fail when exporting CSG and rendering that output again
 # as currently inf/nan is written directly to the CSG file (e.g. r = inf)
