@@ -14,6 +14,9 @@ ScintillaEditor::ScintillaEditor(QWidget *parent) : EditorInterface(parent)
 	qsci->setWrapMode(QsciScintilla::WrapWord);
 	qsci->setWrapVisualFlags(QsciScintilla::WrapFlagByText, QsciScintilla::WrapFlagByText, 0);
 	qsci->setAutoIndent(true);
+	qsci->indicatorDefine(QsciScintilla::RoundBoxIndicator, indicatorNumber);
+	qsci->markerDefine(QsciScintilla::Circle, markerNumber);
+	qsci->setMarkerBackgroundColor(QColor(255, 0, 0, 100), markerNumber);
 	initFont();
         initMargin();
         initLexer();
@@ -50,20 +53,21 @@ void ScintillaEditor::highlightError(int error_pos)
 {
 	int line, index;
 	qsci->lineIndexFromPosition(error_pos, &line, &index);
-	qsci->fillIndicatorRange(line, index, line, index+1, 1);
-	qsci->indicatorDefine(QsciScintilla::RoundBoxIndicator, 1);
+	qsci->fillIndicatorRange(line, index, line, index+1, indicatorNumber);	
 	qsci->setIndicatorForegroundColor(QColor(255,0,0,100));
+	qsci->markerAdd(line, markerNumber);
 }
 void ScintillaEditor::unhighlightLastError() 
 {
-//presently not working :(
+	int totalLength = qsci->text().length();
 	int line, index;
-	 qsci->lineIndexFromPosition(parser_error_pos, &line, &index);
-	qsci->clearIndicatorRange(line, index, line, index+1, 1);
-	qsci->indicatorDefine(QsciScintilla::RoundBoxIndicator, 1);
+	qsci->lineIndexFromPosition(totalLength, &line, &index);
+	qsci->clearIndicatorRange(0, 0, line, index, indicatorNumber);
+	qsci->markerDeleteAll(markerNumber);
 }
 void ScintillaEditor::setHighlightScheme(const QString &name)
 {
+
 
 }
 void ScintillaEditor::insertPlainText(const QString &text)

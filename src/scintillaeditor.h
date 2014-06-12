@@ -39,6 +39,8 @@ public slots:
 	 void onTextChanged();
 private:
          QVBoxLayout *scintillaLayout;
+	const int indicatorNumber = 1;
+	const int markerNumber = 2;
 };
 
 #endif // SCINTILLAEDITOR_H
