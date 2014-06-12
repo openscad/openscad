@@ -280,6 +280,27 @@ public:
 		}
 	}
 
+	// shift image by # pixels
+	void Shift(int xpix, int ypix)
+	{
+		RGBAImage newimg( Width, Height, this->Name );
+		unsigned char red, green, blue, alpha;
+		for (unsigned x = 0; x < Width; x++) {
+		for (unsigned y = 0; y < Height; y++) {
+                        red = this->Get_Red(     (y+ypix)*Width + (x+xpix) );
+			green = this->Get_Green( (y+ypix)*Width + (x+xpix) );
+			blue = this->Get_Blue(   (y+ypix)*Width + (x+xpix) );
+			alpha = this->Get_Alpha( (y+ypix)*Width + (x+xpix) );
+			newimg.Set( red, green, blue, alpha, y*Width+x );
+		}
+		}
+		Data.clear();
+		Data.resize( newimg.Data.size() );
+		for (unsigned i=0;i<newimg.Data.size();i++) {
+			Data[i] = newimg.Data[i];
+		}
+	}
+
 	// this somewhat resembles antialiasing.
 	void SimpleBlur()
 	{
@@ -340,7 +361,7 @@ Returns 0 on PASS (perceptually similar), 1 on FAIL (perceptually different)\n\
 \n\
 Options:\n\
  --fov deg	 Field of view in degrees (0.1 to 89.9)\n\
- --threshold p   # of pixels p below which differences are ignored\n\
+ --threshold p   % of pixels p below which differences are ignored\n\
  --gamma g	 Value to convert rgb into linear space (default 2.2)\n\
  --luminance l   White luminance (default 100.0 cdm^-2)\n\
  --luminanceonly Only consider luminance; ignore chroma (color) in the comparison\n\
@@ -386,13 +407,13 @@ public:
 	CompareArgs()
 	{
 		// use some nice defaults that will 'just work' for most cases
-		// heavy on luminance, light on color (colorfactor 0.1)
+		// heavy on luminance, light on color
 		Verbose = true;
 		LuminanceOnly = false;
 		SumErrors = false;
 		FieldOfView = 45.0f;
 		Gamma = 2.2f;
-		ThresholdPixels = 100;
+		ThresholdPixelsPercent = 128.0/(512.0*512.0) * 100.0;
 		Luminance = 100.0f;
 		ColorFactor = 0.1f;
 		MaxPyramidLevels = 2;
@@ -400,6 +421,9 @@ public:
 		FinalMaxPyramidLevels = 3; // 57 fails
 		//FinalMaxPyramidLevels = 2; // 75 fails
 		FlipExit = false;
+		ImgA = NULL; // Image A
+		ImgB = NULL; // Image B
+		ImgDiff = NULL; // Image Diff
 	}
 	bool Parse_Args(int argc, char **argv)
 	{
@@ -437,13 +461,13 @@ public:
 				{
 					if (++i < argc)
 					{
-						int temporary = lexical_cast<int>(argv[i]);
+						int temporary = lexical_cast<float>(argv[i]);
 						if (temporary < 0)
 						{
 							cout << " invalid_argument(" <<
 								"-threshold must be positive";
 						}
-						ThresholdPixels = static_cast<unsigned int>(temporary);
+						ThresholdPixelsPercent = static_cast<float>(temporary);
 					}
 				}
 				else if (option_matches(argv[i], "gamma"))
@@ -497,7 +521,7 @@ public:
 						ColorFactor = lexical_cast<float>(argv[i]);
 					}
 				}
-				else if (option_matches(argv[i], "output"))
+				else if (option_matches(argv[i], "output") || option_matches(argv[i],"o"))
 				{
 					if (++i < argc)
 					{
@@ -570,7 +594,7 @@ public:
 	void Print_Args() const
 	{
 		cout << "Field of view is " << FieldOfView << " degrees\n"
-			  << "Threshold pixels is " << ThresholdPixels << " pixels\n"
+			  << "Threshold pixels percent is " << ThresholdPixelsPercent << "%\n"
 			  << "The Gamma is " << Gamma << "\n"
 			  << "The Display's luminance is " << Luminance
 			  << " candela per meter squared\n"
@@ -579,9 +603,9 @@ public:
 			  << "Final Max Laplacian Pyramid Levels is " << FinalMaxPyramidLevels << "\n";
 	}
 
-	RGBAImage *ImgA=NULL;	 // Image A
-	RGBAImage *ImgB=NULL;	 // Image B
-	RGBAImage *ImgDiff=NULL;  // Diff image
+	RGBAImage *ImgA;	 // Image A
+	RGBAImage *ImgB;	 // Image B
+	RGBAImage *ImgDiff;  // Diff image
 	bool Verbose;						// Print lots of text or not
 	bool LuminanceOnly;  // Only consider luminance; ignore chroma channels in
 						 // the
@@ -592,7 +616,7 @@ public:
 	float FieldOfView;  // Field of view in degrees
 	float Gamma;		// The gamma to convert to linear color space
 	float Luminance;	// the display's luminance
-	unsigned int ThresholdPixels;  // How many pixels different to ignore
+	float ThresholdPixelsPercent;  // How many pixels different to ignore (percent)
 	string ErrorStr;		  // Error string
 
 	// How much color to use in the metric.
@@ -975,6 +999,7 @@ bool Yee_Compare_Engine(CompareArgs &args)
 	}
 
 	unsigned pixels_failed = 0u;
+	unsigned total_pixels = w*h;
 	float error_sum = 0.;
 //#pragma omp parallel for reduction(+ : pixels_failed) reduction(+ : error_sum)
 	for (unsigned y = 0u; y < h; y++)
@@ -1086,7 +1111,10 @@ bool Yee_Compare_Engine(CompareArgs &args)
 	const string error_sum_buff = s.str();
 
 	s.str("");
-	s << pixels_failed << " pixels failed\n";
+	s << pixels_failed << " pixels failed. ";
+
+	float pixels_failed_percentage = 100.0*(float(pixels_failed)/total_pixels);
+	s << pixels_failed_percentage << " percentage\n";
 	const string different = s.str();
 
 	// Always output image difference if requested.
@@ -1099,7 +1127,7 @@ bool Yee_Compare_Engine(CompareArgs &args)
 		args.ErrorStr += "\n";
 	}
 
-	if (pixels_failed < args.ThresholdPixels)
+	if (pixels_failed_percentage < args.ThresholdPixelsPercent)
 	{
 		args.ErrorStr = "Images are roughly the same\n";
 		args.ErrorStr += different;
@@ -1160,11 +1188,53 @@ bool LevelClimberCompare(CompareArgs &args) {
 	test = Yee_Compare_Engine( args );
 
 	while (test==false && args.MaxPyramidLevels<args.FinalMaxPyramidLevels) {
-		cout << "Test failed with Max # Pyramid Levels=" << args.MaxPyramidLevels;
+		cout << "Test failed with Max # Pyramid Levels=" << args.MaxPyramidLevels << "\n";
+		cout << "result:" << test << " : " << args.ErrorStr << "\n";
 		args.MaxPyramidLevels++;
 		cout << ". Rerunning with " << args.MaxPyramidLevels << "\n";
 		test = Yee_Compare_Engine( args );
 	}
+	if (test==false) {
+		cout << "Tests failed at final max pyramid level. \n";
+		cout << "Retesting with downsampling and simple blur\n\n";
+		args.ImgA->DownSample();
+		args.ImgB->DownSample();
+		args.ImgA->SimpleBlur();
+		args.ImgB->SimpleBlur();
+		args.ImgA->SimpleBlur();
+		args.ImgB->SimpleBlur();
+		args.ImgA->SimpleBlur();
+		args.ImgB->SimpleBlur();
+		if (args.ImgDiff) {
+			args.ImgA->WriteToFile( args.ImgDiff->Get_Name()+".1.downsample.png" );
+			args.ImgB->WriteToFile( args.ImgDiff->Get_Name()+".2.downsample.png" );
+			args.ImgDiff->DownSample();
+		}
+		args.ColorFactor = 0.05;
+		test = Yee_Compare_Engine( args );
+	}
+	if (test==false) {
+		args.ColorFactor = 0.01;
+		cout << "Tests failed after downsample. \n";
+		cout << "Retesting with small pixel shifts\n";
+		args.ImgB->Shift(-1,0);
+		args.ImgB->WriteToFile( "r0.png" );
+		test |= Yee_Compare_Engine( args );
+		cout << "result:" << test << " : " << args.ErrorStr << "\n";
+		args.ImgB->Shift(2,0);
+		args.ImgB->WriteToFile( "r1.png" );
+		test |= Yee_Compare_Engine( args );
+		cout << "result:" << test << " : " << args.ErrorStr << "\n";
+		args.ImgB->Shift(-1,-1);
+		args.ImgB->WriteToFile( "r2.png" );
+		test |= Yee_Compare_Engine( args );
+		cout << "result:" << test << " : " << args.ErrorStr << "\n";
+		args.ImgB->Shift(0,2);
+		args.ImgB->WriteToFile( "r3.png" );
+		test |= Yee_Compare_Engine( args );
+		cout << "result:" << test << " : " << args.ErrorStr << "\n";
+	}
+#if 0
 	if (test==false) {
 		cout << "Tests failed at final max pyramid level. \n";
 		//cout << "Retesting with Downsampling (shrink/blur image)\n";
@@ -1172,6 +1242,7 @@ bool LevelClimberCompare(CompareArgs &args) {
 
 //		args.ImgA->UpSample();
 //		args.ImgB->UpSample();
+
 		args.ImgA->DownSample();
 		args.ImgB->DownSample();
 		if (args.ImgDiff) {
@@ -1196,6 +1267,7 @@ bool LevelClimberCompare(CompareArgs &args) {
 		args.ColorFactor = 0.05;
 		test = Yee_Compare_Engine( args );
 	}
+#endif
 	return test;
 }
 
