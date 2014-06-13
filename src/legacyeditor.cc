@@ -4,6 +4,7 @@
 LegacyEditor::LegacyEditor(QWidget *parent) : EditorInterface(parent)
 {
 	legacyeditorLayout = new QVBoxLayout(this);
+	legacyeditorLayout->setContentsMargins(0, 0, 0, 0);
 	textedit = new QTextEdit(this);
 	legacyeditorLayout->addWidget(textedit);
 	textedit->setAcceptRichText(false);

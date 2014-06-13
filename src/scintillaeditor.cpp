@@ -9,6 +9,7 @@ ScintillaEditor::ScintillaEditor(QWidget *parent) : EditorInterface(parent)
 {
 	scintillaLayout = new QVBoxLayout(this);
 	qsci = new QsciScintilla(this);
+	scintillaLayout->setContentsMargins(0, 0, 0, 0);
 	scintillaLayout->addWidget(qsci);
 	qsci->setBraceMatching (QsciScintilla::SloppyBraceMatch);
 	qsci->setWrapMode(QsciScintilla::WrapWord);
@@ -24,9 +25,6 @@ ScintillaEditor::ScintillaEditor(QWidget *parent) : EditorInterface(parent)
 }
 void ScintillaEditor::indentSelection()
 {
-	int line, index;
-	qsci->getCursorPosition(&line, &index);
-	qsci->indent(line);
 	
 }
 void ScintillaEditor::unindentSelection()
@@ -45,10 +43,12 @@ void ScintillaEditor::setPlainText(const QString &text)
 {
 	qsci->setText(text); 
 }
+
 QString ScintillaEditor::toPlainText()
 {
 	return qsci->text();
 }
+
 void ScintillaEditor::highlightError(int error_pos) 
 {
 	int line, index;
@@ -57,6 +57,7 @@ void ScintillaEditor::highlightError(int error_pos)
 	qsci->setIndicatorForegroundColor(QColor(255,0,0,100));
 	qsci->markerAdd(line, markerNumber);
 }
+
 void ScintillaEditor::unhighlightLastError() 
 {
 	int totalLength = qsci->text().length();
@@ -65,11 +66,12 @@ void ScintillaEditor::unhighlightLastError()
 	qsci->clearIndicatorRange(0, 0, line, index, indicatorNumber);
 	qsci->markerDeleteAll(markerNumber);
 }
+
 void ScintillaEditor::setHighlightScheme(const QString &name)
 {
 
-
 }
+
 void ScintillaEditor::insertPlainText(const QString &text)
 {
 	qsci->setText(text); 
@@ -110,13 +112,11 @@ void ScintillaEditor::zoomOut()
 	qsci->zoomOut(); 
 }
 
-
 void ScintillaEditor::initFont()
 {
     QFont font("Courier", 12);
     font.setFixedPitch(true);
     qsci->setFont(font);
-
 }
 
 void ScintillaEditor::initMargin()
