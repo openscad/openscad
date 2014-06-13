@@ -84,15 +84,12 @@ else {
   TARGET = openscad
 }
 
-LIBS += -lqscintilla2
-
 win* {
   RC_FILE = openscad_win32.rc
   QTPLUGIN += qtaccessiblewidgets
 }
 
 CONFIG += qt
-CONFIG += qscintilla2
 QT += opengl
 
 # see http://fedoraproject.org/wiki/UnderstandingDSOLinkChange
@@ -161,8 +158,8 @@ CONFIG += harfbuzz
 CONFIG += freetype
 CONFIG += fontconfig
 
-#Uncomment the following line to enable QCodeEdit
-#CONFIG += qcodeedit
+#Uncomment the following line to enable the QScintilla editor
+CONFIG += scintilla
 
 # Make experimental features available
 experimental {
@@ -288,8 +285,7 @@ HEADERS += src/typedefs.h \
            src/CsgInfo.h \
            \
            src/AutoUpdater.h \
-    	   src/legacyeditor.h \
-    	   src/scintillaeditor.h
+    	   src/legacyeditor.h
 
 SOURCES += src/version_check.cc \
            src/ProgressWidget.cc \
@@ -373,8 +369,7 @@ SOURCES += src/version_check.cc \
            src/openscad.cc \
            src/mainwin.cc \
 	   src/FontListDialog.cc \
-    	   src/legacyeditor.cc \
-    	   src/scintillaeditor.cpp
+    	   src/legacyeditor.cc
 
 # ClipperLib
 SOURCES += src/polyclipping/clipper.cpp
