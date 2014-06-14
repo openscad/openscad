@@ -48,8 +48,8 @@ CGALRenderer::CGALRenderer(shared_ptr<const Geometry> geom)
 void CGALRenderer::addGeometry(const shared_ptr<const Geometry> &geom)
 {
 	if (shared_ptr<const GeometryList> geomlist = dynamic_pointer_cast<const GeometryList>(geom)) {
-		BOOST_FOREACH(const shared_ptr<const Geometry> &geom, geomlist->getChildren()) {
-			this->addGeometry(geom);
+		BOOST_FOREACH(const Geometry::GeometryItem &item, geomlist->getChildren()) {
+			this->addGeometry(item.second);
 		}
 	}
 	else if (const shared_ptr<const PolySet> ps = dynamic_pointer_cast<const PolySet>(geom)) {

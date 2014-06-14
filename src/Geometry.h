@@ -10,8 +10,8 @@
 class Geometry
 {
 public:
-  typedef std::pair<const class AbstractNode *, shared_ptr<const Geometry> > ChildItem;
-  typedef std::list<ChildItem> ChildList;
+  typedef std::pair<const class AbstractNode *, shared_ptr<const Geometry> > GeometryItem;
+  typedef std::list<GeometryItem> Geometries;
 
 	Geometry() : convexity(1) {}
 	virtual ~Geometry() {}
@@ -32,12 +32,10 @@ protected:
 class GeometryList : public Geometry
 {
 public:
-  typedef std::list<shared_ptr<const Geometry> > Geometries;
 	Geometries children;
 
 	GeometryList();
-	GeometryList(const Geometry::ChildList &chlist);
-	GeometryList(const GeometryList::Geometries &chlist);
+	GeometryList(const Geometry::Geometries &geometries);
 	virtual ~GeometryList();
 
 	virtual size_t memsize() const;
@@ -50,6 +48,6 @@ public:
 		return this->children;
 	}
 
-	shared_ptr<GeometryList> flatten() const;
+	Geometries flatten() const;
 
 };

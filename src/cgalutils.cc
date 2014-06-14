@@ -19,13 +19,13 @@
 
 namespace CGALUtils {
 
-	bool applyHull(const Geometry::ChildList &children, PolySet &result)
+	bool applyHull(const Geometry::Geometries &children, PolySet &result)
 	{
 		typedef CGAL::Exact_predicates_inexact_constructions_kernel K;
 		// Collect point cloud
 		std::set<K::Point_3> points;
 
-		BOOST_FOREACH(const Geometry::ChildItem &item, children) {
+		BOOST_FOREACH(const Geometry::GeometryItem &item, children) {
 			const shared_ptr<const Geometry> &chgeom = item.second;
 			const CGAL_Nef_polyhedron *N = dynamic_cast<const CGAL_Nef_polyhedron *>(chgeom.get());
 			if (N) {
@@ -34,6 +34,7 @@ namespace CGALUtils {
 				}
 			} else {
 				const PolySet *ps = dynamic_cast<const PolySet *>(chgeom.get());
+				assert(ps && "Unsupported geometry type");
 				if (ps) {
 					BOOST_FOREACH(const PolySet::Polygon &p, ps->polygons) {
 						BOOST_FOREACH(const Vector3d &v, p) {
@@ -62,19 +63,20 @@ namespace CGALUtils {
 	Applies op to all children and stores the result in dest.
 	The child list should be guaranteed to contain non-NULL 3D or empty Geometry objects
 */
-	void applyOperator(const Geometry::ChildList &children, CGAL_Nef_polyhedron &dest, OpenSCADOperator op)
+	void applyOperator(const Geometry::Geometries &children, CGAL_Nef_polyhedron &dest, OpenSCADOperator op)
 	{
 		// Speeds up n-ary union operations significantly
 		CGAL::Nef_nary_union_3<CGAL_Nef_polyhedron3> nary_union;
 		int nary_union_num_inserted = 0;
 		CGAL_Nef_polyhedron *N = NULL;
 
-		BOOST_FOREACH(const Geometry::ChildItem &item, children) {
+		BOOST_FOREACH(const Geometry::GeometryItem &item, children) {
 			const shared_ptr<const Geometry> &chgeom = item.second;
 			shared_ptr<const CGAL_Nef_polyhedron> chN = 
 				dynamic_pointer_cast<const CGAL_Nef_polyhedron>(chgeom);
 			if (!chN) {
 				const PolySet *chps = dynamic_cast<const PolySet*>(chgeom.get());
+				assert(chps && "Unsupported geometry type");
 				if (chps) chN.reset(createNefPolyhedronFromGeometry(*chps));
 			}
 

@@ -95,8 +95,8 @@ void export_svg(const shared_ptr<const Geometry> &geom, std::ostream &output)
 {
 	if (const GeometryList *geomlist = dynamic_cast<const GeometryList *>(geom.get())) {
 		assert(false && "Not implemented");
-		BOOST_FOREACH(const shared_ptr<const Geometry> &geom, geomlist->getChildren()) {
-			export_svg(geom, output);
+		BOOST_FOREACH(const Geometry::GeometryItem &item, geomlist->getChildren()) {
+			export_svg(item.second, output);
 		}
 	}
 	else if (const PolySet *ps = dynamic_cast<const PolySet *>(geom.get())) {

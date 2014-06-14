@@ -6,8 +6,8 @@
 #include "enums.h"
 
 namespace CGALUtils {
-	bool applyHull(const Geometry::ChildList &children, PolySet &P);
-	void applyOperator(const Geometry::ChildList &children, CGAL_Nef_polyhedron &dest, OpenSCADOperator op);
+	bool applyHull(const Geometry::Geometries &children, PolySet &P);
+	void applyOperator(const Geometry::Geometries &children, CGAL_Nef_polyhedron &dest, OpenSCADOperator op);
 	void applyBinaryOperator(CGAL_Nef_polyhedron &target, const CGAL_Nef_polyhedron &src, OpenSCADOperator op);
 	Polygon2d *project(const CGAL_Nef_polyhedron &N, bool cut);
 	CGAL_Iso_cuboid_3 boundingBox(const CGAL_Nef_polyhedron3 &N);

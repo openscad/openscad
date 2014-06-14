@@ -159,8 +159,8 @@ static void append_stl(const CGAL_Nef_polyhedron &root_N, std::ostream &output)
 void append_stl(const shared_ptr<const Geometry> &geom, std::ostream &output)
 {
 	if (const GeometryList *geomlist = dynamic_cast<const GeometryList *>(geom.get())) {
-		BOOST_FOREACH(const shared_ptr<const Geometry> &geom, geomlist->getChildren()) {
-			append_stl(geom, output);
+		BOOST_FOREACH(const Geometry::GeometryItem &item, geomlist->getChildren()) {
+			append_stl(item.second, output);
 		}
 	}
 	else if (const CGAL_Nef_polyhedron *N = dynamic_cast<const CGAL_Nef_polyhedron *>(geom.get())) {

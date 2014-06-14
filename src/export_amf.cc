@@ -168,8 +168,8 @@ void export_amf(const shared_ptr<const Geometry> &geom, std::ostream &output)
 {
 	if (const GeometryList *geomlist = dynamic_cast<const GeometryList *>(geom.get())) {
 		assert(false && "Not implemented");
-		BOOST_FOREACH(const shared_ptr<const Geometry> &geom, geomlist->getChildren()) {
-			export_amf(geom, output);
+		BOOST_FOREACH(const Geometry::GeometryItem &item, geomlist->getChildren()) {
+			export_amf(item.second, output);
 		}
 	}
 	else if (const CGAL_Nef_polyhedron *N = dynamic_cast<const CGAL_Nef_polyhedron *>(geom.get())) {
