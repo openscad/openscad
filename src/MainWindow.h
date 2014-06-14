@@ -224,6 +224,7 @@ private:
 
 	char const * afterCompileSlot;
 	bool procevents;
+        bool isClosing;
 	class QTemporaryFile *tempFile;
 	class ProgressWidget *progresswidget;
 	class CGALWorker *cgalworker;
