@@ -260,7 +260,7 @@ AbstractNode *ControlModule::instantiate(const Context* /*ctx*/, const ModuleIns
 		else node = new GroupNode(inst);
 	}
 	else if (type == INT_FOR) node = new AbstractIntersectionNode(inst);
-	else node = new CsgNode(inst, OPENSCAD_UNION);
+	else node = new GroupNode(inst);
 
 	if (type == ECHO)
 	{
