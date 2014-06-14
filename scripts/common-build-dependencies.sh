@@ -3,6 +3,9 @@
 # used by OpenSCAD.
 # It's supposed to be included from the system specific scripts.
 #
+# scripts/uni-build-dependencies.sh - generic linux/bsd
+# scripts/macosx-build-             - mac osx options
+# scripts/mingw-x-build-            - not used, MXE handles all dependencies.
 
 build_freetype()
 {
@@ -67,7 +70,7 @@ build_fontconfig()
   tar xzf "fontconfig-$version.tar.gz"
   cd "fontconfig-$version"
   export PKG_CONFIG_PATH="$DEPLOYDIR/lib/pkgconfig"
-  ./configure --prefix="$DEPLOYDIR" --enable-libxml2
+  ./configure --prefix="$DEPLOYDIR" --enable-libxml2 --disable-docs
   unset PKG_CONFIG_PATH
   make -j$NUMCPU
   make install
@@ -99,7 +102,7 @@ build_gettext()
 {
   version="$1"
 
-  if [ -f "$DEPLOYDIR"/lib/libintl.a ]; then
+  if [ -f "$DEPLOYDIR"/lib/libgettextpo.a ]; then
     echo "gettext already installed. not building"
     return
   fi
@@ -107,13 +110,13 @@ build_gettext()
   echo "Building gettext $version..."
   cd "$BASEDIR"/src
   rm -rf "gettext-$version"
-  if [ ! -f "gettext-$version.tar.xz" ]; then
+  if [ ! -f "gettext-$version.tar.gz" ]; then
     curl --insecure -LO "http://ftpmirror.gnu.org/gettext/gettext-$version.tar.gz"
   fi
   tar xzf "gettext-$version.tar.gz"
   cd "gettext-$version"
 
-  ./configure --prefix="$DEPLOYDIR"
+  ./configure --prefix="$DEPLOYDIR" --disable-java --disable-native-java
   make -j$NUMCPU
   make install
 }

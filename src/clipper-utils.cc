@@ -48,7 +48,9 @@ namespace ClipperUtils {
 		const ClipperLib::PolyNode *node = poly.GetFirst();
 		while (node) {
 			Outline2d outline;
-			outline.positive = !node->IsHole();
+			// Apparently, when using offset(), clipper gets the hole status wrong
+			//outline.positive = !node->IsHole();
+			outline.positive = Orientation(node->Contour);
 
 			ClipperLib::Path cleaned_path;
 			ClipperLib::CleanPolygon(node->Contour, cleaned_path, CLEANING_DISTANCE);
