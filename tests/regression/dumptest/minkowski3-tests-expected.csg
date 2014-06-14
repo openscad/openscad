@@ -1,5 +1,5 @@
 multmatrix([[1, 0, 0, -20], [0, 1, 0, 30], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-	union() {
+	group() {
 		minkowski(convexity = 0) {
 			difference() {
 				cube(size = [10, 10, 5], center = true);
@@ -10,7 +10,7 @@ multmatrix([[1, 0, 0, -20], [0, 1, 0, 30], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 	}
 }
 multmatrix([[1, 0, 0, 0], [0, 1, 0, 25], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-	union() {
+	group() {
 		minkowski(convexity = 0) {
 			difference() {
 				cube(size = [10, 10, 5], center = false);
@@ -21,7 +21,7 @@ multmatrix([[1, 0, 0, 0], [0, 1, 0, 25], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 	}
 }
 multmatrix([[1, 0, 0, 25], [0, 1, 0, 25], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-	union() {
+	group() {
 		minkowski(convexity = 0) {
 			cube(size = [10, 10, 5], center = false);
 			cylinder($fn = 0, $fa = 12, $fs = 2, h = 5, r1 = 5, r2 = 5, center = false);

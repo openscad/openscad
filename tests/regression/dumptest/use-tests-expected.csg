@@ -1,12 +1,12 @@
-union() {
-	union() {
+group() {
+	group() {
 		multmatrix([[1, 0, 0, 2], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-			union() {
+			group() {
 				cylinder($fn = 0, $fa = 12, $fs = 2, h = 1, r1 = 0.7, r2 = 0.2, center = true);
 			}
 		}
 		multmatrix([[1, 0, 0, 2], [0, 1, 0, -2], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-			union() {
+			group() {
 				cylinder($fn = 10, $fa = 12, $fs = 2, h = 1, r1 = 0.5, r2 = 0.5, center = true);
 			}
 		}
@@ -15,12 +15,12 @@ union() {
 	multmatrix([[1, 0, 0, 4], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]);
 	multmatrix([[1, 0, 0, 4], [0, 1, 0, -2], [0, 0, 1, 0], [0, 0, 0, 1]]);
 	multmatrix([[1, 0, 0, -2], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-		union() {
+		group() {
 			sphere($fn = 8, $fa = 12, $fs = 2, r = 0.5);
 		}
 	}
 	multmatrix([[1, 0, 0, -2], [0, 1, 0, -2], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-		union() {
+		group() {
 			difference() {
 				cube(size = [1, 1, 1], center = true);
 				cylinder($fn = 0, $fa = 12, $fs = 2, h = 2, r1 = 0.4, r2 = 0.4, center = true);
@@ -28,7 +28,7 @@ union() {
 		}
 	}
 	multmatrix([[1, 0, 0, 0], [0, 1, 0, 2], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-		union() {
+		group() {
 			cube(size = [0.5, 0.5, 1], center = true);
 		}
 	}
@@ -36,7 +36,7 @@ union() {
 		sphere($fn = 16, $fa = 12, $fs = 2, r = 1);
 	}
 	multmatrix([[1, 0, 0, 0], [0, 1, 0, -4], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-		union() {
+		group() {
 			multmatrix([[0, 0, 1, 0], [0, 1, 0, 0], [-1, 0, 0, 0], [0, 0, 0, 1]]) {
 				union() {
 					linear_extrude(height = 1.5, center = true, convexity = 1, scale = [1, 1], $fn = 0, $fa = 12, $fs = 2) {
@@ -60,7 +60,7 @@ union() {
 	}
 	multmatrix([[1, 0, 0, 2], [0, 1, 0, -4], [0, 0, 1, -0.5], [0, 0, 0, 1]]) {
 		multmatrix([[0.05, 0, 0, 0], [0, 0.05, 0, 0], [0, 0, 0.05, 0], [0, 0, 0, 1]]) {
-			union() {
+			group() {
 				multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 					multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 						union() {
@@ -77,10 +77,10 @@ union() {
 									cube(size = [12, 7, 2.5], center = false);
 								}
 							}
-							union();
+							group();
 							multmatrix([[1, 0, 0, -6], [0, 1, 0, 0], [0, 0, 1, 19], [0, 0, 0, 1]]) {
 								multmatrix([[0, 0, 1, 0], [1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 0, 1]]) {
-									union() {
+									group() {
 										linear_extrude(height = 12, center = false, convexity = 1, scale = [1, 1], $fn = 0, $fa = 12, $fs = 2) {
 											polygon(points = [[0, 0], [18, 0], [0, 4]], paths = [[0, 1, 2]], convexity = 1);
 										}
@@ -91,7 +91,7 @@ union() {
 								cube(size = [12, 6.5, 4], center = false);
 							}
 						}
-						union();
+						group();
 					}
 				}
 			}

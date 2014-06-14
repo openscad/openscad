@@ -1,11 +1,11 @@
 render(convexity = 1);
 render(convexity = 1);
-union() {
+group() {
 	difference() {
 		cube(size = [100, 100, 100], center = true);
 		multmatrix([[1, 0, 0, -50], [0, 1, 0, -50], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 			multmatrix([[-1, 0, 0, 0], [0, -1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-				union() {
+				group() {
 					difference() {
 						cube(size = [20, 20, 150], center = true);
 						multmatrix([[1, 0, 0, -10], [0, 1, 0, -10], [0, 0, 1, 0], [0, 0, 0, 1]]) {
@@ -17,7 +17,7 @@ union() {
 		}
 		multmatrix([[1, 0, 0, 50], [0, 1, 0, -50], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 			multmatrix([[0, 1, 0, 0], [-1, 0, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-				union() {
+				group() {
 					difference() {
 						cube(size = [20, 20, 150], center = true);
 						multmatrix([[1, 0, 0, -10], [0, 1, 0, -10], [0, 0, 1, 0], [0, 0, 0, 1]]) {
@@ -30,14 +30,14 @@ union() {
 	}
 }
 multmatrix([[1, 0, 0, 110], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-	union() {
+	group() {
 		difference() {
 			cube(size = [100, 100, 100], center = true);
 			multmatrix([[1, 0, 0, -50], [0, 1, 0, -50], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 				multmatrix([[-1, 0, 0, 0], [0, -1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-					union() {
+					group() {
 						render(convexity = 2) {
-							union() {
+							group() {
 								difference() {
 									cube(size = [20, 20, 150], center = true);
 									multmatrix([[1, 0, 0, -10], [0, 1, 0, -10], [0, 0, 1, 0], [0, 0, 0, 1]]) {
@@ -51,9 +51,9 @@ multmatrix([[1, 0, 0, 110], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 			}
 			multmatrix([[1, 0, 0, 50], [0, 1, 0, -50], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 				multmatrix([[0, 1, 0, 0], [-1, 0, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-					union() {
+					group() {
 						render(convexity = 2) {
-							union() {
+							group() {
 								difference() {
 									cube(size = [20, 20, 150], center = true);
 									multmatrix([[1, 0, 0, -10], [0, 1, 0, -10], [0, 0, 1, 0], [0, 0, 0, 1]]) {

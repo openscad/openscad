@@ -3,10 +3,11 @@ glide(path = undef, convexity = 0);
 subdiv(level = 1, convexity = 0);
 hull();
 resize(newsize = [0,0,0], auto = [0,0,0]);
-union();
-union();
+group();
+group();
+group();
 intersection();
-union() {
+group() {
 	sphere($fn = 0, $fa = 12, $fs = 2, r = 1);
 }
 union();
@@ -20,7 +21,7 @@ import(file = "", layer = "", origin = [0, 0], scale = 1, convexity = 1, $fn = 0
 import(file = "", layer = "", origin = [0, 0], scale = 1, convexity = 1, $fn = 0, $fa = 12, $fs = 2);
 import(file = "", layer = "", origin = [0, 0], scale = 1, convexity = 1, $fn = 0, $fa = 12, $fs = 2);
 import(file = "", layer = "", origin = [0, 0], scale = 1, convexity = 1, $fn = 0, $fa = 12, $fs = 2);
-union();
+group();
 cube(size = [1, 1, 1], center = false);
 sphere($fn = 0, $fa = 12, $fs = 2, r = 1);
 cylinder($fn = 0, $fa = 12, $fs = 2, h = 1, r1 = 1, r2 = 1, center = false);

@@ -1,5 +1,5 @@
-union();
-union() {
+group();
+group() {
 	difference() {
 		union() {
 			cube(size = [30, 30, 30], center = true);
