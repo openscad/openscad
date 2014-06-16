@@ -33,8 +33,8 @@ args,remaining_args = parser.parse_known_args()
 
 args.format = args.format.lower()
 scadfile = remaining_args[0]
-pngfile = remaining_args[1]
-remaining_args = remaining_args[2:]
+pngfile = remaining_args[-1]
+remaining_args = remaining_args[1:-1]
 
 if not os.path.exists(scadfile):
 	failquit('cant find .scad file named: ' + scadfile)
@@ -56,7 +56,7 @@ print('Running OpenSCAD #1:')
 print(' '.join(export_cmd))
 result = subprocess.call(export_cmd)
 if result != 0:
-	failquit('failure of 1st subprocess.call: ' + ' '.join(export_cmd))
+	failquit('OpenSCAD #1 failed with return code ' + str(result))
 
 
 #
@@ -78,7 +78,7 @@ print('Running OpenSCAD #2:')
 print(' '.join(create_png_cmd))
 result = subprocess.call(create_png_cmd)
 if result != 0:
-	failquit('failure of 2nd subprocess.call: ' + ' '.join(create_png_cmd))
+	failquit('OpenSCAD #2 failed with return code ' + str(result))
 
 try:    os.remove(threedfilename)
 except: failquit('failure at os.remove('+threedfilename+')')
