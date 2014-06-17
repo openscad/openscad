@@ -1,9 +1,10 @@
 #include <iostream>
 #include <QString>
 #include <QChar>
-#include <Qsci/qscilexercpp.h>
+#include "scadlexer.h"
 #include "scintillaeditor.h"
 #include "parsersettings.h"
+#include "Preferences.h"
 
 ScintillaEditor::ScintillaEditor(QWidget *parent) : EditorInterface(parent)
 {
@@ -18,10 +19,10 @@ ScintillaEditor::ScintillaEditor(QWidget *parent) : EditorInterface(parent)
 	qsci->indicatorDefine(QsciScintilla::RoundBoxIndicator, indicatorNumber);
 	qsci->markerDefine(QsciScintilla::Circle, markerNumber);
 	qsci->setMarkerBackgroundColor(QColor(255, 0, 0, 100), markerNumber);
+	highlighter = new ScintillaHighlighter(this);
 	initFont();
         initMargin();
         initLexer();
-
 }
 void ScintillaEditor::indentSelection()
 {
@@ -69,7 +70,7 @@ void ScintillaEditor::unhighlightLastError()
 
 void ScintillaEditor::setHighlightScheme(const QString &name)
 {
-
+	highlighter->assignFormatsToTokens(name);
 }
 
 void ScintillaEditor::insertPlainText(const QString &text)
@@ -138,8 +139,6 @@ void ScintillaEditor::onTextChanged()
 
 void ScintillaEditor::initLexer()
 {
-    QsciLexerCPP *lexer = new QsciLexerCPP();
-    lexer->setDefaultFont(qsci->font());
-    lexer->setFoldComments(true);
-    qsci->setLexer(lexer);
+      ScadLexer *lexer = new ScadLexer(this);
+      qsci->setLexer(lexer);
 }
