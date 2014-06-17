@@ -19,7 +19,6 @@ ScintillaEditor::ScintillaEditor(QWidget *parent) : EditorInterface(parent)
 	qsci->indicatorDefine(QsciScintilla::RoundBoxIndicator, indicatorNumber);
 	qsci->markerDefine(QsciScintilla::Circle, markerNumber);
 	qsci->setMarkerBackgroundColor(QColor(255, 0, 0, 100), markerNumber);
-	highlighter = new ScintillaHighlighter(this);
 	initFont();
         initMargin();
         initLexer();
@@ -70,7 +69,7 @@ void ScintillaEditor::unhighlightLastError()
 
 void ScintillaEditor::setHighlightScheme(const QString &name)
 {
-	highlighter->assignFormatsToTokens(name);
+//	highlighter->assignFormatsToTokens(name);
 }
 
 void ScintillaEditor::insertPlainText(const QString &text)

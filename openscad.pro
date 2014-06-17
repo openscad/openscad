@@ -1,14 +1,14 @@
 # Environment variables which can be set to specify library locations:
-#   MPIRDIR
-#   MPFRDIR
-#   BOOSTDIR
-#   CGALDIR
-#   EIGENDIR
-#   GLEWDIR
-#   OPENCSGDIR
-#   OPENSCAD_LIBRARIES
+# MPIRDIR
+# MPFRDIR
+# BOOSTDIR
+# CGALDIR
+# EIGENDIR
+# GLEWDIR
+# OPENCSGDIR
+# OPENSCAD_LIBRARIES
 #
-# Please see the 'Building' sections of the OpenSCAD user manual 
+# Please see the 'Building' sections of the OpenSCAD user manual
 # for updated tips & workarounds.
 #
 # http://en.wikibooks.org/wiki/OpenSCAD_User_Manual
@@ -50,7 +50,7 @@ DEPENDPATH += src
 OPENSCAD_LIBDIR = $$(OPENSCAD_LIBRARIES)
 !isEmpty(OPENSCAD_LIBDIR) {
   INCLUDEPATH += $$OPENSCAD_LIBDIR/include
-  QMAKE_INCDIR_QT = $$OPENSCAD_LIBDIR/include $$QMAKE_INCDIR_QT 
+  QMAKE_INCDIR_QT = $$OPENSCAD_LIBDIR/include $$QMAKE_INCDIR_QT
   QMAKE_LIBDIR = $$OPENSCAD_LIBDIR/lib $$QMAKE_LIBDIR
 }
 else {
@@ -84,15 +84,12 @@ else {
   TARGET = openscad
 }
 
-LIBS += -lqscintilla2
-
 win* {
   RC_FILE = openscad_win32.rc
   QTPLUGIN += qtaccessiblewidgets
 }
 
 CONFIG += qt
-CONFIG += qscintilla2
 QT += opengl
 
 # see http://fedoraproject.org/wiki/UnderstandingDSOLinkChange
@@ -117,13 +114,13 @@ netbsd* {
 }
 
 # Prevent LD_LIBRARY_PATH problems when running the openscad binary
-# on systems where uni-build-dependencies.sh was used. 
+# on systems where uni-build-dependencies.sh was used.
 # Will not affect 'normal' builds.
 !isEmpty(OPENSCAD_LIBDIR) {
   unix:!macx {
     QMAKE_LFLAGS = -Wl,-R$$OPENSCAD_LIBDIR/lib $$QMAKE_LFLAGS
     # need /lib64 beause GLEW installs itself there on 64 bit machines
-    QMAKE_LFLAGS = -Wl,-R$$OPENSCAD_LIBDIR/lib64 $$QMAKE_LFLAGS 
+    QMAKE_LFLAGS = -Wl,-R$$OPENSCAD_LIBDIR/lib64 $$QMAKE_LFLAGS
   }
 }
 
@@ -134,15 +131,15 @@ netbsd* {
 }
 
 *clang* {
-	# http://llvm.org/bugs/show_bug.cgi?id=9182
-	QMAKE_CXXFLAGS_WARN_ON += -Wno-overloaded-virtual
-	# disable enormous amount of warnings about CGAL / boost / etc
-	QMAKE_CXXFLAGS_WARN_ON += -Wno-unused-parameter
-	QMAKE_CXXFLAGS_WARN_ON += -Wno-unused-variable
-	QMAKE_CXXFLAGS_WARN_ON += -Wno-unused-function
-	QMAKE_CXXFLAGS_WARN_ON += -Wno-c++11-extensions
-	# might want to actually turn this on once in a while
-	QMAKE_CXXFLAGS_WARN_ON += -Wno-sign-compare
+# http://llvm.org/bugs/show_bug.cgi?id=9182
+QMAKE_CXXFLAGS_WARN_ON += -Wno-overloaded-virtual
+# disable enormous amount of warnings about CGAL / boost / etc
+QMAKE_CXXFLAGS_WARN_ON += -Wno-unused-parameter
+QMAKE_CXXFLAGS_WARN_ON += -Wno-unused-variable
+QMAKE_CXXFLAGS_WARN_ON += -Wno-unused-function
+QMAKE_CXXFLAGS_WARN_ON += -Wno-c++11-extensions
+# might want to actually turn this on once in a while
+QMAKE_CXXFLAGS_WARN_ON += -Wno-sign-compare
 }
 
 CONFIG(skip-version-check) {
@@ -161,8 +158,8 @@ CONFIG += harfbuzz
 CONFIG += freetype
 CONFIG += fontconfig
 
-#Uncomment the following line to enable QCodeEdit
-#CONFIG += qcodeedit
+#Uncomment the following line to enable the QScintilla editor
+CONFIG += scintilla
 
 # Make experimental features available
 experimental {
@@ -192,7 +189,7 @@ win* {
 
 RESOURCES = openscad.qrc
 
-FORMS   += src/MainWindow.ui \
+FORMS += src/MainWindow.ui \
            src/Preferences.ui \
            src/OpenCSGWarningDialog.ui \
            src/AboutDialog.ui \
@@ -266,9 +263,9 @@ HEADERS += src/typedefs.h \
            src/GeometryEvaluator.h \
            src/CSGTermEvaluator.h \
            src/Tree.h \
-	   src/DrawingCallback.h \
-	   src/FreetypeRenderer.h \
-	   src/FontCache.h \
+src/DrawingCallback.h \
+src/FreetypeRenderer.h \
+src/FontCache.h \
            src/mathc99.h \
            src/memory.h \
            src/linalg.h \
@@ -288,8 +285,8 @@ HEADERS += src/typedefs.h \
            src/CsgInfo.h \
            \
            src/AutoUpdater.h \
-    	   src/legacyeditor.h \
-    	   src/scintillaeditor.h \
+     src/legacyeditor.h \
+     src/scadlexer.h
 
 SOURCES += src/version_check.cc \
            src/ProgressWidget.cc \
@@ -342,9 +339,9 @@ SOURCES += src/version_check.cc \
            src/ModuleCache.cc \
            src/GeometryCache.cc \
            src/Tree.cc \
-	   src/DrawingCallback.cc \
-	   src/FreetypeRenderer.cc \
-	   src/FontCache.cc \
+src/DrawingCallback.cc \
+src/FreetypeRenderer.cc \
+src/FontCache.cc \
            \
            src/rendersettings.cc \
            src/highlighter.cc \
@@ -372,10 +369,9 @@ SOURCES += src/version_check.cc \
            \
            src/openscad.cc \
            src/mainwin.cc \
-	   src/FontListDialog.cc \
-    	   src/legacyeditor.cc \
-    	   src/scintillaeditor.cpp \
-    
+src/FontListDialog.cc \
+     src/legacyeditor.cc \
+     src/scadlexer.cpp
 
 # ClipperLib
 SOURCES += src/polyclipping/clipper.cpp
@@ -471,4 +467,3 @@ INSTALLS += man
 CONFIG(winconsole) {
   include(winconsole.pri)
 }
-

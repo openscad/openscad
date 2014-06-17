@@ -6,7 +6,6 @@
 #include <QVBoxLayout>
 #include <Qsci/qsciscintilla.h>
 #include <QVBoxLayout>
-#include "scintillahighlighter.h"
 #include "editor.h"
 
 class ScintillaEditor : public EditorInterface
@@ -42,7 +41,7 @@ private:
          QVBoxLayout *scintillaLayout;
 	const int indicatorNumber = 1;
 	const int markerNumber = 2;
-	ScintillaHighlighter *highlighter;
+
 };
 
 #endif // SCINTILLAEDITOR_H
