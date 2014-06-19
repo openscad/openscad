@@ -209,14 +209,16 @@ if (NOT $ENV{BOOSTDIR} STREQUAL "")
 endif()
 
 find_package( Boost 1.35.0 COMPONENTS thread program_options filesystem system regex REQUIRED)
-message(STATUS "Boost includes found: " ${Boost_INCLUDE_DIRS})
+message(STATUS "Boost ${Boost_VERSION} includes found: " ${Boost_INCLUDE_DIRS})
 message(STATUS "Boost libraries found:")
 foreach(boostlib ${Boost_LIBRARIES})
   message(STATUS "  " ${boostlib})
 endforeach()
 
 inclusion(BOOST_ROOT Boost_INCLUDE_DIRS)
-add_definitions(-DBOOST_FILESYSTEM_VERSION=3) # Use V3 for boost 1.44-1.45
+if (${Boost_VERSION} LESS 104600)
+  add_definitions(-DBOOST_FILESYSTEM_VERSION=3) # Use V3 for boost 1.44-1.45
+endif()
 
 # Mac OS X
 if(APPLE)
