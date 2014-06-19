@@ -120,7 +120,7 @@ def compare_png(resultfilename):
       compare_method = 'diffpng'
 
     print >> sys.stderr, 'Image comparison cmdline: '
-    print >> sys.stderr, str(args)
+    print >> sys.stderr, '["'+str(options.comparison_exec) + '"],' + str(args)
 
     # these two lines are parsed by the test_pretty_print.py
     print >> sys.stderr, ' actual image: ' + resultfilename + '\n'
