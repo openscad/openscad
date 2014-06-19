@@ -126,7 +126,11 @@ def compare_png(resultfilename):
 
     if options.comparator == 'diffpng':
       # alternative to imagemagick based on Yee's algorithm
-      args = [expectedfilename, resultfilename, "--output", resultfilename+'.diff.png']
+
+      # Writing the 'difference image' with --output is very useful for debugging but takes a long time
+      # args = [expectedfilename, resultfilename, "--output", resultfilename+'.diff.png']
+
+      args = [expectedfilename, resultfilename]
       compare_method = 'diffpng'
 
     print >> sys.stderr, 'Image comparison cmdline: '

@@ -961,9 +961,15 @@ list(APPEND CGALSTLSANITYTEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/no
 list(APPEND EXPORT3D_TEST_FILES ${EXAMPLE_FILES})
 list(APPEND EXPORT3D_TEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/features/polyhedron-nonplanar-tests.scad )
 disable_tests(
-  # flat_body is not 3d so dont do 3d-tests on it
+  # the flat_body is not 3d so dont do 3d-tests on it
   stlpngtest_flat_body
   offpngtest_flat_body
+
+  # these take too long, for little relative gain in testing
+  stlpngtest_iteration
+  offpngtest_iteration
+  stlpngtest_fractal
+  offpngtest_fractal
 )
 
 # FIXME: This test illustrates a weakness in child() combined with modifiers.
@@ -1008,12 +1014,8 @@ set_test_config(Heavy cgalpngtest_rotate_extrude-tests
 		      throwntogethertest_text-font-alignment-tests
                       cgalpngtest_fractal
                       csgpngtest_fractal
-                      stlpngtest_fractal
-                      offpngtest_fractal
                       cgalpngtest_iteration
                       csgpngtest_iteration
-                      stlpngtest_iteration
-                      offpngtest_iteration
                       cgalpngtest_linear_extrude-scale-zero-tests
                       csgpngtest_linear_extrude-scale-zero-tests
                       cgalpngtest_sphere-tests
