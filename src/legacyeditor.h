@@ -18,14 +18,14 @@ public:
 	~LegacyEditor();
 	QTextEdit *textedit;
 	QSize sizeHint() const;
-	void setInitialSizeHint(const QSize &size);
-	void setTabStopWidth(int width);
-	void wheelEvent (QWheelEvent * event);
+	void setInitialSizeHint(const QSize&);
+	void setTabStopWidth(int);
+	void wheelEvent (QWheelEvent*);
 	QString	toPlainText();
 	QTextCursor textCursor() const;
-	void setTextCursor (const QTextCursor &cursor);
+	void setTextCursor (const QTextCursor&);
 	QTextDocument *document() { return textedit->document(); }
-	bool find(const QString & exp, QTextDocument::FindFlags options = 0);
+	bool find(const QString&, QTextDocument::FindFlags options = 0);
 public slots:
 	void zoomIn();
 	void zoomOut();
@@ -36,11 +36,11 @@ public slots:
 	void unindentSelection();
 	void commentSelection();
 	void uncommentSelection();
-	void setPlainText(const QString &text);
-	void highlightError(int error_pos);
+	void setPlainText(const QString&);
+	void highlightError(int);
 	void unhighlightLastError();
-	void setHighlightScheme(const QString &name);
-	void insertPlainText(const QString &text);
+	void setHighlightScheme(const QString&);
+	void insertPlainText(const QString&);
 	void undo();
 	void redo();
 	void cut();

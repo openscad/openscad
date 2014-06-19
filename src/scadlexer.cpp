@@ -16,14 +16,22 @@ const char *ScadLexer::language() const
 
 const char *ScadLexer::keywords(int set) const
 {
-    if (set != 1)
-        return 0;
 
-    return "abstract assert boolean break byte case catch char class "
-           "const continue default do double else extends final finally "
-           "float for future generic goto if implements import inner "
-           "instanceof int interface long native new null operator outer "
-           "package private protected public rest return short static "
-           "super switch synchronized this throw throws transient try var "
-           "void volatile while";
+ if (set == 1)
+        return "module function intersection_for assign echo search str"
+		"let";       // -> Style: Keyword
+
+    if (set == 2)
+        return "difference union intersection render translate rotate scale projection"
+		"hull resize mirror minkowski";      // -> Style: KeywordSet2
+
+    if (set == 3)
+        return "param author";          // -> used in comments only like /*! \cube */
+
+    if (set == 4)
+        return "cube circle cylinder polygon polyhedron square sphere";           // -> Style: GlobalClass
+
+    return 0;
 }
+
+

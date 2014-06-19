@@ -1,9 +1,6 @@
-#include <iostream>
 #include <QString>
 #include <QChar>
-#include "scadlexer.h"
 #include "scintillaeditor.h"
-#include "parsersettings.h"
 #include "Preferences.h"
 
 ScintillaEditor::ScintillaEditor(QWidget *parent) : EditorInterface(parent)
@@ -18,7 +15,15 @@ ScintillaEditor::ScintillaEditor(QWidget *parent) : EditorInterface(parent)
 	qsci->setAutoIndent(true);
 	qsci->indicatorDefine(QsciScintilla::RoundBoxIndicator, indicatorNumber);
 	qsci->markerDefine(QsciScintilla::Circle, markerNumber);
-	qsci->setMarkerBackgroundColor(QColor(255, 0, 0, 100), markerNumber);
+	preferenceEditorOption = Preferences::inst()->getValue("editor/syntaxhighlight").toString();
+	lexer = new ScadLexer(this);
+	
+	if(preferenceEditorOption == "For Light Background")
+		forLightBackground();
+	if(preferenceEditorOption == "For Dark Background")
+		forDarkBackground();
+	
+	qsci->setCaretLineVisible(true);
 	initFont();
         initMargin();
         initLexer();
@@ -67,9 +72,45 @@ void ScintillaEditor::unhighlightLastError()
 	qsci->markerDeleteAll(markerNumber);
 }
 
+void ScintillaEditor::forLightBackground()
+{
+	lexer->setPaper(Qt::white);
+	lexer->setColor(QColor("#272822")); // -> Style: Default text
+	lexer->setColor(Qt::red, QsciLexerCPP::Keyword);	    // -> Style: Keyword	
+	lexer->setColor(Qt::green, QsciLexerCPP::KeywordSet2);	    // -> Style: KeywordSet2
+	lexer->setColor(Qt::blue, QsciLexerCPP::CommentDocKeyword);	    // -> used in comments only like /*! \cube */
+	lexer->setColor(Qt::blue, QsciLexerCPP::GlobalClass);	    // -> Style: GlobalClass
+
+	qsci->setMarkerBackgroundColor(QColor(255, 0, 0, 100), markerNumber);
+	qsci->setCaretLineBackgroundColor(QColor("#ffe4e4"));
+
+}
+
+void ScintillaEditor::forDarkBackground()
+{
+	lexer->setPaper(QColor("#272822"));
+	lexer->setColor(QColor(Qt::white));	// -> Style: Default text
+	lexer->setColor(QColor("#66d9ef"), QsciLexerCPP::Keyword);	// -> Style: Keyword	
+	lexer->setColor(QColor("#f92672"),QsciLexerCPP::KeywordSet2);  // -> Style: KeywordSet2	
+	lexer->setColor(Qt::blue, QsciLexerCPP::CommentDocKeyword);		// -> used in comments only like /*! \cube */
+	lexer->setColor(QColor("#fd9715"), QsciLexerCPP::GlobalClass); // -> Style: GlobalClass
+		
+	qsci->setCaretLineBackgroundColor(QColor("#eee"));
+}
+
 void ScintillaEditor::setHighlightScheme(const QString &name)
 {
-//	highlighter->assignFormatsToTokens(name);
+
+	if(name == "For Light Background")
+	{
+		forLightBackground();
+	}
+	else if(name == "For Dark Background")
+	{
+		forDarkBackground();
+	}
+	else
+	return;
 }
 
 void ScintillaEditor::insertPlainText(const QString &text)
@@ -138,6 +179,6 @@ void ScintillaEditor::onTextChanged()
 
 void ScintillaEditor::initLexer()
 {
-      ScadLexer *lexer = new ScadLexer(this);
-      qsci->setLexer(lexer);
+    lexer->setDefaultFont(qsci->font());
+    qsci->setLexer(lexer);
 }

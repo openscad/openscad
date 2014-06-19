@@ -15,30 +15,30 @@ public:
 	EditorInterface(QWidget *parent);
 	~EditorInterface();
         virtual QSize sizeHint(){ QSize size; return size;}
-        virtual void setInitialSizeHint(const QSize &size) { }
-	virtual void wheelEvent ( QWheelEvent * event ) { }
-        virtual void setTabStopWidth(int width) { }
+        virtual void setInitialSizeHint(const QSize&) { }
+	virtual void wheelEvent (QWheelEvent*) { }
+        virtual void setTabStopWidth(int) { }
         virtual QString toPlainText() { QString s; return s;}
         virtual QTextCursor textCursor() { QTextCursor c; return c;}
-        virtual void setTextCursor (const QTextCursor &cursor) { }
+        virtual void setTextCursor (const QTextCursor &) { }
         virtual QTextDocument *document(){QTextDocument *t = new QTextDocument; return t;}
-        virtual bool find(const QString & exp, QTextDocument::FindFlags options = 0){ return options;}
+        virtual bool find(const QString &, QTextDocument::FindFlags options = 0){ return options;}
 
 public slots:
 	virtual void zoomIn(){ }
         virtual void zoomOut() { }
-        virtual void setLineWrapping(bool on) { }
-        virtual void setContentModified(bool y){ }
+        virtual void setLineWrapping(bool) { }
+        virtual void setContentModified(bool){ }
         virtual bool isContentModified(){ return true; } 
         virtual void indentSelection(){ }
         virtual void unindentSelection(){ }
         virtual void commentSelection() {}
         virtual void uncommentSelection(){}
-        virtual void setPlainText(const QString &text){ }
-        virtual void highlightError(int error_pos) {}
+        virtual void setPlainText(const QString &){ }
+        virtual void highlightError(int) {}
         virtual void unhighlightLastError() {}
-        virtual void setHighlightScheme(const QString &name){ }
-	virtual void insertPlainText(const QString &text){ }
+        virtual void setHighlightScheme(const QString&){ }
+	virtual void insertPlainText(const QString&){ }
 	virtual void undo(){ }
         virtual void redo(){ }
         virtual void cut(){ }
