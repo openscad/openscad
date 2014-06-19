@@ -31,6 +31,7 @@ module shape3(){
 	}
 }
 
+// make tests appear 'head on' so image comparison will work properly
 rotate([110,0,135]) {
 
 color("red") {
