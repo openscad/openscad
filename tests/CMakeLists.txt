@@ -1143,6 +1143,7 @@ list(APPEND LAZYUNION_FILES ${LAZYUNION_DUMP_FILES})
 add_cmdline_test(lazyunion-dump EXE ${OPENSCAD_BINPATH} ARGS --enable=lazy-union -o SUFFIX csg FILES ${LAZYUNION_DUMP_FILES})
 add_cmdline_test(lazyunion-opencsg EXE ${OPENSCAD_BINPATH} ARGS --enable=lazy-union -o SUFFIX png FILES ${LAZYUNION_FILES})
 add_cmdline_test(lazyunion-cgalpng EXE ${OPENSCAD_BINPATH} ARGS --enable=lazy-union --render -o SUFFIX png FILES ${LAZYUNION_FILES})
+add_cmdline_test(lazyunion-stlpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOURCE_DIR}/export_import_pngtest.py ARGS --openscad=${OPENSCAD_BINPATH} --format=STL --enable=lazy-union EXPECTEDDIR lazyunion-cgalpng SUFFIX png FILES ${LAZYUNION_FILES})
 
 # text
 list(APPEND EXPERIMENTAL_TEXT_FILES 
