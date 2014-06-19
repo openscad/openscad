@@ -52,6 +52,14 @@ threedfilename = os.path.join( outputdir, scadbasefilename + '.' + threedsuffix 
 
 print('test_3d_export: oscad_exec, scadfile, 3dfile, pngfile', oscad_exec, scadfilename, threedfilename, pngfilename);
 
+
+if os.getenv("TEST_GENERATE"):
+	threed_gen_args = [oscad_exec, scadfilename, '--render', '-o', pngfilename]
+	print 'test3dexport generate. ',threed_gen_args
+	result = subprocess.call( threed_gen_args )
+	if result != 0:
+		failquit('failure of 1st subprocess.call('+str(threed_gen_args)+')')
+	
 threed_gen_args = [oscad_exec, scadfilename, '-o', threedfilename]
 result = subprocess.call( threed_gen_args )
 if result != 0:
@@ -72,10 +80,10 @@ result = subprocess.call( png_gen_args )
 if result != 0:
 	failquit('failure of 2nd subprocess.call('+str(png_gen_args)+')')
 
-try:
-	os.remove(threedfilename);
-except:
-	failquit('failure at os.remove('+threedfilename+')')
+#try:
+#	os.remove(threedfilename);
+#except:
+#	failquit('failure at os.remove('+threedfilename+')')
 	
 
 

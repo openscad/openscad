@@ -75,10 +75,23 @@ LodePNG Examples
 #include <string>
 #include <vector>
 
+#ifndef M_PI
+#define M_PI 3.14159265f
+#endif
+
+class RGBAImage;
+class CompareArgs;
+
 namespace diffpng
 {
 
 using namespace std;
+
+// gamma correction function for light level. [if t^x=a then a=e^(x*logn(t))]
+// see http://cseweb.ucsd.edu/~ckanan/publications/Kanan_Cottrell_PloS_ONE_2012.pdf
+float gamma(float t) {
+	return exp( (1.0/2.2) * log(t) );
+}
 
 /** Class encapsulating an image containing R,G,B,A channels.
  *
@@ -98,24 +111,24 @@ public:
 		: Width(w), Height(h), Name(name), Data(w * h)
 	{
 	}
-	unsigned char Get_Red(unsigned int i) const
+	uint8_t Get_Red(unsigned int i) const
 	{
 		return (Data[i%Data.size()] & 0xFF);
 	}
-	unsigned char Get_Green(unsigned int i) const
+	uint8_t Get_Green(unsigned int i) const
 	{
 		return ((Data[i%Data.size()] >> 8) & 0xFF);
 	}
-	unsigned char Get_Blue(unsigned int i) const
+	uint8_t Get_Blue(unsigned int i) const
 	{
 		return ((Data[i%Data.size()] >> 16) & 0xFF);
 	}
-	unsigned char Get_Alpha(unsigned int i) const
+	uint8_t Get_Alpha(unsigned int i) const
 	{
 		return ((Data[i%Data.size()] >> 24) & 0xFF);
 	}
-	void Set(unsigned char r, unsigned char g, unsigned char b,
-			 unsigned char a, unsigned int i)
+	void Set(uint8_t r, uint8_t g, uint8_t b,
+			 uint8_t a, unsigned int i)
 	{
 		Data[i] = r | (g << 8) | (b << 16) | (a << 24);
 	}
@@ -157,11 +170,11 @@ public:
 		cout << "WriteToFile:" << filename << "\n";
 
 		unsigned width = this->Width, height = this->Height;
-		vector<unsigned char> image;
+		vector<uint8_t> image;
 		image.resize(width * height * 4);
 		for(unsigned y = 0; y < height; y++) {
 		for(unsigned x = 0; x < width; x++) {
-			unsigned char red, green, blue, alpha;
+			uint8_t red, green, blue, alpha;
 			red = Get_Red( y*width + x );
 			green = Get_Green( y*width + x );
 			blue = Get_Blue( y*width + x );
@@ -183,7 +196,7 @@ public:
 	static RGBAImage *ReadFromFile(const string &filename)
 	{
 		cout << "reading from file:" << filename << "\n";
-		vector<unsigned char> lodepng_image; //the raw pixels
+		vector<uint8_t> lodepng_image; //the raw pixels
 		unsigned width, height;
 		unsigned error = lodepng::decode(lodepng_image, width, height, filename.c_str());
 		if (error) {
@@ -209,40 +222,14 @@ public:
 		return rgbaimg;
 	}
 
-	void UpSample()
-	{
-		unsigned char red, green, blue, alpha;
-		unsigned oldwidth = Width;
-		//unsigned oldheight = Height;
-		unsigned newwidth = Width*2;
-		unsigned newheight = Height*2;
-		RGBAImage newimg( newwidth, newheight, this->Name );
-		for (unsigned x = 0; x < newwidth; x++) {
-		for (unsigned y = 0; y < newheight; y++) {
-                        red = this->Get_Red(     (y/2)*oldwidth + (x/2) );
-			green = this->Get_Green( (y/2)*oldwidth + (x/2) );
-			blue = this->Get_Blue(   (y/2)*oldwidth + (x/2) );
-			alpha = this->Get_Alpha( (y/2)*oldwidth + (x/2) );
-			newimg.Set( red, green, blue, alpha, y*newwidth+x );
-		}
-		}
-		Width = newwidth;
-		Height = newheight;
-		Data.clear();
-		Data.resize( newimg.Data.size() );
-		for (unsigned i=0;i<newimg.Data.size();i++) {
-			Data[i] = newimg.Data[i];
-		}
-	}
-
-	// make the image half its original size.
+	// make the image half its original width & height (1/4 the area).
 	// this will slightly blur the image.
 	// the result somewhat resembles antialiasing.
 	void DownSample()
 	{
 		unsigned int redsum,greensum,bluesum,alphasum;
 		unsigned int redavg,greenavg,blueavg,alphaavg;
-		unsigned char red, green, blue, alpha;
+		uint8_t red, green, blue, alpha;
 		unsigned oldwidth = Width;
 		//unsigned oldheight = Height;
 		unsigned newwidth = Width/2;
@@ -280,11 +267,11 @@ public:
 		}
 	}
 
-	// shift image by # pixels
+	// shift image by the given number of pixels
 	void Shift(int xpix, int ypix)
 	{
 		RGBAImage newimg( Width, Height, this->Name );
-		unsigned char red, green, blue, alpha;
+		uint8_t red, green, blue, alpha;
 		for (unsigned x = 0; x < Width; x++) {
 		for (unsigned y = 0; y < Height; y++) {
                         red = this->Get_Red(     (y+ypix)*Width + (x+xpix) );
@@ -306,7 +293,7 @@ public:
 	{
 		unsigned int redsum,greensum,bluesum,alphasum;
 		unsigned int redavg,greenavg,blueavg,alphaavg;
-		unsigned char red, green, blue, alpha;
+		uint8_t red, green, blue, alpha;
 		for (unsigned x = 0; x < Width; x++) {
 		for (unsigned y = 0; y < Height; y++) {
 			redsum=greensum=bluesum=alphasum=0;
@@ -356,8 +343,8 @@ See the GPL page for details: http://www.gnu.org/copyleft/gpl.html\n\n");
 
 string usage("Usage: diffpng image1 image2\n\
 \n\
-Compares image1 and image2 using Yee's perceptually based image metric.\n\
-Returns 0 on PASS (perceptually similar), 1 on FAIL (perceptually different)\n\
+Compares image1 and image2 using modified Yee's perceptual difference engine.\n\
+Returns 0 on MATCH (perceptually similar), 1 on DIFFERS \n\
 \n\
 Options:\n\
  --fov deg	 Field of view in degrees (0.1 to 89.9)\n\
@@ -370,7 +357,7 @@ Options:\n\
  --output o.png  Write difference image to o.png (black=same, red=differ)\n\
  --initmax n     Set the initial maximum number of Laplacian Pyramid Levels\n\
  --finalmax n    Set the final maximum number of Laplacian Pyramid Levels\n\
- --flipexit      Flip the normal return values: PASS returns 1, FAIL returns 0\n\
+ --flipexit      Flip the normal return values: MATCHES returns 1, DIFFERS returns 0\n\
  --quiet         Turns off verbose mode\n\
 \n");
 
@@ -398,8 +385,6 @@ static bool option_matches(const char *arg, const string &option_name)
 }
 
 
-class RGBAImage;
-
 // Args to pass into the comparison function
 class CompareArgs
 {
@@ -417,9 +402,10 @@ public:
 		Luminance = 100.0f;
 		ColorFactor = 0.1f;
 		MaxPyramidLevels = 2;
-		//FinalMaxPyramidLevels = 5; // 58 fails
-		FinalMaxPyramidLevels = 3; // 57 fails
-		//FinalMaxPyramidLevels = 2; // 75 fails
+		//FinalMaxPyramidLevels = 3; // too many false differs
+		FinalMaxPyramidLevels = 5;
+		//FinalMaxPyramidLevels = 4;
+		//FinalMaxPyramidLevels = 6; // too many false matches
 		FlipExit = false;
 		ImgA = NULL; // Image A
 		ImgB = NULL; // Image B
@@ -600,7 +586,8 @@ public:
 			  << " candela per meter squared\n"
 			  << "The Color Factor is " << ColorFactor << "\n"
 			  << "Initial Max Laplacian Pyramid Levels is " << MaxPyramidLevels << "\n"
-			  << "Final Max Laplacian Pyramid Levels is " << FinalMaxPyramidLevels << "\n";
+			  << "Final Max Laplacian Pyramid Levels is " << FinalMaxPyramidLevels << "\n"
+		;
 	}
 
 	RGBAImage *ImgA;	 // Image A
@@ -624,35 +611,20 @@ public:
 	// 1.0 means full strength.
 	float ColorFactor;
 
-	// normally we return 0 on PASS, 1 on FAIL. this can flip it.
+	// normally we return 0 on MATCHES, 1 on DIFFERS. this can flip it.
 	bool FlipExit;
 
-	// Fewer Max Pyramid Levels makes it run faster, but will return
-	// false FAILs. We 'climb' from a low number, and only go higher
-	// if there is a FAIL... to further verify the FAIL.
-	// This allows PASS to run relatively fast.
+	// Here we set up the number of Laplacian Pyramid Levels used
+	// by Yee's algorithm. A MATCH is very reliable with a low level
+	// of max levels, and somehwat fsat. However, a DIFFERENCE with
+	// a low level of levels can be unreliable. So in that case, we can
+	// 'retest' with more levels, starting with the initial, and
+	// ending with the 'final'. Each new level is slower.
 	unsigned int MaxPyramidLevels;
 	unsigned int FinalMaxPyramidLevels;
+
 };
 
-
-/*class ParseException : public virtual invalid_argument
-{
-public:
-
-	ParseException(const string &message)
-		: invalid_argument(message)
-	{
-	}
-};
-*/
-
-
-/*
-
-------------------------------- Laplacian Pyramid
-
-*/
 
 static vector<float> Copy(const float *img,
 							   const unsigned int width,
@@ -751,31 +723,6 @@ private:
 	unsigned int MaxPyramidLevels;
 }; //LPyramid
 
-
-/*
-Metric
-Copyright (C) 2006-2011 Yangli Hector Yee
-Copyright (C) 2011-2014 Steven Myint
-
-This program is free software; you can redistribute it and/or modify it under
-the terms of the GNU General Public License as published by the Free Software
-Foundation; either version 2 of the License, or (at your option) any later
-version.
-
-This program is distributed in the hope that it will be useful, but WITHOUT ANY
-WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
-PARTICULAR PURPOSE.  See the GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License along with
-this program; if not, write to the Free Software Foundation, Inc., 59 Temple
-Place, Suite 330, Boston, MA 02111-1307 USA
-*/
-
-#ifndef M_PI
-#define M_PI 3.14159265f
-#endif
-
-class CompareArgs;
 
 /*
 * Given the adaptation luminance, this function returns the
@@ -998,7 +945,7 @@ bool Yee_Compare_Engine(CompareArgs &args)
 		F_freq[i] = csf_max / csf(cpd[i], 100.0f);
 	}
 
-	unsigned pixels_failed = 0u;
+	unsigned int pixels_failed = 0u;
 	unsigned total_pixels = w*h;
 	float error_sum = 0.;
 //#pragma omp parallel for reduction(+ : pixels_failed) reduction(+ : error_sum)
@@ -1111,21 +1058,11 @@ bool Yee_Compare_Engine(CompareArgs &args)
 	const string error_sum_buff = s.str();
 
 	s.str("");
-	s << pixels_failed << " pixels failed. ";
+	s << pixels_failed << " pixels differed out of " << total_pixels << ". (";
 
 	float pixels_failed_percentage = 100.0*(float(pixels_failed)/total_pixels);
-	s << pixels_failed_percentage << " percentage\n";
+	s << pixels_failed_percentage << " percent)";
 	const string different = s.str();
-
-	// Always output image difference if requested.
-	if (args.ImgDiff)
-	{
-		args.ImgDiff->WriteToFile(args.ImgDiff->Get_Name());
-
-		args.ErrorStr += "Wrote difference image to ";
-		args.ErrorStr += args.ImgDiff->Get_Name();
-		args.ErrorStr += "\n";
-	}
 
 	if (pixels_failed_percentage < args.ThresholdPixelsPercent)
 	{
@@ -1147,8 +1084,8 @@ bool Yee_Compare_Engine(CompareArgs &args)
 /*
 Multi-stage comparison.
 
-This is designed to run faster on sets of images that match (PASS) than
-on sets of images that fail (FAIL). The basic idea is as follows:
+This is designed to run faster on sets of images that match than
+on sets of images that differ. The basic idea is as follows:
 
 When the number of Laplacian Pyramid Levels is low, the algorithm runs
 relatively fast. It can detect similar images well, but it also FAILS
@@ -1156,10 +1093,10 @@ on images that should not fail. This is because it does not do enough 'blurring'
 
 Thus, the strategy is as follows.
 
-Start with a low number of Pyramid Levels.... and if the images match, (PASS),
+Start with a low number of Pyramid Levels.... and if the images match, ,
 then quit the algorithm.
 
-Now, only if the images dont match (FAIL) do we increase the number of
+Now, only if the images dont match do we increase the number of
 pyramid levels.
 
 On a typical regression test system, this can create a good speedup. Why?
@@ -1185,89 +1122,80 @@ ten times faster.
 
 bool LevelClimberCompare(CompareArgs &args) {
 	bool test = false;
-	test = Yee_Compare_Engine( args );
 
 	while (test==false && args.MaxPyramidLevels<args.FinalMaxPyramidLevels) {
-		cout << "Test failed with Max # Pyramid Levels=" << args.MaxPyramidLevels << "\n";
-		cout << "result:" << test << " : " << args.ErrorStr << "\n";
-		args.MaxPyramidLevels++;
-		cout << ". Rerunning with " << args.MaxPyramidLevels << "\n";
-		test = Yee_Compare_Engine( args );
+		cout << "Testing with Max Pyramid Levels=" << args.MaxPyramidLevels << "\n";
+		test |= Yee_Compare_Engine( args );
+		cout << "Result:" << test << " : " << args.ErrorStr << "\n";
+		if (args.ImgDiff) {
+			std::stringstream s; s<<args.MaxPyramidLevels;
+			args.ImgDiff->WriteToFile(args.ImgDiff->Get_Name()+".diff.maxlevel"+s.str()+".png");
+		}
+		if (test==false) {
+			args.MaxPyramidLevels++;
+			cout << "Test detected differences.\n";
+			if (args.MaxPyramidLevels<args.FinalMaxPyramidLevels) cout << "Retesting.\n\n";
+		} else {
+			return true;
+		}
 	}
+
+
+	// the purpose of downsampling is not necessarily to throw away pixels.
+	// it is to enable the higher pyramid levels to run at a
+	// reasonable speed.
 	if (test==false) {
-		cout << "Tests failed at final max pyramid level. \n";
+		cout << "\nTests detected differences at final max pyramid level. \n";
 		cout << "Retesting with downsampling and simple blur\n\n";
+
 		args.ImgA->DownSample();
 		args.ImgB->DownSample();
 		args.ImgA->SimpleBlur();
 		args.ImgB->SimpleBlur();
 		args.ImgA->SimpleBlur();
 		args.ImgB->SimpleBlur();
-		args.ImgA->SimpleBlur();
-		args.ImgB->SimpleBlur();
+//		args.ImgA->SimpleBlur();
+//		args.ImgB->SimpleBlur();
+//		args.ImgA->SimpleBlur();
+//		args.ImgB->SimpleBlur();
 		if (args.ImgDiff) {
 			args.ImgA->WriteToFile( args.ImgDiff->Get_Name()+".1.downsample.png" );
 			args.ImgB->WriteToFile( args.ImgDiff->Get_Name()+".2.downsample.png" );
 			args.ImgDiff->DownSample();
 		}
 		args.ColorFactor = 0.05;
-		test = Yee_Compare_Engine( args );
-	}
+		cout << "Testing with Max Pyramid Levels=" << args.MaxPyramidLevels << "\n";
+		test |= Yee_Compare_Engine( args );
+		cout << "Result:" << test << " : " << args.ErrorStr << "\n";
+		if (args.ImgDiff)
+			args.ImgDiff->WriteToFile(args.ImgDiff->Get_Name()+".diff.sampleddown.png");
+	};
+
 	if (test==false) {
 		args.ColorFactor = 0.01;
-		cout << "Tests failed after downsample. \n";
+		cout << "\nTests detected differences after downsample. \n";
 		cout << "Retesting with small pixel shifts\n";
 		args.ImgB->Shift(-1,0);
-		args.ImgB->WriteToFile( "r0.png" );
+		args.ImgB->WriteToFile( "shift1.png" );
 		test |= Yee_Compare_Engine( args );
+		if (args.ImgDiff) args.ImgDiff->WriteToFile(args.ImgDiff->Get_Name()+".diffshift1.png");
 		cout << "result:" << test << " : " << args.ErrorStr << "\n";
 		args.ImgB->Shift(2,0);
-		args.ImgB->WriteToFile( "r1.png" );
+		args.ImgB->WriteToFile( "shift2.png" );
 		test |= Yee_Compare_Engine( args );
+		if (args.ImgDiff) args.ImgDiff->WriteToFile(args.ImgDiff->Get_Name()+".diffshift2.png");
 		cout << "result:" << test << " : " << args.ErrorStr << "\n";
 		args.ImgB->Shift(-1,-1);
-		args.ImgB->WriteToFile( "r2.png" );
+		args.ImgB->WriteToFile( "shift3.png" );
 		test |= Yee_Compare_Engine( args );
+		if (args.ImgDiff) args.ImgDiff->WriteToFile(args.ImgDiff->Get_Name()+".diffshift3.png");
 		cout << "result:" << test << " : " << args.ErrorStr << "\n";
 		args.ImgB->Shift(0,2);
-		args.ImgB->WriteToFile( "r3.png" );
+		args.ImgB->WriteToFile( "shift4.png" );
 		test |= Yee_Compare_Engine( args );
+		if (args.ImgDiff) args.ImgDiff->WriteToFile(args.ImgDiff->Get_Name()+".diffshift4.png");
 		cout << "result:" << test << " : " << args.ErrorStr << "\n";
 	}
-#if 0
-	if (test==false) {
-		cout << "Tests failed at final max pyramid level. \n";
-		//cout << "Retesting with Downsampling (shrink/blur image)\n";
-		cout << "Retesting with downsampling and simple blur\n";
-
-//		args.ImgA->UpSample();
-//		args.ImgB->UpSample();
-
-		args.ImgA->DownSample();
-		args.ImgB->DownSample();
-		if (args.ImgDiff) {
-			args.ImgA->WriteToFile( args.ImgDiff->Get_Name()+".1.downsample.png" );
-			args.ImgB->WriteToFile( args.ImgDiff->Get_Name()+".2.downsample.png" );
-			args.ImgDiff->DownSample();
-		}
-
-		// i=1, lots of fail
-		// i=2, 8 fail
-		// i=3, 7 fail
-		for (int i=0;i<3;i++){
-			args.ImgA->SimpleBlur();
-			args.ImgB->SimpleBlur();
-		}
-
-		if (args.ImgDiff) {
-			args.ImgA->WriteToFile( args.ImgDiff->Get_Name()+".1.simpleblur.png" );
-			args.ImgB->WriteToFile( args.ImgDiff->Get_Name()+".2.simpleblur.png" );
-		}
-
-		args.ColorFactor = 0.05;
-		test = Yee_Compare_Engine( args );
-	}
-#endif
 	return test;
 }
 
@@ -1300,7 +1228,7 @@ int main(int argc, char **argv)
 //	{
 		if (not args.Parse_Args(argc, argv))
 		{
-			std::cout << args.ErrorStr;
+			std::cout << args.ErrorStr << "\n";
 			return -1;
 		}
 		else
@@ -1311,25 +1239,26 @@ int main(int argc, char **argv)
 			}
 		}
 
-		bool passed = diffpng::LevelClimberCompare(args);
-		if (passed)
+		std::cout << "\n";
+		bool matches = diffpng::LevelClimberCompare(args);
+		if (matches)
 		{
 			if (args.Verbose)
 			{
 				if (interactive()) std::cout << green;
-				std::cout << "PASS: result: " << args.ErrorStr;
+				std::cout << "MATCHES: result: " << args.ErrorStr << "\n";
 				if (interactive()) std::cout << nocolor;
 			}
 		}
 		else
 		{
 			if (interactive()) std::cout << red;
-			std::cout << "FAIL: result: " << args.ErrorStr;
+			std::cout << "DIFFERS: result: " << args.ErrorStr << "\n";
 			if (interactive()) std::cout << nocolor;
 		}
 
-	if (args.FlipExit) passed = !passed;
-	if (passed) return 0;
+	if (args.FlipExit) matches = !matches;
+	if (matches) return 0;
 	return 1;
 //	}
 /*	catch (...)

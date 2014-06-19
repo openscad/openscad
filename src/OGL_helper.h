@@ -28,24 +28,21 @@
 #include <cstdlib>
 
 // Overridden in CGAL_renderer
-/*#define CGAL_NEF3_MARKED_VERTEX_COLOR 183,232,92
-#define CGAL_NEF3_MARKED_EDGE_COLOR 171,216,86
-#define CGAL_NEF3_MARKED_FACET_COLOR  157,203,81
-#define CGAL_NEF3_MARKED_BACK_FACET_COLOR  157,103,181
+#define CGAL_NEF3_OGL_MARKED_VERTEX_COLOR 183,232,92
+#define CGAL_NEF3_OGL_MARKED_EDGE_COLOR 171,216,86
+#define CGAL_NEF3_OGL_MARKED_FACET_COLOR  157,203,81
+#define CGAL_NEF3_OGL_MARKED_BACK_FACET_COLOR  157,103,181
 
-#define CGAL_NEF3_UNMARKED_VERTEX_COLOR 255,246,124
-#define CGAL_NEF3_UNMARKED_EDGE_COLOR 255,236,94
-#define CGAL_NEF3_UNMARKED_FACET_COLOR 249,215,44
-<<<<<<< HEAD
-*/
-=======
-#define CGAL_NEF3_UNMARKED_BACK_FACET_COLOR 249,115,144
+#define CGAL_NEF3_OGL_UNMARKED_VERTEX_COLOR 255,246,124
+#define CGAL_NEF3_OGL_UNMARKED_EDGE_COLOR 255,236,94
+#define CGAL_NEF3_OGL_UNMARKED_FACET_COLOR 249,215,44
+
+#define CGAL_NEF3_OGL_UNMARKED_BACK_FACET_COLOR 249,115,144
 
 
 const bool cull_backfaces = false;
 const bool color_backfaces = false;
 
->>>>>>> fe8ce9335e813765fef33cfc34a48ff12a9529e3
 #ifdef _WIN32
 #define CGAL_GLU_TESS_CALLBACK CALLBACK
 #else
@@ -372,8 +369,8 @@ namespace OGL {
     virtual CGAL::Color getVertexColor(Vertex_iterator v) const
     {
 	(void)v;
-//	CGAL::Color cf(CGAL_NEF3_MARKED_VERTEX_COLOR),
-//	  ct(CGAL_NEF3_UNMARKED_VERTEX_COLOR); // more blue-ish
+//	CGAL::Color cf(CGAL_NEF3_OGL_MARKED_VERTEX_COLOR),
+//	  ct(CGAL_NEF3_OGL_UNMARKED_VERTEX_COLOR); // more blue-ish
 //	CGAL::Color c = v->mark() ? ct : cf;
 	// Overridden in CGAL_renderer
 	CGAL::Color c(0,0,200);
@@ -398,8 +395,8 @@ namespace OGL {
     virtual CGAL::Color getEdgeColor(Edge_iterator e) const
     {
 	(void)e;
-//	CGAL::Color cf(CGAL_NEF3_MARKED_EDGE_COLOR),
-//	  ct(CGAL_NEF3_UNMARKED_EDGE_COLOR); // more blue-ish
+//	CGAL::Color cf(CGAL_NEF3_OGL_MARKED_EDGE_COLOR),
+//	  ct(CGAL_NEF3_OGL_UNMARKED_EDGE_COLOR); // more blue-ish
 //	CGAL::Color c = e->mark() ? ct : cf;
 	// Overridden in CGAL_renderer
 	CGAL::Color c(200,0,0);
@@ -421,23 +418,22 @@ namespace OGL {
 
     virtual CGAL::Color getFacetColor(Halffacet_iterator f, bool is_back_facing) const
     {
-<<<<<<< HEAD
+/*
 	(void)f;
-//	CGAL::Color cf(CGAL_NEF3_MARKED_FACET_COLOR),
-//	  ct(CGAL_NEF3_UNMARKED_FACET_COLOR); // more blue-ish
+//	CGAL::Color cf(CGAL_NEF3_OGL_MARKED_FACET_COLOR),
+//	  ct(CGAL_NEF3_OGL_UNMARKED_FACET_COLOR); // more blue-ish
 //	CGAL::Color c = (f->mark() ? ct : cf);
 	// Overridden in CGAL_renderer
 	CGAL::Color c(0,200,0);
 	return c;
-=======
+*/
 
       if (is_back_facing) return !f->mark()
-          ? CGAL::Color(CGAL_NEF3_MARKED_BACK_FACET_COLOR)
-          : CGAL::Color(CGAL_NEF3_UNMARKED_BACK_FACET_COLOR);
+          ? CGAL::Color(CGAL_NEF3_OGL_MARKED_BACK_FACET_COLOR)
+          : CGAL::Color(CGAL_NEF3_OGL_UNMARKED_BACK_FACET_COLOR);
       else return !f->mark()
-          ? CGAL::Color(CGAL_NEF3_MARKED_FACET_COLOR)
-          : CGAL::Color(CGAL_NEF3_UNMARKED_FACET_COLOR);
->>>>>>> fe8ce9335e813765fef33cfc34a48ff12a9529e3
+          ? CGAL::Color(CGAL_NEF3_OGL_MARKED_FACET_COLOR)
+          : CGAL::Color(CGAL_NEF3_OGL_UNMARKED_FACET_COLOR);
     }
 
     void draw(Halffacet_iterator f, bool is_back_facing) const {
