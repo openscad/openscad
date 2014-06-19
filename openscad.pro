@@ -309,6 +309,7 @@ SOURCES += src/version_check.cc \
            src/ProgressWidget.cc \
            src/mathc99.cc \
            src/linalg.cc \
+           src/Camera.cc \
            src/handle_dep.cc \
            src/value.cc \
            src/expr.cc \

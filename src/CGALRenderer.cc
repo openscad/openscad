@@ -128,6 +128,7 @@ void CGALRenderer::draw(bool showfaces, bool showedges) const
 BoundingBox CGALRenderer::getBoundingBox() const
 {
 	BoundingBox bbox;
+
 	BOOST_FOREACH(const shared_ptr<class Polyhedron> &p, this->polyhedrons) {
 		CGAL::Bbox_3 cgalbbox = p->bbox();
 		bbox.extend(BoundingBox(
@@ -137,5 +138,6 @@ BoundingBox CGALRenderer::getBoundingBox() const
 	BOOST_FOREACH(const shared_ptr<const class PolySet> &ps, this->polysets) {
 		bbox.extend(ps->getBoundingBox());
 	}
+
 	return bbox;
 }
