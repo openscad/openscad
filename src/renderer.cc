@@ -8,8 +8,9 @@
 
 bool Renderer::getColor(Renderer::ColorMode colormode, Color4f &col) const
 {
-	if (colormap.count(colormode)>0)
-		col = colormap.at(colormode);
+	if (colormode==COLORMODE_NONE) return false;
+	if (colormap.count(colormode)>0) col = colormap.at(colormode);
+	else return false;
 	return true;
 }
 
