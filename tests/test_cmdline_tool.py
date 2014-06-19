@@ -53,10 +53,13 @@ def init_actual_filename():
     actualfilename = os.path.normpath(actualfilename)
 
 def verify_test(testname, cmd):
-    global expectedfilename
+    global expectedfilename, actualfilename
     if not options.generate:
         if not os.path.isfile(expectedfilename):
             print >> sys.stderr, "Error: test '%s' is missing expected output in %s" % (testname, expectedfilename)
+            # next 2 imgs parsed by test_pretty_print.py
+            print >> sys.stderr, ' actual image: ' + actualfilename + '\n'
+            print >> sys.stderr, ' expected image: ' + expectedfilename + '\n'
             return False
     return True
 
@@ -112,8 +115,8 @@ def compare_png(resultfilename):
       compare_method = 'NCC'
 
     if options.comparator == 'diffpng':
-      # use Hector Yee algorithm, dont use imagemagick
-      args = [expectedfilename, resultfilename, "--output", "diff"+resultfilename]
+      # alternative to imagemagick based on Yee's algorithm
+      args = [expectedfilename, resultfilename, "--output", resultfilename+'.diff.png']
       compare_method = 'diffpng'
 
     print >> sys.stderr, 'Image comparison cmdline: '
@@ -141,8 +144,8 @@ def compare_png(resultfilename):
             if ncc_err > thresh or ncc_err==0.0: return True
             else: print >> sys.stderr, ncc_err, ' Images differ: NCC comparison < ', thresh
         elif compare_method=='diffpng':
-            if 'PASS:' in output: return True
-            if 'FAIL:' in output: return False
+            if 'MATCHES:' in output: return True
+            if 'DIFFERS:' in output: return False
     return False
 
 def compare_with_expected(resultfilename):
@@ -174,7 +177,8 @@ def run_test(testname, cmd, args):
 
     try:
         cmdline = [cmd] + args + [outputname]
-        print cmdline
+        print 'run_test() cmdline:',cmdline
+        sys.stdout.flush()
         proc = subprocess.Popen(cmdline, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         errtext = proc.communicate()[1]
         if errtext != None and len(errtext) > 0:
