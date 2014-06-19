@@ -8,6 +8,7 @@ public:
 	CGALRenderer(shared_ptr<const class Geometry> geom);
 	~CGALRenderer();
 	void draw(bool showfaces, bool showedges) const;
+	BoundingBox getBoundingBox() const;
 
 public:
 	shared_ptr<class Polyhedron> polyhedron;

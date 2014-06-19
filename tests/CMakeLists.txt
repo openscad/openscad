@@ -573,6 +573,7 @@ set(CORE_SOURCES
   ../src/parsersettings.cc
   ../src/mathc99.cc
   ../src/linalg.cc
+  ../src/Camera.cc
   ../src/handle_dep.cc 
   ../src/value.cc 
   ../src/calc.cc 
@@ -1151,36 +1152,64 @@ add_cmdline_test(openscad-imgstretch2 EXE ${OPENSCAD_BINPATH}
                  ARGS --imgsize 100,500 -o 
                  SUFFIX png 
 		 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/features/camera-tests.scad)
+# Perspective gimbal cam
 add_cmdline_test(openscad-camdist EXE ${OPENSCAD_BINPATH} 
-                 ARGS --imgsize=500,500 --camera=0,0,0,90,0,90,300 -o
+                 ARGS --imgsize=500,500 --camera=0,0,0,90,0,90,100 -o
                  SUFFIX png
 		 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/features/camera-tests.scad)
+# Perspective gimbal cam
 add_cmdline_test(openscad-camrot EXE ${OPENSCAD_BINPATH}
-                 ARGS --imgsize=500,500 --camera=0,0,0,440,337.5,315,300 -o
+                 ARGS --imgsize=500,500 --camera=0,0,0,440,337.5,315,100 -o
                  SUFFIX png
 		 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/features/camera-tests.scad)
+# Perspective gimbal cam
 add_cmdline_test(openscad-camtrans EXE ${OPENSCAD_BINPATH}
-                 ARGS --imgsize=500,500 --camera=100,-20,-10,90,0,90,300 -o
+                 ARGS --imgsize=500,500 --camera=100,-20,-10,90,0,90,100 -o
                  SUFFIX png
 		 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/features/camera-tests.scad)
+# Perspective gimbal cam, viewall
+add_cmdline_test(openscad-camtrans-viewall EXE ${OPENSCAD_BINPATH}
+                 ARGS --imgsize=500,500 --camera=100,-20,-10,90,0,90,3000 --viewall -o
+                 SUFFIX png
+		 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/features/camera-tests.scad)
+# Orthographic gimbal cam
 add_cmdline_test(openscad-camortho EXE ${OPENSCAD_BINPATH}
                  ARGS --imgsize=500,500 --camera=100,-20,-10,90,0,90,300 --projection=o -o
                  SUFFIX png
 		 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/features/camera-tests.scad)
+# Orthographic gimbal cam viewall
+add_cmdline_test(openscad-camortho-viewall EXE ${OPENSCAD_BINPATH}
+                 ARGS --imgsize=500,500 --camera=100,-20,-10,90,0,90,3000 --viewall --projection=o -o
+                 SUFFIX png
+		 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/features/camera-tests.scad)
+# Perspective vector cam
 add_cmdline_test(openscad-cameye EXE ${OPENSCAD_BINPATH}
                  ARGS --imgsize=500,500 --camera=60,40,30,0,0,0 -o
                  SUFFIX png
 		 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/features/camera-tests.scad)
+# Perspective vector cam
 add_cmdline_test(openscad-cameye2 EXE ${OPENSCAD_BINPATH}
                  ARGS --imgsize=500,500 --camera=160,140,130,0,0,0 -o
                  SUFFIX png
 		 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/features/camera-tests.scad)
+# Perspective vector cam
+add_cmdline_test(openscad-camcenter EXE ${OPENSCAD_BINPATH}
+                 ARGS --imgsize=500,500 --camera=60,40,30,20,10,30  -o
+                 SUFFIX png
+		 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/features/camera-tests.scad)
+# Perspective vector cam viewall
+add_cmdline_test(openscad-camcenter-viewall EXE ${OPENSCAD_BINPATH}
+                 ARGS --imgsize=500,500 --camera=60,40,30,20,10,30 --viewall -o
+                 SUFFIX png
+		 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/features/camera-tests.scad)
+# Orthographic vector cam
 add_cmdline_test(openscad-cameyeortho EXE ${OPENSCAD_BINPATH}
                  ARGS --imgsize=500,500 --camera=160,140,130,0,0,0 --projection=o -o 
                  SUFFIX png
 		 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/features/camera-tests.scad)
-add_cmdline_test(openscad-camcenter EXE ${OPENSCAD_BINPATH}
-                 ARGS --imgsize=500,500 --camera=60,40,30,20,10,30  -o
+# Orthographic vector cam viewall
+add_cmdline_test(openscad-cameyeortho-viewall EXE ${OPENSCAD_BINPATH}
+                 ARGS --imgsize=500,500 --camera=16,14,13,0,0,0 --viewall --projection=o -o 
                  SUFFIX png
 		 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/features/camera-tests.scad)
 

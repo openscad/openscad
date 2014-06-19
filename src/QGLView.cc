@@ -147,17 +147,16 @@ void QGLView::display_opencsg_warning_dialog()
 void QGLView::resizeGL(int w, int h)
 {
   GLView::resizeGL(w,h);
-  GLView::setupGimbalCamPerspective();
 }
 
 void QGLView::paintGL()
 {
-  GLView::gimbalCamPaintGL();
+  GLView::paintGL();
 
   if (statusLabel) {
     QString msg;
 
-    Camera nc( cam );
+    Camera nc(cam);
     nc.gimbalDefaultTranslate();
     msg.sprintf("Viewport: translate = [ %.2f %.2f %.2f ], rotate = [ %.2f %.2f %.2f ], distance = %.2f",
       nc.object_trans.x(), nc.object_trans.y(), nc.object_trans.z(),

@@ -109,6 +109,7 @@ static void help(const char *progname)
          "%2%[ --version ] [ --info ] \\\n"
          "%2%[ --camera=translatex,y,z,rotx,y,z,dist | \\\n"
          "%2%  --camera=eyex,y,z,centerx,y,z ] \\\n"
+         "%2%[ --viewall ] \\\n"
          "%2%[ --imgsize=width,height ] [ --projection=(o)rtho|(p)ersp] \\\n"
          "%2%[ --render | --preview[=throwntogether] ] \\\n"
          "%2%[ --csglimit=num ]"
@@ -170,6 +171,10 @@ Camera get_camera( po::variables_map vm )
 
 	if (camera.type == Camera::GIMBAL) {
 		camera.gimbalDefaultTranslate();
+	}
+
+	if (vm.count("viewall")) {
+		camera.viewall = true;
 	}
 
 	if (vm.count("projection")) {
@@ -430,7 +435,6 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 				} else {
 					export_png_with_opencsg(tree, camera, fstream);
 				}
-				PRINTB("Camera eye: %f %f %f\n", camera.eye[0] % camera.eye[1] % camera.eye[2]);
 				fstream.close();
 			}
 		}
@@ -609,6 +613,7 @@ int main(int argc, char **argv)
 		("preview", po::value<string>(), "if exporting a png image, do an OpenCSG(default) or ThrownTogether preview")
 		("csglimit", po::value<unsigned int>(), "if exporting a png image, stop rendering at the given number of CSG elements")
 		("camera", po::value<string>(), "parameters for camera when exporting png")
+		("viewall", "adjust camera to fit object")
 		("imgsize", po::value<string>(), "=width,height for exporting png")
 		("projection", po::value<string>(), "(o)rtho or (p)erspective when exporting png")
 		("debug", po::value<string>(), "special debug info")
@@ -713,7 +718,7 @@ int main(int argc, char **argv)
 
 	currentdir = boosty::stringy(fs::current_path());
 
-	Camera camera = get_camera( vm );
+	Camera camera = get_camera(vm);
 
 	// Initialize global visitors
 	NodeCache nodecache;
