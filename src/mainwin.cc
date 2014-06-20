@@ -1363,6 +1363,8 @@ void MainWindow::updateTemporalVariables()
 	vpr.push_back(Value(fmodf(360 - qglview->cam.object_rot.y(), 360)));
 	vpr.push_back(Value(fmodf(360 - qglview->cam.object_rot.z(), 360)));
 	top_ctx.set_variable("$vpr", Value(vpr));
+
+	top_ctx.set_variable("$vpd", Value(qglview->cam.viewer_distance));
 }
 
 /*!
