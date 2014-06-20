@@ -212,9 +212,9 @@ def png_encode64(fname, width=512, data=None, alt=''):
 
 def findlogfile(builddir):
     logpath = os.path.join(builddir, 'Testing', 'Temporary')
-    logfilename = os.path.join(logpath, 'LastTest.log')
+    logfilename = os.path.join(logpath, 'LastTest.log.tmp')
     if not os.path.isfile(logfilename):
-        logfilename = os.path.join(logpath, 'LastTest.log.tmp')
+        logfilename = os.path.join(logpath, 'LastTest.log')
     if not os.path.isfile(logfilename):
         print 'can\'t find and/or open logfile', logfilename
         sys.exit()
@@ -428,14 +428,17 @@ def upload_html(page_url, title, html):
 
 # --- End Web Upload ---
 
+debug_test_pp = False
+#debug_test_pp = True
+debugfile = None
 def debug(x):
+    global debugfile
     if debug_test_pp:
         print 'test_pretty_print debug: ' + x
+    debugfile.write(x+'\n')
 
-#debug_test_pp = False
-debug_test_pp = True
-include_passed = False
 builddir = os.getcwd()
+include_passed = False
 
 def main():
     global builddir, debug_test_pp
@@ -483,6 +486,7 @@ def main():
     makefiles = load_makefiles(builddir)
     logfilename = findlogfile(builddir)
     testlog = tryread(logfilename)
+    debug('found log file: '+logfilename+'\n')
     startdate, tests, enddate, imgcomparer = parselog(testlog)
     if debug_test_pp:
         print 'found sysinfo.txt,',
@@ -517,4 +521,6 @@ def main():
     debug('test_pretty_print complete')
 
 if __name__=='__main__':
+    debugfile = open('test_pretty_print.log.txt','w')
     main()
+    debugfile.close()
