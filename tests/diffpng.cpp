@@ -87,12 +87,6 @@ namespace diffpng
 
 using namespace std;
 
-// gamma correction function for light level. [if t^x=a then a=e^(x*logn(t))]
-// see http://cseweb.ucsd.edu/~ckanan/publications/Kanan_Cottrell_PloS_ONE_2012.pdf
-float gamma(float t) {
-	return exp( (1.0/2.2) * log(t) );
-}
-
 /** Class encapsulating an image containing R,G,B,A channels.
  *
  * Internal representation assumes data is in the ABGR format, with the RGB
@@ -103,10 +97,15 @@ float gamma(float t) {
  */
 class RGBAImage
 {
+public:
 	RGBAImage(const RGBAImage &);
 	RGBAImage &operator=(const RGBAImage &);
 
-public:
+	unsigned int Width;
+	unsigned int Height;
+	const string Name;
+	vector<unsigned int> Data;
+
 	RGBAImage(unsigned int w, unsigned int h, const string &name="")
 		: Width(w), Height(h), Name(name), Data(w * h)
 	{
@@ -219,6 +218,7 @@ public:
 			rgbaimg->Set( red, green, blue, alpha, y*width+x );
 		}
 		}
+
 		return rgbaimg;
 	}
 
@@ -318,11 +318,6 @@ public:
 		}
 		}
 	}
-private:
-	unsigned int Width;
-	unsigned int Height;
-	const string Name;
-	vector<unsigned int> Data;
 };
 
 
