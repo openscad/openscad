@@ -20,6 +20,7 @@ public:
 	void initLexer();
 	void forLightBackground();
 	void forDarkBackground();
+	void noColor();
 
 public slots:
 	 void zoomIn();

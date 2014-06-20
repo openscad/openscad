@@ -12,8 +12,7 @@ public:
     ScadLexer(QObject *parent);
     virtual ~ScadLexer();
     const char *language() const;
-    const char *keywords(int set) const;
-  //  QColor defaultColor(int style) const;	
+    const char *keywords(int set) const;	
   
 private:
     ScadLexer(const ScadLexer &);
