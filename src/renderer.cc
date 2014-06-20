@@ -9,9 +9,11 @@
 bool Renderer::getColor(Renderer::ColorMode colormode, Color4f &col) const
 {
 	if (colormode==COLORMODE_NONE) return false;
-	if (colormap.count(colormode)>0) col = colormap.at(colormode);
-	else return false;
-	return true;
+	if (colormap.count(colormode) > 0) {
+		col = colormap.at(colormode);
+		return true;
+	}
+	return false;
 }
 
 Renderer::Renderer() : colorscheme(NULL)
@@ -22,7 +24,6 @@ Renderer::Renderer() : colorscheme(NULL)
 	// for Highlight/Background colors
 	// but it wouldn't be too hard to make them do so.
 
-	colormap[COLORMODE_NONE] = Color4f(-1,-1,-1,-1);
 	// MATERIAL is set by this object's colorscheme
 	// CUTOUT is set by this object's colorscheme
 	colormap[COLORMODE_HIGHLIGHT] = Color4f(255, 81, 81, 128);

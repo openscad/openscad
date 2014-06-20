@@ -36,7 +36,6 @@
 #define CGAL_NEF3_OGL_UNMARKED_VERTEX_COLOR 255,246,124
 #define CGAL_NEF3_OGL_UNMARKED_EDGE_COLOR 255,236,94
 #define CGAL_NEF3_OGL_UNMARKED_FACET_COLOR 249,215,44
-
 #define CGAL_NEF3_OGL_UNMARKED_BACK_FACET_COLOR 249,115,144
 
 
@@ -423,11 +422,11 @@ namespace OGL {
 //	CGAL::Color cf(CGAL_NEF3_OGL_MARKED_FACET_COLOR),
 //	  ct(CGAL_NEF3_OGL_UNMARKED_FACET_COLOR); // more blue-ish
 //	CGAL::Color c = (f->mark() ? ct : cf);
-	// Overridden in CGAL_renderer
 	CGAL::Color c(0,200,0);
 	return c;
 */
 
+      // Overridden in CGAL_renderer
       if (is_back_facing) return !f->mark()
           ? CGAL::Color(CGAL_NEF3_OGL_MARKED_BACK_FACET_COLOR)
           : CGAL::Color(CGAL_NEF3_OGL_UNMARKED_BACK_FACET_COLOR);

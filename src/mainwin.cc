@@ -204,6 +204,7 @@ MainWindow::MainWindow(const QString &filename)
 	tval = 0;
 	fps = 0;
 	fsteps = 1;
+	isClosing = false;
 
 	const QString importStatement = "import(\"%1\");\n";
 	const QString surfaceStatement = "surface(\"%1\");\n";
@@ -490,14 +491,10 @@ MainWindow::loadViewSettings(){
 	} else {
 		viewPerspective();
 	}
-	if (settings.value("view/hideConsole").toBool()) {
-		viewActionHide->setChecked(true);
-		hideConsole();
-	}
-	if (settings.value("view/hideEditor").toBool()) {
-		editActionHide->setChecked(true);
-		hideEditor();
-	}
+	viewActionHide->setChecked(settings.value("view/hideConsole").toBool());
+	hideConsole();
+	editActionHide->setChecked(settings.value("view/hideEditor").toBool());
+	hideEditor();
 	updateMdiMode(settings.value("advanced/mdi").toBool());
 	updateUndockMode(settings.value("advanced/undockableWindows").toBool());
 }
@@ -2091,6 +2088,9 @@ void MainWindow::viewResetView()
 
 void MainWindow::on_editorDock_visibilityChanged(bool visible)
 {
+	if (isClosing) {
+		return;
+	}
 	QSettings settings;
 	settings.setValue("view/hideEditor", !visible);
 	editActionHide->setChecked(!visible);
@@ -2099,6 +2099,9 @@ void MainWindow::on_editorDock_visibilityChanged(bool visible)
 
 void MainWindow::on_consoleDock_visibilityChanged(bool visible)
 {
+	if (isClosing) {
+		return;
+	}
 	QSettings settings;
 	settings.setValue("view/hideConsole", !visible);
 	viewActionHide->setChecked(!visible);
@@ -2266,6 +2269,7 @@ void MainWindow::closeEvent(QCloseEvent *event)
 			delete this->tempFile;
 			this->tempFile = NULL;
 		}
+		isClosing = true;
 		event->accept();
 	} else {
 		event->ignore();

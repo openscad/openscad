@@ -209,14 +209,16 @@ if (NOT $ENV{BOOSTDIR} STREQUAL "")
 endif()
 
 find_package( Boost 1.35.0 COMPONENTS thread program_options filesystem system regex REQUIRED)
-message(STATUS "Boost includes found: " ${Boost_INCLUDE_DIRS})
+message(STATUS "Boost ${Boost_VERSION} includes found: " ${Boost_INCLUDE_DIRS})
 message(STATUS "Boost libraries found:")
 foreach(boostlib ${Boost_LIBRARIES})
   message(STATUS "  " ${boostlib})
 endforeach()
 
 inclusion(BOOST_ROOT Boost_INCLUDE_DIRS)
-add_definitions(-DBOOST_FILESYSTEM_VERSION=3) # Use V3 for boost 1.44-1.45
+if (${Boost_VERSION} LESS 104600)
+  add_definitions(-DBOOST_FILESYSTEM_VERSION=3) # Use V3 for boost 1.44-1.45
+endif()
 
 # Mac OS X
 if(APPLE)
@@ -583,6 +585,7 @@ set(CORE_SOURCES
   ../src/mathc99.cc
   ../src/linalg.cc
   ../src/colormap.cc
+  ../src/Camera.cc
   ../src/handle_dep.cc 
   ../src/value.cc 
   ../src/calc.cc 
@@ -1141,15 +1144,15 @@ add_cmdline_test(dumptest EXE ${OPENSCAD_BINPATH} ARGS -o SUFFIX csg FILES ${DUM
 add_cmdline_test(dumptest-examples EXE ${OPENSCAD_BINPATH} ARGS -o SUFFIX csg FILES ${EXAMPLE_FILES})
 add_cmdline_test(cgalpngtest EXE ${OPENSCAD_BINPATH} ARGS --render -o SUFFIX png FILES ${CGALPNGTEST_FILES})
 add_cmdline_test(opencsgtest EXE ${OPENSCAD_BINPATH} ARGS -o SUFFIX png FILES ${OPENCSGTEST_FILES})
-add_cmdline_test(csgpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOURCE_DIR}/csg-import-test.py ARGS ${OPENSCAD_BINPATH} EXPECTEDDIR cgalpngtest SUFFIX png FILES ${CGALPNGTEST_FILES})
+add_cmdline_test(csgpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOURCE_DIR}/export_import_pngtest.py ARGS --openscad=${OPENSCAD_BINPATH} --format=csg EXPECTEDDIR cgalpngtest SUFFIX png FILES ${CGALPNGTEST_FILES})
 add_cmdline_test(throwntogethertest EXE ${OPENSCAD_BINPATH} ARGS --preview=throwntogether -o SUFFIX png FILES ${THROWNTOGETHERTEST_FILES})
 # FIXME: We don't actually need to compare the output of cgalstlsanitytest
 # with anything. It's self-contained and returns != 0 on error
 add_cmdline_test(cgalstlsanitytest EXE ${CMAKE_SOURCE_DIR}/cgalstlsanitytest SUFFIX txt ARGS ${OPENSCAD_BINPATH} FILES ${CGALSTLSANITYTEST_FILES})
 
 # Export/Import 3d png tests.
-add_cmdline_test(stlpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOURCE_DIR}/test_3d_export.py ARGS ${OPENSCAD_BINPATH} STL SUFFIX png FILES ${EXPORT3D_TEST_FILES})
-add_cmdline_test(offpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOURCE_DIR}/test_3d_export.py ARGS ${OPENSCAD_BINPATH} OFF SUFFIX png FILES ${EXPORT3D_TEST_FILES})
+add_cmdline_test(stlpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOURCE_DIR}/export_import_pngtest.py ARGS --openscad=${OPENSCAD_BINPATH} --format=STL EXPECTEDDIR cgalpngtest SUFFIX png FILES ${EXPORT3D_TEST_FILES})
+add_cmdline_test(offpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOURCE_DIR}/export_import_pngtest.py ARGS --openscad=${OPENSCAD_BINPATH} --format=OFF EXPECTEDDIR cgalpngtest SUFFIX png FILES ${EXPORT3D_TEST_FILES})
 
 # Add experimental tests
 
@@ -1198,36 +1201,64 @@ add_cmdline_test(openscad-imgstretch2 EXE ${OPENSCAD_BINPATH}
                  ARGS --imgsize 100,500 -o 
                  SUFFIX png 
 		 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/features/camera-tests.scad)
+# Perspective gimbal cam
 add_cmdline_test(openscad-camdist EXE ${OPENSCAD_BINPATH} 
-                 ARGS --imgsize=500,500 --camera=0,0,0,90,0,90,300 -o
+                 ARGS --imgsize=500,500 --camera=0,0,0,90,0,90,100 -o
                  SUFFIX png
 		 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/features/camera-tests.scad)
+# Perspective gimbal cam
 add_cmdline_test(openscad-camrot EXE ${OPENSCAD_BINPATH}
-                 ARGS --imgsize=500,500 --camera=0,0,0,440,337.5,315,300 -o
+                 ARGS --imgsize=500,500 --camera=0,0,0,440,337.5,315,100 -o
                  SUFFIX png
 		 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/features/camera-tests.scad)
+# Perspective gimbal cam
 add_cmdline_test(openscad-camtrans EXE ${OPENSCAD_BINPATH}
-                 ARGS --imgsize=500,500 --camera=100,-20,-10,90,0,90,300 -o
+                 ARGS --imgsize=500,500 --camera=100,-20,-10,90,0,90,100 -o
                  SUFFIX png
 		 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/features/camera-tests.scad)
+# Perspective gimbal cam, viewall
+add_cmdline_test(openscad-camtrans-viewall EXE ${OPENSCAD_BINPATH}
+                 ARGS --imgsize=500,500 --camera=100,-20,-10,90,0,90,3000 --viewall -o
+                 SUFFIX png
+		 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/features/camera-tests.scad)
+# Orthographic gimbal cam
 add_cmdline_test(openscad-camortho EXE ${OPENSCAD_BINPATH}
                  ARGS --imgsize=500,500 --camera=100,-20,-10,90,0,90,300 --projection=o -o
                  SUFFIX png
 		 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/features/camera-tests.scad)
+# Orthographic gimbal cam viewall
+add_cmdline_test(openscad-camortho-viewall EXE ${OPENSCAD_BINPATH}
+                 ARGS --imgsize=500,500 --camera=100,-20,-10,90,0,90,3000 --viewall --projection=o -o
+                 SUFFIX png
+		 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/features/camera-tests.scad)
+# Perspective vector cam
 add_cmdline_test(openscad-cameye EXE ${OPENSCAD_BINPATH}
                  ARGS --imgsize=500,500 --camera=60,40,30,0,0,0 -o
                  SUFFIX png
 		 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/features/camera-tests.scad)
+# Perspective vector cam
 add_cmdline_test(openscad-cameye2 EXE ${OPENSCAD_BINPATH}
                  ARGS --imgsize=500,500 --camera=160,140,130,0,0,0 -o
                  SUFFIX png
 		 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/features/camera-tests.scad)
+# Perspective vector cam
+add_cmdline_test(openscad-camcenter EXE ${OPENSCAD_BINPATH}
+                 ARGS --imgsize=500,500 --camera=60,40,30,20,10,30  -o
+                 SUFFIX png
+		 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/features/camera-tests.scad)
+# Perspective vector cam viewall
+add_cmdline_test(openscad-camcenter-viewall EXE ${OPENSCAD_BINPATH}
+                 ARGS --imgsize=500,500 --camera=60,40,30,20,10,30 --viewall -o
+                 SUFFIX png
+		 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/features/camera-tests.scad)
+# Orthographic vector cam
 add_cmdline_test(openscad-cameyeortho EXE ${OPENSCAD_BINPATH}
                  ARGS --imgsize=500,500 --camera=160,140,130,0,0,0 --projection=o -o 
                  SUFFIX png
 		 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/features/camera-tests.scad)
-add_cmdline_test(openscad-camcenter EXE ${OPENSCAD_BINPATH}
-                 ARGS --imgsize=500,500 --camera=60,40,30,20,10,30  -o
+# Orthographic vector cam viewall
+add_cmdline_test(openscad-cameyeortho-viewall EXE ${OPENSCAD_BINPATH}
+                 ARGS --imgsize=500,500 --camera=16,14,13,0,0,0 --viewall --projection=o -o 
                  SUFFIX png
 		 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/features/camera-tests.scad)
 
