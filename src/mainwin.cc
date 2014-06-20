@@ -36,6 +36,7 @@
 #include "highlighter.h"
 #include "export.h"
 #include "builtin.h"
+#include "expression.h"
 #include "progress.h"
 #include "dxfdim.h"
 #include "AboutDialog.h"
@@ -1367,6 +1368,66 @@ void MainWindow::updateTemporalVariables()
 	top_ctx.set_variable("$vpd", Value(qglview->cam.viewer_distance));
 }
 
+
+/*!
+ * Update the viewport camera by evaluating the special variables. If they
+ * are assigned on top-level, the values are used to change the camera
+ * rotation, translation and distance. 
+ */
+void MainWindow::updateCamera()
+{
+	if (!root_module)
+		return;
+	
+	bool camera_set = false;
+	double tx = qglview->cam.object_trans.x();
+	double ty = qglview->cam.object_trans.y();
+	double tz = qglview->cam.object_trans.z();
+	double rx = qglview->cam.object_rot.x();
+	double ry = qglview->cam.object_rot.y();
+	double rz = qglview->cam.object_rot.z();
+	double d = qglview->cam.viewer_distance;
+	BOOST_FOREACH(const Assignment &a, root_module->scope.assignments) {
+		double x, y, z;
+		if ("$vpr" == a.first) {
+			const Value vpr = a.second.get()->evaluate(&top_ctx);
+			if (vpr.getVec3(x, y, z)) {
+				rx = x;
+				ry = y;
+				rz = z;
+				camera_set = true;
+			}
+		} else if ("$vpt" == a.first) {
+			const Value vpt = a.second.get()->evaluate(&top_ctx);
+			if (vpt.getVec3(x, y, z)) {
+				tx = x;
+				ty = y;
+				tz = z;
+				camera_set = true;
+			}
+		} else if ("$vpd" == a.first) {
+			const Value vpd = a.second.get()->evaluate(&top_ctx);
+			if (vpd.type() == Value::NUMBER) {
+				d = vpd.toDouble();
+				camera_set = true;
+			}
+		}
+	}
+
+	if (camera_set) {
+		std::vector<double> params;
+		params.push_back(tx);
+		params.push_back(ty);
+		params.push_back(tz);
+		params.push_back(rx);
+		params.push_back(ry);
+		params.push_back(rz);
+		params.push_back(d);
+		qglview->cam.setup(params);
+		qglview->updateGL();
+	}
+}
+
 /*!
 	Returns true if the current document is a file on disk and that file has new content.
 	Returns false if a file on disk has disappeared or if we haven't yet saved.
@@ -1412,6 +1473,7 @@ void MainWindow::compileTopLevelDocument()
 														QFileInfo(this->fileName).absolutePath().toLocal8Bit(),
 														false);
 
+	updateCamera();
 }
 
 void MainWindow::checkAutoReload()
