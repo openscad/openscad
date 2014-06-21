@@ -92,12 +92,19 @@ macx {
   dirs = $${BOOSTDIR} $${QMAKE_LIBDIR}
   for(dir, dirs) {
     system(grep -q __112basic_string $${dir}/libboost_thread* >& /dev/null) {
-      message("Detected libc++-linked boost in $${dir}")
+      message("Using libc++11")
       CONFIG += libc++
+    }
+    else {
+      message("Using libstdc++")
+      CONFIG += libstdc++
     }
   }
 
-  c++11: CONFIG += libc++
+  c++11 {
+    libstdc++: error("libc++ vs. libstdc++ conflict: Dependencies must be linked with libc++")
+    else: CONFIG += libc++
+  }
 
   libc++ {
     QMAKE_CXXFLAGS += -stdlib=libc++
