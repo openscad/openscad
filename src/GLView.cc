@@ -335,6 +335,9 @@ void GLView::showSmallaxes()
 	glOrtho(-scale*dpi*aspectratio,scale*dpi*aspectratio,
 					-scale*dpi,scale*dpi,
 					-scale*dpi,scale*dpi);
+  gluLookAt(0.0, -1.0, 0.0,
+						0.0, 0.0, 0.0,
+						0.0, 0.0, 1.0);
 	 
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
@@ -410,11 +413,10 @@ void GLView::showAxes()
   // FIXME: doesn't work under Vector Camera
   // Large gray axis cross inline with the model
   // FIXME: This is always gray - adjust color to keep contrast with background
-	float dpi = this->getDPI();
-  glLineWidth(1*dpi);
+  glLineWidth(this->getDPI());
   glColor3d(0.5, 0.5, 0.5);
   glBegin(GL_LINES);
-  double l = cam.viewer_distance*dpi/10;
+  double l = cam.viewer_distance;
   glVertex3d(-l, 0, 0);
   glVertex3d(+l, 0, 0);
   glVertex3d(0, -l, 0);
