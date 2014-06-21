@@ -3,6 +3,7 @@
 #include "stdio.h"
 #include "rendersettings.h"
 #include "mathc99.h"
+#include "renderer.h"
 
 #ifdef _WIN32
 #include <GL/wglew.h>

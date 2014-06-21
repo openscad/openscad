@@ -68,11 +68,6 @@ void export_png_preview_common(Tree &tree, Camera &cam, std::ostream &output, Pr
 #endif
 	ThrownTogetherRenderer thrownTogetherRenderer(csgInfo.root_chain, csgInfo.highlights_chain, csgInfo.background_chain);
 
-	BoundingBox bbox;
-	if (csgInfo.root_chain) bbox = csgInfo.root_chain->getBoundingBox();
-	setupCamera(cam, bbox, 2.7);
-
-	csgInfo.glview->setCamera(cam);
 #ifdef ENABLE_OPENCSG
 	if (previewer == OPENCSG)
 		csgInfo.glview->setRenderer(&openCSGRenderer);
@@ -80,6 +75,10 @@ void export_png_preview_common(Tree &tree, Camera &cam, std::ostream &output, Pr
 #endif
 		csgInfo.glview->setRenderer(&thrownTogetherRenderer);
 #ifdef ENABLE_OPENCSG
+	BoundingBox bbox = csgInfo.glview->getRenderer()->getBoundingBox();
+	setupCamera(cam, bbox, 2.7);
+
+	csgInfo.glview->setCamera(cam);
 	OpenCSG::setContext(0);
 	OpenCSG::setOption(OpenCSG::OffscreenSetting, OpenCSG::FrameBufferObject);
 #endif

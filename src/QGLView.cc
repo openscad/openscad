@@ -88,6 +88,15 @@ void QGLView::resetView()
   cam.viewer_distance = 140;
 }
 
+void QGLView::viewAll()
+{
+	if (Renderer *r = this->getRenderer()) {
+		BoundingBox bbox = r->getBoundingBox();
+		cam.object_trans = -bbox.center();
+		cam.viewAll(r->getBoundingBox());
+	}
+}
+
 void QGLView::initializeGL()
 {
   GLenum err = glewInit();

@@ -203,6 +203,7 @@ public slots:
 	void viewPerspective();
 	void viewOrthogonal();
 	void viewResetView();
+	void viewAll();
 	void hideConsole();
 	void animateUpdateDocChanged();
 	void animateUpdate();
