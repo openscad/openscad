@@ -85,7 +85,7 @@ void GLView::setupCamera()
 		glRotated(cam.object_rot.z(), 0.0, 0.0, 1.0);
 		glTranslated(cam.object_trans.x(), cam.object_trans.y(), cam.object_trans.z() );
 		break;
-	case Camera::VECTOR:
+	case Camera::VECTOR: {
 		switch (this->cam.projection) {
 		case Camera::PERSPECTIVE: {
 			double dist = (cam.center - cam.eye).norm();
@@ -101,10 +101,18 @@ void GLView::setupCamera()
 		}
 		glMatrixMode(GL_MODELVIEW);
 		glLoadIdentity();
+
+		Vector3d dir(cam.eye - cam.center);
+		Vector3d up(0.0,0.0,1.0);
+		if (dir.cross(up).norm() < 0.001) { // View direction is ~parallel with up vector
+			up << 0.0,1.0,0.0;
+		}
+
 		gluLookAt(cam.eye[0], cam.eye[1], cam.eye[2],
 							cam.center[0], cam.center[1], cam.center[2],
-							0.0, 0.1, 1.0); // Tilt it a bit to be able to look down the Z axis
+							up[0], up[1], up[2]);
 		break;
+	}
 	default:
 		break;
 	}
