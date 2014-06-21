@@ -93,7 +93,6 @@ void GLView::setupCamera()
 			break;
 		}
 		case Camera::ORTHOGONAL: {
-			double l = (cam.center - cam.eye).norm() / 10;
 			glOrtho(-cam.height/2*aspectratio, cam.height*aspectratio/2,
 							-cam.height/2, cam.height/2,
 							-far_far_away, +far_far_away);
