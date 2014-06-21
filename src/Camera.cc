@@ -52,23 +52,21 @@ void Camera::viewAll(const BoundingBox &bbox, float scalefactor)
 {
 	if (this->type == Camera::NONE) {
 		this->type = Camera::VECTOR;
-		this->center = getBoundingCenter(bbox);
+		this->center = bbox.center();
 		this->eye = this->center - Vector3d(1,1,-0.5);
 	}
 
 	switch (this->projection) {
 	case Camera::ORTHOGONAL:
-		this->height = getBoundingRadius(bbox)*2;
+		this->height = bbox.diagonal().norm();
 		break;
 	case Camera::PERSPECTIVE: {
-		double radius = getBoundingRadius(bbox);
+		double radius = bbox.diagonal().norm()/2;
 		switch (this->type) {
 		case Camera::GIMBAL:
-			// FIXME: viewAll() of gimbal cameras doesn't work
 			this->viewer_distance = radius / tan(this->fov*M_PI/360);
 			break;
 		case Camera::VECTOR: {
-			// FIXME: viewAll() of orthographic cameras doesn't work
 			Vector3d cameradir = (this->center - this->eye).normalized();
 			this->eye = this->center - radius*scalefactor*cameradir;
 			break;

@@ -6,9 +6,9 @@ class CGALRenderer : public Renderer
 {
 public:
 	CGALRenderer(shared_ptr<const class Geometry> geom);
-	~CGALRenderer();
-	void draw(bool showfaces, bool showedges) const;
-	BoundingBox getBoundingBox() const;
+	virtual ~CGALRenderer();
+	virtual void draw(bool showfaces, bool showedges) const;
+	virtual BoundingBox getBoundingBox() const;
 
 public:
 	std::list<shared_ptr<class Polyhedron> > polyhedrons;

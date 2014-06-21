@@ -120,7 +120,7 @@
      <x>0</x>
      <y>0</y>
      <width>936</width>
-     <height>34</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_File">
@@ -234,6 +234,7 @@
     <addaction name="viewActionBack"/>
     <addaction name="viewActionDiagonal"/>
     <addaction name="viewActionCenter"/>
+    <addaction name="viewActionViewAll"/>
     <addaction name="separator"/>
     <addaction name="viewActionZoomIn"/>
     <addaction name="viewActionZoomOut"/>
@@ -959,6 +960,11 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+[</string>
+   </property>
+  </action>
+  <action name="viewActionViewAll">
+   <property name="text">
+    <string>View All</string>
    </property>
   </action>
  </widget>
