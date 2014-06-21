@@ -25,28 +25,21 @@ Some actions (showCrossHairs) only work properly on Gimbal Camera.
 #endif
 #include "system-gl.h"
 #include <iostream>
-#include "renderer.h"
 #include "Camera.h"
 
 class GLView
 {
 public:
 	GLView();
-	void setRenderer(Renderer* r);
+	void setRenderer(class Renderer* r);
+	Renderer *getRenderer() const { return this->renderer; }
 
 	void initializeGL();
 	void resizeGL(int w, int h);
 	virtual void paintGL();
 
-	void setCamera( Camera &cam );
-
-	void setupGimbalCamPerspective();
-	void setupGimbalCamOrtho(double distance, bool offset=false);
-	void gimbalCamPaintGL();
-
-	void setupVectorCamPerspective();
-	void setupVectorCamOrtho(bool offset=false);
-	void vectorCamPaintGL();
+	void setCamera(const Camera &cam);
+	void setupCamera();
 
 	void showCrosshairs();
 	void showAxes();
@@ -61,7 +54,7 @@ public:
 	double far_far_away;
 	size_t width;
 	size_t height;
-	double w_h_ratio;
+	double aspectratio;
 	bool orthomode;
 	bool showaxes;
 	bool showfaces;

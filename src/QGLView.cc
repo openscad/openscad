@@ -85,7 +85,16 @@ void QGLView::resetView()
 {
   cam.object_rot << 35, 0, -25;
   cam.object_trans << 0, 0, 0;
-  cam.viewer_distance = 500;
+  cam.viewer_distance = 140;
+}
+
+void QGLView::viewAll()
+{
+	if (Renderer *r = this->getRenderer()) {
+		BoundingBox bbox = r->getBoundingBox();
+		cam.object_trans = -bbox.center();
+		cam.viewAll(r->getBoundingBox());
+	}
 }
 
 void QGLView::initializeGL()
@@ -147,17 +156,16 @@ void QGLView::display_opencsg_warning_dialog()
 void QGLView::resizeGL(int w, int h)
 {
   GLView::resizeGL(w,h);
-  GLView::setupGimbalCamPerspective();
 }
 
 void QGLView::paintGL()
 {
-  GLView::gimbalCamPaintGL();
+  GLView::paintGL();
 
   if (statusLabel) {
     QString msg;
 
-    Camera nc( cam );
+    Camera nc(cam);
     nc.gimbalDefaultTranslate();
     msg.sprintf("Viewport: translate = [ %.2f %.2f %.2f ], rotate = [ %.2f %.2f %.2f ], distance = %.2f",
       nc.object_trans.x(), nc.object_trans.y(), nc.object_trans.z(),
