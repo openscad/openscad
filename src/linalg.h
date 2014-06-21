@@ -3,7 +3,8 @@
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 #include <Eigen/Dense>
-#include<Eigen/StdVector>
+#include <Eigen/StdVector>
+#include <boost/functional/hash.hpp>
 
 EIGEN_DEFINE_STL_VECTOR_SPECIALIZATION(Eigen::Vector2d)
 using Eigen::Vector2d;
@@ -35,3 +36,7 @@ public:
 
 	bool isValid() const { return this->minCoeff() >= 0.0f; }
 };
+
+namespace Eigen {
+	size_t hash_value(Vector3d const &v);
+}

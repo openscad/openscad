@@ -1185,14 +1185,6 @@ bool createPolySetFromNefPolyhedron3(const CGAL_Nef_polyhedron3 &N, PolySet &ps)
 
 #undef GEN_SURFACE_DEBUG
 
-namespace Eigen {
-	size_t hash_value(Vector3d const &v) {
-		size_t seed = 0;
-		for (int i=0;i<3;i++) boost::hash_combine(seed, v[i]);
-		return seed;
-	}
-}
-
 class CGAL_Build_PolySet : public CGAL::Modifier_base<CGAL_HDS>
 {
 public:

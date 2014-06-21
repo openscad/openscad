@@ -36,51 +36,72 @@
 #include "cgal.h"
 #include "cgalutils.h"
 
-static void export_off(const CGAL_Nef_polyhedron &root_N, std::ostream &output)
+#include "Reindexer.h"
+
+struct IndexedMesh {
+	IndexedMesh() : numfaces(0) {}
+
+	Reindexer<Vector3d> vertices;
+	std::vector<int> indices;
+	size_t numfaces;
+};
+
+
+static void append_geometry(const PolySet &ps, IndexedMesh &mesh)
 {
-	if (!root_N.p3->is_simple()) {
-		PRINT("Object isn't a valid 2-manifold! Modify your design.");
-		return;
+	BOOST_FOREACH(const PolySet::Polygon &p, ps.polygons) {
+		BOOST_FOREACH(const Vector3d &v, p) {
+			mesh.indices.push_back(mesh.vertices.lookup(v));
+		}
+		mesh.numfaces++;
+		mesh.indices.push_back(-1);
 	}
-	CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
-	try {
-		CGAL_Polyhedron P;
-		root_N.p3->convert_to_Polyhedron(P);
-		output << P;
-	}
-	catch (const CGAL::Assertion_exception &e) {
-		PRINTB("CGAL error in CGAL_Nef_polyhedron3::convert_to_Polyhedron(): %s", e.what());
-	}
-	CGAL::set_error_behaviour(old_behaviour);
 }
 
-static void export_off(const class PolySet &ps, std::ostream &output)
-{
-	// FIXME: Implement this without creating a Nef polyhedron
-	CGAL_Nef_polyhedron *N = createNefPolyhedronFromGeometry(ps);
-	export_off(*N, output);
-	delete N;
-}
-
-void export_off(const shared_ptr<const Geometry> &geom, std::ostream &output)
+void append_geometry(const shared_ptr<const Geometry> &geom, IndexedMesh &mesh)
 {
 	if (const GeometryList *geomlist = dynamic_cast<const GeometryList *>(geom.get())) {
-		assert(false && "Not implemented");
 		BOOST_FOREACH(const Geometry::GeometryItem &item, geomlist->getChildren()) {
-			export_off(item.second, output);
+			append_geometry(item.second, mesh);
 		}
 	}
 	else if (const CGAL_Nef_polyhedron *N = dynamic_cast<const CGAL_Nef_polyhedron *>(geom.get())) {
-		export_off(*N, output);
+		PolySet *ps = N->convertToPolyset();
+		append_geometry(*ps, mesh);
+		delete ps;
 	}
 	else if (const PolySet *ps = dynamic_cast<const PolySet *>(geom.get())) {
-		export_off(*ps, output);
+		append_geometry(*ps, mesh);
 	}
 	else if (const Polygon2d *poly = dynamic_cast<const Polygon2d *>(geom.get())) {
 		assert(false && "Unsupported file format");
 	} else {
 		assert(false && "Not implemented");
 	}
+}
+
+void export_off(const shared_ptr<const Geometry> &geom, std::ostream &output)
+{
+	IndexedMesh mesh;
+	append_geometry(geom, mesh);
+
+	output << "OFF " << mesh.vertices.size() << " " << mesh.numfaces << " 0\n";
+	const Vector3d *v = mesh.vertices.getArray();
+	size_t numverts = mesh.vertices.size();
+	for (size_t i=0;i<numverts;i++) {
+		output << v[i][0] << " " << v[i][1] << " " << v[i][2] << " " << "\n";
+	}
+	size_t cnt = 0;
+	for (size_t i=0;i<mesh.numfaces;i++) {
+		size_t nverts = 0;
+		while (mesh.indices[cnt++] != -1) nverts++;
+		output << nverts;
+		cnt -= nverts + 1;
+		for (size_t n=0;n<nverts;n++) output << " " << mesh.indices[cnt++];
+		output << "\n";
+        cnt++; // Skip the -1 marker
+	}
+
 }
 
 #endif // ENABLE_CGAL

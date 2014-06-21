@@ -1142,7 +1142,7 @@ add_cmdline_test(cgalstlsanitytest EXE ${CMAKE_SOURCE_DIR}/cgalstlsanitytest SUF
 add_cmdline_test(echotest EXE ${OPENSCAD_BINPATH} ARGS --enable=concat -o SUFFIX echo FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/experimental/concat-tests.scad)
 
 # lazy-union
-list(APPEND LAZYUNION_DUMP_FILES
+list(APPEND LAZYUNION_3D_FILES
             ${CMAKE_SOURCE_DIR}/../testdata/scad/experimental/lazyunion-toplevel-objects.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/experimental/lazyunion-toplevel-for.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/experimental/lazyunion-nested-for.scad
@@ -1153,12 +1153,19 @@ list(APPEND LAZYUNION_DUMP_FILES
             ${CMAKE_SOURCE_DIR}/../testdata/scad/experimental/lazyunion-minkowski-for.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/experimental/lazyunion-transform-for.scad)
 
-list(APPEND LAZYUNION_FILES ${LAZYUNION_DUMP_FILES})
+list(APPEND LAZYUNION_2D_FILES
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/experimental/lazyunion-toplevel-2dobjects.scad)
+
+list(APPEND LAZYUNION_FILES ${LAZYUNION_2D_FILES} ${LAZYUNION_3D_FILES})
                                  
-add_cmdline_test(lazyunion-dump EXE ${OPENSCAD_BINPATH} ARGS --enable=lazy-union -o SUFFIX csg FILES ${LAZYUNION_DUMP_FILES})
+add_cmdline_test(lazyunion-dump EXE ${OPENSCAD_BINPATH} ARGS --enable=lazy-union -o SUFFIX csg FILES ${LAZYUNION_FILES})
 add_cmdline_test(lazyunion-opencsg EXE ${OPENSCAD_BINPATH} ARGS --enable=lazy-union -o SUFFIX png FILES ${LAZYUNION_FILES})
 add_cmdline_test(lazyunion-cgalpng EXE ${OPENSCAD_BINPATH} ARGS --enable=lazy-union --render -o SUFFIX png FILES ${LAZYUNION_FILES})
-add_cmdline_test(lazyunion-stlpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOURCE_DIR}/export_import_pngtest.py ARGS --openscad=${OPENSCAD_BINPATH} --format=STL --enable=lazy-union EXPECTEDDIR lazyunion-cgalpng SUFFIX png FILES ${LAZYUNION_FILES})
+add_cmdline_test(lazyunion-stlpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOURCE_DIR}/export_import_pngtest.py ARGS --openscad=${OPENSCAD_BINPATH} --format=STL --enable=lazy-union EXPECTEDDIR lazyunion-cgalpng SUFFIX png FILES ${LAZYUNION_3D_FILES})
+add_cmdline_test(lazyunion-offpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOURCE_DIR}/export_import_pngtest.py ARGS --openscad=${OPENSCAD_BINPATH} --format=OFF --enable=lazy-union EXPECTEDDIR lazyunion-cgalpng SUFFIX png FILES ${LAZYUNION_3D_FILES})
+add_cmdline_test(lazyunion-dxfpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOURCE_DIR}/export_import_pngtest.py ARGS --openscad=${OPENSCAD_BINPATH} --format=DXF --enable=lazy-union EXPECTEDDIR lazyunion-cgalpng SUFFIX png FILES ${LAZYUNION_2D_FILES})
+# FIXME: Wait for SVG import to be merged:
+# add_cmdline_test(lazyunion-svgpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOURCE_DIR}/export_import_pngtest.py ARGS --openscad=${OPENSCAD_BINPATH} --format=SVG --enable=lazy-union EXPECTEDDIR lazyunion-cgalpng SUFFIX png FILES ${LAZYUNION_2D_FILES})
 
 # text
 list(APPEND EXPERIMENTAL_TEXT_FILES 
