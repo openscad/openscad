@@ -30,81 +30,63 @@
 
 #include <boost/foreach.hpp>
 
-/*!
-	Saves the current Polygon2d as SVG to the given absolute filename.
- */
-void export_svg(const Polygon2d &poly, std::ostream &output)
+static void append_svg(const Polygon2d &poly, std::ostream &output)
 {
-	setlocale(LC_NUMERIC, "C"); // Ensure radix is . (not ,) in output
-	// Some importers (e.g. Inkscape) needs a BLOCKS section to be present
-	output << "  0\n"
-				 <<	"SECTION\n"
-				 <<	"  2\n"
-				 <<	"BLOCKS\n"
-				 <<	"  0\n"
-				 << "ENDSEC\n"
-				 << "  0\n"
-				 << "SECTION\n"
-				 << "  2\n"
-				 << "ENTITIES\n";
-
+	output << "<path d=\"\n";
 	BOOST_FOREACH(const Outline2d &o, poly.outlines()) {
-		for (unsigned int i=0;i<o.vertices.size();i++) {
-			const Vector2d &p1 = o.vertices[i];
-			const Vector2d &p2 = o.vertices[(i+1)%o.vertices.size()];
-			double x1 = p1[0];
-			double y1 = p1[1];
-			double x2 = p2[0];
-			double y2 = p2[1];
-			output << "  0\n"
-						 << "LINE\n";
-			// Some importers (e.g. Inkscape) needs a layer to be specified
-			output << "  8\n"
-						 << "0\n"
-						 << " 10\n"
-						 << x1 << "\n"
-						 << " 11\n"
-						 << x2 << "\n"
-						 << " 20\n"
-						 << y1 << "\n"
-						 << " 21\n"
-						 << y2 << "\n";
+		if (o.vertices.empty()) {
+			continue;
 		}
+		
+		const Eigen::Vector2d& p0 = o.vertices[0];
+		output << "M " << p0.x() << "," << -p0.y();
+		for (unsigned int idx = 1;idx < o.vertices.size();idx++) {
+			const Eigen::Vector2d& p = o.vertices[idx];
+			output << " L " << p.x() << "," << -p.y();
+			if ((idx % 6) == 5) {
+				output << "\n";
+			}
+		}
+		output << " z\n";
 	}
+	output << "\" stroke=\"black\" fill=\"lightgray\" stroke-width=\"0.5\"/>\n";
 
-	output << "  0\n"
-				 << "ENDSEC\n";
-
-	// Some importers (e.g. Inkscape) needs an OBJECTS section with a DICTIONARY entry
-	output << "  0\n"
-				 << "SECTION\n"
-				 << "  2\n"
-				 << "OBJECTS\n"
-				 << "  0\n"
-				 << "DICTIONARY\n"
-				 << "  0\n"
-				 << "ENDSEC\n";
-
-	output << "  0\n"
-				 <<"EOF\n";
-
-	setlocale(LC_NUMERIC, "");      // Set default locale
 }
 
-void export_svg(const shared_ptr<const Geometry> &geom, std::ostream &output)
+static void append_svg(const shared_ptr<const Geometry> &geom, std::ostream &output)
 {
 	if (const GeometryList *geomlist = dynamic_cast<const GeometryList *>(geom.get())) {
-		assert(false && "Not implemented");
 		BOOST_FOREACH(const Geometry::GeometryItem &item, geomlist->getChildren()) {
-			export_svg(item.second, output);
+			append_svg(item.second, output);
 		}
 	}
 	else if (const PolySet *ps = dynamic_cast<const PolySet *>(geom.get())) {
 		assert(false && "Unsupported file format");
 	}
 	else if (const Polygon2d *poly = dynamic_cast<const Polygon2d *>(geom.get())) {
-		export_svg(*poly, output);
+		append_svg(*poly, output);
 	} else {
 		assert(false && "Export as SVG for this geometry type is not supported");
 	}
+}
+
+void export_svg(const shared_ptr<const Geometry> &geom, std::ostream &output)
+{
+	setlocale(LC_NUMERIC, "C"); // Ensure radix is . (not ,) in output
+	
+	BoundingBox bbox = geom->getBoundingBox();
+	int minx = floor(bbox.min().x());
+	int miny = floor(-bbox.max().y());
+	int maxx = ceil(bbox.max().x());
+	int maxy = ceil(-bbox.min().y());
+	output
+		<< "<?xml version=\"1.0\" standalone=\"no\"?>\n"
+		<< "<!DOCTYPE svg PUBLIC \"-//W3C//DTD SVG 1.1//EN\" \"http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd\">\n"
+		<< "<svg width=\"" << (maxx - minx) << "\" height=\"" << (maxy - miny) << "\" viewBox=\"" << (minx - 1) << " " << (miny - 1) << " " << (maxx - minx + 2) << " " << (maxy - miny + 2) << "\" xmlns=\"http://www.w3.org/2000/svg\" version=\"1.1\">\n"
+		<< "<title>OpenSCAD Model</title>\n";
+
+	append_svg(geom, output);
+
+	output << "</svg>\n";	
+	setlocale(LC_NUMERIC, "");      // Set default locale
 }
