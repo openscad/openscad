@@ -86,6 +86,7 @@ private:
 	void openFile(const QString &filename);
         void handleFileDrop(const QString &filename);
 	void refreshDocument();
+        void updateCamera();
 	void updateTemporalVariables();
 	bool fileChangedOnDisk();
 	void compileTopLevelDocument();
