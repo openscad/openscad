@@ -66,19 +66,18 @@ void GLView::setupCamera()
 		case Camera::PERSPECTIVE: {
 			double dist = cam.viewer_distance;
 			gluPerspective(cam.fov, aspectratio, 0.1*dist, 100*dist);
-			gluLookAt(0.0, -cam.viewer_distance, 0.0,
-								0.0, 0.0, 0.0,
-								0.0, 0.0, 1.0);
 			break;
 		}
 		case Camera::ORTHOGONAL: {
 			glOrtho(-cam.height/2*aspectratio, cam.height*aspectratio/2,
 							-cam.height/2, cam.height/2,
 							-far_far_away, +far_far_away);
-			gluLookAt(0.0, -cam.viewer_distance, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0);
 			break;
 		}
 		}
+		gluLookAt(0.0, -cam.viewer_distance, 0.0,
+							0.0, 0.0, 0.0,
+							0.0, 0.0, 1.0);
 		glMatrixMode(GL_MODELVIEW);
 		glLoadIdentity();
 		glRotated(cam.object_rot.x(), 1.0, 0.0, 0.0);
@@ -105,7 +104,7 @@ void GLView::setupCamera()
 		glLoadIdentity();
 		gluLookAt(cam.eye[0], cam.eye[1], cam.eye[2],
 							cam.center[0], cam.center[1], cam.center[2],
-							0.0, 0.0, 1.0);
+							0.0, 0.1, 1.0); // Tilt it a bit to be able to look down the Z axis
 		break;
 	default:
 		break;
