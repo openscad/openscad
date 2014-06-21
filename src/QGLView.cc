@@ -85,7 +85,7 @@ void QGLView::resetView()
 {
   cam.object_rot << 35, 0, -25;
   cam.object_trans << 0, 0, 0;
-  cam.viewer_distance = 500;
+  cam.viewer_distance = 140;
 }
 
 void QGLView::initializeGL()
