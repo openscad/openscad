@@ -45,11 +45,13 @@ struct triangle {
     std::string vs3;
 };
 
+static int objectid;
+
 /*!
     Saves the current 3D CGAL Nef polyhedron as AMF to the given file.
     The file must be open.
  */
-static void export_amf(const CGAL_Nef_polyhedron &root_N, std::ostream &output)
+static void append_amf(const CGAL_Nef_polyhedron &root_N, std::ostream &output)
 {
 	if (!root_N.p3->is_simple()) {
 		PRINT("Object isn't a valid 2-manifold! Modify your design.");
@@ -64,8 +66,6 @@ static void export_amf(const CGAL_Nef_polyhedron &root_N, std::ostream &output)
 		typedef CGAL_Polyhedron::Vertex_const_iterator VCI;
 		typedef CGAL_Polyhedron::Facet_const_iterator FCI;
 		typedef CGAL_Polyhedron::Halfedge_around_facet_const_circulator HFCC;
-
-		setlocale(LC_NUMERIC, "C"); // Ensure radix is . (not ,) in output
 
 		std::vector<std::string> vertices;
 		std::vector<triangle> triangles;
@@ -116,15 +116,8 @@ static void export_amf(const CGAL_Nef_polyhedron &root_N, std::ostream &output)
 			} while (hc != hc_end);
 		}
 
-		output << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n"
-			<< "<amf unit=\"millimeter\">\r\n"
-			<< " <metadata type=\"producer\">OpenSCAD " << QUOTED(OPENSCAD_VERSION)
-#ifdef OPENSCAD_COMMIT
-			<< " (git " << QUOTED(OPENSCAD_COMMIT) << ")"
-#endif
-			<< "</metadata>\r\n"
-			<< " <object id=\"0\">\r\n"
-			<< "  <mesh>\r\n";
+		output << " <object id=\"" << objectid++ << "\">\r\n"
+					 << "  <mesh>\r\n";
 		output << "   <vertices>\r\n";
 		for (size_t i = 0; i < vertices.size(); i++) {
 			std::string s = vertices[i];
@@ -155,30 +148,27 @@ static void export_amf(const CGAL_Nef_polyhedron &root_N, std::ostream &output)
 		}
 		output << "   </volume>\r\n";
 		output << "  </mesh>\r\n"
-			<< " </object>\r\n"
-			<< "</amf>\r\n";
+					 << " </object>\r\n";
 	} catch (CGAL::Assertion_exception e) {
 		PRINTB("CGAL error in CGAL_Nef_polyhedron3::convert_to_Polyhedron(): %s", e.what());
 	}
 	CGAL::set_error_behaviour(old_behaviour);
-	setlocale(LC_NUMERIC, ""); // Set default locale
 }
 
-void export_amf(const shared_ptr<const Geometry> &geom, std::ostream &output)
+static void append_amf(const shared_ptr<const Geometry> &geom, std::ostream &output)
 {
 	if (const GeometryList *geomlist = dynamic_cast<const GeometryList *>(geom.get())) {
-		assert(false && "Not implemented");
 		BOOST_FOREACH(const Geometry::GeometryItem &item, geomlist->getChildren()) {
-			export_amf(item.second, output);
+			append_amf(item.second, output);
 		}
 	}
 	else if (const CGAL_Nef_polyhedron *N = dynamic_cast<const CGAL_Nef_polyhedron *>(geom.get())) {
-		export_amf(*N, output);
+		append_amf(*N, output);
 	}
 	else if (const PolySet *ps = dynamic_cast<const PolySet *>(geom.get())) {
 		// FIXME: Implement this without creating a Nef polyhedron
 		CGAL_Nef_polyhedron *N = createNefPolyhedronFromGeometry(*ps);
-		export_amf(*N, output);
+		append_amf(*N, output);
 		delete N;
 	}
 	else if (const Polygon2d *poly = dynamic_cast<const Polygon2d *>(geom.get())) {
@@ -186,6 +176,25 @@ void export_amf(const shared_ptr<const Geometry> &geom, std::ostream &output)
 	} else {
 		assert(false && "Not implemented");
 	}
+}
+
+void export_amf(const shared_ptr<const Geometry> &geom, std::ostream &output)
+{
+	setlocale(LC_NUMERIC, "C"); // Ensure radix is . (not ,) in output
+
+	output << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n"
+				 << "<amf unit=\"millimeter\">\r\n"
+				 << " <metadata type=\"producer\">OpenSCAD " << QUOTED(OPENSCAD_VERSION)
+#ifdef OPENSCAD_COMMIT
+				 << " (git " << QUOTED(OPENSCAD_COMMIT) << ")"
+#endif
+				 << "</metadata>\r\n";
+
+	objectid = 0;
+	append_amf(geom, output);
+
+	output << "</amf>\r\n";
+	setlocale(LC_NUMERIC, ""); // Set default locale
 }
 
 #endif // ENABLE_CGAL
