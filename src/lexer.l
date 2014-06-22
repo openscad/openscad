@@ -26,6 +26,7 @@
 
 %{
 
+#include <glib.h>
 #include "typedefs.h"
 #include "handle_dep.h"
 #include "printutils.h"
@@ -77,6 +78,7 @@ extern FileModule *rootmodule;
   }                                       \
 }
 
+void to_utf8(const char *, char *);
 void includefile();
 fs::path sourcepath();
 std::vector<fs::path> path_stack;
@@ -97,6 +99,7 @@ std::string filepath;
 
 D [0-9]
 E [Ee][+-]?{D}+
+H [0-9a-fA-F]
 
 %%
 
@@ -166,6 +169,8 @@ use[ \t\r\n>]*"<"	{ BEGIN(cond_use); }
 \\r			{ stringcontents += '\r'; }
 \\\\			{ stringcontents += '\\'; }
 \\\"			{ stringcontents += '"'; }
+\\x[0-7]{H}             { unsigned long i = strtoul(lexertext + 2, NULL, 16); stringcontents += (i == 0 ? ' ' : (unsigned char)(i & 0xff)); }
+\\u{H}{4}|\\U{H}{6}     { char buf[8]; to_utf8(lexertext + 2, buf); stringcontents += buf; }
 [^\\\n\"]+		{ stringcontents += lexertext; }
 \"			{ BEGIN(INITIAL); 
 			parserlval.text = strdup(stringcontents.c_str()); 
@@ -193,6 +198,22 @@ use[ \t\r\n>]*"<"	{ BEGIN(cond_use); }
 . { return yytext[0]; }
 
 %%
+
+/*!
+ * Convert unicode codepoint given in hex notation
+ * into UTF8 encoding. The output buffer must be 8
+ * characters long.
+ */
+void to_utf8(const char *str, char *out)
+{
+    memset(out, 0, 8);
+    const gunichar c = strtoul(str, NULL, 16);
+    if (g_unichar_validate(c) && (c != 0)) {
+        g_unichar_to_utf8(c, out);
+    } else {
+        out[0] = ' ';
+    }
+}
 
 fs::path sourcepath()
 {
