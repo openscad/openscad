@@ -113,3 +113,20 @@ void CGALRenderer::draw(bool showfaces, bool showedges) const
 		this->polyhedron->draw(showfaces && showedges);
   }
 }
+
+BoundingBox CGALRenderer::getBoundingBox() const
+{
+	BoundingBox bbox;
+
+	if (this->polyhedron) {
+		CGAL::Bbox_3 cgalbbox = this->polyhedron->bbox();
+		bbox = BoundingBox(
+		  Vector3d(cgalbbox.xmin(), cgalbbox.ymin(), cgalbbox.zmin()),
+		  Vector3d(cgalbbox.xmax(), cgalbbox.ymax(), cgalbbox.zmax()) );
+	}
+	else if (this->polyset) {
+		bbox = this->polyset->getBoundingBox();
+	}
+
+	return bbox;
+}

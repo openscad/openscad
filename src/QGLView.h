@@ -44,6 +44,7 @@ public:
 #endif
 	bool save(const char *filename);
 	void resetView();
+	void viewAll();
 
 public slots:
 	void ZoomIn(void);

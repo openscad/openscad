@@ -8,13 +8,16 @@
 #include <vector>
 #include <string>
 
+#include <boost/logic/tribool.hpp>
+BOOST_TRIBOOL_THIRD_STATE(unknown)
+
 class PolySet : public Geometry
 {
 public:
 	typedef std::vector<Vector3d> Polygon;
 	std::vector<Polygon> polygons;
 
-	PolySet(unsigned int dim);
+	PolySet(unsigned int dim, boost::tribool convex = unknown);
 	PolySet(const Polygon2d &origin);
 	virtual ~PolySet();
 
@@ -38,7 +41,10 @@ public:
 	void transform(const Transform3d &mat);
 	void resize(Vector3d newsize, const Eigen::Matrix<bool,3,1> &autosize);
 
+	bool is_convex() const;
+
 private:
-  Polygon2d polygon;
+	Polygon2d polygon;
 	unsigned int dim;
+	mutable boost::tribool convex;
 };

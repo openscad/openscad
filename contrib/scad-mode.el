@@ -1,4 +1,4 @@
-;;; scad-mode.el --- SCAD mode derived mode
+;;; scad-mode.el --- Major mode for editing SCAD files
 
 ;; Author:     Len Trigg
 ;; Maintainer: Len Trigg <lenbok@gmail.com>

@@ -305,7 +305,7 @@ Geometry *PrimitiveNode::createGeometry() const
 
 	switch (this->type) {
 	case CUBE: {
-		PolySet *p = new PolySet(3);
+		PolySet *p = new PolySet(3,true);
 		g = p;
 		if (this->x > 0 && this->y > 0 && this->z > 0 &&
 			!isinf(this->x) > 0 && !isinf(this->y) > 0 && !isinf(this->z) > 0) {
@@ -363,7 +363,7 @@ Geometry *PrimitiveNode::createGeometry() const
 	}
 		break;
 	case SPHERE: {
-		PolySet *p = new PolySet(3);
+		PolySet *p = new PolySet(3,true);
 		g = p;
 		if (this->r1 > 0 && !isinf(this->r1)) {
 			struct ring_s {
@@ -438,7 +438,7 @@ Geometry *PrimitiveNode::createGeometry() const
 	}
 		break;
 	case CYLINDER: {
-		PolySet *p = new PolySet(3);
+		PolySet *p = new PolySet(3,true);
 		g = p;
 		if (this->h > 0 && !isinf(this->h) &&
 				this->r1 >=0 && this->r2 >= 0 && (this->r1 > 0 || this->r2 > 0) &&

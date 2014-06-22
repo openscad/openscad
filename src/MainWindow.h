@@ -87,6 +87,7 @@ private:
 	void openFile(const QString &filename);
         void handleFileDrop(const QString &filename);
 	void refreshDocument();
+        void updateCamera();
 	void updateTemporalVariables();
 	bool fileChangedOnDisk();
 	void compileTopLevelDocument();
@@ -205,6 +206,7 @@ public slots:
 	void viewPerspective();
 	void viewOrthogonal();
 	void viewResetView();
+	void viewAll();
 	void hideConsole();
 	void animateUpdateDocChanged();
 	void animateUpdate();
@@ -227,6 +229,7 @@ private:
 
 	char const * afterCompileSlot;
 	bool procevents;
+        bool isClosing;
 	class QTemporaryFile *tempFile;
 	class ProgressWidget *progresswidget;
 	class CGALWorker *cgalworker;

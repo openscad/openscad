@@ -234,6 +234,7 @@
     <addaction name="viewActionBack"/>
     <addaction name="viewActionDiagonal"/>
     <addaction name="viewActionCenter"/>
+    <addaction name="viewActionViewAll"/>
     <addaction name="separator"/>
     <addaction name="viewActionZoomIn"/>
     <addaction name="viewActionZoomOut"/>
@@ -940,6 +941,11 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+[</string>
+   </property>
+  </action>
+  <action name="viewActionViewAll">
+   <property name="text">
+    <string>View All</string>
    </property>
   </action>
  </widget>
