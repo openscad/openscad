@@ -180,7 +180,7 @@ CONFIG += freetype
 CONFIG += fontconfig
 
 #Uncomment the following line to enable QCodeEdit
-#CONFIG += qcodeedit
+CONFIG += scintilla
 
 # Make experimental features available
 experimental {
@@ -303,7 +303,8 @@ src/FontCache.h \
            src/system-gl.h \
            src/CsgInfo.h \
            \
-           src/AutoUpdater.h
+           src/AutoUpdater.h \
+	   src/scadlexer.h
 
 SOURCES += src/version_check.cc \
            src/ProgressWidget.cc \
@@ -387,8 +388,8 @@ src/FontCache.cc \
            \
            src/openscad.cc \
            src/mainwin.cc \
-src/FontListDialog.cc
-
+src/FontListDialog.cc \
+src/scadlexer.cpp
 # ClipperLib
 SOURCES += src/polyclipping/clipper.cpp
 HEADERS += src/polyclipping/clipper.hpp
