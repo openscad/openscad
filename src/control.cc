@@ -33,6 +33,7 @@
 #include "printutils.h"
 #include <sstream>
 #include "mathc99.h"
+#include <stdio.h>
 
 
 #define foreach BOOST_FOREACH
@@ -260,13 +261,42 @@ AbstractNode *ControlModule::instantiate(const Context* /*ctx*/, const ModuleIns
 	if (type == ECHO)
 	{
 		std::stringstream msg;
-		msg << "ECHO: ";
-		for (size_t i = 0; i < inst->arguments.size(); i++) {
-			if (i > 0) msg << ", ";
-			if (!evalctx->getArgName(i).empty()) msg << evalctx->getArgName(i) << " = ";
-			msg << evalctx->getArgValue(i);
+		if (inst->arguments.size() > 0 && evalctx->getArgName(0) == "tofile" && !evalctx->getArgName(0).empty()) { // Detect if the first argument specifies a file to write the values in
+			bool append = true;
+			const char * dstFile = evalctx->getArgValue(0).toString().c_str(); // Store the path of the output file
+			for (size_t i = 1; i < inst->arguments.size(); i++) {
+				if (evalctx->getArgName(i) == "append" && evalctx->getArgValue(i).toString() == "false") { // Detects the "append" argument and does not write it into the file
+					append = false;
+				} else {
+					if (i > 1) msg << ", ";// Tries to keep as close to the original behavior as possible
+					if (!evalctx->getArgName(i).empty()) msg << evalctx->getArgName(i) << " = ";
+					msg << evalctx->getArgValue(i).toString(); // Note: Adding toString() removes quotes from text variables
+				}
+			}
+			FILE * pFile;
+			if (append) { // Open the file in write or append mode
+				PRINTB("APPENDING TO FILE %s", dstFile);
+				pFile = fopen (dstFile,"a");
+			} else {
+				PRINTB("WRITING TO FILE %s", dstFile);
+				pFile = fopen (dstFile,"w");
+			}
+			if (pFile) {
+				PRINTB("WRITING: %s", msg.str());
+				fprintf (pFile, "%s", msg.str().c_str()); // Write the contents
+				fclose (pFile);
+			} else {
+				PRINTB("ERROR WRITING FILE: %s", dstFile);
+			}
+		} else { // Original behavior of "echo"
+			msg << "ECHO: ";
+			for (size_t i = 0; i < inst->arguments.size(); i++) {
+				if (i > 0) msg << ", ";
+				if (!evalctx->getArgName(i).empty()) msg << evalctx->getArgName(i) << " = ";
+				msg << evalctx->getArgValue(i);
+			}
+			PRINTB("%s", msg.str());
 		}
-		PRINTB("%s", msg.str());
 	}
 
 	if (type == ASSIGN)
