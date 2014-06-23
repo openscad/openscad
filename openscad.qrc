@@ -8,19 +8,19 @@
         <file>icons/prefsUpdate.png</file>
         <file>icons/flattr.png</file>
         <file>src/AboutDialog.html</file>
-        <file>Arrowhead-Right-32.png</file>
-        <file>axes.png</file>
-        <file>back.png</file>
-        <file>bottom.png</file>
-        <file>Document-New-128.png</file>
-        <file>down.png</file>
-        <file>front.png</file>
-        <file>grid.png</file>
-        <file>left.png</file>
-        <file>Open-128.png</file>
-        <file>openscad.png</file>
-        <file>right.png</file>
-        <file>Save-128.png</file>
-        <file>up.png</file>
+        <file>images/Arrowhead-Right-32.png</file>
+        <file>images/axes.png</file>
+        <file>images/back.png</file>
+        <file>images/Document-New-128.png</file>
+        <file>images/down.png</file>
+        <file>images/front.png</file>
+        <file>images/grid.png</file>
+        <file>images/Open-128.png</file>
+        <file>images/openscad.png</file>
+        <file>images/right.png</file>
+        <file>images/Save-128.png</file>
+        <file>images/up.png</file>
+        <file>images/bottom.png</file>
+        <file>images/left.png</file>
     </qresource>
 </RCC>

@@ -332,7 +332,7 @@
         <number>0</number>
        </property>
        <layout class="QGridLayout" name="gridLayout">
-        <item row="0" column="0">
+        <item row="1" column="0">
          <widget class="QComboBox" name="findTypeComboBox">
           <item>
            <property name="text">
@@ -346,52 +346,55 @@
           </item>
          </widget>
         </item>
-        <item row="0" column="1">
-         <widget class="QLineEdit" name="findInputField">
-          <property name="placeholderText">
-           <string>Search string</string>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="2">
+        <item row="1" column="2">
          <widget class="QPushButton" name="prevButton">
           <property name="text">
            <string>&lt;</string>
           </property>
          </widget>
         </item>
-        <item row="0" column="3">
+        <item row="1" column="3">
          <widget class="QPushButton" name="nextButton">
           <property name="text">
            <string>&gt;</string>
           </property>
          </widget>
         </item>
-        <item row="0" column="4">
+        <item row="1" column="4">
          <widget class="QPushButton" name="hideFindButton">
           <property name="text">
            <string>Done</string>
           </property>
          </widget>
         </item>
-        <item row="1" column="1">
+        <item row="2" column="1">
          <widget class="QLineEdit" name="replaceInputField">
           <property name="placeholderText">
            <string>Replacement string</string>
           </property>
          </widget>
         </item>
-        <item row="1" column="2" colspan="2">
+        <item row="2" column="2" colspan="2">
          <widget class="QPushButton" name="replaceButton">
           <property name="text">
            <string>Replace</string>
           </property>
          </widget>
         </item>
-        <item row="1" column="4">
+        <item row="2" column="4">
          <widget class="QPushButton" name="replaceAllButton">
           <property name="text">
            <string>All</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="0">
+         <widget class="QWidget" name="widget" native="true"/>
+        </item>
+        <item row="1" column="1">
+         <widget class="QLineEdit" name="findInputField">
+          <property name="placeholderText">
+           <string>Search string</string>
           </property>
          </widget>
         </item>
@@ -431,30 +434,6 @@
      </item>
     </layout>
    </widget>
-  </widget>
-  <widget class="QToolBar" name="toolBar">
-   <property name="windowTitle">
-    <string>toolBar</string>
-   </property>
-   <attribute name="toolBarArea">
-    <enum>TopToolBarArea</enum>
-   </attribute>
-   <attribute name="toolBarBreak">
-    <bool>false</bool>
-   </attribute>
-   <addaction name="fileActionNew"/>
-   <addaction name="fileActionOpen"/>
-   <addaction name="fileActionSave"/>
-   <addaction name="designActionRender"/>
-   <addaction name="separator"/>
-   <addaction name="viewActionTop"/>
-   <addaction name="viewActionBottom"/>
-   <addaction name="viewActionLeft"/>
-   <addaction name="viewActionRight"/>
-   <addaction name="viewActionFront"/>
-   <addaction name="viewActionBack"/>
-   <addaction name="viewActionShowEdges"/>
-   <addaction name="viewActionShowAxes"/>
   </widget>
   <action name="fileActionNew">
    <property name="icon">
