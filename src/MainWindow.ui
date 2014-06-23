@@ -204,6 +204,7 @@
     <addaction name="designActionReloadAndPreview"/>
     <addaction name="designActionPreview"/>
     <addaction name="designActionRender"/>
+    <addaction name="designActionRenderSelection"/>
     <addaction name="separator"/>
     <addaction name="designCheckValidity"/>
     <addaction name="designActionDisplayAST"/>
@@ -599,6 +600,14 @@
    </property>
    <property name="shortcut">
     <string>F6</string>
+   </property>
+  </action>
+  <action name="designActionRenderSelection">
+   <property name="text">
+    <string>Render &amp;Selection</string>
+   </property>
+   <property name="shortcut">
+    <string>F7</string>
    </property>
   </action>
   <action name="designCheckValidity">

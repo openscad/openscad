@@ -325,8 +325,10 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this->designActionPreview, SIGNAL(triggered()), this, SLOT(actionRenderPreview()));
 #ifdef ENABLE_CGAL
 	connect(this->designActionRender, SIGNAL(triggered()), this, SLOT(actionRender()));
+	connect(this->designActionRenderSelection, SIGNAL(triggered()), this, SLOT(actionRenderSelection()));
 #else
 	this->designActionRender->setVisible(false);
+	this->designActionRenderSelection->setVisible(false);
 #endif
 	connect(this->designCheckValidity, SIGNAL(triggered()), this, SLOT(actionCheckValidity()));
 	connect(this->designActionDisplayAST, SIGNAL(triggered()), this, SLOT(actionDisplayAST()));
@@ -1452,22 +1454,22 @@ bool MainWindow::fileChangedOnDisk()
 	return false;
 }
 
-/*!
-	Returns true if anything was compiled.
-*/
 void MainWindow::compileTopLevelDocument()
+{
+	this->compileText(editor->toPlainText());
+}
+
+void MainWindow::compileText(QString str)
 {
 	updateTemporalVariables();
 	resetPrintedDeprecations();
 
-	this->last_compiled_doc = editor->toPlainText();
-	std::string fulltext =
-		std::string(this->last_compiled_doc.toLocal8Bit().constData()) +
-		"\n" + commandline_commands;
-
 	delete this->root_module;
 	this->root_module = NULL;
 
+	this->last_compiled_doc = str;
+	std::string fulltext = std::string(this->last_compiled_doc.toLocal8Bit().constData()) +
+		"\n" + commandline_commands;
 	this->root_module = parse(fulltext.c_str(),
 														this->fileName.isEmpty() ?
 														"" :
@@ -1587,9 +1589,9 @@ void MainWindow::csgRender()
 
 #ifdef ENABLE_CGAL
 
-void MainWindow::actionRender()
+bool MainWindow::canPerformActionRender()
 {
-	if (GuiLocker::isLocked()) return;
+	if (GuiLocker::isLocked()) return false;
 	GuiLocker::lock();
 	autoReloadTimer->stop();
 	setCurrentOutput();
@@ -1598,7 +1600,44 @@ void MainWindow::actionRender()
 	QApplication::processEvents();
 	this->afterCompileSlot = "cgalRender";
 	this->procevents = true;
-	compile(false);
+	return true;
+}
+
+void MainWindow::actionRender()
+{
+	if (this->canPerformActionRender())
+		compile(false);
+}
+
+void MainWindow::actionRenderSelection()
+{
+	if (!this->canPerformActionRender())
+		return;
+	
+	console->clear();
+	if (editor->isContentModified()) saveBackup();
+
+	QTextCursor cursor = editor->textCursor();
+	//Selection, or current line if there is no selection
+	if(cursor.selectionStart() == cursor.selectionEnd()) {
+		cursor.select(QTextCursor::LineUnderCursor);
+	}
+	
+	this->compileText(editor->textCursor().selectedText());
+		
+	if (this->root_module) {
+		if (this->root_module->handleDependencies())
+			PRINTB("Module cache size: %d modules", ModuleCache::instance()->size());
+	}
+
+	if (!animate_panel->isVisible()) {
+		emit unhighlightLastError();
+		if (!this->root_module) {
+			emit highlightError( parser_error_pos );
+		}
+	}
+
+	compileDone(true);
 }
 
 void MainWindow::cgalRender()
