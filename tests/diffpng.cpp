@@ -98,12 +98,16 @@ using namespace std;
 class RGBAImage
 {
 public:
-	RGBAImage(const RGBAImage &);
-	RGBAImage &operator=(const RGBAImage &);
+	RGBAImage(const RGBAImage &img) {
+		Width = img.Width;
+		Height = img.Height;
+		Name = img.Name;
+		Data = img.Data;
+	};
 
 	unsigned int Width;
 	unsigned int Height;
-	const string Name;
+	string Name;
 	vector<unsigned int> Data;
 
 	RGBAImage(unsigned int w, unsigned int h, const string &name="")
@@ -1076,6 +1080,30 @@ bool Yee_Compare_Engine(CompareArgs &args)
 	return false;
 }
 
+void copy( diffpng::RGBAImage &dest, diffpng::RGBAImage &src) {
+	dest.Data.clear();
+	dest.Data.resize( src.Data.size() );
+	for (unsigned i=0;i<src.Data.size();i++) {
+		dest.Data[i] = src.Data[i];
+	}
+	dest.Width = src.Width;
+	dest.Height = src.Height;
+	dest.Name = src.Name;
+}
+
+
+bool ShiftAndTest( CompareArgs &args, RGBAImage &originalB, int xshift, int yshift ) {
+	args.ImgB->Shift(xshift,yshift);
+	args.ImgB->DownSample();
+	args.ImgB->SimpleBlur();
+	args.ImgB->SimpleBlur();
+	bool test = Yee_Compare_Engine( args );
+	if (args.ImgDiff) args.ImgDiff->WriteToFile(args.ImgDiff->Get_Name()+".diffshift1.png");
+	cout << "result: " << test << "\n";
+	copy(*args.ImgB, originalB);
+	return test;
+}
+
 /*
 Multi-stage comparison.
 
@@ -1120,8 +1148,8 @@ bool LevelClimberCompare(CompareArgs &args) {
 
 	while (test==false && args.MaxPyramidLevels<args.FinalMaxPyramidLevels) {
 		cout << "Testing with Max Pyramid Levels=" << args.MaxPyramidLevels << "\n";
-		test |= Yee_Compare_Engine( args );
-		cout << "Result:" << test << " : " << args.ErrorStr << "\n";
+		test = Yee_Compare_Engine( args );
+		cout << "Result: " << test << " ErrorStr:" << args.ErrorStr << "\n";
 		if (args.ImgDiff) {
 			std::stringstream s; s<<args.MaxPyramidLevels;
 			args.ImgDiff->WriteToFile(args.ImgDiff->Get_Name()+".diff.maxlevel"+s.str()+".png");
@@ -1135,6 +1163,8 @@ bool LevelClimberCompare(CompareArgs &args) {
 		}
 	}
 
+	diffpng::RGBAImage originalA(*args.ImgA);
+	diffpng::RGBAImage originalB(*args.ImgB);
 
 	// the purpose of downsampling is not necessarily to throw away pixels.
 	// it is to enable the higher pyramid levels to run at a
@@ -1142,7 +1172,6 @@ bool LevelClimberCompare(CompareArgs &args) {
 	if (test==false) {
 		cout << "\nTests detected differences at final max pyramid level. \n";
 		cout << "Retesting with downsampling and simple blur\n\n";
-
 		args.ImgA->DownSample();
 		args.ImgB->DownSample();
 		args.ImgA->SimpleBlur();
@@ -1160,36 +1189,51 @@ bool LevelClimberCompare(CompareArgs &args) {
 		}
 		args.ColorFactor = 0.05;
 		cout << "Testing with Max Pyramid Levels=" << args.MaxPyramidLevels << "\n";
-		test |= Yee_Compare_Engine( args );
-		cout << "Result:" << test << " : " << args.ErrorStr << "\n";
+		test = Yee_Compare_Engine( args );
+		cout << "Result: " << test << " ErrorStr:" << args.ErrorStr << "\n";
 		if (args.ImgDiff)
 			args.ImgDiff->WriteToFile(args.ImgDiff->Get_Name()+".diff.sampleddown.png");
+		if (test) return true;
 	};
+
+	copy(*args.ImgA, originalA);
+	copy(*args.ImgB, originalB);
+	args.ImgA->DownSample();
+	args.ImgA->SimpleBlur();
+	args.ImgA->SimpleBlur();
+	if (args.ImgDiff) args.ImgDiff->DownSample();
 
 	if (test==false) {
 		args.ColorFactor = 0.01;
 		cout << "\nTests detected differences after downsample. \n";
 		cout << "Retesting with small pixel shifts\n";
-		args.ImgB->Shift(-1,0);
-		args.ImgB->WriteToFile( "shift1.png" );
-		test |= Yee_Compare_Engine( args );
-		if (args.ImgDiff) args.ImgDiff->WriteToFile(args.ImgDiff->Get_Name()+".diffshift1.png");
-		cout << "result:" << test << " : " << args.ErrorStr << "\n";
-		args.ImgB->Shift(2,0);
-		args.ImgB->WriteToFile( "shift2.png" );
-		test |= Yee_Compare_Engine( args );
-		if (args.ImgDiff) args.ImgDiff->WriteToFile(args.ImgDiff->Get_Name()+".diffshift2.png");
-		cout << "result:" << test << " : " << args.ErrorStr << "\n";
-		args.ImgB->Shift(-1,-1);
-		args.ImgB->WriteToFile( "shift3.png" );
-		test |= Yee_Compare_Engine( args );
-		if (args.ImgDiff) args.ImgDiff->WriteToFile(args.ImgDiff->Get_Name()+".diffshift3.png");
-		cout << "result:" << test << " : " << args.ErrorStr << "\n";
-		args.ImgB->Shift(0,2);
-		args.ImgB->WriteToFile( "shift4.png" );
-		test |= Yee_Compare_Engine( args );
-		if (args.ImgDiff) args.ImgDiff->WriteToFile(args.ImgDiff->Get_Name()+".diffshift4.png");
-		cout << "result:" << test << " : " << args.ErrorStr << "\n";
+
+		if (ShiftAndTest(args, originalB, -2, 0)) return true;
+		if (ShiftAndTest(args, originalB,  2, 0)) return true;
+		if (ShiftAndTest(args, originalB,  0,-2)) return true;
+		if (ShiftAndTest(args, originalB,  0, 2)) return true;
+
+
+		if (ShiftAndTest(args, originalB, -1, 0)) return true;
+		if (ShiftAndTest(args, originalB,  1, 0)) return true;
+		if (ShiftAndTest(args, originalB,  0,-1)) return true;
+		if (ShiftAndTest(args, originalB,  0, 1)) return true;
+
+/*
+		if (ShiftAndTest(args, originalB, -2, 2)) return true;
+		if (ShiftAndTest(args, originalB,  2, 2)) return true;
+		if (ShiftAndTest(args, originalB,  2,-2)) return true;
+		if (ShiftAndTest(args, originalB,  2, 2)) return true;
+*/
+
+/*
+		if (ShiftAndTest(args, originalB, -1,-1)) return true;
+		if (ShiftAndTest(args, originalB,  1,-1)) return true;
+		if (ShiftAndTest(args, originalB, -1, 1)) return true;
+		if (ShiftAndTest(args, originalB,  1, 1)) return true;
+
+*/
+
 	}
 	return test;
 }

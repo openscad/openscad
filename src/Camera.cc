@@ -1,5 +1,6 @@
 #include "Camera.h"
 #include "rendersettings.h"
+#include "printutils.h"
 
 Camera::Camera(enum CameraType camtype) :
 	type(camtype), projection(Camera::PERSPECTIVE), fov(45), height(60), viewall(false)
@@ -56,6 +57,14 @@ void Camera::viewAll(const BoundingBox &bbox, float scalefactor)
 		this->center = getBoundingCenter(bbox);
 		this->eye = this->center - Vector3d(1,1,-0.5);
 	}
+
+	PRINTD("viewAll");
+	PRINTDB("type %i",type);
+	PRINTDB("proj %i",projection);
+	PRINTDB("bbox %s",bbox.min().transpose());
+	PRINTDB("bbox %s",bbox.max().transpose());
+	PRINTDB("center x y z %f %f %f",center.x() % center.y() % center.z());
+	PRINTDB("eye    x y z %f %f %f",eye.x() % eye.y() % eye.z());
 
 	switch (this->projection) {
 	case Camera::ORTHOGONAL:
