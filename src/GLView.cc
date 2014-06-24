@@ -5,6 +5,7 @@
 #include "rendersettings.h"
 #include "mathc99.h"
 #include "printutils.h"
+#include "renderer.h"
 
 #ifdef _WIN32
 #include <GL/wglew.h>
@@ -96,19 +97,18 @@ void GLView::setupCamera()
 		case Camera::PERSPECTIVE: {
 			double dist = cam.viewer_distance;
 			gluPerspective(cam.fov, aspectratio, 0.1*dist, 100*dist);
-			gluLookAt(0.0, -cam.viewer_distance, 0.0,
-								0.0, 0.0, 0.0,
-								0.0, 0.0, 1.0);
 			break;
 		}
 		case Camera::ORTHOGONAL: {
 			glOrtho(-cam.height/2*aspectratio, cam.height*aspectratio/2,
 							-cam.height/2, cam.height/2,
 							-far_far_away, +far_far_away);
-			gluLookAt(0.0, -cam.viewer_distance, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0);
 			break;
 		}
 		}
+		gluLookAt(0.0, -cam.viewer_distance, 0.0,
+							0.0, 0.0, 0.0,
+							0.0, 0.0, 1.0);
 		glMatrixMode(GL_MODELVIEW);
 		glLoadIdentity();
 		glRotated(cam.object_rot.x(), 1.0, 0.0, 0.0);
@@ -116,7 +116,7 @@ void GLView::setupCamera()
 		glRotated(cam.object_rot.z(), 0.0, 0.0, 1.0);
 		glTranslated(cam.object_trans.x(), cam.object_trans.y(), cam.object_trans.z() );
 		break;
-	case Camera::VECTOR:
+	case Camera::VECTOR: {
 		switch (this->cam.projection) {
 		case Camera::PERSPECTIVE: {
 			double dist = (cam.center - cam.eye).norm();
@@ -124,7 +124,6 @@ void GLView::setupCamera()
 			break;
 		}
 		case Camera::ORTHOGONAL: {
-			double l = (cam.center - cam.eye).norm() / 10;
 			glOrtho(-cam.height/2*aspectratio, cam.height*aspectratio/2,
 							-cam.height/2, cam.height/2,
 							-far_far_away, +far_far_away);
@@ -133,10 +132,18 @@ void GLView::setupCamera()
 		}
 		glMatrixMode(GL_MODELVIEW);
 		glLoadIdentity();
+
+		Vector3d dir(cam.eye - cam.center);
+		Vector3d up(0.0,0.0,1.0);
+		if (dir.cross(up).norm() < 0.001) { // View direction is ~parallel with up vector
+			up << 0.0,1.0,0.0;
+		}
+
 		gluLookAt(cam.eye[0], cam.eye[1], cam.eye[2],
 							cam.center[0], cam.center[1], cam.center[2],
-							0.0, 0.0, 1.0);
+							up[0], up[1], up[2]);
 		break;
+	}
 	default:
 		break;
 	}
@@ -368,6 +375,9 @@ void GLView::showSmallaxes()
 	glOrtho(-scale*dpi*aspectratio,scale*dpi*aspectratio,
 					-scale*dpi,scale*dpi,
 					-scale*dpi,scale*dpi);
+  gluLookAt(0.0, -1.0, 0.0,
+						0.0, 0.0, 0.0,
+						0.0, 0.0, 1.0);
 	 
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
@@ -443,11 +453,10 @@ void GLView::showAxes()
   // FIXME: doesn't work under Vector Camera
   // Large gray axis cross inline with the model
   // FIXME: This is always gray - adjust color to keep contrast with background
-	float dpi = this->getDPI();
-  glLineWidth(1*dpi);
+  glLineWidth(this->getDPI());
   glColor3d(0.5, 0.5, 0.5);
   glBegin(GL_LINES);
-  double l = cam.viewer_distance*dpi/10;
+  double l = cam.viewer_distance;
   glVertex3d(-l, 0, 0);
   glVertex3d(+l, 0, 0);
   glVertex3d(0, -l, 0);

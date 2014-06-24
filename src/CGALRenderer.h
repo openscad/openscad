@@ -10,8 +10,7 @@ public:
 	~CGALRenderer();
 	virtual void draw(bool showfaces, bool showedges) const;
 	virtual void setColorScheme(const OSColors::colorscheme &cs);
-	BoundingBox getBoundingBox() const;
-
+	virtual BoundingBox getBoundingBox() const;
 	void rebuildPolyhedron();
 public:
 	shared_ptr<class Polyhedron> polyhedron;

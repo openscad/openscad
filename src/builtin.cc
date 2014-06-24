@@ -106,6 +106,7 @@ Builtins::Builtins()
 	Value zero3val(zero3);
 	this->globalscope.assignments.push_back(Assignment("$vpt", boost::shared_ptr<Expression>(new Expression(zero3val))));
 	this->globalscope.assignments.push_back(Assignment("$vpr", boost::shared_ptr<Expression>(new Expression(zero3val))));
+	this->globalscope.assignments.push_back(Assignment("$vpd", boost::shared_ptr<Expression>(new Expression(500))));
 }
 
 Builtins::~Builtins()

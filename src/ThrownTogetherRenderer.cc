@@ -126,3 +126,10 @@ void ThrownTogetherRenderer::renderCSGChain(CSGChain *chain, bool highlight,
 		glPopMatrix();
 	}
 }
+
+BoundingBox ThrownTogetherRenderer::getBoundingBox() const
+{
+	BoundingBox bbox;
+	if (this->root_chain) bbox = this->root_chain->getBoundingBox();
+	return bbox;
+}

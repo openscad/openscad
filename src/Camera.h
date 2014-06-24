@@ -29,7 +29,7 @@ public:
 	Camera(enum CameraType camtype = NONE);
 	void setup(std::vector<double> params);
 	void gimbalDefaultTranslate();
-	void viewAll(const BoundingBox &bbox, float scalefactor);
+	void viewAll(const BoundingBox &bbox, float scalefactor = 1.0f);
 
 	const OSColors::colorscheme *colorscheme;
 

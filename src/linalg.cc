@@ -46,18 +46,3 @@ bool matrix_contains_nan( const Transform3d &m )
   }
 	return false;
 }
-
-double getBoundingRadius(BoundingBox bbox)
-{
-	// FIXME: For eigen3, we can use bbox.diagonal().norm()/2;
-  double radius = (bbox.max() - bbox.min()).norm() / 2;
-  return radius; // 0;
-}
-
-Vector3d getBoundingCenter(BoundingBox bbox)
-{
-  // FIXME: For eigen3, we can use bbox.center();
-  Vector3d center = (bbox.min() + bbox.max()) / 2;
-  return center; // Vector3d(0,0,0);
-}
-

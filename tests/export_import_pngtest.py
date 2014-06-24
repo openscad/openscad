@@ -29,12 +29,12 @@ def createImport(inputfile, scadfile):
         print ('createImport: ' + inputfile + " " + scadfile)
         outputdir = os.path.dirname(scadfile)
         try:
-                if not os.path.exists(outputdir): os.mkdir(outputdir)
+                if outputdir and not os.path.exists(outputdir): os.mkdir(outputdir)
                 f = open(scadfile,'w')
                 f.write('import("'+inputfile+'");'+os.linesep)
                 f.close()
         except:
-                failquit('failure while opening/writing ' + scadfile)
+                failquit('failure while opening/writing ' + scadfile + ': ' + str(sys.exc_info()))
         
 
 #

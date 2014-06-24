@@ -17,7 +17,6 @@ IF (APPLE)
    EXECUTE_PROCESS(COMMAND sw_vers -productVersion OUTPUT_VARIABLE MACOSX_VERSION)
    IF (NOT ${MACOSX_VERSION} VERSION_LESS "10.9.0")
      message("Detected Maverick (10.9) or later")
-     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
      set(CMAKE_C_COMPILER "clang")
      set(CMAKE_CXX_COMPILER "clang++")
      # Somehow, since we build dependencies for 10.7, we need to also build executables
@@ -139,7 +138,6 @@ if(${CMAKE_CXX_COMPILER} MATCHES ".*clang.*")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-parameter")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-variable")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-function")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-c++11-extensions")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-sign-compare")
 endif()
 
@@ -154,27 +152,34 @@ function(inclusion user_set_path found_paths)
   # their set_paths to be a priority. 
 
   if (DEBUG_OSCD)
-    message(STATUS "inclusion ${user_set_path} ${found_paths}")
-    message(STATUS "inclusion ${${user_set_path}} ${${found_paths}}")
+    message(STATUS "inclusion:")
+    message(STATUS "  ${user_set_path}: ${${user_set_path}}")
+    message(STATUS "  ${found_paths}: ${${found_paths}}")
   endif()
-  set( inclusion_match 0 )
-  foreach( found_path ${${found_paths}} )
-    if (${found_path} MATCHES ${${user_set_path}}.*)
-      set( inclusion_match 1 )
+  set(inclusion_match 0)
+  if (${user_set_path})
+    foreach(found_path ${${found_paths}})
+      string(FIND ${found_path} ${${user_set_path}} INDEX)
+      if (DEFINED INDEX)
+        if (${INDEX} EQUAL 0)
+          set(inclusion_match 1)
+        endif()
+      endif()
+    endforeach()
+    if (inclusion_match)
+      include_directories(BEFORE ${${found_paths}})
+      if (DEBUG_OSCD)
+        message(STATUS "inclusion prepend ${${found_paths}} for ${user_set_path}")
+      endif()
+      set(inclusion_match 0)
     endif()
-  endforeach()
-  if (user_set_path AND inclusion_match)
-    include_directories(BEFORE ${${found_paths}})
-    if (DEBUG_OSCD)
-      message(STATUS "inclusion prepend ${${found_paths}} for ${user_set_path}")
-    endif()
-  else()
+  endif()
+  if (NOT inclusion_match)
     include_directories(AFTER ${${found_paths}})
     if (DEBUG_OSCD)
       message(STATUS "inclusion append ${${found_paths}} for ${user_set_path}")
     endif()
   endif()
-  set( inclusion_match 0 )
 endfunction()
 
 # Boost
@@ -218,6 +223,16 @@ endforeach()
 inclusion(BOOST_ROOT Boost_INCLUDE_DIRS)
 if (${Boost_VERSION} LESS 104600)
   add_definitions(-DBOOST_FILESYSTEM_VERSION=3) # Use V3 for boost 1.44-1.45
+endif()
+
+# On Mac, we need to link against the correct C++ library. We choose the same one
+# as Boost uses.
+if(APPLE)
+  execute_process(COMMAND grep -q __112basic_string ${Boost_LIBRARIES}
+                  RESULT_VARIABLE BOOST_USE_STDLIBCPP)
+  if (NOT BOOST_USE_STDLIBCPP)
+     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
+  endif()
 endif()
 
 # Mac OS X
@@ -1052,7 +1067,8 @@ list(APPEND BUGS_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue495.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue612.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue112.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue666.scad
-                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue802.scad)
+                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue802.scad
+                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue835.scad)
 
 list(APPEND OPENCSGTEST_FILES ${BUGS_FILES})
 list(APPEND CGALPNGTEST_FILES ${BUGS_FILES})
@@ -1289,3 +1305,5 @@ message("Available test configurations: ${TEST_CONFIGS}")
 #foreach(CONF ${TEST_CONFIGS})
 #  message("${CONF}: ${${CONF}_TEST_CONFIG}")
 #endforeach()
+
+message("CPPFLAGS: ${CMAKE_CXX_FLAGS}")
