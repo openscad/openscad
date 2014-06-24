@@ -1,5 +1,6 @@
 #include "Camera.h"
 #include "rendersettings.h"
+#include "printutils.h"
 
 Camera::Camera(enum CameraType camtype) :
 	type(camtype), projection(Camera::PERSPECTIVE), fov(45), height(60), viewall(false)
