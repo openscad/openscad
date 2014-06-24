@@ -261,7 +261,6 @@ void includefile()
   else {
     rootmodule->registerInclude(boosty::stringy(localpath), boosty::stringy(localpath));
     PRINTB("WARNING: Can't open include file '%s'.", boosty::stringy(localpath));
-    if (path_stack.size() > 0) path_stack.pop_back();
     return;
   };
 
