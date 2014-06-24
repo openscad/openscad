@@ -12,7 +12,6 @@ public:
 	typedef std::vector<Feature *> list_t;
 	typedef list_t::iterator iterator;
 
-	static const Feature ExperimentalConcatFunction;
 	static const Feature ExperimentalTextModule;
     
 	const std::string& get_name() const;

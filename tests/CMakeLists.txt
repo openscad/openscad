@@ -938,6 +938,7 @@ list(APPEND ECHO_FILES ${FUNCTION_FILES}
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/range-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/no-break-space-test.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/unicode-tests.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/concat-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/empty-stl.scad)
 
 list(APPEND DUMPTEST_FILES ${FEATURES_FILES})
@@ -1123,8 +1124,6 @@ add_cmdline_test(throwntogethertest EXE ${OPENSCAD_BINPATH} ARGS --preview=throw
 add_cmdline_test(cgalstlsanitytest EXE ${CMAKE_SOURCE_DIR}/cgalstlsanitytest SUFFIX txt ARGS ${OPENSCAD_BINPATH} FILES ${CGALSTLSANITYTEST_FILES})
 
 # Add experimental tests
-
-add_cmdline_test(echotest EXE ${OPENSCAD_BINPATH} ARGS --enable=concat -o SUFFIX echo FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/experimental/concat-tests.scad)
 
 list(APPEND EXPERIMENTAL_TEXT_FILES 
             ${CMAKE_SOURCE_DIR}/../testdata/scad/experimental/text-font-alignment-tests.scad
