@@ -928,7 +928,7 @@ void register_builtin_functions()
 	Builtins::init("log", new BuiltinFunction(&builtin_log));
 	Builtins::init("ln", new BuiltinFunction(&builtin_ln));
 	Builtins::init("str", new BuiltinFunction(&builtin_str));
-	Builtins::init("concat", new BuiltinFunction(&builtin_concat, Feature::ExperimentalConcatFunction));
+	Builtins::init("concat", new BuiltinFunction(&builtin_concat));
 	Builtins::init("lookup", new BuiltinFunction(&builtin_lookup));
 	Builtins::init("search", new BuiltinFunction(&builtin_search));
 	Builtins::init("version", new BuiltinFunction(&builtin_version));

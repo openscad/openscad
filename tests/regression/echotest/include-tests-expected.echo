@@ -1,0 +1,6 @@
+WARNING: Can't open include file 'not_exist.scad'.
+WARNING: Can't open include file 'non/existent/path/non-file'.
+WARNING: Can't open include file 'test/'.
+WARNING: Can't open include file '/'.
+ECHO: "included.scad"
+ECHO: "included2.scad"

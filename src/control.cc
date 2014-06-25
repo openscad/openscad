@@ -62,7 +62,7 @@ public: // methods
 						 const Context *ctx, const EvalContext *evalctx);
 
 	static const EvalContext* getLastModuleCtx(const EvalContext *evalctx);
-	
+
 	static AbstractNode* getChild(const Value& value, const EvalContext* modulectx);
 
 private: // data
@@ -139,7 +139,7 @@ AbstractNode* ControlModule::getChild(const Value& value, const EvalContext* mod
 		PRINTB("WARNING: Bad parameter type (%s) for children, only accept: empty, number, vector, range.", value.toString());
 		return NULL;
 	}
-		
+
 	int n = trunc(v);
 	if (n < 0) {
 		PRINTB("WARNING: Negative children index (%d) not allowed", n);
@@ -268,9 +268,14 @@ AbstractNode *ControlModule::instantiate(const Context* /*ctx*/, const ModuleIns
 				if (evalctx->getArgName(i) == "append" && evalctx->getArgValue(i).toString() == "false") { // Detects the "append" argument and does not write it into the file
 					append = false;
 				} else {
-					if (i > 1) msg << ", ";// Tries to keep as close to the original behavior as possible
+					if (i > 1) msg << ", ";// Original behavior (except when dealing with strings)
 					if (!evalctx->getArgName(i).empty()) msg << evalctx->getArgName(i) << " = ";
-					msg << evalctx->getArgValue(i).toString(); // Note: Adding toString() removes quotes from text variables
+					Value val = evalctx->getArgValue(i);
+					//if (val.type() == Value::STRING) {
+					//	msg << '"' << val.toString() << '"';
+					//} else {
+						msg << val.toString(); // Note: Removing quotes when the output is an string is much more convenient when writing to files
+					//}
 				}
 			}
 			FILE * pFile;
@@ -293,7 +298,12 @@ AbstractNode *ControlModule::instantiate(const Context* /*ctx*/, const ModuleIns
 			for (size_t i = 0; i < inst->arguments.size(); i++) {
 				if (i > 0) msg << ", ";
 				if (!evalctx->getArgName(i).empty()) msg << evalctx->getArgName(i) << " = ";
-				msg << evalctx->getArgValue(i);
+				Value val = evalctx->getArgValue(i);
+				if (val.type() == Value::STRING) {
+					msg << '"' << val.toString() << '"';
+				} else {
+					msg << val.toString();
+				}
 			}
 			PRINTB("%s", msg.str());
 		}
