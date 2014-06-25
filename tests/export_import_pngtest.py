@@ -25,8 +25,8 @@ import sys, os, re, subprocess, argparse
 
 def failquit(*args):
 	if len(args)!=0: print(args)
-	print('test_3d_export args:',str(sys.argv))
-	print('exiting test_3d_export.py with failure')
+	print('export_import_pngtest args:',str(sys.argv))
+	print('exiting export_import_pngtest.py with failure')
 	sys.exit(1)
 
 def createImport(inputfile, scadfile):
@@ -78,6 +78,19 @@ if inputsuffix != '.scad' and inputsuffix != '.csg':
         createImport(inputfile, tempfile)
         inputfile = tempfile
 
+#
+# Generate monotone color export. Only used during TEST_GENERATE (see 
+# doc/testing.txt). Used for 3d formats that dont encode color, like STL.
+# (importing an STL will destroy the 'negative face' colors of OpenCSG/CGAL)
+if os.getenv("TEST_GENERATE") and args.format in ['stl','off']:
+	create_expected_png_cmd = [args.openscad, inputfile, '--colorscheme=Monotone', '-o', pngfile]
+	print('Running OpenSCAD for TEST_GENERATE:')
+	print(' '.join(create_expected_png_cmd))
+	result = subprocess.call(create_expected_png_cmd)
+	if result != 0:
+		failquit('OpenSCAD #1 failed with return code ' + str(result))
+	else:
+		sys.exit(0)
 #
 # First run: Just export the given filetype
 #
