@@ -18,6 +18,9 @@ public:
   virtual Response visit(class State &state, const class LeafNode &node) {
 		return visit(state, (const class AbstractPolyNode &)node);
 	}
+  virtual Response visit(class State &state, const class BendNode &node) {
+		return visit(state, (const class AbstractPolyNode &)node);
+	}
   virtual Response visit(class State &state, const class CgaladvNode &node) {
 		return visit(state, (const class AbstractNode &)node);
 	}

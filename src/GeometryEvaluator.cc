@@ -8,6 +8,7 @@
 #include "state.h"
 #include "offsetnode.h"
 #include "transformnode.h"
+#include "bendnode.h"
 #include "linearextrudenode.h"
 #include "rotateextrudenode.h"
 #include "csgnode.h"
@@ -530,6 +531,164 @@ Response GeometryEvaluator::visit(State &state, const CsgNode &node)
 		addToParent(state, node, geom);
 	}
 	return ContinueTraversal;
+}
+
+/*!
+	input: List of 2D or 3D objects (not mixed)
+	output: Polygon2d or 3D PolySet
+	operation:
+	  o Union all children
+	  o Perform bend
+ */			
+Response GeometryEvaluator::visit(State &state, const BendNode &node)
+{
+#define EPS 1e-3
+	if (state.isPrefix() && isSmartCached(node)) return PruneTraversal;
+	if (state.isPostfix()) {
+		shared_ptr<const class Geometry> geom;
+		if (!isSmartCached(node)) {
+			double b1[3], m, b2[3], b3[3], ov[3], R0, R, Y, L, a;
+			// First union all children
+			ResultObject res = applyToChildren(node, OPENSCAD_UNION);
+			if ((geom = res.constptr())) {
+				if (geom->getDimension() == 2) {
+					// 2D circular bend, ignoring Z coord
+
+					// b1: radius
+					b1[0] = node.fixed_x-node.center_x;
+					b1[1] = node.fixed_y-node.center_y;
+					R0 = sqrt(b1[0]*b1[0] + b1[1]*b1[1]);
+					if (R0 < EPS) {
+						PRINT("Error: 2D bend center is equal to fixed point, skipping object.");
+						return ContinueTraversal;
+					}
+					b1[0] = b1[0]/R0;
+					b1[1] = b1[1]/R0;
+
+					shared_ptr<const Polygon2d> polygons = dynamic_pointer_cast<const Polygon2d>(geom);
+					assert(polygons);
+
+					// If we got a const object, make a copy
+					shared_ptr<Polygon2d> newpoly;
+					if (res.isConst()) newpoly.reset(new Polygon2d(*polygons));
+					else newpoly = dynamic_pointer_cast<Polygon2d>(res.ptr());
+
+					BOOST_FOREACH(Outline2d &p, (Polygon2d::Outlines2d&)newpoly->outlines()) {
+						BOOST_FOREACH(Vector2d &v, p.vertices) {
+							ov[0] = v[0]-node.center_x;
+							ov[1] = v[1]-node.center_y;
+							R = ov[0]*b1[0] + ov[1]*b1[1];
+							L = -ov[0]*b1[1] + ov[1]*b1[0];
+							a = L/R0;
+							v[0] = node.center_x + R*b1[0]*cos(a) - R*b1[1]*sin(a);
+							v[1] = node.center_y + R*b1[1]*cos(a) + R*b1[0]*sin(a);
+						}
+					}
+
+					geom = newpoly;
+				}
+				else if (geom->getDimension() == 3) {
+					shared_ptr<const PolySet> ps = dynamic_pointer_cast<const PolySet>(geom);
+					if (!ps) {
+						shared_ptr<const CGAL_Nef_polyhedron> N = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom);
+						assert(N);
+						ps.reset(N->convertToPolyset());
+						if (!ps) {
+							PRINT("ERROR: Failed to convert Nef polyhedron to PolySet; bend only works on PolySets. Is your object non-manifold?\n");
+						}
+					}
+					if (ps) {
+
+						// If we got a const object, make a copy
+						shared_ptr<PolySet> newps;
+						if (res.isConst()) newps.reset(new PolySet(*ps));
+						else newps = dynamic_pointer_cast<PolySet>(res.ptr());
+
+						// b1: vertical radius
+						b1[0] = node.fixed_x-node.center_x;
+						b1[1] = node.fixed_y-node.center_y;
+						b1[2] = node.fixed_z-node.center_z;
+						R0 = sqrt(b1[0]*b1[0] + b1[1]*b1[1] + b1[2]*b1[2]);
+						if (R0 < EPS) {
+							PRINT("Error: 3D bend center is equal to fixed point, skipping object.");
+							return ContinueTraversal;
+						}
+						b1[0] = b1[0]/R0;
+						b1[1] = b1[1]/R0;
+						b1[2] = b1[2]/R0;
+
+						// b2: parallel to the axis of bend cylinder
+						b2[0] = node.cyl_x-node.fixed_x;
+						b2[1] = node.cyl_y-node.fixed_y;
+						b2[2] = node.cyl_z-node.fixed_z;
+						m = b2[0]*b1[0] + b2[1]*b1[1] + b2[2]*b1[2];
+						b2[0] = b2[0] - m*b1[0];
+						b2[1] = b2[1] - m*b1[1];
+						b2[2] = b2[2] - m*b1[2];
+						m = sqrt(b2[0]*b2[0] + b2[1]*b2[1] + b2[2]*b2[2]);
+
+						if (m < EPS) {
+							// center, fixed and cyl are laying on a single straight line => 3D spherical bend
+							BOOST_FOREACH(PolySet::Polygon &p, newps->polygons) {
+								BOOST_FOREACH(Vector3d &v, p) {
+									ov[0] = v[0]-node.center_x;
+									ov[1] = v[1]-node.center_y;
+									ov[2] = v[2]-node.center_z;
+									R = ov[0]*b1[0] + ov[1]*b1[1] + ov[2]*b1[2];
+									b2[0] = ov[0]-R*b1[0];
+									b2[1] = ov[1]-R*b1[1];
+									b2[2] = ov[2]-R*b1[2];
+									L = sqrt(b2[0]*b2[0] + b2[1]*b2[1] + b2[2]*b2[2]);
+									if (L > EPS) {
+										b2[0] /= L;
+										b2[1] /= L;
+										b2[2] /= L;
+									}
+									a = L/R0;
+									v[0] = node.center_x + R*b1[0]*cos(a) + R*b2[0]*sin(a);
+									v[1] = node.center_y + R*b1[1]*cos(a) + R*b2[1]*sin(a);
+									v[2] = node.center_z + R*b1[2]*cos(a) + R*b2[2]*sin(a);
+								}
+							}
+						}
+						else {
+							b2[0] = b2[0]/m;
+							b2[1] = b2[1]/m;
+							b2[2] = b2[2]/m;
+							// b3: third basis vector - cross product of b1, b2
+							b3[0] = b1[1] * b2[2] - b1[2] * b2[1];
+							b3[1] = b1[2] * b2[0] - b1[0] * b2[2];
+							b3[2] = b1[0] * b2[1] - b1[1] * b2[0];
+
+							// 3D cylindric bend
+							BOOST_FOREACH(PolySet::Polygon &p, newps->polygons) {
+								BOOST_FOREACH(Vector3d &v, p) {
+									ov[0] = v[0]-node.center_x;
+									ov[1] = v[1]-node.center_y;
+									ov[2] = v[2]-node.center_z;
+									R = ov[0]*b1[0] + ov[1]*b1[1] + ov[2]*b1[2];
+									Y = ov[0]*b2[0] + ov[1]*b2[1] + ov[2]*b2[2];
+									L = ov[0]*b3[0] + ov[1]*b3[1] + ov[2]*b3[2];
+									a = L/R0;
+									v[0] = node.center_x + Y*b2[0] + R*b1[0]*cos(a) + R*b3[0]*sin(a);
+									v[1] = node.center_y + Y*b2[1] + R*b1[1]*cos(a) + R*b3[1]*sin(a);
+									v[2] = node.center_z + Y*b2[2] + R*b1[2]*cos(a) + R*b3[2]*sin(a);
+								}
+							}
+						}
+
+						geom = newps;
+					}
+				}
+			}
+		}
+		else {
+			geom = smartCacheGet(node);
+		}
+		addToParent(state, node, geom);
+	}
+	return ContinueTraversal;
+#undef EPS
 }
 
 /*!
