@@ -322,9 +322,7 @@ bool FileModule::handleDependencies()
 			// Detect appearance but not removal of files, and keep old module
 			// on compile errors (FIXME: Is this correct behavior?)
 			if (changed) {
-#ifdef DEBUG
-				PRINTB_NOCACHE("  %s: %p -> %p", filename % oldmodule % newmodule);
-#endif
+				PRINTDB("  %s: %p -> %p", filename % oldmodule % newmodule);
 			}
 			somethingchanged |= changed;
 			// Only print warning if we're not part of an automatic reload
