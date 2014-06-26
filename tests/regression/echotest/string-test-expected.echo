@@ -1,1 +1,2 @@
-ECHO: "The quick brown fox \tjumps \"over\" the lazy dog.The quick brown fox.\nThe \\lazy\\ dog."
+ECHO: "The quick brown fox 	jumps "over" the lazy dog.The quick brown fox.
+The \lazy\ dog."
