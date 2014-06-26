@@ -84,10 +84,10 @@ bool ModuleCache::evaluate(const std::string &filename, FileModule *&module)
 	if (shouldCompile) {
 #ifdef DEBUG
 		if (found) {
-			PRINTB("Recompiling cached library: %s (%s)", filename % cache_id);
+			PRINTDB("Recompiling cached library: %s (%s)", filename % cache_id);
 		}
 		else {
-			PRINTB("Compiling library '%s'.", filename);
+			PRINTDB("Compiling library '%s'.", filename);
 		}
 #endif
 
