@@ -34,10 +34,7 @@ public:
 	bool showCrosshairs() const { return this->showcrosshairs; }
 	void setShowCrosshairs(bool enabled) { this->showcrosshairs = enabled; }
 	bool orthoMode() const { return (this->cam.projection == Camera::ORTHOGONAL); }
-	void setOrthoMode(bool enabled) {
-		if (enabled) this->cam.projection = Camera::ORTHOGONAL;
-		else this->cam.projection = Camera::PERSPECTIVE;
-	}
+	void setOrthoMode(bool enabled);
 	std::string getRendererInfo() const;
 #if QT_VERSION >= 0x050100
 	float getDPI() { return this->devicePixelRatio(); }
