@@ -207,7 +207,7 @@ use[ \t\r\n>]*"<"	{ BEGIN(cond_use); }
 <cond_comment>{
 "*/"                    { BEGIN(INITIAL); }
 {UNICODE}               { parser_error_pos -= strlen(lexertext) - 1; }
-\n
+.|\n
 }
 
 "<="	return LE;
