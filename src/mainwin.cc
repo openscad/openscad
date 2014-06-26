@@ -97,10 +97,6 @@
 #include "cgalworker.h"
 #include "cgalutils.h"
 
-#else
-
-#include "PolySetEvaluator.h"
-
 #endif // ENABLE_CGAL
 
 #include "boosty.h"
