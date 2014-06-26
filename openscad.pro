@@ -305,7 +305,8 @@ src/FontCache.h \
            \
            src/AutoUpdater.h \
 	   src/scadlexer.h \
-    src/toolbar.h
+    src/toolbar.h \
+    src/editortoolbar.h
 
 SOURCES += src/version_check.cc \
            src/ProgressWidget.cc \
@@ -391,7 +392,8 @@ src/FontCache.cc \
            src/mainwin.cc \
 src/FontListDialog.cc \
 src/scadlexer.cpp \
-    src/toolbar.cpp
+    src/toolbar.cpp \
+    src/editortoolbar.cpp
 # ClipperLib
 SOURCES += src/polyclipping/clipper.cpp
 HEADERS += src/polyclipping/clipper.hpp
