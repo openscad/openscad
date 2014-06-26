@@ -51,6 +51,7 @@ public:
 	};
 
 	Polyhedron() {
+		PRINTD("Polyhedron()");
 		// Set default colors.
 		setColor(CGAL_NEF3_MARKED_VERTEX_COLOR,0xb7,0xe8,0x5c);
 		setColor(CGAL_NEF3_UNMARKED_VERTEX_COLOR,0xff,0xf6,0x7c);
@@ -58,11 +59,11 @@ public:
 		//setColor(CGAL_NEF3_UNMARKED_EDGE_COLOR,0xff,0xec,0x5e);
 		// Face and Edge colors are taken from default colorscheme
 		setColorScheme(OSColors::defaultColorScheme());
-		PRINTD("Cgalrender polyhedron constr");
+		PRINTD("Polyhedron() end");
 	}
 
 	void draw(bool showedges) const {
-		PRINTD("cgal hedron draw");
+		PRINTD("draw()");
 		if(this->style == SNC_BOUNDARY) {
 			glCallList(this->object_list_+2);
 			if(showedges) {
@@ -75,41 +76,51 @@ public:
 			glCallList(this->object_list_+1);
 			glCallList(this->object_list_);
 		}
+		PRINTD("draw() end");
 	}
+
+	// overrides function in OGL_helper.h
 	CGAL::Color getVertexColor(Vertex_iterator v) const {
+		PRINTD("getVertexColor");
 		CGAL::Color c = v->mark() ? colors[CGAL_NEF3_UNMARKED_VERTEX_COLOR] : colors[CGAL_NEF3_MARKED_VERTEX_COLOR];
 		return c;
 	}
 
+	// overrides function in OGL_helper.h
 	CGAL::Color getEdgeColor(Edge_iterator e) const {
+		PRINTD("getEdgeColor");
 		CGAL::Color c = e->mark() ? colors[CGAL_NEF3_UNMARKED_EDGE_COLOR] : colors[CGAL_NEF3_MARKED_EDGE_COLOR];
 		return c;
 	}
 
-	CGAL::Color getFacetColor(Halffacet_iterator f) const {
+	// overrides function in OGL_helper.h
+	CGAL::Color getFacetColor(Halffacet_iterator f, bool is_back_facing) const {
+		PRINTD("getFacetColor");
 		CGAL::Color c = f->mark() ? colors[CGAL_NEF3_UNMARKED_FACET_COLOR] : colors[CGAL_NEF3_MARKED_FACET_COLOR];
 		return c;
 	}
 
 	void setColor(Polyhedron::RenderColor color_index, const Color4f &c) {
+		PRINTDB("setColor %i %f %f %f",color_index%c[0]%c[1]%c[2]);
 		this->colors[color_index] = CGAL::Color(c[0]*255,c[1]*255,c[2]*255);
 	}
 
 	void setColor(Polyhedron::RenderColor color_index,
 				  unsigned char r, unsigned char g, unsigned char b) {
+		PRINTDB("setColor %i %i %i %i",color_index%r%g%b);
 		this->colors[color_index] = CGAL::Color(r,g,b);
 	}
 
 	// set this->colors based on the given colorscheme. vertex colors
 	// are not set here as colorscheme doesnt yet hold vertex colors.
 	void setColorScheme(const OSColors::colorscheme &cs) {
-		PRINTD("cgal renderer polyhedron setcolsch");
+		PRINTD("setColorScheme");
 		//setColor(CGAL_NEF3_MARKED_VERTEX_COLOR,cs.at(...));
 		//setColor(CGAL_NEF3_UNMARKED_VERTEX_COLOR,cs.at(...));
 		setColor(CGAL_NEF3_MARKED_FACET_COLOR, OSColors::getValue(cs,OSColors::CGAL_FACE_BACK_COLOR));
-		setColor(CGAL_NEF3_MARKED_EDGE_COLOR, OSColors::getValue(cs,OSColors::CGAL_EDGE_FRONT_COLOR));
 		setColor(CGAL_NEF3_UNMARKED_FACET_COLOR, OSColors::getValue(cs,OSColors::CGAL_FACE_FRONT_COLOR));
-		setColor(CGAL_NEF3_UNMARKED_EDGE_COLOR, OSColors::getValue(cs,OSColors::CGAL_EDGE_BACK_COLOR));
+		setColor(CGAL_NEF3_MARKED_EDGE_COLOR, OSColors::getValue(cs,OSColors::CGAL_EDGE_BACK_COLOR));
+		setColor(CGAL_NEF3_UNMARKED_EDGE_COLOR, OSColors::getValue(cs,OSColors::CGAL_EDGE_FRONT_COLOR));
 	}
 
 private:

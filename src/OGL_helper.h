@@ -28,6 +28,7 @@
 #include <cstdlib>
 
 // Overridden in CGAL_renderer
+/*
 #define CGAL_NEF3_OGL_MARKED_VERTEX_COLOR 183,232,92
 #define CGAL_NEF3_OGL_MARKED_EDGE_COLOR 171,216,86
 #define CGAL_NEF3_OGL_MARKED_FACET_COLOR  157,203,81
@@ -37,7 +38,7 @@
 #define CGAL_NEF3_OGL_UNMARKED_EDGE_COLOR 255,236,94
 #define CGAL_NEF3_OGL_UNMARKED_FACET_COLOR 249,215,44
 #define CGAL_NEF3_OGL_UNMARKED_BACK_FACET_COLOR 249,115,144
-
+*/
 
 const bool cull_backfaces = false;
 const bool color_backfaces = false;
@@ -365,18 +366,20 @@ namespace OGL {
     Bbox_3  bbox() const { return bbox_; }
     Bbox_3& bbox()       { return bbox_; }
 
+    // Overridden in CGAL_renderer
     virtual CGAL::Color getVertexColor(Vertex_iterator v) const
     {
+      PRINTD("getVertexColor()");
 	(void)v;
 //	CGAL::Color cf(CGAL_NEF3_OGL_MARKED_VERTEX_COLOR),
 //	  ct(CGAL_NEF3_OGL_UNMARKED_VERTEX_COLOR); // more blue-ish
 //	CGAL::Color c = v->mark() ? ct : cf;
-	// Overridden in CGAL_renderer
 	CGAL::Color c(0,0,200);
 	return c;
     }
 
     void draw(Vertex_iterator v) const { 
+      PRINTD("draw( Vertex_iterator )");
       //      CGAL_NEF_TRACEN("drawing vertex "<<*v);
       CGAL::Color c = getVertexColor(v);
       glPointSize(10);
@@ -391,8 +394,10 @@ namespace OGL {
       glEnd();
     }
 
+    // Overridden in CGAL_renderer
     virtual CGAL::Color getEdgeColor(Edge_iterator e) const
     {
+      PRINTD("getEdgeColor)");
 	(void)e;
 //	CGAL::Color cf(CGAL_NEF3_OGL_MARKED_EDGE_COLOR),
 //	  ct(CGAL_NEF3_OGL_UNMARKED_EDGE_COLOR); // more blue-ish
@@ -403,6 +408,7 @@ namespace OGL {
     }
 
     void draw(Edge_iterator e) const { 
+      PRINTD("draw(Edge_iterator)");
       //      CGAL_NEF_TRACEN("drawing edge "<<*e);
       Double_point p = e->source(), q = e->target();
       CGAL::Color c = getEdgeColor(e);
@@ -415,27 +421,32 @@ namespace OGL {
       glEnd();
     }
 
+
+    // Overridden in CGAL_renderer
     virtual CGAL::Color getFacetColor(Halffacet_iterator f, bool is_back_facing) const
     {
+      PRINTD("getFacetColor");
 /*
 	(void)f;
 //	CGAL::Color cf(CGAL_NEF3_OGL_MARKED_FACET_COLOR),
 //	  ct(CGAL_NEF3_OGL_UNMARKED_FACET_COLOR); // more blue-ish
 //	CGAL::Color c = (f->mark() ? ct : cf);
+*/
 	CGAL::Color c(0,200,0);
 	return c;
-*/
 
-      // Overridden in CGAL_renderer
+/*
       if (is_back_facing) return !f->mark()
           ? CGAL::Color(CGAL_NEF3_OGL_MARKED_BACK_FACET_COLOR)
           : CGAL::Color(CGAL_NEF3_OGL_UNMARKED_BACK_FACET_COLOR);
       else return !f->mark()
           ? CGAL::Color(CGAL_NEF3_OGL_MARKED_FACET_COLOR)
           : CGAL::Color(CGAL_NEF3_OGL_UNMARKED_FACET_COLOR);
+*/
     }
 
     void draw(Halffacet_iterator f, bool is_back_facing) const {
+      PRINTD("draw(Halffacet_iterator)");
       //      CGAL_NEF_TRACEN("drawing facet "<<(f->debug(),""));
       GLUtesselator* tess_ = gluNewTess();
       gluTessCallback(tess_, GLenum(GLU_TESS_VERTEX_DATA),
@@ -478,6 +489,7 @@ namespace OGL {
 
     void construct_axes() const
     { 
+      PRINTD("construct_axes");
       glLineWidth(2.0);
       // red x-axis
       glColor3f(1.0,0.0,0.0);
@@ -511,6 +523,7 @@ namespace OGL {
 
 
     void fill_display_lists() {
+      PRINTD("fill_display_lists");
       glNewList(object_list_, GL_COMPILE);
       Vertex_iterator v;
       for(v=vertices_.begin();v!=vertices_.end();++v) 
@@ -548,6 +561,7 @@ namespace OGL {
     }
 
     void init() { 
+      PRINTD("init()");
       if (init_) return;
       init_ = true;
       switches[SNC_AXES] = false;
@@ -555,11 +569,13 @@ namespace OGL {
       object_list_ = glGenLists(4); 
       CGAL_assertion(object_list_); 
       fill_display_lists();
+      PRINTD("init() end");
     }
 
 
     void draw() const
     { 
+      PRINTD("draw()");
       if (!is_initialized()) const_cast<Polyhedron&>(*this).init();
       double l = (std::max)( (std::max)( bbox().xmax() - bbox().xmin(),
 					 bbox().ymax() - bbox().ymin()),
@@ -582,6 +598,7 @@ namespace OGL {
       glCallList(object_list_+1); // edges
       glCallList(object_list_);   // vertices
       if (switches[SNC_AXES]) glCallList(object_list_+3); // axis
+      PRINTD("draw() end");
    }
 
     void debug(std::ostream& os = std::cerr) const

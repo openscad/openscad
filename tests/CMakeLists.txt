@@ -1301,6 +1301,10 @@ add_cmdline_test(openscad-colorscheme-metallic EXE ${OPENSCAD_BINPATH}
                  ARGS --colorscheme=Metallic -o 
                  SUFFIX png 
                  FILES ${CMAKE_SOURCE_DIR}/../examples/Basics/difference_cube.scad)
+add_cmdline_test(openscad-colorscheme-metallic-render EXE ${OPENSCAD_BINPATH}
+                 ARGS --colorscheme=Metallic --render -o 
+                 SUFFIX png 
+                 FILES ${CMAKE_SOURCE_DIR}/../examples/Basics/difference_cube.scad)
 add_cmdline_test(openscad-colorscheme-sunset EXE ${OPENSCAD_BINPATH}
                  ARGS --colorscheme=Sunset -o 
                  SUFFIX png 

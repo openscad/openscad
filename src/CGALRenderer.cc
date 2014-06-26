@@ -64,7 +64,7 @@ CGALRenderer::~CGALRenderer()
 
 void CGALRenderer::rebuildPolyhedron()
 {
-	PRINTD("cgr rebuild poly");
+	PRINTD("rebuildPolyhedron");
 	if (this->N) {
 		this->polyhedron.reset(new Polyhedron());
 		if (this->colorscheme) this->polyhedron->setColorScheme(*this->colorscheme);
@@ -73,23 +73,23 @@ void CGALRenderer::rebuildPolyhedron()
 		// CGAL_NEF3_UNMARKED_FACET_COLOR <- CGAL_FACE_FRONT_COLOR
 		this->polyhedron->init();
 	}
-	PRINTD("cgr rebuild end");
+	PRINTD("rebuild() end");
 }
 
 void CGALRenderer::setColorScheme(const OSColors::colorscheme &cs)
 {
-	PRINTD("Cgalrenderer scholor");
+	PRINTD("setColorScheme");
 	Renderer::setColorScheme(cs);
 	this->rebuildPolyhedron();
-	PRINTD("Cgalrenderer scholor done");
+	PRINTD("setColorScheme done");
 }
 
 void CGALRenderer::draw(bool showfaces, bool showedges) const
 {
-	PRINTD("cgalrenderer draw");
+	PRINTD("draw()");
 	if (this->polyset) {
+		PRINTD("draw() polyset");
 		if (this->polyset->getDimension() == 2) {
-			PRINTD("cgalrenderer draw 2D");
 			// Draw 2D polygons
 			glDisable(GL_LIGHTING);
 // FIXME:		const QColor &col = Preferences::inst()->color(Preferences::CGAL_FACE_2D_COLOR);
@@ -114,7 +114,6 @@ void CGALRenderer::draw(bool showfaces, bool showedges) const
 			glEnable(GL_DEPTH_TEST);
 		}
 		else {
-			PRINTD("cgalrenderer polyset draw");
 			// Draw 3D polygons
 			const Color4f c(-1,-1,-1,-1);	
 			setColor(COLORMODE_MATERIAL, c.data(), NULL);
@@ -122,12 +121,12 @@ void CGALRenderer::draw(bool showfaces, bool showedges) const
 		}
 	}
 	else if (this->polyhedron) {
-		PRINTD("cgalrenderer polyhedron draw");
+		PRINTD("draw() polyhedron");
 		if (showfaces) this->polyhedron->set_style(SNC_BOUNDARY);
 		else this->polyhedron->set_style(SNC_SKELETON);
-		
 		this->polyhedron->draw(showfaces && showedges);
-  }
+	}
+	PRINTD("draw() end");
 }
 
 BoundingBox CGALRenderer::getBoundingBox() const

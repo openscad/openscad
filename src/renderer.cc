@@ -18,6 +18,7 @@ bool Renderer::getColor(Renderer::ColorMode colormode, Color4f &col) const
 
 Renderer::Renderer() : colorscheme(NULL)
 {
+	PRINTD("Renderer() start");
 	// Setup default colors
 	// The main colors, MATERIAL and CUTOUT, come from this object's
 	// colorscheme. Colorschemes don't currently hold information
@@ -34,11 +35,12 @@ Renderer::Renderer() : colorscheme(NULL)
 	colormap[COLORMODE_BACKGROUND_EDGES] = Color4f(150, 150, 150, 128);
 
 	setColorScheme(OSColors::defaultColorScheme());
-	PRINTD("render constr");
+	PRINTD("Renderer() end");
 }
 
 void Renderer::setColor(const float color[4], GLint *shaderinfo) const
 {
+	PRINTD("setColor a");
 	Color4f col;
 	getColor(COLORMODE_MATERIAL,col);
 	float c[4] = {color[0], color[1], color[2], color[3]};
@@ -57,6 +59,7 @@ void Renderer::setColor(const float color[4], GLint *shaderinfo) const
 
 void Renderer::setColor(ColorMode colormode, const float color[4], GLint *shaderinfo) const
 {
+	PRINTD("setColor b");
 	Color4f basecol;
 	if (getColor(colormode, basecol)) {
 		if (colormode == COLORMODE_BACKGROUND) {
@@ -77,6 +80,7 @@ void Renderer::setColor(ColorMode colormode, const float color[4], GLint *shader
 
 void Renderer::setColor(ColorMode colormode, GLint *shaderinfo) const
 {	
+	PRINTD("setColor c");
 	float c[4] = {-1,-1,-1,-1};
 	setColor(colormode, c, shaderinfo);
 }
@@ -86,7 +90,7 @@ this does not change Highlight or Background colors as they are not
 represented in the colorscheme (yet). Also edgecolors are currently the 
 same for CGAL & OpenCSG */
 void Renderer::setColorScheme(const OSColors::colorscheme &cs) {
-	PRINTD("renderer setcolsch");
+	PRINTD("setColorScheme");
 	colormap[COLORMODE_MATERIAL] = OSColors::getValue(cs,OSColors::OPENCSG_FACE_FRONT_COLOR);
 	colormap[COLORMODE_CUTOUT] = OSColors::getValue(cs,OSColors::OPENCSG_FACE_BACK_COLOR);
 	colormap[COLORMODE_MATERIAL_EDGES] = OSColors::getValue(cs,OSColors::CGAL_EDGE_FRONT_COLOR);
