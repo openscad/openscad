@@ -797,6 +797,7 @@ endmacro()
 # Usage example: set_test_config(Heavy dumptest_testname opencsgtest_testname2)
 #
 function(set_test_config CONFIG)
+  #message(STATUS "set_test_config, config: ${CONFIG} argn: ${ARGN}")
   list(APPEND ${CONFIG}_TEST_CONFIG ${ARGN})
   list(FIND TEST_CONFIGS ${CONFIG} FOUND)
   if (FOUND EQUAL -1)
@@ -904,7 +905,7 @@ function(add_cmdline_test TESTCMD_BASENAME)
         set(FILENAME_OPTION -f ${FILE_BASENAME})
       endif()
 
-      add_test(NAME ${TEST_FULLNAME} ${CONFARG} ${CONFVAL} COMMAND ${PYTHON_EXECUTABLE} ${tests_SOURCE_DIR}/test_cmdline_tool.py --comparator=${COMPARATOR} -c ${ImageMagick_convert_EXECUTABLE} -s ${TESTCMD_SUFFIX} ${EXTRA_OPTIONS} ${TESTNAME_OPTION} ${FILENAME_OPTION} ${TESTCMD_EXE} ${TESTCMD_SCRIPT} "${SCADFILE}" ${TESTCMD_ARGS})
+      add_test(NAME ${TEST_FULLNAME} ${CONFARG} ${CONFVAL} COMMAND ${PYTHON_EXECUTABLE} ${tests_SOURCE_DIR}/test_cmdline_tool.py --comparator=${COMPARATOR} -c ${IMAGE_COMPARE_EXECUTABLE} -s ${TESTCMD_SUFFIX} ${EXTRA_OPTIONS} ${TESTNAME_OPTION} ${FILENAME_OPTION} ${TESTCMD_EXE} ${TESTCMD_SCRIPT} "${SCADFILE}" ${CAMERA_OPTION} ${TESTCMD_ARGS} )
       set_property(TEST ${TEST_FULLNAME} PROPERTY ENVIRONMENT "${CTEST_ENVIRONMENT}")
     endif()
   endforeach()
@@ -985,6 +986,29 @@ list(APPEND OPENCSGTEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/intersec
 list(APPEND THROWNTOGETHERTEST_FILES ${OPENCSGTEST_FILES})
 
 list(APPEND CGALSTLSANITYTEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/normal-nan.scad)
+
+list(APPEND EXPORT3D_TEST_FILES ${EXAMPLE_FILES})
+list(APPEND EXPORT3D_TEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/features/polyhedron-nonplanar-tests.scad )
+disable_tests(
+  # the flat_body is not 3d so dont do 3d-tests on it
+  stlpngtest_flat_body
+  offpngtest_flat_body
+
+  # these take too long, for little relative gain in testing
+  stlpngtest_iteration
+  offpngtest_iteration
+  stlpngtest_fractal
+  offpngtest_fractal
+)
+
+# mark which tests are 2d (regex match inside add_cmdline_test)
+# (note - dont use the offset from examples/Advanced)
+list(APPEND TESTS_2D circle control-hull-dimension difference-2d ellipse
+ flat_body hull2 dxf intersection2 issue585 issue612 lwpolyline2 -arc _arc
+ minkowski2 multiple-layers offset- polygon* primitive-cut projection-test
+ render-2d resize-2d scale2D scale2d text-search square font 
+ transform-insert triangle)
+set(TEST_CONFIGS ${TEST_CONFIGS} Dimension2)
 
 # FIXME: This test illustrates a weakness in child() combined with modifiers.
 # Reenable it when this is improved

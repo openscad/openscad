@@ -68,7 +68,7 @@ void Camera::viewAll(const BoundingBox &bbox, float scalefactor)
 
 	switch (this->projection) {
 	case Camera::ORTHOGONAL:
-		this->height = bbox.diagonal().norm();
+		this->height = bbox.diagonal().norm()+16.18;
 		break;
 	case Camera::PERSPECTIVE: {
 		double radius = bbox.diagonal().norm()/2;
@@ -87,6 +87,8 @@ void Camera::viewAll(const BoundingBox &bbox, float scalefactor)
 	}
 		break;
 	}
+	PRINTDB("modified center x y z %f %f %f",center.x() % center.y() % center.z());
+	PRINTDB("modified eye    x y z %f %f %f",eye.x() % eye.y() % eye.z());
 }
 
 void Camera::zoom(int delta)
