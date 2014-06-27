@@ -823,6 +823,7 @@ endmacro()
 # Usage example: set_test_config(Heavy dumptest_testname opencsgtest_testname2)
 #
 function(set_test_config CONFIG)
+  #message(STATUS "set_test_config, config: ${CONFIG} argn: ${ARGN}")
   list(APPEND ${CONFIG}_TEST_CONFIG ${ARGN})
   list(FIND TEST_CONFIGS ${CONFIG} FOUND)
   if (FOUND EQUAL -1)
@@ -894,6 +895,23 @@ function(add_cmdline_test TESTCMD_BASENAME)
     string(REPLACE " " "_" FILE_BASENAME ${FILE_BASENAME}) # Test names cannot include spaces
     set(TEST_FULLNAME "${TESTCMD_BASENAME}_${FILE_BASENAME}")
     list(FIND DISABLED_TESTS ${TEST_FULLNAME} DISABLED)
+
+    # 2d tests should be viewed from the top, not an angle.
+    set(test_is_2d 0)
+    foreach(test2d IN LISTS TESTS_2D)
+      string(REGEX MATCH "${test2d}" match_result ${TEST_FULLNAME})
+      if( NOT "${match_result}" STREQUAL "" )
+        #message(STATUS "2d test found: ${TEST_FULLNAME}, ${match_result}")
+        set(test_is_2d 1)
+      endif() 
+    endforeach()
+    set(CAMERA_OPTION "")
+    if(${test_is_2d} EQUAL 1)
+      #message(STATUS "${TESTCMD_ARGS}")
+      set(CAMERA_OPTION "--camera=0,0,200,0,0,0" "--viewall" "--projection=ortho" "--debug=Camera")
+      set_test_config(Dimension2 ${TEST_FULLNAME})
+    endif()
+
     if (${DISABLED} EQUAL -1)
 
       # Handle configurations
@@ -913,7 +931,7 @@ function(add_cmdline_test TESTCMD_BASENAME)
         set(FILENAME_OPTION -f ${FILE_BASENAME})
       endif()
 
-      add_test(NAME ${TEST_FULLNAME} ${CONFARG} ${CONFVAL} COMMAND ${PYTHON_EXECUTABLE} ${tests_SOURCE_DIR}/test_cmdline_tool.py --comparator=${COMPARATOR} -c ${IMAGE_COMPARE_EXECUTABLE} -s ${TESTCMD_SUFFIX} ${EXTRA_OPTIONS} ${TESTNAME_OPTION} ${FILENAME_OPTION} ${TESTCMD_EXE} ${TESTCMD_SCRIPT} "${SCADFILE}" ${TESTCMD_ARGS})
+      add_test(NAME ${TEST_FULLNAME} ${CONFARG} ${CONFVAL} COMMAND ${PYTHON_EXECUTABLE} ${tests_SOURCE_DIR}/test_cmdline_tool.py --comparator=${COMPARATOR} -c ${IMAGE_COMPARE_EXECUTABLE} -s ${TESTCMD_SUFFIX} ${EXTRA_OPTIONS} ${TESTNAME_OPTION} ${FILENAME_OPTION} ${TESTCMD_EXE} ${TESTCMD_SCRIPT} "${SCADFILE}" ${CAMERA_OPTION} ${TESTCMD_ARGS} )
       set_property(TEST ${TEST_FULLNAME} PROPERTY ENVIRONMENT "${CTEST_ENVIRONMENT}")
     endif()
   endforeach()
@@ -1008,6 +1026,15 @@ disable_tests(
   offpngtest_fractal
 )
 
+# mark which tests are 2d (regex match inside add_cmdline_test)
+# (note - dont use the offset from examples/Advanced)
+list(APPEND TESTS_2D circle control-hull-dimension difference-2d ellipse
+ flat_body hull2 dxf intersection2 issue585 issue612 lwpolyline2 -arc _arc
+ minkowski2 multiple-layers offset- polygon* primitive-cut projection-test
+ render-2d resize-2d scale2D scale2d text-search square font 
+ transform-insert triangle)
+set(TEST_CONFIGS ${TEST_CONFIGS} Dimension2)
+
 # FIXME: This test illustrates a weakness in child() combined with modifiers.
 # Reenable it when this is improved
 disable_tests(opencsgtest_child-background)
@@ -1097,8 +1124,6 @@ foreach(FILE ${BUGS_FILES})
   set_test_config(Bugs ${TEST_FULLNAME})
   get_test_fullname(csgpngtest ${FILE} TEST_FULLNAME)
   set_test_config(Bugs ${TEST_FULLNAME})
-  get_test_fullname(expoimpo3dpngtest ${FILE} TEST_FULLNAME)
-  set_test_config(Bugs ${TEST_FULLNAME})
 endforeach()
 
 # Examples
@@ -1111,8 +1136,6 @@ foreach(FILE ${EXAMPLE_FILES})
   get_test_fullname(throwntogethertest ${FILE} TEST_FULLNAME)
   set_test_config(Examples ${TEST_FULLNAME})
   get_test_fullname(csgpngtest ${FILE} TEST_FULLNAME)
-  set_test_config(Examples ${TEST_FULLNAME})
-  get_test_fullname(expoimpo3dpngtest ${FILE} TEST_FULLNAME)
   set_test_config(Examples ${TEST_FULLNAME})
 endforeach()
 

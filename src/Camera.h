@@ -43,10 +43,10 @@ public:
 	Eigen::Vector3d object_rot;
 	double viewer_distance;
 
-  // Perspective settings
+	// Perspective settings
 	double fov; // Field of view
 
-  // Orthographic settings
+	// Orthographic settings
 	double height; // world-space height of viewport
 
 	bool viewall;
