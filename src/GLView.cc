@@ -424,7 +424,7 @@ void GLView::showAxes()
   glLineWidth(this->getDPI());
   glColor3d(0.5, 0.5, 0.5);
   glBegin(GL_LINES);
-  double l = cam.viewer_distance;
+  double l = cam.projection == Camera::PERSPECTIVE ? cam.viewer_distance : cam.height;
   glVertex3d(-l, 0, 0);
   glVertex3d(+l, 0, 0);
   glVertex3d(0, -l, 0);

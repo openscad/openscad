@@ -108,18 +108,19 @@ AbstractNode *LinearExtrudeModule::instantiate(const Context *ctx, const ModuleI
 	if (node->scale_x < 0) node->scale_x = 0;
 	if (node->scale_y < 0) node->scale_y = 0;
 
+	if (slices.type() == Value::NUMBER) node->slices = (int)slices.toDouble();
+
 	if (twist.type() == Value::NUMBER) {
 		node->twist = twist.toDouble();
 		if (node->twist != 0.0) {
-			if (slices.type() == Value::NUMBER) {
-				node->slices = (int)slices.toDouble();
-			} else {
+			if (node->slices == 0) {
 				node->slices = (int)fmax(2, fabs(Calc::get_fragments_from_r(node->height,
 																																		node->fn, node->fs, node->fa) * node->twist / 360));
 			}
 			node->has_twist = true;
 		}
 	}
+	node->slices = std::max(node->slices, 1);
 
 	if (node->filename.empty()) {
 		std::vector<AbstractNode *> instantiatednodes = inst->instantiateChildren(evalctx);
@@ -152,7 +153,10 @@ std::string LinearExtrudeNode::toString() const
 		"convexity = " << this->convexity;
 	
 	if (this->has_twist) {
-		stream << ", twist = " << this->twist << ", slices = " << this->slices;
+		stream << ", twist = " << this->twist;
+	}
+	if (this->slices > 1) {
+		stream << ", slices = " << this->slices;
 	}
 	stream << ", scale = [" << this->scale_x << ", " << this->scale_y << "]";
 	stream << ", $fn = " << this->fn << ", $fa = " << this->fa << ", $fs = " << this->fs << ")";

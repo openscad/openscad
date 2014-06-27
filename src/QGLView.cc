@@ -178,12 +178,6 @@ void QGLView::paintGL()
   if (running_under_wine) swapBuffers();
 }
 
-void QGLView::wheelEvent(QWheelEvent *event)
-{
-  cam.viewer_distance *= pow(0.9, event->delta() / 120.0);
-  updateGL();
-}
-
 void QGLView::mousePressEvent(QMouseEvent *event)
 {
   mouse_drag_active = true;
@@ -286,14 +280,25 @@ bool QGLView::save(const char *filename)
   return img.save(filename, "PNG");
 }
 
+void QGLView::wheelEvent(QWheelEvent *event)
+{
+	this->cam.zoom(event->delta());
+  updateGL();
+}
+
 void QGLView::ZoomIn(void)
 {
-  cam.viewer_distance *= 0.9;
+  this->cam.zoom(120);
   updateGL();
 }
 
 void QGLView::ZoomOut(void)
 {
-  cam.viewer_distance /= 0.9;
+  this->cam.zoom(-120);
   updateGL();
+}
+
+void QGLView::setOrthoMode(bool enabled) {
+	if (enabled) this->cam.setProjection(Camera::ORTHOGONAL);
+	else this->cam.setProjection(Camera::PERSPECTIVE);
 }
