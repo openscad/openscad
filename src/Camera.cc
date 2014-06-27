@@ -78,3 +78,28 @@ void Camera::viewAll(const BoundingBox &bbox, float scalefactor)
 		break;
 	}
 }
+
+void Camera::zoom(int delta)
+{
+	if (this->projection == PERSPECTIVE) {
+		this->viewer_distance *= pow(0.9, delta / 120.0);
+	}
+	else {
+		this->height *= pow(0.9, delta / 120.0);
+	}
+}
+
+void Camera::setProjection(ProjectionType type)
+{
+	if (this->projection != type) {
+		switch (type) {
+		case PERSPECTIVE:
+			this->viewer_distance = this->height;
+			break;
+		case ORTHOGONAL:
+			this->height = this->viewer_distance;
+			break;
+		}
+		this->projection = type;
+	}
+}
