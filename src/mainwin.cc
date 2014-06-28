@@ -1378,13 +1378,16 @@ void MainWindow::updateCamera()
 		return;
 	
 	bool camera_set = false;
-	double tx = qglview->cam.object_trans.x();
-	double ty = qglview->cam.object_trans.y();
-	double tz = qglview->cam.object_trans.z();
-	double rx = qglview->cam.object_rot.x();
-	double ry = qglview->cam.object_rot.y();
-	double rz = qglview->cam.object_rot.z();
-	double d = qglview->cam.viewer_distance;
+
+	Camera cam(qglview->cam);
+	cam.gimbalDefaultTranslate();
+	double tx = cam.object_trans.x();
+	double ty = cam.object_trans.y();
+	double tz = cam.object_trans.z();
+	double rx = cam.object_rot.x();
+	double ry = cam.object_rot.y();
+	double rz = cam.object_rot.z();
+	double d = cam.viewer_distance;
 
 	ModuleContext mc(&top_ctx, NULL);
 	mc.initializeModule(*root_module);
@@ -1426,6 +1429,7 @@ void MainWindow::updateCamera()
 		params.push_back(rz);
 		params.push_back(d);
 		qglview->cam.setup(params);
+		qglview->cam.gimbalDefaultTranslate();
 		qglview->updateGL();
 	}
 }
