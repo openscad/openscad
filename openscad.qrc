@@ -41,5 +41,7 @@
         <file>images/blackaxes.png</file>
         <file>images/zoomin.png</file>
         <file>images/zoomout.png</file>
+        <file>images/wireframe1.png</file>
+        <file>images/surface.png</file>
     </qresource>
 </RCC>

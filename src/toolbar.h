@@ -11,8 +11,8 @@ public:
     explicit ToolBar(QWidget *parent = 0);
     QToolButton *buttonZoomIn, *buttonZoomOut, *buttonRender;
     QToolButton *buttonTop, *buttonBottom, *buttonLeft, *buttonRight;
-    QToolButton *buttonFront, *buttonBack,  *buttonEdges;
-	QAction *buttonAxes;
+    QToolButton *buttonFront, *buttonBack, *buttonWireframe, *buttonSurface;
+
 signals:
 
 public slots:

@@ -451,14 +451,26 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this->replaceAllButton, SIGNAL(clicked()), this, SLOT(replaceAll()));
 	connect(this->replaceInputField, SIGNAL(returnPressed()), this->replaceButton, SLOT(animateClick()));
 	
-    //EditorToolbar
-    connect(editortoolbar->buttonNew, SIGNAL(clicked()), this, SLOT(actionNew()));
-    connect(editortoolbar->buttonOpen, SIGNAL(clicked()), this, SLOT(actionOpen()));
-    connect(editortoolbar->buttonSave, SIGNAL(clicked()), this, SLOT(actionSave()));
+       //EditorToolbar
+        connect(editortoolbar->buttonNew, SIGNAL(clicked()), this, SLOT(actionNew()));
+        connect(editortoolbar->buttonOpen, SIGNAL(clicked()), this, SLOT(actionOpen()));
+        connect(editortoolbar->buttonSave, SIGNAL(clicked()), this, SLOT(actionSave()));
+	connect(editortoolbar->buttonZoomIn, SIGNAL(clicked()), editor, SLOT(zoomIn()));
+	connect(editortoolbar->buttonZoomOut, SIGNAL(clicked()), editor, SLOT(zoomOut()));
+
 
 	//Toolbar
-    toolBar = new ToolBar(this);
-    verticalLayout_2->addWidget(toolBar);
+        toolBar = new ToolBar(this);
+        verticalLayout_2->addWidget(toolBar);
+	int defaultcolor = toolBar->palette().background().color().lightness(); 
+        
+	if(defaultcolor > 165){ 
+	 viewActionShowAxes->setIcon(QIcon("://images/blackaxes.png"));
+	 toolBar->addAction(viewActionShowAxes);
+	 viewActionShowEdges->setIcon(QIcon("://images/Rotation-32.png"));
+	 toolBar->addAction(viewActionShowEdges);
+	}
+
 	connect(toolBar->buttonRender, SIGNAL(clicked()), this, SLOT(actionRender()));
 	connect(toolBar->buttonTop, SIGNAL(clicked()), this, SLOT(viewAngleTop()));
 	connect(toolBar->buttonBottom, SIGNAL(clicked()), this, SLOT(viewAngleBottom()));
@@ -466,16 +478,13 @@ MainWindow::MainWindow(const QString &filename)
 	connect(toolBar->buttonRight, SIGNAL(clicked()), this, SLOT(viewAngleRight()));
 	connect(toolBar->buttonFront, SIGNAL(clicked()), this, SLOT(viewAngleFront()));
 	connect(toolBar->buttonBack, SIGNAL(clicked()), this, SLOT(viewModeShowAxes()));
-	connect(toolBar->buttonAxes, SIGNAL(triggered()), this, SLOT(viewModeShowAxes()));
-	connect(toolBar->buttonEdges, SIGNAL(clicked()), this, SLOT(viewModeShowEdges()));
 	connect(toolBar->buttonZoomIn, SIGNAL(clicked()), qglview, SLOT(ZoomIn()));
 	connect(toolBar->buttonZoomOut, SIGNAL(clicked()), qglview, SLOT(ZoomOut()));
-
 	
+	connect(toolBar->buttonSurface, SIGNAL(clicked()), this, SLOT(viewModeSurface()));
+	connect(toolBar->buttonWireframe, SIGNAL(clicked()), this, SLOT(viewModeWireframe()));
+
 	toolBar->setStyleSheet("QToolBar{border:1 solid black;}" );
-	//		       "QToolButton:hover{background-color:green;}");
-	//std::cout<< toolBar->palette().background().color().name().toStdString()<<std::endl;
-	//std::cout<< toolBar->palette().background().color().lightness()<<std::endl;
 	
 	// make sure it looks nice..
 	QSettings settings;
