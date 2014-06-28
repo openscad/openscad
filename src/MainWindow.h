@@ -1,6 +1,7 @@
 #pragma once
 
 #include <QMainWindow>
+#include <QIcon>
 #include "ui_MainWindow.h"
 #include "openscad.h"
 #include "modcontext.h"
