@@ -1385,10 +1385,14 @@ void MainWindow::updateCamera()
 	double ry = qglview->cam.object_rot.y();
 	double rz = qglview->cam.object_rot.z();
 	double d = qglview->cam.viewer_distance;
+
+	ModuleContext mc(&top_ctx, NULL);
+	mc.initializeModule(*root_module);
+
 	BOOST_FOREACH(const Assignment &a, root_module->scope.assignments) {
 		double x, y, z;
 		if ("$vpr" == a.first) {
-			const Value vpr = a.second.get()->evaluate(&top_ctx);
+			const Value vpr = a.second.get()->evaluate(&mc);
 			if (vpr.getVec3(x, y, z)) {
 				rx = x;
 				ry = y;
@@ -1396,7 +1400,7 @@ void MainWindow::updateCamera()
 				camera_set = true;
 			}
 		} else if ("$vpt" == a.first) {
-			const Value vpt = a.second.get()->evaluate(&top_ctx);
+			const Value vpt = a.second.get()->evaluate(&mc);
 			if (vpt.getVec3(x, y, z)) {
 				tx = x;
 				ty = y;
@@ -1404,7 +1408,7 @@ void MainWindow::updateCamera()
 				camera_set = true;
 			}
 		} else if ("$vpd" == a.first) {
-			const Value vpd = a.second.get()->evaluate(&top_ctx);
+			const Value vpd = a.second.get()->evaluate(&mc);
 			if (vpd.type() == Value::NUMBER) {
 				d = vpd.toDouble();
 				camera_set = true;
