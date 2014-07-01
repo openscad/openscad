@@ -104,3 +104,28 @@ void Camera::viewAll(const BoundingBox &bbox, float scalefactor)
 	PRINTDB("modified obj trans x y z %f %f %f",object_trans.x() % object_trans.y() % object_trans.z());
 	PRINTDB("modified obj rot   x y z %f %f %f",object_rot.x() % object_rot.y() % object_rot.z());
 }
+
+void Camera::zoom(int delta)
+{
+	if (this->projection == PERSPECTIVE) {
+		this->viewer_distance *= pow(0.9, delta / 120.0);
+	}
+	else {
+		this->height *= pow(0.9, delta / 120.0);
+	}
+}
+
+void Camera::setProjection(ProjectionType type)
+{
+	if (this->projection != type) {
+		switch (type) {
+		case PERSPECTIVE:
+			this->viewer_distance = this->height;
+			break;
+		case ORTHOGONAL:
+			this->height = this->viewer_distance;
+			break;
+		}
+		this->projection = type;
+	}
+}
