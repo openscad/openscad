@@ -5,6 +5,7 @@
 Camera::Camera(enum CameraType camtype) :
 	type(camtype), projection(Camera::PERSPECTIVE), fov(45), height(60), viewall(false)
 {
+	PRINTD("Camera()");
 	if (this->type == Camera::GIMBAL) {
 		object_trans << 0,0,0;
 		object_rot << 35,0,25;
@@ -17,6 +18,7 @@ Camera::Camera(enum CameraType camtype) :
 	pixel_width = RenderSettings::inst()->img_width;
 	pixel_height = RenderSettings::inst()->img_height;
 	colorscheme = &OSColors::defaultColorScheme();
+	autocenter = false;
 }
 
 void Camera::setup(std::vector<double> params)
@@ -49,27 +51,36 @@ void Camera::gimbalDefaultTranslate()
 	Moves camera so that the given bbox is fully visible.
 	FIXME: The scalefactor is a temporary hack to be compatible with
 	earlier ways of showing the whole scene.
+	autocenter = point camera at the center of the bounding box.
+	(only works with vector camera)
 */
 void Camera::viewAll(const BoundingBox &bbox, float scalefactor)
 {
 	if (this->type == Camera::NONE) {
 		this->type = Camera::VECTOR;
-		this->center = bbox.center();
+		this->autocenter = true;
 		this->eye = this->center - Vector3d(1,1,-0.5);
 	}
 
-	this->center = bbox.center();
+	if (this->autocenter) {
+		this->object_trans = -bbox.center(); // for Gimbal cam
+		this->center = bbox.center(); // for Vector cam
+	}
+
 	PRINTD("viewAll");
+	PRINTDB("autocenter %i",autocenter);
 	PRINTDB("type %i",type);
 	PRINTDB("proj %i",projection);
 	PRINTDB("bbox %s",bbox.min().transpose());
 	PRINTDB("bbox %s",bbox.max().transpose());
 	PRINTDB("center x y z %f %f %f",center.x() % center.y() % center.z());
 	PRINTDB("eye    x y z %f %f %f",eye.x() % eye.y() % eye.z());
+	PRINTDB("obj trans x y z %f %f %f",object_trans.x() % object_trans.y() % object_trans.z());
+	PRINTDB("obj rot   x y z %f %f %f",object_rot.x() % object_rot.y() % object_rot.z());
 
 	switch (this->projection) {
 	case Camera::ORTHOGONAL:
-		this->height = bbox.diagonal().norm()+16.18;
+		this->height = bbox.diagonal().norm();
 		break;
 	case Camera::PERSPECTIVE: {
 		double radius = bbox.diagonal().norm()/2;
@@ -90,4 +101,6 @@ void Camera::viewAll(const BoundingBox &bbox, float scalefactor)
 	}
 	PRINTDB("modified center x y z %f %f %f",center.x() % center.y() % center.z());
 	PRINTDB("modified eye    x y z %f %f %f",eye.x() % eye.y() % eye.z());
+	PRINTDB("modified obj trans x y z %f %f %f",object_trans.x() % object_trans.y() % object_trans.z());
+	PRINTDB("modified obj rot   x y z %f %f %f",object_rot.x() % object_rot.y() % object_rot.z());
 }
