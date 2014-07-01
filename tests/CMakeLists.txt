@@ -868,6 +868,23 @@ function(add_cmdline_test TESTCMD_BASENAME)
     string(REPLACE " " "_" FILE_BASENAME ${FILE_BASENAME}) # Test names cannot include spaces
     set(TEST_FULLNAME "${TESTCMD_BASENAME}_${FILE_BASENAME}")
     list(FIND DISABLED_TESTS ${TEST_FULLNAME} DISABLED)
+
+    # 2d tests should be viewed from the top, not an angle.
+    set(test_is_2d 0)
+    foreach(test2d IN LISTS TESTS_2D)
+      string(REGEX MATCH "${test2d}" match_result ${TEST_FULLNAME})
+      if( NOT "${match_result}" STREQUAL "" )
+        #message(STATUS "2d test found: ${TEST_FULLNAME}, ${match_result}")
+        set(test_is_2d 1)
+      endif() 
+    endforeach()
+    set(CAMERA_OPTION "")
+    if(${test_is_2d} EQUAL 1)
+      #message(STATUS "${TESTCMD_ARGS}")
+      set(CAMERA_OPTION "--camera=0,0,100,0,0,0" "--viewall" "--autocenter" "--projection=ortho" "--debug=Camera")
+      set_test_config(Dimension2 ${TEST_FULLNAME})
+    endif()
+
     if (${DISABLED} EQUAL -1)
 
       # Handle configurations
