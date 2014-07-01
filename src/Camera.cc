@@ -51,18 +51,17 @@ void Camera::gimbalDefaultTranslate()
 	Moves camera so that the given bbox is fully visible.
 	FIXME: The scalefactor is a temporary hack to be compatible with
 	earlier ways of showing the whole scene.
-	autocenter = point camera at the center of the bounding box.
-	(only works with vector camera)
 */
 void Camera::viewAll(const BoundingBox &bbox, float scalefactor)
 {
 	if (this->type == Camera::NONE) {
 		this->type = Camera::VECTOR;
-		this->autocenter = true;
+		this->center = bbox.center();
 		this->eye = this->center - Vector3d(1,1,-0.5);
 	}
 
 	if (this->autocenter) {
+		// autocenter = point camera at the center of the bounding box.
 		this->object_trans = -bbox.center(); // for Gimbal cam
 		this->center = bbox.center(); // for Vector cam
 	}
