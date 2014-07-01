@@ -908,7 +908,7 @@ function(add_cmdline_test TESTCMD_BASENAME)
     set(CAMERA_OPTION "")
     if(${test_is_2d} EQUAL 1)
       #message(STATUS "${TESTCMD_ARGS}")
-      set(CAMERA_OPTION "--camera=0,0,100,0,0,0" "--viewall" "--autocenter" "--projection=ortho" "--debug=Camera")
+      set(CAMERA_OPTION "--camera=0,0,0,0,0,0,20" "--viewall" "--autocenter" "--projection=ortho" "--debug=Camera")
       set_test_config(Dimension2 ${TEST_FULLNAME})
     endif()
 
