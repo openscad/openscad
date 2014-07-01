@@ -26,7 +26,7 @@ namespace OSColors {
 	const boost::unordered_map<std::string, Color4f> &webColors();
 	const colorscheme *colorScheme(const std::string &name);
 	const colorscheme &defaultColorScheme();
-	std::list<std::string> colorSchemes();
+	std::list< std::string > colorSchemes();
 
 	Color4f getValue(const colorscheme &cs, const RenderColor rc);
 	
