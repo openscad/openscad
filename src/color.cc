@@ -73,7 +73,7 @@ AbstractNode *ColorModule::instantiate(const Context *ctx, const ModuleInstantia
 		boost::algorithm::to_lower(colorname);
 		Color4f color;
 		if (colormap.find(colorname) != colormap.end())	{
-			node->color = colormap[colorname];
+			node->color = colormap.at(colorname);
 		} else {
 			PRINTB_NOCACHE("WARNING: Color name \"%s\" unknown. Please see", colorname);
 			PRINT_NOCACHE("WARNING: http://en.wikipedia.org/wiki/Web_colors");
