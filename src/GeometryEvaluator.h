@@ -31,6 +31,7 @@ public:
 	virtual Response visit(State &state, const RenderNode &node);
 	virtual Response visit(State &state, const TextNode &node);
 	virtual Response visit(State &state, const OffsetNode &node);
+	virtual Response visit(State &state, const SweepNode &node);
 
 	const Tree &getTree() const { return this->tree; }
 

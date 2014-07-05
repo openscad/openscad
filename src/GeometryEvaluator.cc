@@ -25,6 +25,8 @@
 #include "svg.h"
 #include "calc.h"
 #include "dxfdata.h"
+#include "sweep.h"
+#include "sweepnode.h"
 
 #include <algorithm>
 #include <boost/foreach.hpp>
@@ -722,6 +724,46 @@ Response GeometryEvaluator::visit(State &state, const LinearExtrudeNode &node)
 	}
 	return ContinueTraversal;
 }
+
+
+Response GeometryEvaluator::visit(State &state, const SweepNode &node)
+{
+	if (state.isPrefix() && isSmartCached(node)) return PruneTraversal;
+	if (state.isPostfix()) {
+		shared_ptr<const Geometry> geom;
+
+		if (!isSmartCached(node)) {
+
+			shared_ptr<const Geometry> geometry = applyToChildren(node, OPENSCAD_UNION).constptr();
+
+			if (geometry) {
+				const Polygon2d *polygons = dynamic_cast<const Polygon2d*>(geometry.get());
+				Geometry *result;
+
+				if (polygons) {
+
+					if (node.dimensions == 2) {
+						result = sweep2d_2d(node.sweep_path, *polygons);
+					} else {
+						PRINT("ERROR: 2d -> 3d sweep not yet implemented");
+						result = NULL;
+					}
+				} else {
+					PRINT("ERROR: 3d -> 3d sweep not yet implemented");
+					result = NULL;
+				}
+
+				geom.reset(result);
+			}
+		}
+		else {
+			geom = smartCacheGet(node);
+		}
+		addToParent(state, node, geom);
+	}
+	return ContinueTraversal;
+}
+
 
 static void fill_ring(std::vector<Vector3d> &ring, const Outline2d &o, double a)
 {

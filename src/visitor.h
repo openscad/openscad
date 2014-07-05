@@ -57,5 +57,8 @@ public:
   virtual Response visit(class State &state, const class OffsetNode &node) {
 		return visit(state, (const class AbstractPolyNode &)node);
 	}
+  virtual Response visit(class State &state, const class SweepNode &node) {
+		return visit(state, (const class AbstractPolyNode &)node);
+    }
 	// Add visit() methods for new visitable subtypes of AbstractNode here
 };

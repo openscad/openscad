@@ -254,6 +254,8 @@ HEADERS += src/typedefs.h \
            src/offsetnode.h \
            src/linearextrudenode.h \
            src/rotateextrudenode.h \
+		   src/sweepnode.h \
+		   src/sweep.h \
            src/projectionnode.h \
            src/cgaladvnode.h \
            src/importnode.h \
@@ -345,6 +347,8 @@ SOURCES += src/version_check.cc \
            src/offset.cc \
            src/linearextrude.cc \
            src/rotateextrude.cc \
+		   src/sweepnode.cc \
+		   src/sweep.cc \
            src/printutils.cc \
            src/fileutils.cc \
            src/progress.cc \
