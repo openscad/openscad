@@ -127,13 +127,13 @@ FontCache * FontCache::instance()
 	return self;
 }
 
-void FontCache::register_font_file(std::string path) {
+void FontCache::register_font_file(const std::string path) {
 	if (!FcConfigAppFontAddFile(config, reinterpret_cast<const FcChar8 *>(path.c_str()))) {
 		PRINTB("Can't register font '%s'", path);
 	}
 }
 
-void FontCache::add_font_dir(std::string path) {
+void FontCache::add_font_dir(const std::string path) {
 	if (!fs::is_directory(path)) {
 		return;
 	}
@@ -182,7 +182,7 @@ void FontCache::clear()
 	cache.clear();
 }
 
-void FontCache::dump_cache(std::string info)
+void FontCache::dump_cache(const std::string info)
 {
 	std::cout << info << ":";
 	for (cache_t::iterator it = cache.begin();it != cache.end();it++) {
@@ -207,7 +207,7 @@ void FontCache::check_cleanup()
 	cache.erase(pos);
 }
 
-FT_Face FontCache::get_font(std::string font)
+FT_Face FontCache::get_font(const std::string font)
 {
 	FT_Face face;
 	cache_t::iterator it = cache.find(font);
@@ -224,7 +224,7 @@ FT_Face FontCache::get_font(std::string font)
 	return face;
 }
 
-FT_Face FontCache::find_face(std::string font)
+FT_Face FontCache::find_face(const std::string font)
 {
 	FT_Face face;
 	
@@ -232,7 +232,7 @@ FT_Face FontCache::find_face(std::string font)
 	return face ? face : find_face_in_path_list(font);
 }	
 	
-FT_Face FontCache::find_face_in_path_list(std::string font)
+FT_Face FontCache::find_face_in_path_list(const std::string font)
 {
 	const char *env_font_path = getenv("OPENSCAD_FONT_PATH");
 	
@@ -261,7 +261,7 @@ void FontCache::init_pattern(FcPattern *pattern)
 	FcPatternAdd(pattern, FC_SCALABLE, true_value, true);
 }
 
-FT_Face FontCache::find_face_fontconfig(std::string font)
+FT_Face FontCache::find_face_fontconfig(const std::string font)
 {
 	FcResult result;
 	
@@ -284,7 +284,7 @@ FT_Face FontCache::find_face_fontconfig(std::string font)
 	return error ? NULL : face;
 }
 
-FT_Face FontCache::find_face_in_path(std::string path, std::string font)
+FT_Face FontCache::find_face_in_path(const std::string path, const std::string font)
 {
 	FT_Error error;
 	

@@ -84,14 +84,14 @@ private:
     FT_Library library;
 
     void check_cleanup();
-    void dump_cache(std::string info);
+    void dump_cache(const std::string info);
     
-    void add_font_dir(std::string path);
+    void add_font_dir(const std::string path);
     void init_pattern(FcPattern *pattern);
     
-    FT_Face find_face(std::string font);
-    FT_Face find_face_fontconfig(std::string font);
-    FT_Face find_face_in_path_list(std::string font);
-    FT_Face find_face_in_path(std::string path, std::string font);
+    FT_Face find_face(const std::string font);
+    FT_Face find_face_fontconfig(const std::string font);
+    FT_Face find_face_in_path_list(const std::string font);
+    FT_Face find_face_in_path(const std::string path, const std::string font);
 };
 
