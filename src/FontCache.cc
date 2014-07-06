@@ -36,6 +36,8 @@
 
 extern std::vector<std::string> librarypath;
 
+std::vector<std::string> fontpath;
+
 namespace fs = boost::filesystem;
 
 static bool FontInfoSortPredicate(const FontInfo& fi1, const FontInfo& fi2)
@@ -137,6 +139,16 @@ FontCache::FontCache()
 			}
 		}
 	}
+
+	FcStrList *dirs = FcConfigGetFontDirs(config);
+	while (true) {
+		FcChar8 *dir = FcStrListNext(dirs);
+		if (dir == NULL) {
+			break;
+		}
+		fontpath.push_back(std::string((const char *)dir));
+	}
+	FcStrListDone(dirs);
 
 	const FT_Error error = FT_Init_FreeType(&library);
 	if (error) {
