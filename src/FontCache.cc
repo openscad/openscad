@@ -102,15 +102,25 @@ FontCache::FontCache()
 		}
 	}
 
-	add_font_dir("/System/Library/Fonts");
 	const char *home = getenv("HOME");
+
+	// Add MacOS font folders. (see http://support.apple.com/kb/HT2435)
+	add_font_dir("/Library/Fonts");
+	add_font_dir("/System/Library/Fonts");
 	if (home) {
 		add_font_dir(std::string(home) + "/Library/Fonts");
-		add_font_dir(std::string(home) + "/.fonts");
 	}
+
+	// Add Window font folders.
 	const char *windir = getenv("WinDir");
 	if (windir) {
 		add_font_dir(std::string(windir) + "\\Fonts");
+	}
+	
+	// Add Linux font folders, the system folders are expected to be
+	// configured by the system configuration for fontconfig.
+	if (home) {
+		add_font_dir(std::string(home) + "/.fonts");
 	}
 	
 	const FT_Error error = FT_Init_FreeType(&library);
