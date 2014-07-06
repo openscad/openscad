@@ -6,6 +6,8 @@
 
 extern std::vector<std::string> librarypath;
 
+extern std::vector<std::string> fontpath;
+
 bool PlatformUtils::createLibraryPath()
 {
 	std::string path = PlatformUtils::libraryPath();
@@ -146,6 +148,7 @@ std::string PlatformUtils::info()
 #endif // ENABLE_CGAL
 
 	const char *env_path = getenv("OPENSCADPATH");
+	const char *env_font_path = getenv("OPENSCAD_FONT_PATH");
 	
 	s << "OpenSCAD Version: " << TOSTRING(OPENSCAD_VERSION)
           << "\nCompiler, build date: " << compiler_info << ", " << __DATE__
@@ -162,6 +165,13 @@ std::string PlatformUtils::info()
 	for (std::vector<std::string>::iterator it = librarypath.begin();it != librarypath.end();it++) {
 		s << "  " << *it << "\n";
 	}
+
+	s << "\nOPENSCAD_FONT_PATH: " << (env_font_path == NULL ? "<not set>" : env_font_path)
+	  << "\nOpenSCAD font path:\n";
 	
+	for (std::vector<std::string>::iterator it = fontpath.begin();it != fontpath.end();it++) {
+		s << "  " << *it << "\n";
+	}
+
 	return s.str();
 }

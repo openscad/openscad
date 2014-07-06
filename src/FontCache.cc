@@ -31,8 +31,12 @@
 #include <boost/algorithm/string.hpp>
 
 #include "FontCache.h"
+#include "PlatformUtils.h"
 #include "parsersettings.h"
+
 extern std::vector<std::string> librarypath;
+
+std::vector<std::string> fontpath;
 
 namespace fs = boost::filesystem;
 
@@ -76,7 +80,8 @@ std::string FontInfo::get_file() const
 }
 
 FontCache * FontCache::self = NULL;
-
+const std::string FontCache::DEFAULT_FONT("Liberation Sans:style=Regular");
+    
 FontCache::FontCache()
 {
 	init_ok = false;
@@ -92,20 +97,59 @@ FontCache::FontCache()
 		if (fs::exists(fontpath) && fs::is_directory(fontpath)) {
 			fs::path path = boosty::canonical(fontpath);
 			add_font_dir(path.string());
+			
+			fs::path fontconf = fontpath / "fonts.conf";
+			if (fs::exists(fontconf) && fs::is_regular(fontconf)) {
+				FcConfigParseAndLoad(config, (unsigned char *)fontconf.string().c_str(), false);
+			}
 		}
 	}
 
-	add_font_dir("/System/Library/Fonts");
 	const char *home = getenv("HOME");
+
+	// Add MacOS font folders. (see http://support.apple.com/kb/HT2435)
+	add_font_dir("/Library/Fonts");
+	add_font_dir("/System/Library/Fonts");
 	if (home) {
 		add_font_dir(std::string(home) + "/Library/Fonts");
-		add_font_dir(std::string(home) + "/.fonts");
 	}
+
+	// Add Window font folders.
 	const char *windir = getenv("WinDir");
 	if (windir) {
 		add_font_dir(std::string(windir) + "\\Fonts");
 	}
 	
+	// Add Linux font folders, the system folders are expected to be
+	// configured by the system configuration for fontconfig.
+	if (home) {
+		add_font_dir(std::string(home) + "/.fonts");
+	}
+	
+	const char *env_font_path = getenv("OPENSCAD_FONT_PATH");
+	if (env_font_path != NULL) {
+		std::string paths(env_font_path);
+		const std::string sep = PlatformUtils::pathSeparatorChar();
+		typedef boost::split_iterator<std::string::iterator> string_split_iterator;
+		for (string_split_iterator it = boost::make_split_iterator(paths, boost::first_finder(sep, boost::is_iequal()));it != string_split_iterator();it++) {
+			const fs::path p(boost::copy_range<std::string>(*it));
+			if (fs::exists(p) && fs::is_directory(p)) {
+				std::string path = boosty::absolute(p).string();
+				add_font_dir(path);
+			}
+		}
+	}
+
+	FcStrList *dirs = FcConfigGetFontDirs(config);
+	while (true) {
+		FcChar8 *dir = FcStrListNext(dirs);
+		if (dir == NULL) {
+			break;
+		}
+		fontpath.push_back(std::string((const char *)dir));
+	}
+	FcStrListDone(dirs);
+
 	const FT_Error error = FT_Init_FreeType(&library);
 	if (error) {
 		PRINT("Can't initialize freetype library, text() objects will not be rendered");
@@ -127,13 +171,13 @@ FontCache * FontCache::instance()
 	return self;
 }
 
-void FontCache::register_font_file(std::string path) {
+void FontCache::register_font_file(const std::string path) {
 	if (!FcConfigAppFontAddFile(config, reinterpret_cast<const FcChar8 *>(path.c_str()))) {
 		PRINTB("Can't register font '%s'", path);
 	}
 }
 
-void FontCache::add_font_dir(std::string path) {
+void FontCache::add_font_dir(const std::string path) {
 	if (!fs::is_directory(path)) {
 		return;
 	}
@@ -182,7 +226,7 @@ void FontCache::clear()
 	cache.clear();
 }
 
-void FontCache::dump_cache(std::string info)
+void FontCache::dump_cache(const std::string info)
 {
 	std::cout << info << ":";
 	for (cache_t::iterator it = cache.begin();it != cache.end();it++) {
@@ -207,7 +251,7 @@ void FontCache::check_cleanup()
 	cache.erase(pos);
 }
 
-FT_Face FontCache::get_font(std::string font)
+FT_Face FontCache::get_font(const std::string font)
 {
 	FT_Face face;
 	cache_t::iterator it = cache.find(font);
@@ -224,33 +268,17 @@ FT_Face FontCache::get_font(std::string font)
 	return face;
 }
 
-FT_Face FontCache::find_face(std::string font)
+FT_Face FontCache::find_face(const std::string font)
 {
-	FT_Face face;
-	
-	face = find_face_fontconfig(font);
-	return face ? face : find_face_in_path_list(font);
+	std::string trimmed(font);
+	boost::algorithm::trim(trimmed);
+
+	const std::string lookup = trimmed.empty() ? DEFAULT_FONT : trimmed;
+	FT_Face face = find_face_fontconfig(lookup);
+	PRINTDB("font = \"%s\", lookup = \"%s\" -> result = \"%s\", style = \"%s\"", font % lookup % face->family_name % face->style_name);
+	return face;
 }	
 	
-FT_Face FontCache::find_face_in_path_list(std::string font)
-{
-	const char *env_font_path = getenv("OPENSCAD_FONT_PATH");
-	
-	std::string paths = (env_font_path == NULL) ? "/usr/share/fonts/truetype" : env_font_path;
-	typedef boost::split_iterator<std::string::iterator> string_split_iterator;
-	for (string_split_iterator it = boost::make_split_iterator(paths, boost::first_finder(":", boost::is_iequal()));it != string_split_iterator();it++) {
-		fs::path p(boost::copy_range<std::string>(*it));
-		if (fs::exists(p)) {
-			std::string path = boosty::absolute(p).string();
-			FT_Face face = find_face_in_path(path, font);
-			if (face) {
-				return face;
-			}
-		}
-	}
-	return NULL;
-}
-
 void FontCache::init_pattern(FcPattern *pattern)
 {
 	FcValue true_value;
@@ -261,7 +289,7 @@ void FontCache::init_pattern(FcPattern *pattern)
 	FcPatternAdd(pattern, FC_SCALABLE, true_value, true);
 }
 
-FT_Face FontCache::find_face_fontconfig(std::string font)
+FT_Face FontCache::find_face_fontconfig(const std::string font)
 {
 	FcResult result;
 	
@@ -282,30 +310,4 @@ FT_Face FontCache::find_face_fontconfig(std::string font)
 	FcPatternDestroy(match);
 
 	return error ? NULL : face;
-}
-
-FT_Face FontCache::find_face_in_path(std::string path, std::string font)
-{
-	FT_Error error;
-	
-	if (!fs::is_directory(path)) {
-		PRINTB("Font path '%s' does not exist or is not a directory.", path);
-	}
-
-	for (fs::recursive_directory_iterator it(path);it != fs::recursive_directory_iterator();it++) {
-		fs::directory_entry entry = (*it);
-		if (fs::is_regular(entry.path())) {
-			FT_Face face;
-			error = FT_New_Face(library, entry.path().string().c_str(), 0, &face);
-			if (error) {
-				continue;
-			}
-			const char *name = FT_Get_Postscript_Name(face);
-			if (font == name) {
-				return face;
-			}
-			FT_Done_Face(face);
-		}
-	}
-	return NULL;
 }
