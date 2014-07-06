@@ -32,6 +32,7 @@
 
 #include "FontCache.h"
 #include "parsersettings.h"
+
 extern std::vector<std::string> librarypath;
 
 namespace fs = boost::filesystem;
@@ -76,7 +77,8 @@ std::string FontInfo::get_file() const
 }
 
 FontCache * FontCache::self = NULL;
-
+const std::string FontCache::DEFAULT_FONT("Liberation Sans:style=Regular");
+    
 FontCache::FontCache()
 {
 	init_ok = false;
@@ -92,6 +94,11 @@ FontCache::FontCache()
 		if (fs::exists(fontpath) && fs::is_directory(fontpath)) {
 			fs::path path = boosty::canonical(fontpath);
 			add_font_dir(path.string());
+			
+			fs::path fontconf = fontpath / "fonts.conf";
+			if (fs::exists(fontconf) && fs::is_regular(fontconf)) {
+				FcConfigParseAndLoad(config, (unsigned char *)fontconf.string().c_str(), false);
+			}
 		}
 	}
 
@@ -226,10 +233,14 @@ FT_Face FontCache::get_font(const std::string font)
 
 FT_Face FontCache::find_face(const std::string font)
 {
-	FT_Face face;
-	
-	face = find_face_fontconfig(font);
-	return face ? face : find_face_in_path_list(font);
+	std::string trimmed(font);
+	boost::algorithm::trim(trimmed);
+
+	const std::string lookup = trimmed.empty() ? DEFAULT_FONT : trimmed;
+	FT_Face face = find_face_fontconfig(lookup);
+	face = face ? face : find_face_in_path_list(font);
+	PRINTDB("font = \"%s\", lookup = \"%s\" -> result = \"%s\", style = \"%s\"", font % lookup % face->family_name % face->style_name);
+	return face;
 }	
 	
 FT_Face FontCache::find_face_in_path_list(const std::string font)

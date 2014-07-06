@@ -60,6 +60,7 @@ typedef std::vector<FontInfo> FontInfoList;
 
 class FontCache {
 public:
+    const static std::string DEFAULT_FONT;
     const static unsigned int MAX_NR_OF_CACHE_ENTRIES = 3;
     
     FontCache();
