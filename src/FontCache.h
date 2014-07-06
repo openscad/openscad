@@ -92,7 +92,5 @@ private:
     
     FT_Face find_face(const std::string font);
     FT_Face find_face_fontconfig(const std::string font);
-    FT_Face find_face_in_path_list(const std::string font);
-    FT_Face find_face_in_path(const std::string path, const std::string font);
 };
 

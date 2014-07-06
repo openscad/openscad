@@ -31,6 +31,7 @@
 #include <boost/algorithm/string.hpp>
 
 #include "FontCache.h"
+#include "PlatformUtils.h"
 #include "parsersettings.h"
 
 extern std::vector<std::string> librarypath;
@@ -123,6 +124,20 @@ FontCache::FontCache()
 		add_font_dir(std::string(home) + "/.fonts");
 	}
 	
+	const char *env_font_path = getenv("OPENSCAD_FONT_PATH");
+	if (env_font_path != NULL) {
+		std::string paths(env_font_path);
+		const std::string sep = PlatformUtils::pathSeparatorChar();
+		typedef boost::split_iterator<std::string::iterator> string_split_iterator;
+		for (string_split_iterator it = boost::make_split_iterator(paths, boost::first_finder(sep, boost::is_iequal()));it != string_split_iterator();it++) {
+			const fs::path p(boost::copy_range<std::string>(*it));
+			if (fs::exists(p) && fs::is_directory(p)) {
+				std::string path = boosty::absolute(p).string();
+				add_font_dir(path);
+			}
+		}
+	}
+
 	const FT_Error error = FT_Init_FreeType(&library);
 	if (error) {
 		PRINT("Can't initialize freetype library, text() objects will not be rendered");
@@ -248,30 +263,10 @@ FT_Face FontCache::find_face(const std::string font)
 
 	const std::string lookup = trimmed.empty() ? DEFAULT_FONT : trimmed;
 	FT_Face face = find_face_fontconfig(lookup);
-	face = face ? face : find_face_in_path_list(font);
 	PRINTDB("font = \"%s\", lookup = \"%s\" -> result = \"%s\", style = \"%s\"", font % lookup % face->family_name % face->style_name);
 	return face;
 }	
 	
-FT_Face FontCache::find_face_in_path_list(const std::string font)
-{
-	const char *env_font_path = getenv("OPENSCAD_FONT_PATH");
-	
-	std::string paths = (env_font_path == NULL) ? "/usr/share/fonts/truetype" : env_font_path;
-	typedef boost::split_iterator<std::string::iterator> string_split_iterator;
-	for (string_split_iterator it = boost::make_split_iterator(paths, boost::first_finder(":", boost::is_iequal()));it != string_split_iterator();it++) {
-		fs::path p(boost::copy_range<std::string>(*it));
-		if (fs::exists(p)) {
-			std::string path = boosty::absolute(p).string();
-			FT_Face face = find_face_in_path(path, font);
-			if (face) {
-				return face;
-			}
-		}
-	}
-	return NULL;
-}
-
 void FontCache::init_pattern(FcPattern *pattern)
 {
 	FcValue true_value;
@@ -303,30 +298,4 @@ FT_Face FontCache::find_face_fontconfig(const std::string font)
 	FcPatternDestroy(match);
 
 	return error ? NULL : face;
-}
-
-FT_Face FontCache::find_face_in_path(const std::string path, const std::string font)
-{
-	FT_Error error;
-	
-	if (!fs::is_directory(path)) {
-		PRINTB("Font path '%s' does not exist or is not a directory.", path);
-	}
-
-	for (fs::recursive_directory_iterator it(path);it != fs::recursive_directory_iterator();it++) {
-		fs::directory_entry entry = (*it);
-		if (fs::is_regular(entry.path())) {
-			FT_Face face;
-			error = FT_New_Face(library, entry.path().string().c_str(), 0, &face);
-			if (error) {
-				continue;
-			}
-			const char *name = FT_Get_Postscript_Name(face);
-			if (font == name) {
-				return face;
-			}
-			FT_Done_Face(face);
-		}
-	}
-	return NULL;
 }
