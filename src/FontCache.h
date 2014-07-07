@@ -33,7 +33,7 @@
 
 #include <ft2build.h>
 #include FT_FREETYPE_H
-#include <ttnameid.h>
+#include FT_TRUETYPE_IDS_H
 
 #include <vector>
 #include <string>
