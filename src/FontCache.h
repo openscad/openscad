@@ -33,6 +33,7 @@
 
 #include <ft2build.h>
 #include FT_FREETYPE_H
+#include <ttnameid.h>
 
 #include <vector>
 #include <string>
@@ -68,6 +69,7 @@ public:
 
     bool is_init_ok();
     FT_Face get_font(std::string font);
+    bool is_windows_symbol_font(FT_Face face);
     void register_font_file(std::string path);
     void clear();
     FontInfoList * list_fonts();
@@ -92,5 +94,6 @@ private:
     
     FT_Face find_face(const std::string font);
     FT_Face find_face_fontconfig(const std::string font);
+    bool try_charmap(FT_Face face, int platform_id, int encoding_id);
 };
 
