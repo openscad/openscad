@@ -150,7 +150,7 @@ std::vector<const Geometry *> FreetypeRenderer::render(const FreetypeRenderer::P
 	hb_buffer_set_direction(hb_buf, hb_direction_from_string(params.direction.c_str(), -1));
 	hb_buffer_set_script(hb_buf, hb_script_from_string(params.script.c_str(), -1));
 	hb_buffer_set_language(hb_buf, hb_language_from_string(params.language.c_str(), -1));
-	if ((face->charmap->platform_id == TT_PLATFORM_MICROSOFT) && (face->charmap->encoding_id == TT_MS_ID_SYMBOL_CS)) {
+	if (FontCache::instance()->is_windows_symbol_font(face)) {
 		// Special handling for symbol fonts like Webdings.
 		// see http://www.microsoft.com/typography/otspec/recom.htm
 		//

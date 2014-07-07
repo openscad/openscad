@@ -314,29 +314,31 @@ FT_Face FontCache::find_face_fontconfig(const std::string font)
 	FcPatternDestroy(pattern);
 	FcPatternDestroy(match);
 
-	for (int a = 0; a < face->num_charmaps; a++) {
-		FT_CharMap charmap = face->charmaps[a];
-		PRINTDB("charmap = %d: platform = %d, encoding = %d", a % charmap->platform_id % charmap->encoding_id);
+	if (FT_Select_Charmap(face, ft_encoding_unicode) == 0) {
+		PRINTDB("Successfully selected unicode charmap: %s/%s", face->family_name % face->style_name);
+	} else {
+		for (int a = 0; a < face->num_charmaps; a++) {
+			FT_CharMap charmap = face->charmaps[a];
+			PRINTDB("charmap = %d: platform = %d, encoding = %d", a % charmap->platform_id % charmap->encoding_id);
+		}
+
+		bool charmap_set = false;
+		if (!charmap_set)
+			charmap_set = try_charmap(face, TT_PLATFORM_MICROSOFT, TT_MS_ID_UNICODE_CS);
+		if (!charmap_set)
+			charmap_set = try_charmap(face, TT_PLATFORM_ISO, TT_ISO_ID_10646);
+		if (!charmap_set)
+			charmap_set = try_charmap(face, TT_PLATFORM_APPLE_UNICODE, -1);
+		if (!charmap_set)
+			charmap_set = try_charmap(face, TT_PLATFORM_MICROSOFT, TT_MS_ID_SYMBOL_CS);
+		if (!charmap_set)
+			charmap_set = try_charmap(face, TT_PLATFORM_ISO, TT_ISO_ID_8859_1);
+		if (!charmap_set)
+			charmap_set = try_charmap(face, TT_PLATFORM_ISO, TT_ISO_ID_7BIT_ASCII);
+		if (!charmap_set)
+			PRINTB("Warning: Could not select a char map for font %s/%s", face->family_name % face->style_name);
 	}
-
-	bool charmap_set = false;
-	if (!charmap_set)
-		charmap_set = FT_Select_Charmap(face, ft_encoding_unicode) == 0;
-	if (!charmap_set)
-		charmap_set = try_charmap(face, TT_PLATFORM_MICROSOFT, TT_MS_ID_UNICODE_CS);
-	if (!charmap_set)
-		charmap_set = try_charmap(face, TT_PLATFORM_ISO, TT_ISO_ID_10646);
-	if (!charmap_set)
-		charmap_set = try_charmap(face, TT_PLATFORM_APPLE_UNICODE, -1);
-	if (!charmap_set)
-		charmap_set = try_charmap(face, TT_PLATFORM_MICROSOFT, TT_MS_ID_SYMBOL_CS);
-	if (!charmap_set)
-		charmap_set = try_charmap(face, TT_PLATFORM_ISO, TT_ISO_ID_8859_1);
-	if (!charmap_set)
-		charmap_set = try_charmap(face, TT_PLATFORM_ISO, TT_ISO_ID_7BIT_ASCII);
-	if (!charmap_set)
-		PRINTB("Warning: Could not select a char map for font %s/%s", face->family_name % face->style_name);
-
+	
 	return error ? NULL : face;
 }
 
@@ -347,9 +349,31 @@ bool FontCache::try_charmap(FT_Face face, int platform_id, int encoding_id)
 		if ((charmap->platform_id == platform_id) && ((encoding_id < 0) || (charmap->encoding_id == encoding_id))) {
 			if (FT_Set_Charmap(face, charmap) == 0) {
 				PRINTDB("Selected charmap: platform_id = %d, encoding_id = %d", charmap->platform_id % charmap->encoding_id);
+				if (is_windows_symbol_font(face)) {
+					PRINTDB("Detected windows symbol font with character codes in the Private Use Area of Unicode at 0xf000: %s/%s", face->family_name % face->style_name);
+				}
 				return true;
 			}
 		}
 	}
 	return false;
+}
+
+bool FontCache::is_windows_symbol_font(FT_Face face)
+{
+	if (face->charmap->platform_id != TT_PLATFORM_MICROSOFT) {
+		return false;
+	}
+
+	if (face->charmap->encoding_id != TT_MS_ID_SYMBOL_CS) {
+		return false;
+	}
+
+	FT_UInt gindex;
+	FT_ULong charcode = FT_Get_First_Char(face, &gindex);
+	if ((gindex == 0) || (charcode < 0xf000)) {
+		return false;
+	}
+	
+	return true;
 }

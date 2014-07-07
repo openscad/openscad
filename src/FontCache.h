@@ -69,6 +69,7 @@ public:
 
     bool is_init_ok();
     FT_Face get_font(std::string font);
+    bool is_windows_symbol_font(FT_Face face);
     void register_font_file(std::string path);
     void clear();
     FontInfoList * list_fonts();
