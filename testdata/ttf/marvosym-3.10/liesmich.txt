@@ -1,0 +1,19 @@
+MarVoSym.ttf unterliegt der SIL Open Font Lizenz, Version 1.1.
+Die Bedingungen dieser Lizenz sind einsehbar unter 
+http://scripts.sil.org/OFL
+
+Die wichtigsten Punkte aus dieser Lizenz:
+
+- Der Font darf kostenlos verwendet und weitergegeben werden.
+- Sie dürfen den Font verändern und für Ihre eigenen Zwecke anpassen.
+- Sie dürfen abgeleitete Werke herstellen - beispielsweise TeX-Fontpakete.
+
+Wenn Sie Vorschlaege fuer weitere Symbole haben, wenden Sie sich
+einfach an den Autor:
+
+Martin Vogel
+Stockumer Str. 445
+44227 Dortmund
+Deutschland
+
+mail@martinvogel.de

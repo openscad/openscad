@@ -2,6 +2,9 @@ language: cpp
 cache: apt
 compiler: gcc
 
+notifications:
+  irc: "chat.freenode.net#openscad"
+
 before_install:
  - echo 'yes' | sudo add-apt-repository ppa:chrysn/openscad
  - sudo apt-get update -qq
