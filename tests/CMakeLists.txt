@@ -1131,6 +1131,8 @@ list(APPEND EXPERIMENTAL_TEXT_FILES
             ${CMAKE_SOURCE_DIR}/../testdata/scad/experimental/text-font-direction-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/experimental/text-font-simple-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/experimental/text-font-tests.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/experimental/text-font-composition.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/experimental/text-font-symbol.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/experimental/text-search-test.scad)
 
 add_cmdline_test(cgalpngtest EXE ${OPENSCAD_BINPATH} ARGS --render --enable=text -o SUFFIX png FILES ${EXPERIMENTAL_TEXT_FILES})
