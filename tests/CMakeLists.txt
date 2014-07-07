@@ -1193,7 +1193,7 @@ add_cmdline_test(openscad-camtrans-viewall EXE ${OPENSCAD_BINPATH}
 		 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/features/camera-tests.scad)
 # Orthographic gimbal cam
 add_cmdline_test(openscad-camortho EXE ${OPENSCAD_BINPATH}
-                 ARGS --imgsize=500,500 --camera=100,-20,-10,90,0,90,300 --projection=o -o
+                 ARGS --imgsize=500,500 --camera=100,-20,-20,90,0,90,90 --projection=o -o
                  SUFFIX png
 		 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/features/camera-tests.scad)
 # Orthographic gimbal cam viewall
