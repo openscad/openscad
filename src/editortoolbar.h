@@ -9,8 +9,6 @@ class EditorToolBar : public QToolBar
     Q_OBJECT
 public:
     explicit EditorToolBar(QWidget *parent = 0);
-    QToolButton *buttonNew, *buttonOpen, *buttonSave;
-    QToolButton *buttonZoomIn, *buttonZoomOut;
 
 signals:
 

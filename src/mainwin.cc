@@ -441,40 +441,87 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this->replaceAllButton, SIGNAL(clicked()), this, SLOT(replaceAll()));
 	connect(this->replaceInputField, SIGNAL(returnPressed()), this->replaceButton, SLOT(animateClick()));
 	
-       //EditorToolbar
-        connect(editortoolbar->buttonNew, SIGNAL(clicked()), this, SLOT(actionNew()));
-        connect(editortoolbar->buttonOpen, SIGNAL(clicked()), this, SLOT(actionOpen()));
-        connect(editortoolbar->buttonSave, SIGNAL(clicked()), this, SLOT(actionSave()));
-	connect(editortoolbar->buttonZoomIn, SIGNAL(clicked()), editor, SLOT(zoomIn()));
-	connect(editortoolbar->buttonZoomOut, SIGNAL(clicked()), editor, SLOT(zoomOut()));
-
-
 	//Toolbar
         toolBar = new ToolBar(this);
         verticalLayout_2->addWidget(toolBar);
 	int defaultcolor = toolBar->palette().background().color().lightness(); 
         
 	if(defaultcolor > 165){ 
+	 fileActionNew->setIcon(QIcon("://images/blackNew.png"));
+	 fileActionOpen->setIcon(QIcon("://images/Open-32(1).png"));
+	 fileActionSave->setIcon(QIcon("://images/Save-32.png"));
+	 editActionZoomIn->setIcon(QIcon("://images/zoomin.png"));
+	 editActionZoomOut->setIcon(QIcon("://images/zoomout.png"));
+	 designActionRender->setIcon(QIcon("://images/blackRender.png"));
 	 viewActionShowAxes->setIcon(QIcon("://images/blackaxes.png"));
-	 toolBar->addAction(viewActionShowAxes);
-	 viewActionShowEdges->setIcon(QIcon("://images/Rotation-32.png"));
-	 toolBar->addAction(viewActionShowEdges);
-	}
-
-	connect(toolBar->buttonRender, SIGNAL(clicked()), this, SLOT(actionRender()));
-	connect(toolBar->buttonTop, SIGNAL(clicked()), this, SLOT(viewAngleTop()));
-	connect(toolBar->buttonBottom, SIGNAL(clicked()), this, SLOT(viewAngleBottom()));
-	connect(toolBar->buttonLeft, SIGNAL(clicked()), this, SLOT(viewAngleLeft()));
-	connect(toolBar->buttonRight, SIGNAL(clicked()), this, SLOT(viewAngleRight()));
-	connect(toolBar->buttonFront, SIGNAL(clicked()), this, SLOT(viewAngleFront()));
-	connect(toolBar->buttonBack, SIGNAL(clicked()), this, SLOT(viewModeShowAxes()));
-	connect(toolBar->buttonZoomIn, SIGNAL(clicked()), qglview, SLOT(ZoomIn()));
-	connect(toolBar->buttonZoomOut, SIGNAL(clicked()), qglview, SLOT(ZoomOut()));
+	 viewActionShowEdges->setIcon(QIcon("://images/Rotation-32.png")); 
+	 viewActionZoomIn->setIcon(QIcon("://images/zoomin.png"));
+	 viewActionZoomOut->setIcon(QIcon("://images/zoomout.png"));
+	 viewActionTop->setIcon(QIcon("://images/blackUp.png"));
+	 viewActionBottom->setIcon(QIcon("://images/blackbottom.png"));
+	 viewActionLeft->setIcon(QIcon("://images/blackleft (copy).png"));
+	 viewActionRight->setIcon(QIcon("://images/rightright.png"));
+	 viewActionFront->setIcon(QIcon("://images/blackfront.png"));
+	 viewActionBack->setIcon(QIcon("://images/blackback.png"));
+	 viewActionSurfaces->setIcon(QIcon("://images/surface.png"));
+	 viewActionWireframe->setIcon(QIcon("://images/wireframe1.png"));
+	 viewActionShowCrosshairs->setIcon(QIcon("://images/cross.png"));
+	 viewActionPerspective->setIcon(QIcon("://images/perspective1.png"));
+	 viewActionOrthogonal->setIcon(QIcon("://images/orthogonal.png"));
+	 viewActionPreview->setIcon(QIcon("://images/Preview-32.png"));
+	 viewActionAnimate->setIcon(QIcon("://images/animate.png"));
 	
-	connect(toolBar->buttonSurface, SIGNAL(clicked()), this, SLOT(viewModeSurface()));
-	connect(toolBar->buttonWireframe, SIGNAL(clicked()), this, SLOT(viewModeWireframe()));
+	} else {
+	 fileActionNew->setIcon(QIcon("://images/Document-New-128.png"));
+	 fileActionOpen->setIcon(QIcon("://images/Open-128.png"));
+	 fileActionSave->setIcon(QIcon("://images/Save-128.png"));
+	 editActionZoomIn->setIcon(QIcon("://images/Zoom-In-32.png"));
+	 editActionZoomOut->setIcon(QIcon("://images/Zoom-Out-32.png"));
+ 	 designActionRender->setIcon(QIcon("://images/Arrowhead-Right-32.png"));
+	 viewActionZoomIn->setIcon(QIcon("://images/Zoom-In-32.png"));
+	 viewActionZoomOut->setIcon(QIcon("://images/Zoom-Out-32.png")); 
+	 viewActionShowAxes->setIcon(QIcon("://images/axes.png"));
+	 viewActionShowEdges->setIcon(QIcon("://images/grid.png"));
+         viewActionTop->setIcon(QIcon("://images/up.png"));
+         viewActionBottom->setIcon(QIcon("://images/bottom.png"));
+         viewActionLeft->setIcon(QIcon("://images/left.png"));
+         viewActionRight->setIcon(QIcon("://images/right.png"));
+         viewActionFront->setIcon(QIcon("://images/front.png"));
+         viewActionBack->setIcon(QIcon("://images/back.png"));
+	 viewActionSurfaces->setIcon(QIcon("://images/surfaceWhite.png"));
+	 viewActionWireframe->setIcon(QIcon("://images/wireframeWhite.png"));
+	 viewActionShowCrosshairs->setIcon(QIcon("://images/crosswhite.png"));
+	 viewActionPreview->setIcon(QIcon("://images/Preview-32(1).png"));
+	 viewActionPerspective->setIcon(QIcon("://images/perspective1white.png"));
+	 viewActionOrthogonal->setIcon(QIcon("://images/orthogonalwhite.png"));
+	 viewActionAnimate->setIcon(QIcon("://images/animate.png"));
+	}
+	
+	 editortoolbar->addAction(fileActionNew);
+	 editortoolbar->addAction(fileActionOpen);
+	 editortoolbar->addAction(fileActionSave);
+	 editortoolbar->addAction(editActionZoomIn);
+	 editortoolbar->addAction(editActionZoomOut);
+	 editortoolbar->addAction(designActionRender);
 
-	toolBar->setStyleSheet("QToolBar{border:1 solid black;}" );
+	 toolBar->addAction(viewActionPreview);
+	 toolBar->addAction(viewActionSurfaces);
+	 toolBar->addAction(viewActionWireframe);
+	 toolBar->addAction(viewActionShowAxes);
+	 toolBar->addAction(viewActionShowEdges);
+	 toolBar->addAction(viewActionZoomIn);
+	 toolBar->addAction(viewActionZoomOut);
+	 toolBar->addAction(viewActionTop);
+	 toolBar->addAction(viewActionBottom);
+	 toolBar->addAction(viewActionLeft);
+	 toolBar->addAction(viewActionRight);
+	 toolBar->addAction(viewActionFront);
+	 toolBar->addAction(viewActionBack);
+	 toolBar->addAction(viewActionShowCrosshairs);
+	 toolBar->addAction(viewActionPerspective);
+	 toolBar->addAction(viewActionOrthogonal);
+	 toolBar->addAction(viewActionAnimate);
+ 	toolBar->setStyleSheet("QToolBar{border:1 solid black;}" );
 	
 	// make sure it looks nice..
 	QSettings settings;

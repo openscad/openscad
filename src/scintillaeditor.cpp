@@ -16,6 +16,7 @@ ScintillaEditor::ScintillaEditor(QWidget *parent) : EditorInterface(parent)
 	qsci->indicatorDefine(QsciScintilla::RoundBoxIndicator, indicatorNumber);
 	qsci->markerDefine(QsciScintilla::Circle, markerNumber);
 	qsci->setUtf8(true);
+	qsci->setTabWidth(4);
 	preferenceEditorOption = Preferences::inst()->getValue("editor/syntaxhighlight").toString();
 	lexer = new ScadLexer(this);
 	initFont();
@@ -73,8 +74,8 @@ void ScintillaEditor::forLightBackground()
 {
 	lexer->setPaper("#fff");
 	lexer->setColor(QColor("#272822")); // -> Style: Default text
-	lexer->setColor(QColor("#ff00ff"), QsciLexerCPP::Keyword);	    // -> Style: Keyword	
-	lexer->setColor(QColor("#00f0f0"), QsciLexerCPP::KeywordSet2);	    // -> Style: KeywordSet2
+	lexer->setColor(QColor("#4e9a06"), QsciLexerCPP::Keyword);	    // -> Style: Keyword	
+	lexer->setColor(QColor("#cc0000"), QsciLexerCPP::KeywordSet2);	    // -> Style: KeywordSet2
 	lexer->setColor(Qt::blue, QsciLexerCPP::CommentDocKeyword);	    // -> used in comments only like /*! \cube */
 	lexer->setColor(QColor("#00d000"), QsciLexerCPP::GlobalClass);	    // -> Style: GlobalClass
 	lexer->setColor(QColor("#111111"), QsciLexerCPP::Operator);
