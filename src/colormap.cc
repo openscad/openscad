@@ -223,7 +223,7 @@ beforedawn = map_list_of
   (CGAL_EDGE_FRONT_COLOR,    Color4f(0xff, 0x00, 0x00))
   (CGAL_EDGE_BACK_COLOR,     Color4f(0xff, 0x00, 0x00))
   (CGAL_EDGE_2D_COLOR,       Color4f(0xff, 0x00, 0x00))
-  (CROSSHAIR_COLOR,          Color4f(0x11, 0x11, 0x11));
+  (CROSSHAIR_COLOR,          Color4f(0xf0, 0xf0, 0xf0));
 
 nature = map_list_of
   (BACKGROUND_COLOR,         Color4f(0xfa, 0xfa, 0xfa))
