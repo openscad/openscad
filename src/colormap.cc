@@ -238,11 +238,11 @@ nature = map_list_of
   (CROSSHAIR_COLOR,          Color4f(0x11, 0x11, 0x11));
 
 deepocean = map_list_of
-  (BACKGROUND_COLOR,         Color4f(0x33, 0x33, 0x33));
-  (OPENCSG_FACE_FRONT_COLOR, Color4f(0xee, 0xee, 0xee));
-  (OPENCSG_FACE_BACK_COLOR,  Color4f(0x0b, 0xab, 0xc8));
-  (CGAL_FACE_FRONT_COLOR,    Color4f(0xee, 0xee, 0xee));
-  (CGAL_FACE_BACK_COLOR,     Color4f(0x0b, 0xab, 0xc8));
+  (BACKGROUND_COLOR,         Color4f(0x33, 0x33, 0x33))
+  (OPENCSG_FACE_FRONT_COLOR, Color4f(0xee, 0xee, 0xee))
+  (OPENCSG_FACE_BACK_COLOR,  Color4f(0x0b, 0xab, 0xc8))
+  (CGAL_FACE_FRONT_COLOR,    Color4f(0xee, 0xee, 0xee))
+  (CGAL_FACE_BACK_COLOR,     Color4f(0x0b, 0xab, 0xc8))
   (CGAL_FACE_2D_COLOR,       webcolors["mediumpurple"])
   (CGAL_EDGE_FRONT_COLOR,    Color4f(0x00, 0x00, 0xff))
   (CGAL_EDGE_BACK_COLOR,     Color4f(0x00, 0x00, 0xff))
