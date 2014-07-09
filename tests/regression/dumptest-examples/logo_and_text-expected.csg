@@ -28,9 +28,7 @@ group() {
 					group() {
 						group() {
 							multmatrix([[1, 0, 0, 0], [0, 0, -1, 0], [0, 1, 0, 0], [0, 0, 0, 1]]) {
-								linear_extrude(height = 1, center = false, convexity = 1, scale = [1, 1], $fn = 0, $fa = 12, $fs = 2) {
-									($fn = 4, text = 'Open', size = 42, spacing = 1, font = 'Liberation Serif:style=Bold', direction = 'ltr', language = 'en', script = 'latin', halign = 'left', valign = 'baseline');
-								}
+								linear_extrude(height = 1, center = false, convexity = 1, scale = [1, 1], $fn = 0, $fa = 12, $fs = 2);
 							}
 						}
 					}
@@ -43,9 +41,7 @@ group() {
 					group() {
 						group() {
 							multmatrix([[1, 0, 0, 0], [0, 0, -1, 0], [0, 1, 0, 0], [0, 0, 0, 1]]) {
-								linear_extrude(height = 1, center = false, convexity = 1, scale = [1, 1], $fn = 0, $fa = 12, $fs = 2) {
-									($fn = 4, text = 'SCAD', size = 42, spacing = 1, font = 'Liberation Serif:style=Bold', direction = 'ltr', language = 'en', script = 'latin', halign = 'left', valign = 'baseline');
-								}
+								linear_extrude(height = 1, center = false, convexity = 1, scale = [1, 1], $fn = 0, $fa = 12, $fs = 2);
 							}
 						}
 					}
@@ -58,9 +54,7 @@ group() {
 					group() {
 						group() {
 							multmatrix([[1, 0, 0, 0], [0, 0, -1, 0], [0, 1, 0, 0], [0, 0, 0, 1]]) {
-								linear_extrude(height = 1, center = false, convexity = 1, scale = [1, 1], $fn = 0, $fa = 12, $fs = 2) {
-									($fn = 4, text = 'The Programmers', size = 18, spacing = 1, font = 'Liberation Serif', direction = 'ltr', language = 'en', script = 'latin', halign = 'left', valign = 'baseline');
-								}
+								linear_extrude(height = 1, center = false, convexity = 1, scale = [1, 1], $fn = 0, $fa = 12, $fs = 2);
 							}
 						}
 					}
@@ -73,9 +67,7 @@ group() {
 					group() {
 						group() {
 							multmatrix([[1, 0, 0, 0], [0, 0, -1, 0], [0, 1, 0, 0], [0, 0, 0, 1]]) {
-								linear_extrude(height = 1, center = false, convexity = 1, scale = [1, 1], $fn = 0, $fa = 12, $fs = 2) {
-									($fn = 4, text = 'Solid 3D CAD Modeller', size = 18, spacing = 1, font = 'Liberation Serif', direction = 'ltr', language = 'en', script = 'latin', halign = 'left', valign = 'baseline');
-								}
+								linear_extrude(height = 1, center = false, convexity = 1, scale = [1, 1], $fn = 0, $fa = 12, $fs = 2);
 							}
 						}
 					}

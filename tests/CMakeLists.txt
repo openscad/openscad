@@ -912,7 +912,17 @@ function(add_cmdline_test TESTCMD_BASENAME)
       set_test_config(Dimension2 ${TEST_FULLNAME})
     endif()
 
-    set(EXPERIMENTAL_OPTION "--enable=text")
+    set(EXPERIMENTAL_OPTION "")
+    string(REGEX MATCH "csgtexttest" match_result1 ${TEST_FULLNAME})
+    string(REGEX MATCH "cgalstlsanity" match_result2 ${TEST_FULLNAME})
+    string(REGEX MATCH "dumptest" match_result3 ${TEST_FULLNAME})
+    if( "${match_result1}" STREQUAL "" )
+     if( "${match_result2}" STREQUAL "" )
+      if( "${match_result3}" STREQUAL "" )
+       set(EXPERIMENTAL_OPTION "--enable=text")
+      endif()
+     endif()
+    endif()
 
     if (${DISABLED} EQUAL -1)
 
