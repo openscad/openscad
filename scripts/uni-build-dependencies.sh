@@ -752,11 +752,23 @@ build_opencsg 1.3.2
 build_gettext 0.18.3.1
 build_glib2 2.38.2
 
-# the following are only needed for text()
+# the following are only needed for text(). many of them require
+# pkg-config so we temporarily alter it here.
+# (most of these are defined in common-build-dependencies.sh)
+
+OLD_PKG_CONFIG_PATH=$PKG_CONFIG_PATH
+PKG_CONFIG_PATH=$DEPLOYDIR/lib/pkgconfig:$PKG_CONFIG_PATH
+export PKG_CONFIG_PATH
+echo 'altering PKG_CONFIG_PATH' $PKG_CONFIG_PATH
+
 build_freetype 2.5.0.1
 build_libxml2 2.9.1
 build_fontconfig 2.11.0
 build_ragel 6.8
 build_harfbuzz 0.9.27 --with-glib=yes
+
+PKG_CONFIG_PATH=$OLD_PKG_CONFIG_PATH
+export PKG_CONFIG_PATH
+echo 'restoring old PKG_CONFIG_PATH' $PKG_CONFIG_PATH
 
 echo "OpenSCAD dependencies built and installed to " $BASEDIR

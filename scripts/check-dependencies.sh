@@ -96,9 +96,9 @@ fontconfig_sysver()
 {
   fcpath=$1/include/fontconfig/fontconfig.h
   if [ ! -e $fcpath ]; then return; fi
-  fcmajor=`grep "define  *FC_MAJOR  *[0-9.]*" $fcpath | awk '{print $3}'`
-  fcminor=`grep "define  *FC_MINOR  *[0-9.]*" $fcpath | awk '{print $3}'`
-  fcrevison=`grep "define  *FC_REVISION  *[0-9.]*" $fcpath | awk '{print $3}'`
+  fcmajor=`grep "define *FC_MAJOR.*[0-9.]*" $fcpath | awk '{print $3}'`
+  fcminor=`grep "define *FC_MINOR.*[0-9.]*" $fcpath | awk '{print $3}'`
+  fcrevison=`grep "define *FC_REVISION.*[0-9.]*" $fcpath | awk '{print $3}'`
   fontconfig_sysver="${fcmajor}.${fcminor}.${fcrevision}"
 }
 
