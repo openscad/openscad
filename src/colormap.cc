@@ -9,6 +9,9 @@ OSColors::colorscheme metallic;
 OSColors::colorscheme sunset;
 OSColors::colorscheme starnight;
 OSColors::colorscheme monotone;
+OSColors::colorscheme beforedawn;
+OSColors::colorscheme nature;
+OSColors::colorscheme deepocean; 
 boost::unordered_map<std::string, OSColors::colorscheme> colorschemes;
 
 void OSColors::init() {
@@ -163,42 +166,78 @@ webcolors = map_list_of
     ("yellowgreen", Color4f(154, 205, 50));
 
 cornfield = map_list_of
-  (BACKGROUND_COLOR,         Color4f(0xfa, 0xfa, 0xfa))
-  (OPENCSG_FACE_FRONT_COLOR, Color4f(0xfd, 0xd6, 0x3a))
-  (OPENCSG_FACE_BACK_COLOR,  Color4f(0x16, 0xa0, 0x85))
-  (CGAL_FACE_FRONT_COLOR,    Color4f(0xfd, 0xd6, 0x3a))
-  (CGAL_FACE_BACK_COLOR,     Color4f(0x16, 0xa0, 0x85))
-  (CGAL_FACE_2D_COLOR,       Color4f(0x00, 0xff, 0x00))
+  (BACKGROUND_COLOR,         Color4f(0xff, 0xff, 0xe5))
+  (OPENCSG_FACE_FRONT_COLOR, Color4f(0xf9, 0xd7, 0x2c))
+  (OPENCSG_FACE_BACK_COLOR,  Color4f(0x9d, 0xcb, 0x51))
+  (CGAL_FACE_FRONT_COLOR,    Color4f(0xf9, 0xd7, 0x2c))
+  (CGAL_FACE_BACK_COLOR,     Color4f(0x9d, 0xcb, 0x51))
+  (CGAL_FACE_2D_COLOR,       Color4f(0x00, 0xbf, 0x99))
   (CGAL_EDGE_FRONT_COLOR,    Color4f(0xff, 0xec, 0x5e))
   (CGAL_EDGE_BACK_COLOR,     Color4f(0xab, 0xd8, 0x56))
   (CGAL_EDGE_2D_COLOR,       Color4f(0xff, 0x00, 0x00))
   (CROSSHAIR_COLOR,          Color4f(0x80, 0x00, 0x00));
 
 metallic = map_list_of
-  (BACKGROUND_COLOR,         Color4f(0x39, 0x39, 0x39))
-  (OPENCSG_FACE_FRONT_COLOR, Color4f(0xcf, 0xcf, 0xcf))
-  (OPENCSG_FACE_BACK_COLOR,  Color4f(0x5e, 0x5e, 0x5e))
-  (CGAL_FACE_FRONT_COLOR,    Color4f(0xcf, 0xcf, 0xcf))
-  (CGAL_FACE_BACK_COLOR,     Color4f(0x5e, 0x5e, 0x5e))
+  (BACKGROUND_COLOR,         Color4f(0xaa, 0xaa, 0xff))
+  (OPENCSG_FACE_FRONT_COLOR, Color4f(0xdd, 0xdd, 0xff))
+  (OPENCSG_FACE_BACK_COLOR,  Color4f(0xdd, 0x22, 0xdd))
+  (CGAL_FACE_FRONT_COLOR,    Color4f(0xdd, 0xdd, 0xff))
+  (CGAL_FACE_BACK_COLOR,     Color4f(0xdd, 0x22, 0xdd))
   (CGAL_FACE_2D_COLOR,       Color4f(0x00, 0xbf, 0x99))
   (CGAL_EDGE_FRONT_COLOR,    Color4f(0xff, 0x00, 0x00))
   (CGAL_EDGE_BACK_COLOR,     Color4f(0xff, 0x00, 0x00))
   (CGAL_EDGE_2D_COLOR,       Color4f(0xff, 0x00, 0x00))
-  (CROSSHAIR_COLOR,          Color4f(0x11, 0x11, 0x11));
+  (CROSSHAIR_COLOR,          Color4f(0x80, 0x00, 0x00));
 
 sunset = map_list_of
-  (BACKGROUND_COLOR,         Color4f(0xfa, 0xfa, 0xfa))
-  (OPENCSG_FACE_FRONT_COLOR, Color4f(0xb4, 0x2f, 0x2f))
-  (OPENCSG_FACE_BACK_COLOR,  Color4f(0x56, 0x17, 0x17))
-  (CGAL_FACE_FRONT_COLOR,    Color4f(0xb4, 0x2f, 0x2f))
+  (BACKGROUND_COLOR,         Color4f(0xaa, 0x44, 0x44))
+  (OPENCSG_FACE_FRONT_COLOR, Color4f(0xff, 0xaa, 0xaa))
+  (OPENCSG_FACE_BACK_COLOR,  Color4f(0x88, 0x22, 0x33))
+  (CGAL_FACE_FRONT_COLOR,    Color4f(0xff, 0xaa, 0xaa))
   (CGAL_FACE_BACK_COLOR,     Color4f(0x88, 0x22, 0x33))
   (CGAL_FACE_2D_COLOR,       Color4f(0x00, 0xbf, 0x99))
   (CGAL_EDGE_FRONT_COLOR,    Color4f(0xff, 0x00, 0x00))
   (CGAL_EDGE_BACK_COLOR,     Color4f(0xff, 0x00, 0x00))
   (CGAL_EDGE_2D_COLOR,       Color4f(0xff, 0x00, 0x00))
-  (CROSSHAIR_COLOR,          Color4f(0x11, 0x11, 0x11));
+  (CROSSHAIR_COLOR,          Color4f(0x80, 0x00, 0x00));
 
 starnight = map_list_of
+  (BACKGROUND_COLOR,         webcolors["black"])
+  (OPENCSG_FACE_FRONT_COLOR, webcolors["lightyellow"])
+  (OPENCSG_FACE_BACK_COLOR,  webcolors["cyan"])
+  (CGAL_FACE_FRONT_COLOR,    webcolors["lightyellow"])
+  (CGAL_FACE_BACK_COLOR,     webcolors["cyan"])
+  (CGAL_FACE_2D_COLOR,       webcolors["mediumpurple"])
+  (CGAL_EDGE_FRONT_COLOR,    Color4f(0x00, 0x00, 0xff))
+  (CGAL_EDGE_BACK_COLOR,     Color4f(0x00, 0x00, 0xff))
+  (CGAL_EDGE_2D_COLOR,       webcolors["magenta"])
+  (CROSSHAIR_COLOR,          Color4f(0xf0, 0xf0, 0xf0));
+
+beforedawn = map_list_of
+  (BACKGROUND_COLOR,         Color4f(0x33, 0x33, 0x33))
+  (OPENCSG_FACE_FRONT_COLOR, Color4f(0xcc, 0xcc, 0xcc))
+  (OPENCSG_FACE_BACK_COLOR,  Color4f(0x55, 0x63, 0xdd))
+  (CGAL_FACE_FRONT_COLOR,    Color4f(0xcc, 0xcc, 0xcc))
+  (CGAL_FACE_BACK_COLOR,     Color4f(0x55, 0x63, 0xdd))
+  (CGAL_FACE_2D_COLOR,       Color4f(0x00, 0xbf, 0x99))
+  (CGAL_EDGE_FRONT_COLOR,    Color4f(0xff, 0x00, 0x00))
+  (CGAL_EDGE_BACK_COLOR,     Color4f(0xff, 0x00, 0x00))
+  (CGAL_EDGE_2D_COLOR,       Color4f(0xff, 0x00, 0x00))
+  (CROSSHAIR_COLOR,          Color4f(0xf0, 0xf0, 0xf0));
+
+nature = map_list_of
+  (BACKGROUND_COLOR,         Color4f(0xfa, 0xfa, 0xfa))
+  (OPENCSG_FACE_FRONT_COLOR, Color4f(0x16, 0xa0, 0x85))
+  (OPENCSG_FACE_BACK_COLOR,  Color4f(0xdb, 0xf4, 0xda))
+  (CGAL_FACE_FRONT_COLOR,    Color4f(0x16, 0xa0, 0x85))
+  (CGAL_FACE_BACK_COLOR,     Color4f(0xdb, 0xf4, 0xda))
+  (CGAL_FACE_2D_COLOR,       Color4f(0x00, 0xbf, 0x99))
+  (CGAL_EDGE_FRONT_COLOR,    Color4f(0xff, 0x00, 0x00))
+  (CGAL_EDGE_BACK_COLOR,     Color4f(0xff, 0x00, 0x00))
+  (CGAL_EDGE_2D_COLOR,       Color4f(0xff, 0x00, 0x00))
+  (CROSSHAIR_COLOR,          Color4f(0x11, 0x11, 0x11));
+
+deepocean = map_list_of
   (BACKGROUND_COLOR,         Color4f(0x33, 0x33, 0x33))
   (OPENCSG_FACE_FRONT_COLOR, Color4f(0xee, 0xee, 0xee))
   (OPENCSG_FACE_BACK_COLOR,  Color4f(0x0b, 0xab, 0xc8))
@@ -209,6 +248,7 @@ starnight = map_list_of
   (CGAL_EDGE_BACK_COLOR,     Color4f(0x00, 0x00, 0xff))
   (CGAL_EDGE_2D_COLOR,       webcolors["magenta"])
   (CROSSHAIR_COLOR,          Color4f(0xf0, 0xf0, 0xf0));
+
 
 // Monotone - no difference between 'back face' and 'front face'
 monotone = map_list_of
@@ -228,6 +268,9 @@ colorschemes = map_list_of
   ("Metallic", metallic)
   ("Sunset", sunset)
   ("Starnight", starnight)
+  ("BeforeDawn", beforedawn)
+  ("Nature", nature)
+  ("DeepOcean", deepocean)
   ("Monotone", monotone); // Hidden, not in GUI
 }
 

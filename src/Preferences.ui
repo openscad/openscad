@@ -76,6 +76,21 @@
                 <string>Starnight</string>
                </property>
               </item>
+		<item>
+               <property name="text">
+                <string>BeforeDawn</string>
+               </property>
+              </item>
+		<item>
+               <property name="text">
+                <string>Nature</string>
+               </property>
+              </item>
+		<item>
+               <property name="text">
+                <string>DeepOcean</string>
+               </property>
+              </item>
              </widget>
             </item>
            </layout>
