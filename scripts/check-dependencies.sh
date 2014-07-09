@@ -99,7 +99,7 @@ fontconfig_sysver()
   fcmajor=`grep "define *FC_MAJOR.*[0-9.]*" $fcpath | awk '{print $3}'`
   fcminor=`grep "define *FC_MINOR.*[0-9.]*" $fcpath | awk '{print $3}'`
   fcrevison=`grep "define *FC_REVISION.*[0-9.]*" $fcpath | awk '{print $3}'`
-  fontconfig_sysver="${fcmajor}.${fcminor}.${fcrevision}"
+  fontconfig_sysver_result="${fcmajor}.${fcminor}.${fcrevision}"
 }
 
 freetype2_sysver()
