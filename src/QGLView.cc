@@ -184,38 +184,6 @@ void QGLView::mousePressEvent(QMouseEvent *event)
   last_mouse = event->globalPos();
 }
 
-void QGLView::mouseDoubleClickEvent (QMouseEvent *event) {
-	setupCamera();
-
-	int viewport[4];
-	GLdouble modelview[16];
-	GLdouble projection[16];
-
-	glGetIntegerv( GL_VIEWPORT, viewport);
-	glGetDoublev(GL_MODELVIEW_MATRIX, modelview);
-	glGetDoublev(GL_PROJECTION_MATRIX, projection);
-
-	double x = event->pos().x();
-	double y = viewport[3] - event->pos().y();
-	GLfloat z = 0;
-
-	glReadPixels(x, y, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &z);
-
-	if (z == 1) return; // outside object
-
-	GLdouble px, py, pz;
-
-	GLint success = gluUnProject(x, y, z, modelview, projection, viewport, &px, &py, &pz);
-
-	if (success == GL_TRUE) {
-		cam.object_trans.x() = -px;
-		cam.object_trans.y() = -py;
-		cam.object_trans.z() = -pz;
-		updateGL();
-		emit doAnimateUpdate();
-	}
-}
-
 void QGLView::normalizeAngle(GLdouble& angle)
 {
   while(angle < 0)

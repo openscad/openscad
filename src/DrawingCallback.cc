@@ -43,7 +43,6 @@ DrawingCallback::~DrawingCallback()
 void DrawingCallback::start_glyph()
 {
 	this->polygon = new Polygon2d();
-	this->polygon->setSanitized(true);
 }
 
 void DrawingCallback::finish_glyph()
