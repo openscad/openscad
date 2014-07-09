@@ -94,10 +94,8 @@ FreetypeRenderer::Params TextNode::get_params() const
 std::string TextNode::toString() const
 {
 	std::stringstream stream;
-	stream << "text(" << this->params << ")";
-	std::string validscad(stream.str());
-	boost::replace_all( validscad, "'", "\"" );
-	return validscad;
+	stream << "(" << this->params << ")";
+	return stream.str();
 }
 
 void register_builtin_text()
