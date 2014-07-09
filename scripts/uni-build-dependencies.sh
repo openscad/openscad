@@ -757,6 +757,6 @@ build_freetype 2.5.0.1
 build_libxml2 2.9.1
 build_fontconfig 2.11.0
 build_ragel 6.8
-build_harfbuzz 0.9.23 --with-glib=yes
+build_harfbuzz 0.9.27 --with-glib=yes
 
 echo "OpenSCAD dependencies built and installed to " $BASEDIR
