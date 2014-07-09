@@ -35,6 +35,7 @@
 #include "Polygon2d.h"
 
 #include <boost/assign/std/vector.hpp>
+#include <boost/algorithm/string.hpp>
 using namespace boost::assign; // bring 'operator+=()' into scope
 
 class TextModule : public AbstractModule
@@ -93,8 +94,10 @@ FreetypeRenderer::Params TextNode::get_params() const
 std::string TextNode::toString() const
 {
 	std::stringstream stream;
-	stream << "(" << this->params << ")";
-	return stream.str();
+	stream << "text(" << this->params << ")";
+	std::string validscad(stream.str());
+	boost::replace_all( validscad, "'", "\"" );
+	return validscad;
 }
 
 void register_builtin_text()

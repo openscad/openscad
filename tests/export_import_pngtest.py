@@ -79,7 +79,7 @@ if inputsuffix != '.scad' and inputsuffix != '.csg':
 # doc/testing.txt). Used for 3d formats that dont encode color, like STL.
 # (importing an STL will destroy the 'negative face' colors of OpenCSG/CGAL)
 if os.getenv("TEST_GENERATE") and args.format in ['stl','off']:
-	create_expected_png_cmd = [args.openscad, inputfile, '--colorscheme=Monotone', '--render', '-o', pngfile]
+	create_expected_png_cmd = [args.openscad, '--enable=text', inputfile, '--colorscheme=Monotone', '--render', '-o', pngfile]
 	print('Running OpenSCAD for TEST_GENERATE:')
 	print(' '.join(create_expected_png_cmd))
 	result = subprocess.call(create_expected_png_cmd)
@@ -90,7 +90,7 @@ if os.getenv("TEST_GENERATE") and args.format in ['stl','off']:
 #
 # First run: Just export the given filetype
 #
-export_cmd = [args.openscad, inputfile, '-o', exportfile] + remaining_args
+export_cmd = [args.openscad, '--enable=text', inputfile, '-o', exportfile] + remaining_args
 print('Running OpenSCAD #1:')
 print(' '.join(export_cmd))
 result = subprocess.call(export_cmd)
@@ -107,7 +107,7 @@ if args.format != 'csg':
         newscadfile += '.scad'
         createImport(exportfile, newscadfile)
 
-create_png_cmd = [args.openscad, newscadfile, '--render', '-o', pngfile] + remaining_args
+create_png_cmd = [args.openscad, '--enable=text', newscadfile, '--render', '-o', pngfile] + remaining_args
 print('Running OpenSCAD #2:')
 print(' '.join(create_png_cmd))
 result = subprocess.call(create_png_cmd)

@@ -912,6 +912,8 @@ function(add_cmdline_test TESTCMD_BASENAME)
       set_test_config(Dimension2 ${TEST_FULLNAME})
     endif()
 
+    set(EXPERIMENTAL_OPTION "--enable=text")
+
     if (${DISABLED} EQUAL -1)
 
       # Handle configurations
@@ -931,7 +933,7 @@ function(add_cmdline_test TESTCMD_BASENAME)
         set(FILENAME_OPTION -f ${FILE_BASENAME})
       endif()
 
-      add_test(NAME ${TEST_FULLNAME} ${CONFARG} ${CONFVAL} COMMAND ${PYTHON_EXECUTABLE} ${tests_SOURCE_DIR}/test_cmdline_tool.py --comparator=${COMPARATOR} -c ${IMAGE_COMPARE_EXECUTABLE} -s ${TESTCMD_SUFFIX} ${EXTRA_OPTIONS} ${TESTNAME_OPTION} ${FILENAME_OPTION} ${TESTCMD_EXE} ${TESTCMD_SCRIPT} "${SCADFILE}" ${CAMERA_OPTION} ${TESTCMD_ARGS} )
+      add_test(NAME ${TEST_FULLNAME} ${CONFARG} ${CONFVAL} COMMAND ${PYTHON_EXECUTABLE} ${tests_SOURCE_DIR}/test_cmdline_tool.py --comparator=${COMPARATOR} -c ${IMAGE_COMPARE_EXECUTABLE} -s ${TESTCMD_SUFFIX} ${EXTRA_OPTIONS} ${TESTNAME_OPTION} ${FILENAME_OPTION} ${TESTCMD_EXE} ${TESTCMD_SCRIPT} "${SCADFILE}" ${CAMERA_OPTION} ${EXPERIMENTAL_OPTION} ${TESTCMD_ARGS} )
       set_property(TEST ${TEST_FULLNAME} PROPERTY ENVIRONMENT "${CTEST_ENVIRONMENT}")
     endif()
   endforeach()
@@ -1024,6 +1026,8 @@ disable_tests(
   offpngtest_iteration
   stlpngtest_fractal
   offpngtest_fractal
+  stlpngtest_logo_and_text
+  offpngtest_logo_and_text
 )
 
 # mark which tests are 2d (regex match inside add_cmdline_test)
@@ -1220,9 +1224,9 @@ list(APPEND EXPERIMENTAL_TEXT_FILES
             ${CMAKE_SOURCE_DIR}/../testdata/scad/experimental/text-font-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/experimental/text-search-test.scad)
 
-add_cmdline_test(cgalpngtest EXE ${OPENSCAD_BINPATH} ARGS --render --enable=text -o SUFFIX png FILES ${EXPERIMENTAL_TEXT_FILES})
-add_cmdline_test(opencsgtest EXE ${OPENSCAD_BINPATH} ARGS --enable=text -o SUFFIX png FILES ${EXPERIMENTAL_TEXT_FILES})
-add_cmdline_test(throwntogethertest EXE ${OPENSCAD_BINPATH} ARGS --preview=throwntogether --enable=text -o SUFFIX png FILES ${EXPERIMENTAL_TEXT_FILES})
+add_cmdline_test(cgalpngtest EXE ${OPENSCAD_BINPATH} ARGS --render -o SUFFIX png FILES ${EXPERIMENTAL_TEXT_FILES})
+add_cmdline_test(opencsgtest EXE ${OPENSCAD_BINPATH} ARGS -o SUFFIX png FILES ${EXPERIMENTAL_TEXT_FILES})
+add_cmdline_test(throwntogethertest EXE ${OPENSCAD_BINPATH} ARGS --preview=throwntogether -o SUFFIX png FILES ${EXPERIMENTAL_TEXT_FILES})
 
 # Tests using the actual OpenSCAD binary
 
