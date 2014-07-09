@@ -2,6 +2,7 @@
 
 #include <map>
 #include <string>
+#include <list>
 #include "linalg.h"
 #include <boost/unordered/unordered_map.hpp>
 
