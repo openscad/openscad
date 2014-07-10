@@ -77,7 +77,7 @@ if inputsuffix != '.scad' and inputsuffix != '.csg':
 #
 # First run: Just export the given filetype
 #
-export_cmd = [args.openscad, inputfile, '-o', exportfile] + remaining_args
+export_cmd = [args.openscad, inputfile, '--enable=text', '-o', exportfile] + remaining_args
 print('Running OpenSCAD #1:')
 print(' '.join(export_cmd))
 result = subprocess.call(export_cmd)
@@ -94,7 +94,7 @@ if args.format != 'csg':
         newscadfile += '.scad'
         createImport(exportfile, newscadfile)
 
-create_png_cmd = [args.openscad, newscadfile, '--render', '-o', pngfile] + remaining_args
+create_png_cmd = [args.openscad, newscadfile, '--enable=text', '--render', '-o', pngfile] + remaining_args
 print('Running OpenSCAD #2:')
 print(' '.join(create_png_cmd))
 result = subprocess.call(create_png_cmd)

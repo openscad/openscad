@@ -70,17 +70,16 @@ public:
         }
         friend std::ostream & operator << (std::ostream &stream, const FreetypeRenderer::Params &params) {
 		return stream
-                        << "$fn = " << params.fn
-			<< ", text = '" << params.text
-			<< "', size = " << params.size
+			<< "text = \"" << params.text
+			<< "\", size = " << params.size
 			<< ", spacing = " << params.spacing
-			<< ", font = '" << params.font
-			<< "', direction = '" << params.direction
-			<< "', language = '" << params.language
-			<< "', script = '" << params.script
-			<< "', halign = '" << params.halign
-			<< "', valign = '" << params.valign
-			<< "'";
+			<< ", font = \"" << params.font
+			<< "\", direction = \"" << params.direction
+			<< "\", language = \"" << params.language
+			<< "\", script = \"" << params.script
+			<< "\", halign = \"" << params.halign
+			<< "\", valign = \"" << params.valign
+                        << "\", $fn = " << params.fn;
         }
     private:
         double size, spacing, fn;
