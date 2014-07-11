@@ -97,7 +97,7 @@
 #include "cgal.h"
 #include "cgalworker.h"
 #include "cgalutils.h"
-
+#include <string>
 #else
 
 #include "PolySetEvaluator.h"
@@ -170,11 +170,22 @@ MainWindow::MainWindow(const QString &filename)
 {
 	setupUi(this);
 
+	QString editortype = Preferences::inst()->getValue("editor/editortype").toString();
+
+	if(editortype == "Simple Editor")
+	{
+		editor = new LegacyEditor(editorDockContents);
+	 } else if(editortype == "QScintilla Editor") 
+	 {
+		editor = new ScintillaEditor(editorDockContents);
+	}
+/*
 #ifdef USE_SCINTILLA_EDITOR
 	editor = new ScintillaEditor(editorDockContents);
 #else
 	editor = new LegacyEditor(editorDockContents);
 #endif
+*/
 	editorDockContents->layout()->addWidget(editor);
 
 	setCorner(Qt::TopLeftCorner, Qt::LeftDockWidgetArea);
