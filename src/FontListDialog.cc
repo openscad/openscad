@@ -38,14 +38,33 @@ FontListDialog::~FontListDialog()
 {
 }
 
+void FontListDialog::on_pasteButton_clicked()
+{
+	const QString name = model->item(selected_row, 0)->text();
+	const QString style = model->item(selected_row, 1)->text();
+	font_selected(QString("\"%1:style=%2\"").arg(name).arg(style));
+}
+
+void FontListDialog::selection_changed(const QItemSelection &, const QItemSelection &)
+{
+	QModelIndexList indexes = tableView->selectionModel()->selection().indexes();
+	bool has_selection = indexes.count() > 0;
+	if (has_selection) {
+		selected_row = indexes.at(0).row();
+	}
+	pasteButton->setEnabled(has_selection);
+}
+
 void FontListDialog::update_font_list()
 {
+	pasteButton->setEnabled(false);
+
 	if (model) {
 		delete model;
 	}
 	
 	FontInfoList *list = FontCache::instance()->list_fonts();
-	QStandardItemModel *model = new QStandardItemModel(list->size(), 3, this);
+	model = new QStandardItemModel(list->size(), 3, this);
 	model->setHorizontalHeaderItem(0, new QStandardItem(QString("Font name")));
 	model->setHorizontalHeaderItem(1, new QStandardItem(QString("Font style")));
 	model->setHorizontalHeaderItem(2, new QStandardItem(QString("Filename")));
@@ -64,8 +83,12 @@ void FontListDialog::update_font_list()
 		model->setItem(idx, 2, file);
 	}
 	this->tableView->setModel(model);
+	this->tableView->setSelectionMode(QAbstractItemView::SingleSelection);
 	this->tableView->sortByColumn(0, Qt::AscendingOrder);
 	this->tableView->resizeColumnsToContents();
 	this->tableView->setSortingEnabled(true);
+	
+	connect(tableView->selectionModel(), SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)), this, SLOT(selection_changed(const QItemSelection &, const QItemSelection &)));
+
 	delete list;
 }
