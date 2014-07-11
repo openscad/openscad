@@ -30,6 +30,7 @@ public slots:
          void commentSelection();
          void uncommentSelection();
          void setPlainText(const QString&);
+	 bool isContentModified();
          void highlightError(int);
          void unhighlightLastError();
          void setHighlightScheme(const QString&);

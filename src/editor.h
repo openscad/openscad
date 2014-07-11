@@ -29,7 +29,7 @@ public slots:
         virtual void zoomOut() { }
         virtual void setLineWrapping(bool) { }
         virtual void setContentModified(bool){ }
-        virtual bool isContentModified(){ return true; } 
+        virtual bool isContentModified(){ return 0; } 
         virtual void indentSelection(){ }
         virtual void unindentSelection(){ }
         virtual void commentSelection() {}
