@@ -321,14 +321,14 @@ FT_Face FontCache::find_face_fontconfig(const std::string font)
 	FcPatternDestroy(pattern);
 	FcPatternDestroy(match);
 
+	for (int a = 0; a < face->num_charmaps; a++) {
+		FT_CharMap charmap = face->charmaps[a];
+		PRINTDB("charmap = %d: platform = %d, encoding = %d", a % charmap->platform_id % charmap->encoding_id);
+	}
+
 	if (FT_Select_Charmap(face, ft_encoding_unicode) == 0) {
 		PRINTDB("Successfully selected unicode charmap: %s/%s", face->family_name % face->style_name);
 	} else {
-		for (int a = 0; a < face->num_charmaps; a++) {
-			FT_CharMap charmap = face->charmaps[a];
-			PRINTDB("charmap = %d: platform = %d, encoding = %d", a % charmap->platform_id % charmap->encoding_id);
-		}
-
 		bool charmap_set = false;
 		if (!charmap_set)
 			charmap_set = try_charmap(face, TT_PLATFORM_MICROSOFT, TT_MS_ID_UNICODE_CS);
@@ -338,6 +338,8 @@ FT_Face FontCache::find_face_fontconfig(const std::string font)
 			charmap_set = try_charmap(face, TT_PLATFORM_APPLE_UNICODE, -1);
 		if (!charmap_set)
 			charmap_set = try_charmap(face, TT_PLATFORM_MICROSOFT, TT_MS_ID_SYMBOL_CS);
+		if (!charmap_set)
+			charmap_set = try_charmap(face, TT_PLATFORM_MACINTOSH, TT_MAC_ID_ROMAN);
 		if (!charmap_set)
 			charmap_set = try_charmap(face, TT_PLATFORM_ISO, TT_ISO_ID_8859_1);
 		if (!charmap_set)
