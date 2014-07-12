@@ -306,10 +306,17 @@ FT_Face FontCache::find_face_fontconfig(const std::string font)
 	FcPattern *match = FcFontMatch(config, pattern, &result);
 
 	FcValue file_value;
-	FcPatternGet(match, FC_FILE, 0, &file_value);
+	if (FcPatternGet(match, FC_FILE, 0, &file_value) != FcResultMatch) {
+		return NULL;
+	}
 
+	FcValue font_index;
+	if (FcPatternGet(match, FC_INDEX, 0, &font_index)) {
+		return NULL;
+	}
+	
 	FT_Face face;
-	FT_Error error = FT_New_Face(library, (const char *) file_value.u.s, 0, &face);
+	FT_Error error = FT_New_Face(library, (const char *) file_value.u.s, font_index.u.i, &face);
 
 	FcPatternDestroy(pattern);
 	FcPatternDestroy(match);
