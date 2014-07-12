@@ -1,6 +1,7 @@
 #pragma once
 
 #include <QStandardItemModel>
+#include <QSortFilterProxyModel>
 
 #include "ui_FontListDialog.h"
 
@@ -15,6 +16,17 @@ public:
         virtual ~FontListDialog();
         
         void update_font_list();
+
+public slots:
+        void on_pasteButton_clicked();
+        void on_filterLineEdit_textChanged(const QString &);
+        void selection_changed(const QItemSelection &, const QItemSelection &);
+
+signals:
+        void font_selected(const QString font);
+
 private:
+        QString selection;
         QStandardItemModel *model;
+        QSortFilterProxyModel *proxy;
 };

@@ -49,7 +49,7 @@ AbstractNode *TextModule::instantiate(const Context *ctx, const ModuleInstantiat
 	TextNode *node = new TextNode(inst);
 
 	AssignmentList args;
-	args += Assignment("t"), Assignment("size"), Assignment("font");
+	args += Assignment("text"), Assignment("size"), Assignment("font");
 
 	Context c(ctx);
 	c.setVariables(args, evalctx);
@@ -67,7 +67,7 @@ AbstractNode *TextModule::instantiate(const Context *ctx, const ModuleInstantiat
 	int text_segments = std::max(((int)floor(segments / 6)) + 2, 2);
 	node->params.set_size(size);
 	node->params.set_fn(text_segments);
-	node->params.set_text(lookup_string_variable_with_default(c, "t", ""));
+	node->params.set_text(lookup_string_variable_with_default(c, "text", ""));
 	node->params.set_spacing(lookup_double_variable_with_default(c, "spacing", 1.0));
 	node->params.set_font(lookup_string_variable_with_default(c, "font", ""));
 	node->params.set_direction(lookup_string_variable_with_default(c, "direction", "ltr"));
@@ -93,7 +93,7 @@ FreetypeRenderer::Params TextNode::get_params() const
 std::string TextNode::toString() const
 {
 	std::stringstream stream;
-	stream << "(" << this->params << ")";
+	stream << name() << "(" << this->params << ")";
 	return stream.str();
 }
 

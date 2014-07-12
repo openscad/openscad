@@ -4,4 +4,4 @@ use <../../ttf/liberation-2.00.1/LiberationSans-Regular.ttf>
 // The U+030A (COMBINING RING ABOVE) should be unioned to the
 // letter and not generate a hole where the A and the ring
 // overlap.
-text(t = "A\u030a", font = "Liberation Sans", size = 40);
+text(text = "A\u030a", font = "Liberation Sans", size = 40);

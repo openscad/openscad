@@ -8,7 +8,7 @@ use <../../ttf/amiri-0.106/amiri-regular.ttf>
 
 o = 180;
 t = [ "0123", "ABCD", "abcd" ];
-f = [ "MarVoSym", /* "Webdings" */ "Amiri", "Liberation Sans" ];
+f = [ "MarVoSym", /* "Webdings" */ "Amiri", "Liberation Sans:style=Regular" ];
 
 // Validate that windows symbol fonts are handled correctly.
 // When following the suggested encoding, the charmap is defined

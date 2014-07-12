@@ -1242,6 +1242,12 @@ void MainWindow::pasteViewportTranslation()
 	cursor.insertText(txt);
 }
 
+void MainWindow::pasteText(const QString text)
+{
+	QTextCursor cursor = editor->textCursor();
+	cursor.insertText(text);
+}
+
 void MainWindow::pasteViewportRotation()
 {
 	QTextCursor cursor = editor->textCursor();
@@ -2277,6 +2283,7 @@ void MainWindow::helpFontInfo()
 {
 	if (!this->font_list_dialog) {
 		FontListDialog *dialog = new FontListDialog();
+		connect(dialog, SIGNAL(font_selected(QString)), this, SLOT(pasteText(QString)));
 		this->font_list_dialog = dialog;
 	}
 	this->font_list_dialog->update_font_list();

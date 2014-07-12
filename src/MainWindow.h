@@ -126,6 +126,7 @@ private slots:
 	void compileEnded();
 
 private slots:
+        void pasteText(const QString text);
 	void pasteViewportTranslation();
 	void pasteViewportRotation();
 	void hideEditor();
