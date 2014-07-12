@@ -24,12 +24,15 @@
  *
  */
 
+#include <QSortFilterProxyModel>
+
 #include "FontListDialog.h"
 #include "FontCache.h"
 
 FontListDialog::FontListDialog()
 {
 	model = NULL;
+	proxy = NULL;
 	setupUi(this);
 	connect(this->okButton, SIGNAL(clicked()), this, SLOT(accept()));
 }
@@ -40,27 +43,39 @@ FontListDialog::~FontListDialog()
 
 void FontListDialog::on_pasteButton_clicked()
 {
-	const QString name = model->item(selected_row, 0)->text();
-	const QString style = model->item(selected_row, 1)->text();
-	font_selected(QString("\"%1:style=%2\"").arg(name).arg(style));
+	font_selected(selection);
 }
 
-void FontListDialog::selection_changed(const QItemSelection &, const QItemSelection &)
+void FontListDialog::on_filterLineEdit_textChanged(const QString &text)
 {
-	QModelIndexList indexes = tableView->selectionModel()->selection().indexes();
-	bool has_selection = indexes.count() > 0;
-	if (has_selection) {
-		selected_row = indexes.at(0).row();
+	proxy->setFilterWildcard(text);
+}
+
+void FontListDialog::selection_changed(const QItemSelection &current, const QItemSelection &)
+{
+	if (current.count() == 0) {
+		pasteButton->setEnabled(false);
+		return;
 	}
-	pasteButton->setEnabled(has_selection);
+	
+	const QModelIndex &idx = proxy->mapToSource(current.indexes().at(0));
+	const QString name = model->item(idx.row(), 0)->text();
+	const QString style = model->item(idx.row(), 1)->text();
+	selection = QString("\"%1:style=%2\"").arg(name).arg(style);
+	pasteButton->setEnabled(true);
 }
 
 void FontListDialog::update_font_list()
 {
 	pasteButton->setEnabled(false);
 
+	if (proxy) {
+		delete proxy;
+		proxy = NULL;
+	}
 	if (model) {
 		delete model;
+		model = NULL;
 	}
 	
 	FontInfoList *list = FontCache::instance()->list_fonts();
@@ -82,7 +97,12 @@ void FontListDialog::update_font_list()
 		file->setEditable(false);
 		model->setItem(idx, 2, file);
 	}
-	this->tableView->setModel(model);
+	
+        proxy = new QSortFilterProxyModel(this);
+        proxy->setSourceModel(model);
+	proxy->setFilterCaseSensitivity(Qt::CaseInsensitive);
+	
+	this->tableView->setModel(proxy);
 	this->tableView->setSelectionMode(QAbstractItemView::SingleSelection);
 	this->tableView->sortByColumn(0, Qt::AscendingOrder);
 	this->tableView->resizeColumnsToContents();

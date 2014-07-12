@@ -1,6 +1,7 @@
 #pragma once
 
 #include <QStandardItemModel>
+#include <QSortFilterProxyModel>
 
 #include "ui_FontListDialog.h"
 
@@ -18,12 +19,14 @@ public:
 
 public slots:
         void on_pasteButton_clicked();
+        void on_filterLineEdit_textChanged(const QString &);
         void selection_changed(const QItemSelection &, const QItemSelection &);
 
 signals:
         void font_selected(const QString font);
 
 private:
-        int selected_row;
+        QString selection;
         QStandardItemModel *model;
+        QSortFilterProxyModel *proxy;
 };
