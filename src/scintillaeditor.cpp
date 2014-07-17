@@ -53,10 +53,7 @@ QString ScintillaEditor::toPlainText()
 
 bool ScintillaEditor::isContentModified()
 {
-	if(qsci->isModified())
-	{
-	    return true;
-	}
+  return qsci->isModified();
 }
 
 void ScintillaEditor::highlightError(int error_pos) 
