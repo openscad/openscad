@@ -3,7 +3,12 @@ cache: apt
 compiler: gcc
 
 notifications:
-  irc: "chat.freenode.net#openscad"
+  irc:
+    channels:
+      - "chat.freenode.net#openscad"
+    on_success: change
+    use_notice: true
+    skip_join: true
 
 before_install:
  - echo 'yes' | sudo add-apt-repository ppa:chrysn/openscad
