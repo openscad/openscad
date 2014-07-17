@@ -129,6 +129,21 @@ build_qt5()
   make -j6 install
 }
 
+build_qscintilla()
+{
+  version=$1
+  echo "Building QScintilla" $version "..."
+  cd $BASEDIR/src
+  rm -rf QScintilla-gpl-$version
+  if [ ! -f QScintilla-gpl-$version.tar.gz ]; then
+    curl -LO http://downloads.sourceforge.net/project/pyqt/QScintilla2/QScintilla-$version/QScintilla-gpl-$version.tar.gz
+  fi
+  tar xzf QScintilla-gpl-$version.tar.gz
+  cd QScintilla-gpl-$version/Qt4Qt5
+  qmake qscintilla.pro
+  make -j6 install
+}
+
 # Hack warning: gmplib is built separately in 32-bit and 64-bit mode
 # and then merged afterwards. gmplib's header files are dependent on
 # the CPU architecture on which configure was run and will be patched accordingly.
@@ -711,6 +726,7 @@ fi
 echo "Using basedir:" $BASEDIR
 mkdir -p $SRCDIR $DEPLOYDIR
 build_qt5 5.3.0
+build_qscintilla 2.8.3
 # NB! For eigen, also update the path in the function
 build_eigen 3.2.0
 build_gmp 5.1.3
