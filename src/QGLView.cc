@@ -85,7 +85,16 @@ void QGLView::resetView()
 {
   cam.object_rot << 35, 0, -25;
   cam.object_trans << 0, 0, 0;
-  cam.viewer_distance = 500;
+  cam.viewer_distance = 140;
+}
+
+void QGLView::viewAll()
+{
+	if (Renderer *r = this->getRenderer()) {
+		BoundingBox bbox = r->getBoundingBox();
+		cam.object_trans = -bbox.center();
+		cam.viewAll(r->getBoundingBox());
+	}
 }
 
 void QGLView::initializeGL()
@@ -147,17 +156,16 @@ void QGLView::display_opencsg_warning_dialog()
 void QGLView::resizeGL(int w, int h)
 {
   GLView::resizeGL(w,h);
-  GLView::setupGimbalCamPerspective();
 }
 
 void QGLView::paintGL()
 {
-  GLView::gimbalCamPaintGL();
+  GLView::paintGL();
 
   if (statusLabel) {
     QString msg;
 
-    Camera nc( cam );
+    Camera nc(cam);
     nc.gimbalDefaultTranslate();
     msg.sprintf("Viewport: translate = [ %.2f %.2f %.2f ], rotate = [ %.2f %.2f %.2f ], distance = %.2f",
       nc.object_trans.x(), nc.object_trans.y(), nc.object_trans.z(),
@@ -170,16 +178,42 @@ void QGLView::paintGL()
   if (running_under_wine) swapBuffers();
 }
 
-void QGLView::wheelEvent(QWheelEvent *event)
-{
-  cam.viewer_distance *= pow(0.9, event->delta() / 120.0);
-  updateGL();
-}
-
 void QGLView::mousePressEvent(QMouseEvent *event)
 {
   mouse_drag_active = true;
   last_mouse = event->globalPos();
+}
+
+void QGLView::mouseDoubleClickEvent (QMouseEvent *event) {
+	setupCamera();
+
+	int viewport[4];
+	GLdouble modelview[16];
+	GLdouble projection[16];
+
+	glGetIntegerv( GL_VIEWPORT, viewport);
+	glGetDoublev(GL_MODELVIEW_MATRIX, modelview);
+	glGetDoublev(GL_PROJECTION_MATRIX, projection);
+
+	double x = event->pos().x();
+	double y = viewport[3] - event->pos().y();
+	GLfloat z = 0;
+
+	glReadPixels(x, y, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &z);
+
+	if (z == 1) return; // outside object
+
+	GLdouble px, py, pz;
+
+	GLint success = gluUnProject(x, y, z, modelview, projection, viewport, &px, &py, &pz);
+
+	if (success == GL_TRUE) {
+		cam.object_trans.x() = -px;
+		cam.object_trans.y() = -py;
+		cam.object_trans.z() = -pz;
+		updateGL();
+		emit doAnimateUpdate();
+	}
 }
 
 void QGLView::normalizeAngle(GLdouble& angle)
@@ -278,14 +312,25 @@ bool QGLView::save(const char *filename)
   return img.save(filename, "PNG");
 }
 
+void QGLView::wheelEvent(QWheelEvent *event)
+{
+	this->cam.zoom(event->delta());
+  updateGL();
+}
+
 void QGLView::ZoomIn(void)
 {
-  cam.viewer_distance *= 0.9;
+  this->cam.zoom(120);
   updateGL();
 }
 
 void QGLView::ZoomOut(void)
 {
-  cam.viewer_distance /= 0.9;
+  this->cam.zoom(-120);
   updateGL();
+}
+
+void QGLView::setOrthoMode(bool enabled) {
+	if (enabled) this->cam.setProjection(Camera::ORTHOGONAL);
+	else this->cam.setProjection(Camera::PERSPECTIVE);
 }

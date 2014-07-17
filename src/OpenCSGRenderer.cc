@@ -147,3 +147,10 @@ void OpenCSGRenderer::renderCSGChain(CSGChain *chain, GLint *shaderinfo,
 	}
 	std::for_each(primitives.begin(), primitives.end(), del_fun<OpenCSG::Primitive>());
 }
+
+BoundingBox OpenCSGRenderer::getBoundingBox() const
+{
+	BoundingBox bbox;
+	if (this->root_chain) bbox = this->root_chain->getBoundingBox();
+	return bbox;
+}

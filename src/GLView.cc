@@ -3,6 +3,7 @@
 #include "stdio.h"
 #include "rendersettings.h"
 #include "mathc99.h"
+#include "renderer.h"
 
 #ifdef _WIN32
 #include <GL/wglew.h>
@@ -47,60 +48,107 @@ void GLView::resizeGL(int w, int h)
   cam.pixel_width = w;
   cam.pixel_height = h;
   glViewport(0, 0, w, h);
-  w_h_ratio = sqrt((double)w / (double)h);
+  aspectratio = 1.0*w/h;
 }
 
-void GLView::setupGimbalCamPerspective()
-{
-  glMatrixMode(GL_PROJECTION);
-  glLoadIdentity();
-  glFrustum(-w_h_ratio, +w_h_ratio, -(1/w_h_ratio), +(1/w_h_ratio), +10.0, +far_far_away);
-  gluLookAt(0.0, -cam.viewer_distance, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0);
-}
-
-void GLView::setupGimbalCamOrtho(double distance, bool offset)
-{
-  glMatrixMode(GL_PROJECTION);
-  glLoadIdentity();
-  if (offset) glTranslated(-0.8, -0.8, 0);
-  double l = distance/10;
-  glOrtho(-w_h_ratio*l, +w_h_ratio*l,
-      -(1/w_h_ratio)*l, +(1/w_h_ratio)*l,
-      -far_far_away, +far_far_away);
-  gluLookAt(0.0, -cam.viewer_distance, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0);
-}
-
-void GLView::setupVectorCamPerspective()
-{
-  glMatrixMode(GL_PROJECTION);
-  glLoadIdentity();
-  double dist = (cam.center - cam.eye).norm();
-  gluPerspective(45, pow(w_h_ratio,2), 0.1*dist, 100*dist);
-}
-
-void GLView::setupVectorCamOrtho(bool offset)
-{
-  glMatrixMode(GL_PROJECTION);
-  glLoadIdentity();
-  if (offset) glTranslated(-0.8, -0.8, 0);
-  double l = (cam.center - cam.eye).norm() / 10;
-  glOrtho(-pow(w_h_ratio,2)*l, +pow(w_h_ratio,2)*l,
-          -(1/pow(w_h_ratio,2))*l, +(1/pow(w_h_ratio,2))*l,
-          -far_far_away, +far_far_away);
-}
-
-void GLView::setCamera( Camera &cam )
+void GLView::setCamera(const Camera &cam)
 {
   this->cam = cam;
 }
 
+void GLView::setupCamera()
+{
+  glMatrixMode(GL_PROJECTION);
+  glLoadIdentity();
+
+	switch (this->cam.type) {
+	case Camera::GIMBAL:
+		switch (this->cam.projection) {
+		case Camera::PERSPECTIVE: {
+			double dist = cam.viewer_distance;
+			gluPerspective(cam.fov, aspectratio, 0.1*dist, 100*dist);
+			break;
+		}
+		case Camera::ORTHOGONAL: {
+			glOrtho(-cam.height/2*aspectratio, cam.height*aspectratio/2,
+							-cam.height/2, cam.height/2,
+							-far_far_away, +far_far_away);
+			break;
+		}
+		}
+		gluLookAt(0.0, -cam.viewer_distance, 0.0,
+							0.0, 0.0, 0.0,
+							0.0, 0.0, 1.0);
+		glMatrixMode(GL_MODELVIEW);
+		glLoadIdentity();
+		glRotated(cam.object_rot.x(), 1.0, 0.0, 0.0);
+		glRotated(cam.object_rot.y(), 0.0, 1.0, 0.0);
+		glRotated(cam.object_rot.z(), 0.0, 0.0, 1.0);
+		glTranslated(cam.object_trans.x(), cam.object_trans.y(), cam.object_trans.z() );
+		break;
+	case Camera::VECTOR: {
+		switch (this->cam.projection) {
+		case Camera::PERSPECTIVE: {
+			double dist = (cam.center - cam.eye).norm();
+			gluPerspective(cam.fov, aspectratio, 0.1*dist, 100*dist);
+			break;
+		}
+		case Camera::ORTHOGONAL: {
+			glOrtho(-cam.height/2*aspectratio, cam.height*aspectratio/2,
+							-cam.height/2, cam.height/2,
+							-far_far_away, +far_far_away);
+			break;
+		}
+		}
+		glMatrixMode(GL_MODELVIEW);
+		glLoadIdentity();
+
+		Vector3d dir(cam.eye - cam.center);
+		Vector3d up(0.0,0.0,1.0);
+		if (dir.cross(up).norm() < 0.001) { // View direction is ~parallel with up vector
+			up << 0.0,1.0,0.0;
+		}
+
+		gluLookAt(cam.eye[0], cam.eye[1], cam.eye[2],
+							cam.center[0], cam.center[1], cam.center[2],
+							up[0], up[1], up[2]);
+		break;
+	}
+	default:
+		break;
+	}
+}
+
 void GLView::paintGL()
 {
-  if (cam.type == Camera::GIMBAL) gimbalCamPaintGL();
-  else if (cam.type == Camera::VECTOR) vectorCamPaintGL();
-  else if (cam.type == Camera::NONE) {
-    fprintf(stderr,"paintGL with null camera\n");
-  }
+  glEnable(GL_LIGHTING);
+
+	setupCamera();
+
+  Color4f bgcol = RenderSettings::inst()->color(RenderSettings::BACKGROUND_COLOR);
+  glClearColor(bgcol[0], bgcol[1], bgcol[2], 1.0);
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+
+	// Only for GIMBAL cam
+  if (showcrosshairs) GLView::showCrosshairs();
+  if (showaxes) GLView::showAxes();
+
+  glDepthFunc(GL_LESS);
+  glCullFace(GL_BACK);
+  glDisable(GL_CULL_FACE);
+  glLineWidth(2);
+  glColor3d(1.0, 0.0, 0.0);
+
+  if (this->renderer) {
+#if defined(ENABLE_OPENCSG)
+    // FIXME: This belongs in the OpenCSG renderer, but it doesn't know about this ID yet
+    OpenCSG::setContext(this->opencsg_id);
+#endif
+    this->renderer->draw(showfaces, showedges);
+	}
+
+  // Only for GIMBAL
+	if (showaxes) GLView::showSmallaxes();
 }
 
 #ifdef ENABLE_OPENCSG
@@ -279,86 +327,6 @@ void GLView::initializeGL()
 #endif
 }
 
-void GLView::vectorCamPaintGL()
-{
-  glEnable(GL_LIGHTING);
-
-  if (cam.projection==Camera::ORTHOGONAL) setupVectorCamOrtho();
-  else setupVectorCamPerspective();
-
-  glMatrixMode(GL_MODELVIEW);
-  glLoadIdentity();
-
-  glClearColor(1.0f, 1.0f, 0.92f, 1.0f);
-
-  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-
-  gluLookAt(cam.eye[0], cam.eye[1], cam.eye[2],
-            cam.center[0], cam.center[1], cam.center[2],
-            0.0, 0.0, 1.0);
-
-  // fixme - showcrosshairs doesnt work with vector camera
-  // if (showcrosshairs) GLView::showCrosshairs();
-
-  if (showaxes) GLView::showAxes();
-
-  glDepthFunc(GL_LESS);
-  glCullFace(GL_BACK);
-  glDisable(GL_CULL_FACE);
-
-  glLineWidth(2);
-  glColor3d(1.0, 0.0, 0.0);
-  //FIXME showSmallAxes wont work with vector camera
-  //if (showaxes) GLView::showSmallaxes();
-
-  if (this->renderer) {
-    this->renderer->draw(showfaces, showedges);
-  }
-}
-
-void GLView::gimbalCamPaintGL()
-{
-  glEnable(GL_LIGHTING);
-
-  if (cam.projection == Camera::ORTHOGONAL)
-    GLView::setupGimbalCamOrtho(cam.viewer_distance);
-  else
-    GLView::setupGimbalCamPerspective();
-
-  glMatrixMode(GL_MODELVIEW);
-  glLoadIdentity();
-
-  Color4f bgcol = RenderSettings::inst()->color(RenderSettings::BACKGROUND_COLOR);
-  glClearColor(bgcol[0], bgcol[1], bgcol[2], 1.0);
-
-  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-  glRotated(cam.object_rot.x(), 1.0, 0.0, 0.0);
-  glRotated(cam.object_rot.y(), 0.0, 1.0, 0.0);
-  glRotated(cam.object_rot.z(), 0.0, 0.0, 1.0);
-
-  if (showcrosshairs) GLView::showCrosshairs();
-
-  glTranslated(cam.object_trans.x(), cam.object_trans.y(), cam.object_trans.z() );
-
-  if (showaxes) GLView::showAxes();
-
-  glDepthFunc(GL_LESS);
-  glCullFace(GL_BACK);
-  glDisable(GL_CULL_FACE);
-  glLineWidth(2);
-  glColor3d(1.0, 0.0, 0.0);
-
-  if (this->renderer) {
-#if defined(ENABLE_OPENCSG)
-    // FIXME: This belongs in the OpenCSG renderer, but it doesn't know about this ID yet
-    OpenCSG::setContext(this->opencsg_id);
-#endif
-    this->renderer->draw(showfaces, showedges);
-	}
-  // Small axis cross in the lower left corner
-  if (showaxes) GLView::showSmallaxes();
-}
-
 void GLView::showSmallaxes()
 {
   // Fixme - this doesnt work in Vector Camera mode
@@ -367,8 +335,18 @@ void GLView::showSmallaxes()
   // Small axis cross in the lower left corner
   glDepthFunc(GL_ALWAYS);
 
-  GLView::setupGimbalCamOrtho(1000,true);
-
+	// Set up an orthographic projection of the axis cross in the corner
+  glMatrixMode(GL_PROJECTION);
+  glLoadIdentity();
+	glTranslatef(-0.8f, -0.8f, 0.0f);
+	double scale = 90;
+	glOrtho(-scale*dpi*aspectratio,scale*dpi*aspectratio,
+					-scale*dpi,scale*dpi,
+					-scale*dpi,scale*dpi);
+  gluLookAt(0.0, -1.0, 0.0,
+						0.0, 0.0, 0.0,
+						0.0, 0.0, 1.0);
+	 
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
   glRotated(cam.object_rot.x(), 1.0, 0.0, 0.0);
@@ -436,10 +414,6 @@ void GLView::showSmallaxes()
   // FIXME - depends on gimbal camera 'viewer distance'.. how to fix this
   //         for VectorCamera?
   glEnd();
-
-  //Restore perspective for next paint
-  if(cam.projection==Camera::PERSPECTIVE)
-    GLView::setupGimbalCamPerspective();
 }
 
 void GLView::showAxes()
@@ -447,11 +421,10 @@ void GLView::showAxes()
   // FIXME: doesn't work under Vector Camera
   // Large gray axis cross inline with the model
   // FIXME: This is always gray - adjust color to keep contrast with background
-	float dpi = this->getDPI();
-  glLineWidth(1*dpi);
+  glLineWidth(this->getDPI());
   glColor3d(0.5, 0.5, 0.5);
   glBegin(GL_LINES);
-  double l = cam.viewer_distance*dpi/10;
+  double l = cam.projection == Camera::PERSPECTIVE ? cam.viewer_distance : cam.height;
   glVertex3d(-l, 0, 0);
   glVertex3d(+l, 0, 0);
   glVertex3d(0, -l, 0);

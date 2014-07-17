@@ -97,7 +97,7 @@ GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren3D(const Abstr
 	if (children.size() == 0) return ResultObject();
 
 	if (op == OPENSCAD_HULL) {
-		PolySet *ps = new PolySet(3);
+		PolySet *ps = new PolySet(3, true);
 
 		if (CGALUtils::applyHull(children, *ps)) {
 			return ps;
@@ -109,6 +109,8 @@ GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren3D(const Abstr
 	
 	// Only one child -> this is a noop
 	if (children.size() == 1) return ResultObject(children.front().second);
+
+	if (op == OPENSCAD_MINKOWSKI) return ResultObject(CGALUtils::applyMinkowski(children));
 
 	CGAL_Nef_polyhedron *N = new CGAL_Nef_polyhedron;
 	CGALUtils::applyOperator(children, *N, op);
@@ -705,7 +707,7 @@ static Geometry *extrudePolygon(const LinearExtrudeNode &node, const Polygon2d &
 		ps->append(*ps_top);
 		delete ps_top;
 	}
-    size_t slices = node.has_twist ? node.slices : 1;
+    size_t slices = node.slices;
 
 	for (unsigned int j = 0; j < slices; j++) {
 		double rot1 = node.twist*j / slices;

@@ -84,10 +84,10 @@ bool ModuleCache::evaluate(const std::string &filename, FileModule *&module)
 	if (shouldCompile) {
 #ifdef DEBUG
 		if (found) {
-			PRINTB("Recompiling cached library: %s (%s)", filename % cache_id);
+			PRINTDB("Recompiling cached library: %s (%s)", filename % cache_id);
 		}
 		else {
-			PRINTB("Compiling library '%s'.", filename);
+			PRINTDB("Compiling library '%s'.", filename);
 		}
 #endif
 
@@ -108,7 +108,7 @@ bool ModuleCache::evaluate(const std::string &filename, FileModule *&module)
 		
 		std::string pathname = boosty::stringy(fs::path(filename).parent_path());
 		lib_mod = dynamic_cast<FileModule*>(parse(textbuf.str().c_str(), pathname.c_str(), false));
-		PRINTB_NOCACHE("  compiled module: %p", lib_mod);
+		PRINTDB("  compiled module: %p", lib_mod);
 		
 		// We defer deletion so we can ensure that the new module won't
 		// have the same address as the old

@@ -18,7 +18,7 @@
 }
 
 isEmpty(QT_VERSION) {
-  error("Please use qmake for Qt 4 (probably qmake-qt4)")
+  error("Please use qmake for Qt 4 or Qt 5 (probably qmake-qt4)")
 }
 
 # Auto-include config_<variant>.pri if the VARIANT variable is give on the
@@ -34,10 +34,6 @@ isEmpty(QT_VERSION) {
 # Populate VERSION, VERSION_YEAR, VERSION_MONTH, VERSION_DATE from system date
 include(version.pri)
 
-# for debugging link problems (use nmake -f Makefile.Release > log.txt)
-win* {
-  # QMAKE_LFLAGS += -VERBOSE
-}
 debug: DEFINES += DEBUG
 
 TEMPLATE = app
@@ -47,41 +43,65 @@ DEPENDPATH += src
 
 # Handle custom library location.
 # Used when manually installing 3rd party libraries
-OPENSCAD_LIBDIR = $$(OPENSCAD_LIBRARIES)
-!isEmpty(OPENSCAD_LIBDIR) {
-  INCLUDEPATH += $$OPENSCAD_LIBDIR/include
-  QMAKE_INCDIR_QT = $$OPENSCAD_LIBDIR/include $$QMAKE_INCDIR_QT
-  QMAKE_LIBDIR = $$OPENSCAD_LIBDIR/lib $$QMAKE_LIBDIR
-}
-else {
-  macx {
-    # Default to MacPorts on Mac OS X
-    QMAKE_INCDIR = /opt/local/include
-    QMAKE_LIBDIR = /opt/local/lib
+isEmpty(OPENSCAD_LIBDIR) OPENSCAD_LIBDIR = $$(OPENSCAD_LIBRARIES)
+macx:isEmpty(OPENSCAD_LIBDIR) {
+  exists(/opt/local):exists(/usr/local/Cellar) {
+    error("It seems you might have libraries in both /opt/local and /usr/local. Please specify which one to use with qmake OPENSCAD_LIBDIR=<prefix>")
+  } else {
+    exists(/opt/local) {
+      #Default to MacPorts on Mac OS X
+      message("Automatically searching for libraries in /opt/local. To override, use qmake OPENSCAD_LIBDIR=<prefix>")
+      OPENSCAD_LIBDIR = /opt/local
+    } else:exists(/usr/local/Cellar) {
+      message("Automatically searching for libraries in /usr/local. To override, use qmake OPENSCAD_LIBDIR=<prefix>")
+      OPENSCAD_LIBDIR = /usr/local
+    }
   }
+}
+!isEmpty(OPENSCAD_LIBDIR) {
+  QMAKE_INCDIR = $$OPENSCAD_LIBDIR/include
+  QMAKE_LIBDIR = $$OPENSCAD_LIBDIR/lib
 }
 
 # add CONFIG+=deploy to the qmake command-line to make a deployment build
 deploy {
   message("Building deployment version")
   DEFINES += OPENSCAD_DEPLOY
-  macx {
-    CONFIG += x86_64
-    CONFIG += sparkle
-  }
+  macx: CONFIG += sparkle
 }
 
 macx {
   TARGET = OpenSCAD
+}
+else {
+  TARGET = openscad
+}
+
+macx {
   ICON = icons/OpenSCAD.icns
   QMAKE_INFO_PLIST = Info.plist
   APP_RESOURCES.path = Contents/Resources
   APP_RESOURCES.files = OpenSCAD.sdef dsa_pub.pem icons/SCAD.icns
   QMAKE_BUNDLE_DATA += APP_RESOURCES
   LIBS += -framework Cocoa -framework ApplicationServices
-}
-else {
-  TARGET = openscad
+
+  # Mac needs special care to link against the correct C++ library
+  # We attempt to auto-detect it by inspecting Boost
+  dirs = $${BOOSTDIR} $${QMAKE_LIBDIR}
+  for(dir, dirs) {
+    system(grep -q __112basic_string $${dir}/libboost_thread* >& /dev/null) {
+      message("Detected libc++-linked boost in $${dir}")
+      CONFIG += libc++
+    }
+  }
+
+  libc++ {
+    QMAKE_CXXFLAGS += -stdlib=libc++
+    QMAKE_LFLAGS += -stdlib=libc++
+    QMAKE_OBJECTIVE_CFLAGS += -stdlib=libc++
+    # libc++ on requires Mac OS X 10.7+
+    QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.7
+  }
 }
 
 win* {
@@ -105,6 +125,7 @@ netbsd* {
    QMAKE_LFLAGS += -Wl,-R/usr/X11R7/lib
    QMAKE_LFLAGS += -Wl,-R/usr/pkg/lib
    !clang: { QMAKE_CXXFLAGS += -std=c++0x }
+   # FIXME: Can the lines below be removed in favour of the OPENSCAD_LIBDIR handling above?
    !isEmpty(OPENSCAD_LIBDIR) {
      QMAKE_CFLAGS = -I$$OPENSCAD_LIBDIR/include $$QMAKE_CFLAGS
      QMAKE_CXXFLAGS = -I$$OPENSCAD_LIBDIR/include $$QMAKE_CXXFLAGS
@@ -131,15 +152,15 @@ netbsd* {
 }
 
 *clang* {
-# http://llvm.org/bugs/show_bug.cgi?id=9182
-QMAKE_CXXFLAGS_WARN_ON += -Wno-overloaded-virtual
-# disable enormous amount of warnings about CGAL / boost / etc
-QMAKE_CXXFLAGS_WARN_ON += -Wno-unused-parameter
-QMAKE_CXXFLAGS_WARN_ON += -Wno-unused-variable
-QMAKE_CXXFLAGS_WARN_ON += -Wno-unused-function
-QMAKE_CXXFLAGS_WARN_ON += -Wno-c++11-extensions
-# might want to actually turn this on once in a while
-QMAKE_CXXFLAGS_WARN_ON += -Wno-sign-compare
+  # http://llvm.org/bugs/show_bug.cgi?id=9182
+  QMAKE_CXXFLAGS_WARN_ON += -Wno-overloaded-virtual
+  # disable enormous amount of warnings about CGAL / boost / etc
+  QMAKE_CXXFLAGS_WARN_ON += -Wno-unused-parameter
+  QMAKE_CXXFLAGS_WARN_ON += -Wno-unused-variable
+  QMAKE_CXXFLAGS_WARN_ON += -Wno-unused-function
+  QMAKE_CXXFLAGS_WARN_ON += -Wno-c++11-extensions
+  # might want to actually turn this on once in a while
+  QMAKE_CXXFLAGS_WARN_ON += -Wno-sign-compare
 }
 
 CONFIG(skip-version-check) {
@@ -169,8 +190,6 @@ experimental {
 mdi {
   DEFINES += ENABLE_MDI
 }
-
-DEFINES += USE_PROGRESSWIDGET
 
 include(common.pri)
 
@@ -292,6 +311,7 @@ SOURCES += src/version_check.cc \
            src/ProgressWidget.cc \
            src/mathc99.cc \
            src/linalg.cc \
+           src/Camera.cc \
            src/handle_dep.cc \
            src/value.cc \
            src/expr.cc \

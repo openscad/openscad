@@ -86,16 +86,16 @@ libraries from aptitude. If you're using Mac, or an older Linux/BSD, there
 are build scripts that download and compile the libraries from source. 
 Follow the instructions for the platform you're compiling on below.
 
-* [Qt4 (4.4 - 5.2)](http://www.qt.nokia.com/)
-* [CGAL (3.6 - 4.1)](http://www.cgal.org/)
+* [Qt4 (4.4 - 5.3)](http://www.qt.nokia.com/)
+* [CGAL (3.6 - 4.4)](http://www.cgal.org/)
  * [GMP (5.x)](http://www.gmplib.org/)
  * [MPFR (3.x)](http://www.mpfr.org/)
 * [cmake (2.8, required by CGAL and the test framework)](http://www.cmake.org/)
 * [boost (1.35 - 1.55)](http://www.boost.org/)
-* [OpenCSG (1.3.2)](http://www.opencsg.org/)
+* [OpenCSG (1.3.2 ->)](http://www.opencsg.org/)
 * [GLEW (1.5.4 ->)](http://glew.sourceforge.net/)
-* [Eigen (3.0 - 3.2)](http://eigen.tuxfamily.org/)
-* [glib2 (2.2.0)](https://developer.gnome.org/glib/)
+* [Eigen (3.x)](http://eigen.tuxfamily.org/)
+* [glib2 (2.x)](https://developer.gnome.org/glib/)
 * [fontconfig (2.10)](http://fontconfig.org/)
 * [freetype2 (2.4)](http://freetype.org/)
 * [harfbuzz (0.9.19)](http://harfbuzz.org/)

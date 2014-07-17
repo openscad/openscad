@@ -1,6 +1,9 @@
 //Test that the entire path is pushed onto the stack upto the last '/' 
 include <sub1/sub2/sub3/sub4/include-test2.scad>
 
+//Subdir
+include <sub1/included.scad>
+
 //Test that a non existent path/file doesn't screw things up
 include <non/existent/path/non-file>
 

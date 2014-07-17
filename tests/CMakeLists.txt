@@ -138,7 +138,6 @@ if(${CMAKE_CXX_COMPILER} MATCHES ".*clang.*")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-parameter")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-variable")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-function")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-c++11-extensions")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-sign-compare")
 endif()
 
@@ -153,27 +152,34 @@ function(inclusion user_set_path found_paths)
   # their set_paths to be a priority. 
 
   if (DEBUG_OSCD)
-    message(STATUS "inclusion ${user_set_path} ${found_paths}")
-    message(STATUS "inclusion ${${user_set_path}} ${${found_paths}}")
+    message(STATUS "inclusion:")
+    message(STATUS "  ${user_set_path}: ${${user_set_path}}")
+    message(STATUS "  ${found_paths}: ${${found_paths}}")
   endif()
-  set( inclusion_match 0 )
-  foreach( found_path ${${found_paths}} )
-    if (${found_path} MATCHES ${${user_set_path}}.*)
-      set( inclusion_match 1 )
+  set(inclusion_match 0)
+  if (${user_set_path})
+    foreach(found_path ${${found_paths}})
+      string(FIND ${found_path} ${${user_set_path}} INDEX)
+      if (DEFINED INDEX)
+        if (${INDEX} EQUAL 0)
+          set(inclusion_match 1)
+        endif()
+      endif()
+    endforeach()
+    if (inclusion_match)
+      include_directories(BEFORE ${${found_paths}})
+      if (DEBUG_OSCD)
+        message(STATUS "inclusion prepend ${${found_paths}} for ${user_set_path}")
+      endif()
+      set(inclusion_match 0)
     endif()
-  endforeach()
-  if (user_set_path AND inclusion_match)
-    include_directories(BEFORE ${${found_paths}})
-    if (DEBUG_OSCD)
-      message(STATUS "inclusion prepend ${${found_paths}} for ${user_set_path}")
-    endif()
-  else()
+  endif()
+  if (NOT inclusion_match)
     include_directories(AFTER ${${found_paths}})
     if (DEBUG_OSCD)
       message(STATUS "inclusion append ${${found_paths}} for ${user_set_path}")
     endif()
   endif()
-  set( inclusion_match 0 )
 endfunction()
 
 # Boost
@@ -208,14 +214,26 @@ if (NOT $ENV{BOOSTDIR} STREQUAL "")
 endif()
 
 find_package( Boost 1.35.0 COMPONENTS thread program_options filesystem system regex REQUIRED)
-message(STATUS "Boost includes found: " ${Boost_INCLUDE_DIRS})
+message(STATUS "Boost ${Boost_VERSION} includes found: " ${Boost_INCLUDE_DIRS})
 message(STATUS "Boost libraries found:")
 foreach(boostlib ${Boost_LIBRARIES})
   message(STATUS "  " ${boostlib})
 endforeach()
 
 inclusion(BOOST_ROOT Boost_INCLUDE_DIRS)
-add_definitions(-DBOOST_FILESYSTEM_VERSION=3) # Use V3 for boost 1.44-1.45
+if (${Boost_VERSION} LESS 104600)
+  add_definitions(-DBOOST_FILESYSTEM_VERSION=3) # Use V3 for boost 1.44-1.45
+endif()
+
+# On Mac, we need to link against the correct C++ library. We choose the same one
+# as Boost uses.
+if(APPLE)
+  execute_process(COMMAND grep -q __112basic_string ${Boost_LIBRARIES}
+                  RESULT_VARIABLE BOOST_USE_STDLIBCPP)
+  if (NOT BOOST_USE_STDLIBCPP)
+     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
+  endif()
+endif()
 
 # Mac OS X
 if(APPLE)
@@ -570,6 +588,7 @@ set(CORE_SOURCES
   ../src/parsersettings.cc
   ../src/mathc99.cc
   ../src/linalg.cc
+  ../src/Camera.cc
   ../src/handle_dep.cc 
   ../src/value.cc 
   ../src/calc.cc 
@@ -918,6 +937,10 @@ list(APPEND ECHO_FILES ${FUNCTION_FILES}
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/children-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/range-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/no-break-space-test.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/unicode-tests.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/utf8-tests.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/concat-tests.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/include-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/empty-stl.scad)
 
 list(APPEND DUMPTEST_FILES ${FEATURES_FILES})
@@ -957,6 +980,9 @@ disable_tests(cgalpngtest_child-background
               csgpngtest_highlight-and-background-modifier
               csgpngtest_testcolornames
               throwntogethertest_testcolornames)
+
+# This test won't render anything meaningful in throwntogether mode
+disable_tests(throwntogethertest_minkowski3-erosion)
 
 # The inf/nan tests fail when exporting CSG and rendering that output again
 # as currently inf/nan is written directly to the CSG file (e.g. r = inf)
@@ -1004,7 +1030,8 @@ list(APPEND BUGS_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue495.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue612.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue112.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue666.scad
-                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue802.scad)
+                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue802.scad
+                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue835.scad)
 
 list(APPEND OPENCSGTEST_FILES ${BUGS_FILES})
 list(APPEND CGALPNGTEST_FILES ${BUGS_FILES})
@@ -1090,9 +1117,9 @@ add_cmdline_test(csgtermtest EXE ${OPENSCAD_BINPATH} ARGS -o SUFFIX term FILES
 add_cmdline_test(echotest EXE ${OPENSCAD_BINPATH} ARGS -o SUFFIX echo FILES ${ECHO_FILES})
 add_cmdline_test(dumptest EXE ${OPENSCAD_BINPATH} ARGS -o SUFFIX csg FILES ${DUMPTEST_FILES})
 add_cmdline_test(dumptest-examples EXE ${OPENSCAD_BINPATH} ARGS -o SUFFIX csg FILES ${EXAMPLE_FILES})
-add_cmdline_test(cgalpngtest EXE ${OPENSCAD_BINPATH} ARGS --render -o SUFFIX png FILES ${CGALPNGTEST_FILES})
-add_cmdline_test(opencsgtest EXE ${OPENSCAD_BINPATH} ARGS -o SUFFIX png FILES ${OPENCSGTEST_FILES})
-add_cmdline_test(csgpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT csg-import-test.py ARGS ${OPENSCAD_BINPATH} EXPECTEDDIR cgalpngtest SUFFIX png FILES ${CGALPNGTEST_FILES})
+add_cmdline_test(cgalpngtest EXE ${OPENSCAD_BINPATH} ARGS --enable=text --render -o SUFFIX png FILES ${CGALPNGTEST_FILES})
+add_cmdline_test(opencsgtest EXE ${OPENSCAD_BINPATH} ARGS --enable=text -o SUFFIX png FILES ${OPENCSGTEST_FILES})
+add_cmdline_test(csgpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOURCE_DIR}/export_import_pngtest.py ARGS --openscad=${OPENSCAD_BINPATH} --format=csg EXPECTEDDIR cgalpngtest SUFFIX png FILES ${CGALPNGTEST_FILES})
 add_cmdline_test(throwntogethertest EXE ${OPENSCAD_BINPATH} ARGS --preview=throwntogether -o SUFFIX png FILES ${THROWNTOGETHERTEST_FILES})
 # FIXME: We don't actually need to compare the output of cgalstlsanitytest
 # with anything. It's self-contained and returns != 0 on error
@@ -1100,17 +1127,19 @@ add_cmdline_test(cgalstlsanitytest EXE ${CMAKE_SOURCE_DIR}/cgalstlsanitytest SUF
 
 # Add experimental tests
 
-add_cmdline_test(echotest EXE ${OPENSCAD_BINPATH} ARGS --enable=concat -o SUFFIX echo FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/experimental/concat-tests.scad)
-
 list(APPEND EXPERIMENTAL_TEXT_FILES 
             ${CMAKE_SOURCE_DIR}/../testdata/scad/experimental/text-font-alignment-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/experimental/text-font-direction-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/experimental/text-font-simple-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/experimental/text-font-tests.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/experimental/text-font-composition.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/experimental/text-font-symbol.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/experimental/text-search-test.scad)
 
+add_cmdline_test(dumptest EXE ${OPENSCAD_BINPATH} ARGS --enable=text -o SUFFIX csg FILES ${EXPERIMENTAL_TEXT_FILES})
 add_cmdline_test(cgalpngtest EXE ${OPENSCAD_BINPATH} ARGS --render --enable=text -o SUFFIX png FILES ${EXPERIMENTAL_TEXT_FILES})
 add_cmdline_test(opencsgtest EXE ${OPENSCAD_BINPATH} ARGS --enable=text -o SUFFIX png FILES ${EXPERIMENTAL_TEXT_FILES})
+add_cmdline_test(csgpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOURCE_DIR}/export_import_pngtest.py ARGS --openscad=${OPENSCAD_BINPATH} --format=csg EXPECTEDDIR cgalpngtest SUFFIX png FILES ${EXPERIMENTAL_TEXT_FILES})
 add_cmdline_test(throwntogethertest EXE ${OPENSCAD_BINPATH} ARGS --preview=throwntogether --enable=text -o SUFFIX png FILES ${EXPERIMENTAL_TEXT_FILES})
 
 # Tests using the actual OpenSCAD binary
@@ -1145,36 +1174,64 @@ add_cmdline_test(openscad-imgstretch2 EXE ${OPENSCAD_BINPATH}
                  ARGS --imgsize 100,500 -o 
                  SUFFIX png 
 		 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/features/camera-tests.scad)
+# Perspective gimbal cam
 add_cmdline_test(openscad-camdist EXE ${OPENSCAD_BINPATH} 
-                 ARGS --imgsize=500,500 --camera=0,0,0,90,0,90,300 -o
+                 ARGS --imgsize=500,500 --camera=0,0,0,90,0,90,100 -o
                  SUFFIX png
 		 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/features/camera-tests.scad)
+# Perspective gimbal cam
 add_cmdline_test(openscad-camrot EXE ${OPENSCAD_BINPATH}
-                 ARGS --imgsize=500,500 --camera=0,0,0,440,337.5,315,300 -o
+                 ARGS --imgsize=500,500 --camera=0,0,0,440,337.5,315,100 -o
                  SUFFIX png
 		 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/features/camera-tests.scad)
+# Perspective gimbal cam
 add_cmdline_test(openscad-camtrans EXE ${OPENSCAD_BINPATH}
-                 ARGS --imgsize=500,500 --camera=100,-20,-10,90,0,90,300 -o
+                 ARGS --imgsize=500,500 --camera=100,-20,-10,90,0,90,100 -o
                  SUFFIX png
 		 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/features/camera-tests.scad)
+# Perspective gimbal cam, viewall
+add_cmdline_test(openscad-camtrans-viewall EXE ${OPENSCAD_BINPATH}
+                 ARGS --imgsize=500,500 --camera=100,-20,-10,90,0,90,3000 --viewall -o
+                 SUFFIX png
+		 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/features/camera-tests.scad)
+# Orthographic gimbal cam
 add_cmdline_test(openscad-camortho EXE ${OPENSCAD_BINPATH}
-                 ARGS --imgsize=500,500 --camera=100,-20,-10,90,0,90,300 --projection=o -o
+                 ARGS --imgsize=500,500 --camera=100,-20,-20,90,0,90,90 --projection=o -o
                  SUFFIX png
 		 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/features/camera-tests.scad)
+# Orthographic gimbal cam viewall
+add_cmdline_test(openscad-camortho-viewall EXE ${OPENSCAD_BINPATH}
+                 ARGS --imgsize=500,500 --camera=100,-20,-10,90,0,90,3000 --viewall --projection=o -o
+                 SUFFIX png
+		 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/features/camera-tests.scad)
+# Perspective vector cam
 add_cmdline_test(openscad-cameye EXE ${OPENSCAD_BINPATH}
                  ARGS --imgsize=500,500 --camera=60,40,30,0,0,0 -o
                  SUFFIX png
 		 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/features/camera-tests.scad)
+# Perspective vector cam
 add_cmdline_test(openscad-cameye2 EXE ${OPENSCAD_BINPATH}
                  ARGS --imgsize=500,500 --camera=160,140,130,0,0,0 -o
                  SUFFIX png
 		 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/features/camera-tests.scad)
+# Perspective vector cam
+add_cmdline_test(openscad-camcenter EXE ${OPENSCAD_BINPATH}
+                 ARGS --imgsize=500,500 --camera=60,40,30,20,10,30  -o
+                 SUFFIX png
+		 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/features/camera-tests.scad)
+# Perspective vector cam viewall
+add_cmdline_test(openscad-camcenter-viewall EXE ${OPENSCAD_BINPATH}
+                 ARGS --imgsize=500,500 --camera=60,40,30,20,10,30 --viewall -o
+                 SUFFIX png
+		 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/features/camera-tests.scad)
+# Orthographic vector cam
 add_cmdline_test(openscad-cameyeortho EXE ${OPENSCAD_BINPATH}
                  ARGS --imgsize=500,500 --camera=160,140,130,0,0,0 --projection=o -o 
                  SUFFIX png
 		 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/features/camera-tests.scad)
-add_cmdline_test(openscad-camcenter EXE ${OPENSCAD_BINPATH}
-                 ARGS --imgsize=500,500 --camera=60,40,30,20,10,30  -o
+# Orthographic vector cam viewall
+add_cmdline_test(openscad-cameyeortho-viewall EXE ${OPENSCAD_BINPATH}
+                 ARGS --imgsize=500,500 --camera=16,14,13,0,0,0 --viewall --projection=o -o 
                  SUFFIX png
 		 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/features/camera-tests.scad)
 
@@ -1184,3 +1241,5 @@ message("Available test configurations: ${TEST_CONFIGS}")
 #foreach(CONF ${TEST_CONFIGS})
 #  message("${CONF}: ${${CONF}_TEST_CONFIG}")
 #endforeach()
+
+message("CPPFLAGS: ${CMAKE_CXX_FLAGS}")

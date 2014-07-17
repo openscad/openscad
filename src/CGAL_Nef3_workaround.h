@@ -228,7 +228,7 @@ public:
 	typename Nef::SHalfedge_const_handle se;
 	typename Nef::Halffacet_cycle_const_iterator fc;
      	
-	typename Nef::Halffacet_const_handle f = opposite_facet->twin();
+	typename Nef::Halffacet_const_handle f = !opposite_facet->incident_volume()->mark() ? opposite_facet : opposite_facet->twin();
 
 	typename Nef::SHalfedge_around_facet_const_circulator 
 	  sfc1(f->facet_cycles_begin()), sfc2(sfc1);

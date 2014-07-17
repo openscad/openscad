@@ -28,6 +28,8 @@
 
 #include <iostream>
 
+#include <glib.h>
+
 #include <fontconfig/fontconfig.h>
 
 #include "printutils.h"
@@ -148,7 +150,32 @@ std::vector<const Geometry *> FreetypeRenderer::render(const FreetypeRenderer::P
 	hb_buffer_set_direction(hb_buf, hb_direction_from_string(params.direction.c_str(), -1));
 	hb_buffer_set_script(hb_buf, hb_script_from_string(params.script.c_str(), -1));
 	hb_buffer_set_language(hb_buf, hb_language_from_string(params.language.c_str(), -1));
-	hb_buffer_add_utf8(hb_buf, params.text.c_str(), strlen(params.text.c_str()), 0, strlen(params.text.c_str()));
+	if (FontCache::instance()->is_windows_symbol_font(face)) {
+		// Special handling for symbol fonts like Webdings.
+		// see http://www.microsoft.com/typography/otspec/recom.htm
+		//
+		// We go through the string char by char and if the codepoint
+		// value is between 0x00 and 0xff, then the codepoint is translated
+		// to the 0xf000 page (Private Use Area of Unicode). All other
+		// values are untouched, so using the correct codepoint directly
+		// (e.g. \uf021 for the spider in Webdings) still works.
+		const char *p = params.text.c_str();
+		if (g_utf8_validate(p, -1, NULL)) {
+			char buf[8];
+			while (*p != 0) {
+				memset(buf, 0, 8);
+				gunichar c = g_utf8_get_char(p);
+				c = (c < 0x0100) ? 0xf000 + c : c;
+			        g_unichar_to_utf8(c, buf);
+				hb_buffer_add_utf8(hb_buf, buf, strlen(buf), 0, strlen(buf));
+				p = g_utf8_next_char(p);
+			}
+		} else {
+			PRINTB("Warning: Ignoring text with invalid UTF-8 encoding: \"%s\"", params.text.c_str());
+		}
+	} else {
+		hb_buffer_add_utf8(hb_buf, params.text.c_str(), strlen(params.text.c_str()), 0, strlen(params.text.c_str()));
+	}
 	hb_shape(hb_ft_font, hb_buf, NULL, 0);
 	
 	unsigned int glyph_count;

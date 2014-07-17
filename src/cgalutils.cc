@@ -11,11 +11,22 @@
 #include "cgal.h"
 #include <CGAL/convex_hull_3.h>
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
+#include <CGAL/normal_vector_newell_3.h>
+#include <CGAL/Handle_hash_function.h>
 #include "svg.h"
 #include "Reindexer.h"
 
 #include <map>
+#include <queue>
 #include <boost/foreach.hpp>
+#include <boost/unordered_set.hpp>
+
+namespace /* anonymous */ {
+	template<typename Result, typename V>
+	Result vector_convert(V const& v) {
+		return Result(CGAL::to_double(v[0]),CGAL::to_double(v[1]),CGAL::to_double(v[2]));
+	}
+}
 
 namespace CGALUtils {
 
@@ -55,6 +66,240 @@ namespace CGALUtils {
 			return false;
 		} else {
 			return false;
+		}
+	}
+
+	template<typename Polyhedron>
+	bool is_weakly_convex(Polyhedron const& p) {
+		for (typename Polyhedron::Edge_const_iterator i = p.edges_begin(); i != p.edges_end(); ++i) {
+			typename Polyhedron::Plane_3 p(i->opposite()->vertex()->point(), i->vertex()->point(), i->next()->vertex()->point());
+			if (p.has_on_positive_side(i->opposite()->next()->vertex()->point()) &&
+				CGAL::squared_distance(p, i->opposite()->next()->vertex()->point()) > 1e-8) {
+				return false;
+			}
+		}
+		// Also make sure that there is only one shell:
+		boost::unordered_set<typename Polyhedron::Facet_const_handle, typename CGAL::Handle_hash_function> visited;
+		// c++11
+		// visited.reserve(p.size_of_facets());
+
+		std::queue<typename Polyhedron::Facet_const_handle> to_explore;
+		to_explore.push(p.facets_begin()); // One arbitrary facet
+		visited.insert(to_explore.front());
+
+		while (!to_explore.empty()) {
+			typename Polyhedron::Facet_const_handle f = to_explore.front();
+			to_explore.pop();
+			typename Polyhedron::Facet::Halfedge_around_facet_const_circulator he, end;
+			end = he = f->facet_begin();
+			CGAL_For_all(he,end) {
+				typename Polyhedron::Facet_const_handle o = he->opposite()->facet();
+
+				if (!visited.count(o)) {
+					visited.insert(o);
+					to_explore.push(o);
+				}
+			}
+		}
+
+		return visited.size() == p.size_of_facets();
+	}
+
+	Geometry const * applyMinkowski(const Geometry::ChildList &children)
+	{
+		CGAL::Timer t,t_tot;
+		assert(children.size() >= 2);
+		Geometry::ChildList::const_iterator it = children.begin();
+		t_tot.start();
+		Geometry const* operands[2] = {it->second.get(), NULL};
+		try {
+			while (++it != children.end()) {
+				operands[1] = it->second.get();
+
+				typedef CGAL::Exact_predicates_inexact_constructions_kernel Hull_kernel;
+
+				std::list<CGAL_Polyhedron> P[2];
+				std::list<CGAL::Polyhedron_3<Hull_kernel> > result_parts;
+
+				for (int i = 0; i < 2; i++) {
+					CGAL_Polyhedron poly;
+
+					const PolySet * ps = dynamic_cast<const PolySet *>(operands[i]);
+
+					const CGAL_Nef_polyhedron * nef = dynamic_cast<const CGAL_Nef_polyhedron *>(operands[i]);
+
+					if (ps) createPolyhedronFromPolySet(*ps, poly);
+					else if (nef && nef->p3->is_simple()) nefworkaround::convert_to_Polyhedron<CGAL_Kernel3>(*nef->p3, poly);
+					else throw 0;
+
+					if (ps && ps->is_convex() || !ps && is_weakly_convex(poly)) {
+						PRINTDB("Minkowski: child %d is convex and %s",i % (ps?"PolySet":"Nef") );
+						P[i].push_back(poly);
+					} else {
+						CGAL_Nef_polyhedron3 decomposed_nef;
+
+						if (ps) {
+							PRINTDB("Minkowski: child %d is nonconvex PolySet, transforming to Nef and decomposing...", i);
+							CGAL_Nef_polyhedron *p = createNefPolyhedronFromGeometry(*ps);
+							decomposed_nef = *p->p3;
+							delete p;
+						} else {
+							PRINTDB("Minkowski: child %d is nonconvex Nef, decomposing...",i);
+							decomposed_nef = *nef->p3;
+						}
+
+						CGAL::convex_decomposition_3(decomposed_nef);
+
+						// the first volume is the outer volume, which ignored in the decomposition
+						CGAL_Nef_polyhedron3::Volume_const_iterator ci = ++decomposed_nef.volumes_begin();
+						for( ; ci != decomposed_nef.volumes_end(); ++ci) {
+							if(ci->mark()) {
+								CGAL_Polyhedron poly;
+								decomposed_nef.convert_inner_shell_to_polyhedron(ci->shells_begin(), poly);
+								P[i].push_back(poly);
+							}
+						}
+
+
+						PRINTDB("Minkowski: decomposed into %d convex parts", P[i].size());
+					}
+				}
+
+				std::vector<Hull_kernel::Point_3> points[2];
+				std::vector<Hull_kernel::Point_3> minkowski_points;
+
+				for (int i = 0; i < P[0].size(); i++) {
+					for (int j = 0; j < P[1].size(); j++) {
+						t.start();
+						points[0].clear();
+						points[1].clear();
+
+						for (int k = 0; k < 2; k++) {
+							std::list<CGAL_Polyhedron>::iterator it = P[k].begin();
+							std::advance(it, k==0?i:j);
+
+							CGAL_Polyhedron const& poly = *it;
+							points[k].reserve(poly.size_of_vertices());
+
+							for (CGAL_Polyhedron::Vertex_const_iterator pi = poly.vertices_begin(); pi != poly.vertices_end(); ++pi) {
+								CGAL_Polyhedron::Point_3 const& p = pi->point();
+								points[k].push_back(Hull_kernel::Point_3(to_double(p[0]),to_double(p[1]),to_double(p[2])));
+							}
+						}
+
+						minkowski_points.clear();
+						minkowski_points.reserve(points[0].size() * points[1].size());
+						for (int i = 0; i < points[0].size(); i++) {
+							for (int j = 0; j < points[1].size(); j++) {
+								minkowski_points.push_back(points[0][i]+(points[1][j]-CGAL::ORIGIN));
+							}
+						}
+
+						if (minkowski_points.size() <= 3) {
+							t.stop();
+							continue;
+						}
+
+
+						CGAL::Polyhedron_3<Hull_kernel> result;
+						t.stop();
+						PRINTDB("Minkowski: Point cloud creation (%d ⨉ %d -> %d) took %f ms", points[0].size() % points[1].size() % minkowski_points.size() % (t.time()*1000));
+						t.reset();
+
+						t.start();
+
+						CGAL::convex_hull_3(minkowski_points.begin(), minkowski_points.end(), result);
+
+						std::vector<Hull_kernel::Point_3> strict_points;
+						strict_points.reserve(minkowski_points.size());
+
+						for (CGAL::Polyhedron_3<Hull_kernel>::Vertex_iterator i = result.vertices_begin(); i != result.vertices_end(); ++i) {
+							Hull_kernel::Point_3 const& p = i->point();
+
+							CGAL::Polyhedron_3<Hull_kernel>::Vertex::Halfedge_handle h,e;
+							h = i->halfedge();
+							e = h;
+							bool collinear = false;
+							bool coplanar = true;
+
+							do {
+								Hull_kernel::Point_3 const& q = h->opposite()->vertex()->point();
+								if (coplanar && !CGAL::coplanar(p,q,
+																h->next_on_vertex()->opposite()->vertex()->point(),
+																h->next_on_vertex()->next_on_vertex()->opposite()->vertex()->point())) {
+									coplanar = false;
+								}
+
+
+								for (CGAL::Polyhedron_3<Hull_kernel>::Vertex::Halfedge_handle j = h->next_on_vertex();
+									 j != h && !collinear && ! coplanar;
+									 j = j->next_on_vertex()) {
+
+									Hull_kernel::Point_3 const& r = j->opposite()->vertex()->point();
+									if (CGAL::collinear(p,q,r)) {
+										collinear = true;
+									}
+								}
+
+								h = h->next_on_vertex();
+							} while (h != e && !collinear);
+
+							if (!collinear && !coplanar)
+								strict_points.push_back(p);
+						}
+
+						result.clear();
+						CGAL::convex_hull_3(strict_points.begin(), strict_points.end(), result);
+
+
+						t.stop();
+						PRINTDB("Minkowski: Computing convex hull took %f s", t.time());
+						t.reset();
+
+						result_parts.push_back(result);
+					}
+				}
+
+				if (it != boost::next(children.begin()))
+					delete operands[0];
+
+				if (result_parts.size() == 1) {
+					PolySet *ps = new PolySet(3,true);
+					createPolySetFromPolyhedron(*result_parts.begin(), *ps);
+					operands[0] = ps;
+				} else if (!result_parts.empty()) {
+					t.start();
+					PRINTDB("Minkowski: Computing union of %d parts",result_parts.size());
+					Geometry::ChildList fake_children;
+					for (std::list<CGAL::Polyhedron_3<Hull_kernel> >::iterator i = result_parts.begin(); i != result_parts.end(); ++i) {
+						PolySet ps(3,true);
+						createPolySetFromPolyhedron(*i, ps);
+						fake_children.push_back(std::make_pair((const AbstractNode*)NULL,
+															   shared_ptr<const Geometry>(createNefPolyhedronFromGeometry(ps))));
+					}
+					CGAL_Nef_polyhedron *N = new CGAL_Nef_polyhedron;
+					CGALUtils::applyOperator(fake_children, *N, OPENSCAD_UNION);
+					t.stop();
+					PRINTDB("Minkowski: Union done: %f s",t.time());
+					t.reset();
+					operands[0] = N;
+				} else {
+					return NULL;
+				}
+			}
+
+			t_tot.stop();
+			PRINTDB("Minkowski: Total execution time %f s", t_tot.time());
+			t_tot.reset();
+			return operands[0];
+		}
+		catch (...) {
+			// If anything throws we simply fall back to Nef Minkowski
+			PRINTD("Minkowski: Falling back to Nef Minkowski");
+
+			CGAL_Nef_polyhedron *N = new CGAL_Nef_polyhedron;
+			applyOperator(children, *N, OPENSCAD_MINKOWSKI);
+			return N;
 		}
 	}
 	
@@ -337,6 +582,105 @@ namespace CGALUtils {
 		return result;
 	}
 
+	namespace {
+
+		// lexicographic comparison
+		bool operator < (Vector3d const& a, Vector3d const& b) {
+			for (int i = 0; i < 3; i++) {
+				if (a[i] < b[i]) return true;
+				else if (a[i] == b[i]) continue;
+				return false;
+			}
+			return false;
+		}
+	}
+
+	struct VecPairCompare {
+		bool operator ()(std::pair<Vector3d, Vector3d> const& a,
+						 std::pair<Vector3d, Vector3d> const& b) const {
+			return a.first < b.first || (!(b.first < a.first) && a.second < b.second);
+		}
+	};
+
+
+	bool is_approximately_convex(const PolySet &ps) {
+
+		const double angle_threshold = cos(.1/180*M_PI); // .1°
+
+		typedef CGAL::Simple_cartesian<double> K;
+		typedef K::Vector_3 Vector;
+		typedef K::Point_3 Point;
+		typedef K::Plane_3 Plane;
+
+		// compute edge to face relations and plane equations
+		typedef std::pair<Vector3d,Vector3d> Edge;
+		typedef std::map<Edge, int, VecPairCompare> Edge_to_facet_map;
+		Edge_to_facet_map edge_to_facet_map;
+		std::vector<Plane> facet_planes; facet_planes.reserve(ps.polygons.size());
+
+		for (int i = 0; i < ps.polygons.size(); i++) {
+			size_t N = ps.polygons[i].size();
+			assert(N > 0);
+			std::vector<Point> v(N);
+			for (int j = 0; j < N; j++) {
+				v[j] = vector_convert<Point>(ps.polygons[i][j]);
+				Edge edge(ps.polygons[i][j],ps.polygons[i][(j+1)%N]);
+				if (edge_to_facet_map.count(edge)) return false; // edge already exists: nonmanifold
+				edge_to_facet_map[edge] = i;
+			}
+			Vector normal;
+			CGAL::normal_vector_newell_3(v.begin(), v.end(), normal);
+
+			facet_planes.push_back(Plane(v[0], normal));
+		}
+
+		for (int i = 0; i < ps.polygons.size(); i++) {
+			size_t N = ps.polygons[i].size();
+			for (int j = 0; j < N; j++) {
+				Edge other_edge(ps.polygons[i][(j+1)%N], ps.polygons[i][j]);
+				if (edge_to_facet_map.count(other_edge) == 0) return false;//
+				//Edge_to_facet_map::const_iterator it = edge_to_facet_map.find(other_edge);
+				//if (it == edge_to_facet_map.end()) return false; // not a closed manifold
+				//int other_facet = it->second;
+				int other_facet = edge_to_facet_map[other_edge];
+
+				Point p = vector_convert<Point>(ps.polygons[i][(j+2)%N]);
+
+				if (facet_planes[other_facet].has_on_positive_side(p)) {
+					// Check angle
+					Vector u = facet_planes[other_facet].orthogonal_vector();
+					Vector v = facet_planes[i].orthogonal_vector();
+
+					double cos_angle = u / sqrt(u*u) * v / sqrt(v*v);
+					if (cos_angle < angle_threshold) {
+						return false;
+					}
+				}
+			}
+		}
+
+		std::set<int> explored_facets;
+		std::queue<int> facets_to_visit;
+		facets_to_visit.push(0);
+		explored_facets.insert(0);
+
+		while(!facets_to_visit.empty()) {
+			int f = facets_to_visit.front(); facets_to_visit.pop();
+
+			for (int i = 0; i < ps.polygons[f].size(); i++) {
+				int j = (i+1) % ps.polygons[f].size();
+				Edge_to_facet_map::iterator it = edge_to_facet_map.find(Edge(ps.polygons[f][i], ps.polygons[f][j]));
+				if (it == edge_to_facet_map.end()) return false; // Nonmanifold
+				if (!explored_facets.count(it->second)) {
+					explored_facets.insert(it->second);
+					facets_to_visit.push(it->second);
+				}
+			}
+		}
+
+		// Make sure that we were able to reach all polygons during our visit
+		return explored_facets.size() == ps.polygons.size();
+	}
 };
 
 template <typename Polyhedron>
@@ -365,6 +709,8 @@ bool createPolySetFromPolyhedron(const Polyhedron &p, PolySet &ps)
 
 template bool createPolySetFromPolyhedron(const CGAL_Polyhedron &p, PolySet &ps);
 template bool createPolySetFromPolyhedron(const CGAL::Polyhedron_3<CGAL::Epick> &p, PolySet &ps);
+template bool createPolySetFromPolyhedron(const CGAL::Polyhedron_3<CGAL::Epeck> &p, PolySet &ps);
+template bool createPolySetFromPolyhedron(const CGAL::Polyhedron_3<CGAL::Simple_cartesian<long> > &p, PolySet &ps);
 
 
 /////// Tessellation begin
@@ -1100,10 +1446,97 @@ void ZRemover::visit( CGAL_Nef_polyhedron3::Halffacet_const_handle hfacet )
 	PRINTD(" <!-- ZRemover Halffacet visit end -->");
 }
 
+namespace /* anonymous */ {
+	// This code is from CGAL/demo/Polyhedron/Scene_nef_polyhedron_item.cpp
+	// quick hacks to convert polyhedra from exact to inexact and vice-versa
+	template <class Polyhedron_input,
+	class Polyhedron_output>
+	struct Copy_polyhedron_to
+	: public CGAL::Modifier_base<typename Polyhedron_output::HalfedgeDS>
+	{
+		Copy_polyhedron_to(const Polyhedron_input& in_poly)
+		: in_poly(in_poly) {}
+
+		void operator()(typename Polyhedron_output::HalfedgeDS& out_hds)
+		{
+			typedef typename Polyhedron_output::HalfedgeDS Output_HDS;
+
+			CGAL::Polyhedron_incremental_builder_3<Output_HDS> builder(out_hds);
+
+			typedef typename Polyhedron_input::Vertex_const_iterator Vertex_const_iterator;
+			typedef typename Polyhedron_input::Facet_const_iterator  Facet_const_iterator;
+			typedef typename Polyhedron_input::Halfedge_around_facet_const_circulator HFCC;
+
+			builder.begin_surface(in_poly.size_of_vertices(),
+								  in_poly.size_of_facets(),
+								  in_poly.size_of_halfedges());
+
+			for(Vertex_const_iterator
+				vi = in_poly.vertices_begin(), end = in_poly.vertices_end();
+				vi != end ; ++vi)
+			{
+				typename Polyhedron_output::Point_3 p(::CGAL::to_double( vi->point().x()),
+													  ::CGAL::to_double( vi->point().y()),
+													  ::CGAL::to_double( vi->point().z()));
+				builder.add_vertex(p);
+			}
+
+			typedef CGAL::Inverse_index<Vertex_const_iterator> Index;
+			Index index( in_poly.vertices_begin(), in_poly.vertices_end());
+
+			for(Facet_const_iterator
+				fi = in_poly.facets_begin(), end = in_poly.facets_end();
+				fi != end; ++fi)
+			{
+				HFCC hc = fi->facet_begin();
+				HFCC hc_end = hc;
+				//     std::size_t n = circulator_size( hc);
+				//     CGAL_assertion( n >= 3);
+				builder.begin_facet ();
+				do {
+					builder.add_vertex_to_facet(index[hc->vertex()]);
+					++hc;
+				} while( hc != hc_end);
+				builder.end_facet();
+			}
+			builder.end_surface();
+		} // end operator()(..)
+	private:
+		const Polyhedron_input& in_poly;
+	}; // end Copy_polyhedron_to<>
+
+	template <class Poly_A, class Poly_B>
+	void copy_to(const Poly_A& poly_a, Poly_B& poly_b)
+	{
+		Copy_polyhedron_to<Poly_A, Poly_B> modifier(poly_a);
+		poly_b.delegate(modifier);
+	}
+}
+
 static CGAL_Nef_polyhedron *createNefPolyhedronFromPolySet(const PolySet &ps)
 {
 	if (ps.isEmpty()) return new CGAL_Nef_polyhedron();
 	assert(ps.getDimension() == 3);
+
+	if (ps.is_convex()) {
+		typedef CGAL::Exact_predicates_inexact_constructions_kernel K;
+		// Collect point cloud
+		std::set<K::Point_3> points;
+		for (int i = 0; i < ps.polygons.size(); i++) {
+			for (int j = 0; j < ps.polygons[i].size(); j++) {
+				points.insert(vector_convert<K::Point_3>(ps.polygons[i][j]));
+			}
+		}
+
+		if (points.size() <= 3) return new CGAL_Nef_polyhedron();;
+
+		// Apply hull
+		CGAL::Polyhedron_3<K> r;
+		CGAL::convex_hull_3(points.begin(), points.end(), r);
+		CGAL::Polyhedron_3<CGAL_Kernel3> r_exact;
+		copy_to(r,r_exact);
+		return new CGAL_Nef_polyhedron(new CGAL_Nef_polyhedron3(r_exact));
+	}
 
 	CGAL_Nef_polyhedron3 *N = NULL;
 	bool plane_error = false;
