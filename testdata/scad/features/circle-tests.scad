@@ -1,4 +1,5 @@
 circle();
+circle(1/0);
 translate([0,3,0]) circle(1);
 translate([5,1,0]) circle(r=3);
 translate([0,-1,0]) circle(r=0);
