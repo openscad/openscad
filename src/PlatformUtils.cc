@@ -3,6 +3,9 @@
 #include "PlatformUtils.h"
 #include "boosty.h"
 #include <Eigen/Core>
+#ifdef USE_SCINTILLA_EDITOR
+#include <Qsci/qsciglobal.h>
+#endif
 
 extern std::vector<std::string> librarypath;
 
@@ -157,6 +160,9 @@ std::string PlatformUtils::info()
 	  << "\nCGAL version, kernels: " << TOSTRING(CGAL_VERSION) << ", " << cgal_3d_kernel << ", " << cgal_2d_kernel << ", " << cgal_2d_kernelEx
 	  << "\nOpenCSG version: " << OPENCSG_VERSION_STRING
 	  << "\nQt version: " << qtVersion
+#ifdef USE_SCINTILLA_EDITOR
+	  << "\nQScintilla version: " << QSCINTILLA_VERSION_STR
+#endif
 	  << "\nMingW build: " << mingwstatus
 	  << "\nGLib version: "       << GLIB_MAJOR_VERSION << "." << GLIB_MINOR_VERSION << "." << GLIB_MICRO_VERSION
 	  << "\nOPENSCADPATH: " << (env_path == NULL ? "<not set>" : env_path)
