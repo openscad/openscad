@@ -122,14 +122,9 @@ std::string PlatformUtils::info()
 	std::string mingwstatus("No");
 #endif
 
-#ifdef ENABLE_OPENCSG
 #ifndef OPENCSG_VERSION
 #define OPENCSG_VERSION "unknown, <1.3.2"
-#endif // OPENCSG_VERSION
-#else // ENABLE_OPENCSG
-// we are having problems with the Test Suite misreporting "<1.3.2" incorrectly
-#define OPENCSG_VERSION "OpenCSG version reporting unavailable"
-#endif // ENABLE_OPENCSG
+#endif
 
 #ifdef QT_VERSION
 	std::string qtVersion = qVersion();
