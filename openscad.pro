@@ -292,6 +292,7 @@ HEADERS += src/typedefs.h \
            src/system-gl.h \
            src/stl-utils.h \
            src/boost-utils.h \
+           src/LibraryInfo.h \
            src/svg.h \
            \
            src/lodepng.h \
@@ -350,6 +351,7 @@ SOURCES += src/version_check.cc \
            src/stl-utils.cc \
            src/boost-utils.cc \
            src/PlatformUtils.cc \
+           src/LibraryInfo.cc \
            \
            src/nodedumper.cc \
            src/traverser.cc \

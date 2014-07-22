@@ -37,6 +37,7 @@
 #include "parsersettings.h"
 #include "rendersettings.h"
 #include "PlatformUtils.h"
+#include "LibraryInfo.h"
 #include "nodedumper.h"
 #include "CocoaUtils.h"
 
@@ -135,7 +136,7 @@ static void version()
 
 static void info()
 {
-	std::cout << PlatformUtils::info() << "\n\n";
+	std::cout << LibraryInfo::info() << "\n\n";
 
 	CsgInfo csgInfo = CsgInfo();
 	try {

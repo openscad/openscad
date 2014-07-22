@@ -631,6 +631,8 @@ set(CORE_SOURCES
   ../src/DrawingCallback.cc
   ../src/FreetypeRenderer.cc
   ../src/lodepng.cpp
+  ../src/PlatformUtils.cc 
+  ../src/${PLATFORMUTILS_SOURCE}
   ${FLEX_OpenSCADlexer_OUTPUTS}
   ${BISON_OpenSCADparser_OUTPUTS})
 
@@ -638,8 +640,7 @@ set(NOCGAL_SOURCES
   ../src/builtin.cc 
   ../src/import.cc
   ../src/export.cc
-  ../src/PlatformUtils.cc 
-  ../src/${PLATFORMUTILS_SOURCE})
+  ../src/LibraryInfo.cc)
 
 set(CGAL_SOURCES
   ${NOCGAL_SOURCES}
