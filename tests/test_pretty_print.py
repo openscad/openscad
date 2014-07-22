@@ -54,7 +54,7 @@ def tryread(filename):
         debug( "couldn't open file: [" + filename + "]" )
         debug( str(type(e))+str(e) )
         if filename==None:
-            # dont write a bunch of etxra errors during test output. 
+            # dont write a bunch of extra errors during test output. 
             # the reporting of test failure is sufficient to indicate a problem
             pass
     return data

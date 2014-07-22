@@ -508,7 +508,12 @@ add_definitions(${HARFBUZZ_CFLAGS})
 # Image comparison - expected test image vs actual generated image
 
 if (DIFFPNG)
+  # How to set cflags to optimize the executable?
+  set(IMAGE_COMPARE_EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/diffpng)
+  set(COMPARATOR "diffpng")
+  add_executable(diffpng diffpng.cpp ../src/lodepng.cpp)
   set(SKIP_IMAGEMAGICK 1)
+  message(STATUS "using diffpng for image comparison")
 endif()
 
 if (SKIP_IMAGEMAGICK)
@@ -559,7 +564,6 @@ if (DIFFPNG)
   add_executable(diffpng diffpng.cpp ../src/lodepng.cpp)
   message(STATUS "Image comparison program: diffpng")
 endif()
-
 
 # Internal includes
 include_directories(../src)
@@ -1158,6 +1162,10 @@ foreach(FILE ${EXAMPLE_FILES})
   set_test_config(Examples ${TEST_FULLNAME})
   get_test_fullname(csgpngtest ${FILE} TEST_FULLNAME)
   set_test_config(Examples ${TEST_FULLNAME})
+  get_test_fullname(stlpngtest ${FILE} TEST_FULLNAME)
+  set_test_config(Examples ${TEST_FULLNAME})
+  get_test_fullname(offpngtest ${FILE} TEST_FULLNAME)
+  set_test_config(Examples ${TEST_FULLNAME})
 endforeach()
 
 # Workaround Gallium bugs
@@ -1229,8 +1237,8 @@ add_cmdline_test(throwntogethertest EXE ${OPENSCAD_BINPATH} ARGS --preview=throw
 add_cmdline_test(cgalstlsanitytest EXE ${CMAKE_SOURCE_DIR}/cgalstlsanitytest SUFFIX txt ARGS ${OPENSCAD_BINPATH} FILES ${CGALSTLSANITYTEST_FILES})
 
 # Export/Import 3d png tests.
-add_cmdline_test(stlpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOURCE_DIR}/export_import_pngtest.py ARGS --openscad=${OPENSCAD_BINPATH} --format=STL  SUFFIX png FILES ${EXPORT3D_TEST_FILES})
-add_cmdline_test(offpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOURCE_DIR}/export_import_pngtest.py ARGS --openscad=${OPENSCAD_BINPATH} --format=OFF  SUFFIX png FILES ${EXPORT3D_TEST_FILES})
+add_cmdline_test(stlpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOURCE_DIR}/export_import_pngtest.py ARGS --openscad=${OPENSCAD_BINPATH} --format=STL SUFFIX png FILES ${EXPORT3D_TEST_FILES})
+add_cmdline_test(offpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOURCE_DIR}/export_import_pngtest.py ARGS --openscad=${OPENSCAD_BINPATH} --format=OFF SUFFIX png FILES ${EXPORT3D_TEST_FILES})
 
 # Add experimental tests
 

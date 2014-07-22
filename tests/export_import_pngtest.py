@@ -83,7 +83,7 @@ if inputsuffix != '.scad' and inputsuffix != '.csg':
 # doc/testing.txt). Used for 3d formats that dont encode color, like STL.
 # (importing an STL will destroy the 'negative face' colors of OpenCSG/CGAL)
 if os.getenv("TEST_GENERATE") and args.format in ['stl','off']:
-	create_expected_png_cmd = [args.openscad, '--enable=text', inputfile, '--colorscheme=Monotone', '--render', '-o', pngfile]
+	create_expected_png_cmd = [args.openscad, inputfile, '--enable=text', '--colorscheme=Monotone', '--render', '-o', pngfile]
 	print('Running OpenSCAD for TEST_GENERATE:')
 	print(' '.join(create_expected_png_cmd))
 	result = subprocess.call(create_expected_png_cmd)
