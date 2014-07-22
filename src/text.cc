@@ -35,7 +35,6 @@
 #include "Polygon2d.h"
 
 #include <boost/assign/std/vector.hpp>
-#include <boost/algorithm/string.hpp>
 using namespace boost::assign; // bring 'operator+=()' into scope
 
 class TextModule : public AbstractModule
