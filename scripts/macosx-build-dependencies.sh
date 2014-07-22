@@ -142,6 +142,7 @@ build_qscintilla()
   cd QScintilla-gpl-$version/Qt4Qt5
   qmake qscintilla.pro
   make -j6 install
+  install_name_tool -id $DEPLOYDIR/lib/libqscintilla2.dylib $DEPLOYDIR/lib/libqscintilla2.dylib
 }
 
 # Hack warning: gmplib is built separately in 32-bit and 64-bit mode
