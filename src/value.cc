@@ -61,6 +61,9 @@ std::ostream &operator<<(std::ostream &stream, const QuotedString &s)
     case '\n':
       stream << "\\n";
       break;
+    case '\r':
+      stream << "\\r";
+      break;
     case '"':
     case '\\':
       stream << '\\';

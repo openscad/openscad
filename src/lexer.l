@@ -26,6 +26,7 @@
 
 %{
 
+#include <glib.h>
 #include "typedefs.h"
 #include "handle_dep.h"
 #include "printutils.h"
@@ -77,6 +78,7 @@ extern FileModule *rootmodule;
   }                                       \
 }
 
+void to_utf8(const char *, char *);
 void includefile();
 fs::path sourcepath();
 std::vector<fs::path> path_stack;
@@ -91,12 +93,19 @@ std::string filepath;
 %option yylineno
 %option noyywrap
 
-%x cond_comment cond_string
+%x cond_comment cond_lcomment cond_string
 %x cond_include
 %x cond_use
 
 D [0-9]
 E [Ee][+-]?{D}+
+H [0-9a-fA-F]
+
+U       [\x80-\xbf]
+U2      [\xc2-\xdf]
+U3      [\xe0-\xef]
+U4      [\xf0-\xf4]
+UNICODE {U2}{U}|{U3}{U}{U}|{U4}{U}{U}{U}
 
 %%
 
@@ -149,6 +158,16 @@ use[ \t\r\n>]*"<"	{ BEGIN(cond_use); }
 "false"		return TOK_FALSE;
 "undef"		return TOK_UNDEF;
 
+%{/*
+ U+00A0 (UTF-8 encoded: C2A0) is no-break space. We support it since Qt's QTextEdit
+ automatically converts these to spaces and we want to be able to process the same
+ files on the cmd-line as in the editor.
+*/%}
+
+\xc2\xa0
+
+{UNICODE}+              { parser_error_pos -= strlen(yytext); return TOK_ERROR; }
+
 {D}+{E}? | 
 {D}*\.{D}+{E}? |
 {D}+\.{D}*{E}?          {
@@ -166,22 +185,30 @@ use[ \t\r\n>]*"<"	{ BEGIN(cond_use); }
 \\r			{ stringcontents += '\r'; }
 \\\\			{ stringcontents += '\\'; }
 \\\"			{ stringcontents += '"'; }
-[^\\\n\"]+		{ stringcontents += lexertext; }
+{UNICODE}               { parser_error_pos -= strlen(lexertext) - 1; stringcontents += lexertext; }
+\\x[0-7]{H}             { unsigned long i = strtoul(lexertext + 2, NULL, 16); stringcontents += (i == 0 ? ' ' : (unsigned char)(i & 0xff)); }
+\\u{H}{4}|\\U{H}{6}     { char buf[8]; to_utf8(lexertext + 2, buf); stringcontents += buf; }
+[^\\\n\"]		{ stringcontents += lexertext; }
 \"			{ BEGIN(INITIAL); 
 			parserlval.text = strdup(stringcontents.c_str()); 
 			return TOK_STRING; }
 }
 
-%{/*
- C2A0 is no-break space. We support it since Qt's QTextEdit automatically converts these to
- spaces and we want to be able to process the same files on the cmd-line as in the editor.
-*/%}
+[\n\r\t ]
 
-[\n\r\t ]|\xc2\xa0
-\/\/[^\n]*\n?
+\/\/ BEGIN(cond_lcomment);
+<cond_lcomment>{
+\n                      { BEGIN(INITIAL); }
+{UNICODE}               { parser_error_pos -= strlen(lexertext) - 1; }
+[^\n]
+}
+
 "/*" BEGIN(cond_comment);
-<cond_comment>"*/" BEGIN(INITIAL);
-<cond_comment>.|\n
+<cond_comment>{
+"*/"                    { BEGIN(INITIAL); }
+{UNICODE}               { parser_error_pos -= strlen(lexertext) - 1; }
+.|\n
+}
 
 "<="	return LE;
 ">="	return GE;
@@ -193,6 +220,22 @@ use[ \t\r\n>]*"<"	{ BEGIN(cond_use); }
 . { return yytext[0]; }
 
 %%
+
+/*!
+ * Convert unicode codepoint given in hex notation
+ * into UTF8 encoding. The output buffer must be 8
+ * characters long.
+ */
+void to_utf8(const char *str, char *out)
+{
+    memset(out, 0, 8);
+    const gunichar c = strtoul(str, NULL, 16);
+    if (g_unichar_validate(c) && (c != 0)) {
+        g_unichar_to_utf8(c, out);
+    } else {
+        out[0] = ' ';
+    }
+}
 
 fs::path sourcepath()
 {
@@ -218,7 +261,6 @@ void includefile()
   else {
     rootmodule->registerInclude(boosty::stringy(localpath), boosty::stringy(localpath));
     PRINTB("WARNING: Can't open include file '%s'.", boosty::stringy(localpath));
-    if (path_stack.size() > 0) path_stack.pop_back();
     return;
   };
 

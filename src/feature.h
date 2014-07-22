@@ -12,7 +12,6 @@ public:
 	typedef std::vector<Feature *> list_t;
 	typedef list_t::iterator iterator;
 
-	static const Feature ExperimentalConcatFunction;
 	static const Feature ExperimentalLazyUnion;
 	static const Feature ExperimentalTextModule;
     

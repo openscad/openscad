@@ -269,7 +269,12 @@ AbstractNode *ControlModule::instantiate(const Context* /*ctx*/, const ModuleIns
 		for (size_t i = 0; i < inst->arguments.size(); i++) {
 			if (i > 0) msg << ", ";
 			if (!evalctx->getArgName(i).empty()) msg << evalctx->getArgName(i) << " = ";
-			msg << evalctx->getArgValue(i);
+			Value val = evalctx->getArgValue(i);
+			if (val.type() == Value::STRING) {
+				msg << '"' << val.toString() << '"';
+			} else {
+				msg << val.toString();
+			}
 		}
 		PRINTB("%s", msg.str());
 	}

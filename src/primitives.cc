@@ -528,7 +528,8 @@ Geometry *PrimitiveNode::createGeometry() const
 	case SQUARE: {
 		Polygon2d *p = new Polygon2d();
 		g = p;
-		if (this->x > 0 && this->y > 0) {
+		if (this->x > 0 && this->y > 0 &&
+				!isinf(this->x) && !isinf(this->y)) {
 			Vector2d v1(0, 0);
 			Vector2d v2(this->x, this->y);
 			if (this->center) {
@@ -550,7 +551,7 @@ Geometry *PrimitiveNode::createGeometry() const
 	case CIRCLE: {
 		Polygon2d *p = new Polygon2d();
 		g = p;
-		if (this->r1 > 0)	{
+		if (this->r1 > 0 && !isinf(this->r1))	{
 			int fragments = Calc::get_fragments_from_r(this->r1, this->fn, this->fs, this->fa);
 
 			Outline2d o;

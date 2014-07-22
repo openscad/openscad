@@ -343,7 +343,7 @@ namespace CGALUtils {
 			}
 			// Initialize N with first expected geometric object
 			if (!N) {
-				N = chN->copy();
+				N = new CGAL_Nef_polyhedron(*chN);
 				continue;
 			}
 
@@ -422,7 +422,7 @@ namespace CGALUtils {
 		try {
 			switch (op) {
 			case OPENSCAD_UNION:
-				if (target.isEmpty()) target = *src.copy();
+				if (target.isEmpty()) target = *new CGAL_Nef_polyhedron(src);
 				else target += src;
 				break;
 			case OPENSCAD_INTERSECTION:
@@ -607,7 +607,7 @@ namespace CGALUtils {
 
 	bool is_approximately_convex(const PolySet &ps) {
 
-		const double angle_threshold = cos(.5/180*M_PI); // .5°
+		const double angle_threshold = cos(.1/180*M_PI); // .1°
 
 		typedef CGAL::Simple_cartesian<double> K;
 		typedef K::Vector_3 Vector;
@@ -660,7 +660,28 @@ namespace CGALUtils {
 				}
 			}
 		}
-		return true;
+
+		std::set<int> explored_facets;
+		std::queue<int> facets_to_visit;
+		facets_to_visit.push(0);
+		explored_facets.insert(0);
+
+		while(!facets_to_visit.empty()) {
+			int f = facets_to_visit.front(); facets_to_visit.pop();
+
+			for (int i = 0; i < ps.polygons[f].size(); i++) {
+				int j = (i+1) % ps.polygons[f].size();
+				Edge_to_facet_map::iterator it = edge_to_facet_map.find(Edge(ps.polygons[f][i], ps.polygons[f][j]));
+				if (it == edge_to_facet_map.end()) return false; // Nonmanifold
+				if (!explored_facets.count(it->second)) {
+					explored_facets.insert(it->second);
+					facets_to_visit.push(it->second);
+				}
+			}
+		}
+
+		// Make sure that we were able to reach all polygons during our visit
+		return explored_facets.size() == ps.polygons.size();
 	}
 };
 

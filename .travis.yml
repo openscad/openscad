@@ -2,6 +2,14 @@ language: cpp
 cache: apt
 compiler: gcc
 
+notifications:
+  irc:
+    channels:
+      - "chat.freenode.net#openscad"
+    on_success: change
+    use_notice: true
+    skip_join: true
+
 before_install:
  - echo 'yes' | sudo add-apt-repository ppa:chrysn/openscad
  - sudo apt-get update -qq
@@ -24,7 +32,7 @@ before_script:
  - base64 --decode --ignore-garbage ~/.ssh/openscad_rsa_base64 > ~/.ssh/id_rsa
  - chmod 600 ~/.ssh/id_rsa
 
-script: ./scripts/travis-ci.sh
+script: if [ "${COVERITY_SCAN_BRANCH}" != 1 ]; then ./scripts/travis-ci.sh ; fi
 
 env:
  global:
@@ -67,4 +75,15 @@ env:
  - secure: "JsOTX5JsRAY3zyKa/5yYkd48Nejt9CAEraXVpN1NDW25jJmsOynyW5d2WYazJ1H0x1oR6Fhc4gstNxaj1MNh/gVM9O3UM2tyFnSxDY6fZnEGWaf17ln4dqi3KHXWU7h2Gdg1ah19NS0nWytooW6VcEXmk+cYSheTqyfc5gK7Sdo="
  - secure: "mMc9MyopIjvzpDg3eN6owSmr2PI58JiPnlLhMNvOWW9axUzup5tthfqM+tvR/AqdLQSSMUC9JXwwQK0d543Q4YyoQ0jwVY2RT56VdEywxD5+yWRfXD+ANlJhdQWmlPVc3KsavKYmfQPBLbwe0nyhtQTWGeAgKTYvYT+k1/PD4rg="
  - secure: "X7KDSiSOR3XcePJgTXNzwE1wU285yFsxB7crMLskD08wU8xdRqS8NL+1++/Lju6pypOkospI2AYH1JAJ7JK3Sx5QYM4MxgRJcrMHiTMirN3cm3KzkWUuv3iEZNJ7q6ANi5oFfHh3k0D4JhCEnA1ICTDPdq+r9+mOvgkrly8V0Dw="
+ # scan.coverity token
+ - secure: "CGHkiv3Aki3HF2xiNPbPEqB66Xcz8HrdhSpFYjQFqHsrseIXOmZGLaIdnkwCqoIHUMFVtqGVGSxRhhrSOrAq+uOgc6Wyst8u6ThN3HhRbvQgF2v7XvtGsTiAObxLvj5V91gqQwHxWPHf948Cm12QQgmEd+dbhyjPWsmVMDb4gNk="
  
+addons:
+  coverity_scan:
+    project:
+      name: "openscad/openscad"
+      description: "The Programmers Solid 3D CAD Modeller"
+    notification_email: torsten.paul@gmx.de
+    build_command_prepend: qmake
+    build_command: make
+    branch_pattern: coverity_scan

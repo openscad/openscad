@@ -15,6 +15,7 @@ Camera::Camera(enum CameraType camtype) :
 	}
 	pixel_width = RenderSettings::inst()->img_width;
 	pixel_height = RenderSettings::inst()->img_height;
+	autocenter = false;
 }
 
 void Camera::setup(std::vector<double> params)
@@ -24,6 +25,7 @@ void Camera::setup(std::vector<double> params)
 		object_trans << params[0], params[1], params[2];
 		object_rot << params[3], params[4], params[5];
 		viewer_distance = params[6];
+		height = params[6];
 	} else if (params.size() == 6) {
 		type = Camera::VECTOR;
 		eye << params[0], params[1], params[2];
@@ -56,6 +58,12 @@ void Camera::viewAll(const BoundingBox &bbox, float scalefactor)
 		this->eye = this->center - Vector3d(1,1,-0.5);
 	}
 
+	if (this->autocenter) {
+		// autocenter = point camera at the center of the bounding box.
+		this->object_trans = -bbox.center(); // for Gimbal cam
+		this->center = bbox.center(); // for Vector cam
+	}
+
 	switch (this->projection) {
 	case Camera::ORTHOGONAL:
 		this->height = bbox.diagonal().norm();
@@ -76,5 +84,30 @@ void Camera::viewAll(const BoundingBox &bbox, float scalefactor)
 		}
 	}
 		break;
+	}
+}
+
+void Camera::zoom(int delta)
+{
+	if (this->projection == PERSPECTIVE) {
+		this->viewer_distance *= pow(0.9, delta / 120.0);
+	}
+	else {
+		this->height *= pow(0.9, delta / 120.0);
+	}
+}
+
+void Camera::setProjection(ProjectionType type)
+{
+	if (this->projection != type) {
+		switch (type) {
+		case PERSPECTIVE:
+			this->viewer_distance = this->height;
+			break;
+		case ORTHOGONAL:
+			this->height = this->viewer_distance;
+			break;
+		}
+		this->projection = type;
 	}
 }
