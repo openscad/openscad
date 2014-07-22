@@ -15,6 +15,7 @@ Camera::Camera(enum CameraType camtype) :
 	}
 	pixel_width = RenderSettings::inst()->img_width;
 	pixel_height = RenderSettings::inst()->img_height;
+	autocenter = false;
 }
 
 void Camera::setup(std::vector<double> params)
@@ -55,6 +56,12 @@ void Camera::viewAll(const BoundingBox &bbox, float scalefactor)
 		this->type = Camera::VECTOR;
 		this->center = bbox.center();
 		this->eye = this->center - Vector3d(1,1,-0.5);
+	}
+
+	if (this->autocenter) {
+		// autocenter = point camera at the center of the bounding box.
+		this->object_trans = -bbox.center(); // for Gimbal cam
+		this->center = bbox.center(); // for Vector cam
 	}
 
 	switch (this->projection) {

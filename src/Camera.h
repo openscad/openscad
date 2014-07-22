@@ -42,13 +42,19 @@ public:
 	Eigen::Vector3d object_rot;
 	double viewer_distance;
 
-  // Perspective settings
+	// Perspective settings
 	double fov; // Field of view
 
-  // Orthographic settings
+	// Orthographic settings
 	double height; // world-space height of viewport
 
+	// true if camera should try to view everything in a given
+	// bounding box.
 	bool viewall;
+
+	// true if camera should point at center of bounding box
+	// (normally it points at 0,0,0 or at given coordinates)
+	bool autocenter;
 
 	unsigned int pixel_width;
 	unsigned int pixel_height;

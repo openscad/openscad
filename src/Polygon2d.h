@@ -19,6 +19,7 @@ public:
 	virtual std::string dump() const;
 	virtual unsigned int getDimension() const { return 2; }
 	virtual bool isEmpty() const;
+	virtual Geometry *copy() const { return new Polygon2d(*this); }
 
 	void addOutline(const Outline2d &outline) { this->theoutlines.push_back(outline); }
 	class PolySet *tessellate() const;

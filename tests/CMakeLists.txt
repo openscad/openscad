@@ -74,7 +74,7 @@ if(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/../libraries/MCAD/__init__.py)
   message(FATAL_ERROR "MCAD not found. You can install from the OpenSCAD root as follows: \n  git submodule update --init")
 endif()
 
-# NULLGL - Allow us to buidl without OpenGL(TM). run 'cmake .. -DNULLGL=1'
+# NULLGL - Allow us to build without OpenGL(TM). run 'cmake .. -DNULLGL=1'
 # Most tests will fail, but it can be used for testing/experiments
 
 if(NULLGL)
@@ -630,8 +630,8 @@ set(CORE_SOURCES
   ../src/FontCache.cc
   ../src/DrawingCallback.cc
   ../src/FreetypeRenderer.cc
-  ../src/PlatformUtils.cc 
   ../src/lodepng.cpp
+  ../src/PlatformUtils.cc 
   ../src/${PLATFORMUTILS_SOURCE}
   ${FLEX_OpenSCADlexer_OUTPUTS}
   ${BISON_OpenSCADparser_OUTPUTS})
@@ -639,7 +639,8 @@ set(CORE_SOURCES
 set(NOCGAL_SOURCES
   ../src/builtin.cc 
   ../src/import.cc
-  ../src/export.cc)
+  ../src/export.cc
+  ../src/LibraryInfo.cc)
 
 set(CGAL_SOURCES
   ${NOCGAL_SOURCES}
@@ -678,7 +679,8 @@ set(OFFSCREEN_SOURCES
   ../src/ThrownTogetherRenderer.cc
   ../src/renderer.cc
   ../src/render.cc
-  ../src/OpenCSGRenderer.cc)
+  ../src/OpenCSGRenderer.cc
+)
 
 if(NULLGL)
   message(STATUS "NULLGL is set. Overriding previous OpenGL(TM) settings")
@@ -690,9 +692,7 @@ if(NULLGL)
     ../src/${OFFSCREEN_IMGUTILS_SOURCE}
     ../src/imageutils.cc
     ../src/renderer.cc
-    ../src/render.cc
-    ../src/PlatformUtils.cc 
-    ../src/${PLATFORMUTILS_SOURCE} )
+    ../src/render.cc)
 endif()
 
 add_library(tests-core STATIC ${CORE_SOURCES})
@@ -702,7 +702,7 @@ add_library(tests-common STATIC ${COMMON_SOURCES})
 target_link_libraries(tests-common tests-core)
 
 add_library(tests-cgal STATIC ${CGAL_SOURCES})
-set_target_properties(tests-cgal PROPERTIES COMPILE_FLAGS "-DENABLE_CGAL ${CGAL_CXX_FLAGS_INIT}")
+set_target_properties(tests-cgal PROPERTIES COMPILE_FLAGS "${ENABLE_OPENCSG_FLAG} -DENABLE_CGAL ${CGAL_CXX_FLAGS_INIT}")
 target_link_libraries(tests-cgal tests-common ${CGAL_LIBRARY} ${CGAL_3RD_PARTY_LIBRARIES} ${GMP_LIBRARIES} ${MPFR_LIBRARIES})
 
 #
@@ -710,12 +710,13 @@ target_link_libraries(tests-cgal tests-common ${CGAL_LIBRARY} ${CGAL_3RD_PARTY_L
 #
 if (NOT NULLGL)
   add_library(tests-nocgal STATIC ${NOCGAL_SOURCES})
+  set_target_properties(tests-nocgal PROPERTIES COMPILE_FLAGS ${ENABLE_OPENCSG_FLAG})
   target_link_libraries(tests-nocgal tests-common)
 else()
   message(STATUS "NULLGL: cannot use GL/GLU tessellator. see dxftess.cc")
   message(STATUS "NULLGL: non-CGAL tests will use CGAL's tessellator")
-  add_library(tests-nocgal STATIC ${CGAL_SOURCES})
-  set_target_properties(tests-nocgal PROPERTIES COMPILE_FLAGS "-DENABLE_CGAL ${CGAL_CXX_FLAGS_INIT}")
+  add_library(tests-nocgal STATIC ${NOCGAL_SOURCES})
+  set_target_properties(tests-nocgal PROPERTIES COMPILE_FLAGS ${ENABLE_OPENCSG_FLAG})
   target_link_libraries(tests-nocgal tests-common)
 endif()
 
@@ -738,15 +739,15 @@ target_link_libraries(csgtexttest tests-nocgal)
 # cgalcachetest
 #
 add_executable(cgalcachetest cgalcachetest.cc)
-set_target_properties(cgalcachetest PROPERTIES COMPILE_FLAGS "-DENABLE_CGAL ${CGAL_CXX_FLAGS_INIT}")
+set_target_properties(cgalcachetest PROPERTIES COMPILE_FLAGS "${ENABLE_OPENCSG_FLAG} -DENABLE_CGAL ${CGAL_CXX_FLAGS_INIT}")
 target_link_libraries(cgalcachetest tests-cgal ${GLEW_LIBRARY})
 
 #
 # openscad no-qt
 #
 add_executable(openscad_nogui ../src/openscad.cc)
-set_target_properties(openscad_nogui PROPERTIES COMPILE_FLAGS "-fno-strict-aliasing -DEIGEN_DONT_ALIGN -DENABLE_CGAL -DENABLE_OPENCSG ${CGAL_CXX_FLAGS_INIT}")
-target_link_libraries(openscad_nogui tests-offscreen tests-cgal tests-nocgal ${GLEW_LIBRARY} ${OPENCSG_LIBRARY} ${APP_SERVICES_LIBRARY})
+set_target_properties(openscad_nogui PROPERTIES COMPILE_FLAGS "-fno-strict-aliasing -DEIGEN_DONT_ALIGN ${ENABLE_OPENCSG_FLAG} -DENABLE_CGAL ${CGAL_CXX_FLAGS_INIT}")
+target_link_libraries(openscad_nogui tests-offscreen tests-cgal ${GLEW_LIBRARY} ${OPENCSG_LIBRARY} ${APP_SERVICES_LIBRARY})
 
 #
 # GUI binary tests
@@ -867,6 +868,23 @@ function(add_cmdline_test TESTCMD_BASENAME)
     string(REPLACE " " "_" FILE_BASENAME ${FILE_BASENAME}) # Test names cannot include spaces
     set(TEST_FULLNAME "${TESTCMD_BASENAME}_${FILE_BASENAME}")
     list(FIND DISABLED_TESTS ${TEST_FULLNAME} DISABLED)
+
+    # 2d tests should be viewed from the top, not an angle.
+    set(test_is_2d 0)
+    foreach(test2d IN LISTS TESTS_2D)
+      string(REGEX MATCH "${test2d}" match_result ${TEST_FULLNAME})
+      if( NOT "${match_result}" STREQUAL "" )
+        #message(STATUS "2d test found: ${TEST_FULLNAME}, ${match_result}")
+        set(test_is_2d 1)
+      endif() 
+    endforeach()
+    set(CAMERA_OPTION "")
+    if(${test_is_2d} EQUAL 1)
+      #message(STATUS "${TESTCMD_ARGS}")
+      set(CAMERA_OPTION "--camera=0,0,100,0,0,0" "--viewall" "--autocenter" "--projection=ortho" "--debug=Camera")
+      set_test_config(Dimension2 ${TEST_FULLNAME})
+    endif()
+
     if (${DISABLED} EQUAL -1)
 
       # Handle configurations
@@ -886,7 +904,7 @@ function(add_cmdline_test TESTCMD_BASENAME)
         set(FILENAME_OPTION -f ${FILE_BASENAME})
       endif()
 
-      add_test(NAME ${TEST_FULLNAME} ${CONFARG} ${CONFVAL} COMMAND ${PYTHON_EXECUTABLE} ${tests_SOURCE_DIR}/test_cmdline_tool.py --comparator=${COMPARATOR} -c ${ImageMagick_convert_EXECUTABLE} -s ${TESTCMD_SUFFIX} ${EXTRA_OPTIONS} ${TESTNAME_OPTION} ${FILENAME_OPTION} ${TESTCMD_EXE} ${TESTCMD_SCRIPT} "${SCADFILE}" ${TESTCMD_ARGS})
+      add_test(NAME ${TEST_FULLNAME} ${CONFARG} ${CONFVAL} COMMAND ${PYTHON_EXECUTABLE} ${tests_SOURCE_DIR}/test_cmdline_tool.py --comparator=${COMPARATOR} -c ${ImageMagick_convert_EXECUTABLE} -s ${TESTCMD_SUFFIX} ${EXTRA_OPTIONS} ${TESTNAME_OPTION} ${FILENAME_OPTION} ${TESTCMD_EXE} ${TESTCMD_SCRIPT} "${SCADFILE}" ${CAMERA_OPTION} ${TESTCMD_ARGS} )
       set_property(TEST ${TEST_FULLNAME} PROPERTY ENVIRONMENT "${CTEST_ENVIRONMENT}")
     endif()
   endforeach()
@@ -967,6 +985,29 @@ list(APPEND OPENCSGTEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/intersec
 list(APPEND THROWNTOGETHERTEST_FILES ${OPENCSGTEST_FILES})
 
 list(APPEND CGALSTLSANITYTEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/normal-nan.scad)
+
+list(APPEND EXPORT3D_TEST_FILES ${EXAMPLE_FILES})
+list(APPEND EXPORT3D_TEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/features/polyhedron-nonplanar-tests.scad )
+disable_tests(
+  # the flat_body is not 3d so dont do 3d-tests on it
+  stlpngtest_flat_body
+  offpngtest_flat_body
+
+  # these take too long, for little relative gain in testing
+  stlpngtest_iteration
+  offpngtest_iteration
+  stlpngtest_fractal
+  offpngtest_fractal
+)
+
+# mark which tests are 2d (regex match inside add_cmdline_test)
+# (note - dont use the offset from examples/Advanced)
+list(APPEND TESTS_2D circle control-hull-dimension difference-2d ellipse
+ flat_body hull2 dxf intersection2 issue585 issue612 lwpolyline2 -arc _arc
+ minkowski2 multiple-layers offset- polygon* primitive-cut projection-test
+ render-2d resize-2d scale2D scale2d text-search square font 
+ transform-insert triangle)
+set(TEST_CONFIGS ${TEST_CONFIGS} Dimension2)
 
 # FIXME: This test illustrates a weakness in child() combined with modifiers.
 # Reenable it when this is improved
