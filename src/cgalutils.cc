@@ -341,7 +341,7 @@ namespace CGALUtils {
 			}
 			// Initialize N with first expected geometric object
 			if (!N) {
-				N = chN->copy();
+				N = new CGAL_Nef_polyhedron(*chN);
 				continue;
 			}
 
@@ -420,7 +420,7 @@ namespace CGALUtils {
 		try {
 			switch (op) {
 			case OPENSCAD_UNION:
-				if (target.isEmpty()) target = *src.copy();
+				if (target.isEmpty()) target = *new CGAL_Nef_polyhedron(src);
 				else target += src;
 				break;
 			case OPENSCAD_INTERSECTION:

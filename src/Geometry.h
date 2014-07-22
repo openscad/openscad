@@ -21,6 +21,7 @@ public:
 	virtual std::string dump() const = 0;
 	virtual unsigned int getDimension() const = 0;
 	virtual bool isEmpty() const = 0;
+	virtual Geometry *copy() const = 0;
 
 	unsigned int getConvexity() const { return convexity; }
 	void setConvexity(int c) { this->convexity = c; }

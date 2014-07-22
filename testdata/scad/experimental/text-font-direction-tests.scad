@@ -1,4 +1,4 @@
-use <../../ttf/paratype-serif/PTF55F.ttf>
+use <../../ttf/liberation-2.00.1/LiberationSans-Regular.ttf>
 
 t = "OpenSCAD";
 dir = [
@@ -12,6 +12,6 @@ for (a = dir) {
 	translate([a[0], a[1], 0]) {
 		color("red") square([135, 0.5]);
 		color("blue") square([0.5, 20]);
-		text(t = t, font = "PT Serif:style=Regular", size = 20, direction = a[2]);
+		text(text = t, font = "Liberation Sans:style=Regular", size = 20, direction = a[2]);
 	}
 }
