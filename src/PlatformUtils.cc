@@ -96,6 +96,10 @@ bool PlatformUtils::createBackupPath()
 #endif // GNUG
 #endif // ENABLE_CGAL
 
+#ifdef ENABLE_OPENCSG
+#include <opencsg.h>
+#endif
+
 std::string PlatformUtils::info()
 {
 	std::stringstream s;
