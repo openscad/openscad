@@ -709,12 +709,13 @@ target_link_libraries(tests-cgal tests-common ${CGAL_LIBRARY} ${CGAL_3RD_PARTY_L
 #
 if (NOT NULLGL)
   add_library(tests-nocgal STATIC ${NOCGAL_SOURCES})
+  set_target_properties(tests-nocgal PROPERTIES COMPILE_FLAGS ${ENABLE_OPENCSG_FLAG})
   target_link_libraries(tests-nocgal tests-common)
 else()
   message(STATUS "NULLGL: cannot use GL/GLU tessellator. see dxftess.cc")
   message(STATUS "NULLGL: non-CGAL tests will use CGAL's tessellator")
-  add_library(tests-nocgal STATIC ${CGAL_SOURCES})
-  set_target_properties(tests-nocgal PROPERTIES COMPILE_FLAGS "${ENABLE_OPENCSG_FLAG} -DENABLE_CGAL ${CGAL_CXX_FLAGS_INIT}")
+  add_library(tests-nocgal STATIC ${NOCGAL_SOURCES})
+  set_target_properties(tests-nocgal PROPERTIES COMPILE_FLAGS ${ENABLE_OPENCSG_FLAG})
   target_link_libraries(tests-nocgal tests-common)
 endif()
 
@@ -745,7 +746,7 @@ target_link_libraries(cgalcachetest tests-cgal ${GLEW_LIBRARY})
 #
 add_executable(openscad_nogui ../src/openscad.cc)
 set_target_properties(openscad_nogui PROPERTIES COMPILE_FLAGS "-fno-strict-aliasing -DEIGEN_DONT_ALIGN ${ENABLE_OPENCSG_FLAG} -DENABLE_CGAL ${CGAL_CXX_FLAGS_INIT}")
-target_link_libraries(openscad_nogui tests-offscreen tests-cgal tests-nocgal ${GLEW_LIBRARY} ${OPENCSG_LIBRARY} ${APP_SERVICES_LIBRARY})
+target_link_libraries(openscad_nogui tests-offscreen tests-cgal ${GLEW_LIBRARY} ${OPENCSG_LIBRARY} ${APP_SERVICES_LIBRARY})
 
 #
 # GUI binary tests
