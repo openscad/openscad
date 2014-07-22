@@ -66,7 +66,7 @@ void Camera::viewAll(const BoundingBox &bbox, float scalefactor)
 
 	switch (this->projection) {
 	case Camera::ORTHOGONAL:
-		this->height = bbox.diagonal().norm()+16.18;
+		this->height = bbox.diagonal().norm();
 		break;
 	case Camera::PERSPECTIVE: {
 		double radius = bbox.diagonal().norm()/2;
