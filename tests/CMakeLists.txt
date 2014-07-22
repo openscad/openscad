@@ -1130,6 +1130,10 @@ foreach(FILE ${EXAMPLE_FILES})
   set_test_config(Examples ${TEST_FULLNAME})
   get_test_fullname(csgpngtest ${FILE} TEST_FULLNAME)
   set_test_config(Examples ${TEST_FULLNAME})
+  get_test_fullname(stlpngtest ${FILE} TEST_FULLNAME)
+  set_test_config(Examples ${TEST_FULLNAME})
+  get_test_fullname(offpngtest ${FILE} TEST_FULLNAME)
+  set_test_config(Examples ${TEST_FULLNAME})
 endforeach()
 
 # Workaround Gallium bugs
