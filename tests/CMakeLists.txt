@@ -69,6 +69,10 @@ if(${CMAKE_BUILD_TYPE} STREQUAL "Debug")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DDEBUG")
 endif()
 
+# Some features are "experimental". We want to enable here so we can
+# regression test them.
+add_definitions(-DOPENSCAD_TESTING -DENABLE_EXPERIMENTAL)
+
 # MCAD
 if(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/../libraries/MCAD/__init__.py)
   message(FATAL_ERROR "MCAD not found. You can install from the OpenSCAD root as follows: \n  git submodule update --init")
@@ -518,7 +522,8 @@ else()
     message(STATUS "ImageMagick convert executable found: " ${ImageMagick_convert_EXECUTABLE})
     set(IMAGE_COMPARE_EXECUTABLE ${ImageMagick_convert_EXECUTABLE})
   else()
-    message(FATAL_ERROR "Couldn't find imagemagick 'convert' program")
+    message(STATUS "Couldn't find imagemagick 'convert' program")
+    set(DIFFPNG 1)
   endif()
   if ( "${ImageMagick_VERSION_STRING}" VERSION_LESS "6.5.9.4" )
     message(STATUS "ImageMagick version less than 6.5.9.4, cannot use -morphology comparison")
@@ -537,7 +542,9 @@ else()
   set(IM_TEST_FILES "${CMAKE_CURRENT_SOURCE_DIR}/magicktest1.png" "${CMAKE_CURRENT_SOURCE_DIR}/magicktest2.png")
   set(COMPARE_ARGS ${IMAGE_COMPARE_EXECUTABLE} ${IM_TEST_FILES} -alpha Off -compose difference -composite -threshold 10% -morphology Erode Square -format %[fx:w*h*mean] info:)
   # compare arguments taken from test_cmdline_tool.py
+  message(STATUS "Running ImageMagick compare: ${COMPARE_ARGS}")
   execute_process(COMMAND ${COMPARE_ARGS} RESULT_VARIABLE IM_RESULT OUTPUT_VARIABLE IM_OUT )
+  message(STATUS "Result: ${IM_RESULT}")
   if ( NOT ${IM_RESULT} STREQUAL "0" )
     message(STATUS "magicktest1.png and magicktest2.png were incorrectly detected as identical")
     message(STATUS "Using alternative image comparison")
@@ -584,8 +591,6 @@ add_definitions(-DOPENSCAD_VERSION=${VERSION} -DOPENSCAD_YEAR=${OPENSCAD_YEAR} -
 if (DEFINED OPENSCAD_DAY)
   add_definitions(-DOPENSCAD_DAY=${OPENSCAD_DAY})
 endif()
-
-add_definitions(-DOPENSCAD_TESTING -DENABLE_EXPERIMENTAL)
 
 # Search for MCAD in correct place
 set(CTEST_ENVIRONMENT "${CTEST_ENVIRONMENT};OPENSCADPATH=${CMAKE_CURRENT_SOURCE_DIR}/../libraries")
@@ -1222,8 +1227,8 @@ add_cmdline_test(throwntogethertest EXE ${OPENSCAD_BINPATH} ARGS --preview=throw
 add_cmdline_test(cgalstlsanitytest EXE ${CMAKE_SOURCE_DIR}/cgalstlsanitytest SUFFIX txt ARGS ${OPENSCAD_BINPATH} FILES ${CGALSTLSANITYTEST_FILES})
 
 # Export/Import 3d png tests.
-add_cmdline_test(stlpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOURCE_DIR}/export_import_pngtest.py ARGS --openscad=${OPENSCAD_BINPATH} --format=STL SUFFIX png FILES ${EXPORT3D_TEST_FILES})
-add_cmdline_test(offpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOURCE_DIR}/export_import_pngtest.py ARGS --openscad=${OPENSCAD_BINPATH} --format=OFF SUFFIX png FILES ${EXPORT3D_TEST_FILES})
+add_cmdline_test(stlpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOURCE_DIR}/export_import_pngtest.py ARGS --openscad=${OPENSCAD_BINPATH} --format=STL  SUFFIX png FILES ${EXPORT3D_TEST_FILES})
+add_cmdline_test(offpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOURCE_DIR}/export_import_pngtest.py ARGS --openscad=${OPENSCAD_BINPATH} --format=OFF  SUFFIX png FILES ${EXPORT3D_TEST_FILES})
 
 # Add experimental tests
 
@@ -1232,6 +1237,8 @@ list(APPEND EXPERIMENTAL_TEXT_FILES
             ${CMAKE_SOURCE_DIR}/../testdata/scad/experimental/text-font-direction-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/experimental/text-font-simple-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/experimental/text-font-tests.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/experimental/text-font-composition.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/experimental/text-font-symbol.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/experimental/text-search-test.scad)
 
 add_cmdline_test(cgalpngtest EXE ${OPENSCAD_BINPATH} ARGS --render -o SUFFIX png FILES ${EXPERIMENTAL_TEXT_FILES})
@@ -1363,4 +1370,4 @@ message("Available test configurations: ${TEST_CONFIGS}")
 #  message("${CONF}: ${${CONF}_TEST_CONFIG}")
 #endforeach()
 
-message("CPPFLAGS: ${CMAKE_CXX_FLAGS}")
+message(STATUS "CPPFLAGS: ${CMAKE_CXX_FLAGS}")
