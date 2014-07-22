@@ -436,8 +436,6 @@ def debug(x):
     if debug_test_pp:
         print 'test_pretty_print debug: ' + x
 
-#debug_test_pp = False
-debug_test_pp = True
 include_passed = False
 builddir = os.getcwd()
 include_passed = False
