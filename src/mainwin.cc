@@ -55,6 +55,7 @@
 #include "CocoaUtils.h"
 #endif
 #include "PlatformUtils.h"
+#include "LibraryInfo.h"
 
 #include <QMenu>
 #include <QTime>
@@ -2285,14 +2286,14 @@ MainWindow::helpManual()
 
 void MainWindow::helpLibrary()
 {
-	QString info( PlatformUtils::info().c_str() );
-	info += QString( qglview->getRendererInfo().c_str() );
+	QString info(LibraryInfo::info().c_str());
+	info += QString(qglview->getRendererInfo().c_str());
 	if (!this->openglbox) {
 		this->openglbox = new QMessageBox(QMessageBox::Information,
                                       "OpenGL Info", "OpenSCAD Detailed Library and Build Information",
                                       QMessageBox::Ok, this);
 	}
-	this->openglbox->setDetailedText( info );
+	this->openglbox->setDetailedText(info);
 	this->openglbox->show();
 }
 

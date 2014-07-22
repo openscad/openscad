@@ -67,17 +67,6 @@ void Camera::viewAll(const BoundingBox &bbox, float scalefactor)
 		this->center = bbox.center(); // for Vector cam
 	}
 
-	PRINTD("viewAll");
-	PRINTDB("autocenter %i",autocenter);
-	PRINTDB("type %i",type);
-	PRINTDB("proj %i",projection);
-	PRINTDB("bbox %s",bbox.min().transpose());
-	PRINTDB("bbox %s",bbox.max().transpose());
-	PRINTDB("center x y z %f %f %f",center.x() % center.y() % center.z());
-	PRINTDB("eye    x y z %f %f %f",eye.x() % eye.y() % eye.z());
-	PRINTDB("obj trans x y z %f %f %f",object_trans.x() % object_trans.y() % object_trans.z());
-	PRINTDB("obj rot   x y z %f %f %f",object_rot.x() % object_rot.y() % object_rot.z());
-
 	switch (this->projection) {
 	case Camera::ORTHOGONAL:
 		this->height = bbox.diagonal().norm();

@@ -14,6 +14,8 @@ The extensive #else #endif is to ensure only a single error is printed at
 a time, to avoid confusion.
 */
 
+#pragma once
+
 #ifndef OPENSCAD_SKIP_VERSION_CHECK
 
 
