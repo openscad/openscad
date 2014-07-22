@@ -74,7 +74,7 @@ if(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/../libraries/MCAD/__init__.py)
   message(FATAL_ERROR "MCAD not found. You can install from the OpenSCAD root as follows: \n  git submodule update --init")
 endif()
 
-# NULLGL - Allow us to buidl without OpenGL(TM). run 'cmake .. -DNULLGL=1'
+# NULLGL - Allow us to build without OpenGL(TM). run 'cmake .. -DNULLGL=1'
 # Most tests will fail, but it can be used for testing/experiments
 
 if(NULLGL)
@@ -630,16 +630,16 @@ set(CORE_SOURCES
   ../src/FontCache.cc
   ../src/DrawingCallback.cc
   ../src/FreetypeRenderer.cc
-  ../src/PlatformUtils.cc 
   ../src/lodepng.cpp
-  ../src/${PLATFORMUTILS_SOURCE}
   ${FLEX_OpenSCADlexer_OUTPUTS}
   ${BISON_OpenSCADparser_OUTPUTS})
 
 set(NOCGAL_SOURCES
   ../src/builtin.cc 
   ../src/import.cc
-  ../src/export.cc)
+  ../src/export.cc
+  ../src/PlatformUtils.cc 
+  ../src/${PLATFORMUTILS_SOURCE})
 
 set(CGAL_SOURCES
   ${NOCGAL_SOURCES}
@@ -678,7 +678,8 @@ set(OFFSCREEN_SOURCES
   ../src/ThrownTogetherRenderer.cc
   ../src/renderer.cc
   ../src/render.cc
-  ../src/OpenCSGRenderer.cc)
+  ../src/OpenCSGRenderer.cc
+)
 
 if(NULLGL)
   message(STATUS "NULLGL is set. Overriding previous OpenGL(TM) settings")
@@ -690,9 +691,7 @@ if(NULLGL)
     ../src/${OFFSCREEN_IMGUTILS_SOURCE}
     ../src/imageutils.cc
     ../src/renderer.cc
-    ../src/render.cc
-    ../src/PlatformUtils.cc 
-    ../src/${PLATFORMUTILS_SOURCE} )
+    ../src/render.cc)
 endif()
 
 add_library(tests-core STATIC ${CORE_SOURCES})
@@ -702,7 +701,7 @@ add_library(tests-common STATIC ${COMMON_SOURCES})
 target_link_libraries(tests-common tests-core)
 
 add_library(tests-cgal STATIC ${CGAL_SOURCES})
-set_target_properties(tests-cgal PROPERTIES COMPILE_FLAGS "-DENABLE_CGAL ${CGAL_CXX_FLAGS_INIT}")
+set_target_properties(tests-cgal PROPERTIES COMPILE_FLAGS "${ENABLE_OPENCSG_FLAG} -DENABLE_CGAL ${CGAL_CXX_FLAGS_INIT}")
 target_link_libraries(tests-cgal tests-common ${CGAL_LIBRARY} ${CGAL_3RD_PARTY_LIBRARIES} ${GMP_LIBRARIES} ${MPFR_LIBRARIES})
 
 #
@@ -715,7 +714,7 @@ else()
   message(STATUS "NULLGL: cannot use GL/GLU tessellator. see dxftess.cc")
   message(STATUS "NULLGL: non-CGAL tests will use CGAL's tessellator")
   add_library(tests-nocgal STATIC ${CGAL_SOURCES})
-  set_target_properties(tests-nocgal PROPERTIES COMPILE_FLAGS "-DENABLE_CGAL ${CGAL_CXX_FLAGS_INIT}")
+  set_target_properties(tests-nocgal PROPERTIES COMPILE_FLAGS "${ENABLE_OPENCSG_FLAG} -DENABLE_CGAL ${CGAL_CXX_FLAGS_INIT}")
   target_link_libraries(tests-nocgal tests-common)
 endif()
 
@@ -738,14 +737,14 @@ target_link_libraries(csgtexttest tests-nocgal)
 # cgalcachetest
 #
 add_executable(cgalcachetest cgalcachetest.cc)
-set_target_properties(cgalcachetest PROPERTIES COMPILE_FLAGS "-DENABLE_CGAL ${CGAL_CXX_FLAGS_INIT}")
+set_target_properties(cgalcachetest PROPERTIES COMPILE_FLAGS "${ENABLE_OPENCSG_FLAG} -DENABLE_CGAL ${CGAL_CXX_FLAGS_INIT}")
 target_link_libraries(cgalcachetest tests-cgal ${GLEW_LIBRARY})
 
 #
 # openscad no-qt
 #
 add_executable(openscad_nogui ../src/openscad.cc)
-set_target_properties(openscad_nogui PROPERTIES COMPILE_FLAGS "-fno-strict-aliasing -DEIGEN_DONT_ALIGN -DENABLE_CGAL -DENABLE_OPENCSG ${CGAL_CXX_FLAGS_INIT}")
+set_target_properties(openscad_nogui PROPERTIES COMPILE_FLAGS "-fno-strict-aliasing -DEIGEN_DONT_ALIGN ${ENABLE_OPENCSG_FLAG} -DENABLE_CGAL ${CGAL_CXX_FLAGS_INIT}")
 target_link_libraries(openscad_nogui tests-offscreen tests-cgal tests-nocgal ${GLEW_LIBRARY} ${OPENCSG_LIBRARY} ${APP_SERVICES_LIBRARY})
 
 #
