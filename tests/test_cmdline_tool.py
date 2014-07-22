@@ -26,12 +26,22 @@ import shutil
 import platform
 import string
 
+#_debug_tcct = True
+_debug_tcct = False
+
+def debug(*args):
+    global _debug_tcct
+    if _debug_tcct:
+	print 'test_cmdline_tool:',
+	for a in args: print a,
+	print
+
 def initialize_environment():
     if not options.generate: options.generate = bool(os.getenv("TEST_GENERATE"))
     return True
 
 def init_expected_filename():
-    global expecteddir, expectedfilename
+    global expecteddir, expectedfilename # fixme - globals are hard to use
 
     expected_testname = options.testname
 
@@ -45,7 +55,7 @@ def init_expected_filename():
     expectedfilename = os.path.normpath(expectedfilename)
 
 def init_actual_filename():
-    global actualdir, actualfilename
+    global actualdir, actualfilename # fixme - globals are hard to use
 
     cmdname = os.path.split(options.cmd)[1]
     actualdir = os.path.join(os.getcwd(), options.testname + "-output")
@@ -116,7 +126,11 @@ def compare_png(resultfilename):
 
     if options.comparator == 'diffpng':
       # alternative to imagemagick based on Yee's algorithm
-      args = [expectedfilename, resultfilename, "--output", resultfilename+'.diff.png']
+
+      # Writing the 'difference image' with --output is very useful for debugging but takes a long time
+      # args = [expectedfilename, resultfilename, "--output", resultfilename+'.diff.png']
+
+      args = [expectedfilename, resultfilename]
       compare_method = 'diffpng'
 
     print >> sys.stderr, 'Image comparison cmdline: '
@@ -129,7 +143,6 @@ def compare_png(resultfilename):
     if not resultfilename:
         print >> sys.stderr, "Error: Error during test image generation"
         return False
-    print >> sys.stderr, ' actual image: ', resultfilename
 
     (retval, output) = execute_and_redirect(options.comparison_exec, args, subprocess.PIPE)
     print "Image comparison return:", retval, "output:", output
@@ -180,9 +193,12 @@ def run_test(testname, cmd, args):
         print 'run_test() cmdline:',cmdline
         sys.stdout.flush()
         proc = subprocess.Popen(cmdline, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        errtext = proc.communicate()[1]
+	comresult = proc.communicate()
+        stdouttext, errtext = comresult[0],comresult[1]
         if errtext != None and len(errtext) > 0:
-            print >> sys.stderr, "Error output: " + errtext
+            print >> sys.stderr, "stderr output: " + errtext
+        if stdouttext != None and len(stdouttext) > 0:
+            print >> sys.stderr, "stdout output: " + stdouttext
         outfile.close()
         if proc.returncode != 0:
             print >> sys.stderr, "Error: %s failed with return code %d" % (cmdname, proc.returncode)
@@ -214,7 +230,9 @@ def usage():
 if __name__ == '__main__':
     # Handle command-line arguments
     try:
+        debug('args:'+str(sys.argv))
         opts, args = getopt.getopt(sys.argv[1:], "gs:e:c:t:f:m", ["generate", "convexec=", "suffix=", "expected_dir=", "test=", "file=", "comparator="])
+        debug('getopt args:'+str(sys.argv))
     except getopt.GetoptError, err:
         usage()
         sys.exit(2)
@@ -274,5 +292,4 @@ if __name__ == '__main__':
 
     resultfile = run_test(options.testname, options.cmd, args[1:])
     if not resultfile: exit(1)
-    
     if not verification or not compare_with_expected(resultfile): exit(1)

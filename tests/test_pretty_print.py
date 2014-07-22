@@ -54,6 +54,8 @@ def tryread(filename):
         debug( "couldn't open file: [" + filename + "]" )
         debug( str(type(e))+str(e) )
         if filename==None:
+            # dont write a bunch of extra errors during test output. 
+            # the reporting of test failure is sufficient to indicate a problem
             pass
     return data
 
@@ -212,9 +214,9 @@ def png_encode64(fname, width=512, data=None, alt=''):
 
 def findlogfile(builddir):
     logpath = os.path.join(builddir, 'Testing', 'Temporary')
-    logfilename = os.path.join(logpath, 'LastTest.log')
+    logfilename = os.path.join(logpath, 'LastTest.log.tmp')
     if not os.path.isfile(logfilename):
-        logfilename = os.path.join(logpath, 'LastTest.log.tmp')
+        logfilename = os.path.join(logpath, 'LastTest.log')
     if not os.path.isfile(logfilename):
         print 'can\'t find and/or open logfile', logfilename
         sys.exit()
@@ -435,8 +437,8 @@ def debug(x):
     global debugfile
     if debug_test_pp:
         print 'test_pretty_print debug: ' + x
+    debugfile.write(x+'\n')
 
-include_passed = False
 builddir = os.getcwd()
 include_passed = False
 
@@ -486,6 +488,7 @@ def main():
     makefiles = load_makefiles(builddir)
     logfilename = findlogfile(builddir)
     testlog = tryread(logfilename)
+    debug('found log file: '+logfilename+'\n')
     startdate, tests, enddate, imgcomparer = parselog(testlog)
     if debug_test_pp:
         print 'found sysinfo.txt,',
