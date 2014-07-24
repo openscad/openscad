@@ -501,32 +501,66 @@ add_definitions(${FONTCONFIG_CFLAGS})
 add_definitions(${FREETYPE_CFLAGS})
 add_definitions(${HARFBUZZ_CFLAGS})
 
-# Imagemagick
+# Image comparison - expected test image vs actual generated image
+
+if (DIFFPNG)
+  # How to set cflags to optimize the executable?
+  set(IMAGE_COMPARE_EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/diffpng)
+  set(COMPARATOR "diffpng")
+  add_executable(diffpng diffpng.cpp ../src/lodepng.cpp)
+  set(SKIP_IMAGEMAGICK 1)
+  message(STATUS "using diffpng for image comparison")
+endif()
 
 if (SKIP_IMAGEMAGICK)
-  # cross-building depends on this
-  set(ImageMagick_convert_EXECUTABLE "/bin/echo")
+  if (NOT DIFFPNG)
+    # cross-building depends on this
+    set(IMAGE_COMPARE_EXECUTABLE "/bin/echo")
+  endif()
 else()
   find_package(ImageMagick COMPONENTS convert)
   if (ImageMagick_convert_FOUND)
     message(STATUS "ImageMagick convert executable found: " ${ImageMagick_convert_EXECUTABLE})
+    set(IMAGE_COMPARE_EXECUTABLE ${ImageMagick_convert_EXECUTABLE})
   else()
-    message(FATAL_ERROR "Couldn't find imagemagick 'convert' program")
+    message(STATUS "Couldn't find imagemagick 'convert' program")
+    set(DIFFPNG 1)
   endif()
-
   if ( "${ImageMagick_VERSION_STRING}" VERSION_LESS "6.5.9.4" )
     message(STATUS "ImageMagick version less than 6.5.9.4, cannot use -morphology comparison")
     message(STATUS "ImageMagick Using older image comparison method")
     set(COMPARATOR "old")
   endif()
 
-  execute_process(COMMAND ${ImageMagick_convert_EXECUTABLE} --version OUTPUT_VARIABLE IM_OUT )
+  execute_process(COMMAND ${IMAGE_COMPARE_EXECUTABLE} --version OUTPUT_VARIABLE IM_OUT )
   if ( ${IM_OUT} MATCHES "OpenMP" )
     # http://www.daniloaz.com/en/617/systems/high-cpu-load-when-converting-images-with-imagemagick
     message(STATUS "ImageMagick: OpenMP bug workaround - setting MAGICK_THREAD_LIMIT=1")
     set(CTEST_ENVIRONMENT "${CTEST_ENVIRONMENT};MAGICK_THREAD_LIMIT=1")
   endif()
+
+  message(STATUS "Comparing magicktest1.png with magicktest2.png")
+  set(IM_TEST_FILES "${CMAKE_CURRENT_SOURCE_DIR}/magicktest1.png" "${CMAKE_CURRENT_SOURCE_DIR}/magicktest2.png")
+  set(COMPARE_ARGS ${IMAGE_COMPARE_EXECUTABLE} ${IM_TEST_FILES} -alpha Off -compose difference -composite -threshold 10% -morphology Erode Square -format %[fx:w*h*mean] info:)
+  # compare arguments taken from test_cmdline_tool.py
+  message(STATUS "Running ImageMagick compare: ${COMPARE_ARGS}")
+  execute_process(COMMAND ${COMPARE_ARGS} RESULT_VARIABLE IM_RESULT OUTPUT_VARIABLE IM_OUT )
+  message(STATUS "Result: ${IM_RESULT}")
+  if ( NOT ${IM_RESULT} STREQUAL "0" )
+    message(STATUS "magicktest1.png and magicktest2.png were incorrectly detected as identical")
+    message(STATUS "Using alternative image comparison")
+    set(DIFFPNG 1)
+  endif()
 endif()
+
+if (DIFFPNG)
+  # How to set cflags to optimize the executable regardless of CMAKE_BUILD_TYPE?
+  set(IMAGE_COMPARE_EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/diffpng)
+  set(COMPARATOR "diffpng")
+  add_executable(diffpng diffpng.cpp ../src/lodepng.cpp)
+  message(STATUS "Image comparison program: diffpng")
+endif()
+
 
 # Internal includes
 include_directories(../src)
@@ -869,23 +903,18 @@ function(add_cmdline_test TESTCMD_BASENAME)
     set(TEST_FULLNAME "${TESTCMD_BASENAME}_${FILE_BASENAME}")
     list(FIND DISABLED_TESTS ${TEST_FULLNAME} DISABLED)
 
-    # 2d tests should be viewed from the top, not an angle.
-    set(test_is_2d 0)
-    foreach(test2d IN LISTS TESTS_2D)
-      string(REGEX MATCH "${test2d}" match_result ${TEST_FULLNAME})
-      if( NOT "${match_result}" STREQUAL "" )
-        #message(STATUS "2d test found: ${TEST_FULLNAME}, ${match_result}")
-        set(test_is_2d 1)
-      endif() 
-    endforeach()
-    set(CAMERA_OPTION "")
-    if(${test_is_2d} EQUAL 1)
-      #message(STATUS "${TESTCMD_ARGS}")
-      set(CAMERA_OPTION "--camera=0,0,100,0,0,0" "--viewall" "--autocenter" "--projection=ortho" "--debug=Camera")
-      set_test_config(Dimension2 ${TEST_FULLNAME})
-    endif()
-
     if (${DISABLED} EQUAL -1)
+
+      # 2D tests should be viewed from the top, not an angle.
+      set(CAMERA_OPTION "")
+      foreach(test2d IN LISTS TESTS_2D)
+        string(REGEX MATCH "${test2d}" match_result ${TEST_FULLNAME})
+        if (NOT "${match_result}" STREQUAL "")
+          #message(STATUS "2d test found: ${TEST_FULLNAME}, ${match_result}")
+          set(CAMERA_OPTION "--camera=0,0,100,0,0,0" "--viewall" "--autocenter" "--projection=ortho" "--debug=Camera")
+          break()
+        endif()
+      endforeach()
 
       # Handle configurations
       unset(FOUNDCONFIGS)
@@ -904,7 +933,7 @@ function(add_cmdline_test TESTCMD_BASENAME)
         set(FILENAME_OPTION -f ${FILE_BASENAME})
       endif()
 
-      add_test(NAME ${TEST_FULLNAME} ${CONFARG} ${CONFVAL} COMMAND ${PYTHON_EXECUTABLE} ${tests_SOURCE_DIR}/test_cmdline_tool.py --comparator=${COMPARATOR} -c ${ImageMagick_convert_EXECUTABLE} -s ${TESTCMD_SUFFIX} ${EXTRA_OPTIONS} ${TESTNAME_OPTION} ${FILENAME_OPTION} ${TESTCMD_EXE} ${TESTCMD_SCRIPT} "${SCADFILE}" ${CAMERA_OPTION} ${TESTCMD_ARGS} )
+      add_test(NAME ${TEST_FULLNAME} ${CONFARG} ${CONFVAL} COMMAND ${PYTHON_EXECUTABLE} ${tests_SOURCE_DIR}/test_cmdline_tool.py --comparator=${COMPARATOR} -c ${IMAGE_COMPARE_EXECUTABLE} -s ${TESTCMD_SUFFIX} ${EXTRA_OPTIONS} ${TESTNAME_OPTION} ${FILENAME_OPTION} ${TESTCMD_EXE} ${TESTCMD_SCRIPT} "${SCADFILE}" ${CAMERA_OPTION} ${TESTCMD_ARGS})
       set_property(TEST ${TEST_FULLNAME} PROPERTY ENVIRONMENT "${CTEST_ENVIRONMENT}")
     endif()
   endforeach()
@@ -987,7 +1016,7 @@ list(APPEND THROWNTOGETHERTEST_FILES ${OPENCSGTEST_FILES})
 list(APPEND CGALSTLSANITYTEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/normal-nan.scad)
 
 list(APPEND EXPORT3D_TEST_FILES ${EXAMPLE_FILES})
-list(APPEND EXPORT3D_TEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/features/polyhedron-nonplanar-tests.scad )
+list(APPEND EXPORT3D_TEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/features/polyhedron-nonplanar-tests.scad)
 disable_tests(
   # the flat_body is not 3d so dont do 3d-tests on it
   stlpngtest_flat_body
@@ -1003,11 +1032,10 @@ disable_tests(
 # mark which tests are 2d (regex match inside add_cmdline_test)
 # (note - dont use the offset from examples/Advanced)
 list(APPEND TESTS_2D circle control-hull-dimension difference-2d ellipse
- flat_body hull2 dxf intersection2 issue585 issue612 lwpolyline2 -arc _arc
+ flat_body hull2 import_dxf intersection2 issue585 issue612 lwpolyline2 -arc _arc
  minkowski2 multiple-layers offset- polygon* primitive-cut projection-test
  render-2d resize-2d scale2D scale2d text-search square font 
  transform-insert triangle)
-set(TEST_CONFIGS ${TEST_CONFIGS} Dimension2)
 
 # FIXME: This test illustrates a weakness in child() combined with modifiers.
 # Reenable it when this is improved
@@ -1096,6 +1124,10 @@ foreach(FILE ${EXAMPLE_FILES})
   set_test_config(Examples ${TEST_FULLNAME})
   get_test_fullname(csgpngtest ${FILE} TEST_FULLNAME)
   set_test_config(Examples ${TEST_FULLNAME})
+  get_test_fullname(stlpngtest ${FILE} TEST_FULLNAME)
+  set_test_config(Examples ${TEST_FULLNAME})
+  get_test_fullname(offpngtest ${FILE} TEST_FULLNAME)
+  set_test_config(Examples ${TEST_FULLNAME})
 endforeach()
 
 # Workaround Gallium bugs
@@ -1165,6 +1197,10 @@ add_cmdline_test(throwntogethertest EXE ${OPENSCAD_BINPATH} ARGS --preview=throw
 # FIXME: We don't actually need to compare the output of cgalstlsanitytest
 # with anything. It's self-contained and returns != 0 on error
 add_cmdline_test(cgalstlsanitytest EXE ${CMAKE_SOURCE_DIR}/cgalstlsanitytest SUFFIX txt ARGS ${OPENSCAD_BINPATH} FILES ${CGALSTLSANITYTEST_FILES})
+
+# Export/Import 3d png tests.
+add_cmdline_test(stlpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOURCE_DIR}/export_import_pngtest.py ARGS --openscad=${OPENSCAD_BINPATH} --format=STL SUFFIX png FILES ${EXPORT3D_TEST_FILES})
+add_cmdline_test(offpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOURCE_DIR}/export_import_pngtest.py ARGS --openscad=${OPENSCAD_BINPATH} --format=OFF SUFFIX png FILES ${EXPORT3D_TEST_FILES})
 
 # Add experimental tests
 
@@ -1278,7 +1314,7 @@ add_cmdline_test(openscad-cameyeortho-viewall EXE ${OPENSCAD_BINPATH}
 
 
 
-message("Available test configurations: ${TEST_CONFIGS}")
+#message("Available test configurations: ${TEST_CONFIGS}")
 #foreach(CONF ${TEST_CONFIGS})
 #  message("${CONF}: ${${CONF}_TEST_CONFIG}")
 #endforeach()

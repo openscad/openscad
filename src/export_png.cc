@@ -15,12 +15,14 @@
 
 static void setupCamera(Camera &cam, const BoundingBox &bbox, float scalefactor)
 {
+	PRINTDB("setupCamera() %i",cam.type);
 	if (cam.type == Camera::NONE) cam.viewall = true;
 	if (cam.viewall) cam.viewAll(bbox, scalefactor);
 }
 
 void export_png(const Geometry *root_geom, Camera &cam, std::ostream &output)
 {
+	PRINTD("export_png geom");
 	OffscreenView *glview;
 	try {
 		glview = new OffscreenView(cam.pixel_width, cam.pixel_height);
@@ -50,6 +52,7 @@ enum Previewer { OPENCSG, THROWNTOGETHER } previewer;
 
 void export_png_preview_common(Tree &tree, Camera &cam, std::ostream &output, Previewer previewer = OPENCSG)
 {
+	PRINTD("export_png_preview_common");
 	CsgInfo csgInfo = CsgInfo();
 	if (!csgInfo.compile_chains(tree)) {
 		fprintf(stderr,"Couldn't initialize CSG chains\n");
@@ -88,6 +91,7 @@ void export_png_preview_common(Tree &tree, Camera &cam, std::ostream &output, Pr
 
 void export_png_with_opencsg(Tree &tree, Camera &cam, std::ostream &output)
 {
+	PRINTD("export_png_w_opencsg");
 #ifdef ENABLE_OPENCSG
 	export_png_preview_common(tree, cam, output, OPENCSG);
 #else
@@ -97,6 +101,7 @@ void export_png_with_opencsg(Tree &tree, Camera &cam, std::ostream &output)
 
 void export_png_with_throwntogether(Tree &tree, Camera &cam, std::ostream &output)
 {
+	PRINTD("export_png_w_thrown");
 	export_png_preview_common(tree, cam, output, THROWNTOGETHER);
 }
 
