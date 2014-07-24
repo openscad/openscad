@@ -906,35 +906,30 @@ function(add_cmdline_test TESTCMD_BASENAME)
     set(TEST_FULLNAME "${TESTCMD_BASENAME}_${FILE_BASENAME}")
     list(FIND DISABLED_TESTS ${TEST_FULLNAME} DISABLED)
 
-    # 2d tests should be viewed from the top, not an angle.
-    set(test_is_2d 0)
-    foreach(test2d IN LISTS TESTS_2D)
-      string(REGEX MATCH "${test2d}" match_result ${TEST_FULLNAME})
-      if( NOT "${match_result}" STREQUAL "" )
-        #message(STATUS "2d test found: ${TEST_FULLNAME}, ${match_result}")
-        set(test_is_2d 1)
-      endif() 
-    endforeach()
-    set(CAMERA_OPTION "")
-    if(${test_is_2d} EQUAL 1)
-      #message(STATUS "${TESTCMD_ARGS}")
-      set(CAMERA_OPTION "--camera=0,0,0,0,0,0,20" "--viewall" "--autocenter" "--projection=ortho" "--debug=Camera")
-      set_test_config(Dimension2 ${TEST_FULLNAME})
-    endif()
-
-    set(EXPERIMENTAL_OPTION "")
-    string(REGEX MATCH "csgtexttest" match_result1 ${TEST_FULLNAME})
-    string(REGEX MATCH "cgalstlsanity" match_result2 ${TEST_FULLNAME})
-    string(REGEX MATCH "dumptest" match_result3 ${TEST_FULLNAME})
-    if( "${match_result1}" STREQUAL "" )
-     if( "${match_result2}" STREQUAL "" )
-      if( "${match_result3}" STREQUAL "" )
-       set(EXPERIMENTAL_OPTION "--enable=text")
-      endif()
-     endif()
-    endif()
-
     if (${DISABLED} EQUAL -1)
+
+      set(EXPERIMENTAL_OPTION "")
+      string(REGEX MATCH "csgtexttest" match_result1 ${TEST_FULLNAME})
+      string(REGEX MATCH "cgalstlsanity" match_result2 ${TEST_FULLNAME})
+      string(REGEX MATCH "dumptest" match_result3 ${TEST_FULLNAME})
+      if( "${match_result1}" STREQUAL "" )
+       if( "${match_result2}" STREQUAL "" )
+        if( "${match_result3}" STREQUAL "" )
+         set(EXPERIMENTAL_OPTION "--enable=text")
+        endif()
+       endif()
+      endif()
+
+      # 2D tests should be viewed from the top, not an angle.
+      set(CAMERA_OPTION "")
+      foreach(test2d IN LISTS TESTS_2D)
+        string(REGEX MATCH "${test2d}" match_result ${TEST_FULLNAME})
+        if (NOT "${match_result}" STREQUAL "")
+          #message(STATUS "2d test found: ${TEST_FULLNAME}, ${match_result}")
+          set(CAMERA_OPTION "--camera=0,0,100,0,0,0" "--viewall" "--autocenter" "--projection=ortho" "--debug=Camera")
+          break()
+        endif()
+      endforeach()
 
       # Handle configurations
       unset(FOUNDCONFIGS)
@@ -1036,7 +1031,7 @@ list(APPEND THROWNTOGETHERTEST_FILES ${OPENCSGTEST_FILES})
 list(APPEND CGALSTLSANITYTEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/normal-nan.scad)
 
 list(APPEND EXPORT3D_TEST_FILES ${EXAMPLE_FILES})
-list(APPEND EXPORT3D_TEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/features/polyhedron-nonplanar-tests.scad )
+list(APPEND EXPORT3D_TEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/features/polyhedron-nonplanar-tests.scad)
 disable_tests(
   # the flat_body is not 3d so dont do 3d-tests on it
   stlpngtest_flat_body
@@ -1054,11 +1049,10 @@ disable_tests(
 # mark which tests are 2d (regex match inside add_cmdline_test)
 # (note - dont use the offset from examples/Advanced)
 list(APPEND TESTS_2D circle control-hull-dimension difference-2d ellipse
- flat_body hull2 dxf intersection2 issue585 issue612 lwpolyline2 -arc _arc
+ flat_body hull2 import_dxf intersection2 issue585 issue612 lwpolyline2 -arc _arc
  minkowski2 multiple-layers offset- polygon* primitive-cut projection-test
  render-2d resize-2d scale2D scale2d text-search square font 
  transform-insert triangle)
-set(TEST_CONFIGS ${TEST_CONFIGS} Dimension2)
 
 # FIXME: This test illustrates a weakness in child() combined with modifiers.
 # Reenable it when this is improved
@@ -1377,7 +1371,7 @@ add_cmdline_test(openscad-colorscheme-monotone EXE ${OPENSCAD_BINPATH}
 
 
 
-message("Available test configurations: ${TEST_CONFIGS}")
+#message("Available test configurations: ${TEST_CONFIGS}")
 #foreach(CONF ${TEST_CONFIGS})
 #  message("${CONF}: ${${CONF}_TEST_CONFIG}")
 #endforeach()
