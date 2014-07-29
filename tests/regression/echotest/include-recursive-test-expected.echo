@@ -1,0 +1,13 @@
+WARNING: Can't open include file 'include-recursive-test.scad'.
+WARNING: Can't open include file '../misc/include-recursive-test.scad'.
+WARNING: Can't open include file '../../scad/misc/include-recursive-test.scad'.
+WARNING: Can't open include file 'include-recursive-test.scad'.
+WARNING: Can't open include file '../misc/include-recursive-test.scad'.
+WARNING: Can't open include file '../../scad/misc/include-recursive-test.scad'.
+WARNING: Can't open include file 'include-recursive-test.scad'.
+WARNING: Can't open include file '../misc/include-recursive-test.scad'.
+WARNING: Can't open include file '../../scad/misc/include-recursive-test.scad'.
+ECHO: "INC"
+ECHO: "INC"
+ECHO: "INC"
+ECHO: "INC"
