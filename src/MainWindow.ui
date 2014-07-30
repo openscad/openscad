@@ -225,6 +225,9 @@
     <addaction name="viewActionShowAxes"/>
     <addaction name="viewActionShowCrosshairs"/>
     <addaction name="viewActionAnimate"/>
+    <addaction name="viewActionAnimateReverse"/>
+    <addaction name="viewActionAnimateBack"/>
+    <addaction name="viewActionAnimateFwd"/>
     <addaction name="separator"/>
     <addaction name="viewActionTop"/>
     <addaction name="viewActionBottom"/>
@@ -714,6 +717,33 @@
    </property>
    <property name="text">
     <string>Animate</string>
+   </property>
+  </action>
+  <action name="viewActionAnimateReverse">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Reverse Animation</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Alt+R</string>
+   </property>
+  </action>
+  <action name="viewActionAnimateBack">   
+   <property name="text">
+    <string>Animation Step Back</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Alt+-</string>
+   </property>
+  </action>
+  <action name="viewActionAnimateFwd">   
+   <property name="text">
+    <string>Animation Step Forward</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Alt+=</string>
    </property>
   </action>
   <action name="viewActionTop">

@@ -360,6 +360,8 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this->viewActionShowAxes, SIGNAL(triggered()), this, SLOT(viewModeShowAxes()));
 	connect(this->viewActionShowCrosshairs, SIGNAL(triggered()), this, SLOT(viewModeShowCrosshairs()));
 	connect(this->viewActionAnimate, SIGNAL(triggered()), this, SLOT(viewModeAnimate()));
+	connect(this->viewActionAnimateBack, SIGNAL(triggered()), this, SLOT(viewAnimateBack()));
+	connect(this->viewActionAnimateFwd, SIGNAL(triggered()), this, SLOT(viewAnimateFwd()));
 	connect(this->viewActionTop, SIGNAL(triggered()), this, SLOT(viewAngleTop()));
 	connect(this->viewActionBottom, SIGNAL(triggered()), this, SLOT(viewAngleBottom()));
 	connect(this->viewActionLeft, SIGNAL(triggered()), this, SLOT(viewAngleLeft()));
@@ -670,7 +672,16 @@ void MainWindow::updatedFps()
 	}
 }
 
-void MainWindow::updateTVal()
+
+void MainWindow::updateTVal() {
+    if (this->viewActionAnimateReverse->isChecked()) {
+        this->updateTVal(true);
+    } else {
+        this->updateTVal(false);
+    }
+}
+
+void MainWindow::updateTVal(bool reverse)
 {
 	bool fps_ok;
 	double fps = this->e_fps->text().toDouble(&fps_ok);
@@ -679,9 +690,14 @@ void MainWindow::updateTVal()
 			actionRenderPreview();
 		} else {
 			double s = this->e_fsteps->text().toDouble();
-			double t = this->e_tval->text().toDouble() + 1/s;
 			QString txt;
-			txt.sprintf("%.5f", t >= 1.0 ? 0.0 : t);
+			if (reverse) {
+			    double t = this->e_tval->text().toDouble() - 1/s;
+			    txt.sprintf("%.5f", t <= 0 ? 1.0 : t);
+			} else {
+			    double t = this->e_tval->text().toDouble() + 1/s;
+                txt.sprintf("%.5f", t >= 1.0 ? 0.0 : t);
+            }
 			this->e_tval->setText(txt);
 		}
 	}
@@ -2057,6 +2073,26 @@ void MainWindow::viewModeAnimate()
 		animate_panel->hide();
 		animate_timer->stop();
 	}
+}
+
+void MainWindow::viewAnimateBack() {
+    bool fps_ok;
+    double fps = this->e_fps->text().toDouble(&fps_ok);
+    if (!fps_ok && fps == 0) {
+        PRINTB("FPS is '%s' - please adjust animation settings", fps);
+        return;
+    }
+    MainWindow::updateTVal(true);
+}
+
+void MainWindow::viewAnimateFwd() {
+    bool fps_ok;
+    double fps = this->e_fps->text().toDouble(&fps_ok);
+    if (!fps_ok && fps == 0) {
+        PRINTB("FPS is '%s' - please adjust animation settings", fps);
+        return;
+    }
+    MainWindow::updateTVal(false);
 }
 
 void MainWindow::animateUpdateDocChanged()

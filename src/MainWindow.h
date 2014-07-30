@@ -75,6 +75,7 @@ protected:
 private slots:
 	void updatedFps();
 	void updateTVal();
+	void updateTVal(bool reverse);
         void updateMdiMode(bool mdi);
         void updateUndockMode(bool undockMode);
 	void setFileName(const QString &filename);
@@ -193,6 +194,8 @@ public slots:
 	void viewModeShowAxes();
 	void viewModeShowCrosshairs();
 	void viewModeAnimate();
+	void viewAnimateBack();
+	void viewAnimateFwd();
 	void viewAngleTop();
 	void viewAngleBottom();
 	void viewAngleLeft();
