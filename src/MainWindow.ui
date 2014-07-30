@@ -715,6 +715,9 @@
    <property name="text">
     <string>Animate</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+Alt+A</string>
+   </property>
   </action>
   <action name="viewActionTop">
    <property name="text">
