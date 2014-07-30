@@ -308,6 +308,7 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this->editActionZoomIn, SIGNAL(triggered()), editor, SLOT(zoomIn()));
 	connect(this->editActionZoomOut, SIGNAL(triggered()), editor, SLOT(zoomOut()));
 	connect(this->editActionHide, SIGNAL(triggered()), this, SLOT(hideEditor()));
+	connect(this->editActionWordWrap, SIGNAL(triggered()), this, SLOT(toggleWordWrap()));
 	connect(this->editActionPreferences, SIGNAL(triggered()), this, SLOT(preferences()));
 	// Edit->Find
 	connect(this->editActionFind, SIGNAL(triggered()), this, SLOT(find()));
@@ -488,6 +489,8 @@ MainWindow::loadViewSettings(){
 	hideConsole();
 	editActionHide->setChecked(settings.value("view/hideEditor").toBool());
 	hideEditor();
+	editActionWordWrap->setChecked(settings.value("view/wordWrap", true).toBool());
+	toggleWordWrap();
 	updateMdiMode(settings.value("advanced/mdi").toBool());
 	updateUndockMode(settings.value("advanced/undockableWindows").toBool());
 }
@@ -2209,6 +2212,19 @@ void MainWindow::hideEditor()
 	} else {
 		editorDock->show();
 	}
+}
+
+void MainWindow::toggleWordWrap()
+{
+    QSettings settings;
+    if (editActionWordWrap->isChecked()) {
+        editor->setWordWrap(true);
+        settings.setValue("view/wordWrap", true);
+    } else {
+        editor->setWordWrap(false);
+        settings.setValue("view/wordWrap", false);
+    }
+
 }
 
 void MainWindow::hideConsole()
