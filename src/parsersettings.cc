@@ -77,10 +77,11 @@ fs::path find_valid_path(const fs::path &sourcepath,
 												 const std::vector<std::string> *openfilenames)
 {
 	if (boosty::is_absolute(localpath)) {
-		if (check_valid(localpath, openfilenames)) return boosty::absolute(localpath);
+		if (check_valid(localpath, openfilenames)) return fs::canonical(localpath);
 	}
 	else {
 		fs::path fpath = sourcepath / localpath;
+		if (fs::exists(fpath)) fpath = fs::canonical(fpath);
 		if (check_valid(fpath, openfilenames)) return fpath;
 		fpath = search_libs(localpath);
 		if (!fpath.empty() && check_valid(fpath, openfilenames)) return fpath;

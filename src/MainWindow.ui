@@ -194,6 +194,7 @@
     <addaction name="separator"/>
     <addaction name="editActionZoomIn"/>
     <addaction name="editActionZoomOut"/>
+    <addaction name="editActionWordWrap"/>    
     <addaction name="editActionPreferences"/>
    </widget>
    <widget class="QMenu" name="menu_Design">
@@ -569,6 +570,14 @@
     <string>Ctrl+-</string>
    </property>
   </action>
+  <action name="editActionWordWrap">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Wordwrap editor</string>
+   </property>
+  </action>
   <action name="editActionHide">
    <property name="checkable">
     <bool>true</bool>
@@ -714,6 +723,9 @@
    </property>
    <property name="text">
     <string>Animate</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Alt+A</string>
    </property>
   </action>
   <action name="viewActionTop">
