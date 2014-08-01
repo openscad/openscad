@@ -165,6 +165,16 @@ MainWindow::MainWindow(const QString &filename)
 	: root_inst("group"), font_list_dialog(NULL), tempFile(NULL), progresswidget(NULL)
 {
 	setupUi(this);
+	launcher = new LaunchingScreen(this);
+        connect(launcher->ui->pushButtonNew, SIGNAL(clicked()), this, SLOT(actionNew()));
+        connect(launcher->ui->pushButtonOpen, SIGNAL(clicked()), this, SLOT(actionOpen()));
+        connect(launcher->ui->pushButtonHelp, SIGNAL(clicked()), this, SLOT(helpHomepage()));
+
+        connect(launcher->ui->RecentList, SIGNAL(itemClicked(QListWidgetItem *)), this, SLOT(enableBtn(QListWidgetItem *)));
+        connect(launcher->ui->openRecentbtn, SIGNAL(clicked()), this, SLOT(launcherOpenRecent()));
+
+        connect(launcher->ui->exampleBtn, SIGNAL(clicked()), this, SLOT(openCurrentExample()));
+
 	setCorner(Qt::TopLeftCorner, Qt::LeftDockWidgetArea);
 	setCorner(Qt::TopRightCorner, Qt::RightDockWidgetArea);
 	setCorner(Qt::BottomLeftCorner, Qt::LeftDockWidgetArea);
@@ -657,6 +667,11 @@ void MainWindow::updateRecentFiles()
 	}
 }
 
+void MainWindow::launcherOpenRecent()
+{
+  	QString currentItem = launcher->ui->RecentList->currentItem()->text();
+        openFile(currentItem);
+}
 
 void MainWindow::updatedFps()
 {
@@ -1037,6 +1052,15 @@ void MainWindow::actionOpenRecent()
 	openFile(action->data().toString());
 }
 
+void MainWindow::enableBtn(QListWidgetItem * itemClicked)
+{
+        if(itemClicked)
+        {
+          launcher->ui->openRecentbtn->setEnabled(true);
+        }
+
+}
+
 void MainWindow::clearRecentFiles()
 {
 	QSettings settings; // already set up properly via main.cpp
@@ -1072,6 +1096,7 @@ void MainWindow::updateRecentFileActions()
 		this->actionRecentFile[i]->setText(QFileInfo(files[i]).fileName());
 		this->actionRecentFile[i]->setData(files[i]);
 		this->actionRecentFile[i]->setVisible(true);
+		launcher->ui->RecentList->insertItem(1, files[i]);
 	}
 	for (int j = numRecentFiles; j < maxRecentFiles; ++j)
 		this->actionRecentFile[j]->setVisible(false);
@@ -1081,31 +1106,51 @@ void MainWindow::updateRecentFileActions()
 		settings.setValue("recentFileList", files);
 }
 
+void MainWindow::openCurrentExample()
+{
+	QString currentItm = launcher->ui->treeWidget->currentItem()->text(0);
+        std::cout <<",,,,,,,,,,," << currentItm.toStdString() <<std::endl;
+        openFile(currentItm);
+}
 void MainWindow::show_examples()
 {
-		bool found_example = false;
-		QStringList categories;
-                categories << "Basics" << "Shapes" << "Extrusion" << "Advanced";
-        
-                foreach (const QString &cat, categories){
-                        QStringList examples = QDir(qexamplesdir + QDir::separator() + cat).entryList(QStringList("*.scad"),
-                        QDir::Files | QDir::Readable, QDir::Name);
-                        QMenu *menu = this->menuExamples->addMenu(cat);
-                        
-                        foreach(const QString &ex, examples) {
-                                QAction *openAct = new QAction(ex, this);
-                                connect(openAct, SIGNAL(triggered()), this, SLOT(actionOpenExample()));
-                                menu->addAction(openAct);
-                                QVariant categoryName = cat;
-                                openAct->setData(categoryName);
-                                found_example = true;
-			}
-		}
-		 if (!found_example) {
-                        delete this->menuExamples;
-                        this->menuExamples = NULL;
-                }
+        bool found_example = false;
+        QStringList categories;
+        categories << "Basics" << "Shapes" << "Extrusion" << "Advanced";
+        foreach (const QString &cat, categories){
+                QStringList examples = QDir(qexamplesdir + QDir::separator() + cat).entryList(QStringList("*.scad"),
+                QDir::Files | QDir::Readable, QDir::Name);
+                QMenu *menu = this->menuExamples->addMenu(cat);
+                show_launcher_examples(cat);
 
+                foreach(const QString &ex, examples) {
+                        QAction *openAct = new QAction(ex, this);
+                        connect(openAct, SIGNAL(triggered()), this, SLOT(actionOpenExample()));
+                        menu->addAction(openAct);
+                        add_child(itm, ex);
+
+                        QVariant categoryName = cat;
+                        openAct->setData(categoryName);
+                        found_example = true;
+                }
+        }
+        if (!found_example) {
+                delete this->menuExamples;
+                this->menuExamples = NULL;
+        }
+}
+
+void MainWindow::show_launcher_examples(QString dirName)
+{
+        itm = new QTreeWidgetItem(launcher->ui->treeWidget);
+        itm->setText(0, dirName);
+}
+
+void MainWindow::add_child(QTreeWidgetItem *parent, QString exampleName)
+{
+        QTreeWidgetItem *item = new QTreeWidgetItem();
+        item->setText(0, exampleName);
+	parent->addChild(item);
 }
 
 void MainWindow::actionOpenExample()
