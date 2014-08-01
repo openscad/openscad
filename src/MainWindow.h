@@ -2,6 +2,8 @@
 
 #include <QMainWindow>
 #include "ui_MainWindow.h"
+#include "launchingscreen.h"
+#include "ui_launchingscreen.h"
 #include "openscad.h"
 #include "modcontext.h"
 #include "module.h"
@@ -65,6 +67,10 @@ public:
 	static const int maxRecentFiles = 10;
 	QAction *actionRecentFile[maxRecentFiles];
         QMap<QString, QString> knownFileExtensions;
+	LaunchingScreen *launcher;
+	QTreeWidgetItem *itm;
+	void show_launcher_examples(QString);
+        void add_child(QTreeWidgetItem*, QString);
 
 	MainWindow(const QString &filename);
 	~MainWindow();
@@ -81,6 +87,9 @@ private slots:
 	void setFont(const QString &family, uint size);
 	void showProgress();
 	void openCSGSettingsChanged();
+	void launcherOpenRecent();
+	void openCurrentExample();
+	void enableBtn(QListWidgetItem*);
 
 private:
 	void openFile(const QString &filename);

@@ -1109,8 +1109,8 @@ void MainWindow::updateRecentFileActions()
 void MainWindow::openCurrentExample()
 {
 	QString currentItm = launcher->ui->treeWidget->currentItem()->text(0);
-        std::cout <<",,,,,,,,,,," << currentItm.toStdString() <<std::endl;
-        openFile(currentItm);
+	QString currentDir = launcher->ui->treeWidget->currentItem()->parent()->text(0);
+	openFile(qexamplesdir + QDir::separator() + currentDir + QDir::separator() + currentItm);
 }
 void MainWindow::show_examples()
 {
