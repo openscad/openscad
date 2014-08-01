@@ -171,10 +171,12 @@ MainWindow::MainWindow(const QString &filename)
         connect(launcher->ui->pushButtonHelp, SIGNAL(clicked()), this, SLOT(helpHomepage()));
 
         connect(launcher->ui->RecentList, SIGNAL(itemClicked(QListWidgetItem *)), this, SLOT(enableBtn(QListWidgetItem *)));
+	connect(launcher->ui->treeWidget, SIGNAL(itemClicked(QTreeWidgetItem *,int)), this, SLOT(enableExampleBtn(QTreeWidgetItem *,int)));
+
         connect(launcher->ui->openRecentbtn, SIGNAL(clicked()), this, SLOT(launcherOpenRecent()));
 
         connect(launcher->ui->exampleBtn, SIGNAL(clicked()), this, SLOT(openCurrentExample()));
-
+	
 	setCorner(Qt::TopLeftCorner, Qt::LeftDockWidgetArea);
 	setCorner(Qt::TopRightCorner, Qt::RightDockWidgetArea);
 	setCorner(Qt::BottomLeftCorner, Qt::LeftDockWidgetArea);
@@ -1060,7 +1062,15 @@ void MainWindow::enableBtn(QListWidgetItem * itemClicked)
         }
 
 }
+void MainWindow::enableExampleBtn(QTreeWidgetItem * itemClicked, int column)
+{
+	column = 0;
+        if(itemClicked)
+        {
+          launcher->ui->exampleBtn->setEnabled(true);
+        }
 
+}
 void MainWindow::clearRecentFiles()
 {
 	QSettings settings; // already set up properly via main.cpp
@@ -1108,6 +1118,11 @@ void MainWindow::updateRecentFileActions()
 
 void MainWindow::openCurrentExample()
 {
+	QTreeWidgetItem *Item = new QTreeWidgetItem(launcher->ui->treeWidget);
+	if(Item->isSelected() == false)
+	{
+	    launcher->ui->exampleBtn->setEnabled(false);
+	}
 	QString currentItm = launcher->ui->treeWidget->currentItem()->text(0);
 	QString currentDir = launcher->ui->treeWidget->currentItem()->parent()->text(0);
 	openFile(qexamplesdir + QDir::separator() + currentDir + QDir::separator() + currentItm);

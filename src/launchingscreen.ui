@@ -159,6 +159,9 @@
     </item>
     <item>
      <widget class="QPushButton" name="exampleBtn">
+      <property name="enabled">
+       <bool>false</bool>
+      </property>
       <property name="text">
        <string>Open Example</string>
       </property>

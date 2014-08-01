@@ -90,6 +90,7 @@ private slots:
 	void launcherOpenRecent();
 	void openCurrentExample();
 	void enableBtn(QListWidgetItem*);
+	void enableExampleBtn(QTreeWidgetItem*, int);
 
 private:
 	void openFile(const QString &filename);
