@@ -23,7 +23,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  */
-
+#include <iostream>
 #include "GeometryCache.h"
 #include "ModuleCache.h"
 #include "MainWindow.h"
@@ -176,6 +176,7 @@ MainWindow::MainWindow(const QString &filename)
         connect(launcher->ui->openRecentbtn, SIGNAL(clicked()), this, SLOT(launcherOpenRecent()));
 
         connect(launcher->ui->exampleBtn, SIGNAL(clicked()), this, SLOT(openCurrentExample()));
+	connect(launcher->ui->checkBox, SIGNAL(stateChanged(int)), this, SLOT(checkboxState(int)));	
 	
 	setCorner(Qt::TopLeftCorner, Qt::LeftDockWidgetArea);
 	setCorner(Qt::TopRightCorner, Qt::RightDockWidgetArea);
@@ -1127,6 +1128,13 @@ void MainWindow::openCurrentExample()
 	QString currentDir = launcher->ui->treeWidget->currentItem()->parent()->text(0);
 	openFile(qexamplesdir + QDir::separator() + currentDir + QDir::separator() + currentItm);
 }
+
+void MainWindow::checkboxState(int state)
+{
+	QSettings settings;
+	settings.setValue("launcher/checkboxState", state);
+}
+
 void MainWindow::show_examples()
 {
         bool found_example = false;

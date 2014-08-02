@@ -7,8 +7,7 @@ LaunchingScreen::LaunchingScreen(QWidget *parent) :
 {
    ui->setupUi(this);
    this->setStyleSheet("QDialog {background-image:url(':/background.png')}"
-                       "QPushButton {color:white;}"
-		       "QTreeWidget {background-color:rgba(255,255,255,0%)}");
+                       "QPushButton {color:white;}");
    QPixmap pixmap(":/button.png");
    QPalette palette;
 
@@ -43,7 +42,7 @@ LaunchingScreen::LaunchingScreen(QWidget *parent) :
    ui->exampleBtn->setPalette(palette);
 
 
-   ui->treeWidget->setFrameShape(QFrame::NoFrame);      
+//   ui->treeWidget->setFrameShape(QFrame::NoFrame);      
    //ui->treeWidget->headerItem()->setForeground(0, Qt::green); 
 }
 

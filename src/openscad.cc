@@ -44,6 +44,7 @@
 #include <string>
 #include <vector>
 #include <fstream>
+#include <QSettings>
 
 #ifdef ENABLE_CGAL
 #include "CGAL_Nef_polyhedron.h"
@@ -574,6 +575,12 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 #endif
 	if(set == true)
 	mainwin->launcher->show();
+	
+	QSettings settings;
+	int s = settings.value("launcher/checkboxState").toInt();
+	if(s == 0)
+	mainwin->launcher->hide();
+	
 	app.connect(&app, SIGNAL(lastWindowClosed()), &app, SLOT(quit()));
 	int rc = app.exec();
 	if (MainWindow::windows) {
