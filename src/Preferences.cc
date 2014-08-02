@@ -165,6 +165,9 @@ Preferences::Preferences(QWidget *parent) : QMainWindow(parent)
 	updateGUI();
 
 	RenderSettings::inst()->setColors(this->colorschemes[getValue("3dview/colorscheme").toString()]);
+ //launcher Settings
+ 	connect(this->launcherBox, SIGNAL(stateChanged(int)), SLOT(launcherSettings(int)));	
+
 }
 
 Preferences::~Preferences()
@@ -183,6 +186,14 @@ Preferences::~Preferences()
  * @param widget The widget that should be shown when the action is triggered.
  *               This must be a child page of the stackedWidget.
  */
+
+void
+Preferences::launcherSettings(int state)
+{
+	QSettings settings;
+	settings.setValue("launcher/checkboxState", state);	
+}
+
 void
 Preferences::addPrefPage(QActionGroup *group, QAction *action, QWidget *widget)
 {

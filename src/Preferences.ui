@@ -27,7 +27,7 @@
     <item>
      <widget class="QStackedWidget" name="stackedWidget">
       <property name="currentIndex">
-       <number>4</number>
+       <number>3</number>
       </property>
       <widget class="QWidget" name="page3DView">
        <layout class="QVBoxLayout" name="verticalLayout_4">
@@ -426,7 +426,16 @@
       </widget>
       <widget class="QWidget" name="pageFeatures">
        <layout class="QGridLayout" name="gridLayout_2">
-        <property name="margin">
+        <property name="leftMargin">
+         <number>0</number>
+        </property>
+        <property name="topMargin">
+         <number>0</number>
+        </property>
+        <property name="rightMargin">
+         <number>0</number>
+        </property>
+        <property name="bottomMargin">
          <number>0</number>
         </property>
         <item row="0" column="0">
@@ -464,7 +473,7 @@
                <x>0</x>
                <y>0</y>
                <width>803</width>
-               <height>325</height>
+               <height>332</height>
               </rect>
              </property>
              <layout class="QVBoxLayout" name="verticalLayout_10">
@@ -474,6 +483,13 @@
                  <number>8</number>
                 </property>
                </layout>
+              </item>
+              <item>
+               <widget class="QCheckBox" name="launcherBox">
+                <property name="text">
+                 <string>Show Launcher.</string>
+                </property>
+               </widget>
               </item>
               <item>
                <spacer name="verticalSpacer_3">

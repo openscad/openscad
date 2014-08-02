@@ -37,6 +37,7 @@ public slots:
 	void on_mdiCheckBox_toggled(bool);
 	void on_undockCheckBox_toggled(bool);
 	void on_checkNowButton_clicked();
+	void launcherSettings(int);
 
 signals:
 	void requestRedraw() const;

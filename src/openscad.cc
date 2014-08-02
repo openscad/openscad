@@ -574,13 +574,12 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 	MainWindow *mainwin = new MainWindow(assemblePath(original_path, inputFiles[0]));
 #endif
 	if(set == true)
-	mainwin->launcher->show();
-	
+	mainwin->launcher->show();	
 	QSettings settings;
 	int s = settings.value("launcher/checkboxState").toInt();
 	if(s == 0)
 	mainwin->launcher->hide();
-	
+
 	app.connect(&app, SIGNAL(lastWindowClosed()), &app, SLOT(quit()));
 	int rc = app.exec();
 	if (MainWindow::windows) {
