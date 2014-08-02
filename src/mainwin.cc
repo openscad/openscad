@@ -168,7 +168,7 @@ MainWindow::MainWindow(const QString &filename)
 	launcher = new LaunchingScreen(this);
         connect(launcher->ui->pushButtonNew, SIGNAL(clicked()), this, SLOT(actionNew()));
         connect(launcher->ui->pushButtonOpen, SIGNAL(clicked()), this, SLOT(actionOpen()));
-        connect(launcher->ui->pushButtonHelp, SIGNAL(clicked()), this, SLOT(helpHomepage()));
+        connect(launcher->ui->pushButtonHelp, SIGNAL(clicked()), this, SLOT(helpManual()));
 
         connect(launcher->ui->RecentList, SIGNAL(itemClicked(QListWidgetItem *)), this, SLOT(enableBtn(QListWidgetItem *)));
 	connect(launcher->ui->treeWidget, SIGNAL(itemClicked(QTreeWidgetItem *,int)), this, SLOT(enableExampleBtn(QTreeWidgetItem *,int)));
@@ -674,6 +674,7 @@ void MainWindow::launcherOpenRecent()
 {
   	QString currentItem = launcher->ui->RecentList->currentItem()->text();
         openFile(currentItem);
+	launcher->hide();
 }
 
 void MainWindow::updatedFps()
@@ -1022,6 +1023,7 @@ void MainWindow::actionNew()
 		setFileName("");
 		editor->setPlainText("");
 	}
+	launcher->hide();
 }
 
 void MainWindow::actionOpen()
@@ -1041,7 +1043,7 @@ void MainWindow::actionOpen()
 	if (!MainWindow::mdiMode && !maybeSave()) {
 		return;
 	}
-
+	launcher->hide();
 	openFile(new_filename);
 }
 
@@ -1127,6 +1129,7 @@ void MainWindow::openCurrentExample()
 	QString currentItm = launcher->ui->treeWidget->currentItem()->text(0);
 	QString currentDir = launcher->ui->treeWidget->currentItem()->parent()->text(0);
 	openFile(qexamplesdir + QDir::separator() + currentDir + QDir::separator() + currentItm);
+	launcher->hide();
 }
 
 void MainWindow::checkboxState(int state)
@@ -2341,6 +2344,7 @@ void
 MainWindow::helpManual()
 {
 	QDesktopServices::openUrl(QUrl("http://www.openscad.org/documentation.html"));
+	launcher->hide();
 }
 
 void MainWindow::helpLibrary()
