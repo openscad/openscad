@@ -47,6 +47,9 @@ public:
         void set_fn(double fn) {
             this->fn = fn;
         }
+        void set_segments(double segments) {
+            this->segments = segments;
+        }
         void set_text(std::string text) {
             this->text = text;
         }
@@ -82,7 +85,7 @@ public:
                         << "\", $fn = " << params.fn;
         }
     private:
-        double size, spacing, fn;
+        double size, spacing, fn, segments;
 	std::string text, font, direction, language, script, halign, valign;
         
         friend class FreetypeRenderer;
