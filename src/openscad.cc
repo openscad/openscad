@@ -44,7 +44,6 @@
 #include <string>
 #include <vector>
 #include <fstream>
-#include <QSettings>
 
 #ifdef ENABLE_CGAL
 #include "CGAL_Nef_polyhedron.h"
@@ -221,7 +220,7 @@ Camera get_camera( po::variables_map vm )
 #define OPENSCAD_QTGUI 1
 #include <QApplication>
 #endif
-
+#include <QSettings>
 static bool checkAndExport(shared_ptr<const Geometry> root_geom, unsigned nd,
 	enum FileFormat format, const char *filename)
 {
