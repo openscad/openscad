@@ -219,8 +219,8 @@ Camera get_camera( po::variables_map vm )
 #else
 #define OPENSCAD_QTGUI 1
 #include <QApplication>
-#endif
 #include <QSettings>
+#endif
 static bool checkAndExport(shared_ptr<const Geometry> root_geom, unsigned nd,
 	enum FileFormat format, const char *filename)
 {
