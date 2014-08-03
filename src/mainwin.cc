@@ -166,6 +166,7 @@ MainWindow::MainWindow(const QString &filename)
 {
 	setupUi(this);
 	launcher = new LaunchingScreen(this);
+	launcher->setFixedSize(676,414);
         connect(launcher->ui->pushButtonNew, SIGNAL(clicked()), this, SLOT(actionNew()));
         connect(launcher->ui->pushButtonOpen, SIGNAL(clicked()), this, SLOT(actionOpen()));
         connect(launcher->ui->pushButtonHelp, SIGNAL(clicked()), this, SLOT(helpManual()));
