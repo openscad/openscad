@@ -564,7 +564,11 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 	QGLFormat::setDefaultFormat(f);
 #endif
 	bool set = false;
-	if (!inputFiles.size()) inputFiles.push_back(""); set = true;
+	if (!inputFiles.size()) 
+	{
+	    set = true;
+	    inputFiles.push_back("");
+	}
 #ifdef ENABLE_MDI
 	BOOST_FOREACH(const string &infile, inputFiles) {
         MainWindow *mainwin = new MainWindow(assemblePath(original_path, infile));
