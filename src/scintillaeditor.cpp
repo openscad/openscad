@@ -13,7 +13,6 @@ ScintillaEditor::ScintillaEditor(QWidget *parent) : EditorInterface(parent)
 	qsci->setWrapMode(QsciScintilla::WrapWord);
 	qsci->setWrapVisualFlags(QsciScintilla::WrapFlagByText, QsciScintilla::WrapFlagByText, 0);
 	qsci->setAutoIndent(true);
-	qsci->setTabWidth(4);
 	qsci->indicatorDefine(QsciScintilla::RoundBoxIndicator, indicatorNumber);
 	qsci->markerDefine(QsciScintilla::Circle, markerNumber);
 	qsci->setUtf8(true);
