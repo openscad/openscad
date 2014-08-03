@@ -2,6 +2,8 @@
 // (c) 2014 Torsten Paul
 // CC-BY-SA 4.0
 
+echo(version=version());
+
 font = "Liberation Sans";
 
 cube_size = 60;
