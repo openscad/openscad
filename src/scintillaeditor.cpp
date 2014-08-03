@@ -21,6 +21,7 @@ ScintillaEditor::ScintillaEditor(QWidget *parent) : EditorInterface(parent)
 	initFont();
 	initLexer();
 	initMargin();
+	qsci->setFolding(QsciScintilla::BoxedTreeFoldStyle, 4);
 	qsci->setCaretLineVisible(true);
 	this->setHighlightScheme(preferenceEditorOption);	
 	
