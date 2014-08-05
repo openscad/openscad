@@ -113,6 +113,25 @@ void ScintillaEditor::forDarkBackground()
 	qsci->setMarginsForegroundColor(QColor("#fff"));
 
 }
+
+void ScintillaEditor::Monokai()
+{
+	lexer->setPaper("#272822");
+	lexer->setColor(QColor("#f8f8f2")); // -> Style: Default text
+	lexer->setColor(QColor("#66c3b3"), QsciLexerCPP::Keyword);	    // -> Style: Keyword	
+	lexer->setColor(QColor("#79abff"), QsciLexerCPP::KeywordSet2);	    // -> Style: KeywordSet2
+	lexer->setColor(QColor("#ccdf32"), QsciLexerCPP::CommentDocKeyword);	    // -> used in comments only like /*! \cube */
+	lexer->setColor(QColor("#ffffff"), QsciLexerCPP::GlobalClass);	    // -> Style: GlobalClass
+	lexer->setColor(QColor("#d8d8d8"), QsciLexerCPP::Operator);
+	lexer->setColor(QColor("#e6db74"), QsciLexerCPP::DoubleQuotedString);	
+	lexer->setColor(QColor("#75715e"), QsciLexerCPP::CommentLine);
+	lexer->setColor(QColor("#7fb347"), QsciLexerCPP::Number);
+	qsci->setMarkerBackgroundColor(QColor(255, 0, 0, 100), markerNumber);
+	qsci->setCaretLineBackgroundColor(QColor("#3e3d32"));
+	qsci->setMarginsBackgroundColor(QColor("#757575"));
+	qsci->setMarginsForegroundColor(QColor("#f8f8f2"));
+}
+
 void ScintillaEditor::noColor()
 {
 	lexer->setPaper(Qt::white);
@@ -131,6 +150,10 @@ void ScintillaEditor::setHighlightScheme(const QString &name)
 	else if(name == "For Dark Background")
 	{
 		forDarkBackground();
+	}
+	else if(name == "Monokai")
+	{
+		Monokai();
 	}
 	else if(name == "Off")
 	{

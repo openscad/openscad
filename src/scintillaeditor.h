@@ -20,6 +20,7 @@ public:
 	void initLexer();
 	void forLightBackground();
 	void forDarkBackground();
+	void Monokai();
 	void noColor();
 
 public slots:
