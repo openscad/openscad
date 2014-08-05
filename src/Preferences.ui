@@ -259,6 +259,11 @@
             <string>Monokai</string>
            </property>
           </item>
+	  <item>
+           <property name="text">
+            <string>Solarized</string>
+           </property>
+          </item>
           <item>
            <property name="text">
             <string>Off</string>

@@ -21,6 +21,7 @@ public:
 	void forLightBackground();
 	void forDarkBackground();
 	void Monokai();
+	void Solarized_light();
 	void noColor();
 
 public slots:
