@@ -23,7 +23,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  */
-
+#include <iostream>
 #include "GeometryCache.h"
 #include "ModuleCache.h"
 #include "MainWindow.h"
@@ -168,14 +168,15 @@ MainWindow::MainWindow(const QString &filename)
 {
 	setupUi(this);
 
-	QString editortype = Preferences::inst()->getValue("editor/editortype").toString();
+ 	 editortype = Preferences::inst()->getValue("editor/editortype").toString();
 
-	bool useScintilla = (editortype == "QScintilla Editor");
+	 useScintilla = (editortype == "QScintilla Editor");
 #ifdef USE_SCINTILLA_EDITOR
-	if (useScintilla)	editor = new ScintillaEditor(editorDockContents);
+	if (useScintilla)	
+	    editor = new ScintillaEditor(editorDockContents);
 	else
 #endif
-		editor = new LegacyEditor(editorDockContents);
+	   editor = new LegacyEditor(editorDockContents);
 
 	editorDockContents->layout()->addWidget(editor);
 
@@ -435,6 +436,10 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this->replaceButton, SIGNAL(clicked()), this, SLOT(replace()));
 	connect(this->replaceAllButton, SIGNAL(clicked()), this, SLOT(replaceAll()));
 	connect(this->replaceInputField, SIGNAL(returnPressed()), this->replaceButton, SLOT(animateClick()));
+
+	connect(this->findInputField, SIGNAL(textChanged(QString)), this, SLOT(scintillaFind(QString)));
+	connect(this->nextButton, SIGNAL(clicked()), this, SLOT(scintillaFindNext()));
+	connect(this->replaceButton, SIGNAL(clicked()), this, SLOT(scintillaReplace()));
 
 	// make sure it looks nice..
 	QSettings settings;
@@ -1280,7 +1285,19 @@ void MainWindow::find()
 	replaceAllButton->hide();
 	find_panel->show();
 	findInputField->setFocus();
-	findInputField->selectAll();
+	findInputField->selectAll(); 
+}
+
+void MainWindow::scintillaFind(QString textToFind)
+{
+	if(useScintilla)
+	editor->findFirst(textToFind, false, false, false, false, true, 1, 1, true, false);
+}
+
+void MainWindow::scintillaFindNext()
+{
+	if(useScintilla)
+	editor->findNext();
 }
 
 void MainWindow::findAndReplace()
@@ -1333,6 +1350,11 @@ void MainWindow::replaceAll() {
 		editor->textCursor().insertText(replaceInputField->text());
 	}
 	editor->setTextCursor(old_cursor);
+}
+
+void MainWindow::scintillaReplace(){
+	QString newText = this->replaceInputField->text();
+	editor->replaceSelectedText(newText);
 }
 
 void MainWindow::findNext()

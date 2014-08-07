@@ -23,7 +23,10 @@ public:
 	void Monokai();
 	void Solarized_light();
 	void noColor();
-
+	bool findFirst(const QString&, bool, bool, bool, bool, bool, int, int, bool, bool);
+	bool findNext();
+	void replaceSelectedText(QString&);
+	
 public slots:
 	 void zoomIn();
          void zoomOut(); 
