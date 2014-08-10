@@ -9,7 +9,6 @@ namespace PlatformUtils {
 	bool createLibraryPath();
 	std::string backupPath();
 	bool createBackupPath();
-	std::string info();
         
         /**
          * Single character separating path specifications in a list

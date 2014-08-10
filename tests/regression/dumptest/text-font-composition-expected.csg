@@ -1,0 +1,3 @@
+group() {
+	text(text = "Å", size = 40, spacing = 1, font = "Liberation Sans", direction = "ltr", language = "en", script = "latin", halign = "left", valign = "baseline", $fn = 0, $fa = 12, $fs = 2);
+}

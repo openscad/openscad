@@ -54,6 +54,8 @@ def tryread(filename):
         debug( "couldn't open file: [" + filename + "]" )
         debug( str(type(e))+str(e) )
         if filename==None:
+            # dont write a bunch of extra errors during test output. 
+            # the reporting of test failure is sufficient to indicate a problem
             pass
     return data
 
@@ -111,14 +113,11 @@ def read_sysinfo(filename):
 
     renderer = ezsearch('GL Renderer:(.*?)\n',data)
     tmp = renderer.split(' ')
-    tmp = string.join(tmp[0:3],'-')
+    tmp = string.join(tmp[0:min(len(tmp),4)],'-')
     tmp = tmp.split('/')[0]
     renderer = tmp
 
     data += read_gitinfo()
-
-    data += 'Image comparison: ImageMagick'
-
     data = data.strip()
 
     # create 4 letter hash and stick on end of sysid
@@ -135,18 +134,23 @@ def read_sysinfo(filename):
 class Test:
     def __init__(self, fullname, subpr, passed, output, type, actualfile,
                  expectedfile, scadfile, log):
-        self.fullname, self.time = fullname, time
+        self.fullname= fullname
         self.passed, self.output = passed, output
         self.type, self.actualfile = type, actualfile
         self.expectedfile, self.scadfile = expectedfile, scadfile
         self.fulltestlog = log
+        self.actualfile_data = None
+        self.expectedfile_data = None
         
     def __str__(self):
         x = 'fullname: ' + self.fullname
         x+= '\nactualfile: ' + self.actualfile
         x+= '\nexpectedfile: ' + self.expectedfile
-        x+= '\ntesttime: ' + self.time
-        x+= '\ntesttype: ' + self.type
+        if self.actualfile_data:
+            x+= '\nactualfile_data (#bytes): ' + str(len(self.actualfile_data))
+        if self.expectedfile_data:
+            x+= '\nexpectedfile_data (#bytes): ' + str(len(self.expectedfile_data))
+        x+= '\ntesttype: ' + str(self.type)
         x+= '\npassed: ' + str(self.passed)
         x+= '\nscadfile: ' + self.scadfile
         x+= '\noutput bytes: ' + str(len(self.output))
@@ -171,6 +175,7 @@ def parsetest(teststring):
         test.actualfile_data = tryread(test.actualfile)
     if len(test.expectedfile) > 0:
         test.expectedfile_data = tryread(test.expectedfile)
+    debug(" Parsed test\n" + str(test)+'\n')
     return test
 
 def parselog(data):
@@ -180,7 +185,9 @@ def parselog(data):
     test_chunks = re.findall(pattern,data, re.S)
     tests = map( parsetest, test_chunks )
     tests = sorted(tests, key = lambda t: t.passed)
-    return startdate, tests, enddate
+    imgcomparer='ImageMagick'
+    if '--comparator=diffpng' in data: imgcomparer='diffpng'
+    return startdate, tests, enddate, imgcomparer
 
 def load_makefiles(builddir):
     filelist = []
@@ -195,15 +202,12 @@ def load_makefiles(builddir):
     return result
 
 
-def png_encode64(fname, width=250, data=None):
+def png_encode64(fname, width=512, data=None, alt=''):
     # en.wikipedia.org/wiki/Data_URI_scheme
     data = data or tryread(fname) or ''
     data_uri = data.encode('base64').replace('\n', '')
     tag = '''<img src="data:image/png;base64,%s" width="%s" %s/>'''
-    if data == '':
-        alt = 'alt="error: no image generated" '
-    else:
-        alt = 'alt="openscad_test_image" '
+    if alt=="": alt = 'alt="openscad_test_image:' + fname + '" '
     tag %= (data_uri, width, alt)
     return tag
 
@@ -234,11 +238,21 @@ class Templates(object):
             <b>Result summary</b>:  {numpassed} / {numtests} tests passed ({percent}%)
         </p>
         
-        <h2>System info</h2>
+        <p>
+            <b>System info</b>
+        </p>
         <pre>{sysinfo}</pre>
-            
-        <p>start time: {startdate}</p>
-        <p>end time: {enddate}</p>
+
+        <p>
+            <b>Image comparer</b>: {imgcomparer}
+        </p>
+
+        <p>
+            <b>Tests start time</b>: {startdate}
+        </p>
+        <p>
+            <b>Tests end time</b>: {enddate}
+        </p>
 
         <h2>Image tests</h2>
         {image_tests}
@@ -315,7 +329,7 @@ class Templates(object):
         return self.filled.get(var, '')
 
 
-def to_html(project_name, startdate, tests, enddate, sysinfo, sysid, makefiles):
+def to_html(project_name, startdate, tests, enddate, sysinfo, sysid, imgcomparer, makefiles):
     passed_tests = [test for test in tests if test.passed]
     failed_tests = [test for test in tests if not test.passed]
 
@@ -337,11 +351,18 @@ def to_html(project_name, startdate, tests, enddate, sysinfo, sysid, makefiles):
                           test_log=test.fulltestlog)
         elif test.type == 'png':
             image_test_count += 1
-            # FIXME: Handle missing test.actualfile or test.expectedfile
+            alttxt = 'OpenSCAD test image'
+
+            if not os.path.exists(test.actualfile):
+                alttxt = 'image missing for ' + test.fullname
             actual_img = png_encode64(test.actualfile,
-                                  data=vars(test).get('actualfile_data'))
+                                  data=test.actualfile_data, alt=alttxt)
+
+            if not os.path.exists(test.expectedfile):
+                alttxt = 'no img generated for ' + test.fullname
             expected_img = png_encode64(test.expectedfile,
-                                    data=vars(test).get('expectedfile_data'))
+                                    data=test.expectedfile_data, alt=alttxt)
+
             templates.add('image_template', 'image_tests',
                           test_name=test.fullname,
                           test_log=test.fulltestlog,
@@ -372,7 +393,8 @@ def to_html(project_name, startdate, tests, enddate, sysinfo, sysid, makefiles):
                           numtests=len(tests),
                           numpassed=len(passed_tests),
                           percent=percent, image_tests=image_tests,
-                          text_tests=text_tests, makefiles=makefiles_str)
+                          text_tests=text_tests, makefiles=makefiles_str,
+                          imgcomparer=imgcomparer)
 
 # --- End Templating ---
 
@@ -408,13 +430,17 @@ def upload_html(page_url, title, html):
 
 # --- End Web Upload ---
 
-def debug(x):
-    if debug_test_pp:
-        print 'test_pretty_print: ' + x
-
 debug_test_pp = False
-include_passed = False
+#debug_test_pp = True
+debugfile = None
+def debug(x):
+    global debugfile
+    if debug_test_pp:
+        print 'test_pretty_print debug: ' + x
+    debugfile.write(x+'\n')
+
 builddir = os.getcwd()
+include_passed = False
 
 def main():
     global builddir, debug_test_pp
@@ -462,14 +488,14 @@ def main():
     makefiles = load_makefiles(builddir)
     logfilename = findlogfile(builddir)
     testlog = tryread(logfilename)
-    startdate, tests, enddate = parselog(testlog)
+    debug('found log file: '+logfilename+'\n')
+    startdate, tests, enddate, imgcomparer = parselog(testlog)
     if debug_test_pp:
         print 'found sysinfo.txt,',
         print 'found', len(makefiles),'makefiles,',
         print 'found', len(tests),'test results'
-
-
-    html = to_html(project_name, startdate, tests, enddate, sysinfo, sysid, makefiles)
+        print 'comparer', imgcomparer
+    html = to_html(project_name, startdate, tests, enddate, sysinfo, sysid, imgcomparer, makefiles)
     html_basename = sysid + '_report.html'
     html_filename = os.path.join(builddir, 'Testing', 'Temporary', html_basename)
     debug('saving ' + html_filename + ' ' + str(len(html)) + ' bytes')
@@ -497,4 +523,6 @@ def main():
     debug('test_pretty_print complete')
 
 if __name__=='__main__':
+    debugfile = open('test_pretty_print.log.txt','w')
     main()
+    debugfile.close()

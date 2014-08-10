@@ -15,14 +15,18 @@
 #
 # This script should return 0 on success, not-0 on error.
 #
+# The CSG file tests do not include the use<fontfile> statements, so to allow the
+# export tests to find the font files in the test data directory, the OPENSCAD_FONT_PATH
+# is set to the testdata/ttf directory.
+#
 # Authors: Torsten Paul, Don Bright, Marius Kintel
 
 import sys, os, re, subprocess, argparse
 
 def failquit(*args):
 	if len(args)!=0: print(args)
-	print('test_3d_export args:',str(sys.argv))
-	print('exiting test_3d_export.py with failure')
+	print('export_import_pngtest args:',str(sys.argv))
+	print('exiting export_import_pngtest.py with failure')
 	sys.exit(1)
 
 def createImport(inputfile, scadfile):
@@ -77,7 +81,7 @@ if inputsuffix != '.scad' and inputsuffix != '.csg':
 #
 # First run: Just export the given filetype
 #
-export_cmd = [args.openscad, inputfile, '-o', exportfile] + remaining_args
+export_cmd = [args.openscad, inputfile, '--enable=text', '-o', exportfile] + remaining_args
 print('Running OpenSCAD #1:')
 print(' '.join(export_cmd))
 result = subprocess.call(export_cmd)
@@ -94,10 +98,13 @@ if args.format != 'csg':
         newscadfile += '.scad'
         createImport(exportfile, newscadfile)
 
-create_png_cmd = [args.openscad, newscadfile, '--render', '-o', pngfile] + remaining_args
+create_png_cmd = [args.openscad, newscadfile, '--enable=text', '--render', '-o', pngfile] + remaining_args
 print('Running OpenSCAD #2:')
 print(' '.join(create_png_cmd))
-result = subprocess.call(create_png_cmd)
+fontdir =  os.path.join(os.path.dirname(args.openscad), "..", "testdata");
+fontenv = os.environ.copy();
+fontenv["OPENSCAD_FONT_PATH"] = fontdir;
+result = subprocess.call(create_png_cmd, env = fontenv);
 if result != 0:
 	failquit('OpenSCAD #2 failed with return code ' + str(result))
 

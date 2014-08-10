@@ -1,0 +1,37 @@
+group() {
+	group() {
+		group() {
+			multmatrix([[1, 0, 0, -180], [0, 1, 0, 10], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+				text(text = "0123", size = 40, spacing = 1, font = "MarVoSym", direction = "ltr", language = "en", script = "latin", halign = "center", valign = "baseline", $fn = 0, $fa = 12, $fs = 2);
+			}
+			multmatrix([[1, 0, 0, -180], [0, 1, 0, 70], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+				text(text = "ABCD", size = 40, spacing = 1, font = "MarVoSym", direction = "ltr", language = "en", script = "latin", halign = "center", valign = "baseline", $fn = 0, $fa = 12, $fs = 2);
+			}
+			multmatrix([[1, 0, 0, -180], [0, 1, 0, 130], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+				text(text = "abcd", size = 40, spacing = 1, font = "MarVoSym", direction = "ltr", language = "en", script = "latin", halign = "center", valign = "baseline", $fn = 0, $fa = 12, $fs = 2);
+			}
+		}
+		group() {
+			multmatrix([[1, 0, 0, 0], [0, 1, 0, 10], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+				text(text = "0123", size = 40, spacing = 1, font = "Amiri", direction = "ltr", language = "en", script = "latin", halign = "center", valign = "baseline", $fn = 0, $fa = 12, $fs = 2);
+			}
+			multmatrix([[1, 0, 0, 0], [0, 1, 0, 70], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+				text(text = "ABCD", size = 40, spacing = 1, font = "Amiri", direction = "ltr", language = "en", script = "latin", halign = "center", valign = "baseline", $fn = 0, $fa = 12, $fs = 2);
+			}
+			multmatrix([[1, 0, 0, 0], [0, 1, 0, 130], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+				text(text = "abcd", size = 40, spacing = 1, font = "Amiri", direction = "ltr", language = "en", script = "latin", halign = "center", valign = "baseline", $fn = 0, $fa = 12, $fs = 2);
+			}
+		}
+		group() {
+			multmatrix([[1, 0, 0, 180], [0, 1, 0, 10], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+				text(text = "0123", size = 40, spacing = 1, font = "Liberation Sans:style=Regular", direction = "ltr", language = "en", script = "latin", halign = "center", valign = "baseline", $fn = 0, $fa = 12, $fs = 2);
+			}
+			multmatrix([[1, 0, 0, 180], [0, 1, 0, 70], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+				text(text = "ABCD", size = 40, spacing = 1, font = "Liberation Sans:style=Regular", direction = "ltr", language = "en", script = "latin", halign = "center", valign = "baseline", $fn = 0, $fa = 12, $fs = 2);
+			}
+			multmatrix([[1, 0, 0, 180], [0, 1, 0, 130], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+				text(text = "abcd", size = 40, spacing = 1, font = "Liberation Sans:style=Regular", direction = "ltr", language = "en", script = "latin", halign = "center", valign = "baseline", $fn = 0, $fa = 12, $fs = 2);
+			}
+		}
+	}
+}
