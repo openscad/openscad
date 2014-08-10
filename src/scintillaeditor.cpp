@@ -79,14 +79,15 @@ void ScintillaEditor::forLightBackground()
 {
 	lexer->setPaper("#fff");
 	lexer->setColor(QColor("#272822")); // -> Style: Default text
-	lexer->setColor(QColor("#ff00ff"), QsciLexerCPP::Keyword);	    // -> Style: Keyword	
-	lexer->setColor(QColor("#00f0f0"), QsciLexerCPP::KeywordSet2);	    // -> Style: KeywordSet2
+	lexer->setColor(QColor("Green"), QsciLexerCPP::Keyword);	    // -> Style: Keyword	
+	lexer->setColor(QColor("Green"), QsciLexerCPP::KeywordSet2);	    // -> Style: KeywordSet2
 	lexer->setColor(Qt::blue, QsciLexerCPP::CommentDocKeyword);	    // -> used in comments only like /*! \cube */
-	lexer->setColor(QColor("#00d000"), QsciLexerCPP::GlobalClass);	    // -> Style: GlobalClass
-	lexer->setColor(QColor("#111111"), QsciLexerCPP::Operator);
-	lexer->setColor(QColor("#808000"), QsciLexerCPP::DoubleQuotedString);	
-	lexer->setColor(QColor("#0000d0"), QsciLexerCPP::CommentLine);
-	lexer->setColor(QColor("#800080"), QsciLexerCPP::Number);
+	lexer->setColor(QColor("DarkBlue"), QsciLexerCPP::GlobalClass);	    // -> Style: GlobalClass
+	lexer->setColor(Qt::blue, QsciLexerCPP::Operator);
+	lexer->setColor(Qt::darkMagenta, QsciLexerCPP::DoubleQuotedString);	
+	lexer->setColor(Qt::darkCyan, QsciLexerCPP::Comment);
+	lexer->setColor(Qt::darkCyan, QsciLexerCPP::CommentLine);
+	lexer->setColor(QColor("DarkRed"), QsciLexerCPP::Number);
 	qsci->setMarkerBackgroundColor(QColor(255, 0, 0, 100), markerNumber);
 	qsci->setCaretLineBackgroundColor(QColor("#ffe4e4"));
 	qsci->setMarginsBackgroundColor(QColor("#ccc"));
