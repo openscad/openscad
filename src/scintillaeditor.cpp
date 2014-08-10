@@ -162,10 +162,31 @@ ScintillaEditor::ScintillaEditor(QWidget *parent) : EditorInterface(parent)
 	qsci->setAutoCompletionFillupsEnabled(true);
 	qsci->setCallTipsVisible(10);
 	qsci->setCallTipsStyle(QsciScintilla::CallTipsContext);
+	
+	qsci->setTabIndents(true);
+	qsci->setTabWidth(8);
+	qsci->setIndentationWidth(4);
+	qsci->setIndentationsUseTabs(false);
+	
+	addTemplate("module", "module () {\n    \n}", 7);
+	addTemplate("difference", "difference() {\n    union() {\n        \n    }\n}", 37);
+	addTemplate("translate", "translate([])", 11);
+	addTemplate("rotate", "rotate([])", 8);
+	addTemplate("for", "for (i = [  :  ]) {\n    \n}", 11);
+	addTemplate("function", "function f(x) = x;", 17);
+	
+	connect(qsci, SIGNAL(userListActivated(int, const QString &)), this, SLOT(onUserListSelected(const int, const QString &)));
 }
+
+void ScintillaEditor::addTemplate(const QString key, const QString text, const int cursor_offset)
+{
+	templateMap.insert(key, ScadTemplate(text, cursor_offset));
+	userList.append(key);
+}
+
 void ScintillaEditor::indentSelection()
 {
-	
+	qsci->showUserList(1, userList);
 }
 void ScintillaEditor::unindentSelection()
 {
@@ -401,4 +422,29 @@ bool ScintillaEditor::findNext()
 void ScintillaEditor::replaceSelectedText(QString& newText)
 {
 	qsci->replaceSelectedText(newText);
+}
+
+void ScintillaEditor::onUserListSelected(const int id, const QString &text)
+{
+	if (!templateMap.contains(text)) {
+		return;
+	}
+	
+	ScadTemplate &t = templateMap[text];
+	qsci->insert(t.get_text());
+
+	int line, index;
+	qsci->getCursorPosition(&line, &index);
+	int pos = qsci->positionFromLineIndex(line, index);
+	
+	pos += t.get_cursor_offset();
+	int indent_line = line;
+	int indent_width = qsci->indentation(line);
+	qsci->lineIndexFromPosition(pos, &line, &index);
+	qsci->setCursorPosition(line, index);
+	
+	int lines = t.get_text().count("\n");
+	for (int a = 0;a < lines;a++) {
+		qsci->insertAt(QString(" ").repeated(indent_width), indent_line + a + 1, 0);
+	}
 }

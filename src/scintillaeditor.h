@@ -1,6 +1,7 @@
 #ifndef SCINTILLAEDITOR_H
 #define SCINTILLAEDITOR_H
 
+#include <QMap>
 #include <QObject>
 #include <QWidget>
 #include <QVBoxLayout>
@@ -30,6 +31,9 @@ public:
 	bool findFirst(const QString&, bool, bool, bool, bool, bool, int, int, bool, bool);
 	bool findNext();
 	void replaceSelectedText(QString&);
+
+private:
+        void addTemplate(const QString key, const QString text, const int cursor_offset);
 	
 public slots:
 	 void zoomIn();
@@ -50,6 +54,7 @@ public slots:
          void copy();
          void paste();
 	 void onTextChanged();
+         void onUserListSelected(const int id, const QString &text);
          
 private:
         QVBoxLayout *scintillaLayout;
@@ -58,6 +63,8 @@ private:
 	ScadLexer *lexer;
         ScadApi *api;
 	QString preferenceEditorOption;
+        QStringList userList;
+        QMap<QString, ScadTemplate> templateMap;
 };
 
 #endif // SCINTILLAEDITOR_H

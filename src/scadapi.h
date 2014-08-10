@@ -28,6 +28,28 @@ public:
         }
 };
 
+class ScadTemplate
+{
+private:
+    QString text;
+    int cursor_offset;
+public:
+    ScadTemplate() : text(""), cursor_offset(0) { }
+    ScadTemplate(const QString text, const int cursor_offset) : text(text), cursor_offset(cursor_offset) { }
+    virtual ~ScadTemplate() { }
+    
+    const QString& get_text() const { return text; }
+    int get_cursor_offset() const { return cursor_offset; }
+    
+    ScadTemplate & operator=(const ScadTemplate &other) {
+        if (this != &other) {
+            this->text = other.text;
+            this->cursor_offset = other.cursor_offset;
+        }
+        return *this;
+    }
+};
+
 class ScadApi : public QsciAbstractAPIs
 {
 	Q_OBJECT
