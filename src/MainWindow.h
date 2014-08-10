@@ -69,6 +69,9 @@ public:
 	static const int maxRecentFiles = 10;
 	QAction *actionRecentFile[maxRecentFiles];
         QMap<QString, QString> knownFileExtensions;
+	
+	QString editortype;	
+	bool useScintilla;
 
 	MainWindow(const QString &filename);
 	~MainWindow();
@@ -144,7 +147,10 @@ private slots:
 private slots:
 	void selectFindType(int);
 	void find();
+	void scintillaFind(QString);
+	void scintillaFindNext();
 	void findAndReplace();
+	void scintillaReplace();
 	void findNext();
 	void findPrev();
 	void useSelectionForFind();

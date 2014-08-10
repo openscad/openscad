@@ -23,13 +23,16 @@ public:
         virtual void setTextCursor (const QTextCursor &) { }
         virtual QTextDocument *document(){QTextDocument *t = new QTextDocument; return t;}
         virtual bool find(const QString &, QTextDocument::FindFlags options = 0){ return options;}
+	virtual bool findFirst(const QString&, bool, bool, bool, bool, bool, int, int, bool, bool){return 0;}
+	virtual bool findNext(){return 0;}
+	virtual void replaceSelectedText(QString&){ }
 
 public slots:
 	virtual void zoomIn(){ }
         virtual void zoomOut() { }
         virtual void setLineWrapping(bool) { }
         virtual void setContentModified(bool){ }
-        virtual bool isContentModified(){ return true; } 
+        virtual bool isContentModified(){ return 0; } 
         virtual void indentSelection(){ }
         virtual void unindentSelection(){ }
         virtual void commentSelection() {}

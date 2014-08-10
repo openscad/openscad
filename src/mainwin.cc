@@ -168,14 +168,18 @@ MainWindow::MainWindow(const QString &filename)
 {
 	setupUi(this);
 
-    editortoolbar = new EditorToolBar(this);
-    editorDockContents->layout()->addWidget(editortoolbar);
+	editortoolbar = new EditorToolBar(this);
+	editorDockContents->layout()->addWidget(editortoolbar);
 
+	editortype = Preferences::inst()->getValue("editor/editortype").toString();
+	useScintilla = (editortype == "QScintilla Editor");
 #ifdef USE_SCINTILLA_EDITOR
-	editor = new ScintillaEditor(editorDockContents);
-#else
-	editor = new LegacyEditor(editorDockContents);
+	if (useScintilla)	
+	    editor = new ScintillaEditor(editorDockContents);
+	else
 #endif
+	   editor = new LegacyEditor(editorDockContents);
+
 	editorDockContents->layout()->addWidget(editor);
 
 	setCorner(Qt::TopLeftCorner, Qt::LeftDockWidgetArea);
@@ -519,6 +523,10 @@ MainWindow::MainWindow(const QString &filename)
 	 toolBar->addAction(viewActionAnimate);
  	toolBar->setStyleSheet("QToolBar{border:1 solid black;}" );
 	
+	connect(this->findInputField, SIGNAL(textChanged(QString)), this, SLOT(scintillaFind(QString)));
+	connect(this->nextButton, SIGNAL(clicked()), this, SLOT(scintillaFindNext()));
+	connect(this->replaceButton, SIGNAL(clicked()), this, SLOT(scintillaReplace()));
+
 	// make sure it looks nice..
 	QSettings settings;
 	QByteArray windowState = settings.value("window/state", QByteArray()).toByteArray();
@@ -1365,7 +1373,19 @@ void MainWindow::find()
 	replaceAllButton->hide();
 	find_panel->show();
 	findInputField->setFocus();
-	findInputField->selectAll();
+	findInputField->selectAll(); 
+}
+
+void MainWindow::scintillaFind(QString textToFind)
+{
+	if(useScintilla)
+	editor->findFirst(textToFind, false, false, false, false, true, 1, 1, true, false);
+}
+
+void MainWindow::scintillaFindNext()
+{
+	if(useScintilla)
+	editor->findNext();
 }
 
 void MainWindow::findAndReplace()
@@ -1418,6 +1438,11 @@ void MainWindow::replaceAll() {
 		editor->textCursor().insertText(replaceInputField->text());
 	}
 	editor->setTextCursor(old_cursor);
+}
+
+void MainWindow::scintillaReplace(){
+	QString newText = this->replaceInputField->text();
+	editor->replaceSelectedText(newText);
 }
 
 void MainWindow::findNext()
