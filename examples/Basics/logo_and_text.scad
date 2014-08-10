@@ -2,8 +2,10 @@
 // (c) 2014 Torsten Paul
 // CC-BY-SA 4.0
 
-$vpr = [0, 0, 0];
-$vpt = [-250, 0, -80];
+echo(version=version());
+
+$vpr = [90, 0, 0];
+$vpt = [250, 0, 80];
 $vpd = 500;
 
 r = 60;

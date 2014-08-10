@@ -79,19 +79,6 @@ if inputsuffix != '.scad' and inputsuffix != '.csg':
         inputfile = tempfile
 
 #
-# Generate monotone color export. Only used during TEST_GENERATE (see 
-# doc/testing.txt). Used for 3d formats that dont encode color, like STL.
-# (importing an STL will destroy the 'negative face' colors of OpenCSG/CGAL)
-if os.getenv("TEST_GENERATE") and args.format in ['stl','off']:
-	create_expected_png_cmd = [args.openscad, inputfile, '--render', '-o', pngfile]
-	print('Running OpenSCAD for TEST_GENERATE:')
-	print(' '.join(create_expected_png_cmd))
-	result = subprocess.call(create_expected_png_cmd)
-	if result != 0:
-		failquit('OpenSCAD #1 failed with return code ' + str(result))
-	else:
-		sys.exit(0)
-#
 # First run: Just export the given filetype
 #
 export_cmd = [args.openscad, inputfile, '--enable=text', '-o', exportfile] + remaining_args

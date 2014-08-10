@@ -41,15 +41,6 @@ printUsage()
   echo "  -d   Build for deployment"
 }
 
-create_dummy_cmd()
-{
-  cmd="$1"
-  file="$2"
-
-  echo "$cmd" > "$file"
-  chmod 755 "$file"
-}
-
 patch_qt_disable_core_wlan()
 {
   version="$1"
@@ -110,12 +101,18 @@ build_qt()
       ;;
   esac
   ./configure -prefix $DEPLOYDIR -release $QT_32BIT -arch x86_64 -opensource -confirm-license $PLATFORM -fast -no-qt3support -no-svg -no-phonon -no-audio-backend -no-multimedia -no-javascript-jit -no-script -no-scripttools -no-declarative -no-xmlpatterns -nomake demos -nomake examples -nomake docs -nomake translations -no-webkit $MACOSX_RELEASE_OPTIONS
-  make -j6 install
+  make -j"$NUMCPU" install
 }
 
 build_qt5()
 {
   version=$1
+
+  if [ -d $DEPLOYDIR/lib/QtCore.framework ]; then
+    echo "Qt5 already installed. not building"
+    return
+  fi
+
   echo "Building Qt" $version "..."
   cd $BASEDIR/src
   v=(${version//./ }) # Split into array
@@ -125,8 +122,15 @@ build_qt5()
   fi
   tar xzf qt-everywhere-opensource-src-$version.tar.gz
   cd qt-everywhere-opensource-src-$version
-  ./configure -prefix $DEPLOYDIR -release -opensource -confirm-license -nomake examples -nomake tests -no-xcb -no-c++11 -no-glib
-  make -j6 install
+  ./configure -prefix $DEPLOYDIR -release -opensource -confirm-license \
+		-nomake examples -nomake tests \
+		-no-xcb -no-c++11 -no-glib -no-harfbuzz -no-sql-db2 -no-sql-ibase -no-sql-mysql -no-sql-oci -no-sql-odbc \
+		-no-sql-psql -no-sql-sqlite2 -no-sql-tds -no-cups -no-qml-debug \
+		-skip activeqt -skip connectivity -skip declarative -skip doc \
+		-skip enginio -skip graphicaleffects -skip location -skip multimedia \
+		-skip quick1 -skip quickcontrols -skip script -skip sensors -skip serialport \
+		-skip svg -skip webkit -skip webkit-examples -skip websockets -skip xmlpatterns
+  make -j"$NUMCPU" install
 }
 
 build_qscintilla()
@@ -326,7 +330,7 @@ build_boost()
     BOOST_TOOLSET="toolset=clang"
     echo "using clang ;" >> tools/build/v2/user-config.jam 
   fi
-  ./b2 -j6 -d+2 $BOOST_TOOLSET cflags="-mmacosx-version-min=$MAC_OSX_VERSION_MIN -arch x86_64 $BOOST_EXTRA_FLAGS" linkflags="-mmacosx-version-min=$MAC_OSX_VERSION_MIN -arch x86_64 $BOOST_EXTRA_FLAGS -headerpad_max_install_names" install
+  ./b2 -j"$NUMCPU" -d+2 $BOOST_TOOLSET cflags="-mmacosx-version-min=$MAC_OSX_VERSION_MIN -arch x86_64 $BOOST_EXTRA_FLAGS" linkflags="-mmacosx-version-min=$MAC_OSX_VERSION_MIN -arch x86_64 $BOOST_EXTRA_FLAGS -headerpad_max_install_names" install
   install_name_tool -id $DEPLOYDIR/lib/libboost_thread.dylib $DEPLOYDIR/lib/libboost_thread.dylib 
   install_name_tool -change libboost_system.dylib $DEPLOYDIR/lib/libboost_system.dylib $DEPLOYDIR/lib/libboost_thread.dylib 
   install_name_tool -change libboost_chrono.dylib $DEPLOYDIR/lib/libboost_chrono.dylib $DEPLOYDIR/lib/libboost_thread.dylib 
@@ -370,7 +374,7 @@ build_cgal()
     CGAL_EXTRA_FLAGS=";i386"
   fi
   cmake -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR -DGMP_INCLUDE_DIR=$DEPLOYDIR/include -DGMP_LIBRARIES=$DEPLOYDIR/lib/libgmp.dylib -DGMPXX_LIBRARIES=$DEPLOYDIR/lib/libgmpxx.dylib -DGMPXX_INCLUDE_DIR=$DEPLOYDIR/include -DMPFR_INCLUDE_DIR=$DEPLOYDIR/include -DMPFR_LIBRARIES=$DEPLOYDIR/lib/libmpfr.dylib -DWITH_CGAL_Qt3=OFF -DWITH_CGAL_Qt4=OFF -DWITH_CGAL_ImageIO=OFF -DBUILD_SHARED_LIBS=TRUE -DCMAKE_OSX_DEPLOYMENT_TARGET="$MAC_OSX_VERSION_MIN" -DCMAKE_OSX_ARCHITECTURES="x86_64$CGAL_EXTRA_FLAGS" -DBOOST_ROOT=$DEPLOYDIR -DBoost_USE_MULTITHREADED=false
-  make -j4
+  make -j"$NUMCPU" install
   make install
   install_name_tool -id $DEPLOYDIR/lib/libCGAL.dylib $DEPLOYDIR/lib/libCGAL.dylib
   install_name_tool -id $DEPLOYDIR/lib/libCGAL_Core.dylib $DEPLOYDIR/lib/libCGAL_Core.dylib
@@ -430,10 +434,6 @@ build_eigen()
 {
   version=$1
 
-  if [ -d $DEPLOYDIR/include/eigen2 ]; then
-    echo "eigen2 already installed. not building"
-    return
-  fi
   if [ -d $DEPLOYDIR/include/eigen3 ]; then
     echo "eigen3 already installed. not building"
     return
@@ -447,7 +447,9 @@ build_eigen()
   if [ $version = "3.1.2" ]; then EIGENDIR=eigen-eigen-5097c01bcdc4;
   elif [ $version = "3.1.3" ]; then EIGENDIR=eigen-eigen-2249f9c22fe8;
   elif [ $version = "3.1.4" ]; then EIGENDIR=eigen-eigen-36bf2ceaf8f5;
-  elif [ $version = "3.2.0" ]; then EIGENDIR=eigen-eigen-ffa86ffb5570; fi
+  elif [ $version = "3.2.0" ]; then EIGENDIR=eigen-eigen-ffa86ffb5570;
+  elif [ $version = "3.2.1" ]; then EIGENDIR=eigen-eigen-6b38706d90a9;
+  fi
 
   if [ $EIGENDIR = "none" ]; then
     echo Unknown eigen version. Please edit script.
@@ -468,7 +470,7 @@ build_eigen()
     EIGEN_EXTRA_FLAGS=";i386"
   fi
   cmake -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR -DEIGEN_BUILD_LIB=ON -DBUILD_SHARED_LIBS=FALSE -DCMAKE_OSX_DEPLOYMENT_TARGET="$MAC_OSX_VERSION_MIN" -DCMAKE_OSX_ARCHITECTURES="x86_64$EIGEN_EXTRA_FLAGS" ..
-  make -j4
+  make -j"$NUMCPU" install
   make install
 }
 
@@ -503,6 +505,11 @@ build_freetype()
   version="$1"
   extra_config_flags="$2"
 
+  if [ -f $DEPLOYDIR/lib/libfreetype.dylib ]; then
+    echo "freetype already installed. not building"
+    return
+  fi
+
   echo "Building freetype $version..."
   cd "$BASEDIR"/src
   rm -rf "freetype-$version"
@@ -520,6 +527,11 @@ build_libxml2()
 {
   version="$1"
 
+  if [ -f $DEPLOYDIR/lib/libxml2.dylib ]; then
+    echo "libxml2 already installed. not building"
+    return
+  fi
+
   echo "Building libxml2 $version..."
   cd "$BASEDIR"/src
   rm -rf "libxml2-$version"
@@ -536,6 +548,11 @@ build_libxml2()
 build_fontconfig()
 {
   version=$1
+
+  if [ -f $DEPLOYDIR/lib/libfontconfig.dylib ]; then
+    echo "fontconfig already installed. not building"
+    return
+  fi
 
   echo "Building fontconfig $version..."
   cd "$BASEDIR"/src
@@ -556,6 +573,11 @@ build_libffi()
 {
   version="$1"
 
+  if [ -f $DEPLOYDIR/lib/libffi.dylib ]; then
+    echo "libffi already installed. not building"
+    return
+  fi
+
   echo "Building libffi $version..."
   cd "$BASEDIR"/src
   rm -rf "libffi-$version"
@@ -572,6 +594,11 @@ build_libffi()
 build_gettext()
 {
   version="$1"
+
+  if [ -f $DEPLOYDIR/lib/libgettextlib.dylib ]; then
+    echo "gettext already installed. not building"
+    return
+  fi
 
   echo "Building gettext $version..."
   cd "$BASEDIR"/src
@@ -590,6 +617,11 @@ build_gettext()
 build_glib2()
 {
   version="$1"
+
+  if [ -f $DEPLOYDIR/lib/libglib-2.0.dylib ]; then
+    echo "glib2 already installed. not building"
+    return
+  fi
 
   echo "Building glib2 $version..."
 
@@ -613,6 +645,11 @@ build_ragel()
 {
   version=$1
 
+  if [ -f $DEPLOYDIR/bin/ragel ]; then
+    echo "ragel already installed. not building"
+    return
+  fi
+
   echo "Building ragel $version..."
   cd "$BASEDIR"/src
   rm -rf "ragel-$version"
@@ -631,6 +668,11 @@ build_harfbuzz()
 {
   version=$1
   extra_config_flags="$2"
+
+  if [ -f $DEPLOYDIR/lib/libharfbuzz.dylib ]; then
+    echo "harfbuzz already installed. not building"
+    return
+  fi
 
   echo "Building harfbuzz $version..."
   cd "$BASEDIR"/src
@@ -709,6 +751,7 @@ echo "Building for $MAC_OSX_VERSION_MIN or later"
 
 if [ ! $NUMCPU ]; then
   NUMCPU=$(sysctl -n hw.ncpu)
+  echo "Setting number of CPUs to $NUMCPU"
 fi
 
 if $OPTION_DEPLOY; then
@@ -726,10 +769,10 @@ fi
 
 echo "Using basedir:" $BASEDIR
 mkdir -p $SRCDIR $DEPLOYDIR
-build_qt5 5.3.0
+build_qt5 5.3.1
 build_qscintilla 2.8.3
 # NB! For eigen, also update the path in the function
-build_eigen 3.2.0
+build_eigen 3.2.1
 build_gmp 5.1.3
 build_mpfr 3.1.2
 build_boost 1.54.0
@@ -741,14 +784,12 @@ build_libffi 3.1
 build_glib2 2.40.0
 build_opencsg 1.3.2
 build_freetype 2.5.3 --without-png
+build_ragel 6.8
 build_harfbuzz 0.9.28 "--with-coretext=auto --with-glib=no"
 export FREETYPE_CFLAGS="-I$DEPLOYDIR/include -I$DEPLOYDIR/include/freetype2"
 export FREETYPE_LIBS="-L$DEPLOYDIR/lib -lfreetype"
 build_libxml2 2.9.1
 build_fontconfig 2.11.1
-build_ragel 6.8
-export PATH="$PATH:$DEPLOYDIR/bin"
-create_dummy_cmd "touch gtk-doc.make" "$DEPLOYDIR/bin/gtkdocize"
 if $OPTION_DEPLOY; then
 #  build_sparkle andymatuschak 0ed83cf9f2eeb425d4fdd141c01a29d843970c20
   build_sparkle Cocoanetics 1e7dcb1a48b96d1a8c62100b5864bd50211cbae1
