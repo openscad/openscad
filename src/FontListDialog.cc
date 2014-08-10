@@ -24,6 +24,7 @@
  *
  */
 
+#include <QClipboard>
 #include <QSortFilterProxyModel>
 
 #include "FontListDialog.h"
@@ -41,9 +42,12 @@ FontListDialog::~FontListDialog()
 {
 }
 
-void FontListDialog::on_pasteButton_clicked()
+void FontListDialog::on_copyButton_clicked()
 {
 	font_selected(selection);
+	
+	QClipboard *clipboard = QApplication::clipboard();
+	clipboard->setText(selection);
 }
 
 void FontListDialog::on_filterLineEdit_textChanged(const QString &text)
@@ -54,7 +58,7 @@ void FontListDialog::on_filterLineEdit_textChanged(const QString &text)
 void FontListDialog::selection_changed(const QItemSelection &current, const QItemSelection &)
 {
 	if (current.count() == 0) {
-		pasteButton->setEnabled(false);
+		copyButton->setEnabled(false);
 		return;
 	}
 	
@@ -62,12 +66,12 @@ void FontListDialog::selection_changed(const QItemSelection &current, const QIte
 	const QString name = model->item(idx.row(), 0)->text();
 	const QString style = model->item(idx.row(), 1)->text();
 	selection = QString("\"%1:style=%2\"").arg(name).arg(style);
-	pasteButton->setEnabled(true);
+	copyButton->setEnabled(true);
 }
 
 void FontListDialog::update_font_list()
 {
-	pasteButton->setEnabled(false);
+	copyButton->setEnabled(false);
 
 	if (proxy) {
 		delete proxy;

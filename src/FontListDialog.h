@@ -18,7 +18,7 @@ public:
         void update_font_list();
 
 public slots:
-        void on_pasteButton_clicked();
+        void on_copyButton_clicked();
         void on_filterLineEdit_textChanged(const QString &);
         void selection_changed(const QItemSelection &, const QItemSelection &);
 
