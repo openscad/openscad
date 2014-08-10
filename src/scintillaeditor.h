@@ -4,13 +4,17 @@
 #include <QObject>
 #include <QWidget>
 #include <QVBoxLayout>
+
 #include <Qsci/qsciscintilla.h>
-#include <QVBoxLayout>
+
 #include "editor.h"
+#include "scadapi.h"
 #include "scadlexer.h"
 
 class ScintillaEditor : public EditorInterface
 {
+    Q_OBJECT
+    
 public:
     ScintillaEditor(QWidget *parent);
     QsciScintilla *qsci;
@@ -46,11 +50,13 @@ public slots:
          void copy();
          void paste();
 	 void onTextChanged();
+         
 private:
-         QVBoxLayout *scintillaLayout;
+        QVBoxLayout *scintillaLayout;
 	const int indicatorNumber = 1;
 	const int markerNumber = 2;
 	ScadLexer *lexer;
+        ScadApi *api;
 	QString preferenceEditorOption;
 };
 

@@ -13,6 +13,7 @@ public:
     virtual ~ScadLexer();
     const char *language() const;
     const char *keywords(int set) const;	
+    const char *autoCompletionFillups() const;
   
 private:
     ScadLexer(const ScadLexer &);

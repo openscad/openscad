@@ -231,6 +231,7 @@ HEADERS += src/typedefs.h \
            src/OpenCSGWarningDialog.h \
            src/AboutDialog.h \
            src/FontListDialog.h \
+	   src/scadapi.h \
            src/builtin.h \
            src/calc.h \
            src/context.h \
