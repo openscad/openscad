@@ -254,6 +254,16 @@
             <string>For Dark Background</string>
            </property>
           </item>
+	   <item>
+           <property name="text">
+            <string>Monokai</string>
+           </property>
+          </item>
+	  <item>
+           <property name="text">
+            <string>Solarized</string>
+           </property>
+          </item>
           <item>
            <property name="text">
             <string>Off</string>
