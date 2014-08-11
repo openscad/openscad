@@ -15,7 +15,16 @@
     <property name="spacing">
      <number>0</number>
     </property>
-    <property name="margin">
+    <property name="leftMargin">
+     <number>0</number>
+    </property>
+    <property name="topMargin">
+     <number>0</number>
+    </property>
+    <property name="rightMargin">
+     <number>0</number>
+    </property>
+    <property name="bottomMargin">
      <number>0</number>
     </property>
     <item>
@@ -30,7 +39,16 @@
        <string notr="true"/>
       </property>
       <layout class="QVBoxLayout" name="verticalLayout_3">
-       <property name="margin">
+       <property name="leftMargin">
+        <number>0</number>
+       </property>
+       <property name="topMargin">
+        <number>0</number>
+       </property>
+       <property name="rightMargin">
+        <number>0</number>
+       </property>
+       <property name="bottomMargin">
         <number>0</number>
        </property>
        <item>
@@ -64,7 +82,16 @@
           <number>0</number>
          </property>
          <layout class="QHBoxLayout" name="horizontalLayoutAnimate">
-          <property name="margin">
+          <property name="leftMargin">
+           <number>0</number>
+          </property>
+          <property name="topMargin">
+           <number>0</number>
+          </property>
+          <property name="rightMargin">
+           <number>0</number>
+          </property>
+          <property name="bottomMargin">
            <number>0</number>
           </property>
           <item>
@@ -120,7 +147,7 @@
      <x>0</x>
      <y>0</y>
      <width>936</width>
-     <height>22</height>
+     <height>25</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_File">
@@ -179,7 +206,6 @@
     <addaction name="separator"/>
     <addaction name="editActionIndent"/>
     <addaction name="editActionUnindent"/>
-    <addaction name="separator"/>
     <addaction name="editActionComment"/>
     <addaction name="editActionUncomment"/>
     <addaction name="separator"/>
@@ -271,7 +297,16 @@
    </attribute>
    <widget class="QWidget" name="editorDockContents">
     <layout class="QVBoxLayout" name="verticalLayout_4">
-     <property name="margin">
+     <property name="leftMargin">
+      <number>0</number>
+     </property>
+     <property name="topMargin">
+      <number>0</number>
+     </property>
+     <property name="rightMargin">
+      <number>0</number>
+     </property>
+     <property name="bottomMargin">
       <number>0</number>
      </property>
      <item alignment="Qt::AlignTop">
@@ -370,7 +405,16 @@
    </attribute>
    <widget class="QWidget" name="consoleDockContents">
     <layout class="QVBoxLayout" name="verticalLayout_5">
-     <property name="margin">
+     <property name="leftMargin">
+      <number>0</number>
+     </property>
+     <property name="topMargin">
+      <number>0</number>
+     </property>
+     <property name="rightMargin">
+      <number>0</number>
+     </property>
+     <property name="bottomMargin">
       <number>0</number>
      </property>
      <item>
@@ -957,9 +1001,7 @@
    <container>1</container>
   </customwidget>
  </customwidgets>
- <resources>
-  <include location="../openscad.qrc"/>
- </resources>
+ <resources/>
  <connections>
   <connection>
    <sender>fileActionClose</sender>
