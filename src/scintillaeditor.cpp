@@ -260,10 +260,8 @@ bool ScintillaEditor::find(const QString &expr, bool findNext, bool findBackward
     int lineFrom, indexFrom, lineTo, indexTo;
     qsci->getSelection(&lineFrom, &indexFrom, &lineTo, &indexTo);
     
-    if (findNext) {
-      startline = findBackwards ? std::min(lineFrom, lineTo) : std::max(lineFrom, lineTo);
-      startindex = findBackwards ? std::min(indexFrom, indexTo) : std::max(indexFrom, indexTo);
-    }
+    startline = !(findBackwards xor findNext) ? std::min(lineFrom, lineTo) : std::max(lineFrom, lineTo);
+    startindex = !(findBackwards xor findNext) ? std::min(indexFrom, indexTo) : std::max(indexFrom, indexTo);
   }
 
   return qsci->findFirst(expr, false, false, false, true, 
