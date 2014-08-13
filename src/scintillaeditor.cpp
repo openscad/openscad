@@ -250,14 +250,15 @@ void ScintillaEditor::onTextChanged()
     qsci->setMarginWidth(0, fontmetrics.width(QString::number(qsci->lines())) + 6);
 }
 
-bool ScintillaEditor::findFirst(const QString &expr, bool re, bool cs, bool wo, bool wrap, bool forward, int line, int index, bool show, bool posix)
+bool ScintillaEditor::find(const QString &expr, QTextDocument::FindFlags options)
 {
-	qsci->findFirst(expr, re, cs, wo, wrap, forward, line, index, show, posix);
+	qsci->findFirst(expr, false, false, false, false, true, 1, 1, true, false);
 }
 
-bool ScintillaEditor::findNext()
+bool ScintillaEditor::findNext(QTextDocument::FindFlags options, QString& newText)
 {
 	qsci->findNext();
+	return 0;
 }
 
 void ScintillaEditor::replaceSelectedText(QString& newText)

@@ -173,7 +173,12 @@ MainWindow::MainWindow(const QString &filename)
 	 useScintilla = (editortype == "QScintilla Editor");
 #ifdef USE_SCINTILLA_EDITOR
 	if (useScintilla)	
-	    editor = new ScintillaEditor(editorDockContents);
+	{    editor = new ScintillaEditor(editorDockContents);
+	     this->editActionIndent->setVisible(false);
+	     this->editActionUnindent->setVisible(false);
+	     this->editActionComment->setVisible(false);
+	     this->editActionUncomment->setVisible(false);
+	}
 	else
 #endif
 	   editor = new LegacyEditor(editorDockContents);
@@ -436,10 +441,7 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this->replaceButton, SIGNAL(clicked()), this, SLOT(replace()));
 	connect(this->replaceAllButton, SIGNAL(clicked()), this, SLOT(replaceAll()));
 	connect(this->replaceInputField, SIGNAL(returnPressed()), this->replaceButton, SLOT(animateClick()));
-
-	connect(this->findInputField, SIGNAL(textChanged(QString)), this, SLOT(scintillaFind(QString)));
-	connect(this->nextButton, SIGNAL(clicked()), this, SLOT(scintillaFindNext()));
-	connect(this->replaceButton, SIGNAL(clicked()), this, SLOT(scintillaReplace()));
+	connect(this->findInputField, SIGNAL(textChanged(QString)), this, SLOT(FindString(QString)));
 
 	// make sure it looks nice..
 	QSettings settings;
@@ -1288,16 +1290,10 @@ void MainWindow::find()
 	findInputField->selectAll(); 
 }
 
-void MainWindow::scintillaFind(QString textToFind)
+void MainWindow::FindString(QString textToFind)
 {
-	if(useScintilla)
-	editor->findFirst(textToFind, false, false, false, false, true, 1, 1, true, false);
-}
-
-void MainWindow::scintillaFindNext()
-{
-	if(useScintilla)
-	editor->findNext();
+	QTextDocument::FindFlags options;
+	editor->find(textToFind, options);
 }
 
 void MainWindow::findAndReplace()
@@ -1333,12 +1329,8 @@ bool MainWindow::findOperation(QTextDocument::FindFlags options) {
 }
 
 void MainWindow::replace() {
-	QTextCursor cursor = editor->textCursor();
-	QString selectedText = cursor.selectedText();
-	if (selectedText == findInputField->text()) {
-		cursor.insertText(replaceInputField->text());
-	}
-	findNext();
+	QString newText = this->replaceInputField->text();
+	editor->replaceSelectedText(newText);
 }
 
 void MainWindow::replaceAll() {
@@ -1352,14 +1344,11 @@ void MainWindow::replaceAll() {
 	editor->setTextCursor(old_cursor);
 }
 
-void MainWindow::scintillaReplace(){
-	QString newText = this->replaceInputField->text();
-	editor->replaceSelectedText(newText);
-}
-
 void MainWindow::findNext()
 {
-	findOperation();
+	QTextDocument::FindFlags options;
+	QString newText = this->replaceInputField->text();
+	editor->findNext(options, newText);	
 }
 
 void MainWindow::findPrev()

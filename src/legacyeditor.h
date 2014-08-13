@@ -26,6 +26,9 @@ public:
 	void setTextCursor (const QTextCursor&);
 	QTextDocument *document() { return textedit->document(); }
 	bool find(const QString&, QTextDocument::FindFlags options = 0);
+	void replaceSelectedText(QString& newText);	
+	bool findNext(QTextDocument::FindFlags, QString&);
+
 public slots:
 	void zoomIn();
 	void zoomOut();

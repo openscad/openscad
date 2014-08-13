@@ -223,3 +223,30 @@ LegacyEditor::~LegacyEditor()
 {
 	delete highlighter;
 }
+
+void LegacyEditor::replaceSelectedText(QString& newText)
+{
+	QTextCursor cursor = this->textCursor();
+	QString selectedText = cursor.selectedText();
+	if (selectedText == newText) {
+		cursor.insertText(newText);
+	}
+}
+
+bool LegacyEditor::findNext(QTextDocument::FindFlags options, QString& newText)
+{
+	bool success = this->find(newText, options);
+	if (!success) { // Implement wrap-around search behavior
+		QTextCursor old_cursor = this->textCursor();
+		QTextCursor tmp_cursor = old_cursor;
+		tmp_cursor.movePosition((options & QTextDocument::FindBackward) ? QTextCursor::End : QTextCursor::Start);
+		this->setTextCursor(tmp_cursor);
+		bool success = this->find(newText, options);
+		if (!success) {
+			this->setTextCursor(old_cursor);
+		}
+		return success;
+	}
+	return true;
+
+}

@@ -141,10 +141,8 @@ private slots:
 private slots:
 	void selectFindType(int);
 	void find();
-	void scintillaFind(QString);
-	void scintillaFindNext();
+	void FindString(QString);
 	void findAndReplace();
-	void scintillaReplace();
 	void findNext();
 	void findPrev();
 	void useSelectionForFind();
