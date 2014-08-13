@@ -23,7 +23,6 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  */
-#include <iostream>
 #include "GeometryCache.h"
 #include "ModuleCache.h"
 #include "MainWindow.h"
@@ -165,18 +164,17 @@ MainWindow::MainWindow(const QString &filename)
 	: root_inst("group"), font_list_dialog(NULL), tempFile(NULL), progresswidget(NULL)
 {
 	setupUi(this);
+
+  // Launch Screen
 	launcher = new LaunchingScreen(this);
 	launcher->setFixedSize(676,414);
-        connect(launcher->ui->pushButtonNew, SIGNAL(clicked()), this, SLOT(actionNew()));
-        connect(launcher->ui->pushButtonOpen, SIGNAL(clicked()), this, SLOT(actionOpen()));
-        connect(launcher->ui->pushButtonHelp, SIGNAL(clicked()), this, SLOT(helpManual()));
-
-        connect(launcher->ui->RecentList, SIGNAL(itemClicked(QListWidgetItem *)), this, SLOT(enableBtn(QListWidgetItem *)));
-	connect(launcher->ui->treeWidget, SIGNAL(itemClicked(QTreeWidgetItem *,int)), this, SLOT(enableExampleBtn(QTreeWidgetItem *,int)));
-
-        connect(launcher->ui->openRecentbtn, SIGNAL(clicked()), this, SLOT(launcherOpenRecent()));
-
-        connect(launcher->ui->exampleBtn, SIGNAL(clicked()), this, SLOT(openCurrentExample()));
+	connect(launcher->ui->pushButtonNew, SIGNAL(clicked()), this, SLOT(actionNew()));
+	connect(launcher->ui->pushButtonOpen, SIGNAL(clicked()), this, SLOT(actionOpen()));
+	connect(launcher->ui->pushButtonHelp, SIGNAL(clicked()), this, SLOT(helpManual()));
+	connect(launcher->ui->RecentList, SIGNAL(itemClicked(QListWidgetItem *)), this, SLOT(enableRecentButton(QListWidgetItem *)));
+	connect(launcher->ui->treeWidget, SIGNAL(itemClicked(QTreeWidgetItem *,int)), this, SLOT(enableExampleButton(QTreeWidgetItem *,int)));
+	connect(launcher->ui->openRecentButton, SIGNAL(clicked()), this, SLOT(launcherOpenRecent()));
+	connect(launcher->ui->openExampleButton, SIGNAL(clicked()), this, SLOT(openCurrentExample()));
 	connect(launcher->ui->checkBox, SIGNAL(stateChanged(int)), this, SLOT(checkboxState(int)));	
 	
 	setCorner(Qt::TopLeftCorner, Qt::LeftDockWidgetArea);
@@ -673,8 +671,8 @@ void MainWindow::updateRecentFiles()
 
 void MainWindow::launcherOpenRecent()
 {
-  	QString currentItem = recentFilesMap[launcher->ui->RecentList->currentItem()->text()];
-        openFile(currentItem);
+	QString currentItem = recentFilesMap[launcher->ui->RecentList->currentItem()->text()];
+	openFile(currentItem);
 	launcher->hide();
 }
 
@@ -1058,23 +1056,21 @@ void MainWindow::actionOpenRecent()
 	openFile(action->data().toString());
 }
 
-void MainWindow::enableBtn(QListWidgetItem * itemClicked)
+void MainWindow::enableRecentButton(QListWidgetItem * itemClicked)
 {
-        if(itemClicked)
-        {
-          launcher->ui->openRecentbtn->setEnabled(true);
-        }
-
+	if (itemClicked) {
+		launcher->ui->openRecentButton->setEnabled(true);
+	}
 }
-void MainWindow::enableExampleBtn(QTreeWidgetItem * itemClicked, int column)
+
+void MainWindow::enableExampleButton(QTreeWidgetItem * itemClicked, int column)
 {
 	column = 0;
-        if(itemClicked)
-        {
-          launcher->ui->exampleBtn->setEnabled(true);
-        }
-
+	if (itemClicked) {
+		launcher->ui->openExampleButton->setEnabled(true);
+	}
 }
+
 void MainWindow::clearRecentFiles()
 {
 	QSettings settings; // already set up properly via main.cpp
@@ -1124,9 +1120,8 @@ void MainWindow::updateRecentFileActions()
 void MainWindow::openCurrentExample()
 {
 	QTreeWidgetItem *Item = new QTreeWidgetItem(launcher->ui->treeWidget);
-	if(Item->isSelected() == false)
-	{
-	    launcher->ui->exampleBtn->setEnabled(false);
+	if (Item->isSelected() == false)	{
+		launcher->ui->openExampleButton->setEnabled(false);
 	}
 	QString currentItm = launcher->ui->treeWidget->currentItem()->text(0);
 	QString currentDir = launcher->ui->treeWidget->currentItem()->parent()->text(0);

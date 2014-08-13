@@ -90,8 +90,8 @@ private slots:
 	void openCSGSettingsChanged();
 	void launcherOpenRecent();
 	void openCurrentExample();
-	void enableBtn(QListWidgetItem*);
-	void enableExampleBtn(QTreeWidgetItem*, int);
+	void enableRecentButton(QListWidgetItem*);
+	void enableExampleButton(QTreeWidgetItem*, int);
 	void checkboxState(int);
 private:
 	void openFile(const QString &filename);

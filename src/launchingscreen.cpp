@@ -17,9 +17,9 @@ LaunchingScreen::LaunchingScreen(QWidget *parent) :
 
    palette.setBrush(ui->pushButtonHelp->backgroundRole(), QBrush(pixmap));
 
-   palette.setBrush(ui->openRecentbtn->backgroundRole(), QBrush(pixmap));
+   palette.setBrush(ui->openRecentButton->backgroundRole(), QBrush(pixmap));
 
-   palette.setBrush(ui->exampleBtn->backgroundRole(), QBrush(pixmap));
+   palette.setBrush(ui->openExampleButton->backgroundRole(), QBrush(pixmap));
 
    ui->pushButtonNew->setFlat(true);
    ui->pushButtonNew->setAutoFillBackground(true);
@@ -33,13 +33,13 @@ LaunchingScreen::LaunchingScreen(QWidget *parent) :
    ui->pushButtonHelp->setAutoFillBackground(true);
    ui->pushButtonHelp->setPalette(palette);
  
-   ui->openRecentbtn->setFlat(true);
-   ui->openRecentbtn->setAutoFillBackground(true);
-   ui->openRecentbtn->setPalette(palette);
+   ui->openRecentButton->setFlat(true);
+   ui->openRecentButton->setAutoFillBackground(true);
+   ui->openRecentButton->setPalette(palette);
  
-   ui->exampleBtn->setFlat(true);
-   ui->exampleBtn->setAutoFillBackground(true);
-   ui->exampleBtn->setPalette(palette);
+   ui->openExampleButton->setFlat(true);
+   ui->openExampleButton->setAutoFillBackground(true);
+   ui->openExampleButton->setPalette(palette);
 
 
 //   ui->treeWidget->setFrameShape(QFrame::NoFrame);      
