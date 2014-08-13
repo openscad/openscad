@@ -25,10 +25,10 @@ public:
 	QTextCursor textCursor() const;
 	void setTextCursor (const QTextCursor&);
 	QTextDocument *document() { return textedit->document(); }
-	bool find(const QString&, QTextDocument::FindFlags options = 0);
+	bool find(const QString &, bool findNext = false, bool findBackwards = false);
 	void replaceSelectedText(QString& newText);	
-	bool findNext(QTextDocument::FindFlags, QString&);
 
+	bool findString(const QString & exp, bool findBackwards) const;
 public slots:
 	void zoomIn();
 	void zoomOut();

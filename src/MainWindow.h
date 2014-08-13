@@ -140,7 +140,7 @@ private slots:
 private slots:
 	void selectFindType(int);
 	void find();
-	void FindString(QString);
+	void findString(QString);
 	void findAndReplace();
 	void findNext();
 	void findPrev();
@@ -148,7 +148,7 @@ private slots:
 	void replace();
 	void replaceAll();
 protected:
-	bool findOperation(QTextDocument::FindFlags options = 0);
+	bool findOperation(bool findBackwards = false);
 	virtual bool eventFilter(QObject* obj, QEvent *event);
 
 private slots:

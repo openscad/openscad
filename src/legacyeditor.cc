@@ -191,10 +191,6 @@ void LegacyEditor::setTextCursor (const QTextCursor &cursor)
 {
 	textedit->setTextCursor(cursor);
 }
-bool LegacyEditor::find(const QString & exp, QTextDocument::FindFlags options)
-{
-	return textedit->find(exp, options);
-}
 void LegacyEditor::insertPlainText(const QString &text)
 {
 	textedit->insertPlainText(text);
@@ -233,15 +229,20 @@ void LegacyEditor::replaceSelectedText(QString& newText)
 	}
 }
 
-bool LegacyEditor::findNext(QTextDocument::FindFlags options, QString& newText)
+bool LegacyEditor::findString(const QString & exp, bool findBackwards) const
 {
-	bool success = this->find(newText, options);
+	return textedit->find(exp, findBackwards ? QTextDocument::FindBackward : QTextDocument::FindFlags(0));
+}
+
+bool LegacyEditor::find(const QString &newText, bool findNext, bool findBackwards)
+{
+	bool success = this->findString(newText, findBackwards);
 	if (!success) { // Implement wrap-around search behavior
 		QTextCursor old_cursor = this->textCursor();
 		QTextCursor tmp_cursor = old_cursor;
-		tmp_cursor.movePosition((options & QTextDocument::FindBackward) ? QTextCursor::End : QTextCursor::Start);
+		tmp_cursor.movePosition(findBackwards ? QTextCursor::End : QTextCursor::Start);
 		this->setTextCursor(tmp_cursor);
-		bool success = this->find(newText, options);
+		bool success = this->findString(newText, findBackwards);
 		if (!success) {
 			this->setTextCursor(old_cursor);
 		}

@@ -23,8 +23,7 @@ public:
 	void Monokai();
 	void Solarized_light();
 	void noColor();
-	bool find(const QString&, QTextDocument::FindFlags options);
-	bool findNext(QTextDocument::FindFlags, QString&);
+	bool find(const QString &, bool findNext = false, bool findBackwards = false);
 	void replaceSelectedText(QString&);
 	
 public slots:

@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <QString>
 #include <QChar>
 #include "scintillaeditor.h"
@@ -250,15 +251,23 @@ void ScintillaEditor::onTextChanged()
     qsci->setMarginWidth(0, fontmetrics.width(QString::number(qsci->lines())) + 6);
 }
 
-bool ScintillaEditor::find(const QString &expr, QTextDocument::FindFlags options)
+bool ScintillaEditor::find(const QString &expr, bool findNext, bool findBackwards)
 {
-	qsci->findFirst(expr, false, false, false, false, true, 1, 1, true, false);
-}
+  int startline = -1, startindex = -1;
 
-bool ScintillaEditor::findNext(QTextDocument::FindFlags options, QString& newText)
-{
-	qsci->findNext();
-	return 0;
+  // If findNext, start from the end of the current selection
+  if (qsci->hasSelectedText()) {
+    int lineFrom, indexFrom, lineTo, indexTo;
+    qsci->getSelection(&lineFrom, &indexFrom, &lineTo, &indexTo);
+    
+    if (findNext) {
+      startline = findBackwards ? std::min(lineFrom, lineTo) : std::max(lineFrom, lineTo);
+      startindex = findBackwards ? std::min(indexFrom, indexTo) : std::max(indexFrom, indexTo);
+    }
+  }
+
+  return qsci->findFirst(expr, false, false, false, true, 
+                         !findBackwards, startline, startindex);
 }
 
 void ScintillaEditor::replaceSelectedText(QString& newText)

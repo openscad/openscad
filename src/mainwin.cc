@@ -23,7 +23,6 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  */
-#include <iostream>
 #include "GeometryCache.h"
 #include "ModuleCache.h"
 #include "MainWindow.h"
@@ -40,7 +39,9 @@
 #include "progress.h"
 #include "dxfdim.h"
 #include "legacyeditor.h"
+#ifdef USE_SCINTILLA_EDITOR
 #include "scintillaeditor.h"
+#endif
 #include "AboutDialog.h"
 #include "FontListDialog.h"
 #ifdef ENABLE_OPENCSG
@@ -172,14 +173,14 @@ MainWindow::MainWindow(const QString &filename)
 
 	 useScintilla = (editortype == "QScintilla Editor");
 #ifdef USE_SCINTILLA_EDITOR
-	if (useScintilla)	
-	{    editor = new ScintillaEditor(editorDockContents);
-	     this->editActionIndent->setVisible(false);
-	     this->editActionUnindent->setVisible(false);
-	     this->editActionComment->setVisible(false);
-	     this->editActionUncomment->setVisible(false);
-	}
-	else
+	 if (useScintilla) {
+		 editor = new ScintillaEditor(editorDockContents);
+		 this->editActionIndent->setVisible(false);
+		 this->editActionUnindent->setVisible(false);
+		 this->editActionComment->setVisible(false);
+		 this->editActionUncomment->setVisible(false);
+	 }
+	 else
 #endif
 	   editor = new LegacyEditor(editorDockContents);
 
@@ -432,6 +433,7 @@ MainWindow::MainWindow(const QString &filename)
 	Preferences::inst()->apply();
 
 	connect(this->findTypeComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(selectFindType(int)));
+	connect(this->findInputField, SIGNAL(textChanged(QString)), this, SLOT(findString(QString)));
 	connect(this->findInputField, SIGNAL(returnPressed()), this->nextButton, SLOT(animateClick()));
 	find_panel->installEventFilter(this);
 
@@ -441,7 +443,6 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this->replaceButton, SIGNAL(clicked()), this, SLOT(replace()));
 	connect(this->replaceAllButton, SIGNAL(clicked()), this, SLOT(replaceAll()));
 	connect(this->replaceInputField, SIGNAL(returnPressed()), this->replaceButton, SLOT(animateClick()));
-	connect(this->findInputField, SIGNAL(textChanged(QString)), this, SLOT(FindString(QString)));
 
 	// make sure it looks nice..
 	QSettings settings;
@@ -1284,10 +1285,9 @@ void MainWindow::find()
 	findInputField->selectAll(); 
 }
 
-void MainWindow::FindString(QString textToFind)
+void MainWindow::findString(QString textToFind)
 {
-	QTextDocument::FindFlags options;
-	editor->find(textToFind, options);
+	editor->find(textToFind, false, false);
 }
 
 void MainWindow::findAndReplace()
@@ -1306,20 +1306,19 @@ void MainWindow::selectFindType(int type) {
 	if (type == 1) findAndReplace();
 }
 
-bool MainWindow::findOperation(QTextDocument::FindFlags options) {
-	bool success = editor->find(findInputField->text(), options);
+bool MainWindow::findOperation(bool findBackwards) {
+	bool success = editor->find(findInputField->text(), findBackwards);
 	if (!success) { // Implement wrap-around search behavior
 		QTextCursor old_cursor = editor->textCursor();
 		QTextCursor tmp_cursor = old_cursor;
-		tmp_cursor.movePosition((options & QTextDocument::FindBackward) ? QTextCursor::End : QTextCursor::Start);
+		tmp_cursor.movePosition(findBackwards ? QTextCursor::End : QTextCursor::Start);
 		editor->setTextCursor(tmp_cursor);
-		bool success = editor->find(findInputField->text(), options);
+		success = editor->find(findInputField->text(), findBackwards);
 		if (!success) {
 			editor->setTextCursor(old_cursor);
 		}
-		return success;
 	}
-	return true;
+	return success;
 }
 
 void MainWindow::replace() {
@@ -1340,14 +1339,12 @@ void MainWindow::replaceAll() {
 
 void MainWindow::findNext()
 {
-	QTextDocument::FindFlags options;
-	QString newText = this->replaceInputField->text();
-	editor->findNext(options, newText);	
+	editor->find(this->findInputField->text(), true);
 }
 
 void MainWindow::findPrev()
 {
-	findOperation(QTextDocument::FindBackward);
+	editor->find(this->findInputField->text(), true, true);
 }
 
 void MainWindow::useSelectionForFind()

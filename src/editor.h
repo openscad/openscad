@@ -22,8 +22,7 @@ public:
         virtual QTextCursor textCursor() { QTextCursor c; return c;}
         virtual void setTextCursor (const QTextCursor &) { }
         virtual QTextDocument *document(){QTextDocument *t = new QTextDocument; return t;}
-        virtual bool find(const QString &, QTextDocument::FindFlags options = 0){ return options;}
-	virtual bool findNext(QTextDocument::FindFlags, QString&){return 0;}
+	virtual bool find(const QString &, bool findNext = false, bool findBackwards = false) = 0;
 	virtual void replaceSelectedText(QString&){ }
 
 public slots:
