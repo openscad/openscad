@@ -563,25 +563,21 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 	f.setSamples(4);
 	QGLFormat::setDefaultFormat(f);
 #endif
-	bool set = false;
-	if (!inputFiles.size()) 
-	{
-	    set = true;
-	    inputFiles.push_back("");
+	bool noInputFiles = false;
+	if (!inputFiles.size()) {
+		noInputFiles = true;
+		inputFiles.push_back("");
 	}
+	MainWindow *mainwin;
 #ifdef ENABLE_MDI
 	BOOST_FOREACH(const string &infile, inputFiles) {
-        MainWindow *mainwin = new MainWindow(assemblePath(original_path, infile));
+		mainwin = new MainWindow(assemblePath(original_path, infile));
 	}
 #else
-	MainWindow *mainwin = new MainWindow(assemblePath(original_path, inputFiles[0]));
+	mainwin = new MainWindow(assemblePath(original_path, inputFiles[0]));
 #endif
-	if(set == true)
-	mainwin->launcher->show();	
 	QSettings settings;
-	int s = settings.value("launcher/checkboxState").toInt();
-	if(s == 0)
-	mainwin->launcher->hide();
+	if (noInputFiles && settings.value("launcher/checkboxState").toInt()) mainwin->launcher->show();
 
 	app.connect(&app, SIGNAL(lastWindowClosed()), &app, SLOT(quit()));
 	int rc = app.exec();
