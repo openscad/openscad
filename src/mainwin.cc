@@ -23,7 +23,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  */
-
+#include <iostream>
 #include "GeometryCache.h"
 #include "ModuleCache.h"
 #include "MainWindow.h"
@@ -39,6 +39,8 @@
 #include "expression.h"
 #include "progress.h"
 #include "dxfdim.h"
+#include "legacyeditor.h"
+#include "scintillaeditor.h"
 #include "AboutDialog.h"
 #include "FontListDialog.h"
 #ifdef ENABLE_OPENCSG
@@ -165,6 +167,18 @@ MainWindow::MainWindow(const QString &filename)
 	: root_inst("group"), font_list_dialog(NULL), tempFile(NULL), progresswidget(NULL)
 {
 	setupUi(this);
+
+	editortype = Preferences::inst()->getValue("editor/editortype").toString();
+	useScintilla = (editortype == "QScintilla Editor");
+#ifdef USE_SCINTILLA_EDITOR
+	if (useScintilla)	
+	    editor = new ScintillaEditor(editorDockContents);
+	else
+#endif
+	   editor = new LegacyEditor(editorDockContents);
+
+	editorDockContents->layout()->addWidget(editor);
+
 	setCorner(Qt::TopLeftCorner, Qt::LeftDockWidgetArea);
 	setCorner(Qt::TopRightCorner, Qt::RightDockWidgetArea);
 	setCorner(Qt::BottomLeftCorner, Qt::LeftDockWidgetArea);
@@ -253,8 +267,9 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this->appActionUpdateCheck, SIGNAL(triggered()), this, SLOT(actionUpdateCheck()));
 #endif
 #endif
+	
 	// File menu
-	connect(this->fileActionNew, SIGNAL(triggered()), this, SLOT(actionNew()));
+	connect(this->fileActionNew, SIGNAL(triggered()), this, SLOT(actionNew())); 
 	connect(this->fileActionOpen, SIGNAL(triggered()), this, SLOT(actionOpen()));
 	connect(this->fileActionSave, SIGNAL(triggered()), this, SLOT(actionSave()));
 	connect(this->fileActionSaveAs, SIGNAL(triggered()), this, SLOT(actionSaveAs()));
@@ -372,6 +387,7 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this->viewActionViewAll, SIGNAL(triggered()), this, SLOT(viewAll()));
 	connect(this->viewActionPerspective, SIGNAL(triggered()), this, SLOT(viewPerspective()));
 	connect(this->viewActionOrthogonal, SIGNAL(triggered()), this, SLOT(viewOrthogonal()));
+	connect(this->toolBarActionHide, SIGNAL(triggered()), this, SLOT(hideToolbar()));
 	connect(this->viewActionHide, SIGNAL(triggered()), this, SLOT(hideConsole()));
 	connect(this->viewActionZoomIn, SIGNAL(triggered()), qglview, SLOT(ZoomIn()));
 	connect(this->viewActionZoomOut, SIGNAL(triggered()), qglview, SLOT(ZoomOut()));
@@ -381,7 +397,7 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this->helpActionHomepage, SIGNAL(triggered()), this, SLOT(helpHomepage()));
 	connect(this->helpActionManual, SIGNAL(triggered()), this, SLOT(helpManual()));
 	connect(this->helpActionLibraryInfo, SIGNAL(triggered()), this, SLOT(helpLibrary()));
-	connect(this->helpActionFontInfo, SIGNAL(triggered()), this, SLOT(helpFontInfo()));
+	connect(this->helpActionFontInfo, SIGNAL(triggered()), this, SLOT(viewModeShowAxes()));
 
 	setCurrentOutput();
 
@@ -421,6 +437,90 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this->replaceButton, SIGNAL(clicked()), this, SLOT(replace()));
 	connect(this->replaceAllButton, SIGNAL(clicked()), this, SLOT(replaceAll()));
 	connect(this->replaceInputField, SIGNAL(returnPressed()), this->replaceButton, SLOT(animateClick()));
+	
+	//Toolbar
+	int defaultcolor = toolBar->palette().background().color().lightness(); 
+        
+	if(defaultcolor > 165){ 
+	 fileActionNew->setIcon(QIcon("://images/blackNew.png"));
+	 fileActionOpen->setIcon(QIcon("://images/Open-32(1).png"));
+	 fileActionSave->setIcon(QIcon("://images/Save-32.png"));
+	 editActionZoomIn->setIcon(QIcon("://images/zoomin.png"));
+	 editActionZoomOut->setIcon(QIcon("://images/zoomout.png"));
+	 designActionRender->setIcon(QIcon("://images/blackRender.png"));
+	 viewActionShowAxes->setIcon(QIcon("://images/blackaxes.png"));
+	 viewActionShowEdges->setIcon(QIcon("://images/Rotation-32.png")); 
+	 viewActionZoomIn->setIcon(QIcon("://images/zoomin.png"));
+	 viewActionZoomOut->setIcon(QIcon("://images/zoomout.png"));
+	 viewActionTop->setIcon(QIcon("://images/blackUp.png"));
+	 viewActionBottom->setIcon(QIcon("://images/blackbottom.png"));
+	 viewActionLeft->setIcon(QIcon("://images/blackleft (copy).png"));
+	 viewActionRight->setIcon(QIcon("://images/rightright.png"));
+	 viewActionFront->setIcon(QIcon("://images/blackfront.png"));
+	 viewActionBack->setIcon(QIcon("://images/blackback.png"));
+	 viewActionSurfaces->setIcon(QIcon("://images/surface.png"));
+	 viewActionWireframe->setIcon(QIcon("://images/wireframe1.png"));
+	 viewActionShowCrosshairs->setIcon(QIcon("://images/cross.png"));
+	 viewActionPerspective->setIcon(QIcon("://images/perspective1.png"));
+	 viewActionOrthogonal->setIcon(QIcon("://images/orthogonal.png"));
+	 viewActionPreview->setIcon(QIcon("://images/Preview-32.png"));
+	 viewActionAnimate->setIcon(QIcon("://images/animate.png"));
+	
+	} else {
+	 fileActionNew->setIcon(QIcon("://images/Document-New-128.png"));
+	 fileActionOpen->setIcon(QIcon("://images/Open-128.png"));
+	 fileActionSave->setIcon(QIcon("://images/Save-128.png"));
+	 editActionZoomIn->setIcon(QIcon("://images/Zoom-In-32.png"));
+	 editActionZoomOut->setIcon(QIcon("://images/Zoom-Out-32.png"));
+ 	 designActionRender->setIcon(QIcon("://images/Arrowhead-Right-32.png"));
+	 viewActionZoomIn->setIcon(QIcon("://images/Zoom-In-32.png"));
+	 viewActionZoomOut->setIcon(QIcon("://images/Zoom-Out-32.png")); 
+	 viewActionShowAxes->setIcon(QIcon("://images/axes.png"));
+	 viewActionShowEdges->setIcon(QIcon("://images/grid.png"));
+         viewActionTop->setIcon(QIcon("://images/up.png"));
+         viewActionBottom->setIcon(QIcon("://images/bottom.png"));
+         viewActionLeft->setIcon(QIcon("://images/left.png"));
+         viewActionRight->setIcon(QIcon("://images/right.png"));
+         viewActionFront->setIcon(QIcon("://images/front.png"));
+         viewActionBack->setIcon(QIcon("://images/back.png"));
+	 viewActionSurfaces->setIcon(QIcon("://images/surfaceWhite.png"));
+	 viewActionWireframe->setIcon(QIcon("://images/wireframeWhite.png"));
+	 viewActionShowCrosshairs->setIcon(QIcon("://images/crosswhite.png"));
+	 viewActionPreview->setIcon(QIcon("://images/Preview-32(1).png"));
+	 viewActionPerspective->setIcon(QIcon("://images/perspective1white.png"));
+	 viewActionOrthogonal->setIcon(QIcon("://images/orthogonalwhite.png"));
+	 viewActionAnimate->setIcon(QIcon("://images/animate.png"));
+	}
+	
+	 editortoolbar->addAction(fileActionNew);
+	 editortoolbar->addAction(fileActionOpen);
+	 editortoolbar->addAction(fileActionSave);
+	 editortoolbar->addAction(editActionZoomIn);
+	 editortoolbar->addAction(editActionZoomOut);
+
+	 toolBar->addAction(designActionRender);
+	 toolBar->addAction(viewActionPreview);
+	 //toolBar->addAction(viewActionSurfaces);
+	 //toolBar->addAction(viewActionWireframe);
+	 toolBar->addAction(viewActionShowAxes);
+	 //toolBar->addAction(viewActionShowEdges);
+	 toolBar->addAction(viewActionZoomIn);
+	 toolBar->addAction(viewActionZoomOut);
+	 toolBar->addAction(viewActionTop);
+	 toolBar->addAction(viewActionBottom);
+	 toolBar->addAction(viewActionLeft);
+	 toolBar->addAction(viewActionRight);
+	 toolBar->addAction(viewActionFront);
+	 toolBar->addAction(viewActionBack);
+	 //toolBar->addAction(viewActionShowCrosshairs);
+	 toolBar->addAction(viewActionPerspective);
+	 toolBar->addAction(viewActionOrthogonal);
+	 toolBar->addAction(viewActionAnimate);
+ 	toolBar->setStyleSheet("QToolBar{border:1 solid black;}" );
+	
+	connect(this->findInputField, SIGNAL(textChanged(QString)), this, SLOT(scintillaFind(QString)));
+	connect(this->nextButton, SIGNAL(clicked()), this, SLOT(scintillaFindNext()));
+	connect(this->replaceButton, SIGNAL(clicked()), this, SLOT(scintillaReplace()));
 
 	// make sure it looks nice..
 	QSettings settings;
@@ -488,6 +588,8 @@ MainWindow::loadViewSettings(){
 	hideConsole();
 	editActionHide->setChecked(settings.value("view/hideEditor").toBool());
 	hideEditor();
+	toolBarActionHide->setChecked(settings.value("view/hideToolbar").toBool());
+	hideToolbar();
 	updateMdiMode(settings.value("advanced/mdi").toBool());
 	updateUndockMode(settings.value("advanced/undockableWindows").toBool());
 }
@@ -1260,7 +1362,19 @@ void MainWindow::find()
 	replaceAllButton->hide();
 	find_panel->show();
 	findInputField->setFocus();
-	findInputField->selectAll();
+	findInputField->selectAll(); 
+}
+
+void MainWindow::scintillaFind(QString textToFind)
+{
+	if(useScintilla)
+	editor->findFirst(textToFind, false, false, false, false, true, 1, 1, true, false);
+}
+
+void MainWindow::scintillaFindNext()
+{
+	if(useScintilla)
+	editor->findNext();
 }
 
 void MainWindow::findAndReplace()
@@ -1313,6 +1427,11 @@ void MainWindow::replaceAll() {
 		editor->textCursor().insertText(replaceInputField->text());
 	}
 	editor->setTextCursor(old_cursor);
+}
+
+void MainWindow::scintillaReplace(){
+	QString newText = this->replaceInputField->text();
+	editor->replaceSelectedText(newText);
 }
 
 void MainWindow::findNext()
@@ -1467,6 +1586,7 @@ void MainWindow::compileTopLevelDocument()
 	resetPrintedDeprecations();
 
 	this->last_compiled_doc = editor->toPlainText();
+
 	std::string fulltext =
 		std::string(this->last_compiled_doc.toLocal8Bit().constData()) +
 		"\n" + commandline_commands;
@@ -2055,7 +2175,7 @@ void MainWindow::viewModeAnimate()
 
 void MainWindow::animateUpdateDocChanged()
 {
-	QString current_doc = editor->toPlainText();
+	QString current_doc = editor->toPlainText(); 
 	if (current_doc != last_compiled_doc)
 		animateUpdate();
 }
@@ -2196,6 +2316,17 @@ void MainWindow::setDockWidgetTitle(QDockWidget *dockWidget, QString prefix, boo
 	dockWidget->setWindowTitle(title);
 }
 
+void MainWindow::hideToolbar()
+{
+	if(toolBarActionHide->isChecked()){
+		toolBar->hide();
+        editortoolbar->hide();
+	} else {
+		toolBar->show();
+        editortoolbar->show();
+	}
+}
+
 void MainWindow::hideEditor()
 {
 	if (editActionHide->isChecked()) {
@@ -2206,6 +2337,7 @@ void MainWindow::hideEditor()
 }
 
 void MainWindow::hideConsole()
+
 {
 	if (viewActionHide->isChecked()) {
 		consoleDock->hide();

@@ -26,10 +26,10 @@
         <verstretch>0</verstretch>
        </sizepolicy>
       </property>
-      <property name="styleSheet">
-       <string notr="true"/>
-      </property>
       <layout class="QVBoxLayout" name="verticalLayout_3">
+       <property name="spacing">
+        <number>0</number>
+       </property>
        <property name="margin">
         <number>0</number>
        </property>
@@ -49,7 +49,7 @@
          </property>
         </widget>
        </item>
-       <item alignment="Qt::AlignBottom">
+       <item>
         <widget class="QFrame" name="animate_panel">
          <property name="enabled">
           <bool>true</bool>
@@ -107,9 +107,13 @@
          </layout>
         </widget>
        </item>
+       <item>
+        <widget class="ToolBar" name="toolBar" native="true"/>
+       </item>
       </layout>
       <zorder>animate_panel</zorder>
       <zorder>qglview</zorder>
+      <zorder>toolBar</zorder>
      </widget>
     </item>
    </layout>
@@ -244,6 +248,7 @@
     <addaction name="viewActionPerspective"/>
     <addaction name="viewActionOrthogonal"/>
     <addaction name="separator"/>
+    <addaction name="toolBarActionHide"/>
     <addaction name="editActionHide"/>
     <addaction name="viewActionHide"/>
    </widget>
@@ -270,11 +275,17 @@
     <number>1</number>
    </attribute>
    <widget class="QWidget" name="editorDockContents">
-    <layout class="QVBoxLayout" name="verticalLayout_4">
+    <layout class="QVBoxLayout" name="verticalLayout">
+     <property name="spacing">
+      <number>0</number>
+     </property>
      <property name="margin">
       <number>0</number>
      </property>
-     <item alignment="Qt::AlignTop">
+     <item>
+      <widget class="EditorToolBar" name="editortoolbar" native="true"/>
+     </item>
+     <item>
       <widget class="QFrame" name="find_panel">
        <property name="enabled">
         <bool>true</bool>
@@ -295,6 +306,9 @@
         <number>0</number>
        </property>
        <layout class="QGridLayout" name="gridLayout">
+        <property name="margin">
+         <number>0</number>
+        </property>
         <item row="0" column="0">
          <widget class="QComboBox" name="findTypeComboBox">
           <item>
@@ -361,25 +375,6 @@
        </layout>
       </widget>
      </item>
-     <item>
-      <widget class="Editor" name="editor" native="true">
-       <property name="minimumSize">
-        <size>
-         <width>100</width>
-         <height>100</height>
-        </size>
-       </property>
-       <property name="font">
-        <font>
-         <family>Monaco</family>
-         <pointsize>8</pointsize>
-        </font>
-       </property>
-       <property name="focusPolicy">
-        <enum>Qt::WheelFocus</enum>
-       </property>
-      </widget>
-     </item>
     </layout>
    </widget>
   </widget>
@@ -406,6 +401,10 @@
    </widget>
   </widget>
   <action name="fileActionNew">
+   <property name="icon">
+    <iconset>
+     <normaloff>:/Document-New-128.png</normaloff>:/Document-New-128.png</iconset>
+   </property>
    <property name="text">
     <string>&amp;New</string>
    </property>
@@ -414,6 +413,10 @@
    </property>
   </action>
   <action name="fileActionOpen">
+   <property name="icon">
+    <iconset>
+     <normaloff>:/Open-128.png</normaloff>:/Open-128.png</iconset>
+   </property>
    <property name="text">
     <string>&amp;Open...</string>
    </property>
@@ -422,6 +425,10 @@
    </property>
   </action>
   <action name="fileActionSave">
+   <property name="icon">
+    <iconset>
+     <normaloff>:/Save-128.png</normaloff>:/Save-128.png</iconset>
+   </property>
    <property name="text">
     <string>&amp;Save</string>
    </property>
@@ -594,6 +601,10 @@
    </property>
   </action>
   <action name="designActionRender">
+   <property name="icon">
+    <iconset>
+     <normaloff>:/Arrowhead-Right-32.png</normaloff>:/Arrowhead-Right-32.png</iconset>
+   </property>
    <property name="text">
     <string>&amp;Render</string>
    </property>
@@ -679,6 +690,10 @@
    <property name="checkable">
     <bool>true</bool>
    </property>
+   <property name="icon">
+    <iconset>
+     <normaloff>:/grid.png</normaloff>:/grid.png</iconset>
+   </property>
    <property name="text">
     <string>Show Edges</string>
    </property>
@@ -689,6 +704,10 @@
   <action name="viewActionShowAxes">
    <property name="checkable">
     <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset>
+     <normaloff>:/axes.png</normaloff>:/axes.png</iconset>
    </property>
    <property name="text">
     <string>Show Axes</string>
@@ -717,6 +736,10 @@
    </property>
   </action>
   <action name="viewActionTop">
+   <property name="icon">
+    <iconset>
+     <normaloff>:/up.png</normaloff>:/up.png</iconset>
+   </property>
    <property name="text">
     <string>Top</string>
    </property>
@@ -725,6 +748,10 @@
    </property>
   </action>
   <action name="viewActionBottom">
+   <property name="icon">
+    <iconset>
+     <normaloff>:/bottom.png</normaloff>:/bottom.png</iconset>
+   </property>
    <property name="text">
     <string>Bottom</string>
    </property>
@@ -733,6 +760,10 @@
    </property>
   </action>
   <action name="viewActionLeft">
+   <property name="icon">
+    <iconset>
+     <normaloff>:/left.png</normaloff>:/left.png</iconset>
+   </property>
    <property name="text">
     <string>Left</string>
    </property>
@@ -741,6 +772,10 @@
    </property>
   </action>
   <action name="viewActionRight">
+   <property name="icon">
+    <iconset>
+     <normaloff>:/right.png</normaloff>:/right.png</iconset>
+   </property>
    <property name="text">
     <string>Right</string>
    </property>
@@ -749,6 +784,10 @@
    </property>
   </action>
   <action name="viewActionFront">
+   <property name="icon">
+    <iconset>
+     <normaloff>:/front.png</normaloff>:/front.png</iconset>
+   </property>
    <property name="text">
     <string>Front</string>
    </property>
@@ -757,6 +796,10 @@
    </property>
   </action>
   <action name="viewActionBack">
+   <property name="icon">
+    <iconset>
+     <normaloff>:/back.png</normaloff>:/back.png</iconset>
+   </property>
    <property name="text">
     <string>Back</string>
    </property>
@@ -967,6 +1010,14 @@
     <string>View All</string>
    </property>
   </action>
+  <action name="toolBarActionHide">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Hide Toolbar</string>
+   </property>
+  </action>
  </widget>
  <customwidgets>
   <customwidget>
@@ -976,9 +1027,16 @@
    <container>1</container>
   </customwidget>
   <customwidget>
-   <class>Editor</class>
+   <class>EditorToolBar</class>
    <extends>QWidget</extends>
-   <header>editor.h</header>
+   <header>editortoolbar.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>ToolBar</class>
+   <extends>QWidget</extends>
+   <header>toolbar.h</header>
+   <container>1</container>
   </customwidget>
  </customwidgets>
  <resources>

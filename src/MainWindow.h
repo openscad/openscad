@@ -1,12 +1,14 @@
 #pragma once
 
 #include <QMainWindow>
+#include <QIcon>
 #include "ui_MainWindow.h"
 #include "openscad.h"
 #include "modcontext.h"
 #include "module.h"
 #include "Tree.h"
 #include "memory.h"
+#include "editor.h"
 #include <vector>
 #include <QMutex>
 #include <QSet>
@@ -65,6 +67,9 @@ public:
 	static const int maxRecentFiles = 10;
 	QAction *actionRecentFile[maxRecentFiles];
         QMap<QString, QString> knownFileExtensions;
+	
+	QString editortype;	
+	bool useScintilla;
 
 	MainWindow(const QString &filename);
 	~MainWindow();
@@ -104,6 +109,8 @@ private:
 	void show_examples();
 	void setDockWidgetTitle(QDockWidget *dockWidget, QString prefix, bool topLevel);
 
+	EditorInterface *editor;
+
   class QMessageBox *openglbox;
   class FontListDialog *font_list_dialog;
 
@@ -130,11 +137,15 @@ private slots:
 	void pasteViewportRotation();
 	void hideEditor();
 	void preferences();
+	void hideToolbar();
 
 private slots:
 	void selectFindType(int);
 	void find();
+	void scintillaFind(QString);
+	void scintillaFindNext();
 	void findAndReplace();
+	void scintillaReplace();
 	void findNext();
 	void findPrev();
 	void useSelectionForFind();

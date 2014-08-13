@@ -1,3 +1,5 @@
+#pragma once
+
 #include <QObject>
 #include <QString>
 #include <QWidget>
@@ -6,30 +8,48 @@
 #include <QTextEdit>
 #include "highlighter.h"
 
-class Editor : public QTextEdit
+class EditorInterface : public QWidget
 {
 	Q_OBJECT
 public:
-	Editor(QWidget *parent);
-	~Editor();
-        QSize sizeHint() const;
-        void setInitialSizeHint(const QSize &size);
+	EditorInterface(QWidget *parent);
+	~EditorInterface();
+        virtual QSize sizeHint(){ QSize size; return size;}
+        virtual void setInitialSizeHint(const QSize&) { }
+	virtual void wheelEvent (QWheelEvent*) { }
+        virtual void setTabStopWidth(int) { }
+        virtual QString toPlainText() { QString s; return s;}
+        virtual QTextCursor textCursor() { QTextCursor c; return c;}
+        virtual void setTextCursor (const QTextCursor &) { }
+        virtual QTextDocument *document(){QTextDocument *t = new QTextDocument; return t;}
+        virtual bool find(const QString &, QTextDocument::FindFlags options = 0){ return options;}
+	virtual bool findFirst(const QString&, bool, bool, bool, bool, bool, int, int, bool, bool){return 0;}
+	virtual bool findNext(){return 0;}
+	virtual void replaceSelectedText(QString&){ }
+
 public slots:
-	void zoomIn();
-	void zoomOut();
-	void setLineWrapping(bool on) { if(on) setWordWrapMode(QTextOption::WrapAnywhere); }
-	void setContentModified(bool y) { document()->setModified(y); }
-	bool isContentModified() { return document()->isModified(); }
-	void indentSelection();
-	void unindentSelection();
-	void commentSelection();
-	void uncommentSelection();
-	void setPlainText(const QString &text);
-	void highlightError(int error_pos);
-	void unhighlightLastError();
-	void setHighlightScheme(const QString &name);
+	virtual void zoomIn(){ }
+        virtual void zoomOut() { }
+        virtual void setLineWrapping(bool) { }
+        virtual void setContentModified(bool){ }
+        virtual bool isContentModified(){ return 0; } 
+        virtual void indentSelection(){ }
+        virtual void unindentSelection(){ }
+        virtual void commentSelection() {}
+        virtual void uncommentSelection(){}
+        virtual void setPlainText(const QString &){ }
+        virtual void highlightError(int) {}
+        virtual void unhighlightLastError() {}
+        virtual void setHighlightScheme(const QString&){ }
+	virtual void insertPlainText(const QString&){ }
+	virtual void undo(){ }
+        virtual void redo(){ }
+        virtual void cut(){ }
+        virtual void copy(){ }
+        virtual void paste(){ }
+	virtual void onTextChanged() { }
 private:
-	void wheelEvent ( QWheelEvent * event );
-	Highlighter *highlighter;
-        QSize initialSizeHint;
+        Highlighter *highlighter;
+	QSize initialSizeHint;
+
 };
