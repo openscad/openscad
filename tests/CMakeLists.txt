@@ -926,7 +926,7 @@ function(add_cmdline_test TESTCMD_BASENAME)
         string(REGEX MATCH "${test2d}" match_result ${TEST_FULLNAME})
         if (NOT "${match_result}" STREQUAL "")
           #message(STATUS "2d test found: ${TEST_FULLNAME}, ${match_result}")
-          set(CAMERA_OPTION "--camera=0,0,100,0,0,0" "--viewall" "--autocenter" "--projection=ortho" "--debug=Camera")
+          set(CAMERA_OPTION "--camera=0,0,100,0,0,0" "--viewall" "--autocenter" "--projection=ortho")
           break()
         endif()
       endforeach()
@@ -1003,6 +1003,7 @@ list(APPEND ECHO_FILES ${FUNCTION_FILES}
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/utf8-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/concat-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/include-tests.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/include-recursive-test.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/empty-stl.scad)
 
 list(APPEND DUMPTEST_FILES ${FEATURES_FILES})
