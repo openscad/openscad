@@ -55,8 +55,12 @@ AbstractNode *TextModule::instantiate(const Context *ctx, const ModuleInstantiat
 	c.setVariables(args, evalctx);
 
 	double fn = c.lookup_variable("$fn").toDouble();
-	double fs = c.lookup_variable("$fs").toDouble();
 	double fa = c.lookup_variable("$fa").toDouble();
+	double fs = c.lookup_variable("$fs").toDouble();
+
+	node->params.set_fn(fn);
+	node->params.set_fa(fa);
+	node->params.set_fs(fs);
 
 	double size = lookup_double_variable_with_default(c, "size", 10.0);
 	int segments = Calc::get_fragments_from_r(size, fn, fs, fa);
@@ -64,9 +68,10 @@ AbstractNode *TextModule::instantiate(const Context *ctx, const ModuleInstantiat
 	// by using a fraction of the number of full circle segments
 	// the resolution will be better matching the detail level of
 	// other objects.
-	int text_segments = std::max(((int)floor(segments / 6)) + 2, 2);
+	int text_segments = std::max(((int)floor(segments / 8)) + 1, 2);
+
 	node->params.set_size(size);
-	node->params.set_fn(text_segments);
+	node->params.set_segments(text_segments);
 	node->params.set_text(lookup_string_variable_with_default(c, "text", ""));
 	node->params.set_spacing(lookup_double_variable_with_default(c, "spacing", 1.0));
 	node->params.set_font(lookup_string_variable_with_default(c, "font", ""));
