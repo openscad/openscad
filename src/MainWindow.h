@@ -67,6 +67,7 @@ public:
 	static const int maxRecentFiles = 10;
 	QAction *actionRecentFile[maxRecentFiles];
         QMap<QString, QString> knownFileExtensions;
+	QMap<QString, QString> recentFilesMap;
 	LaunchingScreen *launcher;
 	QTreeWidgetItem *itm;
 	void show_launcher_examples(QString);

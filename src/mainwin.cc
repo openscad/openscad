@@ -673,7 +673,7 @@ void MainWindow::updateRecentFiles()
 
 void MainWindow::launcherOpenRecent()
 {
-  	QString currentItem = launcher->ui->RecentList->currentItem()->text();
+  	QString currentItem = recentFilesMap[launcher->ui->RecentList->currentItem()->text()];
         openFile(currentItem);
 	launcher->hide();
 }
@@ -1110,7 +1110,8 @@ void MainWindow::updateRecentFileActions()
 		this->actionRecentFile[i]->setText(QFileInfo(files[i]).fileName());
 		this->actionRecentFile[i]->setData(files[i]);
 		this->actionRecentFile[i]->setVisible(true);
-		launcher->ui->RecentList->insertItem(1, files[i]);
+		launcher->ui->RecentList->insertItem(1, QFileInfo(files[i]).fileName());
+		recentFilesMap.insert(QFileInfo(files[i]).fileName(), files[i]);
 	}
 	for (int j = numRecentFiles; j < maxRecentFiles; ++j)
 		this->actionRecentFile[j]->setVisible(false);
