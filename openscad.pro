@@ -282,9 +282,9 @@ HEADERS += src/typedefs.h \
            src/GeometryEvaluator.h \
            src/CSGTermEvaluator.h \
            src/Tree.h \
-src/DrawingCallback.h \
-src/FreetypeRenderer.h \
-src/FontCache.h \
+           src/DrawingCallback.h \
+           src/FreetypeRenderer.h \
+           src/FontCache.h \
            src/mathc99.h \
            src/memory.h \
            src/linalg.h \
@@ -292,6 +292,7 @@ src/FontCache.h \
            src/system-gl.h \
            src/stl-utils.h \
            src/boost-utils.h \
+           src/LibraryInfo.h \
            src/svg.h \
            \
            src/lodepng.h \
@@ -304,9 +305,9 @@ src/FontCache.h \
            src/CsgInfo.h \
            \
            src/AutoUpdater.h \
-	   src/scadlexer.h \
-    src/toolbar.h \
-    src/editortoolbar.h
+           src/toolbar.h \
+           src/editortoolbar.h \
+           src/legacyeditor.h
 
 SOURCES += src/version_check.cc \
            src/ProgressWidget.cc \
@@ -353,6 +354,7 @@ SOURCES += src/version_check.cc \
            src/stl-utils.cc \
            src/boost-utils.cc \
            src/PlatformUtils.cc \
+           src/LibraryInfo.cc \
            \
            src/nodedumper.cc \
            src/traverser.cc \
@@ -390,10 +392,11 @@ src/FontCache.cc \
            \
            src/openscad.cc \
            src/mainwin.cc \
-src/FontListDialog.cc \
-src/scadlexer.cpp \
-    src/toolbar.cpp \
-    src/editortoolbar.cpp
+           src/FontListDialog.cc \
+           src/toolbar.cpp \
+           src/editortoolbar.cpp \
+           src/legacyeditor.cc
+
 # ClipperLib
 SOURCES += src/polyclipping/clipper.cpp
 HEADERS += src/polyclipping/clipper.hpp

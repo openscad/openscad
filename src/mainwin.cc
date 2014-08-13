@@ -57,6 +57,7 @@
 #include "CocoaUtils.h"
 #endif
 #include "PlatformUtils.h"
+#include "LibraryInfo.h"
 
 #include <QMenu>
 #include <QTime>
@@ -98,10 +99,6 @@
 #include "cgal.h"
 #include "cgalworker.h"
 #include "cgalutils.h"
-
-#else
-
-#include "PolySetEvaluator.h"
 
 #endif // ENABLE_CGAL
 
@@ -171,14 +168,18 @@ MainWindow::MainWindow(const QString &filename)
 {
 	setupUi(this);
 
-    editortoolbar = new EditorToolBar(this);
-    editorDockContents->layout()->addWidget(editortoolbar);
+	editortoolbar = new EditorToolBar(this);
+	editorDockContents->layout()->addWidget(editortoolbar);
 
+	editortype = Preferences::inst()->getValue("editor/editortype").toString();
+	useScintilla = (editortype == "QScintilla Editor");
 #ifdef USE_SCINTILLA_EDITOR
-	editor = new ScintillaEditor(editorDockContents);
-#else
-	editor = new LegacyEditor(editorDockContents);
+	if (useScintilla)	
+	    editor = new ScintillaEditor(editorDockContents);
+	else
 #endif
+	   editor = new LegacyEditor(editorDockContents);
+
 	editorDockContents->layout()->addWidget(editor);
 
 	setCorner(Qt::TopLeftCorner, Qt::LeftDockWidgetArea);
@@ -416,7 +417,6 @@ MainWindow::MainWindow(const QString &filename)
 
 	connect(editor->document(), SIGNAL(contentsChanged()), this, SLOT(animateUpdateDocChanged()));
 	connect(editor->document(), SIGNAL(modificationChanged(bool)), this, SLOT(setWindowModified(bool)));
-	connect(editor->document(), SIGNAL(modificationChanged(bool)), fileActionSave, SLOT(setEnabled(bool)));
 	connect(this->qglview, SIGNAL(doAnimateUpdate()), this, SLOT(animateUpdate()));
 
 	connect(Preferences::inst(), SIGNAL(requestRedraw()), this->qglview, SLOT(updateGL()));
@@ -523,6 +523,10 @@ MainWindow::MainWindow(const QString &filename)
 	 toolBar->addAction(viewActionAnimate);
  	toolBar->setStyleSheet("QToolBar{border:1 solid black;}" );
 	
+	connect(this->findInputField, SIGNAL(textChanged(QString)), this, SLOT(scintillaFind(QString)));
+	connect(this->nextButton, SIGNAL(clicked()), this, SLOT(scintillaFindNext()));
+	connect(this->replaceButton, SIGNAL(clicked()), this, SLOT(scintillaReplace()));
+
 	// make sure it looks nice..
 	QSettings settings;
 	QByteArray windowState = settings.value("window/state", QByteArray()).toByteArray();
@@ -1270,6 +1274,8 @@ void MainWindow::actionSave()
 		actionSaveAs();
 	}
 	else {
+		if (!editor->isContentModified())
+			return;
 		setCurrentOutput();
 		QFile file(this->fileName);
 		if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text)) {
@@ -1344,6 +1350,12 @@ void MainWindow::pasteViewportTranslation()
 	cursor.insertText(txt);
 }
 
+void MainWindow::pasteText(const QString text)
+{
+	QTextCursor cursor = editor->textCursor();
+	cursor.insertText(text);
+}
+
 void MainWindow::pasteViewportRotation()
 {
 	QTextCursor cursor = editor->textCursor();
@@ -1361,7 +1373,19 @@ void MainWindow::find()
 	replaceAllButton->hide();
 	find_panel->show();
 	findInputField->setFocus();
-	findInputField->selectAll();
+	findInputField->selectAll(); 
+}
+
+void MainWindow::scintillaFind(QString textToFind)
+{
+	if(useScintilla)
+	editor->findFirst(textToFind, false, false, false, false, true, 1, 1, true, false);
+}
+
+void MainWindow::scintillaFindNext()
+{
+	if(useScintilla)
+	editor->findNext();
 }
 
 void MainWindow::findAndReplace()
@@ -1414,6 +1438,11 @@ void MainWindow::replaceAll() {
 		editor->textCursor().insertText(replaceInputField->text());
 	}
 	editor->setTextCursor(old_cursor);
+}
+
+void MainWindow::scintillaReplace(){
+	QString newText = this->replaceInputField->text();
+	editor->replaceSelectedText(newText);
 }
 
 void MainWindow::findNext()
@@ -1480,17 +1509,24 @@ void MainWindow::updateCamera()
 		return;
 	
 	bool camera_set = false;
-	double tx = qglview->cam.object_trans.x();
-	double ty = qglview->cam.object_trans.y();
-	double tz = qglview->cam.object_trans.z();
-	double rx = qglview->cam.object_rot.x();
-	double ry = qglview->cam.object_rot.y();
-	double rz = qglview->cam.object_rot.z();
-	double d = qglview->cam.viewer_distance;
+
+	Camera cam(qglview->cam);
+	cam.gimbalDefaultTranslate();
+	double tx = cam.object_trans.x();
+	double ty = cam.object_trans.y();
+	double tz = cam.object_trans.z();
+	double rx = cam.object_rot.x();
+	double ry = cam.object_rot.y();
+	double rz = cam.object_rot.z();
+	double d = cam.viewer_distance;
+
+	ModuleContext mc(&top_ctx, NULL);
+	mc.initializeModule(*root_module);
+
 	BOOST_FOREACH(const Assignment &a, root_module->scope.assignments) {
 		double x, y, z;
 		if ("$vpr" == a.first) {
-			const Value vpr = a.second.get()->evaluate(&top_ctx);
+			const Value vpr = a.second.get()->evaluate(&mc);
 			if (vpr.getVec3(x, y, z)) {
 				rx = x;
 				ry = y;
@@ -1498,7 +1534,7 @@ void MainWindow::updateCamera()
 				camera_set = true;
 			}
 		} else if ("$vpt" == a.first) {
-			const Value vpt = a.second.get()->evaluate(&top_ctx);
+			const Value vpt = a.second.get()->evaluate(&mc);
 			if (vpt.getVec3(x, y, z)) {
 				tx = x;
 				ty = y;
@@ -1506,7 +1542,7 @@ void MainWindow::updateCamera()
 				camera_set = true;
 			}
 		} else if ("$vpd" == a.first) {
-			const Value vpd = a.second.get()->evaluate(&top_ctx);
+			const Value vpd = a.second.get()->evaluate(&mc);
 			if (vpd.type() == Value::NUMBER) {
 				d = vpd.toDouble();
 				camera_set = true;
@@ -1524,6 +1560,7 @@ void MainWindow::updateCamera()
 		params.push_back(rz);
 		params.push_back(d);
 		qglview->cam.setup(params);
+		qglview->cam.gimbalDefaultTranslate();
 		qglview->updateGL();
 	}
 }
@@ -2377,14 +2414,14 @@ MainWindow::helpManual()
 
 void MainWindow::helpLibrary()
 {
-	QString info( PlatformUtils::info().c_str() );
-	info += QString( qglview->getRendererInfo().c_str() );
+	QString info(LibraryInfo::info().c_str());
+	info += QString(qglview->getRendererInfo().c_str());
 	if (!this->openglbox) {
 		this->openglbox = new QMessageBox(QMessageBox::Information,
                                       "OpenGL Info", "OpenSCAD Detailed Library and Build Information",
                                       QMessageBox::Ok, this);
 	}
-	this->openglbox->setDetailedText( info );
+	this->openglbox->setDetailedText(info);
 	this->openglbox->show();
 }
 
@@ -2392,6 +2429,7 @@ void MainWindow::helpFontInfo()
 {
 	if (!this->font_list_dialog) {
 		FontListDialog *dialog = new FontListDialog();
+		connect(dialog, SIGNAL(font_selected(QString)), this, SLOT(pasteText(QString)));
 		this->font_list_dialog = dialog;
 	}
 	this->font_list_dialog->update_font_list();

@@ -9,6 +9,11 @@ CGAL_Nef_polyhedron::CGAL_Nef_polyhedron(CGAL_Nef_polyhedron3 *p)
 	if (p) p3.reset(p);
 }
 
+// Copy constructor
+CGAL_Nef_polyhedron::CGAL_Nef_polyhedron(const CGAL_Nef_polyhedron &src)
+{
+	if (src.p3) this->p3.reset(new CGAL_Nef_polyhedron3(*src.p3));
+}
 
 CGAL_Nef_polyhedron& CGAL_Nef_polyhedron::operator+=(const CGAL_Nef_polyhedron &other)
 {
@@ -79,12 +84,46 @@ PolySet *CGAL_Nef_polyhedron::convertToPolyset() const
 	return ps;
 }
 
-/*!
-	Deep copy
-*/
-CGAL_Nef_polyhedron *CGAL_Nef_polyhedron::copy() const
+void CGAL_Nef_polyhedron::resize(Vector3d newsize, 
+																 const Eigen::Matrix<bool,3,1> &autosize)
 {
-	CGAL_Nef_polyhedron *copy = new CGAL_Nef_polyhedron(*this);
-	if (copy->p3) copy->p3.reset(new CGAL_Nef_polyhedron3(*copy->p3));
-	return copy;
+	// Based on resize() in Giles Bathgate's RapCAD (but not exactly)
+	if (this->isEmpty()) return;
+
+	CGAL_Iso_cuboid_3 bb = CGALUtils::boundingBox(*this->p3);
+
+	std::vector<NT3> scale, bbox_size;
+	for (unsigned int i=0;i<3;i++) {
+		scale.push_back(NT3(1));
+		bbox_size.push_back(bb.max_coord(i) - bb.min_coord(i));
+	}
+	int newsizemax_index = 0;
+	for (unsigned int i=0;i<this->getDimension();i++) {
+		if (newsize[i]) {
+			if (bbox_size[i] == NT3(0)) {
+				PRINT("WARNING: Resize in direction normal to flat object is not implemented");
+				return;
+			}
+			else {
+				scale[i] = NT3(newsize[i]) / bbox_size[i];
+			}
+			if (newsize[i] > newsize[newsizemax_index]) newsizemax_index = i;
+		}
+	}
+
+	NT3 autoscale = NT3(1);
+	if (newsize[newsizemax_index] != 0) {
+		autoscale = NT3(newsize[newsizemax_index]) / bbox_size[newsizemax_index];
+	}
+	for (unsigned int i=0;i<this->getDimension();i++) {
+		if (autosize[i] && newsize[i]==0) scale[i] = autoscale;
+	}
+
+	Eigen::Matrix4d t;
+	t << CGAL::to_double(scale[0]),           0,        0,        0,
+	     0,        CGAL::to_double(scale[1]),           0,        0,
+	     0,        0,        CGAL::to_double(scale[2]),           0,
+	     0,        0,        0,                                   1;
+
+	this->transform(Transform3d(t));
 }
