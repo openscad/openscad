@@ -512,13 +512,13 @@ MainWindow::MainWindow(const QString &filename)
 	 editortoolbar->addAction(fileActionSave);
 	 editortoolbar->addAction(editActionZoomIn);
 	 editortoolbar->addAction(editActionZoomOut);
-	 editortoolbar->addAction(designActionRender);
 
+	 toolBar->addAction(designActionRender);
 	 toolBar->addAction(viewActionPreview);
-	 toolBar->addAction(viewActionSurfaces);
-	 toolBar->addAction(viewActionWireframe);
+	 //toolBar->addAction(viewActionSurfaces);
+	 //toolBar->addAction(viewActionWireframe);
 	 toolBar->addAction(viewActionShowAxes);
-	 toolBar->addAction(viewActionShowEdges);
+	 //toolBar->addAction(viewActionShowEdges);
 	 toolBar->addAction(viewActionZoomIn);
 	 toolBar->addAction(viewActionZoomOut);
 	 toolBar->addAction(viewActionTop);
@@ -527,7 +527,7 @@ MainWindow::MainWindow(const QString &filename)
 	 toolBar->addAction(viewActionRight);
 	 toolBar->addAction(viewActionFront);
 	 toolBar->addAction(viewActionBack);
-	 toolBar->addAction(viewActionShowCrosshairs);
+	 //toolBar->addAction(viewActionShowCrosshairs);
 	 toolBar->addAction(viewActionPerspective);
 	 toolBar->addAction(viewActionOrthogonal);
 	 toolBar->addAction(viewActionAnimate);
