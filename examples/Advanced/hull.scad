@@ -1,56 +1,29 @@
-// Six-Sided Spindle Die
-// By Laura Bailey August 8, 2014
-// CC BY-SA license
-
-
 echo(version=version());
 
+module crystal() {
 
-module spindle_die() {
-  hull() {
-    cylinder($fn=6, r1=25, r2=1, h=25);
-    rotate([180]) translate([0,0,40]) cylinder($fn=6, r1=25, r2=1, h=25);
-    }
+ r_corner=3;
+ fn_base=10;
+ r1=25-r_corner;
+ h1=25-r_corner;
+ h2=40;
+ fn_sphere=fn_base*3;
+
+ hull(){
+
+  translate([0,0,h1])sphere(r_corner,$fn=fn_sphere);
+  translate([0,0,-h2-h1])sphere(r_corner,$fn=fn_sphere);
+
+  for(i=[0:fn_base-1]){
+
+   rotate(360/fn_base*i)translate([r1,0,0])sphere(r_corner,$fn=fn_sphere);
+   rotate(360/fn_base*i)translate([r1,r1,-h1])sphere(r_corner,$fn=fn_sphere);
+   rotate(360/fn_base*i)translate([r1,0,-h2])sphere(r_corner,$fn=fn_sphere);
+
+   }
+
   }
 
+ }
 
-module die_numbers() {
-  // one
-  rotate([90,0,0]) translate([0,-20,20]) sphere(5);
-
-  // two
-  rotate([90,0,0]) translate([5,-30,-20]) sphere(4);
-  rotate([90,0,0]) translate([-5,-10,-20]) sphere(4);
-
-  // three
-  rotate([90,0,60]) translate([-5,-10,20]) sphere(4);
-  rotate([90,0,60]) translate([0,-20,20]) sphere(4);
-  rotate([90,0,60]) translate([5,-30,20]) sphere(4);
-
-  // four
-  rotate([90,0,60]) translate([-5,-10,-20]) sphere(4);
-  rotate([90,0,60]) translate([5,-30,-20]) sphere(4);
-  rotate([90,0,60]) translate([5,-10,-20]) sphere(4);
-  rotate([90,0,60]) translate([-5,-30,-20]) sphere(4);
-
-  // five
-  rotate([90,0,120]) translate([-5,-10,20]) sphere(4);
-  rotate([90,0,120]) translate([5,-30,20]) sphere(4);
-  rotate([90,0,120]) translate([5,-10,20]) sphere(4);
-  rotate([90,0,120]) translate([-5,-30,20]) sphere(4);
-  rotate([90,0,120]) translate([0,-20,20]) sphere(4);
-
-  // six
-  rotate([90,0,120]) translate([-5,-10,-20]) sphere(4);
-  rotate([90,0,120]) translate([5,-30,-20]) sphere(4);
-  rotate([90,0,120]) translate([5,-10,-20]) sphere(4);
-  rotate([90,0,120]) translate([-5,-30,-20]) sphere(4);
-  rotate([90,0,120]) translate([5,-20,-20]) sphere(4);
-  rotate([90,0,120]) translate([-5,-20,-20]) sphere(4);
-  }
-
-
-difference() {
-  spindle_die();
-  die_numbers();
-  }
+crystal();
