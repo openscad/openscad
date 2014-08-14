@@ -28,6 +28,7 @@
 #include "ModuleCache.h"
 #include "MainWindow.h"
 #include "parsersettings.h"
+#include "rendersettings.h"
 #include "Preferences.h"
 #include "printutils.h"
 #include "node.h"
@@ -414,7 +415,7 @@ MainWindow::MainWindow(const QString &filename)
 	Preferences::inst()->apply();
 
 	QString cs = Preferences::inst()->getValue("3dview/colorscheme").toString();
-	this->qglview->setColorScheme( cs.toStdString() );
+	this->setColorScheme(cs);
 
 	connect(this->findTypeComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(selectFindType(int)));
 	connect(this->findInputField, SIGNAL(returnPressed()), this->nextButton, SLOT(animateClick()));
@@ -2363,7 +2364,8 @@ MainWindow::preferences()
 
 void MainWindow::setColorScheme(const QString &scheme)
 {
-	this->qglview->setColorScheme( scheme.toStdString() );
+	RenderSettings::inst()->colorscheme = scheme.toStdString();
+	this->qglview->setColorScheme(scheme.toStdString());
 	this->qglview->updateGL();
 }
 

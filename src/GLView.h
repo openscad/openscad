@@ -46,7 +46,7 @@ public:
 	void showAxes();
 	void showSmallaxes();
 
-	void setColorScheme(const OSColors::colorscheme &cs);
+	void setColorScheme(const ColorScheme &cs);
 	void setColorScheme(const std::string &cs);
 	void updateColorScheme();
 
@@ -55,7 +55,7 @@ public:
 	virtual float getDPI() { return 1.0f; }
 
 	Renderer *renderer;
-	const OSColors::colorscheme *colorscheme;
+	const ColorScheme *colorscheme;
 	Camera cam;
 	double far_far_away;
 	size_t width;

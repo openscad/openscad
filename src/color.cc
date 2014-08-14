@@ -40,11 +40,11 @@ using namespace boost::assign; // bring 'operator+=()' into scope
 class ColorModule : public AbstractModule
 {
 public:
-	ColorModule() : colormap(OSColors::webColors()) { }
+	ColorModule() : webcolors(ColorMap::inst()->webColors()) { }
 	virtual AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const;
 
 private:
-	const boost::unordered_map<std::string, Color4f> &colormap;
+	const boost::unordered_map<std::string, Color4f> &webcolors;
 };
 
 AbstractNode *ColorModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const
@@ -72,8 +72,8 @@ AbstractNode *ColorModule::instantiate(const Context *ctx, const ModuleInstantia
 		std::string colorname = v.toString();
 		boost::algorithm::to_lower(colorname);
 		Color4f color;
-		if (colormap.find(colorname) != colormap.end())	{
-			node->color = colormap.at(colorname);
+		if (webcolors.find(colorname) != webcolors.end())	{
+			node->color = webcolors.at(colorname);
 		} else {
 			PRINTB_NOCACHE("WARNING: Color name \"%s\" unknown. Please see", colorname);
 			PRINT_NOCACHE("WARNING: http://en.wikipedia.org/wiki/Web_colors");

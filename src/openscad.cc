@@ -153,10 +153,7 @@ static void info()
 	exit(0);
 }
 
-extern void printcolorscheme(const OSColors::colorscheme &cs);
-extern void printcolorschemes();
-
-Camera get_camera( po::variables_map vm )
+Camera get_camera(po::variables_map vm)
 {
 	Camera camera;
 
@@ -214,19 +211,6 @@ Camera get_camera( po::variables_map vm )
 	}
 	camera.pixel_width = w;
 	camera.pixel_height = h;
-
-	if (vm.count("colorscheme")) {
-		std::string colorscheme = vm["colorscheme"].as<string>();
-		if (const OSColors::colorscheme *scheme = OSColors::colorScheme(colorscheme)) {
-			camera.colorscheme = scheme;
-		} else {
-			PRINT("Unknown color scheme. Valid schemes:");
-			BOOST_FOREACH (const std::string &name, OSColors::colorSchemes()) {
-				PRINT(name);
-			}
-			exit(1);
-		}
-	}
 
 	return camera;
 }
@@ -621,7 +605,6 @@ int main(int argc, char **argv)
 	CGAL::set_error_behaviour(CGAL::ABORT);
 #endif
 	Builtins::instance()->initialize();
-	OSColors::init();	
 
 	fs::path original_path = fs::current_path();
 
@@ -741,6 +724,19 @@ int main(int argc, char **argv)
 		help(argv[0]);
 	}
 #endif
+
+	if (vm.count("colorscheme")) {
+		std::string colorscheme = vm["colorscheme"].as<string>();
+		if (ColorMap::inst()->findColorScheme(colorscheme)) {
+			RenderSettings::inst()->colorscheme = colorscheme;
+		} else {
+			PRINT("Unknown color scheme. Valid schemes:");
+			BOOST_FOREACH (const std::string &name, ColorMap::inst()->colorSchemeNames()) {
+				PRINT(name);
+			}
+			exit(1);
+		}
+	}
 
 	currentdir = boosty::stringy(fs::current_path());
 

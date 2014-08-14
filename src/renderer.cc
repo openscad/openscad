@@ -34,7 +34,7 @@ Renderer::Renderer() : colorscheme(NULL)
 	colormap[COLORMODE_HIGHLIGHT_EDGES] = Color4f(255, 171, 86, 128);
 	colormap[COLORMODE_BACKGROUND_EDGES] = Color4f(150, 150, 150, 128);
 
-	setColorScheme(OSColors::defaultColorScheme());
+	setColorScheme(ColorMap::inst()->defaultColorScheme());
 	PRINTD("Renderer() end");
 }
 
@@ -89,13 +89,13 @@ void Renderer::setColor(ColorMode colormode, GLint *shaderinfo) const
 this does not change Highlight or Background colors as they are not 
 represented in the colorscheme (yet). Also edgecolors are currently the 
 same for CGAL & OpenCSG */
-void Renderer::setColorScheme(const OSColors::colorscheme &cs) {
+void Renderer::setColorScheme(const ColorScheme &cs) {
 	PRINTD("setColorScheme");
-	colormap[COLORMODE_MATERIAL] = OSColors::getValue(cs,OSColors::OPENCSG_FACE_FRONT_COLOR);
-	colormap[COLORMODE_CUTOUT] = OSColors::getValue(cs,OSColors::OPENCSG_FACE_BACK_COLOR);
-	colormap[COLORMODE_MATERIAL_EDGES] = OSColors::getValue(cs,OSColors::CGAL_EDGE_FRONT_COLOR);
-	colormap[COLORMODE_CUTOUT_EDGES] = OSColors::getValue(cs,OSColors::CGAL_EDGE_BACK_COLOR);
-	colormap[COLORMODE_EMPTY_SPACE] = OSColors::getValue(cs,OSColors::BACKGROUND_COLOR);
+	colormap[COLORMODE_MATERIAL] = ColorMap::getColor(cs, OPENCSG_FACE_FRONT_COLOR);
+	colormap[COLORMODE_CUTOUT] = ColorMap::getColor(cs, OPENCSG_FACE_BACK_COLOR);
+	colormap[COLORMODE_MATERIAL_EDGES] = ColorMap::getColor(cs, CGAL_EDGE_FRONT_COLOR);
+	colormap[COLORMODE_CUTOUT_EDGES] = ColorMap::getColor(cs, CGAL_EDGE_BACK_COLOR);
+	colormap[COLORMODE_EMPTY_SPACE] = ColorMap::getColor(cs, BACKGROUND_COLOR);
 	this->colorscheme = &cs;
 }
 

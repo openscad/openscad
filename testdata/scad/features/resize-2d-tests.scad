@@ -47,10 +47,10 @@ translate([16,16]) resize([0,15],auto=true) scale() shape2();
 translate([16,32]) resize([0,15],auto=[true,false]) shape3();
 }
 
-color("pink") {
-translate([32,0]) scale([2.4,2.4]) resize([0,0],auto=[false,true]) shape();
-translate([32,16]) scale([2.4,2.4]) resize([0,0,15],auto=true) shape2();
-translate([32,32]) scale([2.4,2.4]) resize([0,0,15]) shape3();
+color("pink"){
+translate([32,0]) resize([0,0],auto=[false,true]) shape();
+translate([32,16]) resize([0,0,15],auto=true) shape2();
+translate([32,32]) resize([0,0,15]) shape3();
 }
 
 color("blue"){

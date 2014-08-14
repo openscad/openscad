@@ -50,15 +50,13 @@ public:
 		NUM_COLORS
 	};
 
-	Polyhedron() {
+	Polyhedron(const ColorScheme &cs) {
 		PRINTD("Polyhedron()");
 		// Set default colors.
 		setColor(CGAL_NEF3_MARKED_VERTEX_COLOR,0xb7,0xe8,0x5c);
 		setColor(CGAL_NEF3_UNMARKED_VERTEX_COLOR,0xff,0xf6,0x7c);
-		//setColor(CGAL_NEF3_MARKED_EDGE_COLOR,0xab,0xd8,0x56);
-		//setColor(CGAL_NEF3_UNMARKED_EDGE_COLOR,0xff,0xec,0x5e);
 		// Face and Edge colors are taken from default colorscheme
-		setColorScheme(OSColors::defaultColorScheme());
+		setColorScheme(cs);
 		PRINTD("Polyhedron() end");
 	}
 
@@ -113,14 +111,12 @@ public:
 
 	// set this->colors based on the given colorscheme. vertex colors
 	// are not set here as colorscheme doesnt yet hold vertex colors.
-	void setColorScheme(const OSColors::colorscheme &cs) {
+	void setColorScheme(const ColorScheme &cs) {
 		PRINTD("setColorScheme");
-		//setColor(CGAL_NEF3_MARKED_VERTEX_COLOR,cs.at(...));
-		//setColor(CGAL_NEF3_UNMARKED_VERTEX_COLOR,cs.at(...));
-		setColor(CGAL_NEF3_MARKED_FACET_COLOR, OSColors::getValue(cs,OSColors::CGAL_FACE_BACK_COLOR));
-		setColor(CGAL_NEF3_UNMARKED_FACET_COLOR, OSColors::getValue(cs,OSColors::CGAL_FACE_FRONT_COLOR));
-		setColor(CGAL_NEF3_MARKED_EDGE_COLOR, OSColors::getValue(cs,OSColors::CGAL_EDGE_BACK_COLOR));
-		setColor(CGAL_NEF3_UNMARKED_EDGE_COLOR, OSColors::getValue(cs,OSColors::CGAL_EDGE_FRONT_COLOR));
+		setColor(CGAL_NEF3_MARKED_FACET_COLOR, ColorMap::getColor(cs, CGAL_FACE_BACK_COLOR));
+		setColor(CGAL_NEF3_UNMARKED_FACET_COLOR, ColorMap::getColor(cs, CGAL_FACE_FRONT_COLOR));
+		setColor(CGAL_NEF3_MARKED_EDGE_COLOR, ColorMap::getColor(cs, CGAL_EDGE_BACK_COLOR));
+		setColor(CGAL_NEF3_UNMARKED_EDGE_COLOR, ColorMap::getColor(cs, CGAL_EDGE_FRONT_COLOR));
 	}
 
 private:

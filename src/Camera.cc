@@ -17,7 +17,6 @@ Camera::Camera(enum CameraType camtype) :
 	}
 	pixel_width = RenderSettings::inst()->img_width;
 	pixel_height = RenderSettings::inst()->img_height;
-	colorscheme = &OSColors::defaultColorScheme();
 	autocenter = false;
 }
 

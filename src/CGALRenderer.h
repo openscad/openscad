@@ -9,11 +9,14 @@ public:
 	CGALRenderer(shared_ptr<const class Geometry> geom);
 	~CGALRenderer();
 	virtual void draw(bool showfaces, bool showedges) const;
-	virtual void setColorScheme(const OSColors::colorscheme &cs);
+	virtual void setColorScheme(const ColorScheme &cs);
 	virtual BoundingBox getBoundingBox() const;
-	void rebuildPolyhedron();
-public:
-	shared_ptr<class Polyhedron> polyhedron;
+
+private:
+	shared_ptr<class Polyhedron> getPolyhedron() const;
+	void buildPolyhedron() const;
+
+	mutable shared_ptr<class Polyhedron> polyhedron;
 	shared_ptr<const CGAL_Nef_polyhedron> N;
 	shared_ptr<const class PolySet> polyset;
 };

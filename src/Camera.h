@@ -19,7 +19,6 @@ projection, Perspective and Orthogonal.
 #include "linalg.h"
 #include <vector>
 #include <Eigen/Geometry>
-#include "colormap.h"
 
 class Camera
 {
@@ -32,8 +31,6 @@ public:
 	void setProjection(ProjectionType type);
 	void zoom(int delta);
 	void viewAll(const BoundingBox &bbox, float scalefactor = 1.0f);
-
-	const OSColors::colorscheme *colorscheme;
 
 	// Vectorcam
 	Eigen::Vector3d eye;

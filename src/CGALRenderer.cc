@@ -53,7 +53,6 @@ CGALRenderer::CGALRenderer(shared_ptr<const class Geometry> geom)
 		assert(new_N->getDimension() == 3);
 		if (!new_N->isEmpty()) {
 			this->N = new_N;
-			this->rebuildPolyhedron();
 		}
 	}
 }
@@ -62,25 +61,29 @@ CGALRenderer::~CGALRenderer()
 {
 }
 
-void CGALRenderer::rebuildPolyhedron()
+shared_ptr<class Polyhedron> CGALRenderer::getPolyhedron() const
 {
-	PRINTD("rebuildPolyhedron");
-	if (this->N) {
-		this->polyhedron.reset(new Polyhedron());
-		if (this->colorscheme) this->polyhedron->setColorScheme(*this->colorscheme);
-		CGAL::OGL::Nef3_Converter<CGAL_Nef_polyhedron3>::convert_to_OGLPolyhedron(*this->N->p3, this->polyhedron.get());
-		// CGAL_NEF3_MARKED_FACET_COLOR <- CGAL_FACE_BACK_COLOR
-		// CGAL_NEF3_UNMARKED_FACET_COLOR <- CGAL_FACE_FRONT_COLOR
-		this->polyhedron->init();
-	}
-	PRINTD("rebuild() end");
+	if (this->N && !this->polyhedron) buildPolyhedron();
+	return this->polyhedron;
 }
 
-void CGALRenderer::setColorScheme(const OSColors::colorscheme &cs)
+void CGALRenderer::buildPolyhedron() const
+{
+	PRINTD("buildPolyhedron");
+	this->polyhedron.reset(new Polyhedron(*this->colorscheme));
+	CGAL::OGL::Nef3_Converter<CGAL_Nef_polyhedron3>::convert_to_OGLPolyhedron(*this->N->p3, this->polyhedron.get());
+	// CGAL_NEF3_MARKED_FACET_COLOR <- CGAL_FACE_BACK_COLOR
+	// CGAL_NEF3_UNMARKED_FACET_COLOR <- CGAL_FACE_FRONT_COLOR
+	this->polyhedron->init();
+	PRINTD("buildPolyhedron() end");
+}
+
+// Overridden from Renderer
+void CGALRenderer::setColorScheme(const ColorScheme &cs)
 {
 	PRINTD("setColorScheme");
 	Renderer::setColorScheme(cs);
-	this->rebuildPolyhedron();
+	this->polyhedron.reset(); // Mark as dirty
 	PRINTD("setColorScheme done");
 }
 
@@ -120,11 +123,14 @@ void CGALRenderer::draw(bool showfaces, bool showedges) const
 			this->polyset->render_surface(CSGMODE_NORMAL, Transform3d::Identity(), NULL);
 		}
 	}
-	else if (this->polyhedron) {
-		PRINTD("draw() polyhedron");
-		if (showfaces) this->polyhedron->set_style(SNC_BOUNDARY);
-		else this->polyhedron->set_style(SNC_SKELETON);
-		this->polyhedron->draw(showfaces && showedges);
+	else {
+		shared_ptr<class Polyhedron> polyhedron = getPolyhedron();
+        if (polyhedron) {
+            PRINTD("draw() polyhedron");
+            if (showfaces) polyhedron->set_style(SNC_BOUNDARY);
+            else polyhedron->set_style(SNC_SKELETON);
+            polyhedron->draw(showfaces && showedges);
+        }
 	}
 	PRINTD("draw() end");
 }
@@ -133,15 +139,17 @@ BoundingBox CGALRenderer::getBoundingBox() const
 {
 	BoundingBox bbox;
 
-	if (this->polyhedron) {
-		CGAL::Bbox_3 cgalbbox = this->polyhedron->bbox();
-		bbox = BoundingBox(
-		  Vector3d(cgalbbox.xmin(), cgalbbox.ymin(), cgalbbox.zmin()),
-		  Vector3d(cgalbbox.xmax(), cgalbbox.ymax(), cgalbbox.zmax()) );
-	}
-	else if (this->polyset) {
+	if (this->polyset) {
 		bbox = this->polyset->getBoundingBox();
 	}
-
+	else {
+		shared_ptr<class Polyhedron> polyhedron = getPolyhedron();
+		if (polyhedron) {
+			CGAL::Bbox_3 cgalbbox = polyhedron->bbox();
+			bbox = BoundingBox(
+				Vector3d(cgalbbox.xmin(), cgalbbox.ymin(), cgalbbox.zmin()),
+				Vector3d(cgalbbox.xmax(), cgalbbox.ymax(), cgalbbox.zmax()));
+		}
+	}
 	return bbox;
 }

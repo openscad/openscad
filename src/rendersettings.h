@@ -11,6 +11,7 @@ public:
 
 	unsigned int openCSGTermLimit, img_width, img_height;
 	double far_gl_clip_limit;
+	std::string colorscheme;
 private:
 	RenderSettings();
 	~RenderSettings() {}
