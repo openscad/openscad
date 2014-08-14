@@ -622,6 +622,7 @@ set(CORE_SOURCES
   ../src/parsersettings.cc
   ../src/mathc99.cc
   ../src/linalg.cc
+  ../src/colormap.cc
   ../src/Camera.cc
   ../src/handle_dep.cc 
   ../src/value.cc 
@@ -905,6 +906,18 @@ function(add_cmdline_test TESTCMD_BASENAME)
 
     if (${DISABLED} EQUAL -1)
 
+      set(EXPERIMENTAL_OPTION "")
+      string(REGEX MATCH "csgtexttest" match_result1 ${TEST_FULLNAME})
+      string(REGEX MATCH "cgalstlsanity" match_result2 ${TEST_FULLNAME})
+      string(REGEX MATCH "dumptest" match_result3 ${TEST_FULLNAME})
+      if( "${match_result1}" STREQUAL "" )
+       if( "${match_result2}" STREQUAL "" )
+        if( "${match_result3}" STREQUAL "" )
+         set(EXPERIMENTAL_OPTION "--enable=text")
+        endif()
+       endif()
+      endif()
+
       # 2D tests should be viewed from the top, not an angle.
       set(CAMERA_OPTION "")
       foreach(test2d IN LISTS TESTS_2D)
@@ -933,7 +946,7 @@ function(add_cmdline_test TESTCMD_BASENAME)
         set(FILENAME_OPTION -f ${FILE_BASENAME})
       endif()
 
-      add_test(NAME ${TEST_FULLNAME} ${CONFARG} ${CONFVAL} COMMAND ${PYTHON_EXECUTABLE} ${tests_SOURCE_DIR}/test_cmdline_tool.py --comparator=${COMPARATOR} -c ${IMAGE_COMPARE_EXECUTABLE} -s ${TESTCMD_SUFFIX} ${EXTRA_OPTIONS} ${TESTNAME_OPTION} ${FILENAME_OPTION} ${TESTCMD_EXE} ${TESTCMD_SCRIPT} "${SCADFILE}" ${CAMERA_OPTION} ${TESTCMD_ARGS})
+      add_test(NAME ${TEST_FULLNAME} ${CONFARG} ${CONFVAL} COMMAND ${PYTHON_EXECUTABLE} ${tests_SOURCE_DIR}/test_cmdline_tool.py --comparator=${COMPARATOR} -c ${IMAGE_COMPARE_EXECUTABLE} -s ${TESTCMD_SUFFIX} ${EXTRA_OPTIONS} ${TESTNAME_OPTION} ${FILENAME_OPTION} ${TESTCMD_EXE} ${TESTCMD_SCRIPT} "${SCADFILE}" ${CAMERA_OPTION} ${EXPERIMENTAL_OPTION} ${TESTCMD_ARGS})
       set_property(TEST ${TEST_FULLNAME} PROPERTY ENVIRONMENT "${CTEST_ENVIRONMENT}")
     endif()
   endforeach()
@@ -1028,6 +1041,8 @@ disable_tests(
   offpngtest_iteration
   stlpngtest_fractal
   offpngtest_fractal
+  stlpngtest_logo_and_text
+  offpngtest_logo_and_text
 )
 
 # mark which tests are 2d (regex match inside add_cmdline_test)
@@ -1085,7 +1100,23 @@ set_test_config(Heavy cgalpngtest_rotate_extrude-tests
                       cgalpngtest_linear_extrude-scale-zero-tests
                       csgpngtest_linear_extrude-scale-zero-tests
                       cgalpngtest_sphere-tests
-                      csgpngtest_resize-tests)
+                      csgpngtest_resize-tests
+                      csgpngtest_resize-tests
+                      stlpngtest_fence
+                      stlpngtest_surface
+                      stlpngtest_demo_cut
+                      stlpngtest_search
+                      stlpngtest_rounded_box
+                      stlpngtest_difference
+                      stlpngtest_translation
+                      offpngtest_fence
+                      offpngtest_surface
+                      offpngtest_demo_cut
+                      offpngtest_search
+                      offpngtest_rounded_box
+                      offpngtest_difference
+                      offpngtest_translation
+)
 
 # Bugs
 
@@ -1313,11 +1344,35 @@ add_cmdline_test(openscad-cameyeortho-viewall EXE ${OPENSCAD_BINPATH}
                  SUFFIX png
 		 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/features/camera-tests.scad)
 
-
+# Colorscheme tests
+add_cmdline_test(openscad-colorscheme-cornfield EXE ${OPENSCAD_BINPATH}
+                 ARGS --colorscheme=Cornfield -o 
+                 SUFFIX png 
+                 FILES ${CMAKE_SOURCE_DIR}/../examples/Basics/difference_cube.scad)
+add_cmdline_test(openscad-colorscheme-metallic EXE ${OPENSCAD_BINPATH}
+                 ARGS --colorscheme=Metallic -o 
+                 SUFFIX png 
+                 FILES ${CMAKE_SOURCE_DIR}/../examples/Basics/difference_cube.scad)
+add_cmdline_test(openscad-colorscheme-metallic-render EXE ${OPENSCAD_BINPATH}
+                 ARGS --colorscheme=Metallic --render -o 
+                 SUFFIX png 
+                 FILES ${CMAKE_SOURCE_DIR}/../examples/Basics/difference_cube.scad)
+add_cmdline_test(openscad-colorscheme-sunset EXE ${OPENSCAD_BINPATH}
+                 ARGS --colorscheme=Sunset -o 
+                 SUFFIX png 
+                 FILES ${CMAKE_SOURCE_DIR}/../examples/Basics/difference_cube.scad)
+add_cmdline_test(openscad-colorscheme-starnight EXE ${OPENSCAD_BINPATH}
+                 ARGS --colorscheme=Starnight -o 
+                 SUFFIX png 
+                 FILES ${CMAKE_SOURCE_DIR}/../examples/Basics/difference_cube.scad)
+add_cmdline_test(openscad-colorscheme-monotone EXE ${OPENSCAD_BINPATH}
+                 ARGS --colorscheme=Monotone -o 
+                 SUFFIX png 
+                 FILES ${CMAKE_SOURCE_DIR}/../examples/Basics/difference_cube.scad)
 
 #message("Available test configurations: ${TEST_CONFIGS}")
 #foreach(CONF ${TEST_CONFIGS})
 #  message("${CONF}: ${${CONF}_TEST_CONFIG}")
 #endforeach()
 
-message("CPPFLAGS: ${CMAKE_CXX_FLAGS}")
+message(STATUS "CPPFLAGS: ${CMAKE_CXX_FLAGS}")

@@ -27,6 +27,7 @@
 #include "ThrownTogetherRenderer.h"
 #include "polyset.h"
 #include "csgterm.h"
+#include "printutils.h"
 
 #include "system-gl.h"
 
@@ -43,6 +44,7 @@ ThrownTogetherRenderer::ThrownTogetherRenderer(CSGChain *root_chain,
 
 void ThrownTogetherRenderer::draw(bool /*showfaces*/, bool showedges) const
 {
+	PRINTD("Thrown draw");
 	if (this->root_chain) {
 		glEnable(GL_CULL_FACE);
 		glCullFace(GL_BACK);
@@ -62,6 +64,7 @@ void ThrownTogetherRenderer::renderCSGChain(CSGChain *chain, bool highlight,
 																						bool background, bool showedges, 
 																						bool fberror) const
 {
+	PRINTD("Thrown renderCSGChain");
 	glDepthFunc(GL_LEQUAL);
 	boost::unordered_map<std::pair<const Geometry*,const Transform3d*>,int> geomVisitMark;
 	BOOST_FOREACH(const CSGChainObject &obj, chain->objects) {

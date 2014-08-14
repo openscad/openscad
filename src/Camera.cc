@@ -5,6 +5,7 @@
 Camera::Camera(enum CameraType camtype) :
 	type(camtype), projection(Camera::PERSPECTIVE), fov(45), height(60), viewall(false)
 {
+	PRINTD("Camera()");
 	if (this->type == Camera::GIMBAL) {
 		object_trans << 0,0,0;
 		object_rot << 35,0,25;
@@ -92,6 +93,10 @@ void Camera::viewAll(const BoundingBox &bbox, float scalefactor)
 	}
 		break;
 	}
+	PRINTDB("modified center x y z %f %f %f",center.x() % center.y() % center.z());
+	PRINTDB("modified eye    x y z %f %f %f",eye.x() % eye.y() % eye.z());
+	PRINTDB("modified obj trans x y z %f %f %f",object_trans.x() % object_trans.y() % object_trans.z());
+	PRINTDB("modified obj rot   x y z %f %f %f",object_rot.x() % object_rot.y() % object_rot.z());
 }
 
 void Camera::zoom(int delta)

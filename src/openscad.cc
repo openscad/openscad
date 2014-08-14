@@ -114,6 +114,7 @@ static void help(const char *progname)
          "%2%[ --viewall ] \\\n"
          "%2%[ --imgsize=width,height ] [ --projection=(o)rtho|(p)ersp] \\\n"
          "%2%[ --render | --preview[=throwntogether] ] \\\n"
+         "%2%[ --colorscheme=[Cornfield|Sunset|Metallic|Starnight|BeforeDawn|Nature|DeepOcean] ] \\\n"
          "%2%[ --csglimit=num ]"
 #ifdef ENABLE_EXPERIMENTAL
          " [ --enable=<feature> ]"
@@ -152,7 +153,7 @@ static void info()
 	exit(0);
 }
 
-Camera get_camera( po::variables_map vm )
+Camera get_camera(po::variables_map vm)
 {
 	Camera camera;
 
@@ -623,6 +624,7 @@ int main(int argc, char **argv)
 		("viewall", "adjust camera to fit object")
 		("imgsize", po::value<string>(), "=width,height for exporting png")
 		("projection", po::value<string>(), "(o)rtho or (p)erspective when exporting png")
+		("colorscheme", po::value<string>(), "colorscheme")
 		("debug", po::value<string>(), "special debug info")
 		("o,o", po::value<string>(), "out-file")
 		("s,s", po::value<string>(), "stl-file")
@@ -722,6 +724,19 @@ int main(int argc, char **argv)
 		help(argv[0]);
 	}
 #endif
+
+	if (vm.count("colorscheme")) {
+		std::string colorscheme = vm["colorscheme"].as<string>();
+		if (ColorMap::inst()->findColorScheme(colorscheme)) {
+			RenderSettings::inst()->colorscheme = colorscheme;
+		} else {
+			PRINT("Unknown color scheme. Valid schemes:");
+			BOOST_FOREACH (const std::string &name, ColorMap::inst()->colorSchemeNames()) {
+				PRINT(name);
+			}
+			exit(1);
+		}
+	}
 
 	currentdir = boosty::stringy(fs::current_path());
 

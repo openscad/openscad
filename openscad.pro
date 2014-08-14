@@ -221,6 +221,7 @@ HEADERS += src/typedefs.h \
            src/parsersettings.h \
            src/renderer.h \
            src/rendersettings.h \
+           src/colormap.h \
            src/ThrownTogetherRenderer.h \
            src/CGAL_renderer.h \
            src/OGL_helper.h \
@@ -378,6 +379,7 @@ SOURCES += src/version_check.cc \
            src/export_png.cc \
            src/import.cc \
            src/renderer.cc \
+           src/colormap.cc \
            src/ThrownTogetherRenderer.cc \
            src/CSGTermEvaluator.cc \
            src/svg.cc \
