@@ -62,7 +62,7 @@ get_debian_deps()
   libeigen3-dev libcgal-dev libopencsg-dev libgmp3-dev libgmp-dev \
   imagemagick libfontconfig-dev libfreetype6-dev \
   libharfbuzz-dev gtk-doc-tools libglib2.0-dev gettext; do
-   sudo apt-get -y install $pkg;
+   apt-get -y install $pkg;
  done
 }
 

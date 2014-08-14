@@ -69,6 +69,10 @@ if(${CMAKE_BUILD_TYPE} STREQUAL "Debug")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DDEBUG")
 endif()
 
+# Some features are "experimental". We want to enable here so we can
+# regression test them.
+add_definitions(-DOPENSCAD_TESTING -DENABLE_EXPERIMENTAL)
+
 # MCAD
 if(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/../libraries/MCAD/__init__.py)
   message(FATAL_ERROR "MCAD not found. You can install from the OpenSCAD root as follows: \n  git submodule update --init")
@@ -561,7 +565,6 @@ if (DIFFPNG)
   message(STATUS "Image comparison program: diffpng")
 endif()
 
-
 # Internal includes
 include_directories(../src)
 
@@ -592,8 +595,6 @@ add_definitions(-DOPENSCAD_VERSION=${VERSION} -DOPENSCAD_YEAR=${OPENSCAD_YEAR} -
 if (DEFINED OPENSCAD_DAY)
   add_definitions(-DOPENSCAD_DAY=${OPENSCAD_DAY})
 endif()
-
-add_definitions(-DOPENSCAD_TESTING -DENABLE_EXPERIMENTAL)
 
 # Search for MCAD in correct place
 set(CTEST_ENVIRONMENT "${CTEST_ENVIRONMENT};OPENSCADPATH=${CMAKE_CURRENT_SOURCE_DIR}/../libraries")
@@ -832,6 +833,7 @@ endmacro()
 # Usage example: set_test_config(Heavy dumptest_testname opencsgtest_testname2)
 #
 function(set_test_config CONFIG)
+  #message(STATUS "set_test_config, config: ${CONFIG} argn: ${ARGN}")
   list(APPEND ${CONFIG}_TEST_CONFIG ${ARGN})
   list(FIND TEST_CONFIGS ${CONFIG} FOUND)
   if (FOUND EQUAL -1)
@@ -1100,7 +1102,6 @@ set_test_config(Heavy cgalpngtest_rotate_extrude-tests
                       cgalpngtest_linear_extrude-scale-zero-tests
                       csgpngtest_linear_extrude-scale-zero-tests
                       cgalpngtest_sphere-tests
-                      csgpngtest_resize-tests
                       csgpngtest_resize-tests
                       stlpngtest_fence
                       stlpngtest_surface
