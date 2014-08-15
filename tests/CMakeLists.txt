@@ -553,15 +553,6 @@ else()
   endif()
 endif()
 
-if (DIFFPNG)
-  # How to set cflags to optimize the executable regardless of CMAKE_BUILD_TYPE?
-  set(IMAGE_COMPARE_EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/diffpng)
-  set(COMPARATOR "diffpng")
-  add_executable(diffpng diffpng.cpp ../src/lodepng.cpp)
-  message(STATUS "Image comparison program: diffpng")
-endif()
-
-
 # Internal includes
 include_directories(../src)
 
