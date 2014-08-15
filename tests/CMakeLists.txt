@@ -1040,7 +1040,7 @@ disable_tests(
 # (note - dont use the offset from examples/Advanced)
 list(APPEND TESTS_2D circle control-hull-dimension difference-2d ellipse
  flat_body hull2 import_dxf intersection2 issue585 issue612 lwpolyline2 -arc _arc
- minkowski2 multiple-layers offset- polygon* primitive-cut projection-test
+ minkowski2 multiple-layers offset- polygon* primitive-cut projection-test projection-cut-test
  render-2d resize-2d scale2D scale2d text-search square font 
  transform-insert triangle)
 
