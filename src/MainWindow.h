@@ -82,7 +82,6 @@ private slots:
         void updateMdiMode(bool mdi);
         void updateUndockMode(bool undockMode);
 	void setFileName(const QString &filename);
-	void setFont(const QString &family, uint size);
 	void showProgress();
 	void openCSGSettingsChanged();
 

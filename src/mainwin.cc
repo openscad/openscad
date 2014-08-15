@@ -425,7 +425,7 @@ MainWindow::MainWindow(const QString &filename)
 	connect(Preferences::inst(), SIGNAL(updateMdiMode(bool)), this, SLOT(updateMdiMode(bool)));
 	connect(Preferences::inst(), SIGNAL(updateUndockMode(bool)), this, SLOT(updateUndockMode(bool)));
 	connect(Preferences::inst(), SIGNAL(fontChanged(const QString&,uint)), 
-					this, SLOT(setFont(const QString&,uint)));
+					editor, SLOT(initFont(const QString&,uint)));
 	connect(Preferences::inst(), SIGNAL(openCSGSettingsChanged()),
 					this, SLOT(openCSGSettingsChanged()));
 	connect(Preferences::inst(), SIGNAL(syntaxHighlightChanged(const QString&)),
@@ -2373,16 +2373,6 @@ MainWindow::preferences()
 	Preferences::inst()->show();
 	Preferences::inst()->activateWindow();
 	Preferences::inst()->raise();
-}
-
-void MainWindow::setFont(const QString &family, uint size)
-{
-	QFont font;
-	if (!family.isEmpty()) font.setFamily(family);
-	else font.setFixedPitch(true);
-	if (size > 0)	font.setPointSize(size);
-	font.setStyleHint(QFont::TypeWriter);
-	editor->setFont(font);
 }
 
 void MainWindow::quit()

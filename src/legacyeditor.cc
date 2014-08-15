@@ -251,3 +251,14 @@ bool LegacyEditor::find(const QString &newText, bool findNext, bool findBackward
 	return true;
 
 }
+
+void LegacyEditor::initFont(const QString& family, uint size)
+{
+	QFont font;
+	if (!family.isEmpty()) font.setFamily(family);
+	else font.setFixedPitch(true);
+	if (size > 0)	font.setPointSize(size);
+	font.setStyleHint(QFont::TypeWriter);
+	this->setFont(font);
+
+}

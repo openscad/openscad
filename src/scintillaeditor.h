@@ -15,7 +15,6 @@ public:
     ScintillaEditor(QWidget *parent);
     QsciScintilla *qsci;
         QString toPlainText();
-	void initFont();
 	void initMargin();
 	void initLexer();
 	void forLightBackground();
@@ -45,6 +44,8 @@ public slots:
         void copy();
         void paste();
 	void onTextChanged();
+	void initFont(const QString&, uint);
+
 private:
          QVBoxLayout *scintillaLayout;
 	const int indicatorNumber = 1;

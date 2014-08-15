@@ -19,7 +19,7 @@ ScintillaEditor::ScintillaEditor(QWidget *parent) : EditorInterface(parent)
 	qsci->setUtf8(true);
 	preferenceEditorOption = Preferences::inst()->getValue("editor/syntaxhighlight").toString();
 	lexer = new ScadLexer(this);
-	initFont();
+//	initFont();
 	initLexer();
 	initMargin();
 	qsci->setFolding(QsciScintilla::BoxedTreeFoldStyle, 4);
@@ -223,16 +223,15 @@ void ScintillaEditor::zoomOut()
 	qsci->zoomOut(); 
 }
 
-void ScintillaEditor::initFont()
+void ScintillaEditor::initFont(const QString& fontName, uint size)
 {
-    QFont font("inconsolata", 12);
+    QFont font(fontName, size);
     font.setFixedPitch(true);
-    qsci->setFont(font);
+    lexer->setFont(font);
 }
 
 void ScintillaEditor::initLexer()
 {
-    lexer->setFont(qsci->font());
     qsci->setLexer(lexer);
 }
 void ScintillaEditor::initMargin()

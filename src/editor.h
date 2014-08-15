@@ -46,6 +46,7 @@ public slots:
         virtual void copy(){ }
         virtual void paste(){ }
 	virtual void onTextChanged() { }
+	virtual void initFont(const QString&, uint){ }
 private:
         Highlighter *highlighter;
 	QSize initialSizeHint;

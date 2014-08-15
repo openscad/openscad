@@ -27,8 +27,8 @@ public:
 	QTextDocument *document() { return textedit->document(); }
 	bool find(const QString &, bool findNext = false, bool findBackwards = false);
 	void replaceSelectedText(QString& newText);	
-
 	bool findString(const QString & exp, bool findBackwards) const;
+
 public slots:
 	void zoomIn();
 	void zoomOut();
@@ -49,6 +49,7 @@ public slots:
 	void cut();
 	void copy();
 	void paste();
+	void initFont(const QString&, uint);
 private:
 	Highlighter *highlighter;
 	QSize initialSizeHint;
