@@ -20,6 +20,7 @@
 #endif
 
 typedef CGAL::Exact_predicates_inexact_constructions_kernel K;
+typedef K::Point_3 Point_3;
 typedef CGAL::Triangulation_vertex_base_2<K> Vb;
 typedef CGAL::Delaunay_mesh_face_base_2<K> Fb;
 typedef CGAL::Triangulation_data_structure_2<Vb, Fb> Tds;
@@ -112,7 +113,7 @@ namespace PolysetUtils {
 	 is projected onto the XY plane you will not get a polygon, you wil get 
 	 a skinny line thing. It's better to project that square onto the yz 
 	 plane.*/
-	projection_t find_good_projection( PolySet::Polygon pgon ) {
+	projection_t find_good_projection( PolySet::Polygon const& pgon ) {
 		// step 1 - find 3 non-collinear points in the input
 		if (pgon.size()<3) return NONE;
 		Vector3d v1,v2,v3;
@@ -233,6 +234,72 @@ namespace PolysetUtils {
 					outps.append_vertex(t[1].x(),t[1].y(),t[1].z());
 					outps.append_vertex(t[2].x(),t[2].y(),t[2].z());
 				}
+		}
+	}
+
+	bool triangulate_polygon( const PolySet::Polygon &pgon, std::vector<PolySet::Polygon> &triangles) {
+		if (pgon.size()<3) {
+			PRINT("WARNING: PolySet has polygon with <3 points");
+			return false;
+		}
+
+		projection_t goodproj = find_good_projection( pgon );
+
+		if (goodproj==NONE) {
+			PRINT("WARNING: PolySet has degenerate polygon");
+			return false;
+		}
+
+		return triangulate_polygon(pgon, triangles, goodproj);
+	}
+
+	namespace /* anonymous */ {
+
+		struct PointList {
+			std::vector<Point_3> points;
+			projection_t projection;
+
+			PointList(Polygon3d const& p)
+			: points(p.size())
+			{
+				for (int i = 0; i < p.size(); i++)
+					points[i] = Point_3(p[i][0], p[i][1], p[i][2]);
+
+				projection = find_good_projection(p);
+			}
+		};
+
+	}
+
+	bool is_simple(Polygon3d const& p) {
+		if (p.size() <= 3) return true;
+
+		PointList poly(p);
+
+		switch (poly.projection) {
+			case YZPLANE: return CGAL::is_simple_2(poly.points.begin(), poly.points.end(),
+												   CGAL::Projection_traits_yz_3<K>());
+			case XZPLANE: return CGAL::is_simple_2(poly.points.begin(), poly.points.end(),
+												   CGAL::Projection_traits_xz_3<K>());
+			case XYPLANE: return CGAL::is_simple_2(poly.points.begin(), poly.points.end(),
+												   CGAL::Projection_traits_xy_3<K>());
+			case NONE:    return false;
+		}
+	}
+
+	bool is_convex(Polygon3d const& p) {
+		if (p.size() <= 3) return true;
+
+		PointList poly(p);
+
+		switch (poly.projection) {
+			case YZPLANE: return CGAL::is_convex_2(poly.points.begin(), poly.points.end(),
+											 CGAL::Projection_traits_yz_3<K>());
+			case XZPLANE: return CGAL::is_convex_2(poly.points.begin(), poly.points.end(),
+											 CGAL::Projection_traits_xz_3<K>());
+			case XYPLANE: return CGAL::is_convex_2(poly.points.begin(), poly.points.end(),
+											 CGAL::Projection_traits_xy_3<K>());
+			case NONE:    return false;
 		}
 	}
 }

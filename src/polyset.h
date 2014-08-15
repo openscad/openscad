@@ -30,6 +30,7 @@ public:
 
 	size_t numPolygons() const { return polygons.size(); }
 	void append_poly();
+	void finish_poly();
 	void append_vertex(double x, double y, double z = 0.0);
 	void append_vertex(Vector3d v);
 	void insert_vertex(double x, double y, double z = 0.0);

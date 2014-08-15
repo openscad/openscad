@@ -29,6 +29,7 @@
 #include "printutils.h"
 #include <Eigen/LU>
 #include <boost/foreach.hpp>
+#include "polyset-utils.h"
 
 /*! /class PolySet
 
@@ -82,6 +83,23 @@ std::string PolySet::dump() const
 void PolySet::append_poly()
 {
 	polygons.push_back(Polygon());
+}
+
+void PolySet::finish_poly() {
+#ifdef ENABLE_CGAL
+	// check if the last polygon is convex – if so, decompose
+	if (polygons.back().size() <= 3) return; // triangles are always convex
+
+	// is_simple is a precondition for is_convex
+	if (PolysetUtils::is_simple(polygons.back()) &&
+		!PolysetUtils::is_convex(polygons.back())) {
+		std::vector<Polygon> triangles;
+		if (!PolysetUtils::triangulate_polygon(polygons.back(), triangles)) {
+			polygons.pop_back();
+			polygons.insert(polygons.end(), triangles.begin(), triangles.end());
+		}
+	}
+#endif
 }
 
 void PolySet::append_vertex(double x, double y, double z)
