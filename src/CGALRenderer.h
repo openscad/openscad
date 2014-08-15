@@ -13,10 +13,10 @@ public:
 	virtual BoundingBox getBoundingBox() const;
 
 private:
-	shared_ptr<class Polyhedron> getPolyhedron() const;
+	shared_ptr<class CGAL_OGL_Polyhedron> getPolyhedron() const;
 	void buildPolyhedron() const;
 
-	mutable shared_ptr<class Polyhedron> polyhedron;
+	mutable shared_ptr<class CGAL_OGL_Polyhedron> polyhedron;
 	shared_ptr<const CGAL_Nef_polyhedron> N;
 	shared_ptr<const class PolySet> polyset;
 };

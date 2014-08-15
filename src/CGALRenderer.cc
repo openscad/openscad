@@ -35,7 +35,7 @@
 #include "printutils.h"
 
 #include "CGALRenderer.h"
-#include "CGAL_renderer.h"
+#include "CGAL_OGL_Polyhedron.h"
 #include "CGAL_Nef_polyhedron.h"
 #include "cgal.h"
 
@@ -61,7 +61,7 @@ CGALRenderer::~CGALRenderer()
 {
 }
 
-shared_ptr<class Polyhedron> CGALRenderer::getPolyhedron() const
+shared_ptr<class CGAL_OGL_Polyhedron> CGALRenderer::getPolyhedron() const
 {
 	if (this->N && !this->polyhedron) buildPolyhedron();
 	return this->polyhedron;
@@ -70,7 +70,7 @@ shared_ptr<class Polyhedron> CGALRenderer::getPolyhedron() const
 void CGALRenderer::buildPolyhedron() const
 {
 	PRINTD("buildPolyhedron");
-	this->polyhedron.reset(new Polyhedron(*this->colorscheme));
+	this->polyhedron.reset(new CGAL_OGL_Polyhedron(*this->colorscheme));
 	CGAL::OGL::Nef3_Converter<CGAL_Nef_polyhedron3>::convert_to_OGLPolyhedron(*this->N->p3, this->polyhedron.get());
 	// CGAL_NEF3_MARKED_FACET_COLOR <- CGAL_FACE_BACK_COLOR
 	// CGAL_NEF3_UNMARKED_FACET_COLOR <- CGAL_FACE_FRONT_COLOR
@@ -124,7 +124,7 @@ void CGALRenderer::draw(bool showfaces, bool showedges) const
 		}
 	}
 	else {
-		shared_ptr<class Polyhedron> polyhedron = getPolyhedron();
+		shared_ptr<class CGAL_OGL_Polyhedron> polyhedron = getPolyhedron();
         if (polyhedron) {
             PRINTD("draw() polyhedron");
             if (showfaces) polyhedron->set_style(SNC_BOUNDARY);
@@ -143,7 +143,7 @@ BoundingBox CGALRenderer::getBoundingBox() const
 		bbox = this->polyset->getBoundingBox();
 	}
 	else {
-		shared_ptr<class Polyhedron> polyhedron = getPolyhedron();
+		shared_ptr<class CGAL_OGL_Polyhedron> polyhedron = getPolyhedron();
 		if (polyhedron) {
 			CGAL::Bbox_3 cgalbbox = polyhedron->bbox();
 			bbox = BoundingBox(

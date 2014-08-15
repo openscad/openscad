@@ -223,7 +223,7 @@ HEADERS += src/typedefs.h \
            src/rendersettings.h \
            src/colormap.h \
            src/ThrownTogetherRenderer.h \
-           src/CGAL_renderer.h \
+           src/CGAL_OGL_Polyhedron.h \
            src/OGL_helper.h \
            src/QGLView.h \
            src/GLView.h \

@@ -1084,7 +1084,7 @@ bool tessellate_3d_face_with_holes( std::vector<CGAL_Polygon_3> &polygons, std::
 	}
 
 	size_t numholes = polygons2d.size()-1;
-	PRINTB("seeding %i holes",numholes);
+	PRINTDB("seeding %i holes",numholes);
 	std::list<CDTPoint> list_of_seeds;
 	for (size_t i=1;i<polygons2d.size();i++) {
 		std::vector<CGAL_Point_2> &pgon = polygons2d[i];
@@ -1105,16 +1105,16 @@ bool tessellate_3d_face_with_holes( std::vector<CGAL_Polygon_3> &polygons, std::
 		//PRINTB("seed %s",*li);
 		double x = CGAL::to_double( li->x() );
 		double y = CGAL::to_double( li->y() );
-		PRINTB("seed %f,%f",x%y);
+		PRINTDB("seed %f,%f",x%y);
 	}
-	PRINT("seeding done");
+	PRINTD("seeding done");
 
-	PRINT( "meshing" );
+	PRINTD( "meshing" );
 	CGAL::refine_Delaunay_mesh_2_without_edge_refinement( cdt,
 		list_of_seeds.begin(), list_of_seeds.end(),
 		DummyCriteria<CDT>() );
 
-	PRINT("meshing done");
+	PRINTD("meshing done");
 	// this fails because it calls is_simple and is_simple fails on many
 	// Nef Polyhedron faces
 	//CGAL::Orientation original_orientation =

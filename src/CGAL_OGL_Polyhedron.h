@@ -36,7 +36,7 @@
 using CGAL::OGL::SNC_BOUNDARY;
 using CGAL::OGL::SNC_SKELETON;
 
-class Polyhedron : public CGAL::OGL::Polyhedron
+class CGAL_OGL_Polyhedron : public CGAL::OGL::Polyhedron
 {
 public:
 
@@ -50,14 +50,14 @@ public:
 		NUM_COLORS
 	};
 
-	Polyhedron(const ColorScheme &cs) {
-		PRINTD("Polyhedron()");
+	CGAL_OGL_Polyhedron(const ColorScheme &cs) {
+		PRINTD("CGAL_OGL_Polyhedron()");
 		// Set default colors.
 		setColor(CGAL_NEF3_MARKED_VERTEX_COLOR,0xb7,0xe8,0x5c);
 		setColor(CGAL_NEF3_UNMARKED_VERTEX_COLOR,0xff,0xf6,0x7c);
 		// Face and Edge colors are taken from default colorscheme
 		setColorScheme(cs);
-		PRINTD("Polyhedron() end");
+		PRINTD("CGAL_OGL_Polyhedron() end");
 	}
 
 	void draw(bool showedges) const {
@@ -98,12 +98,12 @@ public:
 		return c;
 	}
 
-	void setColor(Polyhedron::RenderColor color_index, const Color4f &c) {
+	void setColor(CGAL_OGL_Polyhedron::RenderColor color_index, const Color4f &c) {
 		PRINTDB("setColor %i %f %f %f",color_index%c[0]%c[1]%c[2]);
 		this->colors[color_index] = CGAL::Color(c[0]*255,c[1]*255,c[2]*255);
 	}
 
-	void setColor(Polyhedron::RenderColor color_index,
+	void setColor(CGAL_OGL_Polyhedron::RenderColor color_index,
 				  unsigned char r, unsigned char g, unsigned char b) {
 		PRINTDB("setColor %i %i %i %i",color_index%r%g%b);
 		this->colors[color_index] = CGAL::Color(r,g,b);
@@ -122,7 +122,7 @@ public:
 private:
 	CGAL::Color colors[NUM_COLORS];
 
-}; // Polyhedron
+}; // CGAL_OGL_Polyhedron
 
 
 
@@ -131,10 +131,10 @@ private:
 
 #include <CGAL/Bbox_3.h>
 
-class Polyhedron
+class CGAL_OGL_Polyhedron
 {
 public:
-	Polyhedron() {}
+	CGAL_OGL_Polyhedron() {}
 	void draw(bool showedges) const {}
 	CGAL::Bbox_3 bbox() const { return CGAL::Bbox_3(-1,-1,-1,1,1,1); }
 };

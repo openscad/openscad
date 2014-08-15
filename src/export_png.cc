@@ -8,7 +8,6 @@
 
 #ifdef ENABLE_CGAL
 #include "CGALRenderer.h"
-#include "CGAL_renderer.h"
 #include "cgal.h"
 #include "cgalutils.h"
 #include "CGAL_Nef_polyhedron.h"
