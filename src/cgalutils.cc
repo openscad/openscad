@@ -1167,7 +1167,7 @@ bool createPolySetFromNefPolyhedron3(const CGAL_Nef_polyhedron3 &N, PolySet &ps)
 		CGAL_Plane_3 plane( hfaceti->plane() );
 		std::vector<CGAL_Polygon_3> polygons;
 		// the 0-mark-volume is the 'empty' volume of space. skip it.
-		if (hfaceti->incident_volume()->mark() == 0) continue;
+		if (hfaceti->incident_volume()->mark()) continue;
 		CGAL_Nef_polyhedron3::Halffacet_cycle_const_iterator cyclei;
 		CGAL_forall_facet_cycles_of( cyclei, hfaceti ) {
 			CGAL_Nef_polyhedron3::SHalfedge_around_facet_const_circulator c1(cyclei);
@@ -1188,18 +1188,20 @@ bool createPolySetFromNefPolyhedron3(const CGAL_Nef_polyhedron3 &N, PolySet &ps)
 		just output the resulting 3d triangles*/
 		std::vector<CGAL_Polygon_3> triangles;
 		bool err = tessellate_3d_face_with_holes( polygons, triangles, plane );
-		if (!err) for (size_t i=0;i<triangles.size();i++) {
-			if (triangles[i].size()!=3) {
-				PRINT("WARNING: triangle doesn't have 3 points. skipping");
-				continue;
-			}
-			ps.append_poly();
-			for (size_t j=0;j<3;j++) {
-				double x1,y1,z1;
-				x1 = CGAL::to_double( triangles[i][j].x() );
-				y1 = CGAL::to_double( triangles[i][j].y() );
-				z1 = CGAL::to_double( triangles[i][j].z() );
-				ps.append_vertex(x1,y1,z1);
+		if (!err) {
+			for (size_t i=0;i<triangles.size();i++) {
+				if (triangles[i].size()!=3) {
+					PRINT("WARNING: triangle doesn't have 3 points. skipping");
+					continue;
+				}
+				ps.append_poly();
+				for (size_t j=0;j<3;j++) {
+					double x1,y1,z1;
+					x1 = CGAL::to_double( triangles[i][j].x() );
+					y1 = CGAL::to_double( triangles[i][j].y() );
+					z1 = CGAL::to_double( triangles[i][j].z() );
+					ps.append_vertex(x1,y1,z1);
+				}
 			}
 		}
 	}
