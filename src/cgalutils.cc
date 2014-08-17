@@ -132,7 +132,8 @@ namespace CGALUtils {
 					else if (nef && nef->p3->is_simple()) nefworkaround::convert_to_Polyhedron<CGAL_Kernel3>(*nef->p3, poly);
 					else throw 0;
 
-					if (ps && ps->is_convex() || !ps && is_weakly_convex(poly)) {
+					if ((ps && ps->is_convex()) ||
+							(!ps && is_weakly_convex(poly))) {
 						PRINTDB("Minkowski: child %d is convex and %s",i % (ps?"PolySet":"Nef") );
 						P[i].push_back(poly);
 					} else {
@@ -619,23 +620,26 @@ namespace CGALUtils {
 		std::vector<Plane> facet_planes; facet_planes.reserve(ps.polygons.size());
 
 		for (int i = 0; i < ps.polygons.size(); i++) {
+			Plane plane;
 			size_t N = ps.polygons[i].size();
-			assert(N > 0);
-			std::vector<Point> v(N);
-			for (int j = 0; j < N; j++) {
-				v[j] = vector_convert<Point>(ps.polygons[i][j]);
-				Edge edge(ps.polygons[i][j],ps.polygons[i][(j+1)%N]);
-				if (edge_to_facet_map.count(edge)) return false; // edge already exists: nonmanifold
-				edge_to_facet_map[edge] = i;
+			if (N >= 3) {
+				std::vector<Point> v(N);
+				for (int j = 0; j < N; j++) {
+					v[j] = vector_convert<Point>(ps.polygons[i][j]);
+					Edge edge(ps.polygons[i][j],ps.polygons[i][(j+1)%N]);
+					if (edge_to_facet_map.count(edge)) return false; // edge already exists: nonmanifold
+					edge_to_facet_map[edge] = i;
+				}
+				Vector normal;
+				CGAL::normal_vector_newell_3(v.begin(), v.end(), normal);
+				plane = Plane(v[0], normal);
 			}
-			Vector normal;
-			CGAL::normal_vector_newell_3(v.begin(), v.end(), normal);
-
-			facet_planes.push_back(Plane(v[0], normal));
+			facet_planes.push_back(plane);
 		}
 
 		for (int i = 0; i < ps.polygons.size(); i++) {
 			size_t N = ps.polygons[i].size();
+			if (N < 3) continue;
 			for (int j = 0; j < N; j++) {
 				Edge other_edge(ps.polygons[i][(j+1)%N], ps.polygons[i][j]);
 				if (edge_to_facet_map.count(other_edge) == 0) return false;//
