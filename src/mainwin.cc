@@ -1797,6 +1797,12 @@ void MainWindow::actionExport(export_type_e, QString, QString)
 		return;
 	}
 
+	if (this->root_geom->isEmpty()) {
+		PRINT("Current top level object is empty.");
+		clearCurrentOutput();
+		return;
+	}
+
 	const CGAL_Nef_polyhedron *N = dynamic_cast<const CGAL_Nef_polyhedron *>(this->root_geom.get());
 	if (N && !N->p3->is_simple()) {
 		PRINT("Object isn't a valid 2-manifold! Modify your design. See http://en.wikibooks.org/wiki/OpenSCAD_User_Manual/STL_Import_and_Export");
