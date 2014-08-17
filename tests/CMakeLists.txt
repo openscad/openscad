@@ -951,6 +951,52 @@ function(add_cmdline_test TESTCMD_BASENAME)
   endforeach()
 endfunction()
 
+#
+# Usage add_failing_test(testbasename RETVAL <expected return value>
+#                        [EXE <executable>] [SCRIPT <script>] [ARGS <args to exe>]
+#                        FILES <test files>)
+#
+function(add_failing_test TESTCMD_BASENAME)
+  cmake_parse_arguments(TESTCMD "" "RETVAL;EXE;SCRIPT;" "FILES;ARGS" ${ARGN})
+
+  if (TESTCMD_EXE)
+    set(TESTNAME_OPTION -t ${TESTCMD_BASENAME})
+  else()
+    # If no executable was specified, assume it was built by us and resides here
+    set(TESTCMD_EXE ${CMAKE_BINARY_DIR}/${TESTCMD_BASENAME})
+  endif()
+
+  # Add tests from args
+  foreach (SCADFILE ${TESTCMD_FILES})
+    get_filename_component(FILE_BASENAME ${SCADFILE} NAME_WE)
+    string(REPLACE " " "_" FILE_BASENAME ${FILE_BASENAME}) # Test names cannot include spaces
+    set(TEST_FULLNAME "${TESTCMD_BASENAME}_${FILE_BASENAME}")
+    list(FIND DISABLED_TESTS ${TEST_FULLNAME} DISABLED)
+
+    if (${DISABLED} EQUAL -1)
+      # Handle configurations
+      unset(FOUNDCONFIGS)
+      get_test_config(${TEST_FULLNAME} FOUNDCONFIGS)
+      if (NOT FOUNDCONFIGS)
+        set_test_config(Default ${TEST_FULLNAME})
+      endif()
+      set_test_config(All ${TEST_FULLNAME})
+      unset(FOUNDCONFIGS)
+      get_test_config(${TEST_FULLNAME} FOUNDCONFIGS)
+      set(CONFARG CONFIGURATIONS)
+      set(CONFVAL ${FOUNDCONFIGS})
+
+      # The python script cannot extract the testname when given extra parameters
+      if (TESTCMD_ARGS)
+        set(FILENAME_OPTION -f ${FILE_BASENAME})
+      endif()
+
+      add_test(NAME ${TEST_FULLNAME} ${CONFARG} ${CONFVAL} COMMAND ${TESTCMD_EXE} ${TESTCMD_SCRIPT} "${SCADFILE}" ${TESTCMD_ARGS})
+      set_property(TEST ${TEST_FULLNAME} PROPERTY ENVIRONMENT "${CTEST_ENVIRONMENT}")
+    endif()
+  endforeach()
+endfunction()
+
 enable_testing()
 
 
@@ -973,7 +1019,12 @@ file(GLOB FEATURES_2D_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/2D/features/*.s
 file(GLOB DEPRECATED_3D_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/deprecated/*.scad)
 file(GLOB SCAD_DXF_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/dxf/*.scad)
 file(GLOB FUNCTION_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/functions/*.scad)
-file(GLOB EXAMPLE_FILES ${CMAKE_SOURCE_DIR}/../examples/*/*.scad)
+file(GLOB_RECURSE EXAMPLE_3D_FILES ${CMAKE_SOURCE_DIR}/../examples/*.scad)
+
+list(REMOVE_ITEM EXAMPLE_3D_FILES ${CMAKE_SOURCE_DIR}/../examples/Shapes/flat_body.scad)
+list(APPEND EXAMPLE_2D_FILES ${CMAKE_SOURCE_DIR}/../examples/Shapes/flat_body.scad)
+
+list(APPEND EXAMPLE_FILES ${EXAMPLE_3D_FILES} ${EXAMPLE_2D_FILES})
 
 list(APPEND ECHO_FILES ${FUNCTION_FILES}
             ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/features/for-tests.scad
@@ -1016,8 +1067,8 @@ list(APPEND DUMPTEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/escape-test
                            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/allfunctions.scad
                            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/allmodules.scad)
 
-list(APPEND CGALPNGTEST_2D_FILES ${FEATURES_2D_FILES} ${SCAD_DXF_FILES})
-list(APPEND CGALPNGTEST_3D_FILES ${FEATURES_3D_FILES} ${DEPRECATED_3D_FILES} ${EXAMPLE_FILES})
+list(APPEND CGALPNGTEST_2D_FILES ${FEATURES_2D_FILES} ${SCAD_DXF_FILES} ${EXAMPLE_2D_FILES})
+list(APPEND CGALPNGTEST_3D_FILES ${FEATURES_3D_FILES} ${DEPRECATED_3D_FILES} ${EXAMPLE_3D_FILES})
 list(APPEND CGALPNGTEST_3D_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/include-tests.scad
                            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/use-tests.scad
                            ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/transform-nan-inf-tests.scad
@@ -1025,7 +1076,8 @@ list(APPEND CGALPNGTEST_3D_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/inclu
                            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/localfiles_dir/localfiles-compatibility-test.scad
                            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/rotate-empty-bbox.scad
                            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/empty-shape-tests.scad
-                           ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/null-polygons.scad)
+                           ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/null-polygons.scad
+                           ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/empty-union.scad)
 
 list(APPEND CGALPNGTEST_FILES ${CGALPNGTEST_2D_FILES} ${CGALPNGTEST_3D_FILES})
 list(APPEND OPENCSGTEST_FILES ${CGALPNGTEST_FILES})
@@ -1036,15 +1088,16 @@ list(APPEND CGALSTLSANITYTEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/no
 
 file(GLOB EXPERIMENTAL_TEXT_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/experimental/text-*.scad)
 
-list(APPEND EXPORT3D_TEST_FILES ${EXAMPLE_FILES})
-list(APPEND EXPORT3D_TEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/features/polyhedron-nonplanar-tests.scad)
+list(APPEND EXPORT3D_TEST_FILES ${EXAMPLE_3D_FILES})
+list(APPEND EXPORT3D_TEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/features/polyhedron-nonplanar-tests.scad
+                                ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/features/polyhedron-tests.scad
+                                ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/features/rotate_extrude-tests.scad
+                                ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/features/union-coincident-test.scad
+                                ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/null-polygons.scad)
+
 disable_tests(
   # This doesn't output anything
   dxfpngtest_nothing-decimal-comma-separated
-
-  # the flat_body is not 3d so dont do 3d-tests on it
-  stlpngtest_flat_body
-  offpngtest_flat_body
 
   # these take too long, for little relative gain in testing
   stlpngtest_iteration
@@ -1056,7 +1109,7 @@ disable_tests(
 )
 
 # 2D tests
-list(APPEND ALL_2D_FILES ${FEATURES_2D_FILES} ${SCAD_DXF_FILES} ${EXPERIMENTAL_TEXT_FILES})
+list(APPEND ALL_2D_FILES ${FEATURES_2D_FILES} ${SCAD_DXF_FILES} ${EXAMPLE_2D_FILES} ${EXPERIMENTAL_TEXT_FILES})
 
 # FIXME: This test illustrates a weakness in child() combined with modifiers.
 # Reenable it when this is improved
@@ -1161,6 +1214,8 @@ foreach(FILE ${EXAMPLE_FILES})
   set_test_config(Examples ${TEST_FULLNAME})
   get_test_fullname(csgpngtest ${FILE} TEST_FULLNAME)
   set_test_config(Examples ${TEST_FULLNAME})
+  get_test_fullname(monotonepngtest ${FILE} TEST_FULLNAME)
+  set_test_config(Examples ${TEST_FULLNAME})
   get_test_fullname(stlpngtest ${FILE} TEST_FULLNAME)
   set_test_config(Examples ${TEST_FULLNAME})
   get_test_fullname(offpngtest ${FILE} TEST_FULLNAME)
@@ -1235,13 +1290,30 @@ add_cmdline_test(throwntogethertest EXE ${OPENSCAD_BINPATH} ARGS --preview=throw
 # with anything. It's self-contained and returns != 0 on error
 add_cmdline_test(cgalstlsanitytest EXE ${CMAKE_SOURCE_DIR}/cgalstlsanitytest SUFFIX txt ARGS ${OPENSCAD_BINPATH} FILES ${CGALSTLSANITYTEST_FILES})
 
+#
 # Export/Import tests
-add_cmdline_test(stlpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOURCE_DIR}/export_import_pngtest.py ARGS --openscad=${OPENSCAD_BINPATH} --format=STL SUFFIX png FILES ${EXPORT3D_TEST_FILES})
-add_cmdline_test(offpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOURCE_DIR}/export_import_pngtest.py ARGS --openscad=${OPENSCAD_BINPATH} --format=OFF EXPECTEDDIR stlpngtest SUFFIX png FILES ${EXPORT3D_TEST_FILES})
+#
+
+# Issue #337
+set_test_config(Bugs stlpngtest_polyhedron-tests)
+# Issue #910
+set_test_config(Bugs offpngtest_polyhedron-tests)
+
+add_cmdline_test(monotonepngtest EXE ${OPENSCAD_BINPATH} ARGS --colorscheme=Monotone --enable=text --render -o SUFFIX png FILES ${EXPORT3D_TEST_FILES})
+add_cmdline_test(stlpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOURCE_DIR}/export_import_pngtest.py ARGS --openscad=${OPENSCAD_BINPATH} --format=STL EXPECTEDDIR monotonepngtest SUFFIX png FILES ${EXPORT3D_TEST_FILES})
+add_cmdline_test(offpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOURCE_DIR}/export_import_pngtest.py ARGS --openscad=${OPENSCAD_BINPATH} --format=OFF EXPECTEDDIR monotonepngtest SUFFIX png FILES ${EXPORT3D_TEST_FILES})
 add_cmdline_test(dxfpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOURCE_DIR}/export_import_pngtest.py ARGS --openscad=${OPENSCAD_BINPATH} --format=DXF EXPECTEDDIR cgalpngtest SUFFIX png FILES ${ALL_2D_FILES})
 
-# Add experimental tests
 
+#
+# Failing tests
+#
+add_failing_test(stlfailedtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOURCE_DIR}/shouldfail.py ARGS --openscad=${OPENSCAD_BINPATH} --retval=1 -o SUFFIX stl FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/empty-union.scad)
+add_failing_test(offfailedtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOURCE_DIR}/shouldfail.py ARGS --openscad=${OPENSCAD_BINPATH} --retval=1 -o SUFFIX off FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/empty-union.scad)
+
+#
+# Add experimental tests
+#
 add_cmdline_test(dumptest EXE ${OPENSCAD_BINPATH} ARGS --enable=text -o SUFFIX csg FILES ${EXPERIMENTAL_TEXT_FILES})
 add_cmdline_test(cgalpngtest EXE ${OPENSCAD_BINPATH} ARGS --render --enable=text -o SUFFIX png FILES ${EXPERIMENTAL_TEXT_FILES})
 add_cmdline_test(opencsgtest EXE ${OPENSCAD_BINPATH} ARGS --enable=text -o SUFFIX png FILES ${EXPERIMENTAL_TEXT_FILES})
