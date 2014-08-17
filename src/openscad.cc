@@ -229,6 +229,10 @@ static bool checkAndExport(shared_ptr<const Geometry> root_geom, unsigned nd,
 		PRINTB("Current top level object is not a %dD object.", nd);
 		return false;
 	}
+	if (root_geom->isEmpty()) {
+		PRINT("Current top level object is empty.");
+		return false;
+	}
 	exportFileByName(root_geom.get(), format, filename, filename);
 	return true;
 }
