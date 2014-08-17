@@ -510,9 +510,9 @@ namespace CGALUtils {
 				newN.p3.reset(new CGAL_Nef_polyhedron3(N.p3->intersection(xy_plane, CGAL_Nef_polyhedron3::PLANE_ONLY)));
 			}
 			catch (const CGAL::Failure_exception &e) {
-				PRINTB("CGALUtils::project during plane intersection: %s", e.what());
+				PRINTDB("CGALUtils::project during plane intersection: %s", e.what());
 				try {
-					PRINT("Trying alternative intersection using very large thin box: ");
+					PRINTD("Trying alternative intersection using very large thin box: ");
 					std::vector<CGAL_Point_3> pts;
 					// dont use z of 0. there are bugs in CGAL.
 					double inf = 1e8;
@@ -1042,7 +1042,7 @@ holding the polygon and it's holes. */
 bool tessellate_3d_face_with_holes( std::vector<CGAL_Polygon_3> &polygons, std::vector<CGAL_Polygon_3> &triangles, CGAL_Plane_3 &plane )
 {
 	if (polygons.size()==1 && polygons[0].size()==3) {
-		PRINT("input polygon has 3 points. shortcut tessellation.");
+		PRINTD("input polygon has 3 points. shortcut tessellation.");
 		CGAL_Polygon_3 t;
 		t.push_back(polygons[0][2]);
 		t.push_back(polygons[0][1]);
@@ -1054,12 +1054,12 @@ bool tessellate_3d_face_with_holes( std::vector<CGAL_Polygon_3> &polygons, std::
 	CDT cdt;
 	std::map<CDTPoint,CGAL_Point_3> vertmap;
 
-	PRINT("finding good projection");
+	PRINTD("finding good projection");
 	projection_t goodproj = find_good_projection( plane );
 
-	PRINTB("plane %s",plane );
-	PRINTB("proj: %i %i",goodproj.plane % goodproj.flip);
-	PRINT("Inserting points and edges into Constrained Delaunay Triangulation");
+	PRINTDB("plane %s",plane );
+	PRINTDB("proj: %i %i",goodproj.plane % goodproj.flip);
+	PRINTD("Inserting points and edges into Constrained Delaunay Triangulation");
 	std::vector< std::vector<CGAL_Point_2> > polygons2d;
 	for (size_t i=0;i<polygons.size();i++) {
 	        std::vector<Vertex_handle> vhandles;
