@@ -1077,7 +1077,13 @@ list(APPEND CGALPNGTEST_3D_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/inclu
                            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/rotate-empty-bbox.scad
                            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/empty-shape-tests.scad
                            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/null-polygons.scad
-                           ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/empty-union.scad)
+                           ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/empty-union.scad
+                           ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/internal-cavity.scad
+                           ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/internal-cavity-polyhedron.scad
+                           ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/bad-stl-pcbvicebar.scad
+                           ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/bad-stl-tardis.scad
+                           ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/bad-stl-wing.scad
+                           ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/rotate_extrude-hole.scad)
 
 list(APPEND CGALPNGTEST_FILES ${CGALPNGTEST_2D_FILES} ${CGALPNGTEST_3D_FILES})
 list(APPEND OPENCSGTEST_FILES ${CGALPNGTEST_FILES})
@@ -1094,11 +1100,13 @@ list(APPEND EXPORT3D_TEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/features
                                 ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/features/rotate_extrude-tests.scad
                                 ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/features/union-coincident-test.scad
                                 ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/null-polygons.scad
+                                ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/empty-union.scad
                                 ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/internal-cavity.scad
                                 ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/internal-cavity-polyhedron.scad
                                 ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/bad-stl-pcbvicebar.scad
                                 ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/bad-stl-tardis.scad
-                                ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/bad-stl-wing.scad)
+                                ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/bad-stl-wing.scad
+                                ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/rotate_extrude-hole.scad)
 
 disable_tests(
   # This doesn't output anything
@@ -1185,7 +1193,6 @@ set_test_config(Heavy cgalpngtest_rotate_extrude-tests
 
 list(APPEND BUGS_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue584.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue591.scad
-                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue112.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue666.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue802.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue835.scad)
