@@ -169,20 +169,20 @@ MainWindow::MainWindow(const QString &filename)
 {
 	setupUi(this);
 
- 	 editortype = Preferences::inst()->getValue("editor/editortype").toString();
+ 	editortype = Preferences::inst()->getValue("editor/editortype").toString();
 
-	 useScintilla = (editortype == "QScintilla Editor");
+	useScintilla = (editortype == "QScintilla Editor");
 #ifdef USE_SCINTILLA_EDITOR
-	 if (useScintilla) {
+	if (useScintilla) {
 		 editor = new ScintillaEditor(editorDockContents);
 		 this->editActionIndent->setVisible(false);
 		 this->editActionUnindent->setVisible(false);
 		 this->editActionComment->setVisible(false);
 		 this->editActionUncomment->setVisible(false);
-	 }
-	 else
+	}
+	else
 #endif
-	   editor = new LegacyEditor(editorDockContents);
+	editor = new LegacyEditor(editorDockContents);
 
 	editorDockContents->layout()->addWidget(editor);
 
@@ -432,6 +432,7 @@ MainWindow::MainWindow(const QString &filename)
 					editor, SLOT(setHighlightScheme(const QString&)));
 	Preferences::inst()->apply();
 
+	//find and replace panel
 	connect(this->findTypeComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(selectFindType(int)));
 	connect(this->findInputField, SIGNAL(textChanged(QString)), this, SLOT(findString(QString)));
 	connect(this->findInputField, SIGNAL(returnPressed()), this->nextButton, SLOT(animateClick()));
@@ -486,8 +487,7 @@ MainWindow::MainWindow(const QString &filename)
 	clearCurrentOutput();
 }
 
-void
-MainWindow::loadViewSettings(){
+void MainWindow::loadViewSettings(){
 	QSettings settings;
 	if (settings.value("view/showEdges").toBool()) {
 		viewActionShowEdges->setChecked(true);
@@ -514,8 +514,7 @@ MainWindow::loadViewSettings(){
 	updateUndockMode(settings.value("advanced/undockableWindows").toBool());
 }
 
-void
-MainWindow::loadDesignSettings()
+void MainWindow::loadDesignSettings()
 {
 	QSettings settings;
 	if (settings.value("design/autoReload").toBool()) {
@@ -607,8 +606,8 @@ void MainWindow::requestOpenFile(const QString &filename)
  	one is not empty. Otherwise the current window content is overwritten.
  	Any check whether to replace the content have to be made before.
  */
-void
-MainWindow::openFile(const QString &new_filename)
+
+void MainWindow::openFile(const QString &new_filename)
 {
 	if (MainWindow::mdiMode) {
 		if (!editor->toPlainText().isEmpty()) {
@@ -638,8 +637,7 @@ MainWindow::openFile(const QString &new_filename)
 	clearCurrentOutput();
 }
 
-void
-MainWindow::setFileName(const QString &filename)
+void MainWindow::setFileName(const QString &filename)
 {
 	if (filename.isEmpty()) {
 		this->fileName.clear();
@@ -1107,6 +1105,7 @@ void MainWindow::show_examples()
 {
 		bool found_example = false;
 		QStringList categories;
+		//categories in File menu item - Examples
                 categories << "Basics" << "Shapes" << "Extrusion" << "Advanced";
         
                 foreach (const QString &cat, categories){
@@ -1498,10 +1497,8 @@ void MainWindow::compileTopLevelDocument()
 	this->root_module = NULL;
 
 	this->root_module = parse(fulltext.c_str(),
-														this->fileName.isEmpty() ?
-														"" :
-														QFileInfo(this->fileName).absolutePath().toLocal8Bit(),
-														false);
+	this->fileName.isEmpty() ? "" :
+	QFileInfo(this->fileName).absolutePath().toLocal8Bit(), false);
 
 	updateCamera();
 }
@@ -1932,8 +1929,9 @@ void MainWindow::actionExportCSG()
 	}
 
 	QString csg_filename = QFileDialog::getSaveFileName(this, "Export CSG File",
-																											this->fileName.isEmpty() ? "Untitled.csg" : QFileInfo(this->fileName).baseName()+".csg",
-																											"CSG Files (*.csg)");
+        this->fileName.isEmpty() ? "Untitled.csg" : QFileInfo(this->fileName).baseName()+".csg",
+	"CSG Files (*.csg)");
+	
 	if (csg_filename.isEmpty()) {
 		PRINT("No filename specified. CSG export aborted.");
 		clearCurrentOutput();
@@ -2392,7 +2390,8 @@ void MainWindow::consoleOutput(const std::string &msg, void *userdata)
   // originates in a worker thread.
 	MainWindow *thisp = static_cast<MainWindow*>(userdata);
 	QMetaObject::invokeMethod(thisp->console, "append", Qt::QueuedConnection,
-														Q_ARG(QString, QString::fromLocal8Bit(msg.c_str())));
+	Q_ARG(QString, QString::fromLocal8Bit(msg.c_str())));
+	
 	if (thisp->procevents) QApplication::processEvents();
 }
 
@@ -2409,6 +2408,7 @@ void MainWindow::clearCurrentOutput()
 void MainWindow::openCSGSettingsChanged()
 {
 #ifdef ENABLE_OPENCSG
-	OpenCSG::setOption(OpenCSG::AlgorithmSetting, Preferences::inst()->getValue("advanced/forceGoldfeather").toBool() ? OpenCSG::Goldfeather : OpenCSG::Automatic);
+	OpenCSG::setOption(OpenCSG::AlgorithmSetting, Preferences::inst()->getValue("advanced/forceGoldfeather").toBool() ? 
+	OpenCSG::Goldfeather : OpenCSG::Automatic);
 #endif
 }

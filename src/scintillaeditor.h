@@ -12,8 +12,8 @@
 class ScintillaEditor : public EditorInterface
 {
 public:
-    ScintillaEditor(QWidget *parent);
-    QsciScintilla *qsci;
+    	ScintillaEditor(QWidget *parent);
+    	QsciScintilla *qsci;
         QString toPlainText();
 	void initMargin();
 	void initLexer();
@@ -27,11 +27,7 @@ public:
 	
 public slots:
 	void zoomIn();
-        void zoomOut(); 
-        void indentSelection();
-        void unindentSelection();
-        void commentSelection();
-        void uncommentSelection();
+        void zoomOut();  
         void setPlainText(const QString&);
 	bool isContentModified();
         void highlightError(int);
@@ -47,7 +43,7 @@ public slots:
 	void initFont(const QString&, uint);
 
 private:
-         QVBoxLayout *scintillaLayout;
+        QVBoxLayout *scintillaLayout;
 	const int indicatorNumber = 1;
 	const int markerNumber = 2;
 	ScadLexer *lexer;

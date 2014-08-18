@@ -183,38 +183,47 @@ QString LegacyEditor::toPlainText()
 {
 	return textedit->toPlainText();
 }
+
 QTextCursor LegacyEditor::textCursor() const
 {
 	return textedit->textCursor();
 }
+
 void LegacyEditor::setTextCursor (const QTextCursor &cursor)
 {
 	textedit->setTextCursor(cursor);
 }
+
 void LegacyEditor::insertPlainText(const QString &text)
 {
 	textedit->insertPlainText(text);
 }
+
 void LegacyEditor::undo()
 {
 	textedit->undo();
 }
+
 void LegacyEditor::redo()
 {
 	textedit->redo();
 }
+
 void LegacyEditor::cut()
 {
 	textedit->cut();
 }
+
 void LegacyEditor::copy()
 {
 	textedit->copy();
 }
+
 void LegacyEditor::paste()
 {
 	textedit->paste();
 }
+
 LegacyEditor::~LegacyEditor()
 {
 	delete highlighter;

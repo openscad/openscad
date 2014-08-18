@@ -2,12 +2,10 @@
 
 ScadLexer::ScadLexer(QObject *parent)
     : QsciLexerCPP(parent)
-{
-}
+{ }
 
 ScadLexer::~ScadLexer()
-{
-}
+{ }
 
 const char *ScadLexer::language() const
 {
@@ -17,7 +15,7 @@ const char *ScadLexer::language() const
 const char *ScadLexer::keywords(int set) const
 {
 
- if (set == 1)
+    if (set == 1)
         return  "if else for module function intersection_for assign echo search "
 	    " str let true false ";       // -> Style: Keyword
 

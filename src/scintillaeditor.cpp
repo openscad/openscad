@@ -19,7 +19,6 @@ ScintillaEditor::ScintillaEditor(QWidget *parent) : EditorInterface(parent)
 	qsci->setUtf8(true);
 	preferenceEditorOption = Preferences::inst()->getValue("editor/syntaxhighlight").toString();
 	lexer = new ScadLexer(this);
-//	initFont();
 	initLexer();
 	initMargin();
 	qsci->setFolding(QsciScintilla::BoxedTreeFoldStyle, 4);
@@ -27,22 +26,7 @@ ScintillaEditor::ScintillaEditor(QWidget *parent) : EditorInterface(parent)
 	this->setHighlightScheme(preferenceEditorOption);	
 	
 }
-void ScintillaEditor::indentSelection()
-{
-	
-}
-void ScintillaEditor::unindentSelection()
-{
-	 
-}
-void ScintillaEditor::commentSelection() 
-{
 
-}
-void ScintillaEditor::uncommentSelection()
-{
-	
-}
 void ScintillaEditor::setPlainText(const QString &text)
 {
 	qsci->setText(text); 
@@ -76,6 +60,7 @@ void ScintillaEditor::unhighlightLastError()
 	qsci->markerDeleteAll(markerNumber);
 }
 
+//Editor themes
 void ScintillaEditor::forLightBackground()
 {
 	lexer->setPaper("#fff");
@@ -234,6 +219,7 @@ void ScintillaEditor::initLexer()
 {
     qsci->setLexer(lexer);
 }
+
 void ScintillaEditor::initMargin()
 {
     QFontMetrics fontmetrics = QFontMetrics(qsci->font());
