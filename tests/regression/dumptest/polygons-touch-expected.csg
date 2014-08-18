@@ -1,0 +1,6 @@
+group() {
+	square(size = [10, 10], center = false);
+	multmatrix([[1, 0, 0, -10], [0, 1, 0, -10], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+		square(size = [10, 10], center = false);
+	}
+}

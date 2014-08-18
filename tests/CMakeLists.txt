@@ -1093,7 +1093,12 @@ list(APPEND EXPORT3D_TEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/features
                                 ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/features/polyhedron-tests.scad
                                 ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/features/rotate_extrude-tests.scad
                                 ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/features/union-coincident-test.scad
-                                ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/null-polygons.scad)
+                                ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/null-polygons.scad
+                                ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/internal-cavity.scad
+                                ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/internal-cavity-polyhedron.scad
+                                ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/bad-stl-pcbvicebar.scad
+                                ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/bad-stl-tardis.scad
+                                ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/bad-stl-wing.scad)
 
 disable_tests(
   # This doesn't output anything
@@ -1178,15 +1183,8 @@ set_test_config(Heavy cgalpngtest_rotate_extrude-tests
 
 # Bugs
 
-list(APPEND BUGS_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue495.scad
-                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue495b.scad
-                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue541.scad
-                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue578.scad
-                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue578b.scad
-                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue584.scad
-                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue585.scad
+list(APPEND BUGS_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue584.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue591.scad
-                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue612.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue112.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue666.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue802.scad
@@ -1297,7 +1295,10 @@ add_cmdline_test(cgalstlsanitytest EXE ${CMAKE_SOURCE_DIR}/cgalstlsanitytest SUF
 # Issue #337
 set_test_config(Bugs stlpngtest_polyhedron-tests)
 # Issue #910
-set_test_config(Bugs offpngtest_polyhedron-tests)
+set_test_config(Bugs offpngtest_polyhedron-tests
+                     offpngtest_bad-stl-pcbvicebar
+                     offpngtest_bad-stl-tardis
+                     offpngtest_bad-stl-wing)
 
 add_cmdline_test(monotonepngtest EXE ${OPENSCAD_BINPATH} ARGS --colorscheme=Monotone --enable=text --render -o SUFFIX png FILES ${EXPORT3D_TEST_FILES})
 add_cmdline_test(stlpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOURCE_DIR}/export_import_pngtest.py ARGS --openscad=${OPENSCAD_BINPATH} --format=STL EXPECTEDDIR monotonepngtest SUFFIX png FILES ${EXPORT3D_TEST_FILES})

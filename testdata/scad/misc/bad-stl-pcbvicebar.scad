@@ -6,4 +6,4 @@ ERROR: CGAL NefPolyhedron->Polyhedron conversion failed.
 
 This has been fixed, but keep this test for future reference
 */
-render() import("issue541.stl");
+render() import("bad-stl-pcbvicebar.stl");
