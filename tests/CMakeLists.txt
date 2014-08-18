@@ -1077,7 +1077,6 @@ list(APPEND CGALPNGTEST_3D_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/inclu
                            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/rotate-empty-bbox.scad
                            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/empty-shape-tests.scad
                            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/null-polygons.scad
-                           ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/empty-union.scad
                            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/internal-cavity.scad
                            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/internal-cavity-polyhedron.scad
                            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/bad-stl-pcbvicebar.scad
@@ -1100,7 +1099,6 @@ list(APPEND EXPORT3D_TEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/features
                                 ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/features/rotate_extrude-tests.scad
                                 ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/features/union-coincident-test.scad
                                 ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/null-polygons.scad
-                                ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/empty-union.scad
                                 ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/internal-cavity.scad
                                 ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/internal-cavity-polyhedron.scad
                                 ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/bad-stl-pcbvicebar.scad
@@ -1111,6 +1109,10 @@ list(APPEND EXPORT3D_TEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/features
 disable_tests(
   # This doesn't output anything
   dxfpngtest_nothing-decimal-comma-separated
+
+  # Not useful
+  throwntogethertest_internal-cavity
+  throwntogethertest_internal-cavity-polyhedron
 
   # these take too long, for little relative gain in testing
   stlpngtest_iteration
