@@ -544,7 +544,7 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 					qexamplesdir = exdir.path();
 				}
 	MainWindow::setExamplesDir(qexamplesdir);
-  parser_init(app_path.toLocal8Bit().constData());
+        parser_init(app_path.toLocal8Bit().constData());
 
 #ifdef Q_OS_MAC
 	installAppleEventHandlers();
@@ -568,6 +568,7 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 		noInputFiles = true;
 		inputFiles.push_back("");
 	}
+
 	MainWindow *mainwin;
 #ifdef ENABLE_MDI
 	BOOST_FOREACH(const string &infile, inputFiles) {

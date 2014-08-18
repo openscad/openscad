@@ -165,18 +165,6 @@ MainWindow::MainWindow(const QString &filename)
 {
 	setupUi(this);
 
-  // Launch Screen
-	launcher = new LaunchingScreen(this);
-	launcher->setFixedSize(676,414);
-	connect(launcher->ui->pushButtonNew, SIGNAL(clicked()), this, SLOT(actionNew()));
-	connect(launcher->ui->pushButtonOpen, SIGNAL(clicked()), this, SLOT(actionOpen()));
-	connect(launcher->ui->pushButtonHelp, SIGNAL(clicked()), this, SLOT(helpManual()));
-	connect(launcher->ui->RecentList, SIGNAL(itemClicked(QListWidgetItem *)), this, SLOT(enableRecentButton(QListWidgetItem *)));
-	connect(launcher->ui->treeWidget, SIGNAL(itemClicked(QTreeWidgetItem *,int)), this, SLOT(enableExampleButton(QTreeWidgetItem *,int)));
-	connect(launcher->ui->openRecentButton, SIGNAL(clicked()), this, SLOT(launcherOpenRecent()));
-	connect(launcher->ui->openExampleButton, SIGNAL(clicked()), this, SLOT(openCurrentExample()));
-	connect(launcher->ui->checkBox, SIGNAL(stateChanged(int)), this, SLOT(checkboxState(int)));	
-	
 	setCorner(Qt::TopLeftCorner, Qt::LeftDockWidgetArea);
 	setCorner(Qt::TopRightCorner, Qt::RightDockWidgetArea);
 	setCorner(Qt::BottomLeftCorner, Qt::LeftDockWidgetArea);
@@ -255,6 +243,20 @@ MainWindow::MainWindow(const QString &filename)
 	animate_panel->hide();
 	find_panel->hide();
 
+	// Launch Screen
+	launcher = new LaunchingScreen(this);
+	launcher->setFixedSize(676,414);
+	connect(launcher->ui->pushButtonNew, SIGNAL(clicked()), this, SLOT(actionNew()));
+	connect(launcher->ui->pushButtonOpen, SIGNAL(clicked()), this, SLOT(actionOpen()));
+	connect(launcher->ui->pushButtonHelp, SIGNAL(clicked()), this, SLOT(helpManual()));
+	connect(launcher->ui->RecentList, SIGNAL(itemClicked(QListWidgetItem *)), 
+					this, SLOT(enableRecentButton(QListWidgetItem *)));
+	connect(launcher->ui->treeWidget, SIGNAL(itemClicked(QTreeWidgetItem *,int)), 
+					this, SLOT(enableExampleButton(QTreeWidgetItem *,int)));
+	connect(launcher->ui->openRecentButton, SIGNAL(clicked()), this, SLOT(launcherOpenRecent()));
+	connect(launcher->ui->openExampleButton, SIGNAL(clicked()), this, SLOT(openCurrentExample()));
+	connect(launcher->ui->checkBox, SIGNAL(stateChanged(int)), this, SLOT(checkboxState(int)));	
+	
 	// Application menu
 #ifdef DEBUG
 	this->appActionUpdateCheck->setEnabled(false);
@@ -1056,14 +1058,14 @@ void MainWindow::actionOpenRecent()
 	openFile(action->data().toString());
 }
 
-void MainWindow::enableRecentButton(QListWidgetItem * itemClicked)
+void MainWindow::enableRecentButton(QListWidgetItem *itemClicked)
 {
 	if (itemClicked) {
 		launcher->ui->openRecentButton->setEnabled(true);
 	}
 }
 
-void MainWindow::enableExampleButton(QTreeWidgetItem * itemClicked, int column)
+void MainWindow::enableExampleButton(QTreeWidgetItem *itemClicked, int column)
 {
 	column = 0;
 	if (itemClicked) {
@@ -1099,8 +1101,7 @@ void MainWindow::updateRecentFileActions()
 			files.removeAt(i);
 	}
 
-	int numRecentFiles = qMin(files.size(),
-														static_cast<int>(maxRecentFiles));
+	int numRecentFiles = qMin(files.size(), static_cast<int>(maxRecentFiles));
 
 	for (int i = 0; i < numRecentFiles; ++i) {
 		this->actionRecentFile[i]->setText(QFileInfo(files[i]).fileName());
@@ -1120,7 +1121,7 @@ void MainWindow::updateRecentFileActions()
 void MainWindow::openCurrentExample()
 {
 	QTreeWidgetItem *Item = new QTreeWidgetItem(launcher->ui->treeWidget);
-	if (Item->isSelected() == false)	{
+	if (!Item->isSelected()){
 		launcher->ui->openExampleButton->setEnabled(false);
 	}
 	QString currentItm = launcher->ui->treeWidget->currentItem()->text(0);
@@ -1139,7 +1140,9 @@ void MainWindow::show_examples()
 {
         bool found_example = false;
         QStringList categories;
+	//categories in File menu item - Examples
         categories << "Basics" << "Shapes" << "Extrusion" << "Advanced";
+
         foreach (const QString &cat, categories){
                 QStringList examples = QDir(qexamplesdir + QDir::separator() + cat).entryList(QStringList("*.scad"),
                 QDir::Files | QDir::Readable, QDir::Name);
@@ -1240,7 +1243,8 @@ void MainWindow::actionSave()
 		setCurrentOutput();
 		QFile file(this->fileName);
 		if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text)) {
-			PRINTB("Failed to open file for writing: %s (%s)", this->fileName.toLocal8Bit().constData() % file.errorString().toLocal8Bit().constData());
+			PRINTB("Failed to open file for writing: %s (%s)", 
+			this->fileName.toLocal8Bit().constData() % file.errorString().toLocal8Bit().constData());
 			QMessageBox::warning(this, windowTitle(), tr("Failed to open file for writing:\n %1 (%2)")
 					.arg(this->fileName).arg(file.errorString()));
 		}
@@ -1307,7 +1311,9 @@ void MainWindow::pasteViewportTranslation()
 {
 	QTextCursor cursor = editor->textCursor();
 	QString txt;
-	txt.sprintf("[ %.2f, %.2f, %.2f ]", -qglview->cam.object_trans.x(), -qglview->cam.object_trans.y(), -qglview->cam.object_trans.z());
+	txt.sprintf("[ %.2f, %.2f, %.2f ]", -qglview->cam.object_trans.x(), 
+	-qglview->cam.object_trans.y(), -qglview->cam.object_trans.z());
+	
 	cursor.insertText(txt);
 }
 
@@ -1316,7 +1322,8 @@ void MainWindow::pasteViewportRotation()
 	QTextCursor cursor = editor->textCursor();
 	QString txt;
 	txt.sprintf("[ %.2f, %.2f, %.2f ]",
-		fmodf(360 - qglview->cam.object_rot.x() + 90, 360), fmodf(360 - qglview->cam.object_rot.y(), 360), fmodf(360 - qglview->cam.object_rot.z(), 360));
+		fmodf(360 - qglview->cam.object_rot.x() + 90, 360), 
+		fmodf(360 - qglview->cam.object_rot.y(), 360), fmodf(360 - qglview->cam.object_rot.z(), 360));
 	cursor.insertText(txt);
 }
 
@@ -1542,11 +1549,8 @@ void MainWindow::compileTopLevelDocument()
 	delete this->root_module;
 	this->root_module = NULL;
 
-	this->root_module = parse(fulltext.c_str(),
-														this->fileName.isEmpty() ?
-														"" :
-														QFileInfo(this->fileName).absolutePath().toLocal8Bit(),
-														false);
+	this->root_module = parse(fulltext.c_str(), this->fileName.isEmpty() ? "" :
+	QFileInfo(this->fileName).absolutePath().toLocal8Bit(), false);
 
 	updateCamera();
 }
@@ -1799,11 +1803,13 @@ void MainWindow::actionDisplayCSGProducts()
 	e->setWindowTitle("CSG Products Dump");
 	e->setReadOnly(true);
 	e->setPlainText(QString("\nCSG before normalization:\n%1\n\n\nCSG after normalization:\n%2\n\n\nCSG rendering chain:\n%3\n\n\nHighlights CSG rendering chain:\n%4\n\n\nBackground CSG rendering chain:\n%5\n")
-									.arg(root_raw_term ? QString::fromLocal8Bit(root_raw_term->dump().c_str()) : "N/A",
-											 root_norm_term ? QString::fromLocal8Bit(root_norm_term->dump().c_str()) : "N/A",
-											 this->root_chain ? QString::fromLocal8Bit(this->root_chain->dump().c_str()) : "N/A",
-											 highlights_chain ? QString::fromLocal8Bit(highlights_chain->dump().c_str()) : "N/A",
-											 background_chain ? QString::fromLocal8Bit(background_chain->dump().c_str()) : "N/A"));
+									
+	.arg(root_raw_term ? QString::fromLocal8Bit(root_raw_term->dump().c_str()) : "N/A",
+	root_norm_term ? QString::fromLocal8Bit(root_norm_term->dump().c_str()) : "N/A",
+	this->root_chain ? QString::fromLocal8Bit(this->root_chain->dump().c_str()) : "N/A",
+	highlights_chain ? QString::fromLocal8Bit(highlights_chain->dump().c_str()) : "N/A",
+	background_chain ? QString::fromLocal8Bit(background_chain->dump().c_str()) : "N/A"));
+	
 	e->show();
 	e->resize(600, 400);
 	clearCurrentOutput();
@@ -1977,8 +1983,8 @@ void MainWindow::actionExportCSG()
 	}
 
 	QString csg_filename = QFileDialog::getSaveFileName(this, "Export CSG File",
-																											this->fileName.isEmpty() ? "Untitled.csg" : QFileInfo(this->fileName).baseName()+".csg",
-																											"CSG Files (*.csg)");
+																		       this->fileName.isEmpty() ? "Untitled.csg" : QFileInfo(this->fileName).baseName()+".csg",	"CSG Files (*.csg)");
+
 	if (csg_filename.isEmpty()) {
 		PRINT("No filename specified. CSG export aborted.");
 		clearCurrentOutput();
@@ -2046,7 +2052,9 @@ void MainWindow::viewModePreview()
 	if (this->qglview->hasOpenCSGSupport()) {
 		viewModeActionsUncheck();
 		viewActionPreview->setChecked(true);
-		this->qglview->setRenderer(this->opencsgRenderer ? (Renderer *)this->opencsgRenderer : (Renderer *)this->thrownTogetherRenderer);
+		this->qglview->setRenderer(this->opencsgRenderer ? (Renderer *)this->opencsgRenderer : 
+		(Renderer *)this->thrownTogetherRenderer);
+		
 		this->qglview->updateGL();
 	} else {
 		viewModeThrownTogether();
@@ -2316,8 +2324,7 @@ void MainWindow::handleFileDrop(const QString &filename)
 	}
 }
 
-void
-MainWindow::helpAbout()
+void MainWindow::helpAbout()
 {
 	qApp->setWindowIcon(QApplication::windowIcon());
 	AboutDialog *dialog = new AboutDialog(this);
@@ -2325,14 +2332,12 @@ MainWindow::helpAbout()
 	//QMessageBox::information(this, "About OpenSCAD", QString(helptitle) + QString(copyrighttext));
 }
 
-void
-MainWindow::helpHomepage()
+void MainWindow::helpHomepage()
 {
 	QDesktopServices::openUrl(QUrl("http://openscad.org/"));
 }
 
-void
-MainWindow::helpManual()
+void MainWindow::helpManual()
 {
 	QDesktopServices::openUrl(QUrl("http://www.openscad.org/documentation.html"));
 	launcher->hide();
@@ -2364,8 +2369,7 @@ void MainWindow::helpFontInfo()
 /*!
 	FIXME: In MDI mode, should this be called on both reload functions?
  */
-bool
-MainWindow::maybeSave()
+bool MainWindow::maybeSave()
 {
 	if (editor->isContentModified()) {
 		QMessageBox::StandardButton ret;
@@ -2413,8 +2417,7 @@ void MainWindow::closeEvent(QCloseEvent *event)
 	}
 }
 
-void
-MainWindow::preferences()
+void MainWindow::preferences()
 {
 	Preferences::inst()->show();
 	Preferences::inst()->activateWindow();
@@ -2448,7 +2451,8 @@ void MainWindow::consoleOutput(const std::string &msg, void *userdata)
   // originates in a worker thread.
 	MainWindow *thisp = static_cast<MainWindow*>(userdata);
 	QMetaObject::invokeMethod(thisp->console, "append", Qt::QueuedConnection,
-														Q_ARG(QString, QString::fromLocal8Bit(msg.c_str())));
+	Q_ARG(QString, QString::fromLocal8Bit(msg.c_str())));
+
 	if (thisp->procevents) QApplication::processEvents();
 }
 
@@ -2465,6 +2469,7 @@ void MainWindow::clearCurrentOutput()
 void MainWindow::openCSGSettingsChanged()
 {
 #ifdef ENABLE_OPENCSG
-	OpenCSG::setOption(OpenCSG::AlgorithmSetting, Preferences::inst()->getValue("advanced/forceGoldfeather").toBool() ? OpenCSG::Goldfeather : OpenCSG::Automatic);
+	OpenCSG::setOption(OpenCSG::AlgorithmSetting, Preferences::inst()->getValue("advanced/forceGoldfeather").toBool() ? 
+	OpenCSG::Goldfeather : OpenCSG::Automatic);
 #endif
 }
