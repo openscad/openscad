@@ -948,7 +948,17 @@ Response GeometryEvaluator::visit(State &state, const CgaladvNode &node)
 		if (!isSmartCached(node)) {
 			switch (node.type) {
 			case MINKOWSKI: {
-				geom = applyToChildren(node, OPENSCAD_MINKOWSKI).constptr();
+				ResultObject res = applyToChildren(node, OPENSCAD_MINKOWSKI);
+				geom = res.constptr();
+				// If we added convexity, we need to pass it on
+				if (geom && geom->getConvexity() != node.convexity) {
+					shared_ptr<Geometry> editablegeom;
+					// If we got a const object, make a copy
+					if (res.isConst()) editablegeom.reset(geom->copy());
+					else editablegeom = res.ptr();
+					geom = editablegeom;
+					editablegeom->setConvexity(node.convexity);
+				}
 				break;
 			}
 			case HULL: {
