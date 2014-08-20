@@ -428,6 +428,7 @@ HEADERS += src/cgal.h \
            src/Polygon2d-CGAL.h
 
 SOURCES += src/cgalutils.cc \
+           src/cgalutils-tess.cc \
            src/CGALCache.cc \
            src/CGALRenderer.cc \
            src/CGAL_Nef_polyhedron.cc \

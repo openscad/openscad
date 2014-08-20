@@ -673,6 +673,7 @@ set(CGAL_SOURCES
   ../src/CSGTermEvaluator.cc 
   ../src/CGAL_Nef_polyhedron.cc 
   ../src/cgalutils.cc 
+  ../src/cgalutils-tess.cc 
   ../src/CGALCache.cc
   ../src/CGAL_Nef_polyhedron_DxfData.cc
   ../src/Polygon2d-CGAL.cc

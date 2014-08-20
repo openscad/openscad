@@ -1,6 +1,6 @@
 #pragma once
 
-#include <cgal.h>
+#include "cgal.h"
 #include "polyset.h"
 #include "CGAL_Nef_polyhedron.h"
 #include "enums.h"
@@ -13,12 +13,17 @@ namespace CGALUtils {
 	CGAL_Iso_cuboid_3 boundingBox(const CGAL_Nef_polyhedron3 &N);
 	bool is_approximately_convex(const PolySet &ps);
 	Geometry const* applyMinkowski(const Geometry::ChildList &children);
-};
 
-CGAL_Nef_polyhedron *createNefPolyhedronFromGeometry(const class Geometry &geom);
-template <typename Polyhedron> bool createPolySetFromPolyhedron(const Polyhedron &p, PolySet &ps);
-bool createPolySetFromNefPolyhedron3(const CGAL_Nef_polyhedron3 &N, PolySet &ps);
-bool createPolyhedronFromPolySet(const PolySet &ps, CGAL_Polyhedron &p);
+	CGAL_Nef_polyhedron *createNefPolyhedronFromGeometry(const class Geometry &geom);
+	template <typename Polyhedron> bool createPolySetFromPolyhedron(const Polyhedron &p, PolySet &ps);
+	bool createPolySetFromNefPolyhedron3(const CGAL_Nef_polyhedron3 &N, PolySet &ps);
+	bool createPolyhedronFromPolySet(const PolySet &ps, CGAL_Polyhedron &p);
+
+	typedef std::vector<CGAL_Point_3> CGAL_Polygon_3;
+	bool tessellate3DFaceWithHoles(std::vector<CGAL_Polygon_3> &polygons,
+																 std::vector<CGAL_Polygon_3> &triangles,
+																 CGAL::Plane_3<CGAL_Kernel3> &plane);
+};
 
 #include "svg.h"
 #include "printutils.h"

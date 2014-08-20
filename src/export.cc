@@ -233,7 +233,7 @@ void export_stl(const CGAL_Nef_polyhedron *root_N, std::ostream &output)
 	bool usePolySet = false;
 	if (usePolySet) {
 		PolySet ps(3);
-		bool err = createPolySetFromNefPolyhedron3(*(root_N->p3), ps);
+		bool err = CGALUtils::createPolySetFromNefPolyhedron3(*(root_N->p3), ps);
 		if (err) { PRINT("ERROR: Nef->PolySet failed"); }
 		else {
 			export_stl(ps, output);
@@ -264,7 +264,7 @@ void export_stl(const CGAL_Nef_polyhedron *root_N, std::ostream &output)
 void export_off(const class PolySet &ps, std::ostream &output)
 {
 	// FIXME: Implement this without creating a Nef polyhedron
-	CGAL_Nef_polyhedron *N = createNefPolyhedronFromGeometry(ps);
+	CGAL_Nef_polyhedron *N = CGALUtils::createNefPolyhedronFromGeometry(ps);
 	export_off(N, output);
 	delete N;
 }
@@ -290,7 +290,7 @@ void export_off(const CGAL_Nef_polyhedron *root_N, std::ostream &output)
 void export_amf(const class PolySet &ps, std::ostream &output)
 {
 	// FIXME: Implement this without creating a Nef polyhedron
-	CGAL_Nef_polyhedron *N = createNefPolyhedronFromGeometry(ps);
+	CGAL_Nef_polyhedron *N = CGALUtils::createNefPolyhedronFromGeometry(ps);
 	export_amf(N, output);
 	delete N;
 }
