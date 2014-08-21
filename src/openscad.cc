@@ -81,6 +81,7 @@ std::string currentdir;
 using std::string;
 using std::vector;
 using boost::lexical_cast;
+using boost::bad_lexical_cast;
 using boost::is_any_of;
 
 class Echostream : public std::ofstream
@@ -162,12 +163,16 @@ Camera get_camera(po::variables_map vm)
 		vector<double> cam_parameters;
 		split(strs, vm["camera"].as<string>(), is_any_of(","));
 		if ( strs.size()==6 || strs.size()==7 ) {
-			BOOST_FOREACH(string &s, strs)
-				cam_parameters.push_back(lexical_cast<double>(s));
-			camera.setup( cam_parameters );
+			try {
+				BOOST_FOREACH(string &s, strs) cam_parameters.push_back(lexical_cast<double>(s));
+				camera.setup(cam_parameters);
+			}
+			catch (bad_lexical_cast &) {
+				PRINT("Camera setup requires numbers as parameters");
+			}
 		} else {
-			PRINT("Camera setup requires either 7 numbers for Gimbal Camera\n");
-			PRINT("or 6 numbers for Vector Camera\n");
+			PRINT("Camera setup requires either 7 numbers for Gimbal Camera");
+			PRINT("or 6 numbers for Vector Camera");
 			exit(1);
 		}
 	}
@@ -202,11 +207,16 @@ Camera get_camera(po::variables_map vm)
 		vector<string> strs;
 		split(strs, vm["imgsize"].as<string>(), is_any_of(","));
 		if ( strs.size() != 2 ) {
-			PRINT("Need 2 numbers for imgsize\n");
+			PRINT("Need 2 numbers for imgsize");
 			exit(1);
 		} else {
-			w = lexical_cast<int>( strs[0] );
-			h = lexical_cast<int>( strs[1] );
+			try {
+				w = lexical_cast<int>(strs[0]);
+				h = lexical_cast<int>(strs[1]);
+			}
+			catch (bad_lexical_cast &) {
+				PRINT("Need 2 numbers for imgsize");
+			}
 		}
 	}
 	camera.pixel_width = w;
