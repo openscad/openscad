@@ -53,6 +53,8 @@ size_t CGAL_Nef_polyhedron::memsize() const
 
 	Note: Can return NULL if an error occurred
 */
+// FIXME: Deprecated by CGALUtils::createPolySetFromNefPolyhedron3
+#if 0
 PolySet *CGAL_Nef_polyhedron::convertToPolyset() const
 {
 	if (this->isEmpty()) return new PolySet(3);
@@ -83,6 +85,7 @@ PolySet *CGAL_Nef_polyhedron::convertToPolyset() const
 	CGAL::set_error_behaviour(old_behaviour);
 	return ps;
 }
+#endif
 
 void CGAL_Nef_polyhedron::resize(Vector3d newsize, 
 																 const Eigen::Matrix<bool,3,1> &autosize)

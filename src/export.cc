@@ -134,11 +134,14 @@ void export_stl(const PolySet &ps, std::ostream &output)
 	setlocale(LC_NUMERIC, "C"); // Ensure radix is . (not ,) in output
 	output << "solid OpenSCAD_Model\n";
 	BOOST_FOREACH(const PolySet::Polygon &p, triangulated.polygons) {
-		output << "  facet normal 0 0 0\n";
-		output << "    outer loop\n";
 		assert(p.size() == 3); // STL only allows triangles
+		Vector3d normal = (p[1] - p[0]).cross(p[2] - p[0]);
+		normal.normalize();
+		output << "  facet normal " << normal[0] << " " << normal[1] << " " << normal[2] << "\n";
+		output << "    outer loop\n";
+		
 		BOOST_FOREACH(const Vector3d &v, p) {
-			output << "vertex " << v[0] << " " << v[1] << " " << v[2] << "\n";
+			output << "      vertex " << v[0] << " " << v[1] << " " << v[2] << "\n";
 		}
 		output << "    endloop\n";
 		output << "  endfacet\n";
@@ -230,7 +233,7 @@ void export_stl(const CGAL_Nef_polyhedron *root_N, std::ostream &output)
 		PRINT("Object isn't a valid 2-manifold! Modify your design.\n");
 	}
 
-	bool usePolySet = false;
+	bool usePolySet = true;
 	if (usePolySet) {
 		PolySet ps(3);
 		bool err = CGALUtils::createPolySetFromNefPolyhedron3(*(root_N->p3), ps);

@@ -302,7 +302,7 @@ static CGAL_Nef_polyhedron *createNefPolyhedronFromPolySet(const PolySet &ps)
 		bool err = CGALUtils::createPolyhedronFromPolySet(ps, P);
 		// if (!err) {
 		// 	PRINTB("Polyhedron is closed: %d", P.is_closed());
-		// 	PRINTB("Polyhedron is valid: %d", P.is_valid(true, 0));
+		// 	PRINTB("Polyhedron is valid: %d", P.is_valid(false, 0));
 		// }
 
 		if (!err) N = new CGAL_Nef_polyhedron3(P);
@@ -888,10 +888,13 @@ namespace CGALUtils {
 		}
 		// In projection mode all the triangles are projected manually into the XY plane
 		else {
-			PolySet *ps3 = N.convertToPolyset();
-			if (!ps3) return poly;
-			poly = PolysetUtils::project(*ps3);
-			delete ps3;
+			PolySet ps(3);
+			bool err = CGALUtils::createPolySetFromNefPolyhedron3(*N.p3, ps);
+			if (err) {
+				PRINT("ERROR: Nef->PolySet failed");
+				return poly;
+			}
+			poly = PolysetUtils::project(ps);
 		}
 		return poly;
 	}

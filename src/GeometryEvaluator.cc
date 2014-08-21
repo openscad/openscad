@@ -60,8 +60,14 @@ shared_ptr<const Geometry> GeometryEvaluator::evaluateGeometry(const AbstractNod
 
 		if (!allownef) {
 			if (shared_ptr<const CGAL_Nef_polyhedron> N = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(this->root)) {
-				
-				this->root.reset(N->convertToPolyset());
+				PolySet *ps = new PolySet(3);
+				ps->setConvexity(N->getConvexity());
+				this->root.reset(ps);
+				bool err = CGALUtils::createPolySetFromNefPolyhedron3(*N->p3, *ps);
+				if (err) {
+					PRINT("ERROR: Nef->PolySet failed");
+				}
+
 				smartCacheInsert(node, this->root);
 			}
 		}
@@ -888,7 +894,14 @@ Response GeometryEvaluator::visit(State &state, const ProjectionNode &node)
 					if (!chPS) {
 						shared_ptr<const CGAL_Nef_polyhedron> chN = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(chgeom);
 						if (chN) {
-							chPS.reset(chN->convertToPolyset());
+							PolySet *ps = new PolySet(3);
+							bool err = CGALUtils::createPolySetFromNefPolyhedron3(*chN->p3, *ps);
+							if (err) {
+								PRINT("ERROR: Nef->PolySet failed");
+							}
+							else {
+								chPS.reset(ps);
+							}
 						}
 					}
 					if (chPS) poly = PolysetUtils::project(*chPS);
