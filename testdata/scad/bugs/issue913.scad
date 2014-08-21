@@ -1,7 +1,7 @@
 module erode(r) {
     difference() {
         children();
-        minkowski() {
+        minkowski(convexity=2) {
             difference() {
                 cube(14, center=true);
                 children();
