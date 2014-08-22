@@ -45,8 +45,8 @@ public slots:
 
 private:
 	QVBoxLayout *scintillaLayout;
-	const int indicatorNumber = 1;
-	const int markerNumber = 2;
+	static const int indicatorNumber = 1;
+	static const int markerNumber = 2;
 	ScadLexer *lexer;
 	QString preferenceEditorOption;
 };
