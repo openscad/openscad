@@ -1264,19 +1264,17 @@ void MainWindow::actionReload()
 
 void MainWindow::pasteViewportTranslation()
 {
-	QTextCursor cursor = editor->textCursor();
 	QString txt;
 	txt.sprintf("[ %.2f, %.2f, %.2f ]", -qglview->cam.object_trans.x(), -qglview->cam.object_trans.y(), -qglview->cam.object_trans.z());
-	cursor.insertText(txt);
+	this->editor->insert(txt);
 }
 
 void MainWindow::pasteViewportRotation()
 {
-	QTextCursor cursor = editor->textCursor();
 	QString txt;
 	txt.sprintf("[ %.2f, %.2f, %.2f ]",
 		fmodf(360 - qglview->cam.object_rot.x() + 90, 360), fmodf(360 - qglview->cam.object_rot.y(), 360), fmodf(360 - qglview->cam.object_rot.z(), 360));
-	cursor.insertText(txt);
+	this->editor->insert(txt);
 }
 
 void MainWindow::find()
