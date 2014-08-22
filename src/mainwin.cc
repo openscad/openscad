@@ -336,7 +336,6 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this->editActionFindAndReplace, SIGNAL(triggered()), this, SLOT(findAndReplace()));
 	connect(this->editActionFindNext, SIGNAL(triggered()), this, SLOT(findNext()));
 	connect(this->editActionFindPrevious, SIGNAL(triggered()), this, SLOT(findPrev()));
-	connect(this->editActionUseSelectionForFind, SIGNAL(triggered()), this, SLOT(useSelectionForFind()));
 
 	// Design menu
 	connect(this->designActionAutoReload, SIGNAL(toggled(bool)), this, SLOT(autoReloadSet(bool)));
@@ -1309,35 +1308,15 @@ void MainWindow::selectFindType(int type) {
 	if (type == 1) findAndReplace();
 }
 
-bool MainWindow::findOperation(bool findBackwards) {
-	bool success = editor->find(findInputField->text(), findBackwards);
-	if (!success) { // Implement wrap-around search behavior
-		QTextCursor old_cursor = editor->textCursor();
-		QTextCursor tmp_cursor = old_cursor;
-		tmp_cursor.movePosition(findBackwards ? QTextCursor::End : QTextCursor::Start);
-		editor->setTextCursor(tmp_cursor);
-		success = editor->find(findInputField->text(), findBackwards);
-		if (!success) {
-			editor->setTextCursor(old_cursor);
-		}
-	}
-	return success;
-}
-
 void MainWindow::replace() {
-	QString newText = this->replaceInputField->text();
-	editor->replaceSelectedText(newText);
+	this->editor->replaceSelectedText(this->replaceInputField->text());
+	this->editor->find(this->findInputField->text());
 }
 
 void MainWindow::replaceAll() {
-	QTextCursor old_cursor = editor->textCursor();
-	QTextCursor tmp_cursor = old_cursor;
-	tmp_cursor.movePosition(QTextCursor::Start);
-	editor->setTextCursor(tmp_cursor);
-	while (editor->find(findInputField->text())) {
-		editor->textCursor().insertText(replaceInputField->text());
+	while (this->editor->find(this->findInputField->text(), true)) {
+		this->editor->replaceSelectedText(this->replaceInputField->text());
 	}
-	editor->setTextCursor(old_cursor);
 }
 
 void MainWindow::findNext()
@@ -1348,11 +1327,6 @@ void MainWindow::findNext()
 void MainWindow::findPrev()
 {
 	editor->find(this->findInputField->text(), true, true);
-}
-
-void MainWindow::useSelectionForFind()
-{
-	findInputField->setText(editor->textCursor().selectedText());
 }
 
 bool MainWindow::eventFilter(QObject* obj, QEvent *event)

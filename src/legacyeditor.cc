@@ -232,11 +232,10 @@ LegacyEditor::~LegacyEditor()
 	delete highlighter;
 }
 
-void LegacyEditor::replaceSelectedText(QString& newText)
+void LegacyEditor::replaceSelectedText(const QString &newText)
 {
 	QTextCursor cursor = this->textCursor();
-	QString selectedText = cursor.selectedText();
-	if (selectedText == newText) {
+	if (cursor.selectedText() != newText) {
 		cursor.insertText(newText);
 	}
 }

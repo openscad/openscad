@@ -25,7 +25,7 @@ public:
 	void setTextCursor (const QTextCursor&);
 	QTextDocument *document() { return textedit->document(); }
 	bool find(const QString &, bool findNext = false, bool findBackwards = false);
-	void replaceSelectedText(QString& newText);	
+	void replaceSelectedText(const QString &newText);	
 	bool findString(const QString & exp, bool findBackwards) const;
 
 public slots:

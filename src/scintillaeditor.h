@@ -24,7 +24,7 @@ public:
 	void Solarized_light();
 	void noColor();
 	bool find(const QString &, bool findNext = false, bool findBackwards = false);
-	void replaceSelectedText(QString&);
+	void replaceSelectedText(const QString&);
 	
 public slots:
 	void zoomIn();

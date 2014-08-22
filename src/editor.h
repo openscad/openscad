@@ -18,11 +18,9 @@ public:
 	virtual void wheelEvent (QWheelEvent*) { }
 	virtual void setTabStopWidth(int) { }
 	virtual QString toPlainText() { QString s; return s;}
-	virtual QTextCursor textCursor() { QTextCursor c; return c;}
-	virtual void setTextCursor (const QTextCursor &) { }
 	virtual QTextDocument *document(){QTextDocument *t = new QTextDocument; return t;}
 	virtual bool find(const QString &, bool findNext = false, bool findBackwards = false) = 0;
-	virtual void replaceSelectedText(QString&){ }
+	virtual void replaceSelectedText(const QString &) = 0;
 
 public slots:
 	virtual void zoomIn(){ }

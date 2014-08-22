@@ -145,11 +145,9 @@ private slots:
 	void findAndReplace();
 	void findNext();
 	void findPrev();
-	void useSelectionForFind();
 	void replace();
 	void replaceAll();
 protected:
-	bool findOperation(bool findBackwards = false);
 	virtual bool eventFilter(QObject* obj, QEvent *event);
 
 private slots:
