@@ -11,6 +11,7 @@
 
 class ScintillaEditor : public EditorInterface
 {
+	Q_OBJECT;
 public:
 	ScintillaEditor(QWidget *parent);
 	virtual ~ScintillaEditor() {}
@@ -45,8 +46,10 @@ public slots:
 	void cut();
 	void copy();
 	void paste();
-	void onTextChanged();
 	void initFont(const QString&, uint);
+
+private slots:
+	void onTextChanged();
 
 private:
 	QVBoxLayout *scintillaLayout;

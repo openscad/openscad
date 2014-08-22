@@ -10,9 +10,10 @@ ScintillaEditor::ScintillaEditor(QWidget *parent) : EditorInterface(parent)
   qsci = new QsciScintilla(this);
   scintillaLayout->setContentsMargins(0, 0, 0, 0);
   scintillaLayout->addWidget(qsci);
+
   qsci->setBraceMatching (QsciScintilla::SloppyBraceMatch);
-  qsci->setWrapMode(QsciScintilla::WrapWord);
-  qsci->setWrapVisualFlags(QsciScintilla::WrapFlagByText, QsciScintilla::WrapFlagByText, 0);
+  qsci->setWrapMode(QsciScintilla::WrapCharacter);
+  qsci->setWrapVisualFlags(QsciScintilla::WrapFlagByBorder, QsciScintilla::WrapFlagNone, 0);
   qsci->setAutoIndent(true);
   qsci->indicatorDefine(QsciScintilla::RoundBoxIndicator, indicatorNumber);
   qsci->markerDefine(QsciScintilla::Circle, markerNumber);
@@ -25,7 +26,7 @@ ScintillaEditor::ScintillaEditor(QWidget *parent) : EditorInterface(parent)
   qsci->setCaretLineVisible(true);
   this->setHighlightScheme(preferenceEditorOption);	
 
-  connect(qsci, SIGNAL(textChanged()), this, SIGNAL(textChanged()));
+  connect(qsci, SIGNAL(textChanged()), this, SIGNAL(contentsChanged()));
   connect(qsci, SIGNAL(modificationChanged(bool)), this, SIGNAL(modificationChanged(bool)));
 }
 
