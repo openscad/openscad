@@ -350,6 +350,8 @@ void GLView::initializeGL()
   glEnable(GL_NORMALIZE);
 
   glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
+  // The following line is reported to fix issue #71
+	glMateriali(GL_FRONT_AND_BACK, GL_SHININESS, 64);
   glEnable(GL_COLOR_MATERIAL);
 #ifdef ENABLE_OPENCSG
   enable_opencsg_shaders();
