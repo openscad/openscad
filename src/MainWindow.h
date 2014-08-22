@@ -130,6 +130,7 @@ private slots:
 	void pasteViewportTranslation();
 	void pasteViewportRotation();
 	void hideEditor();
+	void toggleWordWrap();
 	void preferences();
 
 private slots:

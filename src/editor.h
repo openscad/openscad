@@ -25,6 +25,7 @@ public slots:
 	void commentSelection();
 	void uncommentSelection();
 	void setPlainText(const QString &text);
+	void setWordWrap(bool enabled);
 	void highlightError(int error_pos);
 	void unhighlightLastError();
 	void setHighlightScheme(const QString &name);

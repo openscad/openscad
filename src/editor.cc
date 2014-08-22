@@ -134,6 +134,15 @@ void Editor::setPlainText(const QString &text)
 	}
 }
 
+void Editor::setWordWrap(bool enabled)
+{
+    if (enabled) {
+        QTextEdit::setLineWrapMode(QTextEdit::WidgetWidth);
+    } else {
+        QTextEdit::setLineWrapMode(QTextEdit::NoWrap);
+    }
+}
+
 void Editor::highlightError(int error_pos)
 {
 	highlighter->highlightError( error_pos );
