@@ -11,7 +11,7 @@ class EditorInterface : public QWidget
 {
 	Q_OBJECT
 public:
-	EditorInterface(QWidget *parent) {}
+	EditorInterface(QWidget *parent) : QWidget(parent) {}
 	virtual ~EditorInterface() {}
 	virtual QSize sizeHint(){ QSize size; return size;}
 	virtual void setInitialSizeHint(const QSize&) { }
