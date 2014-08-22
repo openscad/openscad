@@ -553,15 +553,6 @@ else()
   endif()
 endif()
 
-if (DIFFPNG)
-  # How to set cflags to optimize the executable regardless of CMAKE_BUILD_TYPE?
-  set(IMAGE_COMPARE_EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/diffpng)
-  set(COMPARATOR "diffpng")
-  add_executable(diffpng diffpng.cpp ../src/lodepng.cpp)
-  message(STATUS "Image comparison program: diffpng")
-endif()
-
-
 # Internal includes
 include_directories(../src)
 
@@ -622,6 +613,7 @@ set(CORE_SOURCES
   ../src/parsersettings.cc
   ../src/mathc99.cc
   ../src/linalg.cc
+  ../src/colormap.cc
   ../src/Camera.cc
   ../src/handle_dep.cc 
   ../src/value.cc 
@@ -681,6 +673,7 @@ set(CGAL_SOURCES
   ../src/CSGTermEvaluator.cc 
   ../src/CGAL_Nef_polyhedron.cc 
   ../src/cgalutils.cc 
+  ../src/cgalutils-tess.cc 
   ../src/CGALCache.cc
   ../src/CGAL_Nef_polyhedron_DxfData.cc
   ../src/Polygon2d-CGAL.cc
@@ -874,6 +867,18 @@ function(get_test_fullname TESTCMD FILENAME FULLNAME)
 endfunction()
 
 #
+# Check if a test file is a 2D test
+#
+function(is_2d FULLNAME RESULT)
+  list(FIND ALL_2D_FILES ${FULLNAME} IDX)
+  if (${IDX} GREATER -1)
+    set(${RESULT} 1 PARENT_SCOPE)
+  else()
+    set(${RESULT} PARENT_SCOPE)
+  endif()
+endfunction()
+
+#
 # This functions adds cmd-line tests given files.
 #
 # Usage add_cmdline_test(testbasename [EXE <executable>] [ARGS <args to exe>]
@@ -905,16 +910,24 @@ function(add_cmdline_test TESTCMD_BASENAME)
 
     if (${DISABLED} EQUAL -1)
 
+      set(EXPERIMENTAL_OPTION "")
+      string(REGEX MATCH "csgtexttest" match_result1 ${TEST_FULLNAME})
+      string(REGEX MATCH "cgalstlsanity" match_result2 ${TEST_FULLNAME})
+      string(REGEX MATCH "dumptest" match_result3 ${TEST_FULLNAME})
+      if( "${match_result1}" STREQUAL "" )
+       if( "${match_result2}" STREQUAL "" )
+        if( "${match_result3}" STREQUAL "" )
+         set(EXPERIMENTAL_OPTION "--enable=text")
+        endif()
+       endif()
+      endif()
+
       # 2D tests should be viewed from the top, not an angle.
       set(CAMERA_OPTION "")
-      foreach(test2d IN LISTS TESTS_2D)
-        string(REGEX MATCH "${test2d}" match_result ${TEST_FULLNAME})
-        if (NOT "${match_result}" STREQUAL "")
-          #message(STATUS "2d test found: ${TEST_FULLNAME}, ${match_result}")
-          set(CAMERA_OPTION "--camera=0,0,100,0,0,0" "--viewall" "--autocenter" "--projection=ortho")
-          break()
-        endif()
-      endforeach()
+      is_2d(${SCADFILE} IS2D)
+      if (IS2D)
+        set(CAMERA_OPTION "--camera=0,0,100,0,0,0" "--viewall" "--autocenter" "--projection=ortho")
+      endif()
 
       # Handle configurations
       unset(FOUNDCONFIGS)
@@ -933,7 +946,53 @@ function(add_cmdline_test TESTCMD_BASENAME)
         set(FILENAME_OPTION -f ${FILE_BASENAME})
       endif()
 
-      add_test(NAME ${TEST_FULLNAME} ${CONFARG} ${CONFVAL} COMMAND ${PYTHON_EXECUTABLE} ${tests_SOURCE_DIR}/test_cmdline_tool.py --comparator=${COMPARATOR} -c ${IMAGE_COMPARE_EXECUTABLE} -s ${TESTCMD_SUFFIX} ${EXTRA_OPTIONS} ${TESTNAME_OPTION} ${FILENAME_OPTION} ${TESTCMD_EXE} ${TESTCMD_SCRIPT} "${SCADFILE}" ${CAMERA_OPTION} ${TESTCMD_ARGS})
+      add_test(NAME ${TEST_FULLNAME} ${CONFARG} ${CONFVAL} COMMAND ${PYTHON_EXECUTABLE} ${tests_SOURCE_DIR}/test_cmdline_tool.py --comparator=${COMPARATOR} -c ${IMAGE_COMPARE_EXECUTABLE} -s ${TESTCMD_SUFFIX} ${EXTRA_OPTIONS} ${TESTNAME_OPTION} ${FILENAME_OPTION} ${TESTCMD_EXE} ${TESTCMD_SCRIPT} "${SCADFILE}" ${CAMERA_OPTION} ${EXPERIMENTAL_OPTION} ${TESTCMD_ARGS})
+      set_property(TEST ${TEST_FULLNAME} PROPERTY ENVIRONMENT "${CTEST_ENVIRONMENT}")
+    endif()
+  endforeach()
+endfunction()
+
+#
+# Usage add_failing_test(testbasename RETVAL <expected return value>
+#                        [EXE <executable>] [SCRIPT <script>] [ARGS <args to exe>]
+#                        FILES <test files>)
+#
+function(add_failing_test TESTCMD_BASENAME)
+  cmake_parse_arguments(TESTCMD "" "RETVAL;EXE;SCRIPT;" "FILES;ARGS" ${ARGN})
+
+  if (TESTCMD_EXE)
+    set(TESTNAME_OPTION -t ${TESTCMD_BASENAME})
+  else()
+    # If no executable was specified, assume it was built by us and resides here
+    set(TESTCMD_EXE ${CMAKE_BINARY_DIR}/${TESTCMD_BASENAME})
+  endif()
+
+  # Add tests from args
+  foreach (SCADFILE ${TESTCMD_FILES})
+    get_filename_component(FILE_BASENAME ${SCADFILE} NAME_WE)
+    string(REPLACE " " "_" FILE_BASENAME ${FILE_BASENAME}) # Test names cannot include spaces
+    set(TEST_FULLNAME "${TESTCMD_BASENAME}_${FILE_BASENAME}")
+    list(FIND DISABLED_TESTS ${TEST_FULLNAME} DISABLED)
+
+    if (${DISABLED} EQUAL -1)
+      # Handle configurations
+      unset(FOUNDCONFIGS)
+      get_test_config(${TEST_FULLNAME} FOUNDCONFIGS)
+      if (NOT FOUNDCONFIGS)
+        set_test_config(Default ${TEST_FULLNAME})
+      endif()
+      set_test_config(All ${TEST_FULLNAME})
+      unset(FOUNDCONFIGS)
+      get_test_config(${TEST_FULLNAME} FOUNDCONFIGS)
+      set(CONFARG CONFIGURATIONS)
+      set(CONFVAL ${FOUNDCONFIGS})
+
+      # The python script cannot extract the testname when given extra parameters
+      if (TESTCMD_ARGS)
+        set(FILENAME_OPTION -f ${FILE_BASENAME})
+      endif()
+
+      add_test(NAME ${TEST_FULLNAME} ${CONFARG} ${CONFVAL} COMMAND ${TESTCMD_EXE} ${TESTCMD_SCRIPT} "${SCADFILE}" ${TESTCMD_ARGS})
       set_property(TEST ${TEST_FULLNAME} PROPERTY ENVIRONMENT "${CTEST_ENVIRONMENT}")
     endif()
   endforeach()
@@ -951,18 +1010,25 @@ configure_file(${CMAKE_SOURCE_DIR}/../testdata/scad/templates/include-tests-temp
 configure_file(${CMAKE_SOURCE_DIR}/../testdata/scad/templates/use-tests-template.scad
                ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/use-tests.scad)
 configure_file(${CMAKE_SOURCE_DIR}/../testdata/scad/templates/import_stl-tests-template.scad
-               ${CMAKE_SOURCE_DIR}/../testdata/scad/features/import_stl-tests.scad)
+               ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/features/import_stl-tests.scad)
 configure_file(${CMAKE_SOURCE_DIR}/../testdata/scad/templates/import_dxf-tests-template.scad
-               ${CMAKE_SOURCE_DIR}/../testdata/scad/features/import_dxf-tests.scad)
+               ${CMAKE_SOURCE_DIR}/../testdata/scad/2D/features/import_dxf-tests.scad)
 
 # Find all scad files
-file(GLOB FEATURES_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/features/*.scad)
+file(GLOB FEATURES_3D_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/features/*.scad)
+file(GLOB FEATURES_2D_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/2D/features/*.scad)
+file(GLOB DEPRECATED_3D_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/deprecated/*.scad)
 file(GLOB SCAD_DXF_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/dxf/*.scad)
 file(GLOB FUNCTION_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/functions/*.scad)
-file(GLOB EXAMPLE_FILES ${CMAKE_SOURCE_DIR}/../examples/*/*.scad)
+file(GLOB_RECURSE EXAMPLE_3D_FILES ${CMAKE_SOURCE_DIR}/../examples/*.scad)
+
+list(REMOVE_ITEM EXAMPLE_3D_FILES ${CMAKE_SOURCE_DIR}/../examples/Shapes/flat_body.scad)
+list(APPEND EXAMPLE_2D_FILES ${CMAKE_SOURCE_DIR}/../examples/Shapes/flat_body.scad)
+
+list(APPEND EXAMPLE_FILES ${EXAMPLE_3D_FILES} ${EXAMPLE_2D_FILES})
 
 list(APPEND ECHO_FILES ${FUNCTION_FILES}
-            ${CMAKE_SOURCE_DIR}/../testdata/scad/features/for-tests.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/features/for-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/echo-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/escape-test.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/parser-tests.scad
@@ -971,6 +1037,7 @@ list(APPEND ECHO_FILES ${FUNCTION_FILES}
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/string-test.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/string-indexing.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/string-unicode.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/chr-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/vector-values.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/search-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/search-tests-unicode.scad
@@ -991,7 +1058,7 @@ list(APPEND ECHO_FILES ${FUNCTION_FILES}
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/include-recursive-test.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/empty-stl.scad)
 
-list(APPEND DUMPTEST_FILES ${FEATURES_FILES})
+list(APPEND DUMPTEST_FILES ${FEATURES_2D_FILES} ${FEATURES_3D_FILES} ${DEPRECATED_3D_FILES})
 list(APPEND DUMPTEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/escape-test.scad
                            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/include-tests.scad
                            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/use-tests.scad
@@ -1001,42 +1068,64 @@ list(APPEND DUMPTEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/escape-test
                            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/allfunctions.scad
                            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/allmodules.scad)
 
-list(APPEND CGALPNGTEST_FILES ${FEATURES_FILES} ${SCAD_DXF_FILES} ${EXAMPLE_FILES})
-list(APPEND CGALPNGTEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/include-tests.scad
+list(APPEND CGALPNGTEST_2D_FILES ${FEATURES_2D_FILES} ${SCAD_DXF_FILES} ${EXAMPLE_2D_FILES})
+list(APPEND CGALPNGTEST_3D_FILES ${FEATURES_3D_FILES} ${DEPRECATED_3D_FILES} ${EXAMPLE_3D_FILES})
+list(APPEND CGALPNGTEST_3D_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/include-tests.scad
                            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/use-tests.scad
                            ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/transform-nan-inf-tests.scad
                            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/localfiles-test.scad
                            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/localfiles_dir/localfiles-compatibility-test.scad
                            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/rotate-empty-bbox.scad
-                           ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/empty-shape-tests.scad)
+                           ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/empty-shape-tests.scad
+                           ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/null-polygons.scad
+                           ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/internal-cavity.scad
+                           ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/internal-cavity-polyhedron.scad
+                           ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/bad-stl-pcbvicebar.scad
+                           ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/bad-stl-tardis.scad
+                           ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/bad-stl-wing.scad
+                           ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/rotate_extrude-hole.scad)
 
+list(APPEND CGALPNGTEST_FILES ${CGALPNGTEST_2D_FILES} ${CGALPNGTEST_3D_FILES})
 list(APPEND OPENCSGTEST_FILES ${CGALPNGTEST_FILES})
 list(APPEND OPENCSGTEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/intersection-prune-test.scad)
 list(APPEND THROWNTOGETHERTEST_FILES ${OPENCSGTEST_FILES})
 
 list(APPEND CGALSTLSANITYTEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/normal-nan.scad)
 
-list(APPEND EXPORT3D_TEST_FILES ${EXAMPLE_FILES})
-list(APPEND EXPORT3D_TEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/features/polyhedron-nonplanar-tests.scad)
+file(GLOB EXPERIMENTAL_TEXT_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/experimental/text-*.scad)
+
+list(APPEND EXPORT3D_TEST_FILES ${EXAMPLE_3D_FILES})
+list(APPEND EXPORT3D_TEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/features/polyhedron-nonplanar-tests.scad
+                                ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/features/polyhedron-tests.scad
+                                ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/features/rotate_extrude-tests.scad
+                                ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/features/union-coincident-test.scad
+                                ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/null-polygons.scad
+                                ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/internal-cavity.scad
+                                ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/internal-cavity-polyhedron.scad
+                                ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/bad-stl-pcbvicebar.scad
+                                ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/bad-stl-tardis.scad
+                                ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/bad-stl-wing.scad
+                                ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/rotate_extrude-hole.scad)
+
 disable_tests(
-  # the flat_body is not 3d so dont do 3d-tests on it
-  stlpngtest_flat_body
-  offpngtest_flat_body
+  # This doesn't output anything
+  dxfpngtest_nothing-decimal-comma-separated
+
+  # Not useful
+  throwntogethertest_internal-cavity
+  throwntogethertest_internal-cavity-polyhedron
 
   # these take too long, for little relative gain in testing
   stlpngtest_iteration
   offpngtest_iteration
   stlpngtest_fractal
   offpngtest_fractal
+  stlpngtest_logo_and_text
+  offpngtest_logo_and_text
 )
 
-# mark which tests are 2d (regex match inside add_cmdline_test)
-# (note - dont use the offset from examples/Advanced)
-list(APPEND TESTS_2D circle control-hull-dimension difference-2d ellipse
- flat_body hull2 import_dxf intersection2 issue585 issue612 lwpolyline2 -arc _arc
- minkowski2 multiple-layers offset- polygon* primitive-cut projection-test
- render-2d resize-2d scale2D scale2d text-search square font 
- transform-insert triangle)
+# 2D tests
+list(APPEND ALL_2D_FILES ${FEATURES_2D_FILES} ${SCAD_DXF_FILES} ${EXAMPLE_2D_FILES} ${EXPERIMENTAL_TEXT_FILES})
 
 # FIXME: This test illustrates a weakness in child() combined with modifiers.
 # Reenable it when this is improved
@@ -1085,23 +1174,33 @@ set_test_config(Heavy cgalpngtest_rotate_extrude-tests
                       cgalpngtest_linear_extrude-scale-zero-tests
                       csgpngtest_linear_extrude-scale-zero-tests
                       cgalpngtest_sphere-tests
-                      csgpngtest_resize-tests)
+                      csgpngtest_resize-tests
+                      csgpngtest_resize-tests
+                      stlpngtest_fence
+                      stlpngtest_surface
+                      stlpngtest_demo_cut
+                      stlpngtest_search
+                      stlpngtest_rounded_box
+                      stlpngtest_difference
+                      stlpngtest_translation
+                      offpngtest_fence
+                      offpngtest_surface
+                      offpngtest_demo_cut
+                      offpngtest_search
+                      offpngtest_rounded_box
+                      offpngtest_difference
+                      offpngtest_translation
+)
 
 # Bugs
 
-list(APPEND BUGS_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue495.scad
-                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue495b.scad
-                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue541.scad
-                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue578.scad
-                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue578b.scad
-                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue584.scad
-                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue585.scad
+list(APPEND BUGS_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue584.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue591.scad
-                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue612.scad
-                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue112.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue666.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue802.scad
-                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue835.scad)
+                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue835.scad
+                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue911.scad
+                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue913.scad)
 
 list(APPEND OPENCSGTEST_FILES ${BUGS_FILES})
 list(APPEND CGALPNGTEST_FILES ${BUGS_FILES})
@@ -1124,6 +1223,8 @@ foreach(FILE ${EXAMPLE_FILES})
   get_test_fullname(throwntogethertest ${FILE} TEST_FULLNAME)
   set_test_config(Examples ${TEST_FULLNAME})
   get_test_fullname(csgpngtest ${FILE} TEST_FULLNAME)
+  set_test_config(Examples ${TEST_FULLNAME})
+  get_test_fullname(monotonepngtest ${FILE} TEST_FULLNAME)
   set_test_config(Examples ${TEST_FULLNAME})
   get_test_fullname(stlpngtest ${FILE} TEST_FULLNAME)
   set_test_config(Examples ${TEST_FULLNAME})
@@ -1199,21 +1300,33 @@ add_cmdline_test(throwntogethertest EXE ${OPENSCAD_BINPATH} ARGS --preview=throw
 # with anything. It's self-contained and returns != 0 on error
 add_cmdline_test(cgalstlsanitytest EXE ${CMAKE_SOURCE_DIR}/cgalstlsanitytest SUFFIX txt ARGS ${OPENSCAD_BINPATH} FILES ${CGALSTLSANITYTEST_FILES})
 
-# Export/Import 3d png tests.
-add_cmdline_test(stlpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOURCE_DIR}/export_import_pngtest.py ARGS --openscad=${OPENSCAD_BINPATH} --format=STL SUFFIX png FILES ${EXPORT3D_TEST_FILES})
-add_cmdline_test(offpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOURCE_DIR}/export_import_pngtest.py ARGS --openscad=${OPENSCAD_BINPATH} --format=OFF SUFFIX png FILES ${EXPORT3D_TEST_FILES})
+#
+# Export/Import tests
+#
 
+# Issue #337
+set_test_config(Bugs stlpngtest_polyhedron-tests)
+# Issue #910
+set_test_config(Bugs offpngtest_polyhedron-tests
+                     offpngtest_bad-stl-pcbvicebar
+                     offpngtest_bad-stl-tardis
+                     offpngtest_bad-stl-wing)
+
+add_cmdline_test(monotonepngtest EXE ${OPENSCAD_BINPATH} ARGS --colorscheme=Monotone --enable=text --render -o SUFFIX png FILES ${EXPORT3D_TEST_FILES})
+add_cmdline_test(stlpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOURCE_DIR}/export_import_pngtest.py ARGS --openscad=${OPENSCAD_BINPATH} --format=STL EXPECTEDDIR monotonepngtest SUFFIX png FILES ${EXPORT3D_TEST_FILES})
+add_cmdline_test(offpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOURCE_DIR}/export_import_pngtest.py ARGS --openscad=${OPENSCAD_BINPATH} --format=OFF EXPECTEDDIR monotonepngtest SUFFIX png FILES ${EXPORT3D_TEST_FILES})
+add_cmdline_test(dxfpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOURCE_DIR}/export_import_pngtest.py ARGS --openscad=${OPENSCAD_BINPATH} --format=DXF EXPECTEDDIR cgalpngtest SUFFIX png FILES ${ALL_2D_FILES})
+
+
+#
+# Failing tests
+#
+add_failing_test(stlfailedtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOURCE_DIR}/shouldfail.py ARGS --openscad=${OPENSCAD_BINPATH} --retval=1 -o SUFFIX stl FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/empty-union.scad)
+add_failing_test(offfailedtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOURCE_DIR}/shouldfail.py ARGS --openscad=${OPENSCAD_BINPATH} --retval=1 -o SUFFIX off FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/empty-union.scad)
+
+#
 # Add experimental tests
-
-list(APPEND EXPERIMENTAL_TEXT_FILES 
-            ${CMAKE_SOURCE_DIR}/../testdata/scad/experimental/text-font-alignment-tests.scad
-            ${CMAKE_SOURCE_DIR}/../testdata/scad/experimental/text-font-direction-tests.scad
-            ${CMAKE_SOURCE_DIR}/../testdata/scad/experimental/text-font-simple-tests.scad
-            ${CMAKE_SOURCE_DIR}/../testdata/scad/experimental/text-font-tests.scad
-            ${CMAKE_SOURCE_DIR}/../testdata/scad/experimental/text-font-composition.scad
-            ${CMAKE_SOURCE_DIR}/../testdata/scad/experimental/text-font-symbol.scad
-            ${CMAKE_SOURCE_DIR}/../testdata/scad/experimental/text-search-test.scad)
-
+#
 add_cmdline_test(dumptest EXE ${OPENSCAD_BINPATH} ARGS --enable=text -o SUFFIX csg FILES ${EXPERIMENTAL_TEXT_FILES})
 add_cmdline_test(cgalpngtest EXE ${OPENSCAD_BINPATH} ARGS --render --enable=text -o SUFFIX png FILES ${EXPERIMENTAL_TEXT_FILES})
 add_cmdline_test(opencsgtest EXE ${OPENSCAD_BINPATH} ARGS --enable=text -o SUFFIX png FILES ${EXPERIMENTAL_TEXT_FILES})
@@ -1243,81 +1356,105 @@ endif()
 add_cmdline_test(openscad-imgsize EXE ${OPENSCAD_BINPATH}
                  ARGS --imgsize 100,100 -o 
                  SUFFIX png 
-		 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/features/camera-tests.scad)
+		 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/features/camera-tests.scad)
 add_cmdline_test(openscad-imgstretch EXE ${OPENSCAD_BINPATH}
                  ARGS --imgsize 500,100 -o 
                  SUFFIX png 
-		 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/features/camera-tests.scad)
+		 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/features/camera-tests.scad)
 add_cmdline_test(openscad-imgstretch2 EXE ${OPENSCAD_BINPATH}
                  ARGS --imgsize 100,500 -o 
                  SUFFIX png 
-		 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/features/camera-tests.scad)
+		 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/features/camera-tests.scad)
 # Perspective gimbal cam
 add_cmdline_test(openscad-camdist EXE ${OPENSCAD_BINPATH} 
                  ARGS --imgsize=500,500 --camera=0,0,0,90,0,90,100 -o
                  SUFFIX png
-		 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/features/camera-tests.scad)
+		 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/features/camera-tests.scad)
 # Perspective gimbal cam
 add_cmdline_test(openscad-camrot EXE ${OPENSCAD_BINPATH}
                  ARGS --imgsize=500,500 --camera=0,0,0,440,337.5,315,100 -o
                  SUFFIX png
-		 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/features/camera-tests.scad)
+		 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/features/camera-tests.scad)
 # Perspective gimbal cam
 add_cmdline_test(openscad-camtrans EXE ${OPENSCAD_BINPATH}
                  ARGS --imgsize=500,500 --camera=100,-20,-10,90,0,90,100 -o
                  SUFFIX png
-		 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/features/camera-tests.scad)
+		 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/features/camera-tests.scad)
 # Perspective gimbal cam, viewall
 add_cmdline_test(openscad-camtrans-viewall EXE ${OPENSCAD_BINPATH}
                  ARGS --imgsize=500,500 --camera=100,-20,-10,90,0,90,3000 --viewall -o
                  SUFFIX png
-		 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/features/camera-tests.scad)
+		 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/features/camera-tests.scad)
 # Orthographic gimbal cam
 add_cmdline_test(openscad-camortho EXE ${OPENSCAD_BINPATH}
                  ARGS --imgsize=500,500 --camera=100,-20,-20,90,0,90,90 --projection=o -o
                  SUFFIX png
-		 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/features/camera-tests.scad)
+		 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/features/camera-tests.scad)
 # Orthographic gimbal cam viewall
 add_cmdline_test(openscad-camortho-viewall EXE ${OPENSCAD_BINPATH}
                  ARGS --imgsize=500,500 --camera=100,-20,-10,90,0,90,3000 --viewall --projection=o -o
                  SUFFIX png
-		 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/features/camera-tests.scad)
+		 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/features/camera-tests.scad)
 # Perspective vector cam
 add_cmdline_test(openscad-cameye EXE ${OPENSCAD_BINPATH}
                  ARGS --imgsize=500,500 --camera=60,40,30,0,0,0 -o
                  SUFFIX png
-		 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/features/camera-tests.scad)
+		 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/features/camera-tests.scad)
 # Perspective vector cam
 add_cmdline_test(openscad-cameye2 EXE ${OPENSCAD_BINPATH}
                  ARGS --imgsize=500,500 --camera=160,140,130,0,0,0 -o
                  SUFFIX png
-		 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/features/camera-tests.scad)
+		 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/features/camera-tests.scad)
 # Perspective vector cam
 add_cmdline_test(openscad-camcenter EXE ${OPENSCAD_BINPATH}
                  ARGS --imgsize=500,500 --camera=60,40,30,20,10,30  -o
                  SUFFIX png
-		 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/features/camera-tests.scad)
+		 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/features/camera-tests.scad)
 # Perspective vector cam viewall
 add_cmdline_test(openscad-camcenter-viewall EXE ${OPENSCAD_BINPATH}
                  ARGS --imgsize=500,500 --camera=60,40,30,20,10,30 --viewall -o
                  SUFFIX png
-		 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/features/camera-tests.scad)
+		 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/features/camera-tests.scad)
 # Orthographic vector cam
 add_cmdline_test(openscad-cameyeortho EXE ${OPENSCAD_BINPATH}
                  ARGS --imgsize=500,500 --camera=160,140,130,0,0,0 --projection=o -o 
                  SUFFIX png
-		 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/features/camera-tests.scad)
+		 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/features/camera-tests.scad)
 # Orthographic vector cam viewall
 add_cmdline_test(openscad-cameyeortho-viewall EXE ${OPENSCAD_BINPATH}
                  ARGS --imgsize=500,500 --camera=16,14,13,0,0,0 --viewall --projection=o -o 
                  SUFFIX png
-		 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/features/camera-tests.scad)
+		 FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/features/camera-tests.scad)
 
-
+# Colorscheme tests
+add_cmdline_test(openscad-colorscheme-cornfield EXE ${OPENSCAD_BINPATH}
+                 ARGS --colorscheme=Cornfield -o 
+                 SUFFIX png 
+                 FILES ${CMAKE_SOURCE_DIR}/../examples/Basics/difference_cube.scad)
+add_cmdline_test(openscad-colorscheme-metallic EXE ${OPENSCAD_BINPATH}
+                 ARGS --colorscheme=Metallic -o 
+                 SUFFIX png 
+                 FILES ${CMAKE_SOURCE_DIR}/../examples/Basics/difference_cube.scad)
+add_cmdline_test(openscad-colorscheme-metallic-render EXE ${OPENSCAD_BINPATH}
+                 ARGS --colorscheme=Metallic --render -o 
+                 SUFFIX png 
+                 FILES ${CMAKE_SOURCE_DIR}/../examples/Basics/difference_cube.scad)
+add_cmdline_test(openscad-colorscheme-sunset EXE ${OPENSCAD_BINPATH}
+                 ARGS --colorscheme=Sunset -o 
+                 SUFFIX png 
+                 FILES ${CMAKE_SOURCE_DIR}/../examples/Basics/difference_cube.scad)
+add_cmdline_test(openscad-colorscheme-starnight EXE ${OPENSCAD_BINPATH}
+                 ARGS --colorscheme=Starnight -o 
+                 SUFFIX png 
+                 FILES ${CMAKE_SOURCE_DIR}/../examples/Basics/difference_cube.scad)
+add_cmdline_test(openscad-colorscheme-monotone EXE ${OPENSCAD_BINPATH}
+                 ARGS --colorscheme=Monotone -o 
+                 SUFFIX png 
+                 FILES ${CMAKE_SOURCE_DIR}/../examples/Basics/difference_cube.scad)
 
 #message("Available test configurations: ${TEST_CONFIGS}")
 #foreach(CONF ${TEST_CONFIGS})
 #  message("${CONF}: ${${CONF}_TEST_CONFIG}")
 #endforeach()
 
-message("CPPFLAGS: ${CMAKE_CXX_FLAGS}")
+message(STATUS "CPPFLAGS: ${CMAKE_CXX_FLAGS}")

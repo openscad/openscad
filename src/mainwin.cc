@@ -27,6 +27,7 @@
 #include "ModuleCache.h"
 #include "MainWindow.h"
 #include "parsersettings.h"
+#include "rendersettings.h"
 #include "Preferences.h"
 #include "printutils.h"
 #include "node.h"
@@ -430,7 +431,12 @@ MainWindow::MainWindow(const QString &filename)
 					this, SLOT(openCSGSettingsChanged()));
 	connect(Preferences::inst(), SIGNAL(syntaxHighlightChanged(const QString&)),
 					editor, SLOT(setHighlightScheme(const QString&)));
+	connect(Preferences::inst(), SIGNAL(colorSchemeChanged(const QString&)), 
+					this, SLOT(setColorScheme(const QString&)));
 	Preferences::inst()->apply();
+
+	QString cs = Preferences::inst()->getValue("3dview/colorscheme").toString();
+	this->setColorScheme(cs);
 
 	//find and replace panel
 	connect(this->findTypeComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(selectFindType(int)));
@@ -1811,6 +1817,12 @@ void MainWindow::actionExport(export_type_e, QString, QString)
 		return;
 	}
 
+	if (this->root_geom->isEmpty()) {
+		PRINT("Current top level object is empty.");
+		clearCurrentOutput();
+		return;
+	}
+
 	const CGAL_Nef_polyhedron *N = dynamic_cast<const CGAL_Nef_polyhedron *>(this->root_geom.get());
 	if (N && !N->p3->is_simple()) {
 		PRINT("Object isn't a valid 2-manifold! Modify your design. See http://en.wikibooks.org/wiki/OpenSCAD_User_Manual/STL_Import_and_Export");
@@ -1938,7 +1950,7 @@ void MainWindow::actionExportCSG()
 		return;
 	}
 
-	std::ofstream fstream(csg_filename.toUtf8());
+	std::ofstream fstream(csg_filename.toLocal8Bit());
 	if (!fstream.is_open()) {
 		PRINTB("Can't open file \"%s\" for export", csg_filename.toLocal8Bit().constData());
 	}
@@ -2000,6 +2012,7 @@ void MainWindow::viewModePreview()
 		viewModeActionsUncheck();
 		viewActionPreview->setChecked(true);
 		this->qglview->setRenderer(this->opencsgRenderer ? (Renderer *)this->opencsgRenderer : (Renderer *)this->thrownTogetherRenderer);
+		this->qglview->updateColorScheme();
 		this->qglview->updateGL();
 	} else {
 		viewModeThrownTogether();
@@ -2016,6 +2029,7 @@ void MainWindow::viewModeSurface()
 	viewActionSurfaces->setChecked(true);
 	this->qglview->setShowFaces(true);
 	this->qglview->setRenderer(this->cgalRenderer);
+	this->qglview->updateColorScheme();
 	this->qglview->updateGL();
 }
 
@@ -2025,6 +2039,7 @@ void MainWindow::viewModeWireframe()
 	viewActionWireframe->setChecked(true);
 	this->qglview->setShowFaces(false);
 	this->qglview->setRenderer(this->cgalRenderer);
+	this->qglview->updateColorScheme();
 	this->qglview->updateGL();
 }
 
@@ -2035,6 +2050,7 @@ void MainWindow::viewModeThrownTogether()
 	viewModeActionsUncheck();
 	viewActionThrownTogether->setChecked(true);
 	this->qglview->setRenderer(this->thrownTogetherRenderer);
+	this->qglview->updateColorScheme();
 	this->qglview->updateGL();
 }
 
@@ -2371,6 +2387,23 @@ MainWindow::preferences()
 	Preferences::inst()->show();
 	Preferences::inst()->activateWindow();
 	Preferences::inst()->raise();
+}
+
+void MainWindow::setColorScheme(const QString &scheme)
+{
+	RenderSettings::inst()->colorscheme = scheme.toStdString();
+	this->qglview->setColorScheme(scheme.toStdString());
+	this->qglview->updateGL();
+}
+
+void MainWindow::setFont(const QString &family, uint size)
+{
+	QFont font;
+	if (!family.isEmpty()) font.setFamily(family);
+	else font.setFixedPitch(true);
+	if (size > 0)	font.setPointSize(size);
+	font.setStyleHint(QFont::TypeWriter);
+	editor->setFont(font);
 }
 
 void MainWindow::quit()

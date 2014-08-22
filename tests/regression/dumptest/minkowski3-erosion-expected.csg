@@ -12,7 +12,7 @@ group() {
 					cube(size = [5, 5, 10], center = false);
 				}
 			}
-			minkowski(convexity = 0) {
+			minkowski(convexity = 3) {
 				difference() {
 					cube(size = [25, 25, 25], center = true);
 					group() {

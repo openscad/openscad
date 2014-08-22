@@ -87,6 +87,7 @@ public:
     /// return number of steps, max uint32_t value if step is 0
     boost::uint32_t nbsteps() const;
     
+    friend class chr_visitor;
     friend class tostring_visitor;
     friend class bracket_visitor;
   };
@@ -121,6 +122,7 @@ public:
   bool getDouble(double &v) const;
   bool toBool() const;
   std::string toString() const;
+  std::string chrString() const;
   const VectorType &toVector() const;
   bool getVec2(double &x, double &y) const;
   bool getVec3(double &x, double &y, double &z, double defaultval = 0.0) const;

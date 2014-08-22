@@ -239,6 +239,7 @@ static void gl_draw_triangle(GLint *shaderinfo, const Vector3d &p0, const Vector
 
 void PolySet::render_surface(Renderer::csgmode_e csgmode, const Transform3d &m, GLint *shaderinfo) const
 {
+	PRINTD("Polyset render");
 	bool mirrored = m.matrix().determinant() < 0;
 #ifdef ENABLE_OPENCSG
 	if (shaderinfo) {

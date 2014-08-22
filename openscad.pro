@@ -221,8 +221,9 @@ HEADERS += src/typedefs.h \
            src/parsersettings.h \
            src/renderer.h \
            src/rendersettings.h \
+           src/colormap.h \
            src/ThrownTogetherRenderer.h \
-           src/CGAL_renderer.h \
+           src/CGAL_OGL_Polyhedron.h \
            src/OGL_helper.h \
            src/QGLView.h \
            src/GLView.h \
@@ -379,6 +380,7 @@ src/FontCache.cc \
            src/export_png.cc \
            src/import.cc \
            src/renderer.cc \
+           src/colormap.cc \
            src/ThrownTogetherRenderer.cc \
            src/CSGTermEvaluator.cc \
            src/svg.cc \
@@ -428,6 +430,7 @@ HEADERS += src/cgal.h \
            src/Polygon2d-CGAL.h
 
 SOURCES += src/cgalutils.cc \
+           src/cgalutils-tess.cc \
            src/CGALCache.cc \
            src/CGALRenderer.cc \
            src/CGAL_Nef_polyhedron.cc \

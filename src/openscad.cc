@@ -81,6 +81,7 @@ std::string currentdir;
 using std::string;
 using std::vector;
 using boost::lexical_cast;
+using boost::bad_lexical_cast;
 using boost::is_any_of;
 
 class Echostream : public std::ofstream
@@ -114,6 +115,7 @@ static void help(const char *progname)
          "%2%[ --viewall ] \\\n"
          "%2%[ --imgsize=width,height ] [ --projection=(o)rtho|(p)ersp] \\\n"
          "%2%[ --render | --preview[=throwntogether] ] \\\n"
+         "%2%[ --colorscheme=[Cornfield|Sunset|Metallic|Starnight|BeforeDawn|Nature|DeepOcean] ] \\\n"
          "%2%[ --csglimit=num ]"
 #ifdef ENABLE_EXPERIMENTAL
          " [ --enable=<feature> ]"
@@ -152,7 +154,7 @@ static void info()
 	exit(0);
 }
 
-Camera get_camera( po::variables_map vm )
+Camera get_camera(po::variables_map vm)
 {
 	Camera camera;
 
@@ -161,12 +163,16 @@ Camera get_camera( po::variables_map vm )
 		vector<double> cam_parameters;
 		split(strs, vm["camera"].as<string>(), is_any_of(","));
 		if ( strs.size()==6 || strs.size()==7 ) {
-			BOOST_FOREACH(string &s, strs)
-				cam_parameters.push_back(lexical_cast<double>(s));
-			camera.setup( cam_parameters );
+			try {
+				BOOST_FOREACH(string &s, strs) cam_parameters.push_back(lexical_cast<double>(s));
+				camera.setup(cam_parameters);
+			}
+			catch (bad_lexical_cast &) {
+				PRINT("Camera setup requires numbers as parameters");
+			}
 		} else {
-			PRINT("Camera setup requires either 7 numbers for Gimbal Camera\n");
-			PRINT("or 6 numbers for Vector Camera\n");
+			PRINT("Camera setup requires either 7 numbers for Gimbal Camera");
+			PRINT("or 6 numbers for Vector Camera");
 			exit(1);
 		}
 	}
@@ -201,11 +207,16 @@ Camera get_camera( po::variables_map vm )
 		vector<string> strs;
 		split(strs, vm["imgsize"].as<string>(), is_any_of(","));
 		if ( strs.size() != 2 ) {
-			PRINT("Need 2 numbers for imgsize\n");
+			PRINT("Need 2 numbers for imgsize");
 			exit(1);
 		} else {
-			w = lexical_cast<int>( strs[0] );
-			h = lexical_cast<int>( strs[1] );
+			try {
+				w = lexical_cast<int>(strs[0]);
+				h = lexical_cast<int>(strs[1]);
+			}
+			catch (bad_lexical_cast &) {
+				PRINT("Need 2 numbers for imgsize");
+			}
 		}
 	}
 	camera.pixel_width = w;
@@ -226,6 +237,10 @@ static bool checkAndExport(shared_ptr<const Geometry> root_geom, unsigned nd,
 {
 	if (root_geom->getDimension() != nd) {
 		PRINTB("Current top level object is not a %dD object.", nd);
+		return false;
+	}
+	if (root_geom->isEmpty()) {
+		PRINT("Current top level object is empty.");
 		return false;
 	}
 	exportFileByName(root_geom.get(), format, filename, filename);
@@ -623,6 +638,7 @@ int main(int argc, char **argv)
 		("viewall", "adjust camera to fit object")
 		("imgsize", po::value<string>(), "=width,height for exporting png")
 		("projection", po::value<string>(), "(o)rtho or (p)erspective when exporting png")
+		("colorscheme", po::value<string>(), "colorscheme")
 		("debug", po::value<string>(), "special debug info")
 		("o,o", po::value<string>(), "out-file")
 		("s,s", po::value<string>(), "stl-file")
@@ -722,6 +738,19 @@ int main(int argc, char **argv)
 		help(argv[0]);
 	}
 #endif
+
+	if (vm.count("colorscheme")) {
+		std::string colorscheme = vm["colorscheme"].as<string>();
+		if (ColorMap::inst()->findColorScheme(colorscheme)) {
+			RenderSettings::inst()->colorscheme = colorscheme;
+		} else {
+			PRINT("Unknown color scheme. Valid schemes:");
+			BOOST_FOREACH (const std::string &name, ColorMap::inst()->colorSchemeNames()) {
+				PRINT(name);
+			}
+			exit(1);
+		}
+	}
 
 	currentdir = boosty::stringy(fs::current_path());
 

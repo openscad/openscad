@@ -8,7 +8,6 @@
 
 #ifdef ENABLE_CGAL
 #include "CGALRenderer.h"
-#include "CGAL_renderer.h"
 #include "cgal.h"
 #include "cgalutils.h"
 #include "CGAL_Nef_polyhedron.h"
@@ -38,6 +37,7 @@ void export_png(const Geometry *root_geom, Camera &cam, std::ostream &output)
 
 	glview->setCamera(cam);
 	glview->setRenderer(&cgalRenderer);
+	glview->setColorScheme(RenderSettings::inst()->colorscheme);
 	glview->paintGL();
 	glview->save(output);
 }
@@ -85,6 +85,7 @@ void export_png_preview_common(Tree &tree, Camera &cam, std::ostream &output, Pr
 	OpenCSG::setContext(0);
 	OpenCSG::setOption(OpenCSG::OffscreenSetting, OpenCSG::FrameBufferObject);
 #endif
+	csgInfo.glview->setColorScheme(RenderSettings::inst()->colorscheme);
 	csgInfo.glview->paintGL();
 	csgInfo.glview->save(output);
 }

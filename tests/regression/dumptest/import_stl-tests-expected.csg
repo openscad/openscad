@@ -1,5 +1,4 @@
 group() {
-	import(file = "import.stl", layer = "", origin = [0, 0], scale = 1, convexity = 1, $fn = 0, $fa = 12, $fs = 2);
 	multmatrix([[1, 0, 0, 2], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 		import(file = "import.stl", layer = "", origin = [0, 0], scale = 1, convexity = 1, $fn = 0, $fa = 12, $fs = 2);
 	}
