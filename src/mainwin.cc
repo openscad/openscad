@@ -241,7 +241,6 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this, SIGNAL(highlightError(int)), editor, SLOT(highlightError(int)));
 	connect(this, SIGNAL(unhighlightLastError()), editor, SLOT(unhighlightLastError()));
 	editor->setTabStopWidth(30);
-	editor->setLineWrapping(true); // Not designable
 
 	this->qglview->statusLabel = new QLabel(this);
 	statusBar()->addWidget(this->qglview->statusLabel);
@@ -417,8 +416,8 @@ MainWindow::MainWindow(const QString &filename)
 	}
 	updateRecentFileActions();
 
-	connect(editor->document(), SIGNAL(contentsChanged()), this, SLOT(animateUpdateDocChanged()));
-	connect(editor->document(), SIGNAL(modificationChanged(bool)), this, SLOT(setWindowModified(bool)));
+	connect(editor, SIGNAL(contentsChanged()), this, SLOT(animateUpdateDocChanged()));
+	connect(editor, SIGNAL(modificationChanged(bool)), this, SLOT(setWindowModified(bool)));
 	connect(this->qglview, SIGNAL(doAnimateUpdate()), this, SLOT(animateUpdate()));
 
 	connect(Preferences::inst(), SIGNAL(requestRedraw()), this->qglview, SLOT(updateGL()));

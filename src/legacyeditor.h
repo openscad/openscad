@@ -31,7 +31,6 @@ public:
 public slots:
 	void zoomIn();
 	void zoomOut();
-	void setLineWrapping(bool on) { if(on) textedit->setWordWrapMode(QTextOption::WrapAnywhere); }
 	void setContentModified(bool y) { textedit->document()->setModified(y);  }
 	bool isContentModified() {return textedit->document()->isModified();}
 	void indentSelection();

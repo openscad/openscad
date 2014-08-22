@@ -11,8 +11,12 @@ LegacyEditor::LegacyEditor(QWidget *parent) : EditorInterface(parent)
 	// This needed to avoid the editor accepting filename drops as we want
 	// to handle these ourselves in MainWindow
 	this->textedit->setAcceptDrops(false);
+	this->textedit->setWordWrapMode(QTextOption::WrapAnywhere);
 
 	this->highlighter = new Highlighter(this->textedit->document());
+
+	connect(this->textedit, SIGNAL(textChanged()), this, SIGNAL(textChanged()));
+	connect(this->textedit, SIGNAL(modificationChanged(bool)), this, SIGNAL(modificationChanged(bool)));
 }
 
 void LegacyEditor::indentSelection()

@@ -30,10 +30,15 @@ public slots:
 	void zoomIn();
 	void zoomOut();  
 	void setPlainText(const QString&);
+	void setContentModified(bool);
 	bool isContentModified();
 	void highlightError(int);
 	void unhighlightLastError();
 	void setHighlightScheme(const QString&);
+	void indentSelection();
+	void unindentSelection();
+	void commentSelection();
+	void uncommentSelection();
 	void insert(const QString&);
 	void undo();
 	void redo();

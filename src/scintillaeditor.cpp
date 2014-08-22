@@ -24,7 +24,9 @@ ScintillaEditor::ScintillaEditor(QWidget *parent) : EditorInterface(parent)
   qsci->setFolding(QsciScintilla::BoxedTreeFoldStyle, 4);
   qsci->setCaretLineVisible(true);
   this->setHighlightScheme(preferenceEditorOption);	
-	
+
+  connect(qsci, SIGNAL(textChanged()), this, SIGNAL(textChanged()));
+  connect(qsci, SIGNAL(modificationChanged(bool)), this, SIGNAL(modificationChanged(bool)));
 }
 
 void ScintillaEditor::setPlainText(const QString &text)
@@ -35,6 +37,11 @@ void ScintillaEditor::setPlainText(const QString &text)
 QString ScintillaEditor::toPlainText()
 {
   return qsci->text();
+}
+
+void ScintillaEditor::setContentModified(bool modified)
+{
+  qsci->setModified(modified);
 }
 
 bool ScintillaEditor::isContentModified()
@@ -258,3 +265,22 @@ void ScintillaEditor::replaceSelectedText(const QString &newText)
   if (qsci->selectedText() != newText) qsci->replaceSelectedText(newText);
 }
 
+void ScintillaEditor::indentSelection()
+{
+  // FIXME: Implement
+}
+
+void ScintillaEditor::unindentSelection()
+{
+  // FIXME: Implement
+}
+
+void ScintillaEditor::commentSelection()
+{
+  // FIXME: Implement
+}
+
+void ScintillaEditor::uncommentSelection()
+{
+  // FIXME: Implement
+}

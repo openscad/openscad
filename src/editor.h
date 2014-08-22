@@ -17,33 +17,35 @@ public:
 	virtual void setInitialSizeHint(const QSize&) { }
 	virtual void wheelEvent (QWheelEvent*) { }
 	virtual void setTabStopWidth(int) { }
-	virtual QString toPlainText() { QString s; return s;}
+	virtual QString toPlainText() = 0;
 	virtual QTextDocument *document(){QTextDocument *t = new QTextDocument; return t;}
 	virtual bool find(const QString &, bool findNext = false, bool findBackwards = false) = 0;
 	virtual void replaceSelectedText(const QString &) = 0;
 
+signals:
+  void contentsChanged();
+  void modificationChanged(bool);												
+
 public slots:
-	virtual void zoomIn(){ }
-	virtual void zoomOut() { }
-	virtual void setLineWrapping(bool) { }
-	virtual void setContentModified(bool){ }
-	virtual bool isContentModified(){ return 0; } 
-	virtual void indentSelection(){ }
-	virtual void unindentSelection(){ }
-	virtual void commentSelection() {}
-	virtual void uncommentSelection(){}
-	virtual void setPlainText(const QString &){ }
-	virtual void highlightError(int) {}
-	virtual void unhighlightLastError() {}
-	virtual void setHighlightScheme(const QString&){ }
+	virtual void zoomIn() = 0;
+	virtual void zoomOut() = 0;
+	virtual void setContentModified(bool) = 0;
+	virtual bool isContentModified() = 0;
+	virtual void indentSelection() = 0;
+	virtual void unindentSelection() = 0;
+	virtual void commentSelection() = 0;
+	virtual void uncommentSelection() = 0;
+	virtual void setPlainText(const QString &) = 0;
+	virtual void highlightError(int) = 0;
+	virtual void unhighlightLastError() = 0;
+	virtual void setHighlightScheme(const QString&) = 0;
 	virtual void insert(const QString&) = 0;
-	virtual void undo(){ }
-	virtual void redo(){ }
-	virtual void cut(){ }
-	virtual void copy(){ }
-	virtual void paste(){ }
-	virtual void onTextChanged() { }
-	virtual void initFont(const QString&, uint){ }
+	virtual void undo() = 0;
+	virtual void redo() = 0;
+	virtual void cut() = 0;
+	virtual void copy() = 0;
+	virtual void paste() = 0;
+	virtual void initFont(const QString&, uint) = 0;
 
 private:
 	QSize initialSizeHint;
