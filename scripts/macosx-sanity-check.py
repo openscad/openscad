@@ -32,18 +32,18 @@ def lookup_library(file):
         if re.search("@executable_path", file):
             abs = re.sub("^@executable_path", executable_path, file)
             if os.path.exists(abs): found = abs
-            if DEBUG: print "Lib in @executable_path found: " + found
+            if DEBUG: print "Lib in @executable_path found: " + str(found)
         elif re.search("\.app/", file):
             found = file
-            if DEBUG: print "App found: " + found
+            if DEBUG: print "App found: " + str(found)
         elif re.search("\.framework/", file):
             found = os.path.join("/Library/Frameworks", file)
-            if DEBUG: print "Framework found: " + found
+            if DEBUG: print "Framework found: " + str(found)
         else:
             for path in os.getenv("DYLD_LIBRARY_PATH").split(':'):
                 abs = os.path.join(path, file)
                 if os.path.exists(abs): found = abs
-            if DEBUG: print "Library found: " + found
+            if DEBUG: print "Library found: " + str(found)
     else:
         found = file
     return found
