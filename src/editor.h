@@ -6,14 +6,13 @@
 #include <QWheelEvent>
 #include <QScrollBar>
 #include <QTextEdit>
-#include "highlighter.h"
 
 class EditorInterface : public QWidget
 {
 	Q_OBJECT
 public:
-	EditorInterface(QWidget *parent);
-	~EditorInterface();
+	EditorInterface(QWidget *parent) {}
+	virtual ~EditorInterface() {}
 	virtual QSize sizeHint(){ QSize size; return size;}
 	virtual void setInitialSizeHint(const QSize&) { }
 	virtual void wheelEvent (QWheelEvent*) { }
@@ -39,7 +38,7 @@ public slots:
 	virtual void highlightError(int) {}
 	virtual void unhighlightLastError() {}
 	virtual void setHighlightScheme(const QString&){ }
-	virtual void insertPlainText(const QString&){ }
+	virtual void insert(const QString&) = 0;
 	virtual void undo(){ }
 	virtual void redo(){ }
 	virtual void cut(){ }
@@ -49,6 +48,5 @@ public slots:
 	virtual void initFont(const QString&, uint){ }
 
 private:
-	Highlighter *highlighter;
 	QSize initialSizeHint;
 };

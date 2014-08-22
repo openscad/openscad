@@ -13,6 +13,7 @@ class ScintillaEditor : public EditorInterface
 {
 public:
 	ScintillaEditor(QWidget *parent);
+	virtual ~ScintillaEditor() {}
 	QsciScintilla *qsci;
 	QString toPlainText();
 	void initMargin();
@@ -33,7 +34,7 @@ public slots:
 	void highlightError(int);
 	void unhighlightLastError();
 	void setHighlightScheme(const QString&);
-	void insertPlainText(const QString&);
+	void insert(const QString&);
 	void undo();
 	void redo();
 	void cut();

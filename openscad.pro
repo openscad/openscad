@@ -369,7 +369,6 @@ src/FontCache.cc \
            src/highlighter.cc \
            src/Preferences.cc \
            src/OpenCSGWarningDialog.cc \
-           src/editor.cc \
            src/GLView.cc \
            src/QGLView.cc \
            src/AutoUpdater.cc \

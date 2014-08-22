@@ -2281,7 +2281,7 @@ void MainWindow::handleFileDrop(const QString &filename)
 		}
 		openFile(filename);
 	} else {
-		editor->insertPlainText(cmd.arg(filename));
+		editor->insert(cmd.arg(filename));
 	}
 }
 

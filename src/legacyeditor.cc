@@ -5,10 +5,13 @@ LegacyEditor::LegacyEditor(QWidget *parent) : EditorInterface(parent)
 {
 	legacyeditorLayout = new QVBoxLayout(this);
 	legacyeditorLayout->setContentsMargins(0, 0, 0, 0);
-	textedit = new QTextEdit(this);
-	legacyeditorLayout->addWidget(textedit);
-	textedit->setAcceptRichText(false);
-	setAcceptDrops(false);
+	this->textedit = new QTextEdit(this);
+	legacyeditorLayout->addWidget(this->textedit);
+	this->textedit->setAcceptRichText(false);
+	// This needed to avoid the editor accepting filename drops as we want
+	// to handle these ourselves in MainWindow
+	this->textedit->setAcceptDrops(false);
+
 	this->highlighter = new Highlighter(this->textedit->document());
 }
 
@@ -194,7 +197,7 @@ void LegacyEditor::setTextCursor (const QTextCursor &cursor)
 	textedit->setTextCursor(cursor);
 }
 
-void LegacyEditor::insertPlainText(const QString &text)
+void LegacyEditor::insert(const QString &text)
 {
 	textedit->insertPlainText(text);
 }

@@ -168,9 +168,9 @@ void ScintillaEditor::setHighlightScheme(const QString &name)
     }
 }
 
-void ScintillaEditor::insertPlainText(const QString &text)
+void ScintillaEditor::insert(const QString &text)
 {
-  qsci->setText(text); 
+  qsci->insert(text); 
 }
 
 void ScintillaEditor::undo()

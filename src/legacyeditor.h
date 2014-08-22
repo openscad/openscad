@@ -15,8 +15,7 @@ class LegacyEditor : public EditorInterface
 	Q_OBJECT
 public:
 	LegacyEditor(QWidget *parent);
-	~LegacyEditor();
-	QTextEdit *textedit;
+	virtual ~LegacyEditor();
 	QSize sizeHint() const;
 	void setInitialSizeHint(const QSize&);
 	void setTabStopWidth(int);
@@ -43,7 +42,7 @@ public slots:
 	void highlightError(int);
 	void unhighlightLastError();
 	void setHighlightScheme(const QString&);
-	void insertPlainText(const QString&);
+	void insert(const QString&);
 	void undo();
 	void redo();
 	void cut();
@@ -51,6 +50,7 @@ public slots:
 	void paste();
 	void initFont(const QString&, uint);
 private:
+	QTextEdit *textedit;
 	Highlighter *highlighter;
 	QSize initialSizeHint;
 	QVBoxLayout *legacyeditorLayout;
