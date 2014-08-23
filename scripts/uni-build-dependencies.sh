@@ -131,6 +131,56 @@ build_qt4()
   echo "----------"
 }
 
+build_qt5()
+{
+  version=$1
+
+  if [ -f $DEPLOYDIR/lib/libQt5Core.a ]; then
+    echo "Qt5 already installed. not building"
+    return
+  fi
+
+  echo "Building Qt" $version "..."
+  cd $BASEDIR/src
+  #rm -rf qt-everywhere-opensource-src-$version
+  v=`echo "$version" | sed -e 's/\.[0-9]$//'`
+  if [ ! -f qt-everywhere-opensource-src-$version.tar.gz ]; then
+     curl -O -L http://download.qt-project.org/official_releases/qt/$v/$version/single/qt-everywhere-opensource-src-$version.tar.gz
+  fi
+  tar xzf qt-everywhere-opensource-src-$version.tar.gz
+  cd qt-everywhere-opensource-src-$version
+  ./configure -prefix $DEPLOYDIR -release -static -opensource -confirm-license \
+                -nomake examples -nomake tests \
+                -qt-xcb -no-c++11 -no-glib -no-harfbuzz -no-sql-db2 -no-sql-ibase -no-sql-mysql -no-sql-oci -no-sql-odbc \
+                -no-sql-psql -no-sql-sqlite2 -no-sql-tds -no-cups -no-qml-debug \
+                -skip activeqt -skip connectivity -skip declarative -skip doc \
+                -skip enginio -skip graphicaleffects -skip location -skip multimedia \
+                -skip quick1 -skip quickcontrols -skip script -skip sensors -skip serialport \
+                -skip svg -skip webkit -skip webkit-examples -skip websockets -skip xmlpatterns
+  make -j"$NUMCPU" install
+}
+
+build_qt5scintilla2()
+{
+  version=$1
+
+  if [ -d $DEPLOYDIR/lib/libqt5scintilla2.a ]; then
+    echo "Qt5Scintilla2 already installed. not building"
+    return
+  fi
+
+  echo "Building Qt5Scintilla2" $version "..."
+  cd $BASEDIR/src
+  #rm -rf QScintilla-gpl-$version.tar.gz
+  if [ ! -f QScintilla-gpl-$version.tar.gz ]; then
+     curl -L -o "QScintilla-gpl-$version.tar.gz" "http://downloads.sourceforge.net/project/pyqt/QScintilla2/QScintilla-$version/QScintilla-gpl-$version.tar.gz?use_mirror=switch"
+  fi
+  tar xzf QScintilla-gpl-$version.tar.gz
+  cd QScintilla-gpl-$version/Qt4Qt5/
+  qmake CONFIG+=staticlib
+  make -j"$NUMCPU" install
+}
+
 build_bison()
 {
   version=$1
@@ -707,6 +757,11 @@ if [ $1 ]; then
   if [ $1 = "qt4" ]; then
     # such a huge build, put here by itself
     build_qt4 4.8.4
+    exit $?
+  fi
+  if [ $1 = "qt5" ]; then
+    build_qt5 5.3.1
+    build_qt5scintilla2 2.8.3
     exit $?
   fi
   if [ $1 = "glu" ]; then

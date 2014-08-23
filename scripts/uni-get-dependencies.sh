@@ -56,7 +56,7 @@ get_mageia_deps()
 
 get_debian_deps()
 {
- for pkg in build-essential libqt4-dev libqt4-opengl-dev \
+ for pkg in build-essential qtbase5-dev \
   libxmu-dev cmake bison flex git-core libboost-all-dev \
   libXi-dev libmpfr-dev libboost-dev libglew-dev \
   libeigen3-dev libcgal-dev libopencsg-dev libgmp3-dev libgmp-dev \
