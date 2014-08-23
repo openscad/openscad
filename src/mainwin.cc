@@ -240,7 +240,6 @@ MainWindow::MainWindow(const QString &filename)
 
 	connect(this, SIGNAL(highlightError(int)), editor, SLOT(highlightError(int)));
 	connect(this, SIGNAL(unhighlightLastError()), editor, SLOT(unhighlightLastError()));
-	editor->setTabStopWidth(30);
 
 	this->qglview->statusLabel = new QLabel(this);
 	statusBar()->addWidget(this->qglview->statusLabel);

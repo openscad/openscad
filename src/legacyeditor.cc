@@ -12,11 +12,12 @@ LegacyEditor::LegacyEditor(QWidget *parent) : EditorInterface(parent)
 	// to handle these ourselves in MainWindow
 	this->textedit->setAcceptDrops(false);
 	this->textedit->setWordWrapMode(QTextOption::WrapAnywhere);
+	this->textedit->setTabStopWidth(30);
 
 	this->highlighter = new Highlighter(this->textedit->document());
 
 	connect(this->textedit, SIGNAL(textChanged()), this, SIGNAL(contentsChanged()));
-	connect(this->textedit, SIGNAL(modificationChanged(bool)), this, SIGNAL(modificationChanged(bool)));
+	connect(this->textedit->document(), SIGNAL(modificationChanged(bool)), this, SIGNAL(modificationChanged(bool)));
 }
 
 void LegacyEditor::indentSelection()
@@ -167,11 +168,6 @@ void LegacyEditor::setInitialSizeHint(const QSize &size)
 	initialSizeHint = size;
 }
  
-void LegacyEditor::setTabStopWidth(int width)
-{
-	textedit->setTabStopWidth(width);
-}
-
 QString LegacyEditor::toPlainText()
 {
 	return textedit->toPlainText();

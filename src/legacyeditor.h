@@ -17,7 +17,6 @@ public:
 	virtual ~LegacyEditor();
 	QSize sizeHint() const;
 	void setInitialSizeHint(const QSize&);
-	void setTabStopWidth(int);
 	QString	toPlainText();
 	QString selectedText();
 	bool find(const QString &, bool findNext = false, bool findBackwards = false);
