@@ -1,5 +1,4 @@
-#ifndef SCINTILLAEDITOR_H
-#define SCINTILLAEDITOR_H
+#pragma once
 
 #include <QObject>
 #include <QWidget>
@@ -57,5 +56,3 @@ private:
 	static const int markerNumber = 2;
 	ScadLexer *lexer;
 };
-
-#endif // SCINTILLAEDITOR_H

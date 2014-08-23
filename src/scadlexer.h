@@ -1,5 +1,4 @@
-#ifndef SCADLEXER_H
-#define SCADLEXER_H
+#pragma once
 
 #include <qobject.h>
 
@@ -19,5 +18,3 @@ private:
     ScadLexer &operator=(const ScadLexer &);
 
 };
-
-#endif // SCADLEXER_H
