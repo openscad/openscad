@@ -15,7 +15,7 @@ public:
 	virtual ~EditorInterface() {}
 	virtual QSize sizeHint(){ QSize size; return size;}
 	virtual void setInitialSizeHint(const QSize&) { }
-	virtual void wheelEvent(QWheelEvent*) { }
+	virtual void wheelEvent(QWheelEvent*);
 	virtual void setTabStopWidth(int) { }
 	virtual QString toPlainText() = 0;
 	virtual QTextDocument *document(){QTextDocument *t = new QTextDocument; return t;}

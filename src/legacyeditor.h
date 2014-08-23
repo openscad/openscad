@@ -3,7 +3,6 @@
 #include <QObject>
 #include <QString>
 #include <QWidget>
-#include <QWheelEvent>
 #include <QScrollBar>
 #include <QTextEdit>
 #include <QVBoxLayout>
@@ -19,7 +18,6 @@ public:
 	QSize sizeHint() const;
 	void setInitialSizeHint(const QSize&);
 	void setTabStopWidth(int);
-	void wheelEvent(QWheelEvent*);
 	QString	toPlainText();
 	QTextCursor textCursor() const;
 	void setTextCursor (const QTextCursor&);
