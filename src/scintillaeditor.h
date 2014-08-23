@@ -56,7 +56,6 @@ private:
 	static const int indicatorNumber = 1;
 	static const int markerNumber = 2;
 	ScadLexer *lexer;
-	QString preferenceEditorOption;
 };
 
 #endif // SCINTILLAEDITOR_H

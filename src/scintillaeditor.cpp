@@ -18,13 +18,12 @@ ScintillaEditor::ScintillaEditor(QWidget *parent) : EditorInterface(parent)
   qsci->indicatorDefine(QsciScintilla::RoundBoxIndicator, indicatorNumber);
   qsci->markerDefine(QsciScintilla::Circle, markerNumber);
   qsci->setUtf8(true);
-  preferenceEditorOption = Preferences::inst()->getValue("editor/syntaxhighlight").toString();
   lexer = new ScadLexer(this);
   initLexer();
   initMargin();
   qsci->setFolding(QsciScintilla::BoxedTreeFoldStyle, 4);
   qsci->setCaretLineVisible(true);
-  this->setHighlightScheme(preferenceEditorOption);	
+  this->setHighlightScheme(Preferences::inst()->getValue("editor/syntaxhighlight").toString());
 
   connect(qsci, SIGNAL(textChanged()), this, SIGNAL(contentsChanged()));
   connect(qsci, SIGNAL(modificationChanged(bool)), this, SIGNAL(modificationChanged(bool)));
@@ -151,29 +150,24 @@ void ScintillaEditor::noColor()
   qsci->setMarginsForegroundColor(QColor("#111"));
 	
 }
+
 void ScintillaEditor::setHighlightScheme(const QString &name)
 {
-
-  if(name == "For Light Background")
-    {
-      forLightBackground();
-    }
-  else if(name == "For Dark Background")
-    {
-      forDarkBackground();
-    }
-  else if(name == "Monokai")
-    {
-      Monokai();
-    }
-  else if(name == "Solarized")
-    {
-      Solarized_light();
-    }
-  else if(name == "Off")
-    {
-      noColor();
-    }
+  if(name == "For Light Background") {
+    forLightBackground();
+  }
+  else if(name == "For Dark Background") {
+    forDarkBackground();
+  }
+  else if(name == "Monokai") {
+    Monokai();
+  }
+  else if(name == "Solarized") {
+    Solarized_light();
+  }
+  else if(name == "Off") {
+    noColor();
+  }
 }
 
 void ScintillaEditor::insert(const QString &text)
