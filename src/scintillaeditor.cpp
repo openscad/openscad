@@ -85,6 +85,8 @@ void ScintillaEditor::forLightBackground()
   qsci->setCaretLineBackgroundColor(QColor("#ffe4e4"));
   qsci->setMarginsBackgroundColor(QColor("#ccc"));
   qsci->setMarginsForegroundColor(QColor("#111"));
+  qsci->setMatchedBraceBackgroundColor(QColor("#333"));
+  qsci->setMatchedBraceForegroundColor(QColor("#fff"));
 }
 
 void ScintillaEditor::forDarkBackground()
@@ -103,7 +105,8 @@ void ScintillaEditor::forDarkBackground()
   qsci->setMarkerBackgroundColor(QColor(255, 0, 0, 100), markerNumber);
   qsci->setMarginsBackgroundColor(QColor("20,20,20,150"));
   qsci->setMarginsForegroundColor(QColor("#fff"));
-
+  qsci->setCaretWidth(2);
+  qsci->setCaretForegroundColor(QColor("#ffff00"));
 }
 
 void ScintillaEditor::Monokai()
@@ -122,6 +125,8 @@ void ScintillaEditor::Monokai()
   qsci->setCaretLineBackgroundColor(QColor("#3e3d32"));
   qsci->setMarginsBackgroundColor(QColor("#757575"));
   qsci->setMarginsForegroundColor(QColor("#f8f8f2"));
+  qsci->setCaretWidth(2);
+  qsci->setCaretForegroundColor(QColor("#ffff00"));
 }
 
 void ScintillaEditor::Solarized_light()
@@ -140,6 +145,9 @@ void ScintillaEditor::Solarized_light()
   qsci->setCaretLineBackgroundColor(QColor("#eeead5"));
   qsci->setMarginsBackgroundColor(QColor("#eee8d5"));
   qsci->setMarginsForegroundColor(QColor("#93a1a1"));
+  qsci->setMatchedBraceBackgroundColor(QColor("#0000ff"));
+  qsci->setMatchedBraceBackgroundColor(QColor("#333"));
+  qsci->setMatchedBraceForegroundColor(QColor("#fff"));
 }
 
 void ScintillaEditor::noColor()
@@ -226,8 +234,8 @@ void ScintillaEditor::initMargin()
 {
   QFontMetrics fontmetrics = QFontMetrics(qsci->font());
   qsci->setMarginsFont(qsci->font());
-  qsci->setMarginWidth(0, fontmetrics.width(QString::number(qsci->lines())) + 6);
-  qsci->setMarginLineNumbers(0, true);
+  qsci->setMarginWidth(1, fontmetrics.width(QString::number(qsci->lines())) + 6);
+  qsci->setMarginLineNumbers(1, true);
  
   connect(qsci, SIGNAL(textChanged()), this, SLOT(onTextChanged()));
 }
@@ -235,7 +243,7 @@ void ScintillaEditor::initMargin()
 void ScintillaEditor::onTextChanged()
 {
   QFontMetrics fontmetrics = qsci->fontMetrics();
-  qsci->setMarginWidth(0, fontmetrics.width(QString::number(qsci->lines())) + 6);
+  qsci->setMarginWidth(1, fontmetrics.width(QString::number(qsci->lines())) + 6);
 }
 
 bool ScintillaEditor::find(const QString &expr, bool findNext, bool findBackwards)
