@@ -3,7 +3,7 @@
 
 LegacyEditor::LegacyEditor(QWidget *parent) : EditorInterface(parent)
 {
-	legacyeditorLayout = new QVBoxLayout(this);
+	QVBoxLayout *legacyeditorLayout = new QVBoxLayout(this);
 	legacyeditorLayout->setContentsMargins(0, 0, 0, 0);
 	this->textedit = new QTextEdit(this);
 	legacyeditorLayout->addWidget(this->textedit);
@@ -21,7 +21,7 @@ LegacyEditor::LegacyEditor(QWidget *parent) : EditorInterface(parent)
 
 void LegacyEditor::indentSelection()
 {	
-	QTextCursor cursor = textCursor();
+	QTextCursor cursor = textedit->textCursor();
 	int p1 = cursor.selectionStart();
 	QString txt = cursor.selectedText();
 
@@ -39,7 +39,7 @@ void LegacyEditor::indentSelection()
 
 void LegacyEditor::unindentSelection()
 {
-	QTextCursor cursor = textCursor();
+	QTextCursor cursor = textedit->textCursor();
 	int p1 = cursor.selectionStart();
 	QString txt = cursor.selectedText();
 
@@ -56,7 +56,7 @@ void LegacyEditor::unindentSelection()
 
 void LegacyEditor::commentSelection()
 {
-	QTextCursor cursor = textCursor();
+	QTextCursor cursor = textedit->textCursor();
 	int p1 = cursor.selectionStart();
 	QString txt = cursor.selectedText();
 
@@ -75,7 +75,7 @@ void LegacyEditor::commentSelection()
 
 void LegacyEditor::uncommentSelection()
 {
-	QTextCursor cursor = textCursor();
+	QTextCursor cursor = textedit->textCursor();
 	int p1 = cursor.selectionStart();
 	QString txt = cursor.selectedText();
 
@@ -122,7 +122,7 @@ void LegacyEditor::setPlainText(const QString &text)
 
 	int y = textedit->verticalScrollBar()->sliderPosition();
 	// Save current cursor position
-	QTextCursor cursor = textCursor();
+	QTextCursor cursor = textedit->textCursor();
 	int n = cursor.position();
 	textedit->setPlainText(text);
 	// Restore cursor position
@@ -136,9 +136,9 @@ void LegacyEditor::setPlainText(const QString &text)
 void LegacyEditor::highlightError(int error_pos)
 {
 	highlighter->highlightError(error_pos);
-        QTextCursor cursor = this->textCursor();
+        QTextCursor cursor = this->textedit->textCursor();
         cursor.setPosition(error_pos);
-        this->setTextCursor(cursor);
+        this->textedit->setTextCursor(cursor);
 
 }
 
@@ -175,16 +175,6 @@ void LegacyEditor::setTabStopWidth(int width)
 QString LegacyEditor::toPlainText()
 {
 	return textedit->toPlainText();
-}
-
-QTextCursor LegacyEditor::textCursor() const
-{
-	return textedit->textCursor();
-}
-
-void LegacyEditor::setTextCursor (const QTextCursor &cursor)
-{
-	textedit->setTextCursor(cursor);
 }
 
 void LegacyEditor::insert(const QString &text)
@@ -224,7 +214,7 @@ LegacyEditor::~LegacyEditor()
 
 void LegacyEditor::replaceSelectedText(const QString &newText)
 {
-	QTextCursor cursor = this->textCursor();
+	QTextCursor cursor = this->textedit->textCursor();
 	if (cursor.selectedText() != newText) {
 		cursor.insertText(newText);
 	}
@@ -239,13 +229,13 @@ bool LegacyEditor::find(const QString &newText, bool findNext, bool findBackward
 {
 	bool success = this->findString(newText, findBackwards);
 	if (!success) { // Implement wrap-around search behavior
-		QTextCursor old_cursor = this->textCursor();
+		QTextCursor old_cursor = this->textedit->textCursor();
 		QTextCursor tmp_cursor = old_cursor;
 		tmp_cursor.movePosition(findBackwards ? QTextCursor::End : QTextCursor::Start);
-		this->setTextCursor(tmp_cursor);
+		this->textedit->setTextCursor(tmp_cursor);
 		bool success = this->findString(newText, findBackwards);
 		if (!success) {
-			this->setTextCursor(old_cursor);
+			this->textedit->setTextCursor(old_cursor);
 		}
 		return success;
 	}
@@ -266,5 +256,5 @@ void LegacyEditor::initFont(const QString& family, uint size)
 
 QString LegacyEditor::selectedText()
 {
-	return textCursor().selectedText();
+	return textedit->textCursor().selectedText();
 }
