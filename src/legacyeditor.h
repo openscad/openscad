@@ -19,7 +19,7 @@ public:
 	QSize sizeHint() const;
 	void setInitialSizeHint(const QSize&);
 	void setTabStopWidth(int);
-	void wheelEvent (QWheelEvent*);
+	void wheelEvent(QWheelEvent*);
 	QString	toPlainText();
 	QTextCursor textCursor() const;
 	void setTextCursor (const QTextCursor&);

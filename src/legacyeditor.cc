@@ -15,7 +15,7 @@ LegacyEditor::LegacyEditor(QWidget *parent) : EditorInterface(parent)
 
 	this->highlighter = new Highlighter(this->textedit->document());
 
-	connect(this->textedit, SIGNAL(textChanged()), this, SIGNAL(textChanged()));
+	connect(this->textedit, SIGNAL(textChanged()), this, SIGNAL(contentsChanged()));
 	connect(this->textedit, SIGNAL(modificationChanged(bool)), this, SIGNAL(modificationChanged(bool)));
 }
 
@@ -95,12 +95,12 @@ void LegacyEditor::zoomIn()
 	// See also QT's implementation in QLegacyEditor.cpp
 	QSettings settings;
 	QFont tmp_font = this->font() ;
-	if ( font().pointSize() >= 1 )
-		tmp_font.setPointSize( 1 + font().pointSize() );
+	if (font().pointSize() >= 1)
+		tmp_font.setPointSize(1 + font().pointSize());
 	else
-		tmp_font.setPointSize( 1 );
+		tmp_font.setPointSize(1);
 	settings.setValue("editor/fontsize", tmp_font.pointSize());
-	this->setFont( tmp_font );
+	this->setFont(tmp_font);
 }
 
 void LegacyEditor::zoomOut()
@@ -108,26 +108,26 @@ void LegacyEditor::zoomOut()
 
 	QSettings settings;
 	QFont tmp_font = this->font();
-	if ( font().pointSize() >= 2 )
-		tmp_font.setPointSize( -1 + font().pointSize() );
+	if (font().pointSize() >= 2)
+		tmp_font.setPointSize(-1 + font().pointSize());
 	else
-		tmp_font.setPointSize( 1 );
+		tmp_font.setPointSize(1);
 	settings.setValue("editor/fontsize", tmp_font.pointSize());
-	this->setFont( tmp_font );
+	this->setFont(tmp_font);
 
 }
 
-void LegacyEditor::wheelEvent ( QWheelEvent * event )
+void LegacyEditor::wheelEvent(QWheelEvent *event)
 {
 	QSettings settings;
 	bool wheelzoom_enabled = Preferences::inst()->getValue("editor/ctrlmousewheelzoom").toBool();
-	if ((event->modifiers() == Qt::ControlModifier) && wheelzoom_enabled ) {
-		if (event->delta() > 0 )
+	if ((event->modifiers() == Qt::ControlModifier) && wheelzoom_enabled) {
+		if (event->delta() > 0)
 			zoomIn();
-		else if (event->delta() < 0 )
+		else if (event->delta() < 0)
 			zoomOut();
 	} else {
-		QWidget::wheelEvent( event );
+		QWidget::wheelEvent(event);
 	}
 }
 
@@ -149,10 +149,10 @@ void LegacyEditor::setPlainText(const QString &text)
 
 void LegacyEditor::highlightError(int error_pos)
 {
-	highlighter->highlightError( error_pos );
+	highlighter->highlightError(error_pos);
         QTextCursor cursor = this->textCursor();
-        cursor.setPosition( error_pos );
-        this->setTextCursor( cursor );
+        cursor.setPosition(error_pos);
+        this->setTextCursor(cursor);
 
 }
 
@@ -163,7 +163,7 @@ void LegacyEditor::unhighlightLastError()
 
 void LegacyEditor::setHighlightScheme(const QString &name)
 {
-	highlighter->assignFormatsToTokens( name );
+	highlighter->assignFormatsToTokens(name);
 	highlighter->rehighlight(); // slow on large files
 }
 
