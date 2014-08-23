@@ -279,3 +279,8 @@ void ScintillaEditor::uncommentSelection()
 {
   // FIXME: Implement
 }
+
+QString ScintillaEditor::selectedText()
+{
+  return qsci->selectedText();
+}

@@ -263,3 +263,8 @@ void LegacyEditor::initFont(const QString& family, uint size)
 	this->setFont(font);
 
 }
+
+QString LegacyEditor::selectedText()
+{
+	return textCursor().selectedText();
+}

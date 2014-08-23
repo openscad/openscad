@@ -23,6 +23,7 @@ public:
 	void Monokai();
 	void Solarized_light();
 	void noColor();
+	QString selectedText();
 	bool find(const QString &, bool findNext = false, bool findBackwards = false);
 	void replaceSelectedText(const QString&);
 	

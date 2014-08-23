@@ -1282,8 +1282,9 @@ void MainWindow::find()
 	replaceButton->hide();
 	replaceAllButton->hide();
 	find_panel->show();
+	findInputField->setText(editor->selectedText());
 	findInputField->setFocus();
-	findInputField->selectAll(); 
+	findInputField->selectAll();
 }
 
 void MainWindow::findString(QString textToFind)
