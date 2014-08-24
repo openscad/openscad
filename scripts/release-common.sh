@@ -451,6 +451,13 @@ case $OS in
 	PLATFORMDIR="openscad-$VERSION/lib/openscad/platforms/"
 	mkdir -p "$PLATFORMDIR"
 	cp -av "$QTLIBDIR"/qt5/plugins/platforms/libqxcb.so "$PLATFORMDIR"
+	DRIDRIVERDIR=$(find /usr/lib -xdev -type d -name dri)
+	if [ -d "$DRIDRIVERDIR" ]
+	then
+		DRILIB="openscad-$VERSION/lib/openscad/dri/"
+		mkdir -p "$DRILIB"
+		cp -av "$DRIDRIVERDIR"/swrast_dri.so "$DRILIB"
+	fi
 
         strip openscad-$VERSION/lib/openscad/*
         mkdir -p openscad-$VERSION/share/appdata
