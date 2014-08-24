@@ -17,7 +17,7 @@
                BlueprintIdentifier = "E0034E3D19AA8651009F0BD0"
                BuildableName = "OpenSCAD.app"
                BlueprintName = "OpenSCAD.app"
-               ReferencedContainer = "container:openscad.xcodeproj">
+               ReferencedContainer = "container:OpenSCAD.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -35,7 +35,7 @@
             BlueprintIdentifier = "E0034E3D19AA8651009F0BD0"
             BuildableName = "OpenSCAD.app"
             BlueprintName = "OpenSCAD.app"
-            ReferencedContainer = "container:openscad.xcodeproj">
+            ReferencedContainer = "container:OpenSCAD.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
    </TestAction>
@@ -43,7 +43,8 @@
       selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
       launchStyle = "0"
-      useCustomWorkingDirectory = "NO"
+      useCustomWorkingDirectory = "YES"
+      customWorkingDirectory = "$(PROJECT_DIR)/.."
       buildConfiguration = "Debug"
       ignoresPersistentStateOnLaunch = "NO"
       debugDocumentVersioning = "YES"
@@ -54,9 +55,15 @@
             BlueprintIdentifier = "E0034E3D19AA8651009F0BD0"
             BuildableName = "OpenSCAD.app"
             BlueprintName = "OpenSCAD.app"
-            ReferencedContainer = "container:openscad.xcodeproj">
+            ReferencedContainer = "container:OpenSCAD.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
+      <CommandLineArguments>
+         <CommandLineArgument
+            argument = "../openscad/cube.scad"
+            isEnabled = "YES">
+         </CommandLineArgument>
+      </CommandLineArguments>
       <AdditionalOptions>
       </AdditionalOptions>
    </LaunchAction>
@@ -72,7 +79,7 @@
             BlueprintIdentifier = "E0034E3D19AA8651009F0BD0"
             BuildableName = "OpenSCAD.app"
             BlueprintName = "OpenSCAD.app"
-            ReferencedContainer = "container:openscad.xcodeproj">
+            ReferencedContainer = "container:OpenSCAD.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>
