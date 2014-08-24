@@ -142,7 +142,7 @@ build_qt5()
 
   echo "Building Qt" $version "..."
   cd $BASEDIR/src
-  #rm -rf qt-everywhere-opensource-src-$version
+  rm -rf qt-everywhere-opensource-src-$version
   v=`echo "$version" | sed -e 's/\.[0-9]$//'`
   if [ ! -f qt-everywhere-opensource-src-$version.tar.gz ]; then
      curl -O -L http://download.qt-project.org/official_releases/qt/$v/$version/single/qt-everywhere-opensource-src-$version.tar.gz
@@ -365,6 +365,7 @@ build_cgal()
   echo "Building CGAL" $version "..."
   cd $BASEDIR/src
   rm -rf CGAL-$version
+  ver4_4="curl --insecure -O https://gforge.inria.fr/frs/download.php/file/33524/CGAL-4.4.tar.bz2"
   ver4_2="curl --insecure -O https://gforge.inria.fr/frs/download.php/32360/CGAL-4.2.tar.bz2"
   ver4_1="curl --insecure -O https://gforge.inria.fr/frs/download.php/31640/CGAL-4.1.tar.bz2"
   ver4_0_2="curl --insecure -O https://gforge.inria.fr/frs/download.php/31174/CGAL-4.0.2.tar.bz2"
@@ -559,6 +560,7 @@ build_eigen()
   cd $BASEDIR/src
   rm -rf eigen-$version
   EIGENDIR="none"
+  if [ $version = "3.2.2" ]; then EIGENDIR=eigen-eigen-1306d75b4a21; fi
   if [ $version = "3.1.1" ]; then EIGENDIR=eigen-eigen-43d9075b23ef; fi
   if [ $EIGENDIR = "none" ]; then
     echo Unknown eigen version. Please edit script.
@@ -747,7 +749,7 @@ if [ $1 ]; then
     exit $?
   fi
   if [ $1 = "cgal" ]; then
-    build_cgal 4.0.2 use-sys-libs
+    build_cgal 4.4 use-sys-libs
     exit $?
   fi
   if [ $1 = "opencsg" ]; then
@@ -796,12 +798,12 @@ fi
 # 
 # Some of these are defined in scripts/common-build-dependencies.sh
 
-build_eigen 3.1.1
+build_eigen 3.2.2
 build_gmp 5.0.5
 build_mpfr 3.1.1
-build_boost 1.53.0
+build_boost 1.56.0
 # NB! For CGAL, also update the actual download URL in the function
-build_cgal 4.0.2
+build_cgal 4.4
 build_glew 1.9.0
 build_opencsg 1.3.2
 build_gettext 0.18.3.1
