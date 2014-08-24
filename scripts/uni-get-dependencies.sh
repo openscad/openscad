@@ -64,6 +64,15 @@ get_debian_deps()
   libharfbuzz-dev gtk-doc-tools libglib2.0-dev gettext; do
    sudo apt-get -y install $pkg;
  done
+
+ # The following packages are only needed to build the static
+ # Qt5 version for release builds / older distributions.
+ for pkg in libdbus-1-dev \
+  libxcb1-dev libx11-xcb-dev libxcb-keysyms1-dev libxcb-image0-dev \
+  libxcb-shm0-dev libxcb-icccm4-dev libxcb-sync0-dev libxcb-xfixes0-dev \
+  libxrender-dev libxcb-shape0-dev libxcb-randr0-dev libxcb-glx0-dev; do
+   sudo apt-get -y install $pkg;
+ done
 }
 
 unknown()
