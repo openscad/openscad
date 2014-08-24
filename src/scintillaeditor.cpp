@@ -269,24 +269,57 @@ void ScintillaEditor::replaceSelectedText(const QString &newText)
   if (qsci->selectedText() != newText) qsci->replaceSelectedText(newText);
 }
 
+void ScintillaEditor::get_range(int *lineFrom, int *lineTo)
+{
+    int indexFrom, indexTo;
+    if (qsci->hasSelectedText()) {
+	qsci->getSelection(lineFrom, &indexFrom, lineTo, &indexTo);
+    } else {
+	qsci->getCursorPosition(lineFrom, &indexFrom);
+	*lineTo = *lineFrom;
+    }
+}
+
 void ScintillaEditor::indentSelection()
 {
-  // FIXME: Implement
+    int lineFrom, lineTo;
+    get_range(&lineFrom, &lineTo);
+    for (int line = lineFrom;line <= lineTo;line++) {
+	qsci->indent(line);
+    }
 }
 
 void ScintillaEditor::unindentSelection()
 {
-  // FIXME: Implement
+    int lineFrom, lineTo;
+    get_range(&lineFrom, &lineTo);
+    for (int line = lineFrom;line <= lineTo;line++) {
+	qsci->unindent(line);
+    }
 }
 
 void ScintillaEditor::commentSelection()
 {
-  // FIXME: Implement
+    int lineFrom, lineTo;
+    get_range(&lineFrom, &lineTo);
+    for (int line = lineFrom;line <= lineTo;line++) {
+	qsci->insertAt("//", line, 0);
+    }
+    qsci->setSelection(lineFrom, 0, lineTo, std::max(0, qsci->lineLength(lineTo) - 1));
 }
 
 void ScintillaEditor::uncommentSelection()
 {
-  // FIXME: Implement
+    int lineFrom, lineTo;
+    get_range(&lineFrom, &lineTo);
+    for (int line = lineFrom;line <= lineTo;line++) {
+	QString lineText = qsci->text(line);
+	if (lineText.startsWith("//")) {
+	    qsci->setSelection(line, 0, line, 2);
+	    qsci->removeSelectedText();
+	}
+    }
+    qsci->setSelection(lineFrom, 0, lineTo, std::max(0, qsci->lineLength(lineTo) - 1));
 }
 
 QString ScintillaEditor::selectedText()

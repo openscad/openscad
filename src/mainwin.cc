@@ -176,10 +176,6 @@ MainWindow::MainWindow(const QString &filename)
 #ifdef USE_SCINTILLA_EDITOR
 	if (useScintilla) {
 		 editor = new ScintillaEditor(editorDockContents);
-		 this->editActionIndent->setVisible(false);
-		 this->editActionUnindent->setVisible(false);
-		 this->editActionComment->setVisible(false);
-		 this->editActionUncomment->setVisible(false);
 	}
 	else
 #endif
