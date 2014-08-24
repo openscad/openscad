@@ -1,19 +1,12 @@
 #pragma once
 
-#include <QObject>
-#include <QString>
-#include <QWidget>
-#include <QScrollBar>
-#include <QTextEdit>
-#include <QVBoxLayout>
-#include "highlighter.h"
 #include "editor.h"
 
 class LegacyEditor : public EditorInterface
 {
 	Q_OBJECT
 public:
-	LegacyEditor(QWidget *parent);
+	LegacyEditor(class QWidget *parent);
 	virtual ~LegacyEditor();
 	QSize sizeHint() const;
 	void setInitialSizeHint(const QSize&);
@@ -26,8 +19,8 @@ public:
 public slots:
 	void zoomIn();
 	void zoomOut();
-	void setContentModified(bool y) { textedit->document()->setModified(y);  }
-	bool isContentModified() {return textedit->document()->isModified();}
+	void setContentModified(bool);
+	bool isContentModified();
 	void indentSelection();
 	void unindentSelection();
 	void commentSelection();
@@ -44,7 +37,7 @@ public slots:
 	void paste();
 	void initFont(const QString&, uint);
 private:
-	QTextEdit *textedit;
-	Highlighter *highlighter;
+	class QTextEdit *textedit;
+	class Highlighter *highlighter;
 	QSize initialSizeHint;
 };

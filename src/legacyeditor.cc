@@ -1,5 +1,6 @@
 #include "legacyeditor.h"
 #include "Preferences.h"
+#include "highlighter.h"
 
 LegacyEditor::LegacyEditor(QWidget *parent) : EditorInterface(parent)
 {
@@ -253,4 +254,14 @@ void LegacyEditor::initFont(const QString& family, uint size)
 QString LegacyEditor::selectedText()
 {
 	return textedit->textCursor().selectedText();
+}
+
+void LegacyEditor::setContentModified(bool y)
+{
+	textedit->document()->setModified(y);
+}
+
+bool LegacyEditor::isContentModified()
+{
+	return textedit->document()->isModified();
 }
