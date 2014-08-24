@@ -30,8 +30,9 @@ ScintillaEditor::ScintillaEditor(QWidget *parent) : EditorInterface(parent)
 }
 
 void ScintillaEditor::setPlainText(const QString &text)
-{
+{ 
   qsci->setText(text); 
+  setContentModified(false);
 }
 
 QString ScintillaEditor::toPlainText()
