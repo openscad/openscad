@@ -61,6 +61,10 @@
       <CommandLineArguments>
          <CommandLineArgument
             argument = "../openscad/cube.scad"
+            isEnabled = "NO">
+         </CommandLineArgument>
+         <CommandLineArgument
+            argument = "falsetest.scad -o out.echo"
             isEnabled = "YES">
          </CommandLineArgument>
       </CommandLineArguments>
