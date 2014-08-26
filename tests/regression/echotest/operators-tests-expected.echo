@@ -1,0 +1,924 @@
+ECHO: false, " == ", false, "->", true
+ECHO: false, " >  ", false, "->", false
+ECHO: false, " >= ", false, "->", true
+ECHO: false, " <  ", false, "->", false
+ECHO: false, " <= ", false, "->", true
+ECHO: false, " != ", false, "->", false
+ECHO: false, " == ", true, "->", false
+ECHO: false, " >  ", true, "->", false
+ECHO: false, " >= ", true, "->", false
+ECHO: false, " <  ", true, "->", true
+ECHO: false, " <= ", true, "->", true
+ECHO: false, " != ", true, "->", true
+ECHO: false, " == ", -1, "->", false
+ECHO: false, " >  ", -1, "->", true
+ECHO: false, " >= ", -1, "->", true
+ECHO: false, " <  ", -1, "->", false
+ECHO: false, " <= ", -1, "->", false
+ECHO: false, " != ", -1, "->", true
+ECHO: false, " == ", 0, "->", false
+ECHO: false, " >  ", 0, "->", false
+ECHO: false, " >= ", 0, "->", true
+ECHO: false, " <  ", 0, "->", false
+ECHO: false, " <= ", 0, "->", true
+ECHO: false, " != ", 0, "->", true
+ECHO: false, " == ", 1, "->", false
+ECHO: false, " >  ", 1, "->", false
+ECHO: false, " >= ", 1, "->", false
+ECHO: false, " <  ", 1, "->", true
+ECHO: false, " <= ", 1, "->", true
+ECHO: false, " != ", 1, "->", true
+ECHO: false, " == ", nan, "->", false
+ECHO: false, " >  ", nan, "->", false
+ECHO: false, " >= ", nan, "->", false
+ECHO: false, " <  ", nan, "->", false
+ECHO: false, " <= ", nan, "->", false
+ECHO: false, " != ", nan, "->", true
+ECHO: false, " == ", inf, "->", false
+ECHO: false, " >  ", inf, "->", false
+ECHO: false, " >= ", inf, "->", false
+ECHO: false, " <  ", inf, "->", true
+ECHO: false, " <= ", inf, "->", true
+ECHO: false, " != ", inf, "->", true
+ECHO: false, " == ", "alpha", "->", false
+ECHO: false, " >  ", "alpha", "->", false
+ECHO: false, " >= ", "alpha", "->", false
+ECHO: false, " <  ", "alpha", "->", false
+ECHO: false, " <= ", "alpha", "->", false
+ECHO: false, " != ", "alpha", "->", true
+ECHO: false, " == ", [1, 2, 3], "->", false
+ECHO: false, " >  ", [1, 2, 3], "->", false
+ECHO: false, " >= ", [1, 2, 3], "->", false
+ECHO: false, " <  ", [1, 2, 3], "->", false
+ECHO: false, " <= ", [1, 2, 3], "->", false
+ECHO: false, " != ", [1, 2, 3], "->", true
+ECHO: false, " == ", [0 : 1 : 3], "->", false
+ECHO: false, " >  ", [0 : 1 : 3], "->", false
+ECHO: false, " >= ", [0 : 1 : 3], "->", false
+ECHO: false, " <  ", [0 : 1 : 3], "->", false
+ECHO: false, " <= ", [0 : 1 : 3], "->", false
+ECHO: false, " != ", [0 : 1 : 3], "->", true
+ECHO: false, " == ", undef, "->", false
+ECHO: false, " >  ", undef, "->", false
+ECHO: false, " >= ", undef, "->", false
+ECHO: false, " <  ", undef, "->", false
+ECHO: false, " <= ", undef, "->", false
+ECHO: false, " != ", undef, "->", true
+ECHO: true, " == ", false, "->", false
+ECHO: true, " >  ", false, "->", true
+ECHO: true, " >= ", false, "->", true
+ECHO: true, " <  ", false, "->", false
+ECHO: true, " <= ", false, "->", false
+ECHO: true, " != ", false, "->", true
+ECHO: true, " == ", true, "->", true
+ECHO: true, " >  ", true, "->", false
+ECHO: true, " >= ", true, "->", true
+ECHO: true, " <  ", true, "->", false
+ECHO: true, " <= ", true, "->", true
+ECHO: true, " != ", true, "->", false
+ECHO: true, " == ", -1, "->", false
+ECHO: true, " >  ", -1, "->", true
+ECHO: true, " >= ", -1, "->", true
+ECHO: true, " <  ", -1, "->", false
+ECHO: true, " <= ", -1, "->", false
+ECHO: true, " != ", -1, "->", true
+ECHO: true, " == ", 0, "->", false
+ECHO: true, " >  ", 0, "->", true
+ECHO: true, " >= ", 0, "->", true
+ECHO: true, " <  ", 0, "->", false
+ECHO: true, " <= ", 0, "->", false
+ECHO: true, " != ", 0, "->", true
+ECHO: true, " == ", 1, "->", false
+ECHO: true, " >  ", 1, "->", false
+ECHO: true, " >= ", 1, "->", true
+ECHO: true, " <  ", 1, "->", false
+ECHO: true, " <= ", 1, "->", true
+ECHO: true, " != ", 1, "->", true
+ECHO: true, " == ", nan, "->", false
+ECHO: true, " >  ", nan, "->", false
+ECHO: true, " >= ", nan, "->", false
+ECHO: true, " <  ", nan, "->", false
+ECHO: true, " <= ", nan, "->", false
+ECHO: true, " != ", nan, "->", true
+ECHO: true, " == ", inf, "->", false
+ECHO: true, " >  ", inf, "->", false
+ECHO: true, " >= ", inf, "->", false
+ECHO: true, " <  ", inf, "->", true
+ECHO: true, " <= ", inf, "->", true
+ECHO: true, " != ", inf, "->", true
+ECHO: true, " == ", "alpha", "->", false
+ECHO: true, " >  ", "alpha", "->", false
+ECHO: true, " >= ", "alpha", "->", false
+ECHO: true, " <  ", "alpha", "->", false
+ECHO: true, " <= ", "alpha", "->", false
+ECHO: true, " != ", "alpha", "->", true
+ECHO: true, " == ", [1, 2, 3], "->", false
+ECHO: true, " >  ", [1, 2, 3], "->", false
+ECHO: true, " >= ", [1, 2, 3], "->", false
+ECHO: true, " <  ", [1, 2, 3], "->", false
+ECHO: true, " <= ", [1, 2, 3], "->", false
+ECHO: true, " != ", [1, 2, 3], "->", true
+ECHO: true, " == ", [0 : 1 : 3], "->", false
+ECHO: true, " >  ", [0 : 1 : 3], "->", false
+ECHO: true, " >= ", [0 : 1 : 3], "->", false
+ECHO: true, " <  ", [0 : 1 : 3], "->", false
+ECHO: true, " <= ", [0 : 1 : 3], "->", false
+ECHO: true, " != ", [0 : 1 : 3], "->", true
+ECHO: true, " == ", undef, "->", false
+ECHO: true, " >  ", undef, "->", false
+ECHO: true, " >= ", undef, "->", false
+ECHO: true, " <  ", undef, "->", false
+ECHO: true, " <= ", undef, "->", false
+ECHO: true, " != ", undef, "->", true
+ECHO: -1, " == ", false, "->", false
+ECHO: -1, " >  ", false, "->", false
+ECHO: -1, " >= ", false, "->", false
+ECHO: -1, " <  ", false, "->", true
+ECHO: -1, " <= ", false, "->", true
+ECHO: -1, " != ", false, "->", true
+ECHO: -1, " == ", true, "->", false
+ECHO: -1, " >  ", true, "->", false
+ECHO: -1, " >= ", true, "->", false
+ECHO: -1, " <  ", true, "->", true
+ECHO: -1, " <= ", true, "->", true
+ECHO: -1, " != ", true, "->", true
+ECHO: -1, " == ", -1, "->", true
+ECHO: -1, " >  ", -1, "->", false
+ECHO: -1, " >= ", -1, "->", true
+ECHO: -1, " <  ", -1, "->", false
+ECHO: -1, " <= ", -1, "->", true
+ECHO: -1, " != ", -1, "->", false
+ECHO: -1, " == ", 0, "->", false
+ECHO: -1, " >  ", 0, "->", false
+ECHO: -1, " >= ", 0, "->", false
+ECHO: -1, " <  ", 0, "->", true
+ECHO: -1, " <= ", 0, "->", true
+ECHO: -1, " != ", 0, "->", true
+ECHO: -1, " == ", 1, "->", false
+ECHO: -1, " >  ", 1, "->", false
+ECHO: -1, " >= ", 1, "->", false
+ECHO: -1, " <  ", 1, "->", true
+ECHO: -1, " <= ", 1, "->", true
+ECHO: -1, " != ", 1, "->", true
+ECHO: -1, " == ", nan, "->", false
+ECHO: -1, " >  ", nan, "->", false
+ECHO: -1, " >= ", nan, "->", false
+ECHO: -1, " <  ", nan, "->", false
+ECHO: -1, " <= ", nan, "->", false
+ECHO: -1, " != ", nan, "->", true
+ECHO: -1, " == ", inf, "->", false
+ECHO: -1, " >  ", inf, "->", false
+ECHO: -1, " >= ", inf, "->", false
+ECHO: -1, " <  ", inf, "->", true
+ECHO: -1, " <= ", inf, "->", true
+ECHO: -1, " != ", inf, "->", true
+ECHO: -1, " == ", "alpha", "->", false
+ECHO: -1, " >  ", "alpha", "->", false
+ECHO: -1, " >= ", "alpha", "->", false
+ECHO: -1, " <  ", "alpha", "->", false
+ECHO: -1, " <= ", "alpha", "->", false
+ECHO: -1, " != ", "alpha", "->", true
+ECHO: -1, " == ", [1, 2, 3], "->", false
+ECHO: -1, " >  ", [1, 2, 3], "->", false
+ECHO: -1, " >= ", [1, 2, 3], "->", false
+ECHO: -1, " <  ", [1, 2, 3], "->", false
+ECHO: -1, " <= ", [1, 2, 3], "->", false
+ECHO: -1, " != ", [1, 2, 3], "->", true
+ECHO: -1, " == ", [0 : 1 : 3], "->", false
+ECHO: -1, " >  ", [0 : 1 : 3], "->", false
+ECHO: -1, " >= ", [0 : 1 : 3], "->", false
+ECHO: -1, " <  ", [0 : 1 : 3], "->", false
+ECHO: -1, " <= ", [0 : 1 : 3], "->", false
+ECHO: -1, " != ", [0 : 1 : 3], "->", true
+ECHO: -1, " == ", undef, "->", false
+ECHO: -1, " >  ", undef, "->", false
+ECHO: -1, " >= ", undef, "->", false
+ECHO: -1, " <  ", undef, "->", false
+ECHO: -1, " <= ", undef, "->", false
+ECHO: -1, " != ", undef, "->", true
+ECHO: 0, " == ", false, "->", false
+ECHO: 0, " >  ", false, "->", false
+ECHO: 0, " >= ", false, "->", true
+ECHO: 0, " <  ", false, "->", false
+ECHO: 0, " <= ", false, "->", true
+ECHO: 0, " != ", false, "->", true
+ECHO: 0, " == ", true, "->", false
+ECHO: 0, " >  ", true, "->", false
+ECHO: 0, " >= ", true, "->", false
+ECHO: 0, " <  ", true, "->", true
+ECHO: 0, " <= ", true, "->", true
+ECHO: 0, " != ", true, "->", true
+ECHO: 0, " == ", -1, "->", false
+ECHO: 0, " >  ", -1, "->", true
+ECHO: 0, " >= ", -1, "->", true
+ECHO: 0, " <  ", -1, "->", false
+ECHO: 0, " <= ", -1, "->", false
+ECHO: 0, " != ", -1, "->", true
+ECHO: 0, " == ", 0, "->", true
+ECHO: 0, " >  ", 0, "->", false
+ECHO: 0, " >= ", 0, "->", true
+ECHO: 0, " <  ", 0, "->", false
+ECHO: 0, " <= ", 0, "->", true
+ECHO: 0, " != ", 0, "->", false
+ECHO: 0, " == ", 1, "->", false
+ECHO: 0, " >  ", 1, "->", false
+ECHO: 0, " >= ", 1, "->", false
+ECHO: 0, " <  ", 1, "->", true
+ECHO: 0, " <= ", 1, "->", true
+ECHO: 0, " != ", 1, "->", true
+ECHO: 0, " == ", nan, "->", false
+ECHO: 0, " >  ", nan, "->", false
+ECHO: 0, " >= ", nan, "->", false
+ECHO: 0, " <  ", nan, "->", false
+ECHO: 0, " <= ", nan, "->", false
+ECHO: 0, " != ", nan, "->", true
+ECHO: 0, " == ", inf, "->", false
+ECHO: 0, " >  ", inf, "->", false
+ECHO: 0, " >= ", inf, "->", false
+ECHO: 0, " <  ", inf, "->", true
+ECHO: 0, " <= ", inf, "->", true
+ECHO: 0, " != ", inf, "->", true
+ECHO: 0, " == ", "alpha", "->", false
+ECHO: 0, " >  ", "alpha", "->", false
+ECHO: 0, " >= ", "alpha", "->", false
+ECHO: 0, " <  ", "alpha", "->", false
+ECHO: 0, " <= ", "alpha", "->", false
+ECHO: 0, " != ", "alpha", "->", true
+ECHO: 0, " == ", [1, 2, 3], "->", false
+ECHO: 0, " >  ", [1, 2, 3], "->", false
+ECHO: 0, " >= ", [1, 2, 3], "->", false
+ECHO: 0, " <  ", [1, 2, 3], "->", false
+ECHO: 0, " <= ", [1, 2, 3], "->", false
+ECHO: 0, " != ", [1, 2, 3], "->", true
+ECHO: 0, " == ", [0 : 1 : 3], "->", false
+ECHO: 0, " >  ", [0 : 1 : 3], "->", false
+ECHO: 0, " >= ", [0 : 1 : 3], "->", false
+ECHO: 0, " <  ", [0 : 1 : 3], "->", false
+ECHO: 0, " <= ", [0 : 1 : 3], "->", false
+ECHO: 0, " != ", [0 : 1 : 3], "->", true
+ECHO: 0, " == ", undef, "->", false
+ECHO: 0, " >  ", undef, "->", false
+ECHO: 0, " >= ", undef, "->", false
+ECHO: 0, " <  ", undef, "->", false
+ECHO: 0, " <= ", undef, "->", false
+ECHO: 0, " != ", undef, "->", true
+ECHO: 1, " == ", false, "->", false
+ECHO: 1, " >  ", false, "->", true
+ECHO: 1, " >= ", false, "->", true
+ECHO: 1, " <  ", false, "->", false
+ECHO: 1, " <= ", false, "->", false
+ECHO: 1, " != ", false, "->", true
+ECHO: 1, " == ", true, "->", false
+ECHO: 1, " >  ", true, "->", false
+ECHO: 1, " >= ", true, "->", true
+ECHO: 1, " <  ", true, "->", false
+ECHO: 1, " <= ", true, "->", true
+ECHO: 1, " != ", true, "->", true
+ECHO: 1, " == ", -1, "->", false
+ECHO: 1, " >  ", -1, "->", true
+ECHO: 1, " >= ", -1, "->", true
+ECHO: 1, " <  ", -1, "->", false
+ECHO: 1, " <= ", -1, "->", false
+ECHO: 1, " != ", -1, "->", true
+ECHO: 1, " == ", 0, "->", false
+ECHO: 1, " >  ", 0, "->", true
+ECHO: 1, " >= ", 0, "->", true
+ECHO: 1, " <  ", 0, "->", false
+ECHO: 1, " <= ", 0, "->", false
+ECHO: 1, " != ", 0, "->", true
+ECHO: 1, " == ", 1, "->", true
+ECHO: 1, " >  ", 1, "->", false
+ECHO: 1, " >= ", 1, "->", true
+ECHO: 1, " <  ", 1, "->", false
+ECHO: 1, " <= ", 1, "->", true
+ECHO: 1, " != ", 1, "->", false
+ECHO: 1, " == ", nan, "->", false
+ECHO: 1, " >  ", nan, "->", false
+ECHO: 1, " >= ", nan, "->", false
+ECHO: 1, " <  ", nan, "->", false
+ECHO: 1, " <= ", nan, "->", false
+ECHO: 1, " != ", nan, "->", true
+ECHO: 1, " == ", inf, "->", false
+ECHO: 1, " >  ", inf, "->", false
+ECHO: 1, " >= ", inf, "->", false
+ECHO: 1, " <  ", inf, "->", true
+ECHO: 1, " <= ", inf, "->", true
+ECHO: 1, " != ", inf, "->", true
+ECHO: 1, " == ", "alpha", "->", false
+ECHO: 1, " >  ", "alpha", "->", false
+ECHO: 1, " >= ", "alpha", "->", false
+ECHO: 1, " <  ", "alpha", "->", false
+ECHO: 1, " <= ", "alpha", "->", false
+ECHO: 1, " != ", "alpha", "->", true
+ECHO: 1, " == ", [1, 2, 3], "->", false
+ECHO: 1, " >  ", [1, 2, 3], "->", false
+ECHO: 1, " >= ", [1, 2, 3], "->", false
+ECHO: 1, " <  ", [1, 2, 3], "->", false
+ECHO: 1, " <= ", [1, 2, 3], "->", false
+ECHO: 1, " != ", [1, 2, 3], "->", true
+ECHO: 1, " == ", [0 : 1 : 3], "->", false
+ECHO: 1, " >  ", [0 : 1 : 3], "->", false
+ECHO: 1, " >= ", [0 : 1 : 3], "->", false
+ECHO: 1, " <  ", [0 : 1 : 3], "->", false
+ECHO: 1, " <= ", [0 : 1 : 3], "->", false
+ECHO: 1, " != ", [0 : 1 : 3], "->", true
+ECHO: 1, " == ", undef, "->", false
+ECHO: 1, " >  ", undef, "->", false
+ECHO: 1, " >= ", undef, "->", false
+ECHO: 1, " <  ", undef, "->", false
+ECHO: 1, " <= ", undef, "->", false
+ECHO: 1, " != ", undef, "->", true
+ECHO: nan, " == ", false, "->", false
+ECHO: nan, " >  ", false, "->", false
+ECHO: nan, " >= ", false, "->", false
+ECHO: nan, " <  ", false, "->", false
+ECHO: nan, " <= ", false, "->", false
+ECHO: nan, " != ", false, "->", true
+ECHO: nan, " == ", true, "->", false
+ECHO: nan, " >  ", true, "->", false
+ECHO: nan, " >= ", true, "->", false
+ECHO: nan, " <  ", true, "->", false
+ECHO: nan, " <= ", true, "->", false
+ECHO: nan, " != ", true, "->", true
+ECHO: nan, " == ", -1, "->", false
+ECHO: nan, " >  ", -1, "->", false
+ECHO: nan, " >= ", -1, "->", false
+ECHO: nan, " <  ", -1, "->", false
+ECHO: nan, " <= ", -1, "->", false
+ECHO: nan, " != ", -1, "->", true
+ECHO: nan, " == ", 0, "->", false
+ECHO: nan, " >  ", 0, "->", false
+ECHO: nan, " >= ", 0, "->", false
+ECHO: nan, " <  ", 0, "->", false
+ECHO: nan, " <= ", 0, "->", false
+ECHO: nan, " != ", 0, "->", true
+ECHO: nan, " == ", 1, "->", false
+ECHO: nan, " >  ", 1, "->", false
+ECHO: nan, " >= ", 1, "->", false
+ECHO: nan, " <  ", 1, "->", false
+ECHO: nan, " <= ", 1, "->", false
+ECHO: nan, " != ", 1, "->", true
+ECHO: nan, " == ", nan, "->", false
+ECHO: nan, " >  ", nan, "->", false
+ECHO: nan, " >= ", nan, "->", false
+ECHO: nan, " <  ", nan, "->", false
+ECHO: nan, " <= ", nan, "->", false
+ECHO: nan, " != ", nan, "->", true
+ECHO: nan, " == ", inf, "->", false
+ECHO: nan, " >  ", inf, "->", false
+ECHO: nan, " >= ", inf, "->", false
+ECHO: nan, " <  ", inf, "->", false
+ECHO: nan, " <= ", inf, "->", false
+ECHO: nan, " != ", inf, "->", true
+ECHO: nan, " == ", "alpha", "->", false
+ECHO: nan, " >  ", "alpha", "->", false
+ECHO: nan, " >= ", "alpha", "->", false
+ECHO: nan, " <  ", "alpha", "->", false
+ECHO: nan, " <= ", "alpha", "->", false
+ECHO: nan, " != ", "alpha", "->", true
+ECHO: nan, " == ", [1, 2, 3], "->", false
+ECHO: nan, " >  ", [1, 2, 3], "->", false
+ECHO: nan, " >= ", [1, 2, 3], "->", false
+ECHO: nan, " <  ", [1, 2, 3], "->", false
+ECHO: nan, " <= ", [1, 2, 3], "->", false
+ECHO: nan, " != ", [1, 2, 3], "->", true
+ECHO: nan, " == ", [0 : 1 : 3], "->", false
+ECHO: nan, " >  ", [0 : 1 : 3], "->", false
+ECHO: nan, " >= ", [0 : 1 : 3], "->", false
+ECHO: nan, " <  ", [0 : 1 : 3], "->", false
+ECHO: nan, " <= ", [0 : 1 : 3], "->", false
+ECHO: nan, " != ", [0 : 1 : 3], "->", true
+ECHO: nan, " == ", undef, "->", false
+ECHO: nan, " >  ", undef, "->", false
+ECHO: nan, " >= ", undef, "->", false
+ECHO: nan, " <  ", undef, "->", false
+ECHO: nan, " <= ", undef, "->", false
+ECHO: nan, " != ", undef, "->", true
+ECHO: inf, " == ", false, "->", false
+ECHO: inf, " >  ", false, "->", true
+ECHO: inf, " >= ", false, "->", true
+ECHO: inf, " <  ", false, "->", false
+ECHO: inf, " <= ", false, "->", false
+ECHO: inf, " != ", false, "->", true
+ECHO: inf, " == ", true, "->", false
+ECHO: inf, " >  ", true, "->", true
+ECHO: inf, " >= ", true, "->", true
+ECHO: inf, " <  ", true, "->", false
+ECHO: inf, " <= ", true, "->", false
+ECHO: inf, " != ", true, "->", true
+ECHO: inf, " == ", -1, "->", false
+ECHO: inf, " >  ", -1, "->", true
+ECHO: inf, " >= ", -1, "->", true
+ECHO: inf, " <  ", -1, "->", false
+ECHO: inf, " <= ", -1, "->", false
+ECHO: inf, " != ", -1, "->", true
+ECHO: inf, " == ", 0, "->", false
+ECHO: inf, " >  ", 0, "->", true
+ECHO: inf, " >= ", 0, "->", true
+ECHO: inf, " <  ", 0, "->", false
+ECHO: inf, " <= ", 0, "->", false
+ECHO: inf, " != ", 0, "->", true
+ECHO: inf, " == ", 1, "->", false
+ECHO: inf, " >  ", 1, "->", true
+ECHO: inf, " >= ", 1, "->", true
+ECHO: inf, " <  ", 1, "->", false
+ECHO: inf, " <= ", 1, "->", false
+ECHO: inf, " != ", 1, "->", true
+ECHO: inf, " == ", nan, "->", false
+ECHO: inf, " >  ", nan, "->", false
+ECHO: inf, " >= ", nan, "->", false
+ECHO: inf, " <  ", nan, "->", false
+ECHO: inf, " <= ", nan, "->", false
+ECHO: inf, " != ", nan, "->", true
+ECHO: inf, " == ", inf, "->", true
+ECHO: inf, " >  ", inf, "->", false
+ECHO: inf, " >= ", inf, "->", true
+ECHO: inf, " <  ", inf, "->", false
+ECHO: inf, " <= ", inf, "->", true
+ECHO: inf, " != ", inf, "->", false
+ECHO: inf, " == ", "alpha", "->", false
+ECHO: inf, " >  ", "alpha", "->", false
+ECHO: inf, " >= ", "alpha", "->", false
+ECHO: inf, " <  ", "alpha", "->", false
+ECHO: inf, " <= ", "alpha", "->", false
+ECHO: inf, " != ", "alpha", "->", true
+ECHO: inf, " == ", [1, 2, 3], "->", false
+ECHO: inf, " >  ", [1, 2, 3], "->", false
+ECHO: inf, " >= ", [1, 2, 3], "->", false
+ECHO: inf, " <  ", [1, 2, 3], "->", false
+ECHO: inf, " <= ", [1, 2, 3], "->", false
+ECHO: inf, " != ", [1, 2, 3], "->", true
+ECHO: inf, " == ", [0 : 1 : 3], "->", false
+ECHO: inf, " >  ", [0 : 1 : 3], "->", false
+ECHO: inf, " >= ", [0 : 1 : 3], "->", false
+ECHO: inf, " <  ", [0 : 1 : 3], "->", false
+ECHO: inf, " <= ", [0 : 1 : 3], "->", false
+ECHO: inf, " != ", [0 : 1 : 3], "->", true
+ECHO: inf, " == ", undef, "->", false
+ECHO: inf, " >  ", undef, "->", false
+ECHO: inf, " >= ", undef, "->", false
+ECHO: inf, " <  ", undef, "->", false
+ECHO: inf, " <= ", undef, "->", false
+ECHO: inf, " != ", undef, "->", true
+ECHO: "alpha", " == ", false, "->", false
+ECHO: "alpha", " >  ", false, "->", false
+ECHO: "alpha", " >= ", false, "->", false
+ECHO: "alpha", " <  ", false, "->", false
+ECHO: "alpha", " <= ", false, "->", false
+ECHO: "alpha", " != ", false, "->", true
+ECHO: "alpha", " == ", true, "->", false
+ECHO: "alpha", " >  ", true, "->", false
+ECHO: "alpha", " >= ", true, "->", false
+ECHO: "alpha", " <  ", true, "->", false
+ECHO: "alpha", " <= ", true, "->", false
+ECHO: "alpha", " != ", true, "->", true
+ECHO: "alpha", " == ", -1, "->", false
+ECHO: "alpha", " >  ", -1, "->", false
+ECHO: "alpha", " >= ", -1, "->", false
+ECHO: "alpha", " <  ", -1, "->", false
+ECHO: "alpha", " <= ", -1, "->", false
+ECHO: "alpha", " != ", -1, "->", true
+ECHO: "alpha", " == ", 0, "->", false
+ECHO: "alpha", " >  ", 0, "->", false
+ECHO: "alpha", " >= ", 0, "->", false
+ECHO: "alpha", " <  ", 0, "->", false
+ECHO: "alpha", " <= ", 0, "->", false
+ECHO: "alpha", " != ", 0, "->", true
+ECHO: "alpha", " == ", 1, "->", false
+ECHO: "alpha", " >  ", 1, "->", false
+ECHO: "alpha", " >= ", 1, "->", false
+ECHO: "alpha", " <  ", 1, "->", false
+ECHO: "alpha", " <= ", 1, "->", false
+ECHO: "alpha", " != ", 1, "->", true
+ECHO: "alpha", " == ", nan, "->", false
+ECHO: "alpha", " >  ", nan, "->", false
+ECHO: "alpha", " >= ", nan, "->", false
+ECHO: "alpha", " <  ", nan, "->", false
+ECHO: "alpha", " <= ", nan, "->", false
+ECHO: "alpha", " != ", nan, "->", true
+ECHO: "alpha", " == ", inf, "->", false
+ECHO: "alpha", " >  ", inf, "->", false
+ECHO: "alpha", " >= ", inf, "->", false
+ECHO: "alpha", " <  ", inf, "->", false
+ECHO: "alpha", " <= ", inf, "->", false
+ECHO: "alpha", " != ", inf, "->", true
+ECHO: "alpha", " == ", "alpha", "->", true
+ECHO: "alpha", " >  ", "alpha", "->", false
+ECHO: "alpha", " >= ", "alpha", "->", true
+ECHO: "alpha", " <  ", "alpha", "->", false
+ECHO: "alpha", " <= ", "alpha", "->", true
+ECHO: "alpha", " != ", "alpha", "->", false
+ECHO: "alpha", " == ", [1, 2, 3], "->", false
+ECHO: "alpha", " >  ", [1, 2, 3], "->", false
+ECHO: "alpha", " >= ", [1, 2, 3], "->", false
+ECHO: "alpha", " <  ", [1, 2, 3], "->", false
+ECHO: "alpha", " <= ", [1, 2, 3], "->", false
+ECHO: "alpha", " != ", [1, 2, 3], "->", true
+ECHO: "alpha", " == ", [0 : 1 : 3], "->", false
+ECHO: "alpha", " >  ", [0 : 1 : 3], "->", false
+ECHO: "alpha", " >= ", [0 : 1 : 3], "->", false
+ECHO: "alpha", " <  ", [0 : 1 : 3], "->", false
+ECHO: "alpha", " <= ", [0 : 1 : 3], "->", false
+ECHO: "alpha", " != ", [0 : 1 : 3], "->", true
+ECHO: "alpha", " == ", undef, "->", false
+ECHO: "alpha", " >  ", undef, "->", false
+ECHO: "alpha", " >= ", undef, "->", false
+ECHO: "alpha", " <  ", undef, "->", false
+ECHO: "alpha", " <= ", undef, "->", false
+ECHO: "alpha", " != ", undef, "->", true
+ECHO: "beta", " == ", false, "->", false
+ECHO: "beta", " >  ", false, "->", false
+ECHO: "beta", " >= ", false, "->", false
+ECHO: "beta", " <  ", false, "->", false
+ECHO: "beta", " <= ", false, "->", false
+ECHO: "beta", " != ", false, "->", true
+ECHO: "beta", " == ", true, "->", false
+ECHO: "beta", " >  ", true, "->", false
+ECHO: "beta", " >= ", true, "->", false
+ECHO: "beta", " <  ", true, "->", false
+ECHO: "beta", " <= ", true, "->", false
+ECHO: "beta", " != ", true, "->", true
+ECHO: "beta", " == ", -1, "->", false
+ECHO: "beta", " >  ", -1, "->", false
+ECHO: "beta", " >= ", -1, "->", false
+ECHO: "beta", " <  ", -1, "->", false
+ECHO: "beta", " <= ", -1, "->", false
+ECHO: "beta", " != ", -1, "->", true
+ECHO: "beta", " == ", 0, "->", false
+ECHO: "beta", " >  ", 0, "->", false
+ECHO: "beta", " >= ", 0, "->", false
+ECHO: "beta", " <  ", 0, "->", false
+ECHO: "beta", " <= ", 0, "->", false
+ECHO: "beta", " != ", 0, "->", true
+ECHO: "beta", " == ", 1, "->", false
+ECHO: "beta", " >  ", 1, "->", false
+ECHO: "beta", " >= ", 1, "->", false
+ECHO: "beta", " <  ", 1, "->", false
+ECHO: "beta", " <= ", 1, "->", false
+ECHO: "beta", " != ", 1, "->", true
+ECHO: "beta", " == ", nan, "->", false
+ECHO: "beta", " >  ", nan, "->", false
+ECHO: "beta", " >= ", nan, "->", false
+ECHO: "beta", " <  ", nan, "->", false
+ECHO: "beta", " <= ", nan, "->", false
+ECHO: "beta", " != ", nan, "->", true
+ECHO: "beta", " == ", inf, "->", false
+ECHO: "beta", " >  ", inf, "->", false
+ECHO: "beta", " >= ", inf, "->", false
+ECHO: "beta", " <  ", inf, "->", false
+ECHO: "beta", " <= ", inf, "->", false
+ECHO: "beta", " != ", inf, "->", true
+ECHO: "beta", " == ", "alpha", "->", false
+ECHO: "beta", " >  ", "alpha", "->", true
+ECHO: "beta", " >= ", "alpha", "->", true
+ECHO: "beta", " <  ", "alpha", "->", false
+ECHO: "beta", " <= ", "alpha", "->", false
+ECHO: "beta", " != ", "alpha", "->", true
+ECHO: "beta", " == ", [1, 2, 3], "->", false
+ECHO: "beta", " >  ", [1, 2, 3], "->", false
+ECHO: "beta", " >= ", [1, 2, 3], "->", false
+ECHO: "beta", " <  ", [1, 2, 3], "->", false
+ECHO: "beta", " <= ", [1, 2, 3], "->", false
+ECHO: "beta", " != ", [1, 2, 3], "->", true
+ECHO: "beta", " == ", [0 : 1 : 3], "->", false
+ECHO: "beta", " >  ", [0 : 1 : 3], "->", false
+ECHO: "beta", " >= ", [0 : 1 : 3], "->", false
+ECHO: "beta", " <  ", [0 : 1 : 3], "->", false
+ECHO: "beta", " <= ", [0 : 1 : 3], "->", false
+ECHO: "beta", " != ", [0 : 1 : 3], "->", true
+ECHO: "beta", " == ", undef, "->", false
+ECHO: "beta", " >  ", undef, "->", false
+ECHO: "beta", " >= ", undef, "->", false
+ECHO: "beta", " <  ", undef, "->", false
+ECHO: "beta", " <= ", undef, "->", false
+ECHO: "beta", " != ", undef, "->", true
+ECHO: [1, 2, 3], " == ", false, "->", false
+ECHO: [1, 2, 3], " >  ", false, "->", false
+ECHO: [1, 2, 3], " >= ", false, "->", false
+ECHO: [1, 2, 3], " <  ", false, "->", false
+ECHO: [1, 2, 3], " <= ", false, "->", false
+ECHO: [1, 2, 3], " != ", false, "->", true
+ECHO: [1, 2, 3], " == ", true, "->", false
+ECHO: [1, 2, 3], " >  ", true, "->", false
+ECHO: [1, 2, 3], " >= ", true, "->", false
+ECHO: [1, 2, 3], " <  ", true, "->", false
+ECHO: [1, 2, 3], " <= ", true, "->", false
+ECHO: [1, 2, 3], " != ", true, "->", true
+ECHO: [1, 2, 3], " == ", -1, "->", false
+ECHO: [1, 2, 3], " >  ", -1, "->", false
+ECHO: [1, 2, 3], " >= ", -1, "->", false
+ECHO: [1, 2, 3], " <  ", -1, "->", false
+ECHO: [1, 2, 3], " <= ", -1, "->", false
+ECHO: [1, 2, 3], " != ", -1, "->", true
+ECHO: [1, 2, 3], " == ", 0, "->", false
+ECHO: [1, 2, 3], " >  ", 0, "->", false
+ECHO: [1, 2, 3], " >= ", 0, "->", false
+ECHO: [1, 2, 3], " <  ", 0, "->", false
+ECHO: [1, 2, 3], " <= ", 0, "->", false
+ECHO: [1, 2, 3], " != ", 0, "->", true
+ECHO: [1, 2, 3], " == ", 1, "->", false
+ECHO: [1, 2, 3], " >  ", 1, "->", false
+ECHO: [1, 2, 3], " >= ", 1, "->", false
+ECHO: [1, 2, 3], " <  ", 1, "->", false
+ECHO: [1, 2, 3], " <= ", 1, "->", false
+ECHO: [1, 2, 3], " != ", 1, "->", true
+ECHO: [1, 2, 3], " == ", nan, "->", false
+ECHO: [1, 2, 3], " >  ", nan, "->", false
+ECHO: [1, 2, 3], " >= ", nan, "->", false
+ECHO: [1, 2, 3], " <  ", nan, "->", false
+ECHO: [1, 2, 3], " <= ", nan, "->", false
+ECHO: [1, 2, 3], " != ", nan, "->", true
+ECHO: [1, 2, 3], " == ", inf, "->", false
+ECHO: [1, 2, 3], " >  ", inf, "->", false
+ECHO: [1, 2, 3], " >= ", inf, "->", false
+ECHO: [1, 2, 3], " <  ", inf, "->", false
+ECHO: [1, 2, 3], " <= ", inf, "->", false
+ECHO: [1, 2, 3], " != ", inf, "->", true
+ECHO: [1, 2, 3], " == ", "alpha", "->", false
+ECHO: [1, 2, 3], " >  ", "alpha", "->", false
+ECHO: [1, 2, 3], " >= ", "alpha", "->", false
+ECHO: [1, 2, 3], " <  ", "alpha", "->", false
+ECHO: [1, 2, 3], " <= ", "alpha", "->", false
+ECHO: [1, 2, 3], " != ", "alpha", "->", true
+ECHO: [1, 2, 3], " == ", [1, 2, 3], "->", true
+ECHO: [1, 2, 3], " >  ", [1, 2, 3], "->", false
+ECHO: [1, 2, 3], " >= ", [1, 2, 3], "->", false
+ECHO: [1, 2, 3], " <  ", [1, 2, 3], "->", false
+ECHO: [1, 2, 3], " <= ", [1, 2, 3], "->", false
+ECHO: [1, 2, 3], " != ", [1, 2, 3], "->", false
+ECHO: [1, 2, 3], " == ", [0 : 1 : 3], "->", false
+ECHO: [1, 2, 3], " >  ", [0 : 1 : 3], "->", false
+ECHO: [1, 2, 3], " >= ", [0 : 1 : 3], "->", false
+ECHO: [1, 2, 3], " <  ", [0 : 1 : 3], "->", false
+ECHO: [1, 2, 3], " <= ", [0 : 1 : 3], "->", false
+ECHO: [1, 2, 3], " != ", [0 : 1 : 3], "->", true
+ECHO: [1, 2, 3], " == ", undef, "->", false
+ECHO: [1, 2, 3], " >  ", undef, "->", false
+ECHO: [1, 2, 3], " >= ", undef, "->", false
+ECHO: [1, 2, 3], " <  ", undef, "->", false
+ECHO: [1, 2, 3], " <= ", undef, "->", false
+ECHO: [1, 2, 3], " != ", undef, "->", true
+ECHO: [1, 2, 4], " == ", false, "->", false
+ECHO: [1, 2, 4], " >  ", false, "->", false
+ECHO: [1, 2, 4], " >= ", false, "->", false
+ECHO: [1, 2, 4], " <  ", false, "->", false
+ECHO: [1, 2, 4], " <= ", false, "->", false
+ECHO: [1, 2, 4], " != ", false, "->", true
+ECHO: [1, 2, 4], " == ", true, "->", false
+ECHO: [1, 2, 4], " >  ", true, "->", false
+ECHO: [1, 2, 4], " >= ", true, "->", false
+ECHO: [1, 2, 4], " <  ", true, "->", false
+ECHO: [1, 2, 4], " <= ", true, "->", false
+ECHO: [1, 2, 4], " != ", true, "->", true
+ECHO: [1, 2, 4], " == ", -1, "->", false
+ECHO: [1, 2, 4], " >  ", -1, "->", false
+ECHO: [1, 2, 4], " >= ", -1, "->", false
+ECHO: [1, 2, 4], " <  ", -1, "->", false
+ECHO: [1, 2, 4], " <= ", -1, "->", false
+ECHO: [1, 2, 4], " != ", -1, "->", true
+ECHO: [1, 2, 4], " == ", 0, "->", false
+ECHO: [1, 2, 4], " >  ", 0, "->", false
+ECHO: [1, 2, 4], " >= ", 0, "->", false
+ECHO: [1, 2, 4], " <  ", 0, "->", false
+ECHO: [1, 2, 4], " <= ", 0, "->", false
+ECHO: [1, 2, 4], " != ", 0, "->", true
+ECHO: [1, 2, 4], " == ", 1, "->", false
+ECHO: [1, 2, 4], " >  ", 1, "->", false
+ECHO: [1, 2, 4], " >= ", 1, "->", false
+ECHO: [1, 2, 4], " <  ", 1, "->", false
+ECHO: [1, 2, 4], " <= ", 1, "->", false
+ECHO: [1, 2, 4], " != ", 1, "->", true
+ECHO: [1, 2, 4], " == ", nan, "->", false
+ECHO: [1, 2, 4], " >  ", nan, "->", false
+ECHO: [1, 2, 4], " >= ", nan, "->", false
+ECHO: [1, 2, 4], " <  ", nan, "->", false
+ECHO: [1, 2, 4], " <= ", nan, "->", false
+ECHO: [1, 2, 4], " != ", nan, "->", true
+ECHO: [1, 2, 4], " == ", inf, "->", false
+ECHO: [1, 2, 4], " >  ", inf, "->", false
+ECHO: [1, 2, 4], " >= ", inf, "->", false
+ECHO: [1, 2, 4], " <  ", inf, "->", false
+ECHO: [1, 2, 4], " <= ", inf, "->", false
+ECHO: [1, 2, 4], " != ", inf, "->", true
+ECHO: [1, 2, 4], " == ", "alpha", "->", false
+ECHO: [1, 2, 4], " >  ", "alpha", "->", false
+ECHO: [1, 2, 4], " >= ", "alpha", "->", false
+ECHO: [1, 2, 4], " <  ", "alpha", "->", false
+ECHO: [1, 2, 4], " <= ", "alpha", "->", false
+ECHO: [1, 2, 4], " != ", "alpha", "->", true
+ECHO: [1, 2, 4], " == ", [1, 2, 3], "->", false
+ECHO: [1, 2, 4], " >  ", [1, 2, 3], "->", false
+ECHO: [1, 2, 4], " >= ", [1, 2, 3], "->", false
+ECHO: [1, 2, 4], " <  ", [1, 2, 3], "->", false
+ECHO: [1, 2, 4], " <= ", [1, 2, 3], "->", false
+ECHO: [1, 2, 4], " != ", [1, 2, 3], "->", true
+ECHO: [1, 2, 4], " == ", [0 : 1 : 3], "->", false
+ECHO: [1, 2, 4], " >  ", [0 : 1 : 3], "->", false
+ECHO: [1, 2, 4], " >= ", [0 : 1 : 3], "->", false
+ECHO: [1, 2, 4], " <  ", [0 : 1 : 3], "->", false
+ECHO: [1, 2, 4], " <= ", [0 : 1 : 3], "->", false
+ECHO: [1, 2, 4], " != ", [0 : 1 : 3], "->", true
+ECHO: [1, 2, 4], " == ", undef, "->", false
+ECHO: [1, 2, 4], " >  ", undef, "->", false
+ECHO: [1, 2, 4], " >= ", undef, "->", false
+ECHO: [1, 2, 4], " <  ", undef, "->", false
+ECHO: [1, 2, 4], " <= ", undef, "->", false
+ECHO: [1, 2, 4], " != ", undef, "->", true
+ECHO: [0 : 1 : 3], " == ", false, "->", false
+ECHO: [0 : 1 : 3], " >  ", false, "->", false
+ECHO: [0 : 1 : 3], " >= ", false, "->", false
+ECHO: [0 : 1 : 3], " <  ", false, "->", false
+ECHO: [0 : 1 : 3], " <= ", false, "->", false
+ECHO: [0 : 1 : 3], " != ", false, "->", true
+ECHO: [0 : 1 : 3], " == ", true, "->", false
+ECHO: [0 : 1 : 3], " >  ", true, "->", false
+ECHO: [0 : 1 : 3], " >= ", true, "->", false
+ECHO: [0 : 1 : 3], " <  ", true, "->", false
+ECHO: [0 : 1 : 3], " <= ", true, "->", false
+ECHO: [0 : 1 : 3], " != ", true, "->", true
+ECHO: [0 : 1 : 3], " == ", -1, "->", false
+ECHO: [0 : 1 : 3], " >  ", -1, "->", false
+ECHO: [0 : 1 : 3], " >= ", -1, "->", false
+ECHO: [0 : 1 : 3], " <  ", -1, "->", false
+ECHO: [0 : 1 : 3], " <= ", -1, "->", false
+ECHO: [0 : 1 : 3], " != ", -1, "->", true
+ECHO: [0 : 1 : 3], " == ", 0, "->", false
+ECHO: [0 : 1 : 3], " >  ", 0, "->", false
+ECHO: [0 : 1 : 3], " >= ", 0, "->", false
+ECHO: [0 : 1 : 3], " <  ", 0, "->", false
+ECHO: [0 : 1 : 3], " <= ", 0, "->", false
+ECHO: [0 : 1 : 3], " != ", 0, "->", true
+ECHO: [0 : 1 : 3], " == ", 1, "->", false
+ECHO: [0 : 1 : 3], " >  ", 1, "->", false
+ECHO: [0 : 1 : 3], " >= ", 1, "->", false
+ECHO: [0 : 1 : 3], " <  ", 1, "->", false
+ECHO: [0 : 1 : 3], " <= ", 1, "->", false
+ECHO: [0 : 1 : 3], " != ", 1, "->", true
+ECHO: [0 : 1 : 3], " == ", nan, "->", false
+ECHO: [0 : 1 : 3], " >  ", nan, "->", false
+ECHO: [0 : 1 : 3], " >= ", nan, "->", false
+ECHO: [0 : 1 : 3], " <  ", nan, "->", false
+ECHO: [0 : 1 : 3], " <= ", nan, "->", false
+ECHO: [0 : 1 : 3], " != ", nan, "->", true
+ECHO: [0 : 1 : 3], " == ", inf, "->", false
+ECHO: [0 : 1 : 3], " >  ", inf, "->", false
+ECHO: [0 : 1 : 3], " >= ", inf, "->", false
+ECHO: [0 : 1 : 3], " <  ", inf, "->", false
+ECHO: [0 : 1 : 3], " <= ", inf, "->", false
+ECHO: [0 : 1 : 3], " != ", inf, "->", true
+ECHO: [0 : 1 : 3], " == ", "alpha", "->", false
+ECHO: [0 : 1 : 3], " >  ", "alpha", "->", false
+ECHO: [0 : 1 : 3], " >= ", "alpha", "->", false
+ECHO: [0 : 1 : 3], " <  ", "alpha", "->", false
+ECHO: [0 : 1 : 3], " <= ", "alpha", "->", false
+ECHO: [0 : 1 : 3], " != ", "alpha", "->", true
+ECHO: [0 : 1 : 3], " == ", [1, 2, 3], "->", false
+ECHO: [0 : 1 : 3], " >  ", [1, 2, 3], "->", false
+ECHO: [0 : 1 : 3], " >= ", [1, 2, 3], "->", false
+ECHO: [0 : 1 : 3], " <  ", [1, 2, 3], "->", false
+ECHO: [0 : 1 : 3], " <= ", [1, 2, 3], "->", false
+ECHO: [0 : 1 : 3], " != ", [1, 2, 3], "->", true
+ECHO: [0 : 1 : 3], " == ", [0 : 1 : 3], "->", true
+ECHO: [0 : 1 : 3], " >  ", [0 : 1 : 3], "->", false
+ECHO: [0 : 1 : 3], " >= ", [0 : 1 : 3], "->", false
+ECHO: [0 : 1 : 3], " <  ", [0 : 1 : 3], "->", false
+ECHO: [0 : 1 : 3], " <= ", [0 : 1 : 3], "->", false
+ECHO: [0 : 1 : 3], " != ", [0 : 1 : 3], "->", false
+ECHO: [0 : 1 : 3], " == ", undef, "->", false
+ECHO: [0 : 1 : 3], " >  ", undef, "->", false
+ECHO: [0 : 1 : 3], " >= ", undef, "->", false
+ECHO: [0 : 1 : 3], " <  ", undef, "->", false
+ECHO: [0 : 1 : 3], " <= ", undef, "->", false
+ECHO: [0 : 1 : 3], " != ", undef, "->", true
+ECHO: [0 : 1 : 1], " == ", false, "->", false
+ECHO: [0 : 1 : 1], " >  ", false, "->", false
+ECHO: [0 : 1 : 1], " >= ", false, "->", false
+ECHO: [0 : 1 : 1], " <  ", false, "->", false
+ECHO: [0 : 1 : 1], " <= ", false, "->", false
+ECHO: [0 : 1 : 1], " != ", false, "->", true
+ECHO: [0 : 1 : 1], " == ", true, "->", false
+ECHO: [0 : 1 : 1], " >  ", true, "->", false
+ECHO: [0 : 1 : 1], " >= ", true, "->", false
+ECHO: [0 : 1 : 1], " <  ", true, "->", false
+ECHO: [0 : 1 : 1], " <= ", true, "->", false
+ECHO: [0 : 1 : 1], " != ", true, "->", true
+ECHO: [0 : 1 : 1], " == ", -1, "->", false
+ECHO: [0 : 1 : 1], " >  ", -1, "->", false
+ECHO: [0 : 1 : 1], " >= ", -1, "->", false
+ECHO: [0 : 1 : 1], " <  ", -1, "->", false
+ECHO: [0 : 1 : 1], " <= ", -1, "->", false
+ECHO: [0 : 1 : 1], " != ", -1, "->", true
+ECHO: [0 : 1 : 1], " == ", 0, "->", false
+ECHO: [0 : 1 : 1], " >  ", 0, "->", false
+ECHO: [0 : 1 : 1], " >= ", 0, "->", false
+ECHO: [0 : 1 : 1], " <  ", 0, "->", false
+ECHO: [0 : 1 : 1], " <= ", 0, "->", false
+ECHO: [0 : 1 : 1], " != ", 0, "->", true
+ECHO: [0 : 1 : 1], " == ", 1, "->", false
+ECHO: [0 : 1 : 1], " >  ", 1, "->", false
+ECHO: [0 : 1 : 1], " >= ", 1, "->", false
+ECHO: [0 : 1 : 1], " <  ", 1, "->", false
+ECHO: [0 : 1 : 1], " <= ", 1, "->", false
+ECHO: [0 : 1 : 1], " != ", 1, "->", true
+ECHO: [0 : 1 : 1], " == ", nan, "->", false
+ECHO: [0 : 1 : 1], " >  ", nan, "->", false
+ECHO: [0 : 1 : 1], " >= ", nan, "->", false
+ECHO: [0 : 1 : 1], " <  ", nan, "->", false
+ECHO: [0 : 1 : 1], " <= ", nan, "->", false
+ECHO: [0 : 1 : 1], " != ", nan, "->", true
+ECHO: [0 : 1 : 1], " == ", inf, "->", false
+ECHO: [0 : 1 : 1], " >  ", inf, "->", false
+ECHO: [0 : 1 : 1], " >= ", inf, "->", false
+ECHO: [0 : 1 : 1], " <  ", inf, "->", false
+ECHO: [0 : 1 : 1], " <= ", inf, "->", false
+ECHO: [0 : 1 : 1], " != ", inf, "->", true
+ECHO: [0 : 1 : 1], " == ", "alpha", "->", false
+ECHO: [0 : 1 : 1], " >  ", "alpha", "->", false
+ECHO: [0 : 1 : 1], " >= ", "alpha", "->", false
+ECHO: [0 : 1 : 1], " <  ", "alpha", "->", false
+ECHO: [0 : 1 : 1], " <= ", "alpha", "->", false
+ECHO: [0 : 1 : 1], " != ", "alpha", "->", true
+ECHO: [0 : 1 : 1], " == ", [1, 2, 3], "->", false
+ECHO: [0 : 1 : 1], " >  ", [1, 2, 3], "->", false
+ECHO: [0 : 1 : 1], " >= ", [1, 2, 3], "->", false
+ECHO: [0 : 1 : 1], " <  ", [1, 2, 3], "->", false
+ECHO: [0 : 1 : 1], " <= ", [1, 2, 3], "->", false
+ECHO: [0 : 1 : 1], " != ", [1, 2, 3], "->", true
+ECHO: [0 : 1 : 1], " == ", [0 : 1 : 3], "->", false
+ECHO: [0 : 1 : 1], " >  ", [0 : 1 : 3], "->", false
+ECHO: [0 : 1 : 1], " >= ", [0 : 1 : 3], "->", false
+ECHO: [0 : 1 : 1], " <  ", [0 : 1 : 3], "->", false
+ECHO: [0 : 1 : 1], " <= ", [0 : 1 : 3], "->", false
+ECHO: [0 : 1 : 1], " != ", [0 : 1 : 3], "->", true
+ECHO: [0 : 1 : 1], " == ", undef, "->", false
+ECHO: [0 : 1 : 1], " >  ", undef, "->", false
+ECHO: [0 : 1 : 1], " >= ", undef, "->", false
+ECHO: [0 : 1 : 1], " <  ", undef, "->", false
+ECHO: [0 : 1 : 1], " <= ", undef, "->", false
+ECHO: [0 : 1 : 1], " != ", undef, "->", true
+ECHO: undef, " == ", false, "->", false
+ECHO: undef, " >  ", false, "->", false
+ECHO: undef, " >= ", false, "->", false
+ECHO: undef, " <  ", false, "->", false
+ECHO: undef, " <= ", false, "->", false
+ECHO: undef, " != ", false, "->", true
+ECHO: undef, " == ", true, "->", false
+ECHO: undef, " >  ", true, "->", false
+ECHO: undef, " >= ", true, "->", false
+ECHO: undef, " <  ", true, "->", false
+ECHO: undef, " <= ", true, "->", false
+ECHO: undef, " != ", true, "->", true
+ECHO: undef, " == ", -1, "->", false
+ECHO: undef, " >  ", -1, "->", false
+ECHO: undef, " >= ", -1, "->", false
+ECHO: undef, " <  ", -1, "->", false
+ECHO: undef, " <= ", -1, "->", false
+ECHO: undef, " != ", -1, "->", true
+ECHO: undef, " == ", 0, "->", false
+ECHO: undef, " >  ", 0, "->", false
+ECHO: undef, " >= ", 0, "->", false
+ECHO: undef, " <  ", 0, "->", false
+ECHO: undef, " <= ", 0, "->", false
+ECHO: undef, " != ", 0, "->", true
+ECHO: undef, " == ", 1, "->", false
+ECHO: undef, " >  ", 1, "->", false
+ECHO: undef, " >= ", 1, "->", false
+ECHO: undef, " <  ", 1, "->", false
+ECHO: undef, " <= ", 1, "->", false
+ECHO: undef, " != ", 1, "->", true
+ECHO: undef, " == ", nan, "->", false
+ECHO: undef, " >  ", nan, "->", false
+ECHO: undef, " >= ", nan, "->", false
+ECHO: undef, " <  ", nan, "->", false
+ECHO: undef, " <= ", nan, "->", false
+ECHO: undef, " != ", nan, "->", true
+ECHO: undef, " == ", inf, "->", false
+ECHO: undef, " >  ", inf, "->", false
+ECHO: undef, " >= ", inf, "->", false
+ECHO: undef, " <  ", inf, "->", false
+ECHO: undef, " <= ", inf, "->", false
+ECHO: undef, " != ", inf, "->", true
+ECHO: undef, " == ", "alpha", "->", false
+ECHO: undef, " >  ", "alpha", "->", false
+ECHO: undef, " >= ", "alpha", "->", false
+ECHO: undef, " <  ", "alpha", "->", false
+ECHO: undef, " <= ", "alpha", "->", false
+ECHO: undef, " != ", "alpha", "->", true
+ECHO: undef, " == ", [1, 2, 3], "->", false
+ECHO: undef, " >  ", [1, 2, 3], "->", false
+ECHO: undef, " >= ", [1, 2, 3], "->", false
+ECHO: undef, " <  ", [1, 2, 3], "->", false
+ECHO: undef, " <= ", [1, 2, 3], "->", false
+ECHO: undef, " != ", [1, 2, 3], "->", true
+ECHO: undef, " == ", [0 : 1 : 3], "->", false
+ECHO: undef, " >  ", [0 : 1 : 3], "->", false
+ECHO: undef, " >= ", [0 : 1 : 3], "->", false
+ECHO: undef, " <  ", [0 : 1 : 3], "->", false
+ECHO: undef, " <= ", [0 : 1 : 3], "->", false
+ECHO: undef, " != ", [0 : 1 : 3], "->", true
+ECHO: undef, " == ", undef, "->", true
+ECHO: undef, " >  ", undef, "->", false
+ECHO: undef, " >= ", undef, "->", false
+ECHO: undef, " <  ", undef, "->", false
+ECHO: undef, " <= ", undef, "->", false
+ECHO: undef, " != ", undef, "->", false

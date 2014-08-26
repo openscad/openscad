@@ -1056,6 +1056,7 @@ list(APPEND ECHO_FILES ${FUNCTION_FILES}
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/concat-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/include-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/include-recursive-test.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/operators-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/empty-stl.scad)
 
 list(APPEND DUMPTEST_FILES ${FEATURES_2D_FILES} ${FEATURES_3D_FILES} ${DEPRECATED_3D_FILES})
