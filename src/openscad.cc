@@ -254,8 +254,9 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 	const std::string application_path = QApplication::instance()->applicationDirPath().toLocal8Bit().constData();
 #else
 	const std::string application_path = boosty::stringy(boosty::absolute(boost::filesystem::path(argv[0]).parent_path()));
-#endif
-	parser_init(application_path);
+#endif	
+	PlatformUtils::registerApplicationPath(application_path);
+	parser_init(PlatformUtils::applicationPath());
 	Tree tree;
 #ifdef ENABLE_CGAL
 	GeometryEvaluator geomevaluator(tree);
@@ -538,28 +539,12 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 	qRegisterMetaType<shared_ptr<const Geometry> >();
 	
 	const QString &app_path = app.applicationDirPath();
+	PlatformUtils::registerApplicationPath(app_path.toLocal8Bit().constData());
 
-	QDir exdir(app_path);
-	QString qexamplesdir;
-#ifdef Q_OS_MAC
-	exdir.cd("../Resources"); // Examples can be bundled
-	if (!exdir.exists("examples")) exdir.cd("../../..");
-#elif defined(Q_OS_UNIX)
-	if (exdir.cd("../share/openscad/examples")) {
-		qexamplesdir = exdir.path();
-	} else
-		if (exdir.cd("../../share/openscad/examples")) {
-			qexamplesdir = exdir.path();
-		} else
-			if (exdir.cd("../../examples")) {
-				qexamplesdir = exdir.path();
-			} else
-#endif
-				if (exdir.cd("examples")) {
-					qexamplesdir = exdir.path();
-				}
-	MainWindow::setExamplesDir(qexamplesdir);
-  parser_init(app_path.toLocal8Bit().constData());
+	QDir exdir(QString::fromStdString(PlatformUtils::resourcesPath()));
+	exdir.cd("examples");
+	MainWindow::setExamplesDir(exdir.path());
+  parser_init(PlatformUtils::applicationPath());
 
 #ifdef Q_OS_MAC
 	installAppleEventHandlers();

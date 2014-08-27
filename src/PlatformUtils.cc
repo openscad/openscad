@@ -5,9 +5,23 @@
 extern std::vector<std::string> librarypath;
 extern std::vector<std::string> fontpath;
 
-bool PlatformUtils::createLibraryPath()
+namespace {
+	std::string applicationpath;
+}
+
+void PlatformUtils::registerApplicationPath(const std::string &apppath)
 {
-	std::string path = PlatformUtils::libraryPath();
+	applicationpath = apppath;
+}
+
+std::string PlatformUtils::applicationPath()
+{
+	return applicationpath;
+}
+
+bool PlatformUtils::createUserLibraryPath()
+{
+	std::string path = PlatformUtils::userLibraryPath();
 	bool OK = false;
 	try {
 		if (!fs::exists(fs::path(path))) {
@@ -23,7 +37,7 @@ bool PlatformUtils::createLibraryPath()
 	return OK;
 }
 
-std::string PlatformUtils::libraryPath()
+std::string PlatformUtils::userLibraryPath()
 {
 	fs::path path;
 	try {
@@ -75,4 +89,38 @@ bool PlatformUtils::createBackupPath()
 		PRINTB("ERROR: %s",ex.what());
 	}
 	return OK;
+}
+
+// This is the built-in read-only resources path
+std::string PlatformUtils::resourcesPath()
+{
+	fs::path resourcedir(applicationPath());
+	fs::path tmpdir;
+#ifdef __APPLE__
+	// Resources can be bundled on Mac. If not, fall back to development layout
+	bool isbundle = is_directory(resourcedir / ".." / "Resources");
+	if (isbundle) {
+		resourcedir /= "../Resources";
+		// Fall back to dev layout
+		if (!is_directory(resourcedir / "libraries")) resourcedir /= "../../..";
+	}
+#elif !defined(WIN32)
+	tmpdir = resourcedir / "../share/openscad";
+	if (is_directory(tmpdir / "libraries")) {
+		resourcedir = tmpdir;
+	}
+	else {
+		tmpdir = resourcedir / "../../share/openscad";
+		if (is_directory(tmpdir / "libraries")) {
+			resourcedir = tmpdir;
+		} else {
+			tmpdir = resourcedir / "../..";
+			if (is_directory(tmpdir / "libraries")) {
+				resourcedir = tmpdir;
+			}
+		}
+	}
+#endif
+	// resourcedir defaults to applicationPath
+	return boosty::stringy(resourcedir);
 }

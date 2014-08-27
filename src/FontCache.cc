@@ -86,6 +86,10 @@ FontCache::FontCache()
 {
 	init_ok = false;
 
+    // FIXME: For bundled app, Initialize fontconfig with own config directory
+//	setenv("FONTCONFIG_PATH", [[[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent: @"fonts"] UTF8String], 1);
+
+    // FIXME: To detect a valid font cache, first FcInitLoadConfig(), then check caches, then FcConfigBuildFonts()
 	config = FcInitLoadConfigAndFonts();
 	if (!config) {
 		PRINT("Can't initialize fontconfig library, text() objects will not be rendered");

@@ -1221,16 +1221,16 @@ void MainWindow::actionSaveAs()
 
 void MainWindow::actionShowLibraryFolder()
 {
-	std::string path = PlatformUtils::libraryPath();
+	std::string path = PlatformUtils::userLibraryPath();
 	if (!fs::exists(path)) {
 		PRINTB("WARNING: Library path %s doesnt exist. Creating", path);
-		if (!PlatformUtils::createLibraryPath()) {
+		if (!PlatformUtils::createUserLibraryPath()) {
 			PRINTB("ERROR: Cannot create library path: %s",path);
 		}
 	}
-	QString url = QString::fromStdString( path );
+	QString url = QString::fromStdString(path);
 	//PRINTB("Opening file browser for %s", url.toStdString() );
-	QDesktopServices::openUrl(QUrl::fromLocalFile( url ));
+	QDesktopServices::openUrl(QUrl::fromLocalFile(url));
 }
 
 void MainWindow::actionReload()
@@ -1805,9 +1805,9 @@ void MainWindow::actionExport(export_type_e, QString, QString)
 
 	const CGAL_Nef_polyhedron *N = dynamic_cast<const CGAL_Nef_polyhedron *>(this->root_geom.get());
 	if (N && !N->p3->is_simple()) {
-		PRINT("Object isn't a valid 2-manifold! Modify your design. See http://en.wikibooks.org/wiki/OpenSCAD_User_Manual/STL_Import_and_Export");
-		clearCurrentOutput();
-		return;
+	 	PRINT("Object isn't a valid 2-manifold! Modify your design. See http://en.wikibooks.org/wiki/OpenSCAD_User_Manual/STL_Import_and_Export");
+	 	clearCurrentOutput();
+	 	return;
 	}
 
 	QString title = QString("Export %1 File").arg(type_name);
