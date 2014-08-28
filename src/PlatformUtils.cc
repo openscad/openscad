@@ -122,5 +122,5 @@ std::string PlatformUtils::resourcesPath()
 	}
 #endif
 	// resourcedir defaults to applicationPath
-	return boosty::stringy(resourcedir);
+	return boosty::stringy(boosty::canonical(resourcedir));
 }
