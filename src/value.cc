@@ -384,6 +384,18 @@ public:\
     return false;\
   }\
 \
+  bool operator()(const bool &op1, const bool &op2) const {\
+    return op1 op op2;\
+  }\
+\
+  bool operator()(const bool &op1, const double &op2) const {\
+    return op1 op op2;\
+  }\
+\
+  bool operator()(const double &op1, const bool &op2) const {\
+    return op1 op op2;\
+  }\
+\
   bool operator()(const double &op1, const double &op2) const {\
     return op1 op op2;\
   }\

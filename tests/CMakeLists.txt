@@ -1056,6 +1056,7 @@ list(APPEND ECHO_FILES ${FUNCTION_FILES}
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/concat-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/include-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/include-recursive-test.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/operators-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/empty-stl.scad)
 
 list(APPEND DUMPTEST_FILES ${FEATURES_2D_FILES} ${FEATURES_3D_FILES} ${DEPRECATED_3D_FILES})
@@ -1093,6 +1094,12 @@ list(APPEND THROWNTOGETHERTEST_FILES ${OPENCSGTEST_FILES})
 list(APPEND CGALSTLSANITYTEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/normal-nan.scad)
 
 file(GLOB EXPERIMENTAL_TEXT_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/experimental/text-*.scad)
+# Issue #899
+set_test_config(Bugs dxfpngtest_text-font-direction-tests
+                     cgalpngtest_text-font-direction-tests
+                     opencsgtest_text-font-direction-tests
+                     csgpngtest_text-font-direction-tests
+                     throwntogethertest_text-font-direction-tests)
 
 list(APPEND EXPORT3D_TEST_FILES ${EXAMPLE_3D_FILES})
 list(APPEND EXPORT3D_TEST_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/3D/features/polyhedron-nonplanar-tests.scad
@@ -1158,15 +1165,6 @@ set_test_config(Heavy cgalpngtest_rotate_extrude-tests
                       csgpngtest_for-nested-tests
                       cgalpngtest_resize-tests
                       cgalpngtest_text-search-test
-		      cgalpngtest_text-font-direction-tests
-		      cgalpngtest_text-font-tests
-		      cgalpngtest_text-font-alignment-tests
-		      opencsgtest_text-font-direction-tests
-		      opencsgtest_text-font-tests
-		      opencsgtest_text-font-alignment-tests
-		      throwntogethertest_text-font-direction-tests
-		      throwntogethertest_text-font-tests
-		      throwntogethertest_text-font-alignment-tests
                       cgalpngtest_fractal
                       csgpngtest_fractal
                       cgalpngtest_iteration
@@ -1199,6 +1197,7 @@ list(APPEND BUGS_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue584.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue666.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue802.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue835.scad
+                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue899.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue911.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue913.scad)
 

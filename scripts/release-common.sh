@@ -352,6 +352,11 @@ if [ -n $FONTDIR ]; then
   echo $FONTDIR
   mkdir -p $FONTDIR
   cp -a fonts/* $FONTDIR
+  case $OS in
+    MACOSX) 
+      cp -a fonts-osx/* $FONTDIR
+      ;;
+  esac
 fi
 if [ -n $LIBRARYDIR ]; then
     echo $LIBRARYDIR

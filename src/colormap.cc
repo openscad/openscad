@@ -14,7 +14,7 @@ ColorMap *ColorMap::inst(bool erase)
 }
 
 ColorMap::ColorMap() {
-	webcolors = map_list_of
+	boost::unordered_map<std::string, Color4f> tmpwebcolors = map_list_of
     ("aliceblue", Color4f(240, 248, 255))
     ("antiquewhite", Color4f(250, 235, 215))
     ("aqua", Color4f(0, 255, 255))
@@ -163,6 +163,7 @@ ColorMap::ColorMap() {
     ("whitesmoke", Color4f(245, 245, 245))
     ("yellow", Color4f(255, 255, 0))
     ("yellowgreen", Color4f(154, 205, 50));
+	webcolors = tmpwebcolors;
 
 	ColorScheme cornfield = map_list_of
 		(BACKGROUND_COLOR,         Color4f(0xff, 0xff, 0xe5))
@@ -261,7 +262,7 @@ ColorMap::ColorMap() {
 		(CGAL_EDGE_2D_COLOR,       Color4f(0xff, 0x00, 0x00))
 		(CROSSHAIR_COLOR,          Color4f(0x80, 0x00, 0x00));
 
-	colorschemes = map_list_of
+	boost::unordered_map<std::string, ColorScheme> tmpcolorschemes = map_list_of
 		("Cornfield", cornfield)
 		("Metallic", metallic)
 		("Sunset", sunset)
@@ -270,6 +271,7 @@ ColorMap::ColorMap() {
 		("Nature", nature)
 		("DeepOcean", deepocean)
 		("Monotone", monotone); // Hidden, not in GUI
+	colorschemes = tmpcolorschemes;
 
 }
 

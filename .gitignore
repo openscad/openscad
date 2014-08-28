@@ -24,3 +24,5 @@ testdata/scad/misc/include-tests.scad
 testdata/scad/misc/use-tests.scad
 /mingw32
 /mingw64
+**/project.xcworkspace
+**/xcuserdata

@@ -17,7 +17,7 @@
                BlueprintIdentifier = "E0034E1C19AA8409009F0BD0"
                BuildableName = "openscad_nogui"
                BlueprintName = "openscad_nogui"
-               ReferencedContainer = "container:openscad.xcodeproj">
+               ReferencedContainer = "container:OpenSCAD.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -35,7 +35,7 @@
             BlueprintIdentifier = "E0034E1C19AA8409009F0BD0"
             BuildableName = "openscad_nogui"
             BlueprintName = "openscad_nogui"
-            ReferencedContainer = "container:openscad.xcodeproj">
+            ReferencedContainer = "container:OpenSCAD.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
    </TestAction>
@@ -43,7 +43,8 @@
       selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
       launchStyle = "0"
-      useCustomWorkingDirectory = "NO"
+      useCustomWorkingDirectory = "YES"
+      customWorkingDirectory = "$(PROJECT_DIR)/.."
       buildConfiguration = "Debug"
       ignoresPersistentStateOnLaunch = "NO"
       debugDocumentVersioning = "YES"
@@ -54,7 +55,7 @@
             BlueprintIdentifier = "E0034E1C19AA8409009F0BD0"
             BuildableName = "openscad_nogui"
             BlueprintName = "openscad_nogui"
-            ReferencedContainer = "container:openscad.xcodeproj">
+            ReferencedContainer = "container:OpenSCAD.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
       <AdditionalOptions>
@@ -72,7 +73,7 @@
             BlueprintIdentifier = "E0034E1C19AA8409009F0BD0"
             BuildableName = "openscad_nogui"
             BlueprintName = "openscad_nogui"
-            ReferencedContainer = "container:openscad.xcodeproj">
+            ReferencedContainer = "container:OpenSCAD.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>
