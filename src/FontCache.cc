@@ -86,44 +86,37 @@ FontCache::FontCache()
 {
 	init_ok = false;
 
-    // FIXME: For bundled app, Initialize fontconfig with own config directory
-//	setenv("FONTCONFIG_PATH", [[[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent: @"fonts"] UTF8String], 1);
+	// If we've got a bundled fonts.conf, initialize fontconfig with our own config
+	// by overriding the built-in fontconfig path.
+	// For system installs and dev environments, we leave this alone
+	fs::path fontdir(fs::path(PlatformUtils::resourcesPath()) / "fonts");
+	if (fs::is_regular_file(fontdir / "fonts.conf")) {
+		setenv("FONTCONFIG_PATH", boosty::stringy(boosty::absolute(fontdir)).c_str(), 0);
+	}
 
-    // FIXME: To detect a valid font cache, first FcInitLoadConfig(), then check caches, then FcConfigBuildFonts()
-	config = FcInitLoadConfigAndFonts();
+	// Just load the configs. We'll build the fonts once all configs are loaded
+	config = FcInitLoadConfig();
 	if (!config) {
 		PRINT("Can't initialize fontconfig library, text() objects will not be rendered");
 		return;
 	}
 
-	BOOST_FOREACH(const std::string &dir, librarypath)
-	{
-		fs::path fontpath = fs::path(dir) / "../fonts";
-		if (fs::exists(fontpath) && fs::is_directory(fontpath)) {
-			fs::path path = boosty::canonical(fontpath);
-			add_font_dir(path.string());
-
-			fs::path fontconf = fontpath / "fonts.conf";
-			if (fs::exists(fontconf) && fs::is_regular(fontconf)) {
-				FcConfigParseAndLoad(config, (unsigned char *) fontconf.string().c_str(), false);
-			}
-		}
+	// Add the built-in fonts & config
+	fs::path builtinfontpath = fs::path(PlatformUtils::resourcesPath()) / "fonts";
+	if (fs::is_directory(builtinfontpath)) {
+		add_font_dir(boosty::stringy(boosty::canonical(builtinfontpath)));
+		FcConfigParseAndLoad(config, reinterpret_cast<const FcChar8 *>(boosty::stringy(builtinfontpath).c_str()), false);
 	}
 
 	const char *home = getenv("HOME");
 
-	// Add MacOS font folders. (see http://support.apple.com/kb/HT2435)
-	add_font_dir("/Library/Fonts");
-	add_font_dir("/System/Library/Fonts");
-	if (home) {
-		add_font_dir(std::string(home) + "/Library/Fonts");
-	}
-
+#ifdef WIN32
 	// Add Window font folders.
 	const char *windir = getenv("WinDir");
 	if (windir) {
 		add_font_dir(std::string(windir) + "\\Fonts");
 	}
+#endif
 
 	// Add Linux font folders, the system folders are expected to be
 	// configured by the system configuration for fontconfig.
@@ -145,13 +138,13 @@ FontCache::FontCache()
 		}
 	}
 
+	// FIXME: Caching happens here. This would be a good place to notify the user
+	FcConfigBuildFonts(config);
+
+	// For use by LibraryInfo
 	FcStrList *dirs = FcConfigGetFontDirs(config);
-	while (true) {
-		FcChar8 *dir = FcStrListNext(dirs);
-		if (dir == NULL) {
-			break;
-		}
-		fontpath.push_back(std::string((const char *) dir));
+	while (FcChar8 *dir = FcStrListNext(dirs)) {
+		fontpath.push_back(std::string((const char *)dir));
 	}
 	FcStrListDone(dirs);
 
