@@ -638,7 +638,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "rm -rf \"$BUILT_PRODUCTS_DIR/$FULL_PRODUCT_NAME\"\ncp -R \"$PROJECT_DIR/../$FULL_PRODUCT_NAME\" \"$BUILT_PRODUCTS_DIR\"";
+			shellScript = "rm -rf \"$BUILT_PRODUCTS_DIR/$FULL_PRODUCT_NAME\"\ncp -Rf \"$PROJECT_DIR/../$FULL_PRODUCT_NAME\" \"$PROJECT_DIR/../libraries\" \"$PROJECT_DIR/../examples\" \"$PROJECT_DIR/../fonts\" \"$BUILT_PRODUCTS_DIR\"";
 		};
 		E0395E7C19AA884F00E43D12 /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -651,7 +651,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "rm -rf \"$BUILT_PRODUCTS_DIR/$FULL_PRODUCT_NAME\"\ncp -R \"$PROJECT_DIR/../tests/$FULL_PRODUCT_NAME\" \"$BUILT_PRODUCTS_DIR\"";
+			shellScript = "rm -rf \"$BUILT_PRODUCTS_DIR/$FULL_PRODUCT_NAME\"\ncp -Rf \"$PROJECT_DIR/../tests/$FULL_PRODUCT_NAME\" \"$PROJECT_DIR/../libraries\" \"$PROJECT_DIR/../examples\" \"$PROJECT_DIR/../fonts\" \"$BUILT_PRODUCTS_DIR\"";
 		};
 /* End PBXShellScriptBuildPhase section */
 
