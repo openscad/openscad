@@ -6,7 +6,8 @@
 
 get_fedora_deps()
 {
- yum install qt-devel bison flex eigen3-devel \
+ yum -y install qt5-qtbase-devel bison flex eigen3-devel harfbuzz-devel \
+  fontconfig-devel freetype-devel \
   boost-devel mpfr-devel gmp-devel glew-devel CGAL-devel gcc gcc-c++ pkgconfig \
   opencsg-devel git libXmu-devel curl imagemagick ImageMagick glib2-devel make \
   xorg-x11-server-Xvfb gettext
