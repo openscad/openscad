@@ -202,7 +202,12 @@ case $OS in
         cd $OPENSCADDIR
     ;;
     *)
-        qmake VERSION=$VERSION OPENSCAD_COMMIT=$OPENSCAD_COMMIT CONFIG+="$CONFIG" CONFIG-=debug openscad.pro
+	QMAKE="`command -v qmake-qt5`"
+	if [ ! -x "$QMAKE" ]
+	then
+		QMAKE=qmake
+	fi
+	"$QMAKE" VERSION=$VERSION OPENSCAD_COMMIT=$OPENSCAD_COMMIT CONFIG+="$CONFIG" CONFIG-=debug openscad.pro
     ;;
 esac
 
