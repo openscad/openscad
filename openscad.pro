@@ -118,6 +118,7 @@ macx {
 
 c++11 {
   QMAKE_CXXFLAGS += -std=c++11
+  message("Using C++11")
 }
 
 win* {
