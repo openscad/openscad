@@ -61,6 +61,9 @@ std::ostream &operator<<(std::ostream &stream, const QuotedString &s)
     case '\n':
       stream << "\\n";
       break;
+    case '\r':
+      stream << "\\r";
+      break;
     case '"':
     case '\\':
       stream << '\\';
@@ -245,6 +248,58 @@ std::string Value::toString() const
   return boost::apply_visitor(tostring_visitor(), this->value);
 }
 
+class chr_visitor : public boost::static_visitor<std::string> {
+public:
+	template <typename S> std::string operator()(const S &) const
+	{
+		return "";
+	}
+
+	std::string operator()(const double &v) const
+	{
+		char buf[8];
+		memset(buf, 0, 8);
+		if (v > 0) {
+			const gunichar c = v;
+			if (g_unichar_validate(c) && (c != 0)) {
+			    g_unichar_to_utf8(c, buf);
+			}
+		}
+		return std::string(buf);
+	}
+
+	std::string operator()(const Value::VectorType &v) const
+	{
+		std::stringstream stream;
+		for (size_t i = 0; i < v.size(); i++) {
+			stream << v[i].chrString();
+		}
+		return stream.str();
+	}
+
+	std::string operator()(const Value::RangeType &v) const
+	{
+		const boost::uint32_t steps = v.nbsteps();
+		if (steps >= 10000) {
+			PRINTB("WARNING: Bad range parameter in for statement: too many elements (%lu).", steps);
+			return "";
+		}
+
+		std::stringstream stream;
+		Value::RangeType range = v;
+		for (Value::RangeType::iterator it = range.begin();it != range.end();it++) {
+			const Value value(*it);
+			stream << value.chrString();
+		}
+		return stream.str();
+	}
+};
+
+std::string Value::chrString() const
+{
+  return boost::apply_visitor(chr_visitor(), this->value);
+}
+
 const Value::VectorType &Value::toVector() const
 {
   static VectorType empty;
@@ -327,6 +382,18 @@ class name : public boost::static_visitor<bool> \
 public:\
   template <typename T, typename U> bool operator()(const T &, const U &) const {\
     return false;\
+  }\
+\
+  bool operator()(const bool &op1, const bool &op2) const {\
+    return op1 op op2;\
+  }\
+\
+  bool operator()(const bool &op1, const double &op2) const {\
+    return op1 op op2;\
+  }\
+\
+  bool operator()(const double &op1, const bool &op2) const {\
+    return op1 op op2;\
   }\
 \
   bool operator()(const double &op1, const double &op2) const {\

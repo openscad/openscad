@@ -527,6 +527,17 @@ Value builtin_str(const Context *, const EvalContext *evalctx)
 	return Value(stream.str());
 }
 
+Value builtin_chr(const Context *, const EvalContext *evalctx)
+{
+	std::stringstream stream;
+	
+	for (size_t i = 0; i < evalctx->numArgs(); i++) {
+		const Value v = evalctx->getArgValue(i);
+		stream << v.chrString();
+	}
+	return Value(stream.str());
+}
+
 Value builtin_concat(const Context *, const EvalContext *evalctx)
 {
 	Value::VectorType result;
@@ -928,7 +939,8 @@ void register_builtin_functions()
 	Builtins::init("log", new BuiltinFunction(&builtin_log));
 	Builtins::init("ln", new BuiltinFunction(&builtin_ln));
 	Builtins::init("str", new BuiltinFunction(&builtin_str));
-	Builtins::init("concat", new BuiltinFunction(&builtin_concat, Feature::ExperimentalConcatFunction));
+	Builtins::init("chr", new BuiltinFunction(&builtin_chr));
+	Builtins::init("concat", new BuiltinFunction(&builtin_concat));
 	Builtins::init("lookup", new BuiltinFunction(&builtin_lookup));
 	Builtins::init("search", new BuiltinFunction(&builtin_search));
 	Builtins::init("version", new BuiltinFunction(&builtin_version));

@@ -237,8 +237,9 @@ HEADERS += src/typedefs.h \
            src/parsersettings.h \
            src/renderer.h \
            src/rendersettings.h \
+           src/colormap.h \
            src/ThrownTogetherRenderer.h \
-           src/CGAL_renderer.h \
+           src/CGAL_OGL_Polyhedron.h \
            src/OGL_helper.h \
            src/QGLView.h \
            src/GLView.h \
@@ -308,6 +309,7 @@ HEADERS += src/typedefs.h \
            src/system-gl.h \
            src/stl-utils.h \
            src/boost-utils.h \
+           src/LibraryInfo.h \
            src/svg.h \
            \
            src/lodepng.h \
@@ -366,6 +368,7 @@ SOURCES += src/version_check.cc \
            src/stl-utils.cc \
            src/boost-utils.cc \
            src/PlatformUtils.cc \
+           src/LibraryInfo.cc \
            \
            src/nodedumper.cc \
            src/traverser.cc \
@@ -392,6 +395,7 @@ SOURCES += src/version_check.cc \
            src/export_png.cc \
            src/import.cc \
            src/renderer.cc \
+           src/colormap.cc \
            src/ThrownTogetherRenderer.cc \
            src/CSGTermEvaluator.cc \
            src/svg.cc \
@@ -440,6 +444,7 @@ HEADERS += src/cgal.h \
            src/Polygon2d-CGAL.h
 
 SOURCES += src/cgalutils.cc \
+           src/cgalutils-tess.cc \
            src/CGALCache.cc \
            src/CGALRenderer.cc \
            src/CGAL_Nef_polyhedron.cc \

@@ -37,6 +37,7 @@
 #include "parsersettings.h"
 #include "rendersettings.h"
 #include "PlatformUtils.h"
+#include "LibraryInfo.h"
 #include "nodedumper.h"
 #include "CocoaUtils.h"
 
@@ -80,6 +81,7 @@ std::string currentdir;
 using std::string;
 using std::vector;
 using boost::lexical_cast;
+using boost::bad_lexical_cast;
 using boost::is_any_of;
 
 class Echostream : public std::ofstream
@@ -109,9 +111,11 @@ static void help(const char *progname)
          "%2%[ --version ] [ --info ] \\\n"
          "%2%[ --camera=translatex,y,z,rotx,y,z,dist | \\\n"
          "%2%  --camera=eyex,y,z,centerx,y,z ] \\\n"
+         "%2%[ --autocenter ] \\\n"
          "%2%[ --viewall ] \\\n"
          "%2%[ --imgsize=width,height ] [ --projection=(o)rtho|(p)ersp] \\\n"
          "%2%[ --render | --preview[=throwntogether] ] \\\n"
+         "%2%[ --colorscheme=[Cornfield|Sunset|Metallic|Starnight|BeforeDawn|Nature|DeepOcean] ] \\\n"
          "%2%[ --csglimit=num ]"
 #ifdef ENABLE_EXPERIMENTAL
          " [ --enable=<feature> ]"
@@ -135,7 +139,7 @@ static void version()
 
 static void info()
 {
-	std::cout << PlatformUtils::info() << "\n\n";
+	std::cout << LibraryInfo::info() << "\n\n";
 
 	CsgInfo csgInfo = CsgInfo();
 	try {
@@ -150,7 +154,7 @@ static void info()
 	exit(0);
 }
 
-Camera get_camera( po::variables_map vm )
+Camera get_camera(po::variables_map vm)
 {
 	Camera camera;
 
@@ -158,13 +162,17 @@ Camera get_camera( po::variables_map vm )
 		vector<string> strs;
 		vector<double> cam_parameters;
 		split(strs, vm["camera"].as<string>(), is_any_of(","));
-		if ( strs.size() == 6 || strs.size() == 7 ) {
-			BOOST_FOREACH(string &s, strs)
-				cam_parameters.push_back(lexical_cast<double>(s));
-			camera.setup( cam_parameters );
+		if ( strs.size()==6 || strs.size()==7 ) {
+			try {
+				BOOST_FOREACH(string &s, strs) cam_parameters.push_back(lexical_cast<double>(s));
+				camera.setup(cam_parameters);
+			}
+			catch (bad_lexical_cast &) {
+				PRINT("Camera setup requires numbers as parameters");
+			}
 		} else {
-			PRINT("Camera setup requires either 7 numbers for Gimbal Camera\n");
-			PRINT("or 6 numbers for Vector Camera\n");
+			PRINT("Camera setup requires either 7 numbers for Gimbal Camera");
+			PRINT("or 6 numbers for Vector Camera");
 			exit(1);
 		}
 	}
@@ -175,6 +183,10 @@ Camera get_camera( po::variables_map vm )
 
 	if (vm.count("viewall")) {
 		camera.viewall = true;
+	}
+
+	if (vm.count("autocenter")) {
+		camera.autocenter = true;
 	}
 
 	if (vm.count("projection")) {
@@ -195,11 +207,16 @@ Camera get_camera( po::variables_map vm )
 		vector<string> strs;
 		split(strs, vm["imgsize"].as<string>(), is_any_of(","));
 		if ( strs.size() != 2 ) {
-			PRINT("Need 2 numbers for imgsize\n");
+			PRINT("Need 2 numbers for imgsize");
 			exit(1);
 		} else {
-			w = lexical_cast<int>( strs[0] );
-			h = lexical_cast<int>( strs[1] );
+			try {
+				w = lexical_cast<int>(strs[0]);
+				h = lexical_cast<int>(strs[1]);
+			}
+			catch (bad_lexical_cast &) {
+				PRINT("Need 2 numbers for imgsize");
+			}
 		}
 	}
 	camera.pixel_width = w;
@@ -222,6 +239,10 @@ static bool checkAndExport(shared_ptr<const Geometry> root_geom, unsigned nd,
 		PRINTB("Current top level object is not a %dD object.", nd);
 		return false;
 	}
+	if (root_geom->isEmpty()) {
+		PRINT("Current top level object is empty.");
+		return false;
+	}
 	exportFileByName(root_geom.get(), format, filename, filename);
 	return true;
 }
@@ -233,8 +254,9 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 	const std::string application_path = QApplication::instance()->applicationDirPath().toLocal8Bit().constData();
 #else
 	const std::string application_path = boosty::stringy(boosty::absolute(boost::filesystem::path(argv[0]).parent_path()));
-#endif
-	parser_init(application_path);
+#endif	
+	PlatformUtils::registerApplicationPath(application_path);
+	parser_init(PlatformUtils::applicationPath());
 	Tree tree;
 #ifdef ENABLE_CGAL
 	GeometryEvaluator geomevaluator(tree);
@@ -517,28 +539,12 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 	qRegisterMetaType<shared_ptr<const Geometry> >();
 	
 	const QString &app_path = app.applicationDirPath();
+	PlatformUtils::registerApplicationPath(app_path.toLocal8Bit().constData());
 
-	QDir exdir(app_path);
-	QString qexamplesdir;
-#ifdef Q_OS_MAC
-	exdir.cd("../Resources"); // Examples can be bundled
-	if (!exdir.exists("examples")) exdir.cd("../../..");
-#elif defined(Q_OS_UNIX)
-	if (exdir.cd("../share/openscad/examples")) {
-		qexamplesdir = exdir.path();
-	} else
-		if (exdir.cd("../../share/openscad/examples")) {
-			qexamplesdir = exdir.path();
-		} else
-			if (exdir.cd("../../examples")) {
-				qexamplesdir = exdir.path();
-			} else
-#endif
-				if (exdir.cd("examples")) {
-					qexamplesdir = exdir.path();
-				}
-	MainWindow::setExamplesDir(qexamplesdir);
-  parser_init(app_path.toLocal8Bit().constData());
+	QDir exdir(QString::fromStdString(PlatformUtils::resourcesPath()));
+	exdir.cd("examples");
+	MainWindow::setExamplesDir(exdir.path());
+  parser_init(PlatformUtils::applicationPath());
 
 #ifdef Q_OS_MAC
 	installAppleEventHandlers();
@@ -613,9 +619,11 @@ int main(int argc, char **argv)
 		("preview", po::value<string>(), "if exporting a png image, do an OpenCSG(default) or ThrownTogether preview")
 		("csglimit", po::value<unsigned int>(), "if exporting a png image, stop rendering at the given number of CSG elements")
 		("camera", po::value<string>(), "parameters for camera when exporting png")
+		("autocenter", "adjust camera to look at object center")
 		("viewall", "adjust camera to fit object")
 		("imgsize", po::value<string>(), "=width,height for exporting png")
 		("projection", po::value<string>(), "(o)rtho or (p)erspective when exporting png")
+		("colorscheme", po::value<string>(), "colorscheme")
 		("debug", po::value<string>(), "special debug info")
 		("o,o", po::value<string>(), "out-file")
 		("s,s", po::value<string>(), "stl-file")
@@ -715,6 +723,19 @@ int main(int argc, char **argv)
 		help(argv[0]);
 	}
 #endif
+
+	if (vm.count("colorscheme")) {
+		std::string colorscheme = vm["colorscheme"].as<string>();
+		if (ColorMap::inst()->findColorScheme(colorscheme)) {
+			RenderSettings::inst()->colorscheme = colorscheme;
+		} else {
+			PRINT("Unknown color scheme. Valid schemes:");
+			BOOST_FOREACH (const std::string &name, ColorMap::inst()->colorSchemeNames()) {
+				PRINT(name);
+			}
+			exit(1);
+		}
+	}
 
 	currentdir = boosty::stringy(fs::current_path());
 

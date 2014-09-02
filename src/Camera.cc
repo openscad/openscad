@@ -1,9 +1,11 @@
 #include "Camera.h"
 #include "rendersettings.h"
+#include "printutils.h"
 
 Camera::Camera(enum CameraType camtype) :
 	type(camtype), projection(Camera::PERSPECTIVE), fov(45), height(60), viewall(false)
 {
+	PRINTD("Camera()");
 	if (this->type == Camera::GIMBAL) {
 		object_trans << 0,0,0;
 		object_rot << 35,0,25;
@@ -15,6 +17,7 @@ Camera::Camera(enum CameraType camtype) :
 	}
 	pixel_width = RenderSettings::inst()->img_width;
 	pixel_height = RenderSettings::inst()->img_height;
+	autocenter = false;
 }
 
 void Camera::setup(std::vector<double> params)
@@ -24,6 +27,7 @@ void Camera::setup(std::vector<double> params)
 		object_trans << params[0], params[1], params[2];
 		object_rot << params[3], params[4], params[5];
 		viewer_distance = params[6];
+		height = params[6];
 	} else if (params.size() == 6) {
 		type = Camera::VECTOR;
 		eye << params[0], params[1], params[2];
@@ -56,6 +60,18 @@ void Camera::viewAll(const BoundingBox &bbox, float scalefactor)
 		this->eye = this->center - Vector3d(1,1,-0.5);
 	}
 
+	if (this->autocenter) {
+		// autocenter = point camera at the center of the bounding box.
+        if (this->type == Camera::GIMBAL) {
+            this->object_trans = -bbox.center(); // for Gimbal cam
+        }
+        else if (this->type == Camera::VECTOR) {
+            Vector3d dir = this->center - this->eye;
+            this->center = bbox.center(); // for Vector cam
+            this->eye = this->center - dir;
+        }
+	}
+
 	switch (this->projection) {
 	case Camera::ORTHOGONAL:
 		this->height = bbox.diagonal().norm();
@@ -76,5 +92,34 @@ void Camera::viewAll(const BoundingBox &bbox, float scalefactor)
 		}
 	}
 		break;
+	}
+	PRINTDB("modified center x y z %f %f %f",center.x() % center.y() % center.z());
+	PRINTDB("modified eye    x y z %f %f %f",eye.x() % eye.y() % eye.z());
+	PRINTDB("modified obj trans x y z %f %f %f",object_trans.x() % object_trans.y() % object_trans.z());
+	PRINTDB("modified obj rot   x y z %f %f %f",object_rot.x() % object_rot.y() % object_rot.z());
+}
+
+void Camera::zoom(int delta)
+{
+	if (this->projection == PERSPECTIVE) {
+		this->viewer_distance *= pow(0.9, delta / 120.0);
+	}
+	else {
+		this->height *= pow(0.9, delta / 120.0);
+	}
+}
+
+void Camera::setProjection(ProjectionType type)
+{
+	if (this->projection != type) {
+		switch (type) {
+		case PERSPECTIVE:
+			this->viewer_distance = this->height;
+			break;
+		case ORTHOGONAL:
+			this->height = this->viewer_distance;
+			break;
+		}
+		this->projection = type;
 	}
 }

@@ -1,5 +1,6 @@
 group() {
 	circle($fn = 0, $fa = 12, $fs = 2, r = 1);
+	circle($fn = 0, $fa = 12, $fs = 2, r = inf);
 	multmatrix([[1, 0, 0, 0], [0, 1, 0, 3], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 		circle($fn = 0, $fa = 12, $fs = 2, r = 1);
 	}

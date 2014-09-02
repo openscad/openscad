@@ -35,18 +35,18 @@
 #include <boost/assign/std/vector.hpp>
 #include <boost/assign/list_of.hpp>
 using namespace boost::assign; // bring 'operator+=()' into scope
+#include "colormap.h"
 
 class ColorModule : public AbstractModule
 {
 public:
-	ColorModule() { }
+	ColorModule() : webcolors(ColorMap::inst()->webColors()) { }
 	virtual AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const;
 
 private:
-	static boost::unordered_map<std::string, Color4f> colormap;
+	const boost::unordered_map<std::string, Color4f> &webcolors;
 };
 
-#include "colormap.h"
 AbstractNode *ColorModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const
 {
 	ColorNode *node = new ColorNode(inst);
@@ -72,11 +72,8 @@ AbstractNode *ColorModule::instantiate(const Context *ctx, const ModuleInstantia
 		std::string colorname = v.toString();
 		boost::algorithm::to_lower(colorname);
 		Color4f color;
-		if (colormap.find(colorname) != colormap.end())	{
-			color = colormap[colorname];
-			node->color[0] = color[0];
-			node->color[1] = color[1];
-			node->color[2] = color[2];
+		if (webcolors.find(colorname) != webcolors.end())	{
+			node->color = webcolors.at(colorname);
 		} else {
 			PRINTB_NOCACHE("WARNING: Color name \"%s\" unknown. Please see", colorname);
 			PRINT_NOCACHE("WARNING: http://en.wikipedia.org/wiki/Web_colors");

@@ -4,6 +4,10 @@
 #include "linalg.h"
 #include <vector>
 
+/*!
+	A single contour.
+	positive is (optionally) used to distinguish between polygon contours and hold contours.
+*/
 struct Outline2d {
 	Outline2d() : positive(true) {}
 	std::vector<Vector2d> vertices;
@@ -19,6 +23,7 @@ public:
 	virtual std::string dump() const;
 	virtual unsigned int getDimension() const { return 2; }
 	virtual bool isEmpty() const;
+	virtual Geometry *copy() const { return new Polygon2d(*this); }
 
 	void addOutline(const Outline2d &outline) { this->theoutlines.push_back(outline); }
 	class PolySet *tessellate() const;

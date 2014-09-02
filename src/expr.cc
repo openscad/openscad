@@ -184,7 +184,11 @@ Value Expression::sub_evaluate_list_comprehension(const Context *context) const
 
 	if (this->call_funcname == "if") {
 		if (this->children[0]->evaluate(context)) {
-			vec.push_back(this->children[1]->evaluate(context));
+			if (this->children[1]->type == "c") {
+				return this->children[1]->evaluate(context);
+			} else {
+				vec.push_back(this->children[1]->evaluate(context));
+			}
 		}
 		return vec;
 	} else if (this->call_funcname == "for") {

@@ -28,6 +28,7 @@
 #include "ModuleCache.h"
 #include "MainWindow.h"
 #include "parsersettings.h"
+#include "rendersettings.h"
 #include "Preferences.h"
 #include "printutils.h"
 #include "node.h"
@@ -55,6 +56,7 @@
 #include "CocoaUtils.h"
 #endif
 #include "PlatformUtils.h"
+#include "LibraryInfo.h"
 
 #include <QMenu>
 #include <QTime>
@@ -96,10 +98,6 @@
 #include "cgal.h"
 #include "cgalworker.h"
 #include "cgalutils.h"
-
-#else
-
-#include "PolySetEvaluator.h"
 
 #endif // ENABLE_CGAL
 
@@ -401,7 +399,6 @@ MainWindow::MainWindow(const QString &filename)
 
 	connect(editor->document(), SIGNAL(contentsChanged()), this, SLOT(animateUpdateDocChanged()));
 	connect(editor->document(), SIGNAL(modificationChanged(bool)), this, SLOT(setWindowModified(bool)));
-	connect(editor->document(), SIGNAL(modificationChanged(bool)), fileActionSave, SLOT(setEnabled(bool)));
 	connect(this->qglview, SIGNAL(doAnimateUpdate()), this, SLOT(animateUpdate()));
 
 	connect(Preferences::inst(), SIGNAL(requestRedraw()), this->qglview, SLOT(updateGL()));
@@ -413,7 +410,12 @@ MainWindow::MainWindow(const QString &filename)
 					this, SLOT(openCSGSettingsChanged()));
 	connect(Preferences::inst(), SIGNAL(syntaxHighlightChanged(const QString&)),
 					editor, SLOT(setHighlightScheme(const QString&)));
+	connect(Preferences::inst(), SIGNAL(colorSchemeChanged(const QString&)), 
+					this, SLOT(setColorScheme(const QString&)));
 	Preferences::inst()->apply();
+
+	QString cs = Preferences::inst()->getValue("3dview/colorscheme").toString();
+	this->setColorScheme(cs);
 
 	connect(this->findTypeComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(selectFindType(int)));
 	connect(this->findInputField, SIGNAL(returnPressed()), this->nextButton, SLOT(animateClick()));
@@ -1171,6 +1173,8 @@ void MainWindow::actionSave()
 		actionSaveAs();
 	}
 	else {
+		if (!editor->isContentModified())
+			return;
 		setCurrentOutput();
 		QFile file(this->fileName);
 		if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text)) {
@@ -1217,16 +1221,16 @@ void MainWindow::actionSaveAs()
 
 void MainWindow::actionShowLibraryFolder()
 {
-	std::string path = PlatformUtils::libraryPath();
+	std::string path = PlatformUtils::userLibraryPath();
 	if (!fs::exists(path)) {
 		PRINTB("WARNING: Library path %s doesnt exist. Creating", path);
-		if (!PlatformUtils::createLibraryPath()) {
+		if (!PlatformUtils::createUserLibraryPath()) {
 			PRINTB("ERROR: Cannot create library path: %s",path);
 		}
 	}
-	QString url = QString::fromStdString( path );
+	QString url = QString::fromStdString(path);
 	//PRINTB("Opening file browser for %s", url.toStdString() );
-	QDesktopServices::openUrl(QUrl::fromLocalFile( url ));
+	QDesktopServices::openUrl(QUrl::fromLocalFile(url));
 }
 
 void MainWindow::actionReload()
@@ -1381,17 +1385,24 @@ void MainWindow::updateCamera()
 		return;
 	
 	bool camera_set = false;
-	double tx = qglview->cam.object_trans.x();
-	double ty = qglview->cam.object_trans.y();
-	double tz = qglview->cam.object_trans.z();
-	double rx = qglview->cam.object_rot.x();
-	double ry = qglview->cam.object_rot.y();
-	double rz = qglview->cam.object_rot.z();
-	double d = qglview->cam.viewer_distance;
+
+	Camera cam(qglview->cam);
+	cam.gimbalDefaultTranslate();
+	double tx = cam.object_trans.x();
+	double ty = cam.object_trans.y();
+	double tz = cam.object_trans.z();
+	double rx = cam.object_rot.x();
+	double ry = cam.object_rot.y();
+	double rz = cam.object_rot.z();
+	double d = cam.viewer_distance;
+
+	ModuleContext mc(&top_ctx, NULL);
+	mc.initializeModule(*root_module);
+
 	BOOST_FOREACH(const Assignment &a, root_module->scope.assignments) {
 		double x, y, z;
 		if ("$vpr" == a.first) {
-			const Value vpr = a.second.get()->evaluate(&top_ctx);
+			const Value vpr = a.second.get()->evaluate(&mc);
 			if (vpr.getVec3(x, y, z)) {
 				rx = x;
 				ry = y;
@@ -1399,7 +1410,7 @@ void MainWindow::updateCamera()
 				camera_set = true;
 			}
 		} else if ("$vpt" == a.first) {
-			const Value vpt = a.second.get()->evaluate(&top_ctx);
+			const Value vpt = a.second.get()->evaluate(&mc);
 			if (vpt.getVec3(x, y, z)) {
 				tx = x;
 				ty = y;
@@ -1407,7 +1418,7 @@ void MainWindow::updateCamera()
 				camera_set = true;
 			}
 		} else if ("$vpd" == a.first) {
-			const Value vpd = a.second.get()->evaluate(&top_ctx);
+			const Value vpd = a.second.get()->evaluate(&mc);
 			if (vpd.type() == Value::NUMBER) {
 				d = vpd.toDouble();
 				camera_set = true;
@@ -1425,6 +1436,7 @@ void MainWindow::updateCamera()
 		params.push_back(rz);
 		params.push_back(d);
 		qglview->cam.setup(params);
+		qglview->cam.gimbalDefaultTranslate();
 		qglview->updateGL();
 	}
 }
@@ -1785,11 +1797,17 @@ void MainWindow::actionExport(export_type_e, QString, QString)
 		return;
 	}
 
-	const CGAL_Nef_polyhedron *N = dynamic_cast<const CGAL_Nef_polyhedron *>(this->root_geom.get());
-	if (N && !N->p3->is_simple()) {
-		PRINT("Object isn't a valid 2-manifold! Modify your design. See http://en.wikibooks.org/wiki/OpenSCAD_User_Manual/STL_Import_and_Export");
+	if (this->root_geom->isEmpty()) {
+		PRINT("Current top level object is empty.");
 		clearCurrentOutput();
 		return;
+	}
+
+	const CGAL_Nef_polyhedron *N = dynamic_cast<const CGAL_Nef_polyhedron *>(this->root_geom.get());
+	if (N && !N->p3->is_simple()) {
+	 	PRINT("Object isn't a valid 2-manifold! Modify your design. See http://en.wikibooks.org/wiki/OpenSCAD_User_Manual/STL_Import_and_Export");
+	 	clearCurrentOutput();
+	 	return;
 	}
 
 	QString title = QString("Export %1 File").arg(type_name);
@@ -1911,7 +1929,7 @@ void MainWindow::actionExportCSG()
 		return;
 	}
 
-	std::ofstream fstream(csg_filename.toUtf8());
+	std::ofstream fstream(csg_filename.toLocal8Bit());
 	if (!fstream.is_open()) {
 		PRINTB("Can't open file \"%s\" for export", csg_filename.toLocal8Bit().constData());
 	}
@@ -1973,6 +1991,7 @@ void MainWindow::viewModePreview()
 		viewModeActionsUncheck();
 		viewActionPreview->setChecked(true);
 		this->qglview->setRenderer(this->opencsgRenderer ? (Renderer *)this->opencsgRenderer : (Renderer *)this->thrownTogetherRenderer);
+		this->qglview->updateColorScheme();
 		this->qglview->updateGL();
 	} else {
 		viewModeThrownTogether();
@@ -1989,6 +2008,7 @@ void MainWindow::viewModeSurface()
 	viewActionSurfaces->setChecked(true);
 	this->qglview->setShowFaces(true);
 	this->qglview->setRenderer(this->cgalRenderer);
+	this->qglview->updateColorScheme();
 	this->qglview->updateGL();
 }
 
@@ -1998,6 +2018,7 @@ void MainWindow::viewModeWireframe()
 	viewActionWireframe->setChecked(true);
 	this->qglview->setShowFaces(false);
 	this->qglview->setRenderer(this->cgalRenderer);
+	this->qglview->updateColorScheme();
 	this->qglview->updateGL();
 }
 
@@ -2008,6 +2029,7 @@ void MainWindow::viewModeThrownTogether()
 	viewModeActionsUncheck();
 	viewActionThrownTogether->setChecked(true);
 	this->qglview->setRenderer(this->thrownTogetherRenderer);
+	this->qglview->updateColorScheme();
 	this->qglview->updateGL();
 }
 
@@ -2265,14 +2287,14 @@ MainWindow::helpManual()
 
 void MainWindow::helpLibrary()
 {
-	QString info( PlatformUtils::info().c_str() );
-	info += QString( qglview->getRendererInfo().c_str() );
+	QString info(LibraryInfo::info().c_str());
+	info += QString(qglview->getRendererInfo().c_str());
 	if (!this->openglbox) {
 		this->openglbox = new QMessageBox(QMessageBox::Information,
                                       "OpenGL Info", "OpenSCAD Detailed Library and Build Information",
                                       QMessageBox::Ok, this);
 	}
-	this->openglbox->setDetailedText( info );
+	this->openglbox->setDetailedText(info);
 	this->openglbox->show();
 }
 
@@ -2344,6 +2366,13 @@ MainWindow::preferences()
 	Preferences::inst()->show();
 	Preferences::inst()->activateWindow();
 	Preferences::inst()->raise();
+}
+
+void MainWindow::setColorScheme(const QString &scheme)
+{
+	RenderSettings::inst()->colorscheme = scheme.toStdString();
+	this->qglview->setColorScheme(scheme.toStdString());
+	this->qglview->updateGL();
 }
 
 void MainWindow::setFont(const QString &family, uint size)

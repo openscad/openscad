@@ -44,6 +44,12 @@
             </item>
             <item>
              <widget class="QListWidget" name="colorSchemeChooser">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Expanding" vsizetype="MinimumExpanding">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
               <property name="alternatingRowColors">
                <bool>false</bool>
               </property>
@@ -63,6 +69,26 @@
               <item>
                <property name="text">
                 <string>Sunset</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Starnight</string>
+               </property>
+              </item>
+		<item>
+               <property name="text">
+                <string>BeforeDawn</string>
+               </property>
+              </item>
+		<item>
+               <property name="text">
+                <string>Nature</string>
+               </property>
+              </item>
+		<item>
+               <property name="text">
+                <string>DeepOcean</string>
                </property>
               </item>
              </widget>
@@ -88,6 +114,9 @@
          <spacer name="verticalSpacer">
           <property name="orientation">
            <enum>Qt::Vertical</enum>
+          </property>
+          <property name="sizeType">
+           <enum>QSizePolicy::Expanding</enum>
           </property>
           <property name="sizeHint" stdset="0">
            <size>
@@ -170,7 +199,7 @@
            <number>0</number>
           </property>
           <item>
-           <widget class="QLabel" name="label_9">
+           <widget class="QLabel" name="label_syntax_h">
             <property name="font">
              <font>
               <weight>75</weight>

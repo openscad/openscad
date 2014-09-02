@@ -80,6 +80,8 @@ std::string parser_source_path;
   AssignmentList *args;
 }
 
+%token TOK_ERROR
+
 %token TOK_MODULE
 %token TOK_FUNCTION
 %token TOK_IF

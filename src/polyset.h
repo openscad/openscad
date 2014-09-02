@@ -26,6 +26,7 @@ public:
 	virtual std::string dump() const;
 	virtual unsigned int getDimension() const { return this->dim; }
 	virtual bool isEmpty() const { return polygons.size() == 0; }
+	virtual Geometry *copy() const { return new PolySet(*this); }
 
 	size_t numPolygons() const { return polygons.size(); }
 	void append_poly();

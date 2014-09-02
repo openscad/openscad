@@ -10,6 +10,7 @@ class CGAL_Nef_polyhedron : public Geometry
 {
 public:
 	CGAL_Nef_polyhedron(CGAL_Nef_polyhedron3 *p = NULL);
+	CGAL_Nef_polyhedron(const CGAL_Nef_polyhedron &src);
 	~CGAL_Nef_polyhedron() {}
 
 	virtual size_t memsize() const;
@@ -19,14 +20,17 @@ public:
 	virtual unsigned int getDimension() const { return 3; }
   // Empty means it is a geometric node which has zero area/volume
 	virtual bool isEmpty() const { return !p3; }
+	virtual Geometry *copy() const { return new CGAL_Nef_polyhedron(*this); }
 
 	void reset() { p3.reset(); }
 	CGAL_Nef_polyhedron &operator+=(const CGAL_Nef_polyhedron &other);
 	CGAL_Nef_polyhedron &operator*=(const CGAL_Nef_polyhedron &other);
 	CGAL_Nef_polyhedron &operator-=(const CGAL_Nef_polyhedron &other);
 	CGAL_Nef_polyhedron &minkowski(const CGAL_Nef_polyhedron &other);
-	CGAL_Nef_polyhedron *copy() const;
-	class PolySet *convertToPolyset() const;
+// FIXME: Deprecated by CGALUtils::createPolySetFromNefPolyhedron3
+//	class PolySet *convertToPolyset() const;
 	void transform( const Transform3d &matrix );
+	void resize(Vector3d newsize, const Eigen::Matrix<bool,3,1> &autosize);
+
 	shared_ptr<CGAL_Nef_polyhedron3> p3;
 };

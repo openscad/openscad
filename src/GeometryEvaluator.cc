@@ -60,7 +60,14 @@ shared_ptr<const Geometry> GeometryEvaluator::evaluateGeometry(const AbstractNod
 
 		if (!allownef) {
 			if (shared_ptr<const CGAL_Nef_polyhedron> N = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(this->root)) {
-				this->root.reset(N->convertToPolyset());
+				PolySet *ps = new PolySet(3);
+				ps->setConvexity(N->getConvexity());
+				this->root.reset(ps);
+				bool err = CGALUtils::createPolySetFromNefPolyhedron3(*N->p3, *ps);
+				if (err) {
+					PRINT("ERROR: Nef->PolySet failed");
+				}
+
 				smartCacheInsert(node, this->root);
 			}
 		}
@@ -160,53 +167,6 @@ Geometry *GeometryEvaluator::applyHull3D(const AbstractNode &node)
 	delete P;
 	return NULL;
 }
-
-void GeometryEvaluator::applyResize3D(CGAL_Nef_polyhedron &N, 
-																			const Vector3d &newsize,
-																			const Eigen::Matrix<bool,3,1> &autosize)
-{
-	// Based on resize() in Giles Bathgate's RapCAD (but not exactly)
-	if (N.isEmpty()) return;
-
-	CGAL_Iso_cuboid_3 bb = CGALUtils::boundingBox(*N.p3);
-
-	std::vector<NT3> scale, bbox_size;
-	for (unsigned int i=0;i<3;i++) {
-		scale.push_back(NT3(1));
-		bbox_size.push_back(bb.max_coord(i) - bb.min_coord(i));
-	}
-	int newsizemax_index = 0;
-	for (unsigned int i=0;i<N.getDimension();i++) {
-		if (newsize[i]) {
-			if (bbox_size[i] == NT3(0)) {
-				PRINT("WARNING: Resize in direction normal to flat object is not implemented");
-				return;
-			}
-			else {
-				scale[i] = NT3(newsize[i]) / bbox_size[i];
-			}
-			if (newsize[i] > newsize[newsizemax_index]) newsizemax_index = i;
-		}
-	}
-
-	NT3 autoscale = NT3(1);
-	if (newsize[newsizemax_index] != 0) {
-		autoscale = NT3(newsize[newsizemax_index]) / bbox_size[newsizemax_index];
-	}
-	for (unsigned int i=0;i<N.getDimension();i++) {
-		if (autosize[i] && newsize[i]==0) scale[i] = autoscale;
-	}
-
-	Eigen::Matrix4d t;
-	t << CGAL::to_double(scale[0]),           0,        0,        0,
-	     0,        CGAL::to_double(scale[1]),           0,        0,
-	     0,        0,        CGAL::to_double(scale[2]),           0,
-	     0,        0,        0,                                   1;
-
-	N.transform(Transform3d(t));
-	return;
-}
-
 
 Polygon2d *GeometryEvaluator::applyMinkowski2D(const AbstractNode &node)
 {
@@ -457,7 +417,7 @@ Response GeometryEvaluator::visit(State &state, const RenderNode &node)
 			else if (shared_ptr<const CGAL_Nef_polyhedron> N = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom)) {
 				// If we got a const object, make a copy
 				shared_ptr<CGAL_Nef_polyhedron> newN;
-				if (res.isConst()) newN.reset(N->copy());
+				if (res.isConst()) newN.reset((CGAL_Nef_polyhedron*)N->copy());
 				else newN = dynamic_pointer_cast<CGAL_Nef_polyhedron>(res.ptr());
 				newN->setConvexity(node.convexity);
 				geom = newN;
@@ -594,7 +554,7 @@ Response GeometryEvaluator::visit(State &state, const TransformNode &node)
 							assert(N);
 							// If we got a const object, make a copy
 							shared_ptr<CGAL_Nef_polyhedron> newN;
-							if (res.isConst()) newN.reset(N->copy());
+							if (res.isConst()) newN.reset((CGAL_Nef_polyhedron*)N->copy());
 							else newN = dynamic_pointer_cast<CGAL_Nef_polyhedron>(res.ptr());
 							newN->transform(node.matrix);
 							geom = newN;
@@ -707,7 +667,7 @@ static Geometry *extrudePolygon(const LinearExtrudeNode &node, const Polygon2d &
 		ps->append(*ps_top);
 		delete ps_top;
 	}
-    size_t slices = node.has_twist ? node.slices : 1;
+    size_t slices = node.slices;
 
 	for (unsigned int j = 0; j < slices; j++) {
 		double rot1 = node.twist*j / slices;
@@ -920,7 +880,7 @@ Response GeometryEvaluator::visit(State &state, const ProjectionNode &node)
 					if (chN) chPS.reset(chN->convertToPolyset());
 					if (chPS) ps2d = PolysetUtils::flatten(*chPS);
 					if (ps2d) {
-						CGAL_Nef_polyhedron *N2d = createNefPolyhedronFromGeometry(*ps2d);
+						CGAL_Nef_polyhedron *N2d = CGALUtils::createNefPolyhedronFromGeometry(*ps2d);
 						poly = N2d->convertToPolygon2d();
 					}
 #endif
@@ -934,7 +894,14 @@ Response GeometryEvaluator::visit(State &state, const ProjectionNode &node)
 					if (!chPS) {
 						shared_ptr<const CGAL_Nef_polyhedron> chN = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(chgeom);
 						if (chN) {
-							chPS.reset(chN->convertToPolyset());
+							PolySet *ps = new PolySet(3);
+							bool err = CGALUtils::createPolySetFromNefPolyhedron3(*chN->p3, *ps);
+							if (err) {
+								PRINT("ERROR: Nef->PolySet failed");
+							}
+							else {
+								chPS.reset(ps);
+							}
 						}
 					}
 					if (chPS) poly = PolysetUtils::project(*chPS);
@@ -962,7 +929,7 @@ Response GeometryEvaluator::visit(State &state, const ProjectionNode &node)
 				if (newgeom) {
 					shared_ptr<const CGAL_Nef_polyhedron> Nptr = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(newgeom);
 					if (!Nptr) {
-						Nptr.reset(createNefPolyhedronFromGeometry(*newgeom));
+						Nptr.reset(CGALUtils::createNefPolyhedronFromGeometry(*newgeom));
 					}
 					if (!Nptr->isEmpty()) {
 						Polygon2d *poly = CGALUtils::project(*Nptr, node.cut_mode);
@@ -995,7 +962,17 @@ Response GeometryEvaluator::visit(State &state, const CgaladvNode &node)
 		if (!isSmartCached(node)) {
 			switch (node.type) {
 			case MINKOWSKI: {
-				geom = applyToChildren(node, OPENSCAD_MINKOWSKI).constptr();
+				ResultObject res = applyToChildren(node, OPENSCAD_MINKOWSKI);
+				geom = res.constptr();
+				// If we added convexity, we need to pass it on
+				if (geom && geom->getConvexity() != node.convexity) {
+					shared_ptr<Geometry> editablegeom;
+					// If we got a const object, make a copy
+					if (res.isConst()) editablegeom.reset(geom->copy());
+					else editablegeom = res.ptr();
+					geom = editablegeom;
+					editablegeom->setConvexity(node.convexity);
+				}
 				break;
 			}
 			case HULL: {
@@ -1005,40 +982,31 @@ Response GeometryEvaluator::visit(State &state, const CgaladvNode &node)
 			case RESIZE: {
 				ResultObject res = applyToChildren(node, OPENSCAD_UNION);
 				geom = res.constptr();
-
-				shared_ptr<const CGAL_Nef_polyhedron> N = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(res.constptr());
-				if (N) {
+				if (geom) {
+					shared_ptr<Geometry> editablegeom;
 					// If we got a const object, make a copy
-					shared_ptr<CGAL_Nef_polyhedron> newN;
-					if (res.isConst()) newN.reset(N->copy());
-					else newN = dynamic_pointer_cast<CGAL_Nef_polyhedron>(res.ptr());
-					applyResize3D(*newN, node.newsize, node.autosize);
-					geom = newN;
-				}
-				else {
-					shared_ptr<const Polygon2d> poly = dynamic_pointer_cast<const Polygon2d>(res.constptr());
-					if (poly) {
-						// If we got a const object, make a copy
-						shared_ptr<Polygon2d> newpoly;
-						if (res.isConst()) newpoly.reset(new Polygon2d(*poly));
-						else newpoly = dynamic_pointer_cast<Polygon2d>(res.ptr());
+					if (res.isConst()) editablegeom.reset(geom->copy());
+					else editablegeom = res.ptr();
+					geom = editablegeom;
 
-						newpoly->resize(Vector2d(node.newsize[0], node.newsize[1]),
-														Eigen::Matrix<bool,2,1>(node.autosize[0], node.autosize[1]));
+					shared_ptr<CGAL_Nef_polyhedron> N = dynamic_pointer_cast<CGAL_Nef_polyhedron>(editablegeom);
+					if (N) {
+						N->resize(node.newsize, node.autosize);
 					}
 					else {
-						shared_ptr<const PolySet> ps = dynamic_pointer_cast<const PolySet>(res.constptr());
-						if (ps) {
-							// If we got a const object, make a copy
-							shared_ptr<PolySet> newps;
-							if (res.isConst()) newps.reset(new PolySet(*ps));
-							else newps = dynamic_pointer_cast<PolySet>(res.ptr());
-
-							newps->resize(node.newsize, node.autosize);
-							geom = newps;
+						shared_ptr<Polygon2d> poly = dynamic_pointer_cast<Polygon2d>(editablegeom);
+						if (poly) {
+							poly->resize(Vector2d(node.newsize[0], node.newsize[1]),
+													 Eigen::Matrix<bool,2,1>(node.autosize[0], node.autosize[1]));
 						}
 						else {
-							assert(false);
+							shared_ptr<PolySet> ps = dynamic_pointer_cast<PolySet>(editablegeom);
+							if (ps) {
+								ps->resize(node.newsize, node.autosize);
+							}
+							else {
+								assert(false);
+							}
 						}
 					}
 				}
