@@ -2,12 +2,35 @@
 #include <QString>
 #include <QChar>
 #include "scintillaeditor.h"
+#include <Qsci/qscicommandset.h>
 #include "Preferences.h"
 
 ScintillaEditor::ScintillaEditor(QWidget *parent) : EditorInterface(parent)
 {
   scintillaLayout = new QVBoxLayout(this);
   qsci = new QsciScintilla(this);
+
+
+  //
+  // Remapping some scintilla key binding which conflict with OpenSCAD global
+  // key bindings, as well as some minor scintilla bugs
+  //
+  QsciCommand *c;
+#ifdef Q_OS_MAC
+  // Alt-Backspace should delete left word (Alt-Delete already deletes right word)
+  c= qsci->standardCommands()->find(QsciCommand::DeleteWordLeft);
+  c->setKey(Qt::Key_Backspace | Qt::ALT);
+#endif
+  // Cmd/Ctrl-T is handled by the menu
+  c = qsci->standardCommands()->boundTo(Qt::Key_T | Qt::CTRL);
+  c->setKey(0);
+  // Cmd/Ctrl-D is handled by the menu
+  c = qsci->standardCommands()->boundTo(Qt::Key_D | Qt::CTRL);
+  c->setKey(0);
+  // Ctrl-Shift-Z should redo on all platforms
+  c= qsci->standardCommands()->find(QsciCommand::Redo);
+  c->setKey(Qt::Key_Z | Qt::CTRL | Qt::SHIFT);
+
   scintillaLayout->setContentsMargins(0, 0, 0, 0);
   scintillaLayout->addWidget(qsci);
 
@@ -305,7 +328,6 @@ void ScintillaEditor::commentSelection()
     for (int line = lineFrom;line <= lineTo;line++) {
 	qsci->insertAt("//", line, 0);
     }
-    qsci->setSelection(lineFrom, 0, lineTo, std::max(0, qsci->lineLength(lineTo) - 1));
 }
 
 void ScintillaEditor::uncommentSelection()
@@ -319,7 +341,6 @@ void ScintillaEditor::uncommentSelection()
 	    qsci->removeSelectedText();
 	}
     }
-    qsci->setSelection(lineFrom, 0, lineTo, std::max(0, qsci->lineLength(lineTo) - 1));
 }
 
 QString ScintillaEditor::selectedText()
