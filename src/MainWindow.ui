@@ -15,16 +15,7 @@
     <property name="spacing">
      <number>0</number>
     </property>
-    <property name="leftMargin">
-     <number>0</number>
-    </property>
-    <property name="topMargin">
-     <number>0</number>
-    </property>
-    <property name="rightMargin">
-     <number>0</number>
-    </property>
-    <property name="bottomMargin">
+    <property name="margin">
      <number>0</number>
     </property>
     <item>
@@ -39,16 +30,7 @@
        <string notr="true"/>
       </property>
       <layout class="QVBoxLayout" name="verticalLayout_3">
-       <property name="leftMargin">
-        <number>0</number>
-       </property>
-       <property name="topMargin">
-        <number>0</number>
-       </property>
-       <property name="rightMargin">
-        <number>0</number>
-       </property>
-       <property name="bottomMargin">
+       <property name="margin">
         <number>0</number>
        </property>
        <item>
@@ -82,16 +64,7 @@
           <number>0</number>
          </property>
          <layout class="QHBoxLayout" name="horizontalLayoutAnimate">
-          <property name="leftMargin">
-           <number>0</number>
-          </property>
-          <property name="topMargin">
-           <number>0</number>
-          </property>
-          <property name="rightMargin">
-           <number>0</number>
-          </property>
-          <property name="bottomMargin">
+          <property name="margin">
            <number>0</number>
           </property>
           <item>
@@ -147,7 +120,7 @@
      <x>0</x>
      <y>0</y>
      <width>936</width>
-     <height>25</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_File">
@@ -297,16 +270,7 @@
    </attribute>
    <widget class="QWidget" name="editorDockContents">
     <layout class="QVBoxLayout" name="verticalLayout_4">
-     <property name="leftMargin">
-      <number>0</number>
-     </property>
-     <property name="topMargin">
-      <number>0</number>
-     </property>
-     <property name="rightMargin">
-      <number>0</number>
-     </property>
-     <property name="bottomMargin">
+     <property name="margin">
       <number>0</number>
      </property>
      <item alignment="Qt::AlignTop">
@@ -330,6 +294,15 @@
         <number>0</number>
        </property>
        <layout class="QGridLayout" name="gridLayout">
+        <property name="topMargin">
+         <number>0</number>
+        </property>
+        <property name="bottomMargin">
+         <number>0</number>
+        </property>
+        <property name="verticalSpacing">
+         <number>0</number>
+        </property>
         <item row="0" column="0">
          <widget class="QComboBox" name="findTypeComboBox">
           <item>
@@ -405,16 +378,7 @@
    </attribute>
    <widget class="QWidget" name="consoleDockContents">
     <layout class="QVBoxLayout" name="verticalLayout_5">
-     <property name="leftMargin">
-      <number>0</number>
-     </property>
-     <property name="topMargin">
-      <number>0</number>
-     </property>
-     <property name="rightMargin">
-      <number>0</number>
-     </property>
-     <property name="bottomMargin">
+     <property name="margin">
       <number>0</number>
      </property>
      <item>
@@ -486,7 +450,7 @@
     <string>Ctrl+Z</string>
    </property>
    <property name="shortcutContext">
-    <enum>Qt::WidgetWithChildrenShortcut</enum>
+    <enum>Qt::WindowShortcut</enum>
    </property>
   </action>
   <action name="editActionRedo">
@@ -497,7 +461,7 @@
     <string>Ctrl+Shift+Z</string>
    </property>
    <property name="shortcutContext">
-    <enum>Qt::WidgetWithChildrenShortcut</enum>
+    <enum>Qt::WindowShortcut</enum>
    </property>
   </action>
   <action name="editActionCut">
@@ -508,7 +472,7 @@
     <string>Ctrl+X</string>
    </property>
    <property name="shortcutContext">
-    <enum>Qt::WidgetWithChildrenShortcut</enum>
+    <enum>Qt::WindowShortcut</enum>
    </property>
   </action>
   <action name="editActionCopy">
@@ -519,7 +483,7 @@
     <string>Ctrl+C</string>
    </property>
    <property name="shortcutContext">
-    <enum>Qt::WidgetWithChildrenShortcut</enum>
+    <enum>Qt::WindowShortcut</enum>
    </property>
   </action>
   <action name="editActionPaste">
@@ -530,7 +494,7 @@
     <string>Ctrl+V</string>
    </property>
    <property name="shortcutContext">
-    <enum>Qt::WidgetWithChildrenShortcut</enum>
+    <enum>Qt::WindowShortcut</enum>
    </property>
   </action>
   <action name="editActionIndent">
@@ -800,9 +764,6 @@
   <action name="viewActionCenter">
    <property name="text">
     <string>Center</string>
-   </property>
-   <property name="shortcut">
-    <string>Ctrl+P</string>
    </property>
   </action>
   <action name="viewActionPerspective">
