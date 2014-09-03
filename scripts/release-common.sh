@@ -361,6 +361,9 @@ if [ -n $FONTDIR ]; then
     MACOSX) 
       cp -a fonts-osx/* $FONTDIR
       ;;
+    UNIX_CROSS_WIN)
+      cp -a "$DEPLOYDIR"/mingw-cross-env/etc/fonts/. "$FONTDIR"
+      ;;
   esac
 fi
 if [ -n $LIBRARYDIR ]; then
