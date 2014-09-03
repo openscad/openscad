@@ -314,6 +314,7 @@ FT_Face FontCache::find_face_fontconfig(const std::string font)
 	
 	FT_Face face;
 	FT_Error error = FT_New_Face(library, (const char *) file_value.u.s, font_index.u.i, &face);
+	PRINTDB("font file = %s", (const char *) file_value.u.s);
 
 	FcPatternDestroy(pattern);
 	FcPatternDestroy(match);
