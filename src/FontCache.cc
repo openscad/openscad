@@ -110,14 +110,6 @@ FontCache::FontCache()
 
 	const char *home = getenv("HOME");
 
-#ifdef WIN32
-	// Add Window font folders.
-	const char *windir = getenv("WinDir");
-	if (windir) {
-		add_font_dir(std::string(windir) + "\\Fonts");
-	}
-#endif
-
 	// Add Linux font folders, the system folders are expected to be
 	// configured by the system configuration for fontconfig.
 	if (home) {
@@ -298,8 +290,9 @@ FT_Face FontCache::find_face_fontconfig(const std::string font)
 	FcPattern *pattern = FcNameParse((unsigned char *) font.c_str());
 	init_pattern(pattern);
 
+	FcConfigSubstitute(config, pattern, FcMatchPattern);
 	FcDefaultSubstitute(pattern);
-	FcConfigSubstitute(config, pattern, FcMatchFont);
+
 	FcPattern *match = FcFontMatch(config, pattern, &result);
 
 	FcValue file_value;
