@@ -91,7 +91,7 @@ FontCache::FontCache()
 	// For system installs and dev environments, we leave this alone
 	fs::path fontdir(fs::path(PlatformUtils::resourcesPath()) / "fonts");
 	if (fs::is_regular_file(fontdir / "fonts.conf")) {
-		setenv("FONTCONFIG_PATH", boosty::stringy(boosty::absolute(fontdir)).c_str(), 0);
+		PlatformUtils::setenv("FONTCONFIG_PATH", boosty::stringy(boosty::absolute(fontdir)).c_str(), 0);
 	}
 
 	// Just load the configs. We'll build the fonts once all configs are loaded
