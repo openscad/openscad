@@ -298,8 +298,9 @@ FT_Face FontCache::find_face_fontconfig(const std::string font)
 	FcPattern *pattern = FcNameParse((unsigned char *) font.c_str());
 	init_pattern(pattern);
 
+	FcConfigSubstitute(config, pattern, FcMatchPattern);
 	FcDefaultSubstitute(pattern);
-	FcConfigSubstitute(config, pattern, FcMatchFont);
+
 	FcPattern *match = FcFontMatch(config, pattern, &result);
 
 	FcValue file_value;
