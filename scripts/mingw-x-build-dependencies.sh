@@ -63,14 +63,14 @@ git checkout master
 if [ "`echo $* | grep 64`" ]; then
  MXE_TARGETS='x86_64-w64-mingw32.static'
  if [ "`echo $* | grep download`" ]; then
-  PACKAGES='download-mpfr download-eigen download-opencsg download-cgal download-qt download-qt5 download-glib download-freetype download-fontconfig download-harfbuzz'
+  PACKAGES='download-mpfr download-eigen download-opencsg download-cgal download-qtbase download-glib download-freetype download-fontconfig download-harfbuzz'
  else
   PACKAGES='qtbase qscintilla2 mpfr eigen opencsg cgal glib freetype fontconfig harfbuzz'
  fi
 else
  MXE_TARGETS='i686-w64-mingw32.static'
  if [ "`echo $* | grep download`" ]; then
-  PACKAGES='download-mpfr download-eigen download-opencsg download-cgal download-qt download-qt5 download-nsis download-glib download-freetype download-fontconfig download-harfbuzz'
+  PACKAGES='download-mpfr download-eigen download-opencsg download-cgal download-qtbase download-nsis download-glib download-freetype download-fontconfig download-harfbuzz'
  else
   PACKAGES='qtbase qscintilla2 mpfr eigen opencsg cgal nsis glib freetype fontconfig harfbuzz'
  fi

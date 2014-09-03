@@ -1,3 +1,5 @@
+#include <stdlib.h>
+
 #include "PlatformUtils.h"
 #include "boosty.h"
 #include <Eigen/Core>
@@ -126,4 +128,20 @@ std::string PlatformUtils::resourcesPath()
 #endif
 	// resourcedir defaults to applicationPath
 	return boosty::stringy(boosty::canonical(resourcedir));
+}
+
+int PlatformUtils::setenv(const char *name, const char *value, int overwrite)
+{
+#if defined(WIN32)
+    const char *ptr = getenv(name);
+    if ((overwrite == 0) && (ptr != NULL)) {
+	return 0;
+    }
+
+    char buf[4096];
+    snprintf(buf, sizeof(buf), "%s=%s", name, value);
+    return _putenv(buf);
+#else
+    return ::setenv(name, value, overwrite);
+#endif
 }
