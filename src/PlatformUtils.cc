@@ -3,6 +3,9 @@
 #include "PlatformUtils.h"
 #include "boosty.h"
 #include <Eigen/Core>
+#ifdef USE_SCINTILLA_EDITOR
+#include <Qsci/qsciglobal.h>
+#endif
 
 extern std::vector<std::string> librarypath;
 extern std::vector<std::string> fontpath;

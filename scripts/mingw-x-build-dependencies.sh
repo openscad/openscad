@@ -65,14 +65,14 @@ if [ "`echo $* | grep 64`" ]; then
  if [ "`echo $* | grep download`" ]; then
   PACKAGES='download-mpfr download-eigen download-opencsg download-cgal download-qtbase download-glib download-freetype download-fontconfig download-harfbuzz'
  else
-  PACKAGES='qtbase mpfr eigen opencsg cgal glib freetype fontconfig harfbuzz'
+  PACKAGES='qtbase qscintilla2 mpfr eigen opencsg cgal glib freetype fontconfig harfbuzz'
  fi
 else
  MXE_TARGETS='i686-w64-mingw32.static'
  if [ "`echo $* | grep download`" ]; then
   PACKAGES='download-mpfr download-eigen download-opencsg download-cgal download-qtbase download-nsis download-glib download-freetype download-fontconfig download-harfbuzz'
  else
-  PACKAGES='qtbase mpfr eigen opencsg cgal nsis glib freetype fontconfig harfbuzz'
+  PACKAGES='qtbase qscintilla2 mpfr eigen opencsg cgal nsis glib freetype fontconfig harfbuzz'
  fi
 fi
 echo make $PACKAGES MXE_TARGETS=$MXE_TARGETS -j $NUMCPU JOBS=$NUMJOBS

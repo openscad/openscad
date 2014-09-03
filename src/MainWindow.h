@@ -7,6 +7,7 @@
 #include "module.h"
 #include "Tree.h"
 #include "memory.h"
+#include "editor.h"
 #include <vector>
 #include <QMutex>
 #include <QSet>
@@ -65,6 +66,9 @@ public:
 	static const int maxRecentFiles = 10;
 	QAction *actionRecentFile[maxRecentFiles];
         QMap<QString, QString> knownFileExtensions;
+	
+	QString editortype;	
+	bool useScintilla;
 
 	MainWindow(const QString &filename);
 	~MainWindow();
@@ -105,6 +109,8 @@ private:
 	void show_examples();
 	void setDockWidgetTitle(QDockWidget *dockWidget, QString prefix, bool topLevel);
 
+	EditorInterface *editor;
+
   class QMessageBox *openglbox;
   class FontListDialog *font_list_dialog;
 
@@ -135,14 +141,13 @@ private slots:
 private slots:
 	void selectFindType(int);
 	void find();
+	void findString(QString);
 	void findAndReplace();
 	void findNext();
 	void findPrev();
-	void useSelectionForFind();
 	void replace();
 	void replaceAll();
 protected:
-	bool findOperation(QTextDocument::FindFlags options = 0);
 	virtual bool eventFilter(QObject* obj, QEvent *event);
 
 private slots:

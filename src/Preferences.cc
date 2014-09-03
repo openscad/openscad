@@ -66,6 +66,7 @@ Preferences::Preferences(QWidget *parent) : QMainWindow(parent)
 	this->defaultmap["editor/fontfamily"] = found_family;
  	this->defaultmap["editor/fontsize"] = 12;
 	this->defaultmap["editor/syntaxhighlight"] = "For Light Background";
+	this->defaultmap["editor/editortype"] = "Simple Editor";
 
 #if defined (Q_OS_MAC)
 	this->defaultmap["editor/ctrlmousewheelzoom"] = false;
@@ -85,9 +86,12 @@ Preferences::Preferences(QWidget *parent) : QMainWindow(parent)
 	connect(this->fontSize, SIGNAL(currentIndexChanged(const QString&)),
 					this, SLOT(on_fontSize_editTextChanged(const QString &)));
 
+	connect(this->editorType, SIGNAL(currentIndexChanged(const QString&)),
+					this, SLOT(on_editorType_editTextChanged(const QString &)));
+
 	// reset GUI fontsize if fontSize->addItem emitted signals that changed it.
 	this->fontSize->setEditText( QString("%1").arg( savedsize ) );
-
+	
 	// Setup default settings
 	this->defaultmap["advanced/opencsg_show_warning"] = true;
 	this->defaultmap["advanced/enable_opencsg_opengl1x"] = true;
@@ -261,6 +265,12 @@ void Preferences::on_fontSize_editTextChanged(const QString &size)
 	emit fontChanged(getValue("editor/fontfamily").toString(), intsize);
 }
 
+void Preferences::on_editorType_editTextChanged(const QString &type)
+{
+	QSettings settings;
+	settings.setValue("editor/editortype", type);
+}
+
 void Preferences::on_syntaxHighlight_currentIndexChanged(const QString &s)
 {
 	QSettings settings;
@@ -429,6 +439,10 @@ void Preferences::updateGUI()
 	QString shighlight = getValue("editor/syntaxhighlight").toString();
 	int shidx = this->syntaxHighlight->findText(shighlight);
 	if (shidx >= 0) this->syntaxHighlight->setCurrentIndex(shidx);
+
+	QString editortypevar = getValue("editor/editortype").toString();
+	int edidx = this->editorType->findText(editortypevar);
+	if (edidx >=0) this->editorType->setCurrentIndex(edidx);
 
 	this->mouseWheelZoomBox->setChecked(getValue("editor/ctrlmousewheelzoom").toBool());
 

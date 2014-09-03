@@ -35,7 +35,7 @@ public slots:
 	void on_mdiCheckBox_toggled(bool);
 	void on_undockCheckBox_toggled(bool);
 	void on_checkNowButton_clicked();
-
+	void on_editorType_editTextChanged(const QString &);
 signals:
 	void requestRedraw() const;
 	void updateMdiMode(bool mdi) const;
@@ -44,6 +44,7 @@ signals:
 	void colorSchemeChanged(const QString &scheme) const;
 	void openCSGSettingsChanged() const;
 	void syntaxHighlightChanged(const QString &s);
+	void editorTypeChanged(const QString &type);
 
 private:
 	Preferences(QWidget *parent = NULL);
