@@ -47,6 +47,7 @@
 
 #ifdef ENABLE_CGAL
 #include "CGAL_Nef_polyhedron.h"
+#include "cgalutils.h"
 #endif
 
 #include "csgterm.h"
@@ -75,7 +76,7 @@
 
 namespace po = boost::program_options;
 namespace fs = boost::filesystem;
-namespace Render { enum type { CGAL, OPENCSG, THROWNTOGETHER }; };
+namespace Render { enum type { GEOMETRY, CGAL, OPENCSG, THROWNTOGETHER }; };
 std::string commandline_commands;
 std::string currentdir;
 using std::string;
@@ -385,15 +386,22 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 	}
 	else {
 #ifdef ENABLE_CGAL
-		if ((echo_output_file || png_output_file) && !(renderer==Render::CGAL)) {
-			// echo or OpenCSG png -> don't necessarily need CGALMesh evaluation
+		if ((echo_output_file || png_output_file) &&
+				(renderer==Render::OPENCSG || renderer==Render::THROWNTOGETHER)) {
+			// echo or OpenCSG png -> don't necessarily need geometry evaluation
 		} else {
 			root_geom = geomevaluator.evaluateGeometry(*tree.root(), true);
 			if (!root_geom) {
 				PRINT("No top-level object found.");
 				return 1;
 			}
-			const CGAL_Nef_polyhedron *N = dynamic_cast<const CGAL_Nef_polyhedron*>(root_geom.get());
+			if (renderer == Render::CGAL && root_geom->getDimension() == 3) {
+				const CGAL_Nef_polyhedron *N = dynamic_cast<const CGAL_Nef_polyhedron*>(root_geom.get());
+				if (!N) {
+					root_geom.reset(CGALUtils::createNefPolyhedronFromGeometry(*root_geom));
+					PRINT("Converted to Nef polyhedron");
+				}
+			}
 		}
 
 		fs::current_path(original_path);
@@ -450,8 +458,8 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 				PRINTB("Can't open file \"%s\" for export", png_output_file);
 			}
 			else {
-				if (renderer==Render::CGAL) {
-					export_png(root_geom.get(), camera, fstream);
+				if (renderer==Render::CGAL || renderer==Render::GEOMETRY) {
+					export_png(root_geom, camera, fstream);
 				} else if (renderer==Render::THROWNTOGETHER) {
 					export_png_with_throwntogether(tree, camera, fstream);
 				} else {
@@ -615,8 +623,8 @@ int main(int argc, char **argv)
 		("help,h", "help message")
 		("version,v", "print the version")
 		("info", "print information about the building process")
-		("render", "if exporting a png image, do a full CGAL render")
-		("preview", po::value<string>(), "if exporting a png image, do an OpenCSG(default) or ThrownTogether preview")
+		("render", po::value<string>()->implicit_value(""), "if exporting a png image, do a full geometry evaluation")
+		("preview", po::value<string>()->implicit_value(""), "if exporting a png image, do an OpenCSG(default) or ThrownTogether preview")
 		("csglimit", po::value<unsigned int>(), "if exporting a png image, stop rendering at the given number of CSG elements")
 		("camera", po::value<string>(), "parameters for camera when exporting png")
 		("autocenter", "adjust camera to look at object center")
@@ -665,11 +673,14 @@ int main(int argc, char **argv)
 	if (vm.count("info")) info();
 
 	Render::type renderer = Render::OPENCSG;
-	if (vm.count("render"))
-		renderer = Render::CGAL;
-	if (vm.count("preview"))
+	if (vm.count("preview")) {
 		if (vm["preview"].as<string>() == "throwntogether")
 			renderer = Render::THROWNTOGETHER;
+	}
+	else if (vm.count("render")) {
+		if (vm["render"].as<string>() == "cgal") renderer = Render::CGAL;
+		else renderer = Render::GEOMETRY;
+	}
 
 	if (vm.count("csglimit")) {
 		RenderSettings::inst()->openCSGTermLimit = vm["csglimit"].as<unsigned int>();
