@@ -1,6 +1,8 @@
 #pragma once
 
+#include <QMap>
 #include <QObject>
+#include <QString>
 #include <QWidget>
 #include <QVBoxLayout>
 #include <Qsci/qsciscintilla.h>
@@ -9,12 +11,36 @@
 #include "scadlexer.h"
 #include "parsersettings.h"
 
+#include <boost/shared_ptr.hpp>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
 
-class ScintillaEditor : public EditorInterface
+class EditorColorScheme
 {
+private:
+        const fs::path path;
+        
+        boost::property_tree::ptree pt;
+        QString _name;
+        int _index;
+        
+public:
+        EditorColorScheme(const fs::path path);
+        virtual ~EditorColorScheme();
+        
+        const QString & name() const;
+        int index() const;
+        bool valid() const;
+        const boost::property_tree::ptree & propertyTree() const;
+        
+};
+
+class ScintillaEditor : public EditorInterface
+{        
 	Q_OBJECT;
+
+        typedef std::multimap<int, boost::shared_ptr<EditorColorScheme>, std::less<int> > colorscheme_set_t;
+        
 public:
 	ScintillaEditor(QWidget *parent);
 	virtual ~ScintillaEditor() {}
@@ -29,10 +55,11 @@ public:
 	QStringList colorSchemes();
         
 private:
-        void get_range(int *lineFrom, int *lineTo);
-        void read_colormap(const boost::filesystem::path path);
-        int read_int(boost::property_tree::ptree &pt, const std::string name, const int defaultValue);
-        QColor read_color(boost::property_tree::ptree &pt, const std::string name, const QColor defaultColor);
+        void getRange(int *lineFrom, int *lineTo);
+        void setColormap(const EditorColorScheme *colorScheme);
+        int readInt(const boost::property_tree::ptree &pt, const std::string name, const int defaultValue);
+        QColor readColor(const boost::property_tree::ptree &pt, const std::string name, const QColor defaultColor);
+        colorscheme_set_t enumerateColorSchemes();
 	
 public slots:
 	void zoomIn();
