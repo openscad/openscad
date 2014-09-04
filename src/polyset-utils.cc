@@ -213,15 +213,16 @@ namespace PolysetUtils {
 	 polyset has simple polygon faces with no holes, no self intersections, no
 	 duplicate points, and proper orientation. */
 	void tessellate_faces(const PolySet &inps, PolySet &outps) {
+		int degeneratePolygons = 0;
 		for (size_t i = 0; i < inps.polygons.size(); i++) {
 			const PolySet::Polygon pgon = inps.polygons[i];
-			if (pgon.size()<3) {
-				PRINT("WARNING: PolySet has polygon with <3 points");
+			if (pgon.size() < 3) {
+				degeneratePolygons++;
 				continue;
 			}
 			projection_t goodproj = find_good_projection( pgon );
 			if (goodproj==NONE) {
-				PRINT("WARNING: PolySet has degenerate polygon");
+				degeneratePolygons++;
 				continue;
 			}
 			std::vector<PolySet::Polygon> triangles;
@@ -234,6 +235,7 @@ namespace PolysetUtils {
 					outps.append_vertex(t[2].x(),t[2].y(),t[2].z());
 				}
 		}
+		if (degeneratePolygons > 0) PRINT("WARNING: PolySet has degenerate polygons");
 	}
 }
 
