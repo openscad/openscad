@@ -1792,9 +1792,7 @@ void MainWindow::actionExport(export_type_e, QString, QString)
 
 	const CGAL_Nef_polyhedron *N = dynamic_cast<const CGAL_Nef_polyhedron *>(this->root_geom.get());
 	if (N && !N->p3->is_simple()) {
-	 	PRINT("Object isn't a valid 2-manifold! Modify your design. See http://en.wikibooks.org/wiki/OpenSCAD_User_Manual/STL_Import_and_Export");
-	 	clearCurrentOutput();
-	 	return;
+	 	PRINT("Warning: Object may not be a valid 2-manifold and may need repair! See http://en.wikibooks.org/wiki/OpenSCAD_User_Manual/STL_Import_and_Export");
 	}
 
 	QString title = QString("Export %1 File").arg(type_name);
