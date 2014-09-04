@@ -66,7 +66,7 @@ Preferences::Preferences(QWidget *parent) : QMainWindow(parent)
 	this->defaultmap["editor/fontfamily"] = found_family;
  	this->defaultmap["editor/fontsize"] = 12;
 	this->defaultmap["editor/syntaxhighlight"] = "For Light Background";
-	this->defaultmap["editor/editortype"] = "Simple Editor";
+	this->defaultmap["editor/editortype"] = "QScintilla Editor";
 
 #if defined (Q_OS_MAC)
 	this->defaultmap["editor/ctrlmousewheelzoom"] = false;
