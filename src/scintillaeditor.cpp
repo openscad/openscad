@@ -6,6 +6,44 @@
 #include "Preferences.h"
 #include "PlatformUtils.h"
 
+EditorColorScheme::EditorColorScheme(fs::path path) : path(path)
+{
+    try {
+	boost::property_tree::read_json(boosty::stringy(path).c_str(), pt);
+	_name = QString(pt.get<std::string>("name").c_str());
+	_index = pt.get<int>("index");
+    } catch (const std::exception & e) {
+	PRINTB("Error reading color scheme file '%s': %s", path.c_str() % e.what());
+	_name = "";
+	_index = 0;
+    }
+}
+
+EditorColorScheme::~EditorColorScheme()
+{
+    
+}
+
+bool EditorColorScheme::valid() const
+{
+    return !_name.isEmpty();
+}
+
+const QString & EditorColorScheme::name() const
+{
+    return _name;
+}
+
+int EditorColorScheme::index() const
+{
+    return _index;
+}
+
+const boost::property_tree::ptree & EditorColorScheme::propertyTree() const
+{
+    return pt;
+}
+
 ScintillaEditor::ScintillaEditor(QWidget *parent) : EditorInterface(parent)
 {
   scintillaLayout = new QVBoxLayout(this);
@@ -99,18 +137,17 @@ void ScintillaEditor::unhighlightLastError()
   qsci->markerDeleteAll(markerNumber);
 }
 
-QColor ScintillaEditor::read_color(boost::property_tree::ptree &pt, const std::string name, const QColor defaultColor)
+QColor ScintillaEditor::readColor(const boost::property_tree::ptree &pt, const std::string name, const QColor defaultColor)
 {
     try {
 	const std::string val = pt.get<std::string>(name);
 	return QColor(val.c_str());
     } catch (std::exception e) {
-	//std::cout << "read_color('" << name << "') failed" << std::endl;
 	return defaultColor;
     }
 }
 
-int ScintillaEditor::read_int(boost::property_tree::ptree &pt, const std::string name, const int defaultValue)
+int ScintillaEditor::readInt(const boost::property_tree::ptree &pt, const std::string name, const int defaultValue)
 {
     try {
 	const int val = pt.get<int>(name);
@@ -120,46 +157,45 @@ int ScintillaEditor::read_int(boost::property_tree::ptree &pt, const std::string
     }
 }
 
-void ScintillaEditor::read_colormap(const fs::path path)
+void ScintillaEditor::setColormap(const EditorColorScheme *colorScheme)
 {
-    boost::property_tree::ptree pt;
+    const boost::property_tree::ptree & pt = colorScheme->propertyTree();
 
     try {
-	boost::property_tree::read_json(boosty::stringy(path).c_str(), pt);
 	const QColor textColor(pt.get<std::string>("text").c_str());
 	const QColor paperColor(pt.get<std::string>("paper").c_str());
 
 	lexer->setColor(textColor);
 	lexer->setPaper(paperColor);
 
-        boost::property_tree::ptree& colors = pt.get_child("colors");
-	lexer->setColor(read_color(colors, "keyword1", textColor), QsciLexerCPP::Keyword);
-	lexer->setColor(read_color(colors, "keyword2", textColor), QsciLexerCPP::KeywordSet2);
-	lexer->setColor(read_color(colors, "keyword3", textColor), QsciLexerCPP::GlobalClass);
-	lexer->setColor(read_color(colors, "comment", textColor), QsciLexerCPP::CommentDocKeyword);
-	lexer->setColor(read_color(colors, "number", textColor), QsciLexerCPP::Number);
-	lexer->setColor(read_color(colors, "string", textColor), QsciLexerCPP::DoubleQuotedString);
-	lexer->setColor(read_color(colors, "operator", textColor), QsciLexerCPP::Operator);
-	lexer->setColor(read_color(colors, "commentline", textColor), QsciLexerCPP::CommentLine);
+        const boost::property_tree::ptree& colors = pt.get_child("colors");
+	lexer->setColor(readColor(colors, "keyword1", textColor), QsciLexerCPP::Keyword);
+	lexer->setColor(readColor(colors, "keyword2", textColor), QsciLexerCPP::KeywordSet2);
+	lexer->setColor(readColor(colors, "keyword3", textColor), QsciLexerCPP::GlobalClass);
+	lexer->setColor(readColor(colors, "comment", textColor), QsciLexerCPP::CommentDocKeyword);
+	lexer->setColor(readColor(colors, "number", textColor), QsciLexerCPP::Number);
+	lexer->setColor(readColor(colors, "string", textColor), QsciLexerCPP::DoubleQuotedString);
+	lexer->setColor(readColor(colors, "operator", textColor), QsciLexerCPP::Operator);
+	lexer->setColor(readColor(colors, "commentline", textColor), QsciLexerCPP::CommentLine);
 
-        boost::property_tree::ptree& caret = pt.get_child("caret");
+        const boost::property_tree::ptree& caret = pt.get_child("caret");
 	
-	qsci->setCaretWidth(read_int(caret, "width", 1));
-	qsci->setCaretForegroundColor(read_color(caret, "foreground", textColor));
-	qsci->setCaretLineBackgroundColor(read_color(caret, "line-background", paperColor));
+	qsci->setCaretWidth(readInt(caret, "width", 1));
+	qsci->setCaretForegroundColor(readColor(caret, "foreground", textColor));
+	qsci->setCaretLineBackgroundColor(readColor(caret, "line-background", paperColor));
 
-	qsci->setMarkerBackgroundColor(read_color(colors, "error-marker", QColor(255, 0, 0, 100)), markerNumber);
-	qsci->setMarginsBackgroundColor(read_color(colors, "margin-background", paperColor));
-	qsci->setMarginsForegroundColor(read_color(colors, "margin-foreground", textColor));
-	qsci->setMatchedBraceBackgroundColor(read_color(colors, "matched-brace-background", paperColor));
-	qsci->setMatchedBraceForegroundColor(read_color(colors, "matched-brace-foreground", textColor));
-	qsci->setUnmatchedBraceBackgroundColor(read_color(colors, "unmatched-brace-background", paperColor));
-	qsci->setUnmatchedBraceForegroundColor(read_color(colors, "unmatched-brace-foreground", textColor));
-	qsci->setSelectionForegroundColor(read_color(colors, "selection-foreground", paperColor));
-	qsci->setSelectionBackgroundColor(read_color(colors, "selection-background", textColor));
-        qsci->setFoldMarginColors(read_color(colors, "margin-foreground", textColor),
-		read_color(colors, "margin-background", paperColor));
-	qsci->setEdgeColor(read_color(colors, "edge", textColor));
+	qsci->setMarkerBackgroundColor(readColor(colors, "error-marker", QColor(255, 0, 0, 100)), markerNumber);
+	qsci->setMarginsBackgroundColor(readColor(colors, "margin-background", paperColor));
+	qsci->setMarginsForegroundColor(readColor(colors, "margin-foreground", textColor));
+	qsci->setMatchedBraceBackgroundColor(readColor(colors, "matched-brace-background", paperColor));
+	qsci->setMatchedBraceForegroundColor(readColor(colors, "matched-brace-foreground", textColor));
+	qsci->setUnmatchedBraceBackgroundColor(readColor(colors, "unmatched-brace-background", paperColor));
+	qsci->setUnmatchedBraceForegroundColor(readColor(colors, "unmatched-brace-foreground", textColor));
+	qsci->setSelectionForegroundColor(readColor(colors, "selection-foreground", paperColor));
+	qsci->setSelectionBackgroundColor(readColor(colors, "selection-background", textColor));
+        qsci->setFoldMarginColors(readColor(colors, "margin-foreground", textColor),
+		readColor(colors, "margin-background", paperColor));
+	qsci->setEdgeColor(readColor(colors, "edge", textColor));
     } catch (std::exception e) {
 	noColor();
     }
@@ -187,15 +223,12 @@ void ScintillaEditor::noColor()
     qsci->setEdgeColor(Qt::black);
 }
 
-QStringList ScintillaEditor::colorSchemes()
+ScintillaEditor::colorscheme_set_t ScintillaEditor::enumerateColorSchemes()
 {
-    typedef std::multimap<int, QString> result_set_t;
-    result_set_t result_set;
-
     const fs::path resources = PlatformUtils::resourcesPath();
     const fs::path color_schemes = resources / "color-schemes" / "editor";
 
-    QStringList colorSchemes;
+    colorscheme_set_t result_set;
     fs::directory_iterator end_iter;
     
     if (fs::exists(color_schemes) && fs::is_directory(color_schemes)) {
@@ -205,27 +238,30 @@ QStringList ScintillaEditor::colorSchemes()
 	    }
 	    
 	    const fs::path path = (*dir_iter).path();
-	    const fs::path ext = path.extension();
 	    if (!(path.extension().string() == ".json")) {
 		continue;
 	    }
-
-	    boost::property_tree::ptree pt;
-	    try {
-		boost::property_tree::read_json(boosty::stringy(path).c_str(), pt);
-		QString name = QString(pt.get<std::string>("name").c_str());
-		int index = pt.get<int>("index");
-		result_set.insert(result_set_t::value_type(index, name));
-	    } catch (const std::exception & e) {
-		PRINTB("Error reading color scheme file '%s': %s", path.c_str() % e.what());
+	    
+	    EditorColorScheme *colorScheme = new EditorColorScheme(path);
+	    if (colorScheme->valid()) {
+		result_set.insert(colorscheme_set_t::value_type(colorScheme->index(), boost::shared_ptr<EditorColorScheme>(colorScheme)));
+	    } else {
+		delete colorScheme;
 	    }
 	}
     }
     
-    for (result_set_t::iterator it = result_set.begin();it != result_set.end();it++) {
-        colorSchemes <<  (*it).second;
-    }
+    return result_set;
+}
 
+QStringList ScintillaEditor::colorSchemes()
+{
+    const colorscheme_set_t colorscheme_set = enumerateColorSchemes();
+
+    QStringList colorSchemes;
+    for (colorscheme_set_t::const_iterator it = colorscheme_set.begin();it != colorscheme_set.end();it++) {
+        colorSchemes <<  (*it).second.get()->name();
+    }
     colorSchemes << "Off";
 	
     return colorSchemes;
@@ -233,20 +269,17 @@ QStringList ScintillaEditor::colorSchemes()
 
 void ScintillaEditor::setHighlightScheme(const QString &name)
 {
-    fs::path resources = PlatformUtils::resourcesPath();
-    fs::path color_schemes = resources / "color-schemes" / "editor";
-    
-    if (name == "For Light Background") {
-	read_colormap(color_schemes / "light-background.json");
-    } else if (name == "For Dark Background") {
-	read_colormap(color_schemes / "dark-background.json");
-    } else if (name == "Monokai") {
-	read_colormap(color_schemes / "monokai.json");
-    } else if (name == "Solarized") {
-	read_colormap(color_schemes / "solarized.json");
-    } else if (name == "Off") {
-	noColor();
+    const colorscheme_set_t colorscheme_set = enumerateColorSchemes();
+
+    for (colorscheme_set_t::const_iterator it = colorscheme_set.begin();it != colorscheme_set.end();it++) {
+        const EditorColorScheme *colorScheme = (*it).second.get();
+	if (colorScheme->name() == name) {
+	    setColormap(colorScheme);
+	    return;
+	}
     }
+    
+    noColor();
 }
 
 void ScintillaEditor::insert(const QString &text)
@@ -345,7 +378,7 @@ void ScintillaEditor::replaceSelectedText(const QString &newText)
   if (qsci->selectedText() != newText) qsci->replaceSelectedText(newText);
 }
 
-void ScintillaEditor::get_range(int *lineFrom, int *lineTo)
+void ScintillaEditor::getRange(int *lineFrom, int *lineTo)
 {
     int indexFrom, indexTo;
     if (qsci->hasSelectedText()) {
@@ -362,7 +395,7 @@ void ScintillaEditor::get_range(int *lineFrom, int *lineTo)
 void ScintillaEditor::indentSelection()
 {
     int lineFrom, lineTo;
-    get_range(&lineFrom, &lineTo);
+    getRange(&lineFrom, &lineTo);
     for (int line = lineFrom;line <= lineTo;line++) {
 	qsci->indent(line);
     }
@@ -371,7 +404,7 @@ void ScintillaEditor::indentSelection()
 void ScintillaEditor::unindentSelection()
 {
     int lineFrom, lineTo;
-    get_range(&lineFrom, &lineTo);
+    getRange(&lineFrom, &lineTo);
     for (int line = lineFrom;line <= lineTo;line++) {
 	qsci->unindent(line);
     }
@@ -382,7 +415,7 @@ void ScintillaEditor::commentSelection()
     bool hasSelection = qsci->hasSelectedText();
     
     int lineFrom, lineTo;
-    get_range(&lineFrom, &lineTo);
+    getRange(&lineFrom, &lineTo);
     for (int line = lineFrom;line <= lineTo;line++) {
 	qsci->insertAt("//", line, 0);
     }
@@ -397,7 +430,7 @@ void ScintillaEditor::uncommentSelection()
     bool hasSelection = qsci->hasSelectedText();
 
     int lineFrom, lineTo;
-    get_range(&lineFrom, &lineTo);
+    getRange(&lineFrom, &lineTo);
     for (int line = lineFrom;line <= lineTo;line++) {
 	QString lineText = qsci->text(line);
 	if (lineText.startsWith("//")) {
