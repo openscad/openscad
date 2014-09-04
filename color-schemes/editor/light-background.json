@@ -1,0 +1,29 @@
+{
+    "paper" : "#fff",
+    "text" : "#272822",
+    "caret" : {
+        "width" : 2,
+        "foreground" : "#000000",
+        "line-background" : "#ffe4e4"
+    },
+    "colors" : {
+        "keyword1" : "Green",
+        "keyword2" : "Green",
+        "keyword3" : "DarkBlue",
+        "comment" : "DarkCyan",
+        "number" : "DarkRed",
+        "string" : "DarkMagenta",
+        "operator" : "Blue",
+        "commentline" : "DarkCyan",
+        "selection-foreground" : "#ffff00",
+        "selection-background" : "#a0a0ff",
+        "margin-background" : "#ccc",
+        "margin-foreground" : "#111",
+        "matched-brace-background" : "#333",
+        "matched-brace-foreground" : "#fff",
+        "unmatched-brace-background" : "#333",
+        "unmatched-brace-foreground" : "#fff",
+        "error-marker" : "#ff0000",
+        "edge" : "#ffffff"
+    }
+}

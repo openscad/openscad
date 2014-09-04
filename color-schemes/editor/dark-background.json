@@ -1,0 +1,29 @@
+{
+    "paper" : "#272822",
+    "text" : "#ffffff",
+    "caret" : {
+        "width" : 2,
+        "foreground" : "#ffff00",
+        "line-background" : "#68e1687f"
+    },
+    "colors" : {
+        "keyword1" : "#f12971",
+        "keyword2" : "#56dbf0",
+        "keyword3" : "#56d8f0",
+        "comment" : "#ccdf32",
+        "number" : "#af7dff",
+        "string" : "#e6db74",
+        "operator" : "#d8d8d8",
+        "commentline" : "#e6db74",
+        "selection-foreground" : "#ffff00",
+        "selection-background" : "#a0a0ff",
+        "margin-background" : "#14141496",
+        "margin-foreground" : "#fff",
+        "matched-brace-background" : "#333",
+        "matched-brace-foreground" : "#fff",
+        "unmatched-brace-background" : "#333",
+        "unmatched-brace-foreground" : "#fff",
+        "error-marker" : "#ff0000",
+        "edge" : "#ffffff"
+    }
+}
