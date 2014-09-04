@@ -178,6 +178,50 @@ void ScintillaEditor::noColor()
     qsci->setEdgeColor(Qt::black);
 }
 
+QStringList ScintillaEditor::colorSchemes()
+{
+    typedef std::multimap<int, QString> result_set_t;
+    result_set_t result_set;
+
+    const fs::path resources = PlatformUtils::resourcesPath();
+    const fs::path color_schemes = resources / "color-schemes" / "editor";
+
+    QStringList colorSchemes;
+    fs::directory_iterator end_iter;
+    
+    if (fs::exists(color_schemes) && fs::is_directory(color_schemes)) {
+	for (fs::directory_iterator dir_iter(color_schemes); dir_iter != end_iter; ++dir_iter) {
+	    if (!fs::is_regular_file(dir_iter->status())) {
+		continue;
+	    }
+	    
+	    const fs::path path = (*dir_iter).path();
+	    const fs::path ext = path.extension();
+	    if (!(path.extension().string() == ".json")) {
+		continue;
+	    }
+
+	    boost::property_tree::ptree pt;
+	    try {
+		boost::property_tree::read_json(boosty::stringy(path).c_str(), pt);
+		QString name = QString(pt.get<std::string>("name").c_str());
+		int index = pt.get<int>("index");
+		result_set.insert(result_set_t::value_type(index, name));
+	    } catch (const std::exception & e) {
+		PRINTB("Error reading color scheme file '%s': %s", path.c_str() % e.what());
+	    }
+	}
+    }
+    
+    for (result_set_t::iterator it = result_set.begin();it != result_set.end();it++) {
+        colorSchemes <<  (*it).second;
+    }
+
+    colorSchemes << "Off";
+	
+    return colorSchemes;
+}
+
 void ScintillaEditor::setHighlightScheme(const QString &name)
 {
     fs::path resources = PlatformUtils::resourcesPath();

@@ -26,6 +26,7 @@ public:
 	QString selectedText();
 	bool find(const QString &, bool findNext = false, bool findBackwards = false);
 	void replaceSelectedText(const QString&);
+	QStringList colorSchemes();
         
 private:
         void get_range(int *lineFrom, int *lineTo);

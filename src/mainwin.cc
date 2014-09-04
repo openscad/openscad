@@ -170,8 +170,8 @@ MainWindow::MainWindow(const QString &filename)
 {
 	setupUi(this);
 
- 	editortype = Preferences::inst()->getValue("editor/editortype").toString();
-
+	QSettings settings;
+ 	editortype = settings.value("editor/editortype").toString();
 	useScintilla = (editortype == "QScintilla Editor");
 #ifdef USE_SCINTILLA_EDITOR
 	if (useScintilla) {
@@ -180,6 +180,8 @@ MainWindow::MainWindow(const QString &filename)
 	else
 #endif
 	editor = new LegacyEditor(editorDockContents);
+
+	Preferences::create(this, editor->colorSchemes());
 
 	editorDockContents->layout()->addWidget(editor);
 
@@ -426,6 +428,7 @@ MainWindow::MainWindow(const QString &filename)
 					editor, SLOT(setHighlightScheme(const QString&)));
 	connect(Preferences::inst(), SIGNAL(colorSchemeChanged(const QString&)), 
 					this, SLOT(setColorScheme(const QString&)));
+	
 	Preferences::inst()->apply();
 
 	QString cs = Preferences::inst()->getValue("3dview/colorscheme").toString();
@@ -445,7 +448,6 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this->replaceInputField, SIGNAL(returnPressed()), this->replaceButton, SLOT(animateClick()));
 
 	// make sure it looks nice..
-	QSettings settings;
 	QByteArray windowState = settings.value("window/state", QByteArray()).toByteArray();
 	restoreState(windowState);
 	resize(settings.value("window/size", QSize(800, 600)).toSize());

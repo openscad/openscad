@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>544</width>
-    <height>389</height>
+    <height>487</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -27,7 +27,7 @@
     <item>
      <widget class="QStackedWidget" name="stackedWidget">
       <property name="currentIndex">
-       <number>2</number>
+       <number>1</number>
       </property>
       <widget class="QWidget" name="page3DView">
        <layout class="QVBoxLayout" name="verticalLayout_4">
@@ -210,7 +210,7 @@
            <widget class="QFontComboBox" name="fontChooser">
             <property name="currentFont">
              <font>
-              <family>Helvetica</family>
+              <family>Nimbus Sans L</family>
               <pointsize>12</pointsize>
              </font>
             </property>
@@ -264,31 +264,6 @@
               <verstretch>0</verstretch>
              </sizepolicy>
             </property>
-            <item>
-             <property name="text">
-              <string>For Light Background</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>For Dark Background</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>Monokai</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>Solarized</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>Off</string>
-             </property>
-            </item>
            </widget>
           </item>
           <item>
@@ -547,8 +522,8 @@
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>518</width>
-               <height>278</height>
+               <width>100</width>
+               <height>30</height>
               </rect>
              </property>
              <layout class="QVBoxLayout" name="verticalLayout_10">
