@@ -7,6 +7,10 @@
 #include <QVBoxLayout>
 #include "editor.h"
 #include "scadlexer.h"
+#include "parsersettings.h"
+
+#include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/json_parser.hpp>
 
 class ScintillaEditor : public EditorInterface
 {
@@ -18,10 +22,6 @@ public:
 	QString toPlainText();
 	void initMargin();
 	void initLexer();
-	void forLightBackground();
-	void forDarkBackground();
-	void Monokai();
-	void Solarized_light();
 	void noColor();
 	QString selectedText();
 	bool find(const QString &, bool findNext = false, bool findBackwards = false);
@@ -29,6 +29,9 @@ public:
         
 private:
         void get_range(int *lineFrom, int *lineTo);
+        void read_colormap(const boost::filesystem::path path);
+        int read_int(boost::property_tree::ptree &pt, const std::string name, const int defaultValue);
+        QColor read_color(boost::property_tree::ptree &pt, const std::string name, const QColor defaultColor);
 	
 public slots:
 	void zoomIn();

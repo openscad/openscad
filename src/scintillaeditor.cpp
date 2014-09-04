@@ -4,6 +4,7 @@
 #include "scintillaeditor.h"
 #include <Qsci/qscicommandset.h>
 #include "Preferences.h"
+#include "PlatformUtils.h"
 
 ScintillaEditor::ScintillaEditor(QWidget *parent) : EditorInterface(parent)
 {
@@ -51,7 +52,6 @@ ScintillaEditor::ScintillaEditor(QWidget *parent) : EditorInterface(parent)
   initMargin();
   qsci->setFolding(QsciScintilla::BoxedTreeFoldStyle, 4);
   qsci->setCaretLineVisible(true);
-  this->setHighlightScheme(Preferences::inst()->getValue("editor/syntaxhighlight").toString());
 
   connect(qsci, SIGNAL(textChanged()), this, SIGNAL(contentsChanged()));
   connect(qsci, SIGNAL(modificationChanged(bool)), this, SIGNAL(modificationChanged(bool)));
@@ -87,7 +87,6 @@ void ScintillaEditor::highlightError(int error_pos)
   int line, index;
   qsci->lineIndexFromPosition(error_pos, &line, &index);
   qsci->fillIndicatorRange(line, index, line, index+1, indicatorNumber);	
-  qsci->setIndicatorForegroundColor(QColor(255,0,0,100));
   qsci->markerAdd(line, markerNumber);
 }
 
@@ -100,115 +99,110 @@ void ScintillaEditor::unhighlightLastError()
   qsci->markerDeleteAll(markerNumber);
 }
 
-//Editor themes
-void ScintillaEditor::forLightBackground()
+QColor ScintillaEditor::read_color(boost::property_tree::ptree &pt, const std::string name, const QColor defaultColor)
 {
-  lexer->setPaper("#fff");
-  lexer->setColor(QColor("#272822")); // -> Style: Default text
-  lexer->setColor(QColor("Green"), QsciLexerCPP::Keyword);	    // -> Style: Keyword	
-  lexer->setColor(QColor("Green"), QsciLexerCPP::KeywordSet2);	    // -> Style: KeywordSet2
-  lexer->setColor(Qt::blue, QsciLexerCPP::CommentDocKeyword);	    // -> used in comments only like /*! \cube */
-  lexer->setColor(QColor("DarkBlue"), QsciLexerCPP::GlobalClass);	    // -> Style: GlobalClass
-  lexer->setColor(Qt::blue, QsciLexerCPP::Operator);
-  lexer->setColor(Qt::darkMagenta, QsciLexerCPP::DoubleQuotedString);	
-  lexer->setColor(Qt::darkCyan, QsciLexerCPP::Comment);
-  lexer->setColor(Qt::darkCyan, QsciLexerCPP::CommentLine);
-  lexer->setColor(QColor("DarkRed"), QsciLexerCPP::Number);
-  qsci->setMarkerBackgroundColor(QColor(255, 0, 0, 100), markerNumber);
-  qsci->setCaretLineBackgroundColor(QColor("#ffe4e4"));
-  qsci->setMarginsBackgroundColor(QColor("#ccc"));
-  qsci->setMarginsForegroundColor(QColor("#111"));
-  qsci->setMatchedBraceBackgroundColor(QColor("#333"));
-  qsci->setMatchedBraceForegroundColor(QColor("#fff"));
+    try {
+	const std::string val = pt.get<std::string>(name);
+	return QColor(val.c_str());
+    } catch (std::exception e) {
+	//std::cout << "read_color('" << name << "') failed" << std::endl;
+	return defaultColor;
+    }
 }
 
-void ScintillaEditor::forDarkBackground()
+int ScintillaEditor::read_int(boost::property_tree::ptree &pt, const std::string name, const int defaultValue)
 {
-  lexer->setPaper(QColor("#272822"));
-  lexer->setColor(QColor(Qt::white));          
-  lexer->setColor(QColor("#f12971"), QsciLexerCPP::Keyword);
-  lexer->setColor(QColor("#56dbf0"),QsciLexerCPP::KeywordSet2);	
-  lexer->setColor(QColor("#ccdf32"), QsciLexerCPP::CommentDocKeyword);
-  lexer->setColor(QColor("#56d8f0"), QsciLexerCPP::GlobalClass); 
-  lexer->setColor(QColor("#d8d8d8"), QsciLexerCPP::Operator);
-  lexer->setColor(QColor("#e6db74"), QsciLexerCPP::DoubleQuotedString);	
-  lexer->setColor(QColor("#e6db74"), QsciLexerCPP::CommentLine);
-  lexer->setColor(QColor("#af7dff"), QsciLexerCPP::Number);
-  qsci->setCaretLineBackgroundColor(QColor(104,225,104, 127));
-  qsci->setMarkerBackgroundColor(QColor(255, 0, 0, 100), markerNumber);
-  qsci->setMarginsBackgroundColor(QColor("20,20,20,150"));
-  qsci->setMarginsForegroundColor(QColor("#fff"));
-  qsci->setCaretWidth(2);
-  qsci->setCaretForegroundColor(QColor("#ffff00"));
+    try {
+	const int val = pt.get<int>(name);
+	return val;
+    } catch (std::exception e) {
+	return defaultValue;
+    }
 }
 
-void ScintillaEditor::Monokai()
+void ScintillaEditor::read_colormap(const fs::path path)
 {
-  lexer->setPaper("#272822");
-  lexer->setColor(QColor("#f8f8f2")); // -> Style: Default text
-  lexer->setColor(QColor("#66c3b3"), QsciLexerCPP::Keyword);	    // -> Style: Keyword	
-  lexer->setColor(QColor("#79abff"), QsciLexerCPP::KeywordSet2);	    // -> Style: KeywordSet2
-  lexer->setColor(QColor("#ccdf32"), QsciLexerCPP::CommentDocKeyword);	    // -> used in comments only like /*! \cube */
-  lexer->setColor(QColor("#ffffff"), QsciLexerCPP::GlobalClass);	    // -> Style: GlobalClass
-  lexer->setColor(QColor("#d8d8d8"), QsciLexerCPP::Operator);
-  lexer->setColor(QColor("#e6db74"), QsciLexerCPP::DoubleQuotedString);	
-  lexer->setColor(QColor("#75715e"), QsciLexerCPP::CommentLine);
-  lexer->setColor(QColor("#7fb347"), QsciLexerCPP::Number);
-  qsci->setMarkerBackgroundColor(QColor(255, 0, 0, 100), markerNumber);
-  qsci->setCaretLineBackgroundColor(QColor("#3e3d32"));
-  qsci->setMarginsBackgroundColor(QColor("#757575"));
-  qsci->setMarginsForegroundColor(QColor("#f8f8f2"));
-  qsci->setCaretWidth(2);
-  qsci->setCaretForegroundColor(QColor("#ffff00"));
-}
+    boost::property_tree::ptree pt;
 
-void ScintillaEditor::Solarized_light()
-{
-  lexer->setPaper("#fdf6e3");
-  lexer->setColor(QColor("#657b83")); // -> Style: Default text
-  lexer->setColor(QColor("#268ad1"), QsciLexerCPP::Keyword);	    // -> Style: Keyword	
-  lexer->setColor(QColor("#6c71c4"), QsciLexerCPP::KeywordSet2);	    // -> Style: KeywordSet2
-  lexer->setColor(QColor("#b58900"), QsciLexerCPP::CommentDocKeyword);	    // -> used in comments only like /*! \cube */
-  lexer->setColor(QColor("#b58800"), QsciLexerCPP::GlobalClass);	    // -> Style: GlobalClass
-  lexer->setColor(QColor("#859900"), QsciLexerCPP::Operator);
-  lexer->setColor(QColor("#2aa198"), QsciLexerCPP::DoubleQuotedString);	
-  lexer->setColor(QColor("#b58800"), QsciLexerCPP::CommentLine);
-  lexer->setColor(QColor("#cb4b16"), QsciLexerCPP::Number);
-  qsci->setMarkerBackgroundColor(QColor(255, 0, 0, 100), markerNumber);
-  qsci->setCaretLineBackgroundColor(QColor("#eeead5"));
-  qsci->setMarginsBackgroundColor(QColor("#eee8d5"));
-  qsci->setMarginsForegroundColor(QColor("#93a1a1"));
-  qsci->setMatchedBraceBackgroundColor(QColor("#0000ff"));
-  qsci->setMatchedBraceBackgroundColor(QColor("#333"));
-  qsci->setMatchedBraceForegroundColor(QColor("#fff"));
+    try {
+	boost::property_tree::read_json(boosty::stringy(path).c_str(), pt);
+	const QColor textColor(pt.get<std::string>("text").c_str());
+	const QColor paperColor(pt.get<std::string>("paper").c_str());
+
+	lexer->setColor(textColor);
+	lexer->setPaper(paperColor);
+
+        boost::property_tree::ptree& colors = pt.get_child("colors");
+	lexer->setColor(read_color(colors, "keyword1", textColor), QsciLexerCPP::Keyword);
+	lexer->setColor(read_color(colors, "keyword2", textColor), QsciLexerCPP::KeywordSet2);
+	lexer->setColor(read_color(colors, "keyword3", textColor), QsciLexerCPP::GlobalClass);
+	lexer->setColor(read_color(colors, "comment", textColor), QsciLexerCPP::CommentDocKeyword);
+	lexer->setColor(read_color(colors, "number", textColor), QsciLexerCPP::Number);
+	lexer->setColor(read_color(colors, "string", textColor), QsciLexerCPP::DoubleQuotedString);
+	lexer->setColor(read_color(colors, "operator", textColor), QsciLexerCPP::Operator);
+	lexer->setColor(read_color(colors, "commentline", textColor), QsciLexerCPP::CommentLine);
+
+        boost::property_tree::ptree& caret = pt.get_child("caret");
+	
+	qsci->setCaretWidth(read_int(caret, "width", 1));
+	qsci->setCaretForegroundColor(read_color(caret, "foreground", textColor));
+	qsci->setCaretLineBackgroundColor(read_color(caret, "line-background", paperColor));
+
+	qsci->setMarkerBackgroundColor(read_color(colors, "error-marker", QColor(255, 0, 0, 100)), markerNumber);
+	qsci->setMarginsBackgroundColor(read_color(colors, "margin-background", paperColor));
+	qsci->setMarginsForegroundColor(read_color(colors, "margin-foreground", textColor));
+	qsci->setMatchedBraceBackgroundColor(read_color(colors, "matched-brace-background", paperColor));
+	qsci->setMatchedBraceForegroundColor(read_color(colors, "matched-brace-foreground", textColor));
+	qsci->setUnmatchedBraceBackgroundColor(read_color(colors, "unmatched-brace-background", paperColor));
+	qsci->setUnmatchedBraceForegroundColor(read_color(colors, "unmatched-brace-foreground", textColor));
+	qsci->setSelectionForegroundColor(read_color(colors, "selection-foreground", paperColor));
+	qsci->setSelectionBackgroundColor(read_color(colors, "selection-background", textColor));
+        qsci->setFoldMarginColors(read_color(colors, "margin-foreground", textColor),
+		read_color(colors, "margin-background", paperColor));
+	qsci->setEdgeColor(read_color(colors, "edge", textColor));
+    } catch (std::exception e) {
+	noColor();
+    }
 }
 
 void ScintillaEditor::noColor()
 {
-  lexer->setPaper(Qt::white);
-  lexer->setColor(Qt::black);
-  qsci->setMarginsBackgroundColor(QColor("#ccc"));
-  qsci->setMarginsForegroundColor(QColor("#111"));
-	
+    lexer->setPaper(Qt::white);
+    lexer->setColor(Qt::black);
+    qsci->setCaretWidth(2);
+    qsci->setCaretForegroundColor(Qt::black);
+    qsci->setMarkerBackgroundColor(QColor(255, 0, 0, 100), markerNumber);
+    qsci->setCaretLineBackgroundColor(Qt::white);
+    qsci->setMarginsBackgroundColor(Qt::white);
+    qsci->setMarginsForegroundColor(Qt::black);
+    qsci->setSelectionForegroundColor(Qt::white);
+    qsci->setSelectionBackgroundColor(Qt::black);
+    qsci->setMatchedBraceBackgroundColor(Qt::white);
+    qsci->setMatchedBraceForegroundColor(Qt::black);
+    qsci->setUnmatchedBraceBackgroundColor(Qt::white);
+    qsci->setUnmatchedBraceForegroundColor(Qt::black);
+    qsci->setMarginsBackgroundColor(Qt::lightGray);
+    qsci->setMarginsForegroundColor(Qt::black);
+    qsci->setFoldMarginColors(Qt::black, Qt::lightGray);
+    qsci->setEdgeColor(Qt::black);
 }
 
 void ScintillaEditor::setHighlightScheme(const QString &name)
 {
-  if(name == "For Light Background") {
-    forLightBackground();
-  }
-  else if(name == "For Dark Background") {
-    forDarkBackground();
-  }
-  else if(name == "Monokai") {
-    Monokai();
-  }
-  else if(name == "Solarized") {
-    Solarized_light();
-  }
-  else if(name == "Off") {
-    noColor();
-  }
+    fs::path resources = PlatformUtils::resourcesPath();
+    fs::path color_schemes = resources / "color-schemes" / "editor";
+    
+    if (name == "For Light Background") {
+	read_colormap(color_schemes / "light-background.json");
+    } else if (name == "For Dark Background") {
+	read_colormap(color_schemes / "dark-background.json");
+    } else if (name == "Monokai") {
+	read_colormap(color_schemes / "monokai.json");
+    } else if (name == "Solarized") {
+	read_colormap(color_schemes / "solarized.json");
+    } else if (name == "Off") {
+	noColor();
+    }
 }
 
 void ScintillaEditor::insert(const QString &text)
