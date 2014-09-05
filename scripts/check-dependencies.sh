@@ -84,6 +84,9 @@ glib2_sysver()
     glib2path=$1/lib/glib-2.0/include/glibconfig.h
   fi
   if [ ! -e $glib2path ]; then
+    glib2path=$1/lib64/glib-2.0/include/glibconfig.h
+  fi
+  if [ ! -e $glib2path ]; then
     return
   fi
   glib2major=`grep "define  *GLIB_MAJOR_VERSION  *[0-9.]*" $glib2path | awk '{print $3}'`
