@@ -1,8 +1,10 @@
 #include "GLView.h"
 
 #include "stdio.h"
+#include "colormap.h"
 #include "rendersettings.h"
 #include "mathc99.h"
+#include "printutils.h"
 #include "renderer.h"
 
 #ifdef _WIN32
@@ -22,6 +24,7 @@ GLView::GLView()
   showaxes = false;
   showcrosshairs = false;
   renderer = NULL;
+  colorscheme = &ColorMap::inst()->defaultColorScheme();
   cam = Camera();
   far_far_away = RenderSettings::inst()->far_gl_clip_limit;
 #ifdef ENABLE_OPENCSG
@@ -37,6 +40,32 @@ GLView::GLView()
 void GLView::setRenderer(Renderer* r)
 {
   renderer = r;
+}
+
+/* update the color schemes of the Renderer attached to this GLView
+to match the colorscheme of this GLView.*/
+void GLView::updateColorScheme()
+{
+  if (this->renderer) this->renderer->setColorScheme(*this->colorscheme);
+}
+
+/* change this GLView's colorscheme to the one given, and update the
+Renderer attached to this GLView as well. */
+void GLView::setColorScheme(const ColorScheme &cs)
+{
+  this->colorscheme = &cs;
+  this->updateColorScheme();
+}
+
+void GLView::setColorScheme(const std::string &cs)
+{
+  const ColorScheme *colorscheme = ColorMap::inst()->findColorScheme(cs);
+  if (colorscheme) {
+    setColorScheme(*colorscheme);
+  }
+  else {
+    PRINTB("WARNING: GLView: unknown colorscheme %s", cs);
+  }
 }
 
 void GLView::resizeGL(int w, int h)
@@ -125,7 +154,7 @@ void GLView::paintGL()
 
 	setupCamera();
 
-  Color4f bgcol = RenderSettings::inst()->color(RenderSettings::BACKGROUND_COLOR);
+  Color4f bgcol = ColorMap::getColor(*this->colorscheme, BACKGROUND_COLOR);
   glClearColor(bgcol[0], bgcol[1], bgcol[2], 1.0);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
@@ -321,6 +350,8 @@ void GLView::initializeGL()
   glEnable(GL_NORMALIZE);
 
   glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
+  // The following line is reported to fix issue #71
+	glMateriali(GL_FRONT_AND_BACK, GL_SHININESS, 64);
   glEnable(GL_COLOR_MATERIAL);
 #ifdef ENABLE_OPENCSG
   enable_opencsg_shaders();
@@ -440,7 +471,7 @@ void GLView::showCrosshairs()
   // FIXME: Crosshairs and axes are lighted, this doesn't make sense and causes them
   // to change color based on view orientation.
   glLineWidth(3);
-  Color4f col = RenderSettings::inst()->color(RenderSettings::CROSSHAIR_COLOR);
+  Color4f col = ColorMap::getColor(*this->colorscheme, CROSSHAIR_COLOR);
   glColor3f(col[0], col[1], col[2]);
   glBegin(GL_LINES);
   for (double xf = -1; xf <= +1; xf += 2)

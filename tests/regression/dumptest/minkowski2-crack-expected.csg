@@ -1,0 +1,12 @@
+group() {
+	minkowski(convexity = 0) {
+		difference() {
+			square(size = [40, 40], center = true);
+			minkowski(convexity = 0) {
+				circle($fn = 64, $fa = 12, $fs = 2, r = 2);
+				circle($fn = 64, $fa = 12, $fs = 2, r = 4);
+			}
+		}
+		square(size = [1, 1], center = false);
+	}
+}

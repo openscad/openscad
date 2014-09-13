@@ -6,7 +6,8 @@
 
 get_fedora_deps()
 {
- yum install qt-devel bison flex eigen3-devel \
+ yum -y install qt5-qtbase-devel bison flex eigen3-devel harfbuzz-devel \
+  fontconfig-devel freetype-devel \
   boost-devel mpfr-devel gmp-devel glew-devel CGAL-devel gcc gcc-c++ pkgconfig \
   opencsg-devel git libXmu-devel curl imagemagick ImageMagick glib2-devel make \
   xorg-x11-server-Xvfb gettext
@@ -56,12 +57,21 @@ get_mageia_deps()
 
 get_debian_deps()
 {
- for pkg in build-essential libqt4-dev libqt4-opengl-dev \
+ for pkg in build-essential curl libffi-dev qtbase5-dev \
   libxmu-dev cmake bison flex git-core libboost-all-dev \
   libXi-dev libmpfr-dev libboost-dev libglew-dev \
   libeigen3-dev libcgal-dev libopencsg-dev libgmp3-dev libgmp-dev \
   imagemagick libfontconfig-dev libfreetype6-dev \
   libharfbuzz-dev gtk-doc-tools libglib2.0-dev gettext; do
+   sudo apt-get -y install $pkg;
+ done
+
+ # The following packages are only needed to build the static
+ # Qt5 version for release builds / older distributions.
+ for pkg in libdbus-1-dev \
+  libxcb1-dev libx11-xcb-dev libxcb-keysyms1-dev libxcb-image0-dev \
+  libxcb-shm0-dev libxcb-icccm4-dev libxcb-sync0-dev libxcb-xfixes0-dev \
+  libxrender-dev libxcb-shape0-dev libxcb-randr0-dev libxcb-glx0-dev; do
    sudo apt-get -y install $pkg;
  done
 }

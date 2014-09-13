@@ -27,6 +27,7 @@
 #include "ModuleCache.h"
 #include "MainWindow.h"
 #include "parsersettings.h"
+#include "rendersettings.h"
 #include "Preferences.h"
 #include "printutils.h"
 #include "node.h"
@@ -38,6 +39,10 @@
 #include "expression.h"
 #include "progress.h"
 #include "dxfdim.h"
+#include "legacyeditor.h"
+#ifdef USE_SCINTILLA_EDITOR
+#include "scintillaeditor.h"
+#endif
 #include "AboutDialog.h"
 #include "FontListDialog.h"
 #ifdef ENABLE_OPENCSG
@@ -165,6 +170,19 @@ MainWindow::MainWindow(const QString &filename)
 {
 	setupUi(this);
 
+ 	editortype = Preferences::inst()->getValue("editor/editortype").toString();
+
+	useScintilla = (editortype == "QScintilla Editor");
+#ifdef USE_SCINTILLA_EDITOR
+	if (useScintilla) {
+		 editor = new ScintillaEditor(editorDockContents);
+	}
+	else
+#endif
+	    editor = new LegacyEditor(editorDockContents);
+
+	editorDockContents->layout()->addWidget(editor);
+
 	setCorner(Qt::TopLeftCorner, Qt::LeftDockWidgetArea);
 	setCorner(Qt::TopRightCorner, Qt::RightDockWidgetArea);
 	setCorner(Qt::BottomLeftCorner, Qt::LeftDockWidgetArea);
@@ -218,8 +236,6 @@ MainWindow::MainWindow(const QString &filename)
 
 	connect(this, SIGNAL(highlightError(int)), editor, SLOT(highlightError(int)));
 	connect(this, SIGNAL(unhighlightLastError()), editor, SLOT(unhighlightLastError()));
-	editor->setTabStopWidth(30);
-	editor->setLineWrapping(true); // Not designable
 
 	this->qglview->statusLabel = new QLabel(this);
 	statusBar()->addWidget(this->qglview->statusLabel);
@@ -328,7 +344,6 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this->editActionFindAndReplace, SIGNAL(triggered()), this, SLOT(findAndReplace()));
 	connect(this->editActionFindNext, SIGNAL(triggered()), this, SLOT(findNext()));
 	connect(this->editActionFindPrevious, SIGNAL(triggered()), this, SLOT(findPrev()));
-	connect(this->editActionUseSelectionForFind, SIGNAL(triggered()), this, SLOT(useSelectionForFind()));
 
 	// Design menu
 	connect(this->designActionAutoReload, SIGNAL(toggled(bool)), this, SLOT(autoReloadSet(bool)));
@@ -410,22 +425,29 @@ MainWindow::MainWindow(const QString &filename)
 	}
 	updateRecentFileActions();
 
-	connect(editor->document(), SIGNAL(contentsChanged()), this, SLOT(animateUpdateDocChanged()));
-	connect(editor->document(), SIGNAL(modificationChanged(bool)), this, SLOT(setWindowModified(bool)));
+	connect(editor, SIGNAL(contentsChanged()), this, SLOT(animateUpdateDocChanged()));
+	connect(editor, SIGNAL(modificationChanged(bool)), this, SLOT(setWindowModified(bool)));
 	connect(this->qglview, SIGNAL(doAnimateUpdate()), this, SLOT(animateUpdate()));
 
 	connect(Preferences::inst(), SIGNAL(requestRedraw()), this->qglview, SLOT(updateGL()));
 	connect(Preferences::inst(), SIGNAL(updateMdiMode(bool)), this, SLOT(updateMdiMode(bool)));
 	connect(Preferences::inst(), SIGNAL(updateUndockMode(bool)), this, SLOT(updateUndockMode(bool)));
 	connect(Preferences::inst(), SIGNAL(fontChanged(const QString&,uint)), 
-					this, SLOT(setFont(const QString&,uint)));
+					editor, SLOT(initFont(const QString&,uint)));
 	connect(Preferences::inst(), SIGNAL(openCSGSettingsChanged()),
 					this, SLOT(openCSGSettingsChanged()));
 	connect(Preferences::inst(), SIGNAL(syntaxHighlightChanged(const QString&)),
 					editor, SLOT(setHighlightScheme(const QString&)));
+	connect(Preferences::inst(), SIGNAL(colorSchemeChanged(const QString&)), 
+					this, SLOT(setColorScheme(const QString&)));
 	Preferences::inst()->apply();
 
+	QString cs = Preferences::inst()->getValue("3dview/colorscheme").toString();
+	this->setColorScheme(cs);
+
+	//find and replace panel
 	connect(this->findTypeComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(selectFindType(int)));
+	connect(this->findInputField, SIGNAL(textChanged(QString)), this, SLOT(findString(QString)));
 	connect(this->findInputField, SIGNAL(returnPressed()), this->nextButton, SLOT(animateClick()));
 	find_panel->installEventFilter(this);
 
@@ -478,8 +500,7 @@ MainWindow::MainWindow(const QString &filename)
 	clearCurrentOutput();
 }
 
-void
-MainWindow::loadViewSettings(){
+void MainWindow::loadViewSettings(){
 	QSettings settings;
 	if (settings.value("view/showEdges").toBool()) {
 		viewActionShowEdges->setChecked(true);
@@ -506,8 +527,7 @@ MainWindow::loadViewSettings(){
 	updateUndockMode(settings.value("advanced/undockableWindows").toBool());
 }
 
-void
-MainWindow::loadDesignSettings()
+void MainWindow::loadDesignSettings()
 {
 	QSettings settings;
 	if (settings.value("design/autoReload").toBool()) {
@@ -599,8 +619,8 @@ void MainWindow::requestOpenFile(const QString &filename)
  	one is not empty. Otherwise the current window content is overwritten.
  	Any check whether to replace the content have to be made before.
  */
-void
-MainWindow::openFile(const QString &new_filename)
+
+void MainWindow::openFile(const QString &new_filename)
 {
 	if (MainWindow::mdiMode) {
 		if (!editor->toPlainText().isEmpty()) {
@@ -630,8 +650,7 @@ MainWindow::openFile(const QString &new_filename)
 	clearCurrentOutput();
 }
 
-void
-MainWindow::setFileName(const QString &filename)
+void MainWindow::setFileName(const QString &filename)
 {
 	if (filename.isEmpty()) {
 		this->fileName.clear();
@@ -1287,16 +1306,16 @@ void MainWindow::actionSaveAs()
 
 void MainWindow::actionShowLibraryFolder()
 {
-	std::string path = PlatformUtils::libraryPath();
+	std::string path = PlatformUtils::userLibraryPath();
 	if (!fs::exists(path)) {
 		PRINTB("WARNING: Library path %s doesnt exist. Creating", path);
-		if (!PlatformUtils::createLibraryPath()) {
+		if (!PlatformUtils::createUserLibraryPath()) {
 			PRINTB("ERROR: Cannot create library path: %s",path);
 		}
 	}
-	QString url = QString::fromStdString( path );
+	QString url = QString::fromStdString(path);
 	//PRINTB("Opening file browser for %s", url.toStdString() );
-	QDesktopServices::openUrl(QUrl::fromLocalFile( url ));
+	QDesktopServices::openUrl(QUrl::fromLocalFile(url));
 }
 
 void MainWindow::actionReload()
@@ -1309,22 +1328,19 @@ void MainWindow::actionReload()
 
 void MainWindow::pasteViewportTranslation()
 {
-	QTextCursor cursor = editor->textCursor();
 	QString txt;
-	txt.sprintf("[ %.2f, %.2f, %.2f ]", -qglview->cam.object_trans.x(), 
-	-qglview->cam.object_trans.y(), -qglview->cam.object_trans.z());
-	
-	cursor.insertText(txt);
+	txt.sprintf("[ %.2f, %.2f, %.2f ]", -qglview->cam.object_trans.x(), -qglview->cam.object_trans.y(), -qglview->cam.object_trans.z());
+	this->editor->insert(txt);
 }
 
 void MainWindow::pasteViewportRotation()
 {
-	QTextCursor cursor = editor->textCursor();
 	QString txt;
 	txt.sprintf("[ %.2f, %.2f, %.2f ]",
-		fmodf(360 - qglview->cam.object_rot.x() + 90, 360), 
-		fmodf(360 - qglview->cam.object_rot.y(), 360), fmodf(360 - qglview->cam.object_rot.z(), 360));
-	cursor.insertText(txt);
+		fmodf(360 - qglview->cam.object_rot.x() + 90, 360),
+		fmodf(360 - qglview->cam.object_rot.y(), 360),
+		fmodf(360 - qglview->cam.object_rot.z(), 360));
+	this->editor->insert(txt);
 }
 
 void MainWindow::find()
@@ -1334,8 +1350,14 @@ void MainWindow::find()
 	replaceButton->hide();
 	replaceAllButton->hide();
 	find_panel->show();
+	findInputField->setText(editor->selectedText());
 	findInputField->setFocus();
 	findInputField->selectAll();
+}
+
+void MainWindow::findString(QString textToFind)
+{
+	editor->find(textToFind, false, false);
 }
 
 void MainWindow::findAndReplace()
@@ -1354,55 +1376,25 @@ void MainWindow::selectFindType(int type) {
 	if (type == 1) findAndReplace();
 }
 
-bool MainWindow::findOperation(QTextDocument::FindFlags options) {
-	bool success = editor->find(findInputField->text(), options);
-	if (!success) { // Implement wrap-around search behavior
-		QTextCursor old_cursor = editor->textCursor();
-		QTextCursor tmp_cursor = old_cursor;
-		tmp_cursor.movePosition((options & QTextDocument::FindBackward) ? QTextCursor::End : QTextCursor::Start);
-		editor->setTextCursor(tmp_cursor);
-		bool success = editor->find(findInputField->text(), options);
-		if (!success) {
-			editor->setTextCursor(old_cursor);
-		}
-		return success;
-	}
-	return true;
-}
-
 void MainWindow::replace() {
-	QTextCursor cursor = editor->textCursor();
-	QString selectedText = cursor.selectedText();
-	if (selectedText == findInputField->text()) {
-		cursor.insertText(replaceInputField->text());
-	}
-	findNext();
+	this->editor->replaceSelectedText(this->replaceInputField->text());
+	this->editor->find(this->findInputField->text());
 }
 
 void MainWindow::replaceAll() {
-	QTextCursor old_cursor = editor->textCursor();
-	QTextCursor tmp_cursor = old_cursor;
-	tmp_cursor.movePosition(QTextCursor::Start);
-	editor->setTextCursor(tmp_cursor);
-	while (editor->find(findInputField->text())) {
-		editor->textCursor().insertText(replaceInputField->text());
+	while (this->editor->find(this->findInputField->text(), true)) {
+		this->editor->replaceSelectedText(this->replaceInputField->text());
 	}
-	editor->setTextCursor(old_cursor);
 }
 
 void MainWindow::findNext()
 {
-	findOperation();
+	editor->find(this->findInputField->text(), true);
 }
 
 void MainWindow::findPrev()
 {
-	findOperation(QTextDocument::FindBackward);
-}
-
-void MainWindow::useSelectionForFind()
-{
-	findInputField->setText(editor->textCursor().selectedText());
+	editor->find(this->findInputField->text(), true, true);
 }
 
 bool MainWindow::eventFilter(QObject* obj, QEvent *event)
@@ -1542,6 +1534,7 @@ void MainWindow::compileTopLevelDocument()
 	resetPrintedDeprecations();
 
 	this->last_compiled_doc = editor->toPlainText();
+
 	std::string fulltext =
 		std::string(this->last_compiled_doc.toLocal8Bit().constData()) +
 		"\n" + commandline_commands;
@@ -1549,7 +1542,8 @@ void MainWindow::compileTopLevelDocument()
 	delete this->root_module;
 	this->root_module = NULL;
 
-	this->root_module = parse(fulltext.c_str(), this->fileName.isEmpty() ? "" :
+	this->root_module = parse(fulltext.c_str(),
+	this->fileName.isEmpty() ? "" :
 	QFileInfo(this->fileName).absolutePath().toLocal8Bit(), false);
 
 	updateCamera();
@@ -1865,11 +1859,15 @@ void MainWindow::actionExport(export_type_e, QString, QString)
 		return;
 	}
 
-	const CGAL_Nef_polyhedron *N = dynamic_cast<const CGAL_Nef_polyhedron *>(this->root_geom.get());
-	if (N && !N->p3->is_simple()) {
-		PRINT("Object isn't a valid 2-manifold! Modify your design. See http://en.wikibooks.org/wiki/OpenSCAD_User_Manual/STL_Import_and_Export");
+	if (this->root_geom->isEmpty()) {
+		PRINT("Current top level object is empty.");
 		clearCurrentOutput();
 		return;
+	}
+
+	const CGAL_Nef_polyhedron *N = dynamic_cast<const CGAL_Nef_polyhedron *>(this->root_geom.get());
+	if (N && !N->p3->is_simple()) {
+	 	PRINT("Warning: Object may not be a valid 2-manifold and may need repair! See http://en.wikibooks.org/wiki/OpenSCAD_User_Manual/STL_Import_and_Export");
 	}
 
 	QString title = QString("Export %1 File").arg(type_name);
@@ -1983,15 +1981,16 @@ void MainWindow::actionExportCSG()
 	}
 
 	QString csg_filename = QFileDialog::getSaveFileName(this, "Export CSG File",
-																		       this->fileName.isEmpty() ? "Untitled.csg" : QFileInfo(this->fileName).baseName()+".csg",	"CSG Files (*.csg)");
-
+	    this->fileName.isEmpty() ? "Untitled.csg" : QFileInfo(this->fileName).baseName()+".csg",
+	    "CSG Files (*.csg)");
+	
 	if (csg_filename.isEmpty()) {
 		PRINT("No filename specified. CSG export aborted.");
 		clearCurrentOutput();
 		return;
 	}
 
-	std::ofstream fstream(csg_filename.toUtf8());
+	std::ofstream fstream(csg_filename.toLocal8Bit());
 	if (!fstream.is_open()) {
 		PRINTB("Can't open file \"%s\" for export", csg_filename.toLocal8Bit().constData());
 	}
@@ -2052,9 +2051,8 @@ void MainWindow::viewModePreview()
 	if (this->qglview->hasOpenCSGSupport()) {
 		viewModeActionsUncheck();
 		viewActionPreview->setChecked(true);
-		this->qglview->setRenderer(this->opencsgRenderer ? (Renderer *)this->opencsgRenderer : 
-		(Renderer *)this->thrownTogetherRenderer);
-		
+		this->qglview->setRenderer(this->opencsgRenderer ? (Renderer *)this->opencsgRenderer : (Renderer *)this->thrownTogetherRenderer);
+		this->qglview->updateColorScheme();
 		this->qglview->updateGL();
 	} else {
 		viewModeThrownTogether();
@@ -2071,6 +2069,7 @@ void MainWindow::viewModeSurface()
 	viewActionSurfaces->setChecked(true);
 	this->qglview->setShowFaces(true);
 	this->qglview->setRenderer(this->cgalRenderer);
+	this->qglview->updateColorScheme();
 	this->qglview->updateGL();
 }
 
@@ -2080,6 +2079,7 @@ void MainWindow::viewModeWireframe()
 	viewActionWireframe->setChecked(true);
 	this->qglview->setShowFaces(false);
 	this->qglview->setRenderer(this->cgalRenderer);
+	this->qglview->updateColorScheme();
 	this->qglview->updateGL();
 }
 
@@ -2090,6 +2090,7 @@ void MainWindow::viewModeThrownTogether()
 	viewModeActionsUncheck();
 	viewActionThrownTogether->setChecked(true);
 	this->qglview->setRenderer(this->thrownTogetherRenderer);
+	this->qglview->updateColorScheme();
 	this->qglview->updateGL();
 }
 
@@ -2131,7 +2132,7 @@ void MainWindow::viewModeAnimate()
 
 void MainWindow::animateUpdateDocChanged()
 {
-	QString current_doc = editor->toPlainText();
+	QString current_doc = editor->toPlainText(); 
 	if (current_doc != last_compiled_doc)
 		animateUpdate();
 }
@@ -2320,7 +2321,7 @@ void MainWindow::handleFileDrop(const QString &filename)
 		}
 		openFile(filename);
 	} else {
-		editor->insertPlainText(cmd.arg(filename));
+		editor->insert(cmd.arg(filename));
 	}
 }
 
@@ -2424,6 +2425,13 @@ void MainWindow::preferences()
 	Preferences::inst()->raise();
 }
 
+void MainWindow::setColorScheme(const QString &scheme)
+{
+	RenderSettings::inst()->colorscheme = scheme.toStdString();
+	this->qglview->setColorScheme(scheme.toStdString());
+	this->qglview->updateGL();
+}
+
 void MainWindow::setFont(const QString &family, uint size)
 {
 	QFont font;
@@ -2452,7 +2460,6 @@ void MainWindow::consoleOutput(const std::string &msg, void *userdata)
 	MainWindow *thisp = static_cast<MainWindow*>(userdata);
 	QMetaObject::invokeMethod(thisp->console, "append", Qt::QueuedConnection,
 	Q_ARG(QString, QString::fromLocal8Bit(msg.c_str())));
-
 	if (thisp->procevents) QApplication::processEvents();
 }
 

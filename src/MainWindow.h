@@ -9,6 +9,7 @@
 #include "module.h"
 #include "Tree.h"
 #include "memory.h"
+#include "editor.h"
 #include <vector>
 #include <QMutex>
 #include <QSet>
@@ -67,11 +68,15 @@ public:
 	static const int maxRecentFiles = 10;
 	QAction *actionRecentFile[maxRecentFiles];
         QMap<QString, QString> knownFileExtensions;
+
 	QMap<QString, QString> recentFilesMap;
 	LaunchingScreen *launcher;
 	QTreeWidgetItem *itm;
 	void show_launcher_examples(QString);
         void add_child(QTreeWidgetItem*, QString);
+	
+	QString editortype;	
+	bool useScintilla;
 
 	MainWindow(const QString &filename);
 	~MainWindow();
@@ -86,6 +91,7 @@ private slots:
         void updateUndockMode(bool undockMode);
 	void setFileName(const QString &filename);
 	void setFont(const QString &family, uint size);
+	void setColorScheme(const QString &cs);
 	void showProgress();
 	void openCSGSettingsChanged();
 	void launcherOpenRecent();
@@ -114,6 +120,8 @@ private:
 	QString get2dExportFilename(QString format, QString extension);
 	void show_examples();
 	void setDockWidgetTitle(QDockWidget *dockWidget, QString prefix, bool topLevel);
+
+	EditorInterface *editor;
 
   class QMessageBox *openglbox;
   class FontListDialog *font_list_dialog;
@@ -145,14 +153,13 @@ private slots:
 private slots:
 	void selectFindType(int);
 	void find();
+	void findString(QString);
 	void findAndReplace();
 	void findNext();
 	void findPrev();
-	void useSelectionForFind();
 	void replace();
 	void replaceAll();
 protected:
-	bool findOperation(QTextDocument::FindFlags options = 0);
 	virtual bool eventFilter(QObject* obj, QEvent *event);
 
 private slots:

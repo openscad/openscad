@@ -44,12 +44,12 @@
 
 class FontInfo {
 public:
-    FontInfo(std::string family, std::string style, std::string file);
+    FontInfo(const std::string &family, const std::string &style, const std::string &file);
     virtual ~FontInfo();
     
-    std::string get_family() const;
-    std::string get_style() const;
-    std::string get_file() const;
+    const std::string &get_family() const;
+    const std::string &get_style() const;
+    const std::string &get_file() const;
     bool operator<(const FontInfo &rhs) const;
 private:
     std::string family;
@@ -67,14 +67,14 @@ public:
     FontCache();
     virtual ~FontCache();
 
-    bool is_init_ok();
-    FT_Face get_font(std::string font);
-    bool is_windows_symbol_font(FT_Face face);
-    void register_font_file(std::string path);
+    bool is_init_ok() const;
+    FT_Face get_font(const std::string &font);
+    bool is_windows_symbol_font(const FT_Face &face) const;
+    void register_font_file(const std::string &path);
     void clear();
-    FontInfoList * list_fonts();
+    FontInfoList *list_fonts() const;
     
-    static FontCache * instance();
+    static FontCache *instance();
 private:
     typedef std::pair<FT_Face, time_t> cache_entry_t;
     typedef std::map<std::string, cache_entry_t> cache_t;
@@ -87,13 +87,13 @@ private:
     FT_Library library;
 
     void check_cleanup();
-    void dump_cache(const std::string info);
+    void dump_cache(const std::string &info);
     
-    void add_font_dir(const std::string path);
-    void init_pattern(FcPattern *pattern);
+    void add_font_dir(const std::string &path);
+    void init_pattern(FcPattern *pattern) const;
     
-    FT_Face find_face(const std::string font);
-    FT_Face find_face_fontconfig(const std::string font);
-    bool try_charmap(FT_Face face, int platform_id, int encoding_id);
+    FT_Face find_face(const std::string &font) const;
+    FT_Face find_face_fontconfig(const std::string &font) const;
+    bool try_charmap(FT_Face face, int platform_id, int encoding_id) const;
 };
 

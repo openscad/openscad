@@ -8,7 +8,6 @@
 
 #ifdef ENABLE_CGAL
 #include "CGALRenderer.h"
-#include "CGAL_renderer.h"
 #include "cgal.h"
 #include "cgalutils.h"
 #include "CGAL_Nef_polyhedron.h"
@@ -20,7 +19,7 @@ static void setupCamera(Camera &cam, const BoundingBox &bbox, float scalefactor)
 	if (cam.viewall) cam.viewAll(bbox, scalefactor);
 }
 
-void export_png(const Geometry *root_geom, Camera &cam, std::ostream &output)
+void export_png(shared_ptr<const Geometry> root_geom, Camera &cam, std::ostream &output)
 {
 	PRINTD("export_png geom");
 	OffscreenView *glview;
@@ -30,14 +29,14 @@ void export_png(const Geometry *root_geom, Camera &cam, std::ostream &output)
 		fprintf(stderr,"Can't create OpenGL OffscreenView. Code: %i.\n", error);
 		return;
 	}
-	shared_ptr<const Geometry> ptr(root_geom);
-	CGALRenderer cgalRenderer(ptr);
+	CGALRenderer cgalRenderer(root_geom);
 
 	BoundingBox bbox = cgalRenderer.getBoundingBox();
 	setupCamera(cam, bbox, 3);
 
 	glview->setCamera(cam);
 	glview->setRenderer(&cgalRenderer);
+	glview->setColorScheme(RenderSettings::inst()->colorscheme);
 	glview->paintGL();
 	glview->save(output);
 }
@@ -85,6 +84,7 @@ void export_png_preview_common(Tree &tree, Camera &cam, std::ostream &output, Pr
 	OpenCSG::setContext(0);
 	OpenCSG::setOption(OpenCSG::OffscreenSetting, OpenCSG::FrameBufferObject);
 #endif
+	csgInfo.glview->setColorScheme(RenderSettings::inst()->colorscheme);
 	csgInfo.glview->paintGL();
 	csgInfo.glview->save(output);
 }

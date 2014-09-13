@@ -102,37 +102,9 @@ void parser_init(const std::string &applicationpath)
 		}
 	}
 
-	// This is the built-in user-writable library path
 #ifndef OPENSCAD_TESTING
-  // This will resolve to ~/Documents on Mac, "My Documents" on Windows and
-  // ~/.local/share on Linux
-	fs::path docdir(PlatformUtils::documentsPath());
-	add_librarydir(boosty::stringy(docdir / "OpenSCAD" / "libraries"));
+	add_librarydir(PlatformUtils::userLibraryPath());
 #endif
 
-	// This is the built-in read-only library path
-	std::string librarydir;
-	fs::path libdir(applicationpath);
-	fs::path tmpdir;
-#ifdef __APPLE__
-	// Libraries can be bundled on Mac. If not, fall back to development layout
-	bool isbundle = is_directory(libdir / ".." / "Resources");
-	if (isbundle) {
-		libdir /= "../Resources";
-		if (!is_directory(libdir / "libraries")) libdir /= "../../..";
-	}
-#elif !defined(WIN32)
-	if (is_directory(tmpdir = libdir / "../share/openscad/libraries")) {
-		librarydir = boosty::stringy(tmpdir);
-	} else if (is_directory(tmpdir = libdir / "../../share/openscad/libraries")) {
-		librarydir = boosty::stringy(tmpdir);
-	} else if (is_directory(tmpdir = libdir / "../../libraries")) {
-		librarydir = boosty::stringy(tmpdir);
-	} else
-#endif
-		if (is_directory(tmpdir = libdir / "libraries")) {
-			librarydir = boosty::stringy(tmpdir);
-		}
-
-	if (!librarydir.empty()) add_librarydir(librarydir);
+	add_librarydir(boosty::absolute(fs::path(PlatformUtils::resourcesPath()) / "libraries").string());
 }
