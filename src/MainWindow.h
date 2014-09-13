@@ -98,7 +98,7 @@ private slots:
 	void openCurrentExample();
 	void enableRecentButton(QListWidgetItem*);
 	void enableExampleButton(QTreeWidgetItem*, int);
-	void checkboxState(int);
+	void checkboxState(bool);
 private:
 	void openFile(const QString &filename);
         void handleFileDrop(const QString &filename);

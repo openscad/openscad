@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>544</width>
-    <height>389</height>
+    <width>852</width>
+    <height>550</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -27,7 +27,7 @@
     <item>
      <widget class="QStackedWidget" name="stackedWidget">
       <property name="currentIndex">
-       <number>2</number>
+       <number>3</number>
       </property>
       <widget class="QWidget" name="page3DView">
        <layout class="QVBoxLayout" name="verticalLayout_4">
@@ -210,7 +210,7 @@
            <widget class="QFontComboBox" name="fontChooser">
             <property name="currentFont">
              <font>
-              <family>Helvetica</family>
+              <family>Nimbus Sans L</family>
               <pointsize>12</pointsize>
              </font>
             </property>
@@ -510,16 +510,7 @@
       </widget>
       <widget class="QWidget" name="pageFeatures">
        <layout class="QGridLayout" name="gridLayout_2">
-        <property name="leftMargin">
-         <number>0</number>
-        </property>
-        <property name="topMargin">
-         <number>0</number>
-        </property>
-        <property name="rightMargin">
-         <number>0</number>
-        </property>
-        <property name="bottomMargin">
+        <property name="margin">
          <number>0</number>
         </property>
         <item row="0" column="0">
@@ -556,8 +547,8 @@
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>518</width>
-               <height>278</height>
+               <width>832</width>
+               <height>420</height>
               </rect>
              </property>
              <layout class="QVBoxLayout" name="verticalLayout_10">
@@ -567,13 +558,6 @@
                  <number>8</number>
                 </property>
                </layout>
-              </item>
-              <item>
-               <widget class="QCheckBox" name="launcherBox">
-                <property name="text">
-                 <string>Show Launcher.</string>
-                </property>
-               </widget>
               </item>
               <item>
                <spacer name="verticalSpacer_3">
@@ -695,19 +679,6 @@
          </layout>
         </item>
         <item>
-         <spacer name="verticalSpacer_2">
-          <property name="orientation">
-           <enum>Qt::Vertical</enum>
-          </property>
-          <property name="sizeHint" stdset="0">
-           <size>
-            <width>20</width>
-            <height>11</height>
-           </size>
-          </property>
-         </spacer>
-        </item>
-        <item>
          <widget class="QCheckBox" name="mdiCheckBox">
           <property name="text">
            <string>Allow to open multiple documents</string>
@@ -720,6 +691,26 @@
            <string>Enable undocking of Editor and Console</string>
           </property>
          </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="launcherBox">
+          <property name="text">
+           <string>Show Welcome Screen</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <spacer name="verticalSpacer_2">
+          <property name="orientation">
+           <enum>Qt::Vertical</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>20</width>
+            <height>11</height>
+           </size>
+          </property>
+         </spacer>
         </item>
        </layout>
       </widget>

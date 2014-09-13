@@ -261,7 +261,6 @@ MainWindow::MainWindow(const QString &filename)
 
 	// Launch Screen
 	launcher = new LaunchingScreen(this);
-	launcher->setFixedSize(676,414);
 	connect(launcher->ui->pushButtonNew, SIGNAL(clicked()), this, SLOT(actionNew()));
 	connect(launcher->ui->pushButtonOpen, SIGNAL(clicked()), this, SLOT(actionOpen()));
 	connect(launcher->ui->pushButtonHelp, SIGNAL(clicked()), this, SLOT(helpManual()));
@@ -271,7 +270,7 @@ MainWindow::MainWindow(const QString &filename)
 					this, SLOT(enableExampleButton(QTreeWidgetItem *,int)));
 	connect(launcher->ui->openRecentButton, SIGNAL(clicked()), this, SLOT(launcherOpenRecent()));
 	connect(launcher->ui->openExampleButton, SIGNAL(clicked()), this, SLOT(openCurrentExample()));
-	connect(launcher->ui->checkBox, SIGNAL(stateChanged(int)), this, SLOT(checkboxState(int)));	
+	connect(launcher->ui->checkBox, SIGNAL(toggled(bool)), this, SLOT(checkboxState(bool)));	
 	
 	// Application menu
 #ifdef DEBUG
@@ -1079,17 +1078,14 @@ void MainWindow::actionOpenRecent()
 
 void MainWindow::enableRecentButton(QListWidgetItem *itemClicked)
 {
-	if (itemClicked) {
-		launcher->ui->openRecentButton->setEnabled(true);
-	}
+        const bool enable = itemClicked;
+	launcher->ui->openRecentButton->setEnabled(enable);
 }
 
-void MainWindow::enableExampleButton(QTreeWidgetItem *itemClicked, int column)
+void MainWindow::enableExampleButton(QTreeWidgetItem *itemClicked, int /* column */)
 {
-	column = 0;
-	if (itemClicked) {
-		launcher->ui->openExampleButton->setEnabled(true);
-	}
+	const bool enable = itemClicked && (itemClicked->childCount() == 0);
+	launcher->ui->openExampleButton->setEnabled(enable);
 }
 
 void MainWindow::clearRecentFiles()
@@ -1149,10 +1145,10 @@ void MainWindow::openCurrentExample()
 	launcher->hide();
 }
 
-void MainWindow::checkboxState(int state)
+void MainWindow::checkboxState(bool state)
 {
 	QSettings settings;
-	settings.setValue("launcher/checkboxState", state);
+	settings.setValue("launcher/showOnStartup", !state);
 }
 
 void MainWindow::show_examples()

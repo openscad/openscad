@@ -35,7 +35,7 @@ public slots:
 	void on_mdiCheckBox_toggled(bool);
 	void on_undockCheckBox_toggled(bool);
 	void on_checkNowButton_clicked();
-	void launcherSettings(int);
+	void on_launcherBox_toggled(bool);
 	void on_editorType_editTextChanged(const QString &);
 
 signals:

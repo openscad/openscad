@@ -586,7 +586,7 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 	mainwin = new MainWindow(assemblePath(original_path, inputFiles[0]));
 #endif
 	QSettings settings;
-	if (noInputFiles && settings.value("launcher/checkboxState").toInt()) mainwin->launcher->show();
+	if (noInputFiles && settings.value("launcher/showOnStartup").toBool()) mainwin->launcher->show();
 
 	app.connect(&app, SIGNAL(lastWindowClosed()), &app, SLOT(quit()));
 	int rc = app.exec();

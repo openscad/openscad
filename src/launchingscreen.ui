@@ -6,169 +6,334 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>676</width>
-    <height>414</height>
+    <width>618</width>
+    <height>516</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Dialog</string>
+   <string>Welcome to OpenSCAD</string>
   </property>
-  <widget class="QLabel" name="label">
-   <property name="geometry">
-    <rect>
-     <x>50</x>
-     <y>30</y>
-     <width>67</width>
-     <height>61</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string/>
-   </property>
-   <property name="pixmap">
-    <pixmap resource="../openscad.qrc">:/icons/prefs3DView.png</pixmap>
-   </property>
-  </widget>
-  <widget class="QCheckBox" name="checkBox">
-   <property name="enabled">
-    <bool>true</bool>
-   </property>
-   <property name="geometry">
-    <rect>
-     <x>460</x>
-     <y>370</y>
-     <width>171</width>
-     <height>22</height>
-    </rect>
-   </property>
-   <property name="autoFillBackground">
-    <bool>false</bool>
-   </property>
-   <property name="text">
-    <string>Show this everytime</string>
-   </property>
-   <property name="checked">
-    <bool>true</bool>
-   </property>
-  </widget>
-  <widget class="QLabel" name="label_3">
-   <property name="geometry">
-    <rect>
-     <x>130</x>
-     <y>26</y>
-     <width>161</width>
-     <height>31</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:22pt; color:#006100;&quot;&gt; Open&lt;/span&gt;&lt;span style=&quot; font-size:22pt;&quot;&gt;SCAD&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-   </property>
-  </widget>
-  <widget class="QLabel" name="label_4">
-   <property name="geometry">
-    <rect>
-     <x>136</x>
-     <y>60</y>
-     <width>261</width>
-     <height>20</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>The programmer's 3D CAD Modeller</string>
-   </property>
-  </widget>
-  <widget class="QWidget" name="layoutWidget1">
-   <property name="geometry">
-    <rect>
-     <x>50</x>
-     <y>110</y>
-     <width>273</width>
-     <height>251</height>
-    </rect>
-   </property>
-   <layout class="QVBoxLayout" name="verticalLayout_2">
-    <item>
-     <layout class="QVBoxLayout" name="verticalLayout">
-      <item>
-       <layout class="QHBoxLayout" name="horizontalLayout">
-        <item>
-         <widget class="QPushButton" name="pushButtonNew">
-          <property name="text">
-           <string>New</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QPushButton" name="pushButtonOpen">
-          <property name="text">
-           <string>Open</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QPushButton" name="pushButtonHelp">
-          <property name="text">
-           <string>Help</string>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </item>
-      <item>
-       <widget class="QLabel" name="label_2">
-        <property name="text">
-         <string>Recents</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QListWidget" name="RecentList"/>
-      </item>
-     </layout>
-    </item>
-    <item>
-     <widget class="QPushButton" name="openRecentButton">
-      <property name="enabled">
-       <bool>false</bool>
-      </property>
-      <property name="text">
-       <string>Open Recent</string>
-      </property>
-     </widget>
-    </item>
-   </layout>
-  </widget>
-  <widget class="QWidget" name="layoutWidget">
-   <property name="geometry">
-    <rect>
-     <x>370</x>
-     <y>140</y>
-     <width>258</width>
-     <height>221</height>
-    </rect>
-   </property>
-   <layout class="QVBoxLayout" name="verticalLayout_3">
-    <item>
-     <widget class="QTreeWidget" name="treeWidget">
-      <column>
+  <property name="windowIcon">
+   <iconset resource="../openscad.qrc">
+    <normaloff>:/icons/prefs3DView.png</normaloff>:/icons/prefs3DView.png</iconset>
+  </property>
+  <property name="sizeGripEnabled">
+   <bool>true</bool>
+  </property>
+  <layout class="QGridLayout" name="gridLayout">
+   <item row="6" column="0">
+    <layout class="QVBoxLayout" name="verticalLayout_2">
+     <property name="leftMargin">
+      <number>10</number>
+     </property>
+     <property name="topMargin">
+      <number>20</number>
+     </property>
+     <property name="rightMargin">
+      <number>10</number>
+     </property>
+     <property name="bottomMargin">
+      <number>20</number>
+     </property>
+     <item>
+      <layout class="QVBoxLayout" name="verticalLayout">
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout">
+         <item>
+          <widget class="QPushButton" name="pushButtonNew">
+           <property name="styleSheet">
+            <string notr="true">QPushButton {
+    margin: 0;
+    padding: 4px;
+    color: white;
+    background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #82dd97, stop: 1 #2a833f);
+    border-radius: 2px;
+}
+QPushButton:hover {
+    background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #92eda7, stop: 1 #3a934f);
+}
+QPushButton:disabled {
+    background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #dfdfdf, stop: 1 #aeaeae);
+}
+QPushButton:pressed {
+    background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #2a833f, stop: 1 #82dd97);
+}</string>
+           </property>
+           <property name="text">
+            <string>New</string>
+           </property>
+           <property name="default">
+            <bool>true</bool>
+           </property>
+           <property name="flat">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="pushButtonOpen">
+           <property name="styleSheet">
+            <string notr="true">QPushButton {
+    margin: 0;
+    padding: 4px;
+    color: white;
+    background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #82dd97, stop: 1 #2a833f);
+    border-radius: 2px;
+}
+QPushButton:hover {
+    background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #92eda7, stop: 1 #3a934f);
+}
+QPushButton:disabled {
+    background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #dfdfdf, stop: 1 #aeaeae);
+}
+QPushButton:pressed {
+    background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #2a833f, stop: 1 #82dd97);
+}</string>
+           </property>
+           <property name="text">
+            <string>Open</string>
+           </property>
+           <property name="flat">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="pushButtonHelp">
+           <property name="styleSheet">
+            <string notr="true">QPushButton {
+    margin: 0;
+    padding: 4px;
+    color: white;
+    background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #82dd97, stop: 1 #2a833f);
+    border-radius: 2px;
+}
+QPushButton:hover {
+    background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #92eda7, stop: 1 #3a934f);
+}
+QPushButton:disabled {
+    background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #dfdfdf, stop: 1 #aeaeae);
+}
+QPushButton:pressed {
+    background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #2a833f, stop: 1 #82dd97);
+}</string>
+           </property>
+           <property name="text">
+            <string>Help</string>
+           </property>
+           <property name="flat">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <widget class="QLabel" name="label_2">
+         <property name="text">
+          <string>Recents</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QListWidget" name="RecentList">
+         <property name="styleSheet">
+          <string notr="true">background-color:transparent;</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <widget class="QPushButton" name="openRecentButton">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">QPushButton {
+    margin: 0;
+    padding: 4px;
+    color: white;
+    background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #82dd97, stop: 1 #2a833f);
+    border-radius: 2px;
+}
+QPushButton:hover {
+    background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #92eda7, stop: 1 #3a934f);
+}
+QPushButton:disabled {
+    background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #dfdfdf, stop: 1 #aeaeae);
+}
+QPushButton:pressed {
+    background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #2a833f, stop: 1 #82dd97);
+}</string>
+       </property>
+       <property name="text">
+        <string>Open Recent</string>
+       </property>
+       <property name="flat">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item row="6" column="1">
+    <layout class="QVBoxLayout" name="verticalLayout_3">
+     <property name="leftMargin">
+      <number>10</number>
+     </property>
+     <property name="topMargin">
+      <number>20</number>
+     </property>
+     <property name="rightMargin">
+      <number>10</number>
+     </property>
+     <property name="bottomMargin">
+      <number>20</number>
+     </property>
+     <item>
+      <widget class="QLabel" name="label_5">
        <property name="text">
         <string>Examples</string>
        </property>
-      </column>
-     </widget>
-    </item>
-    <item>
-     <widget class="QPushButton" name="openExampleButton">
-      <property name="enabled">
-       <bool>false</bool>
-      </property>
-      <property name="text">
-       <string>Open Example</string>
-      </property>
-     </widget>
-    </item>
-   </layout>
-  </widget>
+      </widget>
+     </item>
+     <item>
+      <widget class="QTreeWidget" name="treeWidget">
+       <property name="styleSheet">
+        <string notr="true">background-color:transparent;</string>
+       </property>
+       <attribute name="headerVisible">
+        <bool>false</bool>
+       </attribute>
+       <column>
+        <property name="text">
+         <string>Examples</string>
+        </property>
+       </column>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="openExampleButton">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">QPushButton {
+    margin: 0;
+    padding: 4px;
+    color: white;
+    background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #82dd97, stop: 1 #2a833f);
+    border-radius: 2px;
+}
+QPushButton:hover {
+    background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #92eda7, stop: 1 #3a934f);
+}
+QPushButton:disabled {
+    background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #dfdfdf, stop: 1 #aeaeae);
+}
+QPushButton:pressed {
+    background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #2a833f, stop: 1 #82dd97);
+}</string>
+       </property>
+       <property name="text">
+        <string>Open Example</string>
+       </property>
+       <property name="flat">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item row="3" column="0" rowspan="2" colspan="2">
+    <layout class="QGridLayout" name="gridLayout_2">
+     <property name="leftMargin">
+      <number>10</number>
+     </property>
+     <property name="rightMargin">
+      <number>10</number>
+     </property>
+     <item row="0" column="0" rowspan="2">
+      <widget class="QLabel" name="label">
+       <property name="text">
+        <string/>
+       </property>
+       <property name="pixmap">
+        <pixmap resource="../openscad.qrc">:/icons/prefs3DView.png</pixmap>
+       </property>
+       <property name="margin">
+        <number>12</number>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="2">
+      <widget class="QLabel" name="label_4">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="text">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:12pt;&quot;&gt;The programmer's 3D CAD Modeller&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1">
+      <spacer name="horizontalSpacer">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeType">
+        <enum>QSizePolicy::Fixed</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>20</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item row="0" column="1" colspan="2">
+      <widget class="QLabel" name="label_3">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="text">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:22pt; color:#006100;&quot;&gt;Open&lt;/span&gt;&lt;span style=&quot; font-size:22pt;&quot;&gt;SCAD&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item row="8" column="0" colspan="2">
+    <widget class="QCheckBox" name="checkBox">
+     <property name="enabled">
+      <bool>true</bool>
+     </property>
+     <property name="minimumSize">
+      <size>
+       <width>600</width>
+       <height>0</height>
+      </size>
+     </property>
+     <property name="autoFillBackground">
+      <bool>false</bool>
+     </property>
+     <property name="text">
+      <string>Don't show again</string>
+     </property>
+     <property name="checked">
+      <bool>false</bool>
+     </property>
+    </widget>
+   </item>
+  </layout>
  </widget>
  <resources>
   <include location="../openscad.qrc"/>
