@@ -1,5 +1,6 @@
 <RCC>
   <qresource prefix="/">
+    <file>icons/openscad.png</file>
     <file>icons/button.png</file>
     <file>icons/background-welcome-screen.svg</file>
     <file>icons/prefsFeatures.png</file>

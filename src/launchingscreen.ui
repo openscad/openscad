@@ -2,6 +2,14 @@
 <ui version="4.0">
  <class>LaunchingScreen</class>
  <widget class="QDialog" name="LaunchingScreen">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>618</width>
+    <height>418</height>
+   </rect>
+  </property>
   <property name="windowTitle">
    <string>Welcome to OpenSCAD</string>
   </property>
@@ -13,7 +21,7 @@
    <bool>true</bool>
   </property>
   <property name="modal">
-   <bool>true</bool>
+   <bool>false</bool>
   </property>
   <layout class="QGridLayout" name="gridLayout">
    <item row="6" column="0">
@@ -249,20 +257,44 @@ QPushButton:pressed {
      <property name="rightMargin">
       <number>10</number>
      </property>
+     <property name="spacing">
+      <number>0</number>
+     </property>
      <item row="0" column="0" rowspan="2">
       <widget class="QLabel" name="label">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>96</width>
+         <height>96</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>96</width>
+         <height>96</height>
+        </size>
+       </property>
        <property name="text">
         <string/>
        </property>
        <property name="pixmap">
-        <pixmap resource="../openscad.qrc">:/icons/prefs3DView.png</pixmap>
+        <pixmap resource="../openscad.qrc">:/icons/openscad.png</pixmap>
+       </property>
+       <property name="scaledContents">
+        <bool>true</bool>
        </property>
        <property name="margin">
-        <number>12</number>
+        <number>0</number>
        </property>
       </widget>
      </item>
-     <item row="1" column="2">
+     <item row="1" column="3">
       <widget class="QLabel" name="label_4">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
@@ -275,7 +307,7 @@ QPushButton:pressed {
        </property>
       </widget>
      </item>
-     <item row="1" column="1">
+     <item row="1" column="2">
       <spacer name="horizontalSpacer">
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
@@ -285,13 +317,13 @@ QPushButton:pressed {
        </property>
        <property name="sizeHint" stdset="0">
         <size>
-         <width>20</width>
-         <height>20</height>
+         <width>30</width>
+         <height>2</height>
         </size>
        </property>
       </spacer>
      </item>
-     <item row="0" column="1" colspan="2">
+     <item row="0" column="2" colspan="2">
       <widget class="QLabel" name="label_3">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
@@ -299,10 +331,29 @@ QPushButton:pressed {
          <verstretch>0</verstretch>
         </sizepolicy>
        </property>
+       <property name="styleSheet">
+        <string notr="true"/>
+       </property>
        <property name="text">
         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:22pt; color:#006100;&quot;&gt;Open&lt;/span&gt;&lt;span style=&quot; font-size:22pt;&quot;&gt;SCAD&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
       </widget>
+     </item>
+     <item row="0" column="1">
+      <spacer name="horizontalSpacer_2">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeType">
+        <enum>QSizePolicy::Fixed</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>20</width>
+         <height>2</height>
+        </size>
+       </property>
+      </spacer>
      </item>
     </layout>
    </item>
