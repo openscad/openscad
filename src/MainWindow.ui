@@ -15,16 +15,7 @@
     <property name="spacing">
      <number>0</number>
     </property>
-    <property name="leftMargin">
-     <number>0</number>
-    </property>
-    <property name="topMargin">
-     <number>0</number>
-    </property>
-    <property name="rightMargin">
-     <number>0</number>
-    </property>
-    <property name="bottomMargin">
+    <property name="margin">
      <number>0</number>
     </property>
     <item>
@@ -35,20 +26,11 @@
         <verstretch>0</verstretch>
        </sizepolicy>
       </property>
-      <property name="styleSheet">
-       <string notr="true"/>
-      </property>
       <layout class="QVBoxLayout" name="verticalLayout_3">
-       <property name="leftMargin">
+       <property name="spacing">
         <number>0</number>
        </property>
-       <property name="topMargin">
-        <number>0</number>
-       </property>
-       <property name="rightMargin">
-        <number>0</number>
-       </property>
-       <property name="bottomMargin">
+       <property name="margin">
         <number>0</number>
        </property>
        <item>
@@ -67,7 +49,7 @@
          </property>
         </widget>
        </item>
-       <item alignment="Qt::AlignBottom">
+       <item>
         <widget class="QFrame" name="animate_panel">
          <property name="enabled">
           <bool>true</bool>
@@ -82,16 +64,7 @@
           <number>0</number>
          </property>
          <layout class="QHBoxLayout" name="horizontalLayoutAnimate">
-          <property name="leftMargin">
-           <number>0</number>
-          </property>
-          <property name="topMargin">
-           <number>0</number>
-          </property>
-          <property name="rightMargin">
-           <number>0</number>
-          </property>
-          <property name="bottomMargin">
+          <property name="margin">
            <number>0</number>
           </property>
           <item>
@@ -134,9 +107,13 @@
          </layout>
         </widget>
        </item>
+       <item>
+        <widget class="ToolBar" name="toolBar" native="true"/>
+       </item>
       </layout>
       <zorder>animate_panel</zorder>
       <zorder>qglview</zorder>
+      <zorder>toolBar</zorder>
      </widget>
     </item>
    </layout>
@@ -147,7 +124,7 @@
      <x>0</x>
      <y>0</y>
      <width>936</width>
-     <height>25</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_File">
@@ -297,20 +274,17 @@
     <number>1</number>
    </attribute>
    <widget class="QWidget" name="editorDockContents">
-    <layout class="QVBoxLayout" name="verticalLayout_4">
-     <property name="leftMargin">
+    <layout class="QVBoxLayout" name="verticalLayout">
+     <property name="spacing">
       <number>0</number>
      </property>
-     <property name="topMargin">
+     <property name="margin">
       <number>0</number>
      </property>
-     <property name="rightMargin">
-      <number>0</number>
-     </property>
-     <property name="bottomMargin">
-      <number>0</number>
-     </property>
-     <item alignment="Qt::AlignTop">
+     <item>
+      <widget class="EditorToolBar" name="editortoolbar" native="true"/>
+     </item>
+     <item>
       <widget class="QFrame" name="find_panel">
        <property name="enabled">
         <bool>true</bool>
@@ -415,16 +389,7 @@
    </attribute>
    <widget class="QWidget" name="consoleDockContents">
     <layout class="QVBoxLayout" name="verticalLayout_5">
-     <property name="leftMargin">
-      <number>0</number>
-     </property>
-     <property name="topMargin">
-      <number>0</number>
-     </property>
-     <property name="rightMargin">
-      <number>0</number>
-     </property>
-     <property name="bottomMargin">
+     <property name="margin">
       <number>0</number>
      </property>
      <item>
@@ -442,7 +407,7 @@
   </widget>
   <action name="fileActionNew">
    <property name="icon">
-    <iconset resource="../openscad.qrc">
+    <iconset>
      <normaloff>:/Document-New-128.png</normaloff>:/Document-New-128.png</iconset>
    </property>
    <property name="text">
@@ -454,7 +419,7 @@
   </action>
   <action name="fileActionOpen">
    <property name="icon">
-    <iconset resource="../openscad.qrc">
+    <iconset>
      <normaloff>:/Open-128.png</normaloff>:/Open-128.png</iconset>
    </property>
    <property name="text">
@@ -466,7 +431,7 @@
   </action>
   <action name="fileActionSave">
    <property name="icon">
-    <iconset resource="../openscad.qrc">
+    <iconset>
      <normaloff>:/Save-128.png</normaloff>:/Save-128.png</iconset>
    </property>
    <property name="text">
@@ -642,7 +607,7 @@
   </action>
   <action name="designActionRender">
    <property name="icon">
-    <iconset resource="../openscad.qrc">
+    <iconset>
      <normaloff>:/Arrowhead-Right-32.png</normaloff>:/Arrowhead-Right-32.png</iconset>
    </property>
    <property name="text">
@@ -731,7 +696,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset resource="../openscad.qrc">
+    <iconset>
      <normaloff>:/grid.png</normaloff>:/grid.png</iconset>
    </property>
    <property name="text">
@@ -746,7 +711,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset resource="../openscad.qrc">
+    <iconset>
      <normaloff>:/axes.png</normaloff>:/axes.png</iconset>
    </property>
    <property name="text">
@@ -777,7 +742,7 @@
   </action>
   <action name="viewActionTop">
    <property name="icon">
-    <iconset resource="../openscad.qrc">
+    <iconset>
      <normaloff>:/up.png</normaloff>:/up.png</iconset>
    </property>
    <property name="text">
@@ -789,7 +754,7 @@
   </action>
   <action name="viewActionBottom">
    <property name="icon">
-    <iconset resource="../openscad.qrc">
+    <iconset>
      <normaloff>:/bottom.png</normaloff>:/bottom.png</iconset>
    </property>
    <property name="text">
@@ -801,7 +766,7 @@
   </action>
   <action name="viewActionLeft">
    <property name="icon">
-    <iconset resource="../openscad.qrc">
+    <iconset>
      <normaloff>:/left.png</normaloff>:/left.png</iconset>
    </property>
    <property name="text">
@@ -813,7 +778,7 @@
   </action>
   <action name="viewActionRight">
    <property name="icon">
-    <iconset resource="../openscad.qrc">
+    <iconset>
      <normaloff>:/right.png</normaloff>:/right.png</iconset>
    </property>
    <property name="text">
@@ -825,7 +790,7 @@
   </action>
   <action name="viewActionFront">
    <property name="icon">
-    <iconset resource="../openscad.qrc">
+    <iconset>
      <normaloff>:/front.png</normaloff>:/front.png</iconset>
    </property>
    <property name="text">
@@ -837,7 +802,7 @@
   </action>
   <action name="viewActionBack">
    <property name="icon">
-    <iconset resource="../openscad.qrc">
+    <iconset>
      <normaloff>:/back.png</normaloff>:/back.png</iconset>
    </property>
    <property name="text">
@@ -1061,6 +1026,18 @@
    <class>QGLView</class>
    <extends>QWidget</extends>
    <header>QGLView.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>EditorToolBar</class>
+   <extends>QWidget</extends>
+   <header>editortoolbar.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>ToolBar</class>
+   <extends>QWidget</extends>
+   <header>toolbar.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

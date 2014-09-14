@@ -171,8 +171,7 @@ MainWindow::MainWindow(const QString &filename)
 {
 	setupUi(this);
 
- 	editortype = Preferences::inst()->getValue("editor/editortype").toString();
-
+	editortype = Preferences::inst()->getValue("editor/editortype").toString();
 	useScintilla = (editortype == "QScintilla Editor");
 
 #ifdef USE_SCINTILLA_EDITOR
@@ -452,8 +451,6 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this->replaceInputField, SIGNAL(returnPressed()), this->replaceButton, SLOT(animateClick()));
 	
 	//Toolbar
-        toolBar = new ToolBar(this);
-        verticalLayout_2->addWidget(toolBar);
 	int defaultcolor = toolBar->palette().background().color().lightness(); 
         
 	if(defaultcolor > 165){ 
