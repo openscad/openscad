@@ -184,9 +184,6 @@ MainWindow::MainWindow(const QString &filename)
 
 	editorDockContents->layout()->addWidget(editor);
 
-	editortoolbar = new EditorToolBar(this);
-	editorDockContents->layout()->addWidget(editortoolbar);
-
 	setCorner(Qt::TopLeftCorner, Qt::LeftDockWidgetArea);
 	setCorner(Qt::TopRightCorner, Qt::RightDockWidgetArea);
 	setCorner(Qt::BottomLeftCorner, Qt::LeftDockWidgetArea);
@@ -455,7 +452,7 @@ MainWindow::MainWindow(const QString &filename)
         
 	if(defaultcolor > 165){ 
 	 fileActionNew->setIcon(QIcon("://images/blackNew.png"));
-	 fileActionOpen->setIcon(QIcon("://images/Open-32(1).png"));
+	 fileActionOpen->setIcon(QIcon("://images/Open-32.png"));
 	 fileActionSave->setIcon(QIcon("://images/Save-32.png"));
 	 editActionZoomIn->setIcon(QIcon("://images/zoomin.png"));
 	 editActionZoomOut->setIcon(QIcon("://images/zoomout.png"));
@@ -503,32 +500,6 @@ MainWindow::MainWindow(const QString &filename)
 	 viewActionOrthogonal->setIcon(QIcon("://images/orthogonalwhite.png"));
 	 viewActionAnimate->setIcon(QIcon("://images/animate.png"));
 	}
-	
-	 editortoolbar->addAction(fileActionNew);
-	 editortoolbar->addAction(fileActionOpen);
-	 editortoolbar->addAction(fileActionSave);
-	 editortoolbar->addAction(editActionZoomIn);
-	 editortoolbar->addAction(editActionZoomOut);
-
-	 toolBar->addAction(designActionRender);
-	 toolBar->addAction(viewActionPreview);
-	 //toolBar->addAction(viewActionSurfaces);
-	 //toolBar->addAction(viewActionWireframe);
-	 toolBar->addAction(viewActionShowAxes);
-	 //toolBar->addAction(viewActionShowEdges);
-	 toolBar->addAction(viewActionZoomIn);
-	 toolBar->addAction(viewActionZoomOut);
-	 toolBar->addAction(viewActionTop);
-	 toolBar->addAction(viewActionBottom);
-	 toolBar->addAction(viewActionLeft);
-	 toolBar->addAction(viewActionRight);
-	 toolBar->addAction(viewActionFront);
-	 toolBar->addAction(viewActionBack);
-	 //toolBar->addAction(viewActionShowCrosshairs);
-	 toolBar->addAction(viewActionPerspective);
-	 toolBar->addAction(viewActionOrthogonal);
-	 toolBar->addAction(viewActionAnimate);
- 	toolBar->setStyleSheet("QToolBar{border:1 solid black;}" );
 	
 	// make sure it looks nice..
 	QSettings settings;
