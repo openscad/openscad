@@ -112,7 +112,6 @@ QSet<MainWindow*> *MainWindow::windows = NULL;
 
 // Global application state
 unsigned int GuiLocker::gui_locked = 0;
-QString MainWindow::qexamplesdir;
 
 #define QUOTE(x__) # x__
 #define QUOTED(x__) QUOTE(x__)
@@ -259,19 +258,6 @@ MainWindow::MainWindow(const QString &filename)
 	animate_panel->hide();
 	find_panel->hide();
 
-	// Launch Screen
-	launcher = new LaunchingScreen(this);
-	connect(launcher->ui->pushButtonNew, SIGNAL(clicked()), this, SLOT(actionNew()));
-	connect(launcher->ui->pushButtonOpen, SIGNAL(clicked()), this, SLOT(actionOpen()));
-	connect(launcher->ui->pushButtonHelp, SIGNAL(clicked()), this, SLOT(helpManual()));
-	connect(launcher->ui->RecentList, SIGNAL(itemClicked(QListWidgetItem *)), 
-					this, SLOT(enableRecentButton(QListWidgetItem *)));
-	connect(launcher->ui->treeWidget, SIGNAL(itemClicked(QTreeWidgetItem *,int)), 
-					this, SLOT(enableExampleButton(QTreeWidgetItem *,int)));
-	connect(launcher->ui->openRecentButton, SIGNAL(clicked()), this, SLOT(launcherOpenRecent()));
-	connect(launcher->ui->openExampleButton, SIGNAL(clicked()), this, SLOT(openCurrentExample()));
-	connect(launcher->ui->checkBox, SIGNAL(toggled(bool)), this, SLOT(checkboxState(bool)));	
-	
 	// Application menu
 #ifdef DEBUG
 	this->appActionUpdateCheck->setEnabled(false);
@@ -299,7 +285,7 @@ MainWindow::MainWindow(const QString &filename)
 	this->fileActionReload->setShortcuts(shortcuts);
 #endif
 	// Open Recent
-	for (int i = 0;i<maxRecentFiles; i++) {
+	for (int i = 0;i<UIUtils::maxRecentFiles; i++) {
 		this->actionRecentFile[i] = new QAction(this);
 		this->actionRecentFile[i]->setVisible(false);
 		this->menuOpenRecent->addAction(this->actionRecentFile[i]);
@@ -310,17 +296,8 @@ MainWindow::MainWindow(const QString &filename)
 	this->menuOpenRecent->addAction(this->fileActionClearRecent);
 	connect(this->fileActionClearRecent, SIGNAL(triggered()),
 					this, SLOT(clearRecentFiles()));
-	//Examples
-	if (!qexamplesdir.isEmpty()) {
-       
-		show_examples();
-	
-        } else {
-                delete this->menuExamples;
-                this->menuExamples = NULL;
 
-	  }
-
+	show_examples();
 
 	// Edit menu
 	connect(this->editActionUndo, SIGNAL(triggered()), editor, SLOT(undo()));
@@ -678,7 +655,7 @@ void MainWindow::updateRecentFiles()
 	QStringList files = settings.value("recentFileList").toStringList();
 	files.removeAll(infoFileName);
 	files.prepend(infoFileName);
-	while (files.size() > maxRecentFiles) files.removeLast();
+	while (files.size() > UIUtils::maxRecentFiles) files.removeLast();
 	settings.setValue("recentFileList", files);
 
 	foreach(QWidget *widget, QApplication::topLevelWidgets()) {
@@ -687,13 +664,6 @@ void MainWindow::updateRecentFiles()
 			mainWin->updateRecentFileActions();
 		}
 	}
-}
-
-void MainWindow::launcherOpenRecent()
-{
-	QString currentItem = recentFilesMap[launcher->ui->RecentList->currentItem()->text()];
-	openFile(currentItem);
-	launcher->hide();
 }
 
 void MainWindow::updatedFps()
@@ -1042,28 +1012,20 @@ void MainWindow::actionNew()
 		setFileName("");
 		editor->setPlainText("");
 	}
-	launcher->hide();
 }
 
 void MainWindow::actionOpen()
 {
-	QSettings settings;
-	QString last_dirname = settings.value("lastOpenDirName").toString();
-	QString new_filename = QFileDialog::getOpenFileName(this, "Open File",
-		last_dirname, "OpenSCAD Designs (*.scad *.csg)");
+	QFileInfo fileInfo = UIUtils::openFile(this);
+	if (!fileInfo.exists()) {
+	    return;
+	}
 
-	if (new_filename.isEmpty()) {
-		return;
+	if (!MainWindow::mdiMode && !maybeSave()) {
+	    return;
 	}
 	
-	QDir last_dir = QFileInfo(new_filename).dir();
-	last_dirname = last_dir.path();
-	settings.setValue("lastOpenDirName", last_dirname);
-	if (!MainWindow::mdiMode && !maybeSave()) {
-		return;
-	}
-	launcher->hide();
-	openFile(new_filename);
+	openFile(fileInfo.filePath());
 }
 
 void MainWindow::actionOpenRecent()
@@ -1074,18 +1036,6 @@ void MainWindow::actionOpenRecent()
 
 	QAction *action = qobject_cast<QAction *>(sender());
 	openFile(action->data().toString());
-}
-
-void MainWindow::enableRecentButton(QListWidgetItem *itemClicked)
-{
-        const bool enable = itemClicked;
-	launcher->ui->openRecentButton->setEnabled(enable);
-}
-
-void MainWindow::enableExampleButton(QTreeWidgetItem *itemClicked, int /* column */)
-{
-	const bool enable = itemClicked && (itemClicked->childCount() == 0);
-	launcher->ui->openExampleButton->setEnabled(enable);
 }
 
 void MainWindow::clearRecentFiles()
@@ -1099,99 +1049,39 @@ void MainWindow::clearRecentFiles()
 
 void MainWindow::updateRecentFileActions()
 {
-	QSettings settings; // set up project and program properly in main.cpp
-	QStringList files = settings.value("recentFileList").toStringList();
+    QStringList files = UIUtils::recentFiles();
 
-	int originalNumRecentFiles = files.size();
-
-	// Remove any duplicate or empty entries from the list
-#if (QT_VERSION >= QT_VERSION_CHECK(4, 5, 0))
-	files.removeDuplicates();
-#endif
-	files.removeAll(QString());
-	// Now remove any entries which do not exist
-	for(int i = files.size()-1; i >= 0; --i) {
-		QFileInfo fileInfo(files[i]);
-		if (!QFile(fileInfo.absoluteFilePath()).exists())
-			files.removeAt(i);
-	}
-
-	int numRecentFiles = qMin(files.size(), static_cast<int>(maxRecentFiles));
-
-	for (int i = 0; i < numRecentFiles; ++i) {
-		this->actionRecentFile[i]->setText(QFileInfo(files[i]).fileName());
-		this->actionRecentFile[i]->setData(files[i]);
-		this->actionRecentFile[i]->setVisible(true);
-		launcher->ui->RecentList->insertItem(1, QFileInfo(files[i]).fileName());
-		recentFilesMap.insert(QFileInfo(files[i]).fileName(), files[i]);
-	}
-	for (int j = numRecentFiles; j < maxRecentFiles; ++j)
-		this->actionRecentFile[j]->setVisible(false);
-
-	// If we had to prune the list, then save the cleaned list
-	if (originalNumRecentFiles != numRecentFiles)
-		settings.setValue("recentFileList", files);
-}
-
-void MainWindow::openCurrentExample()
-{
-	QTreeWidgetItem *Item = new QTreeWidgetItem(launcher->ui->treeWidget);
-	if (!Item->isSelected()){
-		launcher->ui->openExampleButton->setEnabled(false);
-	}
-	QString currentItm = launcher->ui->treeWidget->currentItem()->text(0);
-	QString currentDir = launcher->ui->treeWidget->currentItem()->parent()->text(0);
-	openFile(qexamplesdir + QDir::separator() + currentDir + QDir::separator() + currentItm);
-	launcher->hide();
-}
-
-void MainWindow::checkboxState(bool state)
-{
-	QSettings settings;
-	settings.setValue("launcher/showOnStartup", !state);
+    for (int i = 0; i < files.size(); ++i) {
+	this->actionRecentFile[i]->setText(QFileInfo(files[i]).fileName());
+	this->actionRecentFile[i]->setData(files[i]);
+	this->actionRecentFile[i]->setVisible(true);
+    }
+    for (int i = files.size(); i < UIUtils::maxRecentFiles; ++i) {
+	this->actionRecentFile[i]->setVisible(false);
+    }
 }
 
 void MainWindow::show_examples()
 {
         bool found_example = false;
-        QStringList categories;
-	//categories in File menu item - Examples
-        categories << "Basics" << "Shapes" << "Extrusion" << "Advanced";
 
-        foreach (const QString &cat, categories){
-                QStringList examples = QDir(qexamplesdir + QDir::separator() + cat).entryList(QStringList("*.scad"),
-                QDir::Files | QDir::Readable, QDir::Name);
+        foreach (const QString &cat, UIUtils::exampleCategories()) {
+		QFileInfoList examples = UIUtils::exampleFiles(cat);
                 QMenu *menu = this->menuExamples->addMenu(cat);
-                show_launcher_examples(cat);
 
-                foreach(const QString &ex, examples) {
-                        QAction *openAct = new QAction(ex, this);
+                foreach(const QFileInfo &ex, examples) {
+                        QAction *openAct = new QAction(ex.fileName(), this);
                         connect(openAct, SIGNAL(triggered()), this, SLOT(actionOpenExample()));
                         menu->addAction(openAct);
-                        add_child(itm, ex);
-
-                        QVariant categoryName = cat;
-                        openAct->setData(categoryName);
+                        openAct->setData(ex.canonicalFilePath());
                         found_example = true;
                 }
         }
+
         if (!found_example) {
                 delete this->menuExamples;
                 this->menuExamples = NULL;
         }
-}
-
-void MainWindow::show_launcher_examples(QString dirName)
-{
-        itm = new QTreeWidgetItem(launcher->ui->treeWidget);
-        itm->setText(0, dirName);
-}
-
-void MainWindow::add_child(QTreeWidgetItem *parent, QString exampleName)
-{
-        QTreeWidgetItem *item = new QTreeWidgetItem();
-        item->setText(0, exampleName);
-	parent->addChild(item);
 }
 
 void MainWindow::actionOpenExample()
@@ -1200,11 +1090,10 @@ void MainWindow::actionOpenExample()
 		return;
 	}
 
-	QAction *action = qobject_cast<QAction *>(sender());
+	const QAction *action = qobject_cast<QAction *>(sender());
 	if (action) {
-		QVariant cat = action->data();
-		QString catname = cat.toString();
-		openFile(qexamplesdir + QDir::separator() + catname + QDir::separator() + action->text());
+		const QString path = action->data().toString();
+		openFile(path);
 	}
 }
 
@@ -2331,13 +2220,12 @@ void MainWindow::helpAbout()
 
 void MainWindow::helpHomepage()
 {
-	QDesktopServices::openUrl(QUrl("http://openscad.org/"));
+        UIUtils::openHomepageURL();
 }
 
 void MainWindow::helpManual()
 {
-	QDesktopServices::openUrl(QUrl("http://www.openscad.org/documentation.html"));
-	launcher->hide();
+        UIUtils::openUserManualURL();
 }
 
 void MainWindow::helpLibrary()

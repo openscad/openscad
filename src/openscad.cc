@@ -485,6 +485,7 @@ Q_IMPORT_PLUGIN(qtaccessiblewidgets)
 #endif // QT_VERSION
 #endif // MINGW64/MINGW32/MSCVER
 #include "MainWindow.h"
+#include "launchingscreen.h"
   #ifdef __APPLE__
   #include "EventFilter.h"
   #endif
@@ -549,9 +550,6 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 	const QString &app_path = app.applicationDirPath();
 	PlatformUtils::registerApplicationPath(app_path.toLocal8Bit().constData());
 
-	QDir exdir(QString::fromStdString(PlatformUtils::resourcesPath()));
-	exdir.cd("examples");
-	MainWindow::setExamplesDir(exdir.path());
   parser_init(PlatformUtils::applicationPath());
 
 #ifdef Q_OS_MAC
@@ -577,6 +575,18 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 		inputFiles.push_back("");
 	}
 
+	QSettings settings;
+	if (noInputFiles && settings.value("launcher/showOnStartup").toBool()) {
+	    LaunchingScreen *launcher = new LaunchingScreen();
+	    int dialogResult = launcher->exec();
+	    if (dialogResult) {
+		inputFiles.clear();
+		inputFiles.push_back(launcher->selectedFile().toStdString());
+	    } else {
+		return 0;
+	    }
+	}
+
 	MainWindow *mainwin;
 #ifdef ENABLE_MDI
 	BOOST_FOREACH(const string &infile, inputFiles) {
@@ -585,8 +595,6 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 #else
 	mainwin = new MainWindow(assemblePath(original_path, inputFiles[0]));
 #endif
-	QSettings settings;
-	if (noInputFiles && settings.value("launcher/showOnStartup").toBool()) mainwin->launcher->show();
 
 	app.connect(&app, SIGNAL(lastWindowClosed()), &app, SLOT(quit()));
 	int rc = app.exec();

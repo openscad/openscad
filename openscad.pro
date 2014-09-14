@@ -394,6 +394,7 @@ src/FontCache.cc \
            \
            src/openscad.cc \
            src/mainwin.cc \
+           src/UIUtils.cc \
 	   src/FontListDialog.cc \
            src/launchingscreen.cpp \
            src/legacyeditor.cc

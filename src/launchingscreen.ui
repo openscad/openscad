@@ -2,14 +2,6 @@
 <ui version="4.0">
  <class>LaunchingScreen</class>
  <widget class="QDialog" name="LaunchingScreen">
-  <property name="geometry">
-   <rect>
-    <x>0</x>
-    <y>0</y>
-    <width>618</width>
-    <height>516</height>
-   </rect>
-  </property>
   <property name="windowTitle">
    <string>Welcome to OpenSCAD</string>
   </property>
@@ -18,6 +10,9 @@
     <normaloff>:/icons/prefs3DView.png</normaloff>:/icons/prefs3DView.png</iconset>
   </property>
   <property name="sizeGripEnabled">
+   <bool>true</bool>
+  </property>
+  <property name="modal">
    <bool>true</bool>
   </property>
   <layout class="QGridLayout" name="gridLayout">
@@ -136,7 +131,7 @@ QPushButton:pressed {
         </widget>
        </item>
        <item>
-        <widget class="QListWidget" name="RecentList">
+        <widget class="QListWidget" name="recentList">
          <property name="styleSheet">
           <string notr="true">background-color:transparent;</string>
          </property>
