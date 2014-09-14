@@ -137,6 +137,7 @@ private slots:
 	void pasteViewportRotation();
 	void hideEditor();
 	void preferences();
+	void hideToolbar();
 
 private slots:
 	void selectFindType(int);

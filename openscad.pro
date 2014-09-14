@@ -306,7 +306,8 @@ src/FontCache.h \
            src/CsgInfo.h \
            \
            src/AutoUpdater.h \
-           src/legacyeditor.h
+           src/legacyeditor.h \
+	   src/scadlexer.h
 
 SOURCES += src/version_check.cc \
            src/ProgressWidget.cc \
@@ -393,7 +394,8 @@ src/FontCache.cc \
            src/openscad.cc \
            src/mainwin.cc \
            src/FontListDialog.cc \
-           src/legacyeditor.cc
+           src/legacyeditor.cc \
+           src/scadlexer.cpp
 
 # ClipperLib
 SOURCES += src/polyclipping/clipper.cpp

@@ -1,12 +1,26 @@
 <RCC>
-  <qresource prefix="/">
-    <file>icons/prefsFeatures.png</file>
-    <file>icons/stopbutton.png</file>
-    <file>icons/prefsAdvanced.png</file>
-    <file>icons/prefs3DView.png</file>
-    <file>icons/prefsEditor.png</file>
-    <file>icons/prefsUpdate.png</file>
-    <file>icons/flattr.png</file>
-    <file>src/AboutDialog.html</file>
-  </qresource>
+    <qresource prefix="/">
+        <file>icons/prefsFeatures.png</file>
+        <file>icons/stopbutton.png</file>
+        <file>icons/prefsAdvanced.png</file>
+        <file>icons/prefs3DView.png</file>
+        <file>icons/prefsEditor.png</file>
+        <file>icons/prefsUpdate.png</file>
+        <file>icons/flattr.png</file>
+        <file>src/AboutDialog.html</file>
+        <file>Arrowhead-Right-32.png</file>
+        <file>axes.png</file>
+        <file>back.png</file>
+        <file>bottom.png</file>
+        <file>Document-New-128.png</file>
+        <file>down.png</file>
+        <file>front.png</file>
+        <file>grid.png</file>
+        <file>left.png</file>
+        <file>Open-128.png</file>
+        <file>openscad.png</file>
+        <file>right.png</file>
+        <file>Save-128.png</file>
+        <file>up.png</file>
+    </qresource>
 </RCC>

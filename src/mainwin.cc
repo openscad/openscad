@@ -387,6 +387,7 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this->viewActionViewAll, SIGNAL(triggered()), this, SLOT(viewAll()));
 	connect(this->viewActionPerspective, SIGNAL(triggered()), this, SLOT(viewPerspective()));
 	connect(this->viewActionOrthogonal, SIGNAL(triggered()), this, SLOT(viewOrthogonal()));
+	connect(this->toolBarActionHide, SIGNAL(triggered()), this, SLOT(hideToolbar()));
 	connect(this->viewActionHide, SIGNAL(triggered()), this, SLOT(hideConsole()));
 	connect(this->viewActionZoomIn, SIGNAL(triggered()), qglview, SLOT(ZoomIn()));
 	connect(this->viewActionZoomOut, SIGNAL(triggered()), qglview, SLOT(ZoomOut()));
@@ -443,7 +444,8 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this->replaceButton, SIGNAL(clicked()), this, SLOT(replace()));
 	connect(this->replaceAllButton, SIGNAL(clicked()), this, SLOT(replaceAll()));
 	connect(this->replaceInputField, SIGNAL(returnPressed()), this->replaceButton, SLOT(animateClick()));
-
+	
+	toolBar->setStyleSheet("QToolBar{background-color:black;}");
 	// make sure it looks nice..
 	QSettings settings;
 	QByteArray windowState = settings.value("window/state", QByteArray()).toByteArray();
@@ -2198,6 +2200,15 @@ void MainWindow::setDockWidgetTitle(QDockWidget *dockWidget, QString prefix, boo
 	dockWidget->setWindowTitle(title);
 }
 
+void MainWindow::hideToolbar()
+{
+	if(toolBarActionHide->isChecked()){
+		toolBar->hide();
+	} else {
+		toolBar->show();
+	}
+}
+
 void MainWindow::hideEditor()
 {
 	if (editActionHide->isChecked()) {
@@ -2208,6 +2219,7 @@ void MainWindow::hideEditor()
 }
 
 void MainWindow::hideConsole()
+
 {
 	if (viewActionHide->isChecked()) {
 		consoleDock->hide();
