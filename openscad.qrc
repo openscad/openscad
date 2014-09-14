@@ -22,5 +22,24 @@
         <file>images/up.png</file>
         <file>images/bottom.png</file>
         <file>images/left.png</file>
+        <file>images/blackUp.png</file>
+        <file>images/blackNew.png</file>
+        <file>images/blackRender.png</file>
+        <file>images/Rotation-32.png</file>
+        <file>images/Shape-Cube-32.png</file>
+        <file>images/Open-32.png</file>
+        <file>images/Open-32(1).png</file>
+        <file>images/Save-32.png</file>
+        <file>images/blackbottom.png</file>
+        <file>images/blackleft (copy).png</file>
+        <file>images/blackright (copy).png</file>
+        <file>images/blackright.png</file>
+        <file>images/blackright1.png</file>
+        <file>images/rightright.png</file>
+        <file>images/blackfront.png</file>
+        <file>images/blackback.png</file>
+        <file>images/blackaxes.png</file>
+        <file>images/zoomin.png</file>
+        <file>images/zoomout.png</file>
     </qresource>
 </RCC>

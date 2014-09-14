@@ -307,7 +307,8 @@ src/FontCache.h \
            \
            src/AutoUpdater.h \
            src/legacyeditor.h \
-           src/toolbar.h
+           src/toolbar.h \
+           src/editortoolbar.h
 
 SOURCES += src/version_check.cc \
            src/ProgressWidget.cc \
@@ -395,7 +396,8 @@ SOURCES += src/version_check.cc \
            src/mainwin.cc \
            src/FontListDialog.cc \
            src/legacyeditor.cc \
-           src/toolbar.cpp
+           src/toolbar.cpp \
+           src/editortoolbar.cpp
 
 # ClipperLib
 SOURCES += src/polyclipping/clipper.cpp

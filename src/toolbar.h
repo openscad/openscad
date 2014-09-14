@@ -3,15 +3,16 @@
 
 #include <QToolBar>
 #include <QToolButton>
+#include <QAction>
 class ToolBar : public QToolBar
 {
     Q_OBJECT
 public:
     explicit ToolBar(QWidget *parent = 0);
-    QToolButton *buttonNew, *buttonOpen, *buttonSave, *buttonRender;
+    QToolButton *buttonZoomIn, *buttonZoomOut, *buttonRender;
     QToolButton *buttonTop, *buttonBottom, *buttonLeft, *buttonRight;
-    QToolButton *buttonFront, *buttonBack;
-
+    QToolButton *buttonFront, *buttonBack,  *buttonEdges;
+	QAction *buttonAxes;
 signals:
 
 public slots:

@@ -23,6 +23,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  */
+#include <iostream>
 #include "GeometryCache.h"
 #include "ModuleCache.h"
 #include "MainWindow.h"
@@ -173,6 +174,7 @@ MainWindow::MainWindow(const QString &filename)
  	editortype = Preferences::inst()->getValue("editor/editortype").toString();
 
 	useScintilla = (editortype == "QScintilla Editor");
+
 #ifdef USE_SCINTILLA_EDITOR
 	if (useScintilla) {
 		 editor = new ScintillaEditor(editorDockContents);
@@ -182,6 +184,9 @@ MainWindow::MainWindow(const QString &filename)
 	editor = new LegacyEditor(editorDockContents);
 
 	editorDockContents->layout()->addWidget(editor);
+
+	editortoolbar = new EditorToolBar(this);
+	editorDockContents->layout()->addWidget(editortoolbar);
 
 	setCorner(Qt::TopLeftCorner, Qt::LeftDockWidgetArea);
 	setCorner(Qt::TopRightCorner, Qt::RightDockWidgetArea);
@@ -398,7 +403,7 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this->helpActionHomepage, SIGNAL(triggered()), this, SLOT(helpHomepage()));
 	connect(this->helpActionManual, SIGNAL(triggered()), this, SLOT(helpManual()));
 	connect(this->helpActionLibraryInfo, SIGNAL(triggered()), this, SLOT(helpLibrary()));
-	connect(this->helpActionFontInfo, SIGNAL(triggered()), this, SLOT(helpFontInfo()));
+	connect(this->helpActionFontInfo, SIGNAL(triggered()), this, SLOT(viewModeShowAxes()));
 
 	setCurrentOutput();
 
@@ -446,24 +451,32 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this->replaceAllButton, SIGNAL(clicked()), this, SLOT(replaceAll()));
 	connect(this->replaceInputField, SIGNAL(returnPressed()), this->replaceButton, SLOT(animateClick()));
 	
-	
+    //EditorToolbar
+    connect(editortoolbar->buttonNew, SIGNAL(clicked()), this, SLOT(actionNew()));
+    connect(editortoolbar->buttonOpen, SIGNAL(clicked()), this, SLOT(actionOpen()));
+    connect(editortoolbar->buttonSave, SIGNAL(clicked()), this, SLOT(actionSave()));
+
 	//Toolbar
-	toolBar = new ToolBar(this);
-	verticalLayout_2->addWidget(toolBar);
-	connect(toolBar->buttonNew, SIGNAL(clicked()), this, SLOT(actionNew()));	
-	connect(toolBar->buttonOpen, SIGNAL(clicked()), this, SLOT(actionOpen()));
-	connect(toolBar->buttonSave, SIGNAL(clicked()), this, SLOT(actionSave()));
+    toolBar = new ToolBar(this);
+    verticalLayout_2->addWidget(toolBar);
 	connect(toolBar->buttonRender, SIGNAL(clicked()), this, SLOT(actionRender()));
 	connect(toolBar->buttonTop, SIGNAL(clicked()), this, SLOT(viewAngleTop()));
 	connect(toolBar->buttonBottom, SIGNAL(clicked()), this, SLOT(viewAngleBottom()));
 	connect(toolBar->buttonLeft, SIGNAL(clicked()), this, SLOT(viewAngleLeft()));
 	connect(toolBar->buttonRight, SIGNAL(clicked()), this, SLOT(viewAngleRight()));
 	connect(toolBar->buttonFront, SIGNAL(clicked()), this, SLOT(viewAngleFront()));
-	connect(toolBar->buttonBack, SIGNAL(clicked()), this, SLOT(viewAngleBack()));
-	
-	toolBar->setStyleSheet("QToolBar{background-color:black;}" 
-			       "QToolButton:hover{background-color:green;}");
+	connect(toolBar->buttonBack, SIGNAL(clicked()), this, SLOT(viewModeShowAxes()));
+	connect(toolBar->buttonAxes, SIGNAL(triggered()), this, SLOT(viewModeShowAxes()));
+	connect(toolBar->buttonEdges, SIGNAL(clicked()), this, SLOT(viewModeShowEdges()));
+	connect(toolBar->buttonZoomIn, SIGNAL(clicked()), qglview, SLOT(ZoomIn()));
+	connect(toolBar->buttonZoomOut, SIGNAL(clicked()), qglview, SLOT(ZoomOut()));
 
+	
+	toolBar->setStyleSheet("QToolBar{border:1 solid black;}" );
+	//		       "QToolButton:hover{background-color:green;}");
+	//std::cout<< toolBar->palette().background().color().name().toStdString()<<std::endl;
+	//std::cout<< toolBar->palette().background().color().lightness()<<std::endl;
+	
 	// make sure it looks nice..
 	QSettings settings;
 	QByteArray windowState = settings.value("window/state", QByteArray()).toByteArray();
@@ -529,6 +542,8 @@ void MainWindow::loadViewSettings(){
 	hideConsole();
 	editActionHide->setChecked(settings.value("view/hideEditor").toBool());
 	hideEditor();
+	toolBarActionHide->setChecked(settings.value("view/hideToolbar").toBool());
+	hideToolbar();
 	updateMdiMode(settings.value("advanced/mdi").toBool());
 	updateUndockMode(settings.value("advanced/undockableWindows").toBool());
 }
@@ -2222,8 +2237,10 @@ void MainWindow::hideToolbar()
 {
 	if(toolBarActionHide->isChecked()){
 		toolBar->hide();
+        editortoolbar->hide();
 	} else {
 		toolBar->show();
+        editortoolbar->show();
 	}
 }
 
