@@ -440,30 +440,6 @@
     </layout>
    </widget>
   </widget>
-  <widget class="QToolBar" name="toolBar">
-   <property name="windowTitle">
-    <string>toolBar</string>
-   </property>
-   <attribute name="toolBarArea">
-    <enum>TopToolBarArea</enum>
-   </attribute>
-   <attribute name="toolBarBreak">
-    <bool>false</bool>
-   </attribute>
-   <addaction name="fileActionNew"/>
-   <addaction name="fileActionOpen"/>
-   <addaction name="fileActionSave"/>
-   <addaction name="designActionRender"/>
-   <addaction name="separator"/>
-   <addaction name="viewActionTop"/>
-   <addaction name="viewActionBottom"/>
-   <addaction name="viewActionLeft"/>
-   <addaction name="viewActionRight"/>
-   <addaction name="viewActionFront"/>
-   <addaction name="viewActionBack"/>
-   <addaction name="viewActionShowEdges"/>
-   <addaction name="viewActionShowAxes"/>
-  </widget>
   <action name="fileActionNew">
    <property name="icon">
     <iconset resource="../openscad.qrc">

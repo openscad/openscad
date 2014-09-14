@@ -269,8 +269,9 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this->appActionUpdateCheck, SIGNAL(triggered()), this, SLOT(actionUpdateCheck()));
 #endif
 #endif
+	
 	// File menu
-	connect(this->fileActionNew, SIGNAL(triggered()), this, SLOT(actionNew()));
+	connect(this->fileActionNew, SIGNAL(triggered()), this, SLOT(actionNew())); 
 	connect(this->fileActionOpen, SIGNAL(triggered()), this, SLOT(actionOpen()));
 	connect(this->fileActionSave, SIGNAL(triggered()), this, SLOT(actionSave()));
 	connect(this->fileActionSaveAs, SIGNAL(triggered()), this, SLOT(actionSaveAs()));
@@ -445,7 +446,24 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this->replaceAllButton, SIGNAL(clicked()), this, SLOT(replaceAll()));
 	connect(this->replaceInputField, SIGNAL(returnPressed()), this->replaceButton, SLOT(animateClick()));
 	
-	toolBar->setStyleSheet("QToolBar{background-color:black;}");
+	
+	//Toolbar
+	toolBar = new ToolBar(this);
+	verticalLayout_2->addWidget(toolBar);
+	connect(toolBar->buttonNew, SIGNAL(clicked()), this, SLOT(actionNew()));	
+	connect(toolBar->buttonOpen, SIGNAL(clicked()), this, SLOT(actionOpen()));
+	connect(toolBar->buttonSave, SIGNAL(clicked()), this, SLOT(actionSave()));
+	connect(toolBar->buttonRender, SIGNAL(clicked()), this, SLOT(actionRender()));
+	connect(toolBar->buttonTop, SIGNAL(clicked()), this, SLOT(viewAngleTop()));
+	connect(toolBar->buttonBottom, SIGNAL(clicked()), this, SLOT(viewAngleBottom()));
+	connect(toolBar->buttonLeft, SIGNAL(clicked()), this, SLOT(viewAngleLeft()));
+	connect(toolBar->buttonRight, SIGNAL(clicked()), this, SLOT(viewAngleRight()));
+	connect(toolBar->buttonFront, SIGNAL(clicked()), this, SLOT(viewAngleFront()));
+	connect(toolBar->buttonBack, SIGNAL(clicked()), this, SLOT(viewAngleBack()));
+	
+	toolBar->setStyleSheet("QToolBar{background-color:black;}" 
+			       "QToolButton:hover{background-color:green;}");
+
 	// make sure it looks nice..
 	QSettings settings;
 	QByteArray windowState = settings.value("window/state", QByteArray()).toByteArray();

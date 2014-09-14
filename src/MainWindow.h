@@ -8,6 +8,7 @@
 #include "Tree.h"
 #include "memory.h"
 #include "editor.h"
+#include "toolbar.h"
 #include <vector>
 #include <QMutex>
 #include <QSet>
@@ -110,6 +111,7 @@ private:
 	void setDockWidgetTitle(QDockWidget *dockWidget, QString prefix, bool topLevel);
 
 	EditorInterface *editor;
+	ToolBar *toolBar;
 
   class QMessageBox *openglbox;
   class FontListDialog *font_list_dialog;

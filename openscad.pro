@@ -307,7 +307,7 @@ src/FontCache.h \
            \
            src/AutoUpdater.h \
            src/legacyeditor.h \
-	   src/scadlexer.h
+           src/toolbar.h
 
 SOURCES += src/version_check.cc \
            src/ProgressWidget.cc \
@@ -362,9 +362,9 @@ SOURCES += src/version_check.cc \
            src/ModuleCache.cc \
            src/GeometryCache.cc \
            src/Tree.cc \
-src/DrawingCallback.cc \
-src/FreetypeRenderer.cc \
-src/FontCache.cc \
+	   src/DrawingCallback.cc \
+	   src/FreetypeRenderer.cc \
+	   src/FontCache.cc \
            \
            src/rendersettings.cc \
            src/highlighter.cc \
@@ -395,7 +395,7 @@ src/FontCache.cc \
            src/mainwin.cc \
            src/FontListDialog.cc \
            src/legacyeditor.cc \
-           src/scadlexer.cpp
+           src/toolbar.cpp
 
 # ClipperLib
 SOURCES += src/polyclipping/clipper.cpp
