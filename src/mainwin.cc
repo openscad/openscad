@@ -499,6 +499,7 @@ MainWindow::MainWindow(const QString &filename)
 	 viewActionPerspective->setIcon(QIcon("://images/perspective1white.png"));
 	 viewActionOrthogonal->setIcon(QIcon("://images/orthogonalwhite.png"));
 	 viewActionAnimate->setIcon(QIcon("://images/animate.png"));
+	 designActionExportSTL->setIcon(QIcon(":/images/export-white.png"))
 	}
 	
 	// make sure it looks nice..

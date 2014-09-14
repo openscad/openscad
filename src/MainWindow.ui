@@ -305,6 +305,11 @@
        <addaction name="fileActionNew"/>
        <addaction name="fileActionOpen"/>
        <addaction name="fileActionSave"/>
+       <addaction name="separator"/>
+       <addaction name="designActionPreview"/>
+       <addaction name="designActionRender"/>
+       <addaction name="separator"/>
+       <addaction name="designActionExportSTL"/>
       </widget>
      </item>
      <item>
@@ -665,6 +670,10 @@
    </property>
   </action>
   <action name="designActionExportSTL">
+   <property name="icon">
+    <iconset resource="../openscad.qrc">
+     <normaloff>:/images/export.png</normaloff>:/images/export.png</iconset>
+   </property>
    <property name="text">
     <string>Export as &amp;STL...</string>
    </property>
