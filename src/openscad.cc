@@ -576,7 +576,8 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 	}
 
 	QSettings settings;
-	if (noInputFiles && settings.value("launcher/showOnStartup").toBool()) {
+	QVariant showOnStartup = settings.value("launcher/showOnStartup");
+	if (noInputFiles && (showOnStartup.isNull() || showOnStartup.toBool())) {
 	    LaunchingScreen *launcher = new LaunchingScreen();
 	    int dialogResult = launcher->exec();
 	    if (dialogResult) {
