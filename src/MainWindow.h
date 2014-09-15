@@ -111,7 +111,7 @@ private:
 
 	EditorInterface *editor;
 
-  class QMessageBox *openglbox;
+  class LibraryInfoDialog* library_info_dialog;
   class FontListDialog *font_list_dialog;
 
 private slots:

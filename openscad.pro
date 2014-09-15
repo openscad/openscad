@@ -213,7 +213,8 @@ FORMS += src/MainWindow.ui \
            src/OpenCSGWarningDialog.ui \
            src/AboutDialog.ui \
            src/FontListDialog.ui \
-           src/ProgressWidget.ui
+           src/ProgressWidget.ui \
+    src/LibraryInfoDialog.ui
 
 HEADERS += src/typedefs.h \
            src/version_check.h \
@@ -306,7 +307,8 @@ src/FontCache.h \
            src/CsgInfo.h \
            \
            src/AutoUpdater.h \
-           src/legacyeditor.h
+           src/legacyeditor.h \
+    src/LibraryInfoDialog.h
 
 SOURCES += src/version_check.cc \
            src/ProgressWidget.cc \
@@ -393,7 +395,8 @@ src/FontCache.cc \
            src/openscad.cc \
            src/mainwin.cc \
            src/FontListDialog.cc \
-           src/legacyeditor.cc
+           src/legacyeditor.cc \
+    src/LibraryInfoDialog.cc
 
 # ClipperLib
 SOURCES += src/polyclipping/clipper.cpp
