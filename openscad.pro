@@ -214,7 +214,8 @@ FORMS += src/MainWindow.ui \
            src/AboutDialog.ui \
            src/FontListDialog.ui \
            src/ProgressWidget.ui \
-    src/launchingscreen.ui
+           src/launchingscreen.ui \
+           src/LibraryInfoDialog.ui
 
 HEADERS += src/typedefs.h \
            src/version_check.h \
@@ -308,7 +309,8 @@ src/FontCache.h \
            \
            src/AutoUpdater.h \
            src/launchingscreen.h \
-           src/legacyeditor.h
+           src/legacyeditor.h \
+           src/LibraryInfoDialog.h
 
 SOURCES += src/version_check.cc \
            src/ProgressWidget.cc \
@@ -397,7 +399,8 @@ src/FontCache.cc \
            src/UIUtils.cc \
 	   src/FontListDialog.cc \
            src/launchingscreen.cpp \
-           src/legacyeditor.cc
+           src/legacyeditor.cc \
+           src/LibraryInfoDialog.cc
 
 # ClipperLib
 SOURCES += src/polyclipping/clipper.cpp
