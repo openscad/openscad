@@ -45,6 +45,7 @@
 #endif
 #include "AboutDialog.h"
 #include "FontListDialog.h"
+#include "LibraryInfoDialog.h"
 #ifdef ENABLE_OPENCSG
 #include "CSGTermEvaluator.h"
 #include "OpenCSGRenderer.h"
@@ -59,7 +60,6 @@
 #include "CocoaUtils.h"
 #endif
 #include "PlatformUtils.h"
-#include "LibraryInfo.h"
 
 #include <QMenu>
 #include <QTime>
@@ -166,7 +166,7 @@ bool MainWindow::mdiMode = false;
 bool MainWindow::undockMode = false;
 
 MainWindow::MainWindow(const QString &filename)
-	: root_inst("group"), font_list_dialog(NULL), tempFile(NULL), progresswidget(NULL)
+    : root_inst("group"), library_info_dialog(NULL), font_list_dialog(NULL), tempFile(NULL), progresswidget(NULL)
 {
 	setupUi(this);
 
@@ -201,7 +201,6 @@ MainWindow::MainWindow(const QString &filename)
 
 	top_ctx.registerBuiltin();
 
-	this->openglbox = NULL;
 	root_module = NULL;
 	absolute_root_node = NULL;
 	this->root_chain = NULL;
@@ -2273,15 +2272,12 @@ MainWindow::helpManual()
 
 void MainWindow::helpLibrary()
 {
-	QString info(LibraryInfo::info().c_str());
-	info += QString(qglview->getRendererInfo().c_str());
-	if (!this->openglbox) {
-		this->openglbox = new QMessageBox(QMessageBox::Information,
-                                      "OpenGL Info", "OpenSCAD Detailed Library and Build Information",
-                                      QMessageBox::Ok, this);
-	}
-	this->openglbox->setDetailedText(info);
-	this->openglbox->show();
+    if (!this->library_info_dialog) {
+        QString rendererInfo(qglview->getRendererInfo().c_str());
+        LibraryInfoDialog *dialog = new LibraryInfoDialog(rendererInfo);
+        this->library_info_dialog = dialog;
+    }
+    this->library_info_dialog->show();
 }
 
 void MainWindow::helpFontInfo()
