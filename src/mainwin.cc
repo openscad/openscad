@@ -1293,6 +1293,7 @@ void MainWindow::findAndReplace()
 	replaceButton->show();
 	replaceAllButton->show();
 	find_panel->show();
+	findInputField->setText(editor->selectedText());
 	findInputField->setFocus();
 	findInputField->selectAll();
 }
