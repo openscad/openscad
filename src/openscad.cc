@@ -231,8 +231,8 @@ Camera get_camera(po::variables_map vm)
 #else
 #define OPENSCAD_QTGUI 1
 #include <QApplication>
+#include <QSettings>
 #endif
-
 static bool checkAndExport(shared_ptr<const Geometry> root_geom, unsigned nd,
 	enum FileFormat format, const char *filename)
 {
@@ -485,6 +485,7 @@ Q_IMPORT_PLUGIN(qtaccessiblewidgets)
 #endif // QT_VERSION
 #endif // MINGW64/MINGW32/MSCVER
 #include "MainWindow.h"
+#include "launchingscreen.h"
   #ifdef __APPLE__
   #include "EventFilter.h"
   #endif
@@ -549,9 +550,6 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 	const QString &app_path = app.applicationDirPath();
 	PlatformUtils::registerApplicationPath(app_path.toLocal8Bit().constData());
 
-	QDir exdir(QString::fromStdString(PlatformUtils::resourcesPath()));
-	exdir.cd("examples");
-	MainWindow::setExamplesDir(exdir.path());
   parser_init(PlatformUtils::applicationPath());
 
 #ifdef Q_OS_MAC
@@ -571,14 +569,34 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 	f.setSamples(4);
 	QGLFormat::setDefaultFormat(f);
 #endif
-	if (!inputFiles.size()) inputFiles.push_back("");
+	bool noInputFiles = false;
+	if (!inputFiles.size()) {
+		noInputFiles = true;
+		inputFiles.push_back("");
+	}
+
+	QSettings settings;
+	QVariant showOnStartup = settings.value("launcher/showOnStartup");
+	if (noInputFiles && (showOnStartup.isNull() || showOnStartup.toBool())) {
+	    LaunchingScreen *launcher = new LaunchingScreen();
+	    int dialogResult = launcher->exec();
+	    if (dialogResult) {
+		inputFiles.clear();
+		inputFiles.push_back(launcher->selectedFile().toStdString());
+	    } else {
+		return 0;
+	    }
+	}
+
+	MainWindow *mainwin;
 #ifdef ENABLE_MDI
 	BOOST_FOREACH(const string &infile, inputFiles) {
-               new MainWindow(assemblePath(original_path, infile));
+		mainwin = new MainWindow(assemblePath(original_path, infile));
 	}
 #else
-	new MainWindow(assemblePath(original_path, inputFiles[0]));
+	mainwin = new MainWindow(assemblePath(original_path, inputFiles[0]));
 #endif
+
 	app.connect(&app, SIGNAL(lastWindowClosed()), &app, SLOT(quit()));
 	int rc = app.exec();
 	if (MainWindow::windows) {
