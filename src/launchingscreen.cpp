@@ -40,9 +40,11 @@ LaunchingScreen::LaunchingScreen(QWidget *parent) :
     connect(ui->pushButtonNew, SIGNAL(clicked()), this, SLOT(accept()));
     connect(ui->pushButtonOpen, SIGNAL(clicked()), this, SLOT(openFile()));
     connect(ui->pushButtonHelp, SIGNAL(clicked()), this, SLOT(openUserManualURL()));
-    connect(ui->recentList, SIGNAL(itemClicked(QListWidgetItem *)), this, SLOT(enableRecentButton(QListWidgetItem *)));
+    connect(ui->recentList->selectionModel(), SIGNAL(currentRowChanged(const QModelIndex &, const QModelIndex &)), this, SLOT(enableRecentButton(const QModelIndex &, const QModelIndex &)));
+
     connect(ui->recentList, SIGNAL(itemDoubleClicked(QListWidgetItem*)), this, SLOT(openRecent()));
-    connect(ui->treeWidget, SIGNAL(itemClicked(QTreeWidgetItem *,int)), this, SLOT(enableExampleButton(QTreeWidgetItem *,int)));
+    connect(ui->treeWidget, SIGNAL(currentItemChanged(QTreeWidgetItem *, QTreeWidgetItem *)), this, SLOT(enableExampleButton(QTreeWidgetItem *, QTreeWidgetItem *)));
+
     connect(ui->treeWidget, SIGNAL(itemDoubleClicked(QTreeWidgetItem *,int)), this, SLOT(openExample()));
     connect(ui->openRecentButton, SIGNAL(clicked()), this, SLOT(openRecent()));
     connect(ui->openExampleButton, SIGNAL(clicked()), this, SLOT(openExample()));
@@ -59,10 +61,10 @@ QString LaunchingScreen::selectedFile()
     return selection;
 }
 
-void LaunchingScreen::enableRecentButton(QListWidgetItem *itemClicked)
+void LaunchingScreen::enableRecentButton(const QModelIndex & current, const QModelIndex & previous)
 {
-    const bool enable = itemClicked;
-    ui->openRecentButton->setEnabled(enable);
+    ui->openRecentButton->setEnabled(true);
+    ui->openRecentButton->setDefault(true);
 }
 
 void LaunchingScreen::openRecent()
@@ -75,10 +77,11 @@ void LaunchingScreen::openRecent()
     checkOpen(item->data(Qt::UserRole));
 }
 
-void LaunchingScreen::enableExampleButton(QTreeWidgetItem *itemClicked, int /* column */)
+void LaunchingScreen::enableExampleButton(QTreeWidgetItem *current, QTreeWidgetItem *previous)
 {
-    const bool enable = itemClicked && (itemClicked->childCount() == 0);
-    ui->openExampleButton->setEnabled(enable);
+  const bool enable = current->childCount() == 0;
+  ui->openExampleButton->setEnabled(enable);
+  ui->openExampleButton->setDefault(true);
 }
 
 void LaunchingScreen::openExample()

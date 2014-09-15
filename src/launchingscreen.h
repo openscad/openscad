@@ -22,13 +22,13 @@ public:
 
 private slots:
     void checkboxState(bool state);
-    void enableRecentButton(QListWidgetItem *itemClicked);
-    void enableExampleButton(QTreeWidgetItem *itemClicked, int column);
+    void enableRecentButton(const QModelIndex &current, const QModelIndex &previous);
+    void enableExampleButton(QTreeWidgetItem *current, QTreeWidgetItem *previous);
     void openFile();
     void openRecent();
     void openExample();
     void openUserManualURL();
-    
+
 private:
     void checkOpen(const QVariant &data);
     
