@@ -103,6 +103,7 @@ Preferences::Preferences(QWidget *parent) : QMainWindow(parent)
 	this->defaultmap["advanced/forceGoldfeather"] = false;
 	this->defaultmap["advanced/mdi"] = true;
 	this->defaultmap["advanced/undockableWindows"] = false;
+	this->defaultmap["launcher/showOnStartup"] = true;
 
 	// Toolbar
 	QActionGroup *group = new QActionGroup(this);
@@ -378,6 +379,13 @@ void Preferences::on_mouseWheelZoomBox_toggled(bool state)
 	settings.setValue("editor/ctrlmousewheelzoom", state);
 }
 
+void
+Preferences::on_launcherBox_toggled(bool state)
+{
+	QSettings settings;
+ 	settings.setValue("launcher/showOnStartup", state);	
+}
+
 void Preferences::keyPressEvent(QKeyEvent *e)
 {
 #ifdef Q_OS_MAC
@@ -460,6 +468,7 @@ void Preferences::updateGUI()
 	this->forceGoldfeatherBox->setChecked(getValue("advanced/forceGoldfeather").toBool());
 	this->mdiCheckBox->setChecked(getValue("advanced/mdi").toBool());
 	this->undockCheckBox->setChecked(getValue("advanced/undockableWindows").toBool());
+	this->launcherBox->setChecked(getValue("launcher/showOnStartup").toBool());
 }
 
 void Preferences::apply() const

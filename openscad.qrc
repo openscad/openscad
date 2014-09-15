@@ -1,5 +1,8 @@
 <RCC>
   <qresource prefix="/">
+    <file>icons/openscad.png</file>
+    <file>icons/button.png</file>
+    <file>icons/background-welcome-screen.svg</file>
     <file>icons/prefsFeatures.png</file>
     <file>icons/stopbutton.png</file>
     <file>icons/prefsAdvanced.png</file>
@@ -53,5 +56,6 @@
     <file>images/orthogonalwhite.png</file>
     <file>images/perspective1white.png</file>
     <file>images/crosswhite.png</file>
+    <file>icons/background.png</file>
   </qresource>
 </RCC>

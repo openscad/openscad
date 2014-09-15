@@ -3,6 +3,7 @@
 #include <QMainWindow>
 #include <QIcon>
 #include "ui_MainWindow.h"
+#include "UIUtils.h"
 #include "openscad.h"
 #include "modcontext.h"
 #include "module.h"
@@ -62,12 +63,10 @@ public:
 	std::vector<shared_ptr<CSGTerm> > background_terms;
 	CSGChain *background_chain;
 	QString last_compiled_doc;
-	static QString qexamplesdir;
 
-	static const int maxRecentFiles = 10;
-	QAction *actionRecentFile[maxRecentFiles];
+	QAction *actionRecentFile[UIUtils::maxRecentFiles];
         QMap<QString, QString> knownFileExtensions;
-	
+
 	QString editortype;	
 	bool useScintilla;
 
@@ -87,7 +86,6 @@ private slots:
 	void setColorScheme(const QString &cs);
 	void showProgress();
 	void openCSGSettingsChanged();
-
 private:
 	void openFile(const QString &filename);
         void handleFileDrop(const QString &filename);
@@ -112,7 +110,7 @@ private:
 
 	EditorInterface *editor;
 
-  class QMessageBox *openglbox;
+  class LibraryInfoDialog* library_info_dialog;
   class FontListDialog *font_list_dialog;
 
 private slots:
@@ -177,7 +175,6 @@ private slots:
 
 public:
 	static QSet<MainWindow*> *windows;
-	static void setExamplesDir(const QString &dir) { MainWindow::qexamplesdir = dir; }
 	void viewModeActionsUncheck();
 	void setCurrentOutput();
 	void clearCurrentOutput();
