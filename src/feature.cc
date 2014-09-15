@@ -19,6 +19,7 @@ Feature::list_t Feature::feature_list;
  * context.
  */
 const Feature Feature::ExperimentalTextModule("text", "Enable the <code>text()</code> module.");
+const Feature Feature::ExperimentalMarkerModule("marker", "Enable the <code>marker()</code> module.");
 
 Feature::Feature(const std::string &name, const std::string &description)
 	: enabled(false), name(name), description(description)

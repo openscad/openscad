@@ -55,7 +55,9 @@ public: // types
 public: // methods
 	ControlModule(Type type)
 		: type(type)
-	{ }
+	{
+		if (type == MARKER) this->feature = &Feature::ExperimentalMarkerModule;
+	}
 
 	virtual AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const;
 
