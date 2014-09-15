@@ -141,7 +141,7 @@ QPushButton:pressed {
        <item>
         <widget class="QListWidget" name="recentList">
          <property name="styleSheet">
-          <string notr="true">background-color:transparent;</string>
+          <string notr="true">QListWidget { background-color:transparent; }</string>
          </property>
         </widget>
        </item>
@@ -204,7 +204,7 @@ QPushButton:pressed {
      <item>
       <widget class="QTreeWidget" name="treeWidget">
        <property name="styleSheet">
-        <string notr="true">background-color:transparent;</string>
+        <string notr="true">QTreeWidget { background-color:transparent; }</string>
        </property>
        <attribute name="headerVisible">
         <bool>false</bool>
