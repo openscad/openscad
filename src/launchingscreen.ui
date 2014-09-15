@@ -294,51 +294,6 @@ QPushButton:pressed {
        </property>
       </widget>
      </item>
-     <item row="1" column="3">
-      <widget class="QLabel" name="label_4">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="text">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:12pt;&quot;&gt;The programmer's 3D CAD Modeller&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="2">
-      <spacer name="horizontalSpacer">
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
-       <property name="sizeType">
-        <enum>QSizePolicy::Fixed</enum>
-       </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>30</width>
-         <height>2</height>
-        </size>
-       </property>
-      </spacer>
-     </item>
-     <item row="0" column="2" colspan="2">
-      <widget class="QLabel" name="label_3">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="styleSheet">
-        <string notr="true"/>
-       </property>
-       <property name="text">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:22pt; color:#006100;&quot;&gt;Open&lt;/span&gt;&lt;span style=&quot; font-size:22pt;&quot;&gt;SCAD&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-       </property>
-      </widget>
-     </item>
      <item row="0" column="1">
       <spacer name="horizontalSpacer_2">
        <property name="orientation">
@@ -354,6 +309,25 @@ QPushButton:pressed {
         </size>
        </property>
       </spacer>
+     </item>
+     <item row="0" column="2" rowspan="2">
+      <widget class="QLabel" name="label_3">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="text">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;
+&lt;p style=&quot;font-family: 'Open Sans', 'Droid Sans', 'sans-serif'; font-weight: bold; padding-bottom: 0; margin-bottom: 0; font-size: 22pt;&quot;&gt;&lt;span style=&quot;color: green;&quot;&gt;Open&lt;/span&gt;SCAD&lt;/p&gt;
+&lt;p style=&quot;font-family: 'Open Sans', 'Droid Sans', 'sans-serif'; font-weight: normal; font-size: 14pt; padding-top: 0; margin-top: 0; margin-left: 2em;&quot;&gt;The Programmers Solid 3D CAD Modeller&lt;/p&gt;
+&lt;/body&gt;&lt;/html&gt;
+
+
+</string>
+       </property>
+      </widget>
      </item>
     </layout>
    </item>
