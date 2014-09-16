@@ -200,7 +200,7 @@ namespace PolysetUtils {
 				}
 			}
 		} catch (const CGAL::Assertion_exception &e) {
-			PRINTB("CGAL error in dxftess triangulate_polygon: %s", e.what());
+			PRINTB("CGAL error in triangulate_polygon(): %s", e.what());
 			err = true;
 		}
 		CGAL::set_error_behaviour(old_behaviour);
@@ -213,27 +213,35 @@ namespace PolysetUtils {
 	 polyset has simple polygon faces with no holes, no self intersections, no
 	 duplicate points, and proper orientation. */
 	void tessellate_faces(const PolySet &inps, PolySet &outps) {
+		int degeneratePolygons = 0;
 		for (size_t i = 0; i < inps.polygons.size(); i++) {
 			const PolySet::Polygon pgon = inps.polygons[i];
-			if (pgon.size()<3) {
-				PRINT("WARNING: PolySet has polygon with <3 points");
-				continue;
-			}
-			projection_t goodproj = find_good_projection( pgon );
-			if (goodproj==NONE) {
-				PRINT("WARNING: PolySet has degenerate polygon");
+			if (pgon.size() < 3) {
+				degeneratePolygons++;
 				continue;
 			}
 			std::vector<PolySet::Polygon> triangles;
-			bool err = triangulate_polygon( pgon, triangles, goodproj );
-			if (!err) for (size_t j=0;j<triangles.size();j++) {
+			if (pgon.size() == 3) {
+				triangles.push_back(pgon);
+			}
+			else {
+				projection_t goodproj = find_good_projection( pgon );
+				if (goodproj==NONE) {
+					degeneratePolygons++;
+					continue;
+				}
+				bool err = triangulate_polygon(pgon, triangles, goodproj);
+				if (err) continue;
+			}
+			for (size_t j=0;j<triangles.size();j++) {
 					PolySet::Polygon t = triangles[j];
 					outps.append_poly();
 					outps.append_vertex(t[0].x(),t[0].y(),t[0].z());
 					outps.append_vertex(t[1].x(),t[1].y(),t[1].z());
 					outps.append_vertex(t[2].x(),t[2].y(),t[2].z());
-				}
+			}
 		}
+		if (degeneratePolygons > 0) PRINT("WARNING: PolySet has degenerate polygons");
 	}
 }
 

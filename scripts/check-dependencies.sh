@@ -84,6 +84,9 @@ glib2_sysver()
     glib2path=$1/lib/glib-2.0/include/glibconfig.h
   fi
   if [ ! -e $glib2path ]; then
+    glib2path=$1/lib64/glib-2.0/include/glibconfig.h
+  fi
+  if [ ! -e $glib2path ]; then
     return
   fi
   glib2major=`grep "define  *GLIB_MAJOR_VERSION  *[0-9.]*" $glib2path | awk '{print $3}'`
@@ -171,6 +174,24 @@ qt4_sysver()
   qt4ver=`grep 'define  *QT_VERSION_STR  *' $qt4path | awk '{print $3}'`
   qt4ver=`echo $qt4ver | sed s/'"'//g`
   qt4_sysver_result=$qt4ver
+}
+
+qscintilla2_sysver()
+{
+  QMAKE=qmake
+  if [ "`command -v qmake-qt4`" ]; then
+    QMAKE=qmake-qt4
+  fi
+  
+  qt4incdir="`$QMAKE -query QT_INSTALL_HEADERS`"
+  qscipath="$qt4incdir/Qsci/qsciglobal.h"
+  if [ ! -e $qscipath ]; then
+    return
+  fi
+
+  qsciver=`grep define.*QSCINTILLA_VERSION_STR "$qscipath" | awk '{print $3}'`
+  qsciver=`echo $qsciver | sed s/'"'//g`
+  qscintilla2_sysver_result="$qsciver"
 }
 
 glew_sysver()
@@ -586,7 +607,7 @@ checkargs()
 
 main()
 {
-  deps="qt4 cgal gmp mpfr boost opencsg glew eigen glib2 fontconfig freetype2 harfbuzz gcc bison flex make"
+  deps="qt4 qscintilla2 cgal gmp mpfr boost opencsg glew eigen glib2 fontconfig freetype2 harfbuzz gcc bison flex make"
   #deps="$deps curl git" # not technically necessary for build
   #deps="$deps python cmake imagemagick" # only needed for tests
   #deps="cgal"

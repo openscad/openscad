@@ -88,6 +88,7 @@ are build scripts that download and compile the libraries from source.
 Follow the instructions for the platform you're compiling on below.
 
 * [Qt4 (4.4 - 5.3)](http://www.qt.nokia.com/)
+* [QScintilla2 (2.7)](http://www.riverbankcomputing.co.uk/software/qscintilla/)
 * [CGAL (3.6 - 4.4)](http://www.cgal.org/)
  * [GMP (5.x)](http://www.gmplib.org/)
  * [MPFR (3.x)](http://www.mpfr.org/)

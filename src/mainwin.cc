@@ -45,6 +45,7 @@
 #endif
 #include "AboutDialog.h"
 #include "FontListDialog.h"
+#include "LibraryInfoDialog.h"
 #ifdef ENABLE_OPENCSG
 #include "CSGTermEvaluator.h"
 #include "OpenCSGRenderer.h"
@@ -59,7 +60,6 @@
 #include "CocoaUtils.h"
 #endif
 #include "PlatformUtils.h"
-#include "LibraryInfo.h"
 
 #include <QMenu>
 #include <QTime>
@@ -112,7 +112,6 @@ QSet<MainWindow*> *MainWindow::windows = NULL;
 
 // Global application state
 unsigned int GuiLocker::gui_locked = 0;
-QString MainWindow::qexamplesdir;
 
 #define QUOTE(x__) # x__
 #define QUOTED(x__) QUOTE(x__)
@@ -166,20 +165,20 @@ bool MainWindow::mdiMode = false;
 bool MainWindow::undockMode = false;
 
 MainWindow::MainWindow(const QString &filename)
-	: root_inst("group"), font_list_dialog(NULL), tempFile(NULL), progresswidget(NULL)
+    : root_inst("group"), library_info_dialog(NULL), font_list_dialog(NULL), tempFile(NULL), progresswidget(NULL)
 {
 	setupUi(this);
 
 	QSettings settings;
  	editortype = settings.value("editor/editortype").toString();
-	useScintilla = (editortype == "QScintilla Editor");
+	useScintilla = (editortype != "Simple Editor");
 #ifdef USE_SCINTILLA_EDITOR
 	if (useScintilla) {
 		 editor = new ScintillaEditor(editorDockContents);
 	}
 	else
 #endif
-	editor = new LegacyEditor(editorDockContents);
+	    editor = new LegacyEditor(editorDockContents);
 
 	Preferences::create(this, editor->colorSchemes());
 
@@ -203,7 +202,6 @@ MainWindow::MainWindow(const QString &filename)
 
 	top_ctx.registerBuiltin();
 
-	this->openglbox = NULL;
 	root_module = NULL;
 	absolute_root_node = NULL;
 	this->root_chain = NULL;
@@ -288,7 +286,7 @@ MainWindow::MainWindow(const QString &filename)
 	this->fileActionReload->setShortcuts(shortcuts);
 #endif
 	// Open Recent
-	for (int i = 0;i<maxRecentFiles; i++) {
+	for (int i = 0;i<UIUtils::maxRecentFiles; i++) {
 		this->actionRecentFile[i] = new QAction(this);
 		this->actionRecentFile[i]->setVisible(false);
 		this->menuOpenRecent->addAction(this->actionRecentFile[i]);
@@ -299,17 +297,8 @@ MainWindow::MainWindow(const QString &filename)
 	this->menuOpenRecent->addAction(this->fileActionClearRecent);
 	connect(this->fileActionClearRecent, SIGNAL(triggered()),
 					this, SLOT(clearRecentFiles()));
-	//Examples
-	if (!qexamplesdir.isEmpty()) {
-       
-		show_examples();
-	
-        } else {
-                delete this->menuExamples;
-                this->menuExamples = NULL;
 
-	  }
-
+	show_examples();
 
 	// Edit menu
 	connect(this->editActionUndo, SIGNAL(triggered()), editor, SLOT(undo()));
@@ -667,7 +656,7 @@ void MainWindow::updateRecentFiles()
 	QStringList files = settings.value("recentFileList").toStringList();
 	files.removeAll(infoFileName);
 	files.prepend(infoFileName);
-	while (files.size() > maxRecentFiles) files.removeLast();
+	while (files.size() > UIUtils::maxRecentFiles) files.removeLast();
 	settings.setValue("recentFileList", files);
 
 	foreach(QWidget *widget, QApplication::topLevelWidgets()) {
@@ -677,7 +666,6 @@ void MainWindow::updateRecentFiles()
 		}
 	}
 }
-
 
 void MainWindow::updatedFps()
 {
@@ -1029,23 +1017,16 @@ void MainWindow::actionNew()
 
 void MainWindow::actionOpen()
 {
-	QSettings settings;
-	QString last_dirname = settings.value("lastOpenDirName").toString();
-	QString new_filename = QFileDialog::getOpenFileName(this, "Open File",
-		last_dirname, "OpenSCAD Designs (*.scad *.csg)");
+	QFileInfo fileInfo = UIUtils::openFile(this);
+	if (!fileInfo.exists()) {
+	    return;
+	}
 
-	if (new_filename.isEmpty()) {
-		return;
+	if (!MainWindow::mdiMode && !maybeSave()) {
+	    return;
 	}
 	
-	QDir last_dir = QFileInfo(new_filename).dir();
-	last_dirname = last_dir.path();
-	settings.setValue("lastOpenDirName", last_dirname);
-	if (!MainWindow::mdiMode && !maybeSave()) {
-		return;
-	}
-
-	openFile(new_filename);
+	openFile(fileInfo.filePath());
 }
 
 void MainWindow::actionOpenRecent()
@@ -1069,65 +1050,39 @@ void MainWindow::clearRecentFiles()
 
 void MainWindow::updateRecentFileActions()
 {
-	QSettings settings; // set up project and program properly in main.cpp
-	QStringList files = settings.value("recentFileList").toStringList();
+    QStringList files = UIUtils::recentFiles();
 
-	int originalNumRecentFiles = files.size();
-
-	// Remove any duplicate or empty entries from the list
-#if (QT_VERSION >= QT_VERSION_CHECK(4, 5, 0))
-	files.removeDuplicates();
-#endif
-	files.removeAll(QString());
-	// Now remove any entries which do not exist
-	for(int i = files.size()-1; i >= 0; --i) {
-		QFileInfo fileInfo(files[i]);
-		if (!QFile(fileInfo.absoluteFilePath()).exists())
-			files.removeAt(i);
-	}
-
-	int numRecentFiles = qMin(files.size(),
-														static_cast<int>(maxRecentFiles));
-
-	for (int i = 0; i < numRecentFiles; ++i) {
-		this->actionRecentFile[i]->setText(QFileInfo(files[i]).fileName());
-		this->actionRecentFile[i]->setData(files[i]);
-		this->actionRecentFile[i]->setVisible(true);
-	}
-	for (int j = numRecentFiles; j < maxRecentFiles; ++j)
-		this->actionRecentFile[j]->setVisible(false);
-
-	// If we had to prune the list, then save the cleaned list
-	if (originalNumRecentFiles != numRecentFiles)
-		settings.setValue("recentFileList", files);
+    for (int i = 0; i < files.size(); ++i) {
+	this->actionRecentFile[i]->setText(QFileInfo(files[i]).fileName());
+	this->actionRecentFile[i]->setData(files[i]);
+	this->actionRecentFile[i]->setVisible(true);
+    }
+    for (int i = files.size(); i < UIUtils::maxRecentFiles; ++i) {
+	this->actionRecentFile[i]->setVisible(false);
+    }
 }
 
 void MainWindow::show_examples()
 {
-		bool found_example = false;
-		QStringList categories;
-		//categories in File menu item - Examples
-                categories << "Basics" << "Shapes" << "Extrusion" << "Advanced";
-        
-                foreach (const QString &cat, categories){
-                        QStringList examples = QDir(qexamplesdir + QDir::separator() + cat).entryList(QStringList("*.scad"),
-                        QDir::Files | QDir::Readable, QDir::Name);
-                        QMenu *menu = this->menuExamples->addMenu(cat);
-                        
-                        foreach(const QString &ex, examples) {
-                                QAction *openAct = new QAction(ex, this);
-                                connect(openAct, SIGNAL(triggered()), this, SLOT(actionOpenExample()));
-                                menu->addAction(openAct);
-                                QVariant categoryName = cat;
-                                openAct->setData(categoryName);
-                                found_example = true;
-			}
-		}
-		 if (!found_example) {
-                        delete this->menuExamples;
-                        this->menuExamples = NULL;
-                }
+        bool found_example = false;
 
+        foreach (const QString &cat, UIUtils::exampleCategories()) {
+		QFileInfoList examples = UIUtils::exampleFiles(cat);
+                QMenu *menu = this->menuExamples->addMenu(cat);
+
+                foreach(const QFileInfo &ex, examples) {
+                        QAction *openAct = new QAction(ex.fileName(), this);
+                        connect(openAct, SIGNAL(triggered()), this, SLOT(actionOpenExample()));
+                        menu->addAction(openAct);
+                        openAct->setData(ex.canonicalFilePath());
+                        found_example = true;
+                }
+        }
+
+        if (!found_example) {
+                delete this->menuExamples;
+                this->menuExamples = NULL;
+        }
 }
 
 void MainWindow::actionOpenExample()
@@ -1136,11 +1091,10 @@ void MainWindow::actionOpenExample()
 		return;
 	}
 
-	QAction *action = qobject_cast<QAction *>(sender());
+	const QAction *action = qobject_cast<QAction *>(sender());
 	if (action) {
-		QVariant cat = action->data();
-		QString catname = cat.toString();
-		openFile(qexamplesdir + QDir::separator() + catname + QDir::separator() + action->text());
+		const QString path = action->data().toString();
+		openFile(path);
 	}
 }
 
@@ -1194,7 +1148,8 @@ void MainWindow::actionSave()
 		setCurrentOutput();
 		QFile file(this->fileName);
 		if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text)) {
-			PRINTB("Failed to open file for writing: %s (%s)", this->fileName.toLocal8Bit().constData() % file.errorString().toLocal8Bit().constData());
+			PRINTB("Failed to open file for writing: %s (%s)", 
+			this->fileName.toLocal8Bit().constData() % file.errorString().toLocal8Bit().constData());
 			QMessageBox::warning(this, windowTitle(), tr("Failed to open file for writing:\n %1 (%2)")
 					.arg(this->fileName).arg(file.errorString()));
 		}
@@ -1268,7 +1223,9 @@ void MainWindow::pasteViewportRotation()
 {
 	QString txt;
 	txt.sprintf("[ %.2f, %.2f, %.2f ]",
-		fmodf(360 - qglview->cam.object_rot.x() + 90, 360), fmodf(360 - qglview->cam.object_rot.y(), 360), fmodf(360 - qglview->cam.object_rot.z(), 360));
+		fmodf(360 - qglview->cam.object_rot.x() + 90, 360),
+		fmodf(360 - qglview->cam.object_rot.y(), 360),
+		fmodf(360 - qglview->cam.object_rot.z(), 360));
 	this->editor->insert(txt);
 }
 
@@ -1296,6 +1253,7 @@ void MainWindow::findAndReplace()
 	replaceButton->show();
 	replaceAllButton->show();
 	find_panel->show();
+	findInputField->setText(editor->selectedText());
 	findInputField->setFocus();
 	findInputField->selectAll();
 }
@@ -1726,11 +1684,13 @@ void MainWindow::actionDisplayCSGProducts()
 	e->setWindowTitle("CSG Products Dump");
 	e->setReadOnly(true);
 	e->setPlainText(QString("\nCSG before normalization:\n%1\n\n\nCSG after normalization:\n%2\n\n\nCSG rendering chain:\n%3\n\n\nHighlights CSG rendering chain:\n%4\n\n\nBackground CSG rendering chain:\n%5\n")
-									.arg(root_raw_term ? QString::fromLocal8Bit(root_raw_term->dump().c_str()) : "N/A",
-											 root_norm_term ? QString::fromLocal8Bit(root_norm_term->dump().c_str()) : "N/A",
-											 this->root_chain ? QString::fromLocal8Bit(this->root_chain->dump().c_str()) : "N/A",
-											 highlights_chain ? QString::fromLocal8Bit(highlights_chain->dump().c_str()) : "N/A",
-											 background_chain ? QString::fromLocal8Bit(background_chain->dump().c_str()) : "N/A"));
+									
+	.arg(root_raw_term ? QString::fromLocal8Bit(root_raw_term->dump().c_str()) : "N/A",
+	root_norm_term ? QString::fromLocal8Bit(root_norm_term->dump().c_str()) : "N/A",
+	this->root_chain ? QString::fromLocal8Bit(this->root_chain->dump().c_str()) : "N/A",
+	highlights_chain ? QString::fromLocal8Bit(highlights_chain->dump().c_str()) : "N/A",
+	background_chain ? QString::fromLocal8Bit(background_chain->dump().c_str()) : "N/A"));
+	
 	e->show();
 	e->resize(600, 400);
 	clearCurrentOutput();
@@ -1794,9 +1754,7 @@ void MainWindow::actionExport(export_type_e, QString, QString)
 
 	const CGAL_Nef_polyhedron *N = dynamic_cast<const CGAL_Nef_polyhedron *>(this->root_geom.get());
 	if (N && !N->p3->is_simple()) {
-	 	PRINT("Object isn't a valid 2-manifold! Modify your design. See http://en.wikibooks.org/wiki/OpenSCAD_User_Manual/STL_Import_and_Export");
-	 	clearCurrentOutput();
-	 	return;
+	 	PRINT("Warning: Object may not be a valid 2-manifold and may need repair! See http://en.wikibooks.org/wiki/OpenSCAD_User_Manual/STL_Import_and_Export");
 	}
 
 	QString title = QString("Export %1 File").arg(type_name);
@@ -1910,8 +1868,8 @@ void MainWindow::actionExportCSG()
 	}
 
 	QString csg_filename = QFileDialog::getSaveFileName(this, "Export CSG File",
-        this->fileName.isEmpty() ? "Untitled.csg" : QFileInfo(this->fileName).baseName()+".csg",
-	"CSG Files (*.csg)");
+	    this->fileName.isEmpty() ? "Untitled.csg" : QFileInfo(this->fileName).baseName()+".csg",
+	    "CSG Files (*.csg)");
 	
 	if (csg_filename.isEmpty()) {
 		PRINT("No filename specified. CSG export aborted.");
@@ -2254,8 +2212,7 @@ void MainWindow::handleFileDrop(const QString &filename)
 	}
 }
 
-void
-MainWindow::helpAbout()
+void MainWindow::helpAbout()
 {
 	qApp->setWindowIcon(QApplication::windowIcon());
 	AboutDialog *dialog = new AboutDialog(this);
@@ -2263,29 +2220,24 @@ MainWindow::helpAbout()
 	//QMessageBox::information(this, "About OpenSCAD", QString(helptitle) + QString(copyrighttext));
 }
 
-void
-MainWindow::helpHomepage()
+void MainWindow::helpHomepage()
 {
-	QDesktopServices::openUrl(QUrl("http://openscad.org/"));
+        UIUtils::openHomepageURL();
 }
 
-void
-MainWindow::helpManual()
+void MainWindow::helpManual()
 {
-	QDesktopServices::openUrl(QUrl("http://www.openscad.org/documentation.html"));
+        UIUtils::openUserManualURL();
 }
 
 void MainWindow::helpLibrary()
 {
-	QString info(LibraryInfo::info().c_str());
-	info += QString(qglview->getRendererInfo().c_str());
-	if (!this->openglbox) {
-		this->openglbox = new QMessageBox(QMessageBox::Information,
-                                      "OpenGL Info", "OpenSCAD Detailed Library and Build Information",
-                                      QMessageBox::Ok, this);
-	}
-	this->openglbox->setDetailedText(info);
-	this->openglbox->show();
+    if (!this->library_info_dialog) {
+        QString rendererInfo(qglview->getRendererInfo().c_str());
+        LibraryInfoDialog *dialog = new LibraryInfoDialog(rendererInfo);
+        this->library_info_dialog = dialog;
+    }
+    this->library_info_dialog->show();
 }
 
 void MainWindow::helpFontInfo()
@@ -2301,8 +2253,7 @@ void MainWindow::helpFontInfo()
 /*!
 	FIXME: In MDI mode, should this be called on both reload functions?
  */
-bool
-MainWindow::maybeSave()
+bool MainWindow::maybeSave()
 {
 	if (editor->isContentModified()) {
 		QMessageBox::StandardButton ret;
@@ -2350,8 +2301,7 @@ void MainWindow::closeEvent(QCloseEvent *event)
 	}
 }
 
-void
-MainWindow::preferences()
+void MainWindow::preferences()
 {
 	Preferences::inst()->show();
 	Preferences::inst()->activateWindow();
@@ -2393,7 +2343,6 @@ void MainWindow::consoleOutput(const std::string &msg, void *userdata)
 	MainWindow *thisp = static_cast<MainWindow*>(userdata);
 	QMetaObject::invokeMethod(thisp->console, "append", Qt::QueuedConnection,
 	Q_ARG(QString, QString::fromLocal8Bit(msg.c_str())));
-	
 	if (thisp->procevents) QApplication::processEvents();
 }
 

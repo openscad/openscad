@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>544</width>
-    <height>487</height>
+    <width>852</width>
+    <height>550</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -27,7 +27,7 @@
     <item>
      <widget class="QStackedWidget" name="stackedWidget">
       <property name="currentIndex">
-       <number>1</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="page3DView">
        <layout class="QVBoxLayout" name="verticalLayout_4">
@@ -109,19 +109,6 @@
            </spacer>
           </item>
          </layout>
-        </item>
-        <item>
-         <spacer name="verticalSpacer">
-          <property name="orientation">
-           <enum>Qt::Vertical</enum>
-          </property>
-          <property name="sizeHint" stdset="0">
-           <size>
-            <width>20</width>
-            <height>645</height>
-           </size>
-          </property>
-         </spacer>
         </item>
        </layout>
       </widget>
@@ -522,8 +509,8 @@
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>100</width>
-               <height>30</height>
+               <width>832</width>
+               <height>420</height>
               </rect>
              </property>
              <layout class="QVBoxLayout" name="verticalLayout_10">
@@ -654,19 +641,6 @@
          </layout>
         </item>
         <item>
-         <spacer name="verticalSpacer_2">
-          <property name="orientation">
-           <enum>Qt::Vertical</enum>
-          </property>
-          <property name="sizeHint" stdset="0">
-           <size>
-            <width>20</width>
-            <height>11</height>
-           </size>
-          </property>
-         </spacer>
-        </item>
-        <item>
          <widget class="QCheckBox" name="mdiCheckBox">
           <property name="text">
            <string>Allow to open multiple documents</string>
@@ -679,6 +653,26 @@
            <string>Enable undocking of Editor and Console</string>
           </property>
          </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="launcherBox">
+          <property name="text">
+           <string>Show Welcome Screen</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <spacer name="verticalSpacer_2">
+          <property name="orientation">
+           <enum>Qt::Vertical</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>20</width>
+            <height>11</height>
+           </size>
+          </property>
+         </spacer>
         </item>
        </layout>
       </widget>

@@ -69,7 +69,7 @@ void Preferences::init() {
 	this->defaultmap["editor/fontfamily"] = found_family;
  	this->defaultmap["editor/fontsize"] = 12;
 	this->defaultmap["editor/syntaxhighlight"] = "For Light Background";
-	this->defaultmap["editor/editortype"] = "Simple Editor";
+	this->defaultmap["editor/editortype"] = "QScintilla Editor";
 
 #if defined (Q_OS_MAC)
 	this->defaultmap["editor/ctrlmousewheelzoom"] = false;
@@ -89,9 +89,6 @@ void Preferences::init() {
 	connect(this->fontSize, SIGNAL(currentIndexChanged(const QString&)),
 					this, SLOT(on_fontSize_editTextChanged(const QString &)));
 
-	connect(this->editorType, SIGNAL(currentIndexChanged(const QString&)),
-					this, SLOT(on_editorType_editTextChanged(const QString &)));
-
 	// reset GUI fontsize if fontSize->addItem emitted signals that changed it.
 	this->fontSize->setEditText( QString("%1").arg( savedsize ) );
 	
@@ -106,6 +103,7 @@ void Preferences::init() {
 	this->defaultmap["advanced/forceGoldfeather"] = false;
 	this->defaultmap["advanced/mdi"] = true;
 	this->defaultmap["advanced/undockableWindows"] = false;
+	this->defaultmap["launcher/showOnStartup"] = true;
 
 	// Toolbar
 	QActionGroup *group = new QActionGroup(this);
@@ -265,7 +263,7 @@ void Preferences::on_fontSize_editTextChanged(const QString &size)
 	emit fontChanged(getValue("editor/fontfamily").toString(), intsize);
 }
 
-void Preferences::on_editorType_editTextChanged(const QString &type)
+void Preferences::on_editorType_activated(const QString &type)
 {
 	QSettings settings;
 	settings.setValue("editor/editortype", type);
@@ -378,6 +376,13 @@ void Preferences::on_mouseWheelZoomBox_toggled(bool state)
 	settings.setValue("editor/ctrlmousewheelzoom", state);
 }
 
+void
+Preferences::on_launcherBox_toggled(bool state)
+{
+	QSettings settings;
+ 	settings.setValue("launcher/showOnStartup", state);	
+}
+
 void Preferences::keyPressEvent(QKeyEvent *e)
 {
 #ifdef Q_OS_MAC
@@ -467,6 +472,7 @@ void Preferences::updateGUI()
 	this->forceGoldfeatherBox->setChecked(getValue("advanced/forceGoldfeather").toBool());
 	this->mdiCheckBox->setChecked(getValue("advanced/mdi").toBool());
 	this->undockCheckBox->setChecked(getValue("advanced/undockableWindows").toBool());
+	this->launcherBox->setChecked(getValue("launcher/showOnStartup").toBool());
 }
 
 void Preferences::apply() const
