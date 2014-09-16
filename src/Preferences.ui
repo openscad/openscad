@@ -54,7 +54,7 @@
                <bool>false</bool>
               </property>
               <property name="currentRow">
-               <number>0</number>
+               <number>-1</number>
               </property>
               <item>
                <property name="text">
@@ -89,6 +89,11 @@
               <item>
                <property name="text">
                 <string>DeepOcean</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Solarized</string>
                </property>
               </item>
              </widget>
@@ -522,8 +527,8 @@
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>832</width>
-               <height>420</height>
+               <width>100</width>
+               <height>30</height>
               </rect>
              </property>
              <layout class="QVBoxLayout" name="verticalLayout_10">

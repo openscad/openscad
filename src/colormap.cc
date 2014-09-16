@@ -249,6 +249,18 @@ ColorMap::ColorMap() {
 		(CGAL_EDGE_2D_COLOR,       webcolors["magenta"])
 		(CROSSHAIR_COLOR,          Color4f(0xf0, 0xf0, 0xf0));
 
+	ColorScheme solarized = map_list_of
+		(BACKGROUND_COLOR,         Color4f(0xfd, 0xf6, 0xe3))
+		(OPENCSG_FACE_FRONT_COLOR, Color4f(0xb5, 0x88, 0x00))
+		(OPENCSG_FACE_BACK_COLOR,  Color4f(0x88, 0x22, 0x33))
+		(CGAL_FACE_FRONT_COLOR,    Color4f(0xb5, 0x88, 0x00))
+		(CGAL_FACE_BACK_COLOR,     Color4f(0x88, 0x22, 0x33))
+		(CGAL_FACE_2D_COLOR,       Color4f(0x6c, 0x71, 0xc4))
+		(CGAL_EDGE_FRONT_COLOR,    Color4f(0xb5, 0x88, 0x00))
+		(CGAL_EDGE_BACK_COLOR,     Color4f(0xb5, 0x88, 0x00))
+		(CGAL_EDGE_2D_COLOR,       Color4f(0xb5, 0x88, 0x00))
+		(CROSSHAIR_COLOR,          Color4f(0x80, 0x00, 0x00));
+
   // Monotone - no difference between 'back face' and 'front face'
 	ColorScheme monotone = map_list_of
 		(BACKGROUND_COLOR,         Color4f(0xff, 0xff, 0xe5))
@@ -270,6 +282,7 @@ ColorMap::ColorMap() {
 		("BeforeDawn", beforedawn)
 		("Nature", nature)
 		("DeepOcean", deepocean)
+		("Solarized", solarized)
 		("Monotone", monotone); // Hidden, not in GUI
 	colorschemes = tmpcolorschemes;
 
