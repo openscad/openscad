@@ -488,9 +488,17 @@ void Preferences::apply() const
 
 void Preferences::create(QWidget *parent, QStringList colorSchemes)
 {
+    std::list<std::string> names = ColorMap::inst()->colorSchemeNames(true);
+    QStringList renderColorSchemes;
+    foreach (std::string name, names) {
+	renderColorSchemes << name.c_str();
+    }
+    
     instance = new Preferences(parent);
     instance->syntaxHighlight->clear();
     instance->syntaxHighlight->addItems(colorSchemes);
+    instance->colorSchemeChooser->clear();
+    instance->colorSchemeChooser->addItems(renderColorSchemes);
     instance->init();
     instance->setupFeaturesPage();
     instance->updateGUI();

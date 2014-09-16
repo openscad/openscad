@@ -1,0 +1,18 @@
+{
+    "name" : "Cornfield",
+    "index" : 1000,
+    "show-in-gui" : true,
+
+    "colors" : {
+        "background" :         "#ffffe5",
+        "opencsg-face-front" : "#f9d72c",
+        "opencsg-face-back" :  "#9dcb51",
+        "cgal-face-front" :    "#f9d72c",
+        "cgal-face-back" :     "#9dcb51",
+        "cgal-face-2d" :       "#00bf99",
+        "cgal-edge-front" :    "#ffec5e",
+        "cgal-edge-back" :     "#abd856",
+        "cgal-edge-2d" :       "#ff0000",
+        "crosshair" :          "#800000"
+    }
+}
