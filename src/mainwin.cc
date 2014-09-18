@@ -492,6 +492,7 @@ MainWindow::MainWindow(const QString &filename)
 	 viewActionOrthogonal->setIcon(QIcon("://images/orthogonalwhite.png"));
 	 viewActionAnimate->setIcon(QIcon("://images/animate.png"));
 	 designActionExportSTL->setIcon(QIcon(":/images/export-white.png"));
+	 viewActionViewAll->setIcon(QIcon(":/images/zoom-all-white.png"));
 	}
 	
 	// make sure it looks nice..

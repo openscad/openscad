@@ -112,6 +112,7 @@
          <addaction name="designActionPreview"/>
          <addaction name="designActionRender"/>
          <addaction name="separator"/>
+         <addaction name="viewActionViewAll"/>
          <addaction name="viewActionZoomIn"/>
          <addaction name="viewActionZoomOut"/>
          <addaction name="separator"/>
@@ -125,7 +126,6 @@
          <addaction name="viewActionPerspective"/>
          <addaction name="viewActionOrthogonal"/>
          <addaction name="viewActionShowAxes"/>
-         <addaction name="viewActionShowCrosshairs"/>
          <addaction name="viewActionShowEdges"/>
         </widget>
        </item>
@@ -1064,6 +1064,10 @@
    </property>
   </action>
   <action name="viewActionViewAll">
+   <property name="icon">
+    <iconset resource="../openscad.qrc">
+     <normaloff>:/images/zoom-all.png</normaloff>:/images/zoom-all.png</iconset>
+   </property>
    <property name="text">
     <string>View All</string>
    </property>
