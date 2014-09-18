@@ -436,6 +436,9 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this->replaceAllButton, SIGNAL(clicked()), this, SLOT(replaceAll()));
 	connect(this->replaceInputField, SIGNAL(returnPressed()), this->replaceButton, SLOT(animateClick()));
 	
+	addKeyboardShortCut(this->toolBar->actions());
+	addKeyboardShortCut(this->editortoolbar->actions());
+	
 	//Toolbar
 	int defaultcolor = toolBar->palette().background().color().lightness(); 
         
@@ -531,6 +534,24 @@ MainWindow::MainWindow(const QString &filename)
 
 	setAcceptDrops(true);
 	clearCurrentOutput();
+}
+
+void MainWindow::addKeyboardShortCut(const QList<QAction *> &actions)
+{
+    foreach (QAction *action, actions) {
+	// prevent adding shortcut twice if action is added to multiple toolbars
+	if (action->toolTip().contains("&nbsp;")) {
+	    continue;
+	}
+	
+	const QString shortCut(action->shortcut().toString(QKeySequence::NativeText));
+	if (shortCut.isEmpty()) {
+	    continue;
+	}
+
+	const QString toolTip("%1 &nbsp;<span style=\"color: gray; font-size: small; font-style: italic\">%2</span>");
+	action->setToolTip(toolTip.arg(action->toolTip(), shortCut));
+    }
 }
 
 void MainWindow::loadViewSettings(){

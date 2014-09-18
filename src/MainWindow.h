@@ -107,6 +107,7 @@ private:
 	QString get2dExportFilename(QString format, QString extension);
 	void show_examples();
 	void setDockWidgetTitle(QDockWidget *dockWidget, QString prefix, bool topLevel);
+        void addKeyboardShortCut(const QList<QAction *> &actions);
 
 	EditorInterface *editor;
 
