@@ -143,7 +143,7 @@
      <x>0</x>
      <y>0</y>
      <width>1397</width>
-     <height>34</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_File">
@@ -1077,7 +1077,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Hide Toolbar</string>
+    <string>Hide toolbars</string>
    </property>
   </action>
  </widget>
