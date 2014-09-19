@@ -319,6 +319,7 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this->editActionFindAndReplace, SIGNAL(triggered()), this, SLOT(findAndReplace()));
 	connect(this->editActionFindNext, SIGNAL(triggered()), this, SLOT(findNext()));
 	connect(this->editActionFindPrevious, SIGNAL(triggered()), this, SLOT(findPrev()));
+	connect(this->editActionUseSelectionForFind, SIGNAL(triggered()), this, SLOT(useSelectionForFind()));
 
 	// Design menu
 	connect(this->designActionAutoReload, SIGNAL(toggled(bool)), this, SLOT(autoReloadSet(bool)));
@@ -1280,6 +1281,11 @@ void MainWindow::findNext()
 void MainWindow::findPrev()
 {
 	editor->find(this->findInputField->text(), true, true);
+}
+
+void MainWindow::useSelectionForFind()
+{
+	findInputField->setText(editor->selectedText());
 }
 
 bool MainWindow::eventFilter(QObject* obj, QEvent *event)

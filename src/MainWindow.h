@@ -143,6 +143,7 @@ private slots:
 	void findAndReplace();
 	void findNext();
 	void findPrev();
+	void useSelectionForFind();
 	void replace();
 	void replaceAll();
 protected:
