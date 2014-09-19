@@ -146,6 +146,10 @@ private slots:
 	void useSelectionForFind();
 	void replace();
 	void replaceAll();
+
+	// Mac OSX FindBuffer support
+	void findBufferChanged();
+	void updateFindBuffer(QString);
 protected:
 	virtual bool eventFilter(QObject* obj, QEvent *event);
 
