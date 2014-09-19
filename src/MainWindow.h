@@ -125,6 +125,7 @@ private slots:
 	void actionSaveAs();
 	void actionReload();
 	void actionShowLibraryFolder();
+        void convertTabsToSpaces();
 
 	void instantiateRoot();
 	void compileDone(bool didchange);

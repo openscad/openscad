@@ -308,6 +308,7 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this->editActionUnindent, SIGNAL(triggered()), editor, SLOT(unindentSelection()));
 	connect(this->editActionComment, SIGNAL(triggered()), editor, SLOT(commentSelection()));
 	connect(this->editActionUncomment, SIGNAL(triggered()), editor, SLOT(uncommentSelection()));
+	connect(this->editActionConvertTabsToSpaces, SIGNAL(triggered()), this, SLOT(convertTabsToSpaces()));
 	connect(this->editActionPasteVPT, SIGNAL(triggered()), this, SLOT(pasteViewportTranslation()));
 	connect(this->editActionPasteVPR, SIGNAL(triggered()), this, SLOT(pasteViewportRotation()));
 	connect(this->editActionZoomIn, SIGNAL(triggered()), editor, SLOT(zoomIn()));
@@ -1256,20 +1257,47 @@ void MainWindow::findAndReplace()
 	findInputField->selectAll();
 }
 
-void MainWindow::selectFindType(int type) {
+void MainWindow::selectFindType(int type)
+{
 	if (type == 0) find();
 	if (type == 1) findAndReplace();
 }
 
-void MainWindow::replace() {
+void MainWindow::replace()
+{
 	this->editor->replaceSelectedText(this->replaceInputField->text());
 	this->editor->find(this->findInputField->text());
 }
 
-void MainWindow::replaceAll() {
+void MainWindow::replaceAll()
+{
 	while (this->editor->find(this->findInputField->text(), true)) {
 		this->editor->replaceSelectedText(this->replaceInputField->text());
 	}
+}
+
+void MainWindow::convertTabsToSpaces()
+{
+    const QString text = this->editor->toPlainText();
+
+    QString converted;
+    
+    int cnt = 4;
+    for (int idx = 0;idx < text.length();idx++) {
+	QChar c = text.at(idx);
+	if (c == '\t') {
+	    for (; cnt > 0; cnt--) {
+		converted.append(' ');
+	    }
+	} else {
+	    converted.append(c);
+	}
+	if (cnt <= 0 || c == '\n') {
+	    cnt = 5;
+	}
+	cnt--;
+    }
+    this->editor->replaceAll(converted);
 }
 
 void MainWindow::findNext()

@@ -212,6 +212,12 @@ void ScintillaEditor::insert(const QString &text)
   qsci->insert(text); 
 }
 
+void ScintillaEditor::replaceAll(const QString &text)
+{
+    qsci->selectAll(true);
+    qsci->replaceSelectedText(text);
+}
+
 void ScintillaEditor::undo()
 {
   qsci->undo(); 

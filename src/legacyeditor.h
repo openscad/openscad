@@ -30,6 +30,7 @@ public slots:
 	void unhighlightLastError();
 	void setHighlightScheme(const QString&);
 	void insert(const QString&);
+        void replaceAll(const QString&);
 	void undo();
 	void redo();
 	void cut();

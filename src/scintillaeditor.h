@@ -44,6 +44,7 @@ public slots:
 	void commentSelection();
 	void uncommentSelection();
 	void insert(const QString&);
+        void replaceAll(const QString&);
 	void undo();
 	void redo();
 	void cut();

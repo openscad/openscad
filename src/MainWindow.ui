@@ -120,7 +120,7 @@
      <x>0</x>
      <y>0</y>
      <width>936</width>
-     <height>22</height>
+     <height>34</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_File">
@@ -181,6 +181,7 @@
     <addaction name="editActionUnindent"/>
     <addaction name="editActionComment"/>
     <addaction name="editActionUncomment"/>
+    <addaction name="editActionConvertTabsToSpaces"/>
     <addaction name="separator"/>
     <addaction name="editActionPasteVPT"/>
     <addaction name="editActionPasteVPR"/>
@@ -951,6 +952,11 @@
   <action name="viewActionViewAll">
    <property name="text">
     <string>View All</string>
+   </property>
+  </action>
+  <action name="editActionConvertTabsToSpaces">
+   <property name="text">
+    <string>Convert Tabs to Spaces</string>
    </property>
   </action>
  </widget>
