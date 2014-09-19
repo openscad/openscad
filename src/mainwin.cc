@@ -1243,7 +1243,9 @@ void MainWindow::find()
 	replaceButton->hide();
 	replaceAllButton->hide();
 	find_panel->show();
-	findInputField->setText(editor->selectedText());
+	if (!editor->selectedText().isEmpty()) {
+		findInputField->setText(editor->selectedText());
+	}
 	findInputField->setFocus();
 	findInputField->selectAll();
 }
@@ -1260,7 +1262,9 @@ void MainWindow::findAndReplace()
 	replaceButton->show();
 	replaceAllButton->show();
 	find_panel->show();
-	findInputField->setText(editor->selectedText());
+	if (!editor->selectedText().isEmpty()) {
+		findInputField->setText(editor->selectedText());
+	}
 	findInputField->setFocus();
 	findInputField->selectAll();
 }
