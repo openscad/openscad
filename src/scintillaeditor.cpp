@@ -41,6 +41,11 @@ ScintillaEditor::ScintillaEditor(QWidget *parent) : EditorInterface(parent)
   qsci->indicatorDefine(QsciScintilla::RoundBoxIndicator, indicatorNumber);
   qsci->markerDefine(QsciScintilla::Circle, markerNumber);
   qsci->setUtf8(true);
+  qsci->setTabIndents(true);
+  qsci->setTabWidth(8);
+  qsci->setIndentationWidth(4);
+  qsci->setIndentationsUseTabs(false);  
+  
   lexer = new ScadLexer(this);
   initLexer();
   initMargin();
