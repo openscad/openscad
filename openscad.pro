@@ -474,6 +474,10 @@ libraries.path = $$PREFIX/share/openscad/libraries/
 libraries.files = libraries/*
 INSTALLS += libraries
 
+fonts.path = $$PREFIX/share/openscad/fonts/
+fonts.files = fonts/*
+INSTALLS += fonts
+
 applications.path = $$PREFIX/share/applications
 applications.files = icons/openscad.desktop
 INSTALLS += applications
