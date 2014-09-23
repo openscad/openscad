@@ -1,7 +1,87 @@
 #include "colormap.h"
+#include <boost/lexical_cast.hpp>
 #include <boost/assign/list_of.hpp>
+#include "boosty.h"
 #include "printutils.h"
+#include "PlatformUtils.h"
+
 using namespace boost::assign; // bring map_list_of() into scope
+
+RenderColorScheme::RenderColorScheme(fs::path path) : path(path)
+{
+    try {
+	boost::property_tree::read_json(boosty::stringy(path).c_str(), pt);
+	_name = pt.get<std::string>("name");
+	_index = pt.get<int>("index");
+	_show_in_gui = pt.get<bool>("show-in-gui");
+	
+	addColor(BACKGROUND_COLOR, "background");
+	addColor(OPENCSG_FACE_FRONT_COLOR, "opencsg-face-front");
+	addColor(OPENCSG_FACE_BACK_COLOR, "opencsg-face-back");
+	addColor(CGAL_FACE_FRONT_COLOR, "cgal-face-front");
+	addColor(CGAL_FACE_2D_COLOR, "cgal-face-back");
+	addColor(CGAL_FACE_BACK_COLOR, "cgal-face-2d");
+	addColor(CGAL_EDGE_FRONT_COLOR, "cgal-edge-front");
+	addColor(CGAL_EDGE_BACK_COLOR, "cgal-edge-back");
+	addColor(CGAL_EDGE_2D_COLOR, "cgal-edge-2d");
+	addColor(CROSSHAIR_COLOR, "crosshair");
+    } catch (const std::exception & e) {
+	PRINTB("Error reading color scheme file '%s': %s", path.c_str() % e.what());
+	_name = "";
+	_index = 0;
+	_show_in_gui = false;
+    }
+}
+
+RenderColorScheme::~RenderColorScheme()
+{
+}
+
+bool RenderColorScheme::valid() const
+{
+    return !_name.empty();
+}
+
+const std::string & RenderColorScheme::name() const
+{
+    return _name;
+}
+
+int RenderColorScheme::index() const
+{
+    return _index;
+}
+
+bool RenderColorScheme::showInGui() const
+{
+    return _show_in_gui;
+}
+
+ColorScheme & RenderColorScheme::colorScheme()
+{
+    return _color_scheme;
+}
+
+const boost::property_tree::ptree & RenderColorScheme::propertyTree() const
+{
+    return pt;
+}
+
+void RenderColorScheme::addColor(RenderColor colorKey, std::string key)
+{
+    const boost::property_tree::ptree& colors = pt.get_child("colors");
+    std::string color = colors.get<std::string>(key);
+    if ((color.length() == 7) && (color.at(0) == '#')) {
+	char *endptr;
+	unsigned int val = strtol(color.substr(1).c_str(), &endptr, 16);
+	int r = (val >> 16) & 0xff;
+	int g = (val >> 8) & 0xff;
+	int b = val & 0xff;
+	_color_scheme.insert(ColorScheme::value_type(colorKey, Color4f(r, g, b)));
+    } else {
+	throw std::invalid_argument(std::string("invalid color value for key '") + key + "': '" + color + "'");
+    }
+}
 
 ColorMap *ColorMap::inst(bool erase)
 {
@@ -164,135 +244,39 @@ ColorMap::ColorMap() {
     ("yellow", Color4f(255, 255, 0))
     ("yellowgreen", Color4f(154, 205, 50));
 	webcolors = tmpwebcolors;
-
-	ColorScheme cornfield = map_list_of
-		(BACKGROUND_COLOR,         Color4f(0xff, 0xff, 0xe5))
-		(OPENCSG_FACE_FRONT_COLOR, Color4f(0xf9, 0xd7, 0x2c))
-		(OPENCSG_FACE_BACK_COLOR,  Color4f(0x9d, 0xcb, 0x51))
-		(CGAL_FACE_FRONT_COLOR,    Color4f(0xf9, 0xd7, 0x2c))
-		(CGAL_FACE_BACK_COLOR,     Color4f(0x9d, 0xcb, 0x51))
-		(CGAL_FACE_2D_COLOR,       Color4f(0x00, 0xbf, 0x99))
-		(CGAL_EDGE_FRONT_COLOR,    Color4f(0xff, 0xec, 0x5e))
-		(CGAL_EDGE_BACK_COLOR,     Color4f(0xab, 0xd8, 0x56))
-		(CGAL_EDGE_2D_COLOR,       Color4f(0xff, 0x00, 0x00))
-		(CROSSHAIR_COLOR,          Color4f(0x80, 0x00, 0x00));
-
-	ColorScheme metallic = map_list_of
-		(BACKGROUND_COLOR,         Color4f(0xaa, 0xaa, 0xff))
-		(OPENCSG_FACE_FRONT_COLOR, Color4f(0xdd, 0xdd, 0xff))
-		(OPENCSG_FACE_BACK_COLOR,  Color4f(0xdd, 0x22, 0xdd))
-		(CGAL_FACE_FRONT_COLOR,    Color4f(0xdd, 0xdd, 0xff))
-		(CGAL_FACE_BACK_COLOR,     Color4f(0xdd, 0x22, 0xdd))
-		(CGAL_FACE_2D_COLOR,       Color4f(0x00, 0xbf, 0x99))
-		(CGAL_EDGE_FRONT_COLOR,    Color4f(0xff, 0x00, 0x00))
-		(CGAL_EDGE_BACK_COLOR,     Color4f(0xff, 0x00, 0x00))
-		(CGAL_EDGE_2D_COLOR,       Color4f(0xff, 0x00, 0x00))
-		(CROSSHAIR_COLOR,          Color4f(0x80, 0x00, 0x00));
-
-	ColorScheme sunset = map_list_of
-		(BACKGROUND_COLOR,         Color4f(0xaa, 0x44, 0x44))
-		(OPENCSG_FACE_FRONT_COLOR, Color4f(0xff, 0xaa, 0xaa))
-		(OPENCSG_FACE_BACK_COLOR,  Color4f(0x88, 0x22, 0x33))
-		(CGAL_FACE_FRONT_COLOR,    Color4f(0xff, 0xaa, 0xaa))
-		(CGAL_FACE_BACK_COLOR,     Color4f(0x88, 0x22, 0x33))
-		(CGAL_FACE_2D_COLOR,       Color4f(0x00, 0xbf, 0x99))
-		(CGAL_EDGE_FRONT_COLOR,    Color4f(0xff, 0x00, 0x00))
-		(CGAL_EDGE_BACK_COLOR,     Color4f(0xff, 0x00, 0x00))
-		(CGAL_EDGE_2D_COLOR,       Color4f(0xff, 0x00, 0x00))
-		(CROSSHAIR_COLOR,          Color4f(0x80, 0x00, 0x00));
-
-	ColorScheme starnight = map_list_of
-		(BACKGROUND_COLOR,         webcolors["black"])
-		(OPENCSG_FACE_FRONT_COLOR, webcolors["lightyellow"])
-		(OPENCSG_FACE_BACK_COLOR,  webcolors["cyan"])
-		(CGAL_FACE_FRONT_COLOR,    webcolors["lightyellow"])
-		(CGAL_FACE_BACK_COLOR,     webcolors["cyan"])
-		(CGAL_FACE_2D_COLOR,       webcolors["mediumpurple"])
-		(CGAL_EDGE_FRONT_COLOR,    Color4f(0x00, 0x00, 0xff))
-		(CGAL_EDGE_BACK_COLOR,     Color4f(0x00, 0x00, 0xff))
-		(CGAL_EDGE_2D_COLOR,       webcolors["magenta"])
-		(CROSSHAIR_COLOR,          Color4f(0xf0, 0xf0, 0xf0));
-
-	ColorScheme beforedawn = map_list_of
-		(BACKGROUND_COLOR,         Color4f(0x33, 0x33, 0x33))
-		(OPENCSG_FACE_FRONT_COLOR, Color4f(0xcc, 0xcc, 0xcc))
-		(OPENCSG_FACE_BACK_COLOR,  Color4f(0x55, 0x63, 0xdd))
-		(CGAL_FACE_FRONT_COLOR,    Color4f(0xcc, 0xcc, 0xcc))
-		(CGAL_FACE_BACK_COLOR,     Color4f(0x55, 0x63, 0xdd))
-		(CGAL_FACE_2D_COLOR,       Color4f(0x00, 0xbf, 0x99))
-		(CGAL_EDGE_FRONT_COLOR,    Color4f(0xff, 0x00, 0x00))
-		(CGAL_EDGE_BACK_COLOR,     Color4f(0xff, 0x00, 0x00))
-		(CGAL_EDGE_2D_COLOR,       Color4f(0xff, 0x00, 0x00))
-		(CROSSHAIR_COLOR,          Color4f(0xf0, 0xf0, 0xf0));
-
-	ColorScheme nature = map_list_of
-		(BACKGROUND_COLOR,         Color4f(0xfa, 0xfa, 0xfa))
-		(OPENCSG_FACE_FRONT_COLOR, Color4f(0x16, 0xa0, 0x85))
-		(OPENCSG_FACE_BACK_COLOR,  Color4f(0xdb, 0xf4, 0xda))
-		(CGAL_FACE_FRONT_COLOR,    Color4f(0x16, 0xa0, 0x85))
-		(CGAL_FACE_BACK_COLOR,     Color4f(0xdb, 0xf4, 0xda))
-		(CGAL_FACE_2D_COLOR,       Color4f(0x00, 0xbf, 0x99))
-		(CGAL_EDGE_FRONT_COLOR,    Color4f(0xff, 0x00, 0x00))
-		(CGAL_EDGE_BACK_COLOR,     Color4f(0xff, 0x00, 0x00))
-		(CGAL_EDGE_2D_COLOR,       Color4f(0xff, 0x00, 0x00))
-		(CROSSHAIR_COLOR,          Color4f(0x11, 0x11, 0x11));
-
-	ColorScheme deepocean = map_list_of
-		(BACKGROUND_COLOR,         Color4f(0x33, 0x33, 0x33))
-		(OPENCSG_FACE_FRONT_COLOR, Color4f(0xee, 0xee, 0xee))
-		(OPENCSG_FACE_BACK_COLOR,  Color4f(0x0b, 0xab, 0xc8))
-		(CGAL_FACE_FRONT_COLOR,    Color4f(0xee, 0xee, 0xee))
-		(CGAL_FACE_BACK_COLOR,     Color4f(0x0b, 0xab, 0xc8))
-		(CGAL_FACE_2D_COLOR,       webcolors["mediumpurple"])
-		(CGAL_EDGE_FRONT_COLOR,    Color4f(0x00, 0x00, 0xff))
-		(CGAL_EDGE_BACK_COLOR,     Color4f(0x00, 0x00, 0xff))
-		(CGAL_EDGE_2D_COLOR,       webcolors["magenta"])
-		(CROSSHAIR_COLOR,          Color4f(0xf0, 0xf0, 0xf0));
-
-  // Monotone - no difference between 'back face' and 'front face'
-	ColorScheme monotone = map_list_of
-		(BACKGROUND_COLOR,         Color4f(0xff, 0xff, 0xe5))
-		(OPENCSG_FACE_FRONT_COLOR, Color4f(0xf9, 0xd7, 0x2c))
-		(OPENCSG_FACE_BACK_COLOR,  Color4f(0xf9, 0xd7, 0x2c))
-		(CGAL_FACE_FRONT_COLOR,    Color4f(0xf9, 0xd7, 0x2c))
-		(CGAL_FACE_BACK_COLOR,     Color4f(0xf9, 0xd7, 0x2c))
-		(CGAL_FACE_2D_COLOR,       Color4f(0x00, 0xbf, 0x99))
-		(CGAL_EDGE_FRONT_COLOR,    Color4f(0xff, 0x00, 0x00))
-		(CGAL_EDGE_BACK_COLOR,     Color4f(0xff, 0x00, 0x00))
-		(CGAL_EDGE_2D_COLOR,       Color4f(0xff, 0x00, 0x00))
-		(CROSSHAIR_COLOR,          Color4f(0x80, 0x00, 0x00));
-
-	boost::unordered_map<std::string, ColorScheme> tmpcolorschemes = map_list_of
-		("Cornfield", cornfield)
-		("Metallic", metallic)
-		("Sunset", sunset)
-		("Starnight", starnight)
-		("BeforeDawn", beforedawn)
-		("Nature", nature)
-		("DeepOcean", deepocean)
-		("Monotone", monotone); // Hidden, not in GUI
-	colorschemes = tmpcolorschemes;
-
+	
+	colorschemes = enumerateColorSchemes();
 }
 
 const ColorScheme &ColorMap::defaultColorScheme() const
 {
-	return colorschemes.at("Cornfield");
+    return *findColorScheme("Cornfield");
 }
 
 const ColorScheme *ColorMap::findColorScheme(const std::string &name) const
 {
-	if (colorschemes.find(name) != colorschemes.end()) return &colorschemes.at(name);
-	return NULL;
+    for (colorscheme_set_t::const_iterator it = colorschemes.begin();it != colorschemes.end();it++) {
+	RenderColorScheme *scheme = (*it).second.get();
+	if (name == scheme->name()) {
+	    return &scheme->colorScheme();
+	}
+    }
+
+    return NULL;
 }
 
-std::list<std::string> ColorMap::colorSchemeNames() const
+std::list<std::string> ColorMap::colorSchemeNames(bool guiOnly) const
 {
-	std::list<std::string> names;
-	for (boost::unordered_map<std::string, ColorScheme>::const_iterator iter=colorschemes.begin(); iter!=colorschemes.end(); iter++) {
-		names.push_back(iter->first);
+    std::list<std::string> colorSchemes;
+    for (colorscheme_set_t::const_iterator it = colorschemes.begin();it != colorschemes.end();it++) {
+	RenderColorScheme *scheme = (*it).second.get();
+	if (guiOnly && !scheme->showInGui()) {
+	    continue;
 	}
-	return names;
+        colorSchemes.push_back(scheme->name());
+    }
+	
+    return colorSchemes;
 }
 
 Color4f ColorMap::getColor(const ColorScheme &cs, const RenderColor rc)
@@ -302,19 +286,33 @@ Color4f ColorMap::getColor(const ColorScheme &cs, const RenderColor rc)
 	return Color4f(0, 0, 0, 127);
 }
 
-/*
-	void printcolorscheme(const ColorScheme &cs)
-	{
-	for (ColorScheme::const_iterator j=cs.begin();j!=cs.end();j++)
-	PRINTB("%i %s",j->first % j->second.transpose());
-	}
+ColorMap::colorscheme_set_t ColorMap::enumerateColorSchemes()
+{
+    const fs::path resources = PlatformUtils::resourcesPath();
+    const fs::path color_schemes = resources / "color-schemes" / "render";
 
-	void printcolorschemes()
-	{
-	for (boost::unordered_map<std::string, ColorScheme>::const_iterator i=colorschemes.begin();i!=colorschemes.end();i++) {
-	PRINTB("-- %s --", i->first);
-	for (ColorScheme::const_iterator j=i->second.begin();j!=i->second.end();j++)
-	PRINTB("%i %s",j->first % j->second.transpose());
+    colorscheme_set_t result_set;
+    fs::directory_iterator end_iter;
+    
+    if (fs::exists(color_schemes) && fs::is_directory(color_schemes)) {
+	for (fs::directory_iterator dir_iter(color_schemes); dir_iter != end_iter; ++dir_iter) {
+	    if (!fs::is_regular_file(dir_iter->status())) {
+		continue;
+	    }
+	    
+	    const fs::path path = (*dir_iter).path();
+	    if (!(path.extension().string() == ".json")) {
+		continue;
+	    }
+	    
+	    RenderColorScheme *colorScheme = new RenderColorScheme(path);
+	    if (colorScheme->valid()) {
+		result_set.insert(colorscheme_set_t::value_type(colorScheme->index(), boost::shared_ptr<RenderColorScheme>(colorScheme)));
+	    } else {
+		delete colorScheme;
+	    }
 	}
-	}
-*/
+    }
+    
+    return result_set;
+}

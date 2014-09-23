@@ -1,0 +1,18 @@
+{
+    "name" : "Nature",
+    "index" : 1500,
+    "show-in-gui" : true,
+
+    "colors" : {
+        "background" :         "#fafafa",
+        "opencsg-face-front" : "#16a085",
+        "opencsg-face-back" :  "#dbf4da",
+        "cgal-face-front" :    "#16a085",
+        "cgal-face-back" :     "#dbf4da",
+        "cgal-face-2d" :       "#00bf99",
+        "cgal-edge-front" :    "#ff0000",
+        "cgal-edge-back" :     "#ff0000",
+        "cgal-edge-2d" :       "#ff0000",
+        "crosshair" :          "#111111"
+    }
+}
