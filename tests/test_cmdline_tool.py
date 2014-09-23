@@ -25,6 +25,7 @@ import getopt
 import shutil
 import platform
 import string
+import difflib
 
 #_debug_tcct = True
 _debug_tcct = False
@@ -99,12 +100,15 @@ def compare_text(expected, actual):
     return get_normalized_text(expected) == get_normalized_text(actual)
 
 def compare_default(resultfilename):
-    print >> sys.stderr, 'diff text compare: '
+    print >> sys.stderr, 'text comparison: '
     print >> sys.stderr, ' expected textfile: ', expectedfilename
     print >> sys.stderr, ' actual textfile: ', resultfilename
-    if not compare_text(expectedfilename, resultfilename):
+    expected_text = get_normalized_text(expectedfilename)
+    actual_text = get_normalized_text(resultfilename)
+    if not expected_text == actual_text:
 	if resultfilename: 
-            execute_and_redirect("diff", ["-u", expectedfilename, resultfilename], sys.stderr)
+            differences = difflib.unified_diff(expected_text.splitlines(1), actual_text.splitlines(1))
+            for line in differences: sys.stderr.write(line)
         return False
     return True
 
