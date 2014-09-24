@@ -247,6 +247,7 @@ HEADERS += src/typedefs.h \
            src/ProgressWidget.h \
            src/parsersettings.h \
            src/renderer.h \
+           src/settings.h \
            src/rendersettings.h \
            src/colormap.h \
            src/ThrownTogetherRenderer.h \
@@ -399,6 +400,7 @@ SOURCES += src/version_check.cc \
 	   src/FreetypeRenderer.cc \
 	   src/FontCache.cc \
            \
+           src/settings.cc \
            src/rendersettings.cc \
            src/highlighter.cc \
            src/Preferences.cc \

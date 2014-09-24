@@ -43,6 +43,7 @@
 #include "progress.h"
 #include "dxfdim.h"
 #include "legacyeditor.h"
+#include "settings.h"
 #ifdef USE_SCINTILLA_EDITOR
 #include "scintillaeditor.h"
 #endif
