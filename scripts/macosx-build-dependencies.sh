@@ -426,8 +426,8 @@ build_opencsg()
   if $OPTION_32BIT; then
     OPENCSG_EXTRA_FLAGS="x86"
   fi
-  OPENSCAD_LIBRARIES=$DEPLOYDIR qmake -r CONFIG+="x86_64 $OPENCSG_EXTRA_FLAGS"
-  make install
+  qmake -r QMAKE_CXXFLAGS+="-I$DEPLOYDIR/include" QMAKE_LFLAGS+="-L$DEPLOYDIR/lib" CONFIG+="x86_64 $OPENCSG_EXTRA_FLAGS"
+  INSTALL_ROOT=$DEPLOYDIR make install
 }
 
 build_eigen()
@@ -782,7 +782,7 @@ build_glew 1.10.0
 build_gettext 0.18.3.2
 build_libffi 3.1
 build_glib2 2.40.0
-build_opencsg 1.3.2
+build_opencsg 1.4.0
 build_freetype 2.5.3 --without-png
 build_ragel 6.8
 build_harfbuzz 0.9.28 "--with-coretext=auto --with-glib=no"

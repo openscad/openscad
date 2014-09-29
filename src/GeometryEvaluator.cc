@@ -633,7 +633,8 @@ static void add_slice(PolySet *ps, const Polygon2d &poly,
 */
 static Geometry *extrudePolygon(const LinearExtrudeNode &node, const Polygon2d &poly)
 {
-	PolySet *ps = new PolySet(3);
+	bool cvx = poly.is_convex();
+	PolySet *ps = new PolySet(3, !cvx ? boost::tribool(false) : node.twist == 0 ? boost::tribool(true) : unknown);
 	ps->setConvexity(node.convexity);
 	if (node.height <= 0) return ps;
 

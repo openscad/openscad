@@ -1001,7 +1001,7 @@ namespace CGALUtils {
 
 			for (int i = 0; i < ps.polygons[f].size(); i++) {
 				int j = (i+1) % ps.polygons[f].size();
-				Edge_to_facet_map::iterator it = edge_to_facet_map.find(Edge(ps.polygons[f][i], ps.polygons[f][j]));
+				Edge_to_facet_map::iterator it = edge_to_facet_map.find(Edge(ps.polygons[f][j], ps.polygons[f][i]));
 				if (it == edge_to_facet_map.end()) return false; // Nonmanifold
 				if (!explored_facets.count(it->second)) {
 					explored_facets.insert(it->second);

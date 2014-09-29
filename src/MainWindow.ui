@@ -501,7 +501,7 @@
     <string>Ctrl+Z</string>
    </property>
    <property name="shortcutContext">
-    <enum>Qt::WindowShortcut</enum>
+    <enum>Qt::WidgetWithChildrenShortcut</enum>
    </property>
   </action>
   <action name="editActionRedo">
@@ -512,7 +512,7 @@
     <string>Ctrl+Shift+Z</string>
    </property>
    <property name="shortcutContext">
-    <enum>Qt::WindowShortcut</enum>
+    <enum>Qt::WidgetWithChildrenShortcut</enum>
    </property>
   </action>
   <action name="editActionCut">
@@ -523,7 +523,7 @@
     <string>Ctrl+X</string>
    </property>
    <property name="shortcutContext">
-    <enum>Qt::WindowShortcut</enum>
+    <enum>Qt::WidgetWithChildrenShortcut</enum>
    </property>
   </action>
   <action name="editActionCopy">
@@ -534,7 +534,7 @@
     <string>Ctrl+C</string>
    </property>
    <property name="shortcutContext">
-    <enum>Qt::WindowShortcut</enum>
+    <enum>Qt::WidgetWithChildrenShortcut</enum>
    </property>
   </action>
   <action name="editActionPaste">
@@ -545,7 +545,7 @@
     <string>Ctrl+V</string>
    </property>
    <property name="shortcutContext">
-    <enum>Qt::WindowShortcut</enum>
+    <enum>Qt::WidgetWithChildrenShortcut</enum>
    </property>
   </action>
   <action name="editActionIndent">
