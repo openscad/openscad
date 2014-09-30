@@ -108,7 +108,7 @@
         </widget>
        </item>
        <item>
-        <widget class="ToolBar" name="toolBar">
+        <widget class="ToolBar" name="viewerToolBar">
          <addaction name="designActionPreview"/>
          <addaction name="designActionRender"/>
          <addaction name="separator"/>
@@ -132,7 +132,7 @@
       </layout>
       <zorder>animate_panel</zorder>
       <zorder>qglview</zorder>
-      <zorder>toolBar</zorder>
+      <zorder>viewerToolBar</zorder>
      </widget>
     </item>
    </layout>

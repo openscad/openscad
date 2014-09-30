@@ -436,63 +436,62 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this->replaceAllButton, SIGNAL(clicked()), this, SLOT(replaceAll()));
 	connect(this->replaceInputField, SIGNAL(returnPressed()), this->replaceButton, SLOT(animateClick()));
 	
-	addKeyboardShortCut(this->toolBar->actions());
+	addKeyboardShortCut(this->viewerToolBar->actions());
 	addKeyboardShortCut(this->editortoolbar->actions());
 	
 	//Toolbar
-	int defaultcolor = toolBar->palette().background().color().lightness(); 
+	int defaultcolor = viewerToolBar->palette().background().color().lightness(); 
         
-	if(defaultcolor > 165){ 
-	 fileActionNew->setIcon(QIcon("://images/blackNew.png"));
-	 fileActionOpen->setIcon(QIcon("://images/Open-32.png"));
-	 fileActionSave->setIcon(QIcon("://images/Save-32.png"));
-	 editActionZoomIn->setIcon(QIcon("://images/zoomin.png"));
-	 editActionZoomOut->setIcon(QIcon("://images/zoomout.png"));
-	 designActionRender->setIcon(QIcon("://images/blackRender.png"));
-	 viewActionShowAxes->setIcon(QIcon("://images/blackaxes.png"));
-	 viewActionShowEdges->setIcon(QIcon("://images/Rotation-32.png")); 
-	 viewActionZoomIn->setIcon(QIcon("://images/zoomin.png"));
-	 viewActionZoomOut->setIcon(QIcon("://images/zoomout.png"));
-	 viewActionTop->setIcon(QIcon("://images/blackUp.png"));
-	 viewActionBottom->setIcon(QIcon("://images/blackbottom.png"));
-	 viewActionLeft->setIcon(QIcon("://images/blackleft (copy).png"));
-	 viewActionRight->setIcon(QIcon("://images/rightright.png"));
-	 viewActionFront->setIcon(QIcon("://images/blackfront.png"));
-	 viewActionBack->setIcon(QIcon("://images/blackback.png"));
-	 viewActionSurfaces->setIcon(QIcon("://images/surface.png"));
-	 viewActionWireframe->setIcon(QIcon("://images/wireframe1.png"));
-	 viewActionShowCrosshairs->setIcon(QIcon("://images/cross.png"));
-	 viewActionPerspective->setIcon(QIcon("://images/perspective1.png"));
-	 viewActionOrthogonal->setIcon(QIcon("://images/orthogonal.png"));
-	 viewActionPreview->setIcon(QIcon("://images/Preview-32.png"));
-	 viewActionAnimate->setIcon(QIcon("://images/animate.png"));
-	
+	if (defaultcolor > 165) { 
+		fileActionNew->setIcon(QIcon("://images/blackNew.png"));
+		fileActionOpen->setIcon(QIcon("://images/Open-32.png"));
+		fileActionSave->setIcon(QIcon("://images/Save-32.png"));
+		editActionZoomIn->setIcon(QIcon("://images/zoomin.png"));
+		editActionZoomOut->setIcon(QIcon("://images/zoomout.png"));
+		designActionRender->setIcon(QIcon("://images/blackRender.png"));
+		viewActionShowAxes->setIcon(QIcon("://images/blackaxes.png"));
+		viewActionShowEdges->setIcon(QIcon("://images/Rotation-32.png")); 
+		viewActionZoomIn->setIcon(QIcon("://images/zoomin.png"));
+		viewActionZoomOut->setIcon(QIcon("://images/zoomout.png"));
+		viewActionTop->setIcon(QIcon("://images/blackUp.png"));
+		viewActionBottom->setIcon(QIcon("://images/blackbottom.png"));
+		viewActionLeft->setIcon(QIcon("://images/blackleft (copy).png"));
+		viewActionRight->setIcon(QIcon("://images/rightright.png"));
+		viewActionFront->setIcon(QIcon("://images/blackfront.png"));
+		viewActionBack->setIcon(QIcon("://images/blackback.png"));
+		viewActionSurfaces->setIcon(QIcon("://images/surface.png"));
+		viewActionWireframe->setIcon(QIcon("://images/wireframe1.png"));
+		viewActionShowCrosshairs->setIcon(QIcon("://images/cross.png"));
+		viewActionPerspective->setIcon(QIcon("://images/perspective1.png"));
+		viewActionOrthogonal->setIcon(QIcon("://images/orthogonal.png"));
+		viewActionPreview->setIcon(QIcon("://images/Preview-32.png"));
+		viewActionAnimate->setIcon(QIcon("://images/animate.png"));
 	} else {
-	 fileActionNew->setIcon(QIcon("://images/Document-New-128.png"));
-	 fileActionOpen->setIcon(QIcon("://images/Open-128.png"));
-	 fileActionSave->setIcon(QIcon("://images/Save-128.png"));
-	 editActionZoomIn->setIcon(QIcon("://images/Zoom-In-32.png"));
-	 editActionZoomOut->setIcon(QIcon("://images/Zoom-Out-32.png"));
- 	 designActionRender->setIcon(QIcon("://images/Arrowhead-Right-32.png"));
-	 viewActionZoomIn->setIcon(QIcon("://images/Zoom-In-32.png"));
-	 viewActionZoomOut->setIcon(QIcon("://images/Zoom-Out-32.png")); 
-	 viewActionShowAxes->setIcon(QIcon("://images/axes.png"));
-	 viewActionShowEdges->setIcon(QIcon("://images/grid.png"));
-         viewActionTop->setIcon(QIcon("://images/up.png"));
-         viewActionBottom->setIcon(QIcon("://images/bottom.png"));
-         viewActionLeft->setIcon(QIcon("://images/left.png"));
-         viewActionRight->setIcon(QIcon("://images/right.png"));
-         viewActionFront->setIcon(QIcon("://images/front.png"));
-         viewActionBack->setIcon(QIcon("://images/back.png"));
-	 viewActionSurfaces->setIcon(QIcon("://images/surfaceWhite.png"));
-	 viewActionWireframe->setIcon(QIcon("://images/wireframeWhite.png"));
-	 viewActionShowCrosshairs->setIcon(QIcon("://images/crosswhite.png"));
-	 viewActionPreview->setIcon(QIcon("://images/Preview-32(1).png"));
-	 viewActionPerspective->setIcon(QIcon("://images/perspective1white.png"));
-	 viewActionOrthogonal->setIcon(QIcon("://images/orthogonalwhite.png"));
-	 viewActionAnimate->setIcon(QIcon("://images/animate.png"));
-	 designActionExportSTL->setIcon(QIcon(":/images/export-white.png"));
-	 viewActionViewAll->setIcon(QIcon(":/images/zoom-all-white.png"));
+		fileActionNew->setIcon(QIcon("://images/Document-New-128.png"));
+		fileActionOpen->setIcon(QIcon("://images/Open-128.png"));
+		fileActionSave->setIcon(QIcon("://images/Save-128.png"));
+		editActionZoomIn->setIcon(QIcon("://images/Zoom-In-32.png"));
+		editActionZoomOut->setIcon(QIcon("://images/Zoom-Out-32.png"));
+		designActionRender->setIcon(QIcon("://images/Arrowhead-Right-32.png"));
+		viewActionZoomIn->setIcon(QIcon("://images/Zoom-In-32.png"));
+		viewActionZoomOut->setIcon(QIcon("://images/Zoom-Out-32.png")); 
+		viewActionShowAxes->setIcon(QIcon("://images/axes.png"));
+		viewActionShowEdges->setIcon(QIcon("://images/grid.png"));
+		viewActionTop->setIcon(QIcon("://images/up.png"));
+		viewActionBottom->setIcon(QIcon("://images/bottom.png"));
+		viewActionLeft->setIcon(QIcon("://images/left.png"));
+		viewActionRight->setIcon(QIcon("://images/right.png"));
+		viewActionFront->setIcon(QIcon("://images/front.png"));
+		viewActionBack->setIcon(QIcon("://images/back.png"));
+		viewActionSurfaces->setIcon(QIcon("://images/surfaceWhite.png"));
+		viewActionWireframe->setIcon(QIcon("://images/wireframeWhite.png"));
+		viewActionShowCrosshairs->setIcon(QIcon("://images/crosswhite.png"));
+		viewActionPreview->setIcon(QIcon("://images/Preview-32(1).png"));
+		viewActionPerspective->setIcon(QIcon("://images/perspective1white.png"));
+		viewActionOrthogonal->setIcon(QIcon("://images/orthogonalwhite.png"));
+		viewActionAnimate->setIcon(QIcon("://images/animate.png"));
+		designActionExportSTL->setIcon(QIcon(":/images/export-white.png"));
+		viewActionViewAll->setIcon(QIcon(":/images/zoom-all-white.png"));
 	}
 	
 	// make sure it looks nice..
@@ -2242,12 +2241,12 @@ void MainWindow::setDockWidgetTitle(QDockWidget *dockWidget, QString prefix, boo
 
 void MainWindow::hideToolbar()
 {
-	if(toolBarActionHide->isChecked()){
-		toolBar->hide();
-        editortoolbar->hide();
+	if (toolBarActionHide->isChecked()) {
+		viewerToolBar->hide();
+		editortoolbar->hide();
 	} else {
-		toolBar->show();
-        editortoolbar->show();
+		viewerToolBar->show();
+		editortoolbar->show();
 	}
 }
 
