@@ -388,7 +388,7 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this->helpActionHomepage, SIGNAL(triggered()), this, SLOT(helpHomepage()));
 	connect(this->helpActionManual, SIGNAL(triggered()), this, SLOT(helpManual()));
 	connect(this->helpActionLibraryInfo, SIGNAL(triggered()), this, SLOT(helpLibrary()));
-	connect(this->helpActionFontInfo, SIGNAL(triggered()), this, SLOT(viewModeShowAxes()));
+	connect(this->helpActionFontInfo, SIGNAL(triggered()), this, SLOT(helpFontInfo()));
 
 	setCurrentOutput();
 
