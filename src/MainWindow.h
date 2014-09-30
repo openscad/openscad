@@ -1,6 +1,7 @@
 #pragma once
 
 #include <QMainWindow>
+#include <QIcon>
 #include "ui_MainWindow.h"
 #include "UIUtils.h"
 #include "openscad.h"
@@ -106,6 +107,7 @@ private:
 	QString get2dExportFilename(QString format, QString extension);
 	void show_examples();
 	void setDockWidgetTitle(QDockWidget *dockWidget, QString prefix, bool topLevel);
+        void addKeyboardShortCut(const QList<QAction *> &actions);
 
 	EditorInterface *editor;
 
@@ -133,8 +135,10 @@ private slots:
 private slots:
 	void pasteViewportTranslation();
 	void pasteViewportRotation();
-	void hideEditor();
 	void preferences();
+	void hideToolbars();
+	void hideEditor();
+	void hideConsole();
 
 private slots:
 	void selectFindType(int);
@@ -207,7 +211,6 @@ public slots:
 	void viewOrthogonal();
 	void viewResetView();
 	void viewAll();
-	void hideConsole();
 	void animateUpdateDocChanged();
 	void animateUpdate();
 	void dragEnterEvent(QDragEnterEvent *event);

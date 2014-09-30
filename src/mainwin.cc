@@ -23,6 +23,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  */
+#include <iostream>
 #include "GeometryCache.h"
 #include "ModuleCache.h"
 #include "MainWindow.h"
@@ -169,9 +170,9 @@ MainWindow::MainWindow(const QString &filename)
 {
 	setupUi(this);
 
- 	editortype = Preferences::inst()->getValue("editor/editortype").toString();
-
+	editortype = Preferences::inst()->getValue("editor/editortype").toString();
 	useScintilla = (editortype == "QScintilla Editor");
+
 #ifdef USE_SCINTILLA_EDITOR
 	if (useScintilla) {
 		 editor = new ScintillaEditor(editorDockContents);
@@ -267,8 +268,9 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this->appActionUpdateCheck, SIGNAL(triggered()), this, SLOT(actionUpdateCheck()));
 #endif
 #endif
+	
 	// File menu
-	connect(this->fileActionNew, SIGNAL(triggered()), this, SLOT(actionNew()));
+	connect(this->fileActionNew, SIGNAL(triggered()), this, SLOT(actionNew())); 
 	connect(this->fileActionOpen, SIGNAL(triggered()), this, SLOT(actionOpen()));
 	connect(this->fileActionSave, SIGNAL(triggered()), this, SLOT(actionSave()));
 	connect(this->fileActionSaveAs, SIGNAL(triggered()), this, SLOT(actionSaveAs()));
@@ -312,7 +314,6 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this->editActionPasteVPR, SIGNAL(triggered()), this, SLOT(pasteViewportRotation()));
 	connect(this->editActionZoomIn, SIGNAL(triggered()), editor, SLOT(zoomIn()));
 	connect(this->editActionZoomOut, SIGNAL(triggered()), editor, SLOT(zoomOut()));
-	connect(this->editActionHide, SIGNAL(triggered()), this, SLOT(hideEditor()));
 	connect(this->editActionPreferences, SIGNAL(triggered()), this, SLOT(preferences()));
 	// Edit->Find
 	connect(this->editActionFind, SIGNAL(triggered()), this, SLOT(find()));
@@ -376,9 +377,11 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this->viewActionViewAll, SIGNAL(triggered()), this, SLOT(viewAll()));
 	connect(this->viewActionPerspective, SIGNAL(triggered()), this, SLOT(viewPerspective()));
 	connect(this->viewActionOrthogonal, SIGNAL(triggered()), this, SLOT(viewOrthogonal()));
-	connect(this->viewActionHide, SIGNAL(triggered()), this, SLOT(hideConsole()));
 	connect(this->viewActionZoomIn, SIGNAL(triggered()), qglview, SLOT(ZoomIn()));
 	connect(this->viewActionZoomOut, SIGNAL(triggered()), qglview, SLOT(ZoomOut()));
+	connect(this->viewActionHideToolBars, SIGNAL(triggered()), this, SLOT(hideToolbars()));
+	connect(this->viewActionHideEditor, SIGNAL(triggered()), this, SLOT(hideEditor()));
+	connect(this->viewActionHideConsole, SIGNAL(triggered()), this, SLOT(hideConsole()));
 
 	// Help menu
 	connect(this->helpActionAbout, SIGNAL(triggered()), this, SLOT(helpAbout()));
@@ -432,7 +435,65 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this->replaceButton, SIGNAL(clicked()), this, SLOT(replace()));
 	connect(this->replaceAllButton, SIGNAL(clicked()), this, SLOT(replaceAll()));
 	connect(this->replaceInputField, SIGNAL(returnPressed()), this->replaceButton, SLOT(animateClick()));
-
+	
+	addKeyboardShortCut(this->viewerToolBar->actions());
+	addKeyboardShortCut(this->editortoolbar->actions());
+	
+	//Toolbar
+	int defaultcolor = viewerToolBar->palette().background().color().lightness(); 
+        
+	if (defaultcolor > 165) { 
+		fileActionNew->setIcon(QIcon("://images/blackNew.png"));
+		fileActionOpen->setIcon(QIcon("://images/Open-32.png"));
+		fileActionSave->setIcon(QIcon("://images/Save-32.png"));
+		editActionZoomIn->setIcon(QIcon("://images/zoomin.png"));
+		editActionZoomOut->setIcon(QIcon("://images/zoomout.png"));
+		designActionRender->setIcon(QIcon("://images/blackRender.png"));
+		viewActionShowAxes->setIcon(QIcon("://images/blackaxes.png"));
+		viewActionShowEdges->setIcon(QIcon("://images/Rotation-32.png")); 
+		viewActionZoomIn->setIcon(QIcon("://images/zoomin.png"));
+		viewActionZoomOut->setIcon(QIcon("://images/zoomout.png"));
+		viewActionTop->setIcon(QIcon("://images/blackUp.png"));
+		viewActionBottom->setIcon(QIcon("://images/blackbottom.png"));
+		viewActionLeft->setIcon(QIcon("://images/blackleft (copy).png"));
+		viewActionRight->setIcon(QIcon("://images/rightright.png"));
+		viewActionFront->setIcon(QIcon("://images/blackfront.png"));
+		viewActionBack->setIcon(QIcon("://images/blackback.png"));
+		viewActionSurfaces->setIcon(QIcon("://images/surface.png"));
+		viewActionWireframe->setIcon(QIcon("://images/wireframe1.png"));
+		viewActionShowCrosshairs->setIcon(QIcon("://images/cross.png"));
+		viewActionPerspective->setIcon(QIcon("://images/perspective1.png"));
+		viewActionOrthogonal->setIcon(QIcon("://images/orthogonal.png"));
+		viewActionPreview->setIcon(QIcon("://images/Preview-32.png"));
+		viewActionAnimate->setIcon(QIcon("://images/animate.png"));
+	} else {
+		fileActionNew->setIcon(QIcon("://images/Document-New-128.png"));
+		fileActionOpen->setIcon(QIcon("://images/Open-128.png"));
+		fileActionSave->setIcon(QIcon("://images/Save-128.png"));
+		editActionZoomIn->setIcon(QIcon("://images/Zoom-In-32.png"));
+		editActionZoomOut->setIcon(QIcon("://images/Zoom-Out-32.png"));
+		designActionRender->setIcon(QIcon("://images/Arrowhead-Right-32.png"));
+		viewActionZoomIn->setIcon(QIcon("://images/Zoom-In-32.png"));
+		viewActionZoomOut->setIcon(QIcon("://images/Zoom-Out-32.png")); 
+		viewActionShowAxes->setIcon(QIcon("://images/axes.png"));
+		viewActionShowEdges->setIcon(QIcon("://images/grid.png"));
+		viewActionTop->setIcon(QIcon("://images/up.png"));
+		viewActionBottom->setIcon(QIcon("://images/bottom.png"));
+		viewActionLeft->setIcon(QIcon("://images/left.png"));
+		viewActionRight->setIcon(QIcon("://images/right.png"));
+		viewActionFront->setIcon(QIcon("://images/front.png"));
+		viewActionBack->setIcon(QIcon("://images/back.png"));
+		viewActionSurfaces->setIcon(QIcon("://images/surfaceWhite.png"));
+		viewActionWireframe->setIcon(QIcon("://images/wireframeWhite.png"));
+		viewActionShowCrosshairs->setIcon(QIcon("://images/crosswhite.png"));
+		viewActionPreview->setIcon(QIcon("://images/Preview-32(1).png"));
+		viewActionPerspective->setIcon(QIcon("://images/perspective1white.png"));
+		viewActionOrthogonal->setIcon(QIcon("://images/orthogonalwhite.png"));
+		viewActionAnimate->setIcon(QIcon("://images/animate.png"));
+		designActionExportSTL->setIcon(QIcon(":/images/export-white.png"));
+		viewActionViewAll->setIcon(QIcon(":/images/zoom-all-white.png"));
+	}
+	
 	// make sure it looks nice..
 	QSettings settings;
 	QByteArray windowState = settings.value("window/state", QByteArray()).toByteArray();
@@ -475,6 +536,24 @@ MainWindow::MainWindow(const QString &filename)
 	clearCurrentOutput();
 }
 
+void MainWindow::addKeyboardShortCut(const QList<QAction *> &actions)
+{
+    foreach (QAction *action, actions) {
+	// prevent adding shortcut twice if action is added to multiple toolbars
+	if (action->toolTip().contains("&nbsp;")) {
+	    continue;
+	}
+	
+	const QString shortCut(action->shortcut().toString(QKeySequence::NativeText));
+	if (shortCut.isEmpty()) {
+	    continue;
+	}
+
+	const QString toolTip("%1 &nbsp;<span style=\"color: gray; font-size: small; font-style: italic\">%2</span>");
+	action->setToolTip(toolTip.arg(action->toolTip(), shortCut));
+    }
+}
+
 void MainWindow::loadViewSettings(){
 	QSettings settings;
 	if (settings.value("view/showEdges").toBool()) {
@@ -494,10 +573,12 @@ void MainWindow::loadViewSettings(){
 	} else {
 		viewPerspective();
 	}
-	viewActionHide->setChecked(settings.value("view/hideConsole").toBool());
+	viewActionHideConsole->setChecked(settings.value("view/hideConsole").toBool());
 	hideConsole();
-	editActionHide->setChecked(settings.value("view/hideEditor").toBool());
+	viewActionHideEditor->setChecked(settings.value("view/hideEditor").toBool());
 	hideEditor();
+	viewActionHideToolBars->setChecked(settings.value("view/hideToolbar").toBool());
+	hideToolbars();
 	updateMdiMode(settings.value("advanced/mdi").toBool());
 	updateUndockMode(settings.value("advanced/undockableWindows").toBool());
 }
@@ -2123,7 +2204,7 @@ void MainWindow::on_editorDock_visibilityChanged(bool visible)
 	}
 	QSettings settings;
 	settings.setValue("view/hideEditor", !visible);
-	editActionHide->setChecked(!visible);
+	viewActionHideEditor->setChecked(!visible);
 	editorTopLevelChanged(editorDock->isFloating());
 }
 
@@ -2134,7 +2215,7 @@ void MainWindow::on_consoleDock_visibilityChanged(bool visible)
 	}
 	QSettings settings;
 	settings.setValue("view/hideConsole", !visible);
-	viewActionHide->setChecked(!visible);
+	viewActionHideConsole->setChecked(!visible);
 	consoleTopLevelChanged(consoleDock->isFloating());
 }
 
@@ -2158,9 +2239,20 @@ void MainWindow::setDockWidgetTitle(QDockWidget *dockWidget, QString prefix, boo
 	dockWidget->setWindowTitle(title);
 }
 
+void MainWindow::hideToolbars()
+{
+	if (viewActionHideToolBars->isChecked()) {
+		viewerToolBar->hide();
+		editortoolbar->hide();
+	} else {
+		viewerToolBar->show();
+		editortoolbar->show();
+	}
+}
+
 void MainWindow::hideEditor()
 {
-	if (editActionHide->isChecked()) {
+	if (viewActionHideEditor->isChecked()) {
 		editorDock->close();
 	} else {
 		editorDock->show();
@@ -2168,8 +2260,9 @@ void MainWindow::hideEditor()
 }
 
 void MainWindow::hideConsole()
+
 {
-	if (viewActionHide->isChecked()) {
+	if (viewActionHideConsole->isChecked()) {
 		consoleDock->hide();
 	} else {
 		consoleDock->show();

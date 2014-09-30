@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>936</width>
+    <width>1397</width>
     <height>586</height>
    </rect>
   </property>
@@ -26,10 +26,10 @@
         <verstretch>0</verstretch>
        </sizepolicy>
       </property>
-      <property name="styleSheet">
-       <string notr="true"/>
-      </property>
       <layout class="QVBoxLayout" name="verticalLayout_3">
+       <property name="spacing">
+        <number>0</number>
+       </property>
        <property name="margin">
         <number>0</number>
        </property>
@@ -49,7 +49,7 @@
          </property>
         </widget>
        </item>
-       <item alignment="Qt::AlignBottom">
+       <item>
         <widget class="QFrame" name="animate_panel">
          <property name="enabled">
           <bool>true</bool>
@@ -107,9 +107,32 @@
          </layout>
         </widget>
        </item>
+       <item>
+        <widget class="QToolBar" name="viewerToolBar">
+         <addaction name="designActionPreview"/>
+         <addaction name="designActionRender"/>
+         <addaction name="separator"/>
+         <addaction name="viewActionViewAll"/>
+         <addaction name="viewActionZoomIn"/>
+         <addaction name="viewActionZoomOut"/>
+         <addaction name="separator"/>
+         <addaction name="viewActionRight"/>
+         <addaction name="viewActionTop"/>
+         <addaction name="viewActionBottom"/>
+         <addaction name="viewActionLeft"/>
+         <addaction name="viewActionFront"/>
+         <addaction name="viewActionBack"/>
+         <addaction name="separator"/>
+         <addaction name="viewActionPerspective"/>
+         <addaction name="viewActionOrthogonal"/>
+         <addaction name="viewActionShowAxes"/>
+         <addaction name="viewActionShowEdges"/>
+        </widget>
+       </item>
       </layout>
       <zorder>animate_panel</zorder>
       <zorder>qglview</zorder>
+      <zorder>viewerToolBar</zorder>
      </widget>
     </item>
    </layout>
@@ -119,7 +142,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>936</width>
+     <width>1397</width>
      <height>22</height>
     </rect>
    </property>
@@ -243,8 +266,9 @@
     <addaction name="viewActionPerspective"/>
     <addaction name="viewActionOrthogonal"/>
     <addaction name="separator"/>
-    <addaction name="editActionHide"/>
-    <addaction name="viewActionHide"/>
+    <addaction name="viewActionHideToolBars"/>
+    <addaction name="viewActionHideEditor"/>
+    <addaction name="viewActionHideConsole"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
@@ -269,11 +293,26 @@
     <number>1</number>
    </attribute>
    <widget class="QWidget" name="editorDockContents">
-    <layout class="QVBoxLayout" name="verticalLayout_4">
+    <layout class="QVBoxLayout" name="verticalLayout">
+     <property name="spacing">
+      <number>0</number>
+     </property>
      <property name="margin">
       <number>0</number>
      </property>
-     <item alignment="Qt::AlignTop">
+     <item>
+      <widget class="QToolBar" name="editortoolbar">
+       <addaction name="fileActionNew"/>
+       <addaction name="fileActionOpen"/>
+       <addaction name="fileActionSave"/>
+       <addaction name="separator"/>
+       <addaction name="designActionPreview"/>
+       <addaction name="designActionRender"/>
+       <addaction name="separator"/>
+       <addaction name="designActionExportSTL"/>
+      </widget>
+     </item>
+     <item>
       <widget class="QFrame" name="find_panel">
        <property name="enabled">
         <bool>true</bool>
@@ -395,6 +434,10 @@
    </widget>
   </widget>
   <action name="fileActionNew">
+   <property name="icon">
+    <iconset resource="../openscad.qrc">
+     <normaloff>:/images/blackNew.png</normaloff>:/images/blackNew.png</iconset>
+   </property>
    <property name="text">
     <string>&amp;New</string>
    </property>
@@ -403,6 +446,10 @@
    </property>
   </action>
   <action name="fileActionOpen">
+   <property name="icon">
+    <iconset resource="../openscad.qrc">
+     <normaloff>:/images/Open-32.png</normaloff>:/images/Open-32.png</iconset>
+   </property>
    <property name="text">
     <string>&amp;Open...</string>
    </property>
@@ -411,6 +458,10 @@
    </property>
   </action>
   <action name="fileActionSave">
+   <property name="icon">
+    <iconset resource="../openscad.qrc">
+     <normaloff>:/images/Save-32.png</normaloff>:/images/Save-32.png</iconset>
+   </property>
    <property name="text">
     <string>&amp;Save</string>
    </property>
@@ -558,7 +609,7 @@
     <string>Ctrl+-</string>
    </property>
   </action>
-  <action name="editActionHide">
+  <action name="viewActionHideEditor">
    <property name="checkable">
     <bool>true</bool>
    </property>
@@ -575,6 +626,10 @@
    </property>
   </action>
   <action name="designActionPreview">
+   <property name="icon">
+    <iconset resource="../openscad.qrc">
+     <normaloff>:/images/Preview-32.png</normaloff>:/images/Preview-32.png</iconset>
+   </property>
    <property name="text">
     <string>&amp;Preview</string>
    </property>
@@ -583,6 +638,10 @@
    </property>
   </action>
   <action name="designActionRender">
+   <property name="icon">
+    <iconset resource="../openscad.qrc">
+     <normaloff>:/images/blackRender.png</normaloff>:/images/blackRender.png</iconset>
+   </property>
    <property name="text">
     <string>&amp;Render</string>
    </property>
@@ -611,6 +670,10 @@
    </property>
   </action>
   <action name="designActionExportSTL">
+   <property name="icon">
+    <iconset resource="../openscad.qrc">
+     <normaloff>:/images/export.png</normaloff>:/images/export.png</iconset>
+   </property>
    <property name="text">
     <string>Export as &amp;STL...</string>
    </property>
@@ -668,6 +731,10 @@
    <property name="checkable">
     <bool>true</bool>
    </property>
+   <property name="icon">
+    <iconset resource="../openscad.qrc">
+     <normaloff>:/images/Rotation-32.png</normaloff>:/images/Rotation-32.png</iconset>
+   </property>
    <property name="text">
     <string>Show Edges</string>
    </property>
@@ -679,6 +746,10 @@
    <property name="checkable">
     <bool>true</bool>
    </property>
+   <property name="icon">
+    <iconset resource="../openscad.qrc">
+     <normaloff>:/images/blackaxes.png</normaloff>:/images/blackaxes.png</iconset>
+   </property>
    <property name="text">
     <string>Show Axes</string>
    </property>
@@ -689,6 +760,10 @@
   <action name="viewActionShowCrosshairs">
    <property name="checkable">
     <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="../openscad.qrc">
+     <normaloff>:/images/cross.png</normaloff>:/images/cross.png</iconset>
    </property>
    <property name="text">
     <string>Show Crosshairs</string>
@@ -706,6 +781,10 @@
    </property>
   </action>
   <action name="viewActionTop">
+   <property name="icon">
+    <iconset resource="../openscad.qrc">
+     <normaloff>:/images/blackUp.png</normaloff>:/images/blackUp.png</iconset>
+   </property>
    <property name="text">
     <string>Top</string>
    </property>
@@ -714,6 +793,10 @@
    </property>
   </action>
   <action name="viewActionBottom">
+   <property name="icon">
+    <iconset resource="../openscad.qrc">
+     <normaloff>:/images/blackbottom.png</normaloff>:/images/blackbottom.png</iconset>
+   </property>
    <property name="text">
     <string>Bottom</string>
    </property>
@@ -722,6 +805,10 @@
    </property>
   </action>
   <action name="viewActionLeft">
+   <property name="icon">
+    <iconset resource="../openscad.qrc">
+     <normaloff>:/images/blackleft (copy).png</normaloff>:/images/blackleft (copy).png</iconset>
+   </property>
    <property name="text">
     <string>Left</string>
    </property>
@@ -730,6 +817,10 @@
    </property>
   </action>
   <action name="viewActionRight">
+   <property name="icon">
+    <iconset resource="../openscad.qrc">
+     <normaloff>:/images/rightright.png</normaloff>:/images/rightright.png</iconset>
+   </property>
    <property name="text">
     <string>Right</string>
    </property>
@@ -738,6 +829,10 @@
    </property>
   </action>
   <action name="viewActionFront">
+   <property name="icon">
+    <iconset resource="../openscad.qrc">
+     <normaloff>:/images/blackfront.png</normaloff>:/images/blackfront.png</iconset>
+   </property>
    <property name="text">
     <string>Front</string>
    </property>
@@ -746,6 +841,10 @@
    </property>
   </action>
   <action name="viewActionBack">
+   <property name="icon">
+    <iconset resource="../openscad.qrc">
+     <normaloff>:/images/blackback.png</normaloff>:/images/blackback.png</iconset>
+   </property>
    <property name="text">
     <string>Back</string>
    </property>
@@ -770,6 +869,10 @@
    <property name="checkable">
     <bool>true</bool>
    </property>
+   <property name="icon">
+    <iconset resource="../openscad.qrc">
+     <normaloff>:/images/perspective1.png</normaloff>:/images/perspective1.png</iconset>
+   </property>
    <property name="text">
     <string>Perspective</string>
    </property>
@@ -778,11 +881,15 @@
    <property name="checkable">
     <bool>true</bool>
    </property>
+   <property name="icon">
+    <iconset resource="../openscad.qrc">
+     <normaloff>:/images/orthogonal.png</normaloff>:/images/orthogonal.png</iconset>
+   </property>
    <property name="text">
     <string>Orthogonal</string>
    </property>
   </action>
-  <action name="viewActionHide">
+  <action name="viewActionHideConsole">
    <property name="checkable">
     <bool>true</bool>
    </property>
@@ -933,6 +1040,10 @@
    </property>
   </action>
   <action name="viewActionZoomIn">
+   <property name="icon">
+    <iconset resource="../openscad.qrc">
+     <normaloff>:/images/zoomin.png</normaloff>:/images/zoomin.png</iconset>
+   </property>
    <property name="text">
     <string>Zoom In</string>
    </property>
@@ -941,6 +1052,10 @@
    </property>
   </action>
   <action name="viewActionZoomOut">
+   <property name="icon">
+    <iconset resource="../openscad.qrc">
+     <normaloff>:/images/zoomout.png</normaloff>:/images/zoomout.png</iconset>
+   </property>
    <property name="text">
     <string>Zoom Out</string>
    </property>
@@ -949,8 +1064,20 @@
    </property>
   </action>
   <action name="viewActionViewAll">
+   <property name="icon">
+    <iconset resource="../openscad.qrc">
+     <normaloff>:/images/zoom-all.png</normaloff>:/images/zoom-all.png</iconset>
+   </property>
    <property name="text">
     <string>View All</string>
+   </property>
+  </action>
+  <action name="viewActionHideToolBars">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Hide toolbars</string>
    </property>
   </action>
  </widget>
@@ -962,7 +1089,9 @@
    <container>1</container>
   </customwidget>
  </customwidgets>
- <resources/>
+ <resources>
+  <include location="../openscad.qrc"/>
+ </resources>
  <connections>
   <connection>
    <sender>fileActionClose</sender>
