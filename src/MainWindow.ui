@@ -108,7 +108,7 @@
         </widget>
        </item>
        <item>
-        <widget class="ToolBar" name="viewerToolBar">
+        <widget class="QToolBar" name="viewerToolBar">
          <addaction name="designActionPreview"/>
          <addaction name="designActionRender"/>
          <addaction name="separator"/>
@@ -301,7 +301,7 @@
       <number>0</number>
      </property>
      <item>
-      <widget class="EditorToolBar" name="editortoolbar">
+      <widget class="QToolBar" name="editortoolbar">
        <addaction name="fileActionNew"/>
        <addaction name="fileActionOpen"/>
        <addaction name="fileActionSave"/>
@@ -1086,18 +1086,6 @@
    <class>QGLView</class>
    <extends>QWidget</extends>
    <header>QGLView.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>ToolBar</class>
-   <extends>QToolBar</extends>
-   <header>toolbar.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>EditorToolBar</class>
-   <extends>QToolBar</extends>
-   <header>editortoolbar.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
