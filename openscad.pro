@@ -365,9 +365,9 @@ SOURCES += src/version_check.cc \
            src/ModuleCache.cc \
            src/GeometryCache.cc \
            src/Tree.cc \
-src/DrawingCallback.cc \
-src/FreetypeRenderer.cc \
-src/FontCache.cc \
+	   src/DrawingCallback.cc \
+	   src/FreetypeRenderer.cc \
+	   src/FontCache.cc \
            \
            src/rendersettings.cc \
            src/highlighter.cc \
@@ -397,7 +397,7 @@ src/FontCache.cc \
            src/openscad.cc \
            src/mainwin.cc \
            src/UIUtils.cc \
-	   src/FontListDialog.cc \
+           src/FontListDialog.cc \
            src/launchingscreen.cpp \
            src/legacyeditor.cc \
            src/LibraryInfoDialog.cc
