@@ -266,9 +266,9 @@
     <addaction name="viewActionPerspective"/>
     <addaction name="viewActionOrthogonal"/>
     <addaction name="separator"/>
-    <addaction name="toolBarActionHide"/>
-    <addaction name="editActionHide"/>
-    <addaction name="viewActionHide"/>
+    <addaction name="viewActionHideToolBars"/>
+    <addaction name="viewActionHideEditor"/>
+    <addaction name="viewActionHideConsole"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
@@ -609,7 +609,7 @@
     <string>Ctrl+-</string>
    </property>
   </action>
-  <action name="editActionHide">
+  <action name="viewActionHideEditor">
    <property name="checkable">
     <bool>true</bool>
    </property>
@@ -889,7 +889,7 @@
     <string>Orthogonal</string>
    </property>
   </action>
-  <action name="viewActionHide">
+  <action name="viewActionHideConsole">
    <property name="checkable">
     <bool>true</bool>
    </property>
@@ -1072,7 +1072,7 @@
     <string>View All</string>
    </property>
   </action>
-  <action name="toolBarActionHide">
+  <action name="viewActionHideToolBars">
    <property name="checkable">
     <bool>true</bool>
    </property>

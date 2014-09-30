@@ -314,7 +314,6 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this->editActionPasteVPR, SIGNAL(triggered()), this, SLOT(pasteViewportRotation()));
 	connect(this->editActionZoomIn, SIGNAL(triggered()), editor, SLOT(zoomIn()));
 	connect(this->editActionZoomOut, SIGNAL(triggered()), editor, SLOT(zoomOut()));
-	connect(this->editActionHide, SIGNAL(triggered()), this, SLOT(hideEditor()));
 	connect(this->editActionPreferences, SIGNAL(triggered()), this, SLOT(preferences()));
 	// Edit->Find
 	connect(this->editActionFind, SIGNAL(triggered()), this, SLOT(find()));
@@ -378,10 +377,11 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this->viewActionViewAll, SIGNAL(triggered()), this, SLOT(viewAll()));
 	connect(this->viewActionPerspective, SIGNAL(triggered()), this, SLOT(viewPerspective()));
 	connect(this->viewActionOrthogonal, SIGNAL(triggered()), this, SLOT(viewOrthogonal()));
-	connect(this->toolBarActionHide, SIGNAL(triggered()), this, SLOT(hideToolbar()));
-	connect(this->viewActionHide, SIGNAL(triggered()), this, SLOT(hideConsole()));
 	connect(this->viewActionZoomIn, SIGNAL(triggered()), qglview, SLOT(ZoomIn()));
 	connect(this->viewActionZoomOut, SIGNAL(triggered()), qglview, SLOT(ZoomOut()));
+	connect(this->viewActionHideToolBars, SIGNAL(triggered()), this, SLOT(hideToolbars()));
+	connect(this->viewActionHideEditor, SIGNAL(triggered()), this, SLOT(hideEditor()));
+	connect(this->viewActionHideConsole, SIGNAL(triggered()), this, SLOT(hideConsole()));
 
 	// Help menu
 	connect(this->helpActionAbout, SIGNAL(triggered()), this, SLOT(helpAbout()));
@@ -573,12 +573,12 @@ void MainWindow::loadViewSettings(){
 	} else {
 		viewPerspective();
 	}
-	viewActionHide->setChecked(settings.value("view/hideConsole").toBool());
+	viewActionHideConsole->setChecked(settings.value("view/hideConsole").toBool());
 	hideConsole();
-	editActionHide->setChecked(settings.value("view/hideEditor").toBool());
+	viewActionHideEditor->setChecked(settings.value("view/hideEditor").toBool());
 	hideEditor();
-	toolBarActionHide->setChecked(settings.value("view/hideToolbar").toBool());
-	hideToolbar();
+	viewActionHideToolBars->setChecked(settings.value("view/hideToolbar").toBool());
+	hideToolbars();
 	updateMdiMode(settings.value("advanced/mdi").toBool());
 	updateUndockMode(settings.value("advanced/undockableWindows").toBool());
 }
@@ -2204,7 +2204,7 @@ void MainWindow::on_editorDock_visibilityChanged(bool visible)
 	}
 	QSettings settings;
 	settings.setValue("view/hideEditor", !visible);
-	editActionHide->setChecked(!visible);
+	viewActionHideEditor->setChecked(!visible);
 	editorTopLevelChanged(editorDock->isFloating());
 }
 
@@ -2215,7 +2215,7 @@ void MainWindow::on_consoleDock_visibilityChanged(bool visible)
 	}
 	QSettings settings;
 	settings.setValue("view/hideConsole", !visible);
-	viewActionHide->setChecked(!visible);
+	viewActionHideConsole->setChecked(!visible);
 	consoleTopLevelChanged(consoleDock->isFloating());
 }
 
@@ -2239,9 +2239,9 @@ void MainWindow::setDockWidgetTitle(QDockWidget *dockWidget, QString prefix, boo
 	dockWidget->setWindowTitle(title);
 }
 
-void MainWindow::hideToolbar()
+void MainWindow::hideToolbars()
 {
-	if (toolBarActionHide->isChecked()) {
+	if (viewActionHideToolBars->isChecked()) {
 		viewerToolBar->hide();
 		editortoolbar->hide();
 	} else {
@@ -2252,7 +2252,7 @@ void MainWindow::hideToolbar()
 
 void MainWindow::hideEditor()
 {
-	if (editActionHide->isChecked()) {
+	if (viewActionHideEditor->isChecked()) {
 		editorDock->close();
 	} else {
 		editorDock->show();
@@ -2262,7 +2262,7 @@ void MainWindow::hideEditor()
 void MainWindow::hideConsole()
 
 {
-	if (viewActionHide->isChecked()) {
+	if (viewActionHideConsole->isChecked()) {
 		consoleDock->hide();
 	} else {
 		consoleDock->show();

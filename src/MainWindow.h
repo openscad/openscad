@@ -135,9 +135,10 @@ private slots:
 private slots:
 	void pasteViewportTranslation();
 	void pasteViewportRotation();
-	void hideEditor();
 	void preferences();
-	void hideToolbar();
+	void hideToolbars();
+	void hideEditor();
+	void hideConsole();
 
 private slots:
 	void selectFindType(int);
@@ -210,7 +211,6 @@ public slots:
 	void viewOrthogonal();
 	void viewResetView();
 	void viewAll();
-	void hideConsole();
 	void animateUpdateDocChanged();
 	void animateUpdate();
 	void dragEnterEvent(QDragEnterEvent *event);
