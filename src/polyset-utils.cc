@@ -199,7 +199,9 @@ namespace PolysetUtils {
 					triangles.push_back( pgon );
 				}
 			}
-		} catch (const CGAL::Assertion_exception &e) {
+		} catch (const CGAL::Failure_exception &e) {
+            // Using failure exception to catch precondition errors for malformed polygons
+            // in e.g. CGAL::orientation_2().
 			PRINTB("CGAL error in triangulate_polygon(): %s", e.what());
 			err = true;
 		}
