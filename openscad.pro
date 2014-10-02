@@ -365,9 +365,9 @@ SOURCES += src/version_check.cc \
            src/ModuleCache.cc \
            src/GeometryCache.cc \
            src/Tree.cc \
-src/DrawingCallback.cc \
-src/FreetypeRenderer.cc \
-src/FontCache.cc \
+	   src/DrawingCallback.cc \
+	   src/FreetypeRenderer.cc \
+	   src/FontCache.cc \
            \
            src/rendersettings.cc \
            src/highlighter.cc \
@@ -397,7 +397,7 @@ src/FontCache.cc \
            src/openscad.cc \
            src/mainwin.cc \
            src/UIUtils.cc \
-	   src/FontListDialog.cc \
+           src/FontListDialog.cc \
            src/launchingscreen.cpp \
            src/legacyeditor.cc \
            src/LibraryInfoDialog.cc
@@ -473,6 +473,10 @@ INSTALLS += examples
 libraries.path = $$PREFIX/share/openscad/libraries/
 libraries.files = libraries/*
 INSTALLS += libraries
+
+fonts.path = $$PREFIX/share/openscad/fonts/
+fonts.files = fonts/*
+INSTALLS += fonts
 
 applications.path = $$PREFIX/share/applications
 applications.files = icons/openscad.desktop

@@ -427,7 +427,7 @@ build_opencsg()
     OPENCSG_EXTRA_FLAGS="x86"
   fi
   qmake -r QMAKE_CXXFLAGS+="-I$DEPLOYDIR/include" QMAKE_LFLAGS+="-L$DEPLOYDIR/lib" CONFIG+="x86_64 $OPENCSG_EXTRA_FLAGS"
-  INSTALL_ROOT=$DEPLOYDIR make install
+  make install
 }
 
 build_eigen()
