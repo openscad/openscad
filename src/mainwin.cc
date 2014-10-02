@@ -85,6 +85,7 @@
 #include <QMutexLocker>
 #include <QTemporaryFile>
 #include <QDockWidget>
+#include <QClipboard>
 
 #include <fstream>
 
@@ -321,6 +322,7 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this->editActionFindAndReplace, SIGNAL(triggered()), this, SLOT(findAndReplace()));
 	connect(this->editActionFindNext, SIGNAL(triggered()), this, SLOT(findNext()));
 	connect(this->editActionFindPrevious, SIGNAL(triggered()), this, SLOT(findPrev()));
+	connect(this->editActionUseSelectionForFind, SIGNAL(triggered()), this, SLOT(useSelectionForFind()));
 
 	// Design menu
 	connect(this->designActionAutoReload, SIGNAL(toggled(bool)), this, SLOT(autoReloadSet(bool)));
@@ -429,6 +431,13 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this->findInputField, SIGNAL(textChanged(QString)), this, SLOT(findString(QString)));
 	connect(this->findInputField, SIGNAL(returnPressed()), this->nextButton, SLOT(animateClick()));
 	find_panel->installEventFilter(this);
+	if (QApplication::clipboard()->supportsFindBuffer()) {
+		connect(this->findInputField, SIGNAL(textChanged(QString)), this, SLOT(updateFindBuffer(QString)));
+		connect(QApplication::clipboard(), SIGNAL(findBufferChanged()), this, SLOT(findBufferChanged()));
+		// With Qt 4.8.6, there seems to be a bug that often gives an incorrect findbuffer content when
+		// the app receives focus for the first time
+		this->findInputField->setText(QApplication::clipboard()->text(QClipboard::FindBuffer));
+	}
 
 	connect(this->prevButton, SIGNAL(clicked()), this, SLOT(findPrev()));
 	connect(this->nextButton, SIGNAL(clicked()), this, SLOT(findNext()));
@@ -1316,7 +1325,9 @@ void MainWindow::find()
 	replaceButton->hide();
 	replaceAllButton->hide();
 	find_panel->show();
-	findInputField->setText(editor->selectedText());
+	if (!editor->selectedText().isEmpty()) {
+		findInputField->setText(editor->selectedText());
+	}
 	findInputField->setFocus();
 	findInputField->selectAll();
 }
@@ -1333,7 +1344,9 @@ void MainWindow::findAndReplace()
 	replaceButton->show();
 	replaceAllButton->show();
 	find_panel->show();
-	findInputField->setText(editor->selectedText());
+	if (!editor->selectedText().isEmpty()) {
+		findInputField->setText(editor->selectedText());
+	}
 	findInputField->setFocus();
 	findInputField->selectAll();
 }
@@ -1390,6 +1403,24 @@ void MainWindow::findPrev()
 {
 	editor->find(this->findInputField->text(), true, true);
 }
+
+void MainWindow::useSelectionForFind()
+{
+	findInputField->setText(editor->selectedText());
+}
+
+void MainWindow::updateFindBuffer(QString s) {
+	QApplication::clipboard()->setText(s, QClipboard::FindBuffer);
+}
+
+void MainWindow::findBufferChanged() {
+	QString t = QApplication::clipboard()->text(QClipboard::FindBuffer);
+	// The convention seems to be to not update the search field if the findbuffer is empty
+	if (!t.isEmpty()) {
+		findInputField->setText(t);
+	}
+}
+
 
 bool MainWindow::eventFilter(QObject* obj, QEvent *event)
 {
