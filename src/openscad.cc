@@ -578,14 +578,14 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 	QSettings settings;
 	QVariant showOnStartup = settings.value("launcher/showOnStartup");
 	if (noInputFiles && (showOnStartup.isNull() || showOnStartup.toBool())) {
-	    LaunchingScreen *launcher = new LaunchingScreen();
-	    int dialogResult = launcher->exec();
-	    if (dialogResult) {
-		inputFiles.clear();
-		inputFiles.push_back(launcher->selectedFile().toStdString());
-	    } else {
-		return 0;
-	    }
+		LaunchingScreen *launcher = new LaunchingScreen();
+		int dialogResult = launcher->exec();
+		if (dialogResult) {
+			inputFiles.clear();
+			inputFiles.push_back(launcher->selectedFile().toStdString());
+		} else {
+			return 0;
+		}
 	}
 
 	MainWindow *mainwin;

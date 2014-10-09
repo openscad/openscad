@@ -398,7 +398,7 @@ SOURCES += src/version_check.cc \
            src/mainwin.cc \
            src/UIUtils.cc \
            src/FontListDialog.cc \
-           src/launchingscreen.cpp \
+           src/launchingscreen.cc \
            src/legacyeditor.cc \
            src/LibraryInfoDialog.cc
 

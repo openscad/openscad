@@ -6,12 +6,9 @@
 #include <QSettings>
 #include <QListWidgetItem>
 #include <QTreeWidgetItem>
+#include "ui_launchingscreen.h"
 
-namespace Ui {
-class LaunchingScreen;
-}
-
-class LaunchingScreen : public QDialog
+class LaunchingScreen : public QDialog, public Ui::LaunchingScreen
 {
     Q_OBJECT
 
@@ -33,7 +30,6 @@ private:
     void checkOpen(const QVariant &data);
     
     QString selection;
-    Ui::LaunchingScreen *ui;
 };
 
 #endif // LAUNCHINGSCREEN_H
