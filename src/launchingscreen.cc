@@ -1,12 +1,28 @@
 #include <QFileInfo>
+#include <QSettings>
+#include <QListWidgetItem>
 
 #include "launchingscreen.h"
 #include "ui_launchingscreen.h"
 
 #include "UIUtils.h"
 
+LaunchingScreen *LaunchingScreen::inst = NULL;
+
+LaunchingScreen *LaunchingScreen::getDialog() {
+	return LaunchingScreen::inst;
+}
+
+void LaunchingScreen::openFile(const QString &filename)
+{
+	QVariant v(filename);
+	this->checkOpen(v);
+	this->done(QDialog::Accepted);
+}
+
 LaunchingScreen::LaunchingScreen(QWidget *parent) : QDialog(parent)
 {
+	LaunchingScreen::inst = this;
 	setupUi(this);
 	this->setStyleSheet("QDialog {background-image:url(':/icons/background.png')}"
 											"QPushButton {color:white;}");
@@ -51,11 +67,12 @@ LaunchingScreen::LaunchingScreen(QWidget *parent) : QDialog(parent)
 
 LaunchingScreen::~LaunchingScreen()
 {
+	LaunchingScreen::inst = NULL;
 }
 
 QString LaunchingScreen::selectedFile()
 {
-	return selection;
+	return this->selection;
 }
 
 void LaunchingScreen::enableRecentButton(const QModelIndex & current, const QModelIndex & previous)
@@ -98,7 +115,7 @@ void LaunchingScreen::checkOpen(const QVariant &data)
 		return;
 	}
     
-	selection = path;
+	this->selection = path;
 	accept();
 }
 
@@ -106,7 +123,7 @@ void LaunchingScreen::openFile()
 {
 	QFileInfo fileInfo = UIUtils::openFile(this);
 	if (fileInfo.exists()) {
-		selection = fileInfo.canonicalFilePath();
+		this->selection = fileInfo.canonicalFilePath();
 		accept();
 	}
 }

@@ -182,7 +182,7 @@ private slots:
 	void actionFlushCaches();
 
 public:
-	static QSet<MainWindow*> *windows;
+	static QSet<MainWindow*> *getWindows();
 	void viewModeActionsUncheck();
 	void setCurrentOutput();
 	void clearCurrentOutput();
@@ -233,8 +233,9 @@ public slots:
 
 private:
 	static void report_func(const class AbstractNode*, void *vp, int mark);
-        static bool mdiMode;
-        static bool undockMode;
+	static bool mdiMode;
+	static bool undockMode;
+	static QSet<MainWindow*> *windows;
 
 	char const * afterCompileSlot;
 	bool procevents;

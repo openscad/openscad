@@ -112,6 +112,12 @@
 // Keeps track of open window
 QSet<MainWindow*> *MainWindow::windows = NULL;
 
+QSet<MainWindow*> *MainWindow::getWindows()
+{
+	if (!MainWindow::windows) MainWindow::windows = new QSet<MainWindow*>;
+	return MainWindow::windows;
+}
+
 // Global application state
 unsigned int GuiLocker::gui_locked = 0;
 
@@ -191,8 +197,7 @@ MainWindow::MainWindow(const QString &filename)
 
 	this->setAttribute(Qt::WA_DeleteOnClose);
 
-	if (!MainWindow::windows) MainWindow::windows = new QSet<MainWindow*>;
-	MainWindow::windows->insert(this);
+	MainWindow::getWindows()->insert(this);
 
 #ifdef ENABLE_CGAL
 	this->cgalworker = new CGALWorker();
@@ -637,7 +642,7 @@ MainWindow::~MainWindow()
 	delete this->opencsgRenderer;
 #endif
 	delete this->thrownTogetherRenderer;
-	MainWindow::windows->remove(this);
+	MainWindow::getWindows()->remove(this);
 }
 
 void MainWindow::showProgress()
@@ -666,7 +671,7 @@ void MainWindow::report_func(const class AbstractNode*, void *vp, int mark)
 void MainWindow::requestOpenFile(const QString &filename)
 {
 	// if we have an empty open window, use that one
-	QSetIterator<MainWindow *> i(*MainWindow::windows);
+	QSetIterator<MainWindow *> i(*MainWindow::getWindows());
 	while (i.hasNext()) {
 		MainWindow *w = i.next();
 

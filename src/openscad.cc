@@ -580,9 +580,10 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 	if (noInputFiles && (showOnStartup.isNull() || showOnStartup.toBool())) {
 		LaunchingScreen *launcher = new LaunchingScreen();
 		int dialogResult = launcher->exec();
-		if (dialogResult) {
+		if (dialogResult == QDialog::Accepted) {
 			inputFiles.clear();
 			inputFiles.push_back(launcher->selectedFile().toStdString());
+			delete launcher;
 		} else {
 			return 0;
 		}
@@ -599,10 +600,9 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 
 	app.connect(&app, SIGNAL(lastWindowClosed()), &app, SLOT(quit()));
 	int rc = app.exec();
-	if (MainWindow::windows) {
-		foreach (MainWindow *mainw, *MainWindow::windows) {
-			delete mainw;
-		}
+	QSet<MainWindow*> *windows = MainWindow::getWindows();
+	foreach (MainWindow *mainw, *windows) {
+		delete mainw;
 	}
 	return rc;
 }
