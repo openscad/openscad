@@ -70,6 +70,8 @@ QString ScintillaEditor::toPlainText()
 
 void ScintillaEditor::setContentModified(bool modified)
 {
+  // FIXME: Due to an issue with QScintilla, we need to do this on the document itself.
+  qsci->SCN_SAVEPOINTLEFT();
   qsci->setModified(modified);
 }
 

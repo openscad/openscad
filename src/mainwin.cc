@@ -1279,7 +1279,9 @@ void MainWindow::actionSaveAs()
 				}
 			}
 		}
-		setFileName(new_filename);
+		// Set to modified to make sure the save happens
+		editor->setContentModified(true);
+        setFileName(new_filename);
 		actionSave();
 	}
 }
