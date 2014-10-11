@@ -1237,8 +1237,6 @@ void MainWindow::actionSave()
 		actionSaveAs();
 	}
 	else {
-		if (!editor->isContentModified())
-			return;
 		setCurrentOutput();
 		QFile file(this->fileName);
 		if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text)) {
