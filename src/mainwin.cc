@@ -731,7 +731,8 @@ void MainWindow::setFileName(const QString &filename)
 	} else {
 		QFileInfo fileinfo(filename);
 		this->fileName = fileinfo.exists() ? fileinfo.absoluteFilePath() : fileinfo.fileName();
-		setWindowFilePath(this->fileName);
+        QString fn =fileinfo.absoluteFilePath();
+		setWindowFilePath(fn);
 
 		QDir::setCurrent(fileinfo.dir().absolutePath());
 		this->top_ctx.setDocumentPath(fileinfo.dir().absolutePath().toLocal8Bit().constData());
@@ -1231,6 +1232,11 @@ void MainWindow::saveBackup()
 	return writeBackup(this->tempFile);
 }
 
+/*!
+	Save current document.
+	Should _always_ write to disk, since this is called by SaveAs - i.e. don't try to be
+	smart and check for document modification here.
+ */
 void MainWindow::actionSave()
 {
 	if (this->fileName.isEmpty()) {
@@ -1277,9 +1283,7 @@ void MainWindow::actionSaveAs()
 				}
 			}
 		}
-		// Set to modified to make sure the save happens
-		editor->setContentModified(true);
-        setFileName(new_filename);
+		setFileName(new_filename);
 		actionSave();
 	}
 }
