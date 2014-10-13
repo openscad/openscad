@@ -100,7 +100,7 @@ namespace PolysetUtils {
 				for (fit=cdt.finite_faces_begin(); fit!=cdt.finite_faces_end(); fit++) {
 					PolySet::Polygon pgon;
 					for (int i=0;i<3;i++) {
-						const K::Point_3 &v = cdt.triangle(fit)[i];
+						K::Point_3 v = cdt.triangle(fit)[i];
 						pgon.push_back(Vector3d(v.x(), v.y(), v.z()));
 					}
 					triangles.push_back(pgon);
