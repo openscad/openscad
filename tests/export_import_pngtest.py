@@ -3,15 +3,17 @@
 # Export-import test
 #
 #
-# Usage: <script> <inputfile> --openscad=<executable-path> --format=<format> file.png
+# Usage: <script> <inputfile> --openscad=<executable-path> --format=<format> [<openscad args>] file.png
 #
 #
-# step 1. If the input file is _not_ and .scad file, create a temporary .scad file importing the input file.
-# step 2. process the .scad file, output an export format (csg, stl, off, dxf, svg, amf)
+# step 1. If the input file is _not_ an .scad file, create a temporary .scad file importing the input file.
+# step 2. Run OpenSCAD on the .scad file, output an export format (csg, stl, off, dxf, svg, amf)
 # step 3. If the export format is _not_ .csg, create a temporary new .scad file importing the exported file
-# step 4. render the .csg or .scad file to the given .png file
+# step 4. Run OpenSCAD on the .csg or .scad file, export to the given .png file
 # step 5. (done in CTest) - compare the generated .png file to expected output
 #         of the original .scad file. they should be the same!
+#
+# All the optional openscad args are passed on to OpenSCAD both in step 2 and 4.
 #
 # This script should return 0 on success, not-0 on error.
 #

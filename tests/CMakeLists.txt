@@ -1287,7 +1287,21 @@ string(REPLACE __openscad_upload_tests__ "${UPLOADARG}" TMP ${TMP})
 message(STATUS "creating CTestCustom.cmake")
 file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/CTestCustom.cmake ${TMP})
 
+#
 # Add tests
+#
+# Types of tests:
+# o echotest: Just record console output
+# o dumptest: Export .csg
+# o cgalpngtest: Export to PNG using --render
+# o opencsgtest: Export to PNG using OpenCSG
+# o throwntogethertest: Export to PNG using the Throwntogether renderer
+# o csgpngtest: 1) Export to .csg, 2) import .csg and export to PNG (--render)
+# o monotonepngtest: Same as cgalpngtest but with the "Monotone" color scheme
+# o stlpngtest: Export to STL, Re-import and render to PNG (--render=cgal)
+# o offpngtest: Export to OFF, Re-import and render to PNG (--render=cgal)
+# o dxfpngtest: Export to DXF, Re-import and render to PNG (--render=cgal)
+#
 
 add_cmdline_test(moduledumptest EXE ${OPENSCAD_BINPATH} ARGS -o SUFFIX ast FILES
                  ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/allmodules.scad
