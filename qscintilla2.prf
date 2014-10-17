@@ -9,4 +9,10 @@ greaterThan(QT_MAJOR_VERSION, 4) {
 INCLUDEPATH += $$[QT_INSTALL_HEADERS]
 
 LIBS += -L$$[QT_INSTALL_LIBS]
-LIBS += -lqscintilla2
+
+greaterThan(QT_MAJOR_VERSION, 4) {
+    win32|macx:LIBS += -lqscintilla2
+    else:LIBS += -lqt5scintilla2
+} else {
+    LIBS += -lqscintilla2
+}
