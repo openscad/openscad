@@ -312,6 +312,9 @@ void ScintillaEditor::get_range(int *lineFrom, int *lineTo)
     int indexFrom, indexTo;
     if (qsci->hasSelectedText()) {
 	qsci->getSelection(lineFrom, &indexFrom, lineTo, &indexTo);
+	if (indexTo == 0) {
+	    *lineTo = *lineTo - 1;
+	}
     } else {
 	qsci->getCursorPosition(lineFrom, &indexFrom);
 	*lineTo = *lineFrom;
@@ -338,15 +341,23 @@ void ScintillaEditor::unindentSelection()
 
 void ScintillaEditor::commentSelection()
 {
+    bool hasSelection = qsci->hasSelectedText();
+    
     int lineFrom, lineTo;
     get_range(&lineFrom, &lineTo);
     for (int line = lineFrom;line <= lineTo;line++) {
 	qsci->insertAt("//", line, 0);
     }
+    
+    if (hasSelection) {
+        qsci->setSelection(lineFrom, 0, lineTo, std::max(0, qsci->lineLength(lineTo) - 1));
+    }
 }
 
 void ScintillaEditor::uncommentSelection()
 {
+    bool hasSelection = qsci->hasSelectedText();
+
     int lineFrom, lineTo;
     get_range(&lineFrom, &lineTo);
     for (int line = lineFrom;line <= lineTo;line++) {
@@ -355,6 +366,9 @@ void ScintillaEditor::uncommentSelection()
 	    qsci->setSelection(line, 0, line, 2);
 	    qsci->removeSelectedText();
 	}
+    }
+    if (hasSelection) {
+	qsci->setSelection(lineFrom, 0, lineTo, std::max(0, qsci->lineLength(lineTo) - 1));
     }
 }
 
