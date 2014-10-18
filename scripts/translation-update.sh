@@ -14,6 +14,7 @@ updatepot()
  OPTS=$OPTS' --package-version='$VER
  OPTS=$OPTS' --default-domain=openscad'
  OPTS=$OPTS' --keyword=_'
+ OPTS=$OPTS' --keyword=N_'
  OPTS=$OPTS' --files-from=./po/POTFILES'
  cmd="${GETTEXT_PATH}xgettext "$OPTS' -o ./po/openscad.pot'
  echo $cmd

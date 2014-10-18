@@ -14,6 +14,8 @@
 #include <QString>
 #include "printutils.h"
 
+#define N_(String) String
+
 inline QString _( const char *msgid, int category )
 {
 	Q_UNUSED( category );
