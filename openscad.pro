@@ -8,7 +8,12 @@
 # OPENCSGDIR
 # OPENSCAD_LIBRARIES
 #
-# Please see the 'Building' sections of the OpenSCAD user manual
+# qmake Variables to define the installation:
+#
+#   PREFIX defines the base installation folder
+#   LOCALE_PREFIX can overwrite the location of the gettext message catalogs
+#
+# Please see the 'Building' sections of the OpenSCAD user manual 
 # for updated tips & workarounds.
 #
 # http://en.wikibooks.org/wiki/OpenSCAD_User_Manual
@@ -472,6 +477,19 @@ isEmpty(PREFIX):PREFIX = /usr/local
 
 target.path = $$PREFIX/bin/
 INSTALLS += target
+
+LINGUAS = $$cat(po/LINGUAS)
+isEmpty(LOCALE_PREFIX):LOCALE_PREFIX = $$PREFIX/share/openscad/po
+for(language, LINGUAS) {
+  catalog = po/$$language/LC_MESSAGES/openscad.mo
+  exists($$catalog) {
+    translation_path = translation_$${language}.path
+    translation_files = translation_$${language}.files
+    $$translation_path = $$LOCALE_PREFIX/$$language/LC_MESSAGES/
+    $$translation_files = $$catalog
+    INSTALLS += translation_$$language
+  }
+}
 
 examples.path = $$PREFIX/share/openscad/examples/
 examples.files = examples/*

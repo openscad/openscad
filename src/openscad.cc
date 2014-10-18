@@ -571,6 +571,7 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 	PlatformUtils::registerApplicationPath(app_path.toLocal8Bit().constData());
 
 	parser_init(PlatformUtils::applicationPath());
+
 	QSettings settings;
 	if (settings.value("advanced/localization", false).toBool()) {
 	        localization_init();

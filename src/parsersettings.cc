@@ -22,22 +22,38 @@ fs::path get_resource_dir(const std::string &resource_folder)
 	}
 
 	fs::path basepath(applicationdir);
+
+	fs::path paths[] = {
+#if __APPLE__
+		// Application layout when installed on MacOS
+	        basepath.parent_path().parent_path() / "Contents" / "Resources",
+#endif
+#ifdef __unix__
+		// Different unix installation layouts are possible, this
+		// tries to capture the most obvious cases.
+		basepath.parent_path() / "share" / "openscad",
+		basepath.parent_path().parent_path() / "share" / "openscad",
+		fs::path("..") / "..",
+#endif
 #ifdef OPENSCAD_TESTING
-	basepath = "..";
+		// Used when running the test cases from source code layout.
+		fs::path(".."),
 #endif
-#ifdef __APPLE__
-        fs::path bundlepath = basepath.parent_path().parent_path();
-        if (bundlepath.filename().string() == "OpenSCAD.app") {
-		basepath = bundlepath / "Contents" / "Resources";
-	}
-#endif
+		// Try to fall back to path relative to the executable and
+		// relative to the current working directory.
+		basepath,
+		fs::path("."),
+		fs::path(), // end of list marker
+	};
 	
-	fs::path resource_dir = basepath / resource_folder;
-	if (!fs::is_directory(resource_dir)) {
-		return fs::path();
+	for (int a = 0;!paths[a].empty();a++) {
+		fs::path resource_dir = paths[a] / resource_folder;
+	        if (fs::is_directory(resource_dir)) {
+			return resource_dir;
+		}
 	}
 	
-	return resource_dir;
+	return fs::path();
 }
 
 /*!
