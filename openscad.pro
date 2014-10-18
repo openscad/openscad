@@ -120,6 +120,8 @@ unix:!macx {
   QMAKE_LIBS_OPENGL *= -lX11
 }
 
+#QTPLUGIN += qtaccessiblewidgets
+
 netbsd* {
    QMAKE_LFLAGS += -L/usr/X11R7/lib
    QMAKE_LFLAGS += -Wl,-R/usr/X11R7/lib
@@ -159,6 +161,8 @@ netbsd* {
   QMAKE_CXXFLAGS_WARN_ON += -Wno-unused-variable
   QMAKE_CXXFLAGS_WARN_ON += -Wno-unused-function
   QMAKE_CXXFLAGS_WARN_ON += -Wno-c++11-extensions
+  # gettext
+  QMAKE_CXXFLAGS_WARN_ON += -Wno-format-security
   # might want to actually turn this on once in a while
   QMAKE_CXXFLAGS_WARN_ON += -Wno-sign-compare
 }
@@ -208,7 +212,9 @@ win* {
 
 RESOURCES = openscad.qrc
 
-FORMS += src/MainWindow.ui \
+QMAKE_UIC += -tr _
+
+FORMS   += src/MainWindow.ui \
            src/Preferences.ui \
            src/OpenCSGWarningDialog.ui \
            src/AboutDialog.ui \

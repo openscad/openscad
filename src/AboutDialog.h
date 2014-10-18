@@ -1,5 +1,6 @@
 #pragma once
 
+#include "qtgettext.h"
 #include "ui_AboutDialog.h"
 
 #define STRINGIFY(x) #x

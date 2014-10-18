@@ -1,5 +1,6 @@
 #pragma once
 
+#include "qtgettext.h"
 #include <QMainWindow>
 #include <QSettings>
 #include "ui_Preferences.h"
