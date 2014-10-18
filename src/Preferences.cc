@@ -104,7 +104,7 @@ Preferences::Preferences(QWidget *parent) : QMainWindow(parent)
 	this->defaultmap["advanced/mdi"] = true;
 	this->defaultmap["advanced/undockableWindows"] = false;
 	this->defaultmap["launcher/showOnStartup"] = true;
-	this->defaultmap["advanced/localization"] = false;
+	this->defaultmap["advanced/localization"] = true;
 
 	// Toolbar
 	QActionGroup *group = new QActionGroup(this);
@@ -367,6 +367,12 @@ void Preferences::on_opencsgLimitEdit_textChanged(const QString &text)
 	// FIXME: Set this globally?
 }
 
+void Preferences::on_localizationCheckBox_toggled(bool state)
+{
+	QSettings settings;
+	settings.setValue("advanced/localization", state);
+}
+
 void Preferences::on_forceGoldfeatherBox_toggled(bool state)
 {
 	QSettings settings;
@@ -466,6 +472,7 @@ void Preferences::updateGUI()
 	this->cgalCacheSizeEdit->setText(getValue("advanced/cgalCacheSize").toString());
 	this->polysetCacheSizeEdit->setText(getValue("advanced/polysetCacheSize").toString());
 	this->opencsgLimitEdit->setText(getValue("advanced/openCSGLimit").toString());
+	this->localizationCheckBox->setChecked(getValue("advanced/localization").toBool());
 	this->forceGoldfeatherBox->setChecked(getValue("advanced/forceGoldfeather").toBool());
 	this->mdiCheckBox->setChecked(getValue("advanced/mdi").toBool());
 	this->undockCheckBox->setChecked(getValue("advanced/undockableWindows").toBool());
