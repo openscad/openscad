@@ -22,6 +22,9 @@ fs::path get_resource_dir(const std::string &resource_folder)
 	}
 
 	fs::path basepath(applicationdir);
+#ifdef OPENSCAD_TESTING
+	basepath = "..";
+#endif
 #ifdef __APPLE__
         fs::path bundlepath = basepath.parent_path().parent_path();
         if (bundlepath.filename().string() == "OpenSCAD.app") {
