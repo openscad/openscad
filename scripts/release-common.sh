@@ -326,12 +326,14 @@ case $OS in
         EXAMPLESDIR=OpenSCAD.app/Contents/Resources/examples
         LIBRARYDIR=OpenSCAD.app/Contents/Resources/libraries
         FONTDIR=OpenSCAD.app/Contents/Resources/fonts
+        TRANSLATIONDIR=OpenSCAD.app/Contents/Resources/po
     ;;
     UNIX_CROSS_WIN)
         cd $OPENSCADDIR
         EXAMPLESDIR=$DEPLOYDIR/openscad-$VERSION/examples/
         LIBRARYDIR=$DEPLOYDIR/openscad-$VERSION/libraries/
         FONTDIR=$DEPLOYDIR/openscad-$VERSION/fonts/
+        TRANSLATIONDIR=$DEPLOYDIR/openscad-$VERSION/po/
         rm -rf $DEPLOYDIR/openscad-$VERSION
         mkdir $DEPLOYDIR/openscad-$VERSION
     ;;
@@ -339,6 +341,7 @@ case $OS in
         EXAMPLESDIR=openscad-$VERSION/examples/
         LIBRARYDIR=openscad-$VERSION/libraries/
         FONTDIR=openscad-$VERSION/fonts/
+        TRANSLATIONDIR=openscad-$VERSION/po/
         rm -rf openscad-$VERSION
         mkdir openscad-$VERSION
     ;;
@@ -377,6 +380,13 @@ if [ -n $LIBRARYDIR ]; then
     cd $LIBRARYDIR/.. && tar xf $OPENSCADDIR/libraries.tar && cd $OPENSCADDIR
     rm -f libraries.tar
     chmod -R u=rwx,go=r,+X $LIBRARYDIR/*
+fi
+if [ -n $TRANSLATIONDIR ]; then
+  echo $TRANSLATIONDIR
+  mkdir -p $TRANSLATIONDIR
+  tar cvf translations.tar po
+  cd $TRANSLATIONDIR/.. && tar xvf $OPENSCADDIR/translations.tar && cd $OPENSCADDIR
+  rm -f translations.tar
 fi
 
 echo "Creating archive.."
