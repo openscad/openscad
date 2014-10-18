@@ -182,6 +182,7 @@ CONFIG += glib-2.0
 CONFIG += harfbuzz
 CONFIG += freetype
 CONFIG += fontconfig
+CONFIG += gettext
 
 #Uncomment the following line to enable the QScintilla editor
 CONFIG += scintilla
