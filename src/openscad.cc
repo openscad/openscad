@@ -168,7 +168,7 @@ void localization_init() {
 	std::string locale_path(po_dir.string());
 #endif
 	if (fs::is_directory(locale_path)) {
-		setlocale(LC_ALL,"");
+		setlocale(LC_ALL, "");
 		bindtextdomain("openscad", locale_path.c_str());
 		bind_textdomain_codeset("openscad", "UTF-8");
 		textdomain("openscad");
@@ -581,7 +581,7 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 	parser_init(PlatformUtils::applicationPath());
 
 	QSettings settings;
-	if (settings.value("advanced/localization", false).toBool()) {
+	if (settings.value("advanced/localization", true).toBool()) {
 	        localization_init();
 	}
 
@@ -656,11 +656,6 @@ int main(int argc, char **argv)
 #else
 	PlatformUtils::ensureStdIO();
 #endif
-
-	setlocale(LC_ALL,"");
-	bindtextdomain("openscad","./po");
-	bind_textdomain_codeset("openscad", "UTF-8");
-	textdomain("openscad");
 
 #ifdef ENABLE_CGAL
 	// Causes CGAL errors to abort directly instead of throwing exceptions
