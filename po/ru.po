@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OpenSCAD 2014.01.05\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-01-06 04:13+0100\n"
+"POT-Creation-Date: 2014-01-06 05:16+0100\n"
 "PO-Revision-Date: 2013-02-24 17:50+0100\n"
 "Last-Translator:  <hugh.m.bright@gmail.com>\n"
 "Language-Team: Russian\n"
@@ -657,6 +657,31 @@ msgstr ""
 msgid "WARNING: minkowski() could not get any points from object 2!"
 msgstr ""
 
+#: src/CGALCache.cc:15
+#, c-format
+msgid "CGAL Cache hit: %s (%d bytes)"
+msgstr ""
+
+#: src/CGALCache.cc:24
+#, c-format
+msgid "CGAL Cache insert: %s (%d bytes)"
+msgstr ""
+
+#: src/CGALCache.cc:25
+#, c-format
+msgid "CGAL Cache insert failed: %s (%d bytes)"
+msgstr ""
+
+#: src/CGALCache.cc:47
+#, c-format
+msgid "CGAL Polyhedrons in cache: %d"
+msgstr ""
+
+#: src/CGALCache.cc:48
+#, c-format
+msgid "CGAL cache size in bytes: %d"
+msgstr ""
+
 #: src/CGALEvaluator.cc:89
 #, c-format
 msgid "CGAL error in CGAL_Nef_polyhedron's %s operator: %s"
@@ -670,6 +695,19 @@ msgstr ""
 msgid ""
 "Hull() currently requires a valid 2-manifold. Please modify your design. See "
 "http://en.wikibooks.org/wiki/OpenSCAD_User_Manual/STL_Import_and_Export"
+msgstr ""
+
+#: src/CGALEvaluator.cc:172
+#, c-format
+msgid "ERROR: CGAL NefPolyhedron->Polyhedron conversion failed. %s"
+msgstr ""
+
+#: src/CGALEvaluator.cc:207
+msgid "WARNING: Cannot resize to sizes less than 0."
+msgstr ""
+
+#: src/CGALEvaluator.cc:234
+msgid "WARNING: Resize in direction normal to flat object is not implemented"
 msgstr ""
 
 #: src/CGALEvaluator.cc:336
@@ -690,6 +728,15 @@ msgstr ""
 msgid "WARNING: CGAL Evaluator: Root node didn't fit into cache"
 msgstr ""
 
+#: src/CGALEvaluator.cc:693
+msgid "PolySet has nonplanar faces. Attempting alternate construction"
+msgstr ""
+
+#: src/CGALEvaluator.cc:697
+#, c-format
+msgid "CGAL error in CGAL_Nef_polyhedron3(): %s"
+msgstr ""
+
 #: src/CGALEvaluator.cc:708
 #, c-format
 msgid "Alternate construction failed. CGAL error in CGAL_Nef_polyhedron3(): %s"
@@ -697,6 +744,19 @@ msgstr ""
 
 #: src/CGAL_Nef_polyhedron.cc:113
 msgid "ERROR: CGAL NefPolyhedron->Polyhedron conversion failed."
+msgstr ""
+
+#: src/CGAL_Nef_polyhedron.cc:114
+#, c-format
+msgid "ERROR: %s"
+msgstr ""
+
+#: src/CGAL_Nef_polyhedron_DxfData.cc:107
+msgid "Warning: Scaling a 2D object with 0 - removing object"
+msgstr ""
+
+#: src/CGAL_Nef_polyhedron_DxfData.cc:137
+msgid "Warning: Scaling a 3D object with 0 - removing object"
 msgstr ""
 
 #: src/cgalutils.cc:138
@@ -742,6 +802,66 @@ msgstr ""
 #: src/context.cc:135
 #, c-format
 msgid "WARNING: Ignoring unknown module '%s'."
+msgstr ""
+
+#: src/context.cc:156
+#, c-format
+msgid "ModuleContext %p (%p) for %s inst (%p)"
+msgstr ""
+
+#: src/context.cc:158
+#, c-format
+msgid "Context: %p (%p)"
+msgstr ""
+
+#: src/context.cc:159
+#, c-format
+msgid "  document path: %s"
+msgstr ""
+
+#: src/context.cc:163
+msgid "  module args:"
+msgstr ""
+
+#: src/context.cc:170
+msgid "  vars:"
+msgstr ""
+
+#: src/control.cc:83
+#, c-format
+msgid "WARNING: Bad range parameter in for statement: too many elements (%lu)."
+msgstr ""
+
+#: src/control.cc:133 src/control.cc:138 src/control.cc:247
+#, c-format
+msgid ""
+"WARNING: Bad parameter type (%s) for children, only accept: empty, number, "
+"vector, range."
+msgstr ""
+
+#: src/control.cc:144
+#, c-format
+msgid "WARNING: Negative children index (%d) not allowed"
+msgstr ""
+
+#: src/control.cc:150
+#, c-format
+msgid "WARNING: Children index (%d) out of bounds (%d children)"
+msgstr ""
+
+#: src/control.cc:170
+#, c-format
+msgid "WARNING: Negative child index (%d) not allowed"
+msgstr ""
+
+#: src/control.cc:189
+#, c-format
+msgid "WARNING: Child index (%d) out of bounds (%d children)"
+msgstr ""
+
+#: src/control.cc:234
+#, c-format
+msgid "WARNING: Bad range parameter for children: too many elements (%lu)."
 msgstr ""
 
 #: src/csgtermnormalizer.cc:21 src/csgtermnormalizer.cc:53
@@ -807,14 +927,35 @@ msgstr ""
 msgid "CGAL error in dxf_tesselate(): %s"
 msgstr ""
 
+#: src/dxftess-cgal.cc:475
+#, c-format
+msgid "CGAL error in dxftess triangulate_polygon: %s"
+msgstr ""
+
+#: src/dxftess-cgal.cc:491
+msgid "WARNING: PolySet has polygon with <3 points"
+msgstr ""
+
+#: src/dxftess-cgal.cc:496
+msgid "WARNING: PolySet has degenerate polygon"
+msgstr ""
+
 #: src/dxftess-glu.cc:108 src/dxftess-glu.cc:109
 #, c-format
 msgid "GLU tesselation error %s"
 msgstr ""
 
+#: src/export.cc:48
+msgid "ERROR: CGAL NefPolyhedron->Polyhedron conversion failed"
+msgstr ""
+
 #: src/export.cc:120 src/export.cc:137
 #, c-format
 msgid "CGAL error in CGAL_Nef_polyhedron3::convert_to_Polyhedron(): %s"
+msgstr ""
+
+#: src/export.cc:123
+msgid "CGAL unknown error in CGAL_Nef_polyhedron3::convert_to_Polyhedron()"
 msgstr ""
 
 #: src/func.cc:503 src/func.cc:536
@@ -830,6 +971,18 @@ msgstr ""
 #: src/func.cc:545
 #, c-format
 msgid "  WARNING: search: none performed on input %s"
+msgstr ""
+
+#: src/func.cc:591
+#, c-format
+msgid "WARNING: Negative parent module index (%d) not allowed"
+msgstr ""
+
+#: src/func.cc:595
+#, c-format
+msgid ""
+"WARNING: Parent module index (%d) greater than the number of modules on the "
+"stack"
 msgstr ""
 
 #: src/glview.cc:149
@@ -898,12 +1051,27 @@ msgid ""
 "OpenGL version %s\n"
 msgstr ""
 
+#: src/glview.cc:537
+#, c-format
+msgid ""
+"Viewport: translate = [ %.2f %.2f %.2f ], rotate = [ %.2f %.2f %.2f ], "
+"distance = %.2f"
+msgstr ""
+
 #: src/handle_dep.cc:36
 #, c-format
 msgid "Can't open dependencies file `%s' for writing!\n"
 msgstr ""
 
-#: src/import.cc:195
+#: src/import.cc:98
+msgid "DEPRECATED: filename= is deprecated. Please use file="
+msgstr ""
+
+#: src/import.cc:122
+msgid "DEPRECATED: layername= is deprecated. Please use layer="
+msgstr ""
+
+#: src/import.cc:195 src/import.cc:281
 #, c-format
 msgid "WARNING: Can't open import file '%s'."
 msgstr ""
@@ -948,6 +1116,10 @@ msgid "OpenSCAD - New Document[*]"
 msgstr ""
 
 #: src/mainwin.cc:529
+msgid "OpenSCAD - "
+msgstr ""
+
+#: src/mainwin.cc:529
 msgid "[*]"
 msgstr ""
 
@@ -959,6 +1131,11 @@ msgstr ""
 #: src/mainwin.cc:610
 #, c-format
 msgid "Loaded design '%s'."
+msgstr ""
+
+#: src/mainwin.cc:657
+#, c-format
+msgid "Module cache size: %d modules"
 msgstr ""
 
 #: src/mainwin.cc:741
@@ -1039,6 +1216,12 @@ msgstr ""
 msgid "Failed to open file for writing: %s (%s)"
 msgstr ""
 
+#: src/mainwin.cc:1003
+msgid ""
+"Failed to open file for writing:\n"
+" %1 (%2)"
+msgstr ""
+
 #: src/mainwin.cc:1010
 #, c-format
 msgid "Saved design '%s'."
@@ -1060,6 +1243,16 @@ msgstr ""
 msgid ""
 "%1 already exists.\n"
 "Do you want to replace it?"
+msgstr ""
+
+#: src/mainwin.cc:1047
+#, c-format
+msgid "WARNING: Library path %s doesn't exist. Creating"
+msgstr ""
+
+#: src/mainwin.cc:1049
+#, c-format
+msgid "ERROR: Cannot create library path: %s"
 msgstr ""
 
 #: src/mainwin.cc:1184 src/mainwin.cc:1857
@@ -1255,6 +1448,9 @@ msgid "No filename specified. %s export aborted."
 msgstr ""
 
 #: src/mainwin.cc:1471 src/mainwin.cc:1524 src/mainwin.cc:1557
+#: src/openscad.cc:292 src/openscad.cc:304 src/openscad.cc:322
+#: src/openscad.cc:373 src/openscad.cc:392 src/openscad.cc:407
+#: src/openscad.cc:418
 #, c-format
 msgid "Can't open file \"%s\" for export"
 msgstr ""
@@ -1324,6 +1520,14 @@ msgstr ""
 msgid "No filename specified. Image export aborted."
 msgstr ""
 
+#: src/mainwin.cc:1827
+msgid "http://openscad.org/"
+msgstr ""
+
+#: src/mainwin.cc:1833
+msgid "http://www.openscad.org/documentation.html"
+msgstr ""
+
 #: src/mainwin.cc:1842
 msgid "OpenGL Info"
 msgstr ""
@@ -1358,6 +1562,11 @@ msgstr ""
 msgid "  compiled module: %p"
 msgstr ""
 
+#: src/module.cc:180
+#, c-format
+msgid "ERROR: Recursion detected calling module '%s'"
+msgstr ""
+
 #: src/module.cc:298
 #, c-format
 msgid "WARNING: Failed to compile library '%s'."
@@ -1381,12 +1590,138 @@ msgstr ""
 msgid "OpenSCAD version %s\n"
 msgstr ""
 
+#: src/openscad.cc:138
+#, c-format
+msgid "Can't create OpenGL OffscreenView. Code: %i. Exiting.\n"
+msgstr ""
+
+#: src/openscad.cc:160
+msgid "Camera setup requires either 7 numbers for Gimbal Camera\n"
+msgstr ""
+
+#: src/openscad.cc:161
+msgid "or 6 numbers for Vector Camera\n"
+msgstr ""
+
+#: src/openscad.cc:177
+msgid "projection needs to be 'o' or 'p' for ortho or perspective\n"
+msgstr ""
+
+#: src/openscad.cc:188
+msgid "Need 2 numbers for imgsize\n"
+msgstr ""
+
+#: src/openscad.cc:236
+#, c-format
+msgid "Unknown suffix for output file %s\n"
+msgstr ""
+
+#: src/openscad.cc:260
+#, c-format
+msgid "Can't open input file '%s'!\n"
+msgstr ""
+
+#: src/openscad.cc:269
+#, c-format
+msgid "Can't parse file '%s'!\n"
+msgstr ""
+
+#: src/openscad.cc:351
+#, c-format
+msgid "Output file:%s\n"
+msgstr ""
+
+#: src/openscad.cc:352
+msgid "Sorry, don't know how to write deps for that file type. Exiting\n"
+msgstr ""
+
+#: src/openscad.cc:357
+msgid "error writing deps"
+msgstr ""
+
+#: src/openscad.cc:364 src/openscad.cc:383
+msgid "Current top level object is not a 3D object.\n"
+msgstr ""
+
+#: src/openscad.cc:368 src/openscad.cc:387
+msgid "Object isn't a valid 2-manifold! Modify your design.\n"
+msgstr ""
+
+#: src/openscad.cc:402
+msgid "Current top level object is not a 2D object.\n"
+msgstr ""
+
 #: src/openscad.cc:583
 msgid "Allowed options"
 msgstr ""
 
+#: src/openscad.cc:585
+msgid "help message"
+msgstr ""
+
+#: src/openscad.cc:586
+msgid "print the version"
+msgstr ""
+
+#: src/openscad.cc:587
+msgid "print information about the building process"
+msgstr ""
+
+#: src/openscad.cc:588
+msgid "if exporting a png image, do a full CGAL render"
+msgstr ""
+
+#: src/openscad.cc:589
+msgid ""
+"if exporting a png image, do an OpenCSG(default) or ThrownTogether preview"
+msgstr ""
+
+#: src/openscad.cc:590
+msgid "parameters for camera when exporting png"
+msgstr ""
+
+#: src/openscad.cc:591
+msgid "=width,height for exporting png"
+msgstr ""
+
+#: src/openscad.cc:592
+msgid "(o)rtho or (p)erspective when exporting png"
+msgstr ""
+
+#: src/openscad.cc:593
+msgid "out-file"
+msgstr ""
+
+#: src/openscad.cc:594
+msgid "stl-file"
+msgstr ""
+
+#: src/openscad.cc:595
+msgid "dxf-file"
+msgstr ""
+
+#: src/openscad.cc:596
+msgid "deps-file"
+msgstr ""
+
+#: src/openscad.cc:597
+msgid "makefile"
+msgstr ""
+
+#: src/openscad.cc:598
+msgid "var=val"
+msgstr ""
+
+#: src/openscad.cc:599
+msgid "enable experimental features"
+msgstr ""
+
 #: src/openscad.cc:601
 msgid "Hidden options"
+msgstr ""
+
+#: src/openscad.cc:603
+msgid "input file"
 msgstr ""
 
 #: src/openscad.cc:637
@@ -1522,6 +1857,18 @@ msgstr ""
 msgid "WARNING: Body of render() isn't valid 2-manifold!"
 msgstr ""
 
+#: src/PolySetCGALEvaluator.cc:466
+#, c-format
+msgid ""
+"ERROR: all points for rotate_extrude() must have the same X coordinate sign "
+"(range is %.2f -> %.2f)"
+msgstr ""
+
+#: src/primitives.cc:130
+#, c-format
+msgid "WARNING: Ignoring radius variable '%s' as diameter '%s' is defined too."
+msgstr ""
+
 #: src/primitives.cc:183
 #, c-format
 msgid "WARNING: $fs too small - clamping to %f"
@@ -1530,6 +1877,12 @@ msgstr ""
 #: src/primitives.cc:187
 #, c-format
 msgid "WARNING: $fa too small - clamping to %f"
+msgstr ""
+
+#: src/primitives.cc:244
+msgid ""
+"DEPRECATED: polyhedron(triangles=[]) will be removed in future releases. Use "
+"polyhedron(faces=[]) instead."
 msgstr ""
 
 #: src/primitives.cc:536
@@ -1551,4 +1904,10 @@ msgstr ""
 #: src/surface.cc:139
 #, c-format
 msgid "WARNING: Illegal value in '%s': %s"
+msgstr ""
+
+#: src/value.cc:640
+msgid ""
+"DEPRECATED: Using ranges of the form [begin:end] with begin value greater "
+"than the end value is deprecated."
 msgstr ""
