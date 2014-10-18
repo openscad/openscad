@@ -8,22 +8,9 @@ namespace fs = boost::filesystem;
 extern int parser_error_pos;
 
 /**
- * Initialize application an library path.
- * 
- * @param applicationpath path of the application binary, this is usually
- * derived from the Qt application object. If Qt is disabled, argv[0] is used.
+ * Initialize library path.
  */
-void parser_init(const std::string &applicationpath);
-
-/**
- * Return a path to specific resources relative to the application binary.
- * This is used to find resources bundled with the application, e.g. the
- * translation files for the gettext library.
- * 
- * @param folder subfolder for the resources (e.g. "po").
- * @return the resource path.
- */
-fs::path get_resource_dir(const std::string &resource_folder);
+void parser_init();
 
 fs::path search_libs(const fs::path &localpath);
 fs::path find_valid_path(const fs::path &sourcepath, 

@@ -2,13 +2,16 @@
 
 #include <string>
 
+#include "boosty.h"
+
 namespace PlatformUtils {
 
 	void registerApplicationPath(const std::string &applicationpath);
 	std::string applicationPath();
 
 	std::string documentsPath();
-	std::string resourcesPath();
+        std::string resourceBasePath();
+	fs::path resourcePath(const std::string& resource);
 	std::string userLibraryPath();
 	bool createUserLibraryPath();
 	std::string backupPath();

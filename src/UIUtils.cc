@@ -89,8 +89,8 @@ QStringList UIUtils::exampleCategories()
 
 QFileInfoList UIUtils::exampleFiles(const QString &category)
 {
-    QDir dir(QString::fromStdString(PlatformUtils::resourcesPath()));
-    if (!dir.cd("examples") || !dir.cd(category)) {
+    QDir dir(QString::fromStdString(PlatformUtils::resourcePath("examples").string()));
+    if (!dir.cd(category)) {
 	return QFileInfoList();
     }
 

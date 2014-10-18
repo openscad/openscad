@@ -1,7 +1,6 @@
 #include <stdlib.h>
 
 #include "PlatformUtils.h"
-#include "boosty.h"
 #include <Eigen/Core>
 #ifdef USE_SCINTILLA_EDITOR
 #include <Qsci/qsciglobal.h>
@@ -97,7 +96,7 @@ bool PlatformUtils::createBackupPath()
 }
 
 // This is the built-in read-only resources path
-std::string PlatformUtils::resourcesPath()
+std::string PlatformUtils::resourceBasePath()
 {
 	fs::path resourcedir(applicationPath());
 	fs::path tmpdir;
@@ -128,6 +127,21 @@ std::string PlatformUtils::resourcesPath()
 #endif
 	// resourcedir defaults to applicationPath
 	return boosty::stringy(boosty::canonical(resourcedir));
+}
+
+fs::path PlatformUtils::resourcePath(const std::string &resource)
+{
+	fs::path base(resourceBasePath());
+	if (!fs::is_directory(base)) {
+		return fs::path();
+	}
+	
+	fs::path resource_dir = base / resource;
+	if (!fs::is_directory(resource_dir)) {
+		return fs::path();
+	}
+	
+	return resource_dir;
 }
 
 int PlatformUtils::setenv(const char *name, const char *value, int overwrite)

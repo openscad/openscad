@@ -164,7 +164,7 @@ void localization_init() {
 #ifdef 	LOCALE_PREFIX
 	std::string locale_path(LOCALE_PREFIX);
 #else
-	fs::path po_dir = get_resource_dir("locale");
+	fs::path po_dir(PlatformUtils::resourcePath("locale"));
 	std::string locale_path(po_dir.string());
 #endif
 	if (fs::is_directory(locale_path)) {
@@ -279,7 +279,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 	const std::string application_path = boosty::stringy(boosty::absolute(boost::filesystem::path(argv[0]).parent_path()));
 #endif	
 	PlatformUtils::registerApplicationPath(application_path);
-	parser_init(PlatformUtils::applicationPath());
+	parser_init();
 	localization_init();
 
 	Tree tree;
@@ -578,7 +578,7 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 	const QString &app_path = app.applicationDirPath();
 	PlatformUtils::registerApplicationPath(app_path.toLocal8Bit().constData());
 
-	parser_init(PlatformUtils::applicationPath());
+	parser_init();
 
 	QSettings settings;
 	if (settings.value("advanced/localization", true).toBool()) {
