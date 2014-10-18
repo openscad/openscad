@@ -155,6 +155,23 @@ static void info()
 	exit(0);
 }
 
+/**
+ * Initialize gettext. This must be called after the appliation path was
+ * determined so we can lookup the resource path for the language translation
+ * files.
+ */
+void localization_init() {
+	fs::path po_dir = get_resource_dir("po");
+	if (fs::is_directory(po_dir)) {
+		setlocale(LC_ALL,"");
+		bindtextdomain("openscad", po_dir.string().c_str());
+		bind_textdomain_codeset("openscad", "UTF-8");
+		textdomain("openscad");
+	} else {
+		PRINT("Could not initialize localization.");
+	}
+}
+
 Camera get_camera(po::variables_map vm)
 {
 	Camera camera;
@@ -258,6 +275,8 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 #endif	
 	PlatformUtils::registerApplicationPath(application_path);
 	parser_init(PlatformUtils::applicationPath());
+	localization_init();
+
 	Tree tree;
 #ifdef ENABLE_CGAL
 	GeometryEvaluator geomevaluator(tree);
@@ -550,7 +569,8 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 	const QString &app_path = app.applicationDirPath();
 	PlatformUtils::registerApplicationPath(app_path.toLocal8Bit().constData());
 
-  parser_init(PlatformUtils::applicationPath());
+	parser_init(PlatformUtils::applicationPath());
+	localization_init();
 
 #ifdef Q_OS_MAC
 	installAppleEventHandlers();

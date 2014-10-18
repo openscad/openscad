@@ -30,6 +30,7 @@
 #include <boost/filesystem.hpp>
 #include <boost/algorithm/string.hpp>
 
+#include "boosty.h"
 #include "FontCache.h"
 #include "PlatformUtils.h"
 #include "parsersettings.h"
