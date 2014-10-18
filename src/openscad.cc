@@ -505,6 +505,7 @@ Q_IMPORT_PLUGIN(qtaccessiblewidgets)
 #endif // MINGW64/MINGW32/MSCVER
 #include "MainWindow.h"
 #include "launchingscreen.h"
+#include "qsettings.h"
   #ifdef __APPLE__
   #include "EventFilter.h"
   #endif
@@ -570,7 +571,10 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 	PlatformUtils::registerApplicationPath(app_path.toLocal8Bit().constData());
 
 	parser_init(PlatformUtils::applicationPath());
-	localization_init();
+	QSettings settings;
+	if (settings.value("advanced/localization", false).toBool()) {
+	        localization_init();
+	}
 
 #ifdef Q_OS_MAC
 	installAppleEventHandlers();
@@ -595,7 +599,6 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 		inputFiles.push_back("");
 	}
 
-	QSettings settings;
 	QVariant showOnStartup = settings.value("launcher/showOnStartup");
 	if (noInputFiles && (showOnStartup.isNull() || showOnStartup.toBool())) {
 		LaunchingScreen *launcher = new LaunchingScreen();

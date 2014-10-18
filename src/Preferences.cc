@@ -104,6 +104,7 @@ Preferences::Preferences(QWidget *parent) : QMainWindow(parent)
 	this->defaultmap["advanced/mdi"] = true;
 	this->defaultmap["advanced/undockableWindows"] = false;
 	this->defaultmap["launcher/showOnStartup"] = true;
+	this->defaultmap["advanced/localization"] = false;
 
 	// Toolbar
 	QActionGroup *group = new QActionGroup(this);
