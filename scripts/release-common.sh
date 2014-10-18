@@ -384,7 +384,7 @@ fi
 if [ -n $TRANSLATIONDIR ]; then
   echo $TRANSLATIONDIR
   mkdir -p $TRANSLATIONDIR
-  tar cvf translations.tar po
+  tar cvf translations.tar po/*/*/*.mo
   cd $TRANSLATIONDIR/.. && tar xvf $OPENSCADDIR/translations.tar && cd $OPENSCADDIR
   rm -f translations.tar
 fi

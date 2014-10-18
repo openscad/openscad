@@ -24,6 +24,7 @@
  *
  */
 
+#include "qtgettext.h"
 #include "QGLView.h"
 #include "Preferences.h"
 #include "renderer.h"

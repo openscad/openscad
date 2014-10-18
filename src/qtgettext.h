@@ -3,10 +3,16 @@
 
 // see doc/translation.txt
 
-#include "printutils.h"
-#include <libintl.h>
-#include <locale.h>
+// MinGW defines sprintf to libintl_sprintf which breaks usage of the
+// Qt sprintf in QString. This is skipped if sprintf and _GL_STDIO_H
+// is already defined, so the workaround defines sprintf as itself.
+#ifdef __MINGW32__
+#define _GL_STDIO_H
+#define sprintf sprintf
+#endif
+
 #include <QString>
+#include "printutils.h"
 
 inline QString _( const char *msgid, int category )
 {

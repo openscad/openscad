@@ -624,6 +624,12 @@ int main(int argc, char **argv)
 #else
 	PlatformUtils::ensureStdIO();
 #endif
+
+	setlocale(LC_ALL,"");
+	bindtextdomain("openscad","./po");
+	bind_textdomain_codeset("openscad", "UTF-8");
+	textdomain("openscad");
+
 #ifdef ENABLE_CGAL
 	// Causes CGAL errors to abort directly instead of throwing exceptions
 	// (which we don't catch). This gives us stack traces without rerunning in gdb.

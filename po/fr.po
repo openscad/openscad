@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OpenSCAD 2013.02.07\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-01-06 05:16+0100\n"
+"POT-Creation-Date: 2014-01-06 21:19+0100\n"
 "PO-Revision-Date: 2013-02-08 15:06-0600\n"
 "Last-Translator: don bright <hugh.m.bright@gmail.com>\n"
 "Language-Team: French\n"
@@ -1653,88 +1653,88 @@ msgstr ""
 msgid "Current top level object is not a 2D object.\n"
 msgstr ""
 
-#: src/openscad.cc:583
+#: src/openscad.cc:584
 msgid "Allowed options"
 msgstr ""
 
-#: src/openscad.cc:585
+#: src/openscad.cc:586
 msgid "help message"
 msgstr ""
 
-#: src/openscad.cc:586
+#: src/openscad.cc:587
 msgid "print the version"
 msgstr ""
 
-#: src/openscad.cc:587
+#: src/openscad.cc:588
 msgid "print information about the building process"
 msgstr ""
 
-#: src/openscad.cc:588
+#: src/openscad.cc:589
 msgid "if exporting a png image, do a full CGAL render"
 msgstr ""
 
-#: src/openscad.cc:589
+#: src/openscad.cc:590
 msgid ""
 "if exporting a png image, do an OpenCSG(default) or ThrownTogether preview"
 msgstr ""
 
-#: src/openscad.cc:590
+#: src/openscad.cc:591
 msgid "parameters for camera when exporting png"
 msgstr ""
 
-#: src/openscad.cc:591
+#: src/openscad.cc:592
 msgid "=width,height for exporting png"
 msgstr ""
 
-#: src/openscad.cc:592
+#: src/openscad.cc:593
 msgid "(o)rtho or (p)erspective when exporting png"
 msgstr ""
 
-#: src/openscad.cc:593
+#: src/openscad.cc:594
 msgid "out-file"
 msgstr ""
 
-#: src/openscad.cc:594
+#: src/openscad.cc:595
 msgid "stl-file"
 msgstr ""
 
-#: src/openscad.cc:595
+#: src/openscad.cc:596
 msgid "dxf-file"
 msgstr ""
 
-#: src/openscad.cc:596
+#: src/openscad.cc:597
 msgid "deps-file"
 msgstr ""
 
-#: src/openscad.cc:597
+#: src/openscad.cc:598
 msgid "makefile"
 msgstr ""
 
-#: src/openscad.cc:598
+#: src/openscad.cc:599
 msgid "var=val"
 msgstr ""
 
-#: src/openscad.cc:599
+#: src/openscad.cc:600
 msgid "enable experimental features"
 msgstr ""
 
-#: src/openscad.cc:601
+#: src/openscad.cc:602
 msgid "Hidden options"
 msgstr ""
 
-#: src/openscad.cc:603
+#: src/openscad.cc:604
 msgid "input file"
 msgstr ""
 
-#: src/openscad.cc:637
+#: src/openscad.cc:638
 msgid "DEPRECATED: The -s option is deprecated. Use -o instead.\n"
 msgstr ""
 
-#: src/openscad.cc:642
+#: src/openscad.cc:643
 msgid "DEPRECATED: The -x option is deprecated. Use -o instead.\n"
 msgstr ""
 
-#: src/openscad.cc:699
+#: src/openscad.cc:700
 msgid "Requested GUI mode but can't open display!\n"
 msgstr ""
 
