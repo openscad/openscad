@@ -161,10 +161,15 @@ static void info()
  * files.
  */
 void localization_init() {
-	fs::path po_dir = get_resource_dir("po");
-	if (fs::is_directory(po_dir)) {
+#ifdef 	LOCALE_PREFIX
+	std::string locale_path(LOCALE_PREFIX);
+#else
+	fs::path po_dir = get_resource_dir("locale");
+	std::string locale_path(po_dir.string());
+#endif
+	if (fs::is_directory(locale_path)) {
 		setlocale(LC_ALL,"");
-		bindtextdomain("openscad", po_dir.string().c_str());
+		bindtextdomain("openscad", locale_path.c_str());
 		bind_textdomain_codeset("openscad", "UTF-8");
 		textdomain("openscad");
 	} else {
