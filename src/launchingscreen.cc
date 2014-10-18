@@ -39,7 +39,7 @@ LaunchingScreen::LaunchingScreen(QWidget *parent) : QDialog(parent)
 	foreach(const QString &category, UIUtils::exampleCategories())
 	{
 		QFileInfoList examples = UIUtils::exampleFiles(category);
-		QTreeWidgetItem *categoryItem = new QTreeWidgetItem(QStringList(category));
+		QTreeWidgetItem *categoryItem = new QTreeWidgetItem(QStringList(gettext(category.toStdString().c_str())));
 
 		foreach(const QFileInfo &example, examples)
 		{

@@ -31,6 +31,7 @@
 #include <QFileDialog>
 #include <QDesktopServices>
 
+#include "qtgettext.h"
 #include "UIUtils.h"
 #include "PlatformUtils.h"
 
@@ -81,7 +82,7 @@ QStringList UIUtils::exampleCategories()
 {
     QStringList categories;
     //categories in File menu item - Examples
-    categories << "Basics" << "Shapes" << "Extrusion" << "Advanced";
+    categories << N_("Basics") << N_("Shapes") << N_("Extrusion") << N_("Advanced");
     
     return categories;
 }
