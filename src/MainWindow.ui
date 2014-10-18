@@ -142,6 +142,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
+     <width>1397</width>
+     <height>33</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_File">
@@ -150,7 +152,7 @@
     </property>
     <widget class="QMenu" name="menuOpenRecent">
      <property name="title">
-      <string>Open Recent</string>
+      <string>Recent Files</string>
      </property>
     </widget>
     <widget class="QMenu" name="menuExamples">
