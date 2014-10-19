@@ -18,4 +18,4 @@ echo "Generating POTFILES..."
 echo "Updating translation files..."
 ./scripts/translation-update.sh
 
-echo "Done.
+echo "Done."
