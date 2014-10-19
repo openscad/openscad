@@ -225,7 +225,6 @@ MainWindow::MainWindow(const QString &filename)
 	tval = 0;
 	fps = 0;
 	fsteps = 1;
-	isClosing = false;
 
 	const QString importStatement = "import(\"%1\");\n";
 	const QString surfaceStatement = "surface(\"%1\");\n";
@@ -532,6 +531,10 @@ MainWindow::MainWindow(const QString &filename)
 		editor->setInitialSizeHint(QSize((5 * this->width() / 11), 100));
 	}
 	
+	this->editorDock->setConfigKey("view/hideEditor");
+	this->editorDock->setAction(this->viewActionHideEditor);
+	this->consoleDock->setConfigKey("view/hideConsole");
+	this->consoleDock->setAction(this->viewActionHideConsole);
 	connect(this->editorDock, SIGNAL(topLevelChanged(bool)), this, SLOT(editorTopLevelChanged(bool)));
 	connect(this->consoleDock, SIGNAL(topLevelChanged(bool)), this, SLOT(consoleTopLevelChanged(bool)));
 	
@@ -2265,25 +2268,13 @@ void MainWindow::viewAll()
 	this->qglview->updateGL();
 }
 
-void MainWindow::on_editorDock_visibilityChanged(bool visible)
+void MainWindow::on_editorDock_visibilityChanged(bool)
 {
-	if (isClosing) {
-		return;
-	}
-	QSettings settings;
-	settings.setValue("view/hideEditor", !visible);
-	viewActionHideEditor->setChecked(!visible);
 	editorTopLevelChanged(editorDock->isFloating());
 }
 
-void MainWindow::on_consoleDock_visibilityChanged(bool visible)
+void MainWindow::on_consoleDock_visibilityChanged(bool)
 {
-	if (isClosing) {
-		return;
-	}
-	QSettings settings;
-	settings.setValue("view/hideConsole", !visible);
-	viewActionHideConsole->setChecked(!visible);
 	consoleTopLevelChanged(consoleDock->isFloating());
 }
 
@@ -2453,7 +2444,6 @@ void MainWindow::closeEvent(QCloseEvent *event)
 			delete this->tempFile;
 			this->tempFile = NULL;
 		}
-		isClosing = true;
 		event->accept();
 	} else {
 		event->ignore();
