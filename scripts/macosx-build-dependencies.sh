@@ -356,8 +356,9 @@ build_cgal()
   cd $BASEDIR/src
   rm -rf CGAL-$version
   if [ ! -f CGAL-$version.tar.gz ]; then
-    # 4.4
-    curl -O https://gforge.inria.fr/frs/download.php/file/33525/CGAL-$version.tar.gz
+    # 4.5
+    curl -O https://gforge.inria.fr/frs/download.php/file/34149/CGAL-$version.tar.gz
+    # 4.4 curl -O https://gforge.inria.fr/frs/download.php/file/33525/CGAL-$version.tar.gz
     # 4.3 curl -O https://gforge.inria.fr/frs/download.php/32994/CGAL-$version.tar.gz
     # 4.2 curl -O https://gforge.inria.fr/frs/download.php/32359/CGAL-$version.tar.gz
     # 4.1 curl -O https://gforge.inria.fr/frs/download.php/31641/CGAL-$version.tar.gz
@@ -777,7 +778,7 @@ build_gmp 5.1.3
 build_mpfr 3.1.2
 build_boost 1.54.0
 # NB! For CGAL, also update the actual download URL in the function
-build_cgal 4.4
+build_cgal 4.5
 build_glew 1.10.0
 build_gettext 0.18.3.2
 build_libffi 3.1
