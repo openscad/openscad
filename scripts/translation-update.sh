@@ -4,10 +4,21 @@
 
 updatepot()
 {
- if [ ! -e objects/ui_MainWindow.h ]; then
-   echo cannot find objects/ui_xxxxx.h files. perhaps if you run make...?
+ # check we have all files from POTFILES present
+ while read f
+ do
+   if [ ! -f "$f" ]; then
+     echo "cannot find file '$f' from POTFILES"
+     exit 1
+   fi
+ done < po/POTFILES
+
+ grep ui_MainWindow.h po/POTFILES >/dev/null 2>/dev/null
+ if [ $? -ne 0 ] ; then
+   echo "cannot find .../ui_xxxxx.h files. perhaps if you run make...?"
    exit 1
  fi
+
  VER=`date +"%Y.%m.%d"`
  OPTS=
  OPTS=$OPTS' --package-name=OpenSCAD'
@@ -56,9 +67,9 @@ updatemo()
 }
 
 GETTEXT_PATH=""
-if [ "x$OPENSCAD_LIBRARIES" != x ]; then
-	GETTEXT_PATH="$OPENSCAD_LIBRARIES/bin/"
-fi
+#if [ "x$OPENSCAD_LIBRARIES" != x ]; then
+#	GETTEXT_PATH="$OPENSCAD_LIBRARIES/bin/"
+#fi
 
 if [ "x$1" = xupdatemo ]; then
  updatemo

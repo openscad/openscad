@@ -492,7 +492,7 @@ INSTALLS += target
 isEmpty(LOCALE_PREFIX): LOCALE_PREFIX = $$PREFIX/share/openscad/locale
 
 # Run translation update scripts as last step after linking the target
-QMAKE_POST_LINK += ./scripts/generate-potfiles.sh > po/POTFILES ; ./scripts/translation-update.sh
+QMAKE_POST_LINK += $$PWD/scripts/translation-make.sh
 
 # Create install targets for the languages defined in LINGUAS
 LINGUAS = $$cat(po/LINGUAS)
