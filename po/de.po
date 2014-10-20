@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: OpenSCAD 2014.01.05\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2014-10-19 00:48+0200\n"
-"PO-Revision-Date: 2014-10-19 00:48+0100\n"
+"PO-Revision-Date: 2014-10-21 00:00+0100\n"
 "Last-Translator: Torsten Paul <Torsten.Paul@gmx.de>\n"
 "Language-Team: German\n"
 "Language: de\n"
@@ -54,8 +54,8 @@ msgid ""
 "family:'Courier New,courier';\">  text(t = &quot;OpenSCAD&quot;, font = "
 "&quot;Liberation Sans:style=Italic&quot;);</span></pre></body></html>"
 msgstr ""
-"<html><head/><body><p>This list shows the fonts currently registered with "
-"OpenSCAD.</p><p>Example:</p><pre style=\" margin-top:12px; margin-"
+"<html><head/><body><p>Diese Liste zeigt die Fonts, die momentan mit OpenSCAD "
+"registriert sind.</p><p>Beispiele:</p><pre style=\" margin-top:12px; margin-"
 "bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-"
 "indent:0px;\"><span style=\" font-family:'Courier New,courier';\">  text(t = "
 "&quot;OpenSCAD&quot;, font = &quot;DejaVu Sans&quot;);</span></pre><pre "
@@ -70,7 +70,7 @@ msgstr "Lib & Build Info"
 
 #: objects/ui_LibraryInfoDialog.h:76
 msgid "OpenSCAD Detailed Library and Build Information"
-msgstr "OpenSCAD Detailed Library and Build Information"
+msgstr ""
 
 #: objects/ui_MainWindow.h:732
 msgid "&New"
@@ -226,7 +226,7 @@ msgstr "Editor verstecken"
 
 #: objects/ui_MainWindow.h:770
 msgid "&Reload and Preview"
-msgstr "Neu laden und übersetzen"
+msgstr "Neu laden und Vorschau"
 
 #: objects/ui_MainWindow.h:771
 msgid "F4"
@@ -414,7 +414,7 @@ msgstr "Dokumentation"
 
 #: objects/ui_MainWindow.h:817
 msgid "Clear Recent"
-msgstr "Clear Recent"
+msgstr "Zuletzt benutze Dateien löschen"
 
 #: objects/ui_MainWindow.h:818
 msgid "Export as DXF..."
@@ -482,7 +482,7 @@ msgstr "OpenSCAD Homepage"
 
 #: objects/ui_MainWindow.h:834
 msgid "Automatic Reload and Preview"
-msgstr "Automatisch neu Laden und Übersetzen"
+msgstr "Automatisch neu Laden und Vorschau"
 
 #: objects/ui_MainWindow.h:835
 msgid "Export as Image..."
@@ -579,7 +579,7 @@ msgstr "&Bearbeiten"
 
 #: objects/ui_MainWindow.h:860
 msgid "&Design"
-msgstr "&Design"
+msgstr "D&esign"
 
 #: objects/ui_MainWindow.h:861
 msgid "&View"
@@ -651,11 +651,11 @@ msgstr ""
 
 #: objects/ui_OpenCSGWarningDialog.h:92
 msgid "Enable OpenCSG"
-msgstr "Enable OpenCSG"
+msgstr "OpenCSG benutzen"
 
 #: objects/ui_OpenCSGWarningDialog.h:93
 msgid "Show this message again"
-msgstr "Show this message again"
+msgstr "Diesen Dialog wieder anzeigen"
 
 #: objects/ui_Preferences.h:610
 msgid "3D View"
@@ -679,7 +679,7 @@ msgstr "Funktionen"
 
 #: objects/ui_Preferences.h:616
 msgid "Enable/Disable experimental features"
-msgstr "Enable/Disable experimental features"
+msgstr "Experimentelle Erweiterungen ein-/ausschalten"
 
 #: objects/ui_Preferences.h:618
 msgid "Color scheme:"
@@ -735,7 +735,7 @@ msgstr "Font"
 
 #: objects/ui_Preferences.h:646
 msgid "Color syntax highlighting"
-msgstr "Color syntax highlighting"
+msgstr "Syntaxhervorhebung"
 
 #: objects/ui_Preferences.h:649
 msgid "For Light Background"
@@ -829,6 +829,7 @@ msgstr "Startbildschirm anzeigen"
 msgid "Enable user interface localization (requires restart of OpenSCAD)"
 msgstr "Lokalisierung der GUI einschalten (benötigt Neustart von OpenSCAD)"
 
+# This should not be visible (window title of the ToolBar).
 #: objects/ui_Preferences.h:676
 msgid "toolBar"
 msgstr "toolBar"
@@ -863,7 +864,7 @@ msgstr "Zuletzt benutze Dateien"
 
 #: objects/ui_launchingscreen.h:281
 msgid "Open Recent"
-msgstr "Öffnen"
+msgstr "Datei öffnen"
 
 #: objects/ui_launchingscreen.h:285
 msgid "Open Example"
@@ -907,17 +908,12 @@ msgid ""
 "Using QGLWidget\n"
 "\n"
 msgstr ""
-"\n"
-"Using QGLWidget\n"
-"\n"
 
 #: src/QGLView.cc:131
 msgid ""
 "Warning: You may experience OpenCSG rendering errors.\n"
 "\n"
 msgstr ""
-"Warning: You may experience OpenCSG rendering errors.\n"
-"\n"
 
 #: src/QGLView.cc:134
 msgid ""
@@ -925,9 +921,6 @@ msgid ""
 "disabled.\n"
 "\n"
 msgstr ""
-"Warning: Missing OpenGL capabilities for OpenCSG - OpenCSG has been "
-"disabled.\n"
-"\n"
 
 #: src/QGLView.cc:137
 msgid ""
@@ -935,9 +928,6 @@ msgid ""
 "later.\n"
 "Your renderer information is as follows:\n"
 msgstr ""
-"It is highly recommended to use OpenSCAD on a system with OpenGL 2.0 or "
-"later.\n"
-"Your renderer information is as follows:\n"
 
 #: src/QGLView.cc:141
 #, c-format
@@ -973,7 +963,7 @@ msgstr "Extrusion"
 
 #: src/mainwin.cc:728 src/mainwin.cc:1269
 msgid "Untitled.scad"
-msgstr "Untitled.scad"
+msgstr "Unbenannt.scad"
 
 #: src/mainwin.cc:1268
 msgid "Save File"
@@ -1000,28 +990,24 @@ msgid ""
 "The document has been modified.\n"
 "Do you really want to reload the file?"
 msgstr ""
-"The document has been modified.\n"
-"Do you really want to reload the file?"
+"Das Dokument ist verändert.\n"
+"Möchten Sie die Datei wirklich neu laden?"
 
 #: src/mainwin.cc:1907 src/mainwin.cc:1964
-#, fuzzy
 msgid "Export %1 File"
-msgstr "Export STL File"
+msgstr "%1 Datei exportieren"
 
 #: src/mainwin.cc:1908 src/mainwin.cc:1968
-#, fuzzy
 msgid "%1 Files (*%2)"
-msgstr "STL Files (*.stl)"
+msgstr "%1 Dateien (*%2)"
 
 #: src/mainwin.cc:1909
-#, fuzzy
 msgid "Untitled"
-msgstr "Untitled.dxf"
+msgstr "Unbenannt"
 
 #: src/mainwin.cc:1966
-#, fuzzy
 msgid "Untitled%1"
-msgstr "Untitled.dxf"
+msgstr "Unbenannt%1"
 
 #: src/mainwin.cc:2017
 msgid "Export CSG File"
@@ -1029,38 +1015,31 @@ msgstr "Export CSG File"
 
 #: src/mainwin.cc:2018
 msgid "Untitled.csg"
-msgstr "Untitled.csg"
+msgstr "Unbenannt.csg"
 
 #: src/mainwin.cc:2019
 msgid "CSG Files (*.csg)"
-msgstr "CSG Files (*.csg)"
+msgstr "CSG Dateien (*.csg)"
 
 #: src/mainwin.cc:2045
-#, fuzzy
 msgid "Export Image"
-msgstr "Image exportieren..."
+msgstr "Image exportieren"
 
 #: src/mainwin.cc:2045
 msgid "PNG Files (*.png)"
-msgstr "PNG Files (*.png)"
+msgstr "PNG Dateien (*.png)"
 
 #: src/mainwin.cc:2297
 msgid "Console"
 msgstr "Konsole"
 
 #: src/mainwin.cc:2420
-#, fuzzy
 msgid "The document has been modified."
-msgstr ""
-"The document has been modified.\n"
-"Do you want to save your changes?"
+msgstr "Das Dokument ist verändert."
 
 #: src/mainwin.cc:2421
-#, fuzzy
 msgid "Do you want to save your changes?"
-msgstr ""
-"The document has been modified.\n"
-"Do you want to save your changes?"
+msgstr "Möchten Sie die Änderungen speichern?"
 
 #~ msgid "MainWindow"
 #~ msgstr "MainWindow"
