@@ -307,6 +307,7 @@ src/FontCache.h \
            src/system-gl.h \
            src/CsgInfo.h \
            \
+           src/Dock.h \
            src/AutoUpdater.h \
            src/launchingscreen.h \
            src/legacyeditor.h \
@@ -397,6 +398,7 @@ SOURCES += src/version_check.cc \
            src/openscad.cc \
            src/mainwin.cc \
            src/UIUtils.cc \
+           src/Dock.cc \
            src/FontListDialog.cc \
            src/launchingscreen.cc \
            src/legacyeditor.cc \

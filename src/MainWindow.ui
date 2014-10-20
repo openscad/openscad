@@ -142,6 +142,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
+     <width>1397</width>
+     <height>33</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_File">
@@ -287,7 +289,7 @@
    <addaction name="menuHelp"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
-  <widget class="QDockWidget" name="editorDock">
+  <widget class="Dock" name="editorDock">
    <attribute name="dockWidgetArea">
     <number>1</number>
    </attribute>
@@ -410,7 +412,7 @@
     </layout>
    </widget>
   </widget>
-  <widget class="QDockWidget" name="consoleDock">
+  <widget class="Dock" name="consoleDock">
    <attribute name="dockWidgetArea">
     <number>8</number>
    </attribute>
@@ -1090,6 +1092,12 @@
    <class>QGLView</class>
    <extends>QWidget</extends>
    <header>QGLView.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>Dock</class>
+   <extends>QDockWidget</extends>
+   <header>Dock.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
