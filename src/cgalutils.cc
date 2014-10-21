@@ -365,8 +365,10 @@ namespace CGALUtils {
 			const shared_ptr<const Geometry> &chgeom = item.second;
 			const CGAL_Nef_polyhedron *N = dynamic_cast<const CGAL_Nef_polyhedron *>(chgeom.get());
 			if (N) {
-				for (CGAL_Nef_polyhedron3::Vertex_const_iterator i = N->p3->vertices_begin(); i != N->p3->vertices_end(); ++i) {
-					points.insert(K::Point_3(to_double(i->point()[0]),to_double(i->point()[1]),to_double(i->point()[2])));
+				if (!N->isEmpty()) {
+					for (CGAL_Nef_polyhedron3::Vertex_const_iterator i = N->p3->vertices_begin(); i != N->p3->vertices_end(); ++i) {
+						points.insert(K::Point_3(to_double(i->point()[0]),to_double(i->point()[1]),to_double(i->point()[2])));
+					}
 				}
 			} else {
 				const PolySet *ps = dynamic_cast<const PolySet *>(chgeom.get());
