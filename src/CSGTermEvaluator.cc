@@ -113,8 +113,10 @@ Response CSGTermEvaluator::visit(State &state, const AbstractPolyNode &node)
 		shared_ptr<CSGTerm> t1;
 		if (this->geomevaluator) {
 			shared_ptr<const Geometry> geom = this->geomevaluator->evaluateGeometry(node, false);
-			t1 = evaluate_csg_term_from_geometry(state, this->highlights, this->background, 
-																					 geom, node.modinst, node);
+			if (geom) {
+				t1 = evaluate_csg_term_from_geometry(state, this->highlights, this->background, 
+																						 geom, node.modinst, node);
+			}
 			node.progress_report();
 		}
 		this->stored_term[node.index()] = t1;
@@ -178,8 +180,10 @@ Response CSGTermEvaluator::visit(State &state, const RenderNode &node)
 		shared_ptr<const Geometry> geom;
 		if (this->geomevaluator) {
 			geom = this->geomevaluator->evaluateGeometry(node, false);
-			t1 = evaluate_csg_term_from_geometry(state, this->highlights, this->background, 
-																					 geom, node.modinst, node);
+			if (geom) {
+				t1 = evaluate_csg_term_from_geometry(state, this->highlights, this->background, 
+																						 geom, node.modinst, node);
+			}
 			node.progress_report();
 		}
 		this->stored_term[node.index()] = t1;
@@ -196,8 +200,10 @@ Response CSGTermEvaluator::visit(State &state, const CgaladvNode &node)
 		shared_ptr<const Geometry> geom;
 		if (this->geomevaluator) {
 			geom = this->geomevaluator->evaluateGeometry(node, false);
-			t1 = evaluate_csg_term_from_geometry(state, this->highlights, this->background, 
-																					 geom, node.modinst, node);
+			if (geom) {
+				t1 = evaluate_csg_term_from_geometry(state, this->highlights, this->background, 
+																						 geom, node.modinst, node);
+			}
 			node.progress_report();
 		}
 		this->stored_term[node.index()] = t1;
