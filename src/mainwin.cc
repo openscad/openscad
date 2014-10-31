@@ -178,6 +178,11 @@ MainWindow::MainWindow(const QString &filename)
 {
 	setupUi(this);
 
+	this->editorDock->setConfigKey("view/hideEditor");
+	this->editorDock->setAction(this->viewActionHideEditor);
+	this->consoleDock->setConfigKey("view/hideConsole");
+	this->consoleDock->setAction(this->viewActionHideConsole);
+
 	editortype = Preferences::inst()->getValue("editor/editortype").toString();
 	useScintilla = (editortype == "QScintilla Editor");
 
@@ -550,10 +555,6 @@ MainWindow::MainWindow(const QString &filename)
 #endif	    
 	}
 	
-	this->editorDock->setConfigKey("view/hideEditor");
-	this->editorDock->setAction(this->viewActionHideEditor);
-	this->consoleDock->setConfigKey("view/hideConsole");
-	this->consoleDock->setAction(this->viewActionHideConsole);
 	connect(this->editorDock, SIGNAL(topLevelChanged(bool)), this, SLOT(editorTopLevelChanged(bool)));
 	connect(this->consoleDock, SIGNAL(topLevelChanged(bool)), this, SLOT(consoleTopLevelChanged(bool)));
 	
@@ -2319,7 +2320,11 @@ void MainWindow::setDockWidgetTitle(QDockWidget *dockWidget, QString prefix, boo
 
 void MainWindow::hideToolbars()
 {
-	if (viewActionHideToolBars->isChecked()) {
+	QSettings settings;
+	bool shouldHide = viewActionHideToolBars->isChecked();
+	settings.setValue("view/hideToolbar", shouldHide);
+
+	if (shouldHide) {
 		viewerToolBar->hide();
 		editortoolbar->hide();
 	} else {
