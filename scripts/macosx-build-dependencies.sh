@@ -655,7 +655,7 @@ build_ragel()
   cd "$BASEDIR"/src
   rm -rf "ragel-$version"
   if [ ! -f "ragel-$version.tar.gz" ]; then
-    curl --insecure -LO "http://www.complang.org/ragel/ragel-$version.tar.gz"
+    curl --insecure -LO "http://www.colm.net/wp-content/uploads/2014/10/ragel-$version.tar.gz"
   fi
   tar xzf "ragel-$version.tar.gz"
   cd "ragel-$version"
@@ -785,8 +785,8 @@ build_libffi 3.1
 build_glib2 2.40.0
 build_opencsg 1.4.0
 build_freetype 2.5.3 --without-png
-build_ragel 6.8
-build_harfbuzz 0.9.28 "--with-coretext=auto --with-glib=no"
+build_ragel 6.9
+build_harfbuzz 0.9.35 "--with-coretext=auto --with-glib=no"
 export FREETYPE_CFLAGS="-I$DEPLOYDIR/include -I$DEPLOYDIR/include/freetype2"
 export FREETYPE_LIBS="-L$DEPLOYDIR/lib -lfreetype"
 build_libxml2 2.9.1
