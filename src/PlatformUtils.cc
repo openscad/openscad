@@ -110,20 +110,21 @@ std::string PlatformUtils::resourcesPath()
 		if (!is_directory(resourcedir / "libraries")) resourcedir /= "../../..";
 	}
 #elif !defined(WIN32)
-	tmpdir = resourcedir / "../share/openscad";
-	if (is_directory(tmpdir / "libraries")) {
+	const char *searchpath[] = {
+	    "../share/openscad",
+	    "../../share/openscad",
+	    ".",
+	    "..",
+	    "../..",
+	    NULL
+	};
+	
+	for (int a = 0;searchpath[a] != NULL;a++) {
+	    tmpdir = resourcedir / searchpath[a];
+	    if (is_directory(tmpdir / "libraries")) {
 		resourcedir = tmpdir;
-	}
-	else {
-		tmpdir = resourcedir / "../../share/openscad";
-		if (is_directory(tmpdir / "libraries")) {
-			resourcedir = tmpdir;
-		} else {
-			tmpdir = resourcedir / "../..";
-			if (is_directory(tmpdir / "libraries")) {
-				resourcedir = tmpdir;
-			}
-		}
+		break;
+	    }
 	}
 #endif
 	// resourcedir defaults to applicationPath

@@ -4,7 +4,6 @@
 #include <string>
 #include <list>
 #include "linalg.h"
-#include <boost/unordered/unordered_map.hpp>
 
 #include <boost/shared_ptr.hpp>
 #include <boost/filesystem.hpp>
@@ -62,9 +61,7 @@ class ColorMap
 public:
 	static ColorMap *inst(bool erase = false);
 
-	const ColorScheme &defaultColorScheme() const;
-
-	const boost::unordered_map<std::string, Color4f> &webColors() const { return webcolors; }
+	const ColorScheme & defaultColorScheme() const;
 	const ColorScheme *findColorScheme(const std::string &name) const;
 	std::list<std::string> colorSchemeNames(bool guiOnly = false) const;
 
@@ -72,9 +69,7 @@ public:
 	
 private:
 	ColorMap();
-	~ColorMap() {}
+	virtual ~ColorMap();
         colorscheme_set_t enumerateColorSchemes();
-
-	boost::unordered_map<std::string, Color4f> webcolors;
-        colorscheme_set_t colorschemes;
+        colorscheme_set_t colorSchemeSet;
 };
