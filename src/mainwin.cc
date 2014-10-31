@@ -183,8 +183,9 @@ MainWindow::MainWindow(const QString &filename)
 	this->consoleDock->setConfigKey("view/hideConsole");
 	this->consoleDock->setAction(this->viewActionHideConsole);
 
-	editortype = Preferences::inst()->getValue("editor/editortype").toString();
-	useScintilla = (editortype == "QScintilla Editor");
+	QSettings settings;
+	editortype = settings.value("editor/editortype").toString();
+	useScintilla = (editortype != "Simple Editor");
 
 #ifdef USE_SCINTILLA_EDITOR
 	if (useScintilla) {
@@ -193,6 +194,8 @@ MainWindow::MainWindow(const QString &filename)
 	else
 #endif
 	    editor = new LegacyEditor(editorDockContents);
+
+	Preferences::create(this, editor->colorSchemes());
 
 	editorDockContents->layout()->addWidget(editor);
 
@@ -515,7 +518,6 @@ MainWindow::MainWindow(const QString &filename)
 	}
 	
 	// make sure it looks nice..
-	QSettings settings;
 	QByteArray windowState = settings.value("window/state", QByteArray()).toByteArray();
 	restoreState(windowState);
 	resize(settings.value("window/size", QSize(800, 600)).toSize());

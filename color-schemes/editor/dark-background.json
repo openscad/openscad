@@ -1,4 +1,6 @@
 {
+    "name" : "For Dark Background",
+    "index" : 1100,
     "paper" : "#272822",
     "text" : "#ffffff",
     "caret" : {

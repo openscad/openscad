@@ -1,4 +1,6 @@
 {
+    "name" : "Solarized",
+    "index" : 1300,
     "paper" : "#fdf6e3",
     "text" : "#657b83",
     "caret" : {
