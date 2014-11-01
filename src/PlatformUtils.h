@@ -10,6 +10,16 @@ namespace PlatformUtils {
 	std::string documentsPath();
 	std::string resourcesPath();
 	std::string userLibraryPath();
+        
+        /**
+         * Base path where user configuration can be read and written to. On
+         * Linux this is the $XDG_CONFIG_HOME.
+         * 
+         * @return absolute path to the writable configuration folder or
+         * an empty string if the config path does not exist.
+         */
+        std::string userConfigPath();
+
 	bool createUserLibraryPath();
 	std::string backupPath();
 	bool createBackupPath();

@@ -71,5 +71,6 @@ private:
 	ColorMap();
 	virtual ~ColorMap();
         colorscheme_set_t enumerateColorSchemes();
+        void enumerateColorSchemesInPath(colorscheme_set_t &result_set, const fs::path path);
         colorscheme_set_t colorSchemeSet;
 };

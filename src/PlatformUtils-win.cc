@@ -78,6 +78,11 @@ std::string PlatformUtils::documentsPath()
 	return retval;
 }
 
+std::string PlatformUtils::userConfigPath()
+{
+    return "";
+}
+
 #include <io.h>
 #include <stdio.h>
 #include <fstream>

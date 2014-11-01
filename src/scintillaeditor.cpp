@@ -223,12 +223,10 @@ void ScintillaEditor::noColor()
     qsci->setEdgeColor(Qt::black);
 }
 
-ScintillaEditor::colorscheme_set_t ScintillaEditor::enumerateColorSchemes()
+void ScintillaEditor::enumerateColorSchemesInPath(ScintillaEditor::colorscheme_set_t &result_set, const fs::path path)
 {
-    const fs::path resources = PlatformUtils::resourcesPath();
-    const fs::path color_schemes = resources / "color-schemes" / "editor";
+    const fs::path color_schemes = path / "color-schemes" / "editor";
 
-    colorscheme_set_t result_set;
     fs::directory_iterator end_iter;
     
     if (fs::exists(color_schemes) && fs::is_directory(color_schemes)) {
@@ -250,6 +248,14 @@ ScintillaEditor::colorscheme_set_t ScintillaEditor::enumerateColorSchemes()
 	    }
 	}
     }
+}
+
+ScintillaEditor::colorscheme_set_t ScintillaEditor::enumerateColorSchemes()
+{
+    colorscheme_set_t result_set;
+
+    enumerateColorSchemesInPath(result_set, PlatformUtils::resourcesPath());
+    enumerateColorSchemesInPath(result_set, PlatformUtils::userConfigPath());
     
     return result_set;
 }

@@ -140,12 +140,10 @@ Color4f ColorMap::getColor(const ColorScheme &cs, const RenderColor rc)
 	return Color4f(0, 0, 0, 127);
 }
 
-ColorMap::colorscheme_set_t ColorMap::enumerateColorSchemes()
+void ColorMap::enumerateColorSchemesInPath(colorscheme_set_t &result_set, const fs::path path)
 {
-    const fs::path resources = PlatformUtils::resourcesPath();
-    const fs::path color_schemes = resources / "color-schemes" / "render";
-
-    colorscheme_set_t result_set;
+    const fs::path color_schemes = path / "color-schemes" / "render";
+    
     fs::directory_iterator end_iter;
     
     if (fs::exists(color_schemes) && fs::is_directory(color_schemes)) {
@@ -160,13 +158,21 @@ ColorMap::colorscheme_set_t ColorMap::enumerateColorSchemes()
 	    }
 	    
 	    RenderColorScheme *colorScheme = new RenderColorScheme(path);
-	    if (colorScheme->valid()) {
+	    if (colorScheme->valid() && (findColorScheme(colorScheme->name()) == 0)) {
 		result_set.insert(colorscheme_set_t::value_type(colorScheme->index(), boost::shared_ptr<RenderColorScheme>(colorScheme)));
 	    } else {
 		delete colorScheme;
 	    }
 	}
     }
+}
+
+ColorMap::colorscheme_set_t ColorMap::enumerateColorSchemes()
+{
+    colorscheme_set_t result_set;
+
+    enumerateColorSchemesInPath(result_set, PlatformUtils::resourcesPath());
+    enumerateColorSchemesInPath(result_set, PlatformUtils::userConfigPath());
     
     return result_set;
 }
