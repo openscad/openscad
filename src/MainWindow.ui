@@ -423,6 +423,12 @@
      </property>
      <item>
       <widget class="QTextEdit" name="console">
+       <property name="minimumSize">
+        <size>
+         <width>10</width>
+         <height>10</height>
+        </size>
+       </property>
        <property name="focusPolicy">
         <enum>Qt::ClickFocus</enum>
        </property>
