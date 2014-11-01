@@ -67,6 +67,9 @@ public:
 	QAction *actionRecentFile[UIUtils::maxRecentFiles];
         QMap<QString, QString> knownFileExtensions;
 
+        QWidget *editorDockTitleWidget;
+        QWidget *consoleDockTitleWidget;
+        
 	QString editortype;	
 	bool useScintilla;
 
@@ -81,6 +84,7 @@ private slots:
 	void updateTVal();
         void updateMdiMode(bool mdi);
         void updateUndockMode(bool undockMode);
+        void updateReorderMode(bool reorderMode);
 	void setFileName(const QString &filename);
 	void setFont(const QString &family, uint size);
 	void setColorScheme(const QString &cs);
@@ -235,6 +239,7 @@ private:
 	static void report_func(const class AbstractNode*, void *vp, int mark);
 	static bool mdiMode;
 	static bool undockMode;
+	static bool reorderMode;
 	static QSet<MainWindow*> *windows;
 
 	char const * afterCompileSlot;

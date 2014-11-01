@@ -33,6 +33,7 @@ public slots:
 	void on_updateCheckBox_toggled(bool);
 	void on_snapshotCheckBox_toggled(bool);
 	void on_mdiCheckBox_toggled(bool);
+	void on_reorderCheckBox_toggled(bool);
 	void on_undockCheckBox_toggled(bool);
 	void on_checkNowButton_clicked();
 	void on_launcherBox_toggled(bool);
@@ -41,7 +42,8 @@ public slots:
 signals:
 	void requestRedraw() const;
 	void updateMdiMode(bool mdi) const;
-	void updateUndockMode(bool mdi) const;
+	void updateUndockMode(bool undockMode) const;
+	void updateReorderMode(bool undockMode) const;
 	void fontChanged(const QString &family, uint size) const;
 	void colorSchemeChanged(const QString &scheme) const;
 	void openCSGSettingsChanged() const;

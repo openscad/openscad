@@ -172,11 +172,15 @@ settings_valueList(const QString &key, const QList<int> &defaultList = QList<int
 
 bool MainWindow::mdiMode = false;
 bool MainWindow::undockMode = false;
+bool MainWindow::reorderMode = false;
 
 MainWindow::MainWindow(const QString &filename)
     : root_inst("group"), library_info_dialog(NULL), font_list_dialog(NULL), tempFile(NULL), progresswidget(NULL)
 {
 	setupUi(this);
+
+	editorDockTitleWidget = new QWidget();
+        consoleDockTitleWidget = new QWidget();
 
 	this->editorDock->setConfigKey("view/hideEditor");
 	this->editorDock->setAction(this->viewActionHideEditor);
@@ -422,6 +426,7 @@ MainWindow::MainWindow(const QString &filename)
 
 	connect(Preferences::inst(), SIGNAL(requestRedraw()), this->qglview, SLOT(updateGL()));
 	connect(Preferences::inst(), SIGNAL(updateMdiMode(bool)), this, SLOT(updateMdiMode(bool)));
+	connect(Preferences::inst(), SIGNAL(updateReorderMode(bool)), this, SLOT(updateReorderMode(bool)));
 	connect(Preferences::inst(), SIGNAL(updateUndockMode(bool)), this, SLOT(updateUndockMode(bool)));
 	connect(Preferences::inst(), SIGNAL(fontChanged(const QString&,uint)), 
 					editor, SLOT(initFont(const QString&,uint)));
@@ -619,6 +624,7 @@ void MainWindow::loadViewSettings(){
 	hideToolbars();
 	updateMdiMode(settings.value("advanced/mdi").toBool());
 	updateUndockMode(settings.value("advanced/undockableWindows").toBool());
+	updateReorderMode(settings.value("advanced/reorderWindows").toBool());
 }
 
 void MainWindow::loadDesignSettings()
@@ -647,9 +653,22 @@ void MainWindow::updateUndockMode(bool undockMode)
 		editorDock->setFeatures(editorDock->features() | QDockWidget::DockWidgetFloatable);
 		consoleDock->setFeatures(consoleDock->features() | QDockWidget::DockWidgetFloatable);
 	} else {
+		if (editorDock->isFloating()) {
+			editorDock->setFloating(false);
+		}
 		editorDock->setFeatures(editorDock->features() & ~QDockWidget::DockWidgetFloatable);
+		if (consoleDock->isFloating()) {
+			consoleDock->setFloating(false);
+		}
 		consoleDock->setFeatures(consoleDock->features() & ~QDockWidget::DockWidgetFloatable);
 	}
+}
+
+void MainWindow::updateReorderMode(bool reorderMode)
+{
+	MainWindow::reorderMode = reorderMode;
+	editorDock->setTitleBarWidget(reorderMode ? 0 : editorDockTitleWidget);
+	consoleDock->setTitleBarWidget(reorderMode ? 0 : consoleDockTitleWidget);
 }
 
 MainWindow::~MainWindow()
