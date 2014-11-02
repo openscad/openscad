@@ -7,6 +7,26 @@
 
 using namespace boost::assign; // bring map_list_of() into scope
 
+static const char *DEFAULT_COLOR_SCHEME_NAME = "Cornfield";
+
+RenderColorScheme::RenderColorScheme() : path("")
+{
+	_name = DEFAULT_COLOR_SCHEME_NAME;
+	_index = 1000;
+	_show_in_gui = true;
+
+	_color_scheme.insert(ColorScheme::value_type(BACKGROUND_COLOR, Color4f(0xff, 0xff, 0xe5)));
+	_color_scheme.insert(ColorScheme::value_type(OPENCSG_FACE_FRONT_COLOR, Color4f(0xf9, 0xd7, 0x2c)));
+	_color_scheme.insert(ColorScheme::value_type(OPENCSG_FACE_BACK_COLOR, Color4f(0x9d, 0xcb, 0x51)));
+	_color_scheme.insert(ColorScheme::value_type(CGAL_FACE_FRONT_COLOR, Color4f(0xf9, 0xd7, 0x2c)));
+	_color_scheme.insert(ColorScheme::value_type(CGAL_FACE_2D_COLOR, Color4f(0x00, 0xbf, 0x99)));
+	_color_scheme.insert(ColorScheme::value_type(CGAL_FACE_BACK_COLOR, Color4f(0x9d, 0xcb, 0x51)));
+	_color_scheme.insert(ColorScheme::value_type(CGAL_EDGE_FRONT_COLOR, Color4f(0xff, 0xec, 0x5e)));
+	_color_scheme.insert(ColorScheme::value_type(CGAL_EDGE_BACK_COLOR, Color4f(0xab, 0xd8, 0x56)));
+	_color_scheme.insert(ColorScheme::value_type(CGAL_EDGE_2D_COLOR, Color4f(0xff, 0x00, 0x00)));
+	_color_scheme.insert(ColorScheme::value_type(CROSSHAIR_COLOR, Color4f(0x80, 0x00, 0x00)));
+}
+
 RenderColorScheme::RenderColorScheme(fs::path path) : path(path)
 {
     try {
@@ -104,7 +124,7 @@ ColorMap::~ColorMap()
 
 const ColorScheme &ColorMap::defaultColorScheme() const
 {
-    return *findColorScheme("Cornfield");
+    return *findColorScheme(DEFAULT_COLOR_SCHEME_NAME);
 }
 
 const ColorScheme *ColorMap::findColorScheme(const std::string &name) const
@@ -171,6 +191,9 @@ ColorMap::colorscheme_set_t ColorMap::enumerateColorSchemes()
 {
     colorscheme_set_t result_set;
 
+    RenderColorScheme *defaultColorScheme = new RenderColorScheme();
+    result_set.insert(colorscheme_set_t::value_type(defaultColorScheme->index(),
+	    boost::shared_ptr<RenderColorScheme>(defaultColorScheme)));
     enumerateColorSchemesInPath(result_set, PlatformUtils::resourcesPath());
     enumerateColorSchemesInPath(result_set, PlatformUtils::userConfigPath());
     

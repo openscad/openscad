@@ -40,9 +40,16 @@ private:
         ColorScheme _color_scheme;
         
 public:
+        /**
+         * Constructor for the default color scheme Cornfield.
+         */
+        RenderColorScheme();
+        /**
+         * Constructor for reading external JSON files.
+         */
         RenderColorScheme(const fs::path path);
         virtual ~RenderColorScheme();
-        
+
         const std::string & name() const;
         int index() const;
         bool valid() const;
@@ -52,6 +59,8 @@ public:
 
 private:
         void addColor(RenderColor colorKey, std::string key);
+        
+        friend class ColorMap;
 };
 
 class ColorMap
