@@ -14,6 +14,8 @@ namespace {
 	std::string applicationpath;
 }
 
+const char *PlatformUtils::OPENSCAD_FOLDER_NAME = "OpenSCAD";
+
 void PlatformUtils::registerApplicationPath(const std::string &apppath)
 {
 	applicationpath = apppath;
@@ -52,7 +54,7 @@ std::string PlatformUtils::userLibraryPath()
 		//PRINTB("path size %i",boosty::stringy(path).size());
 		//PRINTB("lib path found: [%s]", path );
 		if (path.empty()) return "";
-		path /= "OpenSCAD";
+		path /= OPENSCAD_FOLDER_NAME;
 		path /= "libraries";
 		//PRINTB("Appended path %s", path );
 		//PRINTB("Exists: %i", fs::exists(path) );
@@ -71,7 +73,7 @@ std::string PlatformUtils::backupPath()
 		if (pathstr=="") return "";
 		path = boosty::canonical(fs::path( pathstr ));
 		if (path.empty()) return "";
-		path /= "OpenSCAD";
+		path /= OPENSCAD_FOLDER_NAME;
 		path /= "backups";
 	} catch (const fs::filesystem_error& ex) {
 		PRINTB("ERROR: %s",ex.what());
