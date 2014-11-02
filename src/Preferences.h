@@ -3,7 +3,6 @@
 #include <QMainWindow>
 #include <QSettings>
 #include "ui_Preferences.h"
-#include "colormap.h"
 
 class Preferences : public QMainWindow, public Ui::Preferences
 {
