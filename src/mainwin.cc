@@ -1031,8 +1031,8 @@ void MainWindow::compileCSG(bool procevents)
 		CSGTermEvaluator csgrenderer(this->tree, &geomevaluator);
 		if (procevents) QApplication::processEvents();
 		this->root_raw_term = csgrenderer.evaluateCSGTerm(*root_node, highlight_terms, background_terms);
-		if (!root_raw_term) {
-			PRINT("ERROR: CSG generation failed! (no top level object found)");
+		if (!root_raw_term && background_terms.empty()) {
+			PRINT("ERROR: CSG generation failed! (no objects found)");
 		}
 		GeometryCache::instance()->print();
 #ifdef ENABLE_CGAL
@@ -1048,12 +1048,13 @@ void MainWindow::compileCSG(bool procevents)
 	delete this->progresswidget;
 	this->progresswidget = NULL;
 
-	if (root_raw_term) {
-		PRINT("Compiling design (CSG Products normalization)...");
-		if (procevents) QApplication::processEvents();
+	PRINT("Compiling design (CSG Products normalization)...");
+	if (procevents) QApplication::processEvents();
 
-		size_t normalizelimit = 2 * Preferences::inst()->getValue("advanced/openCSGLimit").toUInt();
-		CSGTermNormalizer normalizer(normalizelimit);
+	size_t normalizelimit = 2 * Preferences::inst()->getValue("advanced/openCSGLimit").toUInt();
+	CSGTermNormalizer normalizer(normalizelimit);
+	
+	if (root_raw_term) {
 		this->root_norm_term = normalizer.normalize(this->root_raw_term);
 		if (this->root_norm_term) {
 			this->root_chain = new CSGChain();
@@ -1064,53 +1065,51 @@ void MainWindow::compileCSG(bool procevents)
 			PRINT("WARNING: CSG normalization resulted in an empty tree");
 			if (procevents) QApplication::processEvents();
 		}
-
-		if (highlight_terms.size() > 0)
-		{
-			PRINTB("Compiling highlights (%d CSG Trees)...", highlight_terms.size());
-			if (procevents) QApplication::processEvents();
-
-			highlights_chain = new CSGChain();
-			for (unsigned int i = 0; i < highlight_terms.size(); i++) {
-				highlight_terms[i] = normalizer.normalize(highlight_terms[i]);
-				highlights_chain->import(highlight_terms[i]);
-			}
-		}
-
-		if (background_terms.size() > 0)
-		{
-			PRINTB("Compiling background (%d CSG Trees)...", background_terms.size());
-			if (procevents) QApplication::processEvents();
-
-			background_chain = new CSGChain();
-			for (unsigned int i = 0; i < background_terms.size(); i++) {
-				background_terms[i] = normalizer.normalize(background_terms[i]);
-				background_chain->import(background_terms[i]);
-			}
-		}
-
-		if (this->root_chain &&
-				(this->root_chain->objects.size() >
-				 Preferences::inst()->getValue("advanced/openCSGLimit").toUInt())) {
-			PRINTB("WARNING: Normalized tree has %d elements!", this->root_chain->objects.size());
-			PRINT("WARNING: OpenCSG rendering has been disabled.");
-		}
-		else {
-			PRINTB("Normalized CSG tree has %d elements",
-						 (this->root_chain ? this->root_chain->objects.size() : 0));
-			this->opencsgRenderer = new OpenCSGRenderer(this->root_chain,
-																									this->highlights_chain,
-																									this->background_chain,
-																									this->qglview->shaderinfo);
-		}
-		this->thrownTogetherRenderer = new ThrownTogetherRenderer(this->root_chain,
-																															this->highlights_chain,
-																															this->background_chain);
-		PRINT("CSG generation finished.");
-		int s = t.elapsed() / 1000;
-		PRINTB("Total rendering time: %d hours, %d minutes, %d seconds", (s / (60*60)) % ((s / 60) % 60) % (s % 60));
-		if (procevents) QApplication::processEvents();
 	}
+
+	if (highlight_terms.size() > 0) {
+		PRINTB("Compiling highlights (%d CSG Trees)...", highlight_terms.size());
+		if (procevents) QApplication::processEvents();
+		
+		highlights_chain = new CSGChain();
+		for (unsigned int i = 0; i < highlight_terms.size(); i++) {
+			highlight_terms[i] = normalizer.normalize(highlight_terms[i]);
+			highlights_chain->import(highlight_terms[i]);
+		}
+	}
+	
+	if (background_terms.size() > 0) {
+		PRINTB("Compiling background (%d CSG Trees)...", background_terms.size());
+		if (procevents) QApplication::processEvents();
+		
+		background_chain = new CSGChain();
+		for (unsigned int i = 0; i < background_terms.size(); i++) {
+			background_terms[i] = normalizer.normalize(background_terms[i]);
+			background_chain->import(background_terms[i]);
+		}
+	}
+
+	if (this->root_chain &&
+			(this->root_chain->objects.size() >
+			 Preferences::inst()->getValue("advanced/openCSGLimit").toUInt())) {
+		PRINTB("WARNING: Normalized tree has %d elements!", this->root_chain->objects.size());
+		PRINT("WARNING: OpenCSG rendering has been disabled.");
+	}
+	else {
+		PRINTB("Normalized CSG tree has %d elements",
+					 (this->root_chain ? this->root_chain->objects.size() : 0));
+		this->opencsgRenderer = new OpenCSGRenderer(this->root_chain,
+																								this->highlights_chain,
+																								this->background_chain,
+																								this->qglview->shaderinfo);
+	}
+	this->thrownTogetherRenderer = new ThrownTogetherRenderer(this->root_chain,
+																														this->highlights_chain,
+																														this->background_chain);
+	PRINT("CSG generation finished.");
+	int s = t.elapsed() / 1000;
+	PRINTB("Total rendering time: %d hours, %d minutes, %d seconds", (s / (60*60)) % ((s / 60) % 60) % (s % 60));
+	if (procevents) QApplication::processEvents();
 }
 
 void MainWindow::actionUpdateCheck()
