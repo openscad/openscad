@@ -103,15 +103,15 @@ std::string PlatformUtils::resourcesPath()
 {
 	fs::path resourcedir(applicationPath());
 	fs::path tmpdir;
+#ifndef WIN32
 #ifdef __APPLE__
-	// Resources can be bundled on Mac. If not, fall back to development layout
-	bool isbundle = is_directory(resourcedir / ".." / "Resources");
-	if (isbundle) {
-		resourcedir /= "../Resources";
-		// Fall back to dev layout
-		if (!is_directory(resourcedir / "libraries")) resourcedir /= "../../..";
-	}
-#elif !defined(WIN32)
+	const char *searchpath[] = {
+	    "../Resources", 	// Resources can be bundled on Mac.
+	    "../../..",       // Dev location
+	    "..",          // Test location
+	    NULL
+	};
+#else
 	const char *searchpath[] = {
 	    "../share/openscad",
 	    "../../share/openscad",
@@ -120,7 +120,7 @@ std::string PlatformUtils::resourcesPath()
 	    "../..",
 	    NULL
 	};
-	
+#endif	
 	for (int a = 0;searchpath[a] != NULL;a++) {
 	    tmpdir = resourcedir / searchpath[a];
 	    if (is_directory(tmpdir / "libraries")) {
@@ -128,7 +128,7 @@ std::string PlatformUtils::resourcesPath()
 		break;
 	    }
 	}
-#endif
+#endif // !WIN32
 	// resourcedir defaults to applicationPath
 	return boosty::stringy(boosty::canonical(resourcedir));
 }
