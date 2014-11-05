@@ -103,6 +103,7 @@ Preferences::Preferences(QWidget *parent) : QMainWindow(parent)
 	this->defaultmap["advanced/forceGoldfeather"] = false;
 	this->defaultmap["advanced/mdi"] = true;
 	this->defaultmap["advanced/undockableWindows"] = false;
+	this->defaultmap["advanced/reorderWindows"] = true;
 	this->defaultmap["launcher/showOnStartup"] = true;
 
 	// Toolbar
@@ -322,6 +323,18 @@ Preferences::on_mdiCheckBox_toggled(bool state)
 }
 
 void
+Preferences::on_reorderCheckBox_toggled(bool state)
+{
+	if (!state) {
+		undockCheckBox->setChecked(false);
+	}
+	undockCheckBox->setEnabled(state);
+	QSettings settings;
+	settings.setValue("advanced/reorderWindows", state);
+	emit updateReorderMode(state);
+}
+
+void
 Preferences::on_undockCheckBox_toggled(bool state)
 {
 	QSettings settings;
@@ -467,7 +480,9 @@ void Preferences::updateGUI()
 	this->opencsgLimitEdit->setText(getValue("advanced/openCSGLimit").toString());
 	this->forceGoldfeatherBox->setChecked(getValue("advanced/forceGoldfeather").toBool());
 	this->mdiCheckBox->setChecked(getValue("advanced/mdi").toBool());
+	this->reorderCheckBox->setChecked(getValue("advanced/reorderWindows").toBool());
 	this->undockCheckBox->setChecked(getValue("advanced/undockableWindows").toBool());
+	this->undockCheckBox->setEnabled(this->reorderCheckBox->isChecked());
 	this->launcherBox->setChecked(getValue("launcher/showOnStartup").toBool());
 }
 
