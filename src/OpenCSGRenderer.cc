@@ -152,5 +152,7 @@ BoundingBox OpenCSGRenderer::getBoundingBox() const
 {
 	BoundingBox bbox;
 	if (this->root_chain) bbox = this->root_chain->getBoundingBox();
+	if (this->background_chain) bbox.extend(this->background_chain->getBoundingBox());
+
 	return bbox;
 }
