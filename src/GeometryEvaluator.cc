@@ -80,7 +80,7 @@ GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren(const Abstrac
 {
 	unsigned int dim = 0;
 	BOOST_FOREACH(const Geometry::ChildItem &item, this->visitedchildren[node.index()]) {
-		if (item.second) {
+		if (!item.first->modinst->isBackground() && item.second) {
 			if (!dim) dim = item.second->getDimension();
 			else if (dim != item.second->getDimension()) {
 				PRINT("WARNING: Mixing 2D and 3D objects is not supported.");
