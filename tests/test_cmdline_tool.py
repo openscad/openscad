@@ -9,6 +9,11 @@
 # Any generated output is written to the file `basename <argument`-actual.<suffix>
 # Any warning or errors are written to stderr.
 #
+# The test is run with OPENSCAD_FONT_PATH set to the testdata/ttf directory. This
+# should ensure we fetch the fonts from there even if they are also installed
+# on the system. (E.g. the C glyph is actually different from Debian/Jessie
+# installation and what we ship as Liberation-2.00.1).
+#
 # Returns 0 on passed test
 #         1 on error
 #         2 on invalid cmd-line options
@@ -195,8 +200,12 @@ def run_test(testname, cmd, args):
     try:
         cmdline = [cmd] + args + [outputname]
         print 'run_test() cmdline:',cmdline
+        fontdir =  os.path.join(os.path.dirname(cmd), "..", "testdata")
+        fontenv = os.environ.copy()
+        fontenv["OPENSCAD_FONT_PATH"] = fontdir
+        print 'using font directory:', fontdir
         sys.stdout.flush()
-        proc = subprocess.Popen(cmdline, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        proc = subprocess.Popen(cmdline, env = fontenv, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 	comresult = proc.communicate()
         stdouttext, errtext = comresult[0],comresult[1]
         if errtext != None and len(errtext) > 0:
