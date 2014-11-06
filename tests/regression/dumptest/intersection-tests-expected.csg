@@ -60,6 +60,24 @@ group() {
 			cube(size = [0, 0, 0], center = false);
 		}
 	}
+	multmatrix([[1, 0, 0, 0], [0, 1, 0, -12], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+		intersection() {
+			cube(size = [4, 4, 4], center = true);
+			linear_extrude(height = 100, center = false, convexity = 1, scale = [1, 1], $fn = 0, $fa = 12, $fs = 2);
+		}
+	}
+	multmatrix([[1, 0, 0, 0], [0, 1, 0, -16], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+		intersection() {
+			cube(size = [4, 4, 4], center = true);
+			render(convexity = 1);
+		}
+	}
+	multmatrix([[1, 0, 0, 0], [0, 1, 0, -20], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+		intersection() {
+			cube(size = [4, 4, 4], center = true);
+			minkowski(convexity = 0);
+		}
+	}
 	multmatrix([[1, 0, 0, 12], [0, 1, 0, -12], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 		intersection() {
 			cube(size = [5, 5, 5], center = true);

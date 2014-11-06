@@ -133,6 +133,22 @@ build_qt5()
   make -j"$NUMCPU" install
 }
 
+build_qscintilla()
+{
+  version=$1
+  echo "Building QScintilla" $version "..."
+  cd $BASEDIR/src
+  rm -rf QScintilla-gpl-$version
+  if [ ! -f QScintilla-gpl-$version.tar.gz ]; then
+    curl -LO http://downloads.sourceforge.net/project/pyqt/QScintilla2/QScintilla-$version/QScintilla-gpl-$version.tar.gz
+  fi
+  tar xzf QScintilla-gpl-$version.tar.gz
+  cd QScintilla-gpl-$version/Qt4Qt5
+  qmake qscintilla.pro
+  make -j6 install
+  install_name_tool -id $DEPLOYDIR/lib/libqscintilla2.dylib $DEPLOYDIR/lib/libqscintilla2.dylib
+}
+
 # Hack warning: gmplib is built separately in 32-bit and 64-bit mode
 # and then merged afterwards. gmplib's header files are dependent on
 # the CPU architecture on which configure was run and will be patched accordingly.
@@ -340,8 +356,9 @@ build_cgal()
   cd $BASEDIR/src
   rm -rf CGAL-$version
   if [ ! -f CGAL-$version.tar.gz ]; then
-    # 4.4
-    curl -O https://gforge.inria.fr/frs/download.php/file/33525/CGAL-$version.tar.gz
+    # 4.5
+    curl -O https://gforge.inria.fr/frs/download.php/file/34149/CGAL-$version.tar.gz
+    # 4.4 curl -O https://gforge.inria.fr/frs/download.php/file/33525/CGAL-$version.tar.gz
     # 4.3 curl -O https://gforge.inria.fr/frs/download.php/32994/CGAL-$version.tar.gz
     # 4.2 curl -O https://gforge.inria.fr/frs/download.php/32359/CGAL-$version.tar.gz
     # 4.1 curl -O https://gforge.inria.fr/frs/download.php/31641/CGAL-$version.tar.gz
@@ -410,7 +427,7 @@ build_opencsg()
   if $OPTION_32BIT; then
     OPENCSG_EXTRA_FLAGS="x86"
   fi
-  OPENSCAD_LIBRARIES=$DEPLOYDIR qmake -r CONFIG+="x86_64 $OPENCSG_EXTRA_FLAGS"
+  qmake -r QMAKE_CXXFLAGS+="-I$DEPLOYDIR/include" QMAKE_LFLAGS+="-L$DEPLOYDIR/lib" CONFIG+="x86_64 $OPENCSG_EXTRA_FLAGS" DESTDIR=$DEPLOYDIR
   make install
 }
 
@@ -638,7 +655,7 @@ build_ragel()
   cd "$BASEDIR"/src
   rm -rf "ragel-$version"
   if [ ! -f "ragel-$version.tar.gz" ]; then
-    curl --insecure -LO "http://www.complang.org/ragel/ragel-$version.tar.gz"
+    curl --insecure -LO "http://www.colm.net/wp-content/uploads/2014/10/ragel-$version.tar.gz"
   fi
   tar xzf "ragel-$version.tar.gz"
   cd "ragel-$version"
@@ -754,21 +771,22 @@ fi
 echo "Using basedir:" $BASEDIR
 mkdir -p $SRCDIR $DEPLOYDIR
 build_qt5 5.3.1
+build_qscintilla 2.8.3
 # NB! For eigen, also update the path in the function
 build_eigen 3.2.1
 build_gmp 5.1.3
 build_mpfr 3.1.2
 build_boost 1.54.0
 # NB! For CGAL, also update the actual download URL in the function
-build_cgal 4.4
+build_cgal 4.5
 build_glew 1.10.0
 build_gettext 0.18.3.2
 build_libffi 3.1
 build_glib2 2.40.0
-build_opencsg 1.3.2
+build_opencsg 1.4.0
 build_freetype 2.5.3 --without-png
-build_ragel 6.8
-build_harfbuzz 0.9.28 "--with-coretext=auto --with-glib=no"
+build_ragel 6.9
+build_harfbuzz 0.9.35 "--with-coretext=auto --with-glib=no"
 export FREETYPE_CFLAGS="-I$DEPLOYDIR/include -I$DEPLOYDIR/include/freetype2"
 export FREETYPE_LIBS="-L$DEPLOYDIR/lib -lfreetype"
 build_libxml2 2.9.1

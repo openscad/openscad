@@ -131,6 +131,56 @@ build_qt4()
   echo "----------"
 }
 
+build_qt5()
+{
+  version=$1
+
+  if [ -f $DEPLOYDIR/lib/libQt5Core.a ]; then
+    echo "Qt5 already installed. not building"
+    return
+  fi
+
+  echo "Building Qt" $version "..."
+  cd $BASEDIR/src
+  rm -rf qt-everywhere-opensource-src-$version
+  v=`echo "$version" | sed -e 's/\.[0-9]$//'`
+  if [ ! -f qt-everywhere-opensource-src-$version.tar.gz ]; then
+     curl -O -L http://download.qt-project.org/official_releases/qt/$v/$version/single/qt-everywhere-opensource-src-$version.tar.gz
+  fi
+  tar xzf qt-everywhere-opensource-src-$version.tar.gz
+  cd qt-everywhere-opensource-src-$version
+  ./configure -prefix $DEPLOYDIR -release -static -opensource -confirm-license \
+                -nomake examples -nomake tests \
+                -qt-xcb -no-c++11 -no-glib -no-harfbuzz -no-sql-db2 -no-sql-ibase -no-sql-mysql -no-sql-oci -no-sql-odbc \
+                -no-sql-psql -no-sql-sqlite2 -no-sql-tds -no-cups -no-qml-debug \
+                -skip activeqt -skip connectivity -skip declarative -skip doc \
+                -skip enginio -skip graphicaleffects -skip location -skip multimedia \
+                -skip quick1 -skip quickcontrols -skip script -skip sensors -skip serialport \
+                -skip svg -skip webkit -skip webkit-examples -skip websockets -skip xmlpatterns
+  make -j"$NUMCPU" install
+}
+
+build_qt5scintilla2()
+{
+  version=$1
+
+  if [ -d $DEPLOYDIR/lib/libqt5scintilla2.a ]; then
+    echo "Qt5Scintilla2 already installed. not building"
+    return
+  fi
+
+  echo "Building Qt5Scintilla2" $version "..."
+  cd $BASEDIR/src
+  #rm -rf QScintilla-gpl-$version.tar.gz
+  if [ ! -f QScintilla-gpl-$version.tar.gz ]; then
+     curl -L -o "QScintilla-gpl-$version.tar.gz" "http://downloads.sourceforge.net/project/pyqt/QScintilla2/QScintilla-$version/QScintilla-gpl-$version.tar.gz?use_mirror=switch"
+  fi
+  tar xzf QScintilla-gpl-$version.tar.gz
+  cd QScintilla-gpl-$version/Qt4Qt5/
+  qmake CONFIG+=staticlib
+  make -j"$NUMCPU" install
+}
+
 build_bison()
 {
   version=$1
@@ -210,7 +260,7 @@ build_gmp()
   cd $BASEDIR/src
   rm -rf gmp-$version
   if [ ! -f gmp-$version.tar.bz2 ]; then
-    curl --insecure -O ftp://ftp.gmplib.org/pub/gmp-$version/gmp-$version.tar.bz2
+    curl --insecure -O https://gmplib.org/download/gmp/gmp-$version.tar.bz2
   fi
   tar xjf gmp-$version.tar.bz2
   cd gmp-$version
@@ -315,6 +365,7 @@ build_cgal()
   echo "Building CGAL" $version "..."
   cd $BASEDIR/src
   rm -rf CGAL-$version
+  ver4_4="curl --insecure -O https://gforge.inria.fr/frs/download.php/file/33524/CGAL-4.4.tar.bz2"
   ver4_2="curl --insecure -O https://gforge.inria.fr/frs/download.php/32360/CGAL-4.2.tar.bz2"
   ver4_1="curl --insecure -O https://gforge.inria.fr/frs/download.php/31640/CGAL-4.1.tar.bz2"
   ver4_0_2="curl --insecure -O https://gforge.inria.fr/frs/download.php/31174/CGAL-4.0.2.tar.bz2"
@@ -509,6 +560,7 @@ build_eigen()
   cd $BASEDIR/src
   rm -rf eigen-$version
   EIGENDIR="none"
+  if [ $version = "3.2.2" ]; then EIGENDIR=eigen-eigen-1306d75b4a21; fi
   if [ $version = "3.1.1" ]; then EIGENDIR=eigen-eigen-43d9075b23ef; fi
   if [ $EIGENDIR = "none" ]; then
     echo Unknown eigen version. Please edit script.
@@ -697,7 +749,7 @@ if [ $1 ]; then
     exit $?
   fi
   if [ $1 = "cgal" ]; then
-    build_cgal 4.0.2 use-sys-libs
+    build_cgal 4.4 use-sys-libs
     exit $?
   fi
   if [ $1 = "opencsg" ]; then
@@ -707,6 +759,11 @@ if [ $1 ]; then
   if [ $1 = "qt4" ]; then
     # such a huge build, put here by itself
     build_qt4 4.8.4
+    exit $?
+  fi
+  if [ $1 = "qt5" ]; then
+    build_qt5 5.3.1
+    build_qt5scintilla2 2.8.3
     exit $?
   fi
   if [ $1 = "glu" ]; then
@@ -741,21 +798,21 @@ fi
 # 
 # Some of these are defined in scripts/common-build-dependencies.sh
 
-build_eigen 3.1.1
+build_eigen 3.2.2
 build_gmp 5.0.5
 build_mpfr 3.1.1
-build_boost 1.53.0
+build_boost 1.56.0
 # NB! For CGAL, also update the actual download URL in the function
-build_cgal 4.0.2
+build_cgal 4.4
 build_glew 1.9.0
 build_opencsg 1.3.2
 build_gettext 0.18.3.1
 build_glib2 2.38.2
 
 # the following are only needed for text()
-build_freetype 2.5.0.1
+build_freetype 2.5.0.1 --without-png
 build_libxml2 2.9.1
-build_fontconfig 2.11.0
+build_fontconfig 2.11.0 --with-add-fonts=/usr/X11R6/lib/X11/fonts,/usr/local/share/fonts
 build_ragel 6.8
 build_harfbuzz 0.9.23 --with-glib=yes
 

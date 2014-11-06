@@ -80,7 +80,7 @@ GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren(const Abstrac
 {
 	unsigned int dim = 0;
 	BOOST_FOREACH(const Geometry::ChildItem &item, this->visitedchildren[node.index()]) {
-		if (item.second) {
+		if (!item.first->modinst->isBackground() && item.second) {
 			if (!dim) dim = item.second->getDimension();
 			else if (dim != item.second->getDimension()) {
 				PRINT("WARNING: Mixing 2D and 3D objects is not supported.");
@@ -633,7 +633,8 @@ static void add_slice(PolySet *ps, const Polygon2d &poly,
 */
 static Geometry *extrudePolygon(const LinearExtrudeNode &node, const Polygon2d &poly)
 {
-	PolySet *ps = new PolySet(3);
+	bool cvx = poly.is_convex();
+	PolySet *ps = new PolySet(3, !cvx ? boost::tribool(false) : node.twist == 0 ? boost::tribool(true) : unknown);
 	ps->setConvexity(node.convexity);
 	if (node.height <= 0) return ps;
 

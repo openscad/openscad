@@ -57,14 +57,13 @@ get_mageia_deps()
 
 get_debian_deps()
 {
- for pkg in build-essential libqt4-dev libqt4-opengl-dev \
+ apt-get -y install \
+  build-essential curl libffi-dev qtbase5-dev libqt5scintilla2-dev \
   libxmu-dev cmake bison flex git-core libboost-all-dev \
   libXi-dev libmpfr-dev libboost-dev libglew-dev \
   libeigen3-dev libcgal-dev libopencsg-dev libgmp3-dev libgmp-dev \
   imagemagick libfontconfig-dev libfreetype6-dev \
-  libharfbuzz-dev gtk-doc-tools libglib2.0-dev gettext; do
-   sudo apt-get -y install $pkg;
- done
+  libharfbuzz-dev gtk-doc-tools libglib2.0-dev gettext
 }
 
 unknown()

@@ -9,6 +9,11 @@
 # Any generated output is written to the file `basename <argument`-actual.<suffix>
 # Any warning or errors are written to stderr.
 #
+# The test is run with OPENSCAD_FONT_PATH set to the testdata/ttf directory. This
+# should ensure we fetch the fonts from there even if they are also installed
+# on the system. (E.g. the C glyph is actually different from Debian/Jessie
+# installation and what we ship as Liberation-2.00.1).
+#
 # Returns 0 on passed test
 #         1 on error
 #         2 on invalid cmd-line options
@@ -25,6 +30,7 @@ import getopt
 import shutil
 import platform
 import string
+import difflib
 
 #_debug_tcct = True
 _debug_tcct = False
@@ -99,12 +105,15 @@ def compare_text(expected, actual):
     return get_normalized_text(expected) == get_normalized_text(actual)
 
 def compare_default(resultfilename):
-    print >> sys.stderr, 'diff text compare: '
+    print >> sys.stderr, 'text comparison: '
     print >> sys.stderr, ' expected textfile: ', expectedfilename
     print >> sys.stderr, ' actual textfile: ', resultfilename
-    if not compare_text(expectedfilename, resultfilename):
+    expected_text = get_normalized_text(expectedfilename)
+    actual_text = get_normalized_text(resultfilename)
+    if not expected_text == actual_text:
 	if resultfilename: 
-            execute_and_redirect("diff", ["-u", expectedfilename, resultfilename], sys.stderr)
+            differences = difflib.unified_diff(expected_text.splitlines(1), actual_text.splitlines(1))
+            for line in differences: sys.stderr.write(line)
         return False
     return True
 
@@ -191,8 +200,12 @@ def run_test(testname, cmd, args):
     try:
         cmdline = [cmd] + args + [outputname]
         print 'run_test() cmdline:',cmdline
+        fontdir =  os.path.join(os.path.dirname(cmd), "..", "testdata")
+        fontenv = os.environ.copy()
+        fontenv["OPENSCAD_FONT_PATH"] = fontdir
+        print 'using font directory:', fontdir
         sys.stdout.flush()
-        proc = subprocess.Popen(cmdline, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        proc = subprocess.Popen(cmdline, env = fontenv, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 	comresult = proc.communicate()
         stdouttext, errtext = comresult[0],comresult[1]
         if errtext != None and len(errtext) > 0:
@@ -202,7 +215,6 @@ def run_test(testname, cmd, args):
         outfile.close()
         if proc.returncode != 0:
             print >> sys.stderr, "Error: %s failed with return code %d" % (cmdname, proc.returncode)
-            return None
 
         return outputname
     except OSError, err:

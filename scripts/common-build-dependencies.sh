@@ -55,6 +55,7 @@ build_libxml2()
 build_fontconfig()
 {
   version=$1
+  extra_config_flags="$2"
 
   if [ -e $DEPLOYDIR/include/fontconfig ]; then
     echo "fontconfig already installed. not building"
@@ -70,10 +71,10 @@ build_fontconfig()
   tar xzf "fontconfig-$version.tar.gz"
   cd "fontconfig-$version"
   export PKG_CONFIG_PATH="$DEPLOYDIR/lib/pkgconfig"
-  ./configure --prefix="$DEPLOYDIR" --enable-libxml2 --disable-docs
+  ./configure --prefix=/ --enable-libxml2 --disable-docs $extra_config_flags
   unset PKG_CONFIG_PATH
-  make -j$NUMCPU
-  make install
+  DESTDIR="$DEPLOYDIR" make -j$NUMCPU
+  DESTDIR="$DEPLOYDIR" make install
 }
 
 build_libffi()

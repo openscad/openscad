@@ -46,6 +46,20 @@ translate([0,-12,0]) intersection() {
   cube(0);
 }
 
+// Intersecting something with nothing (issue 996)
+translate([0,-12,0]) intersection() {
+  cube(4, center=true);
+  linear_extrude();
+}
+translate([0,-16,0]) intersection() {
+  cube(4, center=true);
+  render();
+}
+translate([0,-20,0]) intersection() {
+  cube(4, center=true);
+  minkowski();
+}
+
 // Intersecting 2D with 3D
 translate([12,-12,0]) intersection() {
   cube([5,5,5], center=true);

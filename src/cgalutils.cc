@@ -365,8 +365,10 @@ namespace CGALUtils {
 			const shared_ptr<const Geometry> &chgeom = item.second;
 			const CGAL_Nef_polyhedron *N = dynamic_cast<const CGAL_Nef_polyhedron *>(chgeom.get());
 			if (N) {
-				for (CGAL_Nef_polyhedron3::Vertex_const_iterator i = N->p3->vertices_begin(); i != N->p3->vertices_end(); ++i) {
-					points.insert(K::Point_3(to_double(i->point()[0]),to_double(i->point()[1]),to_double(i->point()[2])));
+				if (!N->isEmpty()) {
+					for (CGAL_Nef_polyhedron3::Vertex_const_iterator i = N->p3->vertices_begin(); i != N->p3->vertices_end(); ++i) {
+						points.insert(K::Point_3(to_double(i->point()[0]),to_double(i->point()[1]),to_double(i->point()[2])));
+					}
 				}
 			} else {
 				const PolySet *ps = dynamic_cast<const PolySet *>(chgeom.get());
@@ -1001,7 +1003,7 @@ namespace CGALUtils {
 
 			for (int i = 0; i < ps.polygons[f].size(); i++) {
 				int j = (i+1) % ps.polygons[f].size();
-				Edge_to_facet_map::iterator it = edge_to_facet_map.find(Edge(ps.polygons[f][i], ps.polygons[f][j]));
+				Edge_to_facet_map::iterator it = edge_to_facet_map.find(Edge(ps.polygons[f][j], ps.polygons[f][i]));
 				if (it == edge_to_facet_map.end()) return false; // Nonmanifold
 				if (!explored_facets.count(it->second)) {
 					explored_facets.insert(it->second);

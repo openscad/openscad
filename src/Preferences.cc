@@ -66,6 +66,7 @@ Preferences::Preferences(QWidget *parent) : QMainWindow(parent)
 	this->defaultmap["editor/fontfamily"] = found_family;
  	this->defaultmap["editor/fontsize"] = 12;
 	this->defaultmap["editor/syntaxhighlight"] = "For Light Background";
+	this->defaultmap["editor/editortype"] = "QScintilla Editor";
 
 #if defined (Q_OS_MAC)
 	this->defaultmap["editor/ctrlmousewheelzoom"] = false;
@@ -85,9 +86,12 @@ Preferences::Preferences(QWidget *parent) : QMainWindow(parent)
 	connect(this->fontSize, SIGNAL(currentIndexChanged(const QString&)),
 					this, SLOT(on_fontSize_editTextChanged(const QString &)));
 
+	connect(this->editorType, SIGNAL(currentIndexChanged(const QString&)),
+					this, SLOT(on_editorType_editTextChanged(const QString &)));
+
 	// reset GUI fontsize if fontSize->addItem emitted signals that changed it.
 	this->fontSize->setEditText( QString("%1").arg( savedsize ) );
-
+	
 	// Setup default settings
 	this->defaultmap["advanced/opencsg_show_warning"] = true;
 	this->defaultmap["advanced/enable_opencsg_opengl1x"] = true;
@@ -99,6 +103,8 @@ Preferences::Preferences(QWidget *parent) : QMainWindow(parent)
 	this->defaultmap["advanced/forceGoldfeather"] = false;
 	this->defaultmap["advanced/mdi"] = true;
 	this->defaultmap["advanced/undockableWindows"] = false;
+	this->defaultmap["advanced/reorderWindows"] = true;
+	this->defaultmap["launcher/showOnStartup"] = true;
 
 	// Toolbar
 	QActionGroup *group = new QActionGroup(this);
@@ -261,6 +267,12 @@ void Preferences::on_fontSize_editTextChanged(const QString &size)
 	emit fontChanged(getValue("editor/fontfamily").toString(), intsize);
 }
 
+void Preferences::on_editorType_editTextChanged(const QString &type)
+{
+	QSettings settings;
+	settings.setValue("editor/editortype", type);
+}
+
 void Preferences::on_syntaxHighlight_currentIndexChanged(const QString &s)
 {
 	QSettings settings;
@@ -308,6 +320,18 @@ Preferences::on_mdiCheckBox_toggled(bool state)
 	QSettings settings;
 	settings.setValue("advanced/mdi", state);
 	emit updateMdiMode(state);
+}
+
+void
+Preferences::on_reorderCheckBox_toggled(bool state)
+{
+	if (!state) {
+		undockCheckBox->setChecked(false);
+	}
+	undockCheckBox->setEnabled(state);
+	QSettings settings;
+	settings.setValue("advanced/reorderWindows", state);
+	emit updateReorderMode(state);
 }
 
 void
@@ -366,6 +390,13 @@ void Preferences::on_mouseWheelZoomBox_toggled(bool state)
 {
 	QSettings settings;
 	settings.setValue("editor/ctrlmousewheelzoom", state);
+}
+
+void
+Preferences::on_launcherBox_toggled(bool state)
+{
+	QSettings settings;
+ 	settings.setValue("launcher/showOnStartup", state);	
 }
 
 void Preferences::keyPressEvent(QKeyEvent *e)
@@ -430,6 +461,10 @@ void Preferences::updateGUI()
 	int shidx = this->syntaxHighlight->findText(shighlight);
 	if (shidx >= 0) this->syntaxHighlight->setCurrentIndex(shidx);
 
+	QString editortypevar = getValue("editor/editortype").toString();
+	int edidx = this->editorType->findText(editortypevar);
+	if (edidx >=0) this->editorType->setCurrentIndex(edidx);
+
 	this->mouseWheelZoomBox->setChecked(getValue("editor/ctrlmousewheelzoom").toBool());
 
 	if (AutoUpdater *updater = AutoUpdater::updater()) {
@@ -445,7 +480,10 @@ void Preferences::updateGUI()
 	this->opencsgLimitEdit->setText(getValue("advanced/openCSGLimit").toString());
 	this->forceGoldfeatherBox->setChecked(getValue("advanced/forceGoldfeather").toBool());
 	this->mdiCheckBox->setChecked(getValue("advanced/mdi").toBool());
+	this->reorderCheckBox->setChecked(getValue("advanced/reorderWindows").toBool());
 	this->undockCheckBox->setChecked(getValue("advanced/undockableWindows").toBool());
+	this->undockCheckBox->setEnabled(this->reorderCheckBox->isChecked());
+	this->launcherBox->setChecked(getValue("launcher/showOnStartup").toBool());
 }
 
 void Preferences::apply() const

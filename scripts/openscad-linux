@@ -4,5 +4,6 @@ cd "$( dirname "$( type -p $0 )" )"
 libdir=$PWD/../lib/openscad/
 cd "$OLDPWD"
 
+export LIBGL_DRIVERS_PATH="$libdir"/dri
 export LD_LIBRARY_PATH="$libdir${LD_LIBRARY_PATH:+:}$LD_LIBRARY_PATH"
 exec $libdir/openscad "$@"

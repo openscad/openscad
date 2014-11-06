@@ -246,7 +246,7 @@ static void export_stl(const CGAL_Polyhedron &P, std::ostream &output)
 void export_stl(const CGAL_Nef_polyhedron *root_N, std::ostream &output)
 {
 	if (!root_N->p3->is_simple()) {
-		PRINT("Object isn't a valid 2-manifold! Modify your design.\n");
+		PRINT("Warning: Exported object may not be a valid 2-manifold and may need repair");
 	}
 
 	bool usePolySet = true;
