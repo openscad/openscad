@@ -2,7 +2,6 @@
 /*.a
 /*-output
 /*.scad
-out.*
 /CMakeFiles
 /CMakeCache.txt
 /CTestTestfile.cmake
@@ -18,3 +17,4 @@ out.*
 /sysinfo.txt
 /CTestCustom.cmake
 /openscad_nogui
+/test_pretty_print.log.txt
