@@ -395,6 +395,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 				PRINT("No top-level object found.");
 				return 1;
 			}
+			// Force creation of CGAL objects (for testing)
 			if (renderer == Render::CGAL && root_geom->getDimension() == 3) {
 				const CGAL_Nef_polyhedron *N = dynamic_cast<const CGAL_Nef_polyhedron*>(root_geom.get());
 				if (!N) {
