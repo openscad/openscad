@@ -47,6 +47,15 @@ public:
         void set_fn(double fn) {
             this->fn = fn;
         }
+        void set_fa(double fa) {
+            this->fa = fa;
+        }
+        void set_fs(double fs) {
+            this->fs = fs;
+        }
+        void set_segments(double segments) {
+            this->segments = segments;
+        }
         void set_text(std::string text) {
             this->text = text;
         }
@@ -79,10 +88,12 @@ public:
 			<< "\", script = \"" << params.script
 			<< "\", halign = \"" << params.halign
 			<< "\", valign = \"" << params.valign
-                        << "\", $fn = " << params.fn;
+                        << "\", $fn = " << params.fn
+                        << ", $fa = " << params.fa
+                        << ", $fs = " << params.fs;
         }
     private:
-        double size, spacing, fn;
+        double size, spacing, fn, fa, fs, segments;
 	std::string text, font, direction, language, script, halign, valign;
         
         friend class FreetypeRenderer;

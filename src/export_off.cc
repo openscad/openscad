@@ -66,9 +66,12 @@ void append_geometry(const shared_ptr<const Geometry> &geom, IndexedMesh &mesh)
 		}
 	}
 	else if (const CGAL_Nef_polyhedron *N = dynamic_cast<const CGAL_Nef_polyhedron *>(geom.get())) {
-		PolySet *ps = N->convertToPolyset();
-		append_geometry(*ps, mesh);
-		delete ps;
+		PolySet ps(3);
+		bool err = CGALUtils::createPolySetFromNefPolyhedron3(*(N->p3), ps);
+		if (err) { PRINT("ERROR: Nef->PolySet failed"); }
+		else {
+			append_geometry(ps, mesh);
+		}
 	}
 	else if (const PolySet *ps = dynamic_cast<const PolySet *>(geom.get())) {
 		append_geometry(*ps, mesh);

@@ -167,7 +167,7 @@ static void append_amf(const shared_ptr<const Geometry> &geom, std::ostream &out
 	}
 	else if (const PolySet *ps = dynamic_cast<const PolySet *>(geom.get())) {
 		// FIXME: Implement this without creating a Nef polyhedron
-		CGAL_Nef_polyhedron *N = createNefPolyhedronFromGeometry(*ps);
+		CGAL_Nef_polyhedron *N = CGALUtils::createNefPolyhedronFromGeometry(*ps);
 		append_amf(*N, output);
 		delete N;
 	}

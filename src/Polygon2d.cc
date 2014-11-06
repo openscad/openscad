@@ -92,3 +92,20 @@ void Polygon2d::resize(Vector2d newsize, const Eigen::Matrix<bool,2,1> &autosize
 	this->transform(t);
 }
 
+bool Polygon2d::is_convex() const {
+	if (theoutlines.size() > 1) return false;
+	if (theoutlines.empty()) return true;
+
+	std::vector<Vector2d> const& pts = theoutlines[0].vertices;
+	int N = pts.size();
+
+	// Check for a right turn. This assumes the polygon is simple.
+	for (int i = 0; i < N; i++) {
+		Vector2d d1 = pts[(i+1)%N] - pts[i];
+		Vector2d d2 = pts[(i+2)%N] - pts[(i+1)%N];
+		double zcross = d1[0]*d2[1]-d1[1]*d2[0];
+		if (zcross < 0) return false;
+	}
+	return true;
+}
+

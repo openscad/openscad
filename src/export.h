@@ -3,6 +3,7 @@
 #include <iostream>
 #include "Tree.h"
 #include "Camera.h"
+#include "memory.h"
 
 enum FileFormat {
 	OPENSCAD_STL,
@@ -20,6 +21,8 @@ void export_off(const shared_ptr<const Geometry> &geom, std::ostream &output);
 void export_amf(const shared_ptr<const Geometry> &geom, std::ostream &output);
 void export_dxf(const shared_ptr<const Geometry> &geom, std::ostream &output);
 void export_svg(const shared_ptr<const Geometry> &geom, std::ostream &output);
+
+// void exportFile(const class Geometry *root_geom, std::ostream &output, FileFormat format);
 
 void export_png(const shared_ptr<const class Geometry> &root_geom, Camera &c, std::ostream &output);
 void export_png(const shared_ptr<const class CGAL_Nef_polyhedron> &root_N, Camera &c, std::ostream &output);

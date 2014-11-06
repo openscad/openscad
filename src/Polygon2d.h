@@ -4,6 +4,10 @@
 #include "linalg.h"
 #include <vector>
 
+/*!
+	A single contour.
+	positive is (optionally) used to distinguish between polygon contours and hold contours.
+*/
 struct Outline2d {
 	Outline2d() : positive(true) {}
 	std::vector<Vector2d> vertices;
@@ -32,6 +36,7 @@ public:
 
 	bool isSanitized() const { return this->sanitized; }
 	void setSanitized(bool s) { this->sanitized = s; }
+	bool is_convex() const;
 private:
 	Outlines2d theoutlines;
 	bool sanitized;

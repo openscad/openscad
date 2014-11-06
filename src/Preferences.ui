@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>823</width>
-    <height>440</height>
+    <width>852</width>
+    <height>554</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -23,7 +23,7 @@
    <bool>true</bool>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <layout class="QVBoxLayout" name="verticalLayout">
+   <layout class="QVBoxLayout" name="verticalLayout_5">
     <item>
      <widget class="QStackedWidget" name="stackedWidget">
       <property name="currentIndex">
@@ -44,6 +44,12 @@
             </item>
             <item>
              <widget class="QListWidget" name="colorSchemeChooser">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Expanding" vsizetype="MinimumExpanding">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
               <property name="alternatingRowColors">
                <bool>false</bool>
               </property>
@@ -63,6 +69,26 @@
               <item>
                <property name="text">
                 <string>Sunset</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Starnight</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>BeforeDawn</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Nature</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>DeepOcean</string>
                </property>
               </item>
              </widget>
@@ -100,10 +126,71 @@
        </layout>
       </widget>
       <widget class="QWidget" name="pageEditor">
-       <layout class="QVBoxLayout" name="verticalLayout_5">
+       <layout class="QVBoxLayout" name="verticalLayout">
         <item>
-         <layout class="QGridLayout" name="gridLayout">
-          <item row="0" column="0">
+         <layout class="QHBoxLayout" name="horizontalLayout_5">
+          <item>
+           <widget class="QLabel" name="label_12">
+            <property name="font">
+             <font>
+              <weight>75</weight>
+              <bold>true</bold>
+             </font>
+            </property>
+            <property name="text">
+             <string>Editor Type</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QComboBox" name="editorType">
+            <item>
+             <property name="text">
+              <string>Simple Editor</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>QScintilla Editor</string>
+             </property>
+            </item>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="label_13">
+            <property name="font">
+             <font>
+              <pointsize>10</pointsize>
+              <weight>50</weight>
+              <bold>false</bold>
+             </font>
+            </property>
+            <property name="text">
+             <string>(requires restart)</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <spacer name="horizontalSpacer_7">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeType">
+             <enum>QSizePolicy::Expanding</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>30</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_6">
+          <item>
            <widget class="QLabel" name="label_3">
             <property name="font">
              <font>
@@ -119,37 +206,24 @@
             </property>
            </widget>
           </item>
-          <item row="0" column="1">
-           <spacer name="horizontalSpacer_4">
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>40</width>
-              <height>20</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-          <item row="1" column="0" colspan="2">
+          <item>
            <widget class="QFontComboBox" name="fontChooser">
             <property name="currentFont">
              <font>
-              <family>DejaVu Sans</family>
+              <family>Nimbus Sans L</family>
               <pointsize>12</pointsize>
              </font>
             </property>
            </widget>
           </item>
-          <item row="1" column="2">
+          <item>
            <widget class="QComboBox" name="fontSize">
             <property name="editable">
              <bool>true</bool>
             </property>
            </widget>
           </item>
-          <item row="1" column="3">
+          <item>
            <spacer name="horizontalSpacer_5">
             <property name="orientation">
              <enum>Qt::Horizontal</enum>
@@ -198,6 +272,16 @@
             <item>
              <property name="text">
               <string>For Dark Background</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Monokai</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Solarized</string>
              </property>
             </item>
             <item>
@@ -273,7 +357,7 @@
           <property name="sizeHint" stdset="0">
            <size>
             <width>20</width>
-            <height>77</height>
+            <height>723</height>
            </size>
           </property>
          </spacer>
@@ -365,7 +449,7 @@
           <item>
            <layout class="QHBoxLayout" name="horizontalLayout_10">
             <item>
-             <spacer name="horizontalSpacer_11">
+             <spacer name="horizontalSpacer_31">
               <property name="orientation">
                <enum>Qt::Horizontal</enum>
               </property>
@@ -463,8 +547,8 @@
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>803</width>
-               <height>325</height>
+               <width>100</width>
+               <height>30</height>
               </rect>
              </property>
              <layout class="QVBoxLayout" name="verticalLayout_10">
@@ -595,6 +679,34 @@
          </layout>
         </item>
         <item>
+         <widget class="QCheckBox" name="mdiCheckBox">
+          <property name="text">
+           <string>Allow to open multiple documents</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="reorderCheckBox">
+          <property name="text">
+           <string>Enable docking of Editor and Console in different places</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="undockCheckBox">
+          <property name="text">
+           <string>Enable undocking of Editor and Console to separate windows</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="launcherBox">
+          <property name="text">
+           <string>Show Welcome Screen</string>
+          </property>
+         </widget>
+        </item>
+        <item>
          <spacer name="verticalSpacer_2">
           <property name="orientation">
            <enum>Qt::Vertical</enum>
@@ -606,20 +718,6 @@
            </size>
           </property>
          </spacer>
-        </item>
-        <item>
-         <widget class="QCheckBox" name="mdiCheckBox">
-          <property name="text">
-           <string>Allow to open multiple documents</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QCheckBox" name="undockCheckBox">
-          <property name="text">
-           <string>Enable undocking of Editor and Console</string>
-          </property>
-         </widget>
         </item>
        </layout>
       </widget>

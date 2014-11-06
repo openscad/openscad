@@ -3,6 +3,7 @@
 #include "system-gl.h"
 #include "linalg.h"
 #include "memory.h"
+#include "colormap.h"
 
 #ifdef _MSC_VER // NULL
 #include <cstdlib>
@@ -11,6 +12,7 @@
 class Renderer
 {
 public:
+	Renderer();
 	virtual ~Renderer() {}
 	virtual void draw(bool showfaces, bool showedges) const = 0;
 	virtual BoundingBox getBoundingBox() const = 0;
@@ -35,14 +37,20 @@ public:
 		COLORMODE_MATERIAL_EDGES,
 		COLORMODE_CUTOUT_EDGES,
 		COLORMODE_HIGHLIGHT_EDGES,
-		COLORMODE_BACKGROUND_EDGES
+		COLORMODE_BACKGROUND_EDGES,
+		COLORMODE_EMPTY_SPACE
 	};
 
 	virtual bool getColor(ColorMode colormode, Color4f &col) const;
 	virtual void setColor(const float color[4], GLint *shaderinfo = NULL) const;
 	virtual void setColor(ColorMode colormode, GLint *shaderinfo = NULL) const;
 	virtual void setColor(ColorMode colormode, const float color[4], GLint *shaderinfo = NULL) const;
+	virtual void setColorScheme(const ColorScheme &cs);
 
 	static void render_surface(shared_ptr<const class Geometry> geom, csgmode_e csgmode, const Transform3d &m, GLint *shaderinfo = NULL);
 	static void render_edges(shared_ptr<const Geometry> geom, csgmode_e csgmode);
+
+protected:
+	std::map<ColorMode,Color4f> colormap;
+	const ColorScheme *colorscheme;
 };

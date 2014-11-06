@@ -27,7 +27,8 @@ public:
 	CGAL_Nef_polyhedron &operator*=(const CGAL_Nef_polyhedron &other);
 	CGAL_Nef_polyhedron &operator-=(const CGAL_Nef_polyhedron &other);
 	CGAL_Nef_polyhedron &minkowski(const CGAL_Nef_polyhedron &other);
-	class PolySet *convertToPolyset() const;
+// FIXME: Deprecated by CGALUtils::createPolySetFromNefPolyhedron3
+//	class PolySet *convertToPolyset() const;
 	void transform( const Transform3d &matrix );
 	void resize(Vector3d newsize, const Eigen::Matrix<bool,3,1> &autosize);
 

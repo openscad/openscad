@@ -1,4 +1,5 @@
 square(size = [1, 1], center = false);
+square(size = [inf, inf], center = false);
 multmatrix([[1, 0, 0, 2], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 	square(size = [1, 1], center = true);
 }

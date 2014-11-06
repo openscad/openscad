@@ -56,9 +56,9 @@ if [ ! -e $DEPLOYDIR ]; then
 fi
 
 if [ "`echo $* | grep 64 `" ]; then
-	MXETARGETDIR=$MXEDIR/usr/x86_64-w64-mingw32
+	MXETARGETDIR=$MXEDIR/usr/x86_64-w64-mingw32.static
 else
-	MXETARGETDIR=$MXEDIR/usr/i686-pc-mingw32
+	MXETARGETDIR=$MXEDIR/usr/i686-w64-mingw32.static
 fi
 
 if [ ! $MINGWX_SAVED_ORIGINAL_PATH ]; then

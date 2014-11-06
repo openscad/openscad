@@ -47,6 +47,7 @@
 
 #ifdef ENABLE_CGAL
 #include "CGAL_Nef_polyhedron.h"
+#include "cgalutils.h"
 #endif
 
 #include "csgterm.h"
@@ -75,12 +76,13 @@
 
 namespace po = boost::program_options;
 namespace fs = boost::filesystem;
-namespace Render { enum type { CGAL, OPENCSG, THROWNTOGETHER }; };
+namespace Render { enum type { GEOMETRY, CGAL, OPENCSG, THROWNTOGETHER }; };
 std::string commandline_commands;
 std::string currentdir;
 using std::string;
 using std::vector;
 using boost::lexical_cast;
+using boost::bad_lexical_cast;
 using boost::is_any_of;
 
 class Echostream : public std::ofstream
@@ -114,6 +116,7 @@ static void help(const char *progname)
          "%2%[ --viewall ] \\\n"
          "%2%[ --imgsize=width,height ] [ --projection=(o)rtho|(p)ersp] \\\n"
          "%2%[ --render | --preview[=throwntogether] ] \\\n"
+         "%2%[ --colorscheme=[Cornfield|Sunset|Metallic|Starnight|BeforeDawn|Nature|DeepOcean] ] \\\n"
          "%2%[ --csglimit=num ]"
 #ifdef ENABLE_EXPERIMENTAL
          " [ --enable=<feature> ]"
@@ -152,7 +155,7 @@ static void info()
 	exit(0);
 }
 
-Camera get_camera( po::variables_map vm )
+Camera get_camera(po::variables_map vm)
 {
 	Camera camera;
 
@@ -161,12 +164,16 @@ Camera get_camera( po::variables_map vm )
 		vector<double> cam_parameters;
 		split(strs, vm["camera"].as<string>(), is_any_of(","));
 		if ( strs.size()==6 || strs.size()==7 ) {
-			BOOST_FOREACH(string &s, strs)
-				cam_parameters.push_back(lexical_cast<double>(s));
-			camera.setup( cam_parameters );
+			try {
+				BOOST_FOREACH(string &s, strs) cam_parameters.push_back(lexical_cast<double>(s));
+				camera.setup(cam_parameters);
+			}
+			catch (bad_lexical_cast &) {
+				PRINT("Camera setup requires numbers as parameters");
+			}
 		} else {
-			PRINT("Camera setup requires either 7 numbers for Gimbal Camera\n");
-			PRINT("or 6 numbers for Vector Camera\n");
+			PRINT("Camera setup requires either 7 numbers for Gimbal Camera");
+			PRINT("or 6 numbers for Vector Camera");
 			exit(1);
 		}
 	}
@@ -201,11 +208,16 @@ Camera get_camera( po::variables_map vm )
 		vector<string> strs;
 		split(strs, vm["imgsize"].as<string>(), is_any_of(","));
 		if ( strs.size() != 2 ) {
-			PRINT("Need 2 numbers for imgsize\n");
+			PRINT("Need 2 numbers for imgsize");
 			exit(1);
 		} else {
-			w = lexical_cast<int>( strs[0] );
-			h = lexical_cast<int>( strs[1] );
+			try {
+				w = lexical_cast<int>(strs[0]);
+				h = lexical_cast<int>(strs[1]);
+			}
+			catch (bad_lexical_cast &) {
+				PRINT("Need 2 numbers for imgsize");
+			}
 		}
 	}
 	camera.pixel_width = w;
@@ -219,13 +231,17 @@ Camera get_camera( po::variables_map vm )
 #else
 #define OPENSCAD_QTGUI 1
 #include <QApplication>
+#include <QSettings>
 #endif
-
 static bool checkAndExport(shared_ptr<const Geometry> root_geom, unsigned nd,
 	enum FileFormat format, const char *filename)
 {
 	if (root_geom->getDimension() != nd) {
 		PRINTB("Current top level object is not a %dD object.", nd);
+		return false;
+	}
+	if (root_geom->isEmpty()) {
+		PRINT("Current top level object is empty.");
 		return false;
 	}
 	exportFileByName(root_geom, format, filename, filename);
@@ -239,8 +255,9 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 	const std::string application_path = QApplication::instance()->applicationDirPath().toLocal8Bit().constData();
 #else
 	const std::string application_path = boosty::stringy(boosty::absolute(boost::filesystem::path(argv[0]).parent_path()));
-#endif
-	parser_init(application_path);
+#endif	
+	PlatformUtils::registerApplicationPath(application_path);
+	parser_init(PlatformUtils::applicationPath());
 	Tree tree;
 #ifdef ENABLE_CGAL
 	GeometryEvaluator geomevaluator(tree);
@@ -369,15 +386,22 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 	}
 	else {
 #ifdef ENABLE_CGAL
-		if ((echo_output_file || png_output_file) && !(renderer==Render::CGAL)) {
-			// echo or OpenCSG png -> don't necessarily need CGALMesh evaluation
+		if ((echo_output_file || png_output_file) &&
+				(renderer==Render::OPENCSG || renderer==Render::THROWNTOGETHER)) {
+			// echo or OpenCSG png -> don't necessarily need geometry evaluation
 		} else {
 			root_geom = geomevaluator.evaluateGeometry(*tree.root(), true);
 			if (!root_geom) {
 				PRINT("No top-level object found.");
 				return 1;
 			}
-			const CGAL_Nef_polyhedron *N = dynamic_cast<const CGAL_Nef_polyhedron*>(root_geom.get());
+			if (renderer == Render::CGAL && root_geom->getDimension() == 3) {
+				const CGAL_Nef_polyhedron *N = dynamic_cast<const CGAL_Nef_polyhedron*>(root_geom.get());
+				if (!N) {
+					root_geom.reset(CGALUtils::createNefPolyhedronFromGeometry(*root_geom));
+					PRINT("Converted to Nef polyhedron");
+				}
+			}
 		}
 
 		fs::current_path(original_path);
@@ -434,7 +458,7 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 				PRINTB("Can't open file \"%s\" for export", png_output_file);
 			}
 			else {
-				if (renderer==Render::CGAL) {
+				if (renderer==Render::CGAL || renderer==Render::GEOMETRY) {
 					export_png(root_geom, camera, fstream);
 				} else if (renderer==Render::THROWNTOGETHER) {
 					export_png_with_throwntogether(tree, camera, fstream);
@@ -461,6 +485,7 @@ Q_IMPORT_PLUGIN(qtaccessiblewidgets)
 #endif // QT_VERSION
 #endif // MINGW64/MINGW32/MSCVER
 #include "MainWindow.h"
+#include "launchingscreen.h"
   #ifdef __APPLE__
   #include "EventFilter.h"
   #endif
@@ -523,28 +548,9 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 	qRegisterMetaType<shared_ptr<const Geometry> >();
 	
 	const QString &app_path = app.applicationDirPath();
+	PlatformUtils::registerApplicationPath(app_path.toLocal8Bit().constData());
 
-	QDir exdir(app_path);
-	QString qexamplesdir;
-#ifdef Q_OS_MAC
-	exdir.cd("../Resources"); // Examples can be bundled
-	if (!exdir.exists("examples")) exdir.cd("../../..");
-#elif defined(Q_OS_UNIX)
-	if (exdir.cd("../share/openscad/examples")) {
-		qexamplesdir = exdir.path();
-	} else
-		if (exdir.cd("../../share/openscad/examples")) {
-			qexamplesdir = exdir.path();
-		} else
-			if (exdir.cd("../../examples")) {
-				qexamplesdir = exdir.path();
-			} else
-#endif
-				if (exdir.cd("examples")) {
-					qexamplesdir = exdir.path();
-				}
-	MainWindow::setExamplesDir(qexamplesdir);
-  parser_init(app_path.toLocal8Bit().constData());
+  parser_init(PlatformUtils::applicationPath());
 
 #ifdef Q_OS_MAC
 	installAppleEventHandlers();
@@ -563,20 +569,40 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 	f.setSamples(4);
 	QGLFormat::setDefaultFormat(f);
 #endif
-	if (!inputFiles.size()) inputFiles.push_back("");
+	bool noInputFiles = false;
+	if (!inputFiles.size()) {
+		noInputFiles = true;
+		inputFiles.push_back("");
+	}
+
+	QSettings settings;
+	QVariant showOnStartup = settings.value("launcher/showOnStartup");
+	if (noInputFiles && (showOnStartup.isNull() || showOnStartup.toBool())) {
+		LaunchingScreen *launcher = new LaunchingScreen();
+		int dialogResult = launcher->exec();
+		if (dialogResult == QDialog::Accepted) {
+			inputFiles.clear();
+			inputFiles.push_back(launcher->selectedFile().toStdString());
+			delete launcher;
+		} else {
+			return 0;
+		}
+	}
+
+	MainWindow *mainwin;
 #ifdef ENABLE_MDI
 	BOOST_FOREACH(const string &infile, inputFiles) {
-               new MainWindow(assemblePath(original_path, infile));
+		mainwin = new MainWindow(assemblePath(original_path, infile));
 	}
 #else
-	new MainWindow(assemblePath(original_path, inputFiles[0]));
+	mainwin = new MainWindow(assemblePath(original_path, inputFiles[0]));
 #endif
+
 	app.connect(&app, SIGNAL(lastWindowClosed()), &app, SLOT(quit()));
 	int rc = app.exec();
-	if (MainWindow::windows) {
-		foreach (MainWindow *mainw, *MainWindow::windows) {
-			delete mainw;
-		}
+	QSet<MainWindow*> *windows = MainWindow::getWindows();
+	foreach (MainWindow *mainw, *windows) {
+		delete mainw;
 	}
 	return rc;
 }
@@ -615,14 +641,15 @@ int main(int argc, char **argv)
 		("help,h", "help message")
 		("version,v", "print the version")
 		("info", "print information about the building process")
-		("render", "if exporting a png image, do a full CGAL render")
-		("preview", po::value<string>(), "if exporting a png image, do an OpenCSG(default) or ThrownTogether preview")
+		("render", po::value<string>()->implicit_value(""), "if exporting a png image, do a full geometry evaluation")
+		("preview", po::value<string>()->implicit_value(""), "if exporting a png image, do an OpenCSG(default) or ThrownTogether preview")
 		("csglimit", po::value<unsigned int>(), "if exporting a png image, stop rendering at the given number of CSG elements")
 		("camera", po::value<string>(), "parameters for camera when exporting png")
 		("autocenter", "adjust camera to look at object center")
 		("viewall", "adjust camera to fit object")
 		("imgsize", po::value<string>(), "=width,height for exporting png")
 		("projection", po::value<string>(), "(o)rtho or (p)erspective when exporting png")
+		("colorscheme", po::value<string>(), "colorscheme")
 		("debug", po::value<string>(), "special debug info")
 		("o,o", po::value<string>(), "out-file")
 		("s,s", po::value<string>(), "stl-file")
@@ -664,11 +691,14 @@ int main(int argc, char **argv)
 	if (vm.count("info")) info();
 
 	Render::type renderer = Render::OPENCSG;
-	if (vm.count("render"))
-		renderer = Render::CGAL;
-	if (vm.count("preview"))
+	if (vm.count("preview")) {
 		if (vm["preview"].as<string>() == "throwntogether")
 			renderer = Render::THROWNTOGETHER;
+	}
+	else if (vm.count("render")) {
+		if (vm["render"].as<string>() == "cgal") renderer = Render::CGAL;
+		else renderer = Render::GEOMETRY;
+	}
 
 	if (vm.count("csglimit")) {
 		RenderSettings::inst()->openCSGTermLimit = vm["csglimit"].as<unsigned int>();
@@ -722,6 +752,19 @@ int main(int argc, char **argv)
 		help(argv[0]);
 	}
 #endif
+
+	if (vm.count("colorscheme")) {
+		std::string colorscheme = vm["colorscheme"].as<string>();
+		if (ColorMap::inst()->findColorScheme(colorscheme)) {
+			RenderSettings::inst()->colorscheme = colorscheme;
+		} else {
+			PRINT("Unknown color scheme. Valid schemes:");
+			BOOST_FOREACH (const std::string &name, ColorMap::inst()->colorSchemeNames()) {
+				PRINT(name);
+			}
+			exit(1);
+		}
+	}
 
 	currentdir = boosty::stringy(fs::current_path());
 

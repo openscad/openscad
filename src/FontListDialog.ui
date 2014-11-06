@@ -34,12 +34,12 @@
     </widget>
    </item>
    <item row="4" column="3">
-    <widget class="QPushButton" name="pasteButton">
+    <widget class="QPushButton" name="copyButton">
      <property name="toolTip">
       <string>Paste font selector to Editor Window</string>
      </property>
      <property name="text">
-      <string>Paste</string>
+      <string>Copy to Clipboard</string>
      </property>
     </widget>
    </item>

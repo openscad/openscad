@@ -43,8 +43,8 @@ public:
 		CSGTermEvaluator evaluator(tree, &geomevaluator);
 		boost::shared_ptr<CSGTerm> root_raw_term = evaluator.evaluateCSGTerm( *root_node, this->highlight_terms, this->background_terms );
 
-		if (!root_raw_term) {
-			PRINT("Error: CSG generation failed! (no top level object found)");
+		if (!root_raw_term && this->background_terms.empty()) {
+			PRINT("Error: CSG generation failed! (no objects found)");
 			call_progress_function();
 			return false;
 		}
@@ -52,16 +52,18 @@ public:
 		PRINT("Compiling design (CSG Products normalization)...");
 		call_progress_function();
 		CSGTermNormalizer normalizer( normalizelimit );
-		this->root_norm_term = normalizer.normalize(root_raw_term);
-		if (this->root_norm_term) {
-			this->root_chain = new CSGChain();
-			this->root_chain->import(this->root_norm_term);
-			PRINTB("Normalized CSG tree has %d elements", int(this->root_chain->objects.size()));
-		}
-		else {
-			this->root_chain = NULL;
-			PRINT("WARNING: CSG normalization resulted in an empty tree");
-			call_progress_function();
+		if (root_raw_term) {
+			this->root_norm_term = normalizer.normalize(root_raw_term);
+			if (this->root_norm_term) {
+				this->root_chain = new CSGChain();
+				this->root_chain->import(this->root_norm_term);
+				PRINTB("Normalized CSG tree has %d elements", int(this->root_chain->objects.size()));
+			}
+			else {
+				this->root_chain = NULL;
+				PRINT("WARNING: CSG normalization resulted in an empty tree");
+				call_progress_function();
+			}
 		}
 
 		if (this->highlight_terms.size() > 0) {

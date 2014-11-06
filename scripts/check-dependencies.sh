@@ -84,6 +84,9 @@ glib2_sysver()
     glib2path=$1/lib/glib-2.0/include/glibconfig.h
   fi
   if [ ! -e $glib2path ]; then
+    glib2path=$1/lib64/glib-2.0/include/glibconfig.h
+  fi
+  if [ ! -e $glib2path ]; then
     return
   fi
   glib2major=`grep "define  *GLIB_MAJOR_VERSION  *[0-9.]*" $glib2path | awk '{print $3}'`
@@ -96,10 +99,10 @@ fontconfig_sysver()
 {
   fcpath=$1/include/fontconfig/fontconfig.h
   if [ ! -e $fcpath ]; then return; fi
-  fcmajor=`grep "define  *FC_MAJOR  *[0-9.]*" $fcpath | awk '{print $3}'`
-  fcminor=`grep "define  *FC_MINOR  *[0-9.]*" $fcpath | awk '{print $3}'`
-  fcrevison=`grep "define  *FC_REVISION  *[0-9.]*" $fcpath | awk '{print $3}'`
-  fontconfig_sysver="${fcmajor}.${fcminor}.${fcrevision}"
+  fcmajor=`grep "define *FC_MAJOR.*[0-9.]*" $fcpath | awk '{print $3}'`
+  fcminor=`grep "define *FC_MINOR.*[0-9.]*" $fcpath | awk '{print $3}'`
+  fcrevison=`grep "define *FC_REVISION.*[0-9.]*" $fcpath | awk '{print $3}'`
+  fontconfig_sysver_result="${fcmajor}.${fcminor}.${fcrevision}"
 }
 
 freetype2_sysver()
@@ -142,7 +145,7 @@ mpfr_sysver()
 
 gmp_sysver()
 {
-  gmppaths="`find $1 -name 'gmp.h' -o -name 'gmp-*.h'`"
+  gmppaths="`find $1 -name 'gmp.h' -o -name 'gmp-*.h' 2>/dev/null`"
   if [ ! "$gmppaths" ]; then
     debug "gmp_sysver no gmp.h beneath $1"
     return
@@ -157,20 +160,67 @@ gmp_sysver()
   gmp_sysver_result="$gmpmaj.$gmpmin.$gmppat"
 }
 
-qt4_sysver()
+qt_sysver()
 {
-  qt4path=$1/include/qt4/QtCore/qglobal.h
-  if [ ! -e $qt4path ]; then
-    qt4path=$1/include/QtCore/qglobal.h
+  if [ "`command -v qtchooser`" ]; then
+    if qtchooser -run-tool=qmake -qt=5 -v >/dev/null 2>&1 ; then
+      export QT_SELECT=5
+      qtpath="`qtchooser -run-tool=qmake -qt=5 -query QT_INSTALL_HEADERS`"/QtCore/qglobal.h 
+    fi
+    if [ ! -e $qtpath ]; then
+      if qtchooser -run-tool=qmake -qt=4 -v >/dev/null 2>&1 ; then
+        export QT_SELECT=4
+        qtpath="`qtchooser -run-tool=qmake -qt=4 -query QT_INSTALL_HEADERS`"/QtCore/qglobal.h 
+      fi
+    fi
+  else
+    export QT_SELECT=5
+    qtpath=$1/include/qt5/QtCore/qglobal.h
+    if [ ! -e $qtpath ]; then
+      qtpath=$1/include/i686-linux-gnu/qt5/QtCore/qglobal.h
+    fi
+    if [ ! -e $qtpath ]; then
+      qtpath=$1/include/x86_64-linux-gnu/qt5/QtCore/qglobal.h
+    fi
+    if [ ! -e $qtpath ]; then
+      export QT_SELECT=4
+      qtpath=$1/include/qt4/QtCore/qglobal.h
+    fi
+    if [ ! -e $qtpath ]; then
+      qtpath=$1/include/QtCore/qglobal.h
+    fi
+    if [ ! -e $qtpath ]; then
+      # netbsd
+      qtpath=$1/qt4/include/QtCore/qglobal.h 
+    fi
+    if [ ! -e $qtpath ]; then
+      unset QT_SELECT
+      return
+    fi
   fi
-  if [ ! -e $qt4path ]; then
-    # netbsd
-    qt4path=$1/qt4/include/QtCore/qglobal.h 
+  qtver=`grep 'define  *QT_VERSION_STR  *' $qtpath | awk '{print $3}'`
+  qtver=`echo $qtver | sed s/'"'//g`
+  qt_sysver_result=$qtver
+}
+
+qscintilla2_sysver()
+{
+  # expecting the QT_SELECT already set in case we found qtchooser
+  if qmake -v >/dev/null 2>&1 ; then
+    QMAKE=qmake
+  elif [ "`command -v qmake-qt4`" ]; then
+    QMAKE=qmake-qt4
   fi
-  if [ ! -e $qt4path ]; then return; fi
-  qt4ver=`grep 'define  *QT_VERSION_STR  *' $qt4path | awk '{print $3}'`
-  qt4ver=`echo $qt4ver | sed s/'"'//g`
-  qt4_sysver_result=$qt4ver
+  
+  qtincdir="`$QMAKE -query QT_INSTALL_HEADERS`"
+  qscipath="$qtincdir/Qsci/qsciglobal.h"
+  if [ ! -e $qscipath ]; then
+    return
+  fi
+
+  qsciver=`grep define.*QSCINTILLA_VERSION_STR "$qscipath" | awk '{print $3}'`
+  qsciver=`echo $qsciver | sed s/'"'//g`
+  qscintilla2_sysver_result="$qsciver"
 }
 
 glew_sysver()
@@ -586,7 +636,7 @@ checkargs()
 
 main()
 {
-  deps="qt4 cgal gmp mpfr boost opencsg glew eigen glib2 fontconfig freetype2 harfbuzz gcc bison flex make"
+  deps="qt qscintilla2 cgal gmp mpfr boost opencsg glew eigen glib2 fontconfig freetype2 harfbuzz gcc bison flex make"
   #deps="$deps curl git" # not technically necessary for build
   #deps="$deps python cmake imagemagick" # only needed for tests
   #deps="cgal"

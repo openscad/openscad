@@ -1,14 +1,14 @@
 # Environment variables which can be set to specify library locations:
-#   MPIRDIR
-#   MPFRDIR
-#   BOOSTDIR
-#   CGALDIR
-#   EIGENDIR
-#   GLEWDIR
-#   OPENCSGDIR
-#   OPENSCAD_LIBRARIES
+# MPIRDIR
+# MPFRDIR
+# BOOSTDIR
+# CGALDIR
+# EIGENDIR
+# GLEWDIR
+# OPENCSGDIR
+# OPENSCAD_LIBRARIES
 #
-# Please see the 'Building' sections of the OpenSCAD user manual 
+# Please see the 'Building' sections of the OpenSCAD user manual
 # for updated tips & workarounds.
 #
 # http://en.wikibooks.org/wiki/OpenSCAD_User_Manual
@@ -135,13 +135,13 @@ netbsd* {
 }
 
 # Prevent LD_LIBRARY_PATH problems when running the openscad binary
-# on systems where uni-build-dependencies.sh was used. 
+# on systems where uni-build-dependencies.sh was used.
 # Will not affect 'normal' builds.
 !isEmpty(OPENSCAD_LIBDIR) {
   unix:!macx {
     QMAKE_LFLAGS = -Wl,-R$$OPENSCAD_LIBDIR/lib $$QMAKE_LFLAGS
     # need /lib64 beause GLEW installs itself there on 64 bit machines
-    QMAKE_LFLAGS = -Wl,-R$$OPENSCAD_LIBDIR/lib64 $$QMAKE_LFLAGS 
+    QMAKE_LFLAGS = -Wl,-R$$OPENSCAD_LIBDIR/lib64 $$QMAKE_LFLAGS
   }
 }
 
@@ -179,8 +179,8 @@ CONFIG += harfbuzz
 CONFIG += freetype
 CONFIG += fontconfig
 
-#Uncomment the following line to enable QCodeEdit
-#CONFIG += qcodeedit
+#Uncomment the following line to enable the QScintilla editor
+CONFIG += scintilla
 
 # Make experimental features available
 experimental {
@@ -208,12 +208,14 @@ win* {
 
 RESOURCES = openscad.qrc
 
-FORMS   += src/MainWindow.ui \
+FORMS += src/MainWindow.ui \
            src/Preferences.ui \
            src/OpenCSGWarningDialog.ui \
            src/AboutDialog.ui \
            src/FontListDialog.ui \
-           src/ProgressWidget.ui
+           src/ProgressWidget.ui \
+           src/launchingscreen.ui \
+           src/LibraryInfoDialog.ui
 
 HEADERS += src/typedefs.h \
            src/version_check.h \
@@ -221,8 +223,9 @@ HEADERS += src/typedefs.h \
            src/parsersettings.h \
            src/renderer.h \
            src/rendersettings.h \
+           src/colormap.h \
            src/ThrownTogetherRenderer.h \
-           src/CGAL_renderer.h \
+           src/CGAL_OGL_Polyhedron.h \
            src/OGL_helper.h \
            src/QGLView.h \
            src/GLView.h \
@@ -282,9 +285,9 @@ HEADERS += src/typedefs.h \
            src/GeometryEvaluator.h \
            src/CSGTermEvaluator.h \
            src/Tree.h \
-	   src/DrawingCallback.h \
-	   src/FreetypeRenderer.h \
-	   src/FontCache.h \
+src/DrawingCallback.h \
+src/FreetypeRenderer.h \
+src/FontCache.h \
            src/mathc99.h \
            src/memory.h \
            src/linalg.h \
@@ -304,7 +307,11 @@ HEADERS += src/typedefs.h \
            src/system-gl.h \
            src/CsgInfo.h \
            \
-           src/AutoUpdater.h
+           src/Dock.h \
+           src/AutoUpdater.h \
+           src/launchingscreen.h \
+           src/legacyeditor.h \
+           src/LibraryInfoDialog.h
 
 SOURCES += src/version_check.cc \
            src/ProgressWidget.cc \
@@ -383,6 +390,7 @@ SOURCES += src/version_check.cc \
            src/export_png.cc \
            src/import.cc \
            src/renderer.cc \
+           src/colormap.cc \
            src/ThrownTogetherRenderer.cc \
            src/CSGTermEvaluator.cc \
            src/svg.cc \
@@ -394,7 +402,12 @@ SOURCES += src/version_check.cc \
            \
            src/openscad.cc \
            src/mainwin.cc \
-	   src/FontListDialog.cc
+           src/UIUtils.cc \
+           src/Dock.cc \
+           src/FontListDialog.cc \
+           src/launchingscreen.cc \
+           src/legacyeditor.cc \
+           src/LibraryInfoDialog.cc
 
 # ClipperLib
 SOURCES += src/polyclipping/clipper.cpp
@@ -431,6 +444,7 @@ HEADERS += src/cgal.h \
            src/Polygon2d-CGAL.h
 
 SOURCES += src/cgalutils.cc \
+           src/cgalutils-tess.cc \
            src/CGALCache.cc \
            src/CGALRenderer.cc \
            src/CGAL_Nef_polyhedron.cc \
@@ -467,6 +481,10 @@ libraries.path = $$PREFIX/share/openscad/libraries/
 libraries.files = libraries/*
 INSTALLS += libraries
 
+fonts.path = $$PREFIX/share/openscad/fonts/
+fonts.files = fonts/*
+INSTALLS += fonts
+
 applications.path = $$PREFIX/share/applications
 applications.files = icons/openscad.desktop
 INSTALLS += applications
@@ -490,4 +508,3 @@ INSTALLS += man
 CONFIG(winconsole) {
   include(winconsole.pri)
 }
-
