@@ -269,74 +269,6 @@ namespace /* anonymous */ {
 
 }
 
-static CGAL_Nef_polyhedron *createNefPolyhedronFromPolySet(const PolySet &ps)
-{
-	if (ps.isEmpty()) return new CGAL_Nef_polyhedron();
-	assert(ps.getDimension() == 3);
-
-	if (ps.is_convex()) {
-		typedef CGAL::Exact_predicates_inexact_constructions_kernel K;
-		// Collect point cloud
-		std::set<K::Point_3> points;
-		for (int i = 0; i < ps.polygons.size(); i++) {
-			for (int j = 0; j < ps.polygons[i].size(); j++) {
-				points.insert(vector_convert<K::Point_3>(ps.polygons[i][j]));
-			}
-		}
-
-		if (points.size() <= 3) return new CGAL_Nef_polyhedron();;
-
-		// Apply hull
-		CGAL::Polyhedron_3<K> r;
-		CGAL::convex_hull_3(points.begin(), points.end(), r);
-		CGAL::Polyhedron_3<CGAL_Kernel3> r_exact;
-		copy_to(r,r_exact);
-		return new CGAL_Nef_polyhedron(new CGAL_Nef_polyhedron3(r_exact));
-	}
-
-	CGAL_Nef_polyhedron3 *N = NULL;
-	bool plane_error = false;
-	CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
-	try {
-		CGAL_Polyhedron P;
-		bool err = CGALUtils::createPolyhedronFromPolySet(ps, P);
-		// if (!err) {
-		// 	PRINTB("Polyhedron is closed: %d", P.is_closed());
-		// 	PRINTB("Polyhedron is valid: %d", P.is_valid(false, 0));
-		// }
-
-		if (!err) N = new CGAL_Nef_polyhedron3(P);
-	}
-	catch (const CGAL::Assertion_exception &e) {
-		if (std::string(e.what()).find("Plane_constructor")!=std::string::npos) {
-			if (std::string(e.what()).find("has_on")!=std::string::npos) {
-				PRINT("PolySet has nonplanar faces. Attempting alternate construction");
-				plane_error=true;
-			}
-		} else {
-			PRINTB("CGAL error in CGAL_Nef_polyhedron3(): %s", e.what());
-		}
-	}
-	if (plane_error) try {
-			PolySet ps2(3);
-			CGAL_Polyhedron P;
-			PolysetUtils::tessellate_faces(ps, ps2);
-			bool err = CGALUtils::createPolyhedronFromPolySet(ps2,P);
-			if (!err) N = new CGAL_Nef_polyhedron3(P);
-		}
-		catch (const CGAL::Assertion_exception &e) {
-			PRINTB("Alternate construction failed. CGAL error in CGAL_Nef_polyhedron3(): %s", e.what());
-		}
-	CGAL::set_error_behaviour(old_behaviour);
-	return new CGAL_Nef_polyhedron(N);
-}
-
-static CGAL_Nef_polyhedron *createNefPolyhedronFromPolygon2d(const Polygon2d &polygon)
-{
-	shared_ptr<PolySet> ps(polygon.tessellate());
-	return createNefPolyhedronFromPolySet(*ps);
-}
-
 namespace CGALUtils {
 
 	bool createPolyhedronFromPolySet(const PolySet &ps, CGAL_Polyhedron &p)
@@ -1116,6 +1048,75 @@ namespace CGALUtils {
 		assert(false && "createNefPolyhedronFromGeometry(): Unsupported geometry type");
 		return NULL;
 	}
+
+	CGAL_Nef_polyhedron *createNefPolyhedronFromPolySet(const PolySet &ps)
+	{
+		if (ps.isEmpty()) return new CGAL_Nef_polyhedron();
+		assert(ps.getDimension() == 3);
+		
+		if (ps.is_convex()) {
+			typedef CGAL::Exact_predicates_inexact_constructions_kernel K;
+			// Collect point cloud
+			std::set<K::Point_3> points;
+			for (int i = 0; i < ps.polygons.size(); i++) {
+				for (int j = 0; j < ps.polygons[i].size(); j++) {
+					points.insert(vector_convert<K::Point_3>(ps.polygons[i][j]));
+				}
+			}
+
+			if (points.size() <= 3) return new CGAL_Nef_polyhedron();;
+
+			// Apply hull
+			CGAL::Polyhedron_3<K> r;
+			CGAL::convex_hull_3(points.begin(), points.end(), r);
+			CGAL::Polyhedron_3<CGAL_Kernel3> r_exact;
+			copy_to(r,r_exact);
+			return new CGAL_Nef_polyhedron(new CGAL_Nef_polyhedron3(r_exact));
+		}
+
+		CGAL_Nef_polyhedron3 *N = NULL;
+		bool plane_error = false;
+		CGAL::Failure_behaviour old_behaviour = CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
+		try {
+			CGAL_Polyhedron P;
+			bool err = CGALUtils::createPolyhedronFromPolySet(ps, P);
+			// if (!err) {
+			// 	PRINTB("Polyhedron is closed: %d", P.is_closed());
+			// 	PRINTB("Polyhedron is valid: %d", P.is_valid(false, 0));
+			// }
+
+			if (!err) N = new CGAL_Nef_polyhedron3(P);
+		}
+		catch (const CGAL::Assertion_exception &e) {
+			if (std::string(e.what()).find("Plane_constructor")!=std::string::npos) {
+				if (std::string(e.what()).find("has_on")!=std::string::npos) {
+					PRINT("PolySet has nonplanar faces. Attempting alternate construction");
+					plane_error=true;
+				}
+			} else {
+				PRINTB("CGAL error in CGAL_Nef_polyhedron3(): %s", e.what());
+			}
+		}
+		if (plane_error) try {
+				PolySet ps2(3);
+				CGAL_Polyhedron P;
+				PolysetUtils::tessellate_faces(ps, ps2);
+				bool err = CGALUtils::createPolyhedronFromPolySet(ps2,P);
+				if (!err) N = new CGAL_Nef_polyhedron3(P);
+			}
+			catch (const CGAL::Assertion_exception &e) {
+				PRINTB("Alternate construction failed. CGAL error in CGAL_Nef_polyhedron3(): %s", e.what());
+			}
+		CGAL::set_error_behaviour(old_behaviour);
+		return new CGAL_Nef_polyhedron(N);
+	}
+
+	CGAL_Nef_polyhedron *createNefPolyhedronFromPolygon2d(const Polygon2d &polygon)
+	{
+		shared_ptr<PolySet> ps(polygon.tessellate());
+		return createNefPolyhedronFromPolySet(*ps);
+	}
+
 }; // namespace CGALUtils
 
 

@@ -15,6 +15,8 @@ namespace CGALUtils {
 	Geometry const* applyMinkowski(const Geometry::Geometries &children);
 
 	CGAL_Nef_polyhedron *createNefPolyhedronFromGeometry(const class Geometry &geom);
+	CGAL_Nef_polyhedron *createNefPolyhedronFromPolySet(const PolySet &ps);
+	CGAL_Nef_polyhedron *createNefPolyhedronFromPolygon2d(const Polygon2d &polygon);
 	template <typename Polyhedron> bool createPolySetFromPolyhedron(const Polyhedron &p, PolySet &ps);
 	bool createPolySetFromNefPolyhedron3(const CGAL_Nef_polyhedron3 &N, PolySet &ps);
 	bool createPolyhedronFromPolySet(const PolySet &ps, CGAL_Polyhedron &p);
