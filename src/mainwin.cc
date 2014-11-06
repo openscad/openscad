@@ -175,7 +175,7 @@ bool MainWindow::undockMode = false;
 bool MainWindow::reorderMode = false;
 
 MainWindow::MainWindow(const QString &filename)
-    : root_inst("group"), library_info_dialog(NULL), font_list_dialog(NULL), tempFile(NULL), progresswidget(NULL)
+	: root_inst("group"), library_info_dialog(NULL), font_list_dialog(NULL), tempFile(NULL), progresswidget(NULL), contentschanged(false)
 {
 	setupUi(this);
 
@@ -421,6 +421,7 @@ MainWindow::MainWindow(const QString &filename)
 	updateRecentFileActions();
 
 	connect(editor, SIGNAL(contentsChanged()), this, SLOT(animateUpdateDocChanged()));
+	connect(editor, SIGNAL(contentsChanged()), this, SLOT(setContentsChanged()));
 	connect(editor, SIGNAL(modificationChanged(bool)), this, SLOT(setWindowModified(bool)));
 	connect(this->qglview, SIGNAL(doAnimateUpdate()), this, SLOT(animateUpdate()));
 
@@ -847,8 +848,10 @@ void MainWindow::refreshDocument()
 			reader.setCodec("UTF-8");
 			QString text = reader.readAll();
 			PRINTB("Loaded design '%s'.", this->fileName.toLocal8Bit().constData());
-			if (editor->toPlainText() != text)
+			if (editor->toPlainText() != text) {
 				editor->setPlainText(text);
+				this->contentschanged = true;
+			}
 		}
 	}
 	setCurrentOutput();
@@ -1822,6 +1825,7 @@ void MainWindow::actionRenderDone(shared_ptr<const Geometry> root_geom)
 	this->statusBar()->removeWidget(this->progresswidget);
 	delete this->progresswidget;
 	this->progresswidget = NULL;
+	this->contentschanged = false;
 	compileEnded();
 }
 
@@ -1926,6 +1930,18 @@ void MainWindow::actionExport(export_type_e, QString, QString)
 		PRINT("Nothing to export! Try building first (press F6).");
 		clearCurrentOutput();
 		return;
+	}
+
+	// editor has changed since last F6
+	if (this->contentschanged) {
+		QMessageBox::StandardButton ret;
+		ret = QMessageBox::warning(this, "Application",
+				"The document has been modified since the last render (F6).\n"
+				"Do you really want to export the previous content?",
+				QMessageBox::Yes | QMessageBox::No);
+		if (ret != QMessageBox::Yes) {
+			return;
+		}
 	}
 
 	if (this->root_geom->getDimension() != 3) {
@@ -2553,4 +2569,9 @@ void MainWindow::openCSGSettingsChanged()
 	OpenCSG::setOption(OpenCSG::AlgorithmSetting, Preferences::inst()->getValue("advanced/forceGoldfeather").toBool() ? 
 	OpenCSG::Goldfeather : OpenCSG::Automatic);
 #endif
+}
+
+void MainWindow::setContentsChanged()
+{
+	this->contentschanged = true;
 }

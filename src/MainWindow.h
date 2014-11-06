@@ -234,6 +234,7 @@ public slots:
 	void checkAutoReload();
 	void waitAfterReload();
 	void autoReloadSet(bool);
+	void setContentsChanged();
 
 private:
 	static void report_func(const class AbstractNode*, void *vp, int mark);
@@ -248,6 +249,7 @@ private:
 	class ProgressWidget *progresswidget;
 	class CGALWorker *cgalworker;
 	QMutex consolemutex;
+	bool contentschanged; // Set if the source code has changes since the last render (F6)
 
 signals:
 	void highlightError(int);
