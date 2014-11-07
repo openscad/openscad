@@ -1199,6 +1199,7 @@ add_tests(Bugs CGALPNG CSGPNG OPENCSG MONOTONEPNG STLPNG OFFPNG FILES
                      testdata/scad/bugs/issue584.scad
                      testdata/scad/bugs/issue591.scad
                      testdata/scad/bugs/issue666.scad
+                     testdata/scad/bugs/issue791.scad
                      testdata/scad/bugs/issue802.scad
                      testdata/scad/bugs/issue835.scad
                      testdata/scad/bugs/issue899.scad
