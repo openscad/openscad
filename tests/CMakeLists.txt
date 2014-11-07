@@ -1198,6 +1198,7 @@ set_test_config(Heavy cgalpngtest_rotate_extrude-tests
 list(APPEND BUGS_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue584.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue591.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue666.scad
+                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue791.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue802.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue835.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue899.scad
