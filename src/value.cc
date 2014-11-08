@@ -129,9 +129,19 @@ Value::ValueType Value::type() const
   return static_cast<ValueType>(this->value.which());
 }
 
+bool Value::isDefined() const
+{
+  return this->type() != UNDEFINED;
+}
+
+bool Value::isDefinedAs(const ValueType type) const
+{
+  return this->type() == type;
+}
+
 bool Value::isUndefined() const
 {
-  return this->type() == UNDEFINED;
+  return !isDefined();
 }
 
 bool Value::toBool() const
