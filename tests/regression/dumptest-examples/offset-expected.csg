@@ -1,7 +1,7 @@
 group() {
 	group();
 	linear_extrude(height = 20, center = false, convexity = 1, scale = [0.5, 0.5], $fn = 40, $fa = 12, $fs = 2) {
-		offset(delta = 10, join_type = "round", $fn = 40, $fa = 12, $fs = 2) {
+		offset(r = 10, $fn = 40, $fa = 12, $fs = 2) {
 			square(size = [50, 50], center = true);
 		}
 	}
@@ -9,12 +9,12 @@ group() {
 		linear_extrude(height = 20, center = false, convexity = 1, scale = [1, 1], $fn = 40, $fa = 12, $fs = 2) {
 			group() {
 				difference() {
-					offset(delta = 1, join_type = "miter", miter_limit = 2, $fn = 40, $fa = 12, $fs = 2) {
+					offset(r = 1, $fn = 40, $fa = 12, $fs = 2) {
 						group() {
 							circle($fn = 40, $fa = 12, $fs = 2, r = 15);
 						}
 					}
-					offset(delta = -1, join_type = "miter", miter_limit = 2, $fn = 40, $fa = 12, $fs = 2) {
+					offset(r = -1, $fn = 40, $fa = 12, $fs = 2) {
 						group() {
 							circle($fn = 40, $fa = 12, $fs = 2, r = 15);
 						}

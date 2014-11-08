@@ -117,6 +117,8 @@ public:
   ~Value() {}
 
   ValueType type() const;
+  bool isDefined() const;
+  bool isDefinedAs(const ValueType type) const;
   bool isUndefined() const;
 
   double toDouble() const;
