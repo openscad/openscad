@@ -165,6 +165,8 @@ Take care that you don't have old local copies anywhere (/usr/local/).
 If all dependencies are present and of a high enough version, skip ahead 
 to the Compilation instructions. 
 
+On **Arch Linux** you should use the [openscad-git pkgbuild](https://aur.archlinux.org/packages/openscad-git/) instead.
+
 ### Building for Linux/BSD on systems with older or missing dependencies
 
 If some of your system dependency libraries are missing or old, then you 
