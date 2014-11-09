@@ -1,0 +1,31 @@
+{
+    "name" : "Monokai",
+    "index" : 1200,
+    "paper" : "#272822",
+    "text" : "#f8f8f2",
+    "caret" : {
+        "width" : 2,
+        "foreground" : "#ffff00",
+        "line-background" : "#3e3d32"
+    },
+    "colors" : {
+        "keyword1" : "#66c3b3",
+        "keyword2" : "#79abff",
+        "keyword3" : "#ffffff",
+        "comment" : "#ccdf32",
+        "number" : "#7fb347",
+        "string" : "#e6db74",
+        "operator" : "#d8d8d8",
+        "commentline" : "#75715e",
+        "selection-foreground" : "#ffff00",
+        "selection-background" : "#a0a0ff",
+        "margin-background" : "#757575",
+        "margin-foreground" : "#f8f8f2",
+        "matched-brace-background" : "#333",
+        "matched-brace-foreground" : "#fff",
+        "unmatched-brace-background" : "#333",
+        "unmatched-brace-foreground" : "#fff",
+        "error-marker" : "#ff0000",
+        "edge" : "#ffffff"
+    }
+}

@@ -271,3 +271,15 @@ bool LegacyEditor::isContentModified()
 {
 	return textedit->document()->isModified();
 }
+
+QStringList LegacyEditor::colorSchemes()
+{
+	QStringList colorSchemes;
+    
+	colorSchemes
+	    << "For Light Background"
+	    << "For Dark Background"
+	    << "Off";
+	
+	return colorSchemes;
+}

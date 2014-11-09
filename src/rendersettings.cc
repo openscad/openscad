@@ -1,5 +1,4 @@
 #include "rendersettings.h"
-#include "colormap.h"
 #include "printutils.h"
 
 RenderSettings *RenderSettings::inst(bool erase)

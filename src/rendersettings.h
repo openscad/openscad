@@ -2,7 +2,6 @@
 
 #include <map>
 #include "linalg.h"
-#include "colormap.h"
 
 class RenderSettings
 {

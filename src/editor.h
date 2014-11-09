@@ -21,6 +21,7 @@ public:
 	virtual QString selectedText() = 0;
 	virtual bool find(const QString &, bool findNext = false, bool findBackwards = false) = 0;
 	virtual void replaceSelectedText(const QString &) = 0;
+	virtual QStringList colorSchemes() = 0;
 
 signals:
   void contentsChanged();
