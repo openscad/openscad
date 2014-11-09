@@ -1,6 +1,7 @@
 #include <algorithm>
 #include <QChar>
 #include <QString>
+#include <QFileInfo>
 #include <Qsci/qscicommandset.h>
 
 #include "scintillaeditor.h"
@@ -13,9 +14,31 @@ QScintilla::QScintilla(QWidget *parent) : QsciScintilla(parent)
 void QScintilla::dropEvent(QDropEvent *event)
 {
     if (event->mimeData()->hasUrls()) {
-	// In case URLs are dropped, assume that drag&drop from outside
-	// which should be forwarded to the main window.
-        emit onDropEvent(event);
+	// In case URLs are dropped, assume that drag&drop from outside.
+	QString text;
+	const QList<QUrl> urls = event->mimeData()->urls();
+	for (int i = 0; i < urls.size(); i++) {
+		if (urls[i].scheme() != "file")
+			continue;
+		
+		const QString filename = urls[i].toLocalFile();
+		const QFileInfo fileInfo(filename);
+		const QString suffix = fileInfo.suffix().toLower();
+		const QString cmd = EditorInterface::getKnownFileExtensions()[suffix];
+		if (cmd.isEmpty()) {
+			emit fileDropped(filename);
+		} else {
+			text += cmd.arg(filename);
+		}
+	}
+
+
+	QMimeData mimeData;
+	mimeData.setText(text);
+	
+        QDropEvent fakeDropEvent(event->pos(), Qt::CopyAction, &mimeData, Qt::NoButton, Qt::NoModifier);
+	fakeDropEvent.setAccepted(true);
+	QsciScintilla::dropEvent(&fakeDropEvent);
     } else {
 	// Run scintilla drop handler to still allow drag&drop of
 	// selected text.
@@ -50,7 +73,7 @@ ScintillaEditor::ScintillaEditor(QWidget *parent) : EditorInterface(parent)
 {
   scintillaLayout = new QVBoxLayout(this);
   qsci = new QScintilla(this);
-
+  connect(qsci, SIGNAL(fileDropped(const QString &)), this, SLOT(onFileDropped(const QString &))); 
 
   //
   // Remapping some scintilla key binding which conflict with OpenSCAD global

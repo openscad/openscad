@@ -65,7 +65,6 @@ public:
 	QString last_compiled_doc;
 
 	QAction *actionRecentFile[UIUtils::maxRecentFiles];
-        QMap<QString, QString> knownFileExtensions;
 
         QWidget *editorDockTitleWidget;
         QWidget *consoleDockTitleWidget;
@@ -90,9 +89,9 @@ private slots:
 	void setColorScheme(const QString &cs);
 	void showProgress();
 	void openCSGSettingsChanged();
+        void handleFileDrop(const QString &filename);
 private:
 	void openFile(const QString &filename);
-        void handleFileDrop(const QPoint &pos, const QString &filename);
 	void refreshDocument();
         void updateCamera();
 	void updateTemporalVariables();
@@ -223,8 +222,6 @@ public slots:
 	void viewAll();
 	void animateUpdateDocChanged();
 	void animateUpdate();
-	void dragEnterEvent(QDragEnterEvent *event);
-	void dropEvent(QDropEvent *event);
 	void helpAbout();
 	void helpHomepage();
 	void helpManual();

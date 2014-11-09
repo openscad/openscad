@@ -11,7 +11,7 @@ class EditorInterface : public QWidget
 {
 	Q_OBJECT
 public:
-	EditorInterface(QWidget *parent) : QWidget(parent) {}
+	EditorInterface(QWidget *parent);
 	virtual ~EditorInterface() {}
 	virtual QSize sizeHint(){ QSize size; return size;}
 	virtual void setInitialSizeHint(const QSize&) { }
@@ -21,10 +21,14 @@ public:
 	virtual QString selectedText() = 0;
 	virtual bool find(const QString &, bool findNext = false, bool findBackwards = false) = 0;
 	virtual void replaceSelectedText(const QString &) = 0;
+        
+        void handleFileDrop(const QMimeData *);
+        static QMap<QString, QString> & getKnownFileExtensions();
 
 signals:
-  void contentsChanged();
-  void modificationChanged(bool);												
+        void contentsChanged();
+        void modificationChanged(bool);
+        void fileDropped(const QString &);
 
 public slots:
 	virtual void zoomIn() = 0;
@@ -48,7 +52,9 @@ public slots:
 	virtual void copy() = 0;
 	virtual void paste() = 0;
 	virtual void initFont(const QString&, uint) = 0;
+        virtual void onFileDropped(const QString &);
 
 private:
 	QSize initialSizeHint;
+        static QMap<QString, QString> knownFileExtensions;
 };

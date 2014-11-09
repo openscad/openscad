@@ -193,12 +193,13 @@ MainWindow::MainWindow(const QString &filename)
 #ifdef USE_SCINTILLA_EDITOR
 	if (useScintilla) {
 	    ScintillaEditor *scintillaEditor = new ScintillaEditor(editorDockContents);
-	    connect(scintillaEditor->qsci, SIGNAL(onDropEvent(QDropEvent *)), this, SLOT(dropEvent(QDropEvent *))); 
 	    editor = scintillaEditor;
 	}
 	else
 #endif
 	    editor = new LegacyEditor(editorDockContents);
+
+	connect(editor, SIGNAL(fileDropped(const QString &)), this, SLOT(handleFileDrop(const QString &))); 
 
 	editorDockContents->layout()->addWidget(editor);
 
@@ -237,16 +238,6 @@ MainWindow::MainWindow(const QString &filename)
 	tval = 0;
 	fps = 0;
 	fsteps = 1;
-
-	const QString importStatement = "import(\"%1\");\n";
-	const QString surfaceStatement = "surface(\"%1\");\n";
-	knownFileExtensions["stl"] = importStatement;
-	knownFileExtensions["off"] = importStatement;
-	knownFileExtensions["dxf"] = importStatement;
-	knownFileExtensions["dat"] = surfaceStatement;
-	knownFileExtensions["png"] = surfaceStatement;
-	knownFileExtensions["scad"] = "";
-	knownFileExtensions["csg"] = "";
 	
 	editActionZoomIn->setShortcuts(QList<QKeySequence>() << editActionZoomIn->shortcuts() << QKeySequence("CTRL+="));
 
@@ -578,7 +569,6 @@ MainWindow::MainWindow(const QString &filename)
 	loadViewSettings();
 	loadDesignSettings();
 
-	setAcceptDrops(true);
 	clearCurrentOutput();
 }
 
@@ -751,8 +741,8 @@ void MainWindow::openFile(const QString &new_filename)
 
 	const QFileInfo fileInfo(new_filename);
 	const QString suffix = fileInfo.suffix().toLower();
-	const bool knownFileType = knownFileExtensions.contains(suffix);
-	const QString cmd = knownFileExtensions[suffix];
+	const bool knownFileType = editor->getKnownFileExtensions().contains(suffix);
+	const QString cmd = editor->getKnownFileExtensions()[suffix];
 	if (knownFileType && cmd.isEmpty()) {
 		setFileName(new_filename);
 		updateRecentFiles();		
@@ -2379,7 +2369,6 @@ void MainWindow::hideEditor()
 }
 
 void MainWindow::hideConsole()
-
 {
 	if (viewActionHideConsole->isChecked()) {
 		consoleDock->hide();
@@ -2388,38 +2377,13 @@ void MainWindow::hideConsole()
 	}
 }
 
-void MainWindow::dragEnterEvent(QDragEnterEvent *event)
-{
-	if (event->mimeData()->hasUrls())
-		event->acceptProposedAction();
-}
-
-void MainWindow::dropEvent(QDropEvent *event)
+void MainWindow::handleFileDrop(const QString &filename)
 {
 	setCurrentOutput();
-	const QList<QUrl> urls = event->mimeData()->urls();
-	for (int i = 0; i < urls.size(); i++) {
-		if (urls[i].scheme() != "file")
-			continue;
-		
-		handleFileDrop(event->pos(), urls[i].toLocalFile());
-	}
-	clearCurrentOutput();
-}
-
-void MainWindow::handleFileDrop(const QPoint &pos, const QString &filename)
-{
-	const QFileInfo fileInfo(filename);
-	const QString suffix = fileInfo.suffix().toLower();
-	const QString cmd = knownFileExtensions[suffix];
-	if (cmd.isEmpty()) {
-		if (!MainWindow::mdiMode && !maybeSave()) {
-			return;
-		}
+	if (MainWindow::mdiMode || maybeSave()) {
 		openFile(filename);
-	} else {
-		editor->insertAt(pos, cmd.arg(filename));
 	}
+	clearCurrentOutput();    
 }
 
 void MainWindow::helpAbout()

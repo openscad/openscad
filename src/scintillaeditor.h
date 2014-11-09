@@ -19,9 +19,9 @@ public:
 
 public slots:    
     void dropEvent(QDropEvent *event);
-    
+
 signals:
-    void onDropEvent(QDropEvent *event);
+    void fileDropped(const QString &);
 };
 
 class ScintillaEditor : public EditorInterface
@@ -68,7 +68,7 @@ public slots:
 	void copy();
 	void paste();
 	void initFont(const QString&, uint);
-
+ 
 private slots:
 	void onTextChanged();
 
