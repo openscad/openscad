@@ -36,8 +36,8 @@ void QScintilla::dropEvent(QDropEvent *event)
 	QMimeData mimeData;
 	mimeData.setText(text);
 	
-        QDropEvent fakeDropEvent(event->pos(), Qt::CopyAction, &mimeData, Qt::NoButton, Qt::NoModifier);
-	fakeDropEvent.setAccepted(true);
+        QDropEvent fakeDropEvent(event->pos(), event->proposedAction(), &mimeData, event->mouseButtons(), event->keyboardModifiers());
+	fakeDropEvent.acceptProposedAction();
 	QsciScintilla::dropEvent(&fakeDropEvent);
     } else {
 	// Run scintilla drop handler to still allow drag&drop of
