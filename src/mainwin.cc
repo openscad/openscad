@@ -192,7 +192,9 @@ MainWindow::MainWindow(const QString &filename)
 
 #ifdef USE_SCINTILLA_EDITOR
 	if (useScintilla) {
-		 editor = new ScintillaEditor(editorDockContents);
+	    ScintillaEditor *scintillaEditor = new ScintillaEditor(editorDockContents);
+	    connect(scintillaEditor->qsci, SIGNAL(onDropEvent(QDropEvent *)), this, SLOT(dropEvent(QDropEvent *))); 
+	    editor = scintillaEditor;
 	}
 	else
 #endif
@@ -2400,12 +2402,12 @@ void MainWindow::dropEvent(QDropEvent *event)
 		if (urls[i].scheme() != "file")
 			continue;
 		
-		handleFileDrop(urls[i].toLocalFile());
+		handleFileDrop(event->pos(), urls[i].toLocalFile());
 	}
 	clearCurrentOutput();
 }
 
-void MainWindow::handleFileDrop(const QString &filename)
+void MainWindow::handleFileDrop(const QPoint &pos, const QString &filename)
 {
 	const QFileInfo fileInfo(filename);
 	const QString suffix = fileInfo.suffix().toLower();
@@ -2416,7 +2418,7 @@ void MainWindow::handleFileDrop(const QString &filename)
 		}
 		openFile(filename);
 	} else {
-		editor->insert(cmd.arg(filename));
+		editor->insertAt(pos, cmd.arg(filename));
 	}
 }
 

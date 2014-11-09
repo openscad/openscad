@@ -2,11 +2,27 @@
 
 #include <QObject>
 #include <QWidget>
+#include <QMimeData>
+#include <QDropEvent>
 #include <QVBoxLayout>
 #include <Qsci/qsciscintilla.h>
 #include <QVBoxLayout>
 #include "editor.h"
 #include "scadlexer.h"
+
+class QScintilla : public QsciScintilla
+{
+    Q_OBJECT;
+public:
+    QScintilla(QWidget *parent);
+    virtual void insertAtPos(const QPoint&, const QString&);
+
+public slots:    
+    void dropEvent(QDropEvent *event);
+    
+signals:
+    void onDropEvent(QDropEvent *event);
+};
 
 class ScintillaEditor : public EditorInterface
 {
@@ -14,7 +30,7 @@ class ScintillaEditor : public EditorInterface
 public:
 	ScintillaEditor(QWidget *parent);
 	virtual ~ScintillaEditor() {}
-	QsciScintilla *qsci;
+	QScintilla *qsci;
 	QString toPlainText();
 	void initMargin();
 	void initLexer();
@@ -44,6 +60,7 @@ public slots:
 	void commentSelection();
 	void uncommentSelection();
 	void insert(const QString&);
+        void insertAt(const QPoint&, const QString&);
         void replaceAll(const QString&);
 	void undo();
 	void redo();

@@ -40,6 +40,7 @@ public slots:
 	virtual void unhighlightLastError() = 0;
 	virtual void setHighlightScheme(const QString&) = 0;
 	virtual void insert(const QString&) = 0;
+        virtual void insertAt(const QPoint&, const QString&) = 0;
         virtual void replaceAll(const QString&) = 0;
 	virtual void undo() = 0;
 	virtual void redo() = 0;

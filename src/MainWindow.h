@@ -92,7 +92,7 @@ private slots:
 	void openCSGSettingsChanged();
 private:
 	void openFile(const QString &filename);
-        void handleFileDrop(const QString &filename);
+        void handleFileDrop(const QPoint &pos, const QString &filename);
 	void refreshDocument();
         void updateCamera();
 	void updateTemporalVariables();

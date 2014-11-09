@@ -1,14 +1,55 @@
 #include <algorithm>
-#include <QString>
 #include <QChar>
-#include "scintillaeditor.h"
+#include <QString>
 #include <Qsci/qscicommandset.h>
+
+#include "scintillaeditor.h"
 #include "Preferences.h"
+
+QScintilla::QScintilla(QWidget *parent) : QsciScintilla(parent)
+{
+}
+
+void QScintilla::dropEvent(QDropEvent *event)
+{
+    if (event->mimeData()->hasUrls()) {
+	// In case URLs are dropped, assume that drag&drop from outside
+	// which should be forwarded to the main window.
+        emit onDropEvent(event);
+    } else {
+	// Run scintilla drop handler to still allow drag&drop of
+	// selected text.
+	QsciScintilla::dropEvent(event);
+    }
+}
+
+/**
+ * Insert text using fake drag&drop events as there is currently no way
+ * to do that using the normal API.
+ * 
+ * @param pos Mouse position of the drop event.
+ * @param text The text to insert.
+ */
+void QScintilla::insertAtPos(const QPoint& pos, const QString& text)
+{
+    QMimeData data;
+    data.setText(text);
+
+    QDragMoveEvent fakeDragMoveEvent(pos, Qt::CopyAction, &data, Qt::NoButton, Qt::NoModifier);
+    QsciScintilla::dragMoveEvent(&fakeDragMoveEvent);
+    
+    QDropEvent fakeDropEvent(pos, Qt::CopyAction, &data, Qt::NoButton, Qt::NoModifier);
+    QsciScintilla::dropEvent(&fakeDropEvent);
+    
+    QsciScintilla::dragLeaveEvent(0);
+
+    selectAll(false);
+}
 
 ScintillaEditor::ScintillaEditor(QWidget *parent) : EditorInterface(parent)
 {
   scintillaLayout = new QVBoxLayout(this);
-  qsci = new QsciScintilla(this);
+  qsci = new QScintilla(this);
 
 
   //
@@ -213,7 +254,12 @@ void ScintillaEditor::setHighlightScheme(const QString &name)
 
 void ScintillaEditor::insert(const QString &text)
 {
-  qsci->insert(text); 
+    qsci->insert(text); 
+}
+
+void ScintillaEditor::insertAt(const QPoint& pos, const QString &text)
+{
+    qsci->insertAtPos(pos, text);
 }
 
 void ScintillaEditor::replaceAll(const QString &text)

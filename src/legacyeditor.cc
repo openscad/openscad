@@ -179,6 +179,11 @@ void LegacyEditor::insert(const QString &text)
 	textedit->insertPlainText(text);
 }
 
+void LegacyEditor::insertAt(const QPoint&, const QString &text)
+{
+	textedit->insertPlainText(text);
+}
+
 void LegacyEditor::replaceAll(const QString &text)
 {
 	textedit->selectAll();
