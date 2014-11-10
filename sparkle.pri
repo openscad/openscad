@@ -8,4 +8,5 @@ sparkle {
   LIBS += -framework Sparkle
   HEADERS += src/SparkleAutoUpdater.h
   OBJECTIVE_SOURCES += src/SparkleAutoUpdater.mm
+  DEFINES += OPENSCAD_UPDATER
 }
