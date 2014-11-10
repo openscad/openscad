@@ -56,11 +56,13 @@
 #include "ThrownTogetherRenderer.h"
 #include "csgtermnormalizer.h"
 #include "QGLView.h"
-#include "AutoUpdater.h"
 #ifdef Q_OS_MAC
 #include "CocoaUtils.h"
 #endif
 #include "PlatformUtils.h"
+#ifdef OPENSCAD_UPDATER
+#include "AutoUpdater.h"
+#endif
 
 #include <QMenu>
 #include <QTime>
@@ -187,8 +189,9 @@ MainWindow::MainWindow(const QString &filename)
 	this->consoleDock->setConfigKey("view/hideConsole");
 	this->consoleDock->setAction(this->viewActionHideConsole);
 
-	editortype = Preferences::inst()->getValue("editor/editortype").toString();
-	useScintilla = (editortype == "QScintilla Editor");
+	QSettings settings;
+	editortype = settings.value("editor/editortype").toString();
+	useScintilla = (editortype != "Simple Editor");
 
 #ifdef USE_SCINTILLA_EDITOR
 	if (useScintilla) {
@@ -197,6 +200,8 @@ MainWindow::MainWindow(const QString &filename)
 	else
 #endif
 	    editor = new LegacyEditor(editorDockContents);
+
+	Preferences::create(this, editor->colorSchemes());
 
 	editorDockContents->layout()->addWidget(editor);
 
@@ -273,17 +278,6 @@ MainWindow::MainWindow(const QString &filename)
 	animate_panel->hide();
 	find_panel->hide();
 
-	// Application menu
-#ifdef DEBUG
-	this->appActionUpdateCheck->setEnabled(false);
-#else
-#ifdef Q_OS_MAC
-	this->appActionUpdateCheck->setMenuRole(QAction::ApplicationSpecificRole);
-	this->appActionUpdateCheck->setEnabled(true);
-	connect(this->appActionUpdateCheck, SIGNAL(triggered()), this, SLOT(actionUpdateCheck()));
-#endif
-#endif
-	
 	// File menu
 	connect(this->fileActionNew, SIGNAL(triggered()), this, SLOT(actionNew())); 
 	connect(this->fileActionOpen, SIGNAL(triggered()), this, SLOT(actionOpen()));
@@ -407,6 +401,10 @@ MainWindow::MainWindow(const QString &filename)
 	connect(this->helpActionLibraryInfo, SIGNAL(triggered()), this, SLOT(helpLibrary()));
 	connect(this->helpActionFontInfo, SIGNAL(triggered()), this, SLOT(helpFontInfo()));
 
+#ifdef OPENSCAD_UPDATER
+	this->menuBar()->addMenu(AutoUpdater::updater()->updateMenu);
+#endif
+
 	setCurrentOutput();
 
 	PRINT(helptitle);
@@ -521,7 +519,6 @@ MainWindow::MainWindow(const QString &filename)
 	}
 	
 	// make sure it looks nice..
-	QSettings settings;
 	QByteArray windowState = settings.value("window/state", QByteArray()).toByteArray();
 	restoreState(windowState);
 	resize(settings.value("window/size", QSize(800, 600)).toSize());
@@ -1132,13 +1129,6 @@ void MainWindow::compileCSG(bool procevents)
 	int s = t.elapsed() / 1000;
 	PRINTB("Total rendering time: %d hours, %d minutes, %d seconds", (s / (60*60)) % ((s / 60) % 60) % (s % 60));
 	if (procevents) QApplication::processEvents();
-}
-
-void MainWindow::actionUpdateCheck()
-{
-	if (AutoUpdater *updater =AutoUpdater::updater()) {
-		updater->checkForUpdates();
-	}
 }
 
 void MainWindow::actionNew()

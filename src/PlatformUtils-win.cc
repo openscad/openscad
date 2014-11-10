@@ -47,6 +47,27 @@ std::string winapi_wstr_to_utf8( std::wstring wstr )
 	return utf8_str;
 }
 
+// see http://msdn.microsoft.com/en-us/library/windows/desktop/bb762494%28v=vs.85%29.aspx
+static const std::string getFolderPath(int nFolder)
+{
+	std::wstring path(MAX_PATH,0);
+
+	HWND hwndOwner = 0;
+	HANDLE hToken = NULL;
+	DWORD dwFlags = SHGFP_TYPE_CURRENT;
+	LPTSTR pszPath = &path[0];
+
+	int result = SHGetFolderPathW( hwndOwner, nFolder, hToken, dwFlags, pszPath );
+
+	if (result == S_OK) {
+		path = std::wstring( path.c_str() ); // strip extra NULLs
+		//std::wcerr << "wchar path:" << "\n";
+		const std::string retval = winapi_wstr_to_utf8( path );
+		//PRINTB("Path found: %s",retval);
+		return retval;
+	}
+	return "";
+}
 
 // retrieve the path to 'My Documents' for the current user under windows
 // In XP this is 'c:\documents and settings\username\my documents'
@@ -55,27 +76,20 @@ std::string winapi_wstr_to_utf8( std::wstring wstr )
 // Mingw does not provide access to the updated SHGetKnownFolderPath
 std::string PlatformUtils::documentsPath()
 {
-	std::string retval;
-	std::wstring path(MAX_PATH,0);
-
-	HWND hwndOwner = 0;
-	int nFolder = CSIDL_PERSONAL;
-	HANDLE hToken = NULL;
-	DWORD dwFlags = SHGFP_TYPE_CURRENT;
-	LPTSTR pszPath = &path[0];
-
-	int result = SHGetFolderPathW( hwndOwner, nFolder, hToken, dwFlags, pszPath );
-
-	if (result == S_OK) {
-		path = std::wstring( path.c_str() ); // stip extra NULLs
-		//std::wcerr << "wchar path:" << "\n";
-		retval = winapi_wstr_to_utf8( path );
-		//PRINTB("Path found: %s",retval);
-	} else {
-		PRINT("ERROR: Could not find My Documents location");
-		retval = "";
+	const std::string retval = getFolderPath(CSIDL_PERSONAL);
+	if (retval.empty()) {
+	    PRINT("ERROR: Could not find My Documents location");
 	}
 	return retval;
+}
+
+std::string PlatformUtils::userConfigPath()
+{
+	const std::string retval = getFolderPath(CSIDL_LOCAL_APPDATA);
+	if (retval.empty()) {
+	    PRINT("ERROR: Could not find Local AppData location");
+	}
+	return retval + std::string("/") + PlatformUtils::OPENSCAD_FOLDER_NAME;
 }
 
 #include <io.h>

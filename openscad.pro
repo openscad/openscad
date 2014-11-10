@@ -485,6 +485,10 @@ fonts.path = $$PREFIX/share/openscad/fonts/
 fonts.files = fonts/*
 INSTALLS += fonts
 
+colorschemes.path = $$PREFIX/share/openscad/color-schemes/
+colorschemes.files = color-schemes/*
+INSTALLS += colorschemes
+
 applications.path = $$PREFIX/share/applications
 applications.files = icons/openscad.desktop
 INSTALLS += applications
