@@ -161,12 +161,9 @@ static void info()
  * files.
  */
 void localization_init() {
-#ifdef 	LOCALE_PREFIX
-	std::string locale_path(LOCALE_PREFIX);
-#else
 	fs::path po_dir(PlatformUtils::resourcePath("locale"));
 	std::string locale_path(po_dir.string());
-#endif
+
 	if (fs::is_directory(locale_path)) {
 		setlocale(LC_ALL, "");
 		bindtextdomain("openscad", locale_path.c_str());

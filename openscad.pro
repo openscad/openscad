@@ -12,14 +12,6 @@
 #
 #   PREFIX defines the base installation folder
 #
-#   LOCALE_PREFIX can overwrite the location of the gettext message catalogs
-#
-#   For linux packages that want to install the localization files into
-#   a folder shared by all packages, specify the LOCALE_PREFIX which will
-#   force usage of the given folder.
-#   The default layout is created by: LOCALE_PREFIX=<prefix>/share/locale
-#   where <prefix> is the base installation folder.   
-#
 # Please see the 'Building' sections of the OpenSCAD user manual 
 # for updated tips & workarounds.
 #
@@ -490,14 +482,13 @@ isEmpty(PREFIX):PREFIX = /usr/local
 target.path = $$PREFIX/bin/
 INSTALLS += target
 
-!isEmpty(LOCALE_PREFIX): DEFINES += LOCALE_PREFIX=\'\"$$LOCALE_PREFIX\"\'
-isEmpty(LOCALE_PREFIX): LOCALE_PREFIX = $$PREFIX/share/openscad/locale
 
 # Run translation update scripts as last step after linking the target
 QMAKE_POST_LINK += $$PWD/scripts/translation-make.sh
 
 # Create install targets for the languages defined in LINGUAS
 LINGUAS = $$cat(locale/LINGUAS)
+LOCALE_PREFIX = $$PREFIX/share/openscad/locale
 for(language, LINGUAS) {
   catalog = locale/$$language/LC_MESSAGES/openscad.mo
   exists($$catalog) {

@@ -13,8 +13,8 @@ parser_yacc.h
 /tmp
 /OpenSCAD.app
 */#*#
-/po/*/*/*.mo
-/po/POTFILES
+/locale/*/*/*.mo
+/locale/POTFILES
 /nbproject
 /openscad
 /tests/openscad_nogui
