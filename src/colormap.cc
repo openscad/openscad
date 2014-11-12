@@ -194,7 +194,7 @@ ColorMap::colorscheme_set_t ColorMap::enumerateColorSchemes()
     RenderColorScheme *defaultColorScheme = new RenderColorScheme();
     result_set.insert(colorscheme_set_t::value_type(defaultColorScheme->index(),
 	    boost::shared_ptr<RenderColorScheme>(defaultColorScheme)));
-    enumerateColorSchemesInPath(result_set, PlatformUtils::resourcesPath());
+    enumerateColorSchemesInPath(result_set, PlatformUtils::resourceBasePath());
     enumerateColorSchemesInPath(result_set, PlatformUtils::userConfigPath());
     
     return result_set;

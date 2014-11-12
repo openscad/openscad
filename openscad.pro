@@ -497,16 +497,16 @@ isEmpty(LOCALE_PREFIX): LOCALE_PREFIX = $$PREFIX/share/openscad/locale
 QMAKE_POST_LINK += $$PWD/scripts/translation-make.sh
 
 # Create install targets for the languages defined in LINGUAS
-LINGUAS = $$cat(po/LINGUAS)
+LINGUAS = $$cat(locale/LINGUAS)
 for(language, LINGUAS) {
-  catalog = po/$$language/LC_MESSAGES/openscad.mo
+  catalog = locale/$$language/LC_MESSAGES/openscad.mo
   exists($$catalog) {
     translation_path = translation_$${language}.path
     translation_files = translation_$${language}.files
     translation_depends = translation_$${language}.depends
     $$translation_path = $$LOCALE_PREFIX/$$language/LC_MESSAGES/
     $$translation_files = $$catalog
-    $$translation_depends = po/$${language}.po
+    $$translation_depends = locale/$${language}.po
     INSTALLS += translation_$$language
   }
 }

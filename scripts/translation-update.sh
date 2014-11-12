@@ -11,9 +11,9 @@ updatepot()
      echo "cannot find file '$f' from POTFILES"
      exit 1
    fi
- done < po/POTFILES
+ done < locale/POTFILES
 
- grep ui_MainWindow.h po/POTFILES >/dev/null 2>/dev/null
+ grep ui_MainWindow.h locale/POTFILES >/dev/null 2>/dev/null
  if [ $? -ne 0 ] ; then
    echo "cannot find .../ui_xxxxx.h files. perhaps if you run make...?"
    exit 1
@@ -26,22 +26,22 @@ updatepot()
  OPTS=$OPTS' --default-domain=openscad'
  OPTS=$OPTS' --keyword=_'
  OPTS=$OPTS' --keyword=N_'
- OPTS=$OPTS' --files-from=./po/POTFILES'
- cmd="${GETTEXT_PATH}xgettext "$OPTS' -o ./po/openscad.pot'
+ OPTS=$OPTS' --files-from=./locale/POTFILES'
+ cmd="${GETTEXT_PATH}xgettext "$OPTS' -o ./locale/openscad.pot'
  echo $cmd
  $cmd
  if [ ! $? = 0 ]; then
   echo error running xgettext
   exit 1
  fi
- sed -e s/"CHARSET"/"UTF-8"/g ./po/openscad.pot > ./po/openscad.pot.new && mv ./po/openscad.pot.new ./po/openscad.pot
+ sed -e s/"CHARSET"/"UTF-8"/g ./locale/openscad.pot > ./locale/openscad.pot.new && mv ./locale/openscad.pot.new ./locale/openscad.pot
 }
 
 updatepo()
 {
- for LANGCODE in `cat ./po/LINGUAS | grep -v "#"`; do
+ for LANGCODE in `cat ./locale/LINGUAS | grep -v "#"`; do
   OPTS='--update --backup=t'
-  cmd="$GETTEXT_PATH"'msgmerge '$OPTS' ./po/'$LANGCODE'.po ./po/openscad.pot'
+  cmd="$GETTEXT_PATH"'msgmerge '$OPTS' ./locale/'$LANGCODE'.po ./locale/openscad.pot'
   echo $cmd
   $cmd
   if [ ! $? = 0 ]; then
@@ -53,10 +53,10 @@ updatepo()
 
 updatemo()
 {
- for LANGCODE in `cat po/LINGUAS | grep -v "#"`; do
-  mkdir -p ./po/$LANGCODE/LC_MESSAGES
+ for LANGCODE in `cat locale/LINGUAS | grep -v "#"`; do
+  mkdir -p ./locale/$LANGCODE/LC_MESSAGES
   OPTS='-c -v'
-  cmd="$GETTEXT_PATH"'msgfmt '$OPTS' -o ./po/'$LANGCODE'/LC_MESSAGES/openscad.mo ./po/'$LANGCODE'.po'
+  cmd="$GETTEXT_PATH"'msgfmt '$OPTS' -o ./locale/'$LANGCODE'/LC_MESSAGES/openscad.mo ./locale/'$LANGCODE'.po'
   echo $cmd
   $cmd
   if [ ! $? = 0 ]; then

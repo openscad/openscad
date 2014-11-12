@@ -13,7 +13,7 @@ TOPDIR="`dirname \"$SCRIPTDIR\"`"
 cd "$TOPDIR"
 
 echo "Generating POTFILES..."
-./scripts/generate-potfiles.sh > po/POTFILES
+./scripts/generate-potfiles.sh > locale/POTFILES
 
 echo "Updating translation files..."
 ./scripts/translation-update.sh

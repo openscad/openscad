@@ -1,6 +1,7 @@
 #include <algorithm>
 #include <QString>
 #include <QChar>
+#include "boosty.h"
 #include "scintillaeditor.h"
 #include <Qsci/qscicommandset.h>
 #include "Preferences.h"
@@ -254,7 +255,7 @@ ScintillaEditor::colorscheme_set_t ScintillaEditor::enumerateColorSchemes()
 {
     colorscheme_set_t result_set;
 
-    enumerateColorSchemesInPath(result_set, PlatformUtils::resourcesPath());
+    enumerateColorSchemesInPath(result_set, PlatformUtils::resourceBasePath());
     enumerateColorSchemesInPath(result_set, PlatformUtils::userConfigPath());
     
     return result_set;
