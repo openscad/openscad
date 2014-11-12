@@ -329,6 +329,7 @@ src/FontCache.h \
            src/system-gl.h \
            src/CsgInfo.h \
            \
+           src/Dock.h \
            src/AutoUpdater.h \
            src/launchingscreen.h \
            src/legacyeditor.h \
@@ -419,6 +420,7 @@ SOURCES += src/version_check.cc \
            src/openscad.cc \
            src/mainwin.cc \
            src/UIUtils.cc \
+           src/Dock.cc \
            src/FontListDialog.cc \
            src/launchingscreen.cc \
            src/legacyeditor.cc \
@@ -520,6 +522,10 @@ INSTALLS += libraries
 fonts.path = $$PREFIX/share/openscad/fonts/
 fonts.files = fonts/*
 INSTALLS += fonts
+
+colorschemes.path = $$PREFIX/share/openscad/color-schemes/
+colorschemes.files = color-schemes/*
+INSTALLS += colorschemes
 
 applications.path = $$PREFIX/share/applications
 applications.files = icons/openscad.desktop

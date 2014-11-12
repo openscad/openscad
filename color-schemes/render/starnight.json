@@ -1,0 +1,18 @@
+{
+    "name" : "Starnight",
+    "index" : 1300,
+    "show-in-gui" : true,
+
+    "colors" : {
+        "background" :         "#000000",
+        "opencsg-face-front" : "#ffffe0",
+        "opencsg-face-back" :  "#00ffff",
+        "cgal-face-front" :    "#ffffe0",
+        "cgal-face-back" :     "#00ffff",
+        "cgal-face-2d" :       "#9370db",
+        "cgal-edge-front" :    "#0000ff",
+        "cgal-edge-back" :     "#0000ff",
+        "cgal-edge-2d" :       "#ff00ff",
+        "crosshair" :          "#f0f0f0"
+    }
+}

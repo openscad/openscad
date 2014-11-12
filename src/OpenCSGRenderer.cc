@@ -58,16 +58,16 @@ OpenCSGRenderer::OpenCSGRenderer(CSGChain *root_chain, CSGChain *highlights_chai
 
 void OpenCSGRenderer::draw(bool /*showfaces*/, bool showedges) const
 {
+	GLint *shaderinfo = this->shaderinfo;
+	if (!shaderinfo[0]) shaderinfo = NULL;
 	if (this->root_chain) {
-		GLint *shaderinfo = this->shaderinfo;
-		if (!shaderinfo[0]) shaderinfo = NULL;
 		renderCSGChain(this->root_chain, showedges ? shaderinfo : NULL, false, false);
-		if (this->background_chain) {
-			renderCSGChain(this->background_chain, showedges ? shaderinfo : NULL, false, true);
-		}
-		if (this->highlights_chain) {
-			renderCSGChain(this->highlights_chain, showedges ? shaderinfo : NULL, true, false);
-		}
+	}
+	if (this->background_chain) {
+		renderCSGChain(this->background_chain, showedges ? shaderinfo : NULL, false, true);
+	}
+	if (this->highlights_chain) {
+		renderCSGChain(this->highlights_chain, showedges ? shaderinfo : NULL, true, false);
 	}
 }
 
@@ -152,5 +152,7 @@ BoundingBox OpenCSGRenderer::getBoundingBox() const
 {
 	BoundingBox bbox;
 	if (this->root_chain) bbox = this->root_chain->getBoundingBox();
+	if (this->background_chain) bbox.extend(this->background_chain->getBoundingBox());
+
 	return bbox;
 }

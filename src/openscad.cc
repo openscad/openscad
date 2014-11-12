@@ -56,19 +56,19 @@
 
 #include <sstream>
 
-#ifdef __APPLE__
-#include "AppleEvents.h"
-#ifdef OPENSCAD_DEPLOY
-  #include "SparkleAutoUpdater.h"
-#endif
-#endif
-
 #include "Camera.h"
 #include <boost/algorithm/string.hpp>
 #include <boost/program_options.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/foreach.hpp>
 #include "boosty.h"
+
+#ifdef __APPLE__
+#include "AppleEvents.h"
+#ifdef OPENSCAD_DEPLOY
+  #include "SparkleAutoUpdater.h"
+#endif
+#endif
 
 #ifdef _MSC_VER
 #define snprintf _snprintf
@@ -590,9 +590,9 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 #endif
 
 #if defined(OPENSCAD_DEPLOY) && defined(Q_OS_MAC)
-	AutoUpdater *updater = new SparkleAutoUpdater;
-	AutoUpdater::setUpdater(updater);
-	if (updater->automaticallyChecksForUpdates()) updater->checkForUpdates();
+//	AutoUpdater *updater = new SparkleAutoUpdater;
+//	AutoUpdater::setUpdater(updater);
+//	if (updater->automaticallyChecksForUpdates()) updater->checkForUpdates();
 #endif
 
 #if 0 /*** disabled by clifford wolf: adds rendering artefacts with OpenCSG ***/

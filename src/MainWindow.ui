@@ -289,7 +289,7 @@
    <addaction name="menuHelp"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
-  <widget class="QDockWidget" name="editorDock">
+  <widget class="Dock" name="editorDock">
    <attribute name="dockWidgetArea">
     <number>1</number>
    </attribute>
@@ -412,7 +412,7 @@
     </layout>
    </widget>
   </widget>
-  <widget class="QDockWidget" name="consoleDock">
+  <widget class="Dock" name="consoleDock">
    <attribute name="dockWidgetArea">
     <number>8</number>
    </attribute>
@@ -423,6 +423,12 @@
      </property>
      <item>
       <widget class="QTextEdit" name="console">
+       <property name="minimumSize">
+        <size>
+         <width>10</width>
+         <height>10</height>
+        </size>
+       </property>
        <property name="focusPolicy">
         <enum>Qt::ClickFocus</enum>
        </property>
@@ -1092,6 +1098,12 @@
    <class>QGLView</class>
    <extends>QWidget</extends>
    <header>QGLView.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>Dock</class>
+   <extends>QDockWidget</extends>
+   <header>Dock.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

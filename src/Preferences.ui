@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>852</width>
-    <height>550</height>
+    <height>554</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -27,7 +27,7 @@
     <item>
      <widget class="QStackedWidget" name="stackedWidget">
       <property name="currentIndex">
-       <number>3</number>
+       <number>4</number>
       </property>
       <widget class="QWidget" name="page3DView">
        <layout class="QVBoxLayout" name="verticalLayout_4">
@@ -54,43 +54,8 @@
                <bool>false</bool>
               </property>
               <property name="currentRow">
-               <number>0</number>
+               <number>-1</number>
               </property>
-              <item>
-               <property name="text">
-                <string>Cornfield</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>Metallic</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>Sunset</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>Starnight</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>BeforeDawn</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>Nature</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>DeepOcean</string>
-               </property>
-              </item>
              </widget>
             </item>
            </layout>
@@ -264,31 +229,6 @@
               <verstretch>0</verstretch>
              </sizepolicy>
             </property>
-            <item>
-             <property name="text">
-              <string>For Light Background</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>For Dark Background</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>Monokai</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>Solarized</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>Off</string>
-             </property>
-            </item>
            </widget>
           </item>
           <item>
@@ -547,8 +487,8 @@
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>832</width>
-               <height>420</height>
+               <width>100</width>
+               <height>30</height>
               </rect>
              </property>
              <layout class="QVBoxLayout" name="verticalLayout_10">
@@ -686,9 +626,16 @@
          </widget>
         </item>
         <item>
+         <widget class="QCheckBox" name="reorderCheckBox">
+          <property name="text">
+           <string>Enable docking of Editor and Console in different places</string>
+          </property>
+         </widget>
+        </item>
+        <item>
          <widget class="QCheckBox" name="undockCheckBox">
           <property name="text">
-           <string>Enable undocking of Editor and Console</string>
+           <string>Enable undocking of Editor and Console to separate windows</string>
           </property>
          </widget>
         </item>

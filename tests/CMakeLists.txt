@@ -1086,7 +1086,8 @@ list(APPEND CGALPNGTEST_3D_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/inclu
                            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/bad-stl-pcbvicebar.scad
                            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/bad-stl-tardis.scad
                            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/bad-stl-wing.scad
-                           ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/rotate_extrude-hole.scad)
+                           ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/rotate_extrude-hole.scad
+                           ${CMAKE_SOURCE_DIR}/../testdata/scad/experimental/tessellation-text-test.scad)
 
 list(APPEND CGALPNGTEST_FILES ${CGALPNGTEST_2D_FILES} ${CGALPNGTEST_3D_FILES})
 list(APPEND OPENCSGTEST_FILES ${CGALPNGTEST_FILES})
@@ -1197,6 +1198,7 @@ set_test_config(Heavy cgalpngtest_rotate_extrude-tests
 list(APPEND BUGS_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue584.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue591.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue666.scad
+                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue791.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue802.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue835.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue899.scad
@@ -1204,8 +1206,12 @@ list(APPEND BUGS_FILES ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue584.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue911.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue913.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue936.scad
+                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue945.scad
                        ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue964.scad
-                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue964b.scad)
+                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue964b.scad
+                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue990.scad
+                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue1004.scad
+                       ${CMAKE_SOURCE_DIR}/../testdata/scad/bugs/issue1005.scad)
 list(APPEND EXPORT3D_TEST_FILES ${BUGS_FILES})
 
 list(APPEND OPENCSGTEST_FILES ${BUGS_FILES})

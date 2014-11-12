@@ -5,6 +5,7 @@
 #include "boosty.h"
 
 namespace PlatformUtils {
+        extern const char *OPENSCAD_FOLDER_NAME;
 
 	void registerApplicationPath(const std::string &applicationpath);
 	std::string applicationPath();
@@ -13,6 +14,19 @@ namespace PlatformUtils {
         std::string resourceBasePath();
 	fs::path resourcePath(const std::string& resource);
 	std::string userLibraryPath();
+        
+        /**
+         * Base path where user configuration can be read and written to. On
+         * Linux this is the $XDG_CONFIG_HOME, on Windows the local AppData
+         * folder CSIDL_LOCAL_APPDATA.
+         * On success the returned path can be used directly as base folder
+         * as it already includes an OpenSCAD specific part.
+         * 
+         * @return absolute path to the writable configuration folder or
+         * an empty string if the config path does not exist.
+         */
+        std::string userConfigPath();
+
 	bool createUserLibraryPath();
 	std::string backupPath();
 	bool createBackupPath();

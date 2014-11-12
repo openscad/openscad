@@ -13,6 +13,8 @@ namespace {
 	std::string applicationpath;
 }
 
+const char *PlatformUtils::OPENSCAD_FOLDER_NAME = "OpenSCAD";
+
 void PlatformUtils::registerApplicationPath(const std::string &apppath)
 {
 	applicationpath = apppath;
@@ -51,7 +53,7 @@ std::string PlatformUtils::userLibraryPath()
 		//PRINTB("path size %i",boosty::stringy(path).size());
 		//PRINTB("lib path found: [%s]", path );
 		if (path.empty()) return "";
-		path /= "OpenSCAD";
+		path /= OPENSCAD_FOLDER_NAME;
 		path /= "libraries";
 		//PRINTB("Appended path %s", path );
 		//PRINTB("Exists: %i", fs::exists(path) );
@@ -70,7 +72,7 @@ std::string PlatformUtils::backupPath()
 		if (pathstr=="") return "";
 		path = boosty::canonical(fs::path( pathstr ));
 		if (path.empty()) return "";
-		path /= "OpenSCAD";
+		path /= OPENSCAD_FOLDER_NAME;
 		path /= "backups";
 	} catch (const fs::filesystem_error& ex) {
 		PRINTB("ERROR: %s",ex.what());
@@ -100,31 +102,32 @@ std::string PlatformUtils::resourceBasePath()
 {
 	fs::path resourcedir(applicationPath());
 	fs::path tmpdir;
+#ifndef WIN32
 #ifdef __APPLE__
-	// Resources can be bundled on Mac. If not, fall back to development layout
-	bool isbundle = is_directory(resourcedir / ".." / "Resources");
-	if (isbundle) {
-		resourcedir /= "../Resources";
-		// Fall back to dev layout
-		if (!is_directory(resourcedir / "libraries")) resourcedir /= "../../..";
-	}
-#elif !defined(WIN32)
-	tmpdir = resourcedir / "../share/openscad";
-	if (is_directory(tmpdir / "libraries")) {
+	const char *searchpath[] = {
+	    "../Resources", 	// Resources can be bundled on Mac.
+	    "../../..",       // Dev location
+	    "..",          // Test location
+	    NULL
+	};
+#else
+	const char *searchpath[] = {
+	    "../share/openscad",
+	    "../../share/openscad",
+	    ".",
+	    "..",
+	    "../..",
+	    NULL
+	};
+#endif	
+	for (int a = 0;searchpath[a] != NULL;a++) {
+	    tmpdir = resourcedir / searchpath[a];
+	    if (is_directory(tmpdir / "libraries")) {
 		resourcedir = tmpdir;
+		break;
+	    }
 	}
-	else {
-		tmpdir = resourcedir / "../../share/openscad";
-		if (is_directory(tmpdir / "libraries")) {
-			resourcedir = tmpdir;
-		} else {
-			tmpdir = resourcedir / "../..";
-			if (is_directory(tmpdir / "libraries")) {
-				resourcedir = tmpdir;
-			}
-		}
-	}
-#endif
+#endif // !WIN32
 	// resourcedir defaults to applicationPath
 	return boosty::stringy(boosty::canonical(resourcedir));
 }

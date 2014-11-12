@@ -4,7 +4,6 @@
 #include <QMainWindow>
 #include <QSettings>
 #include "ui_Preferences.h"
-#include "colormap.h"
 
 class Preferences : public QMainWindow, public Ui::Preferences
 {
@@ -12,9 +11,12 @@ class Preferences : public QMainWindow, public Ui::Preferences
 
 public:
 	~Preferences();
-	static Preferences *inst() { if (!instance) instance = new Preferences(); return instance; }
+        
+        static void create(QWidget *parent, QStringList colorSchemes);
+	static Preferences *inst();
 
 	QVariant getValue(const QString &key) const;
+        void init();
 	void apply() const;
 
 public slots:
@@ -23,7 +25,7 @@ public slots:
 	void on_colorSchemeChooser_itemSelectionChanged();
 	void on_fontChooser_activated(const QString &);
 	void on_fontSize_editTextChanged(const QString &);
-	void on_syntaxHighlight_currentIndexChanged(const QString &);
+	void on_syntaxHighlight_activated(const QString &);
 	void on_openCSGWarningBox_toggled(bool);
 	void on_enableOpenCSGBox_toggled(bool);
 	void on_cgalCacheSizeEdit_textChanged(const QString &);
@@ -35,6 +37,7 @@ public slots:
 	void on_updateCheckBox_toggled(bool);
 	void on_snapshotCheckBox_toggled(bool);
 	void on_mdiCheckBox_toggled(bool);
+	void on_reorderCheckBox_toggled(bool);
 	void on_undockCheckBox_toggled(bool);
 	void on_checkNowButton_clicked();
 	void on_launcherBox_toggled(bool);
@@ -43,11 +46,12 @@ public slots:
 signals:
 	void requestRedraw() const;
 	void updateMdiMode(bool mdi) const;
-	void updateUndockMode(bool mdi) const;
+	void updateUndockMode(bool undockMode) const;
+	void updateReorderMode(bool undockMode) const;
 	void fontChanged(const QString &family, uint size) const;
 	void colorSchemeChanged(const QString &scheme) const;
 	void openCSGSettingsChanged() const;
-	void syntaxHighlightChanged(const QString &s);
+	void syntaxHighlightChanged(const QString &s) const;
 	void editorTypeChanged(const QString &type);
 
 private:

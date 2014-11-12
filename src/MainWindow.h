@@ -68,6 +68,9 @@ public:
 	QAction *actionRecentFile[UIUtils::maxRecentFiles];
         QMap<QString, QString> knownFileExtensions;
 
+        QWidget *editorDockTitleWidget;
+        QWidget *consoleDockTitleWidget;
+        
 	QString editortype;	
 	bool useScintilla;
 
@@ -82,6 +85,7 @@ private slots:
 	void updateTVal();
         void updateMdiMode(bool mdi);
         void updateUndockMode(bool undockMode);
+        void updateReorderMode(bool reorderMode);
 	void setFileName(const QString &filename);
 	void setFont(const QString &family, uint size);
 	void setColorScheme(const QString &cs);
@@ -231,20 +235,22 @@ public slots:
 	void checkAutoReload();
 	void waitAfterReload();
 	void autoReloadSet(bool);
+	void setContentsChanged();
 
 private:
 	static void report_func(const class AbstractNode*, void *vp, int mark);
 	static bool mdiMode;
 	static bool undockMode;
+	static bool reorderMode;
 	static QSet<MainWindow*> *windows;
 
 	char const * afterCompileSlot;
 	bool procevents;
-        bool isClosing;
 	class QTemporaryFile *tempFile;
 	class ProgressWidget *progresswidget;
 	class CGALWorker *cgalworker;
 	QMutex consolemutex;
+	bool contentschanged; // Set if the source code has changes since the last render (F6)
 
 signals:
 	void highlightError(int);
