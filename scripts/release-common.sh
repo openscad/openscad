@@ -392,7 +392,7 @@ fi
 if [ -n $TRANSLATIONDIR ]; then
   echo $TRANSLATIONDIR
   mkdir -p $TRANSLATIONDIR
-  cd po && tar cvf $OPENSCADDIR/translations.tar */*/*.mo && cd $OPENSCADDIR
+  cd locale && tar cvf $OPENSCADDIR/translations.tar */*/*.mo && cd $OPENSCADDIR
   cd $TRANSLATIONDIR && tar xvf $OPENSCADDIR/translations.tar && cd $OPENSCADDIR
   rm -f translations.tar
 fi
