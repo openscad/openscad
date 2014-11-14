@@ -468,10 +468,10 @@ void export_dxf(const Polygon2d &poly, std::ostream &output)
 						 << "0\n"
 						 << " 10\n"
 						 << x1 << "\n"
-						 << " 11\n"
-						 << x2 << "\n"
 						 << " 20\n"
 						 << y1 << "\n"
+						 << " 11\n"
+						 << x2 << "\n"
 						 << " 21\n"
 						 << y2 << "\n";
 		}
