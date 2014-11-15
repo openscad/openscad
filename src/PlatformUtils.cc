@@ -11,6 +11,7 @@ extern std::vector<std::string> librarypath;
 extern std::vector<std::string> fontpath;
 
 namespace {
+	bool path_initialized = false;
 	std::string applicationpath;
 	std::string resourcespath;
 }
@@ -66,10 +67,14 @@ void PlatformUtils::registerApplicationPath(const std::string &apppath)
 {
 	applicationpath = apppath;
 	resourcespath = lookupResourcesPath();
+	path_initialized = true;
 }
 
 std::string PlatformUtils::applicationPath()
 {
+	if (!path_initialized) {
+	    throw std::runtime_error("PlatformUtils::applicationPath(): application path not initialized!");
+	}
 	return applicationpath;
 }
 
@@ -148,7 +153,10 @@ bool PlatformUtils::createBackupPath()
 // This is the built-in read-only resources path
 std::string PlatformUtils::resourcesPath()
 {
-    return resourcespath;
+	if (!path_initialized) {
+	    throw std::runtime_error("PlatformUtils::resourcesPath(): application path not initialized!");
+	}
+	return resourcespath;
 }
 
 int PlatformUtils::setenv(const char *name, const char *value, int overwrite)
