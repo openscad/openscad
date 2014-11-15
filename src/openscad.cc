@@ -85,6 +85,7 @@ using boost::is_any_of;
 
 std::string commandline_commands;
 std::string currentdir;
+static bool arg_info = false;
 static std::string arg_colorscheme;
 
 class Echostream : public std::ofstream
@@ -286,6 +287,10 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 #ifdef ENABLE_CGAL
 	GeometryEvaluator geomevaluator(tree);
 #endif
+	if (arg_info) {
+	    info();
+	}
+	
 	const char *stl_output_file = NULL;
 	const char *off_output_file = NULL;
 	const char *amf_output_file = NULL;
@@ -718,7 +723,7 @@ int main(int argc, char **argv)
 	}
 	if (vm.count("help")) help(argv[0]);
 	if (vm.count("version")) version();
-	if (vm.count("info")) info();
+	if (vm.count("info")) arg_info = true;
 
 	Render::type renderer = Render::OPENCSG;
 	if (vm.count("preview")) {
@@ -801,7 +806,7 @@ int main(int argc, char **argv)
 		if (!inputFiles.size()) help(argv[0]);
 	}
 
-	if (cmdlinemode) {
+	if (arg_info || cmdlinemode) {
 		rc = cmdline(deps_output_file, inputFiles[0], camera, output_file, original_path, renderer, argc, argv);
 	}
 	else if (QtUseGUI()) {
