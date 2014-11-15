@@ -1,15 +1,11 @@
 #include "colormap.h"
-#include <boost/lexical_cast.hpp>
-#include <boost/assign/list_of.hpp>
 #include "boosty.h"
 #include "printutils.h"
 #include "PlatformUtils.h"
 
-using namespace boost::assign; // bring map_list_of() into scope
-
 static const char *DEFAULT_COLOR_SCHEME_NAME = "Cornfield";
 
-RenderColorScheme::RenderColorScheme() : path("")
+RenderColorScheme::RenderColorScheme() : _path("")
 {
 	_name = DEFAULT_COLOR_SCHEME_NAME;
 	_index = 1000;
@@ -27,7 +23,7 @@ RenderColorScheme::RenderColorScheme() : path("")
 	_color_scheme.insert(ColorScheme::value_type(CROSSHAIR_COLOR, Color4f(0x80, 0x00, 0x00)));
 }
 
-RenderColorScheme::RenderColorScheme(fs::path path) : path(path)
+RenderColorScheme::RenderColorScheme(fs::path path) : _path(path)
 {
     try {
 	boost::property_tree::read_json(boosty::stringy(path).c_str(), pt);
@@ -47,6 +43,7 @@ RenderColorScheme::RenderColorScheme(fs::path path) : path(path)
 	addColor(CROSSHAIR_COLOR, "crosshair");
     } catch (const std::exception & e) {
 	PRINTB("Error reading color scheme file '%s': %s", path.c_str() % e.what());
+	_error = e.what();
 	_name = "";
 	_index = 0;
 	_show_in_gui = false;
@@ -75,6 +72,16 @@ int RenderColorScheme::index() const
 bool RenderColorScheme::showInGui() const
 {
     return _show_in_gui;
+}
+
+std::string RenderColorScheme::path() const
+{
+    return _path.string();
+}
+
+std::string RenderColorScheme::error() const
+{
+    return _error;
 }
 
 ColorScheme & RenderColorScheme::colorScheme()
@@ -116,6 +123,8 @@ ColorMap *ColorMap::inst(bool erase)
 ColorMap::ColorMap()
 {
     colorSchemeSet = enumerateColorSchemes();
+
+    dump();
 }
 
 ColorMap::~ColorMap()
@@ -139,11 +148,33 @@ const ColorScheme *ColorMap::findColorScheme(const std::string &name) const
     return NULL;
 }
 
+void ColorMap::dump() const
+{
+    PRINTD("Listing available color schemes...");
+    
+    std::list<std::string> names = colorSchemeNames();
+    unsigned int length = 0;
+    for (std::list<std::string>::const_iterator it = names.begin();it != names.end();it++) {
+	length = (*it).length() > length ? (*it).length() : length;
+    }
+
+    for (colorscheme_set_t::const_iterator it = colorSchemeSet.begin();it != colorSchemeSet.end();it++) {
+	const RenderColorScheme *cs = (*it).second.get();
+	const char gui = cs->showInGui() ? 'G' : '-';
+	if (cs->path().empty()) {
+	    PRINTDB("%6d:%c: %s (built-in)", cs->index() % gui % boost::io::group(std::setw(length), cs->name()));
+	} else {
+	    PRINTDB("%6d:%c: %s from %s", cs->index() % gui % boost::io::group(std::setw(length), cs->name()) % cs->path());
+	}
+    }
+    PRINTD("done.");
+}
+
 std::list<std::string> ColorMap::colorSchemeNames(bool guiOnly) const
 {
     std::list<std::string> colorSchemeNames;
     for (colorscheme_set_t::const_iterator it = colorSchemeSet.begin();it != colorSchemeSet.end();it++) {
-	RenderColorScheme *scheme = (*it).second.get();
+	const RenderColorScheme *scheme = (*it).second.get();
 	if (guiOnly && !scheme->showInGui()) {
 	    continue;
 	}
@@ -160,9 +191,11 @@ Color4f ColorMap::getColor(const ColorScheme &cs, const RenderColor rc)
 	return Color4f(0, 0, 0, 127);
 }
 
-void ColorMap::enumerateColorSchemesInPath(colorscheme_set_t &result_set, const fs::path path)
+void ColorMap::enumerateColorSchemesInPath(colorscheme_set_t &result_set, const fs::path basePath)
 {
-    const fs::path color_schemes = path / "color-schemes" / "render";
+    const fs::path color_schemes = basePath / "color-schemes" / "render";
+
+    PRINTDB("Enumerating color schemes from '%s'", color_schemes.string().c_str());
     
     fs::directory_iterator end_iter;
     
@@ -180,7 +213,10 @@ void ColorMap::enumerateColorSchemesInPath(colorscheme_set_t &result_set, const 
 	    RenderColorScheme *colorScheme = new RenderColorScheme(path);
 	    if (colorScheme->valid() && (findColorScheme(colorScheme->name()) == 0)) {
 		result_set.insert(colorscheme_set_t::value_type(colorScheme->index(), boost::shared_ptr<RenderColorScheme>(colorScheme)));
+		PRINTDB("Found file '%s' with color scheme '%s' and index %d",
+			colorScheme->path() % colorScheme->name() % colorScheme->index());
 	    } else {
+		PRINTDB("Invalid file '%s': %s", colorScheme->path() % colorScheme->error());
 		delete colorScheme;
 	    }
 	}
