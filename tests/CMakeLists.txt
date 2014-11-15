@@ -1136,7 +1136,7 @@ disable_tests(
 
 # 2D tests
 list(APPEND FILES_2D ${FEATURES_2D_FILES} ${SCAD_DXF_FILES} ${EXAMPLE_2D_FILES} ${EXPERIMENTAL_TEXT_FILES})
-list(APPEND ALL_2D_FILES ${FILES_2D_FILES})
+list(APPEND ALL_2D_FILES ${FILES_2D})
 
 # FIXME: This test illustrates a weakness in child() combined with modifiers.
 # Reenable it when this is improved
