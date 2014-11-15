@@ -77,13 +77,15 @@
 namespace po = boost::program_options;
 namespace fs = boost::filesystem;
 namespace Render { enum type { GEOMETRY, CGAL, OPENCSG, THROWNTOGETHER }; };
-std::string commandline_commands;
-std::string currentdir;
 using std::string;
 using std::vector;
 using boost::lexical_cast;
 using boost::bad_lexical_cast;
 using boost::is_any_of;
+
+std::string commandline_commands;
+std::string currentdir;
+static std::string arg_colorscheme;
 
 class Echostream : public std::ofstream
 {
@@ -248,6 +250,28 @@ static bool checkAndExport(shared_ptr<const Geometry> root_geom, unsigned nd,
 	return true;
 }
 
+void set_render_color_scheme(const std::string color_scheme, const bool exit_if_not_found)
+{
+	if (color_scheme.empty()) {
+		return;
+	}
+	
+	if (ColorMap::inst()->findColorScheme(color_scheme)) {
+		RenderSettings::inst()->colorscheme = color_scheme;
+		return;
+	}
+		
+	if (exit_if_not_found) {
+		PRINTB("Unknown color scheme '%s'. Valid schemes:", color_scheme);
+		BOOST_FOREACH (const std::string &name, ColorMap::inst()->colorSchemeNames()) {
+			PRINT(name);
+		}
+		exit(1);
+	} else {
+		PRINTB("Unknown color scheme '%s', using default '%s'.", arg_colorscheme % ColorMap::inst()->defaultColorSchemeName());
+	}
+}
+
 int cmdline(const char *deps_output_file, const std::string &filename, Camera &camera, const char *output_file, const fs::path &original_path, Render::type renderer, int argc, char ** argv )
 {
 #ifdef OPENSCAD_QTGUI
@@ -291,6 +315,8 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 		return 1;
 	}
 
+	set_render_color_scheme(arg_colorscheme, true);
+	
 	// Top context - this context only holds builtins
 	ModuleContext top_ctx;
 	top_ctx.registerBuiltin();
@@ -570,6 +596,9 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 	f.setSamples(4);
 	QGLFormat::setDefaultFormat(f);
 #endif
+	
+	set_render_color_scheme(arg_colorscheme, false);
+	
 	bool noInputFiles = false;
 	if (!inputFiles.size()) {
 		noInputFiles = true;
@@ -755,16 +784,7 @@ int main(int argc, char **argv)
 #endif
 
 	if (vm.count("colorscheme")) {
-		std::string colorscheme = vm["colorscheme"].as<string>();
-		if (ColorMap::inst()->findColorScheme(colorscheme)) {
-			RenderSettings::inst()->colorscheme = colorscheme;
-		} else {
-			PRINT("Unknown color scheme. Valid schemes:");
-			BOOST_FOREACH (const std::string &name, ColorMap::inst()->colorSchemeNames()) {
-				PRINT(name);
-			}
-			exit(1);
-		}
+		arg_colorscheme = vm["colorscheme"].as<string>();
 	}
 
 	currentdir = boosty::stringy(fs::current_path());
