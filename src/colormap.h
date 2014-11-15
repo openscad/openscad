@@ -30,10 +30,11 @@ typedef std::map<RenderColor, Color4f> ColorScheme;
 class RenderColorScheme
 {
 private:
-        const fs::path path;
+        const fs::path _path;
         
         boost::property_tree::ptree pt;
         std::string _name;
+        std::string _error;
         int _index;
         bool _show_in_gui;
         
@@ -58,6 +59,8 @@ public:
         const boost::property_tree::ptree & propertyTree() const;
 
 private:
+        std::string path() const;
+        std::string error() const;
         void addColor(RenderColor colorKey, std::string key);
         
         friend class ColorMap;
@@ -70,6 +73,7 @@ class ColorMap
 public:
 	static ColorMap *inst(bool erase = false);
 
+	const char * defaultColorSchemeName() const;
 	const ColorScheme & defaultColorScheme() const;
 	const ColorScheme *findColorScheme(const std::string &name) const;
 	std::list<std::string> colorSchemeNames(bool guiOnly = false) const;
@@ -79,6 +83,7 @@ public:
 private:
 	ColorMap();
 	virtual ~ColorMap();
+        void dump() const;
         colorscheme_set_t enumerateColorSchemes();
         void enumerateColorSchemesInPath(colorscheme_set_t &result_set, const fs::path path);
         colorscheme_set_t colorSchemeSet;
