@@ -12,13 +12,60 @@ extern std::vector<std::string> fontpath;
 
 namespace {
 	std::string applicationpath;
+	std::string resourcespath;
 }
 
 const char *PlatformUtils::OPENSCAD_FOLDER_NAME = "OpenSCAD";
 
+static std::string lookupResourcesPath()
+{
+	fs::path resourcedir(applicationpath);
+	PRINTDB("Looking up resource folder with application path '%s'", resourcedir.c_str());
+	
+#ifndef WIN32
+#ifdef __APPLE__
+	const char *searchpath[] = {
+	    "../Resources", 	// Resources can be bundled on Mac.
+	    "../../..",       // Dev location
+	    "..",          // Test location
+	    NULL
+	};
+#else
+	const char *searchpath[] = {
+	    "../share/openscad",
+	    "../../share/openscad",
+	    ".",
+	    "..",
+	    "../..",
+	    NULL
+	};
+#endif	
+
+	fs::path tmpdir;
+	for (int a = 0;searchpath[a] != NULL;a++) {
+	    tmpdir = resourcedir / searchpath[a];
+	    
+	    const fs::path checkdir = tmpdir / "libraries";
+	    PRINTDB("Checking '%s'", checkdir.c_str());
+
+	    if (is_directory(checkdir)) {
+		resourcedir = tmpdir;
+		PRINTDB("Found resource folder '%s'", tmpdir.c_str());
+		break;
+	    }
+	}
+#endif // !WIN32
+
+	// resourcedir defaults to applicationPath
+	std::string result = boosty::stringy(boosty::canonical(resourcedir));
+	PRINTDB("Using resource folder '%s'", result);
+	return result;
+}
+
 void PlatformUtils::registerApplicationPath(const std::string &apppath)
 {
 	applicationpath = apppath;
+	resourcespath = lookupResourcesPath();
 }
 
 std::string PlatformUtils::applicationPath()
@@ -101,36 +148,7 @@ bool PlatformUtils::createBackupPath()
 // This is the built-in read-only resources path
 std::string PlatformUtils::resourcesPath()
 {
-	fs::path resourcedir(applicationPath());
-	fs::path tmpdir;
-#ifndef WIN32
-#ifdef __APPLE__
-	const char *searchpath[] = {
-	    "../Resources", 	// Resources can be bundled on Mac.
-	    "../../..",       // Dev location
-	    "..",          // Test location
-	    NULL
-	};
-#else
-	const char *searchpath[] = {
-	    "../share/openscad",
-	    "../../share/openscad",
-	    ".",
-	    "..",
-	    "../..",
-	    NULL
-	};
-#endif	
-	for (int a = 0;searchpath[a] != NULL;a++) {
-	    tmpdir = resourcedir / searchpath[a];
-	    if (is_directory(tmpdir / "libraries")) {
-		resourcedir = tmpdir;
-		break;
-	    }
-	}
-#endif // !WIN32
-	// resourcedir defaults to applicationPath
-	return boosty::stringy(boosty::canonical(resourcedir));
+    return resourcespath;
 }
 
 int PlatformUtils::setenv(const char *name, const char *value, int overwrite)
