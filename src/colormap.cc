@@ -131,6 +131,11 @@ ColorMap::~ColorMap()
 {
 }
 
+const char * ColorMap::defaultColorSchemeName() const
+{
+    return DEFAULT_COLOR_SCHEME_NAME;
+}
+
 const ColorScheme &ColorMap::defaultColorScheme() const
 {
     return *findColorScheme(DEFAULT_COLOR_SCHEME_NAME);
