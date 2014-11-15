@@ -1346,7 +1346,7 @@ set_test_config(Bugs offpngtest_polyhedron-tests
                      offpngtest_bad-stl-tardis
                      offpngtest_bad-stl-wing)
 
-add_cmdline_test(monotonepngtest EXE ${OPENSCAD_BINPATH} ARGS --colorscheme=Monotone --enable=text --render -o SUFFIX png FILES ${EXPORT3D_TEST_FILES})
+add_cmdline_test(monotonepngtest EXE ${OPENSCAD_BINPATH} ARGS --debug=colormap --colorscheme=Monotone --enable=text --render -o SUFFIX png FILES ${EXPORT3D_TEST_FILES})
 add_cmdline_test(stlpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOURCE_DIR}/export_import_pngtest.py ARGS --openscad=${OPENSCAD_BINPATH} --format=STL --render=cgal EXPECTEDDIR monotonepngtest SUFFIX png FILES ${EXPORT3D_TEST_FILES})
 add_cmdline_test(offpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOURCE_DIR}/export_import_pngtest.py ARGS --openscad=${OPENSCAD_BINPATH} --format=OFF --render=cgal EXPECTEDDIR monotonepngtest SUFFIX png FILES ${EXPORT3D_TEST_FILES})
 add_cmdline_test(dxfpngtest EXE ${PYTHON_EXECUTABLE} SCRIPT ${CMAKE_SOURCE_DIR}/export_import_pngtest.py ARGS --openscad=${OPENSCAD_BINPATH} --format=DXF --render=cgal EXPECTEDDIR cgalpngtest SUFFIX png FILES ${ALL_2D_FILES})
@@ -1462,27 +1462,27 @@ add_cmdline_test(openscad-cameyeortho-viewall EXE ${OPENSCAD_BINPATH}
 
 # Colorscheme tests
 add_cmdline_test(openscad-colorscheme-cornfield EXE ${OPENSCAD_BINPATH}
-                 ARGS --colorscheme=Cornfield -o 
+                 ARGS --debug=colormap --colorscheme=Cornfield -o 
                  SUFFIX png 
                  FILES ${CMAKE_SOURCE_DIR}/../examples/Basics/difference_cube.scad)
 add_cmdline_test(openscad-colorscheme-metallic EXE ${OPENSCAD_BINPATH}
-                 ARGS --colorscheme=Metallic -o 
+                 ARGS --debug=colormap --colorscheme=Metallic -o 
                  SUFFIX png 
                  FILES ${CMAKE_SOURCE_DIR}/../examples/Basics/difference_cube.scad)
 add_cmdline_test(openscad-colorscheme-metallic-render EXE ${OPENSCAD_BINPATH}
-                 ARGS --colorscheme=Metallic --render -o 
+                 ARGS --debug=colormap --colorscheme=Metallic --render -o 
                  SUFFIX png 
                  FILES ${CMAKE_SOURCE_DIR}/../examples/Basics/difference_cube.scad)
 add_cmdline_test(openscad-colorscheme-sunset EXE ${OPENSCAD_BINPATH}
-                 ARGS --colorscheme=Sunset -o 
+                 ARGS --debug=colormap --colorscheme=Sunset -o 
                  SUFFIX png 
                  FILES ${CMAKE_SOURCE_DIR}/../examples/Basics/difference_cube.scad)
 add_cmdline_test(openscad-colorscheme-starnight EXE ${OPENSCAD_BINPATH}
-                 ARGS --colorscheme=Starnight -o 
+                 ARGS --debug=colormap --colorscheme=Starnight -o 
                  SUFFIX png 
                  FILES ${CMAKE_SOURCE_DIR}/../examples/Basics/difference_cube.scad)
 add_cmdline_test(openscad-colorscheme-monotone EXE ${OPENSCAD_BINPATH}
-                 ARGS --colorscheme=Monotone -o 
+                 ARGS --debug=colormap --colorscheme=Monotone -o 
                  SUFFIX png 
                  FILES ${CMAKE_SOURCE_DIR}/../examples/Basics/difference_cube.scad)
 
