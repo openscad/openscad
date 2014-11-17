@@ -71,6 +71,7 @@ void ModuleContext::initializeModule(const class Module &module)
 	BOOST_FOREACH(const Assignment &ass, module.scope.assignments) {
 		this->set_variable(ass.first, ass.second->evaluate(this));
 	}
+
 // Experimental code. See issue #399
 //	evaluateAssignments(module.scope.assignments);
 }
@@ -130,7 +131,7 @@ Value ModuleContext::evaluate_function(const std::string &name, const EvalContex
 	return Context::evaluate_function(name, evalctx);
 }
 
-AbstractNode *ModuleContext::instantiate_module(const ModuleInstantiation &inst, const EvalContext *evalctx) const
+AbstractNode *ModuleContext::instantiate_module(const ModuleInstantiation &inst, EvalContext *evalctx) const
 {
 	const AbstractModule *foundm = this->findLocalModule(inst.name());
 	if (foundm) return foundm->instantiate(this, &inst, evalctx);
@@ -207,7 +208,7 @@ Value FileContext::evaluate_function(const std::string &name, const EvalContext 
 	return ModuleContext::evaluate_function(name, evalctx);
 }
 
-AbstractNode *FileContext::instantiate_module(const ModuleInstantiation &inst, const EvalContext *evalctx) const
+AbstractNode *FileContext::instantiate_module(const ModuleInstantiation &inst, EvalContext *evalctx) const
 {
 	const AbstractModule *foundm = this->findLocalModule(inst.name());
 	if (foundm) return foundm->instantiate(this, &inst, evalctx);

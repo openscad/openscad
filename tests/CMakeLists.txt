@@ -1046,6 +1046,7 @@ list(APPEND ECHO_FILES ${FUNCTION_FILES}
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/value-reassignment-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/value-reassignment-tests2.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/variable-scope-tests.scad
+            ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/scope-assignment-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/lookup-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/expression-shortcircuit-tests.scad
             ${CMAKE_SOURCE_DIR}/../testdata/scad/misc/parent_module-tests.scad

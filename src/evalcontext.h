@@ -12,8 +12,7 @@ public:
 	typedef std::vector<class ModuleInstantiation *> InstanceList;
 
 	EvalContext(const Context *parent, 
-							const AssignmentList &args, const class LocalScope *const scope = NULL)
-		: Context(parent), eval_arguments(args), scope(scope) {}
+							const AssignmentList &args, const class LocalScope *const scope = NULL);
 	virtual ~EvalContext() {}
 
 	size_t numArgs() const { return this->eval_arguments.size(); }
@@ -22,6 +21,8 @@ public:
 
 	size_t numChildren() const;
 	ModuleInstantiation *getChild(size_t i) const;
+
+	void applyScope();
 
 #ifdef DEBUG
 	virtual std::string dump(const class AbstractModule *mod, const ModuleInstantiation *inst);

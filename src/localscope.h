@@ -11,7 +11,7 @@ public:
 
 	size_t numElements() const { return assignments.size() + children.size(); }
 	std::string dump(const std::string &indent) const;
-	std::vector<class AbstractNode*> instantiateChildren(const class Context *evalctx, class FileContext *filectx = NULL) const;
+	std::vector<class AbstractNode*> instantiateChildren(const class Context *evalctx) const;
 	void addChild(ModuleInstantiation *ch);
 
 	AssignmentList assignments;

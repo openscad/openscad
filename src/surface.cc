@@ -52,7 +52,7 @@ class SurfaceModule : public AbstractModule
 {
 public:
 	SurfaceModule() { }
-	virtual AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const;
+	virtual AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const;
 };
 
 typedef boost::unordered_map<std::pair<int,int>,double> img_data_t;
@@ -80,7 +80,7 @@ private:
 	img_data_t read_png_or_dat(std::string filename) const;
 };
 
-AbstractNode *SurfaceModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const
+AbstractNode *SurfaceModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const
 {
 	SurfaceNode *node = new SurfaceNode(inst);
 	node->center = false;
