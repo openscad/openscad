@@ -625,13 +625,14 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 	}
 
 	MainWindow *mainwin;
-#ifdef ENABLE_MDI
-	BOOST_FOREACH(const string &infile, inputFiles) {
-		mainwin = new MainWindow(assemblePath(original_path, infile));
+	bool isMdi = settings.value("advanced/mdi", true).toBool();
+	if (isMdi) {
+	    BOOST_FOREACH(const string &infile, inputFiles) {
+		    mainwin = new MainWindow(assemblePath(original_path, infile));
+	    }
+	} else {
+	    mainwin = new MainWindow(assemblePath(original_path, inputFiles[0]));
 	}
-#else
-	mainwin = new MainWindow(assemblePath(original_path, inputFiles[0]));
-#endif
 
 	app.connect(&app, SIGNAL(lastWindowClosed()), &app, SLOT(quit()));
 	int rc = app.exec();
@@ -782,11 +783,6 @@ int main(int argc, char **argv)
 	if (vm.count("input-file"))	{
 		inputFiles = vm["input-file"].as<vector<string> >();
 	}
-#ifndef ENABLE_MDI
-	if (inputFiles.size() > 1) {
-		help(argv[0]);
-	}
-#endif
 
 	if (vm.count("colorscheme")) {
 		arg_colorscheme = vm["colorscheme"].as<string>();
@@ -807,6 +803,9 @@ int main(int argc, char **argv)
 	}
 
 	if (arg_info || cmdlinemode) {
+		if (inputFiles.size() > 1) {
+			help(argv[0]);
+		}
 		rc = cmdline(deps_output_file, inputFiles[0], camera, output_file, original_path, renderer, argc, argv);
 	}
 	else if (QtUseGUI()) {

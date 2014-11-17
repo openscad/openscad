@@ -144,6 +144,7 @@ void Preferences::init() {
 Preferences::~Preferences()
 {
 	removeDefaultSettings();
+	instance = NULL;
 }
 
 /**
@@ -501,15 +502,19 @@ void Preferences::apply() const
 	emit syntaxHighlightChanged(getValue("editor/syntaxhighlight").toString());
 }
 
-void Preferences::create(QWidget *parent, QStringList colorSchemes)
+void Preferences::create(QStringList colorSchemes)
 {
+    if (instance != NULL) {
+	return;
+    }
+
     std::list<std::string> names = ColorMap::inst()->colorSchemeNames(true);
     QStringList renderColorSchemes;
     foreach (std::string name, names) {
 	renderColorSchemes << name.c_str();
     }
     
-    instance = new Preferences(parent);
+    instance = new Preferences();
     instance->syntaxHighlight->clear();
     instance->syntaxHighlight->addItems(colorSchemes);
     instance->colorSchemeChooser->clear();
