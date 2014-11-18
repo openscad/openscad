@@ -36,6 +36,7 @@
 #include "export.h"
 #include "builtin.h"
 #include "Tree.h"
+#include "PlatformUtils.h"
 
 #ifndef _MSC_VER
 #include <getopt.h>
@@ -78,8 +79,10 @@ int main(int argc, char **argv)
 
 	currentdir = boosty::stringy( fs::current_path() );
 
-	PlatformUtils::registerApplicationPath(boosty::stringy(fs::path(argv[0]).branch_path()));
-	parser_init();
+	std::string applicationpath = boosty::stringy(fs::path(argv[0]).branch_path());
+	PlatformUtils::registerApplicationPath(applicationpath);
+	parser_init(applicationpath);
+	add_librarydir(boosty::stringy(fs::path(argv[0]).branch_path() / "../libraries"));
 
 	ModuleContext top_ctx;
 	top_ctx.registerBuiltin();

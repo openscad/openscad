@@ -77,13 +77,16 @@
 namespace po = boost::program_options;
 namespace fs = boost::filesystem;
 namespace Render { enum type { GEOMETRY, CGAL, OPENCSG, THROWNTOGETHER }; };
-std::string commandline_commands;
-std::string currentdir;
 using std::string;
 using std::vector;
 using boost::lexical_cast;
 using boost::bad_lexical_cast;
 using boost::is_any_of;
+
+std::string commandline_commands;
+std::string currentdir;
+static bool arg_info = false;
+static std::string arg_colorscheme;
 
 class Echostream : public std::ofstream
 {
@@ -267,6 +270,28 @@ static bool checkAndExport(shared_ptr<const Geometry> root_geom, unsigned nd,
 	return true;
 }
 
+void set_render_color_scheme(const std::string color_scheme, const bool exit_if_not_found)
+{
+	if (color_scheme.empty()) {
+		return;
+	}
+	
+	if (ColorMap::inst()->findColorScheme(color_scheme)) {
+		RenderSettings::inst()->colorscheme = color_scheme;
+		return;
+	}
+		
+	if (exit_if_not_found) {
+		PRINTB("Unknown color scheme '%s'. Valid schemes:", color_scheme);
+		BOOST_FOREACH (const std::string &name, ColorMap::inst()->colorSchemeNames()) {
+			PRINT(name);
+		}
+		exit(1);
+	} else {
+		PRINTB("Unknown color scheme '%s', using default '%s'.", arg_colorscheme % ColorMap::inst()->defaultColorSchemeName());
+	}
+}
+
 int cmdline(const char *deps_output_file, const std::string &filename, Camera &camera, const char *output_file, const fs::path &original_path, Render::type renderer, int argc, char ** argv )
 {
 #ifdef OPENSCAD_QTGUI
@@ -283,6 +308,10 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 #ifdef ENABLE_CGAL
 	GeometryEvaluator geomevaluator(tree);
 #endif
+	if (arg_info) {
+	    info();
+	}
+	
 	const char *stl_output_file = NULL;
 	const char *off_output_file = NULL;
 	const char *amf_output_file = NULL;
@@ -312,6 +341,8 @@ int cmdline(const char *deps_output_file, const std::string &filename, Camera &c
 		return 1;
 	}
 
+	set_render_color_scheme(arg_colorscheme, true);
+	
 	// Top context - this context only holds builtins
 	ModuleContext top_ctx;
 	top_ctx.registerBuiltin();
@@ -600,6 +631,9 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 	f.setSamples(4);
 	QGLFormat::setDefaultFormat(f);
 #endif
+	
+	set_render_color_scheme(arg_colorscheme, false);
+	
 	bool noInputFiles = false;
 	if (!inputFiles.size()) {
 		noInputFiles = true;
@@ -620,13 +654,14 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 	}
 
 	MainWindow *mainwin;
-#ifdef ENABLE_MDI
-	BOOST_FOREACH(const string &infile, inputFiles) {
-		mainwin = new MainWindow(assemblePath(original_path, infile));
+	bool isMdi = settings.value("advanced/mdi", true).toBool();
+	if (isMdi) {
+	    BOOST_FOREACH(const string &infile, inputFiles) {
+		    mainwin = new MainWindow(assemblePath(original_path, infile));
+	    }
+	} else {
+	    mainwin = new MainWindow(assemblePath(original_path, inputFiles[0]));
 	}
-#else
-	mainwin = new MainWindow(assemblePath(original_path, inputFiles[0]));
-#endif
 
 	app.connect(&app, SIGNAL(lastWindowClosed()), &app, SLOT(quit()));
 	int rc = app.exec();
@@ -719,7 +754,7 @@ int main(int argc, char **argv)
 	}
 	if (vm.count("help")) help(argv[0]);
 	if (vm.count("version")) version();
-	if (vm.count("info")) info();
+	if (vm.count("info")) arg_info = true;
 
 	Render::type renderer = Render::OPENCSG;
 	if (vm.count("preview")) {
@@ -778,23 +813,9 @@ int main(int argc, char **argv)
 	if (vm.count("input-file"))	{
 		inputFiles = vm["input-file"].as<vector<string> >();
 	}
-#ifndef ENABLE_MDI
-	if (inputFiles.size() > 1) {
-		help(argv[0]);
-	}
-#endif
 
 	if (vm.count("colorscheme")) {
-		std::string colorscheme = vm["colorscheme"].as<string>();
-		if (ColorMap::inst()->findColorScheme(colorscheme)) {
-			RenderSettings::inst()->colorscheme = colorscheme;
-		} else {
-			PRINT("Unknown color scheme. Valid schemes:");
-			BOOST_FOREACH (const std::string &name, ColorMap::inst()->colorSchemeNames()) {
-				PRINT(name);
-			}
-			exit(1);
-		}
+		arg_colorscheme = vm["colorscheme"].as<string>();
 	}
 
 	currentdir = boosty::stringy(fs::current_path());
@@ -811,7 +832,10 @@ int main(int argc, char **argv)
 		if (!inputFiles.size()) help(argv[0]);
 	}
 
-	if (cmdlinemode) {
+	if (arg_info || cmdlinemode) {
+		if (inputFiles.size() > 1) {
+			help(argv[0]);
+		}
 		rc = cmdline(deps_output_file, inputFiles[0], camera, output_file, original_path, renderer, argc, argv);
 	}
 	else if (QtUseGUI()) {

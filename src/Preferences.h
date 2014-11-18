@@ -12,7 +12,7 @@ class Preferences : public QMainWindow, public Ui::Preferences
 public:
 	~Preferences();
         
-        static void create(QWidget *parent, QStringList colorSchemes);
+        static void create(QStringList colorSchemes);
 	static Preferences *inst();
 
 	QVariant getValue(const QString &key) const;

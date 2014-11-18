@@ -6,6 +6,7 @@
 #endif
 
 #include "version_check.h"
+#include "PlatformUtils.h"
 #define STRINGIFY(x) #x
 #define TOSTRING(x) STRINGIFY(x)
 
@@ -90,6 +91,12 @@ std::string LibraryInfo::info()
 #endif
 	  << "\nMingW build: " << mingwstatus
 	  << "\nGLib version: "       << GLIB_MAJOR_VERSION << "." << GLIB_MINOR_VERSION << "." << GLIB_MICRO_VERSION
+	  << "\nApplication Path: " << PlatformUtils::applicationPath()
+	  << "\nDocuments Path: " << PlatformUtils::documentsPath()
+	  << "\nResource Path: " << PlatformUtils::resourcesPath()
+	  << "\nUser Library Path: " << PlatformUtils::userLibraryPath()
+	  << "\nUser Config Path: " << PlatformUtils::userConfigPath()
+	  << "\nBackup Path: " << PlatformUtils::backupPath()
 	  << "\nOPENSCADPATH: " << (env_path == NULL ? "<not set>" : env_path)
 	  << "\nOpenSCAD library path:\n";
 

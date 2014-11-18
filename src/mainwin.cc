@@ -201,7 +201,7 @@ MainWindow::MainWindow(const QString &filename)
 #endif
 	    editor = new LegacyEditor(editorDockContents);
 
-	Preferences::create(this, editor->colorSchemes());
+	Preferences::create(editor->colorSchemes());
 
 	editorDockContents->layout()->addWidget(editor);
 
