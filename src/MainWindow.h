@@ -120,7 +120,6 @@ private:
   class FontListDialog *font_list_dialog;
 
 private slots:
-	void actionUpdateCheck();
 	void actionNew();
 	void actionOpen();
 	void actionOpenRecent();

@@ -33,7 +33,7 @@ LaunchingScreen::LaunchingScreen(QWidget *parent) : QDialog(parent)
 		QListWidgetItem *item = new QListWidgetItem(fileInfo.fileName());
 		item->setData(Qt::ToolTipRole, fileInfo.canonicalPath());
 		item->setData(Qt::UserRole, fileInfo.canonicalFilePath());
-		this->recentList->insertItem(1, item);
+		this->recentList->addItem(item);
 	}
 
 	foreach(const QString &category, UIUtils::exampleCategories())

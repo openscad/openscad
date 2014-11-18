@@ -114,7 +114,7 @@ void Preferences::init() {
 	QActionGroup *group = new QActionGroup(this);
 	addPrefPage(group, prefsAction3DView, page3DView);
 	addPrefPage(group, prefsActionEditor, pageEditor);
-#if defined(OPENSCAD_DEPLOY) && defined(Q_OS_MAC)
+#ifdef OPENSCAD_UPDATER
 	addPrefPage(group, prefsActionUpdate, pageUpdate);
 #else
 	this->toolBar->removeAction(prefsActionUpdate);
@@ -308,7 +308,7 @@ void Preferences::on_snapshotCheckBox_toggled(bool on)
 
 void Preferences::on_checkNowButton_clicked()
 {
-	if (AutoUpdater *updater =AutoUpdater::updater()) {
+	if (AutoUpdater *updater = AutoUpdater::updater()) {
 		updater->checkForUpdates();
 	} else {
 		unimplemented_msg();

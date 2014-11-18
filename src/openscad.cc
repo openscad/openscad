@@ -65,9 +65,9 @@
 
 #ifdef __APPLE__
 #include "AppleEvents.h"
-#ifdef OPENSCAD_DEPLOY
-  #include "SparkleAutoUpdater.h"
-#endif
+  #ifdef OPENSCAD_UPDATER
+    #include "SparkleAutoUpdater.h"
+  #endif
 #endif
 
 #ifdef _MSC_VER
@@ -586,10 +586,11 @@ int gui(vector<string> &inputFiles, const fs::path &original_path, int argc, cha
 	installAppleEventHandlers();
 #endif
 
-#if defined(OPENSCAD_DEPLOY) && defined(Q_OS_MAC)
-//	AutoUpdater *updater = new SparkleAutoUpdater;
-//	AutoUpdater::setUpdater(updater);
-//	if (updater->automaticallyChecksForUpdates()) updater->checkForUpdates();
+#ifdef OPENSCAD_UPDATER
+	AutoUpdater *updater = new SparkleAutoUpdater;
+	AutoUpdater::setUpdater(updater);
+	if (updater->automaticallyChecksForUpdates()) updater->checkForUpdates();
+	updater->init();
 #endif
 
 #if 0 /*** disabled by clifford wolf: adds rendering artefacts with OpenCSG ***/
