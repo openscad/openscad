@@ -30,6 +30,5 @@ public:
 
 private:
 	const AssignmentList &eval_arguments;
-	std::vector<std::pair<std::string, Value> > eval_values;
 	const LocalScope *const scope;
 };
