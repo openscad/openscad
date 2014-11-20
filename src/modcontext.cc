@@ -116,7 +116,7 @@ const AbstractModule *ModuleContext::findLocalModule(const std::string &name) co
 		}
 		std::string replacement = Builtins::instance()->isDeprecated(name);
 		if (!replacement.empty()) {
-			PRINT_DEPRECATION("DEPRECATED: The %s() module will be removed in future releases. Use %s() instead.", name % replacement);
+			PRINT_DEPRECATION("DEPRECATED: The %s() module will be removed in future releases. Use %s instead.", name % replacement);
 		}
 		return m;
 	}
