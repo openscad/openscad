@@ -13,6 +13,7 @@ public:
 	typedef list_t::iterator iterator;
 
 	static const Feature ExperimentalTextModule;
+	static const Feature ExperimentalMarkerModule;
     
 	const std::string& get_name() const;
 	const std::string& get_description() const;

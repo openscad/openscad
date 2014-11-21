@@ -60,7 +60,7 @@ public:
 
 class AbstractModule
 {
-private:
+protected:
         const Feature *feature;
 public:
         AbstractModule() : feature(NULL) {}

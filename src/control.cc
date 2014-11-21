@@ -31,6 +31,7 @@
 #include "modcontext.h"
 #include "builtin.h"
 #include "printutils.h"
+#include "markernode.h"
 #include <sstream>
 #include "mathc99.h"
 
@@ -45,6 +46,7 @@ public: // types
 		CHILD,
 		CHILDREN,
 		ECHO,
+        MARKER,
 		ASSIGN,
 		FOR,
 		INT_FOR,
@@ -53,7 +55,9 @@ public: // types
 public: // methods
 	ControlModule(Type type)
 		: type(type)
-	{ }
+	{
+		if (type == MARKER) this->feature = &Feature::ExperimentalMarkerModule;
+	}
 
 	virtual AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const;
 
@@ -257,10 +261,12 @@ AbstractNode *ControlModule::instantiate(const Context* /*ctx*/, const ModuleIns
 	else
 		node = new AbstractNode(inst);
 
-	if (type == ECHO)
+	if (type == ECHO || type == MARKER)
 	{
 		std::stringstream msg;
-		msg << "ECHO: ";
+        if (type == ECHO) {
+    		msg << "ECHO: ";
+        }
 		for (size_t i = 0; i < inst->arguments.size(); i++) {
 			if (i > 0) msg << ", ";
 			if (!evalctx->getArgName(i).empty()) msg << evalctx->getArgName(i) << " = ";
@@ -271,7 +277,13 @@ AbstractNode *ControlModule::instantiate(const Context* /*ctx*/, const ModuleIns
 				msg << val.toString();
 			}
 		}
-		PRINTB("%s", msg.str());
+        if (type == ECHO) {
+    		PRINTB("%s", msg.str());
+        } else {
+            MarkerNode *markernode = new MarkerNode(inst);
+            markernode->value = msg.str();
+            node = markernode;
+        }
 	}
 
 	if (type == ASSIGN)
@@ -311,6 +323,7 @@ void register_builtin_control()
 	Builtins::init("child", new ControlModule(ControlModule::CHILD));
 	Builtins::init("children", new ControlModule(ControlModule::CHILDREN));
 	Builtins::init("echo", new ControlModule(ControlModule::ECHO));
+	Builtins::init("marker", new ControlModule(ControlModule::MARKER));
 	Builtins::init("assign", new ControlModule(ControlModule::ASSIGN));
 	Builtins::init("for", new ControlModule(ControlModule::FOR));
 	Builtins::init("intersection_for", new ControlModule(ControlModule::INT_FOR));

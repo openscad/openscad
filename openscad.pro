@@ -262,6 +262,7 @@ HEADERS += src/typedefs.h \
            src/transformnode.h \
            src/colornode.h \
            src/rendernode.h \
+           src/markernode.h \
            src/textnode.h \
            src/openscad.h \
            src/handle_dep.h \
@@ -345,6 +346,7 @@ SOURCES += src/version_check.cc \
            src/surface.cc \
            src/control.cc \
            src/render.cc \
+           src/marker.cc \
            src/text.cc \
            src/dxfdata.cc \
            src/dxfdim.cc \
