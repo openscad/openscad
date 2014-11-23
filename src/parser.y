@@ -320,14 +320,13 @@ expr:
             }
         | TOK_ID
             {
-                $$ = new Expression();
-                $$->type = "L";
+                $$ = new Expression(EXPRESSION_TYPE_LOOKUP);
                 $$->var_name = $1;
                 free($1);
             }
         | expr '.' TOK_ID
             {
-                $$ = new Expression("N", $1);
+                $$ = new Expression(EXPRESSION_TYPE_MEMBER, $1);
                 $$->var_name = $3;
                 free($3);
             }
@@ -342,31 +341,27 @@ expr:
             }
         | TOK_LET '(' arguments_call ')' expr %prec LET
             {
-                $$ = new Expression();
-                $$->type = "l";
+                $$ = new Expression(EXPRESSION_TYPE_LET);
                 $$->call_arguments = *$3;
                 delete $3;
                 $$->children.push_back($5);
             }
         | '[' expr ':' expr ']'
             {
-                $$ = new Expression();
-                $$->type = "R";
+                $$ = new Expression(EXPRESSION_TYPE_RANGE);
                 $$->children.push_back($2);
                 $$->children.push_back($4);
             }
         | '[' expr ':' expr ':' expr ']'
             {
-                $$ = new Expression();
-                $$->type = "R";
+                $$ = new Expression(EXPRESSION_TYPE_RANGE);
                 $$->children.push_back($2);
                 $$->children.push_back($4);
                 $$->children.push_back($6);
             }
         | '[' list_comprehension_elements ']'
             {
-                $$ = new Expression();
-                $$->type = "i";
+                $$ = new Expression(EXPRESSION_TYPE_LC_EXPRESSION);
                 $$->children.push_back($2);
             }
         | '[' optional_commas ']'
@@ -379,55 +374,55 @@ expr:
             }
         | expr '*' expr
             {
-                $$ = new Expression("*", $1, $3);
+                $$ = new Expression(EXPRESSION_TYPE_MULTIPLY, $1, $3);
             }
         | expr '/' expr
             {
-                $$ = new Expression("/", $1, $3);
+                $$ = new Expression(EXPRESSION_TYPE_DIVISION, $1, $3);
             }
         | expr '%' expr
             {
-                $$ = new Expression("%", $1, $3);
+                $$ = new Expression(EXPRESSION_TYPE_MODULO, $1, $3);
             }
         | expr '+' expr
             {
-                $$ = new Expression("+", $1, $3);
+                $$ = new Expression(EXPRESSION_TYPE_PLUS, $1, $3);
             }
         | expr '-' expr
             {
-                $$ = new Expression("-", $1, $3);
+                $$ = new Expression(EXPRESSION_TYPE_MINUS, $1, $3);
             }
         | expr '<' expr
             {
-                $$ = new Expression("<", $1, $3);
+                $$ = new Expression(EXPRESSION_TYPE_LESS, $1, $3);
             }
         | expr LE expr
             {
-                $$ = new Expression("<=", $1, $3);
+                $$ = new Expression(EXPRESSION_TYPE_LESS_OR_EQUAL, $1, $3);
             }
         | expr EQ expr
             {
-                $$ = new Expression("==", $1, $3);
+                $$ = new Expression(EXPRESSION_TYPE_EQUAL, $1, $3);
             }
         | expr NE expr
             {
-                $$ = new Expression("!=", $1, $3);
+                $$ = new Expression(EXPRESSION_TYPE_NOT_EQUAL, $1, $3);
             }
         | expr GE expr
             {
-                $$ = new Expression(">=", $1, $3);
+                $$ = new Expression(EXPRESSION_TYPE_GREATER_OR_EQUAL, $1, $3);
             }
         | expr '>' expr
             {
-                $$ = new Expression(">", $1, $3);
+                $$ = new Expression(EXPRESSION_TYPE_GREATER, $1, $3);
             }
         | expr AND expr
             {
-                $$ = new Expression("&&", $1, $3);
+                $$ = new Expression(EXPRESSION_TYPE_LOGICAL_AND, $1, $3);
             }
         | expr OR expr
             {
-                $$ = new Expression("||", $1, $3);
+                $$ = new Expression(EXPRESSION_TYPE_LOGICAL_OR, $1, $3);
             }
         | '+' expr
             {
@@ -435,11 +430,11 @@ expr:
             }
         | '-' expr
             {
-                $$ = new Expression("I", $2);
+                $$ = new Expression(EXPRESSION_TYPE_INVERT, $2);
             }
         | '!' expr
             {
-                $$ = new Expression("!", $2);
+                $$ = new Expression(EXPRESSION_TYPE_NOT, $2);
             }
         | '(' expr ')'
             {
@@ -447,20 +442,18 @@ expr:
             }
         | expr '?' expr ':' expr
             {
-                $$ = new Expression();
-                $$->type = "?:";
+                $$ = new Expression(EXPRESSION_TYPE_TERNARY);
                 $$->children.push_back($1);
                 $$->children.push_back($3);
                 $$->children.push_back($5);
             }
         | expr '[' expr ']'
             {
-                $$ = new Expression("[]", $1, $3);
+                $$ = new Expression(EXPRESSION_TYPE_ARRAY_ACCESS, $1, $3);
             }
         | TOK_ID '(' arguments_call ')'
             {
-                $$ = new Expression();
-                $$->type = "F";
+                $$ = new Expression(EXPRESSION_TYPE_FUNCTION);
                 $$->call_funcname = $1;
                 $$->call_arguments = *$3;
                 free($1);
@@ -473,7 +466,7 @@ list_comprehension_elements:
              be parsed as an expression) */
           TOK_LET '(' arguments_call ')' list_comprehension_elements
             {
-                $$ = new Expression("c", $5);
+                $$ = new Expression(EXPRESSION_TYPE_LC, $5);
                 $$->call_funcname = "let";
                 $$->call_arguments = *$3;
                 delete $3;
@@ -484,7 +477,7 @@ list_comprehension_elements:
 
                 /* transform for(i=...,j=...) -> for(i=...) for(j=...) */
                 for (int i = $3->size()-1; i >= 0; i--) {
-                    Expression *e = new Expression("c", $$);
+                    Expression *e = new Expression(EXPRESSION_TYPE_LC, $$);
                     e->call_funcname = "for";
                     e->call_arguments.push_back((*$3)[i]);
                     $$ = e;
@@ -493,7 +486,7 @@ list_comprehension_elements:
             }
         | TOK_IF '(' expr ')' list_comprehension_elements_or_expr
             {
-                $$ = new Expression("c", $3, $5);
+                $$ = new Expression(EXPRESSION_TYPE_LC, $3, $5);
                 $$->call_funcname = "if";
             }
         ;
@@ -511,7 +504,7 @@ optional_commas:
 vector_expr:
           expr
             {
-                $$ = new Expression("V", $1);
+                $$ = new Expression(EXPRESSION_TYPE_VECTOR, $1);
             }
         | vector_expr ',' optional_commas expr
             {

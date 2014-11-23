@@ -35,120 +35,21 @@
 #include <boost/bind.hpp>
 #include <boost/foreach.hpp>
 
-Expression::Expression() : recursioncount(0)
-{
-}
+ExpressionEvaluator * Expression::evaluators[256];
 
-Expression::Expression(const std::string &type, Expression *left, Expression *right)
-	: type(type), recursioncount(0)
-{
-	this->children.push_back(left);
-	this->children.push_back(right);
-}
-
-Expression::Expression(const std::string &type, Expression *expr)
-	: type(type), recursioncount(0)
-{
-	this->children.push_back(expr);
-}
-
-Expression::Expression(const ValuePtr &val) : const_value(val), type("C"), recursioncount(0)
-{
-}
-
-Expression::~Expression()
-{
-	std::for_each(this->children.begin(), this->children.end(), del_fun<Expression>());
-}
-
-ValuePtr Expression::sub_evaluate_range(const Context *context) const
-{
-	ValuePtr v1 = this->children[0]->evaluate(context);
-	if (v1->type() == Value::NUMBER) {
-		ValuePtr v2 = this->children[1]->evaluate(context);
-		if (v2->type() == Value::NUMBER) {
-			if (this->children.size() == 2) {
-				Value::RangeType range(v1->toDouble(), v2->toDouble());
-				return ValuePtr(range);
-			} else {
-				ValuePtr v3 = this->children[2]->evaluate(context);
-				if (v3->type() == Value::NUMBER) {
-					Value::RangeType range(v1->toDouble(), v2->toDouble(), v3->toDouble());
-					return ValuePtr(range);
-				}
-			}
-		}
-	}
-	return ValuePtr::undefined;
-}
-
-ValuePtr Expression::sub_evaluate_member(const Context *context) const
-{
-	ValuePtr v = this->children[0]->evaluate(context);
-
-	if (v->type() == Value::VECTOR) {
-		if (this->var_name == "x") return v[0];
-		if (this->var_name == "y") return v[1];
-		if (this->var_name == "z") return v[2];
-	} else if (v->type() == Value::RANGE) {
-		if (this->var_name == "begin") return v[0];
-		if (this->var_name == "step") return v[1];
-		if (this->var_name == "end") return v[2];
-	}
-	return ValuePtr::undefined;
-}
-
-ValuePtr Expression::sub_evaluate_vector(const Context *context) const
-{
-	Value::VectorType vec;
-	BOOST_FOREACH(const Expression *e, this->children) {
-		vec.push_back(*(e->evaluate(context)));
-	}
-	return ValuePtr(vec);
-}
-
-ValuePtr Expression::sub_evaluate_function(const Context *context) const
-{
-//	if (this->recursioncount >= 1000) {
-//		PRINTB("ERROR: Recursion detected calling function '%s'", this->call_funcname);
-//		// TO DO: throw function_recursion_detected();
-//		return Value();
-//	}
-	this->recursioncount += 1;
-	EvalContext c(context, this->call_arguments);
-	ValuePtr result = context->evaluate_function(this->call_funcname, &c);
-	this->recursioncount -= 1;
-	return result;
-}
-
-#define TYPE2INT(c,c1) ((int)(c) | ((int)(c1)<<8))
-
-static inline int type2int(register const char *typestr)
-{
-	// the following asserts basic ASCII only so sign extension does not matter
-	// utilize the fact that type strings must have one or two non-null characters
-#if 0 // defined(DEBUG) // may need this code as template for future development
-	register int c1, result = *typestr;
-	if (result && 0 != (c1 = typestr[1])) {
-		// take the third character for error checking only
-		result |= (c1 << 8) | ((int)typestr[2] << 16);
-	}
-	return result;
-#else
-	return TYPE2INT(typestr[0], typestr[1]);
-#endif
-}
+// static initializer for the expression evaluator lookup table
+ExpressionEvaluatorInit Expression::evaluatorInit;
 
 // unnamed namespace
 namespace {
 	Value::VectorType flatten(Value::VectorType const& vec) {
 		int n = 0;
-		for (int i = 0; i < vec.size(); i++) {
+		for (unsigned int i = 0; i < vec.size(); i++) {
 			assert(vec[i].type() == Value::VECTOR);
 			n += vec[i].toVector().size();
 		}
 		Value::VectorType ret; ret.reserve(n);
-		for (int i = 0; i < vec.size(); i++) {
+		for (unsigned int i = 0; i < vec.size(); i++) {
 			std::copy(vec[i].toVector().begin(),vec[i].toVector().end(),std::back_inserter(ret));
 		}
 		return ret;
@@ -159,7 +60,7 @@ namespace {
 
 		const bool allow_reassignment = false;
 
-		for (int i = 0; i < let_context.numArgs(); i++) {
+		for (unsigned int i = 0; i < let_context.numArgs(); i++) {
 			if (!allow_reassignment && context->has_local_variable(let_context.getArgName(i))) {
 				PRINTB("WARNING: Ignoring duplicate variable assignment %s = %s", let_context.getArgName(i) % let_context.getArgValue(i, context)->toString());
 			} else {
@@ -170,29 +71,253 @@ namespace {
 	}
 }
 
-ValuePtr Expression::sub_evaluate_let_expression(const Context *context) const
+class ExpressionEvaluatorAbort : public ExpressionEvaluator
 {
-	Context c(context);
-	evaluate_sequential_assignment(this->call_arguments, &c);
+    ValuePtr evaluate(const class Expression *, const class Context *) const {
+	abort();
+    }
+};
 
-	return this->children[0]->evaluate(&c);
+class ExpressionEvaluatorNot : public ExpressionEvaluator
+{
+    ValuePtr evaluate(const class Expression *expr, const class Context *context) const {
+	return ! expr->children[0]->evaluate(context);
+    }
+};
+
+class ExpressionEvaluatorLogicalAnd : public ExpressionEvaluator
+{
+    ValuePtr evaluate(const class Expression *expr, const class Context *context) const {
+	return expr->children[0]->evaluate(context) && expr->children[1]->evaluate(context);
+    }
+};
+
+class ExpressionEvaluatorLogicalOr : public ExpressionEvaluator
+{
+    ValuePtr evaluate(const class Expression *expr, const class Context *context) const {
+	return  expr->children[0]->evaluate(context) || expr->children[1]->evaluate(context);
+    }
+};
+
+class ExpressionEvaluatorMultiply : public ExpressionEvaluator
+{
+    ValuePtr evaluate(const class Expression *expr, const class Context *context) const {
+	return expr->children[0]->evaluate(context) * expr->children[1]->evaluate(context);
+    }
+};
+
+class ExpressionEvaluatorDivision : public ExpressionEvaluator
+{
+    ValuePtr evaluate(const class Expression *expr, const class Context *context) const {
+	return expr->children[0]->evaluate(context) / expr->children[1]->evaluate(context);
+    }
+};
+
+class ExpressionEvaluatorModulo : public ExpressionEvaluator
+{
+    ValuePtr evaluate(const class Expression *expr, const class Context *context) const {
+	return expr->children[0]->evaluate(context) % expr->children[1]->evaluate(context);
+    }
+};
+
+class ExpressionEvaluatorPlus : public ExpressionEvaluator
+{
+    ValuePtr evaluate(const class Expression *expr, const class Context *context) const {
+	return expr->children[0]->evaluate(context) + expr->children[1]->evaluate(context);
+    }
+};
+
+class ExpressionEvaluatorMinus : public ExpressionEvaluator
+{
+    ValuePtr evaluate(const class Expression *expr, const class Context *context) const {
+	return expr->children[0]->evaluate(context) - expr->children[1]->evaluate(context);
+    }
+};
+
+class ExpressionEvaluatorLess : public ExpressionEvaluator
+{
+    ValuePtr evaluate(const class Expression *expr, const class Context *context) const {
+	return expr->children[0]->evaluate(context) < expr->children[1]->evaluate(context);
+    }
+};
+
+class ExpressionEvaluatorLessOrEqual : public ExpressionEvaluator
+{
+    ValuePtr evaluate(const class Expression *expr, const class Context *context) const {
+	return expr->children[0]->evaluate(context) <= expr->children[1]->evaluate(context);
+    }
+};
+
+class ExpressionEvaluatorEqual : public ExpressionEvaluator
+{
+    ValuePtr evaluate(const class Expression *expr, const class Context *context) const {
+	return expr->children[0]->evaluate(context) == expr->children[1]->evaluate(context);
+    }
+};
+
+class ExpressionEvaluatorNotEqual : public ExpressionEvaluator
+{
+    ValuePtr evaluate(const class Expression *expr, const class Context *context) const {
+	return expr->children.at(0)->evaluate(context) != expr->children.at(1)->evaluate(context);
+    }
+};
+
+class ExpressionEvaluatorGreaterOrEqual : public ExpressionEvaluator
+{
+    ValuePtr evaluate(const class Expression *expr, const class Context *context) const {
+	return expr->children[0]->evaluate(context) >= expr->children[1]->evaluate(context);
+    }
+};
+
+class ExpressionEvaluatorGreater : public ExpressionEvaluator
+{
+    ValuePtr evaluate(const class Expression *expr, const class Context *context) const {
+	return expr->children[0]->evaluate(context) > expr->children[1]->evaluate(context);
+    }
+};
+
+class ExpressionEvaluatorTernary : public ExpressionEvaluator
+{
+    ValuePtr evaluate(const class Expression *expr, const class Context *context) const {
+	return expr->children[expr->children[0]->evaluate(context) ? 1 : 2]->evaluate(context);
+    }
+};
+
+class ExpressionEvaluatorArray : public ExpressionEvaluator
+{
+    ValuePtr evaluate(const class Expression *expr, const class Context *context) const {
+	return expr->children[0]->evaluate(context)[expr->children[1]->evaluate(context)];
+    }
+};
+
+class ExpressionEvaluatorInvert : public ExpressionEvaluator
+{
+    ValuePtr evaluate(const class Expression *expr, const class Context *context) const {
+	return -expr->children[0]->evaluate(context);
+    }
+};
+
+class ExpressionEvaluatorConst : public ExpressionEvaluator
+{
+    ValuePtr evaluate(const class Expression *expr, const class Context *) const {
+	return ValuePtr(expr->const_value);
+    }
+};
+
+class ExpressionEvaluatorRange : public ExpressionEvaluator
+{
+    ValuePtr evaluate(const class Expression *expr, const class Context *context) const {
+	ValuePtr v1 = expr->children[0]->evaluate(context);
+	if (v1->type() == Value::NUMBER) {
+		ValuePtr v2 = expr->children[1]->evaluate(context);
+		if (v2->type() == Value::NUMBER) {
+			if (expr->children.size() == 2) {
+				Value::RangeType range(v1->toDouble(), v2->toDouble());
+				return ValuePtr(range);
+			} else {
+				ValuePtr v3 = expr->children[2]->evaluate(context);
+				if (v3->type() == Value::NUMBER) {
+					Value::RangeType range(v1->toDouble(), v2->toDouble(), v3->toDouble());
+					return ValuePtr(range);
+				}
+			}
+		}
+	}
+	return ValuePtr::undefined;
+    }
+};
+
+class ExpressionEvaluatorVector : public ExpressionEvaluator
+{
+    ValuePtr evaluate(const class Expression *expr, const class Context *context) const {
+	Value::VectorType vec;
+	BOOST_FOREACH(const Expression *e, expr->children) {
+		vec.push_back(*(e->evaluate(context)));
+	}
+	return ValuePtr(vec);
+    }
+};
+
+class ExpressionEvaluatorLookup : public ExpressionEvaluator
+{
+    ValuePtr evaluate(const class Expression *expr, const class Context *context) const {
+	return context->lookup_variable(expr->var_name);
+    }
+};
+
+class ExpressionEvaluatorMember : public ExpressionEvaluator
+{
+    ValuePtr evaluate(const class Expression *expr, const class Context *context) const {
+	ValuePtr v = expr->children[0]->evaluate(context);
+
+	if (v->type() == Value::VECTOR) {
+		if (expr->var_name == "x") return v[0];
+		if (expr->var_name == "y") return v[1];
+		if (expr->var_name == "z") return v[2];
+	} else if (v->type() == Value::RANGE) {
+		if (expr->var_name == "begin") return v[0];
+		if (expr->var_name == "step") return v[1];
+		if (expr->var_name == "end") return v[2];
+	}
+	return ValuePtr::undefined;
+   }
+};
+
+static void function_recursion_detected(const char *func)
+{
+	PRINTB("ERROR: Recursion detected calling function '%s'", func);
 }
 
-ValuePtr Expression::sub_evaluate_list_comprehension(const Context *context) const
+class ExpressionEvaluatorFunction : public ExpressionEvaluator
 {
+    ValuePtr evaluate(const class Expression *expr, const class Context *context) const {
+	if (expr->recursioncount >= 1000) {
+		function_recursion_detected(expr->call_funcname.c_str());
+		// TO DO: throw function_recursion_detected();
+		return ValuePtr::undefined;
+	}
+	expr->recursioncount += 1;
+	EvalContext *c = new EvalContext(context, expr->call_arguments);
+	ValuePtr result = context->evaluate_function(expr->call_funcname, c);
+	delete c;
+	expr->recursioncount -= 1;
+	return result;
+    }
+};
+
+class ExpressionEvaluatorLet : public ExpressionEvaluator
+{
+    ValuePtr evaluate(const class Expression *expr, const class Context *context) const {
+	Context c(context);
+	evaluate_sequential_assignment(expr->call_arguments, &c);
+
+	return expr->children[0]->evaluate(&c);
+    }
+};
+
+class ExpressionEvaluatorLcExpression : public ExpressionEvaluator
+{
+    ValuePtr evaluate(const class Expression *expr, const class Context *context) const {
+	return expr->children[0]->evaluate(context);
+    }
+};
+
+class ExpressionEvaluatorLc : public ExpressionEvaluator
+{
+    ValuePtr evaluate(const class Expression *expr, const class Context *context) const {
 	Value::VectorType vec;
 
-	if (this->call_funcname == "if") {
-		if (this->children[0]->evaluate(context)) {
-			if (this->children[1]->type == "c") {
-				return this->children[1]->evaluate(context);
+	if (expr->call_funcname == "if") {
+		if (expr->children[0]->evaluate(context)) {
+			if (expr->children[1]->type == EXPRESSION_TYPE_LC) {
+				return expr->children[1]->evaluate(context);
 			} else {
-				vec.push_back((*this->children[1]->evaluate(context)));
+				vec.push_back((*expr->children[1]->evaluate(context)));
 			}
 		}
 		return ValuePtr(vec);
-	} else if (this->call_funcname == "for") {
-		EvalContext for_context(context, this->call_arguments);
+	} else if (expr->call_funcname == "for") {
+		EvalContext for_context(context, expr->call_arguments);
 
 		Context assign_context(context);
 
@@ -210,96 +335,113 @@ ValuePtr Expression::sub_evaluate_list_comprehension(const Context *context) con
 			} else {
 				for (Value::RangeType::iterator it = range.begin();it != range.end();it++) {
 					c.set_variable(it_name, ValuePtr(*it));
-					vec.push_back((*this->children[0]->evaluate(&c)));
+					vec.push_back((*expr->children[0]->evaluate(&c)));
 				}
 			}
 		}
 		else if (it_values->type() == Value::VECTOR) {
 			for (size_t i = 0; i < it_values->toVector().size(); i++) {
 				c.set_variable(it_name, it_values->toVector()[i]);
-				vec.push_back((*this->children[0]->evaluate(&c)));
+				vec.push_back((*expr->children[0]->evaluate(&c)));
 			}
 		}
 		else if (it_values->type() != Value::UNDEFINED) {
 			c.set_variable(it_name, it_values);
-			vec.push_back((*this->children[0]->evaluate(&c)));
+			vec.push_back((*expr->children[0]->evaluate(&c)));
 		}
-		if (this->children[0]->type == "c") {
+		if (expr->children[0]->type == EXPRESSION_TYPE_LC) {
 			return ValuePtr(flatten(vec));
 		} else {
 			return ValuePtr(vec);
 		}
-	} else if (this->call_funcname == "let") {
+	} else if (expr->call_funcname == "let") {
 		Context c(context);
-		evaluate_sequential_assignment(this->call_arguments, &c);
+		evaluate_sequential_assignment(expr->call_arguments, &c);
 
-		return this->children[0]->evaluate(&c);
+		return expr->children[0]->evaluate(&c);
 	} else {
 		abort();
 	}
+    }
+};
+
+ExpressionEvaluatorInit::ExpressionEvaluatorInit()
+{
+    ExpressionEvaluator *abort = new ExpressionEvaluatorAbort();
+    for (int a = 0;a < 256;a++) {
+	Expression::evaluators[a] = abort;
+    }
+    
+    Expression::evaluators[EXPRESSION_TYPE_NOT] = new ExpressionEvaluatorNot();
+    Expression::evaluators[EXPRESSION_TYPE_LOGICAL_AND] = new ExpressionEvaluatorLogicalAnd();
+    Expression::evaluators[EXPRESSION_TYPE_LOGICAL_OR] = new ExpressionEvaluatorLogicalOr();
+    Expression::evaluators[EXPRESSION_TYPE_MULTIPLY] = new ExpressionEvaluatorMultiply();
+    Expression::evaluators[EXPRESSION_TYPE_DIVISION] = new ExpressionEvaluatorDivision();
+    Expression::evaluators[EXPRESSION_TYPE_MODULO] = new ExpressionEvaluatorModulo();
+    Expression::evaluators[EXPRESSION_TYPE_PLUS] = new ExpressionEvaluatorPlus();
+    Expression::evaluators[EXPRESSION_TYPE_MINUS] = new ExpressionEvaluatorMinus();
+    Expression::evaluators[EXPRESSION_TYPE_LESS] = new ExpressionEvaluatorLess();
+    Expression::evaluators[EXPRESSION_TYPE_LESS_OR_EQUAL] = new ExpressionEvaluatorLessOrEqual();
+    Expression::evaluators[EXPRESSION_TYPE_EQUAL] = new ExpressionEvaluatorEqual();
+    Expression::evaluators[EXPRESSION_TYPE_NOT_EQUAL] = new ExpressionEvaluatorNotEqual();
+    Expression::evaluators[EXPRESSION_TYPE_GREATER_OR_EQUAL] = new ExpressionEvaluatorGreaterOrEqual();
+    Expression::evaluators[EXPRESSION_TYPE_GREATER] = new ExpressionEvaluatorGreater();
+    Expression::evaluators[EXPRESSION_TYPE_TERNARY] = new ExpressionEvaluatorTernary();
+    Expression::evaluators[EXPRESSION_TYPE_ARRAY_ACCESS] = new ExpressionEvaluatorArray();
+    Expression::evaluators[EXPRESSION_TYPE_INVERT] = new ExpressionEvaluatorInvert();
+    Expression::evaluators[EXPRESSION_TYPE_CONST] = new ExpressionEvaluatorConst();
+    Expression::evaluators[EXPRESSION_TYPE_RANGE] = new ExpressionEvaluatorRange();
+    Expression::evaluators[EXPRESSION_TYPE_VECTOR] = new ExpressionEvaluatorVector();
+    Expression::evaluators[EXPRESSION_TYPE_LOOKUP] = new ExpressionEvaluatorLookup();
+    Expression::evaluators[EXPRESSION_TYPE_MEMBER] = new ExpressionEvaluatorMember();
+    Expression::evaluators[EXPRESSION_TYPE_FUNCTION] = new ExpressionEvaluatorFunction();
+    Expression::evaluators[EXPRESSION_TYPE_LET] = new ExpressionEvaluatorLet();
+    Expression::evaluators[EXPRESSION_TYPE_LC_EXPRESSION] = new ExpressionEvaluatorLcExpression();
+    Expression::evaluators[EXPRESSION_TYPE_LC] = new ExpressionEvaluatorLc();
 }
 
+Expression::Expression(const unsigned char type) : recursioncount(0)
+{
+	setType(type);
+}
+
+Expression::Expression(const unsigned char type, Expression *left, Expression *right)
+	: recursioncount(0)
+{
+	setType(type);
+	this->children.push_back(left);
+	this->children.push_back(right);
+}
+
+Expression::Expression(const unsigned char type, Expression *expr)
+	: recursioncount(0)
+{
+	setType(type);
+	this->children.push_back(expr);
+}
+
+Expression::Expression(const ValuePtr &val) : const_value(val), recursioncount(0)
+{
+	setType(EXPRESSION_TYPE_CONST);
+}
+
+Expression::~Expression()
+{
+	std::for_each(this->children.begin(), this->children.end(), del_fun<Expression>());
+}
+
+void Expression::setType(const unsigned char type)
+{
+	this->type = type;
+	this->evaluator = evaluators[type];
+}
 
 ValuePtr Expression::evaluate(const Context *context) const
 {
     char _c;
     context->checkStack(&_c);
-
-	switch (type2int(this->type.c_str())) {
-	case '!':
-		return ! this->children[0]->evaluate(context);
-	case TYPE2INT('&','&'):
-		return this->children[0]->evaluate(context) && this->children[1]->evaluate(context);
-	case TYPE2INT('|','|'):
-		return this->children[0]->evaluate(context) || this->children[1]->evaluate(context);
-	case '*':
-		return this->children[0]->evaluate(context) * this->children[1]->evaluate(context);
-	case '/':
-		return this->children[0]->evaluate(context) / this->children[1]->evaluate(context);
-	case '%':
-		return this->children[0]->evaluate(context) % this->children[1]->evaluate(context);
-	case '+':
-		return this->children[0]->evaluate(context) + this->children[1]->evaluate(context);
-	case '-':
-		return this->children[0]->evaluate(context) - this->children[1]->evaluate(context);
-	case '<':
-		return this->children[0]->evaluate(context) < this->children[1]->evaluate(context);
-	case TYPE2INT('<','='):
-		return this->children[0]->evaluate(context) <= this->children[1]->evaluate(context);
-	case TYPE2INT('=','='):
-		return this->children[0]->evaluate(context) == this->children[1]->evaluate(context);
-	case TYPE2INT('!','='):
-		return this->children[0]->evaluate(context) != this->children[1]->evaluate(context);
-	case TYPE2INT('>','='):
-		return this->children[0]->evaluate(context) >= this->children[1]->evaluate(context);
-	case '>':
-		return this->children[0]->evaluate(context) > this->children[1]->evaluate(context);
-	case TYPE2INT('?',':'):
-		return this->children[this->children[0]->evaluate(context) ? 1 : 2]->evaluate(context);
-	case TYPE2INT('[',']'):
-		return this->children[0]->evaluate(context)[this->children[1]->evaluate(context)];
-	case 'I':
-		return -this->children[0]->evaluate(context);
-	case 'C':
-		return this->const_value;
-	case 'R':
-		return sub_evaluate_range(context);
-	case 'V':
-		return sub_evaluate_vector(context);
-	case 'L':
-		return context->lookup_variable(this->var_name);
-	case 'N':
-		return sub_evaluate_member(context);
-	case 'F':
-		return sub_evaluate_function(context);
-	case 'l':
-		return sub_evaluate_let_expression(context);
-	case 'i':  // list comprehension expression
-		return this->children[0]->evaluate(context);
-	case 'c':
-		return sub_evaluate_list_comprehension(context);
-	}
-	abort();
+  
+    return evaluator->evaluate(this, context);
 }
 
 namespace /* anonymous*/ {
@@ -320,55 +462,79 @@ std::string Expression::toString() const
 {
 	std::stringstream stream;
 
-	if (this->type == "*" || this->type == "/" || this->type == "%" || this->type == "+" ||
-			this->type == "-" || this->type == "<" || this->type == "<=" || this->type == "==" || 
-			this->type == "!=" || this->type == ">=" || this->type == ">" ||
-			this->type == "&&" || this->type == "||") {
+	switch (this->type) {
+	case EXPRESSION_TYPE_MULTIPLY:
+	case EXPRESSION_TYPE_DIVISION:
+	case EXPRESSION_TYPE_MODULO:
+	case EXPRESSION_TYPE_PLUS:
+	case EXPRESSION_TYPE_MINUS:
+	case EXPRESSION_TYPE_LESS:
+	case EXPRESSION_TYPE_GREATER:
 		stream << "(" << *this->children[0] << " " << this->type << " " << *this->children[1] << ")";
-	}
-	else if (this->type == "?:") {
-		stream << "(" << *this->children[0] << " ? " << *this->children[1] << " : " << *this->children[2] << ")";
-	}
-	else if (this->type == "[]") {
-		stream << *this->children[0] << "[" << *this->children[1] << "]";
-	}
-	else if (this->type == "I") {
-		stream << "-" << *this->children[0];
-	}
-	else if (this->type == "!") {
+		break;
+	case EXPRESSION_TYPE_NOT:
 		stream << "!" << *this->children[0];
-	}
-	else if (this->type == "C") {
+		break;
+	case EXPRESSION_TYPE_LOGICAL_AND:
+		stream << "(" << *this->children[0] << " && " << *this->children[1] << ")";
+		break;
+	case EXPRESSION_TYPE_LOGICAL_OR:
+		stream << "(" << *this->children[0] << " || " << *this->children[1] << ")";
+		break;
+	case EXPRESSION_TYPE_LESS_OR_EQUAL:
+		stream << "(" << *this->children[0] << " <= " << *this->children[1] << ")";
+		break;
+	case EXPRESSION_TYPE_EQUAL:
+		stream << "(" << *this->children[0] << " == " << *this->children[1] << ")";
+		break;
+	case EXPRESSION_TYPE_NOT_EQUAL:
+		stream << "(" << *this->children[0] << " != " << *this->children[1] << ")";
+		break;
+	case EXPRESSION_TYPE_GREATER_OR_EQUAL:
+		stream << "(" << *this->children[0] << " >= " << *this->children[1] << ")";
+		break;
+	case EXPRESSION_TYPE_TERNARY:
+		stream << "(" << *this->children[0] << " ? " << *this->children[1] << " : " << *this->children[2] << ")";
+		break;
+	case EXPRESSION_TYPE_ARRAY_ACCESS:
+		stream << *this->children[0] << "[" << *this->children[1] << "]";
+		break;
+	case EXPRESSION_TYPE_INVERT:
+		stream << "-" << *this->children[0];
+		break;
+	case EXPRESSION_TYPE_CONST:
 		stream << *this->const_value;
-	}
-	else if (this->type == "R") {
+		break;
+	case EXPRESSION_TYPE_RANGE:
 		stream << "[" << *this->children[0] << " : " << *this->children[1];
 		if (this->children.size() > 2) {
 			stream << " : " << *this->children[2];
 		}
 		stream << "]";
-	}
-	else if (this->type == "V") {
+		break;
+	case EXPRESSION_TYPE_VECTOR:
 		stream << "[";
 		for (size_t i=0; i < this->children.size(); i++) {
 			if (i > 0) stream << ", ";
 			stream << *this->children[i];
 		}
 		stream << "]";
-	}
-	else if (this->type == "L") {
+		break;
+	case EXPRESSION_TYPE_LOOKUP:
 		stream << this->var_name;
-	}
-	else if (this->type == "N") {
+		break;
+	case EXPRESSION_TYPE_MEMBER:
 		stream << *this->children[0] << "." << this->var_name;
-	}
-	else if (this->type == "F") {
+		break;
+	case EXPRESSION_TYPE_FUNCTION:
 		stream << this->call_funcname << "(" << this->call_arguments << ")";
-	}
-	else if (this->type == "l") {
+		break;
+	case EXPRESSION_TYPE_LET:
 		stream << "let(" << this->call_arguments << ") " << *this->children[0];
-	}
-	else if (this->type == "i") { // list comprehension expression
+		break;
+	case EXPRESSION_TYPE_LC_EXPRESSION:  // list comprehension expression
+	//case EXPRESSION_TYPE_LC:
+	{
 		Expression const* c = this->children[0];
 
 		stream << "[";
@@ -386,14 +552,15 @@ std::string Expression::toString() const
 			} else {
 				assert(false && "Illegal list comprehension element");
 			}
-		} while (c->type == "c");
+		} while (c->type == EXPRESSION_TYPE_LC);
 
 		stream << *c << "]";
+		break;
 	}
-	else {
+	default:
 		assert(false && "Illegal expression type");
+		break;
 	}
-
 	return stream.str();
 }
 
