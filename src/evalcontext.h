@@ -18,7 +18,7 @@ public:
 
 	size_t numArgs() const { return this->eval_arguments.size(); }
 	const std::string &getArgName(size_t i) const;
-	Value getArgValue(size_t i, const Context *ctx = NULL) const;
+	ValuePtr getArgValue(size_t i, const Context *ctx = NULL) const;
 
 	size_t numChildren() const;
 	ModuleInstantiation *getChild(size_t i) const;
@@ -29,6 +29,6 @@ public:
 
 private:
 	const AssignmentList &eval_arguments;
-	std::vector<std::pair<std::string, Value> > eval_values;
+	std::vector<std::pair<std::string, ValuePtr> > eval_values;
 	const LocalScope *const scope;
 };

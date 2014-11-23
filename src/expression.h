@@ -10,7 +10,7 @@ class Expression
 public:
 	std::vector<Expression*> children;
 
-	const Value const_value;
+	ValuePtr const_value;
 	std::string var_name;
 
 	std::string call_funcname;
@@ -35,12 +35,12 @@ public:
   std::string type;
 
 	Expression();
-	Expression(const Value &val);
+	Expression(const ValuePtr &val);
 	Expression(const std::string &type, Expression *left, Expression *right);
 	Expression(const std::string &type, Expression *expr);
 	~Expression();
 
-	Value evaluate(const class Context *context) const;
+	ValuePtr evaluate(const class Context *context) const;
 
 	std::string toString() const;
 
@@ -48,12 +48,12 @@ private:
 	mutable int recursioncount;
 
 	// The following sub_* methods are needed to minimize stack usage only.
-	Value sub_evaluate_function(const class Context *context) const;
-	Value sub_evaluate_member(const class Context *context) const;
-	Value sub_evaluate_range(const class Context *context) const;
-	Value sub_evaluate_vector(const class Context *context) const;
-	Value sub_evaluate_let_expression(const class Context *context) const;
-	Value sub_evaluate_list_comprehension(const class Context *context) const;
+	ValuePtr sub_evaluate_function(const class Context *context) const;
+	ValuePtr sub_evaluate_member(const class Context *context) const;
+	ValuePtr sub_evaluate_range(const class Context *context) const;
+	ValuePtr sub_evaluate_vector(const class Context *context) const;
+	ValuePtr sub_evaluate_let_expression(const class Context *context) const;
+	ValuePtr sub_evaluate_list_comprehension(const class Context *context) const;
 };
 
 std::ostream &operator<<(std::ostream &stream, const Expression &expr);

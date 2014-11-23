@@ -78,14 +78,14 @@ void Context::setVariables(const AssignmentList &args,
 													 const EvalContext *evalctx)
 {
 	BOOST_FOREACH(const Assignment &arg, args) {
-		set_variable(arg.first, arg.second ? arg.second->evaluate(this->parent) : Value());
+		set_variable(arg.first, arg.second ? arg.second->evaluate(this->parent) : ValuePtr::undefined);
 	}
 
 	if (evalctx) {
 		size_t posarg = 0;
 		for (size_t i=0; i<evalctx->numArgs(); i++) {
 			const std::string &name = evalctx->getArgName(i);
-			const Value &val = evalctx->getArgValue(i);
+			ValuePtr val = evalctx->getArgValue(i);
 			if (name.empty()) {
 				if (posarg < args.size()) this->set_variable(args[posarg++].first, val);
 			} else {
@@ -95,13 +95,18 @@ void Context::setVariables(const AssignmentList &args,
 	}
 }
 
-void Context::set_variable(const std::string &name, const Value &value)
+void Context::set_variable(const std::string &name, const ValuePtr &value)
 {
 	if (is_config_variable(name)) this->config_variables[name] = value;
 	else this->variables[name] = value;
 }
 
-void Context::set_constant(const std::string &name, const Value &value)
+void Context::set_variable(const std::string &name, const Value &value)
+{
+	set_variable(name, ValuePtr(value));
+}
+
+void Context::set_constant(const std::string &name, const ValuePtr &value)
 {
 	if (this->constants.find(name) != this->constants.end()) {
 		PRINTB("WARNING: Attempt to modify constant '%s'.", name);
@@ -111,11 +116,16 @@ void Context::set_constant(const std::string &name, const Value &value)
 	}
 }
 
-Value Context::lookup_variable(const std::string &name, bool silent) const
+void Context::set_constant(const std::string &name, const Value &value)
+{
+	set_constant(name, ValuePtr(value));
+}
+
+ValuePtr Context::lookup_variable(const std::string &name, bool silent) const
 {
 	if (!this->ctx_stack) {
 		PRINT("ERROR: Context had null stack in lookup_variable()!!");
-		return Value();
+		return ValuePtr::undefined;
 	}
 	if (is_config_variable(name)) {
 		for (int i = this->ctx_stack->size()-1; i >= 0; i--) {
@@ -123,7 +133,7 @@ Value Context::lookup_variable(const std::string &name, bool silent) const
 			if (confvars.find(name) != confvars.end())
 				return confvars.find(name)->second;
 		}
-		return Value();
+		return ValuePtr::undefined;
 	}
 	if (!this->parent && this->constants.find(name) != this->constants.end())
 		return this->constants.find(name)->second;
@@ -133,7 +143,7 @@ Value Context::lookup_variable(const std::string &name, bool silent) const
 		return this->parent->lookup_variable(name, silent);
 	if (!silent)
 		PRINTB("WARNING: Ignoring unknown variable '%s'.", name);
-	return Value();
+	return ValuePtr::undefined;
 }
 
 bool Context::has_local_variable(const std::string &name) const
@@ -145,11 +155,11 @@ bool Context::has_local_variable(const std::string &name) const
 	return variables.find(name) != variables.end();
 }
 
-Value Context::evaluate_function(const std::string &name, const EvalContext *evalctx) const
+ValuePtr Context::evaluate_function(const std::string &name, const EvalContext *evalctx) const
 {
 	if (this->parent) return this->parent->evaluate_function(name, evalctx);
 	PRINTB("WARNING: Ignoring unknown function '%s'.", name);
-	return Value();
+	return ValuePtr::undefined;
 }
 
 AbstractNode *Context::instantiate_module(const ModuleInstantiation &inst, const EvalContext *evalctx) const
@@ -190,7 +200,7 @@ std::string Context::dump(const AbstractModule *mod, const ModuleInstantiation *
 			}
 		}
 	}
-	typedef std::pair<std::string, Value> ValueMapType;
+	typedef std::pair<std::string, ValuePtr> ValueMapType;
 	s << "  vars:";
 	BOOST_FOREACH(const ValueMapType &v, constants) {
 		s << boost::format("    %s = %s") % v.first % v.second;

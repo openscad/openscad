@@ -59,14 +59,14 @@ AbstractNode *AbstractModule::instantiate(const Context *ctx, const ModuleInstan
 
 double AbstractModule::lookup_double_variable_with_default(Context &c, std::string variable, double def) const
 {
-	const Value v = c.lookup_variable(variable, true);
-	return (v.type() == Value::NUMBER) ? v.toDouble() : def;
+	ValuePtr v = c.lookup_variable(variable, true);
+	return (v->type() == Value::NUMBER) ? v->toDouble() : def;
 }
 
 std::string AbstractModule::lookup_string_variable_with_default(Context &c, std::string variable, std::string def) const
 {
-	const Value v = c.lookup_variable(variable, true);
-	return (v.type() == Value::STRING) ? v.toString() : def;
+	ValuePtr v = c.lookup_variable(variable, true);
+	return (v->type() == Value::STRING) ? v->toString() : def;
 }
 
 std::string AbstractModule::dump(const std::string &indent, const std::string &name) const
@@ -195,9 +195,9 @@ AbstractNode *Module::instantiate(const Context *ctx, const ModuleInstantiation 
 
 	ModuleContext c(ctx, evalctx);
 	// set $children first since we might have variables depending on it
-	c.set_variable("$children", Value(double(inst->scope.children.size())));
+	c.set_variable("$children", ValuePtr(double(inst->scope.children.size())));
 	module_stack.push_back(inst->name());
-	c.set_variable("$parent_modules", Value(double(module_stack.size())));
+	c.set_variable("$parent_modules", ValuePtr(double(module_stack.size())));
 	c.initializeModule(*this);
 	// FIXME: Set document path to the path of the module
 #if 0 && DEBUG

@@ -11,6 +11,7 @@
 #include <boost/lexical_cast.hpp>
 #endif
 #include <boost/cstdint.hpp>
+#include "memory.h"
 
 class QuotedString : public std::string
 {
@@ -138,7 +139,7 @@ public:
   bool operator>=(const Value &v) const;
   bool operator>(const Value &v) const;
   Value operator-() const;
-  Value operator[](const Value &v);
+  Value operator[](const Value &v) const;
   Value operator+(const Value &v) const;
   Value operator-(const Value &v) const;
   Value operator*(const Value &v) const;
@@ -159,4 +160,41 @@ private:
   static Value multvecmat(const Value &vectorval, const Value &matrixval);
 
   Variant value;
+};
+
+class ValuePtr : public shared_ptr<const Value>
+{
+public:
+  static ValuePtr undefined;
+
+	ValuePtr();
+	explicit ValuePtr(const Value &v);
+  ValuePtr(bool v);
+  ValuePtr(int v);
+  ValuePtr(double v);
+  ValuePtr(const std::string &v);
+  ValuePtr(const char *v);
+  ValuePtr(const char v);
+  ValuePtr(const Value::VectorType &v);
+  ValuePtr(const Value::RangeType &v);
+
+	operator bool() const { return **this; }
+
+  bool operator==(const ValuePtr &v) const;
+  bool operator!=(const ValuePtr &v) const;
+  bool operator<(const ValuePtr &v) const;
+  bool operator<=(const ValuePtr &v) const;
+  bool operator>=(const ValuePtr &v) const;
+  bool operator>(const ValuePtr &v) const;
+  ValuePtr operator-() const;
+  ValuePtr operator[](const ValuePtr &v) const;
+  ValuePtr operator+(const ValuePtr &v) const;
+  ValuePtr operator-(const ValuePtr &v) const;
+  ValuePtr operator*(const ValuePtr &v) const;
+  ValuePtr operator/(const ValuePtr &v) const;
+  ValuePtr operator%(const ValuePtr &v) const;
+
+  const Value &operator*() const { return *this->get(); }
+
+private:
 };

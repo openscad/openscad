@@ -52,7 +52,7 @@ Expression::Expression(const std::string &type, Expression *expr)
 	this->children.push_back(expr);
 }
 
-Expression::Expression(const Value &val) : const_value(val), type("C"), recursioncount(0)
+Expression::Expression(const ValuePtr &val) : const_value(val), type("C"), recursioncount(0)
 {
 }
 
@@ -61,62 +61,62 @@ Expression::~Expression()
 	std::for_each(this->children.begin(), this->children.end(), del_fun<Expression>());
 }
 
-Value Expression::sub_evaluate_range(const Context *context) const
+ValuePtr Expression::sub_evaluate_range(const Context *context) const
 {
-	Value v1 = this->children[0]->evaluate(context);
-	if (v1.type() == Value::NUMBER) {
-		Value v2 = this->children[1]->evaluate(context);
-		if (v2.type() == Value::NUMBER) {
+	ValuePtr v1 = this->children[0]->evaluate(context);
+	if (v1->type() == Value::NUMBER) {
+		ValuePtr v2 = this->children[1]->evaluate(context);
+		if (v2->type() == Value::NUMBER) {
 			if (this->children.size() == 2) {
-				Value::RangeType range(v1.toDouble(), v2.toDouble());
-				return Value(range);
+				Value::RangeType range(v1->toDouble(), v2->toDouble());
+				return ValuePtr(range);
 			} else {
-				Value v3 = this->children[2]->evaluate(context);
-				if (v3.type() == Value::NUMBER) {
-					Value::RangeType range(v1.toDouble(), v2.toDouble(), v3.toDouble());
-					return Value(range);
+				ValuePtr v3 = this->children[2]->evaluate(context);
+				if (v3->type() == Value::NUMBER) {
+					Value::RangeType range(v1->toDouble(), v2->toDouble(), v3->toDouble());
+					return ValuePtr(range);
 				}
 			}
 		}
 	}
-	return Value();
+	return ValuePtr::undefined;
 }
 
-Value Expression::sub_evaluate_member(const Context *context) const
+ValuePtr Expression::sub_evaluate_member(const Context *context) const
 {
-	Value v = this->children[0]->evaluate(context);
+	ValuePtr v = this->children[0]->evaluate(context);
 
-	if (v.type() == Value::VECTOR) {
+	if (v->type() == Value::VECTOR) {
 		if (this->var_name == "x") return v[0];
 		if (this->var_name == "y") return v[1];
 		if (this->var_name == "z") return v[2];
-	} else if (v.type() == Value::RANGE) {
-		if (this->var_name == "begin") return Value(v[0]);
-		if (this->var_name == "step") return Value(v[1]);
-		if (this->var_name == "end") return Value(v[2]);
+	} else if (v->type() == Value::RANGE) {
+		if (this->var_name == "begin") return v[0];
+		if (this->var_name == "step") return v[1];
+		if (this->var_name == "end") return v[2];
 	}
-	return Value();
+	return ValuePtr::undefined;
 }
 
-Value Expression::sub_evaluate_vector(const Context *context) const
+ValuePtr Expression::sub_evaluate_vector(const Context *context) const
 {
 	Value::VectorType vec;
 	BOOST_FOREACH(const Expression *e, this->children) {
-		vec.push_back(e->evaluate(context));
+		vec.push_back(*(e->evaluate(context)));
 	}
-	return Value(vec);
+	return ValuePtr(vec);
 }
 
-Value Expression::sub_evaluate_function(const Context *context) const
+ValuePtr Expression::sub_evaluate_function(const Context *context) const
 {
 	if (this->recursioncount >= 1000) {
 		PRINTB("ERROR: Recursion detected calling function '%s'", this->call_funcname);
 		// TO DO: throw function_recursion_detected();
-		return Value();
+		return ValuePtr::undefined;
 	}
 	this->recursioncount += 1;
 	EvalContext c(context, this->call_arguments);
-	const Value &result = context->evaluate_function(this->call_funcname, &c);
+	ValuePtr result = context->evaluate_function(this->call_funcname, &c);
 	this->recursioncount -= 1;
 	return result;
 }
@@ -161,7 +161,7 @@ namespace {
 
 		for (int i = 0; i < let_context.numArgs(); i++) {
 			if (!allow_reassignment && context->has_local_variable(let_context.getArgName(i))) {
-				PRINTB("WARNING: Ignoring duplicate variable assignment %s = %s", let_context.getArgName(i) % let_context.getArgValue(i, context).toString());
+				PRINTB("WARNING: Ignoring duplicate variable assignment %s = %s", let_context.getArgName(i) % let_context.getArgValue(i, context)->toString());
 			} else {
 				// NOTE: iteratively evaluated list of arguments
 				context->set_variable(let_context.getArgName(i), let_context.getArgValue(i, context));
@@ -170,7 +170,7 @@ namespace {
 	}
 }
 
-Value Expression::sub_evaluate_let_expression(const Context *context) const
+ValuePtr Expression::sub_evaluate_let_expression(const Context *context) const
 {
 	Context c(context);
 	evaluate_sequential_assignment(this->call_arguments, &c);
@@ -178,7 +178,7 @@ Value Expression::sub_evaluate_let_expression(const Context *context) const
 	return this->children[0]->evaluate(&c);
 }
 
-Value Expression::sub_evaluate_list_comprehension(const Context *context) const
+ValuePtr Expression::sub_evaluate_list_comprehension(const Context *context) const
 {
 	Value::VectorType vec;
 
@@ -187,10 +187,10 @@ Value Expression::sub_evaluate_list_comprehension(const Context *context) const
 			if (this->children[1]->type == "c") {
 				return this->children[1]->evaluate(context);
 			} else {
-				vec.push_back(this->children[1]->evaluate(context));
+				vec.push_back((*this->children[1]->evaluate(context)));
 			}
 		}
-		return vec;
+		return ValuePtr(vec);
 	} else if (this->call_funcname == "for") {
 		EvalContext for_context(context, this->call_arguments);
 
@@ -198,36 +198,36 @@ Value Expression::sub_evaluate_list_comprehension(const Context *context) const
 
 		// comprehension for statements are by the parser reduced to only contain one single element
 		const std::string &it_name = for_context.getArgName(0);
-		const Value &it_values = for_context.getArgValue(0, &assign_context);
+		ValuePtr it_values = for_context.getArgValue(0, &assign_context);
 
 		Context c(context);
 
-		if (it_values.type() == Value::RANGE) {
-			Value::RangeType range = it_values.toRange();
+		if (it_values->type() == Value::RANGE) {
+			Value::RangeType range = it_values->toRange();
 			boost::uint32_t steps = range.nbsteps();
 			if (steps >= 1000000) {
 				PRINTB("WARNING: Bad range parameter in for statement: too many elements (%lu).", steps);
 			} else {
 				for (Value::RangeType::iterator it = range.begin();it != range.end();it++) {
-					c.set_variable(it_name, Value(*it));
-					vec.push_back(this->children[0]->evaluate(&c));
+					c.set_variable(it_name, ValuePtr(*it));
+					vec.push_back((*this->children[0]->evaluate(&c)));
 				}
 			}
 		}
-		else if (it_values.type() == Value::VECTOR) {
-			for (size_t i = 0; i < it_values.toVector().size(); i++) {
-				c.set_variable(it_name, it_values.toVector()[i]);
-				vec.push_back(this->children[0]->evaluate(&c));
+		else if (it_values->type() == Value::VECTOR) {
+			for (size_t i = 0; i < it_values->toVector().size(); i++) {
+				c.set_variable(it_name, it_values->toVector()[i]);
+				vec.push_back((*this->children[0]->evaluate(&c)));
 			}
 		}
-		else if (it_values.type() != Value::UNDEFINED) {
+		else if (it_values->type() != Value::UNDEFINED) {
 			c.set_variable(it_name, it_values);
-			vec.push_back(this->children[0]->evaluate(&c));
+			vec.push_back((*this->children[0]->evaluate(&c)));
 		}
 		if (this->children[0]->type == "c") {
-			return flatten(vec);
+			return ValuePtr(flatten(vec));
 		} else {
-			return vec;
+			return ValuePtr(vec);
 		}
 	} else if (this->call_funcname == "let") {
 		Context c(context);
@@ -240,7 +240,7 @@ Value Expression::sub_evaluate_list_comprehension(const Context *context) const
 }
 
 
-Value Expression::evaluate(const Context *context) const
+ValuePtr Expression::evaluate(const Context *context) const
 {
 	switch (type2int(this->type.c_str())) {
 	case '!':
@@ -336,7 +336,7 @@ std::string Expression::toString() const
 		stream << "!" << *this->children[0];
 	}
 	else if (this->type == "C") {
-		stream << this->const_value;
+		stream << *this->const_value;
 	}
 	else if (this->type == "R") {
 		stream << "[" << *this->children[0] << " : " << *this->children[1];

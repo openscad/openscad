@@ -1485,7 +1485,7 @@ bool MainWindow::eventFilter(QObject* obj, QEvent *event)
 
 void MainWindow::updateTemporalVariables()
 {
-	this->top_ctx.set_variable("$t", Value(this->e_tval->text().toDouble()));
+	this->top_ctx.set_variable("$t", ValuePtr(this->e_tval->text().toDouble()));
 
 	Value::VectorType vpt;
 	vpt.push_back(Value(-qglview->cam.object_trans.x()));
@@ -1497,9 +1497,9 @@ void MainWindow::updateTemporalVariables()
 	vpr.push_back(Value(fmodf(360 - qglview->cam.object_rot.x() + 90, 360)));
 	vpr.push_back(Value(fmodf(360 - qglview->cam.object_rot.y(), 360)));
 	vpr.push_back(Value(fmodf(360 - qglview->cam.object_rot.z(), 360)));
-	top_ctx.set_variable("$vpr", Value(vpr));
+	top_ctx.set_variable("$vpr", ValuePtr(vpr));
 
-	top_ctx.set_variable("$vpd", Value(qglview->cam.viewer_distance));
+	top_ctx.set_variable("$vpd", ValuePtr(qglview->cam.viewer_distance));
 }
 
 
@@ -1531,25 +1531,25 @@ void MainWindow::updateCamera()
 	BOOST_FOREACH(const Assignment &a, root_module->scope.assignments) {
 		double x, y, z;
 		if ("$vpr" == a.first) {
-			const Value vpr = a.second.get()->evaluate(&mc);
-			if (vpr.getVec3(x, y, z)) {
+			ValuePtr vpr = a.second.get()->evaluate(&mc);
+			if (vpr->getVec3(x, y, z)) {
 				rx = x;
 				ry = y;
 				rz = z;
 				camera_set = true;
 			}
 		} else if ("$vpt" == a.first) {
-			const Value vpt = a.second.get()->evaluate(&mc);
-			if (vpt.getVec3(x, y, z)) {
+			ValuePtr vpt = a.second.get()->evaluate(&mc);
+			if (vpt->getVec3(x, y, z)) {
 				tx = x;
 				ty = y;
 				tz = z;
 				camera_set = true;
 			}
 		} else if ("$vpd" == a.first) {
-			const Value vpd = a.second.get()->evaluate(&mc);
-			if (vpd.type() == Value::NUMBER) {
-				d = vpd.toDouble();
+			ValuePtr vpd = a.second.get()->evaluate(&mc);
+			if (vpd->type() == Value::NUMBER) {
+				d = vpd->toDouble();
 				camera_set = true;
 			}
 		}

@@ -308,15 +308,15 @@ single_module_instantiation:
 expr:
           TOK_TRUE
             {
-                $$ = new Expression(Value(true));
+                $$ = new Expression(ValuePtr(true));
             }
         | TOK_FALSE
             {
-                $$ = new Expression(Value(false));
+                $$ = new Expression(ValuePtr(false));
             }
         | TOK_UNDEF
             {
-                $$ = new Expression(Value::undefined);
+                $$ = new Expression(ValuePtr::undefined);
             }
         | TOK_ID
             {
@@ -333,12 +333,12 @@ expr:
             }
         | TOK_STRING
             {
-                $$ = new Expression(Value(std::string($1)));
+                $$ = new Expression(ValuePtr(std::string($1)));
                 free($1);
             }
         | TOK_NUMBER
             {
-                $$ = new Expression(Value($1));
+                $$ = new Expression(ValuePtr($1));
             }
         | TOK_LET '(' arguments_call ')' expr %prec LET
             {
@@ -371,7 +371,7 @@ expr:
             }
         | '[' optional_commas ']'
             {
-                $$ = new Expression(Value(Value::VectorType()));
+                $$ = new Expression(ValuePtr(Value::VectorType()));
             }
         | '[' vector_expr optional_commas ']'
             {
