@@ -95,10 +95,11 @@ ValuePtr Function::evaluate(const Context *ctx, const EvalContext *evalctx) cons
 	bool set = ctx->setStack(&_c);
 	
 	if (!expr) return ValuePtr::undefined;
-	Context c(ctx);
-	c.setVariables(definition_arguments, evalctx);
-	ValuePtr result = expr->evaluate(&c);
-	
+	Context *c = new Context(ctx);
+	c->setVariables(definition_arguments, evalctx);
+	ValuePtr result = expr->evaluate(c);
+	delete c;
+
 	if (set) {
 	    std::cout << txt << ctx->stackUsage() << std::endl;
 	}
