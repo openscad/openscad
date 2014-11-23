@@ -198,17 +198,22 @@ bool Context::has_local_variable(const std::string &name) const
 	return variables.find(name) != variables.end();
 }
 
+static void print_ignore_warning(const char *what, const char *name)
+{
+	PRINTB("WARNING: Ignoring unknown %s '%s'.", what % name);
+}
+ 
 ValuePtr Context::evaluate_function(const std::string &name, const EvalContext *evalctx) const
 {
 	if (this->parent) return this->parent->evaluate_function(name, evalctx);
-	PRINTB("WARNING: Ignoring unknown function '%s'.", name);
+	print_ignore_warning("function", name.c_str());
 	return ValuePtr::undefined;
 }
 
 AbstractNode *Context::instantiate_module(const ModuleInstantiation &inst, const EvalContext *evalctx) const
 {
 	if (this->parent) return this->parent->instantiate_module(inst, evalctx);
-	PRINTB("WARNING: Ignoring unknown module '%s'.", inst.name());
+	print_ignore_warning("module", inst.name().c_str());
 	return NULL;
 }
 
