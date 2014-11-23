@@ -109,11 +109,11 @@ ValuePtr Expression::sub_evaluate_vector(const Context *context) const
 
 ValuePtr Expression::sub_evaluate_function(const Context *context) const
 {
-	if (this->recursioncount >= 1000) {
-		PRINTB("ERROR: Recursion detected calling function '%s'", this->call_funcname);
-		// TO DO: throw function_recursion_detected();
-		return ValuePtr::undefined;
-	}
+//	if (this->recursioncount >= 1000) {
+//		PRINTB("ERROR: Recursion detected calling function '%s'", this->call_funcname);
+//		// TO DO: throw function_recursion_detected();
+//		return Value();
+//	}
 	this->recursioncount += 1;
 	EvalContext c(context, this->call_arguments);
 	ValuePtr result = context->evaluate_function(this->call_funcname, &c);
@@ -242,6 +242,9 @@ ValuePtr Expression::sub_evaluate_list_comprehension(const Context *context) con
 
 ValuePtr Expression::evaluate(const Context *context) const
 {
+    char _c;
+    context->checkStack(&_c);
+
 	switch (type2int(this->type.c_str())) {
 	case '!':
 		return ! this->children[0]->evaluate(context);

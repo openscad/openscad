@@ -88,12 +88,21 @@ Function::~Function()
 	delete expr;
 }
 
+static const char *txt = "stack usage: ";
 ValuePtr Function::evaluate(const Context *ctx, const EvalContext *evalctx) const
 {
+	char _c;
+	bool set = ctx->setStack(&_c);
+	
 	if (!expr) return ValuePtr::undefined;
 	Context c(ctx);
 	c.setVariables(definition_arguments, evalctx);
-	return expr->evaluate(&c);
+	ValuePtr result = expr->evaluate(&c);
+	
+	if (set) {
+	    std::cout << txt << ctx->stackUsage() << std::endl;
+	}
+	return result;
 }
 
 std::string Function::dump(const std::string &indent, const std::string &name) const
