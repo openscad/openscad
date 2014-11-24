@@ -7,20 +7,6 @@
 #include <string>
 #include <vector>
 
-
-#include <exception>
-class FunctionRecursionException: public std::exception {
-public:
-	FunctionRecursionException(const char *funcname) : funcname(funcname) {}
-	virtual const char *what() const throw() {
-		std::stringstream out;
-		out << "ERROR: Recursion detected calling function '" << this->funcname << "'";
-		return out.str().c_str();
-  }
-private:
-	const char *funcname;
-};
-
 class AbstractFunction
 {
 private:

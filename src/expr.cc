@@ -32,7 +32,7 @@
 #include <algorithm>
 #include "stl-utils.h"
 #include "printutils.h"
-#include "function.h"
+#include "exceptions.h"
 #include <boost/bind.hpp>
 #include <boost/foreach.hpp>
 
@@ -272,7 +272,7 @@ class ExpressionEvaluatorFunction : public ExpressionEvaluator
     // int su = context->stackUsage();
     // if (su > 1000000) PRINTB("Stack usage: %d", su);
 		if (expr->recursioncount >= 1000) {
-			throw FunctionRecursionException(expr->call_funcname.c_str());
+			throw RecursionException("function", expr->call_funcname.c_str());
 			return ValuePtr::undefined;
 		}
 		expr->recursioncount += 1;
