@@ -2,14 +2,15 @@
 
 class RecursionException: public std::exception {
 public:
-	RecursionException(const char *recursiontype, const char *funcname)
-		: rectype(recursiontype), funcname(funcname) {}
+	RecursionException(const char *recursiontype, const std::string &name)
+		: rectype(recursiontype), name(name) {}
+	virtual ~RecursionException() throw() {}
 	virtual const char *what() const throw() {
 		std::stringstream out;
-		out << "ERROR: Recursion detected calling " << this->rectype << " '" << this->funcname << "'";
+		out << "ERROR: Recursion detected calling " << this->rectype << " '" << this->name << "'";
 		return out.str().c_str();
   }
 private:
 	const char *rectype;
-	const char *funcname;
+	const std::string name;
 };

@@ -176,7 +176,7 @@ Module::~Module()
 AbstractNode *Module::instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const
 {
 	if (StackCheck::inst()->check()) {
-		throw RecursionException("module", inst->name().c_str());
+		throw RecursionException("module", inst->name());
 		return NULL;
 	}
 

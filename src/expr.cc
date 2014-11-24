@@ -482,7 +482,7 @@ ExpressionFunction::ExpressionFunction()
 ValuePtr ExpressionFunction::evaluate(const Context *context) const
 {
     if (StackCheck::inst()->check()) {
-	throw RecursionException("function", call_funcname.c_str());
+	throw RecursionException("function", call_funcname);
     }
     
     EvalContext *c = new EvalContext(context, this->call_arguments);
