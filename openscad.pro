@@ -245,6 +245,7 @@ HEADERS += src/typedefs.h \
            src/dxfdim.h \
            src/export.h \
            src/expression.h \
+           src/stackcheck.h \
            src/function.h \
            src/grid.h \
            src/highlighter.h \
@@ -321,6 +322,7 @@ SOURCES += src/version_check.cc \
            src/handle_dep.cc \
            src/value.cc \
            src/expr.cc \
+           src/stackcheck.cc \
            src/func.cc \
            src/localscope.cc \
            src/module.cc \
