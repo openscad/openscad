@@ -18,5 +18,10 @@ std::string PlatformUtils::userConfigPath()
 	return std::string([[appSupportDir path] UTF8String]) + std::string("/") + PlatformUtils::OPENSCAD_FOLDER_NAME;
 }
 
+unsigned long PlatformUtils::stackLimit()
+{
+    return STACK_LIMIT_DEFAULT;
+}
+
 void PlatformUtils::ensureStdIO(void) {}
 

@@ -92,6 +92,11 @@ std::string PlatformUtils::userConfigPath()
 	return retval + std::string("/") + PlatformUtils::OPENSCAD_FOLDER_NAME;
 }
 
+unsigned long PlatformUtils::stackLimit()
+{
+    return STACK_LIMIT_DEFAULT;
+}
+
 #include <io.h>
 #include <stdio.h>
 #include <fstream>

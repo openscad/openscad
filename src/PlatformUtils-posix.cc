@@ -1,3 +1,5 @@
+#include <sys/resource.h>
+
 #include "PlatformUtils.h"
 #include "boosty.h"
 
@@ -39,6 +41,23 @@ std::string PlatformUtils::userConfigPath()
     }
     
     return "";
+}
+
+unsigned long PlatformUtils::stackLimit()
+{
+    struct rlimit limit;
+
+    int ret = getrlimit(RLIMIT_STACK, &limit);
+    if (ret == 0) {
+	if (limit.rlim_cur > STACK_BUFFER_SIZE) {
+	    return limit.rlim_cur - STACK_BUFFER_SIZE;
+	}
+	if (limit.rlim_max > STACK_BUFFER_SIZE) {
+	    return limit.rlim_max - STACK_BUFFER_SIZE;
+	}
+    }
+
+    return STACK_LIMIT_DEFAULT;
 }
 
 void PlatformUtils::ensureStdIO(void) {}
