@@ -475,11 +475,6 @@ ValuePtr ExpressionMember::evaluate(const Context *context) const
     return ValuePtr::undefined;
 }
 
-static void function_recursion_detected(const char *func)
-{
-	PRINTB("ERROR: Recursion detected calling function '%s'", func);
-}
-
 ExpressionFunction::ExpressionFunction()
 {
 }
@@ -487,7 +482,6 @@ ExpressionFunction::ExpressionFunction()
 ValuePtr ExpressionFunction::evaluate(const Context *context) const
 {
     if (StackCheck::inst()->check()) {
-	function_recursion_detected(this->call_funcname.c_str());
 	throw RecursionException("function", call_funcname.c_str());
     }
     
