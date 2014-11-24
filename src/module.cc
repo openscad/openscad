@@ -354,8 +354,12 @@ AbstractNode *FileModule::instantiate(const Context *ctx, const ModuleInstantiat
 #endif
 
 	AbstractNode *node = new AbstractNode(inst);
-	std::vector<AbstractNode *> instantiatednodes = this->scope.instantiateChildren(ctx, &c);
-	node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
-
+	try {
+		std::vector<AbstractNode *> instantiatednodes = this->scope.instantiateChildren(ctx, &c);
+		node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
+	}
+	catch (RecursionException &e) {
+		PRINT(e.what());
+	}
 	return node;
 }
