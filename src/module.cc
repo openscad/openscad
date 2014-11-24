@@ -34,6 +34,7 @@
 #include "printutils.h"
 #include "parsersettings.h"
 #include "exceptions.h"
+#include "stackcheck.h"
 
 #include <boost/filesystem.hpp>
 namespace fs = boost::filesystem;
@@ -172,24 +173,9 @@ Module::~Module()
 {
 }
 
-class ModRecursionGuard
-{
-public:
-	ModRecursionGuard(const ModuleInstantiation &inst) : inst(inst) { 
-		inst.recursioncount++; 
-	}
-	~ModRecursionGuard() { 
-		inst.recursioncount--; 
-	}
-	bool recursion_detected() const { return (inst.recursioncount > 1000); }
-private:
-	const ModuleInstantiation &inst;
-};
-
 AbstractNode *Module::instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const
 {
-	ModRecursionGuard g(*inst);
-	if (g.recursion_detected()) { 
+	if (StackCheck::inst()->check()) {
 		throw RecursionException("module", inst->name().c_str());
 		return NULL;
 	}

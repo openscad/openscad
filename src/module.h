@@ -18,7 +18,7 @@ class ModuleInstantiation
 {
 public:
 	ModuleInstantiation(const std::string &name = "")
-		: tag_root(false), tag_highlight(false), tag_background(false), recursioncount(0), modname(name) { }
+		: tag_root(false), tag_highlight(false), tag_background(false), modname(name) { }
 	virtual ~ModuleInstantiation();
 
 	virtual std::string dump(const std::string &indent) const;
@@ -40,7 +40,6 @@ public:
 	bool tag_root;
 	bool tag_highlight;
 	bool tag_background;
-	mutable int recursioncount;
 protected:
 	std::string modname;
 	std::string modpath;
