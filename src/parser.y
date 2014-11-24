@@ -308,65 +308,57 @@ single_module_instantiation:
 expr:
           TOK_TRUE
             {
-                $$ = new Expression(ValuePtr(true));
+                $$ = new ExpressionConst(ValuePtr(true));
             }
         | TOK_FALSE
             {
-                $$ = new Expression(ValuePtr(false));
+                $$ = new ExpressionConst(ValuePtr(false));
             }
         | TOK_UNDEF
             {
-                $$ = new Expression(ValuePtr::undefined);
+                $$ = new ExpressionConst(ValuePtr::undefined);
             }
         | TOK_ID
             {
-                $$ = new Expression(EXPRESSION_TYPE_LOOKUP);
-                $$->var_name = $1;
+                $$ = new ExpressionLookup($1);
                 free($1);
             }
         | expr '.' TOK_ID
             {
-                $$ = new Expression(EXPRESSION_TYPE_MEMBER, $1);
-                $$->var_name = $3;
+                $$ = new ExpressionMember($3, $1);
                 free($3);
             }
         | TOK_STRING
             {
-                $$ = new Expression(ValuePtr(std::string($1)));
+                $$ = new ExpressionConst(ValuePtr(std::string($1)));
                 free($1);
             }
         | TOK_NUMBER
             {
-                $$ = new Expression(ValuePtr($1));
+                $$ = new ExpressionConst(ValuePtr($1));
             }
         | TOK_LET '(' arguments_call ')' expr %prec LET
             {
-                $$ = new Expression(EXPRESSION_TYPE_LET);
+                $$ = new ExpressionLet();
                 $$->call_arguments = *$3;
                 delete $3;
                 $$->children.push_back($5);
             }
         | '[' expr ':' expr ']'
             {
-                $$ = new Expression(EXPRESSION_TYPE_RANGE);
-                $$->children.push_back($2);
-                $$->children.push_back($4);
+                $$ = new ExpressionRange($2, $4);
             }
         | '[' expr ':' expr ':' expr ']'
             {
-                $$ = new Expression(EXPRESSION_TYPE_RANGE);
-                $$->children.push_back($2);
-                $$->children.push_back($4);
-                $$->children.push_back($6);
+                $$ = new ExpressionRange($2, $4, $6);
             }
         | '[' list_comprehension_elements ']'
             {
-                $$ = new Expression(EXPRESSION_TYPE_LC_EXPRESSION);
-                $$->children.push_back($2);
+                $$ = new ExpressionLcExpression($2);
             }
         | '[' optional_commas ']'
             {
-                $$ = new Expression(ValuePtr(Value::VectorType()));
+                $$ = new ExpressionConst(ValuePtr(Value::VectorType()));
             }
         | '[' vector_expr optional_commas ']'
             {
@@ -374,55 +366,55 @@ expr:
             }
         | expr '*' expr
             {
-                $$ = new Expression(EXPRESSION_TYPE_MULTIPLY, $1, $3);
+                $$ = new ExpressionMultiply($1, $3);
             }
         | expr '/' expr
             {
-                $$ = new Expression(EXPRESSION_TYPE_DIVISION, $1, $3);
+                $$ = new ExpressionDivision($1, $3);
             }
         | expr '%' expr
             {
-                $$ = new Expression(EXPRESSION_TYPE_MODULO, $1, $3);
+                $$ = new ExpressionModulo($1, $3);
             }
         | expr '+' expr
             {
-                $$ = new Expression(EXPRESSION_TYPE_PLUS, $1, $3);
+                $$ = new ExpressionPlus($1, $3);
             }
         | expr '-' expr
             {
-                $$ = new Expression(EXPRESSION_TYPE_MINUS, $1, $3);
+                $$ = new ExpressionMinus($1, $3);
             }
         | expr '<' expr
             {
-                $$ = new Expression(EXPRESSION_TYPE_LESS, $1, $3);
+                $$ = new ExpressionLess($1, $3);
             }
         | expr LE expr
             {
-                $$ = new Expression(EXPRESSION_TYPE_LESS_OR_EQUAL, $1, $3);
+                $$ = new ExpressionLessOrEqual($1, $3);
             }
         | expr EQ expr
             {
-                $$ = new Expression(EXPRESSION_TYPE_EQUAL, $1, $3);
+                $$ = new ExpressionEqual($1, $3);
             }
         | expr NE expr
             {
-                $$ = new Expression(EXPRESSION_TYPE_NOT_EQUAL, $1, $3);
+                $$ = new ExpressionNotEqual($1, $3);
             }
         | expr GE expr
             {
-                $$ = new Expression(EXPRESSION_TYPE_GREATER_OR_EQUAL, $1, $3);
+                $$ = new ExpressionGreaterOrEqual($1, $3);
             }
         | expr '>' expr
             {
-                $$ = new Expression(EXPRESSION_TYPE_GREATER, $1, $3);
+                $$ = new ExpressionGreater($1, $3);
             }
         | expr AND expr
             {
-                $$ = new Expression(EXPRESSION_TYPE_LOGICAL_AND, $1, $3);
+                $$ = new ExpressionLogicalAnd($1, $3);
             }
         | expr OR expr
             {
-                $$ = new Expression(EXPRESSION_TYPE_LOGICAL_OR, $1, $3);
+                $$ = new ExpressionLogicalOr($1, $3);
             }
         | '+' expr
             {
@@ -430,11 +422,11 @@ expr:
             }
         | '-' expr
             {
-                $$ = new Expression(EXPRESSION_TYPE_INVERT, $2);
+                $$ = new ExpressionInvert($2);
             }
         | '!' expr
             {
-                $$ = new Expression(EXPRESSION_TYPE_NOT, $2);
+                $$ = new ExpressionNot($2);
             }
         | '(' expr ')'
             {
@@ -442,18 +434,15 @@ expr:
             }
         | expr '?' expr ':' expr
             {
-                $$ = new Expression(EXPRESSION_TYPE_TERNARY);
-                $$->children.push_back($1);
-                $$->children.push_back($3);
-                $$->children.push_back($5);
+                $$ = new ExpressionTernary($1, $3, $5);
             }
         | expr '[' expr ']'
             {
-                $$ = new Expression(EXPRESSION_TYPE_ARRAY_ACCESS, $1, $3);
+                $$ = new ExpressionArray($1, $3);
             }
         | TOK_ID '(' arguments_call ')'
             {
-                $$ = new Expression(EXPRESSION_TYPE_FUNCTION);
+                $$ = new ExpressionFunction();
                 $$->call_funcname = $1;
                 $$->call_arguments = *$3;
                 free($1);
@@ -466,7 +455,7 @@ list_comprehension_elements:
              be parsed as an expression) */
           TOK_LET '(' arguments_call ')' list_comprehension_elements
             {
-                $$ = new Expression(EXPRESSION_TYPE_LC, $5);
+                $$ = new ExpressionLc($5);
                 $$->call_funcname = "let";
                 $$->call_arguments = *$3;
                 delete $3;
@@ -477,7 +466,7 @@ list_comprehension_elements:
 
                 /* transform for(i=...,j=...) -> for(i=...) for(j=...) */
                 for (int i = $3->size()-1; i >= 0; i--) {
-                    Expression *e = new Expression(EXPRESSION_TYPE_LC, $$);
+                    Expression *e = new ExpressionLc($$);
                     e->call_funcname = "for";
                     e->call_arguments.push_back((*$3)[i]);
                     $$ = e;
@@ -486,7 +475,7 @@ list_comprehension_elements:
             }
         | TOK_IF '(' expr ')' list_comprehension_elements_or_expr
             {
-                $$ = new Expression(EXPRESSION_TYPE_LC, $3, $5);
+                $$ = new ExpressionLc($3, $5);
                 $$->call_funcname = "if";
             }
         ;
@@ -504,7 +493,7 @@ optional_commas:
 vector_expr:
           expr
             {
-                $$ = new Expression(EXPRESSION_TYPE_VECTOR, $1);
+                $$ = new ExpressionVector($1);
             }
         | vector_expr ',' optional_commas expr
             {

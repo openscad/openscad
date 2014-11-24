@@ -35,6 +35,7 @@
 #include <algorithm>
 #include "stl-utils.h"
 #include "printutils.h"
+#include "stackcheck.h"
 #include <boost/foreach.hpp>
 
 #include <boost/math/special_functions/fpclassify.hpp>
@@ -88,21 +89,14 @@ Function::~Function()
 	delete expr;
 }
 
-static const char *txt = "stack usage: ";
 ValuePtr Function::evaluate(const Context *ctx, const EvalContext *evalctx) const
 {
-	char _c;
-	bool set = ctx->setStack(&_c);
-	
 	if (!expr) return ValuePtr::undefined;
 	Context *c = new Context(ctx);
 	c->setVariables(definition_arguments, evalctx);
 	ValuePtr result = expr->evaluate(c);
 	delete c;
 
-	if (set) {
-	    std::cout << txt << ctx->stackUsage() << std::endl;
-	}
 	return result;
 }
 
