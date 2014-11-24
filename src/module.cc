@@ -33,6 +33,7 @@
 #include "function.h"
 #include "printutils.h"
 #include "parsersettings.h"
+#include "exceptions.h"
 
 #include <boost/filesystem.hpp>
 namespace fs = boost::filesystem;
@@ -189,7 +190,7 @@ AbstractNode *Module::instantiate(const Context *ctx, const ModuleInstantiation 
 {
 	ModRecursionGuard g(*inst);
 	if (g.recursion_detected()) { 
-		PRINTB("ERROR: Recursion detected calling module '%s'", inst->name());
+		throw RecursionException("module", inst->name().c_str());
 		return NULL;
 	}
 

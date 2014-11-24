@@ -32,6 +32,7 @@
 #include "stl-utils.h"
 #include "printutils.h"
 #include "stackcheck.h"
+#include "exceptions.h"
 #include <boost/bind.hpp>
 #include <boost/foreach.hpp>
 
@@ -487,8 +488,7 @@ ValuePtr ExpressionFunction::evaluate(const Context *context) const
 {
     if (StackCheck::inst()->check()) {
 	function_recursion_detected(this->call_funcname.c_str());
-	// TO DO: throw function_recursion_detected();
-	return ValuePtr::undefined;
+	throw RecursionException("function", call_funcname.c_str());
     }
     
     EvalContext *c = new EvalContext(context, this->call_arguments);

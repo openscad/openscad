@@ -247,6 +247,7 @@ HEADERS += src/typedefs.h \
            src/expression.h \
            src/stackcheck.h \
            src/function.h \
+           src/exceptions.h \
            src/grid.h \
            src/highlighter.h \
            src/localscope.h \

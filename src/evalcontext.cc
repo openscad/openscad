@@ -5,6 +5,7 @@
 #include "printutils.h"
 #include "builtin.h"
 #include "localscope.h"
+#include "exceptions.h"
 
 #include <boost/foreach.hpp>
 
@@ -18,7 +19,16 @@ ValuePtr EvalContext::getArgValue(size_t i, const Context *ctx) const
 {
 	assert(i < this->eval_arguments.size());
 	const Assignment &arg = this->eval_arguments[i];
-	return arg.second ? arg.second->evaluate(ctx ? ctx : this) : ValuePtr::undefined;
+	ValuePtr v;
+	if (arg.second) {
+		try {
+			v = arg.second->evaluate(ctx ? ctx : this);
+		}
+		catch (RecursionException &e) {
+			PRINT(e.what());
+		}
+	}
+	return v;
 }
 
 size_t EvalContext::numChildren() const

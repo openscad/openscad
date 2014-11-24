@@ -7,7 +7,6 @@
 #include <string>
 #include <vector>
 
-
 class AbstractFunction
 {
 private:
