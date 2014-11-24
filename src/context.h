@@ -33,17 +33,11 @@ public:
 	const std::string &documentPath() const { return this->document_path; }
 	std::string getAbsolutePath(const std::string &filename) const;
         
-        unsigned long stackUsage() const;
-        bool setStack(const void *stack_cur) const;
-        void checkStack(const void *stack_cur) const;
-
 public:
 
 protected:
 	const Context *parent;
 	Stack *ctx_stack;
-        const void *stack_ptr;
-        const void *stack_max;
 
 	typedef boost::unordered_map<std::string, ValuePtr> ValueMap;
 	ValueMap constants;

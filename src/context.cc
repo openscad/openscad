@@ -49,7 +49,7 @@ static bool is_config_variable(const std::string &name) {
 	created, and all children will share the root parent's stack.
 */
 Context::Context(const Context *parent)
-	: parent(parent), stack_ptr(0), stack_max(0)
+	: parent(parent)
 {
 	if (parent) {
 		assert(parent->ctx_stack && "Parent context stack was null!");
@@ -68,49 +68,6 @@ Context::~Context()
 	assert(this->ctx_stack && "Context stack was null at destruction!");
 	this->ctx_stack->pop_back();
 	if (!parent) delete this->ctx_stack;
-}
-
-unsigned long Context::stackUsage() const
-{
-    if (parent == NULL) {
-	unsigned long ret = std::labs((unsigned long)stack_ptr - (unsigned long)stack_max);
-        ((Context *)this)->stack_ptr = 0;
-        ((Context *)this)->stack_max = 0;
-	return ret;
-    } else {
-	return parent->stackUsage();
-    }
-}
-
-bool Context::setStack(const void* stack_cur) const
-{
-    if (parent == NULL) {
-	bool ret = this->stack_ptr == 0;
-	if (ret) {
-	    ((Context *)this)->stack_ptr = stack_cur;
-	    ((Context *)this)->stack_max = stack_cur;
-	}
-	return ret;
-    } else {
-	return parent->setStack(stack_cur);
-    }
-}
-
-void Context::checkStack(const void *stack_cur) const
-{
-    if (parent == NULL) {
-	if (stack_cur < this->stack_ptr) {
-	    if (stack_cur < this->stack_max) {
-		((Context *)this)->stack_max = stack_cur;
-	    }
-	} else {
-	    if (stack_cur > this->stack_max) {
-		((Context *)this)->stack_max = stack_cur;
-	    }
-	}
-    } else {
-	parent->checkStack(stack_cur);
-    }
 }
 
 /*!
