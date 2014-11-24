@@ -73,7 +73,7 @@ Context::~Context()
 unsigned long Context::stackUsage() const
 {
     if (parent == NULL) {
-	unsigned long ret = std::abs((unsigned long)stack_ptr - (unsigned long)stack_max);
+	unsigned long ret = std::labs((unsigned long)stack_ptr - (unsigned long)stack_max);
         ((Context *)this)->stack_ptr = 0;
         ((Context *)this)->stack_max = 0;
 	return ret;

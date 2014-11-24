@@ -32,6 +32,7 @@
 #include <algorithm>
 #include "stl-utils.h"
 #include "printutils.h"
+#include "function.h"
 #include <boost/bind.hpp>
 #include <boost/foreach.hpp>
 
@@ -263,26 +264,24 @@ class ExpressionEvaluatorMember : public ExpressionEvaluator
    }
 };
 
-static void function_recursion_detected(const char *func)
-{
-	PRINTB("ERROR: Recursion detected calling function '%s'", func);
-}
-
 class ExpressionEvaluatorFunction : public ExpressionEvaluator
 {
-    ValuePtr evaluate(const class Expression *expr, const class Context *context) const {
-	if (expr->recursioncount >= 1000) {
-		function_recursion_detected(expr->call_funcname.c_str());
-		// TO DO: throw function_recursion_detected();
-		return ValuePtr::undefined;
+	ValuePtr evaluate(const class Expression *expr, const class Context *context) const {
+    // FIXME: Throw based on stack usage.
+		// NB! This doesn't currently work since the stack usage isn't initialized at this point
+    // int su = context->stackUsage();
+    // if (su > 1000000) PRINTB("Stack usage: %d", su);
+		if (expr->recursioncount >= 1000) {
+			throw FunctionRecursionException(expr->call_funcname.c_str());
+			return ValuePtr::undefined;
+		}
+		expr->recursioncount += 1;
+		EvalContext *c = new EvalContext(context, expr->call_arguments);
+		ValuePtr result = context->evaluate_function(expr->call_funcname, c);
+		delete c;
+		expr->recursioncount -= 1;
+		return result;
 	}
-	expr->recursioncount += 1;
-	EvalContext *c = new EvalContext(context, expr->call_arguments);
-	ValuePtr result = context->evaluate_function(expr->call_funcname, c);
-	delete c;
-	expr->recursioncount -= 1;
-	return result;
-    }
 };
 
 class ExpressionEvaluatorLet : public ExpressionEvaluator
