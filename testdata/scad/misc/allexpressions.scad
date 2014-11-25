@@ -29,4 +29,4 @@ z = (j);
 aa = k ? l : m;
 bb = n[o];
 cc = let(a=1) a;
-dd = [for (a=[0,1]) a];
+dd = [for (a=[0,1]) let(b=a) if (true) b];

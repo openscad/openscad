@@ -375,7 +375,7 @@ std::string Expression::toString() const
 				stream << "for(" << c->call_arguments << ") ";
 				c = c->children[0];
 			} else if (c->call_funcname == "if") {
-				stream << "if(" << c->children[0] << ") ";
+				stream << "if(" << *c->children[0] << ") ";
 				c = c->children[1];
 			} else if (c->call_funcname == "let") {
 				stream << "let(" << c->call_arguments << ") ";
