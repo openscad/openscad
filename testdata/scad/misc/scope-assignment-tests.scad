@@ -32,6 +32,19 @@ for (i=[0:2]) {
   echo("c", c); 
 }
 
+echo("if scope:");
+if (true) {
+    d = 8;
+    echo("d (8)", d);
+}
+
+echo("else scope:");
+if (false) {
+} else {
+    d = 9;
+    echo("d (9)", d);
+}
+
 echo("anonymous inner scope (scope ignored):");
 union() {
     e = 2;
@@ -63,3 +76,10 @@ h=5;
     h=h*2; // Not allowed
     echo("h (undef)", h); 
 } 
+
+echo("override variable in assign scope:");
+assign(i=9) {
+    i=10;
+    echo("i (10)", i);
+}
+
