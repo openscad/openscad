@@ -37,3 +37,5 @@ mirror();
 translate();
 multmatrix();
 color();
+offset();
+text();
