@@ -620,6 +620,7 @@ set(CORE_SOURCES
   ../src/calc.cc 
   ../src/expr.cc 
   ../src/func.cc 
+  ../src/stackcheck.cc 
   ../src/localscope.cc 
   ../src/module.cc 
   ../src/ModuleCache.cc 
