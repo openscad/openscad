@@ -2,16 +2,13 @@
 
 //Helper function that pretty prints our search test
 //Expected result is checked against execution of a search() invocation and OK/FAIL is indicated
-module test_search_and_echo( exp_res, search_to_find, search_to_search, search_up_to_num_matches = undef)
-{
-   if(undef != search_up_to_num_matches)
-   {
-      assign( test_res = search(search_to_find, search_to_search, search_up_to_num_matches) )
+module test_search_and_echo( exp_res, search_to_find, search_to_search, search_up_to_num_matches = undef) {
+   if (undef != search_up_to_num_matches) {
+      test_res = search(search_to_find, search_to_search, search_up_to_num_matches);
       echo(str("Expect ", exp_res, " for search(", search_to_find, ", ", search_to_search, ", ", search_up_to_num_matches, ")=", test_res, ". ", (exp_res == test_res)?"OK":"FAIL"  ));
    }
-   else
-   {
-      assign( test_res = search(search_to_find, search_to_search) )
+   else {
+      test_res = search(search_to_find, search_to_search);
       echo(str("Expect ", exp_res, " for search(", search_to_find, ", ", search_to_search, ")=", test_res, ". ", (exp_res == test_res)?"OK":"FAIL"  ));
    }
 }
