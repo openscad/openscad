@@ -56,7 +56,7 @@ AbstractNode *RotateExtrudeModule::instantiate(const Context *ctx, const ModuleI
 
 	Context c(ctx);
 	c.setVariables(args, evalctx);
-	evalctx->applyScope();
+	inst->scope.apply(*evalctx);
 
 	node->fn = c.lookup_variable("$fn").toDouble();
 	node->fs = c.lookup_variable("$fs").toDouble();

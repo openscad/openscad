@@ -50,7 +50,7 @@ AbstractNode *RenderModule::instantiate(const Context *ctx, const ModuleInstanti
 
 	Context c(ctx);
 	c.setVariables(args, evalctx);
-	evalctx->applyScope();
+	inst->scope.apply(*evalctx);
 
 	Value v = c.lookup_variable("convexity");
 	if (v.type() == Value::NUMBER)

@@ -167,10 +167,6 @@ AbstractNode *ControlModule::instantiate(const Context* /*ctx*/, const ModuleIns
 {
 	AbstractNode *node = NULL;
 
-	if (this->type != FOR && this->type != INT_FOR) {
-		evalctx->applyScope();
-	}
-
 	switch (this->type) {
 	case CHILD:	{
 		printDeprecation("DEPRECATED: child() will be removed in future releases. Use children() instead.");
@@ -285,11 +281,15 @@ AbstractNode *ControlModule::instantiate(const Context* /*ctx*/, const ModuleIns
 
 	case ASSIGN: {
 		node = new AbstractNode(inst);
+		// We create a new context to avoid parameters from influencing each other
+		// -> parallel evaluation. This is to be backwards compatible.
 		Context c(evalctx);
 		for (size_t i = 0; i < evalctx->numArgs(); i++) {
 			if (!evalctx->getArgName(i).empty())
 				c.set_variable(evalctx->getArgName(i), evalctx->getArgValue(i));
 		}
+		// Let any local variables override the parameters
+		inst->scope.apply(c);
 		std::vector<AbstractNode *> instantiatednodes = inst->instantiateChildren(&c);
 		node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
 	}
@@ -309,10 +309,12 @@ AbstractNode *ControlModule::instantiate(const Context* /*ctx*/, const ModuleIns
 		node = new AbstractNode(inst);
 		const IfElseModuleInstantiation *ifelse = dynamic_cast<const IfElseModuleInstantiation*>(inst);
 		if (evalctx->numArgs() > 0 && evalctx->getArgValue(0).toBool()) {
+			inst->scope.apply(*evalctx);
 			std::vector<AbstractNode *> instantiatednodes = ifelse->instantiateChildren(evalctx);
 			node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
 		}
 		else {
+			ifelse->else_scope.apply(*evalctx);
 			std::vector<AbstractNode *> instantiatednodes = ifelse->instantiateElseChildren(evalctx);
 			node->children.insert(node->children.end(), instantiatednodes.begin(), instantiatednodes.end());
 		}

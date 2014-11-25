@@ -53,7 +53,7 @@ AbstractNode *ProjectionModule::instantiate(const Context *ctx, const ModuleInst
 
 	Context c(ctx);
 	c.setVariables(args, evalctx);
-	evalctx->applyScope();
+	inst->scope.apply(*evalctx);
 
 	Value convexity = c.lookup_variable("convexity", true);
 	Value cut = c.lookup_variable("cut", true);

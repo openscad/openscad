@@ -62,7 +62,7 @@ AbstractNode *CgaladvModule::instantiate(const Context *ctx, const ModuleInstant
 
 	Context c(ctx);
 	c.setVariables(args, evalctx);
-	evalctx->applyScope();
+	inst->scope.apply(*evalctx);
 
 	Value convexity, path, subdiv_type, level;
 

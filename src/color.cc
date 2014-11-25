@@ -218,7 +218,7 @@ AbstractNode *ColorModule::instantiate(const Context *ctx, const ModuleInstantia
 
 	Context c(ctx);
 	c.setVariables(args, evalctx);
-	evalctx->applyScope();
+	inst->scope.apply(*evalctx);
 
 	Value v = c.lookup_variable("c");
 	if (v.type() == Value::VECTOR) {

@@ -54,3 +54,16 @@ std::vector<AbstractNode*> LocalScope::instantiateChildren(const Context *evalct
 	return childnodes;
 }
 
+/*!
+	When instantiating a module which can take a scope as parameter (i.e. non-leaf nodes),
+	use this method to apply the local scope definitions to the evaluation context.
+	This will enable variables defined in local blocks.
+	NB! for loops are special as the local block may depend on variables evaluated by the
+	for loop parameters. The for loop code will handle this specially.
+*/
+void LocalScope::apply(Context &ctx) const
+{
+	BOOST_FOREACH(const Assignment &ass, this->assignments) {
+		ctx.set_variable(ass.first, ass.second->evaluate(&ctx));
+	}
+}

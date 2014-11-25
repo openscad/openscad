@@ -37,22 +37,6 @@ ModuleInstantiation *EvalContext::getChild(size_t i) const
 	return this->scope ? this->scope->children[i] : NULL; 
 }
 
-/*!
-	When instantiating a module which can take a scope as parameter (i.e. non-leaf nodes),
-	use this method to apply the local scope definitions to the evaluation context.
-	This will enable variables defined in local blocks.
-	NB! for loops are special as the local block may depend on variables evaluated by the
-	for loop parameters. The for loop code will handle this specially.
-*/
-void EvalContext::applyScope()
-{
-	if (this->scope) {
-	 	BOOST_FOREACH(const Assignment &ass, this->scope->assignments) {
-	 		this->set_variable(ass.first, ass.second->evaluate(this));
-	 	}
-	}
-}
-
 #ifdef DEBUG
 std::string EvalContext::dump(const AbstractModule *mod, const ModuleInstantiation *inst)
 {
