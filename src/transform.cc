@@ -50,10 +50,10 @@ class TransformModule : public AbstractModule
 public:
 	transform_type_e type;
 	TransformModule(transform_type_e type) : type(type) { }
-	virtual AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const;
+	virtual AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const;
 };
 
-AbstractNode *TransformModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const
+AbstractNode *TransformModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const
 {
 	TransformNode *node = new TransformNode(inst);
 
@@ -83,6 +83,7 @@ AbstractNode *TransformModule::instantiate(const Context *ctx, const ModuleInsta
 
 	Context c(ctx);
 	c.setVariables(args, evalctx);
+	evalctx->applyScope();
 
 	if (this->type == SCALE)
 	{

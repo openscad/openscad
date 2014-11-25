@@ -41,10 +41,10 @@ class ProjectionModule : public AbstractModule
 {
 public:
 	ProjectionModule() { }
-	virtual AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const;
+	virtual AbstractNode *instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const;
 };
 
-AbstractNode *ProjectionModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, const EvalContext *evalctx) const
+AbstractNode *ProjectionModule::instantiate(const Context *ctx, const ModuleInstantiation *inst, EvalContext *evalctx) const
 {
 	ProjectionNode *node = new ProjectionNode(inst);
 
@@ -53,6 +53,7 @@ AbstractNode *ProjectionModule::instantiate(const Context *ctx, const ModuleInst
 
 	Context c(ctx);
 	c.setVariables(args, evalctx);
+	evalctx->applyScope();
 
 	Value convexity = c.lookup_variable("convexity", true);
 	Value cut = c.lookup_variable("cut", true);
